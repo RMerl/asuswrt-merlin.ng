@@ -30,32 +30,29 @@
 #include "mjpegdec.h"
 #include "sp5x.h"
 
-
-static int sp5x_decode_frame(AVCodecContext *avctx,
-                              void *data, int *got_frame,
-                              AVPacket *avpkt)
+int ff_sp5x_process_packet(AVCodecContext *avctx, AVPacket *avpkt)
 {
     const uint8_t *buf = avpkt->data;
     int buf_size = avpkt->size;
-    AVPacket avpkt_recoded;
-    const int qscale = 5;
+    AVBufferRef *buf_recoded;
     uint8_t *recoded;
     int i = 0, j = 0;
 
     if (!avctx->width || !avctx->height)
         return -1;
 
-    recoded = av_mallocz(buf_size + 1024);
-    if (!recoded)
+    buf_recoded = av_buffer_allocz(buf_size + 1024);
+    if (!buf_recoded)
         return -1;
+    recoded = buf_recoded->data;
 
     /* SOI */
     recoded[j++] = 0xFF;
     recoded[j++] = 0xD8;
 
     memcpy(recoded+j, &sp5x_data_dqt[0], sizeof(sp5x_data_dqt));
-    memcpy(recoded+j+5, &sp5x_quant_table[qscale * 2], 64);
-    memcpy(recoded+j+70, &sp5x_quant_table[(qscale * 2) + 1], 64);
+    memcpy(recoded + j + 5,  &sp5x_qscale_five_quant_table[0], 64);
+    memcpy(recoded + j + 70, &sp5x_qscale_five_quant_table[1], 64);
     j += sizeof(sp5x_data_dqt);
 
     memcpy(recoded+j, &sp5x_data_dht[0], sizeof(sp5x_data_dht));
@@ -84,14 +81,12 @@ static int sp5x_decode_frame(AVCodecContext *avctx,
     recoded[j++] = 0xFF;
     recoded[j++] = 0xD9;
 
-    av_init_packet(&avpkt_recoded);
-    avpkt_recoded.data = recoded;
-    avpkt_recoded.size = j;
-    i = ff_mjpeg_decode_frame(avctx, data, got_frame, &avpkt_recoded);
+    av_buffer_unref(&avpkt->buf);
+    avpkt->buf  = buf_recoded;
+    avpkt->data = recoded;
+    avpkt->size = j;
 
-    av_free(recoded);
-
-    return i < 0 ? i : avpkt->size;
+    return 0;
 }
 
 #if CONFIG_SP5X_DECODER
@@ -103,10 +98,11 @@ AVCodec ff_sp5x_decoder = {
     .priv_data_size = sizeof(MJpegDecodeContext),
     .init           = ff_mjpeg_decode_init,
     .close          = ff_mjpeg_decode_end,
-    .decode         = sp5x_decode_frame,
+    .receive_frame  = ff_mjpeg_receive_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
     .max_lowres     = 3,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP |
+                      FF_CODEC_CAP_SETS_PKT_DTS,
 };
 #endif
 #if CONFIG_AMV_DECODER
@@ -118,9 +114,10 @@ AVCodec ff_amv_decoder = {
     .priv_data_size = sizeof(MJpegDecodeContext),
     .init           = ff_mjpeg_decode_init,
     .close          = ff_mjpeg_decode_end,
-    .decode         = sp5x_decode_frame,
+    .receive_frame  = ff_mjpeg_receive_frame,
     .max_lowres     = 3,
     .capabilities   = AV_CODEC_CAP_DR1,
-    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP |
+                      FF_CODEC_CAP_SETS_PKT_DTS,
 };
 #endif

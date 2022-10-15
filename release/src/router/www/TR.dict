@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=AiMesh sistemi ve son cihazların uyumu göz önüne alınd�
 AiMesh_confirm_msg10=AiMesh sisteminiz ve son cihaz(lar) arasında bağlantıyı sağlamak için WPA3-Kişisel’e geçmeden önce lütfen bu <a id="wpa3FaqLink">SSS</a> kısmını okuyun.
 AiMesh_confirm_msg11=Şu anda WPA3-kişisel kullanıyorsunuz. Bir AiMesh sistemi oluşturmak için kimlik doğrulama yönteminiz WPA2/WPA3-kişisel olarak değiştirilecektir. İlerlemek istiyor musunuz?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Daha fazla ayrıntı için, lütfen <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>bu SSS</a> adresini ziyaret edin
+AiMesh_confirm_msg13=Daha fazla ayrıntı için, lütfen <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>bu SSS</a> adresini ziyaret edin
 AiMesh_Feature_Desc=Gelişmiş ASUS AiMesh, birden fazla ASUS yönlendiricinin birbirine bağlanmasıyla tüm ev WiFi ağı oluşturmayı sağlayan yenilikçi bir yeni yönlendirici özelliğidir.
 AiMesh_FAQ=ASUS AiMesh konusunda daha fazla bilgi edinin
 AiMesh_FindNode=AiMesh düğümü bul
@@ -2412,7 +2412,7 @@ Internet=Internet
 Interval=Aralık
 Introduce_demo=Tanıtım
 Invitation=Davet
-Interaction=Взаємодія
+Interaction=Etkileşim
 InternetSpeed=İnternet Hızı
 InternetSpeed_desc=Bu hizmet, Ookla® tarafından sağlanır. Yönlendiricinizden İnternetinize indirme ve karşıya yükleme hızlarını tespit eder. Bu testin tamamlanması yaklaşık bir dakika sürer. Bu hizmeti kullanarak, <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Ookla’nın Gizlilik Politikasını</a> kabul edersiniz.
 InternetSpeed_ookla_mark=Ookla® ve Speedtest®, Ookla, LLC şirketine ait olarak federal tescillidir.
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS Seçeneği
 WANTCPMSSOptionComm1Text=byte
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN Toplama, WAN hızınızı 2 Gbps'ye kadar artırmak için iki ağ bağlantısını birleştirir. Yönlendiricinizin WAN bağlantı noktasını ve LAN 4 bağlantı noktasını modeminizin LAN bağlantı noktasına bağlayın (aynı özelliklerde iki kablo kullandığınızdan emin olun). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Toplama SSS</a>
+WANAggregation_desc=WAN Toplama, WAN hızınızı 2 Gbps'ye kadar artırmak için iki ağ bağlantısını birleştirir. Yönlendiricinizin #WAN bağlantı noktasını ve LAN 4 bağlantı noktasını modeminizin LAN bağlantı noktasına bağlayın (aynı özelliklerde iki kablo kullandığınızdan emin olun). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Toplama SSS</a>
 WANAggregation_enable=WAN Toplamasını Etkinleştir
 WANAggregation_disable_dualwan=Yönlendiricinizde Çift WAN etkin. WAN Toplamasını etkinleştirmek Dual WAN'ı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_disable_WANAggregation=Yönlendiricinizde WAN Toplama etkin. Çift WAN'ın etkinleştirilmesi WAN Toplamayı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_PortConflict_hint1=WAN Toplama, yönlendiricinizin LAN 4 bağlantı noktasını kullanıyor. IPTV'ninn etkinleştirilmesi WAN Toplamayı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_PortConflict_hint2=IPTV, yönlendiricinizin LAN 4 bağlantı noktasını kullanıyor. WAN Toplamasını etkinleştirmek IPTV'yi devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_disable_IPTVDualWAN=Yönlendiricinizde hem Çift WAN hem de IPTV etkindir. WAN Toplamayı etkinleştirmek, bağlantı noktası karmaşasını önlemek için Çift WAN ve IPTV'yi devre dışı bırakacaktır. Devam etmek istediğine emin misin?
-WANAggregation_help_WAN=Yönelticinizin WAN bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
+WANAggregation_help_WAN=Yönelticinizin #WAN bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
 WANAggregation_help_LAN=Yönelticinizin LAN 4 bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
 WANAggregation_goto_WAN=WAN Toplamasını etkinleştirmek için <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-İnternet</a> Bağlantısı sayfasına gidin.
 WANAggregation_help_desc=WAN Birleştirme kurulumu başarılı olmazsa, lütfen tekrar denemek için aşağıdaki adımları izleyin.
-WANAggregation_help_step1=Modeminizin LAN portlarının yönlendiricinizin WAN ve LAN 4 konumuna kablo ile bağlanmış olduğundan emin olun.
+WANAggregation_help_step1=Modeminizin LAN portlarının yönlendiricinizin #WAN ve LAN 4 konumuna kablo ile bağlanmış olduğundan emin olun.
 WANAggregation_help_step2=Modeminizin 802.3ad’i etkinleştirdiğinden emin olun
 WANAggregation_help_step3=Aynı özellikte iki kablo kullandığınızı doğrulayın (gigabit & gigabit veya 10/100& 10/100Mbps)
 WANAggregation_help_step4=Yönlendiricinizi yeniden başlatın
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Daha hızlı ve daha iyi bir oyun deneyimi için GeForce Now oyun aygıtlarına öncelik vermek üzere GeForce Now'ı seçin.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Olay
 AURA_Event_desc=Sistem aşağıdaki olayları algılar ve farklı LED efektlerini tetikler.
 AURA_Event_Boost_desc=Oyun Takviyesini etkinleştirirken, LED çubuğunun kırmızı soluma etkisi kullandığını göreceksiniz.

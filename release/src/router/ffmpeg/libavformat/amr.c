@@ -29,6 +29,7 @@ Only mono files are supported.
 #include "libavutil/channel_layout.h"
 #include "avformat.h"
 #include "internal.h"
+#include "rawenc.h"
 
 typedef struct {
     uint64_t cumulated_size;
@@ -60,18 +61,11 @@ static int amr_write_header(AVFormatContext *s)
     } else {
         return -1;
     }
-    avio_flush(pb);
-    return 0;
-}
-
-static int amr_write_packet(AVFormatContext *s, AVPacket *pkt)
-{
-    avio_write(s->pb, pkt->data, pkt->size);
     return 0;
 }
 #endif /* CONFIG_AMR_MUXER */
 
-static int amr_probe(AVProbeData *p)
+static int amr_probe(const AVProbeData *p)
 {
     // Only check for "#!AMR" which could be amr-wb, amr-nb.
     // This will also trigger multichannel files: "#!AMR_MC1.0\n" and
@@ -90,13 +84,15 @@ static int amr_read_header(AVFormatContext *s)
     AVStream *st;
     uint8_t header[9];
 
-    avio_read(pb, header, 6);
+    if (avio_read(pb, header, 6) != 6)
+        return AVERROR_INVALIDDATA;
 
     st = avformat_new_stream(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
     if (memcmp(header, AMR_header, 6)) {
-        avio_read(pb, header + 6, 3);
+        if (avio_read(pb, header + 6, 3) != 3)
+            return AVERROR_INVALIDDATA;
         if (memcmp(header, AMRWB_header, 9)) {
             return -1;
         }
@@ -154,7 +150,6 @@ static int amr_read_packet(AVFormatContext *s, AVPacket *pkt)
     read              = avio_read(s->pb, pkt->data + 1, size - 1);
 
     if (read != size - 1) {
-        av_packet_unref(pkt);
         if (read < 0)
             return read;
         return AVERROR(EIO);
@@ -176,7 +171,7 @@ AVInputFormat ff_amr_demuxer = {
 #endif
 
 #if CONFIG_AMRNB_DEMUXER
-static int amrnb_probe(AVProbeData *p)
+static int amrnb_probe(const AVProbeData *p)
 {
     int mode, i = 0, valid = 0, invalid = 0;
     const uint8_t *b = p->buf;
@@ -184,12 +179,11 @@ static int amrnb_probe(AVProbeData *p)
     while (i < p->buf_size) {
         mode = b[i] >> 3 & 0x0F;
         if (mode < 9 && (b[i] & 0x4) == 0x4) {
-            int last = mode;
+            int last = b[i];
             int size = amrnb_packed_size[mode];
             while (size--) {
                 if (b[++i] != last)
                     break;
-                last = b[i];
             }
             if (size > 0) {
                 valid++;
@@ -201,7 +195,7 @@ static int amrnb_probe(AVProbeData *p)
             i++;
         }
     }
-    if (valid > 100 && valid > invalid)
+    if (valid > 100 && valid >> 4 > invalid)
         return AVPROBE_SCORE_EXTENSION / 2 + 1;
     return 0;
 }
@@ -233,7 +227,7 @@ AVInputFormat ff_amrnb_demuxer = {
 #endif
 
 #if CONFIG_AMRWB_DEMUXER
-static int amrwb_probe(AVProbeData *p)
+static int amrwb_probe(const AVProbeData *p)
 {
     int mode, i = 0, valid = 0, invalid = 0;
     const uint8_t *b = p->buf;
@@ -241,12 +235,11 @@ static int amrwb_probe(AVProbeData *p)
     while (i < p->buf_size) {
         mode = b[i] >> 3 & 0x0F;
         if (mode < 10 && (b[i] & 0x4) == 0x4) {
-            int last = mode;
+            int last = b[i];
             int size = amrwb_packed_size[mode];
             while (size--) {
                 if (b[++i] != last)
                     break;
-                last = b[i];
             }
             if (size > 0) {
                 valid++;
@@ -258,8 +251,8 @@ static int amrwb_probe(AVProbeData *p)
             i++;
         }
     }
-    if (valid > 100 && valid > invalid)
-        return AVPROBE_SCORE_EXTENSION / 2 - 1;
+    if (valid > 100 && valid >> 4 > invalid)
+        return AVPROBE_SCORE_EXTENSION / 2 + 1;
     return 0;
 }
 
@@ -298,7 +291,7 @@ AVOutputFormat ff_amr_muxer = {
     .audio_codec       = AV_CODEC_ID_AMR_NB,
     .video_codec       = AV_CODEC_ID_NONE,
     .write_header      = amr_write_header,
-    .write_packet      = amr_write_packet,
+    .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
 #endif

@@ -28,7 +28,6 @@
 
 typedef struct {
     int64_t data;
-    uint8_t *pkt_sizes;
     int size_buffer_size;
     int size_entries_used;
     int packets;
@@ -203,37 +202,35 @@ static int caf_write_header(AVFormatContext *s)
     avio_wb64(pb, -1);        //< mChunkSize
     avio_wb32(pb, 0);         //< mEditCount
 
-    avio_flush(pb);
     return 0;
 }
 
 static int caf_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
     CAFContext *caf = s->priv_data;
+    AVStream *const st = s->streams[0];
 
-    avio_write(s->pb, pkt->data, pkt->size);
-    if (!s->streams[0]->codecpar->block_align) {
-        void *pkt_sizes = caf->pkt_sizes;
-        int i, alloc_size = caf->size_entries_used + 5;
-        if (alloc_size < 0) {
-            caf->pkt_sizes = NULL;
-        } else {
-            caf->pkt_sizes = av_fast_realloc(caf->pkt_sizes,
-                                             &caf->size_buffer_size,
-                                             alloc_size);
-        }
-        if (!caf->pkt_sizes) {
-            av_free(pkt_sizes);
+    if (!st->codecpar->block_align) {
+        uint8_t *pkt_sizes;
+        int i, alloc_size = caf->size_entries_used + 5U;
+        if (alloc_size < 0)
+            return AVERROR(ERANGE);
+
+        pkt_sizes = av_fast_realloc(st->priv_data,
+                                    &caf->size_buffer_size,
+                                    alloc_size);
+        if (!pkt_sizes)
             return AVERROR(ENOMEM);
-        }
+        st->priv_data = pkt_sizes;
         for (i = 4; i > 0; i--) {
             unsigned top = pkt->size >> i * 7;
             if (top)
-                caf->pkt_sizes[caf->size_entries_used++] = 128 | top;
+                pkt_sizes[caf->size_entries_used++] = 128 | top;
         }
-        caf->pkt_sizes[caf->size_entries_used++] = pkt->size & 127;
+        pkt_sizes[caf->size_entries_used++] = pkt->size & 127;
         caf->packets++;
     }
+    avio_write(s->pb, pkt->data, pkt->size);
     return 0;
 }
 
@@ -241,7 +238,8 @@ static int caf_write_trailer(AVFormatContext *s)
 {
     CAFContext *caf = s->priv_data;
     AVIOContext *pb = s->pb;
-    AVCodecParameters *par = s->streams[0]->codecpar;
+    AVStream *st = s->streams[0];
+    AVCodecParameters *par = st->codecpar;
 
     if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
         int64_t file_size = avio_tell(pb);
@@ -251,17 +249,14 @@ static int caf_write_trailer(AVFormatContext *s)
         avio_seek(pb, file_size, SEEK_SET);
         if (!par->block_align) {
             ffio_wfourcc(pb, "pakt");
-            avio_wb64(pb, caf->size_entries_used + 24);
+            avio_wb64(pb, caf->size_entries_used + 24U);
             avio_wb64(pb, caf->packets); ///< mNumberPackets
             avio_wb64(pb, caf->packets * samples_per_packet(par->codec_id, par->channels, par->block_align)); ///< mNumberValidFrames
             avio_wb32(pb, 0); ///< mPrimingFrames
             avio_wb32(pb, 0); ///< mRemainderFrames
-            avio_write(pb, caf->pkt_sizes, caf->size_entries_used);
-            caf->size_buffer_size = 0;
+            avio_write(pb, st->priv_data, caf->size_entries_used);
         }
-        avio_flush(pb);
     }
-    av_freep(&caf->pkt_sizes);
     return 0;
 }
 
@@ -276,5 +271,5 @@ AVOutputFormat ff_caf_muxer = {
     .write_header   = caf_write_header,
     .write_packet   = caf_write_packet,
     .write_trailer  = caf_write_trailer,
-    .codec_tag      = (const AVCodecTag* const []){ff_codec_caf_tags, 0},
+    .codec_tag      = ff_caf_codec_tags_list,
 };

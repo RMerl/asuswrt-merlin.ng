@@ -4,6 +4,7 @@
 #include <stdlib.h>
 #include <inttypes.h>
 #include <time.h>
+#include <json.h>
 #include "cosql_utils.h"
 #include "log.h"
 #include "codb_config.h"
@@ -283,7 +284,7 @@ static char* get_operations_symbol(operation_type_e operation_type)
 static int is_valid_text(const char* input) 
 {
 	int i,len;
-	char whitelist[] = ":.-,=/_ ";
+	char whitelist[] = ":.-,=/_ []()%";
 	char tmp[2] = {0};
 	
 	if(!input) {
@@ -501,6 +502,21 @@ static int is_valid_text_ip(const char *input)
 	return FORMAT_ERROR;
 }
 
+static int is_valid_text_json(const char *input) 
+{
+	if(!input) {
+		return FORMAT_ERROR;
+	}
+
+	json_object *rootObj = json_tokener_parse(input);
+	if (rootObj!=NULL) {
+		json_object_put(rootObj);
+		return FORMAT_OK;
+	}
+
+	return FORMAT_ERROR;
+}
+
 static char* gen_match_query_string(int match_columns_count, sql_column_match_t* match_columns, char* match_query_string, const char* split_string)
 {
 	if (match_columns==NULL) {
@@ -579,6 +595,22 @@ static char* gen_match_query_string(int match_columns_count, sql_column_match_t*
 				//- ex. column_name=column_value
 				snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
 				break;
+
+			case COLUMN_TYPE_TEXT_JSON:
+				if (match_columns->value.t==NULL) {
+					match_columns++;
+					continue;
+				}
+
+				if (is_valid_text_json(match_columns->value.t)==FORMAT_ERROR) {
+					match_columns++;
+					continue;
+				}
+
+				//- ex. column_name=column_value
+				snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
+				break;
+
 
 			case COLUMN_TYPE_INT16:
 				snprintf(buff, MAX_BUF_LEN, "%s%s%"PRId16, column_name, operation_symbol, match_columns->value.i16);
@@ -685,6 +717,20 @@ static char* gen_match_query_string(int match_columns_count, sql_column_match_t*
 				}
 
 				if (is_valid_text_ip(match_columns->value.t)==FORMAT_ERROR) {
+					match_columns++;
+					continue;
+				}
+
+				snprintf(buff, MAX_BUF_LEN, "%s%s'%s'", column_name, operation_symbol, match_columns->value.t);
+				break;
+
+			case COLUMN_TYPE_TEXT_JSON:
+				if (match_columns->value.t==NULL) {
+					match_columns++;
+					continue;
+				}
+
+				if (is_valid_text_json(match_columns->value.t)==FORMAT_ERROR) {
 					match_columns++;
 					continue;
 				}
@@ -805,6 +851,20 @@ static char* gen_upsert_query_string(int columns_count, sql_column_t* columns, c
 				snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
 				break;
 
+			case COLUMN_TYPE_TEXT_JSON:
+				if (columns->value.t==NULL) {
+					columns++;
+					continue;
+				}
+
+				if (is_valid_text_json(columns->value.t)==FORMAT_ERROR) {
+					columns++;
+					continue;
+				}
+
+				snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
+				break;
+
 			case COLUMN_TYPE_INT16:
 				snprintf(buff, MAX_VALUE_LEN, "%s=%"PRId16, column_name, columns->value.i16);
 				break;
@@ -905,6 +965,20 @@ static char* gen_upsert_query_string(int columns_count, sql_column_t* columns, c
 				}
 
 				if (is_valid_text_ip(columns->value.t)==FORMAT_ERROR) {
+					columns++;
+					continue;
+				}
+
+				snprintf(buff, MAX_VALUE_LEN, "%s='%s'", column_name, columns->value.t);
+				break;
+
+			case COLUMN_TYPE_TEXT_JSON:
+				if (columns->value.t==NULL) {
+					columns++;
+					continue;
+				}
+
+				if (is_valid_text_json(columns->value.t)==FORMAT_ERROR) {
 					columns++;
 					continue;
 				}
@@ -1143,6 +1217,7 @@ int cosql_create_table(sqlite3 *pdb, const char* db_version, int columns_count, 
 			case COLUMN_TYPE_TEXT:
 			case COLUMN_TYPE_TEXT_MAC:
 			case COLUMN_TYPE_TEXT_IP:
+			case COLUMN_TYPE_TEXT_JSON:
 				snprintf(buff, MAX_BUF_LEN, "%s TEXT DEFAULT '' NOT NULL", column_name);
 				break;
 
@@ -1206,6 +1281,7 @@ int cosql_create_table(sqlite3 *pdb, const char* db_version, int columns_count, 
 			case COLUMN_TYPE_TEXT:
 			case COLUMN_TYPE_TEXT_MAC:
 			case COLUMN_TYPE_TEXT_IP:
+			case COLUMN_TYPE_TEXT_JSON:
 				snprintf(buff, MAX_BUF_LEN, "%s TEXT DEFAULT '' NOT NULL", column_name);
 				break;
 
@@ -1454,7 +1530,7 @@ int cosql_insert_table(sqlite3* pdb, int columns_count, sql_column_t* columns)
 	}
 	
 	int i=0, ret=0;
-
+	
 	time_t current_time = time(NULL);
 	char buff_column_name[MAX_BUF_LEN];
 	char buff_insert_value[MAX_VALUE_LEN];
@@ -1511,6 +1587,20 @@ int cosql_insert_table(sqlite3* pdb, int columns_count, sql_column_t* columns)
 				}
 				
 				if (is_valid_text_ip(columns->value.t)==FORMAT_ERROR) {
+					columns++;
+					continue;
+				}
+
+				snprintf(buff_insert_value, MAX_VALUE_LEN, "'%s'", columns->value.t);
+				break;
+
+			case COLUMN_TYPE_TEXT_JSON:
+				if (columns->value.t==NULL) {
+					columns++;
+					continue;
+				}
+				
+				if (is_valid_text_json(columns->value.t)==FORMAT_ERROR) {
 					columns++;
 					continue;
 				}
@@ -1629,6 +1719,20 @@ int cosql_insert_table(sqlite3* pdb, int columns_count, sql_column_t* columns)
 				}
 				
 				if (is_valid_text_ip(columns->value.t)==FORMAT_ERROR) {
+					columns++;
+					continue;
+				}
+
+				snprintf(buff_insert_value, MAX_VALUE_LEN, "'%s'", columns->value.t);
+				break;
+
+			case COLUMN_TYPE_TEXT_JSON:
+				if (columns->value.t==NULL) {
+					columns++;
+					continue;
+				}
+				
+				if (is_valid_text_json(columns->value.t)==FORMAT_ERROR) {
 					columns++;
 					continue;
 				}
@@ -2631,7 +2735,7 @@ int xxcosql_resize_table_by_count(sqlite3* pdb, const char* table_name, const ch
 	return COSQL_OK;
 }
 
-int cosql_backup_and_remove_data_between_time(sqlite3* src_pdb, sqlite3* dst_pdb, int start_data_time, int end_data_time) 
+int cosql_backup_and_remove_data_between_time(sqlite3* src_pdb, sqlite3* dst_pdb, const char* backup_data_columns, int start_data_time, int end_data_time) 
 {
 	if (src_pdb == NULL || dst_pdb == NULL) {
 		return COSQL_ERROR;
@@ -2647,8 +2751,15 @@ int cosql_backup_and_remove_data_between_time(sqlite3* src_pdb, sqlite3* dst_pdb
 	}
 
 	// insert data from main database into target database.
-	ret = cosql_exec(src_pdb, "INSERT INTO target.%s SELECT * FROM main.%s WHERE data_time BETWEEN %d AND %d", 
-		DATA_TABLE_NAME, DATA_TABLE_NAME, start_data_time, end_data_time);
+	if (backup_data_columns==NULL || strlen(backup_data_columns)<=0) {
+		ret = cosql_exec(src_pdb, "INSERT INTO target.%s SELECT * FROM main.%s WHERE data_time BETWEEN %d AND %d", 
+			DATA_TABLE_NAME, DATA_TABLE_NAME, start_data_time, end_data_time);
+	}
+	else {
+		ret = cosql_exec(src_pdb, "INSERT INTO target.%s(%s, data_time) SELECT %s, data_time FROM main.%s WHERE data_time BETWEEN %d AND %d", 
+			DATA_TABLE_NAME, backup_data_columns, backup_data_columns, DATA_TABLE_NAME, start_data_time, end_data_time);
+	}
+	
 	if( ret != COSQL_OK ) {
 		codbg(src_pdb, "fail to insert data to target db %s.", dst_db_path);
 		int ins_err = sqlite3_errcode(src_pdb);
@@ -2855,7 +2966,10 @@ int cosql_free_match_columns(sql_column_match_t* match_columns, int match_column
 	       free(match_columns_idx->name);
 	   }
 
-	   if (match_columns_idx->type==COLUMN_TYPE_TEXT && match_columns_idx->value.t!=NULL) {
+	   if ((match_columns_idx->type==COLUMN_TYPE_TEXT ||
+	   	  match_columns_idx->type==COLUMN_TYPE_TEXT_MAC ||
+	   	  match_columns_idx->type==COLUMN_TYPE_TEXT_IP ||
+	   	  match_columns_idx->type==COLUMN_TYPE_TEXT_JSON) && match_columns_idx->value.t!=NULL) {
 	       free(match_columns_idx->value.t);
 	   }
 

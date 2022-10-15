@@ -410,7 +410,8 @@ static unsigned calc(unsigned bw, unsigned pct)
 void del_EbtablesRules(void)
 {
 	/* Flush all rules in nat table of ebtable*/
-	eval("ebtables", "-t", "nat", "-F");
+	if (module_loaded("ebtable_nat"))
+		eval("ebtables", "-t", "nat", "-F");
 	etable_flag = 0;
 }
 

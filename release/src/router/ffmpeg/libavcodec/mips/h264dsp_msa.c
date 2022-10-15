@@ -21,7 +21,7 @@
 #include "libavutil/mips/generic_macros_msa.h"
 #include "h264dsp_mips.h"
 
-static void avc_wgt_4x2_msa(uint8_t *data, int32_t stride,
+static void avc_wgt_4x2_msa(uint8_t *data, ptrdiff_t stride,
                             int32_t log2_denom, int32_t src_weight,
                             int32_t offset_in)
 {
@@ -45,11 +45,12 @@ static void avc_wgt_4x2_msa(uint8_t *data, int32_t stride,
     tmp0 = __msa_srlr_h(tmp0, denom);
     tmp0 = (v8i16) __msa_sat_u_h((v8u16) tmp0, 7);
     src0 = (v16u8) __msa_pckev_b((v16i8) tmp0, (v16i8) tmp0);
-    ST4x2_UB(src0, data, stride);
+    ST_W2(src0, 0, 1, data, stride);
 }
 
-static void avc_wgt_4x4_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
-                            int32_t src_weight, int32_t offset_in)
+static void avc_wgt_4x4_msa(uint8_t *data, ptrdiff_t stride,
+                            int32_t log2_denom, int32_t src_weight,
+                            int32_t offset_in)
 {
     uint32_t tp0, tp1, tp2, tp3, offset_val;
     v16u8 src0 = { 0 };
@@ -71,11 +72,12 @@ static void avc_wgt_4x4_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
     tmp1 = __msa_srlr_h(tmp1, denom);
     SAT_UH2_SH(tmp0, tmp1, 7);
     src0 = (v16u8) __msa_pckev_b((v16i8) tmp1, (v16i8) tmp0);
-    ST4x4_UB(src0, src0, 0, 1, 2, 3, data, stride);
+    ST_W4(src0, 0, 1, 2, 3, data, stride);
 }
 
-static void avc_wgt_4x8_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
-                            int32_t src_weight, int32_t offset_in)
+static void avc_wgt_4x8_msa(uint8_t *data, ptrdiff_t stride,
+                            int32_t log2_denom, int32_t src_weight,
+                            int32_t offset_in)
 {
     uint32_t tp0, tp1, tp2, tp3, offset_val;
     v16u8 src0 = { 0 }, src1 = { 0 };
@@ -102,11 +104,12 @@ static void avc_wgt_4x8_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
     SRLR_H4_SH(tmp0, tmp1, tmp2, tmp3, denom);
     SAT_UH4_SH(tmp0, tmp1, tmp2, tmp3, 7);
     PCKEV_B2_UB(tmp1, tmp0, tmp3, tmp2, src0, src1);
-    ST4x8_UB(src0, src1, data, stride);
+    ST_W8(src0, src1, 0, 1, 2, 3, 0, 1, 2, 3, data, stride);
 }
 
-static void avc_wgt_8x4_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
-                            int32_t src_weight, int32_t offset_in)
+static void avc_wgt_8x4_msa(uint8_t *data, ptrdiff_t stride,
+                            int32_t log2_denom, int32_t src_weight,
+                            int32_t offset_in)
 {
     uint32_t offset_val;
     uint64_t tp0, tp1, tp2, tp3;
@@ -133,10 +136,10 @@ static void avc_wgt_8x4_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
     SRLR_H4_SH(tmp0, tmp1, tmp2, tmp3, denom);
     SAT_UH4_SH(tmp0, tmp1, tmp2, tmp3, 7);
     PCKEV_B2_UB(tmp1, tmp0, tmp3, tmp2, src0, src1);
-    ST8x4_UB(src0, src1, data, stride);
+    ST_D4(src0, src1, 0, 1, 0, 1, data, stride);
 }
 
-static void avc_wgt_8x8_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
+static void avc_wgt_8x8_msa(uint8_t *data, ptrdiff_t stride, int32_t log2_denom,
                             int32_t src_weight, int32_t offset_in)
 {
     uint32_t offset_val;
@@ -175,11 +178,12 @@ static void avc_wgt_8x8_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
     SAT_UH8_SH(tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, 7);
     PCKEV_B4_UB(tmp1, tmp0, tmp3, tmp2, tmp5, tmp4, tmp7, tmp6, src0, src1,
                 src2, src3);
-    ST8x8_UB(src0, src1, src2, src3, data, stride);
+    ST_D8(src0, src1, src2, src3, 0, 1, 0, 1, 0, 1, 0, 1, data, stride);
 }
 
-static void avc_wgt_8x16_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
-                             int32_t src_weight, int32_t offset_in)
+static void avc_wgt_8x16_msa(uint8_t *data, ptrdiff_t stride,
+                             int32_t log2_denom, int32_t src_weight,
+                             int32_t offset_in)
 {
     uint32_t offset_val, cnt;
     uint64_t tp0, tp1, tp2, tp3;
@@ -218,12 +222,12 @@ static void avc_wgt_8x16_msa(uint8_t *data, int32_t stride, int32_t log2_denom,
         SAT_UH8_SH(tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7, 7);
         PCKEV_B4_UB(tmp1, tmp0, tmp3, tmp2, tmp5, tmp4, tmp7, tmp6, src0, src1,
                     src2, src3);
-        ST8x8_UB(src0, src1, src2, src3, data, stride);
+        ST_D8(src0, src1, src2, src3, 0, 1, 0, 1, 0, 1, 0, 1, data, stride);
         data += 8 * stride;
     }
 }
 
-static void avc_biwgt_4x2_msa(uint8_t *src, uint8_t *dst, int32_t stride,
+static void avc_biwgt_4x2_msa(uint8_t *src, uint8_t *dst, ptrdiff_t stride,
                               int32_t log2_denom, int32_t src_weight,
                               int32_t dst_weight, int32_t offset_in)
 {
@@ -253,10 +257,10 @@ static void avc_biwgt_4x2_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     tmp0 = __msa_maxi_s_h(tmp0, 0);
     tmp0 = __msa_min_s_h(max255, tmp0);
     dst0 = (v16u8) __msa_pckev_b((v16i8) tmp0, (v16i8) tmp0);
-    ST4x2_UB(dst0, dst, stride);
+    ST_W2(dst0, 0, 1, dst, stride);
 }
 
-static void avc_biwgt_4x4_msa(uint8_t *src, uint8_t *dst, int32_t stride,
+static void avc_biwgt_4x4_msa(uint8_t *src, uint8_t *dst, ptrdiff_t stride,
                               int32_t log2_denom, int32_t src_weight,
                               int32_t dst_weight, int32_t offset_in)
 {
@@ -287,10 +291,10 @@ static void avc_biwgt_4x4_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     tmp1 >>= denom;
     CLIP_SH2_0_255(tmp0, tmp1);
     dst0 = (v16u8) __msa_pckev_b((v16i8) tmp1, (v16i8) tmp0);
-    ST4x4_UB(dst0, dst0, 0, 1, 2, 3, dst, stride);
+    ST_W4(dst0, 0, 1, 2, 3, dst, stride);
 }
 
-static void avc_biwgt_4x8_msa(uint8_t *src, uint8_t *dst, int32_t stride,
+static void avc_biwgt_4x8_msa(uint8_t *src, uint8_t *dst, ptrdiff_t stride,
                               int32_t log2_denom, int32_t src_weight,
                               int32_t dst_weight, int32_t offset_in)
 {
@@ -327,10 +331,10 @@ static void avc_biwgt_4x8_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     SRA_4V(tmp0, tmp1, tmp2, tmp3, denom);
     CLIP_SH4_0_255(tmp0, tmp1, tmp2, tmp3);
     PCKEV_B2_UB(tmp1, tmp0, tmp3, tmp2, dst0, dst1);
-    ST4x8_UB(dst0, dst1, dst, stride);
+    ST_W8(dst0, dst1, 0, 1, 2, 3, 0, 1, 2, 3, dst, stride);
 }
 
-static void avc_biwgt_8x4_msa(uint8_t *src, uint8_t *dst, int32_t stride,
+static void avc_biwgt_8x4_msa(uint8_t *src, uint8_t *dst, ptrdiff_t stride,
                               int32_t log2_denom, int32_t src_weight,
                               int32_t dst_weight, int32_t offset_in)
 {
@@ -365,10 +369,10 @@ static void avc_biwgt_8x4_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     SRA_4V(tmp0, tmp1, tmp2, tmp3, denom);
     CLIP_SH4_0_255(tmp0, tmp1, tmp2, tmp3);
     PCKEV_B2_UB(tmp1, tmp0, tmp3, tmp2, dst0, dst1);
-    ST8x4_UB(dst0, dst1, dst, stride);
+    ST_D4(dst0, dst1, 0, 1, 0, 1, dst, stride);
 }
 
-static void avc_biwgt_8x8_msa(uint8_t *src, uint8_t *dst, int32_t stride,
+static void avc_biwgt_8x8_msa(uint8_t *src, uint8_t *dst, ptrdiff_t stride,
                               int32_t log2_denom, int32_t src_weight,
                               int32_t dst_weight, int32_t offset_in)
 {
@@ -413,14 +417,13 @@ static void avc_biwgt_8x8_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     tmp7 = __msa_dpadd_s_h(offset, wgt, vec7);
     SRA_4V(tmp0, tmp1, tmp2, tmp3, denom);
     SRA_4V(tmp4, tmp5, tmp6, tmp7, denom);
-    CLIP_SH4_0_255(tmp0, tmp1, tmp2, tmp3);
-    CLIP_SH4_0_255(tmp4, tmp5, tmp6, tmp7);
+    CLIP_SH8_0_255(tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7);
     PCKEV_B2_UB(tmp1, tmp0, tmp3, tmp2, dst0, dst1);
     PCKEV_B2_UB(tmp5, tmp4, tmp7, tmp6, dst2, dst3);
-    ST8x8_UB(dst0, dst1, dst2, dst3, dst, stride);
+    ST_D8(dst0, dst1, dst2, dst3, 0, 1, 0, 1, 0, 1, 0, 1, dst, stride);
 }
 
-static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
+static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, ptrdiff_t stride,
                                int32_t log2_denom, int32_t src_weight,
                                int32_t dst_weight, int32_t offset_in)
 {
@@ -475,11 +478,10 @@ static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
 
         SRA_4V(temp0, temp1, temp2, temp3, denom);
         SRA_4V(temp4, temp5, temp6, temp7, denom);
-        CLIP_SH4_0_255(temp0, temp1, temp2, temp3);
-        CLIP_SH4_0_255(temp4, temp5, temp6, temp7);
+        CLIP_SH8_0_255(temp0, temp1, temp2, temp3, temp4, temp5, temp6, temp7);
         PCKEV_B4_UB(temp1, temp0, temp3, temp2, temp5, temp4, temp7, temp6,
                     dst0, dst1, dst2, dst3);
-        ST8x8_UB(dst0, dst1, dst2, dst3, dst, stride);
+        ST_D8(dst0, dst1, dst2, dst3, 0, 1, 0, 1, 0, 1, 0, 1, dst, stride);
         dst += 8 * stride;
     }
 }
@@ -531,7 +533,7 @@ static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     temp = p1_or_q1_org_in << 1;                              \
     clip3 = clip3 - temp;                                     \
     clip3 = __msa_ave_s_h(p2_or_q2_org_in, clip3);            \
-    clip3 = CLIP_SH(clip3, negate_tc_in, tc_in);              \
+    CLIP_SH(clip3, negate_tc_in, tc_in);                      \
     p1_or_q1_out = p1_or_q1_org_in + clip3;                   \
 }
 
@@ -549,7 +551,7 @@ static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     delta = q0_sub_p0 + p1_sub_q1;                              \
     delta >>= 3;                                                \
                                                                 \
-    delta = CLIP_SH(delta, negate_threshold_in, threshold_in);  \
+    CLIP_SH(delta, negate_threshold_in, threshold_in);          \
                                                                 \
     p0_or_q0_out = p0_or_q0_org_in + delta;                     \
     q0_or_p0_out = q0_or_p0_org_in - delta;                     \
@@ -598,7 +600,7 @@ static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     delta = q0_sub_p0 + p1_sub_q1;                                       \
     delta = __msa_srari_h(delta, 3);                                     \
                                                                          \
-    delta = CLIP_SH(delta, -tc, tc);                                     \
+    CLIP_SH(delta, -tc, tc);                                             \
                                                                          \
     ILVR_B2_SH(zeros, src1, zeros, src2, res0_r, res1_r);                \
                                                                          \
@@ -620,7 +622,7 @@ static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
                                                              \
     out0 = (v16u8) __msa_ilvr_b((v16i8) in1, (v16i8) in0);   \
     out1 = (v16u8) __msa_sldi_b(zero_m, (v16i8) out0, 2);    \
-    SLDI_B2_0_UB(out1, out2, out2, out3, 2);                 \
+    SLDI_B2_UB(zero_m, out1, zero_m, out2, 2, out2, out3);   \
 }
 
 #define AVC_LPF_H_2BYTE_CHROMA_422(src, stride, tc_val, alpha, beta, res)  \
@@ -662,7 +664,7 @@ static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
     q0_sub_p0 <<= 2;                                                       \
     delta = q0_sub_p0 + p1_sub_q1;                                         \
     delta = __msa_srari_h(delta, 3);                                       \
-    delta = CLIP_SH(delta, -tc, tc);                                       \
+    CLIP_SH(delta, -tc, tc);                                               \
                                                                            \
     ILVR_B2_SH(zeros, src1, zeros, src2, res0_r, res1_r);                  \
                                                                            \
@@ -681,7 +683,7 @@ static void avc_biwgt_8x16_msa(uint8_t *src, uint8_t *dst, int32_t stride,
 static void avc_loopfilter_luma_intra_edge_hor_msa(uint8_t *data,
                                                    uint8_t alpha_in,
                                                    uint8_t beta_in,
-                                                   uint32_t img_width)
+                                                   ptrdiff_t img_width)
 {
     v16u8 p0_asub_q0, p1_asub_p0, q1_asub_q0;
     v16u8 is_less_than, is_less_than_beta, is_less_than_alpha;
@@ -814,7 +816,7 @@ static void avc_loopfilter_luma_intra_edge_hor_msa(uint8_t *data,
 static void avc_loopfilter_luma_intra_edge_ver_msa(uint8_t *data,
                                                    uint8_t alpha_in,
                                                    uint8_t beta_in,
-                                                   uint32_t img_width)
+                                                   ptrdiff_t img_width)
 {
     uint8_t *src = data - 4;
     v16u8 alpha, beta, p0_asub_q0;
@@ -955,23 +957,24 @@ static void avc_loopfilter_luma_intra_edge_ver_msa(uint8_t *data,
         ILVRL_H2_SH(tp3, tp2, tmp6, tmp7);
 
         src = data - 3;
-        ST4x4_UB(tmp3, tmp3, 0, 1, 2, 3, src, img_width);
-        ST2x4_UB(tmp2, 0, src + 4, img_width);
+        ST_W4(tmp3, 0, 1, 2, 3, src, img_width);
+        ST_H4(tmp2, 0, 1, 2, 3, src + 4, img_width);
         src += 4 * img_width;
-        ST4x4_UB(tmp4, tmp4, 0, 1, 2, 3, src, img_width);
-        ST2x4_UB(tmp2, 4, src + 4, img_width);
+        ST_W4(tmp4, 0, 1, 2, 3, src, img_width);
+        ST_H4(tmp2, 4, 5, 6, 7, src + 4, img_width);
         src += 4 * img_width;
 
-        ST4x4_UB(tmp6, tmp6, 0, 1, 2, 3, src, img_width);
-        ST2x4_UB(tmp5, 0, src + 4, img_width);
+        ST_W4(tmp6, 0, 1, 2, 3, src, img_width);
+        ST_H4(tmp5, 0, 1, 2, 3, src + 4, img_width);
         src += 4 * img_width;
-        ST4x4_UB(tmp7, tmp7, 0, 1, 2, 3, src, img_width);
-        ST2x4_UB(tmp5, 4, src + 4, img_width);
+        ST_W4(tmp7, 0, 1, 2, 3, src, img_width);
+        ST_H4(tmp5, 4, 5, 6, 7, src + 4, img_width);
     }
     }
 }
 
-static void avc_h_loop_filter_luma_mbaff_intra_msa(uint8_t *src, int32_t stride,
+static void avc_h_loop_filter_luma_mbaff_intra_msa(uint8_t *src,
+                                                   ptrdiff_t stride,
                                                    int32_t alpha_in,
                                                    int32_t beta_in)
 {
@@ -1025,7 +1028,8 @@ static void avc_h_loop_filter_luma_mbaff_intra_msa(uint8_t *src, int32_t stride,
 
     ILVR_W2_SB(tmp2, tmp0, tmp3, tmp1, src6, src3);
     ILVL_W2_SB(tmp2, tmp0, tmp3, tmp1, src1, src5);
-    SLDI_B4_0_SB(src6, src1, src3, src5, src0, src2, src4, src7, 8);
+    SLDI_B4_SB(zeros, src6, zeros, src1, zeros, src3, zeros, src5,
+               8, src0, src2, src4, src7);
 
     p0_asub_q0 = __msa_asub_u_b((v16u8) src2, (v16u8) src3);
     p1_asub_p0 = __msa_asub_u_b((v16u8) src1, (v16u8) src2);
@@ -1116,10 +1120,10 @@ static void avc_h_loop_filter_luma_mbaff_intra_msa(uint8_t *src, int32_t stride,
     ILVRL_H2_SH(zeros, dst2_x, tmp2, tmp3);
 
     ILVR_W2_UB(tmp2, tmp0, tmp3, tmp1, dst0, dst4);
-    SLDI_B2_0_UB(dst0, dst4, dst1, dst5, 8);
+    SLDI_B2_UB(zeros, dst0, zeros, dst4, 8, dst1, dst5);
     dst2_x = (v16u8) __msa_ilvl_w((v4i32) tmp2, (v4i32) tmp0);
     dst2_y = (v16u8) __msa_ilvl_w((v4i32) tmp3, (v4i32) tmp1);
-    SLDI_B2_0_UB(dst2_x, dst2_y, dst3_x, dst3_y, 8);
+    SLDI_B2_UB(zeros, dst2_x, zeros, dst2_y, 8, dst3_x, dst3_y);
 
     out0 = __msa_copy_u_w((v4i32) dst0, 0);
     out1 = __msa_copy_u_h((v8i16) dst0, 2);
@@ -1172,7 +1176,7 @@ static void avc_h_loop_filter_luma_mbaff_intra_msa(uint8_t *src, int32_t stride,
 static void avc_loopfilter_cb_or_cr_intra_edge_hor_msa(uint8_t *data_cb_or_cr,
                                                        uint8_t alpha_in,
                                                        uint8_t beta_in,
-                                                       uint32_t img_width)
+                                                       ptrdiff_t img_width)
 {
     v16u8 alpha, beta;
     v16u8 is_less_than;
@@ -1221,7 +1225,7 @@ static void avc_loopfilter_cb_or_cr_intra_edge_hor_msa(uint8_t *data_cb_or_cr,
 static void avc_loopfilter_cb_or_cr_intra_edge_ver_msa(uint8_t *data_cb_or_cr,
                                                        uint8_t alpha_in,
                                                        uint8_t beta_in,
-                                                       uint32_t img_width)
+                                                       ptrdiff_t img_width)
 {
     v8i16 tmp1;
     v16u8 alpha, beta, is_less_than;
@@ -1274,9 +1278,9 @@ static void avc_loopfilter_cb_or_cr_intra_edge_ver_msa(uint8_t *data_cb_or_cr,
         tmp1 = (v8i16) __msa_ilvr_b((v16i8) q0_or_p0_org, (v16i8) p0_or_q0_org);
 
         data_cb_or_cr -= 1;
-        ST2x4_UB(tmp1, 0, data_cb_or_cr, img_width);
+        ST_H4(tmp1, 0, 1, 2, 3, data_cb_or_cr, img_width);
         data_cb_or_cr += 4 * img_width;
-        ST2x4_UB(tmp1, 4, data_cb_or_cr, img_width);
+        ST_H4(tmp1, 4, 5, 6, 7, data_cb_or_cr, img_width);
     }
 }
 
@@ -1287,7 +1291,7 @@ static void avc_loopfilter_luma_inter_edge_ver_msa(uint8_t *data,
                                                    uint8_t tc2, uint8_t tc3,
                                                    uint8_t alpha_in,
                                                    uint8_t beta_in,
-                                                   uint32_t img_width)
+                                                   ptrdiff_t img_width)
 {
     v16u8 tmp_vec, bs = { 0 };
 
@@ -1567,7 +1571,7 @@ static void avc_loopfilter_luma_inter_edge_hor_msa(uint8_t *data,
                                                    uint8_t tc2, uint8_t tc3,
                                                    uint8_t alpha_in,
                                                    uint8_t beta_in,
-                                                   uint32_t image_width)
+                                                   ptrdiff_t image_width)
 {
     v16u8 tmp_vec;
     v16u8 bs = { 0 };
@@ -1716,7 +1720,7 @@ static void avc_loopfilter_luma_inter_edge_hor_msa(uint8_t *data,
     }
 }
 
-static void avc_h_loop_filter_luma_mbaff_msa(uint8_t *in, int32_t stride,
+static void avc_h_loop_filter_luma_mbaff_msa(uint8_t *in, ptrdiff_t stride,
                                              int32_t alpha_in, int32_t beta_in,
                                              int8_t *tc0)
 {
@@ -1741,7 +1745,7 @@ static void avc_h_loop_filter_luma_mbaff_msa(uint8_t *in, int32_t stride,
     v8i16 tc, tc_orig_r, tc_plus1;
     v16u8 is_tc_orig1, is_tc_orig2, tc_orig = { 0 };
     v8i16 p0_ilvr_q0, p0_add_q0, q0_sub_p0, p1_sub_q1;
-    v8u16 src2_r, src3_r;
+    v8i16 src2_r, src3_r;
     v8i16 p2_r, p1_r, q2_r, q1_r;
     v16u8 p2, q2, p0, q0;
     v4i32 dst0, dst1;
@@ -1839,8 +1843,8 @@ static void avc_h_loop_filter_luma_mbaff_msa(uint8_t *in, int32_t stride,
     tc_orig_r = (v8i16) __msa_ilvr_b(zeros, (v16i8) tc_orig);
     tc = tc_orig_r;
 
-    p2_r = CLIP_SH(p2_r, -tc_orig_r, tc_orig_r);
-    q2_r = CLIP_SH(q2_r, -tc_orig_r, tc_orig_r);
+    CLIP_SH(p2_r, -tc_orig_r, tc_orig_r);
+    CLIP_SH(q2_r, -tc_orig_r, tc_orig_r);
 
     p2_r += p1_r;
     q2_r += q1_r;
@@ -1872,14 +1876,13 @@ static void avc_h_loop_filter_luma_mbaff_msa(uint8_t *in, int32_t stride,
                                               (v16i8) is_less_than_beta2);
     tc = (v8i16) __msa_bmnz_v((v16u8) tc, (v16u8) tc_plus1, is_less_than_beta2);
 
-    q0_sub_p0 = CLIP_SH(q0_sub_p0, -tc, tc);
+    CLIP_SH(q0_sub_p0, -tc, tc);
 
-    ILVR_B2_UH(zeros, src2, zeros, src3, src2_r, src3_r);
+    ILVR_B2_SH(zeros, src2, zeros, src3, src2_r, src3_r);
     src2_r += q0_sub_p0;
     src3_r -= q0_sub_p0;
 
-    src2_r = (v8u16) CLIP_SH_0_255(src2_r);
-    src3_r = (v8u16) CLIP_SH_0_255(src3_r);
+    CLIP_SH2_0_255(src2_r, src3_r);
 
     PCKEV_B2_UB(src2_r, src2_r, src3_r, src3_r, p0, q0);
 
@@ -1943,7 +1946,7 @@ static void avc_loopfilter_cb_or_cr_inter_edge_hor_msa(uint8_t *data,
                                                        uint8_t tc2, uint8_t tc3,
                                                        uint8_t alpha_in,
                                                        uint8_t beta_in,
-                                                       uint32_t img_width)
+                                                       ptrdiff_t img_width)
 {
     v16u8 alpha, beta;
     v8i16 tmp_vec;
@@ -2029,7 +2032,7 @@ static void avc_loopfilter_cb_or_cr_inter_edge_ver_msa(uint8_t *data,
                                                        uint8_t tc2, uint8_t tc3,
                                                        uint8_t alpha_in,
                                                        uint8_t beta_in,
-                                                       uint32_t img_width)
+                                                       ptrdiff_t img_width)
 {
     uint8_t *src;
     v16u8 alpha, beta;
@@ -2110,14 +2113,14 @@ static void avc_loopfilter_cb_or_cr_inter_edge_ver_msa(uint8_t *data,
             q0_org = __msa_bmnz_v(q0_org, q0, is_less_than);
             tmp1 = (v8i16) __msa_ilvr_b((v16i8) q0_org, (v16i8) p0_org);
             src = data - 1;
-            ST2x4_UB(tmp1, 0, src, img_width);
+            ST_H4(tmp1, 0, 1, 2, 3, src, img_width);
             src += 4 * img_width;
-            ST2x4_UB(tmp1, 4, src, img_width);
+            ST_H4(tmp1, 4, 5, 6, 7, src, img_width);
         }
     }
 }
 
-static void avc_h_loop_filter_chroma422_msa(uint8_t *src, int32_t stride,
+static void avc_h_loop_filter_chroma422_msa(uint8_t *src, ptrdiff_t stride,
                                             int32_t alpha_in, int32_t beta_in,
                                             int8_t *tc0)
 {
@@ -2136,12 +2139,13 @@ static void avc_h_loop_filter_chroma422_msa(uint8_t *src, int32_t stride,
         }
 
         AVC_LPF_H_CHROMA_422(src, stride, tc_val, alpha, beta, res);
-        ST2x4_UB(res, 0, (src - 1), stride);
+        ST_H4(res, 0, 1, 2, 3, (src - 1), stride);
         src += (4 * stride);
     }
 }
 
-static void avc_h_loop_filter_chroma422_mbaff_msa(uint8_t *src, int32_t stride,
+static void avc_h_loop_filter_chroma422_mbaff_msa(uint8_t *src,
+                                                  ptrdiff_t stride,
                                                   int32_t alpha_in,
                                                   int32_t beta_in,
                                                   int8_t *tc0)
@@ -2173,7 +2177,7 @@ static void avc_h_loop_filter_chroma422_mbaff_msa(uint8_t *src, int32_t stride,
     }
 }
 
-void ff_h264_h_lpf_luma_inter_msa(uint8_t *data, int img_width,
+void ff_h264_h_lpf_luma_inter_msa(uint8_t *data, ptrdiff_t img_width,
                                   int alpha, int beta, int8_t *tc)
 {
     uint8_t bs0 = 1;
@@ -2195,7 +2199,7 @@ void ff_h264_h_lpf_luma_inter_msa(uint8_t *data, int img_width,
                                            alpha, beta, img_width);
 }
 
-void ff_h264_v_lpf_luma_inter_msa(uint8_t *data, int img_width,
+void ff_h264_v_lpf_luma_inter_msa(uint8_t *data, ptrdiff_t img_width,
                                   int alpha, int beta, int8_t *tc)
 {
 
@@ -2218,7 +2222,7 @@ void ff_h264_v_lpf_luma_inter_msa(uint8_t *data, int img_width,
                                            alpha, beta, img_width);
 }
 
-void ff_h264_h_lpf_chroma_inter_msa(uint8_t *data, int img_width,
+void ff_h264_h_lpf_chroma_inter_msa(uint8_t *data, ptrdiff_t img_width,
                                     int alpha, int beta, int8_t *tc)
 {
     uint8_t bs0 = 1;
@@ -2240,7 +2244,7 @@ void ff_h264_h_lpf_chroma_inter_msa(uint8_t *data, int img_width,
                                                alpha, beta, img_width);
 }
 
-void ff_h264_v_lpf_chroma_inter_msa(uint8_t *data, int img_width,
+void ff_h264_v_lpf_chroma_inter_msa(uint8_t *data, ptrdiff_t img_width,
                                     int alpha, int beta, int8_t *tc)
 {
     uint8_t bs0 = 1;
@@ -2262,40 +2266,40 @@ void ff_h264_v_lpf_chroma_inter_msa(uint8_t *data, int img_width,
                                                alpha, beta, img_width);
 }
 
-void ff_h264_h_lpf_luma_intra_msa(uint8_t *data, int img_width,
+void ff_h264_h_lpf_luma_intra_msa(uint8_t *data, ptrdiff_t img_width,
                                   int alpha, int beta)
 {
     avc_loopfilter_luma_intra_edge_ver_msa(data, (uint8_t) alpha,
                                            (uint8_t) beta,
-                                           (unsigned int) img_width);
+                                           img_width);
 }
 
-void ff_h264_v_lpf_luma_intra_msa(uint8_t *data, int img_width,
+void ff_h264_v_lpf_luma_intra_msa(uint8_t *data, ptrdiff_t img_width,
                                   int alpha, int beta)
 {
     avc_loopfilter_luma_intra_edge_hor_msa(data, (uint8_t) alpha,
                                            (uint8_t) beta,
-                                           (unsigned int) img_width);
+                                           img_width);
 }
 
-void ff_h264_h_lpf_chroma_intra_msa(uint8_t *data, int img_width,
+void ff_h264_h_lpf_chroma_intra_msa(uint8_t *data, ptrdiff_t img_width,
                                     int alpha, int beta)
 {
     avc_loopfilter_cb_or_cr_intra_edge_ver_msa(data, (uint8_t) alpha,
                                                (uint8_t) beta,
-                                               (unsigned int) img_width);
+                                               img_width);
 }
 
-void ff_h264_v_lpf_chroma_intra_msa(uint8_t *data, int img_width,
+void ff_h264_v_lpf_chroma_intra_msa(uint8_t *data, ptrdiff_t img_width,
                                     int alpha, int beta)
 {
     avc_loopfilter_cb_or_cr_intra_edge_hor_msa(data, (uint8_t) alpha,
                                                (uint8_t) beta,
-                                               (unsigned int) img_width);
+                                               img_width);
 }
 
 void ff_h264_h_loop_filter_chroma422_msa(uint8_t *src,
-                                         int32_t ystride,
+                                         ptrdiff_t ystride,
                                          int32_t alpha, int32_t beta,
                                          int8_t *tc0)
 {
@@ -2303,7 +2307,7 @@ void ff_h264_h_loop_filter_chroma422_msa(uint8_t *src,
 }
 
 void ff_h264_h_loop_filter_chroma422_mbaff_msa(uint8_t *src,
-                                               int32_t ystride,
+                                               ptrdiff_t ystride,
                                                int32_t alpha,
                                                int32_t beta,
                                                int8_t *tc0)
@@ -2312,7 +2316,7 @@ void ff_h264_h_loop_filter_chroma422_mbaff_msa(uint8_t *src,
 }
 
 void ff_h264_h_loop_filter_luma_mbaff_msa(uint8_t *src,
-                                          int32_t ystride,
+                                          ptrdiff_t ystride,
                                           int32_t alpha,
                                           int32_t beta,
                                           int8_t *tc0)
@@ -2321,7 +2325,7 @@ void ff_h264_h_loop_filter_luma_mbaff_msa(uint8_t *src,
 }
 
 void ff_h264_h_loop_filter_luma_mbaff_intra_msa(uint8_t *src,
-                                                int32_t ystride,
+                                                ptrdiff_t ystride,
                                                 int32_t alpha,
                                                 int32_t beta)
 {
@@ -2509,10 +2513,8 @@ void ff_biweight_h264_pixels16_8_msa(uint8_t *dst, uint8_t *src,
     SRA_4V(tmp4, tmp5, tmp6, tmp7, denom);
     SRA_4V(tmp8, tmp9, tmp10, tmp11, denom);
     SRA_4V(tmp12, tmp13, tmp14, tmp15, denom);
-    CLIP_SH4_0_255(tmp0, tmp1, tmp2, tmp3);
-    CLIP_SH4_0_255(tmp4, tmp5, tmp6, tmp7);
-    CLIP_SH4_0_255(tmp8, tmp9, tmp10, tmp11);
-    CLIP_SH4_0_255(tmp12, tmp13, tmp14, tmp15);
+    CLIP_SH8_0_255(tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7);
+    CLIP_SH8_0_255(tmp8, tmp9, tmp10, tmp11, tmp12, tmp13, tmp14, tmp15);
     PCKEV_B4_UB(tmp1, tmp0, tmp3, tmp2, tmp5, tmp4, tmp7, tmp6, dst0, dst1,
                 dst2, dst3);
     PCKEV_B4_UB(tmp9, tmp8, tmp11, tmp10, tmp13, tmp12, tmp15, tmp14, dst4,
@@ -2553,10 +2555,8 @@ void ff_biweight_h264_pixels16_8_msa(uint8_t *dst, uint8_t *src,
         SRA_4V(tmp4, tmp5, tmp6, tmp7, denom);
         SRA_4V(tmp8, tmp9, tmp10, tmp11, denom);
         SRA_4V(tmp12, tmp13, tmp14, tmp15, denom);
-        CLIP_SH4_0_255(tmp0, tmp1, tmp2, tmp3);
-        CLIP_SH4_0_255(tmp4, tmp5, tmp6, tmp7);
-        CLIP_SH4_0_255(tmp8, tmp9, tmp10, tmp11);
-        CLIP_SH4_0_255(tmp12, tmp13, tmp14, tmp15);
+        CLIP_SH8_0_255(tmp0, tmp1, tmp2, tmp3, tmp4, tmp5, tmp6, tmp7);
+        CLIP_SH8_0_255(tmp8, tmp9, tmp10, tmp11, tmp12, tmp13, tmp14, tmp15);
         PCKEV_B4_UB(tmp1, tmp0, tmp3, tmp2, tmp5, tmp4, tmp7, tmp6, dst0, dst1,
                     dst2, dst3);
         PCKEV_B4_UB(tmp9, tmp8, tmp11, tmp10, tmp13, tmp12, tmp15, tmp14, dst4,

@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Glede na združljivost sistema AiMesh in končnih naprav pri
 AiMesh_confirm_msg10=Za vzpostavitev povezave med sistemom AiMesh in končnimi napravami pred preklopom na način WPA3-Personal preberite temo <a id="wpa3FaqLink">FAQ</a>.
 AiMesh_confirm_msg11=Trenutno uporabljate WPA3-personal. Z namenom ustvarjanja sistema AiMesh bo način preverjanja pristnosti spremenjen v WPA2/WPA3-personal. Ali želite nadaljevati?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Dodatne podrobnosti najdete na spletnem mestu <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>pogosto zastavljeno vprašanje</a>
+AiMesh_confirm_msg13=Dodatne podrobnosti najdete na spletnem mestu <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>pogosto zastavljeno vprašanje</a>
 AiMesh_Feature_Desc=Napredni ASUS AiMesh je inovativna nova funkcija usmerjevalnikov, ki povezuje več usmerjevalnikov ASUS in ustvarja omrežje WiFi za celoten dom.
 AiMesh_FAQ=Več o funkciji ASUS AiMesh
 AiMesh_FindNode=Iskanje vozlišča AiMesh
@@ -2412,7 +2412,7 @@ Internet=Internet
 Interval=Interval
 Introduce_demo=Predstavitev
 Invitation=Povabilo
-Interaction=Tương tác
+Interaction=Interakcija
 InternetSpeed=Hitrost internetne povezave
 InternetSpeed_desc=To storitev zagotavlja Ookla®. Zaznava hitrost prenašanja in nalaganja iz usmerjevalnika v internet. Ta preskus traja približno eno minuto. Če uporabljate to storitev, soglašate s <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">pravilnikom o zasebnosti Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® in Speedtest® sta registrirana v zveznem registru kot Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Omogoči preverjanje dosegljivosti interneta
 WANTCPMSSOptionText=Možnost MSS za TCP
 WANTCPMSSOptionComm1Text=bajtov
 WANVLANIDText=ID omrežja VLAN
-WANAggregation_desc=Združevanje omrežij WAN združi dve omrežni povezavi, da poveča hitrost omrežja WAN na 2 Gb/s. Priključek WAN in priključek LAN 4 na usmerjevalniku priključite na priključka LAN na modemu (obvezno uporabite kabla z enakimi specifikacijami). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Pogosta vprašanja o združevanju omrežij WAN</a>
+WANAggregation_desc=Združevanje omrežij WAN združi dve omrežni povezavi, da poveča hitrost omrežja WAN na 2 Gb/s. Priključek #WAN in priključek LAN 4 na usmerjevalniku priključite na priključka LAN na modemu (obvezno uporabite kabla z enakimi specifikacijami). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Pogosta vprašanja o združevanju omrežij WAN</a>
 WANAggregation_enable=Omogoči združevanje WAN
 WANAggregation_disable_dualwan=V vašem usmerjevalniku je omogočen dvojni WAN. Če omogočite združevanje omrežij WAN, boste onemogočili dvojni WAN. Ali res želite nadaljevati?
 WANAggregation_disable_WANAggregation=V vašem usmerjevalniku je omogočeno združevanje omrežij WAN. Če omogočite dvojni WAN, boste onemogočili združevanje omrežij WAN. Ali res želite nadaljevati?
 WANAggregation_PortConflict_hint1=Združevanje omrežij WAN uporablja priključek LAN 4 vašega usmerjevalnika. Če omogočite IPTV, boste onemogočili združevanje omrežij WAN. Ali res želite nadaljevati?
 WANAggregation_PortConflict_hint2=IPTV uporablja priključek LAN 4 vašega usmerjevalnika. Če omogočite združevanje omrežij WAN, boste onemogočili IPTV. Ali res želite nadaljevati?
 WANAggregation_disable_IPTVDualWAN=V vašem usmerjevalniku sta omogočena dvojni WAN in IPTV. Če omogočite združevanje omrežij WAN, bosta dvojni WAN in IPTV zaradi preprečitve spora na priključku onemogočena. Ali res želite nadaljevati?
-WANAggregation_help_WAN=Prepričajte se, da sta priključek WAN na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
+WANAggregation_help_WAN=Prepričajte se, da sta priključek #WAN na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
 WANAggregation_help_LAN=Prepričajte se, da sta priključek LAN 4 na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
 WANAggregation_goto_WAN=Če želite omogočiti združevanje omrežij WAN, odprite stran z <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">nastavitvami internetne povezave WAN</a>.
 WANAggregation_help_desc=Če funkcije združevanja omrežja WAN ni mogoče nastaviti, upoštevajte ta navodila in poskusite znova.
-WANAggregation_help_step1=Prepričajte se, da so vrata LAN modema kabelsko že povezana z omrežjem WAN in LAN 4 usmerjevalnika.
+WANAggregation_help_step1=Prepričajte se, da so vrata LAN modema kabelsko že povezana z omrežjem #WAN in LAN 4 usmerjevalnika.
 WANAggregation_help_step2=Prepričajte se, da je za modem omogočena funkcija 802.3ad
 WANAggregation_help_step3=Preverite, ali uporabljate kabla z istimi specifikacijami (gigabitni in gigabitni oziroma 10/100 in 10/100 Mb/s)
 WANAggregation_help_step4=Ponovno zaženite usmerjevalnik
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Izberite možnost GeForce Now, da določite vrstni red pomembnosti igralnih naprav GeForce Now za hitrejše in boljše igralne izkušnje.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Dogodek
 AURA_Event_desc=Sistem bo zaznal naslednje dogodke in sprožil LED-učinke.
 AURA_Event_Boost_desc=Ko omogočite Game Boost, boste videli, da LED-vrstica uporablja rdeč učinek utripanja.

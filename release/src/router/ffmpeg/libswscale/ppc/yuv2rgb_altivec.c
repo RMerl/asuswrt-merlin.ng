@@ -96,6 +96,7 @@
 #include "libswscale/swscale_internal.h"
 #include "libavutil/attributes.h"
 #include "libavutil/cpu.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 #include "yuv2rgb_altivec.h"
 
@@ -283,6 +284,16 @@ static inline void cvtyuvtoRGB(SwsContext *c, vector signed short Y,
  * ------------------------------------------------------------------------------
  */
 
+#if !HAVE_VSX
+static inline vector unsigned char vec_xl(signed long long offset, const ubyte *addr)
+{
+    const vector unsigned char *v_addr = (const vector unsigned char *) (addr + offset);
+    vector unsigned char align_perm = vec_lvsl(offset, addr);
+
+    return (vector unsigned char) vec_perm(v_addr[0], v_addr[1], align_perm);
+}
+#endif /* !HAVE_VSX */
+
 #define DEFCSP420_CVT(name, out_pixels)                                       \
 static int altivec_ ## name(SwsContext *c, const unsigned char **in,          \
                             int *instrides, int srcSliceY, int srcSliceH,     \
@@ -304,9 +315,6 @@ static int altivec_ ## name(SwsContext *c, const unsigned char **in,          \
     vector signed short R0, G0, B0;                                           \
     vector signed short R1, G1, B1;                                           \
     vector unsigned char R, G, B;                                             \
-                                                                              \
-    const vector unsigned char *y1ivP, *y2ivP, *uivP, *vivP;                  \
-    vector unsigned char align_perm;                                          \
                                                                               \
     vector signed short lCY       = c->CY;                                    \
     vector signed short lOY       = c->OY;                                    \
@@ -338,26 +346,13 @@ static int altivec_ ## name(SwsContext *c, const unsigned char **in,          \
         vec_dstst(oute, (0x02000002 | (((w * 3 + 32) / 32) << 16)), 1);       \
                                                                               \
         for (j = 0; j < w / 16; j++) {                                        \
-            y1ivP = (const vector unsigned char *) y1i;                       \
-            y2ivP = (const vector unsigned char *) y2i;                       \
-            uivP  = (const vector unsigned char *) ui;                        \
-            vivP  = (const vector unsigned char *) vi;                        \
+            y0 = vec_xl(0, y1i);                                              \
                                                                               \
-            align_perm = vec_lvsl(0, y1i);                                    \
-            y0 = (vector unsigned char)                                       \
-                     vec_perm(y1ivP[0], y1ivP[1], align_perm);                \
+            y1 = vec_xl(0, y2i);                                              \
                                                                               \
-            align_perm = vec_lvsl(0, y2i);                                    \
-            y1 = (vector unsigned char)                                       \
-                     vec_perm(y2ivP[0], y2ivP[1], align_perm);                \
+            u = (vector signed char) vec_xl(0, ui);                           \
                                                                               \
-            align_perm = vec_lvsl(0, ui);                                     \
-            u = (vector signed char)                                          \
-                    vec_perm(uivP[0], uivP[1], align_perm);                   \
-                                                                              \
-            align_perm = vec_lvsl(0, vi);                                     \
-            v = (vector signed char)                                          \
-                    vec_perm(vivP[0], vivP[1], align_perm);                   \
+            v = (vector signed char) vec_xl(0, vi);                           \
                                                                               \
             u = (vector signed char)                                          \
                     vec_sub(u,                                                \
@@ -440,13 +435,13 @@ static int altivec_ ## name(SwsContext *c, const unsigned char **in,          \
 }
 
 #define out_abgr(a, b, c, ptr)                                          \
-    vec_mstrgb32(__typeof__(a), ((__typeof__(a)) { 255 }), c, b, a, ptr)
+    vec_mstrgb32(__typeof__(a), ((__typeof__(a)) vec_splat((__typeof__(a)){ 255 }, 0)), c, b, a, ptr)
 #define out_bgra(a, b, c, ptr)                                          \
-    vec_mstrgb32(__typeof__(a), c, b, a, ((__typeof__(a)) { 255 }), ptr)
+    vec_mstrgb32(__typeof__(a), c, b, a, ((__typeof__(a)) vec_splat((__typeof__(a)){ 255 }, 0)), ptr)
 #define out_rgba(a, b, c, ptr)                                          \
-    vec_mstrgb32(__typeof__(a), a, b, c, ((__typeof__(a)) { 255 }), ptr)
+    vec_mstrgb32(__typeof__(a), a, b, c, ((__typeof__(a)) vec_splat((__typeof__(a)){ 255 }, 0)), ptr)
 #define out_argb(a, b, c, ptr)                                          \
-    vec_mstrgb32(__typeof__(a), ((__typeof__(a)) { 255 }), a, b, c, ptr)
+    vec_mstrgb32(__typeof__(a), ((__typeof__(a)) vec_splat((__typeof__(a)){ 255 }, 0)), a, b, c, ptr)
 #define out_rgb24(a, b, c, ptr) vec_mstrgb24(a, b, c, ptr)
 #define out_bgr24(a, b, c, ptr) vec_mstbgr24(a, b, c, ptr)
 

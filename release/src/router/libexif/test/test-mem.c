@@ -1,6 +1,6 @@
 /* test-mem.c
  *
- * Copyright © 2002 Lutz Müller <lutz@users.sourceforge.net>
+ * Copyright (c) 2002 Lutz Mueller <lutz@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -39,10 +39,24 @@ main ()
 
 	printf ("Creating EXIF data...\n");
 	ed = exif_data_new ();
+	if (!ed) {
+		fprintf(stderr, "Out of memory\n");
+		exit(13);
+	}
+
 	exif_data_set_data_type (ed, EXIF_DATA_TYPE_UNCOMPRESSED_CHUNKY);
 
 	printf ("Fill EXIF data with all necessary entries to follow specs...\n");
 	exif_data_fix (ed);
+
+	/* Add a dummy thumbnail */
+	ed->size = 4;
+	ed->data = calloc(1, ed->size);
+	if (!ed->data) {
+		fprintf(stderr, "Out of memory\n");
+		exif_data_unref (ed);
+		exit(13);
+	}
 
 	exif_data_dump (ed);
 
@@ -52,6 +66,11 @@ main ()
 
 	printf ("Writing %i byte(s) EXIF data to loader...\n", ebs);
 	loader = exif_loader_new ();
+	if (!loader) {
+		fprintf(stderr, "Out of memory\n");
+		free (eb);
+		exit(13);
+	}
 	size[0] = (unsigned char) ebs;
 	size[1] = (unsigned char) (ebs >> 8);
 	exif_loader_write (loader, size, 2);
@@ -59,6 +78,10 @@ main ()
 	printf ("Wrote %i byte(s).\n", i);
 	free (eb);
 	ed = exif_loader_get_data (loader);
+	if (!ed) {
+		fprintf(stderr, "Out of memory\n");
+		exit(13);
+	}
 	exif_loader_unref (loader);
 	exif_data_dump (ed);
 	exif_data_unref (ed);

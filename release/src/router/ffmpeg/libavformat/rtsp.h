@@ -27,6 +27,7 @@
 #include "rtpdec.h"
 #include "network.h"
 #include "httpauth.h"
+#include "internal.h"
 
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
@@ -42,6 +43,7 @@ enum RTSPLowerTransport {
     RTSP_LOWER_TRANSPORT_HTTP = 8,          /**< HTTP tunneled - not a proper
                                                  transport mode as such,
                                                  only for use via AVOptions */
+    RTSP_LOWER_TRANSPORT_HTTPS,             /**< HTTPS tunneled */
     RTSP_LOWER_TRANSPORT_CUSTOM = 16,       /**< Custom IO - not a public
                                                  option for lower_transport_mask,
                                                  but set in the SDP demuxer based
@@ -77,6 +79,7 @@ enum RTSPControlTransport {
 #define RTSP_DEFAULT_AUDIO_SAMPLERATE 44100
 #define RTSP_RTP_PORT_MIN 5000
 #define RTSP_RTP_PORT_MAX 65000
+#define SDP_MAX_SIZE 16384
 
 /**
  * This describes a single item in the "Transport:" line of one stream as
@@ -185,6 +188,11 @@ typedef struct RTSPMessageHeader {
      * Content type header
      */
     char content_type[64];
+
+    /**
+     * SAT>IP com.ses.streamID header
+     */
+    char stream_id[64];
 } RTSPMessageHeader;
 
 /**
@@ -207,6 +215,7 @@ enum RTSPServerType {
     RTSP_SERVER_RTP,  /**< Standards-compliant RTP-server */
     RTSP_SERVER_REAL, /**< Realmedia-style server */
     RTSP_SERVER_WMS,  /**< Windows Media server */
+    RTSP_SERVER_SATIP,/**< SAT>IP server */
     RTSP_SERVER_NB
 };
 
@@ -314,7 +323,7 @@ typedef struct RTSPState {
     /** some MS RTSP streams contain a URL in the SDP that we need to use
      * for all subsequent RTSP requests, rather than the input URI; in
      * other cases, this is a copy of AVFormatContext->filename. */
-    char control_uri[1024];
+    char control_uri[MAX_URL_SIZE];
 
     /** The following are used for parsing raw mpegts in udp */
     //@{
@@ -409,6 +418,7 @@ typedef struct RTSPState {
 
     char default_lang[4];
     int buffer_size;
+    int pkt_size;
 } RTSPState;
 
 #define RTSP_FLAG_FILTER_SRC  0x1    /**< Filter incoming UDP packets -
@@ -419,6 +429,7 @@ typedef struct RTSPState {
 #define RTSP_FLAG_RTCP_TO_SOURCE 0x8 /**< Send RTCP packets to the source
                                           address of received packets. */
 #define RTSP_FLAG_PREFER_TCP  0x10   /**< Try RTP via TCP first if possible. */
+#define RTSP_FLAG_SATIP_RAW   0x20   /**< Export SAT>IP stream as raw MPEG-TS */
 
 typedef struct RTSPSource {
     char addr[128]; /**< Source-specific multicast include source IP address (from SDP content) */
@@ -441,7 +452,7 @@ typedef struct RTSPStream {
      * for the selected transport. Only used for TCP. */
     int interleaved_min, interleaved_max;
 
-    char control_url[1024];   /**< url for this stream (from SDP) */
+    char control_url[MAX_URL_SIZE];   /**< url for this stream (from SDP) */
 
     /** The following are used only in SDP, not RTSP */
     //@{

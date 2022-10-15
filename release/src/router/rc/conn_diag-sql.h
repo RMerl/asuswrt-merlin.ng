@@ -1,22 +1,28 @@
+#include <limits.h>
 #include <sqlite3.h>
 #include <pthread.h>
+#include <conn_diag_log.h>
 
 #define RTCONFIG_UPLOADER
 
 #define DIAG_TAB_NAME "conn_diag"
 #define DATA_TAB_NAME "diag_data"
-#define MAX_DB_SIZE 419430 //4194304 // 4MB
+#define MAX_DB_SIZE 512000 //500k
 #define MAX_DATA 8192
 #define MAX_DB_COUNT 2
 #define DB_BACKUP_NO 0
 #define DB_BACKUP_JFFS 1
 #define DB_BACKUP_USB 2
-#define DB_SIZE_CHECK_PERIOD 30
+#define DB_BACKUP_EXTERNAL 3
+#define DB_SIZE_CHECK_PERIOD 10
+
+#define DIAG_DB_FOLDER ".diag"
+
 #define JFFS_DIR         	"/jffs"
-#define DIAG_JFFS_DB_DIR     	JFFS_DIR"/.diag"
+#define DIAG_JFFS_DB_DIR     	JFFS_DIR"/"DIAG_DB_FOLDER
 
 #define TMP_DIR	"/tmp"
-#define DIAG_TMP_DB_DIR TMP_DIR"/.diag"
+#define DIAG_TMP_DB_DIR TMP_DIR"/"DIAG_DB_FOLDER
 
 #ifdef RTCONFIG_UPLOADER
 #define DIAG_CLOUD_DIR  "/tmp/diag_db_cloud"
@@ -67,6 +73,22 @@ struct amas_eth_port_table {
 	uint8 cable_diag_active;//indicate cable-idag state of this node
 };
 
+struct stainfo {
+	char sta_mac[18];
+	double tx_rate;
+	double rx_rate;
+	int conn_time;
+	int inactive_flag;
+	//time_t last_update;
+	struct stainfo *next;
+};
+
+struct stainfo_table {
+	char node_mac[18];
+	struct stainfo *stalist;
+	struct stainfo_table *next;
+};
+
 #define COLUMN_TYPE_MASK 0x0000FFFF
 #define COLUMN_IGNORE 0x00010000
 
@@ -102,6 +124,7 @@ enum {
 	DB_STAINFO_STABLE,
 	DB_IPERF_SERVER,
 	DB_IPERF_CLIENT,
+	DB_WLC_EVENT,
 	DB_MAX
 };
 
@@ -147,7 +170,7 @@ int diag_portinfo;
 
 #define LOG_TITLE_CHK "CHKSTA"
 #define LOG_TITLE_DIAG_SQL "CONNDIAGSQL"
-
+#define CONNDIAG_DBG 1
 
 #define CHK_LOG(LV, fmt, arg...) \
 	do { \
@@ -163,7 +186,10 @@ int diag_portinfo;
 			_dprintf("%lu: "fmt"\n", time(NULL), ##arg); \
 		if(diag_syslog >= LV) \
 			syslog(LV, "%s: "fmt, LOG_TITLE_DIAG, ##arg); \
+		if(CONNDIAG_DBG) \
+			Cdbg(CONNDIAG_DBG, fmt, ##arg);	\
 	} while (0)
+    // CF_OPEN(APP_LOG_PATH,  FILE_TYPE | CONSOLE_TYPE | SYSLOG_TYPE);
 
 #ifdef RTCONFIG_LIBASUSLOG
 #define DBG_CHK_DATA "chksta_data.log"
@@ -209,7 +235,10 @@ extern int get_sta_txrxbyte_avg(char *sta_mac,char *mac,double *txbyte,double *r
 extern int get_staphy_txrxbyte_avg(char *sta_mac,char *mac,double *txbyte,double *rxbyte,int diff_range);
 #endif
 extern int exec_force_cable_diag(char *node_mac,char *label_name);
+extern int exec_wifi_dfs_diag(char *json_data);
 #ifdef RTCONFIG_CD_IPERF
 int exec_iperf(char *server_mac,char *client_mac);
 #endif
 
+extern int query_stainfo(char *sta_mac,char **buf);
+extern void free_stainfo(char **buf);

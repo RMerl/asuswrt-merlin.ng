@@ -11,6 +11,7 @@
 #include <sys/stat.h>
 #include <fcntl.h>
 #include <unistd.h>
+#include <inttypes.h>
 #include <string.h>
 #include <time.h>
 #include <limits.h>
@@ -35,7 +36,6 @@
 
 #if defined(RTCONFIG_SOC_IPQ8074)
 #include <sys/vfs.h>
-#include <inttypes.h>
 #include <sys/reboot.h>
 #endif
 
@@ -652,6 +652,7 @@ static int rctest_main(int argc, char *argv[])
 		int utime = atoi(argv[3])?:0;
 		int no_fork = atoi(argv[4]);
 
+		pid = getpid();
 		if(no_fork) {
 			begin = clock();
 			for(i=0; i<loops; ++i) {
@@ -659,53 +660,60 @@ static int rctest_main(int argc, char *argv[])
 				nvp = nvram_safe_get("ppap1\n");
 				if(nvram_get_int("ppap1")!=1) {
 					err++;
-					_dprintf("pid_%d get wrong nv_ppap1=%s(%d)\n", pid, nvp, err);
+					printf("pid_%d get wrong nv_ppap1=%s(%d)\n", pid, nvp, err);
 				}
 				if(utime)
 					usleep(utime);
 			}
 			end = clock();
-			_dprintf("pid_%d, clock counts=%d\n", pid, (int)(end-begin));
+			printf("pid_%d, clock counts=%d\n", pid, (int)(end-begin));
+			fflush(stdout);
 			return 0;
 		} 
 
-		_dprintf("(NVP)fork nv test w/ loops(%d), usleep(%d)\n", loops, utime);
+		printf("fork nv test w/ loops(%d), usleep(%d)\n", loops, utime);
+		fflush(stdout);
 
 		pid = fork();
 
 		if(pid == 0) {
+			printf("child start\n");
 			begin = clock();
 			for(i=0; i<loops; ++i) {
 				nvram_set("ppap1", "1");
 				nvp = nvram_safe_get("ppap1\n");
 				if(nvram_get_int("ppap1")!=1) {
 					err++;
-					_dprintf("pid_%d get wrong nv_ppap1=%s(%d)\n", pid, nvp, err);
+					printf("child get wrong nv_ppap1=%s(%d)\n", nvp, err);
 				}
 				if(utime)
 					usleep(utime);
 			}
 			end = clock();
-			_dprintf("pid_%d, clock counts=%d\n", pid, (int)(end-begin));
+			printf("child, clock counts=%d\n", (int)(end-begin));
+			fflush(stdout);
 		} else if(pid > 0) {
+			printf("parent start\n");
 			begin = clock();
 			for(i=0; i<loops; ++i) {
 				nvram_set("ppap2", "2");
 				nvp = nvram_safe_get("ppap2\n");
 				if(nvram_get_int("ppap2")!=2) {
 					err++;
-					_dprintf("pid_%d get wrong nv_ppap2=%s(%d)\n", pid, nvp, err);
+					printf("parent get wrong nv_ppap2=%s(%d)\n", nvp, err);
 				}
 				if(utime)
 					usleep(utime);
 			}
 			end = clock();
-			_dprintf("pid_%d, clock counts=%d\n", pid, (int)(end-begin));
+			printf("parent, clock counts=%d\n", (int)(end-begin));
+			fflush(stdout);
 		} else {
-			_dprintf("wrong fork.\n");
+			printf("wrong fork.\n");
 		}
 
-		_dprintf("pid_%d exit\n", pid);
+		printf("%s exit\n", pid?"parent":"child");
+		fflush(stdout);
 	}
 #endif
 	else if (strcmp(argv[1], "nvramhex")==0) {
@@ -840,6 +848,19 @@ static int rctest_main(int argc, char *argv[])
 		//exec_force_cable_diag(capmac,remac);
 #endif
 	}
+#endif
+#if defined(RTCONFIG_CD_IPERF)
+        else if (strcmp(argv[1], "run_iperf")==0) {
+                if (argv[2] && argv[3]) {
+                        char smac[32],cmac[32];
+                        snprintf(smac,sizeof(smac),"%s",argv[2]);
+                        snprintf(cmac,sizeof(cmac),"%s",argv[3]);
+                        if(strlen(smac)==17 && strlen(cmac)==17)
+                                exec_iperf(smac, cmac);
+                        else
+                                _dprintf("server mac or client mac error\n");
+                }
+        }
 #endif	
 #if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 	else if (strcmp(argv[1], "aae_refresh_userticket")==0) {
@@ -918,6 +939,13 @@ static int rctest_main(int argc, char *argv[])
 		json_object_put(root);
 	}
 #endif
+	else if (strcmp(argv[1], "diag_stainfo")==0) {
+		char *stainfo_buf = NULL;
+		if(argv[2] && query_stainfo((!strcmp(argv[2], "all") ? NULL : argv[2]), &stainfo_buf) > 0){
+			fprintf(stderr, "%s\n", stainfo_buf);
+			free_stainfo(&stainfo_buf);
+		}
+	}
 	else {
 		on = atoi(argv[2]);
 		_dprintf("%s %d\n", argv[1], on);
@@ -1099,7 +1127,7 @@ static int rctest_main(int argc, char *argv[])
 		else if (strcmp(argv[1], "gpior") == 0) {
 			printf("%d\n", get_gpio(atoi(argv[2])));
 		}
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(XD6_V2)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(XD6_V2) || defined(RTAX5400)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
 			printf("%d\n", get_gpio2(atoi(argv[2])));
 		}
@@ -1958,7 +1986,7 @@ static const applets_t applets[] = {
 	{ "netool", 			netool_main			},
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-	{ "s46map_rptd", 		s46map_rptd_main		},
+	{ "v6plusd", 		v6plusd_main		},
 #endif
 #if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N)
 	{ "rtkswitch",			config_rtkswitch		},
@@ -2105,7 +2133,7 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_ISP_CUSTOMIZE_TOOL
 	{ "tci",			tci_main		},
 #endif
-#ifdef RTCONFIG_ACCOUNT_BINDING
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 	{ "update_asus_ddns_token",		update_asus_ddns_token_main			},
 #endif
 #if defined(RTCONFIG_IG_SITE2SITE)

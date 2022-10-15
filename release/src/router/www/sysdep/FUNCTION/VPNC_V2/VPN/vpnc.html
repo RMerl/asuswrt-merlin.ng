@@ -1515,7 +1515,7 @@ function Get_Component_Import_Ovpn_File(_parm){
 	if(_parm.type == "import_ovpn"){
 		$text.addClass("import_file");
 		$("<div>").addClass("status_text").appendTo($btn_item).hide();
-		$("<input/>").attr({"id":"import_ovpn", "type":"file"}).hide().appendTo($btn_item)
+		$("<input/>").attr({"id":"import_ovpn", "type":"file", "accept":".ovpn"}).hide().appendTo($btn_item)
 			.on("change", function(){
 				$(this).closest(".btn_item").find(".text.import_file").removeClass("loadingicon");
 				$(this).closest(".btn_item").find(".status_text").html("").hide();
@@ -1575,7 +1575,7 @@ function Get_Component_Import_Ovpn_File(_parm){
 	else if(_parm.type == "import_ca"){
 		$text.addClass("import_file");
 		$("<div>").addClass("status_text").appendTo($btn_item).hide();
-		$("<input/>").attr({"id":"import_ca", "type":"file"}).hide().appendTo($btn_item)
+		$("<input/>").attr({"id":"import_ca", "type":"file", "accept":".crt, .key"}).hide().appendTo($btn_item)
 			.on("change", function(){
 				$(this).closest(".btn_item").find(".text.import_file").removeClass("loadingicon");
 				$(this).closest(".btn_item").find(".status_text").html("").hide();
@@ -1648,7 +1648,7 @@ function Get_Component_Import_WGC_File(_parm){
 	if(_parm.type == "import_wgc"){
 		$text.addClass("import_file");
 		$("<div>").addClass("status_text").appendTo($btn_item).hide();
-		$("<input/>").attr({"id":"import_wgc", "type":"file"}).hide().appendTo($btn_item)
+		$("<input/>").attr({"id":"import_wgc", "type":"file", "accept":".conf"}).hide().appendTo($btn_item)
 			.on("change", function(){
 				$(this).closest(".btn_item").find(".text.import_file").removeClass("loadingicon");
 				$(this).closest(".btn_item").find(".status_text").html("").hide();

@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Luând în considerare compatibilitatea dintre sistemul AiMe
 AiMesh_confirm_msg10=Pentru a asigura conexiunea sistemului AiMesh și a dispozitivelor terminale, citiți <a id="wpa3FaqLink">FAQ</a> înainte de a trece la WPA3-Personal.
 AiMesh_confirm_msg11=Momentan utilizați WPA3-personal. Pentru a crea un sistem AiMesh, metoda dvs. de autentificare va fi schimbată la WPA2/WPA3-personal. Doriți să continuați?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Pentru detalii suplimentare, vizitaţi <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>această întrebare frecventă</a>
+AiMesh_confirm_msg13=Pentru detalii suplimentare, vizitaţi <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>această întrebare frecventă</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh este o funcție nouă a routerului care permite conectarea mai multor routere ASUS și crearea unei rețele WiFi cu acoperire în toată locuința.
 AiMesh_FAQ=Aflați mai multe despre ASUS AiMesh
 AiMesh_FindNode=Găsire nod AiMesh
@@ -2412,7 +2412,7 @@ Internet=Internet
 Interval=Interval
 Introduce_demo=Demo introductiv
 Invitation=Invitaţie
-Interaction=Interakcija
+Interaction=Interacţiune
 InternetSpeed=Viteză Internet
 InternetSpeed_desc=Acest serviciu este furnizat de Ookla®. Detectează viteza de încărcare și descărcare a routerului pe Internet. Efectuarea acestui test durează circa un minut. Prin utilizarea acestui serviciu, sunteți de acord cu  <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Politica de confidențialitate Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® și Speedtest® sunt înregistrate federal de Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Opțiune TCP MSS
 WANTCPMSSOptionComm1Text=octeţi
 WANVLANIDText=VLAN ID
-WANAggregation_desc=Funcţia de agregare WAN combină două conexiuni de reţea pentru a creşte viteza WAN până la 2 Gbps. Conectaţi portul WAN şi portul LAN 4 ale routerului la porturile LAN ale modemului (asiguraţi-vă că utilizaţi două cabluri cu aceeaşi specificaţie). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Întrebări frecvente despre agregarea WAN</a>
+WANAggregation_desc=Funcţia de agregare WAN combină două conexiuni de reţea pentru a creşte viteza WAN până la 2 Gbps. Conectaţi portul #WAN şi portul LAN 4 ale routerului la porturile LAN ale modemului (asiguraţi-vă că utilizaţi două cabluri cu aceeaşi specificaţie). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Întrebări frecvente despre agregarea WAN</a>
 WANAggregation_enable=Activare agregare WAN
 WANAggregation_disable_dualwan=Routerul dvs. are activată funcţia Dual WAN. Activarea funcţiei de agregare WAN va dezactiva funcţia Dual WAN. Sigur doriţi să continuaţi?
 WANAggregation_disable_WANAggregation=Routerul dvs. are activată funcţia de agregare WAN. Activarea funcţiei Dual WAN va dezactiva funcţia de agregare WAN. Sigur doriţi să continuaţi?
 WANAggregation_PortConflict_hint1=Funcţia de agregare WAN utilizează portul LAN 4 al routerului. Activarea funcţiei IPTV va dezactiva funcţia de agregare WAN. Sigur doriţi să continuaţi?
 WANAggregation_PortConflict_hint2=Funcţia IPTV utilizează portul LAN 4 al routerului. Activarea funcţiei de agregare WAN va dezactiva funcţia IPTV. Sigur doriţi să continuaţi?
 WANAggregation_disable_IPTVDualWAN=Routerul dvs. are activate atât funcţia Dual WAN, cât şi funcţia IPTV. Activarea funcţiei de agregare WAN va dezactiva funcţiile Dual WAN şi IPTV pentru a. preveni conflictele între porturi. Sigur doriţi să continuaţi?
-WANAggregation_help_WAN=Asiguraţi-vă că portul WAN al routerului şi portul LAN al modemului au fost conectate utilizându-se două cabluri cu aceeaşi specificaţie.
+WANAggregation_help_WAN=Asiguraţi-vă că portul #WAN al routerului şi portul LAN al modemului au fost conectate utilizându-se două cabluri cu aceeaşi specificaţie.
 WANAggregation_help_LAN=Asiguraţi-vă că portul LAN 4 al routerului şi portul LAN al modemului au fost conectate utilizându-se două cabluri cu aceeaşi specificaţie.
 WANAggregation_goto_WAN=Pentru a activa funcţia de agregare WAN, accesaţi pagina <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">Conectarea la internet prin WAN</a>.
 WANAggregation_help_desc=Dacă configurarea agregării WAN nu este reușită, urmaţi paşii de mai jos pentru a reîncerca.
-WANAggregation_help_step1=Asigurați-vă că porturile LAN de la modem sunt deja conectate cu cablu la WAN și LAN 4 de la router.
+WANAggregation_help_step1=Asigurați-vă că porturile LAN de la modem sunt deja conectate cu cablu la #WAN și LAN 4 de la router.
 WANAggregation_help_step2=Asigurați-vă că modemul dvs. a activat 802.3ad
 WANAggregation_help_step3=Confirmați că utilizaţi două cabluri cu aceeași specificație (fie gigabit și gigabit sau 10/100 și 10/100 Mbps)
 WANAggregation_help_step4=Reporniți ruterul
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Selectați GeForce Now pentru a prioritiza dispozitivele de jocuri GeForce Now pentru o experiență de joc mai rapidă și mai bună.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Eveniment
 AURA_Event_desc=Sistemul va detecta următoarele evenimente și va declanșa diferite efecte LED.
 AURA_Event_Boost_desc=Când activați Game Boost (Accelerare jocuri), veți vedea bara de LED-uri folosind un efect de respiraţie roșu.

@@ -1150,6 +1150,7 @@ typedef struct
 #endif
 
 
+#if 0
 /**
  * Return MiB(tx_bytes/rx_bytes/tx_pakcets/rx_packets/crc_errors) of @phy.
  * @port:	port id
@@ -1159,7 +1160,6 @@ typedef struct
  */
 static int get_qca8075_8337_8035_8033_aqr107_port_mib(unsigned int port, phy_info *info)
 {
-#if 0
 	int fd;
 	unsigned long arg_val[SW_MAX_API_PARAM] = {0};
 	unsigned long rtn = 0;
@@ -1191,9 +1191,9 @@ static int get_qca8075_8337_8035_8033_aqr107_port_mib(unsigned int port, phy_inf
 		//	info->tx_bytes, info->rx_bytes, info->tx_packets, info->rx_packets, info->crc_errors);
 	}
 	close(fd);
-#endif
 	return 0;
 }
+#endif
 
 void reset_qca_switch(void)
 {
@@ -1552,18 +1552,13 @@ static char conv_speed(unsigned int link, unsigned int speed)
 
 void ATE_port_status(int verbose, phy_info_list *list)
 {
-	int i, len;
+	int i;
 	char buf[6 * 11], wbuf[6 * 3], lbuf[6 * 8];
 #ifdef RTCONFIG_NEW_PHYMAP
 	char cap_buf[64] = {0};
 	char wlen = 0, llen = 0;
 #endif
 	phyState pS;
-#if defined(RTAC89U)
-	const int wan1g_sfp10g = 1;	/* 10G base-T absent. */
-#else
-	const int wan1g_sfp10g = 0;
-#endif
 
 #ifdef RTCONFIG_NEW_PHYMAP
 	phy_port_mapping port_mapping;
@@ -1589,7 +1584,7 @@ void ATE_port_status(int verbose, phy_info_list *list)
 
 			list->count++;
 		}
-		if (port_mapping.port[i].cap & PHY_PORT_CAP_WAN > 0)
+		if ((port_mapping.port[i].cap & PHY_PORT_CAP_WAN) > 0)
 			wlen += sprintf(wbuf+wlen, "%s=%C;", port_mapping.port[i].label_name,
 						conv_speed(pS.link[i], pS.speed[i]));
 		else
@@ -1631,8 +1626,8 @@ void ATE_port_status(int verbose, phy_info_list *list)
 		conv_speed(pS.link[LAN6_PORT], pS.speed[LAN6_PORT]),
 		conv_speed(pS.link[LAN7_PORT], pS.speed[LAN7_PORT]),
 		conv_speed(pS.link[LAN8_PORT], pS.speed[LAN8_PORT]));
-	if (wan1g_sfp10g) {
-		/* RT-AC89U */
+	if (!is_aqr_phy_exist()) {
+		/* RT-AX89X w/o 10G base-T port, not shipped. */
 		snprintf(wbuf, sizeof(wbuf), "W0=%C;W2=%C;",
 			conv_speed(pS.link[WAN_PORT], pS.speed[WAN_PORT]),
 			conv_speed(pS.link[WAN10GS_PORT], pS.speed[WAN10GS_PORT]));

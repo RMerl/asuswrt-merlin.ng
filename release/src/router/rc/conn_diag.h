@@ -68,6 +68,7 @@ enum {
 	DIAGMODE_ETH_DETECT = 0x80,		//legacy,dont change
 	DIAGMODE_PORTINFO = 0x100,		//legacy,dont change
 	DIAGMODE_WIFI_DFS = 0x200,		//legacy,dont change
+	
 	//legacy,dont change
 
 	DIAGMODE_LEGACY_MAX = 0x0FFF,
@@ -96,6 +97,7 @@ enum {
 	DIAGMODE_EVENT_ALL_CHAN_RADAR 			= DIAGMODE_EVENT+3,
 	DIAGMODE_EVENT_CHLIST_CHANGE 			= DIAGMODE_EVENT+4,
 	DIAGMODE_EVENT_PORT_STATUS_USB_CHANGE 	= DIAGMODE_EVENT+5,
+	DIAGMODE_EVENT_WLC 	                    = DIAGMODE_EVENT+6,
 	//DIAGMODE_EVENT
 	//DIAGMODE_SITE_SURVEY_2G = 0x800, //need modify
 	//DIAGMODE_SITE_SURVEY_5G1 = 0x1000, //need modify
@@ -132,6 +134,7 @@ enum {
 	UI_ACTION_GET_PORTSTATUS,
 	UI_ACTION_RUN_CABLEDIAG,
 	UI_ACTION_RUN_IPERF,
+	UI_ACTION_GET_STAINFO,  // for networkmap use
 	UI_ACTION_MAX
 };
 
@@ -154,6 +157,7 @@ enum {
 #define MAX_CHIN_CNT 4
 #define CONNDIAG_SQL_IPC_SOCKET_PATH	"/var/run/conndiag_sql_ipc_socket"
 #define CONNDIAG_PS_IPC_SOCKET_PATH	"/var/run/conndiag_portstatus_ipc_socket"
+#define AWSIOT_IPC_SOCKET_PATH  "/var/run/awsiot_ipc_socket"
 #define DIAG_EVENT_SYS "SYS" // DIAG_EVENT_SYS>node type>IP>MAC>FW version>t-code>AiProtection>USB mode>CTF or Runner/FC disable
 #define DIAG_EVENT_SYS2 "SYS2" // DIAG_EVENT_SYS2>node type>IP>MAC>CPU freq>MemFree>CPU temperature>2G's temperature>5G's temperature
 #define DIAG_EVENT_WIFISYS "WIFISYS" // DIAG_EVENT_WIFISYS>node type>IP>MAC>2G's ifname,2G's chip,2G's country/rev>5G's ifname,5G's chip,5G's country/rev
@@ -197,6 +201,7 @@ extern int get_subif_count(char *target, int *count); // TODO: non-Brcm needs to
 extern int get_subif_ssid(char *target, char *output, int outputlen); // TODO: non-Brcm needs to do.
 extern int get_wifi_chanim(char *ifname, char *output, int outputlen);
 #endif
+extern int get_wifi_dfs_status(char *output, int len, char *node, char *lan_ipaddr, char *lan_hwaddr);
 
 extern char *diag_get_wifi_fh_ifnames(int wifi_unit, char *buffer, size_t buffer_size);
 extern char *diag_get_eth_bh_ifnames(char *buffer, size_t buffer_size);

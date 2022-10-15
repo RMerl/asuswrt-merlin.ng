@@ -249,12 +249,14 @@ static int write_frame(AVFilterContext *ctx, FPSContext *s, AVFilterLink *outlin
         frame = av_frame_clone(s->frames[0]);
         if (!frame)
             return AVERROR(ENOMEM);
+        // Make sure Closed Captions will not be duplicated
+        av_frame_remove_side_data(s->frames[0], AV_FRAME_DATA_A53_CC);
         frame->pts = s->next_pts++;
 
         av_log(ctx, AV_LOG_DEBUG, "Writing frame with pts %"PRId64" to pts %"PRId64"\n",
                s->frames[0]->pts, frame->pts);
         s->cur_frame_out++;
-
+        *again = 1;
         return ff_filter_frame(outlink, frame);
     }
 }

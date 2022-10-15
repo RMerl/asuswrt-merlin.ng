@@ -25,7 +25,8 @@
  */
 
 #include "libavutil/imgutils.h"
-#include "libavutil/timer.h"
+#include "libavutil/mem_internal.h"
+
 #include "avcodec.h"
 #include "blockdsp.h"
 #define  UNCHECKED_BITSTREAM_READER 1
@@ -37,7 +38,7 @@
 #include "thread.h"
 
 typedef struct RowContext {
-    DECLARE_ALIGNED(16, int16_t, blocks)[12][64];
+    DECLARE_ALIGNED(32, int16_t, blocks)[12][64];
     int luma_scale[64];
     int chroma_scale[64];
     GetBitContext gb;
@@ -67,6 +68,8 @@ typedef struct DNXHDContext {
     const CIDEntry *cid_table;
     int bit_depth; // 8, 10, 12 or 0 if not initialized at all.
     int is_444;
+    int alpha;
+    int lla;
     int mbaff;
     int act;
     int (*decode_dct_block)(const struct DNXHDContext *ctx,
@@ -109,53 +112,47 @@ static av_cold int dnxhd_decode_init(AVCodecContext *avctx)
 
 static int dnxhd_init_vlc(DNXHDContext *ctx, uint32_t cid, int bitdepth)
 {
+    int ret;
     if (cid != ctx->cid) {
-        int index;
+        const CIDEntry *cid_table = ff_dnxhd_get_cid_table(cid);
 
-        if ((index = ff_dnxhd_get_cid_table(cid)) < 0) {
+        if (!cid_table) {
             av_log(ctx->avctx, AV_LOG_ERROR, "unsupported cid %"PRIu32"\n", cid);
             return AVERROR(ENOSYS);
         }
-        if (ff_dnxhd_cid_table[index].bit_depth != bitdepth &&
-            ff_dnxhd_cid_table[index].bit_depth != DNXHD_VARIABLE) {
-            av_log(ctx->avctx, AV_LOG_ERROR, "bit depth mismatches %d %d\n", ff_dnxhd_cid_table[index].bit_depth, bitdepth);
+        if (cid_table->bit_depth != bitdepth &&
+            cid_table->bit_depth != DNXHD_VARIABLE) {
+            av_log(ctx->avctx, AV_LOG_ERROR, "bit depth mismatches %d %d\n",
+                   cid_table->bit_depth, bitdepth);
             return AVERROR_INVALIDDATA;
         }
-        ctx->cid_table = &ff_dnxhd_cid_table[index];
+        ctx->cid_table = cid_table;
         av_log(ctx->avctx, AV_LOG_VERBOSE, "Profile cid %"PRIu32".\n", cid);
 
         ff_free_vlc(&ctx->ac_vlc);
         ff_free_vlc(&ctx->dc_vlc);
         ff_free_vlc(&ctx->run_vlc);
 
-        init_vlc(&ctx->ac_vlc, DNXHD_VLC_BITS, 257,
+        if ((ret = init_vlc(&ctx->ac_vlc, DNXHD_VLC_BITS, 257,
                  ctx->cid_table->ac_bits, 1, 1,
-                 ctx->cid_table->ac_codes, 2, 2, 0);
-        init_vlc(&ctx->dc_vlc, DNXHD_DC_VLC_BITS, bitdepth > 8 ? 14 : 12,
+                 ctx->cid_table->ac_codes, 2, 2, 0)) < 0)
+            goto out;
+        if ((ret = init_vlc(&ctx->dc_vlc, DNXHD_DC_VLC_BITS, bitdepth > 8 ? 14 : 12,
                  ctx->cid_table->dc_bits, 1, 1,
-                 ctx->cid_table->dc_codes, 1, 1, 0);
-        init_vlc(&ctx->run_vlc, DNXHD_VLC_BITS, 62,
+                 ctx->cid_table->dc_codes, 1, 1, 0)) < 0)
+            goto out;
+        if ((ret = init_vlc(&ctx->run_vlc, DNXHD_VLC_BITS, 62,
                  ctx->cid_table->run_bits, 1, 1,
-                 ctx->cid_table->run_codes, 2, 2, 0);
+                 ctx->cid_table->run_codes, 2, 2, 0)) < 0)
+            goto out;
 
         ctx->cid = cid;
     }
-    return 0;
-}
-
-static av_cold int dnxhd_decode_init_thread_copy(AVCodecContext *avctx)
-{
-    DNXHDContext *ctx = avctx->priv_data;
-
-    ctx->avctx = avctx;
-    // make sure VLC tables will be loaded when cid is parsed
-    ctx->cid = -1;
-
-    ctx->rows = av_mallocz_array(avctx->thread_count, sizeof(RowContext));
-    if (!ctx->rows)
-        return AVERROR(ENOMEM);
-
-    return 0;
+    ret = 0;
+out:
+    if (ret < 0)
+        av_log(ctx->avctx, AV_LOG_ERROR, "init_vlc failed\n");
+    return ret;
 }
 
 static int dnxhd_get_profile(int cid)
@@ -205,6 +202,10 @@ static int dnxhd_decode_header(DNXHDContext *ctx, AVFrame *frame,
         ctx->cur_field = 0;
     }
     ctx->mbaff = (buf[0x6] >> 5) & 1;
+    ctx->alpha = buf[0x7] & 1;
+    ctx->lla   = (buf[0x7] >> 1) & 1;
+    if (ctx->alpha)
+        avpriv_request_sample(ctx->avctx, "alpha");
 
     ctx->height = AV_RB16(buf + 0x18);
     ctx->width  = AV_RB16(buf + 0x1a);
@@ -229,7 +230,14 @@ static int dnxhd_decode_header(DNXHDContext *ctx, AVFrame *frame,
         av_log(ctx->avctx, AV_LOG_WARNING,
                "Adaptive MB interlace flag in an unsupported profile.\n");
 
-    ctx->act = buf[0x2C] & 7;
+    switch ((buf[0x2C] >> 1) & 3) {
+    case 0: frame->colorspace = AVCOL_SPC_BT709;       break;
+    case 1: frame->colorspace = AVCOL_SPC_BT2020_NCL;  break;
+    case 2: frame->colorspace = AVCOL_SPC_BT2020_CL;   break;
+    case 3: frame->colorspace = AVCOL_SPC_UNSPECIFIED; break;
+    }
+
+    ctx->act = buf[0x2C] & 1;
     if (ctx->act && ctx->cid_table->cid != 1256 && ctx->cid_table->cid != 1270)
         av_log(ctx->avctx, AV_LOG_WARNING,
                "Adaptive color transform in an unsupported profile.\n");
@@ -583,20 +591,22 @@ static int dnxhd_decode_row(AVCodecContext *avctx, void *data,
     const DNXHDContext *ctx = avctx->priv_data;
     uint32_t offset = ctx->mb_scan_index[rownb];
     RowContext *row = ctx->rows + threadnb;
-    int x;
+    int x, ret;
 
     row->last_dc[0] =
     row->last_dc[1] =
     row->last_dc[2] = 1 << (ctx->bit_depth + 2); // for levels +2^(bitdepth-1)
-    init_get_bits(&row->gb, ctx->buf + offset, (ctx->buf_size - offset) << 3);
+    ret = init_get_bits8(&row->gb, ctx->buf + offset, ctx->buf_size - offset);
+    if (ret < 0) {
+        row->errors++;
+        return ret;
+    }
     for (x = 0; x < ctx->mb_width; x++) {
-        //START_TIMER;
         int ret = dnxhd_decode_macroblock(ctx, row, data, x, rownb);
         if (ret < 0) {
             row->errors++;
             return ret;
         }
-        //STOP_TIMER("decode macroblock");
     }
 
     return 0;
@@ -726,6 +736,5 @@ AVCodec ff_dnxhd_decoder = {
     .decode         = dnxhd_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS |
                       AV_CODEC_CAP_SLICE_THREADS,
-    .init_thread_copy = ONLY_IF_THREADS_ENABLED(dnxhd_decode_init_thread_copy),
     .profiles       = NULL_IF_CONFIG_SMALL(ff_dnxhd_profiles),
 };

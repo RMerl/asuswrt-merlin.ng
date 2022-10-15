@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Ottaen huomioon AiMesh-järjestelmän ja päätelaitteiden y
 AiMesh_confirm_msg10=Jotta AiMesh-järjestelmäsi ja päätelaitteidesi pysyvät yhteydessä keskenään, lue <a id="wpa3FaqLink">Usein kysytyt kysymykset</a>, ennen kuin vaihdat salaustilaksi WPA3-Personal.
 AiMesh_confirm_msg11=Käytät tällä hetkellä WPA3-personal-salausta. Jotta voit AiMesh-järjestelmän, todennusmenetelmäksi on vaihdettava WPA2/WPA3-personal. Haluatko jatkaa?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Katso lisätietoja osoitteesta <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>tässä UKK-asiakirjassa</a>
+AiMesh_confirm_msg13=Katso lisätietoja osoitteesta <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>tässä UKK-asiakirjassa</a>
 AiMesh_Feature_Desc=Edistynyt ASUS AiMesh on uusi innovatiivinen reitittimen ominaisuus, joka yhdistää useita ASUS-reitittimiä yhteen luoden koko kodin kattavan WiFi-verkon.
 AiMesh_FAQ=Lue lisää ASUS AiMesh -ominaisuudesta
 AiMesh_FindNode=Etsi AiMesh-noodi
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS -valinta
 WANTCPMSSOptionComm1Text=tavua
 WANVLANIDText=VLAN-tunnus
-WANAggregation_desc=WAN-aggregaatio yhdistää kaksi verkkoyhteyttä, jolloin WANin nopeus nousee jopa 2 Gbps:ään. Yhdistä reitittimen WAN-portti ja LAN 4-portti modeemin LAN-portteihin (varmista, että käytät kahta kaapelia, joiden tekniset ominaisuudet ovat samat). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregaatio Usein kysytyt kysymykset</a>
+WANAggregation_desc=WAN-aggregaatio yhdistää kaksi verkkoyhteyttä, jolloin WANin nopeus nousee jopa 2 Gbps:ään. Yhdistä reitittimen #WAN-portti ja LAN 4-portti modeemin LAN-portteihin (varmista, että käytät kahta kaapelia, joiden tekniset ominaisuudet ovat samat). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregaatio Usein kysytyt kysymykset</a>
 WANAggregation_enable=Ota WAN-aggregaatio käyttöön
 WANAggregation_disable_dualwan=Kaksois-WAN on aktivoituna reitittimessä. WAN-aggregaation aktivointi poistaa kaksois-WANin käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_disable_WANAggregation=WAN-aggregaatio on aktivoituna reitittimessä. Kaksois-WANin aktivointi poistaa WAN-aggregaation käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_PortConflict_hint1=WAN-aggregaatio käyttää reitittimen LAN 4 -porttia. IPTV:n aktivointi poistaa WAN-aggregaation käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_PortConflict_hint2=IPTV käyttää reitittimen LAN 4 -porttia. WAN-aggregaation aktivointi poistaa IPTV:n käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_disable_IPTVDualWAN=Sekä kaksois-WAN että IPTV ovat aktivoituina reitittimessä. WAN-aggregaation aktivointi poistaa kaksois-WANin ja IPTV:n käytöstä porttien ristiriitojen välttämiseksi. Haluatko varmasti jatkaa?
-WANAggregation_help_WAN=Varmista, että reitittimen WAN-portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden spesifikaatio on sama.
+WANAggregation_help_WAN=Varmista, että reitittimen #WAN-portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden spesifikaatio on sama.
 WANAggregation_help_LAN=Varmista, että reitittimen LAN 4 -portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden tekniset ominaisuudet ovat samat.
 WANAggregation_goto_WAN=Kun haluat ottaa WAN-aggregaation käyttöön, mene sivulle <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-Internet Connection (WAN-Internet-yhteys)</a>.
 WANAggregation_help_desc=Jos WAN-aggregaation käyttöönotto ei onnistu, yritä uudelleen seuraavien vaiheiden avulla.
-WANAggregation_help_step1=Varmista, että modeemin LAN-portit on jo yhdistetty reitittimen WAN- ja LAN 4 -portteihin kaapeleilla.
+WANAggregation_help_step1=Varmista, että modeemin LAN-portit on jo yhdistetty reitittimen #WAN- ja LAN 4 -portteihin kaapeleilla.
 WANAggregation_help_step2=Varmista, että 802.3ad on aktivoitu modeemistasi
 WANAggregation_help_step3=Varmista, että kaapelit ovat teknisiltä ominaisuuksiltaan samanlaiset (molemmat joko gigabit- tai 10/100 Mbps -tyyppiä)
 WANAggregation_help_step4=Käynnistä reititin uudelleen
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Jos haluat priorisoida GeForce Now -pelilaitteita pelaamisen nopeuttamiseksi ja parantamiseksi, valitse GeForce Now.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Tapahtuma
 AURA_Event_desc=Järjestelmä tunnistaa seuraavat tapahtumat ja käynnistää erilaisia leditehosteita.
 AURA_Event_Boost_desc=Kun otat Game Boostin käyttöön, näet ledipalkissa punaisen hengitystehosteen.

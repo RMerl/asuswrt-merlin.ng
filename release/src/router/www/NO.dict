@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Med tanke på kompatibiliteten mellom AiMesh-systemet og slu
 AiMesh_confirm_msg10=For å sikre at AiMesh-systemet kan koble til sluttenheten(e), må du lese disse <a id="wpa3FaqLink">FAQ</a> før du bytter til WPA3-Personal.
 AiMesh_confirm_msg11=Du bruker for øyeblikket WPA3-Personal. Hvis du vil opprette et AiMesh-system, blir autentiseringsmetoden din endret til WPA2/WPA3-Personal. Vil du fortsette?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Nærmere informasjon får du på <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>disse vanlige spørsmålene</a>
+AiMesh_confirm_msg13=Nærmere informasjon får du på <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>disse vanlige spørsmålene</a>
 AiMesh_Feature_Desc=Avansert ASUS AiMesh er en innovativ ruter-funksjon som kobler flere ASUS-rutere sammen og skaper et WiFi-nettverk for hele hjemmet.
 AiMesh_FAQ=Finn ut mer om ASUS AiMesh
 AiMesh_FindNode=Finn AiMesh-node
@@ -2412,7 +2412,7 @@ Internet=Internett
 Interval=Intervall
 Introduce_demo=Innledende demo
 Invitation=Invitasjon
-Interaction=Interakcja
+Interaction=Interaksjon
 InternetSpeed=Internett-hastighet
 InternetSpeed_desc=Denne tjenesten leveres av Ookla®. Den registrerer nedlastings- og opplastingshastigheten fra ruteren din til Internett. Denne testen tar omtrent ett minutt. Ved å bruke denne tjenesten godtar du  <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Ooklas retningslinjer for personvern</a>.
 InternetSpeed_ookla_mark=Ookla® og Speedtest® er føderalt registrerte varemerker som tilhører Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS Valg
 WANTCPMSSOptionComm1Text=Bytes
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN-aggregering kombinerer to nettverktilkoblinger, slik at WAN-hastigheten økes til 2 Gbps. Koble ruterens WAN-port og LAN 4-port til modemets LAN-porter (forsikre deg om at du bruker to kabler med samme spesifikasjon). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregering – ofte stilte spørsmål</a>
+WANAggregation_desc=WAN-aggregering kombinerer to nettverktilkoblinger, slik at WAN-hastigheten økes til 2 Gbps. Koble ruterens #WAN-port og LAN 4-port til modemets LAN-porter (forsikre deg om at du bruker to kabler med samme spesifikasjon). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregering – ofte stilte spørsmål</a>
 WANAggregation_enable=Aktiver WAN-aggregering
 WANAggregation_disable_dualwan=Ruteren din har dobbel-WAN aktivert. Hvis du aktiverer WAN-aggregering, deaktiveres dobbel WAN. Er du sikker på at du ønsker å fortsette?
 WANAggregation_disable_WANAggregation=WAN-aggregering er aktivert på ruteren. Hvis du aktiverer dobbel WAN, deaktiveres WAN-aggregering. Er du sikker på at du ønsker å fortsette?
 WANAggregation_PortConflict_hint1=WAN-aggregering bruker ruterens LAN 4-port. Hvis du aktiverer IPTV, deaktiveres WAN-aggregering. Er du sikker på at du ønsker å fortsette?
 WANAggregation_PortConflict_hint2=IPTV bruker ruterens LAN 4-port. Hvis du aktiverer WAN-aggregering, deaktiveres IPTV. Er du sikker på at du ønsker å fortsette?
 WANAggregation_disable_IPTVDualWAN=Ruteren har både dobbel WAN og IPTV aktivert. Hvis du aktiverer WAN-aggregering, blir dobbel WAN og IPTV deaktivert for å unngå portkonflikter. Er du sikker på at du ønsker å fortsette?
-WANAggregation_help_WAN=Forsikre deg om at ruterens WAN-port og modemets LAN-port er tilkoblet med to kabler som har samme spesifikasjon.
+WANAggregation_help_WAN=Forsikre deg om at ruterens #WAN-port og modemets LAN-port er tilkoblet med to kabler som har samme spesifikasjon.
 WANAggregation_help_LAN=Forsikre deg om at ruterens LAN 4-port og modemets LAN-port er tilkoblet med to kabler som har samme spesifikasjon.
 WANAggregation_goto_WAN=Gå til tilkoblingssiden for <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-internett</a>, for å aktivere WAN-aggregering.
 WANAggregation_help_desc=Hvis WAN-aggregeringen ikke lykkes, utfør de følgende trinn for å prøve på nytt.
-WANAggregation_help_step1=Sørg for at modemets LAN-porter allerede er tilkoblet ruterens WAN og LAN 4 med kabler.
+WANAggregation_help_step1=Sørg for at modemets LAN-porter allerede er tilkoblet ruterens #WAN og LAN 4 med kabler.
 WANAggregation_help_step2=Pass på at modemet har 802.3ad aktivert
 WANAggregation_help_step3=Bekreft at du bruker to kabler med de samme spesifikasjoner (enten to gigabit-kabler eller to 10/100 Mbps-kabler)
 WANAggregation_help_step4=Start om ruteren
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Velg GeForce Now for å prioritere GeForce Now-spillenheter for en raskere og bedre spillopplevelse.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Hendelse
 AURA_Event_desc=Systemet oppdager følgende hendelser og utløser forskjellige LED-effekter.
 AURA_Event_Boost_desc=Når du aktiverer Game Boost, vil du se at LED-feltet bruker en rød pusteeffekt.

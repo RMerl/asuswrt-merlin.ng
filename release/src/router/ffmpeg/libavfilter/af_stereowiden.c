@@ -39,13 +39,14 @@ typedef struct StereoWidenContext {
 } StereoWidenContext;
 
 #define OFFSET(x) offsetof(StereoWidenContext, x)
-#define A AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+#define A  AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+#define AT AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption stereowiden_options[] = {
     { "delay",     "set delay time",    OFFSET(delay),     AV_OPT_TYPE_FLOAT, {.dbl=20}, 1, 100, A },
-    { "feedback",  "set feedback gain", OFFSET(feedback),  AV_OPT_TYPE_FLOAT, {.dbl=.3}, 0, 0.9, A },
-    { "crossfeed", "set cross feed",    OFFSET(crossfeed), AV_OPT_TYPE_FLOAT, {.dbl=.3}, 0, 0.8, A },
-    { "drymix",    "set dry-mix",       OFFSET(drymix),    AV_OPT_TYPE_FLOAT, {.dbl=.8}, 0, 1.0, A },
+    { "feedback",  "set feedback gain", OFFSET(feedback),  AV_OPT_TYPE_FLOAT, {.dbl=.3}, 0, 0.9, AT },
+    { "crossfeed", "set cross feed",    OFFSET(crossfeed), AV_OPT_TYPE_FLOAT, {.dbl=.3}, 0, 0.8, AT },
+    { "drymix",    "set dry-mix",       OFFSET(drymix),    AV_OPT_TYPE_FLOAT, {.dbl=.8}, 0, 1.0, AT },
     { NULL }
 };
 
@@ -113,8 +114,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         if (s->cur == s->buffer + s->length)
             s->cur = s->buffer;
 
-        dst[0] = drymix * left - crossfeed * right - feedback * s->cur[1];
-        dst[1] = drymix * right - crossfeed * left - feedback * s->cur[0];
+        if (ctx->is_disabled) {
+            dst[0] = left;
+            dst[1] = right;
+        } else {
+            dst[0] = drymix * left - crossfeed * right - feedback * s->cur[1];
+            dst[1] = drymix * right - crossfeed * left - feedback * s->cur[0];
+        }
 
         s->cur[0] = left;
         s->cur[1] = right;
@@ -159,4 +165,6 @@ AVFilter ff_af_stereowiden = {
     .uninit         = uninit,
     .inputs         = inputs,
     .outputs        = outputs,
+    .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
+    .process_command = ff_filter_process_command,
 };

@@ -1693,9 +1693,9 @@ function smart_sync_support(_nvramvalue, _ptn){
 
 //- Login success callback function
 function onDropBoxLogin(_parm){
-	if(_parm.token.search("error") == -1){
+	if(_parm.code.search("error") == -1){
 		document.form.cloud_username.value = _parm.uid;
-		document.form.cloud_password.value = _parm.token;
+		document.form.cloud_password.value = _parm.code;
 		document.getElementById("applyBtn").style.display = "";
 		document.getElementById("authBtn").style.display = "none";
 		document.getElementById("authHint").style.display = "";

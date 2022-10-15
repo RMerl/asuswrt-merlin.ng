@@ -2657,35 +2657,35 @@ void stop_s46_tunnel(int unit, int unload)
 #endif
 }
 void
-start_s46map_rptd(void)
+start_v6plusd(void)
 {
-        char *s46map_rptd_argv[] = {"s46map_rptd", NULL};
+        char *v6plusd_argv[] = {"v6plusd", NULL};
         pid_t pid;
 
         if(getpid()!=1) {
-                notify_rc("start_s46map_rptd");
+                notify_rc("start_v6plusd");
                 return;
         }
 
-        killall("s46map_rptd", SIGTERM);
+        killall("v6plusd", SIGTERM);
 
-        _eval(s46map_rptd_argv, NULL, 0, &pid);
+        _eval(v6plusd_argv, NULL, 0, &pid);
 }
 
-void stop_s46map_rptd(void)
+void stop_v6plusd(void)
 {
         if(getpid()!=1) {
-                notify_rc("stop_s46map_rptd");
+                notify_rc("stop_v6plusd");
                 return;
         }
 
-        killall("s46map_rptd", SIGTERM);
+        killall("v6plusd", SIGTERM);
 }
 
-void restart_s46map_rptd(void)
+void restart_v6plusd(void)
 {
-	stop_s46map_rptd();
-	start_s46map_rptd();
+	stop_v6plusd();
+	start_v6plusd();
 }
 #endif
 
@@ -4308,6 +4308,11 @@ start_ddns(char *caller)
 	}
 #endif
 	server = nvram_safe_get("ddns_server_x");
+#ifdef RTCONFIG_INADYN
+	if (strcmp(server, "DNS.HE.NET") == 0)
+		user = nvram_safe_get("ddns_hostname_x"); /* The username is also the hostname in HE.NET */
+	else
+#endif
 	user = nvram_safe_get("ddns_username_x");
 	passwd = nvram_safe_get("ddns_passwd_x");
 	host = nvram_safe_get("ddns_hostname_x");
@@ -4612,8 +4617,7 @@ start_ddns(char *caller)
 			fprintf(fp, "}\n");
 
 			fprintf(fp, "iterations = 1\n");
-			if (!realip)
-				fprintf(fp, "iface = %s\n", wan_ifname);
+			fprintf(fp, "iface = %s\n", wan_ifname); /* External WAN IP also need: Private IPv4 + Public IPv6 */
 			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
 			if (!nvram_get_int("ntp_ready"))
 				fprintf(fp, "broken-rtc = true\n");
@@ -4890,8 +4894,7 @@ asusddns_reg_domain(int reg)
 			fprintf(fp, "}\n");
 
 			fprintf(fp, "iterations = 1\n");
-			if (!realip)
-				fprintf(fp, "iface = %s\n", wan_ifname);
+			fprintf(fp, "iface = %s\n", wan_ifname); /* External WAN IP also need: Private IPv4 + Public IPv6 */
 			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
 			if (!nvram_get_int("ntp_ready"))
 				fprintf(fp, "broken-rtc = true\n");
@@ -4899,7 +4902,7 @@ asusddns_reg_domain(int reg)
 			if (1)
 				fprintf(fp, "secure-ssl = false\n");
 			fclose(fp);
-#ifdef RTCONFIG_ACCOUNT_BINDING
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 			if(nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
 				((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 				|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn")))))
@@ -5000,7 +5003,7 @@ _dprintf("%s: do ez-ipupdate to unregister! unit = %d wan_ifname = %s nserver = 
 		};
 
 		if ((fp = fopen("/etc/inadyn.conf", "w"))) {
-#ifdef RTCONFIG_ACCOUNT_BINDING
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 			if(nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
 				((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 				|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn")))))
@@ -5028,7 +5031,7 @@ _dprintf("%s: do ez-ipupdate to unregister! unit = %d wan_ifname = %s nserver = 
 				fprintf(fp, "secure-ssl = false\n");
 			fclose(fp);
 
-#ifdef RTCONFIG_ACCOUNT_BINDING
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 			if(nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
 				((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 				|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn")))))
@@ -5473,7 +5476,7 @@ mcpd_conf(void)
 	   to enable mcpd bring up							*/
 	if (!nvram_match("switch_wantag", "") && nvram_get_int("switch_stb_x") > 0 &&
 		nvram_get_int("switch_stb_x") <= 6 && !nvram_match("switch_wantag", "free")) {
-		if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2 || model == MODEL_TUFAX5400_V2 || model == MODEL_XD6_V2)
+		if (model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2 || model == MODEL_TUFAX5400_V2 || model == MODEL_XD6_V2 || model == MODEL_RTAX5400)
 			proxy_ifname = "eth4.v0";
 		else if (model == MODEL_RTAX82_XD6S)
 			proxy_ifname = "eth1.v0";
@@ -13597,10 +13600,16 @@ again:
 	}
 	else if(strcmp(script, "mfgmode") == 0) {
 		nvram_set("asus_mfg", "2");
+#ifdef RTCONFIG_ASD
+		no_asd();
+#endif
 		stop_services_mfg();
 	}
 	else if(strcmp(script, "wltest") == 0) {
 		nvram_set("asus_mfg", "3");
+#ifdef RTCONFIG_ASD
+		no_asd();
+#endif
 		stop_check_watchdog();
 		stop_watchdog();
         stop_alt_watchdog(); // add by Andrew
@@ -13609,6 +13618,9 @@ again:
 	}
 	else if(strcmp(script, "ethtest") == 0) {
 		nvram_set("asus_mfg", "3");
+#ifdef RTCONFIG_ASD
+		no_asd();
+#endif
 		stop_check_watchdog();
 		stop_watchdog();
         stop_alt_watchdog(); // add by Andrew
@@ -14866,6 +14878,12 @@ check_ddr_done:
 			char *current_ifname = get_wan_ifname(wan_unit);
 
 			wan_up(current_ifname);
+#ifdef DSL_AX82U
+			if (is_custom_i2()) {
+				update_iptv_ifname(wan_unit);
+				start_igmpproxy(current_ifname);
+			}
+#endif
 		}
 	}
 #ifdef CONFIG_BCMWL5
@@ -16452,25 +16470,36 @@ retry_wps_enr:
 		char reason_tmp[16];
 		int client_mode = 1;
 		int reload_wait = nvram_get_int("reload_wait")?:5;
+		int pre_auth = nvram_match("x_Setting", "0") && !nvram_match("stop_preauth", "1");
 
 		if(cmd[1])
 			band = atoi(cmd[1]);
 
-		_dprintf("%s wpasupp_qis.. wl%d, cli:%d(%d/%d), reload_wait:%d\n", __func__, band, client_mode, dpsta_mode(), dpsr_mode(), reload_wait);
+		_dprintf("%s wpasupp_qis..pre_auth:%d, wl%d, cli:%d(%d/%d), reload_wait:%d\n", __func__, pre_auth, band, client_mode, dpsta_mode(), dpsr_mode(), reload_wait);
 
-		nvram_set("wpas0_reason", "");
-		nvram_set("wpas1_reason", "");
-		nvram_set("wpas2_reason", "");
-		
+		if (pre_auth == 0) {
+			_dprintf("%s wlc%d stop_preauth due not initial settings\n", __func__, band);
+			nvram_set("wpas0_reason", "completed");
+			nvram_set("wpas1_reason", "completed");
+			nvram_set("wpas2_reason", "completed");
+
+			if(client_mode)
+        			killall("psta_monitor", SIGTERM);
+		} else {
+			nvram_set("wpas0_reason", "");
+			nvram_set("wpas1_reason", "");
+			nvram_set("wpas2_reason", "");
+		}
 
 		if(action & RC_SERVICE_STOP)
 		{
-			stop_wpasupp(band);
+			if(pre_auth)
+				stop_wpasupp(band);
 		}
 
 		if(action & RC_SERVICE_START)
 		{
-			if(client_mode) {
+			if(pre_auth && client_mode) {
         			//killall("psta_monitor", SIGTERM);
 
 				set_wpasupp(band, 1);
@@ -16480,7 +16509,7 @@ retry_wps_enr:
 					if(*nvram_safe_get(strcat_r(prefix, "ssid", tmp)))
 					{
 						if(nvram_match("x_Setting", "1")) {
-							_dprintf("backup current wlc settings\n");
+							_dprintf("backup current wlc%d settings\n", band);
 	
 							snprintf(prefix, sizeof(prefix), "wlr%d_", band);
 							snprintf(prefix_b, sizeof(prefix_b), "wl%d_", band);
@@ -17538,10 +17567,10 @@ start_write_smb_conf();
 	}
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-	else if (strcmp(script, "s46map_rptd") == 0)
+	else if (strcmp(script, "v6plusd") == 0)
 	{
-		if(action & RC_SERVICE_STOP) stop_s46map_rptd();
-		if(action & RC_SERVICE_START) start_s46map_rptd();
+		if(action & RC_SERVICE_STOP) stop_v6plusd();
+		if(action & RC_SERVICE_START) start_v6plusd();
 	}
 #endif
 #ifdef RTCONFIG_DISABLE_NETWORKMAP

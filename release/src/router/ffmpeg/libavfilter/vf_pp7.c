@@ -29,9 +29,11 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "internal.h"
+#include "qp_table.h"
 #include "vf_pp7.h"
 
 enum mode {
@@ -322,10 +324,15 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFrame *out = in;
 
     int qp_stride = 0;
-    uint8_t *qp_table = NULL;
+    int8_t *qp_table = NULL;
 
-    if (!pp7->qp)
-        qp_table = av_frame_get_qp_table(in, &qp_stride, &pp7->qscale_type);
+    if (!pp7->qp) {
+        int ret = ff_qp_table_extract(in, &qp_table, &qp_stride, NULL, &pp7->qscale_type);
+        if (ret < 0) {
+            av_frame_free(&in);
+            return ret;
+        }
+    }
 
     if (!ctx->is_disabled) {
         const int cw = AV_CEIL_RSHIFT(inlink->w, pp7->hsub);
@@ -340,6 +347,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             out = ff_get_video_buffer(outlink, aligned_w, aligned_h);
             if (!out) {
                 av_frame_free(&in);
+                av_freep(&qp_table);
                 return AVERROR(ENOMEM);
             }
             av_frame_copy_props(out, in);
@@ -366,6 +374,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                                 inlink->w, inlink->h);
         av_frame_free(&in);
     }
+    av_freep(&qp_table);
     return ff_filter_frame(outlink, out);
 }
 

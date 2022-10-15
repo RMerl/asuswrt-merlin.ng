@@ -55,6 +55,8 @@ CF_XD6_V2        // pkgtb
      MODELID(CF_TUFAX5400),                   \
      MODELID(CF_TUFAX5400_V2),                \
      MODELID(CF_XD6_V2),                      \
+     MODELID(CF_GSAX3000),                   \
+     MODELID(CF_GSAX5400),                   \
      MODELID(MAX_FTYPE),                           \
 }
 

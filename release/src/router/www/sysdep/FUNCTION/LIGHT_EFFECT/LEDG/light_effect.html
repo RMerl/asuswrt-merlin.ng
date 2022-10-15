@@ -8,6 +8,8 @@
 <script type="text/javascript" src="/light_effect/specific_schema.js"></script>
 </head>
 <script >
+var ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=166";
 var model_info = httpApi.nvramGet(["productid", "CoBrand"]);
 $(function(){
 	var getUrlParameter = function getUrlParameter(param){
@@ -75,8 +77,9 @@ function initial_led_control() {
 	$light_effect_bg = $("#light_effect_bg");
 	$hue_bar = $("#hue_bar");
 	$hue_slider = $("#hue_slider");
-	if($("#light_effect_setting .light_effect_setting_bg .setting_enable_bg .schedule").css("display") != "none")
-		$("#light_effect_setting .light_effect_setting_bg .setting_enable_bg .switch").css("right", "20%");
+	if($("#light_effect_setting .setting_enable_bg .schedule").css("display") != "none"){
+		$("#light_effect_setting .setting_enable_bg .switch").css("right", "20%");
+	}
 
 	if(!isMobile()) {
 		$hue_bar.mousedown(function(e) {
@@ -301,6 +304,11 @@ function initial_led_control() {
 	else{
 		$("#antenna_bg, #antenna_setting, .switch_mode_list_bg").remove();
 	}
+
+	var cur_slider_w = parseInt($hue_slider.css("width"),10);
+	var retune_slider_w = parseInt(($hue_bar.width() / 270) * cur_slider_w);
+	if(retune_slider_w > cur_slider_w)
+		$hue_slider.css({"width": retune_slider_w});
 }
 function set_scheme_mode(_type, _LED_Set_Obj){
 	Object.keys(_LED_Set_Obj).forEach(function(group_idx) {
@@ -311,6 +319,13 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 
 	var group_rgb = scheme_item_post["LED_Set"];
 	var hue_slider_rgb = [group_rgb[1]["R"],group_rgb[1]["G"],group_rgb[1]["B"]];
+	if(_type == "3" ||_type == "7"){//for Gradient RGB, use idx 2 RGB
+		if(scheme_item_post["LED_Set"][2] != undefined){
+			if(JSON.stringify(scheme_item_post["LED_Set"][1]) != JSON.stringify(scheme_item_post["LED_Set"][2])){
+				hue_slider_rgb = [group_rgb[2]["R"],group_rgb[2]["G"],group_rgb[2]["B"]];
+			}
+		}
+	}
 	switch(_type) {
 		case "2" :
 			rgbToLeft(hue_slider_rgb);
@@ -578,7 +593,7 @@ function rgbToLeft(_rgb) {
 var lightl_effect_animate = {
 	"interval" : false,
 	"breathing" : function(_obj, _rgbArr) {
-		if(model_info.productid == "GT-AXE16000"){
+		if(model_info.productid == "GT-AXE16000" || model_info.productid == "GT10"){
 			var breathing_color = function(_obj) {
 				var led1 = "rgba(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ", " + alpha + ") 40%";
 				var led2 = "rgba(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ", " + alpha + ") 60%";
@@ -627,7 +642,7 @@ var lightl_effect_animate = {
 			min = Math.max(0, (percent_init - 30));
 			middle = percent_init;
 			max = Math.min(100, (percent_init + 30));
-			if(model_info.productid == "GT-AXE16000"){
+			if(model_info.productid == "GT-AXE16000" || model_info.productid == "GT10"){
 				var led1 = "rgb(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ") " + Math.max(0, (middle - 10)) + "%";
 				var led2 = "rgb(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ") " + middle + "%";
 				var led3 = "rgb(" + scheme_item_post['LED_Set'][3]['R'] + ", " + scheme_item_post['LED_Set'][3]['G'] + ", " + scheme_item_post['LED_Set'][3]['B'] + ") " +  Math.min(100, (middle + 10)) + "%";
@@ -649,7 +664,7 @@ var lightl_effect_animate = {
 		var percent_init = 0;
 		var percent_end = 100;
 		var wave_color = function(_obj, _rgbArr) {
-			if(model_info.productid == "GT-AXE16000"){
+			if(model_info.productid == "GT-AXE16000" || model_info.productid == "GT10"){
 				var led1 = "rgb(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ") " + Math.max(0, (percent_init - 10)) + "%";
 				var led2 = "rgb(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ") " + percent_init + "%";
 				var led3 = "rgb(" + scheme_item_post['LED_Set'][3]['R'] + ", " + scheme_item_post['LED_Set'][3]['G'] + ", " + scheme_item_post['LED_Set'][3]['B'] + ") " +  Math.min(100, (percent_init + 10)) + "%";
@@ -692,7 +707,7 @@ function isSupport(_ptn){
 	return (ui_support[_ptn]) ? ui_support[_ptn] : 0;
 }
 function gradient_transform_left(_left){
-	var screen_width = $hue_bar.outerWidth(true);
+	var screen_width = $hue_bar.width();
 	return parseInt((screen_width / 320) * _left);
 }
 function switch_mode(_type){
@@ -764,7 +779,7 @@ $(document).ready(initial_led_control);
 			<div id="default_set"><#Setting_factorydefault_value#></div>
 		</div>
 	</div>
-	<div class="all_led_off">LEDs are currently disabled - please re-enable them to be able to use AuraRGB.</div><!-- untranslated -->
+	<div class="all_led_off">LEDs are currently disabled - please re-enable them to be able to use AuraRGB.</div>
 </div>
 
 <div class="light_effect_bg" id="antenna_bg" mode_group="antenna">

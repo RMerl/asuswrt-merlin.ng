@@ -9,6 +9,7 @@ typedef enum column_type{
 	COLUMN_TYPE_TEXT=0,
     COLUMN_TYPE_TEXT_MAC,
     COLUMN_TYPE_TEXT_IP,
+    COLUMN_TYPE_TEXT_JSON,
     COLUMN_TYPE_INT16, /* short */
     COLUMN_TYPE_UINT16, /* unsigned short */
 	COLUMN_TYPE_INT, /* int */
@@ -171,7 +172,7 @@ extern int cosql_remove_data_between_column_value(sqlite3* pdb, const char* colu
 
 extern int cosql_resize_table_by_reserved_count(sqlite3* pdb, int reserved_newest_data_count);
 
-extern int cosql_backup_and_remove_data_between_time(sqlite3* src_pdb, sqlite3* dst_pdb, int start_data_time, int end_data_time);
+extern int cosql_backup_and_remove_data_between_time(sqlite3* src_pdb, sqlite3* dst_pdb, const char* backup_data_columns, int start_data_time, int end_data_time);
 
 extern int cosql_backup_and_remove_data_between_column_value(sqlite3* pdb, sqlite3* dst_pdb, 
     const char* column_name, int start_value, int end_value);

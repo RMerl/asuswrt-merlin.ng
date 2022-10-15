@@ -152,6 +152,7 @@ static void arith2_init(ArithCoder *c, GetByteContext *gB)
     c->low           = 0;
     c->high          = 0xFFFFFF;
     c->value         = bytestream2_get_be24(gB);
+    c->overread      = 0;
     c->gbc.gB        = gB;
     c->get_model_sym = arith2_get_model_sym;
     c->get_number    = arith2_get_number;
@@ -174,7 +175,7 @@ static int decode_pal_v2(MSS12Context *ctx, const uint8_t *buf, int buf_size)
     return 1 + ncol * 3;
 }
 
-static int decode_555(GetByteContext *gB, uint16_t *dst, ptrdiff_t stride,
+static int decode_555(AVCodecContext *avctx, GetByteContext *gB, uint16_t *dst, ptrdiff_t stride,
                       int keyframe, int w, int h)
 {
     int last_symbol = 0, repeat = 0, prev_avail = 0;
@@ -212,7 +213,7 @@ static int decode_555(GetByteContext *gB, uint16_t *dst, ptrdiff_t stride,
                     repeat = 0;
                     while (b-- > 130) {
                         if (repeat >= (INT_MAX >> 8) - 1) {
-                            av_log(NULL, AV_LOG_ERROR, "repeat overflow\n");
+                            av_log(avctx, AV_LOG_ERROR, "repeat overflow\n");
                             return AVERROR_INVALIDDATA;
                         }
                         repeat = (repeat << 8) + bytestream2_get_byte(gB) + 1;
@@ -410,8 +411,6 @@ static int decode_wmv9(AVCodecContext *avctx, const uint8_t *buf, int buf_size,
     }
 
     ff_mpeg_er_frame_start(s);
-
-    v->bits = buf_size * 8;
 
     v->end_mb_x = (w + 15) >> 4;
     s->end_mb_y = (h + 15) >> 4;
@@ -617,7 +616,7 @@ static int mss2_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             return AVERROR_INVALIDDATA;
         }
     } else {
-        if ((ret = ff_reget_buffer(avctx, ctx->last_pic)) < 0)
+        if ((ret = ff_reget_buffer(avctx, ctx->last_pic, 0)) < 0)
             return ret;
         if ((ret = av_frame_ref(frame, ctx->last_pic)) < 0)
             return ret;
@@ -634,7 +633,7 @@ static int mss2_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
     if (is_555) {
         bytestream2_init(&gB, buf, buf_size);
 
-        if (decode_555(&gB, (uint16_t *)c->rgb_pic, c->rgb_stride >> 1,
+        if (decode_555(avctx, &gB, (uint16_t *)c->rgb_pic, c->rgb_stride >> 1,
                        keyframe, avctx->width, avctx->height))
             return AVERROR_INVALIDDATA;
 

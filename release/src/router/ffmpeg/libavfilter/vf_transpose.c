@@ -38,27 +38,7 @@
 #include "formats.h"
 #include "internal.h"
 #include "video.h"
-
-typedef enum {
-    TRANSPOSE_PT_TYPE_NONE,
-    TRANSPOSE_PT_TYPE_LANDSCAPE,
-    TRANSPOSE_PT_TYPE_PORTRAIT,
-} PassthroughType;
-
-enum TransposeDir {
-    TRANSPOSE_CCLOCK_FLIP,
-    TRANSPOSE_CLOCK,
-    TRANSPOSE_CCLOCK,
-    TRANSPOSE_CLOCK_FLIP,
-};
-
-typedef struct TransVtable {
-    void (*transpose_8x8)(uint8_t *src, ptrdiff_t src_linesize,
-                          uint8_t *dst, ptrdiff_t dst_linesize);
-    void (*transpose_block)(uint8_t *src, ptrdiff_t src_linesize,
-                            uint8_t *dst, ptrdiff_t dst_linesize,
-                            int w, int h);
-} TransVtable;
+#include "transpose.h"
 
 typedef struct TransContext {
     const AVClass *class;
@@ -252,6 +232,14 @@ static int config_props_output(AVFilterLink *outlink)
                 v->transpose_8x8   = transpose_8x8_48_c; break;
         case 8: v->transpose_block = transpose_block_64_c;
                 v->transpose_8x8   = transpose_8x8_64_c; break;
+        }
+    }
+
+    if (ARCH_X86) {
+        for (int i = 0; i < 4; i++) {
+            TransVtable *v = &s->vtables[i];
+
+            ff_transpose_init_x86(v, s->pixsteps[i]);
         }
     }
 

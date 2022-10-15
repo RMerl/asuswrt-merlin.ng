@@ -182,9 +182,9 @@ ifeq ($(RTCONFIG_4352_5G),y)
 CFLAGS += -DBCM4352
 endif
 
+CFLAGS += -I$(TOP)/libdisk
 ifeq ($(RTCONFIG_USB),y)
 CFLAGS += -DU2EC
-CFLAGS += -I$(TOP)/libdisk
 LDFLAGS += -L$(TOP)/libdisk -ldisk
 ifeq ($(BCM_MMC),y)
 CFLAGS += -DBCM_MMC
@@ -526,7 +526,7 @@ endif
 OBJS += frs_service.o
 #endif
 
-ifeq ($(RTCONFIG_ACCOUNT_BINDING),y)
+ifeq ($(and $(RTCONFIG_TUNNEL),$(RTCONFIG_ACCOUNT_BINDING)),y)
 OBJS += asus_ddns.o
 endif
 
@@ -683,8 +683,8 @@ ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW
 CFLAGS += -I$(TOP)/curl-7.21.7/include
 LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.9.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.9.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 endif
 
@@ -697,7 +697,7 @@ endif
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
 CFLAGS += -I$(TOP)/json-c
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-OBJS += s46map_rptd.o
+OBJS += s46comm.o v6plusd.o
 endif
 
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
@@ -934,6 +934,7 @@ else ifeq ($(RTCONFIG_QCA),y)
 OBJS += conn_diag-qca.o
 endif
 DIAG_OBJS += conn_diag-sql.o
+DIAG_OBJS += conn_diag_log.o
 endif
 
 ifeq ($(BUILD_NAME), GT10)
@@ -1449,7 +1450,7 @@ endif
 
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mapcalc
-	@cd $(INSTALLDIR)/sbin && ln -sf rc s46map_rptd
+	@cd $(INSTALLDIR)/sbin && ln -sf rc v6plusd
 endif
 
 ifeq ($(RTCONFIG_WLCSCAN_RSSI),y)
@@ -1500,7 +1501,7 @@ ifeq ($(RTCONFIG_TC_DOWNLOAD), y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc tc_download
 endif
 
-ifeq ($(RTCONFIG_ACCOUNT_BINDING),y)
+ifeq ($(and $(RTCONFIG_TUNNEL),$(RTCONFIG_ACCOUNT_BINDING)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc update_asus_ddns_token
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc collect_debuglog
@@ -1950,9 +1951,13 @@ ledg.o:
 endif
 endif
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
-ifneq ($(wildcard ./prebuild/s46map_rptd.o),)
-s46map_rptd.o:
-	@-cp -f ./prebuild/s46map_rptd.o .
+ifneq ($(wildcard ./prebuild/s46comm.o),)
+s46comm.o:
+	@-cp -f ./prebuild/s46comm.o .
+endif
+ifneq ($(wildcard ./prebuild/v6plusd.o),)
+v6plusd.o:
+	@-cp -f ./prebuild/v6plusd.o .
 endif
 endif
 ifeq ($(RTCONFIG_TPVPN),y)

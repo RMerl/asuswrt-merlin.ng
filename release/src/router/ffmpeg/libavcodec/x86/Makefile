@@ -50,13 +50,16 @@ OBJS-$(CONFIG_ADPCM_G722_ENCODER)      += x86/g722dsp_init.o
 OBJS-$(CONFIG_ALAC_DECODER)            += x86/alacdsp_init.o
 OBJS-$(CONFIG_APNG_DECODER)            += x86/pngdsp_init.o
 OBJS-$(CONFIG_CAVS_DECODER)            += x86/cavsdsp.o
+OBJS-$(CONFIG_CFHD_DECODER)            += x86/cfhddsp_init.o
+OBJS-$(CONFIG_CFHD_ENCODER)            += x86/cfhdencdsp_init.o
 OBJS-$(CONFIG_DCA_DECODER)             += x86/dcadsp_init.o x86/synth_filter_init.o
 OBJS-$(CONFIG_DNXHD_ENCODER)           += x86/dnxhdenc_init.o
 OBJS-$(CONFIG_EXR_DECODER)             += x86/exrdsp_init.o
-OBJS-$(CONFIG_OPUS_DECODER)            += x86/opus_dsp_init.o
-OBJS-$(CONFIG_OPUS_ENCODER)            += x86/opus_dsp_init.o
+OBJS-$(CONFIG_OPUS_DECODER)            += x86/opusdsp_init.o
+OBJS-$(CONFIG_OPUS_ENCODER)            += x86/celt_pvq_init.o
 OBJS-$(CONFIG_HEVC_DECODER)            += x86/hevcdsp_init.o
 OBJS-$(CONFIG_JPEG2000_DECODER)        += x86/jpeg2000dsp_init.o
+OBJS-$(CONFIG_LSCR_DECODER)            += x86/pngdsp_init.o
 OBJS-$(CONFIG_MLP_DECODER)             += x86/mlpdsp_init.o
 OBJS-$(CONFIG_MPEG4_DECODER)           += x86/xvididct_init.o
 OBJS-$(CONFIG_PNG_DECODER)             += x86/pngdsp_init.o
@@ -127,7 +130,8 @@ X86ASM-OBJS-$(CONFIG_MDCT15)           += x86/mdct15.o
 X86ASM-OBJS-$(CONFIG_ME_CMP)           += x86/me_cmp.o
 X86ASM-OBJS-$(CONFIG_MPEGAUDIODSP)     += x86/imdct36.o
 X86ASM-OBJS-$(CONFIG_MPEGVIDEOENC)     += x86/mpegvideoencdsp.o
-X86ASM-OBJS-$(CONFIG_OPUS_ENCODER)     += x86/opus_pvq_search.o
+X86ASM-OBJS-$(CONFIG_OPUS_DECODER)     += x86/opusdsp.o
+X86ASM-OBJS-$(CONFIG_OPUS_ENCODER)     += x86/celt_pvq_search.o
 X86ASM-OBJS-$(CONFIG_PIXBLOCKDSP)      += x86/pixblockdsp.o
 X86ASM-OBJS-$(CONFIG_QPELDSP)          += x86/qpeldsp.o                 \
                                           x86/fpel.o                    \
@@ -151,6 +155,8 @@ X86ASM-OBJS-$(CONFIG_ADPCM_G722_ENCODER) += x86/g722dsp.o
 X86ASM-OBJS-$(CONFIG_ALAC_DECODER)     += x86/alacdsp.o
 X86ASM-OBJS-$(CONFIG_APNG_DECODER)     += x86/pngdsp.o
 X86ASM-OBJS-$(CONFIG_CAVS_DECODER)     += x86/cavsidct.o
+X86ASM-OBJS-$(CONFIG_CFHD_ENCODER)     += x86/cfhdencdsp.o
+X86ASM-OBJS-$(CONFIG_CFHD_DECODER)     += x86/cfhddsp.o
 X86ASM-OBJS-$(CONFIG_DCA_DECODER)      += x86/dcadsp.o x86/synth_filter.o
 X86ASM-OBJS-$(CONFIG_DIRAC_DECODER)    += x86/diracdsp.o                \
                                           x86/dirac_dwt.o
@@ -167,6 +173,7 @@ X86ASM-OBJS-$(CONFIG_HEVC_DECODER)     += x86/hevc_add_res.o            \
                                           x86/hevc_sao.o                \
                                           x86/hevc_sao_10bit.o
 X86ASM-OBJS-$(CONFIG_JPEG2000_DECODER) += x86/jpeg2000dsp.o
+X86ASM-OBJS-$(CONFIG_LSCR_DECODER)     += x86/pngdsp.o
 X86ASM-OBJS-$(CONFIG_MLP_DECODER)      += x86/mlpdsp.o
 X86ASM-OBJS-$(CONFIG_MPEG4_DECODER)    += x86/xvididct.o
 X86ASM-OBJS-$(CONFIG_PNG_DECODER)      += x86/pngdsp.o

@@ -41,7 +41,23 @@ static int get_backup_db_path_by_datetime(const char* db_name, const char* db_ve
         return 0;
     }
 
-    if(!nvram_match("db_backup_type", "1")) {
+    char db_bakcup_path[MAX_FILE_PATH]={0};
+    char* ex_db_backup_path = nvram_safe_get("ex_db_backup_path");
+    if (ex_db_backup_path!=NULL && 
+        strlen(ex_db_backup_path)>0 &&
+        d_exists(ex_db_backup_path)) {
+
+        snprintf(db_bakcup_path, MAX_FILE_PATH, "%s/%s", ex_db_backup_path, DIAG_DB_FOLDER);
+    }
+    else if (d_exists(JFFS_DIR)){
+        snprintf(db_bakcup_path, MAX_FILE_PATH, "%s/%s", JFFS_DIR, DIAG_DB_FOLDER);
+    }
+    else {
+
+        return 0;
+    }
+
+    if (!d_exists(db_bakcup_path)){
         return 0;
     }
 
@@ -51,17 +67,16 @@ static int get_backup_db_path_by_datetime(const char* db_name, const char* db_ve
     // 1632960000_sys_detect_1.0.db
 
     char *lasts;
-    char* usb_db_bakcup_path = nvram_safe_get("usb_db_bakcup_path");
     char* tmp_db_version = strdup(db_version);
     char* pch_db_version = strtok_r(tmp_db_version, ",", &lasts);
-    
+
     while (pch_db_version!=NULL) {
 
         char file_name[40] = "\0";
 
         sprintf(file_name, "%lu_%s_%s.db", timestamp_day, db_name, pch_db_version);
 
-        strncpy(db_file_path, usb_db_bakcup_path, strlen(usb_db_bakcup_path));
+        strncpy(db_file_path, db_bakcup_path, strlen(db_bakcup_path));
         strncat(db_file_path, "/", 1);
         strncat(db_file_path, file_name, strlen(file_name));
 
@@ -124,7 +139,10 @@ static sql_column_match_t* parse_match_columns_data(char* data, int data_count) 
             }
             else if (idx==2) {
                 //- column value
-                if (query_match_columns_idx->type==COLUMN_TYPE_TEXT) {
+                if (query_match_columns_idx->type==COLUMN_TYPE_TEXT ||
+                    query_match_columns_idx->type==COLUMN_TYPE_TEXT_MAC ||
+                    query_match_columns_idx->type==COLUMN_TYPE_TEXT_IP ||
+                    query_match_columns_idx->type==COLUMN_TYPE_TEXT_JSON) {
                     query_match_columns_idx->value.t = (char *)malloc(sizeof(char)*len);
                     memset(query_match_columns_idx->value.t, 0, len);
                     strncpy(query_match_columns_idx->value.t, pch2, len);

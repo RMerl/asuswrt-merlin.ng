@@ -1,0 +1,5616 @@
+# Translation of gsasl to Ukrainian
+#
+# Copyright (C) 2012 Lutz Mueller and others
+# This file is distributed under the same license as the libexif package.
+#
+# Yuri Chornoivan <yurchor@ukr.net>, 2012, 2013, 2016, 2018, 2020, 2021.
+msgid ""
+msgstr ""
+"Project-Id-Version: libexif 0.6.24\n"
+"Report-Msgid-Bugs-To: libexif-devel@lists.sourceforge.net\n"
+"POT-Creation-Date: 2021-11-25 11:31+0100\n"
+"PO-Revision-Date: 2021-11-27 18:51+0200\n"
+"Last-Translator: Yuri Chornoivan <yurchor@ukr.net>\n"
+"Language-Team: Ukrainian <trans-uk@lists.fedoraproject.org>\n"
+"Language: uk\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=1; plural=0;\n"
+"X-Generator: Lokalize 20.12.0\n"
+
+#: libexif/canon/mnote-canon-entry.c:38 libexif/fuji/mnote-fuji-entry.c:35
+#: libexif/olympus/mnote-olympus-entry.c:37
+#: libexif/pentax/mnote-pentax-entry.c:39
+#, c-format
+msgid "Invalid format '%s', expected '%s'."
+msgstr "Некоректний формат «%s», мало бути «%s»."
+
+#: libexif/canon/mnote-canon-entry.c:50 libexif/fuji/mnote-fuji-entry.c:47
+#: libexif/olympus/mnote-olympus-entry.c:62
+#: libexif/pentax/mnote-pentax-entry.c:51
+#, c-format
+msgid "Invalid number of components (%i, expected %i)."
+msgstr "Некоректна кількість компонентів (%i, мало бути %i)."
+
+#: libexif/canon/mnote-canon-entry.c:59
+#: libexif/olympus/mnote-olympus-entry.c:72
+#: libexif/pentax/mnote-pentax-entry.c:61
+#, c-format
+msgid "Invalid number of components (%i, expected %i or %i)."
+msgstr "Некоректна кількість компонентів (%i, мало бути %i або %i)."
+
+#: libexif/canon/mnote-canon-entry.c:74 libexif/canon/mnote-canon-entry.c:128
+#: libexif/canon/mnote-canon-entry.c:180 libexif/exif-entry.c:832
+#: libexif/olympus/mnote-olympus-entry.c:199
+#: libexif/olympus/mnote-olympus-tag.c:140
+#: libexif/pentax/mnote-pentax-entry.c:174
+#: libexif/pentax/mnote-pentax-entry.c:209
+#: libexif/pentax/mnote-pentax-entry.c:297
+msgid "Macro"
+msgstr "Макро"
+
+#: libexif/canon/mnote-canon-entry.c:75 libexif/canon/mnote-canon-entry.c:77
+#: libexif/canon/mnote-canon-entry.c:155 libexif/canon/mnote-canon-entry.c:158
+#: libexif/canon/mnote-canon-entry.c:161 libexif/exif-entry.c:700
+#: libexif/exif-entry.c:703 libexif/exif-entry.c:704 libexif/exif-entry.c:705
+#: libexif/exif-entry.c:771 libexif/fuji/mnote-fuji-entry.c:64
+#: libexif/olympus/mnote-olympus-entry.c:121
+#: libexif/olympus/mnote-olympus-entry.c:198
+#: libexif/olympus/mnote-olympus-entry.c:206
+#: libexif/olympus/mnote-olympus-entry.c:216
+#: libexif/olympus/mnote-olympus-entry.c:594
+#: libexif/pentax/mnote-pentax-entry.c:105
+#: libexif/pentax/mnote-pentax-entry.c:110
+#: libexif/pentax/mnote-pentax-entry.c:115
+#: libexif/pentax/mnote-pentax-entry.c:208
+msgid "Normal"
+msgstr "Звичайний"
+
+#: libexif/canon/mnote-canon-entry.c:76
+msgid "Economy"
+msgstr "Економний друк"
+
+#: libexif/canon/mnote-canon-entry.c:78
+msgid "Fine"
+msgstr "Високої якості"
+
+#: libexif/canon/mnote-canon-entry.c:79 libexif/fuji/mnote-fuji-entry.c:178
+#: libexif/pentax/mnote-pentax-entry.c:141
+msgid "RAW"
+msgstr "RAW"
+
+#: libexif/canon/mnote-canon-entry.c:80
+msgid "Superfine"
+msgstr "Надтонкий"
+
+#: libexif/canon/mnote-canon-entry.c:81 libexif/canon/mnote-canon-entry.c:302
+#: libexif/canon/mnote-canon-entry.c:305 libexif/canon/mnote-canon-entry.c:313
+#: libexif/canon/mnote-canon-entry.c:346 libexif/canon/mnote-canon-entry.c:358
+#: libexif/canon/mnote-canon-entry.c:371 libexif/canon/mnote-canon-entry.c:373
+#: libexif/canon/mnote-canon-entry.c:584 libexif/canon/mnote-canon-entry.c:684
+#: libexif/fuji/mnote-fuji-entry.c:70 libexif/fuji/mnote-fuji-entry.c:103
+#: libexif/fuji/mnote-fuji-entry.c:107 libexif/fuji/mnote-fuji-entry.c:115
+#: libexif/fuji/mnote-fuji-entry.c:142
+#: libexif/olympus/mnote-olympus-entry.c:181
+#: libexif/olympus/mnote-olympus-entry.c:189
+#: libexif/olympus/mnote-olympus-entry.c:254
+#: libexif/olympus/mnote-olympus-entry.c:538
+#: libexif/olympus/mnote-olympus-entry.c:555
+#: libexif/pentax/mnote-pentax-entry.c:195
+#: libexif/pentax/mnote-pentax-entry.c:260
+msgid "Off"
+msgstr "Вимкн."
+
+#: libexif/canon/mnote-canon-entry.c:82 libexif/canon/mnote-canon-entry.c:165
+#: libexif/canon/mnote-canon-entry.c:178 libexif/canon/mnote-canon-entry.c:329
+#: libexif/canon/mnote-canon-entry.c:401 libexif/fuji/mnote-fuji-entry.c:73
+#: libexif/fuji/mnote-fuji-entry.c:101 libexif/fuji/mnote-fuji-entry.c:111
+#: libexif/fuji/mnote-fuji-entry.c:119
+#: libexif/olympus/mnote-olympus-entry.c:134
+#: libexif/olympus/mnote-olympus-entry.c:186
+#: libexif/olympus/mnote-olympus-entry.c:202
+#: libexif/olympus/mnote-olympus-entry.c:247
+#: libexif/pentax/mnote-pentax-entry.c:77
+#: libexif/pentax/mnote-pentax-entry.c:88
+#: libexif/pentax/mnote-pentax-entry.c:91
+#: libexif/pentax/mnote-pentax-entry.c:97
+#: libexif/pentax/mnote-pentax-entry.c:131
+#: libexif/pentax/mnote-pentax-entry.c:229
+#: libexif/pentax/mnote-pentax-entry.c:245
+#: libexif/pentax/mnote-pentax-entry.c:290
+msgid "Auto"
+msgstr "Авто"
+
+#: libexif/canon/mnote-canon-entry.c:83 libexif/canon/mnote-canon-entry.c:303
+#: libexif/canon/mnote-canon-entry.c:348 libexif/canon/mnote-canon-entry.c:362
+#: libexif/canon/mnote-canon-entry.c:372 libexif/fuji/mnote-fuji-entry.c:102
+#: libexif/fuji/mnote-fuji-entry.c:108 libexif/fuji/mnote-fuji-entry.c:116
+#: libexif/fuji/mnote-fuji-entry.c:143
+#: libexif/olympus/mnote-olympus-entry.c:182
+#: libexif/olympus/mnote-olympus-entry.c:541
+#: libexif/olympus/mnote-olympus-entry.c:558
+#: libexif/pentax/mnote-pentax-entry.c:198
+#: libexif/pentax/mnote-pentax-entry.c:261
+msgid "On"
+msgstr "Увімкн."
+
+#: libexif/canon/mnote-canon-entry.c:84 libexif/fuji/mnote-fuji-entry.c:104
+#: libexif/olympus/mnote-olympus-entry.c:187
+#: libexif/pentax/mnote-pentax-entry.c:94
+msgid "Red-eye reduction"
+msgstr "Коригування ефекту «Червоних очей»"
+
+#: libexif/canon/mnote-canon-entry.c:85
+msgid "Slow synchro"
+msgstr "Повільна синхронізація"
+
+#: libexif/canon/mnote-canon-entry.c:86
+msgid "Auto, red-eye reduction"
+msgstr "Авто, усування «червоних очей»"
+
+#: libexif/canon/mnote-canon-entry.c:87
+#: libexif/pentax/mnote-pentax-entry.c:200
+msgid "On, red-eye reduction"
+msgstr "Увімкнено, усування «червоних очей»"
+
+#: libexif/canon/mnote-canon-entry.c:88
+msgid "External flash"
+msgstr "Зовнішній спалах"
+
+#: libexif/canon/mnote-canon-entry.c:89 libexif/canon/mnote-canon-entry.c:99
+#: libexif/canon/mnote-canon-entry.c:295
+msgid "Single"
+msgstr "Поодинокі"
+
+#: libexif/canon/mnote-canon-entry.c:90 libexif/canon/mnote-canon-entry.c:100
+#: libexif/canon/mnote-canon-entry.c:296
+msgid "Continuous"
+msgstr "Неперервне"
+
+#: libexif/canon/mnote-canon-entry.c:91
+msgid "Movie"
+msgstr "Відео"
+
+#: libexif/canon/mnote-canon-entry.c:92
+msgid "Continuous, speed priority"
+msgstr "Неперервне з перевагою швидкості"
+
+#: libexif/canon/mnote-canon-entry.c:93
+msgid "Continuous, low"
+msgstr "Неперервне, низька"
+
+#: libexif/canon/mnote-canon-entry.c:94
+msgid "Continuous, high"
+msgstr "Неперервна, висока"
+
+#: libexif/canon/mnote-canon-entry.c:95
+msgid "One-shot AF"
+msgstr "Однознімкове АФ"
+
+#: libexif/canon/mnote-canon-entry.c:96
+msgid "AI servo AF"
+msgstr "ШІ-серво АФ"
+
+#: libexif/canon/mnote-canon-entry.c:97
+msgid "AI focus AF"
+msgstr "ШІ-фокус АФ"
+
+#: libexif/canon/mnote-canon-entry.c:98 libexif/canon/mnote-canon-entry.c:101
+msgid "Manual focus"
+msgstr "Фокусування вручну"
+
+#: libexif/canon/mnote-canon-entry.c:102 libexif/canon/mnote-canon-entry.c:130
+#: libexif/canon/mnote-canon-entry.c:185
+#: libexif/pentax/mnote-pentax-entry.c:212
+msgid "Pan focus"
+msgstr "Панорамне фокусування"
+
+#: libexif/canon/mnote-canon-entry.c:103
+msgid "JPEG"
+msgstr "JPEG"
+
+#: libexif/canon/mnote-canon-entry.c:104
+msgid "CRW+THM"
+msgstr "CRW+THM"
+
+#: libexif/canon/mnote-canon-entry.c:105
+msgid "AVI+THM"
+msgstr "AVI+THM"
+
+#: libexif/canon/mnote-canon-entry.c:106
+msgid "TIF"
+msgstr "TIF"
+
+#: libexif/canon/mnote-canon-entry.c:107
+msgid "TIF+JPEG"
+msgstr "TIF+JPEG"
+
+#: libexif/canon/mnote-canon-entry.c:108
+msgid "CR2"
+msgstr "CR2"
+
+#: libexif/canon/mnote-canon-entry.c:109
+msgid "CR2+JPEG"
+msgstr "CR2+JPEG"
+
+#: libexif/canon/mnote-canon-entry.c:110
+msgid "Large"
+msgstr "Великий"
+
+#: libexif/canon/mnote-canon-entry.c:111
+msgid "Medium"
+msgstr "Середній"
+
+#: libexif/canon/mnote-canon-entry.c:112
+msgid "Small"
+msgstr "Малий"
+
+#: libexif/canon/mnote-canon-entry.c:113
+msgid "Medium 1"
+msgstr "Середній 1"
+
+#: libexif/canon/mnote-canon-entry.c:114
+msgid "Medium 2"
+msgstr "Середній 2"
+
+#: libexif/canon/mnote-canon-entry.c:115
+msgid "Medium 3"
+msgstr "Середній 3"
+
+#: libexif/canon/mnote-canon-entry.c:116
+msgid "Postcard"
+msgstr "Поштова картка"
+
+#: libexif/canon/mnote-canon-entry.c:117
+msgid "Widescreen"
+msgstr "Широкоекранний"
+
+#: libexif/canon/mnote-canon-entry.c:118
+msgid "Full auto"
+msgstr "Повна автоматика"
+
+#: libexif/canon/mnote-canon-entry.c:119 libexif/canon/mnote-canon-entry.c:177
+#: libexif/canon/mnote-canon-entry.c:199 libexif/canon/mnote-canon-entry.c:286
+#: libexif/canon/mnote-canon-entry.c:393 libexif/exif-entry.c:770
+#: libexif/fuji/mnote-fuji-entry.c:112
+#: libexif/olympus/mnote-olympus-entry.c:93
+#: libexif/olympus/mnote-olympus-entry.c:203
+#: libexif/pentax/mnote-pentax-entry.c:79
+#: libexif/pentax/mnote-pentax-entry.c:102
+#: libexif/pentax/mnote-pentax-entry.c:133
+#: libexif/pentax/mnote-pentax-entry.c:165
+#: libexif/pentax/mnote-pentax-entry.c:211
+#: libexif/pentax/mnote-pentax-entry.c:250
+msgid "Manual"
+msgstr "Вручну"
+
+#: libexif/canon/mnote-canon-entry.c:120 libexif/canon/mnote-canon-entry.c:431
+#: libexif/exif-entry.c:697 libexif/exif-entry.c:781
+#: libexif/fuji/mnote-fuji-entry.c:121 libexif/pentax/mnote-pentax-entry.c:167
+#: libexif/pentax/mnote-pentax-entry.c:301
+msgid "Landscape"
+msgstr "Альбомна"
+
+#: libexif/canon/mnote-canon-entry.c:121
+msgid "Fast shutter"
+msgstr "Швидкий затвор"
+
+#: libexif/canon/mnote-canon-entry.c:122
+msgid "Slow shutter"
+msgstr "Повільний затвор"
+
+#: libexif/canon/mnote-canon-entry.c:123 libexif/fuji/mnote-fuji-entry.c:123
+#: libexif/olympus/mnote-olympus-entry.c:257
+msgid "Night"
+msgstr "Ніч"
+
+#: libexif/canon/mnote-canon-entry.c:124
+msgid "Grayscale"
+msgstr "Тони сірого"
+
+#: libexif/canon/mnote-canon-entry.c:125 libexif/canon/mnote-canon-entry.c:309
+#: libexif/pentax/mnote-pentax-entry.c:128
+msgid "Sepia"
+msgstr "Сепія"
+
+#: libexif/canon/mnote-canon-entry.c:126 libexif/canon/mnote-canon-entry.c:430
+#: libexif/exif-entry.c:697 libexif/exif-entry.c:779
+#: libexif/fuji/mnote-fuji-entry.c:120 libexif/pentax/mnote-pentax-entry.c:166
+#: libexif/pentax/mnote-pentax-entry.c:291
+#: libexif/pentax/mnote-pentax-entry.c:294
+#: libexif/pentax/mnote-pentax-entry.c:300
+msgid "Portrait"
+msgstr "Книжкова"
+
+#: libexif/canon/mnote-canon-entry.c:127 libexif/fuji/mnote-fuji-entry.c:122
+msgid "Sports"
+msgstr "Спорт"
+
+#: libexif/canon/mnote-canon-entry.c:129 libexif/canon/mnote-canon-entry.c:310
+#: libexif/canon/mnote-canon-entry.c:336 libexif/canon/mnote-canon-entry.c:408
+#: libexif/fuji/mnote-fuji-entry.c:89 libexif/pentax/mnote-pentax-entry.c:127
+msgid "Black & white"
+msgstr "Чорно-біле"
+
+#: libexif/canon/mnote-canon-entry.c:131 libexif/canon/mnote-canon-entry.c:306
+msgid "Vivid"
+msgstr "Чіткість"
+
+#: libexif/canon/mnote-canon-entry.c:132 libexif/canon/mnote-canon-entry.c:307
+#: libexif/canon/mnote-canon-entry.c:432
+msgid "Neutral"
+msgstr "Нейтральне"
+
+#: libexif/canon/mnote-canon-entry.c:133
+#: libexif/pentax/mnote-pentax-entry.c:93
+msgid "Flash off"
+msgstr "Вимкнений спалах"
+
+#: libexif/canon/mnote-canon-entry.c:134
+msgid "Long shutter"
+msgstr "Повільна зйомка"
+
+#: libexif/canon/mnote-canon-entry.c:135 libexif/canon/mnote-canon-entry.c:186
+#: libexif/olympus/mnote-olympus-entry.c:174
+msgid "Super macro"
+msgstr "Надзбільшення"
+
+#: libexif/canon/mnote-canon-entry.c:136
+msgid "Foliage"
+msgstr "Листя"
+
+#: libexif/canon/mnote-canon-entry.c:137
+msgid "Indoor"
+msgstr "У приміщенні"
+
+#: libexif/canon/mnote-canon-entry.c:138 libexif/fuji/mnote-fuji-entry.c:135
+#: libexif/pentax/mnote-pentax-entry.c:175
+msgid "Fireworks"
+msgstr "Феєрверк"
+
+#: libexif/canon/mnote-canon-entry.c:139 libexif/fuji/mnote-fuji-entry.c:133
+msgid "Beach"
+msgstr "Пляж"
+
+#: libexif/canon/mnote-canon-entry.c:140 libexif/canon/mnote-canon-entry.c:345
+#: libexif/canon/mnote-canon-entry.c:417 libexif/fuji/mnote-fuji-entry.c:136
+#: libexif/pentax/mnote-pentax-entry.c:187
+#: libexif/pentax/mnote-pentax-entry.c:292
+#: libexif/pentax/mnote-pentax-entry.c:298
+msgid "Underwater"
+msgstr "Під водою"
+
+#: libexif/canon/mnote-canon-entry.c:141 libexif/fuji/mnote-fuji-entry.c:134
+msgid "Snow"
+msgstr "Сніг"
+
+#: libexif/canon/mnote-canon-entry.c:142
+msgid "Kids & pets"
+msgstr "Діти і домашні улюбленці"
+
+#: libexif/canon/mnote-canon-entry.c:143
+msgid "Night snapshot"
+msgstr "Нічний знімок"
+
+#: libexif/canon/mnote-canon-entry.c:144
+msgid "Digital macro"
+msgstr "Цифрове збільшення"
+
+#: libexif/canon/mnote-canon-entry.c:145
+msgid "My colors"
+msgstr "Мої кольори"
+
+#: libexif/canon/mnote-canon-entry.c:146
+msgid "Still image"
+msgstr "Статична картинка"
+
+#: libexif/canon/mnote-canon-entry.c:147
+msgid "Color accent"
+msgstr "Акцент на кольорі"
+
+#: libexif/canon/mnote-canon-entry.c:148
+msgid "Color swap"
+msgstr "Заміна кольорів"
+
+#: libexif/canon/mnote-canon-entry.c:149
+msgid "Aquarium"
+msgstr "Акваріум"
+
+#: libexif/canon/mnote-canon-entry.c:150
+msgid "ISO 3200"
+msgstr "ISO 3200"
+
+#: libexif/canon/mnote-canon-entry.c:151 libexif/canon/mnote-canon-entry.c:349
+#: libexif/canon/mnote-canon-entry.c:366 libexif/canon/mnote-canon-entry.c:418
+#: libexif/olympus/mnote-olympus-entry.c:192
+#: libexif/olympus/mnote-olympus-entry.c:229
+#: libexif/olympus/mnote-olympus-entry.c:458
+#: libexif/pentax/mnote-pentax-entry.c:242
+msgid "None"
+msgstr "Немає"
+
+#: libexif/canon/mnote-canon-entry.c:152
+msgid "2x"
+msgstr "2x"
+
+#: libexif/canon/mnote-canon-entry.c:153
+msgid "4x"
+msgstr "4x"
+
+#: libexif/canon/mnote-canon-entry.c:154 libexif/exif-entry.c:728
+#: libexif/exif-entry.c:758
+msgid "Other"
+msgstr "Інше"
+
+#: libexif/canon/mnote-canon-entry.c:156 libexif/canon/mnote-canon-entry.c:159
+#: libexif/canon/mnote-canon-entry.c:162 libexif/canon/mnote-canon-entry.c:399
+#: libexif/fuji/mnote-fuji-entry.c:86 libexif/pentax/mnote-pentax-entry.c:112
+#: libexif/pentax/mnote-pentax-entry.c:117
+msgid "High"
+msgstr "Висока"
+
+#: libexif/canon/mnote-canon-entry.c:157 libexif/canon/mnote-canon-entry.c:160
+#: libexif/canon/mnote-canon-entry.c:163 libexif/canon/mnote-canon-entry.c:397
+#: libexif/pentax/mnote-pentax-entry.c:111
+#: libexif/pentax/mnote-pentax-entry.c:116
+msgid "Low"
+msgstr "Низький"
+
+#: libexif/canon/mnote-canon-entry.c:164
+msgid "Auto high"
+msgstr "Автовисоке"
+
+#: libexif/canon/mnote-canon-entry.c:166
+msgid "50"
+msgstr "50"
+
+#: libexif/canon/mnote-canon-entry.c:167
+#: libexif/pentax/mnote-pentax-entry.c:120
+#: libexif/pentax/mnote-pentax-entry.c:122
+msgid "100"
+msgstr "100"
+
+#: libexif/canon/mnote-canon-entry.c:168
+#: libexif/pentax/mnote-pentax-entry.c:121
+#: libexif/pentax/mnote-pentax-entry.c:123
+msgid "200"
+msgstr "200"
+
+#: libexif/canon/mnote-canon-entry.c:169
+msgid "400"
+msgstr "400"
+
+#: libexif/canon/mnote-canon-entry.c:170
+msgid "800"
+msgstr "800"
+
+#: libexif/canon/mnote-canon-entry.c:171
+msgid "Default"
+msgstr "Типовий"
+
+#: libexif/canon/mnote-canon-entry.c:172 libexif/exif-entry.c:724
+msgid "Spot"
+msgstr "Пляма"
+
+#: libexif/canon/mnote-canon-entry.c:173 libexif/exif-entry.c:722
+msgid "Average"
+msgstr "Посередньо"
+
+#: libexif/canon/mnote-canon-entry.c:174
+msgid "Evaluative"
+msgstr "Оціночний"
+
+#: libexif/canon/mnote-canon-entry.c:175 libexif/exif-entry.c:727
+msgid "Partial"
+msgstr "Частковий"
+
+#: libexif/canon/mnote-canon-entry.c:176 libexif/exif-entry.c:723
+msgid "Center-weighted average"
+msgstr "Середній відносно центру"
+
+#: libexif/canon/mnote-canon-entry.c:179
+msgid "Not known"
+msgstr "Невідомо"
+
+#: libexif/canon/mnote-canon-entry.c:181
+msgid "Very close"
+msgstr "Дуже близько"
+
+#: libexif/canon/mnote-canon-entry.c:182 libexif/exif-entry.c:833
+msgid "Close"
+msgstr "Закрити"
+
+#: libexif/canon/mnote-canon-entry.c:183
+msgid "Middle range"
+msgstr "Середній діапазон"
+
+#: libexif/canon/mnote-canon-entry.c:184
+msgid "Far range"
+msgstr "Дальній діапазон"
+
+#: libexif/canon/mnote-canon-entry.c:187
+#: libexif/pentax/mnote-pentax-entry.c:210
+msgid "Infinity"
+msgstr "Нескінченість"
+
+#: libexif/canon/mnote-canon-entry.c:188
+msgid "Manual AF point selection"
+msgstr "Вибір точки АФ вручну"
+
+#: libexif/canon/mnote-canon-entry.c:189 libexif/canon/mnote-canon-entry.c:350
+msgid "None (MF)"
+msgstr "Немає (MF)"
+
+#: libexif/canon/mnote-canon-entry.c:190
+msgid "Auto-selected"
+msgstr "Автовибір"
+
+#: libexif/canon/mnote-canon-entry.c:191 libexif/canon/mnote-canon-entry.c:351
+#: libexif/pentax/mnote-pentax-entry.c:224
+#: libexif/pentax/mnote-pentax-entry.c:238
+msgid "Right"
+msgstr "Стрілка праворуч"
+
+#: libexif/canon/mnote-canon-entry.c:192 libexif/canon/mnote-canon-entry.c:352
+#: libexif/pentax/mnote-pentax-entry.c:222
+#: libexif/pentax/mnote-pentax-entry.c:237
+msgid "Center"
+msgstr "По центру"
+
+#: libexif/canon/mnote-canon-entry.c:193 libexif/canon/mnote-canon-entry.c:354
+#: libexif/pentax/mnote-pentax-entry.c:220
+#: libexif/pentax/mnote-pentax-entry.c:236
+msgid "Left"
+msgstr "Стрілка ліворуч"
+
+#: libexif/canon/mnote-canon-entry.c:194
+msgid "Auto AF point selection"
+msgstr "Автовибір точки АФ"
+
+#: libexif/canon/mnote-canon-entry.c:195
+msgid "Easy shooting"
+msgstr "Просте знімання"
+
+#: libexif/canon/mnote-canon-entry.c:196
+#: libexif/pentax/mnote-pentax-entry.c:163
+msgid "Program"
+msgstr "Програма"
+
+#: libexif/canon/mnote-canon-entry.c:197
+msgid "Tv-priority"
+msgstr "Tv-пріоритет"
+
+#: libexif/canon/mnote-canon-entry.c:198
+msgid "Av-priority"
+msgstr "Av-пріоритет"
+
+#: libexif/canon/mnote-canon-entry.c:200
+msgid "A-DEP"
+msgstr "A-DEP"
+
+#: libexif/canon/mnote-canon-entry.c:201
+msgid "M-DEP"
+msgstr "M-DEP"
+
+#: libexif/canon/mnote-canon-entry.c:202
+msgid "Canon EF 50mm f/1.8"
+msgstr "Canon EF 50 мм f/1.8"
+
+#: libexif/canon/mnote-canon-entry.c:203
+msgid "Canon EF 28mm f/2.8"
+msgstr "Canon EF 28 мм f/2.8"
+
+#: libexif/canon/mnote-canon-entry.c:204
+msgid "Sigma UC Zoom 35-135mm f/4-5.6"
+msgstr "Sigma UC Zoom 35-135 мм f/4-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:205
+msgid "Tokina AF193-2 19-35mm f/3.5-4.5"
+msgstr "Tokina AF193-2 19-35 мм f/3.5-4.5"
+
+#: libexif/canon/mnote-canon-entry.c:206
+msgid "Canon EF 100-300mm F5.6L"
+msgstr "Canon EF 100-300 мм F5.6L"
+
+#: libexif/canon/mnote-canon-entry.c:207
+msgid "Sigma 50mm f/2.8 EX or 28mm f/1.8"
+msgstr "Sigma 50 мм f/2.8 EX або 28 мм f/1.8"
+
+#: libexif/canon/mnote-canon-entry.c:208
+msgid "Canon EF 35mm f/2"
+msgstr "Canon EF 35 мм f/2"
+
+#: libexif/canon/mnote-canon-entry.c:209
+msgid "Canon EF 15mm f/2.8"
+msgstr "Canon EF 15 мм f/2.8"
+
+#: libexif/canon/mnote-canon-entry.c:210
+msgid "Canon EF 80-200mm f/2.8L"
+msgstr "Canon EF 80-200 мм f/2.8L"
+
+#: libexif/canon/mnote-canon-entry.c:211
+msgid "Tokina AT-X280AF PRO 28-80mm F2.8 Aspherical"
+msgstr "Tokina AT-X280AF PRO 28-80 мм F2.8 асферичний"
+
+#: libexif/canon/mnote-canon-entry.c:212
+msgid "Cosina 100mm f/3.5 Macro AF"
+msgstr "Cosina 100 мм f/3.5 Macro АФ"
+
+#: libexif/canon/mnote-canon-entry.c:213
+msgid "Tamron AF Aspherical 28-200mm f/3.8-5.6"
+msgstr "Tamron АФ асферичний 28-200 мм f/3.8-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:214
+msgid "Canon EF 50mm f/1.8 MkII"
+msgstr "Canon EF 50 мм f/1.8 MkII"
+
+#: libexif/canon/mnote-canon-entry.c:215
+msgid "Tamron SP AF 300mm f/2.8 LD IF"
+msgstr "Tamron SP АФ 300 мм f/2.8 LD IF"
+
+#: libexif/canon/mnote-canon-entry.c:216
+msgid "Canon EF 24mm f/2.8 or Sigma 15mm f/2.8 EX Fisheye"
+msgstr "Canon EF 24 мм f/2.8 або Sigma 15 мм f/2.8 EX риб'яче око"
+
+#: libexif/canon/mnote-canon-entry.c:217
+msgid "Canon EF 35-80mm f/4-5.6"
+msgstr "Canon EF 35-80 мм f/4-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:218
+msgid "Canon EF 75-300mm f/4-5.6"
+msgstr "Canon EF 75-300 мм f/4-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:219
+msgid "Canon EF 28-80mm f/3.5-5.6"
+msgstr "Canon EF 28-80 мм f/3.5-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:220
+msgid "Canon EF 28-105mm f/4-5.6"
+msgstr "Canon EF 28-105 мм f/4-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:221
+msgid "Canon EF-S 18-55mm f/3.5-5.6"
+msgstr "Canon EF-S 18-55 мм f/3.5-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:222
+msgid "Canon EF-S 18-55mm f/3.5-5.6 IS II"
+msgstr "Canon EF-S 18-55 мм f/3.5-5.6 IS II"
+
+#: libexif/canon/mnote-canon-entry.c:223
+msgid "Canon MP-E 65mm f/2.8 1-5x Macro Photo"
+msgstr "Canon MP-E 65 мм f/2.8 1-5x макрофото"
+
+#: libexif/canon/mnote-canon-entry.c:224
+msgid "Canon TS-E 24mm f/3.5L"
+msgstr "Canon TS-E 24 мм f/3.5L"
+
+#: libexif/canon/mnote-canon-entry.c:225
+msgid "Canon TS-E 45mm f/2.8"
+msgstr "Canon TS-E 45 мм f/2.8"
+
+#: libexif/canon/mnote-canon-entry.c:226
+msgid "Canon TS-E 90mm f/2.8"
+msgstr "Canon TS-E 90 мм f/2.8"
+
+#: libexif/canon/mnote-canon-entry.c:227
+msgid "Canon EF 50mm f/1.0L"
+msgstr "Canon EF 50 мм f/1.0L"
+
+#: libexif/canon/mnote-canon-entry.c:228
+msgid "Sigma 17-35mm f2.8-4 EX Aspherical HSM"
+msgstr "Sigma 17-35 мм f2.8-4 EX асферичний HSM"
+
+#: libexif/canon/mnote-canon-entry.c:229
+msgid "Canon EF 600mm f/4L IS"
+msgstr "Canon EF 600 мм f/4L IS"
+
+#: libexif/canon/mnote-canon-entry.c:230
+msgid "Canon EF 200mm f/1.8L"
+msgstr "Canon EF 200 мм f/1.8L"
+
+#: libexif/canon/mnote-canon-entry.c:231
+msgid "Canon EF 300mm f/2.8L"
+msgstr "Canon EF 300 мм f/2.8L"
+
+#: libexif/canon/mnote-canon-entry.c:232
+msgid "Canon EF 85mm f/1.2L"
+msgstr "Canon EF 85 мм f/1.2L"
+
+#: libexif/canon/mnote-canon-entry.c:233
+msgid "Canon EF 400mm f/2.8L"
+msgstr "Canon EF 400 мм f/2.8L"
+
+#: libexif/canon/mnote-canon-entry.c:234
+msgid "Canon EF 500mm f/4.5L"
+msgstr "Canon EF 500 мм f/4.5L"
+
+#: libexif/canon/mnote-canon-entry.c:235
+msgid "Canon EF 300mm f/2.8L IS"
+msgstr "Canon EF 300 мм f/2.8L IS"
+
+#: libexif/canon/mnote-canon-entry.c:236
+msgid "Canon EF 500mm f/4L IS"
+msgstr "Canon EF 500 мм f/4L IS"
+
+#: libexif/canon/mnote-canon-entry.c:237
+msgid "Canon EF 100mm f/2"
+msgstr "Canon EF 100 мм f/2"
+
+#: libexif/canon/mnote-canon-entry.c:238
+msgid "Sigma 20mm EX f/1.8"
+msgstr "Sigma 20 мм EX f/1.8"
+
+#: libexif/canon/mnote-canon-entry.c:239
+msgid "Canon EF 200mm f/2.8L"
+msgstr "Canon EF 200 мм f/2.8L"
+
+#: libexif/canon/mnote-canon-entry.c:240
+msgid "Sigma 10-20mm F4-5.6 or 12-24mm f/4.5-5.6 or 14mm f/2.8"
+msgstr "Sigma 10-20 мм F4-5.6, або 12-24 мм f/4.5-5.6, або 14 мм f/2.8"
+
+#: libexif/canon/mnote-canon-entry.c:241
+msgid "Canon EF 35-350mm f/3.5-5.6L"
+msgstr "Canon EF 35-350 мм f/3.5-5.6L"
+
+#: libexif/canon/mnote-canon-entry.c:242
+msgid "Canon EF 85mm f/1.8 USM"
+msgstr "Canon EF 85 мм f/1.8 USM"
+
+#: libexif/canon/mnote-canon-entry.c:243
+msgid "Canon EF 28-105mm f/3.5-4.5 USM"
+msgstr "Canon EF 28-105 мм f/3.5-4.5 USM"
+
+#: libexif/canon/mnote-canon-entry.c:244
+msgid "Canon EF 20-35mm f/3.5-4.5 USM"
+msgstr "Canon EF 20-35 мм f/3.5-4.5 USM"
+
+#: libexif/canon/mnote-canon-entry.c:245
+msgid "Canon EF 28-70mm f/2.8L or Sigma 24-70mm EX f/2.8"
+msgstr "Canon EF 28-70 мм f/2.8L або Sigma 24-70 мм EX f/2.8"
+
+#: libexif/canon/mnote-canon-entry.c:246
+msgid "Canon EF 70-200mm f/2.8 L"
+msgstr "Canon EF 70-200 мм f/2.8L"
+
+#: libexif/canon/mnote-canon-entry.c:247
+msgid "Canon EF 70-200mm f/2.8 L + x1.4"
+msgstr "Canon EF 70-200 мм f/2.8 L + x1.4"
+
+#: libexif/canon/mnote-canon-entry.c:248
+msgid "Canon EF 70-200mm f/2.8 L + x2"
+msgstr "Canon EF 70-200 мм f/2.8 L + x2"
+
+#: libexif/canon/mnote-canon-entry.c:249
+msgid "Canon EF 28mm f/1.8 USM"
+msgstr "Canon EF 28 мм f/1.8 USM"
+
+#: libexif/canon/mnote-canon-entry.c:250
+msgid "Sigma 15-30mm f/3.5-4.5 EX DG Aspherical"
+msgstr "Sigma 15-30 мм f/3.5-4.5 EX DG асферичний"
+
+#: libexif/canon/mnote-canon-entry.c:251
+msgid "Canon EF 200mm f/2.8L II"
+msgstr "Canon EF 200 мм f/2.8L II"
+
+#: libexif/canon/mnote-canon-entry.c:252
+msgid "Canon EF 180mm Macro f/3.5L or Sigma 180mm EX HSM Macro f/3.5"
+msgstr "Canon EF 180 мм макро f/3.5L або Sigma 180mm EX HSM макро f/3.5"
+
+#: libexif/canon/mnote-canon-entry.c:253
+msgid "Canon EF 135mm f/2L"
+msgstr "Canon EF 135 мм f/2L"
+
+#: libexif/canon/mnote-canon-entry.c:254
+msgid "Canon EF 24-85mm f/3.5-4.5 USM"
+msgstr "Canon EF 24-85 мм f/3.5-4.5 USM"
+
+#: libexif/canon/mnote-canon-entry.c:255
+msgid "Canon EF 300mm f/4L IS"
+msgstr "Canon EF 300 мм f/4L IS"
+
+#: libexif/canon/mnote-canon-entry.c:256
+msgid "Canon EF 28-135mm f/3.5-5.6 IS"
+msgstr "Canon EF 28-135 мм f/3.5-5.6 IS"
+
+#: libexif/canon/mnote-canon-entry.c:257
+msgid "Canon EF 35mm f/1.4L"
+msgstr "Canon EF 35 мм f/1.4L"
+
+#: libexif/canon/mnote-canon-entry.c:258
+msgid "Canon EF 100-400mm f/4.5-5.6L IS + x1.4"
+msgstr "Canon EF 100-400 мм f/4.5-5.6L IS + x1.4"
+
+#: libexif/canon/mnote-canon-entry.c:259
+msgid "Canon EF 100-400mm f/4.5-5.6L IS + x2"
+msgstr "Canon EF 100-400 мм f/4.5-5.6L IS + x2"
+
+#: libexif/canon/mnote-canon-entry.c:260
+msgid "Canon EF 100-400mm f/4.5-5.6L IS"
+msgstr "Canon EF 100-400 мм f/4.5-5.6L IS"
+
+#: libexif/canon/mnote-canon-entry.c:261
+msgid "Canon EF 400mm f/2.8L + x2"
+msgstr "Canon EF 400 мм f/2.8L + x2"
+
+#: libexif/canon/mnote-canon-entry.c:262
+msgid "Canon EF 70-200mm f/4L"
+msgstr "Canon EF 70-200 мм f/4L"
+
+#: libexif/canon/mnote-canon-entry.c:263
+msgid "Canon EF 100mm f/2.8 Macro"
+msgstr "Canon EF 100 мм f/2.8 Macro"
+
+#: libexif/canon/mnote-canon-entry.c:264
+msgid "Canon EF 400mm f/4 DO IS"
+msgstr "Canon EF 400 мм f/4 DO IS"
+
+#: libexif/canon/mnote-canon-entry.c:265
+msgid "Canon EF 75-300mm f/4-5.6 IS"
+msgstr "Canon EF 75-300 мм f/4-5.6 IS"
+
+#: libexif/canon/mnote-canon-entry.c:266
+msgid "Canon EF 50mm f/1.4"
+msgstr "Canon EF 50 мм f/1.4"
+
+#: libexif/canon/mnote-canon-entry.c:267
+msgid "Canon EF 28-80 f/3.5-5.6 USM IV"
+msgstr "Canon EF 28-80 f/3.5-5.6 USM IV"
+
+#: libexif/canon/mnote-canon-entry.c:268
+msgid "Canon EF 28-200mm f/3.5-5.6"
+msgstr "Canon EF 28-200 мм f/3.5-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:269
+msgid "Canon EF 90-300mm f/4.5-5.6"
+msgstr "Canon EF 90-300 мм f/4.5-5.6"
+
+#: libexif/canon/mnote-canon-entry.c:270
+msgid "Canon EF-S 18-55mm f/3.5-4.5 USM"
+msgstr "Canon EF-S 18-55 мм f/3.5-4.5 USM"
+
+#: libexif/canon/mnote-canon-entry.c:271
+msgid "Canon EF 70-200mm f/2.8L IS USM"
+msgstr "Canon EF 70-200 мм f/2.8L IS USM"
+
+#: libexif/canon/mnote-canon-entry.c:272
+msgid "Canon EF 70-200mm f/2.8L IS USM + x1.4"
+msgstr "Canon EF 70-200 мм f/2.8L IS USM + x1.4"
+
+#: libexif/canon/mnote-canon-entry.c:273
+msgid "Canon EF 70-200mm f/2.8L IS USM + x2"
+msgstr "Canon EF 70-200 мм f/2.8L IS USM + x2"
+
+#: libexif/canon/mnote-canon-entry.c:274
+msgid "Canon EF 16-35mm f/2.8L"
+msgstr "Canon EF 16-35 мм f/2.8L"
+
+#: libexif/canon/mnote-canon-entry.c:275
+msgid "Canon EF 24-70mm f/2.8L"
+msgstr "Canon EF 24-70 мм f/2.8L"
+
+#: libexif/canon/mnote-canon-entry.c:276
+msgid "Canon EF 17-40mm f/4L"
+msgstr "Canon EF 17-40 мм f/4L"
+
+#: libexif/canon/mnote-canon-entry.c:277
+msgid "Canon EF 70-300mm f/4.5-5.6 DO IS USM"
+msgstr "Canon EF 70-300 мм f/4.5-5.6 DO IS USM"
+
+#: libexif/canon/mnote-canon-entry.c:278
+msgid "Canon EF-S 17-85mm f4-5.6 IS USM"
+msgstr "Canon EF-S 17-85 мм f4-5.6 IS USM"
+
+#: libexif/canon/mnote-canon-entry.c:279
+msgid "Canon EF-S10-22mm F3.5-4.5 USM"
+msgstr "Canon EF-S10-22 мм F3.5-4.5 USM"
+
+#: libexif/canon/mnote-canon-entry.c:280
+msgid "Canon EF-S60mm F2.8 Macro USM"
+msgstr "Canon EF-S60 мм F2.8 Macro USM"
+
+#: libexif/canon/mnote-canon-entry.c:281
+msgid "Canon EF 24-105mm f/4L IS"
+msgstr "Canon EF 24-105 мм f/4L IS"
+
+#: libexif/canon/mnote-canon-entry.c:282
+msgid "Canon EF 70-300mm F4-5.6 IS USM"
+msgstr "Canon EF 70-300 мм F4-5.6 IS USM"
+
+#: libexif/canon/mnote-canon-entry.c:283
+msgid "Canon EF 50mm F1.2L USM"
+msgstr "Canon EF 50 мм F1.2L USM"
+
+#: libexif/canon/mnote-canon-entry.c:284
+msgid "Canon EF 70-200mm f/4L IS USM"
+msgstr "Canon EF 70-200 мм f/4L IS USM"
+
+#: libexif/canon/mnote-canon-entry.c:285
+msgid "Canon EF 70-200mm f/2.8L IS II USM"
+msgstr "Canon EF 70-200 мм f/2.8L IS II USM"
+
+#: libexif/canon/mnote-canon-entry.c:287
+msgid "TTL"
+msgstr "TTL"
+
+#: libexif/canon/mnote-canon-entry.c:288
+msgid "A-TTL"
+msgstr "A-TTL"
+
+#: libexif/canon/mnote-canon-entry.c:289
+msgid "E-TTL"
+msgstr "E-TTL"
+
+#: libexif/canon/mnote-canon-entry.c:290
+msgid "FP sync enabled"
+msgstr "Увімкнено синхронізацію FP"
+
+#: libexif/canon/mnote-canon-entry.c:291
+msgid "2nd-curtain sync used"
+msgstr "Використано синхронізацію із другою шторкою"
+
+#: libexif/canon/mnote-canon-entry.c:292
+msgid "FP sync used"
+msgstr "Використано синхронізацію FP"
+
+#: libexif/canon/mnote-canon-entry.c:293
+#: libexif/olympus/mnote-olympus-entry.c:193
+msgid "Internal"
+msgstr "Внутрішні"
+
+#: libexif/canon/mnote-canon-entry.c:294
+#: libexif/olympus/mnote-olympus-entry.c:194
+msgid "External"
+msgstr "Зовнішній"
+
+#: libexif/canon/mnote-canon-entry.c:297
+msgid "Normal AE"
+msgstr "Звичайна AE"
+
+#: libexif/canon/mnote-canon-entry.c:298
+msgid "Exposure compensation"
+msgstr "Компенсація експозиції"
+
+#: libexif/canon/mnote-canon-entry.c:299
+msgid "AE lock"
+msgstr "Блокування AE"
+
+#: libexif/canon/mnote-canon-entry.c:300
+msgid "AE lock + exposure compensation"
+msgstr "Блокування AE + компенсація експозиції"
+
+#: libexif/canon/mnote-canon-entry.c:301
+msgid "No AE"
+msgstr "Без AE"
+
+#: libexif/canon/mnote-canon-entry.c:304
+msgid "On, shot only"
+msgstr "Увімкн, лише знімок"
+
+#: libexif/canon/mnote-canon-entry.c:308
+msgid "Smooth"
+msgstr "Згладити"
+
+#: libexif/canon/mnote-canon-entry.c:311 libexif/canon/mnote-canon-entry.c:335
+#: libexif/canon/mnote-canon-entry.c:394 libexif/canon/mnote-canon-entry.c:407
+#: libexif/fuji/mnote-fuji-entry.c:81 libexif/pentax/mnote-pentax-entry.c:87
+msgid "Custom"
+msgstr "Нетиповий"
+
+#: libexif/canon/mnote-canon-entry.c:312
+msgid "My color data"
+msgstr "Мої дані кольорів"
+
+#: libexif/canon/mnote-canon-entry.c:314 libexif/canon/mnote-canon-entry.c:376
+#: libexif/pentax/mnote-pentax-entry.c:126
+#: libexif/pentax/mnote-pentax-entry.c:145
+msgid "Full"
+msgstr "На весь екран"
+
+#: libexif/canon/mnote-canon-entry.c:315 libexif/canon/mnote-canon-entry.c:375
+msgid "2/3"
+msgstr "2/3"
+
+#: libexif/canon/mnote-canon-entry.c:316 libexif/canon/mnote-canon-entry.c:374
+msgid "1/3"
+msgstr "1/3"
+
+#: libexif/canon/mnote-canon-entry.c:322
+msgid "Fixed"
+msgstr "Фіксована"
+
+#: libexif/canon/mnote-canon-entry.c:323 libexif/pentax/mnote-pentax-tag.c:44
+msgid "Zoom"
+msgstr "Масштаб"
+
+#: libexif/canon/mnote-canon-entry.c:330
+msgid "Sunny"
+msgstr "Сонячно"
+
+#: libexif/canon/mnote-canon-entry.c:331 libexif/canon/mnote-canon-entry.c:403
+#: libexif/exif-entry.c:745 libexif/fuji/mnote-fuji-entry.c:75
+#: libexif/olympus/mnote-olympus-entry.c:139
+#: libexif/pentax/mnote-pentax-entry.c:255
+msgid "Cloudy"
+msgstr "Хмарно"
+
+#: libexif/canon/mnote-canon-entry.c:332 libexif/canon/mnote-canon-entry.c:404
+#: libexif/exif-entry.c:742 libexif/pentax/mnote-pentax-entry.c:100
+#: libexif/pentax/mnote-pentax-entry.c:249
+msgid "Tungsten"
+msgstr "Лампа розжарювання"
+
+#: libexif/canon/mnote-canon-entry.c:333 libexif/canon/mnote-canon-entry.c:405
+#: libexif/exif-entry.c:741 libexif/pentax/mnote-pentax-entry.c:101
+#: libexif/pentax/mnote-pentax-entry.c:248
+msgid "Fluorescent"
+msgstr "Флуоресцентна лампа"
+
+#: libexif/canon/mnote-canon-entry.c:334 libexif/canon/mnote-canon-entry.c:406
+#: libexif/exif-entry.c:743 libexif/exif-entry.c:795 libexif/exif-tag.c:626
+#: libexif/fuji/mnote-fuji-entry.c:80 libexif/pentax/mnote-pentax-entry.c:254
+msgid "Flash"
+msgstr "Спалах"
+
+#: libexif/canon/mnote-canon-entry.c:337 libexif/canon/mnote-canon-entry.c:409
+#: libexif/exif-entry.c:746 libexif/pentax/mnote-pentax-entry.c:99
+#: libexif/pentax/mnote-pentax-entry.c:247
+msgid "Shade"
+msgstr "Тінь"
+
+#: libexif/canon/mnote-canon-entry.c:338 libexif/canon/mnote-canon-entry.c:410
+msgid "Manual temperature (Kelvin)"
+msgstr "Температура вручну (у Кельвінах)"
+
+#: libexif/canon/mnote-canon-entry.c:339 libexif/canon/mnote-canon-entry.c:411
+msgid "PC set 1"
+msgstr "PC-набір 1"
+
+#: libexif/canon/mnote-canon-entry.c:340 libexif/canon/mnote-canon-entry.c:412
+msgid "PC set 2"
+msgstr "PC-набір 2"
+
+#: libexif/canon/mnote-canon-entry.c:341 libexif/canon/mnote-canon-entry.c:413
+msgid "PC set 3"
+msgstr "PC-набір 3"
+
+#: libexif/canon/mnote-canon-entry.c:342 libexif/canon/mnote-canon-entry.c:414
+#: libexif/exif-entry.c:747 libexif/fuji/mnote-fuji-entry.c:76
+#: libexif/pentax/mnote-pentax-entry.c:251
+msgid "Daylight fluorescent"
+msgstr "Флуоресцентна лампа денного світла"
+
+#: libexif/canon/mnote-canon-entry.c:343 libexif/canon/mnote-canon-entry.c:415
+msgid "Custom 1"
+msgstr "Інше 1"
+
+#: libexif/canon/mnote-canon-entry.c:344 libexif/canon/mnote-canon-entry.c:416
+msgid "Custom 2"
+msgstr "Інше 2"
+
+#: libexif/canon/mnote-canon-entry.c:347 libexif/exif-entry.c:698
+#: libexif/pentax/mnote-pentax-entry.c:78
+#: libexif/pentax/mnote-pentax-entry.c:132
+#: libexif/pentax/mnote-pentax-entry.c:169
+#: libexif/pentax/mnote-pentax-entry.c:295
+msgid "Night scene"
+msgstr "Нічне освітлення"
+
+#: libexif/canon/mnote-canon-entry.c:353
+msgid "Center-right"
+msgstr "По центру праворуч"
+
+#: libexif/canon/mnote-canon-entry.c:355
+msgid "Left-right"
+msgstr "Ліворуч-праворуч"
+
+#: libexif/canon/mnote-canon-entry.c:356
+msgid "Left-center"
+msgstr "Ліворуч-центр"
+
+#: libexif/canon/mnote-canon-entry.c:357
+msgid "All"
+msgstr "Всі"
+
+#: libexif/canon/mnote-canon-entry.c:359
+msgid "On (shot 1)"
+msgstr "Увімкн. (знімок 1)"
+
+#: libexif/canon/mnote-canon-entry.c:360
+msgid "On (shot 2)"
+msgstr "Увімкн. (знімок 2)"
+
+#: libexif/canon/mnote-canon-entry.c:361
+msgid "On (shot 3)"
+msgstr "Увімкн. (знімок 3)"
+
+#: libexif/canon/mnote-canon-entry.c:363
+msgid "EOS high-end"
+msgstr "Високоякісна ЕОС"
+
+#: libexif/canon/mnote-canon-entry.c:364
+msgid "Compact"
+msgstr "Компактний"
+
+#: libexif/canon/mnote-canon-entry.c:365
+msgid "EOS mid-range"
+msgstr "Середньодіапазонна ЕОС"
+
+#: libexif/canon/mnote-canon-entry.c:367
+msgid "Rotate 90 CW"
+msgstr "Обернути на 90° за г. стр."
+
+#: libexif/canon/mnote-canon-entry.c:368
+msgid "Rotate 180"
+msgstr "Обернути на 180°"
+
+#: libexif/canon/mnote-canon-entry.c:369
+msgid "Rotate 270 CW"
+msgstr "Обернути на 270° за г. стр."
+
+#: libexif/canon/mnote-canon-entry.c:370
+msgid "Rotated by software"
+msgstr "Програмне обертання"
+
+#: libexif/canon/mnote-canon-entry.c:382
+#: libexif/olympus/mnote-olympus-entry.c:614
+msgid "Left to right"
+msgstr "Зліва праворуч"
+
+#: libexif/canon/mnote-canon-entry.c:383
+#: libexif/olympus/mnote-olympus-entry.c:617
+msgid "Right to left"
+msgstr "Справа ліворуч"
+
+#: libexif/canon/mnote-canon-entry.c:384
+#: libexif/olympus/mnote-olympus-entry.c:620
+msgid "Bottom to top"
+msgstr "Знизу догори"
+
+#: libexif/canon/mnote-canon-entry.c:385
+#: libexif/olympus/mnote-olympus-entry.c:623
+msgid "Top to bottom"
+msgstr "Згори вниз"
+
+#: libexif/canon/mnote-canon-entry.c:386
+msgid "2x2 matrix (clockwise)"
+msgstr "Матриця 2x2 (за год. стрілкою)"
+
+#: libexif/canon/mnote-canon-entry.c:392 libexif/canon/mnote-canon-entry.c:398
+#: libexif/canon/mnote-canon-entry.c:419 libexif/canon/mnote-canon-entry.c:429
+#: libexif/exif-entry.c:697 libexif/fuji/mnote-fuji-entry.c:84
+#: libexif/fuji/mnote-fuji-entry.c:93 libexif/fuji/mnote-fuji-entry.c:163
+#: libexif/olympus/mnote-olympus-entry.c:230
+msgid "Standard"
+msgstr "Стандартний"
+
+#: libexif/canon/mnote-canon-entry.c:395
+msgid "N/A"
+msgstr "н/п"
+
+#: libexif/canon/mnote-canon-entry.c:396
+msgid "Lowest"
+msgstr "Найнижча"
+
+#: libexif/canon/mnote-canon-entry.c:400
+msgid "Highest"
+msgstr "Найвища"
+
+#: libexif/canon/mnote-canon-entry.c:402 libexif/exif-entry.c:740
+#: libexif/fuji/mnote-fuji-entry.c:74
+#: libexif/olympus/mnote-olympus-entry.c:136
+#: libexif/pentax/mnote-pentax-entry.c:98
+#: libexif/pentax/mnote-pentax-entry.c:246
+msgid "Daylight"
+msgstr "Денне світло"
+
+#: libexif/canon/mnote-canon-entry.c:420
+msgid "Set 1"
+msgstr "Набір 1"
+
+#: libexif/canon/mnote-canon-entry.c:421
+msgid "Set 2"
+msgstr "Набір 2"
+
+#: libexif/canon/mnote-canon-entry.c:422
+msgid "Set 3"
+msgstr "Набір 3"
+
+#: libexif/canon/mnote-canon-entry.c:423
+msgid "User def. 1"
+msgstr "Визн. корист. 1"
+
+#: libexif/canon/mnote-canon-entry.c:424
+msgid "User def. 2"
+msgstr "Визн. корист. 2"
+
+#: libexif/canon/mnote-canon-entry.c:425
+msgid "User def. 3"
+msgstr "Визн. корист. 3"
+
+#: libexif/canon/mnote-canon-entry.c:426
+msgid "External 1"
+msgstr "Зовнішнє 1"
+
+#: libexif/canon/mnote-canon-entry.c:427
+msgid "External 2"
+msgstr "Зовнішнє 2"
+
+#: libexif/canon/mnote-canon-entry.c:428
+msgid "External 3"
+msgstr "Зовнішнє 3"
+
+#: libexif/canon/mnote-canon-entry.c:433
+msgid "Faithful"
+msgstr "Надійний"
+
+#: libexif/canon/mnote-canon-entry.c:434
+#: libexif/olympus/mnote-olympus-entry.c:118
+msgid "Monochrome"
+msgstr "Чорно-біле"
+
+#: libexif/canon/mnote-canon-entry.c:492
+msgid ", "
+msgstr ", "
+
+#: libexif/canon/mnote-canon-entry.c:587 libexif/canon/mnote-canon-entry.c:687
+#, c-format
+msgid "%i (ms)"
+msgstr "%i (мс)"
+
+#: libexif/canon/mnote-canon-entry.c:632
+#, c-format
+msgid "%.2f mm"
+msgstr "%.2f мм"
+
+#: libexif/canon/mnote-canon-entry.c:658
+#, c-format
+msgid "%.2f EV"
+msgstr "%.2f EV"
+
+#: libexif/canon/mnote-canon-entry.c:668 libexif/exif-entry.c:1101
+#, c-format
+msgid "1/%.0f"
+msgstr "1/%.0f"
+
+#: libexif/canon/mnote-canon-entry.c:680
+#, c-format
+msgid "%u mm"
+msgstr "%u мм"
+
+#: libexif/canon/mnote-canon-entry.c:816 libexif/fuji/mnote-fuji-entry.c:303
+#: libexif/pentax/mnote-pentax-entry.c:401
+#: libexif/pentax/mnote-pentax-entry.c:497
+#, c-format
+msgid "%i bytes unknown data"
+msgstr "%i байтів невідомих даних"
+
+#: libexif/canon/mnote-canon-tag.c:35
+msgid "Settings (First Part)"
+msgstr "Параметри (перша частина)"
+
+#: libexif/canon/mnote-canon-tag.c:36 libexif/canon/mnote-canon-tag.c:158
+#: libexif/exif-tag.c:630 libexif/pentax/mnote-pentax-tag.c:88
+msgid "Focal Length"
+msgstr "Фокусна відстань"
+
+#: libexif/canon/mnote-canon-tag.c:37
+msgid "Settings (Second Part)"
+msgstr "Параметри (друга частина)"
+
+#: libexif/canon/mnote-canon-tag.c:38
+#: libexif/olympus/mnote-olympus-entry.c:603
+#: libexif/pentax/mnote-pentax-entry.c:177
+msgid "Panorama"
+msgstr "Панорама"
+
+#: libexif/canon/mnote-canon-tag.c:39
+msgid "Image Type"
+msgstr "Тип зображення"
+
+#: libexif/canon/mnote-canon-tag.c:40 libexif/olympus/mnote-olympus-tag.c:37
+#: libexif/olympus/mnote-olympus-tag.c:145
+msgid "Firmware Version"
+msgstr "Версія мікропрограми"
+
+#: libexif/canon/mnote-canon-tag.c:41
+msgid "Image Number"
+msgstr "Номер зображення"
+
+#: libexif/canon/mnote-canon-tag.c:42
+msgid "Owner Name"
+msgstr "Ім'я власника"
+
+#: libexif/canon/mnote-canon-tag.c:43
+msgid "Color Information"
+msgstr "Дані щодо кольорів"
+
+#: libexif/canon/mnote-canon-tag.c:44 libexif/fuji/mnote-fuji-tag.c:37
+#: libexif/olympus/mnote-olympus-tag.c:82
+#: libexif/olympus/mnote-olympus-tag.c:178
+msgid "Serial Number"
+msgstr "Серійний номер"
+
+#: libexif/canon/mnote-canon-tag.c:45 libexif/pentax/mnote-pentax-tag.c:117
+msgid "Camera Info"
+msgstr "Дані щодо фотоапарата"
+
+#: libexif/canon/mnote-canon-tag.c:46
+msgid "File Length"
+msgstr "Довжина файла"
+
+#: libexif/canon/mnote-canon-tag.c:47
+msgid "Custom Functions"
+msgstr "Функції користувача"
+
+#: libexif/canon/mnote-canon-tag.c:48
+msgid "Model ID"
+msgstr "Ідентифікатор моделі"
+
+#: libexif/canon/mnote-canon-tag.c:49
+msgid "Movie Info"
+msgstr "Дані щодо фільму"
+
+#: libexif/canon/mnote-canon-tag.c:50
+msgid "AF Info"
+msgstr "Дані щодо АФ"
+
+#: libexif/canon/mnote-canon-tag.c:51
+msgid "Thumbnail Valid Area"
+msgstr "Коректна область мініатюри"
+
+#: libexif/canon/mnote-canon-tag.c:52
+msgid "Serial Number Format"
+msgstr "Формат серійного номера"
+
+#: libexif/canon/mnote-canon-tag.c:53
+msgid "Super Macro"
+msgstr "Надзбільшення"
+
+#: libexif/canon/mnote-canon-tag.c:54
+msgid "Date Stamp Mode"
+msgstr "Режим часової позначки"
+
+#: libexif/canon/mnote-canon-tag.c:55
+msgid "My Colors"
+msgstr "Мої кольори"
+
+#: libexif/canon/mnote-canon-tag.c:56
+msgid "Firmware Revision"
+msgstr "Модифікація мікропрограми"
+
+#: libexif/canon/mnote-canon-tag.c:57
+msgid "Categories"
+msgstr "Категорії"
+
+#: libexif/canon/mnote-canon-tag.c:58
+msgid "Face Detect 1"
+msgstr "Виявлення облич 1"
+
+#: libexif/canon/mnote-canon-tag.c:59
+msgid "Face Detect 2"
+msgstr "Виявлення облич 2"
+
+#: libexif/canon/mnote-canon-tag.c:60 libexif/olympus/mnote-olympus-tag.c:121
+msgid "AF Info 2"
+msgstr "Дані щодо АФ 2"
+
+#: libexif/canon/mnote-canon-tag.c:61
+msgid "Contrast Info"
+msgstr "Дані щодо контрастності"
+
+#: libexif/canon/mnote-canon-tag.c:62 libexif/exif-tag.c:901
+msgid "Image Unique ID"
+msgstr "Унікальний ідентифікатор зображення"
+
+#: libexif/canon/mnote-canon-tag.c:63
+msgid "WB Info"
+msgstr "Дані ББ"
+
+#: libexif/canon/mnote-canon-tag.c:64
+msgid "Face Detect 3"
+msgstr "Виявлення облич 3"
+
+#: libexif/canon/mnote-canon-tag.c:65
+msgid "Time Info"
+msgstr "Дані щодо часу"
+
+#: libexif/canon/mnote-canon-tag.c:66
+msgid "Battery Type"
+msgstr "Тип акумулятора"
+
+#: libexif/canon/mnote-canon-tag.c:67
+msgid "AF Info 3"
+msgstr "Дані щодо АФ 3"
+
+#: libexif/canon/mnote-canon-tag.c:68
+msgid "Raw Data Offset"
+msgstr "Зсув даних цифрового негатива"
+
+#: libexif/canon/mnote-canon-tag.c:69
+msgid "Original Decision Data Offset"
+msgstr "Відступ даних початкового рішення"
+
+#: libexif/canon/mnote-canon-tag.c:70
+msgid "Personal Functions"
+msgstr "Особисті функції"
+
+#: libexif/canon/mnote-canon-tag.c:71
+msgid "Personal Functions Values"
+msgstr "Значення особистих функцій"
+
+#: libexif/canon/mnote-canon-tag.c:72 libexif/olympus/mnote-olympus-tag.c:122
+msgid "File Info"
+msgstr "Дані щодо файла"
+
+#: libexif/canon/mnote-canon-tag.c:73 libexif/exif-tag.c:927
+msgid "Lens Model"
+msgstr "Модель об'єктива"
+
+#: libexif/canon/mnote-canon-tag.c:74
+msgid "CMOS Serial Number"
+msgstr "Серійний номер CMOS"
+
+#: libexif/canon/mnote-canon-tag.c:75
+msgid "Dust Removal Data"
+msgstr "Дані усування пилу"
+
+#: libexif/canon/mnote-canon-tag.c:76
+msgid "Crop Info"
+msgstr "Дані щодо обрізання"
+
+#: libexif/canon/mnote-canon-tag.c:77
+msgid "Custom Functions 2"
+msgstr "Функції користувача 2"
+
+#: libexif/canon/mnote-canon-tag.c:78
+msgid "Aspect Info"
+msgstr "Дані щодо співвіношення розмірів"
+
+#: libexif/canon/mnote-canon-tag.c:79
+msgid "Tone Curve Table"
+msgstr "Таблиця кривої відтінків"
+
+#: libexif/canon/mnote-canon-tag.c:80
+msgid "Sharpness Table"
+msgstr "Таблиця різкості"
+
+#: libexif/canon/mnote-canon-tag.c:81
+msgid "Sharpness Frequency Table"
+msgstr "Таблиця частот різкості"
+
+#: libexif/canon/mnote-canon-tag.c:82
+msgid "Whitebalance Table"
+msgstr "Таблиця балансу білого"
+
+#: libexif/canon/mnote-canon-tag.c:83 libexif/olympus/mnote-olympus-tag.c:77
+msgid "Color Balance"
+msgstr "Баланс кольорів"
+
+#: libexif/canon/mnote-canon-tag.c:84
+msgid "Measured Color"
+msgstr "Виміряний колір"
+
+#: libexif/canon/mnote-canon-tag.c:85 libexif/canon/mnote-canon-tag.c:199
+msgid "Color Temperature"
+msgstr "Колірна температура"
+
+#: libexif/canon/mnote-canon-tag.c:86
+msgid "Canon Flags"
+msgstr "Прапорці Canon"
+
+#: libexif/canon/mnote-canon-tag.c:87
+msgid "Modified Info"
+msgstr "Змінені дані"
+
+#: libexif/canon/mnote-canon-tag.c:88
+msgid "Tonecurve Matching"
+msgstr "Відповідність кривих відтінків"
+
+#: libexif/canon/mnote-canon-tag.c:89
+msgid "Whitebalance Matching"
+msgstr "Відповідність балансу білого"
+
+#: libexif/canon/mnote-canon-tag.c:90 libexif/exif-tag.c:711
+#: libexif/olympus/mnote-olympus-tag.c:96
+#: libexif/pentax/mnote-pentax-tag.c:102
+msgid "Color Space"
+msgstr "Простір кольорів"
+
+#: libexif/canon/mnote-canon-tag.c:91
+msgid "Preview Image Info"
+msgstr "Дані зображення попереднього перегляду"
+
+#: libexif/canon/mnote-canon-tag.c:92
+msgid "VRD Offset"
+msgstr "Зсув VRD"
+
+#: libexif/canon/mnote-canon-tag.c:93
+msgid "Sensor Info"
+msgstr "Дані щодо датчика"
+
+#: libexif/canon/mnote-canon-tag.c:94
+msgid "WB Packet"
+msgstr "Пакунок ББ"
+
+#: libexif/canon/mnote-canon-tag.c:95
+msgid "Flavor"
+msgstr "Варіант"
+
+#: libexif/canon/mnote-canon-tag.c:96
+msgid "Picture Style Userdefined"
+msgstr "Визначений користувачем стиль зображення"
+
+#: libexif/canon/mnote-canon-tag.c:97
+msgid "Picture Style PC"
+msgstr "PC стилю зображення"
+
+#: libexif/canon/mnote-canon-tag.c:98
+msgid "Custom Picture Style Filename"
+msgstr "Назва файла нетипового стилю зображення"
+
+#: libexif/canon/mnote-canon-tag.c:99
+msgid "AF Micro Adjust"
+msgstr "Мікрокоригування АФ"
+
+#: libexif/canon/mnote-canon-tag.c:100
+msgid "Vignetting Correct"
+msgstr "Виправлення віньєтування"
+
+#: libexif/canon/mnote-canon-tag.c:101
+msgid "Vignetting Correct 2"
+msgstr "Виправлення віньєтування 2"
+
+#: libexif/canon/mnote-canon-tag.c:102
+msgid "LightingOpt"
+msgstr "Оптимізація освітлення"
+
+#: libexif/canon/mnote-canon-tag.c:103 libexif/pentax/mnote-pentax-tag.c:115
+msgid "Lens Info"
+msgstr "Дані щодо об'єктива"
+
+#: libexif/canon/mnote-canon-tag.c:104
+msgid "Ambience_Info"
+msgstr "Дані щодо атмосфери"
+
+#: libexif/canon/mnote-canon-tag.c:105 libexif/olympus/mnote-olympus-tag.c:117
+msgid "Multi Exposure"
+msgstr "Мультиекспонування"
+
+#: libexif/canon/mnote-canon-tag.c:106
+msgid "Filter Info"
+msgstr "Дані щодо фільтра"
+
+#: libexif/canon/mnote-canon-tag.c:107 libexif/olympus/mnote-olympus-tag.c:107
+msgid "HDR Info"
+msgstr "Дані щодо HDR"
+
+#: libexif/canon/mnote-canon-tag.c:108
+msgid "AF Config"
+msgstr "Налаштування АФ"
+
+#: libexif/canon/mnote-canon-tag.c:109
+msgid "Raw Burst Info"
+msgstr "Дані щодо черги цифрового негатива"
+
+#: libexif/canon/mnote-canon-tag.c:120 libexif/fuji/mnote-fuji-tag.c:45
+msgid "Macro Mode"
+msgstr "Макрорежим"
+
+#: libexif/canon/mnote-canon-tag.c:121 libexif/canon/mnote-canon-tag.c:187
+#: libexif/olympus/mnote-olympus-tag.c:207
+#: libexif/pentax/mnote-pentax-tag.c:128
+msgid "Self-timer"
+msgstr "Автоспуск"
+
+#: libexif/canon/mnote-canon-tag.c:122 libexif/fuji/mnote-fuji-tag.c:38
+#: libexif/olympus/mnote-olympus-tag.c:40
+#: libexif/olympus/mnote-olympus-tag.c:126
+#: libexif/olympus/mnote-olympus-tag.c:139
+msgid "Quality"
+msgstr "Якість"
+
+#: libexif/canon/mnote-canon-tag.c:123 libexif/fuji/mnote-fuji-tag.c:43
+#: libexif/olympus/mnote-olympus-tag.c:45
+#: libexif/olympus/mnote-olympus-tag.c:159
+#: libexif/pentax/mnote-pentax-tag.c:38 libexif/pentax/mnote-pentax-tag.c:73
+msgid "Flash Mode"
+msgstr "Режим спалаху"
+
+#: libexif/canon/mnote-canon-tag.c:124 libexif/pentax/mnote-pentax-tag.c:101
+msgid "Drive Mode"
+msgstr "Режим мотора"
+
+#: libexif/canon/mnote-canon-tag.c:125 libexif/canon/mnote-canon-tag.c:146
+#: libexif/olympus/mnote-olympus-tag.c:43
+#: libexif/olympus/mnote-olympus-tag.c:166
+#: libexif/olympus/mnote-olympus-tag.c:205
+#: libexif/pentax/mnote-pentax-tag.c:37 libexif/pentax/mnote-pentax-tag.c:74
+#: libexif/pentax/mnote-pentax-tag.c:130
+msgid "Focus Mode"
+msgstr "Режим фокусу"
+
+#: libexif/canon/mnote-canon-tag.c:126 libexif/pentax/mnote-pentax-tag.c:127
+msgid "Record Mode"
+msgstr "Режим запису"
+
+#: libexif/canon/mnote-canon-tag.c:127 libexif/pentax/mnote-pentax-tag.c:71
+msgid "Image Size"
+msgstr "Розмір зображення"
+
+#: libexif/canon/mnote-canon-tag.c:128
+msgid "Easy Shooting Mode"
+msgstr "Режим простого знімання"
+
+#: libexif/canon/mnote-canon-tag.c:129 libexif/olympus/mnote-olympus-tag.c:64
+#: libexif/olympus/mnote-olympus-tag.c:133
+#: libexif/olympus/mnote-olympus-tag.c:142
+#: libexif/olympus/mnote-olympus-tag.c:212
+#: libexif/pentax/mnote-pentax-tag.c:89
+msgid "Digital Zoom"
+msgstr "Цифрове збільшення"
+
+#: libexif/canon/mnote-canon-tag.c:130 libexif/exif-tag.c:878
+#: libexif/fuji/mnote-fuji-tag.c:42 libexif/pentax/mnote-pentax-tag.c:46
+#: libexif/pentax/mnote-pentax-tag.c:91
+msgid "Contrast"
+msgstr "Контрастність"
+
+#: libexif/canon/mnote-canon-tag.c:131 libexif/exif-tag.c:882
+#: libexif/olympus/mnote-olympus-tag.c:75
+#: libexif/olympus/mnote-olympus-tag.c:88 libexif/pentax/mnote-pentax-tag.c:47
+#: libexif/pentax/mnote-pentax-tag.c:90
+msgid "Saturation"
+msgstr "Насиченість"
+
+#: libexif/canon/mnote-canon-tag.c:132 libexif/canon/mnote-canon-tag.c:192
+#: libexif/exif-tag.c:886 libexif/fuji/mnote-fuji-tag.c:39
+#: libexif/pentax/mnote-pentax-tag.c:45 libexif/pentax/mnote-pentax-tag.c:92
+msgid "Sharpness"
+msgstr "Різкість"
+
+#: libexif/canon/mnote-canon-tag.c:133
+msgid "ISO"
+msgstr "ISO"
+
+#: libexif/canon/mnote-canon-tag.c:134 libexif/exif-tag.c:620
+#: libexif/pentax/mnote-pentax-tag.c:82
+msgid "Metering Mode"
+msgstr "Режим вимірювання"
+
+#: libexif/canon/mnote-canon-tag.c:135 libexif/olympus/mnote-olympus-tag.c:165
+msgid "Focus Range"
+msgstr "Діапазон фокусування"
+
+#: libexif/canon/mnote-canon-tag.c:136 libexif/canon/mnote-canon-tag.c:173
+msgid "AF Point"
+msgstr "Точка АФ"
+
+#: libexif/canon/mnote-canon-tag.c:137 libexif/exif-tag.c:845
+msgid "Exposure Mode"
+msgstr "Режим експозиції"
+
+#: libexif/canon/mnote-canon-tag.c:138 libexif/olympus/mnote-olympus-tag.c:61
+#: libexif/pentax/mnote-pentax-tag.c:106
+msgid "Lens Type"
+msgstr "Тип об'єктива"
+
+#: libexif/canon/mnote-canon-tag.c:139
+msgid "Long Focal Length of Lens"
+msgstr "Довга фокусна відстань об'єктива"
+
+#: libexif/canon/mnote-canon-tag.c:140
+msgid "Short Focal Length of Lens"
+msgstr "Коротка фокусна відстань об'єктива"
+
+#: libexif/canon/mnote-canon-tag.c:141
+msgid "Focal Units per mm"
+msgstr "Фокальних відстаней на мм"
+
+#: libexif/canon/mnote-canon-tag.c:142
+msgid "Maximal Aperture"
+msgstr "Максимальна діафрагма"
+
+#: libexif/canon/mnote-canon-tag.c:143
+msgid "Minimal Aperture"
+msgstr "Мінімальна діаграма"
+
+#: libexif/canon/mnote-canon-tag.c:144
+msgid "Flash Activity"
+msgstr "Активність спалаху"
+
+#: libexif/canon/mnote-canon-tag.c:145
+msgid "Flash Details"
+msgstr "Параметри спалаху"
+
+#: libexif/canon/mnote-canon-tag.c:147
+msgid "AE Setting"
+msgstr "Параметр автоекспонування"
+
+#: libexif/canon/mnote-canon-tag.c:148
+msgid "Image Stabilization"
+msgstr "Стабілізація зображення"
+
+#: libexif/canon/mnote-canon-tag.c:149
+msgid "Display Aperture"
+msgstr "Показати діафрагму"
+
+#: libexif/canon/mnote-canon-tag.c:150
+msgid "Zoom Source Width"
+msgstr "Ширина джерела масштабування"
+
+#: libexif/canon/mnote-canon-tag.c:151
+msgid "Zoom Target Width"
+msgstr "Ширина цілі масштабування"
+
+#: libexif/canon/mnote-canon-tag.c:152
+msgid "Spot Metering Mode"
+msgstr "Точковий режим виміру"
+
+#: libexif/canon/mnote-canon-tag.c:153
+msgid "Photo Effect"
+msgstr "Фотоефект"
+
+#: libexif/canon/mnote-canon-tag.c:154 libexif/canon/mnote-canon-tag.c:188
+msgid "Manual Flash Output"
+msgstr "Виведення для спалаху вручну"
+
+#: libexif/canon/mnote-canon-tag.c:155
+msgid "Color Tone"
+msgstr "Тон кольорів"
+
+#: libexif/canon/mnote-canon-tag.c:156
+msgid "SRAW Quality"
+msgstr "Якість SRAW"
+
+#: libexif/canon/mnote-canon-tag.c:157
+msgid "Focal Type"
+msgstr "Фокальний тип"
+
+#: libexif/canon/mnote-canon-tag.c:159
+msgid "Focal Plane X Size"
+msgstr "Розмір фокальної площини за X"
+
+#: libexif/canon/mnote-canon-tag.c:160
+msgid "Focal Plane Y Size"
+msgstr "Розмір фокальної площини за Y"
+
+#: libexif/canon/mnote-canon-tag.c:161
+msgid "Auto ISO"
+msgstr "Автоматично визначати ISO"
+
+#: libexif/canon/mnote-canon-tag.c:162
+msgid "Shot ISO"
+msgstr "ISO знімка"
+
+#: libexif/canon/mnote-canon-tag.c:163
+msgid "Measured EV"
+msgstr "Виміряне EV"
+
+#: libexif/canon/mnote-canon-tag.c:164
+msgid "Target Aperture"
+msgstr "Діафрагма призначення"
+
+#: libexif/canon/mnote-canon-tag.c:165
+msgid "Target Exposure Time"
+msgstr "Час експонування цілі"
+
+#: libexif/canon/mnote-canon-tag.c:166 libexif/olympus/mnote-olympus-tag.c:161
+#: libexif/pentax/mnote-pentax-tag.c:81
+msgid "Exposure Compensation"
+msgstr "Компенсація експозиції"
+
+#: libexif/canon/mnote-canon-tag.c:167 libexif/canon/mnote-canon-tag.c:198
+#: libexif/exif-tag.c:850 libexif/fuji/mnote-fuji-tag.c:40
+#: libexif/olympus/mnote-olympus-tag.c:41
+#: libexif/olympus/mnote-olympus-tag.c:130
+#: libexif/pentax/mnote-pentax-tag.c:41 libexif/pentax/mnote-pentax-tag.c:84
+#: libexif/pentax/mnote-pentax-tag.c:124
+msgid "White Balance"
+msgstr "Баланс білого"
+
+#: libexif/canon/mnote-canon-tag.c:168
+msgid "Slow Shutter"
+msgstr "Повільний затвор"
+
+#: libexif/canon/mnote-canon-tag.c:169
+msgid "Sequence Number"
+msgstr "Число з послідовності"
+
+#: libexif/canon/mnote-canon-tag.c:170
+msgid "Optical Zoom Code"
+msgstr "Код оптичного масштабування"
+
+#: libexif/canon/mnote-canon-tag.c:171 libexif/pentax/mnote-pentax-tag.c:107
+msgid "Camera Temperature"
+msgstr "Температура фотоапарата"
+
+#: libexif/canon/mnote-canon-tag.c:172
+msgid "Flash Guide Number"
+msgstr "Провідне число спалаху"
+
+#: libexif/canon/mnote-canon-tag.c:174 libexif/olympus/mnote-olympus-tag.c:52
+#: libexif/pentax/mnote-pentax-tag.c:109
+msgid "Flash Exposure Compensation"
+msgstr "Компенсація експозиції спалаху"
+
+#: libexif/canon/mnote-canon-tag.c:175
+msgid "AE Bracketing"
+msgstr "Автовилка експонування"
+
+#: libexif/canon/mnote-canon-tag.c:176
+msgid "AE Bracket Value"
+msgstr "Значення вилки автоекспозиції"
+
+#: libexif/canon/mnote-canon-tag.c:177
+msgid "Control Mode"
+msgstr "Режим керування"
+
+#: libexif/canon/mnote-canon-tag.c:178
+msgid "Focus Distance Upper"
+msgstr "Вища фокусна відстань"
+
+#: libexif/canon/mnote-canon-tag.c:179
+msgid "Focus Distance Lower"
+msgstr "Нижча фокусна відстань"
+
+#: libexif/canon/mnote-canon-tag.c:180 libexif/exif-tag.c:479
+#: libexif/pentax/mnote-pentax-tag.c:79
+msgid "F-Number"
+msgstr "Діафрагмове число"
+
+#: libexif/canon/mnote-canon-tag.c:181 libexif/exif-tag.c:476
+#: libexif/pentax/mnote-pentax-tag.c:78
+msgid "Exposure Time"
+msgstr "Час експозиції"
+
+#: libexif/canon/mnote-canon-tag.c:182
+msgid "Measured EV 2"
+msgstr "Виміряне EV 2"
+
+#: libexif/canon/mnote-canon-tag.c:183
+msgid "Bulb Duration"
+msgstr "Тривалість засвічення лампи"
+
+#: libexif/canon/mnote-canon-tag.c:184
+msgid "Camera Type"
+msgstr "Тип фотоапарата"
+
+#: libexif/canon/mnote-canon-tag.c:185
+msgid "Auto Rotate"
+msgstr "Автоматично повернути"
+
+#: libexif/canon/mnote-canon-tag.c:186
+msgid "ND Filter"
+msgstr "ND-фільтр"
+
+#: libexif/canon/mnote-canon-tag.c:189
+msgid "Panorama Frame"
+msgstr "Рамка панорами"
+
+#: libexif/canon/mnote-canon-tag.c:190
+msgid "Panorama Direction"
+msgstr "Напрям панорами"
+
+#: libexif/canon/mnote-canon-tag.c:191
+msgid "Tone Curve"
+msgstr "Крива тону"
+
+#: libexif/canon/mnote-canon-tag.c:193
+msgid "Sharpness Frequency"
+msgstr "Частота різкості"
+
+#: libexif/canon/mnote-canon-tag.c:194
+msgid "Sensor Red Level"
+msgstr "Рівень червоного датчика"
+
+#: libexif/canon/mnote-canon-tag.c:195
+msgid "Sensor Blue Level"
+msgstr "Рівень синього датчика"
+
+#: libexif/canon/mnote-canon-tag.c:196
+msgid "White Balance Red"
+msgstr "Червоний балансу білого"
+
+#: libexif/canon/mnote-canon-tag.c:197
+msgid "White Balance Blue"
+msgstr "Синій балансу білого"
+
+#: libexif/canon/mnote-canon-tag.c:200
+msgid "Picture Style"
+msgstr "Стиль зображення"
+
+#: libexif/canon/mnote-canon-tag.c:201
+msgid "Digital Gain"
+msgstr "Цифрове підсилення"
+
+#: libexif/canon/mnote-canon-tag.c:202
+msgid "White Balance Shift AB"
+msgstr "Зсув AB балансу білого"
+
+#: libexif/canon/mnote-canon-tag.c:203
+msgid "White Balance Shift GM"
+msgstr "Зсув GM балансу білого"
+
+#: libexif/exif-byte-order.c:33
+msgid "Motorola"
+msgstr "Motorola"
+
+#: libexif/exif-byte-order.c:35
+msgid "Intel"
+msgstr "Intel"
+
+#: libexif/exif-data.c:841
+msgid "Size of data too small to allow for EXIF data."
+msgstr "Розмір даних є надто мами для того, щоб це були дані EXIF."
+
+#: libexif/exif-data.c:914
+msgid "EXIF marker not found."
+msgstr "Не знайдено позначки EXIF."
+
+#: libexif/exif-data.c:926
+#, c-format
+msgid "Read length %d is longer than data length %d."
+msgstr "Довжина читання %d перевищує довжину даних %d."
+
+#: libexif/exif-data.c:931
+msgid "APP Tag too short."
+msgstr "Мітка APP є надто короткою."
+
+#: libexif/exif-data.c:951
+msgid "EXIF header not found."
+msgstr "Не знайдено заголовка EXIF."
+
+#: libexif/exif-data.c:976
+msgid "Unknown encoding."
+msgstr "Невідоме кодування."
+
+#: libexif/exif-data.c:1262
+msgid "Ignore unknown tags"
+msgstr "Ігнорувати невідомі мітки"
+
+#: libexif/exif-data.c:1263
+msgid "Ignore unknown tags when loading EXIF data."
+msgstr "Ігнорувати невідомі мітки під час завантаження даних EXIF."
+
+#: libexif/exif-data.c:1264
+msgid "Follow specification"
+msgstr "Виправляти за специфікацією"
+
+#: libexif/exif-data.c:1265
+msgid "Add, correct and remove entries to get EXIF data that follows the specification."
+msgstr "Додавати, виправляти та вилучати записи, щоб отримати дані EXIF, що відповідають специфікації."
+
+#: libexif/exif-data.c:1267
+msgid "Do not change maker note"
+msgstr "Не змінювати нотатки виробника"
+
+#: libexif/exif-data.c:1268
+msgid "When loading and resaving Exif data, save the maker note unmodified. Be aware that the maker note can get corrupted."
+msgstr "Під час завантаження або повторного зберігання даних Exif, зберігати нотатки виробника без змін. Майте на увазі, що нотатки виробника може бути пошкоджено."
+
+#: libexif/exif-entry.c:243 libexif/exif-entry.c:312 libexif/exif-entry.c:345
+#, c-format
+msgid "Tag '%s' was of format '%s' (which is against specification) and has been changed to format '%s'."
+msgstr "Мітку «%s» було записано у форматі «%s» (що суперечить специфікації), формат змінено на «%s»."
+
+#: libexif/exif-entry.c:280
+#, c-format
+msgid "Tag '%s' is of format '%s' (which is against specification) but cannot be changed to format '%s'."
+msgstr "Мітку «%s» записано у форматі «%s» (що суперечить специфікації), формат не може бути змінено на «%s»."
+
+#: libexif/exif-entry.c:363
+#, c-format
+msgid "Tag 'UserComment' had invalid format '%s'. Format has been set to 'undefined'."
+msgstr "Мітку «UserComment» записано у некоректному форматі «%s». Встановлено формат «undefined»."
+
+#: libexif/exif-entry.c:389
+msgid "Tag 'UserComment' has been expanded to at least 8 bytes in order to follow the specification."
+msgstr "Мітку «UserComment» було розширено до принаймні 8 байтів з метою виконання специфікації."
+
+#: libexif/exif-entry.c:404
+msgid "Tag 'UserComment' is not empty but does not start with a format identifier. This has been fixed."
+msgstr "Мітка «UserComment» не є порожньою, але не починається із ідентифікатора форматування. Цю помилку виправлено."
+
+#: libexif/exif-entry.c:431
+msgid "Tag 'UserComment' did not start with a format identifier. This has been fixed."
+msgstr "Мітка «UserComment» не починається із ідентифікатора форматування. Цю помилку виправлено."
+
+#: libexif/exif-entry.c:468
+#, c-format
+msgid "%i bytes undefined data"
+msgstr "%i байтів невизначених даних"
+
+#: libexif/exif-entry.c:591
+#, c-format
+msgid "%i bytes unsupported data type"
+msgstr "%i байтів непідтримуваного типу даних"
+
+#: libexif/exif-entry.c:648
+#, c-format
+msgid "The tag '%s' contains data of an invalid format ('%s', expected '%s')."
+msgstr "Мітка «%s» містить дані у некоректному форматі («%s» замість «%s»)."
+
+#: libexif/exif-entry.c:661
+#, c-format
+msgid "The tag '%s' contains an invalid number of components (%i, expected %i)."
+msgstr "Мітка «%s» містить некоректну кількість компонентів (%i замість %i)."
+
+#: libexif/exif-entry.c:675
+msgid "Chunky format"
+msgstr "Фрагментарне форматування"
+
+#: libexif/exif-entry.c:675
+msgid "Planar format"
+msgstr "Плоский формат"
+
+#: libexif/exif-entry.c:677 libexif/exif-entry.c:769
+#: test/nls/test-codeset.c:54
+msgid "Not defined"
+msgstr "Не визначено"
+
+#: libexif/exif-entry.c:677
+msgid "One-chip color area sensor"
+msgstr "Датчик кольорової ділянки з одним чипом"
+
+#: libexif/exif-entry.c:678
+msgid "Two-chip color area sensor"
+msgstr "Датчик кольорової ділянки з двома чипами"
+
+#: libexif/exif-entry.c:678
+msgid "Three-chip color area sensor"
+msgstr "Датчик кольорової ділянки з трьома чипами"
+
+#: libexif/exif-entry.c:679
+msgid "Color sequential area sensor"
+msgstr "Датчик ділянки послідовності кольорів"
+
+#: libexif/exif-entry.c:679
+msgid "Trilinear sensor"
+msgstr "Трилінійний сенсор"
+
+#: libexif/exif-entry.c:680
+msgid "Color sequential linear sensor"
+msgstr "Лінійний датчик послідовності кольорів"
+
+#: libexif/exif-entry.c:682 libexif/pentax/mnote-pentax-entry.c:233
+msgid "Top-left"
+msgstr "Вгорі ліворуч"
+
+#: libexif/exif-entry.c:682 libexif/pentax/mnote-pentax-entry.c:235
+msgid "Top-right"
+msgstr "Вгорі праворуч"
+
+#: libexif/exif-entry.c:682 libexif/pentax/mnote-pentax-entry.c:241
+msgid "Bottom-right"
+msgstr "Внизу праворуч"
+
+#: libexif/exif-entry.c:683 libexif/pentax/mnote-pentax-entry.c:239
+msgid "Bottom-left"
+msgstr "Внизу ліворуч"
+
+#: libexif/exif-entry.c:683
+msgid "Left-top"
+msgstr "Ліворуч-вгорі"
+
+#: libexif/exif-entry.c:683
+msgid "Right-top"
+msgstr "Праворуч-вгорі"
+
+#: libexif/exif-entry.c:684
+msgid "Right-bottom"
+msgstr "Праворуч-внизу"
+
+#: libexif/exif-entry.c:684
+msgid "Left-bottom"
+msgstr "Ліворуч-внизу"
+
+#: libexif/exif-entry.c:686
+msgid "Centered"
+msgstr "За центром"
+
+#: libexif/exif-entry.c:686
+msgid "Co-sited"
+msgstr "Розташоване поруч"
+
+#: libexif/exif-entry.c:688
+msgid "Reversed mono"
+msgstr "Обернене моно"
+
+#: libexif/exif-entry.c:688
+msgid "Normal mono"
+msgstr "Нормальне моно"
+
+#: libexif/exif-entry.c:688
+msgid "RGB"
+msgstr "RGB"
+
+#: libexif/exif-entry.c:688
+msgid "Palette"
+msgstr "Палітра"
+
+#: libexif/exif-entry.c:689
+msgid "CMYK"
+msgstr "CMYK"
+
+#: libexif/exif-entry.c:689
+msgid "YCbCr"
+msgstr "YCbCr"
+
+#: libexif/exif-entry.c:689
+msgid "CieLAB"
+msgstr "CieLAB"
+
+#: libexif/exif-entry.c:691
+msgid "Normal process"
+msgstr "Звичайною обробкою"
+
+#: libexif/exif-entry.c:691
+msgid "Custom process"
+msgstr "Нетиповою обробкою"
+
+#: libexif/exif-entry.c:693
+msgid "Auto exposure"
+msgstr "Автоекспозиція"
+
+#: libexif/exif-entry.c:693 libexif/fuji/mnote-fuji-entry.c:139
+msgid "Manual exposure"
+msgstr "Експонування вручну"
+
+#: libexif/exif-entry.c:693
+msgid "Auto bracket"
+msgstr "Автообмеження"
+
+#: libexif/exif-entry.c:695
+msgid "Auto white balance"
+msgstr "Автоматичний баланс білого"
+
+#: libexif/exif-entry.c:695
+msgid "Manual white balance"
+msgstr "Баланс білого вручну"
+
+#: libexif/exif-entry.c:700
+msgid "Low gain up"
+msgstr "Невелике підсилення"
+
+#: libexif/exif-entry.c:700
+msgid "High gain up"
+msgstr "Значне підсилення"
+
+#: libexif/exif-entry.c:701
+msgid "Low gain down"
+msgstr "Невелике послаблення"
+
+#: libexif/exif-entry.c:701
+msgid "High gain down"
+msgstr "Значне послаблення"
+
+#: libexif/exif-entry.c:703
+msgid "Low saturation"
+msgstr "Низька насиченість"
+
+#: libexif/exif-entry.c:703 test/nls/test-codeset.c:48
+#: test/nls/test-codeset.c:61
+msgid "High saturation"
+msgstr "Висока насиченість"
+
+#: libexif/exif-entry.c:704 libexif/exif-entry.c:705
+#: libexif/fuji/mnote-fuji-entry.c:63
+#: libexif/olympus/mnote-olympus-entry.c:208
+#: libexif/olympus/mnote-olympus-entry.c:217
+#: libexif/pentax/mnote-pentax-entry.c:106
+#: libexif/pentax/mnote-pentax-entry.c:170
+msgid "Soft"
+msgstr "М'який"
+
+#: libexif/exif-entry.c:704 libexif/exif-entry.c:705
+#: libexif/fuji/mnote-fuji-entry.c:65 libexif/fuji/mnote-fuji-entry.c:95
+#: libexif/olympus/mnote-olympus-entry.c:207
+#: libexif/olympus/mnote-olympus-entry.c:215
+#: libexif/pentax/mnote-pentax-entry.c:107
+msgid "Hard"
+msgstr "Жорсткий"
+
+#: libexif/exif-entry.c:721 libexif/exif-entry.c:739 libexif/exif-entry.c:784
+#: libexif/exif-entry.c:831 libexif/olympus/mnote-olympus-entry.c:597
+#: libexif/olympus/mnote-olympus-entry.c:691
+#: libexif/olympus/mnote-olympus-entry.c:746
+#: libexif/pentax/mnote-pentax-entry.c:256
+msgid "Unknown"
+msgstr "Невідомо"
+
+#: libexif/exif-entry.c:722
+msgid "Avg"
+msgstr "Сер."
+
+#: libexif/exif-entry.c:723
+msgid "Center-weight"
+msgstr "Центр мас"
+
+#: libexif/exif-entry.c:725
+msgid "Multi spot"
+msgstr "Мульти-пляма"
+
+#: libexif/exif-entry.c:726
+msgid "Pattern"
+msgstr "Візерунок"
+
+#: libexif/exif-entry.c:731
+msgid "Uncompressed"
+msgstr "Нестиснений"
+
+#: libexif/exif-entry.c:732
+msgid "LZW compression"
+msgstr "Стискання LZW"
+
+#: libexif/exif-entry.c:733 libexif/exif-entry.c:734
+msgid "JPEG compression"
+msgstr "Стискання JPEG"
+
+#: libexif/exif-entry.c:735
+msgid "Deflate/ZIP compression"
+msgstr "Стискання Deflate/ZIP"
+
+#: libexif/exif-entry.c:736
+msgid "PackBits compression"
+msgstr "Стискання PackBits"
+
+#: libexif/exif-entry.c:742
+msgid "Tungsten incandescent light"
+msgstr "Лампа розжарювання (світло дуги)"
+
+#: libexif/exif-entry.c:744
+msgid "Fine weather"
+msgstr "Ясна погода"
+
+#: libexif/exif-entry.c:745
+msgid "Cloudy weather"
+msgstr "Хмарна погода"
+
+#: libexif/exif-entry.c:748 libexif/fuji/mnote-fuji-entry.c:77
+#: libexif/pentax/mnote-pentax-entry.c:252
+msgid "Day white fluorescent"
+msgstr "Флуоресцентна лампа з білим світлом"
+
+#: libexif/exif-entry.c:749
+msgid "Cool white fluorescent"
+msgstr "Флуоресцентна лампа з холодним білим світлом"
+
+#: libexif/exif-entry.c:750 libexif/fuji/mnote-fuji-entry.c:78
+#: libexif/pentax/mnote-pentax-entry.c:253
+msgid "White fluorescent"
+msgstr "Флуоресцентна лампа з білим світлом"
+
+#: libexif/exif-entry.c:751
+msgid "Standard light A"
+msgstr "Стандартне світло A"
+
+#: libexif/exif-entry.c:752
+msgid "Standard light B"
+msgstr "Стандартне світло B"
+
+#: libexif/exif-entry.c:753
+msgid "Standard light C"
+msgstr "Стандартне світло C"
+
+#: libexif/exif-entry.c:754
+msgid "D55"
+msgstr "D55"
+
+#: libexif/exif-entry.c:755
+msgid "D65"
+msgstr "D65"
+
+#: libexif/exif-entry.c:756
+msgid "D75"
+msgstr "D75"
+
+#: libexif/exif-entry.c:757
+msgid "ISO studio tungsten"
+msgstr "Студійна лампа розжарювання ISO"
+
+#: libexif/exif-entry.c:761 libexif/exif-entry.c:765
+msgid "Inch"
+msgstr "дюйм"
+
+#: libexif/exif-entry.c:761 libexif/exif-entry.c:765
+msgid "in"
+msgstr "дюйм"
+
+#: libexif/exif-entry.c:762 libexif/exif-entry.c:766
+msgid "Centimeter"
+msgstr "Сантиметр"
+
+#: libexif/exif-entry.c:762 libexif/exif-entry.c:766
+msgid "cm"
+msgstr "см"
+
+#: libexif/exif-entry.c:771
+msgid "Normal program"
+msgstr "Звичайна програма"
+
+#: libexif/exif-entry.c:772
+msgid "Aperture priority"
+msgstr "Пріоритет діафрагми"
+
+#: libexif/exif-entry.c:772 libexif/exif-tag.c:599
+msgid "Aperture"
+msgstr "Діафрагма"
+
+#: libexif/exif-entry.c:773
+msgid "Shutter priority"
+msgstr "Пріоритет затвору"
+
+#: libexif/exif-entry.c:773
+msgid "Shutter"
+msgstr "Затвор"
+
+#: libexif/exif-entry.c:774
+msgid "Creative program (biased toward depth of field)"
+msgstr "Творча програма (ухил в бік глибини поля)"
+
+#: libexif/exif-entry.c:775
+msgid "Creative"
+msgstr "Творчий"
+
+#: libexif/exif-entry.c:776
+msgid "Creative program (biased toward fast shutter speed)"
+msgstr "Творча програма (ухил в бік швидкості руху затвора)"
+
+#: libexif/exif-entry.c:777
+msgid "Action"
+msgstr "Дія"
+
+#: libexif/exif-entry.c:778
+msgid "Portrait mode (for closeup photos with the background out of focus)"
+msgstr "Портретний режим (для знімків з близької відстані з розфокусованим тлом)"
+
+#: libexif/exif-entry.c:780
+msgid "Landscape mode (for landscape photos with the background in focus)"
+msgstr "Режим пейзажу (для пейзажних фото з тлом у фокусі)"
+
+#: libexif/exif-entry.c:785
+msgid "Standard output sensitivity (SOS)"
+msgstr "Стандартна чутливість виведення (SOS)"
+
+#: libexif/exif-entry.c:786
+msgid "Recommended exposure index (REI)"
+msgstr "Рекомендований індекс експонування (REI)"
+
+#: libexif/exif-entry.c:787
+msgid "ISO speed"
+msgstr "Світлочутливість ISO"
+
+#: libexif/exif-entry.c:788
+msgid "Standard output sensitivity (SOS) and recommended exposure index (REI)"
+msgstr "Стандартна чутливість виведення (SOS) та рекомендований індекс експонування (REI)"
+
+#: libexif/exif-entry.c:789
+msgid "Standard output sensitivity (SOS) and ISO speed"
+msgstr "Стандартна чутливість виведення (SOS) та світлочутливість ISO"
+
+#: libexif/exif-entry.c:790
+msgid "Recommended exposure index (REI) and ISO speed"
+msgstr "Рекомендований індекс експонування (REI) та світлочутливість ISO"
+
+#: libexif/exif-entry.c:791
+msgid "Standard output sensitivity (SOS) and recommended exposure index (REI) and ISO speed"
+msgstr "Стандартна чутливість виведення (SOS) та рекомендований індекс експонування (REI) та світлочутливість ISO"
+
+#: libexif/exif-entry.c:794 libexif/exif-entry.c:799
+#: libexif/olympus/mnote-olympus-entry.c:100
+msgid "Flash did not fire"
+msgstr "Спалах не спрацював"
+
+#: libexif/exif-entry.c:794
+msgid "No flash"
+msgstr "Без спалаху"
+
+#: libexif/exif-entry.c:795
+msgid "Flash fired"
+msgstr "Спалах спрацював"
+
+#: libexif/exif-entry.c:795 libexif/olympus/mnote-olympus-entry.c:173
+#: libexif/olympus/mnote-olympus-entry.c:178
+#: libexif/olympus/mnote-olympus-entry.c:212
+#: libexif/olympus/mnote-olympus-entry.c:221
+#: libexif/olympus/mnote-olympus-entry.c:244
+msgid "Yes"
+msgstr "Так"
+
+#: libexif/exif-entry.c:796
+msgid "Strobe return light not detected"
+msgstr "Не виявлено світла від повернення строба"
+
+#: libexif/exif-entry.c:796
+msgid "Without strobe"
+msgstr "Без стробу"
+
+#: libexif/exif-entry.c:798
+msgid "Strobe return light detected"
+msgstr "Виявлено світло від повернення строба"
+
+#: libexif/exif-entry.c:798
+msgid "With strobe"
+msgstr "Зі стробом"
+
+#: libexif/exif-entry.c:800
+msgid "Flash fired, compulsory flash mode"
+msgstr "Спалах спрацював, режим примусового спалаху"
+
+#: libexif/exif-entry.c:801
+msgid "Flash fired, compulsory flash mode, return light not detected"
+msgstr "Спалах спрацював, режим примусового спалаху, відбитого світла не виявлено"
+
+#: libexif/exif-entry.c:803
+msgid "Flash fired, compulsory flash mode, return light detected"
+msgstr "Спалах спрацював, режим примусового спалаху, виявлено відбите світло"
+
+#: libexif/exif-entry.c:805
+msgid "Flash did not fire, compulsory flash mode"
+msgstr "Спалах не спрацював, примусовий режим спалаху"
+
+#: libexif/exif-entry.c:806
+msgid "Flash did not fire, auto mode"
+msgstr "Спалах не спрацював, автоматичний режим"
+
+#: libexif/exif-entry.c:807
+msgid "Flash fired, auto mode"
+msgstr "Спалах спрацював, автоматичний режим"
+
+#: libexif/exif-entry.c:808
+msgid "Flash fired, auto mode, return light not detected"
+msgstr "Спалах спрацював, автоматичний режим, відбитого світла не виявлено"
+
+#: libexif/exif-entry.c:810
+msgid "Flash fired, auto mode, return light detected"
+msgstr "Спалах спрацював, автоматичний режим, виявлено відбите світло"
+
+#: libexif/exif-entry.c:811
+msgid "No flash function"
+msgstr "Без функції спалаху"
+
+#: libexif/exif-entry.c:812
+msgid "Flash fired, red-eye reduction mode"
+msgstr "Спалах спрацював, режим придушення ефекту «червоних очей»"
+
+#: libexif/exif-entry.c:813
+msgid "Flash fired, red-eye reduction mode, return light not detected"
+msgstr "Спалах спрацював, режим придушення ефекту «червоних очей», відбитого світла не виявлено"
+
+#: libexif/exif-entry.c:815
+msgid "Flash fired, red-eye reduction mode, return light detected"
+msgstr "Спалах спрацював, режим придушення ефекту «червоних очей», виявлено відбите світло"
+
+#: libexif/exif-entry.c:817
+msgid "Flash fired, compulsory flash mode, red-eye reduction mode"
+msgstr "Спалах спрацював, примусовий режим спалаху, режим придушення ефекту «червоних очей»"
+
+#: libexif/exif-entry.c:819
+msgid "Flash fired, compulsory flash mode, red-eye reduction mode, return light not detected"
+msgstr "Спалах спрацював, режим примусового спалаху, придушення ефекту «червоних очей», відбитого світла не виявлено"
+
+#: libexif/exif-entry.c:821
+msgid "Flash fired, compulsory flash mode, red-eye reduction mode, return light detected"
+msgstr "Спалах спрацював, режим примусового спалаху, придушення ефекту «червоних очей», виявлено відбите світло"
+
+#: libexif/exif-entry.c:823
+msgid "Flash did not fire, auto mode, red-eye reduction mode"
+msgstr "Спалах не спрацював, автоматичний режим, режим придушення ефекту «червоних очей»"
+
+#: libexif/exif-entry.c:824
+msgid "Flash fired, auto mode, red-eye reduction mode"
+msgstr "Спалах спрацював, автоматичний режим, режим придушення ефекту «червоних очей»"
+
+#: libexif/exif-entry.c:825
+msgid "Flash fired, auto mode, return light not detected, red-eye reduction mode"
+msgstr "Спалах спрацював, автоматичний режим, відбитого світла не виявлено, режим придушення ефекту «червоних очей»"
+
+#: libexif/exif-entry.c:827
+msgid "Flash fired, auto mode, return light detected, red-eye reduction mode"
+msgstr "Спалах спрацював, автоматичний режим, виявлено відбите світло, режим придушення ефекту «червоних очей»"
+
+#: libexif/exif-entry.c:831
+msgid "?"
+msgstr "?"
+
+#: libexif/exif-entry.c:833
+msgid "Close view"
+msgstr "Зблизька"
+
+#: libexif/exif-entry.c:834
+msgid "Distant view"
+msgstr "На відстані"
+
+#: libexif/exif-entry.c:834
+msgid "Distant"
+msgstr "Віддалене"
+
+#: libexif/exif-entry.c:837
+msgid "sRGB"
+msgstr "sRGB"
+
+#: libexif/exif-entry.c:838
+msgid "Adobe RGB"
+msgstr "Adobe RGB"
+
+#: libexif/exif-entry.c:839
+msgid "Uncalibrated"
+msgstr "Некалібрована"
+
+#: libexif/exif-entry.c:889
+#, c-format
+msgid "Invalid size of entry (%i, expected %li x %i)."
+msgstr "Некоректний розмір запису (%i, мало бути %li x %i)."
+
+#: libexif/exif-entry.c:922
+msgid "Unsupported UNICODE string"
+msgstr "Непідтримуваний рядок UNICODE"
+
+#: libexif/exif-entry.c:930
+msgid "Unsupported JIS string"
+msgstr "Непідтримуваний рядок JIS"
+
+#: libexif/exif-entry.c:947
+msgid "Tag UserComment contains data but is against specification."
+msgstr "Мітка UserComment містить дані, але ці дані не відповідають специфікації."
+
+#: libexif/exif-entry.c:951
+#, c-format
+msgid "Byte at position %i: 0x%02x"
+msgstr "Байт на позиції %i: 0x%02x"
+
+#: libexif/exif-entry.c:959
+msgid "Unknown Exif Version"
+msgstr "Невідома версія Exif"
+
+#: libexif/exif-entry.c:963
+#, c-format
+msgid "Exif Version %d.%d"
+msgstr "Версія Exif %d.%d"
+
+#: libexif/exif-entry.c:974
+msgid "FlashPix Version 1.0"
+msgstr "Версія FlashPix 1.0"
+
+#: libexif/exif-entry.c:976
+msgid "FlashPix Version 1.01"
+msgstr "Версія FlashPix 1.01"
+
+#: libexif/exif-entry.c:978
+msgid "Unknown FlashPix Version"
+msgstr "Невідома версія FlashPix"
+
+#: libexif/exif-entry.c:991 libexif/exif-entry.c:1010
+#: libexif/exif-entry.c:1727 libexif/exif-entry.c:1732
+#: libexif/exif-entry.c:1736 libexif/exif-entry.c:1741
+#: libexif/exif-entry.c:1742
+msgid "[None]"
+msgstr "[Немає]"
+
+#: libexif/exif-entry.c:993
+msgid "(Photographer)"
+msgstr "(Фотограф)"
+
+#: libexif/exif-entry.c:1012
+msgid "(Editor)"
+msgstr "(Редактор)"
+
+#: libexif/exif-entry.c:1036 libexif/exif-entry.c:1115
+#: libexif/exif-entry.c:1133 libexif/exif-entry.c:1176
+#, c-format
+msgid "%.02f EV"
+msgstr "%.02f EV"
+
+#: libexif/exif-entry.c:1037
+#, c-format
+msgid " (f/%.01f)"
+msgstr " (f/%.01f)"
+
+#: libexif/exif-entry.c:1070
+#, c-format
+msgid " (35 equivalent: %.0f mm)"
+msgstr " (35-мм еквівалент: %0f мм)"
+
+#: libexif/exif-entry.c:1104
+msgid " sec."
+msgstr " сек."
+
+#: libexif/exif-entry.c:1119
+#, c-format
+msgid " (1/%.0f sec.)"
+msgstr " (1/%.0f секунд)"
+
+#: libexif/exif-entry.c:1121
+#, c-format
+msgid " (%.0f sec.)"
+msgstr " (%.0f секунд)"
+
+#: libexif/exif-entry.c:1134
+#, c-format
+msgid " (%.02f cd/m^2)"
+msgstr " (%.02f кд/м^2)"
+
+#: libexif/exif-entry.c:1143
+msgid "DSC"
+msgstr "ДСК"
+
+#: libexif/exif-entry.c:1145 libexif/exif-entry.c:1185
+#: libexif/exif-entry.c:1269 libexif/exif-entry.c:1321
+#: libexif/exif-entry.c:1330 libexif/exif-entry.c:1366
+#: libexif/fuji/mnote-fuji-entry.c:237 libexif/fuji/mnote-fuji-entry.c:246
+#, c-format
+msgid "Internal error (unknown value %i)"
+msgstr "Внутрішня помилка (невідоме значення %i)"
+
+#: libexif/exif-entry.c:1153
+msgid "-"
+msgstr "-"
+
+#: libexif/exif-entry.c:1154
+msgid "Y"
+msgstr "Y"
+
+#: libexif/exif-entry.c:1155
+msgid "Cb"
+msgstr "Cb"
+
+#: libexif/exif-entry.c:1156
+msgid "Cr"
+msgstr "Cr"
+
+#: libexif/exif-entry.c:1157
+msgid "R"
+msgstr "Ч"
+
+#: libexif/exif-entry.c:1158
+msgid "G"
+msgstr "З"
+
+#: libexif/exif-entry.c:1159
+msgid "B"
+msgstr "С"
+
+#: libexif/exif-entry.c:1160
+msgid "Reserved"
+msgstr "Зарезервовано"
+
+#: libexif/exif-entry.c:1183
+msgid "Directly photographed"
+msgstr "Безпосередньо сфотографовано"
+
+#: libexif/exif-entry.c:1196
+msgid "YCbCr4:2:2"
+msgstr "YCbCr4:2:2"
+
+#: libexif/exif-entry.c:1198
+msgid "YCbCr4:2:0"
+msgstr "YCbCr4:2:0"
+
+#: libexif/exif-entry.c:1215
+#, c-format
+msgid "Within distance %i of (x,y) = (%i,%i)"
+msgstr "У межах відстані %i з (x,y) = (%i,%i)"
+
+#: libexif/exif-entry.c:1224
+#, c-format
+msgid "Within rectangle (width %i, height %i) around (x,y) = (%i,%i)"
+msgstr "У прямокутнику (ширина %i, висота %i) навколо (x,y) = (%i,%i)"
+
+#: libexif/exif-entry.c:1230
+#, c-format
+msgid "Unexpected number of components (%li, expected 2, 3, or 4)."
+msgstr "Неочікувана кількість компонентів (%li замість 2, 3 або 4)."
+
+#: libexif/exif-entry.c:1265
+msgid "Sea level"
+msgstr "Рівень моря"
+
+#: libexif/exif-entry.c:1267
+msgid "Sea level reference"
+msgstr "Еталон рівня моря"
+
+#: libexif/exif-entry.c:1376
+#, c-format
+msgid "Unknown value %i"
+msgstr "Невідоме значення %i"
+
+#: libexif/exif-format.c:37
+msgid "Short"
+msgstr "Короткий"
+
+#: libexif/exif-format.c:38
+msgid "Rational"
+msgstr "Раціональний"
+
+#: libexif/exif-format.c:39
+msgid "SRational"
+msgstr "SRational"
+
+#: libexif/exif-format.c:40
+msgid "Undefined"
+msgstr "Не визначено"
+
+#: libexif/exif-format.c:41
+msgid "ASCII"
+msgstr "ASCII"
+
+#: libexif/exif-format.c:42
+msgid "Long"
+msgstr "Довгий"
+
+#: libexif/exif-format.c:43
+msgid "Byte"
+msgstr "Байт"
+
+#: libexif/exif-format.c:44
+msgid "SByte"
+msgstr "SByte"
+
+#: libexif/exif-format.c:45
+msgid "SShort"
+msgstr "SShort"
+
+#: libexif/exif-format.c:46
+msgid "SLong"
+msgstr "SLong"
+
+#: libexif/exif-format.c:47
+msgid "Float"
+msgstr "Float"
+
+#: libexif/exif-format.c:48
+msgid "Double"
+msgstr "Double"
+
+#: libexif/exif-loader.c:129
+#, c-format
+msgid "The file '%s' could not be opened."
+msgstr "Не вдалося відкрити файл «%s»."
+
+#: libexif/exif-loader.c:334
+msgid "The data supplied does not seem to contain EXIF data."
+msgstr "Надані дані не містять даних EXIF."
+
+#: libexif/exif-log.c:43
+msgid "Debugging information"
+msgstr "Діагностична інформація"
+
+#: libexif/exif-log.c:44
+msgid "Debugging information is available."
+msgstr "Доступна діагностична інформація."
+
+#: libexif/exif-log.c:45
+msgid "Not enough memory"
+msgstr "Не вистачає пам'яті"
+
+#: libexif/exif-log.c:46
+msgid "The system cannot provide enough memory."
+msgstr "Система не надає достатнього обсягу пам'яті."
+
+#: libexif/exif-log.c:47
+msgid "Corrupt data"
+msgstr "Пошкоджені дані"
+
+#: libexif/exif-log.c:48
+msgid "The data provided does not follow the specification."
+msgstr "Надані дані не відповідають специфікації."
+
+#: libexif/exif-tag.c:64
+msgid "GPS Tag Version"
+msgstr "Версія міток GPS"
+
+#: libexif/exif-tag.c:65
+msgid "Indicates the version of <GPSInfoIFD>. The version is given as 2.0.0.0. This tag is mandatory when <GPSInfo> tag is present. (Note: The <GPSVersionID> tag is given in bytes, unlike the <ExifVersion> tag. When the version is 2.0.0.0, the tag value is 02000000.H)."
+msgstr "Відповідає версії <GPSInfoIFD>. Версія подається як 2.0.0.0. Ця мітка є обов'язковою, якщо існує мітка <GPSInfo>. (Зауваження: значення мітки <GPSVersionID> визначається у байтах, на відміну від значення мітки <ExifVersion>. Якщо версією є 2.0.0.0, значенням мітки має бути 02000000.H)."
+
+#: libexif/exif-tag.c:71
+msgid "Interoperability Index"
+msgstr "Індекс здатності до взаємодії"
+
+#: libexif/exif-tag.c:72
+msgid "Indicates the identification of the Interoperability rule. Use \"R98\" for stating ExifR98 Rules. Four bytes used including the termination code (NULL). see the separate volume of Recommended Exif Interoperability Rules (ExifR98) for other tags used for ExifR98."
+msgstr "Вказує на ідентифікацію правила забезпечення взаємодії. Скористайтеся значенням «R98» для визначення правил ExifR98. Використовується чотири байти разом із символом завершення (NULL). Див. окремий том «Рекомендованих правил забезпечення взаємодії Exif» (ExifR98), щоб дізнатися про інші мітки, які використовуються у ExifR98."
+
+#: libexif/exif-tag.c:78
+msgid "North or South Latitude"
+msgstr "Північна або південна широта"
+
+#: libexif/exif-tag.c:79
+msgid "Indicates whether the latitude is north or south latitude. The ASCII value 'N' indicates north latitude, and 'S' is south latitude."
+msgstr "Визначає, є широта північною чи південною. Значення ASCII «N» означає північну широту, а значення «S» — південну."
+
+#: libexif/exif-tag.c:83
+msgid "Interoperability Version"
+msgstr "Версія можливості взаємодії"
+
+#: libexif/exif-tag.c:85
+msgid "Latitude"
+msgstr "Широта"
+
+#: libexif/exif-tag.c:86
+msgid "Indicates the latitude. The latitude is expressed as three RATIONAL values giving the degrees, minutes, and seconds, respectively. When degrees, minutes and seconds are expressed, the format is dd/1,mm/1,ss/1. When degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format is dd/1,mmmm/100,0/1."
+msgstr "Вказує на широту. Широта визначається трьома РАЦІОНАЛЬНИМИ значеннями для градусів, мінут та секунд, відповідно. Якщо довгота визначається градусами, мінутами та секундами, типовим форматом є гг/,мм/,сс/1. Якщо використовуються, наприклад, градуси і мінути, дробова частина мінут задається двома десятковими цифрами, а формат записуватиметься так: гг/1,мммм/100,0/1."
+
+#: libexif/exif-tag.c:93
+msgid "East or West Longitude"
+msgstr "Східна чи західна довгота"
+
+#: libexif/exif-tag.c:94
+msgid "Indicates whether the longitude is east or west longitude. ASCII 'E' indicates east longitude, and 'W' is west longitude."
+msgstr "Визначає, є довгота східною чи західною. «E» у ASCII відповідає східній довготі, а «W» — західній довготі."
+
+#: libexif/exif-tag.c:97
+msgid "Longitude"
+msgstr "Довгота"
+
+#: libexif/exif-tag.c:98
+msgid "Indicates the longitude. The longitude is expressed as three RATIONAL values giving the degrees, minutes, and seconds, respectively. When degrees, minutes and seconds are expressed, the format is ddd/1,mm/1,ss/1. When degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format is ddd/1,mmmm/100,0/1."
+msgstr "Вказує на довготу. Довгота визначається трьома РАЦІОНАЛЬНИМИ значеннями для градусів, мінут та секунд, відповідно. Якщо довгота визначається градусами, мінутами та секундами, типовим форматом є ггг/1,мм/1,сс/1. Якщо використовуються, наприклад, градуси і мінути, дробова частина мінут задається двома десятковими цифрами, а формат записуватиметься так: ггг/1,мммм/100,0/1."
+
+#: libexif/exif-tag.c:105
+msgid "Altitude Reference"
+msgstr "Еталонна висота"
+
+#: libexif/exif-tag.c:106
+msgid "Indicates the altitude used as the reference altitude. If the reference is sea level and the altitude is above sea level, 0 is given. If the altitude is below sea level, a value of 1 is given and the altitude is indicated as an absolute value in the GPSAltitude tag. The reference unit is meters. Note that this tag is BYTE type, unlike other reference tags."
+msgstr "Вказує на висоту, яка є еталонною. Якщо еталонною висотою є рівень моря, і висота обчислюється відносно цього рівня, вказується 0. Якщо висота визначається нижче рівня моря, вказується значення 1, а сама висота, за модулем, вказується у мітці GPSAltitude. Еталонною одиницею виміру є метр. Зауважте, що ця мітка належить до типу BYTE, на відміну від інших міток еталонних величин."
+
+#: libexif/exif-tag.c:112
+msgid "Altitude"
+msgstr "Висота"
+
+#: libexif/exif-tag.c:113
+msgid "Indicates the altitude based on the reference in GPSAltitudeRef. Altitude is expressed as one RATIONAL value. The reference unit is meters."
+msgstr "Вказує на висоту відносно еталонного рівня у GPSAltitudeRef. Висота вказується у форматі РАЦІОНАЛЬНОГО значення. Одиницею вимірювання є метр."
+
+#: libexif/exif-tag.c:116
+msgid "GPS Time (Atomic Clock)"
+msgstr "Час GPS (за атомним годинником)"
+
+#: libexif/exif-tag.c:117
+msgid "Indicates the time as UTC (Coordinated Universal Time). TimeStamp is expressed as three RATIONAL values giving the hour, minute, and second."
+msgstr "Вказує на час UTC (всесвітнього координованого часу). Часова позначка виражається у форматі трьох РАЦІОНАЛЬНИХ значень — годин, хвилин і секунд."
+
+#: libexif/exif-tag.c:120
+msgid "GPS Satellites"
+msgstr "Супутники GPS"
+
+#: libexif/exif-tag.c:121
+msgid "Indicates the GPS satellites used for measurements. This tag can be used to describe the number of satellites, their ID number, angle of elevation, azimuth, SNR and other information in ASCII notation. The format is not specified. If the GPS receiver is incapable of taking measurements, value of the tag shall be set to NULL."
+msgstr "Вказує на супутники GPS, які було використано для вимірювання. Цією міткою можна скористатися для опису кількості супутників, ідентифікаційних номерів, кутів висоти, азимутів, співвідношень сигнал/шум та інших відомостей у записі ASCII. Формат запису не визначено. Якщо приймач GPS не може виконати вимірювання, значенням мітки має бути  NULL."
+
+#: libexif/exif-tag.c:127
+msgid "GPS Receiver Status"
+msgstr "Стан приймача GPS"
+
+#: libexif/exif-tag.c:128
+msgid "Indicates the status of the GPS receiver when the image is recorded. 'A' means measurement is in progress, and 'V' means the measurement is Interoperability."
+msgstr "Визначає стан приймача GPS у момент, коли було записано зображення. «A» означає «виконується вимірювання», а «V» означає «вимірювання Interoperability»."
+
+#: libexif/exif-tag.c:131
+msgid "GPS Measurement Mode"
+msgstr "Режим вимірювання GPS"
+
+#: libexif/exif-tag.c:132
+msgid "Indicates the GPS measurement mode. '2' means two-dimensional measurement and '3' means three-dimensional measurement is in progress."
+msgstr "Вказує на режим вимірювання GPS. «2» означає, що виконується двовимірне вимірювання, а «3» — тривимірне вимірювання."
+
+#: libexif/exif-tag.c:135
+msgid "Measurement Precision"
+msgstr "Точність вимірювання"
+
+#: libexif/exif-tag.c:136
+msgid "Indicates the GPS DOP (data degree of precision). An HDOP value is written during two-dimensional measurement, and PDOP during three-dimensional measurement."
+msgstr "Вказує на GPS DOP (рівень точності даних). Значення HDOP записується під час двовимірного вимірювання, а PDOP — під час тривимірного вимірювання."
+
+#: libexif/exif-tag.c:139
+msgid "Speed Unit"
+msgstr "Одиниця швидкості"
+
+#: libexif/exif-tag.c:140
+msgid "Indicates the unit used to express the GPS receiver speed of movement. 'K', 'M' and 'N' represent kilometers per hour, miles per hour, and knots."
+msgstr "Вказує одиницю виміру швидкості руху приймача GPS. «K», «M» і «N» — кілометри на годину, милі за годину та вузли, відповідно."
+
+#: libexif/exif-tag.c:143
+msgid "Speed of GPS Receiver"
+msgstr "Швидкість приймача даних GPS"
+
+#: libexif/exif-tag.c:144
+msgid "Indicates the speed of GPS receiver movement."
+msgstr "Визначає швидкість руху приймача даних GPS."
+
+#: libexif/exif-tag.c:145
+msgid "Reference for direction of movement"
+msgstr "Режим відліку напрямку"
+
+#: libexif/exif-tag.c:146
+msgid "Indicates the reference for giving the direction of GPS receiver movement. 'T' denotes true direction and 'M' is magnetic direction."
+msgstr "Вказує на еталонний напрямок, від якого обчислюється кут до напрямку руху приймача GPS. «T» — істинний напрямок, а «M» — напрямок на магнітний полюс."
+
+#: libexif/exif-tag.c:149
+msgid "Direction of Movement"
+msgstr "Напрямок руху"
+
+#: libexif/exif-tag.c:150
+msgid "Indicates the direction of GPS receiver movement. The range of values is from 0.00 to 359.99."
+msgstr "Визначає напрям, у якому рухався приймач GPS. Значення мають належати діапазону від 0.00 до 359.99."
+
+#: libexif/exif-tag.c:152
+msgid "GPS Image Direction Reference"
+msgstr "Режим відліку напрямку знімання у GPS"
+
+#: libexif/exif-tag.c:153
+msgid "Indicates the reference for giving the direction of the image when it is captured. 'T' denotes true direction and 'M' is magnetic direction."
+msgstr "Вказує на еталонний напрямок, від якого обчислюється кут до напрямку знімання зображення. «T» — істинний напрямок, а «M» — напрямок на магнітний полюс."
+
+#: libexif/exif-tag.c:155
+msgid "GPS Image Direction"
+msgstr "Напрямок знімання у GPS"
+
+#: libexif/exif-tag.c:156
+msgid "Indicates the direction of the image when it was captured. The range of values is from 0.00 to 359.99."
+msgstr "Визначає напрям, у якому виконувалося знімання зображення. Значення мають належати діапазону від 0.00 до 359.99."
+
+#: libexif/exif-tag.c:158
+msgid "Geodetic Survey Data Used"
+msgstr "Використано дані геодезичної зйомки"
+
+#: libexif/exif-tag.c:159
+msgid "Indicates the geodetic survey data used by the GPS receiver. If the survey data is restricted to Japan, the value of this tag is 'TOKYO' or 'WGS-84'. If a GPS Info tag is recorded, it is strongly recommended that this tag be recorded."
+msgstr "Визначає дані геодезичної зйомки, використані приймачем GPS. Якщо дані зйомки обмежено Японією, значенням цієї мітки буде «TOKYO» або «WGS-84». Якщо записано мітку даних GPS, наполегливо рекомендуємо записати і цю мітку."
+
+#: libexif/exif-tag.c:163
+msgid "Reference For Latitude of Destination"
+msgstr "Напрямок відліку широти"
+
+#: libexif/exif-tag.c:164
+msgid "Indicates whether the latitude of the destination point is north or south latitude. The ASCII value 'N' indicates north latitude, and 'S' is south latitude."
+msgstr "Визначає, є широта точки цілі північною чи південною. Значення ASCII «N» означає північну широту, а значення «S» — південну."
+
+#: libexif/exif-tag.c:167
+msgid "Latitude of Destination"
+msgstr "Широта місця"
+
+#: libexif/exif-tag.c:168
+msgid "Indicates the latitude of the destination point. The latitude is expressed as three RATIONAL values giving the degrees, minutes, and seconds, respectively. If latitude is expressed as degrees, minutes and seconds, a typical format would be dd/1,mm/1,ss/1. When degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format would be dd/1,mmmm/100,0/1."
+msgstr "Вказує на широту точки цілі. Широта визначається трьома РАЦІОНАЛЬНИМИ значеннями для градусів, мінут та секунд, відповідно. Якщо широта визначається градусами, мінутами та секундами, типовим форматом є гг/,мм/,сс/1. Якщо використовуються, наприклад, градуси і мінути, дробова частина мінут задається двома десятковими цифрами, а формат записуватиметься так: ггг/1,мммм/100,0/1."
+
+#: libexif/exif-tag.c:175
+msgid "Reference for Longitude of Destination"
+msgstr "Напрямок відліку довготи"
+
+#: libexif/exif-tag.c:176
+msgid "Indicates whether the longitude of the destination point is east or west longitude. ASCII 'E' indicates east longitude, and 'W' is west longitude."
+msgstr "Визначає, є довгота точки цілі східною чи західною. «E» у ASCII відповідає східній довготі, а «W» — західній довготі."
+
+#: libexif/exif-tag.c:179
+msgid "Longitude of Destination"
+msgstr "Довгота місця"
+
+#: libexif/exif-tag.c:180
+msgid "Indicates the longitude of the destination point. The longitude is expressed as three RATIONAL values giving the degrees, minutes, and seconds, respectively. If longitude is expressed as degrees, minutes and seconds, a typical format would be ddd/1,mm/1,ss/1. When degrees and minutes are used and, for example, fractions of minutes are given up to two decimal places, the format would be ddd/1,mmmm/100,0/1."
+msgstr "Вказує на довготу точки цілі. Довгота визначається трьома РАЦІОНАЛЬНИМИ значеннями для градусів, мінут та секунд, відповідно. Якщо довгота визначається градусами, мінутами та секундами, типовим форматом є ггг/1,мм/1,сс/1. Якщо використовуються, наприклад, градуси і мінути, дробова частина мінут задається двома десятковими цифрами, а формат записуватиметься так: ггг/1,мммм/100,0/1."
+
+#: libexif/exif-tag.c:188
+msgid "Reference for Bearing of Destination"
+msgstr "Еталонний напрямок на ціль"
+
+#: libexif/exif-tag.c:189
+msgid "Indicates the reference used for giving the bearing to the destination point. 'T' denotes true direction and 'M' is magnetic direction."
+msgstr "Вказує на еталонний напрямок, від якого обчислюється кут до напрямку на точку цілі. «T» — істинний напрямок, а «M» — напрямок на магнітний полюс."
+
+#: libexif/exif-tag.c:192
+msgid "Bearing of Destination"
+msgstr "Напрямок на ціль"
+
+#: libexif/exif-tag.c:193
+msgid "Indicates the bearing to the destination point. The range of values is from 0.00 to 359.99."
+msgstr "Вказує на напрямок до точки цілі. Діапазон значень — від 0.00 до 359.99."
+
+#: libexif/exif-tag.c:195
+msgid "Reference for Distance to Destination"
+msgstr "Одиниця вимірювання для відстані до цілі"
+
+#: libexif/exif-tag.c:196
+msgid "Indicates the unit used to express the distance to the destination point. 'K', 'M' and 'N' represent kilometers, miles and nautical miles."
+msgstr "Визначає одиницю, яка використовується для вимірювання відстані до точки цілі. «K», «M» і «N» — це кілометри, милі та морські милі, відповідно."
+
+#: libexif/exif-tag.c:199
+msgid "Distance to Destination"
+msgstr "Відстань до призначення"
+
+#: libexif/exif-tag.c:200
+msgid "Indicates the distance to the destination point."
+msgstr "Визначає відстань до точки призначення."
+
+#: libexif/exif-tag.c:201
+msgid "Name of GPS Processing Method"
+msgstr "Назва способу обробки даних GPS"
+
+#: libexif/exif-tag.c:202
+msgid "A character string recording the name of the method used for location finding. The first byte indicates the character code used, and this is followed by the name of the method. Since the Type is not ASCII, NULL termination is not necessary."
+msgstr "Рядок із символів, у якому записано назву методу, використаного для визначення місця. Перший байт визначає кодування символів, за ним має бути вказано назву способу. Оскільки Type не є набором символів ASCII, завершення рядка символом NULL є непотрібним."
+
+#: libexif/exif-tag.c:207
+msgid "Name of GPS Area"
+msgstr "Назва області GPS"
+
+#: libexif/exif-tag.c:208
+msgid "A character string recording the name of the GPS area. The first byte indicates the character code used, and this is followed by the name of the GPS area. Since the Type is not ASCII, NULL termination is not necessary."
+msgstr "Рядок із символів, у якому записано назву області GPS. Перший байт визначає кодування символів, за ним має бути вказано назву області GPS. Оскільки Type не є набором символів ASCII, завершення рядка символом NULL є непотрібним."
+
+#: libexif/exif-tag.c:212
+msgid "GPS Date"
+msgstr "Дата GPS"
+
+#: libexif/exif-tag.c:213
+msgid "A character string recording date and time information relative to UTC (Coordinated Universal Time). The format is \"YYYY:MM:DD\". The length of the string is 11 bytes including NULL."
+msgstr "Рядок із символів, у якому записано дані щодо дати і часу відносно UTC (всесвітнього координованого часу). Формат є таким: «РРРР:ММ:ДД». Довжина рядка має складати 11 байтів разом із завершальним символом NULL."
+
+#: libexif/exif-tag.c:217
+msgid "GPS Differential Correction"
+msgstr "Диференціальне виправлення GPS"
+
+#: libexif/exif-tag.c:218
+msgid "Indicates whether differential correction is applied to the GPS receiver."
+msgstr "Вказує на диференціальне виправлення, яке застосовано до даних приймача GPS."
+
+#: libexif/exif-tag.c:220
+msgid "GPS Horizontal Positioning Error"
+msgstr "Помилка горизонтального позиціювання GPS"
+
+#: libexif/exif-tag.c:221
+msgid "Indicates the horizontal positioning errors in meters. This is expressed as one RATIONAL value."
+msgstr "Вказує на помилки горизонтального позиціювання у метрах. Визначається як одне РАЦІОНАЛЬНЕ число."
+
+#: libexif/exif-tag.c:225
+msgid "New Subfile Type"
+msgstr "Новий тип підфайлів"
+
+#: libexif/exif-tag.c:225
+msgid "A general indication of the kind of data contained in this subfile."
+msgstr "Загальне визначення типу даних, що містяться у цьому підфайлі."
+
+#: libexif/exif-tag.c:228
+msgid "Image Width"
+msgstr "Ширина зображення"
+
+#: libexif/exif-tag.c:229
+msgid "The number of columns of image data, equal to the number of pixels per row. In JPEG compressed data a JPEG marker is used instead of this tag."
+msgstr "Кількість стовпчиків даних зображення, дорівнює кількості пікселів на рядок. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG."
+
+#: libexif/exif-tag.c:233
+msgid "Image Length"
+msgstr "Довжина зображення"
+
+#: libexif/exif-tag.c:234
+msgid "The number of rows of image data. In JPEG compressed data a JPEG marker is used instead of this tag."
+msgstr "Кількість рядків даних зображення. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG."
+
+#: libexif/exif-tag.c:237
+msgid "Bits per Sample"
+msgstr "Бітів на фрагмент"
+
+#: libexif/exif-tag.c:238
+msgid "The number of bits per image component. In this standard each component of the image is 8 bits, so the value for this tag is 8. See also <SamplesPerPixel>. In JPEG compressed data a JPEG marker is used instead of this tag."
+msgstr "Кількість бітів на компонент зображення. У цьому стандарті кожен компонент зображення є 8-бітовим, отже значенням для цієї мітки є 8. Див. також <SamplesPerPixel>. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG."
+
+#: libexif/exif-tag.c:243
+msgid "Compression"
+msgstr "Стиснення"
+
+#: libexif/exif-tag.c:244
+msgid "The compression scheme used for the image data. When a primary image is JPEG compressed, this designation is not necessary and is omitted. When thumbnails use JPEG compression, this tag value is set to 6."
+msgstr "Алгоритм стискання, який використано для даних зображення. Якщо основне зображення стиснено за допомогою алгоритму JPEG, це значення є зайвим, його можна не вказувати. Якщо стискання JPEG використано для мініатюр, значенням цієї мітки має бути 6."
+
+#: libexif/exif-tag.c:250
+msgid "Photometric Interpretation"
+msgstr "Фотометрична інтерпретація"
+
+#: libexif/exif-tag.c:251
+msgid "The pixel composition. In JPEG compressed data a JPEG marker is used instead of this tag."
+msgstr "Композиція пікселів. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG."
+
+#: libexif/exif-tag.c:255
+msgid "Fill Order"
+msgstr "Порядок заповнення"
+
+#: libexif/exif-tag.c:257
+msgid "Document Name"
+msgstr "Назва документа"
+
+#: libexif/exif-tag.c:260
+msgid "Image Description"
+msgstr "Опис зображення"
+
+#: libexif/exif-tag.c:261
+msgid "A character string giving the title of the image. It may be a comment such as \"1988 company picnic\" or the like. Two-bytes character codes cannot be used. When a 2-bytes code is necessary, the Exif Private tag <UserComment> is to be used."
+msgstr "Рядок із символів, який є заголовком зображення. Це може бути коментар, подібний до «1988 company picnic». Не можна використовувати двобайтові коди символів. Якщо вам потрібні двобайтові символи, скористайтеся приватною міткою Exif <UserComment>."
+
+#: libexif/exif-tag.c:267
+msgid "Manufacturer"
+msgstr "Виробник"
+
+#: libexif/exif-tag.c:268
+msgid "The manufacturer of the recording equipment. This is the manufacturer of the DSC, scanner, video digitizer or other equipment that generated the image. When the field is left blank, it is treated as unknown."
+msgstr "Виробник обладнання для записування даних. Це може бути виробник цифрового дзеркального фотоапарата, сканера, засобу для цифрування відеоданих або іншого обладнання, за допомогою якого було створено зображення. Якщо значення поля є порожнім, вважається, що виробник є невідомим."
+
+#: libexif/exif-tag.c:274
+msgid "Model"
+msgstr "Модель"
+
+#: libexif/exif-tag.c:275
+msgid "The model name or model number of the equipment. This is the model name or number of the DSC, scanner, video digitizer or other equipment that generated the image. When the field is left blank, it is treated as unknown."
+msgstr "Назва моделі або номер моделі обладнання. Це назва моделі або номер цифрового дзеркального фотоапарата, засобу для цифрування відеоданих або іншого обладнання, за допомогою якого було створено зображення. Якщо значення поля є порожнім, вважається, що виробник є невідомим."
+
+#: libexif/exif-tag.c:280
+msgid "Strip Offsets"
+msgstr "Зсуви смуг"
+
+#: libexif/exif-tag.c:281
+msgid "For each strip, the byte offset of that strip. It is recommended that this be selected so the number of strip bytes does not exceed 64 Kbytes. With JPEG compressed data this designation is not needed and is omitted. See also <RowsPerStrip> and <StripByteCounts>."
+msgstr "Зсув у байтах для кожної зі смуг зображення. Рекомендовано, щоб вибрана у такий спосіб кількість байтів для смуги не перевищувала 64 кілобайтів. Для стиснених даних JPEG це значення є непотрібним, його слід пропустити. Див. також <RowsPerStrip> і <StripByteCounts>."
+
+#: libexif/exif-tag.c:287
+msgid "Orientation"
+msgstr "Орієнтація"
+
+#: libexif/exif-tag.c:288
+msgid "The image orientation viewed in terms of rows and columns."
+msgstr "Орієнтація зображення у сенсі рядків і стовпчиків."
+
+#: libexif/exif-tag.c:291
+msgid "Samples per Pixel"
+msgstr "Семпли на піксель"
+
+#: libexif/exif-tag.c:292
+msgid "The number of components per pixel. Since this standard applies to RGB and YCbCr images, the value set for this tag is 3. In JPEG compressed data a JPEG marker is used instead of this tag."
+msgstr "Кількість компонентів на піксель. Оскільки цей стандарт стосується зображень у просторах кольорів RGB і YCbCr, значенням для цієї мітки є 3. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG."
+
+#: libexif/exif-tag.c:297
+msgid "Rows per Strip"
+msgstr "Рядків на смугу"
+
+#: libexif/exif-tag.c:298
+msgid "The number of rows per strip. This is the number of rows in the image of one strip when an image is divided into strips. With JPEG compressed data this designation is not needed and is omitted. See also <StripOffsets> and <StripByteCounts>."
+msgstr "Кількість рядків на смугу. Це кількість рядків у зображення однієї смуги, якщо зображення поділено на смуги. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG. Диа. також <StripOffsets> і <StripByteCounts>."
+
+#: libexif/exif-tag.c:304
+msgid "Strip Byte Count"
+msgstr "Кількість байтів у смузі"
+
+#: libexif/exif-tag.c:305
+msgid "The total number of bytes in each strip. With JPEG compressed data this designation is not needed and is omitted."
+msgstr "Загальна кількість байтів у кожній смузі. Для стиснених даних JPEG це значення є непотрібним, його слід пропустити."
+
+#: libexif/exif-tag.c:308
+msgid "X-Resolution"
+msgstr "Роздільна здатність за X"
+
+#: libexif/exif-tag.c:309
+msgid "The number of pixels per <ResolutionUnit> in the <ImageWidth> direction. When the image resolution is unknown, 72 [dpi] is designated."
+msgstr "Кількість пікселів на <ResolutionUnit> у напрямку <ImageWidth>. Якщо роздільна здатність зображення є невідомою, використовується значення 72 [точок на дюйм]."
+
+#: libexif/exif-tag.c:313
+msgid "Y-Resolution"
+msgstr "Роздільна здатність за Y"
+
+#: libexif/exif-tag.c:314
+msgid "The number of pixels per <ResolutionUnit> in the <ImageLength> direction. The same value as <XResolution> is designated."
+msgstr "Кількість пікселів на <ResolutionUnit> у напрямку <ImageLength>. Використовується те саме значення, що і для <XResolution>."
+
+#: libexif/exif-tag.c:318
+msgid "Planar Configuration"
+msgstr "Налаштування планарності"
+
+#: libexif/exif-tag.c:319
+msgid "Indicates whether pixel components are recorded in a chunky or planar format. In JPEG compressed files a JPEG marker is used instead of this tag. If this field does not exist, the TIFF default of 1 (chunky) is assumed."
+msgstr "Вказує на те, записано компоненти пікселя у фрагментному чи планарному форматі. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG. Якщо поля не існує, використовуватиметься типове значення для TIFF, 1 (фрагментний)."
+
+#: libexif/exif-tag.c:324
+msgid "Resolution Unit"
+msgstr "Одиниця роздільності"
+
+#: libexif/exif-tag.c:325
+msgid "The unit for measuring <XResolution> and <YResolution>. The same unit is used for both <XResolution> and <YResolution>. If the image resolution is unknown, 2 (inches) is designated."
+msgstr "Одиниця виміру <XResolution> і <YResolution>. Для <XResolution> і <YResolution> використовується одна одиниця. Якщо роздільна здатність зображення є невідомою, припускається типове значення 2 (дюйми)."
+
+#: libexif/exif-tag.c:330
+msgid "Transfer Function"
+msgstr "Функція перенесення"
+
+#: libexif/exif-tag.c:331
+msgid "A transfer function for the image, described in tabular style. Normally this tag is not necessary, since color space is specified in the color space information tag (<ColorSpace>)."
+msgstr "Функція передавання, описана у табличному стилі. Зазвичай, потреби у цій мітці немає, оскільки простір кольорів визначається у мітці відомостей щодо простору кольорів (<ColorSpace>)."
+
+#: libexif/exif-tag.c:335
+msgid "Software"
+msgstr "Програми"
+
+#: libexif/exif-tag.c:336
+msgid "This tag records the name and version of the software or firmware of the camera or image input device used to generate the image. The detailed format is not specified, but it is recommended that the example shown below be followed. When the field is left blank, it is treated as unknown."
+msgstr "У цій мітці записується назва і версія програмного забезпечення або мікропрограми фотоапарата або пристрою для отримання зображення, які було використано для створення зображення. Докладно формат запису не визначено, але рекомендовано дотримуватися вказаного нижче прикладу. Якщо поле є порожнім, вважається, що відповідні дані є невідомими."
+
+#: libexif/exif-tag.c:343
+msgid "Date and Time"
+msgstr "Дата і час"
+
+#: libexif/exif-tag.c:344
+msgid "The date and time of image creation. In this standard (EXIF-2.1) it is the date and time the file was changed."
+msgstr "Дата і час створення зображення. У цьому стандарті (EXIF-2.1) це дата і час, коли файл було змінено."
+
+#: libexif/exif-tag.c:347
+msgid "Artist"
+msgstr "Виконавець"
+
+#: libexif/exif-tag.c:348
+msgid "This tag records the name of the camera owner, photographer or image creator. The detailed format is not specified, but it is recommended that the information be written as in the example below for ease of Interoperability. When the field is left blank, it is treated as unknown."
+msgstr "У цій мітці записуються дані щодо власника фотоапарата, фотографа або особи, якою створено зображення. Докладно формат запису не визначено, але рекомендовано дотримуватися вказаного нижче прикладу. Якщо поле є порожнім, вважається, що відповідні дані є невідомими."
+
+#: libexif/exif-tag.c:354 libexif/pentax/mnote-pentax-tag.c:113
+msgid "White Point"
+msgstr "Біла точка"
+
+#: libexif/exif-tag.c:355
+msgid "The chromaticity of the white point of the image. Normally this tag is not necessary, since color space is specified in the color space information tag (<ColorSpace>)."
+msgstr "Основні кольори точки білого зображення. Зазвичай, ця мітка є непотрібною, оскільки простір кольорів визначається у мітці відомостей щодо простору кольорів (<ColorSpace>)."
+
+#: libexif/exif-tag.c:360
+msgid "Primary Chromaticities"
+msgstr "Основні кольори"
+
+#: libexif/exif-tag.c:361
+msgid "The chromaticity of the three primary colors of the image. Normally this tag is not necessary, since color space is specified in the color space information tag (<ColorSpace>)."
+msgstr "Основні кольори трьох основних кольорів зображення. Зазвичай, ця мітка є непотрібною, оскільки простір кольорів визначається у мітці відомостей щодо простору кольорів (<ColorSpace>)."
+
+#: libexif/exif-tag.c:366
+msgid "Defined by Adobe Corporation to enable TIFF Trees within a TIFF file."
+msgstr "Визначено Adobe Corporation для уможливлення ієрархій TIFF у файлі TIFF."
+
+#: libexif/exif-tag.c:369
+msgid "Transfer Range"
+msgstr "Діапазон передавання"
+
+#: libexif/exif-tag.c:374
+msgid "JPEG Interchange Format"
+msgstr "Формат обміну JPEG"
+
+#: libexif/exif-tag.c:375
+msgid "The offset to the start byte (SOI) of JPEG compressed thumbnail data. This is not used for primary image JPEG data."
+msgstr "Зсув початкового байта (SOI) стиснених у форматі JPEG даних мініатюри. Це використовується для основних даних зображення JPEG."
+
+#: libexif/exif-tag.c:380
+msgid "JPEG Interchange Format Length"
+msgstr "Довжина формату обміну JPEG"
+
+#: libexif/exif-tag.c:381
+msgid "The number of bytes of JPEG compressed thumbnail data. This is not used for primary image JPEG data. JPEG thumbnails are not divided but are recorded as a continuous JPEG bitstream from SOI to EOI. Appn and COM markers should not be recorded. Compressed thumbnails must be recorded in no more than 64 Kbytes, including all other data to be recorded in APP1."
+msgstr "Кількість байтів стиснених даних мініатюри JPEG. Не використовується для даних основного зображення JPEG. Мініатюри JPEG не діляться, а записуються як неперервний потік бітів JPEG з SOI до EOI. Позначки Appn і COM не слід записувати. Стиснені мініатюри має бути записано не більше ніж у 64 кілобайти, разом із усіма іншими даними, які слід записувати до APP1."
+
+#: libexif/exif-tag.c:390
+msgid "YCbCr Coefficients"
+msgstr "Коефіцієнти YCbCr"
+
+#: libexif/exif-tag.c:391
+msgid "The matrix coefficients for transformation from RGB to YCbCr image data. No default is given in TIFF; but here the value given in \"Color Space Guidelines\", is used as the default. The color space is declared in a color space information tag, with the default being the value that gives the optimal image characteristics Interoperability this condition."
+msgstr "Коефіцієнти матриця для перетворення даних зображення з RGB до YCbCr. У TIFF типове значення не задається; але тут як типове значення використовується значення, вказане у «Настановах простору кольорів». Простір кольорів оголошується у мітці відомостей щодо простору кольорів. Типовим є значення, яке дає оптимальні характеристики сумісності зображення."
+
+#: libexif/exif-tag.c:400
+msgid "YCbCr Sub-Sampling"
+msgstr "Підрозбиття на кроки для YCbCr"
+
+#: libexif/exif-tag.c:401
+msgid "The sampling ratio of chrominance components in relation to the luminance component. In JPEG compressed data a JPEG marker is used instead of this tag."
+msgstr "Частка у вибірці компонентів колірності відносно компонента освітленості. У стиснених даних JPEG замість цієї мітки використовується позначка JPEG."
+
+#: libexif/exif-tag.c:406
+msgid "YCbCr Positioning"
+msgstr "Позиціювання YCbCr"
+
+#: libexif/exif-tag.c:407
+msgid "The position of chrominance components in relation to the luminance component. This field is designated only for JPEG compressed data or uncompressed YCbCr data. The TIFF default is 1 (centered); but when Y:Cb:Cr = 4:2:2 it is recommended in this standard that 2 (co-sited) be used to record data, in order to improve the image quality when viewed on TV systems. When this field does not exist, the reader shall assume the TIFF default. In the case of Y:Cb:Cr = 4:2:0, the TIFF default (centered) is recommended. If the reader does not have the capability of supporting both kinds of <YCbCrPositioning>, it shall follow the TIFF default regardless of the value in this field. It is preferable that readers be able to support both centered and co-sited positioning."
+msgstr "Розташування компонентів колірності відносно компонента освітленості. Це поле призначено лише для стиснутих даних JPEG або нестиснутих даних YCbCr. Типовим для TIFF є значення 1 (центральне); але якщо Y:Cb:Cr = 4:2:2, рекомендованим у цьому стандарті для запису даних є значення 2 (сумісне). Це значення поліпшить якість зображення при перегляді на телевізійних системах. Якщо цього поля не існує, засіб читання має припускати типове значення TIFF. Якщо Y:Cb:Cr = 4:2:0, рекомендованим є типове значення TIFF (центроване). Якщо у засобі читання немає сумісності із підтримкою обох типів <YCbCrPositioning>, він має використовувати типове значення TIFF, незалежно від значення у цьому полі. Бажано, щоб у засобах читання було передбачено підтримку обох, центрованого і сумісного, розташувань."
+
+#: libexif/exif-tag.c:422
+msgid "Reference Black/White"
+msgstr "Еталонні чорне/біле"
+
+#: libexif/exif-tag.c:423
+msgid "The reference black point value and reference white point value. No defaults are given in TIFF, but the values below are given as defaults here. The color space is declared in a color space information tag, with the default being the value that gives the optimal image characteristics Interoperability these conditions."
+msgstr "Значення еталонної точки чорного і значення еталонної точки білого. У TIFF типові значення не задаються, а використовуються типові значення задані тут. Простір кольорів оголошується у мітці відомостей щодо простору кольорів. Типовим є значення, яке дає оптимальні характеристики сумісності зображення."
+
+#: libexif/exif-tag.c:431
+msgid "XML Packet"
+msgstr "Пакунок XML"
+
+#: libexif/exif-tag.c:431
+msgid "XMP Metadata"
+msgstr "Метадані XMP"
+
+#: libexif/exif-tag.c:447 libexif/exif-tag.c:834
+msgid "CFA Pattern"
+msgstr "Взірець CFA"
+
+#: libexif/exif-tag.c:448 libexif/exif-tag.c:835
+msgid "Indicates the color filter array (CFA) geometric pattern of the image sensor when a one-chip color area sensor is used. It does not apply to all sensing methods."
+msgstr "Визначає геометричний взірець масиву фільтрування кольорів (CFA) датчика зображень, якщо використовується одночиповий датчик області кольорів. Стосується не усіх методів вимірювання."
+
+#: libexif/exif-tag.c:452
+msgid "Battery Level"
+msgstr "Заряд батарей"
+
+#: libexif/exif-tag.c:454
+msgid "Copyright"
+msgstr "Авторське право"
+
+#: libexif/exif-tag.c:455
+msgid "Copyright information. In this standard the tag is used to indicate both the photographer and editor copyrights. It is the copyright notice of the person or organization claiming rights to the image. The Interoperability copyright statement including date and rights should be written in this field; e.g., \"Copyright, John Smith, 19xx. All rights reserved.\". In this standard the field records both the photographer and editor copyrights, with each recorded in a separate part of the statement. When there is a clear distinction between the photographer and editor copyrights, these are to be written in the order of photographer followed by editor copyright, separated by NULL (in this case, since the statement also ends with a NULL, there are two NULL codes) (see example 1). When only the photographer is given, it is terminated by one NULL code (see example 2). When only the editor copyright is given, the photographer copyright part consists of one space followed by a terminating NULL code, then the editor copyright is given (see example 3). When the field is left blank, it is treated as unknown."
+msgstr "Дані щодо авторських прав. У цьому стандарті мітка використовується для зберігання одразу відомостей щодо авторських прав фотографа і редактора. Це запис щодо авторських прав особи або організації, яка є власником авторських прав на зображення. До цього поля має бути записано сумісне формулювання авторських прав, що включає дату і власника. Приклад: «Copyright, John Smith, 19xx. All rights reserved.». У цьому стандарті мітка використовується для зберігання одразу відомостей щодо авторських прав фотографа і редактора, які має бути викладено у окремих частинах формулювання. Якщо між авторськими правами фотографа і редактора є очевидні відмінності, записи має бути викладено у такому порядку: спершу запис фотографа, потім запис редактора, відокремлений символом NULL (у такому випадку, оскільки формулювання також завершується символом NULL, між записами має бути два символи NULL) (див. приклад 1). Якщо вказано лише авторські права фотографа, їхній запис має завершувати одинарним символом NULL (див. приклад 2). Якщо вказано лише авторські права редактора, частина запису авторських прав, присвячена фотографу, має складатися із одного пробілу, за яким має слідувати символ NULL, далі має бути вказано авторські права редактора (див. приклад 3). Якщо поле є порожнім, вважається, що авторські права є невідомими."
+
+#: libexif/exif-tag.c:477
+msgid "Exposure time, given in seconds (sec)."
+msgstr "Тривалість експонування вказана у секундах."
+
+#: libexif/exif-tag.c:480
+msgid "The F number."
+msgstr "Діафрагмове число."
+
+#: libexif/exif-tag.c:485
+msgid "Image Resources Block"
+msgstr "Блок ресурсів зображення"
+
+#: libexif/exif-tag.c:488
+msgid "A pointer to the Exif IFD. Interoperability, Exif IFD has the same structure as that of the IFD specified in TIFF. ordinarily, however, it does not contain image data as in the case of TIFF."
+msgstr "Вказівник на IFD Exif. Для сумісності IFD Exif має таку саму структуру, що і IFD, вказаний у TIFF. Втім, зазвичай, тут не містяться дані зображення, як у випадку TIFF."
+
+#: libexif/exif-tag.c:496
+msgid "Exposure Program"
+msgstr "Програма експозиції"
+
+#: libexif/exif-tag.c:497
+msgid "The class of the program used by the camera to set exposure when the picture is taken."
+msgstr "Клас програми, використаної фотоапаратом для експонування під час знімання."
+
+#: libexif/exif-tag.c:501
+msgid "Spectral Sensitivity"
+msgstr "Спектральна чутливість"
+
+#: libexif/exif-tag.c:502
+msgid "Indicates the spectral sensitivity of each channel of the camera used. The tag value is an ASCII string compatible with the standard developed by the ASTM Technical Committee."
+msgstr "Вказує на спектральну чутливість кожного каналу, використаного фотоапаратом. Значення мітки є рядок символів ASCII, сумісний із стандартом, розробленим Технічним комітетом ASTM."
+
+#: libexif/exif-tag.c:507
+msgid "GPS Info IFD Pointer"
+msgstr "IFD-вказівник даних GPS"
+
+#: libexif/exif-tag.c:508
+msgid "A pointer to the GPS Info IFD. The Interoperability structure of the GPS Info IFD, like that of Exif IFD, has no image data."
+msgstr "Вказівник на IFD відомостей GPS. Структура сумісності IFD відомостей GPS, подібна до IFD Exif, не містить даних зображення."
+
+#: libexif/exif-tag.c:513
+msgid "ISO Speed Ratings"
+msgstr "Світлочутливість ISO"
+
+#: libexif/exif-tag.c:514
+msgid "Indicates the ISO Speed and ISO Latitude of the camera or input device as specified in ISO 12232."
+msgstr "Вказує на швидкість ISO і ширину ISO камери або пристрою отримання даних, як їх визначено в ISO 12232."
+
+#: libexif/exif-tag.c:517
+msgid "Opto-Electronic Conversion Function"
+msgstr "Функція оптично-електронного перетворення"
+
+#: libexif/exif-tag.c:518
+msgid "Indicates the Opto-Electronic Conversion Function (OECF) specified in ISO 14524. <OECF> is the relationship between the camera optical input and the image values."
+msgstr "Вказує на функцію оптоелектронного перетворення (OECF), задану у ISO 14524. <OECF> є зв'язком між оптичними вхідними даними фотоапарата і значеннями у зображенні."
+
+#: libexif/exif-tag.c:523
+msgid "Time Zone Offset"
+msgstr "Часовий пояс"
+
+#: libexif/exif-tag.c:524
+msgid "Encodes time zone of camera clock relative to GMT."
+msgstr "Закодований часовий пояс годинника фотоапарата відносно часу за Грінвичем."
+
+#: libexif/exif-tag.c:526
+msgid "Sensitivity Type"
+msgstr "Тип чутливості"
+
+#: libexif/exif-tag.c:527
+msgid "The SensitivityType tag indicates which one of the parameters of ISO12232 is the PhotographicSensitivity tag. Although it is an optional tag, it should be recorded when a PhotographicSensitivity tag is recorded. Value = 4, 5, 6, or 7 may be used in case that the values of plural parameters are the same."
+msgstr "Мітка SensitivityType (тип чутливості) вказує, який з параметрів ISO12232 є міткою PhotographicSensitivity. Хоча ця мітка не є обов'язковою, її має бути записано при записі мітки PhotographicSensitivity. Значення = 4, 5, 6 або 7 може бути використано, якщо значення множинних параметрів є однаковими."
+
+#: libexif/exif-tag.c:533
+msgid "Standard Output Sensitivity"
+msgstr "Стандартна чутливість виведення"
+
+#: libexif/exif-tag.c:537
+msgid "Recommended Exposure Index"
+msgstr "Рекомендований індекс експонування"
+
+#: libexif/exif-tag.c:541 libexif/pentax/mnote-pentax-tag.c:54
+msgid "ISO Speed"
+msgstr "Світлочутливість ISO"
+
+#: libexif/exif-tag.c:545
+msgid "ISO Speed Latitude yyy"
+msgstr "Світлочутливість ISO широти yyy"
+
+#: libexif/exif-tag.c:549
+msgid "ISO Speed Latitude zzz"
+msgstr "Світлочутливість ISO широти zzz"
+
+#: libexif/exif-tag.c:552
+msgid "Exif Version"
+msgstr "Версія Exif"
+
+#: libexif/exif-tag.c:553
+msgid "The version of this standard supported. Nonexistence of this field is taken to mean nonconformance to the standard."
+msgstr "Підтримувана версія цього стандарту. Якщо у цьому полі не вказано значення, вважатиметься, що дані не відповідають стандарту."
+
+#: libexif/exif-tag.c:557
+msgid "Date and Time (Original)"
+msgstr "Дата і час (знімання)"
+
+#: libexif/exif-tag.c:558
+msgid "The date and time when the original image data was generated. For a digital still camera the date and time the picture was taken are recorded."
+msgstr "Дата і час, коли було створено початкове зображення. Для цифрових фотоапаратів дата і час запису цифрових даних."
+
+#: libexif/exif-tag.c:563
+msgid "Date and Time (Digitized)"
+msgstr "Дата і час (оцифровування)"
+
+#: libexif/exif-tag.c:564
+msgid "The date and time when the image was stored as digital data."
+msgstr "Дата і час, коли зображення було збережено у форматі цифрових даних."
+
+#: libexif/exif-tag.c:567
+msgid "Offset Time For DateTime"
+msgstr "Час зсуву для DateTime"
+
+#: libexif/exif-tag.c:568
+msgid "A tag used to record the offset from UTC (the time difference from Universal Time Coordinated including daylight saving time) of the time of DateTime tag. The format when recording the offset is \"+|-HH:MM\". The part of \"+|-\" shall be recorded as \"+\" or \"-\". When the offset are unknown, all the character spaces except colons (\":\")should be filled with blank characters, or else the Interoperability field should be filled with blank characters. The character string length is 7 Bytes including NULL for termination. When the field is left blank, it is treated as unknown."
+msgstr "Мітка, яку використовують для запису зсуву часу щодо всесвітнього часу (різницю часу щодо всесвітнього координованого часу, включено із літнім часом) часу мітки DateTime. Формат запису зсуву є таким: «+|-ГГ:ХХ». Частину «+|-» має бути записано як «+» або «-». Якщо зсув є невідомим, усі місця символів, окрім двокрапки («:»), має бути заповнено пробілами або має бути заповнено пробілами поле Interoperability. Довжина рядка символів має дорівнювати 7 байтів разом із завершальним символом NULL. Якщо поле не заповнено, вважається, що значення є невідомим."
+
+#: libexif/exif-tag.c:571
+msgid "Offset Time For DateTimeOriginal"
+msgstr "Час зсуву для DateTimeOriginal"
+
+#: libexif/exif-tag.c:572
+msgid "A tag used to record the offset from UTC (the time difference from Universal Time Coordinated including daylight saving  time)  of  the time  of  DateTimeOriginal  tag.  The  format  when  recording  the  offset  is \"+|-HH:MM\". The part of \"+|-\" shall be recorded as \"+\" or \"-\". When the offset are unknown, all the character spaces except colons (\":\")should be filled with blank characters, or else the Interoperability field should be filled with blank characters. The character string length is 7 Bytes including NULL for termination. When the field is left blank, it is treated as unknown."
+msgstr "Мітка, яку використовують для запису зсуву часу щодо всесвітнього часу (різницю часу щодо всесвітнього координованого часу, включено із літнім часом) часу мітки DateTimeOriginal. Формат запису зсуву є таким: «+|-ГГ:ХХ». Частину «+|-» має бути записано як «+» або «-». Якщо зсув є невідомим, усі місця символів, окрім двокрапки («:»), має бути заповнено пробілами або має бути заповнено пробілами поле Interoperability. Довжина рядка символів має дорівнювати 7 байтів разом із завершальним символом NULL. Якщо поле не заповнено, вважається, що значення є невідомим."
+
+#: libexif/exif-tag.c:575
+msgid "Offset Time For DateTimeDigitized"
+msgstr "Час зсуву для DateTimeDigitized"
+
+#: libexif/exif-tag.c:576
+msgid "A tag used to record the offset from UTC (the time difference from Universal Time Coordinated including daylight  saving  time)  of  the time  of  DateTimeDigitized  tag.  The  format  when  recording  the  offset  is \"+|-HH:MM\". The part of \"+|-\" shall be recorded as \"+\" or \"-\". When the offset are unknown, all the character spaces except colons (\":\")should be filled with blank characters, or else the Interoperability field should be filled with blank characters. The character string length is 7 Bytes including NULL for termination. When the field is left blank, it is treated as unknown."
+msgstr "Мітка, яку використовують для запису зсуву часу щодо всесвітнього часу (різницю часу щодо всесвітнього координованого часу, включено із літнім часом) часу мітки DateTimeDigitized. Формат запису зсуву є таким: «+|-ГГ:ХХ». Частину «+|-» має бути записано як «+» або «-». Якщо зсув є невідомим, усі місця символів, окрім двокрапки («:»), має бути заповнено пробілами або має бути заповнено пробілами поле Interoperability. Довжина рядка символів має дорівнювати 7 байтів разом із завершальним символом NULL. Якщо поле не заповнено, вважається, що значення є невідомим."
+
+#: libexif/exif-tag.c:579
+msgid "Components Configuration"
+msgstr "Налаштування компонентів"
+
+#: libexif/exif-tag.c:580
+msgid "Information specific to compressed data. The channels of each component are arranged in order from the 1st component to the 4th. For uncompressed data the data arrangement is given in the <PhotometricInterpretation> tag. However, since <PhotometricInterpretation> can only express the order of Y, Cb and Cr, this tag is provided for cases when compressed data uses components other than Y, Cb, and Cr and to enable support of other sequences."
+msgstr "Відомості, специфічні для стиснених даних. Канали кожного з компонентів упорядковуються від першого компонента до четвертого. Для нестиснених даних упорядкування даних визначається міткою <PhotometricInterpretation>. Втім, оскільки <PhotometricInterpretation> може визначати лише порядок Y, Cb і Cr, ця мітка потрібна для випадків, коли у стиснених даних використовуються компоненти, відмінні від Y, Cb і Cr, а також для уможливлення підтримки інших послідовностей компонентів."
+
+#: libexif/exif-tag.c:590
+msgid "Compressed Bits per Pixel"
+msgstr "Кількість стиснених бітів на піксель"
+
+#: libexif/exif-tag.c:591
+msgid "Information specific to compressed data. The compression mode used for a compressed image is indicated in unit bits per pixel."
+msgstr "Відомості, специфічні для стиснених даних. Режим стиснення, який використано для стискання зображення, визначається у бітах на піксель."
+
+#: libexif/exif-tag.c:595 libexif/olympus/mnote-olympus-tag.c:155
+msgid "Shutter Speed"
+msgstr "Швидкість затвору"
+
+#: libexif/exif-tag.c:596
+msgid "Shutter speed. The unit is the APEX (Additive System of Photographic Exposure) setting."
+msgstr "Швидкість затвору. Одиницею є значення параметра APEX (Additive System of Photographic Exposure або адитивної системи експонування фотографій)."
+
+#: libexif/exif-tag.c:600
+msgid "The lens aperture. The unit is the APEX value."
+msgstr "Діафрагма об'єктива. Одиницею є значення APEX."
+
+#: libexif/exif-tag.c:602
+msgid "Brightness"
+msgstr "Яскравість"
+
+#: libexif/exif-tag.c:603
+msgid "The value of brightness. The unit is the APEX value. Ordinarily it is given in the range of -99.99 to 99.99."
+msgstr "Значення яскравості. Одиницею є значення APEX. Зазвичай, визначається у діапазоні від -99.99 до 99.99."
+
+#: libexif/exif-tag.c:607
+msgid "Exposure Bias"
+msgstr "Ухил експозиції"
+
+#: libexif/exif-tag.c:608
+msgid "The exposure bias. The units is the APEX value. Ordinarily it is given in the range of -99.99 to 99.99."
+msgstr "Ухил експозиції. Одиницями є значення APEX. Зазвичай, визначається у діапазоні від -99.99 до 99.99."
+
+#: libexif/exif-tag.c:611
+msgid "Maximum Aperture Value"
+msgstr "Максимальне значення діафрагми"
+
+#: libexif/exif-tag.c:612
+msgid "The smallest F number of the lens. The unit is the APEX value. Ordinarily it is given in the range of 00.00 to 99.99, but it is not limited to this range."
+msgstr "Найменше значення F об'єктива. Одиницею є значення APEX. Зазвичай, задається у діапазоні від 00.00 до 99.99, але не обмежується цим діапазоном."
+
+#: libexif/exif-tag.c:617
+msgid "Subject Distance"
+msgstr "Відстань до об'єкта"
+
+#: libexif/exif-tag.c:618
+msgid "The distance to the subject, given in meters."
+msgstr "Відстань до об'єкта, вказана у метрах."
+
+#: libexif/exif-tag.c:621
+msgid "The metering mode."
+msgstr "Режим вимірювання."
+
+#: libexif/exif-tag.c:623
+msgid "Light Source"
+msgstr "Джерело світла"
+
+#: libexif/exif-tag.c:624
+msgid "The kind of light source."
+msgstr "Тип джерела світла."
+
+#: libexif/exif-tag.c:627
+msgid "This tag is recorded when an image is taken using a strobe light (flash)."
+msgstr "Ця мітка записується, якщо знімок створюється за допомогою стробоскопічного світла (спалаху)."
+
+#: libexif/exif-tag.c:631
+msgid "The actual focal length of the lens, in mm. Conversion is not made to the focal length of a 35 mm film camera."
+msgstr "Справжня фокальна відстань об'єктива у мм. Перетворення до фокальної відстані 35-мм плівкової фотокамери не виконується."
+
+#: libexif/exif-tag.c:634
+msgid "Subject Area"
+msgstr "Площа об'єкту"
+
+#: libexif/exif-tag.c:635
+msgid "This tag indicates the location and area of the main subject in the overall scene."
+msgstr "Ця мітка визначає розташування і область основного об'єкта усієї сцени."
+
+#: libexif/exif-tag.c:639
+msgid "TIFF/EP Standard ID"
+msgstr "Стандартний ідентифікатор TIFF/EP"
+
+#: libexif/exif-tag.c:641
+msgid "Maker Note"
+msgstr "Нотатка виробника"
+
+#: libexif/exif-tag.c:642
+msgid "A tag for manufacturers of Exif writers to record any desired information. The contents are up to the manufacturer."
+msgstr "Мітка для виробників засобів запису Exif для запису будь-якої бажаної інформації. Вміст мітки визначається виробником."
+
+#: libexif/exif-tag.c:645
+msgid "User Comment"
+msgstr "Коментар користувача"
+
+#: libexif/exif-tag.c:646
+msgid "A tag for Exif users to write keywords or comments on the image besides those in <ImageDescription>, and without the character code limitations of the <ImageDescription> tag. The character code used in the <UserComment> tag is identified based on an ID code in a fixed 8-byte area at the start of the tag data area. The unused portion of the area is padded with NULL (\"00.h\"). ID codes are assigned by means of registration. The designation method and references for each character code are defined in the specification. The value of CountN is determined based on the 8 bytes in the character code area and the number of bytes in the user comment part. Since the TYPE is not ASCII, NULL termination is not necessary. The ID code for the <UserComment> area may be a Defined code such as JIS or ASCII, or may be Undefined. The Undefined name is UndefinedText, and the ID code is filled with 8 bytes of all \"NULL\" (\"00.H\"). An Exif reader that reads the <UserComment> tag must have a function for determining the ID code. This function is not required in Exif readers that do not use the <UserComment> tag. When a <UserComment> area is set aside, it is recommended that the ID code be ASCII and that the following user comment part be filled with blank characters [20.H]."
+msgstr "Мітка для запису користувачами Exif ключових слів або коментарів щодо зображення, окрім тих, які записано у <ImageDescription>, і без обмежень на кодування символів мітки <ImageDescription>. Кодування символів, використане у мітці <UserComment>, визначається на основі коду ідентифікатора у фіксованій 8-байтовій області на початку області даних мітки. Невикористану частину області заповнюють символом NULL («00.h»). Коди ідентифікаторів надаються у результаті реєстрації. Спосіб призначення та довідкові дані щодо кожного кодування символів визначаються у специфікації. Значення CountN визначається на основі 8 байтів у області кодування символів і кількості байтів у частині коментаря користувача. Оскільки TYPE не складається з символів ASCII, немає потреби у завершенні мітки символом NULL. Кодом ідентифікатора для області <UserComment> може бути визначений код, зокрема JIS або ASCII, або значення Undefined. Невизначена назва належить до типу UndefinedText, а код ідентифікатора заповнюється 8 байтами NULL («00.H»). У засобі читання Exif, який читає мітку <UserComment> має бути функція для визначення коду ідентифікатора. Наявність цієї функції не є обов'язковою у засобах читання Exif, які не використовують мітку <UserComment>. Якщо область <UserComment> не визначається окремо, рекомендовано використовувати код ідентифікатора ASCII і заповнювати частину коментаря користувача символом пробілу [20.H]."
+
+#: libexif/exif-tag.c:669
+msgid "Sub-second Time"
+msgstr "Час часток секунди"
+
+#: libexif/exif-tag.c:670
+msgid "A tag used to record fractions of seconds for the <DateTime> tag."
+msgstr "Ця мітка використовується для записування часток секунд для мітки <DateTime>."
+
+#: libexif/exif-tag.c:674
+msgid "Sub-second Time (Original)"
+msgstr "Час часток секунди (початковий)"
+
+#: libexif/exif-tag.c:675
+msgid "A tag used to record fractions of seconds for the <DateTimeOriginal> tag."
+msgstr "Ця мітка використовується для записування часток секунд для мітки <DateTimeOriginal>."
+
+#: libexif/exif-tag.c:679
+msgid "Sub-second Time (Digitized)"
+msgstr "Дробові частки секунд часу (оцифровування)"
+
+#: libexif/exif-tag.c:680
+msgid "A tag used to record fractions of seconds for the <DateTimeDigitized> tag."
+msgstr "Ця мітка використовується для записування часток секунд для мітки <DateTimeDigitized>."
+
+#: libexif/exif-tag.c:684
+msgid "XP Title"
+msgstr "Заголовок XP"
+
+#: libexif/exif-tag.c:685
+msgid "A character string giving the title of the image, encoded in UTF-16LE."
+msgstr "Рядок символів, що містить заголовок зображення у кодуванні UTF-16LE."
+
+#: libexif/exif-tag.c:689
+msgid "XP Comment"
+msgstr "Коментар XP"
+
+#: libexif/exif-tag.c:690
+msgid "A character string containing a comment about the image, encoded in UTF-16LE."
+msgstr "Рядок символів, що містить коментар щодо зображення, закодований у UTF-16LE."
+
+#: libexif/exif-tag.c:694
+msgid "XP Author"
+msgstr "Автор XP"
+
+#: libexif/exif-tag.c:695
+msgid "A character string containing the name of the image creator, encoded in UTF-16LE."
+msgstr "Рядок символів, що містить ім'я творця зображення, закодований у UTF-16LE."
+
+#: libexif/exif-tag.c:699
+msgid "XP Keywords"
+msgstr "Ключові слова XP"
+
+#: libexif/exif-tag.c:700
+msgid "A character string containing key words describing the image, encoded in UTF-16LE."
+msgstr "Рядок символів, що містить ключові слова для опису зображення, закодований у UTF-16LE."
+
+#: libexif/exif-tag.c:704
+msgid "XP Subject"
+msgstr "Об'єкт XP"
+
+#: libexif/exif-tag.c:705
+msgid "A character string giving the image subject, encoded in UTF-16LE."
+msgstr "Рядок символів, що містить дані щодо об'єкта зображення, у кодуванні UTF-16LE."
+
+#: libexif/exif-tag.c:709
+msgid "The FlashPix format version supported by a FPXR file."
+msgstr "Версія форматування FlashPix, підтримувана файлом FPXR."
+
+#: libexif/exif-tag.c:712
+msgid "The color space information tag is always recorded as the color space specifier. Normally sRGB (=1) is used to define the color space based on the PC monitor conditions and environment. If a color space other than sRGB is used, Uncalibrated (=FFFF.H) is set. Image data recorded as Uncalibrated can be treated as sRGB when it is converted to FlashPix."
+msgstr "Мітка відомостей щодо простору кольорів завжди записується як специфікатор простору кольорів. Зазвичай, для визначення простору кольорів на основі умов щодо монітора персонального комп'ютера і середовищі використовується sRGB (=1). Якщо використовується простір кольорів, відмінний від sRGB, встановлюється значення Uncalibrated (=FFFF.H). Дані зображення, записаного як Uncalibrated, можуть вважатися даними sRGB при перетворенні до FlashPix."
+
+#: libexif/exif-tag.c:720
+msgid "Pixel X Dimension"
+msgstr "Розмірність у пікселях за X"
+
+#: libexif/exif-tag.c:721
+msgid "Information specific to compressed data. When a compressed file is recorded, the valid width of the meaningful image must be recorded in this tag, whether or not there is padding data or a restart marker. This tag should not exist in an uncompressed file."
+msgstr "Специфічні для стискання відомості. Якщо записується файл зі стисненими даними, до цієї мітки має бути записано коректну ширину змістовного зображення, незалежно від того, чи є фаска і позначка перезапуску. У нестиснених файлах цієї мітки не повинно бути."
+
+#: libexif/exif-tag.c:727
+msgid "Pixel Y Dimension"
+msgstr "Розмірність у пікселях за Y"
+
+#: libexif/exif-tag.c:728
+msgid "Information specific to compressed data. When a compressed file is recorded, the valid height of the meaningful image must be recorded in this tag, whether or not there is padding data or a restart marker. This tag should not exist in an uncompressed file. Since data padding is unnecessary in the vertical direction, the number of lines recorded in this valid image height tag will in fact be the same as that recorded in the SOF."
+msgstr "Відомості, специфічні для стиснених даних. При записі стисненого файла до цієї мітки має бути записано коректну висоту змістовної частини зображення, незалежно від наявності фаски або позначки перезапуску. У нестисненому файлі цієї мітки не повинно бути. Оскільки у вертикальному напрямку фаска є непотрібною, кількість рядків, записана у цій мітці коректної висоти зображення, фактично дорівнює значенню, записаному у SOF."
+
+#: libexif/exif-tag.c:738
+msgid "Related Sound File"
+msgstr "Пов'язаний звуковий файл"
+
+#: libexif/exif-tag.c:739
+msgid "This tag is used to record the name of an audio file related to the image data. The only relational information recorded here is the Exif audio file name and extension (an ASCII string consisting of 8 characters + '.' + 3 characters). The path is not recorded. Stipulations on audio and file naming conventions are defined in the specification. When using this tag, audio files must be recorded in conformance to the Exif audio format. Writers are also allowed to store the data such as Audio within APP2 as FlashPix extension stream data. The mapping of Exif image files and audio files is done in any of three ways, [1], [2] and [3]. If multiple files are mapped to one file as in [2] or [3], the above format is used to record just one audio file name. If there are multiple audio files, the first recorded file is given. In the case of [3], for example, for the Exif image file \"DSC00001.JPG\" only  \"SND00001.WAV\" is given as the related Exif audio file. When there are three Exif audio files \"SND00001.WAV\", \"SND00002.WAV\" and \"SND00003.WAV\", the Exif image file name for each of them, \"DSC00001.JPG\", is indicated. By combining multiple relational information, a variety of playback possibilities can be supported. The method of using relational information is left to the implementation on the playback side. Since this information is an ASCII character string, it is terminated by NULL. When this tag is used to map audio files, the relation of the audio file to image data must also be indicated on the audio file end."
+msgstr "Ця мітка використовується для записування назви файла звукових даних, пов'язаних із даними зображення. Єдиними даними у цій мітці є назва файла звукових даних Exif і суфікс назви (рядок ASCII, що складається із 8 символів + «.» + 3 символи). Шлях до файла не записується. Умови щодо звукових даних і назви файла визначаються специфікацією. При використанні цієї мітки файли звукових даних має бути записано відповідно до формату звукових даних Exif. Засоби запису можуть зберігати дані, зокрема звукові дані у APP2, як дані розширеного потоку FlashPix. Прив'язка файлів зображень Exif до файлів звукових даних виконується у будь-який з трьох способів, [1], [2] або [3]. Якщо із одним файлом пов'язано декілька файлів, у спосіб [2] або [3], вказаний вище формат використовується для запису лише однієї назви файла звукових даних. Якщо файлів звукових даних декілька, вказують перший записаний файл. У випадку [3], наприклад, для файла зображення Exif «DSC00001.JPG» вказано лише «SND00001.WAV» як пов'язаний файл звукових даних Exif. Якщо файлів звукових даних Exif три, «SND00001.WAV», «SND00002.WAV» та «SND00003.WAV», вказується назва файла зображення Exif для кожного з них, «DSC00001.JPG». Шляхом поєднання даних щодо зв'язків може бути забезпечено підтримку різних можливостей відтворення. Спосіб використання відомостей щодо зв'язків між файлами має бути визначено на боці засобу відтворення. Оскільки ці дані зберігаються у форматі рядка ASCII, рядок слід завершувати символом NULL. Якщо для прив'язки файлів звукових даних використовується ця мітка, зв'язок звукового файла із файлом даних зображення має бути також вказано і у файлі звукових даних."
+
+#: libexif/exif-tag.c:769
+msgid "Interoperability IFD Pointer"
+msgstr "Вказівник IFD сумісності"
+
+#: libexif/exif-tag.c:770
+msgid "Interoperability IFD is composed of tags which stores the information to ensure the Interoperability and pointed by the following tag located in Exif IFD. The Interoperability structure of Interoperability IFD is the same as TIFF defined IFD structure but does not contain the image data characteristically compared with normal TIFF IFD."
+msgstr "IFD сумісності складається з міток, які зберігають дані для забезпечення сумісності і на які вказує наступна мітка, розташована у IFD Exif. Структура сумісності IFD сумності є такою самою, що і визначена TIFF структура IFD, але вона не містить даних зображення."
+
+#: libexif/exif-tag.c:779
+msgid "Flash Energy"
+msgstr "Енергія спалаху"
+
+#: libexif/exif-tag.c:780
+msgid "Indicates the strobe energy at the time the image is captured, as measured in Beam Candle Power Seconds (BCPS)."
+msgstr "Вказує на стробоскопічну енергію у момент створення зображення, виміряну у одиницях потужності променя (у канделах) на секунду (BCPS)."
+
+#: libexif/exif-tag.c:784
+msgid "Spatial Frequency Response"
+msgstr "Відповідь щодо просторових частот"
+
+#: libexif/exif-tag.c:785
+msgid "This tag records the camera or input device spatial frequency table and SFR values in the direction of image width, image height, and diagonal direction, as specified in ISO 12233."
+msgstr "У цій мітці зберігається просторова таблиця частот і значення SFR фотоапарата або пристрою отримання зображення у напрямку ширини зображення, висоти зображення та діагональному напрямку, як вказано в ISO 12233."
+
+#: libexif/exif-tag.c:791
+msgid "Focal Plane X-Resolution"
+msgstr "Роздільна здатність фокальної площини X"
+
+#: libexif/exif-tag.c:792
+msgid "Indicates the number of pixels in the image width (X) direction per <FocalPlaneResolutionUnit> on the camera focal plane."
+msgstr "Вказує на кількість пікселів у напрямку ширини зображення (X) на <FocalPlaneResolutionUnit> у фокальній площині фотоапарата."
+
+#: libexif/exif-tag.c:796
+msgid "Focal Plane Y-Resolution"
+msgstr "Роздільна здатність фокальної площини Y"
+
+#: libexif/exif-tag.c:797
+msgid "Indicates the number of pixels in the image height (V) direction per <FocalPlaneResolutionUnit> on the camera focal plane."
+msgstr "Вказує на кількість пікселів у напрямку висоти зображення (V) на <FocalPlaneResolutionUnit> у фокальній площині фотоапарата."
+
+#: libexif/exif-tag.c:801
+msgid "Focal Plane Resolution Unit"
+msgstr "Одиниця роздільності у фокальній площині"
+
+#: libexif/exif-tag.c:802
+msgid "Indicates the unit for measuring <FocalPlaneXResolution> and <FocalPlaneYResolution>. This value is the same as the <ResolutionUnit>."
+msgstr "Вказує на одиницю виміру <FocalPlaneXResolution> і <FocalPlaneYResolution>. Те саме значення, що і <ResolutionUnit>."
+
+#: libexif/exif-tag.c:807
+msgid "Subject Location"
+msgstr "Знаходження об'єкта"
+
+#: libexif/exif-tag.c:808
+msgid "Indicates the location of the main subject in the scene. The value of this tag represents the pixel at the center of the main subject relative to the left edge, prior to rotation processing as per the <Rotation> tag. The first value indicates the X column number and the second indicates the Y row number."
+msgstr "Вказує на розташування основного об'єкта сцени. Значення цієї мітки відповідає пікселю у центрі основного об'єкта відносного лівого краю, до обробки з обертанням, вказаним за допомогою мітки <Rotation>. Перше значення вказує номер стовпчика за X, а друге вказує на номер рядка за Y."
+
+#: libexif/exif-tag.c:815
+msgid "Exposure Index"
+msgstr "Показник експозиції"
+
+#: libexif/exif-tag.c:816
+msgid "Indicates the exposure index selected on the camera or input device at the time the image is captured."
+msgstr "Вказує на індекс експозиції, вибраний на фотоапараті або пристрої введення даних під час створення зображення."
+
+#: libexif/exif-tag.c:819
+msgid "Sensing Method"
+msgstr "Метод розпізнавання"
+
+#: libexif/exif-tag.c:820
+msgid "Indicates the image sensor type on the camera or input device."
+msgstr "Визначає тип датчика зображення на фотоапараті або пристрої вхідних даних."
+
+#: libexif/exif-tag.c:823 libexif/fuji/mnote-fuji-tag.c:64
+msgid "File Source"
+msgstr "Файлове джерело"
+
+#: libexif/exif-tag.c:824
+msgid "Indicates the image source. If a DSC recorded the image, the tag value of this tag always be set to 3, indicating that the image was recorded on a DSC."
+msgstr "Вказує на джерело зображення. Якщо зображення було записано цифровим дзеркальним фотоапаратом, значенням цієї мітки завжди буде 3, значення, яке означає використання цифрового дзеркального фотоапарата."
+
+#: libexif/exif-tag.c:828
+msgid "Scene Type"
+msgstr "Тип сцени"
+
+#: libexif/exif-tag.c:829
+msgid "Indicates the type of scene. If a DSC recorded the image, this tag value must always be set to 1, indicating that the image was directly photographed."
+msgstr "Вказує на тип сцени. Якщо зображення записано цифровим дзеркальним фотоапаратом, значення цієї мітки має завжди бути встановлено у 1, що означає, що зображення було знято безпосередньо."
+
+#: libexif/exif-tag.c:839
+msgid "Custom Rendered"
+msgstr "Нетипове перетворено"
+
+#: libexif/exif-tag.c:840
+msgid "This tag indicates the use of special processing on image data, such as rendering geared to output. When special processing is performed, the reader is expected to disable or minimize any further processing."
+msgstr "Ця мітка вказує на використання спеціальної обробки даних зображення, зокрема обробки для пристосовування до пристрою виведення. Якщо виконується спеціальна обробка, вважається, що засіб читання має вимкнути або мінімізувати будь-яку подальшу обробку."
+
+#: libexif/exif-tag.c:846
+msgid "This tag indicates the exposure mode set when the image was shot. In auto-bracketing mode, the camera shoots a series of frames of the same scene at different exposure settings."
+msgstr "Ця мітка вказує на режим експонування, який було встановлено під час створення зображення. У режимі автозлиття експозицій фотоапарат знімає послідовність кадрів тієї самої сцени із різними параметрами експонування."
+
+#: libexif/exif-tag.c:851
+msgid "This tag indicates the white balance mode set when the image was shot."
+msgstr "Ця мітка визначає режим балансу білого кольору, встановлений під час знімання."
+
+#: libexif/exif-tag.c:855
+msgid "Digital Zoom Ratio"
+msgstr "Коефіцієнт цифрового збільшення"
+
+#: libexif/exif-tag.c:856
+msgid "This tag indicates the digital zoom ratio when the image was shot. If the numerator of the recorded value is 0, this indicates that digital zoom was not used."
+msgstr "Ця мітка містить дані щодо коефіцієнта цифрового масштабування, яке було використано під час зйомки. Якщо чисельником записаного значення є 0, вважається, що цифрове масштабування не було застосовано."
+
+#: libexif/exif-tag.c:861
+msgid "Focal Length in 35mm Film"
+msgstr "Фокальна довжина для 35 мм плівки"
+
+#: libexif/exif-tag.c:862
+msgid "This tag indicates the equivalent focal length assuming a 35mm film camera, in mm. A value of 0 means the focal length is unknown. Note that this tag differs from the FocalLength tag."
+msgstr "Ця мітка визначає еквівалентну фокальну відстань для 35мм-плівкового фотоапарата, у мм. Значення 0 означає, що фокальна відстань є невідомою. Зауважте, що ця мітка відрізняється від мітки FocalLength."
+
+#: libexif/exif-tag.c:868
+msgid "Scene Capture Type"
+msgstr "Тип захоплення сцени"
+
+#: libexif/exif-tag.c:869
+msgid "This tag indicates the type of scene that was shot. It can also be used to record the mode in which the image was shot. Note that this differs from the scene type <SceneType> tag."
+msgstr "Ця мітка вказує на тип сцени, яку було знято. Нею також можна скористатися для записування режиму, у якому було виконано зйомку. Зауважте, що це значення відрізняється від типу сцени у мітці <SceneType>."
+
+#: libexif/exif-tag.c:874
+msgid "Gain Control"
+msgstr "Регулятор посилення"
+
+#: libexif/exif-tag.c:875
+msgid "This tag indicates the degree of overall image gain adjustment."
+msgstr "Ця мітка визначає степінь загального коригування рівня зображення."
+
+#: libexif/exif-tag.c:879
+msgid "This tag indicates the direction of contrast processing applied by the camera when the image was shot."
+msgstr "Ця мітка вказує на напрям обробки контрастності, застосований фотоапаратом під час знімання."
+
+#: libexif/exif-tag.c:883
+msgid "This tag indicates the direction of saturation processing applied by the camera when the image was shot."
+msgstr "Ця мітка вказує на напрям обробки насиченості, застосований фотоапаратом під час знімання."
+
+#: libexif/exif-tag.c:887
+msgid "This tag indicates the direction of sharpness processing applied by the camera when the image was shot."
+msgstr "Ця мітка вказує на напрям обробки різкості, застосований фотоапаратом під час знімання."
+
+#: libexif/exif-tag.c:891
+msgid "Device Setting Description"
+msgstr "Опис параметрів пристрою"
+
+#: libexif/exif-tag.c:892
+msgid "This tag indicates information on the picture-taking conditions of a particular camera model. The tag is used only to indicate the picture-taking conditions in the reader."
+msgstr "Ця мітка вказує на відомості щодо умов знімання зображення певною моделлю фотоапарата. Мітка використовується для зберігання даних щодо умов зйомки для засобу читання."
+
+#: libexif/exif-tag.c:898
+msgid "Subject Distance Range"
+msgstr "Діапазон відстані до об'єкта"
+
+#: libexif/exif-tag.c:899
+msgid "This tag indicates the distance to the subject."
+msgstr "Цей теґ містить дані щодо відстані до об'єкта зйомки."
+
+#: libexif/exif-tag.c:902
+msgid "This tag indicates an identifier assigned uniquely to each image. It is recorded as an ASCII string equivalent to hexadecimal notation and 128-bit fixed length."
+msgstr "Ця мітка містить унікальний ідентифікатор, який надається кожному окремому зображенню. Вміст записується у форматі рядка символів ASCII, еквівалентного шістнадцятковому позначенню, і має фіксовану довжину у 128 бітів."
+
+#: libexif/exif-tag.c:907
+msgid "Camera Owner Name"
+msgstr "Ім'я власника фотоапарат"
+
+#: libexif/exif-tag.c:908
+msgid "This tag indicates the name of the camera owner, photographer or image creator."
+msgstr "Ця мітка вказує на ім'я власник фотоапарата, фотографа або творця зображення."
+
+#: libexif/exif-tag.c:912
+msgid "Body Serial Number"
+msgstr "Серійний номер корпуса"
+
+#: libexif/exif-tag.c:913
+msgid "This tag indicates the serial number of the body of the camera"
+msgstr "Ця мітка вказує на серійний номер корпуса фотоапарата"
+
+#: libexif/exif-tag.c:916
+msgid "Lens Specification"
+msgstr "Специфікація об'єктива"
+
+#: libexif/exif-tag.c:917
+msgid "This tag indicates minimum focal length, maximum focal length, minimum F number in the minimum focal length, and minimum F number in the maximum focal length."
+msgstr "Ця мітка вказує на мінімальну фокусну відстань, максимальну фокусну відстань, мінімальне F-число у мінімальній фокусній відстані і мінімальне F-число у максимальній фокусній відстані."
+
+#: libexif/exif-tag.c:923
+msgid "Lens Make"
+msgstr "Виробник об'єктива"
+
+#: libexif/exif-tag.c:924
+msgid "This tag indicates the lens manufacturer."
+msgstr "Ця мітка вказує на виробника об'єктива."
+
+#: libexif/exif-tag.c:928
+msgid "This tag indicates the lens' model name and model number."
+msgstr "Ця мітка вказує на назву і номер моделі об'єктива."
+
+#: libexif/exif-tag.c:931
+msgid "Lens Serial Number"
+msgstr "Серійний номер об'єктива"
+
+#: libexif/exif-tag.c:932
+msgid "This tag indicates the serial number of the interchangeable lens."
+msgstr "Ця мітка вказує на серійний номер змінного об'єктива."
+
+#: libexif/exif-tag.c:935
+msgid "Composite Image"
+msgstr "Композитне зображення"
+
+#: libexif/exif-tag.c:936
+msgid "This tag indicates whether this image was composed from multiple images"
+msgstr "Ця мітка вказує, чи було створено це зображення з декількох зображень."
+
+#: libexif/exif-tag.c:939
+msgid "Source Image Number Of Composite Image"
+msgstr "Номер зображення-джерела композитного зображення"
+
+#: libexif/exif-tag.c:940
+msgid "This tag indicates how many images are included and used in the composition of this image"
+msgstr "Ця мітка вказує на кількість зображень, які включено або використано у композиції цього зображення"
+
+#: libexif/exif-tag.c:943
+msgid "Source Exposure Times of Composite Image"
+msgstr "Часи експонування джерел композитного зображення"
+
+#: libexif/exif-tag.c:944
+msgid "This tag indicates the exposure times of the source images of this image"
+msgstr "Ця мітка вказує на часи експонування початкових зображень, з яких складено це зображення"
+
+#: libexif/exif-tag.c:947
+msgid "Gamma"
+msgstr "Гама"
+
+#: libexif/exif-tag.c:948
+msgid "Indicates the value of coefficient gamma."
+msgstr "Показує значення коефіцієнта гамма."
+
+#: libexif/exif-tag.c:951
+msgid "PRINT Image Matching"
+msgstr "PRINT Image Matching"
+
+#: libexif/exif-tag.c:952
+msgid "Related to Epson's PRINT Image Matching technology"
+msgstr "Пов'язано із технологією PRINT Image Matching компанії Epson"
+
+#: libexif/exif-tag.c:955
+msgid "Padding"
+msgstr "Заповнення"
+
+#: libexif/exif-tag.c:956
+msgid "This tag reserves space that can be reclaimed later when additional metadata are added. New metadata can be written in place by replacing this tag with a smaller data element and using the reclaimed space to store the new or expanded metadata tags."
+msgstr "Ця мітка резервує місце, яке згодом може бути використано для додавання додаткових метаданих. Нові метадані може бути записано на місце цієї мітки з використанням лише частки отриманого об'єму даних і резервуванням решти місця для зберігання нових або розширених міток метаданих."
+
+#: libexif/fuji/mnote-fuji-entry.c:62
+msgid "Softest"
+msgstr "Найм'якший"
+
+#: libexif/fuji/mnote-fuji-entry.c:66
+msgid "Hardest"
+msgstr "Найжорсткіший"
+
+#: libexif/fuji/mnote-fuji-entry.c:67 libexif/fuji/mnote-fuji-entry.c:96
+msgid "Medium soft"
+msgstr "Помірно м'який"
+
+#: libexif/fuji/mnote-fuji-entry.c:68 libexif/fuji/mnote-fuji-entry.c:94
+msgid "Medium hard"
+msgstr "Помірно жорсткий"
+
+#: libexif/fuji/mnote-fuji-entry.c:69 libexif/fuji/mnote-fuji-entry.c:90
+#: libexif/fuji/mnote-fuji-entry.c:98 libexif/fuji/mnote-fuji-entry.c:182
+msgid "Film simulation mode"
+msgstr "Режим імітації плівки"
+
+#: libexif/fuji/mnote-fuji-entry.c:79
+msgid "Incandescent"
+msgstr "Розжарений"
+
+#: libexif/fuji/mnote-fuji-entry.c:85
+msgid "Medium high"
+msgstr "Помірно високий"
+
+#: libexif/fuji/mnote-fuji-entry.c:87
+msgid "Medium low"
+msgstr "Помірно низький"
+
+#: libexif/fuji/mnote-fuji-entry.c:88 libexif/fuji/mnote-fuji-entry.c:97
+msgid "Original"
+msgstr "Оригінал"
+
+#: libexif/fuji/mnote-fuji-entry.c:124 libexif/pentax/mnote-pentax-entry.c:164
+#: libexif/pentax/mnote-pentax-entry.c:299
+msgid "Program AE"
+msgstr "Програмне автоекспонування"
+
+#: libexif/fuji/mnote-fuji-entry.c:125
+msgid "Natural photo"
+msgstr "Звичайна фотографія"
+
+#: libexif/fuji/mnote-fuji-entry.c:126
+msgid "Vibration reduction"
+msgstr "Усування тремтіння"
+
+#: libexif/fuji/mnote-fuji-entry.c:127
+msgid "Sunset"
+msgstr "Захід"
+
+#: libexif/fuji/mnote-fuji-entry.c:128 libexif/pentax/mnote-pentax-entry.c:181
+msgid "Museum"
+msgstr "Музей"
+
+#: libexif/fuji/mnote-fuji-entry.c:129
+msgid "Party"
+msgstr "Вечірка"
+
+#: libexif/fuji/mnote-fuji-entry.c:130
+msgid "Flower"
+msgstr "Квітка"
+
+#: libexif/fuji/mnote-fuji-entry.c:131 libexif/pentax/mnote-pentax-entry.c:176
+msgid "Text"
+msgstr "Текст"
+
+#: libexif/fuji/mnote-fuji-entry.c:132
+msgid "NP & flash"
+msgstr "NP і спалах"
+
+#: libexif/fuji/mnote-fuji-entry.c:137
+msgid "Aperture priority AE"
+msgstr "AE-пріоритет діафрагми"
+
+#: libexif/fuji/mnote-fuji-entry.c:138
+msgid "Shutter priority AE"
+msgstr "AE-пріоритет затвору"
+
+#: libexif/fuji/mnote-fuji-entry.c:146
+msgid "F-Standard"
+msgstr "F-стандартний"
+
+#: libexif/fuji/mnote-fuji-entry.c:147
+msgid "F-Chrome"
+msgstr "F-гама"
+
+#: libexif/fuji/mnote-fuji-entry.c:148
+msgid "F-B&W"
+msgstr "F-B&W"
+
+#: libexif/fuji/mnote-fuji-entry.c:151
+msgid "No blur"
+msgstr "Без розмивання"
+
+#: libexif/fuji/mnote-fuji-entry.c:152
+msgid "Blur warning"
+msgstr "Попередження щодо розмитості"
+
+#: libexif/fuji/mnote-fuji-entry.c:155
+msgid "Focus good"
+msgstr "Добре фокусування"
+
+#: libexif/fuji/mnote-fuji-entry.c:156
+msgid "Out of focus"
+msgstr "Поза фокусом"
+
+#: libexif/fuji/mnote-fuji-entry.c:159
+msgid "AE good"
+msgstr "Добре автоекспонування"
+
+#: libexif/fuji/mnote-fuji-entry.c:160
+msgid "Over exposed"
+msgstr "Переекспоноване"
+
+#: libexif/fuji/mnote-fuji-entry.c:164
+msgid "Wide"
+msgstr "Широкий"
+
+#: libexif/fuji/mnote-fuji-entry.c:167
+msgid "F0/Standard"
+msgstr "F0/Стандартний"
+
+#: libexif/fuji/mnote-fuji-entry.c:168
+msgid "F1/Studio portrait"
+msgstr "F1/Студійний портрет"
+
+#: libexif/fuji/mnote-fuji-entry.c:169
+msgid "F1a/Professional portrait"
+msgstr "F1a/Професійний портрет"
+
+#: libexif/fuji/mnote-fuji-entry.c:170
+msgid "F1b/Professional portrait"
+msgstr "F1b/Професійний портрет"
+
+#: libexif/fuji/mnote-fuji-entry.c:171
+msgid "F1c/Professional portrait"
+msgstr "F1c/Професійний портрет"
+
+#: libexif/fuji/mnote-fuji-entry.c:172
+msgid "F2/Fujichrome"
+msgstr "F2/Fujichrome"
+
+#: libexif/fuji/mnote-fuji-entry.c:173
+msgid "F3/Studio portrait Ex"
+msgstr "F3/Розширений студійний портрет"
+
+#: libexif/fuji/mnote-fuji-entry.c:174
+msgid "F4/Velvia"
+msgstr "F4/Velvia"
+
+#: libexif/fuji/mnote-fuji-entry.c:177
+msgid "Auto (100-400%)"
+msgstr "Авто (100-400%)"
+
+#: libexif/fuji/mnote-fuji-entry.c:179
+msgid "Standard (100%)"
+msgstr "Стандартний (100%)"
+
+#: libexif/fuji/mnote-fuji-entry.c:180
+msgid "Wide1 (230%)"
+msgstr "Широкий1 (230%)"
+
+#: libexif/fuji/mnote-fuji-entry.c:181
+msgid "Wide2 (400%)"
+msgstr "Широкий2 (400%)"
+
+#: libexif/fuji/mnote-fuji-entry.c:264
+#, c-format
+msgid "%2.2f mm"
+msgstr "%2.2f мм"
+
+#: libexif/fuji/mnote-fuji-tag.c:36
+msgid "Maker Note Version"
+msgstr "Версія нотаток виробника"
+
+#: libexif/fuji/mnote-fuji-tag.c:37
+msgid "This number is unique and based on the date of manufacture."
+msgstr "Цей номер є унікальним, заснованим на даті вироблення."
+
+#: libexif/fuji/mnote-fuji-tag.c:41
+msgid "Chromaticity Saturation"
+msgstr "Хроматична насиченість"
+
+#: libexif/fuji/mnote-fuji-tag.c:44
+msgid "Flash Firing Strength Compensation"
+msgstr "Компенсація потужності запалення спалаху"
+
+#: libexif/fuji/mnote-fuji-tag.c:46
+msgid "Focusing Mode"
+msgstr "Режим фокусування"
+
+#: libexif/fuji/mnote-fuji-tag.c:47
+msgid "Focus Point"
+msgstr "Точка фокусування"
+
+#: libexif/fuji/mnote-fuji-tag.c:48
+msgid "Slow Synchro Mode"
+msgstr "Режим повільної синхронізації"
+
+#: libexif/fuji/mnote-fuji-tag.c:49 libexif/pentax/mnote-pentax-tag.c:72
+msgid "Picture Mode"
+msgstr "Режим зображення"
+
+#: libexif/fuji/mnote-fuji-tag.c:50
+msgid "Continuous Taking"
+msgstr "Неперервне знімання"
+
+#: libexif/fuji/mnote-fuji-tag.c:51
+msgid "Continuous Sequence Number"
+msgstr "Номер у неперервній послідовності"
+
+#: libexif/fuji/mnote-fuji-tag.c:52
+msgid "FinePix Color"
+msgstr "Колір FinePix"
+
+#: libexif/fuji/mnote-fuji-tag.c:53
+msgid "Blur Check"
+msgstr "Перевірка розмивання"
+
+#: libexif/fuji/mnote-fuji-tag.c:54
+msgid "Auto Focus Check"
+msgstr "Перевірка автофокусування"
+
+#: libexif/fuji/mnote-fuji-tag.c:55
+msgid "Auto Exposure Check"
+msgstr "Перевірка автоекспонування"
+
+#: libexif/fuji/mnote-fuji-tag.c:56
+msgid "Dynamic Range"
+msgstr "Динамічний діапазон"
+
+#: libexif/fuji/mnote-fuji-tag.c:57
+msgid "Film Simulation Mode"
+msgstr "Режим імітації плівки"
+
+#: libexif/fuji/mnote-fuji-tag.c:58
+msgid "Dynamic Range Wide Mode"
+msgstr "Режим широкого динамічного діапазону"
+
+#: libexif/fuji/mnote-fuji-tag.c:59
+msgid "Development Dynamic Range Wide Mode"
+msgstr "Режим проявлення з широким динамічним діапазоном"
+
+#: libexif/fuji/mnote-fuji-tag.c:60
+msgid "Minimum Focal Length"
+msgstr "Мінімальна фокусна відстань"
+
+#: libexif/fuji/mnote-fuji-tag.c:61
+msgid "Maximum Focal Length"
+msgstr "Максимальна фокусна відстань"
+
+#: libexif/fuji/mnote-fuji-tag.c:62
+msgid "Maximum Aperture at Minimum Focal"
+msgstr "Макс. діафрагма при мін. фокусній відстані"
+
+#: libexif/fuji/mnote-fuji-tag.c:63
+msgid "Maximum Aperture at Maximum Focal"
+msgstr "Макс. діафрагма при макс. фокусній відстані"
+
+#: libexif/fuji/mnote-fuji-tag.c:65
+msgid "Order Number"
+msgstr "Порядковий номер"
+
+#: libexif/fuji/mnote-fuji-tag.c:66 libexif/pentax/mnote-pentax-tag.c:98
+msgid "Frame Number"
+msgstr "Кількість кадрів"
+
+#: libexif/olympus/mnote-olympus-entry.c:49
+#, c-format
+msgid "Invalid format '%s', expected '%s' or '%s'."
+msgstr "Некоректний формат «%s», мало бути «%s» або «%s»."
+
+#: libexif/olympus/mnote-olympus-entry.c:92
+msgid "AF non D lens"
+msgstr "Об'єктив із АФ без D"
+
+#: libexif/olympus/mnote-olympus-entry.c:94
+msgid "AF-D or AF-S lens"
+msgstr "Об'єктив АФ-D або АФ-S"
+
+#: libexif/olympus/mnote-olympus-entry.c:95
+msgid "AF-D G lens"
+msgstr "Об'єктив АФ-D G"
+
+#: libexif/olympus/mnote-olympus-entry.c:96
+msgid "AF-D VR lens"
+msgstr "Об'єктив АФ-D VR"
+
+#: libexif/olympus/mnote-olympus-entry.c:97
+msgid "AF-D G VR lens"
+msgstr "Об'єктив АФ-D G VR"
+
+#: libexif/olympus/mnote-olympus-entry.c:101
+msgid "Flash unit unknown"
+msgstr "Невідомий модуль спалаху"
+
+#: libexif/olympus/mnote-olympus-entry.c:102
+msgid "Flash is external"
+msgstr "Спалах є зовнішнім"
+
+#: libexif/olympus/mnote-olympus-entry.c:103
+msgid "Flash is on camera"
+msgstr "Спалах вбудовано до фотоапарата"
+
+#: libexif/olympus/mnote-olympus-entry.c:106
+msgid "VGA basic"
+msgstr "VGA, базова"
+
+#: libexif/olympus/mnote-olympus-entry.c:107
+msgid "VGA normal"
+msgstr "VGA, звичайна"
+
+#: libexif/olympus/mnote-olympus-entry.c:108
+msgid "VGA fine"
+msgstr "VGA, якісна"
+
+#: libexif/olympus/mnote-olympus-entry.c:109
+msgid "SXGA basic"
+msgstr "SXGA, базова"
+
+#: libexif/olympus/mnote-olympus-entry.c:110
+msgid "SXGA normal"
+msgstr "SXGA, звичайна"
+
+#: libexif/olympus/mnote-olympus-entry.c:111
+msgid "SXGA fine"
+msgstr "SXGA, якісна"
+
+#: libexif/olympus/mnote-olympus-entry.c:112
+msgid "2 Mpixel basic"
+msgstr "2-мегапіксельне, базова"
+
+#: libexif/olympus/mnote-olympus-entry.c:113
+msgid "2 Mpixel normal"
+msgstr "2-мегапіксельне, звичайна"
+
+#: libexif/olympus/mnote-olympus-entry.c:114
+msgid "2 Mpixel fine"
+msgstr "2-мегапіксельне, якісне"
+
+#: libexif/olympus/mnote-olympus-entry.c:117
+msgid "Color"
+msgstr "Колір"
+
+#: libexif/olympus/mnote-olympus-entry.c:122
+msgid "Bright+"
+msgstr "Яскравість+"
+
+#: libexif/olympus/mnote-olympus-entry.c:123
+msgid "Bright-"
+msgstr "Яскравість-"
+
+#: libexif/olympus/mnote-olympus-entry.c:124
+msgid "Contrast+"
+msgstr "Контрастність+"
+
+#: libexif/olympus/mnote-olympus-entry.c:125
+msgid "Contrast-"
+msgstr "Контрастність-"
+
+#: libexif/olympus/mnote-olympus-entry.c:128
+msgid "ISO 80"
+msgstr "ISO 80"
+
+#: libexif/olympus/mnote-olympus-entry.c:129
+msgid "ISO 160"
+msgstr "ISO 160"
+
+#: libexif/olympus/mnote-olympus-entry.c:130
+msgid "ISO 320"
+msgstr "ISO 320"
+
+#: libexif/olympus/mnote-olympus-entry.c:131
+#: libexif/olympus/mnote-olympus-entry.c:249
+msgid "ISO 100"
+msgstr "ISO 100"
+
+#: libexif/olympus/mnote-olympus-entry.c:135
+msgid "Preset"
+msgstr "Шаблон"
+
+#: libexif/olympus/mnote-olympus-entry.c:137
+msgid "Incandescence"
+msgstr "Лампа розжарювання"
+
+#: libexif/olympus/mnote-olympus-entry.c:138
+msgid "Fluorescence"
+msgstr "Свічення"
+
+#: libexif/olympus/mnote-olympus-entry.c:140
+msgid "SpeedLight"
+msgstr "SpeedLight"
+
+#: libexif/olympus/mnote-olympus-entry.c:143
+msgid "No fisheye"
+msgstr "Без «риб'ячого ока»"
+
+#: libexif/olympus/mnote-olympus-entry.c:144
+msgid "Fisheye on"
+msgstr "Із «риб'ячим оком»"
+
+#: libexif/olympus/mnote-olympus-entry.c:147
+msgid "Normal, SQ"
+msgstr "Звичайне, SQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:148
+msgid "Normal, HQ"
+msgstr "Звичайне, HQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:149
+msgid "Normal, SHQ"
+msgstr "Звичайне, SHQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:150
+msgid "Normal, RAW"
+msgstr "Звичайне, RAW"
+
+#: libexif/olympus/mnote-olympus-entry.c:151
+msgid "Normal, SQ1"
+msgstr "Звичайне, SQ1"
+
+#: libexif/olympus/mnote-olympus-entry.c:152
+msgid "Normal, SQ2"
+msgstr "Звичайне, SQ2"
+
+#: libexif/olympus/mnote-olympus-entry.c:153
+msgid "Normal, super high"
+msgstr "Звичайне, надвисоке"
+
+#: libexif/olympus/mnote-olympus-entry.c:154
+msgid "Normal, standard"
+msgstr "Звичайне, стандартне"
+
+#: libexif/olympus/mnote-olympus-entry.c:155
+msgid "Fine, SQ"
+msgstr "Якісне, SQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:156
+msgid "Fine, HQ"
+msgstr "Якісне, HQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:157
+msgid "Fine, SHQ"
+msgstr "Якісне, SHQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:158
+msgid "Fine, RAW"
+msgstr "Якісне, RAW"
+
+#: libexif/olympus/mnote-olympus-entry.c:159
+msgid "Fine, SQ1"
+msgstr "Якісне, SQ1"
+
+#: libexif/olympus/mnote-olympus-entry.c:160
+msgid "Fine, SQ2"
+msgstr "Якісне, SQ2"
+
+#: libexif/olympus/mnote-olympus-entry.c:161
+msgid "Fine, super high"
+msgstr "Якісне, надвисоке"
+
+#: libexif/olympus/mnote-olympus-entry.c:162
+msgid "Super fine, SQ"
+msgstr "Дуже якісне, SQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:163
+msgid "Super fine, HQ"
+msgstr "Дуже якісне, HQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:164
+msgid "Super fine, SHQ"
+msgstr "Дуже якісне, SHQ"
+
+#: libexif/olympus/mnote-olympus-entry.c:165
+msgid "Super fine, RAW"
+msgstr "Дуже якісне, RAW"
+
+#: libexif/olympus/mnote-olympus-entry.c:166
+msgid "Super fine, SQ1"
+msgstr "Дуже якісне, SQ1"
+
+#: libexif/olympus/mnote-olympus-entry.c:167
+msgid "Super fine, SQ2"
+msgstr "Дуже якісне, SQ2"
+
+#: libexif/olympus/mnote-olympus-entry.c:168
+msgid "Super fine, super high"
+msgstr "Дуже якісне, надвисоке"
+
+#: libexif/olympus/mnote-olympus-entry.c:169
+msgid "Super fine, high"
+msgstr "Дуже якісне, високе"
+
+#: libexif/olympus/mnote-olympus-entry.c:172
+#: libexif/olympus/mnote-olympus-entry.c:177
+#: libexif/olympus/mnote-olympus-entry.c:211
+#: libexif/olympus/mnote-olympus-entry.c:220
+#: libexif/olympus/mnote-olympus-entry.c:243
+msgid "No"
+msgstr "Ні"
+
+#: libexif/olympus/mnote-olympus-entry.c:183
+msgid "On (Preset)"
+msgstr "Увімкнено (шаблон)"
+
+#: libexif/olympus/mnote-olympus-entry.c:188
+msgid "Fill"
+msgstr "Заповнити"
+
+#: libexif/olympus/mnote-olympus-entry.c:195
+msgid "Internal + external"
+msgstr "Внутрішнє+зовнішнє"
+
+#: libexif/olympus/mnote-olympus-entry.c:224
+msgid "Interlaced"
+msgstr "Черезрядкове"
+
+#: libexif/olympus/mnote-olympus-entry.c:225
+msgid "Progressive"
+msgstr "Прогресивне"
+
+#: libexif/olympus/mnote-olympus-entry.c:231
+#: libexif/pentax/mnote-pentax-entry.c:85
+#: libexif/pentax/mnote-pentax-entry.c:139
+msgid "Best"
+msgstr "Найкраща"
+
+#: libexif/olympus/mnote-olympus-entry.c:232
+msgid "Adjust exposure"
+msgstr "Коригування експозиції"
+
+#: libexif/olympus/mnote-olympus-entry.c:235
+msgid "Spot focus"
+msgstr "Фокусування за плямами"
+
+#: libexif/olympus/mnote-olympus-entry.c:236
+msgid "Normal focus"
+msgstr "Звичайне фокусування"
+
+#: libexif/olympus/mnote-olympus-entry.c:239
+msgid "Record while down"
+msgstr "Записувати, доки натиснено"
+
+#: libexif/olympus/mnote-olympus-entry.c:240
+msgid "Press start, press stop"
+msgstr "Натисніть «старт», натисніть «стоп»"
+
+#: libexif/olympus/mnote-olympus-entry.c:248
+msgid "ISO 50"
+msgstr "ISO 50"
+
+#: libexif/olympus/mnote-olympus-entry.c:250
+msgid "ISO 200"
+msgstr "ISO 200"
+
+#: libexif/olympus/mnote-olympus-entry.c:251
+msgid "ISO 400"
+msgstr "ISO 400"
+
+#: libexif/olympus/mnote-olympus-entry.c:255
+#: libexif/pentax/mnote-pentax-entry.c:168
+msgid "Sport"
+msgstr "Спорт"
+
+#: libexif/olympus/mnote-olympus-entry.c:256
+msgid "TV"
+msgstr "Телебачення"
+
+#: libexif/olympus/mnote-olympus-entry.c:258
+msgid "User 1"
+msgstr "Користувач 1"
+
+#: libexif/olympus/mnote-olympus-entry.c:259
+msgid "User 2"
+msgstr "Користувач 2"
+
+#: libexif/olympus/mnote-olympus-entry.c:260
+msgid "Lamp"
+msgstr "Лампа"
+
+#: libexif/olympus/mnote-olympus-entry.c:263
+msgid "5 frames/sec"
+msgstr "5 кадрів/сек"
+
+#: libexif/olympus/mnote-olympus-entry.c:264
+msgid "10 frames/sec"
+msgstr "10 кадрів/сек"
+
+#: libexif/olympus/mnote-olympus-entry.c:265
+msgid "15 frames/sec"
+msgstr "15 кадрів/сек"
+
+#: libexif/olympus/mnote-olympus-entry.c:266
+msgid "20 frames/sec"
+msgstr "20 кадрів/сек"
+
+#: libexif/olympus/mnote-olympus-entry.c:382
+#, c-format
+msgid "Red Correction %f, blue Correction %f"
+msgstr "Виправлення червоного: %f, виправлення синього: %f"
+
+#: libexif/olympus/mnote-olympus-entry.c:389
+msgid "No manual focus selection"
+msgstr "Без вибору фокусування вручну"
+
+#: libexif/olympus/mnote-olympus-entry.c:392
+#, c-format
+msgid "%2.2f meters"
+msgstr "%2.2f метрів"
+
+#: libexif/olympus/mnote-olympus-entry.c:418
+msgid "AF position: center"
+msgstr "Позиція АФ: центр"
+
+#: libexif/olympus/mnote-olympus-entry.c:419
+msgid "AF position: top"
+msgstr "Позиція АФ: вгорі"
+
+#: libexif/olympus/mnote-olympus-entry.c:420
+msgid "AF position: bottom"
+msgstr "Позиція АФ: внизу"
+
+#: libexif/olympus/mnote-olympus-entry.c:421
+msgid "AF position: left"
+msgstr "Позиція АФ: ліворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:422
+msgid "AF position: right"
+msgstr "Позиція АФ: праворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:423
+msgid "AF position: upper-left"
+msgstr "Позиція АФ: вгорі ліворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:424
+msgid "AF position: upper-right"
+msgstr "Позиція АФ: вгорі праворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:425
+msgid "AF position: lower-left"
+msgstr "Позиція АФ: внизу ліворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:426
+msgid "AF position: lower-right"
+msgstr "Позиція АФ: внизу праворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:427
+msgid "AF position: far left"
+msgstr "Позиція АФ: далеко ліворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:428
+msgid "AF position: far right"
+msgstr "Позиція АФ: далеко праворуч"
+
+#: libexif/olympus/mnote-olympus-entry.c:429
+msgid "Unknown AF position"
+msgstr "Невідома позиція АФ"
+
+#: libexif/olympus/mnote-olympus-entry.c:440
+#: libexif/olympus/mnote-olympus-entry.c:511
+#, c-format
+msgid "Internal error (unknown value %hi)"
+msgstr "Внутрішня помилка (невідоме значення %hi)"
+
+#: libexif/olympus/mnote-olympus-entry.c:448
+#: libexif/olympus/mnote-olympus-entry.c:519
+#, c-format
+msgid "Unknown value %hi"
+msgstr "Невідоме значення %hi"
+
+#: libexif/olympus/mnote-olympus-entry.c:544
+#: libexif/olympus/mnote-olympus-entry.c:564
+#, c-format
+msgid "Unknown %hu"
+msgstr "Невідоме %hu"
+
+#: libexif/olympus/mnote-olympus-entry.c:561
+msgid "2 sec."
+msgstr "2 с"
+
+#: libexif/olympus/mnote-olympus-entry.c:600
+msgid "Fast"
+msgstr "Швидкий"
+
+#: libexif/olympus/mnote-olympus-entry.c:704
+msgid "Automatic"
+msgstr "Автоматично"
+
+#: libexif/olympus/mnote-olympus-entry.c:734
+#, c-format
+msgid "Manual: %liK"
+msgstr "Вручну: %liK"
+
+#: libexif/olympus/mnote-olympus-entry.c:737
+msgid "Manual: unknown"
+msgstr "Вручну: невідомо"
+
+#: libexif/olympus/mnote-olympus-entry.c:743
+msgid "One-touch"
+msgstr "Один дотик"
+
+#: libexif/olympus/mnote-olympus-entry.c:811
+#: libexif/olympus/mnote-olympus-entry.c:821
+msgid "Infinite"
+msgstr "Нескінченний"
+
+#: libexif/olympus/mnote-olympus-entry.c:829
+#, c-format
+msgid "%i bytes unknown data: "
+msgstr "%i байтів невідомих даних: "
+
+#: libexif/olympus/mnote-olympus-tag.c:38
+#: libexif/olympus/mnote-olympus-tag.c:53
+msgid "ISO Setting"
+msgstr "Значення ISO"
+
+#: libexif/olympus/mnote-olympus-tag.c:39
+msgid "Color Mode (?)"
+msgstr "Модель кольору (?)"
+
+#: libexif/olympus/mnote-olympus-tag.c:42
+msgid "Image Sharpening"
+msgstr "Збільшення різкості зображення"
+
+#: libexif/olympus/mnote-olympus-tag.c:44
+msgid "Flash Setting"
+msgstr "Параметри спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:46
+msgid "White Balance Fine Adjustment"
+msgstr "Точне коригування балансу білого"
+
+#: libexif/olympus/mnote-olympus-tag.c:47
+msgid "White Balance RB"
+msgstr "RB балансу білого"
+
+#: libexif/olympus/mnote-olympus-tag.c:48
+msgid "Program Shift"
+msgstr "Програмний зсув"
+
+#: libexif/olympus/mnote-olympus-tag.c:49
+msgid "ISO Selection"
+msgstr "Вибір ISO"
+
+#: libexif/olympus/mnote-olympus-tag.c:50
+msgid "Preview Image IFD"
+msgstr "Зображення попереднього перегляду IFD"
+
+#: libexif/olympus/mnote-olympus-tag.c:50
+msgid "Offset of the preview image directory (IFD) inside the file."
+msgstr "Відступ каталогу зображень попереднього перегляду (IFD) у файлі."
+
+#: libexif/olympus/mnote-olympus-tag.c:51
+msgid "Exposurediff ?"
+msgstr "Exposurediff ?"
+
+#: libexif/olympus/mnote-olympus-tag.c:54
+msgid "Image Boundary"
+msgstr "Межа зображення"
+
+#: libexif/olympus/mnote-olympus-tag.c:55
+msgid "External Flash Exposure Compensation"
+msgstr "Зовнішня компенсація експозиції спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:56
+msgid "Flash Exposure Bracket Value"
+msgstr "Значення вилки експозиції спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:57
+msgid "Exposure Bracket Value"
+msgstr "Значення вилки експозиції"
+
+#: libexif/olympus/mnote-olympus-tag.c:58
+#: libexif/olympus/mnote-olympus-tag.c:128
+msgid "Image Adjustment"
+msgstr "Коригування зображення"
+
+#: libexif/olympus/mnote-olympus-tag.c:59
+msgid "Tone Compensation"
+msgstr "Компенсація тону"
+
+#: libexif/olympus/mnote-olympus-tag.c:60
+msgid "Adapter"
+msgstr "Адаптер"
+
+#: libexif/olympus/mnote-olympus-tag.c:62
+msgid "Lens"
+msgstr "Об'єктив"
+
+#: libexif/olympus/mnote-olympus-tag.c:63
+#: libexif/olympus/mnote-olympus-tag.c:167
+#: libexif/olympus/mnote-olympus-tag.c:217
+msgid "Manual Focus Distance"
+msgstr "Фокусна відстань вручну"
+
+#: libexif/olympus/mnote-olympus-tag.c:65
+msgid "Flash Used"
+msgstr "Використано спалах"
+
+#: libexif/olympus/mnote-olympus-tag.c:66
+msgid "AF Focus Position"
+msgstr "Позиція фокусування для автофокусування"
+
+#: libexif/olympus/mnote-olympus-tag.c:67
+msgid "Bracketing"
+msgstr "Автовилка"
+
+#: libexif/olympus/mnote-olympus-tag.c:69
+msgid "Lens F Stops"
+msgstr "Позиції фокусування об'єктива"
+
+#: libexif/olympus/mnote-olympus-tag.c:70
+msgid "Contrast Curve"
+msgstr "Крива контрастності"
+
+#: libexif/olympus/mnote-olympus-tag.c:71
+#: libexif/olympus/mnote-olympus-tag.c:127
+#: libexif/pentax/mnote-pentax-tag.c:134
+msgid "Color Mode"
+msgstr "Режим кольорів"
+
+#: libexif/olympus/mnote-olympus-tag.c:72
+msgid "Light Type"
+msgstr "Тип освітлення"
+
+#: libexif/olympus/mnote-olympus-tag.c:73
+msgid "Shot Info"
+msgstr "Дані щодо знімка"
+
+#: libexif/olympus/mnote-olympus-tag.c:74
+msgid "Hue Adjustment"
+msgstr "Налаштування відтінку"
+
+#: libexif/olympus/mnote-olympus-tag.c:76
+#: libexif/olympus/mnote-olympus-tag.c:195
+#: libexif/pentax/mnote-pentax-tag.c:108
+msgid "Noise Reduction"
+msgstr "Вилучення шумів"
+
+#: libexif/olympus/mnote-olympus-tag.c:78
+msgid "Lens Data"
+msgstr "Дані щодо об'єктива"
+
+#: libexif/olympus/mnote-olympus-tag.c:79
+msgid "Sensor Pixel Size"
+msgstr "Розмір точки на датчику"
+
+#: libexif/olympus/mnote-olympus-tag.c:81
+msgid "Retouch History"
+msgstr "Журнал ретушування"
+
+#: libexif/olympus/mnote-olympus-tag.c:83
+msgid "Image Data Size"
+msgstr "Розмір даних зображення"
+
+#: libexif/olympus/mnote-olympus-tag.c:83
+msgid "Size of compressed image data in bytes."
+msgstr "Розмір стиснених даних зображення у байтах."
+
+#: libexif/olympus/mnote-olympus-tag.c:85
+msgid "Total Number of Pictures Taken"
+msgstr "Загальна кількість зроблених знімків"
+
+#: libexif/olympus/mnote-olympus-tag.c:86
+#: libexif/pentax/mnote-pentax-tag.c:116
+msgid "Flash Info"
+msgstr "Дані щодо спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:87
+msgid "Optimize Image"
+msgstr "Оптимізація зображення"
+
+#: libexif/olympus/mnote-olympus-tag.c:89
+msgid "Vari Program"
+msgstr "Програма Vari"
+
+#: libexif/olympus/mnote-olympus-tag.c:90
+msgid "Capture Editor Data"
+msgstr "Дані редактора захоплення"
+
+#: libexif/olympus/mnote-olympus-tag.c:91
+msgid "Capture Editor Version"
+msgstr "Версія редактора захоплення"
+
+#: libexif/olympus/mnote-olympus-tag.c:94
+msgid "Crop HiSpeed"
+msgstr "Обрізання HiSpeed"
+
+#: libexif/olympus/mnote-olympus-tag.c:95
+msgid "Exposure Tuning"
+msgstr "Коригування експозиції"
+
+#: libexif/olympus/mnote-olympus-tag.c:97
+msgid "VR Info"
+msgstr "Дані щодо VR"
+
+#: libexif/olympus/mnote-olympus-tag.c:98
+msgid "Image Authentication"
+msgstr "Автентифікація зображення"
+
+#: libexif/olympus/mnote-olympus-tag.c:99
+msgid "Face Detect"
+msgstr "Виявлення облич"
+
+#: libexif/olympus/mnote-olympus-tag.c:100
+msgid "Active DLighting"
+msgstr "Активне DLighting"
+
+#: libexif/olympus/mnote-olympus-tag.c:101
+msgid "Picture Control Data"
+msgstr "Дані керування зображенням"
+
+#: libexif/olympus/mnote-olympus-tag.c:102
+msgid "World Time"
+msgstr "Всесвітній час"
+
+#: libexif/olympus/mnote-olympus-tag.c:103
+msgid "ISO Info"
+msgstr "Дані щодо ISO"
+
+#: libexif/olympus/mnote-olympus-tag.c:104
+msgid "Vignette Control"
+msgstr "Керування віньєтуванням"
+
+#: libexif/olympus/mnote-olympus-tag.c:105
+msgid "Distort Info"
+msgstr "Дані щодо викривлення"
+
+#: libexif/olympus/mnote-olympus-tag.c:106
+msgid "Shutter Mode"
+msgstr "Режим затвора"
+
+#: libexif/olympus/mnote-olympus-tag.c:108
+msgid "Mechanical Shutter Count"
+msgstr "Механічний відлік затвора"
+
+#: libexif/olympus/mnote-olympus-tag.c:109
+msgid "MNOTE_NIKON_TAG_LOCATIONINFO"
+msgstr "MNOTE_NIKON_TAG_LOCATIONINFO"
+
+#: libexif/olympus/mnote-olympus-tag.c:110
+#: libexif/olympus/mnote-olympus-tag.c:173
+msgid "Black Level"
+msgstr "Рівень чорного"
+
+#: libexif/olympus/mnote-olympus-tag.c:111
+msgid "Image Size Raw"
+msgstr "Розмір зображення без обробки"
+
+#: libexif/olympus/mnote-olympus-tag.c:112
+msgid "Crop Area"
+msgstr "Область обрізання"
+
+#: libexif/olympus/mnote-olympus-tag.c:113
+msgid "Nikon Settings"
+msgstr "Параметри Nikon"
+
+#: libexif/olympus/mnote-olympus-tag.c:114
+msgid "Color Temperature Auto"
+msgstr "Автоматична температура кольорів"
+
+#: libexif/olympus/mnote-olympus-tag.c:115
+msgid "Serial Number 2"
+msgstr "Серійний номер 2"
+
+#: libexif/olympus/mnote-olympus-tag.c:116
+msgid "Saturation 2"
+msgstr "Насиченість 2"
+
+#: libexif/olympus/mnote-olympus-tag.c:118
+msgid "High ISO Noise Reduction"
+msgstr "Потужне усування шуму ISO"
+
+#: libexif/olympus/mnote-olympus-tag.c:119
+msgid "Toning Effect"
+msgstr "Ефект тонування"
+
+#: libexif/olympus/mnote-olympus-tag.c:120
+msgid "Powerup Time"
+msgstr "Час неперервної роботи"
+
+#: libexif/olympus/mnote-olympus-tag.c:123
+msgid "Retouch Info"
+msgstr "Дані щодо ретушування"
+
+#: libexif/olympus/mnote-olympus-tag.c:124
+msgid "Preview Image"
+msgstr "Ескіз зображення"
+
+#: libexif/olympus/mnote-olympus-tag.c:129
+#: libexif/olympus/mnote-olympus-tag.c:215
+msgid "CCD Sensitivity"
+msgstr "Чутливість ПЗЗ"
+
+#: libexif/olympus/mnote-olympus-tag.c:131
+msgid "Focus"
+msgstr "Фокусування"
+
+#: libexif/olympus/mnote-olympus-tag.c:134
+msgid "Converter"
+msgstr "Перетворювач"
+
+#: libexif/olympus/mnote-olympus-tag.c:137
+msgid "Thumbnail Image"
+msgstr "Зображення-мініатюра"
+
+#: libexif/olympus/mnote-olympus-tag.c:138
+msgid "Speed/Sequence/Panorama Direction"
+msgstr "Напрямок швидкості/послідовності/панорами"
+
+#: libexif/olympus/mnote-olympus-tag.c:141
+msgid "Black & White Mode"
+msgstr "Чорно-білий режим"
+
+#: libexif/olympus/mnote-olympus-tag.c:143
+msgid "Focal Plane Diagonal"
+msgstr "Діагональ у фокальній площині"
+
+#: libexif/olympus/mnote-olympus-tag.c:144
+msgid "Lens Distortion Parameters"
+msgstr "Параметри викривлення об'єктивом"
+
+#: libexif/olympus/mnote-olympus-tag.c:146
+msgid "Info"
+msgstr "Інформація"
+
+#: libexif/olympus/mnote-olympus-tag.c:147
+msgid "Camera ID"
+msgstr "Ід. фотоапарата"
+
+#: libexif/olympus/mnote-olympus-tag.c:148
+msgid "Precapture Frames"
+msgstr "Попереднє захоплення кадрів"
+
+#: libexif/olympus/mnote-olympus-tag.c:149
+msgid "White Board"
+msgstr "Біла дошка"
+
+#: libexif/olympus/mnote-olympus-tag.c:150
+msgid "One Touch White Balance"
+msgstr "Баланс білого у один дотик"
+
+#: libexif/olympus/mnote-olympus-tag.c:151
+msgid "White Balance Bracket"
+msgstr "Вилка балансу білого"
+
+#: libexif/olympus/mnote-olympus-tag.c:152
+#: libexif/pentax/mnote-pentax-tag.c:123
+msgid "White Balance Bias"
+msgstr "Ухил балансу білого"
+
+#: libexif/olympus/mnote-olympus-tag.c:153
+msgid "Data Dump"
+msgstr "Дамп даних"
+
+#: libexif/olympus/mnote-olympus-tag.c:156
+msgid "ISO Value"
+msgstr "Значення ISO"
+
+#: libexif/olympus/mnote-olympus-tag.c:157
+msgid "Aperture Value"
+msgstr "Розмір діафрагми"
+
+#: libexif/olympus/mnote-olympus-tag.c:158
+msgid "Brightness Value"
+msgstr "Значення яскравості"
+
+#: libexif/olympus/mnote-olympus-tag.c:160
+msgid "Flash Device"
+msgstr "Пристрій спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:162
+msgid "Sensor Temperature"
+msgstr "Температура датчика"
+
+#: libexif/olympus/mnote-olympus-tag.c:163
+msgid "Lens Temperature"
+msgstr "Температура об'єктива"
+
+#: libexif/olympus/mnote-olympus-tag.c:164
+msgid "Light Condition"
+msgstr "Умови освітлення"
+
+#: libexif/olympus/mnote-olympus-tag.c:168
+msgid "Zoom Step Count"
+msgstr "Кількість кроків масштабування"
+
+#: libexif/olympus/mnote-olympus-tag.c:169
+msgid "Focus Step Count"
+msgstr "Кількість кроків фокусування"
+
+#: libexif/olympus/mnote-olympus-tag.c:170
+msgid "Sharpness Setting"
+msgstr "Параметр різкості"
+
+#: libexif/olympus/mnote-olympus-tag.c:171
+msgid "Flash Charge Level"
+msgstr "Рівень заряду спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:172
+msgid "Color Matrix"
+msgstr "Матриця кольорів"
+
+#: libexif/olympus/mnote-olympus-tag.c:174
+msgid "White Balance Setting"
+msgstr "Параметр балансу білого"
+
+#: libexif/olympus/mnote-olympus-tag.c:175
+#: libexif/pentax/mnote-pentax-tag.c:87
+msgid "Red Balance"
+msgstr "Баланс червоного"
+
+#: libexif/olympus/mnote-olympus-tag.c:176
+#: libexif/pentax/mnote-pentax-tag.c:86
+msgid "Blue Balance"
+msgstr "Баланс синього"
+
+#: libexif/olympus/mnote-olympus-tag.c:177
+msgid "Color Matrix Number"
+msgstr "Номер матриці кольору"
+
+#: libexif/olympus/mnote-olympus-tag.c:179
+msgid "Flash Exposure Comp"
+msgstr "Компенсація експозиції спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:180
+msgid "Internal Flash Table"
+msgstr "Вбудована таблиця спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:181
+msgid "External Flash G Value"
+msgstr "G-значення зовнішнього спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:182
+msgid "External Flash Bounce"
+msgstr "Відбиття зовнішнього спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:183
+msgid "External Flash Zoom"
+msgstr "Масштаб зовнішнього спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:184
+msgid "External Flash Mode"
+msgstr "Режим зовнішнього спалаху"
+
+#: libexif/olympus/mnote-olympus-tag.c:185
+msgid "Contrast Setting"
+msgstr "Параметр контрастності"
+
+#: libexif/olympus/mnote-olympus-tag.c:186
+msgid "Sharpness Factor"
+msgstr "Коефіцієнт різкості"
+
+#: libexif/olympus/mnote-olympus-tag.c:187
+msgid "Color Control"
+msgstr "Керування кольором"
+
+#: libexif/olympus/mnote-olympus-tag.c:188
+msgid "Olympus Image Width"
+msgstr "Ширина зображення Olympus"
+
+#: libexif/olympus/mnote-olympus-tag.c:189
+msgid "Olympus Image Height"
+msgstr "Висота зображення Olympus"
+
+#: libexif/olympus/mnote-olympus-tag.c:190
+msgid "Scene Detect"
+msgstr "Виявлення сцени"
+
+#: libexif/olympus/mnote-olympus-tag.c:191
+msgid "Compression Ratio"
+msgstr "Рівень стискання"
+
+#: libexif/olympus/mnote-olympus-tag.c:192
+msgid "Preview Image Valid"
+msgstr "Коректність зображення попереднього перегляду"
+
+#: libexif/olympus/mnote-olympus-tag.c:193
+msgid "AF Result"
+msgstr "Результат автофокусування"
+
+#: libexif/olympus/mnote-olympus-tag.c:194
+msgid "CCD Scan Mode"
+msgstr "Режим сканування ПЗЗ"
+
+#: libexif/olympus/mnote-olympus-tag.c:196
+msgid "Infinity Lens Step"
+msgstr "Крок об'єктива у нескінченності"
+
+#: libexif/olympus/mnote-olympus-tag.c:197
+msgid "Near Lens Step"
+msgstr "Крок об'єктива на близькій відстані"
+
+#: libexif/olympus/mnote-olympus-tag.c:198
+msgid "Light Value Center"
+msgstr "Центральне значення освітленості"
+
+#: libexif/olympus/mnote-olympus-tag.c:199
+msgid "Light Value Periphery"
+msgstr "Периферійне значення освітленості"
+
+#: libexif/olympus/mnote-olympus-tag.c:202
+msgid "Sequential Shot"
+msgstr "Послідовне знімання"
+
+#: libexif/olympus/mnote-olympus-tag.c:203
+msgid "Wide Range"
+msgstr "Широкий діапазон"
+
+#: libexif/olympus/mnote-olympus-tag.c:204
+msgid "Color Adjustment Mode"
+msgstr "Режим коригування кольорів"
+
+#: libexif/olympus/mnote-olympus-tag.c:206
+msgid "Quick Shot"
+msgstr "Швидкий знімок"
+
+#: libexif/olympus/mnote-olympus-tag.c:208
+msgid "Voice Memo"
+msgstr "Голосова нотатка"
+
+#: libexif/olympus/mnote-olympus-tag.c:209
+msgid "Record Shutter Release"
+msgstr "Запис спуску затвора"
+
+#: libexif/olympus/mnote-olympus-tag.c:210
+msgid "Flicker Reduce"
+msgstr "Зменшення блимання"
+
+#: libexif/olympus/mnote-olympus-tag.c:211
+msgid "Optical Zoom"
+msgstr "Оптичне масштабування"
+
+#: libexif/olympus/mnote-olympus-tag.c:213
+msgid "Light Source Special"
+msgstr "Спеціальне джерело світла"
+
+#: libexif/olympus/mnote-olympus-tag.c:214
+msgid "Resaved"
+msgstr "Повторно збережено"
+
+#: libexif/olympus/mnote-olympus-tag.c:216
+msgid "Scene Select"
+msgstr "Вибір сцени"
+
+#: libexif/olympus/mnote-olympus-tag.c:218
+msgid "Sequence Shot Interval"
+msgstr "Інтервал у послідовності знімків"
+
+#: libexif/olympus/mnote-olympus-tag.c:221
+msgid "Epson Image Width"
+msgstr "Ширина зображення Epson"
+
+#: libexif/olympus/mnote-olympus-tag.c:222
+msgid "Epson Image Height"
+msgstr "Висота зображення Epson"
+
+#: libexif/olympus/mnote-olympus-tag.c:223
+msgid "Epson Software Version"
+msgstr "Версія програмного забезпечення Epson"
+
+#: libexif/pentax/mnote-pentax-entry.c:80
+#: libexif/pentax/mnote-pentax-entry.c:134
+msgid "Multi-exposure"
+msgstr "Мультиекспонування"
+
+#: libexif/pentax/mnote-pentax-entry.c:83
+#: libexif/pentax/mnote-pentax-entry.c:137
+msgid "Good"
+msgstr "Добре"
+
+#: libexif/pentax/mnote-pentax-entry.c:84
+#: libexif/pentax/mnote-pentax-entry.c:138
+msgid "Better"
+msgstr "Краще"
+
+#: libexif/pentax/mnote-pentax-entry.c:92
+msgid "Flash on"
+msgstr "Спалах увімкнено"
+
+#: libexif/pentax/mnote-pentax-entry.c:140
+msgid "TIFF"
+msgstr "TIFF"
+
+#: libexif/pentax/mnote-pentax-entry.c:150
+msgid "2560x1920 or 2304x1728"
+msgstr "2560x1920 або 2304x1728"
+
+#: libexif/pentax/mnote-pentax-entry.c:156
+msgid "2304x1728 or 2592x1944"
+msgstr "2304x1728 або 2592x1944"
+
+#: libexif/pentax/mnote-pentax-entry.c:158
+msgid "2816x2212 or 2816x2112"
+msgstr "2816x2212 або 2816x2112"
+
+#: libexif/pentax/mnote-pentax-entry.c:171
+msgid "Surf & snow"
+msgstr "Поверхня і сніг"
+
+#: libexif/pentax/mnote-pentax-entry.c:172
+msgid "Sunset or candlelight"
+msgstr "Захід сонця чи світло свічки"
+
+#: libexif/pentax/mnote-pentax-entry.c:173
+msgid "Autumn"
+msgstr "Осінь"
+
+#: libexif/pentax/mnote-pentax-entry.c:178
+msgid "Self portrait"
+msgstr "Автопортрет"
+
+#: libexif/pentax/mnote-pentax-entry.c:179
+msgid "Illustrations"
+msgstr "Ілюстрації"
+
+#: libexif/pentax/mnote-pentax-entry.c:180
+msgid "Digital filter"
+msgstr "Цифровий фільтр"
+
+#: libexif/pentax/mnote-pentax-entry.c:182
+msgid "Food"
+msgstr "Їжа"
+
+#: libexif/pentax/mnote-pentax-entry.c:183
+msgid "Green mode"
+msgstr "Режим зеленого"
+
+#: libexif/pentax/mnote-pentax-entry.c:184
+msgid "Light pet"
+msgstr "Світла тварина"
+
+#: libexif/pentax/mnote-pentax-entry.c:185
+msgid "Dark pet"
+msgstr "Темна тварина"
+
+#: libexif/pentax/mnote-pentax-entry.c:186
+msgid "Medium pet"
+msgstr "Проміжна тварина"
+
+#: libexif/pentax/mnote-pentax-entry.c:188
+#: libexif/pentax/mnote-pentax-entry.c:296
+msgid "Candlelight"
+msgstr "Світло свічок"
+
+#: libexif/pentax/mnote-pentax-entry.c:189
+msgid "Natural skin tone"
+msgstr "Натуральні тони шкіри"
+
+#: libexif/pentax/mnote-pentax-entry.c:190
+msgid "Synchro sound record"
+msgstr "Синхронний запис звуку"
+
+#: libexif/pentax/mnote-pentax-entry.c:191
+msgid "Frame composite"
+msgstr "Композиція кадру"
+
+#: libexif/pentax/mnote-pentax-entry.c:194
+msgid "Auto, did not fire"
+msgstr "Авто, не спрацювала"
+
+#: libexif/pentax/mnote-pentax-entry.c:196
+msgid "Auto, did not fire, red-eye reduction"
+msgstr "Авто, не спрацювала, прибирання «червоних очей»"
+
+#: libexif/pentax/mnote-pentax-entry.c:197
+msgid "Auto, fired"
+msgstr "Авто, спрацювала"
+
+#: libexif/pentax/mnote-pentax-entry.c:199
+msgid "Auto, fired, red-eye reduction"
+msgstr "Авто, спрацювала, усування «червоних очей»"
+
+#: libexif/pentax/mnote-pentax-entry.c:201
+msgid "On, wireless"
+msgstr "Увімкнено, бездротовий"
+
+#: libexif/pentax/mnote-pentax-entry.c:202
+msgid "On, soft"
+msgstr "Увімкнено, програмний"
+
+#: libexif/pentax/mnote-pentax-entry.c:203
+msgid "On, slow-sync"
+msgstr "Увімкнено, повільна синхронізація"
+
+#: libexif/pentax/mnote-pentax-entry.c:204
+msgid "On, slow-sync, red-eye reduction"
+msgstr "Увімкнено, повільна синхронізація, усування «червоних очей»"
+
+#: libexif/pentax/mnote-pentax-entry.c:205
+msgid "On, trailing-curtain sync"
+msgstr "Увімкнено, синхронізація із кінцем фронту"
+
+#: libexif/pentax/mnote-pentax-entry.c:213
+msgid "AF-S"
+msgstr "АФ-S"
+
+#: libexif/pentax/mnote-pentax-entry.c:214
+msgid "AF-C"
+msgstr "АФ-C"
+
+#: libexif/pentax/mnote-pentax-entry.c:217
+msgid "Upper-left"
+msgstr "Вгорі ліворуч"
+
+#: libexif/pentax/mnote-pentax-entry.c:218
+msgid "Top"
+msgstr "Верхнє"
+
+#: libexif/pentax/mnote-pentax-entry.c:219
+msgid "Upper-right"
+msgstr "Вгорі праворуч"
+
+#: libexif/pentax/mnote-pentax-entry.c:221
+msgid "Mid-left"
+msgstr "Посередині ліворуч"
+
+#: libexif/pentax/mnote-pentax-entry.c:223
+msgid "Mid-right"
+msgstr "Посередині-праворуч"
+
+#: libexif/pentax/mnote-pentax-entry.c:225
+msgid "Lower-left"
+msgstr "Внизу ліворуч"
+
+#: libexif/pentax/mnote-pentax-entry.c:226
+msgid "Bottom"
+msgstr "Нижнє"
+
+#: libexif/pentax/mnote-pentax-entry.c:227
+msgid "Lower-right"
+msgstr "Внизу праворуч"
+
+#: libexif/pentax/mnote-pentax-entry.c:228
+msgid "Fixed center"
+msgstr "Фіксована за центром"
+
+#: libexif/pentax/mnote-pentax-entry.c:232
+msgid "Multiple"
+msgstr "Декілька"
+
+#: libexif/pentax/mnote-pentax-entry.c:234
+msgid "Top-center"
+msgstr "Посередині згори"
+
+#: libexif/pentax/mnote-pentax-entry.c:240
+msgid "Bottom-center"
+msgstr "Посередині знизу"
+
+#: libexif/pentax/mnote-pentax-entry.c:257
+msgid "User selected"
+msgstr "Вибрана користувачем"
+
+#: libexif/pentax/mnote-pentax-entry.c:282
+msgid "3008x2008 or 3040x2024"
+msgstr "3008x2008 або 3040x2024"
+
+#: libexif/pentax/mnote-pentax-entry.c:293
+msgid "Digital filter?"
+msgstr "Цифровий фільтр?"
+
+#: libexif/pentax/mnote-pentax-entry.c:352
+#: libexif/pentax/mnote-pentax-entry.c:361
+#, c-format
+msgid "Internal error (unknown value %hu)"
+msgstr "Внутрішня помилка (невідоме значення %hu)"
+
+#: libexif/pentax/mnote-pentax-entry.c:376
+#, c-format
+msgid "Internal error (unknown value %hu %hu)"
+msgstr "Внутрішня помилка (невідоме значення %hu %hu)"
+
+#: libexif/pentax/mnote-pentax-entry.c:385
+#, c-format
+msgid "Internal error (unknown value %hi %hi)"
+msgstr "Внутрішня помилка (невідоме значення %hi %hi)"
+
+#: libexif/pentax/mnote-pentax-tag.c:35 libexif/pentax/mnote-pentax-tag.c:63
+msgid "Capture Mode"
+msgstr "Режим захоплення"
+
+#: libexif/pentax/mnote-pentax-tag.c:36 libexif/pentax/mnote-pentax-tag.c:70
+#: libexif/pentax/mnote-pentax-tag.c:129
+msgid "Quality Level"
+msgstr "Рівень якості"
+
+#: libexif/pentax/mnote-pentax-tag.c:56
+msgid "Colors"
+msgstr "Кольори"
+
+#: libexif/pentax/mnote-pentax-tag.c:59
+msgid "PrintIM Settings"
+msgstr "Параметри PrintIM"
+
+#: libexif/pentax/mnote-pentax-tag.c:60 libexif/pentax/mnote-pentax-tag.c:131
+msgid "Time Zone"
+msgstr "Часовий пояс"
+
+#: libexif/pentax/mnote-pentax-tag.c:61
+msgid "Daylight Savings"
+msgstr "Літній час"
+
+#: libexif/pentax/mnote-pentax-tag.c:64
+msgid "Preview Size"
+msgstr "Розмір перегляду"
+
+#: libexif/pentax/mnote-pentax-tag.c:65
+msgid "Preview Length"
+msgstr "Тривалість попереднього перегляду"
+
+#: libexif/pentax/mnote-pentax-tag.c:66 libexif/pentax/mnote-pentax-tag.c:122
+msgid "Preview Start"
+msgstr "Почати попередній перегляд"
+
+#: libexif/pentax/mnote-pentax-tag.c:67
+msgid "Model Identification"
+msgstr "Ідентифікація моделі"
+
+#: libexif/pentax/mnote-pentax-tag.c:68
+msgid "Date"
+msgstr "Дата"
+
+#: libexif/pentax/mnote-pentax-tag.c:69
+msgid "Time"
+msgstr "Час"
+
+#: libexif/pentax/mnote-pentax-tag.c:75
+msgid "AF Point Selected"
+msgstr "Вибрана точка АФ"
+
+#: libexif/pentax/mnote-pentax-tag.c:76
+msgid "Auto AF Point"
+msgstr "Автоматична точка АФ"
+
+#: libexif/pentax/mnote-pentax-tag.c:77
+msgid "Focus Position"
+msgstr "Позиція фокусування"
+
+#: libexif/pentax/mnote-pentax-tag.c:80
+msgid "ISO Number"
+msgstr "Коефіцієнт ISO"
+
+#: libexif/pentax/mnote-pentax-tag.c:83
+msgid "Auto Bracketing"
+msgstr "Автоматичне злиття експозицій"
+
+#: libexif/pentax/mnote-pentax-tag.c:85
+msgid "White Balance Mode"
+msgstr "Режим балансу білого"
+
+#: libexif/pentax/mnote-pentax-tag.c:93
+msgid "World Time Location"
+msgstr "Розташування за всесвітнім часом"
+
+#: libexif/pentax/mnote-pentax-tag.c:94
+msgid "Hometown City"
+msgstr "Рідне місто"
+
+#: libexif/pentax/mnote-pentax-tag.c:95
+msgid "Destination City"
+msgstr "Місто призначення"
+
+#: libexif/pentax/mnote-pentax-tag.c:96
+msgid "Hometown DST"
+msgstr "Місцевий час (DST)"
+
+#: libexif/pentax/mnote-pentax-tag.c:96
+msgid "Home Daylight Savings Time"
+msgstr "Місцевий час з врахуванням переведення часу"
+
+#: libexif/pentax/mnote-pentax-tag.c:97
+msgid "Destination DST"
+msgstr "Час місця призначення (DST)"
+
+#: libexif/pentax/mnote-pentax-tag.c:97
+msgid "Destination Daylight Savings Time"
+msgstr "Час місця призначення з врахуванням переведення часу"
+
+#: libexif/pentax/mnote-pentax-tag.c:99
+msgid "Image Processing"
+msgstr "Обробка зображень"
+
+#: libexif/pentax/mnote-pentax-tag.c:100
+msgid "Picture Mode (2)"
+msgstr "Режим знімка (2)"
+
+#: libexif/pentax/mnote-pentax-tag.c:103
+msgid "Image Area Offset"
+msgstr "Відступ області зображення"
+
+#: libexif/pentax/mnote-pentax-tag.c:104
+msgid "Raw Image Size"
+msgstr "Розмір цифрового негатива"
+
+#: libexif/pentax/mnote-pentax-tag.c:105
+msgid "Autofocus Points Used"
+msgstr "Використано точки автофокусування"
+
+#: libexif/pentax/mnote-pentax-tag.c:110
+msgid "Image Tone"
+msgstr "Тон зображення"
+
+#: libexif/pentax/mnote-pentax-tag.c:111
+msgid "Shake Reduction Info"
+msgstr "Відомості щодо усування тремтіння"
+
+#: libexif/pentax/mnote-pentax-tag.c:112
+msgid "Black Point"
+msgstr "Чорна точка"
+
+#: libexif/pentax/mnote-pentax-tag.c:114
+msgid "AE Info"
+msgstr "Дані щодо AE"
+
+#: libexif/pentax/mnote-pentax-tag.c:118
+msgid "Battery Info"
+msgstr "Дані щодо акумулятора"
+
+#: libexif/pentax/mnote-pentax-tag.c:119
+msgid "Hometown City Code"
+msgstr "Код міста перебування"
+
+#: libexif/pentax/mnote-pentax-tag.c:120
+msgid "Destination City Code"
+msgstr "Код міста призначення"
+
+#: libexif/pentax/mnote-pentax-tag.c:125
+msgid "Object Distance"
+msgstr "Відстань до об'єкта"
+
+#: libexif/pentax/mnote-pentax-tag.c:125
+msgid "Distance of photographed object in millimeters."
+msgstr "Відстань до знятого об'єкта у міліметрах."
+
+#: libexif/pentax/mnote-pentax-tag.c:126
+msgid "Flash Distance"
+msgstr "Відстань спалаху"
+
+#: libexif/pentax/mnote-pentax-tag.c:132
+msgid "Bestshot Mode"
+msgstr "Режим Bestshot"
+
+#: libexif/pentax/mnote-pentax-tag.c:133
+msgid "CCS ISO Sensitivity"
+msgstr "ISO-чутливість ПЗЗ"
+
+#: libexif/pentax/mnote-pentax-tag.c:135
+msgid "Enhancement"
+msgstr "Покращення"
+
+#: libexif/pentax/mnote-pentax-tag.c:136
+msgid "Finer"
+msgstr "Краще"
+
+#: test/nls/test-nls.c:20 test/nls/test-nls.c:23 test/nls/test-nls.c:24
+msgid "[DO_NOT_TRANSLATE_THIS_MARKER]"
+msgstr "[DO_NOT_TRANSLATE_THIS_MARKER]"

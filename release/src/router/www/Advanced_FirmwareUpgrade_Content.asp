@@ -354,7 +354,7 @@ function initial(){
 			$('.label-fw_rbk').remove();
 		}
 		if(rbk_count > 0 && httpApi.nvramGet(["webs_state_odm"],1).webs_state_odm != 0 && httpApi.nvramGet(["webs_state_odm"],1).webs_state_odm != "" ){
-			$("#FWString").append("<span class='label-fw_rbk'>Rollback</span>");	//Untranslated
+			$("#FWString").append("<span class='label-fw_rbk'><#FW_rollback#></span>");
 			$(".label-fw_rbk").css("margin-left", "10px")
 							 .css("cursor", "pointer")
 							 .css("text-decoration", "underline")
@@ -405,7 +405,7 @@ function initial(){
 			html += "<span class='aimesh_fw_revert' style='display:none;'>Revert</span>";	//Untranslated
 		}
 		if(rbkfw_support){
-			html += "<span class='aimesh_fw_rbk' style='display:none;'>Rollback</span>";	//Untranslated
+			html += "<span class='aimesh_fw_rbk' style='display:none;'><#FW_rollback#></span>";
 		}
 		html += "</div>";
 		html += "<div id='amesh_manual_upload_fw'>";
@@ -522,7 +522,7 @@ function initial(){
 					
 					if(capability_value & 16384){     //rbkfw_support
 						if(rbkfw_support){
-							$("#amas_" + mac_id + "").children().find(".aimesh_fw_rbk_node").html("Rollback");	/* Untranslated */
+							$("#amas_" + mac_id + "").children().find(".aimesh_fw_rbk_node").html("<#FW_rollback#>");
 							$("#amas_" + mac_id + "").children().find(".aimesh_fw_rbk_node").click(get_cfg_clientlist[idx], open_AiMesh_node_rbkfw);
 						}
 					}
@@ -1586,7 +1586,7 @@ function create_rbkfw_view(){
 	var divObj = document.createElement("div");
 	divObj.id = "div_rbk_title";
 	divObj.className = "rbk_title";
-	divObj.innerHTML = "Firmware Rollback Selector";	//Untranslated
+	divObj.innerHTML = "<#FW_rollback_selector#>";
 	$(divObj).appendTo('#rbk_Block');
 
 	var divObj2 = document.createElement("div");
@@ -1620,7 +1620,7 @@ function create_rbkfw_view(){
 	$(tableObj2).appendTo('#table_panel');
 
 	var theadObj = document.createElement("thead");
-	theadObj.innerHTML = "<tr height='28px'><td id='td_all_list_title' colspan='2'>Choose a firmware version</td></tr>";	/* Untranslated */
+	theadObj.innerHTML = "<tr height='28px'><td id='td_all_list_title' colspan='2'><#FW_rollback_choose#></td></tr>";
 	$(theadObj).appendTo('#table_rbk');
 
 	var trObj = document.createElement("tr");
@@ -1669,7 +1669,7 @@ function create_rbkfw_view(){
 	var divObj_bot = document.createElement("div");
 	divObj_bot.id = "div_rbk_bot";
 	divObj_bot.style = "margin-top:10px;margin-bottom:20px;width:100%;text-align:center;";
-	divObj_bot.innerHTML = "<input class='button_gen' type='button' onclick='close_rbk_selector()' value='<#CTL_Cancel#>'><input class='button_gen' type='button' onclick='rbk_fw_confirm()' style='margin-left:15px;' value='Rollback'>";
+	divObj_bot.innerHTML = "<input class='button_gen' type='button' onclick='close_rbk_selector()' value='<#CTL_Cancel#>'><input class='button_gen' type='button' onclick='rbk_fw_confirm()' style='margin-left:15px;' value='<#FW_rollback#>'>";
 	$(divObj_bot).appendTo('#rbk_Block');
 
 }
@@ -1820,7 +1820,7 @@ function update_AiMesh_fw() {
 					if(rbkfw_support){
 						if(capability_value & 16384){     //rbkfw_support
 							if(online == "1"){
-								$("#amas_" + mac_id + "").children().find(".aimesh_fw_rbk_node").html("Rollback");	/* Untranslated */
+								$("#amas_" + mac_id + "").children().find(".aimesh_fw_rbk_node").html("<#FW_rollback#>");
 								$("#amas_" + mac_id + "").children().find(".aimesh_fw_rbk_node").click(get_cfg_clientlist[idx], open_AiMesh_node_rbkfw);
 							}
 						}

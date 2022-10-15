@@ -204,7 +204,7 @@ static int yop_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
         return AVERROR_INVALIDDATA;
     }
 
-    if ((ret = ff_reget_buffer(avctx, frame)) < 0)
+    if ((ret = ff_reget_buffer(avctx, frame, 0)) < 0)
         return ret;
 
     if (!avctx->frame_number)
@@ -274,4 +274,5 @@ AVCodec ff_yop_decoder = {
     .init           = yop_decode_init,
     .close          = yop_decode_close,
     .decode         = yop_decode_frame,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

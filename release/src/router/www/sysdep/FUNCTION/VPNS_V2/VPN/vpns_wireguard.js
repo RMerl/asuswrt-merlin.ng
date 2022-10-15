@@ -205,6 +205,9 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 			$("<div>").addClass("desc")
 				.html(htmlEnDeCode.htmlEncode("Please download WireGuard App from Google Play or Apple Store, then use the APP to scan the QR Code to connect to this server."))/* untranslated */
 				.appendTo($export_mode_cntr);
+			var $notice_container = $("<div>").addClass("notice_container").appendTo($export_mode_cntr);
+			$("<div>").addClass("notice_title").html("<#InternetSpeed_Notice#>").appendTo($notice_container);
+			$("<div>").addClass("notice_desc").html(htmlEnDeCode.htmlEncode("For iOS users, you must assign a specific DNS server to WireGuard app before accessing the internet through WireGuard Server.")).appendTo($notice_container);/* untranslated */
 			var $qr_code_cntr = $("<div>").addClass("qr_code_container").appendTo($export_mode_cntr);
 			$("<div>").addClass("qr_code").css("background-image", "url(/wgs_client.png?random="+new Date().getTime()+")").appendTo($qr_code_cntr);
 			$("<div>").addClass("qr_text").html(htmlEnDeCode.htmlEncode("<#Scan_QR_Code_For_Details#>")).appendTo($qr_code_cntr);

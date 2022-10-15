@@ -1,6 +1,6 @@
 FATE_FILTER_SAMPLES-$(call ALLYES, SMJPEG_DEMUXER MJPEG_DECODER PERMS_FILTER OWDENOISE_FILTER) += fate-filter-owdenoise-sample
-fate-filter-owdenoise-sample: CMD = ffmpeg -idct simple -i $(TARGET_SAMPLES)/smjpeg/scenwin.mjpg -vf "trim=duration=0.5,perms=random,owdenoise=10:20:20:enable=not(between(t\,0.2\,1.2))" -an -f rawvideo -
-fate-filter-owdenoise-sample: REF = $(TARGET_SAMPLES)/filter-reference/owdenoise-scenwin.raw
+fate-filter-owdenoise-sample: CMD = ffmpeg -auto_conversion_filters -idct simple -i $(TARGET_SAMPLES)/smjpeg/scenwin.mjpg -vf "trim=duration=0.5,perms=random,owdenoise=10:20:20:enable=not(between(t\,0.2\,1.2))" -an -f rawvideo -
+fate-filter-owdenoise-sample: REF = $(SAMPLES)/filter-reference/owdenoise-scenwin.raw
 fate-filter-owdenoise-sample: CMP_TARGET = 1
 fate-filter-owdenoise-sample: FUZZ = 3539
 fate-filter-owdenoise-sample: CMP = oneoff
@@ -15,10 +15,10 @@ FATE_YADIF += fate-filter-yadif-mode1
 fate-filter-yadif-mode1: CMD = framecrc -flags bitexact -idct simple -i $(TARGET_SAMPLES)/mpeg2/mpeg2_field_encoding.ts -frames:v 59 -vf yadif=1
 
 FATE_YADIF += fate-filter-yadif10
-fate-filter-yadif10: CMD = framecrc -flags bitexact -idct simple -i $(TARGET_SAMPLES)/mpeg2/mpeg2_field_encoding.ts -flags bitexact -pix_fmt yuv420p10le -frames:v 30 -vf yadif=0
+fate-filter-yadif10: CMD = framecrc -flags bitexact -idct simple -i $(TARGET_SAMPLES)/mpeg2/mpeg2_field_encoding.ts -flags bitexact -pix_fmt yuv420p10le -frames:v 30 -vf yadif=0,scale
 
 FATE_YADIF += fate-filter-yadif16
-fate-filter-yadif16: CMD = framecrc -flags bitexact -idct simple -i $(TARGET_SAMPLES)/mpeg2/mpeg2_field_encoding.ts -flags bitexact -pix_fmt yuv420p16le -frames:v 30 -vf yadif=0
+fate-filter-yadif16: CMD = framecrc -flags bitexact -idct simple -i $(TARGET_SAMPLES)/mpeg2/mpeg2_field_encoding.ts -flags bitexact -pix_fmt yuv420p16le -frames:v 30 -vf yadif=0,scale
 
 FATE_FILTER_SAMPLES-$(call FILTERDEMDEC, YADIF, MPEGTS, MPEG2VIDEO) += $(FATE_YADIF)
 
@@ -42,25 +42,25 @@ FATE_FILTER_SAMPLES-$(call ALLYES, CODECVIEW_FILTER RM_DEMUXER RV40_DECODER) += 
 fate-filter-codecview-mvs: CMD = framecrc -flags2 +export_mvs -i $(TARGET_SAMPLES)/real/spygames-2MB.rmvb -vf codecview=mv=pf+bf+bb -frames:v 60 -an
 
 FATE_FILTER_SAMPLES-$(call ALLYES, SHOWPALETTE_FILTER FLIC_DEMUXER FLIC_DECODER) += fate-filter-showpalette
-fate-filter-showpalette: CMD = framecrc -i $(TARGET_SAMPLES)/fli/fli-engines.fli -vf showpalette=3 -pix_fmt bgra
+fate-filter-showpalette: CMD = framecrc -i $(TARGET_SAMPLES)/fli/fli-engines.fli -vf showpalette=3,scale -pix_fmt bgra
 
 FATE_FILTER_PALETTEGEN += fate-filter-palettegen-1
-fate-filter-palettegen-1: CMD = framecrc -i $(TARGET_SAMPLES)/filter/anim.mkv -vf palettegen -pix_fmt bgra
+fate-filter-palettegen-1: CMD = framecrc -i $(TARGET_SAMPLES)/filter/anim.mkv -vf scale,palettegen,scale -pix_fmt bgra
 
 FATE_FILTER_PALETTEGEN += fate-filter-palettegen-2
-fate-filter-palettegen-2: CMD = framecrc -i $(TARGET_SAMPLES)/filter/anim.mkv -vf palettegen=max_colors=128:reserve_transparent=0:stats_mode=diff -pix_fmt bgra
+fate-filter-palettegen-2: CMD = framecrc -i $(TARGET_SAMPLES)/filter/anim.mkv -vf scale,palettegen=max_colors=128:reserve_transparent=0:stats_mode=diff,scale -pix_fmt bgra
 
 fate-filter-palettegen: $(FATE_FILTER_PALETTEGEN)
 FATE_FILTER_SAMPLES-$(call ALLYES, PALETTEGEN_FILTER MATROSKA_DEMUXER H264_DECODER) += $(FATE_FILTER_PALETTEGEN)
 
 FATE_FILTER_PALETTEUSE += fate-filter-paletteuse-nodither
-fate-filter-paletteuse-nodither: CMD = framecrc -i $(TARGET_SAMPLES)/filter/anim.mkv -i $(TARGET_SAMPLES)/filter/anim-palette.png -lavfi paletteuse=none -pix_fmt bgra
+fate-filter-paletteuse-nodither: CMD = framecrc -auto_conversion_filters -i $(TARGET_SAMPLES)/filter/anim.mkv -i $(TARGET_SAMPLES)/filter/anim-palette.png -lavfi paletteuse=none -pix_fmt bgra
 
 FATE_FILTER_PALETTEUSE += fate-filter-paletteuse-bayer
-fate-filter-paletteuse-bayer: CMD = framecrc -i $(TARGET_SAMPLES)/filter/anim.mkv -i $(TARGET_SAMPLES)/filter/anim-palette.png -lavfi paletteuse=bayer -pix_fmt bgra
+fate-filter-paletteuse-bayer: CMD = framecrc -auto_conversion_filters -i $(TARGET_SAMPLES)/filter/anim.mkv -i $(TARGET_SAMPLES)/filter/anim-palette.png -lavfi paletteuse=bayer -pix_fmt bgra
 
 FATE_FILTER_PALETTEUSE += fate-filter-paletteuse-sierra2_4a
-fate-filter-paletteuse-sierra2_4a: CMD = framecrc -i $(TARGET_SAMPLES)/filter/anim.mkv -i $(TARGET_SAMPLES)/filter/anim-palette.png -lavfi paletteuse=sierra2_4a:diff_mode=rectangle -pix_fmt bgra
+fate-filter-paletteuse-sierra2_4a: CMD = framecrc -auto_conversion_filters -i $(TARGET_SAMPLES)/filter/anim.mkv -i $(TARGET_SAMPLES)/filter/anim-palette.png -lavfi paletteuse=sierra2_4a:diff_mode=rectangle -pix_fmt bgra
 
 fate-filter-paletteuse: $(FATE_FILTER_PALETTEUSE)
 FATE_FILTER_SAMPLES-$(call ALLYES, PALETTEUSE_FILTER MATROSKA_DEMUXER H264_DECODER IMAGE2_DEMUXER PNG_DECODER) += $(FATE_FILTER_PALETTEUSE)
@@ -89,6 +89,12 @@ fate-filter-allrgb: CMD = framecrc -lavfi allrgb=rate=5:duration=1 -pix_fmt rgb2
 FATE_FILTER-$(call ALLYES, LAVFI_INDEV ALLYUV_FILTER) += fate-filter-allyuv
 fate-filter-allyuv: CMD = framecrc -lavfi allyuv=rate=5:duration=1 -pix_fmt yuv444p
 
+FATE_FILTER-$(call ALLYES, LAVFI_INDEV PAL75BARS_FILTER) += fate-filter-pal75bars
+fate-filter-pal75bars: CMD = framecrc -lavfi pal75bars=rate=5:duration=1 -pix_fmt yuv420p
+
+FATE_FILTER-$(call ALLYES, LAVFI_INDEV PAL100BARS_FILTER) += fate-filter-pal100bars
+fate-filter-pal100bars: CMD = framecrc -lavfi pal100bars=rate=5:duration=1 -pix_fmt yuv420p
+
 FATE_FILTER-$(call ALLYES, LAVFI_INDEV RGBTESTSRC_FILTER) += fate-filter-rgbtestsrc
 fate-filter-rgbtestsrc: CMD = framecrc -lavfi rgbtestsrc=rate=5:duration=1 -pix_fmt rgb24
 
@@ -102,7 +108,7 @@ FATE_FILTER-$(call ALLYES, LAVFI_INDEV YUVTESTSRC_FILTER) += fate-filter-yuvtest
 fate-filter-yuvtestsrc-yuv444p: CMD = framecrc -lavfi yuvtestsrc=rate=5:duration=1 -pix_fmt yuv444p
 
 FATE_FILTER-$(call ALLYES, LAVFI_INDEV YUVTESTSRC_FILTER) += fate-filter-yuvtestsrc-yuv444p12
-fate-filter-yuvtestsrc-yuv444p12: CMD = framecrc -lavfi yuvtestsrc=rate=5:duration=1,format=yuv444p12 -pix_fmt yuv444p12le
+fate-filter-yuvtestsrc-yuv444p12: CMD = framecrc -lavfi yuvtestsrc=rate=5:duration=1,format=yuv444p12,scale -pix_fmt yuv444p12le
 
 FATE_FILTER-$(call ALLYES, AVDEVICE TESTSRC_FILTER FORMAT_FILTER CONCAT_FILTER SCALE_FILTER) += fate-filter-lavd-scalenorm
 fate-filter-lavd-scalenorm: tests/data/filtergraphs/scalenorm
@@ -113,14 +119,18 @@ fate-filter-framerate-up: CMD = framecrc -lavfi testsrc2=r=2:d=10,framerate=fps=
 fate-filter-framerate-down: CMD = framecrc -lavfi testsrc2=r=2:d=10,framerate=fps=1 -t 1
 
 FATE_FILTER-$(call ALLYES, FRAMERATE_FILTER TESTSRC2_FILTER FORMAT_FILTER) += fate-filter-framerate-12bit-up fate-filter-framerate-12bit-down
-fate-filter-framerate-12bit-up: CMD = framecrc -lavfi testsrc2=r=50:d=1,format=pix_fmts=yuv422p12le,framerate=fps=60 -t 1 -pix_fmt yuv422p12le
-fate-filter-framerate-12bit-down: CMD = framecrc -lavfi testsrc2=r=60:d=1,format=pix_fmts=yuv422p12le,framerate=fps=50 -t 1 -pix_fmt yuv422p12le
+fate-filter-framerate-12bit-up: CMD = framecrc -lavfi testsrc2=r=50:d=1,format=pix_fmts=yuv422p12le,scale,framerate=fps=60,scale -t 1 -pix_fmt yuv422p12le
+fate-filter-framerate-12bit-down: CMD = framecrc -lavfi testsrc2=r=60:d=1,format=pix_fmts=yuv422p12le,scale,framerate=fps=50,scale -t 1 -pix_fmt yuv422p12le
+
+FATE_FILTER-$(call ALLYES, MINTERPOLATE_FILTER TESTSRC2_FILTER) += fate-filter-minterpolate-up fate-filter-minterpolate-down
+fate-filter-minterpolate-up: CMD = framecrc -lavfi testsrc2=r=2:d=10,minterpolate=fps=10 -t 1
+fate-filter-minterpolate-down: CMD = framecrc -lavfi testsrc2=r=2:d=10,minterpolate=fps=1 -t 1
 
 FATE_FILTER_VSYNTH-$(CONFIG_BOXBLUR_FILTER) += fate-filter-boxblur
 fate-filter-boxblur: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf boxblur=2:1
 
 FATE_FILTER_VSYNTH-$(call ALLYES, COLORCHANNELMIXER_FILTER FORMAT_FILTER PERMS_FILTER) += fate-filter-colorchannelmixer
-fate-filter-colorchannelmixer: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf format=rgb24,perms=random,colorchannelmixer=.31415927:.4:.31415927:0:.27182818:.8:.27182818:0:.2:.6:.2:0 -flags +bitexact -sws_flags +accurate_rnd+bitexact
+fate-filter-colorchannelmixer: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=rgb24,perms=random,colorchannelmixer=.31415927:.4:.31415927:0:.27182818:.8:.27182818:0:.2:.6:.2:0 -flags +bitexact -sws_flags +accurate_rnd+bitexact
 
 FATE_FILTER_VSYNTH-$(CONFIG_DRAWBOX_FILTER) += fate-filter-drawbox
 fate-filter-drawbox: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf drawbox=224:24:88:72:red@0.5
@@ -129,7 +139,7 @@ FATE_FILTER_VSYNTH-$(CONFIG_FADE_FILTER) += fate-filter-fade
 fate-filter-fade: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf fade=in:5:15,fade=out:30:15
 
 FATE_FILTER_VSYNTH-$(call ALLYES, INTERLACE_FILTER FIELDORDER_FILTER) += fate-filter-fieldorder
-fate-filter-fieldorder: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf interlace=tff,fieldorder=bff -sws_flags +accurate_rnd+bitexact
+fate-filter-fieldorder: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf interlace=tff,scale,fieldorder=bff -sws_flags +accurate_rnd+bitexact
 
 define FATE_FPFILTER_SUITE
 FATE_FILTER_FRAMEPACK += fate-filter-framepack-$(1)
@@ -187,7 +197,7 @@ FATE_FILTER_VSYNTH-$(CONFIG_VECTORSCOPE_FILTER) += fate-filter-vectorscope_color
 fate-filter-vectorscope_color4: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf vectorscope=color4 -sws_flags +accurate_rnd+bitexact -frames:v 3
 
 FATE_FILTER_VSYNTH-$(CONFIG_VECTORSCOPE_FILTER) += fate-filter-vectorscope_xy
-fate-filter-vectorscope_xy: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf vectorscope=x=0:y=1 -sws_flags +accurate_rnd+bitexact -frames:v 3
+fate-filter-vectorscope_xy: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -vf vectorscope=x=0:y=1 -sws_flags +accurate_rnd+bitexact -frames:v 3
 
 FATE_FILTER_VSYNTH-$(CONFIG_MERGEPLANES_FILTER) += fate-filter-mergeplanes
 fate-filter-mergeplanes: tests/data/filtergraphs/mergeplanes
@@ -207,46 +217,54 @@ fate-filter-overlay: CMD = framecrc -c:v pgmyuv -i $(SRC) -c:v pgmyuv -i $(SRC) 
 
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_rgb
 fate-filter-overlay_rgb: tests/data/filtergraphs/overlay_rgb
-fate-filter-overlay_rgb: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_rgb
+fate-filter-overlay_rgb: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_rgb
 
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv420
 fate-filter-overlay_yuv420: tests/data/filtergraphs/overlay_yuv420
 fate-filter-overlay_yuv420: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv420
 
+FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv420p10
+fate-filter-overlay_yuv420p10: tests/data/filtergraphs/overlay_yuv420p10
+fate-filter-overlay_yuv420p10: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv420p10 -pix_fmt yuv420p10le -frames:v 3
+
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_nv12
 fate-filter-overlay_nv12: tests/data/filtergraphs/overlay_nv12
-fate-filter-overlay_nv12: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_nv12
+fate-filter-overlay_nv12: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_nv12
 fate-filter-overlay_nv12: REF = $(SRC_PATH)/tests/ref/fate/filter-overlay_yuv420
 
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_nv21
 fate-filter-overlay_nv21: tests/data/filtergraphs/overlay_nv21
-fate-filter-overlay_nv21: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_nv21
+fate-filter-overlay_nv21: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_nv21
 fate-filter-overlay_nv21: REF = $(SRC_PATH)/tests/ref/fate/filter-overlay_yuv420
 
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv422
 fate-filter-overlay_yuv422: tests/data/filtergraphs/overlay_yuv422
-fate-filter-overlay_yuv422: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv422
+fate-filter-overlay_yuv422: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv422
+
+FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv422p10
+fate-filter-overlay_yuv422p10: tests/data/filtergraphs/overlay_yuv422p10
+fate-filter-overlay_yuv422p10: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv422p10 -pix_fmt yuv422p10le -frames:v 3
 
 FATE_FILTER_VSYNTH-$(call ALLYES, SPLIT_FILTER SCALE_FILTER PAD_FILTER OVERLAY_FILTER) += fate-filter-overlay_yuv444
 fate-filter-overlay_yuv444: tests/data/filtergraphs/overlay_yuv444
-fate-filter-overlay_yuv444: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv444
+fate-filter-overlay_yuv444: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay_yuv444
 
 FATE_FILTER_OVERLAY_ALPHA += fate-filter-overlay_yuv420_yuva420  fate-filter-overlay_yuv422_yuva422  fate-filter-overlay_yuv444_yuva444  fate-filter-overlay_rgb_rgba  fate-filter-overlay_gbrp_gbrap
 FATE_FILTER_OVERLAY_ALPHA += fate-filter-overlay_yuva420_yuva420 fate-filter-overlay_yuva422_yuva422 fate-filter-overlay_yuva444_yuva444 fate-filter-overlay_rgba_rgba fate-filter-overlay_gbrap_gbrap
 $(FATE_FILTER_OVERLAY_ALPHA): SRC = $(TARGET_SAMPLES)/png1/lena-rgba.png
 $(FATE_FILTER_OVERLAY_ALPHA): CMD = framecrc -i $(SRC) -sws_flags +accurate_rnd+bitexact -vf $(FILTER) -frames:v 1
 
-fate-filter-overlay_yuv420_yuva420:  FILTER = "format=yuva420p[over];color=black:128x128,format=yuv420p[main];[main][over]overlay=format=yuv420"
-fate-filter-overlay_yuv422_yuva422:  FILTER = "format=yuva422p[over];color=black:128x128,format=yuv422p[main];[main][over]overlay=format=yuv422"
-fate-filter-overlay_yuv444_yuva444:  FILTER = "format=yuva444p[over];color=black:128x128,format=yuv444p[main];[main][over]overlay=format=yuv444"
-fate-filter-overlay_rgb_rgba:        FILTER = "format=rgba[over];color=black:128x128,format=rgb24[main];[main][over]overlay=format=rgb"
-fate-filter-overlay_gbrp_gbrap:      FILTER = "format=gbrap[over];color=black:128x128,format=gbrp[main];[main][over]overlay=format=gbrp"
+fate-filter-overlay_yuv420_yuva420:  FILTER = "scale,format=yuva420p[over];color=black:128x128,format=yuv420p[main];[main][over]overlay=format=yuv420"
+fate-filter-overlay_yuv422_yuva422:  FILTER = "scale,format=yuva422p[over];color=black:128x128,format=yuv422p[main];[main][over]overlay=format=yuv422"
+fate-filter-overlay_yuv444_yuva444:  FILTER = "scale,format=yuva444p[over];color=black:128x128,format=yuv444p[main];[main][over]overlay=format=yuv444"
+fate-filter-overlay_rgb_rgba:        FILTER = "scale,format=rgba[over];color=black:128x128,format=rgb24[main];[main][over]overlay=format=rgb"
+fate-filter-overlay_gbrp_gbrap:      FILTER = "scale,format=gbrap[over];color=black:128x128,format=gbrp[main];[main][over]overlay=format=gbrp"
 
-fate-filter-overlay_yuva420_yuva420: FILTER = "format=yuva420p[over];color=black:128x128,format=yuva420p[main];[main][over]overlay=format=yuv420"
-fate-filter-overlay_yuva422_yuva422: FILTER = "format=yuva422p[over];color=black:128x128,format=yuva422p[main];[main][over]overlay=format=yuv422"
-fate-filter-overlay_yuva444_yuva444: FILTER = "format=yuva444p[over];color=black:128x128,format=yuva444p[main];[main][over]overlay=format=yuv444"
-fate-filter-overlay_rgba_rgba:       FILTER = "format=rgba[over];color=black:128x128,format=rgba[main];[main][over]overlay=format=rgb"
-fate-filter-overlay_gbrap_gbrap:     FILTER = "format=gbrap[over];color=black:128x128,format=gbrap[main];[main][over]overlay=format=gbrp"
+fate-filter-overlay_yuva420_yuva420: FILTER = "scale,format=yuva420p[over];color=black:128x128,format=yuva420p[main];[main][over]overlay=format=yuv420"
+fate-filter-overlay_yuva422_yuva422: FILTER = "scale,format=yuva422p[over];color=black:128x128,format=yuva422p[main];[main][over]overlay=format=yuv422"
+fate-filter-overlay_yuva444_yuva444: FILTER = "scale,format=yuva444p[over];color=black:128x128,format=yuva444p[main];[main][over]overlay=format=yuv444"
+fate-filter-overlay_rgba_rgba:       FILTER = "scale,format=rgba[over];color=black:128x128,format=rgba[main];[main][over]overlay=format=rgb"
+fate-filter-overlay_gbrap_gbrap:     FILTER = "scale,format=gbrap[over];color=black:128x128,format=gbrap[main];[main][over]overlay=format=gbrp"
 
 FATE_FILTER_SAMPLES-$(call ALLYES, PNG_DECODER APNG_DEMUXER FORMAT_FILTER COLOR_FILTER OVERLAY_FILTER) += $(FATE_FILTER_OVERLAY_ALPHA)
 
@@ -351,10 +369,10 @@ fate-filter-shuffleframes: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf shuffleframe
 FATE_FILTER_VSYNTH-$(CONFIG_SHUFFLEFRAMES_FILTER) += $(FATE_SHUFFLEFRAMES)
 
 FATE_SHUFFLEPLANES += fate-filter-shuffleplanes-dup-luma
-fate-filter-shuffleplanes-dup-luma: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf format=yuva444p,shuffleplanes=0:0:0:0
+fate-filter-shuffleplanes-dup-luma: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=yuva444p,shuffleplanes=0:0:0:0
 
 FATE_SHUFFLEPLANES += fate-filter-shuffleplanes-swapuv
-fate-filter-shuffleplanes-swapuv: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf shuffleplanes=0:2:1
+fate-filter-shuffleplanes-swapuv: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf shuffleplanes=0:2:1:0
 
 FATE_FILTER_VSYNTH-$(CONFIG_SHUFFLEPLANES_FILTER) += $(FATE_SHUFFLEPLANES)
 
@@ -386,8 +404,14 @@ fate-filter-trim-time: CMD = framecrc -i $(SRC) -vf trim=0:0.09
 
 FATE_FILTER_VSYNTH-$(CONFIG_TRIM_FILTER) += $(FATE_TRIM)
 
+FATE_FILTER-$(call ALLYES, TESTSRC2_FILTER UNTILE_FILTER) += fate-filter-untile
+fate-filter-untile: CMD = framecrc -lavfi testsrc2=d=1:r=2,untile=2x2
+
 FATE_FILTER_VSYNTH-$(CONFIG_UNSHARP_FILTER) += fate-filter-unsharp
 fate-filter-unsharp: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf unsharp=11:11:-1.5:11:11:-1.5
+
+FATE_FILTER_VSYNTH-$(CONFIG_UNSHARP_FILTER) += fate-filter-unsharp-yuv420p10
+fate-filter-unsharp-yuv420p10: CMD = framecrc -lavfi testsrc2=r=2:d=10,scale,format=yuv420p10,unsharp=11:11:-1.5:11:11:-1.5,scale -pix_fmt yuv420p10le -flags +bitexact -sws_flags +accurate_rnd+bitexact
 
 FATE_FILTER_SAMPLES-$(call ALLYES, SMJPEG_DEMUXER MJPEG_DECODER PERMS_FILTER HQDN3D_FILTER) += fate-filter-hqdn3d-sample
 fate-filter-hqdn3d-sample: tests/data/filtergraphs/hqdn3d
@@ -395,20 +419,20 @@ fate-filter-hqdn3d-sample: CMD = framecrc -idct simple -i $(TARGET_SAMPLES)/smjp
 
 FATE_FILTER_SAMPLES-$(call ALLYES, MATROSKA_DEMUXER OVERLAY_FILTER H264_DECODER DVDSUB_DECODER) += fate-filter-overlay-dvdsub-2397
 fate-filter-overlay-dvdsub-2397: tests/data/filtergraphs/overlay-dvdsub-2397
-fate-filter-overlay-dvdsub-2397: CMD = framecrc -flags bitexact -i $(TARGET_SAMPLES)/filter/242_4.mkv -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay-dvdsub-2397 -c:a copy
+fate-filter-overlay-dvdsub-2397: CMD = framecrc -auto_conversion_filters -flags bitexact -i $(TARGET_SAMPLES)/filter/242_4.mkv -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/overlay-dvdsub-2397 -c:a copy
 
 FATE_FILTER_HQX-$(call ALLYES, IMAGE2_DEMUXER PNG_DECODER HQX_FILTER) = fate-filter-hq2x fate-filter-hq3x fate-filter-hq4x
 FATE_FILTER_SAMPLES-yes += $(FATE_FILTER_HQX-yes)
-fate-filter-hq2x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf hqx=2 -pix_fmt bgra
-fate-filter-hq3x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf hqx=3 -pix_fmt bgra
-fate-filter-hq4x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf hqx=4 -pix_fmt bgra
+fate-filter-hq2x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,format=rgb32,hqx=2,scale,format=bgra
+fate-filter-hq3x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,format=rgb32,hqx=3,scale,format=bgra
+fate-filter-hq4x: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,format=rgb32,hqx=4,scale,format=bgra
 fate-filter-hqx: $(FATE_FILTER_HQX-yes)
 
 FATE_FILTER_XBR-$(call ALLYES, IMAGE2_DEMUXER PNG_DECODER XBR_FILTER) = fate-filter-2xbr fate-filter-3xbr fate-filter-4xbr
 FATE_FILTER_SAMPLES-yes += $(FATE_FILTER_XBR-yes)
-fate-filter-2xbr: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf xbr=2 -pix_fmt bgra
-fate-filter-3xbr: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf xbr=3 -pix_fmt bgra
-fate-filter-4xbr: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf xbr=4 -pix_fmt bgra
+fate-filter-2xbr: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,xbr=2,scale -pix_fmt bgra
+fate-filter-3xbr: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,xbr=3,scale -pix_fmt bgra
+fate-filter-4xbr: CMD = framecrc -i $(TARGET_SAMPLES)/filter/pixelart%d.png -vf scale,xbr=4,scale -pix_fmt bgra
 fate-filter-xbr: $(FATE_FILTER_XBR-yes)
 
 FATE_FILTER_SAMPLES-$(call ALLYES, UTVIDEO_DECODER AVI_DEMUXER PERMS_FILTER CURVES_FILTER) += fate-filter-curves
@@ -416,11 +440,13 @@ fate-filter-curves: CMD = framecrc -i $(TARGET_SAMPLES)/utvideo/utvideo_rgb_medi
 
 FATE_FILTER_SAMPLES-$(call ALLYES, VMD_DEMUXER VMDVIDEO_DECODER FORMAT_FILTER PERMS_FILTER GRADFUN_FILTER) += fate-filter-gradfun-sample
 fate-filter-gradfun-sample: tests/data/filtergraphs/gradfun
-fate-filter-gradfun-sample: CMD = framecrc -i $(TARGET_SAMPLES)/vmd/12.vmd -filter_script $(TARGET_PATH)/tests/data/filtergraphs/gradfun -an -frames:v 20
+fate-filter-gradfun-sample: CMD = framecrc -auto_conversion_filters -i $(TARGET_SAMPLES)/vmd/12.vmd -filter_script $(TARGET_PATH)/tests/data/filtergraphs/gradfun -an -frames:v 20
 
-FATE_FILTER-$(call ALLYES, TESTSRC_FILTER SINE_FILTER CONCAT_FILTER) += fate-filter-concat
+FATE_FILTER-$(call ALLYES, TESTSRC_FILTER SINE_FILTER CONCAT_FILTER) += fate-filter-concat fate-filter-concat-vfr
 fate-filter-concat: tests/data/filtergraphs/concat
 fate-filter-concat: CMD = framecrc -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/concat
+fate-filter-concat-vfr: tests/data/filtergraphs/concat-vfr
+fate-filter-concat-vfr: CMD = framecrc -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/concat-vfr
 
 FATE_FILTER-$(call ALLYES, TESTSRC2_FILTER FPS_FILTER MPDECIMATE_FILTER) += fate-filter-mpdecimate
 fate-filter-mpdecimate: CMD = framecrc -lavfi testsrc2=r=2:d=10,fps=3,mpdecimate -r 3 -pix_fmt yuv420p
@@ -437,17 +463,17 @@ fate-filter-fps-start-drop: CMD = framecrc -lavfi testsrc2=r=7:d=3.5,fps=3:start
 fate-filter-fps-start-fill: CMD = framecrc -lavfi testsrc2=r=7:d=1.5,setpts=PTS+14,fps=3:start_time=1.5
 
 FATE_FILTER_SAMPLES-$(call ALLYES, MOV_DEMUXER FPS_FILTER QTRLE_DECODER) += fate-filter-fps-cfr fate-filter-fps fate-filter-fps-r
-fate-filter-fps-cfr: CMD = framecrc -i $(TARGET_SAMPLES)/qtrle/apple-animation-variable-fps-bug.mov -r 30 -vsync cfr -pix_fmt yuv420p
-fate-filter-fps-r:   CMD = framecrc -i $(TARGET_SAMPLES)/qtrle/apple-animation-variable-fps-bug.mov -r 30 -vf fps -pix_fmt yuv420p
-fate-filter-fps:     CMD = framecrc -i $(TARGET_SAMPLES)/qtrle/apple-animation-variable-fps-bug.mov -vf fps=30 -pix_fmt yuv420p
+fate-filter-fps-cfr: CMD = framecrc -auto_conversion_filters -i $(TARGET_SAMPLES)/qtrle/apple-animation-variable-fps-bug.mov -r 30 -vsync cfr -pix_fmt yuv420p
+fate-filter-fps-r:   CMD = framecrc -auto_conversion_filters -i $(TARGET_SAMPLES)/qtrle/apple-animation-variable-fps-bug.mov -r 30 -vf fps -pix_fmt yuv420p
+fate-filter-fps:     CMD = framecrc -auto_conversion_filters -i $(TARGET_SAMPLES)/qtrle/apple-animation-variable-fps-bug.mov -vf fps=30 -pix_fmt yuv420p
 
 FATE_FILTER_VSYNTH-$(call ALLYES, FORMAT_FILTER SPLIT_FILTER ALPHAEXTRACT_FILTER ALPHAMERGE_FILTER) += fate-filter-alphaextract_alphamerge_rgb
 fate-filter-alphaextract_alphamerge_rgb: tests/data/filtergraphs/alphamerge_alphaextract_rgb
-fate-filter-alphaextract_alphamerge_rgb: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/alphamerge_alphaextract_rgb
+fate-filter-alphaextract_alphamerge_rgb: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/alphamerge_alphaextract_rgb
 
 FATE_FILTER_VSYNTH-$(call ALLYES, FORMAT_FILTER SPLIT_FILTER ALPHAEXTRACT_FILTER ALPHAMERGE_FILTER) += fate-filter-alphaextract_alphamerge_yuv
 fate-filter-alphaextract_alphamerge_yuv: tests/data/filtergraphs/alphamerge_alphaextract_yuv
-fate-filter-alphaextract_alphamerge_yuv: CMD = framecrc -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/alphamerge_alphaextract_yuv
+fate-filter-alphaextract_alphamerge_yuv: CMD = framecrc -auto_conversion_filters -c:v pgmyuv -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/alphamerge_alphaextract_yuv
 
 FATE_FILTER_VSYNTH-$(CONFIG_CROP_FILTER) += fate-filter-crop
 fate-filter-crop: CMD = video_filter "crop=iw-100:ih-100:100:100"
@@ -476,10 +502,28 @@ fate-filter-scale2ref_keep_aspect: CMD = framemd5 -frames:v 5 -filter_complex_sc
 
 FATE_FILTER_VSYNTH-$(CONFIG_SCALE_FILTER) += fate-filter-scalechroma
 fate-filter-scalechroma: tests/data/vsynth1.yuv
-fate-filter-scalechroma: CMD = framecrc -flags bitexact -s 352x288 -pix_fmt yuv444p -i tests/data/vsynth1.yuv -pix_fmt yuv420p -sws_flags +bitexact -vf scale=out_v_chr_pos=33:out_h_chr_pos=151
+fate-filter-scalechroma: CMD = framecrc -flags bitexact -s 352x288 -pix_fmt yuv444p -i $(TARGET_PATH)/tests/data/vsynth1.yuv -pix_fmt yuv420p -sws_flags +bitexact -vf scale=out_v_chr_pos=33:out_h_chr_pos=151
 
 FATE_FILTER_VSYNTH-$(CONFIG_VFLIP_FILTER) += fate-filter-vflip
 fate-filter-vflip: CMD = video_filter "vflip"
+
+FATE_FILTER_VSYNTH-$(CONFIG_COLORLEVELS_FILTER) += fate-filter-colorlevels
+fate-filter-colorlevels: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=rgb24,colorlevels -flags +bitexact -sws_flags +accurate_rnd+bitexact
+
+FATE_FILTER_VSYNTH-$(CONFIG_COLORLEVELS_FILTER) += fate-filter-colorlevels-16
+fate-filter-colorlevels-16: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=rgb48,colorlevels,scale -pix_fmt rgb48le -flags +bitexact -sws_flags +accurate_rnd+bitexact
+
+FATE_FILTER_VSYNTH-$(CONFIG_COLORBALANCE_FILTER) += fate-filter-colorbalance
+fate-filter-colorbalance: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=rgb24,colorbalance=rs=.2 -flags +bitexact -sws_flags +accurate_rnd+bitexact -frames:v 3
+
+FATE_FILTER_VSYNTH-$(CONFIG_COLORBALANCE_FILTER) += fate-filter-colorbalance-gbrap
+fate-filter-colorbalance-gbrap: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=gbrap,colorbalance=gh=.2 -flags +bitexact -sws_flags +accurate_rnd+bitexact -frames:v 3
+
+FATE_FILTER_VSYNTH-$(CONFIG_COLORBALANCE_FILTER) += fate-filter-colorbalance-rgba64
+fate-filter-colorbalance-rgba64: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=rgba64,colorbalance=rm=.2,scale -pix_fmt rgba64le -flags +bitexact -sws_flags +accurate_rnd+bitexact -frames:v 3
+
+FATE_FILTER_VSYNTH-$(CONFIG_COLORBALANCE_FILTER) += fate-filter-colorbalance-gbrap-16
+fate-filter-colorbalance-gbrap-16: CMD = framecrc -c:v pgmyuv -i $(SRC) -vf scale,format=gbrap,colorbalance=bh=.2 -pix_fmt gbrap -flags +bitexact -sws_flags +accurate_rnd+bitexact -frames:v 3
 
 FATE_FILTER_VSYNTH-$(CONFIG_COLORMATRIX_FILTER) += fate-filter-colormatrix1
 fate-filter-colormatrix1: CMD = video_filter "colormatrix=bt601:smpte240m,colormatrix=smpte240m:fcc,colormatrix=fcc:bt601,colormatrix=bt601:fcc,colormatrix=fcc:smpte240m,colormatrix=smpte240m:bt709"
@@ -494,13 +538,22 @@ FATE_FILTER_VSYNTH-$(CONFIG_VFLIP_FILTER) += fate-filter-vflip_vflip
 fate-filter-vflip_vflip: CMD = video_filter "vflip,vflip"
 
 FATE_FILTER_VSYNTH-$(call ALLYES, FORMAT_FILTER PERMS_FILTER EDGEDETECT_FILTER) += fate-filter-edgedetect
-fate-filter-edgedetect: CMD = video_filter "format=gray,perms=random,edgedetect" -frames:v 20
+fate-filter-edgedetect: CMD = video_filter "scale,format=gray,perms=random,edgedetect" -frames:v 20
 
 FATE_FILTER_VSYNTH-$(call ALLYES, FORMAT_FILTER PERMS_FILTER EDGEDETECT_FILTER) += fate-filter-edgedetect-colormix
-fate-filter-edgedetect-colormix: CMD = video_filter "format=gbrp,perms=random,edgedetect=mode=colormix" -frames:v 20
+fate-filter-edgedetect-colormix: CMD = video_filter "scale,format=gbrp,perms=random,edgedetect=mode=colormix" -frames:v 20
 
-FATE_FILTER_VSYNTH-$(call ALLYES, PERMS_FILTER HUE_FILTER) += fate-filter-hue
-fate-filter-hue: CMD = video_filter "perms=random,hue=s=sin(2*PI*t)+1" -frames:v 20
+FATE_FILTER_VSYNTH-$(call ALLYES, PERMS_FILTER HUE_FILTER) += fate-filter-hue1
+fate-filter-hue1: CMD = video_filter "perms=random,hue=s=sin(2*PI*t)+1" -frames:v 20
+
+FATE_FILTER_VSYNTH-$(call ALLYES, PERMS_FILTER HUE_FILTER) += fate-filter-hue2
+fate-filter-hue2: CMD = video_filter "perms=random,hue=h=18*n" -frames:v 20
+
+FATE_FILTER_VSYNTH-$(call ALLYES, PERMS_FILTER HUE_FILTER) += fate-filter-hue3
+fate-filter-hue3: CMD = video_filter "perms=random,hue=b=n-10" -frames:v 20
+
+FATE_FILTER_VSYNTH-$(call ALLYES, FORMAT_FILTER PERMS_FILTER HUE_FILTER) += fate-filter-hue4
+fate-filter-hue4: CMD = video_filter "scale,format=yuv422p10,perms=random,hue=h=18*n:s=n/10,scale" -frames:v 20 -pix_fmt yuv422p10le
 
 FATE_FILTER_VSYNTH-$(CONFIG_IDET_FILTER) += fate-filter-idet
 fate-filter-idet: CMD = framecrc -flags bitexact -idct simple -i $(SRC) -vf idet -frames:v 25 -flags +bitexact
@@ -511,17 +564,30 @@ fate-filter-pad: CMD = video_filter "pad=iw*1.5:ih*1.5:iw*0.3:ih*0.2"
 FATE_FILTER_PP = fate-filter-pp fate-filter-pp1 fate-filter-pp2 fate-filter-pp3 fate-filter-pp4 fate-filter-pp5 fate-filter-pp6
 FATE_FILTER_VSYNTH-$(CONFIG_PP_FILTER) += $(FATE_FILTER_PP)
 $(FATE_FILTER_PP): fate-vsynth1-mpeg4-qprd
+fate-vsynth1-mpeg4-qprd: KEEP_OVERRIDE= -keep
 
-fate-filter-pp:  CMD = framecrc -flags bitexact -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "pp=be/hb/vb/tn/l5/al"
+fate-filter-pp:  CMD = framecrc -flags bitexact -export_side_data venc_params -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "pp=be/hb/vb/tn/l5/al"
 fate-filter-pp1: CMD = video_filter "pp=fq|4/be/hb/vb/tn/l5/al"
-fate-filter-pp2: CMD = video_filter "qp=x+y,pp=be/h1/v1/lb"
-fate-filter-pp3: CMD = video_filter "qp=x+y,pp=be/ha|128|7/va/li"
+fate-filter-pp2: CMD = video_filter "qp=2*(x+y),pp=be/h1/v1/lb"
+fate-filter-pp3: CMD = video_filter "qp=2*(x+y),pp=be/ha|128|7/va/li"
 fate-filter-pp4: CMD = video_filter "pp=be/ci"
 fate-filter-pp5: CMD = video_filter "pp=md"
 fate-filter-pp6: CMD = video_filter "pp=be/fd"
 
+FATE_FILTER_VSYNTH-$(CONFIG_PP7_FILTER) += fate-filter-pp7
+fate-filter-pp7: fate-vsynth1-mpeg4-qprd
+fate-filter-pp7: CMD = framecrc -flags bitexact -export_side_data venc_params -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "pp7"
+
+FATE_FILTER_VSYNTH-$(CONFIG_SPP_FILTER) += fate-filter-spp
+fate-filter-spp: fate-vsynth1-mpeg4-qprd
+fate-filter-spp: CMD = framecrc -flags bitexact -export_side_data venc_params -idct simple -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf "spp=idct=simple:dct=int"
+
+FATE_FILTER_VSYNTH-$(CONFIG_CODECVIEW_FILTER) += fate-filter-codecview
+fate-filter-codecview: fate-vsynth1-mpeg4-qprd
+fate-filter-codecview: CMD = framecrc -flags bitexact -idct simple -flags2 +export_mvs -i $(TARGET_PATH)/tests/data/fate/vsynth1-mpeg4-qprd.avi -frames:v 5 -flags +bitexact -vf codecview=mv=pf+bf+bb
+
 FATE_FILTER_VSYNTH-$(call ALLYES, QP_FILTER PP_FILTER) += fate-filter-qp
-fate-filter-qp: CMD = video_filter "qp=17,pp=be/hb/vb/tn/l5/al"
+fate-filter-qp: CMD = video_filter "qp=34,pp=be/hb/vb/tn/l5/al"
 
 FATE_FILTER_VSYNTH-$(CONFIG_SELECT_FILTER) += fate-filter-select
 fate-filter-select: CMD = framecrc -flags bitexact -idct simple -i $(SRC) -vf "select=not(eq(mod(n\,2)\,0)+eq(mod(n\,3)\,0))" -frames:v 25 -flags +bitexact
@@ -533,76 +599,76 @@ FATE_FILTER_VSYNTH-$(CONFIG_SETSAR_FILTER) += fate-filter-setsar
 fate-filter-setsar: CMD = video_filter "setsar=sar=16/11"
 
 FATE_STEREO3D += fate-filter-stereo3d-al-sbsl
-fate-filter-stereo3d-al-sbsl: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=al:sbsl
+fate-filter-stereo3d-al-sbsl: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=al:sbsl
 
 FATE_STEREO3D += fate-filter-stereo3d-ar-abl
-fate-filter-stereo3d-ar-abl: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=ar:abl
+fate-filter-stereo3d-ar-abl: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=ar:abl
 
 FATE_STEREO3D += fate-filter-stereo3d-abr-mr
-fate-filter-stereo3d-abr-mr: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=abr:mr
+fate-filter-stereo3d-abr-mr: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=abr:mr
 
 FATE_STEREO3D += fate-filter-stereo3d-abr-ml
-fate-filter-stereo3d-abr-ml: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=abr:ml
+fate-filter-stereo3d-abr-ml: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=abr:ml
 
 FATE_STEREO3D  += fate-filter-stereo3d-sbsl-abl
-fate-filter-stereo3d-sbsl-abl: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:abl
+fate-filter-stereo3d-sbsl-abl: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:abl
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-abr
-fate-filter-stereo3d-sbsl-abr: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:abr
+fate-filter-stereo3d-sbsl-abr: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:abr
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-al
-fate-filter-stereo3d-sbsl-al: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:al
+fate-filter-stereo3d-sbsl-al: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:al
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-sbsr
-fate-filter-stereo3d-sbsl-sbsr: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:sbsr
+fate-filter-stereo3d-sbsl-sbsr: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:sbsr
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-agmc
-fate-filter-stereo3d-sbsl-agmc: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:agmc
+fate-filter-stereo3d-sbsl-agmc: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:agmc
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-agmd
-fate-filter-stereo3d-sbsl-agmd: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:agmd
+fate-filter-stereo3d-sbsl-agmd: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:agmd
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-agmg
-fate-filter-stereo3d-sbsl-agmg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:agmg
+fate-filter-stereo3d-sbsl-agmg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:agmg
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-agmh
-fate-filter-stereo3d-sbsl-agmh: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:agmh
+fate-filter-stereo3d-sbsl-agmh: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:agmh
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-arbg
-fate-filter-stereo3d-sbsl-arbg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:arbg
+fate-filter-stereo3d-sbsl-arbg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:arbg
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-arcc
-fate-filter-stereo3d-sbsl-arcc: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:arcc
+fate-filter-stereo3d-sbsl-arcc: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:arcc
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-arcd
-fate-filter-stereo3d-sbsl-arcd: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:arcd
+fate-filter-stereo3d-sbsl-arcd: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:arcd
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-arcg
-fate-filter-stereo3d-sbsl-arcg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:arcg
+fate-filter-stereo3d-sbsl-arcg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:arcg
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-arch
-fate-filter-stereo3d-sbsl-arch: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:arch
+fate-filter-stereo3d-sbsl-arch: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:arch
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-argg
-fate-filter-stereo3d-sbsl-argg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:argg
+fate-filter-stereo3d-sbsl-argg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:argg
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-aybc
-fate-filter-stereo3d-sbsl-aybc: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:aybc
+fate-filter-stereo3d-sbsl-aybc: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:aybc
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-aybd
-fate-filter-stereo3d-sbsl-aybd: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:aybd
+fate-filter-stereo3d-sbsl-aybd: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:aybd
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-aybg
-fate-filter-stereo3d-sbsl-aybg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:aybg
+fate-filter-stereo3d-sbsl-aybg: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:aybg
 
 FATE_STEREO3D += fate-filter-stereo3d-sbsl-aybh
-fate-filter-stereo3d-sbsl-aybh: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf stereo3d=sbsl:aybh
+fate-filter-stereo3d-sbsl-aybh: CMD = framecrc -c:v pgmyuv -i $(SRC) -frames:v 5 -flags +bitexact -sws_flags +accurate_rnd+bitexact -vf scale,stereo3d=sbsl:aybh
 
 fate-filter-stereo3d: $(FATE_STEREO3D)
 FATE_FILTER_VSYNTH-$(CONFIG_STEREO3D_FILTER) += $(FATE_STEREO3D)
 
 FATE_FILTER_VSYNTH-$(CONFIG_THUMBNAIL_FILTER) += fate-filter-thumbnail
-fate-filter-thumbnail: CMD = video_filter "thumbnail=10"
+fate-filter-thumbnail: CMD = video_filter "scale,thumbnail=10"
 
 FATE_FILTER_VSYNTH-$(CONFIG_TILE_FILTER) += fate-filter-tile
 fate-filter-tile: CMD = video_filter "tile=3x3:nb_frames=5:padding=7:margin=2"
@@ -622,7 +688,7 @@ endif
 
 define PIXDESC_TEST
 FATE_FILTER_PIXDESC-$(CONFIG_FORMAT_FILTER) += fate-filter-pixdesc-$(1)
-fate-filter-pixdesc-$(1): CMD = video_filter "format=$(1),pixdesctest" -pix_fmt $(1)
+fate-filter-pixdesc-$(1): CMD = video_filter "scale,format=$(1),pixdesctest" -pix_fmt $(1)
 endef
 
 $(foreach fmt, $(PIXFMTS), $(eval $(call PIXDESC_TEST,$(fmt))))
@@ -719,7 +785,13 @@ SCENEDETECT_DEPS = FFPROBE LAVFI_INDEV MOVIE_FILTER SELECT_FILTER SCALE_FILTER \
                    AVCODEC AVDEVICE MOV_DEMUXER SVQ3_DECODER ZLIB
 FATE_METADATA_FILTER-$(call ALLYES, $(SCENEDETECT_DEPS)) += fate-filter-metadata-scenedetect
 fate-filter-metadata-scenedetect: SRC = $(TARGET_SAMPLES)/svq3/Vertical400kbit.sorenson3.mov
-fate-filter-metadata-scenedetect: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;movie='$(SRC)',select=gt(scene\,.4)"
+fate-filter-metadata-scenedetect: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;movie='$(SRC)',select=gt(scene\,.25)"
+
+SCDET_DEPS = FFPROBE LAVFI_INDEV MOVIE_FILTER SCDET_FILTER SCALE_FILTER \
+                   AVCODEC AVDEVICE MOV_DEMUXER SVQ3_DECODER ZLIB
+FATE_METADATA_FILTER-$(call ALLYES, $(SCDET_DEPS)) += fate-filter-metadata-scdet
+fate-filter-metadata-scdet: SRC = $(TARGET_SAMPLES)/svq3/Vertical400kbit.sorenson3.mov
+fate-filter-metadata-scdet: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;movie='$(SRC)',scdet=s=1"
 
 CROPDETECT_DEPS = FFPROBE LAVFI_INDEV MOVIE_FILTER CROPDETECT_FILTER SCALE_FILTER \
                   AVCODEC AVDEVICE MOV_DEMUXER H264_DECODER
@@ -727,10 +799,19 @@ FATE_METADATA_FILTER-$(call ALLYES, $(CROPDETECT_DEPS)) += fate-filter-metadata-
 fate-filter-metadata-cropdetect: SRC = $(TARGET_SAMPLES)/filter/cropdetect.mp4
 fate-filter-metadata-cropdetect: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;movie='$(SRC)',cropdetect=max_outliers=3"
 
+FREEZEDETECT_DEPS = FFPROBE AVDEVICE LAVFI_INDEV MPTESTSRC_FILTER SCALE_FILTER FREEZEDETECT_FILTER
+FATE_METADATA_FILTER-$(call ALLYES, $(FREEZEDETECT_DEPS)) += fate-filter-metadata-freezedetect
+fate-filter-metadata-freezedetect: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;mptestsrc=r=25:d=10:m=51,freezedetect"
+
+SIGNALSTATS_DEPS = FFPROBE AVDEVICE LAVFI_INDEV COLOR_FILTER SCALE_FILTER SIGNALSTATS_FILTER
+FATE_METADATA_FILTER-$(call ALLYES, $(SIGNALSTATS_DEPS)) += fate-filter-metadata-signalstats-yuv420p fate-filter-metadata-signalstats-yuv420p10
+fate-filter-metadata-signalstats-yuv420p: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;color=white:duration=1:r=1,signalstats"
+fate-filter-metadata-signalstats-yuv420p10: CMD = run $(FILTER_METADATA_COMMAND) "sws_flags=+accurate_rnd+bitexact;color=white:duration=1:r=1,format=yuv420p10,signalstats"
+
 SILENCEDETECT_DEPS = FFPROBE AVDEVICE LAVFI_INDEV AMOVIE_FILTER TTA_DEMUXER TTA_DECODER SILENCEDETECT_FILTER
 FATE_METADATA_FILTER-$(call ALLYES, $(SILENCEDETECT_DEPS)) += fate-filter-metadata-silencedetect
 fate-filter-metadata-silencedetect: SRC = $(TARGET_SAMPLES)/lossless-audio/inside.tta
-fate-filter-metadata-silencedetect: CMD = run $(FILTER_METADATA_COMMAND) "amovie='$(SRC)',silencedetect=n=-33.5dB:d=.2"
+fate-filter-metadata-silencedetect: CMD = run $(FILTER_METADATA_COMMAND) "amovie='$(SRC)',silencedetect=n=-33.5dB:d=0.2"
 
 EBUR128_METADATA_DEPS = FFPROBE AVDEVICE LAVFI_INDEV AMOVIE_FILTER FLAC_DEMUXER FLAC_DECODER EBUR128_FILTER
 FATE_METADATA_FILTER-$(call ALLYES, $(EBUR128_METADATA_DEPS)) += fate-filter-metadata-ebur128
@@ -762,12 +843,12 @@ tests/data/file4560-override2rotate0.mov: ffmpeg$(PROGSSUF)$(EXESUF) | tests/dat
 
 FATE_FILTER_SAMPLES-$(call ALLYES, MOV_DEMUXER H264_DECODER AAC_FIXED_DECODER PCM_S16LE_ENCODER MOV_MUXER) += fate-filter-meta-4560-rotate0
 fate-filter-meta-4560-rotate0: tests/data/file4560-override2rotate0.mov
-fate-filter-meta-4560-rotate0: CMD = framecrc -flags +bitexact -c:a aac_fixed -i $(TARGET_PATH)/tests/data/file4560-override2rotate0.mov
+fate-filter-meta-4560-rotate0: CMD = framecrc -auto_conversion_filters -flags +bitexact -c:a aac_fixed -i $(TARGET_PATH)/tests/data/file4560-override2rotate0.mov
 
 REFCMP_DEPS = FFMPEG LAVFI_INDEV TESTSRC2_FILTER AVGBLUR_FILTER METADATA_FILTER
 
 FATE_FILTER_SAMPLES-$(call ALLYES, $(REFCMP_DEPS) PSNR_FILTER) += fate-filter-refcmp-psnr-rgb
-fate-filter-refcmp-psnr-rgb: CMD = refcmp_metadata psnr rgb24 0.001
+fate-filter-refcmp-psnr-rgb: CMD = refcmp_metadata psnr rgb24 0.002
 
 FATE_FILTER_SAMPLES-$(call ALLYES, $(REFCMP_DEPS) PSNR_FILTER) += fate-filter-refcmp-psnr-yuv
 fate-filter-refcmp-psnr-yuv: CMD = refcmp_metadata psnr yuv422p 0.0015

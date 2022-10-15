@@ -36,21 +36,19 @@ is no longer needed.
 USAGE
 -----
 
-We have started documenting the libexif API using doxygen and are making
-the results available at http://libexif.sourceforge.net/api/
+We have documented the libexif API using doxygen and are making
+the results available at https://libexif.github.io/api/
 
-Until someone writes some better documentation however, you need to refer
-to the header files.
-
-The short test-program test/test-mem illustrates how to create valid
-EXIF data from scratch, how to save EXIF data and how to load EXIF data 
-from data in memory. There are also a few simple example programs available
-in the contrib/examples/ directory.  Don't hesitate to contact us 
-(<libexif-devel@lists.sourceforge.net>) if you've got any questions
+The short test programs in the test directory illustrates how to create
+valid EXIF data from scratch, how to save EXIF data and how to load EXIF
+data from data in memory. To run the test programs, just run make check.
+There are also a few simple example programs available in the
+contrib/examples/ directory.  Don't hesitate to contact
+us at <libexif-devel@lists.sourceforge.net> if you have any questions
 on how to use libexif.
 
 To link to libexif into your own package, we recommend using the
-pkgconfig utility (cf. http://pkg-config.freedesktop.org/wiki/). For
+pkgconfig utility (cf. https://www.freedesktop.org/wiki/Software/pkg-config/ For
 your convenience, libexif both provides libexif-uninstalled.pc and
 installs libexif.pc.
 
@@ -58,17 +56,19 @@ installs libexif.pc.
 FRONTENDS
 ---------
 
-Right now, I know of the following frontends to libexif:
+Here are a few frontends to libexif:
  - exif:     A small command-line utility to show EXIF information in JPEG
-             files (http://www.sourceforge.net/projects/libexif).
+             files (https://github.com/libexif/libexif).
  - gexif:    A GTK+ frontend for editing EXIF data
-             (http://www.sourceforge.net/projects/libexif).
- - gphoto2:  A command-line frontend to libgphoto2, a library to access a 
+             (https://github.com/libexif/gexif).
+ - gphoto2:  A command-line frontend to libgphoto2, a library to access a
              wide range of digital cameras (http://www.gphoto.org).
- - gtkam:    A GTK+ frontend to libgphoto2 (http://www.topfrose.de).
+ - gtkam:    A GTK+ frontend to libgphoto2 (http://www.gphoto.org).
  - thirdeye: Digital photos organizer and driver for eComStation
              (http://ecomstation.ru/thirdeye).
- - digicam:  
+ - digikam:  digital photo management application for KDE
+             (https://www.digikam.org/)
+
 If you would like to migrate your program to use libexif or add EXIF support
 to it, don't hesitate to contact the authors.
 
@@ -76,10 +76,10 @@ to it, don't hesitate to contact the authors.
 LIBRARIES
 ---------
 
-I know of the following libraries that use or have been inspired by libexif:
+The following libraries use or have been inspired by libexif:
  - libexif-gtk: library of widgets to help display EXIF tags in GTK
-   programs (part of the libexif project)
- - pel: PHP-Code (http://pel.sourceforge.net)
+   programs (https://github.com/libexif/libexif-gtk).
+ - pel: PHP-Code (https://github.com/lsolesen/pel/)
 
 
 BUILDING
@@ -92,20 +92,8 @@ to build. Building from the source tar ball usually involves the commands:
   make
   sudo make install
 
-When building from source out of CVS, something like the following will be
+When building from source out of git, something like the following will be
 necessary:
-
-  gettextize
-  mv po/Makevars.template po/Makevars
-  aclocal -I auto-m4 -I m4m
-  autoheader
-  libtoolize --force
-  automake --add-missing
-  autoconf
-  ./configure
-  make
-
-Or, possibly just:
 
   autoreconf -i
   ./configure
@@ -136,14 +124,14 @@ INTERNATIONALIZATION
 The libexif translations are made by volunteers working on their own,
 either directly with the libexif project or through one of two translation
 coordination sites, the Translation Project
-<http://translationproject.org/domain/libexif.html> and Launchpad
-<https://translations.edge.launchpad.net/ubuntu/karmic/+source/libexif>.
+<https://translationproject.org/domain/libexif.html> and Launchpad
+<https://translations.edge.launchpad.net/ubuntu/bionic/+source/libexif/+pots/libexif-12>.
 Any updates to language translations coordinated by the Translation Project
 must be made through their web site, but all other languages can be
 updated either through Launchpad (preferred) or by sending updates to
 the libexif developers mailing list directly.  As of this writing, the
 following languages must be updated through the Translation Project:
-da de es fr nl pl sk sv vi
+cs da de es fr it ja nl pl pt sk sv uk vi
 
 If you are interested in translating libexif into a new language, we
 recommend that you join one of the above translation groups and take
@@ -159,7 +147,8 @@ AUTHORS
 libexif has originally been written by Curtis Galloway
 <curtisg@users.sourceforge.net>. Because of the original design not
 supporting editing and saving, Lutz Mueller <lutz@users.sourceforge.net>
-rewrote libexif from scratch.
+rewrote libexif from scratch. Since then, many more people have contributed
+to libexif.
 
 
 LINKS
@@ -168,11 +157,7 @@ LINKS
 Some links you might want to check out if you are interested in further
 information about EXIF.
 
- - http://drewnoakes.com/code/exif: metadata extraction framework in Java
- - http://www.pima.net: This is where I got the exif standard from. Site is
-   down as of 2002/12/31.
- - http://www.jeida.or.jp: Can't remember any more. Site is down as of
-   2002/12/31.
- - http://www.exif.org: information about the EXIF standard.
- - http://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/index.html: Looks
+ - https://drewnoakes.com/code/exif: metadata extraction framework in Java
+ - https://www.exif.org: information about the EXIF standard.
+ - https://www.sno.phy.queensu.ca/~phil/exiftool/TagNames/index.html: Looks
    like libexif in Perl. Seems to support a lot of MakerNotes.

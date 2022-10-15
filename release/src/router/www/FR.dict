@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Compte tenu de la compatibilité du système AiMesh et des t
 AiMesh_confirm_msg10=Pour assurer la connexion de votre système AiMesh et de vos appareils terminaux, veuillez lire ceci :<a id="wpa3FaqLink">FAQ</a> avant de passer à WPA3-Personal.
 AiMesh_confirm_msg11=Vous utilisez actuellement WPA3-personal. Pour créer un système AiMesh, votre méthode d'authentification sera modifiée en WPA2/WPA3-personal. Voulez-vous continuer ?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Pour plus de détails, rendez-vous sur <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>cette FAQ</a>
+AiMesh_confirm_msg13=Pour plus de détails, rendez-vous sur <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>cette FAQ</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh est une nouvelle fonctionnalité innovante pour routeur qui connecte plusieurs routeurs ASUS entre eux et crée un réseau WiFi pour toute la maison.
 AiMesh_FAQ=En savoir plus sur ASUS AiMesh
 AiMesh_FindNode=Trouver un nœud AiMesh
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Options TCP MSS
 WANTCPMSSOptionComm1Text=octets
 WANVLANIDText=Identifiant VLAN
-WANAggregation_desc=L'agrégation WAN combine deux connexions réseau pour augmenter la vitesse de votre réseau étendu (WAN) jusqu'à 2 Gb/s. Connectez le port WAN et le port LAN 4 de votre routeur aux ports LAN de votre modem (veillez à utiliser deux câbles de même spécification). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ sur l'agrégation WAN</a>
+WANAggregation_desc=L'agrégation WAN combine deux connexions réseau pour augmenter la vitesse de votre réseau étendu (WAN) jusqu'à 2 Gb/s. Connectez le port #WAN et le port LAN 4 de votre routeur aux ports LAN de votre modem (veillez à utiliser deux câbles de même spécification). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ sur l'agrégation WAN</a>
 WANAggregation_enable=Activer l’agrégation WAN
 WANAggregation_disable_dualwan=Le double WAN est activé sur votre routeur. L'activation de l'agrégation WAN désactive le double WAN. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_disable_WANAggregation=L'agrégation WAN est activée sur votre routeur. L'activation du double WAN désactive l'agrégation WAN. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_PortConflict_hint1=L'agrégation WAN utilise le port LAN 4 de votre routeur. L'activation de l'IPTV désactive l'agrégation WAN. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_PortConflict_hint2=L'IPTV utilise le port LAN 4 de votre routeur. L'activation de l'agrégation WAN désactive l'IPTV. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_disable_IPTVDualWAN=Le double WAN et l'IPTV sont activés sur votre routeur. L'activation de l'agrégation WAN désactive le double WAN et l'IPTV afin d'éviter les conflits de ports. Êtes-vous sûr(e) de vouloir continuer ?
-WANAggregation_help_WAN=Vérifiez que le port WAN de votre routeur et le port LAN de votre modem ont été connectés à l'aide de deux câbles de même spécification.
+WANAggregation_help_WAN=Vérifiez que le port #WAN de votre routeur et le port LAN de votre modem ont été connectés à l'aide de deux câbles de même spécification.
 WANAggregation_help_LAN=Vérifiez que le port LAN 4 de votre routeur et le port LAN de votre modem ont été connectés à l'aide de deux câbles de même spécification.
 WANAggregation_goto_WAN=Pour activer l'agrégation WAN, accédez à la page de <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">connexion WAN-Internet</a>.
 WANAggregation_help_desc=Si la configuration de l'agrégation WAN échoue, suivez les étapes ci-dessous pour réessayer.
-WANAggregation_help_step1=Assurez-vous que les ports LAN de votre modem sont déjà connectés au WAN et au LAN 4 de votre routeur à l'aide de câbles.
+WANAggregation_help_step1=Assurez-vous que les ports LAN de votre modem sont déjà connectés au #WAN et au LAN 4 de votre routeur à l'aide de câbles.
 WANAggregation_help_step2=Assurez-vous que votre modem a activé 802.3ad
 WANAggregation_help_step3=Confirmez que vous utilisez deux câbles avec les mêmes spécifications (gigabit et gigabit ou 10 / 100 et 10 / 100 Mb/s)
 WANAggregation_help_step4=Redémarrez votre routeur
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Sélectionnez GeForce Now pour donner la priorité aux dispositifs de jeu GeForce Now pour une expérience de jeu améliorée et plus rapide.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Événement
 AURA_Event_desc=Le système détecte les événements suivants et déclenche différents effets LED.
 AURA_Event_Boost_desc=En cas d’activation de Game Boost, vous pouvez voir la barre LED utiliser un effet de respiration rouge.

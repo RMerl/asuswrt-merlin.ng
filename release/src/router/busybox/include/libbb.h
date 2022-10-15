@@ -750,6 +750,7 @@ void visible(unsigned ch, char *buf, int flags) FAST_FUNC;
 
 /* dmalloc will redefine these to it's own implementation. It is safe
  * to have the prototypes here unconditionally.  */
+void bb_die_memory_exhausted(void);
 void *malloc_or_warn(size_t size) FAST_FUNC RETURNS_MALLOC;
 void *xmalloc(size_t size) FAST_FUNC RETURNS_MALLOC;
 void *xzalloc(size_t size) FAST_FUNC RETURNS_MALLOC;
@@ -1158,6 +1159,8 @@ extern void xfunc_die(void) NORETURN FAST_FUNC;
 extern void bb_show_usage(void) NORETURN FAST_FUNC;
 extern void bb_error_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2))) FAST_FUNC;
 extern void bb_error_msg_and_die(const char *s, ...) __attribute__ ((noreturn, format (printf, 1, 2))) FAST_FUNC;
+extern void bb_simple_error_msg(const char *s);
+extern void bb_simple_error_msg_and_die(const char *s);
 extern void bb_perror_msg(const char *s, ...) __attribute__ ((format (printf, 1, 2))) FAST_FUNC;
 extern void bb_simple_perror_msg(const char *s) FAST_FUNC;
 extern void bb_perror_msg_and_die(const char *s, ...) __attribute__ ((noreturn, format (printf, 1, 2))) FAST_FUNC;

@@ -27,6 +27,7 @@
 #include "mpegvideo.h"
 #include "h263.h"
 #include "mpeg4video.h"
+#include "profiles.h"
 
 /* The uni_DCtab_* tables below contain unified bits+length tables to encode DC
  * differences in MPEG-4. Unified in the sense that the specification specifies
@@ -104,7 +105,7 @@ static inline void restore_ac_coeffs(MpegEncContext *s, int16_t block[6][64],
     memcpy(s->block_last_index, zigzag_last_index, sizeof(int) * 6);
 
     for (n = 0; n < 6; n++) {
-        int16_t *ac_val = s->ac_val[0][0] + s->block_index[n] * 16;
+        int16_t *ac_val = &s->ac_val[0][0][0] + s->block_index[n] * 16;
 
         st[n] = s->intra_scantable.permutated;
         if (dir[n]) {
@@ -143,7 +144,7 @@ static inline int decide_ac_pred(MpegEncContext *s, int16_t block[6][64],
         score -= get_block_rate(s, block[n], s->block_last_index[n],
                                 s->intra_scantable.permutated);
 
-        ac_val  = s->ac_val[0][0] + s->block_index[n] * 16;
+        ac_val  = &s->ac_val[0][0][0] + s->block_index[n] * 16;
         ac_val1 = ac_val;
         if (dir[n]) {
             const int xy = s->mb_x + s->mb_y * s->mb_stride - s->mb_stride;
@@ -960,9 +961,6 @@ static void mpeg4_encode_vol_header(MpegEncContext *s,
 {
     int vo_ver_id;
 
-    if (!CONFIG_MPEG4_ENCODER)
-        return;
-
     if (s->max_b_frames || s->quarter_sample) {
         vo_ver_id  = 5;
         s->vo_type = ADV_SIMPLE_VO_TYPE;
@@ -1053,7 +1051,7 @@ static void mpeg4_encode_vol_header(MpegEncContext *s,
     if (!(s->avctx->flags & AV_CODEC_FLAG_BITEXACT)) {
         put_bits(&s->pb, 16, 0);
         put_bits(&s->pb, 16, 0x1B2);    /* user_data */
-        avpriv_put_string(&s->pb, LIBAVCODEC_IDENT, 0);
+        ff_put_string(&s->pb, LIBAVCODEC_IDENT, 0);
     }
 }
 
@@ -1306,6 +1304,8 @@ static av_cold int encode_init(AVCodecContext *avctx)
 
     if (s->avctx->flags & AV_CODEC_FLAG_GLOBAL_HEADER) {
         s->avctx->extradata = av_malloc(1024);
+        if (!s->avctx->extradata)
+            return AVERROR(ENOMEM);
         init_put_bits(&s->pb, s->avctx->extradata, 1024);
 
         if (!(s->workaround_bugs & FF_BUG_MS))
@@ -1353,8 +1353,8 @@ void ff_mpeg4_merge_partitions(MpegEncContext *s)
     flush_put_bits(&s->tex_pb);
 
     set_put_bits_buffer_size(&s->pb, s->pb2.buf_end - s->pb.buf);
-    avpriv_copy_bits(&s->pb, s->pb2.buf, pb2_len);
-    avpriv_copy_bits(&s->pb, s->tex_pb.buf, tex_pb_len);
+    ff_copy_bits(&s->pb, s->pb2.buf, pb2_len);
+    ff_copy_bits(&s->pb, s->tex_pb.buf, tex_pb_len);
     s->last_bits = put_bits_count(&s->pb);
 }
 
@@ -1376,6 +1376,7 @@ static const AVOption options[] = {
     { "data_partitioning", "Use data partitioning.",      OFFSET(data_partitioning), AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
     { "alternate_scan",    "Enable alternate scantable.", OFFSET(alternate_scan),    AV_OPT_TYPE_BOOL, { .i64 = 0 }, 0, 1, VE },
     FF_MPV_COMMON_OPTS
+    FF_MPEG4_PROFILE_OPTS
     { NULL },
 };
 
@@ -1397,5 +1398,6 @@ AVCodec ff_mpeg4_encoder = {
     .close          = ff_mpv_encode_end,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_SLICE_THREADS,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .priv_class     = &mpeg4enc_class,
 };

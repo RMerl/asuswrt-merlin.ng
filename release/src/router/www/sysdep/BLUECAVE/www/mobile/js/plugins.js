@@ -884,16 +884,44 @@ var Get_Component_WirelessInput = function(wlArray){
 				ssid_tmp = qisPostData["wlc" + wl.ifname + "_ssid"];
 				wpa_psk_tmp = qisPostData["wlc" + wl.ifname + "_wpa_psk"];
 			}
+
 			switch(parseInt(wl.ifname)){
+				
 				case 0 :
-					ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
+					console.log(isSupport('wifi6e'));
+					
+					if(isSupport('quadband')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
+					}
+
 					break;
 				case 1 :
-					ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					
+					if(isSupport('quadband')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G2";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					}
+
 					break;
 				case 2 :
-					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
+					
+					if(isSupport('quadband')
+					|| isSupport('triband') && isSupport('wifi6e')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RP6G";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
+					}	
+					
 					break;
+				case 3 :
+					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT";
+					break;	
 			}
 			wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(ssid_tmp);
 
@@ -1365,6 +1393,10 @@ function setupWLCNvram(apProfileID) {
 		}
 		else if(encryption == "TKIP"){
 			qisPostData["wlc" + unit + "_auth_mode"] = "psk";
+			if(authentication === 'WPA2-Personal'){
+				qisPostData["wlc" + unit + "_auth_mode"] = "psk2";
+			}
+			
 			qisPostData["wlc" + unit + "_crypto"] = "tkip";
 			qisPostData["wlc" + unit + "_wep"] = "0";
 		}
@@ -1924,19 +1956,31 @@ validator.invalidChar = function(str){
 		'errReason': ''
 	}
 
-	var invalid_char = [];
-	for(var i = 0; i < str.length; ++i){
-		if(str.charAt(i) < ' ' || str.charAt(i) > '~'){
-			invalid_char.push(str.charAt(i));
-		}
-	}
-
-	if(invalid_char.length != 0){
+	if(str.charAt(0) == '"'){
 		testResult.isError = true;
-		testResult.errReason = "<#JS_validstr2#> '" + invalid_char.join('') + "' !";
+		testResult.errReason = '<#JS_validstr1#> ["]';
+                return testResult;
 	}
+	else if(str.charAt(str.length - 1) == '"'){
+		testResult.isError = true;
+		testResult.errReason = '<#JS_validstr3#> ["]';
+		return testResult;
+	}
+	else{
+		var invalid_char = [];
+		for(var i = 0; i < str.length; ++i){
+			if(str.charAt(i) < ' ' || str.charAt(i) > '~'){
+				invalid_char.push(str.charAt(i));
+			}
+		}
 
-	return testResult;
+		if(invalid_char.length != 0){
+			testResult.isError = true;
+			testResult.errReason = "<#JS_validstr2#> '" + invalid_char.join('') + "' !";
+		}
+
+		return testResult;
+	}
 };
 
 validator.KRSkuPwd = function(str){

@@ -109,7 +109,7 @@ libbwdpi.so: $(OBJS)
 	@$(LD) $(LD2) -shared -o $@ $^
 
 hwinfo: hwinfo.o
-	@$(CC) -o $@ $^ $(LD1) -L. -lgcc_s
+	@$(CC) -o $@ $^ $(LD1) -L. -lgcc_s -lm
 
 # this command is for debug only
 dbg_dpi_support: dbg_dpi_support.o dpi_support.o

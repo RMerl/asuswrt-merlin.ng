@@ -93,6 +93,7 @@ static int set_param(AVFilterContext *ctx, f0r_param_info_t info, int index, cha
         double d;
         f0r_param_color_t col;
         f0r_param_position_t pos;
+        f0r_param_string str;
     } val;
     char *tail;
     uint8_t rgba[4];
@@ -123,6 +124,10 @@ static int set_param(AVFilterContext *ctx, f0r_param_info_t info, int index, cha
     case F0R_PARAM_POSITION:
         if (sscanf(param, "%lf/%lf", &val.pos.x, &val.pos.y) != 2)
             goto fail;
+        break;
+
+    case F0R_PARAM_STRING:
+        val.str = param;
         break;
     }
 
@@ -333,7 +338,7 @@ static int query_formats(AVFilterContext *ctx)
             return ret;
     } else {                                   /* F0R_COLOR_MODEL_PACKED32 */
         static const enum AVPixelFormat pix_fmts[] = {
-            AV_PIX_FMT_BGRA, AV_PIX_FMT_ARGB, AV_PIX_FMT_ABGR, AV_PIX_FMT_ARGB, AV_PIX_FMT_NONE
+            AV_PIX_FMT_BGRA, AV_PIX_FMT_ARGB, AV_PIX_FMT_ABGR, AV_PIX_FMT_NONE
         };
         formats = ff_make_format_list(pix_fmts);
     }
@@ -366,11 +371,25 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     return ff_filter_frame(outlink, out);
 }
 
+static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
+                           char *res, int res_len, int flags)
+{
+    Frei0rContext *s = ctx->priv;
+    int ret;
+
+    ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
+    if (ret < 0)
+        return ret;
+
+    return set_params(ctx, s->params);
+}
+
 #define OFFSET(x) offsetof(Frei0rContext, x)
 #define FLAGS AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
+#define TFLAGS AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM | AV_OPT_FLAG_RUNTIME_PARAM
 static const AVOption frei0r_options[] = {
     { "filter_name",   NULL, OFFSET(dl_name), AV_OPT_TYPE_STRING, .flags = FLAGS },
-    { "filter_params", NULL, OFFSET(params),  AV_OPT_TYPE_STRING, .flags = FLAGS },
+    { "filter_params", NULL, OFFSET(params),  AV_OPT_TYPE_STRING, .flags = TFLAGS },
     { NULL }
 };
 
@@ -404,6 +423,8 @@ AVFilter ff_vf_frei0r = {
     .priv_class    = &frei0r_class,
     .inputs        = avfilter_vf_frei0r_inputs,
     .outputs       = avfilter_vf_frei0r_outputs,
+    .process_command = process_command,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };
 
 static av_cold int source_init(AVFilterContext *ctx)

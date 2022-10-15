@@ -572,14 +572,13 @@ extern time_t login_timestamp_tmp_wan; // the timestamp of the current session.
 extern time_t auth_check_dt;
 extern int lock_flag;
 extern int max_lock_time;
-extern int add_try;
 extern int login_error_status;
 extern char* ipisdomain(char* hostname, char* str);
 #ifdef RTCONFIG_AMAS
 extern char* iscap(char* str);
 #endif
 extern int referer_check(char* referer, int fromapp_flag);
-extern int auth_check(char* url, char* file, char* cookies, int fromapp_flag);
+extern int auth_check(char* url, char* file, char* cookies, int fromapp_flag, int *add_count);
 extern int check_noauth_referrer(char* referer, int fromapp_flag);
 extern char current_page_name[128];
 extern int gen_guestnetwork_pass(char *key, size_t size);
@@ -654,4 +653,6 @@ extern int redirect_service_page(char *next_page, webs_t wp);
 extern void store_file_var(char *login_url, char *file);
 extern int get_active_wan_unit(void);
 extern int last_time_lock_warning(void);
+extern int check_lock_status(time_t *dt);
+extern char *wl_nband_to_wlx(char *nv_name, char *wl_name, size_t len);
 #endif /* _httpd_h_ */

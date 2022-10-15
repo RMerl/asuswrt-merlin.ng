@@ -3808,8 +3808,9 @@ function initial_AiMesh(){
 		})[0];
 		if(specific_node_data != undefined){
 			change_node(specific_node_data);
-			if(jstree_load_ready)
-				update_model_icon(specific_node_data);
+			if(jstree_load_ready){
+				setTimeout(function(){update_model_icon(specific_node_data);}, 1000);
+			}
 		}
 	});
 	$('#jstree').on("ready.jstree", function(e, data) {

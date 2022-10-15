@@ -20,6 +20,7 @@
 #define AVFILTER_FORMATS_H
 
 #include "avfilter.h"
+#include "version.h"
 
 /**
  * A list of supported formats for one end of a filter link. This is used
@@ -82,7 +83,7 @@ struct AVFilterFormats {
  *   channel count with unknown disposition with the same number of channels
  *   (e.g. AV_CH_LAYOUT_STEREO and FF_COUNT2LAYOUT(2).
  */
-typedef struct AVFilterChannelLayouts {
+struct AVFilterChannelLayouts {
     uint64_t *channel_layouts;  ///< list of channel layouts
     int    nb_channel_layouts;  ///< number of channel layouts
     char all_layouts;           ///< accept any known channel layout
@@ -90,7 +91,7 @@ typedef struct AVFilterChannelLayouts {
 
     unsigned refcount;          ///< number of references to this list
     struct AVFilterChannelLayouts ***refs; ///< references to this list
-} AVFilterChannelLayouts;
+};
 
 /**
  * Encode a channel count as a channel layout.
@@ -109,17 +110,32 @@ typedef struct AVFilterChannelLayouts {
                            (int)((l) & 0x7FFFFFFF) : 0)
 
 /**
- * Return a channel layouts/samplerates list which contains the intersection of
- * the layouts/samplerates of a and b. Also, all the references of a, all the
- * references of b, and a and b themselves will be deallocated.
+ * Check the formats/samplerates lists for compatibility for merging
+ * without actually merging.
  *
- * If a and b do not share any common elements, neither is modified, and NULL
- * is returned.
+ * @return 1 if they are compatible, 0 if not.
  */
-AVFilterChannelLayouts *ff_merge_channel_layouts(AVFilterChannelLayouts *a,
-                                                 AVFilterChannelLayouts *b);
-AVFilterFormats *ff_merge_samplerates(AVFilterFormats *a,
-                                      AVFilterFormats *b);
+int ff_can_merge_formats(const AVFilterFormats *a, const AVFilterFormats *b,
+                         enum AVMediaType type);
+int ff_can_merge_samplerates(const AVFilterFormats *a, const AVFilterFormats *b);
+
+/**
+ * Merge the formats/channel layouts/samplerates lists if they are compatible
+ * and update all the references of a and b to point to the combined list and
+ * free the old lists as needed. The combined list usually contains the
+ * intersection of the lists of a and b.
+ *
+ * Both a and b must have owners (i.e. refcount > 0) for these functions.
+ *
+ * @return 1 if merging succeeded, 0 if a and b are incompatible
+ *         and negative AVERROR code on failure.
+ *         a and b are unmodified if 0 is returned.
+ */
+int ff_merge_channel_layouts(AVFilterChannelLayouts *a,
+                             AVFilterChannelLayouts *b);
+int ff_merge_formats(AVFilterFormats *a, AVFilterFormats *b,
+                     enum AVMediaType type);
+int ff_merge_samplerates(AVFilterFormats *a, AVFilterFormats *b);
 
 /**
  * Construct an empty AVFilterChannelLayouts/AVFilterFormats struct --
@@ -139,11 +155,11 @@ av_warn_unused_result
 AVFilterChannelLayouts *ff_all_channel_counts(void);
 
 av_warn_unused_result
+AVFilterChannelLayouts *ff_make_format64_list(const int64_t *fmts);
+
+#if LIBAVFILTER_VERSION_MAJOR < 8
 AVFilterChannelLayouts *avfilter_make_format64_list(const int64_t *fmts);
-
-av_warn_unused_result
-AVFilterChannelLayouts *ff_make_formatu64_list(const uint64_t *fmts);
-
+#endif
 
 /**
  * A helper for query_formats() which sets all links to the same list of channel
@@ -186,14 +202,6 @@ void ff_channel_layouts_changeref(AVFilterChannelLayouts **oldref,
 av_warn_unused_result
 int ff_default_query_formats(AVFilterContext *ctx);
 
- /**
- * Set the formats list to all known channel layouts. This function behaves
- * like ff_default_query_formats(), except it only accepts known channel
- * layouts. It should only be used with audio filters.
- */
-av_warn_unused_result
-int ff_query_formats_all_layouts(AVFilterContext *ctx);
-
 /**
  * Create a list of supported formats. This is intended for use in
  * AVFilter->query_formats().
@@ -222,21 +230,20 @@ av_warn_unused_result
 AVFilterFormats *ff_all_formats(enum AVMediaType type);
 
 /**
+ * Construct a formats list containing all pixel formats with certain
+ * properties
+ */
+av_warn_unused_result
+int ff_formats_pixdesc_filter(AVFilterFormats **rfmts, unsigned want, unsigned rej);
+
+//* format is software, non-planar with sub-sampling
+#define FF_PIX_FMT_FLAG_SW_FLAT_SUB (1 << 24)
+
+/**
  * Construct a formats list containing all planar sample formats.
  */
 av_warn_unused_result
 AVFilterFormats *ff_planar_sample_fmts(void);
-
-/**
- * Return a format list which contains the intersection of the formats of
- * a and b. Also, all the references of a, all the references of b, and
- * a and b themselves will be deallocated.
- *
- * If a and b do not share any common formats, neither is modified, and NULL
- * is returned.
- */
-AVFilterFormats *ff_merge_formats(AVFilterFormats *a, AVFilterFormats *b,
-                                  enum AVMediaType type);
 
 /**
  * Add *ref as a new reference to formats.
@@ -283,5 +290,33 @@ void ff_formats_unref(AVFilterFormats **ref);
  *                                                             |_______|
  */
 void ff_formats_changeref(AVFilterFormats **oldref, AVFilterFormats **newref);
+
+/**
+ * Check that fmts is a valid pixel formats list.
+ *
+ * In particular, check for duplicates.
+ */
+int ff_formats_check_pixel_formats(void *log, const AVFilterFormats *fmts);
+
+/**
+ * Check that fmts is a valid sample formats list.
+ *
+ * In particular, check for duplicates.
+ */
+int ff_formats_check_sample_formats(void *log, const AVFilterFormats *fmts);
+
+/**
+ * Check that fmts is a valid sample rates list.
+ *
+ * In particular, check for duplicates.
+ */
+int ff_formats_check_sample_rates(void *log, const AVFilterFormats *fmts);
+
+/**
+ * Check that fmts is a valid channel layouts list.
+ *
+ * In particular, check for duplicates.
+ */
+int ff_formats_check_channel_layouts(void *log, const AVFilterChannelLayouts *fmts);
 
 #endif /* AVFILTER_FORMATS_H */

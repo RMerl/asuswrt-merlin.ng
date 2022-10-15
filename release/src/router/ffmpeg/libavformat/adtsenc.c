@@ -40,6 +40,7 @@ typedef struct ADTSContext {
     int pce_size;
     int apetag;
     int id3v2tag;
+    int mpeg_id;
     uint8_t pce_data[MAX_PCE_SIZE];
 } ADTSContext;
 
@@ -50,10 +51,12 @@ static int adts_decode_extradata(AVFormatContext *s, ADTSContext *adts, const ui
     GetBitContext gb;
     PutBitContext pb;
     MPEG4AudioConfig m4ac;
-    int off;
+    int off, ret;
 
-    init_get_bits(&gb, buf, size * 8);
-    off = avpriv_mpeg4audio_get_config(&m4ac, buf, size * 8, 1);
+    ret = init_get_bits8(&gb, buf, size);
+    if (ret < 0)
+        return ret;
+    off = avpriv_mpeg4audio_get_config2(&m4ac, buf, size, 1, s);
     if (off < 0)
         return off;
     skip_bits_long(&gb, off);
@@ -136,7 +139,7 @@ static int adts_write_frame_header(ADTSContext *ctx,
 
     /* adts_fixed_header */
     put_bits(&pb, 12, 0xfff);   /* syncword */
-    put_bits(&pb, 1, 0);        /* ID */
+    put_bits(&pb, 1, ctx->mpeg_id); /* ID */
     put_bits(&pb, 2, 0);        /* layer */
     put_bits(&pb, 1, 1);        /* protection_absent */
     put_bits(&pb, 2, ctx->objecttype); /* profile_objecttype */
@@ -169,7 +172,8 @@ static int adts_write_packet(AVFormatContext *s, AVPacket *pkt)
         return 0;
     if (!par->extradata_size) {
         uint8_t *side_data;
-        int side_data_size = 0, ret;
+        buffer_size_t side_data_size;
+        int ret;
 
         side_data = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                             &side_data_size);
@@ -214,6 +218,7 @@ static int adts_write_trailer(AVFormatContext *s)
 static const AVOption options[] = {
     { "write_id3v2",  "Enable ID3v2 tag writing", OFFSET(id3v2tag), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, ENC},
     { "write_apetag", "Enable APE tag writing",   OFFSET(apetag),   AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, ENC},
+    { "write_mpeg2",  "Use MPE2 ID when writing", OFFSET(mpeg_id),  AV_OPT_TYPE_BOOL,  {.i64 = 0}, 0, 1, ENC, "mpeg_id"},
     { NULL },
 };
 

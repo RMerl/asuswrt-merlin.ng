@@ -67,10 +67,10 @@ static const AVOption showcqt_options[] = {
     { "axis_h",      "set axis height", OFFSET(axis_h),       AV_OPT_TYPE_INT, { .i64 = -1 },              -1, INT_MAX,  FLAGS },
     { "sono_h",  "set sonogram height", OFFSET(sono_h),       AV_OPT_TYPE_INT, { .i64 = -1 },              -1, INT_MAX,  FLAGS },
     { "fullhd",      "set fullhd size", OFFSET(fullhd),      AV_OPT_TYPE_BOOL, { .i64 = 1 },                0, 1,        FLAGS },
-    { "sono_v",  "set sonogram volume", OFFSET(sono_v),    AV_OPT_TYPE_STRING, { .str = "16" },      CHAR_MIN, CHAR_MAX, FLAGS },
-    { "volume",  "set sonogram volume", OFFSET(sono_v),    AV_OPT_TYPE_STRING, { .str = "16" },      CHAR_MIN, CHAR_MAX, FLAGS },
-    { "bar_v",   "set bargraph volume", OFFSET(bar_v),     AV_OPT_TYPE_STRING, { .str = "sono_v" },  CHAR_MIN, CHAR_MAX, FLAGS },
-    { "volume2", "set bargraph volume", OFFSET(bar_v),     AV_OPT_TYPE_STRING, { .str = "sono_v" },  CHAR_MIN, CHAR_MAX, FLAGS },
+    { "sono_v",  "set sonogram volume", OFFSET(sono_v),    AV_OPT_TYPE_STRING, { .str = "16" },      0, 0, FLAGS },
+    { "volume",  "set sonogram volume", OFFSET(sono_v),    AV_OPT_TYPE_STRING, { .str = "16" },      0, 0, FLAGS },
+    { "bar_v",   "set bargraph volume", OFFSET(bar_v),     AV_OPT_TYPE_STRING, { .str = "sono_v" },  0, 0, FLAGS },
+    { "volume2", "set bargraph volume", OFFSET(bar_v),     AV_OPT_TYPE_STRING, { .str = "sono_v" },  0, 0, FLAGS },
     { "sono_g",   "set sonogram gamma", OFFSET(sono_g),     AV_OPT_TYPE_FLOAT, { .dbl = 3.0 },            1.0, 7.0,      FLAGS },
     { "gamma",    "set sonogram gamma", OFFSET(sono_g),     AV_OPT_TYPE_FLOAT, { .dbl = 3.0 },            1.0, 7.0,      FLAGS },
     { "bar_g",    "set bargraph gamma", OFFSET(bar_g),      AV_OPT_TYPE_FLOAT, { .dbl = 1.0 },            1.0, 7.0,      FLAGS },
@@ -82,13 +82,13 @@ static const AVOption showcqt_options[] = {
     { "basefreq", "set base frequency", OFFSET(basefreq),  AV_OPT_TYPE_DOUBLE, { .dbl = BASEFREQ },      10.0, 100000.0, FLAGS },
     { "endfreq",   "set end frequency", OFFSET(endfreq),   AV_OPT_TYPE_DOUBLE, { .dbl = ENDFREQ },       10.0, 100000.0, FLAGS },
     { "coeffclamp",   "set coeffclamp", OFFSET(coeffclamp), AV_OPT_TYPE_FLOAT, { .dbl = 1.0 },            0.1, 10.0,     FLAGS },
-    { "tlength",         "set tlength", OFFSET(tlength),   AV_OPT_TYPE_STRING, { .str = TLENGTH },   CHAR_MIN, CHAR_MAX, FLAGS },
+    { "tlength",         "set tlength", OFFSET(tlength),   AV_OPT_TYPE_STRING, { .str = TLENGTH },   0, 0, FLAGS },
     { "count",   "set transform count", OFFSET(count),        AV_OPT_TYPE_INT, { .i64 = 6 },                1, 30,       FLAGS },
     { "fcount",  "set frequency count", OFFSET(fcount),       AV_OPT_TYPE_INT, { .i64 = 0 },                0, 10,       FLAGS },
-    { "fontfile", "set axis font file", OFFSET(fontfile),  AV_OPT_TYPE_STRING, { .str = NULL },      CHAR_MIN, CHAR_MAX, FLAGS },
-    { "font",          "set axis font", OFFSET(font),      AV_OPT_TYPE_STRING, { .str = NULL },      CHAR_MIN, CHAR_MAX, FLAGS },
-    { "fontcolor",    "set font color", OFFSET(fontcolor), AV_OPT_TYPE_STRING, { .str = FONTCOLOR }, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "axisfile",     "set axis image", OFFSET(axisfile),  AV_OPT_TYPE_STRING, { .str = NULL },      CHAR_MIN, CHAR_MAX, FLAGS },
+    { "fontfile", "set axis font file", OFFSET(fontfile),  AV_OPT_TYPE_STRING, { .str = NULL },      0, 0, FLAGS },
+    { "font",          "set axis font", OFFSET(font),      AV_OPT_TYPE_STRING, { .str = NULL },      0, 0, FLAGS },
+    { "fontcolor",    "set font color", OFFSET(fontcolor), AV_OPT_TYPE_STRING, { .str = FONTCOLOR }, 0, 0, FLAGS },
+    { "axisfile",     "set axis image", OFFSET(axisfile),  AV_OPT_TYPE_STRING, { .str = NULL },      0, 0, FLAGS },
     { "axis",              "draw axis", OFFSET(axis),        AV_OPT_TYPE_BOOL, { .i64 = 1 },                0, 1,        FLAGS },
     { "text",              "draw axis", OFFSET(axis),        AV_OPT_TYPE_BOOL, { .i64 = 1 },                0, 1,        FLAGS },
     { "csp",         "set color space", OFFSET(csp),          AV_OPT_TYPE_INT, { .i64 = AVCOL_SPC_UNSPECIFIED }, 0, INT_MAX, FLAGS, "csp" },
@@ -99,7 +99,7 @@ static const AVOption showcqt_options[] = {
         { "smpte170m",     "smpte170m", 0,                  AV_OPT_TYPE_CONST, { .i64 = AVCOL_SPC_SMPTE170M },   0, 0, FLAGS, "csp" },
         { "smpte240m",     "smpte240m", 0,                  AV_OPT_TYPE_CONST, { .i64 = AVCOL_SPC_SMPTE240M },   0, 0, FLAGS, "csp" },
         { "bt2020ncl",     "bt2020ncl", 0,                  AV_OPT_TYPE_CONST, { .i64 = AVCOL_SPC_BT2020_NCL },  0, 0, FLAGS, "csp" },
-    { "cscheme",    "set color scheme", OFFSET(cscheme),   AV_OPT_TYPE_STRING, { .str = CSCHEME },   CHAR_MIN, CHAR_MAX, FLAGS },
+    { "cscheme",    "set color scheme", OFFSET(cscheme),   AV_OPT_TYPE_STRING, { .str = CSCHEME },   0, 0, FLAGS },
     { NULL }
 };
 
@@ -365,7 +365,7 @@ static AVFrame *alloc_frame_empty(enum AVPixelFormat format, int w, int h)
     out->format = format;
     out->width = w;
     out->height = h;
-    if (av_frame_get_buffer(out, 32) < 0) {
+    if (av_frame_get_buffer(out, 0) < 0) {
         av_frame_free(&out);
         return NULL;
     }
@@ -1133,11 +1133,11 @@ static int plot_cqt(AVFilterContext *ctx, AVFrame **frameout)
     int64_t last_time, cur_time;
 
 #define UPDATE_TIME(t) \
-    cur_time = av_gettime(); \
+    cur_time = av_gettime_relative(); \
     t += cur_time - last_time; \
     last_time = cur_time
 
-    last_time = av_gettime();
+    last_time = av_gettime_relative();
 
     memcpy(s->fft_result, s->fft_data, s->fft_len * sizeof(*s->fft_data));
     if (s->attack_data) {
@@ -1321,30 +1321,30 @@ static int query_formats(AVFilterContext *ctx)
     AVFilterChannelLayouts *layouts = NULL;
     AVFilterLink *inlink = ctx->inputs[0];
     AVFilterLink *outlink = ctx->outputs[0];
-    enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_NONE };
-    enum AVPixelFormat pix_fmts[] = {
+    static const enum AVSampleFormat sample_fmts[] = { AV_SAMPLE_FMT_FLT, AV_SAMPLE_FMT_NONE };
+    static const enum AVPixelFormat pix_fmts[] = {
         AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
         AV_PIX_FMT_YUV444P, AV_PIX_FMT_RGB24, AV_PIX_FMT_NONE
     };
-    int64_t channel_layouts[] = { AV_CH_LAYOUT_STEREO, AV_CH_LAYOUT_STEREO_DOWNMIX, -1 };
+    static const int64_t channel_layouts[] = { AV_CH_LAYOUT_STEREO, AV_CH_LAYOUT_STEREO_DOWNMIX, -1 };
     int ret;
 
     /* set input audio formats */
     formats = ff_make_format_list(sample_fmts);
-    if ((ret = ff_formats_ref(formats, &inlink->out_formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->outcfg.formats)) < 0)
         return ret;
 
-    layouts = avfilter_make_format64_list(channel_layouts);
-    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
+    layouts = ff_make_format64_list(channel_layouts);
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->outcfg.channel_layouts)) < 0)
         return ret;
 
     formats = ff_all_samplerates();
-    if ((ret = ff_formats_ref(formats, &inlink->out_samplerates)) < 0)
+    if ((ret = ff_formats_ref(formats, &inlink->outcfg.samplerates)) < 0)
         return ret;
 
     /* set output video format */
     formats = ff_make_format_list(pix_fmts);
-    if ((ret = ff_formats_ref(formats, &outlink->in_formats)) < 0)
+    if ((ret = ff_formats_ref(formats, &outlink->incfg.formats)) < 0)
         return ret;
 
     return 0;

@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Z důvodu kompatibility systému AiMesh a koncových zaříz
 AiMesh_confirm_msg10=Chcete-li zajistit připojení systému AiMesh a koncových zařízení, měli byste si před přepnutím na WPA3-Personal přečíst tento přehled <a id="wpa3FaqLink">Nejčastější dotazy</a>.
 AiMesh_confirm_msg11=Aktuálně používáte WPA3-personal. Chcete-li vytvořit systém AiMesh, je nutné změnit způsob ověřování na WPA2/WPA3-personal. Chcete pokračovat?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Další podrobnosti najdete na webu <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Nejčastější dotazy</a>
+AiMesh_confirm_msg13=Další podrobnosti najdete na webu <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>Nejčastější dotazy</a>
 AiMesh_Feature_Desc=Pokročilý ASUS AiMesh je inovativní nová funkce směrovače, která připojuje více směrovačů ASUS a vytváří celou domácí síť WiFi.
 AiMesh_FAQ=Zjistěte víc o ASUS AiMesh
 AiMesh_FindNode=Najít uzel AiMesh
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Volba TCP MSS
 WANTCPMSSOptionComm1Text=bajtů
 WANVLANIDText=VLAN ID
-WANAggregation_desc=Agregace WAN kombinuje dvě síťová připojení pro zvýšení rychlosti vaší sítě WAN na 2 Gb/s. Připojte port WAN vaše směrovače a port LAN 4 k portům LAN vašeho modemu (použijte dva kabely se stejnými specifikacemi). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Agregace WAN – odpovědi na časté dotazy</a>
+WANAggregation_desc=Agregace WAN kombinuje dvě síťová připojení pro zvýšení rychlosti vaší sítě WAN na 2 Gb/s. Připojte port #WAN vaše směrovače a port LAN 4 k portům LAN vašeho modemu (použijte dva kabely se stejnými specifikacemi). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Agregace WAN – odpovědi na časté dotazy</a>
 WANAggregation_enable=Povolit agregaci WAN
 WANAggregation_disable_dualwan=Ve vašem směrovači je aktivována funkce duální WAN. Aktivací agregace WAN bude deaktivována funkce duální WAN. Opravdu chcete pokračovat?
 WANAggregation_disable_WANAggregation=Ve vašem směrovači je aktivována funkce agregace WAN. Aktivací funkce duální WAN bude deaktivována funkce agregace WAN. Opravdu chcete pokračovat?
 WANAggregation_PortConflict_hint1=Funkce agregace WAN používá port LAN 4 vašeho směrovače. Aktivací funkce IPTV bude deaktivována funkce agregace WAN. Opravdu chcete pokračovat?
 WANAggregation_PortConflict_hint2=Funkce IPTV používá port LAN 4 vašeho směrovače. Aktivací agregace WAN bude deaktivována funkce IPTV. Opravdu chcete pokračovat?
 WANAggregation_disable_IPTVDualWAN=Ve vašem směrovači jsou aktivovány obě funkce duální WAN a IPTV. Aktivací funkce agregace WAN budou deaktivovány funkce duální WAN a IPTV, aby se zabránilo konfliktům portů. Opravdu chcete pokračovat?
-WANAggregation_help_WAN=Zkontrolujte, zda jsou k připojení portu WAN vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
+WANAggregation_help_WAN=Zkontrolujte, zda jsou k připojení portu #WAN vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
 WANAggregation_help_LAN=Zkontrolujte, zda jsou k připojení portu LAN 4 vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
 WANAggregation_goto_WAN=Chcete-li aktivovat funkci agregace WAN, přejděte na stránku <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN - připojení k internetu</a>.
 WANAggregation_help_desc=Pokud se agregaci WAN nepodaří nastavit, zkuste to znovu podle následujících pokynů.
-WANAggregation_help_step1=Ujistěte se, zda jsou porty LAN modemu připojené k síti WAN routeru a LAN 4 pomocí kabelů.
+WANAggregation_help_step1=Ujistěte se, zda jsou porty LAN modemu připojené k síti #WAN routeru a LAN 4 pomocí kabelů.
 WANAggregation_help_step2=Zkontrolujte, zda je ve vašem modemu aktivován standard 802.3ad
 WANAggregation_help_step3=Ověřte, zda používáte dva kabely se stejnou specifikací (buď gigabit a gigabit nebo 10/100 a 10/100 Mb/s)
 WANAggregation_help_step4=Restartujte svůj router
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Výběrem GeForce Now budou upřednostněna zařízení GeForce Now pro zážitek z rychlejšího a lepšího hraní.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Událost
 AURA_Event_desc=Systém rozpoznává následující události a aktivuje různé efekty LED.
 AURA_Event_Boost_desc=Při aktivaci Game Boost se na panelu LED zobrazí červený efekt pulzování.

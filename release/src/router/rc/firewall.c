@@ -1691,7 +1691,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 			char *nv, *nvp, *item, *nextp, *ptr;
 			char proto[16], *next;
 		case WAN_V6PLUS:
-			if (nvram_get_int("s46_hgw_case") == S46_CASE_MAP_HGW_ON)
+			if (nvram_get_int("s46_hgw_case") <= S46_CASE_MAP_HGW_ON)
 				break;
 			fprintf(fp, "-A PREROUTING -i %s -d %s -j MAPE\n", lan_if, wan_ip);
 			foreach(proto, "tcp udp", next) {
@@ -2147,6 +2147,10 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 					":CLIENT_TO_INTERNET - [0:0]\n");
 			}
 #endif
+#ifdef RTCONFIG_VPN_FUSION
+			fprintf(fp,
+				":VPN_FUSION - [0:0]\n");
+#endif
 		}
 
 		_dprintf("writting prerouting 2 %s %s %s %s %s %s\n", wan_if, wan_ip, wanx_if, wanx_ip, lan_if, lan_ip);
@@ -2221,6 +2225,10 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 			fprintf(fp,
 				":CLIENT_TO_INTERNET - [0:0]\n");
 		}
+#endif
+#ifdef RTCONFIG_VPN_FUSION
+		fprintf(fp,
+				":VPN_FUSION - [0:0]\n");
 #endif
 	}
 
@@ -7207,9 +7215,9 @@ int start_firewall(int wanunit, int lanunit)
 		if (!f_exists("/proc/sys/net/netfilter/nf_conntrack_frag6_timeout"))
 			modprobe("nf_conntrack_ipv6");
 #ifndef HND_ROUTER
-		modprobe("ip6t_REJECT");
-		modprobe("ip6t_ROUTE");
-		modprobe("ip6t_LOG");
+		modprobe_q("ip6t_REJECT");
+		modprobe_q("ip6t_ROUTE");
+		modprobe_q("ip6t_LOG");
 #endif
 		modprobe("xt_length");
 	} else {

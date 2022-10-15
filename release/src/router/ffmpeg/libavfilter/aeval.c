@@ -89,8 +89,8 @@ static const AVOption aevalsrc_options[]= {
     { "exprs",       "set the '|'-separated list of channels expressions", OFFSET(exprs), AV_OPT_TYPE_STRING, {.str = NULL}, .flags = FLAGS },
     { "nb_samples",  "set the number of samples per requested frame", OFFSET(nb_samples),      AV_OPT_TYPE_INT,    {.i64 = 1024},    0,        INT_MAX, FLAGS },
     { "n",           "set the number of samples per requested frame", OFFSET(nb_samples),      AV_OPT_TYPE_INT,    {.i64 = 1024},    0,        INT_MAX, FLAGS },
-    { "sample_rate", "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "s",           "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "sample_rate", "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0, FLAGS },
+    { "s",           "set the sample rate",                           OFFSET(sample_rate_str), AV_OPT_TYPE_STRING, {.str = "44100"}, 0, 0, FLAGS },
     { "duration",    "set audio duration", OFFSET(duration), AV_OPT_TYPE_DURATION, {.i64 = -1}, -1, INT64_MAX, FLAGS },
     { "d",           "set audio duration", OFFSET(duration), AV_OPT_TYPE_DURATION, {.i64 = -1}, -1, INT64_MAX, FLAGS },
     { "channel_layout", "set channel layout", OFFSET(chlayout_str), AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS },
@@ -124,11 +124,10 @@ static int parse_channel_expressions(AVFilterContext *ctx,
     }
 
 #define ADD_EXPRESSION(expr_) do {                                      \
-        if (!av_dynarray2_add((void **)&eval->expr, &eval->nb_channels, \
-                              sizeof(*eval->expr), NULL)) {             \
-            ret = AVERROR(ENOMEM);                                      \
+        ret = av_dynarray_add_nofree(&eval->expr,                       \
+                                     &eval->nb_channels, NULL);         \
+        if (ret < 0)                                                    \
             goto end;                                                   \
-        }                                                               \
         eval->expr[eval->nb_channels-1] = NULL;                         \
         ret = av_expr_parse(&eval->expr[eval->nb_channels - 1], expr_,  \
                             var_names, func1_names, func1,              \
@@ -258,7 +257,7 @@ static int query_formats(AVFilterContext *ctx)
     if (ret < 0)
         return ret;
 
-    layouts = avfilter_make_format64_list(chlayouts);
+    layouts = ff_make_format64_list(chlayouts);
     if (!layouts)
         return AVERROR(ENOMEM);
     ret = ff_set_common_channel_layouts(ctx, layouts);
@@ -362,7 +361,7 @@ static int aeval_query_formats(AVFilterContext *ctx)
 
     // inlink supports any channel layout
     layouts = ff_all_channel_counts();
-    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->outcfg.channel_layouts)) < 0)
         return ret;
 
     if (eval->same_chlayout) {
@@ -376,7 +375,7 @@ static int aeval_query_formats(AVFilterContext *ctx)
                               eval->out_channel_layout ? eval->out_channel_layout :
                               FF_COUNT2LAYOUT(eval->nb_channels))) < 0)
             return ret;
-        if ((ret = ff_channel_layouts_ref(layouts, &outlink->in_channel_layouts)) < 0)
+        if ((ret = ff_channel_layouts_ref(layouts, &outlink->incfg.channel_layouts)) < 0)
             return ret;
     }
 
@@ -415,8 +414,6 @@ static int aeval_config_output(AVFilterLink *outlink)
 
     return 0;
 }
-
-#define TS2T(ts, tb) ((ts) == AV_NOPTS_VALUE ? NAN : (double)(ts)*av_q2d(tb))
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
@@ -485,6 +482,7 @@ AVFilter ff_af_aeval = {
     .inputs        = aeval_inputs,
     .outputs       = aeval_outputs,
     .priv_class    = &aeval_class,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
 };
 
 #endif /* CONFIG_AEVAL_FILTER */

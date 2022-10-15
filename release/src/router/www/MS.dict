@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Mempertimbangkan keserasian sistem AiMesh dan peranti akhir,
 AiMesh_confirm_msg10=Untuk memastikan sambungan sistem AiMesh dan peranti akhir anda, sila baca ini <a id="wpa3FaqLink">FAQ</a> sebelum beralih ke WPA3-Peribadi.
 AiMesh_confirm_msg11=Anda sedang menggunakan WPA3-peribadi. Untuk mencipta sistem AiMesh, kaedah pengesahan anda akan diubah kepada WPA2/WPA3-peribadi. Adakah anda mahu meneruskan?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Untuk butiran lanjut, sila lawati <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Soalan Lazim</a>
+AiMesh_confirm_msg13=Untuk butiran lanjut, sila lawati <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>Soalan Lazim</a>
 AiMesh_Feature_Desc=AiMesh ASUS Lanjutan ialah ciri penghala baharu inovatif yang menyambungkan berbilang penghala ASUS bersama, mewujudkan rangkaian WiFi seluruh rumah.
 AiMesh_FAQ=Ketahui lebih lanjut tentang AiMesh ASUS
 AiMesh_FindNode=Cari nod AiMesh
@@ -2412,7 +2412,7 @@ Internet=Internet
 Interval=Jarak Waktu
 Introduce_demo=Demo Pengenalan
 Invitation=Jemputan
-Interaction=Interactie
+Interaction=Interaksi
 InternetSpeed=Kelajuan Internet
 InternetSpeed_desc=Perkhidmatan ini disediakan oleh Ookla®. Ia mengesan kelajuan muat turun dan muat naik daripada penghala anda ke Internet. Ujian ini kira-kira satu minit untuk dilengkapkan. Dengan menggunakan perkhidmatan ini, anda bersetuju dengan <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Dasar Privasi Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® dan Speedtest® didaftarkan secara rasmi oleh Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Pilihan TCP MSS
 WANTCPMSSOptionComm1Text=bait
 WANVLANIDText=VLAN ID
-WANAggregation_desc=Pengagregatan WAN menggabungkan dua sambungan rangkaian untuk meningkatkan kelajuan WAN anda sehingga 2Gbps. Sambungkan port WAN penghala anda dan port LAN 4 ke port LAN modem anda (pastikan anda menggunakan dua kabel yang mempunyai spesifikasi sama). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Soalan Lazim Pengagregatan WAN</a>
+WANAggregation_desc=Pengagregatan WAN menggabungkan dua sambungan rangkaian untuk meningkatkan kelajuan WAN anda sehingga 2Gbps. Sambungkan port #WAN penghala anda dan port LAN 4 ke port LAN modem anda (pastikan anda menggunakan dua kabel yang mempunyai spesifikasi sama). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Soalan Lazim Pengagregatan WAN</a>
 WANAggregation_enable=Dayakan Pengagregatan WAN
 WANAggregation_disable_dualwan=WAN Dual penghala anda telah didayakan. Mendayakan Pengagregatan WAN akan menyahdayakan WAN Dual. Adakah anda pasti ingin teruskan?
 WANAggregation_disable_WANAggregation=Pengagregatan WANN penghala anda telah didayakan. Mendayakan WAN Dual akan menyahdayakan Pengagregatan WAN. Adakah anda pasti ingin teruskan?
 WANAggregation_PortConflict_hint1=Pengagregatan WAN menggunakan port LAN 4 penghala anda. Mendayakan IPTV akan menyahdayakan Pengagregatan WAN. Adakah anda pasti ingin teruskan?
 WANAggregation_PortConflict_hint2=IPTV menggunakan port LAN 4 penghala anda. Mendayakan Pengagregatan WAN akan menyahdayakan IPTV. Adakah anda pasti ingin teruskan?
 WANAggregation_disable_IPTVDualWAN=Kedua-dua WAN Dual dan IPTV penghala anda telah didayakan. Mendayakan Pengagregatan WAN akan menyahdayakan WAN Dual dan IPTV bagi mengelak konflik port. Adakah anda pasti ingin teruskan?
-WANAggregation_help_WAN=Pastikan port WAN penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
+WANAggregation_help_WAN=Pastikan port #WAN penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
 WANAggregation_help_LAN=Pastikan port LAN 4 penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
 WANAggregation_goto_WAN=Untuk mendayakan Pengagregatan WAN, pergi ke <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">halaman Sambungan WAN-Internet</a>.
 WANAggregation_help_desc=Jika penyediaan Pengagregatan WAN tidak berjaya, sila ikut langkah-langkah di bawah untuk mencuba semula.
-WANAggregation_help_step1=Pastikan port LAN modem anda sudah disambungkan ke WAN penghala anda dan LAN 4 dengan kabel.
+WANAggregation_help_step1=Pastikan port LAN modem anda sudah disambungkan ke #WAN penghala anda dan LAN 4 dengan kabel.
 WANAggregation_help_step2=Pastikan modem anda telah mendayakan 802.3ad
 WANAggregation_help_step3=Sahkan bahawa anda menggunakan dua kabel dengan spesifikasi yang sama (sama ada gigabit & gigabit atau 10/100& 10/100Mbps)
 WANAggregation_help_step4=But semula penghala anda
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Pilih GeForce Now bagi mengutamakan peranti permainan GeForce Now untuk pengalaman permainan yang lebih laju dan baik.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Peristiwa
 AURA_Event_desc=Sistem akan mengesan peristiwa berikut dan mencetuskan kesan LED yang berbeza.
 AURA_Event_Boost_desc=Apabila mendayakan Rangsangan Permainan, anda akan melihat bar LED menggunakan kesan pernafasan merah.

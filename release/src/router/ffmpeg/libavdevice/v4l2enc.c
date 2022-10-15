@@ -47,8 +47,7 @@ static av_cold int write_header(AVFormatContext *s1)
     }
 
     if (s1->nb_streams != 1 ||
-        s1->streams[0]->codecpar->codec_type != AVMEDIA_TYPE_VIDEO ||
-        s1->streams[0]->codecpar->codec_id   != AV_CODEC_ID_RAWVIDEO) {
+        s1->streams[0]->codecpar->codec_type != AVMEDIA_TYPE_VIDEO) {
         av_log(s1, AV_LOG_ERROR,
                "V4L2 output device supports only a single raw video stream\n");
         return AVERROR(EINVAL);
@@ -56,7 +55,12 @@ static av_cold int write_header(AVFormatContext *s1)
 
     par = s1->streams[0]->codecpar;
 
-    v4l2_pixfmt = ff_fmt_ff2v4l(par->format, AV_CODEC_ID_RAWVIDEO);
+    if(par->codec_id == AV_CODEC_ID_RAWVIDEO) {
+        v4l2_pixfmt = ff_fmt_ff2v4l(par->format, AV_CODEC_ID_RAWVIDEO);
+    } else {
+        v4l2_pixfmt = ff_fmt_ff2v4l(AV_PIX_FMT_NONE, par->codec_id);
+    }
+
     if (!v4l2_pixfmt) { // XXX: try to force them one by one?
         av_log(s1, AV_LOG_ERROR, "Unknown V4L2 pixel format equivalent for %s\n",
                av_get_pix_fmt_name(par->format));
@@ -106,7 +110,7 @@ static const AVClass v4l2_class = {
 };
 
 AVOutputFormat ff_v4l2_muxer = {
-    .name           = "v4l2",
+    .name           = "video4linux2,v4l2",
     .long_name      = NULL_IF_CONFIG_SMALL("Video4Linux2 output device"),
     .priv_data_size = sizeof(V4L2Context),
     .audio_codec    = AV_CODEC_ID_NONE,

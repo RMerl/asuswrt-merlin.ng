@@ -1,21 +1,23 @@
 /*
  * Video Acceleration API (video transcoding) transcode sample
  *
- * This file is part of FFmpeg.
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * FFmpeg is free software; you can redistribute it and/or
- * modify it under the terms of the GNU Lesser General Public
- * License as published by the Free Software Foundation; either
- * version 2.1 of the License, or (at your option) any later version.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
- * FFmpeg is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
- * Lesser General Public License for more details.
- *
- * You should have received a copy of the GNU Lesser General Public
- * License along with FFmpeg; if not, write to the Free Software
- * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL
+ * THE AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
  */
 
 /**
@@ -107,28 +109,25 @@ static int open_input_file(const char *filename)
     return ret;
 }
 
-static int encode_write(AVFrame *frame)
+static int encode_write(AVPacket *enc_pkt, AVFrame *frame)
 {
     int ret = 0;
-    AVPacket enc_pkt;
 
-    av_init_packet(&enc_pkt);
-    enc_pkt.data = NULL;
-    enc_pkt.size = 0;
+    av_packet_unref(enc_pkt);
 
     if ((ret = avcodec_send_frame(encoder_ctx, frame)) < 0) {
         fprintf(stderr, "Error during encoding. Error code: %s\n", av_err2str(ret));
         goto end;
     }
     while (1) {
-        ret = avcodec_receive_packet(encoder_ctx, &enc_pkt);
+        ret = avcodec_receive_packet(encoder_ctx, enc_pkt);
         if (ret)
             break;
 
-        enc_pkt.stream_index = 0;
-        av_packet_rescale_ts(&enc_pkt, ifmt_ctx->streams[video_stream]->time_base,
+        enc_pkt->stream_index = 0;
+        av_packet_rescale_ts(enc_pkt, ifmt_ctx->streams[video_stream]->time_base,
                              ofmt_ctx->streams[0]->time_base);
-        ret = av_interleaved_write_frame(ofmt_ctx, &enc_pkt);
+        ret = av_interleaved_write_frame(ofmt_ctx, enc_pkt);
         if (ret < 0) {
             fprintf(stderr, "Error during writing data to output file. "
                     "Error code: %s\n", av_err2str(ret));
@@ -177,7 +176,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
             }
             /* set AVCodecContext Parameters for encoder, here we keep them stay
              * the same as decoder.
-             * xxx: now the the sample can't handle resolution change case.
+             * xxx: now the sample can't handle resolution change case.
              */
             encoder_ctx->time_base = av_inv_q(decoder_ctx->framerate);
             encoder_ctx->pix_fmt   = AV_PIX_FMT_VAAPI;
@@ -214,7 +213,7 @@ static int dec_enc(AVPacket *pkt, AVCodec *enc_codec)
             initialized = 1;
         }
 
-        if ((ret = encode_write(frame)) < 0)
+        if ((ret = encode_write(pkt, frame)) < 0)
             fprintf(stderr, "Error during encoding and writing.\n");
 
 fail:
@@ -228,7 +227,7 @@ fail:
 int main(int argc, char **argv)
 {
     int ret = 0;
-    AVPacket dec_pkt;
+    AVPacket *dec_pkt;
     AVCodec *enc_codec;
 
     if (argc != 4) {
@@ -242,6 +241,12 @@ int main(int argc, char **argv)
     if (ret < 0) {
         fprintf(stderr, "Failed to create a VAAPI device. Error code: %s\n", av_err2str(ret));
         return -1;
+    }
+
+    dec_pkt = av_packet_alloc();
+    if (!dec_pkt) {
+        fprintf(stderr, "Failed to allocate decode packet\n");
+        goto end;
     }
 
     if ((ret = open_input_file(argv[1])) < 0)
@@ -273,23 +278,21 @@ int main(int argc, char **argv)
 
     /* read all packets and only transcoding video */
     while (ret >= 0) {
-        if ((ret = av_read_frame(ifmt_ctx, &dec_pkt)) < 0)
+        if ((ret = av_read_frame(ifmt_ctx, dec_pkt)) < 0)
             break;
 
-        if (video_stream == dec_pkt.stream_index)
-            ret = dec_enc(&dec_pkt, enc_codec);
+        if (video_stream == dec_pkt->stream_index)
+            ret = dec_enc(dec_pkt, enc_codec);
 
-        av_packet_unref(&dec_pkt);
+        av_packet_unref(dec_pkt);
     }
 
     /* flush decoder */
-    dec_pkt.data = NULL;
-    dec_pkt.size = 0;
-    ret = dec_enc(&dec_pkt, enc_codec);
-    av_packet_unref(&dec_pkt);
+    av_packet_unref(dec_pkt);
+    ret = dec_enc(dec_pkt, enc_codec);
 
     /* flush encoder */
-    ret = encode_write(NULL);
+    ret = encode_write(dec_pkt, NULL);
 
     /* write the trailer for output stream */
     av_write_trailer(ofmt_ctx);
@@ -300,5 +303,6 @@ end:
     avcodec_free_context(&decoder_ctx);
     avcodec_free_context(&encoder_ctx);
     av_buffer_unref(&hw_device_ctx);
+    av_packet_free(&dec_pkt);
     return ret;
 }

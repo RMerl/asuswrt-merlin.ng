@@ -967,10 +967,10 @@ static av_cold void rgb2rgb_init_c(void)
 #else
     shuffle_bytes_0321 = shuffle_bytes_0321_c;
     shuffle_bytes_2103 = shuffle_bytes_2103_c;
+#endif
     shuffle_bytes_1230 = shuffle_bytes_1230_c;
     shuffle_bytes_3012 = shuffle_bytes_3012_c;
     shuffle_bytes_3210 = shuffle_bytes_3210_c;
-#endif
     rgb32tobgr16       = rgb32tobgr16_c;
     rgb32tobgr15       = rgb32tobgr15_c;
     yv12toyuy2         = yv12toyuy2_c;

@@ -33,12 +33,12 @@
 
 struct BitpackedContext {
     int (*decode)(AVCodecContext *avctx, AVFrame *frame,
-                  AVPacket *pkt);
+                  const AVPacket *pkt);
 };
 
 /* For this format, it's a simple passthrough */
 static int bitpacked_decode_uyvy422(AVCodecContext *avctx, AVFrame *frame,
-                                    AVPacket *avpkt)
+                                    const AVPacket *avpkt)
 {
     int ret;
 
@@ -56,7 +56,7 @@ static int bitpacked_decode_uyvy422(AVCodecContext *avctx, AVFrame *frame,
 }
 
 static int bitpacked_decode_yuv422p10(AVCodecContext *avctx, AVFrame *frame,
-                                      AVPacket *avpkt)
+                                      const AVPacket *avpkt)
 {
     uint64_t frame_size = (uint64_t)avctx->width * (uint64_t)avctx->height * 20;
     uint64_t packet_size = (uint64_t)avpkt->size * 8;
@@ -146,4 +146,8 @@ AVCodec ff_bitpacked_decoder = {
     .init = bitpacked_init_decoder,
     .decode = bitpacked_decode,
     .capabilities = AV_CODEC_CAP_EXPERIMENTAL,
+    .codec_tags     = (const uint32_t []){
+        MKTAG('U', 'Y', 'V', 'Y'),
+        FF_CODEC_TAGS_END,
+    },
 };

@@ -19,6 +19,7 @@
  */
 
 #include "libavutil/mem.h"
+#include "libavutil/mem_internal.h"
 
 #include "dcadsp.h"
 #include "dcamath.h"
@@ -328,7 +329,7 @@ static void dmix_add_c(int32_t *dst, const int32_t *src, int coeff, ptrdiff_t le
     int i;
 
     for (i = 0; i < len; i++)
-        dst[i] += mul15(src[i], coeff);
+        dst[i] += (unsigned)mul15(src[i], coeff);
 }
 
 static void dmix_scale_c(int32_t *dst, int scale, ptrdiff_t len)

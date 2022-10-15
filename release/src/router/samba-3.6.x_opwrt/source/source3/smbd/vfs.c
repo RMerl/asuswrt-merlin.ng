@@ -553,19 +553,30 @@ int vfs_allocate_file_space(files_struct *fsp, uint64_t len)
 
 int vfs_set_filelen(files_struct *fsp, SMB_OFF_T len)
 {
-	int ret;
+	int ret = 0;
 
 	contend_level2_oplocks_begin(fsp, LEVEL2_CONTEND_SET_FILE_LEN);
 
-	DEBUG(10,("vfs_set_filelen: ftruncate %s to len %.0f\n",
-		  fsp_str_dbg(fsp), (double)len));
+	DEBUG(10,("vfs_set_filelen: ftruncate %s to len %.0f\n", fsp_str_dbg(fsp), (double)len));
 	flush_write_cache(fsp, SIZECHANGE_FLUSH);
+
+#if defined(BRCM_PATCH)
+	SMB_STRUCT_STAT st;
+
+	if (SMB_VFS_FSTAT(fsp, &st) == 0) {
+		DEBUG(4,("vfswrap_ftruncate. st_size %d . check 2\n", st.st_ex_size));
+		/* Skip extend file size in advance . */
+		if (st.st_ex_size < len)
+			return 0;
+	}
+#endif
+
 	if ((ret = SMB_VFS_FTRUNCATE(fsp, len)) != -1) {
 		set_filelen_write_cache(fsp, len);
 		notify_fname(fsp->conn, NOTIFY_ACTION_MODIFIED,
-			     FILE_NOTIFY_CHANGE_SIZE
-			     | FILE_NOTIFY_CHANGE_ATTRIBUTES,
-			     fsp->fsp_name->base_name);
+				FILE_NOTIFY_CHANGE_SIZE
+				| FILE_NOTIFY_CHANGE_ATTRIBUTES,
+				fsp->fsp_name->base_name);
 	}
 
 	contend_level2_oplocks_end(fsp, LEVEL2_CONTEND_SET_FILE_LEN);

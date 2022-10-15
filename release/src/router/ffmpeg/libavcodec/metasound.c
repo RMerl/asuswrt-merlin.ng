@@ -341,22 +341,16 @@ static av_cold int metasound_decode_init(AVCodecContext *avctx)
         tctx->mtab = &ff_metasound_mode2224s;
         break;
     case (1 << 16) + (44 << 8) + 32:
+    case (2 << 16) + (44 << 8) + 32:
         tctx->mtab = &ff_metasound_mode4432;
         break;
-    case (2 << 16) + (44 << 8) + 32:
-        tctx->mtab = &ff_metasound_mode4432s;
-        break;
     case (1 << 16) + (44 << 8) + 40:
+    case (2 << 16) + (44 << 8) + 40:
         tctx->mtab = &ff_metasound_mode4440;
         break;
-    case (2 << 16) + (44 << 8) + 40:
-        tctx->mtab = &ff_metasound_mode4440s;
-        break;
     case (1 << 16) + (44 << 8) + 48:
-        tctx->mtab = &ff_metasound_mode4448;
-        break;
     case (2 << 16) + (44 << 8) + 48:
-        tctx->mtab = &ff_metasound_mode4448s;
+        tctx->mtab = &ff_metasound_mode4448;
         break;
     default:
         av_log(avctx, AV_LOG_ERROR,
@@ -385,7 +379,7 @@ AVCodec ff_metasound_decoder = {
     .init           = metasound_decode_init,
     .close          = ff_twinvq_decode_close,
     .decode         = ff_twinvq_decode_frame,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
 };

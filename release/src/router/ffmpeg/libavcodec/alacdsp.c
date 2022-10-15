@@ -34,7 +34,7 @@ static void decorrelate_stereo(int32_t *buffer[2], int nb_samples,
         a = buffer[0][i];
         b = buffer[1][i];
 
-        a -= (b * decorr_left_weight) >> decorr_shift;
+        a -= (int)(b * (unsigned)decorr_left_weight) >> decorr_shift;
         b += a;
 
         buffer[0][i] = b;
@@ -49,7 +49,7 @@ static void append_extra_bits(int32_t *buffer[2], int32_t *extra_bits_buffer[2],
 
     for (ch = 0; ch < channels; ch++)
         for (i = 0; i < nb_samples; i++)
-            buffer[ch][i] = (buffer[ch][i] << extra_bits) | extra_bits_buffer[ch][i];
+            buffer[ch][i] = ((unsigned)buffer[ch][i] << extra_bits) | extra_bits_buffer[ch][i];
 }
 
 av_cold void ff_alacdsp_init(ALACDSPContext *c)

@@ -192,7 +192,7 @@ function Get_Component_Import_Cert(_parm){
 	var $btn_container = $("<div>").addClass("btn_container").appendTo($btn_item);
 	var $text = $("<div>").addClass("text import_file").html(htmlEnDeCode.htmlEncode("<#CTL_upload#>")).appendTo($btn_container);
 	$("<div>").addClass("status_text").appendTo($btn_item).hide();
-	$("<input/>").attr({"id":"import_file", "type":"file", "name":"import_cert_file"}).hide().appendTo($btn_item)
+	$("<input/>").attr({"id":"import_file", "type":"file", "name":"import_cert_file", "accept":".cert"}).hide().appendTo($btn_item)
 		.on("change", function(){
 			var $input_btn = $(this);
 			$(this).closest(".btn_item").find(".text.import_file").removeClass("loadingicon");

@@ -40,20 +40,99 @@
 
 #define CNG_RANDOM_SEED 12345
 
+/**
+ * Postfilter gain weighting factors scaled by 2^15
+ */
+static const int16_t ppf_gain_weight[2] = {0x1800, 0x2000};
+
+static const int16_t pitch_contrib[340] = {
+    60,     0,  0,  2489, 60,     0,  0,  5217,
+     1,  6171,  0,  3953,  0, 10364,  1,  9357,
+    -1,  8843,  1,  9396,  0,  5794, -1, 10816,
+     2, 11606, -2, 12072,  0,  8616,  1, 12170,
+     0, 14440,  0,  7787, -1, 13721,  0, 18205,
+     0, 14471,  0, 15807,  1, 15275,  0, 13480,
+    -1, 18375, -1,     0,  1, 11194, -1, 13010,
+     1, 18836, -2, 20354,  1, 16233, -1,     0,
+    60,     0,  0, 12130,  0, 13385,  1, 17834,
+     1, 20875,  0, 21996,  1,     0,  1, 18277,
+    -1, 21321,  1, 13738, -1, 19094, -1, 20387,
+    -1,     0,  0, 21008, 60,     0, -2, 22807,
+     0, 15900,  1,     0,  0, 17989, -1, 22259,
+     1, 24395,  1, 23138,  0, 23948,  1, 22997,
+     2, 22604, -1, 25942,  0, 26246,  1, 25321,
+     0, 26423,  0, 24061,  0, 27247, 60,     0,
+    -1, 25572,  1, 23918,  1, 25930,  2, 26408,
+    -1, 19049,  1, 27357, -1, 24538, 60,     0,
+    -1, 25093,  0, 28549,  1,     0,  0, 22793,
+    -1, 25659,  0, 29377,  0, 30276,  0, 26198,
+     1, 22521, -1, 28919,  0, 27384,  1, 30162,
+    -1,     0,  0, 24237, -1, 30062,  0, 21763,
+     1, 30917, 60,     0,  0, 31284,  0, 29433,
+     1, 26821,  1, 28655,  0, 31327,  2, 30799,
+     1, 31389,  0, 32322,  1, 31760, -2, 31830,
+     0, 26936, -1, 31180,  1, 30875,  0, 27873,
+    -1, 30429,  1, 31050,  0,     0,  0, 31912,
+     1, 31611,  0, 31565,  0, 25557,  0, 31357,
+    60,     0,  1, 29536,  1, 28985, -1, 26984,
+    -1, 31587,  2, 30836, -2, 31133,  0, 30243,
+    -1, 30742, -1, 32090, 60,     0,  2, 30902,
+    60,     0,  0, 30027,  0, 29042, 60,     0,
+     0, 31756,  0, 24553,  0, 25636, -2, 30501,
+    60,     0, -1, 29617,  0, 30649, 60,     0,
+     0, 29274,  2, 30415,  0, 27480,  0, 31213,
+    -1, 28147,  0, 30600,  1, 31652,  2, 29068,
+    60,     0,  1, 28571,  1, 28730,  1, 31422,
+     0, 28257,  0, 24797, 60,     0,  0,     0,
+    60,     0,  0, 22105,  0, 27852, 60,     0,
+    60,     0, -1, 24214,  0, 24642,  0, 23305,
+    60,     0, 60,     0,  1, 22883,  0, 21601,
+    60,     0,  2, 25650, 60,     0, -2, 31253,
+    -2, 25144,  0, 17998
+};
+
+/**
+ * Size of the MP-MLQ fixed excitation codebooks
+ */
+static const int32_t max_pos[4] = {593775, 142506, 593775, 142506};
+
+/**
+ * 0.65^i (Zero part) and 0.75^i (Pole part) scaled by 2^15
+ */
+static const int16_t postfilter_tbl[2][LPC_ORDER] = {
+    /* Zero */
+    {21299, 13844,  8999,  5849, 3802, 2471, 1606, 1044,  679,  441},
+    /* Pole */
+    {24576, 18432, 13824, 10368, 7776, 5832, 4374, 3281, 2460, 1845}
+};
+
+static const int cng_adaptive_cb_lag[4] = { 1, 0, 1, 3 };
+
+static const int cng_filt[4] = { 273, 998, 499, 333 };
+
+static const int cng_bseg[3] = { 2048, 18432, 231233 };
+
 static av_cold int g723_1_decode_init(AVCodecContext *avctx)
 {
-    G723_1_Context *p = avctx->priv_data;
+    G723_1_Context *s = avctx->priv_data;
 
-    avctx->channel_layout = AV_CH_LAYOUT_MONO;
-    avctx->sample_fmt     = AV_SAMPLE_FMT_S16;
-    avctx->channels       = 1;
-    p->pf_gain            = 1 << 12;
+    avctx->sample_fmt     = AV_SAMPLE_FMT_S16P;
+    if (avctx->channels < 1 || avctx->channels > 2) {
+        av_log(avctx, AV_LOG_ERROR, "Only mono and stereo are supported (requested channels: %d).\n", avctx->channels);
+        return AVERROR(EINVAL);
+    }
+    avctx->channel_layout = avctx->channels == 1 ? AV_CH_LAYOUT_MONO : AV_CH_LAYOUT_STEREO;
+    for (int ch = 0; ch < avctx->channels; ch++) {
+        G723_1_ChannelContext *p = &s->ch[ch];
 
-    memcpy(p->prev_lsp, dc_lsp, LPC_ORDER * sizeof(*p->prev_lsp));
-    memcpy(p->sid_lsp,  dc_lsp, LPC_ORDER * sizeof(*p->sid_lsp));
+        p->pf_gain = 1 << 12;
 
-    p->cng_random_seed = CNG_RANDOM_SEED;
-    p->past_frame_type = SID_FRAME;
+        memcpy(p->prev_lsp, dc_lsp, LPC_ORDER * sizeof(*p->prev_lsp));
+        memcpy(p->sid_lsp,  dc_lsp, LPC_ORDER * sizeof(*p->sid_lsp));
+
+        p->cng_random_seed = CNG_RANDOM_SEED;
+        p->past_frame_type = SID_FRAME;
+    }
 
     return 0;
 }
@@ -65,14 +144,17 @@ static av_cold int g723_1_decode_init(AVCodecContext *avctx)
  * @param buf         pointer to the input buffer
  * @param buf_size    size of the input buffer
  */
-static int unpack_bitstream(G723_1_Context *p, const uint8_t *buf,
+static int unpack_bitstream(G723_1_ChannelContext *p, const uint8_t *buf,
                             int buf_size)
 {
     GetBitContext gb;
     int ad_cb_len;
     int temp, info_bits, i;
+    int ret;
 
-    init_get_bits(&gb, buf, buf_size * 8);
+    ret = init_get_bits8(&gb, buf, buf_size);
+    if (ret < 0)
+        return ret;
 
     /* Extract frame type and rate info */
     info_bits = get_bits(&gb, 2);
@@ -211,16 +293,16 @@ static void gen_fcb_excitation(int16_t *vector, G723_1_Subframe *subfrm,
         j = PULSE_MAX - pulses[index];
         temp = subfrm->pulse_pos;
         for (i = 0; i < SUBFRAME_LEN / GRID_SIZE; i++) {
-            temp -= combinatorial_table[j][i];
+            temp -= ff_g723_1_combinatorial_table[j][i];
             if (temp >= 0)
                 continue;
-            temp += combinatorial_table[j++][i];
+            temp += ff_g723_1_combinatorial_table[j++][i];
             if (subfrm->pulse_sign & (1 << (PULSE_MAX - j))) {
                 vector[subfrm->grid_index + GRID_SIZE * i] =
-                                        -fixed_cb_gain[subfrm->amp_index];
+                                        -ff_g723_1_fixed_cb_gain[subfrm->amp_index];
             } else {
                 vector[subfrm->grid_index + GRID_SIZE * i] =
-                                         fixed_cb_gain[subfrm->amp_index];
+                                         ff_g723_1_fixed_cb_gain[subfrm->amp_index];
             }
             if (j == PULSE_MAX)
                 break;
@@ -228,7 +310,7 @@ static void gen_fcb_excitation(int16_t *vector, G723_1_Subframe *subfrm,
         if (subfrm->dirac_train == 1)
             ff_g723_1_gen_dirac_train(vector, pitch_lag);
     } else { /* 5300 bps */
-        int cb_gain  = fixed_cb_gain[subfrm->amp_index];
+        int cb_gain  = ff_g723_1_fixed_cb_gain[subfrm->amp_index];
         int cb_shift = subfrm->grid_index;
         int cb_sign  = subfrm->pulse_sign;
         int cb_pos   = subfrm->pulse_pos;
@@ -344,7 +426,7 @@ static void comp_ppf_gains(int lag, PPFParam *ppf, enum Rate cur_rate,
  * @param ppf       pitch postfilter parameters
  * @param cur_rate  current bitrate
  */
-static void comp_ppf_coeff(G723_1_Context *p, int offset, int pitch_lag,
+static void comp_ppf_coeff(G723_1_ChannelContext *p, int offset, int pitch_lag,
                            PPFParam *ppf, enum Rate cur_rate)
 {
 
@@ -430,7 +512,7 @@ static void comp_ppf_coeff(G723_1_Context *p, int offset, int pitch_lag,
  *
  * @return residual interpolation index if voiced, 0 otherwise
  */
-static int comp_interp_index(G723_1_Context *p, int pitch_lag,
+static int comp_interp_index(G723_1_ChannelContext *p, int pitch_lag,
                              int *exc_eng, int *scale)
 {
     int offset = PITCH_MAX + 2 * SUBFRAME_LEN;
@@ -529,7 +611,7 @@ static void residual_interp(int16_t *buf, int16_t *out, int lag,
  * @param buf    postfiltered output vector
  * @param energy input energy coefficient
  */
-static void gain_scale(G723_1_Context *p, int16_t * buf, int energy)
+static void gain_scale(G723_1_ChannelContext *p, int16_t * buf, int energy)
 {
     int num, denom, gain, bits1, bits2;
     int i;
@@ -572,7 +654,7 @@ static void gain_scale(G723_1_Context *p, int16_t * buf, int energy)
  * @param buf input buffer
  * @param dst output buffer
  */
-static void formant_postfilter(G723_1_Context *p, int16_t *lpc,
+static void formant_postfilter(G723_1_ChannelContext *p, int16_t *lpc,
                                int16_t *buf, int16_t *dst)
 {
     int16_t filter_coef[2][LPC_ORDER];
@@ -655,7 +737,7 @@ static inline int cng_rand(int *state, int base)
     return (*state & 0x7FFF) * base >> 15;
 }
 
-static int estimate_sid_gain(G723_1_Context *p)
+static int estimate_sid_gain(G723_1_ChannelContext *p)
 {
     int i, shift, seg, seg2, t, val, val_add, x, y;
 
@@ -667,7 +749,9 @@ static int estimate_sid_gain(G723_1_Context *p)
             if (p->sid_gain < 0) t = INT32_MIN;
             else                 t = INT32_MAX;
         } else
-            t = p->sid_gain << shift;
+            t = p->sid_gain * (1 << shift);
+    } else if(shift < -31) {
+        t = (p->sid_gain < 0) ? -1 : 0;
     }else
         t = p->sid_gain >> -shift;
     x = av_clipl_int32(t * (int64_t)cng_filt[0] >> 16);
@@ -715,7 +799,7 @@ static int estimate_sid_gain(G723_1_Context *p)
     return val;
 }
 
-static void generate_noise(G723_1_Context *p)
+static void generate_noise(G723_1_ChannelContext *p)
 {
     int i, j, idx, t;
     int off[SUBFRAMES];
@@ -843,7 +927,7 @@ static void generate_noise(G723_1_Context *p)
 static int g723_1_decode_frame(AVCodecContext *avctx, void *data,
                                int *got_frame_ptr, AVPacket *avpkt)
 {
-    G723_1_Context *p  = avctx->priv_data;
+    G723_1_Context *s  = avctx->priv_data;
     AVFrame *frame     = data;
     const uint8_t *buf = avpkt->data;
     int buf_size       = avpkt->size;
@@ -855,9 +939,8 @@ static int g723_1_decode_frame(AVCodecContext *avctx, void *data,
     int16_t acb_vector[SUBFRAME_LEN];
     int16_t *out;
     int bad_frame = 0, i, j, ret;
-    int16_t *audio = p->audio;
 
-    if (buf_size < frame_size[dec_mode]) {
+    if (buf_size < frame_size[dec_mode] * avctx->channels) {
         if (buf_size)
             av_log(avctx, AV_LOG_WARNING,
                    "Expected %d bytes, got %d - skipping packet\n",
@@ -866,142 +949,148 @@ static int g723_1_decode_frame(AVCodecContext *avctx, void *data,
         return buf_size;
     }
 
-    if (unpack_bitstream(p, buf, buf_size) < 0) {
-        bad_frame = 1;
-        if (p->past_frame_type == ACTIVE_FRAME)
-            p->cur_frame_type = ACTIVE_FRAME;
-        else
-            p->cur_frame_type = UNTRANSMITTED_FRAME;
-    }
-
     frame->nb_samples = FRAME_LEN;
     if ((ret = ff_get_buffer(avctx, frame, 0)) < 0)
         return ret;
 
-    out = (int16_t *)frame->data[0];
+    for (int ch = 0; ch < avctx->channels; ch++) {
+        G723_1_ChannelContext *p = &s->ch[ch];
+        int16_t *audio = p->audio;
 
-    if (p->cur_frame_type == ACTIVE_FRAME) {
-        if (!bad_frame)
-            p->erased_frames = 0;
-        else if (p->erased_frames != 3)
-            p->erased_frames++;
+        if (unpack_bitstream(p, buf + ch * (buf_size / avctx->channels),
+                             buf_size / avctx->channels) < 0) {
+            bad_frame = 1;
+            if (p->past_frame_type == ACTIVE_FRAME)
+                p->cur_frame_type = ACTIVE_FRAME;
+            else
+                p->cur_frame_type = UNTRANSMITTED_FRAME;
+        }
 
-        ff_g723_1_inverse_quant(cur_lsp, p->prev_lsp, p->lsp_index, bad_frame);
-        ff_g723_1_lsp_interpolate(lpc, cur_lsp, p->prev_lsp);
+        out = (int16_t *)frame->extended_data[ch];
 
-        /* Save the lsp_vector for the next frame */
-        memcpy(p->prev_lsp, cur_lsp, LPC_ORDER * sizeof(*p->prev_lsp));
+        if (p->cur_frame_type == ACTIVE_FRAME) {
+            if (!bad_frame)
+                p->erased_frames = 0;
+            else if (p->erased_frames != 3)
+                p->erased_frames++;
 
-        /* Generate the excitation for the frame */
-        memcpy(p->excitation, p->prev_excitation,
-               PITCH_MAX * sizeof(*p->excitation));
-        if (!p->erased_frames) {
-            int16_t *vector_ptr = p->excitation + PITCH_MAX;
+            ff_g723_1_inverse_quant(cur_lsp, p->prev_lsp, p->lsp_index, bad_frame);
+            ff_g723_1_lsp_interpolate(lpc, cur_lsp, p->prev_lsp);
 
-            /* Update interpolation gain memory */
-            p->interp_gain = fixed_cb_gain[(p->subframe[2].amp_index +
-                                            p->subframe[3].amp_index) >> 1];
-            for (i = 0; i < SUBFRAMES; i++) {
-                gen_fcb_excitation(vector_ptr, &p->subframe[i], p->cur_rate,
-                                   p->pitch_lag[i >> 1], i);
-                ff_g723_1_gen_acb_excitation(acb_vector,
-                                             &p->excitation[SUBFRAME_LEN * i],
-                                             p->pitch_lag[i >> 1],
-                                             &p->subframe[i], p->cur_rate);
-                /* Get the total excitation */
-                for (j = 0; j < SUBFRAME_LEN; j++) {
-                    int v = av_clip_int16(vector_ptr[j] * 2);
-                    vector_ptr[j] = av_clip_int16(v + acb_vector[j]);
-                }
-                vector_ptr += SUBFRAME_LEN;
-            }
+            /* Save the lsp_vector for the next frame */
+            memcpy(p->prev_lsp, cur_lsp, LPC_ORDER * sizeof(*p->prev_lsp));
 
-            vector_ptr = p->excitation + PITCH_MAX;
-
-            p->interp_index = comp_interp_index(p, p->pitch_lag[1],
-                                                &p->sid_gain, &p->cur_gain);
-
-            /* Perform pitch postfiltering */
-            if (p->postfilter) {
-                i = PITCH_MAX;
-                for (j = 0; j < SUBFRAMES; i += SUBFRAME_LEN, j++)
-                    comp_ppf_coeff(p, i, p->pitch_lag[j >> 1],
-                                   ppf + j, p->cur_rate);
-
-                for (i = 0, j = 0; j < SUBFRAMES; i += SUBFRAME_LEN, j++)
-                    ff_acelp_weighted_vector_sum(p->audio + LPC_ORDER + i,
-                                                 vector_ptr + i,
-                                                 vector_ptr + i + ppf[j].index,
-                                                 ppf[j].sc_gain,
-                                                 ppf[j].opt_gain,
-                                                 1 << 14, 15, SUBFRAME_LEN);
-            } else {
-                audio = vector_ptr - LPC_ORDER;
-            }
-
-            /* Save the excitation for the next frame */
-            memcpy(p->prev_excitation, p->excitation + FRAME_LEN,
+            /* Generate the excitation for the frame */
+            memcpy(p->excitation, p->prev_excitation,
                    PITCH_MAX * sizeof(*p->excitation));
-        } else {
-            p->interp_gain = (p->interp_gain * 3 + 2) >> 2;
-            if (p->erased_frames == 3) {
-                /* Mute output */
-                memset(p->excitation, 0,
-                       (FRAME_LEN + PITCH_MAX) * sizeof(*p->excitation));
-                memset(p->prev_excitation, 0,
-                       PITCH_MAX * sizeof(*p->excitation));
-                memset(frame->data[0], 0,
-                       (FRAME_LEN + LPC_ORDER) * sizeof(int16_t));
-            } else {
-                int16_t *buf = p->audio + LPC_ORDER;
+            if (!p->erased_frames) {
+                int16_t *vector_ptr = p->excitation + PITCH_MAX;
 
-                /* Regenerate frame */
-                residual_interp(p->excitation, buf, p->interp_index,
-                                p->interp_gain, &p->random_seed);
+                /* Update interpolation gain memory */
+                p->interp_gain = ff_g723_1_fixed_cb_gain[(p->subframe[2].amp_index +
+                                                p->subframe[3].amp_index) >> 1];
+                for (i = 0; i < SUBFRAMES; i++) {
+                    gen_fcb_excitation(vector_ptr, &p->subframe[i], p->cur_rate,
+                                       p->pitch_lag[i >> 1], i);
+                    ff_g723_1_gen_acb_excitation(acb_vector,
+                                                 &p->excitation[SUBFRAME_LEN * i],
+                                                 p->pitch_lag[i >> 1],
+                                                 &p->subframe[i], p->cur_rate);
+                    /* Get the total excitation */
+                    for (j = 0; j < SUBFRAME_LEN; j++) {
+                        int v = av_clip_int16(vector_ptr[j] * 2);
+                        vector_ptr[j] = av_clip_int16(v + acb_vector[j]);
+                    }
+                    vector_ptr += SUBFRAME_LEN;
+                }
+
+                vector_ptr = p->excitation + PITCH_MAX;
+
+                p->interp_index = comp_interp_index(p, p->pitch_lag[1],
+                                                    &p->sid_gain, &p->cur_gain);
+
+                /* Perform pitch postfiltering */
+                if (s->postfilter) {
+                    i = PITCH_MAX;
+                    for (j = 0; j < SUBFRAMES; i += SUBFRAME_LEN, j++)
+                        comp_ppf_coeff(p, i, p->pitch_lag[j >> 1],
+                                       ppf + j, p->cur_rate);
+
+                    for (i = 0, j = 0; j < SUBFRAMES; i += SUBFRAME_LEN, j++)
+                        ff_acelp_weighted_vector_sum(p->audio + LPC_ORDER + i,
+                                                     vector_ptr + i,
+                                                     vector_ptr + i + ppf[j].index,
+                                                     ppf[j].sc_gain,
+                                                     ppf[j].opt_gain,
+                                                     1 << 14, 15, SUBFRAME_LEN);
+                } else {
+                    audio = vector_ptr - LPC_ORDER;
+                }
 
                 /* Save the excitation for the next frame */
-                memcpy(p->prev_excitation, buf + (FRAME_LEN - PITCH_MAX),
+                memcpy(p->prev_excitation, p->excitation + FRAME_LEN,
                        PITCH_MAX * sizeof(*p->excitation));
+            } else {
+                p->interp_gain = (p->interp_gain * 3 + 2) >> 2;
+                if (p->erased_frames == 3) {
+                    /* Mute output */
+                    memset(p->excitation, 0,
+                           (FRAME_LEN + PITCH_MAX) * sizeof(*p->excitation));
+                    memset(p->prev_excitation, 0,
+                           PITCH_MAX * sizeof(*p->excitation));
+                    memset(frame->data[0], 0,
+                           (FRAME_LEN + LPC_ORDER) * sizeof(int16_t));
+                } else {
+                    int16_t *buf = p->audio + LPC_ORDER;
+
+                    /* Regenerate frame */
+                    residual_interp(p->excitation, buf, p->interp_index,
+                                    p->interp_gain, &p->random_seed);
+
+                    /* Save the excitation for the next frame */
+                    memcpy(p->prev_excitation, buf + (FRAME_LEN - PITCH_MAX),
+                           PITCH_MAX * sizeof(*p->excitation));
+                }
             }
+            p->cng_random_seed = CNG_RANDOM_SEED;
+        } else {
+            if (p->cur_frame_type == SID_FRAME) {
+                p->sid_gain = sid_gain_to_lsp_index(p->subframe[0].amp_index);
+                ff_g723_1_inverse_quant(p->sid_lsp, p->prev_lsp, p->lsp_index, 0);
+            } else if (p->past_frame_type == ACTIVE_FRAME) {
+                p->sid_gain = estimate_sid_gain(p);
+            }
+
+            if (p->past_frame_type == ACTIVE_FRAME)
+                p->cur_gain = p->sid_gain;
+            else
+                p->cur_gain = (p->cur_gain * 7 + p->sid_gain) >> 3;
+            generate_noise(p);
+            ff_g723_1_lsp_interpolate(lpc, p->sid_lsp, p->prev_lsp);
+            /* Save the lsp_vector for the next frame */
+            memcpy(p->prev_lsp, p->sid_lsp, LPC_ORDER * sizeof(*p->prev_lsp));
         }
-        p->cng_random_seed = CNG_RANDOM_SEED;
-    } else {
-        if (p->cur_frame_type == SID_FRAME) {
-            p->sid_gain = sid_gain_to_lsp_index(p->subframe[0].amp_index);
-            ff_g723_1_inverse_quant(p->sid_lsp, p->prev_lsp, p->lsp_index, 0);
-        } else if (p->past_frame_type == ACTIVE_FRAME) {
-            p->sid_gain = estimate_sid_gain(p);
+
+        p->past_frame_type = p->cur_frame_type;
+
+        memcpy(p->audio, p->synth_mem, LPC_ORDER * sizeof(*p->audio));
+        for (i = LPC_ORDER, j = 0; j < SUBFRAMES; i += SUBFRAME_LEN, j++)
+            ff_celp_lp_synthesis_filter(p->audio + i, &lpc[j * LPC_ORDER],
+                                        audio + i, SUBFRAME_LEN, LPC_ORDER,
+                                        0, 1, 1 << 12);
+        memcpy(p->synth_mem, p->audio + FRAME_LEN, LPC_ORDER * sizeof(*p->audio));
+
+        if (s->postfilter) {
+            formant_postfilter(p, lpc, p->audio, out);
+        } else { // if output is not postfiltered it should be scaled by 2
+            for (i = 0; i < FRAME_LEN; i++)
+                out[i] = av_clip_int16(2 * p->audio[LPC_ORDER + i]);
         }
-
-        if (p->past_frame_type == ACTIVE_FRAME)
-            p->cur_gain = p->sid_gain;
-        else
-            p->cur_gain = (p->cur_gain * 7 + p->sid_gain) >> 3;
-        generate_noise(p);
-        ff_g723_1_lsp_interpolate(lpc, p->sid_lsp, p->prev_lsp);
-        /* Save the lsp_vector for the next frame */
-        memcpy(p->prev_lsp, p->sid_lsp, LPC_ORDER * sizeof(*p->prev_lsp));
-    }
-
-    p->past_frame_type = p->cur_frame_type;
-
-    memcpy(p->audio, p->synth_mem, LPC_ORDER * sizeof(*p->audio));
-    for (i = LPC_ORDER, j = 0; j < SUBFRAMES; i += SUBFRAME_LEN, j++)
-        ff_celp_lp_synthesis_filter(p->audio + i, &lpc[j * LPC_ORDER],
-                                    audio + i, SUBFRAME_LEN, LPC_ORDER,
-                                    0, 1, 1 << 12);
-    memcpy(p->synth_mem, p->audio + FRAME_LEN, LPC_ORDER * sizeof(*p->audio));
-
-    if (p->postfilter) {
-        formant_postfilter(p, lpc, p->audio, out);
-    } else { // if output is not postfiltered it should be scaled by 2
-        for (i = 0; i < FRAME_LEN; i++)
-            out[i] = av_clip_int16(p->audio[LPC_ORDER + i] << 1);
     }
 
     *got_frame_ptr = 1;
 
-    return frame_size[dec_mode];
+    return frame_size[dec_mode] * avctx->channels;
 }
 
 #define OFFSET(x) offsetof(G723_1_Context, x)

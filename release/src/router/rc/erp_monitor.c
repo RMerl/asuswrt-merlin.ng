@@ -649,6 +649,7 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTAX58U
 		|| model == MODEL_RTAX82U_V2
 		|| model == MODEL_TUFAX5400_V2
+		|| model == MODEL_RTAX5400
 		|| model == MODEL_RTAX82_XD6S
 		|| model == MODEL_XD6_V2
 		|| model == MODEL_GT10
@@ -751,6 +752,7 @@ static void erp_standby_mode(int model)
 		case MODEL_TUFAX3000_V2:
 		case MODEL_RTAX82U_V2:
 		case MODEL_TUFAX5400_V2:
+		case MODEL_RTAX5400:
 		case MODEL_XD6_V2:
 			eval("wl", "-i", "eth5", "down");
 			eval("wl", "-i", "eth6", "down"); // turn off 5g radio
@@ -811,6 +813,7 @@ static void erp_standby_mode(int model)
 	if (model == MODEL_GTAXE16000) {
 		// triple band
 		eval("wl", "-i", "eth8", "down"); // turn off 5g-2 radio
+		eval("wl", "-i", "eth9", "down"); // turn off 6g radio
 	}
 
 	if (model == MODEL_ET12 || model == MODEL_XT12) {

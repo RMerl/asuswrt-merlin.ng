@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Учитывая совместимость системы A
 AiMesh_confirm_msg10=Чтобы обеспечить подключение вашей системы AiMesh и конечного устройства(ов), пожалуйста, прочтите этот <a id="wpa3FaqLink">FAQ</a> перед переключением на WPA3-Personal.
 AiMesh_confirm_msg11=В настоящее время вы используете WPA3-Personal. Чтобы создать систему AiMesh, ваш метод аутентификации будет изменен на WPA2/WPA3-Personal. Вы хотите продолжить?
 AiMesh_confirm_msg12=Вы можете прочитать этот <a id='wpa3FaqLink'>FAQ</a> для получения дополнительной информации.
-AiMesh_confirm_msg13=Для получения подробной информации посетите <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Вопросы и ответы</a>
+AiMesh_confirm_msg13=Для получения подробной информации посетите <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>Вопросы и ответы</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh - это инновационная новая возможность роутера, позволяющая объединять несколько роутеров ASUS вместе, создавая сеть WiFi для всего дома.
 AiMesh_FAQ=Дополнительная информация о ASUS AiMesh
 AiMesh_FindNode=Найти узел AiMesh
@@ -2412,7 +2412,7 @@ Internet=Интернет
 Interval=Интервал
 Introduce_demo=Введение
 Invitation=Приглашение
-Interaction=Interaktion
+Interaction=Взаимодействие
 InternetSpeed=Скорость Интернета
 InternetSpeed_desc=Эта служба предоставляется Ookla®. Она обнаруживает скорость загрузки и выгрузки с маршрутизатора в Интернет. Выполнение тестирования занимает примерно минуту. При использовании этой службы вы принимаете <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Политику конфиденциальности Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® и Speedtest® являются федерально зарегистрированными марками Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Опция TCP MSS
 WANTCPMSSOptionComm1Text=байт
 WANVLANIDText=VLAN ID
-WANAggregation_desc=Агрегация интернет каналов объединяет два сетевых подключения, что позволяет увеличить пропускную способность до 2 Гбит/с. Подключите порты WAN и LAN 4 роутера к портам LAN модема (используйте кабели с одинаковыми характеристиками). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Часто задаваемые вопросы по агрегации интернет каналов</a>
+WANAggregation_desc=Агрегация интернет каналов объединяет два сетевых подключения, что позволяет увеличить пропускную способность до 2 Гбит/с. Подключите порты #WAN и LAN 4 роутера к портам LAN модема (используйте кабели с одинаковыми характеристиками). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Часто задаваемые вопросы по агрегации интернет каналов</a>
 WANAggregation_enable=Включить WAN агрегацию
 WANAggregation_disable_dualwan=На роутере включена функция Dual WAN. Включение агрегации интернет каналов отключит Dual WAN. Продолжить?
 WANAggregation_disable_WANAggregation=На роутере включена функция агрегациии интернет каналов. Включение Dual WAN отключит агрегацию интернет каналов. Продолжить?
 WANAggregation_PortConflict_hint1=Агрегация интернет каналов использует порт LAN 4 роутера. Включение IPTV отключит агрегацию интернет каналов. Продолжить?
 WANAggregation_PortConflict_hint2=IPTV использует порт LAN 4 роутера. Включение агрегации интернет каналов отключит IPTV. Продолжить?
 WANAggregation_disable_IPTVDualWAN=На роутере включена функция Dual WAN и IPTV. Включение агрегации интернет каналов отключит Dual WAN и IPTV во избежание конфликтов. Продолжить?
-WANAggregation_help_WAN=Для подключения порта WAN роутера к порту LAN модема используйте кабель с такими же характеристиками как и для порта LAN 4.
+WANAggregation_help_WAN=Для подключения порта #WAN роутера к порту LAN модема используйте кабель с такими же характеристиками как и для порта LAN 4.
 WANAggregation_help_LAN=Для подключения порта LAN 4 роутера к порту LAN модема используйте кабель с такими же характеристиками как и для порта WAN.
 WANAggregation_goto_WAN=Для включения агрегации интернет каналов перейдите на страницу <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-Internet Connection</a>.
 WANAggregation_help_desc=При возникновении ошибки в настройке агрегации интернет каналов следуйте инструкциям ниже.
-WANAggregation_help_step1=Убедитесь, что порты LAN модема с помощью кабелей подключены к портам WAN и LAN 4 роутера
+WANAggregation_help_step1=Убедитесь, что порты LAN модема с помощью кабелей подключены к портам #WAN и LAN 4 роутера
 WANAggregation_help_step2=Убедитесь, что на модеме включена поддержка 802.3ad
 WANAggregation_help_step3=Убедитесь, что используются два кабеля с одинаковыми характеристиками (гигабитные или 10/100 Мбит/с)
 WANAggregation_help_step4=Перезагрузите роутер
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Выберите GeForce Now для ускорения трафика игровых устройств GeForce Now.
 BoostKey_LED=Светодиод Вкл./Выкл.
 BoostKey_LED_desc=Управление включением/выключением светодиодов используется для выключения всех светодиодов, включая свет Aura.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Событие
 AURA_Event_desc=Система изменит режим работы индикатора при обнаружении следующих событий.
 AURA_Event_Boost_desc=При включении Game Boost, Вы увидите медленно мигающий красный.

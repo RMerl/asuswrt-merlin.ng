@@ -661,10 +661,12 @@ var httpApi ={
 			"proto": "",
 			"proto_text": ""
 		};
-
+		var wans_info = httpApi.nvramGet(["wans_dualwan", "wans_mode"], true);
+		var dualwan_enabled = (isSupport("dualwan") && wans_info.wans_dualwan.search("none") == -1) ? 1 : 0;
+		var active_wan_unit = httpApi.hookGet("get_wan_unit", true);
 		var wan_index = (_index == undefined) ? 0 : _index;
 		if(dualwan_enabled){
-			if(active_wan_unit != wan_index && (wans_mode == "fo" || wans_mode == "fb")){
+			if(active_wan_unit != wan_index && (wans_info.wans_mode == "fo" || wans_info.wans_mode == "fb")){
 				result.status = "standby";
 				result.status_text = "<#Standby_str_cold#>";
 
@@ -1422,7 +1424,7 @@ var httpApi ={
 							data["max_rate_text"] = max_rate_data.text;
 							data["special_port_name"] = "";
 							if(data["cap_support"]["GAME"] == true){
-								data["special_port_name"] = "Gaming Port";
+								data["special_port_name"] = "<#Port_Gaming#>";
 							}
 							else{
 								if(data.cap_support.USB){

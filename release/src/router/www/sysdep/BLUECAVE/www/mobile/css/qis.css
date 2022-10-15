@@ -822,6 +822,7 @@ a{
 }
 .titleSub{
 	font-size: 32px;
+	margin-top: 8px;
 }
 .aimeshTopo{
 	background:url('../css/aimesh-topo.png') no-repeat;

@@ -62,7 +62,7 @@ typedef struct VmdDemuxContext {
     unsigned char vmd_header[VMD_HEADER_SIZE];
 } VmdDemuxContext;
 
-static int vmd_probe(AVProbeData *p)
+static int vmd_probe(const AVProbeData *p)
 {
     int w, h, sample_rate;
     if (p->buf_size < 806)
@@ -127,8 +127,8 @@ static int vmd_read_header(AVFormatContext *s)
             vst->codecpar->width >>= 1;
             vst->codecpar->height >>= 1;
         }
-        if (ff_alloc_extradata(vst->codecpar, VMD_HEADER_SIZE))
-            return AVERROR(ENOMEM);
+        if ((ret = ff_alloc_extradata(vst->codecpar, VMD_HEADER_SIZE)) < 0)
+            return ret;
         memcpy(vst->codecpar->extradata, vmd->vmd_header, VMD_HEADER_SIZE);
     }
 
@@ -174,6 +174,8 @@ static int vmd_read_header(AVFormatContext *s)
             avpriv_set_pts_info(vst, 33, num, den);
         avpriv_set_pts_info(st, 33, num, den);
     }
+    if (!s->nb_streams)
+        return AVERROR_INVALIDDATA;
 
     toc_offset = AV_RL32(&vmd->vmd_header[812]);
     vmd->frame_count = AV_RL16(&vmd->vmd_header[6]);
@@ -241,6 +243,8 @@ static int vmd_read_header(AVFormatContext *s)
                     current_audio_pts++;
                 break;
             case 2: /* Video Chunk */
+                if (!vst)
+                    break;
                 vmd->frame_table[total_frames].frame_offset = current_offset;
                 vmd->frame_table[total_frames].stream_index = vmd->video_stream_index;
                 vmd->frame_table[total_frames].frame_size = size;
@@ -283,8 +287,9 @@ static int vmd_read_packet(AVFormatContext *s,
 
     if(ffio_limit(pb, frame->frame_size) != frame->frame_size)
         return AVERROR(EIO);
-    if (av_new_packet(pkt, frame->frame_size + BYTES_PER_FRAME_RECORD))
-        return AVERROR(ENOMEM);
+    ret = av_new_packet(pkt, frame->frame_size + BYTES_PER_FRAME_RECORD);
+    if (ret < 0)
+        return ret;
     pkt->pos= avio_tell(pb);
     memcpy(pkt->data, frame->frame_record, BYTES_PER_FRAME_RECORD);
     if(vmd->is_indeo3 && frame->frame_record[0] == 0x02)
@@ -294,7 +299,6 @@ static int vmd_read_packet(AVFormatContext *s,
             frame->frame_size);
 
     if (ret != frame->frame_size) {
-        av_packet_unref(pkt);
         ret = AVERROR(EIO);
     }
     pkt->stream_index = frame->stream_index;

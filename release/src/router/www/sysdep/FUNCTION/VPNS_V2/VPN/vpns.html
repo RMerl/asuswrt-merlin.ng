@@ -177,8 +177,13 @@ function show_vpn_serverlist(){
 			var vpn_server_port = httpApi.nvramGet(["vpn_server_port"]).vpn_server_port;
 			if(vpn_server_port == ""){
 				show_customize_alert("<#JS_fieldblank#> [ <#WLANAuthentication11a_ExAuthDBPortNumber_itemname#> ]");
-				$(this).closest(".svr_item_container").find(".svr_item_text_container").click();
-				validate_format_OpenVPN($(".profile_setting"), "openvpn_profile");
+				var $svr_item_obj = $(this).closest(".svr_item_container").find(".svr_item_text_container");
+				$(".popup_container.popup_customize_alert").find("[data-btn=ok]").click(function(){
+					e = e || event;
+					e.stopPropagation();
+					$svr_item_obj.click();
+					validate_format_OpenVPN($(".profile_setting"), "openvpn_profile");
+				});
 				return false;
 			}
 			var $this_switch_icon = $(this).find(".switch");
@@ -250,8 +255,13 @@ function show_vpn_serverlist(){
 			var ipsec_profile_1 = httpApi.nvramGet(["ipsec_profile_1"]).ipsec_profile_1;
 			if(ipsec_profile_1 == ""){
 				show_customize_alert("<#JS_fieldblank#> [ <#vpn_ipsec_PreShared_Key#> ]");
-				$(this).closest(".svr_item_container").find(".svr_item_text_container").click();
-				validate_format_IPSec($(".profile_setting"), "ipsec_profile");
+				var $svr_item_obj = $(this).closest(".svr_item_container").find(".svr_item_text_container");
+				$(".popup_container.popup_customize_alert").find("[data-btn=ok]").click(function(){
+					e = e || event;
+					e.stopPropagation();
+					$svr_item_obj.click();
+					validate_format_IPSec($(".profile_setting"), "ipsec_profile");
+				});
 				return false;
 			}
 			var $this_switch_icon = $(this).find(".switch");

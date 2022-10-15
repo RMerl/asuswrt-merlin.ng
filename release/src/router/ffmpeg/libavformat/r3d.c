@@ -27,7 +27,6 @@
 
 typedef struct R3DContext {
     unsigned video_offsets_count;
-    unsigned *video_offsets;
     unsigned rdvo_offset;
 
     int audio_channels;
@@ -57,6 +56,7 @@ static int r3d_read_red1(AVFormatContext *s)
     R3DContext *r3d = s->priv_data;
     char filename[258];
     int tmp;
+    int ret;
     int av_unused tmp2;
     AVRational framerate;
 
@@ -98,7 +98,9 @@ static int r3d_read_red1(AVFormatContext *s)
     r3d->audio_channels = avio_r8(s->pb); // audio channels
     av_log(s, AV_LOG_TRACE, "audio channels %d\n", tmp);
 
-    avio_read(s->pb, filename, 257);
+    ret = avio_read(s->pb, filename, 257);
+    if (ret < 257)
+        return ret < 0 ? ret : AVERROR_EOF;
     filename[sizeof(filename)-1] = 0;
     av_dict_set(&st->metadata, "filename", filename, 0);
 
@@ -118,17 +120,14 @@ static int r3d_read_rdvo(AVFormatContext *s, Atom *atom)
     int i;
 
     r3d->video_offsets_count = (atom->size - 8) / 4;
-    r3d->video_offsets = av_malloc(atom->size);
-    if (!r3d->video_offsets)
-        return AVERROR(ENOMEM);
 
     for (i = 0; i < r3d->video_offsets_count; i++) {
-        r3d->video_offsets[i] = avio_rb32(s->pb);
-        if (!r3d->video_offsets[i]) {
+        unsigned video_offset = avio_rb32(s->pb);
+        if (!video_offset) {
             r3d->video_offsets_count = i;
             break;
         }
-        av_log(s, AV_LOG_TRACE, "video offset %d: %#x\n", i, r3d->video_offsets[i]);
+        av_log(s, AV_LOG_TRACE, "video offset %d: %#x\n", i, video_offset);
     }
 
     if (st->avg_frame_rate.num)
@@ -326,7 +325,8 @@ static int r3d_read_reda(AVFormatContext *s, AVPacket *pkt, Atom *atom)
 
     pkt->stream_index = 1;
     pkt->dts = dts;
-    if (st->codecpar->sample_rate)
+
+    if (st->codecpar->sample_rate && samples > 0)
         pkt->duration = av_rescale(samples, st->time_base.den, st->codecpar->sample_rate);
     av_log(s, AV_LOG_TRACE, "pkt dts %"PRId64" duration %"PRId64" samples %d sample rate %d\n",
             pkt->dts, pkt->duration, samples, st->codecpar->sample_rate);
@@ -368,7 +368,7 @@ static int r3d_read_packet(AVFormatContext *s, AVPacket *pkt)
     return err;
 }
 
-static int r3d_probe(AVProbeData *p)
+static int r3d_probe(const AVProbeData *p)
 {
     if (AV_RL32(p->buf + 4) == MKTAG('R','E','D','1'))
         return AVPROBE_SCORE_MAX;
@@ -400,15 +400,6 @@ static int r3d_seek(AVFormatContext *s, int stream_index, int64_t sample_time, i
     return 0;
 }
 
-static int r3d_close(AVFormatContext *s)
-{
-    R3DContext *r3d = s->priv_data;
-
-    av_freep(&r3d->video_offsets);
-
-    return 0;
-}
-
 AVInputFormat ff_r3d_demuxer = {
     .name           = "r3d",
     .long_name      = NULL_IF_CONFIG_SMALL("REDCODE R3D"),
@@ -416,6 +407,5 @@ AVInputFormat ff_r3d_demuxer = {
     .read_probe     = r3d_probe,
     .read_header    = r3d_read_header,
     .read_packet    = r3d_read_packet,
-    .read_close     = r3d_close,
     .read_seek      = r3d_seek,
 };

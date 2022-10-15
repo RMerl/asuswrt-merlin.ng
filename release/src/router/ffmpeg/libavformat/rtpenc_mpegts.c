@@ -20,17 +20,22 @@
  */
 
 #include "libavutil/mathematics.h"
+#include "libavutil/opt.h"
 #include "avformat.h"
 #include "avio_internal.h"
 
-struct MuxChain {
+typedef struct MuxChain {
+    const AVClass *class;
     AVFormatContext *mpegts_ctx;
     AVFormatContext *rtp_ctx;
-};
+    AVPacket *pkt;
+    AVDictionary* mpegts_muxer_options;
+    AVDictionary* rtp_muxer_options;
+} MuxChain;
 
 static int rtp_mpegts_write_close(AVFormatContext *s)
 {
-    struct MuxChain *chain = s->priv_data;
+    MuxChain *chain = s->priv_data;
 
     if (chain->mpegts_ctx) {
         av_write_trailer(chain->mpegts_ctx);
@@ -41,37 +46,53 @@ static int rtp_mpegts_write_close(AVFormatContext *s)
         av_write_trailer(chain->rtp_ctx);
         avformat_free_context(chain->rtp_ctx);
     }
+
+    av_packet_free(&chain->pkt);
+
     return 0;
 }
 
 static int rtp_mpegts_write_header(AVFormatContext *s)
 {
-    struct MuxChain *chain = s->priv_data;
+    MuxChain *chain = s->priv_data;
     AVFormatContext *mpegts_ctx = NULL, *rtp_ctx = NULL;
-    AVOutputFormat *mpegts_format = av_guess_format("mpegts", NULL, NULL);
-    AVOutputFormat *rtp_format    = av_guess_format("rtp", NULL, NULL);
+    ff_const59 AVOutputFormat *mpegts_format = av_guess_format("mpegts", NULL, NULL);
+    ff_const59 AVOutputFormat *rtp_format    = av_guess_format("rtp", NULL, NULL);
     int i, ret = AVERROR(ENOMEM);
     AVStream *st;
+    AVDictionary *mpegts_muxer_options = NULL;
+    AVDictionary *rtp_muxer_options = NULL;
 
     if (!mpegts_format || !rtp_format)
         return AVERROR(ENOSYS);
     mpegts_ctx = avformat_alloc_context();
     if (!mpegts_ctx)
         return AVERROR(ENOMEM);
+    chain->pkt = av_packet_alloc();
+    if (!chain->pkt)
+        goto fail;
     mpegts_ctx->oformat   = mpegts_format;
     mpegts_ctx->max_delay = s->max_delay;
+    av_dict_copy(&mpegts_ctx->metadata, s->metadata, 0);
     for (i = 0; i < s->nb_streams; i++) {
         AVStream* st = avformat_new_stream(mpegts_ctx, NULL);
         if (!st)
             goto fail;
         st->time_base           = s->streams[i]->time_base;
         st->sample_aspect_ratio = s->streams[i]->sample_aspect_ratio;
+        st->id                  = s->streams[i]->id;
         avcodec_parameters_copy(st->codecpar, s->streams[i]->codecpar);
     }
     if ((ret = avio_open_dyn_buf(&mpegts_ctx->pb)) < 0)
         goto fail;
-    if ((ret = avformat_write_header(mpegts_ctx, NULL)) < 0)
+
+    av_dict_copy(&mpegts_muxer_options, chain->mpegts_muxer_options, 0);
+
+    ret = avformat_write_header(mpegts_ctx, &mpegts_muxer_options);
+    av_dict_free(&mpegts_muxer_options);
+    if (ret < 0)
         goto fail;
+
     for (i = 0; i < s->nb_streams; i++)
         s->streams[i]->time_base = mpegts_ctx->streams[i]->time_base;
 
@@ -93,8 +114,12 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
     st->time_base.den   = 90000;
     st->codecpar->codec_id = AV_CODEC_ID_MPEG2TS;
     rtp_ctx->pb = s->pb;
-    if ((ret = avformat_write_header(rtp_ctx, NULL)) < 0)
+    av_dict_copy(&rtp_muxer_options, chain->rtp_muxer_options, 0);
+    ret = avformat_write_header(rtp_ctx, &rtp_muxer_options);
+    av_dict_free(&rtp_muxer_options);
+    if (ret < 0)
         goto fail;
+
     chain->rtp_ctx = rtp_ctx;
 
     return 0;
@@ -102,20 +127,20 @@ static int rtp_mpegts_write_header(AVFormatContext *s)
 fail:
     if (mpegts_ctx) {
         ffio_free_dyn_buf(&mpegts_ctx->pb);
+        av_dict_free(&mpegts_ctx->metadata);
         avformat_free_context(mpegts_ctx);
     }
-    if (rtp_ctx)
-        avformat_free_context(rtp_ctx);
+    avformat_free_context(rtp_ctx);
     rtp_mpegts_write_close(s);
     return ret;
 }
 
 static int rtp_mpegts_write_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    struct MuxChain *chain = s->priv_data;
+    MuxChain *chain = s->priv_data;
     int ret = 0, size;
     uint8_t *buf;
-    AVPacket local_pkt;
+    AVPacket *local_pkt = chain->pkt;
 
     if (!chain->mpegts_ctx->pb) {
         if ((ret = avio_open_dyn_buf(&chain->mpegts_ctx->pb)) < 0)
@@ -129,31 +154,47 @@ static int rtp_mpegts_write_packet(AVFormatContext *s, AVPacket *pkt)
         av_free(buf);
         return 0;
     }
-    av_init_packet(&local_pkt);
-    local_pkt.data         = buf;
-    local_pkt.size         = size;
-    local_pkt.stream_index = 0;
+    av_packet_unref(local_pkt);
+    local_pkt->data         = buf;
+    local_pkt->size         = size;
+    local_pkt->stream_index = 0;
     if (pkt->pts != AV_NOPTS_VALUE)
-        local_pkt.pts = av_rescale_q(pkt->pts,
+        local_pkt->pts = av_rescale_q(pkt->pts,
                                      s->streams[pkt->stream_index]->time_base,
                                      chain->rtp_ctx->streams[0]->time_base);
     if (pkt->dts != AV_NOPTS_VALUE)
-        local_pkt.dts = av_rescale_q(pkt->dts,
+        local_pkt->dts = av_rescale_q(pkt->dts,
                                      s->streams[pkt->stream_index]->time_base,
                                      chain->rtp_ctx->streams[0]->time_base);
-    ret = av_write_frame(chain->rtp_ctx, &local_pkt);
+    ret = av_write_frame(chain->rtp_ctx, local_pkt);
     av_free(buf);
 
     return ret;
 }
 
+#define OFFSET(x) offsetof(MuxChain, x)
+#define E AV_OPT_FLAG_ENCODING_PARAM
+static const AVOption options[] = {
+    { "mpegts_muxer_options", "set list of options for the MPEG-TS muxer", OFFSET(mpegts_muxer_options), AV_OPT_TYPE_DICT, {.str = NULL}, 0, 0, E },
+    { "rtp_muxer_options",    "set list of options for the RTP muxer",     OFFSET(rtp_muxer_options),    AV_OPT_TYPE_DICT, {.str = NULL}, 0, 0, E },
+    { NULL },
+};
+
+static const AVClass rtp_mpegts_class = {
+    .class_name = "rtp_mpegts muxer",
+    .item_name  = av_default_item_name,
+    .option     = options,
+    .version    = LIBAVUTIL_VERSION_INT,
+};
+
 AVOutputFormat ff_rtp_mpegts_muxer = {
     .name              = "rtp_mpegts",
     .long_name         = NULL_IF_CONFIG_SMALL("RTP/mpegts output format"),
-    .priv_data_size    = sizeof(struct MuxChain),
+    .priv_data_size    = sizeof(MuxChain),
     .audio_codec       = AV_CODEC_ID_AAC,
     .video_codec       = AV_CODEC_ID_MPEG4,
     .write_header      = rtp_mpegts_write_header,
     .write_packet      = rtp_mpegts_write_packet,
     .write_trailer     = rtp_mpegts_write_close,
+    .priv_class        = &rtp_mpegts_class,
 };

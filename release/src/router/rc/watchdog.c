@@ -220,7 +220,7 @@ static int wifi_sw_old = -1;
 #if defined(RTCONFIG_TURBO_BTN)
 static int g_boost_status[BOOST_MODE_MAX] = { 0 };
 #endif
-#if (defined(RTCONFIG_LED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA) && !defined(RTCONFIG_WPS_ALLLED_BTN))) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2)
+#if (defined(RTCONFIG_LED_BTN) || (!defined(RTCONFIG_WIFI_TOG_BTN) && !defined(RTCONFIG_QCA) && !defined(RTCONFIG_WPS_ALLLED_BTN))) && !defined(RTAX82U) && !defined(DSL_AX82U) && !defined(GSAX3000) && !defined(GSAX5400) && !defined(TUFAX5400) && !defined(GTAX6000) && !defined(GT10) && !defined(RTAX82U_V2) && !defined(TUFAX5400_V2) && !defined(RTAX88U_PRO)
 #if defined(RTCONFIG_QCA)
 static int LED_status_old = 0;
 static int LED_status = 0;
@@ -528,6 +528,7 @@ int init_toggle(void)
 		case MODEL_RTAX58U:
 		case MODEL_RTAX82U_V2:
 		case MODEL_TUFAX5400_V2:
+		case MODEL_RTAX5400:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_XD6_V2:
 		case MODEL_RTAX58U_V2:
@@ -2883,13 +2884,15 @@ static inline void __handle_led_onoff_button(int led_onoff)
 		led_control(LED_POWER, LED_ON);
 		kill_pidfile_s("/var/run/wanduck.pid", SIGUSR2);
 #if defined(TUFAX3000_V2) || defined(RTAXE7800)
-#ifdef RTAXE7800
-		if (!nvram_get_int("wans_extwan"))
-#endif
-		wan_phy_led_pinmux(0);
 		bcm53134_led_control(2);
 #endif
 #if defined(HND_ROUTER)
+#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
+#ifdef RTAXE7800
+		if (!nvram_get_int("wans_extwan"))
+#endif
+		lan_phy_led_pinmux(0);
+#endif
 		setLANLedOn();
 #endif
 #if defined(GTAXE11000)
@@ -3865,10 +3868,7 @@ void btn_check(void)
 #if defined(RTAC3200) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 #ifdef HND_ROUTER
 #ifndef GTAC2900
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAXE7800) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
-#ifdef RTAXE7800
-			if (nvram_get_int("wans_extwan"))
-#endif
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
 			wan_phy_led_pinmux(0);
 #else
 			led_control(LED_WAN_NORMAL, LED_ON);
@@ -3883,6 +3883,12 @@ void btn_check(void)
 #if defined(HND_ROUTER)
 #if defined(TUFAX3000_V2) || defined(RTAXE7800)
 			bcm53134_led_control(2);
+#endif
+#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
+#ifdef RTAXE7800
+			if (!nvram_get_int("wans_extwan"))
+#endif
+			lan_phy_led_pinmux(0);
 #endif
 #if !defined(RTCONFIG_FAKE_ETLAN_LED) || defined(RTAX86U)
 			setLANLedOn();
@@ -9511,6 +9517,32 @@ void udhcpc_check(void)
 }
 #endif
 
+/*******************************************************************
+* NAME: record_current_sys_uptime
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2022/08/15
+* DESCRIPTION: Record system uptime in nvram for every 60 seconds
+* INPUT:  None
+* OUTPUT: None
+* RETURN: None
+* NOTE:
+*
+*******************************************************************/
+void record_current_sys_uptime(void)
+{
+	char buf[64] = {0};
+	int record_period = 60;
+	static int cnt = 0;
+
+	if(cnt == 0)
+	{
+		snprintf(buf, sizeof(buf), "%ld", get_sys_uptime());
+		nvram_set("sys_uptime_now", buf);
+	}
+	cnt++;
+	cnt %= record_period;
+}
+
 /* wathchdog is runned in NORMAL_PERIOD, 1 seconds
  * check in each NORMAL_PERIOD
  *	1. button
@@ -9604,6 +9636,9 @@ void watchdog(int sig)
 	/* if timer is set to less than 1 sec, then bypass the following */
 	if (itv.it_value.tv_sec == 0)
 		return;
+
+
+	record_current_sys_uptime();
 
 #ifdef RTCONFIG_WIFI_SON
 	if(nvram_match("wifison_ready", "1")) {

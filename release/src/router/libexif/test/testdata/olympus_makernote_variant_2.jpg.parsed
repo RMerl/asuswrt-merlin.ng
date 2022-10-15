@@ -1,0 +1,272 @@
+File olympus_makernote_variant_2.jpg
+Byte order: Intel
+  Content 0: ifd=0
+    Entry 0: ImageDescription (ASCII)
+      Size, Comps: 11, 11
+      Value:           
+    Entry 1: Make (ASCII)
+      Size, Comps: 6, 6
+      Value: NIKON
+    Entry 2: Model (ASCII)
+      Size, Comps: 13, 13
+      Value: COOLPIX S570
+    Entry 3: Orientation (Short)
+      Size, Comps: 2, 1
+      Value: Top-left
+    Entry 4: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 300
+    Entry 5: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 300
+    Entry 6: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+    Entry 7: Software (ASCII)
+      Size, Comps: 17, 17
+      Value: COOLPIX S570V1.0
+    Entry 8: DateTime (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:12:28 04:28:56
+    Entry 9: YCbCrPositioning (Short)
+      Size, Comps: 2, 1
+      Value: Co-sited
+  Content 1: ifd=1
+    Entry 0: Compression (Short)
+      Size, Comps: 2, 1
+      Value: JPEG compression
+    Entry 1: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 300
+    Entry 2: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 300
+    Entry 3: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+  Content 2: ifd=2
+    Entry 0: ExposureTime (Rational)
+      Size, Comps: 8, 1
+      Value: 1/25 sec.
+    Entry 1: FNumber (Rational)
+      Size, Comps: 8, 1
+      Value: f/2.7
+    Entry 2: ExposureProgram (Short)
+      Size, Comps: 2, 1
+      Value: Normal program
+    Entry 3: ISOSpeedRatings (Short)
+      Size, Comps: 2, 1
+      Value: 80
+    Entry 4: ExifVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: Exif Version 2.2
+    Entry 5: DateTimeOriginal (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:12:28 04:28:56
+    Entry 6: DateTimeDigitized (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:12:28 04:28:56
+    Entry 7: ComponentsConfiguration (Undefined)
+      Size, Comps: 4, 4
+      Value: Y Cb Cr -
+    Entry 8: CompressedBitsPerPixel (Rational)
+      Size, Comps: 8, 1
+      Value:  2
+    Entry 9: ExposureBiasValue (SRational)
+      Size, Comps: 8, 1
+      Value: -2.00 EV
+    Entry 10: MaxApertureValue (Rational)
+      Size, Comps: 8, 1
+      Value: 2.90 EV (f/2.7)
+    Entry 11: MeteringMode (Short)
+      Size, Comps: 2, 1
+      Value: Pattern
+    Entry 12: LightSource (Short)
+      Size, Comps: 2, 1
+      Value: Cool white fluorescent
+    Entry 13: Flash (Short)
+      Size, Comps: 2, 1
+      Value: Flash fired, auto mode
+    Entry 14: FocalLength (Rational)
+      Size, Comps: 8, 1
+      Value: 5.0 mm
+    Entry 15: MakerNote (Undefined)
+      Size, Comps: 1932, 1932
+      Value: 1932 bytes undefined data
+    Entry 16: UserComment (Undefined)
+      Size, Comps: 16, 16
+      Value:        
+    Entry 17: FlashpixVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: FlashPix Version 1.0
+    Entry 18: ColorSpace (Short)
+      Size, Comps: 2, 1
+      Value: sRGB
+    Entry 19: PixelXDimension (Long)
+      Size, Comps: 4, 1
+      Value: 640
+    Entry 20: PixelYDimension (Long)
+      Size, Comps: 4, 1
+      Value: 480
+    Entry 21: FileSource (Undefined)
+      Size, Comps: 1, 1
+      Value: DSC
+    Entry 22: SceneType (Undefined)
+      Size, Comps: 1, 1
+      Value: Directly photographed
+    Entry 23: CustomRendered (Short)
+      Size, Comps: 2, 1
+      Value: Normal process
+    Entry 24: ExposureMode (Short)
+      Size, Comps: 2, 1
+      Value: Auto exposure
+    Entry 25: WhiteBalance (Short)
+      Size, Comps: 2, 1
+      Value: Manual white balance
+    Entry 26: DigitalZoomRatio (Rational)
+      Size, Comps: 8, 1
+      Value: 0.00
+    Entry 27: FocalLengthIn35mmFilm (Short)
+      Size, Comps: 2, 1
+      Value: 28
+    Entry 28: SceneCaptureType (Short)
+      Size, Comps: 2, 1
+      Value: Portrait
+    Entry 29: GainControl (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 30: Contrast (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 31: Saturation (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 32: Sharpness (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 33: SubjectDistanceRange (Short)
+      Size, Comps: 2, 1
+      Value: Unknown
+  Content 3: ifd=3
+  Content 4: ifd=4
+    Entry 0: InteroperabilityIndex (ASCII)
+      Size, Comps: 4, 4
+      Value: R98
+    Entry 1: InteroperabilityVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: 0100
+  MakerNote
+    Entry 0: 1, Firmware
+      Size: 4
+      Value: 0200
+    Entry 1: 2, ISO
+      Size: 6
+      Value: ISO 80
+    Entry 2: 3, ColorMode1
+      Size: 6
+      Value: COLOR 
+    Entry 3: 4, Quality
+      Size: 6
+      Value: NORMAL
+    Entry 4: 5, WhiteBalance
+      Size: 12
+      Value: FLUORESCENT 
+    Entry 5: 6, Sharpening
+      Size: 6
+      Value: AUTO  
+    Entry 6: 7, FocusMode
+      Size: 6
+      Value: AF-C  
+    Entry 7: 8, FlashSetting
+      Size: 7
+      Value: NORMAL 
+    Entry 8: 10, (unknown)
+      Size: 5
+      Value: 7.791
+    Entry 9: 11, WhiteBalanceFine
+      Size: 1
+      Value: 0
+    Entry 10: 15, ISOSelection
+      Size: 6
+      Value: MANUAL
+    Entry 11: 16, (unknown)
+      Size: 24
+      Value: 1 bytes unknown data: 00
+    Entry 12: 17, PreviewImage
+      Size: 4
+      Value: 1816
+    Entry 13: 26, (unknown)
+      Size: 40
+      Value:                                         
+    Entry 14: 33, FaceDetect
+      Size: 236
+      Value: 106 bytes unknown data: 00024001f00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000
+    Entry 15: 38, (unknown)
+      Size: 46
+      Value: Invalid number of components (18, expected 1).
+    Entry 16: 45, (unknown)
+      Size: 45
+      Value: Invalid number of components (2, expected 1).
+    Entry 17: 46, (unknown)
+      Size: 1
+      Value: 1
+    Entry 18: 47, (unknown)
+      Size: 1
+      Value: 0
+    Entry 19: 48, (unknown)
+      Size: 1
+      Value: 0
+    Entry 20: 128, ImageAdjustment
+      Size: 13
+      Value: NORMAL       
+    Entry 21: 133, ManualFocusDistance
+      Size: 25
+      Value: No manual focus selection
+    Entry 22: 134, DigitalZoom
+      Size: 5
+      Value: 1.000
+    Entry 23: 136, AFFocusPosition
+      Size: 19
+      Value: AF position: center
+    Entry 24: 143, (unknown)
+      Size: 15
+      Value:                
+    Entry 25: 145, ShotInfo
+      Size: 1984
+      Value: 980 bytes unknown data: 000000011100000000000000000000000000000000000002bc006700000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000300000400000500000600000700000800000900000a00000b00000c00000d00000e00000f00001000001100001200001300001400001500001600001700001800001900001a00001b00001c00001d00001e00001f00002000002100002200002300002400002500002600002700002800002900002a00002b00002c00002d00002e00002f00003000003100003200003300003400003500003600003700003800003900003a00003b00003c00003d00003e00003f00004000004100004200004300004400004500004600004700004800004900004a00004b00004c00004d00004e00004f00005000005100005200005300005400005500005600005700005800005900005a00005b00005c00005d00005e00005f00006000006100006200006300006400006500006600006700006800006900006a00006b00006c00006d00006e00006f00007000007100007200007300007400007500007600007700007800007900007a00007b00007c00007d00007e00007f00008000008100008200008300008400008500008600008700008800008900008a00008b00008c00008d00008e00008f00009000009100009200009300009400009500009600009700009800009900009a00009b00009c00009d00009e00009f0000a00000a10000a20000a30000a40000a50000a60000a70000a80000a90000aa0000ab0000ac0000ad0000ae0000af0000b00000b10000b20000b30000b40000b50000b60000b70000b80000b90000ba0000bb0000bc0000bd0000be0000bf0000c00000c10000c20000c30000c40000c50000c60000c70000c80000c90000ca0000cb0000cc0000cd0000ce0000cf0000d00000d10000d20000d30000d40000d50000d60000d70000d80000d90000da0000db0000dc0000dd0000de0000df0000e00000e10000e20000e30000e40000e50000e60000e70000e80000e90000ea0000eb0000ec0000ed0000ee0000ef0000f00000f10000f20000f30000f40000f50000f60000f70000f80000f90000fa0000fb0000fc0000fd0000fe0000ff0000
+    Entry 26: 148, Saturation
+      Size: 1
+      Value: 0
+    Entry 27: 149, NoiseReduction,
+      Size: 4
+      Value: OFF 
+    Entry 28: 155, (unknown)
+      Size: 26
+      Value: 2 bytes unknown data: 0000
+    Entry 29: 156, (unknown)
+      Size: 20
+      Value:                     
+    Entry 30: 157, (unknown)
+      Size: 1
+      Value: 0
+    Entry 31: 158, RetouchHistory
+      Size: 46
+      Value: Invalid number of components (10, expected 1).
+    Entry 32: 159, (unknown)
+      Size: 1
+      Value: 0
+    Entry 33: 172, (unknown)
+      Size: 11
+      Value: VR-OFF     
+    Entry 34: 178, (unknown)
+      Size: 8
+      Value: NORMAL  
+    Entry 35: 181, (unknown)
+      Size: 4
+      Value: 4113
+    Entry 36: 61440, (unknown)
+      Size: 30
+      Value: 4 bytes unknown data: 00000000
+    Entry 37: 61441, (unknown)
+      Size: 1
+      Value: 0

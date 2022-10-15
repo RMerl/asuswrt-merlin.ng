@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=AiMesh 시스템과 최종 장치의 호환성을 고려할 
 AiMesh_confirm_msg10=AiMesh 시스템과 최종 장치의 연결을 보장하기 위해 WPA3-Personal로 전환하기 전에 이 <a id="wpa3FaqLink">FAQ</a>를 읽어 보십시오.
 AiMesh_confirm_msg11=현재 WPA3-personal을 사용 중입니다. AiMesh 시스템을 생성하기 위해 인증 방법이 WPA2/WPA3-personal로 변경됩니다. 계속하시겠습니까?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=보다 자세한 내용은 <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>이 FAQ</a> 을 방문하십시오.
+AiMesh_confirm_msg13=보다 자세한 내용은 <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>이 FAQ</a> 을 방문하십시오.
 AiMesh_Feature_Desc=고급 ASUS AiMesh 는여러개의 ASUS 라우터를함께연결하여가정전체의 WiFi 네트워크를구성할수있는새로운혁신적라우터기능입니다.
 AiMesh_FAQ=ASUS AiMesh 에대한자세한내용을확인하십시오.
 AiMesh_FindNode=AiMesh 노드찾기
@@ -3483,7 +3483,7 @@ TZ40_2=칼리닌그라드
 TZ41=아테네
 TZ42=예루살렘
 TZ43=하라레, 프리토리아
-TZ43_2=키예프
+TZ43_2=키이우
 TZ44=모스크바, 상트 페테르부르크
 TZ45=볼고그라드
 TZ46=쿠웨이트, 리야드
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS 옵션
 WANTCPMSSOptionComm1Text=바이트
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN 어그리게이션은 2개의 네트워크를 결합하여 WAN 속도를 최대 2Gbps까지 높일 수 있습니다. 라우터의 WAN 포트와 LAN 4 포트를 모뎀의 LAN 포트에 연결하십시오(사양이 동일한 2개의 케이블을 사용해야 함). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN 어그리게이션 FAQ</a>
+WANAggregation_desc=WAN 어그리게이션은 2개의 네트워크를 결합하여 WAN 속도를 최대 2Gbps까지 높일 수 있습니다. 라우터의 #WAN 포트와 LAN 4 포트를 모뎀의 LAN 포트에 연결하십시오(사양이 동일한 2개의 케이블을 사용해야 함). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN 어그리게이션 FAQ</a>
 WANAggregation_enable=WAN 어그리게이션 활성화
 WANAggregation_disable_dualwan=라우터가 듀얼 WAN을 활성화했습니다. WAN 어그리게이션을 활성화하면 듀얼 WAN이 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_disable_WANAggregation=라우터가 WAN 어그리게이션을 활성화했습니다. 듀얼 WAN을 활성화하면 WAN 어그리게이션이 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_PortConflict_hint1=WAN 어그리게이션이 라우터의 LAN 4 포트를 사용 중입니다. IPTV를 WAN을 활성화하면 WAN 어그리게이션이 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_PortConflict_hint2=IPTV가 라우터의 LAN 4 포트를 사용 중입니다. WAN 어그리게이션을 활성화하면 IPTV가 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_disable_IPTVDualWAN=라우터가 듀얼 WAN과 IPTV를 둘 다 활성화했습니다. WAN 어그리게이션을 활성화하면 포트 충돌을 방지하기 위해 듀얼과 IPTV가 비활성화됩니다. 계속하시겠습니까?
-WANAggregation_help_WAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 WAN 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
+WANAggregation_help_WAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 #WAN 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
 WANAggregation_help_LAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 LAN 4 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
 WANAggregation_goto_WAN=WAN 어그리게이션을 활성화하려면 <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN 인터넷 연결 페이지로</a> 이동하십시오.
 WANAggregation_help_desc=WAN 어그리게이션 설정이 실패하면 아래 단계를 따라 다시 시도하십시오.
-WANAggregation_help_step1=모뎀의 LAN 포트와 라우터의 WAN 및 LAN 4 이(가) 이미 케이블로 연결되어 있는지 확인하십시오.
+WANAggregation_help_step1=모뎀의 LAN 포트와 라우터의 #WAN 및 LAN 4 이(가) 이미 케이블로 연결되어 있는지 확인하십시오.
 WANAggregation_help_step2=모뎀이 802.3ad를 활성화했는지 확인합니다.
 WANAggregation_help_step3=사양이 동일한 두 케이블을 사용했는지 확인합니다(기가비트 및 기가비트 또는 10/100 및 10/100Mbps).
 WANAggregation_help_step4=라우터를 재부팅합니다.
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=GeForce Now 를 선택한 후 GeForce Now 게이밍 장치의 우선순위를 정하여 더 빠르고 재미있는 게임을 경험하십시오.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=이벤트
 AURA_Event_desc=시스템이 다음 이벤트를 감지하여 다른 LED 효과를 트리거합니다.
 AURA_Event_Boost_desc=Game Boost(게임 부스트)를 활성화하면 빨간색 브리딩 효과를 사용하는 LED 바가 표시됩니다.

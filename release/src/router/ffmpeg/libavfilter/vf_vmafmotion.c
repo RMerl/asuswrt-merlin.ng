@@ -27,7 +27,6 @@
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "avfilter.h"
-#include "drawutils.h"
 #include "formats.h"
 #include "internal.h"
 #include "vmaf_motion.h"
@@ -177,8 +176,8 @@ static void convolution_y_##bits##bit(const uint16_t *filter, int filt_w, \
     } \
 }
 
-conv_y_fn(uint8_t, 8);
-conv_y_fn(uint16_t, 10);
+conv_y_fn(uint8_t, 8)
+conv_y_fn(uint16_t, 10)
 
 static void vmafmotiondsp_init(VMAFMotionDSPContext *dsp, int bpp) {
     dsp->convolution_x = convolution_x;
@@ -238,6 +237,9 @@ int ff_vmafmotion_init(VMAFMotionData *s,
     size_t data_sz;
     int i;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
+
+    if (w < 3 || h < 3)
+        return AVERROR(EINVAL);
 
     s->width = w;
     s->height = h;

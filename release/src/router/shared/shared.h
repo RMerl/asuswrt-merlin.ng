@@ -567,6 +567,7 @@ enum conndiagEvent {
 #define RAST_STA        "STA"
 #define RAST_STA_2G	"STA_2G"
 #define RAST_STA_5G	"STA_5G"
+#define RAST_STA_6G     "STA_6G"
 #define RAST_AP         "AP"
 #define RAST_RSSI       "RSSI"
 #define RAST_BAND       "BAND"
@@ -912,6 +913,7 @@ extern int foreach_wif(int include_vifs, void *param,
 
 //shutils.c
 #define modprobe(mod, args...) ({ char *argv[] = { "modprobe", "-q", "-s", mod, ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+extern int modprobe_q(const char *mod);
 extern int modprobe_r(const char *mod);
 extern void dbgprintf (const char * format, ...); //Ren
 extern void cprintf(const char *format, ...);
@@ -1977,7 +1979,7 @@ static inline int eth_wantype(int unit)
 #ifdef CONFIG_BCMWL5
 extern int get_ifname_unit(const char* ifname, int *unit, int *subunit);
 
-static inline int guest_wlif(char *ifname)
+static inline int guest_wlif(const char *ifname)
 {
 	int unit = -1, subunit = -1;
 
@@ -1996,7 +1998,7 @@ static inline int guest_wlif(char *ifname)
 #endif
 }
 #elif defined RTCONFIG_RALINK
-static inline int guest_wlif(char *ifname)
+static inline int guest_wlif(const char *ifname)
 {
 	return strncmp(ifname, "ra", 2) == 0 && !strchr(ifname, '0');
 }
@@ -2008,10 +2010,10 @@ static inline int guest_wlif(char *ifname)
  * 	0:	@ifname is not any guest network interface name.
  *  otherwise:	@ifname is one of gueset network interface name.
  */
-static inline int guest_wlif(char *ifname)
+static inline int guest_wlif(const char *ifname)
 {
 	int r, r1, v;
-	char *p = ifname + 4;
+	const char *p = ifname + 4;
 
 	r = !strncmp(ifname, "ath0", 4) || !strncmp(ifname, "ath1", 4) || !strncmp(ifname, "ath2", 4);
 	if (r) {
@@ -2407,6 +2409,8 @@ extern int get_psta_status(int unit);
 extern int get_psta_status(int unit);
 #endif
 
+extern void create_amas_sys_folder();
+
 #define WLSTA_JSON_FILE 				"/tmp/wl_sta_list.json"
 #define MAX_STA_COUNT 128
 #if (defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710)) && !defined(RTCONFIG_SDK502L07P1_121_37)
@@ -2652,12 +2656,12 @@ typedef struct rtk_stat_port_cntr_s
 } rtk_stat_port_cntr_t;
 #endif
 #ifdef HND_ROUTER
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756)
 extern uint32_t hnd_get_phy_status(char *ifname);
 extern uint32_t hnd_get_phy_speed(char *ifname);
 extern uint32_t hnd_get_phy_duplex(char *ifname);
 extern uint64_t hnd_get_phy_mib(char *ifname, char *type);
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6756) || defined(BCM6855) || defined(BCM6750)
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6855) || defined(BCM6750)
 extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
 extern uint32_t hnd_get_phy_duplex(int port);
@@ -2743,6 +2747,7 @@ extern int discover_interface(const char *current_wan_ifname, int dhcp_det);
 extern int discover_all(int wan_unit);
 
 // strings.c
+extern int all_char_to_ascii(const char *output, const char *input, int outsize);
 extern int char_to_ascii_safe(const char *output, const char *input, int outsize);
 extern void char_to_ascii(const char *output, const char *input);
 #if defined(RTCONFIG_UTF8_SSID)
@@ -3087,8 +3092,8 @@ extern int notify_rc_and_period_wait(const char *event_name, int wait);
 
 /* wl.c */
 #ifdef CONFIG_BCMWL5
-#ifdef __CONFIG_DHDAP__
 extern int dhd_probe(char *name);
+#ifdef __CONFIG_DHDAP__
 extern int dhd_ioctl(char *name, int cmd, void *buf, int len);
 extern int dhd_iovar_setbuf(char *ifname, char *iovar, void *param, int paramlen, void *bufptr, int buflen);
 extern int dhd_iovar_setint(char *ifname, char *iovar, int val);
@@ -3543,9 +3548,12 @@ extern int set_bled_udef_pattern(const char *led_gpio, unsigned int interval, co
 extern int set_bled_udef_tigger(const char *main_led_gpio, const char *tigger);
 extern int set_bled_normal_mode(const char *led_gpio);
 extern int set_bled_udef_pattern_mode(const char *led_gpio);
-extern int start_bled(unsigned int gpio_nr);
-extern int stop_bled(unsigned int gpio_nr);
-extern int del_bled(unsigned int gpio_nr);
+extern int __start_bled(const char *led_gpio, unsigned int gpio_nr);
+extern int __stop_bled(const char *led_gpio, unsigned int gpio_nr);
+extern int __del_bled(const char *led_gpio, unsigned int gpio_nr);
+static inline int start_bled(unsigned int gpio_nr) { return __start_bled(NULL, gpio_nr); }
+static inline int stop_bled(unsigned int gpio_nr) { return __stop_bled(NULL, gpio_nr); }
+static inline int del_bled(unsigned int gpio_nr) { return __del_bled(NULL, gpio_nr); }
 extern int append_netdev_bled_if(const char *led_gpio, const char *ifname);
 extern int remove_netdev_bled_if(const char *led_gpio, const char *ifname);
 extern int __config_swports_bled(const char *led_gpio, unsigned int port_mask, unsigned int min_blink_speed, unsigned int interval, int sleep);
@@ -3722,6 +3730,9 @@ static inline int set_bled_udef_pattern(__attribute__ ((unused)) const char *led
 static inline int set_bled_udef_tigger(__attribute__ ((unused)) const char *main_led_gpio, __attribute__ ((unused)) const char *tigger) { return 0; }
 static inline int set_bled_normal_mode(__attribute__ ((unused)) const char *led_gpio) { return 0; }
 static inline int set_bled_udef_pattern_mode(__attribute__ ((unused)) const char *led_gpio) { return 0; }
+static inline int __start_bled(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) unsigned int gpio_nr) { return 0; }
+static inline int __stop_bled(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) unsigned int gpio_nr) { return 0; }
+static inline int __del_bled(__attribute__ ((unused)) const char *led_gpio, __attribute__ ((unused)) unsigned int gpio_nr) { return 0; }
 static inline int start_bled(__attribute__ ((unused)) unsigned int gpio_nr) { return 0; }
 static inline int stop_bled(__attribute__ ((unused)) unsigned int gpio_nr) { return 0; }
 static inline int chg_bled_state(__attribute__ ((unused)) unsigned int gpio_nr) { return 0; }
@@ -3903,6 +3914,8 @@ extern int gen_uplinkport_describe(char *port_def, char *type, char *subtype, in
 #ifdef RTCONFIG_ISP_CUSTOMIZE
 extern char *find_customize_setting_by_name(const char *name);
 #endif
+
+#define MAX_SSID_LEN 32
 
 enum {
 	CKN_STR_DEFAULT_ASUS = 0,
@@ -4148,7 +4161,7 @@ enum awsiotEventType {
 #define AWSIOT_GENERIC_MSG	 "{\""AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
 #endif
 
-#ifdef RTCONFIG_ACCOUNT_BINDING
+//#ifdef RTCONFIG_ACCOUNT_BINDING
 #define AAE_DDNS_PREFIX "ddns"
 enum aaeDdnsEventType {
 	AAE_EID_DDNS_NONE = 0,
@@ -4176,7 +4189,7 @@ enum aaeHttpdEventType {
 };
 #define AAE_HTTPD_PAYLOAD2_MSG	 "{\""AAE_HTTPD_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_HTTPD_PAYLOAD2_PREFIX"\":%s}}"
 #define AAE_HTTPD_PAYLOAD2_RESP_MSG	 "{\""AAE_HTTPD_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\"}}"
-#endif
+//#endif
 
 int aae_sendIpcMsgAndWaitResp(char *ipcPath, char *data, int dataLen, char *out, int outLen, int timeout_sec);
 #endif //#ifdef RTCONFIG_TUNNEL
@@ -4327,6 +4340,18 @@ enum {
 	BCMBSD_SELIF_MAX 	   = 12
 };
 
+/* rule idx of bcmbsd_def_policy table */
+enum {
+	RULE_2G = 0,
+	RULE_5G1= 1,
+	RULE_5G2= 2,
+	RULE_6G = 3,
+	RULE_MAX= 4
+};
+
+#endif
+#endif
+
 /* which wlunit to set the corresponding rule */
 enum {
 #if defined(GTAXE16000)
@@ -4342,18 +4367,6 @@ enum {
 #endif
 	WLIF_MAX = 4
 };
-
-/* rule idx of bcmbsd_def_policy table */
-enum {
-	RULE_2G = 0,
-	RULE_5G1= 1,
-	RULE_5G2= 2,
-	RULE_6G = 3,
-	RULE_MAX= 4
-};
-
-#endif
-#endif
 
 #ifdef CONFIG_BCMWL5
 #define WL_NBAND_2G 2

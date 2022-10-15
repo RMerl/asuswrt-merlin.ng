@@ -10,7 +10,7 @@ OPUS_SAMPLES        = $(addprefix testvector, 07 08 09 10 12)
 define FATE_OPUS_TEST
 FATE_OPUS     += fate-opus-$(1)
 FATE_OPUS$(2) += fate-opus-$(1)
-fate-opus-$(1): CMD = ffmpeg -i $(TARGET_SAMPLES)/opus/$(1).mka -f s16le -
+fate-opus-$(1): CMD = ffmpeg -i $(TARGET_SAMPLES)/opus/$(1).mka -f s16le -af aresample -
 fate-opus-$(1): REF = $(SAMPLES)/opus/$(1)$(2).dec
 endef
 
@@ -36,6 +36,7 @@ fate-opus-testvector09:      CMP_TARGET = 0
 fate-opus-testvector10:      CMP_TARGET = 38
 fate-opus-testvector11:      CMP_TARGET = 0
 fate-opus-testvector12:      CMP_TARGET = 160
+fate-opus-tron.6ch.tinypkts: CMP_SHIFT = 1440
 fate-opus-tron.6ch.tinypkts: CMP_TARGET = 0
 
 $(FATE_OPUS_CELT): CMP = oneoff

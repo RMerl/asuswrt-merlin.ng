@@ -1742,7 +1742,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "fc_pt_war", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "fc_pt_udp_war", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "runner_disable", "0", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6756)
 	{ "watchdog_new", "30000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "watchdog", "6000", CKN_STR_DEFAULT, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -2604,7 +2604,7 @@ struct nvram_tuple router_defaults[] = {
 	{ "ddns_wan_unit", "-1", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #ifdef RTCONFIG_IPV6
-	{ "ddns_ipv6_update", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "ddns_ipv6_update", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 
 	// NVRAM for start_firewall
@@ -2828,10 +2828,12 @@ struct nvram_tuple router_defaults[] = {
 	{ "enable_ftp", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "ftp_lang", "EN", CKN_STR2, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "ftp_wanac", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#ifdef RTCONFIG_FTP_SSL
 #if defined(RTCONFIG_BCMARM) && !defined(BCM4908) && !defined(BCM4912)
 	{ "ftp_tls", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "ftp_tls", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif
 #endif
 	{ "ftp_pasvport", "57530", CKN_STR5, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
@@ -3636,6 +3638,12 @@ struct nvram_tuple router_defaults[] = {
 	{ "ewan_dot1p", "0", CKN_STR4, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif /* RTCONFIG_DSL */
 #endif /* RTCONFIG_FRS_FEEDBACK */
+#ifdef RTCONFIG_FRS_LIVE_UPDATE
+#ifdef RTCONFIG_AHS
+	{ "ahs_bhc_log", "/jffs/bhc_chg.log", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+	{ "ahs_bhc_log_1", "/jffs/bhc_chg.log.1", CKN_STR64, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
+#endif /* RTCONFIG_AHS */
+#endif /* RTCONFIG_FRS_LIVE_UPDATE */
 #ifdef RTCONFIG_DNS_PING
 	{ "dns_ping_list", "<Cloudflare>1.1.1.1<Cloudflare>1.0.0.1<Google>8.8.8.8<Google>8.8.4.4<HiNet>168.95.1.1<Yandex>77.88.8.8<Yandex>77.88.8.1", CKN_STR2048, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "dns_ping_db_path", "", CKN_STR256, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -4043,100 +4051,69 @@ struct nvram_tuple router_defaults[] = {
 //#if defined(RTCONFIG_PORT_BASED_VLAN)
 	{ "vlan_enable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #ifdef RTCONFIG_AMAS_WGN
-#if defined(RTAC5300) || defined(GTAC5300)	
+#if defined(RTCONFIG_QUADBAND) && defined(RTCONFIG_HAS_5G_2) && defined(RTCONFIG_WIFI6E)
 	{ "vlan_rulelist",\
-	  // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
-	  "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
-	  "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
-	  "<1>503>0>0>FFFF>0000>00000002>192.168.103.1/24>1>0>1>"\
-	  "\0",\
-	  CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
-	},
-#else	/* defined(RTAC5300) || defined(GTAC5300) */
-#if defined(GTAXE16000)
-    { "vlan_rulelist",\
-      // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
-      "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
-      "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
-	  "<1>503>0>0>FFFF>0000>00000002>192.168.103.1/24>1>0>1>"\
-	  "<1>504>0>0>FFFF>0000>000000000002>192.168.104.1/24>1>0>1>"\
-	  "\0",\
-	  CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
-	},
-#else	// defined(GTAXE16000)
-#if defined(RTCONFIG_HAS_5G_2)
-#if defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(GTAXE11000) || defined(ET12)
-    { "vlan_rulelist",\
-      // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
-      "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
-      "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
-	  "<1>503>0>0>FFFF>0000>000000000002>192.168.103.1/24>1>0>1>"\
-	  "\0",\
-	  CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
-	},
-#else	// defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(GTAXE11000) || defined(ET12)
-    { "vlan_rulelist",\
       // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
       "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
       "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
       "<1>503>0>0>FFFF>0000>00000002>192.168.103.1/24>1>0>1>"\
-	  "\0",\
-	  CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
+      "<1>504>0>0>FFFF>0000>000000000002>192.168.104.1/24>1>0>1>"\
+      "\0",\
+      CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
 	},
-#endif	// defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(GTAXE11000) || defined(ET12)
-#else	// defined(RTCONFIG_HAS_5G_2)
-    { "vlan_rulelist",\
-      // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
-      "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
-      "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
-	  "\0",\
-	  CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
-	},
-#endif	// defined(RTCONFIG_HAS_5G_2)
-#endif	// defined(GTAXE16000)
-#endif	// defined(RTAC5300) || defined(GTAC5300)
-
-#if defined(RTAC5300) || defined(GTAC5300)	
 	{ "subnet_rulelist",\
-	  // <ip>netmask>dhcp_enable>dhcp_start>dhcp_end>dhcp_lease>domainname>dns>wins>ema>macipbinding>type>
-	  "<192.168.101.1>255.255.255.0>1>192.168.101.2>192.168.101.254>86400>>>>>>1>"\
-	  "<192.168.102.1>255.255.255.0>1>192.168.102.2>192.168.102.254>86400>>>>>>1>"\
-	  "<192.168.103.1>255.255.255.0>1>192.168.103.2>192.168.103.254>86400>>>>>>1>"\
-	  "\0",\
-	  CKN_STR5500, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
-	},
-#else 	// defined(RTAC5300) || defined(GTAC5300)
-#if defined(GTAXE16000)
-    { "subnet_rulelist",\
       // <ip>netmask>dhcp_enable>dhcp_start>dhcp_end>dhcp_lease>domainname>dns>wins>ema>macipbinding>type>
       "<192.168.101.1>255.255.255.0>1>192.168.101.2>192.168.101.254>86400>>>>>>1>"\
       "<192.168.102.1>255.255.255.0>1>192.168.102.2>192.168.102.254>86400>>>>>>1>"\
       "<192.168.103.1>255.255.255.0>1>192.168.103.2>192.168.103.254>86400>>>>>>1>"\
       "<192.168.104.1>255.255.255.0>1>192.168.104.2>192.168.104.254>86400>>>>>>1>"\
       "\0",\
-      CKN_STR5500, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
+      CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
+	},
+#elif !defined(RTCONFIG_QUADBAND) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_WIFI6E))
+#if defined(RTCONFIG_WIFI6E)
+	{ "vlan_rulelist",\
+      // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
+      "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
+      "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
+      "<1>503>0>0>FFFF>0000>000000000002>192.168.103.1/24>1>0>1>"\
+      "\0",\
+      CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
+	},
+#else
+    { "vlan_rulelist",\
+      // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
+      "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
+      "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
+      "<1>503>0>0>FFFF>0000>00000002>192.168.103.1/24>1>0>1>"\
+      "\0",\
+      CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
     },
-#else	// defined(GTAXE16000)
-#if defined(RTCONFIG_HAS_5G_2)
-    { "subnet_rulelist",\
+#endif
+	{ "subnet_rulelist",\
       // <ip>netmask>dhcp_enable>dhcp_start>dhcp_end>dhcp_lease>domainname>dns>wins>ema>macipbinding>type>
       "<192.168.101.1>255.255.255.0>1>192.168.101.2>192.168.101.254>86400>>>>>>1>"\
       "<192.168.102.1>255.255.255.0>1>192.168.102.2>192.168.102.254>86400>>>>>>1>"\
       "<192.168.103.1>255.255.255.0>1>192.168.103.2>192.168.103.254>86400>>>>>>1>"\
       "\0",\
-      CKN_STR5500, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
+      CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
+	},
+#else 
+    { "vlan_rulelist",\
+      // <enable>vid>prio>wanportset>lanportset>wl2gset>wl5gset>subnet_name>internet>public_vlan>type>
+      "<1>501>0>0>FFFF>0002>0000>192.168.101.1/24>1>0>1>"\
+      "<1>502>0>0>FFFF>0000>0002>192.168.102.1/24>1>0>1>"\
+      "\0",\
+      CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
     },
-#else	// defined(RTCONFIG_HAS_5G_2)
     { "subnet_rulelist",\
       // <ip>netmask>dhcp_enable>dhcp_start>dhcp_end>dhcp_lease>domainname>dns>wins>ema>macipbinding>type>
       "<192.168.101.1>255.255.255.0>1>192.168.101.2>192.168.101.254>86400>>>>>>1>"\
       "<192.168.102.1>255.255.255.0>1>192.168.102.2>192.168.102.254>86400>>>>>>1>"\
       "\0",\
-      CKN_STR5500, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
+      CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0\
     },
-#endif	// defined(RTCONFIG_HAS_5G_2)
-#endif	// defined(GTAXE16000)
-#endif	// defined(RTAC5300) || defined(GTAC5300)
+#endif
 #else 	// RTCONFIG_AMAS_WGN	
 	{ "vlan_rulelist", "", CKN_STR4096, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "subnet_rulelist", "", CKN_STR5500, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
@@ -4281,10 +4258,8 @@ struct nvram_tuple router_defaults[] = {
 	{ "antled_scheme"   , "1",  CKN_STR1  , CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
-#if defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000)
+#if defined(TUFAX5400) || defined(TUFAX5400_V2) || defined(GTAX6000) || defined(GT10)
 	{ "ledg_scheme", "2", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
-#elif defined(GT10)
-	{ "ledg_scheme", "1", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #else
 	{ "ledg_scheme", "6", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 #endif

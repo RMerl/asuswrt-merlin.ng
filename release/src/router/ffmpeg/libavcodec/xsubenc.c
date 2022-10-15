@@ -22,6 +22,7 @@
 
 #include "avcodec.h"
 #include "bytestream.h"
+#include "internal.h"
 #include "put_bits.h"
 
 /**
@@ -63,7 +64,7 @@ static int xsub_encode_rle(PutBitContext *pb, const uint8_t *bitmap,
         while (x0 < w) {
             // Make sure we have enough room for at least one run and padding
             if (pb->size_in_bits - put_bits_count(pb) < 7*8)
-                return -1;
+                return AVERROR_BUFFER_TOO_SMALL;
 
             x1 = x0;
             color = bitmap[x1++] & 3;
@@ -90,7 +91,7 @@ static int xsub_encode_rle(PutBitContext *pb, const uint8_t *bitmap,
         if (color != PADDING_COLOR && (PADDING + (w&1)))
             put_xsub_rle(pb, PADDING + (w&1), PADDING_COLOR);
 
-        avpriv_align_put_bits(pb);
+        align_put_bits(pb);
 
         bitmap += linesize;
     }
@@ -124,7 +125,7 @@ static int xsub_encode(AVCodecContext *avctx, unsigned char *buf,
 
     if (bufsize < 27 + 7*2 + 4*3) {
         av_log(avctx, AV_LOG_ERROR, "Buffer too small for XSUB header.\n");
-        return -1;
+        return AVERROR_BUFFER_TOO_SMALL;
     }
 
     // TODO: support multiple rects
@@ -147,7 +148,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
     // TODO: render text-based subtitles into bitmaps
     if (!h->rects[0]->data[0] || !h->rects[0]->data[1]) {
         av_log(avctx, AV_LOG_WARNING, "No subtitle bitmap available.\n");
-        return -1;
+        return AVERROR(EINVAL);
     }
 
     // TODO: color reduction, similar to dvdsub encoder
@@ -160,7 +161,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
 
     if (make_tc(startTime, start_tc) || make_tc(endTime, end_tc)) {
         av_log(avctx, AV_LOG_WARNING, "Time code >= 100 hours.\n");
-        return -1;
+        return AVERROR(EINVAL);
     }
 
     snprintf(buf, 28,
@@ -195,18 +196,17 @@ FF_ENABLE_DEPRECATION_WARNINGS
     if (xsub_encode_rle(&pb, h->rects[0]->data[0],
                         h->rects[0]->linesize[0] * 2,
                         h->rects[0]->w, (h->rects[0]->h + 1) >> 1))
-        return -1;
+        return AVERROR_BUFFER_TOO_SMALL;
     bytestream_put_le16(&rlelenptr, put_bits_count(&pb) >> 3); // Length of first field
 
     if (xsub_encode_rle(&pb, h->rects[0]->data[0] + h->rects[0]->linesize[0],
                         h->rects[0]->linesize[0] * 2,
                         h->rects[0]->w, h->rects[0]->h >> 1))
-        return -1;
+        return AVERROR_BUFFER_TOO_SMALL;
 
     // Enforce total height to be a multiple of 2
     if (h->rects[0]->h & 1) {
         put_xsub_rle(&pb, h->rects[0]->w, PADDING_COLOR);
-        avpriv_align_put_bits(&pb);
     }
 
     flush_put_bits(&pb);
@@ -231,4 +231,5 @@ AVCodec ff_xsub_encoder = {
     .id         = AV_CODEC_ID_XSUB,
     .init       = xsub_encoder_init,
     .encode_sub = xsub_encode,
+    .caps_internal = FF_CODEC_CAP_INIT_THREADSAFE,
 };

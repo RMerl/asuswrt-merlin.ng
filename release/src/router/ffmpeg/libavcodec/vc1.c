@@ -27,6 +27,7 @@
  */
 
 #include "libavutil/attributes.h"
+#include "libavutil/thread.h"
 #include "internal.h"
 #include "avcodec.h"
 #include "mpegvideo.h"
@@ -379,11 +380,6 @@ int ff_vc1_decode_sequence_header(AVCodecContext *avctx, VC1Context *v, GetBitCo
     } else {
         v->res_rtm_flag = get_bits1(gb); //reserved
     }
-    if (!v->res_rtm_flag) {
-        av_log(avctx, AV_LOG_ERROR,
-               "Old WMV3 version detected, some frames may be decoded incorrectly\n");
-        //return -1;
-    }
     //TODO: figure out what they mean (always 0x402F)
     if (!v->res_fasttx)
         skip_bits(gb, 16);
@@ -456,7 +452,11 @@ static int decode_sequence_header_adv(VC1Context *v, GetBitContext *gb)
             h = get_bits(gb, 8) + 1;
             v->s.avctx->sample_aspect_ratio = (AVRational){w, h};
         } else {
-            av_reduce(&v->s.avctx->sample_aspect_ratio.num,
+            if (v->s.avctx->width  > v->max_coded_width ||
+                v->s.avctx->height > v->max_coded_height) {
+                avpriv_request_sample(v->s.avctx, "Huge resolution");
+            } else
+                av_reduce(&v->s.avctx->sample_aspect_ratio.num,
                       &v->s.avctx->sample_aspect_ratio.den,
                       v->s.avctx->height * w,
                       v->s.avctx->width * h,
@@ -672,6 +672,8 @@ int ff_vc1_parse_frame_header(VC1Context *v, GetBitContext* gb)
     if (v->s.pict_type == AV_PICTURE_TYPE_P)
         v->rnd ^= 1;
 
+    if (get_bits_left(gb) < 5)
+        return AVERROR_INVALIDDATA;
     /* Quantizer stuff */
     pqindex = get_bits(gb, 5);
     if (!pqindex)
@@ -763,6 +765,9 @@ int ff_vc1_parse_frame_header(VC1Context *v, GetBitContext* gb)
             return -1;
         av_log(v->s.avctx, AV_LOG_DEBUG, "MB Skip plane encoding: "
                "Imode: %i, Invert: %i\n", status>>1, status&1);
+
+        if (get_bits_left(gb) < 4)
+            return AVERROR_INVALIDDATA;
 
         /* Hopefully this is correct for P-frames */
         v->s.mv_table_index = get_bits(gb, 2); //but using ff_vc1_ tables
@@ -938,7 +943,9 @@ int ff_vc1_parse_frame_header_adv(VC1Context *v, GetBitContext* gb)
         else if ((v->s.pict_type != AV_PICTURE_TYPE_B) && (v->s.pict_type != AV_PICTURE_TYPE_BI)) {
             v->refdist = get_bits(gb, 2);
             if (v->refdist == 3)
-                v->refdist += get_unary(gb, 0, 16);
+                v->refdist += get_unary(gb, 0, 14);
+            if (v->refdist > 16)
+                return AVERROR_INVALIDDATA;
         }
         if ((v->s.pict_type == AV_PICTURE_TYPE_B) || (v->s.pict_type == AV_PICTURE_TYPE_BI)) {
             if (read_bfraction(v, gb) < 0)
@@ -991,6 +998,7 @@ int ff_vc1_parse_frame_header_adv(VC1Context *v, GetBitContext* gb)
         v->pquantizer = 1;
         break;
     }
+    v->dquantfrm = 0;
     if (v->postprocflag)
         v->postproc = get_bits(gb, 2);
 
@@ -1009,7 +1017,8 @@ int ff_vc1_parse_frame_header_adv(VC1Context *v, GetBitContext* gb)
                 return -1;
             av_log(v->s.avctx, AV_LOG_DEBUG, "FIELDTX plane encoding: "
                    "Imode: %i, Invert: %i\n", status>>1, status&1);
-        }
+        } else
+            v->fieldtx_is_raw = 0;
         status = bitplane_decoding(v->acpred_plane, &v->acpred_is_raw, v);
         if (status < 0)
             return -1;
@@ -1055,6 +1064,8 @@ int ff_vc1_parse_frame_header_adv(VC1Context *v, GetBitContext* gb)
                     v->last_use_ic = 1;
                 }
                 status = bitplane_decoding(v->s.mbskip_table, &v->skip_is_raw, v);
+                if (status < 0)
+                    return -1;
                 av_log(v->s.avctx, AV_LOG_DEBUG, "SKIPMB plane encoding: "
                        "Imode: %i, Invert: %i\n", status>>1, status&1);
                 v->mbmodetab = get_bits(gb, 2);
@@ -1224,7 +1235,7 @@ int ff_vc1_parse_frame_header_adv(VC1Context *v, GetBitContext* gb)
             v->mv_mode          = ff_vc1_mv_pmode_table2[lowquant][mvmode];
             v->qs_last          = v->s.quarter_sample;
             v->s.quarter_sample = (v->mv_mode == MV_PMODE_1MV || v->mv_mode == MV_PMODE_MIXED_MV);
-            v->s.mspel          = !(v->mv_mode == MV_PMODE_1MV_HPEL_BILIN || v->mv_mode == MV_PMODE_1MV_HPEL);
+            v->s.mspel          = (v->mv_mode != MV_PMODE_1MV_HPEL_BILIN);
             status = bitplane_decoding(v->forward_mb_plane, &v->fmb_is_raw, v);
             if (status < 0)
                 return -1;
@@ -1314,16 +1325,17 @@ int ff_vc1_parse_frame_header_adv(VC1Context *v, GetBitContext* gb)
         break;
     }
 
-    if (v->fcm != PROGRESSIVE && !v->s.quarter_sample) {
-        v->range_x <<= 1;
-        v->range_y <<= 1;
-    }
 
     /* AC Syntax */
     v->c_ac_table_index = decode012(gb);
     if (v->s.pict_type == AV_PICTURE_TYPE_I || v->s.pict_type == AV_PICTURE_TYPE_BI) {
         v->y_ac_table_index = decode012(gb);
     }
+    else if (v->fcm != PROGRESSIVE && !v->s.quarter_sample) {
+        v->range_x <<= 1;
+        v->range_y <<= 1;
+    }
+
     /* DC Syntax */
     v->s.dc_table_index = get_bits1(gb);
     if ((v->s.pict_type == AV_PICTURE_TYPE_I || v->s.pict_type == AV_PICTURE_TYPE_BI)
@@ -1570,21 +1582,11 @@ static const uint16_t vlc_offs[] = {
     31714, 31746, 31778, 32306, 32340, 32372
 };
 
-/**
- * Init VC-1 specific tables and VC1Context members
- * @param v The VC1Context to initialize
- * @return Status
- */
-av_cold int ff_vc1_init_common(VC1Context *v)
+static av_cold void vc1_init_static(void)
 {
-    static int done = 0;
     int i = 0;
     static VLC_TYPE vlc_table[32372][2];
 
-    v->hrd_rate = v->hrd_buffer = NULL;
-
-    /* VLC tables */
-    if (!done) {
         INIT_VLC_STATIC(&ff_vc1_bfraction_vlc, VC1_BFRACTION_VLC_BITS, 23,
                         ff_vc1_bfraction_bits, 1, 1,
                         ff_vc1_bfraction_codes, 1, 1, 1 << VC1_BFRACTION_VLC_BITS);
@@ -1691,14 +1693,27 @@ av_cold int ff_vc1_init_common(VC1Context *v)
                      ff_vc1_if_1mv_mbmode_bits[i], 1, 1,
                      ff_vc1_if_1mv_mbmode_codes[i], 1, 1, INIT_VLC_USE_NEW_STATIC);
         }
-        done = 1;
-    }
+}
 
-    /* Other defaults */
+/**
+ * Init VC-1 specific tables and VC1Context members
+ * @param v The VC1Context to initialize
+ * @return Status
+ */
+av_cold int ff_vc1_init_common(VC1Context *v)
+{
+    static AVOnce init_static_once = AV_ONCE_INIT;
+
+    v->hrd_rate = v->hrd_buffer = NULL;
+
+    /* defaults */
     v->pq      = -1;
     v->mvrange = 0; /* 7.1.1.18, p80 */
 
     ff_vc1dsp_init(&v->vc1dsp);
+
+    /* VLC tables */
+    ff_thread_once(&init_static_once, vc1_init_static);
 
     return 0;
 }

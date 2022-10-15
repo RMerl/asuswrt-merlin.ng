@@ -29,6 +29,8 @@
 #include <string.h>
 #include <stdio.h>
 
+#undef JPEG_MARKER_DCT
+#define JPEG_MARKER_DCT  0xc0
 #undef JPEG_MARKER_DHT
 #define JPEG_MARKER_DHT  0xc4
 #undef JPEG_MARKER_SOI
@@ -41,8 +43,16 @@
 #define JPEG_MARKER_APP1 0xe1
 #undef JPEG_MARKER_APP2
 #define JPEG_MARKER_APP2 0xe2
+#undef JPEG_MARKER_APP4
+#define JPEG_MARKER_APP4 0xe4
+#undef JPEG_MARKER_APP5
+#define JPEG_MARKER_APP5 0xe5
+#undef JPEG_MARKER_APP11
+#define JPEG_MARKER_APP11 0xeb
 #undef JPEG_MARKER_APP13
 #define JPEG_MARKER_APP13 0xed
+#undef JPEG_MARKER_APP14
+#define JPEG_MARKER_APP14 0xee
 #undef JPEG_MARKER_COM
 #define JPEG_MARKER_COM 0xfe
 
@@ -53,7 +63,7 @@ typedef enum {
 	EL_READ_SIZE_BYTE_08,
 	EL_READ_SIZE_BYTE_00,
 	EL_SKIP_BYTES,
-	EL_EXIF_FOUND,
+	EL_EXIF_FOUND
 } ExifLoaderState;
 
 typedef enum {
@@ -110,7 +120,7 @@ exif_loader_write_file (ExifLoader *l, const char *path)
 	int size;
 	unsigned char data[1024];
 
-	if (!l) 
+	if (!l || !path)
 		return;
 
 	f = fopen (path, "rb");
@@ -154,6 +164,7 @@ exif_loader_write (ExifLoader *eld, unsigned char *buf, unsigned int len)
 {
 	unsigned int i;
 
+begin:
 	if (!eld || (len && !buf)) 
 		return 0;
 
@@ -225,7 +236,7 @@ exif_loader_write (ExifLoader *eld, unsigned char *buf, unsigned int len)
 		break;
 	}
 
-	for (i = 0; i < sizeof (eld->b); i++)
+	for (i = 0; i < sizeof (eld->b); i++) {
 		switch (eld->state) {
 		case EL_EXIF_FOUND:
 			if (!exif_loader_copy (eld, eld->b + i,
@@ -233,21 +244,31 @@ exif_loader_write (ExifLoader *eld, unsigned char *buf, unsigned int len)
 				return 0;
 			return exif_loader_copy (eld, buf, len);
 		case EL_SKIP_BYTES:
-			eld->size--;
-			if (!eld->size) 
-				eld->state = EL_READ;
+			switch (eld->size) {
+                            case 0:
+			        eld->state = EL_READ;
+				i--;   /* reprocess this byte */
+				break;
+                            case 1:
+                                eld->size = 0;
+			        eld->state = EL_READ;
+				break;
+                            default:
+                                eld->size--;
+				break;
+			}
 			break;
 
 		case EL_READ_SIZE_BYTE_24:
-			eld->size |= eld->b[i] << 24;
+			eld->size |= (unsigned int)eld->b[i] << 24;
 			eld->state = EL_READ_SIZE_BYTE_16;
 			break;
 		case EL_READ_SIZE_BYTE_16:
-			eld->size |= eld->b[i] << 16;
+			eld->size |= (unsigned int)eld->b[i] << 16;
 			eld->state = EL_READ_SIZE_BYTE_08;
 			break;
 		case EL_READ_SIZE_BYTE_08:
-			eld->size |= eld->b[i] << 8;
+			eld->size |= (unsigned int)eld->b[i] << 8;
 			eld->state = EL_READ_SIZE_BYTE_00;
 			break;
 		case EL_READ_SIZE_BYTE_00:
@@ -255,12 +276,20 @@ exif_loader_write (ExifLoader *eld, unsigned char *buf, unsigned int len)
 			switch (eld->data_format) {
 			case EL_DATA_FORMAT_JPEG:
 				eld->state = EL_SKIP_BYTES;
-				eld->size -= 2;
+				if (eld->size < 2) {
+				    /* Actually it's malformed... */
+				    eld->size = 0;
+				} else
+				    eld->size -= 2;
 				break;
 			case EL_DATA_FORMAT_FUJI_RAW:
 				eld->data_format = EL_DATA_FORMAT_EXIF;
 				eld->state = EL_SKIP_BYTES;
-				eld->size -= 86;
+				if (eld->size < 86) {
+				    /* Actually it's malformed... */
+				    eld->size = 0;
+				} else
+				    eld->size -= 86;	/* and put this in an else */
 				break;
 			case EL_DATA_FORMAT_EXIF:
 				eld->state = EL_EXIF_FOUND;
@@ -281,11 +310,16 @@ exif_loader_write (ExifLoader *eld, unsigned char *buf, unsigned int len)
 				eld->size = 0;
 				eld->state = EL_READ_SIZE_BYTE_08;
 				break;
+			case JPEG_MARKER_DCT:
 			case JPEG_MARKER_DHT:
 			case JPEG_MARKER_DQT:
 			case JPEG_MARKER_APP0:
 			case JPEG_MARKER_APP2:
+			case JPEG_MARKER_APP4:
+			case JPEG_MARKER_APP5:
+			case JPEG_MARKER_APP11:
 			case JPEG_MARKER_APP13:
+			case JPEG_MARKER_APP14:
 			case JPEG_MARKER_COM:
 				eld->data_format = EL_DATA_FORMAT_JPEG;
 				eld->size = 0;
@@ -304,13 +338,14 @@ exif_loader_write (ExifLoader *eld, unsigned char *buf, unsigned int len)
 				return 0;
 			}
 		}
+	}
 
 	/*
 	 * If we reach this point, the buffer has not been big enough
 	 * to read all data we need. Fill it with new data.
 	 */
 	eld->b_len = 0;
-	return exif_loader_write (eld, buf, len);
+	goto begin;
 }
 
 ExifLoader *
@@ -410,13 +445,16 @@ exif_loader_get_buf (ExifLoader *loader, const unsigned char **buf,
 	const unsigned char* b = NULL;
 	unsigned int s = 0;
 
-	if (!loader || (loader->data_format == EL_DATA_FORMAT_UNKNOWN)) {
-		exif_log (loader->log, EXIF_LOG_CODE_DEBUG, "ExifLoader",
-			  "Loader format unknown");
-	} else {
-		b = loader->buf;
-		s = loader->bytes_read;
+	if (loader) {
+		if (loader->data_format == EL_DATA_FORMAT_UNKNOWN) {
+			exif_log (loader->log, EXIF_LOG_CODE_DEBUG, "ExifLoader",
+					  "Loader format unknown");
+		} else {
+			b = loader->buf;
+			s = loader->bytes_read;
+		}
 	}
+
 	if (buf)
 		*buf = b;
 	if (buf_size)

@@ -29,6 +29,7 @@
 #include "libavutil/common.h"
 #include "libavutil/hwcontext.h"
 #include "libavutil/hwcontext_cuda_internal.h"
+#include "libavutil/cuda_check.h"
 #include "libavutil/internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
@@ -36,8 +37,10 @@
 #include "avfilter.h"
 #include "formats.h"
 #include "internal.h"
-#include "scale.h"
+#include "scale_eval.h"
 #include "video.h"
+
+#define CHECK_CU(x) FF_CUDA_CHECK_DL(ctx, device_hwctx->internal->cuda_dl, x)
 
 static const enum AVPixelFormat supported_formats[] = {
     AV_PIX_FMT_YUV420P,
@@ -94,6 +97,9 @@ typedef struct NPPScaleContext {
     char *w_expr;               ///< width  expression string
     char *h_expr;               ///< height expression string
     char *format_str;
+
+    int force_original_aspect_ratio;
+    int force_divisible_by;
 
     int interp_algo;
 } NPPScaleContext;
@@ -344,6 +350,9 @@ static int nppscale_config_props(AVFilterLink *outlink)
                                         &w, &h)) < 0)
         goto fail;
 
+    ff_scale_adjust_dimensions(inlink, &w, &h,
+                               s->force_original_aspect_ratio, s->force_divisible_by);
+
     if (((int64_t)h * inlink->w) > INT_MAX  ||
         ((int64_t)w * inlink->h) > INT_MAX)
         av_log(ctx, AV_LOG_ERROR, "Rescaled value for width or height is too big.\n");
@@ -472,12 +481,15 @@ static int nppscale_scale(AVFilterContext *ctx, AVFrame *out, AVFrame *in)
         src        = s->stages[i].frame;
         last_stage = i;
     }
-
     if (last_stage < 0)
         return AVERROR_BUG;
+
     ret = av_hwframe_get_buffer(src->hw_frames_ctx, s->tmp_frame, 0);
     if (ret < 0)
         return ret;
+
+    s->tmp_frame->width  = src->width;
+    s->tmp_frame->height = src->height;
 
     av_frame_move_ref(out, src);
     av_frame_move_ref(src, s->tmp_frame);
@@ -498,7 +510,6 @@ static int nppscale_filter_frame(AVFilterLink *link, AVFrame *in)
     AVCUDADeviceContext *device_hwctx = frames_ctx->device_ctx->hwctx;
 
     AVFrame *out = NULL;
-    CUresult err;
     CUcontext dummy;
     int ret = 0;
 
@@ -511,15 +522,13 @@ static int nppscale_filter_frame(AVFilterLink *link, AVFrame *in)
         goto fail;
     }
 
-    err = device_hwctx->internal->cuda_dl->cuCtxPushCurrent(device_hwctx->cuda_ctx);
-    if (err != CUDA_SUCCESS) {
-        ret = AVERROR_UNKNOWN;
+    ret = CHECK_CU(device_hwctx->internal->cuda_dl->cuCtxPushCurrent(device_hwctx->cuda_ctx));
+    if (ret < 0)
         goto fail;
-    }
 
     ret = nppscale_scale(ctx, out, in);
 
-    device_hwctx->internal->cuda_dl->cuCtxPopCurrent(&dummy);
+    CHECK_CU(device_hwctx->internal->cuda_dl->cuCtxPopCurrent(&dummy));
     if (ret < 0)
         goto fail;
 
@@ -552,6 +561,11 @@ static const AVOption options[] = {
         { "cubic2p_b05c03",     "2-parameter cubic (B=1/2, C=3/10)", 0, AV_OPT_TYPE_CONST, { .i64 = NPPI_INTER_CUBIC2P_B05C03     }, 0, 0, FLAGS, "interp_algo" },
         { "super",              "supersampling",                     0, AV_OPT_TYPE_CONST, { .i64 = NPPI_INTER_SUPER              }, 0, 0, FLAGS, "interp_algo" },
         { "lanczos",            "Lanczos",                           0, AV_OPT_TYPE_CONST, { .i64 = NPPI_INTER_LANCZOS            }, 0, 0, FLAGS, "interp_algo" },
+    { "force_original_aspect_ratio", "decrease or increase w/h if necessary to keep the original AR", OFFSET(force_original_aspect_ratio), AV_OPT_TYPE_INT, { .i64 = 0}, 0, 2, FLAGS, "force_oar" },
+    { "disable",  NULL, 0, AV_OPT_TYPE_CONST, {.i64 = 0 }, 0, 0, FLAGS, "force_oar" },
+    { "decrease", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = 1 }, 0, 0, FLAGS, "force_oar" },
+    { "increase", NULL, 0, AV_OPT_TYPE_CONST, {.i64 = 2 }, 0, 0, FLAGS, "force_oar" },
+    { "force_divisible_by", "enforce that the output resolution is divisible by a defined integer when force_original_aspect_ratio is used", OFFSET(force_divisible_by), AV_OPT_TYPE_INT, { .i64 = 1}, 1, 256, FLAGS },
     { NULL },
 };
 

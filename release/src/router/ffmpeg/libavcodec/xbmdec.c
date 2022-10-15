@@ -26,26 +26,31 @@
 #include "internal.h"
 #include "mathops.h"
 
-static int convert(uint8_t x)
+static int get_nibble(uint8_t x)
 {
-    if (x >= 'a')
-        x -= 87;
-    else if (x >= 'A')
-        x -= 55;
-    else
-        x -= '0';
-    return x;
+    int ret = 255;
+
+    if (x <= '9') {
+        if (x >= '0')
+            ret = x - '0';
+    } else if (x >= 'a') {
+        if (x <= 'f')
+            ret = x - ('a' - 10);
+    } else if (x >= 'A' && x <= 'F')
+        ret = x - ('A' - 10);
+    return ret;
 }
 
-static int parse_str_int(const uint8_t *p, int len, const uint8_t *key)
+static int parse_str_int(const uint8_t *p, const uint8_t *end, const uint8_t *key)
 {
-    const uint8_t *end = p + len;
+    int keylen = strlen(key);
+    const uint8_t *e = end - keylen;
 
-    for(; p<end - strlen(key); p++) {
-        if (!memcmp(p, key, strlen(key)))
+    for(; p < e; p++) {
+        if (!memcmp(p, key, keylen))
             break;
     }
-    p += strlen(key);
+    p += keylen;
     if (p >= end)
         return INT_MIN;
 
@@ -72,8 +77,8 @@ static int xbm_decode_frame(AVCodecContext *avctx, void *data,
     avctx->pix_fmt = AV_PIX_FMT_MONOWHITE;
     end = avpkt->data + avpkt->size;
 
-    width  = parse_str_int(avpkt->data, avpkt->size, "_width");
-    height = parse_str_int(avpkt->data, avpkt->size, "_height");
+    width  = parse_str_int(avpkt->data, end, "_width");
+    height = parse_str_int(avpkt->data, end, "_height");
 
     if ((ret = ff_set_dimensions(avctx, width, height)) < 0)
         return ret;
@@ -93,22 +98,26 @@ static int xbm_decode_frame(AVCodecContext *avctx, void *data,
     for (i = 0; i < avctx->height; i++) {
         dst = p->data[0] + i * p->linesize[0];
         for (j = 0; j < linesize; j++) {
-            uint8_t val;
+            uint8_t nib, val;
 
             while (ptr < end && *ptr != 'x' && *ptr != '$')
                 ptr++;
 
             ptr ++;
-            if (ptr < end && av_isxdigit(*ptr)) {
-                val = convert(*ptr++);
-                if (av_isxdigit(*ptr))
-                    val = (val << 4) + convert(*ptr++);
+            if (ptr < end && (val = get_nibble(*ptr)) <= 15) {
+                ptr++;
+                if ((nib = get_nibble(*ptr)) <= 15) {
+                    val = (val << 4) + nib;
+                    ptr++;
+                }
                 *dst++ = ff_reverse[val];
-                if (av_isxdigit(*ptr) && j+1 < linesize) {
+                if ((val = get_nibble(*ptr)) <= 15 && j+1 < linesize) {
                     j++;
-                    val = convert(*ptr++);
-                    if (av_isxdigit(*ptr))
-                        val = (val << 4) + convert(*ptr++);
+                    ptr++;
+                    if ((nib = get_nibble(*ptr)) <= 15) {
+                        val = (val << 4) + nib;
+                        ptr++;
+                    }
                     *dst++ = ff_reverse[val];
                 }
             } else {

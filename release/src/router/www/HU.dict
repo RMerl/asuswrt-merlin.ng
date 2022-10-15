@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Az AiMesh rendszer és a végeszközök kompatibilitására 
 AiMesh_confirm_msg10=Az AiMesh rendszer és a végeszköz(ök) kapcsolódásának biztosítása érdekében olvassa el ezt a <a id="wpa3FaqLink">FAQ</a>-ot, mielőtt WPA3-Personal módra váltana.
 AiMesh_confirm_msg11=Ön jelenleg WPA3-personal biztonságot használ. AiMesh rendszer létrehozásához a hitelesítési módszer WPA2/WPA3-personal-ra változik. Kívánja folytatni?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=A további részletekért látogasson el a <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>ezt a GYIK-et</a> oldalra.
+AiMesh_confirm_msg13=A további részletekért látogasson el a <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>ezt a GYIK-et</a> oldalra.
 AiMesh_Feature_Desc=A továbbfejlesztett ASUS AiMesh egy olyan új, innovatív router funkció, amely több ASUS routert összekötve egész otthonra kiterjedő WiFi hálózatot hoz létre.
 AiMesh_FAQ=Bővebben az ASUS AiMesh funkcióról
 AiMesh_FindNode=AiMesh csomópont keresése
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS opció
 WANTCPMSSOptionComm1Text=bájt
 WANVLANIDText=VLAN ID
-WANAggregation_desc=A WAN Aggregation két hálózati kapcsolatot egyesít, így a WAN sebessége akár 2Gb/s-ra is nőhet. Csatlakoztassa az útválasztó WAN portját és LAN 4-es portját a modem LAN portjaihoz (győződjön meg arról, hogy egyforma specifikációval rendelkező kábeleket használ). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation GYIK</a>
+WANAggregation_desc=A WAN Aggregation két hálózati kapcsolatot egyesít, így a WAN sebessége akár 2Gb/s-ra is nőhet. Csatlakoztassa az útválasztó #WAN portját és LAN 4-es portját a modem LAN portjaihoz (győződjön meg arról, hogy egyforma specifikációval rendelkező kábeleket használ). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation GYIK</a>
 WANAggregation_enable=WAN-aggregáció engedélyezése
 WANAggregation_disable_dualwan=Az útválasztón engedélyezett a kettős WAN. A WAN Aggregation engedélyezése letiltja a kettős WAN funkciót. Biztosan folytatja?
 WANAggregation_disable_WANAggregation=Az útválasztón engedélyezett a WAN Aggregation. A kettős WAN engedélyezése letiltja a WAN Aggregation funkciót. Biztosan folytatja?
 WANAggregation_PortConflict_hint1=A WAN Aggregation az útválasztó LAN 4-es portját használja. Az IPTV engedélyezése letiltja a WAN Aggregation funkciót. Biztosan folytatja?
 WANAggregation_PortConflict_hint2=Az IPTV az útválasztó LAN 4-es portját használja. A WAN Aggregation engedélyezése letiltja az IPTV funkciót. Biztosan folytatja?
 WANAggregation_disable_IPTVDualWAN=Az útválasztón engedélyezett a kettős WAN és az IPTV. A WAN Aggregation engedélyezése letiltja a kettős WAN és IPTV funkciót , hogy elkerülhető legyen a portütközés. Biztosan folytatja?
-WANAggregation_help_WAN=Győződjön meg arról, hogy az útválasztó WAN portja és a modem LAN portja két egyforma specifikációval rendelkező kábelellel van csatlakoztatva.
+WANAggregation_help_WAN=Győződjön meg arról, hogy az útválasztó #WAN portja és a modem LAN portja két egyforma specifikációval rendelkező kábelellel van csatlakoztatva.
 WANAggregation_help_LAN=Győződjön meg arról, hogy az útválasztó LAN 4-es portja és a modem LAN portja két egyforma specifikációval rendelkező kábelellel van csatlakoztatva.
 WANAggregation_goto_WAN=A WAN Aggregation engedélyezéséhez lépjen a <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-Internet csatlakoztatás című oldalra</a>.
 WANAggregation_help_desc=Ha a WAN aggregáció nem sikeres, kérjük kövesse az alábbi lépéseket az újrapróbáláshoz.
-WANAggregation_help_step1=Győződjön meg róla, hogy a modem LAN portjai már csatlakoznak – kábellel – a router WAN és LAN 4 portjaihoz.
+WANAggregation_help_step1=Győződjön meg róla, hogy a modem LAN portjai már csatlakoznak – kábellel – a router #WAN és LAN 4 portjaihoz.
 WANAggregation_help_step2=Győződjön meg hogy a modemen engedélyezve van a 802.3ad szabvány
 WANAggregation_help_step3=Ellenőrizze, hogy a két kábel azonos tulajdonságú (vagy gigabit & gigabit vagy 10/100 & 10/100 Mbps)
 WANAggregation_help_step4=Indítsa újra aroutert
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Válassza a GeForce Now lehetőséget, hogy előnyben részesítse a GeForce Now játékeszközöket gyorsabb és jobb játékélmény érdekében.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Esemény
 AURA_Event_desc=A rendszer érzékeli a következő eseményeket és különböző LED effektusokat kapcsol be.
 AURA_Event_Boost_desc=Amikor engedélyezi a Game Boost módot, a LED sávon vörös légzési effektust láthat.

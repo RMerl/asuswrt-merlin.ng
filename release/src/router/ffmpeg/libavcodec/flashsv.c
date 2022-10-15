@@ -132,7 +132,6 @@ static av_cold int flashsv_decode_init(AVCodecContext *avctx)
 
     s->frame = av_frame_alloc();
     if (!s->frame) {
-        flashsv_decode_end(avctx);
         return AVERROR(ENOMEM);
     }
 
@@ -180,7 +179,7 @@ static int flashsv2_prime(FlashSVContext *s, uint8_t *src, int size)
     return 0;
 }
 
-static int flashsv_decode_block(AVCodecContext *avctx, AVPacket *avpkt,
+static int flashsv_decode_block(AVCodecContext *avctx, const AVPacket *avpkt,
                                 GetBitContext *gb, int block_size,
                                 int width, int height, int x_pos, int y_pos,
                                 int blk_idx)
@@ -369,7 +368,7 @@ static int flashsv_decode_frame(AVCodecContext *avctx, void *data,
             s->image_width, s->image_height, s->block_width, s->block_height,
             h_blocks, v_blocks, h_part, v_part);
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer(avctx, s->frame, 0)) < 0)
         return ret;
 
     /* loop over all block columns */
@@ -518,6 +517,7 @@ AVCodec ff_flashsv_decoder = {
     .close          = flashsv_decode_end,
     .decode         = flashsv_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_BGR24, AV_PIX_FMT_NONE },
 };
 #endif /* CONFIG_FLASHSV_DECODER */
@@ -551,7 +551,11 @@ static const uint32_t ff_flashsv2_default_palette[128] = {
 static av_cold int flashsv2_decode_init(AVCodecContext *avctx)
 {
     FlashSVContext *s = avctx->priv_data;
-    flashsv_decode_init(avctx);
+    int ret;
+
+    ret = flashsv_decode_init(avctx);
+    if (ret < 0)
+        return ret;
     s->pal = ff_flashsv2_default_palette;
     s->ver = 2;
 
@@ -581,6 +585,7 @@ AVCodec ff_flashsv2_decoder = {
     .close          = flashsv2_decode_end,
     .decode         = flashsv_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_BGR24, AV_PIX_FMT_NONE },
 };
 #endif /* CONFIG_FLASHSV2_DECODER */

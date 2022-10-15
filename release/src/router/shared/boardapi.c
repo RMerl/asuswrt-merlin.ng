@@ -867,6 +867,9 @@ int do_led_control(int which, int mode)
 {
 	int use_gpio, gpio_nr;
 	int v = (mode == LED_OFF)? 0:1;
+#ifndef HND_ROUTER
+	char *led_gpio = NULL;
+#endif
 
 	// Did the user disable the leds?
 	if ((mode == LED_ON) && (nvram_get_int("led_disable") == 1)
@@ -880,19 +883,6 @@ int do_led_control(int which, int mode)
 
 	if (which < 0 || which >= LED_ID_MAX || mode < 0 || mode >= LED_FAN_MODE_MAX)
 		return -1;
-
-#if defined(RTAX82U_V2) || defined(TUFAX5400_V2)
-	if (which == LED_WAN_NORMAL) {
-		eval("sw", "0xff800554", "0");
-#if defined(RTAX82U_V2)
-		eval("sw", "0xff800558", mode == LED_ON ? "0x3015" : "0x2015");
-#elif defined(TUFAX5400_V2)
-		eval("sw", "0xff800558", mode == LED_ON ? "0x3038" : "0x2038");
-#endif
-		eval("sw", "0xff80055c", "0x21");
-		return 0;
-	}
-#endif
 
 #if defined(RTAX86U) || defined(RTAX86U_PRO)
 	if(which == LED_LAN){
@@ -929,14 +919,19 @@ int do_led_control(int which, int mode)
 		v ^= 1;
 
 #ifndef HND_ROUTER
+	if (which == LED_2G)
+		led_gpio = "led_2g_gpio";
+	else if (which == LED_5G)
+		led_gpio = "led_5g_gpio";
+
 	if (mode == LED_OFF) {
-		stop_bled(use_gpio);
+		__stop_bled(led_gpio, use_gpio);
 	}
 #endif
 	set_gpio(gpio_nr, v);
 #ifndef HND_ROUTER
 	if (mode == LED_ON) {
-		start_bled(use_gpio);
+		__start_bled(led_gpio, use_gpio);
 	}
 #endif
 	return 0;
@@ -1120,7 +1115,18 @@ int lanport_status(void)
 	return rtkswitch_lanPorts_phyStatus();
 #elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N)
 	return rtkswitch_lanPorts_phyStatus();
-#elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2)
+#elif defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2)
+	int status = 0;
+	char word[16] = {0};
+	char *next = NULL;
+	foreach(word, nvram_safe_get("lan_ifnames"), next) {
+		if(!wl_probe(word))		// skip wireless interface
+			continue;
+
+		status |= hnd_get_phy_status(word);
+	}
+	return status;
+#elif defined(RTCONFIG_HND_ROUTER_AX_675X)
 	int status = 0;
 	char word[16] = {0};
 	char *next = NULL;

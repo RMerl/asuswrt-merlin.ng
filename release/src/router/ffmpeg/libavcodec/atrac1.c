@@ -33,6 +33,8 @@
 #include <stdio.h>
 
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem_internal.h"
+
 #include "avcodec.h"
 #include "get_bits.h"
 #include "fft.h"
@@ -80,7 +82,8 @@ typedef struct AT1Ctx {
     DECLARE_ALIGNED(32, float, high)[512];
     float*              bands[3];
     FFTContext          mdct_ctx[3];
-    AVFloatDSPContext   *fdsp;
+    void (*vector_fmul_window)(float *dst, const float *src0,
+                               const float *src1, const float *win, int len);
 } AT1Ctx;
 
 /** size of the transform in samples in the long mode for each QMF band */
@@ -140,8 +143,8 @@ static int at1_imdct_block(AT1SUCtx* su, AT1Ctx *q)
             at1_imdct(q, &q->spec[pos], &su->spectrum[0][ref_pos + start_pos], nbits, band_num);
 
             /* overlap and window */
-            q->fdsp->vector_fmul_window(&q->bands[band_num][start_pos], prev_buf,
-                                       &su->spectrum[0][ref_pos + start_pos], ff_sine_32, 16);
+            q->vector_fmul_window(&q->bands[band_num][start_pos], prev_buf,
+                                  &su->spectrum[0][ref_pos + start_pos], ff_sine_32, 16);
 
             prev_buf = &su->spectrum[0][ref_pos+start_pos + 16];
             start_pos += block_size;
@@ -324,8 +327,6 @@ static av_cold int atrac1_decode_end(AVCodecContext * avctx)
     ff_mdct_end(&q->mdct_ctx[1]);
     ff_mdct_end(&q->mdct_ctx[2]);
 
-    av_freep(&q->fdsp);
-
     return 0;
 }
 
@@ -333,6 +334,7 @@ static av_cold int atrac1_decode_end(AVCodecContext * avctx)
 static av_cold int atrac1_decode_init(AVCodecContext *avctx)
 {
     AT1Ctx *q = avctx->priv_data;
+    AVFloatDSPContext *fdsp;
     int ret;
 
     avctx->sample_fmt = AV_SAMPLE_FMT_FLTP;
@@ -353,7 +355,6 @@ static av_cold int atrac1_decode_init(AVCodecContext *avctx)
         (ret = ff_mdct_init(&q->mdct_ctx[1], 8, 1, -1.0/ (1 << 15))) ||
         (ret = ff_mdct_init(&q->mdct_ctx[2], 9, 1, -1.0/ (1 << 15)))) {
         av_log(avctx, AV_LOG_ERROR, "Error initializing MDCT\n");
-        atrac1_decode_end(avctx);
         return ret;
     }
 
@@ -361,7 +362,11 @@ static av_cold int atrac1_decode_init(AVCodecContext *avctx)
 
     ff_atrac_generate_tables();
 
-    q->fdsp = avpriv_float_dsp_alloc(avctx->flags & AV_CODEC_FLAG_BITEXACT);
+    fdsp = avpriv_float_dsp_alloc(avctx->flags & AV_CODEC_FLAG_BITEXACT);
+    if (!fdsp)
+        return AVERROR(ENOMEM);
+    q->vector_fmul_window = fdsp->vector_fmul_window;
+    av_free(fdsp);
 
     q->bands[0] = q->low;
     q->bands[1] = q->mid;
@@ -389,4 +394,5 @@ AVCodec ff_atrac1_decoder = {
     .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

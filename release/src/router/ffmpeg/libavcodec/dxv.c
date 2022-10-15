@@ -256,6 +256,8 @@ static int decompress_texture_thread(AVCodecContext *avctx, void *arg,
 #define CHECKPOINT(x)                                                         \
     do {                                                                      \
         if (state == 0) {                                                     \
+            if (bytestream2_get_bytes_left(gbc) < 4)                          \
+                return AVERROR_INVALIDDATA;                                   \
             value = bytestream2_get_le32(gbc);                                \
             state = 16;                                                       \
         }                                                                     \
@@ -426,7 +428,8 @@ static int fill_optable(unsigned *table0, OpcodeTable *table1, int nb_elements)
 static int get_opcodes(GetByteContext *gb, uint32_t *table, uint8_t *dst, int op_size, int nb_elements)
 {
     OpcodeTable optable[1024];
-    int sum, x, val, lshift, rshift, ret, size_in_bits, i, idx;
+    int sum, x, val, lshift, rshift, ret, i, idx;
+    int64_t size_in_bits;
     unsigned endoffset, newoffset, offset;
     unsigned next;
     uint8_t *src = (uint8_t *)gb->buffer;
@@ -742,6 +745,9 @@ static int dxv_decompress_cocg(DXVContext *ctx, GetByteContext *gb,
     int skip0, skip1, oi0 = 0, oi1 = 0;
     int ret, state0 = 0, state1 = 0;
 
+    if (op_offset < 12 || op_offset - 12 > bytestream2_get_bytes_left(gb))
+        return AVERROR_INVALIDDATA;
+
     dst = tex_data;
     bytestream2_skip(gb, op_offset - 12);
     if (op_size0 > max_op_size0)
@@ -749,7 +755,6 @@ static int dxv_decompress_cocg(DXVContext *ctx, GetByteContext *gb,
     skip0 = dxv_decompress_opcodes(gb, op_data0, op_size0);
     if (skip0 < 0)
         return skip0;
-    bytestream2_seek(gb, data_start + op_offset + skip0 - 12, SEEK_SET);
     if (op_size1 > max_op_size1)
         return AVERROR_INVALIDDATA;
     skip1 = dxv_decompress_opcodes(gb, op_data1, op_size1);
@@ -778,7 +783,7 @@ static int dxv_decompress_cocg(DXVContext *ctx, GetByteContext *gb,
             return ret;
     }
 
-    bytestream2_seek(gb, data_start + op_offset + skip0 + skip1 - 12, SEEK_SET);
+    bytestream2_seek(gb, data_start - 12 + op_offset + skip0 + skip1, SEEK_SET);
 
     return 0;
 }
@@ -792,6 +797,9 @@ static int dxv_decompress_yo(DXVContext *ctx, GetByteContext *gb,
     int data_start = bytestream2_tell(gb);
     uint8_t *dst, *table0[256] = { 0 }, *table1[256] = { 0 };
     int ret, state = 0, skip, oi = 0, v, vv;
+
+    if (op_offset < 8 || op_offset - 8 > bytestream2_get_bytes_left(gb))
+        return AVERROR_INVALIDDATA;
 
     dst = tex_data;
     bytestream2_skip(gb, op_offset - 8);
@@ -859,8 +867,8 @@ static int dxv_decompress_dxt5(AVCodecContext *avctx)
 {
     DXVContext *ctx = avctx->priv_data;
     GetByteContext *gbc = &ctx->gbc;
-    uint32_t value, op;
-    int idx, prev, state = 0;
+    uint32_t value, op, prev;
+    int idx, state = 0;
     int pos = 4;
     int run = 0;
     int probe, check;
@@ -1051,6 +1059,10 @@ static int dxv_decode(AVCodecContext *avctx, void *data,
     avctx->pix_fmt = AV_PIX_FMT_RGBA;
     avctx->colorspace = AVCOL_SPC_RGB;
 
+    ctx->tex_funct = NULL;
+    ctx->tex_funct_planar[0] = NULL;
+    ctx->tex_funct_planar[1] = NULL;
+
     tag = bytestream2_get_le32(gbc);
     switch (tag) {
     case MKBETAG('D', 'X', 'T', '1'):
@@ -1192,6 +1204,12 @@ static int dxv_decode(AVCodecContext *avctx, void *data,
     ret = decompress_tex(avctx);
     if (ret < 0)
         return ret;
+    {
+        int w_block = avctx->coded_width / ctx->texture_block_w;
+        int h_block = avctx->coded_height / ctx->texture_block_h;
+        if (w_block * h_block * ctx->tex_step > ctx->tex_size * 8LL)
+            return AVERROR_INVALIDDATA;
+    }
 
     tframe.f = data;
     ret = ff_thread_get_buffer(avctx, &tframe, 0);

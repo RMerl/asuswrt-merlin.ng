@@ -79,7 +79,7 @@ typedef struct XMVAudioPacket {
     uint16_t channels;        ///< Number of channels.
     int32_t sample_rate;      ///< Sampling rate.
     uint16_t bits_per_sample; ///< Bits per compressed sample.
-    uint32_t bit_rate;        ///< Bits of compressed data per second.
+    uint64_t bit_rate;        ///< Bits of compressed data per second.
     uint16_t flags;           ///< Flags
     unsigned block_align;     ///< Bytes per compressed block.
     uint16_t block_samples;   ///< Decompressed samples per compressed block.
@@ -115,7 +115,7 @@ typedef struct XMVDemuxContext {
     XMVAudioPacket *audio; ///< The audio packets contained in each packet.
 } XMVDemuxContext;
 
-static int xmv_probe(AVProbeData *p)
+static int xmv_probe(const AVProbeData *p)
 {
     uint32_t file_version;
 
@@ -191,7 +191,7 @@ static int xmv_read_header(AVFormatContext *s)
         packet->bits_per_sample = avio_rl16(pb);
         packet->flags           = avio_rl16(pb);
 
-        packet->bit_rate      = packet->bits_per_sample *
+        packet->bit_rate      = (uint64_t)packet->bits_per_sample *
                                 packet->sample_rate *
                                 packet->channels;
         packet->block_align   = XMV_BLOCK_ALIGN_SIZE * packet->channels;
@@ -397,8 +397,6 @@ static int xmv_process_packet_header(AVFormatContext *s)
                 av_assert0(xmv->video.stream_index < s->nb_streams);
 
                 if (vst->codecpar->extradata_size < 4) {
-                    av_freep(&vst->codecpar->extradata);
-
                     if ((ret = ff_alloc_extradata(vst->codecpar, 4)) < 0)
                         return ret;
                 }

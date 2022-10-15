@@ -1,0 +1,30 @@
+# AppVeyor CI configuration file https://www.appveyor.com/
+environment:
+  CYGWIN_MIRROR: https://cygwin.mirror.constant.com
+  matrix:
+  - CONFIG: cygwin
+  - CONFIG: cygwin64
+  - CONFIG: msys2
+
+install:
+# The Cygwin images are too old to install packages as of June 2022, so download the latest
+- cmd: if [%CONFIG%]==[cygwin] (
+    curl -qsS --fail --retry 5 --max-time 1999 --compressed -O https://cygwin.com/setup-x86.exe &&
+    setup-x86.exe -qgnNdO -l C:\cygwin\var\cache\setup -R c:\cygwin -s "%CYGWIN_MIRROR%" -P libiconv-devel )
+- cmd: if [%CONFIG%]==[cygwin64] (
+    curl -qsS --fail --retry 5 --max-time 1999 --compressed -O https://cygwin.com/setup-x86_64.exe &&
+    setup-x86_64.exe -qgnNdO -l C:\cygwin64\var\cache\setup -R c:\cygwin64 -s "%CYGWIN_MIRROR%" -P libiconv-devel )
+- cmd: if [%CONFIG%]==[msys2] (
+    set "PATH=C:\msys64\mingw64\bin;C:\msys64\usr\bin;%PATH%" )
+
+build_script:
+- cmd: if not [%CONFIG%]==[msys2] (
+    C:\%CONFIG%\bin\bash -e -l -c "cd $APPVEYOR_BUILD_FOLDER && autoreconf -sif && ./configure --prefix=$HOME --disable-dependency-tracking && make V=1 LDFLAGS='-lintl' && make V=1 install" )
+- cmd: if [%CONFIG%]==[msys2] (
+    bash -lc "set -x; cd $APPVEYOR_BUILD_FOLDER && autoreconf -sivf && ./configure --prefix=$HOME/install --disable-dependency-tracking && make V=1 && make V=1 install" )
+
+test_script:
+- cmd: if not [%CONFIG%]==[msys2] (
+    C:\%CONFIG%\bin\bash -e -l -c "cd $APPVEYOR_BUILD_FOLDER && make V=1 check" )
+- cmd: if [%CONFIG%]==[msys2] (
+    bash -lc "cd $APPVEYOR_BUILD_FOLDER && make V=1 check" )

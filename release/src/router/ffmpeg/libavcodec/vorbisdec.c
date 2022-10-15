@@ -1097,13 +1097,14 @@ static int vorbis_floor0_decode(vorbis_context *vc,
 {
     vorbis_floor0 *vf = &vfu->t0;
     float *lsp = vf->lsp;
-    unsigned amplitude, book_idx;
+    unsigned book_idx;
+    uint64_t amplitude;
     unsigned blockflag = vc->modes[vc->mode_number].blockflag;
 
     if (!vf->amplitude_bits)
         return 1;
 
-    amplitude = get_bits(&vc->gb, vf->amplitude_bits);
+    amplitude = get_bits64(&vc->gb, vf->amplitude_bits);
     if (amplitude > 0) {
         float last = 0;
         unsigned idx, lsp_len = 0;
@@ -1127,8 +1128,10 @@ static int vorbis_floor0_decode(vorbis_context *vc,
             ff_dlog(NULL, "floor0 dec: maximum depth: %d\n", codebook.maxdepth);
             /* read temp vector */
             vec_off = get_vlc2(&vc->gb, codebook.vlc.table,
-                               codebook.nb_bits, codebook.maxdepth)
-                      * codebook.dimensions;
+                               codebook.nb_bits, codebook.maxdepth);
+            if (vec_off < 0)
+                return AVERROR_INVALIDDATA;
+            vec_off *= codebook.dimensions;
             ff_dlog(NULL, "floor0 dec: vector offset: %d\n", vec_off);
             /* copy each vector component and add last to it */
             for (idx = 0; idx < codebook.dimensions; ++idx)
@@ -1179,9 +1182,12 @@ static int vorbis_floor0_decode(vorbis_context *vc,
                     q *= q;
                 }
 
+                if (p + q == 0.0)
+                    return AVERROR_INVALIDDATA;
+
                 /* calculate linear floor value */
                 q = exp((((amplitude*vf->amplitude_offset) /
-                          (((1 << vf->amplitude_bits) - 1) * sqrt(p + q)))
+                          (((1ULL << vf->amplitude_bits) - 1) * sqrt(p + q)))
                          - vf->amplitude_offset) * .11512925f);
 
                 /* fill vector */
@@ -1355,14 +1361,19 @@ static av_always_inline int setup_classifs(vorbis_context *vc,
                 return AVERROR_INVALIDDATA;
             }
 
-            av_assert0(vr->classifications > 1); //needed for inverse[]
-
+            if (vr->classifications == 1) {
+                for (i = partition_count + c_p_c - 1; i >= partition_count; i--) {
+                    if (i < ptns_to_read)
+                        vr->classifs[p + i] = 0;
+                }
+            } else {
             for (i = partition_count + c_p_c - 1; i >= partition_count; i--) {
                 temp2 = (((uint64_t)temp) * inverse_class) >> 32;
 
                 if (i < ptns_to_read)
                     vr->classifs[p + i] = temp - temp2 * vr->classifications;
                 temp = temp2;
+            }
             }
         }
         p += ptns_to_read;
@@ -1431,7 +1442,7 @@ static av_always_inline int vorbis_residue_decode_internal(vorbis_context *vc,
                         int vqbook  = vr->books[vqclass][pass];
 
                         if (vqbook >= 0 && vc->codebooks[vqbook].codevectors) {
-                            unsigned coffs;
+                            int coffs;
                             unsigned dim  = vc->codebooks[vqbook].dimensions;
                             unsigned step = FASTDIV(vr->partition_size << 1, dim << 1);
                             vorbis_codebook codebook = vc->codebooks[vqbook];
@@ -1440,14 +1451,20 @@ static av_always_inline int vorbis_residue_decode_internal(vorbis_context *vc,
 
                                 voffs = voffset+j*vlen;
                                 for (k = 0; k < step; ++k) {
-                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3) * dim;
+                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3);
+                                    if (coffs < 0)
+                                        return coffs;
+                                    coffs *= dim;
                                     for (l = 0; l < dim; ++l)
                                         vec[voffs + k + l * step] += codebook.codevectors[coffs + l];
                                 }
                             } else if (vr_type == 1) {
                                 voffs = voffset + j * vlen;
                                 for (k = 0; k < step; ++k) {
-                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3) * dim;
+                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3);
+                                    if (coffs < 0)
+                                        return coffs;
+                                    coffs *= dim;
                                     for (l = 0; l < dim; ++l, ++voffs) {
                                         vec[voffs]+=codebook.codevectors[coffs+l];
 
@@ -1460,13 +1477,19 @@ static av_always_inline int vorbis_residue_decode_internal(vorbis_context *vc,
 
                                 if (dim == 2) {
                                     for (k = 0; k < step; ++k) {
-                                        coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3) * 2;
+                                        coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3);
+                                        if (coffs < 0)
+                                            return coffs;
+                                        coffs *= 2;
                                         vec[voffs + k       ] += codebook.codevectors[coffs    ];
                                         vec[voffs + k + vlen] += codebook.codevectors[coffs + 1];
                                     }
                                 } else if (dim == 4) {
                                     for (k = 0; k < step; ++k, voffs += 2) {
-                                        coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3) * 4;
+                                        coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3);
+                                        if (coffs < 0)
+                                            return coffs;
+                                        coffs *= 4;
                                         vec[voffs           ] += codebook.codevectors[coffs    ];
                                         vec[voffs + 1       ] += codebook.codevectors[coffs + 2];
                                         vec[voffs + vlen    ] += codebook.codevectors[coffs + 1];
@@ -1474,7 +1497,10 @@ static av_always_inline int vorbis_residue_decode_internal(vorbis_context *vc,
                                     }
                                 } else
                                 for (k = 0; k < step; ++k) {
-                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3) * dim;
+                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3);
+                                    if (coffs < 0)
+                                        return coffs;
+                                    coffs *= dim;
                                     for (l = 0; l < dim; l += 2, voffs++) {
                                         vec[voffs       ] += codebook.codevectors[coffs + l    ];
                                         vec[voffs + vlen] += codebook.codevectors[coffs + l + 1];
@@ -1487,11 +1513,14 @@ static av_always_inline int vorbis_residue_decode_internal(vorbis_context *vc,
                                 }
 
                             } else if (vr_type == 2) {
-                                unsigned voffs_div = FASTDIV(voffset << 1, ch <<1);
+                                unsigned voffs_div = ch == 1 ? voffset : FASTDIV(voffset, ch);
                                 unsigned voffs_mod = voffset - voffs_div * ch;
 
                                 for (k = 0; k < step; ++k) {
-                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3) * dim;
+                                    coffs = get_vlc2(gb, codebook.vlc.table, codebook.nb_bits, 3);
+                                    if (coffs < 0)
+                                        return coffs;
+                                    coffs *= dim;
                                     for (l = 0; l < dim; ++l) {
                                         vec[voffs_div + voffs_mod * vlen] +=
                                             codebook.codevectors[coffs + l];
@@ -1861,7 +1890,7 @@ AVCodec ff_vorbis_decoder = {
     .close           = vorbis_decode_close,
     .decode          = vorbis_decode_frame,
     .flush           = vorbis_decode_flush,
-    .capabilities    = AV_CODEC_CAP_DR1,
+    .capabilities    = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
     .caps_internal   = FF_CODEC_CAP_INIT_CLEANUP,
     .channel_layouts = ff_vorbis_channel_layouts,
     .sample_fmts     = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_FLTP,

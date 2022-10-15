@@ -53,11 +53,26 @@ static const AVOption tinterlace_options[] = {
     {"complex_filter",    "enable complex vertical low-pass filter",      0, AV_OPT_TYPE_CONST, {.i64 = TINTERLACE_FLAG_CVLPF},INT_MIN, INT_MAX, FLAGS, "flags" },
     {"cvlpf",             "enable complex vertical low-pass filter",      0, AV_OPT_TYPE_CONST, {.i64 = TINTERLACE_FLAG_CVLPF},INT_MIN, INT_MAX, FLAGS, "flags" },
     {"exact_tb",          "force a timebase which can represent timestamps exactly", 0, AV_OPT_TYPE_CONST, {.i64 = TINTERLACE_FLAG_EXACT_TB}, INT_MIN, INT_MAX, FLAGS, "flags" },
+    {"bypass_il",         "bypass already interlaced frames",             0, AV_OPT_TYPE_CONST, {.i64 = TINTERLACE_FLAG_BYPASS_IL}, INT_MIN, INT_MAX, FLAGS, "flags" },
 
     {NULL}
 };
 
 AVFILTER_DEFINE_CLASS(tinterlace);
+
+static const AVOption interlace_options[] = {
+   { "scan",              "scanning mode", OFFSET(mode), AV_OPT_TYPE_INT, {.i64 = MODE_TFF}, 0, 1, FLAGS, "mode"},
+   { "tff",               "top field first",                              0, AV_OPT_TYPE_CONST, {.i64 = MODE_TFF}, INT_MIN, INT_MAX, FLAGS, .unit = "mode"},
+   { "bff",               "bottom field first",                           0, AV_OPT_TYPE_CONST, {.i64 = MODE_BFF}, INT_MIN, INT_MAX, FLAGS, .unit = "mode"},
+   { "lowpass",           "set vertical low-pass filter", OFFSET(lowpass), AV_OPT_TYPE_INT,   {.i64 = VLPF_LIN}, 0, 2, FLAGS, "lowpass" },
+   {     "off",           "disable vertical low-pass filter",             0, AV_OPT_TYPE_CONST, {.i64 = VLPF_OFF}, INT_MIN, INT_MAX, FLAGS, "lowpass" },
+   {     "linear",        "linear vertical low-pass filter",              0, AV_OPT_TYPE_CONST, {.i64 = VLPF_LIN}, INT_MIN, INT_MAX, FLAGS, "lowpass" },
+   {     "complex",       "complex vertical low-pass filter",             0, AV_OPT_TYPE_CONST, {.i64 = VLPF_CMP}, INT_MIN, INT_MAX, FLAGS, "lowpass" },
+
+   { NULL }
+};
+
+AVFILTER_DEFINE_CLASS(interlace);
 
 #define FULL_SCALE_YUVJ_FORMATS \
     AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P
@@ -381,12 +396,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
         copy_picture_field(tinterlace, out->data, out->linesize,
                            (const uint8_t **)cur->data, cur->linesize,
                            inlink->format, inlink->w, inlink->h,
-                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? inlink->frame_count_out & 1 ? FIELD_LOWER : FIELD_UPPER : FIELD_UPPER, tinterlace->flags);
+                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? (1 + inlink->frame_count_out) & 1 ? FIELD_LOWER : FIELD_UPPER : FIELD_UPPER, tinterlace->flags);
         /* write even frame lines into the lower field of the new frame */
         copy_picture_field(tinterlace, out->data, out->linesize,
                            (const uint8_t **)next->data, next->linesize,
                            inlink->format, inlink->w, inlink->h,
-                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? inlink->frame_count_out & 1 ? FIELD_UPPER : FIELD_LOWER : FIELD_LOWER, tinterlace->flags);
+                           FIELD_UPPER_AND_LOWER, 1, tinterlace->mode == MODE_MERGEX2 ? (1 + inlink->frame_count_out) & 1 ? FIELD_UPPER : FIELD_LOWER : FIELD_LOWER, tinterlace->flags);
         if (tinterlace->mode != MODE_MERGEX2)
             av_frame_free(&tinterlace->next);
         break;
@@ -408,7 +423,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
         out->height = outlink->h;
         out->sample_aspect_ratio = av_mul_q(cur->sample_aspect_ratio, av_make_q(2, 1));
 
-        field = (1 + tinterlace->frame) & 1 ? FIELD_UPPER : FIELD_LOWER;
+        field = (1 + outlink->frame_count_in) & 1 ? FIELD_UPPER : FIELD_LOWER;
         /* copy upper and lower fields */
         copy_picture_field(tinterlace, out->data, out->linesize,
                            (const uint8_t **)cur->data, cur->linesize,
@@ -425,6 +440,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
          * halving the frame rate and preserving image height */
     case MODE_INTERLEAVE_TOP:    /* top    field first */
     case MODE_INTERLEAVE_BOTTOM: /* bottom field first */
+        if ((tinterlace->flags & TINTERLACE_FLAG_BYPASS_IL) && cur->interlaced_frame) {
+            av_log(ctx, AV_LOG_WARNING,
+                   "video is already interlaced, adjusting framerate only\n");
+            out = av_frame_clone(cur);
+            if (!out)
+                return AVERROR(ENOMEM);
+            out->pts /= 2;  // adjust pts to new framerate
+            ret = ff_filter_frame(outlink, out);
+            return ret;
+        }
         tff = tinterlace->mode == MODE_INTERLEAVE_TOP;
         out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
         if (!out)
@@ -492,9 +517,24 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
 
     out->pts = av_rescale_q(out->pts, tinterlace->preout_time_base, outlink->time_base);
     ret = ff_filter_frame(outlink, out);
-    tinterlace->frame++;
 
     return ret;
+}
+
+static int init_interlace(AVFilterContext *ctx)
+{
+    TInterlaceContext *tinterlace = ctx->priv;
+
+    if (tinterlace->mode <= MODE_BFF)
+        tinterlace->mode += MODE_INTERLEAVE_TOP;
+
+    tinterlace->flags |= TINTERLACE_FLAG_BYPASS_IL;
+    if (tinterlace->lowpass == VLPF_LIN)
+        tinterlace->flags |= TINTERLACE_FLAG_VLPF;
+    if (tinterlace->lowpass == VLPF_CMP)
+        tinterlace->flags |= TINTERLACE_FLAG_CVLPF;
+
+    return 0;
 }
 
 static const AVFilterPad tinterlace_inputs[] = {
@@ -524,4 +564,17 @@ AVFilter ff_vf_tinterlace = {
     .inputs        = tinterlace_inputs,
     .outputs       = tinterlace_outputs,
     .priv_class    = &tinterlace_class,
+};
+
+
+AVFilter ff_vf_interlace = {
+    .name          = "interlace",
+    .description   = NULL_IF_CONFIG_SMALL("Convert progressive video into interlaced."),
+    .priv_size     = sizeof(TInterlaceContext),
+    .init          = init_interlace,
+    .uninit        = uninit,
+    .query_formats = query_formats,
+    .inputs        = tinterlace_inputs,
+    .outputs       = tinterlace_outputs,
+    .priv_class    = &interlace_class,
 };

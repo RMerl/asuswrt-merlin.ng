@@ -39,7 +39,7 @@ QuickTime faststart:
 Miscellaneous Areas
 ===================
 
-documentation                           Stefano Sabatini, Mike Melanson, Timothy Gu, Lou Logan, Gyan Doshi
+documentation                           Stefano Sabatini, Mike Melanson, Timothy Gu, Gyan Doshi
 project server                          Árpád Gereöffy, Michael Niedermayer, Reimar Doeffinger, Alexander Strasser, Nikolay Aleksandrov
 presets                                 Robert Swain
 metadata subsystem                      Aurelien Jacobs
@@ -52,12 +52,12 @@ Communication
 
 website                                 Deby Barbara Lepage
 fate.ffmpeg.org                         Timothy Gu
-Trac bug tracker                        Alexander Strasser, Michael Niedermayer, Carl Eugen Hoyos, Lou Logan
-mailing lists                           Baptiste Coudurier, Lou Logan
-Google+                                 Paul B Mahol, Michael Niedermayer, Alexander Strasser
-Twitter                                 Lou Logan, Reynaldo H. Verdejo Pinochet
+Trac bug tracker                        Alexander Strasser, Michael Niedermayer, Carl Eugen Hoyos
+Patchwork                               Andriy Gelman
+mailing lists                           Baptiste Coudurier
+Twitter                                 Reynaldo H. Verdejo Pinochet
 Launchpad                               Timothy Gu
-ffmpeg-security                         Andreas Cadhalpun, Carl Eugen Hoyos, Clément Bœsch, Michael Niedermayer, Reimar Doeffinger, Rodger Combs, wm4
+ffmpeg-security                         Andreas Cadhalpun, Carl Eugen Hoyos, Clément Bœsch, Michael Niedermayer, Reimar Doeffinger, rcombs, wm4
 
 
 libavutil
@@ -78,6 +78,7 @@ Other:
   float_dsp                             Loren Merritt
   hash                                  Reimar Doeffinger
   hwcontext_cuda*                       Timo Rothenpieler
+  hwcontext_vulkan*                     Lynne
   intfloat*                             Michael Niedermayer
   integer.c, integer.h                  Michael Niedermayer
   lzo                                   Reimar Doeffinger
@@ -88,6 +89,7 @@ Other:
   rational.c, rational.h                Michael Niedermayer
   rc4                                   Reimar Doeffinger
   ripemd.c, ripemd.h                    James Almer
+  tx*                                   Lynne
 
 
 libavcodec
@@ -121,7 +123,6 @@ Generic Parts:
     motion*                             Michael Niedermayer
   rate control:
     ratecontrol.c                       Michael Niedermayer
-    libxvid_rc.c                        Michael Niedermayer
   simple IDCT:
     simple_idct.c, simple_idct.h        Michael Niedermayer
   postprocessing:
@@ -143,7 +144,8 @@ Codecs:
   ass*                                  Aurelien Jacobs
   asv*                                  Michael Niedermayer
   atrac3plus*                           Maxim Poliakovski
-  audiotoolbox*                         Rodger Combs
+  audiotoolbox*                         rcombs
+  avs2*                                 Huiwen Ren
   bgmc.c, bgmc.h                        Thilo Borgmann
   binkaudio.c                           Peter Ross
   cavs*                                 Stefan Gehrer
@@ -168,7 +170,6 @@ Codecs:
   eacmv*, eaidct*, eat*                 Peter Ross
   evrc*                                 Paul B Mahol
   exif.c, exif.h                        Thilo Borgmann
-  exr.c                                 Martin Vignali
   ffv1*                                 Michael Niedermayer
   ffwavesynth.c                         Nicolas George
   fifo.c                                Jan Sebechlebsky
@@ -190,14 +191,17 @@ Codecs:
   libcelt_dec.c                         Nicolas George
   libcodec2.c                           Tomas Härdin
   libdirac*                             David Conrad
+  libdavs2.c                            Huiwen Ren
   libgsm.c                              Michel Bardiaux
   libkvazaar.c                          Arttu Ylä-Outinen
+  libopenh264enc.c                      Martin Storsjo, Linjie Fu
   libopenjpeg.c                         Jaikrishnan Menon
   libopenjpegenc.c                      Michael Bradshaw
   libtheoraenc.c                        David Conrad
   libvorbis.c                           David Conrad
   libvpx*                               James Zern
   libxavs.c                             Stefan Gehrer
+  libxavs2.c                            Huiwen Ren
   libzvbi-teletextdec.c                 Marton Balint
   lzo.h, lzo.c                          Reimar Doeffinger
   mdec.c                                Michael Niedermayer
@@ -213,6 +217,7 @@ Codecs:
   msvideo1.c                            Mike Melanson
   nuv.c                                 Reimar Doeffinger
   nvdec*, nvenc*                        Timo Rothenpieler
+  omx.c                                 Martin Storsjo, Aman Gupta
   opus*                                 Rostislav Pehlivanov
   paf.*                                 Paul B Mahol
   pcx.c                                 Ivo van Poorten
@@ -220,7 +225,7 @@ Codecs:
   ptx.c                                 Ivo van Poorten
   qcelp*                                Reynaldo H. Verdejo Pinochet
   qdm2.c, qdm2data.h                    Roberto Togni
-  qsv*                                  Mark Thompson
+  qsv*                                  Mark Thompson, Zhong Li
   qtrle.c                               Mike Melanson
   ra144.c, ra144.h, ra288.c, ra288.h    Roberto Togni
   resample2.c                           Michael Niedermayer
@@ -230,7 +235,6 @@ Codecs:
   rv10.c                                Michael Niedermayer
   s3tc*                                 Ivo van Poorten
   smc.c                                 Mike Melanson
-  smvjpegdec.c                          Ash Hughes
   snow*                                 Michael Niedermayer, Loren Merritt
   sonic.c                               Alex Beregszaszi
   speedhq.c                             Steinar H. Gunderson
@@ -333,6 +337,7 @@ Filters:
   vf_bwdif                              Thomas Mundt (CC <thomas.mundt@hr.de>)
   vf_chromakey.c                        Timo Rothenpieler
   vf_colorchannelmixer.c                Paul B Mahol
+  vf_colorconstancy.c                   Mina Sami    (CC <minas.gorgy@gmail.com>)
   vf_colorbalance.c                     Paul B Mahol
   vf_colorkey.c                         Timo Rothenpieler
   vf_colorlevels.c                      Paul B Mahol
@@ -360,11 +365,14 @@ Filters:
   vf_ssim.c                             Paul B Mahol
   vf_stereo3d.c                         Paul B Mahol
   vf_telecine.c                         Paul B Mahol
+  vf_tonemap_opencl.c                   Ruiling Song
   vf_yadif.c                            Michael Niedermayer
   vf_zoompan.c                          Paul B Mahol
 
 Sources:
   vsrc_mandelbrot.c                     Michael Niedermayer
+
+dnn                                     Yejun Guo
 
 libavformat
 ===========
@@ -384,7 +392,12 @@ Muxers/Demuxers:
   afc.c                                 Paul B Mahol
   aiffdec.c                             Baptiste Coudurier, Matthieu Bouron
   aiffenc.c                             Baptiste Coudurier, Matthieu Bouron
+  alp.c                                 Zane van Iperen
+  amvenc.c                              Zane van Iperen
+  apm.c                                 Zane van Iperen
   apngdec.c                             Benoit Fouet
+  argo_asf.c                            Zane van Iperen
+  argo_brp.c                            Zane van Iperen
   ass*                                  Aurelien Jacobs
   astdec.c                              Paul B Mahol
   astenc.c                              James Almer
@@ -413,7 +426,6 @@ Muxers/Demuxers:
   flvenc.c                              Michael Niedermayer, Steven Liu
   gxf.c                                 Reimar Doeffinger
   gxfenc.c                              Baptiste Coudurier
-  hls.c                                 Anssi Hannula
   hlsenc.c                              Christian Suloway, Steven Liu
   idcin.c                               Mike Melanson
   idroqdec.c                            Mike Melanson
@@ -423,14 +435,15 @@ Muxers/Demuxers:
   ircam*                                Paul B Mahol
   iss.c                                 Stefan Gehrer
   jvdec.c                               Peter Ross
+  kvag.c                                Zane van Iperen
   libmodplug.c                          Clément Bœsch
   libopenmpt.c                          Josh de Kock
   lmlm4.c                               Ivo van Poorten
   lvfdec.c                              Paul B Mahol
   lxfdec.c                              Tomas Härdin
-  matroska.c                            Aurelien Jacobs
-  matroskadec.c                         Aurelien Jacobs
-  matroskaenc.c                         David Conrad
+  matroska.c                            Aurelien Jacobs, Andreas Rheinhardt
+  matroskadec.c                         Aurelien Jacobs, Andreas Rheinhardt
+  matroskaenc.c                         David Conrad, Andreas Rheinhardt
   matroska subtitles (matroskaenc.c)    John Peebles
   metadata*                             Aurelien Jacobs
   mgsts.c                               Paul B Mahol
@@ -445,7 +458,7 @@ Muxers/Demuxers:
   mpegtsenc.c                           Baptiste Coudurier
   msnwc_tcp.c                           Ramiro Polla
   mtv.c                                 Reynaldo H. Verdejo Pinochet
-  mxf*                                  Baptiste Coudurier
+  mxf*                                  Baptiste Coudurier, Tomas Härdin
   nistspheredec.c                       Paul B Mahol
   nsvdec.c                              Francois Revol
   nut*                                  Michael Niedermayer
@@ -453,9 +466,9 @@ Muxers/Demuxers:
   oggdec.c, oggdec.h                    David Conrad
   oggenc.c                              Baptiste Coudurier
   oggparse*.c                           David Conrad
-  oggparsedaala*                        Rostislav Pehlivanov
   oma.c                                 Maxim Poliakovski
   paf.c                                 Paul B Mahol
+  pp_bnk.c                              Zane van Iperen
   psxstr.c                              Mike Melanson
   pva.c                                 Ivo van Poorten
   pvfdec.c                              Paul B Mahol
@@ -501,6 +514,7 @@ Protocols:
   ftp.c                                 Lukasz Marek
   http.c                                Ronald S. Bultje
   libssh.c                              Lukasz Marek
+  libzmq.c                              Andriy Gelman
   mms*.c                                Ronald S. Bultje
   udp.c                                 Luca Abeni
   icecast.c                             Marvin Scholz
@@ -524,9 +538,10 @@ Operating systems / CPU architectures
 =====================================
 
 Alpha                                   Falk Hueffner
-MIPS                                    Manojkumar Bhosale
+MIPS                                    Manojkumar Bhosale, Shiyou Yin
 Mac OS X / PowerPC                      Romain Dolbeau, Guillaume Poirier
 Amiga / PowerPC                         Colin Ward
+Linux / PowerPC                         Lauri Kasanen
 Windows MinGW                           Alex Beregszaszi, Ramiro Polla
 Windows Cygwin                          Victor Paesa
 Windows MSVC                            Matthew Oliver, Hendrik Leppkes
@@ -555,6 +570,7 @@ Joakim Plate
 Jun Zhao
 Kieran Kunhya
 Kirill Gavrilov
+Limin Wang
 Martin Storsjö
 Panagiotis Issaris
 Pedro Arthur
@@ -575,8 +591,11 @@ Releases
 If you want to maintain an older release, please contact us
 
 
-GnuPG Fingerprints of maintainers and contributors
-==================================================
+GnuPG Fingerprints and IRC nicknames of maintainers and contributors
+====================================================================
+
+IRC nicknames are in parentheses. These apply
+to the IRC channels listed on the website.
 
 Alexander Strasser            1C96 78B7 83CB 8AA7 9AF5 D1EB A7D8 A57B A876 E58F
 Anssi Hannula                 1A92 FF42 2DD9 8D2E 8AF7 65A9 4278 C520 513D F3CB
@@ -594,13 +613,14 @@ Jaikrishnan Menon             61A1 F09F 01C9 2D45 78E1 C862 25DC 8831 AF70 D368
 James Almer                   7751 2E8C FD94 A169 57E6 9A7A 1463 01AD 7376 59E0
 Jean Delvare                  7CA6 9F44 60F1 BDC4 1FD2 C858 A552 6B9B B3CD 4E6A
 Loren Merritt                 ABD9 08F4 C920 3F65 D8BE 35D7 1540 DAA7 060F 56DE
-Lou Logan                     7D68 DC73 CBEF EABB 671A B6CF 621C 2E28 82F8 DC3A
+Lynne                         FE50 139C 6805 72CA FD52 1F8D A2FE A5F0 3F03 4464
 Michael Niedermayer           9FF2 128B 147E F673 0BAD F133 611E C787 040B 0FAB
 Nicolas George                24CE 01CE 9ACC 5CEB 74D8 8D9D B063 D997 36E5 4C93
 Nikolay Aleksandrov           8978 1D8C FB71 588E 4B27 EAA8 C4F0 B5FC E011 13B1
 Panagiotis Issaris            6571 13A3 33D9 3726 F728 AA98 F643 B12E ECF3 E029
 Peter Ross                    A907 E02F A6E5 0CD2 34CD 20D2 6760 79C5 AC40 DD6B
 Philip Langdale               5DC5 8D66 5FBA 3A43 18EC 045E F8D6 B194 6A75 682E
+Ramiro Polla                  7859 C65B 751B 1179 792E DAE8 8E95 8B2F 9B6C 5700
 Reimar Doeffinger             C61D 16E5 9E2C D10C 8958 38A4 0899 A2B9 06D4 D9C7
 Reinhard Tartler              9300 5DC2 7E87 6C37 ED7B CA9A 9808 3544 9453 48A4
 Reynaldo H. Verdejo Pinochet  6E27 CD34 170C C78E 4D4F 5F40 C18E 077F 3114 452A
@@ -609,7 +629,9 @@ Sascha Sommer                 38A0 F88B 868E 9D3A 97D4 D6A0 E823 706F 1E07 0D3C
 Stefano Sabatini              0D0B AD6B 5330 BBAD D3D6 6A0C 719C 2839 FC43 2D5F
 Steinar H. Gunderson          C2E9 004F F028 C18E 4EAD DB83 7F61 7561 7797 8F76
 Stephan Hilb                  4F38 0B3A 5F39 B99B F505 E562 8D5C 5554 4E17 8863
+Thilo Borgmann (thilo)        CE1D B7F4 4D20 FC3A DD9F FE5A 257C 5B8F 1D20 B92F
 Tiancheng "Timothy" Gu        9456 AFC0 814A 8139 E994 8351 7FE6 B095 B582 B0D4
 Tim Nicholson                 38CF DB09 3ED0 F607 8B67 6CED 0C0B FC44 8B0B FC83
-Tomas Härdin                  A79D 4E3D F38F 763F 91F5 8B33 A01E 8AE0 41BB 2551
+Tomas Härdin (thardin)        A79D 4E3D F38F 763F 91F5 8B33 A01E 8AE0 41BB 2551
 Wei Gao                       4269 7741 857A 0E60 9EC5 08D2 4744 4EFA 62C1 87B9
+Zane van Iperen (zane)        61AE D40F 368B 6F26 9DAE 3892 6861 6B2D 8AC4 DCC5

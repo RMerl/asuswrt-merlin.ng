@@ -8,6 +8,10 @@
 
 #define MAX_FILE_PATH 125
 
+#define DIAG_DB_FOLDER ".diag"
+
+#define JFFS_DIR	"/jffs"
+
 extern int codb_test();
 
 extern int codb_content_query_json_field(char* db_name, int columns_count, char* columns_name, int filter_count, char* filter_data, int start, int end, int limit, json_object **retJsonObj);

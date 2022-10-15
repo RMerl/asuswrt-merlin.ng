@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Fri Feb 25 14:22:45 2022
+ * Date: Fri Sep 30 11:52:41 2022
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -93,8 +93,8 @@
 
 #define TMCFG_BRAND_ASUS 1 // y
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL_4G_AX56 1 // y
-#define TMCFG_MODEL "4g-ax56"
+#define TMCFG_MODEL_TUF_AX4200 1 // y
+#define TMCFG_MODEL "tuf-ax4200"
 #define TMCFG_OEM_SRC 0 // n
 
 /*
@@ -102,19 +102,19 @@
  */
 #define TMCFG_KERN_SPACE 1 // y
 #define TMCFG_ARCH_X86 0 // n
-#define TMCFG_ARCH_MIPS 1 // y
-#define TMCFG_ARCH_ARM 0 // n
-#define TMCFG_CPU_32BITS 1 // y
-#define TMCFG_CPU_64BITS 0 // n
+#define TMCFG_ARCH_MIPS 0 // n
+#define TMCFG_ARCH_ARM 1 // y
+#define TMCFG_CPU_32BITS 0 // n
+#define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX53U_GPL_382.44863/release/src-ra-openwrt-4210/linux/linux-4.4.198"
-#define TMCFG_KERN_ARCH "mips"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_TUF-AX4200_3.0.0.4.388.30130/release/src-mtk-MT798X/linux/linux-5.4.x/"
+#define TMCFG_KERN_ARCH "arm64"
 
 /*
  * Toolchain (TC) configurations
  */
-#define TMCFG_TC_PFX "/opt/toolchain-mipsel_24kc_gcc-5.4.0_musl-1.1.24/bin/mipsel-openwrt-linux-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/openwrt-gcc840_musl.aarch64/bin/aarch64-openwrt-linux-"
 
 /*
  * Advanced Build Options
@@ -127,7 +127,7 @@
 #define TMCFG_TC_RANLIB "$(TMCFG_TC_PFX)ranlib"
 #define TMCFG_TC_STRIP "$(TMCFG_TC_PFX)strip"
 #define TMCFG_TC_OBJDUMP "$(TMCFG_TC_PFX)objdump"
-#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char"
+#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types"
 #define TMCFG_TC_EXTRA_LDFLAGS ""
 #define TMCFG_TC_RUN_STRIP 1 // y
 
@@ -154,12 +154,18 @@
 #define TMCFG_E_UDB_CORE_REV_VER 20
 #define TMCFG_E_UDB_CORE_SHN_REV_NUM 0
 #define TMCFG_E_UDB_CORE_USE_KBUILD 1 // y
-#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS ""
+#define TMCFG_E_UDB_CORE_EXTRA_CFLAGS "-Wno-incompatible-pointer-types"
 #define TMCFG_E_UDB_CORE_CONN_EXTRA 1 // y
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
-#define TMCFG_E_UDB_CORE_MESH 0 // n
+#define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
-#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 1 // y
+
+/*
+ * DNS Based WRS Configs
+ */
+#define TMCFG_E_UDB_CORE_DEF_REDIR_DOMAIN "blocking.asus.hns.tm"
+#define TMCFG_E_UDB_CORE_MAX_DNS_ENTRY 1000
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -183,20 +189,18 @@
 #define TMCFG_E_UDB_CORE_IQOS_RSV_DEF_CLS 1 // y
 #define TMCFG_E_UDB_CORE_GCTRL_SUPPORT 0 // n
 #define TMCFG_E_UDB_CORE_APP_PATROL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 1 // y
-#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 1 // y
-#define TMCFG_E_UDB_CORE_PATROL_TIME_GRP_NUM 32
-#define TMCFG_E_UDB_CORE_PATROL_TIME_DEV_NUM 6
+#define TMCFG_E_UDB_CORE_PATROL_TIME_QUOTA 0 // n
+#define TMCFG_E_UDB_CORE_APP_REDIRECT_URL 0 // n
 #define TMCFG_E_UDB_CORE_PROG_CTRL 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_NONE 1 // y
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V1 0 // n
 #define TMCFG_E_UDB_CORE_PROG_LIC_CTRL_V2 0 // n
-#define TMCFG_E_UDB_CORE_WPR_PAGE 1 // y
+#define TMCFG_E_UDB_CORE_WPR_PAGE 0 // n
 #define TMCFG_E_UDB_CORE_TMDBG 0 // n
 #define TMCFG_E_UDB_CORE_MEMTRACK 0 // n
 #define TMCFG_E_UDB_CORE_HTTP_REFER 0 // n
 #define TMCFG_E_UDB_SHELL 1 // y
-#define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS ""
+#define TMCFG_E_UDB_SHELL_EXTRA_CFLAGS "-Wno-incompatible-pointer-types"
 #define TMCFG_E_UDB_SHELL_KMOD_NAME "tdts_udb"
 #define TMCFG_E_UDB_SHELL_IOCTL_DEV_NAME "idpfw"
 #define TMCFG_E_UDB_SHELL_IOCTL_DEV_MAJ 191
@@ -207,8 +211,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 4
-#define TMCFG_E_REL_PKG_LOCAL_VER ""
+#define TMCFG_E_REL_PKG_REV_VER 5
+#define TMCFG_E_REL_PKG_LOCAL_VER "f9c0d5e3"
 
 /*
  * Accompany applications or modules
@@ -220,7 +224,7 @@
 #define TMCFG_APP_K_EXTRA_CFLAGS ""
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
-#define TMCFG_APP_K_TDTS_UDBFW_CT_NOTIF 1 // y
+#define TMCFG_APP_K_TDTS_UDBFW_CT_NOTIF 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW_META_EXTRACT 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_TC_WQ 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW_QOS_NETLINK_ID 21
@@ -234,7 +238,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/toolchain-mipsel_24kc_gcc-5.4.0_musl-1.1.24/bin/mipsel-openwrt-linux-"
+#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/openwrt-gcc840_musl.aarch64/bin/aarch64-openwrt-linux-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

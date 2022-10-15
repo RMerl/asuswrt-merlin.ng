@@ -29,6 +29,7 @@
 typedef struct {
     AVClass *class;
     uint32_t global_palette[16];
+    char *palette_str;
     int even_rows_fix;
 } DVDSubtitleContext;
 
@@ -423,6 +424,29 @@ fail:
     return ret;
 }
 
+static int bprint_to_extradata(AVCodecContext *avctx, struct AVBPrint *buf)
+{
+    int ret;
+    char *str;
+
+    ret = av_bprint_finalize(buf, &str);
+    if (ret < 0)
+        return ret;
+    if (!av_bprint_is_complete(buf)) {
+        av_free(str);
+        return AVERROR(ENOMEM);
+    }
+
+    avctx->extradata = str;
+    /* Note: the string is NUL terminated (so extradata can be read as a
+     * string), but the ending character is not accounted in the size (in
+     * binary formats you are likely not supposed to mux that character). When
+     * extradata is copied, it is also padded with AV_INPUT_BUFFER_PADDING_SIZE
+     * zeros. */
+    avctx->extradata_size = buf->len;
+    return 0;
+}
+
 static int dvdsub_init(AVCodecContext *avctx)
 {
     DVDSubtitleContext *dvdc = avctx->priv_data;
@@ -436,9 +460,13 @@ static int dvdsub_init(AVCodecContext *avctx)
     int i, ret;
 
     av_assert0(sizeof(dvdc->global_palette) == sizeof(default_palette));
-    memcpy(dvdc->global_palette, default_palette, sizeof(dvdc->global_palette));
+    if (dvdc->palette_str) {
+        ff_dvdsub_parse_palette(dvdc->global_palette, dvdc->palette_str);
+    } else {
+        memcpy(dvdc->global_palette, default_palette, sizeof(dvdc->global_palette));
+    }
 
-    av_bprint_init(&extradata, 0, 1);
+    av_bprint_init(&extradata, 0, AV_BPRINT_SIZE_AUTOMATIC);
     if (avctx->width && avctx->height)
         av_bprintf(&extradata, "size: %dx%d\n", avctx->width, avctx->height);
     av_bprintf(&extradata, "palette:");
@@ -446,7 +474,7 @@ static int dvdsub_init(AVCodecContext *avctx)
         av_bprintf(&extradata, " %06"PRIx32"%c",
                    dvdc->global_palette[i] & 0xFFFFFF, i < 15 ? ',' : '\n');
 
-    ret = avpriv_bprint_to_extradata(avctx, &extradata);
+    ret = bprint_to_extradata(avctx, &extradata);
     if (ret < 0)
         return ret;
 
@@ -467,6 +495,7 @@ static int dvdsub_encode(AVCodecContext *avctx,
 #define OFFSET(x) offsetof(DVDSubtitleContext, x)
 #define SE AV_OPT_FLAG_SUBTITLE_PARAM | AV_OPT_FLAG_ENCODING_PARAM
 static const AVOption options[] = {
+    {"palette", "set the global palette", OFFSET(palette_str), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, SE },
     {"even_rows_fix", "Make number of rows even (workaround for some players)", OFFSET(even_rows_fix), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, SE},
     { NULL },
 };

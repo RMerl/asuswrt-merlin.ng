@@ -27,6 +27,7 @@
 #define RAST_DFT_RSSI_VIDEO_CALL -80	/* rssi thresold to change idle rate weighting scheme */
 #define WL_NBAND_2G 2
 #define WL_NBAND_5G 1
+#define WL_NBAND_6G 4
 
 #define ROAMING_BYPASS 1
 #define ROAMING_NOT_BYPASS 2
@@ -60,7 +61,13 @@ struct rcpi_checklist {
 #else
 #define RAST_TIMEOUT_STA 10
 #endif
+
+#ifdef RTCONFIG_QUADBAND
+#define MAX_IF_NUM 4
+#else
 #define	MAX_IF_NUM 3
+#endif
+
 # ifdef RTCONFIG_FRONTHAUL_DWB
 #define MAX_SUBIF_NUM 6
 #else

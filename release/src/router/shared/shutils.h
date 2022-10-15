@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include <unistd.h>	//pid_t
 #include <rtconfig.h>
+#include <errno.h>
+#include <linux/unistd.h>       /* for _syscallX macros/related stuff */
+#include <sys/sysinfo.h>       /* for struct sysinfo */
+#include <sys/sysinfo.h>
 
 #ifndef MAX_NVPARSE
 #define MAX_NVPARSE 16
@@ -622,4 +626,6 @@ extern int ether_inc(unsigned char *e, const unsigned char n);
 #ifdef RTCONFIG_AMAS
 extern int check_if_exist_ifnames(char *need_check_ifname, char *ifname);
 #endif
+extern long get_sys_uptime();
+extern void wait_ntp_repeat(unsigned long usec, unsigned int count);
 #endif /* _shutils_h_ */

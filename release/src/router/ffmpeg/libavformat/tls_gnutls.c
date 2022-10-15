@@ -100,8 +100,7 @@ static int tls_close(URLContext *h)
         gnutls_deinit(c->session);
     if (c->cred)
         gnutls_certificate_free_credentials(c->cred);
-    if (c->tls_shared.tcp)
-        ffurl_close(c->tls_shared.tcp);
+    ffurl_closep(&c->tls_shared.tcp);
     ff_gnutls_deinit();
     return 0;
 }
@@ -182,11 +181,18 @@ static int tls_open(URLContext *h, const char *uri, int flags, AVDictionary **op
     gnutls_transport_set_push_function(p->session, gnutls_url_push);
     gnutls_transport_set_ptr(p->session, c->tcp);
     gnutls_priority_set_direct(p->session, "NORMAL", NULL);
-    ret = gnutls_handshake(p->session);
-    if (ret) {
-        ret = print_tls_error(h, ret);
-        goto fail;
-    }
+    do {
+        if (ff_check_interrupt(&h->interrupt_callback)) {
+            ret = AVERROR_EXIT;
+            goto fail;
+        }
+
+        ret = gnutls_handshake(p->session);
+        if (gnutls_error_is_fatal(ret)) {
+            ret = print_tls_error(h, ret);
+            goto fail;
+        }
+    } while (ret);
     p->need_shutdown = 1;
     if (c->verify) {
         unsigned int status, cert_list_size;
@@ -263,6 +269,12 @@ static int tls_get_file_handle(URLContext *h)
     return ffurl_get_file_handle(c->tls_shared.tcp);
 }
 
+static int tls_get_short_seek(URLContext *h)
+{
+    TLSContext *s = h->priv_data;
+    return ffurl_get_short_seek(s->tls_shared.tcp);
+}
+
 static const AVOption options[] = {
     TLS_COMMON_OPTIONS(TLSContext, tls_shared),
     { NULL }
@@ -282,6 +294,7 @@ const URLProtocol ff_tls_protocol = {
     .url_write      = tls_write,
     .url_close      = tls_close,
     .url_get_file_handle = tls_get_file_handle,
+    .url_get_short_seek  = tls_get_short_seek,
     .priv_data_size = sizeof(TLSContext),
     .flags          = URL_PROTOCOL_FLAG_NETWORK,
     .priv_data_class = &tls_class,

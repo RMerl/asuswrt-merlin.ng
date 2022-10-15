@@ -31,7 +31,7 @@ function Get_Component_Customize_Alert(_text){
 	$desc.appendTo($customize_alert);
 	var $action_btn_container = $("<div>").addClass("action_btn_container");
 	$action_btn_container.appendTo($customize_alert);
-	var $ok = $("<div>").addClass("ok btn").html("<#CTL_ok#>");
+	var $ok = $("<div>").attr({"data-btn":"ok"}).addClass("ok btn").html("<#CTL_ok#>");
 	$ok.appendTo($action_btn_container);
 	$ok.unbind("click").click(function(e){
 		e = e || event;

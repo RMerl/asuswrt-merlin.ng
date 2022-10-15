@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=In Anbetracht der Kompatibilität von AiMesh-System und Endg
 AiMesh_confirm_msg10=Um die Verbindung Ihres AiMesh-Systems und der Endgeräte sicherzustellen, lesen Sie bitte diese <a id="wpa3FaqLink">FAQ</a>, bevor Sie zu WPA3-Personal wechseln.
 AiMesh_confirm_msg11=Sie verwenden aktuell WPA3-Personal. Um ein AiMesh-System zu erstellen, wird Ihre Authentifizierungsmethode in WPA2/WPA3-Personal geändert. Möchten Sie fortfahren?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Wenn Sie weitere Details wünschen, besuchen Sie bitte: <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>diesen FAQ</a>
+AiMesh_confirm_msg13=Wenn Sie weitere Details wünschen, besuchen Sie bitte: <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>diesen FAQ</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh ist eine neue innovative Routerfunktion, durch die mehrere ASUS Router miteinander verbunden werden können und so für eine WLAN-Abdeckung in Ihrem gesamten Zuhause gesorgt wird.
 AiMesh_FAQ=Erfahren Sie mehr über ASUS AiMesh
 AiMesh_FindNode=AiMesh-Netzknoten finden
@@ -3483,7 +3483,7 @@ TZ40_2=Kaliningrad
 TZ41=Athen
 TZ42=Jerusalem
 TZ43=Harare, Pretoria
-TZ43_2=Kiew
+TZ43_2=Kyiv
 TZ44=Moskau, St. Petersburg
 TZ45=Wolgograd
 TZ46=Kuwait, Riad
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP-MSS-Option
 WANTCPMSSOptionComm1Text=Bytes
 WANVLANIDText=VLAN-ID
-WANAggregation_desc=Bei der WAN-Aggregation werden zwei Netzwerkverbindungen kombiniert, um die WAN-Geschwindigkeit auf bis zu 2 Gbps zu erweitern. Verbinden sie den WAN-Anschluss des Routers mit dem LAN-Anschluss 4 des Modems. (Stellen Sie dabei sicher, dass beide Kabel über die gleiche Spezifikation verfügen.) <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-Aggregation – FAQ</a>
+WANAggregation_desc=Bei der WAN-Aggregation werden zwei Netzwerkverbindungen kombiniert, um die WAN-Geschwindigkeit auf bis zu 2 Gbps zu erweitern. Verbinden sie den #WAN-Anschluss des Routers mit dem LAN-Anschluss 4 des Modems. (Stellen Sie dabei sicher, dass beide Kabel über die gleiche Spezifikation verfügen.) <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-Aggregation – FAQ</a>
 WANAggregation_enable=WAN-Aggregation aktivieren
 WANAggregation_disable_dualwan=Auf Ihrem Router ist Dual-WAN aktiviert. Durch Aktivierung von WAN-Aggregation wird Dual-WAN deaktiviert. Möchten Sie fortfahren?
 WANAggregation_disable_WANAggregation=Auf Ihrem Router ist WAN-Aggregation aktiviert. Durch Aktivierung von Dual-WAN wird WAN-Aggregation deaktiviert. Möchten Sie fortfahren?
 WANAggregation_PortConflict_hint1=LAN-Anschluss 4 Ihres Routers wird für WAN-Aggregation verwendet. Durch Aktivierung von IPTV wird WAN-Aggregation deaktiviert. Möchten Sie fortfahren?
 WANAggregation_PortConflict_hint2=LAN-Anschluss 4 Ihres Routers wird für IPTV verwendet. Durch Aktivierung von IPTV wird WAN-Aggregation deaktiviert. Möchten Sie fortfahren?
 WANAggregation_disable_IPTVDualWAN=Auf Ihrem Router ist sowohl Dual-WAN als auch IPTV aktiviert. Durch Aktivierung von WAN-Aggregation werden Dual-WAN und IPTV deaktiviert, um Port-Konflikten vorzubeugen. Möchten Sie fortfahren?
-WANAggregation_help_WAN=Stellen Sie sicher, dass der WAN-Anschluss des Routers mit dem LAN-Anschluss des Modems über zwei Kabel mit der gleichen Spezifikation verbunden wurde.
+WANAggregation_help_WAN=Stellen Sie sicher, dass der #WAN-Anschluss des Routers mit dem LAN-Anschluss des Modems über zwei Kabel mit der gleichen Spezifikation verbunden wurde.
 WANAggregation_help_LAN=Stellen Sie sicher, dass LAN-Anschluss 4 des Routers über zwei Kabel mit der gleichen Spezifikation mit dem LAN-Anschluss des Modems verbunden wurde.
 WANAggregation_goto_WAN=Navigieren Sie zur Seite "WAN-Internetverbindung", um WAN-Aggregation zu aktivieren.
 WANAggregation_help_desc=Wenn sich die WAN-Aggregation nicht einrichten lässt, beachten Sie bitte Folgendes:
-WANAggregation_help_step1=Stellen Sie sicher, dass die LAN-Ports Ihres Modems mit Kabeln bereits mit dem WAN und LAN 4 Ihres Routers verbunden sind.
+WANAggregation_help_step1=Stellen Sie sicher, dass die LAN-Ports Ihres Modems mit Kabeln bereits mit dem #WAN und LAN 4 Ihres Routers verbunden sind.
 WANAggregation_help_step2=Stellen Sie sicher, dass bei Ihrem Modem 802.3ad aktiviert wurde.
 WANAggregation_help_step3=Überprüfen Sie, ob Sie zwei Kabel mit der gleichen Spezifikation verwenden (entweder Gigabit oder 10/100 Mbps; keine Kombinationen).
 WANAggregation_help_step4=Starten Sie Ihren Router neu.
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Wählen Sie GeForce Now aus, um entsprechende Gaming-Geräte zu bevorzugen. So profitieren Sie von verbessertem Gaming.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Ereignis
 AURA_Event_desc=Die folgenden Ereignisse werden vom System erkannt, woraufhin entsprechende LED-Effekte als Benachrichtigung ausgelöst werden.
 AURA_Event_Boost_desc=Wenn Sie Game Boost verwenden, zeigt die LED-Leiste einen Atmungseffekt in Rot.

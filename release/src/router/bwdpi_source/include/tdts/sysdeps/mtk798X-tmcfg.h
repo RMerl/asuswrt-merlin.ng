@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Fri Feb 25 14:16:27 2022
+ * Date: Fri Sep 30 10:54:27 2022
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "4g-ax56"
+#define TMCFG_MODEL "tuf-ax4200"
 
 /*
  * Target device information
@@ -41,17 +41,17 @@
 #define TMCFG_KERN_SPACE 1 // y
 #define TMCFG_ARCH_X86 0 // n
 #define TMCFG_ARCH_X86_64 0 // n
-#define TMCFG_ARCH_MIPS 1 // y
+#define TMCFG_ARCH_MIPS 0 // n
 #define TMCFG_ARCH_ARM 0 // n
-#define TMCFG_ARCH_ARM_64 0 // n
+#define TMCFG_ARCH_ARM_64 1 // y
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX53U_GPL_382.44863/release/src-ra-openwrt-4210/linux/linux-4.4.198"
-#define TMCFG_KERN_ARCH "mips"
-#define TMCFG_CPU_32BITS 1 // y
-#define TMCFG_CPU_64BITS 0 // n
-#define TMCFG_LOCAL_ATOMIC_OP_LOCK 1 // y
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_TUF-AX4200_3.0.0.4.388.30130/release/src-mtk-MT798X/linux/linux-5.4.x/"
+#define TMCFG_KERN_ARCH "arm64"
+#define TMCFG_CPU_32BITS 0 // n
+#define TMCFG_CPU_64BITS 1 // y
+#define TMCFG_LOCAL_ATOMIC_OP_LOCK 0 // n
 
 /*
  * Toolchain (TC) configurations
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/toolchain-mipsel_24kc_gcc-5.4.0_musl-1.1.24/bin/mipsel-openwrt-linux-"
+#define TMCFG_TC_PFX "/opt/ASUS/toolchains/openwrt-gcc840_musl.aarch64/bin/aarch64-openwrt-linux-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -72,7 +72,7 @@
 /*
  * (CAUTION) Shared CC flags. Do not change if u are not sure.
  */
-#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char"
+#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types"
 #define TMCFG_TC_EXTRA_LDFLAGS ""
 #define TMCFG_TC_RUN_STRIP 1 // y
 
@@ -93,7 +93,7 @@
 /*
  * Engine
  */
-#define TMCFG_E_EXTRA_CFLAGS ""
+#define TMCFG_E_EXTRA_CFLAGS "-Wno-incompatible-pointer-types"
 #define TMCFG_E_KMOD_NAME "tdts"
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
@@ -227,7 +227,7 @@
 /*
  * Engine shell
  */
-#define TMCFG_E_SHELL_EXTRA_CFLAGS ""
+#define TMCFG_E_SHELL_EXTRA_CFLAGS "-Wno-incompatible-pointer-types"
 #define TMCFG_E_SHELL_ATIMER 1 // y
 #define TMCFG_E_SHELL_DEPRECATED_PROCFS 1 // y
 
@@ -250,7 +250,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/toolchain-mipsel_24kc_gcc-5.4.0_musl-1.1.24/bin/mipsel-openwrt-linux-"
+#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/openwrt-gcc840_musl.aarch64/bin/aarch64-openwrt-linux-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"

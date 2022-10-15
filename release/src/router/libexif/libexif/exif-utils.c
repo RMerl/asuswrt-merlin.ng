@@ -89,9 +89,9 @@ exif_get_sshort (const unsigned char *buf, ExifByteOrder order)
 	if (!buf) return 0;
         switch (order) {
         case EXIF_BYTE_ORDER_MOTOROLA:
-                return ((buf[0] << 8) | buf[1]);
+                return (((unsigned int)buf[0] << 8) | buf[1]);
         case EXIF_BYTE_ORDER_INTEL:
-                return ((buf[1] << 8) | buf[0]);
+                return (((unsigned int)buf[1] << 8) | buf[0]);
         }
 
 	/* Won't be reached */
@@ -132,9 +132,9 @@ exif_get_slong (const unsigned char *b, ExifByteOrder order)
 	if (!b) return 0;
         switch (order) {
         case EXIF_BYTE_ORDER_MOTOROLA:
-                return ((b[0] << 24) | (b[1] << 16) | (b[2] << 8) | b[3]);
+                return (((uint32_t)b[0] << 24) | ((uint32_t)b[1] << 16) | ((uint32_t)b[2] << 8) | (uint32_t)b[3]);
         case EXIF_BYTE_ORDER_INTEL:
-                return ((b[3] << 24) | (b[2] << 16) | (b[1] << 8) | b[0]);
+                return (((uint32_t)b[3] << 24) | ((uint32_t)b[2] << 16) | ((uint32_t)b[1] << 8) | (uint32_t)b[0]);
         }
 
 	/* Won't be reached */
@@ -217,37 +217,41 @@ exif_set_srational (unsigned char *buf, ExifByteOrder order,
  * It should really be replaced by iconv().
  */
 void
-exif_convert_utf16_to_utf8 (char *out, const unsigned short *in, int maxlen)
+exif_convert_utf16_to_utf8 (char *out, const unsigned char *in, int maxlen)
 {
 	if (maxlen <= 0) {
 		return;
 	}
-	while (*in) {
-		if (*in < 0x80) {
+	for (;;) {
+		ExifShort v = exif_get_short(in, EXIF_BYTE_ORDER_INTEL);
+		if (!v)
+			break;
+		if (v < 0x80) {
 			if (maxlen > 1) {
-				*out++ = (char)*in++;
+				*out++ = (char)v;
 				maxlen--;
 			} else {
 				break;
 			}
-		} else if (*in < 0x800) {
+		} else if (v < 0x800) {
 			if (maxlen > 2) {
-				*out++ = ((*in >> 6) & 0x1F) | 0xC0;
-				*out++ = (*in++ & 0x3F) | 0x80;
+				*out++ = ((v >> 6) & 0x1F) | 0xC0;
+				*out++ = (v & 0x3F) | 0x80;
 				maxlen -= 2;
 			} else {
 				break;
 			}
 		} else {
-			if (maxlen > 2) {
-				*out++ = ((*in >> 12) & 0x0F) | 0xE0;
-				*out++ = ((*in >> 6) & 0x3F) | 0x80;
-				*out++ = (*in++ & 0x3F) | 0x80;
+			if (maxlen > 3) {
+				*out++ = ((v >> 12) & 0x0F) | 0xE0;
+				*out++ = ((v >> 6) & 0x3F) | 0x80;
+				*out++ = (v & 0x3F) | 0x80;
 				maxlen -= 3;
 			} else {
 				break;
 			}
 		}
+		in += 2;
 	}
 	*out = 0;
 }

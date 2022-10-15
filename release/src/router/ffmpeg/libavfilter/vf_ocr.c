@@ -43,7 +43,7 @@ typedef struct OCRContext {
 static const AVOption ocr_options[] = {
     { "datapath",  "set datapath",            OFFSET(datapath),  AV_OPT_TYPE_STRING, {.str=NULL},  0, 0, FLAGS },
     { "language",  "set language",            OFFSET(language),  AV_OPT_TYPE_STRING, {.str="eng"}, 0, 0, FLAGS },
-    { "whitelist", "set character whitelist", OFFSET(whitelist), AV_OPT_TYPE_STRING, {.str="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.:;,-+_!?\"'[]{}()<>|/\\=*&%$#@!~"}, 0, 0, FLAGS },
+    { "whitelist", "set character whitelist", OFFSET(whitelist), AV_OPT_TYPE_STRING, {.str="0123456789abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ.:;,-+_!?\"'[]{}()<>|/\\=*&%$#@!~ "}, 0, 0, FLAGS },
     { "blacklist", "set character blacklist", OFFSET(blacklist), AV_OPT_TYPE_STRING, {.str=""},    0, 0, FLAGS },
     { NULL }
 };
@@ -100,11 +100,21 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     OCRContext *s = ctx->priv;
     char *result;
+    int *confs;
 
     result = TessBaseAPIRect(s->tess, in->data[0], 1,
                              in->linesize[0], 0, 0, in->width, in->height);
+    confs = TessBaseAPIAllWordConfidences(s->tess);
     av_dict_set(metadata, "lavfi.ocr.text", result, 0);
+    for (int i = 0; confs[i] != -1; i++) {
+        char number[256];
+
+        snprintf(number, sizeof(number), "%d ", confs[i]);
+        av_dict_set(metadata, "lavfi.ocr.confidence", number, AV_DICT_APPEND);
+    }
+
     TessDeleteText(result);
+    TessDeleteIntArray(confs);
 
     return ff_filter_frame(outlink, in);
 }

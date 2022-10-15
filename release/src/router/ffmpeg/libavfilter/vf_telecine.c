@@ -101,19 +101,16 @@ static av_cold int init(AVFilterContext *ctx)
 
 static int query_formats(AVFilterContext *ctx)
 {
-    AVFilterFormats *pix_fmts = NULL;
-    int fmt, ret;
+    AVFilterFormats *formats = NULL;
+    int ret;
 
-    for (fmt = 0; av_pix_fmt_desc_get(fmt); fmt++) {
-        const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(fmt);
-        if (!(desc->flags & AV_PIX_FMT_FLAG_HWACCEL ||
-              desc->flags & AV_PIX_FMT_FLAG_PAL     ||
-              desc->flags & AV_PIX_FMT_FLAG_BITSTREAM) &&
-            (ret = ff_add_format(&pix_fmts, fmt)) < 0)
-            return ret;
-    }
-
-    return ff_set_common_formats(ctx, pix_fmts);
+    ret = ff_formats_pixdesc_filter(&formats, 0,
+                                    AV_PIX_FMT_FLAG_BITSTREAM |
+                                    AV_PIX_FMT_FLAG_PAL |
+                                    AV_PIX_FMT_FLAG_HWACCEL);
+    if (ret < 0)
+        return ret;
+    return ff_set_common_formats(ctx, formats);
 }
 
 static int config_input(AVFilterLink *inlink)
@@ -207,6 +204,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
                                 s->stride[i],
                                 (s->planeheight[i] - !s->first_field + 1) / 2);
         }
+        s->frame[nout]->interlaced_frame = 1;
+        s->frame[nout]->top_field_first  = !s->first_field;
         nout++;
         len--;
         s->occupied = 0;
@@ -220,6 +219,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
                                 inpicref->data[i], inpicref->linesize[i],
                                 s->stride[i],
                                 s->planeheight[i]);
+        s->frame[nout]->interlaced_frame = inpicref->interlaced_frame;
+        s->frame[nout]->top_field_first  = inpicref->top_field_first;
         nout++;
         len -= 2;
     }
@@ -236,6 +237,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
 
     for (i = 0; i < nout; i++) {
         AVFrame *frame = av_frame_clone(s->frame[i]);
+        int interlaced = frame ? frame->interlaced_frame : 0;
+        int tff        = frame ? frame->top_field_first  : 0;
 
         if (!frame) {
             av_frame_free(&inpicref);
@@ -243,6 +246,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
         }
 
         av_frame_copy_props(frame, inpicref);
+        frame->interlaced_frame = interlaced;
+        frame->top_field_first  = tff;
         frame->pts = ((s->start_time == AV_NOPTS_VALUE) ? 0 : s->start_time) +
                      av_rescale(outlink->frame_count_in, s->ts_unit.num,
                                 s->ts_unit.den);

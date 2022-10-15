@@ -163,7 +163,7 @@ RCSTRING=""
 RC_EXT_NO=0
 endif
 
-ifneq ($(findstring 388-rc1,$(CURRENT_BRANCH)),)
+ifeq ($(CURRENT_BRANCH), asuswrt-router-3004-388-rc1)
 EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)rc1_head..HEAD | wc -l)
 else
 EXTENDNO1=$(shell git log --pretty=oneline asuswrt_$(KERNEL_VER).$(FS_VER).$(SERIALNO)..HEAD | wc -l)
@@ -700,7 +700,6 @@ ifeq ($(HND_ROUTER),y)
 	@rm -rf image
 	@ln -sf targets/${PROFILE} image
 	$(MAKE) buildimage
-	@rm -rf targets/${PROFILE}/*cferom*
 else
 	@-mkdir -p image
 
@@ -3592,10 +3591,12 @@ define RouterOptions
 		fi; \
 		sed -i "/RTCONFIG_AMAS_SYNC_2G_BW/d" $(1); \
 		echo "RTCONFIG_AMAS_SYNC_2G_BW=y" >>$(1); \
-		sed -i "/RTCONFIG_ACCOUNT_BINDING/d" $(1); \
-		echo "RTCONFIG_ACCOUNT_BINDING=y" >>$(1); \
-		sed -i "/RTCONFIG_AWSIOT/d" $(1); \
-	        echo "RTCONFIG_AWSIOT=y" >>$(1); \
+		if [ "$(findstring RP-, $(BUILD_NAME))" != "RP-" ]; then \
+			sed -i "/RTCONFIG_ACCOUNT_BINDING/d" $(1); \
+			echo "RTCONFIG_ACCOUNT_BINDING=y" >>$(1); \
+			sed -i "/RTCONFIG_AWSIOT/d" $(1); \
+			echo "RTCONFIG_AWSIOT=y" >>$(1); \
+		fi; \
 		sed -i "/RTCONFIG_NOTIFICATION_CENTER/d" $(1); \
 		echo "RTCONFIG_NOTIFICATION_CENTER=y" >>$(1); \
 		sed -i "/RTCONFIG_BHSWITCH_RE_SELFOPT/d" $(1); \
@@ -3640,6 +3641,12 @@ define RouterOptions
 				sed -i "/RTCONFIG_CD_IPERF/d" $(1); \
 				echo "RTCONFIG_CD_IPERF=y" >>$(1); \
 			fi; \
+		fi; \
+		sed -i "/RTCONFIG_AMAS_SYNC_LEDG/d" $(1); \
+		if [ "$(AMAS_SYNC_LEDG)" = "y" ]; then \
+			echo "RTCONFIG_AMAS_SYNC_LEDG=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_AMAS_SYNC_LEDG is not set" >>$(1); \
 		fi; \
 	fi;
 	sed -i "/RTCONFIG_BATMAN_ADV/d" $(1); \
@@ -3932,6 +3939,9 @@ define RouterOptions
 	if [ -n "$(CAPTCHA)" = "y" ]; then \
 		sed -i "/RTCONFIG_CAPTCHA/d" $(1); \
 		echo "RTCONFIG_CAPTCHA=y" >>$(1); \
+	elif [ "$(CAPTCHA)" = "n" ]; then \
+		sed -i "/RTCONFIG_CAPTCHA/d" $(1); \
+		echo "# RTCONFIG_CAPTCHA is not set" >>$(1); \
 	fi;
 	if [ -n "$(DISAPPCAPT)" = "y" ]; then \
 		sed -i "/RTCONFIG_DISAPPCAPT/d" $(1); \
@@ -4100,6 +4110,16 @@ define RouterOptions
 	if [ "$(BSC_SR)" = "y" ]; then \
 		sed -i "/RTCONFIG_BSC_SR/d" $(1); \
 		echo "RTCONFIG_BSC_SR=y" >>$(1); \
+	fi;
+	sed -i "/RTCONFIG_AMAS_SS2/d" $(1); \
+	if [ "$(AMAS_SS2)" = "y" ]; then \
+		echo "RTCONFIG_AMAS_SS2=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_AMAS_SS2 is not set" >>$(1); \
+	fi;
+	if [ "$(WPA3_ENTERPRISE)" = "y" ]; then \
+		sed -i "/RTCONFIG_WPA3_ENTERPRISE/d" $(1); \
+		echo "RTCONFIG_WPA3_ENTERPRISE=y" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef

@@ -43,7 +43,7 @@ typedef struct SwapRectContext {
 } SwapRectContext;
 
 #define OFFSET(x) offsetof(SwapRectContext, x)
-#define FLAGS AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
+#define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 static const AVOption swaprect_options[] = {
     { "w",  "set rect width",                     OFFSET(w),  AV_OPT_TYPE_STRING, {.str="w/2"}, 0, 0, .flags = FLAGS },
     { "h",  "set rect height",                    OFFSET(h),  AV_OPT_TYPE_STRING, {.str="h/2"}, 0, 0, .flags = FLAGS },
@@ -99,7 +99,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     var_values[VAR_DAR] = var_values[VAR_A] * var_values[VAR_SAR];
     var_values[VAR_N]   = inlink->frame_count_out;
     var_values[VAR_T]   = in->pts == AV_NOPTS_VALUE ? NAN : in->pts * av_q2d(inlink->time_base);
-    var_values[VAR_POS] = in->pkt_pos ? NAN : in->pkt_pos;
+    var_values[VAR_POS] = in->pkt_pos == -1 ? NAN : in->pkt_pos;
 
     ret = av_expr_parse_and_eval(&dw, s->w,
                                  var_names, &var_values[0],
@@ -151,32 +151,32 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     x2[0] = av_clip(x2[0], 0, inlink->w - 1);
     y2[0] = av_clip(y2[0], 0, inlink->w - 1);
 
-    ah[1] = ah[2] = FF_CEIL_RSHIFT(h, s->desc->log2_chroma_h);
+    ah[1] = ah[2] = AV_CEIL_RSHIFT(h, s->desc->log2_chroma_h);
     ah[0] = ah[3] = h;
-    aw[1] = aw[2] = FF_CEIL_RSHIFT(w, s->desc->log2_chroma_w);
+    aw[1] = aw[2] = AV_CEIL_RSHIFT(w, s->desc->log2_chroma_w);
     aw[0] = aw[3] = w;
 
     w = FFMIN3(w, inlink->w - x1[0], inlink->w - x2[0]);
     h = FFMIN3(h, inlink->h - y1[0], inlink->h - y2[0]);
 
-    ph[1] = ph[2] = FF_CEIL_RSHIFT(h, s->desc->log2_chroma_h);
+    ph[1] = ph[2] = AV_CEIL_RSHIFT(h, s->desc->log2_chroma_h);
     ph[0] = ph[3] = h;
-    pw[1] = pw[2] = FF_CEIL_RSHIFT(w, s->desc->log2_chroma_w);
+    pw[1] = pw[2] = AV_CEIL_RSHIFT(w, s->desc->log2_chroma_w);
     pw[0] = pw[3] = w;
 
-    lh[1] = lh[2] = FF_CEIL_RSHIFT(inlink->h, s->desc->log2_chroma_h);
+    lh[1] = lh[2] = AV_CEIL_RSHIFT(inlink->h, s->desc->log2_chroma_h);
     lh[0] = lh[3] = inlink->h;
-    lw[1] = lw[2] = FF_CEIL_RSHIFT(inlink->w, s->desc->log2_chroma_w);
+    lw[1] = lw[2] = AV_CEIL_RSHIFT(inlink->w, s->desc->log2_chroma_w);
     lw[0] = lw[3] = inlink->w;
 
-    x1[1] = x1[2] = FF_CEIL_RSHIFT(x1[0], s->desc->log2_chroma_w);
+    x1[1] = x1[2] = AV_CEIL_RSHIFT(x1[0], s->desc->log2_chroma_w);
     x1[0] = x1[3] = x1[0];
-    y1[1] = y1[2] = FF_CEIL_RSHIFT(y1[0], s->desc->log2_chroma_h);
+    y1[1] = y1[2] = AV_CEIL_RSHIFT(y1[0], s->desc->log2_chroma_h);
     y1[0] = y1[3] = y1[0];
 
-    x2[1] = x2[2] = FF_CEIL_RSHIFT(x2[0], s->desc->log2_chroma_w);
+    x2[1] = x2[2] = AV_CEIL_RSHIFT(x2[0], s->desc->log2_chroma_w);
     x2[0] = x2[3] = x2[0];
-    y2[1] = y2[2] = FF_CEIL_RSHIFT(y2[0], s->desc->log2_chroma_h);
+    y2[1] = y2[2] = AV_CEIL_RSHIFT(y2[0], s->desc->log2_chroma_h);
     y2[0] = y2[3] = y2[0];
 
     for (p = 0; p < s->nb_planes; p++) {
@@ -253,4 +253,5 @@ AVFilter ff_vf_swaprect = {
     .inputs        = inputs,
     .outputs       = outputs,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+    .process_command = ff_filter_process_command,
 };

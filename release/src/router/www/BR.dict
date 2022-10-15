@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Considerando a compatibilidade do sistema AiMesh e dos dispo
 AiMesh_confirm_msg10=Para garantir a conexão do seu sistema AiMesh e do(s) dispositivo(s)-fim, leia estas <a id="wpa3FaqLink">FAQs</a> antes de mudar para WPA3-Personal.
 AiMesh_confirm_msg11=Você está usando o WPA3-personal. Para criar um sistema AiMesh, seu método de autenticação será alterado para WPA2/WPA3-personal. Deseja continuar?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Para mais detalhes, visite <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Perguntas e Respostas</a>
+AiMesh_confirm_msg13=Para mais detalhes, visite <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>Perguntas e Respostas</a>
 AiMesh_Feature_Desc=O avançado ASUS AiMesh é um novo e inovador recurso de roteador que conecta vários roteadores ASUS, criando uma rede WiFi totalmente residencial.
 AiMesh_FAQ=Saiba mais sobre ASUS AiMesh
 AiMesh_FindNode=Encontrar o nó AiMesh
@@ -3827,18 +3827,18 @@ wandog_enable2=Ativar Ping to Internet
 WANTCPMSSOptionText=Opção TCP MSS
 WANTCPMSSOptionComm1Text=bytes
 WANVLANIDText=ID de VLAN
-WANAggregation_desc=Agregação WAN combina duas conexões de rede para aumentar sua velocidade até WAN para 2 Gbps. Conecte a porta WAN do seu roteador e porta LAN 4 a portas LAN do seu modem (garantir que você use dois cabos com a mesma especificação). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ de Agregação WAN</a>
+WANAggregation_desc=Agregação WAN combina duas conexões de rede para aumentar sua velocidade até WAN para 2 Gbps. Conecte a porta #WAN do seu roteador e porta LAN 4 a portas LAN do seu modem (garantir que você use dois cabos com a mesma especificação). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ de Agregação WAN</a>
 WANAggregation_enable=Ativar Agregação de WAN
 WANAggregation_disable_dualwan=O roteador tem WAN Dupla ativada. Permitir Agregação WAN irá desativar WAN Dupla. Tem certeza de que deseja continuar?
 WANAggregation_disable_WANAggregation=Seu roteador tem Agregação WAN ativada. Permitir WAN dupla irá desativar Agregação WAN. Tem certeza de que deseja continuar?
 WANAggregation_PortConflict_hint1=Agregação WAN está usando a porta LAN 4 do seu roteador. Permitir IPTV irá desativar Agregação WAN. Tem certeza de que deseja continuar?
 WANAggregation_PortConflict_hint2=IPTV está usando a porta LAN 4 do seu roteador. Permitir Agregação WAN irá desativar IPTV. Tem certeza de que deseja continuar?
 WANAggregation_disable_IPTVDualWAN=O roteador tem tanto WAN Dupla e IPTV ativadas. Permitir Agregação WAN irá desativar WAN dupla e IPTV para evitar conflitos de porta. Tem certeza de que deseja continuar?
-WANAggregation_help_WAN=Assegure que a porta WAN do seu roteador e a porta LAN do seu modem foram conectadas usando dois cabos com a mesma especificação.
+WANAggregation_help_WAN=Assegure que a porta #WAN do seu roteador e a porta LAN do seu modem foram conectadas usando dois cabos com a mesma especificação.
 WANAggregation_help_LAN=Assegure que a porta LAN 4 do seu roteador e a porta LAN do seu modem foram conectadas usando dois cabos com a mesma especificação.
 WANAggregation_goto_WAN=Para ativar Agregação WAN vá para a página de Conexão de <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">Internet WAN</a>.
 WANAggregation_help_desc=Se a configuração Agregação de WAN não for bem sucedida, siga os passos abaixo para tentar novamente.
-WANAggregation_help_step1=Verifique se as portas LAN do modem já estão conectadas às portas WAN e LAN 4 do seu roteador usando cabos.
+WANAggregation_help_step1=Verifique se as portas LAN do modem já estão conectadas às portas #WAN e LAN 4 do seu roteador usando cabos.
 WANAggregation_help_step2=Certifique-se seu modem permitiu 802.3ad
 WANAggregation_help_step3=Confirme se você usar dois cabos com a mesma especificação (ou gigabit & gigabit ou 10/100 & 10/100 Mbps)
 WANAggregation_help_step4=Reinicie seu roteador
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Selecione GeForce Now priorizar dispositivos de jogos GeForce Now para uma experiência de jogo mais rápido e melhor.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Evento
 AURA_Event_desc=O sistema irá detectar os seguintes eventos e desencadear efeitos de LED diferentes.
 AURA_Event_Boost_desc=Ao ativar Game Boost, você verá a barra de LED usar um efeito vermelho de respiração.

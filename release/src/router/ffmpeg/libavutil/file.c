@@ -60,6 +60,7 @@ int av_file_map(const char *filename, uint8_t **bufptr, size_t *size,
     off_t off_size;
     char errbuf[128];
     *bufptr = NULL;
+    *size = 0;
 
     if (fd < 0) {
         err = AVERROR(errno);
@@ -85,6 +86,11 @@ int av_file_map(const char *filename, uint8_t **bufptr, size_t *size,
     }
     *size = off_size;
 
+    if (!*size) {
+        *bufptr = NULL;
+        goto out;
+    }
+
 #if HAVE_MMAP
     ptr = mmap(NULL, *size, PROT_READ|PROT_WRITE, MAP_PRIVATE, fd, 0);
     if (ptr == MAP_FAILED) {
@@ -92,6 +98,7 @@ int av_file_map(const char *filename, uint8_t **bufptr, size_t *size,
         av_strerror(err, errbuf, sizeof(errbuf));
         av_log(&file_log_ctx, AV_LOG_ERROR, "Error occurred in mmap(): %s\n", errbuf);
         close(fd);
+        *size = 0;
         return err;
     }
     *bufptr = ptr;
@@ -103,6 +110,7 @@ int av_file_map(const char *filename, uint8_t **bufptr, size_t *size,
         if (!mh) {
             av_log(&file_log_ctx, AV_LOG_ERROR, "Error occurred in CreateFileMapping()\n");
             close(fd);
+            *size = 0;
             return -1;
         }
 
@@ -111,6 +119,7 @@ int av_file_map(const char *filename, uint8_t **bufptr, size_t *size,
         if (!ptr) {
             av_log(&file_log_ctx, AV_LOG_ERROR, "Error occurred in MapViewOfFile()\n");
             close(fd);
+            *size = 0;
             return -1;
         }
 
@@ -121,17 +130,21 @@ int av_file_map(const char *filename, uint8_t **bufptr, size_t *size,
     if (!*bufptr) {
         av_log(&file_log_ctx, AV_LOG_ERROR, "Memory allocation error occurred\n");
         close(fd);
+        *size = 0;
         return AVERROR(ENOMEM);
     }
     read(fd, *bufptr, *size);
 #endif
 
+out:
     close(fd);
     return 0;
 }
 
 void av_file_unmap(uint8_t *bufptr, size_t size)
 {
+    if (!size || !bufptr)
+        return;
 #if HAVE_MMAP
     munmap(bufptr, size);
 #elif HAVE_MAPVIEWOFFILE

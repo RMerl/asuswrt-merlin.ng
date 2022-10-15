@@ -740,6 +740,22 @@
 	font-size: 16px;
 	color: rgb(186 192 206);
 }
+.notice_container{
+	border: 1px solid #00DEDA;
+	border-radius: 6px;
+	margin-bottom: 12px;
+	padding: 6px;
+	padding-left: 18px;
+	font-weight: 500;
+	font-size: 12px;
+}
+.notice_container  .notice_title{
+	color: #00DEDA;
+}
+.notice_container  .notice_desc{
+	color: #FFFFFF;
+	line-height: 160%;
+}
 .export_btn_container{
 	    display: flex;
     justify-content: space-between;

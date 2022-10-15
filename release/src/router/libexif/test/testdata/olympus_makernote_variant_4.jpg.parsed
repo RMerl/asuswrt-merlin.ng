@@ -1,0 +1,176 @@
+File olympus_makernote_variant_4.jpg
+Byte order: Intel
+  Content 0: ifd=0
+    Entry 0: ImageDescription (ASCII)
+      Size, Comps: 32, 32
+      Value: OLYMPUS DIGITAL CAMERA         
+    Entry 1: Make (ASCII)
+      Size, Comps: 24, 24
+      Value: OLYMPUS IMAGING CORP.  
+    Entry 2: Model (ASCII)
+      Size, Comps: 17, 17
+      Value: E-PL2           
+    Entry 3: Orientation (Short)
+      Size, Comps: 2, 1
+      Value: Top-left
+    Entry 4: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 160
+    Entry 5: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 160
+    Entry 6: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+    Entry 7: Software (ASCII)
+      Size, Comps: 32, 32
+      Value: Version 1.0                    
+    Entry 8: DateTime (ASCII)
+      Size, Comps: 20, 20
+      Value: 0000:00:00 00:00:00
+    Entry 9: Artist (ASCII)
+      Size, Comps: 64, 64
+      Value: 
+    Entry 10: YCbCrPositioning (Short)
+      Size, Comps: 2, 1
+      Value: Co-sited
+    Entry 11: Copyright (ASCII)
+      Size, Comps: 64, 64
+      Value: [None] (Photographer) - [None] (Editor)
+    Entry 12: PrintImageMatching (Undefined)
+      Size, Comps: 528, 528
+      Value: 528 bytes undefined data
+  Content 1: ifd=1
+    Entry 0: Compression (Short)
+      Size, Comps: 2, 1
+      Value: JPEG compression
+    Entry 1: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 2: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 3: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+  Content 2: ifd=2
+    Entry 0: ExposureTime (Rational)
+      Size, Comps: 8, 1
+      Value: 1/13 sec.
+    Entry 1: FNumber (Rational)
+      Size, Comps: 8, 1
+      Value: f/5.6
+    Entry 2: ExposureProgram (Short)
+      Size, Comps: 2, 1
+      Value: Manual
+    Entry 3: ISOSpeedRatings (Short)
+      Size, Comps: 2, 1
+      Value: 320
+    Entry 4: ExifVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: Exif Version 2.21
+    Entry 5: DateTimeOriginal (ASCII)
+      Size, Comps: 20, 20
+      Value: 0000:00:00 00:00:00
+    Entry 6: DateTimeDigitized (ASCII)
+      Size, Comps: 20, 20
+      Value: 0000:00:00 00:00:00
+    Entry 7: ComponentsConfiguration (Undefined)
+      Size, Comps: 4, 4
+      Value: Y Cb Cr -
+    Entry 8: ExposureBiasValue (SRational)
+      Size, Comps: 8, 1
+      Value: 0.00 EV
+    Entry 9: MaxApertureValue (Rational)
+      Size, Comps: 8, 1
+      Value: 3.61 EV (f/3.5)
+    Entry 10: MeteringMode (Short)
+      Size, Comps: 2, 1
+      Value: Pattern
+    Entry 11: LightSource (Short)
+      Size, Comps: 2, 1
+      Value: Unknown
+    Entry 12: Flash (Short)
+      Size, Comps: 2, 1
+      Value: Internal error (unknown value 72)
+    Entry 13: FocalLength (Rational)
+      Size, Comps: 8, 1
+      Value: 14.0 mm
+    Entry 14: MakerNote (Undefined)
+      Size, Comps: 9858, 9858
+      Value: 9858 bytes undefined data
+    Entry 15: UserComment (Undefined)
+      Size, Comps: 9, 9
+      Value:  
+    Entry 16: FlashpixVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: FlashPix Version 1.0
+    Entry 17: ColorSpace (Short)
+      Size, Comps: 2, 1
+      Value: sRGB
+    Entry 18: PixelXDimension (Long)
+      Size, Comps: 4, 1
+      Value: 1280
+    Entry 19: PixelYDimension (Long)
+      Size, Comps: 4, 1
+      Value: 960
+    Entry 20: FileSource (Undefined)
+      Size, Comps: 1, 1
+      Value: DSC
+    Entry 21: CustomRendered (Short)
+      Size, Comps: 2, 1
+      Value: Normal process
+    Entry 22: ExposureMode (Short)
+      Size, Comps: 2, 1
+      Value: Manual exposure
+    Entry 23: WhiteBalance (Short)
+      Size, Comps: 2, 1
+      Value: Auto white balance
+    Entry 24: DigitalZoomRatio (Rational)
+      Size, Comps: 8, 1
+      Value: 1.00
+    Entry 25: SceneCaptureType (Short)
+      Size, Comps: 2, 1
+      Value: Standard
+    Entry 26: GainControl (Short)
+      Size, Comps: 2, 1
+      Value: Low gain up
+    Entry 27: Contrast (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 28: Saturation (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 29: Sharpness (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+  Content 3: ifd=3
+  Content 4: ifd=4
+    Entry 0: InteroperabilityIndex (ASCII)
+      Size, Comps: 4, 4
+      Value: R98
+    Entry 1: InteroperabilityVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: 0100
+  MakerNote
+    Entry 0: 512, Mode
+      Size: 8
+      Value: Fast/1/0
+    Entry 1: 521, CameraID
+      Size: 31
+      Value: OLYMPUS DIGITAL CAMERA         
+    Entry 2: 8208, (unknown)
+      Size: 0
+      Value: 
+    Entry 3: 8224, (unknown)
+      Size: 0
+      Value: 
+    Entry 4: 8240, (unknown)
+      Size: 0
+      Value: 
+    Entry 5: 8256, (unknown)
+      Size: 0
+      Value: 
+    Entry 6: 8272, (unknown)
+      Size: 0
+      Value: 

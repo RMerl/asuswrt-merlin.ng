@@ -171,22 +171,22 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
     if (!(s->last_frame = av_frame_alloc()))
         return AVERROR(ENOMEM);
     if (!(s->best_frame = av_frame_alloc()))
-        goto enomem;
+        return AVERROR(ENOMEM);
     if (!(s->scratch_frame = av_frame_alloc()))
-        goto enomem;
+        return AVERROR(ENOMEM);
     if (avctx->pix_fmt == AV_PIX_FMT_RGB24)
         if (!(s->input_frame = av_frame_alloc()))
-            goto enomem;
+            return AVERROR(ENOMEM);
 
     if (!(s->codebook_input = av_malloc_array((avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 6 : 4) * (avctx->width * avctx->height) >> 2, sizeof(*s->codebook_input))))
-        goto enomem;
+        return AVERROR(ENOMEM);
 
     if (!(s->codebook_closest = av_malloc_array((avctx->width * avctx->height) >> 2, sizeof(*s->codebook_closest))))
-        goto enomem;
+        return AVERROR(ENOMEM);
 
     for (x = 0; x < (avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 4 : 3); x++)
         if (!(s->pict_bufs[x] = av_malloc((avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 6 : 4) * (avctx->width * avctx->height) >> 2)))
-            goto enomem;
+            return AVERROR(ENOMEM);
 
     mb_count = avctx->width * avctx->height / MB_AREA;
 
@@ -199,13 +199,13 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
     frame_buf_size = CVID_HEADER_SIZE + s->max_max_strips * strip_buf_size;
 
     if (!(s->strip_buf = av_malloc(strip_buf_size)))
-        goto enomem;
+        return AVERROR(ENOMEM);
 
     if (!(s->frame_buf = av_malloc(frame_buf_size)))
-        goto enomem;
+        return AVERROR(ENOMEM);
 
     if (!(s->mb = av_malloc_array(mb_count, sizeof(mb_info))))
-        goto enomem;
+        return AVERROR(ENOMEM);
 
     av_lfg_init(&s->randctx, 1);
     s->avctx          = avctx;
@@ -252,23 +252,6 @@ static av_cold int cinepak_encode_init(AVCodecContext *avctx)
     s->max_strips = s->max_max_strips;
 
     return 0;
-
-enomem:
-    av_frame_free(&s->last_frame);
-    av_frame_free(&s->best_frame);
-    av_frame_free(&s->scratch_frame);
-    if (avctx->pix_fmt == AV_PIX_FMT_RGB24)
-        av_frame_free(&s->input_frame);
-    av_freep(&s->codebook_input);
-    av_freep(&s->codebook_closest);
-    av_freep(&s->strip_buf);
-    av_freep(&s->frame_buf);
-    av_freep(&s->mb);
-
-    for (x = 0; x < (avctx->pix_fmt == AV_PIX_FMT_RGB24 ? 4 : 3); x++)
-        av_freep(&s->pict_bufs[x]);
-
-    return AVERROR(ENOMEM);
 }
 
 static int64_t calculate_mode_score(CinepakEncContext *s, int h,
@@ -544,8 +527,9 @@ static int encode_mode(CinepakEncContext *s, int h,
                        uint8_t *last_data[4], int last_linesize[4],
                        strip_info *info, unsigned char *buf)
 {
-    int x, y, z, flags, bits, temp_size, header_ofs, ret = 0, mb_count = s->w * h / MB_AREA;
+    int x, y, z, bits, temp_size, header_ofs, ret = 0, mb_count = s->w * h / MB_AREA;
     int needs_extra_bit, should_write_temp;
+    uint32_t flags;
     unsigned char temp[64]; // 32/2 = 16 V4 blocks at 4 B each -> 64 B
     mb_info *mb;
     uint8_t *sub_scratch_data[4] = { 0 }, *sub_last_data[4] = { 0 };
@@ -599,7 +583,7 @@ static int encode_mode(CinepakEncContext *s, int h,
             flags = 0;
             for (y = x; y < FFMIN(x + 32, mb_count); y++)
                 if (s->mb[y].best_encoding == ENC_V4)
-                    flags |= 1 << (31 - y + x);
+                    flags |= 1U << (31 - y + x);
 
             AV_WB32(&buf[ret], flags);
             ret += 4;
@@ -626,13 +610,13 @@ static int encode_mode(CinepakEncContext *s, int h,
 
         for (x = 0; x < mb_count; x++) {
             mb                = &s->mb[x];
-            flags            |= (mb->best_encoding != ENC_SKIP) << (31 - bits++);
+            flags            |= (uint32_t)(mb->best_encoding != ENC_SKIP) << (31 - bits++);
             needs_extra_bit   = 0;
             should_write_temp = 0;
 
             if (mb->best_encoding != ENC_SKIP) {
                 if (bits < 32)
-                    flags |= (mb->best_encoding == ENC_V4) << (31 - bits++);
+                    flags |= (uint32_t)(mb->best_encoding == ENC_V4) << (31 - bits++);
                 else
                     needs_extra_bit = 1;
             }
@@ -651,7 +635,7 @@ static int encode_mode(CinepakEncContext *s, int h,
             }
 
             if (needs_extra_bit) {
-                flags = (mb->best_encoding == ENC_V4) << 31;
+                flags = (uint32_t)(mb->best_encoding == ENC_V4) << 31;
                 bits  = 1;
             }
 
@@ -1205,4 +1189,5 @@ AVCodec ff_cinepak_encoder = {
     .close          = cinepak_encode_end,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_RGB24, AV_PIX_FMT_GRAY8, AV_PIX_FMT_NONE },
     .priv_class     = &cinepak_class,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

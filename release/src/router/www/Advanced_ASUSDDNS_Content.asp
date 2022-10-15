@@ -991,7 +991,7 @@ function check_unregister_result(){
 				</td>
 			</tr>
 			<tr id="ddns_ipv6update_tr" style="display: none;">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,18);">IPv6 Update</a></th>
+				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,18);"><#DDNS_ipv6_update#></a></th>
 				<td>
 					<input type="radio" name="ddns_ipv6_update" class="input" value="1" <% nvram_match("ddns_ipv6_update", "1", "checked"); %>><#checkbox_Yes#>
 					<input type="radio" name="ddns_ipv6_update" class="input" value="0" <% nvram_match("ddns_ipv6_update", "0", "checked"); %>><#checkbox_No#>

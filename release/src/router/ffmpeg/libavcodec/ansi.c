@@ -34,6 +34,7 @@
 
 #define ATTR_BOLD         0x01  /**< Bold/Bright-foreground (mode 1) */
 #define ATTR_FAINT        0x02  /**< Faint (mode 2) */
+#define ATTR_ITALICS      0x04  /**< Italics (mode 3) */
 #define ATTR_UNDERLINE    0x08  /**< Underline (mode 4) */
 #define ATTR_BLINK        0x10  /**< Blink/Bright-background (mode 5) */
 #define ATTR_REVERSE      0x40  /**< Reverse (mode 7) */
@@ -308,7 +309,7 @@ static int execute_code(AVCodecContext * avctx, int c)
                 s->attributes = 0;
                 s->fg = DEFAULT_FG_COLOR;
                 s->bg = DEFAULT_BG_COLOR;
-            } else if (m == 1 || m == 2 || m == 4 || m == 5 || m == 7 || m == 8) {
+            } else if (m == 1 || m == 2 || m == 3 || m == 4 || m == 5 || m == 7 || m == 8) {
                 s->attributes |= 1 << (m - 1);
             } else if (m >= 30 && m <= 37) {
                 s->fg = ansi_to_cga[m - 30];
@@ -362,7 +363,7 @@ static int decode_frame(AVCodecContext *avctx,
     const uint8_t *buf_end   = buf+buf_size;
     int ret, i, count;
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer(avctx, s->frame, 0)) < 0)
         return ret;
     if (!avctx->frame_number) {
         for (i=0; i<avctx->height; i++)
@@ -430,7 +431,8 @@ static int decode_frame(AVCodecContext *avctx,
                     s->args[s->nb_args] = FFMAX(s->args[s->nb_args], 0) * 10 + buf[0] - '0';
                 break;
             case ';':
-                s->nb_args++;
+                if (s->nb_args < MAX_NB_ARGS)
+                    s->nb_args++;
                 if (s->nb_args < MAX_NB_ARGS)
                     s->args[s->nb_args] = 0;
                 break;
@@ -473,6 +475,11 @@ static av_cold int decode_close(AVCodecContext *avctx)
     return 0;
 }
 
+static const AVCodecDefault ansi_defaults[] = {
+    { "max_pixels", "640*480" },
+    { NULL },
+};
+
 AVCodec ff_ansi_decoder = {
     .name           = "ansi",
     .long_name      = NULL_IF_CONFIG_SMALL("ASCII/ANSI art"),
@@ -484,4 +491,5 @@ AVCodec ff_ansi_decoder = {
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
     .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
+    .defaults       = ansi_defaults,
 };

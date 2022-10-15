@@ -216,9 +216,7 @@ endif
 else # autoliveupdate_zip
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/ssl_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
-ifeq ($(RTCONFIG_FBWIFI),y)
-	cp -f webs_scripts/fbwifi_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
-else ifeq ($(RTAC68A),y)
+ifeq ($(RTAC68A),y)
 	cp -f webs_scripts/force_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
 else ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
 	cp -f webs_scripts/frs_live_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
@@ -421,7 +419,7 @@ ifeq ($(BUILD_NAME), RT-AXE7800)
 	mkdir -p $(INSTALLDIR)/rom/dhd/6715b0_mfg
 	install -m 0644 dhd/6715b0_mfg/RT-AXE7800/rtecdc_17.10.188.6401.bin $(INSTALLDIR)/rom/dhd/6715b0_mfg/rtecdc.bin
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2 XD6_V2))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2 XD6_V2 RT-AX5400))
 	mkdir -p $(INSTALLDIR)/rom/dhd/6715b0_mfg
 	install -m 0644 dhd/6715b0_mfg/RT-AX82U_V2/rtecdc_17.10.188.6401.bin $(INSTALLDIR)/rom/dhd/6715b0_mfg/rtecdc.bin
 endif
@@ -429,6 +427,10 @@ endif
 
 ifeq ($(RTAX86U), y)
 	install -m 0755 9873w_b0-b4.bin $(INSTALLDIR)/rom
+endif
+
+ifeq ($(BRCM_CHIP),63178)
+	cp -rf rom/etc/adsl1 $(INSTALLDIR)/rom/etc
 endif
 
 .PHONY: dummy

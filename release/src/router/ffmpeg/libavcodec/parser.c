@@ -27,94 +27,9 @@
 #include "libavutil/avassert.h"
 #include "libavutil/internal.h"
 #include "libavutil/mem.h"
-#include "libavutil/thread.h"
 
 #include "internal.h"
 #include "parser.h"
-
-/* Parsers */
-extern AVCodecParser ff_aac_parser;
-extern AVCodecParser ff_aac_latm_parser;
-extern AVCodecParser ff_ac3_parser;
-extern AVCodecParser ff_adx_parser;
-extern AVCodecParser ff_bmp_parser;
-extern AVCodecParser ff_cavsvideo_parser;
-extern AVCodecParser ff_cook_parser;
-extern AVCodecParser ff_dca_parser;
-extern AVCodecParser ff_dirac_parser;
-extern AVCodecParser ff_dnxhd_parser;
-extern AVCodecParser ff_dpx_parser;
-extern AVCodecParser ff_dvaudio_parser;
-extern AVCodecParser ff_dvbsub_parser;
-extern AVCodecParser ff_dvdsub_parser;
-extern AVCodecParser ff_dvd_nav_parser;
-extern AVCodecParser ff_flac_parser;
-extern AVCodecParser ff_g729_parser;
-extern AVCodecParser ff_gsm_parser;
-extern AVCodecParser ff_h261_parser;
-extern AVCodecParser ff_h263_parser;
-extern AVCodecParser ff_h264_parser;
-extern AVCodecParser ff_hevc_parser;
-extern AVCodecParser ff_mjpeg_parser;
-extern AVCodecParser ff_mlp_parser;
-extern AVCodecParser ff_mpeg4video_parser;
-extern AVCodecParser ff_mpegaudio_parser;
-extern AVCodecParser ff_mpegvideo_parser;
-extern AVCodecParser ff_opus_parser;
-extern AVCodecParser ff_png_parser;
-extern AVCodecParser ff_pnm_parser;
-extern AVCodecParser ff_rv30_parser;
-extern AVCodecParser ff_rv40_parser;
-extern AVCodecParser ff_sbc_parser;
-extern AVCodecParser ff_sipr_parser;
-extern AVCodecParser ff_tak_parser;
-extern AVCodecParser ff_vc1_parser;
-extern AVCodecParser ff_vorbis_parser;
-extern AVCodecParser ff_vp3_parser;
-extern AVCodecParser ff_vp8_parser;
-extern AVCodecParser ff_vp9_parser;
-extern AVCodecParser ff_xma_parser;
-
-#include "libavcodec/parser_list.c"
-
-static AVOnce av_parser_next_init = AV_ONCE_INIT;
-
-static void av_parser_init_next(void)
-{
-    AVCodecParser *prev = NULL, *p;
-    int i = 0;
-    while ((p = (AVCodecParser*)parser_list[i++])) {
-        if (prev)
-            prev->next = p;
-        prev = p;
-    }
-}
-
-AVCodecParser *av_parser_next(const AVCodecParser *p)
-{
-    ff_thread_once(&av_parser_next_init, av_parser_init_next);
-
-    if (p)
-        return p->next;
-    else
-        return (AVCodecParser*)parser_list[0];
-}
-
-const AVCodecParser *av_parser_iterate(void **opaque)
-{
-    uintptr_t i = (uintptr_t)*opaque;
-    const AVCodecParser *p = parser_list[i];
-
-    if (p)
-        *opaque = (void*)(i + 1);
-
-    return p;
-}
-
-void av_register_codec_parser(AVCodecParser *parser)
-{
-    ff_thread_once(&av_parser_next_init, av_parser_init_next);
-}
 
 AVCodecParserContext *av_parser_init(int codec_id)
 {
@@ -264,6 +179,9 @@ int av_parser_parse2(AVCodecParserContext *s, AVCodecContext *avctx,
         /* offset of the next frame */
         s->next_frame_offset = s->cur_offset + index;
         s->fetch_timestamp   = 1;
+    } else {
+        /* Don't return a pointer to dummy_buf. */
+        *poutbuf = NULL;
     }
     if (index < 0)
         index = 0;
@@ -271,6 +189,7 @@ int av_parser_parse2(AVCodecParserContext *s, AVCodecContext *avctx,
     return index;
 }
 
+#if FF_API_PARSER_CHANGE
 int av_parser_change(AVCodecParserContext *s, AVCodecContext *avctx,
                      uint8_t **poutbuf, int *poutbuf_size,
                      const uint8_t *buf, int buf_size, int keyframe)
@@ -305,7 +224,7 @@ int av_parser_change(AVCodecParserContext *s, AVCodecContext *avctx,
 
     return 0;
 }
-
+#endif
 void av_parser_close(AVCodecParserContext *s)
 {
     if (s) {
@@ -329,6 +248,9 @@ int ff_combine_frame(ParseContext *pc, int next,
     /* Copy overread bytes from last frame into buffer. */
     for (; pc->overread > 0; pc->overread--)
         pc->buffer[pc->index++] = pc->buffer[pc->overread_index++];
+
+    if (next > *buf_size)
+        return AVERROR(EINVAL);
 
     /* flush remaining if EOF */
     if (!*buf_size && next == END_NOT_FOUND)
@@ -377,6 +299,10 @@ int ff_combine_frame(ParseContext *pc, int next,
         *buf      = pc->buffer;
     }
 
+    if (next < -8) {
+        pc->overread += -8 - next;
+        next = -8;
+    }
     /* store overread bytes */
     for (; next < 0; next++) {
         pc->state   = pc->state   << 8 | pc->buffer[pc->last_index + next];

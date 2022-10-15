@@ -27,13 +27,9 @@ typedef struct BiquadCoeffs {
     double a0, a1, a2, b1, b2;
 } BiquadCoeffs;
 
-typedef struct BiquadD2 {
-    double a0, a1, a2, b1, b2, w1, w2;
-} BiquadD2;
-
 typedef struct RIAACurve {
-    BiquadD2 r1;
-    BiquadD2 brickw;
+    BiquadCoeffs r1;
+    BiquadCoeffs brickw;
     int use_brickw;
 } RIAACurve;
 
@@ -42,11 +38,13 @@ typedef struct AudioEmphasisContext {
     int mode, type;
     double level_in, level_out;
 
-    RIAACurve *rc;
+    RIAACurve rc;
+
+    AVFrame *w;
 } AudioEmphasisContext;
 
 #define OFFSET(x) offsetof(AudioEmphasisContext, x)
-#define FLAGS AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+#define FLAGS AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption aemphasis_options[] = {
     { "level_in",      "set input gain", OFFSET(level_in),  AV_OPT_TYPE_DOUBLE, {.dbl=1}, 0, 64, FLAGS },
@@ -69,29 +67,69 @@ static const AVOption aemphasis_options[] = {
 
 AVFILTER_DEFINE_CLASS(aemphasis);
 
-static inline double biquad(BiquadD2 *bq, double in)
+static inline void biquad_process(BiquadCoeffs *bq, double *dst, const double *src, int nb_samples,
+                                  double *w, double level_in, double level_out)
 {
-    double n = in;
-    double tmp = n - bq->w1 * bq->b1 - bq->w2 * bq->b2;
-    double out = tmp * bq->a0 + bq->w1 * bq->a1 + bq->w2 * bq->a2;
+    const double a0 = bq->a0;
+    const double a1 = bq->a1;
+    const double a2 = bq->a2;
+    const double b1 = bq->b1;
+    const double b2 = bq->b2;
+    double w1 = w[0];
+    double w2 = w[1];
 
-    bq->w2 = bq->w1;
-    bq->w1 = tmp;
+    for (int i = 0; i < nb_samples; i++) {
+        double n = src[i] * level_in;
+        double tmp = n - w1 * b1 - w2 * b2;
+        double out = tmp * a0 + w1 * a1 + w2 * a2;
 
-    return out;
+        w2 = w1;
+        w1 = tmp;
+
+        dst[i] = out * level_out;
+    }
+
+    w[0] = w1;
+    w[1] = w2;
+}
+
+typedef struct ThreadData {
+    AVFrame *in, *out;
+} ThreadData;
+
+static int filter_channels(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
+{
+    AudioEmphasisContext *s = ctx->priv;
+    const double level_out = s->level_out;
+    const double level_in = s->level_in;
+    ThreadData *td = arg;
+    AVFrame *out = td->out;
+    AVFrame *in = td->in;
+    const int start = (in->channels * jobnr) / nb_jobs;
+    const int end = (in->channels * (jobnr+1)) / nb_jobs;
+
+    for (int ch = start; ch < end; ch++) {
+        const double *src = (const double *)in->extended_data[ch];
+        double *w = (double *)s->w->extended_data[ch];
+        double *dst = (double *)out->extended_data[ch];
+
+        if (s->rc.use_brickw) {
+            biquad_process(&s->rc.brickw, dst, src, in->nb_samples, w + 2, level_in, 1.);
+            biquad_process(&s->rc.r1, dst, dst, in->nb_samples, w, 1., level_out);
+        } else {
+            biquad_process(&s->rc.r1, dst, src, in->nb_samples, w, level_in, level_out);
+        }
+    }
+
+    return 0;
 }
 
 static int filter_frame(AVFilterLink *inlink, AVFrame *in)
 {
     AVFilterContext *ctx = inlink->dst;
     AVFilterLink *outlink = ctx->outputs[0];
-    AudioEmphasisContext *s = ctx->priv;
-    const double *src = (const double *)in->data[0];
-    const double level_out = s->level_out;
-    const double level_in = s->level_in;
+    ThreadData td;
     AVFrame *out;
-    double *dst;
-    int n, c;
 
     if (av_frame_is_writable(in)) {
         out = in;
@@ -103,14 +141,10 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         }
         av_frame_copy_props(out, in);
     }
-    dst = (double *)out->data[0];
 
-    for (n = 0; n < in->nb_samples; n++) {
-        for (c = 0; c < inlink->channels; c++)
-            dst[c] = level_out * biquad(&s->rc[c].r1, s->rc[c].use_brickw ? biquad(&s->rc[c].brickw, src[c] * level_in) : src[c] * level_in);
-        dst += inlink->channels;
-        src += inlink->channels;
-    }
+    td.in = in; td.out = out;
+    ctx->internal->execute(ctx, filter_channels, &td, NULL, FFMIN(inlink->channels,
+                                                            ff_filter_get_nb_threads(ctx)));
 
     if (in != out)
         av_frame_free(&in);
@@ -122,7 +156,7 @@ static int query_formats(AVFilterContext *ctx)
     AVFilterChannelLayouts *layouts;
     AVFilterFormats *formats;
     static const enum AVSampleFormat sample_fmts[] = {
-        AV_SAMPLE_FMT_DBL,
+        AV_SAMPLE_FMT_DBLP,
         AV_SAMPLE_FMT_NONE
     };
     int ret;
@@ -147,7 +181,7 @@ static int query_formats(AVFilterContext *ctx)
     return ff_set_common_samplerates(ctx, formats);
 }
 
-static inline void set_highshelf_rbj(BiquadD2 *bq, double freq, double q, double peak, double sr)
+static inline void set_highshelf_rbj(BiquadCoeffs *bq, double freq, double q, double peak, double sr)
 {
     double A = sqrt(peak);
     double w0 = freq * 2 * M_PI / sr;
@@ -171,7 +205,7 @@ static inline void set_highshelf_rbj(BiquadD2 *bq, double freq, double q, double
     bq->a2 *= ib0;
 }
 
-static inline void set_lp_rbj(BiquadD2 *bq, double fc, double q, double sr, double gain)
+static inline void set_lp_rbj(BiquadCoeffs *bq, double fc, double q, double sr, double gain)
 {
     double omega = 2.0 * M_PI * fc / sr;
     double sn = sin(omega);
@@ -205,10 +239,10 @@ static int config_input(AVFilterLink *inlink)
     AVFilterContext *ctx = inlink->dst;
     AudioEmphasisContext *s = ctx->priv;
     BiquadCoeffs coeffs;
-    int ch;
 
-    s->rc = av_calloc(inlink->channels, sizeof(*s->rc));
-    if (!s->rc)
+    if (!s->w)
+        s->w = ff_get_audio_buffer(inlink, 4);
+    if (!s->w)
         return AVERROR(ENOMEM);
 
     switch (s->type) {
@@ -282,12 +316,12 @@ static int config_input(AVFilterLink *inlink)
         if (s->type == 7)
             q = pow((sr / 4750.0) + 19.5, -0.25);
         if (s->mode == 0)
-            set_highshelf_rbj(&s->rc[0].r1, cfreq, q, 1. / gain, sr);
+            set_highshelf_rbj(&s->rc.r1, cfreq, q, 1. / gain, sr);
         else
-            set_highshelf_rbj(&s->rc[0].r1, cfreq, q, gain, sr);
-        s->rc[0].use_brickw = 0;
+            set_highshelf_rbj(&s->rc.r1, cfreq, q, gain, sr);
+        s->rc.use_brickw = 0;
     } else {
-        s->rc[0].use_brickw = 1;
+        s->rc.use_brickw = 1;
         if (s->mode == 0) { // Reproduction
             g  = 1. / (4.+2.*i*t+2.*k*t+i*k*t*t);
             a0 = (2.*t+j*t*t)*g;
@@ -316,27 +350,36 @@ static int config_input(AVFilterLink *inlink)
         gain1kHz = freq_gain(&coeffs, 1000.0, sr);
         // divide one filter's x[n-m] coefficients by that value
         gc = 1.0 / gain1kHz;
-        s->rc[0].r1.a0 = coeffs.a0 * gc;
-        s->rc[0].r1.a1 = coeffs.a1 * gc;
-        s->rc[0].r1.a2 = coeffs.a2 * gc;
-        s->rc[0].r1.b1 = coeffs.b1;
-        s->rc[0].r1.b2 = coeffs.b2;
+        s->rc.r1.a0 = coeffs.a0 * gc;
+        s->rc.r1.a1 = coeffs.a1 * gc;
+        s->rc.r1.a2 = coeffs.a2 * gc;
+        s->rc.r1.b1 = coeffs.b1;
+        s->rc.r1.b2 = coeffs.b2;
     }
 
     cutfreq = FFMIN(0.45 * sr, 21000.);
-    set_lp_rbj(&s->rc[0].brickw, cutfreq, 0.707, sr, 1.);
-
-    for (ch = 1; ch < inlink->channels; ch++) {
-        memcpy(&s->rc[ch], &s->rc[0], sizeof(RIAACurve));
-    }
+    set_lp_rbj(&s->rc.brickw, cutfreq, 0.707, sr, 1.);
 
     return 0;
+}
+
+static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
+                           char *res, int res_len, int flags)
+{
+    int ret;
+
+    ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
+    if (ret < 0)
+        return ret;
+
+    return config_input(ctx->inputs[0]);
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
 {
     AudioEmphasisContext *s = ctx->priv;
-    av_freep(&s->rc);
+
+    av_frame_free(&s->w);
 }
 
 static const AVFilterPad avfilter_af_aemphasis_inputs[] = {
@@ -366,4 +409,7 @@ AVFilter ff_af_aemphasis = {
     .query_formats = query_formats,
     .inputs        = avfilter_af_aemphasis_inputs,
     .outputs       = avfilter_af_aemphasis_outputs,
+    .process_command = process_command,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC |
+                     AVFILTER_FLAG_SLICE_THREADS,
 };

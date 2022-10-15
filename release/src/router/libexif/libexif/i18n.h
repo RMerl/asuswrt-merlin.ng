@@ -1,6 +1,6 @@
 /* i18n.h
  *
- * Copyright © 2001 Lutz Müller <lutz@users.sourceforge.net>
+ * Copyright (c) 2001 Lutz Mueller <lutz@users.sourceforge.net>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -18,8 +18,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __I18N_H__
-#define __I18N_H__
+#ifndef LIBEXIF_I18N_H
+#define LIBEXIF_I18N_H
 
 #include "config.h"
 
@@ -49,4 +49,4 @@
 #  define N_(String) (String)
 #endif
 
-#endif /* __I18N_H__ */
+#endif /* !defined(LIBEXIF_I18N_H) */

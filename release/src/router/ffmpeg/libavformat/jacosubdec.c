@@ -48,7 +48,7 @@ static int timed_line(const char *ptr)
             (sscanf(ptr, "@%u @%u %c", &fs, &fe, &c) == 3 && fs < fe));
 }
 
-static int jacosub_probe(AVProbeData *p)
+static int jacosub_probe(const AVProbeData *p)
 {
     const char *ptr     = p->buf;
     const char *ptr_end = p->buf + p->buf_size;
@@ -107,6 +107,7 @@ static const char *read_ts(JACOsubContext *jacosub, const char *buf,
     unsigned hs, ms, ss, fs; // hours, minutes, seconds, frame start
     unsigned he, me, se, fe; // hours, minutes, seconds, frame end
     int ts_start, ts_end;
+    int64_t ts_start64, ts_end64;
 
     /* timed format */
     if (sscanf(buf, "%u:%u:%u.%u %u:%u:%u.%u %n",
@@ -124,10 +125,10 @@ static const char *read_ts(JACOsubContext *jacosub, const char *buf,
     return NULL;
 
 shift_and_ret:
-    ts_start  = (ts_start + jacosub->shift) * 100 / jacosub->timeres;
-    ts_end    = (ts_end   + jacosub->shift) * 100 / jacosub->timeres;
-    *start    = ts_start;
-    *duration = ts_start + ts_end;
+    ts_start64  = (ts_start + (int64_t)jacosub->shift) * 100LL / jacosub->timeres;
+    ts_end64    = (ts_end   + (int64_t)jacosub->shift) * 100LL / jacosub->timeres;
+    *start    = ts_start64;
+    *duration = ts_end64 - ts_start64;
     return buf + len;
 }
 
@@ -135,22 +136,35 @@ static int get_shift(int timeres, const char *buf)
 {
     int sign = 1;
     int a = 0, b = 0, c = 0, d = 0;
+    int64_t ret;
 #define SSEP "%*1[.:]"
     int n = sscanf(buf, "%d"SSEP"%d"SSEP"%d"SSEP"%d", &a, &b, &c, &d);
 #undef SSEP
+
+    if (a == INT_MIN)
+        return 0;
 
     if (*buf == '-' || a < 0) {
         sign = -1;
         a = FFABS(a);
     }
 
+    ret = 0;
     switch (n) {
-    case 4: return sign * ((a*3600 + b*60 + c) * timeres + d);
-    case 3: return sign * ((         a*60 + b) * timeres + c);
-    case 2: return sign * ((                a) * timeres + b);
+    case 4:
+        ret = sign * (((int64_t)a*3600 + b*60 + c) * timeres + d);
+        break;
+    case 3:
+        ret = sign * ((         (int64_t)a*60 + b) * timeres + c);
+        break;
+    case 2:
+        ret = sign * ((                (int64_t)a) * timeres + b);
+        break;
     }
+    if ((int)ret != ret)
+        ret = 0;
 
-    return 0;
+    return ret;
 }
 
 static int jacosub_read_header(AVFormatContext *s)
@@ -187,8 +201,11 @@ static int jacosub_read_header(AVFormatContext *s)
             AVPacket *sub;
 
             sub = ff_subtitles_queue_insert(&jacosub->q, line, len, merge_line);
-            if (!sub)
-                return AVERROR(ENOMEM);
+            if (!sub) {
+                av_bprint_finalize(&header, NULL);
+                ret = AVERROR(ENOMEM);
+                goto fail;
+            }
             sub->pos = pos;
             merge_line = len > 1 && !strcmp(&line[len - 2], "\\\n");
             continue;
@@ -237,7 +254,7 @@ static int jacosub_read_header(AVFormatContext *s)
     /* SHIFT and TIMERES affect the whole script so packet timing can only be
      * done in a second pass */
     for (i = 0; i < jacosub->q.nb_subs; i++) {
-        AVPacket *sub = &jacosub->q.subs[i];
+        AVPacket *sub = jacosub->q.subs[i];
         read_ts(jacosub, sub->data, &sub->pts, &sub->duration);
     }
     ff_subtitles_queue_finalize(s, &jacosub->q);

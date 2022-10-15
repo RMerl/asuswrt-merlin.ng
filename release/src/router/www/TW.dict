@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=考量到 AiMesh 系統與終端裝置的相容性，我們�
 AiMesh_confirm_msg10=為確保您的 AiMesh 系統與終端裝置順利連線，再切換到 WPA3-Personal之前，請先閱讀 <a id="wpa3FaqLink">FAQ</a>。
 AiMesh_confirm_msg11=您目前使用 WPA3-personal。若要建立 AiMesh 系統，您的無線授權方式將會變更為 WPA2/WPA3-personal。您要繼續嗎？
 AiMesh_confirm_msg12=您也可以閱讀此篇 <a id='wpa3FaqLink'>FAQ</a> 以得到更多資訊。
-AiMesh_confirm_msg13=要了解更多資訊，請參考 <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>常見問題</a>
+AiMesh_confirm_msg13=要了解更多資訊，請參考 <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>常見問題</a>
 AiMesh_Feature_Desc=ASUS AiMesh 是創新的無線路由器功能，可連接多台 ASUS 無線路由器，打造出覆蓋全家的 WiFi 網路。
 AiMesh_FAQ=關於 ASUS AiMesh 的更多資訊
 AiMesh_FindNode=搜尋 AiMesh 節點
@@ -3827,18 +3827,18 @@ wandog_enable2=啟用Ping偵測
 WANTCPMSSOptionText=TCP MSS 選項
 WANTCPMSSOptionComm1Text=字元組
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN Aggregation 融合了兩條網路連線，將您的 WAN 傳送速度提高至 2Gbps。請使用同一規格的兩條網路線將路由器的 WAN 連接埠和 LAN 4 連接埠分別連接至數據機的 LAN 連接埠。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation FAQ</a>
+WANAggregation_desc=WAN Aggregation 融合了兩條網路連線，將您的 WAN 傳送速度提高至 2Gbps。請使用同一規格的兩條網路線將路由器的 #WAN 連接埠和 LAN 4 連接埠分別連接至數據機的 LAN 連接埠。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation FAQ</a>
 WANAggregation_enable=啟用 WAN 聚合
 WANAggregation_disable_dualwan=已啟用路由器的雙 WAN 功能，啟用 WAN Aggregation 將關閉雙 WAN 功能。確認繼續嗎？
 WANAggregation_disable_WANAggregation=已啟用路由器的 WAN Aggregation 功能，啟用雙 WAN 將關閉 WAN Aggregation。確認繼續嗎？
 WANAggregation_PortConflict_hint1=WAN Aggregation 正在使用路由器的 LAN 4 連接埠，啟用 IPTV 將自動關閉 WAN Aggregation。確認繼續嗎？
 WANAggregation_PortConflict_hint2=IPTV 正在使用路由器的 LAN 4 連接埠，啟用 WAN Aggregation 將自動關閉 IPTV。確認繼續嗎？
 WANAggregation_disable_IPTVDualWAN=您的路由器已啟用雙 WAN 和 IPTV，啟用 WAN Aggregation 將關閉雙 WAN 和 IPTV 以避免端口衝突。確認繼續嗎？
-WANAggregation_help_WAN=請確認已使用同一規格的兩條網路線連接路由器的 WAN 連接埠和數據機的 LAN 連接埠。
+WANAggregation_help_WAN=請確認已使用同一規格的兩條網路線連接路由器的 #WAN 連接埠和數據機的 LAN 連接埠。
 WANAggregation_help_LAN=請確認已使用同一規格的兩條網路線連接路由器的 LAN 4 連接埠和數據機的 LAN 連接埠。
 WANAggregation_goto_WAN=欲啟用 WAN Aggregation，請至 <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-網際網路連線</a> 頁面。
 WANAggregation_help_desc=若尚未成功設置WAN Aggregation，請參考下列步驟檢查您的設置是否正確
-WANAggregation_help_step1=請確定已使用網路線，將數據機的 LAN 連接埠連接至無線路由器的 WAN 和 LAN 4 連接埠。
+WANAggregation_help_step1=請確定已使用網路線，將數據機的 LAN 連接埠連接至無線路由器的 #WAN 和 LAN 4 連接埠。
 WANAggregation_help_step2=請確認您的數據機已啟用802.3ad
 WANAggregation_help_step3=請確認您使用的兩條網路線為相同規格(Gigagit+Gigabit或10/100+10/100Mbps)
 WANAggregation_help_step4=請重啟您的路由器
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=選擇 GeForce Now 以優化 GeForce Now 電競裝置，為您提供更快更佳的電競體驗。
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=事件
 AURA_Event_desc=系統將會偵測下列事件並觸發不同的 LED 燈效。
 AURA_Event_Boost_desc=啟用 Game Boost 時，LED 燈帶使用紅色呼吸效果。

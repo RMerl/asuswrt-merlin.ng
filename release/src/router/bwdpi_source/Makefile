@@ -21,13 +21,13 @@ export BWDPI_BCM6750 := y
 endif
 
 # BCM4912 : seperate bin / header / modules from bcm6756
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),ET12 XT12 GT-AX6000 GT-AX11000_PRO GT-AXE16000))
+ifeq ($(BRCM_CHIP),4912)
 export BWDPI_BCM4912 := y
 CFLAGS += -DBRCM_CHIP4912
 endif
 
 # BCM6753 : seperate bin / header / modules from bcm6756
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT10))
+ifeq ($(BRCM_CHIP),6855)
 export BWDPI_BCM6753 := y
 endif
 
@@ -37,7 +37,7 @@ export BWDPI_MTK7621_NEW := y
 endif
 
 # signature version
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX56_XD4 CT-AX56_XD4 RT-AX55 XD4PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX56_XD4 CT-AX56_XD4 RT-AX55 XD4PRO RT-AX3000N XC5 XD4S))
 export LITE_VERSION := y
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 export LITE_VERSION := y

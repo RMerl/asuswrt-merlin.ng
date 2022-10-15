@@ -29,6 +29,8 @@
 
 #include "libavutil/float_dsp.h"
 #include "libavutil/libm.h"
+#include "libavutil/mem_internal.h"
+
 #include "avcodec.h"
 #include "sinewin.h"
 #include "fft.h"
@@ -79,9 +81,6 @@ const float ff_atrac3p_mant_tab[8] = {
 
 av_cold void ff_atrac3p_init_imdct(AVCodecContext *avctx, FFTContext *mdct_ctx)
 {
-    ff_init_ff_sine_windows(7);
-    ff_init_ff_sine_windows(6);
-
     /* Initialize the MDCT transform. */
     ff_mdct_init(mdct_ctx, 8, 1, -1.0);
 }
@@ -94,7 +93,7 @@ static DECLARE_ALIGNED(32, float, sine_table)[2048]; ///< wave table
 static DECLARE_ALIGNED(32, float, hann_window)[256]; ///< Hann windowing function
 static float amp_sf_tab[64];   ///< scalefactors for quantized amplitudes
 
-av_cold void ff_atrac3p_init_wave_synth(void)
+av_cold void ff_atrac3p_init_dsp_static(void)
 {
     int i;
 
@@ -109,6 +108,9 @@ av_cold void ff_atrac3p_init_wave_synth(void)
     /* generate amplitude scalefactors table */
     for (i = 0; i < 64; i++)
         amp_sf_tab[i] = exp2f((i - 3) / 4.0f);
+
+    ff_init_ff_sine_windows(7);
+    ff_init_ff_sine_windows(6);
 }
 
 /**
@@ -248,7 +250,7 @@ void ff_atrac3p_generate_tones(Atrac3pChanUnitCtx *ch_unit, AVFloatDSPContext *f
         out[i] += wavreg1[i] + wavreg2[i];
 }
 
-static const int subband_to_powgrp[ATRAC3P_SUBBANDS] = {
+static const uint8_t subband_to_powgrp[ATRAC3P_SUBBANDS] = {
     0, 1, 1, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4
 };
 
@@ -411,7 +413,7 @@ static const float pwc_levs[16] = {
 };
 
 /** Map subband number to quant unit number. */
-static const int subband_to_qu[17] = {
+static const uint8_t subband_to_qu[17] = {
     0, 8, 12, 16, 18, 20, 22, 23, 24, 25, 26, 27, 28, 29, 30, 31, 32
 };
 

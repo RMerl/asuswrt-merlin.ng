@@ -48,6 +48,7 @@ enum MXFMetadataSetType {
     EssenceGroup,
     TaggedValue,
     TapeDescriptor,
+    AVCSubDescriptor,
 };
 
 enum MXFFrameLayout {
@@ -58,30 +59,61 @@ enum MXFFrameLayout {
     SegmentedFrame,
 };
 
+typedef struct MXFContentPackageRate {
+    int rate;
+    AVRational tb;
+} MXFContentPackageRate;
+
 typedef struct KLVPacket {
     UID key;
     int64_t offset;
     uint64_t length;
+    int64_t next_klv;
 } KLVPacket;
+
+typedef enum {
+    NormalWrap = 0,
+    D10D11Wrap,
+    RawAWrap,
+    RawVWrap
+} MXFWrappingIndicatorType;
+
+typedef struct MXFLocalTagPair {
+    int local_tag;
+    UID uid;
+} MXFLocalTagPair;
+
+extern const uint8_t ff_mxf_random_index_pack_key[16];
+
+#define FF_MXF_MasteringDisplay_PREFIX                  0x06,0x0e,0x2b,0x34,0x01,0x01,0x01,0x0e,0x04,0x20,0x04,0x01,0x01
+#define FF_MXF_MasteringDisplayPrimaries                { FF_MXF_MasteringDisplay_PREFIX,0x01,0x00,0x00 }
+#define FF_MXF_MasteringDisplayWhitePointChromaticity   { FF_MXF_MasteringDisplay_PREFIX,0x02,0x00,0x00 }
+#define FF_MXF_MasteringDisplayMaximumLuminance         { FF_MXF_MasteringDisplay_PREFIX,0x03,0x00,0x00 }
+#define FF_MXF_MasteringDisplayMinimumLuminance         { FF_MXF_MasteringDisplay_PREFIX,0x04,0x00,0x00 }
+
+#define FF_MXF_MASTERING_CHROMA_DEN 50000
+#define FF_MXF_MASTERING_LUMA_DEN   10000
 
 typedef struct MXFCodecUL {
     UID uid;
     unsigned matching_len;
     int id;
+    const char *desc;
+    unsigned wrapping_indicator_pos;
+    MXFWrappingIndicatorType wrapping_indicator_type;
 } MXFCodecUL;
-
-typedef struct {
-    struct AVRational time_base;
-    int samples_per_frame[6];
-} MXFSamplesPerFrame;
 
 extern const MXFCodecUL ff_mxf_data_definition_uls[];
 extern const MXFCodecUL ff_mxf_codec_uls[];
 extern const MXFCodecUL ff_mxf_pixel_format_uls[];
 extern const MXFCodecUL ff_mxf_codec_tag_uls[];
+extern const MXFCodecUL ff_mxf_color_primaries_uls[];
+extern const MXFCodecUL ff_mxf_color_trc_uls[];
+extern const MXFCodecUL ff_mxf_color_space_uls[];
 
 int ff_mxf_decode_pixel_layout(const char pixel_layout[16], enum AVPixelFormat *pix_fmt);
-const MXFSamplesPerFrame *ff_mxf_get_samples_per_frame(AVFormatContext *s, AVRational time_base);
+int ff_mxf_get_content_package_rate(AVRational time_base);
+
 
 #define PRIxUID                             \
     "%02x.%02x.%02x.%02x."                  \

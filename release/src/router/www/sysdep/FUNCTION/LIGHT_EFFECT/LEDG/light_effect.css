@@ -133,16 +133,18 @@
 	color: #FFFFFF;
 }
 .setting_enable_bg .switch {
-	background: rgba(0, 0, 0, 0.5);
+	background: rgba(127, 143, 164, 1);
 	border-radius: 50px;
-	width: 60px;
-	height: 30px;
+	width: 40px;
+	height: 20px;
 	position: absolute;
 	display: inline-block;
 	-webkit-transition: all 0.6s;
 	transition: all 0.6s;
 	cursor: pointer;
-	top: 20px;
+	top: 0;
+	bottom: 0;
+	margin: auto;
 	right: 5%;
 }
 .setting_enable_bg .switch:before {
@@ -150,23 +152,23 @@
 	display: block;
 	position: absolute;
 	content: "";
-	height: 24px;
-	width: 24px;
-	right: 3px;
-	top: 3px;
+	height: 12px;
+	width: 12px;
+	right: 4px;
+	top: 4px;
 	-webkit-transition: 0.6s;
 	transition: all 0.6s;
 	-webkit-transition-delay: 0.01s;
 	transition-delay: 0.01s;
+	background: rgb(48 61 67);
 }
 .setting_enable_bg .switch.off:before {
-	-webkit-transform: translateX(-30px);
-	-ms-transform: translateX(-30px);
-	transform: translateX(-30px);
-	background: #A4B7C3;
+	-webkit-transform: translateX(-20px);
+	-ms-transform: translateX(-20px);
+	transform: translateX(-20px);
 }
-.setting_enable_bg .switch.on:before {
-	background: #1EA2FF;
+.setting_enable_bg .switch.on {
+	background: rgba(16, 185, 129, 1);
 }
 .setting_enable_bg .schedule {
 	cursor: pointer;

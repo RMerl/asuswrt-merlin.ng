@@ -627,7 +627,7 @@ static av_always_inline uint32_t quant_band_template(CeltPVQ *pvq, CeltFrame *f,
             }
         } else if (stereo) {
             if (quant) {
-                inv = itheta > 8192;
+                inv = f->apply_phase_inv ? itheta > 8192 : 0;
                  if (inv) {
                     for (i = 0; i < N; i++)
                        Y[i] *= -1;
@@ -903,8 +903,8 @@ int av_cold ff_celt_pvq_init(CeltPVQ **pvq, int encode)
     s->pvq_search = ppp_pvq_search_c;
     s->quant_band = encode ? pvq_encode_band : pvq_decode_band;
 
-    if (ARCH_X86)
-        ff_opus_dsp_init_x86(s);
+    if (CONFIG_OPUS_ENCODER && ARCH_X86)
+        ff_celt_pvq_init_x86(s);
 
     *pvq = s;
 

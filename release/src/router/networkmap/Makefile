@@ -11,12 +11,17 @@ CFLAGS  += -s -O2 -DNO_PARALLEL
 CFLAGS  += -I$(TOP)/libasc
 CFLAGS  += -I$(TOP)/curl/include
 
+ifeq ($(RTCONFIG_TR069),y)
+CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+endif
+
 ifeq ($(RTCONFIG_RALINK),y)
-CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 
 ifeq ($(RTCONFIG_QCA),y)
-CFLAGS += -I$(TOP)/shared/sysdeps/qca -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/qca -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 CFLAGS += $(if $(RTCONFIG_SAMBA36X),-DSMP)
 endif
 
@@ -26,12 +31,12 @@ endif
 
 ifeq ($(RTCONFIG_ALPINE),y)
 CFLAGS += -DALPINE_WPS
-CFLAGS += -I$(TOP)/httpd/sysdeps -I$(TOP)/shared/sysdeps/alpine -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/httpd/sysdeps -I$(TOP)/shared/sysdeps/alpine -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 
 ifeq ($(RTCONFIG_LANTIQ),y)
 CFLAGS += -DLANTIQ_WPS
-CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
@@ -47,10 +52,6 @@ endif
 LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
 LDFLAGS += -L$(TOP)/libasc -lasc
 
-ifeq ($(RTCONFIG_TR069),y)
-LDFLAGS += -L$(TOP)/libssh2-1.9.0/src/.libs -lssh2
-LDFLAGS += -L$(TOP)/zlib -lz
-endif
 
 ifeq ($(RTCONFIG_QSR10G),y)
 CFLAGS += -I$(TOP)/libqcsapi_client_10g
@@ -76,18 +77,18 @@ ifeq ($(RTCONFIG_BWDPI_DEP),y)
 CFLAGS += -I$(TOP)/httpd
 CFLAGS += -I$(TOP)/bwdpi_dep/bwdpi
 endif
-ifeq ($(RTCONFIG_AMAS),y)
+
 CFLAGS += -I$(TOP)/openssl/include
+ifeq ($(RTCONFIG_AMAS),y)
 CFLAGS += -I$(TOP)/json-c
 endif
 
-LDFLAGS += -lm -L$(TOP)/json-c/.libs -ljson-c
-LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
+LDFLAGS += -lm -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/json-c/.libs -ljson-c
+LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram 
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
-endif
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 endif
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
@@ -117,6 +118,17 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
 endif
+
+ifeq ($(RTCONFIG_CONNDIAG),y)
+ifeq ($(RTCONFIG_LIB_CODB),y)
+CFLAGS += -I$(TOP)/libcodb
+LDFLAGS += -L$(TOP)/libcodb -lcodb
+endif
+CFLAGS += -I$(TOP)/rc
+LDFLAGS += -L$(TOP)/rc -lconn_diag
+endif
+
+
 
 ifeq ($(RTCONFIG_CFGSYNC),y)
 CFLAGS += -I$(TOP)/cfg_mnt

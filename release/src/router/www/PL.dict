@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Ze względu na kompatybilność systemu AiMesh i urządzeń 
 AiMesh_confirm_msg10=Aby zapewnić bezproblemową łączność systemu AiMesh i urządzeń końcowych, zapoznaj się z tą stroną <a id="wpa3FaqLink">FAQ</a> przed przełączeniem w tryb WPA3-Personal.
 AiMesh_confirm_msg11=Obecnie używasz trybu WPA3-personal. W ramach tworzenia systemu AiMesh metoda uwierzytelniania zostanie zmieniona na WPA2/WPA3-personal. Czy chcesz kontynuować?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Więcej informacji można znaleźć w witrynie <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>tym FAQ</a>
+AiMesh_confirm_msg13=Więcej informacji można znaleźć w witrynie <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>tym FAQ</a>
 AiMesh_Feature_Desc=Zaawansowany system ASUS AiMesh to innowacyjna nowa funkcja routerów, umożliwiająca połączenie wielu routerów ASUS w celu utworzenia sieci WiFi w całym domu.
 AiMesh_FAQ=Dowiedz się więcej o funkcji ASUS AiMesh
 AiMesh_FindNode=Znajdź węzeł AiMesh
@@ -2412,7 +2412,7 @@ Internet=Internet status
 Interval=Odstęp czasu
 Introduce_demo=Demo wprowadzające
 Invitation=Zaproszenie
-Interaction=Взаимодействие
+Interaction=Interakcja
 InternetSpeed=Szybkość Internetu
 InternetSpeed_desc=Usługę udostępnia firma Ookla®. Usługa mierzy szybkość wysyłania i pobierania danych między routerem a Internetem. Wykonanie testu trwa około minuty. Korzystając z tej usługi, akceptujesz warunki <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Polityki prywatności firmy Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® i Speedtest® stanowią zastrzeżone znaki towarowe firmy Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Opcja MSS protokołu TCP
 WANTCPMSSOptionComm1Text=bajty
 WANVLANIDText=Identyfikator sieci VLAN
-WANAggregation_desc=Agregacja WAN łączy dwa połączenia sieciowe w celu zwiększenia szybkości WAN do 2Gbps. Połącz port WAN routera i port LAN 4 z portami LAN modemu (upewnij się, że używane są dwa kable o tej samej specyfikacji). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Agregacja WAN - FAQ</a>
+WANAggregation_desc=Agregacja WAN łączy dwa połączenia sieciowe w celu zwiększenia szybkości WAN do 2Gbps. Połącz port #WAN routera i port LAN 4 z portami LAN modemu (upewnij się, że używane są dwa kable o tej samej specyfikacji). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Agregacja WAN - FAQ</a>
 WANAggregation_enable=Włączenie agregacji WAN
 WANAggregation_disable_dualwan=Posiadany router ma włączony tryb Dual WAN. Włączenie trybu Agregacja WAN wyłączy tryb Dual WAN. Czy na pewno chcesz kontynuować?
 WANAggregation_disable_WANAggregation=Posiadany router ma włączony tryb Agregacja WAN. Włączenie trybu Dual WAN wyłączy tryb Agregacja WAN. Czy na pewno chcesz kontynuować?
 WANAggregation_PortConflict_hint1=Agregacja WAN wykorzystuje port LAN 4 routera. Włączenie IPTV wyłączy tryb Agregacja WAN. Czy na pewno chcesz kontynuować?
 WANAggregation_PortConflict_hint2=IPTV wykorzystuje port LAN 4 routera. Włączenie trybu Agregacja WAN wyłączy tryb IPTV. Czy na pewno chcesz kontynuować?
 WANAggregation_disable_IPTVDualWAN=Posiadany router ma włączony tryb Dual WAN i IPTV. Włączenie trybu Agregacja WAN wyłączy tryb Dual WAN i IPTV, aby uniknąć konfliktów portu. Czy na pewno chcesz kontynuować?
-WANAggregation_help_WAN=Upewnij się, że port WAN routera i port LAN modemu zostały połączone z użyciem dwóch kabli o tej samej specyfikacji.
+WANAggregation_help_WAN=Upewnij się, że port #WAN routera i port LAN modemu zostały połączone z użyciem dwóch kabli o tej samej specyfikacji.
 WANAggregation_help_LAN=Upewnij się, że port LAN 4 routera i port LAN modemu zostały połączone z użyciem dwóch kabli o tej samej specyfikacji.
 WANAggregation_goto_WAN=Aby włączyć tryb Agregacja WAN, przejdź na stronę <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN - Połączenie z Internetem</a>.
 WANAggregation_help_desc=Jeśli konfiguracja trybu Agregacja WAN nie powiedzie się, należy wykonać poniższe czynności w celu jej ponownego przeprowadzenia.
-WANAggregation_help_step1=Upewnij się, że porty LAN modemu zostały połączone kablami z portem WAN routera i LAN 4.
+WANAggregation_help_step1=Upewnij się, że porty LAN modemu zostały połączone kablami z portem #WAN routera i LAN 4.
 WANAggregation_help_step2=Upewnij się, że włączono 802.3ad w modemie.
 WANAggregation_help_step3=Upewnij się, że użyto dwóch kabli o takich samych specyfikacjach (gigabitowy i gigabitowy lub 10/100 i 10/100 Mb/s).
 WANAggregation_help_step4=Uruchom ponownie router.
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Wybierz GeForce Now, aby nadać priorytet urządzeniom obsługującym usługę gamingową GeForce Now i zapewnić większą szybkość oraz wyższą jakość podczas grania w gry.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Zdarzenie
 AURA_Event_desc=System będzie wykrywał poniższe zdarzenia i uaktywniał różne efekty LED.
 AURA_Event_Boost_desc=Po włączeniu funkcji Game Boost (Przyspieszenie gier) pasek LED będzie świecił czerwonym oddychającym światłem.

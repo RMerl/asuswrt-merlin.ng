@@ -437,7 +437,7 @@ static void guess_mv(ERContext *s)
     }
 
     if ((!(s->avctx->error_concealment&FF_EC_GUESS_MVS)) ||
-        num_avail <= mb_width / 2) {
+        num_avail <= FFMAX(mb_width, mb_height) / 2) {
         for (mb_y = 0; mb_y < mb_height; mb_y++) {
             for (mb_x = 0; mb_x < s->mb_width; mb_x++) {
                 const int mb_xy = mb_x + mb_y * s->mb_stride;
@@ -1120,6 +1120,8 @@ void ff_er_frame_end(ERContext *s)
     }
     av_log(s->avctx, AV_LOG_INFO, "concealing %d DC, %d AC, %d MV errors in %c frame\n",
            dc_error, ac_error, mv_error, av_get_picture_type_char(s->cur_pic.f->pict_type));
+
+    s->cur_pic.f->decode_error_flags |= FF_DECODE_ERROR_CONCEALMENT_ACTIVE;
 
     is_intra_likely = is_intra_more_likely(s);
 

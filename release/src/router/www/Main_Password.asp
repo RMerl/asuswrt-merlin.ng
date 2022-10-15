@@ -441,10 +441,17 @@ var validator = {
 		if(obj.value.charAt(0) == '"'){
 			showError('<#JS_validstr1#> ["]');
 			obj.value = "";
+                        obj.focus();
+                        obj.select();
+                        return false;
+                }
+                else if(obj.value.charAt(obj.value.length - 1) == '"'){
+                        showError('<#JS_validstr3#> ["]');
+			obj.value = "";
 			obj.focus();
 			obj.select();
-			return false;
-		}
+                        return false;
+                }
 		else{
 			var invalid_char = ""; 
 			for(var i = 0; i < obj.value.length; ++i){
@@ -484,6 +491,21 @@ var validator = {
 		
 		if(obj.value.length > 32){
 			showError("<#JS_max_password#>");
+			obj.value = "";
+			obj.focus();
+			obj.select();
+			return false;
+		}
+
+		if(obj.value.charAt(0) == '"'){
+			showError('<#JS_validstr1#> ["]');
+			obj.value = "";
+			obj.focus();
+			obj.select();
+			return false;
+		}
+		else if(obj.value.charAt(obj.value.length - 1) == '"'){
+			showError('<#JS_validstr3#> ["]');
 			obj.value = "";
 			obj.focus();
 			obj.select();

@@ -46,6 +46,7 @@ enum ColorsSystems {
     CIE1931system,
     Rec709system,
     Rec2020system,
+    DCIP3,
     NB_CS
 };
 
@@ -87,6 +88,7 @@ static const AVOption ciescope_options[] = {
     {   "rec709",     "ITU.BT-709 Y'CbCr",      0, AV_OPT_TYPE_CONST, {.i64=Rec709system},   0, 0, FLAGS, "system" },
     {   "uhdtv",      "ITU-R.BT-2020",          0, AV_OPT_TYPE_CONST, {.i64=Rec2020system},  0, 0, FLAGS, "system" },
     {   "rec2020",    "ITU-R.BT-2020",          0, AV_OPT_TYPE_CONST, {.i64=Rec2020system},  0, 0, FLAGS, "system" },
+    {   "dcip3",      "DCI-P3",                 0, AV_OPT_TYPE_CONST, {.i64=DCIP3},          0, 0, FLAGS, "system" },
     { "cie",        "set cie system", OFFSET(cie), AV_OPT_TYPE_INT,   {.i64=XYY}, 0, NB_CIE-1, FLAGS, "cie" },
     {   "xyy",      "CIE 1931 xyY", 0, AV_OPT_TYPE_CONST, {.i64=XYY}, 0, 0, FLAGS, "cie" },
     {   "ucs",      "CIE 1960 UCS", 0, AV_OPT_TYPE_CONST, {.i64=UCS}, 0, 0, FLAGS, "cie" },
@@ -105,6 +107,7 @@ static const AVOption ciescope_options[] = {
     {   "rec709",   NULL, 0, AV_OPT_TYPE_CONST, {.i64=1<<Rec709system},    0, 0, FLAGS, "gamuts" },
     {   "uhdtv",    NULL, 0, AV_OPT_TYPE_CONST, {.i64=1<<Rec2020system},   0, 0, FLAGS, "gamuts" },
     {   "rec2020",  NULL, 0, AV_OPT_TYPE_CONST, {.i64=1<<Rec2020system},   0, 0, FLAGS, "gamuts" },
+    {   "dcip3",    NULL, 0, AV_OPT_TYPE_CONST, {.i64=1<<DCIP3},           0, 0, FLAGS, "gamuts" },
     { "size",       "set ciescope size", OFFSET(size), AV_OPT_TYPE_INT, {.i64=512}, 256, 8192, FLAGS },
     { "s",          "set ciescope size", OFFSET(size), AV_OPT_TYPE_INT, {.i64=512}, 256, 8192, FLAGS },
     { "intensity",  "set ciescope intensity", OFFSET(intensity), AV_OPT_TYPE_FLOAT, {.dbl=0.001}, 0, 1, FLAGS },
@@ -136,10 +139,10 @@ static int query_formats(AVFilterContext *ctx)
 {
     int ret;
 
-    if ((ret = ff_formats_ref(ff_make_format_list(in_pix_fmts), &ctx->inputs[0]->out_formats)) < 0)
+    if ((ret = ff_formats_ref(ff_make_format_list(in_pix_fmts), &ctx->inputs[0]->outcfg.formats)) < 0)
         return ret;
 
-    if ((ret = ff_formats_ref(ff_make_format_list(out_pix_fmts), &ctx->outputs[0]->in_formats)) < 0)
+    if ((ret = ff_formats_ref(ff_make_format_list(out_pix_fmts), &ctx->outputs[0]->incfg.formats)) < 0)
         return ret;
 
     return 0;
@@ -694,6 +697,10 @@ static const struct ColorSystem color_systems[] = {
         0.708,  0.292,  0.170,  0.797,  0.131,  0.046,
         D65, GAMMA_REC709
     },
+    [DCIP3] = {
+        0.680,  0.320,  0.265,  0.690,  0.150,  0.060,
+        0.314,  0.351, GAMMA_REC709
+    },
 };
 
 /*
@@ -842,7 +849,8 @@ rgb_to_xy(double rc,
     *z = m[2][0] * rc + m[2][1] * gc + m[2][2] * bc;
 
     sum = *x + *y + *z;
-
+    if (sum == 0)
+        sum = 1;
     *x = *x / sum;
     *y = *y / sum;
 }
@@ -1183,15 +1191,11 @@ plot_white_point(uint16_t*      pixels,
     if (cie == LUV) {
         double wup, wvp;
         xy_to_upvp(cs->xWhite, cs->yWhite, &wup, &wvp);
-        wx = wup;
-        wy = wvp;
         wx = (w - 1) * wup;
         wy = (h - 1) - ((int) ((h - 1) * wvp));
     } else if (cie == UCS) {
         double wu, wv;
         xy_to_uv(cs->xWhite, cs->yWhite, &wu, &wv);
-        wx = wu;
-        wy = wv;
         wx = (w - 1) * wu;
         wy = (h - 1) - ((int) ((h - 1) * wv));
     } else if (cie == XYY) {

@@ -31,7 +31,7 @@ fi
 
 TR069=`cat ../.config |grep "RTCONFIG_TR069=y"`
 if [ -n "$TR069" ]; then
-        LDFLAGS+=" -L$router_dir/libssh2-1.9.0/src/.libs -lssh2 -L$router_dir/zlib -lz"
+        LDFLAGS+=" -L$router_dir/libssh2-1.10.0/src/.libs -lssh2 -L$router_dir/zlib -lz"
 fi
 
 export XML_CFLAGS="-I$cur_dir/../libxml2/include"

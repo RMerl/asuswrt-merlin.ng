@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Vanwege de compatibiliteit van het AiMesh-systeem en eindapp
 AiMesh_confirm_msg10=Lees deze <a id="wpa3FaqLink">veelgestelde vragen</a> om de verbinding van uw AiMesh-systeem en eindapparaten te garanderen voordat u overschakelt naar WPA3-Personal.
 AiMesh_confirm_msg11=U gebruikt momenteel WPA3-personal. Om een AiMesh-systeem te maken, zal uw verificatiemethode worden gewijzigd naar WPA2/WPA3-personal. Wilt u doorgaan?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Voor meer details, <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>FAQ</a>
+AiMesh_confirm_msg13=Voor meer details, <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>FAQ</a>
 AiMesh_Feature_Desc=Geavanceerde ASUS AiMesh is een vernieuwende router die meerdere ASUS-routers met elkaar verbindt, waardoor een WiFinetwork in het hele huis ontstaat.
 AiMesh_FAQ=Kom meer te weten over ASUS AiMesh
 AiMesh_FindNode=AiMesh-knooppunt zoeken
@@ -2412,7 +2412,7 @@ Internet=Internet
 Interval=Interval
 Introduce_demo=Inleidingsdemo
 Invitation=Uitnodiging
-Interaction=Samhandling
+Interaction=Interactie
 InternetSpeed=Internetsnelheid
 InternetSpeed_desc=Deze service wordt aangeboden door Ookla®. De service detecteert de download- en uploadsnelheid van uw router naar internet. Deze test duurt ongeveer een minuut. Door deze service te gebruiken, stemt u in met het <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">privacybeleid van Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® en Speedtest® zijn gedeponeerd door Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Ping naar internet inschakelen
 WANTCPMSSOptionText=TCP MSS-optie
 WANTCPMSSOptionComm1Text=bytes
 WANVLANIDText=VLAN-ID
-WANAggregation_desc=WAN-aggregatie combineert twee netwerkverbindingen om uw WAN-snelheid te verhogen tot 2Gbps. Sluit de WAN-poort en de LAN 4-poort van uw router aan om de LAN-poorten van uw modem (zorg dat u twee kabels met dezelfde specificatie gebruikt). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ WAN-aggregatie</a>
+WANAggregation_desc=WAN-aggregatie combineert twee netwerkverbindingen om uw WAN-snelheid te verhogen tot 2Gbps. Sluit de #WAN-poort en de LAN 4-poort van uw router aan om de LAN-poorten van uw modem (zorg dat u twee kabels met dezelfde specificatie gebruikt). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ WAN-aggregatie</a>
 WANAggregation_enable=WAN-aggregatie inschakelen
 WANAggregation_disable_dualwan=Dual WAN is ingeschakeld op uw router. Door WAN-aggregatie in te schakelen, wordt dual WAN uitgeschakeld. Weet u zeker dat u wilt doorgaan?
 WANAggregation_disable_WANAggregation=WAN-aggregatie is ingeschakeld op uw router. Door Dual WAN in te schakelen, wordt WAN-aggregatie uitgeschakeld. Weet u zeker dat u wilt doorgaan?
 WANAggregation_PortConflict_hint1=WAN-aggregatie gebruikt de LAN 4-poort van uw router. Door IPTV in te schakelen, wordt WAN-aggregatie uitgeschakeld. Weet u zeker dat u wilt doorgaan?
 WANAggregation_PortConflict_hint2=IPTV gebruikt de LAN 4-poort van uw router. Door WAN-aggregatie in te schakelen, wordt IPTV uitgeschakeld. Weet u zeker dat u wilt doorgaan?
 WANAggregation_disable_IPTVDualWAN=Zowel dual WAN als IPTV zijn ingeschakeld op uw router. Door WAN-aggregatie in te schakelen, worden dual WAN en IPTV uitgeschakeld. om poortconflicten te vermijden. Weet u zeker dat u wilt doorgaan?
-WANAggregation_help_WAN=Zorg dat de WAN-poort van uw router en de LAN-poort van uw modem zijn aangesloten met twee kabels met dezelfde specificatie.
+WANAggregation_help_WAN=Zorg dat de #WAN-poort van uw router en de LAN-poort van uw modem zijn aangesloten met twee kabels met dezelfde specificatie.
 WANAggregation_help_LAN=Zorg dat de LAN 4-poort van uw router en de LAN-poort van uw modem zijn aangesloten met twee kabels met dezelfde specificatie.
 WANAggregation_goto_WAN=Ga naar de pagina <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-internetverbinding</a> om WAN-aggregatie in te schakelen.
 WANAggregation_help_desc=Als de instelling van de WAN-aggregatie mislukt, volgt u de onderstaande stappen om opnieuw te proberen.
-WANAggregation_help_step1=Zorg dat de LAN-poorten van uw modem al met kabels zijn verbonden met WAN en LAN 4 van uw router.
+WANAggregation_help_step1=Zorg dat de LAN-poorten van uw modem al met kabels zijn verbonden met #WAN en LAN 4 van uw router.
 WANAggregation_help_step2=Zorg dat uw modem 802.3ad heeft ingeschakeld
 WANAggregation_help_step3=Controleer of u twee kabels met dezelfde specificaties gebruikt (gigabit & gigabit of 10/100& 10/100Mbps)
 WANAggregation_help_step4=Start uw router opnieuw op
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Selecteer GeForce Now om GeForce Now-gamingapparaten de prioriteit te geven voor een snellere en betere gamingervaring.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Gebeurtenis
 AURA_Event_desc=Het systeem zal de volgende gebeurtenissen detecteren en verschillende LED-effecten activeren.
 AURA_Event_Boost_desc=Wanneer u Game Boost inschakelt, ziet u dat de LED-balk een rood ademend effect gebruikt.

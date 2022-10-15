@@ -7,6 +7,7 @@
 #define OFFLINE_THRESHOLD	(REPORT_TIME_INTERVAL * 3)
 
 #define CFG_FILE_LOCK		"cfg_mnt"
+#define CFG_APPLY_LOCK		"cfg_apply"
 #define KEY_SHM_CFG		2001
 #define MAC_LIST_JSON_FILE	"/tmp/maclist.json"
 #define ALIAS_LEN			33

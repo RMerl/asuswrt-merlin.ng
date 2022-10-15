@@ -1,22 +1,22 @@
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, ADELAY, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-adelay
 fate-filter-adelay: tests/data/asynth-44100-2.wav
 fate-filter-adelay: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-adelay: CMD = framecrc -i $(SRC) -af adelay=42
+fate-filter-adelay: CMD = framecrc -i $(SRC) -af aresample,adelay=42,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, AECHO, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-aecho
 fate-filter-aecho: tests/data/asynth-44100-2.wav
 fate-filter-aecho: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-aecho: CMD = framecrc -i $(SRC) -af aecho=0.5:0.5:32:0.5
+fate-filter-aecho: CMD = framecrc -i $(SRC) -af aresample,aecho=0.5:0.5:32:0.5,aresample
 
 FATE_FILTER_AEMPHASIS += fate-filter-aemphasis-50fm
 fate-filter-aemphasis-50fm: tests/data/asynth-44100-2.wav
 fate-filter-aemphasis-50fm: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-aemphasis-50fm: CMD = framecrc -i $(SRC) -af aemphasis=1:5:reproduction:50fm
+fate-filter-aemphasis-50fm: CMD = framecrc -i $(SRC) -af aresample,aemphasis=1:5:reproduction:50fm,aresample
 
 FATE_FILTER_AEMPHASIS += fate-filter-aemphasis-75kf
 fate-filter-aemphasis-75kf: tests/data/asynth-44100-2.wav
 fate-filter-aemphasis-75kf: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-aemphasis-75kf: CMD = framecrc -i $(SRC) -af aemphasis=2:8:reproduction:75kf
+fate-filter-aemphasis-75kf: CMD = framecrc -i $(SRC) -af aresample,aemphasis=2:8:reproduction:75kf,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, AEMPHASIS, WAV, PCM_S16LE, PCM_S16LE, WAV) += $(FATE_FILTER_AEMPHASIS)
 
@@ -61,12 +61,12 @@ fate-filter-acrossfade: CMD = framecrc -i $(SRC) -i $(SRC2) -filter_complex acro
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, AFADE, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-agate
 fate-filter-agate: tests/data/asynth-44100-2.wav
 fate-filter-agate: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-agate: CMD = framecrc -i $(SRC) -af agate=level_in=10:range=0:threshold=1:ratio=1:attack=1:knee=1:makeup=4
+fate-filter-agate: CMD = framecrc -i $(SRC) -af aresample,agate=level_in=10:range=0:threshold=1:ratio=1:attack=1:knee=1:makeup=4,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, AFADE, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-alimiter
 fate-filter-alimiter: tests/data/asynth-44100-2.wav
 fate-filter-alimiter: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-alimiter: CMD = framecrc -i $(SRC) -af alimiter=level_in=1:level_out=2:limit=0.2
+fate-filter-alimiter: CMD = framecrc -i $(SRC) -af aresample,alimiter=level_in=1:level_out=2:limit=0.2,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, AMERGE, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-amerge
 fate-filter-amerge: tests/data/asynth-44100-1.wav
@@ -82,7 +82,7 @@ FATE_AFILTER-$(call FILTERDEMDECENCMUX, ANEQUALIZER, WAV, PCM_S16LE, PCM_S16LE, 
 fate-filter-anequalizer: tests/data/asynth-44100-2.wav
 fate-filter-anequalizer: tests/data/filtergraphs/anequalizer
 fate-filter-anequalizer: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-anequalizer: CMD = framecrc -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/anequalizer
+fate-filter-anequalizer: CMD = framecrc -auto_conversion_filters -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/anequalizer
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, ASETNSAMPLES, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-asetnsamples-pad
 fate-filter-asetnsamples-pad: tests/data/asynth-44100-2.wav
@@ -102,28 +102,28 @@ fate-filter-asetrate: CMD = framecrc -i $(SRC) -frames:a 20 -af asetrate=20000
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, CHORUS, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-chorus
 fate-filter-chorus: tests/data/asynth-22050-1.wav
 fate-filter-chorus: SRC = $(TARGET_PATH)/tests/data/asynth-22050-1.wav
-fate-filter-chorus: CMD = framecrc -i $(SRC) -frames:a 10 -af chorus=0.050001:0.050002:64:0.050001:0.025003:2.00004
+fate-filter-chorus: CMD = framecrc -i $(SRC) -frames:a 10 -af aresample,chorus=0.050001:0.050002:64:0.050001:0.025003:2.00004,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, DCSHIFT, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-dcshift
 fate-filter-dcshift: tests/data/asynth-44100-2.wav
 fate-filter-dcshift: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-dcshift: CMD = framecrc -i $(SRC) -frames:a 20 -af dcshift=shift=0.25:limitergain=0.05
+fate-filter-dcshift: CMD = framecrc -i $(SRC) -frames:a 20 -af aresample,dcshift=shift=0.25:limitergain=0.05,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, EARWAX, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-earwax
 fate-filter-earwax: tests/data/asynth-44100-2.wav
 fate-filter-earwax: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-earwax: CMD = framecrc -i $(SRC) -frames:a 20 -af earwax
+fate-filter-earwax: CMD = framecrc -i $(SRC) -frames:a 20 -af aresample,earwax,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, EXTRASTEREO, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-extrastereo
 fate-filter-extrastereo: tests/data/asynth-44100-2.wav
 fate-filter-extrastereo: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-extrastereo: CMD = framecrc -i $(SRC) -frames:a 20 -af extrastereo=m=2
+fate-filter-extrastereo: CMD = framecrc -i $(SRC) -frames:a 20 -af aresample,extrastereo=m=2,aresample
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, FIREQUALIZER ATRIM VOLUME, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-firequalizer
 fate-filter-firequalizer: tests/data/asynth-44100-2.wav
 fate-filter-firequalizer: tests/data/filtergraphs/firequalizer
 fate-filter-firequalizer: REF = tests/data/asynth-44100-2.wav
-fate-filter-firequalizer: CMD = ffmpeg -i $(TARGET_PATH)/tests/data/asynth-44100-2.wav -filter_script $(TARGET_PATH)/tests/data/filtergraphs/firequalizer -f wav -c:a pcm_s16le -
+fate-filter-firequalizer: CMD = ffmpeg -auto_conversion_filters -i $(TARGET_PATH)/tests/data/asynth-44100-2.wav -filter_script $(TARGET_PATH)/tests/data/filtergraphs/firequalizer -f wav -c:a pcm_s16le -
 fate-filter-firequalizer: CMP = oneoff
 fate-filter-firequalizer: CMP_UNIT = s16
 fate-filter-firequalizer: SIZE_TOLERANCE = 1058400 - 1097208
@@ -156,26 +156,49 @@ fate-filter-pan-stereo3: CMD = framecrc -ss 3.14 -i $(SRC) -frames:a 20 -filter:
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, PAN, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-pan-stereo4
 fate-filter-pan-stereo4: tests/data/asynth-44100-2.wav
 fate-filter-pan-stereo4: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-pan-stereo4: CMD = framecrc -ss 3.14 -guess_layout_max 0 -i $(SRC) -frames:a 20 -filter:a "pan=4C|c0=c0-0.5*c1|c1=c1+0.5*c0|c2=0*c0|c3=0*c0"
+fate-filter-pan-stereo4: CMD = framecrc -ss 3.14 -guess_layout_max 0 -i $(SRC) -frames:a 20 -filter:a "pan=2C|c0=c0-0.5*c1|c1=c1+0.5*c0"
+
+FATE_AFILTER-$(call FILTERDEMDECENCMUX, PAN, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-pan-upmix1
+fate-filter-pan-upmix1: tests/data/asynth-44100-2.wav
+fate-filter-pan-upmix1: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
+fate-filter-pan-upmix1: CMD = framecrc -ss 3.14 -guess_layout_max 0 -i $(SRC) -frames:a 20 -filter:a "pan=4C|c0=c0-0.5*c1|c1=c1+0.5*c0|c2=0*c0|c3=0*c0"
+
+FATE_AFILTER-$(call FILTERDEMDECENCMUX, PAN, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-pan-upmix2
+fate-filter-pan-upmix2: tests/data/asynth-44100-4.wav
+fate-filter-pan-upmix2: SRC = $(TARGET_PATH)/tests/data/asynth-44100-4.wav
+fate-filter-pan-upmix2: CMD = framecrc -ss 3.14 -i $(SRC) -frames:a 20 -filter:a "pan=9C|c0=c0-c1|c1=c2+c3|c2=c0+c1|c3=c2-c3|c4=c1-c0|c5=c3+c2|c6=c1+c0|c7=c3-c2|c8=c0-c3"
+
+FATE_AFILTER-$(call FILTERDEMDECENCMUX, PAN, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-pan-downmix1
+fate-filter-pan-downmix1: tests/data/asynth-44100-4.wav
+fate-filter-pan-downmix1: SRC = $(TARGET_PATH)/tests/data/asynth-44100-4.wav
+fate-filter-pan-downmix1: CMD = framecrc -ss 3.14 -i $(SRC) -frames:a 20 -filter:a "pan=2c|FL<FL+0.5*FC+0.6*BL+0.6*SL|FR<FR+0.5*FC+0.6*BR+0.6*SR"
+
+FATE_AFILTER-$(call FILTERDEMDECENCMUX, PAN, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-pan-downmix2
+fate-filter-pan-downmix2: tests/data/asynth-44100-11.wav
+fate-filter-pan-downmix2: SRC = $(TARGET_PATH)/tests/data/asynth-44100-11.wav
+fate-filter-pan-downmix2: CMD = framecrc -ss 3.14 -i $(SRC) -frames:a 20 -filter:a "pan=5C|c0=0.7*c0+0.7*c10|c1=c9|c2=c8|c3=c7|c4=c6"
 
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, SILENCEREMOVE, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-silenceremove
 fate-filter-silenceremove: SRC = $(TARGET_SAMPLES)/audio-reference/divertimenti_2ch_96kHz_s24.wav
-fate-filter-silenceremove: CMD = framecrc -i $(SRC) -frames:a 30 -af silenceremove=0:0:0:-1:0:-90dB
+fate-filter-silenceremove: CMD = framecrc -i $(SRC) -frames:a 30 -af aresample,silenceremove=start_periods=0:start_duration=0:start_threshold=0:stop_periods=-1:stop_duration=0:stop_threshold=-90dB,aresample
 
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, STEREOTOOLS, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-stereotools
 fate-filter-stereotools: SRC = $(TARGET_SAMPLES)/audio-reference/luckynight_2ch_44kHz_s16.wav
-fate-filter-stereotools: CMD = framecrc -i $(SRC) -frames:a 20 -af stereotools=mlev=0.015625
+fate-filter-stereotools: CMD = framecrc -i $(SRC) -frames:a 20 -af aresample,stereotools=mlev=0.015625,aresample
 
-FATE_AFILTER-$(call FILTERDEMDECENCMUX, TREMOLO, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-tremolo
+FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, TREMOLO, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-tremolo
 fate-filter-tremolo: tests/data/asynth-44100-2.wav
 fate-filter-tremolo: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-tremolo: CMD = framecrc -i $(SRC) -frames:a 20 -af tremolo
+fate-filter-tremolo: CMD = ffmpeg -auto_conversion_filters -i $(SRC) -frames:a 20 -af tremolo -f wav -f s16le -
+fate-filter-tremolo: REF = $(SAMPLES)/filter/tremolo.pcm
+fate-filter-tremolo: CMP = oneoff
+fate-filter-tremolo: CMP_UNIT = s16
 
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, COMPAND, WAV, PCM_S16LE, PCM_S16LE, WAV) += fate-filter-compand
 fate-filter-compand: tests/data/asynth-44100-2.wav
 fate-filter-compand: tests/data/filtergraphs/compand
 fate-filter-compand: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
-fate-filter-compand: CMD = framecrc -i $(SRC) -frames:a 20 -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/compand
+fate-filter-compand: CMD = framecrc -auto_conversion_filters -i $(SRC) -frames:a 20 -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/compand
 
 tests/data/hls-list.m3u8: TAG = GEN
 tests/data/hls-list.m3u8: ffmpeg$(PROGSSUF)$(EXESUF) | tests/data
@@ -185,7 +208,7 @@ tests/data/hls-list.m3u8: ffmpeg$(PROGSSUF)$(EXESUF) | tests/data
 
 FATE_AFILTER-$(call ALLYES, HLS_DEMUXER MPEGTS_MUXER MPEGTS_DEMUXER AEVALSRC_FILTER LAVFI_INDEV MP2FIXED_ENCODER) += fate-filter-hls
 fate-filter-hls: tests/data/hls-list.m3u8
-fate-filter-hls: CMD = framecrc -flags +bitexact -i $(TARGET_PATH)/tests/data/hls-list.m3u8
+fate-filter-hls: CMD = framecrc -flags +bitexact -i $(TARGET_PATH)/tests/data/hls-list.m3u8 -af aresample
 
 tests/data/hls-list-append.m3u8: TAG = GEN
 tests/data/hls-list-append.m3u8: ffmpeg$(PROGSSUF)$(EXESUF) | tests/data
@@ -199,20 +222,20 @@ tests/data/hls-list-append.m3u8: ffmpeg$(PROGSSUF)$(EXESUF) | tests/data
 
 FATE_AFILTER-$(call ALLYES, HLS_DEMUXER MPEGTS_MUXER MPEGTS_DEMUXER AEVALSRC_FILTER LAVFI_INDEV MP2FIXED_ENCODER) += fate-filter-hls-append
 fate-filter-hls-append: tests/data/hls-list-append.m3u8
-fate-filter-hls-append: CMD = framecrc -flags +bitexact -i $(TARGET_PATH)/tests/data/hls-list-append.m3u8 -af asetpts=RTCTIME
+fate-filter-hls-append: CMD = framecrc -flags +bitexact -i $(TARGET_PATH)/tests/data/hls-list-append.m3u8 -af asetpts=N*23,aresample
 
 FATE_AMIX += fate-filter-amix-simple
-fate-filter-amix-simple: CMD = ffmpeg -filter_complex amix -i $(SRC) -ss 3 -i $(SRC1) -f f32le -
+fate-filter-amix-simple: CMD = ffmpeg -auto_conversion_filters -filter_complex amix -i $(SRC) -ss 3 -i $(SRC1) -f f32le -
 fate-filter-amix-simple: REF = $(SAMPLES)/filter/amix_simple.pcm
 
 FATE_AMIX += fate-filter-amix-first
-fate-filter-amix-first: CMD = ffmpeg -filter_complex amix=duration=first -ss 4 -i $(SRC) -i $(SRC1) -f f32le -
+fate-filter-amix-first: CMD = ffmpeg -auto_conversion_filters -filter_complex amix=duration=first -ss 4 -i $(SRC) -i $(SRC1) -f f32le -
 fate-filter-amix-first: REF = $(SAMPLES)/filter/amix_first.pcm
 
 FATE_AMIX += fate-filter-amix-transition
 fate-filter-amix-transition: tests/data/asynth-44100-2-3.wav
 fate-filter-amix-transition: SRC2 = $(TARGET_PATH)/tests/data/asynth-44100-2-3.wav
-fate-filter-amix-transition: CMD = ffmpeg -filter_complex amix=inputs=3:dropout_transition=0.5 -i $(SRC) -ss 2 -i $(SRC1) -ss 4 -i $(SRC2) -f f32le -
+fate-filter-amix-transition: CMD = ffmpeg -auto_conversion_filters -filter_complex amix=inputs=3:dropout_transition=0.5 -i $(SRC) -ss 2 -i $(SRC1) -ss 4 -i $(SRC2) -f f32le -
 fate-filter-amix-transition: REF = $(SAMPLES)/filter/amix_transition.pcm
 
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, AMIX, WAV, PCM_S16LE, PCM_F32LE, PCM_F32LE) += $(FATE_AMIX)
@@ -248,7 +271,7 @@ FATE_FILTER_CHANNELMAP += fate-filter-channelmap-one-int
 fate-filter-channelmap-one-int: tests/data/filtergraphs/channelmap_one_int
 fate-filter-channelmap-one-int: SRC = $(TARGET_PATH)/tests/data/asynth-44100-6.wav
 fate-filter-channelmap-one-int: tests/data/asynth-44100-6.wav
-fate-filter-channelmap-one-int: CMD = md5 -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/channelmap_one_int -f wav -fflags +bitexact
+fate-filter-channelmap-one-int: CMD = md5 -auto_conversion_filters -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/channelmap_one_int -f wav -fflags +bitexact
 fate-filter-channelmap-one-int: CMP = oneline
 fate-filter-channelmap-one-int: REF = 8cfe553d65ed4696756d8c1b824fcdd3
 
@@ -256,7 +279,7 @@ FATE_FILTER_CHANNELMAP += fate-filter-channelmap-one-str
 fate-filter-channelmap-one-str: tests/data/filtergraphs/channelmap_one_str
 fate-filter-channelmap-one-str: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
 fate-filter-channelmap-one-str: tests/data/asynth-44100-2.wav
-fate-filter-channelmap-one-str: CMD = md5 -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/channelmap_one_str -f wav -fflags +bitexact
+fate-filter-channelmap-one-str: CMD = md5 -auto_conversion_filters -i $(SRC) -filter_complex_script $(TARGET_PATH)/tests/data/filtergraphs/channelmap_one_str -f wav -fflags +bitexact
 fate-filter-channelmap-one-str: CMP = oneline
 fate-filter-channelmap-one-str: REF = 0ea3052e482c95d5d3bd9da6dac1b5fa
 
@@ -265,7 +288,7 @@ FATE_AFILTER-$(call FILTERDEMDECENCMUX, CHANNELMAP, WAV, PCM_S16LE, PCM_S16LE, W
 FATE_AFILTER-$(call FILTERDEMDECENCMUX, CHANNELSPLIT, WAV, PCM_S16LE, PCM_S16LE, PCM_S16LE) += fate-filter-channelsplit
 fate-filter-channelsplit: SRC = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
 fate-filter-channelsplit: tests/data/asynth-44100-2.wav
-fate-filter-channelsplit: CMD = md5 -i $(SRC) -filter_complex channelsplit -f s16le
+fate-filter-channelsplit: CMD = md5 -auto_conversion_filters -i $(SRC) -filter_complex channelsplit -f s16le
 fate-filter-channelsplit: CMP = oneline
 fate-filter-channelsplit: REF = d92988d0fe2dd92236763f47b07ab597
 
@@ -273,7 +296,7 @@ FATE_AFILTER-$(call FILTERDEMDECENCMUX, JOIN, WAV, PCM_S16LE, PCM_S16LE, PCM_S16
 fate-filter-join: SRC1 = $(TARGET_PATH)/tests/data/asynth-44100-2.wav
 fate-filter-join: SRC2 = $(TARGET_PATH)/tests/data/asynth-44100-3.wav
 fate-filter-join: tests/data/asynth-44100-2.wav tests/data/asynth-44100-3.wav
-fate-filter-join: CMD = md5 -i $(SRC1) -i $(SRC2) -filter_complex join=channel_layout=5c -f s16le
+fate-filter-join: CMD = md5 -auto_conversion_filters -i $(SRC1) -i $(SRC2) -filter_complex join=channel_layout=5c -f s16le
 fate-filter-join: CMP = oneline
 fate-filter-join: REF = 88b0d24a64717ba8635b29e8dac6ecd8
 
@@ -292,47 +315,47 @@ FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM
 fate-filter-hdcd-mix: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-mix: CMD = md5 -i $(SRC) -af hdcd -f s24le
 fate-filter-hdcd-mix: CMP = oneline
-fate-filter-hdcd-mix: REF = e7079913e90c124460cdbc712df5b84c
+fate-filter-hdcd-mix: REF = 77443573e0bd3532de52a8bc0e825da7
 
 # output will be different because of the gain mismatch in the second and third parts
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-mix-psoff
 fate-filter-hdcd-mix-psoff: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-mix-psoff: CMD = md5 -i $(SRC) -af hdcd=process_stereo=false -f s24le
 fate-filter-hdcd-mix-psoff: CMP = oneline
-fate-filter-hdcd-mix-psoff: REF = bd0e81fe17696b825ee3515ab928e6bb
+fate-filter-hdcd-mix-psoff: REF = 89e57885917a436b30855db4d478cefb
 
 # test the different analyze modes
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-analyze-pe
 fate-filter-hdcd-analyze-pe: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-analyze-pe: CMD = md5 -i $(SRC) -af hdcd=analyze_mode=pe -f s24le
 fate-filter-hdcd-analyze-pe: CMP = oneline
-fate-filter-hdcd-analyze-pe: REF = bb83e97bbd0064b9b1c0ef2f2c8f0c77
+fate-filter-hdcd-analyze-pe: REF = 2d839d8a1cf73b10a566ce3d4cfaa79e
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-analyze-lle
 fate-filter-hdcd-analyze-lle: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-analyze-lle: CMD = md5 -i $(SRC) -af hdcd=analyze_mode=lle -f s24le
 fate-filter-hdcd-analyze-lle: CMP = oneline
-fate-filter-hdcd-analyze-lle: REF = 121cc4a681aa0caef5c664fece7a3ddc
+fate-filter-hdcd-analyze-lle: REF = b4b185332b7025c191062f49a2c015f1
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-analyze-cdt
 fate-filter-hdcd-analyze-cdt: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-analyze-cdt: CMD = md5 -i $(SRC) -af hdcd=analyze_mode=cdt -f s24le
 fate-filter-hdcd-analyze-cdt: CMP = oneline
-fate-filter-hdcd-analyze-cdt: REF = 12136e6a00dd532994f6edcc347af1d4
+fate-filter-hdcd-analyze-cdt: REF = afa6577675c63e87da3edbd442b7b6e2
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-analyze-tgm
 fate-filter-hdcd-analyze-tgm: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-analyze-tgm: CMD = md5 -i $(SRC) -af hdcd=analyze_mode=tgm -f s24le
 fate-filter-hdcd-analyze-tgm: CMP = oneline
-fate-filter-hdcd-analyze-tgm: REF = a3c39f62e9b9b42c9c440d0045d5fb2f
+fate-filter-hdcd-analyze-tgm: REF = 285f0fd2249b4903cd5e1ad5ce004219
 # the two additional analyze modes from libhdcd
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-analyze-ltgm
 fate-filter-hdcd-analyze-ltgm: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-analyze-ltgm: CMD = md5 -i $(SRC) -af hdcd=analyze_mode=lle:process_stereo=false -f s24le
 fate-filter-hdcd-analyze-ltgm: CMP = oneline
-fate-filter-hdcd-analyze-ltgm: REF = 76ffd86b762b5a93332039f27e4c0c0e
+fate-filter-hdcd-analyze-ltgm: REF = 404dc2301ea97e9f96c3d6d2ebcfeaa5
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-analyze-pel
 fate-filter-hdcd-analyze-pel: SRC = $(TARGET_SAMPLES)/filter/hdcd-mix.flac
 fate-filter-hdcd-analyze-pel: CMD = md5 -i $(SRC) -af hdcd=analyze_mode=pe:force_pe=true -f s24le
 fate-filter-hdcd-analyze-pel: CMP = oneline
-fate-filter-hdcd-analyze-pel: REF = 8156c5a3658d789ab46447d62151f5e9
+fate-filter-hdcd-analyze-pel: REF = 9342983208ec1a7f2b3e332ac4dcb723
 
 FATE_AFILTER_SAMPLES-$(call FILTERDEMDECENCMUX, HDCD, FLAC, FLAC, PCM_S24LE, PCM_S24LE) += fate-filter-hdcd-false-positive
 fate-filter-hdcd-false-positive: SRC = $(TARGET_SAMPLES)/filter/hdcd-false-positive.flac
@@ -372,7 +395,7 @@ fate-filter-hdcd-s32p: REF = 0c5513e83eedaa10ab6fac9ddc173cf5
 
 FATE_AFILTER-yes += fate-filter-formats
 fate-filter-formats: libavfilter/tests/formats$(EXESUF)
-fate-filter-formats: CMD = run libavfilter/tests/formats
+fate-filter-formats: CMD = run libavfilter/tests/formats$(EXESUF)
 
 FATE_SAMPLES_AVCONV += $(FATE_AFILTER_SAMPLES-yes)
 FATE_FFMPEG += $(FATE_AFILTER-yes)

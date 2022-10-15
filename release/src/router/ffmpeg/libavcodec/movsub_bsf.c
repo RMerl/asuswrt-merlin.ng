@@ -20,8 +20,8 @@
 
 #include "libavutil/common.h"
 #include "libavutil/intreadwrite.h"
-#include "avcodec.h"
 #include "bsf.h"
+#include "bsf_internal.h"
 
 static int text2movsub(AVBSFContext *ctx, AVPacket *out)
 {
@@ -75,8 +75,8 @@ static int mov2textsub(AVBSFContext *ctx, AVPacket *pkt)
        return AVERROR_INVALIDDATA;
     }
 
-    pkt->data += 2;
     pkt->size  = FFMIN(pkt->size - 2, AV_RB16(pkt->data));
+    pkt->data += 2;
 
     return 0;
 }

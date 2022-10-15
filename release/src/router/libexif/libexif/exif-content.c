@@ -78,12 +78,18 @@ exif_content_new_mem (ExifMem *mem)
 void
 exif_content_ref (ExifContent *content)
 {
+	if (!content)
+		return;
+
 	content->priv->ref_count++;
 }
 
 void
 exif_content_unref (ExifContent *content)
 {
+	if (!content)
+		return;
+
 	content->priv->ref_count--;
 	if (!content->priv->ref_count)
 		exif_content_free (content);
@@ -114,14 +120,14 @@ void
 exif_content_dump (ExifContent *content, unsigned int indent)
 {
 	char buf[1024];
-	unsigned int i;
-
-	for (i = 0; i < 2 * indent; i++)
-		buf[i] = ' ';
-	buf[i] = '\0';
+	unsigned int i, l;
 
 	if (!content)
 		return;
+
+	l = MIN(sizeof(buf)-1, 2*indent);
+	memset(buf, ' ', l);
+	buf[l] = '\0';
 
 	printf ("%sDumping exif content (%u entries)...\n", buf,
 		content->count);
@@ -236,9 +242,9 @@ exif_content_get_ifd (ExifContent *c)
 	if (!c || !c->parent) return EXIF_IFD_COUNT;
 
 	return 
+		((c)->parent->ifd[EXIF_IFD_EXIF] == (c)) ? EXIF_IFD_EXIF :
 		((c)->parent->ifd[EXIF_IFD_0] == (c)) ? EXIF_IFD_0 :
 		((c)->parent->ifd[EXIF_IFD_1] == (c)) ? EXIF_IFD_1 :
-		((c)->parent->ifd[EXIF_IFD_EXIF] == (c)) ? EXIF_IFD_EXIF :
 		((c)->parent->ifd[EXIF_IFD_GPS] == (c)) ? EXIF_IFD_GPS :
 		((c)->parent->ifd[EXIF_IFD_INTEROPERABILITY] == (c)) ? EXIF_IFD_INTEROPERABILITY :
 		EXIF_IFD_COUNT;

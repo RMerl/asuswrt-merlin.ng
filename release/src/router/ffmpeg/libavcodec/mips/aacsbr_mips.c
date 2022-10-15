@@ -53,11 +53,13 @@
 
 #include "libavcodec/aac.h"
 #include "libavcodec/aacsbr.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/mips/asmdefs.h"
 
 #define ENVELOPE_ADJUSTMENT_OFFSET 2
 
 #if HAVE_INLINE_ASM
+#if HAVE_MIPSFPU
 static int sbr_lf_gen_mips(AACContext *ac, SpectralBandReplication *sbr,
                       float X_low[32][40][2], const float W[2][32][32][2],
                       int buf_idx)
@@ -310,7 +312,6 @@ static int sbr_x_gen_mips(SpectralBandReplication *sbr, float X[2][38][64],
       return 0;
 }
 
-#if HAVE_MIPSFPU
 #if !HAVE_MIPS32R6 && !HAVE_MIPS64R6
 static void sbr_hf_assemble_mips(float Y1[38][64][2],
                             const float X_high[64][40][2],
@@ -333,7 +334,7 @@ static void sbr_hf_assemble_mips(float Y1[38][64][2],
     int indexnoise = ch_data->f_indexnoise;
     int indexsine  = ch_data->f_indexsine;
     float *g_temp1, *q_temp1, *pok, *pok1;
-    float temp1, temp2, temp3, temp4;
+    uint32_t temp1, temp2, temp3, temp4;
     int size = m_max;
 
     if (sbr->reset) {
@@ -611,9 +612,9 @@ static void sbr_hf_inverse_filter_mips(SBRDSPContext *dsp,
 void ff_aacsbr_func_ptr_init_mips(AACSBRContext *c)
 {
 #if HAVE_INLINE_ASM
+#if HAVE_MIPSFPU
     c->sbr_lf_gen            = sbr_lf_gen_mips;
     c->sbr_x_gen             = sbr_x_gen_mips;
-#if HAVE_MIPSFPU
 #if !HAVE_MIPS32R6 && !HAVE_MIPS64R6
     c->sbr_hf_inverse_filter = sbr_hf_inverse_filter_mips;
     c->sbr_hf_assemble       = sbr_hf_assemble_mips;

@@ -542,22 +542,17 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		{
 			static enum led_id white_led[] = {
 				LED_POWER,
-#if 0
 				LED_WAN_NORMAL,
-#ifdef RTCONFIG_LAN4WAN_LED
-				LED_LAN1, LED_LAN2, LED_LAN3, LED_LAN4,
-#else
 				LED_LAN,
+#ifdef RTCONFIG_EXTPHY_BCM84880
+				LED_EXTPHY,
 #endif
-#endif
+				LED_USB,
 				LED_WPS,
 				LED_ID_MAX
 			};
 			static enum led_id red_led[] = {
 				LED_WAN,
-#ifdef RTCONFIG_EXTPHY_BCM84880
-				LED_EXTPHY,
-#endif
 				LED_ID_MAX
 			};
 
@@ -565,15 +560,14 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			all_led[LED_COLOR_RED] = red_led;
 
 			wan_phy_led_pinmux(1);
+			lan_phy_led_pinmux(1);
 
 			if(color == LED_COLOR_WHITE) {
-				eval("sw", "0xff800520", "0xfdc1fc4a"); // orig value: 0xfdcbfdda or 0xfdcbfddb, let GPIO 4/5/7/8/17/19 be LOW
-				eval("wl", "-i", "eth6", "ledbh", "7", "1"); // wl 2.4G
+				eval("wl", "-i", "eth6", "ledbh", "13", "1"); // wl 2.4G
 				eval("wl", "-i", "eth7", "ledbh", "13", "1"); // wl 5G
 			}
 			else {
-				eval("sw", "0xff800520", "0xfdcbfdfe"); // orig value: 0xfdcbfdda or 0xfdcbfddb, let GPIO 4/5/7/8/17/19 be HIGH. let GPIO2 be HIGH to avoid POWER LED is on abnormally
-				eval("wl", "-i", "eth6", "ledbh", "7", "0"); // wl 2.4G
+				eval("wl", "-i", "eth6", "ledbh", "13", "0"); // wl 2.4G
 				eval("wl", "-i", "eth7", "ledbh", "13", "0"); // wl 5G
 			}
 		}
@@ -694,6 +688,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 	case MODEL_RTAX58U:
 	case MODEL_RTAX82U_V2:
 	case MODEL_TUFAX5400_V2:
+	case MODEL_RTAX5400:
 	case MODEL_XD6_V2:
 		{
 #if defined(RTAX82_XD6) || defined(XD6_V2)
@@ -760,11 +755,13 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 #if defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 			all_led[LED_COLOR_GREEN] = green_led;
 			all_led[LED_COLOR_BLUE] = blue_led;
-#if defined(RTAX82U_V2) || defined(TUFAX5400_V2)
-			wan_phy_led_pinmux(1);
-#else
 			LEDGroupReset(LED_ON);
 #endif
+#if defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
+#if defined(TUFAX5400_V2) || defined(RTAX5400)
+			lan_phy_led_pinmux(1);
+#endif
+			wan_phy_led_pinmux(1);
 #endif
 #endif
 			if (color == LED_COLOR_WHITE) {
@@ -951,7 +948,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			all_led[LED_COLOR_WHITE] = white_led;
 			all_led[LED_COLOR_RED] = red_led;
 
-			wan_phy_led_pinmux(1);
+			lan_phy_led_pinmux(1);
 
 			if (color == LED_COLOR_WHITE) {
 				eval("wl", "-i", "eth5", "ledbh", "0", "1");	// wl 2.4G
@@ -990,7 +987,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			all_led[LED_COLOR_WHITE] = white_led;
 			all_led[LED_COLOR_RED] = red_led;
 
-			wan_phy_led_pinmux(1);
+			lan_phy_led_pinmux(1);
 
 			if (color == LED_COLOR_WHITE) {
 				eval("wl", "-i", "eth5", "ledbh", "0", "1"); // wl 2.4G

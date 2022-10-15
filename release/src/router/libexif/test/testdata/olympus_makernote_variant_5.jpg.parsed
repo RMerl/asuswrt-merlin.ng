@@ -1,0 +1,284 @@
+File olympus_makernote_variant_5.jpg
+Byte order: Intel
+  Content 0: ifd=0
+    Entry 0: ImageDescription (ASCII)
+      Size, Comps: 32, 32
+      Value: SANYO DIGITAL CAMERA           
+    Entry 1: Make (ASCII)
+      Size, Comps: 24, 24
+      Value: SANYO Electric Co.,Ltd.
+    Entry 2: Model (ASCII)
+      Size, Comps: 14, 14
+      Value: TH1          
+    Entry 3: Orientation (Short)
+      Size, Comps: 2, 1
+      Value: Top-left
+    Entry 4: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 5: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 6: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+    Entry 7: Software (ASCII)
+      Size, Comps: 32, 32
+      Value: ver1.1.0                       
+    Entry 8: DateTime (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:12:28 17:03:51
+    Entry 9: YCbCrPositioning (Short)
+      Size, Comps: 2, 1
+      Value: Co-sited
+    Entry 10: PrintImageMatching (Undefined)
+      Size, Comps: 296, 296
+      Value: 296 bytes undefined data
+  Content 1: ifd=1
+    Entry 0: Compression (Short)
+      Size, Comps: 2, 1
+      Value: JPEG compression
+    Entry 1: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 2: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 3: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+  Content 2: ifd=2
+    Entry 0: ExposureTime (Rational)
+      Size, Comps: 8, 1
+      Value: 1/250 sec.
+    Entry 1: FNumber (Rational)
+      Size, Comps: 8, 1
+      Value: f/4.1
+    Entry 2: ExposureProgram (Short)
+      Size, Comps: 2, 1
+      Value: Manual
+    Entry 3: ISOSpeedRatings (Short)
+      Size, Comps: 2, 1
+      Value: 200
+    Entry 4: ExifVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: Exif Version 2.21
+    Entry 5: DateTimeOriginal (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:12:28 17:03:51
+    Entry 6: DateTimeDigitized (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:12:28 17:03:51
+    Entry 7: ComponentsConfiguration (Undefined)
+      Size, Comps: 4, 4
+      Value: Y Cb Cr -
+    Entry 8: CompressedBitsPerPixel (Rational)
+      Size, Comps: 8, 1
+      Value:  2
+    Entry 9: BrightnessValue (SRational)
+      Size, Comps: 8, 1
+      Value: -0.10 EV (3.20 cd/m^2)
+    Entry 10: ExposureBiasValue (SRational)
+      Size, Comps: 8, 1
+      Value: -1.80 EV
+    Entry 11: MaxApertureValue (Rational)
+      Size, Comps: 8, 1
+      Value: 2.10 EV (f/2.1)
+    Entry 12: MeteringMode (Short)
+      Size, Comps: 2, 1
+      Value: Pattern
+    Entry 13: LightSource (Short)
+      Size, Comps: 2, 1
+      Value: Unknown
+    Entry 14: Flash (Short)
+      Size, Comps: 2, 1
+      Value: Flash did not fire, compulsory flash mode
+    Entry 15: FocalLength (Rational)
+      Size, Comps: 8, 1
+      Value: 22.6 mm
+    Entry 16: MakerNote (Undefined)
+      Size, Comps: 8200, 8200
+      Value: 8200 bytes undefined data
+    Entry 17: UserComment (Undefined)
+      Size, Comps: 126, 126
+      Value:                                                                                                                      
+    Entry 18: FlashpixVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: FlashPix Version 1.0
+    Entry 19: ColorSpace (Short)
+      Size, Comps: 2, 1
+      Value: sRGB
+    Entry 20: PixelXDimension (Long)
+      Size, Comps: 4, 1
+      Value: 640
+    Entry 21: PixelYDimension (Long)
+      Size, Comps: 4, 1
+      Value: 480
+    Entry 22: FileSource (Undefined)
+      Size, Comps: 1, 1
+      Value: DSC
+    Entry 23: SceneType (Undefined)
+      Size, Comps: 1, 1
+      Value: Directly photographed
+    Entry 24: CustomRendered (Short)
+      Size, Comps: 2, 1
+      Value: Normal process
+    Entry 25: ExposureMode (Short)
+      Size, Comps: 2, 1
+      Value: Manual exposure
+    Entry 26: WhiteBalance (Short)
+      Size, Comps: 2, 1
+      Value: Auto white balance
+    Entry 27: DigitalZoomRatio (Rational)
+      Size, Comps: 8, 1
+      Value: 0.00
+    Entry 28: FocalLengthIn35mmFilm (Short)
+      Size, Comps: 2, 1
+      Value: 393
+    Entry 29: SceneCaptureType (Short)
+      Size, Comps: 2, 1
+      Value: Standard
+    Entry 30: GainControl (Short)
+      Size, Comps: 2, 1
+      Value: Low gain up
+    Entry 31: Contrast (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 32: Saturation (Short)
+      Size, Comps: 2, 1
+      Value: High saturation
+    Entry 33: Sharpness (Short)
+      Size, Comps: 2, 1
+      Value: Soft
+    Entry 34: SubjectDistanceRange (Short)
+      Size, Comps: 2, 1
+      Value: Close view
+  Content 3: ifd=3
+  Content 4: ifd=4
+    Entry 0: InteroperabilityIndex (ASCII)
+      Size, Comps: 4, 4
+      Value: R98
+    Entry 1: InteroperabilityVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: 0100
+  MakerNote
+    Entry 0: 256, ThumbnailImage
+      Size: 1999
+      Value: 1033 bytes unknown data: 0407060506080707080a110b0a09090a150f100c1118151a19181518171b1e27211b1d251d1718222e222528292b2c2b1a202f332f2a32272a2b2a010708080a090a140b0b142a1c181c2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a020708080a090a140b0b142a1c181c2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2a2affc401a20000010501010101010100000000000000000102030405060708090a0b100002010303020403050504040000017d01020300041105122131410613516107227114328191a1082342b1c11552d1f02433627282090a161718191a25262728292a3435363738393a434445464748494a535455565758595a636465666768696a737475767778797a838485868788898a92939495969798999aa2a3a4a5a6a7a8a9aab2b3b4b5b6b7b8b9bac2c3c4c5c6c7c8c9cad2d3d4d5d6d7d8d9dae1e2e3e4e5e6e7e8e9eaf1f2f3f4f5f6f7f8f9fa0100030101010101010101010000000000000102030405060708090a0b1100020102040403040705040400010277000102031104052131061241510761711322328108144291a1b1c109233352f0156272d10a162434e125f11718191a262728292a35363738393a434445464748494a535455565758595a636465666768696a737475767778797a82838485868788898a92939495969798999aa2a3a4a5a6a7a8a9aab2b3b4b5b6b7b8b9bac2c3c4c5c6c7c8c9cad2d3d4d5d6d7d8d9dae2e3e4e5e6e7e8e9eaf2f3f4f5f6f7f8f9faffc0001108007800a003012100021101031101ffda000c03010002110311003f00f9b68a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028a0028
+    Entry 1: 512, Mode
+      Size: 10
+      Value: Normal/0/0
+    Entry 2: 513, Quality
+      Size: 16
+      Value: Normal, standard
+    Entry 3: 514, Macro
+      Size: 2
+      Value: No
+    Entry 4: 515, BWMode
+      Size: 2
+      Value: No
+    Entry 5: 516, DigiZoom
+      Size: 4
+      Value: None
+    Entry 6: 526, SequentialShot
+      Size: 4
+      Value: None
+    Entry 7: 527, WideRange
+      Size: 3
+      Value: Off
+    Entry 8: 528, ColorAdjustmentMode
+      Size: 3
+      Value: Off
+    Entry 9: 529, (unknown)
+      Size: 1
+      Value: 1
+    Entry 10: 530, FocusMode
+      Size: 10
+      Value: Spot focus
+    Entry 11: 531, QuickShot
+      Size: 3
+      Value: Off
+    Entry 12: 532, SelfTimer
+      Size: 3
+      Value: Off
+    Entry 13: 533, (unknown)
+      Size: 1
+      Value: 1
+    Entry 14: 534, VoiceMemo
+      Size: 3
+      Value: Off
+    Entry 15: 535, RecordShutterRelease
+      Size: 17
+      Value: Record while down
+    Entry 16: 536, FlickerReduce
+      Size: 3
+      Value: Off
+    Entry 17: 537, OpticalZoom
+      Size: 2
+      Value: On
+    Entry 18: 538, CCDSensitivity
+      Size: 4
+      Value: Auto
+    Entry 19: 539, DigitalZoom
+      Size: 2
+      Value: On
+    Entry 20: 540, (unknown)
+      Size: 2
+      Value: 21
+    Entry 21: 541, LightSourceSpecial
+      Size: 3
+      Value: Off
+    Entry 22: 542, Resaved
+      Size: 2
+      Value: No
+    Entry 23: 543, SceneSelect
+      Size: 3
+      Value: Off
+    Entry 24: 544, (unknown)
+      Size: 1
+      Value: 7
+    Entry 25: 545, (unknown)
+      Size: 3
+      Value: 238
+    Entry 26: 546, (unknown)
+      Size: 1
+      Value: 0
+    Entry 27: 547, ManualFocusDistance
+      Size: 45
+      Value: Invalid number of components (8, expected 1).
+    Entry 28: 548, SequenceShotInterval
+      Size: 12
+      Value: 5 frames/sec
+    Entry 29: 549, (unknown)
+      Size: 0
+      Value: 
+    Entry 30: 550, (unknown)
+      Size: 1
+      Value: 0
+    Entry 31: 551, (unknown)
+      Size: 1
+      Value: 0
+    Entry 32: 553, (unknown)
+      Size: 1
+      Value: 0
+    Entry 33: 3840, DataDump
+      Size: 1999
+      Value: 2540 bytes unknown data: 00000000000000000000ff00000037390000000000000000236236230c11008147434486004f4c4100000000804000000001700100a7003200001119000f000f00a3003206041119000000000000010100a300320604111905200388084b0c4b0ccb0dcb0dcb0f0f00f801fb01b400f401f401c70000ffff0b3404ed0000000001b9ffe50021001d00260025001e0028000f0016ffff000c0021fffb002800250028002c00200024001d0023ff91001d00bbfff5008c009b0076007d005b006808d50b3406f107bf04ed06ad09990bf30703082004ed06ad0a360bf608d0096e04ed088a000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000001741741701ee05040001e838054600150000000100f42400008d24d000000fa0000007bb000000010000000000000fa0017c1cc700c829150057005800ea00004000000000570ccc0000000064000b7802828001005101d7001500150000000000000122000001230000000000000000000000000000000017517517020000000d7112b00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000005d00000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000000ffff000000000000000000000000000000000000000000001711711700ef6464640064640182013300ff0103015f014100dc014500aa00ed0123016800ba014400ba00d900464b06012300000a080e1300340b10220f00
+    Entry 34: 3841, (unknown)
+      Size: 1999
+      Value: 4048 bytes unknown data: 59636759ea000006ea00005fea00004fea000058ea000052ea000060ea000041ea000045e59fd188e3a044f0e3a05b4054f0e2856bc0e3a064f0e2867a80e3a074f0e2878d40e3a084f0e2889164e59f9008e5840020e3a00000e5850f96e3a00001e250fffd1aff0000e59500c0e2000080e3501140059f10a0058600c0e3501138059f10a00586af40e3a0a051e28aae80038aa00005860940e3a00001e2800198e5869020e3c99008e5840000e3a00004e5880010e3a00001e250fffd1affa005e38aa000e58600ece5960011e2000011e350fffb1aff0030e3a00000e5850000e59500c2e2000082e35010d0059f00c2e35010cc059f0040e35010c8059f0080e35010c4059f00c0e35010c0059f0b80e3a004f0e2801000e5800037eb000054eb000032ea000008e52d00a4e59f0000e5900004e58d8001e8bd0008e52d0094e59f0000e5900004e58d8001e8bd0008e52d0084e59f0000e5900004e58d8001e8bd0008e52d0074e59f0000e5900004e58d8001e8bd0008e52d0064e59f0000e5900004e58d8001e8bd0008e52d0054e59f0000e5900004e58d8001e8bd0008e52d0044e59f0000e5900004e58d8001e8bd100040000c3010503b3b002600270026110a210711071105110611041104110311031102fff843fffffc43ffffe843fffff043ffffec43ffffe443fffff443ffc000e59fff1ce12f000043fc303fe3a03f10ee063037e3a03f11ee0631dde3a03f12ee063000e3a03f13ee063f14ee063f15ee063f16ee063f17ee061fc0e3a01033e2811f50ee051f70ee051000e3a01f10ee021006e3a01f30ee021000e3a01f10ee033000e3a03f15ee073f16ee073f10ee113d40e3833005e3833f10ee01f00ee1a0ffffeaff70b8e59f5004e3a00b79e3a00082e2804001e3a030b0e1d037a3e1a00004e153fffb1aff0b79e3a00082e2803000e3a030b0e1c00ce2e3a00b40e28030b0e1c0007ce59f3cffe3c530b0e1c00b79e3a03ec0e3a030b0e1c00b79e3a00042e2803000e5903f40e38330b0e1c00b79e3a00040e2803000e3a030b0e1c00b79e3a00082e2804c80e3a04080e28430b0e1d00004e153fffc1aff6ec0e3a08040e3a01e0fe8b61e0fe8a78001e258fffb1aff007ce35550041285ffd91afff00ee1a0000043fce20e0001ffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffffff
+    Entry 35: 3842, (unknown)
+      Size: 1
+      Value: 0
+    Entry 36: 3843, (unknown)
+      Size: 5
+      Value: 67686
+    Entry 37: 3844, (unknown)
+      Size: 46
+      Value: Invalid number of components (1, expected 30).
+    Entry 38: 3845, (unknown)
+      Size: 45
+      Value: Invalid number of components (2, expected 1).
+    Entry 39: 3846, (unknown)
+      Size: 45
+      Value: Invalid number of components (2, expected 1).

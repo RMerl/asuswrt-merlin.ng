@@ -32,7 +32,7 @@ typedef struct VqfContext {
     int remaining_bits;
 } VqfContext;
 
-static int vqf_probe(AVProbeData *probe_packet)
+static int vqf_probe(const AVProbeData *probe_packet)
 {
     if (AV_RL32(probe_packet->buf) != MKTAG('T','W','I','N'))
         return 0;
@@ -97,7 +97,7 @@ static int vqf_read_header(AVFormatContext *s)
     int rate_flag = -1;
     int header_size;
     int read_bitrate = 0;
-    int size;
+    int size, ret;
     uint8_t comm_chunk[12];
 
     if (!st)
@@ -106,6 +106,9 @@ static int vqf_read_header(AVFormatContext *s)
     avio_skip(s->pb, 12);
 
     header_size = avio_rb32(s->pb);
+
+    if (header_size < 0)
+        return AVERROR_INVALIDDATA;
 
     st->codecpar->codec_type = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id   = AV_CODEC_ID_TWINVQ;
@@ -120,7 +123,7 @@ static int vqf_read_header(AVFormatContext *s)
 
         len = avio_rb32(s->pb);
 
-        if ((unsigned) len > INT_MAX/2) {
+        if ((unsigned) len > INT_MAX/2 || header_size < 8) {
             av_log(s, AV_LOG_ERROR, "Malformed header\n");
             return -1;
         }
@@ -129,6 +132,9 @@ static int vqf_read_header(AVFormatContext *s)
 
         switch(chunk_tag){
         case MKTAG('C','O','M','M'):
+            if (len < 12)
+                return AVERROR_INVALIDDATA;
+
             avio_read(s->pb, comm_chunk, 12);
             st->codecpar->channels = AV_RB32(comm_chunk    ) + 1;
             read_bitrate        = AV_RB32(comm_chunk + 4);
@@ -219,8 +225,8 @@ static int vqf_read_header(AVFormatContext *s)
     avpriv_set_pts_info(st, 64, size, st->codecpar->sample_rate);
 
     /* put first 12 bytes of COMM chunk in extradata */
-    if (ff_alloc_extradata(st->codecpar, 12))
-        return AVERROR(ENOMEM);
+    if ((ret = ff_alloc_extradata(st->codecpar, 12)) < 0)
+        return ret;
     memcpy(st->codecpar->extradata, comm_chunk, 12);
 
     ff_metadata_conv_ctx(s, NULL, vqf_metadata_conv);
@@ -234,8 +240,8 @@ static int vqf_read_packet(AVFormatContext *s, AVPacket *pkt)
     int ret;
     int size = (c->frame_bit_len - c->remaining_bits + 7)>>3;
 
-    if (av_new_packet(pkt, size+2) < 0)
-        return AVERROR(EIO);
+    if ((ret = av_new_packet(pkt, size + 2)) < 0)
+        return ret;
 
     pkt->pos          = avio_tell(s->pb);
     pkt->stream_index = 0;
@@ -246,7 +252,6 @@ static int vqf_read_packet(AVFormatContext *s, AVPacket *pkt)
     ret = avio_read(s->pb, pkt->data+2, size);
 
     if (ret != size) {
-        av_packet_unref(pkt);
         return AVERROR(EIO);
     }
 

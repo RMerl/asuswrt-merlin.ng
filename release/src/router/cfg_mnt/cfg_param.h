@@ -47,6 +47,9 @@
 #endif
 #define FT_PLC_MASTER BIT(21)
 #define FT_LOCAL_ACCESS	BIT(22)
+#ifdef RTCONFIG_AMAS_SYNC_LEDG
+#define FT_LEDG	BIT(23)
+#endif
 
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
@@ -76,6 +79,9 @@
 #define RESTART_BW_LIMIT	"restart_qos;restart_firewall"
 #endif
 #define RESTART_HTTPD	"restart_httpd"
+#ifdef RTCONFIG_AMAS_SYNC_LEDG
+#define RESTART_LEDG	"restart_ledg"
+#endif
 
 struct feature_mapping_s {
 	char *name;
@@ -124,6 +130,9 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 	{ "plc_master",	FT_PLC_MASTER,	RESTART_PLC_MASTER },
 #endif
 	{ "local_access", 	FT_LOCAL_ACCESS,	RESTART_HTTPD },
+#ifdef RTCONFIG_AMAS_SYNC_LEDG
+	{ "ledg", 	FT_LEDG,	RESTART_LEDG },
+#endif
 	{ NULL, 0, NULL }
 };
 
@@ -376,6 +385,10 @@ enum {
 	SUBFT_TWT_BAND3,
 	SUBFT_TWT_BAND4,
 
+#ifdef RTCONFIG_AMAS_SYNC_LEDG
+	SUBFT_LEDG,
+#endif
+
 	SUBFT_MAX
 };
 
@@ -619,6 +632,11 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "twt_b2", SUBFT_TWT_BAND2, FT_WIRELESS },
 	{ "twt_b3", SUBFT_TWT_BAND3, FT_WIRELESS },
 	{ "twt_b4", SUBFT_TWT_BAND4, FT_WIRELESS },
+
+#ifdef RTCONFIG_AMAS_SYNC_LEDG
+	/* ledg */
+	{ "ledg", SUBFT_LEDG, FT_LEDG },
+#endif
 
 	/* END */
 	{ NULL, 0, 0}
@@ -1200,6 +1218,14 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "wl2_twt", FT_WIRELESS, SUBFT_TWT_BAND3,		"0"},
 	{ "wl3_twt", FT_WIRELESS, SUBFT_TWT_BAND4,		"0"},
 
+#ifdef RTCONFIG_AMAS_SYNC_LEDG
+	{ "ledg_scheme", FT_LEDG, SUBFT_LEDG,		"2"},
+	{ "ledg_rgb1", FT_LEDG, SUBFT_LEDG,		"128,0,0,128,20,0,128,50,0"},
+	{ "ledg_rgb2", FT_LEDG, SUBFT_LEDG,		"10,0,128,0,0,128,0,0,12"},
+	{ "ledg_rgb3", FT_LEDG, SUBFT_LEDG,		"128,0,0,128,0,0,128,0,0"},
+	{ "ledg_rgb7", FT_LEDG, SUBFT_LEDG,		"128,0,0,128,0,0,128,0,0"},
+#endif
+
 	/* END */
 	{ NULL, 0, 0,		NULL}
 };
@@ -1226,8 +1252,31 @@ static struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] __attribute__ ((unuse
 	{ "radius_ipaddr", NULL },
 	{ "radius_key", NULL },
 	{ "radius_port", NULL },
+	{ "ap_isolate", NULL},
 	{ NULL, 		NULL }
 };
 
+struct smart_connect_nvsuffix_t {
+	char *name;
+	char *converted_name;
+};
+
+static struct smart_connect_nvsuffix_t smart_connect_nvsuffix_list[] = {
+	{ "ssid\0", NULL },
+	{ "wpa_psk\0", NULL },
+	{ "crypto\0", NULL },
+	{ "auth_mode_x\0", "auth_mode\0" },
+	{ "wep_x\0", "wep\0" },
+	{ "key\0", NULL },
+	{ "key1\0", NULL },
+	{ "key2\0", NULL },
+	{ "key3\0", NULL },
+	{ "key4\0", NULL },
+	{ "closed\0", NULL },
+	{ "radius_ipaddr\0", NULL },
+	{ "radius_key\0", NULL },
+	{ "radius_port\0", NULL },
+	{ NULL }
+};
 #endif /* __CFG_PARAM_H__ */
 /* End of cfg_param.h */

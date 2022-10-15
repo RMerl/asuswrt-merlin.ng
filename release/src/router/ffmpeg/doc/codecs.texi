@@ -50,11 +50,13 @@ Use internal 2pass ratecontrol in first pass mode.
 Use internal 2pass ratecontrol in second pass mode.
 @item gray
 Only decode/encode grayscale.
-@item emu_edge
-Do not draw edges.
 @item psnr
 Set error[?] variables during encoding.
 @item truncated
+Input bitstream might be randomly truncated.
+@item drop_changed
+Don't output frames whose parameters differ from first decoded frame in stream.
+Error AVERROR_INPUT_CHANGED is returned when a frame is dropped.
 
 @item ildct
 Use interlaced DCT.
@@ -68,49 +70,13 @@ This ensures that file and data checksums are reproducible and match between
 platforms. Its primary use is for regression testing.
 @item aic
 Apply H263 advanced intra coding / mpeg4 ac prediction.
-@item cbp
-Deprecated, use mpegvideo private options instead.
-@item qprd
-Deprecated, use mpegvideo private options instead.
 @item ilme
 Apply interlaced motion estimation.
 @item cgop
 Use closed gop.
+@item output_corrupt
+Output even potentially corrupted frames.
 @end table
-
-@item me_method @var{integer} (@emph{encoding,video})
-Set motion estimation method.
-
-Possible values:
-@table @samp
-@item zero
-zero motion estimation (fastest)
-@item full
-full motion estimation (slowest)
-@item epzs
-EPZS motion estimation (default)
-@item esa
-esa motion estimation (alias for full)
-@item tesa
-tesa motion estimation
-@item dia
-dia motion estimation (alias for epzs)
-@item log
-log motion estimation
-@item phods
-phods motion estimation
-@item x1
-X1 motion estimation
-@item hex
-hex motion estimation
-@item umh
-umh motion estimation
-@item iter
-iter motion estimation
-@end table
-
-@item extradata_size @var{integer}
-Set extradata size.
 
 @item time_base @var{rational number}
 Set codec time base.
@@ -178,9 +144,6 @@ Default value is 0.
 @item b_qfactor @var{float} (@emph{encoding,video})
 Set qp factor between P and B frames.
 
-@item rc_strategy @var{integer} (@emph{encoding,video})
-Set ratecontrol method.
-
 @item b_strategy @var{integer} (@emph{encoding,video})
 Set strategy to choose between I/P/B-frames.
 
@@ -204,8 +167,6 @@ Possible values:
 @table @samp
 @item autodetect
 
-@item old_msmpeg4
-some old lavc generated msmpeg4v3 files (no autodetection)
 @item xvid_ilace
 Xvid interlacing bug (autodetected if fourcc==XVIX)
 @item ump4
@@ -214,8 +175,6 @@ Xvid interlacing bug (autodetected if fourcc==XVIX)
 padding bug (autodetected)
 @item amv
 
-@item ac_vlc
-illegal vlc bug (autodetected per fourcc)
 @item qpel_chroma
 
 @item std_qpel
@@ -235,14 +194,6 @@ Workaround various bugs in microsoft broken decoders.
 @item trunc
 trancated frames
 @end table
-
-@item lelim @var{integer} (@emph{encoding,video})
-Set single coefficient elimination threshold for luminance (negative
-values also consider DC coefficient).
-
-@item celim @var{integer} (@emph{encoding,video})
-Set single coefficient elimination threshold for chrominance (negative
-values also consider dc coefficient)
 
 @item strict @var{integer} (@emph{decoding/encoding,audio,video})
 Specify how strictly to follow the standards.
@@ -300,25 +251,7 @@ consider things that a sane encoder should not do as an error
 @item mpeg_quant @var{integer} (@emph{encoding,video})
 Use MPEG quantizers instead of H.263.
 
-@item qsquish @var{float} (@emph{encoding,video})
-How to keep quantizer between qmin and qmax (0 = clip, 1 = use
-differentiable function).
-
-@item rc_qmod_amp @var{float} (@emph{encoding,video})
-Set experimental quantizer modulation.
-
-@item rc_qmod_freq @var{integer} (@emph{encoding,video})
-Set experimental quantizer modulation.
-
 @item rc_override_count @var{integer}
-
-@item rc_eq @var{string} (@emph{encoding,video})
-Set rate control equation. When computing the expression, besides the
-standard functions defined in the section 'Expression Evaluation', the
-following functions are available: bits2qp(bits), qp2bits(qp). Also
-the following constants are available: iTex pTex tex mv fCode iCount
-mcVar var isI isP isB avgQP qComp avgIITex avgPITex avgPPTex avgBPTex
-avgTex.
 
 @item maxrate @var{integer} (@emph{encoding,audio,video})
 Set max bitrate tolerance (in bits/s). Requires bufsize to be set.
@@ -330,17 +263,11 @@ encode. It is of little use elsewise.
 @item bufsize @var{integer} (@emph{encoding,audio,video})
 Set ratecontrol buffer size (in bits).
 
-@item rc_buf_aggressivity @var{float} (@emph{encoding,video})
-Currently useless.
-
 @item i_qfactor @var{float} (@emph{encoding,video})
 Set QP factor between P and I frames.
 
 @item i_qoffset @var{float} (@emph{encoding,video})
 Set QP offset between P and I frames.
-
-@item rc_init_cplx @var{float} (@emph{encoding,video})
-Set initial complexity for 1-pass encoding.
 
 @item dct @var{integer} (@emph{encoding,video})
 Set DCT algorithm.
@@ -406,11 +333,7 @@ Automatically pick a IDCT compatible with the simple one
 
 @item simpleneon
 
-@item simplealpha
-
-@item ipp
-
-@item xvidmmx
+@item xvid
 
 @item faani
 floating point AAN IDCT
@@ -640,6 +563,24 @@ noise preserving sum of squared differences
 
 @item dia_size @var{integer} (@emph{encoding,video})
 Set diamond type & size for motion estimation.
+@table @samp
+@item (1024, INT_MAX)
+full motion estimation(slowest)
+@item (768, 1024]
+umh motion estimation
+@item (512, 768]
+hex motion estimation
+@item (256, 512]
+l2s diamond motion estimation
+@item [2,256]
+var diamond motion estimation
+@item (-1,  2)
+small diamond motion estimation
+@item -1
+funny diamond motion estimation
+@item (INT_MIN, -1)
+sab diamond motion estimation
+@end table
 
 @item last_pred @var{integer} (@emph{encoding,video})
 Set amount of motion predictors from the previous frame.
@@ -690,18 +631,8 @@ Set diamond type & size for motion estimation pre-pass.
 @item subq @var{integer} (@emph{encoding,video})
 Set sub pel motion estimation quality.
 
-@item dtg_active_format @var{integer}
-
 @item me_range @var{integer} (@emph{encoding,video})
 Set limit motion vectors range (1023 for DivX player).
-
-@item ibias @var{integer} (@emph{encoding,video})
-Set intra quant bias.
-
-@item pbias @var{integer} (@emph{encoding,video})
-Set inter quant bias.
-
-@item color_table_id @var{integer}
 
 @item global_quality @var{integer} (@emph{encoding,audio,video})
 
@@ -717,8 +648,6 @@ arithmetic coder
 raw (no encoding)
 @item rle
 run-length coder
-@item deflate
-deflate-based coder
 @end table
 
 @item context @var{integer} (@emph{encoding,video})
@@ -739,16 +668,8 @@ use fewest bits
 use best rate distortion
 @end table
 
-@item stream_codec_tag @var{integer}
-
 @item sc_threshold @var{integer} (@emph{encoding,video})
 Set scene change threshold.
-
-@item lmin @var{integer} (@emph{encoding,video})
-Set min lagrange factor (VBR).
-
-@item lmax @var{integer} (@emph{encoding,video})
-Set max lagrange factor (VBR).
 
 @item nr @var{integer} (@emph{encoding,video})
 Set noise reduction.
@@ -757,14 +678,12 @@ Set noise reduction.
 Set number of bits which should be loaded into the rc buffer before
 decoding starts.
 
-@item flags2 @var{flags} (@emph{decoding/encoding,audio,video})
+@item flags2 @var{flags} (@emph{decoding/encoding,audio,video,subtitles})
 
 Possible values:
 @table @samp
 @item fast
 Allow non spec compliant speedup tricks.
-@item sgop
-Deprecated, use mpegvideo private options instead.
 @item noout
 Skip bitstream encoding.
 @item ignorecrop
@@ -775,17 +694,32 @@ Place global headers at every keyframe instead of in extradata.
 Frame data might be split into multiple chunks.
 @item showall
 Show all frames before the first keyframe.
-@item skiprd
-Deprecated, use mpegvideo private options instead.
 @item export_mvs
 Export motion vectors into frame side-data (see @code{AV_FRAME_DATA_MOTION_VECTORS})
 for codecs that support it. See also @file{doc/examples/export_mvs.c}.
+@item skip_manual
+Do not skip samples and export skip information as frame side data.
+@item ass_ro_flush_noop
+Do not reset ASS ReadOrder field on flush.
 @end table
 
-@item error @var{integer} (@emph{encoding,video})
+@item export_side_data @var{flags} (@emph{decoding/encoding,audio,video,subtitles})
 
-@item qns @var{integer} (@emph{encoding,video})
-Deprecated, use mpegvideo private options instead.
+Possible values:
+@table @samp
+@item mvs
+Export motion vectors into frame side-data (see @code{AV_FRAME_DATA_MOTION_VECTORS})
+for codecs that support it. See also @file{doc/examples/export_mvs.c}.
+@item prft
+Export encoder Producer Reference Time into packet side-data (see @code{AV_PKT_DATA_PRFT})
+for codecs that support it.
+@item venc_params
+Export video encoding parameters through frame side data (see @code{AV_FRAME_DATA_VIDEO_ENC_PARAMS})
+for codecs that support it. At present, those are H.264 and VP9.
+@item film_grain
+Export film grain parameters through frame side data (see @code{AV_FRAME_DATA_FILM_GRAIN_PARAMS}).
+Supported at present by AV1 decoders.
+@end table
 
 @item threads @var{integer} (@emph{decoding/encoding,video})
 Set the number of threads to be used, in case the selected codec
@@ -798,12 +732,6 @@ automatically select the number of threads to set
 @end table
 
 Default value is @samp{auto}.
-
-@item me_threshold @var{integer} (@emph{encoding,video})
-Set motion estimation threshold.
-
-@item mb_threshold @var{integer} (@emph{encoding,video})
-Set macroblock threshold.
 
 @item dc @var{integer} (@emph{encoding,video})
 Set intra_dc_precision.
@@ -819,49 +747,8 @@ Set number of macroblock rows at the bottom which are skipped.
 
 @item profile @var{integer} (@emph{encoding,audio,video})
 
-Possible values:
-@table @samp
-@item unknown
-
-@item aac_main
-
-@item aac_low
-
-@item aac_ssr
-
-@item aac_ltp
-
-@item aac_he
-
-@item aac_he_v2
-
-@item aac_ld
-
-@item aac_eld
-
-@item mpeg2_aac_low
-
-@item mpeg2_aac_he
-
-@item mpeg4_sp
-
-@item mpeg4_core
-
-@item mpeg4_main
-
-@item mpeg4_asp
-
-@item dts
-
-@item dts_es
-
-@item dts_96_24
-
-@item dts_hd_hra
-
-@item dts_hd_ma
-
-@end table
+Set encoder codec profile. Default value is @samp{unknown}. Encoder specific
+profiles are documented in the relevant encoder documentation.
 
 @item level @var{integer} (@emph{encoding,audio,video})
 
@@ -923,9 +810,6 @@ noise preserving sum of squared differences
 
 @end table
 
-@item border_mask @var{float} (@emph{encoding,video})
-Increase the quantizer for macroblocks close to borders.
-
 @item mblmin @var{integer} (@emph{encoding,video})
 Set min macroblock lagrange factor (VBR).
 
@@ -962,6 +846,9 @@ Discard all bidirectional frames.
 @item nokey
 Discard all frames excepts keyframes.
 
+@item nointra
+Discard all frames except I frames.
+
 @item all
 Discard all frames.
 @end table
@@ -986,10 +873,6 @@ Set chroma qp offset from luma.
 @item trellis @var{integer} (@emph{encoding,audio,video})
 Set rate-distortion optimal quantization.
 
-@item sc_factor @var{integer} (@emph{encoding,video})
-Set value multiplied by qscale for each frame and added to
-scene_change_score.
-
 @item mv0_threshold @var{integer} (@emph{encoding,video})
 @item b_sensitivity @var{integer} (@emph{encoding,video})
 Adjust sensitivity of b_frame_strategy 1.
@@ -999,9 +882,6 @@ Adjust sensitivity of b_frame_strategy 1.
 @item max_prediction_order @var{integer} (@emph{encoding,audio})
 @item timecode_frame_start @var{integer} (@emph{encoding,video})
 Set GOP timecode frame start number, in non drop frame format.
-
-@item request_channels @var{integer} (@emph{decoding,audio})
-Set desired number of audio channels.
 
 @item bits_per_raw_sample @var{integer}
 @item channel_layout @var{integer} (@emph{decoding/encoding,audio})
@@ -1116,6 +996,12 @@ BT.2020 NCL
 BT.2020 CL
 @item smpte2085
 SMPTE 2085
+@item chroma-derived-nc
+Chroma-derived NCL
+@item chroma-derived-c
+Chroma-derived CL
+@item ictcp
+ICtCp
 @end table
 
 @item color_range @var{integer} (@emph{decoding/encoding,video})
@@ -1236,7 +1122,7 @@ instead of alpha. Default is 0.
 @item dump_separator @var{string} (@emph{input})
 Separator used to separate the fields printed on the command line about the
 Stream parameters.
-For example to separate the fields with newlines and indention:
+For example, to separate the fields with newlines and indentation:
 @example
 ffprobe -dump_separator "
                           "  -i ~/videos/matrixbench_mpeg2.mpg

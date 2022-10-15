@@ -1956,7 +1956,7 @@ config RTCONFIG_IGD2
 
 config RTCONFIG_DNSSEC
 	bool "dnsmasq: Enable DNSSEC support"
-	default n
+	default y
 
 choice
 	prompt "dnsmasq: DNSSEC crypto library"
@@ -2746,3 +2746,14 @@ config RTCONFIG_BSC_SR
 config RTCONFIG_AMAS_DWB_RULE
 	bool "AiMesh new dwb rule"
 	default n
+
+config RTCONFIG_AMAS_SYNC_LEDG
+	bool "AMAS RE sync ledg"
+	default n
+
+config RTCONFIG_AMAS_SS2
+	bool "AiMesh Site Survey strategy-2"
+	default n
+config RTCONFIG_WPA3_ENTERPRISE
+        bool "WPA3 enterprise mode/transition mode/suite-b 192 bit mode"
+        default n

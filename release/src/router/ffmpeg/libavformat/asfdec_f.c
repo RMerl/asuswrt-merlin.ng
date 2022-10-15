@@ -143,6 +143,12 @@ static const ff_asf_guid stream_bitrate_guid = { /* (http://get.to/sdp) */
     0xce, 0x75, 0xf8, 0x7b, 0x8d, 0x46, 0xd1, 0x11, 0x8d, 0x82, 0x00, 0x60, 0x97, 0xc9, 0xa2, 0xb2
 };
 
+static const ff_asf_guid asf_audio_conceal_none = {
+    // 0x40, 0xa4, 0xf1, 0x49, 0x4ece, 0x11d0, 0xa3, 0xac, 0x00, 0xa0, 0xc9, 0x03, 0x48, 0xf6
+    // New value lifted from avifile
+    0x00, 0x57, 0xfb, 0x20, 0x55, 0x5B, 0xCF, 0x11, 0xa8, 0xfd, 0x00, 0x80, 0x5f, 0x5c, 0x44, 0x2b
+};
+
 #define PRINT_IF_GUID(g, cmp) \
     if (!ff_guidcmp(g, &cmp)) \
         av_log(NULL, AV_LOG_TRACE, "(GUID: %s) ", # cmp)
@@ -154,7 +160,7 @@ static void print_guid(ff_asf_guid *g)
     else PRINT_IF_GUID(g, ff_asf_file_header);
     else PRINT_IF_GUID(g, ff_asf_stream_header);
     else PRINT_IF_GUID(g, ff_asf_audio_stream);
-    else PRINT_IF_GUID(g, ff_asf_audio_conceal_none);
+    else PRINT_IF_GUID(g, asf_audio_conceal_none);
     else PRINT_IF_GUID(g, ff_asf_video_stream);
     else PRINT_IF_GUID(g, ff_asf_video_conceal_none);
     else PRINT_IF_GUID(g, ff_asf_command_stream);
@@ -186,7 +192,7 @@ static void print_guid(ff_asf_guid *g)
 #define print_guid(g) while(0)
 #endif
 
-static int asf_probe(AVProbeData *pd)
+static int asf_probe(const AVProbeData *pd)
 {
     /* check file header */
     if (!ff_guidcmp(pd->buf, &ff_asf_header))
@@ -308,8 +314,8 @@ static void get_id3_tag(AVFormatContext *s, int len)
 
     ff_id3v2_read(s, ID3v2_DEFAULT_MAGIC, &id3v2_extra_meta, len);
     if (id3v2_extra_meta) {
-        ff_id3v2_parse_apic(s, &id3v2_extra_meta);
-        ff_id3v2_parse_chapters(s, &id3v2_extra_meta);
+        ff_id3v2_parse_apic(s, id3v2_extra_meta);
+        ff_id3v2_parse_chapters(s, id3v2_extra_meta);
     }
     ff_id3v2_free_extra_meta(&id3v2_extra_meta);
 }
@@ -321,8 +327,7 @@ static void get_tag(AVFormatContext *s, const char *key, int type, int len, int 
     int64_t off = avio_tell(s->pb);
 #define LEN 22
 
-    if ((unsigned)len >= (UINT_MAX - LEN) / 2)
-        return;
+    av_assert0((unsigned)len < (INT_MAX - LEN) / 2);
 
     if (!asf->export_xmp && !strncmp(key, "xmp", 3))
         goto finish;
@@ -425,7 +430,7 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
     if (!(asf->hdr.flags & 0x01)) { // if we aren't streaming...
         int64_t fsize = avio_size(pb);
         if (fsize <= 0 || (int64_t)asf->hdr.file_size <= 0 ||
-            20*FFABS(fsize - (int64_t)asf->hdr.file_size) < FFMIN(fsize, asf->hdr.file_size))
+            FFABS(fsize - (int64_t)asf->hdr.file_size) < FFMIN(fsize, asf->hdr.file_size)/20)
             st->duration = asf->hdr.play_time /
                        (10000000 / 1000) - start_time;
     }
@@ -480,7 +485,7 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
         if (is_dvr_ms_audio) {
             // codec_id and codec_tag are unreliable in dvr_ms
             // files. Set them later by probing stream.
-            st->request_probe    = 1;
+            st->internal->request_probe    = 1;
             st->codecpar->codec_tag = 0;
         }
         if (st->codecpar->codec_id == AV_CODEC_ID_AAC)
@@ -517,6 +522,8 @@ static int asf_read_stream_properties(AVFormatContext *s, int64_t size)
         tag1                             = avio_rl32(pb);
         avio_skip(pb, 20);
         if (sizeX > 40) {
+            if (size < sizeX - 40 || sizeX - 40 > INT_MAX - AV_INPUT_BUFFER_PADDING_SIZE)
+                return AVERROR_INVALIDDATA;
             st->codecpar->extradata_size = ffio_limit(pb, sizeX - 40);
             st->codecpar->extradata      = av_mallocz(st->codecpar->extradata_size +
                                                    AV_INPUT_BUFFER_PADDING_SIZE);
@@ -608,6 +615,8 @@ static int asf_read_ext_stream_properties(AVFormatContext *s, int64_t size)
         ff_get_guid(pb, &g);
         size = avio_rl16(pb);
         ext_len = avio_rl32(pb);
+        if (ext_len < 0)
+            return AVERROR_INVALIDDATA;
         avio_skip(pb, ext_len);
         if (stream_num < 128 && i < FF_ARRAY_ELEMS(asf->streams[stream_num].payload)) {
             ASFPayload *p = &asf->streams[stream_num].payload[i];
@@ -712,6 +721,9 @@ static int asf_read_metadata(AVFormatContext *s, int64_t size)
         value_type = avio_rl16(pb); /* value_type */
         value_len  = avio_rl32(pb);
 
+        if (value_len < 0 || value_len > UINT16_MAX)
+            return AVERROR_INVALIDDATA;
+
         name_len_utf8 = 2*name_len_utf16 + 1;
         name          = av_malloc(name_len_utf8);
         if (!name)
@@ -767,6 +779,8 @@ static int asf_read_marker(AVFormatContext *s, int64_t size)
         avio_rl32(pb);             // send time
         avio_rl32(pb);             // flags
         name_len = avio_rl32(pb);  // name length
+        if ((unsigned)name_len > INT_MAX / 2)
+            return AVERROR_INVALIDDATA;
         if ((ret = avio_get_str16le(pb, name_len * 2, name,
                                     sizeof(name))) < name_len)
             avio_skip(pb, name_len - ret);
@@ -857,11 +871,20 @@ static int asf_read_header(AVFormatContext *s)
                         return ret;
                     av_hex_dump_log(s, AV_LOG_DEBUG, pkt.data, pkt.size);
                     av_packet_unref(&pkt);
+
                     len= avio_rl32(pb);
+                    if (len > UINT16_MAX)
+                        return AVERROR_INVALIDDATA;
                     get_tag(s, "ASF_Protection_Type", -1, len, 32);
+
                     len= avio_rl32(pb);
+                    if (len > UINT16_MAX)
+                        return AVERROR_INVALIDDATA;
                     get_tag(s, "ASF_Key_ID", -1, len, 32);
+
                     len= avio_rl32(pb);
+                    if (len > UINT16_MAX)
+                        return AVERROR_INVALIDDATA;
                     get_tag(s, "ASF_License_URL", -1, len, 32);
                 } else if (!ff_guidcmp(&g, &ff_asf_ext_content_encryption)) {
                     av_log(s, AV_LOG_WARNING,

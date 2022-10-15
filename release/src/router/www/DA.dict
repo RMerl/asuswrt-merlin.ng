@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Vi anbefaler, at du bruger WPA2-Personal af hensyn til kompa
 AiMesh_confirm_msg10=For at sikre forbindelsen for dit AiMesh-system til dine slutenheder skal du lære denne <a id="wpa3FaqLink">FAQ</a>, før du skifter til WPA3-Personal.
 AiMesh_confirm_msg11=Du bruger i øjeblikket WPA3-personal. For at oprette et AiMesh-system ændres din godkendelsesmetode til WPA2/WPA3-personal. Vil du fortsætte?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=For yderligere oplysninger, bedes du venligst besøge <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>ofte stillede spørgsmål</a>
+AiMesh_confirm_msg13=For yderligere oplysninger, bedes du venligst besøge <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>ofte stillede spørgsmål</a>
 AiMesh_Feature_Desc=Avanceret ASUS AiMesh er en innovativ ny routerfunktion, der forbinder flere ASUS-routere på samme tid, og derved opretter et WiFi-netværk i hele hjemmet.
 AiMesh_FAQ=Læs mere om ASUS AiMesh
 AiMesh_FindNode=Find AiMesh-forbindelsespunkter
@@ -3483,7 +3483,7 @@ TZ40_2=Kaliningrad
 TZ41=Athen
 TZ42=Jerusalem
 TZ43=Harare, Pretoria
-TZ43_2=Kijev
+TZ43_2=Kyiv
 TZ44=Moskva, Skt. Petersborg
 TZ45=Volgograd
 TZ46=Kuwait, Riyad
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS-indstillinger
 WANTCPMSSOptionComm1Text=Bytes
 WANVLANIDText=VLAN-id
-WANAggregation_desc=WAN Aggregation kombinerer to netværksforbindelser, så din WAN-hastighed øges til op til 2 Gbps. Slut din routers WAN-port og LAN 4-port til dit modems LAN-porte (sørg for, at du anvender to kabler med den samme specifikation). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Ofte stillede spørgsmål om WAN Aggregation</a>
+WANAggregation_desc=WAN Aggregation kombinerer to netværksforbindelser, så din WAN-hastighed øges til op til 2 Gbps. Slut din routers #WAN-port og LAN 4-port til dit modems LAN-porte (sørg for, at du anvender to kabler med den samme specifikation). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Ofte stillede spørgsmål om WAN Aggregation</a>
 WANAggregation_enable=Aktiver WAN Aggregation
 WANAggregation_disable_dualwan=Dual WAN er aktiveret for din router. Aktivering af WAN Aggregation deaktiverer Dual WAN. Er du sikker på, at du vil fortsætte?
 WANAggregation_disable_WANAggregation=WAN Aggregation er aktiveret for din router. Aktivering af Dual WAN deaktiverer WAN Aggregation. Er du sikker på, at du vil fortsætte?
 WANAggregation_PortConflict_hint1=WAN Aggregation anvender i øjeblikket din routers LAN 4-port. Aktivering af IPTV deaktiverer WAN Aggregation. Er du sikker på, at du vil fortsætte?
 WANAggregation_PortConflict_hint2=IPTV andvender i øjeblikket din routers LAN 4-port. Aktivering af WAN Aggregation deaktiverer IPTV. Er du sikker på, at du vil fortsætte?
 WANAggregation_disable_IPTVDualWAN=Både Dual WAN og IPTV er aktiveret for din router. Aktivering af WAN Aggregation deaktiverer Dual WAN og IPTV for at undgå portkonflikter. Er du sikker på, at du vil fortsætte?
-WANAggregation_help_WAN=Sørg for, at din routers WAN-port og dit modems LAN-port er forbundet via to kabler med den samme specifikation.
+WANAggregation_help_WAN=Sørg for, at din routers #WAN-port og dit modems LAN-port er forbundet via to kabler med den samme specifikation.
 WANAggregation_help_LAN=Sørg for, at din routers LAN 4-port og dit modems LAN-port er forbundet med to kabler med den samme specifikation.
 WANAggregation_goto_WAN=Gå til siden for <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-internetforbindelse</a> for at aktivere WAN Aggregation.
 WANAggregation_help_desc=Hvis opsætningen af WAN Aggregation ikke lykkes, skal du følge de nedenstående trin, før du prøver igen.
-WANAggregation_help_step1=Sørg for, at dit modems LAN-porte allerede er tilsluttet til din routers WAN og LAN 4 med kabler.
+WANAggregation_help_step1=Sørg for, at dit modems LAN-porte allerede er tilsluttet til din routers #WAN og LAN 4 med kabler.
 WANAggregation_help_step2=Sørg for, at 802.3ad er aktiveret for dit modem
 WANAggregation_help_step3=Tjek, at du bruger to kabler af den samme type (enten gigabit & gigabit eller 10/100 & 10/100 Mbps)
 WANAggregation_help_step4=Genstart din router
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Vælg GeForce Now for at prioritere GeForce Now-gamingenheder for en hurtigere og bedre spiloplevelse.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Begivenhed
 AURA_Event_desc=Systemet registrerer følgende begivenheder og udløser forskellige LED-effekter.
 AURA_Event_Boost_desc=Når du aktiverer Game Boost, kan du se en rød vejrtræknings-effekt i LED-bjælken.

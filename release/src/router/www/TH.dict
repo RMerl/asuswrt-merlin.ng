@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=เมื่อพิจารณาจากความเ
 AiMesh_confirm_msg10=เพื่อให้แน่ใจในการเชื่อมต่อของระบบ AiMesh และอุปกรณ์ของผู้ใช้งานปลายทาง กรุณาอ่าน<a id="wpa3FaqLink">คำถามที่ถามบ่อย</a> ก่อนที่จะเปลี่ยนไปใช้ WPA3-ส่วนบุคคล
 AiMesh_confirm_msg11=คุณกำลังใช้งาน WPA3-ส่วนบุคคลอยู่ในขณะนี้ หากคุณสร้างระบบ AiMesh วิธีการรับรองความถูกต้องของคุณจะถูกเปลี่ยนเป็น WPA2/WPA3-ส่วนบุคคล คุณต้องการดำเนินการต่อหรือไม่?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=สำหรับรายละเอียดเพิ่มเติม โปรดเยี่ยมชมที่ <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>คำถามที่ถามบ่อยนี้</a>
+AiMesh_confirm_msg13=สำหรับรายละเอียดเพิ่มเติม โปรดเยี่ยมชมที่ <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>คำถามที่ถามบ่อยนี้</a>
 AiMesh_Feature_Desc=ASUS AiMesh ขั้นสูงคือคุณสมบัติเราเตอร์ใหม่ที่เป็นนวัตกรรมซึ่งเชื่อมต่อเราเตอร์ ASUS หลายตัวเข้าด้วยกันโดยการสร้างเครือข่าย WiFi ทั่วทั้งบ้าน
 AiMesh_FAQ=ค้นหาข้อมูลเพิ่มเติมเกี่ยวกับ ASUS AiMesh
 AiMesh_FindNode=ค้นหาโหนด AiMesh
@@ -2412,7 +2412,7 @@ Internet=อินเทอร์เน็ต
 Interval=ช่วง
 Introduce_demo=การสาธิตเพื่อให้คำแนะนำ
 Invitation=คำเชิญ
-Interaction=Etkileşim
+Interaction=ปฏิสัมพันธ์
 InternetSpeed=ความเร็วของอินเทอร์เน็ต
 InternetSpeed_desc=บริการนี้ให้บริการโดย Ookla® ระบบจะตรวจหาความเร็วในการดาวน์โหลดและอัปโหลดจากเราเตอร์ของคุณไปยังอินเทอร์เน็ต การทดสอบนี้ใช้เวลาประมาณหนึ่งนาทีในการดำเนินการจนเสร็จสมบูรณ์ ในการใช้บริการนี้ เราถีอว่าคุณยอมรับใน <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">นโยบายความเป็นส่วนตัวของ Ookla</a>
 InternetSpeed_ookla_mark=Ookla® และ Speedtest® เป็นเครื่องหมายการค้าจดทะเบียนของ Ookla, LLC.
@@ -3827,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=ตัวเลือก TCP MSS
 WANTCPMSSOptionComm1Text=ไบต์
 WANVLANIDText=VLAN ID
-WANAggregation_desc=การรวมเครือข่าย WAN รวมการเชื่อมต่อสองเครือข่ายเพื่อเพิ่มความเร็ว WAN สูงสุดถึง 2Gbps เชื่อมต่อพอร์ต WAN ของเราเตอร์และพอร์ต LAN 4 กับพอร์ต LAN ของโมเด็ม (ตรวจสอบให้แน่ใจว่าคุณใช้สายเคเบิลสองเส้นที่มีข้อมูลจำเพาะเดียวกัน) <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">คำถามที่พบบ่อยคำถามที่พบบ่อยเกี่ยวกับการรวมเครือข่าย WAN</a>
+WANAggregation_desc=การรวมเครือข่าย WAN รวมการเชื่อมต่อสองเครือข่ายเพื่อเพิ่มความเร็ว WAN สูงสุดถึง 2Gbps เชื่อมต่อพอร์ต #WAN ของเราเตอร์และพอร์ต LAN 4 กับพอร์ต LAN ของโมเด็ม (ตรวจสอบให้แน่ใจว่าคุณใช้สายเคเบิลสองเส้นที่มีข้อมูลจำเพาะเดียวกัน) <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">คำถามที่พบบ่อยคำถามที่พบบ่อยเกี่ยวกับการรวมเครือข่าย WAN</a>
 WANAggregation_enable=เปิดใช้งานการรวม WAN
 WANAggregation_disable_dualwan=เราเตอร์ของคุณได้เปิดใช้งาน Dual WAN การเปิดใช้งานการรวมเครือข่าย WAN จะปิดใช้งาน Dual WAN คุณแน่ใจหรือว่าต้องการดำเนินการต่อ
 WANAggregation_disable_WANAggregation=เราเตอร์ของคุณได้เปิดใช้งานการรวมเครือข่าย WAN การเปิดใช้งาน Dual WAN จะปิดใช้งานการรวมเครือข่าย WAN คุณแน่ใจหรือว่าต้องการดำเนินการต่อ
 WANAggregation_PortConflict_hint1=การรวมเครือข่าย WAN จะใช้พอร์ต LAN 4 ของเราเตอร์ การเปิดใช้งาน IPTV จะปิดใช้งานการรวมเครือข่าย WAN คุณแน่ใจหรือว่าต้องการดำเนินการต่อ
 WANAggregation_PortConflict_hint2=IPTV จะใช้พอร์ต LAN 4 ของเราเตอร์ การเปิดใช้งานการรวมเครือข่าย WAN จะปิดใช้งาน IPTV คุณแน่ใจหรือว่าต้องการดำเนินการต่อ
 WANAggregation_disable_IPTVDualWAN=เราเตอร์ของคุณได้เปิดใช้งานทั้ง Dual WAN และ IPTV การเปิดใช้งานการรวมเครือข่าย WAN จะปิดใช้งาน Dual WAN และ IPTV เพื่อ หลีกเลี่ยงความขัดแย้งของพอร์ต คุณแน่ใจหรือว่าต้องการดำเนินการต่อ
-WANAggregation_help_WAN=ให้แน่ใจว่าได้เชื่อมต่อพอร์ต WAN ของเราเตอร์และพอร์ต LAN ของโมเด็มด้วยสายเคเบิลสองเส้นที่มีข้อมูลจำเพาะเดียวกัน
+WANAggregation_help_WAN=ให้แน่ใจว่าได้เชื่อมต่อพอร์ต #WAN ของเราเตอร์และพอร์ต LAN ของโมเด็มด้วยสายเคเบิลสองเส้นที่มีข้อมูลจำเพาะเดียวกัน
 WANAggregation_help_LAN=ให้แน่ใจว่าได้เชื่อมต่อพอร์ต LAN 4 ของเราเตอร์และพอร์ต LAN ของโมเด็มด้วยสายเคเบิลสองเส้นที่มีข้อมูลจำเพาะเดียวกัน
 WANAggregation_goto_WAN=ในการเปิดใช้งานการรวมเครือข่าย WAN ให้ไปที่หน้าการเชื่อมต่อ<a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">เครือข่ายอินเทอร์เน็ต WAN</a>
 WANAggregation_help_desc=หากตั้งค่า WAN Aggregation ไม่สำเร็จ โปรดทำตามขั้นตอนด้านล่างเพื่อลองอีกครั้ง
-WANAggregation_help_step1=ตรวจสอบให้แน่ใจว่าคุณได้เสียบสายพอร์ต LAN ของโมเด็มของคุณเข้ากับ WAN และ LAN 4 ของเราเตอร์ของคุณแล้ว
+WANAggregation_help_step1=ตรวจสอบให้แน่ใจว่าคุณได้เสียบสายพอร์ต LAN ของโมเด็มของคุณเข้ากับ #WAN และ LAN 4 ของเราเตอร์ของคุณแล้ว
 WANAggregation_help_step2=ตรวจสอบให้แน่ใจโมเด็มของคุณได้เปิดใช้งาน 802.3ad แล้ว
 WANAggregation_help_step3=ยืนยันว่าคุณใช้สายเคเบิลสองเส้นที่มีข้อมูลจำเพาะเดียวกัน (ไม่ว่าจะเป็นกิกะบิต และ กิกะบิตหรือ 10/100 และ 10/100Mbps)
 WANAggregation_help_step4=รีบูตเราเตอร์
@@ -4282,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=เลือก GeForce Now เพื่อจัดลำดับความสำคัญของอุปกรณ์เล่นเกม GeForce Now เพื่อประสบการณ์การเล่นเกมที่เร็วขึ้นและดีขึ้น
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=เหตุการณ์
 AURA_Event_desc=ระบบจะตรวจจับเหตุการณ์ต่อไปนี้และเรียกใช้เอฟเฟกต์ LED ที่แตกต่างกัน
 AURA_Event_Boost_desc=เมื่อเปิดใช้งาน Game Boost คุณจะเห็นแถบ LED ใช้เอฟเฟกต์การหายใจสีแดง

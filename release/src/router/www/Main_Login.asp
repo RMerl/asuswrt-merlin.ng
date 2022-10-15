@@ -390,6 +390,7 @@ if(captcha_support && captcha_enable != "0")
 else
 	var captcha_on = false;
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
 function initial(){
 	var flag = login_info.error_status;
 	if(isIE8 || isIE9){
@@ -429,7 +430,8 @@ function initial(){
 			document.getElementById("error_captcha_field").style.display ="";
 		}
 		else if(flag == 11){
-			document.getElementById("error_status_field").innerHTML ="You have entered an incorrect username or password 10 times. For security reasons, please manually reset your router to factory settings by pressing the reset button on the back.";
+			document.getElementById("error_status_field").innerHTML ="For security reasons, this router has been locked out because of 10 times of incorrect username and password attempts.<br>To unlock, please manually reset your router to factory setting by pressing the reset button on the back.<br>Click <a id=\"faq_SG\" href=\"\" target=\"_blank\" style=\"color:#FC0;text-decoration:underline;\">here</a> for more details.";
+			document.getElementById("faq_SG").href = faq_href;
 			document.getElementById("error_status_field").className = "error_hint error_hint1";
 			disable_input(1);
 			disable_button(1);
@@ -585,7 +587,7 @@ function login(){
 			|| redirect_page.indexOf(" ") != -1 
 			|| redirect_page.indexOf("//") != -1 
 			|| redirect_page.indexOf("http") != -1
-			|| (redirect_page.indexOf(".asp") == -1 && redirect_page.indexOf(".htm") == -1 && redirect_page != "send_IFTTTPincode.cgi" && redirect_page != "cfg_onboarding.cgi" && redirect_page != "enable_ig_s2s_client.cgi")
+			|| (redirect_page.indexOf(".asp") == -1 && redirect_page.indexOf(".htm") == -1 && redirect_page != "send_IFTTTPincode.cgi" && redirect_page != "cfg_onboarding.cgi" && redirect_page != "ig_s2s_link.cgi")
 		){
 			document.form.next_page.value = "";
 		}

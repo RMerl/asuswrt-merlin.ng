@@ -32,7 +32,7 @@ typedef struct RedSparkContext {
     int         samples_count;
 } RedSparkContext;
 
-static int redspark_probe(AVProbeData *p)
+static int redspark_probe(const AVProbeData *p)
 {
     uint32_t key, data;
     uint8_t header[8];
@@ -140,7 +140,6 @@ static int redspark_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = av_get_packet(s->pb, pkt, size);
     if (ret != size) {
-        av_packet_unref(pkt);
         return AVERROR(EIO);
     }
 

@@ -332,7 +332,7 @@ static const chunk_decoder decoder[8] = {
     decode_tdlt, decode_dsw1, decode_blck, decode_dds1,
 };
 
-static const char * const chunk_name[8] = {
+static const char chunk_name[8][5] = {
     "COPY", "TSW1", "BDLT", "WDLT", "TDLT", "DSW1", "BLCK", "DDS1"
 };
 
@@ -355,6 +355,8 @@ static int dfa_decode_frame(AVCodecContext *avctx,
 
     bytestream2_init(&gb, avpkt->data, avpkt->size);
     while (bytestream2_get_bytes_left(&gb) > 0) {
+        if (bytestream2_get_bytes_left(&gb) < 12)
+            return AVERROR_INVALIDDATA;
         bytestream2_skip(&gb, 4);
         chunk_size = bytestream2_get_le32(&gb);
         chunk_type = bytestream2_get_le32(&gb);

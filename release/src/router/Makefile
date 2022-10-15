@@ -384,7 +384,7 @@ export SRCBASE_FW := $(SRCBASE)/../../43684/src
 export SRCBASE_SYS := $(SRCBASE_DHD)
 export DHDAP_BUILD_TYPE := ram
 export CONFIG_MBO_AP=y
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AX11000 GT-AXE11000 RT-AX95Q DSL-AX82U RT-AX88U))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AX11000 GT-AXE11000 RT-AX95Q DSL-AX82U RT-AX88U GS-AX5400 RT-AX82_XD6))
 export BUILD_43684_COMBO := y
 else ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX86U))
 export BUILD_43684b0 := y
@@ -743,6 +743,7 @@ endif
 
 ifeq ($(RPAC87),y)
 obj-y += mpstat-0.1.1
+obj-y += libpcap
 obj-y += tcpdump-4.4.0
 obj-y += switch
 endif
@@ -1235,6 +1236,9 @@ obj-$(RTCONFIG_IPV6) += ndisc6
 obj-$(RTCONFIG_6RELAYD) += 6relayd
 #obj-$(RTCONFIG_IPV6) += ecmh
 
+ifneq ($(RTCONFIG_LANTIQ),y)
+export FFMPEG_ZLIB_REQD := y
+endif
 ifeq ($(FFMPEG_ZLIB_REQD),y)
 obj-$(RTCONFIG_MEDIA_SERVER) += zlib
 endif
@@ -1494,7 +1498,6 @@ ifneq ($(RTCONFIG_4M_SFP),y)
 obj-y += netstat-nat
 endif
 
-obj-$(RTCONFIG_TCPDUMP) += openssl-1.0
 obj-$(RTCONFIG_TCPDUMP) += libpcap
 obj-$(RTCONFIG_TCPDUMP) += tcpdump-4.4.0
 obj-$(RTCONFIG_DUMP4000) += libpcap
@@ -4685,7 +4688,7 @@ socat-install:
 #		@-mkdir -p libnet/lib
 #		@$(MAKE) -C libnet CC=$(CC) AR=$(AR) RANLIB=$(RANLIB)
 
-fprobe-1.1:
+fprobe-1.1: libpcap
 	@$(SEP)
 	@$(MAKE) -C fprobe-1.1 CC=$(CC) AR=$(AR) RANLIB=$(RANLIB)
 
@@ -4792,39 +4795,47 @@ libcodb-clean:
 	@$(MAKE) -C libcodb clean
 	rm -rf libcodb/stamp-h1
 
-libpcap/stamp-h1:
-	cd libpcap && $(CONFIGURE) --with-pcap=linux
-	touch $@
+libpcap/Makefile:
+	cd libpcap && \
+	$(CONFIGURE) --prefix=/usr --disable-shared --enable-static \
+		--disable-bluetooth --disable-canusb --disable-can \
+		--with-pcap=linux --without-dag \
+		CFLAGS="-Os -Wall -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
+		LDFLAGS="-Wl,--gc-sections $(EXTRALDFLAGS)"
 
-libpcap: libpcap/stamp-h1
+libpcap: libpcap/Makefile
 	@$(SEP)
-	@$(MAKE) -C libpcap CC=$(CC) AR=$(AR) RANLIB=$(RANLIB)
+	@$(MAKE) -C $@
 
-libpcap-install: libpcap
-	@echo "do nothing"
-	#install -D libpcap/libpcap.so.1.4.0 $(INSTALLDIR)/libpcap/usr/lib/libpcap.so.1.4.0
-	#$(STRIP) $(INSTALLDIR)/libpcap/usr/lib/libpcap.so.1.4.0
-	#cd $(INSTALLDIR)/libpcap/usr/lib && ln -sf libpcap.so.1.4.0 libpcap.so
+libpcap-install:
+	# do nothing
+	@true
 
 libpcap-clean:
-	[ ! -f libpcap/Makefile ] || $(MAKE) -C libpcap clean
-	@rm -f libpcap/stamp-h1
+	[ ! -f libpcap/Makefile ] || $(MAKE) -C libpcap distclean
+	@rm -f libpcap/Makefile
 
-tcpdump-4.4.0/stamp-h1:
-	cd tcpdump-4.4.0 && $(CONFIGURE) ac_cv_linux_vers=2
-	touch $@
+tcpdump-4.4.0/Makefile:
+	cd tcpdump-4.4.0 && \
+	$(CONFIGURE) --prefix=/usr \
+		$(if $(RTCONFIG_IPV6),--enable-ipv6,--disable-ipv6) \
+		--without-crypto \
+		CFLAGS="-Os -Wall -ffunction-sections -fdata-sections $(EXTRACFLAGS)" \
+		LDFLAGS="-Wl,--gc-sections $(EXTRALDFLAGS)" \
+		td_cv_buggygetaddrinfo="no" \
+		ac_cv_linux_vers=2
 
-tcpdump-4.4.0: libpcap tcpdump-4.4.0/stamp-h1
+tcpdump-4.4.0: libpcap tcpdump-4.4.0/Makefile
 	@$(SEP)
-	@$(MAKE) -C tcpdump-4.4.0 CC=$(CC) AR=$(AR) RANLIB=$(RANLIB)
+	@$(MAKE) -C $@
 
 tcpdump-4.4.0-install: tcpdump-4.4.0
 	install -D tcpdump-4.4.0/tcpdump $(INSTALLDIR)/tcpdump-4.4.0/usr/sbin/tcpdump
 	$(STRIP) $(INSTALLDIR)/tcpdump-4.4.0/usr/sbin/tcpdump
 
 tcpdump-4.4.0-clean:
-	[ ! -f tcpdump-4.4.0/Makefile ] || $(MAKE) -C tcpdump-4.4.0 clean
-	@rm -f tcpdump-4.4.0/stamp-h1
+	[ ! -f tcpdump-4.4.0/Makefile ] || $(MAKE) -C tcpdump-4.4.0 distclean
+	@rm -f tcpdump-4.4.0/Makefile
 
 traceroute-2.1.0/stamp-h1:
 	touch $@
@@ -5330,7 +5341,7 @@ ifneq ($(MEDIA_SERVER_STATIC),y)
 endif
 
 libexif/stamp-h1:
-	cd libexif && CFLAGS="-Os -Wall $(EXTRACFLAGS) -fPIC -ffunction-sections -fdata-sections" \
+	cd libexif && autoreconf -i -f && CFLAGS="-Os -Wall $(EXTRACFLAGS) -fPIC -ffunction-sections -fdata-sections" \
 	LDFLAGS="-fPIC -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 	$(CONFIGURE) --enable-shared --enable-static --prefix='' \
 		--disable-docs --disable-rpath --disable-nls --without-libiconv-prefix --without-libintl-prefix
@@ -6624,11 +6635,11 @@ fb_wifi-clean:
 #libssh2
 libssh2-stage:
 	@$(SEP)
-	@$(MAKE) libssh2-1.9.0-stage
+	@$(MAKE) libssh2-1.10.0-stage
 
-libssh2-1.9.0/Makefile:
+libssh2-1.10.0/Makefile:
 	@$(SEP)
-	cd libssh2-1.9.0 && autoreconf -fi && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
+	cd libssh2-1.10.0 && autoreconf -fi && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
 	$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-libssl-prefix=$(STAGEDIR)/usr,--without-openssl) \
 	--with-libz-prefix=$(STAGEDIR)/usr \
 	--with-libgcrypt-prefix=$(TOP)/libgcrypt-1.5.1 \
@@ -6637,24 +6648,24 @@ libssh2-1.9.0/Makefile:
 	LDFLAGS="-ldl -Wl,-rpath=$(STAGEDIR)/usr/lib,--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib -lz -L$(SRCBASE)/router/openssl -lcrypto -L$(TOP)/libgcrypt-1.5.1/src/.libs" && \
 	LIBS="-lcrypto (if $(RTCONFIG_OPENSSL11),-lpthread,) -fPIC" 
 
-libssh2: libgcrypt-1.5.1 zlib libssh2-1.9.0/Makefile
+libssh2: libgcrypt-1.5.1 zlib libssh2-1.10.0/Makefile
 	@$(SEP)
-	$(MAKE) -j 8 -C libssh2-1.9.0 && $(MAKE) $@-stage
+	$(MAKE) -j 8 -C libssh2-1.10.0 && $(MAKE) $@-stage
 
 libssh2-install:
 	@$(SEP)
-	pwd & install -D libssh2-1.9.0/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
+	pwd & install -D libssh2-1.10.0/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	$(STRIP) $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	cd $(INSTALLDIR)/libssh2/usr/lib &&\
 	rm -f libssh2.so && ln -sf libssh2.so.1.0.1 libssh2.so && \
 	rm -f libssh2.so.1 && ln -sf libssh2.so.1.0.1 libssh2.so.1
 
 libssh2-clean:
-	cd libssh2-1.9.0 && make distclean
+	cd libssh2-1.10.0 && make distclean
 
 #libcurl
 curl/configure:
-	@cd curl && ./buildconf
+	@cd curl && autoreconf -fi
 
 curl/Makefile: curl/configure
 	@cd curl && $(CONFIGURE) CC=$(CC) \

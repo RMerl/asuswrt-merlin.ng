@@ -80,7 +80,7 @@ AC_REQUIRE([GP_CHECK_DOC_DIR])
 
 # ---------------------------------------------------------------------------
 # gtk-doc: We use gtk-doc for building our documentation. However, we
-#          require the user to explicitely request the build.
+#          require the user to explicitly request the build.
 # ---------------------------------------------------------------------------
 try_gtkdoc=false
 gtkdoc_msg="no (not requested)"

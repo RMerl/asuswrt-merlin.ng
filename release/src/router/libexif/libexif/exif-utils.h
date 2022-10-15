@@ -20,8 +20,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __EXIF_UTILS_H__
-#define __EXIF_UTILS_H__
+#ifndef LIBEXIF_EXIF_UTILS_H
+#define LIBEXIF_EXIF_UTILS_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -168,7 +168,7 @@ void exif_set_srational (unsigned char *b, ExifByteOrder order,
 			 ExifSRational value);
 
 /*! \internal */
-void exif_convert_utf16_to_utf8 (char *out, const unsigned short *in, int maxlen);
+void exif_convert_utf16_to_utf8 (char *out, const unsigned char *in, int maxlen);
 
 /* Please do not use this function outside of the library. */
 
@@ -191,4 +191,4 @@ void exif_array_set_byte_order (ExifFormat, unsigned char *, unsigned int,
 }
 #endif /* __cplusplus */
 
-#endif /* __EXIF_UTILS_H__ */
+#endif /* !defined(LIBEXIF_EXIF_UTILS_H) */

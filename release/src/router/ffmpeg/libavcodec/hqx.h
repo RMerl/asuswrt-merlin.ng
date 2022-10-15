@@ -24,7 +24,8 @@
 #include <stdint.h>
 
 #include "libavutil/frame.h"
-#include "libavutil/mem.h"
+#include "libavutil/mem_internal.h"
+
 #include "get_bits.h"
 #include "hqxdsp.h"
 
@@ -77,6 +78,7 @@ typedef struct HQXContext {
     VLC dc_vlc[3];
 } HQXContext;
 
+#define HQX_CBP_VLC_BITS 5
 #define HQX_DC_VLC_BITS 9
 
 extern const HQXAC ff_hqx_ac[NUM_HQX_AC];

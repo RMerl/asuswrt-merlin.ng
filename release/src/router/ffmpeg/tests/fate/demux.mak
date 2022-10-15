@@ -7,8 +7,14 @@ fate-adts-id3v1-demux: CMD = framecrc -f aac -i $(TARGET_SAMPLES)/aac/id3v1.aac 
 fate-adts-id3v2-demux: CMD = framecrc -f aac -i $(TARGET_SAMPLES)/aac/id3v2.aac -c:a copy
 fate-adts-id3v2-two-tags-demux: CMD = framecrc -i $(TARGET_SAMPLES)/aac/id3v2_two_tags.aac -c:a copy
 
+FATE_SAMPLES_DEMUX-$(CONFIG_AA_DEMUXER) += fate-aa-demux
+fate-aa-demux: CMD = framecrc -i $(TARGET_SAMPLES)/aa/bush.aa -c:a copy
+
 FATE_SAMPLES_DEMUX-$(CONFIG_AEA_DEMUXER) += fate-aea-demux
 fate-aea-demux: CMD = crc -i $(TARGET_SAMPLES)/aea/chirp.aea -c:a copy
+
+FATE_SAMPLES_DEMUX-$(call DEMDEC, AV1, AV1) += fate-av1-annexb-demux
+fate-av1-annexb-demux: CMD = framecrc -c:v av1 -i $(TARGET_SAMPLES)/av1/annexb.obu -c:v copy
 
 FATE_SAMPLES_DEMUX-$(CONFIG_AST_DEMUXER) += fate-ast
 fate-ast: CMD = crc -i $(TARGET_SAMPLES)/ast/demo11_02_partial.ast -c copy
@@ -75,6 +81,9 @@ fate-mov-mp3-demux: CMD = framecrc -i $(TARGET_SAMPLES)/mpegaudio/packed_maindat
 
 FATE_SAMPLES_DEMUX-$(CONFIG_MPEGTS_DEMUXER) += fate-ts-opus-demux
 fate-ts-opus-demux: CMD = framecrc -i $(TARGET_SAMPLES)/opus/test-8-7.1.opus-small.ts -c copy
+
+FATE_SAMPLES_DEMUX-$(CONFIG_MPEGTS_DEMUXER) += fate-ts-small-demux
+fate-ts-small-demux: CMD = framecrc -i $(TARGET_SAMPLES)/mpegts/h264small.ts -c copy
 
 FATE_SAMPLES_DEMUX-$(CONFIG_MTV_DEMUXER) += fate-mtv
 fate-mtv: CMD = framecrc -i $(TARGET_SAMPLES)/mtv/comedian_auto-partial.mtv -c copy

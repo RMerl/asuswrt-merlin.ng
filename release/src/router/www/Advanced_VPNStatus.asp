@@ -615,9 +615,8 @@ function display_wg_data(){
 
 
 function get_wgc_data(_unit, _block) {
-	httpApi.nvramSet({"wgc_unit": _unit});
 	$.ajax({
-		url: '/appGet.cgi?hook=nvram_dump(\"wgc.log\",\"wgc.sh\")',
+		url: '/appGet.cgi?hook=nvram_dump(\"wgc.log\",\"' + _unit +'\")',
 		dataType: 'text',
 		error: function(xhr){
 			setTimeout("get_wgc_data(_unit, _block);", 1000);

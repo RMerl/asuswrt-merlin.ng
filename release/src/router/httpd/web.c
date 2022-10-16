@@ -2536,7 +2536,12 @@ ej_dump(int eid, webs_t wp, int argc, char_t **argv)
 	}
 #ifdef RTCONFIG_WIREGUARD
 	else if (strcmp(file, "wgc.log") == 0) {
-		int unit = nvram_get_int("wgc_unit");
+		int unit = 0;
+
+		if (*script)
+			unit = atoi(script);
+		if (unit == 0)
+			unit = nvram_get_int("wgc_unit");
 		char nv[16] = {0};
 		snprintf(nv, sizeof(nv), "wgc%d_enable", unit);
 		if (nvram_get_int(nv)) {

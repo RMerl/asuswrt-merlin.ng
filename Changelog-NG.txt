@@ -1,9 +1,9 @@
-Asuswrt-Merlin 386/NG Changelog
-===============================
+Asuswrt-Merlin Changelog
+========================
 
 388.1 (xx-xxx-xxxx)
-  - NEW: Merged with GPL 388_20566 (only RT-AX88U and GT-AX11000
-         currently included).
+  - NEW: Merged with GPL 388_20566 (only RT-AX88U and GT-AX11000)
+  - NEW: Merged with GPL 388_21224 (only XT12 and GT-AXE16000)
 
   - NEW: (388) WireGuard client and server.  The server uses the
          new 388 VPN server webui.  Implemented a webui for
@@ -37,8 +37,6 @@ Asuswrt-Merlin 386/NG Changelog
              active services.
   - FIXED: Wrong temperatures used by the temperature graphs
            (386.8 regression)
-  - FIXED: Guest Network clients couldn't route through VPN
-           (regression in 386.4 following a GPL merge).
   - FIXED: CVE-2022-37434 in zlib.
 
 

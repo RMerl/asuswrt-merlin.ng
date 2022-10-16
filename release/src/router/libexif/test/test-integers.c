@@ -21,9 +21,7 @@
 
 
 #include "libexif/_stdint.h"
-#include <stdlib.h>
-#include <stdio.h>
-
+#include <assert.h>
 
 typedef enum {
    EN_A,
@@ -34,31 +32,13 @@ typedef enum {
    EN_F
 } enum_t;
 
-
-#if defined(__GNUC__) && (__GNUC__ >= 4)
-# define CHECK(condition)					     \
-	if (!(condition)) {					     \
-		fprintf(stderr, "%s:%d: check failed: %s\n",	     \
-			__FILE__, __LINE__, #condition);	     \
-		errors++;					     \
-	}
-#else
-# define CHECK(condition)					     \
-	if (!(condition)) {					     \
-		abort();					     \
-	}
-#endif
-
-
 int main()
 {
-  unsigned int errors = 0;
-
   /* libexif assumes unsigned ints are not smaller than 32bit in many places */
-  CHECK(sizeof(unsigned int) >= sizeof(uint32_t));
+  assert(sizeof(unsigned int) >= sizeof(uint32_t));
 
   /* libexif assumes that enums fit into ints */
-  CHECK(sizeof(enum_t) <= sizeof(int));
+  assert(sizeof(enum_t) <= sizeof(int));
   
-  return (errors>0)?1:0;
+  return 0;
 }

@@ -27,7 +27,7 @@ typedef struct ntru_trits_t ntru_trits_t;
 #include <crypto/xofs/xof.h>
 
 /**
- * Implements an array of trinary elements (trits) 
+ * Implements an array of trinary elements (trits)
  */
 struct ntru_trits_t {
 

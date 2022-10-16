@@ -82,6 +82,15 @@ function initial(){
 		var ddns_hostname_x = '<% nvram_get("ddns_hostname_x"); %>';
 		if(ddns_enable_x == "1" && ddns_hostname_x != "")
 			$("#ig_server_address").html(ddns_hostname_x);
+
+		var ipsec_block_intranet = httpApi.nvramGet(["ipsec_block_intranet"]).ipsec_block_intranet;
+		if(ipsec_block_intranet == "")
+			ipsec_block_intranet = "0";
+		setRadioValue(document.form.vpn_server_client_access, ipsec_block_intranet);
+		$("#tr_vpn_server_client_access").show();
+	}
+	else{
+		$("#tr_vpn_server_client_access").hide();
 	}
 }
 function viewLog() {
@@ -160,6 +169,17 @@ function update_ipsec_conn(){
 	});
 	tableStruct.data = parseArray;
 	tableApi.genTableAPI(tableStruct);
+}
+function vpnServerClientAccess(){
+	var ipsec_ig_enable = httpApi.nvramGet(["ipsec_ig_enable"])["ipsec_ig_enable"];
+	if(ipsec_ig_enable == "1"){
+		var vpn_server_client_access = getRadioValue(document.form.vpn_server_client_access);
+		httpApi.nvramSet({
+			"action_mode" : "apply",
+			"ipsec_block_intranet" : vpn_server_client_access,
+			"rc_service" : "restart_firewall"
+		});
+	}
 }
 </script>
 </head>
@@ -245,6 +265,17 @@ function update_ipsec_conn(){
 											<th><#System_Log#></th>
 											<td>
 												<input class="button_gen" onclick="viewLog()" type="button" value="<#CTL_check_log#>"/>
+											</td>
+										</tr>
+										<tr id="tr_vpn_server_client_access">
+											<th><#vpn_access#></th>
+											<td>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_internet" class="input" value="1" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_internet">Internet only</label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_both" class="input" value="0" onchange="vpnServerClientAccess();">
+												<label for="vpn_server_client_access_both"><#vpn_access_WANLAN#></label>
+												<br>
+												<span class="hint-color">The access setting will be applied to both IPSec VPN and Instant Guard.</span><!-- untranslated -->
 											</td>
 										</tr>
 									</table>

@@ -111,13 +111,13 @@ int ff_text_peek_r8(FFTextReader *r)
 AVPacket *ff_subtitles_queue_insert(FFDemuxSubtitlesQueue *q,
                                     const uint8_t *event, size_t len, int merge)
 {
-    AVPacket *subs, *sub;
+    AVPacket **subs, *sub;
 
     if (merge && q->nb_subs > 0) {
         /* merge with previous event */
 
         int old_len;
-        sub = &q->subs[q->nb_subs - 1];
+        sub = q->subs[q->nb_subs - 1];
         old_len = sub->size;
         if (av_grow_packet(sub, len) < 0)
             return NULL;
@@ -132,9 +132,14 @@ AVPacket *ff_subtitles_queue_insert(FFDemuxSubtitlesQueue *q,
         if (!subs)
             return NULL;
         q->subs = subs;
-        sub = &subs[q->nb_subs++];
-        if (av_new_packet(sub, len) < 0)
+        sub = av_packet_alloc();
+        if (!sub)
             return NULL;
+        if (av_new_packet(sub, len) < 0) {
+            av_packet_free(&sub);
+            return NULL;
+        }
+        subs[q->nb_subs++] = sub;
         sub->flags |= AV_PKT_FLAG_KEY;
         sub->pts = sub->dts = 0;
         memcpy(sub->data, event, len);
@@ -144,8 +149,8 @@ AVPacket *ff_subtitles_queue_insert(FFDemuxSubtitlesQueue *q,
 
 static int cmp_pkt_sub_ts_pos(const void *a, const void *b)
 {
-    const AVPacket *s1 = a;
-    const AVPacket *s2 = b;
+    const AVPacket *s1 = *(const AVPacket **)a;
+    const AVPacket *s2 = *(const AVPacket **)b;
     if (s1->pts == s2->pts)
         return FFDIFFSIGN(s1->pos, s2->pos);
     return FFDIFFSIGN(s1->pts , s2->pts);
@@ -153,8 +158,8 @@ static int cmp_pkt_sub_ts_pos(const void *a, const void *b)
 
 static int cmp_pkt_sub_pos_ts(const void *a, const void *b)
 {
-    const AVPacket *s1 = a;
-    const AVPacket *s2 = b;
+    const AVPacket *s1 = *(const AVPacket **)a;
+    const AVPacket *s2 = *(const AVPacket **)b;
     if (s1->pos == s2->pos) {
         if (s1->pts == s2->pts)
             return 0;
@@ -169,18 +174,18 @@ static void drop_dups(void *log_ctx, FFDemuxSubtitlesQueue *q)
 
     for (i = 1; i < q->nb_subs; i++) {
         const int last_id = i - 1 - drop;
-        const AVPacket *last = &q->subs[last_id];
+        const AVPacket *last = q->subs[last_id];
 
-        if (q->subs[i].pts        == last->pts &&
-            q->subs[i].duration   == last->duration &&
-            q->subs[i].stream_index == last->stream_index &&
-            !strcmp(q->subs[i].data, last->data)) {
+        if (q->subs[i]->pts        == last->pts &&
+            q->subs[i]->duration   == last->duration &&
+            q->subs[i]->stream_index == last->stream_index &&
+            !strcmp(q->subs[i]->data, last->data)) {
 
-            av_packet_unref(&q->subs[i]);
+            av_packet_free(&q->subs[i]);
             drop++;
         } else if (drop) {
             q->subs[last_id + 1] = q->subs[i];
-            memset(&q->subs[i], 0, sizeof(q->subs[i])); // for safety
+            q->subs[i] = NULL;
         }
     }
 
@@ -194,12 +199,15 @@ void ff_subtitles_queue_finalize(void *log_ctx, FFDemuxSubtitlesQueue *q)
 {
     int i;
 
+    if (!q->nb_subs)
+        return;
+
     qsort(q->subs, q->nb_subs, sizeof(*q->subs),
           q->sort == SUB_SORT_TS_POS ? cmp_pkt_sub_ts_pos
                                      : cmp_pkt_sub_pos_ts);
     for (i = 0; i < q->nb_subs; i++)
-        if (q->subs[i].duration < 0 && i < q->nb_subs - 1)
-            q->subs[i].duration = q->subs[i + 1].pts - q->subs[i].pts;
+        if (q->subs[i]->duration < 0 && i < q->nb_subs - 1 && q->subs[i + 1]->pts - (uint64_t)q->subs[i]->pts <= INT64_MAX)
+            q->subs[i]->duration = q->subs[i + 1]->pts - q->subs[i]->pts;
 
     if (!q->keep_duplicates)
         drop_dups(log_ctx, q);
@@ -207,12 +215,14 @@ void ff_subtitles_queue_finalize(void *log_ctx, FFDemuxSubtitlesQueue *q)
 
 int ff_subtitles_queue_read_packet(FFDemuxSubtitlesQueue *q, AVPacket *pkt)
 {
-    AVPacket *sub = q->subs + q->current_sub_idx;
+    AVPacket *sub;
+    int ret;
 
     if (q->current_sub_idx == q->nb_subs)
         return AVERROR_EOF;
-    if (av_packet_ref(pkt, sub) < 0) {
-        return AVERROR(ENOMEM);
+    sub = q->subs[q->current_sub_idx];
+    if ((ret = av_packet_ref(pkt, sub)) < 0) {
+        return ret;
     }
 
     pkt->dts = pkt->pts;
@@ -233,9 +243,9 @@ static int search_sub_ts(const FFDemuxSubtitlesQueue *q, int64_t ts)
         if (s1 == s2)
             return s1;
         if (s1 == s2 - 1)
-            return q->subs[s1].pts <= q->subs[s2].pts ? s1 : s2;
+            return q->subs[s1]->pts <= q->subs[s2]->pts ? s1 : s2;
         mid = (s1 + s2) / 2;
-        if (q->subs[mid].pts <= ts)
+        if (q->subs[mid]->pts <= ts)
             s1 = mid;
         else
             s2 = mid;
@@ -257,24 +267,24 @@ int ff_subtitles_queue_seek(FFDemuxSubtitlesQueue *q, AVFormatContext *s, int st
 
         if (idx < 0)
             return idx;
-        for (i = idx; i < q->nb_subs && q->subs[i].pts < min_ts; i++)
-            if (stream_index == -1 || q->subs[i].stream_index == stream_index)
+        for (i = idx; i < q->nb_subs && q->subs[i]->pts < min_ts; i++)
+            if (stream_index == -1 || q->subs[i]->stream_index == stream_index)
                 idx = i;
-        for (i = idx; i > 0 && q->subs[i].pts > max_ts; i--)
-            if (stream_index == -1 || q->subs[i].stream_index == stream_index)
+        for (i = idx; i > 0 && q->subs[i]->pts > max_ts; i--)
+            if (stream_index == -1 || q->subs[i]->stream_index == stream_index)
                 idx = i;
 
-        ts_selected = q->subs[idx].pts;
+        ts_selected = q->subs[idx]->pts;
         if (ts_selected < min_ts || ts_selected > max_ts)
             return AVERROR(ERANGE);
 
         /* look back in the latest subtitles for overlapping subtitles */
         for (i = idx - 1; i >= 0; i--) {
-            int64_t pts = q->subs[i].pts;
-            if (q->subs[i].duration <= 0 ||
-                (stream_index != -1 && q->subs[i].stream_index != stream_index))
+            int64_t pts = q->subs[i]->pts;
+            if (q->subs[i]->duration <= 0 ||
+                (stream_index != -1 && q->subs[i]->stream_index != stream_index))
                 continue;
-            if (pts >= min_ts && pts > ts_selected - q->subs[i].duration)
+            if (pts >= min_ts && pts > ts_selected - q->subs[i]->duration)
                 idx = i;
             else
                 break;
@@ -286,7 +296,7 @@ int ff_subtitles_queue_seek(FFDemuxSubtitlesQueue *q, AVFormatContext *s, int st
          * queue is ordered by pts and then filepos, so we can take the first
          * entry for a given timestamp. */
         if (stream_index == -1)
-            while (idx > 0 && q->subs[idx - 1].pts == q->subs[idx].pts)
+            while (idx > 0 && q->subs[idx - 1]->pts == q->subs[idx]->pts)
                 idx--;
 
         q->current_sub_idx = idx;
@@ -299,7 +309,7 @@ void ff_subtitles_queue_clean(FFDemuxSubtitlesQueue *q)
     int i;
 
     for (i = 0; i < q->nb_subs; i++)
-        av_packet_unref(&q->subs[i]);
+        av_packet_free(&q->subs[i]);
     av_freep(&q->subs);
     q->nb_subs = q->allocated_size = q->current_sub_idx = 0;
 }
@@ -408,6 +418,7 @@ ptrdiff_t ff_subtitles_read_line(FFTextReader *tr, char *buf, size_t size)
     size_t cur = 0;
     if (!size)
         return 0;
+    buf[0] = '\0';
     while (cur + 1 < size) {
         unsigned char c = ff_text_r8(tr);
         if (!c)
@@ -417,7 +428,7 @@ ptrdiff_t ff_subtitles_read_line(FFTextReader *tr, char *buf, size_t size)
         buf[cur++] = c;
         buf[cur] = '\0';
     }
-    if (ff_text_peek_r8(tr) == '\r')
+    while (ff_text_peek_r8(tr) == '\r')
         ff_text_r8(tr);
     if (ff_text_peek_r8(tr) == '\n')
         ff_text_r8(tr);

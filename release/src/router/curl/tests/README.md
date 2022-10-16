@@ -1,3 +1,9 @@
+<!--
+Copyright (C) 1998 - 2022 Daniel Stenberg, <daniel@haxx.se>, et al.
+
+SPDX-License-Identifier: curl
+-->
+
 # The curl Test Suite
 
 # Running
@@ -168,7 +174,7 @@
     make test-torture
 
   The graphical tool ggcov can be used to browse the source and create
-  coverage reports on *NIX hosts:
+  coverage reports on \*nix hosts:
 
     ggcov -r lib src
 

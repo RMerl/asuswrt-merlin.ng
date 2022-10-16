@@ -6,6 +6,15 @@
 
 #include "rc.h"
 
+/* Temporary wedge for amas_wgn.o, function exists in VPN Fusion
+   which we don't enable. */
+
+#ifndef RTCONFIG_VPN_FUSION
+int update_default_routing_rule() {
+	return 0;
+}
+#endif
+
 #if 0
 int ovpn_route_up_main(int argc, char **argv)
 {

@@ -6,3 +6,17 @@ charon.plugins.addrblock.strict = yes
 	to no, subject certificates issued without the addrblock extension are
 	accepted without any traffic selector checks and no policy is enforced
 	by the plugin.
+
+charon.plugins.addrblock.depth = -1
+	How deep towards the root CA to validate issuer cert addrblock extensions.
+
+	RFC3779 requires that all addrblocks claimed by a certificate must be
+	contained in the addrblock extension of the issuer certificate, up to
+	the root CA. The default depth setting of -1 enforces this.
+
+	In practice, third party (root) CAs may not contain the extension, making
+	the addrblock extension unusable under such CAs. By limiting the validation
+	depth, only a certain level of issuer certificates are validated for proper
+	addrblock extensions: A depth of 0 does not check any issuer certificate
+	extensions, a depth of 1 only the direct issuer of the end entity
+	certificate is checkend, and so on.

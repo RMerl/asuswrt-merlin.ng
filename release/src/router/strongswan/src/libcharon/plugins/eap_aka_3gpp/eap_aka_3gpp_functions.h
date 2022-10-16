@@ -63,7 +63,7 @@ typedef struct eap_aka_3gpp_functions_t eap_aka_3gpp_functions_t;
  * @param id			user identity
  * @param[out] k		(16 byte) scratchpad to receive secret key K
  * @param[out] opc		(16 byte) scratchpad to receive operator variant key
- *						derivate OPc
+ *						derivative OPc
  */
 bool eap_aka_3gpp_get_k_opc(identification_t *id, uint8_t k[AKA_K_LEN],
 							uint8_t opc[AKA_OPC_LEN]);
@@ -88,7 +88,7 @@ struct eap_aka_3gpp_functions_t {
 	 * f1 : Calculate MAC-A from RAND, SQN, AMF using K and OPc
 	 *
 	 * @param k			(128 bit) secret key K
-	 * @param opc		(128 bit) operator variant key derivate OPc
+	 * @param opc		(128 bit) operator variant key derivative OPc
 	 * @param rand		(128 bit) random value RAND
 	 * @param sqn		 (48 bit) sequence number SQN
 	 * @param amf		 (16 bit) authentication management field AMF
@@ -106,7 +106,7 @@ struct eap_aka_3gpp_functions_t {
 	 * f1* : Calculate MAC-S from RAND, SQN, AMF using K and OPc
 	 *
 	 * @param k			(128 bit) secret key K
-	 * @param opc		(128 bit) operator variant key derivate OPc
+	 * @param opc		(128 bit) operator variant key derivative OPc
 	 * @param rand		(128 bit) random value RAND
 	 * @param sqn		 (48 bit) sequence number SQN
 	 * @param amf		 (16 bit) authentication management field AMF
@@ -127,7 +127,7 @@ struct eap_aka_3gpp_functions_t {
 	 * f5 : Calculates AK  from RAND using K and OPc
 	 *
 	 * @param k			(128 bit) secret key K
-	 * @param opc		(128 bit) operator variant key derivate OPc
+	 * @param opc		(128 bit) operator variant key derivative OPc
 	 * @param rand		(128 bit) random value RAND
 	 * @param[out] res	 (64 bit) scratchpad to receive signed response RES
 	 * @param[out] ck	(128 bit) scratchpad to receive encryption key CK
@@ -146,7 +146,7 @@ struct eap_aka_3gpp_functions_t {
 	 * f5* : Calculates resync AKS from RAND using K and OPc
 	 *
 	 * @param k			(128 bit) secret key K
-	 * @param opc		(128 bit) operator variant key derivate OPc
+	 * @param opc		(128 bit) operator variant key derivative OPc
 	 * @param rand		(128 bit) random value RAND
 	 * @param[out] aks	 (48 bit) scratchpad to receive resync anonymity key AKS
 	 * @return				TRUE if calculations successful

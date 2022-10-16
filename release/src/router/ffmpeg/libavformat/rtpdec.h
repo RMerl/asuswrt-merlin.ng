@@ -134,8 +134,6 @@ struct RTPDynamicProtocolHandler {
     /** Parse handler for this dynamic packet */
     DynamicPayloadPacketHandlerProc parse_packet;
     int (*need_keyframe)(PayloadContext *context);
-
-    struct RTPDynamicProtocolHandler *next;
 };
 
 typedef struct RTPPacket {
@@ -154,7 +152,6 @@ struct RTPDemuxContext {
     uint16_t seq;
     uint32_t timestamp;
     uint32_t base_timestamp;
-    uint32_t cur_timestamp;
     int64_t  unwrapped_timestamp;
     int64_t  range_start_offset;
     int max_payload_size;

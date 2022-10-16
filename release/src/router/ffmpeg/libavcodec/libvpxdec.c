@@ -25,12 +25,14 @@
 
 #define VPX_CODEC_DISABLE_COMPAT 1
 #include <vpx/vpx_decoder.h>
+#include <vpx/vpx_frame_buffer.h>
 #include <vpx/vp8dx.h>
 
 #include "libavutil/common.h"
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
 #include "avcodec.h"
+#include "decode.h"
 #include "internal.h"
 #include "libvpx.h"
 #include "profiles.h"
@@ -38,30 +40,66 @@
 typedef struct VPxDecoderContext {
     struct vpx_codec_ctx decoder;
     struct vpx_codec_ctx decoder_alpha;
+    AVBufferPool *pool;
+    size_t pool_size;
     int has_alpha_channel;
 } VPxContext;
 
-static av_cold int vpx_init(AVCodecContext *avctx,
-                            const struct vpx_codec_iface *iface,
-                            int is_alpha_decoder)
+
+static int get_frame_buffer(void *priv, size_t min_size, vpx_codec_frame_buffer_t *fb)
 {
-    VPxContext *ctx = avctx->priv_data;
+    VPxContext *ctx = priv;
+    AVBufferRef *buf;
+
+    if (min_size > ctx->pool_size) {
+        av_buffer_pool_uninit(&ctx->pool);
+        /* According to the libvpx docs the buffer must be zeroed out. */
+        ctx->pool = av_buffer_pool_init(min_size, av_buffer_allocz);
+        if (!ctx->pool) {
+            ctx->pool_size = 0;
+            return AVERROR(ENOMEM);
+        }
+        ctx->pool_size = min_size;
+    }
+
+    buf = av_buffer_pool_get(ctx->pool);
+    if (!buf)
+        return AVERROR(ENOMEM);
+
+    fb->priv = buf;
+    fb->size = ctx->pool_size;
+    fb->data = buf->data;
+
+    return 0;
+}
+
+static int release_frame_buffer(void *priv, vpx_codec_frame_buffer_t *fb)
+{
+    AVBufferRef *buf = fb->priv;
+    av_buffer_unref(&buf);
+    return 0;
+}
+
+static av_cold int vpx_init(AVCodecContext *avctx,
+                            struct vpx_codec_ctx* decoder,
+                            const struct vpx_codec_iface *iface)
+{
     struct vpx_codec_dec_cfg deccfg = {
-        /* token partitions+1 would be a decent choice */
-        .threads = FFMIN(avctx->thread_count, 16)
+        .threads = FFMIN(avctx->thread_count ? avctx->thread_count : av_cpu_count(), 16)
     };
 
     av_log(avctx, AV_LOG_INFO, "%s\n", vpx_codec_version_str());
     av_log(avctx, AV_LOG_VERBOSE, "%s\n", vpx_codec_build_config());
 
-    if (vpx_codec_dec_init(
-            is_alpha_decoder ? &ctx->decoder_alpha : &ctx->decoder,
-            iface, &deccfg, 0) != VPX_CODEC_OK) {
-        const char *error = vpx_codec_error(&ctx->decoder);
+    if (vpx_codec_dec_init(decoder, iface, &deccfg, 0) != VPX_CODEC_OK) {
+        const char *error = vpx_codec_error(decoder);
         av_log(avctx, AV_LOG_ERROR, "Failed to initialize decoder: %s\n",
                error);
         return AVERROR(EINVAL);
     }
+
+    if (avctx->codec_id == AV_CODEC_ID_VP9)
+        vpx_codec_set_frame_buffer_functions(decoder, get_frame_buffer, release_frame_buffer, avctx->priv_data);
 
     return 0;
 }
@@ -183,7 +221,7 @@ static int vpx_decode(AVCodecContext *avctx,
     struct vpx_image *img, *img_alpha;
     int ret;
     uint8_t *side_data = NULL;
-    int side_data_size = 0;
+    buffer_size_t side_data_size;
 
     ret = decode_frame(avctx, &ctx->decoder, avpkt->data, avpkt->size);
     if (ret)
@@ -192,7 +230,7 @@ static int vpx_decode(AVCodecContext *avctx,
     side_data = av_packet_get_side_data(avpkt,
                                         AV_PKT_DATA_MATROSKA_BLOCKADDITIONAL,
                                         &side_data_size);
-    if (side_data_size > 1) {
+    if (side_data_size >= 8) {
         const uint64_t additional_id = AV_RB64(side_data);
         side_data += 8;
         side_data_size -= 8;
@@ -200,15 +238,16 @@ static int vpx_decode(AVCodecContext *avctx,
             if (!ctx->has_alpha_channel) {
                 ctx->has_alpha_channel = 1;
                 ret = vpx_init(avctx,
+                               &ctx->decoder_alpha,
 #if CONFIG_LIBVPX_VP8_DECODER && CONFIG_LIBVPX_VP9_DECODER
                                (avctx->codec_id == AV_CODEC_ID_VP8) ?
-                               &vpx_codec_vp8_dx_algo : &vpx_codec_vp9_dx_algo,
+                               &vpx_codec_vp8_dx_algo : &vpx_codec_vp9_dx_algo
 #elif CONFIG_LIBVPX_VP8_DECODER
-                               &vpx_codec_vp8_dx_algo,
+                               &vpx_codec_vp8_dx_algo
 #else
-                               &vpx_codec_vp9_dx_algo,
+                               &vpx_codec_vp9_dx_algo
 #endif
-                               1);
+                               );
                 if (ret)
                     return ret;
             }
@@ -244,8 +283,17 @@ static int vpx_decode(AVCodecContext *avctx,
             if (ret < 0)
                 return ret;
         }
-        if ((ret = ff_get_buffer(avctx, picture, 0)) < 0)
-            return ret;
+
+        if (ctx->has_alpha_channel &&
+            (img->d_w != img_alpha->d_w ||
+             img->d_h != img_alpha->d_h ||
+             img->bit_depth != img_alpha->bit_depth)) {
+            av_log(avctx, AV_LOG_ERROR,
+                   "Video dimensions %dx%d@%dbpc differ from alpha dimensions %dx%d@%dbpc\n",
+                   img->d_w, img->d_h, img->bit_depth,
+                   img_alpha->d_w, img_alpha->d_h, img_alpha->bit_depth);
+            return AVERROR_INVALIDDATA;
+        }
 
         planes[0] = img->planes[VPX_PLANE_Y];
         planes[1] = img->planes[VPX_PLANE_U];
@@ -257,8 +305,31 @@ static int vpx_decode(AVCodecContext *avctx,
         linesizes[2] = img->stride[VPX_PLANE_V];
         linesizes[3] =
             ctx->has_alpha_channel ? img_alpha->stride[VPX_PLANE_Y] : 0;
-        av_image_copy(picture->data, picture->linesize, (const uint8_t**)planes,
-                      linesizes, avctx->pix_fmt, img->d_w, img->d_h);
+
+        if (img->fb_priv && (!ctx->has_alpha_channel || img_alpha->fb_priv)) {
+            ret = ff_decode_frame_props(avctx, picture);
+            if (ret < 0)
+                return ret;
+            picture->buf[0] = av_buffer_ref(img->fb_priv);
+            if (!picture->buf[0])
+                return AVERROR(ENOMEM);
+            if (ctx->has_alpha_channel) {
+                picture->buf[1] = av_buffer_ref(img_alpha->fb_priv);
+                if (!picture->buf[1]) {
+                    av_frame_unref(picture);
+                    return AVERROR(ENOMEM);
+                }
+            }
+            for (int i = 0; i < 4; i++) {
+                picture->data[i] = planes[i];
+                picture->linesize[i] = linesizes[i];
+            }
+        } else {
+            if ((ret = ff_get_buffer(avctx, picture, 0)) < 0)
+                return ret;
+            av_image_copy(picture->data, picture->linesize, (const uint8_t**)planes,
+                          linesizes, avctx->pix_fmt, img->d_w, img->d_h);
+        }
         *got_frame           = 1;
     }
     return avpkt->size;
@@ -270,13 +341,15 @@ static av_cold int vpx_free(AVCodecContext *avctx)
     vpx_codec_destroy(&ctx->decoder);
     if (ctx->has_alpha_channel)
         vpx_codec_destroy(&ctx->decoder_alpha);
+    av_buffer_pool_uninit(&ctx->pool);
     return 0;
 }
 
 #if CONFIG_LIBVPX_VP8_DECODER
 static av_cold int vp8_init(AVCodecContext *avctx)
 {
-    return vpx_init(avctx, &vpx_codec_vp8_dx_algo, 0);
+    VPxContext *ctx = avctx->priv_data;
+    return vpx_init(avctx, &ctx->decoder, &vpx_codec_vp8_dx_algo);
 }
 
 AVCodec ff_libvpx_vp8_decoder = {
@@ -288,7 +361,8 @@ AVCodec ff_libvpx_vp8_decoder = {
     .init           = vp8_init,
     .close          = vpx_free,
     .decode         = vpx_decode,
-    .capabilities   = AV_CODEC_CAP_AUTO_THREADS | AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_OTHER_THREADS | AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .wrapper_name   = "libvpx",
 };
 #endif /* CONFIG_LIBVPX_VP8_DECODER */
@@ -296,7 +370,8 @@ AVCodec ff_libvpx_vp8_decoder = {
 #if CONFIG_LIBVPX_VP9_DECODER
 static av_cold int vp9_init(AVCodecContext *avctx)
 {
-    return vpx_init(avctx, &vpx_codec_vp9_dx_algo, 0);
+    VPxContext *ctx = avctx->priv_data;
+    return vpx_init(avctx, &ctx->decoder, &vpx_codec_vp9_dx_algo);
 }
 
 AVCodec ff_libvpx_vp9_decoder = {
@@ -308,7 +383,8 @@ AVCodec ff_libvpx_vp9_decoder = {
     .init           = vp9_init,
     .close          = vpx_free,
     .decode         = vpx_decode,
-    .capabilities   = AV_CODEC_CAP_AUTO_THREADS | AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .init_static_data = ff_vp9_init_static,
     .profiles       = NULL_IF_CONFIG_SMALL(ff_vp9_profiles),
     .wrapper_name   = "libvpx",

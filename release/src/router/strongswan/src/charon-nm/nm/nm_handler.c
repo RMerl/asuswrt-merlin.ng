@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2016 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
  * HSR Hochschule fuer Technik Rapperswil
  *
@@ -16,6 +17,7 @@
 #include "nm_handler.h"
 
 #include <daemon.h>
+#include <collections/array.h>
 
 typedef struct private_nm_handler_t private_nm_handler_t;
 
@@ -30,26 +32,34 @@ struct private_nm_handler_t {
 	nm_handler_t public;
 
 	/**
-	 * list of received DNS server attributes, pointer to 4 byte data
+	 * Received DNS server attributes, chunk_t
 	 */
-	linked_list_t *dns;
+	array_t *dns;
 
 	/**
-	 * list of received NBNS server attributes, pointer to 4 byte data
+	 * Received IPv6 DNS server attributes, chunk_t
 	 */
-	linked_list_t *nbns;
+	array_t *dns6;
+
+	/**
+	 * Received NBNS server attributes, chunk_t
+	 */
+	array_t *nbns;
 };
 
 METHOD(attribute_handler_t, handle, bool,
 	private_nm_handler_t *this, ike_sa_t *ike_sa,
 	configuration_attribute_type_t type, chunk_t data)
 {
-	linked_list_t *list;
+	array_t *list;
 
 	switch (type)
 	{
 		case INTERNAL_IP4_DNS:
 			list = this->dns;
+			break;
+		case INTERNAL_IP6_DNS:
+			list = this->dns6;
 			break;
 		case INTERNAL_IP4_NBNS:
 			list = this->nbns;
@@ -57,11 +67,21 @@ METHOD(attribute_handler_t, handle, bool,
 		default:
 			return FALSE;
 	}
-	if (data.len != 4)
-	{
-		return FALSE;
-	}
-	list->insert_last(list, chunk_clone(data).ptr);
+	data = chunk_clone(data);
+	array_insert(list, ARRAY_TAIL, &data);
+	return TRUE;
+}
+
+METHOD(enumerator_t, enumerate_dns6, bool,
+	enumerator_t *this, va_list args)
+{
+	configuration_attribute_type_t *type;
+	chunk_t *data;
+
+	VA_ARGS_VGET(args, type, data);
+	*type = INTERNAL_IP6_DNS;
+	*data = chunk_empty;
+	this->venumerate = (void*)return_false;
 	return TRUE;
 }
 
@@ -74,7 +94,8 @@ METHOD(enumerator_t, enumerate_nbns, bool,
 	VA_ARGS_VGET(args, type, data);
 	*type = INTERNAL_IP4_NBNS;
 	*data = chunk_empty;
-	this->venumerate = (void*)return_false;
+	/* enumerate IPv6 DNS server as next attribute ... */
+	this->venumerate = _enumerate_dns6;
 	return TRUE;
 }
 
@@ -113,31 +134,18 @@ METHOD(attribute_handler_t, create_attribute_enumerator, enumerator_t*,
 	return enumerator_create_empty();
 }
 
-CALLBACK(filter_chunks, bool,
-	void *null, enumerator_t *orig, va_list args)
-{
-	chunk_t *out;
-	char *ptr;
-
-	VA_ARGS_VGET(args, out);
-
-	if (orig->enumerate(orig, &ptr))
-	{
-		*out = chunk_create(ptr, 4);
-		return TRUE;
-	}
-	return FALSE;
-}
-
 METHOD(nm_handler_t, create_enumerator, enumerator_t*,
 	private_nm_handler_t *this, configuration_attribute_type_t type)
 {
-	linked_list_t *list;
+	array_t *list;
 
 	switch (type)
 	{
 		case INTERNAL_IP4_DNS:
 			list = this->dns;
+			break;
+		case INTERNAL_IP6_DNS:
+			list = this->dns6;
 			break;
 		case INTERNAL_IP4_NBNS:
 			list = this->nbns;
@@ -145,22 +153,25 @@ METHOD(nm_handler_t, create_enumerator, enumerator_t*,
 		default:
 			return enumerator_create_empty();
 	}
-	return enumerator_create_filter(list->create_enumerator(list),
-									filter_chunks, NULL, NULL);
+	return array_create_enumerator(list);
 }
 
 METHOD(nm_handler_t, reset, void,
 	private_nm_handler_t *this)
 {
-	void *data;
+	chunk_t chunk;
 
-	while (this->dns->remove_last(this->dns, (void**)&data) == SUCCESS)
+	while (array_remove(this->dns, ARRAY_TAIL, &chunk))
 	{
-		free(data);
+		chunk_free(&chunk);
 	}
-	while (this->nbns->remove_last(this->nbns, (void**)&data) == SUCCESS)
+	while (array_remove(this->dns6, ARRAY_TAIL, &chunk))
 	{
-		free(data);
+		chunk_free(&chunk);
+	}
+	while (array_remove(this->nbns, ARRAY_TAIL, &chunk))
+	{
+		chunk_free(&chunk);
 	}
 }
 
@@ -168,8 +179,9 @@ METHOD(nm_handler_t, destroy, void,
 	private_nm_handler_t *this)
 {
 	reset(this);
-	this->dns->destroy(this->dns);
-	this->nbns->destroy(this->nbns);
+	array_destroy(this->dns);
+	array_destroy(this->dns6);
+	array_destroy(this->nbns);
 	free(this);
 }
 
@@ -191,8 +203,9 @@ nm_handler_t *nm_handler_create()
 			.reset = _reset,
 			.destroy = _destroy,
 		},
-		.dns = linked_list_create(),
-		.nbns = linked_list_create(),
+		.dns = array_create(sizeof(chunk_t), 0),
+		.dns6 = array_create(sizeof(chunk_t), 0),
+		.nbns = array_create(sizeof(chunk_t), 0),
 	);
 
 	return &this->public;

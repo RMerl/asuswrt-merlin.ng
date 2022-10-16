@@ -14,6 +14,9 @@
  * for more details.
  */
 
+#include <sys/types.h>
+#include <unistd.h>
+
 #include "nm_service.h"
 #include "nm_creds.h"
 #include "nm_handler.h"
@@ -44,7 +47,7 @@ struct nm_backend_t {
 	nm_creds_t *creds;
 
 	/**
-	 * attribute handler regeisterd at the daemon
+	 * attribute handler registered at the daemon
 	 */
 	nm_handler_t *handler;
 };
@@ -55,11 +58,20 @@ struct nm_backend_t {
 static nm_backend_t *nm_backend = NULL;
 
 /**
+ * Terminate the daemon if signaled by NM
+ */
+static void terminate(void *plugin, void *arg)
+{
+	kill(getpid(), SIGTERM);
+}
+
+/**
  * NM plugin processing routine, creates and handles NMVpnServicePlugin
  */
 static job_requeue_t run(nm_backend_t *this)
 {
 	this->loop = g_main_loop_new(NULL, FALSE);
+	g_signal_connect(this->plugin, "quit", G_CALLBACK(terminate), NULL);
 	g_main_loop_run(this->loop);
 	return JOB_REQUEUE_NONE;
 }

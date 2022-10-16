@@ -63,19 +63,34 @@ ENUM_NEXT(tls_alert_desc_names, TLS_INTERNAL_ERROR, TLS_INTERNAL_ERROR,
 		TLS_INSUFFICIENT_SECURITY,
 	"internal error",
 );
+ENUM_NEXT(tls_alert_desc_names, TLS_INAPPROPRIATE_FALLBACK,
+		TLS_INAPPROPRIATE_FALLBACK, TLS_INTERNAL_ERROR,
+	"inappropriate fallback",
+);
 ENUM_NEXT(tls_alert_desc_names, TLS_USER_CANCELED, TLS_USER_CANCELED,
-		TLS_INTERNAL_ERROR,
+		TLS_INAPPROPRIATE_FALLBACK,
 	"user canceled",
 );
 ENUM_NEXT(tls_alert_desc_names, TLS_NO_RENEGOTIATION, TLS_NO_RENEGOTIATION,
 		TLS_USER_CANCELED,
 	"no renegotiation",
 );
-ENUM_NEXT(tls_alert_desc_names, TLS_UNSUPPORTED_EXTENSION, TLS_UNSUPPORTED_EXTENSION,
+ENUM_NEXT(tls_alert_desc_names, TLS_MISSING_EXTENSION, TLS_CERTIFICATE_REQUIRED,
 		TLS_NO_RENEGOTIATION,
+	"missing extensions",
 	"unsupported extension",
+	"certificate unobtainable",
+	"recognized name",
+	"bad certificate status response",
+	"bad certificate hash value",
+	"unknown psk identity",
+	"certificate required",
 );
-ENUM_END(tls_alert_desc_names, TLS_UNSUPPORTED_EXTENSION);
+ENUM_NEXT(tls_alert_desc_names, TLS_NO_APPLICATION_PROTOCOL,
+		TLS_NO_APPLICATION_PROTOCOL, TLS_CERTIFICATE_REQUIRED,
+	"no application protocol"
+);
+ENUM_END(tls_alert_desc_names, TLS_NO_APPLICATION_PROTOCOL);
 
 
 typedef struct private_tls_alert_t private_tls_alert_t;

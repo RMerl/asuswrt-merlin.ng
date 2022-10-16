@@ -2865,7 +2865,7 @@ static void ieee802_1x_finished(struct hostapd_data *hapd,
 	const u8 *key;
 	size_t len;
 	/* TODO: get PMKLifetime from WPA parameters */
-	static const int dot11RSNAConfigPMKLifetime = 43200;
+	static const int dot11RSNAConfigPMKLifetime = DEFAULT_DOT11RSNACONFIGPMKLIFETIME;
 	unsigned int session_timeout;
 	struct os_reltime now, remaining;
 

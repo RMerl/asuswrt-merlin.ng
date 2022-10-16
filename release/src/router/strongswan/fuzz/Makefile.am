@@ -1,4 +1,5 @@
 AM_CPPFLAGS = @CPPFLAGS@ \
+	@FUZZING_CFLAGS@ \
 	-I$(top_srcdir)/src/libstrongswan \
 	-I$(top_srcdir)/src/libimcv \
 	-I$(top_srcdir)/src/libtncif \
@@ -24,7 +25,7 @@ pb_tnc_ldflags = \
 	$(top_builddir)/src/libtncif/.libs/libtncif.a \
 	$(fuzz_ldflags)
 
-FUZZ_TARGETS=fuzz_certs fuzz_crls fuzz_pa_tnc fuzz_pb_tnc
+FUZZ_TARGETS=fuzz_certs fuzz_crls fuzz_ids fuzz_pa_tnc fuzz_pb_tnc
 
 all-local: $(FUZZ_TARGETS)
 
@@ -34,6 +35,9 @@ fuzz_certs: fuzz_certs.c ${libfuzzer}
 	$(CC) $(AM_CPPFLAGS) $(CFLAGS) -o $@ $< $(fuzz_ldflags)
 
 fuzz_crls: fuzz_crls.c ${libfuzzer}
+	$(CC) $(AM_CPPFLAGS) $(CFLAGS) -o $@ $< $(fuzz_ldflags)
+
+fuzz_ids: fuzz_ids.c ${libfuzzer}
 	$(CC) $(AM_CPPFLAGS) $(CFLAGS) -o $@ $< $(fuzz_ldflags)
 
 fuzz_pa_tnc: fuzz_pa_tnc.c ${libfuzzer}

@@ -153,8 +153,8 @@ static bool handle_certs(private_pkcs11_plugin_t *this,
 		}
 		enumerator->destroy(enumerator);
 
-		lib->creds->add_builder(lib->creds, CRED_CERTIFICATE,
-								CERT_X509, FALSE, (void*)pkcs11_creds_load);
+		lib->creds->add_builder(lib->creds, CRED_CERTIFICATE, CERT_X509, FALSE,
+								get_name(this), (void*)pkcs11_creds_load);
 	}
 	else
 	{

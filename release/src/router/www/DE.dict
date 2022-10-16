@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=Wenn Sie beabsichtigen, in der Zukunft die F
 ASUS_eula_withdraw_note=Sie können den Vorgang des Zurücknehmens ohne Internetverbindung nicht abschließen. Bitte nehmen Sie die Aktivierung zurück, wenn Sie mit dem Internet verbunden sind.
 ASUS_eula_withdraw_unstable=Sie können den Vorgang des Zurücknehmens nicht abschließen, weil die Internetverbindung nicht stabil ist. Bitte nehmen Sie die Aktivierung später noch einmal zurück.
 TM_eula_confirm=Indem Sie ASUS AiProtection benutzen, stimmen Sie dem Folgenden zu:
-TM_eula_desc1=Durch die Nutzung von AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service)/Game Boost und dem Webseitenverlauf stimmen Sie der <a id="eula_url" style="text-decoration:underline;" target="_blank">Endbenutzer-Lizenzvereinbarung von Trend Micro</a> zu.
-TM_eula_desc2=Bitte beachten Sie, dass Ihre Daten von Trend Micro über AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service) und den Webseitenverlauf erfasst werden. Sie bestätigen und stimmen zu, dass ASUS weder für Vereinbarungen zwischen Ihnen und Trend Micro noch für die zur Verfügung gestellten Inhalte des Dienstes von Trend Micro verantwortlich ist. Wenn Sie Fragen dazu haben, wie Trend Micro Ihre oben genannten Daten erhebt, verarbeitet und verwendet,  lesen Sie bitte die von Trend Micro herausgegebene Datenschutzerklärung oder wenden Sie sich für weitere Informationen direkt an Trend Micro.
+TM_eula_desc1=Durch die Nutzung von AiProtection, Kindersicherung( Web & App Filter ), Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service)/Game Boost und dem Webseitenverlauf stimmen Sie der <a id="eula_url" style="text-decoration:underline;" target="_blank">Endbenutzer-Lizenzvereinbarung von Trend Micro</a> zu.
+TM_eula_desc2=Bitte beachten Sie, dass Ihre Daten von Trend Micro über AiProtection, Kindersicherung( Web & App Filter ), Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service) und den Webseitenverlauf erfasst werden. Sie bestätigen und stimmen zu, dass ASUS weder für Vereinbarungen zwischen Ihnen und Trend Micro noch für die zur Verfügung gestellten Inhalte des Dienstes von Trend Micro verantwortlich ist. Wenn Sie Fragen dazu haben, wie Trend Micro Ihre oben genannten Daten erhebt, verarbeitet und verwendet,  lesen Sie bitte die von Trend Micro herausgegebene Datenschutzerklärung oder wenden Sie sich für weitere Informationen direkt an Trend Micro.
 TM_eula_desc3=Wenn Sie die Weitergabe Ihrer Daten an Trend Micro über die obigen Funktionen deaktivieren möchten, rufen Sie bitte Folgendes auf: Router web GUI (Router Web-Benutzeroberfläche) > Advanced settings (Erweiterte Einstellungen) > Administration (Verwaltung) > Privacy (Datenschutz).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=Für AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service)/Game Boost und Webseitenverlauf:
+TM_eula_withdraw0=Für AiProtection, Kindersicherung( Web & App Filter ), Traffic Analyzer, Apps Analyzer, Adaptive QoS (Quality of Service)/Game Boost und Webseitenverlauf:
 TM_eula_withdraw_desc1=Bitte beachten Sie, dass Ihre Daten von Trend Micro über die obigen Funktionen erfasst werden.
 TM_eula_withdraw_desc2=Wenn Sie die Weitergabe Ihrer Daten an Trend Micro über die folgenden Funktionen deaktivieren möchten, klicken Sie bitte unten auf <span style="font-weight: bold;">[Withdraw] ([Zurücknehmen])</span>. Bitte beachten Sie jedoch, dass diese Features/Funktionen möglicherweise nicht funktionieren, wenn Sie die Weitergabe Ihrer Daten an Trend Micro einstellen.
 withdraw_confirm=Möchten Sie die Aktivierung wirklich zurücknehmen?
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=In Anbetracht der Kompatibilität von AiMesh-System und Endg
 AiMesh_confirm_msg10=Um die Verbindung Ihres AiMesh-Systems und der Endgeräte sicherzustellen, lesen Sie bitte diese <a id="wpa3FaqLink">FAQ</a>, bevor Sie zu WPA3-Personal wechseln.
 AiMesh_confirm_msg11=Sie verwenden aktuell WPA3-Personal. Um ein AiMesh-System zu erstellen, wird Ihre Authentifizierungsmethode in WPA2/WPA3-Personal geändert. Möchten Sie fortfahren?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Wenn Sie weitere Details wünschen, besuchen Sie bitte: <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>diesen FAQ</a>
+AiMesh_confirm_msg13=Wenn Sie weitere Details wünschen, besuchen Sie bitte: <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>diesen FAQ</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh ist eine neue innovative Routerfunktion, durch die mehrere ASUS Router miteinander verbunden werden können und so für eine WLAN-Abdeckung in Ihrem gesamten Zuhause gesorgt wird.
 AiMesh_FAQ=Erfahren Sie mehr über ASUS AiMesh
 AiMesh_FindNode=AiMesh-Netzknoten finden
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=Balkon
 AiMesh_NodeLocation23=Konferenzraum
 AiMesh_NodeLocation24=Benutzerdefiniert
 AiMesh_NodeLocation25=Garage
+AiMesh_NodeLocation26=Erdgeschoss
+AiMesh_NodeLocation27=Gaming-Raum
+AiMesh_NodeLocation28=Sportraum
 AiMesh_OfflineTips=Tipps, wenn die Verbindung offline ist
 AiMesh_OfflineTips1=Stellen Sie sicher, dass Ihr AiMesh-Netzknoten eingeschaltet ist.
 AiMesh_OfflineTips2=Starten Sie Ihren AiMesh-Netzknoten neu und versuchen Sie es erneut.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Importieren Sie Ihr eigenes Zertifikat
 DDNS_https_cert_Import_desc=Laden Sie hier ein Zertifikat hoch, das von einer Zertifizierungsinstanz ausgestellt wurde. Ihr privater Schlüssel und Ihr SSL-Zertifikat sind erforderlich.
 DDNS_https_cert_PrivateKey=Privater Schlüssel
 DDNS_https_cert_PrivateKey_note=Private Schlüssel können nicht durch Kennwörter geschützt werden.
+DDNS_ipv6_update=IPv6-Update
+DDNS_ipv6_update_desc=Wenn die Netzwerkumgebung des Client eine IPv6-Netzwerkadresse nutzt, wird das Domain durch die Aktivierung dieser Funktion zuerst an eine IPv6-Netzwerkadresse gegeben, wenn remote auf das Geräte zugegriffen wird.
 DDNS_ssl_cert=SSL-Zertifikat
 DDNS_termofservice_Title=Nutzungsbedingungen
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=Aktivieren Sie die Firewall, um Ihr lokales 
 FirewallConfig_display3_sectiondesc=<b>Schwarzlistendauer :</b> Während der geplanten Dauer können die angegebenen Netzwerkdienste nicht von in der Schwarzliste geführten Clients genutzt werden. Nach Ablauf der festgelegten Dauer können sämtliche Clients im LAN wieder auf die angegebenen Netzwerkdienste zugreifen.<br><b>Weißlistendauer :</b> Während der geplanten Dauer können die in der Weißliste geführten Clients AUSSCHLIESSLICH die angegebenen Netzwerkdienste nutzen. Nach Ablauf der festgelegten Dauer können in der Weißliste geführte Clients weder auf das Internet noch auf Internetdienste zugreifen.
 FirewallConfig_display4_sectiondesc=<b>HINWEIS :</b> Wenn Sie eine Weißliste für das Subnetz erstellen, können IP-Adressen außerhalb des Subnetzes weder auf Internet noch auf Internetdienste zugreifen.
 FirewallConfig_display5_sectiondesc=Mit dem MAC-Filter können Sie den Netzwerkzugriff für Geräte mit bestimmten MAC-Adressen freigeben oder sperren. <p>Sie können den MAC-Filter zu Zulassungs- oder Sperrmodus setzen. <p>Im Sperrmodus wird Geräten in der Liste der Netzwerkzugang verwehrt. <p>Im Zulassungsmodus können nur Geräte in der Liste auf das Netzwerk zugreifen. Geräte, die nicht in der Liste aufgeführt sind, können nicht auf das Netzwerk zugreifen.
-FirewallConfig_DoSEnable_itemdesc=Eine DoS-Attacke (Denial-of-Service) ist ein vorsätzlicher Versuch, berechtigten Benutzern den Zugang zu Diensten oder Computerressourcen zu verwehren. <p>Das Aktivieren dieser Funktion schützt den Router vor DoS-Attacken, steigert aber die Auslastung des Routers.
+FirewallConfig_DoSEnable_itemdesc=Das Aktivieren dieser Funktion schützt den Router vor DoS-Attacken (Denial- of-Service), steigert aber die Auslastung des Routers.
 FirewallConfig_DoSEnable_itemname=DoS-Schutz aktivieren
 FirewallConfig_FirewallEnable_itemdesc=Das Deaktivieren der Firewall deaktiviert alle damit verbundenen Funktionen.
 FirewallConfig_FirewallEnable_itemname=Firewall aktivieren
-FirewallIPv4_enable=IPv4 Firewall aktivieren
+FirewallIPv4_enable=IPv4 eingehende firewall regeln aktivieren
 FirewallIPv4=IPv4 Firewall
 FirewallConfig_FTPPrompt_itemdesc=Wenn Sie bei der WAN-Einstellung den Wert 20:21 für den Port-Bereich des FTP-Servers eingeben, wird Ihr FTP-Server in Konflikt mit dem Standard FTP-Server des ZVMODELVZ stehen.
 FirewallConfig_KeywordFilterEnable_itemname=Schlüsselwortfilter aktivieren
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=Neue Firmware ist verfügbar.
 FW_rlnote_loading=Veröffentlichungshinweis wird geladen, bitte warten ...
 FW_rlnote_failed=Veröffentlichungshinweis konnte nicht gefunden werden.
+FW_rollback=Rollback
+FW_rollback_choose=Eine Firmware-Version wählen
+FW_rollback_selector=Firmware Rollback Selector
 Game_acceleration=Game Acceleration
 Game_Boost=Game Boost
 Game_Boost_acceleration=Triple-Level Game Acceleration
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Neuen RADIUS-Client erstellen
 PM_Group_Table=Gruppentabelle
 PoolName=Partitionsname
 Port_format=Für den Quell- oder Ziel-Port-Bereich können Sie: a) Einen bestimmten Port, z.B. \"95\" eingeben; oder b) Einen Port-Bereich, z.B. \"103:315\", \">100\" eingeben, oder \"<65535\" eingeben.
+Port_Gaming=Gaming-Anschluss
 Port_Mapping_desc1=Port Mapping
 Port_Mapping_desc2=Port Mapping unterstützt die IPTV WAN-Schnitstalle für einen bestimmten LAN-Port. Sie können den entsprechenden LAN-Port auswählen und dann auf Anwenden klicken.
 Port_Mapping_desc3=Port Mapping aktivieren
@@ -3474,7 +3483,7 @@ TZ40_2=Kaliningrad
 TZ41=Athen
 TZ42=Jerusalem
 TZ43=Harare, Pretoria
-TZ43_2=Kiew
+TZ43_2=Kyiv
 TZ44=Moskau, St. Petersburg
 TZ45=Wolgograd
 TZ46=Kuwait, Riad
@@ -3537,10 +3546,10 @@ Uplink_rate=Daten gesendet/Sek.
 Uplink_traffic=Daten gesendet
 upnp_Desc=Richten Sie iTunes- und UPnP-Medienserver ein.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=Richten Sie UPnP-Medienserver ein.
-UPnPMediaServer_Help=Der ZVMODELVZ unterstützt UPnP-Standards. Sie können dies aktivieren und anderen UPnP-Geraten wie PS3 oder digitalen Medienplayern den Zugriff auf Multimediadateien des USB-Laufwerks erlauben.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Der ZVMODELVZ unterstützt UPnP-Standards. Sie können dies aktivieren und anderen UPnP-Geraten wie PS3 oder digitalen Medienplayern den Zugriff auf Multimediadateien des USB-Laufwerks erlauben.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Der ZVMODELVZ unterstützt UPnP-Standards. Sie können dies aktivieren und anderen UPnP-Geraten wie PS3 oder digitalen Medienplayern den Zugriff auf Multimediadateien des USB-Laufwerks erlauben.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Der ZVMODELVZ unterstützt UPnP-Standards. Sie können dies aktivieren und anderen UPnP-Geraten wie PS3 oder digitalen Medienplayern den Zugriff auf Multimediadateien des USB-Laufwerks erlauben.
+UPnPMediaServer_Help=Die <a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> und <a id='samba_link'>Network Place (Samba)</a> einrichten.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Die <a id='upnp_link'>UPnP, iTunes</a> und <a id='samba_link'>Network Place (Samba)</a> einrichten.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Die <a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> und <a id='samba_link'>Network Place (Samba)</a> einrichten.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Die <a id='upnp_link'>UPnP</a> und <a id='samba_link'>Network Place (Samba)</a> einrichten.
 url_keyword_alert=URL Keyword
 USB_Application_check=Überprüfen Sie bitte Ihre USB-Anwendung
 USB_Application_disk_checking=Disk überprüfen
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Update fehlgeschlagen, bitte versuchen Sie es erneut.
 vpn_ipsec_clients_reconnect_hint=Alle Ihre VPN-Clients werden die Verbindung wiederherstellen, nachdem Sie auf "Übernehmen" geklickt haben. Möchten Sie wirklich fortfahren?
 vpn_ipsec_IKE_ver=Unterstützte IKE-Version
 vpn_ipsec_set_DDNS=klicken Sie bitte hier, um das DDNS einzurichten.
+vpn_wireguard_server_faq=Wie wird der WireGuard® Server eingerichtet?
+vpn_wireguard_site2site_faq=Wie richtet man ein Site-to-Site-VPN mit WireGuard® ein?
+vpn_wireguard_client_faq=Wie richte ich den WireGuard® Client in VPN Fusion ein?
 vpnc_desc1=VPN- (Virtual Private Network) Clients werden häufig dazu verwendet, zum sicheren Zugreifen auf private Ressourcen über ein öffentliches Netzwerk eine Verbindung zu einem VPN-Server herzustellen.
 vpnc_desc2=Einige Geräte, wie Digitalempfänger, Smart-TVs und Blu-ray-Player, unterstützen VPN-Software nicht.
 vpnc_desc3=Die ASUSWRT-VPN-Funktion bietet VPN-Zugang zu allen Geräten in einem Heimnetzwerk, ohne dass Sie VPN-Software auf jedem einzelnen Gerät installieren müssen.
@@ -3815,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP-MSS-Option
 WANTCPMSSOptionComm1Text=Bytes
 WANVLANIDText=VLAN-ID
-WANAggregation_desc=Bei der WAN-Aggregation werden zwei Netzwerkverbindungen kombiniert, um die WAN-Geschwindigkeit auf bis zu 2 Gbps zu erweitern. Verbinden sie den WAN-Anschluss des Routers mit dem LAN-Anschluss 4 des Modems. (Stellen Sie dabei sicher, dass beide Kabel über die gleiche Spezifikation verfügen.) <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-Aggregation – FAQ</a>
+WANAggregation_desc=Bei der WAN-Aggregation werden zwei Netzwerkverbindungen kombiniert, um die WAN-Geschwindigkeit auf bis zu 2 Gbps zu erweitern. Verbinden sie den #WAN-Anschluss des Routers mit dem LAN-Anschluss 4 des Modems. (Stellen Sie dabei sicher, dass beide Kabel über die gleiche Spezifikation verfügen.) <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-Aggregation – FAQ</a>
 WANAggregation_enable=WAN-Aggregation aktivieren
 WANAggregation_disable_dualwan=Auf Ihrem Router ist Dual-WAN aktiviert. Durch Aktivierung von WAN-Aggregation wird Dual-WAN deaktiviert. Möchten Sie fortfahren?
 WANAggregation_disable_WANAggregation=Auf Ihrem Router ist WAN-Aggregation aktiviert. Durch Aktivierung von Dual-WAN wird WAN-Aggregation deaktiviert. Möchten Sie fortfahren?
 WANAggregation_PortConflict_hint1=LAN-Anschluss 4 Ihres Routers wird für WAN-Aggregation verwendet. Durch Aktivierung von IPTV wird WAN-Aggregation deaktiviert. Möchten Sie fortfahren?
 WANAggregation_PortConflict_hint2=LAN-Anschluss 4 Ihres Routers wird für IPTV verwendet. Durch Aktivierung von IPTV wird WAN-Aggregation deaktiviert. Möchten Sie fortfahren?
 WANAggregation_disable_IPTVDualWAN=Auf Ihrem Router ist sowohl Dual-WAN als auch IPTV aktiviert. Durch Aktivierung von WAN-Aggregation werden Dual-WAN und IPTV deaktiviert, um Port-Konflikten vorzubeugen. Möchten Sie fortfahren?
-WANAggregation_help_WAN=Stellen Sie sicher, dass der WAN-Anschluss des Routers mit dem LAN-Anschluss des Modems über zwei Kabel mit der gleichen Spezifikation verbunden wurde.
+WANAggregation_help_WAN=Stellen Sie sicher, dass der #WAN-Anschluss des Routers mit dem LAN-Anschluss des Modems über zwei Kabel mit der gleichen Spezifikation verbunden wurde.
 WANAggregation_help_LAN=Stellen Sie sicher, dass LAN-Anschluss 4 des Routers über zwei Kabel mit der gleichen Spezifikation mit dem LAN-Anschluss des Modems verbunden wurde.
 WANAggregation_goto_WAN=Navigieren Sie zur Seite "WAN-Internetverbindung", um WAN-Aggregation zu aktivieren.
 WANAggregation_help_desc=Wenn sich die WAN-Aggregation nicht einrichten lässt, beachten Sie bitte Folgendes:
-WANAggregation_help_step1=Stellen Sie sicher, dass die LAN-Ports Ihres Modems mit Kabeln bereits mit dem WAN und LAN 4 Ihres Routers verbunden sind.
+WANAggregation_help_step1=Stellen Sie sicher, dass die LAN-Ports Ihres Modems mit Kabeln bereits mit dem #WAN und LAN 4 Ihres Routers verbunden sind.
 WANAggregation_help_step2=Stellen Sie sicher, dass bei Ihrem Modem 802.3ad aktiviert wurde.
 WANAggregation_help_step3=Überprüfen Sie, ob Sie zwei Kabel mit der gleichen Spezifikation verwenden (entweder Gigabit oder 10/100 Mbps; keine Kombinationen).
 WANAggregation_help_step4=Starten Sie Ihren Router neu.
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Wählen Sie GeForce Now aus, um entsprechende Gaming-Geräte zu bevorzugen. So profitieren Sie von verbessertem Gaming.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Ereignis
 AURA_Event_desc=Die folgenden Ereignisse werden vom System erkannt, woraufhin entsprechende LED-Effekte als Benachrichtigung ausgelöst werden.
 AURA_Event_Boost_desc=Wenn Sie Game Boost verwenden, zeigt die LED-Leiste einen Atmungseffekt in Rot.

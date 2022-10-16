@@ -467,6 +467,14 @@ METHOD(payload_t, verify, status_t,
 			}
 			break;
 		}
+		case COOKIE:
+		{
+			if (this->notify_data.len < 1 || this->notify_data.len > 64)
+			{
+				bad_length = TRUE;
+			}
+			break;
+		}
 		case ADDITIONAL_IP4_ADDRESS:
 		{
 			if (this->notify_data.len != 4)

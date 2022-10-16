@@ -2302,18 +2302,10 @@ sysfail:
  return NULL;
 }
 
-#if 0 // replaced by #define in shared.h
-int modprobe(const char *mod)
+int modprobe_q(const char *mod)
 {
-#if 1
-	return eval("modprobe", "-s", (char *)mod);
-#else
-	int r = eval("modprobe", "-s", (char *)mod);
-	cprintf("modprobe %s = %d\n", mod, r);
-	return r;
-#endif
+	return eval("modprobe", "-q" , (char *)mod);
 }
-#endif // 0
 
 int modprobe_r(const char *mod)
 {
@@ -2789,3 +2781,82 @@ int check_if_exist_ifnames(char *need_check_ifname, char *ifname)
 	return 0;
 }
 #endif
+
+/*******************************************************************
+* NAME: get_sys_uptime
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2022/08/15
+* DESCRIPTION: get system uptime from struct sysinfo.
+* INPUT:  None
+* OUTPUT: None
+* RETURN: 0, if something wrong; other values >= 0, if we get system uptime successfully.
+* NOTE:
+*******************************************************************/
+long get_sys_uptime()
+{
+	struct sysinfo si;
+	int err_code = -1;
+
+	memset(&si, 0, sizeof(si));
+	err_code = sysinfo(&si);
+	if(err_code != 0)
+	{
+		_dprintf("[%s]Error code=%d\n", __FUNCTION__, err_code);
+		return 0;
+	}
+	return si.uptime;
+}
+
+/*******************************************************************
+* NAME: wait_ntp_repeat
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2022/08/29
+* DESCRIPTION: Wait for nvram 'ntp_ready' becoming to "1".
+* INPUT:  usec, time in microseconds (10^-6 seconds).
+*         count, number of loops.
+*         The maximum waiting time is (usec x count) micorseconds.
+*         So the maximum waiting time of wait_ntp_repeat(2*1000*1000, 3) is 2*3=6 seconds.
+* OUTPUT: None
+* RETURN: 0, if something wrong; other values >= 0, if we get system uptime successfully.
+* NOTE:
+*******************************************************************/
+void wait_ntp_repeat(unsigned long usec, unsigned int count)
+{
+	useconds_t small_time = 0;
+	unsigned int seconds = 0;
+
+	if(usec <= 0)
+	{
+		//default: 1 second.
+		small_time = 1000*1000;
+	}
+	else if(usec > 1000000)
+	{
+		seconds = usec/1000000;
+		small_time = usec%1000000;
+	}
+	else
+	{
+		small_time = usec;
+	}
+
+	if(count <= 0)
+	{
+		//default: 1 loop.
+		count = 1;
+	}
+
+	while(nvram_invmatch("ntp_ready", "1") && (count > 0))
+	{
+		sleep(seconds);
+		usleep(small_time);
+		count--;
+		logmessage("wait_ntp_repeat", "wait for ntp_ready...%d", count);
+	}
+
+	if(nvram_invmatch("ntp_ready", "1"))
+	{
+		logmessage("wait_ntp_repeat", "NTP is still not ready...", count);
+	}
+}
+

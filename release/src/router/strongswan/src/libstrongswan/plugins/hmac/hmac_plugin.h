@@ -29,7 +29,7 @@
 typedef struct hmac_plugin_t hmac_plugin_t;
 
 /**
- * Plugin implementing HMAC algorithm to prvoide hash based PRF and signers.
+ * Plugin implementing HMAC algorithm to provide hash based PRF and signers.
  */
 struct hmac_plugin_t {
 

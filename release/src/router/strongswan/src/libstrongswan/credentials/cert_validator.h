@@ -39,7 +39,7 @@ struct cert_validator_t {
 	 *
 	 * If this function returns SUCCESS or FAILED, the certificate lifetime is
 	 * considered definitely (in-)valid, without asking other validators.
-	 * If all registered validaters return NEED_MORE, the default
+	 * If all registered validators return NEED_MORE, the default
 	 * lifetime check is performed.
 	 *
 	 * @param cert			certificate to check lifetime

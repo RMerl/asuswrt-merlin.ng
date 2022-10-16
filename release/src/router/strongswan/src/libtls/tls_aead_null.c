@@ -45,12 +45,12 @@ typedef struct __attribute__((__packed__)) {
 
 METHOD(tls_aead_t, encrypt, bool,
 	private_tls_aead_t *this, tls_version_t version,
-	tls_content_type_t type, uint64_t seq, chunk_t *data)
+	tls_content_type_t *type, uint64_t seq, chunk_t *data)
 {
 	chunk_t assoc, mac;
 	sigheader_t hdr;
 
-	hdr.type = type;
+	hdr.type = *type;
 	htoun64(&hdr.seq, seq);
 	htoun16(&hdr.version, version);
 	htoun16(&hdr.length, data->len);
@@ -67,7 +67,7 @@ METHOD(tls_aead_t, encrypt, bool,
 
 METHOD(tls_aead_t, decrypt, bool,
 	private_tls_aead_t *this, tls_version_t version,
-	tls_content_type_t type, uint64_t seq, chunk_t *data)
+	tls_content_type_t *type, uint64_t seq, chunk_t *data)
 {
 	chunk_t assoc, mac;
 	sigheader_t hdr;
@@ -80,7 +80,7 @@ METHOD(tls_aead_t, decrypt, bool,
 	mac = chunk_skip(*data, data->len - mac.len);
 	data->len -= mac.len;
 
-	hdr.type = type;
+	hdr.type = *type;
 	htoun64(&hdr.seq, seq);
 	htoun16(&hdr.version, version);
 	htoun16(&hdr.length, data->len);

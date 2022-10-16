@@ -117,7 +117,7 @@ pa_tnc_attr_t* ietf_attr_pa_tnc_error_create(pen_type_t error_code,
 /**
  * Creates an ietf_attr_pa_tnc_error_t object from an error code with offset
  *
- * @param error_code		Vendor-specifica PA-TNC error code
+ * @param error_code		Vendor-specific PA-TNC error code
  * @param header			PA-TNC message header (first 8 bytes)
  * @param error_offset		PA-TNC error offset in bytes
  *

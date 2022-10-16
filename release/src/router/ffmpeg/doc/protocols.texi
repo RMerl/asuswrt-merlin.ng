@@ -51,6 +51,82 @@ in microseconds.
 
 A description of the currently available protocols follows.
 
+@section amqp
+
+Advanced Message Queueing Protocol (AMQP) version 0-9-1 is a broker based
+publish-subscribe communication protocol.
+
+FFmpeg must be compiled with --enable-librabbitmq to support AMQP. A separate
+AMQP broker must also be run. An example open-source AMQP broker is RabbitMQ.
+
+After starting the broker, an FFmpeg client may stream data to the broker using
+the command:
+
+@example
+ffmpeg -re -i input -f mpegts amqp://[[user]:[password]@@]hostname[:port][/vhost]
+@end example
+
+Where hostname and port (default is 5672) is the address of the broker. The
+client may also set a user/password for authentication. The default for both
+fields is "guest". Name of virtual host on broker can be set with vhost. The
+default value is "/".
+
+Muliple subscribers may stream from the broker using the command:
+@example
+ffplay amqp://[[user]:[password]@@]hostname[:port][/vhost]
+@end example
+
+In RabbitMQ all data published to the broker flows through a specific exchange,
+and each subscribing client has an assigned queue/buffer. When a packet arrives
+at an exchange, it may be copied to a client's queue depending on the exchange
+and routing_key fields.
+
+The following options are supported:
+
+@table @option
+
+@item exchange
+Sets the exchange to use on the broker. RabbitMQ has several predefined
+exchanges: "amq.direct" is the default exchange, where the publisher and
+subscriber must have a matching routing_key; "amq.fanout" is the same as a
+broadcast operation (i.e. the data is forwarded to all queues on the fanout
+exchange independent of the routing_key); and "amq.topic" is similar to
+"amq.direct", but allows for more complex pattern matching (refer to the RabbitMQ
+documentation).
+
+@item routing_key
+Sets the routing key. The default value is "amqp". The routing key is used on
+the "amq.direct" and "amq.topic" exchanges to decide whether packets are written
+to the queue of a subscriber.
+
+@item pkt_size
+Maximum size of each packet sent/received to the broker. Default is 131072.
+Minimum is 4096 and max is any large value (representable by an int). When
+receiving packets, this sets an internal buffer size in FFmpeg. It should be
+equal to or greater than the size of the published packets to the broker. Otherwise
+the received message may be truncated causing decoding errors.
+
+@item connection_timeout
+The timeout in seconds during the initial connection to the broker. The
+default value is rw_timeout, or 5 seconds if rw_timeout is not set.
+
+@item delivery_mode @var{mode}
+Sets the delivery mode of each message sent to broker.
+The following values are accepted:
+@table @samp
+@item persistent
+Delivery mode set to "persistent" (2). This is the default value.
+Messages may be written to the broker's disk depending on its setup.
+
+@item non-persistent
+Delivery mode set to "non-persistent" (1).
+Messages will stay in broker's memory unless the broker is under memory
+pressure.
+
+@end table
+
+@end table
+
 @section async
 
 Asynchronous data filling wrapper for input stream.
@@ -99,6 +175,16 @@ Caching wrapper for input stream.
 
 Cache the input stream to temporary file. It brings seeking capability to live streams.
 
+The accepted options are:
+@table @option
+
+@item read_ahead_limit
+Amount in bytes that may be read ahead when seeking isn't supported. Range is -1 to INT_MAX.
+-1 for unlimited. Default is 65536.
+
+@end table
+
+URL Syntax is
 @example
 cache:@var{URL}
 @end example
@@ -193,6 +279,20 @@ Set I/O operation maximum block size, in bytes. Default value is
 @code{INT_MAX}, which results in not limiting the requested block size.
 Setting this value reasonably low improves user termination request reaction
 time, which is valuable for files on slow medium.
+
+@item follow
+If set to 1, the protocol will retry reading at the end of the file, allowing
+reading files that still are being written. In order for this to terminate,
+you either need to use the rw_timeout option, or use the interrupt callback
+(for API users).
+
+@item seekable
+Controls if seekability is advertised on the file. 0 means non-seekable, -1
+means auto (seekable for normal files, non-seekable for named pipes).
+
+Many demuxers handle seekable and non-seekable resources differently,
+overriding this might speed up opening certain files at the cost of losing some
+features (e.g. accurate seeking).
 @end table
 
 @section ftp
@@ -214,6 +314,14 @@ Set timeout in microseconds of socket I/O operations used by the underlying low 
 operation. By default it is set to -1, which means that the timeout is
 not specified.
 
+@item ftp-user
+Set a user to be used for authenticating to the FTP server. This is overridden by the
+user in the FTP URL.
+
+@item ftp-password
+Set a password to be used for authenticating to the FTP server. This is overridden by
+the password in the FTP URL, or by @option{ftp-anonymous-password} if no user is set.
+
 @item ftp-anonymous-password
 Password used when login as anonymous user. Typically an e-mail address
 should be used.
@@ -229,20 +337,15 @@ it, unless special care is taken (tests, customized server configuration
 etc.). Different FTP servers behave in different way during seek
 operation. ff* tools may produce incomplete content due to server limitations.
 
-This protocol accepts the following options:
-
-@table @option
-@item follow
-If set to 1, the protocol will retry reading at the end of the file, allowing
-reading files that still are being written. In order for this to terminate,
-you either need to use the rw_timeout option, or use the interrupt callback
-(for API users).
-
-@end table
-
 @section gopher
 
 Gopher protocol.
+
+@section gophers
+
+Gophers protocol.
+
+The Gopher protocol with TLS encapsulation.
 
 @section hls
 
@@ -306,17 +409,19 @@ string describing the libavformat build. ("Lavf/<version>")
 @item user-agent
 This is a deprecated option, you can use user_agent instead it.
 
-@item timeout
-Set timeout in microseconds of socket I/O operations used by the underlying low level
-operation. By default it is set to -1, which means that the timeout is
-not specified.
-
 @item reconnect_at_eof
 If set then eof is treated like an error and causes reconnection, this is useful
 for live / endless streams.
 
 @item reconnect_streamed
 If set then even streamed/non seekable streams will be reconnected on errors.
+
+@item reconnect_on_network_error
+Reconnect automatically in case of TCP/TLS errors during connect.
+
+@item reconnect_on_http_error
+A comma separated list of HTTP status codes to reconnect on. The list can
+include specific status codes (e.g. '503') or the strings '4xx' / '5xx'.
 
 @item reconnect_delay_max
 Sets the maximum delay in seconds after which to give up reconnecting
@@ -390,6 +495,33 @@ ffmpeg -i somefile.ogg -chunked_post 0 -c copy -f ogg http://@var{server}:@var{p
 wget --post-file=somefile.ogg http://@var{server}:@var{port}
 @end example
 
+@item send_expect_100
+Send an Expect: 100-continue header for POST. If set to 1 it will send, if set
+to 0 it won't, if set to -1 it will try to send if it is applicable. Default
+value is -1.
+
+@item auth_type
+
+Set HTTP authentication type. No option for Digest, since this method requires
+getting nonce parameters from the server first and can't be used straight away like
+Basic.
+
+@table @option
+@item none
+Choose the HTTP authentication type automatically. This is the default.
+@item basic
+
+Choose the HTTP basic authentication.
+
+Basic authentication sends a Base64-encoded string that contains a user name and password
+for the client. Base64 is not a form of encryption and should be considered the same as
+sending the user name and password in clear text (Base64 is a reversible encoding).
+If a resource needs to be protected, strongly consider using an authentication scheme
+other than basic authentication. HTTPS/TLS should be used with basic authentication.
+Without these additional security enhancements, basic authentication should not be used
+to protect sensitive or valuable information.
+@end table
+
 @end table
 
 @subsection HTTP Cookies
@@ -443,6 +575,9 @@ audio/mpeg.
 @item legacy_icecast
 This enables support for Icecast versions < 2.4.0, that do not support the
 HTTP PUT method but the SOURCE method.
+
+@item tls
+Establish a TLS (HTTPS) connection to Icecast.
 
 @end table
 
@@ -560,6 +695,42 @@ Example usage:
 @example
 -f rtp_mpegts -fec prompeg=l=8:d=4 rtp://@var{hostname}:@var{port}
 @end example
+
+@section rist
+
+Reliable Internet Streaming Transport protocol
+
+The accepted options are:
+@table @option
+@item rist_profile
+Supported values:
+@table @samp
+@item simple
+@item main
+This one is default.
+@item advanced
+@end table
+
+@item buffer_size
+Set internal RIST buffer size in milliseconds for retransmission of data.
+Default value is 0 which means the librist default (1 sec). Maximum value is 30
+seconds.
+
+@item pkt_size
+Set maximum packet size for sending data. 1316 by default.
+
+@item log_level
+Set loglevel for RIST logging messages. You only need to set this if you
+explicitly want to enable debug level messages or packet loss simulation,
+otherwise the regular loglevel is respected.
+
+@item secret
+Set override of encryption secret, by default is unset.
+
+@item encryption
+Set encryption type, by default is disabled.
+Acceptable values are 128 and 256.
+@end table
 
 @section rtmp
 
@@ -862,6 +1033,9 @@ Set the local RTCP port to @var{n}.
 @item pkt_size=@var{n}
 Set max packet size (in bytes) to @var{n}.
 
+@item buffer_size=@var{size}
+Set the maximum UDP socket buffer size in bytes.
+
 @item connect=0|1
 Do a @code{connect()} on the UDP socket (if set to 1) or not (if set
 to 0).
@@ -878,6 +1052,9 @@ set to 1) or to a default remote address (if set to 0).
 
 @item localport=@var{n}
 Set the local RTP port to @var{n}.
+
+@item timeout=@var{n}
+Set timeout (in microseconds) of socket I/O operations to @var{n}.
 
 This is a deprecated option. Instead, @option{localrtpport} should be
 used.
@@ -1179,7 +1356,7 @@ options.
 This protocol accepts the following options.
 
 @table @option
-@item connect_timeout
+@item connect_timeout=@var{milliseconds}
 Connection timeout; SRT cannot connect for RTT > 1500 msec
 (2 handshake exchanges) with the default connect timeout of
 3 seconds. This option applies to the caller and rendezvous
@@ -1210,7 +1387,18 @@ IP Type of Service. Applies to sender only. Default value is 0xB8.
 @item ipttl=@var{ttl}
 IP Time To Live. Applies to sender only. Default value is 64.
 
-@item listen_timeout
+@item latency=@var{microseconds}
+Timestamp-based Packet Delivery Delay.
+Used to absorb bursts of missed packet retransmissions.
+This flag sets both @option{rcvlatency} and @option{peerlatency}
+to the same value. Note that prior to version 1.3.0
+this is the only flag to set the latency, however
+this is effectively equivalent to setting @option{peerlatency},
+when side is sender and @option{rcvlatency}
+when side is receiver, and the bidirectional stream
+sending is not supported.
+
+@item listen_timeout=@var{microseconds}
 Set socket listen timeout.
 
 @item maxbw=@var{bytes/seconds}
@@ -1255,6 +1443,45 @@ only if @option{pbkeylen} is non-zero. It is used on
 the receiver only if the received data is encrypted.
 The configured passphrase cannot be recovered (write-only).
 
+@item enforced_encryption=@var{1|0}
+If true, both connection parties must have the same password
+set (including empty, that is, with no encryption). If the
+password doesn't match or only one side is unencrypted,
+the connection is rejected. Default is true.
+
+@item kmrefreshrate=@var{packets}
+The number of packets to be transmitted after which the
+encryption key is switched to a new key. Default is -1.
+-1 means auto (0x1000000 in srt library). The range for
+this option is integers in the 0 - @code{INT_MAX}.
+
+@item kmpreannounce=@var{packets}
+The interval between when a new encryption key is sent and
+when switchover occurs. This value also applies to the
+subsequent interval between when switchover occurs and
+when the old encryption key is decommissioned. Default is -1.
+-1 means auto (0x1000 in srt library). The range for
+this option is integers in the 0 - @code{INT_MAX}.
+
+@item payload_size=@var{bytes}
+Sets the maximum declared size of a packet transferred
+during the single call to the sending function in Live
+mode. Use 0 if this value isn't used (which is default in
+file mode).
+Default is -1 (automatic), which typically means MPEG-TS;
+if you are going to use SRT
+to send any different kind of payload, such as, for example,
+wrapping a live stream in very small frames, then you can
+use a bigger maximum frame size, though not greater than
+1456 bytes.
+
+@item pkt_size=@var{bytes}
+Alias for @samp{payload_size}.
+
+@item peerlatency=@var{microseconds}
+The latency value (as described in @option{rcvlatency}) that is
+set by the sender side as a minimum value for the receiver.
+
 @item pbkeylen=@var{bytes}
 Sender encryption key length, in bytes.
 Only can be set to 0, 16, 24 and 32.
@@ -1263,18 +1490,28 @@ Not required on receiver (set to 0),
 key size obtained from sender in HaiCrypt handshake.
 Default value is 0.
 
+@item rcvlatency=@var{microseconds}
+The time that should elapse since the moment when the
+packet was sent and the moment when it's delivered to
+the receiver application in the receiving function.
+This time should be a buffer time large enough to cover
+the time spent for sending, unexpectedly extended RTT
+time, and the time needed to retransmit the lost UDP
+packet. The effective latency value will be the maximum
+of this options' value and the value of @option{peerlatency}
+set by the peer side. Before version 1.3.0 this option
+is only available as @option{latency}.
+
 @item recv_buffer_size=@var{bytes}
-Set receive buffer size, expressed in bytes.
+Set UDP receive buffer size, expressed in bytes.
 
 @item send_buffer_size=@var{bytes}
-Set send buffer size, expressed in bytes.
+Set UDP send buffer size, expressed in bytes.
 
-@item rw_timeout
-Set raise error timeout for read/write optations.
-
-This option is only relevant in read mode:
-if no data arrived in more than this time
-interval, raise error.
+@item timeout=@var{microseconds}
+Set raise error timeouts for read, write and connect operations. Note that the
+SRT library has internal timeouts which can be controlled separately, the
+value set here is only a cap on those.
 
 @item tlpktdrop=@var{1|0}
 Too-late Packet Drop. When enabled on receiver, it skips
@@ -1287,9 +1524,92 @@ have no chance of being delivered in time. It was
 automatically enabled in the sender if the receiver
 supports it.
 
-@item tsbpddelay
-Timestamp-based Packet Delivery Delay.
-Used to absorb burst of missed packet retransmission.
+@item sndbuf=@var{bytes}
+Set send buffer size, expressed in bytes.
+
+@item rcvbuf=@var{bytes}
+Set receive buffer size, expressed in bytes.
+
+Receive buffer must not be greater than @option{ffs}.
+
+@item lossmaxttl=@var{packets}
+The value up to which the Reorder Tolerance may grow. When
+Reorder Tolerance is > 0, then packet loss report is delayed
+until that number of packets come in. Reorder Tolerance
+increases every time a "belated" packet has come, but it
+wasn't due to retransmission (that is, when UDP packets tend
+to come out of order), with the difference between the latest
+sequence and this packet's sequence, and not more than the
+value of this option. By default it's 0, which means that this
+mechanism is turned off, and the loss report is always sent
+immediately upon experiencing a "gap" in sequences.
+
+@item minversion
+The minimum SRT version that is required from the peer. A connection
+to a peer that does not satisfy the minimum version requirement
+will be rejected.
+
+The version format in hex is 0xXXYYZZ for x.y.z in human readable
+form.
+
+@item streamid=@var{string}
+A string limited to 512 characters that can be set on the socket prior
+to connecting. This stream ID will be able to be retrieved by the
+listener side from the socket that is returned from srt_accept and
+was connected by a socket with that set stream ID. SRT does not enforce
+any special interpretation of the contents of this string.
+This option doesn’t make sense in Rendezvous connection; the result
+might be that simply one side will override the value from the other
+side and it’s the matter of luck which one would win
+
+@item smoother=@var{live|file}
+The type of Smoother used for the transmission for that socket, which
+is responsible for the transmission and congestion control. The Smoother
+type must be exactly the same on both connecting parties, otherwise
+the connection is rejected.
+
+@item messageapi=@var{1|0}
+When set, this socket uses the Message API, otherwise it uses Buffer
+API. Note that in live mode (see @option{transtype}) there’s only
+message API available. In File mode you can chose to use one of two modes:
+
+Stream API (default, when this option is false). In this mode you may
+send as many data as you wish with one sending instruction, or even use
+dedicated functions that read directly from a file. The internal facility
+will take care of any speed and congestion control. When receiving, you
+can also receive as many data as desired, the data not extracted will be
+waiting for the next call. There is no boundary between data portions in
+the Stream mode.
+
+Message API. In this mode your single sending instruction passes exactly
+one piece of data that has boundaries (a message). Contrary to Live mode,
+this message may span across multiple UDP packets and the only size
+limitation is that it shall fit as a whole in the sending buffer. The
+receiver shall use as large buffer as necessary to receive the message,
+otherwise the message will not be given up. When the message is not
+complete (not all packets received or there was a packet loss) it will
+not be given up.
+
+@item transtype=@var{live|file}
+Sets the transmission type for the socket, in particular, setting this
+option sets multiple other parameters to their default values as required
+for a particular transmission type.
+
+live: Set options as for live transmission. In this mode, you should
+send by one sending instruction only so many data that fit in one UDP packet,
+and limited to the value defined first in @option{payload_size} (1316 is
+default in this mode). There is no speed control in this mode, only the
+bandwidth control, if configured, in order to not exceed the bandwidth with
+the overhead transmission (retransmitted and control packets).
+
+file: Set options as for non-live transmission. See @option{messageapi}
+for further explanations
+
+@item linger=@var{seconds}
+The number of seconds that the socket waits for unsent data when closing.
+Default is -1. -1 means auto (off with 0 seconds in live mode, on with 180
+seconds in file mode). The range for this option is integers in the
+0 - @code{INT_MAX}.
 
 @end table
 
@@ -1377,8 +1697,9 @@ tcp://@var{hostname}:@var{port}[?@var{options}]
 The list of supported options follows.
 
 @table @option
-@item listen=@var{1|0}
-Listen for an incoming connection. Default value is 0.
+@item listen=@var{2|1|0}
+Listen for an incoming connection. 0 disables listen, 1 enables listen in
+single client mode, 2 enables listen in multi-client mode. Default value is 0.
 
 @item timeout=@var{microseconds}
 Set raise error timeout, expressed in microseconds.
@@ -1397,6 +1718,9 @@ Set send buffer size, expressed bytes.
 
 @item tcp_nodelay=@var{1|0}
 Set TCP_NODELAY to disable Nagle's algorithm. Default value is 0.
+
+@item tcp_mss=@var{bytes}
+Set maximum segment size for outgoing TCP packets, expressed in bytes.
 @end table
 
 The following example shows how to setup a listening TCP connection
@@ -1451,6 +1775,10 @@ A file containing the private key for the certificate.
 If enabled, listen for connections on the provided port, and assume
 the server role in the handshake instead of the client role.
 
+@item http_proxy
+The HTTP proxy to tunnel through, e.g. @code{http://example.com:1234}.
+The proxy must support the CONNECT method.
+
 @end table
 
 Example command lines:
@@ -1489,7 +1817,7 @@ The list of supported options follows.
 @item buffer_size=@var{size}
 Set the UDP maximum socket buffer size in bytes. This is used to set either
 the receive or send buffer size, depending on what the socket is used for.
-Default is 64KB.  See also @var{fifo_size}.
+Default is 32 KB for output, 384 KB for input.  See also @var{fifo_size}.
 
 @item bitrate=@var{bitrate}
 If set to nonzero, the output will have the specified constant bitrate if the
@@ -1503,9 +1831,8 @@ packet bursts.
 Override the local UDP port to bind with.
 
 @item localaddr=@var{addr}
-Choose the local IP address. This is useful e.g. if sending multicast
-and the host has multiple interfaces, where the user can choose
-which interface to send on by specifying the IP address of that interface.
+Local IP address of a network interface used for sending packets or joining
+multicast groups.
 
 @item pkt_size=@var{size}
 Set the size in bytes of UDP packets.
@@ -1528,12 +1855,12 @@ For receiving, this gives the benefit of only receiving packets from
 the specified peer address/port.
 
 @item sources=@var{address}[,@var{address}]
-Only receive packets sent to the multicast group from one of the
-specified sender IP addresses.
+Only receive packets sent from the specified addresses. In case of multicast,
+also subscribe to multicast traffic coming from these addresses only.
 
 @item block=@var{address}[,@var{address}]
-Ignore packets sent to the multicast group from the specified
-sender IP addresses.
+Ignore packets sent from the specified addresses. In case of multicast, also
+exclude the source addresses in the multicast subscription.
 
 @item fifo_size=@var{units}
 Set the UDP receiving circular buffer size, expressed as a number of
@@ -1598,5 +1925,52 @@ Timeout in ms.
 @item listen
 Create the Unix socket in listening mode.
 @end table
+
+@section zmq
+
+ZeroMQ asynchronous messaging using the libzmq library.
+
+This library supports unicast streaming to multiple clients without relying on
+an external server.
+
+The required syntax for streaming or connecting to a stream is:
+@example
+zmq:tcp://ip-address:port
+@end example
+
+Example:
+Create a localhost stream on port 5555:
+@example
+ffmpeg -re -i input -f mpegts zmq:tcp://127.0.0.1:5555
+@end example
+
+Multiple clients may connect to the stream using:
+@example
+ffplay zmq:tcp://127.0.0.1:5555
+@end example
+
+Streaming to multiple clients is implemented using a ZeroMQ Pub-Sub pattern.
+The server side binds to a port and publishes data. Clients connect to the
+server (via IP address/port) and subscribe to the stream. The order in which
+the server and client start generally does not matter.
+
+ffmpeg must be compiled with the --enable-libzmq option to support
+this protocol.
+
+Options can be set on the @command{ffmpeg}/@command{ffplay} command
+line. The following options are supported:
+
+@table @option
+
+@item pkt_size
+Forces the maximum packet size for sending/receiving data. The default value is
+131,072 bytes. On the server side, this sets the maximum size of sent packets
+via ZeroMQ. On the clients, it sets an internal buffer size for receiving
+packets. Note that pkt_size on the clients should be equal to or greater than
+pkt_size on the server. Otherwise the received message may be truncated causing
+decoding errors.
+
+@end table
+
 
 @c man end PROTOCOLS

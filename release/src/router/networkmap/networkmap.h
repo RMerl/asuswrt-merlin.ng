@@ -82,12 +82,13 @@ enum
 
 #define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
-#define NMP_DEBUG_FILE			"/tmp/NMP_DEBUG"
-#define NMP_DEBUG_MORE_FILE		"/tmp/NMP_DEBUG_MORE"
+#define NMP_DEBUG_FILE				"/tmp/NMP_DEBUG"
+#define NMP_DEBUG_MORE_FILE			"/tmp/NMP_DEBUG_MORE"
 #define NMP_DEBUG_FUNCTION_FILE		"/tmp/NMP_DEBUG_FUNCTION"
-#define NMP_DEBUG_VC_FILE		"/tmp/NMP_DEBUG_VC"
+#define NMP_DEBUG_VC_FILE			"/tmp/NMP_DEBUG_VC"
 
 #define NEWORKMAP_OUI_FILE		"/usr/networkmap/networkmap.oui.js"
+
 #if (defined(RTCONFIG_JFFS2) || defined(RTCONFIG_JFFSV1) || defined(RTCONFIG_BRCM_NAND_JFFS2) || defined(RTCONFIG_UBIFS))
 #define NMP_CL_JSON_FILE		"/jffs/nmp_cl_json.js"
 #define NMP_VC_JSON_FILE		"/jffs/nmp_vc_json.js"
@@ -96,6 +97,8 @@ enum
 #define NMP_VC_JSON_FILE		"/tmp/nmp_vc_json.js"
 #endif
 #define ARP_PATH			"/proc/net/arp"
+
+
 
 #define NMP_CONSOLE_DEBUG(fmt, args...) do{ \
 	if(nvram_match("nmp_debug", "1")) { \
@@ -175,6 +178,8 @@ enum
 #define TYPE_WINDOWS		30
 #define TYPE_ANDROID		31
 
+#define SUCCESS		0
+
 enum
 {
 	BASE_TYPE_DEFAULT = 0,
@@ -196,6 +201,8 @@ typedef struct {
 	unsigned char	device_type[MAX_NR_CLIENT_LIST][32];
 	unsigned char	vendorClass[MAX_NR_CLIENT_LIST][32];
 	unsigned char	os_type[MAX_NR_CLIENT_LIST];
+	unsigned char	sdn_idx[MAX_NR_CLIENT_LIST];
+	unsigned char	online[MAX_NR_CLIENT_LIST];
 	unsigned char	type[MAX_NR_CLIENT_LIST];
 	unsigned char	ipMethod[MAX_NR_CLIENT_LIST][7];
 	unsigned char	opMode[MAX_NR_CLIENT_LIST];
@@ -235,6 +242,7 @@ typedef struct {
 	int		asus_device_num;
 	int		commit_no;
 	char		delete_mac[13];
+
 } CLIENT_DETAIL_INFO_TABLE, *P_CLIENT_DETAIL_INFO_TABLE;
 
 // walf test
@@ -254,6 +262,10 @@ typedef struct
 int FindHostname(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
 int FindDevice(unsigned char *pIP, unsigned char *pMac, int replaceMac);
 void find_wireless_device(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int offline);
+void rc_diag_stainfo(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
 void type_filter(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int x, unsigned char type, unsigned char base, int isDev);
 int isBaseType(int type);
+
+int QueryConvTypes(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
+
 #endif  /*__NETWORKMAP_H__*/

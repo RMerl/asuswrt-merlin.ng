@@ -2,16 +2,16 @@
 <?cs each:peercfg = peercfgs ?>
   <div class="expand" id="peercfg-<?cs name:peercfg ?>">
     <h1><?cs name:peercfg ?>:
-  	  <span><?cs var:peercfg.local ?></span> &lt;-&gt; 
-  	  <span><?cs var:peercfg.remote ?></span>
+      <span><?cs var:peercfg.local ?></span> &lt;-&gt;
+      <span><?cs var:peercfg.remote ?></span>
     </h1>
     <div class="controls">
       <?cs if:peercfg.remote != "%any" ?>
         <a title="initiate SA" href="<?cs var:base ?>/control/initiateike/<?cs name:peercfg ?>">
           <img src="<?cs var:base ?>/static/initiate.png"/>
         </a>
-	  <?cs else ?>
-        &nbsp;    
+    <?cs else ?>
+        &nbsp;
       <?cs /if ?>
     </div>
     <div class="expander">
@@ -79,9 +79,9 @@
         <tr class="images">
           <td colspan="2">
             <?cs each:net = childcfg.local.networks ?>
-      	      <p><?cs var:net ?></p>
+              <p><?cs var:net ?></p>
             <?cs /each ?>
-      	  </td>
+          </td>
           <td style="background-image:url(<?cs var:base ?>/static/pipe-thin-left.png)">
             <br/><br/><br/>
           </td>

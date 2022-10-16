@@ -44,5 +44,12 @@ struct openssl_ec_diffie_hellman_t {
  */
 openssl_ec_diffie_hellman_t *openssl_ec_diffie_hellman_create(diffie_hellman_group_t group);
 
-#endif /** OPENSSL_EC_DIFFIE_HELLMAN_H_ @}*/
+/**
+ * Map ECDH groups to OpenSSL NIDs for the ECC curve.
+ *
+ * @param group         ECDH group
+ * @return              NID for the curve
+ */
+int openssl_ecdh_group_to_nid(diffie_hellman_group_t group);
 
+#endif /** OPENSSL_EC_DIFFIE_HELLMAN_H_ @}*/

@@ -27,7 +27,7 @@ proceed.
 
 # Unix
 
-A normal Unix installation is made in three or four steps (after you've
+A normal Unix installation is made in three or four steps (after you have
 unpacked the source archive):
 
     ./configure --with-openssl [--with-gnutls --with-wolfssl]
@@ -58,7 +58,7 @@ your own home directory:
 
 The configure script always tries to find a working SSL library unless
 explicitly told not to. If you have OpenSSL installed in the default search
-path for your compiler/linker, you don't need to do anything special. If you
+path for your compiler/linker, you do not need to do anything special. If you
 have OpenSSL installed in `/usr/local/ssl`, you can run configure like:
 
     ./configure --with-openssl
@@ -79,14 +79,14 @@ have OpenSSL installed in your system, you can run configure like this:
 
 If you have OpenSSL installed, but with the libraries in one place and the
 header files somewhere else, you have to set the `LDFLAGS` and `CPPFLAGS`
-environment variables prior to running configure.  Something like this should
+environment variables prior to running configure. Something like this should
 work:
 
     CPPFLAGS="-I/path/to/ssl/include" LDFLAGS="-L/path/to/ssl/lib" ./configure
 
-If you have shared SSL libs installed in a directory where your run-time
-linker doesn't find them (which usually causes configure failures), you can
-provide this option to gcc to set a hard-coded path to the run-time linker:
+If you have shared SSL libs installed in a directory where your runtime
+linker does not find them (which usually causes configure failures), you can
+provide this option to gcc to set a hard-coded path to the runtime linker:
 
     LDFLAGS=-Wl,-R/usr/local/ssl/lib ./configure --with-openssl
 
@@ -102,7 +102,7 @@ an option like:
 
     ./configure --disable-thread
 
-If you're a curl developer and use gcc, you might want to enable more debug
+If you are a curl developer and use gcc, you might want to enable more debug
 options with the `--enable-debug` option.
 
 curl can be built to use a whole range of libraries to provide various useful
@@ -111,13 +111,12 @@ want to alter it, you can select how to deal with each individual library.
 
 ## Select TLS backend
 
-These options are provided to select TLS backend to use.
+These options are provided to select the TLS backend to use.
 
  - AmiSSL: `--with-amissl`
  - BearSSL: `--with-bearssl`
  - GnuTLS: `--with-gnutls`.
  - mbedTLS: `--with-mbedtls`
- - MesaLink: `--with-mesalink`
  - NSS: `--with-nss`
  - OpenSSL: `--with-openssl` (also for BoringSSL and libressl)
  - rustls: `--with-rustls`
@@ -127,7 +126,7 @@ These options are provided to select TLS backend to use.
 
 # Windows
 
-## Building Windows DLLs and C run-time (CRT) linkage issues
+## Building Windows DLLs and C runtime (CRT) linkage issues
 
  As a general rule, building a DLL with static CRT linkage is highly
  discouraged, and intermixing CRTs in the same app is something to avoid at
@@ -150,7 +149,7 @@ debug multithreaded dynamic C runtime.
 
 ## MingW32
 
-Make sure that MinGW32's bin dir is in the search path, for example:
+Make sure that MinGW32's bin directory is in the search path, for example:
 
 ```cmd
 set PATH=c:\mingw32\bin;%PATH%
@@ -195,9 +194,9 @@ If you want to enable LDAPS support then set LDAPS=1.
 
 ## Cygwin
 
-Almost identical to the unix installation. Run the configure script in the
+Almost identical to the Unix installation. Run the configure script in the
 curl source tree root with `sh configure`. Make sure you have the `sh`
-executable in `/bin/` or you'll see the configure fail toward the end.
+executable in `/bin/` or you will see the configure fail toward the end.
 
 Run `make`
 
@@ -218,25 +217,23 @@ If you want to set any of these defines you have the following options:
  - Modify the "Preprocessor Definitions" in the libcurl project
 
 Note: The pre-processor settings can be found using the Visual Studio IDE
-under "Project -> Settings -> C/C++ -> General" in VC6 and "Project ->
-Properties -> Configuration Properties -> C/C++ -> Preprocessor" in later
-versions.
+under "Project -> Properties -> Configuration Properties -> C/C++ ->
+Preprocessor".
 
 ## Using BSD-style lwIP instead of Winsock TCP/IP stack in Win32 builds
 
 In order to compile libcurl and curl using BSD-style lwIP TCP/IP stack it is
-necessary to make definition of preprocessor symbol `USE_LWIPSOCK` visible to
-libcurl and curl compilation processes. To set this definition you have the
-following alternatives:
+necessary to make the definition of the preprocessor symbol `USE_LWIPSOCK`
+visible to libcurl and curl compilation processes. To set this definition you
+have the following alternatives:
 
  - Modify `lib/config-win32.h` and `src/config-win32.h`
  - Modify `winbuild/Makefile.vc`
  - Modify the "Preprocessor Definitions" in the libcurl project
 
 Note: The pre-processor settings can be found using the Visual Studio IDE
-under "Project -> Settings -> C/C++ -> General" in VC6 and "Project ->
-Properties -> Configuration Properties -> C/C++ -> Preprocessor" in later
-versions.
+under "Project -> Properties -> Configuration Properties -> C/C++ ->
+Preprocessor".
 
 Once that libcurl has been built with BSD-style lwIP TCP/IP stack support, in
 order to use it with your program it is mandatory that your program includes
@@ -255,7 +252,7 @@ might yet need some additional adjustment, caveat emptor.
 ## Important static libcurl usage note
 
 When building an application that uses the static libcurl library on Windows,
-you must add `-DCURL_STATICLIB` to your `CFLAGS`.  Otherwise the linker will
+you must add `-DCURL_STATICLIB` to your `CFLAGS`. Otherwise the linker will
 look for dynamic import symbols.
 
 ## Legacy Windows and SSL
@@ -324,7 +321,8 @@ make -j8
 make install
 ```
 
-In all above, the built libraries and executables can be found in `artifacts` folder.
+In all above, the built libraries and executables can be found in the
+`artifacts` folder.
 
 # Android
 
@@ -355,7 +353,7 @@ to adjust those variables accordingly. After that you can build curl like this:
 
     ./configure --host aarch64-linux-android --with-pic --disable-shared
 
-Note that this won't give you SSL/TLS support. If you need SSL/TLS, you have
+Note that this will not give you SSL/TLS support. If you need SSL/TLS, you have
 to build curl against a SSL/TLS layer, e.g. OpenSSL, because it's impossible for
 curl to access Android's native SSL/TLS layer. To build curl for Android using
 OpenSSL, follow the OpenSSL build instructions and then install `libssl.a` and
@@ -366,7 +364,7 @@ OpenSSL like this:
     ./configure --host aarch64-linux-android --with-pic --disable-shared --with-openssl="$TOOLCHAIN/sysroot/usr"
 
 Note, however, that you must target at least Android M (API level 23) or `configure`
-won't be able to detect OpenSSL since `stderr` (and the like) weren't defined
+will not be able to detect OpenSSL since `stderr` (and the like) were not defined
 before Android M.
 
 # IBM i
@@ -387,16 +385,16 @@ they affect both environments.
 
 ## Multithreading notes
 
-By default, jobs in IBM i won't start with threading enabled. (Exceptions
+By default, jobs in IBM i will not start with threading enabled. (Exceptions
 include interactive PASE sessions started by `QP2TERM` or SSH.) If you use
 curl in an environment without threading when options like async DNS were
-enabled, you'll messages like:
+enabled, you will get messages like:
 
 ```
 getaddrinfo() thread failed to start
 ```
 
-Don't panic! curl and your program aren't broken. You can fix this by:
+Do not panic. curl and your program are not broken. You can fix this by:
 
 - Set the environment variable `QIBM_MULTI_THREADED` to `Y` before starting
   your program. This can be done at whatever scope you feel is appropriate.
@@ -409,8 +407,8 @@ Download and unpack the curl package.
 `cd` to the new directory. (e.g. `cd curl-7.12.3`)
 
 Set environment variables to point to the cross-compile toolchain and call
-configure with any options you need.  Be sure and specify the `--host` and
-`--build` parameters at configuration time.  The following script is an
+configure with any options you need. Be sure and specify the `--host` and
+`--build` parameters at configuration time. The following script is an
 example of cross-compiling for the IBM 405GP PowerPC processor using the
 toolchain from MonteVista for Hardhat Linux.
 
@@ -435,8 +433,8 @@ export NM=ppc_405-nm
 
 You may also need to provide a parameter like `--with-random=/dev/urandom` to
 configure as it cannot detect the presence of a random number generating
-device for a target system.  The `--prefix` parameter specifies where curl
-will be installed.  If `configure` completes successfully, do `make` and `make
+device for a target system. The `--prefix` parameter specifies where curl
+will be installed. If `configure` completes successfully, do `make` and `make
 install` as usual.
 
 In some cases, you may be able to simplify the above commands to as little as:
@@ -448,7 +446,7 @@ In some cases, you may be able to simplify the above commands to as little as:
 There are a number of configure options that can be used to reduce the size of
 libcurl for embedded applications where binary size is an important factor.
 First, be sure to set the `CFLAGS` variable when configuring with any relevant
-compiler optimization flags to reduce the size of the binary.  For gcc, this
+compiler optimization flags to reduce the size of the binary. For gcc, this
 would mean at minimum the -Os option, and potentially the `-march=X`,
 `-mdynamic-no-pic` and `-flto` options as well, e.g.
 
@@ -459,24 +457,45 @@ due to improved optimization.
 
 Be sure to specify as many `--disable-` and `--without-` flags on the
 configure command-line as you can to disable all the libcurl features that you
-know your application is not going to need.  Besides specifying the
+know your application is not going to need. Besides specifying the
 `--disable-PROTOCOL` flags for all the types of URLs your application will not
-use, here are some other flags that can reduce the size of the library:
+use, here are some other flags that can reduce the size of the library by
+disabling support for some feature:
 
- - `--disable-ares` (disables support for the C-ARES DNS library)
- - `--disable-cookies` (disables support for HTTP cookies)
- - `--disable-crypto-auth` (disables HTTP cryptographic authentication)
- - `--disable-ipv6` (disables support for IPv6)
- - `--disable-manual` (disables support for the built-in documentation)
- - `--disable-proxy` (disables support for HTTP and SOCKS proxies)
- - `--disable-unix-sockets` (disables support for UNIX sockets)
+ - `--disable-alt-svc` (HTTP Alt-Srv)
+ - `--disable-ares` (the C-ARES DNS library)
+ - `--disable-cookies` (HTTP cookies)
+ - `--disable-crypto-auth` (cryptographic authentication)
+ - `--disable-dateparse` (date parsing for time conditionals)
+ - `--disable-dnsshuffle` (internal server load spreading)
+ - `--disable-doh` (DNS-over-HTTP)
+ - `--disable-get-easy-options` (lookup easy options at runtime)
+ - `--disable-hsts` (HTTP Strict Transport Security)
+ - `--disable-http-auth` (all HTTP authentication)
+ - `--disable-ipv6` (IPv6)
+ - `--disable-libcurl-option` (--libcurl C code generation support)
+ - `--disable-manual` (built-in documentation)
+ - `--disable-netrc`  (.netrc file)
+ - `--disable-ntlm-wb` (NTLM WinBind)
+ - `--disable-progress-meter` (graphical progress meter in library)
+ - `--disable-proxy` (HTTP and SOCKS proxies)
+ - `--disable-pthreads` (multithreading)
+ - `--disable-socketpair` (socketpair for async name resolving)
+ - `--disable-threaded-resolver`  (threaded name resolver)
+ - `--disable-tls-srp` (Secure Remote Password authentication for TLS)
+ - `--disable-unix-sockets` (UNIX sockets)
  - `--disable-verbose` (eliminates debugging strings and error code strings)
- - `--disable-versioned-symbols` (disables support for versioned symbols)
- - `--enable-hidden-symbols` (eliminates unneeded symbols in the shared library)
- - `--without-libidn` (disables support for the libidn DNS library)
- - `--without-librtmp` (disables support for RTMP)
- - `--without-openssl` (disables support for SSL/TLS)
- - `--without-zlib` (disables support for on-the-fly decompression)
+ - `--disable-versioned-symbols` (versioned symbols)
+ - `--enable-symbol-hiding` (eliminates unneeded symbols in the shared library)
+ - `--without-brotli` (Brotli on-the-fly decompression)
+ - `--without-libpsl` (Public Suffix List in cookies)
+ - `--without-nghttp2` (HTTP/2 using nghttp2)
+ - `--without-ngtcp2` (HTTP/2 using ngtcp2)
+ - `--without-zstd` (Zstd on-the-fly decompression)
+ - `--without-libidn2` (internationalized domain names)
+ - `--without-librtmp` (RTMP)
+ - `--without-ssl` (SSL/TLS)
+ - `--without-zlib` (on-the-fly decompression)
 
 The GNU compiler and linker have a number of options that can reduce the
 size of the libcurl dynamic libraries on some platforms even further.
@@ -488,33 +507,34 @@ the configure command-line, e.g.
     LDFLAGS="-Wl,-s -Wl,-Bsymbolic -Wl,--gc-sections"
 
 Be sure also to strip debugging symbols from your binaries after compiling
-using 'strip' (or the appropriate variant if cross-compiling).  If space is
+using 'strip' (or the appropriate variant if cross-compiling). If space is
 really tight, you may be able to remove some unneeded sections of the shared
 library using the -R option to objcopy (e.g. the .comment section).
 
-Using these techniques it is possible to create a basic HTTP-only shared
-libcurl library for i386 Linux platforms that is only 113 KiB in size, and an
-FTP-only library that is 113 KiB in size (as of libcurl version 7.50.3, using
-gcc 5.4.0).
+Using these techniques it is possible to create a basic HTTP-only libcurl
+shared library for i386 Linux platforms that is only 133 KiB in size
+(as of libcurl version 7.80.0, using gcc 11.2.0).
 
 You may find that statically linking libcurl to your application will result
 in a lower total size than dynamically linking.
 
 Note that the curl test harness can detect the use of some, but not all, of
 the `--disable` statements suggested above. Use will cause tests relying on
-those features to fail.  The test harness can be manually forced to skip the
+those features to fail. The test harness can be manually forced to skip the
 relevant tests by specifying certain key words on the `runtests.pl` command
-line.  Following is a list of appropriate key words:
+line. Following is a list of appropriate key words for those configure options
+that are not automatically detected:
 
  - `--disable-cookies`          !cookies
- - `--disable-manual`           !--manual
- - `--disable-proxy`            !HTTP\ proxy !proxytunnel !SOCKS4 !SOCKS5
+ - `--disable-dateparse`        !RETRY-AFTER !CURLOPT_TIMECONDITION !CURLINFO_FILETIME !If-Modified-Since !getdate !-z
+ - `--disable-libcurl-option`   !--libcurl
+ - `--disable-verbose`          !verbose\ logs
 
 # PORTS
 
 This is a probably incomplete list of known CPU architectures and operating
 systems that curl has been compiled for. If you know a system curl compiles
-and runs on, that isn't listed, please let us know!
+and runs on, that is not listed, please let us know!
 
 ## 85 Operating Systems
 

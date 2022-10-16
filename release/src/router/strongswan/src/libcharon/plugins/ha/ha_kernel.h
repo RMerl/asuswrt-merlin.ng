@@ -50,7 +50,7 @@ struct ha_kernel_t {
 	/**
 	 * Get the segment an arbitrary integer is in.
 	 *
-	 * @param n			integer to segmentate
+	 * @param n			integer to segment
 	 */
 	u_int (*get_segment_int)(ha_kernel_t *this, int n);
 

@@ -342,7 +342,7 @@ METHOD(attr_provider_t, reload, void,
 /*
  * see header file
  */
-attr_provider_t *attr_provider_create(database_t *db)
+attr_provider_t *attr_provider_create()
 {
 	private_attr_provider_t *this;
 

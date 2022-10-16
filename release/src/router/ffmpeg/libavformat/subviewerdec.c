@@ -27,6 +27,7 @@
 #include "avformat.h"
 #include "internal.h"
 #include "subtitles.h"
+#include "avio_internal.h"
 #include "libavcodec/internal.h"
 #include "libavutil/avstring.h"
 #include "libavutil/bprint.h"
@@ -36,7 +37,7 @@ typedef struct {
     FFDemuxSubtitlesQueue q;
 } SubViewerContext;
 
-static int subviewer_probe(AVProbeData *p)
+static int subviewer_probe(const AVProbeData *p)
 {
     char c;
     const unsigned char *ptr = p->buf;
@@ -55,11 +56,21 @@ static int read_ts(const char *s, int64_t *start, int *duration)
     int64_t end;
     int hh1, mm1, ss1, ms1;
     int hh2, mm2, ss2, ms2;
+    int multiplier = 1;
 
+    if (sscanf(s, "%u:%u:%u.%2u,%u:%u:%u.%2u",
+               &hh1, &mm1, &ss1, &ms1, &hh2, &mm2, &ss2, &ms2) == 8) {
+        multiplier = 10;
+    } else if (sscanf(s, "%u:%u:%u.%1u,%u:%u:%u.%1u",
+                      &hh1, &mm1, &ss1, &ms1, &hh2, &mm2, &ss2, &ms2) == 8) {
+        multiplier = 100;
+    }
     if (sscanf(s, "%u:%u:%u.%u,%u:%u:%u.%u",
                &hh1, &mm1, &ss1, &ms1, &hh2, &mm2, &ss2, &ms2) == 8) {
-        end    = (hh2*3600LL + mm2*60LL + ss2) * 100LL + ms2;
-        *start = (hh1*3600LL + mm1*60LL + ss1) * 100LL + ms1;
+        ms1 = FFMIN(ms1, 999);
+        ms2 = FFMIN(ms2, 999);
+        end    = (hh2*3600LL + mm2*60LL + ss2) * 1000LL + ms2 * multiplier;
+        *start = (hh1*3600LL + mm1*60LL + ss1) * 1000LL + ms1 * multiplier;
         *duration = end - *start;
         return 0;
     }
@@ -78,7 +89,12 @@ static int subviewer_read_header(AVFormatContext *s)
 
     if (!st)
         return AVERROR(ENOMEM);
-    avpriv_set_pts_info(st, 64, 1, 100);
+    res = ffio_ensure_seekback(s->pb, 3);
+    if (res < 0)
+        return res;
+    if (avio_rb24(s->pb) != 0xefbbbf)
+        avio_seek(s->pb, -3, SEEK_CUR);
+    avpriv_set_pts_info(st, 64, 1, 1000);
     st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
     st->codecpar->codec_id   = AV_CODEC_ID_SUBVIEWER;
 
@@ -132,6 +148,10 @@ static int subviewer_read_header(AVFormatContext *s)
             new_event = 1;
             pos = avio_tell(s->pb);
         } else if (*line) {
+            if (pts_start == AV_NOPTS_VALUE) {
+                res = AVERROR_INVALIDDATA;
+                goto end;
+            }
             if (!new_event) {
                 sub = ff_subtitles_queue_insert(&subviewer->q, "\n", 1, 1);
                 if (!sub) {
@@ -156,6 +176,8 @@ static int subviewer_read_header(AVFormatContext *s)
     ff_subtitles_queue_finalize(s, &subviewer->q);
 
 end:
+    if (res < 0)
+        ff_subtitles_queue_clean(&subviewer->q);
     av_bprint_finalize(&header, NULL);
     return res;
 }

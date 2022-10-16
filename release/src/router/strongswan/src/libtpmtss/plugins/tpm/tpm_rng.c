@@ -75,7 +75,7 @@ tpm_rng_t *tpm_rng_create(rng_quality_t quality)
 	if (!tpm)
 	{
 		DBG1(DBG_LIB, "no TPM 2.0 found");
-		return NULL;	
+		return NULL;
 	}
 
 	INIT(this,

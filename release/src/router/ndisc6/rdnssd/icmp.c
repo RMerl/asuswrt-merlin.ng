@@ -29,13 +29,6 @@
 #include <netinet/in.h>
 #include <netinet/icmp6.h>
 #include <syslog.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <bcmnvram.h>
-#include <shared.h>
-#ifdef BCMARM
-#include "nvram_linux_arm.c"
-#endif
 
 #include "rdnssd.h"
 #include "gettext.h"
@@ -52,12 +45,8 @@
 # define SOL_ICMPV6 IPPROTO_ICMPV6
 #endif
 
-#define dbg(fmt, args...) do { FILE *fp = fopen("/dev/console", "w"); if (fp) { fprintf(fp, fmt, ## args); fclose(fp); } else fprintf(stderr, fmt, ## args); } while (0)
-#define mylog(fmt, args...) { dbg(fmt, ## args); dbg("\n"); syslog(0, fmt, ## args); }
 static int icmp_recv (int fd)
 {
-		static unsigned last_flag = 1;
-		unsigned flags;
 		struct nd_router_advert icmp6;
 		uint8_t buf[65536 - sizeof (icmp6)], cbuf[CMSG_SPACE (sizeof (int))];
 		struct iovec iov[2] =
@@ -95,44 +84,10 @@ static int icmp_recv (int fd)
 				return -1;
 		}
 
-		/* Parses RA prefix flag, check m & o bit are set or not (IPv6 spec 1.12) */
-		if (icmp6.nd_ra_router_lifetime == 0)
-		{
-			mylog("IPv6 router lifetime reach 0");
-			system("rc rc_service stop_ipv6");
-			last_flag = 1;
-			return 0;
-		}
-
-		flags = icmp6.nd_ra_flags_reserved & (ND_RA_FLAG_MANAGED | ND_RA_FLAG_OTHER);
-		if (flags != last_flag)
-		{
-			if (last_flag != 1)
-				system("rc rc_service stop_ipv6");
-			mylog("Get IPv6 address from %s & DNS from %s",
-				(flags & ND_RA_FLAG_MANAGED) ? "DHCPv6" : "RA",
-				(flags & (ND_RA_FLAG_MANAGED | ND_RA_FLAG_OTHER)) ? "DHCPv6" : "RA");
-			if (flags & ND_RA_FLAG_MANAGED)
-				nvram_set("ipv6_ra_conf", "mset");
-			else if (flags & ND_RA_FLAG_OTHER)
-				nvram_set("ipv6_ra_conf", "oset");
-			else
-				nvram_set("ipv6_ra_conf", "noneset");
-			system("rc rc_service start_dhcp6c");
-			last_flag = flags;
-
-			if ((flags & (ND_RA_FLAG_MANAGED | ND_RA_FLAG_OTHER)) == 0 &&
-			    nvram_match("ipv6_dnsenable", "1"))
-			{
-
 		/* Parses RA options */
 		len -= sizeof (icmp6);
 		return parse_nd_opts((struct nd_opt_hdr *) buf, len, src.sin6_scope_id);
 
-			}
-		}
-
-		return 0;
 }
 
 static int icmp_socket()

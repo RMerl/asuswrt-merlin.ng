@@ -73,7 +73,7 @@ struct socket_t {
 	 * Reads a packet from the socket and sets source/dest
 	 * appropriately.
 	 *
-	 * @param packet		pinter gets address from allocated packet_t
+	 * @param packet		received packet
 	 * @return
 	 *						- SUCCESS when packet successfully received
 	 *						- FAILED when unable to receive
@@ -86,7 +86,7 @@ struct socket_t {
 	 * Sends a packet to the net using source and destination addresses of
 	 * the packet.
 	 *
-	 * @param packet		packet_t to send
+	 * @param packet		packet to send
 	 * @return
 	 *						- SUCCESS when packet successfully sent
 	 *						- FAILED when unable to send

@@ -399,7 +399,7 @@ static char conv_speed(unsigned int link, unsigned int speed)
 
 	return ret;
 }
-void ATE_port_status(phy_info_list *list)
+void ATE_port_status(int verbose, phy_info_list *list)
 {
 	int i, fd;
 	char buf[64];
@@ -443,7 +443,8 @@ void ATE_port_status(phy_info_list *list)
 		conv_speed(pS.link[6], pS.speed[6]),
 		conv_speed(pS.link[7], pS.speed[7]));
 
-	puts(buf);
+	if (verbose)
+		puts(buf);
 }
 
 #if 0

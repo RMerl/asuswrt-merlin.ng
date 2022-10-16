@@ -36,7 +36,7 @@ typedef struct yop_dec_context {
     int palette_size;
 } YopDecContext;
 
-static int yop_probe(AVProbeData *probe_packet)
+static int yop_probe(const AVProbeData *probe_packet)
 {
     if (AV_RB16(probe_packet->buf) == AV_RB16("YO")  &&
         probe_packet->buf[2]<10                      &&
@@ -68,10 +68,6 @@ static int yop_read_header(AVFormatContext *s)
     if (!audio_stream || !video_stream)
         return AVERROR(ENOMEM);
 
-    // Extra data that will be passed to the decoder
-    if (ff_alloc_extradata(video_stream->codecpar, 8))
-        return AVERROR(ENOMEM);
-
     // Audio
     audio_par                 = audio_stream->codecpar;
     audio_par->codec_type     = AVMEDIA_TYPE_AUDIO;
@@ -94,9 +90,9 @@ static int yop_read_header(AVFormatContext *s)
 
     video_stream->sample_aspect_ratio = (AVRational){1, 2};
 
-    ret = avio_read(pb, video_par->extradata, 8);
-    if (ret < 8)
-        return ret < 0 ? ret : AVERROR_EOF;
+    ret = ff_get_extradata(s, video_par, pb, 8);
+    if (ret < 0)
+        return ret;
 
     yop->palette_size       = video_par->extradata[0] * 3 + 4;
     yop->audio_block_length = AV_RL16(video_par->extradata + 6);
@@ -129,14 +125,11 @@ static int yop_read_packet(AVFormatContext *s, AVPacket *pkt)
     yop->video_packet.stream_index = 1;
 
     if (yop->video_packet.data) {
-        *pkt                   =  yop->video_packet;
-        yop->video_packet.data =  NULL;
-        yop->video_packet.buf  =  NULL;
-        yop->video_packet.size =  0;
+        av_packet_move_ref(pkt, &yop->video_packet);
         pkt->data[0]           =  yop->odd_frame;
         pkt->flags             |= AV_PKT_FLAG_KEY;
         yop->odd_frame         ^= 1;
-        return pkt->size;
+        return 0;
     }
     ret = av_new_packet(&yop->video_packet,
                         yop->frame_size - yop->audio_block_length);
@@ -170,7 +163,7 @@ static int yop_read_packet(AVFormatContext *s, AVPacket *pkt)
         av_shrink_packet(&yop->video_packet, yop->palette_size + ret);
 
     // Arbitrarily return the audio data first
-    return yop->audio_block_length;
+    return 0;
 
 err_out:
     av_packet_unref(&yop->video_packet);

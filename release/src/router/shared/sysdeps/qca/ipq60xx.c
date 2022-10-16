@@ -563,7 +563,7 @@ static void build_wan_lan_mask(int stb, int stb_bitmask)
 	if (sw_mode == SW_MODE_AP || sw_mode == SW_MODE_REPEATER)
 		wanscap_lan = 0;
 
-	if (wanscap_lan && (wans_lanport < 0 || wans_lanport > 4)) {
+	if (wanscap_lan && (wans_lanport < 1 || wans_lanport > 4)) {
 		_dprintf("%s: invalid wans_lanport %d!\n", __func__, wans_lanport);
 		wanscap_lan = 0;
 	}
@@ -604,7 +604,7 @@ static void build_wan_lan_mask(int stb, int stb_bitmask)
 
 	/* One of LAN port is acting as WAN. */
 	if (wanscap_lan) {
-		wans_lan_mask = 1U << lan_id_to_vport_nr(wans_lanport);
+		wans_lan_mask = 1U << lan_id_to_vport_nr(wans_lanport -1);
 		lan_mask &= ~wans_lan_mask;
 	}
 
@@ -1091,7 +1091,7 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(phy_info_list *list)
+void ATE_port_status(int verbose, phy_info_list *list)
 {
 	int i, len;
 	char buf[50];
@@ -1113,7 +1113,8 @@ void ATE_port_status(phy_info_list *list)
 		else
 			; // break;
 	}
-	puts(buf);
+	if (verbose)
+		puts(buf);
 }
 
 /* Callback function which is used to fin brvX interface, X must be number.

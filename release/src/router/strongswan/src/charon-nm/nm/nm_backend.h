@@ -28,8 +28,6 @@
 
 /**
  * Initialize the NetworkManager backend.
- *
- * @return		TRUE, if initialization was successful
  */
 void nm_backend_register();
 

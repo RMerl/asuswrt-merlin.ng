@@ -82,7 +82,7 @@ struct private_ha_segments_t {
 	bool heartbeat_active;
 
 	/**
-	 * Interval we send hearbeats
+	 * Interval we send heartbeats
 	 */
 	int heartbeat_delay;
 

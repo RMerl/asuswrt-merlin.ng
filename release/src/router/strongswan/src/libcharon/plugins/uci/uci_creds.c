@@ -41,7 +41,7 @@ struct private_uci_creds_t {
 typedef struct {
 	/** implements enumerator */
 	enumerator_t public;
-	/** inneer UCI enumerator */
+	/** inner UCI enumerator */
 	enumerator_t *inner;
 	/** currently enumerated shared shared */
 	shared_key_t *current;

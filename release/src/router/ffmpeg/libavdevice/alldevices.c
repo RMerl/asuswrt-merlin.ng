@@ -27,13 +27,12 @@
 extern AVInputFormat  ff_alsa_demuxer;
 extern AVOutputFormat ff_alsa_muxer;
 extern AVInputFormat  ff_android_camera_demuxer;
+extern AVOutputFormat ff_audiotoolbox_muxer;
 extern AVInputFormat  ff_avfoundation_demuxer;
 extern AVInputFormat  ff_bktr_demuxer;
 extern AVOutputFormat ff_caca_muxer;
 extern AVInputFormat  ff_decklink_demuxer;
 extern AVOutputFormat ff_decklink_muxer;
-extern AVInputFormat  ff_libndi_newtek_demuxer;
-extern AVOutputFormat ff_libndi_newtek_muxer;
 extern AVInputFormat  ff_dshow_demuxer;
 extern AVInputFormat  ff_fbdev_demuxer;
 extern AVOutputFormat ff_fbdev_muxer;
@@ -67,4 +66,76 @@ extern AVInputFormat  ff_libdc1394_demuxer;
 void avdevice_register_all(void)
 {
     avpriv_register_devices(outdev_list, indev_list);
+}
+
+static void *next_input(const AVInputFormat *prev, AVClassCategory c2)
+{
+    const AVClass *pc;
+    const AVClassCategory c1 = AV_CLASS_CATEGORY_DEVICE_INPUT;
+    AVClassCategory category = AV_CLASS_CATEGORY_NA;
+    const AVInputFormat *fmt = NULL;
+    int i = 0;
+
+    while (prev && (fmt = indev_list[i])) {
+        i++;
+        if (prev == fmt)
+            break;
+    }
+
+    do {
+        fmt = indev_list[i++];
+        if (!fmt)
+            break;
+        pc = fmt->priv_class;
+        if (!pc)
+            continue;
+        category = pc->category;
+    } while (category != c1 && category != c2);
+    return (AVInputFormat *)fmt;
+}
+
+static void *next_output(const AVOutputFormat *prev, AVClassCategory c2)
+{
+    const AVClass *pc;
+    const AVClassCategory c1 = AV_CLASS_CATEGORY_DEVICE_OUTPUT;
+    AVClassCategory category = AV_CLASS_CATEGORY_NA;
+    const AVOutputFormat *fmt = NULL;
+    int i = 0;
+
+    while (prev && (fmt = outdev_list[i])) {
+        i++;
+        if (prev == fmt)
+            break;
+    }
+
+    do {
+        fmt = outdev_list[i++];
+        if (!fmt)
+            break;
+        pc = fmt->priv_class;
+        if (!pc)
+            continue;
+        category = pc->category;
+    } while (category != c1 && category != c2);
+    return (AVOutputFormat *)fmt;
+}
+
+AVInputFormat *av_input_audio_device_next(AVInputFormat  *d)
+{
+    return next_input(d, AV_CLASS_CATEGORY_DEVICE_AUDIO_INPUT);
+}
+
+AVInputFormat *av_input_video_device_next(AVInputFormat  *d)
+{
+    return next_input(d, AV_CLASS_CATEGORY_DEVICE_VIDEO_INPUT);
+}
+
+AVOutputFormat *av_output_audio_device_next(AVOutputFormat *d)
+{
+    return next_output(d, AV_CLASS_CATEGORY_DEVICE_AUDIO_OUTPUT);
+}
+
+AVOutputFormat *av_output_video_device_next(AVOutputFormat *d)
+{
+    return next_output(d, AV_CLASS_CATEGORY_DEVICE_VIDEO_OUTPUT);
 }

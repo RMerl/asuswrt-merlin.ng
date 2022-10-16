@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "test.h"
@@ -61,15 +63,8 @@ int test(char *URL)
   if(!res) {
     /* we are connected, now get a HTTP document the raw way */
     const char *request =
-#ifdef CURL_DOES_CONVERSIONS
-      /* ASCII representation with escape sequences for non-ASCII platforms */
-      "\x47\x45\x54\x20\x2f\x35\x35\x36\x20\x48\x54\x54\x50\x2f\x31\x2e"
-      "\x31\x0d\x0a\x48\x6f\x73\x74\x3a\x20\x6e\x69\x6e\x6a\x61\x0d\x0a"
-      "\x0d\x0a";
-#else
       "GET /556 HTTP/1.1\r\n"
       "Host: ninja\r\n\r\n";
-#endif
     size_t iolen = 0;
 
     res = curl_easy_send(curl, request, strlen(request), &iolen);
@@ -81,10 +76,6 @@ int test(char *URL)
         char buf[1024];
         /* busy-read like crazy */
         res = curl_easy_recv(curl, buf, sizeof(buf), &iolen);
-
-#ifdef TPF
-        sleep(1); /* avoid ctl-10 dump */
-#endif
 
         if(iolen) {
           /* send received stuff to stdout */

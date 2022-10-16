@@ -1090,7 +1090,7 @@ END_TEST
 
 static void *cancel_run(void *data)
 {
-	/* default cancellability should be TRUE, so don't change it */
+	/* default cancelability should be TRUE, so don't change it */
 	while (TRUE)
 	{
 		sleep(10);
@@ -1118,17 +1118,22 @@ START_TEST(test_cancel)
 }
 END_TEST
 
-static void *cancel_onoff_run(void *data)
+typedef struct {
+	semaphore_t *sem;
+	bool cancellable;
+} cancel_onoff_data_t;
+
+static void *cancel_onoff_run(void *data_in)
 {
-	bool *cancellable = (bool*)data;
+	cancel_onoff_data_t *data = (cancel_onoff_data_t*)data_in;
 
 	thread_cancelability(FALSE);
-	*cancellable = FALSE;
+	data->cancellable = FALSE;
 
-	/* we should not get cancelled here */
-	usleep(50000);
+	/* we should not get canceled here */
+	data->sem->wait(data->sem);
 
-	*cancellable = TRUE;
+	data->cancellable = TRUE;
 	thread_cancelability(TRUE);
 
 	/* but here */
@@ -1142,28 +1147,37 @@ static void *cancel_onoff_run(void *data)
 START_TEST(test_cancel_onoff)
 {
 	thread_t *threads[THREADS];
-	bool cancellable[THREADS];
+	cancel_onoff_data_t data[THREADS];
+	semaphore_t *sem;
 	int i;
 
+	sem = semaphore_create(0);
 	for (i = 0; i < THREADS; i++)
 	{
-		cancellable[i] = TRUE;
-		threads[i] = thread_create(cancel_onoff_run, &cancellable[i]);
-	}
-	for (i = 0; i < THREADS; i++)
-	{
-		/* wait until thread has cleared its cancellability */
-		while (cancellable[i])
+		data[i].sem = sem;
+		data[i].cancellable = TRUE;
+		threads[i] = thread_create(cancel_onoff_run, &data[i]);
+		/* wait until thread has cleared its cancelability */
+		while (data[i].cancellable)
 		{
 			sched_yield();
 		}
+	}
+	for (i = 0; i < THREADS; i++)
+	{
 		threads[i]->cancel(threads[i]);
+	}
+	/* let all threads continue */
+	for (i = 0; i < THREADS; i++)
+	{
+		sem->post(sem);
 	}
 	for (i = 0; i < THREADS; i++)
 	{
 		threads[i]->join(threads[i]);
-		ck_assert(cancellable[i]);
+		ck_assert(data[i].cancellable);
 	}
+	sem->destroy(sem);
 }
 END_TEST
 
@@ -1172,7 +1186,7 @@ static void *cancel_point_run(void *data)
 	thread_cancelability(FALSE);
 	while (TRUE)
 	{
-		/* implicitly enables cancellability */
+		/* implicitly enables cancelability */
 		thread_cancellation_point();
 	}
 	return NULL;

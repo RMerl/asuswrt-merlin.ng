@@ -77,6 +77,8 @@ static inline void X509_get0_signature(ASN1_BIT_STRING **psig, X509_ALGOR **palg
 #define X509v3_addr_get_afi v3_addr_get_afi
 #define X509v3_addr_get_range v3_addr_get_range
 #define X509v3_addr_is_canonical v3_addr_is_canonical
+#define X509_get0_notBefore X509_get_notBefore
+#define X509_get0_notAfter X509_get_notAfter
 #endif
 
 typedef struct private_openssl_x509_t private_openssl_x509_t;
@@ -389,6 +391,7 @@ METHOD(certificate_t, issued_by, bool,
 	public_key_t *key;
 	bool valid;
 	x509_t *x509 = (x509_t*)issuer;
+	chunk_t keyid = chunk_empty;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
 	const ASN1_BIT_STRING *sig;
 #else
@@ -414,11 +417,25 @@ METHOD(certificate_t, issued_by, bool,
 		{
 			return FALSE;
 		}
+	}
+
+	/* compare keyIdentifiers if available, otherwise use DNs */
+	if (this->authKeyIdentifier.ptr)
+	{
+		keyid = x509->get_subjectKeyIdentifier(x509);
+		if (keyid.len && !chunk_equals(keyid, this->authKeyIdentifier))
+		{
+			return FALSE;
+		}
+	}
+	if (!keyid.len)
+	{
 		if (!this->issuer->equals(this->issuer, issuer->get_subject(issuer)))
 		{
 			return FALSE;
 		}
 	}
+
 	key = issuer->get_public_key(issuer);
 	if (!key)
 	{
@@ -604,7 +621,7 @@ static private_openssl_x509_t *create_empty()
 }
 
 /**
- * parse an extionsion containing GENERAL_NAMES into a list
+ * parse an extension containing GENERAL_NAMES into a list
  */
 static bool parse_generalNames_ext(linked_list_t *list,
 								   X509_EXTENSION *ext)
@@ -696,7 +713,7 @@ static bool parse_keyUsage_ext(private_openssl_x509_t *this,
 			}
 			if (flags & X509v3_KU_KEY_CERT_SIGN)
 			{
-				/* we use the caBasicContraint, MUST be set */
+				/* we use the caBasicConstraint, MUST be set */
 			}
 		}
 		ASN1_BIT_STRING_free(usage);
@@ -1086,6 +1103,7 @@ static bool parse_certificate(private_openssl_x509_t *this)
 #else
 	X509_ALGOR *alg;
 #endif
+	key_type_t ed_type = KEY_ED448;
 
 	this->x509 = d2i_X509(NULL, &ptr, this->encoding.len);
 	if (!this->x509)
@@ -1128,6 +1146,17 @@ static bool parse_certificate(private_openssl_x509_t *this)
 					chunk, BUILD_END);
 			free(chunk.ptr);
 			break;
+		case OID_ED25519:
+			ed_type = KEY_ED25519;
+			/* fall-through */
+		case OID_ED448:
+			/* for EdDSA, the parsers expect the full subjectPublicKeyInfo */
+			chunk = openssl_i2chunk(X509_PUBKEY, X509_get_X509_PUBKEY(this->x509));
+			this->pubkey = lib->creds->create(lib->creds,
+					CRED_PUBLIC_KEY, ed_type, BUILD_BLOB_ASN1_DER,
+					chunk, BUILD_END);
+			free(chunk.ptr);
+			break;
 		default:
 			DBG1(DBG_LIB, "unsupported public key algorithm");
 			break;
@@ -1137,8 +1166,8 @@ static bool parse_certificate(private_openssl_x509_t *this)
 		return FALSE;
 	}
 
-	this->notBefore = openssl_asn1_to_time(X509_get_notBefore(this->x509));
-	this->notAfter = openssl_asn1_to_time(X509_get_notAfter(this->x509));
+	this->notBefore = openssl_asn1_to_time(X509_get0_notBefore(this->x509));
+	this->notAfter = openssl_asn1_to_time(X509_get0_notAfter(this->x509));
 
 	/* while X509_ALGOR_cmp() is declared in the headers of older OpenSSL
 	 * versions, at least on Ubuntu 14.04 it is not actually defined */

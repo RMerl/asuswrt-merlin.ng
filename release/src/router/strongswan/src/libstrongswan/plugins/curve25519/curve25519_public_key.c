@@ -139,7 +139,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt_, bool,
 	private_curve25519_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t plain, chunk_t *crypto)
+	void *params, chunk_t plain, chunk_t *crypto)
 {
 	DBG1(DBG_LIB, "encryption scheme %N not supported", encryption_scheme_names,
 		 scheme);

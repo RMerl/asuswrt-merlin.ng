@@ -27,6 +27,7 @@
 #ifndef AVCODEC_CABAC_FUNCTIONS_H
 #define AVCODEC_CABAC_FUNCTIONS_H
 
+#include <stddef.h>
 #include <stdint.h>
 
 #include "cabac.h"
@@ -44,6 +45,9 @@
 #endif
 #if ARCH_X86
 #   include "x86/cabac.h"
+#endif
+#if ARCH_MIPS
+#   include "mips/cabac.h"
 #endif
 
 static const uint8_t * const ff_h264_norm_shift = ff_h264_cabac_tables + H264_NORM_SHIFT_OFFSET;

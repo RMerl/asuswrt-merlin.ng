@@ -57,7 +57,7 @@ typedef struct StereoToolsContext {
 } StereoToolsContext;
 
 #define OFFSET(x) offsetof(StereoToolsContext, x)
-#define A AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+#define A AV_OPT_FLAG_AUDIO_PARAM|AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption stereotools_options[] = {
     { "level_in",    "set level in",     OFFSET(level_in),    AV_OPT_TYPE_DOUBLE, {.dbl=1},   0.015625,  64, A },
@@ -69,7 +69,7 @@ static const AVOption stereotools_options[] = {
     { "muter",       "mute R",           OFFSET(mute_r),      AV_OPT_TYPE_BOOL,   {.i64=0},   0,          1, A },
     { "phasel",      "phase L",          OFFSET(phase_l),     AV_OPT_TYPE_BOOL,   {.i64=0},   0,          1, A },
     { "phaser",      "phase R",          OFFSET(phase_r),     AV_OPT_TYPE_BOOL,   {.i64=0},   0,          1, A },
-    { "mode",        "set stereo mode",  OFFSET(mode),        AV_OPT_TYPE_INT,    {.i64=0},   0,          8, A, "mode" },
+    { "mode",        "set stereo mode",  OFFSET(mode),        AV_OPT_TYPE_INT,    {.i64=0},   0,         10, A, "mode" },
     {     "lr>lr",   0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=0},   0,          0, A, "mode" },
     {     "lr>ms",   0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=1},   0,          0, A, "mode" },
     {     "ms>lr",   0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=2},   0,          0, A, "mode" },
@@ -79,6 +79,8 @@ static const AVOption stereotools_options[] = {
     {     "lr>rl",   0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=6},   0,          0, A, "mode" },
     {     "ms>ll",   0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=7},   0,          0, A, "mode" },
     {     "ms>rr",   0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=8},   0,          0, A, "mode" },
+    {     "ms>rl",   0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=9},   0,          0, A, "mode" },
+    {     "lr>l-r",  0,                  0,                   AV_OPT_TYPE_CONST,  {.i64=10},  0,          0, A, "mode" },
     { "slev",        "set side level",   OFFSET(slev),        AV_OPT_TYPE_DOUBLE, {.dbl=1},   0.015625,  64, A },
     { "sbal",        "set side balance", OFFSET(sbal),        AV_OPT_TYPE_DOUBLE, {.dbl=0},  -1,          1, A },
     { "mlev",        "set middle level", OFFSET(mlev),        AV_OPT_TYPE_DOUBLE, {.dbl=1},   0.015625,  64, A },
@@ -118,12 +120,9 @@ static int config_input(AVFilterLink *inlink)
     AVFilterContext *ctx = inlink->dst;
     StereoToolsContext *s = ctx->priv;
 
-    s->length = 2 * inlink->sample_rate * 0.05;
-    if (s->length <= 1 || s->length & 1) {
-        av_log(ctx, AV_LOG_ERROR, "sample rate is too small\n");
-        return AVERROR(EINVAL);
-    }
-    s->buffer = av_calloc(s->length, sizeof(*s->buffer));
+    s->length = FFALIGN(inlink->sample_rate / 10, 2);
+    if (!s->buffer)
+        s->buffer = av_calloc(s->length, sizeof(*s->buffer));
     if (!s->buffer)
         return AVERROR(ENOMEM);
 
@@ -235,7 +234,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             L = R;
             break;
         case 5:
-            L = (L + R) / 2;
+            L = (L + R) * 0.5;
             R = L;
             break;
         case 6:
@@ -258,6 +257,16 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             r = L * mlev * FFMIN(1., mpan)      - R * slev * FFMIN(1., sbal);
             L = r;
             R = r;
+            break;
+        case 9:
+            l = L * mlev * FFMIN(1., 2. - mpan) + R * slev * FFMIN(1., 2. - sbal);
+            r = L * mlev * FFMIN(1., mpan)      - R * slev * FFMIN(1., sbal);
+            L = r;
+            R = l;
+            break;
+        case 10:
+            L = (L - R) * 0.5;
+            R = L;
             break;
         }
 
@@ -315,13 +324,30 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         L *= level_out;
         R *= level_out;
 
-        dst[0] = L;
-        dst[1] = R;
+        if (ctx->is_disabled) {
+            dst[0] = src[0];
+            dst[1] = src[1];
+        } else {
+            dst[0] = L;
+            dst[1] = R;
+        }
     }
 
     if (out != in)
         av_frame_free(&in);
     return ff_filter_frame(outlink, out);
+}
+
+static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
+                           char *res, int res_len, int flags)
+{
+    int ret;
+
+    ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
+    if (ret < 0)
+        return ret;
+
+    return config_input(ctx->inputs[0]);
 }
 
 static av_cold void uninit(AVFilterContext *ctx)
@@ -358,4 +384,6 @@ AVFilter ff_af_stereotools = {
     .uninit         = uninit,
     .inputs         = inputs,
     .outputs        = outputs,
+    .process_command = process_command,
+    .flags          = AVFILTER_FLAG_SUPPORT_TIMELINE_INTERNAL,
 };

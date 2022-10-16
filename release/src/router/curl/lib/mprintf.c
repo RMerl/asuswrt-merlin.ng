@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1999 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1999 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  *
  * Purpose:
@@ -65,7 +67,6 @@
  */
 
 #if (defined(__BORLANDC__) && (__BORLANDC__ >= 0x520)) || \
-    (defined(__WATCOMC__) && defined(__386__)) || \
     (defined(__POCC__) && defined(_MSC_VER)) || \
     (defined(_WIN32_WCE)) || \
     (defined(__MINGW32__)) || \
@@ -830,6 +831,8 @@ static int dprintf_formatf(
         }
         else if(prec != -1)
           len = (size_t)prec;
+        else if(*str == '\0')
+          len = 0;
         else
           len = strlen(str);
 
@@ -858,7 +861,7 @@ static int dprintf_formatf(
       {
         void *ptr;
         ptr = (void *) p->data.ptr;
-        if(ptr != NULL) {
+        if(ptr) {
           /* If the pointer is not NULL, write it as a %#x spec.  */
           base = 16;
           digits = (p->flags & FLAGS_UPPER)? upper_digits : lower_digits;
@@ -955,9 +958,16 @@ static int dprintf_formatf(
 
         *fptr = 0; /* and a final zero termination */
 
+#ifdef __clang__
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wformat-nonliteral"
+#endif
         /* NOTE NOTE NOTE!! Not all sprintf implementations return number of
            output characters */
         (sprintf)(work, formatbuf, p->data.dnum);
+#ifdef __clang__
+#pragma clang diagnostic pop
+#endif
         DEBUGASSERT(strlen(work) <= sizeof(work));
         for(fptr = work; *fptr; fptr++)
           OUTCHAR(*fptr);

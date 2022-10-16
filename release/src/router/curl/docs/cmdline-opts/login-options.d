@@ -1,10 +1,13 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: login-options
 Arg: <options>
-Protocols: IMAP POP3 SMTP
+Protocols: IMAP LDAP POP3 SMTP
 Help: Server login options
 Added: 7.34.0
 Category: imap pop3 smtp auth
 Example: --login-options 'AUTH=*' imap://example.com
+See-also: user
 ---
 Specify the login options to use during server authentication.
 

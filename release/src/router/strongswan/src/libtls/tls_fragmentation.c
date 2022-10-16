@@ -292,7 +292,11 @@ METHOD(tls_fragmentation_t, process, status_t,
 			break;
 		case TLS_HANDSHAKE:
 			status = process_handshake(this, reader);
-			break;
+			if (!this->handshake->finished(this->handshake))
+			{
+				break;
+			}
+			/* fall-through */
 		case TLS_APPLICATION_DATA:
 			status = process_application(this, reader);
 			break;
@@ -353,7 +357,9 @@ static status_t build_handshake(private_tls_fragmentation_t *this)
 				msg->write_data24(msg, hs->get_buf(hs));
 				DBG2(DBG_TLS, "sending TLS %N handshake (%u bytes)",
 					 tls_handshake_type_names, type, hs->get_buf(hs).len);
-				if (!this->handshake->cipherspec_changed(this->handshake, FALSE))
+				if (type != TLS_FINISHED &&
+					type != TLS_KEY_UPDATE &&
+					!this->handshake->cipherspec_changed(this->handshake, FALSE))
 				{
 					hs->destroy(hs);
 					continue;

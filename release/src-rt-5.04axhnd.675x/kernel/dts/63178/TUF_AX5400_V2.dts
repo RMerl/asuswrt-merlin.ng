@@ -63,31 +63,158 @@
 	};
 };
 
+&legacy_leds {
+	wl0-led = <&led5>;
+};
+
 &led_ctrl {
 	status = "okay";
+
+	/* LAN0 ~ LAN3 LED */
 	led0: port_0-led-3-pin_47 {
 		active_low;
+		link = <LED_SPEED_GBE>;
 		activity = <LED_SPEED_GBE>;
 		status = "okay";
 	};
 	led1: port_1-led-3-pin_51 {
 		active_low;
+		link = <LED_SPEED_GBE>;
 		activity = <LED_SPEED_GBE>;
 		status = "okay";
 	};
 	led2: port_2-led-3-pin_50 {
 		active_low;
+		link = <LED_SPEED_GBE>;
 		activity = <LED_SPEED_GBE>;
 		status = "okay";
 	};
-	led3: port_3-led-3-pin_49 {
+	led3: port_3-led-3-pin_55 {
 		active_low;
+		link = <LED_SPEED_GBE>;
 		activity = <LED_SPEED_GBE>;
 		status = "okay";
 	};
+	/* WAN LED */
 	led4: port_4-led-3-pin_56 {
 		active_low;
+		link = <LED_SPEED_GBE>;
 		activity = <LED_SPEED_GBE>;
 		status = "okay";
+	};
+#if 0
+	/* 2.4G WIFI LED */
+		led5: sw_led_28-pin_52 {
+		active_low;
+		status = "okay";
+	};
+#else
+	/* WLAN_2G_ACT */
+	led5:led_gpio_52 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <52>;
+		active_low;
+		init_low;
+	};
+#endif
+#if 0
+	/* TUF LOGO LED1 */
+	led6:led_gpio_13 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <13>;
+		active_low;
+		init_high;
+	};
+	/* TUF LOGO LED2 */
+	led7:led_gpio_14 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <14>;
+		active_low;
+		init_high;
+	};
+	/* TUF LOGO LED3 */
+		led8:led_gpio_15 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <15>;
+		active_low;
+		init_high;
+	};
+#endif
+	/* LED Group RED */
+	led6: sw_led_12-pin_13 {
+		active_high;
+		status = "okay";
+	};
+
+	/* LED Group GREEN */
+	led7: sw_led_13-pin_14 {
+		active_high;
+		status = "okay";
+	};
+
+	/* LED Group BLUE */
+	led8: sw_led_14-pin_15 {
+		active_high;
+		status = "okay";
+	};
+
+	/* WAN LED(RED) */
+	led9:led_gpio_53 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <53>;
+		active_low;
+		init_high;
+	};
+
+	/* Power on/off LED */
+	led10:led_gpio_57 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <57>;
+		active_low;
+		init_low;
+	};
+
+	/* LAN0 LED */
+	led11:led_gpio_47 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <47>;
+		active_low;
+	};
+
+	/* LAN1 LED */
+	led12:led_gpio_51 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <51>;
+		active_low;
+	};
+	/* LAN2 LED */
+	led13:led_gpio_50 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <50>;
+		active_low;
+	};
+	/* LAN3 LED */
+	led14:led_gpio_55 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <55>;
+		active_low;
+	};
+
+	/* WAN LED */
+	led15:led_gpio_56 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <56>;
+		active_low;
 	};
 };

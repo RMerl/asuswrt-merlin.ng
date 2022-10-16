@@ -27,7 +27,7 @@
 typedef struct mysql_database_t mysql_database_t;
 
 /**
- * MySQL databse_t implementation.
+ * MySQL database_t implementation.
  */
 struct mysql_database_t {
 

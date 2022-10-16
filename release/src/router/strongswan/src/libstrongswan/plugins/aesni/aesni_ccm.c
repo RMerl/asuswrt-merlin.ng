@@ -860,15 +860,12 @@ aesni_ccm_t *aesni_ccm_create(encryption_algorithm_t algo,
 	switch (algo)
 	{
 		case ENCR_AES_CCM_ICV8:
-			algo = ENCR_AES_CBC;
 			icv_size = 8;
 			break;
 		case ENCR_AES_CCM_ICV12:
-			algo = ENCR_AES_CBC;
 			icv_size = 12;
 			break;
 		case ENCR_AES_CCM_ICV16:
-			algo = ENCR_AES_CBC;
 			icv_size = 16;
 			break;
 		default:

@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2017-2019 Tobias Brunner
  * Copyright (C) 2008-2009 Martin Willi
  * Copyright (C) 2007-2014 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
@@ -464,6 +465,12 @@ METHOD(certificate_t, destroy, void,
 	}
 }
 
+METHOD(ocsp_request_t, get_nonce, chunk_t,
+	private_x509_ocsp_request_t *this)
+{
+	return this->nonce;
+}
+
 /**
  * create an empty but initialized OCSP request
  */
@@ -488,6 +495,7 @@ static private_x509_ocsp_request_t *create_empty()
 					.get_ref = _get_ref,
 					.destroy = _destroy,
 				},
+				.get_nonce = _get_nonce,
 			},
 		},
 		.candidates = linked_list_create(),

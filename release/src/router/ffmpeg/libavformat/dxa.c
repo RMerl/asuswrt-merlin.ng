@@ -37,7 +37,7 @@ typedef struct DXAContext {
     int readvid;
 }DXAContext;
 
-static int dxa_probe(AVProbeData *p)
+static int dxa_probe(const AVProbeData *p)
 {
     int w, h;
     if (p->buf_size < 15)
@@ -79,7 +79,7 @@ static int dxa_read_header(AVFormatContext *s)
     if(fps > 0){
         den = 1000;
         num = fps;
-    }else if (fps < 0){
+    }else if (fps < 0 && fps > INT_MIN){
         den = 100000;
         num = -fps;
     }else{
@@ -143,7 +143,7 @@ static int dxa_read_header(AVFormatContext *s)
     c->readvid = !c->has_sound;
     c->vidpos  = avio_tell(pb);
     s->start_time = 0;
-    s->duration = (int64_t)c->frames * AV_TIME_BASE * num / den;
+    s->duration = av_rescale(c->frames, AV_TIME_BASE * (int64_t)num, den);
     av_log(s, AV_LOG_DEBUG, "%d frame(s)\n",c->frames);
 
     return 0;
@@ -179,8 +179,8 @@ static int dxa_read_packet(AVFormatContext *s, AVPacket *pkt)
         tag = AV_RL32(buf);
         switch (tag) {
         case MKTAG('N', 'U', 'L', 'L'):
-            if(av_new_packet(pkt, 4 + pal_size) < 0)
-                return AVERROR(ENOMEM);
+            if ((ret = av_new_packet(pkt, 4 + pal_size)) < 0)
+                return ret;
             pkt->stream_index = 0;
             if(pal_size) memcpy(pkt->data, pal, pal_size);
             memcpy(pkt->data + pal_size, buf, 4);
@@ -204,12 +204,12 @@ static int dxa_read_packet(AVFormatContext *s, AVPacket *pkt)
                        size);
                 return AVERROR_INVALIDDATA;
             }
-            if(av_new_packet(pkt, size + DXA_EXTRA_SIZE + pal_size) < 0)
-                return AVERROR(ENOMEM);
+            ret = av_new_packet(pkt, size + DXA_EXTRA_SIZE + pal_size);
+            if (ret < 0)
+                return ret;
             memcpy(pkt->data + pal_size, buf, DXA_EXTRA_SIZE);
             ret = avio_read(s->pb, pkt->data + DXA_EXTRA_SIZE + pal_size, size);
             if(ret != size){
-                av_packet_unref(pkt);
                 return AVERROR(EIO);
             }
             if(pal_size) memcpy(pkt->data, pal, pal_size);

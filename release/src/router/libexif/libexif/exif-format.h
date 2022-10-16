@@ -21,8 +21,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __EXIF_FORMAT_H__
-#define __EXIF_FORMAT_H__
+#ifndef LIBEXIF_EXIF_FORMAT_H
+#define LIBEXIF_EXIF_FORMAT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -47,7 +47,7 @@ typedef enum {
 /*! Return a textual representation of the given EXIF data type.
  *
  * \param[in] format EXIF data format
- * \return localized textual name
+ * \return localized textual name, or NULL if unknown
  */
 const char   *exif_format_get_name (ExifFormat format);
 
@@ -62,4 +62,4 @@ unsigned char exif_format_get_size (ExifFormat format);
 }
 #endif /* __cplusplus */
 
-#endif /* __EXIF_FORMAT_H__ */
+#endif /* !defined(LIBEXIF_EXIF_FORMAT_H) */

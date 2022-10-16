@@ -525,9 +525,11 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 
 PLUGIN_INIT(plugin_init)
 {
-#ifdef RTCONFIG_ASUSDDNS_ACCOUNT_BASE
+#ifdef RTCONFIG_ACCOUNT_BINDING
 	char ddns_server[64] = {0};
-	if (nvram_match("oauth_auth_status", "2")) {
+	if (nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
+		((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
+		|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
 		snprintf(ddns_server, sizeof(ddns_server), "%s", nvram_safe_get("aae_ddnsinfo"));
 		if(strlen(ddns_server) > 0) {
 			asus_update.checkip_name = ddns_server;
@@ -554,9 +556,11 @@ PLUGIN_INIT(plugin_init)
 
 PLUGIN_EXIT(plugin_exit)
 {
-#ifdef RTCONFIG_ASUSDDNS_ACCOUNT_BASE
+#ifdef RTCONFIG_ACCOUNT_BINDING
 	char ddns_server[64] = {0};
-	if (nvram_match("oauth_auth_status", "2")) {
+	if (nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
+		((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
+		|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
 		snprintf(ddns_server, sizeof(ddns_server), "%s", nvram_safe_get("aae_ddnsinfo"));
 		if(strlen(ddns_server) > 0) {
 			asus_update.checkip_name = ddns_server;

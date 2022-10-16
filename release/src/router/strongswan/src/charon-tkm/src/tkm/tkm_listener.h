@@ -43,6 +43,18 @@ struct tkm_listener_t {
 };
 
 /**
+ * Loads CA certificate fingerprint to TKM CA id mapping from config.
+ *
+ * @return          number of registered mappings
+ */
+int register_ca_mapping();
+
+/**
+ * Destroy CA certificate fingerprint to TKM CA id mapping.
+ */
+void destroy_ca_mapping();
+
+/**
  * Create a tkm_listener instance.
  *
  * @return		listener instance

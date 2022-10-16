@@ -90,26 +90,13 @@ static const uint16_t rv34_qscale_tab[32] = {
 
 /**
  * tables used to translate a quantizer value into a VLC set for decoding
- * The first table is used for intraframes.
+ * The first table is used for intraframes. The two last entries are invalid.
  */
-static const uint8_t rv34_quant_to_vlc_set[2][31] = {
+static const uint8_t rv34_quant_to_vlc_set[2][32] = {
  { 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 1, 1,
-   2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 0 },
+   2, 2, 2, 2, 3, 3, 3, 3, 3, 4, 4, 4, 4, 4, 0, 0 },
  { 0, 0, 0, 0, 0, 0, 0, 1, 1, 1, 1, 2, 2, 2, 2, 3,
-   3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6 },
-};
-
-/**
- * table for obtaining the quantizer difference
- * @todo Use with ff_modified_quant_tab from h263data.h.
- */
-static const uint8_t rv34_dquant_tab[2][32]={
-//  0  1  2  3  4  5  6  7  8  9 10 11 12 13 14 15 16 17 18 19 20 21 22 23 24 25 26 27 28 29 30 31
-{
-    0, 3, 1, 2, 3, 4, 5, 6, 7, 8, 9, 9,10,11,12,13,14,15,16,17,18,18,19,20,21,22,23,24,25,26,27,28
-},{
-    0, 2, 3, 4, 5, 6, 7, 8, 9,10,11,13,14,15,16,17,18,19,20,21,22,24,25,26,27,28,29,30,31,31,31,26
-}
+   3, 3, 3, 4, 4, 4, 4, 5, 5, 5, 5, 6, 6, 6, 6, 6 },
 };
 
 /**

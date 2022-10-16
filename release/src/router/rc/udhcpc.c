@@ -200,7 +200,7 @@ static char
 	return buf;
 }
 
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 static int
 opt_add(const void *buf, size_t size, unsigned char id, void *data, unsigned char len)
 {
@@ -717,7 +717,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	char clientid[sizeof("61:") + (128*2) + 1];
 #ifdef RTCONFIG_TR069
 	char vendorid[32+32+sizeof(" dslforum.org")];
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 	unsigned char optbuf[sizeof(struct viopt_hdr) + 128];
 	unsigned char hwaddr[6];
 	char vivopts[sizeof("125:") + sizeof(optbuf)*2];
@@ -745,7 +745,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		NULL, NULL,	/* -V wan_vendorid */
 #ifdef RTCONFIG_TR069
 		NULL,		/* -O43 */
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 		NULL, NULL,	/* -x 125:vivopts */
 #endif
 #endif
@@ -764,7 +764,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	/* Skip dhcp and start zcip for pppoe, if desired */
 	if ((nvram_match(strcat_r(prefix, "proto", tmp), "pppoe") &&
 	    nvram_match(strcat_r(prefix, "vpndhcp", tmp), "0"))
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	||  (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 	    ipv6_enabled() && nvram_match(ipv6_nvname("ipv6_only"), "1"))
 #endif
@@ -785,8 +785,9 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 		/* Wait 160 seconds before trying again (default 20 seconds) */
 		/* set to 160 to accomodate new timings enforced by Charter cable */
 		dhcp_argv[index++] = "-A160";
-	}
-	else if(dhcp_qry == 2){	// Continuous mode
+	} else if(dhcp_qry == 1){	// Aggressive mode
+		dhcp_argv[index++] = "-A5";
+	} else if(dhcp_qry == 2){	// Continuous mode
 		dhcp_argv[index++] = "-t1";
 		dhcp_argv[index++] = "-T5";
 		dhcp_argv[index++] = "-A0";
@@ -859,7 +860,7 @@ start_udhcpc(char *wan_ifname, int unit, pid_t *ppid)
 	}
 
 #ifdef RTCONFIG_TR069
-#ifdef RTCONFIG_TR181
+#if defined(RTCONFIG_TR181) || defined(RTCONFIG_DSL)
 	if (ether_atoe(get_lan_hwaddr(), hwaddr)) {
 		struct viopt_hdr *viopt = (struct viopt_hdr *) optbuf;
 		unsigned char *ptr = viopt->data;
@@ -969,7 +970,7 @@ config(void)
 
 	wan_up(wan_ifname);
 
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	if ((!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1")) &&
@@ -1641,28 +1642,19 @@ static char *get_s46_ra_routes(char *rules, char *addr, size_t addrsz)
 
 void set_s46_ra_addr(int wan_type, char *wan_ifname)
 {
-	char buf[256];
-	char addr[INET6_ADDRSTRLEN + 1];
-	int  size;
-	FILE *fp;
+	char addr[INET6_ADDRSTRLEN];
+	int  len;
 
-	if (wan_type == WAN_V6PLUS)
-		snprintf(buf, sizeof(buf), "ip a s %s | grep \"scope global mngtmpaddr dynamic\" | awk -F \" \" '{printf $2}' 2>/dev/null", wan_ifname);
-	else
-		return;
-
-	S46_DBG("[CMD]:[%s]\n", buf);
-	if ((fp = popen(buf, "r")) != NULL) {
-		if (fscanf(fp, "%[^/]/%d", addr, &size) == 2) {
+	if (wan_type == WAN_V6PLUS) {
+		if (sscanf(getifaddr(wan_ifname, AF_INET6, GIF_PREFIXLEN) ? : "", "%[^/]/%d", addr, &len) == 2) {
 			nvram_set(ipv6_nvname("ipv6_ra_addr"), addr);
-			nvram_set_int(ipv6_nvname("ipv6_ra_length"), size);
-			S46_DBG("ipv6_ra_addr:[%s/%d]\n", addr, size);
+			nvram_set_int(ipv6_nvname("ipv6_ra_length"), len);
+			S46_DBG("ipv6_ra_addr:[%s/%d]\n", addr, len);
 		} else {
 			nvram_unset(ipv6_nvname("ipv6_ra_addr"));
 			nvram_unset(ipv6_nvname("ipv6_ra_length"));
 			S46_DBG("ipv6_ra_addr:[NULL]\n");
 		}
-		pclose(fp);
 	}
 	return;
 }
@@ -1694,10 +1686,10 @@ bound6(char *wan_ifname, int bound)
 	wan_unit = wan_primary_ifunit();
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 
+	S46_DBG("[wan_if]:[%s], [bound]:[%d]\n", wan_ifname, bound);
 	switch (wan_proto = get_wan_proto(prefix)) {
 		int i;
 		char rbuf[32];
-		S46_DBG("[wan_if]:[%s], [bound]:[%d]\n", wan_ifname, bound);
 	case WAN_MAPE:
 		i = 0;
 		while(environ[i] != NULL) {
@@ -1917,11 +1909,11 @@ skip:
 
 		draft = 1;
 		//start map_rptd mechanism
-		if (check_s46map_rptd()) {
-			S46_DBG("[START] s46map_rptd\n");
+		if (check_v6plusd()) {
+			S46_DBG("[START] v6plusd\n");
 		} else {
 			if (bound == 1 || wanaddr_changed || prefix_changed) {
-				kill_pidfile_s("/var/run/s46map_rptd.pid", SIGUSR1);
+				kill_pidfile_s("/var/run/v6plusd.pid", SIGUSR1);
 			}
 		}
 		break;

@@ -37,10 +37,8 @@ typedef struct pkcs11_library_t pkcs11_library_t;
  * Optional PKCS#11 features some libraries support, some not
  */
 enum pkcs11_feature_t {
-	/** CKA_TRUSTED attribute supported for certificate objects */
-	PKCS11_TRUSTED_CERTS = (1<<0),
 	/** CKA_ALWAYS_AUTHENTICATE attribute supported for private keys */
-	PKCS11_ALWAYS_AUTH_KEYS = (1<<1),
+	PKCS11_ALWAYS_AUTH_KEYS = (1<<0),
 };
 
 /**
@@ -73,6 +71,8 @@ struct pkcs11_library_t {
 	 * An optional attribute array is automatically filled in with the
 	 * objects associated attributes. If the value of an output attribute
 	 * is NULL, the value gets allocated/freed during enumeration.
+	 * For attributes that are unavailable, the length field will be set to
+	 * CK_UNAVAILABLE_INFORMATION.
 	 *
 	 * @param session	session to use
 	 * @param tmpl		search template
@@ -92,6 +92,8 @@ struct pkcs11_library_t {
 	 * The given attribute array is automatically filled in with the
 	 * associated attributes. If the value of an output attribute is NULL,
 	 * the required memory gets allocated/freed during enumeration.
+	 * For attributes that are unavailable, the length field will be set to
+	 * CK_UNAVAILABLE_INFORMATION.
 	 *
 	 * @param session	session to use
 	 * @param object	object handle

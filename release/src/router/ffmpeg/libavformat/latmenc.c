@@ -53,27 +53,28 @@ static const AVClass latm_muxer_class = {
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
-static int latm_decode_extradata(LATMContext *ctx, uint8_t *buf, int size)
+static int latm_decode_extradata(AVFormatContext *s, uint8_t *buf, int size)
 {
+    LATMContext *ctx = s->priv_data;
     MPEG4AudioConfig m4ac;
 
     if (size > MAX_EXTRADATA_SIZE) {
-        av_log(ctx, AV_LOG_ERROR, "Extradata is larger than currently supported.\n");
+        av_log(s, AV_LOG_ERROR, "Extradata is larger than currently supported.\n");
         return AVERROR_INVALIDDATA;
     }
-    ctx->off = avpriv_mpeg4audio_get_config(&m4ac, buf, size * 8, 1);
+    ctx->off = avpriv_mpeg4audio_get_config2(&m4ac, buf, size, 1, s);
     if (ctx->off < 0)
         return ctx->off;
 
     if (ctx->object_type == AOT_ALS && (ctx->off & 7)) {
         // as long as avpriv_mpeg4audio_get_config works correctly this is impossible
-        av_log(ctx, AV_LOG_ERROR, "BUG: ALS offset is not byte-aligned\n");
+        av_log(s, AV_LOG_ERROR, "BUG: ALS offset is not byte-aligned\n");
         return AVERROR_INVALIDDATA;
     }
     /* FIXME: are any formats not allowed in LATM? */
 
     if (m4ac.object_type > AOT_SBR && m4ac.object_type != AOT_ALS) {
-        av_log(ctx, AV_LOG_ERROR, "Muxing MPEG-4 AOT %d in LATM is not supported\n", m4ac.object_type);
+        av_log(s, AV_LOG_ERROR, "Muxing MPEG-4 AOT %d in LATM is not supported\n", m4ac.object_type);
         return AVERROR_INVALIDDATA;
     }
     ctx->channel_conf = m4ac.chan_config;
@@ -84,17 +85,31 @@ static int latm_decode_extradata(LATMContext *ctx, uint8_t *buf, int size)
 
 static int latm_write_header(AVFormatContext *s)
 {
-    LATMContext *ctx = s->priv_data;
     AVCodecParameters *par = s->streams[0]->codecpar;
 
     if (par->codec_id == AV_CODEC_ID_AAC_LATM)
         return 0;
+    if (par->codec_id != AV_CODEC_ID_AAC && par->codec_id != AV_CODEC_ID_MP4ALS) {
+        av_log(s, AV_LOG_ERROR, "Only AAC, LATM and ALS are supported\n");
+        return AVERROR(EINVAL);
+    }
 
     if (par->extradata_size > 0 &&
-        latm_decode_extradata(ctx, par->extradata, par->extradata_size) < 0)
+        latm_decode_extradata(s, par->extradata, par->extradata_size) < 0)
         return AVERROR_INVALIDDATA;
 
     return 0;
+}
+
+static void copy_bits(PutBitContext *pb, const uint8_t *src, int length)
+{
+    int words = length >> 4;
+    int bits  = length & 15;
+    int i;
+    for (i = 0; i < words; i++)
+        put_bits(pb, 16, AV_RB16(src + 2 * i));
+    if (bits)
+        put_bits(pb, bits, AV_RB16(src + 2 * words) >> (16 - bits));
 }
 
 static void latm_write_frame_header(AVFormatContext *s, PutBitContext *bs)
@@ -116,12 +131,12 @@ static void latm_write_frame_header(AVFormatContext *s, PutBitContext *bs)
 
         /* AudioSpecificConfig */
         if (ctx->object_type == AOT_ALS) {
-            header_size = par->extradata_size-(ctx->off >> 3);
-            avpriv_copy_bits(bs, &par->extradata[ctx->off >> 3], header_size);
+            header_size = (par->extradata_size - (ctx->off >> 3)) * 8;
+            copy_bits(bs, &par->extradata[ctx->off >> 3], header_size);
         } else {
             // + 3 assumes not scalable and dependsOnCoreCoder == 0,
             // see decode_ga_specific_config in libavcodec/aacdec.c
-            avpriv_copy_bits(bs, par->extradata, ctx->off + 3);
+            copy_bits(bs, par->extradata, ctx->off + 3);
 
             if (!ctx->channel_conf) {
                 GetBitContext gb;
@@ -161,18 +176,20 @@ static int latm_write_packet(AVFormatContext *s, AVPacket *pkt)
             return ff_raw_write_packet(s, pkt);
         else {
             uint8_t *side_data;
-            int side_data_size = 0, ret;
+            buffer_size_t side_data_size;
+            int ret;
 
             side_data = av_packet_get_side_data(pkt, AV_PKT_DATA_NEW_EXTRADATA,
                                                 &side_data_size);
             if (side_data_size) {
-                if (latm_decode_extradata(ctx, side_data, side_data_size) < 0)
+                if (latm_decode_extradata(s, side_data, side_data_size) < 0)
                     return AVERROR_INVALIDDATA;
                 ret = ff_alloc_extradata(par, side_data_size);
                 if (ret < 0)
                     return ret;
                 memcpy(par->extradata, side_data, side_data_size);
-            }
+            } else
+                return AVERROR_INVALIDDATA;
         }
     }
 
@@ -202,11 +219,10 @@ static int latm_write_packet(AVFormatContext *s, AVPacket *pkt)
         // This allows us to remux our FATE AAC samples into latm
         // files that are still playable with minimal effort.
         put_bits(&bs, 8, pkt->data[0] & 0xfe);
-        avpriv_copy_bits(&bs, pkt->data + 1, 8*pkt->size - 8);
+        copy_bits(&bs, pkt->data + 1, 8*pkt->size - 8);
     } else
-        avpriv_copy_bits(&bs, pkt->data, 8*pkt->size);
+        copy_bits(&bs, pkt->data, 8*pkt->size);
 
-    avpriv_align_put_bits(&bs);
     flush_put_bits(&bs);
 
     len = put_bits_count(&bs) >> 3;

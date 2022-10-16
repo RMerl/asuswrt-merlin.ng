@@ -884,16 +884,44 @@ var Get_Component_WirelessInput = function(wlArray){
 				ssid_tmp = qisPostData["wlc" + wl.ifname + "_ssid"];
 				wpa_psk_tmp = qisPostData["wlc" + wl.ifname + "_wpa_psk"];
 			}
+
 			switch(parseInt(wl.ifname)){
+				
 				case 0 :
-					ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
+					console.log(isSupport('wifi6e'));
+					
+					if(isSupport('quadband')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
+					}
+
 					break;
 				case 1 :
-					ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					
+					if(isSupport('quadband')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G2";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					}
+
 					break;
 				case 2 :
-					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
+					
+					if(isSupport('quadband')
+					|| isSupport('triband') && isSupport('wifi6e')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RP6G";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
+					}	
+					
 					break;
+				case 3 :
+					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT";
+					break;	
 			}
 			wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(ssid_tmp);
 
@@ -988,11 +1016,15 @@ var Get_Component_WirelessInput = function(wlArray){
 
 var Get_Component_ISPSelect = function(){
 	var isp_select = $("<select>").attr({"name": "switch_wantag", "id": "switch_wantag"});
-	var isp_profiles = httpApi.hookGet("get_iptvSettings").isp_profiles;
+	var iptvSettings = httpApi.hookGet("get_iptvSettings");
+	var isp_profiles = iptvSettings.isp_profiles;
 	var original_switch_wantag = httpApi.nvramGet(["switch_wantag"]).switch_wantag;
 	var text = "";
 	var selected = false;
+	var found = false;
 
+	systemVariable.ispProfiles = isp_profiles;
+	systemVariable.ispPortDefinitions = iptvSettings.port_definitions;
 	$.each(isp_profiles, function(i, isp_profile) {
 		text = isp_profile.profile_name;
 
@@ -1001,8 +1033,10 @@ var Get_Component_ISPSelect = function(){
 		else if(text == "manual")
 			text = "<#Manual_Setting_btn#>";
 
-		if(isp_profile.switch_wantag == original_switch_wantag)
+		if(isp_profile.switch_wantag == original_switch_wantag){
 			selected = true;
+			found = true;
+		}
 		else
 			selected = false;
 
@@ -1013,8 +1047,99 @@ var Get_Component_ISPSelect = function(){
 			.attr("selected", selected));
 	});
 
+	if(!found){
+		if(original_switch_wantag != ""){
+			isp_select.val("manual");
+		}
+		else
+			isp_select.val("none");
+	}
+
 	return isp_select;
 }
+
+function getCloudProfiles(){
+	$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/iptv_profile.json",
+		function(data){
+			Object.keys(data).forEach(function(profile_name) {
+				var newProfile = {};
+
+				systemVariable.cloudIspProfiles.push(data[profile_name]);
+				newProfile.profile_name = profile_name;
+				if(data[profile_name].iptv_port == "IPTV_PORT")
+					newProfile.iptv_port = systemVariable.ispPortDefinitions.IPTV_PORT;
+				else if(data[profile_name].iptv_port == "MSTB_PORT")
+					newProfile.iptv_port = systemVariable.ispPortDefinitions.MSTB_PORT;
+				else
+					newProfile.iptv_port = "";
+
+				if(data[profile_name].voip_port == "VOIP_PORT")
+					newProfile.voip_port = systemVariable.ispPortDefinitions.VOIP_PORT;
+				else
+					newProfile.voip_port = "";
+
+				if(data[profile_name].bridge_port == "IPTV_PORT")
+					newProfile.bridge_port = systemVariable.ispPortDefinitions.IPTV_PORT;
+				else if(data[profile_name].bridge_port == "VOIP_PORT")
+					newProfile.bridge_port = systemVariable.ispPortDefinitions.VOIP_PORT;
+				else
+					newProfile.bridge_port = "";
+				newProfile.iptv_config = data[profile_name].iptv_config;
+				newProfile.voip_config = data[profile_name].voip_config;
+				newProfile.switch_wantag = data[profile_name].switch_wantag;
+				newProfile.switch_stb_x = data[profile_name].switch_stb_x;
+				newProfile.mr_enable_x = data[profile_name].mr_enable_x;
+				newProfile.emf_enable = data[profile_name].emf_enable;
+				systemVariable.ispProfiles.push(newProfile);
+				systemVariable.ispProfiles.sort(function(a, b){
+									if((a.switch_wantag < b.switch_wantag) || a.switch_wantag == "none" || b.switch_wantag == "manual")
+										return -1;
+									if( a.switch_wantag > b.switch_wantag )
+										return 1;
+
+									return 0;
+								});
+				$("#switchWanTagContainer").empty();
+				$("#switchWanTagContainer").append(Get_Component_ISPSelect);
+				$("#switch_wantag").attr("class", "optionInput");
+			});
+		}
+	);
+}
+
+function is_cloud_profile(isp){
+	var found = false;
+	$.each(systemVariable.cloudIspProfiles, function(i, cloud_isp_profile) {
+		if(cloud_isp_profile.switch_wantag == isp){
+			found = true;
+			return false;
+		}
+	});
+
+	return found;
+}
+
+function get_cloud_settings(isp){
+	var cloud_profile = {};
+	$.each(systemVariable.cloudIspProfiles, function(i, cloud_isp_profile) {
+		console.log("cloud_isp_profile.switch_wantag = "+cloud_isp_profile.switch_wantag);
+		if(cloud_isp_profile.switch_wantag == isp){
+			cloud_profile = cloud_isp_profile;
+			return false;
+		}
+	});
+
+	return cloud_profile;
+}
+
+function isEmpty(obj)
+{
+	for (var name in obj){
+		return false;
+	}
+
+	return true;
+};
 
 function installPages(flag){
 	switch(flag){
@@ -1268,6 +1393,10 @@ function setupWLCNvram(apProfileID) {
 		}
 		else if(encryption == "TKIP"){
 			qisPostData["wlc" + unit + "_auth_mode"] = "psk";
+			if(authentication === 'WPA2-Personal'){
+				qisPostData["wlc" + unit + "_auth_mode"] = "psk2";
+			}
+			
 			qisPostData["wlc" + unit + "_crypto"] = "tkip";
 			qisPostData["wlc" + unit + "_wep"] = "0";
 		}
@@ -1317,7 +1446,9 @@ function setupWLCNvram(apProfileID) {
 
 function setupFronthaulNetwork(_smart_connect){
 	if(isSupport("FRONTHAUL_NETWORK")){
+		var dwb_mode = httpApi.nvramGet(["dwb_mode"]).dwb_mode;
 		postDataModel.insert(fronthaulNetworkObj);
+
 		switch(parseInt(_smart_connect)){
 			case 0:
 			case 2:
@@ -1331,7 +1462,13 @@ function setupFronthaulNetwork(_smart_connect){
 
 		switch(parseInt(qisPostData.fh_ap_enabled)){
 			case 0:
-				qisPostData.acs_unii4 = "1";
+				if(isSupport("amas_bdl")){
+					qisPostData.acs_unii4 = "1";
+				}
+				else{
+					qisPostData.acs_unii4 = "0";
+				}
+
 				break;
 			case 1:
 				qisPostData.acs_unii4 = "0";
@@ -1411,10 +1548,6 @@ var getRestartService = function(){
 
 	if(systemVariable.detwanResult.isIPConflict){
 		actionScript.push("restart_subnet");
-	}
-
-	if(qisPostData.hasOwnProperty("http_passwd")){
-		actionScript.push("chpass")
 	}
 
 	if(qisPostData.hasOwnProperty("time_zone")){
@@ -1783,7 +1916,7 @@ function startLiveUpdate(){
 		var NowTime = Math.ceil(Date.now() / 1000);
 		httpApi.nvramSet({"action_mode":"apply", "webs_update_trigger":"QIS", "rc_service":"start_webs_update"}, function(){
 			setTimeout(function(){
-				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info_am", "webs_state_flag", "webs_state_level", "webs_update_ts"], true);
+				var fwInfo = httpApi.nvramGet(["webs_state_update", "webs_state_info_am", "webs_state_flag", "webs_state_level", "webs_update_ts", "apps_sq"], true);
 				CheckTime = (fwInfo.webs_update_ts == "")? 0:fwInfo.webs_update_ts.split("&#62")[0];
 				TimeDiff = NowTime-CheckTime;
 
@@ -1794,6 +1927,9 @@ function startLiveUpdate(){
 				}
 				if(TimeDiff > 1800 || fwInfo.webs_state_update != "1"){
 					setTimeout(arguments.callee, 1000);
+				}
+				else{
+					httpApi.log("fwInfo", JSON.stringify(fwInfo), systemVariable.qisSession)
 				}
 			}, 2000);
 		});
@@ -1820,19 +1956,31 @@ validator.invalidChar = function(str){
 		'errReason': ''
 	}
 
-	var invalid_char = [];
-	for(var i = 0; i < str.length; ++i){
-		if(str.charAt(i) < ' ' || str.charAt(i) > '~'){
-			invalid_char.push(str.charAt(i));
-		}
-	}
-
-	if(invalid_char.length != 0){
+	if(str.charAt(0) == '"'){
 		testResult.isError = true;
-		testResult.errReason = "<#JS_validstr2#> '" + invalid_char.join('') + "' !";
+		testResult.errReason = '<#JS_validstr1#> ["]';
+                return testResult;
 	}
+	else if(str.charAt(str.length - 1) == '"'){
+		testResult.isError = true;
+		testResult.errReason = '<#JS_validstr3#> ["]';
+		return testResult;
+	}
+	else{
+		var invalid_char = [];
+		for(var i = 0; i < str.length; ++i){
+			if(str.charAt(i) < ' ' || str.charAt(i) > '~'){
+				invalid_char.push(str.charAt(i));
+			}
+		}
 
-	return testResult;
+		if(invalid_char.length != 0){
+			testResult.isError = true;
+			testResult.errReason = "<#JS_validstr2#> '" + invalid_char.join('') + "' !";
+		}
+
+		return testResult;
+	}
 };
 
 validator.KRSkuPwd = function(str){

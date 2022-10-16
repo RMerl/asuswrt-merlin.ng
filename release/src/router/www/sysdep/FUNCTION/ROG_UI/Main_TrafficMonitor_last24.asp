@@ -285,7 +285,7 @@ function setUnit(unit){
 								<input title="Zoom in" type="button" onclick="Zoom('in');" class="zoomin_btn" name="button">
          						<input title="Zoom out" type="button" onclick="Zoom('out');" class="zoomout_btn" name="button">
 							</span>
-							<span id="iftitle" style="font-weight: bold; color: #91071F; position: absolute; top: 375px; left: 45%; min-width: 180px;"></span>
+							<span id="iftitle" class="iftitle"></span>
 							<!--========= svg =========-->
 							<!--[if IE]>
 								<div id="svg-table" align="left" class="IE8HACK">

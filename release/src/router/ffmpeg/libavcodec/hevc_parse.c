@@ -29,13 +29,16 @@ static int hevc_decode_nal_units(const uint8_t *buf, int buf_size, HEVCParamSets
     int ret = 0;
     H2645Packet pkt = { 0 };
 
-    ret = ff_h2645_packet_split(&pkt, buf, buf_size, logctx, is_nalff, nal_length_size, AV_CODEC_ID_HEVC, 1);
+    ret = ff_h2645_packet_split(&pkt, buf, buf_size, logctx, is_nalff,
+                                nal_length_size, AV_CODEC_ID_HEVC, 1, 0);
     if (ret < 0) {
         goto done;
     }
 
     for (i = 0; i < pkt.nb_nals; i++) {
         H2645NAL *nal = &pkt.nals[i];
+        if (nal->nuh_layer_id > 0)
+            continue;
 
         /* ignore everything except parameter sets and VCL NALUs */
         switch (nal->type) {

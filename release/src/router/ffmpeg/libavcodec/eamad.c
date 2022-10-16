@@ -28,6 +28,8 @@
  * http://wiki.multimedia.cx/index.php?title=Electronic_Arts_MAD
  */
 
+#include "libavutil/mem_internal.h"
+
 #include "avcodec.h"
 #include "blockdsp.h"
 #include "bytestream.h"
@@ -349,4 +351,5 @@ AVCodec ff_eamad_decoder = {
     .close          = decode_end,
     .decode         = decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

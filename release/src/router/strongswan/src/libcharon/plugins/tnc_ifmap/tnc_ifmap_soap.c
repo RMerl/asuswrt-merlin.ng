@@ -877,7 +877,7 @@ static bool soap_init(private_tnc_ifmap_soap_t *this)
 
 	/* open TLS socket */
 	this->tls = tls_socket_create(FALSE, server_id, client_id, this->fd,
-								  NULL, TLS_1_2, FALSE);
+								  NULL, TLS_UNSPEC, TLS_UNSPEC, 0);
 	if (!this->tls)
 	{
 		DBG1(DBG_TNC, "creating TLS socket failed");

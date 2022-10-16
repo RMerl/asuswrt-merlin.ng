@@ -19,8 +19,8 @@
 0x55                         "X.500"
   0x04                       "X.509"
     0x03                     "CN"						OID_COMMON_NAME
-    0x04                     "S"						OID_SURNAME
-    0x05                     "SN"						OID_SERIAL_NUMBER
+    0x04                     "SN"						OID_SURNAME
+    0x05                     "serialNumber"				OID_SERIAL_NUMBER
     0x06                     "C"						OID_COUNTRY
     0x07                     "L"						OID_LOCALITY
     0x08                     "ST"						OID_STATE_OR_PROVINCE

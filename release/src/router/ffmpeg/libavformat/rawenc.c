@@ -39,6 +39,18 @@ static int force_one_stream(AVFormatContext *s)
                s->oformat->name);
         return AVERROR(EINVAL);
     }
+    if (   s->oformat->audio_codec != AV_CODEC_ID_NONE
+        && s->streams[0]->codecpar->codec_type != AVMEDIA_TYPE_AUDIO) {
+        av_log(s, AV_LOG_ERROR, "%s files have exactly one audio stream\n",
+               s->oformat->name);
+        return AVERROR(EINVAL);
+    }
+    if (   s->oformat->video_codec != AV_CODEC_ID_NONE
+        && s->streams[0]->codecpar->codec_type != AVMEDIA_TYPE_VIDEO) {
+        av_log(s, AV_LOG_ERROR, "%s files have exactly one video stream\n",
+               s->oformat->name);
+        return AVERROR(EINVAL);
+    }
     return 0;
 }
 
@@ -52,7 +64,7 @@ AVOutputFormat ff_ac3_muxer = {
     .extensions        = "ac3",
     .audio_codec       = AV_CODEC_ID_AC3,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -84,7 +96,7 @@ AVOutputFormat ff_adx_muxer = {
     .extensions        = "adx",
     .audio_codec       = AV_CODEC_ID_ADPCM_ADX,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .write_trailer     = adx_write_trailer,
     .flags             = AVFMT_NOTIMESTAMPS,
@@ -98,7 +110,7 @@ AVOutputFormat ff_aptx_muxer = {
     .extensions        = "aptx",
     .audio_codec       = AV_CODEC_ID_APTX,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -111,7 +123,20 @@ AVOutputFormat ff_aptx_hd_muxer = {
     .extensions        = "aptxhd",
     .audio_codec       = AV_CODEC_ID_APTX_HD,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
+    .write_packet      = ff_raw_write_packet,
+    .flags             = AVFMT_NOTIMESTAMPS,
+};
+#endif
+
+#if CONFIG_AVS2_MUXER
+AVOutputFormat ff_avs2_muxer = {
+    .name              = "avs2",
+    .long_name         = NULL_IF_CONFIG_SMALL("raw AVS2-P2/IEEE1857.4 video"),
+    .extensions        = "avs,avs2",
+    .audio_codec       = AV_CODEC_ID_NONE,
+    .video_codec       = AV_CODEC_ID_AVS2,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -124,7 +149,7 @@ AVOutputFormat ff_cavsvideo_muxer = {
     .extensions        = "cavs",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_CAVS,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -136,7 +161,7 @@ AVOutputFormat ff_codec2raw_muxer = {
     .long_name         = NULL_IF_CONFIG_SMALL("raw codec2 muxer"),
     .audio_codec       = AV_CODEC_ID_CODEC2,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -147,7 +172,7 @@ AVOutputFormat ff_codec2raw_muxer = {
 AVOutputFormat ff_data_muxer = {
     .name              = "data",
     .long_name         = NULL_IF_CONFIG_SMALL("raw data"),
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -160,7 +185,7 @@ AVOutputFormat ff_dirac_muxer = {
     .extensions        = "drc,vc2",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_DIRAC,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -173,7 +198,7 @@ AVOutputFormat ff_dnxhd_muxer = {
     .extensions        = "dnxhd,dnxhr",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_DNXHD,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -187,7 +212,7 @@ AVOutputFormat ff_dts_muxer = {
     .extensions        = "dts",
     .audio_codec       = AV_CODEC_ID_DTS,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -201,7 +226,7 @@ AVOutputFormat ff_eac3_muxer = {
     .extensions        = "eac3",
     .audio_codec       = AV_CODEC_ID_EAC3,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -215,7 +240,7 @@ AVOutputFormat ff_g722_muxer = {
     .extensions        = "g722",
     .audio_codec       = AV_CODEC_ID_ADPCM_G722,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -229,7 +254,7 @@ AVOutputFormat ff_g723_1_muxer = {
     .extensions        = "tco,rco",
     .audio_codec       = AV_CODEC_ID_G723_1,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -241,7 +266,7 @@ AVOutputFormat ff_g726_muxer = {
     .long_name         = NULL_IF_CONFIG_SMALL("raw big-endian G.726 (\"left-justified\")"),
     .audio_codec       = AV_CODEC_ID_ADPCM_G726,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -253,7 +278,7 @@ AVOutputFormat ff_g726le_muxer = {
     .long_name         = NULL_IF_CONFIG_SMALL("raw little-endian G.726 (\"right-justified\")"),
     .audio_codec       = AV_CODEC_ID_ADPCM_G726LE,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -267,7 +292,7 @@ AVOutputFormat ff_gsm_muxer = {
     .extensions        = "gsm",
     .audio_codec       = AV_CODEC_ID_GSM,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -281,7 +306,7 @@ AVOutputFormat ff_h261_muxer = {
     .extensions        = "h261",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_H261,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -295,7 +320,7 @@ AVOutputFormat ff_h263_muxer = {
     .extensions        = "h263",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_H263,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -317,7 +342,7 @@ AVOutputFormat ff_h264_muxer = {
     .extensions        = "h264,264",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_H264,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .check_bitstream   = h264_check_bitstream,
     .flags             = AVFMT_NOTIMESTAMPS,
@@ -340,7 +365,7 @@ AVOutputFormat ff_hevc_muxer = {
     .extensions        = "hevc,h265,265",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_HEVC,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .check_bitstream   = hevc_check_bitstream,
     .flags             = AVFMT_NOTIMESTAMPS,
@@ -354,7 +379,7 @@ AVOutputFormat ff_m4v_muxer = {
     .extensions        = "m4v",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_MPEG4,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -368,7 +393,7 @@ AVOutputFormat ff_mjpeg_muxer = {
     .extensions        = "mjpg,mjpeg",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_MJPEG,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -381,9 +406,9 @@ AVOutputFormat ff_singlejpeg_muxer = {
     .mime_type         = "image/jpeg",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_MJPEG,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
-    .write_header      = force_one_stream,
 };
 #endif
 
@@ -394,7 +419,7 @@ AVOutputFormat ff_mlp_muxer = {
     .extensions        = "mlp",
     .audio_codec       = AV_CODEC_ID_MLP,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -421,7 +446,7 @@ AVOutputFormat ff_mpeg1video_muxer = {
     .extensions        = "mpg,mpeg,m1v",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_MPEG1VIDEO,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -434,7 +459,7 @@ AVOutputFormat ff_mpeg2video_muxer = {
     .extensions        = "m2v",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_MPEG2VIDEO,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -459,7 +484,7 @@ AVOutputFormat ff_sbc_muxer = {
     .mime_type         = "audio/x-sbc",
     .extensions        = "sbc,msbc",
     .audio_codec       = AV_CODEC_ID_SBC,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -472,7 +497,7 @@ AVOutputFormat ff_truehd_muxer = {
     .extensions        = "thd",
     .audio_codec       = AV_CODEC_ID_TRUEHD,
     .video_codec       = AV_CODEC_ID_NONE,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };
@@ -485,7 +510,7 @@ AVOutputFormat ff_vc1_muxer = {
     .extensions        = "vc1",
     .audio_codec       = AV_CODEC_ID_NONE,
     .video_codec       = AV_CODEC_ID_VC1,
-    .write_header      = force_one_stream,
+    .init              = force_one_stream,
     .write_packet      = ff_raw_write_packet,
     .flags             = AVFMT_NOTIMESTAMPS,
 };

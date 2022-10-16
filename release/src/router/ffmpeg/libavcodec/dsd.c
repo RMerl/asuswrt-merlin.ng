@@ -21,6 +21,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/thread.h"
 #include "libavcodec/internal.h"
 #include "libavcodec/mathops.h"
 #include "avcodec.h"
@@ -45,34 +46,34 @@ static av_cold void dsd_ctables_tableinit(void)
 
 av_cold void ff_init_dsd_data(void)
 {
-    static int done = 0;
-    if (done)
-        return;
-    dsd_ctables_tableinit();
-    done = 1;
+    static AVOnce init_static_once = AV_ONCE_INIT;
+    ff_thread_once(&init_static_once, dsd_ctables_tableinit);
 }
 
 void ff_dsd2pcm_translate(DSDContext* s, size_t samples, int lsbf,
-                          const unsigned char *src, ptrdiff_t src_stride,
+                          const uint8_t *src, ptrdiff_t src_stride,
                           float *dst, ptrdiff_t dst_stride)
 {
+    uint8_t buf[FIFOSIZE];
     unsigned pos, i;
-    unsigned char* p;
+    uint8_t* p;
     double sum;
 
     pos = s->pos;
 
+    memcpy(buf, s->buf, sizeof(buf));
+
     while (samples-- > 0) {
-        s->buf[pos] = lsbf ? ff_reverse[*src] : *src;
+        buf[pos] = lsbf ? ff_reverse[*src] : *src;
         src += src_stride;
 
-        p = s->buf + ((pos - CTABLES) & FIFOMASK);
+        p = buf + ((pos - CTABLES) & FIFOMASK);
         *p = ff_reverse[*p];
 
         sum = 0.0;
         for (i = 0; i < CTABLES; i++) {
-            unsigned char a = s->buf[(pos                   - i) & FIFOMASK];
-            unsigned char b = s->buf[(pos - (CTABLES*2 - 1) + i) & FIFOMASK];
+            uint8_t a = buf[(pos                   - i) & FIFOMASK];
+            uint8_t b = buf[(pos - (CTABLES*2 - 1) + i) & FIFOMASK];
             sum += ctables[i][a] + ctables[i][b];
         }
 
@@ -83,4 +84,5 @@ void ff_dsd2pcm_translate(DSDContext* s, size_t samples, int lsbf,
     }
 
     s->pos = pos;
+    memcpy(s->buf, buf, sizeof(buf));
 }

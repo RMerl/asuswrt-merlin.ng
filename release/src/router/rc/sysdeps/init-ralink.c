@@ -1919,6 +1919,12 @@ void reinit_hwnat(int unit)
 	if (nvram_get_int("qos_enable") == 1)
 		act = 0;
 
+#if defined(RTCONFIG_MT798X)
+       /* MTK798X pure software for DPI */
+       if (check_bwdpi_nvram_setting() == 1)
+               act = 0;
+#endif
+
 #if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN11P) || defined(RTN300) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTAC54U) || defined(RTN56UB2) || defined(RTAC1200GA1)  || defined(RTAC1200GU) || defined(RTAC53) || defined(RTAC85U) || defined(RTN800HP) || defined(RTACRH26)
 	if (act > 0 && !nvram_match("switch_wantag", "none") && !nvram_match("switch_wantag", ""))
 		act = 0;

@@ -124,7 +124,7 @@ Usage:\n\
                   --add dns --server 10.1.0.1\n\
                   --add dns --server 10.1.1.1\n\
                If a - (hyphen) is given as a file name, the commands are read\n\
-               from STDIN. Readin commands stops at the end of file. Empty\n\
+               from STDIN. Reading commands stops at the end of file. Empty\n\
                lines are ignored. The file may not contain a --batch command.\n\
   \n");
 }

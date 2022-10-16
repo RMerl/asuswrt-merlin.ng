@@ -15,7 +15,6 @@
 
 #include "test_suite.h"
 
-#include <tests/utils/test_rng.h>
 #include <utils/test.h>
 #include <crypto/xofs/xof.h>
 #include <crypto/xofs/xof_bitspender.h>

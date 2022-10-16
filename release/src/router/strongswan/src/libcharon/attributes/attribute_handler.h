@@ -37,7 +37,7 @@ struct attribute_handler_t {
 	/**
 	 * Handle a configuration attribute.
 	 *
-	 * After receiving a configuration attriubte, it is passed to each
+	 * After receiving a configuration attribute, it is passed to each
 	 * attribute handler until it is handled.
 	 *
 	 * @param ike_sa	IKE_SA under which attribute is received

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,15 +18,17 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
-.TH curl_url_get 3 "August 13, 2021" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_url_get 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
 curl_url_get - extract a part from a URL
 .SH SYNOPSIS
-.B #include <curl/curl.h>
-
 .nf
+#include <curl/curl.h>
+
 CURLUcode curl_url_get(CURLU *url,
                        CURLUPart what,
                        char **part,
@@ -57,7 +59,7 @@ default port for the scheme.
 .IP CURLU_URLDECODE
 Asks \fIcurl_url_get(3)\fP to URL decode the contents before returning it. It
 will not attempt to decode the scheme, the port number or the full URL.
-
+´
 The query component will also get plus-to-space conversion as a bonus when
 this bit is set.
 
@@ -67,6 +69,14 @@ encoding.
 
 If there's any byte values lower than 32 in the decoded string, the get
 operation will return an error instead.
+.IP CURLU_URLENCODE
+If set, will make \fIcurl_url_get(3)\fP URL encode the host name part when a
+full URL is retrieved. If not set (default), libcurl returns the URL with the
+host name "raw" to support IDN names to appear as-is. IDN host names are
+typically using non-ASCII bytes that otherwise will be percent-encoded.
+
+Note that even when not asking for URL encoding, the '%' (byte 37) will be URL
+encoded to make sure the host name remains valid.
 .SH PARTS
 .IP CURLUPART_URL
 When asked to return the full URL, \fIcurl_url_get(3)\fP will return a
@@ -98,11 +108,6 @@ A zero-length query will lead \fIpart\fP to be set to a zero-length string.
 The query part will also get pluses converted to space when asked to URL
 decode on get with the CURLU_URLDECODE bit.
 .IP CURLUPART_FRAGMENT
-.SH RETURN VALUE
-Returns a CURLUcode error value, which is CURLUE_OK (0) if everything went
-fine.
-
-If this function returns an error, no URL part is returned.
 .SH EXAMPLE
 .nf
   CURLUcode rc;
@@ -119,7 +124,13 @@ If this function returns an error, no URL part is returned.
   }
 .fi
 .SH AVAILABILITY
-Added in curl 7.62.0. CURLUPART_ZONEID was added in 7.65.0.
+Added in 7.62.0. CURLUPART_ZONEID was added in 7.65.0.
+.SH RETURN VALUE
+Returns a CURLUcode error value, which is CURLUE_OK (0) if everything went
+fine. See the \fIlibcurl-errors(3)\fP man page for the full list with
+descriptions.
+
+If this function returns an error, no URL part is returned.
 .SH "SEE ALSO"
 .BR curl_url_cleanup "(3), " curl_url "(3), " curl_url_set "(3), "
-.BR curl_url_dup "(3), " CURLOPT_CURLU "(3), "
+.BR curl_url_dup "(3), " curl_url_strerror "(3), " CURLOPT_CURLU "(3)"

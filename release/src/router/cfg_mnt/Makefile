@@ -15,6 +15,7 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -lpthread
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm
+LDFLAGS += -L./ -lcfgmnt
 
 ifeq ($(RTCONFIG_AMAS),y)
 ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
@@ -168,7 +169,7 @@ endif
 
 ifeq ($(RTCONFIG_HAS_5G_2), y)
 CFLAGS += -DSUPPORT_TRI_BAND
-else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q XT8PRO XT8_V2 RT-AXE95Q ET8PRO RP-AC92 GT-AXE11000 GT-AX11000PRO)
+else ifdef $(filter $(BUILD_NAME), RT-AC5300 GT-AC5300 RT-AC92U RT-AX92U GT-AX11000 RT-AX95Q XT8PRO BM68 XT8_V2 RT-AXE95Q ET8PRO ET8_V2 RP-AC92 GT-AXE11000 GT-AX11000PRO)
 CFLAGS += -DSUPPORT_TRI_BAND
 endif
 
@@ -221,7 +222,7 @@ all:
 	-cp -f prebuild/$(BUILD_NAME)/cfg_reportstatus cfg_reportstatus
 	-cp -f prebuild/$(BUILD_NAME)/libcfgmnt.so libcfgmnt.so
 else
-all: cfg_server cfg_client cfg_reportstatus libcfgmnt.so
+all: libcfgmnt.so cfg_server cfg_client cfg_reportstatus
 endif
 
 cfg_server: $(SERVER_OBJS)

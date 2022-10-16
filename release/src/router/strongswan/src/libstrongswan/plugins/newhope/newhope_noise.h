@@ -36,7 +36,7 @@ struct newhope_noise_t {
 	 *
 	 * @param nonce		Nonce determining the pseudo random stream
 	 * @param n			Number of pseudo random bytes to be returned
-	 * @return			Return array with n peudo random bytes
+	 * @return			Return array with n pseudo random bytes
 	 */
 	uint8_t* (*get_uniform_bytes)(newhope_noise_t *this, uint8_t nonce,
 								  uint16_t n);

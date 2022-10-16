@@ -41,7 +41,7 @@ static const uint32_t rsd_unsupported_tags[] = {
     MKTAG('O','G','G',' '),
 };
 
-static int rsd_probe(AVProbeData *p)
+static int rsd_probe(const AVProbeData *p)
 {
     if (memcmp(p->buf, "RSD", 3) || p->buf[3] - '0' < 2 || p->buf[3] - '0' > 6)
         return 0;
@@ -97,20 +97,15 @@ static int rsd_read_header(AVFormatContext *s)
     switch (par->codec_id) {
     case AV_CODEC_ID_XMA2:
         par->block_align = 2048;
-        ff_alloc_extradata(par, 34);
-        if (!par->extradata)
-            return AVERROR(ENOMEM);
+        if ((ret = ff_alloc_extradata(par, 34)) < 0)
+            return ret;
         memset(par->extradata, 0, 34);
         break;
     case AV_CODEC_ID_ADPCM_PSX:
         par->block_align = 16 * par->channels;
-        if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_IMA_RAD:
         par->block_align = 20 * par->channels;
-        if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_IMA_WAV:
         if (version == 2)
@@ -118,8 +113,6 @@ static int rsd_read_header(AVFormatContext *s)
 
         par->bits_per_coded_sample = 4;
         par->block_align = 36 * par->channels;
-        if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_THP_LE:
         /* RSD3GADP is mono, so only alloc enough memory
@@ -129,8 +122,6 @@ static int rsd_read_header(AVFormatContext *s)
 
         if ((ret = ff_get_extradata(s, par, s->pb, 32)) < 0)
             return ret;
-        if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = av_get_audio_frame_duration2(par, avio_size(pb) - start);
         break;
     case AV_CODEC_ID_ADPCM_THP:
         par->block_align = 8 * par->channels;
@@ -140,20 +131,40 @@ static int rsd_read_header(AVFormatContext *s)
             return ret;
 
         for (i = 0; i < par->channels; i++) {
+            if (avio_feof(pb))
+                return AVERROR_EOF;
             avio_read(s->pb, st->codecpar->extradata + 32 * i, 32);
             avio_skip(s->pb, 8);
         }
-        if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = (avio_size(pb) - start) / (8 * par->channels) * 14;
         break;
     case AV_CODEC_ID_PCM_S16LE:
     case AV_CODEC_ID_PCM_S16BE:
         if (version != 4)
             start = avio_rl32(pb);
 
-        if (pb->seekable & AVIO_SEEKABLE_NORMAL)
-            st->duration = (avio_size(pb) - start) / 2 / par->channels;
         break;
+    }
+    if (start < 0)
+        return AVERROR_INVALIDDATA;
+
+    if (pb->seekable & AVIO_SEEKABLE_NORMAL) {
+        int64_t remaining = avio_size(pb);
+
+        if (remaining >= start && remaining - start <= INT_MAX)
+            switch (par->codec_id) {
+            case AV_CODEC_ID_ADPCM_PSX:
+            case AV_CODEC_ID_ADPCM_IMA_RAD:
+            case AV_CODEC_ID_ADPCM_IMA_WAV:
+            case AV_CODEC_ID_ADPCM_THP_LE:
+                st->duration = av_get_audio_frame_duration2(par, remaining - start);
+                break;
+            case AV_CODEC_ID_ADPCM_THP:
+                st->duration = (remaining - start) / (8 * par->channels) * 14;
+                break;
+            case AV_CODEC_ID_PCM_S16LE:
+            case AV_CODEC_ID_PCM_S16BE:
+                st->duration = (remaining - start) / 2 / par->channels;
+            }
     }
 
     avio_skip(pb, start - avio_tell(pb));

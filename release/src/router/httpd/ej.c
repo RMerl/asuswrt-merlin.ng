@@ -43,6 +43,7 @@
 
 extern char *get_cgi_json(char *name, json_object *root);
 extern int do_json_decode(struct json_object *root);
+extern void parsing_payload(char *url, FILE *stream, int cl, char *method, struct json_object *payload_obj);
 #endif
 
 struct REPLACE_PRODUCTID_S replace_productid_t[] =
@@ -64,11 +65,11 @@ struct REPLACE_PRODUCTID_S replace_productid_t[] =
 	{"ZenWiFi_XP4", "灵耀AX XP4", "CN"},
 	{"ZenWiFi_CV4", "ZenWiFi Voice", "global"},
 	{"ZenWiFi_Pro_XT12", "灵耀Pro AX11000", "CN"},
-	{"ZenWiFi_XD5", "灵耀AX魔方 Pro", "CN"},
-	{"ZenWiFi_XD4_Pro", "灵耀AX魔方 Pro", "CN"},
+	{"ZenWiFi_XD4_Pro", "灵耀AX魔方Pro", "CN"},
 	{"ZenWiFi_XT9", "灵耀AX7800", "CN"},
 	{"ZenWiFi_XD6", "灵耀AX5400", "CN"},
 	{"TUF-AX3000_V2", "TUF GAMING 小旋风", "CN"},
+	{"GT6", "ROG魔方 • 幻", "CN"},
 	{NULL, NULL, NULL}
 };
 
@@ -244,11 +245,15 @@ translate_lang (char *s, char *e, FILE *f, kw_t *pkw)
 				pDest = pattern1;
 				while((p_PID_STR = strstr(pSrc, PID_STR)))
 				{
-					memcpy(pDest, pSrc, p_PID_STR - pSrc);
+					if((p_PID_STR - pSrc) > 0){
+						memcpy(pDest, pSrc, p_PID_STR - pSrc);
+						pDest[p_PID_STR - pSrc] = '\0';
+					}
 					pDest += (p_PID_STR - pSrc);
 					pSrc   =  p_PID_STR + pid_len;
 
 					memcpy(pDest, RP_PID_STR, get_pid_len);
+					pDest[get_pid_len] = '\0';
 					pDest += get_pid_len;
 				}
 				if(pDest != pattern1)
@@ -296,6 +301,10 @@ do_ej(char *path, FILE *stream)
 		return;
 
 #ifdef TRANSLATE_ON_FLY
+	char *current_lang = NULL;
+	struct json_object *root = json_object_new_object();
+	struct json_object *payload_obj = json_object_new_object();
+
 	// Load dictionary file
 	lang = nvram_safe_get("preferred_lang");
 	if(!check_lang_support(lang)){
@@ -303,11 +312,12 @@ do_ej(char *path, FILE *stream)
 		nvram_set("preferred_lang", lang);
 	}
 
-	char *current_lang;
-	struct json_object *root = json_object_new_object();
+	if(check_user_agent(user_agent) == FROM_WebView)
+		parsing_payload(referer_url, NULL, 0, "get", payload_obj);
 
 	do_json_decode(root);
-	if ((current_lang = get_cgi_json("current_lang", root)) != NULL){
+
+	if ((current_lang = get_cgi_json("current_lang", payload_obj)) != NULL || (current_lang = get_cgi_json("current_lang", root)) != NULL){
 		if (load_dictionary (current_lang, &kw)){
 			no_translate = 0;
 		}
@@ -318,6 +328,7 @@ do_ej(char *path, FILE *stream)
 		}
 	}
 	if (root) json_object_put(root);
+	if (payload_obj) json_object_put(payload_obj);
 #endif  //defined TRANSLATE_ON_FLY
 
 	start_pat = end_pat = pattern;
@@ -332,6 +343,7 @@ do_ej(char *path, FILE *stream)
 			len = end_pat - start_pat;
 			if(len < pattern_size){
 				memcpy (pattern, start_pat, len);
+				pattern[len] = '\0';
 				start_pat = pattern;
 				end_pat = start_pat + len;
 				*end_pat = '\0';

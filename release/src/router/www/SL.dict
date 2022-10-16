@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=Če nameravate v prihodnosti omogočiti funk
 ASUS_eula_withdraw_note=Če nimate vzpostavljene internetne povezave, ne boste mogli dokončati postopka odstopa. Prosimo, da odstop izvedete, ko bo vzpostavljena internetna povezava.
 ASUS_eula_withdraw_unstable=Ker je stanje interneta nestabilno, ni mogoče dokončati postopka odstopa. Prosimo, poskusite izvesti postopek odstopa pozneje.
 TM_eula_confirm=Če uporabljate ASUS AiProtection, se strinjate s
-TM_eula_desc1=Z uporabo funkcij AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS/Game boost, spletna zgodovina se strinjate z <a id="eula_url" style="text-decoration:underline;" target="_blank">Licenčno pogodbo za končnega uporabnika podjetja Trend Micro</a>.
-TM_eula_desc2=Prosimo, upoštevajte, da bo podjetje Trend Micro vaše podatke zbiralo prek funkcij AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS in spletna zgodovina. Prav tako potrjujete in se strinjate, da podjetje ASUS ni odgovorno niti za pogodbo med vami in podjetjem Trend Micro, niti za vsebino storitve, ki jo nudi podjetje Trend Micro. Če imate kakršna koli vprašanja o tem, kako podjetje Trend Micro zbira, obdeluje in uporablja vaše zgoraj navedene podatke, si, prosimo, oglejte izjavo o zasebnosti podjetja Trend Micro ali se za več informacij obrnite na podjetje Trend Micro, prosimo, oglejte izjavo o zasebnosti podjetja Trend Micro ali se za več informacij obrnite na podjetje Trend Micro.
+TM_eula_desc1=Z uporabo funkcij AiProtection, Starševski nadzor( Spletni filtri in filtri programov ), Traffic analyzer, Apps analyzer, Adaptive QoS/Game boost, spletna zgodovina se strinjate z <a id="eula_url" style="text-decoration:underline;" target="_blank">Licenčno pogodbo za končnega uporabnika podjetja Trend Micro</a>.
+TM_eula_desc2=Prosimo, upoštevajte, da bo podjetje Trend Micro vaše podatke zbiralo prek funkcij AiProtection, Starševski nadzor( Spletni filtri in filtri programov ), Traffic analyzer, Apps analyzer, Adaptive QoS in spletna zgodovina. Prav tako potrjujete in se strinjate, da podjetje ASUS ni odgovorno niti za pogodbo med vami in podjetjem Trend Micro, niti za vsebino storitve, ki jo nudi podjetje Trend Micro. Če imate kakršna koli vprašanja o tem, kako podjetje Trend Micro zbira, obdeluje in uporablja vaše zgoraj navedene podatke, si, prosimo, oglejte izjavo o zasebnosti podjetja Trend Micro ali se za več informacij obrnite na podjetje Trend Micro, prosimo, oglejte izjavo o zasebnosti podjetja Trend Micro ali se za več informacij obrnite na podjetje Trend Micro.
 TM_eula_desc3=Če želite onemogočiti delitev vaših podatkov s podjetjem Trend Micro prek zgoraj navedenih funkcij, prosimo obiščite:  Router web GUI (Spletni grafični uporabniški vmesnik usmerjevalnika) > Advanced settings (Napredne nastavitve) > Administration (Skrbništvo) > Privacy (Zasebnost).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=Za funkcije AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost, spletna zgodovina:
+TM_eula_withdraw0=Za funkcije AiProtection, Starševski nadzor( Spletni filtri in filtri programov ), Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost, spletna zgodovina:
 TM_eula_withdraw_desc1=Prosimo, upoštevajte, da bo podjetje Trend Micro zbiralo vaše podatke prek zgornjih funkcij.
 TM_eula_withdraw_desc2=Če želite onemogočiti delitev vaših podatkov s podjetjem Trend Micro prek naslednjih funkcij, prosimo kliknite <span style="font-weight: bold;">[Odstop]</span> spodaj. Vendar prosimo, upoštevajte, da takšne funkcije/funkcionalnosti morda ne bodo delovale, če prenehate deliti podatke s podjetjem Trend Micro.
 withdraw_confirm=Ali ste prepričani, da želite odstopiti?
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Glede na združljivost sistema AiMesh in končnih naprav pri
 AiMesh_confirm_msg10=Za vzpostavitev povezave med sistemom AiMesh in končnimi napravami pred preklopom na način WPA3-Personal preberite temo <a id="wpa3FaqLink">FAQ</a>.
 AiMesh_confirm_msg11=Trenutno uporabljate WPA3-personal. Z namenom ustvarjanja sistema AiMesh bo način preverjanja pristnosti spremenjen v WPA2/WPA3-personal. Ali želite nadaljevati?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Dodatne podrobnosti najdete na spletnem mestu <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>pogosto zastavljeno vprašanje</a>
+AiMesh_confirm_msg13=Dodatne podrobnosti najdete na spletnem mestu <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>pogosto zastavljeno vprašanje</a>
 AiMesh_Feature_Desc=Napredni ASUS AiMesh je inovativna nova funkcija usmerjevalnikov, ki povezuje več usmerjevalnikov ASUS in ustvarja omrežje WiFi za celoten dom.
 AiMesh_FAQ=Več o funkciji ASUS AiMesh
 AiMesh_FindNode=Iskanje vozlišča AiMesh
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=Balkon
 AiMesh_NodeLocation23=Soba za sestanke
 AiMesh_NodeLocation24=Po meri
 AiMesh_NodeLocation25=Garaža
+AiMesh_NodeLocation26=Prvo nadstropje
+AiMesh_NodeLocation27=Soba za igranje
+AiMesh_NodeLocation28=Telovadnica
 AiMesh_OfflineTips=Namigi za uporabo brez povezave
 AiMesh_OfflineTips1=Prepričajte se, da je vaše vozlišče AiMesh vklopljeno.
 AiMesh_OfflineTips2=Znova zaženite vozlišče AiMesh in poskusite znova.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Uvozite svoje lastno potrdilo
 DDNS_https_cert_Import_desc=Potrdilo, ki ga je izdal overitelj digitalnih potrdil, naložite tukaj. Potrebno je vnesti vaš zasebni ključ in potrdilo SSL.
 DDNS_https_cert_PrivateKey=Zasebni ključ
 DDNS_https_cert_PrivateKey_note=Zasebni ključi ne morejo biti zaščiteni z geselsko frazo.
+DDNS_ipv6_update=Posodobitev IPv6
+DDNS_ipv6_update_desc=Če omrežno okolje odjemalca uporablja omrežni naslov IPv6, boste pri oddaljenem dostopanju do naprave z omogočenjem te funkcije najprej razrešili domeno v omrežni naslov IPv6.
 DDNS_ssl_cert=Potrdilo SSL
 DDNS_termofservice_Title=Obvestilo o pogojih uporabe
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=Omogočite požarni zid, da zaščitite svoj
 FirewallConfig_display3_sectiondesc=<b>Veljavnost seznama nedovoljenih:</b> odjemalci na seznamu nedovoljenih v obdobju načrtovane veljavnosti ne morejo uporabljati navedenih omrežnih storitev. Po poteku obdobja veljavnosti lahko vsi odjemalci v lokalnem omrežju dostopajo do navedenih omrežnih storitev.<br><b>Veljavnost seznama dovoljenih:</b> odjemalci na seznamu dovoljenih lahko v obdobju načrtovane veljavnosti uporabljajo SAMO navedene omrežne storitve. Po poteku obdobja veljavnosti odjemalci na seznamu dovoljenih in drugi omrežni odjemalci ne bodo mogli dostopati do interneta in nobenih drugih internetnih storitev.
 FirewallConfig_display4_sectiondesc=<b>OPOMBA:</b> Če nastavite podomrežje za seznam dovoljenih, naslovi IP zunaj podomrežja ne bodo mogli dostopati do interneta in nobenih drugih internetnih storitev.
 FirewallConfig_display5_sectiondesc=Filter naslovov MAC vam omogoča, da sprejmete ali zavrnete dostop do omrežja za naprave z določenimi naslovi MAC.<p>Filter naslovov MAC lahko nastavite na način »Sprejmi« ali »Zavrni«.<p>V načinu »Zavrni« je napravam na seznamu zavrnjen dostop do omrežja.<p>V načinu »Sprejmi« lahko do omrežja dostopajo samo naprave, ki so na seznamu. Napravam, ki niso na seznamu, je zavrnjen dostop do omrežja.
-FirewallConfig_DoSEnable_itemdesc=Napada »z ohromitvijo storitve« je eksplicitni poskus preprečitve uporabe storitve ali sredstva računalnika zakonitim uporabnikom.<p>Če omogočite to funkcijo, lahko usmerjevalnik zaščitite pred napadom z ohromitvijo storitve, vendar s tem povečate obremenitev usmerjevalnika.
+FirewallConfig_DoSEnable_itemdesc=Če omogočite to funkcijo, lahko usmerjevalnik zaščitite pred napadi DoS (Denial- of-Service) napadom z ohromitvijo storitve, vendar s tem povečate obremenitev usmerjevalnika.
 FirewallConfig_DoSEnable_itemname=Omogoči zaščito pred napadi DoS
 FirewallConfig_FirewallEnable_itemdesc=Če onemogočite požarni zid, deaktivirate vse z njim povezane funkcije.
 FirewallConfig_FirewallEnable_itemname=Omogoči požarni zid
-FirewallIPv4_enable=Omogoči požarni zid IPv4
+FirewallIPv4_enable=Omogoči pravila požarnega zidu za dohodni promet
 FirewallIPv4=Požarni zid IPv4
 FirewallConfig_FTPPrompt_itemdesc=Če pri nastavitvi omrežja WAN za obseg vrat strežnika FTP nastavite 20:21, je strežnik FTP v sporu z izvornim strežnikom FTP usmerjevalnika ZVMODELVZ.
 FirewallConfig_KeywordFilterEnable_itemname=Omogoči filter ključnih besed
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=Na voljo je nova vdelana programska oprema.
 FW_rlnote_loading=Nalaganje opomb ob izdaji. Prosimo, počakajte …
 FW_rlnote_failed=Opomb ob izdaji ni bilo mogoče najti.
+FW_rollback=Povrnitev
+FW_rollback_choose=Izberite različico vdelane programske opreme
+FW_rollback_selector=Izbiralnik povrnitve vdelane programske opreme
 Game_acceleration=Pospeševanje iger
 Game_Boost=Pospešitev igre
 Game_Boost_acceleration=Pospeševanje iger na treh stopnjah
@@ -2404,7 +2412,7 @@ Internet=Internet
 Interval=Interval
 Introduce_demo=Predstavitev
 Invitation=Povabilo
-Interaction=Tương tác
+Interaction=Interakcija
 InternetSpeed=Hitrost internetne povezave
 InternetSpeed_desc=To storitev zagotavlja Ookla®. Zaznava hitrost prenašanja in nalaganja iz usmerjevalnika v internet. Ta preskus traja približno eno minuto. Če uporabljate to storitev, soglašate s <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">pravilnikom o zasebnosti Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® in Speedtest® sta registrirana v zveznem registru kot Ookla, LLC.
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Ustvari novega odjemalca RADIUS
 PM_Group_Table=Tabela skupin
 PoolName=Ime particije
 Port_format=Za obseg izvornih ali ciljnih vrat lahko: a) vnesete določena vrata, na primer »95«, ali b) vnesete vrata v obsegu, na primer »103:315«, »>100» ali »<65535«.
+Port_Gaming=Vrata za igre
 Port_Mapping_desc1=Preslikava vrat
 Port_Mapping_desc2=Preslikava vrat podpira vmesnik IPTV WAN za določena vrata LAN. Izberite ustrezna vrata LAN in kliknite »Uporabi«.
 Port_Mapping_desc3=Omogoči preslikavo vrat
@@ -3444,7 +3453,7 @@ TZ17=Atlantski čas (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
-TZ19_1=Asunción
+TZ19_1=Asuncion
 TZ20=Nova Fundlandija
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Posodobitev ni uspela. Poskusite znova.
 vpn_ipsec_clients_reconnect_hint=Ko kliknete »Uporabi«, bodo vsi odjemalci VPN znova vzpostavili povezavo. Ali ste prepričani, da želite nadaljevati?
 vpn_ipsec_IKE_ver=Podprta različica IKE
 vpn_ipsec_set_DDNS=za nastavitev DDNS kliknite tukaj.
+vpn_wireguard_server_faq=How to set up WireGuard® server?
+vpn_wireguard_site2site_faq=How to set up site to site VPN with WireGuard®?
+vpn_wireguard_client_faq=How to set up WireGuard® client in VPN Fusion?
 vpnc_desc1=Odjemalci VPN (navidezno zasebno omrežje) se pogosto uporabljajo za vzpostavitev povezave s strežnikom VPN, ki omogoča varen dostop do zasebnih sredstev prek javnega omrežja.
 vpnc_desc2=Nekatere naprave, kot so TV-komunikatorji, pametni televizorji in predvajalniki diskov Blu-ray, ne podpirajo programske opreme VPN.
 vpnc_desc3=Funkcija VPN usmerjevalnika ASUSWRT zagotavlja dostop do omrežja VPN vsem napravam v domačem omrežju, pri tem pa vam ni treba namestiti programske opreme VPN v posamezno napravo.
@@ -3815,18 +3827,18 @@ wandog_enable2=Omogoči preverjanje dosegljivosti interneta
 WANTCPMSSOptionText=Možnost MSS za TCP
 WANTCPMSSOptionComm1Text=bajtov
 WANVLANIDText=ID omrežja VLAN
-WANAggregation_desc=Združevanje omrežij WAN združi dve omrežni povezavi, da poveča hitrost omrežja WAN na 2 Gb/s. Priključek WAN in priključek LAN 4 na usmerjevalniku priključite na priključka LAN na modemu (obvezno uporabite kabla z enakimi specifikacijami). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Pogosta vprašanja o združevanju omrežij WAN</a>
+WANAggregation_desc=Združevanje omrežij WAN združi dve omrežni povezavi, da poveča hitrost omrežja WAN na 2 Gb/s. Priključek #WAN in priključek LAN 4 na usmerjevalniku priključite na priključka LAN na modemu (obvezno uporabite kabla z enakimi specifikacijami). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Pogosta vprašanja o združevanju omrežij WAN</a>
 WANAggregation_enable=Omogoči združevanje WAN
 WANAggregation_disable_dualwan=V vašem usmerjevalniku je omogočen dvojni WAN. Če omogočite združevanje omrežij WAN, boste onemogočili dvojni WAN. Ali res želite nadaljevati?
 WANAggregation_disable_WANAggregation=V vašem usmerjevalniku je omogočeno združevanje omrežij WAN. Če omogočite dvojni WAN, boste onemogočili združevanje omrežij WAN. Ali res želite nadaljevati?
 WANAggregation_PortConflict_hint1=Združevanje omrežij WAN uporablja priključek LAN 4 vašega usmerjevalnika. Če omogočite IPTV, boste onemogočili združevanje omrežij WAN. Ali res želite nadaljevati?
 WANAggregation_PortConflict_hint2=IPTV uporablja priključek LAN 4 vašega usmerjevalnika. Če omogočite združevanje omrežij WAN, boste onemogočili IPTV. Ali res želite nadaljevati?
 WANAggregation_disable_IPTVDualWAN=V vašem usmerjevalniku sta omogočena dvojni WAN in IPTV. Če omogočite združevanje omrežij WAN, bosta dvojni WAN in IPTV zaradi preprečitve spora na priključku onemogočena. Ali res želite nadaljevati?
-WANAggregation_help_WAN=Prepričajte se, da sta priključek WAN na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
+WANAggregation_help_WAN=Prepričajte se, da sta priključek #WAN na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
 WANAggregation_help_LAN=Prepričajte se, da sta priključek LAN 4 na usmerjevalniku in priključek LAN na modemu priključena s kabloma z enakimi specifikacijami.
 WANAggregation_goto_WAN=Če želite omogočiti združevanje omrežij WAN, odprite stran z <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">nastavitvami internetne povezave WAN</a>.
 WANAggregation_help_desc=Če funkcije združevanja omrežja WAN ni mogoče nastaviti, upoštevajte ta navodila in poskusite znova.
-WANAggregation_help_step1=Prepričajte se, da so vrata LAN modema kabelsko že povezana z omrežjem WAN in LAN 4 usmerjevalnika.
+WANAggregation_help_step1=Prepričajte se, da so vrata LAN modema kabelsko že povezana z omrežjem #WAN in LAN 4 usmerjevalnika.
 WANAggregation_help_step2=Prepričajte se, da je za modem omogočena funkcija 802.3ad
 WANAggregation_help_step3=Preverite, ali uporabljate kabla z istimi specifikacijami (gigabitni in gigabitni oziroma 10/100 in 10/100 Mb/s)
 WANAggregation_help_step4=Ponovno zaženite usmerjevalnik
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Izberite možnost GeForce Now, da določite vrstni red pomembnosti igralnih naprav GeForce Now za hitrejše in boljše igralne izkušnje.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Dogodek
 AURA_Event_desc=Sistem bo zaznal naslednje dogodke in sprožil LED-učinke.
 AURA_Event_Boost_desc=Ko omogočite Game Boost, boste videli, da LED-vrstica uporablja rdeč učinek utripanja.

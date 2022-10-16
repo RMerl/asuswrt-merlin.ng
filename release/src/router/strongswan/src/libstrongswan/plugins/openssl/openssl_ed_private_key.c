@@ -108,7 +108,7 @@ error:
 
 METHOD(private_key_t, decrypt, bool,
 	private_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "EdDSA private key decryption not implemented");
 	return FALSE;
@@ -248,10 +248,10 @@ private_key_t *openssl_ed_private_key_create(EVP_PKEY *key, bool engine)
 
 	switch (EVP_PKEY_base_id(key))
 	{
-		case EVP_PKEY_X25519:
+		case EVP_PKEY_ED25519:
 			type = KEY_ED25519;
 			break;
-		case EVP_PKEY_X448:
+		case EVP_PKEY_ED448:
 			type = KEY_ED448;
 			break;
 		default:

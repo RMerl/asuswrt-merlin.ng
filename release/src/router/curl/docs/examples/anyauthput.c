@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* <DESC>
@@ -81,17 +83,17 @@ static curlioerr my_ioctl(CURL *handle, curliocmd cmd, void *userp)
 static size_t read_callback(char *ptr, size_t size, size_t nmemb, void *stream)
 {
   ssize_t retcode;
-  curl_off_t nread;
+  unsigned long nread;
 
   int *fdp = (int *)stream;
   int fd = *fdp;
 
   retcode = read(fd, ptr, (READ_3RD_ARG)(size * nmemb));
 
-  nread = (curl_off_t)retcode;
-
-  fprintf(stderr, "*** We read %" CURL_FORMAT_CURL_OFF_T
-          " bytes from file\n", nread);
+  if(retcode > 0) {
+    nread = (unsigned long)retcode;
+    fprintf(stderr, "*** We read %lu bytes from file\n", nread);
+  }
 
   return retcode;
 }
@@ -154,7 +156,7 @@ int main(int argc, char **argv)
     /* set user name and password for the authentication */
     curl_easy_setopt(curl, CURLOPT_USERPWD, "user:password");
 
-    /* Now run off and do what you've been told! */
+    /* Now run off and do what you have been told! */
     res = curl_easy_perform(curl);
     /* Check for errors */
     if(res != CURLE_OK)

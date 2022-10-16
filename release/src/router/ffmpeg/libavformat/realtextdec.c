@@ -35,7 +35,7 @@ typedef struct {
     FFDemuxSubtitlesQueue q;
 } RealTextContext;
 
-static int realtext_probe(AVProbeData *p)
+static int realtext_probe(const AVProbeData *p)
 {
     char buf[7];
     FFTextReader tr;
@@ -45,16 +45,16 @@ static int realtext_probe(AVProbeData *p)
     return !av_strncasecmp(buf, "<window", 7) ? AVPROBE_SCORE_EXTENSION : 0;
 }
 
-static int read_ts(const char *s)
+static int64_t read_ts(const char *s)
 {
     int hh, mm, ss, ms;
 
-    if (sscanf(s, "%u:%u:%u.%u", &hh, &mm, &ss, &ms) == 4) return (hh*3600 + mm*60 + ss) * 100 + ms;
-    if (sscanf(s, "%u:%u:%u"   , &hh, &mm, &ss     ) == 3) return (hh*3600 + mm*60 + ss) * 100;
-    if (sscanf(s,    "%u:%u.%u",      &mm, &ss, &ms) == 3) return (          mm*60 + ss) * 100 + ms;
-    if (sscanf(s,    "%u:%u"   ,      &mm, &ss     ) == 2) return (          mm*60 + ss) * 100;
-    if (sscanf(s,       "%u.%u",           &ss, &ms) == 2) return (                  ss) * 100 + ms;
-    return strtol(s, NULL, 10) * 100;
+    if (sscanf(s, "%u:%u:%u.%u", &hh, &mm, &ss, &ms) == 4) return (hh*3600LL + mm*60LL + ss) * 100LL + ms;
+    if (sscanf(s, "%u:%u:%u"   , &hh, &mm, &ss     ) == 3) return (hh*3600LL + mm*60LL + ss) * 100LL;
+    if (sscanf(s,    "%u:%u.%u",      &mm, &ss, &ms) == 3) return (            mm*60LL + ss) * 100LL + ms;
+    if (sscanf(s,    "%u:%u"   ,      &mm, &ss     ) == 2) return (            mm*60LL + ss) * 100LL;
+    if (sscanf(s,       "%u.%u",           &ss, &ms) == 2) return (                      ss) * 100LL + ms;
+    return strtoll(s, NULL, 10) * 100ULL;
 }
 
 static int realtext_read_header(AVFormatContext *s)
@@ -87,6 +87,10 @@ static int realtext_read_header(AVFormatContext *s)
             /* save header to extradata */
             const char *p = ff_smil_get_attr_ptr(buf.str, "duration");
 
+            if (st->codecpar->extradata) {
+                res = AVERROR_INVALIDDATA;
+                goto end;
+            }
             if (p)
                 duration = read_ts(p);
             st->codecpar->extradata = av_strdup(buf.str);
@@ -107,10 +111,11 @@ static int realtext_read_header(AVFormatContext *s)
             if (!merge) {
                 const char *begin = ff_smil_get_attr_ptr(buf.str, "begin");
                 const char *end   = ff_smil_get_attr_ptr(buf.str, "end");
+                int64_t endi = end ? read_ts(end) : 0;
 
                 sub->pos      = pos;
                 sub->pts      = begin ? read_ts(begin) : 0;
-                sub->duration = end ? (read_ts(end) - sub->pts) : duration;
+                sub->duration = (end && endi > sub->pts && endi - (uint64_t)sub->pts <= INT64_MAX) ? endi - sub->pts : duration;
             }
         }
         av_bprint_clear(&buf);
@@ -119,6 +124,8 @@ static int realtext_read_header(AVFormatContext *s)
 
 end:
     av_bprint_finalize(&buf, NULL);
+    if (res < 0)
+        ff_subtitles_queue_clean(&rt->q);
     return res;
 }
 

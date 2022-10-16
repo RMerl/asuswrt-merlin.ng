@@ -1,20 +1,27 @@
 include ../.config
 
 EXEC = networkmap
-OBJS = function.o connections.o sm.o networkmap.o
+OBJS = function.o connections.o sm.o download.o shared_func.o protect_name.o networkmap.o
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -Werror=return-type -Werror=uninitialized -Wno-date-time 
 endif
 CFLAGS  += -I. -I$(TOP)/shared -I$(TOP)/kernel_header/include -I$(SRCBASE)/include -I$(TOP)/json-c
 CFLAGS  += -s -O2 -DNO_PARALLEL
+CFLAGS  += -I$(TOP)/libasc
+CFLAGS  += -I$(TOP)/curl/include
+
+ifeq ($(RTCONFIG_TR069),y)
+CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+endif
 
 ifeq ($(RTCONFIG_RALINK),y)
-CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/ralink -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 
 ifeq ($(RTCONFIG_QCA),y)
-CFLAGS += -I$(TOP)/shared/sysdeps/qca -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/qca -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 CFLAGS += $(if $(RTCONFIG_SAMBA36X),-DSMP)
 endif
 
@@ -24,12 +31,12 @@ endif
 
 ifeq ($(RTCONFIG_ALPINE),y)
 CFLAGS += -DALPINE_WPS
-CFLAGS += -I$(TOP)/httpd/sysdeps -I$(TOP)/shared/sysdeps/alpine -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/httpd/sysdeps -I$(TOP)/shared/sysdeps/alpine -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 
 ifeq ($(RTCONFIG_LANTIQ),y)
 CFLAGS += -DLANTIQ_WPS
-CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools
+CFLAGS += -I$(TOP)/shared/sysdeps/lantiq -I$(TOP)/wireless_tools$(WTOOL_SUFFIX)
 endif
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
@@ -41,6 +48,10 @@ CFLAGS += -I$(TOP)/libqcsapi_client -I$(TOP)/shared/sysdeps/qtn
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 endif
+
+LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl -L$(TOP)/
+LDFLAGS += -L$(TOP)/libasc -lasc
+
 
 ifeq ($(RTCONFIG_QSR10G),y)
 CFLAGS += -I$(TOP)/libqcsapi_client_10g
@@ -66,18 +77,18 @@ ifeq ($(RTCONFIG_BWDPI_DEP),y)
 CFLAGS += -I$(TOP)/httpd
 CFLAGS += -I$(TOP)/bwdpi_dep/bwdpi
 endif
-ifeq ($(RTCONFIG_AMAS),y)
+
 CFLAGS += -I$(TOP)/openssl/include
+ifeq ($(RTCONFIG_AMAS),y)
 CFLAGS += -I$(TOP)/json-c
 endif
 
-LDFLAGS += -lm -L$(TOP)/json-c/.libs -ljson-c
-LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram
+LDFLAGS += -lm -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX} -lnvram -L$(TOP)/json-c/.libs -ljson-c
+LDFLAGS += -L$(TOP)/shared -lshared -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram 
+LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
-endif
-ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 endif
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
@@ -107,6 +118,17 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L $(TOP)/sqlCipher/.libs -lsqlcipher
 LDFLAGS += -L$(TOP)/PMS_DBapis -lpms_sql
 endif
+
+ifeq ($(RTCONFIG_CONNDIAG),y)
+ifeq ($(RTCONFIG_LIB_CODB),y)
+CFLAGS += -I$(TOP)/libcodb
+LDFLAGS += -L$(TOP)/libcodb -lcodb
+endif
+CFLAGS += -I$(TOP)/rc
+LDFLAGS += -L$(TOP)/rc -lconn_diag
+endif
+
+
 
 ifeq ($(RTCONFIG_CFGSYNC),y)
 CFLAGS += -I$(TOP)/cfg_mnt
@@ -189,7 +211,10 @@ ifneq ($(wildcard $(SRCBASE)/router/networkmap/arpstorm),)
 endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap
-	cp -f networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js
+	cp -f db/networkmap.oui.js $(INSTALLDIR)/usr/networkmap/networkmap.oui.js
+	cp -f db/nmp_conv_type.js $(INSTALLDIR)/usr/networkmap/nmp_conv_type.js
+	cp -f db/nmp_vendor_type.js $(INSTALLDIR)/usr/networkmap/nmp_vendor_type.js
+	cp -f db/nmp_bwdpi_type.js $(INSTALLDIR)/usr/networkmap/nmp_bwdpi_type.js
 
 clean:
 ifneq ($(AC2900),y)

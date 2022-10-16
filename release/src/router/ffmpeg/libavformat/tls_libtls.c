@@ -44,8 +44,7 @@ static int ff_tls_close(URLContext *h)
         tls_close(p->ctx);
         tls_free(p->ctx);
     }
-    if (p->tls_shared.tcp)
-        ffurl_close(p->tls_shared.tcp);
+    ffurl_closep(&p->tls_shared.tcp);
     return 0;
 }
 
@@ -182,6 +181,12 @@ static int tls_get_file_handle(URLContext *h)
     return ffurl_get_file_handle(c->tls_shared.tcp);
 }
 
+static int tls_get_short_seek(URLContext *h)
+{
+    TLSContext *s = h->priv_data;
+    return ffurl_get_short_seek(s->tls_shared.tcp);
+}
+
 static const AVOption options[] = {
     TLS_COMMON_OPTIONS(TLSContext, tls_shared),
     { NULL }
@@ -201,6 +206,7 @@ const URLProtocol ff_tls_protocol = {
     .url_write      = ff_tls_write,
     .url_close      = ff_tls_close,
     .url_get_file_handle = tls_get_file_handle,
+    .url_get_short_seek  = tls_get_short_seek,
     .priv_data_size = sizeof(TLSContext),
     .flags          = URL_PROTOCOL_FLAG_NETWORK,
     .priv_data_class = &tls_class,

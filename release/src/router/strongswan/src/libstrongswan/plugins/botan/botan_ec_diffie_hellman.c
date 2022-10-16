@@ -205,13 +205,13 @@ botan_ec_diffie_hellman_t *botan_ec_diffie_hellman_create(
 			return NULL;
 	}
 
-	if (botan_rng_init(&rng, "user"))
+	if (!botan_get_rng(&rng, RNG_STRONG))
 	{
 		free(this);
 		return NULL;
 	}
 
-	if (botan_privkey_create_ecdh(&this->key, rng, this->curve_name))
+	if (botan_privkey_create(&this->key, "ECDH", this->curve_name, rng))
 	{
 		DBG1(DBG_LIB, "ECDH private key generation failed");
 		botan_rng_destroy(rng);

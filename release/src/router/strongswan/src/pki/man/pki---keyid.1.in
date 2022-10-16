@@ -1,4 +1,4 @@
-.TH "PKI \-\-KEYID" 1 "2013-07-31" "@PACKAGE_VERSION@" "strongSwan"
+.TH "PKI \-\-KEYID" 1 "2019-04-29" "@PACKAGE_VERSION@" "strongSwan"
 .
 .SH "NAME"
 .
@@ -11,6 +11,8 @@ pki \-\-keyid \- Calculate key identifiers of a key or certificate
 .IR file | \fB\-\-keyid\fR
 .IR hex ]
 .OP \-\-type type
+.OP \-\-id id-type
+.OP \-\-format format
 .OP \-\-debug level
 .YS
 .
@@ -54,23 +56,44 @@ Type of input. One of \fIpriv\fR (private key), \fIrsa\fR (RSA private key),
 \fIecdsa\fR (ECDSA private key), \fIbliss\fR (BLISS private key),
 \fIpub\fR (public key), \fIpkcs10\fR (PKCS#10 certificate request),
 \fIx509\fR (X.509 certificate), defaults to \fIpriv\fR.
+.TP
+.BI "\-I, \-\-id " id-type
+Type of identifier. One of \fIall\fR (all identifiers), \fIspk\fR (SHA-1 hash
+of subjectPublicKey), \fIspki\fR (SHA-1 hash of subjectPublicKeyInfo), defaults
+to \fIall\fR.
+.TP
+.BI "\-f, \-\-format " format
+Output format. One of \fIpretty\fR (user-readable output), \fIhex\fR
+(hexadecimal encoding), \fIbase64\fR (Base64 encoding), \fIbin\fR (raw binary
+data), defaults to \fIpretty\fR.
 .
 .SH "EXAMPLES"
 .
 Calculate key identifiers of an RSA private key:
 .PP
 .EX
-  pki --keyid --in key.der
-  subjectKeyIdentifier:      6a:9c:74:d1:f8:89:79:89:f6:5a:94:e9:89:f1...
-  subjectPublicKeyInfo hash: 6e:55:dc:7e:9c:a5:58:d9:5b:e3:c7:13:14:e1...
+  $ pki --keyid --in key.der
+  subjkey (SHA-1 of subjectPublicKey):
+               6a:9c:74:d1:f8:89:79:89:f6:5a:94:e9:89:f1...
+  keyid (SHA-1 of subjectPublicKeyInfo):
+               6e:55:dc:7e:9c:a5:58:d9:5b:e3:c7:13:14:e1...
 .EE
 .PP
 Calculate key identifiers of an X.509 certificate:
 .PP
 .EX
-  pki --keyid --in cert.der --type x509
-  subjectKeyIdentifier:      6a:9c:74:d1:f8:89:79:89:f6:5a:94:e9:89:f1...
-  subjectPublicKeyInfo hash: 6e:55:dc:7e:9c:a5:58:d9:5b:e3:c7:13:14:e1...
+  $ pki --keyid --in cert.der --type x509
+  subjkey (SHA-1 of subjectPublicKey):
+               6a:9c:74:d1:f8:89:79:89:f6:5a:94:e9:89:f1...
+  keyid (SHA-1 of subjectPublicKeyInfo):
+               6e:55:dc:7e:9c:a5:58:d9:5b:e3:c7:13:14:e1...
+.EE
+.PP
+Calculate keyid in simple hex encoding of an X.509 certificate:
+.PP
+.EX
+  $ pki --keyid --in cert.der --type x509 --id spki --format hex
+  6e55dc7e9ca558d95be3c71314e1...
 .EE
 .PP
 .

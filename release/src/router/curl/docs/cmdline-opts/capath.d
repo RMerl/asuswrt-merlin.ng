@@ -1,9 +1,13 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: capath
 Arg: <dir>
 Help: CA directory to verify peer against
 Protocols: TLS
 Category: tls
+See-also: cacert insecure
 Example: --capath /local/directory $URL
+Added: 7.9.8
 ---
 Tells curl to use the specified certificate directory to verify the
 peer. Multiple paths can be provided by separating them with ":" (e.g.

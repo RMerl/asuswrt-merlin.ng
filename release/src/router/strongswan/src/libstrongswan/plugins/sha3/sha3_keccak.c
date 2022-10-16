@@ -143,7 +143,7 @@ static void xor64(uint8_t *x, uint64_t u)
     #define writeLane(i, lane)   (((uint64_t*)state)[i])  = (lane)
     #define XORLane(i, lane)     (((uint64_t*)state)[i]) ^= (lane)
 #elif BYTE_ORDER == BIG_ENDIAN
-    #define readLane(i)          load64((uint8_t*)state+sizeof(uint64_t)*i))
+    #define readLane(i)          load64((uint8_t*)state+sizeof(uint64_t)*i)
     #define writeLane(i, lane)   store64((uint8_t*)state+sizeof(uint64_t)*i, lane)
     #define XORLane(i, lane)     xor64((uint8_t*)state+sizeof(uint64_t)*i, lane)
 #endif

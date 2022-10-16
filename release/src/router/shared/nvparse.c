@@ -322,7 +322,7 @@ get_forward_port(int which, netconf_nat_t *nat)
 	snprintf(name, sizeof(name), "forward_port%d", which);
 	if (!nvram_invmatch(name, ""))
 		return FALSE;
-	nvram_get_ptr = nvram_get(name);
+	nvram_get_ptr = nvram_safe_get(name);
 	if (strlen(nvram_get_ptr) >= sizeof(value))
 		return FALSE;
 	else
@@ -572,7 +572,7 @@ get_filter_client(int which, netconf_filter_t *start, netconf_filter_t *end)
 	snprintf(name, sizeof(name), "filter_client%d", which);
 	if (!nvram_invmatch(name, ""))
 		return FALSE;
-	nvram_get_ptr = nvram_get(name);
+	nvram_get_ptr = nvram_safe_get(name);
 	if (strlen(nvram_get_ptr) >= sizeof(value))
 		return FALSE;
 	else
@@ -681,7 +681,7 @@ get_filter_client(int which, netconf_filter_t *start, netconf_filter_t *end)
 	}
 
 	/* Set interface name (match packets entering LAN interface) */
-	nvram_get_ptr = nvram_get("lan_ifname");
+	nvram_get_ptr = nvram_safe_get("lan_ifname");
 	if (strlen(nvram_get_ptr) >= sizeof(start->match.in.name))
 		return FALSE;
 	else
@@ -951,7 +951,7 @@ get_trf_mgmt_dwm(char *prefix, int which, netconf_trmgmt_t *trm_dwm)
 	snprintf(name, sizeof(name), "%stm_dwm%d", prefix, which);
 	if (!nvram_invmatch(name, ""))
 		return FALSE;
-	nvram_ret = nvram_get(name);
+	nvram_ret = nvram_safe_get(name);
 	if (strlen(nvram_ret) >= sizeof(value))
 		return FALSE;
 	strncpy(value, nvram_ret, sizeof(value)); /* copy including trailing NULL */
@@ -1002,7 +1002,7 @@ get_trf_mgmt_port(char *prefix, int which, netconf_trmgmt_t *trm)
 	snprintf(name, sizeof(name), "%stm%d", prefix, which);
 	if (!nvram_invmatch(name, ""))
 		return FALSE;
-	nvram_ptr =  nvram_get(name);
+	nvram_ptr =  nvram_safe_get(name);
 	if (strlen(nvram_ptr) >= sizeof(value))
 		return FALSE;
 	strncpy(value, nvram_ptr, sizeof(value) - 1);
@@ -1509,7 +1509,7 @@ convert_autofw_port(void)
 		snprintf(name, sizeof(name), "autofw_port%d", i);
 		if (!nvram_invmatch(name, ""))
 			goto fail;
-		nvram_get_ptr =  nvram_get(name);
+		nvram_get_ptr =  nvram_safe_get(name);
 		if (strlen(nvram_get_ptr) >= sizeof(value))
 			goto fail;
 		else

@@ -22,8 +22,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __EXIF_MEM_H__
-#define __EXIF_MEM_H__
+#ifndef LIBEXIF_EXIF_MEM_H
+#define LIBEXIF_EXIF_MEM_H
 
 #include <libexif/exif-utils.h>
 
@@ -61,6 +61,7 @@ typedef struct _ExifMem ExifMem;
  * \param[in] a the allocator function
  * \param[in] r the reallocator function
  * \param[in] f the free function
+ * \return allocated #ExifMem, or NULL on error
  */
 ExifMem *exif_mem_new   (ExifMemAllocFunc a, ExifMemReallocFunc r,
 			 ExifMemFreeFunc f);
@@ -87,4 +88,4 @@ ExifMem *exif_mem_new_default (void);
 }
 #endif /* __cplusplus */
 
-#endif /* __EXIF_MEM_H__ */
+#endif /* !defined(LIBEXIF_EXIF_MEM_H) */

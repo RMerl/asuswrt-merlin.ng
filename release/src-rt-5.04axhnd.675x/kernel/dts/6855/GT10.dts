@@ -147,7 +147,6 @@
             oam-idx = <3>;
             status = "okay";
             label = "eth0";
-            is-wan;
         };
     };
 };
@@ -251,6 +250,15 @@
 		pin = <20>;
 		active_low;
 		init_high;
+	};
+
+	/* USB Power */
+	led7:led_gpio_80 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <80>;
+		active_high;
+		init_low;
 	};
 };
 

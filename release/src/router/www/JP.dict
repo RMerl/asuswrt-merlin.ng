@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=今後、Alexa™およびIFTTT™の機能�
 ASUS_eula_withdraw_note=インターネットへ接続できないため、「共有しない」に変更できません。インターネットに接続し、「共有しない」を実行してください。
 ASUS_eula_withdraw_unstable=インターネット接続が不安定のため、「共有しない」に変更できません。しばらくしてから、もう一度実行してください。
 TM_eula_confirm=ASUS AiProtection をご利用いただくにあたっては以下にご同意いただく必要があります。
-TM_eula_desc1=AiProtection、トラフィックアナライザー、アプリアナライザー、アダプティブ QoS、ゲームブースト、Web 履歴の使用により、<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro の使用許諾契約</a>に同意したものとします。
-TM_eula_desc2=お客様の情報は、AiProtection、アプリアナライザー、アプリアプリアナライザー、アダプティブ QoS 、Web履歴を通じ、Trend Micro で収集されます。お客様とTrend Microにおける契約、Trend Micro が提供するサービスの内容について、ASUSでは一切の責任を負わないものとし、それに同意するものとします。Trend Microによる情報収集、処理、使用に関するお客様からのお問い合わせについては、Trend Microによるプライバシー保護に関する規約をご参照いただくか、Trend Micro に直接お問い合わせください。
+TM_eula_desc1=AiProtection、ペアレンタルコントロール（Web ＆ アプリケーションフィルター）、トラフィックアナライザー、アプリアナライザー、アダプティブ QoS、ゲームブースト、Web 履歴の使用により、<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro の使用許諾契約</a>に同意したものとします。
+TM_eula_desc2=お客様の情報は、AiProtection、ペアレンタルコントロール（Web ＆ アプリケーションフィルター）、アプリアナライザー、アプリアプリアナライザー、アダプティブ QoS 、Web履歴を通じ、Trend Micro で収集されます。お客様とTrend Microにおける契約、Trend Micro が提供するサービスの内容について、ASUSでは一切の責任を負わないものとし、それに同意するものとします。Trend Microによる情報収集、処理、使用に関するお客様からのお問い合わせについては、Trend Microによるプライバシー保護に関する規約をご参照いただくか、Trend Micro に直接お問い合わせください。
 TM_eula_desc3=上記の機能を使用したTrend Micro との情報共有を無効にしたい場合は、ルーターWeb GUIから「詳細設定」→「管理」→「プライバシー」で設定を変更してください。
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=AiProtection、トラフィックアナライザー、アプリアナライザー、アダプティブ QoS、ゲームブースト、Web 履歴:
+TM_eula_withdraw0=AiProtection、ペアレンタルコントロール（Web ＆ アプリケーションフィルター）、トラフィックアナライザー、アプリアナライザー、アダプティブ QoS、ゲームブースト、Web 履歴:
 TM_eula_withdraw_desc1=Trend Micro では、上記機能により利用目的の範囲内でお客様情報を収集をします。
 TM_eula_withdraw_desc2=上記機能の使用による Trend Micro との情報共有を希望しない場合は、下記の<span style="font-weight: bold;">「共有しない」</span> をクリックしてください。 Trend Micro との情報共有を無効にすることによって、それらの機能が正常に動作しない場合があります。
 withdraw_confirm=「共有しない」に変更しますか？
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=AiMeshシステムとエンドデバイスの間の互換性
 AiMesh_confirm_msg10=AiMeshシステムとエンドデバイスを確実に接続するためには、WPA3パーソナルに切り替える前んじ<a id="wpa3FaqLink">FAQ</a>をお読みください。
 AiMesh_confirm_msg11=現在お使いになっているのはWPA3パーソナルです。AiMeshシステムを作るには、認証方法がWPA2/WPA3パーソナルに変更されます。続けますか？
 AiMesh_confirm_msg12=詳細は <a id='wpa3FaqLink'>こちら</a> の FAQ でご確認ください。
-AiMesh_confirm_msg13=詳細に関しては、 <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>この FAQ</a>を参照してください。
+AiMesh_confirm_msg13=詳細に関しては、 <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>この FAQ</a>を参照してください。
 AiMesh_Feature_Desc=革新的な新しい機能 ASUS AiMesh では、複数の AiMesh メインルーターを相互接続し、ご家庭全体に WiFi ネットワークを構築することができます。
 AiMesh_FAQ=ASUS AiMesh の詳細を確認する
 AiMesh_FindNode=AiMesh ノードを探す
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=バルコニー
 AiMesh_NodeLocation23=会議室
 AiMesh_NodeLocation24=カスタム
 AiMesh_NodeLocation25=ガレージ
+AiMesh_NodeLocation26=1階
+AiMesh_NodeLocation27=ゲーミング ルーム
+AiMesh_NodeLocation28=ジム
 AiMesh_OfflineTips=オフライン時の確認事項
 AiMesh_OfflineTips1=AiMesh ノードの電源が入っていることをご確認ください
 AiMesh_OfflineTips2=もう一度、AiMesh ノードを再起動してからお試しください
@@ -1292,7 +1295,7 @@ AiProtection_filter=Web ＆ アプリケーションフィルター
 AiProtection_filter_Adult=成人向け
 AiProtection_filter_Adult_desc=アダルト、ポルノ、暴力、ギャンブルなどの有害なホームページへのアクセスをブロックすることができます。
 [###MODEL_DEP###][BRT-AC828][RT-AD7200]AiProtection_filter_Adult_desc=成人向けのコンテンツをブロックすることで、従業員は性的、暴力的、違法なコンテンツにアクセスできなくなります。
-AiProtection_filter_Adult1=ポルノ
+AiProtection_filter_Adult1=成人向け/アダルト
 AiProtection_filter_Adult2=違法行為 / 暴力
 AiProtection_filter_Adult3=ギャンブル
 AiProtection_filter_Adult4=インターネット電話
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=ユーザー独自の証明書をインポート
 DDNS_https_cert_Import_desc=証明機関が発行した証明書をここにアップロードします。秘密鍵とSSL証明書が必要です。
 DDNS_https_cert_PrivateKey=秘密鍵
 DDNS_https_cert_PrivateKey_note=秘密鍵は暗号化キーで保護することはできません。
+DDNS_ipv6_update=IPv6 アップデート
+DDNS_ipv6_update_desc=クライアントのネットワーク環境が IPv6 ネットワーク アドレスを使用している場合、この機能を有効化すると、リモート デバイスにアクセスする時に、ドメインが IPv6 ネットワーク アドレスに対して最初に解決されます。
 DDNS_ssl_cert=SSL 証明書
 DDNS_termofservice_Title=ご利用条件
 DDNS_transfer=ASUS DDNS 名も移行する
@@ -2143,7 +2148,7 @@ FirewallConfig_DoSEnable_itemdesc=DoS (Denial of Service) 保護機能の有効/
 FirewallConfig_DoSEnable_itemname=DoS 保護を有効にする
 FirewallConfig_FirewallEnable_itemdesc=ファイアウォール機能を無効にすると、関連する次の機能も無効になります。（例：WANからのウェブアクセス）
 FirewallConfig_FirewallEnable_itemname=ファイアウォールを有効にする
-FirewallIPv4_enable=IPv4 ファイアウォールを有効にする
+FirewallIPv4_enable=IPv4 受信ファイアウォール規則有効にする
 FirewallIPv4=IPv4 ファイアウォール
 FirewallConfig_FTPPrompt_itemdesc=FTP サーバーのポートレンジを 20:21 に設定した場合、ネイティブの FTP サーバーとの衝突が発生します。
 FirewallConfig_KeywordFilterEnable_itemname=キーワードフィルターを有効にする
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=新しいファームウェアが利用可能です。
 FW_rlnote_loading=リリースノートのロード中です。お待ちください...
 FW_rlnote_failed=リリースノートが見つけかりませんでした。
+FW_rollback=ロールバック
+FW_rollback_choose=ファームウェア バージョンを選択
+FW_rollback_selector=ロールバック セレクター
 Game_acceleration=ゲームアクセラレーション
 Game_Boost=ゲームブースト
 Game_Boost_acceleration=トリプルレベルのゲームアクセラレーション
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=新しい RADIUS クライアントを作成
 PM_Group_Table=グループテーブル
 PoolName=パーティション名
 Port_format=送信元 IP、または宛先 IP のポート範囲の入力は 2 通りの方法があります。a) 特定のポートを（ \"95\"）を入力、b) 特定のレンジ内のポート（\"103:315\", \">100\", \"<65535\"）を入力。
+Port_Gaming=ゲーミング ポート
 Port_Mapping_desc1=ポートマッピング
 Port_Mapping_desc2=ポートマッピングは特定の LAN ポートで IPTV WAN インタフェースをサポートしています。適切な LAN ポートを選択し「適用」をクリックしてください。
 Port_Mapping_desc3=ポートマッピングを有効にする
@@ -3537,10 +3546,10 @@ Uplink_rate=送信データ/秒
 Uplink_traffic=送信データ
 upnp_Desc=iTunes、UPnP サーバーのセットアップを行います。
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=UPnP サーバーのセットアップを行います。
-UPnPMediaServer_Help=ZVMODELVZ は UPnP 規格に準拠しています。有効にすると、他の UPnP デバイス（PS3 やデジタルメディアプレーヤー）が USB ディスク内のマルチメディアファイルにアクセスできるようになります。
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=ZVMODELVZ は UPnP 規格に準拠しています。有効にすると、他の UPnP デバイス（PS3 やデジタルメディアプレーヤー）が USB ディスク内のマルチメディアファイルにアクセスできるようになります。
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=ZVMODELVZ は UPnP 規格に準拠しています。有効にすると、他の UPnP デバイス（PS3 やデジタルメディアプレーヤー）が USB ディスク内のマルチメディアファイルにアクセスできるようになります。
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=ZVMODELVZ は UPnP 規格に準拠しています。有効にすると、他の UPnP デバイス（PS3 やデジタルメディアプレーヤー）が USB ディスク内のマルチメディアファイルにアクセスできるようになります。
+UPnPMediaServer_Help=<a id='upnp_link'>UPnP、iTunes</a>, <a id='ftp_link'>FTP</a> および <a id='samba_link'>ネットワーク場所 (Samba)</a> をセットアップします。
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=<a id='upnp_link'>UPnP、iTunes</a> および <a id='samba_link'>ネットワーク場所 (Samba)</a> をセットアップします。
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=<a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> および <a id='samba_link'>ネットワーク場所 (Samba)</a> をセットアップします。
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=<a id='upnp_link'>UPnP</a> および <a id='samba_link'>ネットワーク場所 (Samba)</a> をセットアップします。
 url_keyword_alert=URL キーワード
 USB_Application_check=USB アプリケーションをご確認ください。
 USB_Application_disk_checking=ディスクをチェックしています
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=アップデートが失敗しました。再度お�
 vpn_ipsec_clients_reconnect_hint=適用をクリックすると、VPNクライアントがすべて再接続されます。続けてよろしいですか
 vpn_ipsec_IKE_ver=IKE バージョン
 vpn_ipsec_set_DDNS=ここをクリックしてDDNSを設定してください。
+vpn_wireguard_server_faq=WireGuard® サーバーの設定方法
+vpn_wireguard_site2site_faq=WireGuard® を使用してサイト間VPNを設定する方法
+vpn_wireguard_client_faq=VPNフュージョンでWireGuard® クライアントを設定する方法
 vpnc_desc1=VPN クライアントは、公衆回線上に仮想的な通信トンネルを構成したネットワークを経由し、VPN サーバー上のプライベートネットワークに安全にアクセスすることが可能になります。
 vpnc_desc2=マートテレビ、ブルーレイプレーヤー等、一部の機器は VPN をサポートしていない場合があります。
 vpnc_desc3=ASUSWRT が提供する VPN 機能は、個々のデバイスへ VPN ソフトウェアをインストールせずにプライベートネットワーク内の全てのデバイスにアクセスすることができます。
@@ -3815,18 +3827,18 @@ wandog_enable2=インターネットへの Ping
 WANTCPMSSOptionText=TCP MSS オプション
 WANTCPMSSOptionComm1Text=バイト
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN アグリゲーションは、2つのネットワークを組み合わせて、最大 2Gbps に高速通信を可能にします。ルーターの WAN ポートと LAN 4 ポートをモデムの LAN ポートに接続します（必ず同じ仕様の2本のケーブルをご使用ください）。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN アグリゲーションに関する FAQ</a>
+WANAggregation_desc=WAN アグリゲーションは、2つのネットワークを組み合わせて、最大 2Gbps に高速通信を可能にします。ルーターの #WAN ポートと LAN 4 ポートをモデムの LAN ポートに接続します（必ず同じ仕様の2本のケーブルをご使用ください）。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN アグリゲーションに関する FAQ</a>
 WANAggregation_enable=WAN アグリゲーションを有効にする
 WANAggregation_disable_dualwan=デュアル WAN が有効になっています。 WAN アグリゲーションを有効にすると、デュアル WAN は無効になります。続行しますか？
 WANAggregation_disable_WANAggregation=WAN アグリゲーションが有効になっています。 デュアル WAN を有効にすると、WAN アグリゲーションは無効になります。続行しますか？
 WANAggregation_PortConflict_hint1=LAN 4 ポートは WAN アグリゲーションで使用しています。 IPTV を有効にすると、WAN アグリゲーションは無効になります。続行しますか？
 WANAggregation_PortConflict_hint2=LAN 4 ポートで IPTV で使用しています。 WAN アグリゲーションを有効にすると IPTV は無効になります。続行しますか？
 WANAggregation_disable_IPTVDualWAN=デュアル WAN とIPTVの両方が有効になっています。 WAN アグリゲーションを有効にすると、ポートの競合を回避するためデュアル WAN と IPTV は無効になります。続行しますか？
-WANAggregation_help_WAN=WAN ポートとモデムの LAN ポートが、同じ仕様の 2 本のケーブルで接続されていることを確認してください。
+WANAggregation_help_WAN=#WAN ポートとモデムの LAN ポートが、同じ仕様の 2 本のケーブルで接続されていることを確認してください。
 WANAggregation_help_LAN=LAN 4ポートとモデムのLANポートが、同じ仕様の2本のケーブルで接続されていることを確認してください。
 WANAggregation_goto_WAN=WAN アグリゲーションを有効にするには、<a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN - インターネット</a>接続のページに移動します。
 WANAggregation_help_desc=WAN アグリゲーションの設定ができない場合は、次の解決策をお試しください。
-WANAggregation_help_step1=お使いのモデムのLANポートとルータのWANおよびLAN 4がケーブルで接続されていることを確認
+WANAggregation_help_step1=お使いのモデムのLANポートとルータの#WANおよびLAN 4がケーブルで接続されていることを確認
 WANAggregation_help_step2=モデムで 802.3ad が有効になっていることを確認します。
 WANAggregation_help_step3=同じ仕様のケーブルを２本使用していることを確認します。（ギガビット＆ギガビットまたは10/100＆10 / 100Mbps）
 WANAggregation_help_step4=ルーターを再起動します。
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=GeForce Now を選択すると、GeForce Now ゲームデバイスの優先化を行うことができます。より快適なゲーム通信をお楽しみいただけます。
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=イベント
 AURA_Event_desc=システムは、さまざまな LED ステータスを表示を行うための、以下のイベントを検出しました。
 AURA_Event_Boost_desc=ゲームブーストを有効にすると、LED はゆっくり赤点滅します。

@@ -35,7 +35,7 @@ typedef struct host_t host_t;
 #include <sys/types.h>
 
 /**
- * Representates a Host
+ * Represents a Host
  *
  * Host object, identifies a address:port pair and defines some
  * useful functions on it.

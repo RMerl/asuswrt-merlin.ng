@@ -152,11 +152,6 @@ function switchAccount(protocol){
 	
 	switch(get_manage_type(protocol)){
 		case 1:
-			if(ftp_tls_orig=="1"){
-				alert("Allow anonymous login is in conflict with TLS settings.");       /* Untranslated */
-				refreshpage();
-				break;
-			}
 			if(confirm("<#Aidisk_FTP_hint_3#>")){
 				document.aidiskForm.action = "/aidisk/switch_share_mode.asp";
 				document.aidiskForm.protocol.value = protocol;
@@ -758,13 +753,15 @@ function switchUserType(flag){
 }
 
 function secure_check(flag){
-	
-	if(flag==1 && !get_manage_type(PROTOCOL)){
-		alert("<#usb_tls_conflict#>");
-		document.form.ftp_tls[1].checked = true;
-		return;
+
+	if(ftp_ssl_support){	
+		document.getElementById("TLS_disabled").innerHTML = (flag==1)? "":"<#usb_tls_disabled_hint#>";
+		if(flag==1 && !get_manage_type(PROTOCOL)){
+			alert("<#usb_tls_conflict#>");
+			document.form.ftp_tls[1].checked = true;
+			return;
+		}
 	}
-	document.getElementById("TLS_disabled").innerHTML = (flag==1)? "":"<#usb_tls_disabled_hint#>";
 }
 </script>
 </head>
@@ -878,12 +875,12 @@ function secure_check(flag){
 							<script type="text/javascript">
 								$('#radio_anonymous_enable').iphoneSwitch(!get_manage_type(PROTOCOL), 
 									function() {
-										if(ftp_tls_orig=="0"){
-											switchAccount(PROTOCOL);
+										if(ftp_ssl_support && ftp_tls_orig=="1"){
+											alert("<#usb_tls_conflict#>");
+											refreshpage();
 										}
 										else{
-											alert("Allow anonymous login is in conflict with TLS settings.");       /* Untranslated */
-											refreshpage();
+											switchAccount(PROTOCOL);
 										}
 
 									},

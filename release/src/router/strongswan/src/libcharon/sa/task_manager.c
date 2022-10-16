@@ -25,7 +25,7 @@
 u_int task_manager_total_retransmit_timeout()
 {
 	double timeout, base, limit = 0, total = 0;
-	int tries, i;
+	int tries, max_tries = 0, i;
 
 	tries = lib->settings->get_int(lib->settings, "%s.retransmit_tries",
 								   RETRANSMIT_TRIES, lib->ns);
@@ -36,9 +36,18 @@ u_int task_manager_total_retransmit_timeout()
 	limit = lib->settings->get_double(lib->settings, "%s.retransmit_limit",
 									  0, lib->ns);
 
+	if (base > 1)
+	{
+		max_tries = log(UINT32_MAX/(1000.0 * timeout))/log(base);
+	}
+
 	for (i = 0; i <= tries; i++)
 	{
-		double interval = timeout * pow(base, i);
+		double interval = UINT32_MAX/1000.0;
+		if (max_tries && i <= max_tries)
+		{
+			interval = timeout * pow(base, i);
+		}
 		if (limit)
 		{
 			interval = min(interval, limit);

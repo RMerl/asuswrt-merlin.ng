@@ -160,7 +160,7 @@ static uint32_t jhash(jhash_version_t version, uint32_t a, uint32_t b)
 }
 
 /**
- * Segmentate a calculated hash
+ * Segment a calculated hash
  */
 static u_int hash2segment(private_ha_kernel_t *this, uint64_t hash)
 {

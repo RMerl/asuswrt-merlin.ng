@@ -1,9 +1,12 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: happy-eyeballs-timeout-ms
 Arg: <milliseconds>
 Help: Time for IPv6 before trying IPv4
 Added: 7.59.0
 Category: connection
 Example: --happy-eyeballs-timeout-ms 500 $URL
+See-also: max-time connect-timeout
 ---
 Happy Eyeballs is an algorithm that attempts to connect to both IPv4 and IPv6
 addresses for dual-stack hosts, giving IPv6 a head-start of the specified

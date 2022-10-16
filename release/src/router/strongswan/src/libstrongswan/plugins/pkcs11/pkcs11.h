@@ -782,7 +782,7 @@ _CK_DECLARE_FUNCTION (C_SetOperationState,
 		       unsigned char *operation_state,
 		       unsigned long operation_state_len,
 		       ck_object_handle_t encryption_key,
-		       ck_object_handle_t authentiation_key));
+		       ck_object_handle_t authentication_key));
 _CK_DECLARE_FUNCTION (C_Login,
 		      (ck_session_handle_t session, ck_user_type_t user_type,
 		       unsigned char *pin, unsigned long pin_len));

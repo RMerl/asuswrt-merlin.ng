@@ -74,16 +74,24 @@ void stop_aae_sip_conn(int sdk_deinit)
 #define WAIT_TIMEOUT 5
 	int time_count = 0;
 	if (pids("aaews")) {
-		if (sdk_deinit)
-			nvram_set_int("aae_action", AAEWS_ACTION_SDK_DEINIT);
-		else
-			nvram_set_int("aae_action", AAEWS_ACTION_SIP_UNREGISTER);
-		killall("aaews", AAEWS_SIG_ACTION);
-		while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
-			sleep(1);
-			//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
-			time_count++;
+#if defined(RTCONFIG_ACCOUNT_BINDING) && defined(RTCONFIG_AWSIOT)
+		if (nvram_get_int("oauth_auth_status") == 2) {
+			killall("aaews", SIGKILL);
+		} else
+#endif
+		{
+			if (sdk_deinit)
+				nvram_set_int("aae_action", AAEWS_ACTION_SDK_DEINIT);
+			else
+				nvram_set_int("aae_action", AAEWS_ACTION_SIP_UNREGISTER);
+			killall("aaews", AAEWS_SIG_ACTION);
+			while(time_count < WAIT_TIMEOUT && nvram_match("aae_sip_connected", "1")) {
+				sleep(1);
+				//_dprintf("%s: wait sip unregister...\n", __FUNCTION__);
+				time_count++;
+			}
 		}
+
 	}
 }
 
@@ -101,7 +109,7 @@ void stop_aae_gently()
 		}
 
 		time_count = 0;
-		killall("aaews", SIGTERM);
+		killall("aaews", SIGKILL);
 		while(time_count < WAIT_TIMEOUT && pids("aaews")) {
 			sleep(1);
 			//_dprintf("%s: wait aaews end...\n", __FUNCTION__);

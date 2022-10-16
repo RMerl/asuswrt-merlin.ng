@@ -24,6 +24,12 @@
 # get common
 include $(WLCFGDIR)/wl_default
 
+# For RTAXE7800
+-include ../../../../../../../../../.config
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX58U_V2 TUF-AX3000_V2 RT-AXE7800 RT-AX3000N))
+NPHY:=0
+endif
+
 # features
 include $(WLCFGDIR)/wlconfig_apdef
 include $(WLCFGDIR)/wlconfig_lx_wl_clm

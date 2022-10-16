@@ -494,4 +494,12 @@ table.fields {
 }
 .orange_line{
 	color:#FF9000;
-}	
+}
+.iftitle{
+	font-weight: bold;
+	color: #91071F;
+	position: absolute;
+	top: 375px;
+	left: 45%;
+	min-width: 180px;
+}

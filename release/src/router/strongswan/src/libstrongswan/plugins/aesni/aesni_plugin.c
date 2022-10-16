@@ -15,6 +15,7 @@
 
 #include "aesni_plugin.h"
 #include "aesni_cbc.h"
+#include "aesni_ecb.h"
 #include "aesni_ctr.h"
 #include "aesni_ccm.h"
 #include "aesni_gcm.h"
@@ -55,6 +56,10 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 16),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 24),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 32),
+		PLUGIN_REGISTER(CRYPTER, aesni_ecb_create),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 16),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 24),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 32),
 		PLUGIN_REGISTER(CRYPTER, aesni_ctr_create),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CTR, 16),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CTR, 24),

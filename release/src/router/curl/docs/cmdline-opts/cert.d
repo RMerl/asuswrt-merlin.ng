@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Short: E
 Long: cert
 Arg: <certificate[:password]>
@@ -6,11 +8,12 @@ Protocols: TLS
 See-also: cert-type key key-type
 Category: tls
 Example: --cert certfile --key keyfile $URL
+Added: 5.0
 ---
 Tells curl to use the specified client certificate file when getting a file
 with HTTPS, FTPS or another SSL-based protocol. The certificate must be in
 PKCS#12 format if using Secure Transport, or PEM format if using any other
-engine.  If the optional password isn't specified, it will be queried for on
+engine. If the optional password is not specified, it will be queried for on
 the terminal. Note that this option assumes a \&"certificate" file that is the
 private key and the client certificate concatenated! See --cert and --key to
 specify them independently.
@@ -20,9 +23,9 @@ curl the nickname of the certificate to use within the NSS database defined
 by the environment variable SSL_DIR (or by default /etc/pki/nssdb). If the
 NSS PEM PKCS#11 module (libnsspem.so) is available then PEM files may be
 loaded. If you want to use a file from the current directory, please precede
-it with "./" prefix, in order to avoid confusion with a nickname.  If the
+it with "./" prefix, in order to avoid confusion with a nickname. If the
 nickname contains ":", it needs to be preceded by "\\" so that it is not
-recognized as password delimiter.  If the nickname contains "\\", it needs to
+recognized as password delimiter. If the nickname contains "\\", it needs to
 be escaped as "\\\\" so that it is not recognized as an escape character.
 
 If curl is built against OpenSSL library, and the engine pkcs11 is available,

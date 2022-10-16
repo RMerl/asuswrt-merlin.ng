@@ -44,7 +44,7 @@ struct private_eap_gtc_t {
 	identification_t *peer;
 
 	/**
-	 * EAP message identififier
+	 * EAP message identifier
 	 */
 	uint8_t identifier;
 };
@@ -195,7 +195,7 @@ METHOD(eap_method_t, get_type, eap_type_t,
 METHOD(eap_method_t, get_msk, status_t,
 	private_eap_gtc_t *this, chunk_t *msk)
 {
-	return FAILED;
+	return NOT_SUPPORTED;
 }
 
 METHOD(eap_method_t, get_identifier, uint8_t,

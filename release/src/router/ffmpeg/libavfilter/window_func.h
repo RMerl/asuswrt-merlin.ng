@@ -30,6 +30,7 @@ enum WindowFunc     { WFUNC_RECT, WFUNC_HANNING, WFUNC_HAMMING, WFUNC_BLACKMAN,
                       WFUNC_BHARRIS, WFUNC_BNUTTALL, WFUNC_SINE, WFUNC_NUTTALL,
                       WFUNC_BHANN, WFUNC_LANCZOS, WFUNC_GAUSS, WFUNC_TUKEY,
                       WFUNC_DOLPH, WFUNC_CAUCHY, WFUNC_PARZEN, WFUNC_POISSON,
+                      WFUNC_BOHMAN,
                       NB_WFUNC };
 
 static inline void generate_window_func(float *lut, int N, int win_func,
@@ -132,7 +133,7 @@ static inline void generate_window_func(float *lut, int N, int win_func,
         for (c = 1 - 1 / (b*b), n = (N-1) / 2; n >= 0; --n) {
             for (sum = !n, b = t = j = 1; j <= n && sum != t; b *= (n-j) * (1./j), ++j)
                 t = sum, sum += (b *= c * (N - n - j) * (1./j));
-            sum /= (N - 1 - n), sum /= (norm = norm ? norm : sum);
+            sum /= (N - 1 - n), norm = norm ? norm : sum, sum /= norm;
             lut[n] = sum;
             lut[N - 1 - n] = sum;
         }
@@ -179,6 +180,14 @@ static inline void generate_window_func(float *lut, int N, int win_func,
             } else {
                 lut[n] = 0;
             }
+        }
+        *overlap = 0.75;
+        break;
+    case WFUNC_BOHMAN:
+        for (n = 0; n < N; n++) {
+            double x = 2 * ((n / (double)(N - 1))) - 1.;
+
+            lut[n] = (1 - fabs(x)) * cos(M_PI*fabs(x)) + 1./M_PI*sin(M_PI*fabs(x));
         }
         *overlap = 0.75;
         break;

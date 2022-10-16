@@ -37,7 +37,7 @@
 #include "pcm.h"
 #include "sox.h"
 
-static int sox_probe(AVProbeData *p)
+static int sox_probe(const AVProbeData *p)
 {
     if (AV_RL32(p->buf) == SOX_TAG || AV_RB32(p->buf) == SOX_TAG)
         return AVPROBE_SCORE_MAX;
@@ -90,7 +90,7 @@ static int sox_read_header(AVFormatContext *s)
                sample_rate_frac);
 
     if ((header_size + 4) & 7 || header_size < SOX_FIXED_HDR + comment_size
-        || st->codecpar->channels > 65535) /* Reserve top 16 bits */ {
+        || st->codecpar->channels > 65535 || st->codecpar->channels <= 0) /* Reserve top 16 bits */ {
         av_log(s, AV_LOG_ERROR, "invalid header\n");
         return AVERROR_INVALIDDATA;
     }

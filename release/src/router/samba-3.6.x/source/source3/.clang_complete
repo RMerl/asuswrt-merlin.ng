@@ -1,2 +1,0 @@
--I. -I./.. -Iinclude -I./../lib/replace -I./../lib/tevent -I./librpc -I./../lib/talloc -I../lib/tdb/include
--Iinclude/includes.h.gch

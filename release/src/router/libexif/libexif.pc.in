@@ -7,5 +7,6 @@ Name: libexif
 Description: Library for easy access to EXIF data
 Requires:
 Version: @VERSION@
-Libs: -L${libdir} -lexif -lm
+Libs: -L${libdir} -lexif
+Libs.private: -lm
 Cflags: -I${includedir}

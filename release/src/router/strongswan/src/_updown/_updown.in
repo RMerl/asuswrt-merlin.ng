@@ -43,7 +43,7 @@
 #              is the name of the ipsec interface to be used.
 #
 #       PLUTO_REQID
-#              is the requid of the AH|ESP policy
+#              is the reqid of the AH|ESP policy
 #
 #       PLUTO_PROTO
 #              is the negotiated IPsec protocol, ah|esp
@@ -118,6 +118,12 @@
 #
 #       PLUTO_MARK_OUT
 #              is an optional XFRM mark set on the outbound IPsec SA
+#
+#       PLUTO_IF_ID_IN
+#              is an optional XFRM interface ID set on the inbound IPsec SA
+#
+#       PLUTO_IF_ID_OUT
+#              is an optional XFRM interface ID set on the outbound IPsec SA
 #
 #       PLUTO_UDP_ENC
 #              contains the remote UDP port in the case of ESP_IN_UDP
@@ -301,10 +307,10 @@ up-client:iptables)
 	# ones, so do not mess with it; see CAUTION comment up at top.
 	if [ "$PLUTO_PEER_CLIENT" != "$PLUTO_MY_SOURCEIP/32" ]
 	then
-	  iptables -I FORWARD 1 -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
+	  iptables -I IPSEC_STRONGSWAN 1 -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
 	      -s $PLUTO_MY_CLIENT $S_MY_PORT \
 	      -d $PLUTO_PEER_CLIENT $D_PEER_PORT $IPSEC_POLICY_OUT -j ACCEPT
-	  iptables -I FORWARD 1 -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
+	  iptables -I IPSEC_STRONGSWAN 1 -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
 	      -s $PLUTO_PEER_CLIENT $S_PEER_PORT \
 	      -d $PLUTO_MY_CLIENT $D_MY_PORT $IPSEC_POLICY_IN -j ACCEPT
 	fi
@@ -349,11 +355,11 @@ down-client:iptables)
 	# ones, so do not mess with it; see CAUTION comment up at top.
 	if [ "$PLUTO_PEER_CLIENT" != "$PLUTO_MY_SOURCEIP/32" ]
 	then
-	  iptables -D FORWARD -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
+	  iptables -D IPSEC_STRONGSWAN -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
 	      -s $PLUTO_MY_CLIENT $S_MY_PORT \
 	      -d $PLUTO_PEER_CLIENT $D_PEER_PORT \
 	         $IPSEC_POLICY_OUT -j ACCEPT
-	  iptables -D FORWARD -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
+	  iptables -D IPSEC_STRONGSWAN -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
 	      -s $PLUTO_PEER_CLIENT $S_PEER_PORT \
 	      -d $PLUTO_MY_CLIENT $D_MY_PORT \
 	         $IPSEC_POLICY_IN -j ACCEPT
@@ -481,10 +487,10 @@ up-client-v6:iptables)
 	# ones, so do not mess with it; see CAUTION comment up at top.
 	if [ "$PLUTO_PEER_CLIENT" != "$PLUTO_MY_SOURCEIP/128" ]
 	then
-	  ip6tables -I FORWARD 1 -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
+	  ip6tables -I IPSEC_STRONGSWAN 1 -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
 	      -s $PLUTO_MY_CLIENT $S_MY_PORT \
 	      -d $PLUTO_PEER_CLIENT $D_PEER_PORT $IPSEC_POLICY_OUT -j ACCEPT
-	  ip6tables -I FORWARD 1 -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
+	  ip6tables -I IPSEC_STRONGSWAN 1 -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
 	      -s $PLUTO_PEER_CLIENT $S_PEER_PORT \
 	      -d $PLUTO_MY_CLIENT $D_MY_PORT $IPSEC_POLICY_IN -j ACCEPT
 	fi
@@ -529,11 +535,11 @@ down-client-v6:iptables)
 	# ones, so do not mess with it; see CAUTION comment up at top.
 	if [ "$PLUTO_PEER_CLIENT" != "$PLUTO_MY_SOURCEIP/128" ]
 	then
-	  ip6tables -D FORWARD -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
+	  ip6tables -D IPSEC_STRONGSWAN -o $PLUTO_INTERFACE -p $PLUTO_PEER_PROTOCOL \
 	      -s $PLUTO_MY_CLIENT $S_MY_PORT \
 	      -d $PLUTO_PEER_CLIENT $D_PEER_PORT \
 	         $IPSEC_POLICY_OUT -j ACCEPT
-	  ip6tables -D FORWARD -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
+	  ip6tables -D IPSEC_STRONGSWAN -i $PLUTO_INTERFACE -p $PLUTO_MY_PROTOCOL \
 	      -s $PLUTO_PEER_CLIENT $S_PEER_PORT \
 	      -d $PLUTO_MY_CLIENT $D_MY_PORT \
 	         $IPSEC_POLICY_IN -j ACCEPT

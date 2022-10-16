@@ -330,7 +330,9 @@ static bool load_cfg_candidates(private_ike_auth_t *this)
 	my_id = this->ike_sa->get_my_id(this->ike_sa);
 	other_id = this->ike_sa->get_other_id(this->ike_sa);
 	ike_proposal = this->ike_sa->get_proposal(this->ike_sa);
-	private = this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN);
+	private = this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN) ||
+			  lib->settings->get_bool(lib->settings, "%s.accept_private_algs",
+									  FALSE, lib->ns);
 
 	DBG1(DBG_CFG, "looking for peer configs matching %H[%Y]...%H[%Y]",
 		 me, my_id, other, other_id);
@@ -885,7 +887,7 @@ METHOD(task_t, process_r, status_t,
 	/* another auth round done, invoke authorize hook */
 	if (!charon->bus->authorize(charon->bus, FALSE))
 	{
-		DBG1(DBG_IKE, "authorization hook forbids IKE_SA, cancelling");
+		DBG1(DBG_IKE, "authorization hook forbids IKE_SA, canceling");
 		this->authentication_failed = TRUE;
 		return NEED_MORE;
 	}
@@ -1007,9 +1009,19 @@ METHOD(task_t, build_r, status_t,
 			if (!this->ike_sa->supports_extension(this->ike_sa,
 												  EXT_EAP_ONLY_AUTHENTICATION))
 			{
-				DBG1(DBG_IKE, "configured EAP-only authentication, but peer "
-					 "does not support it");
-				goto peer_auth_failed;
+				if (lib->settings->get_bool(lib->settings,
+							"%s.force_eap_only_authentication", FALSE, lib->ns))
+				{
+					DBG1(DBG_IKE, "ignore missing %N notify and use EAP-only "
+						 "authentication", notify_type_names,
+						 EAP_ONLY_AUTHENTICATION);
+				}
+				else
+				{
+					DBG1(DBG_IKE, "configured EAP-only authentication, but "
+						 "peer does not support it");
+					goto peer_auth_failed;
+				}
 			}
 		}
 		else
@@ -1092,7 +1104,7 @@ METHOD(task_t, build_r, status_t,
 	if (charon->ike_sa_manager->check_uniqueness(charon->ike_sa_manager,
 										this->ike_sa, this->initial_contact))
 	{
-		DBG1(DBG_IKE, "cancelling IKE_SA setup due to uniqueness policy");
+		DBG1(DBG_IKE, "canceling IKE_SA setup due to uniqueness policy");
 		charon->bus->alert(charon->bus, ALERT_UNIQUE_KEEP);
 		message->add_notify(message, TRUE, AUTHENTICATION_FAILED,
 							chunk_empty);
@@ -1100,7 +1112,7 @@ METHOD(task_t, build_r, status_t,
 	}
 	if (!charon->bus->authorize(charon->bus, TRUE))
 	{
-		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, cancelling");
+		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, canceling");
 		goto peer_auth_failed;
 	}
 	if (this->ike_sa->supports_extension(this->ike_sa, EXT_IKE_REDIRECTION) &&
@@ -1174,7 +1186,7 @@ static void send_auth_failed_informational(private_ike_auth_t *this,
 }
 
 /**
- * Check if strict constraint fullfillment required to continue current auth
+ * Check if strict constraint fulfillment required to continue current auth
  */
 static bool require_strict(private_ike_auth_t *this, bool mutual_eap)
 {
@@ -1350,7 +1362,7 @@ METHOD(task_t, process_i, status_t,
 		/* another auth round done, invoke authorize hook */
 		if (!charon->bus->authorize(charon->bus, FALSE))
 		{
-			DBG1(DBG_IKE, "authorization forbids IKE_SA, cancelling");
+			DBG1(DBG_IKE, "authorization forbids IKE_SA, canceling");
 			goto peer_auth_failed;
 		}
 
@@ -1441,7 +1453,7 @@ METHOD(task_t, process_i, status_t,
 	if (!charon->bus->authorize(charon->bus, TRUE))
 	{
 		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, "
-				      "cancelling");
+				      "canceling");
 		goto peer_auth_failed;
 	}
 	DBG0(DBG_IKE, "IKE_SA %s[%d] established between %H[%Y]...%H[%Y]",

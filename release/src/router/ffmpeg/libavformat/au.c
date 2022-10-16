@@ -35,8 +35,6 @@
 
 /* if we don't know the size in advance */
 #define AU_UNKNOWN_SIZE ((uint32_t)(~0))
-/* the specification requires an annotation field of at least eight bytes */
-#define AU_DEFAULT_HEADER_SIZE (24+8)
 
 static const AVCodecTag codec_au_tags[] = {
     { AV_CODEC_ID_PCM_MULAW,  1 },
@@ -55,9 +53,11 @@ static const AVCodecTag codec_au_tags[] = {
     { AV_CODEC_ID_NONE,       0 },
 };
 
+static const AVCodecTag *const au_codec_tags[] = { codec_au_tags, NULL };
+
 #if CONFIG_AU_DEMUXER
 
-static int au_probe(AVProbeData *p)
+static int au_probe(const AVProbeData *p)
 {
     if (p->buf[0] == '.' && p->buf[1] == 's' &&
         p->buf[2] == 'n' && p->buf[3] == 'd')
@@ -68,31 +68,38 @@ static int au_probe(AVProbeData *p)
 
 static int au_read_annotation(AVFormatContext *s, int size)
 {
-    static const char * keys[] = {
+    static const char keys[][7] = {
         "title",
         "artist",
         "album",
         "track",
         "genre",
-        NULL };
+    };
     AVIOContext *pb = s->pb;
     enum { PARSE_KEY, PARSE_VALUE, PARSE_FINISHED } state = PARSE_KEY;
     char c;
     AVBPrint bprint;
     char * key = NULL;
     char * value = NULL;
-    int i;
+    int ret, i;
 
     av_bprint_init(&bprint, 64, AV_BPRINT_SIZE_UNLIMITED);
 
     while (size-- > 0) {
+        if (avio_feof(pb)) {
+            av_bprint_finalize(&bprint, NULL);
+            av_freep(&key);
+            return AVERROR_EOF;
+        }
         c = avio_r8(pb);
         switch(state) {
         case PARSE_KEY:
             if (c == '\0') {
                 state = PARSE_FINISHED;
             } else if (c == '=') {
-                av_bprint_finalize(&bprint, &key);
+                ret = av_bprint_finalize(&bprint, &key);
+                if (ret < 0)
+                    return ret;
                 av_bprint_init(&bprint, 64, AV_BPRINT_SIZE_UNLIMITED);
                 state = PARSE_VALUE;
             } else {
@@ -105,11 +112,11 @@ static int au_read_annotation(AVFormatContext *s, int size)
                     av_log(s, AV_LOG_ERROR, "Memory error while parsing AU metadata.\n");
                 } else {
                     av_bprint_init(&bprint, 64, AV_BPRINT_SIZE_UNLIMITED);
-                    for (i = 0; keys[i] != NULL && key != NULL; i++) {
+                    for (i = 0; i < FF_ARRAY_ELEMS(keys); i++) {
                         if (av_strcasecmp(keys[i], key) == 0) {
                             av_dict_set(&(s->metadata), keys[i], value, AV_DICT_DONT_STRDUP_VAL);
-                            av_freep(&key);
                             value = NULL;
+                            break;
                         }
                     }
                 }
@@ -140,9 +147,10 @@ static int au_read_header(AVFormatContext *s)
     unsigned int tag;
     AVIOContext *pb = s->pb;
     unsigned int id, channels, rate;
-    int bps;
+    int bps, ba = 0;
     enum AVCodecID codec;
     AVStream *st;
+    int ret;
 
     tag = avio_rl32(pb);
     if (tag != MKTAG('.', 's', 'n', 'd'))
@@ -161,7 +169,9 @@ static int au_read_header(AVFormatContext *s)
 
     if (size > 24) {
         /* parse annotation field to get metadata */
-        au_read_annotation(s, size - 24);
+        ret = au_read_annotation(s, size - 24);
+        if (ret < 0)
+            return ret;
     }
 
     codec = ff_codec_get_id(codec_au_tags, id);
@@ -178,6 +188,7 @@ static int au_read_header(AVFormatContext *s)
         } else {
             const uint8_t bpcss[] = {4, 0, 3, 5};
             av_assert0(id >= 23 && id < 23 + 4);
+            ba = bpcss[id - 23];
             bps = bpcss[id - 23];
         }
     } else if (!bps) {
@@ -205,7 +216,7 @@ static int au_read_header(AVFormatContext *s)
     st->codecpar->sample_rate = rate;
     st->codecpar->bits_per_coded_sample = bps;
     st->codecpar->bit_rate    = channels * rate * bps;
-    st->codecpar->block_align = FFMAX(bps * st->codecpar->channels / 8, 1);
+    st->codecpar->block_align = ba ? ba : FFMAX(bps * st->codecpar->channels / 8, 1);
     if (data_size != AU_UNKNOWN_SIZE)
         st->duration = (((int64_t)data_size)<<3) / (st->codecpar->channels * (int64_t)bps);
 
@@ -222,7 +233,7 @@ AVInputFormat ff_au_demuxer = {
     .read_header = au_read_header,
     .read_packet = ff_pcm_read_packet,
     .read_seek   = ff_pcm_read_seek,
-    .codec_tag   = (const AVCodecTag* const []) { codec_au_tags, 0 },
+    .codec_tag   = au_codec_tags,
 };
 
 #endif /* CONFIG_AU_DEMUXER */
@@ -235,36 +246,31 @@ typedef struct AUContext {
 
 #include "rawenc.h"
 
-static int au_get_annotations(AVFormatContext *s, char **buffer)
+static int au_get_annotations(AVFormatContext *s, AVBPrint *annotations)
 {
-    static const char * keys[] = {
+    static const char keys[][7] = {
         "Title",
         "Artist",
         "Album",
         "Track",
         "Genre",
-        NULL };
-    int i;
+    };
     int cnt = 0;
     AVDictionary *m = s->metadata;
     AVDictionaryEntry *t = NULL;
-    AVBPrint bprint;
 
-    av_bprint_init(&bprint, 64, AV_BPRINT_SIZE_UNLIMITED);
-
-    for (i = 0; keys[i] != NULL; i++) {
+    for (int i = 0; i < FF_ARRAY_ELEMS(keys); i++) {
         t = av_dict_get(m, keys[i], NULL, 0);
         if (t != NULL) {
             if (cnt++)
-                av_bprint_chars(&bprint, '\n', 1);
-            av_bprint_append_data(&bprint, keys[i], strlen(keys[i]));
-            av_bprint_chars(&bprint, '=', 1);
-            av_bprint_append_data(&bprint, t->value, strlen(t->value));
+                av_bprint_chars(annotations, '\n', 1);
+            av_bprintf(annotations, "%s=%s", keys[i], t->value);
         }
     }
-    /* pad with 0's */
-    av_bprint_append_data(&bprint, "\0\0\0\0\0\0\0\0", 8);
-    return av_bprint_finalize(&bprint, buffer);
+    /* The specification requires the annotation field to be zero-terminated
+     * and its length to be a multiple of eight, so pad with 0's */
+    av_bprint_chars(annotations, '\0', 8);
+    return av_bprint_is_complete(annotations) ? 0 : AVERROR(ENOMEM);
 }
 
 static int au_write_header(AVFormatContext *s)
@@ -273,9 +279,7 @@ static int au_write_header(AVFormatContext *s)
     AUContext *au = s->priv_data;
     AVIOContext *pb = s->pb;
     AVCodecParameters *par = s->streams[0]->codecpar;
-    char *annotations = NULL;
-
-    au->header_size = AU_DEFAULT_HEADER_SIZE;
+    AVBPrint annotations;
 
     if (s->nb_streams != 1) {
         av_log(s, AV_LOG_ERROR, "only one stream is supported\n");
@@ -288,31 +292,24 @@ static int au_write_header(AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
-    if (av_dict_count(s->metadata) > 0) {
-        ret = au_get_annotations(s, &annotations);
-        if (ret < 0)
-            return ret;
-        if (annotations != NULL) {
-            au->header_size = (24 + strlen(annotations) + 8) & ~7;
-            if (au->header_size < AU_DEFAULT_HEADER_SIZE)
-                au->header_size = AU_DEFAULT_HEADER_SIZE;
-        }
-    }
+    av_bprint_init(&annotations, 0, INT_MAX - 24);
+    ret = au_get_annotations(s, &annotations);
+    if (ret < 0)
+        goto fail;
+    au->header_size = 24 + annotations.len & ~7;
+
     ffio_wfourcc(pb, ".snd");                   /* magic number */
     avio_wb32(pb, au->header_size);             /* header size */
     avio_wb32(pb, AU_UNKNOWN_SIZE);             /* data size */
     avio_wb32(pb, par->codec_tag);              /* codec ID */
     avio_wb32(pb, par->sample_rate);
     avio_wb32(pb, par->channels);
-    if (annotations != NULL) {
-        avio_write(pb, annotations, au->header_size - 24);
-        av_freep(&annotations);
-    } else {
-        avio_wb64(pb, 0); /* annotation field */
-    }
-    avio_flush(pb);
+    avio_write(pb, annotations.str, annotations.len & ~7);
 
-    return 0;
+fail:
+    av_bprint_finalize(&annotations, NULL);
+
+    return ret;
 }
 
 static int au_write_trailer(AVFormatContext *s)
@@ -326,7 +323,6 @@ static int au_write_trailer(AVFormatContext *s)
         avio_seek(pb, 8, SEEK_SET);
         avio_wb32(pb, (uint32_t)(file_size - au->header_size));
         avio_seek(pb, file_size, SEEK_SET);
-        avio_flush(pb);
     }
 
     return 0;
@@ -343,7 +339,7 @@ AVOutputFormat ff_au_muxer = {
     .write_header  = au_write_header,
     .write_packet  = ff_raw_write_packet,
     .write_trailer = au_write_trailer,
-    .codec_tag     = (const AVCodecTag* const []) { codec_au_tags, 0 },
+    .codec_tag     = au_codec_tags,
     .flags         = AVFMT_NOTIMESTAMPS,
 };
 

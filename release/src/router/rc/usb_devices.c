@@ -3305,56 +3305,6 @@ after_change_xhcimode:
 		usb_dbg("(%s): Had Storage interfaces(%s) on Port %s.\n", device_name, nvram_value, usb_port);
 
 	if(!isdigit(*ptr)){ // disk
-#if defined(RTCONFIG_NOTIFICATION_CENTER) && defined(RTCONFIG_CLOUDSYNC)
-		char buf[MAX_NVRAM_SPACE], str[32];
-		char *name;
-		int plugged_disk = 0;
-		int ntevent_firstdisk = nvram_get_int("ntevent_firstdisk");
-		int ntevent_nodiskuse = nvram_get_int("ntevent_nodiskuse");
-#if defined(RTCONFIG_USB_XHCI) || defined(RTCONFIG_ETRON_XHCI)
-		int ntevent_disableusb3 = nvram_get_int("ntevent_disableusb3");
-		int usb_usb3 = nvram_get_int("usb_usb3");
-#endif
-
-		if(!ntevent_firstdisk){
-			nvram_getall(buf, sizeof(buf));
-			for(name = buf; *name; name += strlen(name)+1){
-				// non usb nvrams
-				if(strncmp(name, "usb_path", 8))
-					continue;
-
-				// non disk utility nvrams
-				if(strstr(name, "_diskmon_"))
-					continue;
-
-				if(!isdigit(*(name+8)))
-					continue;
-
-				plugged_disk = 1;
-				break;
-			}
-
-			if(!plugged_disk){
-				usb_dbg("(%s): Got the first storage on Port %s.\n", device_name, usb_port);
-				snprintf(str, sizeof(str), "0x%x", HINT_USB_FIRSTIME_CHECK_EVENT);
-				eval("Notify_Event2NC", str, "");
-				nvram_set("ntevent_firstdisk", "1");
-
-				if(!ntevent_nodiskuse)
-					nvram_set("ntevent_nodiskuse", "1");
-
-#if defined(RTCONFIG_USB_XHCI) || defined(RTCONFIG_ETRON_XHCI)
-				if(!usb_usb3 && !ntevent_disableusb3){
-					snprintf(str, sizeof(str), "0x%x", HINT_USB3_WITHOUT_ENHANCE_EVENT);
-					eval("Notify_Event2NC", str, "");
-					nvram_set("ntevent_disableusb3", "1");
-				}
-#endif
-
-				nvram_commit();
-			}
-		}
-#endif
 
 		// set USB common nvram.
 		set_usb_common_nvram(action, device_name, usb_node, "storage");
@@ -4894,3 +4844,312 @@ int asus_usb_interface(const char *device_name, const char *action)
 #endif
 	return 1;
 }
+
+#if defined(RTCONFIG_USB)
+#if 1
+void get_usb_devices_by_usb_port(usb_device_info_t device_list[], int max_devices, int usb_port)
+{
+	disk_info_t *disks_info = NULL, *follow_disk;
+	usb_device_info_t *device_tmp;
+	int i, j;
+	char prefix[32], tmp[32];
+	memset(device_list, 0, sizeof(usb_device_info_t)*max_devices);
+
+	// list storage dievices first.
+	disks_info = read_disk_data();
+	if (disks_info) {
+		for (follow_disk = disks_info; follow_disk != NULL; follow_disk = follow_disk->next) {
+			partition_info_t *follow_partition;
+			char ascii_tag[PATH_MAX];
+			int scan_ret, port = 0, hub_port = 0, target_idx;
+
+
+			if ((scan_ret = sscanf(follow_disk->port, "%d.%d", &port, &hub_port)) == 0)
+				continue;
+
+			if (port != usb_port)
+				continue;
+
+			if (hub_port > max_devices)
+				continue;
+
+			target_idx = (scan_ret == 1 ? 0 : hub_port);
+			target_idx = target_idx > 0 ? target_idx - 1 : 0;
+			device_tmp = &device_list[target_idx];
+
+			/* usb path */
+			snprintf(device_tmp->usb_path, sizeof(device_tmp->usb_path), "%d", port);
+
+			/* node */
+			snprintf(device_tmp->node, sizeof(device_tmp->node), "%s", follow_disk->port);
+
+			/* type */
+			snprintf(device_tmp->type, sizeof(device_tmp->type), "storage");
+
+			snprintf(prefix, sizeof(prefix), "usb_path%s", device_tmp->node);
+
+			/* manufacturer */
+			snprintf(device_tmp->manufacturer, sizeof(device_tmp->manufacturer), "%s", 
+				nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))));
+
+			/* product */
+			snprintf(device_tmp->product, sizeof(device_tmp->product), "%s", 
+				nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))));
+
+			/* serial */
+			snprintf(device_tmp->serial, sizeof(device_tmp->serial), "%s", 
+				nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))));
+
+			/* device name */
+			memset(ascii_tag, 0, PATH_MAX);
+			char_to_ascii_safe(ascii_tag, follow_disk->tag, PATH_MAX);
+			snprintf(device_tmp->device_name, sizeof(device_tmp->device_name), "%s", follow_disk->tag);
+
+			/* speed */
+			device_tmp->speed = nvram_get_int(strlcat_r(prefix, "_speed", tmp, sizeof(tmp)));
+
+			/* go through all partitions for caclulating size */
+			for (follow_partition = follow_disk->partitions; follow_partition != NULL; follow_partition = follow_partition->next) {
+				/* total size */
+				device_tmp->storage_size_in_kilobytes += follow_partition->size_in_kilobytes;
+				/* total used size */
+				device_tmp->storage_used_in_kilobytes += follow_partition->used_kilobytes;
+			}
+		}
+
+		free_disk_data(&disks_info);
+	}
+
+#if defined(RTCONFIG_USB_MODEM) || defined(RTCONFIG_USB_PRINTER)
+	// list modem and printer dievices.
+	for(i = 1; i <= MAX_USB_PORT; ++i) {
+		if (i != usb_port)
+			continue;
+		snprintf(prefix, sizeof(prefix), "usb_path%d", i);
+		if (nvram_get(prefix)) { // not usb hub
+			device_tmp = &device_list[0];
+			//memset(device_tmp, 0, sizeof(usb_device_info_t));
+
+			/* usb path */
+			snprintf(device_tmp->usb_path, sizeof(device_tmp->usb_path), "%d", i);
+			/* node */
+			snprintf(device_tmp->node, sizeof(device_tmp->node), "%d", i);
+
+			if (
+#if defined(RTCONFIG_USB_MODEM)
+				nvram_match(prefix, "modem") ||
+#endif
+#if defined(RTCONFIG_USB_PRINTER)
+				nvram_match(prefix, "printer") ||
+#endif
+				0) {
+				/* type */
+				snprintf(device_tmp->type, sizeof(device_tmp->type), "%s", nvram_safe_get(prefix));
+				/* manufacturer */
+				snprintf(device_tmp->manufacturer, sizeof(device_tmp->manufacturer), "%s", nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)));
+				/* product */
+				snprintf(device_tmp->product, sizeof(device_tmp->product), "%s", nvram_safe_get(strcat_r(prefix, "_product", tmp)));
+				/* serial */
+				snprintf(device_tmp->serial, sizeof(device_tmp->serial), "%s", nvram_safe_get(strcat_r(prefix, "_serial", tmp)));
+				/* speed */
+				device_tmp->speed = nvram_get_int(strlcat_r(prefix, "_speed", tmp, sizeof(tmp)));
+			}
+
+			for(j = 2; j <= MAX_USB_HUB_PORT; ++j) {  // fill rest reserved hub port.
+				snprintf(prefix, sizeof(prefix), "usb_path%d.%d", i, j);
+				device_tmp = &device_list[j-1];
+				/* usb path */
+				snprintf(device_tmp->usb_path, sizeof(device_tmp->usb_path), "%d", i);
+				/* node */
+				snprintf(device_tmp->node, sizeof(device_tmp->node), "%d.%d", i, j);
+			}
+		} else { // usb hub
+			for(j = 1; j <= MAX_USB_HUB_PORT; ++j) {
+				snprintf(prefix, sizeof(prefix), "usb_path%d.%d", i, j);
+				device_tmp = &device_list[j-1];
+				//memset(device_tmp, 0, sizeof(usb_device_info_t));
+
+				/* usb path */
+				snprintf(device_tmp->usb_path, sizeof(device_tmp->usb_path), "%d", i);
+				/* node */
+				snprintf(device_tmp->node, sizeof(device_tmp->node), "%d.%d", i, j);
+
+				if (
+#if defined(RTCONFIG_USB_MODEM)
+					nvram_match(prefix, "modem") ||
+#endif
+#if defined(RTCONFIG_USB_PRINTER)
+					nvram_match(prefix, "printer") ||
+#endif
+					0) {
+					/* type */
+					snprintf(device_tmp->type, sizeof(device_tmp->type), "%s", nvram_safe_get(prefix));
+					/* manufacturer */
+					snprintf(device_tmp->manufacturer, sizeof(device_tmp->manufacturer), "%s", nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)));
+					/* product */
+					snprintf(device_tmp->product, sizeof(device_tmp->product), "%s", nvram_safe_get(strcat_r(prefix, "_product", tmp)));
+					/* serial */
+					snprintf(device_tmp->serial, sizeof(device_tmp->serial), "%s", nvram_safe_get(strcat_r(prefix, "_serial", tmp)));
+					/* speed */
+					device_tmp->speed = nvram_get_int(strlcat_r(prefix, "_speed", tmp, sizeof(tmp)));
+				}
+			}
+		}
+	}
+#endif
+}
+#else
+
+// reference to ej_get_usb_info of httpd/web.c
+void get_usb_devices(usb_device_info_t **device_list)
+{
+	disk_info_t *disks_info = NULL, *follow_disk;
+	usb_device_info_t **device_list_tmp;
+	int i, j;
+	char prefix[32], tmp[32], usb_path_tmp[16];
+
+	*device_list = NULL;
+	device_list_tmp = device_list;
+
+	// list storage dievices first.
+	disks_info = read_disk_data();
+	if (disks_info) {
+		for (follow_disk = disks_info; follow_disk != NULL; follow_disk = follow_disk->next) {
+			partition_info_t *follow_partition;
+			char ascii_tag[PATH_MAX];
+
+			*device_list_tmp = (usb_device_info_t *)malloc(sizeof(usb_device_info_t));
+
+			if(*device_list_tmp) {
+				memset((*device_list_tmp), 0, sizeof(usb_device_info_t));
+
+				/* usb path */
+				memset(usb_path_tmp, 0, sizeof(usb_path_tmp));
+				snprintf(usb_path_tmp, sizeof(usb_path_tmp), "%c", follow_disk->port[0]);
+				(*device_list_tmp)->usb_path = strdup(usb_path_tmp);
+
+				/* tmpdisk.node */
+				(*device_list_tmp)->node = strdup(follow_disk->port);
+
+				/* tmpdisk.deviceType */
+				(*device_list_tmp)->type = strdup("storage");
+
+				snprintf(prefix, sizeof(prefix), "usb_path%s", (*device_list_tmp)->node);
+				/* manufacturer */
+				(*device_list_tmp)->manufacturer = strdup(nvram_safe_get(strlcat_r(prefix, "_manufacturer", tmp, sizeof(tmp))));
+
+				/* product */
+				(*device_list_tmp)->product = strdup(nvram_safe_get(strlcat_r(prefix, "_product", tmp, sizeof(tmp))));
+
+				/* serial */
+				(*device_list_tmp)->serial = strdup(nvram_safe_get(strlcat_r(prefix, "_serial", tmp, sizeof(tmp))));
+
+				/* device name */
+				memset(ascii_tag, 0, PATH_MAX);
+				char_to_ascii_safe(ascii_tag, follow_disk->tag, PATH_MAX);
+				(*device_list_tmp)->device_name = strdup(ascii_tag);
+
+				/* go through all partitions for caclulating size */
+				for (follow_partition = follow_disk->partitions; follow_partition != NULL; follow_partition = follow_partition->next) {
+					/* total size */
+					(*device_list_tmp)->storage_size_in_kilobytes += follow_partition->size_in_kilobytes;
+					/* total used size */
+					(*device_list_tmp)->storage_used_in_kilobytes += follow_partition->used_kilobytes;
+				}
+				while ((*device_list_tmp)) {
+					device_list_tmp = &((*device_list_tmp)->next);
+				}
+			}
+		}
+
+		free_disk_data(&disks_info);
+	}
+
+	// list modem and printer dievices.
+	for(i = 1; i <= MAX_USB_PORT; ++i){
+		snprintf(prefix, sizeof(prefix), "usb_path%d", i);
+		if (nvram_get(prefix)) { // not usb hub
+			if (nvram_match(prefix, "modem") || nvram_match(prefix, "printer")) {
+
+				*device_list_tmp = (usb_device_info_t *)malloc(sizeof(usb_device_info_t));
+				if (*device_list_tmp) {
+					memset((*device_list_tmp), 0, sizeof(usb_device_info_t));
+
+					/* usb path */
+					snprintf(usb_path_tmp, sizeof(usb_path_tmp), "%d", i);
+					(*device_list_tmp)->usb_path = strdup(usb_path_tmp);
+
+					/* tmpdisk.node */
+					(*device_list_tmp)->node = strdup(usb_path_tmp);
+
+					/* tmpdisk.deviceType */
+					(*device_list_tmp)->type = strdup(nvram_safe_get(prefix));
+					(*device_list_tmp)->manufacturer = strdup(nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)));
+					(*device_list_tmp)->product = strdup(nvram_safe_get(strcat_r(prefix, "_product", tmp)));
+					(*device_list_tmp)->serial = strdup(nvram_safe_get(strcat_r(prefix, "_serial", tmp)));
+					(*device_list_tmp)->device_name = strdup("");
+
+					while ((*device_list_tmp))
+						device_list_tmp = &((*device_list_tmp)->next);
+				}
+			}
+		} else { // usb hub
+			for(j = 1; j <= MAX_USB_HUB_PORT; ++j){
+				snprintf(prefix, sizeof(prefix), "usb_path%d.%d", i, j);
+
+				if (nvram_match(prefix, "modem") || nvram_match(prefix, "printer")) {
+
+					*device_list_tmp = (usb_device_info_t *)malloc(sizeof(usb_device_info_t));
+					if (*device_list_tmp) {
+						memset((*device_list_tmp), 0, sizeof(usb_device_info_t));
+
+						/* usb path */
+						snprintf(usb_path_tmp, sizeof(usb_path_tmp), "%d", i);
+						(*device_list_tmp)->usb_path = strdup(usb_path_tmp);
+
+						/* tmpdisk.node */
+						snprintf(usb_path_tmp, sizeof(usb_path_tmp), "%d.%d", i, j);
+						(*device_list_tmp)->node = strdup(usb_path_tmp);
+
+						/* tmpdisk.deviceType */
+						(*device_list_tmp)->type = strdup(nvram_safe_get(prefix));
+						(*device_list_tmp)->manufacturer = strdup(nvram_safe_get(strcat_r(prefix, "_manufacturer", tmp)));
+						(*device_list_tmp)->product = strdup(nvram_safe_get(strcat_r(prefix, "_product", tmp)));
+						(*device_list_tmp)->serial = strdup(nvram_safe_get(strcat_r(prefix, "_serial", tmp)));
+						(*device_list_tmp)->device_name = strdup("");
+
+						while ((*device_list_tmp))
+							device_list_tmp = &((*device_list_tmp)->next);
+					}
+				}
+			}
+		}
+	}
+}
+
+void free_usb_devices(usb_device_info_t **device_list) {
+	usb_device_info_t *device_list_tmp, *device_list_old;
+	device_list_tmp = *device_list;
+	while (device_list_tmp) {
+		if (device_list_tmp->usb_path)
+			free(device_list_tmp->usb_path);
+		if (device_list_tmp->node)
+			free(device_list_tmp->node);
+		if (device_list_tmp->type)
+			free(device_list_tmp->type);
+		if (device_list_tmp->manufacturer)
+			free(device_list_tmp->manufacturer);
+		if (device_list_tmp->product)
+			free(device_list_tmp->product);
+		if (device_list_tmp->serial)
+			free(device_list_tmp->serial);
+		if (device_list_tmp->device_name)
+			free(device_list_tmp->device_name);
+
+		device_list_old = device_list_tmp;
+		device_list_tmp = device_list_tmp->next;
+		free(device_list_old);
+	}
+}
+#endif
+#endif

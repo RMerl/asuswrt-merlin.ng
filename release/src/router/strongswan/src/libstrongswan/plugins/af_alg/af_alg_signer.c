@@ -60,7 +60,7 @@ static struct {
 	{AUTH_HMAC_SHA2_256_128,	"hmac(sha256)",		16,		32,	},
 	{AUTH_HMAC_MD5_96,			"hmac(md5)",		12,		16,	},
 	{AUTH_HMAC_MD5_128,			"hmac(md5)",		16,		16,	},
-	{AUTH_HMAC_SHA2_256_256,	"hmac(sha384)",		32,		32,	},
+	{AUTH_HMAC_SHA2_256_256,	"hmac(sha256)",		32,		32,	},
 	{AUTH_HMAC_SHA2_384_192,	"hmac(sha384)",		24,		48,	},
 	{AUTH_HMAC_SHA2_384_384,	"hmac(sha384)",		48,		48,	},
 	{AUTH_HMAC_SHA2_512_256,	"hmac(sha512)",		32,		64,	},

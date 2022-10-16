@@ -9,14 +9,13 @@
 	<link rel="stylesheet" href="index_style.css"> 
 	<link rel="stylesheet" href="form_style.css">
 	<link rel="stylesheet" type="text/css" href="/js/weekSchedule/weekSchedule.css">
-
+	<script src="/js/jquery.js"></script>
+	<script src="/calendar/jquery-ui.js"></script> 
 	<script src="/state.js"></script>
 	<script src="/general.js"></script>
 	<script src="/help.js"></script>
 	<script src="/popup.js"></script>
 	<script src="/validator.js"></script>
-	<script src="/js/jquery.js"></script>
-	<script src="/calendar/jquery-ui.js"></script> 
 	<script language="JavaScript" type="text/javascript" src="/js/weekSchedule/weekSchedule.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/form.js"></script>
 	<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
@@ -337,7 +336,7 @@ function initial(){
 			based_modelid == "RT-AC68U" || based_modelid == "RT-AC68A" || based_modelid == "DSL-AC68U" || based_modelid == "4G-AC68U" ||
 			based_modelid == "RT-AC87U" || based_modelid == "EA-AC87" || based_modelid == "RT-AX55" ||
 			based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" ||
-			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "TUF-AX5400_V2"|| based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10")
+			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "TUF-AX5400_V2"|| based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10")
 		{
 			if(no_vht_support){
 				inputCtrl(document.form.wl_txbf, 0);
@@ -584,7 +583,7 @@ function initial(){
 			document.getElementById("wl_MU_MIMO_field").style.display = "none";
 			document.form.wl_mumimo.disabled = true;
 		}
-		else if ((based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'XT8PRO' || based_modelid == 'XT8_V2' || based_modelid == 'RT-AX56_XD4' || based_modelid == 'XD4PRO' || based_modelid == 'CT-AX56_XD4' || based_modelid == 'RT-AX56U') && (is_unit_24g(wl_unit_value) || is_unit_5g(wl_unit_value))){
+		else if ((based_modelid == 'RT-AX92U' || based_modelid == 'RT-AX95Q' || based_modelid == 'XT8PRO' || based_modelid == 'BM68' || based_modelid == 'XT8_V2' || based_modelid == 'RT-AX56_XD4' || based_modelid == 'XD4PRO' || based_modelid == 'CT-AX56_XD4' || based_modelid == 'RT-AX56U')  && (is_unit_24g(wl_unit_value) || is_unit_5g(wl_unit_value))){
 			document.getElementById("wl_MU_MIMO_field").style.display = "none";
 			document.form.wl_mumimo.disabled = true;
 		}	
@@ -924,7 +923,7 @@ function applyRule(){
 		}
 		
 		if(	based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" || based_modelid == "RT-AC3100" ||
-			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10"){
+			based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "RT-AX86U" || based_modelid == "RT-AX68U" || based_modelid == "RT-AC68U_V4" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10"){
 			document.form.action_wait.value = "10";
 		}
 		else if(sdk_7){
@@ -1116,29 +1115,42 @@ function init_cookie(){
 
 function save_wifi_schedule(){
 	if(check_nodes_support_wireless_scheduler()) {
-		var postData = {};
-		postData["wl" + wl_unit_value] = {"wl_timesched": "1"};
-		Object.keys(weekScheduleApi.data).forEach(function(key) {
-			var weekday = key;
-			postData["wl" + wl_unit_value][weekday] = weekScheduleApi.data[weekday];
-		});
-		httpApi.set_wl_sched(postData);
+		var nvramSet_obj = {"action_mode": "apply", "wl_unit" : wl_unit_value, "wl_subunit" : "-1"};
+		var wl_timesched = httpApi.nvramGet(["wl" + wl_unit_value + "_timesched"])["wl" + wl_unit_value + "_timesched"];
+		if(wl_timesched == "0")
+			nvramSet_obj.wl_timesched = "1";
+		var wifi_schedule_current = weekScheduleApi.PC_transform_offtime_json_to_string();
+		if(wifi_schedule_ori != wifi_schedule_current){
+			nvramSet_obj.wl_sched_v2 = wifi_schedule_current;
+		}
+		if(nvramSet_obj.wl_timesched != undefined || nvramSet_obj.wl_sched_v2 != undefined){
+			nvramSet_obj.rc_service =  "restart_wireless";
+			httpApi.nvramSet(nvramSet_obj, function(){
+				setTimeout(function(){
+					httpApi.nvramGet(["wl" + wl_unit_value + "_timesched"], true);
+					httpApi.nvramCharToAscii(["wl" + wl_unit_value + "_sched_v2"], true);
+				},1000);
+			});
+		}
+
 		document.getElementById("schedule_block").style.display = "none";
-		document.getElementById("titl_desc").style.display = "";
+		document.getElementById("title_bg").style.display = "";
 		document.getElementById("WAdvTable").style.display = "";
 		document.getElementById("apply_btn").style.display = "";
+		$(".formfonttitle").html("<#menu5_1#> - <#menu5_1_6#>");
 	}
 }
 
 function cancel_wifi_schedule(client){
 	document.getElementById("schedule_block").style.display = "none";
-	document.getElementById("titl_desc").style.display = "";
+	document.getElementById("title_bg").style.display = "";
 	document.getElementById("WAdvTable").style.display = "";
 	document.getElementById("apply_btn").style.display = "";
+	$(".formfonttitle").html("<#menu5_1#> - <#menu5_1_6#>");
 }
-
+var wifi_schedule_ori = "";
 function show_wifi_schedule(){
-	document.getElementById("titl_desc").style.display = "none";
+	document.getElementById("title_bg").style.display = "none";
 	document.getElementById("WAdvTable").style.display = "none";
 	document.getElementById("apply_btn").style.display = "none";
 	document.getElementById("schedule_block").style.display = "";
@@ -1146,12 +1158,18 @@ function show_wifi_schedule(){
 		document.getElementById('svc_hint_div').style.display = "";
 	corrected_timezone();
 
-	httpApi.get_wl_sched(wl_unit_value, function(response){
-		weekScheduleApi.init_data(response["wl" + wl_unit_value]);
-		weekScheduleApi.init_layout("weekScheduleBg");
-		weekScheduleApi.callback_btn_cancel = cancel_wifi_schedule;
-		weekScheduleApi.callback_btn_apply = save_wifi_schedule;
-	});
+	wifi_schedule_ori = decodeURIComponent(httpApi.nvramCharToAscii(["wl" + wl_unit_value + "_sched_v2"], true)["wl" + wl_unit_value + "_sched_v2"]);
+	if(parseInt(isSupport("WL_SCHED_V3")) >= 1)
+		weekScheduleApi.alternate_days = true;
+	weekScheduleApi.support_draggable = true;
+	weekScheduleApi.overview_hide_disable_rule = true;
+	weekScheduleApi.wl_unit = wl_unit_value;
+	weekScheduleApi.PC_init_data(wifi_schedule_ori);
+	weekScheduleApi.init_layout("weekScheduleBg_WL");
+	weekScheduleApi.callback_btn_cancel = cancel_wifi_schedule;
+	weekScheduleApi.callback_btn_apply = save_wifi_schedule;
+	$(".formfonttitle").html("Wireless Schedule - "+ wl_nband_title[wl_unit_value] +"");/* untranslated */
+	tutorial_guide.obj_id = "WS_tutorial_guide";
 }
 
 function control_TimeField(){
@@ -1368,8 +1386,8 @@ function regen_mode(){	//please sync to initial() : //Change wireless mode help 
 		<!--===================================Beginning of Main Content===========================================-->
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 	<tr>
-		<td valign="top" >
-		
+		<td valign="top" style="position:relative;">
+			<div id="WS_tutorial_guide"></div>
 			<table width="760px" border="0" cellpadding="4" cellspacing="0" class="FormTitle" id="FormTitle">
 			<tbody>
 			<tr>
@@ -1377,14 +1395,14 @@ function regen_mode(){	//please sync to initial() : //Change wireless mode help 
 		  			<div>&nbsp;</div>
 		  			<div class="formfonttitle"><#menu5_1#> - <#menu5_1_6#></div>
 		  			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-		 				<div id="titl_desc" class="formfontdesc"><#WLANConfig11b_display5_sectiondesc#></div>
-		 				<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
-		 				<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
-		  			<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>	
-
-
+					<div id="title_bg">
+						<div id="titl_desc" class="formfontdesc"><#WLANConfig11b_display5_sectiondesc#></div>
+						<div id="lantiq_ready" style="display:none;color:#FC0;margin-left:5px;font-size:13px;">Wireless is setting...</div>
+						<div id="svc_hint_div" style="display:none;margin-left:5px;"><span onClick="location.href='Advanced_System_Content.asp?af=ntp_server0'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"><#General_x_SystemTime_syncNTP#></span></div>
+						<div id="timezone_hint_div" style="margin-left:5px;display:none;"><span id="timezone_hint" onclick="location.href='Advanced_System_Content.asp?af=time_zone_select'" style="color:#FFCC00;text-decoration:underline;cursor:pointer;"></span></div>
+					</div>
 					<div id="schedule_block" style="display:none">
-						<div id="weekScheduleBg"></div>
+						<div id="weekScheduleBg_WL"></div>
 					</div>
 
 					

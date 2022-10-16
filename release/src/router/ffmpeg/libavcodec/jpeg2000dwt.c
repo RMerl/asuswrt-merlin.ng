@@ -255,7 +255,7 @@ static void dwt_encode97_int(DWTContext *s, int *t)
     line += 5;
 
     for (i = 0; i < w * h; i++)
-        t[i] <<= I_PRESHIFT;
+        t[i] *= 1 << I_PRESHIFT;
 
     for (lev = s->ndeclevels-1; lev >= 0; lev--){
         int lh = s->linelen[lev][0],
@@ -531,7 +531,7 @@ static void dwt_decode97_int(DWTContext *s, int32_t *t)
     }
 
     for (i = 0; i < w * h; i++)
-        data[i] = (data[i] + ((1<<I_PRESHIFT)>>1)) >> I_PRESHIFT;
+        data[i] = (data[i] + ((1LL<<I_PRESHIFT)>>1)) >> I_PRESHIFT;
 }
 
 int ff_jpeg2000_dwt_init(DWTContext *s, int border[2][2],

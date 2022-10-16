@@ -103,7 +103,7 @@ ntru_trits_t *ntru_trits_create(size_t len, ext_out_function_t alg,
 			return NULL;
 		}
 		if (octet < 243)  /* 243 = 3^5 */
-		{		
+		{
 			ntru_octet_2_trits(octet, (trits_needed < 5) ? buf : trits);
 			if (trits_needed < 5)
 			{

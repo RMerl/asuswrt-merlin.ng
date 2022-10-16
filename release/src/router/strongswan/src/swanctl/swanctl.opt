@@ -154,7 +154,7 @@ connections.<conn>.dpd_timeout = 0s
 	specified; this option has no effect on connections using IKE2.
 
 connections.<conn>.fragmentation = yes
-	Use IKE UDP datagram fragmentation.  (_yes_, _accept_, _no_ or _force_).
+	Use IKE UDP datagram fragmentation (_yes_, _accept_, _no_ or _force_).
 
 	Use IKE fragmentation (proprietary IKEv1 extension or RFC 7383 IKEv2
 	fragmentation).  Acceptable  values  are _yes_ (the	default), _accept_,
@@ -167,6 +167,21 @@ connections.<conn>.fragmentation = yes
 
 	Note that fragmented IKE messages sent by a peer are always accepted
 	irrespective of the value of this option (even when set to _no_).
+
+connections.<conn>.childless = allow
+	Use childless IKE_SA initiation (_allow_, _force_ or _never_).
+
+	Use childless IKE_SA initiation (RFC 6023) for IKEv2.  Acceptable values
+	are _allow_ (the default), _force_ and _never_. If set to _allow_,
+	responders will accept childless IKE_SAs (as indicated via notify in the
+	IKE_SA_INIT response) while initiators continue to create regular IKE_SAs
+	with the first CHILD_SA created during IKE_AUTH, unless the IKE_SA is
+	initiated explicitly without any children (which will fail if the responder
+	does not support or has disabled this extension).  If set to _force_, only
+	childless initiation is accepted and the first CHILD_SA is created with a
+	separate CREATE_CHILD_SA exchange (e.g. to use an independent DH exchange
+	for all CHILD_SAs).  Finally, setting the option to _never_ disables support
+	for childless IKE_SAs as responder.
 
 connections.<conn>.send_certreq = yes
 	Send certificate requests payloads (_yes_ or _no_).
@@ -279,6 +294,18 @@ connections.<conn>.pools =
 	Comma separated list of named IP pools to allocate virtual IP addresses and
 	other configuration attributes from. Each name references a pool by name
 	from either the **pools** section or an external pool.
+
+connections.<conn>.if_id_in = 0
+	Default inbound XFRM interface ID for children.
+
+	XFRM interface ID set on inbound policies/SA, can be overridden by child
+	config, see there for details.
+
+connections.<conn>.if_id_out = 0
+	Default outbound XFRM interface ID for children.
+
+	XFRM interface ID set on outbound policies/SA, can be overridden by child
+	config, see there for details.
 
 connections.<conn>.mediation = no
 	Whether this connection is a mediation connection.
@@ -467,8 +494,14 @@ connections.<conn>.remote<suffix>.round = 0
 connections.<conn>.remote<suffix>.id = %any
 	IKE identity to expect for authentication round.
 
-	IKE identity to expect for authentication round. Refer to the _local_ _id_
-	section for details.
+	IKE identity to expect for authentication round. Refer to the **local**
+	section's **id** keyword for details.
+
+	It's possible to use wildcards to match remote identities (e.g.
+	_*@strongswan.org_, _*.strongswan.org_, or _C=CH,O=strongSwan,CN=*_).
+	Connections with exact matches are preferred. When using distinguished names
+	with wildcards, the _charon.rdn_matching_ option in **strongswan.conf**(5)
+	specifies how RDNs are matched.
 
 connections.<conn>.remote<suffix>.eap_id = id
 	Identity to use as peer identity during EAP authentication.
@@ -559,6 +592,16 @@ connections.<conn>.remote<suffix>.cacert<suffix>.slot =
 
 connections.<conn>.remote<suffix>.cacert<suffix>.module =
 	Optional PKCS#11 module name.
+
+connections.<conn>.remote<suffix>.ca_id =
+	Identity in CA certificate to accept for authentication.
+
+	The specified identity must be contained in one (intermediate) CA
+	of the remote peer trustchain, either as subject or as subjectAltName.
+	This has the same effect as specifying _cacerts_ to force clients under
+	a CA to specific connections; it does not require the CA certificate to
+	be available locally, and can be received from the peer during the
+	IKE exchange.
 
 connections.<conn>.remote<suffix>.pubkeys =
 	Comma separated list of raw public keys to accept for authentication.
@@ -804,7 +847,7 @@ connections.<conn>.children.<child>.rand_packets = life_packets - rekey_packets
 connections.<conn>.children.<child>.updown =
 	Updown script to invoke on CHILD_SA up and down events.
 
-connections.<conn>.children.<child>.hostaccess = yes
+connections.<conn>.children.<child>.hostaccess = no
 	Hostaccess variable to pass to **updown** script.
 
 connections.<conn>.children.<child>.mode = tunnel
@@ -842,7 +885,8 @@ connections.<conn>.children.<child>.dpd_action = clear
 	Action to perform for this CHILD_SA on DPD timeout. The default _clear_
 	closes the CHILD_SA and does not take further action. _trap_ installs
 	a trap policy, which will catch matching traffic and tries to re-negotiate
-	the tunnel on-demand. _restart_ immediately tries to re-negotiate the
+	the tunnel on-demand (note that this is redundant if **start_action**
+	includes _trap_). _restart_ immediately tries to re-negotiate the
 	CHILD_SA under a fresh IKE_SA.
 
 connections.<conn>.children.<child>.ipcomp = no
@@ -947,6 +991,54 @@ connections.<conn>.children.<child>.set_mark_out = 0/0x00000000
 	Setting marks in XFRM output is supported since Linux 4.14. Setting a mask
 	requires at least Linux 4.19.
 
+connections.<conn>.children.<child>.if_id_in = 0
+	Inbound XFRM interface ID.
+
+	XFRM interface ID set on inbound policies/SA. This allows installing
+	duplicate policies/SAs and associates them with an interface with the same
+	ID. The special value _%unique_ sets a unique interface ID on each CHILD_SA
+	instance, beyond that the value _%unique-dir_ assigns a different unique
+	interface ID for each CHILD_SA direction (in/out).
+
+connections.<conn>.children.<child>.if_id_out = 0
+	Outbound XFRM interface ID.
+
+	XFRM interface ID set on outbound policies/SA. This allows installing
+	duplicate policies/SAs and associates them with an interface with the same
+	ID. The special value _%unique_ sets a unique interface ID on each CHILD_SA
+	instance, beyond that the value _%unique-dir_ assigns a different unique
+	interface ID for each CHILD_SA direction (in/out).
+
+	The daemon will not install routes for CHILD_SAs that have this option set.
+
+connections.<conn>.children.<child>.label
+	Optional security label (e.g. SELinux context), IKEv2 only. Refer to
+	**label_mode** for details on how labels are processed.
+
+connections.<conn>.children.<child>.label_mode = system
+	Security label mode (_system_, _simple_ or _selinux_), IKEv2 only.
+
+	Defines the mode in which the configured security label is used. The default
+	value of _system_ selects _selinux_ if strongSwan was built with SELinux
+	support and SELinux is enabled by the kernel, otherwise, _simple_ will be
+	selected.
+
+	If set to _simple_, the label will be used as is as an additional
+	identifier/selector on the IKEv2 level when negotiating CHILD_SAs and
+	selecting configs, labels are not installed in the kernel and received
+	labels have to match exactly.
+
+	If set to _selinux_, which is only allowed if SELinux is usable on the
+	system, the configured label is expected to be a generic context (e.g.
+	_system_u:object_r:ipsec_spd_t:s0_) for which flows, whose context match it
+	via association:polmatch, will trigger an acquire if no SA exists yet for
+	the flow's specific context.  The configured label is installed on (trap)
+	policies, so this should generally be combined with _trap_ in
+	**start_action**. However, if the connection is initiated directly,
+	without acquire, a childless IKE_SA is established and appropriate trap
+	policies are installed on both ends. Labels received from peers are accepted
+	if they match the configured label via association:polmatch.
+
 connections.<conn>.children.<child>.tfc_padding = 0
 	Traffic Flow Confidentiality padding.
 
@@ -1012,19 +1104,22 @@ connections.<conn>.children.<child>.start_action = none
 
 	The value _trap_ installs a trap policy, which triggers the tunnel as soon
 	as matching traffic has been detected. The value _start_ initiates
-	the connection actively.
+	the connection actively. These two modes can be combined with _trap|start_,
+	to immediately initiate a connection for which trap policies have been
+	installed.
 
 	When unloading or replacing a CHILD_SA configuration having a
 	**start_action** different from _none_, the inverse action is performed.
 	Configurations with _start_ get closed, while such with _trap_ get
-	uninstalled.
+	uninstalled (both happens for connections with _trap|start_).
 
 connections.<conn>.children.<child>.close_action = none
 	Action to perform after a CHILD_SA gets closed (_none_, _trap_, _start_).
 
 	Action to perform after a CHILD_SA gets closed by the peer. The default of
 	_none_ does not take any action, _trap_ installs a trap policy for the
-	CHILD_SA. _start_ tries to re-create the CHILD_SA.
+	CHILD_SA (note that this is redundant if **start_action** includes _trap_).
+	_start_ tries to immediately re-create the CHILD_SA.
 
 	**close_action** does not provide any guarantee that the CHILD_SA is kept
 	alive. It acts on explicit close messages only, but not on negotiation

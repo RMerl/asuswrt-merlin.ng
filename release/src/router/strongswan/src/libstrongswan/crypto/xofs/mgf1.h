@@ -38,7 +38,7 @@ struct mgf1_t {
 
 	/**
 	 * Hash the seed before using it as a seed for MGF1
-	 * 
+	 *
 	 * @param yes		TRUE if seed has to be hashed first
 	 */
 	void (*set_hash_seed)(mgf1_t *this, bool yes);

@@ -128,6 +128,9 @@ ifeq ($(RTCONFIG_RGBLED),y)
 CFLAGS += -I$(TOP)/i2c-tools-3.1.2/include/linux
 endif
 
+#Tencent download
+CFLAGS += -D _FILE_OFFSET_BITS=64
+
 ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
 CFLAGS         += -DBCM_KF_NETFILTER
 endif
@@ -148,7 +151,7 @@ ifeq ($(RTCONFIG_AHS),y)
 OBJS += $(if $(wildcard notify_ahs.c),notify_ahs.o,prebuild/notify_ahs.o)
 endif
 ifeq ($(RTCONFIG_AMAS_WGN),y)
-OBJS += amas_wgn_shared.o
+OBJS += $(if $(wildcard amas_wgn_shared.c),amas_wgn_shared.o,prebuild/amas_wgn_shared.o)
 endif
 ifeq ($(RTCONFIG_RGBLED),y)
 OBJS += $(if $(wildcard aura_rgb.c),aura_rgb.o,prebuild/aura_rgb.o)
@@ -422,6 +425,12 @@ CFLAGS  += -I$(TOP)/sw-hw-auth
 vpath %.c $(TOP)/sw-hw-auth
 endif
 
+ifeq ($(RTCONFIG_TUNNEL),y)
+OBJS += aae_ipc.o
+CFLAGS  += -I$(TOP)/aaews
+vpath %.c $(TOP)/aaews
+endif
+
 ifeq ($(RTCONFIG_GEFORCENOW), y)
 OBJS += nvgfn.o
 endif
@@ -437,6 +446,11 @@ ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
 ifneq ($(RTCONFIG_SDK502L07P1_121_37),y)
 OBJS += event_utils.o
 endif
+endif
+
+ifeq ($(or $(RTCONFIG_VPN_FUSION),$(RTCONFIG_TPVPN),$(RTCONFIG_IG_SITE2SITE),$(RTCONFIG_WIREGUARD)),y)
+OBJS += vpn_utils.o
+CFLAGS += -I$(TOP)/libovpn/
 endif
 
 ifeq ($(OPDBG),y)
@@ -497,6 +511,11 @@ ifneq ($(wildcard ./prebuild/nvpriv.o),)
 	@-cp -f ./prebuild/nvpriv.o .
 endif
 
+aae_ipc.o:
+ifeq ($(wildcard $(SRCBASE)/router/aaews/*.c),)
+	cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aae_ipc.o ./
+endif
+
 ifeq ($(RTCONFIG_USB),y)
 vpath %.c $(sort $(dir $(ID_OBJS)))
 
@@ -554,7 +573,7 @@ endif
 .%.depend: %.c
 	@$(CC) $(CFLAGS) -M $< > $@
 
-.defaults.depend .tcode.depend .hw_auth.depend: .%.depend: %.c %.prep
+.defaults.depend .tcode.depend .hw_auth.depend .nvpriv.depend: .%.depend: %.c %.prep
 	@$(CC) $(CFLAGS) -M $< > $@
 
 %.prep: %.c

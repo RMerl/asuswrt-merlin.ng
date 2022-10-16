@@ -98,7 +98,7 @@ METHOD(enumerator_t, enumerator_destroy, void,
 	dpkg_enumerator_t *this)
 {
 	pclose(this->file);
-	free(this);	
+	free(this);
 }
 
 METHOD(sw_collector_dpkg_t, create_sw_enumerator, enumerator_t*,

@@ -216,9 +216,7 @@ endif
 else # autoliveupdate_zip
 ifeq ($(RTCONFIG_HTTPS),y)
 	cp -f webs_scripts/ssl_webs_upgrade.sh $(INSTALLDIR)/usr/sbin/webs_upgrade.sh
-ifeq ($(RTCONFIG_FBWIFI),y)
-	cp -f webs_scripts/fbwifi_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
-else ifeq ($(RTAC68A),y)
+ifeq ($(RTAC68A),y)
 	cp -f webs_scripts/force_webs_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
 else ifeq ($(RTCONFIG_FRS_LIVE_UPDATE),y)
 	cp -f webs_scripts/frs_live_update.sh $(INSTALLDIR)/usr/sbin/webs_update.sh
@@ -238,6 +236,22 @@ endif
 ifeq ($(RTCONFIG_SINGLEIMG_B),y)
 	cp -f webs_scripts/fwupg_flashing2.sh $(INSTALLDIR)/usr/sbin/fwupg_flashing2.sh
 	cp -f webs_scripts/fwupg_create_tmprootfs.sh $(INSTALLDIR)/usr/sbin/fwupg_create_tmprootfs.sh
+endif
+
+ifeq ($(RTCONFIG_ROLLBACKFW),y)
+	cp -f webs_scripts/ssl_rollback_upgrade.sh $(INSTALLDIR)/usr/sbin/rollback_upgrade.sh
+ifeq ($(RTCONFIG_URLFW),y)
+	cp -f webs_scripts/urlfw_rollback_upgrade.sh $(INSTALLDIR)/usr/sbin/rollback_upgrade.sh
+endif
+endif
+
+ifeq ($(RTCONFIG_REVERTFW),y)
+	cp -f webs_scripts/ssl_revert_note.sh $(INSTALLDIR)/usr/sbin/revert_note.sh
+ifeq ($(RTCONFIG_URLFW),y)
+	cp -f webs_scripts/urlfw_revert_upgrade.sh $(INSTALLDIR)/usr/sbin/revert_upgrade.sh
+else
+	cp -f webs_scripts/ssl_revert_upgrade.sh $(INSTALLDIR)/usr/sbin/revert_upgrade.sh
+endif
 endif
 
 ifeq ($(RTAC68U),y)
@@ -392,6 +406,10 @@ ifeq ($(RTCONFIG_HND_ROUTER_AX_6756), y)
 	install -m 0755 apps_scripts/brcm_cled.sh $(INSTALLDIR)/usr/sbin
 endif
 
+ifeq ($(RTCONFIG_FSMD),y)
+	sed '/#/d' ../.config > $(INSTALLDIR)/rom/rtconfig
+endif
+
 ifeq ($(RTCONFIG_BCM_MFG), y)
 ifeq ($(BUILD_NAME), GT10)
 	mkdir -p $(INSTALLDIR)/rom/dhd/6715b0_mfg
@@ -401,7 +419,7 @@ ifeq ($(BUILD_NAME), RT-AXE7800)
 	mkdir -p $(INSTALLDIR)/rom/dhd/6715b0_mfg
 	install -m 0644 dhd/6715b0_mfg/RT-AXE7800/rtecdc_17.10.188.6401.bin $(INSTALLDIR)/rom/dhd/6715b0_mfg/rtecdc.bin
 endif
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2 XD6_V2 RT-AX5400))
 	mkdir -p $(INSTALLDIR)/rom/dhd/6715b0_mfg
 	install -m 0644 dhd/6715b0_mfg/RT-AX82U_V2/rtecdc_17.10.188.6401.bin $(INSTALLDIR)/rom/dhd/6715b0_mfg/rtecdc.bin
 endif
@@ -409,6 +427,10 @@ endif
 
 ifeq ($(RTAX86U), y)
 	install -m 0755 9873w_b0-b4.bin $(INSTALLDIR)/rom
+endif
+
+ifeq ($(BRCM_CHIP),63178)
+	cp -rf rom/etc/adsl1 $(INSTALLDIR)/rom/etc
 endif
 
 .PHONY: dummy

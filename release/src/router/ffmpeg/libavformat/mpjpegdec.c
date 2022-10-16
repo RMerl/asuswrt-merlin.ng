@@ -111,22 +111,18 @@ static int mpjpeg_read_close(AVFormatContext *s)
     return 0;
 }
 
-static int mpjpeg_read_probe(AVProbeData *p)
+static int mpjpeg_read_probe(const AVProbeData *p)
 {
-    AVIOContext *pb;
+    AVIOContext pb;
     int ret = 0;
     int size = 0;
 
     if (p->buf_size < 2 || p->buf[0] != '-' || p->buf[1] != '-')
         return 0;
 
-    pb = avio_alloc_context(p->buf, p->buf_size, 0, NULL, NULL, NULL, NULL);
-    if (!pb)
-        return 0;
+    ffio_init_context(&pb, p->buf, p->buf_size, 0, NULL, NULL, NULL, NULL);
 
-    ret = (parse_multipart_header(pb, &size, "--", NULL) >= 0) ? AVPROBE_SCORE_MAX : 0;
-
-    avio_context_free(&pb);
+    ret = (parse_multipart_header(&pb, &size, "--", NULL) >= 0) ? AVPROBE_SCORE_MAX : 0;
 
     return ret;
 }
@@ -271,7 +267,7 @@ static char* mpjpeg_get_boundary(AVIOContext* pb)
         while (av_isspace(*start))
             start++;
 
-        if (!av_stristart(start, "boundary=", &start)) {
+        if (av_stristart(start, "boundary=", &start)) {
             end = strchr(start, ';');
             if (end)
                 len = end - start - 1;
@@ -306,8 +302,9 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
             boundary = mpjpeg_get_boundary(s->pb);
         }
         if (boundary != NULL) {
-            mpjpeg->boundary = boundary;
-            mpjpeg->searchstr = av_asprintf( "\r\n%s\r\n", boundary );
+            mpjpeg->boundary = av_asprintf("--%s", boundary);
+            mpjpeg->searchstr = av_asprintf("\r\n--%s\r\n", boundary);
+            av_freep(&boundary);
         } else {
             mpjpeg->boundary = av_strdup("--");
             mpjpeg->searchstr = av_strdup("\r\n--");
@@ -331,22 +328,18 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
         ret = av_get_packet(s->pb, pkt, size);
     } else {
         /* no size was given -- we read until the next boundary or end-of-file */
-        int remaining = 0, len;
+        int len;
 
         const int read_chunk = 2048;
-        av_init_packet(pkt);
-        pkt->data = NULL;
-        pkt->size = 0;
+
         pkt->pos  = avio_tell(s->pb);
 
-        /* we may need to return as much as all we've read back to the buffer */
-        ffio_ensure_seekback(s->pb, read_chunk);
-
-        while ((ret = av_append_packet(s->pb, pkt, read_chunk - remaining)) >= 0) {
+        while ((ret = ffio_ensure_seekback(s->pb, read_chunk)) >= 0 && /* we may need to return as much as all we've read back to the buffer */
+               (ret = av_append_packet(s->pb, pkt, read_chunk)) >= 0) {
             /* scan the new data */
             char *start;
 
-            len = ret + remaining;
+            len = ret;
             start = pkt->data + pkt->size - len;
             do {
                 if (!memcmp(start, mpjpeg->searchstr, mpjpeg->searchstr_len)) {
@@ -358,14 +351,13 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
                 len--;
                 start++;
             } while (len >= mpjpeg->searchstr_len);
-            remaining = len;
+            avio_seek(s->pb, -len, SEEK_CUR);
+            pkt->size -= len;
         }
 
         /* error or EOF occurred */
         if (ret == AVERROR_EOF) {
             ret = pkt->size > 0 ? pkt->size : AVERROR_EOF;
-        } else {
-            av_packet_unref(pkt);
         }
     }
 
@@ -375,7 +367,7 @@ static int mpjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
 #define OFFSET(x) offsetof(MPJPEGDemuxContext, x)
 
 #define DEC AV_OPT_FLAG_DECODING_PARAM
-const AVOption mpjpeg_options[] = {
+static const AVOption mpjpeg_options[] = {
     { "strict_mime_boundary",  "require MIME boundaries match", OFFSET(strict_mime_boundary), AV_OPT_TYPE_BOOL, {.i64 = 0}, 0, 1, DEC },
     { NULL }
 };

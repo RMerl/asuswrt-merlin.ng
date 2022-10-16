@@ -43,7 +43,7 @@ struct tnccs_batch_t {
 	/**
 	 * Add TNCCS message
 	 *
-	 * @param msg			TNCCS message to be addedd
+	 * @param msg			TNCCS message to be added
 	 */
 	void (*add_msg)(tnccs_batch_t *this, tnccs_msg_t* msg);
 

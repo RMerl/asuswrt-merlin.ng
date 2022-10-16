@@ -90,7 +90,10 @@ enum gpio_api {
 #define BLED_UDEF_PATTERN_MIN_INTERVAL	(50)	/* unit: ms */
 #define BLED_UDEF_PATTERN_MAX_INTERVAL	(3000)	/* unit: ms */
 
+#define BLED_ID_LEN			(4 + 1)	/* '\0' is included. */
 #define BLED_MAX_NR_GPIO_PER_BLED	(4)	/* for RGBW LED */
+
+#define MAX_NR_BLED_PER_GPIO		(4)
 
 struct bled_common {
 	unsigned int gpio_nr;		/* Primary GPIO number that is used to search bled. */
@@ -100,6 +103,7 @@ struct bled_common {
 	enum bled_state state;
 	enum bled_bh_type bh_type;
 	enum bled_mode mode;
+	char id[BLED_ID_LEN];		/* id of each bled, ASCIIZ format, could be '\0' if GPIO PIN is not shared by two or more bled. */
 	unsigned int min_blink_speed;	/* unit: KB/s */
 	unsigned int interval;		/* unit: ms */
 	unsigned int pattern_interval;	/* unit: ms (BLED_UDEF_PATTERN_MIN_INTERVAL ~ BLED_UDEF_PATTERN_MAX_INTERVAL) */
@@ -163,15 +167,18 @@ struct interrupt_bled {
 #define prn_bl_v(fmt, args...)		if (printk_ratelimit()) printk("bled: " fmt, ##args)
 #if defined(DEBUG_BLED)
 #define dbg_bl(fmt, args...)		printk("bled: " fmt, ##args)
-#define dbg_bl_v(fmt, args...)		if (printk_ratelimit()) printk("bled: " fmt, ##args)
 #else
 #define dbg_bl(fmt, args...)		do {} while (0)
+#endif
+#if defined(DEBUG_BLED_VERBOSE)
+#define dbg_bl_v(fmt, args...)		if (printk_ratelimit()) printk("bled: " fmt, ##args)
+#else
 #define dbg_bl_v(fmt, args...)		do {} while (0)
 #endif
 
 #define BLED_FLAGS_DBG_CHECK_FUNC	(1U << 0)
 
-#define TFMT	"%-30s: "
+#define TFMT	"%-33s: "
 
 struct ndev_bled_ifstat {
 	char ifname[IFNAMSIZ];
@@ -229,7 +236,7 @@ struct bled_priv {
 	unsigned int gpio_count;				/* Number of GPIO in gpio_nr[]/active_low[] */
 	unsigned int gpio_nr[BLED_MAX_NR_GPIO_PER_BLED];
 	int active_low[BLED_MAX_NR_GPIO_PER_BLED];
-	enum bled_state state;
+	enum bled_state state;					/* STOP: All valid user_states are stop; RUN: One or more valid user_states is RUN. */
 	enum bled_type type;
 	enum bled_bh_type bh_type;
 	enum bled_mode mode;
@@ -241,6 +248,9 @@ struct bled_priv {
 	unsigned long threshold;				/* unit: bytes */
 	unsigned long interval;					/* unit: jiffies */
 	unsigned int flags;
+	unsigned int nr_users;					/* number of bled using the GPIO PIN. */
+	enum bled_state user_states[MAX_NR_BLED_PER_GPIO];	/* state of each bled, only 0 ~ nr_users - 1 valid. */
+	char id[MAX_NR_BLED_PER_GPIO][BLED_ID_LEN];		/* id of each bled, ASCIIZ format. */
 	struct udef_pattern_s udef_pattern;			/* User defined pattern. */
 
 	struct timer_list timer;

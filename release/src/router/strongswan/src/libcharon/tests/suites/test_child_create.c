@@ -22,6 +22,47 @@
 #include <tests/utils/sa_asserts.h>
 
 /**
+ * The peers try to create a new CHILD_SA that looks exactly the same
+ * as the existing one, so it won't get initiated.
+ */
+START_TEST(test_duplicate)
+{
+	child_cfg_t *child_cfg;
+	child_cfg_create_t child = {
+		.mode = MODE_TUNNEL,
+	};
+	ike_sa_t *a, *b;
+
+	exchange_test_helper->establish_sa(exchange_test_helper,
+									   &a, &b, NULL);
+
+	assert_no_jobs_scheduled();
+	assert_hook_not_called(child_updown);
+	assert_hook_not_called(message);
+	child_cfg = child_cfg_create("child", &child);
+	child_cfg->add_proposal(child_cfg, proposal_create_default(PROTO_ESP));
+	child_cfg->add_traffic_selector(child_cfg, TRUE,
+								traffic_selector_create_dynamic(0, 0, 65535));
+	child_cfg->add_traffic_selector(child_cfg, FALSE,
+								traffic_selector_create_dynamic(0, 0, 65535));
+	child_cfg->get_ref(child_cfg);
+	call_ikesa(a, initiate, child_cfg, NULL);
+	assert_child_sa_count(a, 1);
+	assert_sa_idle(a);
+
+	call_ikesa(b, initiate, child_cfg, NULL);
+	assert_child_sa_count(b, 1);
+	assert_sa_idle(b);
+	assert_hook();
+	assert_hook();
+	assert_scheduler();
+
+	call_ikesa(a, destroy);
+	call_ikesa(b, destroy);
+}
+END_TEST
+
+/**
  * One of the peers tries to create a new CHILD_SA while the other concurrently
  * started to rekey the IKE_SA. TEMPORARY_FAILURE should be returned on both
  * sides and the peers should prepare to retry.
@@ -31,6 +72,8 @@ START_TEST(test_collision_ike_rekey)
 	child_cfg_t *child_cfg;
 	child_cfg_create_t child = {
 		.mode = MODE_TUNNEL,
+		/* make sure this is not a duplicate of the initial CHILD_SA */
+		.mark_out = { .value = 42, .mask = 0xffffffff },
 	};
 	ike_sa_t *a, *b;
 
@@ -44,7 +87,7 @@ START_TEST(test_collision_ike_rekey)
 								traffic_selector_create_dynamic(0, 0, 65535));
 	child_cfg->add_traffic_selector(child_cfg, FALSE,
 								traffic_selector_create_dynamic(0, 0, 65535));
-	call_ikesa(a, initiate, child_cfg, 0, NULL, NULL);
+	call_ikesa(a, initiate, child_cfg, NULL);
 	assert_child_sa_count(a, 1);
 	assert_hook();
 
@@ -81,7 +124,7 @@ START_TEST(test_collision_ike_rekey)
 	ck_assert(!exchange_test_helper->sender->dequeue(exchange_test_helper->sender));
 	assert_num_tasks(a, 0, TASK_QUEUE_ACTIVE);
 	assert_num_tasks(a, 1, TASK_QUEUE_QUEUED);
-	call_ikesa(a, initiate, NULL, 0, NULL, NULL);
+	call_ikesa(a, initiate, NULL, NULL);
 	assert_num_tasks(a, 0, TASK_QUEUE_ACTIVE);
 
 	assert_sa_idle(b);
@@ -97,6 +140,10 @@ Suite *child_create_suite_create()
 	TCase *tc;
 
 	s = suite_create("child create");
+
+	tc = tcase_create("initiate duplicate");
+	tcase_add_test(tc, test_duplicate);
+	suite_add_tcase(s, tc);
 
 	tc = tcase_create("collisions ike rekey");
 	tcase_add_test(tc, test_collision_ike_rekey);

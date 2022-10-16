@@ -58,7 +58,7 @@ struct cp_payload_t {
 	/**
 	 * Creates an enumerator of stored configuration_attribute_t objects.
 	 *
-	 * @return			enumerator over configration_attribute_T
+	 * @return			enumerator over configuration_attribute_t
 	 */
 	enumerator_t *(*create_attribute_enumerator) (cp_payload_t *this);
 

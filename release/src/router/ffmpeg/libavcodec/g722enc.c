@@ -59,26 +59,10 @@ static av_cold int g722_encode_close(AVCodecContext *avctx)
 static av_cold int g722_encode_init(AVCodecContext * avctx)
 {
     G722Context *c = avctx->priv_data;
-    int ret;
 
     c->band[0].scale_factor = 8;
     c->band[1].scale_factor = 2;
     c->prev_samples_pos = 22;
-
-    if (avctx->trellis) {
-        int frontier = 1 << avctx->trellis;
-        int max_paths = frontier * FREEZE_INTERVAL;
-        int i;
-        for (i = 0; i < 2; i++) {
-            c->paths[i] = av_mallocz_array(max_paths, sizeof(**c->paths));
-            c->node_buf[i] = av_mallocz_array(frontier, 2 * sizeof(**c->node_buf));
-            c->nodep_buf[i] = av_mallocz_array(frontier, 2 * sizeof(**c->nodep_buf));
-            if (!c->paths[i] || !c->node_buf[i] || !c->nodep_buf[i]) {
-                ret = AVERROR(ENOMEM);
-                goto error;
-            }
-        }
-    }
 
     if (avctx->frame_size) {
         /* validate frame size */
@@ -113,14 +97,23 @@ static av_cold int g722_encode_init(AVCodecContext * avctx)
                    avctx->trellis);
             avctx->trellis = new_trellis;
         }
+        if (avctx->trellis) {
+            int frontier = 1 << avctx->trellis;
+            int max_paths = frontier * FREEZE_INTERVAL;
+
+            for (int i = 0; i < 2; i++) {
+                c->paths[i]     = av_calloc(max_paths, sizeof(**c->paths));
+                c->node_buf[i]  = av_calloc(frontier, 2 * sizeof(**c->node_buf));
+                c->nodep_buf[i] = av_calloc(frontier, 2 * sizeof(**c->nodep_buf));
+                if (!c->paths[i] || !c->node_buf[i] || !c->nodep_buf[i])
+                    return AVERROR(ENOMEM);
+            }
+        }
     }
 
     ff_g722dsp_init(&c->dsp);
 
     return 0;
-error:
-    g722_encode_close(avctx);
-    return ret;
 }
 
 static const int16_t low_quant[33] = {
@@ -387,4 +380,5 @@ AVCodec ff_adpcm_g722_encoder = {
     .capabilities    = AV_CODEC_CAP_SMALL_LAST_FRAME,
     .sample_fmts     = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_S16, AV_SAMPLE_FMT_NONE },
     .channel_layouts = (const uint64_t[]){ AV_CH_LAYOUT_MONO, 0 },
+    .caps_internal   = FF_CODEC_CAP_INIT_CLEANUP,
 };

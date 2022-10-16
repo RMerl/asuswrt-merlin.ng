@@ -20,7 +20,7 @@ ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
 
-OBJS = sysstate.o dumplog.o respipc.o cpuusage.o cputemp.o ramusage.o
+OBJS = sysstate.o dumplog.o respipc.o cpuusage.o cputemp.o ramusage.o psstate.o tmpsize.o
 
 ifneq ($(wildcard ./prebuild/$(BUILD_NAME)),)
 all:

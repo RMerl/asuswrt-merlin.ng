@@ -286,7 +286,7 @@ char* GetBW(int BW)
 		case BW_40:
 			return "40M";
 
-#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTAC1200GA1) || defined(RTAC1200GU)
+#if defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTACRH18) || defined(RT4GAC86U) || defined(RTCONFIG_WLMODULE_MT7915D_AP)
 		case BW_80:
 			return "80M";
 #endif
@@ -311,7 +311,7 @@ char* GetPhyMode(int Mode)
 		case MODE_HTGREENFIELD:
 			return "GREEN";
 
-#if defined(RTAC52U) || defined(RTAC51U)  || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTAC1200GA1) || defined(RTAC1200GU)
+#if defined(RTAC52U) || defined(RTAC51U)  || defined(RTN54U) || defined(RTAC1200HP) || defined(RTAC54U) || defined(RTAC1200) || defined(RTAC1200V2) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTACRH18) || defined(RT4GAC86U) || defined(RTCONFIG_WLMODULE_MT7915D_AP)
 		case MODE_VHT:
 			return "VHT";
 #endif
@@ -340,7 +340,7 @@ int MCSMappingRateTable[] =
 	65, 130, 195, 260, 390, 520, 585, 650, 780, 867 /*11ac: 80Mhz, 400ns GI, MCS: 0~9 */
 	};
 
-#if defined(RTCONFIG_WLMODULE_MT7663E_AP)
+#if defined(RTCONFIG_WLMODULE_MT7663E_AP) || defined(RTCONFIG_WLMODULE_MT7629_AP) || defined(RTCONFIG_WLMODULE_MT7622_AP)
 int MCSMappingRateTable_5G[] = {
 	2,  4, 11, 22, 12,  18,  24,  36, 48,  72,  96, 108, 109, 110, 111, 112,/* CCK and OFDM */
 	13, 26, 39, 52, 78, 104, 117, 130, 26,  52,  78, 104, 156, 208, 234, 260,
@@ -542,7 +542,7 @@ _fn_(_st_ HTSetting)							\
 #endif
 
 #if defined(RTCONFIG_HAS_5G)
-#if defined(RTCONFIG_WLMODULE_MT7663E_AP) 
+#if defined(RTCONFIG_WLMODULE_MT7663E_AP) || defined(RTCONFIG_WLMODULE_MT7629_AP) || defined(RTCONFIG_WLMODULE_MT7622_AP)
 int FN_GETRATE(getRate,      MACHTTRANSMIT_SETTING_for_5G, 1, MCSMappingRateTable_5G)		//getRate   (MACHTTRANSMIT_SETTING_for_5G)
 #else
 int FN_GETRATE(getRate,      MACHTTRANSMIT_SETTING_for_5G, 1, MCSMappingRateTable)		//getRate   (MACHTTRANSMIT_SETTING_for_5G)
@@ -646,7 +646,6 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	if (wl_ioctl(ifname, SIOCGIWRANGE, &wrq2) < 0)
 		return ret;
-
 	if (ralink_get_range_info(&range, buffer, wrq2.u.data.length) < 0)
 		return ret;
 
@@ -749,7 +748,7 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 			ret+=websWrite(wp, "Phy Mode	: 11%s\n", tmp+1); // skip first '/'
 	}
 	else
-#else if defined(RTCONFIG_WLMODULE_MT7663E_AP)
+#else if defined(RTCONFIG_WLMODULE_MT7663E_AP) || defined(RTCONFIG_WLMODULE_MT7629_AP)
 	if (unit == 1 || unit == 0)
 	{
 		char *p = tmp;
@@ -834,8 +833,8 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 	ret+=websWrite(wp, "\nStations List			   \n");
 	ret+=websWrite(wp, "----------------------------------------\n");
-	ret+=websWrite(wp, "%-18s%-4s%-8s%-4s%-4s%-4s%-5s%-5s%-12s\n",
-			   "MAC", "PSM", "PhyMode", "BW", "MCS", "SGI", "STBC", "Rate", "Connect Time");
+	ret+=websWrite(wp, "%-18s%-4s%-8s%-4s%-4s%-5s%-7s%-12s\n",
+			   "MAC", "PSM", "PhyMode", "BW", "SGI", "STBC", "TxRate", "Connect Time");
 
 #define SHOW_STA_INFO(_p,_i,_st, _gr) {											\
 		int hr, min, sec;											\
@@ -843,14 +842,13 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		hr = Entry->ConnectedTime/3600;										\
 		min = (Entry->ConnectedTime % 3600)/60;									\
 		sec = Entry->ConnectedTime - hr*3600 - min*60;						\
-		ret+=websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X %s %-7s %s %3d %s %s  %3dM %02d:%02d:%02d\n",		\
+		ret+=websWrite(wp, "%02X:%02X:%02X:%02X:%02X:%02X %s %-7s %s %s %s  %3dM %02d:%02d:%02d\n",		\
 				Entry->Addr[0], Entry->Addr[1],								\
 				Entry->Addr[2], Entry->Addr[3],								\
 				Entry->Addr[4], Entry->Addr[5],								\
 				Entry->Psm ? "Yes" : "NO ",								\
 				GetPhyMode(Entry->TxRate.field.MODE),							\
 				GetBW(Entry->TxRate.field.BW),								\
-				Entry->TxRate.field.MCS,								\
 				Entry->TxRate.field.ShortGI ? "Yes" : "NO ",						\
 				Entry->TxRate.field.STBC ? "Yes" : "NO ",						\
 				_gr(Entry->TxRate),									\
@@ -1225,12 +1223,16 @@ int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 	char mac[ETHER_ADDR_STR_LEN];
 	RT_802_11_MAC_TABLE_2G *mp2;
 	char *value;
-	int rssi, cnt;
+	int rssi, cnt, xTxR;
 	int from_app = 0;
 
 	from_app = check_user_agent(user_agent);
+	xTxR = nvram_get_int("wl0_HT_RxStream");
 
 	memset(mac, 0, sizeof(mac));
+
+	if(hook_get_json == 1)
+		websWrite(wp, "{");
 
 #if defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
 	if (!nvram_get_int("wlready"))
@@ -1251,15 +1253,15 @@ int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 	for (i = 0; i<mp2->Num; i++)
 	{
 		rssi = cnt = 0;
-		if (mp2->Entry[i].AvgRssi0) {
+		if (mp2->Entry[i].AvgRssi0 && cnt < xTxR) {
 			rssi += mp2->Entry[i].AvgRssi0;
 			cnt++;
 		}
-		if (mp2->Entry[i].AvgRssi1) {
+		if (mp2->Entry[i].AvgRssi1 && cnt < xTxR) {
 			rssi += mp2->Entry[i].AvgRssi1;
 			cnt++;
 		}
-		if (mp2->Entry[i].AvgRssi2) {
+		if (mp2->Entry[i].AvgRssi2 && cnt < xTxR) {
 			rssi += mp2->Entry[i].AvgRssi2;
 			cnt++;
 		}
@@ -1271,7 +1273,7 @@ int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 		else
 			websWrite(wp, ", ");
 
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, "[");
 
 		snprintf(mac, sizeof(mac), "%02X:%02X:%02X:%02X:%02X:%02X",
@@ -1280,32 +1282,32 @@ int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 				mp2->Entry[i].Addr[4], mp2->Entry[i].Addr[5]);
 		websWrite(wp, "\"%s\"", mac);
 
-		if (from_app != 0) {
+		if (from_app != 0 || hook_get_json == 1) {
 			websWrite(wp, ":{");
 			websWrite(wp, "\"isWL\":");
 		}
 
 		value = "Yes";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, ", \"%s\"", value);
 		else
 			websWrite(wp, "\"%s\"", value);
 
 		value = "";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, ", \"%s\"", value);
 
-		if (from_app != 0)
+		if (from_app != 0 || hook_get_json == 1)
 			websWrite(wp, ",\"rssi\":");
 
 		rssi = rssi / cnt;
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, ", \"%d\"", rssi);
 		else
 			websWrite(wp, "\"%d\"", rssi);
 
 
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, "]");
 		else
 			websWrite(wp, "}");
@@ -1313,6 +1315,8 @@ int ej_wl_sta_list_2g(int eid, webs_t wp, int argc, char_t **argv)
 
 	/* error/exit */
 exit:
+	if(hook_get_json == 1)
+		websWrite(wp, "}");
 	return 0;
 }
 
@@ -1325,12 +1329,16 @@ int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 	char mac[ETHER_ADDR_STR_LEN];
 	RT_802_11_MAC_TABLE_5G *mp;
 	char *value;
-	int rssi, cnt;
+	int rssi, cnt, xTxR;
 	int from_app = 0;
 
 	from_app = check_user_agent(user_agent);
+	xTxR = nvram_get_int("wl1_HT_RxStream");
 
 	memset(mac, 0, sizeof(mac));
+
+	if(hook_get_json == 1)
+		websWrite(wp, "{");
 
 #if defined(RTAC85U) || defined(RTAC85P) || defined(RTACRH26) || defined(TUFAC1750)
 	if (!nvram_get_int("wlready"))
@@ -1351,15 +1359,15 @@ int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 	for (i = 0; i<mp->Num; i++)
 	{
 		rssi = cnt = 0;
-		if (mp->Entry[i].AvgRssi0) {
+		if (mp->Entry[i].AvgRssi0 && cnt < xTxR) {
 			rssi += mp->Entry[i].AvgRssi0;
 			cnt++;
 		}
-		if (mp->Entry[i].AvgRssi1) {
+		if (mp->Entry[i].AvgRssi1 && cnt < xTxR) {
 			rssi += mp->Entry[i].AvgRssi1;
 			cnt++;
 		}
-		if (mp->Entry[i].AvgRssi2) {
+		if (mp->Entry[i].AvgRssi2 && cnt < xTxR) {
 			rssi += mp->Entry[i].AvgRssi2;
 			cnt++;
 		}
@@ -1371,7 +1379,7 @@ int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 		else
 			websWrite(wp, ", ");
 
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, "[");
 
 		snprintf(mac, sizeof(mac), "%02X:%02X:%02X:%02X:%02X:%02X",
@@ -1386,26 +1394,26 @@ int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 		}
 
 		value = "Yes";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, ", \"%s\"", value);
 		else
 			websWrite(wp, "\"%s\"", value);
 
 		value = "";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, ", \"%s\"", value);
 
-		if (from_app != 0)
+		if (from_app != 0 || hook_get_json == 1)
 			websWrite(wp, ",\"rssi\":");
 
 		rssi = rssi / cnt;
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, ", \"%d\"", rssi);
 		else
 			websWrite(wp, "\"%d\"", rssi);
 
 
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			websWrite(wp, "]");
 		else
 			websWrite(wp, "}");
@@ -1414,6 +1422,8 @@ int ej_wl_sta_list_5g(int eid, webs_t wp, int argc, char_t **argv)
 	/* error/exit */
 #endif	/* RTCONFIG_HAS_5G */
 exit:
+	if(hook_get_json == 1)
+		websWrite(wp, "}");
 	return 0;
 }
 
@@ -1434,12 +1444,13 @@ int ej_get_wlstainfo_list(int eid, webs_t wp, int argc, char_t **argv)
 		RT_802_11_MAC_TABLE_5G *mp;
 		RT_802_11_MAC_TABLE_2G *mp2;
 		char *name;
-		int rssi, cnt;
+		int rssi, cnt, xTxR;
 		char alias[16];
 
 		SKIP_ABSENT_BAND_AND_INC_UNIT(unit);
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 		name = nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)));
+		xTxR = nvram_get_int(strlcat_r(prefix, "HT_RxStream", tmp, sizeof(tmp)));
 
 		/* query wl for authenticated sta list */
 		memset(data, 0, sizeof(data));
@@ -1468,15 +1479,15 @@ int ej_get_wlstainfo_list(int eid, webs_t wp, int argc, char_t **argv)
 						continue;
 
 					rssi = cnt = 0;
-					if (mp2->Entry[j].AvgRssi0) {
+					if (mp2->Entry[j].AvgRssi0 && cnt < xTxR) {
 						rssi += mp2->Entry[j].AvgRssi0;
 						cnt++;
 					}
-					if (mp2->Entry[j].AvgRssi1) {
+					if (mp2->Entry[j].AvgRssi1 && cnt < xTxR) {
 						rssi += mp2->Entry[j].AvgRssi1;
 						cnt++;
 					}
-					if (mp2->Entry[j].AvgRssi2) {
+					if (mp2->Entry[j].AvgRssi2 && cnt < xTxR) {
 						rssi += mp2->Entry[j].AvgRssi2;
 						cnt++;
 					}
@@ -1523,15 +1534,15 @@ int ej_get_wlstainfo_list(int eid, webs_t wp, int argc, char_t **argv)
 						continue;
 
 					rssi = cnt = 0;
-					if (mp->Entry[j].AvgRssi0) {
+					if (mp->Entry[j].AvgRssi0 && cnt < xTxR) {
 						rssi += mp->Entry[j].AvgRssi0;
 						cnt++;
 					}
-					if (mp->Entry[j].AvgRssi1) {
+					if (mp->Entry[j].AvgRssi1 && cnt < xTxR) {
 						rssi += mp->Entry[j].AvgRssi1;
 						cnt++;
 					}
-					if (mp->Entry[j].AvgRssi2) {
+					if (mp->Entry[j].AvgRssi2 && cnt < xTxR) {
 						rssi += mp->Entry[j].AvgRssi2;
 						cnt++;
 					}
@@ -1588,6 +1599,10 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv)
 	wrq.u.data.pointer = data;
 	wrq.u.data.length = sizeof(data);
 	wrq.u.data.flags = 0;
+
+	if(hook_get_json == 1)
+		websWrite(wp, "[");
+
 	if (wl_ioctl(WIF_2G, RTPRIV_IOCTL_GET_MAC_TABLE, &wrq) < 0)
 		goto exit;
 
@@ -1654,6 +1669,8 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv)
 
 	/* error/exit */
 exit:
+	if(hook_get_json == 1)
+		websWrite(wp, "]");
 	return 0;
 }
 #if defined(RTN65U)
@@ -2059,7 +2076,7 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 #endif
 
 ERROR:
-	if(from_app == 0)
+	if(from_app == 0 && hook_get_json == 0)
 		retval += websWrite(wp, "%s", rate_buf);
 	else
 		retval += websWrite(wp, "\"%s\"", rate_buf);
@@ -2108,7 +2125,11 @@ ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv)
 {
 	int retval = 0;
 
+#if defined(RTCONFIG_WLMODULE_MT7629_AP) || defined(RTCONFIG_WLMODULE_MT7622_AP)
+	retval += websWrite(wp, "%d", module_loaded("mtkhnat"));
+#else
 	retval += websWrite(wp, "%d", module_loaded("hw_nat"));
+#endif
 
 	return retval;
 }

@@ -34,7 +34,7 @@ typedef struct GSMDemuxerContext {
     int sample_rate;
 } GSMDemuxerContext;
 
-static int gsm_probe(AVProbeData *p)
+static int gsm_probe(const AVProbeData *p)
 {
     int valid = 0, invalid = 0;
     uint8_t *b = p->buf;
@@ -62,7 +62,6 @@ static int gsm_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = av_get_packet(s->pb, pkt, size);
     if (ret < GSM_BLOCK_SIZE) {
-        av_packet_unref(pkt);
         return ret < 0 ? ret : AVERROR(EIO);
     }
     pkt->duration = 1;

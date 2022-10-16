@@ -57,6 +57,45 @@ ENUM_NEXT(diffie_hellman_group_names, MODP_CUSTOM, MODP_CUSTOM, NH_128_BIT,
 	"MODP_CUSTOM");
 ENUM_END(diffie_hellman_group_names, MODP_CUSTOM);
 
+ENUM_BEGIN(diffie_hellman_group_names_short, MODP_NONE, MODP_1024_BIT,
+	"modpnone",
+	"modp768",
+	"modp1024");
+ENUM_NEXT(diffie_hellman_group_names_short, MODP_1536_BIT, MODP_1536_BIT, MODP_1024_BIT,
+	"modp1536");
+ENUM_NEXT(diffie_hellman_group_names_short, MODP_2048_BIT, ECP_521_BIT, MODP_1536_BIT,
+	"modp2048",
+	"modp3072",
+	"modp4096",
+	"modp6144",
+	"modp8192",
+	"ecp256",
+	"ecp384",
+	"ecp521");
+ENUM_NEXT(diffie_hellman_group_names_short, MODP_1024_160, CURVE_448, ECP_521_BIT,
+	"modp1024s160",
+	"modp2048s224",
+	"modp2048s256",
+	"ecp192",
+	"ecp224",
+	"ecp224bp",
+	"ecp256bp",
+	"ecp384bp",
+	"ecp512bp",
+	"curve25519",
+	"curve448");
+ENUM_NEXT(diffie_hellman_group_names_short, MODP_NULL, MODP_NULL, CURVE_448,
+	"modpnull");
+ENUM_NEXT(diffie_hellman_group_names_short, NTRU_112_BIT, NTRU_256_BIT, MODP_NULL,
+	"ntru112",
+	"ntru128",
+	"ntru192",
+	"ntru256");
+ENUM_NEXT(diffie_hellman_group_names_short, NH_128_BIT, NH_128_BIT, NTRU_256_BIT,
+	"newhope128");
+ENUM_NEXT(diffie_hellman_group_names_short, MODP_CUSTOM, MODP_CUSTOM, NH_128_BIT,
+	"modpcustom");
+ENUM_END(diffie_hellman_group_names_short, MODP_CUSTOM);
 
 /**
  * List of known diffie hellman group parameters.
@@ -493,6 +532,8 @@ bool diffie_hellman_group_is_ec(diffie_hellman_group_t group)
 		case ECP_256_BP:
 		case ECP_384_BP:
 		case ECP_512_BP:
+		case CURVE_25519:
+		case CURVE_448:
 			return TRUE;
 		default:
 			return FALSE;

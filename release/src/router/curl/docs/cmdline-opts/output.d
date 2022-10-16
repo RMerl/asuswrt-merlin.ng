@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: output
 Arg: <file>
 Short: o
@@ -8,6 +10,7 @@ Example: -o file $URL
 Example: "http://{one,two}.example.com" -o "file_#1.txt"
 Example: "http://{site,host}.host[1-5].com" -o "#1_#2"
 Example: -o file $URL -o file2 https://example.net
+Added: 4.0
 ---
 Write output to <file> instead of stdout. If you are using {} or [] to fetch
 multiple documents, you should quote the URL and you can use '#' followed by a
@@ -26,7 +29,7 @@ this:
 
   curl -o aa example.com -o bb example.net
 
-and the order of the -o options and the URLs doesn't matter, just that the
+and the order of the -o options and the URLs does not matter, just that the
 first -o is for the first URL and so on, so the above command line can also be
 written as
 

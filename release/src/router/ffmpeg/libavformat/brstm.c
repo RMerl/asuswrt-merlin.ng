@@ -24,6 +24,11 @@
 #include "avformat.h"
 #include "internal.h"
 
+typedef struct BRSTMCoeffOffset {
+    uint8_t  channel;
+    uint32_t offset;
+} BRSTMCoeffOffset;
+
 typedef struct BRSTMDemuxContext {
     uint32_t    block_size;
     uint32_t    block_count;
@@ -33,12 +38,13 @@ typedef struct BRSTMDemuxContext {
     uint32_t    last_block_size;
     uint32_t    last_block_samples;
     uint32_t    data_start;
-    uint8_t     *table;
+    uint8_t     table[256 * 32];
     uint8_t     *adpc;
+    BRSTMCoeffOffset offsets[256];
     int         little_endian;
 } BRSTMDemuxContext;
 
-static int probe(AVProbeData *p)
+static int probe(const AVProbeData *p)
 {
     if (AV_RL32(p->buf) == MKTAG('R','S','T','M') &&
         (AV_RL16(p->buf + 4) == 0xFFFE ||
@@ -47,7 +53,7 @@ static int probe(AVProbeData *p)
     return 0;
 }
 
-static int probe_bfstm(AVProbeData *p)
+static int probe_bfstm(const AVProbeData *p)
 {
     if ((AV_RL32(p->buf) == MKTAG('F','S','T','M') ||
          AV_RL32(p->buf) == MKTAG('C','S','T','M')) &&
@@ -61,10 +67,16 @@ static int read_close(AVFormatContext *s)
 {
     BRSTMDemuxContext *b = s->priv_data;
 
-    av_freep(&b->table);
     av_freep(&b->adpc);
 
     return 0;
+}
+
+static int sort_offsets(const void *a, const void *b)
+{
+    const BRSTMCoeffOffset *s1 = a;
+    const BRSTMCoeffOffset *s2 = b;
+    return FFDIFFSIGN(s1->offset, s2->offset);
 }
 
 static av_always_inline unsigned int read16(AVFormatContext *s)
@@ -259,17 +271,30 @@ static int read_header(AVFormatContext *s)
         if (toffset > size)
             return AVERROR_INVALIDDATA;
 
+        if (!bfstm) {
+            avio_skip(s->pb, pos + toffset - avio_tell(s->pb) - 8LL * (st->codecpar->channels + 1));
+            for (ch = 0; ch < st->codecpar->channels; ch++) {
+                avio_skip(s->pb, 4);
+                b->offsets[ch].channel = ch;
+                b->offsets[ch].offset = read32(s);
+            }
+
+            qsort(b->offsets, st->codecpar->channels, sizeof(*b->offsets), sort_offsets);
+        }
+
         avio_skip(s->pb, pos + toffset - avio_tell(s->pb));
-        b->table = av_mallocz(32 * st->codecpar->channels);
-        if (!b->table)
-            return AVERROR(ENOMEM);
 
         for (ch = 0; ch < st->codecpar->channels; ch++) {
+            if (!bfstm)
+                avio_skip(s->pb, pos + 16LL + b->offsets[ch].offset - avio_tell(s->pb));
+
             if (avio_read(s->pb, b->table + ch * 32, 32) != 32) {
                 ret = AVERROR_INVALIDDATA;
                 goto fail;
             }
-            avio_skip(s->pb, bfstm ? 14 : 24);
+
+            if (bfstm)
+                avio_skip(s->pb, 14);
         }
     }
 
@@ -393,18 +418,13 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             av_log(s, AV_LOG_ERROR, "adpcm_thp requires ADPC chunk, but none was found.\n");
             return AVERROR_INVALIDDATA;
         }
-        if (!b->table) {
-            b->table = av_mallocz(32 * par->channels);
-            if (!b->table)
-                return AVERROR(ENOMEM);
-        }
 
         if (size > (INT_MAX - 32 - 4) ||
             (32 + 4 + size) > (INT_MAX / par->channels) ||
             (32 + 4 + size) * par->channels > INT_MAX - 8)
             return AVERROR_INVALIDDATA;
-        if (av_new_packet(pkt, 8 + (32 + 4 + size) * par->channels) < 0)
-            return AVERROR(ENOMEM);
+        if ((ret = av_new_packet(pkt, 8 + (32 + 4 + size) * par->channels)) < 0)
+            return ret;
         dst = pkt->data;
         if (par->codec_id == AV_CODEC_ID_ADPCM_THP_LE) {
             bytestream_put_le32(&dst, size * par->channels);
@@ -422,8 +442,7 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             dst += size;
             avio_skip(s->pb, skip);
             if (ret != size) {
-                av_packet_unref(pkt);
-                break;
+                return AVERROR(EIO);
             }
         }
         pkt->duration = samples;
@@ -447,7 +466,11 @@ static int read_seek(AVFormatContext *s, int stream_index,
     BRSTMDemuxContext *b = s->priv_data;
     int64_t ret = 0;
 
+    if (timestamp < 0)
+        timestamp = 0;
     timestamp /= b->samples_per_block;
+    if (timestamp >= b->block_count)
+        timestamp = b->block_count - 1;
     ret = avio_seek(s->pb, b->data_start + timestamp * b->block_size *
                            st->codecpar->channels, SEEK_SET);
     if (ret < 0)

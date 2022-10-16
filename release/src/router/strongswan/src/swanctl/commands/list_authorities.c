@@ -48,7 +48,7 @@ CALLBACK(authority_list, int,
 		if (streq(name, "crl_uris"))
 		{
 			printf("  %s %.*s\n",
-				  (*labeled & LABELED_CRL_URI)  ? "          " : "crl_uris: ", 
+				  (*labeled & LABELED_CRL_URI)  ? "          " : "crl_uris: ",
 				  len, value);
 			*labeled |= LABELED_CRL_URI;
 		}

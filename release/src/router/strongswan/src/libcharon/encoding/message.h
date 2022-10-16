@@ -405,6 +405,23 @@ struct message_t {
 	enumerator_t *(*get_fragments)(message_t *this);
 
 	/**
+	 * Get metadata of this message.
+	 *
+	 * @param key		key of the metadata to retrieve
+	 * @return			metadata object (internal data), NULL if not found
+	 */
+	metadata_t *(*get_metadata)(message_t *message, const char *key);
+
+	/**
+	 * Set/remove metadata of this message.
+	 *
+	 * @param key		key of the metadata (cloned)
+	 * @param data		metadata object (adopted), NULL to remove and destroy
+	 *					existing object with the given key
+	 */
+	void (*set_metadata)(message_t *message, const char *key, metadata_t *data);
+
+	/**
 	 * Destroys a message and all including objects.
 	 */
 	void (*destroy) (message_t *this);

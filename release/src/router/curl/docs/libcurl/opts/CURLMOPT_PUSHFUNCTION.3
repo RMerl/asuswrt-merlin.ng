@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,9 +18,11 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLMOPT_PUSHFUNCTION 3 "November 04, 2020" "libcurl 7.79.1" "curl_multi_setopt options"
+.TH CURLMOPT_PUSHFUNCTION 3 "May 17, 2022" "libcurl 7.84.0" "curl_multi_setopt options"
 
 .SH NAME
 CURLMOPT_PUSHFUNCTION \- callback that approves or denies server pushes
@@ -76,7 +78,7 @@ Returns the header at index 'num' (or NULL). The returned pointer points to a
 "name:value" string that will be freed when this callback returns.
 .IP curl_pushheader_byname
 Returns the value for the given header name (or NULL). This is a shortcut so
-that the application doesn't have to loop through all headers to find the one
+that the application does not have to loop through all headers to find the one
 it is interested in. The data pointed will be freed when this callback
 returns. If more than one header field use the same name, this returns only
 the first one.
@@ -89,7 +91,7 @@ The callback denies the stream and no data for this will reach the
 application, the easy handle will be destroyed by libcurl.
 .IP "CURL_PUSH_ERROROUT (2)"
 Returning this will reject the pushed stream and return an error back on the
-parent stream making it get closed with an error. (Added in curl 7.72.0)
+parent stream making it get closed with an error. (Added in 7.72.0)
 .IP *
 All other return codes are reserved for future use.
 .SH DEFAULT

@@ -56,8 +56,8 @@ typedef struct URLProtocol {
     int     (*url_open)( URLContext *h, const char *url, int flags);
     /**
      * This callback is to be used by protocols which open further nested
-     * protocols. options are then to be passed to ffurl_open()/ffurl_connect()
-     * for those nested protocols.
+     * protocols. options are then to be passed to ffurl_open_whitelist()
+     * or ffurl_connect() for those nested protocols.
      */
     int     (*url_open2)(URLContext *h, const char *url, int flags, AVDictionary **options);
     int     (*url_accept)(URLContext *s, URLContext **c);
@@ -87,8 +87,8 @@ typedef struct URLProtocol {
                                      int *numhandles);
     int (*url_get_short_seek)(URLContext *h);
     int (*url_shutdown)(URLContext *h, int flags);
-    int priv_data_size;
     const AVClass *priv_data_class;
+    int priv_data_size;
     int flags;
     int (*url_check)(URLContext *h, int mask);
     int (*url_open_dir)(URLContext *h);
@@ -147,9 +147,6 @@ int ffurl_open_whitelist(URLContext **puc, const char *filename, int flags,
                const AVIOInterruptCB *int_cb, AVDictionary **options,
                const char *whitelist, const char* blacklist,
                URLContext *parent);
-
-int ffurl_open(URLContext **puc, const char *filename, int flags,
-               const AVIOInterruptCB *int_cb, AVDictionary **options);
 
 /**
  * Accept an URLContext c on an URLContext s
@@ -311,9 +308,19 @@ int ff_url_join(char *str, int size, const char *proto,
  * @param size the size of buf
  * @param base the base url, may be equal to buf.
  * @param rel the new url, which is interpreted relative to base
+ * @param handle_dos_paths handle DOS paths for file or unspecified protocol
  */
-void ff_make_absolute_url(char *buf, int size, const char *base,
-                          const char *rel);
+int ff_make_absolute_url2(char *buf, int size, const char *base,
+                         const char *rel, int handle_dos_paths);
+
+/**
+ * Convert a relative url into an absolute url, given a base url.
+ *
+ * Same as ff_make_absolute_url2 with handle_dos_paths being equal to
+ * HAVE_DOS_PATHS config variable.
+ */
+int ff_make_absolute_url(char *buf, int size, const char *base,
+                         const char *rel);
 
 /**
  * Allocate directory entry with default values.
@@ -322,7 +329,11 @@ void ff_make_absolute_url(char *buf, int size, const char *base,
  */
 AVIODirEntry *ff_alloc_dir_entry(void);
 
+#if FF_API_CHILD_CLASS_NEXT
 const AVClass *ff_urlcontext_child_class_next(const AVClass *prev);
+#endif
+
+const AVClass *ff_urlcontext_child_class_iterate(void **iter);
 
 /**
  * Construct a list of protocols matching a given whitelist and/or blacklist.
@@ -339,5 +350,46 @@ const AVClass *ff_urlcontext_child_class_next(const AVClass *prev);
  */
 const URLProtocol **ffurl_get_protocols(const char *whitelist,
                                         const char *blacklist);
+
+typedef struct URLComponents {
+    const char *url;        /**< whole URL, for reference */
+    const char *scheme;     /**< possibly including lavf-specific options */
+    const char *authority;  /**< "//" if it is a real URL */
+    const char *userinfo;   /**< including final '@' if present */
+    const char *host;
+    const char *port;       /**< including initial ':' if present */
+    const char *path;
+    const char *query;      /**< including initial '?' if present */
+    const char *fragment;   /**< including initial '#' if present */
+    const char *end;
+} URLComponents;
+
+#define url_component_end_scheme      authority
+#define url_component_end_authority   userinfo
+#define url_component_end_userinfo    host
+#define url_component_end_host        port
+#define url_component_end_port        path
+#define url_component_end_path        query
+#define url_component_end_query       fragment
+#define url_component_end_fragment    end
+#define url_component_end_authority_full path
+
+#define URL_COMPONENT_HAVE(uc, component) \
+    ((uc).url_component_end_##component > (uc).component)
+
+/**
+ * Parse an URL to find the components.
+ *
+ * Each component runs until the start of the next component,
+ * possibly including a mandatory delimiter.
+ *
+ * @param uc   structure to fill with pointers to the components.
+ * @param url  URL to parse.
+ * @param end  end of the URL, or NULL to parse to the end of string.
+ *
+ * @return  >= 0 for success or an AVERROR code, especially if the URL is
+ *          malformed.
+ */
+int ff_url_decompose(URLComponents *uc, const char *url, const char *end);
 
 #endif /* AVFORMAT_URL_H */

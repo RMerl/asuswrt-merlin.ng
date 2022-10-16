@@ -23,11 +23,11 @@
 
 typedef struct ntru_private_key_t ntru_private_key_t;
 
-#include "ntru_drbg.h"
 #include "ntru_param_set.h"
 #include "ntru_public_key.h"
 
 #include <library.h>
+#include <crypto/drbgs/drbg.h>
 
 /**
  * Implements an NTRU encryption public/private key pair
@@ -77,7 +77,7 @@ struct ntru_private_key_t {
  * @param drbg			Digital Random Bit Generator used for key generation
  * @param params		NTRU encryption parameter set to be used
  */
-ntru_private_key_t *ntru_private_key_create(ntru_drbg_t *drbg,
+ntru_private_key_t *ntru_private_key_create(drbg_t *drbg,
 											const ntru_param_set_t *params);
 
 /**
@@ -86,7 +86,7 @@ ntru_private_key_t *ntru_private_key_create(ntru_drbg_t *drbg,
  * @param drbg			Deterministic random bit generator
  * @param data			Encoded NTRU private key
  */
-ntru_private_key_t *ntru_private_key_create_from_data(ntru_drbg_t *drbg,
+ntru_private_key_t *ntru_private_key_create_from_data(drbg_t *drbg,
 													  chunk_t data);
 
 #endif /** NTRU_PRIVATE_KEY_H_ @}*/

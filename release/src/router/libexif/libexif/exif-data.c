@@ -30,18 +30,16 @@
 #include <libexif/i18n.h>
 #include <libexif/exif-system.h>
 
+/*#include <libexif/apple/exif-mnote-data-apple.h>*/
 #include <libexif/canon/exif-mnote-data-canon.h>
 #include <libexif/fuji/exif-mnote-data-fuji.h>
 #include <libexif/olympus/exif-mnote-data-olympus.h>
 #include <libexif/pentax/exif-mnote-data-pentax.h>
 
+#include <math.h>
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-
-#if defined(__WATCOMC__) || defined(_MSC_VER)
-#      define strncasecmp strnicmp
-#endif
 
 #undef JPEG_MARKER_SOI
 #define JPEG_MARKER_SOI  0xd8
@@ -49,6 +47,8 @@
 #define JPEG_MARKER_APP0 0xe0
 #undef JPEG_MARKER_APP1
 #define JPEG_MARKER_APP1 0xe1
+
+#define CHECKOVERFLOW(offset,datasize,structsize) (( (offset) >= (datasize)) || ((structsize) > (datasize)) || ((offset) > (datasize) - (structsize) ))
 
 static const unsigned char ExifHeader[] = {0x45, 0x78, 0x69, 0x66, 0x00, 0x00};
 
@@ -195,9 +195,15 @@ exif_data_load_data_entry (ExifData *data, ExifEntry *entry,
 		doff = offset + 8;
 
 	/* Sanity checks */
-	if ((doff + s < doff) || (doff + s < s) || (doff + s > size)) {
+	if (doff >= size) {
 		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
-				  "Tag data past end of buffer (%u > %u)", doff+s, size);	
+				  "Tag starts past end of buffer (%u > %u)", doff, size);
+		return 0;
+	}
+
+	if (s > size - doff) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
+				  "Tag data goes past end of buffer (%u > %u)", doff+s, size);
 		return 0;
 	}
 
@@ -206,8 +212,8 @@ exif_data_load_data_entry (ExifData *data, ExifEntry *entry,
 		entry->size = s;
 		memcpy (entry->data, d + doff, s);
 	} else {
-		/* FIXME: What do our callers do if (entry->data == NULL)? */
 		EXIF_LOG_NO_MEMORY(data->priv->log, "ExifData", s);
+		return 0;
 	}
 
 	/* If this is the MakerNote, remember the offset */
@@ -235,7 +241,6 @@ exif_data_save_data_entry (ExifData *data, ExifEntry *e,
 			   unsigned int offset)
 {
 	unsigned int doff, s;
-	unsigned char *t;
 	unsigned int ts;
 
 	if (!data || !data->priv) 
@@ -253,12 +258,19 @@ exif_data_save_data_entry (ExifData *data, ExifEntry *e,
 	if (!(data->priv->options & EXIF_DATA_OPTION_DONT_CHANGE_MAKER_NOTE)) {
 		/* If this is the maker note tag, update it. */
 		if ((e->tag == EXIF_TAG_MAKER_NOTE) && data->priv->md) {
+			/* TODO: this is using the wrong ExifMem to free e->data */
 			exif_mem_free (data->priv->mem, e->data);
 			e->data = NULL;
 			e->size = 0;
 			exif_mnote_data_set_offset (data->priv->md, *ds - 6);
 			exif_mnote_data_save (data->priv->md, &e->data, &e->size);
 			e->components = e->size;
+			if (exif_format_get_size (e->format) != 1) {
+				/* e->format is taken from input code,
+				 * but we need to make sure it is a 1 byte
+				 * entity due to the multiplication below. */
+				e->format = EXIF_FORMAT_UNDEFINED;
+			}
 		}
 	}
 
@@ -271,6 +283,7 @@ exif_data_save_data_entry (ExifData *data, ExifEntry *e,
 	 */
 	s = exif_format_get_size (e->format) * e->components;
 	if (s > 4) {
+		unsigned char *t;
 		doff = *ds - 6;
 		ts = *ds + s;
 
@@ -298,7 +311,9 @@ exif_data_save_data_entry (ExifData *data, ExifEntry *e,
 	/* Write the data. Fill unneeded bytes with 0. Do not crash with
 	 * e->data is NULL */
 	if (e->data) {
-		memcpy (*d + 6 + doff, e->data, s);
+		unsigned int len = s;
+		if (e->size < s) len = e->size;
+		memcpy (*d + 6 + doff, e->data, len);
 	} else {
 		memset (*d + 6 + doff, 0, s);
 	}
@@ -311,13 +326,14 @@ exif_data_load_data_thumbnail (ExifData *data, const unsigned char *d,
 			       unsigned int ds, ExifLong o, ExifLong s)
 {
 	/* Sanity checks */
-	if ((o + s < o) || (o + s < s) || (o + s > ds) || (o > ds)) {
-		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
-			  "Bogus thumbnail offset (%u) or size (%u).",
-			  o, s);
+	if (o >= ds) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData", "Bogus thumbnail offset (%u).", o);
 		return;
 	}
-
+	if (CHECKOVERFLOW(o,ds,s)) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData", "Bogus thumbnail size (%u), max would be %u.", s, ds-o);
+		return;
+	}
 	if (data->data) 
 		exif_mem_free (data->priv->mem, data->data);
 	if (!(data->data = exif_data_alloc (data, s))) {
@@ -347,6 +363,20 @@ if (data->ifd[(i)]->count) {				\
 	break;						\
 }
 
+/*! Calculate the recursion cost added by one level of IFD loading.
+ *
+ * The work performed is related to the cost in the exponential relation
+ *   work=1.1**cost
+ */
+static unsigned int
+level_cost(unsigned int n)
+{
+    static const double log_1_1 = 0.09531017980432493;
+
+	/* Adding 0.1 protects against the case where n==1 */
+	return ceil(log(n + 0.1)/log_1_1);
+}
+
 /*! Load data for an IFD.
  *
  * \param[in,out] data #ExifData
@@ -354,13 +384,13 @@ if (data->ifd[(i)]->count) {				\
  * \param[in] d pointer to buffer containing raw IFD data
  * \param[in] ds size of raw data in buffer at \c d
  * \param[in] offset offset into buffer at \c d at which IFD starts
- * \param[in] recursion_depth number of times this function has been
- * recursively called without returning
+ * \param[in] recursion_cost factor indicating how expensive this recursive
+ * call could be
  */
 static void
 exif_data_load_data_content (ExifData *data, ExifIfd ifd,
 			     const unsigned char *d,
-			     unsigned int ds, unsigned int offset, unsigned int recursion_depth)
+			     unsigned int ds, unsigned int offset, unsigned int recursion_cost)
 {
 	ExifLong o, thumbnail_offset = 0, thumbnail_length = 0;
 	ExifShort n;
@@ -375,16 +405,27 @@ exif_data_load_data_content (ExifData *data, ExifIfd ifd,
 	if ((((int)ifd) < 0) || ( ((int)ifd) >= EXIF_IFD_COUNT))
 	  return;
 
-	if (recursion_depth > 30) {
+	if (recursion_cost > 170) {
+		/*
+		 * recursion_cost is a logarithmic-scale indicator of how expensive this
+		 * recursive call might end up being. It is an indicator of the depth of
+		 * recursion as well as the potential for worst-case future recursive
+		 * calls. Since it's difficult to tell ahead of time how often recursion
+		 * will occur, this assumes the worst by assuming every tag could end up
+		 * causing recursion.
+		 * The value of 170 was chosen to limit typical EXIF structures to a
+		 * recursive depth of about 6, but pathological ones (those with very
+		 * many tags) to only 2.
+		 */
 		exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA, "ExifData",
-			  "Deep recursion detected!");
+			  "Deep/expensive recursion detected!");
 		return;
 	}
 
 	/* Read the number of entries */
-	if ((offset + 2 < offset) || (offset + 2 < 2) || (offset + 2 > ds)) {
+	if (CHECKOVERFLOW(offset, ds, 2)) {
 		exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA, "ExifData",
-			  "Tag data past end of buffer (%u > %u)", offset+2, ds);
+			  "Tag data past end of buffer (%u+2 > %u)", offset, ds);
 		return;
 	}
 	n = exif_get_short (d + offset, data->priv->order);
@@ -393,7 +434,7 @@ exif_data_load_data_content (ExifData *data, ExifIfd ifd,
 	offset += 2;
 
 	/* Check if we have enough data. */
-	if (offset + 12 * n > ds) {
+	if (CHECKOVERFLOW(offset, ds, 12*n)) {
 		n = (ds - offset) / 12;
 		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
 				  "Short data; only loading %hu entries...", n);
@@ -410,6 +451,11 @@ exif_data_load_data_content (ExifData *data, ExifIfd ifd,
 		case EXIF_TAG_JPEG_INTERCHANGE_FORMAT:
 			o = exif_get_long (d + offset + 12 * i + 8,
 					   data->priv->order);
+			if (o >= ds) {
+				exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA, "ExifData",
+					  "Tag data past end of buffer (%u > %u)", offset+2, ds);
+				return;
+			}
 			/* FIXME: IFD_POINTER tags aren't marked as being in a
 			 * specific IFD, so exif_tag_get_name_in_ifd won't work
 			 */
@@ -419,15 +465,18 @@ exif_data_load_data_content (ExifData *data, ExifIfd ifd,
 			switch (tag) {
 			case EXIF_TAG_EXIF_IFD_POINTER:
 				CHECK_REC (EXIF_IFD_EXIF);
-				exif_data_load_data_content (data, EXIF_IFD_EXIF, d, ds, o, recursion_depth + 1);
+				exif_data_load_data_content (data, EXIF_IFD_EXIF, d, ds, o,
+					recursion_cost + level_cost(n));
 				break;
 			case EXIF_TAG_GPS_INFO_IFD_POINTER:
 				CHECK_REC (EXIF_IFD_GPS);
-				exif_data_load_data_content (data, EXIF_IFD_GPS, d, ds, o, recursion_depth + 1);
+				exif_data_load_data_content (data, EXIF_IFD_GPS, d, ds, o,
+					recursion_cost + level_cost(n));
 				break;
 			case EXIF_TAG_INTEROPERABILITY_IFD_POINTER:
 				CHECK_REC (EXIF_IFD_INTEROPERABILITY);
-				exif_data_load_data_content (data, EXIF_IFD_INTEROPERABILITY, d, ds, o, recursion_depth + 1);
+				exif_data_load_data_content (data, EXIF_IFD_INTEROPERABILITY, d, ds, o,
+					recursion_cost + level_cost(n));
 				break;
 			case EXIF_TAG_JPEG_INTERCHANGE_FORMAT:
 				thumbnail_offset = o;
@@ -474,6 +523,11 @@ exif_data_load_data_content (ExifData *data, ExifIfd ifd,
 					break;
 			}
 			entry = exif_entry_new_mem (data->priv->mem);
+			if (!entry) {
+				  exif_log (data->priv->log, EXIF_LOG_CODE_NO_MEMORY, "ExifData",
+                                          "Could not allocate memory");
+				  return;
+			}
 			if (exif_data_load_data_entry (data, entry, d, ds,
 						   offset + 12 * i))
 				exif_content_add_entry (data->ifd[ifd], entry);
@@ -722,61 +776,67 @@ typedef enum {
 	EXIF_DATA_TYPE_MAKER_NOTE_NONE		= 0,
 	EXIF_DATA_TYPE_MAKER_NOTE_CANON		= 1,
 	EXIF_DATA_TYPE_MAKER_NOTE_OLYMPUS	= 2,
-	EXIF_DATA_TYPE_MAKER_NOTE_PENTAX		= 3,
+	EXIF_DATA_TYPE_MAKER_NOTE_PENTAX	= 3,
 	EXIF_DATA_TYPE_MAKER_NOTE_NIKON		= 4,
 	EXIF_DATA_TYPE_MAKER_NOTE_CASIO		= 5,
 	EXIF_DATA_TYPE_MAKER_NOTE_FUJI 		= 6
 } ExifDataTypeMakerNote;
 
-static ExifDataTypeMakerNote
-exif_data_get_type_maker_note (ExifData *d)
+/*! If MakerNote is recognized, load it.
+ *
+ * \param[in,out] data #ExifData
+ * \param[in] d pointer to raw EXIF data
+ * \param[in] ds length of data at d
+ */
+static void
+interpret_maker_note(ExifData *data, const unsigned char *d, unsigned int ds)
 {
-	ExifEntry *e, *em;
-	char value[1024];
-
-	if (!d) 
-		return EXIF_DATA_TYPE_MAKER_NOTE_NONE;
+	int mnoteid;
+	ExifEntry* e = exif_data_get_entry (data, EXIF_TAG_MAKER_NOTE);
+	if (!e)
+		return;
 	
-	e = exif_data_get_entry (d, EXIF_TAG_MAKER_NOTE);
-	if (!e) 
-		return EXIF_DATA_TYPE_MAKER_NOTE_NONE;
+	if ((mnoteid = exif_mnote_data_olympus_identify (data, e)) != 0) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG,
+			"ExifData", "Olympus MakerNote variant type %d", mnoteid);
+		data->priv->md = exif_mnote_data_olympus_new (data->priv->mem);
 
-	/* Olympus & Nikon & Sanyo */
-	if ((e->size >= 8) && ( !memcmp (e->data, "OLYMP", 6) ||
-				!memcmp (e->data, "OLYMPUS", 8) ||
-				!memcmp (e->data, "SANYO", 6) ||
-				!memcmp (e->data, "EPSON", 6) ||
-				!memcmp (e->data, "Nikon", 6)))
-		return EXIF_DATA_TYPE_MAKER_NOTE_OLYMPUS;
+	} else if ((mnoteid = exif_mnote_data_canon_identify (data, e)) != 0) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG,
+			"ExifData", "Canon MakerNote variant type %d", mnoteid);
+		data->priv->md = exif_mnote_data_canon_new (data->priv->mem, data->priv->options);
 
-	em = exif_data_get_entry (d, EXIF_TAG_MAKE);
-	if (!em) 
-		return EXIF_DATA_TYPE_MAKER_NOTE_NONE;
+	} else if ((mnoteid = exif_mnote_data_fuji_identify (data, e)) != 0) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG,
+			"ExifData", "Fuji MakerNote variant type %d", mnoteid);
+		data->priv->md = exif_mnote_data_fuji_new (data->priv->mem);
 
-	/* Canon */
-	if (!strcmp (exif_entry_get_value (em, value, sizeof (value)), "Canon"))
-		return EXIF_DATA_TYPE_MAKER_NOTE_CANON;
-
-	/* Pentax & some variant of Nikon */
-	if ((e->size >= 2) && (e->data[0] == 0x00) && (e->data[1] == 0x1b)) {
-		if (!strncasecmp (
-			    exif_entry_get_value (em, value, sizeof(value)),
-			    "Nikon", 5))
-			return EXIF_DATA_TYPE_MAKER_NOTE_NIKON;
-		else
-			return EXIF_DATA_TYPE_MAKER_NOTE_PENTAX;
+	/* NOTE: Must do Pentax detection last because some of the
+	 * heuristics are pretty general. */
+	} else if ((mnoteid = exif_mnote_data_pentax_identify (data, e)) != 0) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG,
+			"ExifData", "Pentax MakerNote variant type %d", mnoteid);
+		data->priv->md = exif_mnote_data_pentax_new (data->priv->mem);
 	}
-	if ((e->size >= 8) && !memcmp (e->data, "AOC", 4)) {
-		return EXIF_DATA_TYPE_MAKER_NOTE_PENTAX;
+/* Marcus: disabled until apple makernote can also be saved
+	else if ((mnoteid = exif_mnote_data_apple_identify (data, e)) != 0) {
+		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG,
+			"ExifData", "Apple MakerNote variant type %d", mnoteid);
+		data->priv->md = exif_mnote_data_apple_new (data->priv->mem);
 	}
-	if ((e->size >= 8) && !memcmp (e->data, "QVC", 4)) {
-		return EXIF_DATA_TYPE_MAKER_NOTE_CASIO;
-	}
-	if ((e->size >= 12) && !memcmp (e->data, "FUJIFILM", 8)) {
-		return EXIF_DATA_TYPE_MAKER_NOTE_FUJI;
-	}
+*/
 
-	return EXIF_DATA_TYPE_MAKER_NOTE_NONE;
+	/* 
+	 * If we are able to interpret the maker note, do so.
+	 */
+	if (data->priv->md) {
+		exif_mnote_data_log (data->priv->md, data->priv->log);
+		exif_mnote_data_set_byte_order (data->priv->md,
+						data->priv->order);
+		exif_mnote_data_set_offset (data->priv->md,
+					    data->priv->offset_mnote);
+		exif_mnote_data_load (data->priv->md, d, ds);
+	}
 }
 
 #define LOG_TOO_SMALL \
@@ -785,15 +845,15 @@ exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA, "ExifData", \
 
 void
 exif_data_load_data (ExifData *data, const unsigned char *d_orig,
-		     unsigned int ds_orig)
+		     unsigned int ds)
 {
 	unsigned int l;
 	ExifLong offset;
 	ExifShort n;
 	const unsigned char *d = d_orig;
-	unsigned int ds = ds_orig, len;
+	unsigned int len, fullds;
 
-	if (!data || !data->priv || !d || !ds) 
+	if (!data || !data->priv || !d || !ds)
 		return;
 
 	exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
@@ -809,26 +869,42 @@ exif_data_load_data (ExifData *data, const unsigned char *d_orig,
 	}
 	if (!memcmp (d, ExifHeader, 6)) {
 		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
-			  "Found EXIF header.");
+			  "Found EXIF header at start.");
 	} else {
-		while (1) {
-			while ((d[0] == 0xff) && ds) {
+		while (ds >= 3) {
+			while (ds && (d[0] == 0xff)) {
 				d++;
 				ds--;
 			}
 
 			/* JPEG_MARKER_SOI */
-			if (d[0] == JPEG_MARKER_SOI) {
+			if (ds && d[0] == JPEG_MARKER_SOI) {
 				d++;
 				ds--;
 				continue;
 			}
 
-			/* JPEG_MARKER_APP0 */
-			if (d[0] == JPEG_MARKER_APP0) {
+			/* JPEG_MARKER_APP1 */
+			if (ds && d[0] == JPEG_MARKER_APP1) {
+				/*
+				 * Verify the exif header
+				 * (offset 3, length 6).
+				 * FF E1 NN NN EXIFHEADER
+				 *    ^^ d points here currently
+				 */
+				if ((ds >= 9) && !memcmp (d+3, ExifHeader, 6))
+					break;
+				/* fallthrough */
+			}
+			/* Skip irrelevant APP markers. The branch for APP1 must come before this,
+			   otherwise this code block will cause APP1 to be skipped. This code path
+			   is only relevant for files that are nonconformant to the EXIF
+			   specification. For conformant files, the APP1 code path above will be
+			   taken. */
+			if (ds >= 3 && d[0] >= 0xe0 && d[0] <= 0xef) {  /* JPEG_MARKER_APPn */
 				d++;
 				ds--;
-				l = (d[0] << 8) | d[1];
+				l = (((unsigned int)d[0]) << 8) | d[1];
 				if (l > ds)
 					return;
 				d += l;
@@ -836,27 +912,33 @@ exif_data_load_data (ExifData *data, const unsigned char *d_orig,
 				continue;
 			}
 
-			/* JPEG_MARKER_APP1 */
-			if (d[0] == JPEG_MARKER_APP1)
-				break;
-
 			/* Unknown marker or data. Give up. */
 			exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA,
 				  "ExifData", _("EXIF marker not found."));
 			return;
 		}
-		d++;
-		ds--;
-		if (ds < 2) {
+		if (ds < 3) {
 			LOG_TOO_SMALL;
 			return;
 		}
-		len = (d[0] << 8) | d[1];
+		d++;
+		ds--;
+		len = (((unsigned int)d[0]) << 8) | d[1];
+		if (len > ds) {
+			exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA,
+				  "ExifData", _("Read length %d is longer than data length %d."), len, ds);
+			return;
+		}
+		if (len < 2) {
+			exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA,
+				  "ExifData", _("APP Tag too short."));
+			return;
+		}
 		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
 			  "We have to deal with %i byte(s) of EXIF data.",
 			  len);
 		d += 2;
-		ds -= 2;
+		ds = len - 2;	/* we do not want the full rest size, but only the size of the tag */
 	}
 
 	/*
@@ -876,9 +958,18 @@ exif_data_load_data (ExifData *data, const unsigned char *d_orig,
 	exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
 		  "Found EXIF header.");
 
-	/* Byte order (offset 6, length 2) */
+	/* Sanity check the data length */
 	if (ds < 14)
 		return;
+
+	/* The JPEG APP1 section can be no longer than 64 KiB (including a
+	   16-bit length), so cap the data length to protect against overflow
+	   in future offset calculations */
+	fullds = ds;
+	if (ds > 0xfffe)
+		ds = 0xfffe;
+
+	/* Byte order (offset 6, length 2) */
 	if (!memcmp (d + 6, "II", 2))
 		data->priv->order = EXIF_BYTE_ORDER_INTEL;
 	else if (!memcmp (d + 6, "MM", 2))
@@ -898,23 +989,25 @@ exif_data_load_data (ExifData *data, const unsigned char *d_orig,
 	exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData", 
 		  "IFD 0 at %i.", (int) offset);
 
+	/* ds is restricted to 16 bit above, so offset is restricted too, and offset+8 should not overflow. */
+	if (offset > ds || offset + 6 + 2 > ds)
+		return;
+
 	/* Parse the actual exif data (usually offset 14 from start) */
 	exif_data_load_data_content (data, EXIF_IFD_0, d + 6, ds - 6, offset, 0);
 
 	/* IFD 1 offset */
-	if (offset + 6 + 2 > ds) {
-		return;
-	}
 	n = exif_get_short (d + 6 + offset, data->priv->order);
-	if (offset + 6 + 2 + 12 * n + 4 > ds) {
+	/* offset < 2<<16, n is 16 bit at most, so this op will not overflow */
+	if (offset + 6 + 2 + 12 * n + 4 > ds)
 		return;
-	}
+
 	offset = exif_get_long (d + 6 + offset + 2 + 12 * n, data->priv->order);
 	if (offset) {
 		exif_log (data->priv->log, EXIF_LOG_CODE_DEBUG, "ExifData",
 			  "IFD 1 at %i.", (int) offset);
 
-		/* Sanity check. */
+		/* Sanity check. ds is ensured to be above 6 above, offset is 16bit */
 		if (offset > ds - 6) {
 			exif_log (data->priv->log, EXIF_LOG_CODE_CORRUPT_DATA,
 				  "ExifData", "Bogus offset of IFD1.");
@@ -929,37 +1022,9 @@ exif_data_load_data (ExifData *data, const unsigned char *d_orig,
 	 * space between IFDs. Here is the only place where we have access
 	 * to that data.
 	 */
-	switch (exif_data_get_type_maker_note (data)) {
-	case EXIF_DATA_TYPE_MAKER_NOTE_OLYMPUS:
-	case EXIF_DATA_TYPE_MAKER_NOTE_NIKON:
-		data->priv->md = exif_mnote_data_olympus_new (data->priv->mem);
-		break;
-	case EXIF_DATA_TYPE_MAKER_NOTE_PENTAX:
-	case EXIF_DATA_TYPE_MAKER_NOTE_CASIO:
-		data->priv->md = exif_mnote_data_pentax_new (data->priv->mem);
-		break;
-	case EXIF_DATA_TYPE_MAKER_NOTE_CANON:
-		data->priv->md = exif_mnote_data_canon_new (data->priv->mem, data->priv->options);
-		break;
-	case EXIF_DATA_TYPE_MAKER_NOTE_FUJI:
-		data->priv->md = exif_mnote_data_fuji_new (data->priv->mem);
-		break;
-	default:
-		break;
-	}
+	interpret_maker_note(data, d, fullds);
 
-	/* 
-	 * If we are able to interpret the maker note, do so.
-	 */
-	if (data->priv->md) {
-		exif_mnote_data_log (data->priv->md, data->priv->log);
-		exif_mnote_data_set_byte_order (data->priv->md,
-						data->priv->order);
-		exif_mnote_data_set_offset (data->priv->md,
-					    data->priv->offset_mnote);
-		exif_mnote_data_load (data->priv->md, d, ds);
-	}
-
+	/* Fixup tags if requested */
 	if (data->priv->options & EXIF_DATA_OPTION_FOLLOW_SPECIFICATION)
 		exif_data_fix (data);
 }
@@ -1097,7 +1162,7 @@ exif_data_dump (ExifData *data)
 	}
 
 	if (data->data) {
-		printf ("%i byte(s) thumbnail data available.", data->size);
+		printf ("%i byte(s) thumbnail data available: ", data->size);
 		if (data->size >= 4) {
 			printf ("0x%02x 0x%02x ... 0x%02x 0x%02x\n",
 				data->data[0], data->data[1],
@@ -1255,7 +1320,7 @@ fix_func (ExifContent *c, void *UNUSED(data))
 	case EXIF_IFD_1:
 		if (c->parent->data)
 			exif_content_fix (c);
-		else {
+		else if (c->count) {
 			exif_log (c->parent->priv->log, EXIF_LOG_CODE_DEBUG, "exif-data",
 				  "No thumbnail but entries on thumbnail. These entries have been "
 				  "removed.");

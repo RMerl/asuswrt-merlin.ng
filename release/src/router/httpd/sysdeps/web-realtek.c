@@ -1728,7 +1728,10 @@ ERROR:
 	if (mac_list)
 		free(mac_list);
 
-	retval += websWrite(wp, "%s", rssi_buf);
+	if(hook_get_json == 1)
+		retval += websWrite(wp, "\"%s\"", rssi_buf);
+	else
+		retval += websWrite(wp, "%s", rssi_buf);
 	return retval;
 }
 
@@ -1816,7 +1819,7 @@ static int ej_wl_rate(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	//cprintf("%s:%d \n",__FUNCTION__,__LINE__);
 
 ERROR:
-	if(from_app == 0)
+	if(from_app == 0 && hook_get_json == 0)
 		retval += websWrite(wp, "%s", rate_buf);
 	else
 		retval += websWrite(wp, "\"%s\"", rate_buf);
@@ -2950,6 +2953,9 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 	assoc = malloc(maclist_size);
 	authorized = malloc(maclist_size);
 
+	if(hook_get_json == 1)
+		websWrite(wp, "{");
+
 	if(!auth || !assoc || !authorized)
 		goto exit;
 
@@ -2982,45 +2988,45 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 		else
 			ret += websWrite(wp, ", ");
 
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			ret += websWrite(wp, "[");
 
 		ret += websWrite(wp, "\"%s\"", ether_etoa((void *)&auth->ea[i], ea));
 
-		if (from_app != 0) {
+		if (from_app != 0 || hook_get_json == 1) {
 			ret += websWrite(wp, ":{");
 			ret += websWrite(wp, "\"isWL\":");
 		}
 
 		value = (find_ethaddr_in_list((void *)&auth->ea[i], assoc))?"Yes":"No";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			ret += websWrite(wp, ", \"%s\"", value);
 		else
 			ret += websWrite(wp, "\"%s\"", value);
 
 		value = (find_ethaddr_in_list((void *)&auth->ea[i], authorized))?"Yes":"No";
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			ret += websWrite(wp, ", \"%s\"", value);
 
-		if (from_app != 0) {
+		if (from_app != 0 || hook_get_json == 1) {
 			ret += websWrite(wp, ",\"rssi\":");
 		}
 
 		memcpy(&scb_val.ea, &auth->ea[i], ETHER_ADDR_LEN);
 		if (wl_ioctl(name, WLC_GET_RSSI, &scb_val, sizeof(scb_val_t))){
-			if (from_app == 0)
+			if (from_app == 0 && hook_get_json == 0)
 				ret += websWrite(wp, ", \"%d\"", 0);
 			else
 				ret += websWrite(wp, "\"%d\"", 0);
 		}
 		else{
-			if (from_app == 0)
+			if (from_app == 0 && hook_get_json == 0)
 				ret += websWrite(wp, ", \"%d\"", scb_val.val);
 			else
 				ret += websWrite(wp, "\"%d\"", scb_val.val);
 
 		}
-		if (from_app == 0)
+		if (from_app == 0 && hook_get_json == 0)
 			ret += websWrite(wp, "]");
 		else
 			ret += websWrite(wp, "}");
@@ -3058,45 +3064,45 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 				else
 					ret += websWrite(wp, ", ");
 
-				if (from_app == 0)
+				if (from_app == 0 && hook_get_json == 0)
 					ret += websWrite(wp, "[");
 
 				ret += websWrite(wp, "\"%s\"", ether_etoa((void *)&auth->ea[ii], ea));
 
-				if (from_app != 0) {
+				if (from_app != 0 || hook_get_json == 1) {
 					ret += websWrite(wp, ":{");
 					ret += websWrite(wp, "\"isWL\":");
 				}
 
 				value = (find_ethaddr_in_list((void *)&auth->ea[ii], assoc))?"Yes":"No";
-				if (from_app == 0)
+				if (from_app == 0 && hook_get_json == 0)
 					ret += websWrite(wp, ", \"%s\"", value);
 				else
 					ret += websWrite(wp, "\"%s\"", value);
 
 				value = (find_ethaddr_in_list((void *)&auth->ea[ii], authorized))?"Yes":"No";
-				if (from_app == 0)
+				if (from_app == 0 && hook_get_json == 0)
 					ret += websWrite(wp, ", \"%s\"", value);
 
-				if (from_app != 0) {
+				if (from_app != 0 || hook_get_json == 1) {
 					ret += websWrite(wp, ",\"rssi\":");
 				}
 
 				memcpy(&scb_val.ea, &auth->ea[ii], ETHER_ADDR_LEN);
 				if (wl_ioctl(name, WLC_GET_RSSI, &scb_val, sizeof(scb_val_t))){
-					if (from_app == 0)
+					if (from_app == 0 && hook_get_json == 0)
 						ret += websWrite(wp, ", \"%d\"", 0);
 					else
 						ret += websWrite(wp, "\"%d\"", 0);
 				}
 				else{
-					if (from_app == 0)
+					if (from_app == 0 && hook_get_json == 0)
 						ret += websWrite(wp, ", \"%d\"", scb_val.val);
 					else
 						ret += websWrite(wp, "\"%d\"", scb_val.val);
 				}
 
-				if (from_app == 0)
+				if (from_app == 0 && hook_get_json == 0)
 					ret += websWrite(wp, "]");
 				else
 					ret += websWrite(wp, "}");
@@ -3106,6 +3112,8 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 
 	/* error/exit */
 exit:
+	if(hook_get_json == 1)
+		ebsWrite(wp, "}");
 	if(auth) free(auth);
 	if(assoc) free(assoc);
 	if(authorized) free(authorized);
@@ -3158,6 +3166,9 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv) {
 	assoc = malloc(maclist_size);
 	authorized = malloc(maclist_size);
 	//wme = malloc(maclist_size);
+
+	if(hook_get_json == 1)
+		websWrite(wp, "[");
 
 	//if(!auth || !assoc || !authorized || !wme)
 	if(!auth || !assoc || !authorized)
@@ -3271,6 +3282,9 @@ exit:
 	if(assoc) free(assoc);
 	if(authorized) free(authorized);
 	//if(wme) free(wme);
+
+	if(hook_get_json == 1)
+		websWrite(wp, "]");
 
 	return ret;
 }

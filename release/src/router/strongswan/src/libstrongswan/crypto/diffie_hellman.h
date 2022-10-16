@@ -83,6 +83,11 @@ enum diffie_hellman_group_t {
 extern enum_name_t *diffie_hellman_group_names;
 
 /**
+ * enum names for diffie_hellman_group_t (matching proposal keywords).
+ */
+extern enum_name_t *diffie_hellman_group_names_short;
+
+/**
  * Implementation of the Diffie-Hellman algorithm, as in RFC2631.
  */
 struct diffie_hellman_t {

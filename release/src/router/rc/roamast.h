@@ -27,9 +27,12 @@
 #define RAST_DFT_RSSI_VIDEO_CALL -80	/* rssi thresold to change idle rate weighting scheme */
 #define WL_NBAND_2G 2
 #define WL_NBAND_5G 1
+#define WL_NBAND_6G 4
 
 #define ROAMING_BYPASS 1
 #define ROAMING_NOT_BYPASS 2
+
+#define RAST_PHYTYPE_SIZE 4
 
 #endif
 #define MAC_STR_LEN 17
@@ -58,7 +61,13 @@ struct rcpi_checklist {
 #else
 #define RAST_TIMEOUT_STA 10
 #endif
+
+#ifdef RTCONFIG_QUADBAND
+#define MAX_IF_NUM 4
+#else
 #define	MAX_IF_NUM 3
+#endif
+
 # ifdef RTCONFIG_FRONTHAUL_DWB
 #define MAX_SUBIF_NUM 6
 #else
@@ -246,7 +255,24 @@ typedef struct rast_sta_info {
 #endif
 #ifdef RTCONFIG_STA_AP_BAND_BIND
 	int in_binding_list;
-#endif	
+#endif
+#ifdef RTCONFIG_ADV_RAST
+	uint32 connected_time; 
+#endif
+	char phy[RAST_PHYTYPE_SIZE];//a b g n ac ax ...
+	uint8 psm;
+	uint8 sgi;
+	uint8 stbc;
+	uint8 mubf;
+	uint16 txnss;
+	uint16 rxnss;
+	uint16 txmcs;
+	uint16 rxmcs;
+	uint32 bw;
+	uint32 conndiag_flags;
+	uint32 tx_pkts_total;
+	uint32 tx_pkts_retries;
+	uint32 tx_pkts_retry_exhausted;
 } rast_sta_info_t;
 
 
@@ -408,3 +434,5 @@ int add_to_roaming_list(int idx,int vidx ,struct ether_addr *sta,int rssi);
 int remove_from_roaming_list(int idx,int vidx ,struct ether_addr *sta);
 
 #endif //RTCONFIG_RAST_NONMESH_KVONLY
+
+#define CONNDIAG_NOTNEW 0x1

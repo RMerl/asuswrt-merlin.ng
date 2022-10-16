@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2017 Tobias Brunner
+ * Copyright (C) 2006-2019 Tobias Brunner
  * Copyright (C) 2006-2008 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * HSR Hochschule fuer Technik Rapperswil
@@ -26,9 +26,9 @@
 typedef enum child_sa_state_t child_sa_state_t;
 typedef enum child_sa_outbound_state_t child_sa_outbound_state_t;
 typedef struct child_sa_t child_sa_t;
+typedef struct child_sa_create_t child_sa_create_t;
 
 #include <library.h>
-#include <crypto/prf_plus.h>
 #include <encoding/payloads/proposal_substructure.h>
 #include <crypto/proposal/proposal.h>
 #include <config/child_cfg.h>
@@ -361,6 +361,23 @@ struct child_sa_t {
 	mark_t (*get_mark)(child_sa_t *this, bool inbound);
 
 	/**
+	 * Get the interface ID used with this CHILD_SA.
+	 *
+	 * @param inbound		TRUE to get inbound ID, FALSE for outbound
+	 * @return				interface ID used with this CHILD_SA
+	 */
+	uint32_t (*get_if_id)(child_sa_t *this, bool inbound);
+
+	/**
+	 * Get the security label used with this CHILD_SA.
+	 *
+	 * This might be different than the configured label.
+	 *
+	 * @return				security label used with this CHILD_SA
+	 */
+	sec_label_t *(*get_label)(child_sa_t *this);
+
+	/**
 	 * Create an enumerator over traffic selectors of one side.
 	 *
 	 * @param local		TRUE for own traffic selectors, FALSE for remote.
@@ -488,7 +505,7 @@ struct child_sa_t {
 	uint32_t (*get_rekey_spi)(child_sa_t *this);
 
 	/**
-	 * Update hosts and ecapulation mode in the kernel SAs and policies.
+	 * Update hosts and ecapsulation mode in the kernel SAs and policies.
 	 *
 	 * @param me		the new local host
 	 * @param other		the new remote host
@@ -505,19 +522,41 @@ struct child_sa_t {
 };
 
 /**
+ * Data passed to the constructor of a child_sa_t object.
+ */
+struct child_sa_create_t {
+	/** Optional reqid of old CHILD_SA when rekeying */
+	uint32_t reqid;
+	/** Optional inbound mark when rekeying */
+	uint32_t mark_in;
+	/** Optional outbound mark when rekeying */
+	uint32_t mark_out;
+	/** Optional inbound interface ID when rekeying */
+	uint32_t if_id_in;
+	/** Optional outbound interface ID when rekeying */
+	uint32_t if_id_out;
+	/** Optional default inbound interface ID, if neither if_id_in, nor config
+	 * sets one */
+	uint32_t if_id_in_def;
+	/** Optional default outbound interface ID, if neither if_id_out, nor config
+	 * sets one */
+	uint32_t if_id_out_def;
+	/** Optional security label to apply on SAs (cloned) */
+	sec_label_t *label;
+	/** TRUE to enable UDP encapsulation (NAT traversal) */
+	bool encap;
+};
+
+/**
  * Constructor to create a child SA negotiated with IKE.
  *
  * @param me				own address
  * @param other				remote address
  * @param config			config to use for this CHILD_SA
- * @param reqid				reqid of old CHILD_SA when rekeying, 0 otherwise
- * @param encap				TRUE to enable UDP encapsulation (NAT traversal)
- * @param mark_in			explicit inbound mark value to use, 0 for config
- * @param mark_out			explicit outbound mark value to use, 0 for config
+ * @param data				data for this CHILD_SA
  * @return					child_sa_t object
  */
-child_sa_t * child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
-							 uint32_t reqid, bool encap,
-							 u_int mark_in, u_int mark_out);
+child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
+							child_sa_create_t *data);
 
 #endif /** CHILD_SA_H_ @}*/

@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=나중에 Alexa™나 IFTTT™ 기능을 활
 ASUS_eula_withdraw_note=인터넷 연결 없이는 철회 절차를 완료할 수 없습니다. 인터넷에 연결한 다음 철회하십시오.
 ASUS_eula_withdraw_unstable=인터넷 상태가 불안정해서 철회 절차를 완료할 수 없습니다. 나중에 다시 철회하십시오.
 TM_eula_confirm=ASUS AiProtection 를 사용하면, 이는
-TM_eula_desc1=귀하는 AiProtection, 트래픽 분석기, 앱 분석기, 적응형 QoS/게임 부스트, 웹 기록을 이용함에 있어서,<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro  최종 사용자 사용권 계약</a>에 동의합니다.
-TM_eula_desc2=귀하의 정보가 Trend Micro에 의해 AiProtection, 트래픽 분석기, 앱 분석기, 적응형 QoS 및 웹 기록을 통해 수집된다는 점에 유의하십시오. 또한 귀하는 ASUS는 귀하의 Trend Micro 간 계약이나 Trend Micro가 제공하는 서비스 내용에 대해서 책임지지 않음을 인정하고 이에 동의합니다. Trend Micro가 귀하의 상기 정보를 수집, 처리 및 사용하는 방법에 대해 궁금한 사항이 있을 경우, 자세한 내용은 Trend Micro가 발행한 개인정보 보호와 관련된 고지사항을 참조하거나 Trend Micro에 문의하십시오.
+TM_eula_desc1=귀하는 AiProtection, 부모 통제（웹 & 앱 필터링）, 트래픽 분석기, 앱 분석기, 적응형 QoS/게임 부스트, 웹 기록을 이용함에 있어서,<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro  최종 사용자 사용권 계약</a>에 동의합니다.
+TM_eula_desc2=귀하의 정보가 Trend Micro에 의해 AiProtection, 부모 통제（웹 & 앱 필터링）, 트래픽 분석기, 앱 분석기, 적응형 QoS 및 웹 기록을 통해 수집된다는 점에 유의하십시오. 또한 귀하는 ASUS는 귀하의 Trend Micro 간 계약이나 Trend Micro가 제공하는 서비스 내용에 대해서 책임지지 않음을 인정하고 이에 동의합니다. Trend Micro가 귀하의 상기 정보를 수집, 처리 및 사용하는 방법에 대해 궁금한 사항이 있을 경우, 자세한 내용은 Trend Micro가 발행한 개인정보 보호와 관련된 고지사항을 참조하거나 Trend Micro에 문의하십시오.
 TM_eula_desc3=상기 기능을 통한 Trend Micro와의 정보 공유를 사용 안 함으로 설정하고 싶을 경우,다음으로 이동하십시오.  라우터 웹 GUI > 고급 설정 > 관리 > Privacy(개인정보 보호정책).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=AiProtection, 트래픽 분석기, 앱 분석기, 적응형 QoS/게임 부스트, 웹 기록의 경우:
+TM_eula_withdraw0=AiProtection, 부모 통제（웹 & 앱 필터링）, 트래픽 분석기, 앱 분석기, 적응형 QoS/게임 부스트, 웹 기록의 경우:
 TM_eula_withdraw_desc1=귀하의 정보가 Trend Micro에 의해 상기 기능을 통해 수집된다는 점에 유의하십시오.
 TM_eula_withdraw_desc2=다음 기능을 통한 Trend Micro와의 정보 공유를 사용 안 함으로 설정하고 싶을 경우, 아래의 <span style="font-weight: bold;">[철회]</span>를 클릭하십시오. 그러나 귀하가 Trend Micro와의 정보 공유를 중단할 경우 이같은 특장점/기능이 작동하지 않을 수 있다는 점에 유의하십시오.
 withdraw_confirm=철회하시겠습니까?
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=AiMesh 시스템과 최종 장치의 호환성을 고려할 
 AiMesh_confirm_msg10=AiMesh 시스템과 최종 장치의 연결을 보장하기 위해 WPA3-Personal로 전환하기 전에 이 <a id="wpa3FaqLink">FAQ</a>를 읽어 보십시오.
 AiMesh_confirm_msg11=현재 WPA3-personal을 사용 중입니다. AiMesh 시스템을 생성하기 위해 인증 방법이 WPA2/WPA3-personal로 변경됩니다. 계속하시겠습니까?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=보다 자세한 내용은 <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>이 FAQ</a> 을 방문하십시오.
+AiMesh_confirm_msg13=보다 자세한 내용은 <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>이 FAQ</a> 을 방문하십시오.
 AiMesh_Feature_Desc=고급 ASUS AiMesh 는여러개의 ASUS 라우터를함께연결하여가정전체의 WiFi 네트워크를구성할수있는새로운혁신적라우터기능입니다.
 AiMesh_FAQ=ASUS AiMesh 에대한자세한내용을확인하십시오.
 AiMesh_FindNode=AiMesh 노드찾기
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=발코니
 AiMesh_NodeLocation23=회의실
 AiMesh_NodeLocation24=사용자 지정
 AiMesh_NodeLocation25=차고
+AiMesh_NodeLocation26=1층
+AiMesh_NodeLocation27=게임룸
+AiMesh_NodeLocation28=헬스클럽
 AiMesh_OfflineTips=오프라인팁
 AiMesh_OfflineTips1=AiMesh 노드가켜졌는지확인합니다.
 AiMesh_OfflineTips2=AiMesh 노드를재부팅하고다시시도합니다.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=인증서 가져오기
 DDNS_https_cert_Import_desc=인증 기관에서 발행한 인증서를 여기에 업로드합니다. 개인 키와 SSL 인증서가 필요합니다.
 DDNS_https_cert_PrivateKey=개인 키
 DDNS_https_cert_PrivateKey_note=개인 키는 암호로 보호할 수 없습니다.
+DDNS_ipv6_update=IPv6 업데이트
+DDNS_ipv6_update_desc=클라이언트의 네트워크 환경에서 IPv6 네트워크 주소가 사용될 경우, 이 기능을 사용하면 원격 장치가 액세스할 때 도메인이 먼저 IPv6 네트워크 주소로 연결됩니다.
 DDNS_ssl_cert=SSL 인증서
 DDNS_termofservice_Title=서비스 약관
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=로컬 네트워크를 해커들의 공격�
 FirewallConfig_display3_sectiondesc=<b> 블랙 리스트 지속기간 : </b> 예약된 지속 기간 동안, 블랙 리스트의 클라이언트들은 특정 네트워크 서비스를 사용할 수 없습니다. 그 기간 이후에 모든 클라이언트가 특정 네트워크 서비스에 접근할 수 있습니다. <br> <b> 화이트 리스트 지속기간 : </b> 예약된 지속 기간 동안 화이트 리스트의 클라이언트는 오직 지정된 네트워크 서비스만 사용할 수 있습니다. 지속 기간 이후 화이트 리스트의 클라이언트들과 다른 네트워크 클라이언트들은 인터넷 또는 어떤 인터넷 서비스도 이용할 수 없습니다.
 FirewallConfig_display4_sectiondesc=<b>주:</b> 만약 화이트 리스트에 서브넷을 지정하면, 서브넷 밖의 IP 어드레스는 인터넷 또는 다른 인터넷 서비스를 이용할 수 없습니다.
 FirewallConfig_display5_sectiondesc=MAC 필터는 특정 MAC 어드레스를 가진 기기에 대한 네트워크 접근을 수락하거나 거부할 수 있습니다. <p> MAC 필터를 수락 또는 거부 모드로 설정할 수 있습니다.<p>거부 모드에서, 리스트에 있는 기기들은 네트워크 접근이 거부됩니다. <p> 수락 모드에선, 오직 리스트에 있는 기기들만이 네트워크에 접근 가능합니다. 리스트에 없는 기기들은 네트워크 접근이 거부됩니다.
-FirewallConfig_DoSEnable_itemdesc=\"denial-of-service\" 공격은 합법적인 사용자들이 서비스 또는 컴퓨터 자원을 사용하지 못하게 하려는 시도입니다. <p> 이 기능을 사용하면 Dos 공격으로부터 라우터를 보호할 순 있지만 라우터의 작업 부하를 증가시킵니다.
-FirewallConfig_DoSEnable_itemname=Dos 보호 사용
+FirewallConfig_DoSEnable_itemdesc=이 기능을 사용하면 DoS (Denial- of-Service) 공격으로부터 라우터를 보호할 순 있지만 라우터의 작업 부하를 증가시킵니다.
+FirewallConfig_DoSEnable_itemname=DoS 보호 사용
 FirewallConfig_FirewallEnable_itemdesc=방화벽을 사용하지 않으면 모든 관련 기능을 비활성화하게 됩니다.
 FirewallConfig_FirewallEnable_itemname=방화벽 사용
-FirewallIPv4_enable=IPv4 방화벽사용
+FirewallIPv4_enable=IPv4인바운드 방화벽 규정사용
 FirewallIPv4=IPv4 방화벽
 FirewallConfig_FTPPrompt_itemdesc=WAN 설치시 FTP 서버 포트 범위로 20:21 를 설정하면, 당신의 FTP 서버와 ZVMODELVZ의 기본 FTP 서버와 충돌하게 됩니다!
 FirewallConfig_KeywordFilterEnable_itemname=키워드 필터 사용
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=새 펌웨어가 있습니다.
 FW_rlnote_loading=릴리스 노트 로드 중, 기다려 주십시오...
 FW_rlnote_failed=릴리스 노트를 찾지 못했습니다.
+FW_rollback=롤백
+FW_rollback_choose=펌웨어 버전 선택
+FW_rollback_selector=펌웨어 롤백 선택기
 Game_acceleration=게임 가속도
 Game_Boost=게임 부스트
 Game_Boost_acceleration=세 레벨의 게임 가속도
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=새 RADIUS 클라이언트 만들기
 PM_Group_Table=그룹 표
 PoolName=파티션 이름
 Port_format=소스 혹은 목적지 포트 범위의 경우: a) 특정 포트 명시 \"95\"; 또는b) 특정 범위의 포트들 \"103:315\", \">100\", 또는 \"<65535\" 모두 가능합니다.
+Port_Gaming=게임 포트
 Port_Mapping_desc1=포트 맵핑
 Port_Mapping_desc2=포트 맵핑은 특정 LAN 포트를 위한 IPTV WAN 인터페이스를 지원합니다. 적절한 LAN 포트를 선택하고 적용 버튼을 클릭하십시오.
 Port_Mapping_desc3=포트 맵핑 사용
@@ -3474,7 +3483,7 @@ TZ40_2=칼리닌그라드
 TZ41=아테네
 TZ42=예루살렘
 TZ43=하라레, 프리토리아
-TZ43_2=키예프
+TZ43_2=키이우
 TZ44=모스크바, 상트 페테르부르크
 TZ45=볼고그라드
 TZ46=쿠웨이트, 리야드
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=업데이트에 실패하였습니다. 다시 시도�
 vpn_ipsec_clients_reconnect_hint=적용을 클릭하고 나면 모든 VPN 클라이언트가 재연결됩니다. 계속하시겠습니까?
 vpn_ipsec_IKE_ver=지원되는 IKE 버전
 vpn_ipsec_set_DDNS=여기를 클릭하여 DDNS를 설정하십시오.
+vpn_wireguard_server_faq=WireGuard® 서버를 설정하는 방법
+vpn_wireguard_site2site_faq=WireGuard®로 사이트 간 VPN을 설정하는 방법
+vpn_wireguard_client_faq=VPN Fusion에서 WireGuard® 클라이언트를 설정하는 방법
 vpnc_desc1=VPN(가상사설망) 클라이언트는 종종 VPN 서버 연결에 사용하여 공용 네트워크에서 안전하게 비공개 리소스에 안전하게 액세스합니다.
 vpnc_desc2=셋톱 박스, 스마트 TV, 블루레이 플레이어와 같은 일부 장치는 VPN 소프트웨어를 지원하지 않습니다.
 vpnc_desc3=ASUSWRT VPN 기능은 각 장치에 VPN 소프트웨어를 설치하지 않고도 홈 네트워크에서 모든 장치에 액세스할 수 있는 VPN 액세스를 제공합니다.
@@ -3815,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS 옵션
 WANTCPMSSOptionComm1Text=바이트
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN 어그리게이션은 2개의 네트워크를 결합하여 WAN 속도를 최대 2Gbps까지 높일 수 있습니다. 라우터의 WAN 포트와 LAN 4 포트를 모뎀의 LAN 포트에 연결하십시오(사양이 동일한 2개의 케이블을 사용해야 함). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN 어그리게이션 FAQ</a>
+WANAggregation_desc=WAN 어그리게이션은 2개의 네트워크를 결합하여 WAN 속도를 최대 2Gbps까지 높일 수 있습니다. 라우터의 #WAN 포트와 LAN 4 포트를 모뎀의 LAN 포트에 연결하십시오(사양이 동일한 2개의 케이블을 사용해야 함). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN 어그리게이션 FAQ</a>
 WANAggregation_enable=WAN 어그리게이션 활성화
 WANAggregation_disable_dualwan=라우터가 듀얼 WAN을 활성화했습니다. WAN 어그리게이션을 활성화하면 듀얼 WAN이 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_disable_WANAggregation=라우터가 WAN 어그리게이션을 활성화했습니다. 듀얼 WAN을 활성화하면 WAN 어그리게이션이 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_PortConflict_hint1=WAN 어그리게이션이 라우터의 LAN 4 포트를 사용 중입니다. IPTV를 WAN을 활성화하면 WAN 어그리게이션이 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_PortConflict_hint2=IPTV가 라우터의 LAN 4 포트를 사용 중입니다. WAN 어그리게이션을 활성화하면 IPTV가 비활성화됩니다. 계속하시겠습니까?
 WANAggregation_disable_IPTVDualWAN=라우터가 듀얼 WAN과 IPTV를 둘 다 활성화했습니다. WAN 어그리게이션을 활성화하면 포트 충돌을 방지하기 위해 듀얼과 IPTV가 비활성화됩니다. 계속하시겠습니까?
-WANAggregation_help_WAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 WAN 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
+WANAggregation_help_WAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 #WAN 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
 WANAggregation_help_LAN=사양이 동일한 2개의 케이블을 사용하여 라우터의 LAN 4 포트와 모델의 LAN 포트를 연결했는지 확인하십시오.
 WANAggregation_goto_WAN=WAN 어그리게이션을 활성화하려면 <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN 인터넷 연결 페이지로</a> 이동하십시오.
 WANAggregation_help_desc=WAN 어그리게이션 설정이 실패하면 아래 단계를 따라 다시 시도하십시오.
-WANAggregation_help_step1=모뎀의 LAN 포트와 라우터의 WAN 및 LAN 4 이(가) 이미 케이블로 연결되어 있는지 확인하십시오.
+WANAggregation_help_step1=모뎀의 LAN 포트와 라우터의 #WAN 및 LAN 4 이(가) 이미 케이블로 연결되어 있는지 확인하십시오.
 WANAggregation_help_step2=모뎀이 802.3ad를 활성화했는지 확인합니다.
 WANAggregation_help_step3=사양이 동일한 두 케이블을 사용했는지 확인합니다(기가비트 및 기가비트 또는 10/100 및 10/100Mbps).
 WANAggregation_help_step4=라우터를 재부팅합니다.
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=GeForce Now 를 선택한 후 GeForce Now 게이밍 장치의 우선순위를 정하여 더 빠르고 재미있는 게임을 경험하십시오.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=이벤트
 AURA_Event_desc=시스템이 다음 이벤트를 감지하여 다른 LED 효과를 트리거합니다.
 AURA_Event_Boost_desc=Game Boost(게임 부스트)를 활성화하면 빨간색 브리딩 효과를 사용하는 LED 바가 표시됩니다.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2014 Andreas Steffen
+ * Copyright (C) 2011-2020 Andreas Steffen
  * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
@@ -27,8 +27,8 @@ typedef struct private_pts_ima_bios_list_t private_pts_ima_bios_list_t;
 typedef struct bios_entry_t bios_entry_t;
 typedef enum event_type_t event_type_t;
 
+/* BIOS Events (TCG PC Client Specification for Conventional BIOS 1.21) */
 enum event_type_t {
-	/* BIOS Events (TCG PC Client Specification for Conventional BIOS 1.21) */
 	EV_PREBOOT_CERT =                  0x00000000,
 	EV_POST_CODE =                     0x00000001,
 	EV_UNUSED =                        0x00000002,
@@ -50,21 +50,24 @@ enum event_type_t {
 	EV_OMIT_BOOT_DEVICE_EVENTS =       0x00000012,
 
 	/* EFI Events (TCG EFI Platform Specification 1.22) */
-	EV_EFI_EVENT_BASE =                0x80000000,
-	EV_EFI_VARIABLE_DRIVER_CONFIG =    0x80000001,
-	EV_EFI_VARIABLE_BOOT =             0x80000002,
-	EV_EFI_BOOT_SERVICES_APPLICATION = 0x80000003,
-	EV_EFI_BOOT_SERVICES_DRIVER =      0x80000004,
-	EV_EFI_RUNTIME_SERVICES_DRIVER =   0x80000005,
-	EV_EFI_GPT_EVENT =                 0x80000006,
-	EV_EFI_ACTION =                    0x80000007,
-	EV_EFI_PLATFORM_FIRMWARE_BLOB =    0x80000008,
-	EV_EFI_HANDOFF_TABLES =            0x80000009,
+	EV_EFI_VARIABLE_DRIVER_CONFIG =    0x70000001,
+	EV_EFI_VARIABLE_BOOT =             0x70000002,
+	EV_EFI_BOOT_SERVICES_APPLICATION = 0x70000003,
+	EV_EFI_BOOT_SERVICES_DRIVER =      0x70000004,
+	EV_EFI_RUNTIME_SERVICES_DRIVER =   0x70000005,
+	EV_EFI_GPT_EVENT =                 0x70000006,
+	EV_EFI_ACTION =                    0x70000007,
+	EV_EFI_PLATFORM_FIRMWARE_BLOB =    0x70000008,
+	EV_EFI_HANDOFF_TABLES =            0x70000009,
 
-	EV_EFI_HCRTM_EVENT =               0x80000010,
+	EV_EFI_HCRTM_EVENT =               0x70000010,
 
-	EV_EFI_VARIABLE_AUTHORITY =        0x800000E0
+	EV_EFI_VARIABLE_AUTHORITY =        0x700000E0,
 };
+
+/* By subtracting an offset from EFI events the enum will always be positive */
+#define EV_EFI_EVENT_BASE              0x80000000
+#define EV_EFI_OFFSET                  0x10000000
 
 ENUM_BEGIN(event_type_names, EV_PREBOOT_CERT, EV_OMIT_BOOT_DEVICE_EVENTS,
 	"Preboot Cert",
@@ -87,9 +90,8 @@ ENUM_BEGIN(event_type_names, EV_PREBOOT_CERT, EV_OMIT_BOOT_DEVICE_EVENTS,
 	"Nonhost Info",
 	"Omit Boot Device Events"
 );
-ENUM_NEXT(event_type_names, EV_EFI_EVENT_BASE, EV_EFI_HANDOFF_TABLES,
+ENUM_NEXT(event_type_names, EV_EFI_VARIABLE_DRIVER_CONFIG, EV_EFI_HANDOFF_TABLES,
 							EV_OMIT_BOOT_DEVICE_EVENTS,
-	"EFI Event Base",
 	"EFI Variable Driver Config",
 	"EFI Variable Boot",
 	"EFI Boot Services Application",
@@ -194,17 +196,25 @@ METHOD(pts_ima_bios_list_t, destroy, void,
 /**
  * See header
  */
-pts_ima_bios_list_t* pts_ima_bios_list_create(char *file)
+pts_ima_bios_list_t* pts_ima_bios_list_create(tpm_tss_t *tpm, char *file,
+											  pts_meas_algorithms_t algo)
 {
 	private_pts_ima_bios_list_t *this;
-	uint32_t pcr, event_type, event_len, seek_len;
-	uint32_t buf_len = 2048;
+	uint32_t pcr, ev_type, event_type, event_len, seek_len, count = 1;
+	uint32_t buf_len = 8192;
 	uint8_t event_buf[buf_len];
+	hash_algorithm_t hash_alg;
 	chunk_t event;
 	bios_entry_t *entry;
 	struct stat st;
 	ssize_t res;
 	int fd;
+
+	if (!tpm)
+	{
+		DBG1(DBG_PTS, "no TPM available");
+		return NULL;
+	}
 
 	fd = open(file, O_RDONLY);
 	if (fd == -1)
@@ -220,6 +230,7 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(char *file)
 		close(fd);
 		return FALSE;
 	}
+	hash_alg = pts_meas_algo_to_hash(algo);
 
 	INIT(this,
 		.public = {
@@ -232,7 +243,7 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(char *file)
 		.list = linked_list_create(),
 	);
 
-	DBG2(DBG_PTS, "PCR Event Type  (Size)");
+	DBG2(DBG_PTS, "No. PCR Event Type  (Size)");
 	while (TRUE)
 	{
 		res = read(fd, &pcr, 4);
@@ -246,7 +257,7 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(char *file)
 
 		entry = malloc_thing(bios_entry_t);
 		entry->pcr = pcr;
-		entry->measurement = chunk_alloc(HASH_SIZE_SHA1);
+		entry->measurement = chunk_empty;
 
 		if (res != 4)
 		{
@@ -256,7 +267,7 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(char *file)
 		{
 			break;
 		}
-		if (read(fd, entry->measurement.ptr, HASH_SIZE_SHA1) != HASH_SIZE_SHA1)
+		if (!tpm->get_event_digest(tpm, fd, hash_alg, &entry->measurement))
 		{
 			break;
 		}
@@ -264,9 +275,10 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(char *file)
 		{
 			break;
 		}
-		DBG2(DBG_PTS, "%2u  %N  (%u bytes)", pcr, event_type_names, event_type,
-											 event_len);
-
+		ev_type = (event_type < EV_EFI_EVENT_BASE) ?
+				   event_type : event_type - EV_EFI_OFFSET;
+		DBG2(DBG_PTS, "%3u %2u  %N  (%u bytes)", count, pcr, event_type_names,
+												 ev_type,  event_len);
 		seek_len = (event_len > buf_len) ? event_len - buf_len : 0;
 		event_len -= seek_len;
 
@@ -274,23 +286,49 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(char *file)
 		{
 			break;
 		}
+
+		switch (event_type)
+		{
+			case EV_PREBOOT_CERT:
+			case EV_POST_CODE:
+			case EV_NO_ACTION:
+			case EV_ACTION:
+			case EV_EFI_ACTION:
+			case EV_S_CRTM_CONTENTS:
+			case EV_IPL:
+				if (event_type == EV_NO_ACTION && event_len == 17 &&
+					strpfx(event_buf, "StartupLocality"))
+				{
+					DBG2(DBG_PTS, "        'StartupLocality' %x", event_buf[16]);
+				}
+				else
+				{
+					DBG2(DBG_PTS, "        '%.*s'", event_len, event_buf);
+				}
+				break;
+			default:
+				break;
+		}
 		event = chunk_create(event_buf, event_len);
 		DBG3(DBG_PTS,"%B", &event);
-
-		if (event_type == EV_ACTION || event_type == EV_EFI_ACTION)
-		{
-			DBG2(DBG_PTS, "     '%.*s'", event_len, event_buf);
-		}
 
 		if (seek_len > 0 && lseek(fd, seek_len, SEEK_CUR) == -1)
 		{
 				break;
 		}
-		this->list->insert_last(this->list, entry);
+		if (event_type == EV_NO_ACTION || entry->measurement.len == 0)
+		{
+			free_bios_entry(entry);
+			DBG2(DBG_PTS, "        Not extended into PCR!");
+		}
+		else
+		{
+			this->list->insert_last(this->list, entry);
+			count++;
+		}
 	}
 
-	DBG1(DBG_PTS, "loading bios measurements '%s' failed: %s", file,
-		 strerror(errno));
+	DBG1(DBG_PTS, "loading bios measurements '%s' failed", file);
 	free_bios_entry(entry);
 	close(fd);
 	destroy(this);

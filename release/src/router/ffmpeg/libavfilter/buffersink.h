@@ -31,6 +31,42 @@
  * @defgroup lavfi_buffersink Buffer sink API
  * @ingroup lavfi
  * @{
+ *
+ * The buffersink and abuffersink filters are there to connect filter graphs
+ * to applications. They have a single input, connected to the graph, and no
+ * output. Frames must be extracted using av_buffersink_get_frame() or
+ * av_buffersink_get_samples().
+ *
+ * The format negotiated by the graph during configuration can be obtained
+ * using the accessor functions:
+ * - av_buffersink_get_time_base(),
+ * - av_buffersink_get_format(),
+ * - av_buffersink_get_frame_rate(),
+ * - av_buffersink_get_w(),
+ * - av_buffersink_get_h(),
+ * - av_buffersink_get_sample_aspect_ratio(),
+ * - av_buffersink_get_channels(),
+ * - av_buffersink_get_channel_layout(),
+ * - av_buffersink_get_sample_rate().
+ *
+ * The format can be constrained by setting options, using av_opt_set() and
+ * related functions with the AV_OPT_SEARCH_CHILDREN flag.
+ *  - pix_fmts (int list),
+ *  - sample_fmts (int list),
+ *  - sample_rates (int list),
+ *  - channel_layouts (int64_t),
+ *  - channel_counts (int list),
+ *  - all_channel_counts (bool).
+ * Most of these options are of type binary, and should be set using
+ * av_opt_set_int_list() or av_opt_set_bin(). If they are not set, all
+ * corresponding formats are accepted.
+ *
+ * As a special case, if neither channel_layouts nor channel_counts is set,
+ * all valid channel layouts are accepted, but channel counts without a
+ * layout are not, unless all_channel_counts is set.
+ * Also, channel_layouts must not contain a channel layout already accepted
+ * by a value in channel_counts; for example, if channel_counts contains 2,
+ * then channel_layouts must not contain stereo.
  */
 
 /**
@@ -59,8 +95,9 @@ int av_buffersink_get_frame_flags(AVFilterContext *ctx, AVFrame *frame, int flag
  */
 #define AV_BUFFERSINK_FLAG_NO_REQUEST 2
 
+#if FF_API_BUFFERSINK_ALLOC
 /**
- * Struct to use for initializing a buffersink context.
+ * Deprecated and unused struct to use for initializing a buffersink context.
  */
 typedef struct AVBufferSinkParams {
     const enum AVPixelFormat *pixel_fmts; ///< list of allowed pixel formats, terminated by AV_PIX_FMT_NONE
@@ -71,10 +108,11 @@ typedef struct AVBufferSinkParams {
  *
  * Must be freed with av_free().
  */
+attribute_deprecated
 AVBufferSinkParams *av_buffersink_params_alloc(void);
 
 /**
- * Struct to use for initializing an abuffersink context.
+ * Deprecated and unused struct to use for initializing an abuffersink context.
  */
 typedef struct AVABufferSinkParams {
     const enum AVSampleFormat *sample_fmts; ///< list of allowed sample formats, terminated by AV_SAMPLE_FMT_NONE
@@ -89,7 +127,9 @@ typedef struct AVABufferSinkParams {
  *
  * Must be freed with av_free().
  */
+attribute_deprecated
 AVABufferSinkParams *av_abuffersink_params_alloc(void);
+#endif
 
 /**
  * Set the frame size for an audio buffer sink.
@@ -151,7 +191,7 @@ int av_buffersink_get_frame(AVFilterContext *ctx, AVFrame *frame);
  *              the end of stream, when it can contain less than nb_samples.
  *
  * @return The return codes have the same meaning as for
- *         av_buffersink_get_samples().
+ *         av_buffersink_get_frame().
  *
  * @warning do not mix this function with av_buffersink_get_frame(). Use only one or
  * the other with a single sink, not both.

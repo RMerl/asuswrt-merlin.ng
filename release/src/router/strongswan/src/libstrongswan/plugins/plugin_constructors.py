@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 #
 # Copyright (C) 2017 Tobias Brunner
 # HSR Hochschule fuer Technik Rapperswil
@@ -13,7 +13,6 @@
 # or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
 # for more details.
 
-import sys
 from argparse import ArgumentParser
 
 def generate_output(plugins):

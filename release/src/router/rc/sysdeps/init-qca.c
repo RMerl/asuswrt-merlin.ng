@@ -1056,7 +1056,7 @@ static void init_switch_qca(void)
 #elif defined(RTCONFIG_SOC_IPQ8074)
 		"qca-nss-bridge-mgr",
 		"qca-nss-l2tpv2", "qca-nss-lag-mgr", "qca-nss-map-t",
-		"qca-nss-pptp", "qca-nss-vlan-mgr",
+		"qca-nss-pppoe", "qca-nss-pptp", "qca-nss-vlan-mgr",
 
 		/* 52-diag-char */
 		"diagchar",
@@ -2113,7 +2113,6 @@ int switch_exist(void)
 #endif
 }
 
-#if !defined(RTCONFIG_QCA_WLAN_SCRIPTS)
 #if defined(RTCONFIG_SPF11_QSDK) || defined(RTCONFIG_SPF11_1_QSDK) \
  || defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK)
 /* SPF11.3, SPF11.4 update_global_daemon_coldboot_qdss_support_variables(). */
@@ -2229,6 +2228,7 @@ static int update_daemon_coldboot_qdss_support_variables(int *cold_boot, int *da
 }
 #endif
 
+#if !defined(RTCONFIG_QCA_WLAN_SCRIPTS)
 #if defined(RTCONFIG_SPF11_3_QSDK) || defined(RTCONFIG_SPF11_4_QSDK)
 static void update_daemon_cold_boot_support_to_plat_priv(int cold_boot, int daemon)
 {
@@ -2517,6 +2517,7 @@ static int do_cold_boot_calibration(char *mod, int is_ftm)
 	return 0;
 }
 #endif	/* RTCONFIG_SPF8_QSDK || RTCONFIG_SPF10_QSDK || RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || defined(RTCONFIG_SPF11_4_QSDK) */
+#endif	/* !RTCONFIG_QCA_WLAN_SCRIPTS */
 
 #if defined(RTCONFIG_GLOBAL_INI)
 #if defined(RTCONFIG_SOC_IPQ8074) && defined(RTCONFIG_SPF11_4_QSDK)
@@ -2959,7 +2960,6 @@ static int get_nss_buf_size(int total_mem, int olcfg, const char **extra_pbuf_co
 	return 0;
 }
 #endif	/* RTCONFIG_SPF11/SPF10/SPF8_QSDK */
-#endif	/* !RTCONFIG_QCA_WLAN_SCRIPTS */
 
 /**
  * Low level function to load QCA WiFi driver.
@@ -3595,7 +3595,7 @@ void init_wl(void)
 			}
 			free(sta_ifnames);
 			free(skip_ifnames);
-#if defined(RTCONFIG_AMAS_WDS) && defined(RTCONFIG_BHCOST_OPT)
+#if defined(RTCONFIG_AMAS_QCA_WDS) && defined(RTCONFIG_BHCOST_OPT)
 			//restart or boot
 			nvram_set("amas_wds","0");
 			nvram_set("amas_qca_mode","-1");

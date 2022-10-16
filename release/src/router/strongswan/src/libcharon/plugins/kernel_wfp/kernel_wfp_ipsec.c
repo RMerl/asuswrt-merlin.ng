@@ -145,7 +145,7 @@ static bool equals_sa(sa_entry_t *a, sa_entry_t *b)
 typedef struct {
 	/** policy source addresses */
 	traffic_selector_t *src;
-	/** policy destinaiton addresses */
+	/** policy destination addresses */
 	traffic_selector_t *dst;
 	/** WFP allocated LUID for inbound filter ID */
 	uint64_t policy_in;
@@ -820,6 +820,8 @@ static bool install_sps(private_kernel_wfp_ipsec_t *this,
 			case TS_IPV6_ADDR_RANGE:
 				has_v6 = TRUE;
 				break;
+			default:
+				continue;
 		}
 
 		/* inbound policy */
@@ -1402,7 +1404,8 @@ static bool uninstall_route(private_kernel_wfp_ipsec_t *this,
 			if (charon->kernel->get_interface(charon->kernel, src, &name))
 			{
 				res = charon->kernel->del_route(charon->kernel,
-						dst->get_address(dst), mask, gtw, src, name) == SUCCESS;
+										dst->get_address(dst), mask, gtw, src,
+										name, FALSE) == SUCCESS;
 				free(name);
 			}
 			route = this->routes->remove(this->routes, route);
@@ -1446,8 +1449,8 @@ static bool install_route(private_kernel_wfp_ipsec_t *this,
 	{
 		if (charon->kernel->get_interface(charon->kernel, src, &name))
 		{
-			if (charon->kernel->add_route(charon->kernel,
-						dst->get_address(dst), mask, gtw, src, name) == SUCCESS)
+			if (charon->kernel->add_route(charon->kernel, dst->get_address(dst),
+										mask, gtw, src, name, FALSE) == SUCCESS)
 			{
 				INIT(route,
 					.dst = dst->clone(dst),
@@ -1633,6 +1636,7 @@ static u_int hash_trap(trap_t *trap)
 static void acquire(private_kernel_wfp_ipsec_t *this, UINT64 filter_id,
 					traffic_selector_t *src, traffic_selector_t *dst)
 {
+	kernel_acquire_data_t data = {};
 	uint32_t reqid = 0;
 	trap_t *trap, key = {
 		.filter_id = filter_id,
@@ -1648,9 +1652,13 @@ static void acquire(private_kernel_wfp_ipsec_t *this, UINT64 filter_id,
 
 	if (reqid)
 	{
-		src = src ? src->clone(src) : NULL;
-		dst = dst ? dst->clone(dst) : NULL;
-		charon->kernel->acquire(charon->kernel, reqid, src, dst);
+		data.src = src ? src->clone(src) : NULL;
+		data.dst = dst ? dst->clone(dst) : NULL;
+
+		charon->kernel->acquire(charon->kernel, reqid, &data);
+
+		DESTROY_IF(data.src);
+		DESTROY_IF(data.dst);
 	}
 }
 
@@ -2218,8 +2226,8 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 	{
 		/* inbound entry, do update */
 		sa_id = entry->sa_id;
-		ports.localUdpEncapPort = entry->local->get_port(entry->local);
-		ports.remoteUdpEncapPort = entry->remote->get_port(entry->remote);
+		ports.localUdpEncapPort = data->new_dst->get_port(data->new_dst);
+		ports.remoteUdpEncapPort = data->new_src->get_port(data->new_src);
 	}
 	this->mutex->unlock(this->mutex);
 
@@ -2272,6 +2280,10 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 		key.dst = entry->osa.dst;
 		this->osas->remove(this->osas, &key);
 
+		if (data->new_reqid)
+		{
+			entry->reqid = data->new_reqid;
+		}
 		entry->local->destroy(entry->local);
 		entry->remote->destroy(entry->remote);
 		entry->local = data->new_dst->clone(data->new_dst);

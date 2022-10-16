@@ -25,6 +25,7 @@
 #define VICI_CRED_H_
 
 #include "vici_dispatcher.h"
+#include "vici_authority.h"
 
 #include <credentials/credential_set.h>
 
@@ -58,8 +59,10 @@ struct vici_cred_t {
  * Create a vici_cred instance.
  *
  * @param dispatcher		dispatcher to receive requests from
+ * @param authority			CA certificate storage
  * @return					credential backend
  */
-vici_cred_t *vici_cred_create(vici_dispatcher_t *dispatcher);
+vici_cred_t *vici_cred_create(vici_dispatcher_t *dispatcher,
+							  vici_authority_t *authority);
 
 #endif /** VICI_CRED_H_ @}*/

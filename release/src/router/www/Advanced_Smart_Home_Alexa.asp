@@ -124,7 +124,7 @@ var AccLinkStatus = {
 		"ifttt_token":('<% nvram_match_x("","ifttt_token", "", "1"); %>' == '1')?false:true,
 	},
 	"AAE_SIP":{
-		"aae_sip_connected":'<% nvram_get("aae_sip_connected"); %>',
+		"aae_sip_connected":true,
 	}
 }
 
@@ -375,7 +375,7 @@ function clipboard(ID_value)
 function update_acc_link_status(){
 
 	AccLinkStatus.RemoteStatus = httpApi.nvramGet(["ddns_enable_x", "ddns_hostname_x", "ddns_server_x", "misc_http_x", "link_internet"],true);
-	AccLinkStatus.AAE_SIP = httpApi.nvramGet(["aae_sip_connected"],true);
+	AccLinkStatus.AAE_SIP = true;
 	AccLinkStatus.getoken = httpApi.nvram_match_x("ifttt_token","","1");
 
 	setTimeout("update_acc_link_status()", 5000);
@@ -394,7 +394,7 @@ function show_account_state(){
 
 	var RetAccLink = {
 		"AccLink":(AccLinkStatus.getoken.ifttt_token == '1')?false:true,
-		"AAE_SIP":(AccLinkStatus.AAE_SIP.aae_sip_connected == "1")?true:false,
+		"AAE_SIP":true,
 		"DDNSLink":RetDDNSstatus()
 	}
 

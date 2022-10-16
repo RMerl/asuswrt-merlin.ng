@@ -44,6 +44,8 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/avassert.h"
 
+#define ZIMG_ALIGNMENT 32
+
 static const char *const var_names[] = {
     "in_w",   "iw",
     "in_h",   "ih",
@@ -99,6 +101,8 @@ typedef struct ZScaleContext {
     char *size_str;
     double nominal_peak_luminance;
     int approximate_gamma;
+    double param_a;
+    double param_b;
 
     char *w_expr;               ///< width  expression string
     char *h_expr;               ///< height expression string
@@ -185,10 +189,10 @@ static int query_formats(AVFilterContext *ctx)
     };
     int ret;
 
-    ret = ff_formats_ref(ff_make_format_list(pixel_fmts), &ctx->inputs[0]->out_formats);
+    ret = ff_formats_ref(ff_make_format_list(pixel_fmts), &ctx->inputs[0]->outcfg.formats);
     if (ret < 0)
         return ret;
-    return ff_formats_ref(ff_make_format_list(pixel_fmts), &ctx->outputs[0]->in_formats);
+    return ff_formats_ref(ff_make_format_list(pixel_fmts), &ctx->outputs[0]->incfg.formats);
 }
 
 static int config_props(AVFilterLink *outlink)
@@ -299,7 +303,7 @@ static int config_props(AVFilterLink *outlink)
     } else
         outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
 
-    av_log(ctx, AV_LOG_VERBOSE, "w:%d h:%d fmt:%s sar:%d/%d -> w:%d h:%d fmt:%s sar:%d/%d\n",
+    av_log(ctx, AV_LOG_TRACE, "w:%d h:%d fmt:%s sar:%d/%d -> w:%d h:%d fmt:%s sar:%d/%d\n",
            inlink ->w, inlink ->h, av_get_pix_fmt_name( inlink->format),
            inlink->sample_aspect_ratio.num, inlink->sample_aspect_ratio.den,
            outlink->w, outlink->h, av_get_pix_fmt_name(outlink->format),
@@ -502,6 +506,44 @@ static int graph_build(zimg_filter_graph **graph, zimg_graph_builder_params *par
     return 0;
 }
 
+static int realign_frame(const AVPixFmtDescriptor *desc, AVFrame **frame)
+{
+    AVFrame *aligned = NULL;
+    int ret = 0, plane;
+
+    /* Realign any unaligned input frame. */
+    for (plane = 0; plane < 3; plane++) {
+        int p = desc->comp[plane].plane;
+        if ((uintptr_t)(*frame)->data[p] % ZIMG_ALIGNMENT || (*frame)->linesize[p] % ZIMG_ALIGNMENT) {
+            if (!(aligned = av_frame_alloc())) {
+                ret = AVERROR(ENOMEM);
+                goto fail;
+            }
+
+            aligned->format = (*frame)->format;
+            aligned->width  = (*frame)->width;
+            aligned->height = (*frame)->height;
+
+            if ((ret = av_frame_get_buffer(aligned, ZIMG_ALIGNMENT)) < 0)
+                goto fail;
+
+            if ((ret = av_frame_copy(aligned, *frame)) < 0)
+                goto fail;
+
+            if ((ret = av_frame_copy_props(aligned, *frame)) < 0)
+                goto fail;
+
+            av_frame_free(frame);
+            *frame = aligned;
+            return 0;
+        }
+    }
+
+fail:
+    av_frame_free(&aligned);
+    return ret;
+}
+
 static int filter_frame(AVFilterLink *link, AVFrame *in)
 {
     ZScaleContext *s = link->dst->priv;
@@ -512,12 +554,14 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
     zimg_image_buffer dst_buf = { ZIMG_API_VERSION };
     char buf[32];
     int ret = 0, plane;
-    AVFrame *out;
+    AVFrame *out = NULL;
 
-    out = ff_get_video_buffer(outlink, outlink->w, outlink->h);
-    if (!out) {
-        av_frame_free(&in);
-        return AVERROR(ENOMEM);
+    if ((ret = realign_frame(desc, &in)) < 0)
+        goto fail;
+
+    if (!(out = ff_get_video_buffer(outlink, outlink->w, outlink->h))) {
+        ret =  AVERROR(ENOMEM);
+        goto fail;
     }
 
     av_frame_copy_props(out, in);
@@ -546,11 +590,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
         link->dst->inputs[0]->w      = in->width;
         link->dst->inputs[0]->h      = in->height;
 
-        if ((ret = config_props(outlink)) < 0) {
-            av_frame_free(&in);
-            av_frame_free(&out);
-            return ret;
-        }
+        if ((ret = config_props(outlink)) < 0)
+            goto fail;
 
         zimg_image_format_default(&s->src_format, ZIMG_API_VERSION);
         zimg_image_format_default(&s->dst_format, ZIMG_API_VERSION);
@@ -562,6 +603,8 @@ static int filter_frame(AVFilterLink *link, AVFrame *in)
         s->params.resample_filter_uv = s->filter;
         s->params.nominal_peak_luminance = s->nominal_peak_luminance;
         s->params.allow_approximate_gamma = s->approximate_gamma;
+        s->params.filter_param_a = s->params.filter_param_a_uv = s->param_a;
+        s->params.filter_param_b = s->params.filter_param_b_uv = s->param_b;
 
         format_init(&s->src_format, in, desc, s->colorspace_in,
                     s->primaries_in, s->trc_in, s->range_in, s->chromal_in);
@@ -702,7 +745,7 @@ fail:
     return ff_filter_frame(outlink, out);
 }
 
-static void uninit(AVFilterContext *ctx)
+static av_cold void uninit(AVFilterContext *ctx)
 {
     ZScaleContext *s = ctx->priv;
 
@@ -738,12 +781,13 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
 
 #define OFFSET(x) offsetof(ZScaleContext, x)
 #define FLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM
+#define TFLAGS AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption zscale_options[] = {
-    { "w",      "Output video width",  OFFSET(w_expr),    AV_OPT_TYPE_STRING, .flags = FLAGS },
-    { "width",  "Output video width",  OFFSET(w_expr),    AV_OPT_TYPE_STRING, .flags = FLAGS },
-    { "h",      "Output video height", OFFSET(h_expr),    AV_OPT_TYPE_STRING, .flags = FLAGS },
-    { "height", "Output video height", OFFSET(h_expr),    AV_OPT_TYPE_STRING, .flags = FLAGS },
+    { "w",      "Output video width",  OFFSET(w_expr),    AV_OPT_TYPE_STRING, .flags = TFLAGS },
+    { "width",  "Output video width",  OFFSET(w_expr),    AV_OPT_TYPE_STRING, .flags = TFLAGS },
+    { "h",      "Output video height", OFFSET(h_expr),    AV_OPT_TYPE_STRING, .flags = TFLAGS },
+    { "height", "Output video height", OFFSET(h_expr),    AV_OPT_TYPE_STRING, .flags = TFLAGS },
     { "size",   "set video size",      OFFSET(size_str),  AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS },
     { "s",      "set video size",      OFFSET(size_str),  AV_OPT_TYPE_STRING, {.str = NULL}, 0, 0, FLAGS },
     { "dither", "set dither type",     OFFSET(dither),    AV_OPT_TYPE_INT, {.i64 = 0}, 0, ZIMG_DITHER_ERROR_DIFFUSION, FLAGS, "dither" },
@@ -789,6 +833,7 @@ static const AVOption zscale_options[] = {
     {     "smpte431",         0,       0,                 AV_OPT_TYPE_CONST, {.i64 = ZIMG_PRIMARIES_ST431_2},     0, 0, FLAGS, "primaries" },
     {     "smpte432",         0,       0,                 AV_OPT_TYPE_CONST, {.i64 = ZIMG_PRIMARIES_ST432_1},     0, 0, FLAGS, "primaries" },
     {     "jedec-p22",        0,       0,                 AV_OPT_TYPE_CONST, {.i64 = ZIMG_PRIMARIES_EBU3213_E},   0, 0, FLAGS, "primaries" },
+    {     "ebu3213",          0,       0,                 AV_OPT_TYPE_CONST, {.i64 = ZIMG_PRIMARIES_EBU3213_E},   0, 0, FLAGS, "primaries" },
     { "transfer", "set transfer characteristic", OFFSET(trc), AV_OPT_TYPE_INT, {.i64 = -1}, -1, INT_MAX, FLAGS, "transfer" },
     { "t",        "set transfer characteristic", OFFSET(trc), AV_OPT_TYPE_INT, {.i64 = -1}, -1, INT_MAX, FLAGS, "transfer" },
     {     "input",            0,       0,                 AV_OPT_TYPE_CONST, {.i64 = -1},                         0, 0, FLAGS, "transfer" },
@@ -856,16 +901,13 @@ static const AVOption zscale_options[] = {
     { "cin",        "set input chroma location", OFFSET(chromal_in), AV_OPT_TYPE_INT, {.i64 = -1}, -1, ZIMG_CHROMA_BOTTOM, FLAGS, "chroma" },
     { "npl",       "set nominal peak luminance", OFFSET(nominal_peak_luminance), AV_OPT_TYPE_DOUBLE, {.dbl = NAN}, 0, DBL_MAX, FLAGS },
     { "agamma",       "allow approximate gamma", OFFSET(approximate_gamma),      AV_OPT_TYPE_BOOL,   {.i64 = 1},   0, 1,       FLAGS },
+    { "param_a", "parameter A, which is parameter \"b\" for bicubic, "
+                 "and the number of filter taps for lanczos", OFFSET(param_a), AV_OPT_TYPE_DOUBLE, {.dbl = NAN}, -DBL_MAX, DBL_MAX, FLAGS },
+    { "param_b", "parameter B, which is parameter \"c\" for bicubic", OFFSET(param_b), AV_OPT_TYPE_DOUBLE, {.dbl = NAN}, -DBL_MAX, DBL_MAX, FLAGS },
     { NULL }
 };
 
-static const AVClass zscale_class = {
-    .class_name       = "zscale",
-    .item_name        = av_default_item_name,
-    .option           = zscale_options,
-    .version          = LIBAVUTIL_VERSION_INT,
-    .category         = AV_CLASS_CATEGORY_FILTER,
-};
+AVFILTER_DEFINE_CLASS(zscale);
 
 static const AVFilterPad avfilter_vf_zscale_inputs[] = {
     {

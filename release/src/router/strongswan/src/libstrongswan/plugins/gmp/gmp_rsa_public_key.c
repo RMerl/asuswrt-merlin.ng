@@ -168,7 +168,7 @@ static bool verify_emsa_pss_signature(private_gmp_rsa_public_key_t *this,
 	int i;
 	bool success = FALSE;
 
-	if (!params)
+	if (!params || params->salt_len < 0)
 	{
 		return FALSE;
 	}
@@ -313,7 +313,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt_, bool,
 	private_gmp_rsa_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t plain, chunk_t *crypto)
+	void *params, chunk_t plain, chunk_t *crypto)
 {
 	chunk_t em;
 	u_char *pos;

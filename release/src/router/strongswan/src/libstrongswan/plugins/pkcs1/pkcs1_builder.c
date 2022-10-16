@@ -87,6 +87,13 @@ static public_key_t *parse_public_key(chunk_t blob)
 								KEY_ED25519, BUILD_BLOB_ASN1_DER, blob, BUILD_END);
 					goto end;
 				}
+				else if (oid == OID_ED448)
+				{
+					/* Need the whole subjectPublicKeyInfo for Ed448 public keys */
+					key = lib->creds->create(lib->creds, CRED_PUBLIC_KEY,
+								KEY_ED448, BUILD_BLOB_ASN1_DER, blob, BUILD_END);
+					goto end;
+				}
 				else
 				{
 					/* key type not supported */

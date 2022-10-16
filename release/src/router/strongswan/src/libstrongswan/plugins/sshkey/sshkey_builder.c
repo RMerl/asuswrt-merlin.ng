@@ -91,9 +91,9 @@ static sshkey_public_key_t *parse_public_key(chunk_t blob)
 	}
 	else if (chunk_equals(format, chunk_from_str("ssh-ed25519")))
 	{
-		chunk_t blob;
+		chunk_t ed_key;
 
-		if (!reader->read_data32(reader, &blob))
+		if (!reader->read_data32(reader, &ed_key))
 		{
 			DBG1(DBG_LIB, "invalid Ed25519 key in SSH key");
 			reader->destroy(reader);
@@ -101,13 +101,13 @@ static sshkey_public_key_t *parse_public_key(chunk_t blob)
 		}
 		reader->destroy(reader);
 		return lib->creds->create(lib->creds, CRED_PUBLIC_KEY, KEY_ED25519,
-								  BUILD_EDDSA_PUB, blob, BUILD_END);
+								  BUILD_EDDSA_PUB, ed_key, BUILD_END);
 	}
 	else if (chunk_equals(format, chunk_from_str("ssh-ed448")))
 	{
-		chunk_t blob;
+		chunk_t ed_key;
 
-		if (!reader->read_data32(reader, &blob))
+		if (!reader->read_data32(reader, &ed_key))
 		{
 			DBG1(DBG_LIB, "invalid Ed448 key in SSH key");
 			reader->destroy(reader);
@@ -115,7 +115,7 @@ static sshkey_public_key_t *parse_public_key(chunk_t blob)
 		}
 		reader->destroy(reader);
 		return lib->creds->create(lib->creds, CRED_PUBLIC_KEY, KEY_ED448,
-								  BUILD_EDDSA_PUB, blob, BUILD_END);
+								  BUILD_EDDSA_PUB, ed_key, BUILD_END);
 	}
 	else if (format.len > strlen(ECDSA_PREFIX) &&
 			 strpfx(format.ptr, ECDSA_PREFIX))

@@ -33,7 +33,7 @@ typedef struct dhcp_provider_t dhcp_provider_t;
 struct dhcp_provider_t {
 
 	/**
-	 * Implements attribute_provier_t interface.
+	 * Implements attribute_provider_t interface.
 	 */
 	attribute_provider_t provider;
 

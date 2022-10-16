@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,9 +18,11 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSH_KEYFUNCTION 3 "November 04, 2020" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_SSH_KEYFUNCTION 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_SSH_KEYFUNCTION \- callback for known host matching logic
@@ -32,7 +34,7 @@ enum curl_khstat {
   CURLKHSTAT_FINE_ADD_TO_FILE,
   CURLKHSTAT_FINE,
   CURLKHSTAT_REJECT, /* reject the connection, return an error */
-  CURLKHSTAT_DEFER,  /* do not accept it, but we can't answer right
+  CURLKHSTAT_DEFER,  /* do not accept it, but we cannot answer right
                         now so this causes a CURLE_DEFER error but
                         otherwise the connection will be left intact
                         etc */
@@ -77,19 +79,19 @@ codes to tell libcurl how to act:
 .IP CURLKHSTAT_FINE_REPLACE
 The new host+key is accepted and libcurl will replace the old host+key into
 the known_hosts file before continuing with the connection.  This will also
-add the new host+key combo to the known_host pool kept in memory if it wasn't
+add the new host+key combo to the known_host pool kept in memory if it was not
 already present there. The adding of data to the file is done by completely
 replacing the file with a new copy, so the permissions of the file must allow
 this. (Added in 7.73.0)
 .IP CURLKHSTAT_FINE_ADD_TO_FILE
 The host+key is accepted and libcurl will append it to the known_hosts file
 before continuing with the connection. This will also add the host+key combo
-to the known_host pool kept in memory if it wasn't already present there. The
+to the known_host pool kept in memory if it was not already present there. The
 adding of data to the file is done by completely replacing the file with a new
 copy, so the permissions of the file must allow this.
 .IP CURLKHSTAT_FINE
 The host+key is accepted libcurl will continue with the connection. This will
-also add the host+key combo to the known_host pool kept in memory if it wasn't
+also add the host+key combo to the known_host pool kept in memory if it was not
 already present there.
 .IP CURLKHSTAT_REJECT
 The host+key is rejected. libcurl will deny the connection to continue and it

@@ -27,7 +27,7 @@
 #define ETH_P_PREAUTH 0x88C7 /* IEEE 802.11i pre-authentication */
 #endif /* ETH_P_PREAUTH */
 
-static const int dot11RSNAConfigPMKLifetime = 43200;
+static const int dot11RSNAConfigPMKLifetime = DEFAULT_DOT11RSNACONFIGPMKLIFETIME;
 
 struct rsn_preauth_interface {
 	struct rsn_preauth_interface *next;

@@ -152,5 +152,12 @@ extern void GetNatCfg(struct natnl_config* cfg);
 extern int DeletePeer();
 extern int nat_sdk_deinit();
 extern int nat_sdk_init(int *ue, int do_update_profile);
+#ifdef  TNL_CALLBACK_ENABLE
+extern int kill_all_proc(const char* appname);
+#endif
+
+#if defined(RTCONFIG_ACCOUNT_BINDING) && defined(RTCONFIG_AWSIOT)
+extern int is_any_tnl_active();
+#endif
 
 #endif

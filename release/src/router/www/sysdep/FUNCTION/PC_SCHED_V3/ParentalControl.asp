@@ -16,14 +16,14 @@
 <link rel="stylesheet" type="text/css" href="/calendar/fullcalendar.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css">
 <link rel="stylesheet" type="text/css" href="/js/weekSchedule/weekSchedule.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/calendar/jquery-ui.js"></script> 
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/weekSchedule/weekSchedule.js"></script>
 <script type="text/javascript" src="/form.js"></script>
@@ -192,7 +192,7 @@ function initial(){
 		}
 		cookie.unset("time_scheduling_mac");
 	}
-	if(isSupport("PC_SCHED_V3") == "2")
+	if(parseInt(isSupport("PC_SCHED_V3")) >= 2)
 		$("#block_all_device").show();
 }
 
@@ -422,23 +422,28 @@ function check_macaddr(obj,flag){ //control hint of input mac address
 }
 
 function gen_lantowanTable(event){
-	weekScheduleApi.PC_init_data(event.data.offtime);
-	weekScheduleApi.PC_init_layout("weekScheduleBg");
-	var PC_other_client_rule_num = 0;
+	$(".schedule_block_on").show();
+	$(".schedule_block_off").hide();
+
+	if(parseInt(isSupport("PC_SCHED_V3")) >= 3)
+		weekScheduleApi.support_change_schedule_mode = true;
+	if(parseInt(isSupport("PC_SCHED_V3")) >= 1)
+		weekScheduleApi.alternate_days = true;
+
+	var PC_others_rule_num = 0;
 	$.each(client_time_sche_json, function( index, value ) {
 		var client_time_obj = value;
 		if(event.data.mac != client_time_obj.mac && client_time_obj.offtime != "")
-			PC_other_client_rule_num += client_time_obj.offtime.split("<").length;
+			PC_others_rule_num += client_time_obj.offtime.split("<").length;
 	});
-	weekScheduleApi.PC_other_client_rule_num = PC_other_client_rule_num;
+	weekScheduleApi.PC_others_rule_num = PC_others_rule_num;
+	weekScheduleApi.PC_init_data(event.data.offtime);
+	weekScheduleApi.PC_init_layout("weekScheduleBg");
 	weekScheduleApi.callback_btn_cancel = cancel_lantowan;
 	weekScheduleApi.callback_btn_apply = function(){
 		event.data.offtime = weekScheduleApi.PC_transform_offtime_json_to_string();
 		saveto_lantowan()
 	};
-
-	$(".schedule_block_on").show();
-	$(".schedule_block_off").hide();
 }
 
 function addRow_main(){

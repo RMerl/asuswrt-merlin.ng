@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=İleride Alexa™ ve IFTTT™ işlevlerini e
 ASUS_eula_withdraw_note=Vazgeçme prosedürünü Internet bağlantısı olmadan tamamlayamazsınız. Lütfen Internet'e bağlandığınızda vazgeçin.
 ASUS_eula_withdraw_unstable=Internet durumu kararsız olduğundan vazgeçme prosedürünü tamamlayamıyorsunuz. Lütfen daha sonra tekrar vazgeçin.
 TM_eula_confirm=ASUS AiProtection'u kullanarak aşağıdakileri kabul edersiniz:
-TM_eula_desc1=AiProtection, Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS/Oyun güçlendirme, Web geçmişi kullanarak <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro Son Kullanıcı Lisans Anlaşması</a> koşullarını kabul edersiniz.
-TM_eula_desc2=Lütfen bilgilerinizin Trend Micro tarafından AiProtection, Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS ve web geçmişi aracılığıyla toplanacağını unutmayın. ASUS\'un Trend Micro ile aranızdaki anlaşmadan veya Trend Micro tarafından sağlanan hizmetin herhangi bir içeriğinden sorumlu olmadığını da onaylar ve kabul edersiniz. ITrend Micro\'nun yukarıdaki bilgilerinizi toplama, işleme ve kullanma yöntemleri konusunda sorularınız olursa, lütfen daha fazla ayrıntı için, Trend Micro tarafından yayımlanan gizlilikle ilgili bildirime başvurun veya Trend Micro ile iletişime geçin.
+TM_eula_desc1=AiProtection, Trafik çözümleyici, ebeveyn denetimi( Web ve Uygulama Filtreleri ), Uygulama çözümleyici, Uyarlanabilir QoS/Oyun güçlendirme, Web geçmişi kullanarak <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro Son Kullanıcı Lisans Anlaşması</a> koşullarını kabul edersiniz.
+TM_eula_desc2=Lütfen bilgilerinizin Trend Micro tarafından AiProtection, ebeveyn denetimi( Web ve Uygulama Filtreleri ), Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS ve web geçmişi aracılığıyla toplanacağını unutmayın. ASUS\'un Trend Micro ile aranızdaki anlaşmadan veya Trend Micro tarafından sağlanan hizmetin herhangi bir içeriğinden sorumlu olmadığını da onaylar ve kabul edersiniz. ITrend Micro\'nun yukarıdaki bilgilerinizi toplama, işleme ve kullanma yöntemleri konusunda sorularınız olursa, lütfen daha fazla ayrıntı için, Trend Micro tarafından yayımlanan gizlilikle ilgili bildirime başvurun veya Trend Micro ile iletişime geçin.
 TM_eula_desc3=Bilgilerinizi yukarıdaki işlevler aracılığıyla Trend Micro ile paylaşmayı devre dışı bırakmak isterseniz lütfen şu kısma gidin:  Router web GUI (Yönlendirici web grafiksel kullanıcı arayüzü) > Advanced settings (Gelişmiş ayarlar) > Administration (Yönetim) > Privacy (Gizlilik).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=AiProtection, Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS/Oyun güçlendirme, Web geçmişi için:
+TM_eula_withdraw0=AiProtection, ebeveyn denetimi( Web ve Uygulama Filtreleri ), Trafik çözümleyici, Uygulama çözümleyici, Uyarlanabilir QoS/Oyun güçlendirme, Web geçmişi için:
 TM_eula_withdraw_desc1=Lütfen bilgilerinizin Trend Micro tarafından yukarıdaki işlevler aracılığıyla toplanacağını unutmayın.
 TM_eula_withdraw_desc2=Bilgilerinizi aşağıdaki işlevler aracılığıyla Trend Micro ile paylaşmayı devre dışı bırakmak isterseniz lütfen aşağıdaki <span style="font-weight: bold;">[(Vazgeç]</span> öğesine tıklayın. Ancak, bilgilerinizi Trend Micro ile paylaşmaya son verirseniz bu tür özelliklerin/işlevlerin çalışmayabileceğini lütfen unutmayın.
 withdraw_confirm=Vazgeçmek istediğinizden emin misiniz?
@@ -439,7 +439,7 @@ OP_WISP_item=WISP modu
 OP_WISP_desc1=ZVMODELVZ, ana yönlendiricinize, erişim noktanıza veya kamusal etkin noktaya kablosuz olarak bağlanır ve Internet bağlantısını kablolu/kablosuz istemcilerinizle paylaşır. Bu modda, NAT, güvenlik duvarı ve DHCP sunucusu varsayılan olarak etkinleştirilir.
 OP_WISP_desc2=Bir WiFi etkin noktaya bağlanırken, Internet’e erişim yetkiniz olduğundan emin olun.
 page_not_support_mode_hint=Bu işlev devre dışı bırakıldı.
-Parental_Control=ebeveyn denetimi
+Parental_Control=Ebeveyn denetimi
 PASS_new=Yeni parola
 PASS_retype=Parolayı Yeniden Yazın
 PASS_score0=Çok Zayıf
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=AiMesh sistemi ve son cihazların uyumu göz önüne alınd�
 AiMesh_confirm_msg10=AiMesh sisteminiz ve son cihaz(lar) arasında bağlantıyı sağlamak için WPA3-Kişisel’e geçmeden önce lütfen bu <a id="wpa3FaqLink">SSS</a> kısmını okuyun.
 AiMesh_confirm_msg11=Şu anda WPA3-kişisel kullanıyorsunuz. Bir AiMesh sistemi oluşturmak için kimlik doğrulama yönteminiz WPA2/WPA3-kişisel olarak değiştirilecektir. İlerlemek istiyor musunuz?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Daha fazla ayrıntı için, lütfen <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>bu SSS</a> adresini ziyaret edin
+AiMesh_confirm_msg13=Daha fazla ayrıntı için, lütfen <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>bu SSS</a> adresini ziyaret edin
 AiMesh_Feature_Desc=Gelişmiş ASUS AiMesh, birden fazla ASUS yönlendiricinin birbirine bağlanmasıyla tüm ev WiFi ağı oluşturmayı sağlayan yenilikçi bir yeni yönlendirici özelliğidir.
 AiMesh_FAQ=ASUS AiMesh konusunda daha fazla bilgi edinin
 AiMesh_FindNode=AiMesh düğümü bul
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=Balkon
 AiMesh_NodeLocation23=Toplantı Odası
 AiMesh_NodeLocation24=Özel
 AiMesh_NodeLocation25=Garaj
+AiMesh_NodeLocation26=Birinci Kat
+AiMesh_NodeLocation27=Oyun Odası
+AiMesh_NodeLocation28=Spor
 AiMesh_OfflineTips=Çevrimdışı ipuçları
 AiMesh_OfflineTips1=AiMesh düğümünüzün açık olduğundan emin olun.
 AiMesh_OfflineTips2=AiMesh düğümünüzü yeniden başlatıp tekrar deneyin.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Kendi Sertifikanızı İçe Aktarın
 DDNS_https_cert_Import_desc=Buraya bir sertifika yetkilisi tarafından verilen bir sertifika yükleyin. Özel anahtarınız ve SSL sertifikanız gereklidir.
 DDNS_https_cert_PrivateKey=Özel Anahtar
 DDNS_https_cert_PrivateKey_note=Özel anahtarlar parola korumalı olamaz.
+DDNS_ipv6_update=IPv6 Güncellemesi
+DDNS_ipv6_update_desc=İstemcinin ağ ortamında IPv6 ağ adresi kullanılıyorsa, bu özelliği etkinleştirmek uzak cihaz erişimi olduğunda bir IPv6 ağ adresine giden etki alanını çözecektir.
 DDNS_ssl_cert=SSL Sertifikası
 DDNS_termofservice_Title=Kullanım Şartları Bildirgesi
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=Yerel alan ağınızı hacker'lerden korumak
 FirewallConfig_display3_sectiondesc=<b>Kara Liste Süresi :</b> Planlanan süre boyunca, Kara Listedeki istemciler belirlenen ağ hizmetlerini kullanamaz. Belirlenen sürenin ardından, LAN'daki tüm istemciler belirlenen ağ hizmetlerine erişim sağlayabilir.<br><b>Beyaz Liste Süresi :</b> Planlanan süre boyunca, Beyaz Listedeki istemciler SADECE belirlenen ağ hizmetlerini kullanabilir. Belirlenen sürenin ardından, Beyaz Listedeki istemciler ve diğer ağ istemcileri internete veya internet hizmetlerine rişim sağlayamayacaklardır.
 FirewallConfig_display4_sectiondesc=<b>NOT :</b> Eğer Beyaz Liste için bir ağ ağ ayarlarsanız, alt ağın dışındaki IP adresleri internete veya herhangi bir internet hizmetine erişim sağlayamayacaklar.
 FirewallConfig_display5_sectiondesc=MAC filtresi özel MAC adresli cihazların ağ erişimini kabul ya da reddetmenizi sağlar.<p>MAC filtresini Kabul Et veya Reddet moduna ayarlayabilirsiniz.<p>Reddetme modunda listedeki cihazların ağa erişimi engellenir.<p>Kabul Et modunda sadece listedeki cihazlar ağa erişebilir. Listede olmayan cihazların ağa erişimi engellenir.
-FirewallConfig_DoSEnable_itemdesc=Bir 'hizmeti engelleme' saldırısı geçerli bir kullanıcının bir hizmet veya bilgisayar kaynağını kullanmasını engellemek için bir dışarıdan gelen teşebbüstür.<p>Bu özelliği etkinleştirmek yönlendiriciyi DoS saldırılarından koruyabilir fakat bu yönlendiricinin iş yükünü artıracaktır.
+FirewallConfig_DoSEnable_itemdesc=Bu özelliği etkinleştirmek yönlendiriciyi DoS (Denial- of-Service) saldırılarından koruyabilir fakat bu yönlendiricinin iş yükünü artıracaktır.
 FirewallConfig_DoSEnable_itemname=DoS koruması etkinleştirilsin mi
 FirewallConfig_FirewallEnable_itemdesc=Güvenlik duvarını devre dışı bırakmak tüm ilgili fonksiyonları devre dışı bırakır.
 FirewallConfig_FirewallEnable_itemname=Güvenlik Duvarı Etkinleştirilsin mi
-FirewallIPv4_enable=IPv4 Güvenlik Duvarı etkinleştirilsin mi
+FirewallIPv4_enable=IPv4 Gelen Güvenlik Duvarı Kuralları etkinleştirilsin mi
 FirewallIPv4=IPv4 Güvenlik Duvarı
 FirewallConfig_FTPPrompt_itemdesc=WAN kurulumunuz için FTP sunucunuzun bağlantı noktası aralığını 20:21 olarak ayarladığınızda, FTP sunucunuz, ZVMODELVZ'nun yerel FTP sunucusu ile çakışacaktır.
 FirewallConfig_KeywordFilterEnable_itemname=Anahtar Kelime Filtesini Etkinleştir
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=Yeni üretici yazılımı mevcuttur.
 FW_rlnote_loading=Sürüm notu yükleniyor, lütfen bekleyin…
 FW_rlnote_failed=Sürüm notu bulunamadı.
+FW_rollback=Geri Alma
+FW_rollback_choose=Bir ürün yazılımı sürümü seçin
+FW_rollback_selector=Ürün Yazılımı Geri Alma Seçim Aracı
 Game_acceleration=Oyun ivmesi
 Game_Boost=Oyun Hızlandırma
 Game_Boost_acceleration=Üç seviyeli oyun ivmesi
@@ -2404,7 +2412,7 @@ Internet=Internet
 Interval=Aralık
 Introduce_demo=Tanıtım
 Invitation=Davet
-Interaction=Взаємодія
+Interaction=Etkileşim
 InternetSpeed=İnternet Hızı
 InternetSpeed_desc=Bu hizmet, Ookla® tarafından sağlanır. Yönlendiricinizden İnternetinize indirme ve karşıya yükleme hızlarını tespit eder. Bu testin tamamlanması yaklaşık bir dakika sürer. Bu hizmeti kullanarak, <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Ookla’nın Gizlilik Politikasını</a> kabul edersiniz.
 InternetSpeed_ookla_mark=Ookla® ve Speedtest®, Ookla, LLC şirketine ait olarak federal tescillidir.
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Yeni bir RADIUS istemcisi oluştur
 PM_Group_Table=Grup Tablosu
 PoolName=Bölüm Adı
 Port_format=Kaynak ve hedef bağlantı noktası aralığı için : a) \"95\" gibi belirli bir bağlantı noktası girebilir; veya b) \"103:315\", \">100\", ya da \"<65535\" gibi bir aralık içerisine bağlantı noktalarını girebilirsiniz.
+Port_Gaming=Oyun portu
 Port_Mapping_desc1=Port Haritalama
 Port_Mapping_desc2=Bağlantı Noktası Eşleştirme belirli LAN bağlantı noktası IPTV WAN arabirimini destekler. İlgili LAN bağlantı noktasını seçip Uygula'ya tıklayın.
 Port_Mapping_desc3=Port Haritalamayı Etkinleştir
@@ -3444,7 +3453,7 @@ TZ17=Atlantik Zamanı (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
-TZ19_1=Asunción
+TZ19_1=Asuncion
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3474,7 +3483,7 @@ TZ40_2=Kaliningrad
 TZ41=Aina
 TZ42=Kudüs
 TZ43=Harare, Pretoria
-TZ43_2=Kiev
+TZ43_2=Kyiv
 TZ44=Moskova, St. Petersburg
 TZ45=Volgograd
 TZ46=Kuveyt, Riyad
@@ -3537,10 +3546,10 @@ Uplink_rate=Gönderilen Veri/Sn.
 Uplink_traffic=Gönderilen Veri
 upnp_Desc=iTunes ve UPnP Medya sunucusunu ayarlayın.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=UPnP Medya sunucusunu ayarlayın.
-UPnPMediaServer_Help=ZVMODELVZ, UPnP standartlarını desteklemektedir. Etkinleştirebilir ve PS3 veya dijital medya oynatıcı gibi diğer UPnP aygıtlarının USB diskteki multimedya dosyalarına erişmelerine izin verebilirsiniz.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=ZVMODELVZ, UPnP standartlarını desteklemektedir. Etkinleştirebilir ve PS3 veya dijital medya oynatıcı gibi diğer UPnP aygıtlarının USB diskteki multimedya dosyalarına erişmelerine izin verebilirsiniz.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=ZVMODELVZ, UPnP standartlarını desteklemektedir. Etkinleştirebilir ve PS3 veya dijital medya oynatıcı gibi diğer UPnP aygıtlarının USB diskteki multimedya dosyalarına erişmelerine izin verebilirsiniz.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=ZVMODELVZ, UPnP standartlarını desteklemektedir. Etkinleştirebilir ve PS3 veya dijital medya oynatıcı gibi diğer UPnP aygıtlarının USB diskteki multimedya dosyalarına erişmelerine izin verebilirsiniz.
+UPnPMediaServer_Help=<a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> ve <a id='samba_link'>Ağ Bağlantısını (Samba)</a> ayarlayın.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=<a id='upnp_link'>UPnP, iTunes</a> ve <a id='samba_link'>Ağ Bağlantısını (Samba)</a> ayarlayın.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=<a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> ve <a id='samba_link'>Ağ Bağlantısını (Samba)</a> ayarlayın.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=<a id='upnp_link'>UPnP</a> ve <a id='samba_link'>Ağ Bağlantısını (Samba)</a> ayarlayın.
 url_keyword_alert=URL anahtar kelime
 USB_Application_check=Lütfen USB Uygulamasını kontrol edin
 USB_Application_disk_checking=Disk kontrol ediliyor
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Güncelleme hatası, lütfen tekrar deneyin.
 vpn_ipsec_clients_reconnect_hint=Uygula seçeneğine tıkladıktan sonra tüm VPN istemcileriniz tekrar bağlanacaktır. Devan etmek istediğinize emin misiniz?
 vpn_ipsec_IKE_ver=Desteklenen IKE sürümü
 vpn_ipsec_set_DDNS=DDNS’yi ayarlamak için lütfen buraya tıklayın.
+vpn_wireguard_server_faq=WireGuard® sunucusu nasıl kurulur?
+vpn_wireguard_site2site_faq=WireGuard® ile siteden siteye VPN nasıl kurulur?
+vpn_wireguard_client_faq=VPN Fusion'da WireGuard® sunucusu nasıl kurulur?
 vpnc_desc1=Genel bir ağ üzerinden özel kaynaklara güvenli biçimde erişmek amacıyla bir VPN sunucusuna bağlanmak için sıklıkla VPN (Sanal Özel Ağ) istemcileri kullanılır.
 vpnc_desc2=Set üstü cihazlar, akıllı televizyonlar ve Blu-ray çalarlar gibi bazı aygıtlar VPN yazılımını desteklemez.
 vpnc_desc3=ASUSWRT VPN özelliği, her bir aygıta VPN yazılımı kurmak zorunda kalmadan ev ağındaki tüm aygıtlara VPN erişimi sağlar.
@@ -3815,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS Seçeneği
 WANTCPMSSOptionComm1Text=byte
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN Toplama, WAN hızınızı 2 Gbps'ye kadar artırmak için iki ağ bağlantısını birleştirir. Yönlendiricinizin WAN bağlantı noktasını ve LAN 4 bağlantı noktasını modeminizin LAN bağlantı noktasına bağlayın (aynı özelliklerde iki kablo kullandığınızdan emin olun). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Toplama SSS</a>
+WANAggregation_desc=WAN Toplama, WAN hızınızı 2 Gbps'ye kadar artırmak için iki ağ bağlantısını birleştirir. Yönlendiricinizin #WAN bağlantı noktasını ve LAN 4 bağlantı noktasını modeminizin LAN bağlantı noktasına bağlayın (aynı özelliklerde iki kablo kullandığınızdan emin olun). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Toplama SSS</a>
 WANAggregation_enable=WAN Toplamasını Etkinleştir
 WANAggregation_disable_dualwan=Yönlendiricinizde Çift WAN etkin. WAN Toplamasını etkinleştirmek Dual WAN'ı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_disable_WANAggregation=Yönlendiricinizde WAN Toplama etkin. Çift WAN'ın etkinleştirilmesi WAN Toplamayı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_PortConflict_hint1=WAN Toplama, yönlendiricinizin LAN 4 bağlantı noktasını kullanıyor. IPTV'ninn etkinleştirilmesi WAN Toplamayı devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_PortConflict_hint2=IPTV, yönlendiricinizin LAN 4 bağlantı noktasını kullanıyor. WAN Toplamasını etkinleştirmek IPTV'yi devre dışı bırakacaktır. Devam etmek istediğine emin misin?
 WANAggregation_disable_IPTVDualWAN=Yönlendiricinizde hem Çift WAN hem de IPTV etkindir. WAN Toplamayı etkinleştirmek, bağlantı noktası karmaşasını önlemek için Çift WAN ve IPTV'yi devre dışı bırakacaktır. Devam etmek istediğine emin misin?
-WANAggregation_help_WAN=Yönelticinizin WAN bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
+WANAggregation_help_WAN=Yönelticinizin #WAN bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
 WANAggregation_help_LAN=Yönelticinizin LAN 4 bağlantı noktasının ve modeminizin LAN bağlantı noktasının aynı özelliklere sahip iki kabloyla bağlandığından emin olun.
 WANAggregation_goto_WAN=WAN Toplamasını etkinleştirmek için <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-İnternet</a> Bağlantısı sayfasına gidin.
 WANAggregation_help_desc=WAN Birleştirme kurulumu başarılı olmazsa, lütfen tekrar denemek için aşağıdaki adımları izleyin.
-WANAggregation_help_step1=Modeminizin LAN portlarının yönlendiricinizin WAN ve LAN 4 konumuna kablo ile bağlanmış olduğundan emin olun.
+WANAggregation_help_step1=Modeminizin LAN portlarının yönlendiricinizin #WAN ve LAN 4 konumuna kablo ile bağlanmış olduğundan emin olun.
 WANAggregation_help_step2=Modeminizin 802.3ad’i etkinleştirdiğinden emin olun
 WANAggregation_help_step3=Aynı özellikte iki kablo kullandığınızı doğrulayın (gigabit & gigabit veya 10/100& 10/100Mbps)
 WANAggregation_help_step4=Yönlendiricinizi yeniden başlatın
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Daha hızlı ve daha iyi bir oyun deneyimi için GeForce Now oyun aygıtlarına öncelik vermek üzere GeForce Now'ı seçin.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Olay
 AURA_Event_desc=Sistem aşağıdaki olayları algılar ve farklı LED efektlerini tetikler.
 AURA_Event_Boost_desc=Oyun Takviyesini etkinleştirirken, LED çubuğunun kırmızı soluma etkisi kullandığını göreceksiniz.

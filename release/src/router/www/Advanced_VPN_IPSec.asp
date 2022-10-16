@@ -190,6 +190,10 @@ function initial(){
 			document.form.ipsec_clients_start.value = "10.10.11";
 		}
 	}
+	var ipsec_block_intranet = httpApi.nvramGet(["ipsec_block_intranet"]).ipsec_block_intranet;
+	if(ipsec_block_intranet == "")
+		ipsec_block_intranet = "0";
+	setRadioValue(document.form.vpn_server_client_access, ipsec_block_intranet);
 
 	changeAdvDeadPeerDetection(document.form.ipsec_dead_peer_detection);
 	setClientsEnd();
@@ -664,6 +668,9 @@ function applyRule() {
 			}
 			document.form.ipsec_client_list_1.value = ipsec_client_list_1;
 			document.form.ipsec_client_list_2.value = ipsec_client_list_2;
+
+			document.form.ipsec_block_intranet.disabled = false;
+			document.form.ipsec_block_intranet.value = getRadioValue(document.form.vpn_server_client_access);
 		}
 		else {
 			if(document.form.ipsec_profile_1.value != "") {
@@ -675,6 +682,7 @@ function applyRule() {
 			document.form.ipsec_profile_2.disabled = true;
 			document.form.ipsec_client_list_1.disabled = true;
 			document.form.ipsec_client_list_2.disabled = true;
+			document.form.ipsec_block_intranet.disabled = true;
 		}
 
 		document.form.ipsec_server_enable.value = ipsec_server_enable;
@@ -884,6 +892,7 @@ function export_cert(_mode) {
 <input type="hidden" name="ipsec_profile_2" id="ipsec_profile_2" value="">
 <input type="hidden" name="ipsec_client_list_1" id="ipsec_client_list_1" value="">
 <input type="hidden" name="ipsec_client_list_2" id="ipsec_client_list_2" value="">
+<input type="hidden" name="ipsec_block_intranet" value="<% nvram_get("ipsec_block_intranet"); %>" disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
@@ -976,6 +985,17 @@ function export_cert(_mode) {
 											<td>
 												<input id="ipsec_preshared_key" name="ipsec_preshared_key" type="password" autocapitalization="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);" class="input_25_table" maxlength="32" placeholder="<#vpn_preshared_key_hint#>" autocomplete="off" autocorrect="off" autocapitalize="off">
 												<div id="preshared_key_strength"></div>
+											</td>
+										</tr>
+										<tr class="ipsec_setting_content">
+											<th><#vpn_access#></th>
+											<td>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_internet" class="input" value="1">
+												<label for="vpn_server_client_access_internet">Internet only</label>
+												<input type="radio" name="vpn_server_client_access" id="vpn_server_client_access_both" class="input" value="0">
+												<label for="vpn_server_client_access_both"><#vpn_access_WANLAN#></label>
+												<br>
+												<span class="hint-color">The access setting will be applied to both IPSec VPN and Instant Guard.</span><!-- untranslated -->
 											</td>
 										</tr>
 									</table>

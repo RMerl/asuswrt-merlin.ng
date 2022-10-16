@@ -1,7 +1,26 @@
 Asuswrt-Merlin 386/NG Changelog
 ===============================
 
-V.next (xx-xxx-xxxx)
+388.1 (xx-xxx-xxxx)
+  - NEW: Merged with GPL 388_20566 (only RT-AX88U and GT-AX11000
+         currently included).
+
+  - NEW: (388) WireGuard client and server.  The server uses the
+         new 388 VPN server webui.  Implemented a webui for
+         clients, based on the early development UI from Asus.
+
+         WG client routing is handled by VPN Director - you must
+         configuree redirection rules through it, same as on stock
+         firmware which requires configuring rules through
+         VPN Fusion.
+
+         DNS handling will be identical to OpenVPN's Exclusive DNS
+         mode, forcing clients to use the DNS provided by it
+         (if any is provided).
+
+         Note that enabling WireGuard will disable hardware
+         NAT acceleration due to compatiblity reasons.
+
   - UPDATED: getdns/stubby to 1.7.2/0.4.2.
   - UPDATED: zlib to 1.2.12 + backports.
   - CHANGED: Setting an OpenVPN client to redirect all traffic while
@@ -14,6 +33,8 @@ V.next (xx-xxx-xxxx)
              in that case to control which client should
              be involved in the DNS redirection, or use
              DNSFilter instead of Exclusive DNS mode.
+  - CHANGED: Reworked VPN Status page to only show currently
+             active services.
   - FIXED: Wrong temperatures used by the temperature graphs
            (386.8 regression)
   - FIXED: Guest Network clients couldn't route through VPN

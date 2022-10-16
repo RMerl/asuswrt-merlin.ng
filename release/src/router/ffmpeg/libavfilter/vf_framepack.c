@@ -33,6 +33,7 @@
 #include "libavutil/stereo3d.h"
 
 #include "avfilter.h"
+#include "filters.h"
 #include "formats.h"
 #include "internal.h"
 #include "video.h"
@@ -43,19 +44,38 @@
 typedef struct FramepackContext {
     const AVClass *class;
 
+    int depth;
     const AVPixFmtDescriptor *pix_desc; ///< agreed pixel format
 
     enum AVStereo3DType format;         ///< frame pack type output
 
     AVFrame *input_views[2];            ///< input frames
-
-    int64_t double_pts;                 ///< new pts for frameseq mode
 } FramepackContext;
 
 static const enum AVPixelFormat formats_supported[] = {
-    AV_PIX_FMT_YUV420P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV444P,
-    AV_PIX_FMT_YUV410P,  AV_PIX_FMT_YUVA420P, AV_PIX_FMT_YUVJ420P,
-    AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P,
+    AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9,
+    AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14,
+    AV_PIX_FMT_GRAY16,
+    AV_PIX_FMT_YUV410P, AV_PIX_FMT_YUV411P,
+    AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV422P,
+    AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV444P,
+    AV_PIX_FMT_YUVJ420P, AV_PIX_FMT_YUVJ422P,
+    AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ444P,
+    AV_PIX_FMT_YUVJ411P,
+    AV_PIX_FMT_YUV420P9, AV_PIX_FMT_YUV422P9, AV_PIX_FMT_YUV444P9,
+    AV_PIX_FMT_YUV420P10, AV_PIX_FMT_YUV422P10, AV_PIX_FMT_YUV444P10,
+    AV_PIX_FMT_YUV440P10,
+    AV_PIX_FMT_YUV444P12, AV_PIX_FMT_YUV422P12, AV_PIX_FMT_YUV420P12,
+    AV_PIX_FMT_YUV440P12,
+    AV_PIX_FMT_YUV444P14, AV_PIX_FMT_YUV422P14, AV_PIX_FMT_YUV420P14,
+    AV_PIX_FMT_YUV420P16, AV_PIX_FMT_YUV422P16, AV_PIX_FMT_YUV444P16,
+    AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
+    AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
+    AV_PIX_FMT_YUVA420P,  AV_PIX_FMT_YUVA422P,   AV_PIX_FMT_YUVA444P,
+    AV_PIX_FMT_YUVA444P9, AV_PIX_FMT_YUVA444P10, AV_PIX_FMT_YUVA444P12, AV_PIX_FMT_YUVA444P16,
+    AV_PIX_FMT_YUVA422P9, AV_PIX_FMT_YUVA422P10, AV_PIX_FMT_YUVA422P12, AV_PIX_FMT_YUVA422P16,
+    AV_PIX_FMT_YUVA420P9, AV_PIX_FMT_YUVA420P10, AV_PIX_FMT_YUVA420P16,
+    AV_PIX_FMT_GBRAP,     AV_PIX_FMT_GBRAP10,    AV_PIX_FMT_GBRAP12,    AV_PIX_FMT_GBRAP16,
     AV_PIX_FMT_NONE
 };
 
@@ -114,14 +134,13 @@ static int config_output(AVFilterLink *outlink)
     s->pix_desc = av_pix_fmt_desc_get(outlink->format);
     if (!s->pix_desc)
         return AVERROR_BUG;
+    s->depth = s->pix_desc->comp[0].depth;
 
     // modify output properties as needed
     switch (s->format) {
     case AV_STEREO3D_FRAMESEQUENCE:
         time_base.den  *= 2;
         frame_rate.num *= 2;
-
-        s->double_pts = AV_NOPTS_VALUE;
         break;
     case AV_STEREO3D_COLUMNS:
     case AV_STEREO3D_SIDEBYSIDE:
@@ -152,7 +171,7 @@ static void horizontal_frame_pack(AVFilterLink *outlink,
     FramepackContext *s = ctx->priv;
     int i, plane;
 
-    if (interleaved) {
+    if (interleaved && s->depth <= 8) {
         const uint8_t *leftp  = s->input_views[LEFT]->data[0];
         const uint8_t *rightp = s->input_views[RIGHT]->data[0];
         uint8_t *dstp         = out->data[0];
@@ -187,17 +206,53 @@ static void horizontal_frame_pack(AVFilterLink *outlink,
                 }
             }
         }
+    } else if (interleaved && s->depth > 8) {
+        const uint16_t *leftp  = (const uint16_t *)s->input_views[LEFT]->data[0];
+        const uint16_t *rightp = (const uint16_t *)s->input_views[RIGHT]->data[0];
+        uint16_t *dstp         = (uint16_t *)out->data[0];
+        int length = out->width / 2;
+        int lines  = out->height;
+
+        for (plane = 0; plane < s->pix_desc->nb_components; plane++) {
+            if (plane == 1 || plane == 2) {
+                length = AV_CEIL_RSHIFT(out->width / 2, s->pix_desc->log2_chroma_w);
+                lines  = AV_CEIL_RSHIFT(out->height,    s->pix_desc->log2_chroma_h);
+            }
+            for (i = 0; i < lines; i++) {
+                int j;
+                leftp  = (const uint16_t *)s->input_views[LEFT]->data[plane] +
+                         s->input_views[LEFT]->linesize[plane] * i / 2;
+                rightp = (const uint16_t *)s->input_views[RIGHT]->data[plane] +
+                         s->input_views[RIGHT]->linesize[plane] * i / 2;
+                dstp   = (uint16_t *)out->data[plane] + out->linesize[plane] * i / 2;
+                for (j = 0; j < length; j++) {
+                    // interpolate chroma as necessary
+                    if ((s->pix_desc->log2_chroma_w ||
+                         s->pix_desc->log2_chroma_h) &&
+                        (plane == 1 || plane == 2)) {
+                        *dstp++ = (*leftp + *rightp) / 2;
+                        *dstp++ = (*leftp + *rightp) / 2;
+                    } else {
+                        *dstp++ = *leftp;
+                        *dstp++ = *rightp;
+                    }
+                    leftp += 1;
+                    rightp += 1;
+                }
+            }
+        }
     } else {
         for (i = 0; i < 2; i++) {
+            const int psize = 1 + (s->depth > 8);
             const uint8_t *src[4];
             uint8_t *dst[4];
-            int sub_w = s->input_views[i]->width >> s->pix_desc->log2_chroma_w;
+            int sub_w = psize * s->input_views[i]->width >> s->pix_desc->log2_chroma_w;
 
             src[0] = s->input_views[i]->data[0];
             src[1] = s->input_views[i]->data[1];
             src[2] = s->input_views[i]->data[2];
 
-            dst[0] = out->data[0] + i * s->input_views[i]->width;
+            dst[0] = out->data[0] + i * s->input_views[i]->width * psize;
             dst[1] = out->data[1] + i * sub_w;
             dst[2] = out->data[2] + i * sub_w;
 
@@ -269,39 +324,6 @@ static av_always_inline void spatial_frame_pack(AVFilterLink *outlink,
     }
 }
 
-static int try_push_frame(AVFilterContext *ctx);
-
-static int filter_frame_left(AVFilterLink *inlink, AVFrame *frame)
-{
-    FramepackContext *s = inlink->dst->priv;
-    s->input_views[LEFT] = frame;
-    return try_push_frame(inlink->dst);
-}
-
-static int filter_frame_right(AVFilterLink *inlink, AVFrame *frame)
-{
-    FramepackContext *s = inlink->dst->priv;
-    s->input_views[RIGHT] = frame;
-    return try_push_frame(inlink->dst);
-}
-
-static int request_frame(AVFilterLink *outlink)
-{
-    AVFilterContext *ctx = outlink->src;
-    FramepackContext *s = ctx->priv;
-    int ret, i;
-
-    /* get a frame on the either input, stop as soon as a video ends */
-    for (i = 0; i < 2; i++) {
-        if (!s->input_views[i]) {
-            ret = ff_request_frame(ctx->inputs[i]);
-            if (ret < 0)
-                return ret;
-        }
-    }
-    return 0;
-}
-
 static int try_push_frame(AVFilterContext *ctx)
 {
     FramepackContext *s = ctx->priv;
@@ -312,12 +334,12 @@ static int try_push_frame(AVFilterContext *ctx)
     if (!(s->input_views[0] && s->input_views[1]))
         return 0;
     if (s->format == AV_STEREO3D_FRAMESEQUENCE) {
-        if (s->double_pts == AV_NOPTS_VALUE)
-            s->double_pts = s->input_views[LEFT]->pts;
+        int64_t pts = s->input_views[0]->pts;
 
         for (i = 0; i < 2; i++) {
             // set correct timestamps
-            s->input_views[i]->pts = s->double_pts++;
+            if (pts != AV_NOPTS_VALUE)
+                s->input_views[i]->pts = i == 0 ? pts * 2 : pts * 2 + av_rescale_q(1, av_inv_q(outlink->frame_rate), outlink->time_base);
 
             // set stereo3d side data
             stereo = av_stereo3d_create_side_data(s->input_views[i]);
@@ -363,21 +385,64 @@ static int try_push_frame(AVFilterContext *ctx)
     }
 }
 
+static int activate(AVFilterContext *ctx)
+{
+    AVFilterLink *outlink = ctx->outputs[0];
+    FramepackContext *s = ctx->priv;
+    int ret;
+
+    FF_FILTER_FORWARD_STATUS_BACK_ALL(outlink, ctx);
+
+    if (!s->input_views[0]) {
+        ret = ff_inlink_consume_frame(ctx->inputs[0], &s->input_views[0]);
+        if (ret < 0)
+            return ret;
+    }
+
+    if (!s->input_views[1]) {
+        ret = ff_inlink_consume_frame(ctx->inputs[1], &s->input_views[1]);
+        if (ret < 0)
+            return ret;
+    }
+
+    if (s->input_views[0] && s->input_views[1])
+        return try_push_frame(ctx);
+
+    FF_FILTER_FORWARD_STATUS(ctx->inputs[0], outlink);
+    FF_FILTER_FORWARD_STATUS(ctx->inputs[1], outlink);
+
+    if (ff_outlink_frame_wanted(ctx->outputs[0]) &&
+        !ff_outlink_get_status(ctx->inputs[0]) &&
+        !s->input_views[0]) {
+        ff_inlink_request_frame(ctx->inputs[0]);
+        return 0;
+    }
+
+    if (ff_outlink_frame_wanted(ctx->outputs[0]) &&
+        !ff_outlink_get_status(ctx->inputs[1]) &&
+        !s->input_views[1]) {
+        ff_inlink_request_frame(ctx->inputs[1]);
+        return 0;
+    }
+
+    return FFERROR_NOT_READY;
+}
+
 #define OFFSET(x) offsetof(FramepackContext, x)
-#define V AV_OPT_FLAG_VIDEO_PARAM
+#define VF AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM
 static const AVOption framepack_options[] = {
     { "format", "Frame pack output format", OFFSET(format), AV_OPT_TYPE_INT,
-        { .i64 = AV_STEREO3D_SIDEBYSIDE }, 0, INT_MAX, .flags = V, .unit = "format" },
+        { .i64 = AV_STEREO3D_SIDEBYSIDE }, 0, INT_MAX, .flags = VF, .unit = "format" },
     { "sbs", "Views are packed next to each other", 0, AV_OPT_TYPE_CONST,
-        { .i64 = AV_STEREO3D_SIDEBYSIDE }, INT_MIN, INT_MAX, .flags = V, .unit = "format" },
+        { .i64 = AV_STEREO3D_SIDEBYSIDE }, INT_MIN, INT_MAX, .flags = VF, .unit = "format" },
     { "tab", "Views are packed on top of each other", 0, AV_OPT_TYPE_CONST,
-        { .i64 = AV_STEREO3D_TOPBOTTOM }, INT_MIN, INT_MAX, .flags = V, .unit = "format" },
+        { .i64 = AV_STEREO3D_TOPBOTTOM }, INT_MIN, INT_MAX, .flags = VF, .unit = "format" },
     { "frameseq", "Views are one after the other", 0, AV_OPT_TYPE_CONST,
-        { .i64 = AV_STEREO3D_FRAMESEQUENCE }, INT_MIN, INT_MAX, .flags = V, .unit = "format" },
+        { .i64 = AV_STEREO3D_FRAMESEQUENCE }, INT_MIN, INT_MAX, .flags = VF, .unit = "format" },
     { "lines", "Views are interleaved by lines", 0, AV_OPT_TYPE_CONST,
-        { .i64 = AV_STEREO3D_LINES }, INT_MIN, INT_MAX, .flags = V, .unit = "format" },
+        { .i64 = AV_STEREO3D_LINES }, INT_MIN, INT_MAX, .flags = VF, .unit = "format" },
     { "columns", "Views are interleaved by columns", 0, AV_OPT_TYPE_CONST,
-        { .i64 = AV_STEREO3D_COLUMNS }, INT_MIN, INT_MAX, .flags = V, .unit = "format" },
+        { .i64 = AV_STEREO3D_COLUMNS }, INT_MIN, INT_MAX, .flags = VF, .unit = "format" },
     { NULL },
 };
 
@@ -387,14 +452,10 @@ static const AVFilterPad framepack_inputs[] = {
     {
         .name         = "left",
         .type         = AVMEDIA_TYPE_VIDEO,
-        .filter_frame = filter_frame_left,
-        .needs_fifo   = 1,
     },
     {
         .name         = "right",
         .type         = AVMEDIA_TYPE_VIDEO,
-        .filter_frame = filter_frame_right,
-        .needs_fifo   = 1,
     },
     { NULL }
 };
@@ -404,7 +465,6 @@ static const AVFilterPad framepack_outputs[] = {
         .name          = "packed",
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_output,
-        .request_frame = request_frame,
     },
     { NULL }
 };
@@ -417,5 +477,6 @@ AVFilter ff_vf_framepack = {
     .query_formats = query_formats,
     .inputs        = framepack_inputs,
     .outputs       = framepack_outputs,
+    .activate      = activate,
     .uninit        = framepack_uninit,
 };

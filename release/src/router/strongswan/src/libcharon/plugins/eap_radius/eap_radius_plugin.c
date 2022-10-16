@@ -155,7 +155,7 @@ static void load_configs(private_eap_radius_plugin_t *this)
 									  retransmit_base);
 		if (!config)
 		{
-			DBG1(DBG_CFG, "no RADUIS server defined");
+			DBG1(DBG_CFG, "no RADIUS server defined");
 			return;
 		}
 		this->configs->insert_last(this->configs, config);

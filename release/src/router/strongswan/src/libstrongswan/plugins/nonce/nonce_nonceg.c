@@ -71,7 +71,7 @@ nonce_nonceg_t *nonce_nonceg_create()
 		},
 	);
 
-	this->rng = lib->crypto->create_rng(lib->crypto, RNG_WEAK);
+	this->rng = lib->crypto->create_rng(lib->crypto, NONCE_RNG_QUALITY);
 	if (!this->rng)
 	{
 		DBG1(DBG_LIB, "no RNG found for quality %N", rng_quality_names,

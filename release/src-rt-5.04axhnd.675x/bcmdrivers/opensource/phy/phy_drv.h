@@ -167,7 +167,8 @@ typedef enum {
 
 //USXGMII-M support
 typedef enum {
-    USXGMII_S,
+    USXGMII_M_NONE,
+    USXGMII_S = USXGMII_M_NONE,
     USXGMII_M_10G_S,
     USXGMII_M_10G_D,
     USXGMII_M_10G_Q,

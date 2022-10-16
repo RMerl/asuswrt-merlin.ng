@@ -40,7 +40,7 @@ struct private_pkcs11_dh_t {
 	pkcs11_library_t *lib;
 
 	/**
-	 * Session handle for this objct
+	 * Session handle for this object
 	 */
 	CK_SESSION_HANDLE session;
 
@@ -139,12 +139,6 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 				pubkey.len,
 				pubkey.ptr,
 			};
-
-			if (!lib->settings->get_bool(lib->settings,
-									"%s.ecp_x_coordinate_only", TRUE, lib->ns))
-			{	/* we only get the x coordinate back */
-				return FALSE;
-			}
 			value = chunk_from_thing(params);
 			break;
 		}

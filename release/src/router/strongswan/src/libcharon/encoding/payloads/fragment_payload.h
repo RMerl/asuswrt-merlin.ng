@@ -61,7 +61,7 @@ struct fragment_payload_t {
 	/**
 	 * Get the fragment data.
 	 *
-	 * @return				chunkt to internal fragment data
+	 * @return				chunk to internal fragment data
 	 */
 	chunk_t (*get_data)(fragment_payload_t *this);
 

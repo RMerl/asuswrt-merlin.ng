@@ -13,6 +13,9 @@
  * for more details.
  */
 
+#ifndef LOAD_POOLS_H_
+#define LOAD_POOLS_H_
+
 #include "command.h"
 
 /**
@@ -24,3 +27,5 @@
  */
 int load_pools_cfg(vici_conn_t *conn, command_format_options_t format,
 				   settings_t *cfg);
+
+#endif /** LOAD_POOLS_H_ */

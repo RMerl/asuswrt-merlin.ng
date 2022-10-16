@@ -117,6 +117,11 @@ struct private_x509_crl_t {
 	chunk_t authKeySerialNumber;
 
 	/**
+	 * Optional OID of an [unsupported] critical extension
+	 */
+	chunk_t critical_extension_oid;
+
+	/**
 	 * Number of BaseCRL, if a delta CRL
 	 */
 	chunk_t baseCrlNumber;
@@ -605,6 +610,7 @@ METHOD(certificate_t, destroy, void,
 		DESTROY_IF(this->issuer);
 		free(this->authKeyIdentifier.ptr);
 		free(this->encoding.ptr);
+		free(this->critical_extension_oid.ptr);
 		if (this->generated)
 		{
 			free(this->crlNumber.ptr);
@@ -718,7 +724,7 @@ static bool generate(private_x509_crl_t *this, certificate_t *cert,
 {
 	chunk_t extensions = chunk_empty, certList = chunk_empty, serial;
 	chunk_t crlDistributionPoints = chunk_empty, baseCrlNumber = chunk_empty;
-	chunk_t sig_scheme = chunk_empty;
+	chunk_t sig_scheme = chunk_empty, criticalExtension = chunk_empty;
 	enumerator_t *enumerator;
 	crl_reason_t reason;
 	time_t date;
@@ -784,8 +790,16 @@ static bool generate(private_x509_crl_t *this, certificate_t *cert,
 								asn1_integer("c", this->baseCrlNumber)));
 	}
 
+	if (this->critical_extension_oid.len > 0)
+	{
+		criticalExtension = asn1_wrap(ASN1_SEQUENCE, "mmm",
+					asn1_simple_object(ASN1_OID, this->critical_extension_oid),
+					asn1_simple_object(ASN1_BOOLEAN, chunk_from_chars(0xFF)),
+					asn1_simple_object(ASN1_OCTET_STRING, chunk_empty));
+	}
+
 	extensions = asn1_wrap(ASN1_CONTEXT_C_0, "m",
-					asn1_wrap(ASN1_SEQUENCE, "mmmm",
+					asn1_wrap(ASN1_SEQUENCE, "mmmmm",
 						asn1_wrap(ASN1_SEQUENCE, "mm",
 							asn1_build_known_oid(OID_AUTHORITY_KEY_ID),
 							asn1_wrap(ASN1_OCTET_STRING, "m",
@@ -796,7 +810,8 @@ static bool generate(private_x509_crl_t *this, certificate_t *cert,
 							asn1_build_known_oid(OID_CRL_NUMBER),
 							asn1_wrap(ASN1_OCTET_STRING, "m",
 								asn1_integer("c", this->crlNumber))),
-						crlDistributionPoints, baseCrlNumber));
+						crlDistributionPoints, baseCrlNumber,
+						criticalExtension));
 
 	this->tbsCertList = asn1_wrap(ASN1_SEQUENCE, "cccmmmm",
 							ASN1_INTEGER_1,
@@ -887,6 +902,9 @@ x509_crl_t *x509_crl_gen(certificate_type_t type, va_list args)
 				enumerator->destroy(enumerator);
 				continue;
 			}
+			case BUILD_CRITICAL_EXTENSION:
+				crl->critical_extension_oid = chunk_clone(va_arg(args, chunk_t));
+				continue;
 			case BUILD_END:
 				break;
 			default:

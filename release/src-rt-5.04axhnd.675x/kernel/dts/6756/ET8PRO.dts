@@ -112,7 +112,7 @@
 		port0@0 {
             phy-handle = <&phy_ge>;
 			status = "okay";
-			label = "eth1";
+			label = "eth3";
 		};
 		port1@1 {
 			phy-handle = <&phy_m2m>;
@@ -140,25 +140,25 @@
 		active_low;
 		pinctrl-0=<&a_per_led_14_pin_14>;
         status = "okay";
-        brightness = <127>;
+        brightness = <0>;
 	};
 	led1:sw_led_15 {
 		active_low;
 		pinctrl-0=<&a_per_led_15_pin_15>;
         status = "okay";
-        brightness = <127>;
+        brightness = <0>;
 	};
 	led2:sw_led_16 {
 		active_low;
 		pinctrl-0=<&a_per_led_16_pin_16>;
         status = "okay";
-        brightness = <127>;
+        brightness = <0>;
 	};
 	led3:sw_led_29 {
 		active_low;
 		pinctrl-0=<&a_per_led_29_pin_29>;
         status = "okay";
-        brightness = <255>;
+        brightness = <0>;
 	};
 };
 

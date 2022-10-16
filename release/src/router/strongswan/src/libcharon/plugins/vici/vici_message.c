@@ -644,6 +644,13 @@ METHOD(vici_message_t, dump, bool,
 	return FALSE;
 }
 
+CALLBACK(clear_strings, void,
+	char *str)
+{
+	memwipe(str, strlen(str));
+	free(str);
+}
+
 METHOD(vici_message_t, destroy, void,
 	private_vici_message_t *this)
 {
@@ -651,7 +658,7 @@ METHOD(vici_message_t, destroy, void,
 	{
 		chunk_clear(&this->encoding);
 	}
-	this->strings->destroy_function(this->strings, free);
+	this->strings->destroy_function(this->strings, clear_strings);
 	free(this);
 }
 

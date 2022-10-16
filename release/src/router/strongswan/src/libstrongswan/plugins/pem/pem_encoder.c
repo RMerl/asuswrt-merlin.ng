@@ -120,7 +120,7 @@ bool pem_encoder_encode(cred_encoding_type_t type, chunk_t *encoding,
 			}
 			if (cred_encoding_args(args, CRED_PART_PKCS10_ASN1_DER,
 								   &asn1, CRED_PART_END))
-			{	/* PEM encode PKCS10 certificate reqeuest */
+			{	/* PEM encode PKCS10 certificate request */
 				label = "CERTIFICATE REQUEST";
 				break;
 			}

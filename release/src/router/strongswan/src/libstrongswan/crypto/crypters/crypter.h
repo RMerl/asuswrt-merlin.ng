@@ -64,6 +64,8 @@ enum encryption_algorithm_t {
 	ENCR_TWOFISH_CBC =      1027,
 	/* see macros below to handle RC2 (effective) key length */
 	ENCR_RC2_CBC =          1028,
+	ENCR_AES_ECB =			1029,
+	ENCR_AES_CFB =			1030,
 };
 
 #define DES_BLOCK_SIZE			 8
@@ -112,7 +114,7 @@ struct crypter_t {
 	 *
 	 * The length of the iv must equal to get_iv_size(), while the length
 	 * of data must be a multiple of get_block_size().
-	 * If decrpyted is NULL, the encryption is done in-place (overwriting data).
+	 * If decrypted is NULL, the encryption is done in-place (overwriting data).
 	 *
 	 * @param data			data to decrypt
 	 * @param iv			initializing vector

@@ -30,6 +30,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
 #include "config.h"
 #include "rgb2rgb.h"
@@ -74,8 +75,11 @@ static void hScale16To19_c(SwsContext *c, int16_t *_dst, int dstW,
     int bits            = desc->comp[0].depth - 1;
     int sh              = bits - 4;
 
-    if((isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16)
-        sh= 9;
+    if ((isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8) && desc->comp[0].depth<16) {
+        sh = 9;
+    } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
+        sh = 16 - 1 - 4;
+    }
 
     for (i = 0; i < dstW; i++) {
         int j;
@@ -99,8 +103,11 @@ static void hScale16To15_c(SwsContext *c, int16_t *dst, int dstW,
     const uint16_t *src = (const uint16_t *) _src;
     int sh              = desc->comp[0].depth - 1;
 
-    if(sh<15)
-        sh= isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
+    if (sh<15) {
+        sh = isAnyRGB(c->srcFormat) || c->srcFormat==AV_PIX_FMT_PAL8 ? 13 : (desc->comp[0].depth - 1);
+    } else if (desc->flags & AV_PIX_FMT_FLAG_FLOAT) { /* float input are process like uint 16bpc */
+        sh = 16 - 1;
+    }
 
     for (i = 0; i < dstW; i++) {
         int j;
@@ -260,11 +267,8 @@ static int swscale(SwsContext *c, const uint8_t *src[],
 
     /* vars which will change and which we need to store back in the context */
     int dstY         = c->dstY;
-    int lumBufIndex  = c->lumBufIndex;
-    int chrBufIndex  = c->chrBufIndex;
     int lastInLumBuf = c->lastInLumBuf;
     int lastInChrBuf = c->lastInChrBuf;
-
 
     int lumStart = 0;
     int lumEnd = c->descIndex[0];
@@ -277,25 +281,21 @@ static int swscale(SwsContext *c, const uint8_t *src[],
     SwsSlice *vout_slice = &c->slice[c->numSlice-1];
     SwsFilterDescriptor *desc = c->desc;
 
-
     int needAlpha = c->needAlpha;
 
     int hasLumHoles = 1;
     int hasChrHoles = 1;
 
-
     if (isPacked(c->srcFormat)) {
-        src[0] =
         src[1] =
         src[2] =
         src[3] = src[0];
-        srcStride[0] =
         srcStride[1] =
         srcStride[2] =
         srcStride[3] = srcStride[0];
     }
-    srcStride[1] <<= c->vChrDrop;
-    srcStride[2] <<= c->vChrDrop;
+    srcStride[1] *= 1 << c->vChrDrop;
+    srcStride[2] *= 1 << c->vChrDrop;
 
     DEBUG_BUFFERS("swscale() %p[%d] %p[%d] %p[%d] %p[%d] -> %p[%d] %p[%d] %p[%d] %p[%d]\n",
                   src[0], srcStride[0], src[1], srcStride[1],
@@ -335,8 +335,6 @@ static int swscale(SwsContext *c, const uint8_t *src[],
      * will not get executed. This is not really intended but works
      * currently, so people might do it. */
     if (srcSliceY == 0) {
-        lumBufIndex  = -1;
-        chrBufIndex  = -1;
         dstY         = 0;
         lastInLumBuf = -1;
         lastInChrBuf = -1;
@@ -460,7 +458,6 @@ static int swscale(SwsContext *c, const uint8_t *src[],
                 desc[i].process(c, &desc[i], firstPosY, lastPosY - firstPosY + 1);
         }
 
-        lumBufIndex += lastLumSrcY - lastInLumBuf;
         lastInLumBuf = lastLumSrcY;
 
         if (cPosY < lastChrSrcY + 1) {
@@ -468,20 +465,13 @@ static int swscale(SwsContext *c, const uint8_t *src[],
                 desc[i].process(c, &desc[i], firstCPosY, lastCPosY - firstCPosY + 1);
         }
 
-        chrBufIndex += lastChrSrcY - lastInChrBuf;
         lastInChrBuf = lastChrSrcY;
 
-        // wrap buf index around to stay inside the ring buffer
-        if (lumBufIndex >= vLumFilterSize)
-            lumBufIndex -= vLumFilterSize;
-        if (chrBufIndex >= vChrFilterSize)
-            chrBufIndex -= vChrFilterSize;
         if (!enough_lines)
             break;  // we can't output a dstY line so let's try with the next slice
 
 #if HAVE_MMX_INLINE
-        ff_updateMMXDitherTables(c, dstY, lumBufIndex, chrBufIndex,
-                              lastInLumBuf, lastInChrBuf);
+        ff_updateMMXDitherTables(c, dstY);
 #endif
         if (should_dither) {
             c->chrDither8 = ff_dither_8x8_128[chrDstY & 7];
@@ -511,6 +501,11 @@ static int swscale(SwsContext *c, const uint8_t *src[],
             fillPlane16(dst[3], dstStride[3], length, height, lastDstY,
                     1, desc->comp[3].depth,
                     isBE(dstFormat));
+        } else if (is32BPS(dstFormat)) {
+            const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(dstFormat);
+            fillPlane32(dst[3], dstStride[3], length, height, lastDstY,
+                    1, desc->comp[3].depth,
+                    isBE(dstFormat), desc->flags & AV_PIX_FMT_FLAG_FLOAT);
         } else
             fillPlane(dst[3], dstStride[3], length, height, lastDstY, 255);
     }
@@ -523,8 +518,6 @@ static int swscale(SwsContext *c, const uint8_t *src[],
 
     /* store changed local vars back in the context */
     c->dstY         = dstY;
-    c->lumBufIndex  = lumBufIndex;
-    c->chrBufIndex  = chrBufIndex;
     c->lastInLumBuf = lastInLumBuf;
     c->lastInChrBuf = lastInChrBuf;
 
@@ -565,7 +558,6 @@ static av_cold void sws_init_swscale(SwsContext *c)
                              &c->yuv2packed2, &c->yuv2packedX, &c->yuv2anyX);
 
     ff_sws_init_input_funcs(c);
-
 
     if (c->srcBpc == 8) {
         if (c->dstBpc <= 14) {
@@ -784,8 +776,6 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
     }
 
     if (c->gamma_flag && c->cascaded_context[0]) {
-
-
         ret = sws_scale(c->cascaded_context[0],
                     srcSlice, srcStride, srcSliceY, srcSliceH,
                     c->cascaded_tmp, c->cascaded_tmpStride);
@@ -978,7 +968,6 @@ int attribute_align_arg sws_scale(struct SwsContext *c,
     if (srcSliceY_internal + srcSliceH == c->srcH)
         c->sliceDir = 0;
     ret = c->swscale(c, src2, srcStride2, srcSliceY_internal, srcSliceH, dst2, dstStride2);
-
 
     if (c->dstXYZ && !(c->srcXYZ && c->srcW==c->dstW && c->srcH==c->dstH)) {
         int dstY = c->dstY ? c->dstY : srcSliceY + srcSliceH;

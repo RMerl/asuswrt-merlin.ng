@@ -131,7 +131,7 @@ bliss_huffman_coder_t *bliss_huffman_coder_create(bliss_huffman_code_t *code,
 		},
 		.packer = packer,
 		.code = code,
-		.index_max = (2*code->n_z2 - 1) * code->n_z1,		
+		.index_max = (2*code->n_z2 - 1) * code->n_z1,
 	);
 
 	return &this->public;

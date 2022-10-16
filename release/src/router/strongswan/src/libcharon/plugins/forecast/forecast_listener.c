@@ -569,24 +569,13 @@ METHOD(listener_t, child_rekey, bool,
 
 METHOD(listener_t, ike_update, bool,
 	private_forecast_listener_t *this, ike_sa_t *ike_sa,
-	bool local, host_t *new)
+	host_t *local, host_t *remote)
 {
 	struct iptc_handle *ipth;
 	enumerator_t *enumerator;
 	child_sa_t *child_sa;
-	host_t *lhost, *rhost;
 	bool encap;
 
-	if (local)
-	{
-		lhost = new;
-		rhost = ike_sa->get_other_host(ike_sa);
-	}
-	else
-	{
-		lhost = ike_sa->get_my_host(ike_sa);
-		rhost = new;
-	}
 	/* during ike_update(), has_encap() on the CHILD_SA has not yet been
 	 * updated, but shows the old state. */
 	encap = ike_sa->has_condition(ike_sa, COND_NAT_ANY);
@@ -600,7 +589,7 @@ METHOD(listener_t, ike_update, bool,
 			if (ipth)
 			{
 				if (remove_entry(this, ipth, child_sa) &&
-					add_entry(this, ipth, lhost, rhost, child_sa, encap))
+					add_entry(this, ipth, local, remote, child_sa, encap))
 				{
 					commit_handle(ipth);
 				}

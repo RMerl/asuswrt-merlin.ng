@@ -53,7 +53,7 @@ struct pa_tnc_msg_t {
 	/**
 	 * Add a PA-TNC attribute
 	 *
-	 * @param attr				PA-TNC attribute to be addedd
+	 * @param attr				PA-TNC attribute to be added
 	 * @return					TRUE if attribute fit into message and was added
 	 */
 	bool (*add_attribute)(pa_tnc_msg_t *this, pa_tnc_attr_t* attr);

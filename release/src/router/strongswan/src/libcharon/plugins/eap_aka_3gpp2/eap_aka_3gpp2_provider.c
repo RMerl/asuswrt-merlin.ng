@@ -42,7 +42,7 @@ struct private_eap_aka_3gpp2_provider_t {
 };
 
 /** Authentication management field */
-static char amf[AKA_AMF_LEN] = {0x00, 0x01};
+static char amf_def[AKA_AMF_LEN] = {0x00, 0x01};
 
 /**
  * Get a shared key K from the credential database
@@ -108,7 +108,7 @@ METHOD(simaka_provider_t, get_quintuplet, bool,
 	DBG3(DBG_IKE, "using K %b", k, AKA_K_LEN);
 
 	/* MAC, AK, XRES as expected from client */
-	if (!this->f->f1(this->f, k, rand, this->sqn, amf, mac) ||
+	if (!this->f->f1(this->f, k, rand, this->sqn, amf_def, mac) ||
 		!this->f->f5(this->f, k, rand, ak) ||
 		!this->f->f2(this->f, k, rand, xres))
 	{
@@ -118,7 +118,7 @@ METHOD(simaka_provider_t, get_quintuplet, bool,
 	/* AUTN = (SQN xor AK) || AMF || MAC */
 	memcpy(autn, this->sqn, AKA_SQN_LEN);
 	memxor(autn, ak, AKA_AK_LEN);
-	memcpy(autn + AKA_SQN_LEN, amf, AKA_AMF_LEN);
+	memcpy(autn + AKA_SQN_LEN, amf_def, AKA_AMF_LEN);
 	memcpy(autn + AKA_SQN_LEN + AKA_AMF_LEN, mac, AKA_MAC_LEN);
 	DBG3(DBG_IKE, "AUTN %b", autn, AKA_AUTN_LEN);
 	/* CK/IK */
@@ -127,6 +127,7 @@ METHOD(simaka_provider_t, get_quintuplet, bool,
 	{
 		return FALSE;
 	}
+	chunk_increment(chunk_create(this->sqn, AKA_SQN_LEN));
 	return TRUE;
 }
 

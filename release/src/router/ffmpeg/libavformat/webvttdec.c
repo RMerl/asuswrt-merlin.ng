@@ -37,7 +37,7 @@ typedef struct {
     int kind;
 } WebVTTContext;
 
-static int webvtt_probe(AVProbeData *p)
+static int webvtt_probe(const AVProbeData *p)
 {
     const uint8_t *ptr = p->buf;
 
@@ -60,7 +60,7 @@ static int64_t read_ts(const char *s)
 static int webvtt_read_header(AVFormatContext *s)
 {
     WebVTTContext *webvtt = s->priv_data;
-    AVBPrint header, cue;
+    AVBPrint cue;
     int res = 0;
     AVStream *st = avformat_new_stream(s, NULL);
 
@@ -71,7 +71,6 @@ static int webvtt_read_header(AVFormatContext *s)
     st->codecpar->codec_id   = AV_CODEC_ID_WEBVTT;
     st->disposition |= webvtt->kind;
 
-    av_bprint_init(&header, 0, AV_BPRINT_SIZE_UNLIMITED);
     av_bprint_init(&cue,    0, AV_BPRINT_SIZE_UNLIMITED);
 
     for (;;) {
@@ -126,7 +125,7 @@ static int webvtt_read_header(AVFormatContext *s)
             break;
 
         /* optional cue settings */
-        p += strcspn(p, "\n\t ");
+        p += strcspn(p, "\n\r\t ");
         while (*p == '\t' || *p == ' ')
             p++;
         settings = p;
@@ -165,8 +164,9 @@ static int webvtt_read_header(AVFormatContext *s)
     ff_subtitles_queue_finalize(s, &webvtt->q);
 
 end:
+    if (res < 0)
+        ff_subtitles_queue_clean(&webvtt->q);
     av_bprint_finalize(&cue,    NULL);
-    av_bprint_finalize(&header, NULL);
     return res;
 }
 
@@ -192,14 +192,14 @@ static int webvtt_read_close(AVFormatContext *s)
 }
 
 #define OFFSET(x) offsetof(WebVTTContext, x)
-#define KIND_FLAGS AV_OPT_FLAG_SUBTITLE_PARAM
+#define KIND_FLAGS AV_OPT_FLAG_SUBTITLE_PARAM|AV_OPT_FLAG_DECODING_PARAM
 
 static const AVOption options[] = {
     { "kind", "Set kind of WebVTT track", OFFSET(kind), AV_OPT_TYPE_INT, { .i64 = 0 }, 0, INT_MAX, KIND_FLAGS, "webvtt_kind" },
-        { "subtitles",    "WebVTT subtitles kind",    0, AV_OPT_TYPE_CONST, { .i64 = 0 },                           INT_MIN, INT_MAX, 0, "webvtt_kind" },
-        { "captions",     "WebVTT captions kind",     0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CAPTIONS },     INT_MIN, INT_MAX, 0, "webvtt_kind" },
-        { "descriptions", "WebVTT descriptions kind", 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DESCRIPTIONS }, INT_MIN, INT_MAX, 0, "webvtt_kind" },
-        { "metadata",     "WebVTT metadata kind",     0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_METADATA },     INT_MIN, INT_MAX, 0, "webvtt_kind" },
+        { "subtitles",    "WebVTT subtitles kind",    0, AV_OPT_TYPE_CONST, { .i64 = 0 },                           INT_MIN, INT_MAX, KIND_FLAGS, "webvtt_kind" },
+        { "captions",     "WebVTT captions kind",     0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_CAPTIONS },     INT_MIN, INT_MAX, KIND_FLAGS, "webvtt_kind" },
+        { "descriptions", "WebVTT descriptions kind", 0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_DESCRIPTIONS }, INT_MIN, INT_MAX, KIND_FLAGS, "webvtt_kind" },
+        { "metadata",     "WebVTT metadata kind",     0, AV_OPT_TYPE_CONST, { .i64 = AV_DISPOSITION_METADATA },     INT_MIN, INT_MAX, KIND_FLAGS, "webvtt_kind" },
     { NULL }
 };
 

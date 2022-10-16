@@ -150,7 +150,7 @@
  * synchronization:
  * Each IKE_SA must be checked out strictly and checked in again after use. The
  * manager guarantees that only one thread may check out a single IKE_SA. This
- * allows us to write the (complex) IKE_SAs routines non-threadsave.
+ * allows us to write the (complex) IKE_SAs routines non-threadsafe.
  * The IKE_SA contain the state and the logic of each IKE_SA and handle the
  * messages.
  *

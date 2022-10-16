@@ -14,7 +14,7 @@
  */
 
 /**
- * @defgroup ietf_attr_attr_requestt ietf_attr_attr_request
+ * @defgroup ietf_attr_attr_request ietf_attr_attr_request
  * @{ @ingroup ietf_attr
  */
 

@@ -28,6 +28,9 @@
 #include "libavutil/channel_layout.h"
 #include "libavutil/internal.h"
 #include "libavutil/lfg.h"
+#include "libavutil/mem_internal.h"
+#include "libavutil/thread.h"
+
 #include "avcodec.h"
 #include "get_bits.h"
 #include "internal.h"
@@ -38,25 +41,42 @@
 
 static VLC scfi_vlc, dscf_vlc, hdr_vlc, quant_vlc[MPC7_QUANT_VLC_TABLES][2];
 
-static const uint16_t quant_offsets[MPC7_QUANT_VLC_TABLES*2 + 1] =
+static av_cold void mpc7_init_static(void)
 {
-       0, 512, 1024, 1536, 2052, 2564, 3076, 3588, 4100, 4612, 5124,
-       5636, 6164, 6676, 7224
-};
+    static VLC_TYPE quant_tables[7224][2];
+    const uint8_t *raw_quant_table = mpc7_quant_vlcs;
 
+    INIT_VLC_STATIC_FROM_LENGTHS(&scfi_vlc, MPC7_SCFI_BITS, MPC7_SCFI_SIZE,
+                                 &mpc7_scfi[1], 2,
+                                 &mpc7_scfi[0], 2, 1, 0, 0, 1 << MPC7_SCFI_BITS);
+    INIT_VLC_STATIC_FROM_LENGTHS(&dscf_vlc, MPC7_DSCF_BITS, MPC7_DSCF_SIZE,
+                                 &mpc7_dscf[1], 2,
+                                 &mpc7_dscf[0], 2, 1, -7, 0, 1 << MPC7_DSCF_BITS);
+    INIT_VLC_STATIC_FROM_LENGTHS(&hdr_vlc, MPC7_HDR_BITS, MPC7_HDR_SIZE,
+                                 &mpc7_hdr[1], 2,
+                                 &mpc7_hdr[0], 2, 1, -5, 0, 1 << MPC7_HDR_BITS);
+    for (unsigned i = 0, offset = 0; i < MPC7_QUANT_VLC_TABLES; i++){
+        for (int j = 0; j < 2; j++) {
+            quant_vlc[i][j].table           = &quant_tables[offset];
+            quant_vlc[i][j].table_allocated = FF_ARRAY_ELEMS(quant_tables) - offset;
+            ff_init_vlc_from_lengths(&quant_vlc[i][j], 9, mpc7_quant_vlc_sizes[i],
+                                     &raw_quant_table[1], 2,
+                                     &raw_quant_table[0], 2, 1,
+                                     mpc7_quant_vlc_off[i],
+                                     INIT_VLC_STATIC_OVERLONG, NULL);
+            raw_quant_table += 2 * mpc7_quant_vlc_sizes[i];
+            offset          += quant_vlc[i][j].table_size;
+        }
+    }
+    ff_mpa_synth_init_fixed();
+}
 
 static av_cold int mpc7_decode_init(AVCodecContext * avctx)
 {
-    int i, j, ret;
+    static AVOnce init_static_once = AV_ONCE_INIT;
     MPCContext *c = avctx->priv_data;
     GetBitContext gb;
     LOCAL_ALIGNED_16(uint8_t, buf, [16]);
-    static int vlc_initialized = 0;
-
-    static VLC_TYPE scfi_table[1 << MPC7_SCFI_BITS][2];
-    static VLC_TYPE dscf_table[1 << MPC7_DSCF_BITS][2];
-    static VLC_TYPE hdr_table[1 << MPC7_HDR_BITS][2];
-    static VLC_TYPE quant_tables[7224][2];
 
     /* Musepack SV7 is always stereo */
     if (avctx->channels != 2) {
@@ -73,7 +93,6 @@ static av_cold int mpc7_decode_init(AVCodecContext * avctx)
     ff_bswapdsp_init(&c->bdsp);
     ff_mpadsp_init(&c->mpadsp);
     c->bdsp.bswap_buf((uint32_t *) buf, (const uint32_t *) avctx->extradata, 4);
-    ff_mpc_init();
     init_get_bits(&gb, buf, 128);
 
     c->IS = get_bits1(&gb);
@@ -93,45 +112,7 @@ static av_cold int mpc7_decode_init(AVCodecContext * avctx)
     avctx->sample_fmt = AV_SAMPLE_FMT_S16P;
     avctx->channel_layout = AV_CH_LAYOUT_STEREO;
 
-    if(vlc_initialized) return 0;
-    av_log(avctx, AV_LOG_DEBUG, "Initing VLC\n");
-    scfi_vlc.table = scfi_table;
-    scfi_vlc.table_allocated = 1 << MPC7_SCFI_BITS;
-    if ((ret = init_vlc(&scfi_vlc, MPC7_SCFI_BITS, MPC7_SCFI_SIZE,
-                &mpc7_scfi[1], 2, 1,
-                &mpc7_scfi[0], 2, 1, INIT_VLC_USE_NEW_STATIC))) {
-        av_log(avctx, AV_LOG_ERROR, "Cannot init SCFI VLC\n");
-        return ret;
-    }
-    dscf_vlc.table = dscf_table;
-    dscf_vlc.table_allocated = 1 << MPC7_DSCF_BITS;
-    if ((ret = init_vlc(&dscf_vlc, MPC7_DSCF_BITS, MPC7_DSCF_SIZE,
-                &mpc7_dscf[1], 2, 1,
-                &mpc7_dscf[0], 2, 1, INIT_VLC_USE_NEW_STATIC))) {
-        av_log(avctx, AV_LOG_ERROR, "Cannot init DSCF VLC\n");
-        return ret;
-    }
-    hdr_vlc.table = hdr_table;
-    hdr_vlc.table_allocated = 1 << MPC7_HDR_BITS;
-    if ((ret = init_vlc(&hdr_vlc, MPC7_HDR_BITS, MPC7_HDR_SIZE,
-                &mpc7_hdr[1], 2, 1,
-                &mpc7_hdr[0], 2, 1, INIT_VLC_USE_NEW_STATIC))) {
-        av_log(avctx, AV_LOG_ERROR, "Cannot init HDR VLC\n");
-        return ret;
-    }
-    for(i = 0; i < MPC7_QUANT_VLC_TABLES; i++){
-        for(j = 0; j < 2; j++){
-            quant_vlc[i][j].table = &quant_tables[quant_offsets[i*2 + j]];
-            quant_vlc[i][j].table_allocated = quant_offsets[i*2 + j + 1] - quant_offsets[i*2 + j];
-            if ((ret = init_vlc(&quant_vlc[i][j], 9, mpc7_quant_vlc_sizes[i],
-                        &mpc7_quant_vlc[i][j][1], 4, 2,
-                        &mpc7_quant_vlc[i][j][0], 4, 2, INIT_VLC_USE_NEW_STATIC))) {
-                av_log(avctx, AV_LOG_ERROR, "Cannot init QUANT VLC %i,%i\n",i,j);
-                return ret;
-            }
-        }
-    }
-    vlc_initialized = 1;
+    ff_thread_once(&init_static_once, mpc7_init_static);
 
     return 0;
 }
@@ -168,7 +149,7 @@ static inline void idx_to_quant(MPCContext *c, GetBitContext *gb, int idx, int *
     case  3: case  4: case  5: case  6: case  7:
         i1 = get_bits1(gb);
         for(i = 0; i < SAMPLES_PER_BAND; i++)
-            *dst++ = get_vlc2(gb, quant_vlc[idx-1][i1].table, 9, 2) - mpc7_quant_vlc_off[idx-1];
+            *dst++ = get_vlc2(gb, quant_vlc[idx-1][i1].table, 9, 2);
         break;
     case  8: case  9: case 10: case 11: case 12:
     case 13: case 14: case 15: case 16: case 17:
@@ -183,7 +164,7 @@ static inline void idx_to_quant(MPCContext *c, GetBitContext *gb, int idx, int *
 
 static int get_scale_idx(GetBitContext *gb, int ref)
 {
-    int t = get_vlc2(gb, dscf_vlc.table, MPC7_DSCF_BITS, 1) - 7;
+    int t = get_vlc2(gb, dscf_vlc.table, MPC7_DSCF_BITS, 1);
     if (t == 8)
         return get_bits(gb, 6);
     return ref + t;
@@ -238,8 +219,7 @@ static int mpc7_decode_frame(AVCodecContext * avctx, void *data,
     /* read subband indexes */
     for(i = 0; i <= c->maxbands; i++){
         for(ch = 0; ch < 2; ch++){
-            int t = 4;
-            if(i) t = get_vlc2(&gb, hdr_vlc.table, MPC7_HDR_BITS, 1) - 5;
+            int t = i ? get_vlc2(&gb, hdr_vlc.table, MPC7_HDR_BITS, 1) : 4;
             if(t == 4) bands[i].res[ch] = get_bits(&gb, 4);
             else bands[i].res[ch] = bands[i-1].res[ch] + t;
             if (bands[i].res[ch] < -1 || bands[i].res[ch] > 17) {
@@ -341,4 +321,5 @@ AVCodec ff_mpc7_decoder = {
     .capabilities   = AV_CODEC_CAP_DR1,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16P,
                                                       AV_SAMPLE_FMT_NONE },
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };

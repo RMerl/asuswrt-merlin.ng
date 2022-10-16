@@ -28,6 +28,7 @@
 #include "libavutil/audio_fifo.h"
 #include "libavutil/float_dsp.h"
 #include "libavutil/frame.h"
+#include "libavutil/mem_internal.h"
 
 #include "libswresample/swresample.h"
 
@@ -101,6 +102,15 @@ typedef struct OpusStreamContext {
     AVCodecContext *avctx;
     int output_channels;
 
+    /* number of decoded samples for this stream */
+    int decoded_samples;
+    /* current output buffers for this stream */
+    float *out[2];
+    int out_size;
+    /* Buffer with samples from this stream for synchronizing
+     * the streams when they have different resampling delays */
+    AVAudioFifo *sync_buffer;
+
     OpusRangeCoder rc;
     OpusRangeCoder redundancy_rc;
     SilkContext *silk;
@@ -112,12 +122,12 @@ typedef struct OpusStreamContext {
     DECLARE_ALIGNED(32, float, celt_buf)[2][960];
     float *celt_output[2];
 
-    float redundancy_buf[2][960];
+    DECLARE_ALIGNED(32, float, redundancy_buf)[2][960];
     float *redundancy_output[2];
 
-    /* data buffers for the final output data */
-    float *out[2];
-    int out_size;
+    /* buffers for the next samples to be decoded */
+    float *cur_out[2];
+    int remaining_out_size;
 
     float *out_dummy;
     int    out_dummy_allocated_size;
@@ -153,15 +163,6 @@ typedef struct OpusContext {
     AVClass *av_class;
     OpusStreamContext *streams;
     int apply_phase_inv;
-
-    /* current output buffers for each streams */
-    float **out;
-    int   *out_size;
-    /* Buffers for synchronizing the streams when they have different
-     * resampling delays */
-    AVAudioFifo **sync_buffers;
-    /* number of decoded samples for each stream */
-    int         *decoded_samples;
 
     int             nb_streams;
     int      nb_stereo_streams;

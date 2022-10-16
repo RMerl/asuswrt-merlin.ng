@@ -144,7 +144,7 @@ METHOD(tncif_identity_t, process, bool,
 	reader->read_uint8 (reader, &reserved);
 	reader->read_uint24(reader, &vendor_id);
 	reader->read_uint32(reader, &type);
-	this->subject_type = pen_type_create(vendor_id, type);		
+	this->subject_type = pen_type_create(vendor_id, type);
 
 	reader->read_uint8 (reader, &reserved);
 	reader->read_uint24(reader, &vendor_id);

@@ -1354,7 +1354,7 @@ static void load_secrets(private_stroke_cred_t *this, mem_cred_t *secrets,
 			break;
 		}
 	}
-	chunk_unmap(src);
+	chunk_unmap_clear(src);
 
 	if (level == 0)
 	{	/* replace secrets in active credential set */

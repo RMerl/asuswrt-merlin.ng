@@ -47,7 +47,7 @@ struct vici_logger_t {
  * Create a vici_logger instance.
  *
  * @param dispatcher		dispatcher to receive requests from
- * @return					loggerential backend
+ * @return					logger backend
  */
 vici_logger_t *vici_logger_create(vici_dispatcher_t *dispatcher);
 

@@ -58,8 +58,8 @@ static int query_formats(AVFilterContext *ctx)
                 (ret = ff_add_format(&formats, pix_fmt)) < 0)
                 return ret;
         }
-        if ((ret = ff_formats_ref(formats, &ctx->inputs[0]->out_formats)) < 0 ||
-            (ret = ff_formats_ref(formats, &ctx->outputs[0]->in_formats)) < 0)
+        if ((ret = ff_formats_ref(formats, &ctx->inputs[0]->outcfg.formats)) < 0 ||
+            (ret = ff_formats_ref(formats, &ctx->outputs[0]->incfg.formats)) < 0)
             return ret;
     }
 
@@ -108,8 +108,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
             s->dst_tff ? "up" : "down");
     h = frame->height;
     for (plane = 0; plane < 4 && frame->data[plane] && frame->linesize[plane]; plane++) {
-        dst_line_step = out->linesize[plane];
-        src_line_step = frame->linesize[plane];
+        dst_line_step = out->linesize[plane] * (h > 2);
+        src_line_step = frame->linesize[plane] * (h > 2);
         line_size = s->line_size[plane];
         dst = out->data[plane];
         src = frame->data[plane];

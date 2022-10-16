@@ -28,6 +28,8 @@
 #include <libexif/exif-byte-order.h>
 #include <libexif/exif-utils.h>
 
+#define CHECKOVERFLOW(offset,datasize,structsize) (( (offset) >= (datasize)) || ((structsize) > (datasize)) || ((offset) > (datasize) - (structsize) ))
+
 static void
 exif_mnote_data_pentax_clear (ExifMnoteDataPentax *n)
 {
@@ -78,13 +80,13 @@ exif_mnote_data_pentax_save (ExifMnoteData *ne,
 		unsigned char **buf, unsigned int *buf_size)
 {
 	ExifMnoteDataPentax *n = (ExifMnoteDataPentax *) ne;
-	size_t i,
-	   base = 0,		/* internal MakerNote tag number offset */
-	   o2 = 4 + 2;  	/* offset to first tag entry, past header */
-        size_t datao = n->offset; /* this MakerNote style uses offsets
-        			  based on main IFD, not makernote IFD */
+	size_t i, datao,
+	  base = 0,	/* internal MakerNote tag number offset */
+	  o2 = 4 + 2;  	/* offset to first tag entry, past header */
 
 	if (!n || !buf || !buf_size) return;
+	datao = n->offset; /* this MakerNote style uses offsets
+			      based on main IFD, not makernote IFD */
 
 	/*
 	 * Allocate enough memory for header, the number of entries, entries,
@@ -224,7 +226,7 @@ exif_mnote_data_pentax_load (ExifMnoteData *en,
 		return;
 	}
 	datao = 6 + n->offset;
-	if ((datao + 8 < datao) || (datao + 8 < 8) || (datao + 8 > buf_size)) {
+	if (CHECKOVERFLOW(datao, buf_size, 8)) {
 		exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
 			  "ExifMnoteDataPentax", "Short MakerNote");
 		return;
@@ -263,6 +265,14 @@ exif_mnote_data_pentax_load (ExifMnoteData *en,
 	c = exif_get_short (buf + datao, n->order);
 	datao += 2;
 
+	/* Just use an arbitrary max tag limit here to avoid needing to much memory or time. There are 102 named tags currently.
+	 * The format allows specifying the same range of memory as often as it can, so this multiplies quickly. */
+	if (c > 200) {
+		exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA, "ExifMnoteDataPentax", "Too much tags (%d) in Pentax MakerNote", c);
+		return;
+	}
+
+
 	/* Remove any old entries */
 	exif_mnote_data_pentax_clear (n);
 
@@ -277,7 +287,9 @@ exif_mnote_data_pentax_load (ExifMnoteData *en,
 	tcount = 0;
 	for (i = c, o = datao; i; --i, o += 12) {
 		size_t s;
-		if ((o + 12 < o) || (o + 12 < 12) || (o + 12 > buf_size)) {
+
+		memset(&n->entries[tcount], 0, sizeof(MnotePentaxEntry));
+		if (CHECKOVERFLOW(o,buf_size,12)) {
 			exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
 				  "ExifMnoteDataPentax", "Short MakerNote");
 			break;
@@ -292,6 +304,15 @@ exif_mnote_data_pentax_load (ExifMnoteData *en,
 			  "Loading entry 0x%x ('%s')...", n->entries[tcount].tag,
 			  mnote_pentax_tag_get_name (n->entries[tcount].tag));
 
+		/* Check if we overflow the multiplication. Use buf_size as the max size for integer overflow detection,
+		 * we will check the buffer sizes closer later. */
+		if (	exif_format_get_size (n->entries[tcount].format) &&
+			buf_size / exif_format_get_size (n->entries[tcount].format) < n->entries[tcount].components
+		) {
+			exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
+				  "ExifMnoteDataPentax", "Tag size overflow detected (%u * %lu)", exif_format_get_size (n->entries[tcount].format), n->entries[tcount].components);
+			break;
+		}
 		/*
 		 * Size? If bigger than 4 bytes, the actual data is not
 		 * in the entry but somewhere else (offset).
@@ -304,11 +325,11 @@ exif_mnote_data_pentax_load (ExifMnoteData *en,
 			if (s > 4)
 				/* The data in this case is merely a pointer */
 			   	dataofs = exif_get_long (buf + dataofs, n->order) + 6;
-			if ((dataofs + s < dataofs) || (dataofs + s < s) ||
-				(dataofs + s > buf_size)) {
+
+			if (CHECKOVERFLOW(dataofs, buf_size, s)) {
 				exif_log (en->log, EXIF_LOG_CODE_DEBUG,
 						  "ExifMnoteDataPentax", "Tag data past end "
-					  "of buffer (%u > %u)", dataofs + s, buf_size);
+					  "of buffer (%u > %u)", (unsigned)(dataofs + s), buf_size);
 				continue;
 			}
 
@@ -391,10 +412,36 @@ exif_mnote_data_pentax_set_byte_order (ExifMnoteData *d, ExifByteOrder o)
 	o_orig = n->order;
 	n->order = o;
 	for (i = 0; i < n->count; i++) {
+		if (n->entries[i].components && (n->entries[i].size/n->entries[i].components < exif_format_get_size (n->entries[i].format)))
+			continue;
 		n->entries[i].order = o;
 		exif_array_set_byte_order (n->entries[i].format, n->entries[i].data,
 				n->entries[i].components, o_orig, o);
 	}
+}
+
+int
+exif_mnote_data_pentax_identify (const ExifData *ed, const ExifEntry *e)
+{
+	(void) ed;  /* unused */
+	if ((e->size >= 8) && !memcmp (e->data, "AOC", 4)) {
+		if (((e->data[4] == 'I') && (e->data[5] == 'I')) ||
+		    ((e->data[4] == 'M') && (e->data[5] == 'M')))
+			return pentaxV3;
+		else
+			/* Uses Casio v2 tags */
+			return pentaxV2;
+	}
+
+	if ((e->size >= 8) && !memcmp (e->data, "QVC", 4))
+		return casioV2;
+
+	/* This isn't a very robust test, so make sure it's done last */
+	/* Maybe we should additionally check for a make of Asahi or Pentax */
+	if ((e->size >= 2) && (e->data[0] == 0x00) && (e->data[1] == 0x1b))
+		return pentaxV1;
+
+	return 0;
 }
 
 ExifMnoteData *

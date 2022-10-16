@@ -52,6 +52,15 @@ enum configuration_attribute_type_t {
 	/* RFC 7651 */
 	P_CSCF_IP4_ADDRESS		= 20,
 	P_CSCF_IP6_ADDRESS		= 21,
+	/* Firewall traversal keep-alive time (TS 24.302 12.6.0) */
+	FTT_KAT					= 22,
+	/* External NAT endpoint (TS 29.139) */
+	EXT_SRC_IP4_NAT_INFO    = 23,
+	/* DPD interval (TS 24.302 13.4.0)*/
+	TIMEOUT_PERIOD_FOR_DPD	= 24,
+	/* RFC 8598 */
+	INTERNAL_DNS_DOMAIN		= 25,
+	INTERNAL_DNSSEC_TA		= 26,
 	/* XAUTH attributes */
 	XAUTH_TYPE              = 16520,
 	XAUTH_USER_NAME         = 16521,

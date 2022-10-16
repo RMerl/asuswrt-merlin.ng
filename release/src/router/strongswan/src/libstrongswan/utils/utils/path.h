@@ -27,9 +27,46 @@
  */
 #ifdef WIN32
 # define DIRECTORY_SEPARATOR "\\"
+/* the Windows API also accepts / as separator */
+# define DIRECTORY_SEPARATOR_ALT "/"
 #else
 # define DIRECTORY_SEPARATOR "/"
 #endif
+
+/**
+ * Check if the given character is a directory separator.
+ *
+ * @param c			character
+ * @return			TRUE if the character is a directory separator
+ */
+static inline bool path_is_separator(char c)
+{
+#ifdef WIN32
+	return c == DIRECTORY_SEPARATOR[0] || c == DIRECTORY_SEPARATOR_ALT[0];
+#else
+	return c == DIRECTORY_SEPARATOR[0];
+#endif
+}
+
+/**
+ * Returns a pointer to the first occurrence of a directory separator in the
+ * given string (optionally limited to a given length).
+ *
+ * @param path		path to search
+ * @param len		optional length to search, -1 for the full string
+ * @return			pointer to separator, or NULL if not found
+ */
+char *path_first_separator(const char *path, int len);
+
+/**
+ * Returns a pointer to the last occurrence of a directory separator in the
+ * given string (optionally limited to a given length).
+ *
+ * @param path		path to search
+ * @param len		optional length to search, -1 for the full string
+ * @return			pointer to separator, or NULL if not found
+ */
+char *path_last_separator(const char *path, int len);
 
 /**
  * Like dirname(3) returns the directory part of the given null-terminated

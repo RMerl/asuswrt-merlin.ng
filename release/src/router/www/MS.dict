@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=Pada masa hadapan, jika anda bercadang untuk
 ASUS_eula_withdraw_note=Anda tidak dapat melengkapkan prosedur tarik balik tanpa sambungan Internet. Sila tarik balik apabila bersambung dengan Internet.
 ASUS_eula_withdraw_unstable=Anda tidak dapat melengkapkan prosedur tarik balik kerana status Internet tidak stabil. Sila tarik balik sekali lagi kemudian.
 TM_eula_confirm=Dengan menggunakan ASUS AiProtection, anda bersetuju dengan
-TM_eula_desc1=Dengan menggunakan AiProtection, Penganalisis trafik, Penganalisis aplikasi, QoS Mudah Suai/Rangsangan permainan, Sejarah web, anda bersetuju dengan<a id="eula_url" style="text-decoration:underline;" target="_blank">Perjanjian Lesen Pengguna Akhir Trend Micro</a>.
-TM_eula_desc2=Sila ambil perhatian bahawa maklumat anda akan dikumpulkan oleh Trend Micro menerusi AiProtection, Penganalisis trafik, Penganalisis aplikasi, QoS Mudah Suai dan sejarah web. Anda juga mengakui dan bersetuju bahawa ASUS tidak bertanggungjawab sama ada atas perjanjian antara anda dan Trend Micro mahupun sebarang kandungan perkhidmatan yang disediakan oleh Trend Micro. Jika anda mempunyai sebarang pertanyaan tentang cara Trend Micro mengumpul, memproses dan menggunakan maklumat anda di atas, sila rujuk pernyataan berkaitan privasi yang dikeluarkan oleh Trend Micro atau hubungi Trend Micro untuk butiran lanjut.
+TM_eula_desc1=Dengan menggunakan AiProtection, kawalan ibu bapa( Penapis Web & Aplikasi ), Penganalisis trafik, Penganalisis aplikasi, QoS Mudah Suai/Rangsangan permainan, Sejarah web, anda bersetuju dengan<a id="eula_url" style="text-decoration:underline;" target="_blank">Perjanjian Lesen Pengguna Akhir Trend Micro</a>.
+TM_eula_desc2=Sila ambil perhatian bahawa maklumat anda akan dikumpulkan oleh Trend Micro menerusi AiProtection, kawalan ibu bapa( Penapis Web & Aplikasi ), Penganalisis trafik, Penganalisis aplikasi, QoS Mudah Suai dan sejarah web. Anda juga mengakui dan bersetuju bahawa ASUS tidak bertanggungjawab sama ada atas perjanjian antara anda dan Trend Micro mahupun sebarang kandungan perkhidmatan yang disediakan oleh Trend Micro. Jika anda mempunyai sebarang pertanyaan tentang cara Trend Micro mengumpul, memproses dan menggunakan maklumat anda di atas, sila rujuk pernyataan berkaitan privasi yang dikeluarkan oleh Trend Micro atau hubungi Trend Micro untuk butiran lanjut.
 TM_eula_desc3=Jika anda mahu menyahdayakan maklumat anda dengan Trend Micro menerusi fungsi di atas, sila pergi ke:  GUI web penghala > Tetapan lanjutan > Pentadbiran > Privasi.
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=Untuk AiProtection, Penganalisis Trafik, Penganalisis aplikasi, QoS Mudah Suai/Rangsangan permainan, Sejarah web:
+TM_eula_withdraw0=Untuk AiProtection, kawalan ibu bapa( Penapis Web & Aplikasi ), Penganalisis Trafik, Penganalisis aplikasi, QoS Mudah Suai/Rangsangan permainan, Sejarah web:
 TM_eula_withdraw_desc1=Sila ambil perhatian bahawa maklumat anda akan dikumpulkan oleh Trend Micro menerusi fungsi di atas.
 TM_eula_withdraw_desc2=Jika anda mahu menyahdayakan perkongsian maklumat anda dengan Trend Micro menerusi fungsi berikut, sila klik <span style="font-weight: bold;">[Tarik Balik]</span>di bawah. Walau bagaimanapun, sila ambil perhatian bahawa ciri/fungsi tersebut mungkin tidak berfungsi jika anda berhenti berkongsi maklumat anda dengan Trend Micro.
 withdraw_confirm=Adakah anda pasti mahu menarik balik?
@@ -439,7 +439,7 @@ OP_WISP_item=Mod WISP
 OP_WISP_desc1=ZVMODELVZ menyambung ke penghala utama anda, AP atau hotspot awam secara wayarles dan berkongsi Internet dengan klien berwayar / wayarles anda. Dalam mod ini, NAT, firewall (tembok api), dan pelayan DHCP didayakan secara lalai.
 OP_WISP_desc2=Apabila menyambung ke hotspot WiFi, pastikan bahawa anda dibenarkan untuk mengakses Internet.
 page_not_support_mode_hint=Fungsi ini telah dinyahdayakan.
-Parental_Control=kawalan ibu bapa
+Parental_Control=Kawalan ibu bapa
 PASS_new=Kata laluan baru
 PASS_retype=Taipkan Semula Kata Laluan
 PASS_score0=Sangat Lemah
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Mempertimbangkan keserasian sistem AiMesh dan peranti akhir,
 AiMesh_confirm_msg10=Untuk memastikan sambungan sistem AiMesh dan peranti akhir anda, sila baca ini <a id="wpa3FaqLink">FAQ</a> sebelum beralih ke WPA3-Peribadi.
 AiMesh_confirm_msg11=Anda sedang menggunakan WPA3-peribadi. Untuk mencipta sistem AiMesh, kaedah pengesahan anda akan diubah kepada WPA2/WPA3-peribadi. Adakah anda mahu meneruskan?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Untuk butiran lanjut, sila lawati <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Soalan Lazim</a>
+AiMesh_confirm_msg13=Untuk butiran lanjut, sila lawati <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>Soalan Lazim</a>
 AiMesh_Feature_Desc=AiMesh ASUS Lanjutan ialah ciri penghala baharu inovatif yang menyambungkan berbilang penghala ASUS bersama, mewujudkan rangkaian WiFi seluruh rumah.
 AiMesh_FAQ=Ketahui lebih lanjut tentang AiMesh ASUS
 AiMesh_FindNode=Cari nod AiMesh
@@ -1144,7 +1144,7 @@ AiMesh_BackhaulConnPrio_Only=#CONNPRIOTYPE sahaja
 AiMesh_WiFi_Backhaul=Backhaul Wayarles AiMesh
 AiMesh_WiFi_Backhaul_both=Gunakan sebagai sambungan backhaul dan fronthaul
 AiMesh_WiFi_Backhaul_dedicated_backhaul=Gunakan sebagai backhaul wayarles khusus
-AiMesh_WiFi_Backhaul_release_fronthaul=Release for fronthaul connection when wireless backhaul is not performing
+AiMesh_WiFi_Backhaul_release_fronthaul=Release for fronthaul connection when wireless backhaul is not active
 AiMesh_Node_RemoveConfirm=Adakah anda mahu mengalih keluar nod AiMesh ini daripada sistem AiMesh anda?
 AiMesh_Node_RemoveDesc=Nod ini akan ditetapkan semula kepada tetapan lalai kilangnya dan dialih keluar daripada sistem AiMesh anda. Teruskan?
 AiMesh_Node_RemoveDesc01=Sila tetap semula nod yang akan anda alih keluar daripada sistem secara manual.
@@ -1168,13 +1168,16 @@ AiMesh_NodeLocation15=Bilik Belajar
 AiMesh_NodeLocation16=Koridor
 AiMesh_NodeLocation17=Almari Jumpa Terus
 AiMesh_NodeLocation18=Bilik Mandi
-AiMesh_NodeLocation19=Aras Dua
-AiMesh_NodeLocation20=Aras Tiga
+AiMesh_NodeLocation19=Tingkat dua
+AiMesh_NodeLocation20=Tingkat ketiga
 AiMesh_NodeLocation21=Stor
 AiMesh_NodeLocation22=Balkoni
 AiMesh_NodeLocation23=Bilik Mesyuarat
 AiMesh_NodeLocation24=Tersuai
 AiMesh_NodeLocation25=Garaj
+AiMesh_NodeLocation26=Tingkat satu
+AiMesh_NodeLocation27=Bilik Permainan
+AiMesh_NodeLocation28=Gim
 AiMesh_OfflineTips=Petua luar talian
 AiMesh_OfflineTips1=Pastikan kuasa nod AiMesh anda dihidupkan.
 AiMesh_OfflineTips2=But semula nod AiMesh anda dan cuba lagi.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Import Sijil Anda Sendiri
 DDNS_https_cert_Import_desc=Muat naik sijil yang dikeluarkan oleh pihak berkuasa sijil di sini. Kunci persendirian dan sijil SSL anda adalah perlu.
 DDNS_https_cert_PrivateKey=Kunci Persendirian
 DDNS_https_cert_PrivateKey_note=Kunci persendirian tidak boleh frasa laluan yang dilindungi.
+DDNS_ipv6_update=kemas kini IPv6
+DDNS_ipv6_update_desc=Jika persekitaran rangkaian pelanggan menggunakan alamat rangkaian IPv6, menunjukkan ciri ini akan menyelesaikan domain ke alamat rangkaian IPv6 apabila peranti jauh mengakses.
 DDNS_ssl_cert=Sijil SSL
 DDNS_termofservice_Title=Terma perkhidmatan
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=Dayakan firewall (tembok api) untuk melindun
 FirewallConfig_display3_sectiondesc=<b>Tempoh Senarai Hitam :</b> Semasa tempoh yang dijadualkan, klien dalam Senarai Hitam tidak boleh menggunakan perkhidmatan rangkaian yang ditentukan. Selepas tempoh yang ditentukan, semua klien dalam LAN boleh mengakses perkhidmatan rangkaian yang ditentukan.<br><b>Tempoh Senarai Putih :</b> Semasa tempoh yang dijadualkan, klien dalam Senarai Putih HANYA boleh menggunakan perkhidmatan rangkaian yang ditentukan. Selepas tempoh yang ditentukan, klien dalam Senarai Putih dan klien rangkaian lain tidak boleh mengakses Internet atau mana-mana perkhidmatan Internet yang lain.
 FirewallConfig_display4_sectiondesc=<b>NOTA :</b> Jik anda menetapkan subnet untuk Senarai Putih, alamat IP diluar subnet tidak boleh mengakses Internet atau mana-mana perkhidmatan Internet.
 FirewallConfig_display5_sectiondesc=Penapis MAC membenarkan anda untuk menerima atau menafikan akses rangkaian untuk peranti dengan alamat MAC tertentu.<p>Anda boleh menetapkan penapis MAC ke mod Terima atau Tolak.<p>Dalam mod Tolak, peranti dalam senarai dinafikan akses ke rangkaian.<p>Dalam mod Terima, hanya peranti yang berada dalam senarai boleh mengakses rangkaian. Peranti yang tidak berada dalam senarai dinafikan akses ke rangkaian.
-FirewallConfig_DoSEnable_itemdesc=Serangan \"nafi khidmat\" adalah cubaan jelas untuk menafikan pengguna sah daripada menggunakan perkhidmatan atau sumber komputer.<p>Mendayakan ciri ini boleh melindungi penghala daripada serangan DoS tetapi ia akan meningkatkan beban penghala.
+FirewallConfig_DoSEnable_itemdesc=Mendayakan ciri ini boleh melindungi penghala daripada serangan DoS (Denial- of-Service) tetapi ia akan meningkatkan beban penghala.
 FirewallConfig_DoSEnable_itemname=Dayakan perlindungan DoS
 FirewallConfig_FirewallEnable_itemdesc=Menyahdayakan firewall (tembok api) akan menyahaktifkan semula fungsi berkaitan.
 FirewallConfig_FirewallEnable_itemname=Dayakan Firewall
-FirewallIPv4_enable=Mendayakan IPv4 Firewall
+FirewallIPv4_enable=Mendayakan IPv4 Peraturan Tembok Api Masuk
 FirewallIPv4=Tembok Api IPv4
 FirewallConfig_FTPPrompt_itemdesc=Apabila anda menetapkan 20:21 sebagai julat port pelayan FTP anda untuk persediaan WAN anda, maka pelayan FTP anda akan berkonflik dengan pelayan FTP natif ZVMODELVZ.
 FirewallConfig_KeywordFilterEnable_itemname=Dayakan Penapis Kata kunci
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=Perisian tegar yang baharu tersedia.
 FW_rlnote_loading=Memuatkan nota keluaran, sila tunggu…
 FW_rlnote_failed=Gagal mencari nota keluaran.
+FW_rollback=Kembalikan
+FW_rollback_choose=Pilih versi perisian tegar
+FW_rollback_selector=Pemilih Rollback Perisian Tegar
 Game_acceleration=Pencepatan permainan
 Game_Boost=Penggalak Permainan
 Game_Boost_acceleration=Pencepatan permainan tahap tiga kali ganda
@@ -2404,7 +2412,7 @@ Internet=Internet
 Interval=Jarak Waktu
 Introduce_demo=Demo Pengenalan
 Invitation=Jemputan
-Interaction=Interactie
+Interaction=Interaksi
 InternetSpeed=Kelajuan Internet
 InternetSpeed_desc=Perkhidmatan ini disediakan oleh Ookla®. Ia mengesan kelajuan muat turun dan muat naik daripada penghala anda ke Internet. Ujian ini kira-kira satu minit untuk dilengkapkan. Dengan menggunakan perkhidmatan ini, anda bersetuju dengan <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Dasar Privasi Ookla</a>.
 InternetSpeed_ookla_mark=Ookla® dan Speedtest® didaftarkan secara rasmi oleh Ookla, LLC.
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Cipta klien RADIUS baharu
 PM_Group_Table=Jadual Kumpulan
 PoolName=Nama Sekatan
 Port_format=Untuk sumber atau jarak port destinasi, anda boleh sama ada : a) masukkan port khusus, seperti \"95\"; atau b) masukkan port dalam jarak, seperti \"103:315\", \">100\", atau \"<65535\".
+Port_Gaming=Pelabuhan permainan
 Port_Mapping_desc1=Pemetaan Port
 Port_Mapping_desc2=Pemetaan Port menyokong antara muka IPTV WAN kepada port LAN yang tertentu. Anda boleh memilih port LAN yang sewajarnya kemudian klik Apply (Gunakan).
 Port_Mapping_desc3=Dayakan Pemetaan Port
@@ -3474,7 +3483,7 @@ TZ40_2=Kaliningrad
 TZ41=Athens
 TZ42=Jerusalem
 TZ43=Harare, Pretoria
-TZ43_2=Kiev
+TZ43_2=Kyiv
 TZ44=Moscow, St. Petersburg
 TZ45=Volgograd
 TZ46=Kuwait, Riyadh
@@ -3537,10 +3546,10 @@ Uplink_rate=Data Dihantar/Saat
 Uplink_traffic=Data Dihantar
 upnp_Desc=Tetapkan iTunes dan pelayan Media UPnP.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=Tetapkan pelayan Media UPnP.
-UPnPMediaServer_Help=ZVMODELVZ menyokong standard UPnP. Anda boleh mendayakannya dan membenarkan peranti UPnP lain seperti PS3 atau pemain media digital untuk mengakses fail multimedia dalam cakera USB.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=ZVMODELVZ menyokong standard UPnP. Anda boleh mendayakannya dan membenarkan peranti UPnP lain seperti PS3 atau pemain media digital untuk mengakses fail multimedia dalam cakera USB.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=ZVMODELVZ menyokong standard UPnP. Anda boleh mendayakannya dan membenarkan peranti UPnP lain seperti PS3 atau pemain media digital untuk mengakses fail multimedia dalam cakera USB.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=ZVMODELVZ menyokong standard UPnP. Anda boleh mendayakannya dan membenarkan peranti UPnP lain seperti PS3 atau pemain media digital untuk mengakses fail multimedia dalam cakera USB.
+UPnPMediaServer_Help=Setup the <a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> and <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Setup the <a id='upnp_link'>UPnP, iTunes</a> and <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Setup the <a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> and <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Setup the <a id='upnp_link'>UPnP</a> and <a id='samba_link'>Network Place (Samba)</a>.
 url_keyword_alert=Kata kunci URL
 USB_Application_check=Sila periksa Aplikasi USB
 USB_Application_disk_checking=Memeriksa cakera
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Kemas kini gagal, sila cuba lagi.
 vpn_ipsec_clients_reconnect_hint=Semua klien VPN anda akan menyambung semula selepas mengklik guna. Adakah anda pasti untuk teruskan?
 vpn_ipsec_IKE_ver=Versi IKE yang disokong
 vpn_ipsec_set_DDNS=sila klik di sini untuk menetapkan DDNS.
+vpn_wireguard_server_faq=How to set up WireGuard® server?
+vpn_wireguard_site2site_faq=How to set up site to site VPN with WireGuard®?
+vpn_wireguard_client_faq=How to set up WireGuard® client in VPN Fusion?
 vpnc_desc1=Klien (Rangkaian Persendirian Maya) kerap digunakan untuk menyambungkan pelayan VPN untuk mengakses sumber persendirian dengan selamat pada rangkaian awam.
 vpnc_desc2=Sesetengah peranti seperti kotak set-top, TV pintar dan pemain Blu-ray tidak menyokong perisian VPN.
 vpnc_desc3=Ciri ASUSWRT VPN memberikan akses VPN ke semua peranti dalam rangkaian rumah tanpa perlu memasang perisian VPN pada setiap peranti.
@@ -3815,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Pilihan TCP MSS
 WANTCPMSSOptionComm1Text=bait
 WANVLANIDText=VLAN ID
-WANAggregation_desc=Pengagregatan WAN menggabungkan dua sambungan rangkaian untuk meningkatkan kelajuan WAN anda sehingga 2Gbps. Sambungkan port WAN penghala anda dan port LAN 4 ke port LAN modem anda (pastikan anda menggunakan dua kabel yang mempunyai spesifikasi sama). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Soalan Lazim Pengagregatan WAN</a>
+WANAggregation_desc=Pengagregatan WAN menggabungkan dua sambungan rangkaian untuk meningkatkan kelajuan WAN anda sehingga 2Gbps. Sambungkan port #WAN penghala anda dan port LAN 4 ke port LAN modem anda (pastikan anda menggunakan dua kabel yang mempunyai spesifikasi sama). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Soalan Lazim Pengagregatan WAN</a>
 WANAggregation_enable=Dayakan Pengagregatan WAN
 WANAggregation_disable_dualwan=WAN Dual penghala anda telah didayakan. Mendayakan Pengagregatan WAN akan menyahdayakan WAN Dual. Adakah anda pasti ingin teruskan?
 WANAggregation_disable_WANAggregation=Pengagregatan WANN penghala anda telah didayakan. Mendayakan WAN Dual akan menyahdayakan Pengagregatan WAN. Adakah anda pasti ingin teruskan?
 WANAggregation_PortConflict_hint1=Pengagregatan WAN menggunakan port LAN 4 penghala anda. Mendayakan IPTV akan menyahdayakan Pengagregatan WAN. Adakah anda pasti ingin teruskan?
 WANAggregation_PortConflict_hint2=IPTV menggunakan port LAN 4 penghala anda. Mendayakan Pengagregatan WAN akan menyahdayakan IPTV. Adakah anda pasti ingin teruskan?
 WANAggregation_disable_IPTVDualWAN=Kedua-dua WAN Dual dan IPTV penghala anda telah didayakan. Mendayakan Pengagregatan WAN akan menyahdayakan WAN Dual dan IPTV bagi mengelak konflik port. Adakah anda pasti ingin teruskan?
-WANAggregation_help_WAN=Pastikan port WAN penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
+WANAggregation_help_WAN=Pastikan port #WAN penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
 WANAggregation_help_LAN=Pastikan port LAN 4 penghala anda dan port LAN modem anda telah disambungkan menggunakan dua kabel yang mempunyai spesifikasi sama.
 WANAggregation_goto_WAN=Untuk mendayakan Pengagregatan WAN, pergi ke <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">halaman Sambungan WAN-Internet</a>.
 WANAggregation_help_desc=Jika penyediaan Pengagregatan WAN tidak berjaya, sila ikut langkah-langkah di bawah untuk mencuba semula.
-WANAggregation_help_step1=Pastikan port LAN modem anda sudah disambungkan ke WAN penghala anda dan LAN 4 dengan kabel.
+WANAggregation_help_step1=Pastikan port LAN modem anda sudah disambungkan ke #WAN penghala anda dan LAN 4 dengan kabel.
 WANAggregation_help_step2=Pastikan modem anda telah mendayakan 802.3ad
 WANAggregation_help_step3=Sahkan bahawa anda menggunakan dua kabel dengan spesifikasi yang sama (sama ada gigabit & gigabit atau 10/100& 10/100Mbps)
 WANAggregation_help_step4=But semula penghala anda
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Pilih GeForce Now bagi mengutamakan peranti permainan GeForce Now untuk pengalaman permainan yang lebih laju dan baik.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Peristiwa
 AURA_Event_desc=Sistem akan mengesan peristiwa berikut dan mencetuskan kesan LED yang berbeza.
 AURA_Event_Boost_desc=Apabila mendayakan Rangsangan Permainan, anda akan melihat bar LED menggunakan kesan pernafasan merah.

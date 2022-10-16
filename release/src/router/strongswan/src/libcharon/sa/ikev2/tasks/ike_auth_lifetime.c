@@ -103,7 +103,10 @@ METHOD(task_t, build_r, status_t,
 	if (message->get_exchange_type(message) == IKE_AUTH &&
 		this->ike_sa->get_state(this->ike_sa) == IKE_ESTABLISHED)
 	{
-		add_auth_lifetime(this, message);
+		if (!ike_sa_can_reauthenticate(this->ike_sa))
+		{
+			add_auth_lifetime(this, message);
+		}
 		return SUCCESS;
 	}
 	return NEED_MORE;

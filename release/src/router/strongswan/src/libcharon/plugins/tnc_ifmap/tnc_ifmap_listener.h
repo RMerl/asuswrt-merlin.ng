@@ -15,7 +15,7 @@
 
 /**
  * @defgroup tnc_ifmap_listener tnc_ifmap_listener
- * @{ @ingroup tnc_ifmap 
+ * @{ @ingroup tnc_ifmap
  */
 
 #ifndef TNC_IFMAP_LISTENER_H_

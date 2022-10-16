@@ -64,9 +64,10 @@ START_TEST(test_asn1_parse_algorithmIdentifier)
 
 	testdata_t test[] = {
 		{ OID_ECDSA_WITH_SHA1, TRUE,  chunk_empty },
-		{ OID_SHA1_WITH_RSA,   TRUE,  chunk_from_chars(0x05, 0x00) },
+		{ OID_SHA1_WITH_RSA,   FALSE, chunk_from_chars(0x05, 0x00) },
 		{ OID_3DES_EDE_CBC,    FALSE, chunk_from_chars(0x04, 0x01, 0xaa) },
-		{ OID_PBKDF2,          FALSE, chunk_from_chars(0x30, 0x01, 0xaa) }
+		{ OID_PBKDF2,          FALSE, chunk_from_chars(0x30, 0x01, 0xaa) },
+		{ OID_ECGDSA_PUBKEY,   FALSE, chunk_from_chars(0x02, 0x01, 0x01, 0x30, 0x01, 0xaa) },
 	};
 
 	chunk_t algid, parameters;
@@ -88,7 +89,7 @@ START_TEST(test_asn1_parse_algorithmIdentifier)
 			{
 				ck_assert(parameters.len == 0 && parameters.ptr == NULL);
 			}
-				else
+			else
 			{
 				ck_assert(chunk_equals(parameters, test[i].parameters));
 			}

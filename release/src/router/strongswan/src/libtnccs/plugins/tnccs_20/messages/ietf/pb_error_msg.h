@@ -104,7 +104,7 @@ struct pb_error_msg_t {
  */
 pb_tnc_msg_t* pb_error_msg_create(bool fatal, uint32_t vendor_id,
 								  pb_tnc_error_code_t error_code);
-	
+
 /**
  * Create a PB-Error message from parameters with offset field
  *

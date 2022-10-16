@@ -168,6 +168,8 @@ vis_req_args vis_req_args_list[] = {
 		if (vis_xml_allocate_buffer(xml_strings, nlenreq) != 0)\
 			return; }
 
+extern void httpd_nvram_commit(void);
+
 static unsigned char *vis_rdata = NULL;
 
 /* Visualization WebUI handling starts here */
@@ -576,7 +578,7 @@ vis_do_nvram_operation(const char *request, const char *name, char *value, const
 		vis_rdata[MAX_READ_BUFFER - 1] = '\0';
 	} else if (strcmp(request, VIS_REQ_NVRAM_SET) == 0) {
 		nvram_set(name, value);
-		nvram_commit();
+		httpd_nvram_commit();
 		sys_restart();
 	}
 }
@@ -724,7 +726,7 @@ create_xml_string(const char *querystring, vis_xml_strings_t *xmlstring)
 		nvram_set("vis_dcon_ipaddr", dcon_ip);
 		snprintf(tmpbuf, sizeof(tmpbuf), "%d", isenabled);
 		nvram_set("vis_do_remote_dcon", tmpbuf);
-		nvram_commit();
+		httpd_nvram_commit();
 		sys_restart();
 		goto vis_fun_end;
 	} else if ((strcmp(request, VIS_REQ_NVRAM_GET) == 0) ||

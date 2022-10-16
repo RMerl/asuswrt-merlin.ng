@@ -252,22 +252,24 @@ archive extraction. Do not ask questions about these subjects if you're not
 familiar with.
 
 _ As a prerequisite, QADRT development environment must be installed.
+  For more information on downloading and installing the QADRT development kit,
+  please see https://www.ibm.com/support/pages/node/6258183
 _ If data compression has to be supported, ZLIB development environment must
   be installed.
 _ Likewise, if SCP and SFTP protocols have to be compiled in, LIBSSH2
   developent environment must be installed.
 _ Install the curl source directory in IFS. Do NOT install it in the
   installation target directory (which defaults to /curl).
-_ Enter shell (QSH)
+_ Enter Qshell (QSH, not PASE)
 _ Change current directory to the curl installation directory
 _ Change current directory to ./packages/OS400
 _ Edit file iniscript.sh. You may want to change tunable configuration
-  parameters, like debug info generation, optimisation level, listing option,
+  parameters, like debug info generation, optimization level, listing option,
   target library, ZLIB/LIBSSH2 availability and location, etc.
 _ Copy any file in the current directory to makelog (i.e.:
   cp initscript.sh makelog): this is intended to create the makelog file with
   an ASCII CCSID!
-_ Enter the command "sh makefile.sh > makelog 2>&1'
+_ Enter the command "sh makefile.sh > makelog 2>&1"
 _ Examine the makelog file to check for compilation errors.
 
   Leaving file initscript.sh unchanged, this will produce the following OS/400

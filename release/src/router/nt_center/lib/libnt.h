@@ -36,6 +36,7 @@ extern int eInfo_get_idx_by_evalue(int e);
 extern char *eInfo_get_eName(int e);
 extern int eInfo_get_eAppsid(int e);
 extern int eInfo_get_eType(int e);
+extern int eInfo_get_ePri(int e);
 extern int GetDebugValue(char *path);
 extern void SEND_NT_EVENT(int event, const char *msg);
 
@@ -70,7 +71,7 @@ extern int NT_DBCommand(char *action, NOTIFY_DATABASE_T *input);
 
 /* #### API for httpd #### */
 extern int NT_DBAction(struct list *event_list, char *action, NOTIFY_DATABASE_T *input, char *count);
-extern int NT_DBActionAPP(struct list *event_list, char *action, NOTIFY_DATABASE_T *input, char *page, char *count);
+extern int NT_DBActionAPP(struct list *event_list, char *action, NOTIFY_DATABASE_T *input, char *page, char *count, char *order);
 extern void NT_DBFree(struct list *event_list);
 extern int NT_DBCount();
 

@@ -83,6 +83,8 @@ int av_vdpau_get_surface_parameters(AVCodecContext *avctx,
     switch (avctx->sw_pix_fmt) {
     case AV_PIX_FMT_YUV420P:
     case AV_PIX_FMT_YUVJ420P:
+    case AV_PIX_FMT_YUV420P10:
+    case AV_PIX_FMT_YUV420P12:
         t = VDP_CHROMA_TYPE_420;
         w = (w + 1) & ~1;
         h = (h + 3) & ~3;
@@ -95,6 +97,8 @@ int av_vdpau_get_surface_parameters(AVCodecContext *avctx,
         break;
     case AV_PIX_FMT_YUV444P:
     case AV_PIX_FMT_YUVJ444P:
+    case AV_PIX_FMT_YUV444P10:
+    case AV_PIX_FMT_YUV444P12:
         t = VDP_CHROMA_TYPE_444;
         h = (h + 1) & ~1;
         break;
@@ -208,8 +212,12 @@ int ff_vdpau_common_init(AVCodecContext *avctx, VdpDecoderProfile profile,
         return vdpau_error(status);
     if (avctx->codec_id == AV_CODEC_ID_HEVC && strncmp(info_string, "NVIDIA ", 7) == 0 &&
         !(avctx->hwaccel_flags & AV_HWACCEL_FLAG_ALLOW_PROFILE_MISMATCH)) {
-        av_log(avctx, AV_LOG_VERBOSE, "HEVC with NVIDIA VDPAU drivers is buggy, skipping.\n");
-        return AVERROR(ENOTSUP);
+        int driver_version = 0;
+        sscanf(info_string, "NVIDIA VDPAU Driver Shared Library  %d", &driver_version);
+        if (driver_version < 410) {
+            av_log(avctx, AV_LOG_VERBOSE, "HEVC with NVIDIA VDPAU drivers is buggy, skipping.\n");
+            return AVERROR(ENOTSUP);
+        }
     }
 
     status = vdctx->get_proc_address(vdctx->device,

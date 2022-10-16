@@ -25,6 +25,7 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/avstring.h"
 #include "libavutil/channel_layout.h"
 #include "libavutil/common.h"
 #include "libavutil/opt.h"
@@ -185,12 +186,10 @@ static av_cold int join_init(AVFilterContext *ctx)
         return ret;
 
     for (i = 0; i < s->inputs; i++) {
-        char name[32];
         AVFilterPad pad = { 0 };
 
-        snprintf(name, sizeof(name), "input%d", i);
-        pad.type           = AVMEDIA_TYPE_AUDIO;
-        pad.name           = av_strdup(name);
+        pad.type = AVMEDIA_TYPE_AUDIO;
+        pad.name = av_asprintf("input%d", i);
         if (!pad.name)
             return AVERROR(ENOMEM);
 
@@ -208,9 +207,12 @@ static av_cold void join_uninit(AVFilterContext *ctx)
     JoinContext *s = ctx->priv;
     int i;
 
+    for (i = 0; i < s->inputs && s->input_frames; i++) {
+        av_frame_free(&s->input_frames[i]);
+    }
+
     for (i = 0; i < ctx->nb_inputs; i++) {
         av_freep(&ctx->input_pads[i].name);
-        av_frame_free(&s->input_frames[i]);
     }
 
     av_freep(&s->channels);
@@ -225,12 +227,12 @@ static int join_query_formats(AVFilterContext *ctx)
     int i, ret;
 
     if ((ret = ff_add_channel_layout(&layouts, s->channel_layout)) < 0 ||
-        (ret = ff_channel_layouts_ref(layouts, &ctx->outputs[0]->in_channel_layouts)) < 0)
+        (ret = ff_channel_layouts_ref(layouts, &ctx->outputs[0]->incfg.channel_layouts)) < 0)
         return ret;
 
     for (i = 0; i < ctx->nb_inputs; i++) {
         layouts = ff_all_channel_layouts();
-        if ((ret = ff_channel_layouts_ref(layouts, &ctx->inputs[i]->out_channel_layouts)) < 0)
+        if ((ret = ff_channel_layouts_ref(layouts, &ctx->inputs[i]->outcfg.channel_layouts)) < 0)
             return ret;
     }
 
@@ -471,6 +473,8 @@ static int activate(AVFilterContext *ctx)
     int i, ret, status;
     int nb_samples = 0;
     int64_t pts;
+
+    FF_FILTER_FORWARD_STATUS_BACK_ALL(ctx->outputs[0], ctx);
 
     if (!s->input_frames[0]) {
         ret = ff_inlink_consume_frame(ctx->inputs[0], &s->input_frames[0]);

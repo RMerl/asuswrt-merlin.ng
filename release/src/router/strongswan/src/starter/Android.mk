@@ -6,8 +6,7 @@ starter_SOURCES := \
 starter.c files.h \
 parser/parser.c parser/lexer.c parser/conf_parser.c parser/conf_parser.h \
 args.c args.h confread.c confread.h keywords.c keywords.h cmp.c cmp.h \
-invokecharon.c invokecharon.h starterstroke.c starterstroke.h \
-netkey.c netkey.h klips.c klips.h
+invokecharon.c invokecharon.h starterstroke.c starterstroke.h
 
 LOCAL_SRC_FILES := $(filter %.c,$(starter_SOURCES))
 

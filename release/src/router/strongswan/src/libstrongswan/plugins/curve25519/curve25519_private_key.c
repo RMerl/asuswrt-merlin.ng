@@ -113,7 +113,7 @@ end:
 
 METHOD(private_key_t, decrypt, bool,
 	private_curve25519_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "encryption scheme %N not supported", encryption_scheme_names,
 		 scheme);

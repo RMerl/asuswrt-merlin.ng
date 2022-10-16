@@ -100,8 +100,8 @@ down)
 	shift
 	if [ "$#" -ne 1 ]
 	then
-	    echo "Usage: $IPSEC_SCRIPT down <connection name>"
-	    exit 2
+		echo "Usage: $IPSEC_SCRIPT down <connection name>"
+		exit 2
 	fi
 	rc=7
 	if [ -e $IPSEC_CHARON_PID ]
@@ -115,8 +115,8 @@ down-srcip)
 	shift
 	if [ "$#" -lt 1 ]
 	then
-	    echo "Usage: $IPSEC_SCRIPT down-srcip <start> [<end>]"
-	    exit 2
+		echo "Usage: $IPSEC_SCRIPT down-srcip <start> [<end>]"
+		exit 2
 	fi
 	rc=7
 	if [ -e $IPSEC_CHARON_PID ]
@@ -283,8 +283,8 @@ up)
 	shift
 	if [ "$#" -ne 1 ]
 	then
-	    echo "Usage: $IPSEC_SCRIPT up <connection name>"
-	    exit 2
+		echo "Usage: $IPSEC_SCRIPT up <connection name>"
+		exit 2
 	fi
 	rc=7
 	if [ -e $IPSEC_CHARON_PID ]

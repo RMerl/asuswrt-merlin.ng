@@ -605,6 +605,11 @@ int _port_role_set(enetx_port_t *self, port_netdev_role_t role)
 
 int port_role_set(enetx_port_t *self, port_netdev_role_t role)
 {
+#if defined(CONFIG_BCM_PON)
+    if (self->is_init)
+        return 0;
+#endif
+ 
     if (!self->dev)
     {
         enet_err("cannot modify role of port without network device attached\n");

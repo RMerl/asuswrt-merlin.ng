@@ -176,7 +176,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 	imv_msg_t *out_msg;
 	imv_hcd_state_t *hcd_state;
 	pa_tnc_attr_t *attr;
-	enum_name_t *pa_subtype_names; 
+	enum_name_t *pa_subtype_names;
 	pen_type_t type, msg_type;
 	TNC_Result result;
 	bool fatal_error = FALSE, assessment = FALSE;
@@ -328,7 +328,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 					{
 						/* do not request user applications */
 						hcd_state->set_user_app_disabled(hcd_state);
-					}		
+					}
 					break;
 				}
 				case PWG_HCD_FORWARDING_ENABLED:
@@ -543,7 +543,7 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 
 		/* Determine maximum PA-TNC attribute segment size */
 		max_seg_size = state->get_max_msg_len(state)
-								- PA_TNC_HEADER_SIZE 
+								- PA_TNC_HEADER_SIZE
 								- PA_TNC_ATTR_HEADER_SIZE
 								- TCG_SEG_ATTR_SEG_ENV_HEADER
 								- PA_TNC_ATTR_HEADER_SIZE
@@ -565,7 +565,7 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 												TRUE);
 			out_msg->add_attribute(out_msg, attr);
 
-			hcd_state->set_subtype(hcd_state, msg_types[i].type);	
+			hcd_state->set_subtype(hcd_state, msg_types[i].type);
 			received = state->get_action_flags(state);
 
 			if ((received & IMV_HCD_ATTR_MUST) != IMV_HCD_ATTR_MUST)

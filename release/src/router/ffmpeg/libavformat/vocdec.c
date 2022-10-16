@@ -23,7 +23,7 @@
 #include "voc.h"
 #include "internal.h"
 
-static int voc_probe(AVProbeData *p)
+static int voc_probe(const AVProbeData *p)
 {
     int version, check;
 
@@ -106,5 +106,5 @@ AVInputFormat ff_voc_demuxer = {
     .read_header    = voc_read_header,
     .read_packet    = voc_read_packet,
     .read_seek      = voc_read_seek,
-    .codec_tag      = (const AVCodecTag* const []){ ff_voc_codec_tags, 0 },
+    .codec_tag      = ff_voc_codec_tags_list,
 };

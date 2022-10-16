@@ -39,7 +39,7 @@ struct tcg_pts_attr_proto_caps_t {
 	pa_tnc_attr_t pa_tnc_attribute;
 
 	/**
-	 * Get PTS procol capabilities flags
+	 * Get PTS protocol capabilities flags
 	 *
 	 * @return				set of flags
 	 */

@@ -18,8 +18,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __MNOTE_FUJI_TAG_H__
-#define __MNOTE_FUJI_TAG_H__
+#ifndef LIBEXIF_MNOTE_FUJI_TAG_H
+#define LIBEXIF_MNOTE_FUJI_TAG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -77,7 +77,7 @@ enum _MnoteFujiTag {
 	MNOTE_FUJI_TAG_UNKNOWN_4800             = 0x4800,
 	MNOTE_FUJI_TAG_FILE_SOURCE              = 0x8000,
 	MNOTE_FUJI_TAG_ORDER_NUMBER             = 0x8002,
-	MNOTE_FUJI_TAG_FRAME_NUMBER             = 0x8003,
+	MNOTE_FUJI_TAG_FRAME_NUMBER             = 0x8003
 };
 typedef enum _MnoteFujiTag MnoteFujiTag;
 
@@ -89,4 +89,4 @@ const char *mnote_fuji_tag_get_description (MnoteFujiTag tag);
 }
 #endif /* __cplusplus */
 
-#endif /* __MNOTE_FUJI_TAG_H__ */
+#endif /* !defined(LIBEXIF_MNOTE_FUJI_TAG_H) */

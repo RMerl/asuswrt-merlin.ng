@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: hsts
 Arg: <file name>
 Protocols: HTTPS
@@ -5,6 +7,7 @@ Help: Enable HSTS with this cache file
 Added: 7.74.0
 Category: http
 Example: --hsts cache.txt $URL
+See-also: proto
 ---
 This option enables HSTS for the transfer. If the file name points to an
 existing HSTS cache file, that will be used. After a completed transfer, the

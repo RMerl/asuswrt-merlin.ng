@@ -258,7 +258,7 @@ Initiates an SA while streaming _control-log_ events.
 
 	{
 		child = <CHILD_SA configuration name to initiate>
-		ike = <optional IKE_SA configuration name to find child under>
+		ike = <IKE_SA configuration name to initiate or to find child under>
 		timeout = <timeout in ms before returning>
 		init-limits = <whether limits may prevent initiating the CHILD_SA>
 		loglevel = <loglevel to issue "control-log" events for>
@@ -277,7 +277,7 @@ Terminates an SA while streaming _control-log_ events.
 	{
 		child = <terminate a CHILD_SA by configuration name>
 		ike = <terminate an IKE_SA by configuration name>
-		child-id = <terminate a CHILD_SA by its reqid>
+		child-id = <terminate a CHILD_SA by its unique id>
 		ike-id = <terminate an IKE_SA by its unique id>
 		force = <terminate IKE_SA without waiting for proper DELETE, if timeout
 				 is given, waits for a response until it is reached>
@@ -300,7 +300,7 @@ Initiate the rekeying of an SA.
 	{
 		child = <rekey a CHILD_SA by configuration name>
 		ike = <rekey an IKE_SA by configuration name>
-		child-id = <rekey a CHILD_SA by its reqid>
+		child-id = <rekey a CHILD_SA by its unique id>
 		ike-id = <rekey an IKE_SA by its unique id>
 		reauth = <reauthenticate instead of rekey an IKEv2 SA>
 	} => {
@@ -361,6 +361,8 @@ events.
 		noblock = <use non-blocking mode if key is set>
 		ike = <filter listed IKE_SAs by its name>
 		ike-id = <filter listed IKE_SA by its unique id>
+		child = <filter listed CHILD_SAs by name>
+		child-id = <filter listed CHILD_SAs by unique id>
 	} => {
 		# completes after streaming list-sa events
 	}
@@ -448,10 +450,10 @@ with the same name gets updated or replaced.
 		<IKE_SA config name> = {
 			# IKE configuration parameters with authentication and CHILD_SA
 			# subsections. Refer to swanctl.conf(5) for details.
-		} => {
-			success = <yes or no>
-			errmsg = <error string on failure>
 		}
+	} => {
+		success = <yes or no>
+		errmsg = <error string on failure>
 	}
 
 ### unload-conn() ###
@@ -483,7 +485,7 @@ Load a certificate into the daemon.
 Load a private key into the daemon.
 
 	{
-		type = <private key type, rsa|ecdsa|bliss|any>
+		type = <private key type, rsa|ecdsa|ed25519|ed448|bliss|any>
 		data = <PEM or DER encoded key data>
 	} => {
 		success = <yes or no>
@@ -603,10 +605,10 @@ authority with the same name gets replaced.
 		<certification authority name> = {
 			# certification authority parameters
 			# refer to swanctl.conf(5) for details.
-		} => {
-			success = <yes or no>
-			errmsg = <error string on failure>
 		}
+	} => {
+		success = <yes or no>
+		errmsg = <error string on failure>
 	}
 
 ### unload-authority() ###
@@ -772,6 +774,8 @@ command.
 			nat-remote = <yes, if remote endpoint is behind a NAT>
 			nat-fake = <yes, if NAT situation has been faked as responder>
 			nat-any = <yes, if any endpoint is behind a NAT (also if faked)>
+			if-id-in = <hex encoded default inbound XFRM interface ID>
+			if-id-out = <hex encoded default outbound XFRM interface ID>
 			encr-alg = <IKE encryption algorithm string>
 			encr-keysize = <key size for encr-alg, if applicable>
 			integ-alg = <IKE integrity algorithm string>
@@ -813,6 +817,9 @@ command.
 					mark-mask-in = <hex encoded inbound Netfilter mark mask>
 					mark-out = <hex encoded outbound Netfilter mark value>
 					mark-mask-out = <hex encoded outbound Netfilter mark mask>
+					if-id-in = <hex encoded inbound XFRM interface ID>
+					if-id-out = <hex encoded outbound XFRM interface ID>
+					label = <hex encoded security label>
 					encr-alg = <ESP encryption algorithm name, if any>
 					encr-keysize = <ESP encryption key size, if applicable>
 					integ-alg = <ESP or AH integrity algorithm name, if any>
@@ -850,6 +857,7 @@ _list-policies_ command.
 			child = <CHILD_SA configuration name>
 			ike = <IKE_SA configuration name or namespace, if available>
 			mode = <policy mode, tunnel|transport|pass|drop>
+			label = <hex encoded security label>
 			local-ts = [
 				<list of local traffic selectors>
 			]
@@ -899,6 +907,7 @@ _list-conns_ command.
 			children = {
 				<CHILD_SA config name>* = {
 					mode = <IPsec mode>
+					label = <hex encoded security label>
 					rekey_time = <CHILD_SA rekeying interval in seconds>
 					rekey_bytes = <CHILD_SA rekeying interval in bytes>
 					rekey_packets = <CHILD_SA rekeying interval in packets>
@@ -969,6 +978,22 @@ The _ike-rekey_ event is issued when an IKE_SA is rekeyed.
 			new = {
 				<same data as in the list-sas event, but without child-sas section>
 			}
+		}
+	}
+
+### ike-update ###
+
+The _ike-update_ event is issued when the local or remote endpoint address of an
+IKE_SA is about to change (at least one address/port is different).
+
+	{
+		local-host = <new/current local IKE endpoint address>
+		local-port = <new/current local IKE endpoint port>
+		remote-host = <new/current remote IKE endpoint address>
+		remote-port = <new/current remote IKE endpoint port>
+		<IKE_SA config name> = {
+			<same data as in the list-sas event, but without child-sas section
+			 and listing the old addresses/ports>
 		}
 	}
 
@@ -1267,7 +1292,7 @@ subdirectory, and gets built and installed if strongSwan has been
 The _Vici::Session_ module provides a _new()_ constructor for a high level
 interface, the underlying _Vici::Packet_ and _Vici::Transport_ classes are
 usually not required to build Perl applications using VICI. The _Vici::Session_
-class provides methods for the supported VICI commands. The auxiliare
+class provides methods for the supported VICI commands. The auxiliary
  _Vici::Message_ class is used to encode configuration parameters sent to
 the daemon and decode data returned by the daemon.
 

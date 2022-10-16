@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=Pokud budete chtít v budoucnu povolit funkc
 ASUS_eula_withdraw_note=Proces odvolání nelze dokončit bez připojení k internetu. Odvolání prosím proveďte, když jste připojeni k internetu.
 ASUS_eula_withdraw_unstable=Proces odvolání nemůžete dokončit, protože stav internetu je nestabilní. Zkuste to prosím později.
 TM_eula_confirm=Použitím ASUS AiProtection souhlasíte se
-TM_eula_desc1=Použitím AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS/Game boost webové historie souhlasíte s <a id="eula_url" style="text-decoration:underline;" target="_blank">Licenční smlouvou společnosti Trend Micro s koncovým uživatelem</a>.
-TM_eula_desc2=Upozorňujeme, že vaše údaje budou shromažďovány Trend Micro přes AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS a webovou historii. Také berete na vědomí a souhlasíte s tím, že společnost ASUS není zodpovědná za smlouvu mezi vámi a společností Trend Micro ani za žádný obsah služby poskytované společností Trend Micro. Máte-li nějaké dotazy ohledně toho, jak společnost Trend Micro shromažďuje, zpracovává a používá výše uvedené informace, přečtěte si prosím prohlášení ohledně soukromí vydané společností Trend Micro nebo kontaktujte společnost Trend Micro pro více informací.
+TM_eula_desc1=Použitím AiProtection, rodičovská kontrola( Filtry pro webové stránky a aplikace ), Traffic Analyzer, Apps Analyzer, Adaptive QoS/Game boost webové historie souhlasíte s <a id="eula_url" style="text-decoration:underline;" target="_blank">Licenční smlouvou společnosti Trend Micro s koncovým uživatelem</a>.
+TM_eula_desc2=Upozorňujeme, že vaše údaje budou shromažďovány Trend Micro přes AiProtection, rodičovská kontrola( Filtry pro webové stránky a aplikace ), Traffic Analyzer, Apps Analyzer, Adaptive QoS a webovou historii. Také berete na vědomí a souhlasíte s tím, že společnost ASUS není zodpovědná za smlouvu mezi vámi a společností Trend Micro ani za žádný obsah služby poskytované společností Trend Micro. Máte-li nějaké dotazy ohledně toho, jak společnost Trend Micro shromažďuje, zpracovává a používá výše uvedené informace, přečtěte si prosím prohlášení ohledně soukromí vydané společností Trend Micro nebo kontaktujte společnost Trend Micro pro více informací.
 TM_eula_desc3=Chcete-li zakázat sdílení vašich údajů se společností Trend Micro přes výše uvedené funkce přejděte prosím na:  Router web GUI (Web GUI směrovače) > Advanced settings (Pokročilá nastavení) > Administration (Správa) > Privacy (Soukromí).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=Pro AiProtection, Traffic Analyzer, Apps Analyzer, Adaptive QoS/Game boost, webovou historii:
+TM_eula_withdraw0=Pro AiProtection, rodičovská kontrola( Filtry pro webové stránky a aplikace ), Traffic Analyzer, Apps Analyzer, Adaptive QoS/Game boost, webovou historii:
 TM_eula_withdraw_desc1=Upozorňujeme vás, že vaše informace budou shromažďovány společností Trend Micro přes výše uvedené funkce.
 TM_eula_withdraw_desc2=Chcete-li zakázat sdílení vašich informací se společností Trend Micro přes následující funkce, klikněte prosím na <span style="font-weight: bold;">[(Odvolat]</span> níže. Nicméně vás upozorňujeme, že pokud zastavíte sdílení vašich informací se společností Trend Micro, tyto funkce nemusí fungovat.
 withdraw_confirm=Určitě chcete odvolat?
@@ -439,7 +439,7 @@ OP_WISP_item=Režim Klient
 OP_WISP_desc1=ZVMODELVZ se bezdrátově připojí k hlavnímu routeru, přístupovému bodu nebo veřejnému hot spotu a sdílí připojení s kabelovými / bezdrátovými klienty. V tomto režimu jsou NAT, firewall a DHCP server ve výchozím nastavení povoleny.
 OP_WISP_desc2=Ujistěte se, že jste oprávněni k přístupu k internetu, pokud se připojujete k veřejným hot spotům.
 page_not_support_mode_hint=Tato funkce je deaktivována.
-Parental_Control=rodičovská kontrola
+Parental_Control=Rodičovská kontrola
 PASS_new=Nové heslo
 PASS_retype=Zadejte heslo znovu
 PASS_score0=Velmi slabé
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Z důvodu kompatibility systému AiMesh a koncových zaříz
 AiMesh_confirm_msg10=Chcete-li zajistit připojení systému AiMesh a koncových zařízení, měli byste si před přepnutím na WPA3-Personal přečíst tento přehled <a id="wpa3FaqLink">Nejčastější dotazy</a>.
 AiMesh_confirm_msg11=Aktuálně používáte WPA3-personal. Chcete-li vytvořit systém AiMesh, je nutné změnit způsob ověřování na WPA2/WPA3-personal. Chcete pokračovat?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Další podrobnosti najdete na webu <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>Nejčastější dotazy</a>
+AiMesh_confirm_msg13=Další podrobnosti najdete na webu <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>Nejčastější dotazy</a>
 AiMesh_Feature_Desc=Pokročilý ASUS AiMesh je inovativní nová funkce směrovače, která připojuje více směrovačů ASUS a vytváří celou domácí síť WiFi.
 AiMesh_FAQ=Zjistěte víc o ASUS AiMesh
 AiMesh_FindNode=Najít uzel AiMesh
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=Balkón
 AiMesh_NodeLocation23=Jednací místnost
 AiMesh_NodeLocation24=Vlastní
 AiMesh_NodeLocation25=Garáž
+AiMesh_NodeLocation26=První patro
+AiMesh_NodeLocation27=Herní místnost
+AiMesh_NodeLocation28=Tělocvična
 AiMesh_OfflineTips=Offline tipy
 AiMesh_OfflineTips1=Zkontrolujte, zda je zapnuté napájení vašeho uzlu AiMesh.
 AiMesh_OfflineTips2=Restartujte uzel AiMesh a zkuste to znovu.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Importujte vlastní certifikát
 DDNS_https_cert_Import_desc=Odešlete certifikát vystavený certifikační autoritou zde. Je nezbytný váš privátní klíč a certifikát SSL.
 DDNS_https_cert_PrivateKey=Privátní klíč
 DDNS_https_cert_PrivateKey_note=Privátní klíče nemohou být chráněny heslem.
+DDNS_ipv6_update=Aktualizace IPv6
+DDNS_ipv6_update_desc=Pokud síťové prostředí klienta používá síťovou adresu IPv6, povolením této funkce dojde nejdříve při přístupu ke vzdálenému zařízení k překladu domény na síťovou adresu IPv6.
 DDNS_ssl_cert=Certifikát SSL
 DDNS_termofservice_Title=Ustanovení a Podmínky použití
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=Aktivujte bránu firewall na ochranu vaší 
 FirewallConfig_display3_sectiondesc=<b>Doba trvání - černá listina :</b> Během plánované doby trvání nemohou klienti na černé listině používat určené síťové služby. Po uplynutí určené doby trvání mohou všichni klienti v místní síti LAN přistupovat k určeným síťovým službám.<br><b>Doba trvání - bílá listina :</b> Během plánované doby trvání nemohou určené síťové služby používat POUZE klienti na bílé listině. Po uplynutí určené dob trvání nebudou moci klienti na bílé listině a ostatní síťoví klienti přistupovat k Internetu ani k žádné internetové službě.
 FirewallConfig_display4_sectiondesc=<b>POZNÁMKA :</b> Nastavíte-li masku podsítě pro bílou listinu, adresy IP mimo podsíť nebudou moci přistupovat k Internetu ani k žádné internetové službě.
 FirewallConfig_display5_sectiondesc=Filtr adres MAC umožňuje povolovat nebo odmítat přístup k síti pro zařízení se specifickými adresami MAC.<p>Filtr adres MAC lze nastavit na režim Přijmout nebo Odmítnout.<p>V režimu Odmítnout bude zařízením v seznamu odmítnut přístup k síti.<p>V režimu Přijmout mohou přistupovat k síti pouze zařízení v seznamu. Zařízení, která nejsou v seznamu, mají zamítnutý přístup k síti.
-FirewallConfig_DoSEnable_itemdesc=Útok DoS (Denial-of-Service) je otevřený pokus zabránit legitimním uživatelům v používání služby nebo počítačového zdroje.<p>Aktivací této funkce lze chránit směrovač před útokem DoS, ale zvýší se tím zatížení směrovače.
+FirewallConfig_DoSEnable_itemdesc=Aktivací této funkce lze chránit směrovač před útokem DoS (Denial- of-Service), ale zvýší se tím zatížení směrovače.
 FirewallConfig_DoSEnable_itemname=Povolit ochranu DoS
 FirewallConfig_FirewallEnable_itemdesc=Deaktivací brány firewall budou deaktivovány všechny související funkce.
 FirewallConfig_FirewallEnable_itemname=Povolit Firewall
-FirewallIPv4_enable=Povolit IPv4 Firewall
+FirewallIPv4_enable=Povolit IPv4 Příchozí pravidla brány firewall
 FirewallIPv4=Brána firewall IPv4
 FirewallConfig_FTPPrompt_itemdesc=Když pro konfiguraci vaší sítě WAN nastavíte 20:21 jako rozsah portů serveru FTP, potom bude váš server FTP v konfliktu s nativním serverem FTP zařízení ZVMODELVZ.
 FirewallConfig_KeywordFilterEnable_itemname=Povolit filtr klíčových slov
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=K dispozici je nový firmware.
 FW_rlnote_loading=Načítají se poznámky k verzi, čekejte prosím...
 FW_rlnote_failed=Poznámky k verzi se nepodařilo najít.
+FW_rollback=Vrácení zpět
+FW_rollback_choose=Vyberte verzi firmwaru
+FW_rollback_selector=Výběr vrácení firmwaru zpět
 Game_acceleration=Herní akcelerace
 Game_Boost=Zrychlení her
 Game_Boost_acceleration=Trojúrovňová herní akcelerace
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Vytvořit nového klienta RADIUS
 PM_Group_Table=Skupinová tabulka
 PoolName=Název oddílu
 Port_format=Pro zdrojový nebo cílový rozsah portů můžete: a) zadat konkrétní port, například \"95\"; nebo b) zadat porty v určitém rozsahu, například \"103:315\", \">100\" nebo \"<65535\".
+Port_Gaming=Herní port
 Port_Mapping_desc1=Port Mapping (Mapování portů)
 Port_Mapping_desc2=Mapování portů podporuje rozhraní IPTV WAN pro specifický port LAN. Můžete vybrat příslušný port LAN a potom klepněte na Apply (Použít).
 Port_Mapping_desc3=Enable Port Mapping (Povolit mapování portů)
@@ -3520,7 +3529,7 @@ TZ80=Šalamounovy ostrovy
 TZ81=Nová Kaledonie
 TZ82=Marshallovy ostrovy
 TZ82_1=Magadan
-TZ82_2=Fiji
+TZ82_2=Fidži
 TZ83=Auckland, Wellington
 TZ84=Nuku'alofa
 TZ85=Anadyr, Petropavlovsk-Kamchatsky
@@ -3537,10 +3546,10 @@ Uplink_rate=Odeslaná data/s
 Uplink_traffic=Odeslaná data
 upnp_Desc=Nastavte iTunes a mediální server UPnP.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=Nastavte mediální server UPnP.
-UPnPMediaServer_Help=ZVMODELVZ podporuje standard UPnP. Můžete jej povolit a umožnit jiným UPnP zařízením, jako je PS3 nebo digitální přehrávač, přístup k multimediálním souborům na USB disku.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=ZVMODELVZ podporuje standard UPnP. Můžete jej povolit a umožnit jiným UPnP zařízením, jako je PS3 nebo digitální přehrávač, přístup k multimediálním souborům na USB disku.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=ZVMODELVZ podporuje standard UPnP. Můžete jej povolit a umožnit jiným UPnP zařízením, jako je PS3 nebo digitální přehrávač, přístup k multimediálním souborům na USB disku.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=ZVMODELVZ podporuje standard UPnP. Můžete jej povolit a umožnit jiným UPnP zařízením, jako je PS3 nebo digitální přehrávač, přístup k multimediálním souborům na USB disku.
+UPnPMediaServer_Help=Nastavte <a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> a <a id='samba_link'>Místa v síti (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Nastavte <a id='upnp_link'>UPnP, iTunes</a> a <a id='samba_link'>Místa v síti (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Nastavte <a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> a <a id='samba_link'>Místa v síti (Samba)</a>.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Nastavte <a id='upnp_link'>UPnP</a> a <a id='samba_link'>Místa v síti (Samba)</a>.
 url_keyword_alert=URL klíčových slov
 USB_Application_check=Zkontrolujte aplikaci USB
 USB_Application_disk_checking=Kontrola disku
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Opdatering mislykkedes. Prøv igen.
 vpn_ipsec_clients_reconnect_hint=Alle dine VPN-klienter genopretter forbindelse efter klik på Anvend. Vil du fortsætte?
 vpn_ipsec_IKE_ver=Understøttede IKE-version
 vpn_ipsec_set_DDNS=Klik her for at angive DDNS.
+vpn_wireguard_server_faq=Jak nastavit server WireGuard®?
+vpn_wireguard_site2site_faq=Jak nastavit VPN typu site to site s WireGuard®?
+vpn_wireguard_client_faq=Jak nastavit klienta WireGuard® ve VPN Fusion?
 vpnc_desc1=Klientu služby VPN (Virtual Private Network) často používají připojení k serveru VPN pro bezpečný přístup k soukromým prostředkům přes veřejnou síť.
 vpnc_desc2=Některá zařízení, jakou jsou set-top boxy, chytré TV a Blu-ray přehrávače nepodporují software VPN.
 vpnc_desc3=Funkce ASUSWRT VPN poskytuje přístup VPN ke všem zařízením, aniž byste museli instalovat software služby VPN na každé z nich.
@@ -3815,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Volba TCP MSS
 WANTCPMSSOptionComm1Text=bajtů
 WANVLANIDText=VLAN ID
-WANAggregation_desc=Agregace WAN kombinuje dvě síťová připojení pro zvýšení rychlosti vaší sítě WAN na 2 Gb/s. Připojte port WAN vaše směrovače a port LAN 4 k portům LAN vašeho modemu (použijte dva kabely se stejnými specifikacemi). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Agregace WAN – odpovědi na časté dotazy</a>
+WANAggregation_desc=Agregace WAN kombinuje dvě síťová připojení pro zvýšení rychlosti vaší sítě WAN na 2 Gb/s. Připojte port #WAN vaše směrovače a port LAN 4 k portům LAN vašeho modemu (použijte dva kabely se stejnými specifikacemi). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">Agregace WAN – odpovědi na časté dotazy</a>
 WANAggregation_enable=Povolit agregaci WAN
 WANAggregation_disable_dualwan=Ve vašem směrovači je aktivována funkce duální WAN. Aktivací agregace WAN bude deaktivována funkce duální WAN. Opravdu chcete pokračovat?
 WANAggregation_disable_WANAggregation=Ve vašem směrovači je aktivována funkce agregace WAN. Aktivací funkce duální WAN bude deaktivována funkce agregace WAN. Opravdu chcete pokračovat?
 WANAggregation_PortConflict_hint1=Funkce agregace WAN používá port LAN 4 vašeho směrovače. Aktivací funkce IPTV bude deaktivována funkce agregace WAN. Opravdu chcete pokračovat?
 WANAggregation_PortConflict_hint2=Funkce IPTV používá port LAN 4 vašeho směrovače. Aktivací agregace WAN bude deaktivována funkce IPTV. Opravdu chcete pokračovat?
 WANAggregation_disable_IPTVDualWAN=Ve vašem směrovači jsou aktivovány obě funkce duální WAN a IPTV. Aktivací funkce agregace WAN budou deaktivovány funkce duální WAN a IPTV, aby se zabránilo konfliktům portů. Opravdu chcete pokračovat?
-WANAggregation_help_WAN=Zkontrolujte, zda jsou k připojení portu WAN vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
+WANAggregation_help_WAN=Zkontrolujte, zda jsou k připojení portu #WAN vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
 WANAggregation_help_LAN=Zkontrolujte, zda jsou k připojení portu LAN 4 vašeho směrovače a portu LAN vašeho modemu použity dva kabely se stejnou specifikací.
 WANAggregation_goto_WAN=Chcete-li aktivovat funkci agregace WAN, přejděte na stránku <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN - připojení k internetu</a>.
 WANAggregation_help_desc=Pokud se agregaci WAN nepodaří nastavit, zkuste to znovu podle následujících pokynů.
-WANAggregation_help_step1=Ujistěte se, zda jsou porty LAN modemu připojené k síti WAN routeru a LAN 4 pomocí kabelů.
+WANAggregation_help_step1=Ujistěte se, zda jsou porty LAN modemu připojené k síti #WAN routeru a LAN 4 pomocí kabelů.
 WANAggregation_help_step2=Zkontrolujte, zda je ve vašem modemu aktivován standard 802.3ad
 WANAggregation_help_step3=Ověřte, zda používáte dva kabely se stejnou specifikací (buď gigabit a gigabit nebo 10/100 a 10/100 Mb/s)
 WANAggregation_help_step4=Restartujte svůj router
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Výběrem GeForce Now budou upřednostněna zařízení GeForce Now pro zážitek z rychlejšího a lepšího hraní.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Událost
 AURA_Event_desc=Systém rozpoznává následující události a aktivuje různé efekty LED.
 AURA_Event_Boost_desc=Při aktivaci Game Boost se na panelu LED zobrazí červený efekt pulzování.

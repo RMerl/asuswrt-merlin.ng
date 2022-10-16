@@ -83,7 +83,7 @@ static encoding_rule_t encodings[] = {
 	{ RESERVED_BIT,		offsetof(private_eap_payload_t, reserved[6])	},
 	/* Length of the whole payload*/
 	{ PAYLOAD_LENGTH,	offsetof(private_eap_payload_t, payload_length)	},
-	/* chunt to data, starting at "code" */
+	/* chunk to data, starting at "code" */
 	{ CHUNK_DATA,		offsetof(private_eap_payload_t, data)			},
 };
 

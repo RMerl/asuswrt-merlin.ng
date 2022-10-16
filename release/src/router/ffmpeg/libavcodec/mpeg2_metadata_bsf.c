@@ -22,14 +22,12 @@
 
 #include "bsf.h"
 #include "cbs.h"
+#include "cbs_bsf.h"
 #include "cbs_mpeg2.h"
 #include "mpeg12.h"
 
 typedef struct MPEG2MetadataContext {
-    const AVClass *class;
-
-    CodedBitstreamContext *cbc;
-    CodedBitstreamFragment fragment;
+    CBSBSFContext common;
 
     MPEG2RawExtensionData sequence_display_extension;
 
@@ -47,13 +45,14 @@ typedef struct MPEG2MetadataContext {
 
 
 static int mpeg2_metadata_update_fragment(AVBSFContext *bsf,
+                                          AVPacket *pkt,
                                           CodedBitstreamFragment *frag)
 {
     MPEG2MetadataContext             *ctx = bsf->priv_data;
     MPEG2RawSequenceHeader            *sh = NULL;
     MPEG2RawSequenceExtension         *se = NULL;
     MPEG2RawSequenceDisplayExtension *sde = NULL;
-    int i, se_pos, add_sde = 0;
+    int i, se_pos;
 
     for (i = 0; i < frag->nb_units; i++) {
         if (frag->units[i].type == MPEG2_START_SEQUENCE_HEADER) {
@@ -115,7 +114,7 @@ static int mpeg2_metadata_update_fragment(AVBSFContext *bsf,
         ctx->transfer_characteristics >= 0 ||
         ctx->matrix_coefficients      >= 0) {
         if (!sde) {
-            add_sde = 1;
+            int err;
             ctx->sequence_display_extension.extension_start_code =
                 MPEG2_START_EXTENSION;
             ctx->sequence_display_extension.extension_start_code_identifier =
@@ -135,6 +134,16 @@ static int mpeg2_metadata_update_fragment(AVBSFContext *bsf,
                 .display_vertical_size =
                     se->vertical_size_extension << 12 | sh->vertical_size_value,
             };
+
+            err = ff_cbs_insert_unit_content(frag, se_pos + 1,
+                                             MPEG2_START_EXTENSION,
+                                             &ctx->sequence_display_extension,
+                                             NULL);
+            if (err < 0) {
+                av_log(bsf, AV_LOG_ERROR, "Failed to insert new sequence "
+                       "display extension.\n");
+                return err;
+            }
         }
 
         if (ctx->video_format >= 0)
@@ -147,122 +156,42 @@ static int mpeg2_metadata_update_fragment(AVBSFContext *bsf,
 
             if (ctx->colour_primaries >= 0)
                 sde->colour_primaries = ctx->colour_primaries;
-            else if (add_sde)
-                sde->colour_primaries = 2;
 
             if (ctx->transfer_characteristics >= 0)
                 sde->transfer_characteristics = ctx->transfer_characteristics;
-            else if (add_sde)
-                sde->transfer_characteristics = 2;
 
             if (ctx->matrix_coefficients >= 0)
                 sde->matrix_coefficients = ctx->matrix_coefficients;
-            else if (add_sde)
-                sde->matrix_coefficients = 2;
-        }
-    }
-
-    if (add_sde) {
-        int err;
-
-        err = ff_cbs_insert_unit_content(ctx->cbc, frag, se_pos + 1,
-                                         MPEG2_START_EXTENSION,
-                                         &ctx->sequence_display_extension,
-                                         NULL);
-        if (err < 0) {
-            av_log(bsf, AV_LOG_ERROR, "Failed to insert new sequence "
-                   "display extension.\n");
-            return err;
         }
     }
 
     return 0;
 }
 
-static int mpeg2_metadata_filter(AVBSFContext *bsf, AVPacket *out)
-{
-    MPEG2MetadataContext *ctx = bsf->priv_data;
-    AVPacket *in = NULL;
-    CodedBitstreamFragment *frag = &ctx->fragment;
-    int err;
-
-    err = ff_bsf_get_packet(bsf, &in);
-    if (err < 0)
-        return err;
-
-    err = ff_cbs_read_packet(ctx->cbc, frag, in);
-    if (err < 0) {
-        av_log(bsf, AV_LOG_ERROR, "Failed to read packet.\n");
-        goto fail;
-    }
-
-    err = mpeg2_metadata_update_fragment(bsf, frag);
-    if (err < 0) {
-        av_log(bsf, AV_LOG_ERROR, "Failed to update frame fragment.\n");
-        goto fail;
-    }
-
-    err = ff_cbs_write_packet(ctx->cbc, out, frag);
-    if (err < 0) {
-        av_log(bsf, AV_LOG_ERROR, "Failed to write packet.\n");
-        goto fail;
-    }
-
-    err = av_packet_copy_props(out, in);
-    if (err < 0)
-        goto fail;
-
-    err = 0;
-fail:
-    ff_cbs_fragment_uninit(ctx->cbc, frag);
-
-    if (err < 0)
-        av_packet_unref(out);
-    av_packet_free(&in);
-
-    return err;
-}
+static const CBSBSFType mpeg2_metadata_type = {
+    .codec_id        = AV_CODEC_ID_MPEG2VIDEO,
+    .fragment_name   = "frame",
+    .unit_name       = "start code",
+    .update_fragment = &mpeg2_metadata_update_fragment,
+};
 
 static int mpeg2_metadata_init(AVBSFContext *bsf)
 {
     MPEG2MetadataContext *ctx = bsf->priv_data;
-    CodedBitstreamFragment *frag = &ctx->fragment;
-    int err;
 
-    err = ff_cbs_init(&ctx->cbc, AV_CODEC_ID_MPEG2VIDEO, bsf);
-    if (err < 0)
-        return err;
+#define VALIDITY_CHECK(name) do { \
+        if (!ctx->name) { \
+            av_log(bsf, AV_LOG_ERROR, "The value 0 for %s is " \
+                                      "forbidden.\n", #name); \
+            return AVERROR(EINVAL); \
+        } \
+    } while (0)
+    VALIDITY_CHECK(colour_primaries);
+    VALIDITY_CHECK(transfer_characteristics);
+    VALIDITY_CHECK(matrix_coefficients);
+#undef VALIDITY_CHECK
 
-    if (bsf->par_in->extradata) {
-        err = ff_cbs_read_extradata(ctx->cbc, frag, bsf->par_in);
-        if (err < 0) {
-            av_log(bsf, AV_LOG_ERROR, "Failed to read extradata.\n");
-            goto fail;
-        }
-
-        err = mpeg2_metadata_update_fragment(bsf, frag);
-        if (err < 0) {
-            av_log(bsf, AV_LOG_ERROR, "Failed to update metadata fragment.\n");
-            goto fail;
-        }
-
-        err = ff_cbs_write_extradata(ctx->cbc, bsf->par_out, frag);
-        if (err < 0) {
-            av_log(bsf, AV_LOG_ERROR, "Failed to write extradata.\n");
-            goto fail;
-        }
-    }
-
-    err = 0;
-fail:
-    ff_cbs_fragment_uninit(ctx->cbc, frag);
-    return err;
-}
-
-static void mpeg2_metadata_close(AVBSFContext *bsf)
-{
-    MPEG2MetadataContext *ctx = bsf->priv_data;
-    ff_cbs_close(&ctx->cbc);
+    return ff_cbs_bsf_generic_init(bsf, &mpeg2_metadata_type);
 }
 
 #define OFFSET(x) offsetof(MPEG2MetadataContext, x)
@@ -308,7 +237,7 @@ const AVBitStreamFilter ff_mpeg2_metadata_bsf = {
     .priv_data_size = sizeof(MPEG2MetadataContext),
     .priv_class     = &mpeg2_metadata_class,
     .init           = &mpeg2_metadata_init,
-    .close          = &mpeg2_metadata_close,
-    .filter         = &mpeg2_metadata_filter,
+    .close          = &ff_cbs_bsf_generic_close,
+    .filter         = &ff_cbs_bsf_generic_filter,
     .codec_ids      = mpeg2_metadata_codec_ids,
 };

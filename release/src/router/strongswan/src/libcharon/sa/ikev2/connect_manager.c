@@ -54,7 +54,7 @@ struct private_connect_manager_t {
 	 connect_manager_t public;
 
 	 /**
-	  * Lock for exclusivly accessing the manager.
+	  * Lock for exclusively accessing the manager.
 	  */
 	 mutex_t *mutex;
 

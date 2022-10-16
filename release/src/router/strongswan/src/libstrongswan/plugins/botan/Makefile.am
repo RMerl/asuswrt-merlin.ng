@@ -16,6 +16,7 @@ libstrongswan_botan_la_SOURCES = \
 	botan_rng.h botan_rng.c \
 	botan_hasher.h botan_hasher.c \
 	botan_hmac.h botan_hmac.c \
+	botan_kdf.h botan_kdf.c \
 	botan_crypter.h botan_crypter.c \
 	botan_rsa_public_key.h botan_rsa_public_key.c \
 	botan_rsa_private_key.h botan_rsa_private_key.c \

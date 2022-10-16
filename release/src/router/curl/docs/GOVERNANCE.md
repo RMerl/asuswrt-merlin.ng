@@ -8,7 +8,7 @@ This project was started by and has to some extent been pushed forward over
 the years with Daniel Stenberg as the driving force. It matches a standard
 BDFL (Benevolent Dictator For Life) style project.
 
-This setup has been used due to convenience and the fact that is has worked
+This setup has been used due to convenience and the fact that it has worked
 fine this far. It is not because someone thinks of it as a superior project
 leadership model. It will also only continue working as long as Daniel manages
 to listen in to what the project and the general user population wants and
@@ -45,7 +45,7 @@ non-profit organization that holds on to funds for us. This fund is then used
 for paying the curl security bug bounties, to reimburse project related
 expenses etc.
 
-Donations to the project can also come in form of server hosting, providing
+Donations to the project can also come in the form of server hosting, providing
 services and paying for people to work on curl related code etc. Usually, such
 donations are services paid for directly by the sponsors.
 
@@ -98,7 +98,7 @@ on maintaining curl is considered a hero, for all time hereafter.
 
 ## Security team members
 
-We have a security team. That's the team of people who are subscribed to the
+We have a security team. That is the team of people who are subscribed to the
 curl-security mailing list; the receivers of security reports from users and
 developers. This list of people will vary over time but should be skilled
 developers familiar with the curl project.
@@ -123,7 +123,7 @@ primary curl contact with Fastly.
 
 ## BDFL
 
-That's Daniel.
+That is Daniel.
 
 # Maintainers
 
@@ -152,14 +152,14 @@ within the area of personal expertise and experience.
 
 ### Merge advice
 
-When you're merging patches/PRs...
+When you are merging patches/PRs...
 
 - make sure the commit messages follow our template
-- squash patch sets into a few logical commits even if the PR didn't, if
+- squash patch sets into a few logical commits even if the PR did not, if
   necessary
 - avoid the "merge" button on GitHub, do it "manually" instead to get full
   control and full audit trail (github leaves out you as "Committer:")
-- remember to credit the reporter and the helpers!
+- remember to credit the reporter and the helpers.
 
 ## Who are maintainers?
 

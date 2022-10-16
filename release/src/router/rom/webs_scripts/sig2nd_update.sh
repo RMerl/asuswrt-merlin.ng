@@ -7,11 +7,6 @@ nvram set sig_state_flag=0   # 0: Don't do upgrade  1: Do upgrade
 nvram set sig_state_error=0
 #nvram set sig_state_url=""
 
-IS_SUPPORT_NOTIFICATION_CENTER=`nvram get rc_support|grep -i nt_center`
-if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
-. /tmp/nc/event.conf
-fi
-
 # current signature information
 current_sig_ver=`nvram get bwdpi_sig_ver`
 current_sig_ver=`echo $current_sig_ver | sed s/'\.'//g;`
@@ -70,9 +65,6 @@ else
 	rm -f /tmp/sig_update.*
 fi
 
-update_sig_state_info=`nvram get sig_state_info`
-last_sig_state_info=`nvram get sig_last_info`
-
 echo "---- current sig : $current_sig_ver ----" >> /tmp/sig_upgrade.log
 echo "---- latest sig : $sig_ver ----" >> /tmp/sig_upgrade.log
 
@@ -83,13 +75,6 @@ else
 	if [ "$current_sig_ver" -lt "$sig_ver" ]; then
 		echo "---- < sig_ver, Do upgrade ----" >> /tmp/sig_upgrade.log
 		nvram set sig_state_flag=1	# Do upgrade
-		if [ "$IS_SUPPORT_NOTIFICATION_CENTER" != "" ]; then
-			if [ "$last_sig_state_info" != "$update_sig_state_info" ]; then
-				echo "---- The 1st time to detect new sig ver available ----" >> /tmp/sig_upgrade.log
-				Notify_Event2NC "$SYS_NEW_SIGNATURE_UPDATED_EVENT" "{\"fw_ver\":\"$update_sig_state_info\"}"	#Send Event to Notification Center
-				nvram set sig_last_info="$update_sig_state_info"
-			fi
-		fi
 	fi	
 fi
 

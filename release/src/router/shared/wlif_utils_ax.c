@@ -1087,7 +1087,7 @@ void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, u
 	}
 
 	while (ascii_str[i] != '\0' && i < (ascii_len - 1) && (i * 2) < (hex_len - 1)) {
-		sprintf((hex_str + i*2), "%02X", ascii_str[i]);
+		snprintf((hex_str + i*2), 3,"%02X", ascii_str[i]);
 		i = i + 1;
 	}
 	hex_str[hex_len - 1] = '\0';
@@ -1285,6 +1285,8 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 	char pfcred0[] = "wlc0_";
 	char pfcred1[] = "wlc1_";
 	char pfcred2[] = "wlc2_";
+	char pfcred3[] = "wlc3_";
+
 	int wlif_num = num_of_wl_if();
 	int i, unit = -1;
 	char prefix2[] = "wlXXXXXXX_";
@@ -1323,8 +1325,10 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set(strlcat_r(pfcred, "ssid", tmp, sizeof(tmp)), creds->ssid);
 			nvram_set(strlcat_r(pfcred0, "ssid", tmp, sizeof(tmp)), creds->ssid);
 			nvram_set(strlcat_r(pfcred1, "ssid", tmp, sizeof(tmp)), creds->ssid);
-			if (wlif_num == 3)
+			if (wlif_num >= 3)
 			nvram_set(strlcat_r(pfcred2, "ssid", tmp, sizeof(tmp)), creds->ssid);
+			if (wlif_num == 4)
+			nvram_set(strlcat_r(pfcred3, "ssid", tmp, sizeof(tmp)), creds->ssid);
 		}
 
 		ret = 0;
@@ -1385,8 +1389,10 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 					nvram_set(strlcat_r(pfcred, "auth_mode", tmp, sizeof(tmp)), "psk");
 					nvram_set(strlcat_r(pfcred0, "auth_mode", tmp, sizeof(tmp)), "psk");
 					nvram_set(strlcat_r(pfcred1, "auth_mode", tmp, sizeof(tmp)), "psk");
-					if (wlif_num == 3)
+					if (wlif_num >= 3)
 					nvram_set(strlcat_r(pfcred2, "auth_mode", tmp, sizeof(tmp)), "psk");
+					if (wlif_num == 4)
+					nvram_set(strlcat_r(pfcred3, "auth_mode", tmp, sizeof(tmp)), "psk");
 				} else {
 					nvram_set(strlcat_r(prefix, "_auth_mode_x", tmp, sizeof(tmp)), "psk");
 					if (!wps_configured)
@@ -1402,8 +1408,11 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 					nvram_set(strlcat_r(pfcred, "auth_mode", tmp, sizeof(tmp)), "psk2");
 					nvram_set(strlcat_r(pfcred0, "auth_mode", tmp, sizeof(tmp)), "psk2");
 					nvram_set(strlcat_r(pfcred1, "auth_mode", tmp, sizeof(tmp)), "psk2");
-					if (wlif_num == 3)
+					if (wlif_num >= 3)
 					nvram_set(strlcat_r(pfcred2, "auth_mode", tmp, sizeof(tmp)), "psk2");
+					if (wlif_num == 4)
+					nvram_set(strlcat_r(pfcred3, "auth_mode", tmp, sizeof(tmp)), "psk2");
+
 				} else {
 					nvram_set(strlcat_r(prefix, "_auth_mode_x", tmp, sizeof(tmp)), "psk2");
 					if (!wps_configured)
@@ -1419,8 +1428,10 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 					nvram_set(strlcat_r(pfcred, "auth_mode", tmp, sizeof(tmp)), "psk2");
 					nvram_set(strlcat_r(pfcred0, "auth_mode", tmp, sizeof(tmp)), "psk2");
 					nvram_set(strlcat_r(pfcred1, "auth_mode", tmp, sizeof(tmp)), "psk2");
-					if (wlif_num == 3)
+					if (wlif_num >= 3)
 					nvram_set(strlcat_r(pfcred2, "auth_mode", tmp, sizeof(tmp)), "psk2");
+					if (wlif_num == 4)
+					nvram_set(strlcat_r(pfcred3, "auth_mode", tmp, sizeof(tmp)), "psk2");
 				} else {
 					nvram_set(strlcat_r(prefix, "_auth_mode_x", tmp, sizeof(tmp)), "pskpsk2");
 					if (!wps_configured)
@@ -1436,8 +1447,10 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 					nvram_set(strlcat_r(pfcred, "auth_mode", tmp, sizeof(tmp)), "open");
 					nvram_set(strlcat_r(pfcred0, "auth_mode", tmp, sizeof(tmp)), "open");
 					nvram_set(strlcat_r(pfcred1, "auth_mode", tmp, sizeof(tmp)), "open");
-					if (wlif_num == 3)
+					if (wlif_num >= 3)
 						nvram_set(strlcat_r(pfcred2, "auth_mode", tmp, sizeof(tmp)), "open");
+					if (wlif_num == 4)
+						nvram_set(strlcat_r(pfcred3, "auth_mode", tmp, sizeof(tmp)), "open");
 				} else {
 					nvram_set(strlcat_r(prefix, "_auth_mode_x", tmp, sizeof(tmp)), "open");
 					if (!wps_configured)
@@ -1455,8 +1468,10 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set(strlcat_r(pfcred, "wep", tmp, sizeof(tmp)), "0");
 			nvram_set(strlcat_r(pfcred0, "wep", tmp, sizeof(tmp)), "0");
 			nvram_set(strlcat_r(pfcred1, "wep", tmp, sizeof(tmp)), "0");
-			if (wlif_num == 3)
+			if (wlif_num >= 3)
 			nvram_set(strlcat_r(pfcred2, "wep", tmp, sizeof(tmp)), "0");
+			if (wlif_num == 4)
+			nvram_set(strlcat_r(pfcred3, "wep", tmp, sizeof(tmp)), "0");
 		} else {
 			nvram_set(strlcat_r(prefix, "_wep_x", tmp, sizeof(tmp)), "0");
 			if (!wps_configured)
@@ -1511,8 +1526,10 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set(strlcat_r(pfcred, "crypto", tmp, sizeof(tmp)), val);
 			nvram_set(strlcat_r(pfcred0, "crypto", tmp, sizeof(tmp)), val);
 			nvram_set(strlcat_r(pfcred1, "crypto", tmp, sizeof(tmp)), val);
-			if (wlif_num == 3)
+			if (wlif_num >= 3)
 			nvram_set(strlcat_r(pfcred2, "crypto", tmp, sizeof(tmp)), val);
+			if (wlif_num == 4)
+			nvram_set(strlcat_r(pfcred3, "crypto", tmp, sizeof(tmp)), val);
 		}
 
 		ret = 0;
@@ -1533,8 +1550,11 @@ wl_wlif_apply_creds(wlif_bss_t *bss, wlif_wps_nw_creds_t *creds)
 			nvram_set(strlcat_r(pfcred, "wpa_psk", tmp, sizeof(tmp)), creds->nw_key);
 			nvram_set(strlcat_r(pfcred0, "wpa_psk", tmp, sizeof(tmp)), creds->nw_key);
 			nvram_set(strlcat_r(pfcred1, "wpa_psk", tmp, sizeof(tmp)), creds->nw_key);
-			if (wlif_num == 3)
+			if (wlif_num >= 3)
 			nvram_set(strlcat_r(pfcred2, "wpa_psk", tmp, sizeof(tmp)), creds->nw_key);
+			if (wlif_num == 4)
+			nvram_set(strlcat_r(pfcred3, "wpa_psk", tmp, sizeof(tmp)), creds->nw_key);
+
 		}
 		ret = 0;
 	}

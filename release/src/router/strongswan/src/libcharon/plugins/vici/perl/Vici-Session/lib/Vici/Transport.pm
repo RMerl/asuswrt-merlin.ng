@@ -53,7 +53,7 @@ Vici::Transport - Perl extension for communicating via a strongSwan VICI socket
 
 =head1 SYNOPSIS
 
-  use Vici::Transport;
+use Vici::Transport;
 
 =head1 DESCRIPTION
 

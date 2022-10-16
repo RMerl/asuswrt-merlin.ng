@@ -19,6 +19,7 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "config.h"
 #include "libavutil/error.h"
 #include "libavcodec/avcodec.h"
 #include "avformat.h"
@@ -307,6 +308,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_INDEO5,       MKTAG('I', 'V', '5', '0') },
     { AV_CODEC_ID_VP3,          MKTAG('V', 'P', '3', '1') },
     { AV_CODEC_ID_VP3,          MKTAG('V', 'P', '3', '0') },
+    { AV_CODEC_ID_VP4,          MKTAG('V', 'P', '4', '0') },
     { AV_CODEC_ID_VP5,          MKTAG('V', 'P', '5', '0') },
     { AV_CODEC_ID_VP6,          MKTAG('V', 'P', '6', '0') },
     { AV_CODEC_ID_VP6,          MKTAG('V', 'P', '6', '1') },
@@ -369,6 +371,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_ZMBV,         MKTAG('Z', 'M', 'B', 'V') },
     { AV_CODEC_ID_KMVC,         MKTAG('K', 'M', 'V', 'C') },
     { AV_CODEC_ID_CAVS,         MKTAG('C', 'A', 'V', 'S') },
+    { AV_CODEC_ID_AVS2,         MKTAG('A', 'V', 'S', '2') },
     { AV_CODEC_ID_JPEG2000,     MKTAG('m', 'j', 'p', '2') },
     { AV_CODEC_ID_JPEG2000,     MKTAG('M', 'J', '2', 'C') },
     { AV_CODEC_ID_JPEG2000,     MKTAG('L', 'J', '2', 'C') },
@@ -401,6 +404,7 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_UTVIDEO,      MKTAG('U', 'L', 'H', '0') },
     { AV_CODEC_ID_UTVIDEO,      MKTAG('U', 'L', 'H', '2') },
     { AV_CODEC_ID_UTVIDEO,      MKTAG('U', 'L', 'H', '4') },
+    { AV_CODEC_ID_UTVIDEO,      MKTAG('U', 'Q', 'Y', '0') },
     { AV_CODEC_ID_UTVIDEO,      MKTAG('U', 'Q', 'Y', '2') },
     { AV_CODEC_ID_UTVIDEO,      MKTAG('U', 'Q', 'R', 'A') },
     { AV_CODEC_ID_UTVIDEO,      MKTAG('U', 'Q', 'R', 'G') },
@@ -451,7 +455,9 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '0', 'R', 'A') },
     { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '0', 'R', 'G') },
     { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '0', 'G', '0') },
+    { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '0', 'Y', '0') },
     { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '0', 'Y', '2') },
+    { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '0', 'Y', '4') },
     { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '2', 'R', 'A') },
     { AV_CODEC_ID_MAGICYUV,     MKTAG('M', '2', 'R', 'G') },
     { AV_CODEC_ID_YLC,          MKTAG('Y', 'L', 'C', '0') },
@@ -469,6 +475,33 @@ const AVCodecTag ff_codec_bmp_tags[] = {
     { AV_CODEC_ID_AV1,          MKTAG('A', 'V', '0', '1') },
     { AV_CODEC_ID_MSCC,         MKTAG('M', 'S', 'C', 'C') },
     { AV_CODEC_ID_SRGC,         MKTAG('S', 'R', 'G', 'C') },
+    { AV_CODEC_ID_IMM4,         MKTAG('I', 'M', 'M', '4') },
+    { AV_CODEC_ID_PROSUMER,     MKTAG('B', 'T', '2', '0') },
+    { AV_CODEC_ID_MWSC,         MKTAG('M', 'W', 'S', 'C') },
+    { AV_CODEC_ID_WCMV,         MKTAG('W', 'C', 'M', 'V') },
+    { AV_CODEC_ID_RASC,         MKTAG('R', 'A', 'S', 'C') },
+    { AV_CODEC_ID_HYMT,         MKTAG('H', 'Y', 'M', 'T') },
+    { AV_CODEC_ID_ARBC,         MKTAG('A', 'R', 'B', 'C') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '0') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '1') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '2') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '3') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '4') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '5') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '6') },
+    { AV_CODEC_ID_AGM,          MKTAG('A', 'G', 'M', '7') },
+    { AV_CODEC_ID_LSCR,         MKTAG('L', 'S', 'C', 'R') },
+    { AV_CODEC_ID_IMM5,         MKTAG('I', 'M', 'M', '5') },
+    { AV_CODEC_ID_MVDV,         MKTAG('M', 'V', 'D', 'V') },
+    { AV_CODEC_ID_MVHA,         MKTAG('M', 'V', 'H', 'A') },
+    { AV_CODEC_ID_MV30,         MKTAG('M', 'V', '3', '0') },
+    { AV_CODEC_ID_NOTCHLC,      MKTAG('n', 'l', 'c', '1') },
+    { AV_CODEC_ID_NONE,         0 }
+};
+
+const AVCodecTag ff_codec_bmp_tags_unofficial[] = {
+    { AV_CODEC_ID_HEVC,         MKTAG('H', 'E', 'V', 'C') },
+    { AV_CODEC_ID_HEVC,         MKTAG('H', '2', '6', '5') },
     { AV_CODEC_ID_NONE,         0 }
 };
 
@@ -489,7 +522,7 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { AV_CODEC_ID_ADPCM_IMA_OKI,   0x0010 },
     { AV_CODEC_ID_ADPCM_IMA_WAV,   0x0011 },
     /* must come after adpcm_ima_wav in this list */
-    { AV_CODEC_ID_PCM_ZORK,        0x0011 },
+    { AV_CODEC_ID_ADPCM_ZORK,      0x0011 },
     { AV_CODEC_ID_ADPCM_IMA_OKI,   0x0017 },
     { AV_CODEC_ID_ADPCM_YAMAHA,    0x0020 },
     { AV_CODEC_ID_TRUESPEECH,      0x0022 },
@@ -515,6 +548,7 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { AV_CODEC_ID_AAC,             0x00ff },
     { AV_CODEC_ID_G723_1,          0x0111 },
     { AV_CODEC_ID_SIPR,            0x0130 },
+    { AV_CODEC_ID_ACELP_KELVIN,    0x0135 },
     { AV_CODEC_ID_WMAV1,           0x0160 },
     { AV_CODEC_ID_WMAV2,           0x0161 },
     { AV_CODEC_ID_WMAPRO,          0x0162 },
@@ -556,6 +590,16 @@ const AVCodecTag ff_codec_wav_tags[] = {
     { AV_CODEC_ID_NONE,      0 },
 };
 
+#if CONFIG_AVI_MUXER || CONFIG_WTV_MUXER
+const AVCodecTag *const ff_riff_codec_tags_list[] = {
+    ff_codec_bmp_tags, ff_codec_wav_tags, NULL
+};
+#endif
+
+#if CONFIG_WAV_DEMUXER || CONFIG_WAV_MUXER || CONFIG_W64_DEMUXER || CONFIG_W64_MUXER
+const AVCodecTag *const ff_wav_codec_tags_list[] = { ff_codec_wav_tags, NULL };
+#endif
+
 const AVMetadataConv ff_riff_info_conv[] = {
     { "IART", "artist"     },
     { "ICMT", "comment"    },
@@ -586,7 +630,9 @@ const struct AVCodecTag *avformat_get_riff_audio_tags(void)
 const AVCodecGuid ff_codec_wav_guids[] = {
     { AV_CODEC_ID_AC3,      { 0x2C, 0x80, 0x6D, 0xE0, 0x46, 0xDB, 0xCF, 0x11, 0xB4, 0xD1, 0x00, 0x80, 0x5F, 0x6C, 0xBB, 0xEA } },
     { AV_CODEC_ID_ATRAC3P,  { 0xBF, 0xAA, 0x23, 0xE9, 0x58, 0xCB, 0x71, 0x44, 0xA1, 0x19, 0xFF, 0xFA, 0x01, 0xE4, 0xCE, 0x62 } },
+    { AV_CODEC_ID_ATRAC9,   { 0xD2, 0x42, 0xE1, 0x47, 0xBA, 0x36, 0x8D, 0x4D, 0x88, 0xFC, 0x61, 0x65, 0x4F, 0x8C, 0x83, 0x6C } },
     { AV_CODEC_ID_EAC3,     { 0xAF, 0x87, 0xFB, 0xA7, 0x02, 0x2D, 0xFB, 0x42, 0xA4, 0xD4, 0x05, 0xCD, 0x93, 0x84, 0x3B, 0xDD } },
     { AV_CODEC_ID_MP2,      { 0x2B, 0x80, 0x6D, 0xE0, 0x46, 0xDB, 0xCF, 0x11, 0xB4, 0xD1, 0x00, 0x80, 0x5F, 0x6C, 0xBB, 0xEA } },
+    { AV_CODEC_ID_ADPCM_AGM,{ 0x82, 0xEC, 0x1F, 0x6A, 0xCA, 0xDB, 0x19, 0x45, 0xBD, 0xE7, 0x56, 0xD3, 0xB3, 0xEF, 0x98, 0x1D } },
     { AV_CODEC_ID_NONE }
 };

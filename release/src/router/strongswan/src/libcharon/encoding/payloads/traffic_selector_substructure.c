@@ -14,11 +14,33 @@
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
  */
+/*
+ * Copyright (C) 2022 Tobias Brunner, codelabs GmbH
+ *
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
+ *
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
+ *
+ * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+ * THE SOFTWARE.
+ */
 
 #include "traffic_selector_substructure.h"
 
 #include <encoding/payloads/encodings.h>
-#include <collections/linked_list.h>
+#include <bio/bio_reader.h>
+#include <bio/bio_writer.h>
 
 typedef struct private_traffic_selector_substructure_t private_traffic_selector_substructure_t;
 
@@ -48,50 +70,32 @@ struct private_traffic_selector_substructure_t {
 	uint16_t payload_length;
 
 	/**
-	 * Start port number.
+	 * Port/address range or security label.
 	 */
-	uint16_t start_port;
-
-	/**
-	 * End port number.
-	 */
-	uint16_t end_port;
-
-	/**
-	 * Starting address.
-	 */
-	chunk_t starting_address;
-
-	/**
-	 * Ending address.
-	 */
-	chunk_t ending_address;
+	chunk_t ts_data;
 };
 
 /**
- * Encoding rules to parse or generate a TS payload
+ * Encoding rules to parse or generate a TS payload.
+ *
+ * Due to the generic nature of security labels, the actual structure of regular
+ * TS is not parsed with these rules.
  *
  * The defined offsets are the positions in a object of type
  * private_traffic_selector_substructure_t.
  */
 static encoding_rule_t encodings[] = {
 	/* 1 Byte next ts type*/
-	{ TS_TYPE,		offsetof(private_traffic_selector_substructure_t, ts_type) 			},
+	{ U_INT_8,		offsetof(private_traffic_selector_substructure_t, ts_type) 			},
 	/* 1 Byte IP protocol id*/
 	{ U_INT_8,		offsetof(private_traffic_selector_substructure_t, ip_protocol_id) 	},
 	/* Length of the whole payload*/
 	{ PAYLOAD_LENGTH,offsetof(private_traffic_selector_substructure_t, payload_length)	},
-	/* 2 Byte start port*/
-	{ U_INT_16,		offsetof(private_traffic_selector_substructure_t, start_port)		},
-	/* 2 Byte end port*/
-	{ U_INT_16,		offsetof(private_traffic_selector_substructure_t, end_port)			},
-	/* starting address is either 4 or 16 byte */
-	{ ADDRESS,		offsetof(private_traffic_selector_substructure_t, starting_address)	},
-	/* ending address is either 4 or 16 byte */
-	{ ADDRESS,		offsetof(private_traffic_selector_substructure_t, ending_address)	}
+	/* traffic selector data, length is defined in PAYLOAD_LENGTH */
+	{ CHUNK_DATA,	offsetof(private_traffic_selector_substructure_t, ts_data)			},
 };
 
-/*
+/* Regular traffic selectors for address ranges:
                            1                   2                   3
        0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -107,48 +111,91 @@ static encoding_rule_t encodings[] = {
       ~                         Ending Address*                       ~
       !                                                               !
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
+
+ * Security labels:
+                           1                   2                   3
+       0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
+      +---------------+---------------+-------------------------------+
+      |   TS Type     |    Reserved   |       Selector Length         |
+      +---------------+---------------+-------------------------------+
+      |                                                               |
+      ~                         Security Label*                       ~
+      |                                                               |
+      +---------------------------------------------------------------+
 */
+
+/**
+ * Parse the data of a regular address range traffic selector.
+ */
+static bool parse_ts_data(private_traffic_selector_substructure_t *this,
+						  uint16_t *start_port, uint16_t *end_port,
+						  chunk_t *start_addr, chunk_t *end_addr)
+{
+	bio_reader_t *reader;
+	int addr_len;
+
+	switch (this->ts_type)
+	{
+		case TS_IPV4_ADDR_RANGE:
+			addr_len = 4;
+			break;
+		case TS_IPV6_ADDR_RANGE:
+			addr_len = 16;
+			break;
+		default:
+			return FALSE;
+	}
+
+	reader = bio_reader_create(this->ts_data);
+	if (!reader->read_uint16(reader, start_port) ||
+		!reader->read_uint16(reader, end_port) ||
+		!reader->read_data(reader, addr_len, start_addr) ||
+		!reader->read_data(reader, addr_len, end_addr) ||
+		reader->remaining(reader) > 0)
+	{
+		reader->destroy(reader);
+		return FALSE;
+	}
+	reader->destroy(reader);
+	return TRUE;
+}
 
 METHOD(payload_t, verify, status_t,
 	private_traffic_selector_substructure_t *this)
 {
-	if (this->start_port > this->end_port)
-	{
-		/* OPAQUE ports are the only exception */
-		if (this->start_port != 0xffff && this->end_port != 0)
-		{
-			return FAILED;
-		}
-	}
 	switch (this->ts_type)
 	{
 		case TS_IPV4_ADDR_RANGE:
-		{
-			if ((this->starting_address.len != 4) ||
-				(this->ending_address.len != 4))
-			{
-				/* ipv4 address must be 4 bytes long */
-				return FAILED;
-			}
-			break;
-		}
 		case TS_IPV6_ADDR_RANGE:
 		{
-			if ((this->starting_address.len != 16) ||
-				(this->ending_address.len != 16))
+			uint16_t start_port, end_port;
+			chunk_t start_addr, end_addr;
+
+			if (!parse_ts_data(this, &start_port, &end_port, &start_addr,
+							   &end_addr))
 			{
-				/* ipv6 address must be 16 bytes long */
 				return FAILED;
+			}
+			if (start_port > end_port)
+			{
+				/* OPAQUE ports are the only exception */
+				if (start_port != 0xffff && end_port != 0)
+				{
+					return FAILED;
+				}
 			}
 			break;
 		}
+		case TS_SECLABEL:
+			if (!this->ts_data.len)
+			{
+				return FAILED;
+			}
+			break;
 		default:
-		{
-			/* not supported ts type */
-			return FAILED;
-		}
+			/* unsupported TS type, just ignored later */
+			break;
 	}
-
 	return SUCCESS;
 }
 
@@ -162,7 +209,7 @@ METHOD(payload_t, get_encoding_rules, int,
 METHOD(payload_t, get_header_length, int,
 	private_traffic_selector_substructure_t *this)
 {
-	return 8;
+	return 4;
 }
 
 METHOD(payload_t, get_type, payload_type_t,
@@ -191,17 +238,32 @@ METHOD(payload_t, get_length, size_t,
 METHOD(traffic_selector_substructure_t, get_traffic_selector, traffic_selector_t*,
 	private_traffic_selector_substructure_t *this)
 {
+	uint16_t start_port, end_port;
+	chunk_t start_addr, end_addr;
+
+	if (!parse_ts_data(this, &start_port, &end_port, &start_addr, &end_addr))
+	{
+		return NULL;
+	}
 	return traffic_selector_create_from_bytes(
 									this->ip_protocol_id, this->ts_type,
-									this->starting_address, this->start_port,
-									this->ending_address, this->end_port);
+									start_addr, start_port, end_addr, end_port);
+}
+
+METHOD(traffic_selector_substructure_t, get_sec_label, sec_label_t*,
+	private_traffic_selector_substructure_t *this)
+{
+	if (this->ts_type != TS_SECLABEL)
+	{
+		return NULL;
+	}
+	return sec_label_from_encoding(this->ts_data);
 }
 
 METHOD2(payload_t, traffic_selector_substructure_t, destroy, void,
 	private_traffic_selector_substructure_t *this)
 {
-	free(this->starting_address.ptr);
-	free(this->ending_address.ptr);
+	free(this->ts_data.ptr);
 	free(this);
 }
 
@@ -225,6 +287,7 @@ traffic_selector_substructure_t *traffic_selector_substructure_create()
 				.destroy = _destroy,
 			},
 			.get_traffic_selector = _get_traffic_selector,
+			.get_sec_label = _get_sec_label,
 			.destroy = _destroy,
 		},
 		.payload_length = get_header_length(this),
@@ -241,16 +304,34 @@ traffic_selector_substructure_t *traffic_selector_substructure_create_from_traff
 													traffic_selector_t *ts)
 {
 	private_traffic_selector_substructure_t *this;
+	bio_writer_t *writer;
 
 	this = (private_traffic_selector_substructure_t*)traffic_selector_substructure_create();
 	this->ts_type = ts->get_type(ts);
 	this->ip_protocol_id = ts->get_protocol(ts);
-	this->start_port = ts->get_from_port(ts);
-	this->end_port = ts->get_to_port(ts);
-	this->starting_address = chunk_clone(ts->get_from_address(ts));
-	this->ending_address = chunk_clone(ts->get_to_address(ts));
-	this->payload_length = get_header_length(this) +
-						this->ending_address.len + this->starting_address.len;
 
+	writer = bio_writer_create(this->ts_type == TS_IPV4_ADDR_RANGE ? 12 : 36);
+	writer->write_uint16(writer, ts->get_from_port(ts));
+	writer->write_uint16(writer, ts->get_to_port(ts));
+	writer->write_data(writer, ts->get_from_address(ts));
+	writer->write_data(writer, ts->get_to_address(ts));
+	this->ts_data = writer->extract_buf(writer);
+	this->payload_length += this->ts_data.len;
+	writer->destroy(writer);
+	return &this->public;
+}
+
+/*
+ * Described in header
+ */
+traffic_selector_substructure_t *traffic_selector_substructure_create_from_sec_label(
+													sec_label_t *label)
+{
+	private_traffic_selector_substructure_t *this;
+
+	this = (private_traffic_selector_substructure_t*)traffic_selector_substructure_create();
+	this->ts_type = TS_SECLABEL;
+	this->ts_data = chunk_clone(label->get_encoding(label));
+	this->payload_length += this->ts_data.len;
 	return &this->public;
 }

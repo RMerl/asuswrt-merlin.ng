@@ -71,9 +71,105 @@ int check_bwdpi_nvram_setting()
 		IS_NON_AQOS())
 		enabled = 0;
 
-	if(debug) dbg("[check_bwdpi_nvram_setting] enabled= %d\n", enabled);
+	if (debug) dbg("[check_bwdpi_nvram_setting] enabled= %d\n", enabled);
 
 	return enabled;
+}
+
+int check_wan_2P5G_10G_speed()
+{
+	int ret = 0;
+	char wan_if[8] = {0};
+	char wan_if_ppp[8] = {0};
+	char wan_proto[8] = {0};
+	char wan_speed[64] = {0};
+	char buf[64] = {0};
+	char tmp[64] = {0};
+	char prefix[sizeof("wanX_XXXXXXX")];
+	int speed = 0;
+	int debug = nvram_get_int("bwdpi_debug");
+
+	// ethX, pppX
+	strlcpy(wan_if, get_wan_ifname(wan_primary_ifunit()), sizeof(wan_if));
+
+	// ethX
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit());
+	snprintf(wan_proto, sizeof(wan_proto), "%s", nvram_safe_get(strcat_r(prefix, "proto", tmp)));
+	snprintf(wan_if_ppp, sizeof(wan_if_ppp), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+
+	// fix ppp case issue due to pppX can't get speed
+	if (!strcmp(wan_proto, "pppoe") || !strcmp(wan_proto, "pptp") || !strcmp(wan_proto, "l2tp")) {
+		snprintf(wan_speed, sizeof(wan_speed), "/sys/class/net/%s/speed", wan_if_ppp);
+	}
+	else {
+		snprintf(wan_speed, sizeof(wan_speed), "/sys/class/net/%s/speed", wan_if);
+	}
+
+	if (f_read_string(wan_speed, buf, sizeof(buf)) > 0) {
+		speed = safe_atoi(buf);
+	}
+
+	if (debug) dbg("[check_wan_2P5G_10G_speed] wan_speed=%s, speed=%d\n", wan_speed, speed);
+
+	if (speed >= 2500) ret = 1;
+
+	return ret;
+}
+
+int check_AQoS_only_enabled()
+{
+	int ret = 0;
+	int debug = nvram_get_int("bwdpi_debug");
+
+	// check qos service (adaptive qos only)
+	if (check_wrs_switch() == 0 &&
+		nvram_get_int("wrs_enable") == 0 &&
+		nvram_get_int("wrs_app_enable") == 0 &&
+		nvram_get_int("bwdpi_db_enable") == 0 &&
+		nvram_get_int("apps_analysis") == 0 &&
+		nvram_get_int("bwdpi_wh_enable") == 0 &&
+		IS_AQOS()) {
+		ret = 1;
+	}
+
+	if (debug) dbg("[check_AQoS_only_enabled] ret=%d\n", ret);
+
+	return ret;
+}
+
+int check_WRS_only_enabled()
+{
+	/* QCA no need to check */
+	int ret = 0;
+#if !defined(RTCONFIG_QCA)
+	int debug = nvram_get_int("bwdpi_debug");
+
+	// check wrs service only - No QoS, other should be disabled
+	if ((check_wrs_switch() == 1 || nvram_get_int("wrs_enable") == 1
+		|| nvram_get_int("wrs_app_enable") == 1 || nvram_get_int("bwdpi_wh_enable") == 1)
+		&& nvram_get_int("bwdpi_db_enable") == 0
+		&& nvram_get_int("apps_analysis") == 0
+		&& nvram_get_int("bwdpi_wh_enable") == 0
+		&& nvram_get_int("qos_enable") == 0) {
+		ret = 1;
+	}
+
+#if 0
+	// check wrs service only - Non-A.QoS, ignore this case due to they all need to disable fc / runner
+	if ((check_wrs_switch() == 1 || nvram_get_int("wrs_enable") == 1
+		|| nvram_get_int("wrs_app_enable") == 1 || nvram_get_int("bwdpi_wh_enable") == 1)
+		&& nvram_get_int("bwdpi_db_enable") == 0
+		&& nvram_get_int("apps_analysis") == 0
+		&& nvram_get_int("bwdpi_wh_enable") == 0
+		&& IS_NON_AQOS()) {
+		ret = 1;
+	}
+#endif
+
+	if (debug) dbg("[check_WRS_only_enabled] ret=%d\n", ret);
+#endif
+
+	return ret;
 }
 
 void disable_dpi_engine_setting(void)

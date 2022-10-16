@@ -26,7 +26,7 @@
  * floating-point AC-3 encoder.
  */
 
-#define CONFIG_AC3ENC_FLOAT 1
+#define AC3ENC_FLOAT 1
 #include "internal.h"
 #include "audiodsp.h"
 #include "ac3enc.h"
@@ -34,12 +34,10 @@
 #include "kbdwin.h"
 
 
-#define AC3ENC_TYPE AC3ENC_TYPE_AC3
-#include "ac3enc_opts_template.c"
 static const AVClass ac3enc_class = {
     .class_name = "AC-3 Encoder",
     .item_name  = av_default_item_name,
-    .option     = ac3_options,
+    .option     = ff_ac3_enc_options,
     .version    = LIBAVUTIL_VERSION_INT,
 };
 
@@ -94,10 +92,9 @@ static void sum_square_butterfly(AC3EncodeContext *s, float sum[4],
  *
  * @param s  AC-3 encoder private context
  */
-av_cold void ff_ac3_float_mdct_end(AC3EncodeContext *s)
+static av_cold void ac3_float_mdct_end(AC3EncodeContext *s)
 {
     ff_mdct_end(&s->mdct);
-    av_freep(&s->mdct_window);
 }
 
 
@@ -107,31 +104,27 @@ av_cold void ff_ac3_float_mdct_end(AC3EncodeContext *s)
  * @param s  AC-3 encoder private context
  * @return   0 on success, negative error code on failure
  */
-av_cold int ff_ac3_float_mdct_init(AC3EncodeContext *s)
+static av_cold int ac3_float_mdct_init(AC3EncodeContext *s)
 {
-    float *window;
-    int i, n, n2;
-
-    n  = 1 << 9;
-    n2 = n >> 1;
-
-    window = av_malloc_array(n, sizeof(*window));
+    float *window = av_malloc_array(AC3_BLOCK_SIZE, sizeof(*window));
     if (!window) {
         av_log(s->avctx, AV_LOG_ERROR, "Cannot allocate memory.\n");
         return AVERROR(ENOMEM);
     }
-    ff_kbd_window_init(window, 5.0, n2);
-    for (i = 0; i < n2; i++)
-        window[n-1-i] = window[i];
+
+    ff_kbd_window_init(window, 5.0, AC3_BLOCK_SIZE);
     s->mdct_window = window;
 
-    return ff_mdct_init(&s->mdct, 9, 0, -2.0 / n);
+    return ff_mdct_init(&s->mdct, 9, 0, -2.0 / AC3_WINDOW_SIZE);
 }
 
 
 av_cold int ff_ac3_float_encode_init(AVCodecContext *avctx)
 {
     AC3EncodeContext *s = avctx->priv_data;
+    s->mdct_end                = ac3_float_mdct_end;
+    s->mdct_init               = ac3_float_mdct_init;
+    s->allocate_sample_buffers = allocate_sample_buffers;
     s->fdsp = avpriv_float_dsp_alloc(avctx->flags & AV_CODEC_FLAG_BITEXACT);
     if (!s->fdsp)
         return AVERROR(ENOMEM);
@@ -150,6 +143,8 @@ AVCodec ff_ac3_encoder = {
     .sample_fmts     = (const enum AVSampleFormat[]){ AV_SAMPLE_FMT_FLTP,
                                                       AV_SAMPLE_FMT_NONE },
     .priv_class      = &ac3enc_class,
+    .supported_samplerates = ff_ac3_sample_rate_tab,
     .channel_layouts = ff_ac3_channel_layouts,
-    .defaults        = ac3_defaults,
+    .defaults        = ff_ac3_enc_defaults,
+    .caps_internal   = FF_CODEC_CAP_INIT_THREADSAFE | FF_CODEC_CAP_INIT_CLEANUP,
 };

@@ -32,7 +32,7 @@
 typedef struct imv_database_t imv_database_t;
 
 /**
- * IMV database interface 
+ * IMV database interface
  */
 struct imv_database_t {
 

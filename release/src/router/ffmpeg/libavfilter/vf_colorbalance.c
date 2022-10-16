@@ -31,10 +31,14 @@
 #define B 2
 #define A 3
 
+typedef struct ThreadData {
+    AVFrame *in, *out;
+} ThreadData;
+
 typedef struct Range {
-    double shadows;
-    double midtones;
-    double highlights;
+    float shadows;
+    float midtones;
+    float highlights;
 } Range;
 
 typedef struct ColorBalanceContext {
@@ -42,25 +46,29 @@ typedef struct ColorBalanceContext {
     Range cyan_red;
     Range magenta_green;
     Range yellow_blue;
-
-    uint8_t lut[3][256];
+    int preserve_lightness;
 
     uint8_t rgba_map[4];
+    int depth;
+    int max;
     int step;
+
+    int (*color_balance)(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs);
 } ColorBalanceContext;
 
 #define OFFSET(x) offsetof(ColorBalanceContext, x)
-#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 static const AVOption colorbalance_options[] = {
-    { "rs", "set red shadows",      OFFSET(cyan_red.shadows),         AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "gs", "set green shadows",    OFFSET(magenta_green.shadows),    AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "bs", "set blue shadows",     OFFSET(yellow_blue.shadows),      AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "rm", "set red midtones",     OFFSET(cyan_red.midtones),        AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "gm", "set green midtones",   OFFSET(magenta_green.midtones),   AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "bm", "set blue midtones",    OFFSET(yellow_blue.midtones),     AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "rh", "set red highlights",   OFFSET(cyan_red.highlights),      AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "gh", "set green highlights", OFFSET(magenta_green.highlights), AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
-    { "bh", "set blue highlights",  OFFSET(yellow_blue.highlights),   AV_OPT_TYPE_DOUBLE, {.dbl=0}, -1, 1, FLAGS },
+    { "rs", "set red shadows",      OFFSET(cyan_red.shadows),         AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "gs", "set green shadows",    OFFSET(magenta_green.shadows),    AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "bs", "set blue shadows",     OFFSET(yellow_blue.shadows),      AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "rm", "set red midtones",     OFFSET(cyan_red.midtones),        AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "gm", "set green midtones",   OFFSET(magenta_green.midtones),   AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "bm", "set blue midtones",    OFFSET(yellow_blue.midtones),     AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "rh", "set red highlights",   OFFSET(cyan_red.highlights),      AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "gh", "set green highlights", OFFSET(magenta_green.highlights), AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "bh", "set blue highlights",  OFFSET(yellow_blue.highlights),   AV_OPT_TYPE_FLOAT, {.dbl=0}, -1, 1, FLAGS },
+    { "pl", "preserve lightness",   OFFSET(preserve_lightness),       AV_OPT_TYPE_BOOL,  {.i64=0},  0, 1, FLAGS },
     { NULL }
 };
 
@@ -74,6 +82,14 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_ABGR,  AV_PIX_FMT_ARGB,
         AV_PIX_FMT_0BGR,  AV_PIX_FMT_0RGB,
         AV_PIX_FMT_RGB0,  AV_PIX_FMT_BGR0,
+        AV_PIX_FMT_RGB48,  AV_PIX_FMT_BGR48,
+        AV_PIX_FMT_RGBA64, AV_PIX_FMT_BGRA64,
+        AV_PIX_FMT_GBRP,   AV_PIX_FMT_GBRAP,
+        AV_PIX_FMT_GBRP9,
+        AV_PIX_FMT_GBRP10, AV_PIX_FMT_GBRAP10,
+        AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRAP12,
+        AV_PIX_FMT_GBRP14,
+        AV_PIX_FMT_GBRP16, AV_PIX_FMT_GBRAP16,
         AV_PIX_FMT_NONE
     };
     AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
@@ -82,53 +98,294 @@ static int query_formats(AVFilterContext *ctx)
     return ff_set_common_formats(ctx, fmts_list);
 }
 
+static float get_component(float v, float l,
+                           float s, float m, float h)
+{
+    const float a = 4.f, b = 0.333f, scale = 0.7f;
+
+    s *= av_clipf((b - l) * a + 0.5f, 0, 1) * scale;
+    m *= av_clipf((l - b) * a + 0.5f, 0, 1) * av_clipf((1.0 - l - b) * a + 0.5f, 0, 1) * scale;
+    h *= av_clipf((l + b - 1) * a + 0.5f, 0, 1) * scale;
+
+    v += s;
+    v += m;
+    v += h;
+
+    return av_clipf(v, 0, 1);
+}
+
+static float hfun(float n, float h, float s, float l)
+{
+    float a = s * FFMIN(l, 1. - l);
+    float k = fmodf(n + h / 30.f, 12.f);
+
+    return av_clipf(l - a * FFMAX(FFMIN3(k - 3.f, 9.f - k, 1), -1.f), 0, 1);
+}
+
+static void preservel(float *r, float *g, float *b, float l)
+{
+    float max = FFMAX3(*r, *g, *b);
+    float min = FFMIN3(*r, *g, *b);
+    float h, s;
+
+    l *= 0.5;
+
+    if (*r == *g && *g == *b) {
+        h = 0.;
+    } else if (max == *r) {
+        h = 60. * (0. + (*g - *b) / (max - min));
+    } else if (max == *g) {
+        h = 60. * (2. + (*b - *r) / (max - min));
+    } else if (max == *b) {
+        h = 60. * (4. + (*r - *g) / (max - min));
+    } else {
+        h = 0.;
+    }
+    if (h < 0.)
+        h += 360.;
+
+    if (max == 0. || min == 1.) {
+        s = 0.;
+    } else {
+        s = (max - min) / (1. - FFABS(2. * l - 1));
+    }
+
+    *r = hfun(0, h, s, l);
+    *g = hfun(8, h, s, l);
+    *b = hfun(4, h, s, l);
+}
+
+static int color_balance8_p(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
+{
+    ColorBalanceContext *s = ctx->priv;
+    ThreadData *td = arg;
+    AVFrame *in = td->in;
+    AVFrame *out = td->out;
+    const int slice_start = (out->height * jobnr) / nb_jobs;
+    const int slice_end = (out->height * (jobnr+1)) / nb_jobs;
+    const uint8_t *srcg = in->data[0] + slice_start * in->linesize[0];
+    const uint8_t *srcb = in->data[1] + slice_start * in->linesize[1];
+    const uint8_t *srcr = in->data[2] + slice_start * in->linesize[2];
+    const uint8_t *srca = in->data[3] + slice_start * in->linesize[3];
+    uint8_t *dstg = out->data[0] + slice_start * out->linesize[0];
+    uint8_t *dstb = out->data[1] + slice_start * out->linesize[1];
+    uint8_t *dstr = out->data[2] + slice_start * out->linesize[2];
+    uint8_t *dsta = out->data[3] + slice_start * out->linesize[3];
+    const float max = s->max;
+    int i, j;
+
+    for (i = slice_start; i < slice_end; i++) {
+        for (j = 0; j < out->width; j++) {
+            float r = srcr[j] / max;
+            float g = srcg[j] / max;
+            float b = srcb[j] / max;
+            const float l = FFMAX3(r, g, b) + FFMIN3(r, g, b);
+
+            r = get_component(r, l, s->cyan_red.shadows, s->cyan_red.midtones, s->cyan_red.highlights);
+            g = get_component(g, l, s->magenta_green.shadows, s->magenta_green.midtones, s->magenta_green.highlights);
+            b = get_component(b, l, s->yellow_blue.shadows, s->yellow_blue.midtones, s->yellow_blue.highlights);
+
+            if (s->preserve_lightness)
+                preservel(&r, &g, &b, l);
+
+            dstr[j] = av_clip_uint8(lrintf(r * max));
+            dstg[j] = av_clip_uint8(lrintf(g * max));
+            dstb[j] = av_clip_uint8(lrintf(b * max));
+            if (in != out && out->linesize[3])
+                dsta[j] = srca[j];
+        }
+
+        srcg += in->linesize[0];
+        srcb += in->linesize[1];
+        srcr += in->linesize[2];
+        srca += in->linesize[3];
+        dstg += out->linesize[0];
+        dstb += out->linesize[1];
+        dstr += out->linesize[2];
+        dsta += out->linesize[3];
+    }
+
+    return 0;
+}
+
+static int color_balance16_p(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
+{
+    ColorBalanceContext *s = ctx->priv;
+    ThreadData *td = arg;
+    AVFrame *in = td->in;
+    AVFrame *out = td->out;
+    const int slice_start = (out->height * jobnr) / nb_jobs;
+    const int slice_end = (out->height * (jobnr+1)) / nb_jobs;
+    const uint16_t *srcg = (const uint16_t *)in->data[0] + slice_start * in->linesize[0] / 2;
+    const uint16_t *srcb = (const uint16_t *)in->data[1] + slice_start * in->linesize[1] / 2;
+    const uint16_t *srcr = (const uint16_t *)in->data[2] + slice_start * in->linesize[2] / 2;
+    const uint16_t *srca = (const uint16_t *)in->data[3] + slice_start * in->linesize[3] / 2;
+    uint16_t *dstg = (uint16_t *)out->data[0] + slice_start * out->linesize[0] / 2;
+    uint16_t *dstb = (uint16_t *)out->data[1] + slice_start * out->linesize[1] / 2;
+    uint16_t *dstr = (uint16_t *)out->data[2] + slice_start * out->linesize[2] / 2;
+    uint16_t *dsta = (uint16_t *)out->data[3] + slice_start * out->linesize[3] / 2;
+    const int depth = s->depth;
+    const float max = s->max;
+    int i, j;
+
+    for (i = slice_start; i < slice_end; i++) {
+        for (j = 0; j < out->width; j++) {
+            float r = srcr[j] / max;
+            float g = srcg[j] / max;
+            float b = srcb[j] / max;
+            const float l = (FFMAX3(r, g, b) + FFMIN3(r, g, b));
+
+            r = get_component(r, l, s->cyan_red.shadows, s->cyan_red.midtones, s->cyan_red.highlights);
+            g = get_component(g, l, s->magenta_green.shadows, s->magenta_green.midtones, s->magenta_green.highlights);
+            b = get_component(b, l, s->yellow_blue.shadows, s->yellow_blue.midtones, s->yellow_blue.highlights);
+
+            if (s->preserve_lightness)
+                preservel(&r, &g, &b, l);
+
+            dstr[j] = av_clip_uintp2_c(lrintf(r * max), depth);
+            dstg[j] = av_clip_uintp2_c(lrintf(g * max), depth);
+            dstb[j] = av_clip_uintp2_c(lrintf(b * max), depth);
+            if (in != out && out->linesize[3])
+                dsta[j] = srca[j];
+        }
+
+        srcg += in->linesize[0] / 2;
+        srcb += in->linesize[1] / 2;
+        srcr += in->linesize[2] / 2;
+        srca += in->linesize[3] / 2;
+        dstg += out->linesize[0] / 2;
+        dstb += out->linesize[1] / 2;
+        dstr += out->linesize[2] / 2;
+        dsta += out->linesize[3] / 2;
+    }
+
+    return 0;
+}
+
+static int color_balance8(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
+{
+    ColorBalanceContext *s = ctx->priv;
+    ThreadData *td = arg;
+    AVFrame *in = td->in;
+    AVFrame *out = td->out;
+    AVFilterLink *outlink = ctx->outputs[0];
+    const int slice_start = (out->height * jobnr) / nb_jobs;
+    const int slice_end = (out->height * (jobnr+1)) / nb_jobs;
+    const uint8_t *srcrow = in->data[0] + slice_start * in->linesize[0];
+    const uint8_t roffset = s->rgba_map[R];
+    const uint8_t goffset = s->rgba_map[G];
+    const uint8_t boffset = s->rgba_map[B];
+    const uint8_t aoffset = s->rgba_map[A];
+    const float max = s->max;
+    const int step = s->step;
+    uint8_t *dstrow;
+    int i, j;
+
+    dstrow = out->data[0] + slice_start * out->linesize[0];
+    for (i = slice_start; i < slice_end; i++) {
+        const uint8_t *src = srcrow;
+        uint8_t *dst = dstrow;
+
+        for (j = 0; j < outlink->w * step; j += step) {
+            float r = src[j + roffset] / max;
+            float g = src[j + goffset] / max;
+            float b = src[j + boffset] / max;
+            const float l = (FFMAX3(r, g, b) + FFMIN3(r, g, b));
+
+            r = get_component(r, l, s->cyan_red.shadows, s->cyan_red.midtones, s->cyan_red.highlights);
+            g = get_component(g, l, s->magenta_green.shadows, s->magenta_green.midtones, s->magenta_green.highlights);
+            b = get_component(b, l, s->yellow_blue.shadows, s->yellow_blue.midtones, s->yellow_blue.highlights);
+
+            if (s->preserve_lightness)
+                preservel(&r, &g, &b, l);
+
+            dst[j + roffset] = av_clip_uint8(lrintf(r * max));
+            dst[j + goffset] = av_clip_uint8(lrintf(g * max));
+            dst[j + boffset] = av_clip_uint8(lrintf(b * max));
+            if (in != out && step == 4)
+                dst[j + aoffset] = src[j + aoffset];
+        }
+
+        srcrow += in->linesize[0];
+        dstrow += out->linesize[0];
+    }
+
+    return 0;
+}
+
+static int color_balance16(AVFilterContext *ctx, void *arg, int jobnr, int nb_jobs)
+{
+    ColorBalanceContext *s = ctx->priv;
+    ThreadData *td = arg;
+    AVFrame *in = td->in;
+    AVFrame *out = td->out;
+    AVFilterLink *outlink = ctx->outputs[0];
+    const int slice_start = (out->height * jobnr) / nb_jobs;
+    const int slice_end = (out->height * (jobnr+1)) / nb_jobs;
+    const uint16_t *srcrow = (const uint16_t *)in->data[0] + slice_start * in->linesize[0] / 2;
+    const uint8_t roffset = s->rgba_map[R];
+    const uint8_t goffset = s->rgba_map[G];
+    const uint8_t boffset = s->rgba_map[B];
+    const uint8_t aoffset = s->rgba_map[A];
+    const int step = s->step / 2;
+    const int depth = s->depth;
+    const float max = s->max;
+    uint16_t *dstrow;
+    int i, j;
+
+    dstrow = (uint16_t *)out->data[0] + slice_start * out->linesize[0] / 2;
+    for (i = slice_start; i < slice_end; i++) {
+        const uint16_t *src = srcrow;
+        uint16_t *dst = dstrow;
+
+        for (j = 0; j < outlink->w * step; j += step) {
+            float r = src[j + roffset] / max;
+            float g = src[j + goffset] / max;
+            float b = src[j + boffset] / max;
+            const float l = (FFMAX3(r, g, b) + FFMIN3(r, g, b));
+
+            r = get_component(r, l, s->cyan_red.shadows, s->cyan_red.midtones, s->cyan_red.highlights);
+            g = get_component(g, l, s->magenta_green.shadows, s->magenta_green.midtones, s->magenta_green.highlights);
+            b = get_component(b, l, s->yellow_blue.shadows, s->yellow_blue.midtones, s->yellow_blue.highlights);
+
+            if (s->preserve_lightness)
+                preservel(&r, &g, &b, l);
+
+            dst[j + roffset] = av_clip_uintp2_c(lrintf(r * max), depth);
+            dst[j + goffset] = av_clip_uintp2_c(lrintf(g * max), depth);
+            dst[j + boffset] = av_clip_uintp2_c(lrintf(b * max), depth);
+            if (in != out && step == 4)
+                dst[j + aoffset] = src[j + aoffset];
+        }
+
+        srcrow += in->linesize[0] / 2;
+        dstrow += out->linesize[0] / 2;
+    }
+
+    return 0;
+}
+
 static int config_output(AVFilterLink *outlink)
 {
     AVFilterContext *ctx = outlink->src;
     ColorBalanceContext *s = ctx->priv;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(outlink->format);
-    double *shadows, *midtones, *highlights, *buffer;
-    int i, r, g, b;
+    const int depth = desc->comp[0].depth;
+    const int max = (1 << depth) - 1;
+    const int planar = av_pix_fmt_count_planes(outlink->format) > 1;
 
-    buffer = av_malloc(256 * 3 * sizeof(*buffer));
-    if (!buffer)
-        return AVERROR(ENOMEM);
+    s->depth = depth;
+    s->max = max;
 
-    shadows    = buffer + 256 * 0;
-    midtones   = buffer + 256 * 1;
-    highlights = buffer + 256 * 2;
-
-    for (i = 0; i < 256; i++) {
-        double low = av_clipd((i - 85.0) / -64.0 + 0.5, 0, 1) * 178.5;
-        double mid = av_clipd((i - 85.0) /  64.0 + 0.5, 0, 1) *
-                     av_clipd((i + 85.0 - 255.0) / -64.0 + 0.5, 0, 1) * 178.5;
-
-        shadows[i] = low;
-        midtones[i] = mid;
-        highlights[255 - i] = low;
+    if (max == 255 && planar) {
+        s->color_balance = color_balance8_p;
+    } else if (planar) {
+        s->color_balance = color_balance16_p;
+    } else if (max == 255) {
+        s->color_balance = color_balance8;
+    } else {
+        s->color_balance = color_balance16;
     }
-
-    for (i = 0; i < 256; i++) {
-        r = g = b = i;
-
-        r = av_clip_uint8(r + s->cyan_red.shadows         * shadows[r]);
-        r = av_clip_uint8(r + s->cyan_red.midtones        * midtones[r]);
-        r = av_clip_uint8(r + s->cyan_red.highlights      * highlights[r]);
-
-        g = av_clip_uint8(g + s->magenta_green.shadows    * shadows[g]);
-        g = av_clip_uint8(g + s->magenta_green.midtones   * midtones[g]);
-        g = av_clip_uint8(g + s->magenta_green.highlights * highlights[g]);
-
-        b = av_clip_uint8(b + s->yellow_blue.shadows      * shadows[b]);
-        b = av_clip_uint8(b + s->yellow_blue.midtones     * midtones[b]);
-        b = av_clip_uint8(b + s->yellow_blue.highlights   * highlights[b]);
-
-        s->lut[R][i] = r;
-        s->lut[G][i] = g;
-        s->lut[B][i] = b;
-    }
-
-    av_free(buffer);
 
     ff_fill_rgba_map(s->rgba_map, outlink->format);
     s->step = av_get_padded_bits_per_pixel(desc) >> 3;
@@ -141,15 +398,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterContext *ctx = inlink->dst;
     ColorBalanceContext *s = ctx->priv;
     AVFilterLink *outlink = ctx->outputs[0];
-    const uint8_t roffset = s->rgba_map[R];
-    const uint8_t goffset = s->rgba_map[G];
-    const uint8_t boffset = s->rgba_map[B];
-    const uint8_t aoffset = s->rgba_map[A];
-    const int step = s->step;
-    const uint8_t *srcrow = in->data[0];
-    uint8_t *dstrow;
+    ThreadData td;
     AVFrame *out;
-    int i, j;
 
     if (av_frame_is_writable(in)) {
         out = in;
@@ -162,26 +412,13 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
         av_frame_copy_props(out, in);
     }
 
-    dstrow = out->data[0];
-    for (i = 0; i < outlink->h; i++) {
-        const uint8_t *src = srcrow;
-        uint8_t *dst = dstrow;
-
-        for (j = 0; j < outlink->w * step; j += step) {
-            dst[j + roffset] = s->lut[R][src[j + roffset]];
-            dst[j + goffset] = s->lut[G][src[j + goffset]];
-            dst[j + boffset] = s->lut[B][src[j + boffset]];
-            if (in != out && step == 4)
-                dst[j + aoffset] = src[j + aoffset];
-        }
-
-        srcrow += in->linesize[0];
-        dstrow += out->linesize[0];
-    }
+    td.in = in;
+    td.out = out;
+    ctx->internal->execute(ctx, s->color_balance, &td, NULL, FFMIN(outlink->h, ff_filter_get_nb_threads(ctx)));
 
     if (in != out)
         av_frame_free(&in);
-    return ff_filter_frame(ctx->outputs[0], out);
+    return ff_filter_frame(outlink, out);
 }
 
 static const AVFilterPad colorbalance_inputs[] = {
@@ -210,5 +447,6 @@ AVFilter ff_vf_colorbalance = {
     .query_formats = query_formats,
     .inputs        = colorbalance_inputs,
     .outputs       = colorbalance_outputs,
-    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC,
+    .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
+    .process_command = ff_filter_process_command,
 };

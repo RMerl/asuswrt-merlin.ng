@@ -22,6 +22,7 @@
 #include <unistd.h>
 
 #include <library.h>
+#include <selectors/sec_label.h>
 
 /*
  * Described in header
@@ -57,6 +58,27 @@ settings_t *load_swanctl_conf(char *file)
 	free(swanctl_dir);
 	swanctl_dir = path_dirname(file);
 	return cfg;
+}
+
+/*
+ * Described in header
+ */
+void print_label(const char *prefix, const char *value)
+{
+	sec_label_t *label;
+	chunk_t encoding;
+
+	if (value)
+	{
+		encoding = chunk_from_hex(chunk_from_str((char*)value), NULL);
+		label = sec_label_from_encoding(encoding);
+		if (label)
+		{
+			printf("%s%s\n", prefix, label->get_string(label));
+			label->destroy(label);
+		}
+		chunk_free(&encoding);
+	}
 }
 
 /**

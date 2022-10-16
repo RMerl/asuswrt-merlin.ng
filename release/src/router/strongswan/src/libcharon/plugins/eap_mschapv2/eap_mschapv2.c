@@ -543,18 +543,121 @@ error:
 }
 
 /**
- * Converts an ASCII string into a UTF-16 (little-endian) string
+ * Try to decode the UTF-8 byte sequence utf8 points to and advance the
+ * position.  Returns FALSE if the byte sequence is incomplete (the actual
+ * values are not validated).
  */
-static chunk_t ascii_to_unicode(chunk_t ascii)
+static inline bool decode_utf8(chunk_t *utf8, uint32_t *c)
 {
-	int i;
-	chunk_t unicode = chunk_alloc(ascii.len * 2);
-	for (i = 0; i < ascii.len; i++)
+	uint8_t b1, b2, b3, b4;
+	int i = 0;
+
+	if (!utf8->len)
 	{
-		unicode.ptr[i * 2] = ascii.ptr[i];
-		unicode.ptr[i * 2 + 1] = 0;
+		return FALSE;
 	}
-	return unicode;
+
+	b1 = utf8->ptr[i++];
+	if (b1 & 0x80)
+	{
+		if (i == utf8->len)
+		{
+			return FALSE;
+		}
+		b2 = utf8->ptr[i++];
+		if (b1 < 0xe0)
+		{	/* two-byte encoding */
+			*c = ((b1 & 0x1f) << 6) | (b2 & 0x3f);
+			goto done;
+		}
+		if (i == utf8->len)
+		{
+			return FALSE;
+		}
+		b3 = utf8->ptr[i++];
+		if (b1 < 0xf0)
+		{	/* three-byte encoding */
+			*c = ((b1 & 0x0f) << 12) | ((b2 & 0x3f) << 6) | (b3 & 0x3f);
+			goto done;
+		}
+		if (i == utf8->len)
+		{
+			return FALSE;
+		}
+		b4 = utf8->ptr[i++];
+		/* four-byte encoding */
+		*c =  ((b1 & 0x07) << 18) | ((b2 & 0x3f) << 12) |
+			  ((b3 & 0x3f) << 6) | (b4 & 0x3f);
+	}
+	else
+	{	/* single-byte ASCII */
+		*c = b1;
+	}
+
+done:
+	*utf8 = chunk_skip(*utf8, i);
+	return TRUE;
+}
+
+/**
+ * Encode the given code point (or surrogate) as UTF-16LE where utf16 points
+ * to and advance the position.
+ */
+static inline void encode_utf16le_single(chunk_t *utf16, uint16_t c)
+{
+	if (utf16->len >= 2)
+	{
+		utf16->ptr[0] = c & 0xff;
+		utf16->ptr[1] = c >> 8;
+		*utf16 = chunk_skip(*utf16, 2);
+	}
+}
+
+/**
+ * Encode the given code point as UTF-16LE where utf16 points to and advance
+ * the position.  Invalid code points are ignored.
+ */
+static inline void encode_utf16le(chunk_t *utf16, uint32_t c)
+{
+
+	if (c >= 0xd800 && (c <= 0xdfff || c > 0x10ffff ||
+		(0xfdd0 <= c && (c <= 0xfdef || (c & 0xfffe) == 0xfffe))))
+	{	/* ignore code points that are not characters: single surrogates
+		 * 0xd800..0xdfff, any value > 0x10ffff, 0xfdd0..0xfdef as per
+		 * Unicode 3.1, the last two in each plane 0x__fffe and 0x__ffff. */
+		return;
+	}
+	if (c < 0x10000)
+	{	/* BMP code points */
+		encode_utf16le_single(utf16, c);
+	}
+	else
+	{	/* supplementary code points are split into two 16-bit surrogates */
+		encode_utf16le_single(utf16, 0xd7c0 + (c >> 10));
+		encode_utf16le_single(utf16, 0xdc00 | (c & 0x3ff));
+	}
+}
+
+/**
+ * Converts an (assumed) UTF-8 string into a UTF-16 (little-endian) string
+ */
+static chunk_t utf8_to_utf16le(chunk_t utf8)
+{
+	chunk_t utf16, buf;
+	uint32_t c;
+
+	/* unless the input is ASCII-only this will generally be too much, but
+	 * doesn't really matter for the length of strings processed here */
+	utf16 = buf = chunk_alloc(utf8.len * 2);
+
+	while (decode_utf8(&utf8, &c))
+	{
+		encode_utf16le(&buf, c);
+	}
+
+	utf16.len = utf16.len - buf.len;
+
+	return utf16;
 }
 
 /**
@@ -666,7 +769,7 @@ static bool get_nt_hash(private_eap_mschapv2_t *this, identification_t *me,
 	shared = lib->credmgr->get_shared(lib->credmgr, SHARED_EAP, me, other);
 	if (shared)
 	{
-		password = ascii_to_unicode(shared->get_key(shared));
+		password = utf8_to_utf16le(shared->get_key(shared));
 		shared->destroy(shared);
 
 		if (NtPasswordHash(password, nt_hash) == SUCCESS)
@@ -1058,7 +1161,7 @@ static status_t process_server_retry(private_eap_mschapv2_t *this,
 	/* delay the response for some time to make brute-force attacks harder */
 	sleep(RETRY_DELAY);
 
-	/* since the error is retryable the state does not change, we still
+	/* since the error is retriable the state does not change, we still
 	 * expect an MSCHAPV2_RESPONSE from the peer */
 	return NEED_MORE;
 }

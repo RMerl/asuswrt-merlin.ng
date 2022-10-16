@@ -210,4 +210,5 @@
 #define CFG_BAND_INDEX_VERSION		"bandindex_version"
 #define CFG_BAND_TYPE		"BAND_TYPE"
 #define CFG_STR_UNIT 	"unit"
+#define CFG_DWB_RULE "dwb_rule" 
 #endif /* __CFG_STRING_H__ */

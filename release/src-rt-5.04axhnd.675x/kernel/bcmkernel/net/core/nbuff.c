@@ -577,6 +577,10 @@ int fkb_construct(int fkb_in_skb_offset)
     else
         FKB_DBG( printk(CLRb "FKB compatible with SKB" CLRN); );
 
+#if (defined(CONFIG_BCM94912) || defined(CONFIG_BCM96855)) && defined(CONFIG_BCM_JUMBO_FRAME)
+    fkb_obj_g[FkbMaster_e].object_size = bcm_pktbuf_size();
+#endif
+
 #if defined(CONFIG_BCM_NBUFF_FKB_POOL)
     FKB_POOL_LOCK();
 

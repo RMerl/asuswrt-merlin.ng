@@ -41,6 +41,7 @@
 		var fn_array = ["DDNS"];
 		if(ifttt_support){fn_array.push("IFTTT™");}
 		if(alexa_support){fn_array.push("Alexa™");}
+		fn_array.push("Tencent Download Acceleration");
 		$("#asus_eula_desc").html($("#asus_eula_desc").html().replace('DDNS', fn_array.join("/")));
 
 		if(alexa_support && !ifttt_support){

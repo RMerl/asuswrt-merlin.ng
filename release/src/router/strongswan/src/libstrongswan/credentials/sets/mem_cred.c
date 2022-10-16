@@ -84,37 +84,13 @@ CALLBACK(cert_data_destroy, void,
 CALLBACK(certs_filter, bool,
 	cert_data_t *data, enumerator_t *orig, va_list args)
 {
-	public_key_t *public;
 	certificate_t *cert, **out;
 
 	VA_ARGS_VGET(args, out);
 
 	while (orig->enumerate(orig, &cert))
 	{
-		if (data->cert != CERT_ANY && data->cert != cert->get_type(cert))
-		{
-			continue;
-		}
-		public = cert->get_public_key(cert);
-		if (public)
-		{
-			if (data->key == KEY_ANY || data->key == public->get_type(public))
-			{
-				if (data->id && public->has_fingerprint(public,
-											data->id->get_encoding(data->id)))
-				{
-					public->destroy(public);
-					*out = cert;
-					return TRUE;
-				}
-			}
-			public->destroy(public);
-		}
-		else if (data->key != KEY_ANY)
-		{
-			continue;
-		}
-		if (!data->id || cert->has_subject(cert, data->id))
+		if (certificate_matches(cert, data->cert, data->key, data->id))
 		{
 			*out = cert;
 			return TRUE;

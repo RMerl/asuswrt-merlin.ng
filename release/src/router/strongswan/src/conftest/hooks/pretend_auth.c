@@ -305,12 +305,12 @@ static void process_auth_response(private_pretend_auth_t *this,
 	if (this->tsi)
 	{
 		message->add_payload(message, (payload_t*)
-					ts_payload_create_from_traffic_selectors(TRUE, this->tsi));
+					ts_payload_create_from_traffic_selectors(TRUE, this->tsi, NULL));
 	}
 	if (this->tsr)
 	{
 		message->add_payload(message, (payload_t*)
-					ts_payload_create_from_traffic_selectors(FALSE, this->tsr));
+					ts_payload_create_from_traffic_selectors(FALSE, this->tsr, NULL));
 	}
 }
 

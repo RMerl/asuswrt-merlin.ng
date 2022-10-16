@@ -338,12 +338,12 @@ METHOD(seg_contract_t, get_info_string, void,
 
 	if (this->is_issuer && request)
 	{
-		written = snprintf(pos, len, "%s %d requests",
+		written = snprintf(pos, len, "%s %lu requests",
 						  this->is_imc ? "IMC" : "IMV", this->issuer_id);
 	}
 	else
 	{
-		written = snprintf(pos, len, "%s %d received",
+		written = snprintf(pos, len, "%s %lu received",
 						   this->is_imc ? "IMC" : "IMV",
 						   this->is_issuer ? this->issuer_id :
 											 this->responder_id);
@@ -368,7 +368,7 @@ METHOD(seg_contract_t, get_info_string, void,
 	if ((!this->is_issuer && this->issuer_id != TNC_IMVID_ANY) ||
 		( this->is_issuer && this->responder_id != TNC_IMVID_ANY))
 	{
-		written = snprintf(pos, len, "from %s %d ",
+		written = snprintf(pos, len, "from %s %lu ",
 						   this->is_imc ? "IMV" : "IMC",
 						   this->is_issuer ? this->responder_id :
 											 this->issuer_id);

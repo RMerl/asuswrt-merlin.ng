@@ -1,7 +1,7 @@
 /*
  * Forward declarations for commonly used wl driver structs
  *
- * Copyright (C) 2021, Broadcom. All Rights Reserved.
+ * Copyright (C) 2022, Broadcom. All Rights Reserved.
  *
  * Permission to use, copy, modify, and/or distribute this software for any
  * purpose with or without fee is hereby granted, provided that the above
@@ -18,7 +18,7 @@
  *
  * <<Broadcom-WL-IPTag/Open:>>
  *
- * $Id: wlc_types.h 805334 2021-11-23 06:07:14Z $
+ * $Id: wlc_types.h 806968 2022-01-10 15:08:45Z $
  */
 
 #ifndef _wlc_types_h_
@@ -42,7 +42,7 @@ typedef struct wlcband wlcband_t;
 typedef struct wlc_cmn_info wlc_cmn_info_t;
 typedef struct wlc_assoc_info wlc_assoc_info_t;
 typedef struct wlc_pm_info wlc_pm_info_t;
-
+typedef struct scb_txc_info scb_txc_info_t;
 typedef struct wlc_bsscfg wlc_bsscfg_t;
 typedef struct wlc_mbss_info wlc_mbss_info_t;
 typedef struct wlc_spt wlc_spt_t;

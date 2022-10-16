@@ -38,7 +38,6 @@
 #define V2_INTRA_CBPC_VLC_BITS 3
 #define V2_MB_TYPE_VLC_BITS 7
 #define MV_VLC_BITS 9
-#define V2_MV_VLC_BITS 9
 #define TEX_VLC_BITS 9
 
 #define DEFAULT_INTER_INDEX 3
@@ -66,7 +65,6 @@ static VLC v2_dc_lum_vlc;
 static VLC v2_dc_chroma_vlc;
 static VLC v2_intra_cbpc_vlc;
 static VLC v2_mb_type_vlc;
-static VLC v2_mv_vlc;
 VLC ff_inter_intra_vlc;
 
 /* This is identical to H.263 except that its range is multiplied by 2. */
@@ -74,7 +72,7 @@ static int msmpeg4v2_decode_motion(MpegEncContext * s, int pred, int f_code)
 {
     int code, val, sign, shift;
 
-    code = get_vlc2(&s->gb, v2_mv_vlc.table, V2_MV_VLC_BITS, 2);
+    code = get_vlc2(&s->gb, ff_h263_mv_vlc.table, H263_MV_VLC_BITS, 2);
     ff_dlog(s, "MV code %d at %d %d pred: %d\n", code, s->mb_x,s->mb_y, pred);
     if (code < 0)
         return 0xffff;
@@ -230,8 +228,6 @@ static int msmpeg4v34_decode_mb(MpegEncContext *s, int16_t block[6][64])
         }
 
         code = get_vlc2(&s->gb, ff_mb_non_intra_vlc[DEFAULT_INTER_INDEX].table, MB_NON_INTRA_VLC_BITS, 3);
-        if (code < 0)
-            return -1;
         //s->mb_intra = (code & 0x40) ? 0 : 1;
         s->mb_intra = (~code & 0x40) >> 6;
 
@@ -239,8 +235,6 @@ static int msmpeg4v34_decode_mb(MpegEncContext *s, int16_t block[6][64])
     } else {
         s->mb_intra = 1;
         code = get_vlc2(&s->gb, ff_msmp4_mb_i_vlc.table, MB_INTRA_VLC_BITS, 2);
-        if (code < 0)
-            return -1;
         /* predict coded block pattern */
         cbp = 0;
         for(i=0;i<6;i++) {
@@ -261,8 +255,7 @@ static int msmpeg4v34_decode_mb(MpegEncContext *s, int16_t block[6][64])
             s->rl_chroma_table_index = s->rl_table_index;
         }
         ff_h263_pred_motion(s, 0, 0, &mx, &my);
-        if (ff_msmpeg4_decode_motion(s, &mx, &my) < 0)
-            return -1;
+        ff_msmpeg4_decode_motion(s, &mx, &my);
         s->mv_dir = MV_DIR_FORWARD;
         s->mv_type = MV_TYPE_16X16;
         s->mv[0][0][0] = mx;
@@ -317,19 +310,22 @@ av_cold int ff_msmpeg4_decode_init(AVCodecContext *avctx)
         for(i=0;i<NB_RL_TABLES;i++) {
             ff_rl_init(&ff_rl_table[i], ff_static_rl_table_store[i]);
         }
-        INIT_VLC_RL(ff_rl_table[0], 642);
-        INIT_VLC_RL(ff_rl_table[1], 1104);
-        INIT_VLC_RL(ff_rl_table[2], 554);
+        INIT_FIRST_VLC_RL(ff_rl_table[0], 642);
+        INIT_FIRST_VLC_RL(ff_rl_table[1], 1104);
+        INIT_FIRST_VLC_RL(ff_rl_table[2], 554);
         INIT_VLC_RL(ff_rl_table[3], 940);
         INIT_VLC_RL(ff_rl_table[4], 962);
-        INIT_VLC_RL(ff_rl_table[5], 554);
+        /* ff_rl_table[5] coincides with ff_h263_rl_inter which has just been
+         * initialized in ff_h263_decode_init() above. So just copy the VLCs. */
+        av_assert1(ff_h263_rl_inter.rl_vlc[0]);
+        memcpy(ff_rl_table[5].rl_vlc, ff_h263_rl_inter.rl_vlc, sizeof(ff_rl_table[5].rl_vlc));
 
         mv = &ff_mv_tables[0];
-        INIT_VLC_STATIC(&mv->vlc, MV_VLC_BITS, mv->n + 1,
+        INIT_VLC_STATIC(&mv->vlc, MV_VLC_BITS, MSMPEG4_MV_TABLES_NB_ELEMS + 1,
                     mv->table_mv_bits, 1, 1,
                     mv->table_mv_code, 2, 2, 3714);
         mv = &ff_mv_tables[1];
-        INIT_VLC_STATIC(&mv->vlc, MV_VLC_BITS, mv->n + 1,
+        INIT_VLC_STATIC(&mv->vlc, MV_VLC_BITS, MSMPEG4_MV_TABLES_NB_ELEMS + 1,
                     mv->table_mv_bits, 1, 1,
                     mv->table_mv_code, 2, 2, 2694);
 
@@ -359,9 +355,6 @@ av_cold int ff_msmpeg4_decode_init(AVCodecContext *avctx)
         INIT_VLC_STATIC(&v2_mb_type_vlc, V2_MB_TYPE_VLC_BITS, 8,
                  &ff_v2_mb_type[0][1], 2, 1,
                  &ff_v2_mb_type[0][0], 2, 1, 128);
-        INIT_VLC_STATIC(&v2_mv_vlc, V2_MV_VLC_BITS, 33,
-                 &ff_mvtab[0][1], 2, 1,
-                 &ff_mvtab[0][0], 2, 1, 538);
 
         INIT_VLC_STATIC(&ff_mb_non_intra_vlc[0], MB_NON_INTRA_VLC_BITS, 128,
                      &ff_wmv2_inter_table[0][0][1], 8, 4,
@@ -411,6 +404,14 @@ av_cold int ff_msmpeg4_decode_init(AVCodecContext *avctx)
 int ff_msmpeg4_decode_picture_header(MpegEncContext * s)
 {
     int code;
+
+    // at minimum one bit per macroblock is required at least in a valid frame,
+    // we discard frames much smaller than this. Frames smaller than 1/8 of the
+    // smallest "black/skip" frame generally contain not much recoverable content
+    // while at the same time they have the highest computational requirements
+    // per byte
+    if (get_bits_left(&s->gb) * 8LL < (s->width+15)/16 * ((s->height+15)/16))
+        return AVERROR_INVALIDDATA;
 
     if(s->msmpeg4_version==1){
         int start_code = get_bits_long(&s->gb, 32);
@@ -605,11 +606,6 @@ static int msmpeg4_decode_dc(MpegEncContext * s, int n, int *dir_ptr)
             level = get_vlc2(&s->gb, ff_msmp4_dc_luma_vlc[s->dc_table_index].table, DC_VLC_BITS, 3);
         } else {
             level = get_vlc2(&s->gb, ff_msmp4_dc_chroma_vlc[s->dc_table_index].table, DC_VLC_BITS, 3);
-        }
-        if (level < 0){
-            av_log(s->avctx, AV_LOG_ERROR, "illegal dc vlc\n");
-            *dir_ptr = 0;
-            return -1;
         }
 
         if (level == DC_MAX) {
@@ -832,8 +828,7 @@ int ff_msmpeg4_decode_block(MpegEncContext * s, int16_t * block,
     return 0;
 }
 
-int ff_msmpeg4_decode_motion(MpegEncContext * s,
-                                 int *mx_ptr, int *my_ptr)
+void ff_msmpeg4_decode_motion(MpegEncContext *s, int *mx_ptr, int *my_ptr)
 {
     MVTable *mv;
     int code, mx, my;
@@ -841,11 +836,7 @@ int ff_msmpeg4_decode_motion(MpegEncContext * s,
     mv = &ff_mv_tables[s->mv_table_index];
 
     code = get_vlc2(&s->gb, mv->vlc.table, MV_VLC_BITS, 2);
-    if (code < 0){
-        av_log(s->avctx, AV_LOG_ERROR, "illegal MV code at %d %d\n", s->mb_x, s->mb_y);
-        return -1;
-    }
-    if (code == mv->n) {
+    if (code == MSMPEG4_MV_TABLES_NB_ELEMS) {
         mx = get_bits(&s->gb, 6);
         my = get_bits(&s->gb, 6);
     } else {
@@ -867,7 +858,6 @@ int ff_msmpeg4_decode_motion(MpegEncContext * s,
         my -= 64;
     *mx_ptr = mx;
     *my_ptr = my;
-    return 0;
 }
 
 AVCodec ff_msmpeg4v1_decoder = {

@@ -335,7 +335,7 @@ ip_packet_t *ip_packet_create(chunk_t packet)
 			}
 			ip = (struct ip6_hdr*)packet.ptr;
 			/* remove any RFC 4303 TFC extra padding */
-			packet.len = min(packet.len, 40 + untoh16(&ip->ip6_plen));
+			packet.len = min(packet.len, 40 + untoh16((void*)&ip->ip6_plen));
 			if (!parse_transport_header_v6(ip, packet, &payload, &next_header,
 										   &sport, &dport))
 			{

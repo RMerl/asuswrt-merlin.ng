@@ -211,6 +211,46 @@ openssl_crypter_t *openssl_crypter_create(encryption_algorithm_t algo,
 					return NULL;
 			}
 			break;
+		case ENCR_AES_ECB:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 16;
+					/* FALL */
+				case 16:        /* AES 128 */
+					this->cipher = EVP_get_cipherbyname("aes-128-ecb");
+					break;
+				case 24:        /* AES-192 */
+					this->cipher = EVP_get_cipherbyname("aes-192-ecb");
+					break;
+				case 32:        /* AES-256 */
+					this->cipher = EVP_get_cipherbyname("aes-256-ecb");
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			break;
+		case ENCR_AES_CFB:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 16;
+					/* FALL */
+				case 16:        /* AES 128 */
+					this->cipher = EVP_get_cipherbyname("aes-128-cfb");
+					break;
+				case 24:        /* AES-192 */
+					this->cipher = EVP_get_cipherbyname("aes-192-cfb");
+					break;
+				case 32:        /* AES-256 */
+					this->cipher = EVP_get_cipherbyname("aes-256-cfb");
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			break;
 		case ENCR_CAMELLIA_CBC:
 			switch (key_size)
 			{

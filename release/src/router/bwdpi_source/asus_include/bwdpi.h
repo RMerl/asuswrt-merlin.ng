@@ -44,6 +44,19 @@
 // ASUS debug
 #include <bwdpi_common.h>
 
+/*
+	enum : BLOCKED REASON
+*/
+enum {
+	BLOCKED_DEFAULT         = 0, // 0 : normal, unblocked
+	BLOCKED_2P5G_10G_AQOS   = 1, // 1 : 2P5G or 10G WAN + A.QoS only
+	BLOCKED_MODEL_DISABLE   = 2, // 2 : special models to block for certain reason
+	BLOCKED_TCODE_BLACKLIST = 3, // 3 : tcode blacklist, exclude from dpi_support tcode list
+	BLOCKED_ILLEGAL_MODEL   = 4, // 4 : illegal model, not in dpi_support list
+	BLOCKED_DUALWAN_LB      = 5, // 5 : not support dualwan load-balance mode
+	BLOCKED_STOP_FORCE      = 6  // 6 : debug only with bwdpi_stop_force
+};
+
 // command
 #define WRED            nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/wred" : "wred"
 #define AGENT           nvram_get_int("bwdpi_debug_path") ? "/jffs/TM/tdts_rule_agent" : "tdts_rule_agent"
@@ -84,6 +97,9 @@
 #define QOS_WAN         TDTSFW_PARA"qos_wan"
 #define QOS_LAN         TDTSFW_PARA"qos_lan"
 #define BW_DPI_SET      "/proc/bw_dpi_conf"
+
+// BIQOS control bit (runner)
+#define BIQOS           "/proc/net/biqos"
 
 typedef struct cat_id cid_s;
 struct cat_id{

@@ -227,6 +227,7 @@ var httpApi ={
 			url: '/applyapp.cgi',
 			dataType: 'json',
 			data: postData,
+			type: 'POST',
 			error: function(){},
 			success: function(response){
 				if(handler) handler.call(response);
@@ -243,6 +244,85 @@ var httpApi ={
 		$.ajax({
 			url: 'upload.cgi',
 			dataType: 'multipart/form-data',
+			data: formData,
+			contentType: false,
+			processData: false,
+			type: 'POST',
+			error: function(response){
+				if(handler) handler.call(response);
+			},
+			success: function(response){
+				if(handler) handler.call(response);
+			}
+		 });
+	},
+
+
+	"uploadOvpnFile": function(postData, handler){
+		delete postData.isError;
+
+		var formData = new FormData();
+		for(var key in postData){
+			if(postData.hasOwnProperty(key)){
+				formData.append(key, postData[key]);
+			}
+		}
+
+		$.ajax({
+			url: '/vpnupload.cgi',
+			dataType: 'text',
+			data: formData,
+			contentType: false,
+			processData: false,
+			type: 'POST',
+			error: function(response){
+				if(handler) handler.call(response);
+			},
+			success: function(response){
+				if(handler) handler.call(response);
+			}
+		 });
+	},
+
+	"uploadServerOvpnCert": function(postData, handler){
+		delete postData.isError;
+
+		var formData = new FormData();
+		for(var key in postData){
+			if(postData.hasOwnProperty(key)){
+				formData.append(key, postData[key]);
+			}
+		}
+
+		$.ajax({
+			url: '/upload_server_ovpn_cert.cgi',
+			dataType: 'text',
+			data: formData,
+			contentType: false,
+			processData: false,
+			type: 'POST',
+			error: function(response){
+				if(handler) handler(response);
+			},
+			success: function(response){
+				if(handler) handler(response);
+			}
+		 });
+	},
+
+	"uploadWGCFile": function(postData, handler){
+		delete postData.isError;
+
+		var formData = new FormData();
+		for(var key in postData){
+			if(postData.hasOwnProperty(key)){
+				formData.append(key, postData[key]);
+			}
+		}
+
+		$.ajax({
+			url: '/upload_wgc_config.cgi',
+			dataType: 'text',
 			data: formData,
 			contentType: false,
 			processData: false,
@@ -342,6 +422,9 @@ var httpApi ={
 		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "autodet_state", "autodet_auxstate", "wan0_proto",
 										 "link_internet", "x_Setting", "usb_modem_act_sim", "link_wan"], true);
 		var tcode = httpApi.nvramGet(["territory_code"], true).territory_code;
+
+		var sessionId = (typeof systemVariable != "undefined") ? systemVariable.qisSession : ""; 
+		httpApi.log("httpApi.detwanGetRet", JSON.stringify(wanInfo), sessionId);
 
 		var wanTypeList = {
 			"dhcp": "DHCP",
@@ -578,10 +661,12 @@ var httpApi ={
 			"proto": "",
 			"proto_text": ""
 		};
-
+		var wans_info = httpApi.nvramGet(["wans_dualwan", "wans_mode"], true);
+		var dualwan_enabled = (isSupport("dualwan") && wans_info.wans_dualwan.search("none") == -1) ? 1 : 0;
+		var active_wan_unit = httpApi.hookGet("get_wan_unit", true);
 		var wan_index = (_index == undefined) ? 0 : _index;
 		if(dualwan_enabled){
-			if(active_wan_unit != wan_index && (wans_mode == "fo" || wans_mode == "fb")){
+			if(active_wan_unit != wan_index && (wans_info.wans_mode == "fo" || wans_info.wans_mode == "fb")){
 				result.status = "standby";
 				result.status_text = "<#Standby_str_cold#>";
 
@@ -1231,7 +1316,177 @@ var httpApi ={
 			}
 		});
 	},
+	"get_port_status": function(mac, callBack){
+		var capability_map = [
+				{type:"WAN", bit:0},
+				{type:"LAN", bit:1},
+				{type:"GAME", bit:2},
+				{type:"PLC", bit:3},
+				{type:"WAN2", bit:4},
+				{type:"WAN3", bit:5},
+				{type:"SFPP", bit:6},
+				{type:"USB", bit:7},
+				{type:"MOBILE", bit:8},
+				{type:"IPTV_BRIDGE", bit:26},
+				{type:"IPTV_VOIP", bit:27},
+				{type:"IPTV_STB", bit:28},
+				{type:"DUALWAN_SECONDARY_WAN", bit:29},
+				{type:"DUALWAN_PRIMARY_WAN", bit:30}
+			];
 
+		$.ajax({
+			url: "/get_port_status.cgi?node_mac=" + mac,
+			dataType: 'json',
+			async: true,
+			error: function(){},
+			success: function(response){
+				if(response["port_info"] != undefined){
+					if(response["port_info"][mac] != undefined){
+						var port_info = response["port_info"][mac];
+						$.each(port_info, function(index, data){
+							var cap = data.cap;
+							if(data["cap_support"] == undefined)
+								data["cap_support"] = {};
+							$.each(capability_map, function(index, capability_item){
+								data["cap_support"][capability_item.type] = ((parseInt(cap) & (1 << parseInt(capability_item.bit))) > 0) ? true : false;
+							});
+						});
+					}
+				}
+				if(callBack)
+					callBack(response);
+			}
+		});
+	},
+	"get_port_status_array": function(mac, callBack){
+		var rate_map = [
+			{value:"10",text:"10 Mbps"},
+			{value:"100",text:"100 Mbps"},
+			{value:"1000",text:"1 Gbps"},
+			{value:"2500",text:"2.5 Gbps"},
+			{value:"10000",text:"10 Gbps"}
+		];
+		var rate_map_USB = [
+			{value:"480",text:"USB2.0"},
+			{value:"5000",text:"USB3.0"},
+			{value:"10000",text:"USB3.1"},
+			{value:"20000",text:"USB3.2"}
+		];
+		httpApi.get_port_status(mac, function(response){
+			var response_temp = JSON.parse(JSON.stringify(response));
+			var port_info_temp = {};
+			if(response_temp["port_info"] != undefined){
+				if(response_temp["port_info"][mac] != undefined){
+					port_info_temp = {"WAN":[], "LAN":[]};
+					var port_info = response_temp["port_info"][mac];
+					$.each(port_info, function(index, data){
+						var label = index.substr(0,1);
+						var label_idx = index.substr(1,1);
+						data["label"] = label;
+						data["label_priority"] = ((label == "W") ? 1 : ((label == "L") ? 2 : 3));
+						data["label_idx"] = label_idx;
+						data["label_port_name"] = (function(){
+							if(data.cap_support.WAN){
+								if(label_idx == "0")
+									return "WAN";
+								else
+									return "WAN " + label_idx;
+							}
+							else if(data.cap_support.LAN){
+								return "LAN " + label_idx;
+							}
+							else if(data.cap_support.USB){
+								return "USB";
+							}
+						})();
+						var link_rate_data = rate_map.filter(function(item, index, array){
+							return (item.value == data.link_rate);
+						})[0];
+
+						data["link_rate_text"] = "";
+						if(link_rate_data != undefined){
+							data["link_rate_text"] = link_rate_data.text;
+						}
+
+						if(data.cap_support.USB){
+							var max_rate_data = rate_map_USB.filter(function(item, index, array){
+								return (item.value == data.max_rate);
+							})[0];
+						}
+						else{
+							var max_rate_data = rate_map.filter(function(item, index, array){
+								return (item.value == data.max_rate);
+							})[0];
+						}
+
+						data["max_rate_text"] = "";
+						if(max_rate_data != undefined){
+							data["max_rate_text"] = max_rate_data.text;
+							data["special_port_name"] = "";
+							if(data["cap_support"]["GAME"] == true){
+								data["special_port_name"] = "<#Port_Gaming#>";
+							}
+							else{
+								if(data.cap_support.USB){
+									data["special_port_name"] = max_rate_data.text;
+								}
+								else{
+									var max_rate = parseInt(max_rate_data.value);
+									if(max_rate > 1000){
+										data["special_port_name"] = max_rate_data.text.replace(" Gbps", "");
+										if(max_rate == 10000){
+											if(data["cap_support"]["SFPP"] == true)
+												data["special_port_name"] = data["special_port_name"] + "G SFP+";
+											else
+												data["special_port_name"] = data["special_port_name"] + "G baseT";
+										}
+										else
+											data["special_port_name"] = data["special_port_name"] + "G";
+									}
+								}
+							}
+						}
+
+						var link_rate = isNaN(parseInt(data.link_rate)) ? 0 : parseInt(data.link_rate);
+						var max_rate = isNaN(parseInt(data.max_rate)) ? 0 : parseInt(data.max_rate);
+						data["link_rate_status"] = 1;//normal
+						if(max_rate == 2500)
+							max_rate = 1000;
+
+						if(data.is_on == "1" && link_rate < max_rate)
+							data["link_rate_status"] = 0;//abnormal
+
+						var sort_key = "";
+						if(data.cap_support.DUALWAN_PRIMARY_WAN || data.cap_support.DUALWAN_SECONDARY_WAN){
+							port_info_temp["WAN"].push(data);
+							sort_key = "WAN";
+						}
+						else{
+							port_info_temp["LAN"].push(data);
+							sort_key = "LAN";
+						}
+
+						port_info_temp[sort_key].sort(function(a, b){
+							//first compare label priority, W>L>U
+							var a_label_priority = parseInt(a.label_priority);
+							var b_label_priority = parseInt(b.label_priority);
+							var label_priority = ((a_label_priority == b_label_priority) ? 0 : ((a_label_priority > b_label_priority) ? 1 : -1));
+							if(label_priority != 0){
+								return label_priority;
+							}
+							else {//second compare label idx
+								var a_label_idx = parseInt(a.label_idx);
+								var b_label_idx = parseInt(b.label_idx);
+								return ((a_label_idx == b_label_idx) ? 0 : ((a_label_idx > b_label_idx) ? 1 : -1));
+							}
+						});
+					});
+				}
+			}
+			if(callBack)
+				callBack(port_info_temp);
+		});
+	},
 	"set_antled" : function(postData, parmData){
 		var asyncDefault = true;
 		$.ajax({
@@ -1309,6 +1564,7 @@ var httpApi ={
 					"sched_v2" : {"bit" : 4},
 					"wifi_radio" : {"bit" : 5},
 					"switchctrl" : {"bit" : 8},
+					"port_status" : {"bit" : 9},
 					"local_access" : {"bit" : 10}
 				}
 			},
@@ -1545,5 +1801,158 @@ var httpApi ={
 		})
 
 		return statusCode;
+	},
+
+	"log": function(funcName, content, sessionId){
+		var deviceId = httpApi.nvramGet(["extendno", "productid"]);
+
+		if(typeof window.localStorage === 'undefined') return false;
+		if(!sessionId) sessionId = deviceId.productid + "#" + deviceId.extendno;
+
+		try{
+			window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+		}catch(err){
+			localStorage.clear();
+			window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+		}
+	},
+	
+	"getLog": function(){
+		if(typeof window.localStorage === 'undefined') return false;
+
+		function _download(filename, text) {
+			var element = document.createElement('a');
+			element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(text));
+			element.setAttribute('download', filename);
+			element.style.display = 'none';
+			document.body.appendChild(element);
+			element.click();
+			document.body.removeChild(element);
+		}
+
+		var logContent = [];
+		var logContentArray = [];
+
+		for(var key in window.localStorage){
+			if(typeof window.localStorage[key] !== "function" && key !== "length"){
+				logContentArray.push([key, window.localStorage[key]])
+			}
+		};
+
+		logContentArray.sort(function(a, b){
+			return a[0] - b[0];
+		});
+
+		logContentArray.forEach(function(data){
+			var logTime = new Date(parseInt(data[0])).toString().split(" ")
+			var logTimeArray = []
+			logTimeArray.push(logTime[1], logTime[2], logTime[4])
+			logContent.push("[" + logTimeArray.join(" ") + "]" + data[1])
+		})
+
+		_download("uiLog.txt", logContent.join("\n"));
+	},
+
+	"get_diag_avg_data": function(queryParam, handler){
+		queryParam.ts = parseInt(queryParam.ts/1000);
+		
+		$.ajax({
+			url: '/get_diag_avg_data.cgi',
+			dataType: 'json',
+			type: "POST",
+			data: queryParam,
+			error: function(){},
+			success: function(response){
+				if(handler) handler(response);
+			}
+		});
+	},
+
+	"get_diag_active_client": function(queryParam, handler){
+		queryParam.ts = parseInt(queryParam.ts/1000);
+		
+		$.ajax({
+			url: '/get_diag_active_client.cgi',
+			dataType: 'json',
+			type: "POST",
+			data: queryParam,
+			error: function(){},
+			success: function(response){
+				if(handler) handler(response);
+			}
+		});
+	},
+
+    "get_diag_eth_traffic_data": function(queryParam, handler){
+		queryParam.ts = parseInt(queryParam.ts/1000);
+        queryParam.is_bh = 1;
+		
+		$.ajax({
+			url: '/get_diag_eth_traffic_data.cgi',
+			dataType: 'json',
+			type: "POST",
+			data: queryParam,
+			error: function(){},
+			success: function(response){
+                var ret = {};
+                var getAvg = function(x){return parseInt(x/queryParam.duration/10.24)/100};
+
+                ret.rx_rate = response.rx_diff.map(getAvg)
+                ret.tx_rate = response.tx_diff.map(getAvg)
+
+				if(handler) handler(ret);
+			}
+		});
+	},
+
+	"diag_ping": {
+		"start": function(){
+			$.ajax({
+				url: '/dns_ping.cgi',
+				success: function(response){
+					console.log(response)
+				}
+			});			
+		},
+
+		"getResult": function(){
+			var _content = ["dns_ip", "alias", "valid", "min", "avg", "max", "pkt_sent", "pkt_recv", "pkt_loss_rate", "data_time"];
+			var retData = {};
+			var dns_ping_state = httpApi.nvramGet(["dns_ping_state"], true).dns_ping_state;
+
+			if(dns_ping_state == "3"){
+				retData.status = "FINISH";
+			}
+			else{
+				retData.status = "PROCEEDING";
+			}
+
+			$.ajax({
+				url: '/get_diag_content_data.cgi',
+				async: false,
+				data: {
+					"db": "dns_ping",
+					"content": _content.join(";")
+				},
+				success: function(response){
+					try{
+						var pingArray = JSON.parse(response).contents;
+						for(var i=0; i<pingArray.length; i++){
+							var target = pingArray[i];
+							retData[target[0]] = {}
+							
+							for(j=1; j<target.length; j++){
+								retData[target[0]][_content[j]] = target[j];
+							}
+						}
+					}catch(e){
+						retData = {"status": "PARSE ERROR"}
+						httpApi.log("httpApi.diag_ping.getResult", response);
+					}
+				}
+			});
+
+			return retData;
+		}
 	}
 }

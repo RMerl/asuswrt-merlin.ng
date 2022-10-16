@@ -95,6 +95,23 @@ struct packet_t {
 	void (*set_dscp)(packet_t *this, uint8_t value);
 
 	/**
+	 * Get metadata of this packet.
+	 *
+	 * @param key		key of the metadata to retrieve
+	 * @return			metadata object (internal data), NULL if not found
+	 */
+	metadata_t *(*get_metadata)(packet_t *packet, const char *key);
+
+	/**
+	 * Set/remove metadata of this packet.
+	 *
+	 * @param key		key of the metadata (cloned)
+	 * @param data		metadata object (adopted), NULL to remove and destroy
+	 *					existing object with the given key
+	 */
+	void (*set_metadata)(packet_t *packet, const char *key, metadata_t *data);
+
+	/**
 	 * Increase the offset where the actual packet data starts.
 	 *
 	 * The total offset applies to future calls of get_data() and clone().
@@ -133,8 +150,16 @@ packet_t *packet_create();
  * @param src			source address (gets owned)
  * @param dst			destination address (gets owned)
  * @param data			packet data (gets owned)
- * @return packet_t object
+ * @return				packet_t object
  */
 packet_t *packet_create_from_data(host_t *src, host_t *dst, chunk_t data);
+
+/**
+ * Create a clone of the given packet but without data
+ *
+ * @param packet		packet to clone
+ * @return				cloned packet
+ */
+packet_t *packet_clone_no_data(packet_t *packet);
 
 #endif /** PACKET_H_ @}*/

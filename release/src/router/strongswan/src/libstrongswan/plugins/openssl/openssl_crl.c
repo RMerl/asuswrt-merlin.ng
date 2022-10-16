@@ -288,9 +288,10 @@ METHOD(certificate_t, issued_by, bool,
 	private_openssl_crl_t *this, certificate_t *issuer,
 	signature_params_t **scheme)
 {
-	chunk_t fingerprint, tbs;
+	chunk_t tbs;
 	public_key_t *key;
 	x509_t *x509;
+	chunk_t keyid = chunk_empty;
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L
 	const ASN1_BIT_STRING *sig;
 #else
@@ -303,29 +304,32 @@ METHOD(certificate_t, issued_by, bool,
 		return FALSE;
 	}
 	x509 = (x509_t*)issuer;
-	if (!(x509->get_flags(x509) & X509_CA))
+	if (!(x509->get_flags(x509) & (X509_CA | X509_CRL_SIGN)))
 	{
 		return FALSE;
 	}
-	key = issuer->get_public_key(issuer);
-	if (!key)
+
+	/* compare keyIdentifiers if available, otherwise use DNs */
+	if (this->authKeyIdentifier.ptr)
 	{
-		return FALSE;
-	}
-	if (this->authKeyIdentifier.ptr && key)
-	{
-		if (!key->get_fingerprint(key, KEYID_PUBKEY_SHA1, &fingerprint) ||
-			!chunk_equals(fingerprint, this->authKeyIdentifier))
+		keyid = x509->get_subjectKeyIdentifier(x509);
+		if (keyid.len && !chunk_equals(keyid, this->authKeyIdentifier))
 		{
 			return FALSE;
 		}
 	}
-	else
+	if (!keyid.len)
 	{
 		if (!this->issuer->equals(this->issuer, issuer->get_subject(issuer)))
 		{
 			return FALSE;
 		}
+	}
+
+	key = issuer->get_public_key(issuer);
+	if (!key)
+	{
+		return FALSE;
 	}
 	/* i2d_re_X509_CRL_tbs() was added with 1.1.0 when X509_CRL became opaque */
 #if OPENSSL_VERSION_NUMBER >= 0x10100000L

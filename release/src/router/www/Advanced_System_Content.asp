@@ -324,6 +324,7 @@ function initial(){
 		document.form.dns_probe_chk.checked = false;
 		document.form.wandog_enable_chk.checked = false;
 	}
+	updatDNSListOnline();
 	show_network_monitoring();
 
 	if(!HTTPS_support){
@@ -1813,7 +1814,7 @@ function show_network_monitoring(){
 
 	appendMonitorOption(document.form.dns_probe_chk);
 	appendMonitorOption(document.form.wandog_enable_chk);
-	setTimeout("showPingTargetList();", 500);
+	setTimeout("create_DNSlist_view();", 500);
 }
 
 function appendMonitorOption(obj){
@@ -1821,6 +1822,7 @@ function appendMonitorOption(obj){
 		if(obj.checked){
 			document.getElementById("ping_tr").style.display = "";
 			inputCtrl(document.form.wandog_target, 1);
+
 		}
 		else{
 			document.getElementById("ping_tr").style.display = "none";
@@ -1830,42 +1832,73 @@ function appendMonitorOption(obj){
 	else if(obj.name == "dns_probe_chk"){
 		if(obj.checked){
 			document.getElementById("probe_host_tr").style.display = "";
-			document.getElementById("probe_content_tr").style.display = "";
+			//document.getElementById("probe_content_tr").style.display = "";
 			inputCtrl(document.form.dns_probe_host, 1);
-			inputCtrl(document.form.dns_probe_content, 1);
+			//inputCtrl(document.form.dns_probe_content, 1);
 		}
 		else{
 			document.getElementById("probe_host_tr").style.display = "none";
-			document.getElementById("probe_content_tr").style.display = "none";
+			//document.getElementById("probe_content_tr").style.display = "none";
 			inputCtrl(document.form.dns_probe_host, 0);
-			inputCtrl(document.form.dns_probe_content, 0);
+			//inputCtrl(document.form.dns_probe_content, 0);
 		}
 	}
 }
 
 var isPingListOpen = 0;
-function showPingTargetList(){
+function create_DNSlist_view(){
+	//count ping_target
+	var array_ping=[], array_ping_CN=[];
+	for(var i=0;i<DNSService.length;i++){
+		//"ping_target" : "Yes"|"CN"|"No"
+		switch (DNSService[i].ping_target){
+			case "Yes":
+						array_ping.push(i);
+				break;
+			case "CN":
+						array_ping_CN.push(i);
+				break;
+			default:
+				break;
+		}
+	}
+
 	if(is_CN){
-		var APPListArray = [
-			["Baidu", "www.baidu.com"], ["QQ", "www.qq.com"], ["Taobao", "www.taobao.com"]
-		];
+		var APPListArray = array_ping_CN;
 	}
 	else{
-		var APPListArray = [
-			["Google ", "www.google.com"], ["Facebook", "www.facebook.com"], ["Youtube", "www.youtube.com"], ["Yahoo", "www.yahoo.com"],
-			["Baidu", "www.baidu.com"], ["Wikipedia", "www.wikipedia.org"], ["Windows Live", "www.live.com"], ["QQ", "www.qq.com"],
-			["Amazon", "www.amazon.com"], ["Twitter", "www.twitter.com"], ["Taobao", "www.taobao.com"], ["Blogspot", "www.blogspot.com"],
-			["Linkedin", "www.linkedin.com"], ["Sina", "www.sina.com"], ["eBay", "www.ebay.com"], ["MSN", "msn.com"], ["Bing", "www.bing.com"],
-			["Яндекс", "www.yandex.ru"], ["WordPress", "www.wordpress.com"], ["ВКонтакте", "www.vk.com"]
-		];
+		var APPListArray = array_ping;
 	}
 
 	var code = "";
-	for(var i = 0; i < APPListArray.length; i++){
-		code += '<a><div onclick="setPingTarget(\''+APPListArray[i][1]+'\');"><strong>'+APPListArray[i][0]+'</strong></div></a>';
+	for (var j = 0; j < APPListArray.length; j++){
+		code += '<a><div onclick="setPingTarget(\''+DNSService[APPListArray[j]].ServiceIP1+'\');">'+DNSService[APPListArray[j]].DNSService+' <strong>('+DNSService[APPListArray[j]].ServiceIP1+')</strong></div></a>';
 	}
 	code +='<!--[if lte IE 6.5]><iframe class="hackiframe2"></iframe><![endif]-->';
 	document.getElementById("TargetList_Block_PC").innerHTML = code;
+
+}
+
+var DNSService = new Object;
+function updatDNSListOnline(){
+
+	$.getJSON("/ajax/DNS_List.json", function(local_data){
+		DNSService = Object.keys(local_data).map(function(e){
+				return local_data[e];
+		});
+
+		$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/DNS_List.json",
+			function(cloud_data){
+				if(JSON.stringify(local_data) != JSON.stringify(cloud_data)){
+					if(Object.keys(cloud_data).length > 0){
+						DNSService = Object.keys(cloud_data).map(function(e){
+							return cloud_data[e];
+						});
+					}
+				}
+			}
+		);
+	});
 }
 
 function setPingTarget(ipaddr){
@@ -2392,6 +2425,7 @@ function build_boostkey_options() {
 <input type="hidden" name="sw_mode" value="<% nvram_get("sw_mode"); %>">
 <input type="hidden" name="ncb_enable" value="<% nvram_get("ncb_enable"); %>">
 <input type="hidden" name="dns_probe" value="<% nvram_get("dns_probe"); %>">
+<input type="hidden" name="dns_probe_content" value="*">
 <input type="hidden" name="wandog_enable" value="<% nvram_get("wandog_enable"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -2656,16 +2690,16 @@ function build_boostkey_options() {
 							<input type="text" class="input_32_table" name="dns_probe_host" maxlength="255" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_host"); %>">
 					</td>
 				</tr>
-				<tr id="probe_content_tr" style="display: none;">
-					<th><#Respond_IP#></th>
+				<!-- tr id="probe_content_tr" style="display: none;">
+					<th><#Respond_IP#> (<#NetworkTools_option#>)</th>
 					<td>
 							<input type="text" class="input_32_table" name="dns_probe_content" maxlength="1024" autocorrect="off" autocapitalize="off" value="<% nvram_get("dns_probe_content"); %>">
 					</td>
-				</tr>
+				</tr -->
 				<tr id="ping_tr" style="display: none;">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(26,2);"><#Ping_Target#></a></th>
 					<td>
-							<input type="text" class="input_32_table" name="wandog_target" maxlength="100" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com" autocorrect="off" autocapitalize="off">
+							<input type="text" class="input_25_table" name="wandog_target" maxlength="15" value="<% nvram_get("wandog_target"); %>" placeholder="ex: www.google.com (8.8.8.8)" autocorrect="off" autocapitalize="off">
 							<img id="ping_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullPingTargetList(this);" title="<#select_network_host#>">
 							<div id="TargetList_Block_PC" name="TargetList_Block_PC" class="clientlist_dropdown" style="margin-left: 2px; width: 348px;display: none;"></div>
 					</td>

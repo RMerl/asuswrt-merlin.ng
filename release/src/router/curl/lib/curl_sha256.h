@@ -8,7 +8,7 @@
  *                             \___|\___/|_| \_\_____|
  *
  * Copyright (C) 2017, Florin Petriuc, <petriuc.florin@gmail.com>
- * Copyright (C) 2018 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2018 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -21,6 +21,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 #ifndef CURL_DISABLE_CRYPTO_AUTH
@@ -28,10 +30,17 @@
 
 extern const struct HMAC_params Curl_HMAC_SHA256[1];
 
+#ifdef USE_WOLFSSL
+/* SHA256_DIGEST_LENGTH is an enum value in wolfSSL. Need to import it from
+ * sha.h*/
+#include <wolfssl/options.h>
+#include <wolfssl/openssl/sha.h>
+#else
 #define SHA256_DIGEST_LENGTH 32
+#endif
 
-void Curl_sha256it(unsigned char *outbuffer, const unsigned char *input,
-                   const size_t len);
+CURLcode Curl_sha256it(unsigned char *outbuffer, const unsigned char *input,
+                       const size_t len);
 
 #endif
 

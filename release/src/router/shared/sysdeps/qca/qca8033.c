@@ -898,7 +898,7 @@ rtkswitch_Reset_Storm_Control(void)
 	return 0;
 }
 
-void ATE_port_status(phy_info_list *list)
+void ATE_port_status(int verbose, phy_info_list *list)
 {
 	/* Port status. Link status and Speed */
 	FILE *fp;
@@ -934,7 +934,8 @@ void ATE_port_status(phy_info_list *list)
 	
 	snprintf(buf, sizeof(buf), "L1=%C;", (l == 1) ? (s == 2) ? 'G' : 'M': 'X');
 	
-	puts(buf);
+	if (verbose)
+		puts(buf);
 }
 
 #if 0

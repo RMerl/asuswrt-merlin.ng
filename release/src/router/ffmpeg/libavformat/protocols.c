@@ -34,6 +34,7 @@ extern const URLProtocol ff_ffrtmphttp_protocol;
 extern const URLProtocol ff_file_protocol;
 extern const URLProtocol ff_ftp_protocol;
 extern const URLProtocol ff_gopher_protocol;
+extern const URLProtocol ff_gophers_protocol;
 extern const URLProtocol ff_hls_protocol;
 extern const URLProtocol ff_http_protocol;
 extern const URLProtocol ff_httpproxy_protocol;
@@ -60,6 +61,8 @@ extern const URLProtocol ff_tls_protocol;
 extern const URLProtocol ff_udp_protocol;
 extern const URLProtocol ff_udplite_protocol;
 extern const URLProtocol ff_unix_protocol;
+extern const URLProtocol ff_libamqp_protocol;
+extern const URLProtocol ff_librist_protocol;
 extern const URLProtocol ff_librtmp_protocol;
 extern const URLProtocol ff_librtmpe_protocol;
 extern const URLProtocol ff_librtmps_protocol;
@@ -68,9 +71,11 @@ extern const URLProtocol ff_librtmpte_protocol;
 extern const URLProtocol ff_libsrt_protocol;
 extern const URLProtocol ff_libssh_protocol;
 extern const URLProtocol ff_libsmbclient_protocol;
+extern const URLProtocol ff_libzmq_protocol;
 
 #include "libavformat/protocol_list.c"
 
+#if FF_API_CHILD_CLASS_NEXT
 const AVClass *ff_urlcontext_child_class_next(const AVClass *prev)
 {
     int i;
@@ -89,7 +94,22 @@ const AVClass *ff_urlcontext_child_class_next(const AVClass *prev)
             return url_protocols[i]->priv_data_class;
     return NULL;
 }
+#endif
 
+const AVClass *ff_urlcontext_child_class_iterate(void **iter)
+{
+    const AVClass *ret = NULL;
+    uintptr_t i;
+
+    for (i = (uintptr_t)*iter; url_protocols[i]; i++) {
+        ret = url_protocols[i]->priv_data_class;
+        if (ret)
+            break;
+    }
+
+    *iter = (void*)(uintptr_t)(url_protocols[i] ? i + 1 : i);
+    return ret;
+}
 
 const char *avio_enum_protocols(void **opaque, int output)
 {
@@ -104,6 +124,16 @@ const char *avio_enum_protocols(void **opaque, int output)
     if ((output && (*p)->url_write) || (!output && (*p)->url_read))
         return (*p)->name;
     return avio_enum_protocols(opaque, output);
+}
+
+const AVClass *avio_protocol_get_class(const char *name)
+{
+    int i = 0;
+    for (i = 0; url_protocols[i]; i++) {
+        if (!strcmp(url_protocols[i]->name, name))
+            return url_protocols[i]->priv_data_class;
+    }
+    return NULL;
 }
 
 const URLProtocol **ffurl_get_protocols(const char *whitelist,

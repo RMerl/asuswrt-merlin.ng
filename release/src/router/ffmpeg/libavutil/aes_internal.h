@@ -1,5 +1,5 @@
 /*
- * copyright (c) 2015 Rodger Combs <rodger.combs@gmail.com>
+ * copyright (c) 2015 rcombs
  *
  * This file is part of FFmpeg.
  *
@@ -21,7 +21,7 @@
 #ifndef AVUTIL_AES_INTERNAL_H
 #define AVUTIL_AES_INTERNAL_H
 
-#include "mem.h"
+#include "mem_internal.h"
 #include <stdint.h>
 
 typedef union {

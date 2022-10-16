@@ -219,7 +219,7 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 			get_account_from_smb_info = 1;
 		}
 		
-		Cdbg(DBE, "fail smbc_parser_basic_authentication and get account from smb_info %s, %s", user->ptr, pass->ptr);
+		Cdbg(DBE, "fail smbc_parser_basic_authentication and get account from smb_info");
 	}
 	else{
 		buffer_copy_string(user, auth_username);
@@ -446,7 +446,7 @@ handler_t basic_authentication_handler(server *srv, connection *con, plugin_data
 	if( !buffer_is_equal_string(user, "no", 2) && !buffer_is_equal_string(pass, "no", 2)){
 		buffer_copy_buffer(con->smb_info->username, user);
 		buffer_copy_buffer(con->smb_info->password, pass);
-		Cdbg(DBE, "save username=[%s], password=[%s], time=[%d] to con->smb_info", con->smb_info->username->ptr, con->smb_info->password->ptr, con->smb_info->auth_time);
+		Cdbg(DBE, "save username=[%s], time=[%d] to con->smb_info", con->smb_info->username->ptr, con->smb_info->auth_time);
 	}
 	
 	buffer_free(user);

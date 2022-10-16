@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,28 +18,32 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_setopt 3 "August 26, 2021" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_easy_setopt 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
 curl_easy_setopt \- set options for a curl easy handle
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLoption option, parameter);
+.fi
 .SH DESCRIPTION
 \fIcurl_easy_setopt(3)\fP is used to tell libcurl how to behave. By setting
-the appropriate options, the application can change libcurl's behavior.  All
+the appropriate options, the application can change libcurl's behavior. All
 options are set with an \fIoption\fP followed by a \fIparameter\fP. That
 parameter can be a \fBlong\fP, a \fBfunction pointer\fP, an \fBobject
 pointer\fP or a \fBcurl_off_t\fP, depending on what the specific option
 expects. Read this manual carefully as bad input values may cause libcurl to
-behave badly!  You can only set one option in each function call. A typical
+behave badly! You can only set one option in each function call. A typical
 application uses many \fIcurl_easy_setopt(3)\fP calls in the setup phase.
 
 Options set with this function call are valid for all forthcoming transfers
-performed using this \fIhandle\fP.  The options are not in any way reset
+performed using this \fIhandle\fP. The options are not in any way reset
 between transfers, so if you want subsequent transfers with different options,
 you must change them between the transfers. You can optionally reset all
 options back to internal default with \fIcurl_easy_reset(3)\fP.
@@ -145,6 +149,10 @@ Suppress proxy CONNECT response headers from user callbacks. See \fICURLOPT_SUPP
 Callback to be called before a new resolve request is started. See \fICURLOPT_RESOLVER_START_FUNCTION(3)\fP
 .IP CURLOPT_RESOLVER_START_DATA
 Data pointer to pass to resolver start callback. See \fICURLOPT_RESOLVER_START_DATA(3)\fP
+.IP CURLOPT_PREREQFUNCTION
+Callback to be called after a connection is established but before a request is made on that connection. See \fICURLOPT_PREREQFUNCTION(3)\fP
+.IP CURLOPT_PREREQDATA
+Data pointer to pass to the CURLOPT_PREREQFUNCTION callback. See \fICURLOPT_PREREQDATA(3)\fP
 .SH ERROR OPTIONS
 .IP CURLOPT_ERRORBUFFER
 Error message buffer. See \fICURLOPT_ERRORBUFFER(3)\fP
@@ -259,13 +267,13 @@ Proxy TLS authentication methods. See \fICURLOPT_PROXY_TLSAUTH_TYPE(3)\fP
 .IP CURLOPT_PROXYAUTH
 HTTP proxy authentication methods. See \fICURLOPT_PROXYAUTH(3)\fP
 .IP CURLOPT_SASL_AUTHZID
-SASL authorisation identity (identity to act as). See \fICURLOPT_SASL_AUTHZID(3)\fP
+SASL authorization identity (identity to act as). See \fICURLOPT_SASL_AUTHZID(3)\fP
 .IP CURLOPT_SASL_IR
 Enable SASL initial response. See \fICURLOPT_SASL_IR(3)\fP
 .IP CURLOPT_XOAUTH2_BEARER
 OAuth2 bearer token. See \fICURLOPT_XOAUTH2_BEARER(3)\fP
 .IP CURLOPT_DISALLOW_USERNAME_IN_URL
-Don't allow username in URL. See \fICURLOPT_DISALLOW_USERNAME_IN_URL(3)\fP
+Do not allow username in URL. See \fICURLOPT_DISALLOW_USERNAME_IN_URL(3)\fP
 .SH HTTP OPTIONS
 .IP CURLOPT_AUTOREFERER
 Automatically set Referer: header. See \fICURLOPT_AUTOREFERER(3)\fP
@@ -459,6 +467,8 @@ Upload data. See \fICURLOPT_UPLOAD(3)\fP
 Set upload buffer size. See \fICURLOPT_UPLOAD_BUFFERSIZE(3)\fP
 .IP CURLOPT_MIMEPOST
 Post/send MIME data. See \fICURLOPT_MIMEPOST(3)\fP
+.IP CURLOPT_MIME_OPTIONS
+Set MIME option flags. See \fICURLOPT_MIME_OPTIONS(3)\fP
 .IP CURLOPT_MAXFILESIZE
 Maximum file size to get. See \fICURLOPT_MAXFILESIZE(3)\fP
 .IP CURLOPT_MAXFILESIZE_LARGE
@@ -489,7 +499,9 @@ Use a new connection. \fICURLOPT_FRESH_CONNECT(3)\fP
 .IP CURLOPT_FORBID_REUSE
 Prevent subsequent connections from re-using this. See \fICURLOPT_FORBID_REUSE(3)\fP
 .IP CURLOPT_MAXAGE_CONN
-Limit the age of connections for reuse. See \fICURLOPT_MAXAGE_CONN(3)\fP
+Limit the age (idle time) of connections for reuse. See \fICURLOPT_MAXAGE_CONN(3)\fP
+.IP CURLOPT_MAXLIFETIME_CONN
+Limit the age (since creation) of connections for reuse. See \fICURLOPT_MAXLIFETIME_CONN(3)\fP
 .IP CURLOPT_CONNECTTIMEOUT
 Timeout for the connection phase. See \fICURLOPT_CONNECTTIMEOUT(3)\fP
 .IP CURLOPT_CONNECTTIMEOUT_MS
@@ -529,9 +541,9 @@ Proxy client cert. See \fICURLOPT_PROXY_SSLCERT(3)\fP
 .IP CURLOPT_PROXY_SSLCERT_BLOB
 Proxy client cert memory buffer. See \fICURLOPT_PROXY_SSLCERT_BLOB(3)\fP
 .IP CURLOPT_SSLCERTTYPE
-Client cert type.  See \fICURLOPT_SSLCERTTYPE(3)\fP
+Client cert type. See \fICURLOPT_SSLCERTTYPE(3)\fP
 .IP CURLOPT_PROXY_SSLCERTTYPE
-Proxy client cert type.  See \fICURLOPT_PROXY_SSLCERTTYPE(3)\fP
+Proxy client cert type. See \fICURLOPT_PROXY_SSLCERTTYPE(3)\fP
 .IP CURLOPT_SSLKEY
 Client key. See \fICURLOPT_SSLKEY(3)\fP
 .IP CURLOPT_SSLKEY_BLOB
@@ -643,6 +655,8 @@ SSH authentication types. See \fICURLOPT_SSH_AUTH_TYPES(3)\fP
 Enable SSH compression. See \fICURLOPT_SSH_COMPRESSION(3)\fP
 .IP CURLOPT_SSH_HOST_PUBLIC_KEY_MD5
 MD5 of host's public key. See \fICURLOPT_SSH_HOST_PUBLIC_KEY_MD5(3)\fP
+.IP CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256
+SHA256 of host's public key. See \fICURLOPT_SSH_HOST_PUBLIC_KEY_SHA256(3)\fP
 .IP CURLOPT_SSH_PUBLIC_KEYFILE
 File name of public key. See \fICURLOPT_SSH_PUBLIC_KEYFILE(3)\fP
 .IP CURLOPT_SSH_PRIVATE_KEYFILE
@@ -653,6 +667,10 @@ File name with known hosts. See \fICURLOPT_SSH_KNOWNHOSTS(3)\fP
 Callback for known hosts handling. See \fICURLOPT_SSH_KEYFUNCTION(3)\fP
 .IP CURLOPT_SSH_KEYDATA
 Custom pointer to pass to ssh key callback. See \fICURLOPT_SSH_KEYDATA(3)\fP
+.IP CURLOPT_SSH_HOSTKEYFUNCTION
+Callback for checking host key handling. See \fICURLOPT_SSH_HOSTKEYFUNCTION(3)\fP
+.IP CURLOPT_SSH_HOSTKEYDATA
+Custom pointer to pass to ssh host key callback. See \fICURLOPT_SSH_HOSTKEYDATA(3)\fP
 .SH OTHER OPTIONS
 .IP CURLOPT_PRIVATE
 Private pointer to store. See \fICURLOPT_PRIVATE(3)\fP
@@ -665,6 +683,18 @@ Mode for creating new remote directories. See \fICURLOPT_NEW_DIRECTORY_PERMS(3)\
 .SH TELNET OPTIONS
 .IP CURLOPT_TELNETOPTIONS
 TELNET options. See \fICURLOPT_TELNETOPTIONS(3)\fP
+.SH EXAMPLE
+.nf
+CURL *curl = curl_easy_init();
+if(curl) {
+  CURLcode res;
+  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
+  res = curl_easy_perform(curl);
+  curl_easy_cleanup(curl);
+}
+.fi
+.SH AVAILABILITY
+Always
 .SH RETURN VALUE
 \fICURLE_OK\fP (zero) means that the option was set properly, non-zero means an
 error occurred as \fI<curl/curl.h>\fP defines. See the \fIlibcurl-errors(3)\fP
@@ -677,21 +707,11 @@ Strings passed on to libcurl must be shorter than 8000000 bytes, otherwise
 \fBCURLE_BAD_FUNCTION_ARGUMENT\fP is returned when the argument to an option
 is invalid, like perhaps out of range.
 
-If you try to set an option that libcurl doesn't know about, perhaps because
+If you try to set an option that libcurl does not know about, perhaps because
 the library is too old to support it or the option was removed in a recent
 version, this function will return \fICURLE_UNKNOWN_OPTION\fP. If support for
 the option was disabled at compile-time, it will return
 \fICURLE_NOT_BUILT_IN\fP.
-.SH EXAMPLE
-.nf
-CURL *curl = curl_easy_init();
-if(curl) {
-  CURLcode res;
-  curl_easy_setopt(curl, CURLOPT_URL, "https://example.com");
-  res = curl_easy_perform(curl);
-  curl_easy_cleanup(curl);
-}
-.fi
 .SH "SEE ALSO"
 .BR curl_easy_init "(3), " curl_easy_cleanup "(3), " curl_easy_reset "(3), "
 .BR curl_easy_getinfo "(3), " curl_multi_setopt "(3), "

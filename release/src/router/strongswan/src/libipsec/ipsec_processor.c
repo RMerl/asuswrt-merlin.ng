@@ -209,7 +209,7 @@ static job_requeue_t process_outbound(private_ipsec_processor_t *this)
 	sa = ipsec->sas->checkout_by_reqid(ipsec->sas, policy->get_reqid(policy),
 									   FALSE);
 	if (!sa)
-	{	/* TODO-IPSEC: send an acquire to uppper layer */
+	{	/* TODO-IPSEC: send an acquire to upper layer */
 		DBG1(DBG_ESP, "could not find an outbound IPsec SA for reqid {%u}, "
 			 "dropping packet", policy->get_reqid(policy));
 		packet->destroy(packet);

@@ -62,7 +62,7 @@ START_TEST(test_derive_ike_keys)
 	aead_t * const aead = keymat->keymat_v2.keymat.get_aead(&keymat->keymat_v2.keymat, TRUE);
 	fail_if(!aead, "AEAD is NULL");
 
-	fail_if(aead->get_key_size(aead) != 96, "Key size mismatch %d",
+	fail_if(aead->get_key_size(aead) != 1, "Key size mismatch %d",
 			aead->get_key_size(aead));
 	fail_if(aead->get_block_size(aead) != 16, "Block size mismatch %d",
 			aead->get_block_size(aead));

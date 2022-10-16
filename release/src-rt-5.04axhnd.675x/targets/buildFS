@@ -498,6 +498,22 @@ if [ "$BUILD_NAME" == "RT-AX3000N" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
 fi
 
+if [ "$BUILD_NAME" == "XD6_V2" ]; then
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/cdrom
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/net/phy
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/scsi
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/host/ehci*
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/host/xhci*
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/mon
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/usb/storage
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/drivers/net/bonding
+	rm -rf $TARGETS_DIR/$ROOTFS/lib/modules/$LINUX_VER_STR/kernel/fs
+	rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/mk*
+	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/*fsck*
+fi
+
 # strip userspace binaries is sstrip is "enabled"
 # sstrip is set to /bin/touch if BUILD_GDBSERVER=y
 if [ "$SSTRIP" != "/bin/touch" ]; then

@@ -28,6 +28,7 @@
 #include <xavs.h>
 #include "avcodec.h"
 #include "internal.h"
+#include "packet_internal.h"
 #include "libavutil/internal.h"
 #include "libavutil/mem.h"
 #include "libavutil/opt.h"
@@ -474,7 +475,8 @@ AVCodec ff_libxavs_encoder = {
     .init           = XAVS_init,
     .encode2        = XAVS_frame,
     .close          = XAVS_close,
-    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_AUTO_THREADS,
+    .capabilities   = AV_CODEC_CAP_DELAY | AV_CODEC_CAP_OTHER_THREADS,
+    .caps_internal  = FF_CODEC_CAP_AUTO_THREADS,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P, AV_PIX_FMT_NONE },
     .priv_class     = &xavs_class,
     .defaults       = xavs_defaults,

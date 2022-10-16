@@ -17,7 +17,7 @@
  */
 
 /*
- * OpenVPN utility library for Asuswrt-Merlin
+ * VPN utility library for Asuswrt-Merlin
  * Provides some of the functions found in Asuswrt's
  * proprietary libvpn, either re-implemented, or
  * implemented as wrappers around AM's functions.
@@ -35,6 +35,7 @@
 #include "openvpn_config.h"
 #include "openvpn_control.h"
 #include "openvpn_setup.h"
+#include "amvpn_routing.h"
 
 #include <sys/socket.h>
 #include <netinet/in.h>
@@ -231,7 +232,7 @@ void ovpn_client_down_handler(int unit)
 	ovpn_set_killswitch(unit);
 	_flush_routing_cache();
 
-	ovpn_clear_exclusive_dns(unit);
+	amvpn_clear_exclusive_dns(unit, VPNDIR_PROTO_OPENVPN);
 
 	sprintf(dirname, "/etc/openvpn/client%d", unit);
 
@@ -249,44 +250,6 @@ void ovpn_client_down_handler(int unit)
 	snprintf(buffer, sizeof(buffer), "%s/client.conf", dirname);
 	if (f_exists(buffer))
 		unlink(buffer);
-}
-
-
-void ovpn_clear_exclusive_dns(int unit)
-{
-	char buffer[32];
-
-	sprintf(buffer, "DNSVPN%d", unit);
-	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
-	eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
-	eval("/usr/sbin/iptables", "-t", "nat", "-F", buffer);
-	eval("/usr/sbin/iptables", "-t", "nat", "-X", buffer);
-
-	sprintf(buffer, "/etc/openvpn/client%d/dns.sh", unit);
-	if (f_exists(buffer))
-		unlink(buffer);
-}
-
-
-// Recreate the port 53 PREROUTING rules to ensure they are in the correct order (OVPN1 first, OVPN5 last)
-void ovpn_update_exclusive_dns_rules()
-{
-	int unit;
-	char buffer[100];
-
-	for (unit = OVPN_CLIENT_MAX; unit > 0; unit--) {
-		snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
-		if (f_exists(buffer)) {
-			// Remove and re-add to ensure proper order
-			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit);
-
-			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
-			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
-
-			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
-			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
-		}
-	}
 }
 
 
@@ -415,7 +378,7 @@ void ovpn_client_up_handler(int unit)
 			}
 		}
 
-		ovpn_set_routing_rules(unit);
+		amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 		_flush_routing_cache();
 
 	}	// end IF_TUN
@@ -477,173 +440,13 @@ exit:
 			lock = file_lock(VPNROUTING_LOCK);
 			ovpn_set_exclusive_dns(unit);
 			// Refresh prerouting rules to ensure correct order
-			ovpn_update_exclusive_dns_rules();
+			amvpn_update_exclusive_dns_rules();
 			file_unlock(lock);
 		}
 	}
 
 	if (fp_conf)
 		fclose(fp_conf);
-}
-
-
-// Remove all rules pointing to a specific client table
-// If unit is 0, then remove rules targetting main (i.e. WAN)
-void _clear_routing_rules(int unit) {
-	FILE *fp;
-	char buffer[128], buffer2[128], buffer3[128];
-	int prio, verb;
-	char table[12], *lookup;
-	char target_table[12];
-
-	snprintf(buffer, sizeof (buffer), "vpn_client%d_verb", unit);
-	verb = nvram_get_int(buffer);
-
-	snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule show > /tmp/vpnrules%d_tmp", unit);
-	system(buffer);
-
-	snprintf(buffer, sizeof (buffer), "/tmp/vpnrules%d_tmp", unit);
-	fp = fopen(buffer, "r");
-	if (fp) {
-		if (unit == 0)
-			strlcpy(target_table, "main", sizeof (target_table));
-		else
-			snprintf(target_table, sizeof (target_table), "ovpnc%d", unit);
-
-		while (fgets(buffer2, sizeof(buffer2), fp) != NULL) {
-			if (buffer2[strlen(buffer2)-1] == '\n')
-				buffer2[strlen(buffer2)-1] = '\0';
-
-			if (sscanf(buffer2, "%u", &prio) != 1)
-				continue;
-
-			// Only remove rules within our official range
-			if ((prio < 10000) || (prio > (10209 + (OVPN_CLIENT_MAX * 200))))
-				continue;
-
-			if ((lookup = strstr(buffer2, "lookup")) == NULL)
-				continue;
-
-			if (sscanf(lookup, "lookup %11s", table) != 1)
-				continue;
-			if (strcmp(table, target_table))
-				continue;
-
-			snprintf(buffer3, sizeof (buffer3), "/usr/sbin/ip rule del prio %d", prio);
-			if (verb >= 6)
-				logmessage("openvpn-routing", "Removed rule %d", prio);
-			system(buffer3);
-		}
-		fclose(fp);
-	}
-	unlink(buffer);
-}
-
-/*
-	Rule priority allocations:
-
-	10000-10009: clients set to OVPN_RGW_ALL
-
-	10010-10209: WAN rules
-
-	10210-10409: OVPN 1
-	10510-10609: OVPN 2
-	10710-10809: OVPN 3
-	10910-11009: OVPN 4
-	11100-11209: OVPN 5
-*/
-
-void ovpn_set_routing_rules(int unit) {
-	char prefix[32], buffer[8000];
-	int rgw, state, verb;
-
-	if (unit < 1 || unit > OVPN_CLIENT_MAX)
-		return;
-
-	snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
-	verb = nvram_pf_get_int(prefix, "verb");
-	rgw = nvram_pf_get_int(prefix, "rgw");
-
-	_clear_routing_rules(unit);
-
-	/* Refresh WAN rules */
-	_clear_routing_rules(0);
-	ovpn_get_policy_rules(0, buffer, sizeof (buffer));
-	_write_routing_rules(0, buffer, verb);
-
-	switch (rgw) {
-		case OVPN_RGW_NONE:
-		case OVPN_RGW_ALL:
-			// Set client rules if running or currently connecting
-			state = get_ovpn_status(OVPN_TYPE_CLIENT, unit);
-			if (state == OVPN_STS_RUNNING || state == OVPN_STS_INIT) {
-				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d", unit, 10000 + unit);
-				system(buffer);
-				if (verb >= 3)
-					logmessage("openvpn-routing","Routing all traffic through ovpnc%d", unit);
-			}
-			break;
-
-		case OVPN_RGW_POLICY:
-			ovpn_get_policy_rules(unit, buffer, sizeof (buffer));
-			_write_routing_rules(unit, buffer, verb);
-			break;
-	}
-}
-
-
-void _write_routing_rules(int unit, char *rules, int verb) {
-	char *buffer_tmp, *buffer_tmp2, *rule;
-	char buffer[128], table[16];
-	int ruleprio, vpnprio, wanprio;
-	char *enable, *desc, *target, *src, *dst;
-	char srcstr[64], dststr[64];
-
-	wanprio = 10010;
-	vpnprio = 10010 + (200 * unit);
-
-	buffer_tmp = buffer_tmp2 = strdup(rules);
-
-	while (buffer_tmp && (rule = strsep(&buffer_tmp2, "<")) != NULL) {
-		if((vstrsep(rule, ">", &enable, &desc, &src, &dst, &target)) != 5)
-			 continue;
-
-		if (!atoi(&enable[0]))
-			continue;
-
-		if (!*src && !*dst)
-			continue;
-
-		if (!strcmp(target,"WAN")) {
-			strcpy(table, "main");
-			ruleprio = wanprio++;
-		}
-		else if (!strncmp(target, "OVPN", 4)) {
-			snprintf(table, sizeof (table), "ovpnc%d", unit);
-			ruleprio = vpnprio++;
-		}
-		else
-			continue;
-
-		if (*src && strcmp(src, "0.0.0.0"))
-			snprintf(srcstr, sizeof (srcstr), "from %s", src);
-		else
-			*srcstr = '\0';
-
-		if (*dst && strcmp(dst, "0.0.0.0"))
-			snprintf(dststr, sizeof (dststr), "to %s", dst);
-		else
-			*dststr = '\0';
-
-		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add %s %s table %s priority %d",
-				                                   srcstr, dststr, table, ruleprio);
-
-		if (verb >= 3)
-			logmessage("openvpn-routing","Routing %s from %s to %s through %s", desc, (*src ? src : "any"), (*dst ? dst : "any"), table);
-
-		system(buffer);
-	}
-	free(buffer_tmp);
 }
 
 
@@ -657,122 +460,6 @@ void ovpn_set_killswitch(int unit) {
 		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route add prohibit default table ovpnc%d", unit);
 		logmessage("openvpn-routing", "Configured killswitch on VPN client %d", unit);
 		system(buffer);
-	}
-}
-
-
-inline void _flush_routing_cache() {
-	system("/usr/sbin/ip route flush cache");
-}
-
-
-void ovpn_set_exclusive_dns(int unit) {
-	char rules[8000], wanrules[8000], buffer[64], buffer2[64], server[20], iface_match[8];
-	char *nvp, *entry;
-	char *src, *dst, *iface, *desc, *enable, *netptr;
-	struct in_addr addr;
-	int mask;
-	char prefix[32];
-
-	FILE *fp_resolv, *fp_dns;
-
-	snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/client.resolv", unit);
-	fp_resolv = fopen(buffer, "r");
-	snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
-	fp_dns = fopen(buffer, "w");
-
-	if (!fp_resolv || !fp_dns) {
-		if (fp_resolv)
-			fclose(fp_resolv);
-		if (fp_dns)
-			fclose(fp_dns);
-		return;
-	}
-
-	fprintf(fp_dns, "#!/bin/sh\n"
-	                "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
-	                 unit);
-
-	sprintf(prefix, "vpn_client%d_", unit);
-
-	if (nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_ALL) {
-		// Iterate through servers
-		while (fgets(buffer2, sizeof(buffer2), fp_resolv) != NULL) {
-			if (sscanf(buffer2, "server=%16s", server) != 1)
-				continue;
-
-			if (!inet_aton(server, &addr))
-				continue;
-
-			fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -j DNAT --to-destination %s\n", unit, server);
-			logmessage("openvpn", "Forcing all to use DNS server %s (OpenVPN client %d is set to Exclusive DNS mode)", src, server, unit);
-			// Only configure first server found, as others would never get used
-			break;
-		}
-	} else if (nvram_pf_get_int(prefix, "rgw") == OVPN_RGW_POLICY) {
-		ovpn_get_policy_rules(unit, rules, sizeof (rules));
-		ovpn_get_policy_rules(0, wanrules, sizeof (wanrules));
-		strlcat(rules, wanrules, sizeof (rules));
-
-		nvp = rules;
-
-		snprintf(iface_match, sizeof (iface_match), "OVPN%d", unit);
-
-		while ((entry = strsep(&nvp, "<")) != NULL) {
-			if (vstrsep(entry, ">", &enable, &desc, &src, &dst, &iface) != 5)
-				continue;
-
-			if (atoi(&enable[0]) == 0)
-				continue;
-
-			if (*src && !*dst) {
-				strlcpy(buffer, src, sizeof(buffer));
-
-				if ((netptr = strchr(buffer, '/'))) {
-					*netptr = '\0';
-					mask = atoi(&netptr[1]);
-				} else {
-					mask = 32;
-				}
-
-				if ((mask >= 0) &&
-				    (mask <= 32) &&
-				    (inet_aton(buffer, &addr))) {
-					if (!strcmp(iface, iface_match)) {
-
-						// Iterate through servers
-						rewind(fp_resolv);
-						while (fgets(buffer2, sizeof(buffer2), fp_resolv) != NULL) {
-							if (sscanf(buffer2, "server=%16s", server) != 1)
-								continue;
-
-							if (!inet_aton(server, &addr))
-								continue;
-
-			                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
-			                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
-							// Only configure first server found, as others would never get used
-							break;
-						}
-		                        } else if (!strcmp(iface, "WAN")) {
-		                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
-		                                logmessage("openvpn", "Excluding %s from forced DNS routing", src);
-		                        }
-				}
-			}
-		}
-	}
-
-	fprintf(fp_dns, "/usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN%d\n"
-	                "/usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN%d\n",
-	                 unit, unit);
-
-	fclose(fp_resolv);
-	fclose(fp_dns);
-	sprintf(buffer, "/etc/openvpn/client%d/dns.sh", unit);
-	if (f_exists(buffer)) {
-		chmod(buffer, 0755);
-		eval(buffer);
 	}
 }
 
@@ -952,7 +639,7 @@ void ovpn_stop_client(int unit) {
 		killall_tk_period_wait(buffer, 10);
 
 	// Manual stop, so remove rules
-	_clear_routing_rules(unit);
+	amvpn_clear_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 
 	// Clear routing table, also freeing from killswitch set by down handler
 	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table ovpnc%d", unit);
@@ -1043,7 +730,7 @@ void ovpn_process_eas(int start) {
 		unit = atoi(ptr);
 
 		// Update kill switch states for clients set to auto-start with WAN
-		ovpn_set_routing_rules(unit);
+		amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 		ovpn_set_killswitch(unit);
 
 		if (unit > 0 && unit <= OVPN_CLIENT_MAX) {
@@ -1091,67 +778,4 @@ void stop_ovpn_serverall() {
 		if (pidof(buffer) >= 0)
 			ovpn_stop_server(unit);
         }
-}
-
-
-/* Remove/add server routes from client routing tables */
-
-void update_client_routes(char *server_iface, int addroute) {
-	int unit;
-	char buffer[32];
-
-	for( unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
-		sprintf(buffer, "vpnclient%d", unit);
-		if ( pidof(buffer) >= 0 ) {
-			if (addroute)
-				_add_server_routes(server_iface, unit);
-			else
-				_del_server_routes(server_iface, unit);
-		}
-	}
-}
-
-
-/* Add / remove OpenVPN server routes from client tables */
-/* Server-agnostic, could eventually be reused for other servers like WG/IPSEC */
-
-void _add_server_routes(char *server_iface, int client_unit) {
-	char buffer[128], routecmd[128], line[128];
-	FILE *fp_route;
-
-	snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route list table main | grep %s > /tmp/vpnroute%d_tmp", server_iface, client_unit);
-	system(buffer);
-
-	snprintf(buffer, sizeof (buffer), "/tmp/vpnroute%d_tmp", client_unit);
-	fp_route = fopen(buffer, "r");
-
-	if (fp_route) {
-		while (fgets(line, sizeof(line), fp_route) != NULL) {
-			snprintf(routecmd, sizeof (routecmd), "/usr/sbin/ip route add %s table ovpnc%d", trimNL(line), client_unit);
-			system(routecmd);
-		}
-		fclose(fp_route);
-	}
-	unlink(buffer);
-}
-
-
-void _del_server_routes(char *server_iface, int client_unit) {
-	char buffer[128], routecmd[128], line[128];
-	FILE *fp_route;
-
-	snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route list table ovpnc%d | grep %s > /tmp/vpnroute%d_tmp", client_unit, server_iface, client_unit);
-	system(buffer);
-
-	snprintf(buffer, sizeof (buffer), "/tmp/vpnroute%d_tmp", client_unit);
-	fp_route = fopen(buffer, "r");
-
-	if (fp_route) {
-		while (fgets(line, sizeof(line), fp_route) != NULL) {
-			snprintf(routecmd, sizeof (routecmd), "/usr/sbin/ip route del %s table ovpnc%d", trimNL(line), client_unit);
-			system(routecmd);
-		}
-		fclose(fp_route);
-	}
-	unlink(buffer);
 }

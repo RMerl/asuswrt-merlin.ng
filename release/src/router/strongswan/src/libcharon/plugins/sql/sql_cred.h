@@ -37,7 +37,7 @@ struct sql_cred_t {
 	credential_set_t set;
 
 	/**
-	 * Destry the backend.
+	 * Destroy the backend.
 	 */
 	void (*destroy)(sql_cred_t *this);
 };

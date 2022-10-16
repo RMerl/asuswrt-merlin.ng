@@ -18,6 +18,13 @@
 #define URL_MAX_LEN	128
 #define FLAG_LEN	2
 #define MAC_LEN     20
+#define ACCOUNT_LEN     64
+#define PWD_LEN     16
+
+#define NVRAM_FIRMVER "firmver"
+#define NVRAM_BUILDNO "buildno"
+#define NVRAM_EXTENDNO "extendno"
+#define NVRAM_MODEL_NAME     "productid"
 #define NVRAM_ODMPID     "odmpid"
 #define NVRAM_HTTPS_LANPORT     "https_lanport"
 #define NVRAM_HTTP_ENABLE     "http_enable"
@@ -49,6 +56,11 @@
 #define APILEVEL_STATUS_APILEVEL_NOT_SUPPORT   "1"
 #define APILEVEL_STATUS_FW_VERSION_NOT_SUPPORT "2"
 #define APILEVEL_STATUS_END_OF_LIFE            "3"
+
+#define AWS_CERTS_PATH "/jffs/awscerts"
+#define AWS_CERTS_CA_FILE "/jffs/awscerts/amazon-root-ca.pem"
+#define AWS_CERTS_CRT_FILE "/jffs/awscerts/device.pem.crt"
+#define AWS_CERTS_KEY_FILE "/jffs/awscerts/private.pem.key"
 
 #define my_memcpy(dst, src, dst_len, src_len) {memcpy(dst, src, dst_len < src_len ? dst_len : src_len);}
 

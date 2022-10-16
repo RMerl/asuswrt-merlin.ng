@@ -94,30 +94,6 @@ struct private_scheduler_t {
 };
 
 /**
- * Comparse two timevals, return >0 if a > b, <0 if a < b and =0 if equal
- */
-static int timeval_cmp(timeval_t *a, timeval_t *b)
-{
-	if (a->tv_sec > b->tv_sec)
-	{
-		return 1;
-	}
-	if (a->tv_sec < b->tv_sec)
-	{
-		return -1;
-	}
-	if (a->tv_usec > b->tv_usec)
-	{
-		return 1;
-	}
-	if (a->tv_usec < b->tv_usec)
-	{
-		return -1;
-	}
-	return 0;
-}
-
-/**
  * Returns the top event without removing it. Returns NULL if the heap is empty.
  */
 static event_t *peek_event(private_scheduler_t *this)
@@ -132,6 +108,7 @@ static event_t *peek_event(private_scheduler_t *this)
 static event_t *remove_event(private_scheduler_t *this)
 {
 	event_t *event, *top;
+
 	if (!this->event_count)
 	{
 		return NULL;
@@ -144,21 +121,22 @@ static event_t *remove_event(private_scheduler_t *this)
 
 	if (--this->event_count > 1)
 	{
-		/* seep down the top event */
 		u_int position = 1;
+
+		/* seep down the top event */
 		while ((position << 1) <= this->event_count)
 		{
 			u_int child = position << 1;
 
 			if ((child + 1) <= this->event_count &&
-				timeval_cmp(&this->heap[child + 1]->time,
-							&this->heap[child]->time) < 0)
+				timercmp(&this->heap[child + 1]->time,
+						 &this->heap[child]->time, <))
 			{
 				/* the "right" child is smaller */
 				child++;
 			}
 
-			if (timeval_cmp(&top->time, &this->heap[child]->time) <= 0)
+			if (!timercmp(&top->time, &this->heap[child]->time, >))
 			{
 				/* the top event fires before the smaller of the two children,
 				 * stop */
@@ -189,7 +167,7 @@ static job_requeue_t schedule(private_scheduler_t * this)
 
 	if ((event = peek_event(this)) != NULL)
 	{
-		if (timeval_cmp(&now, &event->time) >= 0)
+		if (!timercmp(&now, &event->time, <))
 		{
 			remove_event(this);
 			this->mutex->unlock(this->mutex);
@@ -231,6 +209,7 @@ METHOD(scheduler_t, get_job_load, u_int,
 	private_scheduler_t *this)
 {
 	int count;
+
 	this->mutex->lock(this->mutex);
 	count = this->event_count;
 	this->mutex->unlock(this->mutex);
@@ -262,8 +241,8 @@ METHOD(scheduler_t, schedule_job_tv, void,
 	position = this->event_count;
 
 	/* then bubble it up */
-	while (position > 1 && timeval_cmp(&this->heap[position >> 1]->time,
-									   &event->time) > 0)
+	while (position > 1 &&
+		   timercmp(&this->heap[position >> 1]->time, &event->time, >))
 	{
 		/* parent has to be fired after the new event, move up */
 		this->heap[position] = this->heap[position >> 1];
@@ -354,4 +333,3 @@ scheduler_t * scheduler_create()
 
 	return &this->public;
 }
-

@@ -22,6 +22,7 @@
  */
 
 #include "libavutil/avassert.h"
+#include "libavutil/thread.h"
 #include "avcodec.h"
 #include "get_bits.h"
 #include "idctdsp.h"
@@ -30,6 +31,8 @@
 #include "intrax8.h"
 #include "intrax8dsp.h"
 #include "mpegutils.h"
+
+#define VLC_BUFFER_SIZE 28150
 
 #define MAX_TABLE_DEPTH(table_bits, max_bits) \
     ((max_bits + table_bits - 1) / table_bits)
@@ -46,82 +49,45 @@ static VLC j_ac_vlc[2][2][8];  // [quant < 13], [intra / inter], [select]
 static VLC j_dc_vlc[2][8];     // [quant], [select]
 static VLC j_orient_vlc[2][4]; // [quant], [select]
 
-static av_cold int x8_vlc_init(void)
+static av_cold void x8_init_vlc(VLC *vlc, int nb_bits, int nb_codes,
+                                int *offset, const uint8_t table[][2])
+{
+    static VLC_TYPE vlc_buf[VLC_BUFFER_SIZE][2];
+
+    vlc->table           = &vlc_buf[*offset];
+    vlc->table_allocated = VLC_BUFFER_SIZE - *offset;
+    ff_init_vlc_from_lengths(vlc, nb_bits, nb_codes, &table[0][1], 2,
+                             &table[0][0], 2, 1, 0, INIT_VLC_STATIC_OVERLONG, NULL);
+    *offset += vlc->table_size;
+}
+
+static av_cold void x8_vlc_init(void)
 {
     int i;
     int offset = 0;
-    int sizeidx = 0;
-    static const uint16_t sizes[8 * 4 + 8 * 2 + 2 + 4] = {
-        576, 548, 582, 618, 546, 616, 560, 642,
-        584, 582, 704, 664, 512, 544, 656, 640,
-        512, 648, 582, 566, 532, 614, 596, 648,
-        586, 552, 584, 590, 544, 578, 584, 624,
-
-        528, 528, 526, 528, 536, 528, 526, 544,
-        544, 512, 512, 528, 528, 544, 512, 544,
-
-        128, 128, 128, 128, 128, 128,
-    };
-
-    static VLC_TYPE table[28150][2];
 
 // set ac tables
-#define init_ac_vlc(dst, src)                                                 \
-    do {                                                                      \
-        dst.table           = &table[offset];                                 \
-        dst.table_allocated = sizes[sizeidx];                                 \
-        offset             += sizes[sizeidx++];                               \
-        init_vlc(&dst, AC_VLC_BITS, 77, &src[1], 4, 2, &src[0], 4, 2,         \
-                 INIT_VLC_USE_NEW_STATIC);                                    \
-    } while(0)
-
-    for (i = 0; i < 8; i++) {
-        init_ac_vlc(j_ac_vlc[0][0][i], x8_ac0_highquant_table[i][0]);
-        init_ac_vlc(j_ac_vlc[0][1][i], x8_ac1_highquant_table[i][0]);
-        init_ac_vlc(j_ac_vlc[1][0][i], x8_ac0_lowquant_table[i][0]);
-        init_ac_vlc(j_ac_vlc[1][1][i], x8_ac1_lowquant_table[i][0]);
-    }
-#undef init_ac_vlc
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 2; j++)
+            for (int k = 0; k < 8; k++)
+                x8_init_vlc(&j_ac_vlc[i][j][k], AC_VLC_BITS, 77,
+                            &offset, x8_ac_quant_table[i][j][k]);
 
 // set dc tables
-#define init_dc_vlc(dst, src)                                                 \
-    do {                                                                      \
-        dst.table           = &table[offset];                                 \
-        dst.table_allocated = sizes[sizeidx];                                 \
-        offset             += sizes[sizeidx++];                               \
-        init_vlc(&dst, DC_VLC_BITS, 34, &src[1], 4, 2, &src[0], 4, 2,         \
-                 INIT_VLC_USE_NEW_STATIC);                                    \
-    } while(0)
-
-    for (i = 0; i < 8; i++) {
-        init_dc_vlc(j_dc_vlc[0][i], x8_dc_highquant_table[i][0]);
-        init_dc_vlc(j_dc_vlc[1][i], x8_dc_lowquant_table[i][0]);
-    }
-#undef init_dc_vlc
+    for (int i = 0; i < 2; i++)
+        for (int j = 0; j < 8; j++)
+            x8_init_vlc(&j_dc_vlc[i][j], DC_VLC_BITS, 34, &offset,
+                        x8_dc_quant_table[i][j]);
 
 // set orient tables
-#define init_or_vlc(dst, src)                                                 \
-    do {                                                                      \
-        dst.table           = &table[offset];                                 \
-        dst.table_allocated = sizes[sizeidx];                                 \
-        offset             += sizes[sizeidx++];                               \
-        init_vlc(&dst, OR_VLC_BITS, 12, &src[1], 4, 2, &src[0], 4, 2,         \
-                 INIT_VLC_USE_NEW_STATIC);                                    \
-    } while(0)
-
     for (i = 0; i < 2; i++)
-        init_or_vlc(j_orient_vlc[0][i], x8_orient_highquant_table[i][0]);
+        x8_init_vlc(&j_orient_vlc[0][i], OR_VLC_BITS, 12,
+                    &offset, x8_orient_highquant_table[i]);
     for (i = 0; i < 4; i++)
-        init_or_vlc(j_orient_vlc[1][i], x8_orient_lowquant_table[i][0]);
-#undef init_or_vlc
+        x8_init_vlc(&j_orient_vlc[1][i], OR_VLC_BITS, 12,
+                    &offset, x8_orient_lowquant_table[i]);
 
-    if (offset != sizeof(table) / sizeof(VLC_TYPE) / 2) {
-        av_log(NULL, AV_LOG_ERROR, "table size %"SIZE_SPECIFIER" does not match needed %i\n",
-               sizeof(table) / sizeof(VLC_TYPE) / 2, offset);
-        return AVERROR_INVALIDDATA;
-    }
-
-    return 0;
+    av_assert2(offset == VLC_BUFFER_SIZE);
 }
 
 static void x8_reset_vlc_tables(IntraX8Context *w)
@@ -731,9 +697,7 @@ av_cold int ff_intrax8_common_init(AVCodecContext *avctx,
                                    int block_last_index[12],
                                    int mb_width, int mb_height)
 {
-    int ret = x8_vlc_init();
-    if (ret < 0)
-        return ret;
+    static AVOnce init_static_once = AV_ONCE_INIT;
 
     w->avctx = avctx;
     w->idsp = *idsp;
@@ -761,6 +725,8 @@ av_cold int ff_intrax8_common_init(AVCodecContext *avctx,
 
     ff_intrax8dsp_init(&w->dsp);
     ff_blockdsp_init(&w->bdsp, avctx);
+
+    ff_thread_once(&init_static_once, x8_vlc_init);
 
     return 0;
 }
@@ -801,6 +767,8 @@ int ff_intrax8_decode_picture(IntraX8Context *w, Picture *pict,
     for (w->mb_y = 0; w->mb_y < w->mb_height * 2; w->mb_y++) {
         x8_init_block_index(w, w->frame);
         mb_xy = (w->mb_y >> 1) * (w->mb_width + 1);
+        if (get_bits_left(gb) < 1)
+            goto error;
         for (w->mb_x = 0; w->mb_x < w->mb_width * 2; w->mb_x++) {
             x8_get_prediction(w);
             if (x8_setup_spatial_predictor(w, 0))

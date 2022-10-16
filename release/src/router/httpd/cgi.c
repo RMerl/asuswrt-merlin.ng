@@ -61,7 +61,7 @@ extern char *strsep(char **stringp, char *delim);
 static struct hsearch_data htab;
 
 void
-unescape(char *s)
+unescape(char *s, size_t len)
 {
 	char s_tmp[65535];
 	unsigned int c;
@@ -193,7 +193,7 @@ init_cgi(char *query)
 
 	for (q = query; q < (query + len);) {
 		/* Unescape each assignment */
-		unescape(name = value = q);
+		unescape(name = value = q, len+1);
 
 		/* Skip to next assignment */
 		for (q += strlen(q); q < (query + len) && !*q; q++);
@@ -266,6 +266,7 @@ void webcgi_init(char *query)
  
 //    cprintf("query = %s\n", query);
        
+       int len = strlen(query);
        end = query + strlen(query);
        q = query;
        nel = 1;
@@ -278,35 +279,8 @@ void webcgi_init(char *query)
                value = q;
                q += strlen(q) + 1;
  
-               unescape(value);
+               unescape(value, len+1);
                name = strsep(&value, "=");
                if (value) webcgi_set(name, value);
        }
 }
-
-static FILE *connfp = NULL;
-int web_read(void *buffer, int len)
-{
-       int r;
-       if (len <= 0) return 0;
-       while ((r = fread(buffer, 1, len, connfp)) == 0) {
-               if (errno != EINTR) return -1;
-       }
-       return r;
-}
-/*
-int web_read_x(void *buffer, int len)
-{
-       int n;
-       int t = 0;
-       while (len > 0) {
-               n = web_read(buffer, len);
-               if (n <= 0) return len;
-               (unsigned char *)buffer += n;
-               len -= n;
-               t += n;
-       }
-       return t;
-}
-*/
-////////^^^^^^^^^^^^^^^^^^^^^^^////////////Viz add 2010.08

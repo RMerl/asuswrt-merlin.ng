@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -140,16 +142,15 @@ int test(char *URL)
   mime = curl_mime_init(pooh.easy);
   part = curl_mime_addpart(mime);
   result = curl_mime_name(part, name);
-  if(!result)
-    res = curl_mime_data_cb(part, (curl_off_t) 2, read_callback,
-                            NULL, NULL, &pooh);
-
   if(result) {
     fprintf(stderr,
             "Something went wrong when building the mime structure: %d\n",
             (int) result);
     goto test_cleanup;
   }
+
+  res = curl_mime_data_cb(part, (curl_off_t) 2, read_callback,
+                          NULL, NULL, &pooh);
 
   /* Bind mime data to its easy handle. */
   if(!res)

@@ -30,7 +30,7 @@ typedef struct {
     FFDemuxSubtitlesQueue q;
 } SRTContext;
 
-static int srt_probe(AVProbeData *p)
+static int srt_probe(const AVProbeData *p)
 {
     int v;
     char buf[64], *pbuf;
@@ -207,6 +207,8 @@ static int srt_read_header(AVFormatContext *s)
     ff_subtitles_queue_finalize(s, &srt->q);
 
 end:
+    if (res < 0)
+        ff_subtitles_queue_clean(&srt->q);
     av_bprint_finalize(&buf, NULL);
     return res;
 }

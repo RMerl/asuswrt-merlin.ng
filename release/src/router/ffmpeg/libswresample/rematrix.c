@@ -88,7 +88,7 @@ static int even(int64_t layout){
     return 0;
 }
 
-static int clean_layout(void *s, int64_t layout){
+static int64_t clean_layout(void *s, int64_t layout){
     if(layout && layout != AV_CH_FRONT_CENTER && !(layout&(layout-1))) {
         char buf[128];
         av_get_channel_layout_string(buf, sizeof(buf), -1, layout);
@@ -140,6 +140,16 @@ av_cold int swr_build_matrix(uint64_t in_ch_layout_param, uint64_t out_ch_layout
        && (out_ch_layout & AV_CH_LAYOUT_STEREO_DOWNMIX) == 0
     )
         in_ch_layout = AV_CH_LAYOUT_STEREO;
+
+    if (in_ch_layout == AV_CH_LAYOUT_22POINT2 &&
+        out_ch_layout != AV_CH_LAYOUT_22POINT2) {
+        in_ch_layout = (AV_CH_LAYOUT_7POINT1_WIDE_BACK|AV_CH_BACK_CENTER);
+        av_get_channel_layout_string(buf, sizeof(buf), -1, in_ch_layout);
+        av_log(log_context, AV_LOG_WARNING,
+               "Full-on remixing from 22.2 has not yet been implemented! "
+               "Processing the input as '%s'\n",
+               buf);
+    }
 
     if(!sane_layout(in_ch_layout)){
         av_get_channel_layout_string(buf, sizeof(buf), -1, in_ch_layout_param);
@@ -384,8 +394,8 @@ av_cold static int auto_matrix(SwrContext *s)
 
 av_cold int swri_rematrix_init(SwrContext *s){
     int i, j;
-    int nb_in  = av_get_channel_layout_nb_channels(s->in_ch_layout);
-    int nb_out = av_get_channel_layout_nb_channels(s->out_ch_layout);
+    int nb_in  = s->used_ch_count;
+    int nb_out = s->out.ch_count;
 
     s->mix_any_f = NULL;
 

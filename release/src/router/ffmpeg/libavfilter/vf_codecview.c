@@ -33,6 +33,7 @@
 #include "libavutil/motion_vector.h"
 #include "libavutil/opt.h"
 #include "avfilter.h"
+#include "qp_table.h"
 #include "internal.h"
 
 #define MV_P_FOR  (1<<0)
@@ -140,7 +141,7 @@ static void draw_line(uint8_t *buf, int sx, int sy, int ex, int ey,
         }
         buf += sx + sy * stride;
         ex  -= sx;
-        f    = ((ey - sy) << 16) / ex;
+        f    = ((ey - sy) * (1 << 16)) / ex;
         for (x = 0; x <= ex; x++) {
             y  = (x * f) >> 16;
             fr = (x * f) & 0xFFFF;
@@ -155,7 +156,7 @@ static void draw_line(uint8_t *buf, int sx, int sy, int ex, int ey,
         buf += sx + sy * stride;
         ey  -= sy;
         if (ey)
-            f = ((ex - sx) << 16) / ey;
+            f = ((ex - sx) * (1 << 16)) / ey;
         else
             f = 0;
         for(y= 0; y <= ey; y++){
@@ -198,8 +199,8 @@ static void draw_arrow(uint8_t *buf, int sx, int sy, int ex,
         int length = sqrt((rx * rx + ry * ry) << 8);
 
         // FIXME subpixel accuracy
-        rx = ROUNDED_DIV(rx * 3 << 4, length);
-        ry = ROUNDED_DIV(ry * 3 << 4, length);
+        rx = ROUNDED_DIV(rx * (3 << 4), length);
+        ry = ROUNDED_DIV(ry * (3 << 4), length);
 
         if (tail) {
             rx = -rx;
@@ -219,8 +220,14 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
     AVFilterLink *outlink = ctx->outputs[0];
 
     if (s->qp) {
-        int qstride, qp_type;
-        int8_t *qp_table = av_frame_get_qp_table(frame, &qstride, &qp_type);
+        int qstride, qp_type, ret;
+        int8_t *qp_table;
+
+        ret = ff_qp_table_extract(frame, &qp_table, &qstride, NULL, &qp_type);
+        if (ret < 0) {
+            av_frame_free(&frame);
+            return ret;
+        }
 
         if (qp_table) {
             int x, y;
@@ -240,6 +247,7 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *frame)
                 pv += lzv;
             }
         }
+        av_freep(&qp_table);
     }
 
     if (s->mv || s->mv_type) {

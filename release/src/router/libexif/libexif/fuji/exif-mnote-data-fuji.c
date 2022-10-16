@@ -28,6 +28,8 @@
 
 #include "exif-mnote-data-fuji.h"
 
+#define CHECKOVERFLOW(offset,datasize,structsize) (( (offset) >= (datasize)) || ((structsize) > (datasize)) || ((offset) > (datasize) - (structsize) ))
+
 struct _MNoteFujiDataPrivate {
 	ExifByteOrder order;
 };
@@ -67,9 +69,11 @@ exif_mnote_data_fuji_get_value (ExifMnoteData *d, unsigned int i, char *val, uns
 
 	if (!d || !val) return NULL;
 	if (i > n->count -1) return NULL;
+/*
 	exif_log (d->log, EXIF_LOG_CODE_DEBUG, "ExifMnoteDataFuji",
 		  "Querying value for tag '%s'...",
 		  mnote_fuji_tag_get_name (n->entries[i].tag));
+*/
 	return mnote_fuji_entry_get_value (&n->entries[i], val, maxlen);
 }
 
@@ -159,17 +163,17 @@ exif_mnote_data_fuji_load (ExifMnoteData *en,
 			  "ExifMnoteDataFuji", "Short MakerNote");
 		return;
 	}
-	datao = 6 + n->offset;
-	if ((datao + 12 < datao) || (datao + 12 < 12) || (datao + 12 > buf_size)) {
+	if (CHECKOVERFLOW(n->offset, buf_size, 6+8+4)) {
 		exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
 			  "ExifMnoteDataFuji", "Short MakerNote");
 		return;
 	}
+	datao = 6 + n->offset;
 
 	n->order = EXIF_BYTE_ORDER_INTEL;
+
 	datao += exif_get_long (buf + datao + 8, EXIF_BYTE_ORDER_INTEL);
-	if ((datao + 2 < datao) || (datao + 2 < 2) ||
-	    (datao + 2 > buf_size)) {
+	if (CHECKOVERFLOW(datao, buf_size, 2)) {
 		exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
 			  "ExifMnoteDataFuji", "Short MakerNote");
 		return;
@@ -178,6 +182,14 @@ exif_mnote_data_fuji_load (ExifMnoteData *en,
 	/* Read the number of tags */
 	c = exif_get_short (buf + datao, EXIF_BYTE_ORDER_INTEL);
 	datao += 2;
+
+	/* Just use an arbitrary max tag limit here to avoid needing to much memory or time. There are 50 named tags currently.
+	 * Fuji XT2 had 56 entries or so, GFX500 has 68. 150 seems a safe upper bound currently.
+	 * The format allows specifying the same range of memory as often as it can, so this multiplies quickly. */
+	if (c > 150) {
+		exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA, "ExifMnoteDataFuji", "Too much tags (%d) in Fuji MakerNote", c);
+		return;
+	}
 
 	/* Remove any old entries */
 	exif_mnote_data_fuji_clear (n);
@@ -193,7 +205,9 @@ exif_mnote_data_fuji_load (ExifMnoteData *en,
 	tcount = 0;
 	for (i = c, o = datao; i; --i, o += 12) {
 		size_t s;
-		if ((o + 12 < o) || (o + 12 < 12) || (o + 12 > buf_size)) {
+
+		memset(&n->entries[tcount], 0, sizeof(MnoteFujiEntry));
+		if (CHECKOVERFLOW(o, buf_size, 12)) {
 			exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
 				  "ExifMnoteDataFuji", "Short MakerNote");
 			break;
@@ -208,6 +222,15 @@ exif_mnote_data_fuji_load (ExifMnoteData *en,
 			  "Loading entry 0x%x ('%s')...", n->entries[tcount].tag,
 			  mnote_fuji_tag_get_name (n->entries[tcount].tag));
 
+		/* Check if we overflow the multiplication. Use buf_size as the max size for integer overflow detection,
+		 * we will check the buffer sizes closer later. */
+		if (	exif_format_get_size (n->entries[tcount].format) &&
+			buf_size / exif_format_get_size (n->entries[tcount].format) < n->entries[tcount].components
+		) {
+			exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
+					  "ExifMnoteDataFuji", "Tag size overflow detected (%u * %lu)", exif_format_get_size (n->entries[tcount].format), n->entries[tcount].components);
+			continue;
+		}
 		/*
 		 * Size? If bigger than 4 bytes, the actual data is not
 		 * in the entry but somewhere else (offset).
@@ -219,11 +242,11 @@ exif_mnote_data_fuji_load (ExifMnoteData *en,
 			if (s > 4)
 				/* The data in this case is merely a pointer */
 				dataofs = exif_get_long (buf + dataofs, n->order) + 6 + n->offset;
-			if ((dataofs + s < dataofs) || (dataofs + s < s) ||
-				(dataofs + s >= buf_size)) {
+
+			if (CHECKOVERFLOW(dataofs, buf_size, s)) {
 				exif_log (en->log, EXIF_LOG_CODE_CORRUPT_DATA,
 						  "ExifMnoteDataFuji", "Tag data past end of "
-					  "buffer (%u >= %u)", dataofs + s, buf_size);
+					  "buffer (%u >= %u)", (unsigned)(dataofs + s), buf_size);
 				continue;
 			}
 
@@ -300,6 +323,8 @@ exif_mnote_data_fuji_set_byte_order (ExifMnoteData *d, ExifByteOrder o)
 	o_orig = n->order;
 	n->order = o;
 	for (i = 0; i < n->count; i++) {
+		if (n->entries[i].components && (n->entries[i].size/n->entries[i].components < exif_format_get_size (n->entries[i].format)))
+			continue;
 		n->entries[i].order = o;
 		exif_array_set_byte_order (n->entries[i].format, n->entries[i].data,
 				n->entries[i].components, o_orig, o);
@@ -310,6 +335,13 @@ static void
 exif_mnote_data_fuji_set_offset (ExifMnoteData *n, unsigned int o)
 {
 	if (n) ((ExifMnoteDataFuji *) n)->offset = o;
+}
+
+int
+exif_mnote_data_fuji_identify (const ExifData *ed, const ExifEntry *e)
+{
+	(void) ed;  /* unused */
+	return ((e->size >= 12) && !memcmp (e->data, "FUJIFILM", 8));
 }
 
 ExifMnoteData *

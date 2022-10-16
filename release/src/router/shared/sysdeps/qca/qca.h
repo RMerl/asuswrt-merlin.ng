@@ -53,6 +53,8 @@
 #define WLFW_CAL_01_BIN			"/data/misc/wifi/wlfw_cal_01.bin"
 #endif
 
+#define CD_SCAN_WLIST    "/tmp/cd_scan_wlist"
+
 extern const char WIF_2G[];
 extern const char WIF_5G[];
 extern const char BR_GUEST[];
@@ -160,9 +162,14 @@ typedef struct _WLANCONFIG_LIST {
 	char txrate[10];
 	char rxrate[10];
 	int rssi;
+	char htcaps[12];
+	char vhtcaps[12];
 	char conn_time[12];
 	char mode[31];
 	char subunit_id;	/* '0': main 2G/5G network, '1' ~ '7': Guest network (MAX_NO_MSSID = 8), 'B': Facebook Wi-Fi, 'F': Free Wi-Fi, 'C': Captive Portal */
+	unsigned int txnss;
+	unsigned int rxnss;
+	unsigned int psm;	/* power-save mode */
 } WLANCONFIG_LIST;
 
 #if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \

@@ -35,10 +35,10 @@
 typedef struct SilenceDetectContext {
     const AVClass *class;
     double noise;               ///< noise amplitude ratio
-    double duration;            ///< minimum duration of silence until notification
+    int64_t duration;           ///< minimum duration of silence until notification
     int mono;                   ///< mono mode : check each channel separately (default = check when ALL channels are silent)
     int channels;               ///< number of channels
-    int independant_channels;   ///< number of entries in following arrays (always 1 in mono mode)
+    int independent_channels;   ///< number of entries in following arrays (always 1 in mono mode)
     int64_t *nb_null_samples;   ///< (array) current number of continuous zero samples
     int64_t *start;             ///< (array) if silence is detected, this value contains the time of the first zero sample (default/unset = INT64_MIN)
     int64_t frame_end;          ///< pts of the end of the current frame (used to compute duration of silence at EOS)
@@ -50,14 +50,16 @@ typedef struct SilenceDetectContext {
                           AVRational time_base);
 } SilenceDetectContext;
 
+#define MAX_DURATION (24*3600*1000000LL)
 #define OFFSET(x) offsetof(SilenceDetectContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_AUDIO_PARAM
 static const AVOption silencedetect_options[] = {
     { "n",         "set noise tolerance",              OFFSET(noise),     AV_OPT_TYPE_DOUBLE, {.dbl=0.001},          0, DBL_MAX,  FLAGS },
     { "noise",     "set noise tolerance",              OFFSET(noise),     AV_OPT_TYPE_DOUBLE, {.dbl=0.001},          0, DBL_MAX,  FLAGS },
-    { "d",         "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_DOUBLE, {.dbl=2.},             0, 24*60*60, FLAGS },
-    { "duration",  "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_DOUBLE, {.dbl=2.},             0, 24*60*60, FLAGS },
-    { "mono",      "check each channel separately",    OFFSET(mono),      AV_OPT_TYPE_BOOL,   {.i64=0.},             0, 1, FLAGS },
+    { "d",         "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_DURATION, {.i64=2000000},      0, MAX_DURATION,FLAGS },
+    { "duration",  "set minimum duration in seconds",  OFFSET(duration),  AV_OPT_TYPE_DURATION, {.i64=2000000},      0, MAX_DURATION,FLAGS },
+    { "mono",      "check each channel separately",    OFFSET(mono),      AV_OPT_TYPE_BOOL,   {.i64=0},              0, 1,        FLAGS },
+    { "m",         "check each channel separately",    OFFSET(mono),      AV_OPT_TYPE_BOOL,   {.i64=0},              0, 1,        FLAGS },
     { NULL }
 };
 
@@ -77,12 +79,12 @@ static av_always_inline void update(SilenceDetectContext *s, AVFrame *insamples,
                                     int is_silence, int current_sample, int64_t nb_samples_notify,
                                     AVRational time_base)
 {
-    int channel = current_sample % s->independant_channels;
+    int channel = current_sample % s->independent_channels;
     if (is_silence) {
         if (s->start[channel] == INT64_MIN) {
             s->nb_null_samples[channel]++;
             if (s->nb_null_samples[channel] >= nb_samples_notify) {
-                s->start[channel] = insamples->pts + av_rescale_q(current_sample / s->channels + 1 - nb_samples_notify * s->independant_channels / s->channels,
+                s->start[channel] = insamples->pts + av_rescale_q(current_sample / s->channels + 1 - nb_samples_notify * s->independent_channels / s->channels,
                         (AVRational){ 1, s->last_sample_rate }, time_base);
                 set_meta(insamples, s->mono ? channel + 1 : 0, "silence_start",
                         av_ts2timestr(s->start[channel], &time_base));
@@ -141,14 +143,15 @@ static int config_input(AVFilterLink *inlink)
     int c;
 
     s->channels = inlink->channels;
-    s->independant_channels = s->mono ? s->channels : 1;
-    s->nb_null_samples = av_mallocz_array(sizeof(*s->nb_null_samples), s->independant_channels);
+    s->duration = av_rescale(s->duration, inlink->sample_rate, AV_TIME_BASE);
+    s->independent_channels = s->mono ? s->channels : 1;
+    s->nb_null_samples = av_mallocz_array(sizeof(*s->nb_null_samples), s->independent_channels);
     if (!s->nb_null_samples)
         return AVERROR(ENOMEM);
-    s->start = av_malloc_array(sizeof(*s->start), s->independant_channels);
+    s->start = av_malloc_array(sizeof(*s->start), s->independent_channels);
     if (!s->start)
         return AVERROR(ENOMEM);
-    for (c = 0; c < s->independant_channels; c++)
+    for (c = 0; c < s->independent_channels; c++)
         s->start[c] = INT64_MIN;
 
     switch (inlink->format) {
@@ -173,12 +176,12 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     const int nb_channels           = inlink->channels;
     const int srate                 = inlink->sample_rate;
     const int nb_samples            = insamples->nb_samples     * nb_channels;
-    const int64_t nb_samples_notify = srate * s->duration * (s->mono ? 1 : nb_channels);
+    const int64_t nb_samples_notify = s->duration * (s->mono ? 1 : nb_channels);
     int c;
 
     // scale number of null samples to the new sample rate
     if (s->last_sample_rate && s->last_sample_rate != srate)
-        for (c = 0; c < s->independant_channels; c++) {
+        for (c = 0; c < s->independent_channels; c++) {
             s->nb_null_samples[c] = srate * s->nb_null_samples[c] / s->last_sample_rate;
         }
     s->last_sample_rate = srate;
@@ -186,7 +189,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *insamples)
     s->frame_end = insamples->pts + av_rescale_q(insamples->nb_samples,
             (AVRational){ 1, s->last_sample_rate }, inlink->time_base);
 
-    // TODO: document metadata
     s->silencedetect(s, insamples, nb_samples, nb_samples_notify,
                      inlink->time_base);
 
@@ -231,7 +233,7 @@ static av_cold void uninit(AVFilterContext *ctx)
     SilenceDetectContext *s = ctx->priv;
     int c;
 
-    for (c = 0; c < s->independant_channels; c++)
+    for (c = 0; c < s->independent_channels; c++)
         if (s->start[c] > INT64_MIN)
             update(s, NULL, 0, c, 0, s->time_base);
     av_freep(&s->nb_null_samples);

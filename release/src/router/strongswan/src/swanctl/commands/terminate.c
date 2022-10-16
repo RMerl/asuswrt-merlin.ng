@@ -156,7 +156,7 @@ static void __attribute__ ((constructor))reg()
 			{"help",		'h', 0, "show usage information"},
 			{"child",		'c', 1, "terminate by CHILD_SA name"},
 			{"ike",			'i', 1, "terminate by IKE_SA name"},
-			{"child-id",	'C', 1, "terminate by CHILD_SA reqid"},
+			{"child-id",	'C', 1, "terminate by CHILD_SA unique identifier"},
 			{"ike-id",		'I', 1, "terminate by IKE_SA unique identifier"},
 			{"force",		'f', 0, "terminate IKE_SA without waiting, unless timeout is set"},
 			{"timeout",		't', 1, "timeout in seconds before detaching"},

@@ -33,9 +33,11 @@
 
 #include "libavutil/avassert.h"
 #include "libavutil/imgutils.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
 #include "internal.h"
+#include "qp_table.h"
 #include "vf_spp.h"
 
 enum mode {
@@ -44,9 +46,18 @@ enum mode {
     NB_MODES
 };
 
+#if FF_API_CHILD_CLASS_NEXT
 static const AVClass *child_class_next(const AVClass *prev)
 {
     return prev ? NULL : avcodec_dct_get_class();
+}
+#endif
+
+static const AVClass *child_class_iterate(void **iter)
+{
+    const AVClass *c = *iter ? NULL : avcodec_dct_get_class();
+    *iter = (void*)(uintptr_t)c;
+    return c;
 }
 
 static void *child_next(void *obj, void *prev)
@@ -57,8 +68,9 @@ static void *child_next(void *obj, void *prev)
 
 #define OFFSET(x) offsetof(SPPContext, x)
 #define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
+#define TFLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 static const AVOption spp_options[] = {
-    { "quality", "set quality", OFFSET(log2_count), AV_OPT_TYPE_INT, {.i64 = 3}, 0, MAX_LEVEL, FLAGS },
+    { "quality", "set quality", OFFSET(log2_count), AV_OPT_TYPE_INT, {.i64 = 3}, 0, MAX_LEVEL, TFLAGS },
     { "qp", "force a constant quantizer parameter", OFFSET(qp), AV_OPT_TYPE_INT, {.i64 = 0}, 0, 63, FLAGS },
     { "mode", "set thresholding mode", OFFSET(mode), AV_OPT_TYPE_INT, {.i64 = MODE_HARD}, 0, NB_MODES - 1, FLAGS, "mode" },
         { "hard", "hard thresholding", 0, AV_OPT_TYPE_CONST, {.i64 = MODE_HARD}, INT_MIN, INT_MAX, FLAGS, "mode" },
@@ -73,7 +85,10 @@ static const AVClass spp_class = {
     .option           = spp_options,
     .version          = LIBAVUTIL_VERSION_INT,
     .category         = AV_CLASS_CATEGORY_FILTER,
+#if FF_API_CHILD_CLASS_NEXT
     .child_class_next = child_class_next,
+#endif
+    .child_class_iterate = child_class_iterate,
     .child_next       = child_next,
 };
 
@@ -222,10 +237,14 @@ static inline void add_block(uint16_t *dst, int linesize, const int16_t block[64
     int y;
 
     for (y = 0; y < 8; y++) {
-        *(uint32_t *)&dst[0 + y*linesize] += *(uint32_t *)&block[0 + y*8];
-        *(uint32_t *)&dst[2 + y*linesize] += *(uint32_t *)&block[2 + y*8];
-        *(uint32_t *)&dst[4 + y*linesize] += *(uint32_t *)&block[4 + y*8];
-        *(uint32_t *)&dst[6 + y*linesize] += *(uint32_t *)&block[6 + y*8];
+        dst[0 + y*linesize] += block[0 + y*8];
+        dst[1 + y*linesize] += block[1 + y*8];
+        dst[2 + y*linesize] += block[2 + y*8];
+        dst[3 + y*linesize] += block[3 + y*8];
+        dst[4 + y*linesize] += block[4 + y*8];
+        dst[5 + y*linesize] += block[5 + y*8];
+        dst[6 + y*linesize] += block[6 + y*8];
+        dst[7 + y*linesize] += block[7 + y*8];
     }
 }
 
@@ -278,7 +297,7 @@ static void filter(SPPContext *p, uint8_t *dst, uint8_t *src,
                 const int x1 = x + offset[i + count - 1][0];
                 const int y1 = y + offset[i + count - 1][1];
                 const int index = x1 + y1*linesize;
-                p->dct->get_pixels(block, p->src + sample_bytes*index, sample_bytes*linesize);
+                p->dct->get_pixels_unaligned(block, p->src + sample_bytes*index, sample_bytes*linesize);
                 p->dct->fdct(block);
                 p->requantize(block2, block, qp, p->dct->idct_permutation);
                 p->dct->idct(block2);
@@ -357,47 +376,34 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     AVFilterLink *outlink = ctx->outputs[0];
     AVFrame *out = in;
     int qp_stride = 0;
-    const int8_t *qp_table = NULL;
+    int8_t *qp_table = NULL;
     const AVPixFmtDescriptor *desc = av_pix_fmt_desc_get(inlink->format);
     const int depth = desc->comp[0].depth;
+    int ret = 0;
 
     /* if we are not in a constant user quantizer mode and we don't want to use
      * the quantizers from the B-frames (B-frames often have a higher QP), we
      * need to save the qp table from the last non B-frame; this is what the
      * following code block does */
-    if (!s->qp) {
-        qp_table = av_frame_get_qp_table(in, &qp_stride, &s->qscale_type);
+    if (!s->qp && (s->use_bframe_qp || in->pict_type != AV_PICTURE_TYPE_B)) {
+        ret = ff_qp_table_extract(in, &qp_table, &qp_stride, NULL, &s->qscale_type);
+        if (ret < 0) {
+            av_frame_free(&in);
+            return ret;
+        }
 
-        if (qp_table && !s->use_bframe_qp && in->pict_type != AV_PICTURE_TYPE_B) {
-            int w, h;
-
-            /* if the qp stride is not set, it means the QP are only defined on
-             * a line basis */
-            if (!qp_stride) {
-                w = AV_CEIL_RSHIFT(inlink->w, 4);
-                h = 1;
-            } else {
-                w = qp_stride;
-                h = AV_CEIL_RSHIFT(inlink->h, 4);
-            }
-
-            if (w * h > s->non_b_qp_alloc_size) {
-                int ret = av_reallocp_array(&s->non_b_qp_table, w, h);
-                if (ret < 0) {
-                    s->non_b_qp_alloc_size = 0;
-                    return ret;
-                }
-                s->non_b_qp_alloc_size = w * h;
-            }
-
-            av_assert0(w * h <= s->non_b_qp_alloc_size);
-            memcpy(s->non_b_qp_table, qp_table, w * h);
+        if (!s->use_bframe_qp && in->pict_type != AV_PICTURE_TYPE_B) {
+            av_freep(&s->non_b_qp_table);
+            s->non_b_qp_table  = qp_table;
+            s->non_b_qp_stride = qp_stride;
         }
     }
 
     if (s->log2_count && !ctx->is_disabled) {
-        if (!s->use_bframe_qp && s->non_b_qp_table)
-            qp_table = s->non_b_qp_table;
+        if (!s->use_bframe_qp && s->non_b_qp_table) {
+            qp_table  = s->non_b_qp_table;
+            qp_stride = s->non_b_qp_stride;
+        }
 
         if (qp_table || s->qp) {
             const int cw = AV_CEIL_RSHIFT(inlink->w, s->hsub);
@@ -412,7 +418,8 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 out = ff_get_video_buffer(outlink, aligned_w, aligned_h);
                 if (!out) {
                     av_frame_free(&in);
-                    return AVERROR(ENOMEM);
+                    ret = AVERROR(ENOMEM);
+                    goto finish;
                 }
                 av_frame_copy_props(out, in);
                 out->width  = in->width;
@@ -436,7 +443,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                                 inlink->w, inlink->h);
         av_frame_free(&in);
     }
-    return ff_filter_frame(outlink, out);
+    ret = ff_filter_frame(outlink, out);
+finish:
+    if (qp_table != s->non_b_qp_table)
+        av_freep(&qp_table);
+    return ret;
 }
 
 static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
@@ -444,7 +455,7 @@ static int process_command(AVFilterContext *ctx, const char *cmd, const char *ar
 {
     SPPContext *s = ctx->priv;
 
-    if (!strcmp(cmd, "level")) {
+    if (!strcmp(cmd, "level") || !strcmp(cmd, "quality")) {
         if (!strcmp(args, "max"))
             s->log2_count = MAX_LEVEL;
         else
@@ -459,9 +470,8 @@ static av_cold int init_dict(AVFilterContext *ctx, AVDictionary **opts)
     SPPContext *s = ctx->priv;
     int ret;
 
-    s->avctx = avcodec_alloc_context3(NULL);
     s->dct = avcodec_dct_alloc();
-    if (!s->avctx || !s->dct)
+    if (!s->dct)
         return AVERROR(ENOMEM);
 
     if (opts) {
@@ -488,10 +498,6 @@ static av_cold void uninit(AVFilterContext *ctx)
 
     av_freep(&s->temp);
     av_freep(&s->src);
-    if (s->avctx) {
-        avcodec_close(s->avctx);
-        av_freep(&s->avctx);
-    }
     av_freep(&s->dct);
     av_freep(&s->non_b_qp_table);
 }

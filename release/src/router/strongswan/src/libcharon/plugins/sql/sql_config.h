@@ -37,7 +37,7 @@ struct sql_config_t {
 	backend_t backend;
 
 	/**
-	 * Destry the backend.
+	 * Destroy the backend.
 	 */
 	void (*destroy)(sql_config_t *this);
 };

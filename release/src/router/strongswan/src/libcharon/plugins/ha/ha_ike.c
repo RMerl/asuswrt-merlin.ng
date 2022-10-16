@@ -47,27 +47,37 @@ struct private_ha_ike_t {
 };
 
 /**
- * Return condition if it is set on ike_sa
+ * Copy conditions of IKE_SA to message as HA_CONDITIONS attribute
  */
-static ike_condition_t copy_condition(ike_sa_t *ike_sa, ike_condition_t cond)
+static void copy_conditions(ha_message_t *m, ike_sa_t *ike_sa)
 {
-	if (ike_sa->has_condition(ike_sa, cond))
+	ike_condition_t i, conditions = 0;
+
+	for (i = 0; i < sizeof(i) * 8; ++i)
 	{
-		return cond;
+		ike_condition_t cond = (1 << i);
+
+		conditions |= (ike_sa->has_condition(ike_sa, cond) ? cond : 0);
 	}
-	return 0;
+
+	m->add_attribute(m, HA_CONDITIONS, (uint32_t)conditions);
 }
 
 /**
- * Return extension if it is supported by peers IKE_SA
+ * Copy extensions of IKE_SA to message as HA_EXTENSIONS attribute
  */
-static ike_extension_t copy_extension(ike_sa_t *ike_sa, ike_extension_t ext)
+static void copy_extensions(ha_message_t *m, ike_sa_t *ike_sa)
 {
-	if (ike_sa->supports_extension(ike_sa, ext))
+	ike_extension_t i, extensions = 0;
+
+	for (i = 0; i < sizeof(i) * 8; ++i)
 	{
-		return ext;
+		ike_extension_t ext = (1 << i);
+
+		extensions |= (ike_sa->supports_extension(ike_sa, ext) ? ext : 0);
 	}
-	return 0;
+
+	m->add_attribute(m, HA_EXTENSIONS, (uint32_t)extensions);
 }
 
 METHOD(listener_t, ike_keys, bool,
@@ -172,33 +182,11 @@ METHOD(listener_t, ike_updown, bool,
 	{
 		enumerator_t *enumerator;
 		peer_cfg_t *peer_cfg;
-		uint32_t extension, condition;
 		host_t *addr;
 		ike_sa_id_t *id;
 		identification_t *eap_id;
 
 		peer_cfg = ike_sa->get_peer_cfg(ike_sa);
-
-		condition = copy_condition(ike_sa, COND_NAT_ANY)
-				  | copy_condition(ike_sa, COND_NAT_HERE)
-				  | copy_condition(ike_sa, COND_NAT_THERE)
-				  | copy_condition(ike_sa, COND_NAT_FAKE)
-				  | copy_condition(ike_sa, COND_EAP_AUTHENTICATED)
-				  | copy_condition(ike_sa, COND_CERTREQ_SEEN)
-				  | copy_condition(ike_sa, COND_ORIGINAL_INITIATOR)
-				  | copy_condition(ike_sa, COND_STALE)
-				  | copy_condition(ike_sa, COND_INIT_CONTACT_SEEN)
-				  | copy_condition(ike_sa, COND_XAUTH_AUTHENTICATED);
-
-		extension = copy_extension(ike_sa, EXT_NATT)
-				  | copy_extension(ike_sa, EXT_MOBIKE)
-				  | copy_extension(ike_sa, EXT_HASH_AND_URL)
-				  | copy_extension(ike_sa, EXT_MULTIPLE_AUTH)
-				  | copy_extension(ike_sa, EXT_STRONGSWAN)
-				  | copy_extension(ike_sa, EXT_EAP_ONLY_AUTHENTICATION)
-				  | copy_extension(ike_sa, EXT_MS_WINDOWS)
-				  | copy_extension(ike_sa, EXT_XAUTH)
-				  | copy_extension(ike_sa, EXT_DPD);
 
 		id = ike_sa->get_id(ike_sa);
 
@@ -213,8 +201,8 @@ METHOD(listener_t, ike_updown, bool,
 		}
 		m->add_attribute(m, HA_LOCAL_ADDR, ike_sa->get_my_host(ike_sa));
 		m->add_attribute(m, HA_REMOTE_ADDR, ike_sa->get_other_host(ike_sa));
-		m->add_attribute(m, HA_CONDITIONS, condition);
-		m->add_attribute(m, HA_EXTENSIONS, extension);
+		copy_conditions(m, ike_sa);
+		copy_extensions(m, ike_sa);
 		m->add_attribute(m, HA_CONFIG_NAME, peer_cfg->get_name(peer_cfg));
 		enumerator = ike_sa->create_peer_address_enumerator(ike_sa);
 		while (enumerator->enumerate(enumerator, (void**)&addr))

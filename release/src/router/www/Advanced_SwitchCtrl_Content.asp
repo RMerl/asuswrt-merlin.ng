@@ -28,7 +28,6 @@
 </style>
 
 <script>
-var lacp_support = isSupport("lacp");
 var lacp_enabled = '<% nvram_get("lacp_enabled"); %>' == 1 ?true: false;
 var bonding_policy_support = false;
 if( lacp_support
@@ -45,27 +44,57 @@ var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12
 var switch_wantag_orig = '<% nvram_get("switch_wantag"); %>';
 var switch_stb_x_orig = '<% nvram_get("switch_stb_x"); %>';
 var no_jumbo_frame_support = isSupport("no_jumbo_frame");
+if(lacp_support){
+	if(based_modelid == "GT-AC5300")
+		var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
+	else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
+		var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
+	else if(based_modelid == "XT8PRO" || based_modelid == "BM68")
+		var bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
+	else
+		var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
+}
 
-function disable_lacp_if_conflicts_with_iptv(){
-	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
-		// LAN1 and/or LAN2.
-		if(switch_stb_x_orig == "1" || switch_stb_x_orig == "2" || switch_stb_x_orig == "5"){
-			var note_str = "This function is disabled because LAN1 or LAN2 is configured as IPTV STB port."; //untranslated
-			document.form.lacp_enabled.style.display = "none";
-			document.getElementById("lacp_note").innerHTML = note_str;
-			document.getElementById("lacp_desc").style.display = "";
-			document.form.lacp_enabled.value = "0";
+function disable_lacp_if_conflicts_with_dualwan(){
+	var wan_lanport_text = "";
+
+	for(var i = 0; i < bonding_port_settings.length; i++){
+		if(wans_lanport == bonding_port_settings[i].val){
+			wan_lanport_text = bonding_port_settings[i].text.toUpperCase();
 		}
 	}
-	else if(based_modelid == "XT8PRO"){
+
+	if(wan_lanport_text!= ""){
+		var note_str = "This function is disabled because " + wan_lanport_text + " is configured as WAN. If you want to enable it, please click <a href=\"http://router.asus.com/Advanced_WANPort_Content.asp\" target=\"_blank\" style=\"text-decoration:underline;\">here</a> to change dual wan settings."; //untranslated
+		document.form.lacp_enabled.style.display = "none";
+		document.getElementById("lacp_note").innerHTML = note_str;
+		document.getElementById("lacp_desc").style.display = "";
+		document.form.lacp_enabled.disabled = true;
+	}
+}
+
+function disable_lacp_if_conflicts_with_iptv(){
+	var note_str = "This function is disabled because " + bonding_port_settings[0].text.toUpperCase() + " or " + bonding_port_settings[1].text.toUpperCase() + " is configured as IPTV STB port."; //untranslated
+	var disable_lacp = false;
+
+	if(bonding_port_settings[0].val == "1"  && bonding_port_settings[1].val == "2"){
+		// LAN1 and/or LAN2.
+		if(switch_stb_x_orig == "1" || switch_stb_x_orig == "2" || switch_stb_x_orig == "5"){
+			disable_lacp = true;
+		}
+	}
+	else if(bonding_port_settings[0].val == "2"  && bonding_port_settings[1].val == "3"){
 		// LAN2 and/or LAN3.
 		if(switch_stb_x_orig == "2" || switch_stb_x_orig == "3" || switch_stb_x_orig == "5" || switch_stb_x_orig == "6" || switch_stb_x_orig == "8"){
-			var note_str = "This function is disabled because LAN2 or LAN3 is configured as IPTV STB port."; //untranslated
-			document.form.lacp_enabled.style.display = "none";
-			document.getElementById("lacp_note").innerHTML = note_str;
-			document.getElementById("lacp_desc").style.display = "";
-			document.form.lacp_enabled.value = "0";
+			disable_lacp = true;
 		}
+	}
+
+	if(disable_lacp){
+		document.form.lacp_enabled.style.display = "none";
+		document.getElementById("lacp_note").innerHTML = note_str;
+		document.getElementById("lacp_desc").style.display = "";
+		document.form.lacp_enabled.value = "0";
 	}
 }
 
@@ -158,7 +187,7 @@ function initial(){
 			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN5");
 			document.getElementById("lacp_note").innerHTML = new_str.replace(/LAN2/g, "LAN6");
 		}
-		else if(based_modelid == "XT8PRO"){
+		else if(based_modelid == "XT8PRO" || based_modelid == "BM68"){
 			var new_str = "";
 			new_str = document.getElementById("lacp_note").innerHTML.replace(/LAN1/g, "LAN3");
 			document.getElementById("lacp_note").innerHTML = new_str;
@@ -176,33 +205,22 @@ function initial(){
 		}
 	}
 
-	if(lacp_support && wans_dualwan_array.indexOf("lan") != -1){
-		var wan_lanport_text = "";
-		if(based_modelid == "GT-AC5300")
-			var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
-		else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
-			var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
-		else if(based_modelid == "XT8PRO")
-			var bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
-		else
-			var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
+	if(lacp_support){
+		if(wans_dualwan_array.indexOf("lan") != -1)
+			disable_lacp_if_conflicts_with_dualwan();
 
-		for(var i = 0; i < bonding_port_settings.length; i++){
-			if(wans_lanport == bonding_port_settings[i].val){
-				wan_lanport_text = bonding_port_settings[i].text.toUpperCase();
+		disable_lacp_if_conflicts_with_iptv();
+		if(based_modelid == "RT-AXE7800" && wan_bonding_support){
+			var bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
+			if(bond_wan == "1"){
+				document.form.lacp_enabled.style.display = "none";
+				document.getElementById("lacp_note").innerHTML = note_str;
+				document.getElementById("lacp_desc").style.display = "";
+				document.form.lacp_enabled.value = "0";
 			}
-		}
-
-		if(wan_lanport_text!= ""){
-			var note_str = "This function is disabled because " + wan_lanport_text + " is configured as WAN. If you want to enable it, please click <a href=\"http://router.asus.com/Advanced_WANPort_Content.asp\" target=\"_blank\" style=\"text-decoration:underline;\">here</a> to change dual wan settings."; //untranslated
-			document.form.lacp_enabled.style.display = "none";
-			document.getElementById("lacp_note").innerHTML = note_str;
-			document.getElementById("lacp_desc").style.display = "";
-			document.form.lacp_enabled.disabled = true;
 		}
 	}
 
-	disable_lacp_if_conflicts_with_iptv();
 	if(no_jumbo_frame_support)
 		$("#jumbo_tr").hide();
 }

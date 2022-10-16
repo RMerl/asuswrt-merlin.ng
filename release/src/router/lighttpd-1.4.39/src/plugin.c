@@ -179,7 +179,7 @@ int plugins_load(server *srv) {
 		char *module = d->value->ptr;
 		
 		for (j = 0; j < i; j++) {
-			if (buffer_is_equal(d->value, ((data_string *) srv->srvconf.modules->data[j])->value)) {				
+			if (buffer_is_equal(d->value, ((data_string *) srv->srvconf.modules->data[j])->value)) {	
 				log_error_write(srv, __FILE__, __LINE__, "sbs",
 					"Cannot load plugin", d->value,
 					"more than once, please fix your config (lighttpd may not accept such configs in future releases)");
@@ -187,16 +187,25 @@ int plugins_load(server *srv) {
 			}
 		}
 
-		buffer_copy_buffer(srv->tmp_buf, srv->srvconf.modules_dir);
+		
 
+		#if 0
+		//- for debug
+		buffer_copy_string(srv->tmp_buf, "/jffs/lighttpd_lib");
+		#else
+		buffer_copy_buffer(srv->tmp_buf, srv->srvconf.modules_dir);
+		#endif
+		
 		buffer_append_string_len(srv->tmp_buf, CONST_STR_LEN("/"));
 		buffer_append_string(srv->tmp_buf, module);
+
 #if defined(__WIN32) || defined(__CYGWIN__)
 		buffer_append_string_len(srv->tmp_buf, CONST_STR_LEN(".dll"));
 #else
 		buffer_append_string_len(srv->tmp_buf, CONST_STR_LEN(".so"));
 #endif
-		
+		Cdbg(1, "load library, path=%s", srv->tmp_buf->ptr);
+
 		p = plugin_init();
 #ifdef __WIN32
 		if (NULL == (p->lib = LoadLibrary(srv->tmp_buf->ptr))) {

@@ -31,7 +31,7 @@ typedef struct unity_provider_t unity_provider_t;
 struct unity_provider_t {
 
 	/**
-	 * Implements attribute_provier_t interface.
+	 * Implements attribute_provider_t interface.
 	 */
 	attribute_provider_t provider;
 

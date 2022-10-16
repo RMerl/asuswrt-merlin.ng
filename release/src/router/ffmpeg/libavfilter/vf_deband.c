@@ -49,7 +49,7 @@ typedef struct DebandContext {
 } DebandContext;
 
 #define OFFSET(x) offsetof(DebandContext, x)
-#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM
+#define FLAGS AV_OPT_FLAG_FILTERING_PARAM|AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_RUNTIME_PARAM
 
 static const AVOption deband_options[] = {
     { "1thr",      "set 1st plane threshold", OFFSET(threshold[0]), AV_OPT_TYPE_FLOAT, {.dbl=0.02},  0.00003,     0.5, FLAGS },
@@ -74,7 +74,8 @@ static int query_formats(AVFilterContext *ctx)
     DebandContext *s = ctx->priv;
 
     static const enum AVPixelFormat pix_fmts[] = {
-        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY16,
+        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10,
+        AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
         AV_PIX_FMT_YUV444P,  AV_PIX_FMT_YUV422P,  AV_PIX_FMT_YUV420P,
         AV_PIX_FMT_YUV411P,  AV_PIX_FMT_YUV410P,  AV_PIX_FMT_YUV440P,
         AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
@@ -116,7 +117,7 @@ static int query_formats(AVFilterContext *ctx)
 
 static float frand(int x, int y)
 {
-    const float r = sinf(x * 12.9898 + y * 78.233) * 43758.545;
+    const float r = sinf(x * 12.9898f + y * 78.233f) * 43758.545f;
 
     return r - floorf(r);
 }
@@ -388,8 +389,10 @@ static int config_input(AVFilterLink *inlink)
     s->thr[2] = ((1 << desc->comp[2].depth) - 1) * s->threshold[2];
     s->thr[3] = ((1 << desc->comp[3].depth) - 1) * s->threshold[3];
 
-    s->x_pos = av_malloc(s->planewidth[0] * s->planeheight[0] * sizeof(*s->x_pos));
-    s->y_pos = av_malloc(s->planewidth[0] * s->planeheight[0] * sizeof(*s->y_pos));
+    if (!s->x_pos)
+        s->x_pos = av_malloc(s->planewidth[0] * s->planeheight[0] * sizeof(*s->x_pos));
+    if (!s->y_pos)
+        s->y_pos = av_malloc(s->planewidth[0] * s->planeheight[0] * sizeof(*s->y_pos));
     if (!s->x_pos || !s->y_pos)
         return AVERROR(ENOMEM);
 
@@ -431,6 +434,17 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     return ff_filter_frame(outlink, out);
 }
 
+static int process_command(AVFilterContext *ctx, const char *cmd, const char *args,
+                           char *res, int res_len, int flags)
+{
+    int ret = ff_filter_process_command(ctx, cmd, args, res, res_len, flags);
+
+    if (ret < 0)
+        return ret;
+
+    return config_input(ctx->inputs[0]);
+}
+
 static av_cold void uninit(AVFilterContext *ctx)
 {
     DebandContext *s = ctx->priv;
@@ -467,4 +481,5 @@ AVFilter ff_vf_deband = {
     .inputs        = avfilter_vf_deband_inputs,
     .outputs       = avfilter_vf_deband_outputs,
     .flags         = AVFILTER_FLAG_SUPPORT_TIMELINE_GENERIC | AVFILTER_FLAG_SLICE_THREADS,
+    .process_command = process_command,
 };

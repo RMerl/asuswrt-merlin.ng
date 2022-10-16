@@ -21,7 +21,7 @@ static void assert_host(char *expected, host_t *host)
 {
 	if (!expected)
 	{
-		ck_assert_msg(!host, "not epxecting IP != %+H", host);
+		ck_assert_msg(!host, "not expecting IP != %+H", host);
 	}
 	else
 	{

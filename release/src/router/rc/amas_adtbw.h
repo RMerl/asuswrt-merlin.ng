@@ -1,5 +1,5 @@
 #define AMAS_ADTBW_TIMER 1   //sec
-#define AMAS_ADTBW_DFT_POLL_INTERVAL 10
+#define AMAS_ADTBW_DFT_POLL_INTERVAL 15
 #define AMAS_ADTBW_DFT_TIMEOUT_WARM_UP 90 //sec
 #define AMAS_ADTBW_DFT_TIMEOUT_SWITCH 60 //sec
 #define AMAS_ADTBW_DFT_BW80_RSSI_THRESH_US -64
@@ -28,6 +28,10 @@
 #define DWB_BACKHAUL_AUTO_FRONTHAUL 1
 #define DWB_BACKHAUL_AND_FRONTHAUL 2
 
+#define AMAS_ADTBW_TOPOLOGY_NONE 0
+#define AMAS_ADTBW_TOPOLOGY_STAR 1
+#define AMAS_ADTBW_TOPOLOGY_DAISY_CHAIN 2
+
 #define AMAS_ADTBW_DEBUG "/tmp/AMAS_ADTBW_DEBUG"
 #define MACF_UP "%02X:%02X:%02X:%02X:%02X:%02X"
 #define LOG_TITLE_AMAS_ADTBW "amas_adtbw"
@@ -54,7 +58,6 @@ typedef struct	amas_adtbw_config {
 	int poll_itval;
     	int unit;
 	char ifname[16];
-	int multiple_re;
 	int rssi_bw80;
 	int rssi_bw160;
 	uint8 hit_bw80;
@@ -79,8 +82,10 @@ typedef struct amas_adtbw_state {
 	time_t time_switch_160m;
 	uint8 dfs_block_remain;
 	uint8 first_re_assoc;
-	uint8 re_count;
+	uint8 lv1_re_count;
+	uint8 cfg_re_online_num;
 	uint8 stop_switch_160m;
+	uint8 topology;
 	int re_support_unii4;
 #ifdef RTCONFIG_FRONTHAUL_AP_AUTO_OPT
 	int fh_ap_up;
@@ -99,6 +104,6 @@ extern int amas_adtbw_enable(void);
 extern int amas_adtbw_dont_check(chanspec_t chanspec);
 extern chanspec_t amas_adtbw_get_chanspec(char* ifname);
 extern int amas_adtbw_check_bw_switch(chanspec_t chsp, int *do_imdtly);
-extern int amas_adtbw_do_bw_switch(chanspec_t chsp, int bw160);
+extern int amas_adtbw_do_bw_switch(chanspec_t chsp, int bw160, int *conduct_bgdfs);
 extern int amas_adtbw_conduct_cac(void);
 

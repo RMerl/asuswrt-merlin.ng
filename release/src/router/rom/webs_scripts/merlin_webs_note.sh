@@ -24,7 +24,7 @@ if [ "$(echo $2 | cut -d "_" -f 3)" = "" ]; then
 	fwsiteSQ=$fwsite
 else
 	echo "Merlin FW" >> /tmp/webs_note.log
-	releasenote_file=$(nvram get webs_state_info_am)_note.txt
+	releasenote_file=${new_firm}_note.txt
 	releasenote_file_US=$releasenote_file
 	fwsite="https://fwupdate.asuswrt-merlin.net"
 	fwsiteSQ=$fwsite"/test"

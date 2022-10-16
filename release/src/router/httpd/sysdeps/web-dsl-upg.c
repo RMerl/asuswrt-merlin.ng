@@ -107,6 +107,7 @@ int separate_tc_fw_from_trx(char* trxpath)
 	unsigned int TrxSize=0;
 	unsigned int filelen;
 	unsigned int TcFwSize;	
+	int readbyte = 0;
 	int RetVal = 0;
 	size_t r_counts = 0;
 	size_t TrxHdrBuf_size = sizeof(TrxHdrBuf);
@@ -121,6 +122,7 @@ int separate_tc_fw_from_trx(char* trxpath)
 	}
 
 	r_counts = fread(TrxHdrBuf,1,TrxHdrBuf_size,FpTrx);
+	TrxHdrBuf[TrxHdrBuf_size-1] = '\0';
 	if(r_counts == TrxHdrBuf_size)
 	{
 		fseek( FpTrx, 0, SEEK_END);
@@ -157,13 +159,15 @@ int separate_tc_fw_from_trx(char* trxpath)
 			{
 				if (TcFwSize > sizeof(buf))
 				{
-					fread(buf, 1, sizeof(buf), fpSrc);
+					readbyte = fread(buf, 1, sizeof(buf), fpSrc);
+					buf[readbyte] = '\0';
 					fwrite(buf, 1, sizeof(buf), fpDst);
 					TcFwSize -= sizeof(buf);
 				}
 				else
 				{
-					fread(buf, 1, TcFwSize, fpSrc);
+					readbyte = fread(buf, 1, TcFwSize, fpSrc);
+					buf[readbyte] = '\0';
 					fwrite(buf, 1, TcFwSize, fpDst);
 					TcFwSize = 0;
 				}
@@ -263,6 +267,7 @@ int check_tc_firmware_crc()
 	unsigned char bBuf[4096] = {0};
 	unsigned char tag[] = {0x3C, 0x23, 0x24, 0x3E};	//<#$>
 	int bBufsize = sizeof(bBuf);
+	int readbyte = 0;
 	size_t r_counts = 0;
 
 	if (update_tc_fw == 0) return 0;
@@ -282,6 +287,7 @@ int check_tc_firmware_crc()
 	}
 
 	r_counts = fread(buf, 1, 0x100, fpSrc);
+	buf[r_counts] = '\0';
 	if(r_counts == 0x100)
 	{
 		cprintf("TC FW VER : %c%c%c , %s , %s\n",buf[0],buf[1],buf[2],TC_DSL_FW_VER,TC_DSL_FW_VER_FROM_MODEM);
@@ -294,7 +300,8 @@ int check_tc_firmware_crc()
 
 	//read tcfw.bin and find the driver ras info, date ...
 	fseek(fpSrc, 0xF000, SEEK_SET);
-	fread(bBuf, 1, bBufsize, fpSrc);
+	readbyte = fread(bBuf, 1, bBufsize, fpSrc);
+	bBuf[readbyte] = '\0';
 	
 	int read_idx = bBufsize;
 	while (read_idx--) {
@@ -439,14 +446,16 @@ int check_tc_firmware_crc()
 	{
 		if (tcfilelen > sizeof(buf))
 		{
-			fread(buf, 1, sizeof(buf), fpSrc);
+			readbyte = fread(buf, 1, sizeof(buf), fpSrc);
+			buf[readbyte] = '\0';
 			fwrite(buf, 1, sizeof(buf), fpDst);
 			calc_crc = crc32_no_comp(calc_crc,buf,sizeof(buf));
 			tcfilelen-=sizeof(buf);
 		}
 		else
 		{
-			fread(buf, 1, tcfilelen, fpSrc);
+			readbyte = fread(buf, 1, tcfilelen, fpSrc);
+			buf[readbyte] = '\0';
 			fwrite(buf, 1, tcfilelen, fpDst);
 			calc_crc = crc32_no_comp(calc_crc,buf,tcfilelen);
 			tcfilelen=0;
@@ -542,6 +551,7 @@ int compare_linux_image(void)
 {
 	IMAGE_HEADER_TRX* TrxHdr;
 	FILE* FpHdr;
+	int readbyte = 0;
 	char TrxHdrBuf[512];
 	unsigned int OrigTime;
 	unsigned int NewTime;
@@ -549,7 +559,8 @@ int compare_linux_image(void)
 	memset(TrxHdrBuf,0,sizeof(TrxHdrBuf));
 	FpHdr = fopen("/tmp/trx_hdr.bin","rb");
 	if (FpHdr == NULL) return -1;
-	fread(TrxHdrBuf,1,sizeof(TrxHdrBuf),FpHdr);	  
+	readbyte = fread(TrxHdrBuf,1,sizeof(TrxHdrBuf),FpHdr);
+	TrxHdrBuf[readbyte] = '\0';
 	fclose(FpHdr); 
 	TrxHdr = (IMAGE_HEADER_TRX*)TrxHdrBuf;
 
@@ -558,7 +569,8 @@ int compare_linux_image(void)
 	memset(TrxHdrBuf,0,sizeof(TrxHdrBuf));
 	FpHdr = fopen("/tmp/linux.trx","rb");
 	if (FpHdr == NULL) return 0;
-	fread(TrxHdrBuf,1,sizeof(TrxHdrBuf),FpHdr);	  
+	readbyte = fread(TrxHdrBuf,1,sizeof(TrxHdrBuf),FpHdr);
+	TrxHdrBuf[readbyte] = '\0';
 	fclose(FpHdr); 
 	TrxHdr = (IMAGE_HEADER_TRX*)TrxHdrBuf;
 

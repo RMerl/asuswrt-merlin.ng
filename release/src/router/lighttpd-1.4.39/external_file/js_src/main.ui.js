@@ -525,7 +525,7 @@ function createHostList(query_type, folder_array){
 					folder_array[i].freadonly + "|" + 
 					folder_array[i].fhidden + "|" + 
 					folder_array[i].type;
-							
+						
 			if(!items.contains(s)){    			
 				items.push(s);
 			}
@@ -533,7 +533,7 @@ function createHostList(query_type, folder_array){
 			g_storage.set("HostList", items.join(','));
 		}
 	}
-		 				        
+	
 	for(var i=0;i<items.length;i++){	
 		var a = items[i].split('|');
 		
@@ -673,7 +673,7 @@ function createHostList(query_type, folder_array){
 		
 		g_storage.set('opentype', ($(this).attr("type")=="usbdisk")?"1":"0");
 							
-		doPROPFIND(open_url, function(){
+		doPROPFIND(open_url, false, function(){
 			g_storage.set('openhostuid', g_opening_uid);			
 			$("#hostview .host_item").each(function(){
 				if($(this).attr("uid") == g_opening_uid){
@@ -851,7 +851,10 @@ function createOpenUrlUI(open_url){
 		//if(confirmCancelUploadFile()==0)
 		//	return;
 			
-		doPROPFIND($(this).attr("uhref"));
+		// doPROPFIND($(this).attr("uhref"), false);
+
+		g_propfind_page = 0;
+		doPROPFIND($(this).attr("uhref"), false, null, '', g_propfind_index, g_propfind_count);
 	});
 }
 

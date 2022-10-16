@@ -203,7 +203,6 @@ static int interactive(int fd)
 		int res;
 
 		printf("> ");
-		fflush(stdout);
 
 		if (fgets(line, sizeof(line), stdin))
 		{
@@ -265,6 +264,8 @@ int main(int argc, char *argv[])
 	{
 		return 1;
 	}
+
+	setvbuf(stdout, NULL, _IOLBF, 0);
 
 	if (argc == 1)
 	{

@@ -43,7 +43,7 @@ static int get_scale_factor(H264SliceContext *sl,
     int td = av_clip_int8(pocdiff);
 
     if (pocdiff != (int)pocdiff)
-        avpriv_request_sample(sl->h264->avctx, "pocdiff overflow\n");
+        avpriv_request_sample(sl->h264->avctx, "pocdiff overflow");
 
     if (td == 0 || sl->ref_list[0][i].parent->long_ref) {
         return 256;
@@ -156,8 +156,8 @@ void ff_h264_direct_ref_list_init(const H264Context *const h, H264SliceContext *
             av_log(h->avctx, AV_LOG_ERROR, "co located POCs unavailable\n");
             sl->col_parity = 1;
         } else
-        sl->col_parity = (FFABS(col_poc[0] - cur_poc) >=
-                          FFABS(col_poc[1] - cur_poc));
+            sl->col_parity = (FFABS(col_poc[0] - (int64_t)cur_poc) >=
+                              FFABS(col_poc[1] - (int64_t)cur_poc));
         ref1sidx =
         sidx     = sl->col_parity;
     // FL -> FL & differ parity

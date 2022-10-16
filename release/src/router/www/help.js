@@ -220,7 +220,7 @@ function upated_sim_record(){ //delete the oldest record and save the current da
 var debug_end_time = parseInt("<% nvram_get("dslx_diag_end_uptime"); %>");
 var wans_mode = '<%nvram_get("wans_mode");%>';
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';
-var orig_wnaports_bond = '<% nvram_get("wanports_bond"); %>';
+var orig_wanports_bond = '<% nvram_get("wanports_bond"); %>';
 
 function overHint(itemNum){
 	var statusmenu = "";
@@ -229,10 +229,13 @@ function overHint(itemNum){
 	var title5_2 = 0;
 
 	if(itemNum == 101){
-		statusmenu ="<span><#WANAggregation_help_WAN#></span>";
+		if(based_modelid == "RT-AXE7800")
+			statusmenu ="<span><#WANAggregation_help_WAN#></span>".replace("#WAN", "1G WAN");
+		else
+			statusmenu ="<span><#WANAggregation_help_WAN#></span>".replace("#WAN", "WAN");
 	}
 	else if(itemNum == 102){
-		statusmenu ="<span><#WANAggregation_help_LAN#></span>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wnaports_bond));
+		statusmenu ="<span><#WANAggregation_help_LAN#></span>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wanports_bond));
 	}
 
 	if(itemNum == 50){
@@ -921,7 +924,10 @@ function cancel_dblog(){
 	parent.document.canceldblogForm.submit();
 }
 
+var referer_obj = "";
 function openHint(hint_array_id, hint_show_id, flag){
+	if(flag != undefined && flag != "")
+		referer_obj = flag;
 	statusmenu = "";
 	if(hint_array_id == 24){
 		var _caption = "";
@@ -1100,7 +1106,10 @@ function openHint(hint_array_id, hint_show_id, flag){
 		statusmenu = "<div>";
 		statusmenu += "<#WANAggregation_help_desc#>";
 		statusmenu += "<ol>";
-		statusmenu += "<li><#WANAggregation_help_step1#></li>".replace("LAN 4", wanAggr_p2_name(orig_wnaports_bond));
+		if(based_modelid == "RT-AXE7800")
+			statusmenu += "<li><#WANAggregation_help_step1#></li>".replace("LAN 4", wanAggr_p2_name(orig_wanports_bond)).replace("#WAN", "1G WAN");
+		else
+			statusmenu += "<li><#WANAggregation_help_step1#></li>".replace("LAN 4", wanAggr_p2_name(orig_wanports_bond)).replace("#WAN", "WAN");
 		statusmenu += "<li><#WANAggregation_help_step2#></li>";
 		statusmenu += "<li><#WANAggregation_help_step3#></li>";
 		statusmenu += "<li><#WANAggregation_help_step4#></li>";
@@ -2181,6 +2190,10 @@ function horizontalPlacement(browserWidth, horizontalScrollAmount, widthFix) {
 		}
 	}	
 
+	if(referer_obj == "rwd_vpns"){
+		if(o3_x > placeX)
+			placeX = o3_x;
+	}
 	return placeX;
 }
 
@@ -2849,7 +2862,10 @@ function chkPass(pwd, flag, obj, id) {
 		/* Display updated score criteria to client */
 		if(typeof document.forms[0] == "undefined" || (typeof document.forms[0] != "undefined" && document.form.current_page.value != "AiProtection_HomeProtection.asp")){		//for Router weakness status, Jimeing added at 2014/06/07
 			oScorebarBorder.style.display = "flex";
-			oScorebar.style.backgroundPosition = "-" + parseInt(nScore * 4) + "px";
+			if(flag == 'rwd_vpn_pwd')
+				oScorebar.style.backgroundPosition = parseInt(nScore) + "%";
+			else
+				oScorebar.style.backgroundPosition = "-" + parseInt(nScore * 4) + "px";
 		}
 		else{
 			if(nScore >= 0 && nScore < 40){

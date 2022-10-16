@@ -43,7 +43,7 @@ METHOD(plugin_t, get_features, int,
 	static plugin_feature_t f[] = {
 		PLUGIN_REGISTER(NONCE_GEN, nonce_nonceg_create),
 			PLUGIN_PROVIDE(NONCE_GEN),
-				PLUGIN_DEPENDS(RNG, RNG_WEAK),
+				PLUGIN_DEPENDS(RNG, NONCE_RNG_QUALITY),
 	};
 	*features = f;
 	return countof(f);

@@ -17,6 +17,7 @@
 #include <stdio.h>
 
 #include <library.h>
+#include <collections/enumerator.h>
 #include <utils/utils.h>
 
 #include "enum.h"
@@ -66,16 +67,17 @@ bool enum_from_name_as_int(enum_name_t *e, const char *name, int *val)
 /**
  * Get the position of a flag name using offset calculation
  */
-static int find_flag_pos(u_int val, u_int first)
+static int find_flag_pos(u_int first, u_int val)
 {
 	int offset = 0;
 
-	while (val != 0x01)
+	while (first != 0x01)
 	{
-		val = val >> 1;
+		first = first >> 1;
 		offset++;
 	}
-	return first - offset;
+	/* skip the first name as that's used if no flag is set */
+	return 1 + val - offset;
 }
 
 /**
@@ -95,7 +97,7 @@ char *enum_flags_to_string(enum_name_t *e, u_int val, char *buf, size_t len)
 		return buf;
 	}
 
-	if (snprintf(buf, len, "(unset)") >= len)
+	if (snprintf(buf, len, e->names[0]) >= len)
 	{
 		return NULL;
 	}
@@ -132,6 +134,54 @@ char *enum_flags_to_string(enum_name_t *e, u_int val, char *buf, size_t len)
 		}
 	}
 	return buf;
+}
+
+/*
+ * Described in header
+ */
+bool enum_flags_from_string_as_int(enum_name_t *e, const char *str, u_int *val)
+{
+	enumerator_t *enumerator;
+	char *name;
+
+	*val = 0;
+
+	if (!str || !*str)
+	{
+		return TRUE;
+	}
+	else if (e->next != ENUM_FLAG_MAGIC)
+	{
+		return enum_from_name_as_int(e, str, val);
+	}
+
+	enumerator = enumerator_create_token(str, "|", " ");
+	while (enumerator->enumerate(enumerator, &name))
+	{
+		u_int flag, i;
+		bool found = FALSE;
+
+		if (strcaseeq(name, e->names[0]))
+		{	/* accept name used if no flags are set */
+			continue;
+		}
+		for (i = 1, flag = e->first; flag <= e->last; i++, flag <<= 1)
+		{
+			if (e->names[i] && strcaseeq(name, e->names[i]))
+			{
+				*val |= flag;
+				found = TRUE;
+				break;
+			}
+		}
+		if (!found)
+		{
+			enumerator->destroy(enumerator);
+			return FALSE;
+		}
+	}
+	enumerator->destroy(enumerator);
+	return TRUE;
 }
 
 /**

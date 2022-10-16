@@ -1,0 +1,125 @@
+.\"	$OpenBSD: pstree.1,v 1.3 2013/06/04 15:22:12 schwarze Exp $
+.\"
+.\" Copyright (c) 2002 Sebastian Stark
+.\" Copyright (c) 2013 Ingo Schwarze <schwarze@openbsd.org>
+.\"
+.\" Permission to use, copy, modify, and distribute this manual for any
+.\" purpose with or without fee is hereby granted, provided that the above
+.\" copyright notice and this permission notice appear in all copies.
+.\"
+.\" THE MANUAL IS PROVIDED "AS IS" AND THE AUTHOR DISCLAIMS ALL WARRANTIES
+.\" WITH REGARD TO THIS MANUAL INCLUDING ALL IMPLIED WARRANTIES OF
+.\" MERCHANTABILITY AND FITNESS. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR
+.\" ANY SPECIAL, DIRECT, INDIRECT, OR CONSEQUENTIAL DAMAGES OR ANY DAMAGES
+.\" WHATSOEVER RESULTING FROM LOSS OF USE, DATA OR PROFITS, WHETHER IN AN
+.\" ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
+.\" OR IN CONNECTION WITH THE USE OF THIS MANUAL.
+.\"
+.Dd $Mdocdate: June 4 2013 $
+.Dt PSTREE 1
+.Os
+.Sh NAME
+.Nm pstree
+.Nd list processes as a tree
+.Sh SYNOPSIS
+.Nm pstree
+.Op Fl Uw
+.Op Fl f Ar file
+.Op Fl g Ar n
+.Op Fl l Ar n
+.Op Fl p Ar pid
+.Op Fl s Ar string
+.Op Fl u Ar user
+.Op Ar rootpid ...
+.Sh DESCRIPTION
+Tree sorted output frontend for
+.Xr ps 1 .
+.Nm
+uses the output of the
+.Xr ps 1
+program to show nicely formatted process family trees.
+.Pp
+For each
+.Ar rootpid
+argument,
+.Nm
+shows one tree rooted at that process.
+By default, if no
+.Ar rootpid
+argument is given, it shows a single tree rooted at process 1.
+.Pp
+The options are as follows:
+.Bl -tag -width 9n
+.It Fl f Ar file
+Read input from
+.Ar file
+instead of running
+.Dq ps -kaxwwo user,pid,ppid,pgid,command .
+If
+.Ar file
+is a single dash
+.Pq Sq \&- ,
+.Nm
+reads from standard input.
+.It Fl g Ar n
+Use graphics chars for tree.
+.Ar n
+= 1: IBM-850,
+.Ar n
+= 2: VT100,
+.Ar n
+= 3: UTF8.
+.It Fl l Ar n
+Show a maximum of 
+.Ar n
+levels.
+.It Fl p Ar pid
+Show only parents and descendants of the process
+.Ar pid .
+.It Fl s Ar string
+Show only parents and descendants of processes containing the
+.Ar string
+in their commandline.
+.It Fl U
+Do not show branches containing only root processes.
+.It Fl u Ar user
+Show only parents and descendants of processes of
+.Ar user .
+.It Fl w
+Wide output, not truncated to terminal width.
+.El
+.Sh ENVIRONMENT
+.Bl -tag -width COLUMNS
+.It Ev COLUMNS
+The width of the terminal in characters.
+This can be set with
+.Xr stty 1 Cm columns Ar number .
+.El
+.Sh EXIT STATUS
+.Ex -std
+.Sh EXAMPLES
+Show branches of processes containing
+.Dq \&httpd
+using VT100 graphic chars:
+.Pp
+.Cm $ pstree -g 2 -s httpd
+.Pp
+Show process number
+.Dq \&15495
+and its descendants:
+.Pp
+.Cm $ pstree 15495
+.Pp
+Show process number
+.Dq \&15495
+and its parents and descendants:
+.Pp
+.Cm $ pstree -p 15495
+.Sh SEE ALSO
+.Xr ps 1 ,
+.Xr top 1
+.Sh AUTHORS
+The program was written and is maintained by
+.An Fred Hucht Aq Mt fred@thp.uni-due.de ,
+and this manual page was initially set up by
+.An Sebastian Stark .

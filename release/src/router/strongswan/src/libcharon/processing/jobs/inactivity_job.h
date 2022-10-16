@@ -29,7 +29,7 @@ typedef struct inactivity_job_t inactivity_job_t;
 /**
  * Job checking for inactivity of CHILD_SA to close them.
  *
- * The inactivity job reschedules itself to check CHILD_SAs prediodically.
+ * The inactivity job reschedules itself to check CHILD_SAs periodically.
  */
 struct inactivity_job_t {
 

@@ -51,7 +51,7 @@ typedef struct __attribute__((__packed__)) {
 } sigheader_t;
 
 METHOD(tls_aead_t, encrypt, bool,
-	private_tls_aead_t *this, tls_version_t version, tls_content_type_t type,
+	private_tls_aead_t *this, tls_version_t version, tls_content_type_t *type,
 	uint64_t seq, chunk_t *data)
 {
 	chunk_t assoc, encrypted, iv, plain;
@@ -74,7 +74,7 @@ METHOD(tls_aead_t, encrypt, bool,
 	plain = chunk_skip(encrypted, iv.len);
 	plain.len -= icvlen;
 
-	hdr.type = type;
+	hdr.type = *type;
 	htoun64(&hdr.seq, seq);
 	htoun16(&hdr.version, version);
 	htoun16(&hdr.length, plain.len);
@@ -91,7 +91,7 @@ METHOD(tls_aead_t, encrypt, bool,
 }
 
 METHOD(tls_aead_t, decrypt, bool,
-	private_tls_aead_t *this, tls_version_t version, tls_content_type_t type,
+	private_tls_aead_t *this, tls_version_t version, tls_content_type_t *type,
 	uint64_t seq, chunk_t *data)
 {
 	chunk_t assoc, iv;
@@ -111,7 +111,7 @@ METHOD(tls_aead_t, decrypt, bool,
 		return FALSE;
 	}
 
-	hdr.type = type;
+	hdr.type = *type;
 	htoun64(&hdr.seq, seq);
 	htoun16(&hdr.version, version);
 	htoun16(&hdr.length, data->len - icvlen);

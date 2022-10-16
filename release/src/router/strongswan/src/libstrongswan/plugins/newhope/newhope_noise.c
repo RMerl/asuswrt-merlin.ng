@@ -140,7 +140,7 @@ newhope_noise_t *newhope_noise_create(chunk_t seed)
 	{
 		DBG1(DBG_LIB, "could not instantiate ChaCha20 stream");
 		return NULL;
-	}	
+	}
 
 	INIT(this,
 		.public = {

@@ -38,13 +38,18 @@ struct private_addrblock_validator_t {
 	 * Whether to reject subject certificates not having a addrBlock extension
 	 */
 	bool strict;
+
+	/**
+	 * How deep to validate issuer parent addrBlock validity, -1 for full
+	 */
+	int depth;
 };
 
 /**
  * Do the addrblock check for two x509 plugins
  */
 static bool check_addrblock(private_addrblock_validator_t *this,
-							x509_t *subject, x509_t *issuer)
+							x509_t *subject, x509_t *issuer, u_int pathlen)
 {
 	bool subject_const, issuer_const, contained = TRUE;
 	enumerator_t *subject_enumerator, *issuer_enumerator;
@@ -61,6 +66,15 @@ static bool check_addrblock(private_addrblock_validator_t *this,
 	{
 		DBG1(DBG_CFG, "subject certificate lacks ipAddrBlocks extension");
 		return !this->strict;
+	}
+	if (this->depth >= 0 && this->depth <= pathlen)
+	{
+		/* at pathlen 0: skip for depth configuration == 0,
+		 * at pathlen 1: skip for depth configurations 0..1,
+		 * ... */
+		DBG1(DBG_CFG, "  skipping issuer ipAddrBlocks validation "
+					  "at pathlen %u", pathlen);
+		return TRUE;
 	}
 	if (!issuer_const)
 	{
@@ -103,7 +117,7 @@ METHOD(cert_validator_t, validate, bool,
 	if (subject->get_type(subject) == CERT_X509 &&
 		issuer->get_type(issuer) == CERT_X509)
 	{
-		if (!check_addrblock(this, (x509_t*)subject, (x509_t*)issuer))
+		if (!check_addrblock(this, (x509_t*)subject, (x509_t*)issuer, pathlen))
 		{
 			lib->credmgr->call_hook(lib->credmgr, CRED_HOOK_POLICY_VIOLATION,
 									subject);
@@ -135,6 +149,8 @@ addrblock_validator_t *addrblock_validator_create()
 		},
 		.strict = lib->settings->get_bool(lib->settings,
 						"%s.plugins.addrblock.strict", TRUE, lib->ns),
+		.depth = lib->settings->get_int(lib->settings,
+						"%s.plugins.addrblock.depth", -1, lib->ns),
 	);
 
 	return &this->public;

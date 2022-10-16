@@ -313,14 +313,17 @@ Suite *fetch_http_suite_create()
 
 	tc = tcase_create("GET");
 	tcase_add_loop_test(tc, test_get, 0, countof(gtests));
+	test_case_set_timeout(tc, 10);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("POST");
 	tcase_add_loop_test(tc, test_post, 0, countof(ptests));
+	test_case_set_timeout(tc, 10);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("response code");
 	tcase_add_loop_test(tc, test_response_code, 0, countof(rtests));
+	test_case_set_timeout(tc, 10);
 	suite_add_tcase(s, tc);
 
 	return s;

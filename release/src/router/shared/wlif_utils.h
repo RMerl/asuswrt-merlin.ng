@@ -34,7 +34,9 @@
 #include "proto/ethernet.h"
 #endif
 #include <wlioctl.h>
+#ifdef RTCONFIG_HND_ROUTER_AX
 #include <wpsdefs.h>
+#endif
 
 #ifndef IFNAMSIZ
 #define IFNAMSIZ 16

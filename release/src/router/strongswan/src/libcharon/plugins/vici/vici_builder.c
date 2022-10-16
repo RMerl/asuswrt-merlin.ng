@@ -145,6 +145,7 @@ static void vadd_kv_or_li(private_vici_builder_t *this, char *key,
 	{
 		value = chunk_alloc(len + 1);
 		len = vsnprintf(value.ptr, value.len, fmt, args);
+		value.len = len;
 	}
 	else
 	{

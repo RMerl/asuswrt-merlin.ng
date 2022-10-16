@@ -13,6 +13,9 @@
  * for more details.
  */
 
+#ifndef LOAD_CREDS_H_
+#define LOAD_CREDS_H_
+
 #include "command.h"
 
 /**
@@ -26,3 +29,5 @@
  */
 int load_creds_cfg(vici_conn_t *conn, command_format_options_t format,
 				   settings_t *cfg, bool clear, bool noprompt);
+
+#endif /** LOAD_CREDS_H_ */

@@ -323,7 +323,7 @@ defines the action to take if the remote peer unexpectedly closes a CHILD_SA
 for meaning of values).
 A
 .B closeaction should not be
-used if the peer uses reauthentication or uniquids checking, as these events
+used if the peer uses reauthentication or uniqueids checking, as these events
 might trigger the defined action when not desired.
 .TP
 .BR compress " = yes | " no

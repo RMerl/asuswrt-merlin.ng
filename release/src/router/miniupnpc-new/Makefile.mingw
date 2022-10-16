@@ -1,0 +1,144 @@
+# $Id: Makefile.mingw,v 1.30 2021/03/02 23:23:14 nanard Exp $
+# Miniupnp project.
+# http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+# (c) 2005-2020 Thomas Bernard
+# This Makefile is made for MinGW
+#
+# To cross compile on a *nix machine :
+# make -f Makefile.mingw DLLWRAP=mingw32-dllwrap CC=mingw32-gcc AR=mingw32-ar
+#
+CC ?= gcc
+SETUP_COMPILER_FLAG?=
+DLLWRAP = dllwrap
+WINDRES = windres
+SH = /bin/sh
+ZIP = zip
+ifeq ($(OS),Windows_NT)
+RM = del
+else
+RM = rm -f
+endif
+#CFLAGS = -Wall -g -DDEBUG -D_WIN32_WINNT=0X501
+CFLAGS = -Wall -W -Wstrict-prototypes -Os -DNDEBUG -D_WIN32_WINNT=0X501
+LDLIBS = -lws2_32 -liphlpapi
+# -lwsock32
+# -liphlpapi is needed for GetBestRoute() and GetIpAddrTable()
+PYTHON=\utils\python25\python
+OBJS=miniwget.o minixml.o igd_desc_parse.o minisoap.o \
+     minissdpc.o \
+     miniupnpc.o upnpreplyparse.o upnpcommands.o upnperrors.o \
+     connecthostport.o portlistingparse.o receivedata.o \
+     upnpdev.o addr_is_reserved.o
+OBJSDLL=$(addprefix dll-, $(OBJS)) winres.o
+BINARIES=upnpc-static.exe upnpc-shared.exe \
+         listdevices-static.exe listdevices-shared.exe \
+         miniupnpc.dll libminiupnpc.a \
+         testminixml.exe
+ifneq ($(GITHUB_SHA),)
+COMMITREF=$(GITHUB_SHA)
+else
+COMMITREF=$(shell git rev-parse --short HEAD)
+endif
+DISTFILE:=$(shell echo "miniupnpc-bin-win32-`cat VERSION`-$(COMMITREF).zip")
+
+.PHONY:	all dist clean
+
+all:	$(BINARIES)
+
+dist:	$(DISTFILE)
+
+clean:
+	$(RM) miniupnpcstrings.h
+	$(RM) *.o
+	$(RM) *.exe
+	$(RM) miniupnpc.dll miniupnpc.lib miniupnpc.dll.def
+	$(RM) libminiupnpc.a
+
+$(DISTFILE):	$(BINARIES)
+	$(ZIP) $@ *.exe *.dll *.lib *.def *.a LICENSE README Changelog.txt
+
+libminiupnpc.a:	$(OBJS)
+	$(AR) cr $@ $?
+
+pythonmodule:	libminiupnpc.a
+	$(PYTHON) setupmingw32.py build $(SETUP_COMPILER_FLAG)
+	$(PYTHON) setupmingw32.py install --skip-build
+	$(PYTHON) setupmingw32.py bdist_wheel --skip-build
+
+miniupnpc.dll:	miniupnpc.def $(OBJSDLL)
+	$(DLLWRAP) -k --driver-name $(CC) \
+	--def miniupnpc.def \
+	--output-def miniupnpc.dll.def \
+	--implib miniupnpc.lib -o $@ \
+	$(OBJSDLL) $(LDLIBS)
+
+miniupnpc.lib:	miniupnpc.dll
+
+%.o:	%.c
+	$(CC) $(CFLAGS) -DMINIUPNP_STATICLIB -c -o $@ $<
+
+dll-%.o:	%.c
+	$(CC) $(CFLAGS) -DMINIUPNP_EXPORTS -c -o $@ $<
+
+%-shared.o:	%.c
+	$(CC) $(CFLAGS) -c -o $@ $<
+
+# --enable-stdcall-fixup
+%-static.exe:	%.o libminiupnpc.a
+	$(CC) -static -o $@ $^ $(LDLIBS)
+
+%-shared.exe:	%-shared.o miniupnpc.lib
+	$(CC) -o $@ $^ $(LDLIBS)
+
+# To make miniupnpcstrings.h from miniupnpcstrings.h.in we either
+# use a custom executable (if running make under windows) or use
+# sed (if cross compiling from another platform).
+ifeq ($(OS),Windows_NT)
+wingenminiupnpcstrings.exe:	wingenminiupnpcstrings.c
+	$(CC) $(CFLAGS) -o $@ $^
+
+miniupnpcstrings.h: miniupnpcstrings.h.in wingenminiupnpcstrings.exe VERSION
+	wingenminiupnpcstrings.exe $< $@ rc_version.h
+
+rc_version.h:	miniupnpcstrings.h
+else
+miniupnpcstrings.h:	miniupnpcstrings.h.in VERSION
+	sed 's|OS_STRING ".*"|OS_STRING "Windows/Mingw32"|' $< | \
+	sed 's|MINIUPNPC_VERSION_STRING ".*"|MINIUPNPC_VERSION_STRING "$(shell cat VERSION)"|' > $@
+
+rc_version.h:	VERSION
+	echo "#define LIBMINIUPNPC_DOTTED_VERSION \"$(shell cat VERSION)\"" > $@.tmp
+	echo "#define LIBMINIUPNPC_MAJOR_VERSION $(shell cat VERSION|cut -d. -f1)" >> $@.tmp
+	echo "#define LIBMINIUPNPC_MINOR_VERSION $(shell cat VERSION|cut -d. -f2)" >> $@.tmp
+	echo "#define LIBMINIUPNPC_MICRO_VERSION $(shell cat VERSION|cut -d. -f3)" >> $@.tmp
+	mv $@.tmp $@
+endif
+
+winres.o:	miniupnpc.rc rc_version.h
+	$(WINDRES) -D INTERNAL_NAME=\\\"miniupnpc.dll\\0\\\" -i $< -o $@
+
+testminixml.exe:	testminixml.o minixml.o igd_desc_parse.o
+	$(CC) -static -o $@ $^
+
+minixml.o:	minixml.c minixml.h
+
+upnpc.o:	miniwget.h minisoap.h miniupnpc.h igd_desc_parse.h
+upnpc.o:	upnpreplyparse.h upnpcommands.h upnperrors.h miniupnpcstrings.h
+
+miniwget.o:	miniwget.c miniwget.h miniupnpcstrings.h connecthostport.h
+
+minisoap.o:	minisoap.c minisoap.h miniupnpcstrings.h
+
+miniupnpc.o:	miniupnpc.c miniupnpc.h minisoap.h miniwget.h minixml.h \
+	addr_is_reserved.h
+
+igd_desc_parse.o:	igd_desc_parse.c igd_desc_parse.h
+
+upnpreplyparse.o:	upnpreplyparse.c upnpreplyparse.h minixml.h
+
+upnpcommands.o:	upnpcommands.c upnpcommands.h upnpreplyparse.h miniupnpc.h portlistingparse.h
+
+minissdpc.o:	minissdpc.c minissdpc.h receivedata.h
+
+upnpdev.o:	upnpdev.c upnpdev.h
+

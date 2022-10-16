@@ -68,7 +68,7 @@ static size_t get_size(array_t *array, uint32_t num)
 {
 	if (array->esize)
 	{
-		return array->esize * num;
+		return (size_t)array->esize * num;
 	}
 	return sizeof(void*) * num;
 }

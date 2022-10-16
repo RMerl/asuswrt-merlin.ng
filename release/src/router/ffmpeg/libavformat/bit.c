@@ -30,7 +30,7 @@
 #define BIT_1      0x81
 
 #if CONFIG_BIT_DEMUXER
-static int probe(AVProbeData *p)
+static int probe(const AVProbeData *p)
 {
     int i = 0, j, valid = 0;
 
@@ -94,8 +94,8 @@ static int read_packet(AVFormatContext *s,
     if(ret != 8 * packet_size * sizeof(uint16_t))
         return AVERROR(EIO);
 
-    if (av_new_packet(pkt, packet_size) < 0)
-        return AVERROR(ENOMEM);
+    if ((ret = av_new_packet(pkt, packet_size)) < 0)
+        return ret;
 
     init_put_bits(&pbo, pkt->data, packet_size);
     for(j=0; j < packet_size; j++)

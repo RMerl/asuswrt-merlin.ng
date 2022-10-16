@@ -18,15 +18,15 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __MNOTE_FUJI_CONTENT_H__
-#define __MNOTE_FUJI_CONTENT_H__
+#ifndef LIBEXIF_EXIF_MNOTE_DATA_FUJI_H
+#define LIBEXIF_EXIF_MNOTE_DATA_FUJI_H
 
 #include <libexif/exif-mnote-data.h>
+#include <libexif/exif-mnote-data-priv.h>
+#include <libexif/exif-data.h>
+#include <libexif/fuji/mnote-fuji-entry.h>
 
 typedef struct _ExifMnoteDataFuji        ExifMnoteDataFuji;
-
-#include <libexif/exif-mnote-data-priv.h>
-#include <libexif/fuji/mnote-fuji-entry.h>
 
 struct _ExifMnoteDataFuji {
 	ExifMnoteData parent;
@@ -38,6 +38,16 @@ struct _ExifMnoteDataFuji {
 	unsigned int offset;
 };
 
+/*! Detect if MakerNote is recognized as one handled by the Fuji module.
+ * 
+ * \param[in] ed image #ExifData to identify as as a Fuji type
+ * \param[in] e #ExifEntry for EXIF_TAG_MAKER_NOTE, from within ed but
+ *   duplicated here for convenience
+ * \return 0 if not recognized, nonzero if recognized. The specific nonzero 
+ *   value returned may identify a subtype unique within this module.
+ */
+int exif_mnote_data_fuji_identify (const ExifData *ed, const ExifEntry *e);
+
 ExifMnoteData *exif_mnote_data_fuji_new (ExifMem *);
 
-#endif /* __MNOTE_FUJI_CONTENT_H__ */
+#endif /* !defined(LIBEXIF_EXIF_MNOTE_DATA_FUJI_H) */

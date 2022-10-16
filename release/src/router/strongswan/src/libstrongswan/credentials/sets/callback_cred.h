@@ -40,7 +40,7 @@ typedef shared_key_t* (*callback_cred_shared_cb_t)(
 								id_match_t *match_me, id_match_t *match_other);
 
 /**
- * Generic callbcack using user specified callback functions.
+ * Generic callback using user specified callback functions.
  */
 struct callback_cred_t {
 

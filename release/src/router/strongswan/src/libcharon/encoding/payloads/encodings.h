@@ -138,7 +138,7 @@ enum encoding_type_t {
 	FLAG,
 
 	/**
-	 * Representating a length field of a payload.
+	 * Representing a length field of a payload.
 	 *
 	 * When generating it must be changed from host to network order.
 	 * The value is read from the associated data struct.
@@ -151,7 +151,7 @@ enum encoding_type_t {
 	PAYLOAD_LENGTH,
 
 	/**
-	 * Representating a length field of a header.
+	 * Representing a length field of a header.
 	 *
 	 * When generating it must be changed from host to network order.
 	 * The value is read from the associated data struct.
@@ -164,7 +164,7 @@ enum encoding_type_t {
 	HEADER_LENGTH,
 
 	/**
-	 * Representating a spi size field.
+	 * Representing a spi size field.
 	 *
 	 * When generating it must be changed from host to network order.
 	 * The value is read from the associated data struct.
@@ -177,9 +177,9 @@ enum encoding_type_t {
 	SPI_SIZE,
 
 	/**
-	 * Representating a spi field.
+	 * Representing a spi field.
 	 *
-	 * When generating the content of the chunkt pointing to
+	 * When generating the content of the chunk pointing to
 	 * is written.
 	 *
 	 * When parsing SPI_SIZE bytes are read and written into the chunk pointing to.
@@ -248,7 +248,7 @@ enum encoding_type_t {
 	 * this field is available or missing and so parsed/generated
 	 * or not parsed/not generated.
 	 *
-	 * When generating the content of the chunkt pointing to
+	 * When generating the content of the chunk pointing to
 	 * is written.
 	 *
 	 * When parsing SPI_SIZE bytes are read and written into the chunk pointing to.
@@ -256,53 +256,27 @@ enum encoding_type_t {
 	ATTRIBUTE_VALUE,
 
 	/**
-	 * Representating a Traffic selector type field.
-	 *
-	 * When generating it must be changed from host to network order.
-	 * The value is read from the associated data struct.
-	 * The current write position is moved 16 bit forward afterwards.
-	 *
-	 * When parsing it must be changed from network to host order.
-	 * The value is written to the associated data struct.
-	 * The current read pointer is moved 16 bit forward afterwards.
-	 */
-	TS_TYPE,
-
-	/**
-	 * Representating an address field in a traffic selector.
-	 *
-	 * Depending on the last field of type TS_TYPE
-	 * this field is either 4 or 16 byte long.
-	 *
-	 * When generating the content of the chunkt pointing to
-	 * is written.
-	 *
-	 * When parsing 4 or 16 bytes are read and written into the chunk pointing to.
-	 */
-	ADDRESS,
-
-	/**
 	 * Representing a variable length byte field.
 	 */
 	CHUNK_DATA,
 
 	/**
-	 * Representating an IKE_SPI field in an IKEv2 Header.
+	 * Representing an IKE_SPI field in an IKEv2 Header.
 	 *
 	 * When generating the value of the uint64_t pointing to
-	 * is written (host and networ order is not changed).
+	 * is written (host and network order is not changed).
 	 *
 	 * When parsing 8 bytes are read and written into the uint64_t pointing to.
 	 */
 	IKE_SPI,
 
 	/**
-	 * Representating an encrypted IKEv1 message.
+	 * Representing an encrypted IKEv1 message.
 	 */
 	ENCRYPTED_DATA,
 
 	/**
-	 * Reprensenting a field containing a set of wrapped payloads.
+	 * Representing a field containing a set of wrapped payloads.
 	 *
 	 * This type is not used directly, but as an offset to the wrapped payloads.
 	 * The type of the wrapped payload is added to this encoding type.

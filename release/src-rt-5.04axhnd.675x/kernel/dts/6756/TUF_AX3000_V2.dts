@@ -188,8 +188,8 @@
     /* GPIO_18: 1G_WAN */
     led0:port_0-led-1 {
         active_low;
-        link = <(LED_SPEED_100|LED_SPEED_1G)>;
-        activity = <(LED_SPEED_100|LED_SPEED_1G)>;
+        link = <LED_SPEED_GBE>;
+        activity = <LED_SPEED_GBE>;
         pinctrl-0=<&a_per_led_18_pin_18>;
         status = "okay";
     };

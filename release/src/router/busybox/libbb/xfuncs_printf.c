@@ -27,6 +27,11 @@
  * fail, so callers never need to check for errors.  If it returned, it
  * succeeded. */
 
+void FAST_FUNC bb_die_memory_exhausted(void)
+{
+	bb_simple_error_msg_and_die(bb_msg_memory_exhausted);
+}
+
 #ifndef DMALLOC
 /* dmalloc provides variants of these that do abort() on failure.
  * Since dmalloc's prototypes overwrite the impls here as they are

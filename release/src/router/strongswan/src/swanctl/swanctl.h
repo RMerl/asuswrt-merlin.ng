@@ -30,7 +30,7 @@
 /**
  * Base directory for credentials and config
  */
-char *swanctl_dir;
+extern char *swanctl_dir;
 
 /**
  * Configuration file for connections, etc.
@@ -110,5 +110,14 @@ char *swanctl_dir;
  * @return			settings, or NULL if loading failed
  */
 settings_t *load_swanctl_conf(char *file);
+
+/**
+ * Print the given security label (hex-encoded) on a separate line with the
+ * given prefix.
+ *
+ * @param prefix	prefix to print before the string-version of the label
+ * @param value		hex-encoded security label
+ */
+void print_label(const char *prefix, const char *value);
 
 #endif /** SWANCTL_H_ @}*/

@@ -60,6 +60,7 @@ void memxor(uint8_t dst[], const uint8_t src[], size_t n)
 	}
 }
 
+#ifndef HAVE_EXPLICIT_BZERO
 /**
  * Described in header.
  */
@@ -67,6 +68,7 @@ void memwipe_noinline(void *ptr, size_t n)
 {
 	memwipe_inline(ptr, n);
 }
+#endif /* HAVE_EXPLICIT_BZERO */
 
 /**
  * Described in header.

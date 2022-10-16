@@ -1,0 +1,133 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\connecthostport.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\upnpreplyparse.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\igd_desc_parse.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\minisoap.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\minissdpc.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\miniupnpc.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\miniwget.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\minixml.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\portlistingparse.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\receivedata.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\upnpcommands.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\upnpdev.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\upnperrors.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+    <ClCompile Include="..\addr_is_reserved.c">
+      <Filter>sources</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\connecthostport.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\igd_desc_parse.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\minisoap.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\minissdpc.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\miniupnpc.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\miniupnpcstrings.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\miniupnpctypes.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\miniwget.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\minixml.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\portlistingparse.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\receivedata.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\upnpcommands.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\upnpdev.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\upnperrors.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\upnpreplyparse.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\miniupnpc_socketdef.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\miniupnpc_declspec.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\miniwget_private.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\addr_is_reserved.h">
+      <Filter>headers</Filter>
+    </ClInclude>
+    <ClInclude Include="..\win32_snprintf.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+    <ClInclude Include="..\rc_version.h">
+      <Filter>Fichiers d%27en-tête</Filter>
+    </ClInclude>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="sources">
+      <UniqueIdentifier>{f2cbd46b-f63f-412e-80e5-b7c9048a1add}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="headers">
+      <UniqueIdentifier>{2b3996de-1bc4-418b-8a83-a5f34fdf0df5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="scripts">
+      <UniqueIdentifier>{45dbc39d-c3ca-4a75-adf0-76070e20415a}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="genminiupnpcstrings.vbs">
+      <Filter>scripts</Filter>
+    </None>
+  </ItemGroup>
+  <ItemGroup>
+    <ResourceCompile Include="../miniupnpc.rc">
+      <Filter>Fichiers de ressources</Filter>
+    </ResourceCompile>
+  </ItemGroup>
+</Project>

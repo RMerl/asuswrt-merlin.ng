@@ -48,7 +48,7 @@ static void adx_encode(ADXContext *c, uint8_t *adx, const int16_t *wav,
     s2 = prev->s2;
     for (i = 0, j = 0; j < 32; i += channels, j++) {
         s0 = wav[i];
-        d = ((s0 << COEFF_BITS) - c->coeff[0] * s1 - c->coeff[1] * s2) >> COEFF_BITS;
+        d = s0 + ((-c->coeff[0] * s1 - c->coeff[1] * s2) >> COEFF_BITS);
         if (max < d)
             max = d;
         if (min > d)
@@ -79,13 +79,13 @@ static void adx_encode(ADXContext *c, uint8_t *adx, const int16_t *wav,
     s1 = prev->s1;
     s2 = prev->s2;
     for (i = 0, j = 0; j < 32; i += channels, j++) {
-        d = ((wav[i] << COEFF_BITS) - c->coeff[0] * s1 - c->coeff[1] * s2) >> COEFF_BITS;
+        d = wav[i] + ((-c->coeff[0] * s1 - c->coeff[1] * s2) >> COEFF_BITS);
 
         d = av_clip_intp2(ROUNDED_DIV(d, scale), 3);
 
         put_sbits(&pb, 4, d);
 
-        s0 = ((d << COEFF_BITS) * scale + c->coeff[0] * s1 + c->coeff[1] * s2) >> COEFF_BITS;
+        s0 = d * scale + ((c->coeff[0] * s1 + c->coeff[1] * s2) >> COEFF_BITS);
         s2 = s1;
         s1 = s0;
     }
@@ -141,9 +141,25 @@ static int adx_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
                             const AVFrame *frame, int *got_packet_ptr)
 {
     ADXContext *c          = avctx->priv_data;
-    const int16_t *samples = (const int16_t *)frame->data[0];
+    const int16_t *samples = frame ? (const int16_t *)frame->data[0] : NULL;
     uint8_t *dst;
     int ch, out_size, ret;
+
+    if (!samples) {
+        if (c->eof)
+            return 0;
+        if ((ret = ff_alloc_packet2(avctx, avpkt, 18, 0)) < 0)
+            return ret;
+        c->eof = 1;
+        dst = avpkt->data;
+        bytestream_put_be16(&dst, 0x8001);
+        bytestream_put_be16(&dst, 0x000E);
+        bytestream_put_be64(&dst, 0x0);
+        bytestream_put_be32(&dst, 0x0);
+        bytestream_put_be16(&dst, 0x0);
+        *got_packet_ptr = 1;
+        return 0;
+    }
 
     out_size = BLOCK_SIZE * avctx->channels + !c->header_parsed * HEADER_SIZE;
     if ((ret = ff_alloc_packet2(avctx, avpkt, out_size, 0)) < 0)
@@ -165,6 +181,8 @@ static int adx_encode_frame(AVCodecContext *avctx, AVPacket *avpkt,
         dst += BLOCK_SIZE;
     }
 
+    avpkt->pts = frame->pts;
+    avpkt->duration = frame->nb_samples;
     *got_packet_ptr = 1;
     return 0;
 }
@@ -177,6 +195,7 @@ AVCodec ff_adpcm_adx_encoder = {
     .priv_data_size = sizeof(ADXContext),
     .init           = adx_encode_init,
     .encode2        = adx_encode_frame,
+    .capabilities   = AV_CODEC_CAP_DELAY,
     .sample_fmts    = (const enum AVSampleFormat[]) { AV_SAMPLE_FMT_S16,
                                                       AV_SAMPLE_FMT_NONE },
 };

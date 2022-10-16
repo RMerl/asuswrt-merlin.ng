@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "tool_setup.h"
@@ -30,7 +32,6 @@
 #include "tool_cfgable.h"
 #include "tool_getparam.h"
 #include "tool_getpass.h"
-#include "tool_homedir.h"
 #include "tool_msgs.h"
 #include "tool_paramhlp.h"
 #include "tool_version.h"
@@ -95,10 +96,16 @@ ParameterError file2memory(char **bufp, size_t *size, FILE *file)
     do {
       char buffer[4096];
       nread = fread(buffer, 1, sizeof(buffer), file);
+      if(ferror(file)) {
+        curlx_dyn_free(&dyn);
+        *size = 0;
+        *bufp = NULL;
+        return PARAM_READ_ERROR;
+      }
       if(nread)
         if(curlx_dyn_addn(&dyn, buffer, nread))
           return PARAM_NO_MEM;
-    } while(nread);
+    } while(!feof(file));
     *size = curlx_dyn_len(&dyn);
     *bufp = curlx_dyn_ptr(&dyn);
   }
@@ -549,10 +556,44 @@ static char *my_useragent(void)
   return strdup(CURL_NAME "/" CURL_VERSION);
 }
 
+#define isheadersep(x) ((((x)==':') || ((x)==';')))
+
+/*
+ * inlist() returns true if the given 'checkfor' header is present in the
+ * header list.
+ */
+static bool inlist(const struct curl_slist *head,
+                   const char *checkfor)
+{
+  size_t thislen = strlen(checkfor);
+  DEBUGASSERT(thislen);
+  DEBUGASSERT(checkfor[thislen-1] != ':');
+
+  for(; head; head = head->next) {
+    if(curl_strnequal(head->data, checkfor, thislen) &&
+       isheadersep(head->data[thislen]) )
+      return TRUE;
+  }
+
+  return FALSE;
+}
+
 CURLcode get_args(struct OperationConfig *config, const size_t i)
 {
   CURLcode result = CURLE_OK;
   bool last = (config->next ? FALSE : TRUE);
+
+  if(config->jsoned) {
+    ParameterError err = PARAM_OK;
+    /* --json also implies json Content-Type: and Accept: headers - if
+       they are not set with -H */
+    if(!inlist(config->headers, "Content-Type"))
+      err = add2list(&config->headers, "Content-Type: application/json");
+    if(!err && !inlist(config->headers, "Accept"))
+      err = add2list(&config->headers, "Accept: application/json");
+    if(err)
+      return CURLE_OUT_OF_MEMORY;
+  }
 
   /* Check we have a password for the given host user */
   if(config->userpwd && !config->oauth_bearer) {

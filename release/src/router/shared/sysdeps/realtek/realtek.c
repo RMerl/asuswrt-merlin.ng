@@ -442,10 +442,15 @@ void set_wlan_status(int band, int enable) {
 }
 
 #ifdef RTCONFIG_NEW_PHYMAP
-/* phy port related start */
-phy_port_mapping get_phy_port_mapping(void)
+extern int get_trunk_port_mapping(int trunk_port_value)
 {
-	static const phy_port_mapping port_mapping = {
+	return trunk_port_value;
+}
+
+/* phy port related start */
+void get_phy_port_mapping(phy_port_mapping *port_mapping)
+{
+	static phy_port_mapping port_mapping_static = {
 #if 0
 #if defined(MAPAC1300) || defined(MAPAC2200) || defined(VZWAC1300) || defined(SHAC1300) /* for Lyra */
 		.count = 2, 
@@ -467,7 +472,15 @@ phy_port_mapping get_phy_port_mapping(void)
 #endif
 #endif
 	};
-	return port_mapping;
+
+	if (!port_mapping)
+		return;
+
+	memcpy(port_mapping, &port_mapping_static, sizeof(phy_port_mapping));
+
+	add_sw_cap(port_mapping);
+	swap_wanlan(port_mapping);
+	return;
 }
 #endif
 

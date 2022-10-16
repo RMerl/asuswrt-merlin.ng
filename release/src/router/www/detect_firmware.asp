@@ -19,3 +19,7 @@ if(cfg_sync_support){
 if(pipefw_support || urlfw_support){
 	hndwr_status = '<% nvram_get("hndwr"); %>';
 }
+if(rbkfw_support){
+	_rollback_info = JSON.parse('<% get_rbkList(); %>');
+	rbk_count = Object.keys(_rollback_info).length;
+}

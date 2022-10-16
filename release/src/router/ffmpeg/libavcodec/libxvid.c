@@ -40,8 +40,8 @@
 
 #include "avcodec.h"
 #include "internal.h"
-#include "libxvid.h"
 #include "mpegutils.h"
+#include "packet_internal.h"
 
 #if HAVE_UNISTD_H
 #include <unistd.h>
@@ -684,17 +684,22 @@ FF_ENABLE_DEPRECATION_WARNINGS
     /* Encode a dummy frame to get the extradata immediately */
     if (x->quicktime_format) {
         AVFrame *picture;
-        AVPacket packet = {0};
-        int size, got_packet, ret;
+        AVPacket *packet;
+        int size, got_packet;
 
-        av_init_packet(&packet);
+        packet = av_packet_alloc();
+        if (!packet)
+            return AVERROR(ENOMEM);
 
         picture = av_frame_alloc();
-        if (!picture)
+        if (!picture) {
+            av_packet_free(&packet);
             return AVERROR(ENOMEM);
+        }
 
         xerr = xvid_encore(NULL, XVID_ENC_CREATE, &xvid_enc_create, NULL);
         if( xerr ) {
+            av_packet_free(&packet);
             av_frame_free(&picture);
             av_log(avctx, AV_LOG_ERROR, "Xvid: Could not create encoder reference\n");
             return AVERROR_EXTERNAL;
@@ -703,6 +708,7 @@ FF_ENABLE_DEPRECATION_WARNINGS
         size = ((avctx->width + 1) & ~1) * ((avctx->height + 1) & ~1);
         picture->data[0] = av_malloc(size + size / 2);
         if (!picture->data[0]) {
+            av_packet_free(&packet);
             av_frame_free(&picture);
             return AVERROR(ENOMEM);
         }
@@ -710,9 +716,8 @@ FF_ENABLE_DEPRECATION_WARNINGS
         picture->data[2] = picture->data[1] + size / 4;
         memset(picture->data[0], 0, size);
         memset(picture->data[1], 128, size / 2);
-        ret = xvid_encode_frame(avctx, &packet, picture, &got_packet);
-        if (!ret && got_packet)
-            av_packet_unref(&packet);
+        xvid_encode_frame(avctx, packet, picture, &got_packet);
+        av_packet_free(&packet);
         av_free(picture->data[0]);
         av_frame_free(&picture);
         xvid_encore(x->encoder_handle, XVID_ENC_DESTROY, NULL, NULL);

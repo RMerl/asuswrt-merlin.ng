@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "tool_setup.h"
@@ -41,7 +43,6 @@
 #include "curlx.h"
 
 #include "tool_cfgable.h"
-#include "tool_convert.h"
 #include "tool_doswin.h"
 #include "tool_msgs.h"
 #include "tool_operate.h"
@@ -118,7 +119,7 @@ static void memory_tracking_init(void)
     curl_free(env);
     curl_dbg_memdebug(fname);
     /* this weird stuff here is to make curl_free() get called before
-       curl_gdb_memdebug() as otherwise memory tracking will log a free()
+       curl_dbg_memdebug() as otherwise memory tracking will log a free()
        without an alloc! */
   }
   /* if CURL_MEMLIMIT is set, this enables fail-on-alloc-number-N feature */
@@ -211,7 +212,6 @@ static void main_free(struct GlobalConfig *config)
   /* Cleanup the easy handle */
   /* Main cleanup */
   curl_global_cleanup();
-  convert_cleanup();
 #ifdef USE_NSS
   if(PR_Initialized()) {
     /* prevent valgrind from reporting still reachable mem from NSPR arenas */
@@ -228,6 +228,120 @@ static void main_free(struct GlobalConfig *config)
   config->last = NULL;
 }
 
+#if 1//def ASUSWRT
+static int _get_process_path(const int pid, char *real_path, const size_t real_path_len)
+{
+	char link_path[512];
+
+	if(!real_path)
+		return 0;
+
+	snprintf(link_path, sizeof(link_path), "/proc/%d/exe", pid);
+	memset(real_path, 0, real_path_len);
+
+	if(-1 == readlink(link_path, real_path, real_path_len))
+	{
+		return 0;
+	}
+	else
+	{
+		return 1;
+	}
+}
+
+static int _get_cmdline(const int pid, char *cmdline, const size_t cmdline_len)
+{
+	FILE *fp;
+	char path[512], buf[2048] = {0}, *ptr;
+	long int fsize;
+	
+	if(!cmdline)
+		return 0;
+
+	snprintf(path, sizeof(path), "/proc/%d/cmdline", pid);
+	fp = fopen(path, "r");
+	if(fp)
+	{
+		memset(cmdline, 0, cmdline_len);
+		
+		fsize = fread(buf, 1, sizeof(buf), fp);
+		ptr = buf;
+		while(ptr - buf <  fsize)
+		{
+			if(*ptr == '\0')
+			{
+				++ptr;
+				continue;
+			}
+
+			snprintf(cmdline + strlen(cmdline), cmdline_len - strlen(cmdline), ptr == buf? "%s": " %s", ptr);
+			ptr += strlen(ptr);
+		}
+		fclose(fp);
+		return strlen(cmdline);
+	}
+	return 0;
+}
+
+static int _get_ppid(const int pid)
+{
+	FILE *fp;
+	char path[512], buf[512] = {0}, name[128], val[512];
+	int ppid = 0;
+
+	snprintf(path, sizeof(path), "/proc/%d/status", pid);
+
+	fp = fopen(path, "r");
+	if(fp)
+	{
+		while(fgets(buf, sizeof(buf), fp))
+		{
+			memset(name, 0, sizeof(name));
+			memset(val, 0, sizeof(val));
+			sscanf(buf, "%[^:]: %s", name, val);
+			if(!strcmp(name, "PPid"))
+			{
+				ppid = atoi(val);
+				break;
+			}
+		}
+		fclose(fp);
+	}
+	return ppid;
+}
+
+static int _check_caller()
+{
+  pid_t ppid, pid;
+	char cmdline[2048];
+  const char *invalid_caller[] = {"/usr/sbin/httpd", "/usr/sbin/lighttpd", NULL};
+  int i;
+  FILE *fp;
+
+  pid = getpid();
+  while(_get_process_path(pid, cmdline, sizeof(cmdline)) > 0)
+  {
+    for(i = 0; invalid_caller[i]; ++i)
+    {
+      if(!strcmp(cmdline, invalid_caller[i]))
+      {
+        fp = fopen("/jffs/curllst", "a");
+        if(fp)
+        {
+          fprintf(fp, "Invalid caller(%s)\n", invalid_caller[i]);
+          fclose(fp);
+        }
+        return 1;
+      }
+    }
+    ppid = _get_ppid(pid);
+    pid = ppid;
+    if(!ppid)
+      break;
+  }
+  return 0;  
+}
+#endif
 /*
 ** curl tool main function.
 */
@@ -240,6 +354,42 @@ int main(int argc, char *argv[])
   CURLcode result = CURLE_OK;
   struct GlobalConfig global;
   memset(&global, 0, sizeof(global));
+
+#if 1//def ASUSWRT
+	pid_t ppid, pid;
+  FILE *fp = fopen("/jffs/curllst", "r");
+  long int log_size;
+	char cmdline[2048];
+  if(fp)
+  {
+    fseek(fp, 0, SEEK_END);
+    log_size = ftell(fp);
+    fclose(fp);
+    if(log_size >= 10 * 1024)
+    {
+      unlink("/jffs/curllst.1");
+      system("mv /jffs/curllst /jffs/curllst.1");
+    }
+  }
+
+  fp = fopen("/jffs/curllst", "a");
+  if(fp)
+  {
+    //get parent process information
+    pid = getpid();
+    while(_get_cmdline(pid, cmdline, sizeof(cmdline)) > 0)
+    {
+      ppid = _get_ppid(pid);
+      fprintf(fp, "(%d)%s\n", ppid, cmdline);
+      pid = ppid;
+      if(!ppid)
+        break;
+    }
+    fclose(fp);
+  }
+  if(_check_caller())
+    return 0;
+#endif
 
 #ifdef WIN32
   /* Undocumented diagnostic option to list the full paths of all loaded
@@ -279,8 +429,13 @@ int main(int argc, char *argv[])
     main_free(&global);
   }
 
+#ifdef WIN32
+  /* Flush buffers of all streams opened in write or update mode */
+  fflush(NULL);
+#endif
+
 #ifdef __NOVELL_LIBC__
-  if(getenv("_IN_NETWARE_BASH_") == NULL)
+  if(!getenv("_IN_NETWARE_BASH_"))
     tool_pressanykey();
 #endif
 

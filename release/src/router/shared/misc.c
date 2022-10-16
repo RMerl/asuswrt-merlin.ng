@@ -66,6 +66,7 @@
 #define MAC_ARG(x) (x)[0],(x)[1],(x)[2],(x)[3],(x)[4],(x)[5]
 #endif
 
+extern struct nvram_tuple router_defaults[];
 
 char *server_table[][2] = {
 	{ "", "" },			/* 0: Unfiltered */
@@ -2527,6 +2528,30 @@ void nvram_commit_x(void)
 	if (!nvram_get_int("debug_nocommit")) nvram_commit();
 }
 
+/*
+ * Restore nvram start with @prefix_default to default value in router_defaults
+ * If @prefix_target is set, set the default value of the nvrams start with
+ * @prefix_default to those nvrams start with @prefix_target
+ * e.g. set the value of wl1_xxx with the default value of wl_xxx
+ */
+void nvram_pf_restore_default(const char *prefix_default, const char *prefix_target)
+{
+	struct nvram_tuple *t;
+
+	if (!prefix_default)
+		return;
+
+	for (t = router_defaults; t->name; t++) {
+		if ( strlen(t->name) > strlen(prefix_default)
+			&& !strncmp(t->name, prefix_default, strlen(prefix_default))
+			&& !strstr(t->name, "unit")
+		) {
+			cprintf("restore %s%s=%s\n", (prefix_target)?:prefix_default, t->name + strlen(prefix_default), t->value);
+			nvram_pf_set((prefix_target)?:prefix_default, t->name + strlen(prefix_default), t->value);
+		}
+	}
+}
+
 void chld_reap(int sig)
 {
 	while (waitpid(-1, NULL, WNOHANG) > 0) {}
@@ -3562,7 +3587,9 @@ int get_upstream_wan_unit(void)
 }
 
 /* Return WiFi unit number in accordance with interface name.
- * @wif:	pointer to WiFi interface name.
+ * @wif:	pointer to WiFi interface name. VAP interfaces for guest network is support.
+ * 		VLAN interface that derived from VAP interfaces for guest network is considered as invalid unit.
+ * 		See fec2ddeebe5d8d024c853d0d6eec3943430c8b20.
  * @return:
  * 	< 0:	invalid
  *  otherwise:	unit
@@ -3582,7 +3609,7 @@ int get_wifi_unit(char *wif)
 		if (strncmp(word, wif, strlen(word)))
 			continue;
 #if defined(RTCONFIG_AMAS_WGN) && defined(RTCONFIG_QCA) 
-		if (strlen(word)!=strlen(wif))
+		if (strchr(wif, '.') && strlen(word)!=strlen(wif))
 			continue;
 #endif
 		for (i = 0; i <= MAX_NR_WL_IF; ++i) {
@@ -5981,11 +6008,11 @@ int find_clientlist_groupid(char *groupid_list, char *groupname, char *groupid, 
 	return have_data;
 }
 
-int gen_random_num(int max)
+int gen_random_num(int max, int seed_ext)
 {
 	int i, ret;
 
-	srand(time(NULL));
+	srand(uptime() + seed_ext);
 	ret = rand() % max;
 
         printf("%d\n", ret);
@@ -6101,6 +6128,360 @@ void update_wlx_psr_mbss(void)
 	return;
 }
 #endif	// #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_PSR_GUEST)
+
+/*
+ * update sync profile update time to nvram
+ * @feat:	0:nvram 1:openvpn 2:ipsec 3:usericon
+ */
+void sync_profile_update_time(int feat){
+
+	int num = 0;
+	time_t update_time = 0;
+	char nvname[50] = {0}, update_time_buf[11] = {0};
+
+	const char *feat_list[] = {"setting", "openvpn", "ipsec", "usericon", NULL};
+
+	num = sizeof(feat_list) / sizeof(feat_list[0]) - 1;
+
+	if(feat < 0 || feat > num)
+		return;
+
+	snprintf(nvname, sizeof(nvname), "%s_update_time", feat_list[feat]);
+
+	if(!nvram_get_int("ntp_ready")){
+		strlcpy(update_time_buf, nvram_safe_get(nvname), sizeof(update_time_buf));
+		update_time = strtoul(update_time_buf, NULL, 10) + 1;
+	}else{
+		update_time = time(NULL);
+	}
+
+	snprintf(update_time_buf, sizeof(update_time_buf), "%lu", update_time);
+
+	nvram_set(nvname, update_time_buf);
+	nvram_commit();
+}
+
+static unsigned int _parseDecimal ( const char** pchCursor )
+{
+	unsigned int nVal = 0;
+	char chNow;
+	while ( (chNow = **pchCursor) != '\0' && chNow >= '0' && chNow <= '9' )
+	{
+		//shift digit in
+		nVal *= 10;
+		nVal += chNow - '0';
+
+		++*pchCursor;
+	}
+	return nVal;
+}
+
+static unsigned int _parseHex ( const char** pchCursor )
+{
+	unsigned int nVal = 0;
+	char chNow;
+	while ( (chNow = **pchCursor & 0x5f) != '\0' && //(collapses case, but mutilates digits)
+	((chNow >= ('0'&0x5f) && chNow <= ('9'&0x5f)) ||
+	(chNow >= 'A' && chNow <= 'F') )
+	)
+	{
+		unsigned char nybbleValue;
+		chNow -= 0x10;  //scootch digital values down; hex now offset by x31
+		nybbleValue = ( chNow > 9 ? chNow - (0x31-0x0a) : chNow );
+		//shift nybble in
+		nVal <<= 4;
+		nVal += nybbleValue;
+
+		++*pchCursor;
+	}
+	return nVal;
+}
+
+//Parse a textual IPv4 or IPv6 address, optionally with port, into a binary
+//array (for the address, in network order), and an optionally provided port.
+//Also, indicate which of those forms (4 or 6) was parsed.  Return true on
+//success.  ppszText must be a nul-terminated ASCII string.  It will be
+//updated to point to the character which terminated parsing (so you can carry
+//on with other things.  abyAddr must be 16 bytes.  You can provide NULL for
+//abyAddr, nPort, bIsIPv6, if you are not interested in any of those
+//informations.  If we request port, but there is no port part, then nPort will
+//be set to 0.  There may be no whitespace leading or internal (though this may
+//be used to terminate a successful parse.
+//Note:  the binary address and integer port are in network order.
+int ParseIPv4OrIPv6 ( const char** ppszText,
+        unsigned char* abyAddr, int* pnPort, int* pbIsIPv6 )
+{
+	unsigned char* abyAddrLocal = NULL;
+	unsigned char abyDummyAddr[16] = {0};
+
+	//find first colon, dot, and open bracket
+	const char* pchColon = strchr( *ppszText, ':' );
+	const char* pchDot = strchr( *ppszText, '.' );
+	const char* pchOpenBracket = strchr( *ppszText, '[' );
+	const char* pchCloseBracket = NULL;
+
+	//we'll consider this to (probably) be IPv6 if we find an open
+	//bracket, or an absence of dots, or if there is a colon, and it
+	//precedes any dots that may or may not be there
+	int bIsIPv6local = (pchOpenBracket != NULL || pchDot == NULL || (pchColon != NULL && (pchDot == NULL || pchDot > pchColon)));
+
+	//OK, now do a little further sanity check our initial guess...
+	if ( bIsIPv6local )
+	{
+		//if open bracket, then must have close bracket that follows somewhere
+		pchCloseBracket = strchr( *ppszText, ']' );
+		if ( pchOpenBracket != NULL && ( pchCloseBracket == NULL ||
+			pchCloseBracket < pchOpenBracket ) )
+			return 0;
+	}
+	else    //probably ipv4
+	{
+		//dots must exist, and precede any colons
+		if ( pchDot == NULL || ( pchColon != NULL && pchColon < pchDot ) )
+			return 0;
+	}
+
+	//we figured out this much so far....
+	if ( NULL != pbIsIPv6 )
+		*pbIsIPv6 = bIsIPv6local;
+
+	//especially for IPv6 (where we will be decompressing and validating)
+	//we really need to have a working buffer even if the caller didn't
+	//care about the results.
+	abyAddrLocal = abyAddr; //prefer to use the caller's
+	if ( NULL == abyAddrLocal ) //but use a dummy if we must
+		abyAddrLocal = abyDummyAddr;
+
+	//OK, there should be no correctly formed strings which are miscategorized,
+	//and now any format errors will be found out as we continue parsing
+	//according to plan.
+	if ( ! bIsIPv6local )   //try to parse as IPv4
+	{
+		//4 dotted quad decimal; optional port if there is a colon
+		//since there are just 4, and because the last one can be terminated
+		//differently, I'm just going to unroll any potential loop.
+		unsigned char* pbyAddrCursor = abyAddrLocal;
+		unsigned int nVal;
+		const char* pszTextBefore = *ppszText;
+		nVal =_parseDecimal( ppszText );           //get first val
+		if ( **ppszText != '.' || nVal > 255 || pszTextBefore == *ppszText )    //must be in range and followed by dot and nonempty
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;  //stick it in addr
+		++(*ppszText);  //past the dot
+		pszTextBefore = *ppszText;
+		nVal =_parseDecimal ( ppszText );           //get second val
+		if ( '.' != **ppszText || nVal > 255 || pszTextBefore == *ppszText )
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;
+		++(*ppszText);  //past the dot
+		pszTextBefore = *ppszText;
+		nVal =_parseDecimal ( ppszText );           //get third val
+		if ( '.' != **ppszText || nVal > 255 || pszTextBefore == *ppszText )
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;
+		++(*ppszText);  //past the dot
+		pszTextBefore = *ppszText;
+		nVal =_parseDecimal ( ppszText );           //get fourth val
+		if ( nVal > 255 || pszTextBefore == *ppszText ) //(we can terminate this one in several ways)
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;
+
+		if ( ':' == **ppszText && pnPort != NULL )  //have port part, and we want it
+		{
+			unsigned short usPortNetwork;   //save value in network order
+			++(*ppszText);  //past the colon
+			pszTextBefore = *ppszText;
+			nVal =_parseDecimal ( ppszText );
+			if ( nVal > 65535 || pszTextBefore == *ppszText )
+				return 0;
+			((unsigned char*)&usPortNetwork)[0] = ( nVal & 0xff00 ) >> 8;
+			((unsigned char*)&usPortNetwork)[1] = ( nVal & 0xff );
+			*pnPort = usPortNetwork;
+			return 1;
+		}
+		else    //finished just with ip address
+		{
+			if ( NULL != pnPort )
+				*pnPort = 0;    //indicate we have no port part
+			return 1;
+		}
+	}
+	else    //try to parse as IPv6
+	{
+		unsigned char* pbyAddrCursor;
+		unsigned char* pbyZerosLoc;
+		int bIPv4Detected;
+		int nIdx;
+		//up to 8 16-bit hex quantities, separated by colons, with at most one
+		//empty quantity, acting as a stretchy run of zeroes.  optional port
+		//if there are brackets followed by colon and decimal port number.
+		//A further form allows an ipv4 dotted quad instead of the last two
+		//16-bit quantities, but only if in the ipv4 space ::ffff:x:x .
+		if ( pchOpenBracket != NULL )   //start past the open bracket, if it exists
+			*ppszText = pchOpenBracket + 1;
+		pbyAddrCursor = abyAddrLocal;
+		pbyZerosLoc = NULL; //if we find a 'zero compression' location
+		bIPv4Detected = 0;
+		for ( nIdx = 0; nIdx < 8; ++nIdx )  //we've got up to 8 of these, so we will use a loop
+		{
+			const char* pszTextBefore = *ppszText;
+			unsigned nVal =_parseHex ( ppszText );      //get value; these are hex
+			if ( pszTextBefore == *ppszText )   //if empty, we are zero compressing; note the loc
+			{
+				if ( pbyZerosLoc != NULL )  //there can be only one!
+				{
+					//unless it's a terminal empty field, then this is OK, it just means we're done with the host part
+					if ( pbyZerosLoc == pbyAddrCursor )
+					{
+						--nIdx;
+						break;
+					}
+					return 0;   //otherwise, it's a format error
+				}
+				if ( ':' != **ppszText )    //empty field can only be via :
+					return 0;
+				if ( nIdx == 0 )    //leading zero compression requires an extra peek, and adjustment
+				{
+					++(*ppszText);
+					if ( ':' != **ppszText )
+						return 0;
+				}
+
+				pbyZerosLoc = pbyAddrCursor;
+				++(*ppszText);
+			}
+			else
+			{
+				if ( '.' == **ppszText )    //special case of ipv4 convenience notation
+				{
+					//who knows how to parse ipv4?  we do!
+					const char* pszTextlocal = pszTextBefore;   //back it up
+					unsigned char abyAddrlocal[16];
+					int bIsIPv6local;
+					int bParseResultlocal = ParseIPv4OrIPv6 ( &pszTextlocal, abyAddrlocal, NULL, &bIsIPv6local );
+					*ppszText = pszTextlocal;   //success or fail, remember the terminating char
+					if ( ! bParseResultlocal || bIsIPv6local )  //must parse and must be ipv4
+						return 0;
+					//transfer addrlocal into the present location
+					*(pbyAddrCursor++) = abyAddrlocal[0];
+					*(pbyAddrCursor++) = abyAddrlocal[1];
+					*(pbyAddrCursor++) = abyAddrlocal[2];
+					*(pbyAddrCursor++) = abyAddrlocal[3];
+					++nIdx; //pretend like we took another short, since the ipv4 effectively is two shorts
+					bIPv4Detected = 1;  //remember how we got here for further validation later
+					break;  //totally done with address
+				}
+
+				if ( nVal > 65535 ) //must be 16 bit quantity
+					return 0;
+				*(pbyAddrCursor++) = nVal >> 8;     //transfer in network order
+				*(pbyAddrCursor++) = nVal & 0xff;
+				if ( ':' == **ppszText )    //typical case inside; carry on
+				{
+					++(*ppszText);
+				}
+				else    //some other terminating character; done with this parsing parts
+				{
+					break;
+				}
+			}
+		}
+
+		//handle any zero compression we found
+		if ( NULL != pbyZerosLoc )
+		{
+			int nHead = (int)( pbyZerosLoc - abyAddrLocal );    //how much before zero compression
+			int nTail = nIdx * 2 - (int)( pbyZerosLoc - abyAddrLocal ); //how much after zero compression
+			int nZeros = 16 - nTail - nHead;        //how much zeros
+			memmove ( &abyAddrLocal[16-nTail], pbyZerosLoc, nTail );    //scootch stuff down
+			memset ( pbyZerosLoc, 0, nZeros );      //clear the compressed zeros
+		}
+
+		//validation of ipv4 subspace ::ffff:x.x
+		if ( bIPv4Detected )
+		{
+			static const unsigned char abyPfx[] = { 0,0, 0,0, 0,0, 0,0, 0,0, 0xff,0xff };
+			if ( memcmp ( abyAddrLocal, abyPfx, sizeof(abyPfx) ) != 0 )
+				return 0;
+		}
+
+		//close bracket
+		if ( NULL != pchOpenBracket )
+		{
+			if ( ']' != **ppszText )
+				return 0;
+			++(*ppszText);
+		}
+
+		if ( ':' == **ppszText && NULL != pnPort )  //have port part, and we want it
+		{
+			const char* pszTextBefore;
+			unsigned int nVal;
+			unsigned short usPortNetwork;   //save value in network order
+			++(*ppszText);  //past the colon
+			pszTextBefore = *ppszText;
+			pszTextBefore = *ppszText;
+			nVal =_parseDecimal ( ppszText );
+			if ( nVal > 65535 || pszTextBefore == *ppszText )
+				return 0;
+			((unsigned char*)&usPortNetwork)[0] = ( nVal & 0xff00 ) >> 8;
+			((unsigned char*)&usPortNetwork)[1] = ( nVal & 0xff );
+			*pnPort = usPortNetwork;
+			return 1;
+		}
+		else    //finished just with ip address
+		{
+			if ( NULL != pnPort )
+				*pnPort = 0;    //indicate we have no port part
+			return 1;
+		}
+    }
+}
+
+//simple version if we want don't care about knowing how much we ate
+int ParseIPv4OrIPv6_2 ( const char* pszText,
+        unsigned char* abyAddr, int* pnPort, int* pbIsIPv6 )
+{
+    const char* pszTextLocal = pszText;
+    return ParseIPv4OrIPv6 ( &pszTextLocal, abyAddr, pnPort, pbIsIPv6);
+}
+
+#if 0 //ParseIPv4OrIPv6 test
+void dumpbin ( unsigned char* pbyBin, int nLen )
+{
+	int i;
+	for ( i = 0; i < nLen; ++i )
+	{
+		printf ( "%02x", pbyBin[i] );
+	}
+}
+
+void testcase ( const char* pszTest )
+{
+	unsigned char abyAddr[16];
+	int bIsIPv6;
+	int nPort;
+	int bSuccess;
+
+	printf ( "Test case '%s'\n", pszTest );
+	const char* pszTextCursor = pszTest;
+	bSuccess = ParseIPv4OrIPv6 ( &pszTextCursor, abyAddr, &nPort, &bIsIPv6 );
+	if ( ! bSuccess )
+	{
+		printf ( "parse failed, at about index %d; rest: '%s'\n", pszTextCursor - pszTest, pszTextCursor );
+		return;
+	}
+
+	printf ( "addr:  " );
+	dumpbin ( abyAddr, bIsIPv6 ? 16 : 4 );
+	printf ( "\n" );
+	if ( 0 == nPort )
+		printf ( "port absent" );
+	else
+		printf ( "port:  %d", htons ( nPort ) );
+	printf ( "\n\n" );
+}
+#endif
 
 static char *rand_string(char *str, size_t size)
 {
@@ -6262,4 +6643,59 @@ void wl_vif_to_subnet(const char *ifname, char *net, int len)
 
 	return;
 
+}
+
+int
+get_string_in_62(char *in_list, int idx, char *out, int out_len)
+{
+	int find_idx = 0;
+	char *buf, *g, *p;
+	g = buf = strdup(in_list);
+
+	while ((p = strchr(g, '>')) != NULL) {
+		if(find_idx == idx)
+		{
+			g[(int)(p - g)] = '\0';
+			strlcpy(out, g, out_len);
+			break;
+		}
+		else{
+			g = p + 1;
+			find_idx++;
+		}
+	}
+
+	free(buf);
+
+	return 0;
+}
+
+int vpnc_use_tunnel(void)
+{
+	time_t now = time(NULL);
+	char s2s_oauth_linklist[4096] = {0}, vpnc_clientlist[8192] = {0}, active[8] = {0}, conn_type[8] = {0};
+	char word[128] = {0}, *next = NULL;
+	char *link = NULL, *ts = NULL, *vpn = NULL, *conn = NULL;
+
+	strlcpy(s2s_oauth_linklist, nvram_safe_get("s2s_oauth_linklist"), sizeof(s2s_oauth_linklist));
+	strlcpy(vpnc_clientlist, nvram_safe_get("vpnc_clientlist"), sizeof(vpnc_clientlist));
+
+	foreach_60(word, s2s_oauth_linklist, next){
+		if((vstrsep(word, ">", &link, &ts, &vpn, &conn)) != 4){
+			continue;
+		}
+		if(safe_atoi(conn) == 1 && (now - atol(ts)) < 86400){
+			return 1;
+		}
+	}
+
+	foreach_60(word, vpnc_clientlist, next){
+		memset(active, 0, sizeof(active));
+		memset(conn_type, 0, sizeof(conn_type));
+		get_string_in_62(word, 9, active, sizeof(active));
+		get_string_in_62(word, 9, conn_type, sizeof(conn_type));
+		if(!strcmp(active, "1") && !strcmp(conn_type, "1"))
+			return 1;
+	}
+	return 0;
 }

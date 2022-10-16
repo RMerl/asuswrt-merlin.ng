@@ -237,38 +237,57 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt_, bool,
 	private_gcrypt_rsa_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t plain, chunk_t *encrypted)
+	void *params, chunk_t plain, chunk_t *encrypted)
 {
-	gcry_sexp_t in, out;
 	gcry_error_t err;
+	gcry_sexp_t in, out = NULL;
+	chunk_t label = chunk_empty;
+	u_char *sexp;
 
-	if (scheme != ENCRYPT_RSA_PKCS1)
+	switch (scheme)
 	{
-		DBG1(DBG_LIB, "encryption scheme %N not supported",
-			 encryption_scheme_names, scheme);
-		return FALSE;
+		case ENCRYPT_RSA_PKCS1:
+			sexp = "(data(flags pkcs1)(value %b))";
+			break;
+		case ENCRYPT_RSA_OAEP_SHA1:
+			sexp = "(data(flags oaep)(value %b))";
+			break;
+		default:
+			DBG1(DBG_LIB, "encryption scheme %N not supported",
+				 encryption_scheme_names, scheme);
+			return FALSE;
 	}
-	/* "pkcs1" uses PKCS 1.5 (section 8.1) block type 2 encryption:
-	 * 00 | 02 | RANDOM | 00 | DATA */
-	err = gcry_sexp_build(&in, NULL, "(data(flags pkcs1)(value %b))",
-						  plain.len, plain.ptr);
+
+	if (scheme == ENCRYPT_RSA_OAEP_SHA1 && params != NULL)
+	{
+		label = *(chunk_t *)params;
+		if (label.len > 0)
+		{
+			DBG1(DBG_LIB, "RSA OAEP encryption with a label not supported");
+			return FALSE;
+		}
+	}
+
+	err = gcry_sexp_build(&in, NULL, sexp, plain.len, plain.ptr);
 	if (err)
 	{
 		DBG1(DBG_LIB, "building encryption S-expression failed: %s",
 			 gpg_strerror(err));
 		return FALSE;
 	}
+
 	err = gcry_pk_encrypt(&out, in, this->key);
 	gcry_sexp_release(in);
 	if (err)
 	{
-		DBG1(DBG_LIB, "encrypting data using pkcs1 failed: %s",
-			 gpg_strerror(err));
+		DBG1(DBG_LIB, "RSA encryption failed: %s", gpg_strerror(err));
 		return FALSE;
 	}
+
 	*encrypted = gcrypt_rsa_find_token(out, "a", this->key);
 	gcry_sexp_release(out);
-	return !!encrypted->len;
+
+	return encrypted->len > 0;
 }
 
 METHOD(public_key_t, get_keysize, int,

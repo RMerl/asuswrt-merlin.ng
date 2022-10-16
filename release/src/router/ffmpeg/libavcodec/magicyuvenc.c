@@ -40,7 +40,6 @@ typedef enum Prediction {
 } Prediction;
 
 typedef struct HuffEntry {
-    uint8_t  sym;
     uint8_t  len;
     uint32_t code;
 } HuffEntry;
@@ -57,7 +56,6 @@ typedef struct MagicYUVContext {
     int                  planes;
     uint8_t              format;
     AVFrame             *p;
-    int                  max;
     int                  slice_height;
     int                  nb_slices;
     int                  correlate;
@@ -148,6 +146,7 @@ static void median_predict(MagicYUVContext *s,
 static av_cold int magy_encode_init(AVCodecContext *avctx)
 {
     MagicYUVContext *s = avctx->priv_data;
+    PutByteContext pb;
     int i;
 
     switch (avctx->pix_fmt) {
@@ -214,35 +213,49 @@ static av_cold int magy_encode_init(AVCodecContext *avctx)
     case MEDIAN:   s->predict = median_predict;   break;
     }
 
+    avctx->extradata_size = 32;
+
+    avctx->extradata = av_mallocz(avctx->extradata_size +
+                                  AV_INPUT_BUFFER_PADDING_SIZE);
+
+    if (!avctx->extradata) {
+        av_log(avctx, AV_LOG_ERROR, "Could not allocate extradata.\n");
+        return AVERROR(ENOMEM);
+    }
+
+    bytestream2_init_writer(&pb, avctx->extradata, avctx->extradata_size);
+    bytestream2_put_le32(&pb, MKTAG('M', 'A', 'G', 'Y'));
+    bytestream2_put_le32(&pb, 32);
+    bytestream2_put_byte(&pb, 7);
+    bytestream2_put_byte(&pb, s->format);
+    bytestream2_put_byte(&pb, 12);
+    bytestream2_put_byte(&pb, 0);
+
+    bytestream2_put_byte(&pb, 0);
+    bytestream2_put_byte(&pb, 0);
+    bytestream2_put_byte(&pb, 32);
+    bytestream2_put_byte(&pb, 0);
+
+    bytestream2_put_le32(&pb, avctx->width);
+    bytestream2_put_le32(&pb, avctx->height);
+    bytestream2_put_le32(&pb, avctx->width);
+    bytestream2_put_le32(&pb, avctx->height);
+
     return 0;
 }
 
-static int magy_huff_cmp_len(const void *a, const void *b)
+static void calculate_codes(HuffEntry *he, uint16_t codes_count[33])
 {
-    const HuffEntry *aa = a, *bb = b;
-    return (aa->len - bb->len) * 256 + aa->sym - bb->sym;
-}
-
-static int huff_cmp_sym(const void *a, const void *b)
-{
-    const HuffEntry *aa = a, *bb = b;
-    return bb->sym - aa->sym;
-}
-
-static void calculate_codes(HuffEntry *he)
-{
-    uint32_t code;
-    int i;
-
-    AV_QSORT(he, 256, HuffEntry, magy_huff_cmp_len);
-
-    code = 1;
-    for (i = 255; i >= 0; i--) {
-        he[i].code  = code >> (32 - he[i].len);
-        code       += 0x80000000u >> (he[i].len - 1);
+    for (unsigned i = 32, nb_codes = 0; i > 0; i--) {
+        uint16_t curr = codes_count[i];   // # of leafs of length i
+        codes_count[i] = nb_codes / 2;    // # of non-leaf nodes on level i
+        nb_codes = codes_count[i] + curr; // # of nodes on level i
     }
 
-    AV_QSORT(he, 256, HuffEntry, huff_cmp_sym);
+    for (unsigned i = 0; i < 256; i++) {
+        he[i].code = codes_count[he[i].len];
+        codes_count[he[i].len]++;
+    }
 }
 
 static void count_usage(uint8_t *src, int width,
@@ -267,12 +280,13 @@ typedef struct PackageMergerList {
 
 static int compare_by_prob(const void *a, const void *b)
 {
-    PTable a_val = *(PTable *)a;
-    PTable b_val = *(PTable *)b;
-    return a_val.prob - b_val.prob;
+    const PTable *a2 = a;
+    const PTable *b2 = b;
+    return a2->prob - b2->prob;
 }
 
 static void magy_huffman_compute_bits(PTable *prob_table, HuffEntry *distincts,
+                                      uint16_t codes_counts[33],
                                       int size, int max_length)
 {
     PackageMergerList list_a, list_b, *to = &list_a, *from = &list_b, *temp;
@@ -328,8 +342,8 @@ static void magy_huffman_compute_bits(PTable *prob_table, HuffEntry *distincts,
     }
 
     for (i = 0; i < size; i++) {
-        distincts[i].sym = i;
         distincts[i].len = nbits[i];
+        codes_counts[nbits[i]]++;
     }
 }
 
@@ -338,18 +352,19 @@ static int encode_table(AVCodecContext *avctx, uint8_t *dst,
                         PutBitContext *pb, HuffEntry *he)
 {
     PTable counts[256] = { {0} };
+    uint16_t codes_counts[33] = { 0 };
     int i;
 
     count_usage(dst, width, height, counts);
 
     for (i = 0; i < 256; i++) {
         counts[i].prob++;
-        counts[i].value = 255 - i;
+        counts[i].value = i;
     }
 
-    magy_huffman_compute_bits(counts, he, 256, 16);
+    magy_huffman_compute_bits(counts, he, codes_counts, 256, 12);
 
-    calculate_codes(he);
+    calculate_codes(he, codes_counts);
 
     for (i = 0; i < 256; i++) {
         put_bits(pb, 1, 0);
@@ -407,12 +422,16 @@ static int magy_encode_frame(AVCodecContext *avctx, AVPacket *pkt,
 
     bytestream2_init_writer(&pb, pkt->data, pkt->size);
     bytestream2_put_le32(&pb, MKTAG('M', 'A', 'G', 'Y'));
-    bytestream2_put_le32(&pb, 32);
-    bytestream2_put_byte(&pb, 7);
+    bytestream2_put_le32(&pb, 32); // header size
+    bytestream2_put_byte(&pb, 7);  // version
     bytestream2_put_byte(&pb, s->format);
+    bytestream2_put_byte(&pb, 12); // max huffman length
+    bytestream2_put_byte(&pb, 0);
+
     bytestream2_put_byte(&pb, 0);
     bytestream2_put_byte(&pb, 0);
-    bytestream2_put_le32(&pb, 0);
+    bytestream2_put_byte(&pb, 32); // coder type
+    bytestream2_put_byte(&pb, 0);
 
     bytestream2_put_le32(&pb, avctx->width);
     bytestream2_put_le32(&pb, avctx->height);
@@ -549,10 +568,11 @@ AVCodec ff_magicyuv_encoder = {
     .init             = magy_encode_init,
     .close            = magy_encode_close,
     .encode2          = magy_encode_frame,
-    .capabilities     = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY | AV_CODEC_CAP_EXPERIMENTAL,
+    .capabilities     = AV_CODEC_CAP_FRAME_THREADS,
     .pix_fmts         = (const enum AVPixelFormat[]) {
                           AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRAP, AV_PIX_FMT_YUV422P,
                           AV_PIX_FMT_YUV420P, AV_PIX_FMT_YUV444P, AV_PIX_FMT_YUVA444P, AV_PIX_FMT_GRAY8,
                           AV_PIX_FMT_NONE
                       },
+    .caps_internal    = FF_CODEC_CAP_INIT_CLEANUP,
 };

@@ -126,7 +126,7 @@ METHOD(private_key_t, sign_not_allowed, bool,
 
 METHOD(private_key_t, decrypt_not_allowed, bool,
 	private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "decryption failed - signature only key");
 	return FALSE;

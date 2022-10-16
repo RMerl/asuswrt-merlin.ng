@@ -94,14 +94,10 @@ static void run()
 		switch (sig)
 		{
 			case SIGINT:
-			{
-				DBG1(DBG_DMN, "signal of type SIGINT received. Shutting down");
-				charon->bus->alert(charon->bus, ALERT_SHUTDOWN_SIGNAL, sig);
-				return;
-			}
 			case SIGTERM:
 			{
-				DBG1(DBG_DMN, "signal of type SIGTERM received. Shutting down");
+				DBG1(DBG_DMN, "%s received, shutting down",
+					 sig == SIGINT ? "SIGINT" : "SIGTERM");
 				charon->bus->alert(charon->bus, ALERT_SHUTDOWN_SIGNAL, sig);
 				return;
 			}
@@ -109,6 +105,7 @@ static void run()
 	}
 }
 
+#ifndef DISABLE_SIGNAL_HANDLER
 /**
  * Handle SIGSEGV/SIGILL signals raised by threads
  */
@@ -124,6 +121,7 @@ static void segv_handler(int signal)
 	DBG1(DBG_DMN, "killing ourself, received critical signal");
 	abort();
 }
+#endif /* DISABLE_SIGNAL_HANDLER */
 
 /**
  * Lookup UID and GID
@@ -194,9 +192,9 @@ int main(int argc, char *argv[])
 							   "charon-nm.syslog.daemon.default", 1));
 	charon->load_loggers(charon);
 
-	/* use random ports to avoid conflicts with regular charon */
-	lib->settings->set_int(lib->settings, "charon-nm.port", 0);
-	lib->settings->set_int(lib->settings, "charon-nm.port_nat_t", 0);
+	/* default to random ports to avoid conflicts with regular charon */
+	lib->settings->set_default_str(lib->settings, "charon-nm.port", "0");
+	lib->settings->set_default_str(lib->settings, "charon-nm.port_nat_t", "0");
 
 	DBG1(DBG_DMN, "Starting charon NetworkManager backend (strongSwan "VERSION")");
 	if (lib->integrity)
@@ -225,16 +223,21 @@ int main(int argc, char *argv[])
 		goto deinit;
 	}
 
-	/* add handler for SEGV and ILL,
+	/* add handler for fatal signals,
 	 * INT and TERM are handled by sigwaitinfo() in run() */
-	action.sa_handler = segv_handler;
 	action.sa_flags = 0;
 	sigemptyset(&action.sa_mask);
 	sigaddset(&action.sa_mask, SIGINT);
 	sigaddset(&action.sa_mask, SIGTERM);
+
+	/* optionally let the external system handle fatal signals */
+#ifndef DISABLE_SIGNAL_HANDLER
+	action.sa_handler = segv_handler;
 	sigaction(SIGSEGV, &action, NULL);
 	sigaction(SIGILL, &action, NULL);
 	sigaction(SIGBUS, &action, NULL);
+#endif /* DISABLE_SIGNAL_HANDLER */
+
 	action.sa_handler = SIG_IGN;
 	sigaction(SIGPIPE, &action, NULL);
 

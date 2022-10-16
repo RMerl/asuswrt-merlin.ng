@@ -425,7 +425,7 @@ The @code{csv} writer is equivalent to @code{compact}, but supports
 different defaults.
 
 Each section is printed on a single line.
-If no option is specifid, the output has the form:
+If no option is specified, the output has the form:
 @example
 section|key1=val1| ... |keyN=valN
 @end example
@@ -584,14 +584,14 @@ value is 0.
 This is required for generating an XML file which can be validated
 through an XSD file.
 
-@item xsd_compliant, x
+@item xsd_strict, x
 If set to 1 perform more checks for ensuring that the output is XSD
 compliant. Default value is 0.
 This option automatically sets @option{fully_qualified} to 1.
 @end table
 
 For more information about the XML format, see
-@url{http://www.w3.org/XML/}.
+@url{https://www.w3.org/XML/}.
 @c man end WRITERS
 
 @chapter Timecode
@@ -642,6 +642,7 @@ DV, GXF and AVI timecodes are available in format metadata
 @ifset config-avfilter
 @include filters.texi
 @end ifset
+@include general_contents.texi
 @end ifset
 
 @chapter See Also

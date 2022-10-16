@@ -494,12 +494,17 @@ static int __get_QCA_sta_info_by_ifname(const char *ifname, char subunit_id, int
 		/* Parse ACAPS ~ IEs (maybe empty string, RSN, WME, or both).
 		 * ACAPS is empty on ILQ2.x ~ SPF10, is "NULL" on SPF11
 		 */
+		{ .key = "HTCAPS",	.fmt = "%s",	.var = &r->htcaps },
+		{ .key = "VHTCAPS",	.fmt = "%s",	.var = &r->vhtcaps },
 		{ .key = "ASSOCTIME",	.fmt = "%s",	.var = &r->conn_time },
 
 		{ .key = NULL, .fmt = NULL, .var = NULL },
 	}, part3_tbl[] = {
 		/* Parse MODE ~ PSMODE */
 		{ .key = "MODE",	.fmt = "IEEE80211_MODE_%s", .var = r->mode },
+		{ .key = "PSMODE",	.fmt = "%u",	.var = &r->psm },
+		{ .key = "RXNSS",	.fmt = "%u",	.var = &r->rxnss },
+		{ .key = "TXNSS",	.fmt = "%u",	.var = &r->txnss },
 
 		{ .key = NULL, .fmt = NULL, .var = NULL },
 	};

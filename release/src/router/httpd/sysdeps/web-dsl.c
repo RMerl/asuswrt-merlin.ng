@@ -217,6 +217,7 @@ int ej_get_isp_list(int eid, webs_t wp, int argc, char_t **argv){
 	char *name;
 	FILE* fpIsp;
 	char bufIsp[512];
+	int readbyte = 0;
 
 	if (ejArgs(argc, argv, "%s", &name) < 1) {
 		websError(wp, 400, "Insufficient args\n");
@@ -227,7 +228,8 @@ int ej_get_isp_list(int eid, webs_t wp, int argc, char_t **argv){
 	if (fpIsp != NULL)
 	{
 	  // read out UTF-8 3 bytes header
-	        fread(bufIsp,3,1,fpIsp);
+		readbyte = fread(bufIsp,3,1,fpIsp);
+		bufIsp[readbyte] = '\0';
 		while(!feof(fpIsp))
 		{
 			char* ret_fgets;

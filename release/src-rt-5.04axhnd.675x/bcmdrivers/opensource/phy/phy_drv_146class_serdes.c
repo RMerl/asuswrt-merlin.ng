@@ -180,6 +180,7 @@ static int phy_drv_serdes_146class_init_lock(phy_dev_t *phy_dev)
 
     phy_dsl_serdes_post_init(phy_dev);
 
+    phy_serdes->inited = 2;
     printk(NtcClr "=== End of 10G Active Ethernet Initialization for core %d port %d ===" DflClr "\n",
         phy_serdes->core_num, phy_dev->usxgmii_m_index);
 

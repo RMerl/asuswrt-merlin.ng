@@ -26,7 +26,9 @@
 /**
  * Maximum size of a single message exchanged.
  */
+#ifndef VICI_MESSAGE_SIZE_MAX
 #define VICI_MESSAGE_SIZE_MAX (512 * 1024)
+#endif
 
 typedef struct vici_socket_t vici_socket_t;
 

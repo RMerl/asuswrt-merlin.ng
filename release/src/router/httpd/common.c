@@ -35,7 +35,7 @@
 #include <time.h>
 #include <sys/wait.h>
 #include <sys/socket.h>
-#include <linux/if.h>
+#include <net/if.h>
 #include <netinet/in.h>
 #include <shutils.h>
 #include <bcmnvram.h>

@@ -70,7 +70,7 @@ static const u32 eapol_key_timeout_first_group = 500; /* ms */
 static const u32 eapol_key_timeout_no_retrans = 4000; /* ms */
 
 /* TODO: make these configurable */
-static const int dot11RSNAConfigPMKLifetime = 43200;
+static const int dot11RSNAConfigPMKLifetime = DEFAULT_DOT11RSNACONFIGPMKLIFETIME;
 static const int dot11RSNAConfigPMKReauthThreshold = 70;
 static const int dot11RSNAConfigSATimeout = 60;
 

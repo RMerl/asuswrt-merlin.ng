@@ -85,7 +85,7 @@ METHOD(task_t, process_r, status_t,
 	bool found = FALSE;
 
 	/* some peers send DELETE payloads for other IKE_SAs, e.g. those for expired
-	 * ones after a rekeyeing, make sure the SPIs match */
+	 * ones after a rekeying, make sure the SPIs match */
 	id = this->ike_sa->get_id(this->ike_sa);
 	payloads = message->create_payload_enumerator(message);
 	while (payloads->enumerate(payloads, &payload))

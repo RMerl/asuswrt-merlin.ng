@@ -27,6 +27,8 @@
 
 const AVCodecTag ff_nut_subtitle_tags[] = {
     { AV_CODEC_ID_TEXT,             MKTAG('U', 'T', 'F', '8') },
+    { AV_CODEC_ID_ASS,              MKTAG('S', 'S', 'A',  0 ) },
+    { AV_CODEC_ID_ASS,              MKTAG('A', 'S', 'S',  0 ) },
     { AV_CODEC_ID_DVD_SUBTITLE,     MKTAG('D', 'V', 'D', 'S') },
     { AV_CODEC_ID_DVB_SUBTITLE,     MKTAG('D', 'V', 'B', 'S') },
     { AV_CODEC_ID_DVB_TELETEXT,     MKTAG('D', 'V', 'B', 'T') },
@@ -43,6 +45,7 @@ const AVCodecTag ff_nut_video_tags[] = {
     { AV_CODEC_ID_XFACE,            MKTAG('X', 'F', 'A', 'C') },
     { AV_CODEC_ID_VP9,              MKTAG('V', 'P', '9', '0') },
     { AV_CODEC_ID_HEVC,             MKTAG('H', 'E', 'V', 'C') },
+    { AV_CODEC_ID_CPIA,             MKTAG('C', 'P', 'i', 'A') },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('R', 'G', 'B', 15 ) },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('B', 'G', 'R', 15 ) },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('R', 'G', 'B', 16 ) },
@@ -143,6 +146,11 @@ const AVCodecTag ff_nut_video_tags[] = {
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('Y', '4',   0,  10) },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG(10,    0, '4', 'Y') },
 
+    { AV_CODEC_ID_RAWVIDEO,         MKTAG('Y', '4',   0,  12) },
+    { AV_CODEC_ID_RAWVIDEO,         MKTAG(12,    0, '4', 'Y') },
+    { AV_CODEC_ID_RAWVIDEO,         MKTAG('Y', '4',  10,  12) },
+    { AV_CODEC_ID_RAWVIDEO,         MKTAG(12,   10, '4', 'Y') },
+
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('Y', '1',   0,  12) },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG(12,    0, '1', 'Y') },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('Y', '1',   0,  16) },
@@ -153,6 +161,9 @@ const AVCodecTag ff_nut_video_tags[] = {
     { AV_CODEC_ID_RAWVIDEO,         MKTAG(16,   10, '4', 'Y') },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('Y', '4',   0,  16) },
     { AV_CODEC_ID_RAWVIDEO,         MKTAG(16,    0, '4', 'Y') },
+
+    { AV_CODEC_ID_RAWVIDEO,         MKTAG('Y', '1',   0,  14) },
+    { AV_CODEC_ID_RAWVIDEO,         MKTAG(14,    0, '1', 'Y') },
 
     { AV_CODEC_ID_RAWVIDEO,         MKTAG('G', '3',   0,   8) },
 
@@ -218,6 +229,8 @@ const AVCodecTag ff_nut_audio_tags[] = {
     { AV_CODEC_ID_PCM_S24LE,        MKTAG('P', 'S', 'D', 24 ) },
     { AV_CODEC_ID_PCM_S32BE,        MKTAG(32 , 'D', 'S', 'P') },
     { AV_CODEC_ID_PCM_S32LE,        MKTAG('P', 'S', 'D', 32 ) },
+    { AV_CODEC_ID_PCM_S64BE,        MKTAG(64 , 'D', 'S', 'P') },
+    { AV_CODEC_ID_PCM_S64LE,        MKTAG('P', 'S', 'D', 64 ) },
     { AV_CODEC_ID_PCM_S8,           MKTAG('P', 'S', 'D',  8 ) },
     { AV_CODEC_ID_PCM_U16BE,        MKTAG(16 , 'D', 'U', 'P') },
     { AV_CODEC_ID_PCM_U16LE,        MKTAG('P', 'U', 'D', 16 ) },

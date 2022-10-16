@@ -218,7 +218,7 @@ function getInterface(){
 		'2.4G5LSmartCommect': [['0', '2.4 GHz/5 GHz-1', '0'], ['1', '5 GHz-2', '1'], ['2', '6 GHz', '2']],
 	}
 
-	if(system.smartConnectSupport && variable.smart_connect_x != '0' && !qca_support){		// Smart Connect
+	if(system.smartConnectSupport && variable.smart_connect_x != '0'){		// Smart Connect
 		if(variable.smart_connect_x == '1'){	// Tri/Dual-Band Smart Connect		
 			if(system.modelName === 'GT-AXE16000'){
 				if(variable.smart_connect_selif_x === '15'){
@@ -332,7 +332,11 @@ function getInterface(){
 			});
 		}
 		else{
-			wlInterface[wlc_band][2] = wlc_band + '.1';
+			for(let i =0;i<wlInterface.length;i++){
+				if(wlInterface[i][0] === wlc_band){
+					wlInterface[i][2] = wlInterface[i][2] + '.1';
+				}
+			}
 		}
 	}
 
@@ -360,7 +364,7 @@ function genElement(){
 	}
 
 	// part of Smart Connect
-	if(system.smartConnectSupport && variable.smart_connect_x != '0' && !qca_support){
+	if(system.smartConnectSupport && variable.smart_connect_x != '0'){
 		$('#smart_connect_field').show();
 		if(system.modelName === 'GT-AXE16000'){
 			var smartConnectType_ori = nvram['smart_connect_x'];
@@ -502,7 +506,7 @@ function genElement(){
 				code += '</div> ';
 			}		
 		}
-		else if(_authMode == 'wpa' || _authMode == 'wpa2' || _authMode == 'wpawpa2'){
+		else if(_authMode == 'wpa' || _authMode == 'wpa2' || _authMode == 'wpawpa2' || _authMode == 'wpa3' || _authMode == 'wpa2wpa3' || _authMode == 'suite-b'){
 			// WPA Encryption
 			code += '<div class="info-block">';
 			code += '<div class="info-title"><#WLANConfig11b_WPAType_itemname#></div>';
@@ -608,7 +612,9 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 	var auth_array = new Array();
 	var authObj = {
 		'allWithWPA3': [['Open System', 'open'], ['Shared Key', 'shared'], ['WPA-Personal', 'psk'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA-Enterprise', 'wpa'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
-		'allWithWPA3OWE': [['Open System', 'open'], ['Enhanced OPEN Transition', 'openowe'], ['Shared Key', 'shared'], ['WPA-Personal', 'psk'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA-Enterprise', 'wpa'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
+		'allWithWPA3WPA3E': [['Open System', 'open'], ['Shared Key', 'shared'], ['WPA-Personal', 'psk'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA-Enterprise', 'wpa'], ['WPA2-Enterprise', 'wpa2'], ['WPA3-Enterprise', 'wpa3'], ['WPA3-Enterprise 192-bit', 'suite-b'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['WPA2/WPA3-Enterprise', 'wpa2wpa3'], ['Radius with 802.1x', 'radius']],
+		'allWithWPA3OWE': [['Open System', 'open'], ['Enhanced OPEN Transition', 'openowe'], ['Shared Key', 'shared'], ['WPA-Personal', 'psk'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA-Enterprise', 'wpa'], ['WPA2-Enterprise', 'wpa2'], ['WPA3-Enterprise', 'wpa3'], ['WPA3-Enterprise 192-bit', 'suite-b'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['WPA2/WPA3-Enterprise', 'wpa2wpa3'], ['Radius with 802.1x', 'radius']],
+		'allWithWPA3OWEWPA3E': [['Open System', 'open'], ['Enhanced OPEN Transition', 'openowe'], ['Shared Key', 'shared'], ['WPA-Personal', 'psk'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA-Enterprise', 'wpa'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
 		'allWithoutWPA3':  [['Open System', 'open'], ['Shared Key', 'shared'], ['WPA-Personal', 'psk'], ['WPA2-Personal', 'psk2'], ['WPA-Auto-Personal', 'pskpsk2'], ['WPA-Enterprise', 'wpa'], ['WPA2-Enterprise', 'wpa2'], ['WPA-Auto-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
 		'repeaterWithWPA3': [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae']],
 		'repeater': [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA-Auto-Personal', 'pskpsk2']],
@@ -618,9 +624,11 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		'wifiNewCertWPA3': [['Open System', 'open'], ['Shared Key', 'shared'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
 		'wifiNewCertNoWPA3':  [['Open System', 'open'], ['Shared Key', 'shared'], ['WPA2-Personal', 'psk2'], ['WPA-Auto-Personal', 'pskpsk2'], ['WPA2-Enterprise', 'wpa2'], ['WPA-Auto-Enterprise', 'wpawpa2'], ['Radius with 802.1x', 'radius']],
 		'normalWithWPA3':  [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2']],
+		'normalWithWPA3WPA3E':  [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA3-Enterprise', 'wpa3'], ['WPA3-Enterprise 192-bit', 'suite-b'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['WPA2/WPA3-Enterprise', 'wpa2wpa3']],
 		'normalWithoutWPA3': [['Open System', 'open'], ['WPA2-Personal', 'psk2'], ['WPA-Auto-Personal', 'pskpsk2'], ['WPA2-Enterprise', 'wpa2'], ['WPA-Auto-Enterprise', 'wpawpa2']],
 		'6G': [['<#Wireless_Encryption_OWE#>', 'owe'], ['WPA3-Personal', 'sae']],
-		'normalWithWPA3OWE': [['Open System', 'open'], ['Enhanced OPEN Transition', 'openowe'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2']]
+		'normalWithWPA3OWE': [['Open System', 'open'], ['Enhanced OPEN Transition', 'openowe'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA/WPA2-Enterprise', 'wpawpa2']],
+		'normalWithWPA3OWEWPA3E': [['Open System', 'open'], ['Enhanced OPEN Transition', 'openowe'], ['WPA2-Personal', 'psk2'], ['WPA3-Personal', 'sae'], ['WPA/WPA2-Personal', 'pskpsk2'], ['WPA2/WPA3-Personal', 'psk2sae'], ['WPA2-Enterprise', 'wpa2'], ['WPA3-Enterprise', 'wpa3'], ['WPA3-Enterprise 192-bit', 'suite-b'], ['WPA/WPA2-Enterprise', 'wpawpa2'], ['WPA2/WPA3-Enterprise', 'wpa2wpa3']],
 	}
 
 	if(sw_mode == '2' || (system.modelName == 'RT-AC87U' && unit == '1')){
@@ -660,6 +668,10 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 					}
 					else{
 						auth_array = authObj['wifiNewCertWPA3'];
+						if(system.modelName === 'RT-AX92U' && unit === '2'
+						|| system.BRCMplatform && band5g_11ax_support && system.modelName !== 'RT-AX92U'){
+							auth_array.pop();
+						}
 					}
 				}
 				else{
@@ -668,20 +680,54 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 							auth_array = authObj['6G'];
 						}
 						else{
-							auth_array = authObj['allWithWPA3OWE'];
+							if(wpa3_enterprise_support){
+								auth_array = authObj['allWithWPA3OWEWPA3E'];
+								if(system.modelName === 'RT-AX92U' && unit === '2'
+								|| system.BRCMplatform && band5g_11ax_support && system.modelName !== 'RT-AX92U'){
+									auth_array.pop();
+								}
+							}
+							else{
+								auth_array = authObj['allWithWPA3OWE'];
+								if(system.modelName === 'RT-AX92U' && unit === '2'
+								|| system.BRCMplatform && band5g_11ax_support && system.modelName !== 'RT-AX92U'){
+									auth_array.pop();
+								}
+							}							
 						}
 					}
 					else{
-						auth_array = authObj['allWithWPA3'];
+						if(wpa3_enterprise_support){
+							auth_array = authObj['allWithWPA3WPA3E'];
+							if(system.modelName === 'RT-AX92U' && unit === '2'
+							|| system.BRCMplatform && band5g_11ax_support && system.modelName !== 'RT-AX92U'){
+								auth_array.pop();
+							}
+						}
+						else{
+							auth_array = authObj['allWithWPA3'];
+							if(system.modelName === 'RT-AX92U' && unit === '2'
+							|| system.BRCMplatform && band5g_11ax_support && system.modelName !== 'RT-AX92U'){
+								auth_array.pop();
+							}
+						}						
 					}
 				}
 			}
 			else{
 				if(system.newWiFiCertSupport){
 					auth_array = authObj['wifiNewCertNoWPA3'];
+					if(system.modelName === 'RT-AX92U' && unit === '2'
+					|| system.BRCMplatform && band5g_11ax_support && system.modelName !== 'RT-AX92U'){
+						auth_array.pop();
+					}
 				}
 				else{
 					auth_array = authObj['allWithoutWPA3'];
+					if(system.modelName === 'RT-AX92U' && unit === '2'
+					|| system.BRCMplatform && band5g_11ax_support && system.modelName !== 'RT-AX92U'){
+						auth_array.pop();
+					}
 				}
 			}
 		}
@@ -693,11 +739,23 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 					auth_array = authObj['6G'];
 				}
 				else{
-					auth_array = authObj['normalWithWPA3OWE'];
+					if(wpa3_enterprise_support){
+						auth_array = authObj['normalWithWPA3OWEWPA3E'];
+					}
+					else{
+						auth_array = authObj['normalWithWPA3OWE'];
+					}
+					
 				}
 			}
 			else{
-				auth_array = authObj['normalWithWPA3'];
+				if(wpa3_enterprise_support){
+					auth_array = authObj['normalWithWPA3WPA3E'];
+				}
+				else{
+					auth_array = authObj['normalWithWPA3'];
+				}
+				
 			}
 		}
 		else{
@@ -787,7 +845,7 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 			}
 		}
 	}
-	else if(auth_mode_x == 'wpa' || auth_mode_x == 'wpa2' || auth_mode_x == 'wpawpa2'){
+	else if(auth_mode_x == 'wpa' || auth_mode_x == 'wpa2' || auth_mode_x == 'wpawpa2' || auth_mode_x == 'wpa3' || auth_mode_x == 'wpa2wpa3' || auth_mode_x == 'suite-b'){
 		genWPAEncryption(unit, 'wl'+ unit +'_crypto', auth_mode_x);
 	}
 }
@@ -796,11 +854,12 @@ function genWPAEncryption(unit, id, auth_mode_x){
 	var wpaEncryptObj = {
 		'tkip': [['TKIP', 'tkip']],
 		'aes': [['AES', 'aes']],
-		'auto': [['AES', 'aes'], ['TKIP+AES', 'tkip+aes']]
+		'auto': [['AES', 'aes'], ['TKIP+AES', 'tkip+aes']],
+		'suite-b': [['Suite B', 'suite-b']],
 	}
 	var wpaEncryptArray = new Array();
 	var _temp = new Array();
-	if(auth_mode_x == 'psk2' || auth_mode_x == 'sae' || auth_mode_x == 'psk2sae' || auth_mode_x == 'wpa2' || auth_mode_x == 'owe' || auth_mode_x == 'openowe'){		// WPA2-Personal, WPA3-Personal, WPA2/WPA3-Personal, WPA2-Enterprise
+	if(auth_mode_x == 'psk2' || auth_mode_x == 'sae' || auth_mode_x == 'psk2sae' || auth_mode_x == 'wpa2' || auth_mode_x == 'wpa3' || auth_mode_x == 'wpa2wpa3' || auth_mode_x == 'owe' || auth_mode_x == 'openowe'){		// WPA2-Personal, WPA3-Personal, WPA2/WPA3-Personal, WPA2-Enterprise
 		wpaEncryptArray.push.apply(wpaEncryptArray, wpaEncryptObj['aes']);
 	}
 	else if(auth_mode_x == 'pskpsk2' || auth_mode_x == 'wpawpa2'){		// WPA/WPA2-Personal, WPA/WPA2-Enterprise
@@ -809,6 +868,9 @@ function genWPAEncryption(unit, id, auth_mode_x){
 	else if(auth_mode_x == 'psk' || auth_mode_x == 'wpa'){		// WPA-Personal, WPA-Enterprise
 		wpaEncryptArray.push.apply(wpaEncryptArray, wpaEncryptObj['tkip']);
     }
+	else if(auth_mode_x == 'suite-b'){
+		wpaEncryptArray.push.apply(wpaEncryptArray, wpaEncryptObj['suite-b']);
+	}
     
 	var code = '';
 	var wpaCryption = variable['wl'+ unit +'_crypto'];
@@ -915,9 +977,9 @@ function updateVariable(id, value, flag){
 	variable[id] = value;
 	var prefix = id.split('_')[0];
 	var wpsEnable = variable['wps_enable'];
-	
 	if(band6g_support && (id == "smart_connect_x")){
 		if(value == '0' || value == '3'){
+			
 			if(variable['wl0_auth_mode_x'] == 'psk2sae'){
 				variable['wl0_auth_mode_x'] = 'psk2';
 				variable['wl0_crypto'] = 'aes';
@@ -954,10 +1016,10 @@ function updateVariable(id, value, flag){
 	}
 
 	// variable padding
-	if(value == 'sae' || value == 'owe' || value == 'openowe'){
+	if(value == 'sae' || value == 'owe' || value == 'openowe' || value == 'wpa3' || value == 'suite-b'){
 		variable[prefix + '_mfp'] = '2';
 	}
-	else if(value == 'psk2sae' && nvram[prefix + '_mfp'] == '0'){	
+	else if((value == 'psk2sae' || value == 'wpa2wpa3') && nvram[prefix + '_mfp'] == '0'){	
 		variable[prefix + '_mfp'] = '1';
 	}
 	else if(value == 'psk2' || value == 'pskpsk2' || value == 'wpawpa2' || value == 'wpa2'){
@@ -969,7 +1031,7 @@ function updateVariable(id, value, flag){
 		}
 	}
 
-	if((value == 'shared' || value == 'wpa' || value == 'wpa2' || value == 'wpawpa2' || value == 'radius') && wpsEnable == '1'){
+	if((value == 'shared' || value == 'wpa' || value == 'wpa2' || value == 'wpa3' || value == 'wpawpa2' || value == 'wpa2wpa3' || value == 'suite-b' || value == 'radius') && wpsEnable == '1'){
 		variable['wps_enable'] = '0';
 	}
 	else{

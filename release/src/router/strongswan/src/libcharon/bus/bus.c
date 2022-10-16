@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2016 Tobias Brunner
+ * Copyright (C) 2011-2020 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
  * HSR Hochschule fuer Technik Rapperswil
  *
@@ -604,8 +604,8 @@ METHOD(bus_t, ike_keys, void,
 }
 
 METHOD(bus_t, ike_derived_keys, void,
-	private_bus_t *this, chunk_t sk_ei, chunk_t sk_er, chunk_t sk_ai,
-	chunk_t sk_ar)
+	private_bus_t *this, chunk_t sk_d, chunk_t sk_ai, chunk_t sk_ar,
+	chunk_t sk_ei, chunk_t sk_er, chunk_t sk_pi, chunk_t sk_pr)
 {
 	enumerator_t *enumerator;
 	ike_sa_t *ike_sa;
@@ -623,8 +623,9 @@ METHOD(bus_t, ike_derived_keys, void,
 			continue;
 		}
 		entry->calling++;
-		keep = entry->listener->ike_derived_keys(entry->listener, ike_sa, sk_ei,
-												 sk_er, sk_ai, sk_ar);
+		keep = entry->listener->ike_derived_keys(entry->listener, ike_sa, sk_d,
+												 sk_ai, sk_ar, sk_ei, sk_er,
+												 sk_pi, sk_pr);
 		entry->calling--;
 		if (!keep)
 		{
@@ -866,7 +867,7 @@ METHOD(bus_t, ike_rekey, void,
 }
 
 METHOD(bus_t, ike_update, void,
-	private_bus_t *this, ike_sa_t *ike_sa, bool local, host_t *new)
+	private_bus_t *this, ike_sa_t *ike_sa, host_t *local, host_t *remote)
 {
 	enumerator_t *enumerator;
 	entry_t *entry;
@@ -881,7 +882,8 @@ METHOD(bus_t, ike_update, void,
 			continue;
 		}
 		entry->calling++;
-		keep = entry->listener->ike_update(entry->listener, ike_sa, local, new);
+		keep = entry->listener->ike_update(entry->listener, ike_sa, local,
+										   remote);
 		entry->calling--;
 		if (!keep)
 		{

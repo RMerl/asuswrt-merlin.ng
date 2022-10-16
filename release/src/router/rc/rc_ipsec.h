@@ -17,8 +17,11 @@
 
 #define CA_FILES_MAX_NUM 32
 
+#define IPSEC_CLI_IF_PREFIX "ipc"
+
 #define FILE_PATH_IPSEC_SH    "/tmp/etc/ipsec_exe.sh"
 #define FILE_PATH_IPSEC_IPTABLES_RULE    "/tmp/ipsec_iptables_rules"
+#define FILE_PATH_IPSEC_UPDOWN    "/tmp/ipsec_updown"
 #define FILE_PATH_CA_CHECK_SH "/jffs/ca_files/awk.sh"
 #define FILE_PATH_CA_GEN_SH   "/jffs/ca_files/pki_genkey.sh"
 #define FILE_PATH_CA_ETC      "/jffs/ca_files/"
@@ -69,6 +72,7 @@ typedef enum vpn_type_s{
     VPN_TYPE_NET_NET_CLI,
     VPN_TYPE_NET_NET_PEER,
     VPN_TYPE_HOST_NET,
+    VPN_TYPE_HOST_NET_CLI, // Roadwarrior Initiator
 }vpn_type_t;
 
 typedef enum flag_type_s{

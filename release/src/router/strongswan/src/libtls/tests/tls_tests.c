@@ -35,8 +35,13 @@ static bool test_runner_init(bool init)
 {
 	if (init)
 	{
-		plugin_loader_add_plugindirs(PLUGINDIR, PLUGINS);
-		if (!lib->plugins->load(lib->plugins, PLUGINS))
+		char *plugins;
+
+		plugins = getenv("TESTS_PLUGINS") ?:
+					lib->settings->get_str(lib->settings,
+										"tests.load", PLUGINS);
+		plugin_loader_add_plugindirs(PLUGINDIR, plugins);
+		if (!lib->plugins->load(lib->plugins, plugins))
 		{
 			return FALSE;
 		}

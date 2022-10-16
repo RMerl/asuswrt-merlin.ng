@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=若要重新使用 Alexa™ 与 IFTTT™ 功
 ASUS_eula_withdraw_note=无法连接至互联网并完成设置，请在连接至互联网的状态下点击[关闭信息传送]。
 ASUS_eula_withdraw_unstable=互联网状态不稳定，无法完成设置。请稍后再试。
 TM_eula_confirm=通过使用 ASUS AiProtection，您同意
-TM_eula_desc1=使用 AiProtection 智能安全防护、流量分析、应用程序分析、带宽管理 Adaptive QoS/Game boost 以及网页浏览历史功能前，请先同意<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro 最终用户许可协议</a>。
-TM_eula_desc2=请注意，AiProtection 智能安全防护、流量分析、应用程序分析、带宽管理 Adaptive QoS/Game boost 以及网页浏览历史功能将会收集您的信息。您了解并同意华硕对于您与 Trend Micro 之间的协议或者是 Trend Micro 所提供的服务内容不承担任何责任。如果您对 Trend Micro 收集信息的方法、过程亦或是如何使用您的信息存在疑虑,请参阅 Trend Micro 所发布之隐私权相关声明，或者请联络 Trend Micro 以获得更多细节。
+TM_eula_desc1=使用 AiProtection 智能安全防护、家长电脑控制程序（网页与 Apps 过滤）、流量分析、应用程序分析、带宽管理 Adaptive QoS/Game boost 以及网页浏览历史功能前，请先同意<a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro 最终用户许可协议</a>。
+TM_eula_desc2=请注意，AiProtection 智能安全防护、家长电脑控制程序（网页与 Apps 过滤）、流量分析、应用程序分析、带宽管理 Adaptive QoS/Game boost 以及网页浏览历史功能将会收集您的信息。您了解并同意华硕对于您与 Trend Micro 之间的协议或者是 Trend Micro 所提供的服务内容不承担任何责任。如果您对 Trend Micro 收集信息的方法、过程亦或是如何使用您的信息存在疑虑,请参阅 Trend Micro 所发布之隐私权相关声明，或者请联络 Trend Micro 以获得更多细节。
 TM_eula_desc3=如果您不想通过以上功能与 Trend Micro 分享信息，请通过此路径更改设置：路由器网页管理界面 > 高级设置 > 系统管理 > 隐私权。
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro 隐私权条款</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=使用 AiProtection 智能安全防护、流量分析、应用程序分析、带宽管理 Adaptive QoS/Game Boost 以及网页浏览历史功能:
+TM_eula_withdraw0=使用 AiProtection 智能安全防护、家长电脑控制程序（网页与 Apps 过滤）、流量分析、应用程序分析、带宽管理 Adaptive QoS/Game Boost 以及网页浏览历史功能:
 TM_eula_withdraw_desc1=请注意，Trend Micro 将通过以上功能收集您的信息。
 TM_eula_withdraw_desc2=如果您不想通过以上功能与 Trend Micro 分享信息，请点击下方<span style="font-weight: bold;">[关闭信息传送]</span>选项。请注意，一旦您停止与 Trend Micro 间的信息分享，上述功能将被停用。
 withdraw_confirm=请确认是否关闭？
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=考虑到 AiMesh 系统与终端设备的兼容性，建议�
 AiMesh_confirm_msg10=为了确保您的 AiMesh 系统和终端设备之间的连接，在切换到 WPA3-Personal 之前，请先阅读<a id="wpa3FaqLink">常见问题</a>。
 AiMesh_confirm_msg11=您当前正在使用 WPA3-personal 。要创建 AiMesh 系统，您的认证方法将更改为 WPA2/WPA3-personal 。您要继续吗？
 AiMesh_confirm_msg12=您也可以阅读此篇 <a id='wpa3FaqLink'>FAQ</a> 以得到更多资讯。
-AiMesh_confirm_msg13=要了解更多信息，请访问 <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>常见问题</a>
+AiMesh_confirm_msg13=要了解更多信息，请访问 <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>常见问题</a>
 AiMesh_Feature_Desc=华硕 AiMesh 是创新的路由器功能，可连接多台华硕无线路由器，打造出覆盖全家的 WiFi 网络。
 AiMesh_FAQ=关于华硕 AiMesh 的更多信息
 AiMesh_FindNode=搜索 AiMesh 节点
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=阳台
 AiMesh_NodeLocation23=会议室
 AiMesh_NodeLocation24=自定义
 AiMesh_NodeLocation25=车库
+AiMesh_NodeLocation26=一楼
+AiMesh_NodeLocation27=游戏室
+AiMesh_NodeLocation28=健身房
 AiMesh_OfflineTips=离线提示
 AiMesh_OfflineTips1=请确认您的 AiMesh 节点已开机。
 AiMesh_OfflineTips2=重置您的 AiMesh 节点并重试。
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=导入您自己的证书
 DDNS_https_cert_Import_desc=请在此处上传由证书授权机构签发的证书，需要您的私人密钥和 SSL 证书。
 DDNS_https_cert_PrivateKey=私人密钥
 DDNS_https_cert_PrivateKey_note=私人密钥不受密码保护。
+DDNS_ipv6_update=IPv6 更新
+DDNS_ipv6_update_desc=如果客户端的网络环境使用的是 IPv6 网络地址，启用此功能后，在远程设备访问时，将首先把域名解析为 IPv6 网络地址。
 DDNS_ssl_cert=SSL 证书
 DDNS_termofservice_Title=使用条款
 DDNS_transfer=转移华硕 DDNS 域名
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=开启防火墙保护您的内部网络不�
 FirewallConfig_display3_sectiondesc=<b>黑名单限制时间：</b>在设置的时间内，黑名单中的客户端无法使用特定的网络服务。在设置时间外，内部网络中的所有客户端都可以访问特定的网络服务。<br><b>白名单限制时间：</b>在设置的时间内，白名单中的客户端仅可以使用特定的网络服务。在设置的时间外，白名单中的客户端与其他网络客户端都无法访问因特网或任何网络服务。
 FirewallConfig_display4_sectiondesc=<b>注意：</b>若您在白名单中设置了某一网段，此网段外的 IP 地址都无法访问因特网或任何网络服务。
 FirewallConfig_display5_sectiondesc=MAC 访问控制能够控制网络中特定网络卡实体地址（MAC Address）的存取。<p>MAC过滤可以设置接收或拒绝模式。<p>在拒绝模式中，列表中的设备被拒绝访问网络。<p>在接收模式中，仅列表中的设备可获取网络。未在列表中的网络拒绝访问网络。
-FirewallConfig_DoSEnable_itemdesc=一个「拒绝服务的袭击」(DoS) 显然想要试图拒绝合法的用户使用服务或计算机资源。开启此项功能可以保护路由器不受 DoS 攻击，但这会增大路由器的工作负载。
+FirewallConfig_DoSEnable_itemdesc=开启此项功能可以保护路由器不受 DoS (Denial- of-Service) 攻击，但这会增大路由器的工作负载。
 FirewallConfig_DoSEnable_itemname=启动 DoS 防护
 FirewallConfig_FirewallEnable_itemdesc=关闭防火墙会撤销所有相关功能。
 FirewallConfig_FirewallEnable_itemname=启用防火墙
-FirewallIPv4_enable=启动 IPv4 防火墙
+FirewallIPv4_enable=启动 IPv4 传入防火墙规则
 FirewallIPv4=IPv4 防火墙
 FirewallConfig_FTPPrompt_itemdesc=当使用 ZVMODELVZ 内置的 FTP 服务器功能时，设置外网（WAN 端口）端口为20：21，会与 ZVMODELVZ 内置的 FTP 服务器使用的接口冲突。
 FirewallConfig_KeywordFilterEnable_itemname=开启关键词过滤器
@@ -2251,6 +2256,9 @@ FW_updated=更新完成
 FW_new_firmware_available=新固件可供更新。
 FW_rlnote_loading=正在加载发行说明，请稍候...
 FW_rlnote_failed=未找到发布说明。
+FW_rollback=回滚
+FW_rollback_choose=选择固件版本
+FW_rollback_selector=固件回滚选择器
 Game_acceleration=电竞加速
 Game_Boost=游戏加速
 Game_Boost_acceleration=三段电竞加速
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=创建新的 RADIUS 客户端
 PM_Group_Table=分组列表
 PoolName=扇区名称
 Port_format=在来源或目的通讯通讯端口的范围方面，您可输入一特定通讯端口，如「95」，或在一范围内的通讯通讯端口，如「103:315」、「>100」或是「<65535」。
+Port_Gaming=游戏端口
 Port_Mapping_desc1=端口映射
 Port_Mapping_desc2=端口映射(Port Mapping)支持将 IPTV WAN 接口映射到指定的 LAN 端口。您可以选择适当的 LAN 端口，然后点击 应用。
 Port_Mapping_desc3=开启端口映射
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=更新失败，请重试。
 vpn_ipsec_clients_reconnect_hint=单击“应用”后，所有 VPN 客户端将重新连接。确定要继续吗？
 vpn_ipsec_IKE_ver=支持的 IKE 版本
 vpn_ipsec_set_DDNS=请单击此处设置 DDNS。
+vpn_wireguard_server_faq=如何设置 WireGuard® VPN 服务器?
+vpn_wireguard_site2site_faq=如何使用 WireGuard® 设置点对点 VPN ?
+vpn_wireguard_client_faq=如何在 VPN Fusion (多 VPN 联机) 设置 WireGuard® VPN 客户端?
 vpnc_desc1=虚拟专用网 Virtual Private Network (VPN) 客户端通常用来连接到 VPN 服务器，以安全地通过公共网络访问私人资源。
 vpnc_desc2=有些设备，如机顶盒、智能电视机与蓝光播放器等，不支持 VPN 软件。
 vpnc_desc3=ASUSWRT 虚拟专用网 (VPN) 功能为家庭网络内的所有设备提供 VPN 访问，而无需在每台设备上安装 VPN 软件。
@@ -3815,18 +3827,18 @@ wandog_enable2=启用 ping 互联网
 WANTCPMSSOptionText=TCP MSS 选项
 WANTCPMSSOptionComm1Text=字节
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN Aggregation 融合了两条网路连接，将您的 WAN 传送速度提高至 2Gbps。请使用同一规格的两条网线将路由器的 WAN 接口和 LAN 4 接口分别连接至调制解调器的 LAN 接口。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation FAQ</a>
+WANAggregation_desc=WAN Aggregation 融合了两条网路连接，将您的 WAN 传送速度提高至 2Gbps。请使用同一规格的两条网线将路由器的 #WAN 接口和 LAN 4 接口分别连接至调制解调器的 LAN 接口。 <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN Aggregation FAQ</a>
 WANAggregation_enable=启用 WAN 聚合
-WANAggregation_disable_dualwan=已启用路由器的双 WAN 功能，启用 WAN Aggregation 将会关闭 WAN 功能。确认继续吗？
+WANAggregation_disable_dualwan=已启用路由器的双 WAN 功能，启用 WAN Aggregation 将会关闭双 WAN 功能。确认继续吗？
 WANAggregation_disable_WANAggregation=已启用路由器的 WAN Aggregation 功能，启用双 WAN 将会关闭 WAN Aggregation。确认继续吗？
 WANAggregation_PortConflict_hint1=WAN Aggregation 正在使用路由器的 LAN 4 接口，启用 IPTV 将会自动关闭 WAN Aggregation。确认继续吗？
 WANAggregation_PortConflict_hint2=IPTV 正在使用路由器的 LAN 4 接口，启用 WAN Aggregation 将会自动关闭 IPTV。确认继续吗？
 WANAggregation_disable_IPTVDualWAN=您的路由器已启用双 WAN 和 IPTV，启用 WAN Aggregation 将会关闭 WAN 和 IPTV 以避免端口冲突。确认继续吗？
-WANAggregation_help_WAN=请确认已使用同一规格的两条网线连接路由器的 WAN 接口和调制解调器的 LAN 接口。
+WANAggregation_help_WAN=请确认已使用同一规格的两条网线连接路由器的 #WAN 接口和调制解调器的 LAN 接口。
 WANAggregation_help_LAN=请确认已使用同一规格的两条网线连接路由器的 LAN 4 接口和调制解调器的 LAN 接口。
 WANAggregation_goto_WAN=欲启用 WAN Aggregation，请至 <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-互联网连接</a> 页面。
 WANAggregation_help_desc=若 WAN Aggregation 设置失败，请遵循下列步骤重新进行设置：
-WANAggregation_help_step1=确保调制解调器的 LAN 端口已通过电缆连接到路由器的 WAN 和 LAN 4。
+WANAggregation_help_step1=确保调制解调器的 LAN 端口已通过电缆连接到路由器的 #WAN 和 LAN 4。
 WANAggregation_help_step2=请确认调制解调器已启用 802.3ad。
 WANAggregation_help_step3=请确认您使用的两根网线为同一规格（两根皆为千兆，或10/100 与10/100Mbps）
 WANAggregation_help_step4=重启路由器。
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=选择 GeForce Now 以优化 GeForce Now 电竞设备，为您提供更快更佳的电竞体验。
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=事件
 AURA_Event_desc=系统将会检测下列事件并触发不同的 LED 灯效。
 AURA_Event_Boost_desc=启用 Game Boost 时，LED 灯带使用红色呼吸效果。

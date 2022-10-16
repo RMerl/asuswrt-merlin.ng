@@ -26,7 +26,7 @@
 typedef struct sqlite_database_t sqlite_database_t;
 
 /**
- * sqlite databse_t implementation.
+ * sqlite database_t implementation.
  */
 struct sqlite_database_t {
 

@@ -13,7 +13,6 @@ endif
 libstrongswan_ntru_la_SOURCES = \
 	ntru_plugin.h ntru_plugin.c \
 	ntru_convert.h ntru_convert.c \
-	ntru_drbg.h ntru_drbg.c \
 	ntru_ke.h ntru_ke.c \
 	ntru_param_set.h ntru_param_set.c \
 	ntru_poly.h ntru_poly.c \

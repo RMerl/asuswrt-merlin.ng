@@ -352,7 +352,7 @@ METHOD(task_t, process_i, status_t,
 	status_t result = NEED_MORE;
 
 	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_NATT))
-	{	/* we didn't receive VIDs inidcating support for NAT-T */
+	{	/* we didn't receive VIDs indicating support for NAT-T */
 		return SUCCESS;
 	}
 

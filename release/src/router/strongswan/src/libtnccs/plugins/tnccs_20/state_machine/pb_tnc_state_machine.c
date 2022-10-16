@@ -134,13 +134,10 @@ METHOD(pb_tnc_state_machine_t, receive_batch, bool,
 			}
 			return FALSE;
 		case PB_STATE_CLIENT_WORKING:
-			if (this->is_server && type == PB_BATCH_CDATA)
+			if (this->is_server &&
+					(type == PB_BATCH_CDATA || type == PB_BATCH_CRETRY))
 			{
 				this->state = PB_STATE_SERVER_WORKING;
-				break;
-			}
-			if (this->is_server && type == PB_BATCH_CRETRY)
-			{
 				break;
 			}
 			if (type == PB_BATCH_CLOSE)

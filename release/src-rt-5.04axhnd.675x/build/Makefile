@@ -902,6 +902,7 @@ endif
 
 uboot:
 ifneq ($(BUILD_UBOOT),)
+	rm -f bootloaders/obj/binaries/*.pkgtb
 	$(MAKE) -f build/make.uboot INCLUDE_OPTEE=$(BCM_OPTEE) INCLUDE_ATF=$(BCM_ARMTF)
 endif
 

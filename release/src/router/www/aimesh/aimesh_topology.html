@@ -6,20 +6,27 @@ var diagnosticApi = {
 		"ethinfo": "ETHINFO",
 		"portinfo": "PORTINFO"
 	},
-	"get_DB": function(_node_mac, _type, _callBack){
+	"get_DB": function(_node_mac, _mac, _item, _type, _is_bh, _callBack){
+		var url_cgi;
 		if(_node_mac == undefined || _node_mac == "" || _type == undefined || _type == "" || _callBack == undefined || _callBack == "")
 			return false;
+
+		if(_type == "fronthaul")
+			url_cgi = '/get_diag_wifi_traffic.cgi?node_mac=' + _node_mac + '&band_mac=' + _mac;
+		else if(_type == "ethinfo")
+			url_cgi = '/get_diag_eth_traffic.cgi?node_mac=' + _node_mac + '&is_bh=' + ((_is_bh == "BH")?'1':'0');
+		else if(_type == "backhaul")
+			url_cgi = '/get_diag_sta_traffic.cgi?node_mac=' + _node_mac + '&sta_mac=' + _mac;
+
 		$.ajax({
-			url: '/ajax_conn_diag.asp?event_name=' + diagnosticApi.db_map[_type] + '&node_mac=' + _node_mac + '&timestap='+Math.floor((($.now())/1000)-600)+'',
-			dataType: 'script',
+			url: url_cgi,
+			dataType: 'json',
 
 			error: function(xhr) {
-				setTimeout("diagnosticApi.get_DB(" + _node_mac + ", " + _type + ", " + _callBack + ");", 1000);
+				setTimeout("diagnosticApi.get_DB(" + _node_mac + ", " + _mac + ", " + _item + ", " + _type + ", " + _is_bh + ", " + _callBack + ");", 1000);
 			},
 			success: function(response){
-				var result = JSON_msg.replace(/\""/g,"\"");
-				var jsonObj = [$.parseJSON(result)];
-				_callBack(jsonObj[0]);
+				_callBack(response, _item);
 			}
 		});
 	},
@@ -28,44 +35,37 @@ var diagnosticApi = {
 			"phy":{"tx":0, "rx":0},
 			"data":{"tx":0, "rx":0, "avg_tx":0, "avg_rx":0}
 		};
-		if(_dataArray != undefined && _dataArray.length > 0 && _online == "1"){
-			var specific_data = _dataArray.filter(function(item, index, array){
-				return (item.node_mac == _node_mac && item.sta_mac == _sta_mac);
-			});
 
-			var specific_count_data = diagnosticApi.get_specific_count_data(10, specific_data);//get data from end
-			traffic = diagnosticApi.get_phy_rate(specific_count_data);
-
+		if(_dataArray != undefined && Object.keys(_dataArray).length > 0 && _online == "1"){
+			traffic.data = _dataArray.data;
+			traffic.phy = _dataArray.phy;
 		}
-		return traffic;
+			return traffic;
 	},
 	"get_fronthaul_traffic": function(_node_mac, _band, _online, _dataArray){
 		var traffic = {
 			"data":{"tx":0, "rx":0, "avg_tx":0, "avg_rx":0}
 		};
-		if(_dataArray != undefined && _dataArray.length > 0 && _online == "1"){
-			var specific_data = _dataArray.filter(function(item, index, array){
-				return (item.node_mac == _node_mac && item.band == _band);
-			});
-			var specific_count_data = diagnosticApi.get_specific_count_data(10, specific_data);//get data from end
-			traffic = diagnosticApi.get_data_rate(specific_count_data);
-		}
+
+		if(_dataArray != undefined && Object.keys(_dataArray).length > 0 && _online == "1")
+			traffic.data = _dataArray.data;
+
 		return traffic;
 	},
 	"get_ethinfo_traffic": function(_node_mac, _type, _online, _dataArray, _sta_band){
 		var traffic = {
 			"data":{"tx":0, "rx":0, "avg_tx":0, "avg_rx":0}
 		};
-		if(_sta_band != undefined && _sta_band == "plc")
-			traffic["phy"] = {"tx":0, "rx":0};
 
-		if(_dataArray != undefined && _dataArray.length > 0 && _online == "1"){
-			var specific_data = _dataArray.filter(function(item, index, array){
-				return (item.node_mac == _node_mac && item.type == _type);
-			});
-			var specific_count_data = diagnosticApi.get_specific_count_data(10, specific_data);//get data from end
-			traffic = diagnosticApi.get_data_rate(specific_count_data, _sta_band);
+		if(_sta_band != undefined && _sta_band == "plc"){
+			traffic["phy"] = {"tx":0, "rx":0};
+			if(_dataArray.phy != undefined)
+				traffic.phy = _dataArray.phy;
 		}
+
+		if(_dataArray != undefined && Object.keys(_dataArray).length > 0 && _online == "1")
+			traffic.data = _dataArray.data;
+
 		return traffic;
 	},
 	"transform_unit": function(_rate){
@@ -75,9 +75,10 @@ var diagnosticApi = {
 			result.unit = "Mbps";
 		}
 		else{
-			result.rate = _rate
+			result.rate = Math.ceil(_rate*100)/100;
 			result.unit = "Kbps";
 		}
+
 		if(isNaN(result.rate))
 			result.rate = 0;
 		else if(result.rate < 0)
@@ -1296,6 +1297,131 @@ function display_network_block(){
 				$(this).find("p").removeClass("hide").addClass("hide");
 			}
 		});
+
+		$("#network_block .port_status_info").hide();
+		if(isSupport("NEW_PHYMAP")){
+			var show_ports_status = false;
+			if(isReNode){
+				show_ports_status = select_node_capability.port_status;
+			}
+			else
+				show_ports_status = true;
+
+			if(show_ports_status){
+				$("#network_block .port_status_info").show();
+				httpApi.get_port_status_array(current_click_mac, function(port_info){
+					var $port_status_content = $("#network_block .port_status_info #port_status_content").empty();
+					if(Object.keys(port_info).length == 0 || specific_node_data.online == "0")
+						$port_status_content.html("<div class='manage_disconnected'><#IPConnection_VSList_Norule#></div>");
+					else{
+						var show_notice = false;
+						var $port_status_bg = $("<div>").addClass("port_status_bg").appendTo($port_status_content);
+						var $label_W_bg = $("<div>").addClass("label_W_bg").appendTo($port_status_bg);
+						var $label_L_bg = $("<div>").addClass("label_L_bg").appendTo($port_status_bg);
+						var error_port_list = [];
+						$.each(port_info, function(label, label_array){
+							$.each(port_info[label], function(index, port_item){
+								var $port_bg = $("<div>").attr({"title":port_item.link_rate_text});
+								if(label == "WAN")
+									$port_bg.appendTo($label_W_bg);
+								else if(label == "LAN")
+									$port_bg.appendTo($label_L_bg);
+								else
+									return true;
+								var $port_icon = $("<div>").addClass("port_icon").appendTo($port_bg);
+								if(port_item.is_on == "1"){
+									if(port_item.link_rate_status == "1")
+										$port_icon.addClass("conn");
+									else
+										$port_icon.addClass("warn");
+								}
+								else if(port_item.is_on == "0"){
+									if(port_item.cap_support.USB){
+										if(port_item.hasOwnProperty("devices")){
+											$port_icon.addClass("conn");
+										}
+										else
+											$port_icon.addClass("unplug");
+									}
+									else
+										$port_icon.addClass("unplug");
+								}
+
+								if(port_item.cap_support.WAN){
+									$("<div>").addClass("wan_icon").appendTo($port_icon);
+									if(port_item.special_port_name != "")
+										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+								}
+								else if(port_item.cap_support.LAN){
+									if(port_item.special_port_name != "")
+										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+									else
+										$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_item.label_idx)).appendTo($port_icon);
+								}
+								else if(port_item.cap_support.USB){
+									$port_icon.addClass("USB");
+									if(port_item.special_port_name != "")
+										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+								}
+
+								if(port_item.link_rate_status != "1"){
+									show_notice = true;
+									error_port_list.push(port_item);
+								}
+							});
+						});
+
+						var $port_status_icon_desc = $("<div>").addClass("port_status_icon_desc").appendTo($port_status_content);
+						$("<div>").addClass("conn").html("<#Connected#>").appendTo($port_status_icon_desc);
+						$("<div>").addClass("warn").html("Warnings").appendTo($port_status_icon_desc);/* untranslated */
+						$("<div>").addClass("unplug").html("<#Status_Unplugged#>").appendTo($port_status_icon_desc);
+
+						var $port_status_notice_icon = $("#network_block .port_status_info .port_status_notice_icon");
+						if(show_notice){
+							$port_status_notice_icon.css("display", "inline-block");
+							$port_status_notice_icon.unbind("click").click(function(e){
+								closeAllSelect();
+								e = e || event;
+								e.stopPropagation();
+								$("#aimesh_hint_msg").empty();
+								$("#aimesh_hint_msg").append(popup_hint_api.get_component_text());
+								$("#aimesh_hint_msg").append(popup_hint_api.get_component_action());
+
+								var $hint_text_bg = $("#aimesh_hint_msg .hint_text");
+								$hint_text_bg.append($("<div>").html("<#Port_Status_Notice_Title1#> <#Port_Status_Notice_Title2#>"));
+								$hint_text_bg.append("<div class='height_space'></div>");
+								var $error_port_list = $("<div>").appendTo($hint_text_bg);
+								$.each(error_port_list, function(index, port_item){
+									var display_name = ((port_item.special_port_name == "") ? port_item.label_port_name : port_item.special_port_name);
+									var $port_item = $("<div>").addClass("port_status_notice_item warn").html(htmlEnDeCode.htmlEncode(display_name)).appendTo($error_port_list);
+								});
+								$("<div>").css({"background":"rgb(255 255 255 / 20%)", "height":"1px", "margin":"10px 0"}).appendTo($hint_text_bg);
+								$hint_text_bg.append($("<div>").css({"margin":"12px 0px 6px 0px"}).html("<#Things_To_Check#> :"));
+								var $help_item = $("<ol>").addClass("ol_item").appendTo($hint_text_bg);
+								$("<li>").addClass("notice_text_gray").html("<#Port_Status_Notice_Replace_ETH_Cable#>".replace("#ETHCABLE", "Cat 5e")).appendTo($help_item);
+								$("<li>").addClass("notice_text_gray").html("<#Port_Status_Notice_Check_Item1#>").appendTo($help_item);
+								$("<li>").addClass("notice_text_gray").html("<#Port_Status_Notice_Check_Item2#>").appendTo($help_item);
+								$("<li>").addClass("notice_text_gray").html("<#Port_Status_Notice_Check_Item3#>").appendTo($help_item);
+								$("<li>").addClass("notice_text_gray").html("<#Port_Status_Notice_Check_Item4#>").appendTo($help_item);
+
+								$("#aimesh_hint_msg #action_canacl").hide();
+								$("#aimesh_hint_msg #action_ok").show();
+								$("#aimesh_hint_msg #action_ok").unbind("click");
+								$("#aimesh_hint_msg #action_ok").click(function(e){
+									e = e || event;
+									e.stopPropagation();
+									$("#aimesh_hint_msg").hide();
+								});
+								$("#aimesh_hint_msg").show();
+								adjust_panel_block_top("aimesh_hint_msg", 100);
+							});
+						}
+						else
+							$port_status_notice_icon.hide();
+					}
+				});
+			}
+		}
 	}
 	else
 		$("#network_block").hide();
@@ -1755,9 +1881,9 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 			};
 
 			if(re_path == "1" || re_path == "16" || re_path == "32" || re_path == "64" || re_path <= 0)
-				diagnosticApi.get_DB(backhaul_parm.sta_mac, "ethinfo", set_backhaul_traffic);
+				diagnosticApi.get_DB(backhaul_parm.sta_mac, "", "", "ethinfo", "BH", set_backhaul_traffic);
 			else
-				diagnosticApi.get_DB(backhaul_parm.mac, "backhaul", set_backhaul_traffic);
+				diagnosticApi.get_DB(backhaul_parm.mac, backhaul_parm.sta_mac, "", "backhaul", "", set_backhaul_traffic);
 		}
 		else
 			_obj.find(".conndiag_data").hide();
@@ -1798,7 +1924,7 @@ function network_set_fronthaul_info(_node_info){
 				_obj.find("#data_rate_avg_rx").html(data_rate_avg_rx.rate);
 				_obj.find("#data_rate_avg_rx").next(".transmit_unit").html(data_rate_avg_rx.unit);
 			};
-			diagnosticApi.get_DB(_node_info.mac, "ethinfo", set_fronthaul_traffic_wired);
+			diagnosticApi.get_DB(_node_info.mac, "", "", "ethinfo", "FH", set_fronthaul_traffic_wired);
 		}
 		else
 			_obj.find(".conndiag_data").hide();
@@ -1967,51 +2093,50 @@ function network_set_fronthaul_info(_node_info){
 	});
 
 	if(conndiag_support){
-		var set_fronthaul_traffic_wl = function(_data){
-			cfg_clientlist_ap_list.forEach(function(item, index, array){
-				if(_node_info[item] != "" && _node_info[item] != undefined){
-					var band = item.substr(2).toUpperCase();
-					var traffic_data_rate = diagnosticApi.get_fronthaul_traffic(_node_info.mac, band, _node_info.online, _data);
-					var $fronthaulObj = $("#network_block .fronthaul_content").find("#fronthaul_wl_" + item + "");
-					$fronthaulObj.find(".conndiag_data").show();
-					var set_traffic_value = function(){
-						var data_rate_cur_tx = diagnosticApi.transform_unit(traffic_data_rate.data.tx);
-						$fronthaulObj.find("#data_rate_cur_tx").html(data_rate_cur_tx.rate);
-						$fronthaulObj.find("#data_rate_cur_tx").next(".transmit_unit").html(data_rate_cur_tx.unit);
+		var set_fronthaul_traffic_wl = function(_data, item){
+			var band = item.substr(2).toUpperCase();
+			var traffic_data_rate = diagnosticApi.get_fronthaul_traffic(_node_info.mac, band, _node_info.online, _data);
+			var $fronthaulObj = $("#network_block .fronthaul_content").find("#fronthaul_wl_" + item + "");
+			$fronthaulObj.find(".conndiag_data").show();
+			var set_traffic_value = function(){
+				var data_rate_cur_tx = diagnosticApi.transform_unit(traffic_data_rate.data.tx);
+				$fronthaulObj.find("#data_rate_cur_tx").html(data_rate_cur_tx.rate);
+				$fronthaulObj.find("#data_rate_cur_tx").next(".transmit_unit").html(data_rate_cur_tx.unit);
 
-						var data_rate_avg_tx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_tx);
-						$fronthaulObj.find("#data_rate_avg_tx").html(data_rate_avg_tx.rate);
-						$fronthaulObj.find("#data_rate_avg_tx").next(".transmit_unit").html(data_rate_avg_tx.unit);
+				var data_rate_avg_tx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_tx);
+				$fronthaulObj.find("#data_rate_avg_tx").html(data_rate_avg_tx.rate);
+				$fronthaulObj.find("#data_rate_avg_tx").next(".transmit_unit").html(data_rate_avg_tx.unit);
 
-						var data_rate_cur_rx = diagnosticApi.transform_unit(traffic_data_rate.data.rx);
-						$fronthaulObj.find("#data_rate_cur_rx").html(data_rate_cur_rx.rate);
-						$fronthaulObj.find("#data_rate_cur_rx").next(".transmit_unit").html(data_rate_cur_rx.unit);
+				var data_rate_cur_rx = diagnosticApi.transform_unit(traffic_data_rate.data.rx);
+				$fronthaulObj.find("#data_rate_cur_rx").html(data_rate_cur_rx.rate);
+				$fronthaulObj.find("#data_rate_cur_rx").next(".transmit_unit").html(data_rate_cur_rx.unit);
 
-						var data_rate_avg_rx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_rx);
-						$fronthaulObj.find("#data_rate_avg_rx").html(data_rate_avg_rx.rate);
-						$fronthaulObj.find("#data_rate_avg_rx").next(".transmit_unit").html(data_rate_avg_rx.unit);
-					};
+				var data_rate_avg_rx = diagnosticApi.transform_unit(traffic_data_rate.data.avg_rx);
+				$fronthaulObj.find("#data_rate_avg_rx").html(data_rate_avg_rx.rate);
+				$fronthaulObj.find("#data_rate_avg_rx").next(".transmit_unit").html(data_rate_avg_rx.unit);
+			};
 
-					if($fronthaulObj.find(".conndiag_data").length != 0)
+			if($fronthaulObj.find(".conndiag_data").length != 0)
+				set_traffic_value();
+			else{
+				var count = 0;
+				var interval_check = setInterval(function(){
+					if($fronthaulObj.find(".conndiag_data").length != 0){
 						set_traffic_value();
-					else{
-						var count = 0;
-						var interval_check = setInterval(function(){
-							if($fronthaulObj.find(".conndiag_data").length != 0){
-								set_traffic_value();
-								clearInterval(interval_check);
-							}
-							else{
-								count++;
-								if(count == 10)
-									clearInterval(interval_check);
-							}
-						}, 50);
+						clearInterval(interval_check);
 					}
-				}
-			});
+					else{
+						count++;
+						if(count == 10)
+							clearInterval(interval_check);
+					}
+				}, 50);
+			}
 		}
-		diagnosticApi.get_DB(_node_info.mac, "fronthaul", set_fronthaul_traffic_wl);
+		cfg_clientlist_ap_list.forEach(function(item, index, array){
+			if(_node_info[item] != "" && _node_info[item] != undefined)
+				diagnosticApi.get_DB(_node_info.mac, _node_info[item], item, "fronthaul", "", set_fronthaul_traffic_wl);
+		});
 	}
 }
 function display_manage_block(){
@@ -2910,7 +3035,7 @@ function manage_set_preferable_backhaul(_node_info, _pref_info){
 	var gen_node_component = function(_each_node_info, _each_node_pref_info){
 		var node_location_info = transform_location(_each_node_info.mac, _each_node_info);
 		var $model_info = $("<div>");
-		$model_info.addClass("notice_text horizontal_line")
+		$model_info.addClass("notice_text horizontal_line");
 		$model_info.css("cursor", "pointer");
 		$model_info.unbind("click");
 
@@ -3683,8 +3808,9 @@ function initial_AiMesh(){
 		})[0];
 		if(specific_node_data != undefined){
 			change_node(specific_node_data);
-			if(jstree_load_ready)
-				update_model_icon(specific_node_data);
+			if(jstree_load_ready){
+				setTimeout(function(){update_model_icon(specific_node_data);}, 1000);
+			}
 		}
 	});
 	$('#jstree').on("ready.jstree", function(e, data) {
@@ -4233,6 +4359,20 @@ $(document).ready(initial_AiMesh);
 					<br>
 					<span id="uplink_type_mode" class="uplink_type_title"></span>
 				</div>
+			</div>
+		</div>
+
+		<div class="port_status_info">
+			<div class="separation_line">
+				<i></i>
+				<p>PORT INFORMATION</p><!-- untranslated -->
+			</div>
+			<div class="card_block_bg connect_type_status_bg port_status">
+				<div>
+					<span class="connect_title horizontal_line">Ports Status</span><!-- untranslated -->
+					<div class="port_status_notice_icon"></div>
+				</div>
+				<div id="port_status_content"></div>
 			</div>
 		</div>
 

@@ -1,9 +1,12 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: retry-delay
 Arg: <seconds>
 Help: Wait time between retries
 Added: 7.12.3
 Category: curl
 Example: --retry-delay 5 --retry $URL
+See-also: retry
 ---
 Make curl sleep this amount of time before each retry when a transfer has
 failed with a transient error (it changes the default backoff time algorithm

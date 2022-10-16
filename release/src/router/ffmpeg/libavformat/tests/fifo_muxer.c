@@ -41,21 +41,18 @@ typedef struct FailingMuxerPacketData {
 
 static int prepare_packet(AVPacket *pkt, const FailingMuxerPacketData *pkt_data, int64_t pts)
 {
-    int ret;
-    FailingMuxerPacketData *data = av_malloc(sizeof(*data));
-    if (!data) {
-        return AVERROR(ENOMEM);
-    }
-    memcpy(data, pkt_data, sizeof(FailingMuxerPacketData));
-    ret = av_packet_from_data(pkt, (uint8_t*) data, sizeof(*data));
+    int ret = av_new_packet(pkt, sizeof(*pkt_data));
+    if (ret < 0)
+        return ret;
+    memcpy(pkt->data, pkt_data, sizeof(*pkt_data));
 
     pkt->pts = pkt->dts = pts;
     pkt->duration = 1;
 
-    return ret;
+    return 0;
 }
 
-static int initialize_fifo_tst_muxer_chain(AVFormatContext **oc)
+static int initialize_fifo_tst_muxer_chain(AVFormatContext **oc, AVPacket **pkt)
 {
     int ret = 0;
     AVStream *s;
@@ -71,20 +68,20 @@ static int initialize_fifo_tst_muxer_chain(AVFormatContext **oc)
     if (!s) {
         fprintf(stderr, "Failed to create stream: %s\n",
                 av_err2str(ret));
-        ret = AVERROR(ENOMEM);
+        return AVERROR(ENOMEM);
     }
 
-    return ret;
+    *pkt = av_packet_alloc();
+    if (!*pkt)
+        return AVERROR(ENOMEM);
+
+    return 0;
 }
 
 static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
-                             const FailingMuxerPacketData *pkt_data)
+                           AVPacket *pkt, const FailingMuxerPacketData *pkt_data)
 {
     int ret = 0, i;
-    AVPacket pkt;
-
-    av_init_packet(&pkt);
-
 
     ret = avformat_write_header(oc, opts);
     if (ret) {
@@ -94,14 +91,14 @@ static int fifo_basic_test(AVFormatContext *oc, AVDictionary **opts,
     }
 
     for (i = 0; i < 15; i++ ) {
-        ret = prepare_packet(&pkt, pkt_data, i);
+        ret = prepare_packet(pkt, pkt_data, i);
         if (ret < 0) {
             fprintf(stderr, "Failed to prepare test packet: %s\n",
                     av_err2str(ret));
             goto write_trailer_and_fail;
         }
-        ret = av_write_frame(oc, &pkt);
-        av_packet_unref(&pkt);
+        ret = av_write_frame(oc, pkt);
+        av_packet_unref(pkt);
         if (ret < 0) {
             fprintf(stderr, "Unexpected write_frame error: %s\n",
                     av_err2str(ret));
@@ -131,13 +128,10 @@ fail:
 }
 
 static int fifo_overflow_drop_test(AVFormatContext *oc, AVDictionary **opts,
-                                   const FailingMuxerPacketData *data)
+                                   AVPacket *pkt, const FailingMuxerPacketData *data)
 {
     int ret = 0, i;
     int64_t write_pkt_start, write_pkt_end, duration;
-    AVPacket pkt;
-
-    av_init_packet(&pkt);
 
     ret = avformat_write_header(oc, opts);
     if (ret) {
@@ -148,18 +142,19 @@ static int fifo_overflow_drop_test(AVFormatContext *oc, AVDictionary **opts,
 
     write_pkt_start = av_gettime_relative();
     for (i = 0; i < 6; i++ ) {
-        ret = prepare_packet(&pkt, data, i);
+        ret = prepare_packet(pkt, data, i);
         if (ret < 0) {
             fprintf(stderr, "Failed to prepare test packet: %s\n",
                     av_err2str(ret));
             goto fail;
         }
-        ret = av_write_frame(oc, &pkt);
-        av_packet_unref(&pkt);
+        ret = av_write_frame(oc, pkt);
+        av_packet_unref(pkt);
         if (ret < 0) {
             break;
         }
     }
+
     write_pkt_end = av_gettime_relative();
     duration = write_pkt_end - write_pkt_start;
     if (duration > (SLEEPTIME_50_MS*6)/2) {
@@ -185,7 +180,8 @@ fail:
 }
 
 typedef struct TestCase {
-    int (*test_func)(AVFormatContext *, AVDictionary **,const FailingMuxerPacketData *pkt_data);
+    int (*test_func)(AVFormatContext *, AVDictionary **,
+                     AVPacket *, const FailingMuxerPacketData *pkt_data);
     const char *test_name;
     const char *options;
 
@@ -203,10 +199,11 @@ static int run_test(const TestCase *test)
 {
     AVDictionary *opts = NULL;
     AVFormatContext *oc = NULL;
+    AVPacket *pkt = NULL;
     char buffer[BUFFER_SIZE];
     int ret, ret1;
 
-    ret = initialize_fifo_tst_muxer_chain(&oc);
+    ret = initialize_fifo_tst_muxer_chain(&oc, &pkt);
     if (ret < 0) {
         fprintf(stderr, "Muxer initialization failed: %s\n", av_err2str(ret));
         goto end;
@@ -232,11 +229,12 @@ static int run_test(const TestCase *test)
         goto end;
     }
 
-    ret = test->test_func(oc, &opts, &test->pkt_data);
+    ret = test->test_func(oc, &opts, pkt, &test->pkt_data);
 
 end:
     printf("%s: %s\n", test->test_name, ret < 0 ? "fail" : "ok");
     avformat_free_context(oc);
+    av_packet_free(&pkt);
     av_dict_free(&opts);
     return ret;
 }

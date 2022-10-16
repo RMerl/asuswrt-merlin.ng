@@ -18,8 +18,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __EXIF_MNOTE_DATA_CANON_H__
-#define __EXIF_MNOTE_DATA_CANON_H__
+#ifndef LIBEXIF_EXIF_MNOTE_DATA_CANON_H
+#define LIBEXIF_EXIF_MNOTE_DATA_CANON_H
 
 #include <libexif/exif-byte-order.h>
 #include <libexif/exif-mnote-data.h>
@@ -43,6 +43,16 @@ struct _ExifMnoteDataCanon {
 	ExifDataOption options;
 };
 
+/*! Detect if MakerNote is recognized as one handled by the Canon module.
+ * 
+ * \param[in] ed image #ExifData to identify as as a Canon type
+ * \param[in] e #ExifEntry for EXIF_TAG_MAKER_NOTE, from within ed but
+ *   duplicated here for convenience
+ * \return 0 if not recognized, nonzero if recognized. The specific nonzero 
+ *   value returned may identify a subtype unique within this module.
+ */
+int exif_mnote_data_canon_identify (const ExifData *ed, const ExifEntry *e);
+
 ExifMnoteData *exif_mnote_data_canon_new (ExifMem *mem, ExifDataOption o);
 
-#endif /* __EXIF_MNOTE_DATA_CANON_H__ */
+#endif /* !defined(LIBEXIF_EXIF_MNOTE_DATA_CANON_H) */

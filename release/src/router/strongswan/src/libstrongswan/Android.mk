@@ -6,16 +6,18 @@ libstrongswan_la_SOURCES = \
 library.c \
 asn1/asn1.c asn1/asn1_parser.c asn1/oid.c bio/bio_reader.c bio/bio_writer.c \
 collections/blocking_queue.c collections/enumerator.c collections/hashtable.c \
-collections/array.c \
-collections/linked_list.c crypto/crypters/crypter.c crypto/hashers/hasher.c \
+collections/hashlist.c collections/array.c \
+collections/linked_list.c crypto/crypters/crypter.c \
+crypto/drbgs/drbg.c crypto/hashers/hasher.c \
 crypto/hashers/hash_algorithm_set.c crypto/proposal/proposal.c \
 crypto/proposal/proposal_keywords.c crypto/proposal/proposal_keywords_static.c \
 crypto/prfs/prf.c crypto/prfs/mac_prf.c crypto/pkcs5.c \
-crypto/rngs/rng.c crypto/prf_plus.c crypto/signers/signer.c \
+crypto/rngs/rng.c crypto/rngs/rng_tester.c \
+crypto/signers/signer.c \
 crypto/signers/mac_signer.c crypto/crypto_factory.c crypto/crypto_tester.c \
 crypto/diffie_hellman.c crypto/aead.c crypto/transform.c \
 crypto/iv/iv_gen.c crypto/iv/iv_gen_rand.c crypto/iv/iv_gen_seq.c \
-crypto/iv/iv_gen_null.c \
+crypto/iv/iv_gen_null.c crypto/kdfs/kdf.c \
 crypto/xofs/xof.c crypto/xofs/xof_bitspender.c \
 credentials/credential_factory.c credentials/builder.c \
 credentials/cred_encoding.c credentials/keys/private_key.c \
@@ -31,6 +33,7 @@ credentials/sets/cert_cache.c credentials/sets/mem_cred.c \
 credentials/sets/callback_cred.c credentials/auth_cfg.c database/database.c \
 database/database_factory.c fetcher/fetcher.c fetcher/fetcher_manager.c eap/eap.c \
 ipsec/ipsec_types.c \
+metadata/metadata_factory.c metadata/metadata_int.c metadata/metadata_set.c \
 networking/host.c networking/host_resolver.c networking/packet.c \
 networking/tun_device.c networking/streams/stream_manager.c \
 networking/streams/stream.c networking/streams/stream_service.c \
@@ -38,7 +41,8 @@ networking/streams/stream_tcp.c networking/streams/stream_service_tcp.c \
 pen/pen.c plugins/plugin_loader.c plugins/plugin_feature.c processing/jobs/job.c \
 processing/jobs/callback_job.c processing/processor.c processing/scheduler.c \
 processing/watcher.c resolver/resolver_manager.c resolver/rr_set.c \
-selectors/traffic_selector.c settings/settings.c settings/settings_types.c \
+selectors/sec_label.c selectors/traffic_selector.c \
+settings/settings.c settings/settings_types.c \
 settings/settings_parser.c settings/settings_lexer.c utils/cpu_feature.c \
 utils/utils.c utils/chunk.c utils/debug.c utils/enum.c utils/identification.c \
 utils/lexparser.c utils/optionsfrom.c utils/capabilities.c utils/backtrace.c \
@@ -87,6 +91,8 @@ LOCAL_SHARED_LIBRARIES += libgmp
 endif
 
 LOCAL_SRC_FILES += $(call add_plugin, hmac)
+
+LOCAL_SRC_FILES += $(call add_plugin, kdf)
 
 LOCAL_SRC_FILES += $(call add_plugin, md4)
 

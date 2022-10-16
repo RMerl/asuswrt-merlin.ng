@@ -14,7 +14,7 @@
  */
 
 /**
- * @defgroup resolveri resolver
+ * @defgroup resolver_t resolver
  * @{ @ingroup resolver
  */
 

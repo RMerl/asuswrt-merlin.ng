@@ -1,4 +1,3 @@
-// SPDX-License-Identifier: GPL-2.0+
 /*
    Copyright (c) 2017 Broadcom Corporation
    All Rights Reserved
@@ -14,7 +13,6 @@
  * Phy drivers for 10G Active Ethernet Serdes
  */
 #include "phy_drv_dsl_serdes.h"
-//#include "bcm_physical_map_part.h"
 #include "phy_drv_merlin28.h"
 #include "M2_merlin.h"
 
@@ -521,18 +519,6 @@ static void merlin28_powerup_lane (uint32 CoreNum, uint32 LaneNum)
     merlin28_reg_prog(powerup_lane, CoreNum, LaneNum);
 }
 
-static void merlin28_mptwo_poll_uc_dsc_ready_for_cmd_equals_1 (uint32 CoreNum, uint32 LaneNum);
-static void merlin28_lane_init(phy_dev_t *phy_dev)
-{
-    int CoreNum = phy_dev->core_index;
-    int LANE = phy_dev->lane_index;
-    //[1:0] prbs_chk_en_timer_mode 2'b10: use heatbeat_toggle_1us for the timer
-    merlin28_pmi_write16(CoreNum, phy_dev->lane_index, 0x1, 0xd0d4, 0x0002, 0xfffc);
-
-    print_log("%s(): Step 4.c wait for uc_dsc_ready_for_cmd = 1 \n", __func__);
-    // merlin28_mptwo_poll_uc_dsc_ready_for_cmd_equals_1 (CoreNum, phy_dev->lane_index);
-}
-
 int merlin28_lane_power_op(phy_dev_t *phy_dev, int power_level)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
@@ -544,9 +530,9 @@ int merlin28_lane_power_op(phy_dev_t *phy_dev, int power_level)
     switch(power_level)
     {
         case SERDES_POWER_UP:
-            merlin28_powerup_lane(phy_dev->core_index, phy_dev->lane_index);
+            /* The Lane power up could be called from top down before Core Init is called */
+            merlin28_serdes_init(phy_dev);  /* Serdes init is calling merlin28_powerup_lane() in the end */
             msleep(10);
-            merlin28_lane_init(phy_dev);
             break;
         case SERDES_POWER_DOWN:
             merlin28_powerdn_lane(phy_dev->core_index, phy_dev->lane_index);
@@ -651,9 +637,6 @@ static void merlin28_core_init(phy_dev_t *phy_dev)
     uint32 wr_addr;
     uint32 CoreNum = phy_dev->core_index;
     uint32 LANE = phy_dev->lane_index;
-
-//    wr_addr =  ETH_PHY_TOP_REG_R2PMI_LP_BCAST_MODE_CNTRL;
-//    host_reg_write(wr_addr, 0);   // Turn off broadcast
 
     serdes_core_reset(phy_dev);
 
@@ -1054,7 +1037,11 @@ static void merlin28_cfg_core_ram_var (uint32 CoreNum, uint16_t vco_rate)
     addr = core_var_ram_base;
     wr_val = (((core_config_word & 0xFF) << 8) | (core_config_word >> 8));  /* Swapping upper byte and lower byte to compensate for endianness in Serdes 8051 */
     /* Micro RAM Word Write */
-    merlin28_mptwo_wrw_uc_ram(CoreNum, addr,wr_val);
+    merlin28_mptwo_wrw_uc_ram(CoreNum, addr, wr_val);
+
+    /* Set HW version to 1 */
+    wr_val = 1;
+    merlin28_mptwo_wrw_uc_ram(CoreNum, addr + 0xf, wr_val);
 
 }
 
@@ -1234,7 +1221,11 @@ static void merlin28_lane_config_speed(phy_dev_t *phy_dev, uint32 LNK_SPD, int a
                 0x21, 0xc000, CoreNum, LaneNum, 0x3, 0x9270);
             merlin28_pmi_write16(CoreNum, LaneNum, 0x3, 0x9270, 0x0021, 0xc000);
         }
-        merlin28_reg_prog(force_speed_2p5g, CoreNum, LaneNum);
+
+        if (serdes_core->vco == VCO_10G)
+            merlin28_reg_prog(force_speed_2p5g_vco10g, CoreNum, LaneNum);
+        else
+            merlin28_reg_prog(force_speed_2p5g_vco9g, CoreNum, LaneNum);
     } else if (LNK_SPD == MLN_SPD_FORCE_1G) {  //Force 1G
         print_log("CONFIGURING FOR FORCE 1G\n");
         merlin28_reg_prog(force_speed_1g, CoreNum, LaneNum);
@@ -1667,11 +1658,11 @@ void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
         int error_cnt = 0;
         int i;
 
-#define TotalCheckCycles 30
+#define TotalCheckCycles 20
 #define ErrorCountLinkDown 1
         for (i=0; i < TotalCheckCycles; i++)
         {
-            rd_data = merlin28_pmi_read16(CoreNum, 0x0, 3, 0xc466);
+            rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
 
             // Checking BAD_R_TYPE, R_TYPE_E, Latched_RX_E or current RX_E
             if ((rd_data & (1<<7)) || (rd_data&0x7) == 4
@@ -1681,12 +1672,34 @@ void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
                 if (error_cnt >= ErrorCountLinkDown)
                 {
                     phy_dev->link = 0;
-                    printk("Serdes %d False Link Up with Error Symbol 0x%04x at 3.c466h %d times at speed %dMbps\n",
-                        phy_dev->addr, rd_data, error_cnt, phy_dev->speed);
+                    printk("Serdes at %d False Link Up with 3.c466h = 0x%04x at speed %dMbps mode %d\n",
+                            phy_dev->addr, rd_data, phy_dev->speed, phy_dev->current_inter_phy_type);
                     goto end;
                 }
             }
-            msleep(1);
+            msleep(10);
+        }
+    }
+
+    /* Check Latched_RX_E specially for any modes */
+    rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
+    if (rd_data & (1<<7))   /* Checked latched_RX_E */
+    {
+        phy_dev->link = 0;
+        printk("Serdes at %d False Link Up with Latched_RX_E 3.c466h = 0x%04x at speed %dMbps mode %d\n",
+                phy_dev->addr, rd_data, phy_dev->speed, phy_dev->current_inter_phy_type);
+        goto end;
+    }
+
+    /* Check the mis-link up between our 1000Base-X vs. SGMII */
+    if (phy_dev->current_inter_phy_type == INTER_PHY_TYPE_1000BASE_X)
+    {
+        rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc46d); /* Status1 */
+        if (rd_data == 0x1fff) {
+            phy_dev->link = 0;
+            printk("Serdes %d 1000Base-X False Link Up with 3.c46dh = 0x%04x\n",
+                    phy_dev->addr, rd_data);
+            goto end;
         }
     }
 
@@ -1706,25 +1719,21 @@ static int phy_speed_to_merlin28_speed(phy_dev_t *phy_dev)
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
-    switch(phy_dev->current_inter_phy_type) 
+    switch(phy_dev->current_inter_phy_type)
     {
         case INTER_PHY_TYPE_SGMII:
-            switch (phy_serdes->current_speed)
+            if (phy_serdes->sfp_module_type != SFP_FIXED_PHY) /* SFP module */
             {
-                case PHY_SPEED_AUTO:
-                    phy_serdes->serdes_speed_mode = MLN_SPD_AN_SGMII_SLAVE;
-                    phy_dev->an_enabled = 1;
-                    break;
-                case PHY_SPEED_1000:
-                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
-                    phy_dev->an_enabled = 0;
-                    break;
-                case PHY_SPEED_100:
+                phy_serdes->serdes_speed_mode = MLN_SPD_AN_SGMII_SLAVE;
+                phy_dev->an_enabled = 1;
+            }
+            else    /* Copper PHY, no AN support */
+            {
+                phy_dev->an_enabled = 0;
+                if (phy_serdes->config_speed == PHY_SPEED_100)
                     phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_100M;
-                    phy_dev->an_enabled = 0;
-                    break;
-                default:
-                    return -1;
+                else
+                    phy_serdes->serdes_speed_mode = MLN_SPD_FORCE_1G;
             }
             break;
 
@@ -1776,7 +1785,6 @@ int merlin28_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duple
 {
     phy_serdes_t *phy_serdes = phy_dev->priv;
 
-
     if (phy_speed_to_merlin28_speed(phy_dev) == -1)
         return 0;
 
@@ -1790,6 +1798,7 @@ int merlin28_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duple
 static int merlin28_get_vco(phy_dev_t *phy_dev)
 {
     int vco;
+    phy_serdes_t *phy_serdes = phy_dev->priv;
 
     if ((phy_dev->lane_index == 0 || (phy_lane0 && phy_lane0->link)) &&
         (phy_lane0->current_inter_phy_type == INTER_PHY_TYPE_5GBASE_R ||
@@ -1823,13 +1832,13 @@ static int merlin28_speed_set_core(phy_dev_t *phy_dev)
     {
         if (max_lanes > 1)
         {
-            for(lane = 0; lane < max_lanes; lane++)
+            for(lane = 0; lane < MAX_LANES_PER_CORE; lane++)
             {
-                if (phy_dev == phy_dev_lanes[lane])
+                if (phy_dev == phy_dev_lanes[lane] || !phy_dev_lanes[lane])
                     continue;
 
                 merlin28_set_status_for_speed_change(phy_dev_lanes[lane]);
-                restore_regs_lane(CoreNum, phy_dev_lanes[lane]->lane_index);
+                restore_regs_lane(CoreNum, lane);
             }
         }
         restore_regs_core(CoreNum, 0);  // Restore all registers to default values for new speed programing
@@ -1913,14 +1922,17 @@ static int merlin28_speed_set_core(phy_dev_t *phy_dev)
     if (vco != org_vco && max_lanes > 1)
     {
         //Program the other lane's speed mode
-        for(lane=0; lane<max_lanes; lane++)
+        if (max_lanes > 1)
         {
-            phy_serdes_t *_phy_serdes = phy_dev_lanes[lane]->priv;
+            for(lane = 0; lane < MAX_LANES_PER_CORE; lane++)
+            {
+                phy_serdes_t *_phy_serdes = phy_dev_lanes[lane]->priv;
 
-            if (phy_dev == phy_dev_lanes[lane])
-                continue;
+                if (phy_dev == phy_dev_lanes[lane] || !phy_dev_lanes[lane])
+                    continue;
 
-            merlin28_lane_config_speed(phy_dev_lanes[lane], _phy_serdes->serdes_speed_mode, phy_dev_lanes[lane]->an_enabled);
+                merlin28_lane_config_speed(phy_dev_lanes[lane], _phy_serdes->serdes_speed_mode, phy_dev_lanes[lane]->an_enabled);
+            }
         }
     }
 
@@ -1937,7 +1949,6 @@ static void merlin28_mptwo_uc_active_enable (uint32 CoreNum, uint8_t enable)
     uint16_t wr_val;
 
     wr_val = (enable & 0x1) << 0x6;
-
     merlin28_pmi_write16(CoreNum, 0x0, 0x1, 0xd0f2, wr_val, 0xffbf);  //uc_active
 }
 
@@ -1948,22 +1959,23 @@ int merlin28_serdes_init(phy_dev_t *phy_dev)
     uint32 CoreNum = phy_dev->core_index;
     uint32 LANE = phy_dev->lane_index;
     int lane;
-    phy_dev_lanes[max_lanes] = phy_dev;
-    max_lanes++;
+    phy_speed_t saved_config_speed = phy_serdes->config_speed;
+    int saved_xfi_mode = phy_dev->current_inter_phy_type;
 
-    switch(phy_dev->lane_index)
+    if (phy_dev_lanes[LANE] == 0)
+    {
+        phy_dev_lanes[LANE] = phy_dev;
+        max_lanes++;
+
+   switch(phy_dev->lane_index)
     {
         case 0:
             phy_lane0 = phy_dev;
             break;
         case 1:
             phy_lane1 = phy_dev;
+            break;
     }
-
-    if (serdes_core->inited)
-    {
-        merlin28_lane_init(phy_dev);
-        return 0;
     }
 
     //--- Step 0 powerup/reset sequence
@@ -1971,51 +1983,56 @@ int merlin28_serdes_init(phy_dev_t *phy_dev)
     {
         print_log("--- Step 0 powerup/reset sequence of core #%d at address %d\n", CoreNum, phy_dev->addr);
 
+        /* Power Reset whole core */
+        _merlin28_core_power_op(phy_dev, SERDES_POWER_UP); /* Dummy power up for real power down to bypass software initial status */
         _merlin28_core_power_op(phy_dev, SERDES_POWER_DOWN);
         _merlin28_core_power_op(phy_dev, SERDES_POWER_UP);
 
+
+        /* PMD Core Reset */
+        merlin28_core_init(phy_dev);
+        timeout_ns(1000);
+        
+        /* Disable PMD All Lanes */
         for (lane = 0; lane < MAX_LANES_PER_CORE; lane++)
-            merlin28_powerdn_lane (phy_dev->core_index, lane);
-    }
-    merlin28_powerup_lane (phy_dev->core_index, phy_dev->lane_index);
+            merlin28_powerdn_lane(CoreNum, lane);
 
-    if (serdes_core->inited)
-        return 0;
+        /* Disable PMD All Lanes */
+        for (lane = 0; lane < MAX_LANES_PER_CORE; lane++)
+            merlin28_powerdn_lane(CoreNum, lane);
 
-    merlin28_core_init(phy_dev);
+		/* Set Broadcast MDIO address to the same address to avoid occupying 0 address */
+        merlin28_pmi_write16(CoreNum, 0x0, 0x1, 0xffdc, phy_dev->addr, 0xffe0);
 
-    timeout_ns(1000);
+        if (parse_sim_opts("-d MERLIN_LOAD_FIRMWARE") ) {
+            merlin28_pmi_write16(CoreNum, phy_dev->lane_index, 0x1, 0xd0d4, 0x0002, 0xfffc);  //[1:0] prbs_chk_en_timer_mode 2'b10: use heatbeat_toggle_1us for the timer
 
-    /* Set Broadcast MDIO address to the same address to avoid occupying 0 address */
-    merlin28_pmi_write16(CoreNum, 0x0, 0x1, 0xffdc, phy_dev->addr, 0xffe0);
+            //---Step 4.a Step 4.a Set uc_active = 1
+            print_log("%s(): Step 4.a Set uc_active = 1 \n", __func__);
+            merlin28_mptwo_uc_active_enable(CoreNum, 0x1);
 
-    if (parse_sim_opts("-d MERLIN_LOAD_FIRMWARE") ) {
-        merlin28_pmi_write16(CoreNum, phy_dev->lane_index, 0x1, 0xd0d4, 0x0002, 0xfffc);  //[1:0] prbs_chk_en_timer_mode 2'b10: use heatbeat_toggle_1us for the timer
+            //--- --- Load firmware ?  TBD
+            //--- Step 4. Assert micro reset (merlin28_shortfin_uc_reset(1))
+            print_log("%s(): Step 4. Assert micro reset \n", __func__);
+            merlin28_uc_reset(CoreNum, 0x1);
 
-        //---Step 4.a Step 4.a Set uc_active = 1
-        print_log("%s(): Step 4.a Set uc_active = 1 \n", __func__);
-        merlin28_mptwo_uc_active_enable(CoreNum, 0x1);
+            //-----------Micro code load and verify
+            print_log("%s(): Step 4.a.2 Micro code load and verify \n", __func__);
+            merlin28_load_firmware(phy_dev);
 
-        //--- --- Load firmware ?  TBD
-        //--- Step 4. Assert micro reset (merlin28_shortfin_uc_reset(1))
-        print_log("%s(): Step 4. Assert micro reset \n", __func__);
-        merlin28_uc_reset(CoreNum, 0x1);
+            if (parse_sim_opts("-d MERLIN_UC_VERIFY_CRC")) { //verify CRC
+                merlin28_mptwo_ucode_load_verify (CoreNum);
+            }
 
-        //-----------Micro code load and verify
-        print_log("%s(): Step 4.a.2 Micro code load and verify \n", __func__);
-        merlin28_load_firmware(phy_dev);
+            //---Step 4.b De-assert 8051 reset
+            print_log("%s(): Step 4.b De-assert micro reset  \n", __func__);
+            merlin28_uc_reset(CoreNum, 0x0);
 
-        if (parse_sim_opts("-d MERLIN_UC_VERIFY_CRC")) { //verify CRC
-            merlin28_mptwo_ucode_load_verify (CoreNum);
+            //---Step 4.c wait for uc_dsc_ready_for_cmd = 1
+            print_log("%s(): Step 4.c wait for uc_dsc_ready_for_cmd = 1 \n", __func__);
+            merlin28_mptwo_poll_uc_dsc_ready_for_cmd_equals_1 (CoreNum, phy_dev->lane_index);
         }
-
-        //---Step 4.b De-assert 8051 reset
-        print_log("%s(): Step 4.b De-assert micro reset  \n", __func__);
-        merlin28_uc_reset(CoreNum, 0x0);
-
-        //---Step 4.c wait for uc_dsc_ready_for_cmd = 1
-        print_log("%s(): Step 4.c wait for uc_dsc_ready_for_cmd = 1 \n", __func__);
-        merlin28_mptwo_poll_uc_dsc_ready_for_cmd_equals_1 (CoreNum, phy_dev->lane_index);
+        serdes_core->inited = 1;
     }
 
 #if 0
@@ -2023,8 +2040,18 @@ int merlin28_serdes_init(phy_dev_t *phy_dev)
         wr_ext_los_en(1);
 #endif
 
-    serdes_core->inited = 1;
-    phy_serdes->inited = 1;
+    /* Set speed default 1000Base-X to fully exercise hardware before enabling LANE */
+    if (phy_serdes->inited < 2)
+    {
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_1000BASE_X;
+        phy_serdes->config_speed = PHY_SPEED_1000;
+        merlin28_speed_set(phy_dev, phy_serdes->config_speed, PHY_DUPLEX_FULL);
+        phy_serdes->config_speed = saved_config_speed;
+        phy_dev->current_inter_phy_type = saved_xfi_mode;
+        phy_serdes->inited = 2;
+    }
+
+    merlin28_powerup_lane(CoreNum, LANE);
 
     print_log("INFO %s(): END Merlin Initialization procedure\n", __func__);
 

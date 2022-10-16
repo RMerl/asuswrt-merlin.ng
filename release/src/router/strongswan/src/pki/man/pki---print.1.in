@@ -53,8 +53,8 @@ an optional 0x prefix.
 Type of input. One of \fIx509\fR (X.509 certificate), \fIcrl\fR (Certificate
 Revocation List, CRL), \fIac\fR (Attribute Certificate), \fIpub\fR (public key),
 \fIpriv\fR (private key), \fIrsa\fR (RSA private key), \fIecdsa\fR (ECDSA
-private key), \fIed25519\fR (Ed25519 private key), \fIbliss\fR (BLISS private
-key), defaults to \fIx509\fR.
+private key), \fIed25519\fR (Ed25519 private key), \fIed448\fR (Ed448 private
+key), \fIbliss\fR (BLISS private key), defaults to \fIx509\fR.
 .
 .SH "SEE ALSO"
 .

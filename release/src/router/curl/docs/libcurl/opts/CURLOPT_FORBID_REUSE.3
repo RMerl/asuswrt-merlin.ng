@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2017, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_FORBID_REUSE 3 "November 04, 2020" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_FORBID_REUSE 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_FORBID_REUSE \- make connection get closed at once after use
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_FORBID_REUSE, long close);
+.fi
 .SH DESCRIPTION
 Pass a long. Set \fIclose\fP to 1 to make libcurl explicitly close the
 connection when done with the transfer. Normally, libcurl keeps all
@@ -58,3 +62,4 @@ Always
 Returns CURLE_OK
 .SH "SEE ALSO"
 .BR CURLOPT_FRESH_CONNECT "(3), " CURLOPT_MAXCONNECTS "(3), "
+.BR CURLOPT_MAXLIFETIME_CONN "(3), "

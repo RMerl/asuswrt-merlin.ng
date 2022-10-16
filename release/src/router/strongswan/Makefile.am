@@ -38,6 +38,9 @@ Android.common.mk :	Android.common.mk.in configure.ac
 		-e "s:\@PACKAGE_VERSION\@:$(PACKAGE_VERSION):" \
 		$(srcdir)/$@.in > $@
 
+dist-hook:
+		@echo $(GIT_VERSION) > $(distdir)/.tarball-git-version
+
 Doxyfile :	Doxyfile.in
 		$(AM_V_GEN) \
 		sed \

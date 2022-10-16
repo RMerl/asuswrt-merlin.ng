@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 2018 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 2022 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,23 +18,27 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DOH_URL 3 "July 28, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_DOH_URL 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_DOH_URL \- provide the DNS-over-HTTPS URL
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_DOH_URL, char *URL);
+.fi
 .SH DESCRIPTION
 Pass in a pointer to a \fIURL\fP for the DoH server to use for name
 resolving. The parameter should be a char * to a null-terminated string which
 must be URL-encoded in the following format: "https://host:port/path". It MUST
-specify a HTTPS URL.
+specify an HTTPS URL.
 
-libcurl doesn't validate the syntax or use this variable until the transfer is
+libcurl does not validate the syntax or use this variable until the transfer is
 issued. Even if you set a crazy value here, \fIcurl_easy_setopt(3)\fP will
 still return \fICURLE_OK\fP.
 
@@ -54,8 +58,14 @@ can be controlled separately via \fICURLOPT_DOH_SSL_VERIFYHOST(3)\fP and
 \fICURLOPT_DOH_SSL_VERIFYPEER(3)\fP.
 
 A set \fICURLOPT_OPENSOCKETFUNCTION(3)\fP callback is not inherited.
+.SH "KNOWN BUGS"
+Even when DoH is set to be used with this option, there are still some name
+resolves that are performed without it, using the default name resolver
+mechanism. This includes name resolves done for \fICURLOPT_INTERFACE(3)\fP,
+\fICURLOPT_FTPPORT(3)\fP, a proxy type set to \fBCURLPROXY_SOCKS4\fP or
+\fBCURLPROXY_SOCKS5\fP and probably some more.
 .SH DEFAULT
-NULL - there is no default DoH URL. If this option isn't set, libcurl will use
+NULL - there is no default DoH URL. If this option is not set, libcurl will use
 the default name resolver.
 .SH PROTOCOLS
 All
@@ -74,8 +84,8 @@ Added in 7.62.0
 Returns CURLE_OK on success or CURLE_OUT_OF_MEMORY if there was insufficient
 heap space.
 
-Note that \fIcurl_easy_setopt(3)\fP won't actually parse the given string so
-given a bad DoH URL, curl will not detect a problem until it tries to resolve
-a name with it.
+Note that \fIcurl_easy_setopt(3)\fP will not immediately parse the given
+string so when given a bad DoH URL, libcurl might not detect the problem until
+it later tries to resolve a name with it.
 .SH "SEE ALSO"
 .BR CURLOPT_VERBOSE "(3), " CURLOPT_RESOLVE "(3), "

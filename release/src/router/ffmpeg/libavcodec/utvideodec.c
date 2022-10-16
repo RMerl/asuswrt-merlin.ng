@@ -27,6 +27,7 @@
 #include <inttypes.h>
 #include <stdlib.h>
 
+#define CACHED_BITSTREAM_READER !ARCH_X86_32
 #define UNCHECKED_BITSTREAM_READER 1
 
 #include "libavutil/intreadwrite.h"
@@ -39,91 +40,51 @@
 #include "thread.h"
 #include "utvideo.h"
 
-static int build_huff10(const uint8_t *src, VLC *vlc, int *fsym)
+typedef struct HuffEntry {
+    uint8_t len;
+    uint16_t sym;
+} HuffEntry;
+
+static int build_huff(UtvideoContext *c, const uint8_t *src, VLC *vlc,
+                      int *fsym, unsigned nb_elems)
 {
     int i;
     HuffEntry he[1024];
-    int last;
-    uint32_t codes[1024];
     uint8_t bits[1024];
-    uint16_t syms[1024];
-    uint32_t code;
+    uint16_t codes_count[33] = { 0 };
 
     *fsym = -1;
-    for (i = 0; i < 1024; i++) {
-        he[i].sym = i;
-        he[i].len = *src++;
-    }
-    qsort(he, 1024, sizeof(*he), ff_ut10_huff_cmp_len);
+    for (i = 0; i < nb_elems; i++) {
+        if (src[i] == 0) {
+            *fsym = i;
+            return 0;
+        } else if (src[i] == 255) {
+            bits[i] = 0;
+        } else if (src[i] <= 32) {
+            bits[i] = src[i];
+        } else
+            return AVERROR_INVALIDDATA;
 
-    if (!he[0].len) {
-        *fsym = he[0].sym;
-        return 0;
+        codes_count[bits[i]]++;
     }
+    if (codes_count[0] == nb_elems)
+        return AVERROR_INVALIDDATA;
 
-    last = 1023;
-    while (he[last].len == 255 && last)
-        last--;
+    /* For Ut Video, longer codes are to the left of the tree and
+     * for codes with the same length the symbol is descending from
+     * left to right. So after the next loop --codes_count[i] will
+     * be the index of the first (lowest) symbol of length i when
+     * indexed by the position in the tree with left nodes being first. */
+    for (int i = 31; i >= 0; i--)
+        codes_count[i] += codes_count[i + 1];
 
-    if (he[last].len > 32) {
-        return -1;
-    }
+    for (unsigned i = 0; i < nb_elems; i++)
+        he[--codes_count[bits[i]]] = (HuffEntry) { bits[i], i };
 
-    code = 1;
-    for (i = last; i >= 0; i--) {
-        codes[i] = code >> (32 - he[i].len);
-        bits[i]  = he[i].len;
-        syms[i]  = he[i].sym;
-        code += 0x80000000u >> (he[i].len - 1);
-    }
 #define VLC_BITS 11
-    return ff_init_vlc_sparse(vlc, VLC_BITS, last + 1,
-                              bits,  sizeof(*bits),  sizeof(*bits),
-                              codes, sizeof(*codes), sizeof(*codes),
-                              syms,  sizeof(*syms),  sizeof(*syms), 0);
-}
-
-static int build_huff(const uint8_t *src, VLC *vlc, int *fsym)
-{
-    int i;
-    HuffEntry he[256];
-    int last;
-    uint32_t codes[256];
-    uint8_t bits[256];
-    uint8_t syms[256];
-    uint32_t code;
-
-    *fsym = -1;
-    for (i = 0; i < 256; i++) {
-        he[i].sym = i;
-        he[i].len = *src++;
-    }
-    qsort(he, 256, sizeof(*he), ff_ut_huff_cmp_len);
-
-    if (!he[0].len) {
-        *fsym = he[0].sym;
-        return 0;
-    }
-
-    last = 255;
-    while (he[last].len == 255 && last)
-        last--;
-
-    if (he[last].len > 32)
-        return -1;
-
-    code = 1;
-    for (i = last; i >= 0; i--) {
-        codes[i] = code >> (32 - he[i].len);
-        bits[i]  = he[i].len;
-        syms[i]  = he[i].sym;
-        code += 0x80000000u >> (he[i].len - 1);
-    }
-
-    return ff_init_vlc_sparse(vlc, VLC_BITS, last + 1,
-                              bits,  sizeof(*bits),  sizeof(*bits),
-                              codes, sizeof(*codes), sizeof(*codes),
-                              syms,  sizeof(*syms),  sizeof(*syms), 0);
+    return ff_init_vlc_from_lengths(vlc, VLC_BITS, codes_count[0],
+                                    &he[0].len, sizeof(*he),
+                                    &he[0].sym, sizeof(*he), 2, 0, 0, c->avctx);
 }
 
 static int decode_plane10(UtvideoContext *c, int plane_no,
@@ -138,7 +99,7 @@ static int decode_plane10(UtvideoContext *c, int plane_no,
     GetBitContext gb;
     int prev, fsym;
 
-    if ((ret = build_huff10(huff, &vlc, &fsym)) < 0) {
+    if ((ret = build_huff(c, huff, &vlc, &fsym, 1024)) < 0) {
         av_log(c->avctx, AV_LOG_ERROR, "Cannot build Huffman codes\n");
         return ret;
     }
@@ -257,11 +218,11 @@ static int decode_plane(UtvideoContext *c, int plane_no,
             GetBitContext cbit, pbit;
             uint8_t *dest, *p;
 
-            ret = init_get_bits8(&cbit, c->control_stream[plane_no][slice], c->control_stream_size[plane_no][slice]);
+            ret = init_get_bits8_le(&cbit, c->control_stream[plane_no][slice], c->control_stream_size[plane_no][slice]);
             if (ret < 0)
                 return ret;
 
-            ret = init_get_bits8(&pbit, c->packed_stream[plane_no][slice], c->packed_stream_size[plane_no][slice]);
+            ret = init_get_bits8_le(&pbit, c->packed_stream[plane_no][slice], c->packed_stream_size[plane_no][slice]);
             if (ret < 0)
                 return ret;
 
@@ -298,7 +259,7 @@ static int decode_plane(UtvideoContext *c, int plane_no,
         return 0;
     }
 
-    if (build_huff(src, &vlc, &fsym)) {
+    if (build_huff(c, src, &vlc, &fsym, 256)) {
         av_log(c->avctx, AV_LOG_ERROR, "Cannot build Huffman codes\n");
         return AVERROR_INVALIDDATA;
     }
@@ -316,7 +277,7 @@ static int decode_plane(UtvideoContext *c, int plane_no,
                 for (i = 0; i < width; i++) {
                     pix = fsym;
                     if (use_pred) {
-                        prev += pix;
+                        prev += (unsigned)pix;
                         pix   = prev;
                     }
                     dest[i] = pix;
@@ -889,6 +850,15 @@ static int decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             }
         }
         break;
+    case AV_PIX_FMT_YUV420P10:
+        for (i = 0; i < 3; i++) {
+            ret = decode_plane10(c, i, (uint16_t *)frame.f->data[i], frame.f->linesize[i] / 2,
+                                 avctx->width >> !!i, avctx->height >> !!i,
+                                 plane_start[i], plane_start[i + 1] - 1024, c->frame_pred == PRED_LEFT);
+            if (ret)
+                return ret;
+        }
+        break;
     case AV_PIX_FMT_YUV422P10:
         for (i = 0; i < 3; i++) {
             ret = decode_plane10(c, i, (uint16_t *)frame.f->data[i], frame.f->linesize[i] / 2,
@@ -946,6 +916,11 @@ static av_cold int decode_init(AVCodecContext *avctx)
         c->planes      = 3;
         avctx->pix_fmt = AV_PIX_FMT_YUV444P;
         avctx->colorspace = AVCOL_SPC_BT470BG;
+        break;
+    case MKTAG('U', 'Q', 'Y', '0'):
+        c->planes      = 3;
+        c->pro         = 1;
+        avctx->pix_fmt = AV_PIX_FMT_YUV420P10;
         break;
     case MKTAG('U', 'Q', 'Y', '2'):
         c->planes      = 3;

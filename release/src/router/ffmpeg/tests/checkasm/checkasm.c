@@ -42,7 +42,7 @@
 #include <io.h>
 #endif
 
-#if HAVE_SETCONSOLETEXTATTRIBUTE
+#if HAVE_SETCONSOLETEXTATTRIBUTE && HAVE_GETSTDHANDLE
 #include <windows.h>
 #define COLOR_RED    FOREGROUND_RED
 #define COLOR_GREEN  FOREGROUND_GREEN
@@ -116,6 +116,16 @@ static const struct {
     #if CONFIG_HEVC_DECODER
         { "hevc_add_res", checkasm_check_hevc_add_res },
         { "hevc_idct", checkasm_check_hevc_idct },
+        { "hevc_qpel", checkasm_check_hevc_qpel },
+        { "hevc_qpel_uni", checkasm_check_hevc_qpel_uni },
+        { "hevc_qpel_uni_w", checkasm_check_hevc_qpel_uni_w },
+        { "hevc_qpel_bi", checkasm_check_hevc_qpel_bi },
+        { "hevc_qpel_bi_w", checkasm_check_hevc_qpel_bi_w },
+        { "hevc_epel", checkasm_check_hevc_epel },
+        { "hevc_epel_uni", checkasm_check_hevc_epel_uni },
+        { "hevc_epel_uni_w", checkasm_check_hevc_epel_uni_w },
+        { "hevc_epel_bi", checkasm_check_hevc_epel_bi },
+        { "hevc_epel_bi_w", checkasm_check_hevc_epel_bi_w },
         { "hevc_sao", checkasm_check_hevc_sao },
     #endif
     #if CONFIG_HUFFYUV_DECODER
@@ -130,11 +140,17 @@ static const struct {
     #if CONFIG_LLVIDENCDSP
         { "llviddspenc", checkasm_check_llviddspenc },
     #endif
+    #if CONFIG_OPUS_DECODER
+        { "opusdsp", checkasm_check_opusdsp },
+    #endif
     #if CONFIG_PIXBLOCKDSP
         { "pixblockdsp", checkasm_check_pixblockdsp },
     #endif
     #if CONFIG_UTVIDEO_DECODER
         { "utvideodsp", checkasm_check_utvideodsp },
+    #endif
+    #if CONFIG_V210_DECODER
+        { "v210dec", checkasm_check_v210dec },
     #endif
     #if CONFIG_V210_ENCODER
         { "v210enc", checkasm_check_v210enc },
@@ -150,14 +166,26 @@ static const struct {
     #endif
 #endif
 #if CONFIG_AVFILTER
+    #if CONFIG_AFIR_FILTER
+        { "af_afir", checkasm_check_afir },
+    #endif
     #if CONFIG_BLEND_FILTER
         { "vf_blend", checkasm_check_blend },
     #endif
     #if CONFIG_COLORSPACE_FILTER
         { "vf_colorspace", checkasm_check_colorspace },
     #endif
+    #if CONFIG_EQ_FILTER
+        { "vf_eq", checkasm_check_vf_eq },
+    #endif
+    #if CONFIG_GBLUR_FILTER
+        { "vf_gblur", checkasm_check_vf_gblur },
+    #endif
     #if CONFIG_HFLIP_FILTER
         { "vf_hflip", checkasm_check_vf_hflip },
+    #endif
+    #if CONFIG_NLMEANS_FILTER
+        { "vf_nlmeans", checkasm_check_nlmeans },
     #endif
     #if CONFIG_THRESHOLD_FILTER
         { "vf_threshold", checkasm_check_vf_threshold },
@@ -165,6 +193,7 @@ static const struct {
 #endif
 #if CONFIG_SWSCALE
     { "sw_rgb", checkasm_check_sw_rgb },
+    { "sw_scale", checkasm_check_sw_scale },
 #endif
 #if CONFIG_AVUTIL
         { "fixed_dsp", checkasm_check_fixed_dsp },
@@ -194,6 +223,9 @@ static const struct {
     { "ALTIVEC",  "altivec",  AV_CPU_FLAG_ALTIVEC },
     { "VSX",      "vsx",      AV_CPU_FLAG_VSX },
     { "POWER8",   "power8",   AV_CPU_FLAG_POWER8 },
+#elif ARCH_MIPS
+    { "MMI",      "mmi",      AV_CPU_FLAG_MMI },
+    { "MSA",      "msa",      AV_CPU_FLAG_MSA },
 #elif ARCH_X86
     { "MMX",      "mmx",      AV_CPU_FLAG_MMX|AV_CPU_FLAG_CMOV },
     { "MMXEXT",   "mmxext",   AV_CPU_FLAG_MMXEXT },
@@ -250,6 +282,7 @@ static struct {
     int cpu_flag;
     const char *cpu_flag_name;
     const char *test_name;
+    int verbose;
 } state;
 
 /* PRNG state */
@@ -356,7 +389,7 @@ static void color_printf(int color, const char *fmt, ...)
     static int use_color = -1;
     va_list arg;
 
-#if HAVE_SETCONSOLETEXTATTRIBUTE
+#if HAVE_SETCONSOLETEXTATTRIBUTE && HAVE_GETSTDHANDLE
     static HANDLE con;
     static WORD org_attributes;
 
@@ -385,7 +418,7 @@ static void color_printf(int color, const char *fmt, ...)
     va_end(arg);
 
     if (use_color) {
-#if HAVE_SETCONSOLETEXTATTRIBUTE
+#if HAVE_SETCONSOLETEXTATTRIBUTE && HAVE_GETSTDHANDLE
         SetConsoleTextAttribute(con, org_attributes);
 #else
         fprintf(stderr, "\x1b[0m");
@@ -606,6 +639,7 @@ static int bench_init_linux(void)
 }
 #endif
 
+#if !CONFIG_LINUX_PERF
 static int bench_init_ffmpeg(void)
 {
 #ifdef AV_READ_TIME
@@ -616,6 +650,7 @@ static int bench_init_ffmpeg(void)
     return -1;
 #endif
 }
+#endif
 
 static int bench_init(void)
 {
@@ -666,6 +701,8 @@ int main(int argc, char *argv[])
                 state.bench_pattern = "";
         } else if (!strncmp(argv[1], "--test=", 7)) {
             state.test_name = argv[1] + 7;
+        } else if (!strcmp(argv[1], "--verbose") || !strcmp(argv[1], "-v")) {
+            state.verbose = 1;
         } else {
             seed = strtoul(argv[1], NULL, 10);
         }
@@ -816,3 +853,42 @@ void checkasm_report(const char *name, ...)
             max_length = length;
     }
 }
+
+#define DEF_CHECKASM_CHECK_FUNC(type, fmt) \
+int checkasm_check_##type(const char *const file, const int line, \
+                          const type *buf1, ptrdiff_t stride1, \
+                          const type *buf2, ptrdiff_t stride2, \
+                          const int w, int h, const char *const name) \
+{ \
+    int y = 0; \
+    stride1 /= sizeof(*buf1); \
+    stride2 /= sizeof(*buf2); \
+    for (y = 0; y < h; y++) \
+        if (memcmp(&buf1[y*stride1], &buf2[y*stride2], w*sizeof(*buf1))) \
+            break; \
+    if (y == h) \
+        return 0; \
+    checkasm_fail_func("%s:%d", file, line); \
+    if (!state.verbose) \
+        return 1; \
+    fprintf(stderr, "%s:\n", name); \
+    while (h--) { \
+        for (int x = 0; x < w; x++) \
+            fprintf(stderr, " " fmt, buf1[x]); \
+        fprintf(stderr, "    "); \
+        for (int x = 0; x < w; x++) \
+            fprintf(stderr, " " fmt, buf2[x]); \
+        fprintf(stderr, "    "); \
+        for (int x = 0; x < w; x++) \
+            fprintf(stderr, "%c", buf1[x] != buf2[x] ? 'x' : '.'); \
+        buf1 += stride1; \
+        buf2 += stride2; \
+        fprintf(stderr, "\n"); \
+    } \
+    return 1; \
+}
+
+DEF_CHECKASM_CHECK_FUNC(uint8_t,  "%02x")
+DEF_CHECKASM_CHECK_FUNC(uint16_t, "%04x")
+DEF_CHECKASM_CHECK_FUNC(int16_t,  "%6d")
+DEF_CHECKASM_CHECK_FUNC(int32_t,  "%9d")

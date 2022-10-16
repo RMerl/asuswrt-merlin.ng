@@ -34,7 +34,7 @@
 /**
  * Maximum number of usage summary lines (+1)
  */
-#define MAX_LINES 12
+#define MAX_LINES 13
 
 typedef struct command_t command_t;
 typedef struct command_option_t command_option_t;

@@ -16,6 +16,12 @@ ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 endif
 
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+CFLAGS  += -I$(TOP)/nt_center/lib
+CFLAGS  += -I$(TOP)/json-c
+LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 ifeq ($(RTCONFIG_QTN),y)
 LDFLAGS += -L$(TOP)/libqcsapi_client -lqcsapi_client
 endif
@@ -73,6 +79,9 @@ LD2 += $(LDFLAGS) $(EXTRALD)
 OBJS += iqos.o wrs.o stat.o dpi.o wrs_app.o data_collect.o watchdog_check.o
 OBJS += dpi_support.o  # dpi_support feature to enhance security
 OBJS += wrs_wbl.o      # wrs - white and black list
+ifeq ($(RTCONFIG_NOTIFICATION_CENTER),y)
+OBJS += infected_cc.o  # infected device - nt_center stage 2 event
+endif
 
 # TrendMicro
 OBJS += conf_app.o ioc_anomaly.o ioc_common.o ioc_qos.o ioc_vp.o ioc_wbl.o ioc_wrs.o ioc_mesh.o
@@ -100,7 +109,7 @@ libbwdpi.so: $(OBJS)
 	@$(LD) $(LD2) -shared -o $@ $^
 
 hwinfo: hwinfo.o
-	@$(CC) -o $@ $^ $(LD1) -L. -lgcc_s
+	@$(CC) -o $@ $^ $(LD1) -L. -lgcc_s -lm
 
 # this command is for debug only
 dbg_dpi_support: dbg_dpi_support.o dpi_support.o

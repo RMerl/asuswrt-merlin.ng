@@ -36,47 +36,69 @@
 
 #define         BIAS            (0x84)      /* Bias for linear code. */
 
+#define         VIDC_SIGN_BIT    (1)
+#define         VIDC_QUANT_MASK  (0x1E)
+#define         VIDC_QUANT_SHIFT (1)
+#define         VIDC_SEG_SHIFT   (5)
+#define         VIDC_SEG_MASK    (0xE0)
+
 /* alaw2linear() - Convert an A-law value to 16-bit linear PCM */
 static av_cold int alaw2linear(unsigned char a_val)
 {
-        int t;
-        int seg;
+    int t;
+    int seg;
 
-        a_val ^= 0x55;
+    a_val ^= 0x55;
 
-        t = a_val & QUANT_MASK;
-        seg = ((unsigned)a_val & SEG_MASK) >> SEG_SHIFT;
-        if(seg) t= (t + t + 1 + 32) << (seg + 2);
-        else    t= (t + t + 1     ) << 3;
+    t = a_val & QUANT_MASK;
+    seg = ((unsigned)a_val & SEG_MASK) >> SEG_SHIFT;
+    if(seg) t= (t + t + 1 + 32) << (seg + 2);
+    else    t= (t + t + 1     ) << 3;
 
-        return (a_val & SIGN_BIT) ? t : -t;
+    return (a_val & SIGN_BIT) ? t : -t;
 }
 
 static av_cold int ulaw2linear(unsigned char u_val)
 {
-        int t;
+    int t;
 
-        /* Complement to obtain normal u-law value. */
-        u_val = ~u_val;
+    /* Complement to obtain normal u-law value. */
+    u_val = ~u_val;
 
-        /*
-         * Extract and bias the quantization bits. Then
-         * shift up by the segment number and subtract out the bias.
-         */
-        t = ((u_val & QUANT_MASK) << 3) + BIAS;
-        t <<= ((unsigned)u_val & SEG_MASK) >> SEG_SHIFT;
+    /*
+     * Extract and bias the quantization bits. Then
+     * shift up by the segment number and subtract out the bias.
+     */
+    t = ((u_val & QUANT_MASK) << 3) + BIAS;
+    t <<= ((unsigned)u_val & SEG_MASK) >> SEG_SHIFT;
 
-        return (u_val & SIGN_BIT) ? (BIAS - t) : (t - BIAS);
+    return (u_val & SIGN_BIT) ? (BIAS - t) : (t - BIAS);
+}
+
+static av_cold int vidc2linear(unsigned char u_val)
+{
+    int t;
+
+    /*
+     * Extract and bias the quantization bits. Then
+     * shift up by the segment number and subtract out the bias.
+     */
+    t = (((u_val & VIDC_QUANT_MASK) >> VIDC_QUANT_SHIFT) << 3) + BIAS;
+    t <<= ((unsigned)u_val & VIDC_SEG_MASK) >> VIDC_SEG_SHIFT;
+
+    return (u_val & VIDC_SIGN_BIT) ? (BIAS - t) : (t - BIAS);
 }
 
 #if CONFIG_HARDCODED_TABLES
 #define pcm_alaw_tableinit()
 #define pcm_ulaw_tableinit()
+#define pcm_vidc_tableinit()
 #include "libavcodec/pcm_tables.h"
 #else
 /* 16384 entries per table */
 static uint8_t linear_to_alaw[16384];
 static uint8_t linear_to_ulaw[16384];
+static uint8_t linear_to_vidc[16384];
 
 static av_cold void build_xlaw_table(uint8_t *linear_to_xlaw,
                              int (*xlaw2linear)(unsigned char),
@@ -110,6 +132,11 @@ static void pcm_alaw_tableinit(void)
 static void pcm_ulaw_tableinit(void)
 {
     build_xlaw_table(linear_to_ulaw, ulaw2linear, 0xff);
+}
+
+static void pcm_vidc_tableinit(void)
+{
+    build_xlaw_table(linear_to_vidc, vidc2linear, 0xff);
 }
 #endif /* CONFIG_HARDCODED_TABLES */
 

@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=Jos aiot ottaa tulevaisuudessa käyttöön A
 ASUS_eula_withdraw_note=Et voi suorittaa loppuun perumistoimintoa ilman internet-yhteyttä. Suorita peruminen, kun internet-yhteys on muodostettu.
 ASUS_eula_withdraw_unstable=Et voi suorittaa loppuun perumistoimintoa, koska internet-tila on epävakaa. Yritä perumista myöhemmin uudelleen.
 TM_eula_confirm=Käyttämällä AiProtectionia, sinä hyväksyt
-TM_eula_desc1=Käyttämällä sovelluksia AiProtection, Traffic analyzer, Apps analyzer, Adaptive QoS/Game boost, Web history, sinä hyväksyt <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro loppukäyttäjän käyttöoikeussopimuksen</a>.
-TM_eula_desc2=Sinä myös hyväksyt ja suostut, että ASUS ei ole vastuussa sinun ja Trend Micro välisestä sopimuksesta eikä mistään Trend Micron tarjoaman palvelun sisällöstä. Sinä myös hyväksyt ja suostut, että ASUS ei ole vastuussa sinun ja Trend Micron välisestä sopimuksesta eikä mistään Trend Micro tarjoaman palvelun sisällöstä. Jos sinulla on kysyttävää, kuinka Trend Micro kerää, käsittelee ja käyttää yllä mainittuja tietoja, katso lisätietoja Trend Micron julkaisemasta tietosuoja-aiheeseen liityvästä ilmoituksesta tai ota yhteyttä Trend Micro.
+TM_eula_desc1=Käyttämällä sovelluksia AiProtection, lapsilukko( Web- ja Sovellussuodattimet ), Traffic analyzer, Apps analyzer, Adaptive QoS/Game boost, Web history, sinä hyväksyt <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micro loppukäyttäjän käyttöoikeussopimuksen</a>.
+TM_eula_desc2=Sinä myös hyväksyt ja suostut, että ASUS ei ole vastuussa sinun ja Trend Micron välisestä sopimuksesta eikä mistään Trend Micro tarjoaman palvelun sisällöstä. Jos sinulla on kysyttävää, kuinka Trend Micro kerää, käsittelee ja käyttää yllä mainittuja tietoja, katso lisätietoja Trend Micron julkaisemasta tietosuoja-aiheeseen liityvästä ilmoituksesta tai ota yhteyttä Trend Micro.
 TM_eula_desc3=Jos haluat ottaa pois käytöstä tietojesi jakamisen yllä mainituilla toiminnoilla Trend Micron kanssa, siirry kohtaan:  Router web GUI  (Reitittimen graafinen käyttöliittymä) > Advanced settings (Lisäasetukset) > Administration (Hallinta) > Privacy (Tietosuoja).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=Sovelluksille  AiProtection, Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost, Web history:
+TM_eula_withdraw0=Sovelluksille  AiProtection, lapsilukko( Web- ja Sovellussuodattimet ), Traffic Analyzer, Apps analyzer, Adaptive QoS/Game boost, Web history:
 TM_eula_withdraw_desc1=Huomaa, että tietojasi kerätään yllä mainituille Trend Micro sovelluksilla.
 TM_eula_withdraw_desc2=Jos haluat ottaa pois käytöstä tietojesi jakamisen Trend Micron kanssa seuraavilla toiminnoilla, napsauta  <span style="font-weight: bold;">[Withdraw] (Peruuta) </span>. Huomaa kuitenkin, että tällaiset ominaisuudet/toiminnot eivät ehkä toimi, jos lopetat tietojesi jakamisen Trend Micro kanssa.
 withdraw_confirm=Haluatko varmasti peruuttaa?
@@ -439,7 +439,7 @@ OP_WISP_item=WISP-tila
 OP_WISP_desc1=ZVMODELVZ muodostaa langattoman yhteyden pääreitittimeesi, tukiasemaan tai julkiseen verkkopisteeseen, ja jakaa internetin langallisten/langattomien asiakkaittesi kanssa. Tässä tilassa, NAT, palomuuri ja DHCP-palvelin ovat oletuksena käytössä.
 OP_WISP_desc2=Kun muodostat yhteyden WiFi-verkkopisteeseen, varmista, sinulla on valtuudet käyttää internetiä.
 page_not_support_mode_hint=Tämä toiminto on otettu pois käytöstä.
-Parental_Control=lapsilukko
+Parental_Control=Lapsilukko
 PASS_new=Uusi salasana
 PASS_retype=Kirjoita salasana uudelleen
 PASS_score0=Hyvin heikko
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Ottaen huomioon AiMesh-järjestelmän ja päätelaitteiden y
 AiMesh_confirm_msg10=Jotta AiMesh-järjestelmäsi ja päätelaitteidesi pysyvät yhteydessä keskenään, lue <a id="wpa3FaqLink">Usein kysytyt kysymykset</a>, ennen kuin vaihdat salaustilaksi WPA3-Personal.
 AiMesh_confirm_msg11=Käytät tällä hetkellä WPA3-personal-salausta. Jotta voit AiMesh-järjestelmän, todennusmenetelmäksi on vaihdettava WPA2/WPA3-personal. Haluatko jatkaa?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Katso lisätietoja osoitteesta <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>tässä UKK-asiakirjassa</a>
+AiMesh_confirm_msg13=Katso lisätietoja osoitteesta <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>tässä UKK-asiakirjassa</a>
 AiMesh_Feature_Desc=Edistynyt ASUS AiMesh on uusi innovatiivinen reitittimen ominaisuus, joka yhdistää useita ASUS-reitittimiä yhteen luoden koko kodin kattavan WiFi-verkon.
 AiMesh_FAQ=Lue lisää ASUS AiMesh -ominaisuudesta
 AiMesh_FindNode=Etsi AiMesh-noodi
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=Parveke
 AiMesh_NodeLocation23=Kokoushuone
 AiMesh_NodeLocation24=Mukauta
 AiMesh_NodeLocation25=Autotalli
+AiMesh_NodeLocation26=Ensimmäinen kerros
+AiMesh_NodeLocation27=Pelihuone
+AiMesh_NodeLocation28=Kuntosali
 AiMesh_OfflineTips=Offline-vinkkejä
 AiMesh_OfflineTips1=Varmista, että AiMesh-noodin virta on kytketty päälle.
 AiMesh_OfflineTips2=Käynnistä AiMesh-noodi ja yritä uudelleen.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Tuo oma varmenteesi
 DDNS_https_cert_Import_desc=Siirrä varmenteenmyöntäjän myöntämä varmenne tässä. Yksityinen avaimesi ja SSL-varmenne ovat välttämättömiä.
 DDNS_https_cert_PrivateKey=Yksityinen avain
 DDNS_https_cert_PrivateKey_note=Yksityiset avaimet eivät voi olla salasanasuojattuja.
+DDNS_ipv6_update=IPv6-päivitys
+DDNS_ipv6_update_desc=Asiakkaan verkko käyttää IPv6-verkko-osoitetta, ja tätä ominaisuutta käyttämällä verkko selvitetään ensin IPv6-verkko-osoitteella ennen etälaitteen käyttöä.
 DDNS_ssl_cert=SSL-varmenne
 DDNS_termofservice_Title=palvelun ehdot
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=Ota palomuuri käyttöön suojataksesi paika
 FirewallConfig_display3_sectiondesc=<b>Kielletyt-luettelon kesto :</b> Aikataulun mukaisen keston aikana Kielletyt-luettelossa olevat asiakkaat eivät voi käyttää määritettyjä verkkopalveluita. Määritetyn keston jälkeen kaikki LAN-verkossa olevat asiakkaat voivat käyttää määritettyjä verkkopalveluita.<br><b>Sallitut-luettelon kesto :</b> Aikataulun mukaisen keston aikana Sallitut-luettelossa olevat asiakkaat voivat käyttää VAIN määritettyjä verkkopalveluita. Määritetyn keston jälkeen Sallitut-luettelossa olevat asiakkaat ja muut verkkoasiakkaat eivät pysty käyttämään internetiä tai mitään internet-palveluja.
 FirewallConfig_display4_sectiondesc=<b>HUOMAUTUS :</b> Jos asetat Sallitut-luettelolle aliverkon, aliverkon ulkopuolella olevat IP-osoitteet eivät voi käyttää internetiä tai mitään internet-palveluita.
 FirewallConfig_display5_sectiondesc=MAC-suodatin sallii käyttäjän hyväksyä tai kieltää verkkokäytön laitteilta tai määrätyiltä MAC-osoitteilta.<p>Voit asettaa MAC-suodattimen Accept (Hyväksy) tai Reject (Hylkää) -tilaan.<p>Hylkää-tilassa verkon käyttö on kielletty luettelon laitteilta.<p>Hyväksy-tilassa vain luettelossa olevat laitteet voivat käyttää verkkoa. Laitteet, jotka eivät ole luettelossa, eivät voi käyttää verkkoa.
-FirewallConfig_DoSEnable_itemdesc=\"Palveunesto\"-hyökkäys on nimenomainen yritys estää laillisia käyttäjiä käyttämästä palvelua tai tietokoneresurssia.<p>Tämän ominaisuuden käyttöönotto suojaa reititintä DoS-hyökkäykseltä. Se kuitenkin lisää reitittimen työkuormaa.
+FirewallConfig_DoSEnable_itemdesc=Tämän ominaisuuden käyttöönotto suojaa reititintä DoS-hyökkäykseltä (Denial- of-Service). Se kuitenkin lisää reitittimen työkuormaa.
 FirewallConfig_DoSEnable_itemname=Otetaanko DoS-suojaus käyttöön
 FirewallConfig_FirewallEnable_itemdesc=Palomuurin ottaminen pois käytöstä deaktivoi kaikki siihen liittyvät toiminnot.
 FirewallConfig_FirewallEnable_itemname=Otetaanko palomuuri käyttöön
-FirewallIPv4_enable=Otetaanko IPv4 Palomuuri käyttöön
+FirewallIPv4_enable=Otetaanko IPv4 saapuvan liikenteen palomuurisäännöt
 FirewallIPv4=IPv4-palomuuri
 FirewallConfig_FTPPrompt_itemdesc=Kun asetat WAN-asetusta varten FTP-palvelimesi porttialueeksi 20:21, FTP-palvelin tulee olemaan ristiriidassa ZVMODELVZ-reitittimen alkuperäisen FTP-palvelimen kanssa.
 FirewallConfig_KeywordFilterEnable_itemname=Ota avainsanasuodatin käyttöön
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=Uusi laiteohjelmisto käytettävissä.
 FW_rlnote_loading=Ladataan julkaisutietoja, odota...
 FW_rlnote_failed=Ei löydetty julkaisutietoja.
+FW_rollback=Palautus
+FW_rollback_choose=Valitse laiteohjelmiston versio
+FW_rollback_selector=Laiteohjelmiston palautuksen valitsin
 Game_acceleration=Peliliikenteen nopeutus
 Game_Boost=Pelien tehostus
 Game_Boost_acceleration=Kolmitasoinen peliliikenteen nopeutus
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Luo uusi RADIUS-asiakas
 PM_Group_Table=Ryhmätaulukko
 PoolName=Osion nimi
 Port_format=Lähde- ja kohdeport-tialueiksi voit joko: a) antaa määrätyn portin, kuten \"95\"; tai b) antaa portit jollakin alueella, kuten \"103:315\", \">100\" tai \"<65535\".
+Port_Gaming=Peliportti
 Port_Mapping_desc1=Porttimääritys
 Port_Mapping_desc2=Porttimääritys sallii tietyn LAN-portin IPTV WAN -liittymän. Voit valita sopivan LAN-portin ja napsauttaa Käytä.
 Port_Mapping_desc3=Ota porttimääritys käyttöön
@@ -3444,7 +3453,7 @@ TZ17=Atlantin aika (Kanada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
-TZ19_1=Asunción
+TZ19_1=Asuncion
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3520,7 +3529,7 @@ TZ80=Salomon-saaret.
 TZ81=Uusi-Kaledonia
 TZ82=Marshall-saaret
 TZ82_1=Magadan
-TZ82_2=Fidzisaaret
+TZ82_2=Fidži
 TZ83=Auckland, Wellington
 TZ84=Nuku'alofa
 TZ85=Anadyr, Petropavlovsk-Kamchatskin
@@ -3537,10 +3546,10 @@ Uplink_rate=Dataa lähetetty/sekuntia
 Uplink_traffic=Dataa lähetetty
 upnp_Desc=Aseta iTunes- ja UPnP-mediapalvelin.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=Aseta UPnP-mediapalvelin.
-UPnPMediaServer_Help=ZVMODELVZ tukee UpnP-standardeja. Voit ottaa sen käyttöön ja sallia muiden UpnP-laitteiden, kuten PS3:n tai digitaalisen mediasoittimen, käyttää USB-levyn multimediatiedostoja.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=ZVMODELVZ tukee UpnP-standardeja. Voit ottaa sen käyttöön ja sallia muiden UpnP-laitteiden, kuten PS3:n tai digitaalisen mediasoittimen, käyttää USB-levyn multimediatiedostoja.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=ZVMODELVZ tukee UpnP-standardeja. Voit ottaa sen käyttöön ja sallia muiden UpnP-laitteiden, kuten PS3:n tai digitaalisen mediasoittimen, käyttää USB-levyn multimediatiedostoja.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=ZVMODELVZ tukee UpnP-standardeja. Voit ottaa sen käyttöön ja sallia muiden UpnP-laitteiden, kuten PS3:n tai digitaalisen mediasoittimen, käyttää USB-levyn multimediatiedostoja.
+UPnPMediaServer_Help=Määritä <a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> ja <a id='samba_link'>verkkosijainti (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Määritä <a id='upnp_link'>UPnP, iTunes</a> ja <a id='samba_link'>verkkosijainti (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Määritä <a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> ja <a id='samba_link'>verkkosijainti (Samba)</a>.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Määritä <a id='upnp_link'>UPnP</a> ja <a id='samba_link'>verkkosijainti (Samba)</a>.
 url_keyword_alert=URL-avainsana
 USB_Application_check=Valitse USB-sovellus
 USB_Application_disk_checking=Tarkistetaan levyä
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Päivitys epäonnistui. Yritä uudelleen.
 vpn_ipsec_clients_reconnect_hint=Kaikki VPN-asiakkaasi muodostavat uudelleen yhteyden, kun olet valinnut Käytä. Haluatko varmasti jatkaa?
 vpn_ipsec_IKE_ver=Tuettu IKE-versio
 vpn_ipsec_set_DDNS=aseta DDNS napsauttamalla tätä.
+vpn_wireguard_server_faq=How to set up WireGuard® server?
+vpn_wireguard_site2site_faq=How to set up site to site VPN with WireGuard®?
+vpn_wireguard_client_faq=How to set up WireGuard® client in VPN Fusion?
 vpnc_desc1=VPN (Virtual Private Network) -asiakkaat on usein yhdistetty VPN-palvelimeen yksityisten resurssien käyttämiseksi turvallisesti julkisessa verkossa.
 vpnc_desc2=Eräät laitteen, kuten digisovittimen, äly-TV:t ja Blu-ray-soittimet eivät tue VPN-ohjelmistoa.
 vpnc_desc3=ASUSWRT VPN -ominaisuus tarjoaa VPN-yhteyden kaikille kotiverkon laitteille tarvitsematta asentaa VPN-ohjelmistoa kaikkiin laitteisiin.
@@ -3815,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS -valinta
 WANTCPMSSOptionComm1Text=tavua
 WANVLANIDText=VLAN-tunnus
-WANAggregation_desc=WAN-aggregaatio yhdistää kaksi verkkoyhteyttä, jolloin WANin nopeus nousee jopa 2 Gbps:ään. Yhdistä reitittimen WAN-portti ja LAN 4-portti modeemin LAN-portteihin (varmista, että käytät kahta kaapelia, joiden tekniset ominaisuudet ovat samat). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregaatio Usein kysytyt kysymykset</a>
+WANAggregation_desc=WAN-aggregaatio yhdistää kaksi verkkoyhteyttä, jolloin WANin nopeus nousee jopa 2 Gbps:ään. Yhdistä reitittimen #WAN-portti ja LAN 4-portti modeemin LAN-portteihin (varmista, että käytät kahta kaapelia, joiden tekniset ominaisuudet ovat samat). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregaatio Usein kysytyt kysymykset</a>
 WANAggregation_enable=Ota WAN-aggregaatio käyttöön
 WANAggregation_disable_dualwan=Kaksois-WAN on aktivoituna reitittimessä. WAN-aggregaation aktivointi poistaa kaksois-WANin käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_disable_WANAggregation=WAN-aggregaatio on aktivoituna reitittimessä. Kaksois-WANin aktivointi poistaa WAN-aggregaation käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_PortConflict_hint1=WAN-aggregaatio käyttää reitittimen LAN 4 -porttia. IPTV:n aktivointi poistaa WAN-aggregaation käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_PortConflict_hint2=IPTV käyttää reitittimen LAN 4 -porttia. WAN-aggregaation aktivointi poistaa IPTV:n käytöstä. Haluatko varmasti jatkaa?
 WANAggregation_disable_IPTVDualWAN=Sekä kaksois-WAN että IPTV ovat aktivoituina reitittimessä. WAN-aggregaation aktivointi poistaa kaksois-WANin ja IPTV:n käytöstä porttien ristiriitojen välttämiseksi. Haluatko varmasti jatkaa?
-WANAggregation_help_WAN=Varmista, että reitittimen WAN-portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden spesifikaatio on sama.
+WANAggregation_help_WAN=Varmista, että reitittimen #WAN-portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden spesifikaatio on sama.
 WANAggregation_help_LAN=Varmista, että reitittimen LAN 4 -portti ja modeemin LAN-portti on yhdistetty kahdella kaapelilla, joiden tekniset ominaisuudet ovat samat.
 WANAggregation_goto_WAN=Kun haluat ottaa WAN-aggregaation käyttöön, mene sivulle <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-Internet Connection (WAN-Internet-yhteys)</a>.
 WANAggregation_help_desc=Jos WAN-aggregaation käyttöönotto ei onnistu, yritä uudelleen seuraavien vaiheiden avulla.
-WANAggregation_help_step1=Varmista, että modeemin LAN-portit on jo yhdistetty reitittimen WAN- ja LAN 4 -portteihin kaapeleilla.
+WANAggregation_help_step1=Varmista, että modeemin LAN-portit on jo yhdistetty reitittimen #WAN- ja LAN 4 -portteihin kaapeleilla.
 WANAggregation_help_step2=Varmista, että 802.3ad on aktivoitu modeemistasi
 WANAggregation_help_step3=Varmista, että kaapelit ovat teknisiltä ominaisuuksiltaan samanlaiset (molemmat joko gigabit- tai 10/100 Mbps -tyyppiä)
 WANAggregation_help_step4=Käynnistä reititin uudelleen
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Jos haluat priorisoida GeForce Now -pelilaitteita pelaamisen nopeuttamiseksi ja parantamiseksi, valitse GeForce Now.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Tapahtuma
 AURA_Event_desc=Järjestelmä tunnistaa seuraavat tapahtumat ja käynnistää erilaisia leditehosteita.
 AURA_Event_Boost_desc=Kun otat Game Boostin käyttöön, näet ledipalkissa punaisen hengitystehosteen.

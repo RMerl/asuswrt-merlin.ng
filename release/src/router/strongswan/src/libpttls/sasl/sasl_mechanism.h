@@ -29,7 +29,7 @@ typedef struct sasl_mechanism_t sasl_mechanism_t;
 #include <library.h>
 
 /**
- * Constructor function for SASL mechansims.
+ * Constructor function for SASL mechanism.
  *
  * @param name			name of the requested SASL mechanism
  * @param client		client identity, NULL to act as server

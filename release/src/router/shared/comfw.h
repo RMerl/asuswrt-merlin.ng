@@ -24,6 +24,13 @@ CF_TUFAX3000_V2  // pkgtb
 CF_RTAX95Q       // w              
 CF_RTAX95QV2     // pkgtb               
 CF_RTAX95QV3     // pkgtb               
+CF_RTAX55        // w
+CF_RTAX3000N     // pkgtb
+CF_RTAX82U       // w
+CF_RTAX82U_V2    // pkgtb
+CF_TUFAX5400     // w
+CF_TUFAX5400_V2  // pkgtb
+CF_XD6_V2        // pkgtb
 */
 
 /* new model must be added after the latest one */
@@ -41,6 +48,15 @@ CF_RTAX95QV3     // pkgtb
      MODELID(CF_RTAX95Q),                     \
      MODELID(CF_RTAX95QV2),                     \
      MODELID(CF_RTAX95QV3),                     \
+     MODELID(CF_RTAX55),                      \
+     MODELID(CF_RTAX3000N),                   \
+     MODELID(CF_RTAX82U),                     \
+     MODELID(CF_RTAX82U_V2),                  \
+     MODELID(CF_TUFAX5400),                   \
+     MODELID(CF_TUFAX5400_V2),                \
+     MODELID(CF_XD6_V2),                      \
+     MODELID(CF_GSAX3000),                   \
+     MODELID(CF_GSAX5400),                   \
      MODELID(MAX_FTYPE),                           \
 }
 

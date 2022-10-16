@@ -126,16 +126,18 @@ static void establish_new(private_ike_rekey_t *this)
 			 this->ike_sa->get_other_host(this->ike_sa),
 			 this->ike_sa->get_other_id(this->ike_sa));
 
+		/* register the new IKE_SA before calling inherit_post() as that may
+		 * schedule jobs, as may listeners for ike_rekey() */
+		charon->ike_sa_manager->checkout_new(charon->ike_sa_manager,
+											 this->new_sa);
 		this->new_sa->inherit_post(this->new_sa, this->ike_sa);
 		charon->bus->ike_rekey(charon->bus, this->ike_sa, this->new_sa);
 		job = check_queued_tasks(this->new_sa);
-		/* don't queue job before checkin(), as the IKE_SA is not yet
-		 * registered at the manager */
-		charon->ike_sa_manager->checkin(charon->ike_sa_manager, this->new_sa);
 		if (job)
 		{
 			lib->processor->queue_job(lib->processor, job);
 		}
+		charon->ike_sa_manager->checkin(charon->ike_sa_manager, this->new_sa);
 		this->new_sa = NULL;
 		charon->bus->set_sa(charon->bus, this->ike_sa);
 
@@ -167,7 +169,7 @@ METHOD(task_t, build_i, status_t,
 	if (this->new_sa == NULL)
 	{
 		version = this->ike_sa->get_version(this->ike_sa);
-		this->new_sa = charon->ike_sa_manager->checkout_new(
+		this->new_sa = charon->ike_sa_manager->create_new(
 										charon->ike_sa_manager, version, TRUE);
 		if (!this->new_sa)
 		{	/* shouldn't happen */
@@ -229,6 +231,12 @@ METHOD(task_t, process_r, status_t,
 		this->failed_temporarily = TRUE;
 		return NEED_MORE;
 	}
+	if (this->ike_sa->has_condition(this->ike_sa, COND_REAUTHENTICATING))
+	{
+		DBG1(DBG_IKE, "peer initiated rekeying, but we are reauthenticating");
+		this->failed_temporarily = TRUE;
+		return NEED_MORE;
+	}
 	if (have_half_open_children(this))
 	{
 		DBG1(DBG_IKE, "peer initiated rekeying, but a child is half-open");
@@ -236,7 +244,7 @@ METHOD(task_t, process_r, status_t,
 		return NEED_MORE;
 	}
 
-	this->new_sa = charon->ike_sa_manager->checkout_new(charon->ike_sa_manager,
+	this->new_sa = charon->ike_sa_manager->create_new(charon->ike_sa_manager,
 							this->ike_sa->get_version(this->ike_sa), FALSE);
 	if (!this->new_sa)
 	{	/* shouldn't happen */

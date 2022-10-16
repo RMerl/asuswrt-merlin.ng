@@ -151,7 +151,7 @@ static void cache(private_cert_cache_t *this,
 	for (try = 0; try < REPLACE_TRIES; try++)
 	{
 		/* replace a random relation */
-		offset = random();
+		offset = random() % CACHE_SIZE;
 		for (i = 0; i < CACHE_SIZE; i++)
 		{
 			rel = &this->relations[(i + offset) % CACHE_SIZE];

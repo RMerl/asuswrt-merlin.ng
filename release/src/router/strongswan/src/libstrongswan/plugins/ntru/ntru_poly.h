@@ -27,7 +27,7 @@ typedef struct ntru_poly_t ntru_poly_t;
 #include <crypto/xofs/xof.h>
 
 /**
- * Implements a trinary polynomial storing the indices of non-zero coefficients 
+ * Implements a trinary polynomial storing the indices of non-zero coefficients
  */
 struct ntru_poly_t {
 

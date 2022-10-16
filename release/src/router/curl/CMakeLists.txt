@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
 #
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
+#
+# SPDX-License-Identifier: curl
 #
 ###########################################################################
 # curl/libcurl CMake script
@@ -65,7 +67,7 @@ message(STATUS "curl version=[${CURL_VERSION}]")
 # SET(PACKAGE_STRING "curl-")
 # SET(PACKAGE_BUGREPORT "a suitable curl mailing list => https://curl.se/mail/")
 set(OPERATING_SYSTEM "${CMAKE_SYSTEM_NAME}")
-set(OS "\"${CMAKE_SYSTEM_NAME}\"")
+set(OS "\"${CMAKE_SYSTEM_NAME}${CURL_OS_SUFFIX}\"")
 
 include_directories(${CURL_SOURCE_DIR}/include)
 
@@ -109,7 +111,7 @@ option(ENABLE_CURLDEBUG "Set to ON to build with TrackMemory feature enabled" OF
 
 if(CMAKE_COMPILER_IS_GNUCC OR CMAKE_COMPILER_IS_CLANG)
   if(PICKY_COMPILER)
-    foreach(_CCOPT -pedantic -Wall -W -Wpointer-arith -Wwrite-strings -Wunused -Wshadow -Winline -Wnested-externs -Wmissing-declarations -Wmissing-prototypes -Wfloat-equal -Wsign-compare -Wundef -Wendif-labels -Wstrict-prototypes -Wdeclaration-after-statement -Wstrict-aliasing=3 -Wcast-align -Wtype-limits -Wold-style-declaration -Wmissing-parameter-type -Wempty-body -Wclobbered -Wignored-qualifiers -Wconversion -Wvla -Wdouble-promotion)
+    foreach(_CCOPT -pedantic -Wall -W -Wpointer-arith -Wwrite-strings -Wunused -Wshadow -Winline -Wnested-externs -Wmissing-declarations -Wmissing-prototypes -Wfloat-equal -Wsign-compare -Wundef -Wendif-labels -Wstrict-prototypes -Wdeclaration-after-statement -Wstrict-aliasing=3 -Wcast-align -Wtype-limits -Wold-style-declaration -Wmissing-parameter-type -Wempty-body -Wclobbered -Wignored-qualifiers -Wconversion -Wvla -Wdouble-promotion -Wenum-conversion -Warith-conversion)
       # surprisingly, CHECK_C_COMPILER_FLAG needs a new variable to store each new
       # test result in.
       string(MAKE_C_IDENTIFIER "OPT${_CCOPT}" _optvarname)
@@ -259,6 +261,17 @@ if(ENABLE_IPV6 AND NOT WIN32)
     set(ENABLE_IPV6 OFF
         CACHE BOOL "Define if you want to enable IPv6 support" FORCE)
   endif()
+
+  if(CMAKE_SYSTEM_NAME STREQUAL "Darwin" AND NOT ENABLE_ARES)
+    set(use_core_foundation ON)
+
+    find_library(SYSTEMCONFIGURATION_FRAMEWORK "SystemConfiguration")
+    if(NOT SYSTEMCONFIGURATION_FRAMEWORK)
+      message(FATAL_ERROR "SystemConfiguration framework not found")
+    endif()
+
+    list(APPEND CURL_LIBS "-framework SystemConfiguration")
+  endif()
 endif()
 
 if(USE_MANUAL)
@@ -323,13 +336,6 @@ check_library_exists_concat("${CMAKE_DL_LIBS}" dlopen HAVE_LIBDL)
 check_library_exists_concat("socket" connect      HAVE_LIBSOCKET)
 check_library_exists("c" gethostbyname "" NOT_NEED_LIBNSL)
 
-# Yellowtab Zeta needs different libraries than BeOS 5.
-if(BEOS)
-  set(NOT_NEED_LIBNSL 1)
-  check_library_exists_concat("bind" gethostbyname HAVE_LIBBIND)
-  check_library_exists_concat("bnetapi" closesocket HAVE_LIBBNETAPI)
-endif()
-
 if(NOT NOT_NEED_LIBNSL)
   check_library_exists_concat("nsl"    gethostbyname  HAVE_LIBNSL)
 endif()
@@ -341,85 +347,94 @@ if(WIN32)
   check_library_exists_concat("winmm"  getch        HAVE_LIBWINMM)
 endif()
 
+# This check below for use of deprecated symbols is only temporary and is to
+# be removed again after a year's service. Remove after November 25, 2022.
+set(CURL_RECONFIG_REQUIRED 0)
+foreach(_LIB GSSAPI OPENLDAP LIBSSH LIBSSH2 BEARSSL MBEDTLS NSS OPENSSL
+        SCHANNEL SECTRANSP WOLFSSL)
+  if(CMAKE_USE_${_LIB})
+    set(CURL_RECONFIG_REQUIRED 1)
+    message(SEND_ERROR "The option CMAKE_USE_${_LIB} was renamed to CURL_USE_${_LIB}.")
+  endif()
+endforeach()
+if(CMAKE_USE_WINSSL)
+  set(CURL_RECONFIG_REQUIRED 1)
+  message(SEND_ERROR "The option CMAKE_USE_WINSSL was renamed to CURL_USE_SCHANNEL.")
+endif()
+if(CURL_RECONFIG_REQUIRED)
+  message(FATAL_ERROR "Reconfig required")
+endif()
+
 # check SSL libraries
 # TODO support GnuTLS
-if(CMAKE_USE_WINSSL)
-  message(FATAL_ERROR "The cmake option CMAKE_USE_WINSSL was renamed to CMAKE_USE_SCHANNEL.")
-endif()
+option(CURL_ENABLE_SSL "Enable SSL support" ON)
 
 if(APPLE)
-  option(CMAKE_USE_SECTRANSP "enable Apple OS native SSL/TLS" OFF)
+  cmake_dependent_option(CURL_USE_SECTRANSP "enable Apple OS native SSL/TLS" OFF CURL_ENABLE_SSL OFF)
 endif()
 if(WIN32)
-  option(CMAKE_USE_SCHANNEL "enable Windows native SSL/TLS" OFF)
+  cmake_dependent_option(CURL_USE_SCHANNEL "enable Windows native SSL/TLS" OFF CURL_ENABLE_SSL OFF)
   cmake_dependent_option(CURL_WINDOWS_SSPI "Use windows libraries to allow NTLM authentication without openssl" ON
-    CMAKE_USE_SCHANNEL OFF)
+    CURL_USE_SCHANNEL OFF)
 endif()
-option(CMAKE_USE_MBEDTLS "Enable mbedTLS for SSL/TLS" OFF)
-option(CMAKE_USE_BEARSSL "Enable BearSSL for SSL/TLS" OFF)
-option(CMAKE_USE_NSS "Enable NSS for SSL/TLS" OFF)
-option(CMAKE_USE_WOLFSSL "enable wolfSSL for SSL/TLS" OFF)
+cmake_dependent_option(CURL_USE_MBEDTLS "Enable mbedTLS for SSL/TLS" OFF CURL_ENABLE_SSL OFF)
+cmake_dependent_option(CURL_USE_BEARSSL "Enable BearSSL for SSL/TLS" OFF CURL_ENABLE_SSL OFF)
+cmake_dependent_option(CURL_USE_NSS "Enable NSS for SSL/TLS" OFF CURL_ENABLE_SSL OFF)
+cmake_dependent_option(CURL_USE_WOLFSSL "enable wolfSSL for SSL/TLS" OFF CURL_ENABLE_SSL OFF)
 
 set(openssl_default ON)
-if(WIN32 OR CMAKE_USE_SECTRANSP OR CMAKE_USE_SCHANNEL OR CMAKE_USE_MBEDTLS OR CMAKE_USE_NSS OR CMAKE_USE_WOLFSSL)
+if(WIN32 OR CURL_USE_SECTRANSP OR CURL_USE_SCHANNEL OR CURL_USE_MBEDTLS OR CURL_USE_NSS OR CURL_USE_WOLFSSL)
   set(openssl_default OFF)
 endif()
-option(CMAKE_USE_OPENSSL "Use OpenSSL code. Experimental" ${openssl_default})
+cmake_dependent_option(CURL_USE_OPENSSL "Use OpenSSL code. Experimental" ${openssl_default} CURL_ENABLE_SSL OFF)
 option(CURL_DISABLE_OPENSSL_AUTO_LOAD_CONFIG "Disable automatic loading of OpenSSL configuration" OFF)
 
 count_true(enabled_ssl_options_count
-  CMAKE_USE_SCHANNEL
-  CMAKE_USE_SECTRANSP
-  CMAKE_USE_OPENSSL
-  CMAKE_USE_MBEDTLS
-  CMAKE_USE_BEARSSL
-  CMAKE_USE_NSS
-  CMAKE_USE_WOLFSSL
+  CURL_USE_SCHANNEL
+  CURL_USE_SECTRANSP
+  CURL_USE_OPENSSL
+  CURL_USE_MBEDTLS
+  CURL_USE_BEARSSL
+  CURL_USE_NSS
+  CURL_USE_WOLFSSL
 )
 if(enabled_ssl_options_count GREATER "1")
   set(CURL_WITH_MULTI_SSL ON)
 endif()
 
-if(CMAKE_USE_SCHANNEL)
+if(CURL_USE_SCHANNEL)
   set(SSL_ENABLED ON)
   set(USE_SCHANNEL ON) # Windows native SSL/TLS support
-  set(USE_WINDOWS_SSPI ON) # CMAKE_USE_SCHANNEL implies CURL_WINDOWS_SSPI
+  set(USE_WINDOWS_SSPI ON) # CURL_USE_SCHANNEL implies CURL_WINDOWS_SSPI
 endif()
 if(CURL_WINDOWS_SSPI)
   set(USE_WINDOWS_SSPI ON)
   set(CMAKE_REQUIRED_DEFINITIONS "${CMAKE_REQUIRED_DEFINITIONS} -DSECURITY_WIN32")
 endif()
 
-if(CMAKE_USE_DARWINSSL)
-  message(FATAL_ERROR "The cmake option CMAKE_USE_DARWINSSL was renamed to CMAKE_USE_SECTRANSP.")
+if(CURL_USE_SECTRANSP)
+  set(use_core_foundation ON)
+
+  find_library(SECURITY_FRAMEWORK "Security")
+  if(NOT SECURITY_FRAMEWORK)
+     message(FATAL_ERROR "Security framework not found")
+  endif()
+
+  set(SSL_ENABLED ON)
+  set(USE_SECTRANSP ON)
+  list(APPEND CURL_LIBS "-framework Security")
 endif()
 
-if(${CMAKE_SYSTEM_NAME} MATCHES "Darwin")
+if(use_core_foundation)
   find_library(COREFOUNDATION_FRAMEWORK "CoreFoundation")
   if(NOT COREFOUNDATION_FRAMEWORK)
       message(FATAL_ERROR "CoreFoundation framework not found")
   endif()
 
-  find_library(SYSTEMCONFIGURATION_FRAMEWORK "SystemConfiguration")
-  if(NOT SYSTEMCONFIGURATION_FRAMEWORK)
-     message(FATAL_ERROR "SystemConfiguration framework not found")
-  endif()
-
-  list(APPEND CURL_LIBS "-framework CoreFoundation" "-framework SystemConfiguration")
-
-  if(CMAKE_USE_SECTRANSP)
-    find_library(SECURITY_FRAMEWORK "Security")
-    if(NOT SECURITY_FRAMEWORK)
-       message(FATAL_ERROR "Security framework not found")
-    endif()
-
-    set(SSL_ENABLED ON)
-    set(USE_SECTRANSP ON)
-    list(APPEND CURL_LIBS "-framework Security")
-  endif()
+  list(APPEND CURL_LIBS "-framework CoreFoundation")
 endif()
 
-if(CMAKE_USE_OPENSSL)
+if(CURL_USE_OPENSSL)
   find_package(OpenSSL REQUIRED)
   set(SSL_ENABLED ON)
   set(USE_OPENSSL ON)
@@ -445,9 +460,11 @@ if(CMAKE_USE_OPENSSL)
   check_symbol_exists(RAND_status "${CURL_INCLUDES}" HAVE_RAND_STATUS)
   check_symbol_exists(RAND_screen "${CURL_INCLUDES}" HAVE_RAND_SCREEN)
   check_symbol_exists(RAND_egd    "${CURL_INCLUDES}" HAVE_RAND_EGD)
+
+  add_definitions(-DOPENSSL_SUPPRESS_DEPRECATED)
 endif()
 
-if(CMAKE_USE_MBEDTLS)
+if(CURL_USE_MBEDTLS)
   find_package(MbedTLS REQUIRED)
   set(SSL_ENABLED ON)
   set(USE_MBEDTLS ON)
@@ -455,7 +472,7 @@ if(CMAKE_USE_MBEDTLS)
   include_directories(${MBEDTLS_INCLUDE_DIRS})
 endif()
 
-if(CMAKE_USE_BEARSSL)
+if(CURL_USE_BEARSSL)
   find_package(BearSSL REQUIRED)
   set(SSL_ENABLED ON)
   set(USE_BEARSSL ON)
@@ -463,7 +480,7 @@ if(CMAKE_USE_BEARSSL)
   include_directories(${BEARSSL_INCLUDE_DIRS})
 endif()
 
-if(CMAKE_USE_WOLFSSL)
+if(CURL_USE_WOLFSSL)
   find_package(WolfSSL REQUIRED)
   set(SSL_ENABLED ON)
   set(USE_WOLFSSL ON)
@@ -471,7 +488,7 @@ if(CMAKE_USE_WOLFSSL)
   include_directories(${WolfSSL_INCLUDE_DIRS})
 endif()
 
-if(CMAKE_USE_NSS)
+if(CURL_USE_NSS)
   find_package(NSS REQUIRED)
   include_directories(${NSS_INCLUDE_DIRS})
   list(APPEND CURL_LIBS ${NSS_LIBRARIES})
@@ -541,6 +558,16 @@ if(USE_QUICHE)
   cmake_pop_check_state()
 endif()
 
+option(USE_MSH3 "Use msquic library for HTTP/3 support" OFF)
+if(USE_MSH3)
+  if(USE_NGTCP2 OR USE_QUICHE)
+    message(FATAL_ERROR "Only one HTTP/3 backend can be selected!")
+  endif()
+  set(USE_MSH3 ON)
+  include_directories(${MSH3_INCLUDE_DIRS})
+  list(APPEND CURL_LIBS ${MSH3_LIBRARIES})
+endif()
+
 if(NOT CURL_DISABLE_LDAP)
   if(WIN32)
     option(USE_WIN32_LDAP "Use Windows LDAP implementation" ON)
@@ -552,13 +579,13 @@ if(NOT CURL_DISABLE_LDAP)
     endif()
   endif()
 
-  option(CMAKE_USE_OPENLDAP "Use OpenLDAP code." OFF)
-  mark_as_advanced(CMAKE_USE_OPENLDAP)
+  option(CURL_USE_OPENLDAP "Use OpenLDAP code." OFF)
+  mark_as_advanced(CURL_USE_OPENLDAP)
   set(CMAKE_LDAP_LIB "ldap" CACHE STRING "Name or full path to ldap library")
   set(CMAKE_LBER_LIB "lber" CACHE STRING "Name or full path to lber library")
 
-  if(CMAKE_USE_OPENLDAP AND USE_WIN32_LDAP)
-    message(FATAL_ERROR "Cannot use USE_WIN32_LDAP and CMAKE_USE_OPENLDAP at the same time")
+  if(CURL_USE_OPENLDAP AND USE_WIN32_LDAP)
+    message(FATAL_ERROR "Cannot use USE_WIN32_LDAP and CURL_USE_OPENLDAP at the same time")
   endif()
 
   # Now that we know, we're not using windows LDAP...
@@ -588,7 +615,7 @@ if(NOT CURL_DISABLE_LDAP)
       set(CURL_DISABLE_LDAP ON CACHE BOOL "" FORCE)
       set(CMAKE_REQUIRED_INCLUDES ${CMAKE_REQUIRED_INCLUDES_BAK}) #LDAP includes won't be used
     else()
-      if(CMAKE_USE_OPENLDAP)
+      if(CURL_USE_OPENLDAP)
         set(USE_OPENLDAP ON)
       endif()
       if(CMAKE_LDAP_INCLUDE_DIR)
@@ -650,11 +677,12 @@ if(NOT CURL_DISABLE_LDAPS)
   check_include_file_concat("ldapssl.h"  HAVE_LDAPSSL_H)
 endif()
 
-# Check for idn
+# Check for idn2
 option(USE_LIBIDN2 "Use libidn2 for IDN support" ON)
-set(HAVE_LIBIDN2 OFF)
 if(USE_LIBIDN2)
   check_library_exists_concat("idn2" idn2_lookup_ul HAVE_LIBIDN2)
+else()
+  set(HAVE_LIBIDN2 OFF)
 endif()
 
 if(WIN32)
@@ -717,14 +745,39 @@ if(CURL_ZSTD)
   endif()
 endif()
 
+#libpsl
+option(CURL_USE_LIBPSL "Use libPSL" ON)
+mark_as_advanced(CURL_USE_LIBPSL)
+set(USE_LIBPSL OFF)
+set(HAVE_LIBPSL OFF)
+set(HAVE_LIBSPSL_H OFF)
+
+if(CURL_USE_LIBPSL)
+  find_package(LibPSL)
+  if(LIBPSL_FOUND)
+    list(APPEND CURL_LIBS ${LIBPSL_LIBRARY})
+    set(CMAKE_REQUIRED_LIBRARIES ${LIBPSL_LIBRARY})
+    list(APPEND CMAKE_REQUIRED_INCLUDES "${LIBPSL_INCLUDE_DIR}")
+    include_directories("${LIBPSL_INCLUDE_DIR}")
+    set(HAVE_LIBPSL ON)
+    set(USE_LIBPSL ON)
+
+    # find_package has already found the headers
+    set(HAVE_LIBPSL_H ON)
+    set(CURL_INCLUDES ${CURL_INCLUDES} "${LIBPSL_INCLUDE_DIR}/libpsl.h")
+    set(CURL_TEST_DEFINES "${CURL_TEST_DEFINES} -DHAVE_LIBPSL_H")
+    unset(CMAKE_REQUIRED_LIBRARIES)
+  endif()
+endif()
+
 #libSSH2
-option(CMAKE_USE_LIBSSH2 "Use libSSH2" ON)
-mark_as_advanced(CMAKE_USE_LIBSSH2)
+option(CURL_USE_LIBSSH2 "Use libSSH2" ON)
+mark_as_advanced(CURL_USE_LIBSSH2)
 set(USE_LIBSSH2 OFF)
 set(HAVE_LIBSSH2 OFF)
 set(HAVE_LIBSSH2_H OFF)
 
-if(CMAKE_USE_LIBSSH2)
+if(CURL_USE_LIBSSH2)
   find_package(LibSSH2)
   if(LIBSSH2_FOUND)
     list(APPEND CURL_LIBS ${LIBSSH2_LIBRARY})
@@ -743,9 +796,9 @@ if(CMAKE_USE_LIBSSH2)
 endif()
 
 # libssh
-option(CMAKE_USE_LIBSSH "Use libSSH" OFF)
-mark_as_advanced(CMAKE_USE_LIBSSH)
-if(NOT HAVE_LIBSSH2 AND CMAKE_USE_LIBSSH)
+option(CURL_USE_LIBSSH "Use libSSH" OFF)
+mark_as_advanced(CURL_USE_LIBSSH)
+if(NOT HAVE_LIBSSH2 AND CURL_USE_LIBSSH)
   find_package(libssh CONFIG)
   if(libssh_FOUND)
     message(STATUS "Found libssh ${libssh_VERSION}")
@@ -756,10 +809,10 @@ if(NOT HAVE_LIBSSH2 AND CMAKE_USE_LIBSSH)
   endif()
 endif()
 
-option(CMAKE_USE_GSSAPI "Use GSSAPI implementation (right now only Heimdal is supported with CMake build)" OFF)
-mark_as_advanced(CMAKE_USE_GSSAPI)
+option(CURL_USE_GSSAPI "Use GSSAPI implementation (right now only Heimdal is supported with CMake build)" OFF)
+mark_as_advanced(CURL_USE_GSSAPI)
 
-if(CMAKE_USE_GSSAPI)
+if(CURL_USE_GSSAPI)
   find_package(GSS)
 
   set(HAVE_GSSAPI ${GSS_FOUND})
@@ -908,7 +961,6 @@ endif()
 # Check for header files
 if(NOT UNIX)
   check_include_file_concat("windows.h"      HAVE_WINDOWS_H)
-  check_include_file_concat("winsock.h"      HAVE_WINSOCK_H)
   check_include_file_concat("ws2tcpip.h"     HAVE_WS2TCPIP_H)
   check_include_file_concat("winsock2.h"     HAVE_WINSOCK2_H)
   check_include_file_concat("wincrypt.h"     HAVE_WINCRYPT_H)
@@ -1003,8 +1055,10 @@ if(HAVE_SIZEOF_LONG_LONG)
   set(HAVE_LL 1)
 endif()
 
-find_file(RANDOM_FILE urandom /dev)
-mark_as_advanced(RANDOM_FILE)
+if(NOT CMAKE_CROSSCOMPILING)
+  find_file(RANDOM_FILE urandom /dev)
+  mark_as_advanced(RANDOM_FILE)
+endif()
 
 # Check for some functions that are used
 if(HAVE_LIBWS2_32)
@@ -1013,6 +1067,7 @@ elseif(HAVE_LIBSOCKET)
   set(CMAKE_REQUIRED_LIBRARIES socket)
 endif()
 
+check_symbol_exists(fchmod        "${CURL_INCLUDES}" HAVE_FCHMOD)
 check_symbol_exists(basename      "${CURL_INCLUDES}" HAVE_BASENAME)
 check_symbol_exists(socket        "${CURL_INCLUDES}" HAVE_SOCKET)
 check_symbol_exists(select        "${CURL_INCLUDES}" HAVE_SELECT)
@@ -1484,12 +1539,10 @@ set(libdir                  "${CMAKE_INSTALL_PREFIX}/lib")
 foreach(_lib ${CMAKE_C_IMPLICIT_LINK_LIBRARIES} ${CURL_LIBS})
   if(TARGET "${_lib}")
     set(_libname "${_lib}")
-    get_target_property(_libtype "${_libname}" TYPE)
-    if(_libtype STREQUAL INTERFACE_LIBRARY)
-      # Interface libraries can occur when an external project embeds curl and
-      # defined targets such as ZLIB::ZLIB by themselves. Ignore these as
-      # reading the LOCATION property will error out. Assume the user won't need
-      # this information in the .pc file.
+    get_target_property(_imported "${_libname}" IMPORTED)
+    if(NOT _imported)
+      # Reading the LOCATION property on non-imported target will error out.
+      # Assume the user won't need this information in the .pc file.
       continue()
     endif()
     get_target_property(_lib "${_libname}" LOCATION)

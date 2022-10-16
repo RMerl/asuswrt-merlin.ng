@@ -67,19 +67,22 @@ struct entry_t {
 	int subtype;
 	/** registered with final flag? */
 	bool final;
+	/** plugin that registered this algorithm */
+	const char *plugin_name;
 	/** builder function */
 	builder_function_t constructor;
 };
 
 METHOD(credential_factory_t, add_builder, void,
 	private_credential_factory_t *this, credential_type_t type, int subtype,
-	bool final, builder_function_t constructor)
+	bool final, const char *plugin_name, builder_function_t constructor)
 {
 	entry_t *entry = malloc_thing(entry_t);
 
 	entry->type = type;
 	entry->subtype = subtype;
 	entry->final = final;
+	entry->plugin_name = plugin_name;
 	entry->constructor = constructor;
 	this->lock->write_lock(this->lock);
 	this->constructors->insert_last(this->constructors, entry);
@@ -115,6 +118,22 @@ METHOD(credential_factory_t, create, void*,
 	void *construct = NULL;
 	int failures = 0;
 	uintptr_t level;
+	enum_name_t *names;
+
+	switch (type)
+	{
+		case CRED_CERTIFICATE:
+			names = certificate_type_names;
+			break;
+		case CRED_CONTAINER:
+			names = container_type_names;
+			break;
+		case CRED_PRIVATE_KEY:
+		case CRED_PUBLIC_KEY:
+		default:
+			names = key_type_names;
+			break;
+	}
 
 	level = (uintptr_t)this->recursive->get(this->recursive);
 	this->recursive->set(this->recursive, (void*)level + 1);
@@ -125,6 +144,9 @@ METHOD(credential_factory_t, create, void*,
 	{
 		if (entry->type == type && entry->subtype == subtype)
 		{
+			DBG2(DBG_LIB, "builder L%d %N - %N of plugin '%s'",
+				 (int)level, credential_type_names, type, names, subtype,
+				 entry->plugin_name);
 			va_start(args, subtype);
 			construct = entry->constructor(subtype, args);
 			va_end(args);
@@ -140,22 +162,6 @@ METHOD(credential_factory_t, create, void*,
 
 	if (!construct && !level)
 	{
-		enum_name_t *names;
-
-		switch (type)
-		{
-			case CRED_CERTIFICATE:
-				names = certificate_type_names;
-				break;
-			case CRED_CONTAINER:
-				names = container_type_names;
-				break;
-			case CRED_PRIVATE_KEY:
-			case CRED_PUBLIC_KEY:
-			default:
-				names = key_type_names;
-				break;
-		}
 		DBG1(DBG_LIB, "building %N - %N failed, tried %d builders",
 			 credential_type_names, type, names, subtype, failures);
 	}

@@ -34,7 +34,7 @@
 #include "decode.h"
 #include "h264_parse.h"
 #include "hevc_parse.h"
-#include "hwaccel.h"
+#include "hwconfig.h"
 #include "internal.h"
 #include "mediacodec_wrapper.h"
 #include "mediacodecdec_common.h"
@@ -167,8 +167,11 @@ static int h264_set_extradata(AVCodecContext *avctx, FFAMediaFormat *format)
         ff_AMediaFormat_setBuffer(format, "csd-1", (void*)data, data_size);
         av_freep(&data);
     } else {
-        av_log(avctx, AV_LOG_ERROR, "Could not extract PPS/SPS from extradata");
-        ret = AVERROR_INVALIDDATA;
+        const int warn = is_avc && (avctx->codec_tag == MKTAG('a','v','c','1') ||
+                                    avctx->codec_tag == MKTAG('a','v','c','2'));
+        av_log(avctx, warn ? AV_LOG_WARNING : AV_LOG_DEBUG,
+               "Could not extract PPS/SPS from extradata\n");
+        ret = 0;
     }
 
 done:
@@ -254,8 +257,10 @@ static int hevc_set_extradata(AVCodecContext *avctx, FFAMediaFormat *format)
 
         av_freep(&data);
     } else {
-        av_log(avctx, AV_LOG_ERROR, "Could not extract VPS/PPS/SPS from extradata");
-        ret = AVERROR_INVALIDDATA;
+        const int warn = is_nalff && avctx->codec_tag == MKTAG('h','v','c','1');
+        av_log(avctx, warn ? AV_LOG_WARNING : AV_LOG_DEBUG,
+               "Could not extract VPS/PPS/SPS from extradata\n");
+        ret = 0;
     }
 
 done:
@@ -440,8 +445,13 @@ static int mediacodec_receive_frame(AVCodecContext *avctx, AVFrame *frame)
             if (ret >= 0) {
                 s->buffered_pkt.size -= ret;
                 s->buffered_pkt.data += ret;
-                if (s->buffered_pkt.size <= 0)
+                if (s->buffered_pkt.size <= 0) {
                     av_packet_unref(&s->buffered_pkt);
+                } else {
+                    av_log(avctx, AV_LOG_WARNING,
+                           "could not send entire packet in single input buffer (%d < %d)\n",
+                           ret, s->buffered_pkt.size+ret);
+                }
             } else if (ret < 0 && ret != AVERROR(EAGAIN)) {
                 return ret;
             }
@@ -461,6 +471,7 @@ static int mediacodec_receive_frame(AVCodecContext *avctx, AVFrame *frame)
             ret = ff_mediacodec_dec_send(avctx, s->ctx, &null_pkt, true);
             if (ret < 0)
                 return ret;
+            return ff_mediacodec_dec_receive(avctx, s->ctx, frame, true);
         } else if (ret == AVERROR(EAGAIN) && s->ctx->current_input_buffer < 0) {
             return ff_mediacodec_dec_receive(avctx, s->ctx, frame, true);
         } else if (ret < 0) {
@@ -480,7 +491,7 @@ static void mediacodec_decode_flush(AVCodecContext *avctx)
     ff_mediacodec_dec_flush(avctx, s->ctx);
 }
 
-static const AVCodecHWConfigInternal *mediacodec_hw_configs[] = {
+static const AVCodecHWConfigInternal *const mediacodec_hw_configs[] = {
     &(const AVCodecHWConfigInternal) {
         .public          = {
             .pix_fmt     = AV_PIX_FMT_MEDIACODEC,

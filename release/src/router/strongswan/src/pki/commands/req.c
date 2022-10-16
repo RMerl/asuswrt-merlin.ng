@@ -23,7 +23,7 @@
 #include <credentials/certificates/certificate.h>
 
 /**
- * Create a self-signed PKCS#10 certificate requesst.
+ * Create a self-signed PKCS#10 certificate request.
  */
 static int req()
 {

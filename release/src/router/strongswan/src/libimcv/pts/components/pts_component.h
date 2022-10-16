@@ -33,7 +33,7 @@ typedef struct pts_component_t pts_component_t;
 #include <bio/bio_writer.h>
 
 /**
- * PTS Functional Component Interface 
+ * PTS Functional Component Interface
  */
 struct pts_component_t {
 
@@ -63,7 +63,7 @@ struct pts_component_t {
 	 *
 	 * @param qualifier		PTS Component Functional Name Qualifier
 	 * @param pts			PTS interface
-	 * @param evidence		returns component evidence measureemt
+	 * @param evidence		returns component evidence measurement
 	 * @param measurements	additional file measurements (NULL if not present)
 	 * @return				status return code
 	 */

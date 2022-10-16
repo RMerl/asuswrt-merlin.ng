@@ -251,10 +251,6 @@ config RTCONFIG_INADYN
 	depends on RTCONFIG_DDNS
 	default y
 
-config RTCONFIG_ASUSDDNS_ACCOUNT_BASE
-	bool "ASUS DDNS for Account base"
-	default n
-
 config RTCONFIG_L7
 	bool "Layer 7 Netfilter"
 	default y
@@ -633,6 +629,11 @@ config RTCONFIG_SAMBASRV
 config RTCONFIG_SAMBA3
 	bool "Compile with Samba 3"
 	depends on RTCONFIG_SAMBASRV
+	default n
+
+
+config RTCONFIG_AWSIOT
+	bool "Compile with aws-iot"
 	default n
 
 config RTCONFIG_SAMBA36X
@@ -1646,10 +1647,6 @@ config RTCONFIG_ISP_OPTUS
 	bool "Support ISP OPTUS Customize"
 	default n
 
-config RTCONFIG_ACS_SUBNET
-	bool "Support ACS SUBNET Customize"
-	default n
-
 config RTCONFIG_ISP_XLNPROVU
 	bool "Support ISP XLN/PROVU Customize"
 	default n
@@ -1747,8 +1744,16 @@ config RTCONFIG_CP_ADVANCED
 	default n
 
 config RTCONFIG_UPNPC
-	bool "UPNP client support"
-	default y
+	bool "UPNP client support for networkmap"
+	default n
+
+config RTCONFIG_UPNPC_NEW
+	bool "New UPNP client support"
+	default n
+
+config RTCONFIG_AUPNPC
+	bool "AUPNPC support"
+	default n
 
 config RTCONFIG_MULTICAST_IPTV
 	bool "Multicsat IPTV"
@@ -1884,6 +1889,13 @@ config RTCONFIG_VPN_FUSION
 	bool "Enable VPN Fusion"
 	default n
 
+config RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	bool "VPN Fusion support interface policy"
+	default n
+	depends on RTCONFIG_VPN_FUSION
+	help
+	VPN Fusion support interface policy(IG share secure connection feature)
+
 config RTCONFIG_LBR_AGGR
 	bool "Low bit rate aggregation support"
 	default n
@@ -1944,7 +1956,7 @@ config RTCONFIG_IGD2
 
 config RTCONFIG_DNSSEC
 	bool "dnsmasq: Enable DNSSEC support"
-	default n
+	default y
 
 choice
 	prompt "dnsmasq: DNSSEC crypto library"
@@ -2043,6 +2055,10 @@ config RTCONFIG_ADV_RAST
 
 config RTCONFIG_BCN_RPT
 	bool "enable 802.11k beacon request/report for roaming"
+	default n
+
+config RTCONFIG_MC_BCN_RPT
+	bool "enable 802.11k multi-channel"
 	default n
 
 config RTCONFIG_NBR_RPT
@@ -2257,6 +2273,14 @@ config RTCONFIG_CONNDIAG
 	bool "enable conn_diag in AiMesh"
 	default n
 
+config RTCONFIG_CABLEDIAG
+	bool "enable cable diag in AiMesh"
+	default n
+
+config RTCONFIG_CD_IPERF
+	bool "enable iperf in AiMesh"
+	default n
+
 config RTCONFIG_REPEATER_STAALLBAND
 	bool "select one of tri band to connect P-AP"
 	default n
@@ -2273,8 +2297,8 @@ config RTCONFIG_QCA_LBD
 	bool "qca lbd support"
 	default n
 
-config RTCONFIG_AMAS_WDS
-	bool "amas wds support"
+config RTCONFIG_AMAS_QCA_WDS
+	bool "qca amas wds support"
 	default n
 
 config RTCONFIG_GEFORCENOW
@@ -2345,6 +2369,18 @@ config RTCONFIG_AUTO_FW_UPGRADE
 	bool "RTCONFIG_AUTO_FW_UPGRADE support"
 	default n
 
+config RTCONFIG_BETA_UPGRADE
+	bool "RTCONFIG_BETA_UPGRADE support"
+	default n
+
+config RTCONFIG_ROLLBACKFW
+	bool "RTCONFIG_ROLLBACK_FW support"
+	default n
+
+config RTCONFIG_REVERTFW
+	bool "RTCONFIG_REVERTFW support"
+	default n
+
 config RTCONFIG_ASD
 	bool "RTCONFIG_ASD support"
 	default n
@@ -2359,6 +2395,14 @@ config RTCONFIG_UUPLUGIN
 
 config RTCONFIG_TCPLUGIN
 	bool "Tencent plugin support"
+	default n
+
+config RTCONFIG_TC_GAME_ACC
+	bool "Tencent game download acceleration"
+	default n
+
+config RTCONFIG_TC_DOWNLOAD
+	bool "TC download mechanism"
 	default n
 
 config RTCONFIG_ATEFROMWAN
@@ -2489,6 +2533,10 @@ config RTCONFIG_CAPTCHA
 	bool "Web UI supports captcha"
 	default n
 
+config RTCONFIG_DISAPPCAPT
+	bool "Disable APP captcha"
+	default n
+
 config RTCONFIG_WIFI6E
 	bool "WiFi 6E"
 	default n
@@ -2509,6 +2557,10 @@ config RTCONFIG_NEW_PHYMAP
 	bool "New phy port mapping system dependent function"
 	default n
 
+config RTCONFIG_LIB_CODB
+	bool "codb library"
+	default n
+
 config RTCONFIG_INSTANT_GUARD
 	bool "IPSEC VPN INSTANT GUARD support"
 	default n
@@ -2525,12 +2577,24 @@ config RTCONFIG_PREFERAP_RE_SELFOPT
 	bool "Notify RE do self optimization based on prefer ap condition"
 	default n
 
+config RTCONFIG_SCHED_DAEMON
+	bool "Enable scheduler daemon"
+	default n
+
+config RTCONFIG_PC_REWARD
+	bool "Parental Control Reward"
+	default n
+
 config RTCONFIG_FRONTHAUL_DBG
 	bool "enable AiMesh RE fronthaul for debug purpose"
 
 config RTCONFIG_MAX_RE
 	int "Support the maximum number of RE"
 	default 9
+
+config RTCONFIG_TIME_QUOTA
+	bool "Parental Control Time Quota"
+	default n
 
 config RTCONFIG_SPF11_3_QSDK
 	bool "SPF11.3 QSDK"
@@ -2611,6 +2675,18 @@ config RTCONFIG_LLDPD_1_0_11
 	bool "lldpd-1.0.11"
 endchoice
 
+config RTCONFIG_FSMD
+	bool "Filesystem monitor support"
+	default n
+
+config RTCONFIG_DNS_PING
+	bool "Ping DNS servers and store the result into database"
+	default n
+
+config RTCONFIG_CALC_NVRAM
+	bool "calculate nvram size"
+	default n
+
 config RTCONFIG_HW_DOG
 	bool "CPU hardward watchdog daemon"
 	default n
@@ -2635,11 +2711,49 @@ config RTCONFIG_BANDINDEX_NEW
         bool " Bandindex version greater than 1"
         default n
 
-config RTCONFIG_SECUREBOOT
-	bool " SecureBoot fw"
+config RTCONFIG_DEF_AUTO_FRONTHAUL
+	bool "The default value of fronthaul ap is auto"
 	default n
+
+config RTCONFIG_DEF_ON_FRONTHAUL
+	bool "The default value of fronthaul ap is on"
+	default n
+
+config RTCONFIG_DEF_OFF_FRONTHAUL
+	bool "The default value of fronthaul ap is off"
+	default n
+
+config RTCONFIG_IG_SITE2SITE
+	bool "INSTANT GUARD site to site support"
+	default n
+
+config RTCONFIG_FRONTHAUL_AP_AUTO_OPT
+	bool "Support auto option for fronthaul ap"
+	default n
+
+config RTCONFIG_SECUREBOOT
+        bool "SecureBoot fw"
+        default n
+
+config RTCONFIG_FSCRYPTCTL
+        bool "fscryptctl tool"
+        default n
 
 config RTCONFIG_BSC_SR
         bool " sync bsscolor and enable spatial-reuse"
         default n
 
+config RTCONFIG_AMAS_DWB_RULE
+	bool "AiMesh new dwb rule"
+	default n
+
+config RTCONFIG_AMAS_SYNC_LEDG
+	bool "AMAS RE sync ledg"
+	default n
+
+config RTCONFIG_AMAS_SS2
+	bool "AiMesh Site Survey strategy-2"
+	default n
+config RTCONFIG_WPA3_ENTERPRISE
+        bool "WPA3 enterprise mode/transition mode/suite-b 192 bit mode"
+        default n

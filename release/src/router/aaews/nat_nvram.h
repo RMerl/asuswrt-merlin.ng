@@ -53,7 +53,6 @@ int nvram_get_https_wan_port(char* https_wan_port);
 int nvram_get_http_wan_port(char* http_wan_port);
 int nvram_get_http_enable(char* http_enable);
 */
-void WatchingNVram();
 int nvram_get_mac_addr(char* mac_addr);
 int nvram_get_link_internet();
 void aae_support_check(int *is_terminate);

@@ -337,7 +337,7 @@ METHOD(attest_db_t, set_directory, bool,
 
 	/* remove trailing '/' or '\' character if not root directory */
 	len = strlen(dir);
-	if (len > 1 && dir[len-1] == DIRECTORY_SEPARATOR[0])
+	if (len > 1 && path_is_separator(dir[len-1]))
 	{
 		dir[len-1] = '\0';
 	}

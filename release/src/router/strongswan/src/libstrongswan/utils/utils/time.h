@@ -33,6 +33,20 @@
 #define TIME_32_BIT_SIGNED_MAX	0x7fffffff
 
 /**
+ * The clock that should be used for time_monotonic() and conditional variables
+ */
+#ifdef HAVE_CLOCK_GETTIME
+#ifdef HAVE_CONDATTR_CLOCK_MONOTONIC
+/* only can use different clocks if we can set it via attribute */
+#ifndef TIME_CLOCK_ID
+#define TIME_CLOCK_ID CLOCK_MONOTONIC
+#endif
+#else
+#define TIME_CLOCK_ID CLOCK_MONOTONIC
+#endif
+#endif
+
+/**
  * Handle struct timeval like an own type.
  */
 typedef struct timeval timeval_t;

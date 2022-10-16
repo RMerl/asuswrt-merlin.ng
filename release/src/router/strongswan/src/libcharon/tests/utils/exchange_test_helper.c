@@ -49,6 +49,11 @@ struct private_exchange_test_helper_t {
 	 * List of registered listeners
 	 */
 	array_t *listeners;
+
+	/**
+	 * Config backend
+	 */
+	private_backend_t *backend;
 };
 
 /**
@@ -85,15 +90,24 @@ exchange_test_helper_t *exchange_test_helper;
 
 static ike_cfg_t *create_ike_cfg(bool initiator, exchange_test_sa_conf_t *conf)
 {
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = "127.0.0.1",
+		.local_port = IKEV2_UDP_PORT,
+		.remote = "127.0.0.1",
+		.remote_port = IKEV2_UDP_PORT,
+	};
 	ike_cfg_t *ike_cfg;
 	char *proposal = NULL;
 
-	ike_cfg = ike_cfg_create(IKEV2, TRUE, FALSE, "127.0.0.1", IKEV2_UDP_PORT,
-							 "127.0.0.1", IKEV2_UDP_PORT, FRAGMENTATION_NO, 0);
 	if (conf)
 	{
+		ike.childless = initiator ? conf->initiator.childless
+								  : conf->responder.childless;
 		proposal = initiator ? conf->initiator.ike : conf->responder.ike;
 	}
+
+	ike_cfg = ike_cfg_create(&ike);
 	if (proposal)
 	{
 		ike_cfg->add_proposal(ike_cfg,
@@ -180,6 +194,18 @@ METHOD(backend_t, create_peer_cfg_enumerator, enumerator_t*,
 	return enumerator_create_single(this->peer_cfg, NULL);
 }
 
+/**
+ * Sets the config objects provided by the backend
+ */
+static void set_config(private_backend_t *this, ike_cfg_t *ike,
+					   peer_cfg_t *peer)
+{
+	DESTROY_IF(this->ike_cfg);
+	this->ike_cfg = ike;
+	DESTROY_IF(this->peer_cfg);
+	this->peer_cfg = peer;
+}
+
 METHOD(exchange_test_helper_t, process_message, status_t,
 	private_exchange_test_helper_t *this, ike_sa_t *ike_sa, message_t *message)
 {
@@ -204,43 +230,50 @@ METHOD(exchange_test_helper_t, process_message, status_t,
 	return status;
 }
 
-METHOD(exchange_test_helper_t, establish_sa, void,
+METHOD(exchange_test_helper_t, create_sa, child_cfg_t*,
 	private_exchange_test_helper_t *this, ike_sa_t **init, ike_sa_t **resp,
 	exchange_test_sa_conf_t *conf)
 {
-	private_backend_t backend = {
-		.public = {
-			.create_ike_cfg_enumerator = _create_ike_cfg_enumerator,
-			.create_peer_cfg_enumerator = _create_peer_cfg_enumerator,
-			.get_peer_cfg_by_name = (void*)return_null,
-		},
-	};
-	ike_sa_id_t *id_i, *id_r;
-	ike_sa_t *sa_i, *sa_r;
 	peer_cfg_t *peer_cfg;
 	child_cfg_t *child_cfg;
 
-	sa_i = *init = charon->ike_sa_manager->checkout_new(charon->ike_sa_manager,
-														IKEV2, TRUE);
-	id_i = sa_i->get_id(sa_i);
+	*init = charon->ike_sa_manager->create_new(charon->ike_sa_manager,
+											   IKEV2, TRUE);
 
-	sa_r = *resp = charon->ike_sa_manager->checkout_new(charon->ike_sa_manager,
-														IKEV2, FALSE);
-	id_r = sa_r->get_id(sa_r);
+	*resp = charon->ike_sa_manager->create_new(charon->ike_sa_manager,
+											   IKEV2, FALSE);
+
+	peer_cfg = create_peer_cfg(FALSE, conf);
+	child_cfg = create_child_cfg(FALSE, conf);
+	peer_cfg->add_child_cfg(peer_cfg, child_cfg->get_ref(child_cfg));
+	child_cfg->destroy(child_cfg);
+	set_config(this->backend,  create_ike_cfg(FALSE, conf), peer_cfg);
 
 	peer_cfg = create_peer_cfg(TRUE, conf);
 	child_cfg = create_child_cfg(TRUE, conf);
 	peer_cfg->add_child_cfg(peer_cfg, child_cfg->get_ref(child_cfg));
-	sa_i->set_peer_cfg(sa_i, peer_cfg);
+	(*init)->set_peer_cfg(*init, peer_cfg);
 	peer_cfg->destroy(peer_cfg);
-	call_ikesa(sa_i, initiate, child_cfg, 0, NULL, NULL);
+	return child_cfg;
+}
 
-	backend.ike_cfg = create_ike_cfg(FALSE, conf);
-	peer_cfg = backend.peer_cfg = create_peer_cfg(FALSE, conf);
-	child_cfg = create_child_cfg(FALSE, conf);
-	peer_cfg->add_child_cfg(peer_cfg, child_cfg->get_ref(child_cfg));
-	child_cfg->destroy(child_cfg);
-	charon->backends->add_backend(charon->backends, &backend.public);
+METHOD(exchange_test_helper_t, establish_sa, void,
+	private_exchange_test_helper_t *this, ike_sa_t **init, ike_sa_t **resp,
+	exchange_test_sa_conf_t *conf)
+{
+	ike_sa_id_t *id_i, *id_r;
+	ike_sa_t *sa_i, *sa_r;
+	child_cfg_t *child_i;
+
+	child_i = create_sa(this, init, resp, conf);
+
+	sa_i = *init;
+	sa_r = *resp;
+
+	id_i = sa_i->get_id(sa_i);
+	id_r = sa_r->get_id(sa_r);
+
+	call_ikesa(sa_i, initiate, child_i, NULL);
 
 	/* IKE_SA_INIT --> */
 	id_r->set_initiator_spi(id_r, id_i->get_initiator_spi(id_i));
@@ -252,10 +285,6 @@ METHOD(exchange_test_helper_t, establish_sa, void,
 	process_message(this, sa_r, NULL);
 	/* <-- IKE_AUTH */
 	process_message(this, sa_i, NULL);
-
-	charon->backends->remove_backend(charon->backends, &backend.public);
-	DESTROY_IF(backend.peer_cfg);
-	DESTROY_IF(backend.ike_cfg);
 }
 
 METHOD(exchange_test_helper_t, add_listener, void,
@@ -300,6 +329,7 @@ static nonce_gen_t *create_nonce_gen()
 void exchange_test_helper_init(char *plugins)
 {
 	private_exchange_test_helper_t *this;
+	private_backend_t *backend;
 	plugin_feature_t features[] = {
 		PLUGIN_REGISTER(DH, mock_dh_create),
 			/* we only need to support a limited number of DH groups */
@@ -311,14 +341,24 @@ void exchange_test_helper_init(char *plugins)
 				PLUGIN_DEPENDS(RNG, RNG_WEAK),
 	};
 
+	INIT(backend,
+		.public = {
+			.create_ike_cfg_enumerator = _create_ike_cfg_enumerator,
+			.create_peer_cfg_enumerator = _create_peer_cfg_enumerator,
+			.get_peer_cfg_by_name = (void*)return_null,
+		},
+	);
+
 	INIT(this,
 		.public = {
 			.sender = mock_sender_create(),
 			.establish_sa = _establish_sa,
+			.create_sa = _create_sa,
 			.process_message = _process_message,
 			.add_listener = _add_listener,
 		},
 		.creds = mem_cred_create(),
+		.backend = backend,
 	);
 
 	initialize_logging();
@@ -338,6 +378,8 @@ void exchange_test_helper_init(char *plugins)
 	/* like SPIs for IPsec SAs, make IKE SPIs predictable */
 	charon->ike_sa_manager->set_spi_cb(charon->ike_sa_manager, get_ike_spi,
 									   this);
+
+	charon->backends->add_backend(charon->backends, &backend->public);
 
 	lib->credmgr->add_set(lib->credmgr, &this->creds->set);
 
@@ -362,6 +404,9 @@ void exchange_test_helper_deinit()
 	{
 		charon->bus->remove_listener(charon->bus, listener);
 	}
+	charon->backends->remove_backend(charon->backends, &this->backend->public);
+	set_config(this->backend, NULL, NULL);
+	free(this->backend);
 	lib->credmgr->remove_set(lib->credmgr, &this->creds->set);
 	this->creds->destroy(this->creds);
 	/* flush SAs before destroying the sender (in case of test failures) */

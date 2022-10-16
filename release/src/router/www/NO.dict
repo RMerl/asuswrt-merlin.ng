@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=Hvis du i fremtiden vil aktivere Alexa™- o
 ASUS_eula_withdraw_note=Du kan ikke i fullføre prosedyren med å trekke tilbake uten internettforbindelse. Trekk tilbake når du har koblet til Internett.
 ASUS_eula_withdraw_unstable=Du kan ikke i fullføre prosedyren med å trekke tilbake når inter
 TM_eula_confirm=Ved å bruke ASUS AiProtection samtykker du i
-TM_eula_desc1=Ved å bruke AiProtection, Traffic Analyzer (Traffikkanalyse), Apps analyzer (App-analyse), Adaptive QoS (Adaptiv QoS) / Game boost (Spill-boost)  (Spill-IPS) og nettleserlogg samtykker du i <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micros lisensavtale for sluttbrukere</a>.
-TM_eula_desc2=Vær oppmerksom på at informasjonen din vil bli samlet inn av Trend Micro gjennom Traffic Analyzer (Traffikkanalyse), Apps analyzer (App-analyse), Adaptive QoS (Adaptiv QoS) og nettleserlogg. Du anerkjenner og samtykker også i at ASUS ikke er ansvarlig for verken avtalen mellom deg og Trend Micro eller innholdet i tjenesten som leveres av Trend Micro. Hvis du har spørsmål om hvordan Trend Micro samler, behandler og bruker informasjonen ovenfor, kan du lese personvernerklæringen til Trend Micro eller kontakte Trend Micro for mer informasjon.
+TM_eula_desc1=Ved å bruke AiProtection, foreldrekontroll( Nettsted- og Appfiltere ), Traffic Analyzer (Traffikkanalyse), Apps analyzer (App-analyse), Adaptive QoS (Adaptiv QoS) / Game boost (Spill-boost)  (Spill-IPS) og nettleserlogg samtykker du i <a id="eula_url" style="text-decoration:underline;" target="_blank">Trend Micros lisensavtale for sluttbrukere</a>.
+TM_eula_desc2=Vær oppmerksom på at informasjonen din vil bli samlet inn av Trend Micro gjennom AiProtection, foreldrekontroll( Nettsted- og Appfiltere ), Traffic Analyzer (Traffikkanalyse), Apps analyzer (App-analyse), Adaptive QoS (Adaptiv QoS) og nettleserlogg. Du anerkjenner og samtykker også i at ASUS ikke er ansvarlig for verken avtalen mellom deg og Trend Micro eller innholdet i tjenesten som leveres av Trend Micro. Hvis du har spørsmål om hvordan Trend Micro samler, behandler og bruker informasjonen ovenfor, kan du lese personvernerklæringen til Trend Micro eller kontakte Trend Micro for mer informasjon.
 TM_eula_desc3=Hvis du vil deaktivere deling av informasjonen din med Trend Micro gjennom funksjonene over, kan du gå til:  Ruterens web-grensesnitt > Advanced settings (Avanserte innstillinger) > Administration (Administrasjon) > Privacy (Personvern).
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=For AiProtection, Traffic Analyzer (Traffikkanalyse), Apps analyzer (App-analyse), Adaptive QoS (Adaptiv QoS) / Game boost (Spill-boost)  (Spill-IPS) og nettleserlogg:
+TM_eula_withdraw0=For  AiProtection, foreldrekontroll( Nettsted- og Appfiltere ) Traffic Analyzer (Traffikkanalyse), Apps analyzer (App-analyse), Adaptive QoS (Adaptiv QoS) / Game boost (Spill-boost)  (Spill-IPS) og nettleserlogg:
 TM_eula_withdraw_desc1=Vær oppmerksom på at informasjonen din vil bli samlet inn av Trend Micro gjennom funksjonene over.
 TM_eula_withdraw_desc2=Hvis du vil deaktivere deling av informasjonen din med Trend Micro gjennom følgende funksjoner, kan du klikke <span style="font-weight: bold;">[Withdraw] (Trekk tilbake)</span> under. Merk imidlertid at disse funksjonene kanskje ikke vil fungere hvis slutter å dele informasjonen med Trend Micro.
 withdraw_confirm=Er du sikker på at du vil trekke tilbake?
@@ -439,7 +439,7 @@ OP_WISP_item=WISP-modus
 OP_WISP_desc1=ZVMODELVZ kobles trådløst til hovedruteren, tilgangspunktet eller et offentlig nettverk. Internett deles med kablede/trådløse klienter. I denne modusen er NAT, brannmur og DHCP-serveren aktivert som standard.
 OP_WISP_desc2=Når du kobler til et WiFi-nettverk, må du være sikker på at du er autorisert til å få tilgang til Internett.
 page_not_support_mode_hint=Funksjonen er deaktivert.
-Parental_Control=foreldrekontroll
+Parental_Control=Foreldrekontroll
 PASS_new=Nytt passord
 PASS_retype=Skriv inn passord på nytt
 PASS_score0=Veldig svak
@@ -1089,7 +1089,7 @@ AiMesh_confirm_msg9=Med tanke på kompatibiliteten mellom AiMesh-systemet og slu
 AiMesh_confirm_msg10=For å sikre at AiMesh-systemet kan koble til sluttenheten(e), må du lese disse <a id="wpa3FaqLink">FAQ</a> før du bytter til WPA3-Personal.
 AiMesh_confirm_msg11=Du bruker for øyeblikket WPA3-Personal. Hvis du vil opprette et AiMesh-system, blir autentiseringsmetoden din endret til WPA2/WPA3-Personal. Vil du fortsette?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Nærmere informasjon får du på <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>disse vanlige spørsmålene</a>
+AiMesh_confirm_msg13=Nærmere informasjon får du på <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>disse vanlige spørsmålene</a>
 AiMesh_Feature_Desc=Avansert ASUS AiMesh er en innovativ ruter-funksjon som kobler flere ASUS-rutere sammen og skaper et WiFi-nettverk for hele hjemmet.
 AiMesh_FAQ=Finn ut mer om ASUS AiMesh
 AiMesh_FindNode=Finn AiMesh-node
@@ -1175,6 +1175,9 @@ AiMesh_NodeLocation22=Balkong
 AiMesh_NodeLocation23=Møterom
 AiMesh_NodeLocation24=Tilpasset
 AiMesh_NodeLocation25=Garasje
+AiMesh_NodeLocation26=Første etasje
+AiMesh_NodeLocation27=Gamingrom
+AiMesh_NodeLocation28=Treningsrom
 AiMesh_OfflineTips=Tips frakoblet
 AiMesh_OfflineTips1=Sørg for at AiMesh-noden er slått på.
 AiMesh_OfflineTips2=Start AiMesh-noden på nytt og prøv igjen.
@@ -1795,6 +1798,8 @@ DDNS_https_cert_Import=Importer ditt eget sertifikat
 DDNS_https_cert_Import_desc=Last opp et sertifikat utstedt av en sertifiseringsmyndighet her. Din private nøkkel og SSL-sertifikat er nødvendig.
 DDNS_https_cert_PrivateKey=Privat nøkkel
 DDNS_https_cert_PrivateKey_note=Private nøkler kan ikke passordbeskyttes.
+DDNS_ipv6_update=IPv6-oppdatering
+DDNS_ipv6_update_desc=Hvis klientens nettverksmiljø bruker en IPv6-nettverksadresse, vil aktivering av denne funksjonen løse domener til en IPv6-nettverksadresse først ved når du prøver å få tilgang til en ekstern enhet.
 DDNS_ssl_cert=SSL-sertifikat
 DDNS_termofservice_Title=Vilkår for tjeneste
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2144,11 @@ FirewallConfig_display2_sectiondesc=Aktiver brannmuren for å beskytte lokalnett
 FirewallConfig_display3_sectiondesc=<b>Varighet for blokkeringsliste :</b> Under den planlagte varigheten, kan ikke klienter i blokkeringslisten bruke de spesifiserte nettverkstjenestene. Etter den spesifiserte varigheten, kan alle klienter i LAN få tilgang til de spesifiserte nettverkstjenestene.<br><b>Varighet for tillatelsesliste :</b> Under den planlagte varigheten, kan klienter i tillatelseslisten BARE bruke de spesifiserte nettverkstjenestene. Etter den spesifiserte varigheten, kan ikke klienter i tillatelseslisten og andre nettverksklienter få tilgang til Internett eller noen Internett-tjeneste.
 FirewallConfig_display4_sectiondesc=<b>MERK :</b> Hvis du stiller inn undernettverket for tillatelseslisten, vil ikke IP-adresser utenfor undernettverket få tilgang til Internett eller noen Internett-tjeneste.
 FirewallConfig_display5_sectiondesc=MAC-filteret lar deg godta eller avvise nettverkstilgang for enheter med spesifikke MAC-adresser.<p>Du kan sette MAC-filteret i Godta- eller Avvis-modus.<p>I Avvis-modusen, nektes enhetene i listen tilgang til nettverket.<p>I Godta-modusen, kan bare enheter i listen få tilgang til nettverket. Enhetene som ikke er i listen nektes tilgang til nettverket.
-FirewallConfig_DoSEnable_itemdesc=Et angrep av typen \"denial-of-service\" er et eksplisitt forsøk på å nekte lovlige brukere fra å bruke en tjeneste eller datamaskinressurs.<p>Aktivering av denne funksjonen kan beskytte ruteren fra DoS-angrep men det vil øke ruterens belastning.
+FirewallConfig_DoSEnable_itemdesc=Aktivering av denne funksjonen kan beskytte ruteren fra DoS-angrep (Denial- of-Service) men det vil øke ruterens belastning.
 FirewallConfig_DoSEnable_itemname=Aktiver DoS-beskyttelse
 FirewallConfig_FirewallEnable_itemdesc=Deaktivering av brannmuren vil deaktivere alle de relaterte funksjonene.
 FirewallConfig_FirewallEnable_itemname=Aktiver brannmur
-FirewallIPv4_enable=Aktiver IPv4 Brannmur
+FirewallIPv4_enable=Aktiver IPv4 Regler for inngående brannmur
 FirewallIPv4=IPv4-brannmur
 FirewallConfig_FTPPrompt_itemdesc=Når du stiller inn 20:21 som FTP-serverens portområde for WAN-oppsettet ditt, ville deretter FTP-serveren være i konflikt med ZVMODELVZ-ens opprinnelige FTP-server.
 FirewallConfig_KeywordFilterEnable_itemname=Aktiver nøkkelordfilter
@@ -2251,6 +2256,9 @@ FW_updated=Updated
 FW_new_firmware_available=Ny fastvare er tilgjengelig.
 FW_rlnote_loading=Laster inn produktmerknad. Vent litt …
 FW_rlnote_failed=Fant ingen produktmerknad.
+FW_rollback=Tilbakestilling
+FW_rollback_choose=Velg en fastvareversjon
+FW_rollback_selector=Tilbakestillingsvalg for fastvare
 Game_acceleration=Spillakselerasjon
 Game_Boost=Ekstra spillytelse
 Game_Boost_acceleration=Spillakselerasjon på trippelnivå
@@ -2404,7 +2412,7 @@ Internet=Internett
 Interval=Intervall
 Introduce_demo=Innledende demo
 Invitation=Invitasjon
-Interaction=Interakcja
+Interaction=Interaksjon
 InternetSpeed=Internett-hastighet
 InternetSpeed_desc=Denne tjenesten leveres av Ookla®. Den registrerer nedlastings- og opplastingshastigheten fra ruteren din til Internett. Denne testen tar omtrent ett minutt. Ved å bruke denne tjenesten godtar du  <a href="https://www.speedtest.net/about/privacy" style="font-family:Lucida Console;text-decoration:underline;color:#7ECAFF;" target="_blank">Ooklas retningslinjer for personvern</a>.
 InternetSpeed_ookla_mark=Ookla® og Speedtest® er føderalt registrerte varemerker som tilhører Ookla, LLC.
@@ -2994,6 +3002,7 @@ PM_RADIUS_Create=Opprett en ny RADIUS-klient
 PM_Group_Table=Gruppetabell
 PoolName=Partisjonsnavn
 Port_format=For kilde- eller destinasjonsportområdet, kan du enten: a) angi en spesifikk port, som \"95\"; eller b) angi porter innenfor et område, som \"103:315\", \">100\" eller \"<65535\".
+Port_Gaming=Gamingport
 Port_Mapping_desc1=Portkartlegging
 Port_Mapping_desc2=Portkartlegging støtter IPTV WAN-grensesnittet for en spesifikk LAN-port. DU kan velge passende LAN-port og klikke på Bruk.
 Port_Mapping_desc3=Aktiver Portkartlegging
@@ -3444,7 +3453,7 @@ TZ17=Atlanterhavskysten (Canada)
 TZ18=La Paz
 TZ18_1=Caracas
 TZ19=Santiago
-TZ19_1=Asunción
+TZ19_1=Asuncion
 TZ20=Newfoundland
 TZ21=Brasilia
 TZ22=Buenos Aires, Georgetown
@@ -3474,7 +3483,7 @@ TZ40_2=Kaliningrad
 TZ41=Athen
 TZ42=Jerusalem
 TZ43=Harare, Pretoria
-TZ43_2=Kiev
+TZ43_2=Kyiv
 TZ44=Moskva, St. Petersburg
 TZ45=Volgograd
 TZ46=Kuwait, Riyadh
@@ -3537,10 +3546,10 @@ Uplink_rate=Data som sendes / sek.
 Uplink_traffic=Data sendt
 upnp_Desc=Sett opp iTunes og UPnP-medieserver.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=Sett opp UPnP-medieserver.
-UPnPMediaServer_Help=ZVMODELVZ støtter UPnP-standarder. Du kan aktivere det og tillate andre UPnP-enheter, som PS3 eller en digital mediespiller, for tilgang til multimediefilene i USB-disken.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=ZVMODELVZ støtter UPnP-standarder. Du kan aktivere det og tillate andre UPnP-enheter, som PS3 eller en digital mediespiller, for tilgang til multimediefilene i USB-disken.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=ZVMODELVZ støtter UPnP-standarder. Du kan aktivere det og tillate andre UPnP-enheter, som PS3 eller en digital mediespiller, for tilgang til multimediefilene i USB-disken.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=ZVMODELVZ støtter UPnP-standarder. Du kan aktivere det og tillate andre UPnP-enheter, som PS3 eller en digital mediespiller, for tilgang til multimediefilene i USB-disken.
+UPnPMediaServer_Help=Konfigurer <a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> og <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Konfigurer <a id='upnp_link'>UPnP, iTunes</a> og <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Konfigurer <a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> og <a id='samba_link'>Network Place (Samba)</a>.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Konfigurer <a id='upnp_link'>UPnP</a> og <a id='samba_link'>Network Place (Samba)</a>.
 url_keyword_alert=URL-nøkkelord
 USB_Application_check=Kontroller USB-applikasjonen
 USB_Application_disk_checking=Kontrollerer harddisken
@@ -3740,6 +3749,9 @@ vpn_ipsec_update_cert_fail=Oppdateringen mislyktes. Prøv på nytt.
 vpn_ipsec_clients_reconnect_hint=Alle VPN-klientene dine kobles til på nytt når du klikker på Bruk. Er du sikker på at du vil fortsette?
 vpn_ipsec_IKE_ver=Støttet IKE-versjon
 vpn_ipsec_set_DDNS=Klikk her for å konfigurere DDNS.
+vpn_wireguard_server_faq=How to set up WireGuard® server?
+vpn_wireguard_site2site_faq=How to set up site to site VPN with WireGuard®?
+vpn_wireguard_client_faq=How to set up WireGuard® client in VPN Fusion?
 vpnc_desc1=VPN-klienter (virtuelt privat nettverk) blir ofte brukt til å koble til en VPN-server for å få tilgang til private ressurser over et offentlig nettverk på en sikker måte.
 vpnc_desc2=Noen enheter som dekodere, smarte TV-er og Blu-ray-spillere støtter ikke VPN-programvare.
 vpnc_desc3=ASUSWRT VPN-funksjonen gir VPN-tilgang til alle enheter i et hjemmenettverk uten å måtte installere VPN-programvare på hver enhet.
@@ -3815,18 +3827,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=TCP MSS Valg
 WANTCPMSSOptionComm1Text=Bytes
 WANVLANIDText=VLAN ID
-WANAggregation_desc=WAN-aggregering kombinerer to nettverktilkoblinger, slik at WAN-hastigheten økes til 2 Gbps. Koble ruterens WAN-port og LAN 4-port til modemets LAN-porter (forsikre deg om at du bruker to kabler med samme spesifikasjon). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregering – ofte stilte spørsmål</a>
+WANAggregation_desc=WAN-aggregering kombinerer to nettverktilkoblinger, slik at WAN-hastigheten økes til 2 Gbps. Koble ruterens #WAN-port og LAN 4-port til modemets LAN-porter (forsikre deg om at du bruker to kabler med samme spesifikasjon). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">WAN-aggregering – ofte stilte spørsmål</a>
 WANAggregation_enable=Aktiver WAN-aggregering
 WANAggregation_disable_dualwan=Ruteren din har dobbel-WAN aktivert. Hvis du aktiverer WAN-aggregering, deaktiveres dobbel WAN. Er du sikker på at du ønsker å fortsette?
 WANAggregation_disable_WANAggregation=WAN-aggregering er aktivert på ruteren. Hvis du aktiverer dobbel WAN, deaktiveres WAN-aggregering. Er du sikker på at du ønsker å fortsette?
 WANAggregation_PortConflict_hint1=WAN-aggregering bruker ruterens LAN 4-port. Hvis du aktiverer IPTV, deaktiveres WAN-aggregering. Er du sikker på at du ønsker å fortsette?
 WANAggregation_PortConflict_hint2=IPTV bruker ruterens LAN 4-port. Hvis du aktiverer WAN-aggregering, deaktiveres IPTV. Er du sikker på at du ønsker å fortsette?
 WANAggregation_disable_IPTVDualWAN=Ruteren har både dobbel WAN og IPTV aktivert. Hvis du aktiverer WAN-aggregering, blir dobbel WAN og IPTV deaktivert for å unngå portkonflikter. Er du sikker på at du ønsker å fortsette?
-WANAggregation_help_WAN=Forsikre deg om at ruterens WAN-port og modemets LAN-port er tilkoblet med to kabler som har samme spesifikasjon.
+WANAggregation_help_WAN=Forsikre deg om at ruterens #WAN-port og modemets LAN-port er tilkoblet med to kabler som har samme spesifikasjon.
 WANAggregation_help_LAN=Forsikre deg om at ruterens LAN 4-port og modemets LAN-port er tilkoblet med to kabler som har samme spesifikasjon.
 WANAggregation_goto_WAN=Gå til tilkoblingssiden for <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">WAN-internett</a>, for å aktivere WAN-aggregering.
 WANAggregation_help_desc=Hvis WAN-aggregeringen ikke lykkes, utfør de følgende trinn for å prøve på nytt.
-WANAggregation_help_step1=Sørg for at modemets LAN-porter allerede er tilkoblet ruterens WAN og LAN 4 med kabler.
+WANAggregation_help_step1=Sørg for at modemets LAN-porter allerede er tilkoblet ruterens #WAN og LAN 4 med kabler.
 WANAggregation_help_step2=Pass på at modemet har 802.3ad aktivert
 WANAggregation_help_step3=Bekreft at du bruker to kabler med de samme spesifikasjoner (enten to gigabit-kabler eller to 10/100 Mbps-kabler)
 WANAggregation_help_step4=Start om ruteren
@@ -4270,6 +4282,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Velg GeForce Now for å prioritere GeForce Now-spillenheter for en raskere og bedre spillopplevelse.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=To enable Aura RGB, LED must remain on. Please turn on LED by pressing hardware button on the router for 3 seconds or enable it via web/app interface.
 AURA_Event=Hendelse
 AURA_Event_desc=Systemet oppdager følgende hendelser og utløser forskjellige LED-effekter.
 AURA_Event_Boost_desc=Når du aktiverer Game Boost, vil du se at LED-feltet bruker en rød pusteeffekt.

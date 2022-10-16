@@ -138,8 +138,7 @@ static int tls_close(URLContext *h)
     av_freep(&c->dec_buf);
     c->dec_buf_size = c->dec_buf_offset = 0;
 
-    if (c->tls_shared.tcp)
-        ffurl_close(c->tls_shared.tcp);
+    ffurl_closep(&c->tls_shared.tcp);
     return 0;
 }
 
@@ -148,7 +147,7 @@ static int tls_client_handshake_loop(URLContext *h, int initial)
     TLSContext *c = h->priv_data;
     TLSShared *s = &c->tls_shared;
     SECURITY_STATUS sspi_ret;
-    SecBuffer outbuf[3];
+    SecBuffer outbuf[3] = { 0 };
     SecBufferDesc outbuf_desc;
     SecBuffer inbuf[2];
     SecBufferDesc inbuf_desc;
@@ -392,7 +391,12 @@ static int tls_read(URLContext *h, uint8_t *buf, int len)
     int size, ret;
     int min_enc_buf_size = len + SCHANNEL_FREE_BUFFER_SIZE;
 
-    if (len <= c->dec_buf_offset)
+    /* If we have some left-over data from previous network activity,
+     * return it first in case it is enough. It may contain
+     * data that is required to know whether this connection
+     * is still required or not, esp. in case of HTTP keep-alive
+     * connections. */
+    if (c->dec_buf_offset > 0)
         goto cleanup;
 
     if (c->sspi_close_notify)
@@ -424,7 +428,7 @@ static int tls_read(URLContext *h, uint8_t *buf, int len)
         c->enc_buf_offset += ret;
     }
 
-    while (c->enc_buf_offset > 0 && sspi_ret == SEC_E_OK && c->dec_buf_offset < len) {
+    while (c->enc_buf_offset > 0 && sspi_ret == SEC_E_OK) {
         /*  input buffer */
         init_sec_buffer(&inbuf[0], SECBUFFER_DATA, c->enc_buf, c->enc_buf_offset);
 
@@ -585,6 +589,12 @@ static int tls_get_file_handle(URLContext *h)
     return ffurl_get_file_handle(c->tls_shared.tcp);
 }
 
+static int tls_get_short_seek(URLContext *h)
+{
+    TLSContext *s = h->priv_data;
+    return ffurl_get_short_seek(s->tls_shared.tcp);
+}
+
 static const AVOption options[] = {
     TLS_COMMON_OPTIONS(TLSContext, tls_shared),
     { NULL }
@@ -604,6 +614,7 @@ const URLProtocol ff_tls_protocol = {
     .url_write      = tls_write,
     .url_close      = tls_close,
     .url_get_file_handle = tls_get_file_handle,
+    .url_get_short_seek  = tls_get_short_seek,
     .priv_data_size = sizeof(TLSContext),
     .flags          = URL_PROTOCOL_FLAG_NETWORK,
     .priv_data_class = &tls_class,

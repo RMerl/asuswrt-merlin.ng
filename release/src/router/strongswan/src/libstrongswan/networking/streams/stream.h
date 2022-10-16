@@ -50,7 +50,7 @@ typedef stream_t*(*stream_constructor_t)(char *uri);
 typedef bool (*stream_cb_t)(void *data, stream_t *stream);
 
 /**
- * Abstraction of a Berkley socket using stream semantics.
+ * Abstraction of a Berkeley socket using stream semantics.
  */
 struct stream_t {
 

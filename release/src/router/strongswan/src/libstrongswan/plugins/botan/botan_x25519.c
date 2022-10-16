@@ -155,13 +155,13 @@ diffie_hellman_t *botan_x25519_create(diffie_hellman_group_t group)
 		},
 	);
 
-	if (botan_rng_init(&rng, "user"))
+	if (!botan_get_rng(&rng, RNG_STRONG))
 	{
 		free(this);
 		return NULL;
 	}
 
-	if (botan_privkey_create_ecdh(&this->key, rng, "curve25519"))
+	if (botan_privkey_create(&this->key, "Curve25519", "", rng))
 	{
 		DBG1(DBG_LIB, "x25519 private key generation failed");
 		botan_rng_destroy(rng);

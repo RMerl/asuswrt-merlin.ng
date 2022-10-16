@@ -684,7 +684,7 @@ static void is_singtel_mio(int is)
  *     -1:	invalid parameter.
  *     -2:	miireg_read() MII_BMSR failed
  */
-static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *speed, unsigned int *link_speed)
+static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *speed, unsigned int *link_speed, phy_info *info)
 {
 	int r = 0, l = 1, s = 0, lspd = 0;
 	char iface[IFNAMSIZ];
@@ -749,6 +749,17 @@ static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *spee
 		*speed = s;
 	if (link_speed)
 		*link_speed = lspd;
+	if (info) {
+		if (l) {
+			info->link_rate = lspd;
+			snprintf(info->state, sizeof(info->state), "up");
+			// TODO: need to retreive duplex from driver
+			//snprintf(info->duplex, sizeof(info->duplex), "none"); 
+		} else {
+			snprintf(info->state, sizeof(info->state), "down");
+			snprintf(info->duplex, sizeof(info->duplex), "none");
+		}
+	}
 
 	return 0;
 }
@@ -769,7 +780,7 @@ static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *spee
  *     -1:	invalid parameter
  *  otherwise:	fail
  */
-static int get_qca8075_8337_8035_8033_aqr107_vport_info(unsigned int vport, unsigned int *link, unsigned int *speed)
+static int get_qca8075_8337_8035_8033_aqr107_vport_info(unsigned int vport, unsigned int *link, unsigned int *speed, phy_info *info)
 {
 	int phy;
 
@@ -791,7 +802,7 @@ static int get_qca8075_8337_8035_8033_aqr107_vport_info(unsigned int vport, unsi
 		return -1;
 	}
 
-	get_phy_info(phy, link, speed, NULL);
+	get_phy_info(phy, link, speed, NULL, info);
 
 	return 0;
 }
@@ -816,7 +827,7 @@ static int get_qca8075_8337_8035_8033_aqr107_phy_linkStatus(unsigned int mask, u
 		if (!(m & 1))
 			continue;
 
-		get_qca8075_8337_8035_8033_aqr107_vport_info(i, &value, (unsigned int*) &t);
+		get_qca8075_8337_8035_8033_aqr107_vport_info(i, &value, (unsigned int*) &t, NULL);
 		value &= 0x1;
 	}
 	*linkStatus = value;
@@ -996,7 +1007,7 @@ static void get_qca8075_8337_8035_8033_aqr107_WAN_Speed(unsigned int *speed)
 		if (!(m & 1))
 			continue;
 
-		get_qca8075_8337_8035_8033_aqr107_vport_info(i, NULL, (unsigned int*) &t);
+		get_qca8075_8337_8035_8033_aqr107_vport_info(i, NULL, (unsigned int*) &t, NULL);
 		t &= 0x3;
 		if (t > v)
 			v = t;
@@ -1080,6 +1091,109 @@ static void link_down_up_qca8075_8337_8035_8033_aqr107_PHY(unsigned int vpmask, 
 		}
 	}
 }
+
+#if 0
+/*define structure for software with 64bit*/
+typedef struct
+{
+	uint64_t RxBroad;
+	uint64_t RxPause;
+	uint64_t RxMulti;
+	uint64_t RxFcsErr;
+	uint64_t RxAllignErr;
+	uint64_t RxRunt;
+	uint64_t RxFragment;
+	uint64_t Rx64Byte;
+	uint64_t Rx128Byte;
+	uint64_t Rx256Byte;
+	uint64_t Rx512Byte;
+	uint64_t Rx1024Byte;
+	uint64_t Rx1518Byte;
+	uint64_t RxMaxByte;
+	uint64_t RxTooLong;
+	uint64_t RxGoodByte;
+	uint64_t RxBadByte;
+	uint64_t RxOverFlow;		/* no this counter for Hawkeye*/
+	uint64_t Filtered;			/*no this counter for Hawkeye*/
+	uint64_t TxBroad;
+	uint64_t TxPause;
+	uint64_t TxMulti;
+	uint64_t TxUnderRun;
+	uint64_t Tx64Byte;
+	uint64_t Tx128Byte;
+	uint64_t Tx256Byte;
+	uint64_t Tx512Byte;
+	uint64_t Tx1024Byte;
+	uint64_t Tx1518Byte;
+	uint64_t TxMaxByte;
+	uint64_t TxOverSize;	/*no this counter for Hawkeye*/
+	uint64_t TxByte;
+	uint64_t TxCollision;
+	uint64_t TxAbortCol;
+	uint64_t TxMultiCol;
+	uint64_t TxSingalCol;
+	uint64_t TxExcDefer;
+	uint64_t TxDefer;
+	uint64_t TxLateCol;
+	uint64_t RxUniCast;
+	uint64_t TxUniCast;
+	uint64_t RxJumboFcsErr;	/* add for  Hawkeye*/
+	uint64_t RxJumboAligenErr;	/* add for Hawkeye*/
+} fal_mib_counter_t;
+
+#define MISC_CHR_DEV           10
+#define UK_MINOR_DEV           254
+#define DEV_SWITH_SSDK_PATH    "/dev/switch_ssdk"
+#define SW_MAX_API_BUF         2048
+#define SW_MAX_API_PARAM       12 /* cmd type + return value + ten parameters */
+#define SW_API_PT_MIB_COUNTER_GET        1107
+#endif
+
+
+#if 0
+/**
+ * Return MiB(tx_bytes/rx_bytes/tx_pakcets/rx_packets/crc_errors) of @phy.
+ * @port:	port id
+ * @info:	sruct phy_info to store MiB(tx_bytes/rx_bytes/tx_pakcets/rx_packets/crc_errors)
+ * @return:	0 for success
+     non-zero for fail
+ */
+static int get_qca8075_8337_8035_8033_aqr107_port_mib(unsigned int port, phy_info *info)
+{
+	int fd;
+	unsigned long arg_val[SW_MAX_API_PARAM] = {0};
+	unsigned long rtn = 0;
+	fal_mib_counter_t mib_counter = {0};
+
+	if (!info)
+		return -1;
+
+	/* even mknod fail we not quit, perhaps the device node exist already */
+	mknod(DEV_SWITH_SSDK_PATH, S_IFCHR, makedev(MISC_CHR_DEV, UK_MINOR_DEV));
+	if ((fd = open(DEV_SWITH_SSDK_PATH, O_RDWR)) < 0) {
+		return -1;
+	}
+	arg_val[0] = (unsigned long)SW_API_PT_MIB_COUNTER_GET;  // API
+	arg_val[1] = (unsigned long)&rtn;
+	arg_val[2] = (unsigned long)0;    //device id
+	arg_val[3] = (unsigned long)port; //port
+	arg_val[4] = (unsigned long)(&mib_counter);
+
+	ioctl(fd, SIOCDEVPRIVATE, arg_val);
+	//fprintf(stderr, "rtn=%d, port=%d\n", rtn, port);
+	if (rtn == 0) {
+		info->tx_bytes = mib_counter.TxByte;
+		info->rx_bytes = mib_counter.RxGoodByte;
+		info->tx_packets = mib_counter.TxBroad + mib_counter.TxMulti + mib_counter.TxUniCast;
+		info->rx_packets = mib_counter.RxBroad + mib_counter.RxMulti + mib_counter.RxUniCast;
+		info->crc_errors = mib_counter.RxFcsErr;
+		//fprintf(stderr, "tx_bytes=%llu, rx_bytes=%llu, tx_packets=%lu, rx_packets=%lu, crc_errors=%lu\n", 
+		//	info->tx_bytes, info->rx_bytes, info->tx_packets, info->rx_packets, info->crc_errors);
+	}
+	close(fd);
+	return 0;
+}
+#endif
 
 void reset_qca_switch(void)
 {
@@ -1436,20 +1550,71 @@ static char conv_speed(unsigned int link, unsigned int speed)
 	return ret;
 }
 
-void ATE_port_status(phy_info_list *list)
+void ATE_port_status(int verbose, phy_info_list *list)
 {
 	int i;
 	char buf[6 * 11], wbuf[6 * 3], lbuf[6 * 8];
-	phyState pS;
-#if defined(RTAC89U)
-	const int wan1g_sfp10g = 1;	/* 10G base-T absent. */
-#else
-	const int wan1g_sfp10g = 0;
+#ifdef RTCONFIG_NEW_PHYMAP
+	char cap_buf[64] = {0};
+	char wlen = 0, llen = 0;
 #endif
+	phyState pS;
 
+#ifdef RTCONFIG_NEW_PHYMAP
+	phy_port_mapping port_mapping;
+	get_phy_port_mapping(&port_mapping);
+
+	for (i = 0; i < port_mapping.count; i++) {
+		// Only handle WAN/LAN ports
+		if (((port_mapping.port[i].cap & PHY_PORT_CAP_WAN) == 0) && ((port_mapping.port[i].cap & PHY_PORT_CAP_LAN) == 0))
+			continue;
+		pS.link[i] = 0;
+		pS.speed[i] = 0;
+		get_qca8075_8337_8035_8033_aqr107_vport_info(lan_id_to_vport_nr(i), &pS.link[i], &pS.speed[i], list ? &list->phy_info[i] : NULL);
+
+		if (list) {
+			list->phy_info[i].phy_port_id = port_mapping.port[i].phy_port_id;
+			snprintf(list->phy_info[i].label_name, sizeof(list->phy_info[i].label_name), "%s", 
+				port_mapping.port[i].label_name);
+			list->phy_info[i].cap = port_mapping.port[i].cap;
+			snprintf(list->phy_info[i].cap_name, sizeof(list->phy_info[i].cap_name), "%s", 
+				get_phy_port_cap_name(port_mapping.port[i].cap, cap_buf, sizeof(cap_buf)));
+			/*if (pS.link[i] == 1 && !list->status_and_speed_only)
+				get_qca8075_8337_8035_8033_aqr107_port_mib(port_mapping.port[i].phy_port_id, &list->phy_info[i]);*/
+
+			list->count++;
+		}
+		if ((port_mapping.port[i].cap & PHY_PORT_CAP_WAN) > 0)
+			wlen += sprintf(wbuf+wlen, "%s=%C;", port_mapping.port[i].label_name,
+						conv_speed(pS.link[i], pS.speed[i]));
+		else
+			llen += sprintf(lbuf+llen, "%s=%C;", port_mapping.port[i].label_name,
+						conv_speed(pS.link[i], pS.speed[i]));
+	}
+
+#else
 	memset(&pS, 0, sizeof(pS));
 	for (i = 0; i < NR_WANLAN_PORT; i++) {
-		get_qca8075_8337_8035_8033_aqr107_vport_info(lan_id_to_vport_nr(i), &pS.link[i], &pS.speed[i]);
+		get_qca8075_8337_8035_8033_aqr107_vport_info(lan_id_to_vport_nr(i), &pS.link[i], &pS.speed[i], list ? &list->phy_info[i] : NULL);
+
+		if (list) {
+			list->phy_info[list->count].phy_port_id = lan_id_to_vport_nr(i);
+			if (!list->count) {
+				list->phy_info[list->count].cap = PHY_PORT_CAP_WAN;
+				snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[i].cap_name), "wan");
+				snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "W0");
+			}
+			else {
+				list->phy_info[list->count].cap = PHY_PORT_CAP_LAN;
+				snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[i].cap_name), "lan");
+				snprintf(list->phy_info[list->count].label_name, sizeof(list->phy_info[list->count].label_name), "L%d", 
+					list->count);
+			}
+			/*if (pS.link[i] == 1 && !list->status_and_speed_only)
+				get_ipq40xx_port_mib(lan_id_to_port_nr(i), &list->phy_info[i]);*/
+
+			list->count++;
+		}
 	}
 
 	snprintf(lbuf, sizeof(lbuf), "L1=%C;L2=%C;L3=%C;L4=%C;L5=%C;L6=%C;L7=%C;L8=%C;",
@@ -1461,8 +1626,8 @@ void ATE_port_status(phy_info_list *list)
 		conv_speed(pS.link[LAN6_PORT], pS.speed[LAN6_PORT]),
 		conv_speed(pS.link[LAN7_PORT], pS.speed[LAN7_PORT]),
 		conv_speed(pS.link[LAN8_PORT], pS.speed[LAN8_PORT]));
-	if (wan1g_sfp10g) {
-		/* RT-AC89U */
+	if (!is_aqr_phy_exist()) {
+		/* RT-AX89X w/o 10G base-T port, not shipped. */
 		snprintf(wbuf, sizeof(wbuf), "W0=%C;W2=%C;",
 			conv_speed(pS.link[WAN_PORT], pS.speed[WAN_PORT]),
 			conv_speed(pS.link[WAN10GS_PORT], pS.speed[WAN10GS_PORT]));
@@ -1473,11 +1638,12 @@ void ATE_port_status(phy_info_list *list)
 			conv_speed(pS.link[WAN10GR_PORT], pS.speed[WAN10GR_PORT]),
 			conv_speed(pS.link[WAN10GS_PORT], pS.speed[WAN10GS_PORT]));
 	}
+#endif // #ifdef RTCONFIG_NEW_PHYMAP
 
 	strlcpy(buf, wbuf, sizeof(buf));
 	strlcat(buf, lbuf, sizeof(buf));
-
-	puts(buf);
+	if (verbose)
+		puts(buf);
 }
 
 /* Callback function which is used to fin brvX interface, X must be number.
@@ -2016,7 +2182,7 @@ int __get_bonding_port_status(enum bs_port_id bs_port)
 		dbg("%s: can't get PHY address of vport %d\n", __func__, vport);
 		return 0;
 	}
-	get_phy_info(phy, &link, NULL, &speed);
+	get_phy_info(phy, &link, NULL, &speed, NULL);
 
 	return link? speed : 0;
 }
@@ -2115,6 +2281,61 @@ void __wgn_sysdep_swtich_set(int vid)
 		_eval(vmbr_add, DBGOUT, 0, NULL);
 	}
 }
+
+#ifdef RTCONFIG_NEW_PHYMAP
+extern int get_trunk_port_mapping(int trunk_port_value)
+{
+	return trunk_port_value;
+}
+
+/* phy port related start */
+void get_phy_port_mapping(phy_port_mapping *port_mapping)
+{
+	static phy_port_mapping port_mapping_static = {
+#if defined(RTAC89U)
+		.count = 10,
+		.port[0] = { .phy_port_id = LAN1_PORT, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[1] = { .phy_port_id = LAN2_PORT, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = LAN3_PORT, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = LAN4_PORT, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = LAN5_PORT, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[5] = { .phy_port_id = LAN6_PORT, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[6] = { .phy_port_id = LAN7_PORT, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[7] = { .phy_port_id = LAN8_PORT, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[8] = { .phy_port_id = WAN_PORT, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = NULL },
+		.port[9] = { .phy_port_id = WAN10GS_PORT, .label_name = "W2", .cap = (PHY_PORT_CAP_WAN2 | PHY_PORT_CAP_SFPP), .max_rate = 10000, .ifname = NULL }
+#elif defined(RTAX89U) || defined(GTAXY16000)
+		.count = 13,
+		.port[0] = { .phy_port_id = LAN1_PORT, .label_name = "L1", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[1] = { .phy_port_id = LAN2_PORT, .label_name = "L2", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[2] = { .phy_port_id = LAN3_PORT, .label_name = "L3", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[3] = { .phy_port_id = LAN4_PORT, .label_name = "L4", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[4] = { .phy_port_id = LAN5_PORT, .label_name = "L5", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[5] = { .phy_port_id = LAN6_PORT, .label_name = "L6", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[6] = { .phy_port_id = LAN7_PORT, .label_name = "L7", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[7] = { .phy_port_id = LAN8_PORT, .label_name = "L8", .cap = PHY_PORT_CAP_LAN, .max_rate = 1000, .ifname = NULL },
+		.port[8] = { .phy_port_id = WAN_PORT, .label_name = "W0", .cap = PHY_PORT_CAP_WAN, .max_rate = 1000, .ifname = NULL },
+		.port[9] = { .phy_port_id = WAN10GR_PORT, .label_name = "W1", .cap = (PHY_PORT_CAP_WAN | PHY_PORT_CAP_WAN2), .max_rate = 10000, .ifname = NULL },
+		.port[10] = { .phy_port_id = WAN10GS_PORT, .label_name = "W2", .cap = (PHY_PORT_CAP_WAN | PHY_PORT_CAP_WAN3 | PHY_PORT_CAP_SFPP), .max_rate = 10000, .ifname = NULL },
+		.port[11] = { .phy_port_id = -1, .label_name = "U1", .cap = PHY_PORT_CAP_USB, .max_rate = 5000, .ifname = NULL },
+		.port[12] = { .phy_port_id = -1, .label_name = "U2", .cap = PHY_PORT_CAP_USB, .max_rate = 5000, .ifname = NULL }
+#else
+		#error "port_mapping is not defined."
+#endif
+	};
+
+	if (!port_mapping)
+		return;
+
+	memcpy(port_mapping, &port_mapping_static, sizeof(phy_port_mapping));
+
+	add_sw_cap(port_mapping);
+	swap_wanlan(port_mapping);
+	return;
+}
+
+/* phy port related end.*/
+#endif
 
 #if defined(RTCONFIG_FRS_FEEDBACK)
 static const struct sfpp_eeprom_value_defs {

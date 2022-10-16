@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
  * HSR Hochschule fuer Technik Rapperswil
  *
@@ -48,8 +48,11 @@ struct sys_logger_t {
 	 * Set options used by this logger.
 	 *
 	 * @param ike_name	TRUE to prefix the name of the IKE_SA
+	 * @param log_level	TRUE to include the log level in the message
+	 * @param map_level	map log level to syslog level, -1 to disable
 	 */
-	void (*set_options) (sys_logger_t *this, bool ike_name);
+	void (*set_options) (sys_logger_t *this, bool ike_name, bool log_level,
+						 int map_level);
 
 	/**
 	 * Destroys a sys_logger_t object.

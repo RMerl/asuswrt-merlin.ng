@@ -1,4 +1,7 @@
 /*
+ * Copyright (C) 2020 Tobias Brunner
+ * HSR Hochschule fuer Technik Rapperswil
+ *
  * Copyright (C) 2014 Martin Willi
  * Copyright (C) 2014 revosec AG
  *
@@ -44,13 +47,13 @@ struct tls_aead_t {
 	 * gets updated to the IV for the next record.
 	 *
 	 * @param version		TLS version
-	 * @param type			TLS content type
+	 * @param type			TLS content type (may be changed)
 	 * @param seq			record sequence number
 	 * @param data			data to encrypt, encryption result
 	 * @return				TRUE if successfully encrypted
 	 */
 	bool (*encrypt)(tls_aead_t *this, tls_version_t version,
-					tls_content_type_t type, uint64_t seq, chunk_t *data);
+					tls_content_type_t *type, uint64_t seq, chunk_t *data);
 
 	/**
 	 * Decrypt and verify a TLS record.
@@ -59,13 +62,13 @@ struct tls_aead_t {
 	 * length, decryption is done inline.
 	 *
 	 * @param version		TLS version
-	 * @param type			TLS content type
+	 * @param type			TLS content type (may be changed)
 	 * @param seq			record sequence number
 	 * @param data			data to decrypt, decrypted result
 	 * @return				TRUE if successfully decrypted
 	 */
 	bool (*decrypt)(tls_aead_t *this, tls_version_t version,
-					tls_content_type_t type, uint64_t seq, chunk_t *data);
+					tls_content_type_t *type, uint64_t seq, chunk_t *data);
 
 	/**
 	 * Get the authentication key size.
@@ -147,10 +150,27 @@ tls_aead_t *tls_aead_create_null(integrity_algorithm_t mac);
 /**
  * Create a tls_aead instance using real a AEAD cipher.
  *
+ * The sequence number is used as IV directly. The internally used nonce
+ * is derived from the key material. Used for TLS 1.2.
+ *
  * @param encr			AEAD encryption algorithm
  * @param encr_size		encryption key size, in bytes
  * @return				TLS AEAD transform
  */
 tls_aead_t *tls_aead_create_aead(encryption_algorithm_t encr, size_t encr_size);
+
+/**
+ * Create a tls_aead instance using real a AEAD cipher and sequence number
+ * as IV.
+ *
+ * The sequence number XORed with a static value of at least the same length
+ * that is derived from the key material is used as IV. This is what TLS 1.3
+ * and newer uses.
+ *
+ * @param encr			AEAD encryption algorithm
+ * @param encr_size		encryption key size, in bytes
+ * @return				TLS AEAD transform
+ */
+tls_aead_t *tls_aead_create_seq(encryption_algorithm_t encr, size_t encr_size);
 
 #endif /** TLS_AEAD_H_ @}*/

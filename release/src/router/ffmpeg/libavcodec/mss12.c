@@ -161,6 +161,8 @@ static av_always_inline int decode_pixel(ArithCoder *acoder, PixContext *pctx,
 {
     int i, val, pix;
 
+    if (acoder->overread > MAX_OVERREAD)
+        return AVERROR_INVALIDDATA;
     val = acoder->get_model_sym(acoder, &pctx->cache_model);
     if (val < pctx->num_syms) {
         if (any_ngb) {
@@ -289,14 +291,15 @@ static int decode_pixel_in_context(ArithCoder *acoder, PixContext *pctx,
         return decode_pixel(acoder, pctx, ref_pix, nlen, 1);
 }
 
-static int decode_region(ArithCoder *acoder, uint8_t *dst, uint8_t *rgb_pic,
+static int decode_region(ArithCoder *acoder, uint8_t *dst, uint8_t *rgb_dst,
                          int x, int y, int width, int height, ptrdiff_t stride,
                          ptrdiff_t rgb_stride, PixContext *pctx,
                          const uint32_t *pal)
 {
     int i, j, p;
-    uint8_t *rgb_dst = rgb_pic + x * 3 + y * rgb_stride;
 
+    rgb_stride = rgb_dst ? rgb_stride : 0;
+    rgb_dst    = rgb_dst ? rgb_dst + x * 3 + y * rgb_stride : NULL;
     dst += x + y * stride;
 
     for (j = 0; j < height; j++) {
@@ -306,13 +309,15 @@ static int decode_region(ArithCoder *acoder, uint8_t *dst, uint8_t *rgb_pic,
             else
                 p = decode_pixel_in_context(acoder, pctx, dst + i, stride,
                                             i, j, width - i - 1);
+            if (p < 0)
+                return p;
             dst[i] = p;
 
-            if (rgb_pic)
+            if (rgb_dst)
                 AV_WB24(rgb_dst + i * 3, pal[p]);
         }
         dst     += stride;
-        rgb_dst += rgb_stride;
+        rgb_dst  = FF_PTR_ADD(rgb_dst, rgb_stride);
     }
 
     return 0;
@@ -398,6 +403,8 @@ static int decode_region_masked(MSS12Context const *c, ArithCoder *acoder,
                 else
                     p = decode_pixel_in_context(acoder, pctx, dst + i, stride,
                                                 i, j, width - i - 1);
+                if (p < 0)
+                    return p;
                 dst[i] = p;
                 if (c->rgb_pic)
                     AV_WB24(rgb_dst + i * 3, c->pal[p]);
@@ -470,15 +477,19 @@ static int decode_region_intra(SliceContext *sc, ArithCoder *acoder,
         ptrdiff_t stride     = c->pal_stride;
         ptrdiff_t rgb_stride = c->rgb_stride;
         uint8_t *dst     = c->pal_pic + x     + y * stride;
-        uint8_t *rgb_dst = c->rgb_pic + x * 3 + y * rgb_stride;
+        uint8_t *rgb_dst = c->rgb_pic ? c->rgb_pic + x * 3 + y * rgb_stride : NULL;
 
         pix     = decode_pixel(acoder, &sc->intra_pix_ctx, NULL, 0, 0);
+        if (pix < 0)
+            return pix;
         rgb_pix = c->pal[pix];
-        for (i = 0; i < height; i++, dst += stride, rgb_dst += rgb_stride) {
+        for (i = 0; i < height; i++, dst += stride) {
             memset(dst, pix, width);
-            if (c->rgb_pic)
+            if (rgb_dst) {
                 for (j = 0; j < width * 3; j += 3)
                     AV_WB24(rgb_dst + j, rgb_pix);
+                rgb_dst += rgb_stride;
+            }
         }
     } else {
         return decode_region(acoder, c->pal_pic, c->rgb_pic,
@@ -499,6 +510,8 @@ static int decode_region_inter(SliceContext *sc, ArithCoder *acoder,
 
     if (!mode) {
         mode = decode_pixel(acoder, &sc->inter_pix_ctx, NULL, 0, 0);
+        if (mode < 0)
+            return mode;
 
         if (c->avctx->err_recognition & AV_EF_EXPLODE &&
             ( c->rgb_pic && mode != 0x01 && mode != 0x02 && mode != 0x04 ||
@@ -530,6 +543,8 @@ int ff_mss12_decode_rect(SliceContext *sc, ArithCoder *acoder,
                          int x, int y, int width, int height)
 {
     int mode, pivot;
+    if (acoder->overread > MAX_OVERREAD)
+        return AVERROR_INVALIDDATA;
 
     mode = acoder->get_model_sym(acoder, &sc->split_mode);
 

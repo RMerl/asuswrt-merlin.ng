@@ -56,6 +56,10 @@ int main(int argc, char *argv[])
 	}
 
 	rounds = atoi(argv[3]);
+	if (rounds < 0 || rounds > (1 << 26))
+	{	/* arbitrary limit to the number of chunk_t/sigs that fit into 1 GiB */
+		usage();
+	}
 
 	if (streq(argv[2], "rsa"))
 	{

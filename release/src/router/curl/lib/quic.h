@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -20,6 +20,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 
 #include "curl_setup.h"
@@ -30,6 +32,9 @@
 #endif
 #ifdef USE_QUICHE
 #include "vquic/quiche.h"
+#endif
+#ifdef USE_MSH3
+#include "vquic/msh3.h"
 #endif
 
 #include "urldata.h"
@@ -51,6 +56,7 @@ void Curl_quic_done(struct Curl_easy *data, bool premature);
 bool Curl_quic_data_pending(const struct Curl_easy *data);
 void Curl_quic_disconnect(struct Curl_easy *data,
                           struct connectdata *conn, int tempindex);
+CURLcode Curl_quic_idle(struct Curl_easy *data);
 
 #else /* ENABLE_QUIC */
 #define Curl_quic_done_sending(x)

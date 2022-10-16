@@ -29,8 +29,8 @@
 #include "rawenc.h"
 #include "pcm.h"
 
-#define AVPRIV_CODEC2_HEADER_SIZE 7
-#define AVPRIV_CODEC2_MAGIC       0xC0DEC2
+#define CODEC2_HEADER_SIZE 7
+#define CODEC2_MAGIC       0xC0DEC2
 
 //the lowest version we should ever run across is 0.8
 //we may run across later versions as the format evolves
@@ -43,10 +43,10 @@ typedef struct {
     int frames_per_packet;
 } Codec2Context;
 
-static int codec2_probe(AVProbeData *p)
+static int codec2_probe(const AVProbeData *p)
 {
     //must start wih C0 DE C2
-    if (AV_RB24(p->buf) != AVPRIV_CODEC2_MAGIC) {
+    if (AV_RB24(p->buf) != CODEC2_MAGIC) {
         return 0;
     }
 
@@ -61,9 +61,69 @@ static int codec2_probe(AVProbeData *p)
     return AVPROBE_SCORE_EXTENSION + 1;
 }
 
+//Mimics codec2_samples_per_frame()
+static int codec2_mode_frame_size(AVFormatContext *s, int mode)
+{
+    int frame_size_table[CODEC2_MODE_MAX+1] = {
+        160,    // 3200
+        160,    // 2400
+        320,    // 1600
+        320,    // 1400
+        320,    // 1300
+        320,    // 1200
+        320,    // 700
+        320,    // 700B
+        320,    // 700C
+    };
+
+    if (mode < 0 || mode > CODEC2_MODE_MAX) {
+        av_log(s, AV_LOG_ERROR, "unknown codec2 mode %i, can't find frame_size\n", mode);
+        return 0;
+    } else {
+        return frame_size_table[mode];
+    }
+}
+
+//Mimics (codec2_bits_per_frame()+7)/8
+static int codec2_mode_block_align(AVFormatContext *s, int mode)
+{
+    int block_align_table[CODEC2_MODE_MAX+1] = {
+        8,      // 3200
+        6,      // 2400
+        8,      // 1600
+        7,      // 1400
+        7,      // 1300
+        6,      // 1200
+        4,      // 700
+        4,      // 700B
+        4,      // 700C
+    };
+
+    if (mode < 0 || mode > CODEC2_MODE_MAX) {
+        av_log(s, AV_LOG_ERROR, "unknown codec2 mode %i, can't find block_align\n", mode);
+        return 0;
+    } else {
+        return block_align_table[mode];
+    }
+}
+
+//Computes bitrate from mode, with frames rounded up to the nearest octet.
+//So 700 bit/s (28 bits/frame) becomes 800 bits/s (32 bits/frame).
+static int codec2_mode_bit_rate(AVFormatContext *s, int mode)
+{
+    int frame_size  = codec2_mode_frame_size(s, mode);
+    int block_align = codec2_mode_block_align(s, mode);
+
+    if (frame_size <= 0 || block_align <= 0) {
+        return 0;
+    }
+
+    return 8 * 8000 * block_align / frame_size;
+}
+
 static int codec2_read_header_common(AVFormatContext *s, AVStream *st)
 {
-    int mode = avpriv_codec2_mode_from_extradata(st->codecpar->extradata);
+    int mode = codec2_mode_from_extradata(st->codecpar->extradata);
 
     st->codecpar->codec_type        = AVMEDIA_TYPE_AUDIO;
     st->codecpar->codec_id          = AV_CODEC_ID_CODEC2;
@@ -71,9 +131,9 @@ static int codec2_read_header_common(AVFormatContext *s, AVStream *st)
     st->codecpar->channels          = 1;
     st->codecpar->format            = AV_SAMPLE_FMT_S16;
     st->codecpar->channel_layout    = AV_CH_LAYOUT_MONO;
-    st->codecpar->bit_rate          = avpriv_codec2_mode_bit_rate(s, mode);
-    st->codecpar->frame_size        = avpriv_codec2_mode_frame_size(s, mode);
-    st->codecpar->block_align       = avpriv_codec2_mode_block_align(s, mode);
+    st->codecpar->bit_rate          = codec2_mode_bit_rate(s, mode);
+    st->codecpar->frame_size        = codec2_mode_frame_size(s, mode);
+    st->codecpar->block_align       = codec2_mode_block_align(s, mode);
 
     if (st->codecpar->bit_rate <= 0 ||
         st->codecpar->frame_size <= 0 ||
@@ -95,28 +155,28 @@ static int codec2_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     }
 
-    if (avio_rb24(s->pb) != AVPRIV_CODEC2_MAGIC) {
+    if (avio_rb24(s->pb) != CODEC2_MAGIC) {
         av_log(s, AV_LOG_ERROR, "not a .c2 file\n");
         return AVERROR_INVALIDDATA;
     }
 
-    ret = ff_alloc_extradata(st->codecpar, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    ret = ff_alloc_extradata(st->codecpar, CODEC2_EXTRADATA_SIZE);
     if (ret) {
         return ret;
     }
 
-    ret = ffio_read_size(s->pb, st->codecpar->extradata, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    ret = ffio_read_size(s->pb, st->codecpar->extradata, CODEC2_EXTRADATA_SIZE);
     if (ret < 0) {
         return ret;
     }
 
-    version = avpriv_codec2_version_from_extradata(st->codecpar->extradata);
+    version = AV_RB16(st->codecpar->extradata);
     if ((version >> 8) != EXPECTED_CODEC2_MAJOR_VERSION) {
         avpriv_report_missing_feature(s, "Major version %i", version >> 8);
         return AVERROR_PATCHWELCOME;
     }
 
-    s->internal->data_offset = AVPRIV_CODEC2_HEADER_SIZE;
+    s->internal->data_offset = CODEC2_HEADER_SIZE;
 
     return codec2_read_header_common(s, st);
 }
@@ -160,14 +220,14 @@ static int codec2_write_header(AVFormatContext *s)
 
     st = s->streams[0];
 
-    if (st->codecpar->extradata_size != AVPRIV_CODEC2_EXTRADATA_SIZE) {
+    if (st->codecpar->extradata_size != CODEC2_EXTRADATA_SIZE) {
         av_log(s, AV_LOG_ERROR, ".c2 files require exactly %i bytes of extradata (got %i)\n",
-               AVPRIV_CODEC2_EXTRADATA_SIZE, st->codecpar->extradata_size);
+               CODEC2_EXTRADATA_SIZE, st->codecpar->extradata_size);
         return AVERROR(EINVAL);
     }
 
-    avio_wb24(s->pb, AVPRIV_CODEC2_MAGIC);
-    avio_write(s->pb, st->codecpar->extradata, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    avio_wb24(s->pb, CODEC2_MAGIC);
+    avio_write(s->pb, st->codecpar->extradata, CODEC2_EXTRADATA_SIZE);
 
     return 0;
 }
@@ -189,13 +249,13 @@ static int codec2raw_read_header(AVFormatContext *s)
         return AVERROR(ENOMEM);
     }
 
-    ret = ff_alloc_extradata(st->codecpar, AVPRIV_CODEC2_EXTRADATA_SIZE);
+    ret = ff_alloc_extradata(st->codecpar, CODEC2_EXTRADATA_SIZE);
     if (ret) {
         return ret;
     }
 
     s->internal->data_offset = 0;
-    avpriv_codec2_make_extradata(st->codecpar->extradata, c2->mode);
+    codec2_make_extradata(st->codecpar->extradata, c2->mode);
 
     return codec2_read_header_common(s, st);
 }
@@ -211,7 +271,7 @@ static const AVOption codec2_options[] = {
 };
 
 static const AVOption codec2raw_options[] = {
-    AVPRIV_CODEC2_AVOPTIONS("codec2 mode [mandatory]", Codec2Context, -1, -1, AV_OPT_FLAG_DECODING_PARAM),
+    CODEC2_AVOPTIONS("codec2 mode [mandatory]", Codec2Context, -1, -1, AV_OPT_FLAG_DECODING_PARAM),
     FRAMES_PER_PACKET,
     { NULL },
 };

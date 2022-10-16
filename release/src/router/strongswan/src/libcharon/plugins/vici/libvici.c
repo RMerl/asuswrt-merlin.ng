@@ -48,7 +48,7 @@ typedef enum {
 } wait_state_t;
 
 /**
- * Private vici connection contex.
+ * Private vici connection context.
  */
 struct vici_conn_t {
 	/** connection stream */

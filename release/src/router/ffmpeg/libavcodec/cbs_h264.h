@@ -24,21 +24,11 @@
 
 #include "cbs.h"
 #include "cbs_h2645.h"
+#include "cbs_sei.h"
 #include "h264.h"
 
 
-enum {
-    // This limit is arbitrary - it is sufficient for one message of each
-    // type plus some repeats, and will therefore easily cover all sane
-    // streams.  However, it is possible to make technically-valid streams
-    // for which it will fail (for example, by including a large number of
-    // user-data-unregistered messages).
-    H264_MAX_SEI_PAYLOADS = 64,
-};
-
-
 typedef struct H264RawNALUnitHeader {
-    uint8_t forbidden_zero_bit;
     uint8_t nal_ref_idc;
     uint8_t nal_unit_type;
 
@@ -253,7 +243,7 @@ typedef struct H264RawSEIPicTimestamp {
     uint8_t minutes_value;
     uint8_t hours_flag;
     uint8_t hours_value;
-    uint32_t time_offset;
+    int32_t time_offset;
 } H264RawSEIPicTimestamp;
 
 typedef struct H264RawSEIPicTiming {
@@ -264,20 +254,16 @@ typedef struct H264RawSEIPicTiming {
     H264RawSEIPicTimestamp timestamp[3];
 } H264RawSEIPicTiming;
 
-typedef struct H264RawSEIUserDataRegistered {
-    uint8_t itu_t_t35_country_code;
-    uint8_t itu_t_t35_country_code_extension_byte;
-    uint8_t *data;
-    size_t data_length;
-    AVBufferRef *data_ref;
-} H264RawSEIUserDataRegistered;
-
-typedef struct H264RawSEIUserDataUnregistered {
-    uint8_t uuid_iso_iec_11578[16];
-    uint8_t *data;
-    size_t data_length;
-    AVBufferRef *data_ref;
-} H264RawSEIUserDataUnregistered;
+typedef struct H264RawSEIPanScanRect {
+    uint32_t pan_scan_rect_id;
+    uint8_t  pan_scan_rect_cancel_flag;
+    uint8_t  pan_scan_cnt_minus1;
+    int32_t  pan_scan_rect_left_offset[3];
+    int32_t  pan_scan_rect_right_offset[3];
+    int32_t  pan_scan_rect_top_offset[3];
+    int32_t  pan_scan_rect_bottom_offset[3];
+    uint16_t pan_scan_rect_repetition_period;
+} H264RawSEIPanScanRect;
 
 typedef struct H264RawSEIRecoveryPoint {
     uint16_t recovery_frame_cnt;
@@ -295,30 +281,9 @@ typedef struct H264RawSEIDisplayOrientation {
     uint8_t display_orientation_extension_flag;
 } H264RawSEIDisplayOrientation;
 
-typedef struct H264RawSEIPayload {
-    uint32_t payload_type;
-    uint32_t payload_size;
-    union {
-        H264RawSEIBufferingPeriod buffering_period;
-        H264RawSEIPicTiming pic_timing;
-        // H264RawSEIFiller filler -> no fields.
-        H264RawSEIUserDataRegistered user_data_registered;
-        H264RawSEIUserDataUnregistered user_data_unregistered;
-        H264RawSEIRecoveryPoint recovery_point;
-        H264RawSEIDisplayOrientation display_orientation;
-        struct {
-            uint8_t *data;
-            size_t data_length;
-            AVBufferRef *data_ref;
-        } other;
-    } payload;
-} H264RawSEIPayload;
-
 typedef struct H264RawSEI {
     H264RawNALUnitHeader nal_unit_header;
-
-    H264RawSEIPayload payload[H264_MAX_SEI_PAYLOADS];
-    uint8_t payload_count;
+    SEIRawMessageList    message_list;
 } H264RawSEI;
 
 typedef struct H264RawSliceHeader {
@@ -402,10 +367,10 @@ typedef struct H264RawSliceHeader {
 typedef struct H264RawSlice {
     H264RawSliceHeader header;
 
-    uint8_t *data;
-    size_t   data_size;
-    int      data_bit_start;
+    uint8_t     *data;
     AVBufferRef *data_ref;
+    size_t       data_size;
+    int          data_bit_start;
 } H264RawSlice;
 
 typedef struct H264RawFiller {
@@ -421,6 +386,8 @@ typedef struct CodedBitstreamH264Context {
 
     // All currently available parameter sets.  These are updated when
     // any parameter set NAL unit is read/written with this context.
+    AVBufferRef *sps_ref[H264_MAX_SPS_COUNT];
+    AVBufferRef *pps_ref[H264_MAX_PPS_COUNT];
     H264RawSPS *sps[H264_MAX_SPS_COUNT];
     H264RawPPS *pps[H264_MAX_PPS_COUNT];
 
@@ -435,24 +402,5 @@ typedef struct CodedBitstreamH264Context {
     // otherwise unknown.
     uint8_t last_slice_nal_unit_type;
 } CodedBitstreamH264Context;
-
-
-/**
- * Add an SEI message to an access unit.
- */
-int ff_cbs_h264_add_sei_message(CodedBitstreamContext *ctx,
-                                CodedBitstreamFragment *access_unit,
-                                const H264RawSEIPayload *payload);
-
-/**
- * Delete an SEI message from an access unit.
- *
- * Deletes from nal_unit, which must be an SEI NAL unit.  If this is the
- * last message in nal_unit, also deletes it from access_unit.
- */
-int ff_cbs_h264_delete_sei_message(CodedBitstreamContext *ctx,
-                                   CodedBitstreamFragment *access_unit,
-                                   CodedBitstreamUnit *nal_unit,
-                                   int position);
 
 #endif /* AVCODEC_CBS_H264_H */

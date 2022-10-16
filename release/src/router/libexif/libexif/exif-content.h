@@ -20,8 +20,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __EXIF_CONTENT_H__
-#define __EXIF_CONTENT_H__
+#ifndef LIBEXIF_EXIF_CONTENT_H
+#define LIBEXIF_EXIF_CONTENT_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -42,21 +42,58 @@ struct _ExifContent
         ExifEntry **entries;
         unsigned int count;
 
-	/* Data containing this content */
+	/*! Data containing this content */
 	ExifData *parent;
 
 	ExifContentPrivate *priv;
 };
 
 /* Lifecycle */
+
+/*! Reserve memory for and initialize a new #ExifContent.
+ *
+ * \return new allocated #ExifContent, or NULL on error
+ *
+ * \see exif_content_new_mem, exif_content_unref
+ */
 ExifContent *exif_content_new     (void);
+
+/*! Reserve memory for and initialize new #ExifContent using the specified
+ * memory allocator.
+ *
+ * \return new allocated #ExifContent, or NULL on error
+ *
+ * \see exif_content_new, exif_content_unref
+ */
 ExifContent *exif_content_new_mem (ExifMem *);
+
+/*! Increase reference counter for #ExifContent.
+ *
+ * \param[in] content #ExifContent
+ *
+ * \see exif_content_unref
+ */
 void         exif_content_ref     (ExifContent *content);
+
+/*! Decrease reference counter for #ExifContent.
+ * When the reference count drops to zero, free the content.
+ *
+ * \param[in] content #ExifContent
+ */
 void         exif_content_unref   (ExifContent *content);
+
+/*! Actually free the #ExifContent.
+ *
+ * \deprecated Should not be called directly. Use #exif_content_ref and
+ *             #exif_content_unref instead.
+ *
+ * \param[in] content #ExifContent
+ */
 void         exif_content_free    (ExifContent *content);
 
 /*! Add an EXIF tag to an IFD.
  * If this tag already exists in the IFD, this function does nothing.
+ * \pre The "tag" member of the entry must be set on entry.
  *
  * \param[out] c IFD
  * \param[in] entry EXIF entry to add
@@ -73,7 +110,7 @@ void         exif_content_remove_entry (ExifContent *c, ExifEntry *e);
 
 /*! Return the #ExifEntry in this IFD corresponding to the given tag.
  * This is a pointer into a member of the #ExifContent array and must NOT be
- * freed by the caller.
+ * freed or unrefed by the caller.
  *
  * \param[in] content EXIF content for an IFD
  * \param[in] tag EXIF tag to return
@@ -141,4 +178,4 @@ void exif_content_log   (ExifContent *content, ExifLog *log);
 }
 #endif /* __cplusplus */
 
-#endif /* __EXIF_CONTENT_H__ */
+#endif /* !defined(LIBEXIF_EXIF_CONTENT_H) */

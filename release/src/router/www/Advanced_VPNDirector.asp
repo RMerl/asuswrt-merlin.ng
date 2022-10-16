@@ -106,8 +106,10 @@ function initial(){
 	show_vpndirector_rulelist();
 	build_interface_list();
 	show_ovpn_summary(0);
-	if (wireguard_support)
+	if (wireguard_support) {
 		show_wgc_summary(0);
+		document.getElementById("wgpri_desc").style.display = "";
+	}
 }
 
 
@@ -605,8 +607,8 @@ function applyRule() {
 									<ul>
 										<li>OpenVPN clients set to redirect all traffic have the highest priority</li>
 										<li>WAN rules will have priority over OpenVPN rules</li>
-										<li>OpenVPN rules will have priority over WireGuard rules</li>
-										<li>CLient 1 rules have higher priority than client 5 rules</li>
+										<li id="wgpri_desc" style="display:none;">OpenVPN rules will have priority over WireGuard rules</li>
+										<li>Client 1 rules have higher priority than client 5 rules</li>
 										<li>Rules can be individually enabled or disabled by clicking on the first column</li>
 									</ul>
 								</div>

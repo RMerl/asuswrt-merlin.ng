@@ -62,7 +62,8 @@
 #define LOG_VASIPDUMP_FILENAME          "vasip_dump.txt"
 #define DEBUG_MONITOR_FILENAME          "/tmp/debug_monitor.txt"
 
-#if defined(BCA_CPEROUTER)
+//#if defined(BCA_CPEROUTER)
+#if 0
 #define rc_stop()		/* do nothing */
 #define rc_start()		system("nvram restart")
 #define rc_restart()		system("nvram restart")
@@ -90,7 +91,7 @@
 	snprintf(buf, sizeof(buf),					\
 	(nic ? "/lib/modules/%s/extra/wl.ko" : "/lib/modules/%s/extra/dhd.ko"),	\
 		name.release);						\
-	eval("insmod", buf);						\
+	eval("insmod", buf, (!nic && nvram_match("build_name", "RT-AXE7800")) ? "instance_base=1 dhd_msg_level=0" : "dhd_msg_level=0"); \
 }
 
 #else /* ! BCA_HNDROUTER && !BCA_CPEROUTER */
@@ -130,7 +131,8 @@ static void dm_watchdog();
 
 char *_mod_name = NULL;
 int dbg_mon_disab_rstrt = FALSE;
-#if defined(__CONFIG_DHDAP__)
+//#if defined(__CONFIG_DHDAP__)
+#if 1
 char *_backup_dir = NULL;
 
 static int do_command(const char *cmd)
@@ -379,11 +381,22 @@ static int backup_logs(char *timestamp, const char *backup_dir)
 	printf("%s: logfile (%s) are backed up to (%s%s)\n",
 			_mod_name, logfile, backup_dir,
 			is_ramfs(backup_dir)? " a ram based fs": "");
+
+	snprintf(cp_file, sizeof(cp_file), "rm -rf %s", LOG_BASE_PATH);
+	ret = do_command(cp_file);
+	if (ret < 0)
+		fprintf(stderr, "%s: failed to delete temp folder %s\n", _mod_name, LOG_BASE_PATH);
+
 	sync();
 	fflush(stdout);
 	return 0;
 
 fail:
+	snprintf(cp_file, sizeof(cp_file), "rm -rf %s", LOG_BASE_PATH);
+	ret = do_command(cp_file);
+	if (ret < 0)
+		fprintf(stderr, "%s: failed to delete temp folder %s\n", _mod_name, LOG_BASE_PATH);
+
 	fflush(stderr);
 	return ret;
 }
@@ -553,7 +566,7 @@ exit:
 static void sig_handler(int signo)
 {
 	char timestamp[64], *tmp;
-	int nic_wl = 0;
+	int nic_wl = 1;
 	int log_size;
 	int retain_logs;
 	int free_space = 0;
@@ -561,6 +574,7 @@ static void sig_handler(int signo)
 	printf("%s: Detected firmware trap/assert !!\n", _mod_name);
 
 	/* figure out module type. dhd or nic */
+#if 0
 	char *val = (char *) nvram_get("kernel_mods");
 
 	if (val && !strstr(val, "dhd")) {
@@ -568,6 +582,17 @@ static void sig_handler(int signo)
 	}
 	printf("%s: kernel_mods: %s nic_wl %d\n",
 		_mod_name, (val ? val : "unset"), nic_wl);
+#else
+	char wl_ifnames[64] = { 0 };
+	char word[64]={0}, *next = NULL;
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+        foreach (word, wl_ifnames, next) {
+		if (!dhd_probe(word)) {
+			nic_wl = 0;
+			break;
+		}
+        }
+#endif
 
 	/* get current timestamp */
 	get_timestamp(timestamp, sizeof(timestamp));
@@ -615,6 +640,7 @@ static void sig_handler(int signo)
 	}
 
 	/* back up the logs to persistent store */
+	if (!nic_wl)
 	backup_logs(timestamp, _backup_dir);
 
 	/* flush file system operations */
@@ -803,7 +829,8 @@ int main(int argc, char **argv)
 {
 	_mod_name = argv[0];
 	char *nv_str;
-#if defined(__CONFIG_DHDAP__)
+//#if defined(__CONFIG_DHDAP__)
+#if 1
 	if (argc < 2) {
 		printf("%s: error no backup dir.\n", _mod_name);
 		usage(_mod_name);

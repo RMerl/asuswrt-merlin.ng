@@ -17280,10 +17280,6 @@ int init_nvram(void)
         add_rc_support("dnssec");
 #endif
 
-#ifdef RTCONFIG_DNSSEC
-        add_rc_support("dnssec");
-#endif
-
 #ifdef RTCONFIG_OPENPLUS_TFAT
 #if defined(RTAC58U)
 	if(!strncmp(nvram_safe_get("odmpid"), "RT-ACRH", 7))

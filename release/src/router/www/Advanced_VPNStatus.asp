@@ -83,7 +83,7 @@ function display_vpn_data(){
 		}
 
 		if (server2pid > 0) {
-			document.getElementById("ovpnmserver2_Block_Running").innerHTML = state_srv_run;
+			document.getElementById("ovpnserver2_Block_Running").innerHTML = state_srv_run;
 			showhide("ovpnserver2", 1);
 		} else {
 			showhide("ovpnserver2", 0);

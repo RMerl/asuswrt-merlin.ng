@@ -2,8 +2,9 @@ Asuswrt-Merlin Changelog
 ========================
 
 388.1 (xx-xxx-xxxx)
-  - NEW: Merged with GPL 388_20566 (only RT-AX88U and GT-AX11000)
-  - NEW: Merged with GPL 388_21224 (only XT12 and GT-AXE16000)
+  - NEW: Merged with GPL 388_20566 (RT-AX88U and GT-AX11000)
+  - NEW: Merged with GPL 388_21224 (XT12, GT-AX6000,
+         GT-AX11000_Pro and GT-AXE16000)
 
   - NEW: (388) WireGuard client and server.  The server uses the
          new 388 VPN server webui.  Implemented a webui for

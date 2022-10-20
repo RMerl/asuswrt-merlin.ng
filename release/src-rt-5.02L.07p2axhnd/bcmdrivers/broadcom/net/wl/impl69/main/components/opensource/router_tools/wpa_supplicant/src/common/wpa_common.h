@@ -168,6 +168,9 @@ WPA_CIPHER_BIP_CMAC_256)
 #define WPA_KEY_INFO_ENCR_KEY_DATA BIT(12) /* IEEE 802.11i/RSN only */
 #define WPA_KEY_INFO_SMK_MESSAGE BIT(13)
 
+/* Set default dot11RSNAConfigPMKLifetime to 1 year instead of 12 hours */
+#define DEFAULT_DOT11RSNACONFIGPMKLIFETIME	(3600 * 24 * 365)
+
 struct wpa_eapol_key {
 	u8 type;
 	/* Note: key_info, key_length, and key_data_length are unaligned */

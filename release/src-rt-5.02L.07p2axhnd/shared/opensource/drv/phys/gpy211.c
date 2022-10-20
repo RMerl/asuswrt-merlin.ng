@@ -164,7 +164,7 @@ static void GPY211_SET_SPEED(phy_dev_t *phy_dev, int speed)
         dbg("force 2500M\n");
     }
     else if (speed == PHY_SPEED_1000) {
-        phy_bus_c45_write(phy_dev, 0x0, 0x4, 0x0de1); // 100M
+        phy_bus_c45_write(phy_dev, 0x0, 0x4, 0x0d81); // 100M
         phy_bus_c45_write(phy_dev, 0x0, 0x9, 0x0200); // 1G
         phy_bus_c45_write(phy_dev, 0x7, 0x20, 0x4002); // 2.5G
         phy_bus_c45_write(phy_dev, 0x1, 0x0, 0x0058); // PMAPMD
@@ -172,7 +172,7 @@ static void GPY211_SET_SPEED(phy_dev_t *phy_dev, int speed)
         dbg("force 1000M\n");
     }
     else if (speed == PHY_SPEED_100) {
-        phy_bus_c45_write(phy_dev, 0x0, 0x4, 0x0de1); // 100M
+        phy_bus_c45_write(phy_dev, 0x0, 0x4, 0x0d81); // 100M
         phy_bus_c45_write(phy_dev, 0x0, 0x9, 0x0000); // 1G
         phy_bus_c45_write(phy_dev, 0x7, 0x20, 0x4002); // 2.5G
         phy_bus_c45_write(phy_dev, 0x1, 0x0, 0x2018); // PMAPMD
@@ -180,7 +180,7 @@ static void GPY211_SET_SPEED(phy_dev_t *phy_dev, int speed)
         dbg("force 100M\n");
     }
     else { // speed == PHY_SPEED_AUTO
-        phy_bus_c45_write(phy_dev, 0x0, 0x4, 0x0de1); // 100M
+        phy_bus_c45_write(phy_dev, 0x0, 0x4, 0x0d81); // 100M
         phy_bus_c45_write(phy_dev, 0x0, 0x9, 0x0200); // 1G
         phy_bus_c45_write(phy_dev, 0x7, 0x20, 0x40a2); // 2.5G
         phy_bus_c45_write(phy_dev, 0x1, 0x0, 0x2058); // PMAPMD

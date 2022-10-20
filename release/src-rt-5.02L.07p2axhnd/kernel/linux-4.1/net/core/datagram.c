@@ -195,7 +195,11 @@ struct sk_buff *__skb_recv_datagram(struct sock *sk, unsigned int flags,
 				    int *peeked, int *off, int *err)
 {
 	struct sk_buff_head *queue = &sk->sk_receive_queue;
+#if !defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 	struct sk_buff *skb, *last;
+#else
+	struct sk_buff *skb, *last, *next;
+#endif /* !CONFIG_BCM_KF_MISC_BACKPORTS */
 	unsigned long cpu_flags;
 	long timeo;
 	/*
@@ -219,7 +223,11 @@ struct sk_buff *__skb_recv_datagram(struct sock *sk, unsigned int flags,
 
 		last = (struct sk_buff *)queue;
 		spin_lock_irqsave(&queue->lock, cpu_flags);
+#if !defined(CONFIG_BCM_KF_MISC_BACKPORTS)
 		skb_queue_walk(queue, skb) {
+#else
+		skb_queue_walk_safe(queue, skb, next) {
+#endif /* !CONFIG_BCM_KF_MISC_BACKPORTS */
 			last = skb;
 			*peeked = skb->peeked;
 			if (flags & MSG_PEEK) {

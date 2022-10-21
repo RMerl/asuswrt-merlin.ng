@@ -32,7 +32,8 @@ BUILD_DIR:=$(HND_SRC)
 
 include $(BUILD_DIR)/make.common
 
-
+# add by Andrew
+include $(BUILD_DIR)/router/.config
 
 #
 # Private apps and libs are allowed to include header files from the

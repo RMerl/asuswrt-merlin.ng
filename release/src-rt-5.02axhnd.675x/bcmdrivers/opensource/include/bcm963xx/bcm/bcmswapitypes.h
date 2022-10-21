@@ -175,6 +175,7 @@ enum {
     ETHSWARLDUMP = 201,
     ETHSWMIBDUMP,
     ETHSWPORTDUMP,
+    ETHSWMDIOARLDUMP,
 #endif
 };
 
@@ -391,13 +392,18 @@ enum phy_cfg_flag {
 
 #if 0   /* skip Andrew code */
 /* eth switch mac entry -- add by Andrew 2020/05/04 */
+#ifndef ETHER_ADDR_LEN
+#define ETHER_ADDR_LEN      6
+#endif
+
 typedef struct ethsw_mac_entry_s {
-    unsigned char mac[6];
+    unsigned short vid;
+    unsigned char mac[ETHER_ADDR_LEN];
     unsigned short port;
 } ethsw_mac_entry;
 
 #ifndef MAX_MAC_ENTRY
-#define MAX_MAC_ENTRY 128
+#define MAX_MAC_ENTRY 64
 #endif
 
 typedef struct ethsw_mac_table_s {

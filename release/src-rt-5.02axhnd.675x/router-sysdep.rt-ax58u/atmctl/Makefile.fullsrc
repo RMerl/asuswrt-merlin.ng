@@ -1,3 +1,6 @@
+#
+# In most cases, you only need to modify this first section.
+#
 EXE  = xtmctl
 LN   = xtm
 

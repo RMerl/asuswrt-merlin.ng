@@ -489,18 +489,20 @@ static void spu_blog_fc_crypt_done_ds(struct brcm_message *msg)
 
         skb->sp = secpath_get(rctx->sp);
         dev_hold(skb->dev);
+        local_bh_disable();
         xfrm_input_resume(skb, nexthdr);
+        local_bh_enable();
     }
     else
     {
         flow_log("%s:%d - blogged\n", __func__, __LINE__);
         hlen += BLOG_ESP_SEQNUM_LEN+rctx->iv_ctr_len;
         pktlen = pktlen - hlen - BLOG_ESP_ICV_LEN - padlen - 2;
-        spin_lock(&xfrm->lock);
+        spin_lock_bh(&xfrm->lock);
         xfrm->repl->advance(xfrm, seqno);
         xfrm->curlft.bytes += pktlen;
         xfrm->curlft.packets++;
-        spin_unlock(&xfrm->lock); 
+        spin_unlock_bh(&xfrm->lock);
     }
     /* free the request context */
     secpath_put(rctx->sp);
@@ -578,7 +580,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
     }
     net = xs_net(xfrm);
 
-    spin_lock(&xfrm->lock);
+    spin_lock_bh(&xfrm->lock);
     do
     {
         /* A new key has genid = 0. When the key is renewed, genid is incremented.
@@ -636,7 +638,7 @@ static int spu_blog_xmit_us(pNBuff_t pNBuf, struct net_device *dev)
         xfrm->curlft.bytes = datalen;
         xfrm->curlft.packets++;
     } while (0);
-    spin_unlock(&xfrm->lock);
+    spin_unlock_bh(&xfrm->lock);
     if ( ret != 0 )
     {
         blog_p->tuple_offset = 0xff;
@@ -786,7 +788,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
     hlen = BLOG_IPV4_HDR_LEN + BLOG_ESP_SPI_LEN;
     seqno = _read32_align16((uint16_t *)&pdata[hlen]);
 
-    spin_lock(&xfrm->lock);
+    spin_lock_bh(&xfrm->lock);
     do
     {
         ret = xfrm->repl->check(xfrm, NULL, seqno);
@@ -814,7 +816,7 @@ static int spu_blog_xmit_ds(pNBuff_t pNBuf, struct net_device *dev)
             break;
         }
     } while (0);
-    spin_unlock(&xfrm->lock);
+    spin_unlock_bh(&xfrm->lock);
     if ( ret )
     {
         secpath_put(secpath);

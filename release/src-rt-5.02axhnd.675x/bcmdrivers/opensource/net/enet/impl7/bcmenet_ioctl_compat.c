@@ -2041,6 +2041,21 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 return -EFAULT;
             return ret;
 
+#ifdef EXT_BCM53134
+      case ETHSWMDIOARLDUMP:
+            phy_dev = phy_dev_get(PHY_TYPE_53125, 0x1e);
+            if (!phy_dev)
+                return -EFAULT;
+
+            if (ethswctl->type != TYPE_DUMP)
+                return -EFAULT;
+
+            ret = ioctl_extsw_pmdio_ext(phy_dev, ethswctl);
+            if (!ret && copy_to_user(rq->ifr_data , ethswctl, sizeof(struct ethswctl_data)))
+                  return -EFAULT;
+          return ret;
+#endif
+
         case ETHSWMIBDUMP:
             if (!sf2_sw) return -(EOPNOTSUPP);
             if (!(port = _compat_port_object_from_unit_port(ethswctl->unit, ethswctl->port)))

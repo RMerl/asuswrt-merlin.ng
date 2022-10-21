@@ -1136,6 +1136,9 @@ normal_path:
             }
         }
 
+        if (IS_SKBUFF_PTR(pNBuff) && PNBUFF_2_SKBUFF(pNBuff)->destructor && PNBUFF_2_SKBUFF(pNBuff)->sk)
+            skb_orphan_partial(PNBUFF_2_SKBUFF(pNBuff));
+
         dispatch_info.pNBuff = pNBuff;
         dispatch_info.port = egress_port;
 

@@ -3425,6 +3425,8 @@ int _enet_arl_entry_op_us(struct ethswctl_data *e, int *count, u8 *mac_vid, u32 
         return FALSE;
 
     me = &(e->mac_table.entry[*count]);
+
+    me->vid = *(uint16 *)&mac_vid[0];
     memcpy(&me->mac, &mac_vid[2], 6);
 
     me->port = data&0x1ff;
@@ -3485,6 +3487,99 @@ int ioctl_extsw_arl_dump(struct ethswctl_data *e)
 
     return BCM_E_NONE;
 }
+
+#ifdef EXT_BCM53134
+static int str_swap(u8 *dst, u8 *src, int len)
+{
+    int i;
+
+    for (i = 0; i < len; i++)
+        dst[i] = src[len-i-1];
+
+    return 0;
+}
+
+int _enet_arl_entry_op_53134(struct ethswctl_data *e, int *count, u8 *mac_vid, u32 data)
+{
+    ethsw_mac_entry *me;
+    u8 dst[6];
+
+    //other clients that are not connected to 53134
+    if ((data&0x1ff) == 0x08)
+        return FALSE;
+
+    if (*count > MAX_MAC_ENTRY)
+        return FALSE;
+
+    me = &(e->mac_table.entry[*count]);
+
+    //the string from lower-level driver is little-endian
+    str_swap(dst, mac_vid, 8);
+    me->vid = *(uint16 *)&dst[0];
+    memcpy(&me->mac, (char *)&dst[2], 6);
+    me->port = data&0x1ff;
+
+    (*count)++;
+
+    // return TRUE to terminate the loop
+    return FALSE;
+}
+
+int _enet_arl_dump_ext_53134(phy_dev_t *phy_dev, struct ethswctl_data *e)
+{
+    int timeout = 1000, count = 0, hash_ent;
+    uint32_t cur_data;
+    uint8_t v8, mac_vid[8];
+
+    if (e->type != TYPE_DUMP) 
+        return BCM_E_PARAM;
+
+    v8 = ARL_SRCH_CTRL_START_DONE;
+    pseudo_phy_write_wrap(phy_dev, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1);
+
+    for( pseudo_phy_read_wrap(phy_dev, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1);
+         (v8 & ARL_SRCH_CTRL_START_DONE);
+         pseudo_phy_read_wrap(phy_dev, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1))
+    {
+        /* Now read the Search Ctrl Reg Until :
+         * Found Valid ARL Entry --> ARL_SRCH_CTRL_SR_VALID, or
+         * ARL Search done --> ARL_SRCH_CTRL_START_DONE */
+        for(timeout = 1000;
+            (v8 & ARL_SRCH_CTRL_SR_VALID) == 0 && (v8 & ARL_SRCH_CTRL_START_DONE) && timeout-- > 0;
+            mdelay(1),
+            pseudo_phy_read_wrap(phy_dev, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_CTRL_531xx, (uint8_t *)&v8, 1));
+
+        if ((v8 & ARL_SRCH_CTRL_SR_VALID) == 0 || timeout <= 0) break;
+
+        /* Found a valid entry */
+        for (hash_ent = 0; hash_ent < REG_ARL_SRCH_HASH_ENTS; hash_ent++)
+        {
+            pseudo_phy_read_wrap(phy_dev, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_MAC_LO_ENTRY0_531xx + hash_ent*0x10, &mac_vid[0], 8|DATA_TYPE_VID_MAC);
+            pseudo_phy_read_wrap(phy_dev, PAGE_AVTBL_ACCESS, REG_ARL_SRCH_DATA_ENTRY0_531xx + hash_ent*0x10,(uint8_t *)&cur_data, 4);
+
+            if ((cur_data & ARL_DATA_ENTRY_VALID_531xx))
+            {
+                if (_enet_arl_entry_op_53134(e, &count, mac_vid, cur_data))
+                    return TRUE;
+            }
+        }
+    }
+    e->mac_table.count = count;
+    e->mac_table.len = count*sizeof(ethsw_mac_entry) + 8;
+
+    return TRUE;
+}
+
+int ioctl_extsw_pmdio_ext(phy_dev_t *phy_dev, struct ethswctl_data *e)
+{
+    if (e->type != TYPE_DUMP)
+        return BCM_E_PARAM;
+
+    _enet_arl_dump_ext_53134(phy_dev, e);
+
+    return BCM_E_NONE;
+}
+#endif
 // end of add
 #endif
 

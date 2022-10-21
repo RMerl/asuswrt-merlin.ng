@@ -311,6 +311,16 @@ typedef struct {
 #define DIAG_DEBUG_CMD_SET_OEM				23
 #define DIAG_DEBUG_CMD_SET_L2_TIMEOUT			24
 #define DIAG_DEBUG_CMD_STAT_SAVE_LOCAL		25
+ #define STAT_SAVE_LOCAL_INIT               1
+ #define STAT_SAVE_LOCAL_ENABLE             2
+ #define STAT_SAVE_LOCAL_DISABLE            3
+ #define STAT_SAVE_LOCAL_WR2DIAG            4   /* Write saved statuses to Diags */
+ #define STAT_SAVE_LOCAL_ENABLECONTINOUS    5   /* Enable logging statues continously */
+ #define STAT_SAVE_LOCAL_STARTCONTINOUS     6   /* Start logging statues continously */
+ #define STAT_SAVE_LOCAL_STOPLOGGING        7
+ #define STAT_SAVE_LOCAL_STARTUNTILFULL     8   /* Start logging statues until buffer is full */
+ #define STAT_SAVE_LOCAL_STARTUNTILRETRAIN  9   /* Start logging statues until retrain */
+ #define STAT_SAVE_LOCAL_PAUSELOGGING       10
 #define DIAG_DEBUG_CMD_IND_READ_6306			26
 #define DIAG_DEBUG_CMD_IND_WRITE_6306			27
 #define DIAG_DEBUG_CMD_READ_6306			28

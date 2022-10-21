@@ -182,7 +182,7 @@ pdc_crypto_engine_poll(struct pdc_state *pdcs)
 	int descr_ready;
 	struct brcm_message *msg = NULL;
 
-	spin_lock(&pdcs->pdc_lock);
+	spin_lock_bh(&pdcs->pdc_lock);
 
 	descr_ready = DESCRCOUNT(pdcs->last_rx_curr, pdcs->rxin);
 	if ((0 == descr_ready) || (descr_ready < pdcs->numd[pdcs->rxin].rx))
@@ -222,7 +222,7 @@ pdc_crypto_engine_poll(struct pdc_state *pdcs)
 		pdc_send_queued_data(pdcs);
 	}
 
-	spin_unlock(&pdcs->pdc_lock);
+	spin_unlock_bh(&pdcs->pdc_lock);
 	return msg;
 }
 
@@ -607,18 +607,18 @@ int pdc_send_data(int chan, struct brcm_message *msg)
 	}
 	pdcs = &pdc_glob->pdc_state[chan];
 
-	spin_lock(&pdcs->pdc_lock);
+	spin_lock_bh(&pdcs->pdc_lock);
 	if ( pdcs->msg_count > 64 )
 	{
 		dev_dbg(&pdcs->pdev->dev,
 		        "%s unable to queue request, %d", __func__, pdcs->msg_count);
-		spin_unlock(&pdcs->pdc_lock);
+		spin_unlock_bh(&pdcs->pdc_lock);
 		return -EBUSY;
 	}
 	list_add_tail(&msg->list, &pdcs->msg_list);
 	pdcs->msg_count++;
 	pdc_send_queued_data(pdcs);
-	spin_unlock(&pdcs->pdc_lock);
+	spin_unlock_bh(&pdcs->pdc_lock);
 
 	return PDC_SUCCESS;
 }

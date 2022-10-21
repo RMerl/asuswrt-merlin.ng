@@ -144,6 +144,7 @@ written consent.
 #define AdslMibDefHeader
 
 #include "SeltDef.h"
+#include "DslCommonDef.h"
 
 #if defined(__cplusplus)
 extern "C" {
@@ -193,6 +194,12 @@ extern "C" {
 #endif
 #endif /* defined(CONFIG_BCM963138) || defined(CONFIG_BCM963158) */
 
+#if defined(CONFIG_BCM963158) && (defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST))
+#ifndef CONFIG_MGFAST_SUPPORT
+#define CONFIG_MGFAST_SUPPORT
+#endif
+#endif
+
 #ifndef CONFIG_TOD_SUPPORTED
 #define CONFIG_TOD_SUPPORTED
 #endif
@@ -209,6 +216,13 @@ extern "C" {
 #endif
 #endif
 
+#if defined(SUPPORT_BAS) || defined(SUPPORT_OPS_BAS)
+#ifdef SUPPORT_BAS_DSL
+#undef SUPPORT_BAS_DSL
+#endif
+#define  SUPPORT_BAS_DSL
+#endif
+
 #if defined(GFAST_TESTMODE_TEST) || defined(PHY_CO)
 #define GFAST_START_RTX_TESTMODE 0x1
 #define GFAST_STOP_RTX_TESTMODE  0x2
@@ -216,13 +230,21 @@ extern "C" {
 #define GFAST_STOP_TPS_TESTMODE  0x8
 #endif
 
+#ifndef FALL_THROUGH
+#if defined(__GNUC__) && (__GNUC__ >= 7)
+#define FALL_THROUGH __attribute__ ((fallthrough))
+#else
+#define FALL_THROUGH  do { } while (0)
+#endif /* __GNUC__ >= 7 */
+#endif /* !FALL_THROUGH */
+
 /*
 **
 **      ADSL configuration parameters 
 **
 */
 
-#define kAdslCfgModMask                     (0x0000000F | 0x0000F000)
+#define kAdslCfgModMask                     (0x0000000F | 0x0001F000)
 #define kAdslCfgModAny                      0x00000000
 
 #define kAdslCfgModGdmtOnly                 0x00000001
@@ -234,6 +256,7 @@ extern "C" {
 #define kAdslCfgModAdsl2pOnly               0x00002000
 #define kDslCfgModVdsl2Only                 0x00004000
 #define kDslCfgModGfastOnly                 0x00008000
+#define kDslCfgModMgfastOnly                0x00010000
 
 
 #define kAdslCfgBitmapMask                  0x00000018
@@ -377,11 +400,28 @@ extern "C" {
 #define		kGfastProfile106b		0x00004000
 #define		kGfastProfile106c		0x00008000
 #define		kGfastProfile212c		0x00000800
+#define		kMgfastProfileP424a		PROFILEMGFASTP424A
+#define		kMgfastProfileP424d		PROFILEMGFASTP424D
+#define		kMgfastProfileQ424c		PROFILEMGFASTQ424C
+#define		kMgfastProfileQ424d		PROFILEMGFASTQ424D
+#define		kMgfastProfileP424amp		PROFILEMGFASTP424AMP
+#define		kMgfastProfileP424dmp		PROFILEMGFASTP424DMP
+#define		kMgfastProfileQ424cmp		PROFILEMGFASTQ424CMP
+#define		kMgfastProfileQ424dmp		PROFILEMGFASTQ424DMP
+
 #define		kGfastProfile106aDisable	kGfastProfile106a
 #define		kGfastProfile212aDisable	kGfastProfile212a
 #define		kGfastProfile106bDisable	kGfastProfile106b
 #define		kGfastProfile106cDisable	kGfastProfile106c
 #define		kGfastProfile212cDisable	kGfastProfile212c
+#define		kMgfastProfileP424aDisable	kMgfastProfileP424a
+#define		kMgfastProfileP424dDisable	kMgfastProfileP424d
+#define		kMgfastProfileQ424cDisable	kMgfastProfileQ424c
+#define		kMgfastProfileQ424dDisable	kMgfastProfileQ424d
+#define		kMgfastProfileP424ampDisable	kMgfastProfileP424amp
+#define		kMgfastProfileP424dmpDisable	kMgfastProfileP424dmp
+#define		kMgfastProfileQ424cmpDisable	kMgfastProfileQ424cmp
+#define		kMgfastProfileQ424dmpDisable	kMgfastProfileQ424dmp
 
 #define		kVdslProfileMask	(kVdslProfile8a | kVdslProfile8b | kVdslProfile8c |kVdslProfile8d |\
 								kVdslProfile12a | kVdslProfile12b | kVdslProfile17a)
@@ -391,6 +431,17 @@ extern "C" {
 
 #define		kGfastProfileMask	(kGfastProfile106aDisable | kGfastProfile106bDisable)
 #define		kGfastProfileMask1	(kGfastProfileMask | kGfastProfile212aDisable | kGfastProfile106cDisable | kGfastProfile212cDisable)
+#define		kMgfastProfileMask	(kMgfastProfileP424aDisable | kMgfastProfileP424dDisable | kMgfastProfileQ424cDisable | kMgfastProfileQ424dDisable |\
+								kMgfastProfileP424ampDisable | kMgfastProfileP424dmpDisable | kMgfastProfileQ424cmpDisable | kMgfastProfileQ424dmpDisable)
+
+#ifdef CONFIG_MGFAST_SUPPORT
+#define		P2MP_NTID_LEN	16
+#define		kGfastProfileSelectMask		(PROFILEGFAST106A | PROFILEGFAST212A | PROFILEGFAST106B | PROFILEGFAST106C | PROFILEGFAST212C |\
+																PROFILEMGFASTP424A | PROFILEMGFASTP424D | PROFILEMGFASTQ424C | PROFILEMGFASTQ424D |\
+																PROFILEMGFASTP424AMP | PROFILEMGFASTP424DMP | PROFILEMGFASTQ424CMP | PROFILEMGFASTQ424DMP)
+#else
+#define		kGfastProfileSelectMask		(PROFILEGFAST106A | PROFILEGFAST212A | PROFILEGFAST106B | PROFILEGFAST106C | PROFILEGFAST212C)
+#endif
 
 #define		kVdslUS0MaskShift	16
 #define		kVdsl8aUS0Mask	(0x00000001 << kVdslUS0MaskShift)
@@ -454,6 +505,9 @@ typedef struct _adslCfgProfile {
     int        xdslMiscCfgParam;
     int        minINP;
     int        maxDelay;
+#ifdef CONFIG_MGFAST_SUPPORT
+    unsigned char p2mp_ntid[P2MP_NTID_LEN];
+#endif
 } adslCfgProfile;
 
 /* 
@@ -527,6 +581,11 @@ typedef struct _adslVersionInfo {
 #define kOidAdslPrivatePartial              254
 #define kOidAdslPrivateSysCtl               253
 #define kOidAdslPrivateSysMediaCfg    0
+#define kOidAdslPrivateOAMThreshold         252
+#define kOidAdslPrivateEvtLogCtl            251
+#define kOidAdslPrivateEvtLogStart    0
+#define kOidAdslPrivateEvtLogStop     1
+#define kOidAdslPrivateEvtLogFlush    2
 
 #define kAdslMibAnnexAToneNum               256
 #define kAdslMibToneNum                     kAdslMibAnnexAToneNum
@@ -595,6 +654,14 @@ typedef struct _adslVersionInfo {
 #define kOidAdslPrivGetnToneRmc             59
 #define kOidAdslPrivGetRmcBitAlloc          60
 #define kOidAdslPrivGetRts                  61
+#define kOidAdslPrivGetLogicalFrameInfo     62
+#define kOidAdslPrivRncCmAlb                63
+#define kOidAdslPrivateGetEvtLog            64
+#define kOidAdslPrivateGetOemData           65
+#define kOidAdslPrivSNRmin                  66
+#define kOidAdslPrivSNRmax                  67
+#define kOidAdslPrivShowtimeMarginMin       68
+#define kOidAdslPrivShowtimeMarginMax       69
 
 
 #define kOidAdslExtraPLNInfo						11
@@ -778,6 +845,7 @@ typedef struct _adslVersionInfo {
 #define kAdslModReAdsl2     6
 #define kVdslModVdsl2       7
 #define kXdslModGfast       8
+#define kXdslModMgfast      9
 
 #define kAdslBitmapShift    3
 #define kAdslBitmapMask     kAdslCfgBitmapMask
@@ -835,7 +903,7 @@ typedef struct _adslPhysEntry {
     int        adslCurrAtn;
     int        adslCurrStatus;
     int        adslCurrOutputPwr;
-    int        adslCurrAttainableRate;
+    unsigned int adslCurrAttainableRate;
     int        adslSignalAttn;
     int        adslHlinScaleFactor;
     int        adslLDCompleted;
@@ -855,7 +923,7 @@ typedef struct _xdslPhysEntry {
     int        adslCurrAtn;
     int        adslCurrStatus;
     int        adslCurrOutputPwr;
-    int        adslCurrAttainableRate;
+    unsigned int adslCurrAttainableRate;
     int        adslSignalAttn;
     int        adslHlinScaleFactor;
     int        adslLDCompleted;
@@ -872,8 +940,8 @@ typedef struct _xdslPhysEntry {
     unsigned char  attnDrInp;
     unsigned char  attnDrDelay;
 #ifdef USE_TRAINING_ATTNDR
-    int        adslShowAttainableRate;
-    int        adslTrainAttainableRate;
+    unsigned int adslShowAttainableRate;
+    unsigned int adslTrainAttainableRate;
 #endif
     int        snrmRoc; /* SNRM ROC/SNRM RMC --> VDSL2/G.fast */
 #if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST) || defined(WINNT) || defined(LINUX_DRIVER)
@@ -895,7 +963,7 @@ typedef struct _adslFullPhysEntry {
     int        adslCurrAtn;
     int        adslCurrStatus;
     int        adslCurrOutputPwr;
-    int        adslCurrAttainableRate;
+    unsigned int adslCurrAttainableRate;
     int        adslSignalAttn;
     int        adslHlinScaleFactor;
     char        adslSysVendorID[kAdslPhysVendorIdLen];
@@ -920,7 +988,7 @@ typedef struct _xdslFullPhysEntry {
     int        adslCurrAtn;
     int        adslCurrStatus;
     int        adslCurrOutputPwr;
-    int        adslCurrAttainableRate;
+    unsigned int adslCurrAttainableRate;
     int        adslSignalAttn;
     int        adslHlinScaleFactor;
     char        adslSysVendorID[kAdslPhysVendorIdLen];
@@ -1041,14 +1109,13 @@ typedef struct {
     rtxCounterInfo  cntUS;
 } rtxCounterInfoEntry;
 
-#if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST) || defined(WINNT) || defined(LINUX_DRIVER)
 typedef struct {
     unsigned int    bswStarted;
     unsigned int    bswCompleted;
     unsigned int    sraStarted;
     unsigned int    sraCompleted;
-    unsigned int    fraStarted;
-    unsigned int    fraCompleted;
+    unsigned int    fraStarted;     /* SOS for VDSL2 */
+    unsigned int    fraCompleted;   /* SOS for VDSL2 */
     unsigned int    rpaStarted;
     unsigned int    rpaCompleted;
     unsigned int    tigaStarted;
@@ -1067,6 +1134,7 @@ typedef struct {
     gfastOlrCounterInfo    cntUS;
 } gfastOlrCounterInfoEntry;
 
+#if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST) || defined(WINNT) || defined(LINUX_DRIVER)
 #define MAX_LAST_Mds  8
 typedef struct {
     unsigned int       dsCurRate;
@@ -1078,7 +1146,22 @@ typedef struct {
     unsigned int       dtaEventCnt;
     int                lastMdsIdx;
     unsigned char      lastMds[MAX_LAST_Mds];
+    unsigned char      annexXenabled;
+    unsigned char      iDtaEnabled;
+    unsigned char      annexDenabled;
+    unsigned char      cDtaEnabled;
+    unsigned char      minMds;
 } gfastDtaInfo;
+
+typedef struct
+{
+  unsigned int    successDTA;  /* count of successful DTA */
+  unsigned char   minMds;      /* min nb of downstream symb positions Mds in a TDD frame used over the associated time interval */
+  unsigned char   maxMds;      /* max nb of downstream symb positions Mds in a TDD frame used over the associated time interval */
+  unsigned char   reserved[2];
+  unsigned int    hfs[2];      /* [NE/FE]: count of High Filling Seconds -- currently not available -- */
+} gfastDtaCounters;
+
 #endif
 
 /* Adsl channel performance data definitions */
@@ -1164,6 +1247,9 @@ typedef struct _adslINMConfiguration {
 #ifdef SUPPORT_HMI
 #define kXdslEvent15MinutesCntrs   0x4000
 #define kXdslEvent24HoursCntrs     0x8000
+#endif
+#if defined(SUPPORT_BAS_DSL) || defined(SUPPORT_HMI)
+#define kXdslEventOAMThresholdChk  0x10000
 #endif
 
 typedef struct _adslThreshCounters {
@@ -1635,7 +1721,7 @@ typedef struct _vdsl2ConnectionInfo {
     vdslMuxFramerParamType  xmt2Info;
     adsl2DelayInp   rcv2DelayInp;
     adsl2DelayInp   xmt2DelayInp;
-    unsigned short  vdsl2Profile;
+    unsigned int    vdsl2Profile;
 } vdsl2ConnectionInfo;
 
 
@@ -1948,7 +2034,118 @@ typedef struct {
   unsigned int  enabledOptions;
 } LineFeatureInfos;
 
+#ifndef __LOGICALFRAMECFG_
+#define __LOGICALFRAMECFG_
+
+typedef struct LogicalFrameCfg LogicalFrameCfg;
+struct LogicalFrameCfg
+{
+  unsigned char  TTR;
+  unsigned char  TA;
+  unsigned char  TBUDGET;
+  unsigned char  IDF;
+  unsigned char  TIQ;
+  unsigned char  direction;
+  unsigned short sfCountApply;
+  unsigned char  applyNow;
+  unsigned char  reserved[3];
+} BCM_PACKING_ATTRIBUTE ;
+#endif  /* __LOGICALFRAMECFG_ */
+
 #endif  /* SUPPORT_HMI */
+
+#ifdef SUPPORT_BAS_DSL
+
+#define   EVENT_DSL_PHY_RESET       0
+/* param0 */
+ #define  DSL_PHY_RESET     0
+ #define  DSL_PHY_DOWNLOAD  1
+
+#define   EVENT_STATE_CHANGE        1
+/* param0 = new state ==> ADSL_LINK_STATE */
+
+#define   EVENT_LPSELT_DONE         2
+#define   EVENT_NE_15MIN_THRESHOLD  3
+#define   EVENT_FE_15MIN_THRESHOLD  4
+/* param0 - bitmap of 15 minutes OAM counters that exceeded the threshold */
+ #define  LOSS_15MIN_CNTR     (1 << 0)
+ #define  ES_15MIN_CNTR       (1 << 1)
+ #define  SES_15MIN_CNTR      (1 << 2)
+ #define  UAS_15MIN_CNTR      (1 << 3)
+ #define  LOFS_15MIN_CNTR     (1 << 4)
+ #define  LPRS_15MIN_CNTR     (1 << 5)    /* LOLS thresh NE, LPRS thresh FE */
+ #define  LEFTRS_15MIN_CNTR   (1 << 6)
+ #define  LORS_15MIN_CNTR     (1 << 7)
+
+#define   EVENT_OLR_RX              5
+#define   EVENT_OLR_TX              6
+/* param0 */
+ #define OLR_TYPE_BSW   0
+ #define OLR_TYPE_SRA   1
+ #define OLR_TYPE_TIGA  2
+ #define OLR_TYPE_RPA   3
+ #define OLR_TYPE_FRA   4
+
+#define   EVENT_DTA                 7
+/* param0 - new Mds */
+
+#define   EVENT_LINK_FAILURE        8
+/* param0 */
+ #define LINK_FAILURE_LOS 0
+ #define LINK_FAILURE_LOF 1
+ #define LINK_FAILURE_LOM 2
+ #define LINK_FAILURE_SES 3
+ #define LINK_FAILURE_LCD 4
+
+#define   EVENT_RATE_CHANGE_RX      9
+#define   EVENT_RATE_CHANGE_TX      10
+ /* param0 - New Rate */
+
+#define   EVENT_CO_L3_TRIGGER       11
+#define   EVENT_CPE_L3_TRIGGER      12
+#define   EVENT_ADMIN_STOP          13
+#define   EVENT_ADMIN_START         14
+#define   EVENT_PHY_DROP_REASON     15
+
+#define   EVENT_NUM_MAX             (EVENT_PHY_DROP_REASON+1)
+
+typedef struct {
+  unsigned int  code;
+  unsigned int  timestamp;  // we can use 10ms units that give us the range of 32 years 
+  unsigned int  param0;     // event sub code or parameter
+  unsigned int  param1;     // event parameter
+} EventEntry;
+
+typedef struct {
+  EventEntry    event;
+  unsigned int  curTimestamp;
+} DrvEventEntry;
+
+#endif  /* SUPPORT_BAS_DSL */
+
+#if defined(SUPPORT_HMI) || defined(SUPPORT_BAS_DSL)
+
+typedef struct OAMCntrThresholds OAMCntrThresholds;
+struct OAMCntrThresholds
+{
+  unsigned int  LOSSthreshold;
+  unsigned int  ESthreshold;
+  unsigned int  SESthreshold;
+  unsigned int  UASthreshold;
+  unsigned int  LOFSthreshold;
+  unsigned int  LPRSthreshold;        /* LOLS thresh NE, LPRS thresh FE */
+  unsigned int  LEFTRSthreshold;
+  unsigned int  LORSthreshold;
+};
+
+typedef struct NewOAMThresholds NewOAMThresholds;
+struct NewOAMThresholds
+{
+  OAMCntrThresholds   threshold15min[2]; /* NE-FE */
+};
+
+#endif  /* defined(SUPPORT_HMI) || defined(SUPPORT_BAS_DSL) */
+
 
 /* Global info structure */
 
@@ -1971,12 +2168,12 @@ typedef struct _adslMibInfo {
 	adslPerfCounters		adslPerfIntervals[kAdslMibPerfIntervals];
 
 	rtxCounterInfoEntry		rtxCounterData;
-#if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST) || defined(WINNT) || defined(LINUX_DRIVER)
 	union {
 	gfastOlrCounterInfoEntry	gfastOlrCounterData;
+#if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST) || defined(WINNT) || defined(LINUX_DRIVER)
 	gfastOlrCounterInfoEntry	gfastOlrXoiCounterData[2];	/* 0-NOI, 1-DOI */
-	};
 #endif
+	};
 
 	union {
 		adslChanPerfDataEntry	xdslChanPerfData[MAX_LP_NUM];
@@ -2111,8 +2308,11 @@ typedef struct _adslMibInfo {
 	unsigned int gfastSupportedOptions;
 	gfastDtaInfo			gfastDta;
 	gfastCounters		gfastCur15MinCntrs;
+	gfastDtaCounters	gfastDtaCntrs;
+	gfastDtaCounters	gfastDtaCntrsCur15Mins;
 #endif
 	ginpCounters		ginpCur15MinCntrs[2];	/* NE - 0, FE - 1 */
+	CmalbTclResults		tclResults;
 } adslMibInfo;
 
 #if defined(__cplusplus)

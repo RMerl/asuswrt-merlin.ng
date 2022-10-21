@@ -18,7 +18,7 @@
 #include "pmksa_cache_auth.h"
 
 static const int pmksa_cache_max_entries = 1024;
-static const int dot11RSNAConfigPMKLifetime = 43200;
+static const int dot11RSNAConfigPMKLifetime = DEFAULT_DOT11RSNACONFIGPMKLIFETIME;
 
 struct rsn_pmksa_cache {
 #define PMKID_HASH_SIZE 128

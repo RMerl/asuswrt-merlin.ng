@@ -975,7 +975,16 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 
 	fprintf(fp, "#!/bin/sh\n");
 	fprintf(fp, "iptables -I OVPNCF -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
+	fprintf(fp, "iptables -I OVPNCF -o %s -j ACCEPT\n", cconf->if_name);
 	fprintf(fp, "iptables -I OVPNCI -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
+
+#ifdef RTCONFIG_IPV6
+	if (ipv6_enabled()) {
+		fprintf(fp, "ip6tables -I OVPNCF -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "ip6tables -I OVPNCF -o %s -j ACCEPT\n", cconf->if_name);
+		fprintf(fp, "ip6tables -I OVPNCI -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
+	}
+#endif
 
 #if !defined(HND_ROUTER)
 	// Setup traffic accounting

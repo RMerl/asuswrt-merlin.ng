@@ -82,7 +82,7 @@ endif
 ifeq ($(strip $(BRCM_NTR_SUPPORT)),1)
 CFLAGS += -DNTR_SUPPORT
 else
-ifneq "$(findstring 63138,$(BRCM_CHIP))$(findstring 63148,$(BRCM_CHIP))" ""
+ifeq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_63158_63178_63146_),_$(strip $(BRCM_CHIP))_)
 CFLAGS += -DNTR_SUPPORT
 endif
 endif

@@ -505,7 +505,7 @@ void ovpn_set_exclusive_dns(int unit) {
 				continue;
 
 			fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -j DNAT --to-destination %s\n", unit, server);
-			logmessage("openvpn", "Forcing all to use DNS server %s (OpenVPN client %d is set to Exclusive DNS mode)", src, server, unit);
+			logmessage("openvpn", "Forcing all to use DNS server %s (OpenVPN client %d is set to Exclusive DNS mode)", server, unit);
 			// Only configure first server found, as others would never get used
 			break;
 		}

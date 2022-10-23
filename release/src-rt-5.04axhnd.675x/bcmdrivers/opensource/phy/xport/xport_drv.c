@@ -401,7 +401,7 @@ static int xport_reset(xport_xlmac_port_info_s *init_params)
     rc = xport_msbus_reset(init_params);
     rc = rc ? rc : xport_xlmac_reset(init_params);
     rc = rc ? rc : xport_xlif_reset(init_params);
-    __xportNotice("rc = %d; intf = %d port = %d spd = %s dup = %d\n",
+    __xportDebug("rc = %d; intf = %d port = %d spd = %s dup = %d\n",
                   rc,init_params->intf_type, init_params->xport_port_id,
                   xport_rate_to_str(init_params->port_rate),init_params->port_duplex);
     return rc;
@@ -425,7 +425,7 @@ static int xport_init(xport_xlmac_port_info_s *init_params)
         }
     }
 #endif
-    __xportNotice("rc = %d; intf = %d port = %d spd = %s dup = %d\n",
+    __xportDebug("rc = %d; intf = %d port = %d spd = %s dup = %d\n",
                   rc,init_params->intf_type, init_params->xport_port_id,
                   xport_rate_to_str(init_params->port_rate),init_params->port_duplex);
     return rc;

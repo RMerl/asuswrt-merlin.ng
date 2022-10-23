@@ -16867,7 +16867,11 @@ retry_wps_enr:
 		int unit, lock;
 
 		if (action & RC_SERVICE_START) {
-			unit = atoi(&script[10]);
+			if (strlen(script) >= 11)
+				unit = atoi(&script[10]);
+			else
+				unit = 0;
+
 			lock = file_lock(VPNROUTING_LOCK);
 			if (unit == 0) {
 #ifdef RTCONFIG_WIREGUARD

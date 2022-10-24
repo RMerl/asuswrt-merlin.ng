@@ -159,11 +159,6 @@ void ovpn_run_fw_scripts(){
 		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/dns.sh", unit);
 		if (f_exists(buffer))
 			eval(buffer);
-
-		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/qos.sh", unit);
-		if (f_exists(buffer))
-			eval(buffer);
-
 	}
 }
 
@@ -235,13 +230,6 @@ void ovpn_client_down_handler(int unit)
 
 	sprintf(dirname, "/etc/openvpn/client%d", unit);
 
-	snprintf(buffer, sizeof(buffer), "%s/qos.sh", dirname);
-	if (f_exists(buffer)) {
-		eval("sed", "-i", "s/-A/-D/g", buffer);
-		eval(buffer);
-		unlink(buffer);
-	}
-
 	snprintf(buffer, sizeof(buffer), "%s/client.resolv", dirname);
 	if (f_exists(buffer))
 		unlink(buffer);
@@ -307,21 +295,6 @@ void ovpn_client_up_handler(int unit)
 
 	snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
 	sprintf(dirname, "/etc/openvpn/client%d", unit);
-
-	// tQOS fix
-	if ((nvram_pf_get_int(prefix, "rgw") >= 1) &&
-	    (nvram_get_int("qos_enable") == 1) &&
-	    (nvram_get_int("qos_type") == 1)) {
-		sprintf(buffer, "%s/qos.sh", dirname);
-		fp_qos = fopen(buffer, "w");
-		if (fp_qos) {
-			fprintf(fp_qos, "#!/bin/sh\n"
-				        "/usr/sbin/iptables -t mangle -A POSTROUTING -o br0 -m mark --mark 0x40000000/0xc0000000 -j MARK --set-xmark 0x80000000/0xC0000000\n");
-			fclose(fp_qos);
-			chmod(buffer, 0755);
-			eval(buffer);
-		}
-	}
 
 	verb = nvram_pf_get_int(prefix, "verb");
 

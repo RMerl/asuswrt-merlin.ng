@@ -4,7 +4,8 @@ Asuswrt-Merlin Changelog
 388.1 (xx-xxx-xxxx)
   - NEW: Merged with GPL 388_20566 (RT-AX88U and GT-AX11000)
   - NEW: Merged with GPL 388_21224 (XT12, GT-AX6000,
-         GT-AX11000_Pro and GT-AXE16000)
+         GT-AX11000_Pro, GT-AXE16000, GT-AXE11000, RT-AX56U
+         and RT-AX58U)
 
   - NEW: (388) WireGuard client and server.  The server uses the
          new 388 VPN server webui.  Implemented a webui for
@@ -39,6 +40,10 @@ Asuswrt-Merlin Changelog
   - FIXED: Wrong temperatures used by the temperature graphs
            (386.8 regression)
   - FIXED: CVE-2022-37434 in zlib.
+  - FIXED: GT-AXE16000 random reboots when using an OpenVPN
+           client with VPN Director and Adaptive QoS.
+  - REMOVED: Interface selector on Speedtest page (no longer
+             working, possibly due to an ookla client update)
 
 
 386.8 (13-Aug-2022)

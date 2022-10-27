@@ -176,20 +176,6 @@
 			"dnspriv_port" : "443",
 			"dnspriv_hostname" : "dns.neutopia.org",
 			"dnspriv_spkipin" : "wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI="
-		},
-		{
-			"dnspriv_label" : "Surfnet/Sinodun 1",
-			"dnspriv_server" : "145.100.185.15",
-			"dnspriv_port" : "443",
-			"dnspriv_hostname" : "dnsovertls.sinodun.com",
-			"dnspriv_spkipin" : "62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4="
-		},
-		{
-			"dnspriv_label" : "Surfnet/Sinodun 2",
-			"dnspriv_server" : "145.100.185.16",
-			"dnspriv_port" : "443",
-			"dnspriv_hostname" : "dnsovertls1.sinodun.com",
-			"dnspriv_spkipin" : "cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA="
 		}
 	],
 	"IPv6" : [
@@ -369,20 +355,6 @@
 			"dnspriv_port" : "443",
 			"dnspriv_hostname" : "dns.neutopia.org",
 			"dnspriv_spkipin" : "wTeXHM8aczvhRSi0cv2qOXkXInoDU+2C+M8MpRyT3OI="
-		},
-		{
-			"dnspriv_label" : "Surfnet/Sinodun 1",
-			"dnspriv_server" : "2001:610:1:40ba:145:100:185:15",
-			"dnspriv_port" : "443",
-			"dnspriv_hostname" : "dnsovertls.sinodun.com",
-			"dnspriv_spkipin" : "62lKu9HsDVbyiPenApnc4sfmSYTHOVfFgL3pyB+cBL4="
-		},
-		{
-			"dnspriv_label" : "Surfnet/Sinodun 2",
-			"dnspriv_server" : "2001:610:1:40ba:145:100:185:16",
-			"dnspriv_port" : "443",
-			"dnspriv_hostname" : "dnsovertls1.sinodun.com",
-			"dnspriv_spkipin" : "cE2ecALeE5B+urJhDrJlVFmf38cJLAvqekONvjvpqUA="
 		}
 	]
 }

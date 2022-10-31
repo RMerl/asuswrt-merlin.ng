@@ -1,0 +1,269 @@
+#
+# This file listed Real-Time settings for the kernel threads.
+# Fields description:
+#  - name: process or kthread name.
+#          Note: If you have defined an entry in eid_xxx.txt file for the same process or kthread,
+#          please make this filed consistent with the name field of the eid entry.
+#  - flags: define which attributes you want to activate.
+#           [Possible values]: RT_SET_SCHED, RT_SET_CPUMASK and RT_SET_CGROUPS
+#  - schedPolicy: scheduling policy for the process. (only be activated when RT_SET_SCHED is set)
+#  -              [Possible values]: SCHED_NORMAL, SCHED_FIFO and SCHED_RR
+#  - schedPriority: scheduling priority for the process. (only be activated when RT_SET_SCHED is set)
+#                   [Possible values]: 99 is highest, 1 is lowest. BRCM also have some symbols defined
+#                   for the certain levels, see bcm_realtime.h.
+#  - cpuMask: bitmask of CPU's this process is allowed to run on. (only be activated when RT_SET_CPUMASK is set)
+#  - cpuGroupName: name of cpugroup this belongs to. (only be activated when RT_SET_CGROUPS is set)
+#
+
+BEGIN
+  name         = init
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name         = sync_supers
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name         = bdi-default
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name         = kswapd0
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name         = fsnotify_mark
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name         = ksoftirqd
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+
+# mtdblockd runs at 5/RR because high prio threads might page fault.
+# It would be better if the high prio threads can lock their pages in memory.
+# the sched priority is set in kernel/drivers/mtd/mtd_blkdevs.c, so don't do
+# it here. 
+BEGIN
+  name         = mtdblock0
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = mtdblock1
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = mtdblock2
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = mtdblock3
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = rt/data
+END
+
+# USB related threads can use 4050-4059
+# USB workqueue thread (see drivers/usb/core/hub.c)
+# Could also bind this thread to a CPU with RT_SET_CPUMASK and
+# cpuMask = 0x1
+# Note: usb-storage & scsi-eh threads priroty is set to RR in kernel
+# as they are created only when USB device is plugged in
+BEGIN
+  name         = khubd
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/media
+END
+
+# Broadcom Buffer Pool Manager thread
+BEGIN
+  name         = bpm
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_HIGH
+  cpuGroupName = rt/high
+END
+
+# Broadcom FAP keep alive watchdog (should it run at high prio?)
+BEGIN
+  name         = kpAliveWatchdog
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+# Broadcom FAP GSO LOOPBACK thread 
+BEGIN
+  name         = fapGsoLoopBk 
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+# Broadcom dedicated skb freeing thread
+BEGIN
+  name         = skb_free_task
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = rt/data
+END
+
+# Broadcom Automatic Voltage Scaling(?) kernel thread
+BEGIN
+  name         = Avs65_Task
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name         = dsl0
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+# next 3 are threads created by broadcom bcmenet driver
+BEGIN
+  name         = bcmsw
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = normal/default
+END
+
+BEGIN
+  name         = bcmsw_timer
+  flags        = RT_SET_CGROUPS
+  cpuGroupName = rt/data
+END
+
+# bcmsw_rx will be bound to the same core as thatof Xtm for now.
+BEGIN
+  name         = bcmsw_rx
+  flags        = RT_SET_SCHED|RT_SET_CPUMASK|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuMask      = 0x1
+  cpuGroupName = rt/data
+END
+
+#bcm2189x_rx is created by broadcom LTE pcie driver
+BEGIN
+  name         = bcm2189x_rx
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = bcm_tm_thread
+  flags        = RT_SET_SCHED|RT_SET_CPUMASK|RT_SET_CGROUPS
+  schedPolicy  = SCHED_FIFO
+  schedPriority= 99
+  cpuMask      = 0x2
+  cpuGroupName = rt/data
+END
+
+# pdc_rx is bound to the same core as bcmsw_rx as this gives
+# the best throughput performance when blog is enabled, which is
+# the default.
+BEGIN
+  name         = pdc_rx
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = spu_rx
+  flags        = RT_SET_SCHED|RT_SET_CPUMASK|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuMask      = 0x1
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = bcmflex
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+# Xtm will be bound to the same core as thatof bcmsw_rx for now.
+BEGIN
+  name         = bcmxtm_rx
+  flags        = RT_SET_SCHED|RT_SET_CPUMASK|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuMask      = 0x1
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = bcm_dhd_rxpost
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = recycle_sysb
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = feed_sysb
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = fc_task
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_RR
+  schedPriority= BCM_RTPRIO_DATA
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = bcmsw_recycle
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_FIFO
+  schedPriority= BCM_RTPRIO_HIGH
+  cpuGroupName = rt/data
+END
+
+BEGIN
+  name         = bcmxtm_recycle
+  flags        = RT_SET_SCHED|RT_SET_CGROUPS
+  schedPolicy  = SCHED_FIFO
+  schedPriority= BCM_RTPRIO_HIGH
+  cpuGroupName = rt/data
+END

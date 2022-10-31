@@ -28,7 +28,10 @@ performance, and performance over features.
 
 Supported Devices
 -----------------
+
 Fully supported devices:
+
+386.x:
  * RT-AC66U_B1 (use the RT-AC68U firmware)
  * RT-AC68U, RT-AC68P, RT-AC68UF (including HW revision C1 and E1)
  * RT-AC68U V3 (use the RT-AC68U firmware)
@@ -39,6 +42,8 @@ Fully supported devices:
  * RT-AC5300
  * RT-AC86U
  * RT-AC2900 (use the RT-AC86U firmware)
+
+388.x:
  * RT-AX88U
  * RT-AX56U
  * RT-AX58U & RT-AX3000
@@ -51,6 +56,7 @@ Fully supported devices:
  * ZenWifi Pro XT12
  * GT-AX11000_Pro
  * GT-AXE16000
+ * RT-AX86U_Pro
 
 No longer supported:
  * RT-N16
@@ -106,8 +112,7 @@ Networking:
    - DNS-based Filtering, enforcing a specific DNS server, can be applied globally or per client
    - Custom DDNS (through a user script)
    - TOR support, individual client access control
-   - Policy-based routing for OpenVPN clients (based on source or destination IPs), sometimes referred to as "selective routing", or "split tunneling")
-   - DNSSEC validation
+   - VPN Director - Policy-based routing for OpenVPN and WireGUard clients (based on source or destination IPs)
    - fq_codel queue discipline for Traditional QoS
    - Detailed wireless troubleshooting information (on some models)
    - Redirect NTP client queries to the router's own NTP daemon

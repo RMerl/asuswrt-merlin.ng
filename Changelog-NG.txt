@@ -2,6 +2,7 @@ Asuswrt-Merlin Changelog
 ========================
 
 388.1 (xx-xxx-xxxx)
+  - NEW: Add RT-AX86U_PRO support.
   - NEW: Merged with GPL 388_20566 (RT-AX88U and GT-AX11000)
   - NEW: Merged with GPL 388_21224 (XT12, GT-AX6000,
          GT-AX11000_Pro, GT-AXE16000, GT-AXE11000, RT-AX56U

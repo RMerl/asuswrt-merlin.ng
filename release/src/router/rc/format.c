@@ -19,7 +19,7 @@ void adjust_merlin_config(void)
 	int unit;
 	char varname_ori[32], varname_ori2[32], varname_new[32];
 	int rgw, plan, converted;
-	char *desc, *source, *dest, *iface, newiface[8];
+	char *source, *dest, *iface, newiface[8];
 #endif
 	char buffer[65536];
 	char *dhcp_hostnames;
@@ -29,6 +29,8 @@ void adjust_merlin_config(void)
 	char tmp[100];
 	int count, len = 0, found;
 	int need_commit = 0;
+	char *desc, *proto, *server, *username, *passwd, *active, *vpnc_idx, *region, *conntype;
+
 
 #ifdef RTCONFIG_OPENVPN
 /* Migrate OVPN RGW + clientlist rules to VPN Director (386.3) */
@@ -330,6 +332,36 @@ void adjust_merlin_config(void)
 			nvram_unset("sshd_dsskey");
 		if (nvram_get_file("sshd_ecdsakey", "/jffs/.ssh/dropbear_ecdsa_host_key", 2048))
 			nvram_unset("sshd_ecdsakey");
+	}
+#endif
+
+
+/* Remove unsupported vpnc_clientlist proto from stock firmware (388.1) */
+#if RTCONFIG_VPNC
+	converted = 0;
+	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
+
+	if (nv && *nv) {
+		buffer[0] = '\0';
+
+		while (nv && (entry = strsep(&nvp, "<")) != NULL) {
+			if (vstrsep(entry, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx, &region, &conntype) < 9)
+				continue;
+
+			if (!strcmp(proto, "OpenVPN") || !strcmp(proto,"WireGuard")) {
+				converted = 1;
+				continue;
+			}
+
+			snprintf(buffer + strlen(buffer), sizeof(buffer) - strlen(buffer), "<%s>%s>%s>%s>%s>%s>%s>%s>%s",
+				desc, proto, server, username, passwd, active, vpnc_idx, region, conntype);
+		}
+	}
+	if(nv) free(nv);
+
+	if (converted) {
+		need_commit = 1;
+		nvram_set("vpnc_clientlist", buffer);
 	}
 #endif
 

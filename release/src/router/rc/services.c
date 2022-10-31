@@ -19712,9 +19712,11 @@ void setup_leds()
 	} else {
 /*** Enable ***/
 		nvram_set("AllLED", "1");
-
+#if defined(RTAX86U_PRO)
+		setAllLedNormal();
+		led_control(LED_POWER, LED_ON);	// Must be run after
+#else
 		led_control(LED_POWER, LED_ON);
-
 #ifdef RTCONFIG_USB
 		start_usbled();
 #endif
@@ -19729,7 +19731,11 @@ void setup_leds()
 		eval("et", "-i", "eth0", "robowr", "0", "0x1a", "0x01ff");
 #elif defined(HND_ROUTER)
 #ifndef GTAC2900
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
+		wan_phy_led_pinmux(0);
+#else
 		led_control(LED_WAN_NORMAL, LED_ON);
+#endif
 #endif
 		setLANLedOn();
 #else
@@ -19890,7 +19896,7 @@ void setup_leds()
 #if defined(GTAXE16000) || defined(GTAX11000_PRO)
 		notify_rc("restart_ledg");
 #endif
-
+#endif // RT-AX86U_PRO
 	}
 #if defined(RTCONFIG_RGBLED)
 	start_aurargb();

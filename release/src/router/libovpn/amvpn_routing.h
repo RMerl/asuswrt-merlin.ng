@@ -25,5 +25,6 @@ extern void ovpn_set_exclusive_dns(int unit);
 extern void wgc_set_exclusive_dns(int unit);
 #endif
 
+extern void amvpn_set_wan_routing_rules();
 #endif
 

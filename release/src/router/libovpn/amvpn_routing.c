@@ -43,7 +43,7 @@
 void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
 	FILE *fp;
 	char buffer[128], buffer2[128], buffer3[128];
-	int prio, verb;
+	int prio, verb = 3;
 	char table[12], *lookup;
 	char target_table[12];
 
@@ -54,7 +54,7 @@ void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
 	} else if (proto == VPNDIR_PROTO_WIREGUARD) {
 		verb = 3;
 #endif
-	} else {
+	} else if (unit != 0){
 		return;
 	}
 
@@ -120,6 +120,15 @@ void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
 	11810-12009: WGC 4
 	12010-12209: WGC 5
 */
+void amvpn_set_wan_routing_rules() {
+	char buffer[8000];
+
+	amvpn_clear_routing_rules(0, VPNDIR_PROTO_NONE);
+	amvpn_get_policy_rules(0, buffer, sizeof (buffer), VPNDIR_PROTO_NONE);
+	_write_routing_rules(0, buffer, 3, VPNDIR_PROTO_NONE);
+}
+
+
 
 void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 	char prefix[32], buffer[8000];
@@ -143,11 +152,6 @@ void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 	}
 
 	amvpn_clear_routing_rules(unit, proto);
-
-	/* Refresh WAN rules */
-	amvpn_clear_routing_rules(0, proto);
-	amvpn_get_policy_rules(0, buffer, sizeof (buffer), proto);
-	_write_routing_rules(0, buffer, verb, proto);
 
 	switch (rgw) {
 		case OVPN_RGW_NONE:
@@ -185,6 +189,8 @@ void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto)
 	else if (proto == VPNDIR_PROTO_WIREGUARD)
 		vpnprio = VPNDIR_PRIO_WIREGUARD + (VPNDIR_PRIO_MAX_RULES * (unit-1));
 #endif
+	else if (proto == VPNDIR_PROTO_NONE)
+		vpnprio = 0;	// Unused
 	else
 		return;
 
@@ -201,12 +207,12 @@ void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto)
 			strcpy(table, "main");
 			ruleprio = wanprio++;
 		}
-		else if (!strncmp(target, "OVPN", 4)) {
+		else if (!strncmp(target, "OVPN", 4) && proto == VPNDIR_PROTO_OPENVPN) {
 			snprintf(table, sizeof (table), "ovpnc%d", unit);
 			ruleprio = vpnprio++;
 		}
 #ifdef RTCONFIG_WIREGUARD
-		else if (!strncmp(target, "WGC", 3)) {
+		else if (!strncmp(target, "WGC", 3) && proto == VPNDIR_PROTO_WIREGUARD) {
 			snprintf(table, sizeof (table), "wgc%d", unit);
 			ruleprio = vpnprio++;
 		}

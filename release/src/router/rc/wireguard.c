@@ -132,6 +132,7 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 	sscanf(prefix, "wgc%d%*s", &unit);
 	sprintf(buf, "wgc%d", unit);
 	update_client_routes(buf, 1);
+	amvpn_set_wan_routing_rules();
 	amvpn_set_routing_rules(unit, VPNDIR_PROTO_WIREGUARD);
 }
 
@@ -156,6 +157,7 @@ static void _wg_client_ep_route_del(char* prefix, int table)
 
 	// VPNDirector - update all other client tables
 	sscanf(prefix, "wgc%d%*s", &unit);
+	amvpn_set_wan_routing_rules();
 	amvpn_set_routing_rules(unit, VPNDIR_PROTO_WIREGUARD);
 	sprintf(buf, "wgc%d", unit);
 	update_client_routes(buf, 0);

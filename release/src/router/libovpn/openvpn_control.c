@@ -351,6 +351,7 @@ void ovpn_client_up_handler(int unit)
 			}
 		}
 
+		amvpn_set_wan_routing_rules();
 		amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 		_flush_routing_cache();
 
@@ -703,6 +704,7 @@ void ovpn_process_eas(int start) {
 		unit = atoi(ptr);
 
 		// Update kill switch states for clients set to auto-start with WAN
+		amvpn_set_wan_routing_rules();
 		amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 		ovpn_set_killswitch(unit);
 

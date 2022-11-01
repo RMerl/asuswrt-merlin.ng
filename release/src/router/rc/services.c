@@ -16873,6 +16873,7 @@ retry_wps_enr:
 
 			lock = file_lock(VPNROUTING_LOCK);
 			if (unit == 0) {
+				amvpn_set_wan_routing_rules();
 #ifdef RTCONFIG_WIREGUARD
 				for (i = WG_CLIENT_MAX; i > 0; i--) {
 					amvpn_set_routing_rules(i, VPNDIR_PROTO_WIREGUARD);
@@ -16887,6 +16888,7 @@ retry_wps_enr:
 				}
 			} else {
 				// unit-specific only called for OpenVPN for now
+				amvpn_set_wan_routing_rules();
 				amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 				amvpn_clear_exclusive_dns(unit, VPNDIR_PROTO_OPENVPN);
 				ovpn_set_exclusive_dns(unit);

@@ -556,13 +556,13 @@ void ovpn_set_exclusive_dns(int unit) {
 								continue;
 
 			                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
-			                                logmessage("openvpn", "Forcing %s to use DNS server %s", src, server);
+			                                logmessage("openvpn", "Forcing %s to use DNS server %s for OVPNC%d", src, server, unit);
 							// Only configure first server found, as others would never get used
 							break;
 						}
 		                        } else if (!strcmp(iface, "WAN")) {
 		                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
-		                                logmessage("openvpn", "Excluding %s from forced DNS routing", src);
+		                                logmessage("openvpn", "Excluding %s from forced DNS routing for OVPNC%d", src, unit);
 		                        }
 				}
 			}
@@ -594,6 +594,10 @@ void wgc_set_exclusive_dns(int unit) {
 	char dns[128] = {0};
 	FILE *fp_dns;
 	char scriptname[32];
+
+	snprintf(buffer, sizeof (buffer), "wgc%d_enable", unit);
+	if (nvram_get_int(buffer) != 1)
+		return;
 
 	snprintf(scriptname, sizeof (scriptname), "/etc/wg/dns%d.sh", unit);
 	fp_dns = fopen(scriptname, "w");
@@ -645,7 +649,7 @@ void wgc_set_exclusive_dns(int unit) {
 								*p = '\0';
 
 							fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit + OVPN_CLIENT_MAX, src, server);
-							logmessage("wireguard", "Forcing %s to use DNS server %s", src, server);
+							logmessage("wireguard", "Forcing %s to use DNS server %s for WGC%d", src, server, unit);
 
 							// currently added by rc/wireguard.c - should I add it to the correct table, like Fusion?
 							//eval("ip", "route", "add", server, "dev", ifname);
@@ -653,7 +657,7 @@ void wgc_set_exclusive_dns(int unit) {
 					}
 	                        } else if (!strcmp(iface, "WAN")) {
 	                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit + OVPN_CLIENT_MAX, src);
-	                                logmessage("wireguard", "Excluding %s from forced DNS routing", src);
+	                                logmessage("wireguard", "Excluding %s from forced DNS routing for WGC%d", src, unit);
 	                        }
 			}
 		}

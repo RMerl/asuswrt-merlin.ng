@@ -7869,7 +7869,7 @@ ncurses-6.0-install: ncurses-6.0
 	$(STRIP) $(INSTALLDIR)/ncurses-6.0/usr/lib/libpanel.so.6.0
 	cd $(INSTALLDIR)/ncurses-6.0/usr/lib && \
 		ln -sf libncurses.so.6.0 libncurses.so.6 &&\
-		ln -sf libncurses.so.6.0 libncurses.so
+		ln -sf libncurses.so.6.0 libncurses.so &&\
 		ln -sf libform.so.6.0 libform.so.6 &&\
 		ln -sf libform.so.6.0 libform.so &&\
 		ln -sf libmenu.so.6.0 libmenu.so.6 &&\

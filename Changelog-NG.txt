@@ -38,11 +38,16 @@ Asuswrt-Merlin Changelog
              DNSFilter instead of Exclusive DNS mode.
   - CHANGED: Reworked VPN Status page to only show currently
              active services.
+  - CHANGED: Optimized VPN Director WAN and DNS rule creation, so
+             they no longer get re-created multiple times when
+             editing VPNDirector rules.
   - FIXED: Wrong temperatures used by the temperature graphs
            (386.8 regression)
   - FIXED: CVE-2022-37434 in zlib.
   - FIXED: GT-AXE16000 random reboots when using an OpenVPN
            client with VPN Director and Adaptive QoS.
+  - FIXED: Clients connected to Guest Network 1 aren't
+           redirected if NTP interception is enabled.
   - REMOVED: Interface selector on Speedtest page (no longer
              working, possibly due to an ookla client update)
 

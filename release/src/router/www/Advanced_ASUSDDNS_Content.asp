@@ -1146,9 +1146,9 @@ function check_unregister_result(){
 						<div class="cert_status_title"><#vpn_openvpn_KC_to#> :</div>
 						<div id="issueTo" class="cert_status_val"></div>
 					</div>
-					<div style="display:table-row;">
-						<div style="display:table-cell;">SAN :</div>
-						<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
+					<div style="display:flex;">
+						<div class="cert_status_title">SAN :</div>
+						<div id="SAN" class="cert_status_val"></div>
 					</div>
 					<div style="display: flex;">
 						<div class="cert_status_title"><#vpn_openvpn_KC_by#> :</div>

@@ -855,7 +855,7 @@ static int _wait_time_sync(int max)
 		sleep(1);
 	if (max <= 0)
 	{
-		logmessage_normal("WireGuard", "NTP time not sync in %d seconds", max);
+		logmessage_normal("WireGuard", "Unable to start clients as NTP not synced yet, retrying later");
 		return -1;
 	}
 	else
@@ -911,20 +911,22 @@ void start_wgcall()
 {
 	int unit;
 	char nv[16] = {0};
+	int timesync = 0;
 
-	if (_wait_time_sync(WG_WAIT_SYNC))
-	{
-		_wgc_jobs_install();
-		return;
-	}
-	else
-		_wgc_jobs_remove();
+	_wgc_jobs_remove();
 
 	for (unit = 1; unit <= WG_CLIENT_MAX; unit++)
 	{
 		snprintf(nv, sizeof(nv), "wgc%d_enable", unit);
-		if (nvram_get_int(nv))
+		if (nvram_get_int(nv)) {
+			if (!timesync && _wait_time_sync(WG_WAIT_SYNC)) {
+				_wgc_jobs_install();
+				return;
+			} else {
+				timesync = 1;
+			}
 			start_wgc(unit);
+		}
 	}
 }
 

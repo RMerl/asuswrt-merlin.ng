@@ -1759,6 +1759,18 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 #ifdef RTCONFIG_NTPD
 	if (nvram_get_int("ntpd_enable") && nvram_get_int("ntpd_server_redir")) {
 		fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 123 -j REDIRECT --to-port 123\n", lan_if);
+
+#if defined(RTCONFIG_AMAS_WGN)
+		char wgn_ifnames[6 * IFNAMSIZ];
+		char *next, iface[IFNAMSIZ];
+
+		strlcpy(wgn_ifnames, nvram_safe_get("wgn_ifnames"), sizeof(wgn_ifnames));
+		foreach(iface, wgn_ifnames, next) {
+			if (!iface_exist(iface))
+				continue;
+			fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 123 -j REDIRECT --to-port 123\n", iface);
+		}
+#endif
 	}
 #endif
 
@@ -2247,6 +2259,18 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 #ifdef RTCONFIG_NTPD
 	if (nvram_get_int("ntpd_enable") && nvram_get_int("ntpd_server_redir")) {
 		fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 123 -j REDIRECT --to-port 123\n", lan_if);
+#if defined(RTCONFIG_AMAS_WGN)
+		char wgn_ifnames[6 * IFNAMSIZ];
+		char *next, iface[IFNAMSIZ];
+
+		strlcpy(wgn_ifnames, nvram_safe_get("wgn_ifnames"), sizeof(wgn_ifnames));
+		foreach(iface, wgn_ifnames, next) {
+			if (!iface_exist(iface))
+				continue;
+			fprintf(fp, "-A PREROUTING -i %s -p udp -m udp --dport 123 -j REDIRECT --to-port 123\n", iface);
+		}
+#endif
+
 	}
 #endif
 

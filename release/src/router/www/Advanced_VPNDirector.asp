@@ -108,14 +108,11 @@ function initial(){
 	show_ovpn_summary(0);
 	if (wireguard_support) {
 		show_wgc_summary(0);
-		document.getElementById("wgpri_desc").style.display = "";
 	}
 }
 
 
 function build_interface_list() {
-	free_options(document.form.vpn_client_unit);
-
 	$('#iface_x').append("<option value='WAN'>WAN</option>")
 	             .append("<option value='OVPN1'>OpenVPN 1: " + get_ovpn_infos(1, 0).desc + "</option>")
 	             .append("<option value='OVPN2'>OpenVPN 2: " + get_ovpn_infos(2, 0).desc + "</option>")
@@ -171,6 +168,9 @@ function get_wgc_infos(unit, refresh) {
 			wgc_info.desc = "";
 			wgc_info.state = "0";
 	}
+
+	if (wgc_info.desc == "")
+		wgc_info.desc = "Client " + unit;
 
 	return wgc_info;
 }
@@ -271,7 +271,7 @@ function del_Row(_this){
 function show_ovpn_summary(refresh) {
 	var code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">';
 	code += '<thead><tr><td colspan="4">OpenVPN clients status</td></tr></thead>';
-
+	code += '<tr><th width="8%">Enable</th><th width="48%" style="text-align:left;">Instance</th><th width="36%" style="text-align:left;">Internet Routing</th><th width="8%">Edit</th></tr>';
 	for (i = 1; i<= 5; i++) {
 		get_ovpn_infos(i, refresh);
 		switch (ovpn_info.routing) {
@@ -293,42 +293,66 @@ function show_ovpn_summary(refresh) {
 				break;
 		}
 
-		code += '<tr><th style="text-align:left; padding-left:10px;">OVPN' + i + ': ' + ovpn_info.desc + '</th>';
-		code += '<td style="text-align:left; padding-left:10px;">' + ( ovpn_info.state == 2 ? '<span class="hint-color">Connected</span>' : 'Disconnected') + '</td>';
-		code +=	'<td style="text-align:left; padding-left:10px;">' + routing + '</td>';
 		if (ovpn_info.state == 2)
-			code += '<td style="text-align:left; padding-left:10px;"><span onclick="stop_ovpn_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Stop Client</span></td></tr>';
-		else if ((ovpn_info.state == 0) || (ovpn_info.state == -1))
-                        code += '<td style="text-align:left; padding-left:10px;"><span onclick="start_ovpn_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Start Client</span></td></tr>';
-		else
-			code += '<td>...&nbsp;</td></tr>';
+			code += '<tr><td><img title="Enabled" src="/images/New_ui/enable.svg" onMouseOver="EnableMouseOver(this, \'1\');" onMouseOut="EnableMouseOut(this, \'1\');" onclick="stop_ovpn_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
+		else if (ovpn_info.state == 0 || ovpn_info.state == -1)
+			code += '<tr><td><img title="Disabled" src="/images/New_ui/disable.svg" onMouseOver="EnableMouseOver(this, \'0\');" onMouseOut="EnableMouseOut(this, \'0\');" onclick="start_ovpn_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
+		else {	// Taking a long time to start, keep spinning and refresh again
+			setTimeout("show_ovpn_summary(1)", 3000);
+			code += '<tr><td><img id="SearchingIcon" src="/images/InternetScan.gif"></td></tr>';
+		}
+
+		code += '<td style="text-align:left; padding-left:10px;">OVPN' + i + ': ' + ovpn_info.desc + '</td>';
+		code += '<td style="text-align:left; padding-left:10px;">' + routing + '</td>';
+		code += '<td><img title="Edit" src="images/New_ui/accountedit.png" style="height:25px; width:25px;" onclick="edit_ovpn_client(' + i +');"></td></tr>';
 	}
 	code += "</table>";
 
 	document.getElementById("vpn_status_Block").innerHTML = code;
 }
 
+function edit_ovpn_client(_unit) {
+	var obj = {
+		"action_mode": "apply",
+	}
+	obj["vpn_client_unit"] = _unit;
+	httpApi.nvramSet(obj);
+
+	showLoading();
+	setTimeout("window.location = 'Advanced_OpenVPNClient_Content.asp';", 2000);
+}
 
 function show_wgc_summary(refresh) {
 	var code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">';
-	code += '<thead><tr><td colspan="4">WireGuard clients status</td></tr></thead>';
+	code += '<thead><tr><td colspan="3">WireGuard clients status</td></tr></thead>';
+	code += '<tr><th width="8%">Enable</th><th width="84%" style="text-align:left;">Instance</th><th width="8%">Edit</th></tr>';
 
 	for (i = 1; i<= 5; i++) {
 		get_wgc_infos(i, refresh);
 
-		code += '<tr><th style="text-align:left; padding-left:10px;">WGC' + i + ': ' + wgc_info.desc + '</th>';
-		code += '<td style="text-align:left; padding-left:10px;">' + ( wgc_info.state == 1 ? '<span class="hint-color">Enabled</span>' : 'Disabled') + '</td>';
-
 		if (wgc_info.state == 1)
-			code += '<td style="text-align:left; padding-left:10px;"><span onclick="disable_wgc_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Disable Client</span></td></tr>';
+			code += '<tr><td><img title="Enabled" src="/images/New_ui/enable.svg" onMouseOver="EnableMouseOver(this, \'1\');" onMouseOut="EnableMouseOut(this, \'1\');" onclick="disable_wgc_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td></tr>';
 		else
-			code += '<td style="text-align:left; padding-left:10px;"><span onclick="enable_wgc_client(\''+i+'\', this);" style="text-decoration:underline; cursor:pointer;">Enable Client</span></td></tr>';
+			code += '<tr><td><img title="Disabled" src="/images/New_ui/disable.svg" onMouseOver="EnableMouseOver(this, \'0\');" onMouseOut="EnableMouseOut(this, \'0\');" onclick="enable_wgc_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
+		code += '<td style="text-align:left; padding-left:10px;">WGC' + i + ': ' + wgc_info.desc + '</td>';
+		code += '<td><img title="Edit" src="images/New_ui/accountedit.png" style="height:25px; width:25px;" onclick="edit_wgc_client(' + i +');"></td></tr>';
 	}
 	code += "</table>";
 
 	document.getElementById("wgc_status_Block").innerHTML = code;
 }
 
+
+function edit_wgc_client(_unit) {
+        var obj = {
+                "action_mode": "apply",
+        }
+        obj["wgc_unit"] = _unit;
+        httpApi.nvramSet(obj);
+
+        showLoading();
+        setTimeout("window.location = 'Advanced_WireguardClient_Content.asp';", 2000);
+}
 
 function stop_ovpn_client(unit, _this) {
 	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
@@ -351,8 +375,6 @@ function start_ovpn_client(unit, _this) {
 	httpApi.nvramSet(obj);
 
 	setTimeout("show_ovpn_summary(1)", 5000);
-	// Some clients take longer to start, so refresh a second time
-	setTimeout("show_ovpn_summary(1)", 10000);
 }
 
 function disable_wgc_client(unit, _this) {
@@ -603,15 +625,7 @@ function applyRule() {
 								<div>&nbsp;</div>
 								<div class="formfonttitle">VPN Director</div>
 								<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-								<div id="page_title" class="formfontdesc" style="margin-bottom:0px;">VPN Director allows you to direct LAN traffic through specific VPN tunnels.
-									<ul>
-										<li>OpenVPN clients set to redirect all traffic have the highest priority</li>
-										<li>WAN rules will have priority over OpenVPN rules</li>
-										<li id="wgpri_desc" style="display:none;">OpenVPN rules will have priority over WireGuard rules</li>
-										<li>Client 1 rules have higher priority than client 5 rules</li>
-										<li>Rules can be individually enabled or disabled by clicking on the first column</li>
-									</ul>
-								</div>
+								<div id="page_title" class="formfontdesc" style="margin-bottom:0px;">VPN Director allows you to direct LAN traffic through specific VPN tunnels.  Please consult the <a href="https://github.com/RMerl/asuswrt-merlin.ng/wiki/VPN-Director" style="font-weight: bolder;text-decoration: underline;" target="_blank">documentation</a> for more details on rule priority.
 								<div id="vpn_status_Block"></div>
 								<div id="wgc_status_Block"></div>
 								<br>

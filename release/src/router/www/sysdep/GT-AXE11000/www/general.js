@@ -1963,7 +1963,7 @@ function gen_switch_menu(_arrayList, _currentItem) {
 		var gen_not_pressed_content = function(_itemArray, _cssMode) {
 			var not_pressed_code = "";
 			not_pressed_code += "<div style='width:110px;height:30px;float:left;" + _cssMode + "' class='block_filter'>";
-			not_pressed_code += "<a href='" + _itemArray[1] + "'>";
+			not_pressed_code += "<a href='" + _itemArray[1] + "' target='_parent'>";
 			not_pressed_code += "<div class='block_filter_name'>" +  _itemArray[0] + "</div>";
 			not_pressed_code += "</a>";
 			not_pressed_code += "</div>";

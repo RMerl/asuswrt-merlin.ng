@@ -1608,6 +1608,9 @@ function showMenuTree(menuList, menuExclude){
 			if("Advanced_WAN_Content.asp" === curMenuWAN.tab[y].url){
 				clickedItem_menuWAN = z;
 			}
+                        if("Advanced_OpenVPNClient_Content.asp" === curMenuWAN.tab[y].url){
+                                clickedItem_tabVPNC = y;
+                        }
 		}
 	}
 
@@ -1625,9 +1628,12 @@ function showMenuTree(menuList, menuExclude){
 
 				if(curMenu.tab[j].tabName !== "__INHERIT__"){
 					clickedItem.tab = j;
-				}
-				else{
-					clickedItem.tab = (curMenu.tab[cookie.get("clickedItem_tab")]) ? parseInt(cookie.get("clickedItem_tab")) : 0;						
+				} else {
+					if(curMenu.tab[j].url.indexOf("Advanced_WireguardClient_Content.asp") == 0) {
+						clickedItem.tab = clickedItem_tabVPNC;
+					} else {
+						clickedItem.tab = (curMenu.tab[cookie.get("clickedItem_tab")]) ? parseInt(cookie.get("clickedItem_tab")) : 0;
+					}
 				}
 				cookie.set("clickedItem_tab", clickedItem.tab);
 				break;

@@ -6,7 +6,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
 <meta HTTP-EQUIV="Pragma" CONTENT="no-cache">
 <meta HTTP-EQUIV="Expires" CONTENT="-1">
-<title><#Web_Title#> - DNS-based Filtering</title>
+<title><#Web_Title#>DNS Director</title>
 <link rel="shortcut icon" href="images/favicon.png">
 <link rel="icon" href="images/favicon.png">
 <link rel="stylesheet" type="text/css" href="ParentalControl.css">
@@ -38,11 +38,11 @@ if (isSupport("hnd")) {
 var dnsfilter_rule_list_row = dnsfilter_rule_list.split('<');
 
 var modes_array = [[ "",   "System" ],
-		  [ "0",  "No Filtering" ],
+		  [ "0",  "No Redirection" ],
 		  [ "11", "Router" ],
-		  [ "8",  "Custom 1" ],
-		  [ "9",  "Custom 2" ],
-		  [ "10", "Custom 3" ],
+		  [ "8",  "User Defined 1" ],
+		  [ "9",  "User Defined 2" ],
+		  [ "10", "User Defined 3" ],
 		  [ "",   "Unfiltered" ],
 		  [ "17", "Cloudflare Safe" ],
 		  [ "",   "Security filters" ],
@@ -373,7 +373,7 @@ function showhide_settings(state) {
 <iframe name="hidden_frame" id="hidden_frame" width="0" height="0" frameborder="0"></iframe>
 <form method="post" name="form" action="/start_apply.htm" target="hidden_frame">
 <input type="hidden" name="productid" value="<% nvram_get("productid"); %>">
-<input type="hidden" name="current_page" value="DNSFilter.asp">
+<input type="hidden" name="current_page" value="DNSDirector.asp">
 <input type="hidden" name="next_page" value="">
 <input type="hidden" name="modified" value="0">
 <input type="hidden" name="action_wait" value="5">
@@ -409,37 +409,27 @@ function showhide_settings(state) {
 	<tr>
 		<td bgcolor="#4D595D" valign="top">
 		<div>&nbsp;</div>
-		<div class="formfonttitle">DNSFilter</div>
+		<div class="formfonttitle">DNS Director</div>
 		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
-		<div id="dnsfilter_desc" style="margin-bottom:10px;">
-			<table width="700px" style="margin-left:25px;">
-				<tr>
-					<td>
-						<img id="guest_image" src="/images/New_ui/DnsFiltering.png">
-					</td>
-					<td>&nbsp;&nbsp;</td>
-					<td style="font-style: italic;font-size: 14px;">
-						<div>
-							<p>DNSFilter allows you to force LAN devices to use a
-							   specific DNS server, which can be useful if you want
-                                                           to force them to use a filtering service that would
-                                                           block malicious or adult sites.  You can set a global
-                                                           network-wide server, or client-specific servers.
-							   Beside the available presets you can also define up to three
-							   different custom servers to use.</p>
-							<br>
-							<p>A few special System options are available in the presets.  "No Filtering" will disable/bypass the filter, and "Router" will force clients to use the DNS provided
-							   by the router's DHCP server (or, the router itself if it's not defined).
-						</div>
-					</td>
-				</tr>
-			</table>
+		<div class="formfontdesc">
+			<p>DNS Director allows you to force LAN devices to use a
+			   specific DNS server, which can be useful if you want
+			   to force them to use a filtering service that would
+			   block malicious or adult sites.  You can set a global
+			   network-wide server, or client-specific servers.
+			   Beside the available presets you can also define up to three
+			   different custom servers to use.</p>
+			<br>
+			<p>A few special System options are available in the presets.  "No Redirection" will bypass a global redirection,
+			   and "Router" will force clients to use the DNS provided by the router's DHCP server (or, the router itself if it's not defined).
 		</div>
+
 			<!--=====Beginning of Main Content=====-->
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+				<thead><tr><td colspan="3">Settings</td></tr></thead>
 				<tr>
-					<th>Enable DNS-based Filtering</th>
+					<th>Enable DNS Director</th>
 					<td>
 						<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="radio_dnsfilter_enable"></div>
 						<div class="iphone_switch_container" style="height:32px; width:74px; position: relative; overflow: hidden">
@@ -461,28 +451,28 @@ function showhide_settings(state) {
 					</td>
 				</tr>
 				<tr id="dnsfilter_mode_tr">
-					<th>Global Filter Mode</th>
+					<th>Global Redirection</th>
 					<td>
 						<select name="dnsfilter_mode" id="dnsfilter_mode" class="input_option">
 						</select>
 					</td>
 				</tr>
 				<tr id="dnsfilter_custom1">
-					<th width="200">Custom (user-defined) DNS 1</th>
+					<th width="200">User defined DNS 1</th>
 					<td>
 						<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom1" value="<% nvram_get("dnsfilter_custom1"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
 						<span id="dnsfilter_custom61" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom61" value="<% nvram_get("dnsfilter_custom61"); %>"></span>
 					</td>
 				</tr>
 				<tr id="dnsfilter_custom2">
-					<th width="200">Custom (user-defined) DNS 2</th>
+					<th width="200">User defined DNS 2</th>
 					<td>
 						<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom2" value="<% nvram_get("dnsfilter_custom2"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
 						<span id="dnsfilter_custom62" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom62" value="<% nvram_get("dnsfilter_custom62"); %>"></span>
 					</td>
 				</tr>
 				<tr id="dnsfilter_custom3">
-					<th width="200">Custom (user-defined) DNS 3</th>
+					<th width="200">User defined DNS 3</th>
 					<td>
 						<span>IPv4: <input type="text" maxlength="15" class="input_15_table" name="dnsfilter_custom3" value="<% nvram_get("dnsfilter_custom3"); %>" onKeyPress="return validator.isIPAddr(this,event)"></span>
 						<span id="dnsfilter_custom63" style="padding-left:10px;display:none;">IPv6: <input type="text" maxlength="39" class="input_25_table" name="dnsfilter_custom63" value="<% nvram_get("dnsfilter_custom63"); %>"></span>
@@ -494,7 +484,7 @@ function showhide_settings(state) {
 				<thead><tr><td colspan="3"><#ConnectedClient#>&nbsp;(<#List_limit#>&nbsp;64)</td></tr></thead>
 				<tr>
 					<th>Client MAC address</th>
-					<th>Filter Mode</th>
+					<th>Redirection</th>
 					<th><#list_add_delete#></th>
 				</tr>
 				<tr>

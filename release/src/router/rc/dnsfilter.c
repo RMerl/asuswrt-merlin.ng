@@ -136,7 +136,7 @@ int get_dns_filter(int proto, int mode, dnsf_srv_entry_t *dnsfsrv)
 #endif
 	       ((proto == AF_INET) && !is_valid_ip4(dnsfsrv->server1)))
 	){
-		logmessage("dnsfilter", "Invalid server1 for mode %d!", mode);
+		logmessage("dnsdirector", "Invalid server1 for mode %d!", mode);
 		dnsfsrv->server1[0] = '\0';
 	}
 
@@ -146,7 +146,7 @@ int get_dns_filter(int proto, int mode, dnsf_srv_entry_t *dnsfsrv)
 #endif
                ((proto == AF_INET) && !is_valid_ip4(dnsfsrv->server2)))
         ){
-		logmessage("dnsfilter", "Invalid server2 for mode %d!", mode);
+		logmessage("dnsdirector", "Invalid server2 for mode %d!", mode);
                 dnsfsrv->server2[0] = '\0';
         }
 

@@ -1003,3 +1003,7 @@ update:
 	wget http://nw-dlcdnet.asus.com/plugin/js/ouiDB.json -O ajax/ouiDB.json
 	wget http://nw-dlcdnet.asus.com/plugin/js/gameList.json -O ajax/gameList.json
 	wget http://nw-dlcdnet.asus.com/plugin/js/logFilter.json -O ajax/logFilter.json
+	wget http://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json -O ajax/extend_custom_icon.json
+	wget http://nw-dlcdnet.asus.com/plugin/js/pppIspList_V2.json -O ajax/pppIspList_V2.json
+	wget http://nw-dlcdnet.asus.com/plugin/js/DNS_List.json -O ajax/DNS_List.json
+

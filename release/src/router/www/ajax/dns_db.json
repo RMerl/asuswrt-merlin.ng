@@ -59,12 +59,6 @@
         "desc": "",
         "translation": ""
     },
-    "yandex": {
-        "name": "Yandex",
-        "server": ["77.88.8.88", "77.88.8.2"],
-        "desc": "",
-        "translation": ""
-    },
     "adguard_1": {
         "name": "AdGuard",
         "server": ["94.140.14.14", "94.140.15.15"],

@@ -8,7 +8,9 @@ Asuswrt-Merlin Changelog
   - NEW: Add RT-AX86U_PRO support.
   - NEW: Merged with GPL 388_20566 (RT-AX88U and GT-AX11000)
   - NEW: Merged with GPL 388_21224 (all other AX models)
-
+  - NEW: Experimental ROG UI version for GT models, as a separate
+         firmware image within the distribution archive, with
+         "_rog" in the filename.
   - NEW: (Asus 388) WireGuard client and server.  The server uses
          the new 388 VPN server webui.  Implemented a webui for
          clients, based on the early development UI from Asus.
@@ -47,7 +49,7 @@ Asuswrt-Merlin Changelog
              active services.
   - CHANGED: Reworked VPN Director page design, added buttons to
              access a client's settings page, and allow leaving
-             both source and destination left empty (for "all").
+             both source and destination IPs empty (for "all").
   - CHANGED: Optimized VPN Director WAN and DNS rule creation, so
              they no longer get re-created multiple times when
              editing VPNDirector rules.
@@ -58,6 +60,8 @@ Asuswrt-Merlin Changelog
            client with VPN Director and Adaptive QoS.
   - FIXED: Clients connected to Guest Network 1 aren't
            redirected if NTP interception is enabled.
+  - FIXED: Name was truncated to 31 chars when enabling OpenVPN client's
+           Server Certificate Name Validation.
   - REMOVED: Interface selector on Speedtest page (no longer
              working, possibly due to an ookla client update)
 

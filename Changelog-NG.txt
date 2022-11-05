@@ -2,18 +2,19 @@ Asuswrt-Merlin Changelog
 ========================
 
 388.1 (xx-xxx-xxxx)
+  - NOTE: This release is only available for AX models.
+          AC models will remain on the 386_xx release branch.
+
   - NEW: Add RT-AX86U_PRO support.
   - NEW: Merged with GPL 388_20566 (RT-AX88U and GT-AX11000)
-  - NEW: Merged with GPL 388_21224 (XT12, GT-AX6000,
-         GT-AX11000_Pro, GT-AXE16000, GT-AXE11000, RT-AX56U
-         and RT-AX58U)
+  - NEW: Merged with GPL 388_21224 (all other AX models)
 
-  - NEW: (388) WireGuard client and server.  The server uses the
-         new 388 VPN server webui.  Implemented a webui for
+  - NEW: (Asus 388) WireGuard client and server.  The server uses
+         the new 388 VPN server webui.  Implemented a webui for
          clients, based on the early development UI from Asus.
 
          WG client routing is handled by VPN Director - you must
-         configuree redirection rules through it, same as on stock
+         configure redirection rules through it, same as on stock
          firmware which requires configuring rules through
          VPN Fusion.
 
@@ -26,6 +27,10 @@ Asuswrt-Merlin Changelog
 
   - UPDATED: getdns/stubby to 1.7.2/0.4.2.
   - UPDATED: zlib to 1.2.12 + backports.
+  - UPDATED: openssl to 1.1.1s.
+  - CHANGED: Rebranded DNSFilter as DNS Director.  This will prevent
+             confusion with the company sharing the same name, and
+             also better describes what the feature does.
   - CHANGED: Setting an OpenVPN client to redirect all traffic while
              in "Exclusive" DNS mode will now force redirect ALL
              DNS traffic just like in VPN Director mode.
@@ -35,9 +40,14 @@ Asuswrt-Merlin Changelog
              resolution.  It might be best to use VPN Director
              in that case to control which client should
              be involved in the DNS redirection, or use
-             DNSFilter instead of Exclusive DNS mode.
+             DNS Director instead of Exclusive DNS mode.
+  - CHANGED: (Asus 388) nvram storage increased to 192 KB on newer
+             HND 5.04 devices like the GT-AXE16000.
   - CHANGED: Reworked VPN Status page to only show currently
              active services.
+  - CHANGED: Reworked VPN Director page design, added buttons to
+             access a client's settings page, and allow leaving
+             both source and destination left empty (for "all").
   - CHANGED: Optimized VPN Director WAN and DNS rule creation, so
              they no longer get re-created multiple times when
              editing VPNDirector rules.

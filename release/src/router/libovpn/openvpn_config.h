@@ -132,7 +132,7 @@ typedef struct ovpn_cconf {
 	int reneg;	//TLS Renegotiation Time
 	int tlscrypt;	//Encrypt and authenticate all control channel packets.
 	int verify_x509_type;	//TYPE of verify-x509-name
-	char verify_x509_name[32];	//NAME of verify-x509-name
+	char verify_x509_name[256];	//NAME of verify-x509-name
 
 //Router options and info
 	int fw;		//Block inbound connections

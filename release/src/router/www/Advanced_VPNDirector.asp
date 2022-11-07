@@ -30,7 +30,7 @@
 	z-index: 200;
 	display: none;
 	margin-left: 35%;
-	top: 280px !important;
+	top: 280px;
 	width: 600px;
 	box-shadow: 1px 5px 10px #000;
 	font-size: 12px;

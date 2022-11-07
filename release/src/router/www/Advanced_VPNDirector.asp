@@ -331,7 +331,7 @@ function show_wgc_summary(refresh) {
 		get_wgc_infos(i, refresh);
 
 		if (wgc_info.state == 1)
-			code += '<tr><td><img title="Enabled" src="/images/New_ui/enable.svg" onMouseOver="EnableMouseOver(this, \'1\');" onMouseOut="EnableMouseOut(this, \'1\');" onclick="disable_wgc_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td></tr>';
+			code += '<tr><td><img title="Enabled" src="/images/New_ui/enable.svg" onMouseOver="EnableMouseOver(this, \'1\');" onMouseOut="EnableMouseOut(this, \'1\');" onclick="disable_wgc_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
 		else
 			code += '<tr><td><img title="Disabled" src="/images/New_ui/disable.svg" onMouseOver="EnableMouseOver(this, \'0\');" onMouseOut="EnableMouseOut(this, \'0\');" onclick="enable_wgc_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
 		code += '<td style="text-align:left; padding-left:10px;">WGC' + i + ': ' + wgc_info.desc + '</td>';

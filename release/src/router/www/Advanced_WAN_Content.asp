@@ -2258,7 +2258,7 @@ function DNSList_match(ip1, ip2){
 					</select>
 					<div id="yadns_hint_dnspriv" style="display:none;"></div>
 					<div id="dhcpdns_hint_dnspriv" style="display:none;"></div>
-					<div id="dnsfilter_hint_dnspriv" style="display:none;"><span><#Dnsfilter_Hint_Dnspriv#></span></div>
+					<div id="dnsfilter_hint_dnspriv" style="display:none;"><span><a style="text-decoration:underline; color:#FFCC00;" href="DNSDirector.asp">DNS Director</a> is enabled - anything configured there to something other than No Redirection or Router will bypass DNS Privacy servers.</span></div>
 				</td>
 			</tr>
 			<tr style="display:none">

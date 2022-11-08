@@ -1207,9 +1207,12 @@ void run_wgc_fw_scripts()
 	int unit;
 	char buf[128] = {0};
 
-	for(unit = 1; unit <= WG_CLIENT_MAX; unit++)
-	{
+	for (unit = WG_CLIENT_MAX; unit > 0; unit--) {
 		snprintf(buf, sizeof(buf), "%s/fw_%s%d.sh", WG_DIR_CONF, WG_CLIENT_IF_PREFIX, unit);
+		if(f_exists(buf))
+			eval(buf);
+
+		snprintf(buf, sizeof(buf), "%s/dns%d.sh", WG_DIR_CONF, unit);
 		if(f_exists(buf))
 			eval(buf);
 	}

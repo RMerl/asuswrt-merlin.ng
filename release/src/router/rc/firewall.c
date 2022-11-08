@@ -1954,7 +1954,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 				    offset + psidlen == 0 || offset + psidlen > 16)
 					break;
 
-#ifdef BCM_KF_NETFILTER
+#if defined(BCM_KF_NETFILTER) && !defined(BCM4912)
 				foreach(proto, "tcp udp icmp", next) {
 					fprintf(fp, "-A POSTROUTING -p %s -o %s -j MASQUERADE --mode %s --psid %d,%d,%d\n",
 						proto, wan_if, (nvram_get_int("nat_type") ? "fullcone" : "symmetric"),
@@ -1969,7 +1969,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 				break;
 			}
 #endif
-#ifdef BCM_KF_NETFILTER
+#if defined(BCM_KF_NETFILTER) && !defined(BCM4912)
 			fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE --mode %s\n", p, wan_if, wan_ip, (nvram_get_int("nat_type") ? "fullcone" : "symmetric"));
 #else
 			fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE\n", p, wan_if, wan_ip);
@@ -1978,7 +1978,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 
 		/* masquerade physical WAN port connection */
 		if (strcmp(wan_if, wanx_if) && inet_addr_(wanx_ip))
-#ifdef BCM_KF_NETFILTER
+#if defined(BCM_KF_NETFILTER) && !defined(BCM4912)
 			fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE --mode %s\n", p, wanx_if, wanx_ip, (nvram_get_int("nat_type") ? "fullcone" : "symmetric"));
 #else
 			fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE\n", p, wanx_if, wanx_ip);
@@ -2489,7 +2489,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 			wanx_ip = nvram_safe_get(strcat_r(prefix, "xipaddr", tmp));
 
 			if(inet_addr_(wan_ip))
-#ifdef BCM_KF_NETFILTER
+#if defined(BCM_KF_NETFILTER) && !defined(BCM4912)
 				fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE --mode %s\n", p, wan_if, wan_ip, (nvram_get_int("nat_type") ? "fullcone" : "symmetric"));
 #else
 				fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE\n", p, wan_if, wan_ip);
@@ -2497,7 +2497,7 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 
 			/* masquerade physical WAN port connection */
 			if (dualwan_unit__nonusbif(unit) && strcmp(wan_if, wanx_if) && inet_addr_(wanx_ip))
-#ifdef BCM_KF_NETFILTER
+#if defined(BCM_KF_NETFILTER) && !defined(BCM4912)
 				fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE --mode %s\n", p, wanx_if, wanx_ip, (nvram_get_int("nat_type") ? "fullcone" : "symmetric"));
 #else
 				fprintf(fp, "-A POSTROUTING %s -o %s ! -s %s -j MASQUERADE\n", p, wanx_if, wanx_ip);

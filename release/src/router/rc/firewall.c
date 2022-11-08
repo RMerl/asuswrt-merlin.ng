@@ -7479,10 +7479,6 @@ int start_firewall(int wanunit, int lanunit)
 	vpnc_add_firewall_rule();
 #endif
 
-#ifdef RTCONFIG_OPENVPN
-	ovpn_run_fw_scripts();
-#endif
-
 	if (!nvram_get_int("ttl_inc_enable") && !nvram_get_int("ttl_spoof_enable")) {
 		modprobe_r("xt_HL");
 		modprobe_r("xt_hl");
@@ -7509,6 +7505,9 @@ int start_firewall(int wanunit, int lanunit)
 	run_wgc_fw_scripts();
 #endif
 
+#ifdef RTCONFIG_OPENVPN
+	ovpn_run_fw_scripts();
+#endif
 	/* Assuming wan interface doesn't change */
 	reload_upnp();
 

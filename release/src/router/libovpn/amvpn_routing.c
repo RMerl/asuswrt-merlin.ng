@@ -434,25 +434,11 @@ void amvpn_clear_exclusive_dns(int unit, vpndir_proto_t proto)
 }
 
 
-// Recreate the port 53 PREROUTING rules to ensure they are in the correct order (OVPN1 first, OVPN5 last)
+// Recreate the port 53 PREROUTING rules to ensure they are in the correct order (OVPN1 first, OVPN5 last, followed by WGC)
 void amvpn_update_exclusive_dns_rules()
 {
 	int unit;
 	char buffer[100];
-
-	for (unit = OVPN_CLIENT_MAX; unit > 0; unit--) {
-		snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
-		if (f_exists(buffer)) {
-			// Remove and re-add to ensure proper order
-			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit);
-
-			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
-			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
-
-			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
-			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
-		}
-	}
 
 #ifdef RTCONFIG_WIREGUARD
 	for (unit = WG_CLIENT_MAX; unit > 0; unit--) {
@@ -469,6 +455,20 @@ void amvpn_update_exclusive_dns_rules()
 		}
 	}
 #endif
+
+	for (unit = OVPN_CLIENT_MAX; unit > 0; unit--) {
+		snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
+		if (f_exists(buffer)) {
+			// Remove and re-add to ensure proper order
+			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit);
+
+			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
+			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
+
+			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
+			eval("/usr/sbin/iptables", "-t", "nat", "-I", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
+		}
+	}
 }
 
 

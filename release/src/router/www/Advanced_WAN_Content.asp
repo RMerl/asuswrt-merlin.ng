@@ -1517,7 +1517,9 @@ function showDiableDHCPclientID(clientid_enable){
 }
 
 function change_nat(state) {
-	if (isSupport("bcm_kf_netfilter")) {
+	if (isSupport("bcm_kf_netfilter") &&
+		(based_modelid != "XT12" && based_modelid != "RT-AX86U_PRO" && based_modelid != "GT-AXE16000" &&
+		 based_modelid != "GT-AX6000" && based_modelid != "GT-AX11000_PRO")) {
 		document.getElementById("nat_type_tr").style.display = (state ? "" : "none");
 	}
 }

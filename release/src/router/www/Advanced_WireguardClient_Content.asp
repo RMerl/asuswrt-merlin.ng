@@ -553,16 +553,22 @@ function show_director_rules(){
 								<input type="radio" value="0" name="wgc_nat" class="input" <% nvram_match("wgc_nat", "0", "checked"); %>><#checkbox_No#></input>
 							</td>
 						</tr>
-                                        <tr>
-                                                <th>Import config</th>
-                                                <td>
-                                                        <input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
-                                                        <input id="" class="button_gen" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
-                                                                <img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
-                                                                <span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
-                                                </td>
-                                        </tr>
-
+						<tr>
+							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,30);">Inbound Firewall</a></th>
+							<td>
+								<input type="radio" name="wgc_fw" class="input" value="1" <% nvram_match_x("", "wgc_fw", "1", "checked"); %>>Block
+								<input type="radio" name="wgc_fw" class="input" value="0" <% nvram_match_x("", "wgc_fw", "0", "checked"); %>>Allow
+							</td>
+						</tr>
+						<tr>
+							<th>Import config</th>
+							<td>
+								<input id="wgfile" type="file" name="file" class="input" style="color:#FFCC00;*color:#000;">
+								<input id="" class="button_gen" onclick="Importwg();" type="button" value="<#CTL_upload#>" />
+								<img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif">
+								<span id="importWgFile" style="display:none;"><#Main_alert_proceeding_desc3#></span>
+							</td>
+						</tr>
 					</table>
 
 					<table id="WgcInterfaceTable" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">

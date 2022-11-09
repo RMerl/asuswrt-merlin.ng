@@ -371,17 +371,19 @@ static void _wg_client_nf_add(char* prefix, char* ifname)
 {
 	FILE* fp;
 	char path[128] = {0};
+	int fw;
 
 	snprintf(path, sizeof(path), "%s/fw_%s.sh", WG_DIR_CONF, ifname);
 	fp = fopen(path, "w");
 	if (fp)
 	{
+		fw = nvram_pf_get_int(prefix, "fw");
 		fprintf(fp, "#!/bin/sh\n\n");
 
-		fprintf(fp, "iptables -I WGCI -i %s -j ACCEPT\n", ifname);
-		fprintf(fp, "ip6tables -I WGCI -i %s -j ACCEPT\n", ifname);
-		fprintf(fp, "iptables -I WGCF -i %s -j ACCEPT\n", ifname);
-		fprintf(fp, "ip6tables -I WGCF -i %s -j ACCEPT\n", ifname);
+		fprintf(fp, "iptables -I WGCI -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "ip6tables -I WGCI -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "iptables -I WGCF -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "ip6tables -I WGCF -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
 		fprintf(fp, "iptables -I WGCF -o %s -j ACCEPT\n", ifname);
 		fprintf(fp, "ip6tables -I WGCF -o %s -j ACCEPT\n", ifname);
 		fprintf(fp, "iptables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);

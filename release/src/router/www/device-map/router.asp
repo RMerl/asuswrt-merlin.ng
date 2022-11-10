@@ -375,8 +375,8 @@ function genElement(){
 			
 		
 			code += '<select class="input_option" onchange="enableSmartConnect(this.value)">'
-			code += '<option value="0" '+ (variable.smart_connect_x === '0' ? 'selected': '') +'>關閉';
-			code += '<option value="1" '+ (variable.smart_connect_x !== '0' ? 'selected': '') +'>開';			
+			code += '<option value="0" '+ (variable.smart_connect_x === '0' ? 'selected': '') +'><#WLANConfig11b_WirelessCtrl_buttonname#>';
+			code += '<option value="1" '+ (variable.smart_connect_x !== '0' ? 'selected': '') +'><#WLANConfig11b_WirelessCtrl_button1name#>';
 			code += '</select>'
 	
 

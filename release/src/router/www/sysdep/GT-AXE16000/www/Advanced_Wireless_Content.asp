@@ -4971,7 +4971,7 @@ function updateSmartConnect(unit, checked){
 				<tr id="band01_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="text" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value="<% nvram_get("wl0_wpa_psk"); %>"  autocorrect="off" autocapitalize="off">
+				  		<input type="password" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value="<% nvram_get("wl0_wpa_psk"); %>"  autocorrect="off" autocapitalize="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 					</td>
 				</tr>
 				  
@@ -5104,7 +5104,7 @@ function updateSmartConnect(unit, checked){
 				<tr id="band0_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="text" name="band0_wpa_psk" maxlength="64" class="input_32_table" value="<% nvram_get("wl3_wpa_psk"); %>" autocorrect="off" autocapitalize="off">
+				  		<input type="password" name="band0_wpa_psk" maxlength="64" class="input_32_table" value="<% nvram_get("wl3_wpa_psk"); %>" autocorrect="off" autocapitalize="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 					</td>
 				</tr>
 				  
@@ -5238,7 +5238,7 @@ function updateSmartConnect(unit, checked){
 				<tr id="band1_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="text" name="band1_wpa_psk" maxlength="64" class="input_32_table" value="<% nvram_get("wl0_wpa_psk"); %>" autocorrect="off" autocapitalize="off">
+				  		<input type="password" name="band1_wpa_psk" maxlength="64" class="input_32_table" value="<% nvram_get("wl0_wpa_psk"); %>" autocorrect="off" autocapitalize="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 					</td>
 				</tr>
 				  
@@ -5374,7 +5374,7 @@ function updateSmartConnect(unit, checked){
 				<tr id="band2_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="text" name="band2_wpa_psk" maxlength="64" class="input_32_table" value="<% nvram_get("wl1_wpa_psk"); %>" autocorrect="off" autocapitalize="off">
+				  		<input type="password" name="band2_wpa_psk" maxlength="64" class="input_32_table" value="<% nvram_get("wl1_wpa_psk"); %>" autocorrect="off" autocapitalize="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 					</td>
 				</tr>
 				  
@@ -5497,7 +5497,7 @@ function updateSmartConnect(unit, checked){
 				<tr id="band3_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="text" name="band3_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value="<% nvram_get("wl2_wpa_psk"); %>" autocorrect="off" autocapitalize="off">
+				  		<input type="password" name="band3_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value="<% nvram_get("wl2_wpa_psk"); %>" autocorrect="off" autocapitalize="off" onBlur="switchType(this, false);" onFocus="switchType(this, true);">
 					</td>
 			  	</tr>
 

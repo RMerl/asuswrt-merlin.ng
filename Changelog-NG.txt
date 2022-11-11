@@ -64,6 +64,8 @@ Asuswrt-Merlin Changelog
            Server Certificate Name Validation.
   - REMOVED: Interface selector on Speedtest page (no longer
              working, possibly due to an ookla client update)
+  - REMOVED: NAT Type setting on HND 5.04 devices (fullcone is
+             not supported by kernel 4.19)
 
 
 386.8 (13-Aug-2022)

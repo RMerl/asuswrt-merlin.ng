@@ -1110,6 +1110,7 @@ function change_qos_type(value){
 		}
 		else{
 			document.form.action_script.value = "reboot";
+			document.form.next_page.value = "QoS_EZQoS.asp";
 			document.form.action_wait.value = "<% get_default_reboot_time(); %>";
 		}
 		if(document.getElementById("auto").checked){

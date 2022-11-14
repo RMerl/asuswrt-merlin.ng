@@ -11328,9 +11328,32 @@ void fc_fini()
 void hnd_nat_ac_init(int bootup)
 {
 	int routing_mode = is_routing_enabled();
+	int unit, wg_enabled = 0;
+	char buffer[32];
 
-	// A.QOS : not to disable fc
-	nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") || (routing_mode && IS_NON_AQOS()) ? 1 : 0);
+	// WG: keep FC disabled if WG server or clients  are enabled
+#ifdef RTCONFIG_WIREGUARD
+	for (unit = 1; unit <= WG_CLIENT_MAX; unit++ ) {
+		sprintf(buffer, "wgc%d_enable", unit);
+		if (nvram_get_int(buffer)) {
+			wg_enabled = 1;
+			break;
+		}
+	}
+
+	if (!wg_enabled) {
+		for (unit = 1; unit <= WG_SERVER_MAX; unit++ ) {
+			sprintf(buffer, "wgs%d_enable", unit);
+			if (nvram_get_int(buffer)) {
+				wg_enabled = 1;
+				break;
+			}
+		}
+	}
+#endif
+
+	// Set fc_disable based on QOS type and WG states
+	nvram_set_int("fc_disable", nvram_get_int("fc_disable_force") || wg_enabled || (routing_mode && IS_NON_AQOS()) ? 1 : 0);
 
 	// A.QOS : no need to disable runner
 	nvram_set_int("runner_disable", nvram_get_int("runner_disable_force") || (routing_mode && IS_NON_AQOS()) ? 1 : 0);

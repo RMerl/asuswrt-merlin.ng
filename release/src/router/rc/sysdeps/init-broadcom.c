@@ -11333,23 +11333,7 @@ void hnd_nat_ac_init(int bootup)
 
 	// WG: keep FC disabled if WG server or clients  are enabled
 #ifdef RTCONFIG_WIREGUARD
-	for (unit = 1; unit <= WG_CLIENT_MAX; unit++ ) {
-		sprintf(buffer, "wgc%d_enable", unit);
-		if (nvram_get_int(buffer)) {
-			wg_enabled = 1;
-			break;
-		}
-	}
-
-	if (!wg_enabled) {
-		for (unit = 1; unit <= WG_SERVER_MAX; unit++ ) {
-			sprintf(buffer, "wgs%d_enable", unit);
-			if (nvram_get_int(buffer)) {
-				wg_enabled = 1;
-				break;
-			}
-		}
-	}
+	wg_enabled = is_wg_enabled();
 #endif
 
 	// Set fc_disable based on QOS type and WG states

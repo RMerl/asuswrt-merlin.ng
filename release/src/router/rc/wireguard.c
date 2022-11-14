@@ -954,6 +954,7 @@ void start_wgs(int unit)
 	char c_path[128] = {0};
 	char cp_path[128] = {0};
 	int c_unit;
+	char tmp[4];
 
 	snprintf(prefix, sizeof(prefix), "%s%d_", WG_SERVER_NVRAM_PREFIX, unit);
 	snprintf(path, sizeof(path), "%s/server%d.conf", WG_DIR_CONF, unit);
@@ -1001,6 +1002,9 @@ void start_wgs(int unit)
 	/// sysdeps
 	_wg_config_sysdeps(1);
 
+	snprintf(tmp, sizeof(tmp), "%d", unit);
+	run_custom_script("wgserver-start", 0, tmp, NULL);
+
 	logmessage("WireGuard", "Starting server.");
 }
 
@@ -1008,6 +1012,10 @@ void stop_wgs(int unit)
 {
 	char ifname[8] = {0};
 	int wg_enable = is_wg_enabled();
+	char tmp[4];
+
+	snprintf(tmp, sizeof(tmp), "%d", unit);
+	run_custom_script("wgserver-stop", 0, tmp, NULL);
 
 	snprintf(ifname, sizeof(ifname), "%s%d", WG_SERVER_IF_PREFIX, unit);
 
@@ -1034,6 +1042,7 @@ void start_wgc(int unit)
 	char ifname[8] = {0};
 	int table = 0;
 	char ep_addr_r[1024] = {0};
+	char tmp[4];
 
 	_dprintf("%s %d\n", __FUNCTION__, unit);
 
@@ -1092,6 +1101,9 @@ void start_wgc(int unit)
 	/// sysdeps
 	_wg_config_sysdeps(1);
 
+	snprintf(tmp, sizeof(tmp), "%d", unit);
+	run_custom_script("wgclient-start", 0, tmp, NULL);
+
 	logmessage("WireGuard", "Starting client %d.", unit);
 }
 
@@ -1103,8 +1115,12 @@ void stop_wgc(int unit)
 	int table = 0;
 	int wg_enable = is_wg_enabled();
 	char buffer[64];
+	char tmp[4];
 
 	_dprintf("%s %d\n", __FUNCTION__, unit);
+
+	snprintf(tmp, sizeof(tmp), "%d", unit);
+	run_custom_script("wgclient-stop", 0, tmp, NULL);
 
 	snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, unit);
 	snprintf(ifname, sizeof(ifname), "%s%d", WG_CLIENT_IF_PREFIX, unit);

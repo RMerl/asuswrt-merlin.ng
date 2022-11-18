@@ -103,10 +103,12 @@ then
 fi
 
 # create the key and certificate request
-OPENSSL_CONF="/etc/openssl.config" $OPENSSL req -new -out /tmp/cert.csr -keyout /tmp/privkey.pem -newkey rsa:2048 -passout pass:password
+#OPENSSL_CONF="/etc/openssl.config" $OPENSSL req -new -out /tmp/cert.csr -keyout /tmp/privkey.pem -newkey rsa:2048 -passout pass:password
+#OPENSSL_CONF="/etc/openssl.config" $OPENSSL rsa -in /tmp/privkey.pem -out key.pem -passin pass:password
+OPENSSL_CONF="/etc/openssl.config" $OPENSSL ecparam -out key.pem -name prime256v1 -genkey
+OPENSSL_CONF="/etc/openssl.config" $OPENSSL req -new -key key.pem -out /tmp/cert.csr
 
-# import the self-certificate
-OPENSSL_CONF="/etc/openssl.config" $OPENSSL rsa -in /tmp/privkey.pem -out key.pem -passin pass:password
+# Import the self-certificate
 OPENSSL_CONF="/etc/openssl.config" RANDFILE=/dev/urandom $OPENSSL req -x509 -new -nodes -in /tmp/cert.csr -key key.pem -days 3653 -sha256 -out cert.pem
 
 # server.pem for WebDav SSL

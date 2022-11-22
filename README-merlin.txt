@@ -46,7 +46,7 @@ Fully supported devices:
 388.x:
  * RT-AX88U
  * RT-AX56U
- * RT-AX58U & RT-AX3000
+ * RT-AX58U & RT-AX3000 (V1 only)
  * RT-AX86U & RT-AX86S
  * GT-AC2900
  * GT-AX11000
@@ -103,17 +103,15 @@ Disk sharing:
 Networking:
    - Act as a SMB Master Browser
    - Act as a WINS server
-   - SSHD support for key-based authentication
    - Allows tweaking TCP/UDP connection tracking timeouts
    - CIFS client support (for mounting remote SMB share on the router)
    - Advanced OpenVPN client and server.
    - Netfilter ipset module, for efficient blacklist implementation
+   - DNS Director - enforcing the use of a specific DNS server, can be applied globally or per client
    - Wireless site survey page
-   - DNS-based Filtering, enforcing a specific DNS server, can be applied globally or per client
    - Custom DDNS (through a user script)
    - TOR support, individual client access control
    - VPN Director - Policy-based routing for OpenVPN and WireGUard clients (based on source or destination IPs)
-   - fq_codel queue discipline for Traditional QoS
    - Detailed wireless troubleshooting information (on some models)
    - Redirect NTP client queries to the router's own NTP daemon
    - Cake SQM QoS (on newer HND models)
@@ -126,7 +124,6 @@ Web interface:
    - Hostname field on the DHCP reservation list and Wireless ACL list
    - System info summary page
    - Wifi icon reports the state of both radios
-   - Wireless site survey
    - Advanced wireless client list display, including automated refresh
    - Redesigned layout of the various System Log sections
    - Editable entries (on some pages)

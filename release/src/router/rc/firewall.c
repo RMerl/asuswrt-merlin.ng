@@ -4649,10 +4649,6 @@ TRACE_PT("writing Parental Control\n");
 							//cprintf("[timematch] g=%s, p=%s, wanlan=%s, buf=%s\n", g, p, wanlan_timematch, wanlan_buf);
 							if (v4v6_ok & IPT_V4)
 				 				fprintf(fp, "-A FORWARD %s -i %s -o %s %s -j %s\n", g, wan_if, lan_if, setting, ftype);
-#ifdef RTCONFIG_IPV6
-							if (ipv6_enabled() && (v4v6_ok & IPT_V6) && *wan6face)
-								fprintf(fp_ipv6, "-A FORWARD %s -i %s -o %s %s -j %s\n", g, wan6face, lan_if, setting, ftype);
-#endif
 						}
 					}
 				}
@@ -4711,11 +4707,6 @@ TRACE_PT("write wl filter\n");
 		// Default
 		fprintf(fp, "-A FORWARD -i %s -o %s -j %s\n", wan_if, lan_if,
 			nvram_match("filter_wl_default_x", "DROP") ? logdrop : logaccept);
-#ifdef RTCONFIG_IPV6
-		if (ipv6_enabled() && *wan6face)
-		fprintf(fp_ipv6, "-A FORWARD -i %s -o %s -j %s\n", wan6face, lan_if,
-			nvram_match("filter_wl_default_x", "DROP") ? logdrop : logaccept);
-#endif
 	}
 #endif
 
@@ -6169,19 +6160,6 @@ TRACE_PT("writing Parental Control\n");
 							}
  			 			}
 					}
-
-#ifdef RTCONFIG_IPV6
-					/* separate lanwan timematch */
-					strlcpy(wanlan_buf, wanlan_timematch, sizeof(wanlan_buf));
-					p = wanlan_buf;
-					while(p){
-						if((g=strsep(&p, ">")) != NULL){
-							//cprintf("[timematch] g=%s, p=%s, wanlan=%s, buf=%s\n", g, p, wanlan_timematch, wanlan_buf);
-							if (ipv6_enabled() && (v4v6_ok & IPT_V6) && *wan6face)
-								fprintf(fp_ipv6, "-A FORWARD %s -i %s -o %s %s -j %s\n", wanlan_timematch, wan6face, lan_if, setting, ftype);
-						}
-					}
-#endif
  				}
 				if(nv) free(nv);
 			}
@@ -6269,11 +6247,6 @@ TRACE_PT("write wl filter\n");
 				wan_if = get_wan_ifname(unit);
 				fprintf(fp, "-A FORWARD -i %s -o %s -j %s\n", wan_if, lan_if, nvram_match("filter_wl_default_x", "DROP") ? logdrop : logaccept);
 			}
-
-#ifdef RTCONFIG_IPV6
-			if (ipv6_enabled() && *wan6face)
-				fprintf(fp_ipv6, "-A FORWARD -i %s -o %s -j %s\n", wan6face, lan_if, nvram_match("filter_wl_default_x", "DROP") ? logdrop : logaccept);
-#endif
 		}
 	}
 #endif

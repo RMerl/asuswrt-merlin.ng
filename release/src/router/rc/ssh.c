@@ -18,7 +18,6 @@ static void check_host_keys()
 		if (mkdir("/jffs/.ssh", 0700)) {
 			logmessage("dropbear", "JFFS unwritable - creating temporary keys in RAM");
 			eval("dropbearkey", "-t", "rsa", "-f", "/etc/dropbear/dropbear_rsa_host_key");
-			eval("dropbearkey", "-t", "dss", "-f", "/etc/dropbear/dropbear_dss_host_key");
 			eval("dropbearkey", "-t", "ecdsa", "-f", "/etc/dropbear/dropbear_ecdsa_host_key");
 			eval("dropbearkey", "-t", "ed25519", "-f", "/etc/dropbear/dropbear_ed25519_host_key");
 			nojffs = 1;
@@ -28,15 +27,12 @@ static void check_host_keys()
 	if (!nojffs) {
 		if (!f_exists("/jffs/.ssh/dropbear_rsa_host_key"))
 			eval("dropbearkey", "-t", "rsa", "-f", "/jffs/.ssh/dropbear_rsa_host_key");
-		if (!f_exists("/jffs/.ssh/dropbear_dss_host_key"))
-			eval("dropbearkey", "-t", "dss", "-f", "/jffs/.ssh/dropbear_dss_host_key");
 		if (!f_exists("/jffs/.ssh/dropbear_ecdsa_host_key"))
 			eval("dropbearkey", "-t", "ecdsa", "-f", "/jffs/.ssh/dropbear_ecdsa_host_key");
 		if (!f_exists("/jffs/.ssh/dropbear_ed25519_host_key"))
 			eval("dropbearkey", "-t", "ed25519", "-f", "/jffs/.ssh/dropbear_ed25519_host_key");
 
 		eval("ln", "-s", "/jffs/.ssh/dropbear_rsa_host_key", "/etc/dropbear/dropbear_rsa_host_key");
-		eval("ln", "-s", "/jffs/.ssh/dropbear_dss_host_key", "/etc/dropbear/dropbear_dss_host_key");
 		eval("ln", "-s", "/jffs/.ssh/dropbear_ecdsa_host_key", "/etc/dropbear/dropbear_ecdsa_host_key");
 		eval("ln", "-s", "/jffs/.ssh/dropbear_ed25519_host_key", "/etc/dropbear/dropbear_ed25519_host_key");
 	}

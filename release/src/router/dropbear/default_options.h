@@ -132,7 +132,7 @@ IMPORTANT: Some options will require "make clean" after changes */
  * is not recommended for new keys.
  * See: RSA_PRIV_FILENAME and DSS_PRIV_FILENAME */
 #define DROPBEAR_RSA 1
-#define DROPBEAR_DSS 1
+#define DROPBEAR_DSS 0
 /* ECDSA is significantly faster than RSA or DSS. Compiling in ECC
  * code (either ECDSA or ECDH) increases binary size - around 30kB
  * on x86-64.

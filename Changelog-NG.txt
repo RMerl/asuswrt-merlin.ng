@@ -56,6 +56,7 @@ Asuswrt-Merlin Changelog
              editing VPNDirector rules.
   - CHANGED: Switched generated self-signed certificate to an
              EC certificate.
+  - CHANGED: Disabled DSS key support in Dropbear SSH.
   - FIXED: Wrong temperatures used by the temperature graphs
            (386.8 regression)
   - FIXED: CVE-2022-37434 in zlib.

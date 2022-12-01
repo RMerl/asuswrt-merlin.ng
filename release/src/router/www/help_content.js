@@ -158,7 +158,7 @@ helpcontent[7] = new Array("",
 							 "<#WAN_DNS_Rebind_Desc#>",
 							 "<#WAN_DNSSEC_Support_Desc#>",
 							 "<#WAN_Valid_Unsigned_DNSSEC_Desc#>",
-							 "<#WAN_Prevent_DoH_Desc#>"
+							 "Some clients like Firefox will automatically switch to DNS over HTTPS, bypassing your preferred DNS servers. This option may prevent that. If set to Auto (the default), it will only prevent it if either DNSPrivacy or DNS Director in global mode are enabled."
 							 );
 
 //Firewall
@@ -443,7 +443,7 @@ helpcontent[50] = new Array("",
 				"You can finetune traffic allocation by specifying the packet overhead of your WAN connection.  You can use a pre-configured preset, or manually enter a value, and enable ATM if you know your WAN connection uses it (many DSL-based services do).  If unsure, just leave these values to their default setting.",
 				"Intercept NTP connections from LAN clients and redirect them to the router's own NTP server.  Note that IPv6 is not supported.",
 				"Allow or block any traffic sent to your network through the VPN tunnel.  Should be set to Block unless running a site-to-site tunnel, or explicitely expecting inbound connections coming through the tunnel.",
-				"Some clients like Firefox or Windows' Discovery of Designated Resolver support can automatically switch to DNS over HTTPS, bypassing your preferred DNS servers.  This option may prevent that.  If set to Auto (the default), it will only prevent it if either DNSPrivacy or DNSFilter in global mode are enabled.",
+				"Some clients like Firefox or Windows' Discovery of Designated Resolver support can automatically switch to DNS over HTTPS, bypassing your preferred DNS servers.  This option may prevent that.  If set to Auto (the default), it will only prevent it if either DNSPrivacy or DNS Director in global mode are enabled.",
 				"Cake is a smart queue management (SQM) system that focuses on optimizing packet delay and reducing bufferbloat.");
 // Last: 50,32
 

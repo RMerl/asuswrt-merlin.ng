@@ -158,7 +158,7 @@ helpcontent[7] = new Array("",
 							 "<#WAN_DNS_Rebind_Desc#>",
 							 "<#WAN_DNSSEC_Support_Desc#>",
 							 "<#WAN_Valid_Unsigned_DNSSEC_Desc#>",
-							 "<#WAN_Prevent_DoH_Desc#>"
+							 "Some clients like Firefox will automatically switch to DNS over HTTPS, bypassing your preferred DNS servers. This option may prevent that. If set to Auto (the default), it will only prevent it if either DNSPrivacy or DNS Director in global mode are enabled."
 							 );
 
 //Firewall

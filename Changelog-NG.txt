@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-388.1 (xx-xxx-xxxx)
+388.1 (3-Dec-2022)
   - NOTE: This release is only available for AX models.
           AC models will remain on the 386_xx release branch.
 
@@ -69,7 +69,7 @@ Asuswrt-Merlin Changelog
   - REMOVED: Interface selector on Speedtest page (no longer
              working, possibly due to an ookla client update)
   - REMOVED: NAT Type setting on HND 5.04 devices (fullcone is
-             not supported by kernel 4.19)
+             not supported by kernel 4.19, so it wasn't working)
 
 
 386.8 (13-Aug-2022)

@@ -103,23 +103,20 @@ const CodecTags ff_mkv_codec_tags[]={
     {""                 , AV_CODEC_ID_NONE}
 };
 
-const CodecMime ff_mkv_image_mime_tags[] = {
-    {"image/gif"                  , AV_CODEC_ID_GIF},
-    {"image/jpeg"                 , AV_CODEC_ID_MJPEG},
-    {"image/png"                  , AV_CODEC_ID_PNG},
-    {"image/tiff"                 , AV_CODEC_ID_TIFF},
+const CodecTags ff_webm_codec_tags[] = {
+    {"V_VP8"            , AV_CODEC_ID_VP8},
+    {"V_VP9"            , AV_CODEC_ID_VP9},
+    {"V_AV1"            , AV_CODEC_ID_AV1},
 
-    {""                           , AV_CODEC_ID_NONE}
-};
+    {"A_VORBIS"         , AV_CODEC_ID_VORBIS},
+    {"A_OPUS"           , AV_CODEC_ID_OPUS},
 
-const CodecMime ff_mkv_mime_tags[] = {
-    {"text/plain"                 , AV_CODEC_ID_TEXT},
-    {"application/x-truetype-font", AV_CODEC_ID_TTF},
-    {"application/x-font"         , AV_CODEC_ID_TTF},
-    {"application/vnd.ms-opentype", AV_CODEC_ID_OTF},
-    {"binary"                     , AV_CODEC_ID_BIN_DATA},
+    {"D_WEBVTT/SUBTITLES"   , AV_CODEC_ID_WEBVTT},
+    {"D_WEBVTT/CAPTIONS"    , AV_CODEC_ID_WEBVTT},
+    {"D_WEBVTT/DESCRIPTIONS", AV_CODEC_ID_WEBVTT},
+    {"D_WEBVTT/METADATA"    , AV_CODEC_ID_WEBVTT},
 
-    {""                           , AV_CODEC_ID_NONE}
+    {""                 , AV_CODEC_ID_NONE}
 };
 
 const AVMetadataConv ff_mkv_metadata_conv[] = {

@@ -30,7 +30,10 @@
 #include <libexif/exif-utils.h>
 #include <libexif/exif-data.h>
 
-#define DEBUG
+#define CHECKOVERFLOW(offset,datasize,structsize) (( (offset) >= (datasize)) || ((structsize) > (datasize)) || ((offset) > (datasize) - (structsize) ))
+
+/* Total size limit to prevent abuse by DoS */
+#define FAILSAFE_SIZE_MAX 1000000L
 
 static void
 exif_mnote_data_canon_clear (ExifMnoteDataCanon *n)
@@ -101,6 +104,8 @@ exif_mnote_data_canon_set_byte_order (ExifMnoteData *d, ExifByteOrder o)
 	o_orig = n->order;
 	n->order = o;
 	for (i = 0; i < n->count; i++) {
+		if (n->entries[i].components && (n->entries[i].size/n->entries[i].components < exif_format_get_size (n->entries[i].format)))
+			continue;
 		n->entries[i].order = o;
 		exif_array_set_byte_order (n->entries[i].format, n->entries[i].data,
 				n->entries[i].components, o_orig, o);
@@ -202,22 +207,30 @@ exif_mnote_data_canon_load (ExifMnoteData *ne,
 	ExifMnoteDataCanon *n = (ExifMnoteDataCanon *) ne;
 	ExifShort c;
 	size_t i, tcount, o, datao;
+	long failsafe_size = 0;
 
 	if (!n || !buf || !buf_size) {
 		exif_log (ne->log, EXIF_LOG_CODE_CORRUPT_DATA,
 			  "ExifMnoteCanon", "Short MakerNote");
 		return;
 	}
-	datao = 6 + n->offset;
-	if ((datao + 2 < datao) || (datao + 2 < 2) || (datao + 2 > buf_size)) {
+	if (CHECKOVERFLOW(n->offset, buf_size, 8)) {
 		exif_log (ne->log, EXIF_LOG_CODE_CORRUPT_DATA,
 			  "ExifMnoteCanon", "Short MakerNote");
 		return;
 	}
+	datao = 6 + n->offset;
 
 	/* Read the number of tags */
 	c = exif_get_short (buf + datao, n->order);
 	datao += 2;
+	/* Just use an arbitrary max tag limit here to avoid needing to much memory or time. There are 24 named tags currently.
+	 * current 2020 camera EOS M6 Mark 2 had 156 entries.
+	 * The format allows specifying the same range of memory as often as it can, so this multiplies quickly. */
+	if (c > 250) {
+		exif_log (ne->log, EXIF_LOG_CODE_CORRUPT_DATA, "ExifMnoteCanon", "Too much tags (%d) in Canon MakerNote", c);
+		return;
+	}
 
 	/* Remove any old entries */
 	exif_mnote_data_canon_clear (n);
@@ -233,11 +246,13 @@ exif_mnote_data_canon_load (ExifMnoteData *ne,
 	tcount = 0;
 	for (i = c, o = datao; i; --i, o += 12) {
 		size_t s;
-		if ((o + 12 < o) || (o + 12 < 12) || (o + 12 > buf_size)) {
+
+		memset(&n->entries[tcount], 0, sizeof(MnoteCanonEntry));
+		if (CHECKOVERFLOW(o,buf_size,12)) {
 			exif_log (ne->log, EXIF_LOG_CODE_CORRUPT_DATA,
 				"ExifMnoteCanon", "Short MakerNote");
 			break;
-	        }
+		}
 
 		n->entries[tcount].tag        = exif_get_short (buf + o, n->order);
 		n->entries[tcount].format     = exif_get_short (buf + o + 2, n->order);
@@ -247,6 +262,16 @@ exif_mnote_data_canon_load (ExifMnoteData *ne,
 		exif_log (ne->log, EXIF_LOG_CODE_DEBUG, "ExifMnoteCanon",
 			"Loading entry 0x%x ('%s')...", n->entries[tcount].tag,
 			 mnote_canon_tag_get_name (n->entries[tcount].tag));
+
+		/* Check if we overflow the multiplication. Use buf_size as the max size for integer overflow detection,
+		 * we will check the buffer sizes closer later. */
+		if (	exif_format_get_size (n->entries[tcount].format) &&
+			buf_size / exif_format_get_size (n->entries[tcount].format) < n->entries[tcount].components
+		) {
+			exif_log (ne->log, EXIF_LOG_CODE_CORRUPT_DATA,
+				  "ExifMnoteCanon", "Tag size overflow detected (%u * %lu)", exif_format_get_size (n->entries[tcount].format), n->entries[tcount].components);
+			continue;
+		}
 
 		/*
 		 * Size? If bigger than 4 bytes, the actual data is not
@@ -264,11 +289,12 @@ exif_mnote_data_canon_load (ExifMnoteData *ne,
 		} else {
 			size_t dataofs = o + 8;
 			if (s > 4) dataofs = exif_get_long (buf + dataofs, n->order) + 6;
-			if ((dataofs + s < s) || (dataofs + s < dataofs) || (dataofs + s > buf_size)) {
+
+			if (CHECKOVERFLOW(dataofs, buf_size, s)) {
 				exif_log (ne->log, EXIF_LOG_CODE_DEBUG,
 					"ExifMnoteCanon",
 					"Tag data past end of buffer (%u > %u)",
-					dataofs + s, buf_size);
+					(unsigned)(dataofs + s), buf_size);
 				continue;
 			}
 
@@ -278,6 +304,23 @@ exif_mnote_data_canon_load (ExifMnoteData *ne,
 				continue;
 			}
 			memcpy (n->entries[tcount].data, buf + dataofs, s);
+		}
+
+		/* Track the size of decoded tag data. A malicious file could
+		 * be crafted to cause extremely large values here without
+		 * tripping any buffer range checks.  This is especially bad
+		 * with the libexif representation of Canon MakerNotes because
+		 * some arrays are turned into individual tags that the
+		 * application must loop around. */
+		failsafe_size += mnote_canon_entry_count_values(&n->entries[tcount]);
+
+		if (failsafe_size > FAILSAFE_SIZE_MAX) {
+			/* Abort if the total size of the data in the tags extraordinarily large, */
+			exif_mem_free (ne->mem, n->entries[tcount].data);
+			exif_log (ne->log, EXIF_LOG_CODE_CORRUPT_DATA,
+					  "ExifMnoteCanon", "Failsafe tag size overflow (%lu > %ld)",
+					  failsafe_size, FAILSAFE_SIZE_MAX);
+			break;
 		}
 
 		/* Tag was successfully parsed */
@@ -344,6 +387,19 @@ exif_mnote_data_canon_get_description (ExifMnoteData *note, unsigned int i)
 	exif_mnote_data_canon_get_tags (dc, i, &m, NULL);
 	if (m >= dc->count) return NULL;
 	return mnote_canon_tag_get_description (dc->entries[m].tag);
+}
+
+int
+exif_mnote_data_canon_identify (const ExifData *ed, const ExifEntry *e)
+{
+	char value[8];
+
+	ExifEntry *em = exif_data_get_entry (ed, EXIF_TAG_MAKE);
+	if (!em) 
+		return 0;
+
+	(void) e;  /* unused */
+	return !strcmp (exif_entry_get_value (em, value, sizeof (value)), "Canon");
 }
 
 ExifMnoteData *

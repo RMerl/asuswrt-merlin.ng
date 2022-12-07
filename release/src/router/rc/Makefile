@@ -181,9 +181,9 @@ ifeq ($(RTCONFIG_4352_5G),y)
 CFLAGS += -DBCM4352
 endif
 
+CFLAGS += -I$(TOP)/libdisk
 ifeq ($(RTCONFIG_USB),y)
 CFLAGS += -DU2EC
-CFLAGS += -I$(TOP)/libdisk
 LDFLAGS += -L$(TOP)/libdisk -ldisk
 ifeq ($(BCM_MMC),y)
 CFLAGS += -DBCM_MMC
@@ -230,7 +230,7 @@ CFLAGS  += -I$(TOP)/protect_srv/include
 endif
 
 ifeq ($(RTCONFIG_BT_CONN),y)
-CFLAGS  += -I$(TOP)/bluez-5.41/lib
+CFLAGS  += -I$(TOP)/bluez-5.56/lib
 endif
 
 #CFLAGS += -DRC_BUILDTIME=$(shell date -d "now" +"%s")
@@ -294,7 +294,9 @@ CFLAGS += -I$(TOP)/sw-hw-auth
 endif
 
 ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
+ifneq ($(HND_ROUTER_AX_6756),y)
 CFLAGS         += -DBCM_KF_NETFILTER
+endif
 endif
 
 OBJS := rc.o init.o interface.o lan.o wireless.o wan.o pppd.o auth.o services.o
@@ -338,11 +340,11 @@ OBJS += amas-ssd-broadcom.o
 endif
 endif
 ifeq ($(RTCONFIG_BCM_MFG),y)
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 TUF-AX5400 RT-AX82U RT-AX55 RT-AX1800 DSL-AX82U GS-AX3000 GS-AX5400))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 TUF-AX5400 RT-AX82U RT-AX55 RT-AX1800 DSL-AX82U GS-AX3000 GS-AX5400 GT-AX6000))
 OBJS += cfe.o
 endif
 else
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U DSL-AX82U GS-AX3000 GS-AX5400))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC68U RT-AC3200 4G-AC68U GT-AC2900 RT-AX58U TUF-AX3000 RT-AX82U DSL-AX82U GS-AX3000 GS-AX5400 GT-AX6000))
 OBJS += cfe.o
 endif
 endif
@@ -484,6 +486,7 @@ endif
 
 ifeq ($(RTCONFIG_TPVPN),y)
 CFLAGS += -I$(TOP)/libasc
+CFLAGS += -I$(TOP)/libdisk
 LDFLAGS += -L$(TOP)/libasc -lasc
 OBJS += tpvpn.o
 endif
@@ -669,8 +672,8 @@ ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW
 CFLAGS += -I$(TOP)/curl-7.21.7/include
 LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 ifeq ($(RTCONFIG_TR069),y)
-CFLAGS += -I$(TOP)/libssh2-1.9.0/include -I$(TOP)/zlib/include
-LDFLAGS += -L$(TOP)/libssh2-1.9.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
+CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
 endif
 endif
 
@@ -683,7 +686,7 @@ endif
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
 CFLAGS += -I$(TOP)/json-c
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-OBJS += s46map_rptd.o
+OBJS += s46comm.o v6plusd.o ocnvcd.o
 endif
 
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
@@ -777,6 +780,10 @@ endif
 
 ifeq ($(RTCONFIG_AMAS_WGN), y)
 OBJS += amas_wgn.o
+endif
+
+ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
+OBJS += gpy211_war.o
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -1137,7 +1144,7 @@ endif
 ifeq ($(RTCONFIG_EXT_RTL8370MB),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
-ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
+ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
 ifeq ($(RTCONFIG_QCA),y)
@@ -1394,7 +1401,8 @@ endif
 
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mapcalc
-	@cd $(INSTALLDIR)/sbin && ln -sf rc s46map_rptd
+	@cd $(INSTALLDIR)/sbin && ln -sf rc v6plusd
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ocnvcd
 endif
 
 ifeq ($(RTCONFIG_WLCSCAN_RSSI),y)
@@ -1418,6 +1426,9 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledbtn
+endif
+ifeq ($(DSL_AX82U),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
 endif
 
 ifeq ($(GTAX6000),y)
@@ -1449,6 +1460,20 @@ endif
 
 ifeq ($(RTCONFIG_ISP_CUSTOMIZE_TOOL),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc tci
+	@rm -rf $(INSTALLDIR)/../rom/${EX_ROM}/ict/
+	@if [ -f $(TOP)/rom/ict/settings.ini ] ; then \
+		install -D $(TOP)/rom/ict/settings.ini $(INSTALLDIR)/../rom/${EX_ROM}/ict/settings.ini ; \
+	fi;
+	@if [ -f $(TOP)/rom/ict/settings.cfg ] ; then \
+		install -D $(TOP)/rom/ict/settings.cfg $(INSTALLDIR)/../rom/${EX_ROM}/ict/settings.cfg ; \
+	fi;
+	@if [ -f $(TOP)/rom/ict/package.tar.gz ] ; then \
+		install -D $(TOP)/rom/ict/package.tar.gz $(INSTALLDIR)/../rom/${EX_ROM}/ict/package.tar.gz ; \
+	fi;
+endif
+
+ifeq ($(HND_ROUTER),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc gpy211_monitor
 endif
 
 clean:
@@ -1602,6 +1627,14 @@ endif
 ifneq ($(wildcard ./prebuild/amas-ssd-broadcom),)
 amas-ssd-broadcom:
 	@-cp -f ./prebuild/amas-ssd-broadcom .
+endif
+ifneq ($(wildcard ./prebuild/amas-ssd-cd-broadcom),)
+amas-ssd-cd-broadcom:
+	@-cp -f ./prebuild/amas-ssd-cd-broadcom .
+endif
+ifneq ($(wildcard ./prebuild/amas-ssd-cd-broadcom.o),)
+amas-ssd-cd-broadcom.o:
+	@-cp -f ./prebuild/amas-ssd-cd-broadcom.o .
 endif
 endif
 endif
@@ -1853,9 +1886,17 @@ ledg.o:
 endif
 endif
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
-ifneq ($(wildcard ./prebuild/s46map_rptd.o),)
-s46map_rptd.o:
-	@-cp -f ./prebuild/s46map_rptd.o .
+ifneq ($(wildcard ./prebuild/s46comm.o),)
+s46comm.o:
+	@-cp -f ./prebuild/s46comm.o .
+endif
+ifneq ($(wildcard ./prebuild/v6plusd.o),)
+v6plusd.o:
+	@-cp -f ./prebuild/v6plusd.o .
+endif
+ifneq ($(wildcard ./prebuild/ocnvcd.o),)
+ocnvcd.o:
+	@-cp -f ./prebuild/ocnvcd.o .
 endif
 endif
 ifeq ($(RTCONFIG_TPVPN),y)
@@ -1870,6 +1911,11 @@ ifneq ($(wildcard ./prebuild/antled.o),)
 broadcom.o:
 	@-cp -f ./prebuild/antled.o .
 endif
+endif
+
+ifneq ($(wildcard ./prebuild/gpy211_war.o),)
+gpy211_war.o:
+	@-cp -f ./prebuild/gpy211_war.o .
 endif
 
 %.o: %.c

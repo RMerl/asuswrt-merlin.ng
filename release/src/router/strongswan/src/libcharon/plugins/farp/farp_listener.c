@@ -1,6 +1,8 @@
 /*
+ * Copyright (C) 2019 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -53,6 +55,18 @@ typedef struct {
 	uint32_t reqid;
 } entry_t;
 
+/**
+ * Destroy a cache entry
+ */
+static void destroy_entry(entry_t *this)
+{
+	this->local->destroy_offset(this->local,
+								offsetof(traffic_selector_t, destroy));
+	this->remote->destroy_offset(this->remote,
+								 offsetof(traffic_selector_t, destroy));
+	free(this);
+}
+
 METHOD(listener_t, child_updown, bool,
 	private_farp_listener_t *this, ike_sa_t *ike_sa, child_sa_t *child_sa,
 	bool up)
@@ -60,6 +74,8 @@ METHOD(listener_t, child_updown, bool,
 	enumerator_t *enumerator;
 	traffic_selector_t *ts;
 	entry_t *entry;
+	const chunk_t full_from = chunk_from_chars(0x00, 0x00, 0x00, 0x00),
+				  full_to   = chunk_from_chars(0xff, 0xff, 0xff, 0xff);
 
 	if (up)
 	{
@@ -69,19 +85,41 @@ METHOD(listener_t, child_updown, bool,
 			.reqid = child_sa->get_reqid(child_sa),
 		);
 
+		enumerator = child_sa->create_ts_enumerator(child_sa, FALSE);
+		while (enumerator->enumerate(enumerator, &ts))
+		{
+			if (ts->get_type(ts) != TS_IPV4_ADDR_RANGE)
+			{
+				continue;
+			}
+			/* ignore 0.0.0.0/0 remote TS because we don't want to
+			 * reply to ARP requests for locally connected subnets */
+			if (chunk_equals(ts->get_from_address(ts), full_from) &&
+				chunk_equals(ts->get_to_address(ts), full_to))
+			{
+				continue;
+			}
+			entry->remote->insert_last(entry->remote, ts->clone(ts));
+		}
+		enumerator->destroy(enumerator);
+
 		enumerator = child_sa->create_ts_enumerator(child_sa, TRUE);
 		while (enumerator->enumerate(enumerator, &ts))
 		{
+			if (ts->get_type(ts) != TS_IPV4_ADDR_RANGE)
+			{
+				continue;
+			}
 			entry->local->insert_last(entry->local, ts->clone(ts));
 		}
 		enumerator->destroy(enumerator);
 
-		enumerator = child_sa->create_ts_enumerator(child_sa, FALSE);
-		while (enumerator->enumerate(enumerator, &ts))
+		if (!entry->remote->get_count(entry->remote) ||
+			!entry->local->get_count(entry->local))
 		{
-			entry->remote->insert_last(entry->remote, ts->clone(ts));
+			destroy_entry(entry);
+			return TRUE;
 		}
-		enumerator->destroy(enumerator);
 
 		this->lock->write_lock(this->lock);
 		this->entries->insert_last(this->entries, entry);
@@ -96,11 +134,7 @@ METHOD(listener_t, child_updown, bool,
 			if (entry->reqid == child_sa->get_reqid(child_sa))
 			{
 				this->entries->remove_at(this->entries, enumerator);
-				entry->local->destroy_offset(entry->local,
-										offsetof(traffic_selector_t, destroy));
-				entry->remote->destroy_offset(entry->remote,
-										offsetof(traffic_selector_t, destroy));
-				free(entry);
+				destroy_entry(entry);
 				break;
 			}
 		}

@@ -212,10 +212,10 @@ static int dirac_combine_frame(AVCodecParserContext *s, AVCodecContext *avctx,
         if (parse_timing_info && pu1.prev_pu_offset >= 13) {
             uint8_t *cur_pu = pc->buffer +
                               pc->index - 13 - pu1.prev_pu_offset;
-            int pts = AV_RB32(cur_pu + 13);
+            int64_t pts = AV_RB32(cur_pu + 13);
             if (s->last_pts == 0 && s->last_dts == 0)
                 s->dts = pts - 1;
-            else
+            else if (s->last_dts != AV_NOPTS_VALUE)
                 s->dts = s->last_dts + 1;
             s->pts = pts;
             if (!avctx->has_b_frames && (cur_pu[4] & 0x03))

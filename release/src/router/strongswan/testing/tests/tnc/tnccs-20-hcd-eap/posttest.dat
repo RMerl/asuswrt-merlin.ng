@@ -1,7 +1,7 @@
-carol::systemctl stop strongswan-swanctl
-dave::systemctl stop strongswan-swanctl
-moon::systemctl stop strongswan-swanctl
-alice::systemctl stop strongswan-swanctl
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan
+alice::systemctl stop strongswan
 alice::rm /etc/swanctl/rsa/aaaKey.pem
 alice::rm /etc/swanctl/x509/aaaCert.pem
 winnetou::ip route del 10.1.0.0/16 via 192.168.0.1

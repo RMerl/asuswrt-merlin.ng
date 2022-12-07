@@ -148,17 +148,17 @@ function getAllWlArray(){
 		document.querySelector('label[for="wireless_checkbox"]').innerHTML = 'Separate 2.4 GHz, 5 GHz-1, 5 GHz-2 and 6 GHz';
 	}
 	else{
-		var wlArrayRet = [{"title":"2.4 GHz", "ifname":"0", "suffix": ""}];
+		var wlArrayRet = [{"title":"2.4 GHz", "ifname":get_wl_unit_by_band('2G'), "suffix": ""}];
 
 		if(isSupport("triband")){
 			if(isSupport('wifi6e')){
 				document.querySelector('label[for="wireless_checkbox"]').innerHTML = '<#qis_wireless_setting_separate1#>';
-				wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"});
-				wlArrayRet.push({"title":"6 GHz", "ifname":"2", "suffix": "_6G"});
+				wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"});
+				wlArrayRet.push({"title":"6 GHz", "ifname":get_wl_unit_by_band('6G'), "suffix": "_6G"});
 			}
 			else{
-				wlArrayRet.push({"title":"5 GHz-1", "ifname":"1", "suffix": "_5G-1"});
-				wlArrayRet.push({"title":"5 GHz-2", "ifname":"2", "suffix": "_5G-2"});
+				wlArrayRet.push({"title":"5 GHz-1", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G-1"});
+				wlArrayRet.push({"title":"5 GHz-2", "ifname":get_wl_unit_by_band('5G2'), "suffix": "_5G-2"});
 			}
 
 			if(isSupport("prelink") && isSupport("amas_bdl")){
@@ -172,11 +172,11 @@ function getAllWlArray(){
 			}
 		}
 		else if(isSupport("dualband") || isSupport('5G')){
-			wlArrayRet.push({"title":"5 GHz", "ifname":"1", "suffix": "_5G"})
+			wlArrayRet.push({"title":"5 GHz", "ifname":get_wl_unit_by_band('5G'), "suffix": "_5G"})
 		}
 
 		if(isSupport('wigig')){
-			wlArrayRet.push({"title":"60 GHz", "ifname":"3", "suffix": "_60G"});
+			wlArrayRet.push({"title":"60 GHz", "ifname":get_wl_unit_by_band('60G'), "suffix": "_60G"});
 		}
 	}
 
@@ -884,16 +884,44 @@ var Get_Component_WirelessInput = function(wlArray){
 				ssid_tmp = qisPostData["wlc" + wl.ifname + "_ssid"];
 				wpa_psk_tmp = qisPostData["wlc" + wl.ifname + "_wpa_psk"];
 			}
+
 			switch(parseInt(wl.ifname)){
+				
 				case 0 :
-					ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
+					console.log(isSupport('wifi6e'));
+					
+					if(isSupport('quadband')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,28) + "_RPT";
+					}
+
 					break;
 				case 1 :
-					ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					
+					if(isSupport('quadband')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G2";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RPT5G";
+					}
+
 					break;
 				case 2 :
-					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
+					
+					if(isSupport('quadband')
+					|| isSupport('triband') && isSupport('wifi6e')){
+						ssid_tmp = ssid_tmp.slice(0,26) + "_RP6G";
+					}
+					else{
+						ssid_tmp = ssid_tmp.slice(0,25) + "_RPT5G2";
+					}	
+					
 					break;
+				case 3 :
+					ssid_tmp = ssid_tmp.slice(0,25) + "_RPT";
+					break;	
 			}
 			wirelessAP["wl" + wl.ifname + "_ssid"] = encodeURIComponent(ssid_tmp);
 
@@ -1268,6 +1296,10 @@ function setupWLCNvram(apProfileID) {
 		}
 		else if(encryption == "TKIP"){
 			qisPostData["wlc" + unit + "_auth_mode"] = "psk";
+			if(authentication === 'WPA2-Personal'){
+				qisPostData["wlc" + unit + "_auth_mode"] = "psk2";
+			}
+			
 			qisPostData["wlc" + unit + "_crypto"] = "tkip";
 			qisPostData["wlc" + unit + "_wep"] = "0";
 		}
@@ -1317,7 +1349,9 @@ function setupWLCNvram(apProfileID) {
 
 function setupFronthaulNetwork(_smart_connect){
 	if(isSupport("FRONTHAUL_NETWORK")){
+		var dwb_mode = httpApi.nvramGet(["dwb_mode"]).dwb_mode;
 		postDataModel.insert(fronthaulNetworkObj);
+
 		switch(parseInt(_smart_connect)){
 			case 0:
 			case 2:
@@ -1331,7 +1365,13 @@ function setupFronthaulNetwork(_smart_connect){
 
 		switch(parseInt(qisPostData.fh_ap_enabled)){
 			case 0:
-				qisPostData.acs_unii4 = "1";
+				if(isSupport("amas_bdl")){
+					qisPostData.acs_unii4 = "1";
+				}
+				else{
+					qisPostData.acs_unii4 = "0";
+				}
+
 				break;
 			case 1:
 				qisPostData.acs_unii4 = "0";
@@ -1820,19 +1860,31 @@ validator.invalidChar = function(str){
 		'errReason': ''
 	}
 
-	var invalid_char = [];
-	for(var i = 0; i < str.length; ++i){
-		if(str.charAt(i) < ' ' || str.charAt(i) > '~'){
-			invalid_char.push(str.charAt(i));
-		}
-	}
-
-	if(invalid_char.length != 0){
+	if(str.charAt(0) == '"'){
 		testResult.isError = true;
-		testResult.errReason = "<#JS_validstr2#> '" + invalid_char.join('') + "' !";
+		testResult.errReason = '<#JS_validstr1#> ["]';
+                return testResult;
 	}
+	else if(str.charAt(str.length - 1) == '"'){
+		testResult.isError = true;
+		testResult.errReason = '<#JS_validstr3#> ["]';
+		return testResult;
+	}
+	else{
+		var invalid_char = [];
+		for(var i = 0; i < str.length; ++i){
+			if(str.charAt(i) < ' ' || str.charAt(i) > '~'){
+				invalid_char.push(str.charAt(i));
+			}
+		}
 
-	return testResult;
+		if(invalid_char.length != 0){
+			testResult.isError = true;
+			testResult.errReason = "<#JS_validstr2#> '" + invalid_char.join('') + "' !";
+		}
+
+		return testResult;
+	}
 };
 
 validator.KRSkuPwd = function(str){

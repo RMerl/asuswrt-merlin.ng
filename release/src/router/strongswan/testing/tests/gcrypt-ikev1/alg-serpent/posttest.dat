@@ -1,2 +1,2 @@
-carol::systemctl stop strongswan-swanctl
-moon::systemctl stop strongswan-swanctl
+carol::systemctl stop strongswan
+moon::systemctl stop strongswan

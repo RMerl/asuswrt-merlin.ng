@@ -122,8 +122,6 @@ static int decode_block(GetBitContext *gb, VLC *vlc,
 
     memset(block, 0, 64 * sizeof(*block));
     dc = get_vlc2(gb, vlc->table, HQX_DC_VLC_BITS, 2);
-    if (dc < 0)
-        return AVERROR_INVALIDDATA;
     *last_dc += dc;
 
     block[0] = sign_extend(*last_dc << (12 - dcb), 12);
@@ -197,7 +195,7 @@ static int hqx_decode_422a(HQXContext *ctx, int slice_no, int x, int y)
     int i, ret;
     int cbp;
 
-    cbp = get_vlc2(gb, ctx->cbp_vlc.table, ctx->cbp_vlc.bits, 1);
+    cbp = get_vlc2(gb, ctx->cbp_vlc.table, HQX_CBP_VLC_BITS, 1);
 
     for (i = 0; i < 12; i++)
         memset(slice->block[i], 0, sizeof(**slice->block) * 64);
@@ -283,7 +281,7 @@ static int hqx_decode_444a(HQXContext *ctx, int slice_no, int x, int y)
     int i, ret;
     int cbp;
 
-    cbp = get_vlc2(gb, ctx->cbp_vlc.table, ctx->cbp_vlc.bits, 1);
+    cbp = get_vlc2(gb, ctx->cbp_vlc.table, HQX_CBP_VLC_BITS, 1);
 
     for (i = 0; i < 16; i++)
         memset(slice->block[i], 0, sizeof(**slice->block) * 64);
@@ -471,6 +469,14 @@ static int hqx_decode_frame(AVCodecContext *avctx, void *data,
     avctx->height              = ctx->height;
     avctx->bits_per_raw_sample = 10;
 
+    //The minimum size is 2bit per macroblock
+    // hqx_decode_422 & hqx_decode_444 have a unconditionally stored 4bits hqx_quants index
+    // hqx_decode_422a & hqx_decode_444a use cbp_vlc which has a minimum length of 2 bits for its VLCs
+    // The code rejects slices overlapping in their input data
+    if (avctx->coded_width / 16 * (avctx->coded_height / 16) *
+        (100 - avctx->discard_damaged_percentage) / 100 > 4LL * avpkt->size)
+        return AVERROR_INVALIDDATA;
+
     switch (ctx->format) {
     case HQX_422:
         avctx->pix_fmt = AV_PIX_FMT_YUV422P16;
@@ -511,9 +517,6 @@ static av_cold int hqx_decode_close(AVCodecContext *avctx)
 {
     int i;
     HQXContext *ctx = avctx->priv_data;
-
-    if (avctx->internal->is_copy)
-        return 0;
 
     ff_free_vlc(&ctx->cbp_vlc);
     for (i = 0; i < 3; i++) {

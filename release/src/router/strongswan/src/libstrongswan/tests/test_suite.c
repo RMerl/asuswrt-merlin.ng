@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -50,19 +51,26 @@ static backtrace_t *failure_backtrace;
 static bool worker_failed;
 
 /**
- * Warning message buf
+ * Warning information
  */
-static char warning_buf[4096];
+typedef struct {
+	/** Warning message */
+	char msg[BUF_LEN];
+	/** Source file warning was issued */
+	const char *file;
+	/** Line of source warning was issued */
+	int line;
+} warning_info_t;
 
 /**
- * Source file warning was issued
+ * Warnings that occurred
  */
-static const char *warning_file;
+static warning_info_t warnings[3];
 
 /**
- * Line of source file warning was issued
+ * Current warning index
  */
-static int warning_line;
+static int warning_idx = -1;
 
 /**
  * See header.
@@ -442,11 +450,16 @@ void test_warn_msg(const char *file, int line, char *fmt, ...)
 {
 	va_list args;
 
+	if (++warning_idx >= countof(warnings))
+	{
+		return;
+	}
 	va_start(args, fmt);
-	vsnprintf(warning_buf, sizeof(warning_buf), fmt, args);
-	warning_line = line;
-	warning_file = file;
+	vsnprintf(warnings[warning_idx].msg, sizeof(warnings[warning_idx].msg),
+			  fmt, args);
 	va_end(args);
+	warnings[warning_idx].file = file;
+	warnings[warning_idx].line = line;
 }
 
 /**
@@ -479,20 +492,22 @@ int test_failure_get(char *msg, int len, const char **file)
 /**
  * See header.
  */
-int test_warning_get(char *msg, int len, const char **file)
+bool test_warnings_get(void (*cb)(void *ctx, const char *msg, const char *file,
+								  const int line), void *ctx)
 {
-	int line = warning_line;
+	int i;
 
-	if (!line)
+	if (warning_idx < 0)
 	{
-		return 0;
+		return FALSE;
 	}
-	strncpy(msg, warning_buf, len - 1);
-	msg[len - 1] = 0;
-	*file = warning_file;
+	for (i = 0; i <= warning_idx && i < countof(warnings); i++)
+	{
+		cb(ctx, warnings[i].msg, warnings[i].file, warnings[i].line);
+	}
 	/* reset state */
-	warning_line = 0;
-	return line;
+	warning_idx = -1;
+	return TRUE;
 }
 
 /**

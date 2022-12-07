@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -60,7 +61,7 @@ METHOD(ntt_fft_t, get_modulus, uint16_t,
  *
  * x[i1] ---|+|------- x[i1]
  *        \/
- *        /\    w[iw]  
+ *        /\    w[iw]
  * x[i2] ---|-|--|*|-- x[i2]
  *
  */
@@ -147,7 +148,7 @@ METHOD(ntt_fft_t, transform, void,
 				{
 					iw = s * (inverse ? (n - i * k) : (i * k));
 					butterfly(this, b, t + i, t + i + m, iw);
-				}				
+				}
 			}
 			t += 2*m;
 		}
@@ -169,7 +170,7 @@ METHOD(ntt_fft_t, transform, void,
 
 	/**
 	 * Compensate the linear phase needed for negative wrapped convolution
-	 * and normalize the output array with 1/n mod q after the inverse FFT. 
+	 * and normalize the output array with 1/n mod q after the inverse FFT.
 	 */
 	if (inverse)
 	{

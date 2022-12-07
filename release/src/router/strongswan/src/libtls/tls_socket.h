@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -99,17 +100,21 @@ struct tls_socket_t {
 /**
  * Create a tls_socket instance.
  *
+ * Use TLS_UNSPEC to default to the configured min/max version.
+ *
  * @param is_server			TRUE to act as TLS server
  * @param server			server identity
  * @param peer				client identity, NULL for no client authentication
  * @param fd				socket to read/write from
  * @param cache				session cache to use, or NULL
- * @param max_version		maximum TLS version to negotiate
- * @param nullok			accept NULL encryption ciphers
+ * @param min_version		minimum TLS version to negotiate or TLS_UNSPEC
+ * @param max_version		maximum TLS version to negotiate or TLS_UNSPEC
+ * @param flags				flags controlling the TLS stack
  * @return					TLS socket wrapper
  */
 tls_socket_t *tls_socket_create(bool is_server, identification_t *server,
-							identification_t *peer, int fd, tls_cache_t *cache,
-							tls_version_t max_version, bool nullok);
+								identification_t *peer, int fd,
+								tls_cache_t *cache, tls_version_t min_version,
+								tls_version_t max_version, tls_flag_t flags);
 
 #endif /** TLS_SOCKET_H_ @}*/

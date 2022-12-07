@@ -34,7 +34,7 @@ typedef struct ADXDemuxerContext {
     int header_size;
 } ADXDemuxerContext;
 
-static int adx_probe(AVProbeData *p)
+static int adx_probe(const AVProbeData *p)
 {
     int offset;
     if (AV_RB16(p->buf) != 0x8000)
@@ -53,6 +53,9 @@ static int adx_read_packet(AVFormatContext *s, AVPacket *pkt)
     AVCodecParameters *par = s->streams[0]->codecpar;
     int ret, size;
 
+    if (avio_feof(s->pb))
+        return AVERROR_EOF;
+
     if (par->channels <= 0) {
         av_log(s, AV_LOG_ERROR, "invalid number of channels %d\n", par->channels);
         return AVERROR_INVALIDDATA;
@@ -63,18 +66,21 @@ static int adx_read_packet(AVFormatContext *s, AVPacket *pkt)
     pkt->pos = avio_tell(s->pb);
     pkt->stream_index = 0;
 
-    ret = av_get_packet(s->pb, pkt, size);
-    if (ret != size) {
-        av_packet_unref(pkt);
-        return ret < 0 ? ret : AVERROR(EIO);
+    ret = av_get_packet(s->pb, pkt, size * 128);
+    if (ret < 0)
+        return ret;
+    if ((ret % size) && ret >= size) {
+        size = ret - (ret % size);
+        av_shrink_packet(pkt, size);
+        pkt->flags &= ~AV_PKT_FLAG_CORRUPT;
+    } else if (ret < size) {
+        return AVERROR(EIO);
+    } else {
+        size = ret;
     }
-    if (AV_RB16(pkt->data) & 0x8000) {
-        av_packet_unref(pkt);
-        return AVERROR_EOF;
-    }
-    pkt->size     = size;
-    pkt->duration = 1;
-    pkt->pts      = (pkt->pos - c->header_size) / size;
+
+    pkt->duration = size / (BLOCK_SIZE * par->channels);
+    pkt->pts      = (pkt->pos - c->header_size) / (BLOCK_SIZE * par->channels);
 
     return 0;
 }
@@ -83,7 +89,7 @@ static int adx_read_header(AVFormatContext *s)
 {
     ADXDemuxerContext *c = s->priv_data;
     AVCodecParameters *par;
-
+    int ret;
     AVStream *st = avformat_new_stream(s, NULL);
     if (!st)
         return AVERROR(ENOMEM);
@@ -94,8 +100,8 @@ static int adx_read_header(AVFormatContext *s)
     c->header_size = avio_rb16(s->pb) + 4;
     avio_seek(s->pb, -4, SEEK_CUR);
 
-    if (ff_get_extradata(s, par, s->pb, c->header_size) < 0)
-        return AVERROR(ENOMEM);
+    if ((ret = ff_get_extradata(s, par, s->pb, c->header_size)) < 0)
+        return ret;
 
     if (par->extradata_size < 12) {
         av_log(s, AV_LOG_ERROR, "Invalid extradata size.\n");

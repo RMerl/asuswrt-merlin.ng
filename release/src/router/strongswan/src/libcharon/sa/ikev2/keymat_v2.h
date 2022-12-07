@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2015 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -43,7 +44,7 @@ struct keymat_v2_t {
 	 * crypters and authentication functions.
 	 *
 	 * @param proposal	selected algorithms
-	 * @param dh		diffie hellman key allocated by create_dh()
+	 * @param dh		diffie hellman key allocated by create_ke()
 	 * @param nonce_i	initiators nonce value
 	 * @param nonce_r	responders nonce value
 	 * @param id		IKE_SA identifier
@@ -52,7 +53,7 @@ struct keymat_v2_t {
 	 * @return			TRUE on success
 	 */
 	bool (*derive_ike_keys)(keymat_v2_t *this, proposal_t *proposal,
-							diffie_hellman_t *dh, chunk_t nonce_i,
+							key_exchange_t *dh, chunk_t nonce_i,
 							chunk_t nonce_r, ike_sa_id_t *id,
 							pseudo_random_function_t rekey_function,
 							chunk_t rekey_skd);
@@ -76,7 +77,7 @@ struct keymat_v2_t {
 	 * If no PFS is used for the CHILD_SA, dh can be NULL.
 	 *
 	 * @param proposal	selected algorithms
-	 * @param dh		diffie hellman key allocated by create_dh(), or NULL
+	 * @param dh		diffie hellman key allocated by create_ke(), or NULL
 	 * @param nonce_i	initiators nonce value
 	 * @param nonce_r	responders nonce value
 	 * @param encr_i	chunk to write initiators encryption key to
@@ -86,7 +87,7 @@ struct keymat_v2_t {
 	 * @return			TRUE on success
 	 */
 	bool (*derive_child_keys)(keymat_v2_t *this,
-							  proposal_t *proposal, diffie_hellman_t *dh,
+							  proposal_t *proposal, key_exchange_t *dh,
 							  chunk_t nonce_i, chunk_t nonce_r,
 							  chunk_t *encr_i, chunk_t *integ_i,
 							  chunk_t *encr_r, chunk_t *integ_r);

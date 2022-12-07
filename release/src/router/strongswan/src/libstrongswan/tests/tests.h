@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -33,6 +34,12 @@ TEST_SUITE(settings_suite_create)
 TEST_SUITE(vectors_suite_create)
 TEST_SUITE_DEPEND(ecdsa_suite_create, PRIVKEY_GEN, KEY_ECDSA)
 TEST_SUITE_DEPEND(rsa_suite_create, PRIVKEY_GEN, KEY_RSA)
+TEST_SUITE_DEPEND(rsa_pkcs1_suite_create,       PRIVKEY_DECRYPT, ENCRYPT_RSA_PKCS1)
+TEST_SUITE_DEPEND(rsa_oaep_sha1_suite_create,   PRIVKEY_DECRYPT, ENCRYPT_RSA_OAEP_SHA1)
+TEST_SUITE_DEPEND(rsa_oaep_sha224_suite_create, PRIVKEY_DECRYPT, ENCRYPT_RSA_OAEP_SHA224)
+TEST_SUITE_DEPEND(rsa_oaep_sha256_suite_create, PRIVKEY_DECRYPT, ENCRYPT_RSA_OAEP_SHA256)
+TEST_SUITE_DEPEND(rsa_oaep_sha384_suite_create, PRIVKEY_DECRYPT, ENCRYPT_RSA_OAEP_SHA384)
+TEST_SUITE_DEPEND(rsa_oaep_sha512_suite_create, PRIVKEY_DECRYPT, ENCRYPT_RSA_OAEP_SHA512)
 TEST_SUITE_DEPEND(certpolicy_suite_create, CERT_ENCODE, CERT_X509)
 TEST_SUITE_DEPEND(certnames_suite_create, CERT_ENCODE, CERT_X509)
 TEST_SUITE(host_suite_create)
@@ -46,12 +53,14 @@ TEST_SUITE_DEPEND(iv_gen_suite_create, RNG, RNG_STRONG)
 TEST_SUITE(pen_suite_create)
 TEST_SUITE(asn1_suite_create)
 TEST_SUITE(asn1_parser_suite_create)
-TEST_SUITE(test_rng_suite_create)
+TEST_SUITE(rng_tester_suite_create)
 TEST_SUITE_DEPEND(mgf1_sha1_suite_create, XOF, XOF_MGF1_SHA1)
 TEST_SUITE_DEPEND(mgf1_sha256_suite_create, XOF, XOF_MGF1_SHA256)
-TEST_SUITE_DEPEND(ntru_suite_create, DH, NTRU_112_BIT)
+TEST_SUITE_DEPEND(prf_plus_suite_create, KDF, KDF_PRF_PLUS)
+TEST_SUITE_DEPEND(ntru_suite_create, KE, NTRU_112_BIT)
 TEST_SUITE_DEPEND(fetch_http_suite_create, FETCHER, "http://")
 TEST_SUITE_DEPEND(ed25519_suite_create, PRIVKEY_GEN, KEY_ED25519)
 TEST_SUITE_DEPEND(ed448_suite_create, PRIVKEY_GEN, KEY_ED448)
 TEST_SUITE(signature_params_suite_create)
-
+TEST_SUITE(metadata_suite_create)
+TEST_SUITE(metadata_set_suite_create)

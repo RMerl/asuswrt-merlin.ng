@@ -1,0 +1,17 @@
+[Unit]
+Description=Bluetooth monitor logger
+ConditionPathIsDirectory=/sys/class/bluetooth
+
+[Service]
+Type=simple
+ExecStart=@pkglibexecdir@/btmon-logger -p -b /var/log/bluetooth/hci.log
+NotifyAccess=main
+CapabilityBoundingSet=CAP_NET_RAW
+LimitNPROC=1
+ProtectHome=true
+ProtectSystem=full
+PrivateTmp=true
+PrivateDevices=true
+
+[Install]
+WantedBy=bluetooth.target

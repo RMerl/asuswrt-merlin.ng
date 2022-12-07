@@ -42,6 +42,9 @@ endif
 
 if USE_LIBCHARON
   SUBDIRS += libcharon
+if USE_KERNEL_NETLINK
+  SUBDIRS += xfrmi
+endif
 endif
 
 if USE_FILE_CONFIG
@@ -49,7 +52,7 @@ if USE_FILE_CONFIG
 endif
 
 if USE_IPSEC_SCRIPT
-  SUBDIRS += ipsec _copyright
+  SUBDIRS += ipsec
 endif
 
 if USE_CHARON
@@ -70,10 +73,6 @@ endif
 
 if USE_UPDOWN
   SUBDIRS += _updown
-endif
-
-if USE_SCEPCLIENT
-  SUBDIRS += scepclient
 endif
 
 if USE_PKI
@@ -140,6 +139,6 @@ if USE_AIKGEN
   SUBDIRS += aikgen
 endif
 
-if USE_TPM
+if USE_LIBTPMTSS
   SUBDIRS += tpm_extendpcr
 endif

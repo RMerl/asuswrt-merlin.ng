@@ -176,8 +176,12 @@ function initial(){
 		},
 		function() {
 			if(dualWAN_support){
-				if(usb_index == 0)
-					document.form.wans_dualwan.value = wans_dualwan_array[1]+" none";
+				if(usb_index == 0){
+					if(wans_dualwan_array[1] != "none" && wans_dualwan_array[1] != "lan")
+						document.form.wans_dualwan.value = wans_dualwan_array[1] +" none";
+					else
+						document.form.wans_dualwan.value = "wan none";
+				}
 				else
 					document.form.wans_dualwan.value = wans_dualwan_array[0]+" none";
 			}

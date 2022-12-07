@@ -41,6 +41,11 @@ if(based_modelid === 'GT-AXE16000'){
 	var radio_5_2 = '<% nvram_get("wl1_radio"); %>';
 	var radio_6 = '<% nvram_get("wl2_radio"); %>';
 }
+else if(based_modelid === 'GT10'){
+	radio_2 = '<% nvram_get("wl2_radio"); %>';
+	radio_5 = '<% nvram_get("wl0_radio"); %>';
+	var radio_5_2 = '<% nvram_get("wl1_radio"); %>';
+}
 <% wl_get_parameter(); %>
 
 wl_channel_list_2g = '<% channel_list_2g(); %>';
@@ -306,6 +311,10 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 	if(based_modelid === 'GT-AXE16000'){
 		unit = (unit+3)%4;
 	}
+	else if(based_modelid === 'GT10'){
+		unit = (unit+2)%3;
+	}
+
 	htmlcode += '<table align="left" style="margin-left:-10px;border-collapse:collapse;width:720px;';
 	if(slicesb > 0)
 		htmlcode += 'margin-top:20px;';	
@@ -538,6 +547,11 @@ function gen_gntable(){
 		gn_array_5g_tmp = gn_array_2g;
 		gn_array_5g_2_tmp = gn_array_5g;
 		var gn_array_6g_tmp = gn_array_5g_2;
+	}
+	else if(based_modelid === 'GT10'){
+		gn_array_2g_tmp = gn_array_5g_2;
+		gn_array_5g_tmp = gn_array_2g;
+		gn_array_5g_2_tmp = gn_array_5g;
 	}
 	var band2sb = 0;
 	var band5sb = 0;

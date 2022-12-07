@@ -141,7 +141,7 @@ void chk_plc_master(char *plc_ifname, int *in_bridge, int *add_try)
 	int res;
 
 	*mac = '\0';
-	strcpy(cfg_plc_master, nvram_safe_get("cfg_plc_m_ex"));
+	strlcpy(cfg_plc_master, nvram_safe_get("cfg_plc_m_ex"), sizeof(cfg_plc_master));
 	if (isValidMacAddress(cfg_plc_master) && strcasecmp(cfg_plc_master, get_lan_hwaddr()) != 0)
 		plc_master = cfg_plc_master;
 	else
@@ -333,11 +333,13 @@ int detect_plc_main(int argc, char *argv[])
 						syslog(LOG_NOTICE, "PLC: not alive !!");
 						log_state = PLC_LOG_RESET;
 					}
+				    if (nvram_get_int("plc_head") <= 0)	//when plc_head==1 the state change would not be re-add into bridge 
 					amas_set_bridge(is_cap_re, plc_ifname, 0, &in_bridge); //remove from LAN bridge (br0)
 					add_try = 0;
 					do_plc_reset(1);
 				}
 				else if (!nvram_get_int("plc_ready")) {
+				    if (nvram_get_int("plc_head") <= 0)	//when plc_head==1 the state change would not be re-add into bridge 
 					amas_set_bridge(is_cap_re, plc_ifname, 0, &in_bridge); //remove from LAN bridge (br0)
 					add_try = 0;
 					if (reset_cnt++ >= 3) {
@@ -371,6 +373,7 @@ int detect_plc_main(int argc, char *argv[])
 						syslog(LOG_NOTICE, "PLC: isolation reset isolation_cnt(%d) tx(%d) rx(%d) num(%d) !!", isolation_cnt, tx, rx, num);
 						log_state = PLC_LOG_RESET;
 					}
+				    if (nvram_get_int("plc_head") <= 0)	//when plc_head==1 the state change would not be re-add into bridge 
 					amas_set_bridge(is_cap_re, plc_ifname, 0, &in_bridge); //remove from LAN bridge (br0)
 					add_try = 0;
 					do_plc_reset(1);

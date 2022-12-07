@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2009 Tobias Brunner
+ * Copyright (C) 2009-2019 Tobias Brunner
  * Copyright (C) 2006-2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -59,10 +60,11 @@ typedef struct enum_name_t enum_name_t;
  * by the numerical enum value.
  */
 struct enum_name_t {
-	/** value of the first enum string */
-	int first;
+	/** value of the first enum string, values are expected to be (u_)int, using
+	 * int64_t here instead, however, avoids warnings for large unsigned ints */
+	int64_t first;
 	/** value of the last enum string */
-	int last;
+	int64_t last;
 	/** next enum_name_t in list, or ENUM_FLAG_MAGIC */
 	enum_name_t *next;
 	/** array of strings containing names from first to last */
@@ -77,10 +79,13 @@ struct enum_name_t {
  * @param last	enum value of the last enum string
  * @param ...	a list of strings
  */
-#define ENUM_BEGIN(name, first, last, ...) static enum_name_t name##last = {first, last, NULL, { __VA_ARGS__ }}
+#define ENUM_BEGIN(name, first, last, ...) \
+	static enum_name_t name##last = {first, last + \
+		BUILD_ASSERT(((last)-(first)+1) == countof(((char*[]){__VA_ARGS__}))), \
+		NULL, { __VA_ARGS__ }}
 
 /**
- * Continue a enum name list startetd with ENUM_BEGIN.
+ * Continue a enum name list started with ENUM_BEGIN.
  *
  * @param name	name of the enum_name list
  * @param first	enum value of the first enum string
@@ -88,7 +93,10 @@ struct enum_name_t {
  * @param prev	enum value of the "last" defined in ENUM_BEGIN/previous ENUM_NEXT
  * @param ...	a list of strings
  */
-#define ENUM_NEXT(name, first, last, prev, ...) static enum_name_t name##last = {first, last, &name##prev, { __VA_ARGS__ }}
+#define ENUM_NEXT(name, first, last, prev, ...) \
+	static enum_name_t name##last = {first, last + \
+		BUILD_ASSERT(((last)-(first)+1) == countof(((char*[]){__VA_ARGS__}))), \
+		&name##prev, { __VA_ARGS__ }}
 
 /**
  * Complete enum name list started with ENUM_BEGIN.
@@ -109,7 +117,8 @@ struct enum_name_t {
  * @param last	enum value of the last enum string
  * @param ...	a list of strings
  */
-#define ENUM(name, first, last, ...) ENUM_BEGIN(name, first, last, __VA_ARGS__); ENUM_END(name, last)
+#define ENUM(name, first, last, ...) \
+	ENUM_BEGIN(name, first, last, __VA_ARGS__); ENUM_END(name, last)
 
 /**
  * Define a enum name with only one range for flags.
@@ -122,11 +131,14 @@ struct enum_name_t {
  * @param name	name of the enum_name list
  * @param first	enum value of the first enum string
  * @param last	enum value of the last enum string
+ * @param unset	name used if no flags are set
  * @param ...	a list of strings
  */
-#define ENUM_FLAGS(name, first, last, ...) \
-	static enum_name_t name##last = {first, last, ENUM_FLAG_MAGIC, { __VA_ARGS__ }}; \
-	ENUM_END(name, last)
+#define ENUM_FLAGS(name, first, last, unset, ...) \
+	static enum_name_t name##last = {first, last + \
+		BUILD_ASSERT((__builtin_ffs(last)-__builtin_ffs(first)+1) == \
+			countof(((char*[]){__VA_ARGS__}))), \
+		ENUM_FLAG_MAGIC, { unset, __VA_ARGS__ }}; ENUM_END(name, last)
 
 /**
  * Convert a enum value to its string representation.
@@ -147,7 +159,7 @@ char *enum_to_name(enum_name_t *e, int val);
  */
 #define enum_from_name(e, name, valp) ({ \
 	int _val; \
-	int _found = enum_from_name_as_int(e, name, &_val); \
+	bool _found = enum_from_name_as_int(e, name, &_val); \
 	if (_found) \
 	{ \
 		*(valp) = _val; \
@@ -157,13 +169,13 @@ char *enum_to_name(enum_name_t *e, int val);
 /**
  * Convert a enum string back to its enum value, integer pointer variant.
  *
- * This variant takes integer pointer only, use enum_from_name() to pass
+ * This variant takes an integer pointer, use enum_from_name() to pass
  * enum type pointers for the result.
  *
  * @param e		enum names for this enum value
  * @param name	name to get enum value for
  * @param val	integer pointer receiving value
- * @return		TRUE if enum name found, FALSE otherwise
+ * @return		TRUE if all names found, FALSE otherwise
  */
 bool enum_from_name_as_int(enum_name_t *e, const char *name, int *val);
 
@@ -177,6 +189,36 @@ bool enum_from_name_as_int(enum_name_t *e, const char *name, int *val);
  * @return		buf, NULL if buffer too small
  */
 char *enum_flags_to_string(enum_name_t *e, u_int val, char *buf, size_t len);
+
+/**
+ * Convert a string of flags separated by | to their combined value
+ *
+ * @param e		enum names for this enum value
+ * @param str	string to get enum value for
+ * @param valp	variable sized pointer receiving value
+ * @return		TRUE if all names found, FALSE otherwise
+ */
+#define enum_flags_from_string(e, str, valp) ({ \
+	u_int _val; \
+	bool _found = enum_flags_from_string_as_int(e, str, &_val); \
+	if (_found) \
+	{ \
+		*(valp) = _val; \
+	} \
+	_found; })
+
+/**
+ * Convert a string of flags separated by | to their combined value.
+ *
+ * This variant takes an unsigned integer pointer, use enum_flags_from_names()
+ * to pass enum type pointers for the result.
+ *
+ * @param e		enum names for this enum value
+ * @param str	string to get enum value for
+ * @param val	integer pointer receiving value
+ * @return		TRUE if enum name found, FALSE otherwise
+ */
+bool enum_flags_from_string_as_int(enum_name_t *e, const char *str, u_int *val);
 
 /**
  * printf hook function for enum_names_t.

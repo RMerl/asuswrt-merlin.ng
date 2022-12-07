@@ -2,7 +2,8 @@
  * Copyright (C) 2007 Tobias Brunner
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -89,7 +90,7 @@ id_payload_t *id_payload_create_from_identification(payload_type_t type,
  * Create an IKEv1 ID_ADDR_SUBNET/RANGE identity from a traffic selector.
  *
  * @param ts		traffic selector
- * @return			PLV1_ID id_paylad_t object.
+ * @return			PLV1_ID id_payload_t object.
  */
 id_payload_t *id_payload_create_from_ts(traffic_selector_t *ts);
 

@@ -1,7 +1,9 @@
 /*
+ * Copyright (C) 2020 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
  * Copyright (C) 2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -60,4 +62,41 @@ bool certificate_is_newer(certificate_t *this, certificate_t *other)
 		 type, &this_update, FALSE, newer ? "newer" : "not newer",
 		 type, &that_update, FALSE, newer ? "replaced" : "retained");
 	return newer;
+}
+
+/*
+ * Described in header
+ */
+bool certificate_matches(certificate_t *cert, certificate_type_t type,
+						 key_type_t key, identification_t *id)
+{
+	public_key_t *public;
+
+	if (type != CERT_ANY && type != cert->get_type(cert))
+	{
+		return FALSE;
+	}
+	public = cert->get_public_key(cert);
+	if (public)
+	{
+		if (key == KEY_ANY || key == public->get_type(public))
+		{
+			if (id && public->has_fingerprint(public, id->get_encoding(id)))
+			{
+				public->destroy(public);
+				return TRUE;
+			}
+		}
+		else
+		{
+			public->destroy(public);
+			return FALSE;
+		}
+		public->destroy(public);
+	}
+	else if (key != KEY_ANY)
+	{
+		return FALSE;
+	}
+	return !id || cert->has_subject(cert, id);
 }

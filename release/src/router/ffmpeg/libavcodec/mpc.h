@@ -30,6 +30,7 @@
 #define AVCODEC_MPC_H
 
 #include "libavutil/lfg.h"
+#include "libavutil/mem_internal.h"
 
 #include "avcodec.h"
 #include "bswapdsp.h"
@@ -70,7 +71,6 @@ typedef struct MPCContext {
     DECLARE_ALIGNED(16, int32_t, sb_samples)[MPA_MAX_CHANNELS][36][SBLIMIT];
 } MPCContext;
 
-void ff_mpc_init(void);
 void ff_mpc_dequantize_and_synth(MPCContext *c, int maxband, int16_t **out, int channels);
 
 #endif /* AVCODEC_MPC_H */

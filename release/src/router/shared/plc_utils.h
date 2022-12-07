@@ -15,6 +15,7 @@ extern int getPLC_MAC(char *abuf);
 extern int getPLC_NMK(char *abuf);
 extern int getPLC_PWD(void);
 extern char *get_plc_ifname(char ifname[]);
+extern int is_plc_ifname(char *ifname);
 extern int current_nmk(char *nmk);
 #ifdef PLAX56_XP4
 #define PLC_INTERFACE	"eth1"

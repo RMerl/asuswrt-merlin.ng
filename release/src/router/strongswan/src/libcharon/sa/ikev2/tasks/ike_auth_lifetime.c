@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -101,9 +102,12 @@ METHOD(task_t, build_r, status_t,
 	private_ike_auth_lifetime_t *this, message_t *message)
 {
 	if (message->get_exchange_type(message) == IKE_AUTH &&
-		this->ike_sa->get_state(this->ike_sa) == IKE_ESTABLISHED)
+		this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
 	{
-		add_auth_lifetime(this, message);
+		if (!ike_sa_can_reauthenticate(this->ike_sa))
+		{
+			add_auth_lifetime(this, message);
+		}
 		return SUCCESS;
 	}
 	return NEED_MORE;
@@ -113,7 +117,7 @@ METHOD(task_t, process_i, status_t,
 	private_ike_auth_lifetime_t *this, message_t *message)
 {
 	if (message->get_exchange_type(message) == IKE_AUTH &&
-		this->ike_sa->get_state(this->ike_sa) == IKE_ESTABLISHED)
+		this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
 	{
 		process_payloads(this, message);
 		return SUCCESS;

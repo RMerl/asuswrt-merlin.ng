@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2015 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,6 +39,7 @@ iv_gen_t* iv_gen_create_for_alg(encryption_algorithm_t alg)
 		case ENCR_SERPENT_CBC:
 		case ENCR_TWOFISH_CBC:
 		case ENCR_RC2_CBC:
+		case ENCR_AES_CFB:
 			return iv_gen_rand_create();
 		case ENCR_AES_CTR:
 		case ENCR_AES_CCM_ICV8:
@@ -61,6 +61,7 @@ iv_gen_t* iv_gen_create_for_alg(encryption_algorithm_t alg)
 		case ENCR_DES_ECB:
 		case ENCR_DES_IV32:
 		case ENCR_DES_IV64:
+		case ENCR_AES_ECB:
 			break;
 	}
 	return NULL;

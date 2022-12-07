@@ -42,12 +42,7 @@ Contents
 
     To check if your kernel fulfills the requirements, see section 4.
 
-    Next add your connections to "/etc/ipsec.conf" and your secrets to
-    "/etc/ipsec.secrets".
-
-    At last start strongSwan with
-
-      ipsec start
+    Refer to README for configuration examples.
 
 
 2.  Required packages
@@ -56,12 +51,16 @@ Contents
     In order to be able to build strongSwan you'll need one of the following
     cryptographic libraries:
 
+      * The OpenSSL Cryptographic Library (libcrypto)
+        https://www.openssl.org
+      * The wolfSSL Embedded TLS Library (libwolfssl)
+        https://www.wolfssl.com
+      * The Botan Crypto Library (libbotan)
+        https://botan.randombit.net
       * The GNU Multiprecision Arithmetic Library (GMP, libgmp)
-        http://www.gmplib.org
-      * The OpenSSL cryptographic library (libcrypto)
-        http://www.openssl.org
-      * The GNU cryptographic library (libgcrypt)
-        http://www.gnupg.org
+        https://gmplib.org
+      * The GNU Cryptographic Library (libgcrypt)
+        https://www.gnupg.org
 
     If no other options are specified during ./configure libgmp will be used.
 
@@ -82,7 +81,7 @@ Contents
     following libraries:
 
       * The cURL library (libcurl)
-        http://curl.haxx.se/libcurl/
+        https://curl.se/libcurl/
       * The LibSoup library (libsoup)
         https://live.gnome.org/LibSoup
 
@@ -95,7 +94,7 @@ Contents
 
     If you intend to dynamically fetch Certificate Revocation Lists (CRLs)
     from an LDAP server then you will need the libldap library available
-    from http://www.openldap.org/.
+    from https://www.openldap.org/.
 
     OpenLDAP is usually included  with your Linux distribution. You will need
     both the run-time and development environments (SuSE: openldap2,
@@ -115,34 +114,34 @@ Contents
 
     There are many other optional plugins that, for instance, provide support
     for PKCS#11 or SQL databases.
-    For a more detailed description of these refer to our wiki:
+    For a more detailed description of these refer to our documentation:
 
-      * http://wiki.strongswan.org
+      * https://docs.strongswan.org
 
 
 4.  Kernel configuration
     --------------------
 
-    Since version 4.x strongSwan only supports 2.6.x and 3.x kernels and its
-    native NETKEY IPsec stack. Please make sure that the following IPsec kernel
-    modules are available:
+    Please make sure that the following IPsec-related Linux kernel modules are
+    available:
 
-      * af_key
-      * ah4
       * esp4
-      * ipcomp
+      * esp6
       * xfrm_user
+
+    And for older kernels, mode-specific modules such as:
+
       * xfrm4_tunnel
+      * xfrm4_mode_tunnel
 
-    These may be built into the kernel or as modules. Modules get loaded
-    automatically at strongSwan startup.
+    These may be built into the kernel or as modules. Modules should get loaded
+    automatically if necessary.
 
-    Also the built-in kernel Cryptoapi modules with selected encryption and
-    hash algorithms should be available.
+    The built-in kernel Cryptoapi modules with selected encryption and
+    hash algorithms should also be available.
 
     Support for multiple routing tables is also recommended.
 
     For a more up-to-date list of recommended modules refer to:
 
-      * http://wiki.strongswan.org/projects/strongswan/wiki/KernelModules
-
+      * https://docs.strongswan.org/docs/5.9/install/kernelModules.html

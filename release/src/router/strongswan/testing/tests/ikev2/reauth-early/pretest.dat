@@ -1,8 +1,8 @@
 moon::iptables-restore < /etc/iptables.rules
 carol::iptables-restore < /etc/iptables.rules
-moon::ipsec start
-carol::ipsec start
+moon::systemctl start strongswan
+carol::systemctl start strongswan
 moon::expect-connection rw
 carol::expect-connection home
-carol::ipsec up home
-carol::sleep 30
+carol::swanctl --initiate --child home
+carol::sleep 21

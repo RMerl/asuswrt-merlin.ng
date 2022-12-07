@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -66,7 +67,7 @@ struct private_fast_dispatcher_t {
 	mutex_t *mutex;
 
 	/**
-	 * Hahstable with active sessions
+	 * Hashtable with active sessions
 	 */
 	hashtable_t *sessions;
 
@@ -294,7 +295,8 @@ static void cleanup_sessions(private_fast_dispatcher_t *this, time_t now)
 /**
  * Actual dispatching code
  */
-static void dispatch(private_fast_dispatcher_t *this)
+CALLBACK(dispatch, void*,
+	private_fast_dispatcher_t *this)
 {
 	thread_cancelability(FALSE);
 
@@ -362,6 +364,7 @@ static void dispatch(private_fast_dispatcher_t *this)
 
 		request->destroy(request);
 	}
+	return NULL;
 }
 
 METHOD(fast_dispatcher_t, run, void,
@@ -371,8 +374,7 @@ METHOD(fast_dispatcher_t, run, void,
 	this->threads = malloc(sizeof(thread_t*) * threads);
 	while (threads)
 	{
-		this->threads[threads - 1] = thread_create((thread_main_t)dispatch,
-												   this);
+		this->threads[threads - 1] = thread_create(dispatch, this);
 		if (this->threads[threads - 1])
 		{
 			threads--;

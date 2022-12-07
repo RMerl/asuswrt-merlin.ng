@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,18 +18,21 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_unescape 3 "November 04, 2020" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_easy_unescape 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
 curl_easy_unescape - URL decodes the given string
 .SH SYNOPSIS
-.B #include <curl/curl.h>
-.sp
-.BI "char *curl_easy_unescape( CURL *" curl ", const char *" url
-.BI ", int "inlength ", int *" outlength " );"
-.ad
+.nf
+#include <curl/curl.h>
+
+char *curl_easy_unescape(CURL *curl, const char *url,
+                         int inlength, int *outlength);
+.fi
 .SH DESCRIPTION
 This function converts the given URL encoded input string to a "plain string"
 and returns that in an allocated memory area. All input characters that are
@@ -46,7 +49,22 @@ pointer to an \fIint\fP type, it can only return a value up to INT_MAX so no
 longer string can be unescaped if the string length is returned in this
 parameter.
 
-You must \fIcurl_free(3)\fP the returned string when you're done with it.
+You must \fIcurl_free(3)\fP the returned string when you are done with it.
+.SH EXAMPLE
+.nf
+CURL *curl = curl_easy_init();
+if(curl) {
+  int decodelen;
+  char *decoded = curl_easy_unescape(curl, "%63%75%72%6c", 12, &decodelen);
+  if(decoded) {
+    /* do not assume printf() works on the decoded data! */
+    printf("Decoded: ");
+    /* ... */
+    curl_free(decoded);
+  }
+  curl_easy_cleanup(curl);
+}
+.fi
 .SH AVAILABILITY
 Added in 7.15.4 and replaces the old \fIcurl_unescape(3)\fP function.
 .SH RETURN VALUE

@@ -27,6 +27,8 @@
  * This is very similar to intra-only MPEG-1.
  */
 
+#include "libavutil/mem_internal.h"
+
 #include "avcodec.h"
 #include "blockdsp.h"
 #include "bswapdsp.h"
@@ -71,8 +73,6 @@ static inline int mdec_decode_block_intra(MDECContext *a, int16_t *block, int n)
     } else {
         component = (n <= 3 ? 0 : n - 4 + 1);
         diff = decode_dc(&a->gb, component);
-        if (diff >= 0xffff)
-            return AVERROR_INVALIDDATA;
         a->last_dc[component] += diff;
         block[0] = a->last_dc[component] * (1 << 3);
     }
@@ -240,17 +240,6 @@ static av_cold int decode_init(AVCodecContext *avctx)
     return 0;
 }
 
-#if HAVE_THREADS
-static av_cold int decode_init_thread_copy(AVCodecContext *avctx)
-{
-    MDECContext * const a = avctx->priv_data;
-
-    a->avctx           = avctx;
-
-    return 0;
-}
-#endif
-
 static av_cold int decode_end(AVCodecContext *avctx)
 {
     MDECContext * const a = avctx->priv_data;
@@ -271,5 +260,5 @@ AVCodec ff_mdec_decoder = {
     .close            = decode_end,
     .decode           = decode_frame,
     .capabilities     = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,
-    .init_thread_copy = ONLY_IF_THREADS_ENABLED(decode_init_thread_copy)
+    .caps_internal    = FF_CODEC_CAP_INIT_THREADSAFE,
 };

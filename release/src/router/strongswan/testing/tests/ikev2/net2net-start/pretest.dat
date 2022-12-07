@@ -1,5 +1,5 @@
-moon::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
-sun::ipsec start
-moon::ipsec start
-moon::sleep 1
+moon::iptables-restore < /etc/iptables.rules
+sun::systemctl start strongswan
+moon::systemctl start strongswan
+moon::sleep 0.5

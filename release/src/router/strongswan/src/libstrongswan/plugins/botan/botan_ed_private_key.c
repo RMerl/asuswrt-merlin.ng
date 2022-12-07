@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -74,7 +73,7 @@ METHOD(private_key_t, sign, bool,
 
 METHOD(private_key_t, decrypt, bool,
 	private_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "EdDSA private key decryption not implemented");
 	return FALSE;
@@ -216,7 +215,7 @@ private_key_t *botan_ed_private_key_gen(key_type_t type, va_list args)
 		break;
 	}
 
-	if (botan_rng_init(&rng, "system"))
+	if (!botan_get_rng(&rng, RNG_TRUE))
 	{
 		return NULL;
 	}

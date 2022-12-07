@@ -10,6 +10,7 @@
     <cmdline>root=/dev/vda1 loglevel=1 console=hvc0 net.ifnames=0</cmdline>
     <boot dev='hd'/>
   </os>
+  <cpu mode='host-passthrough'></cpu>
   <features>
     <acpi/>
     <apic/>
@@ -20,7 +21,7 @@
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
   <devices>
-    <emulator>/usr/bin/kvm</emulator>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='writethrough'/>
       <source file='/var/lib/libvirt/images/bob.qcow2'/>
@@ -61,5 +62,8 @@
     <memballoon model='virtio'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
     </memballoon>
+    <rng model='virtio'>
+      <backend model='random'>/dev/urandom</backend>
+    </rng>
   </devices>
 </domain>

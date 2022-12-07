@@ -33,12 +33,13 @@
 #include "libavutil/internal.h"
 #include "libavutil/opt.h"
 #include "libavutil/pixdesc.h"
-#include "libavutil/pixelutils.h"
 
 #include "avfilter.h"
 #include "internal.h"
 #include "video.h"
+#include "filters.h"
 #include "framerate.h"
+#include "scene_sad.h"
 
 #define OFFSET(x) offsetof(FrameRateContext, x)
 #define V AV_OPT_FLAG_VIDEO_PARAM
@@ -50,7 +51,7 @@ static const AVOption framerate_options[] = {
 
     {"interp_start",        "point to start linear interpolation",    OFFSET(interp_start),    AV_OPT_TYPE_INT,      {.i64=15},                 0,       255,     V|F },
     {"interp_end",          "point to end linear interpolation",      OFFSET(interp_end),      AV_OPT_TYPE_INT,      {.i64=240},                0,       255,     V|F },
-    {"scene",               "scene change level",                     OFFSET(scene_score),     AV_OPT_TYPE_DOUBLE,   {.dbl=8.2},                0,       INT_MAX, V|F },
+    {"scene",               "scene change level",                     OFFSET(scene_score),     AV_OPT_TYPE_DOUBLE,   {.dbl=8.2},                0,       100., V|F },
 
     {"flags",               "set flags",                              OFFSET(flags),           AV_OPT_TYPE_FLAGS,    {.i64=1},                  0,       INT_MAX, V|F, "flags" },
     {"scene_change_detect", "enable scene change detection",          0,                       AV_OPT_TYPE_CONST,    {.i64=FRAMERATE_FLAG_SCD}, INT_MIN, INT_MAX, V|F, "flags" },
@@ -61,52 +62,6 @@ static const AVOption framerate_options[] = {
 
 AVFILTER_DEFINE_CLASS(framerate);
 
-static av_always_inline int64_t sad_8x8_16(const uint16_t *src1, ptrdiff_t stride1,
-                                           const uint16_t *src2, ptrdiff_t stride2)
-{
-    int sum = 0;
-    int x, y;
-
-    for (y = 0; y < 8; y++) {
-        for (x = 0; x < 8; x++)
-            sum += FFABS(src1[x] - src2[x]);
-        src1 += stride1;
-        src2 += stride2;
-    }
-    return sum;
-}
-
-static int64_t scene_sad16(FrameRateContext *s, const uint16_t *p1, int p1_linesize, const uint16_t* p2, int p2_linesize, const int width, const int height)
-{
-    int64_t sad;
-    int x, y;
-    for (sad = y = 0; y < height - 7; y += 8) {
-        for (x = 0; x < width - 7; x += 8) {
-            sad += sad_8x8_16(p1 + y * p1_linesize + x,
-                              p1_linesize,
-                              p2 + y * p2_linesize + x,
-                              p2_linesize);
-        }
-    }
-    return sad;
-}
-
-static int64_t scene_sad8(FrameRateContext *s, uint8_t *p1, int p1_linesize, uint8_t* p2, int p2_linesize, const int width, const int height)
-{
-    int64_t sad;
-    int x, y;
-    for (sad = y = 0; y < height - 7; y += 8) {
-        for (x = 0; x < width - 7; x += 8) {
-            sad += s->sad(p1 + y * p1_linesize + x,
-                          p1_linesize,
-                          p2 + y * p2_linesize + x,
-                          p2_linesize);
-        }
-    }
-    emms_c();
-    return sad;
-}
-
 static double get_scene_score(AVFilterContext *ctx, AVFrame *crnt, AVFrame *next)
 {
     FrameRateContext *s = ctx->priv;
@@ -116,16 +71,13 @@ static double get_scene_score(AVFilterContext *ctx, AVFrame *crnt, AVFrame *next
 
     if (crnt->height == next->height &&
         crnt->width  == next->width) {
-        int64_t sad;
+        uint64_t sad;
         double mafd, diff;
 
         ff_dlog(ctx, "get_scene_score() process\n");
-        if (s->bitdepth == 8)
-            sad = scene_sad8(s, crnt->data[0], crnt->linesize[0], next->data[0], next->linesize[0], crnt->width, crnt->height);
-        else
-            sad = scene_sad16(s, (const uint16_t*)crnt->data[0], crnt->linesize[0] / 2, (const uint16_t*)next->data[0], next->linesize[0] / 2, crnt->width, crnt->height);
-
-        mafd = (double)sad * 100.0 / FFMAX(1, (crnt->height & ~7) * (crnt->width & ~7)) / (1 << s->bitdepth);
+        s->sad(crnt->data[0], crnt->linesize[0], next->data[0], next->linesize[0], crnt->width, crnt->height, &sad);
+        emms_c();
+        mafd = (double)sad * 100.0 / (crnt->width * crnt->height) / (1 << s->bitdepth);
         diff = fabs(mafd - s->prev_mafd);
         ret  = av_clipf(FFMIN(mafd, diff), 0, 100.0);
         s->prev_mafd = mafd;
@@ -143,29 +95,22 @@ static int filter_slice(AVFilterContext *ctx, void *arg, int job, int nb_jobs)
 {
     FrameRateContext *s = ctx->priv;
     ThreadData *td = arg;
+    AVFrame *work = s->work;
+    AVFrame *src1 = td->copy_src1;
+    AVFrame *src2 = td->copy_src2;
     uint16_t src1_factor = td->src1_factor;
     uint16_t src2_factor = td->src2_factor;
     int plane;
 
-    for (plane = 0; plane < 4 && td->copy_src1->data[plane] && td->copy_src2->data[plane]; plane++) {
-        int cpy_line_width = s->line_size[plane];
-        uint8_t *cpy_src1_data = td->copy_src1->data[plane];
-        int cpy_src1_line_size = td->copy_src1->linesize[plane];
-        uint8_t *cpy_src2_data = td->copy_src2->data[plane];
-        int cpy_src2_line_size = td->copy_src2->linesize[plane];
-        int cpy_src_h = (plane > 0 && plane < 3) ? (td->copy_src1->height >> s->vsub) : (td->copy_src1->height);
-        uint8_t *cpy_dst_data = s->work->data[plane];
-        int cpy_dst_line_size = s->work->linesize[plane];
-        const int start = (cpy_src_h *  job   ) / nb_jobs;
-        const int end   = (cpy_src_h * (job+1)) / nb_jobs;
-        cpy_src1_data += start * cpy_src1_line_size;
-        cpy_src2_data += start * cpy_src2_line_size;
-        cpy_dst_data += start * cpy_dst_line_size;
+    for (plane = 0; plane < 4 && src1->data[plane] && src2->data[plane]; plane++) {
+        const int start = (s->height[plane] *  job   ) / nb_jobs;
+        const int end   = (s->height[plane] * (job+1)) / nb_jobs;
+        uint8_t *src1_data = src1->data[plane] + start * src1->linesize[plane];
+        uint8_t *src2_data = src2->data[plane] + start * src2->linesize[plane];
+        uint8_t *dst_data  = work->data[plane] + start * work->linesize[plane];
 
-        s->blend(cpy_src1_data, cpy_src1_line_size,
-                 cpy_src2_data, cpy_src2_line_size,
-                 cpy_dst_data,  cpy_dst_line_size,
-                 cpy_line_width, end - start,
+        s->blend(src1_data, src1->linesize[plane], src2_data, src2->linesize[plane],
+                 dst_data,  work->linesize[plane], s->line_size[plane], end - start,
                  src1_factor, src2_factor, s->blend_factor_max >> 1);
     }
 
@@ -225,7 +170,9 @@ static int process_work_frame(AVFilterContext *ctx)
         return 0;
 
     if (!s->f0) {
-        s->work = av_frame_clone(s->f1);
+        av_assert1(s->flush);
+        s->work = s->f1;
+        s->f1 = NULL;
     } else {
         if (work_pts >= s->pts1 + s->delta && s->flush)
             return 0;
@@ -290,44 +237,38 @@ static int query_formats(AVFilterContext *ctx)
     return ff_set_common_formats(ctx, fmts_list);
 }
 
-static void blend_frames_c(BLEND_FUNC_PARAMS)
-{
-    int line, pixel;
-    for (line = 0; line < height; line++) {
-        for (pixel = 0; pixel < width; pixel++)
-            dst[pixel] = ((src1[pixel] * factor1) + (src2[pixel] * factor2) + half) >> BLEND_FACTOR_DEPTH8;
-        src1 += src1_linesize;
-        src2 += src2_linesize;
-        dst  += dst_linesize;
-    }
+#define BLEND_FRAME_FUNC(nbits)                         \
+static void blend_frames##nbits##_c(BLEND_FUNC_PARAMS)  \
+{                                                       \
+    int line, pixel;                                    \
+    uint##nbits##_t *dstw  = (uint##nbits##_t *)dst;    \
+    uint##nbits##_t *src1w = (uint##nbits##_t *)src1;   \
+    uint##nbits##_t *src2w = (uint##nbits##_t *)src2;   \
+    int bytes = nbits / 8;                              \
+    width /= bytes;                                     \
+    src1_linesize /= bytes;                             \
+    src2_linesize /= bytes;                             \
+    dst_linesize /= bytes;                              \
+    for (line = 0; line < height; line++) {             \
+        for (pixel = 0; pixel < width; pixel++)         \
+            dstw[pixel] = ((src1w[pixel] * factor1) +   \
+                    (src2w[pixel] * factor2) + half)    \
+                    >> BLEND_FACTOR_DEPTH(nbits);       \
+        src1w += src1_linesize;                         \
+        src2w += src2_linesize;                         \
+        dstw  += dst_linesize;                          \
+    }                                                   \
 }
-
-static void blend_frames16_c(BLEND_FUNC_PARAMS)
-{
-    int line, pixel;
-    uint16_t *dstw = (uint16_t *)dst;
-    uint16_t *src1w = (uint16_t *)src1;
-    uint16_t *src2w = (uint16_t *)src2;
-    width /= 2;
-    src1_linesize /= 2;
-    src2_linesize /= 2;
-    dst_linesize /= 2;
-    for (line = 0; line < height; line++) {
-        for (pixel = 0; pixel < width; pixel++)
-            dstw[pixel] = ((src1w[pixel] * factor1) + (src2w[pixel] * factor2) + half) >> BLEND_FACTOR_DEPTH16;
-        src1w += src1_linesize;
-        src2w += src2_linesize;
-        dstw  += dst_linesize;
-    }
-}
+BLEND_FRAME_FUNC(8)
+BLEND_FRAME_FUNC(16)
 
 void ff_framerate_init(FrameRateContext *s)
 {
     if (s->bitdepth == 8) {
-        s->blend_factor_max = 1 << BLEND_FACTOR_DEPTH8;
-        s->blend = blend_frames_c;
+        s->blend_factor_max = 1 << BLEND_FACTOR_DEPTH(8);
+        s->blend = blend_frames8_c;
     } else {
-        s->blend_factor_max = 1 << BLEND_FACTOR_DEPTH16;
+        s->blend_factor_max = 1 << BLEND_FACTOR_DEPTH(16);
         s->blend = blend_frames16_c;
     }
     if (ARCH_X86)
@@ -341,15 +282,15 @@ static int config_input(AVFilterLink *inlink)
     const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(inlink->format);
     int plane;
 
+    s->vsub = pix_desc->log2_chroma_h;
     for (plane = 0; plane < 4; plane++) {
-        s->line_size[plane] = av_image_get_linesize(inlink->format, inlink->w,
-                                                    plane);
+        s->line_size[plane] = av_image_get_linesize(inlink->format, inlink->w, plane);
+        s->height[plane] = inlink->h >> ((plane == 1 || plane == 2) ? s->vsub : 0);
     }
 
     s->bitdepth = pix_desc->comp[0].depth;
-    s->vsub = pix_desc->log2_chroma_h;
 
-    s->sad = av_pixelutils_get_sad_fn(3, 3, 2, s); // 8x8 both sources aligned
+    s->sad = ff_scene_sad_get_fn(s->bitdepth == 8 ? 8 : 16);
     if (!s->sad)
         return AVERROR(EINVAL);
 
@@ -360,53 +301,81 @@ static int config_input(AVFilterLink *inlink)
     return 0;
 }
 
-static int filter_frame(AVFilterLink *inlink, AVFrame *inpicref)
+static int activate(AVFilterContext *ctx)
 {
-    int ret;
-    AVFilterContext *ctx = inlink->dst;
+    int ret, status;
+    AVFilterLink *inlink = ctx->inputs[0];
+    AVFilterLink *outlink = ctx->outputs[0];
     FrameRateContext *s = ctx->priv;
+    AVFrame *inpicref;
     int64_t pts;
 
-    if (inpicref->interlaced_frame)
-        av_log(ctx, AV_LOG_WARNING, "Interlaced frame found - the output will not be correct.\n");
+    FF_FILTER_FORWARD_STATUS_BACK(outlink, inlink);
 
-    if (inpicref->pts == AV_NOPTS_VALUE) {
-        av_log(ctx, AV_LOG_WARNING, "Ignoring frame without PTS.\n");
-        return 0;
+retry:
+    ret = process_work_frame(ctx);
+    if (ret < 0)
+        return ret;
+    else if (ret == 1)
+        return ff_filter_frame(outlink, s->work);
+
+    ret = ff_inlink_consume_frame(inlink, &inpicref);
+    if (ret < 0)
+        return ret;
+
+    if (inpicref) {
+        if (inpicref->interlaced_frame)
+            av_log(ctx, AV_LOG_WARNING, "Interlaced frame found - the output will not be correct.\n");
+
+        if (inpicref->pts == AV_NOPTS_VALUE) {
+            av_log(ctx, AV_LOG_WARNING, "Ignoring frame without PTS.\n");
+            av_frame_free(&inpicref);
+        }
     }
 
-    pts = av_rescale_q(inpicref->pts, s->srce_time_base, s->dest_time_base);
-    if (s->f1 && pts == s->pts1) {
-        av_log(ctx, AV_LOG_WARNING, "Ignoring frame with same PTS.\n");
-        return 0;
+    if (inpicref) {
+        pts = av_rescale_q(inpicref->pts, s->srce_time_base, s->dest_time_base);
+
+        if (s->f1 && pts == s->pts1) {
+            av_log(ctx, AV_LOG_WARNING, "Ignoring frame with same PTS.\n");
+            av_frame_free(&inpicref);
+        }
     }
 
-    av_frame_free(&s->f0);
-    s->f0 = s->f1;
-    s->pts0 = s->pts1;
-    s->f1 = inpicref;
-    s->pts1 = pts;
-    s->delta = s->pts1 - s->pts0;
-    s->score = -1.0;
-
-    if (s->delta < 0) {
-        av_log(ctx, AV_LOG_WARNING, "PTS discontinuity.\n");
-        s->start_pts = s->pts1;
-        s->n = 0;
+    if (inpicref) {
         av_frame_free(&s->f0);
+        s->f0 = s->f1;
+        s->pts0 = s->pts1;
+        s->f1 = inpicref;
+        s->pts1 = pts;
+        s->delta = s->pts1 - s->pts0;
+        s->score = -1.0;
+
+        if (s->delta < 0) {
+            av_log(ctx, AV_LOG_WARNING, "PTS discontinuity.\n");
+            s->start_pts = s->pts1;
+            s->n = 0;
+            av_frame_free(&s->f0);
+        }
+
+        if (s->start_pts == AV_NOPTS_VALUE)
+            s->start_pts = s->pts1;
+
+        goto retry;
     }
 
-    if (s->start_pts == AV_NOPTS_VALUE)
-        s->start_pts = s->pts1;
+    if (ff_inlink_acknowledge_status(inlink, &status, &pts)) {
+        if (!s->flush) {
+            s->flush = 1;
+            goto retry;
+        }
+        ff_outlink_set_status(outlink, status, pts);
+        return 0;
+    }
 
-    do {
-        ret = process_work_frame(ctx);
-        if (ret <= 0)
-            return ret;
-        ret = ff_filter_frame(ctx->outputs[0], s->work);
-    } while (ret >= 0);
+    FF_FILTER_FORWARD_WANTED(outlink, inlink);
 
-    return ret;
+    return FFERROR_NOT_READY;
 }
 
 static int config_output(AVFilterLink *outlink)
@@ -454,33 +423,11 @@ static int config_output(AVFilterLink *outlink)
     return 0;
 }
 
-static int request_frame(AVFilterLink *outlink)
-{
-    AVFilterContext *ctx = outlink->src;
-    FrameRateContext *s = ctx->priv;
-    int ret;
-
-    ff_dlog(ctx, "request_frame()\n");
-
-    ret = ff_request_frame(ctx->inputs[0]);
-    if (ret == AVERROR_EOF && s->f1 && !s->flush) {
-        s->flush = 1;
-        ret = process_work_frame(ctx);
-        if (ret < 0)
-            return ret;
-        ret = ret ? ff_filter_frame(ctx->outputs[0], s->work) : AVERROR_EOF;
-    }
-
-    ff_dlog(ctx, "request_frame() source's request_frame() returned:%d\n", ret);
-    return ret;
-}
-
 static const AVFilterPad framerate_inputs[] = {
     {
         .name         = "default",
         .type         = AVMEDIA_TYPE_VIDEO,
         .config_props = config_input,
-        .filter_frame = filter_frame,
     },
     { NULL }
 };
@@ -489,7 +436,6 @@ static const AVFilterPad framerate_outputs[] = {
     {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
-        .request_frame = request_frame,
         .config_props  = config_output,
     },
     { NULL }
@@ -506,4 +452,5 @@ AVFilter ff_vf_framerate = {
     .inputs        = framerate_inputs,
     .outputs       = framerate_outputs,
     .flags         = AVFILTER_FLAG_SLICE_THREADS,
+    .activate      = activate,
 };

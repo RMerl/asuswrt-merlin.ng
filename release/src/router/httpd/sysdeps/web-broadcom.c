@@ -2188,8 +2188,10 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	snprintf(prefix2, sizeof(prefix2), "wl%d.%d_", unit, 1);
 
-	if ((repeater_mode() || psr_mode()) &&
+	if ((repeater_mode() || psr_mode() || dpsr_mode()) &&
+#ifndef RPAX58
 		(unit == nvram_get_int("wlc_band")) &&
+#endif
 		nvram_match(strlcat_r(prefix2, "bss_enabled", tmp, sizeof(tmp)), "1"))
 		strlcpy(ifname, nvram_safe_get(strlcat_r(prefix2, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 	else
@@ -2458,11 +2460,15 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	}
 #endif
 
-	if ((repeater_mode() || psr_mode()) && (nvram_get_int("wlc_band") == unit))
+#ifndef RPAX58
+	if ((repeater_mode() || psr_mode()) 
+		&& (nvram_get_int("wlc_band") == unit)
+	)
 		snprintf(ifname, sizeof(ifname), "wl%d.%d", unit, 1);
 
 	if (!strlen(ifname))
 		goto exit;
+#endif
 
 #ifdef RTCONFIG_BCMWL6
 	if (!nvram_match(strlcat_r(prefix, "reg_mode", tmp, sizeof(tmp)), "h"))
@@ -2562,6 +2568,7 @@ ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 wds_list:
 #endif
+#ifndef RPAX58
 	if ((nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "ap")
 	  || nvram_match(strlcat_r(prefix, "mode", tmp, sizeof(tmp)), "wds"))
 		&& !nvram_match(strlcat_r(prefix, "wds", tmp, sizeof(tmp)), "")) {
@@ -2587,6 +2594,7 @@ wds_list:
 			ret += websWrite(wp, "\n");
 		}
 	}
+#endif
 
 	/* buffers and length */
 	mac_list_size = sizeof(auth->count) + MAX_STA_COUNT * sizeof(struct ether_addr);
@@ -2690,9 +2698,12 @@ wds_list:
 	}
 
 	for (i = 1; i < wl_max_no_vifs(unit); i++) {
+#ifndef RPAX58
 		if ((repeater_mode() || psr_mode())
-			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
+			&& (unit == nvram_get_int("wlc_band")) && (i == 1)
+		)
 			break;
+#endif
 
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
 		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1"))
@@ -2778,6 +2789,11 @@ exit:
 
 #ifdef GTAXE16000
 static int wl_order[4] = {3,0,1,2};
+#elif defined(GT10)
+#ifndef ARRAYSIZE
+#define ARRAYSIZE(a)	(sizeof(a)/sizeof(a[0]))
+#endif
+static int wl_order[3] = { 2, 0, 1 };
 #endif
 
 int
@@ -2791,6 +2807,8 @@ ej_wl_status_2g(int eid, webs_t wp, int argc, char_t **argv)
 	for (ii = 0; ii < DEV_NUMIFS; ii++) {
 #ifdef GTAXE16000
 		snprintf(nv_param, sizeof(nv_param), "wl%d_unit", wl_order[ii]);
+#elif defined(GT10)
+		snprintf(nv_param, sizeof(nv_param), "wl%d_unit", (ii < ARRAYSIZE(wl_order)) ? wl_order[ii] : ii);
 #else
 		snprintf(nv_param, sizeof(nv_param), "wl%d_unit", ii);
 #endif
@@ -5023,7 +5041,11 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 
-	if ((repeater_mode() || psr_mode()) && (nvram_get_int("wlc_band") == unit))
+	if ((repeater_mode() || psr_mode() || dpsr_mode()) 
+#ifndef RPAX58
+		&& (nvram_get_int("wlc_band") == unit)
+#endif
+		)
 		snprintf(ifname, sizeof(ifname), "wl%d.%d", unit, 1);
 
 	if (!strlen(ifname))
@@ -5097,9 +5119,12 @@ static int wl_sta_list(int eid, webs_t wp, int argc, char_t **argv, int unit) {
 	}
 
 	for (i = 1; i < wl_max_no_vifs(unit); i++) {
+#ifndef RPAX58
 		if ((repeater_mode() || psr_mode())
-			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
+			&& (unit == nvram_get_int("wlc_band")) 
+			&& (i == 1))
 			break;
+#endif
 
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
 		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1"))
@@ -5192,7 +5217,11 @@ static int wl_stainfo_list(int eid, webs_t wp, int argc, char_t **argv, int unit
 	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 
-	if ((repeater_mode() || psr_mode()) && (nvram_get_int("wlc_band") == unit))
+	if ((repeater_mode() || psr_mode() || dpsr_mode()) 
+#ifndef RPAX58
+		&& (nvram_get_int("wlc_band") == unit)
+#endif
+		)
 		snprintf(ifname, sizeof(ifname), "wl%d.%d", unit, 1);
 
 	if (!strlen(ifname))
@@ -5239,9 +5268,12 @@ static int wl_stainfo_list(int eid, webs_t wp, int argc, char_t **argv, int unit
 	}
 
 	for (i = 1; i < wl_max_no_vifs(unit); i++) {
+#ifndef RPAX58
 		if ((repeater_mode() || psr_mode())
-			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
+			&& (unit == nvram_get_int("wlc_band")) 
+			&& (i == 1))
 			break;
+#endif
 
 		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
 		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1"))
@@ -5365,7 +5397,11 @@ int ej_get_wlstainfo_list(int eid, webs_t wp, int argc, char_t **argv)
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 		strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 
-		if ((repeater_mode() || psr_mode()) && (nvram_get_int("wlc_band") == unit))
+		if ((repeater_mode() || psr_mode() || dpsr_mode()) 
+#ifndef RPAX58
+			&& (nvram_get_int("wlc_band") == unit)
+#endif
+			)
 			snprintf(ifname, sizeof(ifname), "wl%d.%d", unit, 1);
 
 		if (!strlen(ifname))
@@ -5419,9 +5455,12 @@ int ej_get_wlstainfo_list(int eid, webs_t wp, int argc, char_t **argv)
 			websWrite(wp, "]");
 
 		for (i = 1; i < 4; i++) {
+#ifndef RPAX58
 			if ((repeater_mode() || psr_mode())
-				&& (unit == nvram_get_int("wlc_band")) && (i == 1))
+				&& (unit == nvram_get_int("wlc_band")) && (i == 1)
+				)
 				break;
+#endif
 
 			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
 			if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1"))
@@ -5483,7 +5522,7 @@ exit:
 // MAC/associated/authorized
 int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv) {
 	int unit = 0;
-	char tmp[128], prefix[] = "wlXXXXXXXXXX_";
+	char tmp[128], prefix[] = "wlXXXXXXXXXX_", prefix2[] = "wlXXXXXXXXXX_";
 	char ifname[IFNAMSIZ] = { 0 };
 	struct maclist *auth = NULL;
 	int mac_list_size;
@@ -5521,7 +5560,15 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv) {
 		}
 #endif
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
-		strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
+		snprintf(prefix2, sizeof(prefix2), "wl%d.%d_", unit, 1);
+		if ((repeater_mode() || psr_mode() || dpsr_mode()) &&
+#ifndef RPAX58
+			(unit == nvram_get_int("wlc_band")) &&
+#endif
+			nvram_match(strlcat_r(prefix2, "bss_enabled", tmp, sizeof(tmp)), "1"))
+			strlcpy(ifname, nvram_safe_get(strlcat_r(prefix2, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
+		else
+			strlcpy(ifname, nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp))), sizeof(ifname));
 
 		memset(auth, 0, mac_list_size);
 		//memset(wme, 0, mac_list_size);
@@ -5564,9 +5611,12 @@ int ej_wl_auth_list(int eid, webs_t wp, int argc, char_t **argv) {
 		}
 
 		for (i = 1; i < 4; i++) {
+#ifndef RPAX58
 			if ((repeater_mode() || psr_mode())
-				&& (unit == nvram_get_int("wlc_band")) && (i == 1))
+				&& (unit == nvram_get_int("wlc_band")) && (i == 1)
+				)
 				break;
+#endif
 
 			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, i);
 			if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1"))

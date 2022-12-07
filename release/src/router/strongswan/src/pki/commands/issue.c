@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * Copyright (C) 2015-2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2015-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -77,6 +78,7 @@ static int issue()
 	int inhibit_mapping = X509_NO_CONSTRAINT, require_explicit = X509_NO_CONSTRAINT;
 	chunk_t serial = chunk_empty;
 	chunk_t encoding = chunk_empty;
+	chunk_t critical_extension_oid = chunk_empty;
 	time_t not_before, not_after, lifetime = 1095 * 24 * 60 * 60;
 	char *datenb = NULL, *datena = NULL, *dateform = NULL;
 	x509_flag_t flags = 0;
@@ -122,6 +124,11 @@ static int issue()
 				{
 					type = CRED_PRIVATE_KEY;
 					subtype = KEY_ED25519;
+				}
+				else if (streq(arg, "ed448"))
+				{
+					type = CRED_PRIVATE_KEY;
+					subtype = KEY_ED448;
 				}
 				else if (streq(arg, "bliss"))
 				{
@@ -333,6 +340,10 @@ static int issue()
 			case 'o':
 				ocsp->insert_last(ocsp, arg);
 				continue;
+			case 'X':
+				chunk_free(&critical_extension_oid);
+				critical_extension_oid = asn1_oid_from_string(arg);
+				continue;
 			case EOF:
 				break;
 			default:
@@ -422,23 +433,10 @@ static int issue()
 	{
 		serial = chunk_from_hex(chunk_create(hex, strlen(hex)), NULL);
 	}
-	else
+	else if (!allocate_serial(8, &serial))
 	{
-		rng_t *rng = lib->crypto->create_rng(lib->crypto, RNG_WEAK);
-
-		if (!rng)
-		{
-			error = "no random number generator found";
-			goto end;
-		}
-		if (!rng_allocate_bytes_not_zero(rng, 8, &serial, FALSE))
-		{
-			error = "failed to generate serial number";
-			rng->destroy(rng);
-			goto end;
-		}
-		serial.ptr[0] &= 0x7F;
-		rng->destroy(rng);
+		error = "failed to generate serial number";
+		goto end;
 	}
 
 	if (pkcs10)
@@ -482,9 +480,12 @@ static int issue()
 			id = cert_req->get_subject(cert_req);
 			id = id->clone(id);
 		}
+		req = (pkcs10_t*)cert_req;
+
+		/* Add Extended Key Usage (EKU) flags */
+		flags |= req->get_flags(req);
 
 		/* Add subjectAltNames from PKCS#10 certificate request */
-		req = (pkcs10_t*)cert_req;
 		enumerator = req->create_subjectAltName_enumerator(req);
 		while (enumerator->enumerate(enumerator, &subjectAltName))
 		{
@@ -558,6 +559,7 @@ static int issue()
 					BUILD_POLICY_REQUIRE_EXPLICIT, require_explicit,
 					BUILD_POLICY_INHIBIT_MAPPING, inhibit_mapping,
 					BUILD_POLICY_INHIBIT_ANY, inhibit_any,
+					BUILD_CRITICAL_EXTENSION, critical_extension_oid,
 					BUILD_SIGNATURE_SCHEME, scheme,
 					BUILD_END);
 	if (!cert)
@@ -593,6 +595,7 @@ end:
 	cdps->destroy_function(cdps, (void*)destroy_cdp);
 	ocsp->destroy(ocsp);
 	signature_params_destroy(scheme);
+	free(critical_extension_oid.ptr);
 	free(encoding.ptr);
 	free(serial.ptr);
 
@@ -612,6 +615,7 @@ usage:
 	mappings->destroy_function(mappings, (void*)destroy_policy_mapping);
 	cdps->destroy_function(cdps, (void*)destroy_cdp);
 	ocsp->destroy(ocsp);
+	free(critical_extension_oid.ptr);
 	return command_usage(error);
 }
 
@@ -623,16 +627,17 @@ static void __attribute__ ((constructor))reg()
 	command_register((command_t) {
 		issue, 'i', "issue",
 		"issue a certificate using a CA certificate and key",
-		{"[--in file] [--type pub|pkcs10|priv|rsa|ecdsa|ed25519|bliss] --cakey file|--cakeyid hex",
-		 " --cacert file [--dn subject-dn] [--san subjectAltName]+",
-		 "[--lifetime days] [--serial hex] [--ca] [--pathlen len]",
+		{"[--in file] [--type pub|pkcs10|priv|rsa|ecdsa|ed25519|ed448|bliss]",
+		 "--cakey file|--cakeyid hex --cacert file [--dn subject-dn]",
+		 "[--san subjectAltName]+ [--lifetime days] [--serial hex]",
+		 "[--ca] [--pathlen len]",
 		 "[--flag serverAuth|clientAuth|crlSign|ocspSigning|msSmartcardLogon]+",
 		 "[--crl uri [--crlissuer i]]+ [--ocsp uri]+ [--nc-permitted name]",
 		 "[--nc-excluded name] [--policy-mapping issuer-oid:subject-oid]",
 		 "[--policy-explicit len] [--policy-inhibit len] [--policy-any len]",
 		 "[--cert-policy oid [--cps-uri uri] [--user-notice text]]+",
 		 "[--digest md5|sha1|sha224|sha256|sha384|sha512|sha3_224|sha3_256|sha3_384|sha3_512]",
-		 "[--rsa-padding pkcs1|pss]",
+		 "[--rsa-padding pkcs1|pss] [--critical oid]",
 		 "[--outform der|pem]"},
 		{
 			{"help",			'h', 0, "show usage information"},
@@ -666,6 +671,7 @@ static void __attribute__ ((constructor))reg()
 			{"ocsp",			'o', 1, "OCSP AuthorityInfoAccess URI to include"},
 			{"digest",			'g', 1, "digest for signature creation, default: key-specific"},
 			{"rsa-padding",		'R', 1, "padding for RSA signatures, default: pkcs1"},
+			{"critical",		'X', 1, "critical extension OID to include"},
 			{"outform",			'f', 1, "encoding of generated cert, default: der"},
 		}
 	});

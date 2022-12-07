@@ -1,4 +1,4 @@
-moon::ipsec stop
-carol::ipsec stop
-carol::rm /etc/ipsec.d/certs/*
-carol::rm /etc/ipsec.d/private/*
+carol::systemctl stop strongswan
+moon::systemctl stop strongswan
+carol::rm /etc/swanctl/x509ocsp/*
+moon::rm /etc/swanctl/x509ocsp/*

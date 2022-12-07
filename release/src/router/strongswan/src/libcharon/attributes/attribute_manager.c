@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -233,7 +234,7 @@ typedef struct {
 	enumerator_t *inner;
 	/** IKE_SA to request attributes for */
 	ike_sa_t *ike_sa;
-	/** virtual IPs we are requesting along with attriubutes */
+	/** virtual IPs we are requesting along with attributes */
 	linked_list_t *vips;
 } initiator_enumerator_t;
 

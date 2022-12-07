@@ -1,0 +1,17 @@
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.0/16]::YES
+moon:: swanctl --list-sas --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.100/32]::YES
+moon:: iptables -A INPUT -i eth0 -s PH_IP_CAROL -j DROP::no output expected::NO
+carol::iptables -A INPUT -i eth0 -s PH_IP_MOON -j DROP::no output expected::NO
+carol::sleep 13::no output expected::NO
+carol::cat /var/log/daemon.log::sending DPD request::YES
+carol::cat /var/log/daemon.log::retransmit.*of request::YES
+carol::cat /var/log/daemon.log::giving up after.*retransmits::YES
+moon:: cat /var/log/daemon.log::retransmit.*of request::YES
+moon:: cat /var/log/daemon.log::giving up after.*retransmits::YES
+carol::iptables -D INPUT -i eth0 -s PH_IP_MOON -j DROP::no output expected::NO
+moon:: iptables -D INPUT -i eth0 -s PH_IP_CAROL -j DROP::no output expected::NO
+carol::ping -c 1 -W 1 PH_IP_ALICE::trigger route::NO
+carol::sleep 1::no output expected::NO
+carol::cat /var/log/daemon.log::creating acquire job for policy::YES
+carol::swanctl --list-sas --ike-id 2 --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.0/16]::YES
+moon:: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.100/32]::YES

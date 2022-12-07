@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -42,7 +43,7 @@ TNC_IMV_Evaluation_Result tncif_policy_update_evaluation(
 /**
  * Create an empty TNC Identity object
  *
- * @param rec			Existing recommendationto be updated
+ * @param rec			Existing recommendation to be updated
  * @param rec_add		Partial recommendation to be added
  * @return				Updated recommendation
  */

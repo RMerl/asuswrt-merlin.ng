@@ -1,7 +1,8 @@
 /*
+ * Copyright (C) 2011-2022 Andreas Steffen
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2011-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -57,7 +58,9 @@ bool imc_attestation_process(pa_tnc_attr_t *attr, imc_msg_t *msg,
 	chunk_t attr_info;
 	pts_t *pts;
 	pts_error_code_t pts_error;
+	tpm_tss_t *tpm;
 	pen_type_t attr_type;
+	char *hash_alg;
 	bool valid_path;
 
 	pts = attestation_state->get_pts(attestation_state);
@@ -85,8 +88,24 @@ bool imc_attestation_process(pa_tnc_attr_t *attr, imc_msg_t *msg,
 			tcg_pts_attr_meas_algo_t *attr_cast;
 			pts_meas_algorithms_t offered_algorithms, selected_algorithm;
 
+
 			attr_cast = (tcg_pts_attr_meas_algo_t*)attr;
 			offered_algorithms = attr_cast->get_algorithms(attr_cast);
+
+			/* If a TPM is present choose only algorithms with a PCR bank */
+			tpm = pts->get_tpm(pts);
+			if (tpm)
+			{
+				pts_meas_algo_with_pcr(tpm, &supported_algorithms);
+			}
+
+			/* The algorithms can be restricted by the Attestation IMC */
+			hash_alg = lib->settings->get_str(lib->settings,
+				"%s.plugins.imc-attestation.hash_algorithm", "sha384", lib->ns);
+			if (!pts_meas_algo_update(hash_alg, &supported_algorithms))
+			{
+				supported_algorithms = PTS_MEAS_ALGO_NONE;
+			}
 			selected_algorithm = pts_meas_algo_select(supported_algorithms,
 													  offered_algorithms);
 			if (selected_algorithm == PTS_MEAS_ALGO_NONE)
@@ -146,7 +165,8 @@ bool imc_attestation_process(pa_tnc_attr_t *attr, imc_msg_t *msg,
 
 			/* Send DH Nonce Parameters Response attribute */
 			attr = tcg_pts_attr_dh_nonce_params_resp_create(selected_dh_group,
-					 supported_algorithms, responder_nonce, responder_value);
+								pts->get_meas_algorithm(pts), responder_nonce,
+								responder_value);
 			msg->add_attribute(msg, attr);
 			break;
 		}
@@ -455,8 +475,8 @@ bool imc_attestation_process(pa_tnc_attr_t *attr, imc_msg_t *msg,
 			msg->add_attribute(msg, attr);
 			break;
 		}
-		case TCG_SEG_MAX_ATTR_SIZE_REQ:
-		case TCG_SEG_NEXT_SEG_REQ:
+		case TCG_SEG_CONTRACT_REQ:
+		case TCG_SEG_NEXT_SEGMENT:
 			break;
 
 		/* TODO: Not implemented yet */

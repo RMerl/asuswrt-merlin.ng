@@ -1,0 +1,9 @@
+- refactor out the Mnote Entries structs, they are all the same
+- perhaps even use the generic exifentry for mnoteentries, its the same except "byteorder"
+- use a generic exif entry renderer for the default: case in mnote entries
+
+- more fileformat readers
+
+- implement more Maker Note Types
+- implement more Maker Note Entries
+	(see exiftool or exiv2 for data)

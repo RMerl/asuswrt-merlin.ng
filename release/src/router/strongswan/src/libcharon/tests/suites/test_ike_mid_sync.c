@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,7 +22,7 @@
 #include <bio/bio_reader.h>
 #include <bio/bio_writer.h>
 
-/**
+/*
  * FIXME: Since we don't have the server side yet, this is kind of a hack!!!
  */
 
@@ -36,15 +37,18 @@ static bool add_notify(listener_t *listener, ike_sa_t *ike_sa,
 	{
 		message->add_notify(message, FALSE, IKEV2_MESSAGE_ID_SYNC_SUPPORTED,
 							chunk_empty);
+		free(listener);
 		return FALSE;
 	}
 	return TRUE;
 }
+
 #define add_notify_to_ike_auth() ({ \
-	listener_t _notify_listener = { \
+	listener_t *_notify_listener; \
+	INIT(_notify_listener, \
 		.message = add_notify, \
-	}; \
-	exchange_test_helper->add_listener(exchange_test_helper, &_notify_listener); \
+	); \
+	exchange_test_helper->add_listener(exchange_test_helper, _notify_listener); \
 })
 
 /**
@@ -493,7 +497,7 @@ START_TEST(test_active)
 	charon->bus->remove_listener(charon->bus, &mid.listener);
 
 	/* the active task was queued again */
-	call_ikesa(a, initiate, NULL, 0, NULL, NULL);
+	call_ikesa(a, initiate, NULL, NULL);
 	exchange_test_helper->process_message(exchange_test_helper, b, NULL);
 	exchange_test_helper->process_message(exchange_test_helper, a, NULL);
 	send_dpd(b, a);

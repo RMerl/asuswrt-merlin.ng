@@ -453,10 +453,9 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
                 true_peak = tmp;
         }
 
-        offset    = s->target_i - global;
-        offset_tp = true_peak + offset;
+        offset    = pow(10., (s->target_i - global) / 20.);
+        offset_tp = true_peak * offset;
         s->offset = offset_tp < s->target_tp ? offset : s->target_tp - true_peak;
-        s->offset = pow(10., s->offset / 20.);
         s->frame_type = LINEAR_MODE;
     }
 
@@ -715,10 +714,10 @@ static int query_formats(AVFilterContext *ctx)
         formats = ff_make_format_list(input_srate);
         if (!formats)
             return AVERROR(ENOMEM);
-        ret = ff_formats_ref(formats, &inlink->out_samplerates);
+        ret = ff_formats_ref(formats, &inlink->outcfg.samplerates);
         if (ret < 0)
             return ret;
-        ret = ff_formats_ref(formats, &outlink->in_samplerates);
+        ret = ff_formats_ref(formats, &outlink->incfg.samplerates);
         if (ret < 0)
             return ret;
     }

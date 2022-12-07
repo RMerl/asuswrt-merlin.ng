@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2014 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,7 +26,7 @@
 typedef enum tty_escape_t tty_escape_t;
 
 /**
- * Excape codes for tty colors
+ * Escape codes for tty colors
  */
 enum tty_escape_t {
 	/** text properties */

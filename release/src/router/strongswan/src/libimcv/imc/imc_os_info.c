@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,6 +23,7 @@
 
 #include <stdio.h>
 #include <stdarg.h>
+#include <ctype.h>
 
 #include <collections/linked_list.h>
 #include <utils/debug.h>
@@ -128,7 +130,7 @@ METHOD(imc_os_info_t, create_package_enumerator, enumerator_t*,
  * Determine Windows release
  */
 static bool extract_platform_info(os_type_t *type, chunk_t *name,
-								  chunk_t *version)
+								  chunk_t *version, bool test)
 {
 	OSVERSIONINFOEX osvie;
 	char buf[64];
@@ -363,14 +365,11 @@ METHOD(imc_os_info_t, create_package_enumerator, enumerator_t*,
 	return (enumerator_t*)enumerator;
 }
 
-#define RELEASE_LSB		0
-#define RELEASE_DEBIAN	1
-
 /**
  * Determine Linux distribution version and hardware platform
  */
 static bool extract_platform_info(os_type_t *type, chunk_t *name,
-								  chunk_t *version)
+								  chunk_t *version, bool test)
 {
 	FILE *file;
 	u_char buf[BUF_LEN], *pos = buf;
@@ -379,34 +378,16 @@ static bool extract_platform_info(os_type_t *type, chunk_t *name,
 	os_type_t os_type = OS_TYPE_UNKNOWN;
 	chunk_t os_name = chunk_empty;
 	chunk_t os_version = chunk_empty;
-	char *os_str;
+	char *arch;
 	struct utsname uninfo;
 	int i;
 
 	/* Linux/Unix distribution release info (from http://linuxmafia.com) */
 	const char* releases[] = {
-		"/etc/lsb-release",           "/etc/debian_version",
-		"/etc/SuSE-release",          "/etc/novell-release",
-		"/etc/sles-release",          "/etc/redhat-release",
-		"/etc/fedora-release",        "/etc/gentoo-release",
-		"/etc/slackware-version",     "/etc/annvix-release",
-		"/etc/arch-release",          "/etc/arklinux-release",
-		"/etc/aurox-release",         "/etc/blackcat-release",
-		"/etc/cobalt-release",        "/etc/conectiva-release",
-		"/etc/debian_release",        "/etc/immunix-release",
-		"/etc/lfs-release",           "/etc/linuxppc-release",
-		"/etc/mandrake-release",      "/etc/mandriva-release",
-		"/etc/mandrakelinux-release", "/etc/mklinux-release",
-		"/etc/pld-release",           "/etc/redhat_version",
-		"/etc/slackware-release",     "/etc/e-smith-release",
-		"/etc/release",               "/etc/sun-release",
-		"/etc/tinysofa-release",      "/etc/turbolinux-release",
-		"/etc/ultrapenguin-release",  "/etc/UnitedLinux-release",
-		"/etc/va-release",            "/etc/yellowdog-release"
+		"/etc/os-release",  "/usr/lib/os-release",
+		"/etc/lsb-release", "/etc/debian_version"
 	};
 
-	const char lsb_distrib_id[]      = "DISTRIB_ID=";
-	const char lsb_distrib_release[] = "DISTRIB_RELEASE=";
 
 	for (i = 0; i < countof(releases); i++)
 	{
@@ -437,11 +418,71 @@ static bool extract_platform_info(os_type_t *type, chunk_t *name,
 		fclose(file);
 
 		DBG1(DBG_IMC, "processing \"%s\" file", releases[i]);
+		os_name    = chunk_empty;
+		os_version = chunk_empty;
 
 		switch (i)
 		{
-			case RELEASE_LSB:
+			case 0:  /* os-release */
+			case 1:
 			{
+				const char os_id[]         = "ID=";
+				const char os_version_id[] = "VERSION_ID=";
+				bool match;
+
+				/* Determine OS ID */
+				pos = buf;
+				do
+				{
+					pos = strstr(pos, os_id);
+					if (!pos)
+					{
+						DBG1(DBG_IMC, "failed to find begin of ID field");
+						return FALSE;
+					}
+					match = (pos == buf || *(pos-1) == '\n');
+					pos += strlen(os_id);
+				} while (!match);
+
+				os_name.ptr = pos;
+
+				/* Convert first ID character to upper case */
+				*pos = toupper(*pos);
+
+				pos = strchr(pos, '\n');
+				if (!pos)
+				{
+					DBG1(DBG_IMC, "failed to find end of ID field");
+					return FALSE;
+				}
+				os_name.len = pos - os_name.ptr;
+
+				/* Determine Version ID */
+				pos = strstr(buf, os_version_id);
+				if (!pos)
+				{
+					DBG1(DBG_IMC, "failed to find begin of VERSION_ID field");
+					return FALSE;
+				}
+				pos += strlen(os_version_id) + 1;
+
+				os_version.ptr = pos;
+
+				pos = strchr(pos, '"');
+				if (!pos)
+				{
+					DBG1(DBG_IMC, "failed to find end of VERSION_ID field");
+					return FALSE;
+				}
+				os_version.len = pos - os_version.ptr;
+
+				break;
+			}
+			case 2:  /* lsb-release */
+			{
+				const char lsb_distrib_id[]      = "DISTRIB_ID=";
+				const char lsb_distrib_release[] = "DISTRIB_RELEASE=";
+
 				/* Determine Distribution ID */
 				pos = strstr(buf, lsb_distrib_id);
 				if (!pos)
@@ -482,64 +523,48 @@ static bool extract_platform_info(os_type_t *type, chunk_t *name,
 
 				break;
 			}
-			case RELEASE_DEBIAN:
+			case 3:  /* debian_version */
 			{
 				os_type = OS_TYPE_DEBIAN;
 
+				/* Use Debian OS type name */
+				os_name = chunk_from_str(enum_to_name(os_type_names, os_type));
+
+
+				/* Extract major release number only */
 				os_version.ptr = buf;
-				pos = strchr(buf, '\n');
+				pos = strchr(buf, '.');
+				if (!pos)
+				{
+					pos = strchr(buf, '\n');
+				}
 				if (!pos)
 				{
 					DBG1(DBG_PTS, "failed to find end of release string");
 					return FALSE;
 				}
-
 				os_version.len = pos - os_version.ptr;
 
 				break;
 			}
 			default:
-			{
-				const char str_release[] = " release ";
-
-				os_name.ptr = buf;
-
-				pos = strstr(buf, str_release);
-				if (!pos)
-				{
-					DBG1(DBG_IMC, "failed to find release keyword");
-					return FALSE;
-				}
-
-				os_name.len = pos - os_name.ptr;
-
-				pos += strlen(str_release);
-				os_version.ptr = pos;
-
-				pos = strchr(pos, '\n');
-				if (!pos)
-				{
-					DBG1(DBG_IMC, "failed to find end of release string");
-					return FALSE;
-			 	}
-
-				os_version.len = pos - os_version.ptr;
-
 				break;
-			}
 		}
-		break;
+
+		/* Successfully extracted the OS info - exit unless in test mode */
+		if (!test)
+		{
+			break;
+		}
+		DBG1(DBG_IMC, "  operating system name is '%.*s'",
+						 os_name.len, os_name.ptr);
+		DBG1(DBG_IMC, "  operating system version is '%.*s'",
+						 os_version.len, os_version.ptr);
 	}
 
 	if (!os_version.ptr)
 	{
 		DBG1(DBG_IMC, "no distribution release file found");
-		return FALSE;
-	}
-
-	if (uname(&uninfo) < 0)
-	{
-		DBG1(DBG_IMC, "could not retrieve machine architecture");
 		return FALSE;
 	}
 
@@ -549,26 +574,31 @@ static bool extract_platform_info(os_type_t *type, chunk_t *name,
 		os_type = os_type_from_name(os_name);
 	}
 
-	/* If known use the official OS name */
-	if (os_type != OS_TYPE_UNKNOWN)
+	if (uname(&uninfo) < 0)
 	{
-		os_str = enum_to_name(os_type_names, os_type);
-		os_name = chunk_create(os_str, strlen(os_str));
+		DBG1(DBG_IMC, "could not retrieve machine architecture");
+		return FALSE;
+	}
+	arch = uninfo.machine;
+
+	if (os_type == OS_TYPE_RASPBIAN && streq(arch, "armv7l"))
+	{
+		arch = "armhf";
 	}
 
-	/* copy OS type */
+	/* Copy OS type */
 	*type = os_type;
 
-	/* copy OS name */
+	/* Copy OS name */
 	*name = chunk_clone(os_name);
 
-	/* copy OS version and machine architecture */
-	*version = chunk_alloc(os_version.len + 1 + strlen(uninfo.machine));
+	/* Copy OS version and machine architecture */
+	*version = chunk_alloc(os_version.len + 1 + strlen(arch));
 	pos = version->ptr;
 	memcpy(pos, os_version.ptr, os_version.len);
 	pos += os_version.len;
 	*pos++ = ' ';
-	memcpy(pos, uninfo.machine, strlen(uninfo.machine));
+	memcpy(pos, arch, strlen(arch));
 
 	return TRUE;
 }
@@ -586,7 +616,7 @@ METHOD(imc_os_info_t, destroy, void,
 /**
  * See header
  */
-imc_os_info_t *imc_os_info_create(void)
+imc_os_info_t *imc_os_info_create(bool test)
 {
 	private_imc_os_info_t *this;
 	chunk_t name, version;
@@ -609,11 +639,13 @@ imc_os_info_t *imc_os_info_create(void)
 	}
 	else
 	{
-		if (!extract_platform_info(&type, &name, &version))
+		if (!extract_platform_info(&type, &name, &version, test))
 		{
 			return NULL;
 		}
 	}
+	DBG1(DBG_IMC, "operating system type is '%N'",
+				   os_type_names, type);
 	DBG1(DBG_IMC, "operating system name is '%.*s'",
 				   name.len, name.ptr);
 	DBG1(DBG_IMC, "operating system version is '%.*s'",

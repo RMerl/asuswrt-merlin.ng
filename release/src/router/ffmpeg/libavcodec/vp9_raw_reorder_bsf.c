@@ -20,9 +20,9 @@
 #include "libavutil/intmath.h"
 #include "libavutil/log.h"
 #include "libavutil/mem.h"
-#include "libavutil/opt.h"
 
 #include "bsf.h"
+#include "bsf_internal.h"
 #include "get_bits.h"
 #include "put_bits.h"
 
@@ -292,7 +292,7 @@ static int vp9_raw_reorder_filter(AVBSFContext *bsf, AVPacket *out)
             return err;
         }
 
-        if (in->data[in->size - 1] & 0xe0 == 0xc0) {
+        if ((in->data[in->size - 1] & 0xe0) == 0xc0) {
             av_log(bsf, AV_LOG_ERROR, "Input in superframes is not "
                    "supported.\n");
             av_packet_free(&in);
@@ -385,6 +385,16 @@ fail:
     return err;
 }
 
+static void vp9_raw_reorder_flush(AVBSFContext *bsf)
+{
+    VP9RawReorderContext *ctx = bsf->priv_data;
+
+    for (int s = 0; s < FRAME_SLOTS; s++)
+        vp9_raw_reorder_clear_slot(ctx, s);
+    ctx->next_frame = NULL;
+    ctx->sequence = 0;
+}
+
 static void vp9_raw_reorder_close(AVBSFContext *bsf)
 {
     VP9RawReorderContext *ctx = bsf->priv_data;
@@ -402,6 +412,7 @@ const AVBitStreamFilter ff_vp9_raw_reorder_bsf = {
     .name           = "vp9_raw_reorder",
     .priv_data_size = sizeof(VP9RawReorderContext),
     .close          = &vp9_raw_reorder_close,
+    .flush          = &vp9_raw_reorder_flush,
     .filter         = &vp9_raw_reorder_filter,
     .codec_ids      = vp9_raw_reorder_codec_ids,
 };

@@ -144,6 +144,9 @@ function genElement(){
 		if(system.modelName === 'GT-AXE16000'){
 			code += '<div class="info-block"><div class="info-title">2.4 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl3_hwaddr +'</div></div>';
 		}
+		else if(odmpid === 'GT6'){
+			code += '<div class="info-block"><div class="info-title">2.4 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
+		}
 		else{
 			code += '<div class="info-block"><div class="info-title">2.4 GHz <#MAC_Address#></div><div class="info-content">'+ variable.wl0_hwaddr +'</div></div>';
 		}		
@@ -158,6 +161,10 @@ function genElement(){
 			if(model == 'MAP-AC2200')
 			{
 				code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl2_hwaddr +'</div></div>';
+				code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
+			}
+			else if(odmpid === 'GT6'){
+				code += '<div class="info-block"><div class="info-title">5 GHz-1 <#MAC_Address#></div><div class="info-content">'+ variable.wl0_hwaddr +'</div></div>';
 				code += '<div class="info-block"><div class="info-title">5 GHz-2 <#MAC_Address#></div><div class="info-content">'+ variable.wl1_hwaddr +'</div></div>';
 			}
 			else

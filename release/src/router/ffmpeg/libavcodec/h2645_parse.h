@@ -23,6 +23,7 @@
 
 #include <stdint.h>
 
+#include "libavutil/buffer.h"
 #include "avcodec.h"
 #include "get_bits.h"
 
@@ -55,6 +56,11 @@ typedef struct H2645NAL {
      */
     int temporal_id;
 
+    /*
+     * HEVC only, identifier of layer to which nal unit belongs
+     */
+    int nuh_layer_id;
+
     int skipped_bytes;
     int skipped_bytes_pos_size;
     int *skipped_bytes_pos;
@@ -66,6 +72,7 @@ typedef struct H2645NAL {
 
 typedef struct H2645RBSP {
     uint8_t *rbsp_buffer;
+    AVBufferRef *rbsp_buffer_ref;
     int rbsp_buffer_alloc_size;
     int rbsp_buffer_size;
 } H2645RBSP;
@@ -76,6 +83,7 @@ typedef struct H2645Packet {
     H2645RBSP rbsp;
     int nb_nals;
     int nals_allocated;
+    unsigned nal_buffer_size;
 } H2645Packet;
 
 /**
@@ -86,10 +94,21 @@ int ff_h2645_extract_rbsp(const uint8_t *src, int length, H2645RBSP *rbsp,
 
 /**
  * Split an input packet into NAL units.
+ *
+ * If data == raw_data holds true for a NAL unit of the returned pkt, then
+ * said NAL unit does not contain any emulation_prevention_three_byte and
+ * the data is contained in the input buffer pointed to by buf.
+ * Otherwise, the unescaped data is part of the rbsp_buffer described by the
+ * packet's H2645RBSP.
+ *
+ * If the packet's rbsp_buffer_ref is not NULL, the underlying AVBuffer must
+ * own rbsp_buffer. If not and rbsp_buffer is not NULL, use_ref must be 0.
+ * If use_ref is set, rbsp_buffer will be reference-counted and owned by
+ * the underlying AVBuffer of rbsp_buffer_ref.
  */
 int ff_h2645_packet_split(H2645Packet *pkt, const uint8_t *buf, int length,
                           void *logctx, int is_nalff, int nal_length_size,
-                          enum AVCodecID codec_id, int small_padding);
+                          enum AVCodecID codec_id, int small_padding, int use_ref);
 
 /**
  * Free all the allocated memory in the packet.

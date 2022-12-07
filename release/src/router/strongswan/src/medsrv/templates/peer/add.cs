@@ -15,7 +15,7 @@
     <tr>
       <td></td>
       <td class="right">
-        <input type="submit" value="Back" name="back"/> 
+        <input type="submit" value="Back" name="back"/>
         <input type="submit" value="Add" name="add"/>
       </td>
     </tr>

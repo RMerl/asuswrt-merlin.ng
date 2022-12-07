@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +18,7 @@
 #include "tnc_ifmap_listener.h"
 
 #include <daemon.h>
- 
+
 typedef struct private_tnc_ifmap_plugin_t private_tnc_ifmap_plugin_t;
 
 /**

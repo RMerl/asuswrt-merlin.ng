@@ -158,7 +158,7 @@ AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int ca
 #else	// USE_GET_TLV_SUPPORT_MAC
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int capability5g, int *cost);
 #endif	// USE_GET_TLV_SUPPORT_MAC
-AMAS_FUNC AMAS_RESULT	AMAS_API amas_is_plc_head(char *ifname, int *is_plc_head);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_is_plc_head(char *ifname, int *is_plc_head, int *plc_amas_client);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_find_mac_role(char *ifname, char *mac, int *role);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_find_role_lan(char *ifname, char *mac);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_set_cost(int cost);

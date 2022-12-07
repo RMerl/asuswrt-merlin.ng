@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,19 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
-.TH curl_escape 3 "November 04, 2020" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_escape 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
 curl_escape - URL encodes the given string
 .SH SYNOPSIS
-.B #include <curl/curl.h>
-.sp
-.BI "char *curl_escape( const char *" url ", int "length " );"
-.ad
+.nf
+#include <curl/curl.h>
+
+char *curl_escape(const char *url, int length);
+.fi
 .SH DESCRIPTION
 Obsolete function. Use \fIcurl_easy_escape(3)\fP instead!
 
@@ -36,10 +39,18 @@ return that as a new allocated string. All input characters that are not a-z,
 A-Z or 0-9 will be converted to their "URL escaped" version (%NN where NN is a
 two-digit hexadecimal number).
 
-If the 'length' argument is set to 0, curl_escape() will use strlen() on the
-input 'url' string to find out the size.
+If the \fBlengthf\fP argument is set to 0, curl_escape() will use strlen() on
+the input \fBurl\fP string to find out the size.
 
-You must \fIcurl_free(3)\fP the returned string when you're done with it.
+You must \fIcurl_free(3)\fP the returned string when you are done with it.
+.SH EXAMPLE
+.nf
+char *output = curl_escape("data to convert", 15);
+if(output) {
+  printf("Encoded: %s\\n", output);
+  curl_free(output);
+}
+.fi
 .SH AVAILABILITY
 Since 7.15.4, \fIcurl_easy_escape(3)\fP should be used. This function will
 be removed in a future release.

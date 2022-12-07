@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -63,8 +64,8 @@ typedef struct eap_aka_3gpp_plugin_t eap_aka_3gpp_plugin_t;
  * SQN with its own locally stored value. This potentially allows an attacker
  * to do replay attacks. But since the server has proven his identity via IKE,
  * such an attack is only possible between server and AAA (if any).
- * Note that SEQ_CHECK only controls the compile-time default behaviour,
- * but the run-time behaviour can always be controlled by setting the
+ * Note that SEQ_CHECK only controls the compile-time default behavior,
+ * but the run-time behavior can always be controlled by setting the
  * charon.plugins.eap-aka-3gpp.seq_check config variable.
  */
 struct eap_aka_3gpp_plugin_t {

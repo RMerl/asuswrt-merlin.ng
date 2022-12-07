@@ -102,12 +102,12 @@ static int query_formats(AVFilterContext *ctx)
         !(out_layouts     = ff_all_channel_layouts (                  )))
         return AVERROR(ENOMEM);
 
-    if ((ret = ff_formats_ref         (in_formats,      &inlink->out_formats        )) < 0 ||
-        (ret = ff_formats_ref         (out_formats,     &outlink->in_formats        )) < 0 ||
-        (ret = ff_formats_ref         (in_samplerates,  &inlink->out_samplerates    )) < 0 ||
-        (ret = ff_formats_ref         (out_samplerates, &outlink->in_samplerates    )) < 0 ||
-        (ret = ff_channel_layouts_ref (in_layouts,      &inlink->out_channel_layouts)) < 0 ||
-        (ret = ff_channel_layouts_ref (out_layouts,     &outlink->in_channel_layouts)) < 0)
+    if ((ret = ff_formats_ref         (in_formats,      &inlink->outcfg.formats        )) < 0 ||
+        (ret = ff_formats_ref         (out_formats,     &outlink->incfg.formats        )) < 0 ||
+        (ret = ff_formats_ref         (in_samplerates,  &inlink->outcfg.samplerates    )) < 0 ||
+        (ret = ff_formats_ref         (out_samplerates, &outlink->incfg.samplerates    )) < 0 ||
+        (ret = ff_channel_layouts_ref (in_layouts,      &inlink->outcfg.channel_layouts)) < 0 ||
+        (ret = ff_channel_layouts_ref (out_layouts,     &outlink->incfg.channel_layouts)) < 0)
         return ret;
 
     return 0;
@@ -306,9 +306,18 @@ fail:
     return ret;
 }
 
+#if FF_API_CHILD_CLASS_NEXT
 static const AVClass *resample_child_class_next(const AVClass *prev)
 {
     return prev ? NULL : avresample_get_class();
+}
+#endif
+
+static const AVClass *resample_child_class_iterate(void **iter)
+{
+    const AVClass *c = *iter ? NULL : avresample_get_class();
+    *iter = (void*)(uintptr_t)c;
+    return c;
 }
 
 static void *resample_child_next(void *obj, void *prev)
@@ -321,7 +330,10 @@ static const AVClass resample_class = {
     .class_name       = "resample",
     .item_name        = av_default_item_name,
     .version          = LIBAVUTIL_VERSION_INT,
+#if FF_API_CHILD_CLASS_NEXT
     .child_class_next = resample_child_class_next,
+#endif
+    .child_class_iterate = resample_child_class_iterate,
     .child_next       = resample_child_next,
 };
 

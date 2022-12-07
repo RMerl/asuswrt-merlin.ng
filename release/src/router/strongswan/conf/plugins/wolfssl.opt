@@ -1,0 +1,2 @@
+charon.plugins.wolfssl.fips_mode = no
+	Enable to prevent loading the plugin if wolfSSL is not in FIPS mode.

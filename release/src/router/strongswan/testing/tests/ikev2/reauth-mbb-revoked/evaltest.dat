@@ -1,10 +1,10 @@
 winnetou::cp /var/www/strongswan.crl /var/www/strongswan.crl.bak
 winnetou::cp /var/www/strongswan_moon_revoked.crl /var/www/strongswan.crl
-carol::ipsec purgecrls
-moon:: ipsec status 2> /dev/null::rw\[1]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
-carol::ipsec status 2> /dev/null::home\[1]: ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
+carol::swanctl --flush-certs --type x509_crl
+moon:: swanctl --list-sas --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=PH_IP_MOON local-port=4500 local-id=moon.strongswan.org remote-host=PH_IP_CAROL remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.100/32]::YES
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=PH_IP_CAROL local-port=4500 local-id=carol@strongswan.org remote-host=PH_IP_MOON remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.0/16]::YES
 carol::sleep 6
 carol::cat /var/log/daemon.log::certificate was revoked.*key compromise::YES
 carol::cat /var/log/daemon.log::peer certificate verification failed, deleting SA::YES
-moon:: ipsec status 2> /dev/null::rw\[2]: ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::NO
-carol::ipsec status 2> /dev/null::home\[2]: ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::NO
+moon:: swanctl --list-sas --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=PH_IP_MOON local-port=4500 local-id=moon.strongswan.org remote-host=PH_IP_CAROL remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16] remote-ts=\[192.168.0.100/32]::NO
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=PH_IP_CAROL local-port=4500 local-id=carol@strongswan.org remote-host=PH_IP_MOON remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.0/16]::NO

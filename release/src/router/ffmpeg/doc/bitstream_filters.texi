@@ -37,6 +37,61 @@ raw ADTS AAC or an MPEG-TS container to MP4A-LATM, to an FLV file, or
 to MOV/MP4 files and related formats such as 3GP or M4A. Please note
 that it is auto-inserted for MP4A-LATM and MOV/MP4 and related formats.
 
+@section av1_metadata
+
+Modify metadata embedded in an AV1 stream.
+
+@table @option
+@item td
+Insert or remove temporal delimiter OBUs in all temporal units of the
+stream.
+
+@table @samp
+@item insert
+Insert a TD at the beginning of every TU which does not already have one.
+@item remove
+Remove the TD from the beginning of every TU which has one.
+@end table
+
+@item color_primaries
+@item transfer_characteristics
+@item matrix_coefficients
+Set the color description fields in the stream (see AV1 section 6.4.2).
+
+@item color_range
+Set the color range in the stream (see AV1 section 6.4.2; note that
+this cannot be set for streams using BT.709 primaries, sRGB transfer
+characteristic and identity (RGB) matrix coefficients).
+@table @samp
+@item tv
+Limited range.
+@item pc
+Full range.
+@end table
+
+@item chroma_sample_position
+Set the chroma sample location in the stream (see AV1 section 6.4.2).
+This can only be set for 4:2:0 streams.
+
+@table @samp
+@item vertical
+Left position (matching the default in MPEG-2 and H.264).
+@item colocated
+Top-left position.
+@end table
+
+@item tick_rate
+Set the tick rate (@emph{num_units_in_display_tick / time_scale}) in
+the timing info in the sequence header.
+@item num_ticks_per_picture
+Set the number of ticks in each picture, to indicate that the stream
+has a fixed framerate.  Ignored if @option{tick_rate} is not also set.
+
+@item delete_padding
+Deletes Padding OBUs.
+
+@end table
+
 @section chomp
 
 Remove zero padding at the end of a packet.
@@ -48,7 +103,9 @@ DTS-HD.
 
 @section dump_extra
 
-Add extradata to the beginning of the filtered packets.
+Add extradata to the beginning of the filtered packets except when
+said packets already exactly begin with the extradata that is intended
+to be added.
 
 @table @option
 @item freq
@@ -65,7 +122,7 @@ add extradata to all packets
 @end table
 @end table
 
-If not specified it is assumed @samp{e}.
+If not specified it is assumed @samp{k}.
 
 For example the following @command{ffmpeg} command forces a global
 header (thus disabling individual packet headers) in the H.264 packets
@@ -167,6 +224,10 @@ Insert or remove AUD NAL units in all access units of the stream.
 @item sample_aspect_ratio
 Set the sample aspect ratio of the stream in the VUI parameters.
 
+@item overscan_appropriate_flag
+Set whether the stream is suitable for display using overscan
+or not (see H.264 section E.2.1).
+
 @item video_format
 @item video_full_range_flag
 Set the video format in the stream (see H.264 section E.2.1 and
@@ -214,6 +275,15 @@ insert the string ``hello'' associated with the given UUID.
 
 @item delete_filler
 Deletes both filler NAL units and filler SEI messages.
+
+@item level
+Set the level in the SPS.  Refer to H.264 section A.3 and tables A-1
+to A-5.
+
+The argument must be the name of a level (for example, @samp{4.2}), a
+level_idc value (for example, @samp{42}), or the special name @samp{auto}
+indicating that the filter should attempt to guess the level from the
+input stream properties.
 
 @end table
 
@@ -296,6 +366,15 @@ will replace the current ones if the stream is already cropped.
 
 These fields are set in pixels.  Note that some sizes may not be
 representable if the chroma is subsampled (H.265 section 7.4.3.2.1).
+
+@item level
+Set the level in the VPS and SPS.  See H.265 section A.4 and tables
+A.6 and A.7.
+
+The argument must be the name of a level (for example, @samp{5.1}), a
+@emph{general_level_idc} value (for example, @samp{153} for level 5.1),
+or the special name @samp{auto} indicating that the filter should
+attempt to guess the level from the input stream properties.
 
 @end table
 
@@ -469,6 +548,111 @@ ffmpeg -i INPUT -c copy -bsf noise[=1] output.mkv
 @section null
 This bitstream filter passes the packets through unchanged.
 
+@section pcm_rechunk
+
+Repacketize PCM audio to a fixed number of samples per packet or a fixed packet
+rate per second. This is similar to the @ref{asetnsamples,,asetnsamples audio
+filter,ffmpeg-filters} but works on audio packets instead of audio frames.
+
+@table @option
+@item nb_out_samples, n
+Set the number of samples per each output audio packet. The number is intended
+as the number of samples @emph{per each channel}. Default value is 1024.
+
+@item pad, p
+If set to 1, the filter will pad the last audio packet with silence, so that it
+will contain the same number of samples (or roughly the same number of samples,
+see @option{frame_rate}) as the previous ones. Default value is 1.
+
+@item frame_rate, r
+This option makes the filter output a fixed number of packets per second instead
+of a fixed number of samples per packet. If the audio sample rate is not
+divisible by the frame rate then the number of samples will not be constant but
+will vary slightly so that each packet will start as close to the frame
+boundary as possible. Using this option has precedence over @option{nb_out_samples}.
+@end table
+
+You can generate the well known 1602-1601-1602-1601-1602 pattern of 48kHz audio
+for NTSC frame rate using the @option{frame_rate} option.
+@example
+ffmpeg -f lavfi -i sine=r=48000:d=1 -c pcm_s16le -bsf pcm_rechunk=r=30000/1001 -f framecrc -
+@end example
+
+@section prores_metadata
+
+Modify color property metadata embedded in prores stream.
+
+@table @option
+@item color_primaries
+Set the color primaries.
+Available values are:
+
+@table @samp
+@item auto
+Keep the same color primaries property (default).
+
+@item unknown
+@item bt709
+@item bt470bg
+BT601 625
+
+@item smpte170m
+BT601 525
+
+@item bt2020
+@item smpte431
+DCI P3
+
+@item smpte432
+P3 D65
+
+@end table
+
+@item transfer_characteristics
+Set the color transfer.
+Available values are:
+
+@table @samp
+@item auto
+Keep the same transfer characteristics property (default).
+
+@item unknown
+@item bt709
+BT 601, BT 709, BT 2020
+@item smpte2084
+SMPTE ST 2084
+@item arib-std-b67
+ARIB STD-B67
+@end table
+
+
+@item matrix_coefficients
+Set the matrix coefficient.
+Available values are:
+
+@table @samp
+@item auto
+Keep the same colorspace property (default).
+
+@item unknown
+@item bt709
+@item smpte170m
+BT 601
+
+@item bt2020nc
+@end table
+@end table
+
+Set Rec709 colorspace for each frame of the file
+@example
+ffmpeg -i INPUT -c copy -bsf:v prores_metadata=color_primaries=bt709:color_trc=bt709:colorspace=bt709 output.mov
+@end example
+
+Set Hybrid Log-Gamma parameters for each frame of the file
+@example
+ffmpeg -i INPUT -c copy -bsf:v prores_metadata=color_primaries=bt2020:color_trc=arib-std-b67:colorspace=bt2020nc output.mov
+@end example
+
 @section remove_extra
 
 Remove extradata from packets.
@@ -491,6 +675,63 @@ Remove extradata from all frames.
 @end table
 @end table
 
+@section setts
+Set PTS and DTS in packets.
+
+It accepts the following parameters:
+@table @option
+@item ts
+@item pts
+@item dts
+Set expressions for PTS, DTS or both.
+@end table
+
+The expressions are evaluated through the eval API and can contain the following
+constants:
+
+@table @option
+@item N
+The count of the input packet. Starting from 0.
+
+@item TS
+The demux timestamp in input in case of @code{ts} or @code{dts} option or presentation
+timestamp in case of @code{pts} option.
+
+@item POS
+The original position in the file of the packet, or undefined if undefined
+for the current packet
+
+@item DTS
+The demux timestamp in input.
+
+@item PTS
+The presentation timestamp in input.
+
+@item STARTDTS
+The DTS of the first packet.
+
+@item STARTPTS
+The PTS of the first packet.
+
+@item PREV_INDTS
+The previous input DTS.
+
+@item PREV_INPTS
+The previous input PTS.
+
+@item PREV_OUTDTS
+The previous output DTS.
+
+@item PREV_OUTPTS
+The previous output PTS.
+
+@item TB
+The timebase of stream packet belongs.
+
+@item SR
+The sample rate of stream packet belongs.
+@end table
+
 @anchor{text2movsub}
 @section text2movsub
 
@@ -505,7 +746,40 @@ Log trace output containing all syntax elements in the coded stream
 headers (everything above the level of individual coded blocks).
 This can be useful for debugging low-level stream issues.
 
-Supports H.264, H.265 and MPEG-2.
+Supports AV1, H.264, H.265, (M)JPEG, MPEG-2 and VP9, but depending
+on the build only a subset of these may be available.
+
+@section truehd_core
+
+Extract the core from a TrueHD stream, dropping ATMOS data.
+
+@section vp9_metadata
+
+Modify metadata embedded in a VP9 stream.
+
+@table @option
+@item color_space
+Set the color space value in the frame header.  Note that any frame
+set to RGB will be implicitly set to PC range and that RGB is
+incompatible with profiles 0 and 2.
+@table @samp
+@item unknown
+@item bt601
+@item bt709
+@item smpte170
+@item smpte240
+@item bt2020
+@item rgb
+@end table
+
+@item color_range
+Set the color range value in the frame header.  Note that any value
+imposed by the color space will take precedence over this value.
+@table @samp
+@item tv
+@item pc
+@end table
+@end table
 
 @section vp9_superframe
 

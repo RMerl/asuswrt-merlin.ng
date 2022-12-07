@@ -41,7 +41,7 @@ static void pgm_save(unsigned char *buf, int wrap, int xsize, int ysize,
     FILE *f;
     int i;
 
-    f = fopen(filename,"w");
+    f = fopen(filename,"wb");
     fprintf(f, "P5\n%d %d\n%d\n", xsize, ysize, 255);
     for (i = 0; i < ysize; i++)
         fwrite(buf + i * wrap, 1, xsize, f);
@@ -95,7 +95,8 @@ int main(int argc, char **argv)
     AVPacket *pkt;
 
     if (argc <= 2) {
-        fprintf(stderr, "Usage: %s <input file> <output file>\n", argv[0]);
+        fprintf(stderr, "Usage: %s <input file> <output file>\n"
+                "And check your input file is encoded by mpeg1video please.\n", argv[0]);
         exit(0);
     }
     filename    = argv[1];

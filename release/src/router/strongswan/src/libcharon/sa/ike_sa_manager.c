@@ -1,10 +1,9 @@
 /*
+ * Copyright (C) 2008-2022 Tobias Brunner
  * Copyright (C) 2005-2011 Martin Willi
- * Copyright (C) 2011 revosec AG
- *
- * Copyright (C) 2008-2018 Tobias Brunner
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,6 +28,7 @@
 #include <threading/condvar.h>
 #include <threading/mutex.h>
 #include <threading/rwlock.h>
+#include <collections/array.h>
 #include <collections/linked_list.h>
 #include <crypto/hashers/hasher.h>
 #include <processing/jobs/delete_ike_sa_job.h>
@@ -65,14 +65,9 @@ struct entry_t {
 	thread_t *checked_out;
 
 	/**
-	 * Does this SA drives out new threads?
+	 * Whether threads are prevented from getting this IKE_SA.
 	 */
-	bool driveout_new_threads;
-
-	/**
-	 * Does this SA drives out waiting threads?
-	 */
-	bool driveout_waiting_threads;
+	bool driveout_threads;
 
 	/**
 	 * Identification of an IKE_SA (SPIs).
@@ -351,6 +346,12 @@ struct private_ike_sa_manager_t {
 	u_int segment_mask;
 
 	/**
+	 * Enabled while shutting down to mark all new entries so no threads
+	 * will check them out.
+	 */
+	bool new_entries_driveout_threads;
+
+	/**
 	 * Hash table with half_open_t objects.
 	 */
 	table_item_t **half_open_table;
@@ -391,9 +392,24 @@ struct private_ike_sa_manager_t {
 	table_item_t **init_hashes_table;
 
 	/**
-	  * Segments of the "hashes" hash table.
+	 * Segments of the "hashes" hash table.
 	 */
 	segment_t *init_hashes_segments;
+
+	/**
+	 * Configs for which an SA is currently being checked out.
+	 */
+	array_t *config_checkouts;
+
+	/**
+	 * Mutex to protect access to configs.
+	 */
+	mutex_t *config_mutex;
+
+	/**
+	 * Condvar to indicate changes in checkout configs.
+	 */
+	condvar_t *config_condvar;
 
 	/**
 	 * RNG to get random SPIs for our side
@@ -412,6 +428,16 @@ struct private_ike_sa_manager_t {
 	 * Lock to access the RNG instance and the callback
 	 */
 	rwlock_t *spi_lock;
+
+	/**
+	 * Mask applied to local SPIs before mixing in the label
+	 */
+	uint64_t spi_mask;
+
+	/**
+	 * Label applied to local SPIs
+	 */
+	uint64_t spi_label;
 
 	/**
 	 * reuse existing IKE_SAs in checkout_by_config
@@ -606,6 +632,8 @@ static u_int put_entry(private_ike_sa_manager_t *this, entry_t *entry)
 	segment = row & this->segment_mask;
 
 	lock_single_segment(this, segment);
+	/* mark entry during shutdown */
+	entry->driveout_threads = this->new_entries_driveout_threads;
 	current = this->ike_sa_table[row];
 	if (current)
 	{	/* insert at the front of current bucket */
@@ -734,12 +762,12 @@ static status_t get_entry_by_sa(private_ike_sa_manager_t *this,
 static bool wait_for_entry(private_ike_sa_manager_t *this, entry_t *entry,
 						   u_int segment)
 {
-	if (entry->driveout_new_threads)
+	if (entry->driveout_threads)
 	{
 		/* we are not allowed to get this */
 		return FALSE;
 	}
-	while (entry->checked_out && !entry->driveout_waiting_threads)
+	while (entry->checked_out && !entry->driveout_threads)
 	{
 		/* so wait until we can get it for us.
 		 * we register us as waiting. */
@@ -748,7 +776,7 @@ static bool wait_for_entry(private_ike_sa_manager_t *this, entry_t *entry,
 		entry->waiting_threads--;
 	}
 	/* hm, a deletion request forbids us to get this SA, get next one */
-	if (entry->driveout_waiting_threads)
+	if (entry->driveout_threads)
 	{
 		/* we must signal here, others may be waiting on it, too */
 		entry->condvar->signal(entry->condvar);
@@ -760,17 +788,16 @@ static bool wait_for_entry(private_ike_sa_manager_t *this, entry_t *entry,
 /**
  * Put a half-open SA into the hash table.
  */
-static void put_half_open(private_ike_sa_manager_t *this, entry_t *entry)
+static void put_half_open(private_ike_sa_manager_t *this, host_t *ip,
+						  bool initiator)
 {
 	table_item_t *item;
 	u_int row, segment;
 	rwlock_t *lock;
-	ike_sa_id_t *ike_id;
 	half_open_t *half_open;
 	chunk_t addr;
 
-	ike_id = entry->ike_sa_id;
-	addr = entry->other->get_address(entry->other);
+	addr = ip->get_address(ip);
 	row = chunk_hash(addr) & this->table_mask;
 	segment = row & this->segment_mask;
 	lock = this->half_open_segments[segment].lock;
@@ -800,7 +827,7 @@ static void put_half_open(private_ike_sa_manager_t *this, entry_t *entry)
 	}
 	half_open->count++;
 	ref_get(&this->half_open_count);
-	if (!ike_id->is_initiator(ike_id))
+	if (!initiator)
 	{
 		half_open->count_responder++;
 		ref_get(&this->half_open_count_responder);
@@ -812,16 +839,15 @@ static void put_half_open(private_ike_sa_manager_t *this, entry_t *entry)
 /**
  * Remove a half-open SA from the hash table.
  */
-static void remove_half_open(private_ike_sa_manager_t *this, entry_t *entry)
+static void remove_half_open(private_ike_sa_manager_t *this, host_t *ip,
+							 bool initiator)
 {
 	table_item_t *item, *prev = NULL;
 	u_int row, segment;
 	rwlock_t *lock;
-	ike_sa_id_t *ike_id;
 	chunk_t addr;
 
-	ike_id = entry->ike_sa_id;
-	addr = entry->other->get_address(entry->other);
+	addr = ip->get_address(ip);
 	row = chunk_hash(addr) & this->table_mask;
 	segment = row & this->segment_mask;
 	lock = this->half_open_segments[segment].lock;
@@ -833,7 +859,7 @@ static void remove_half_open(private_ike_sa_manager_t *this, entry_t *entry)
 
 		if (chunk_equals(addr, half_open->other))
 		{
-			if (!ike_id->is_initiator(ike_id))
+			if (!initiator)
 			{
 				half_open->count_responder--;
 				ignore_result(ref_put(&this->half_open_count_responder));
@@ -859,6 +885,29 @@ static void remove_half_open(private_ike_sa_manager_t *this, entry_t *entry)
 		item = item->next;
 	}
 	lock->unlock(lock);
+}
+
+/**
+ * Create an entry and put it into the hash table.
+ * Note: The caller has to unlock the segment.
+ */
+static u_int create_and_put_entry(private_ike_sa_manager_t *this,
+								  ike_sa_t *ike_sa, entry_t **entry)
+{
+	ike_sa_id_t *ike_sa_id = ike_sa->get_id(ike_sa);
+	host_t *other = ike_sa->get_other_host(ike_sa);
+
+	*entry = entry_create();
+	(*entry)->ike_sa_id = ike_sa_id->clone(ike_sa_id);
+	(*entry)->ike_sa = ike_sa;
+
+	if (ike_sa->get_state(ike_sa) == IKE_CONNECTING)
+	{
+		(*entry)->half_open = TRUE;
+		(*entry)->other = other->clone(other);
+		put_half_open(this, (*entry)->other, ike_sa_id->is_initiator(ike_sa_id));
+	}
+	return put_entry(this, *entry);
 }
 
 CALLBACK(id_matches, bool,
@@ -1010,6 +1059,11 @@ static uint64_t get_spi(private_ike_sa_manager_t *this)
 		spi = 0;
 	}
 	this->spi_lock->unlock(this->spi_lock);
+
+	if (spi)
+	{
+		spi = (spi & ~this->spi_mask) | this->spi_label;
+	}
 	return spi;
 }
 
@@ -1187,7 +1241,7 @@ METHOD(ike_sa_manager_t, checkout, ike_sa_t*,
 	return ike_sa;
 }
 
-METHOD(ike_sa_manager_t, checkout_new, ike_sa_t*,
+METHOD(ike_sa_manager_t, create_new, ike_sa_t*,
 	private_ike_sa_manager_t* this, ike_version_t version, bool initiator)
 {
 	ike_sa_id_t *ike_sa_id;
@@ -1223,6 +1277,17 @@ METHOD(ike_sa_manager_t, checkout_new, ike_sa_t*,
 	return ike_sa;
 }
 
+METHOD(ike_sa_manager_t, checkout_new, void,
+	private_ike_sa_manager_t *this, ike_sa_t *ike_sa)
+{
+	u_int segment;
+	entry_t *entry;
+
+	segment = create_and_put_entry(this, ike_sa, &entry);
+	entry->checked_out = thread_current();
+	unlock_single_segment(this, segment);
+}
+
 /**
  * Get the message ID or message hash to detect early retransmissions
  */
@@ -1249,7 +1314,7 @@ METHOD(ike_sa_manager_t, checkout_by_message, ike_sa_t*,
 	ike_sa_t *ike_sa = NULL;
 	ike_sa_id_t *id;
 	ike_version_t ike_version;
-	bool is_init = FALSE;
+	bool is_init = FALSE, untrack_half_open = FALSE;
 
 	id = message->get_ike_sa_id(message);
 	/* clone the IKE_SA ID so we can modify the initiator flag */
@@ -1294,6 +1359,7 @@ METHOD(ike_sa_manager_t, checkout_by_message, ike_sa_t*,
 		uint64_t our_spi;
 		chunk_t hash;
 
+		untrack_half_open = TRUE;
 		hasher = lib->crypto->create_hasher(lib->crypto, HASH_SHA1);
 		if (!hasher || !get_init_hash(hasher, message, &hash))
 		{
@@ -1321,6 +1387,10 @@ METHOD(ike_sa_manager_t, checkout_by_message, ike_sa_t*,
 						entry->ike_sa_id = id;
 						entry->processing = get_message_id_or_hash(message);
 						entry->init_hash = hash;
+						entry->half_open = TRUE;
+						entry->other = message->get_source(message);
+						entry->other = entry->other->clone(entry->other);
+						untrack_half_open = FALSE;
 
 						segment = put_entry(this, entry);
 						entry->checked_out = thread_current();
@@ -1361,6 +1431,9 @@ METHOD(ike_sa_manager_t, checkout_by_message, ike_sa_t*,
 		/* it looks like we already handled this init message to some degree */
 		id->set_responder_spi(id, our_spi);
 		chunk_free(&hash);
+		/* untrack the duplicate before waiting for the checkout */
+		remove_half_open(this, message->get_source(message), FALSE);
+		untrack_half_open = FALSE;
 	}
 
 	if (get_entry_by_id(this, id, &entry, &segment) == SUCCESS)
@@ -1399,6 +1472,10 @@ METHOD(ike_sa_manager_t, checkout_by_message, ike_sa_t*,
 	id->destroy(id);
 
 out:
+	if (untrack_half_open)
+	{
+		remove_half_open(this, message->get_source(message), FALSE);
+	}
 	charon->bus->set_sa(charon->bus, ike_sa);
 	if (!ike_sa)
 	{
@@ -1406,6 +1483,18 @@ out:
 	}
 	return ike_sa;
 }
+
+/**
+ * Data used to track checkouts by config.
+ */
+typedef struct {
+	/** The peer config for which an IKE_SA is being checked out. */
+	peer_cfg_t *cfg;
+	/** Number of threads checking out SAs for the same config. */
+	int threads;
+	/** A thread is currently creating/finding an SA for this config. */
+	bool working;
+} config_entry_t;
 
 METHOD(ike_sa_manager_t, checkout_by_config, ike_sa_t*,
 	private_ike_sa_manager_t *this, peer_cfg_t *peer_cfg)
@@ -1415,16 +1504,53 @@ METHOD(ike_sa_manager_t, checkout_by_config, ike_sa_t*,
 	ike_sa_t *ike_sa = NULL;
 	peer_cfg_t *current_peer;
 	ike_cfg_t *current_ike;
+	config_entry_t *config_entry, *found = NULL;
 	u_int segment;
+	int i;
 
 	DBG2(DBG_MGR, "checkout IKE_SA by config");
 
 	if (!this->reuse_ikesa && peer_cfg->get_ike_version(peer_cfg) != IKEV1)
 	{	/* IKE_SA reuse disabled by config (not possible for IKEv1) */
-		ike_sa = checkout_new(this, peer_cfg->get_ike_version(peer_cfg), TRUE);
+		ike_sa = create_new(this, peer_cfg->get_ike_version(peer_cfg), TRUE);
+		if (ike_sa)
+		{
+			ike_sa->set_peer_cfg(ike_sa, peer_cfg);
+			checkout_new(this, ike_sa);
+		}
 		charon->bus->set_sa(charon->bus, ike_sa);
 		goto out;
 	}
+
+	this->config_mutex->lock(this->config_mutex);
+	for (i = 0; i < array_count(this->config_checkouts); i++)
+	{
+		array_get(this->config_checkouts, i, &config_entry);
+		if (config_entry->cfg->equals(config_entry->cfg, peer_cfg))
+		{
+			current_ike = config_entry->cfg->get_ike_cfg(config_entry->cfg);
+			if (current_ike->equals(current_ike,
+									peer_cfg->get_ike_cfg(peer_cfg)))
+			{
+				found = config_entry;
+				break;
+			}
+		}
+	}
+	if (!found)
+	{
+		INIT(found,
+			.cfg = peer_cfg->get_ref(peer_cfg),
+		);
+		array_insert_create(&this->config_checkouts, ARRAY_TAIL, found);
+	}
+	found->threads++;
+	while (found->working)
+	{
+		this->config_condvar->wait(this->config_condvar, this->config_mutex);
+	}
+	found->working = TRUE;
+	this->config_mutex->unlock(this->config_mutex);
 
 	enumerator = create_table_enumerator(this);
 	while (enumerator->enumerate(enumerator, &entry, &segment))
@@ -1448,7 +1574,7 @@ METHOD(ike_sa_manager_t, checkout_by_config, ike_sa_t*,
 			{
 				entry->checked_out = thread_current();
 				ike_sa = entry->ike_sa;
-				DBG2(DBG_MGR, "found existing IKE_SA %u with a '%s' config",
+				DBG2(DBG_MGR, "found existing IKE_SA %u with config '%s'",
 						ike_sa->get_unique_id(ike_sa),
 						current_peer->get_name(current_peer));
 				break;
@@ -1460,10 +1586,35 @@ METHOD(ike_sa_manager_t, checkout_by_config, ike_sa_t*,
 	enumerator->destroy(enumerator);
 
 	if (!ike_sa)
-	{	/* no IKE_SA using such a config, hand out a new */
-		ike_sa = checkout_new(this, peer_cfg->get_ike_version(peer_cfg), TRUE);
+	{
+		ike_sa = create_new(this, peer_cfg->get_ike_version(peer_cfg), TRUE);
+		if (ike_sa)
+		{
+			ike_sa->set_peer_cfg(ike_sa, peer_cfg);
+			checkout_new(this, ike_sa);
+		}
 	}
 	charon->bus->set_sa(charon->bus, ike_sa);
+
+	this->config_mutex->lock(this->config_mutex);
+	found->working = FALSE;
+	found->threads--;
+	if (!found->threads)
+	{
+		for (i = 0; i < array_count(this->config_checkouts); i++)
+		{
+			array_get(this->config_checkouts, i, &config_entry);
+			if (config_entry == found)
+			{
+				array_remove(this->config_checkouts, i, NULL);
+				found->cfg->destroy(found->cfg);
+				free(found);
+				break;
+			}
+		}
+	}
+	this->config_condvar->signal(this->config_condvar);
+	this->config_mutex->unlock(this->config_mutex);
 
 out:
 	if (!ike_sa)
@@ -1613,7 +1764,7 @@ METHOD(ike_sa_manager_t, new_initiator_spi, bool,
 
 	if (get_entry_by_sa(this, ike_sa_id, ike_sa, &entry, &segment) == SUCCESS)
 	{
-		if (entry->driveout_waiting_threads && entry->driveout_new_threads)
+		if (entry->driveout_threads)
 		{	/* it looks like flush() has been called and the SA is being deleted
 			 * anyway, no need for a new SPI */
 			DBG2(DBG_MGR, "ignored change of initiator SPI during shutdown");
@@ -1685,8 +1836,7 @@ CALLBACK(enumerator_filter_skip, bool,
 
 	while (orig->enumerate(orig, &entry, &segment))
 	{
-		if (!entry->driveout_new_threads &&
-			!entry->driveout_waiting_threads &&
+		if (!entry->driveout_threads &&
 			!entry->checked_out)
 		{
 			*out = entry->ike_sa;
@@ -1731,8 +1881,12 @@ METHOD(ike_sa_manager_t, checkin, void,
 	other_id = ike_sa->get_other_eap_id(ike_sa);
 	other = ike_sa->get_other_host(ike_sa);
 
-	DBG2(DBG_MGR, "checkin IKE_SA %s[%u]", ike_sa->get_name(ike_sa),
-			ike_sa->get_unique_id(ike_sa));
+	DBG2(DBG_MGR, "checkin %N SA %s[%u] with SPIs %.16"PRIx64"_i "
+		 "%.16"PRIx64"_r", ike_version_names,
+		 ike_sa_id->get_ike_version(ike_sa_id), ike_sa->get_name(ike_sa),
+		 ike_sa->get_unique_id(ike_sa),
+		 be64toh(ike_sa_id->get_initiator_spi(ike_sa_id)),
+		 be64toh(ike_sa_id->get_responder_spi(ike_sa_id)));
 
 	/* look for the entry */
 	if (get_entry_by_sa(this, ike_sa_id, ike_sa, &entry, &segment) == SUCCESS)
@@ -1747,15 +1901,18 @@ METHOD(ike_sa_manager_t, checkin, void,
 		{
 			/* not half open anymore */
 			entry->half_open = FALSE;
-			remove_half_open(this, entry);
+			remove_half_open(this, entry->other,
+							 entry->ike_sa_id->is_initiator(entry->ike_sa_id));
 		}
 		else if (entry->half_open && !other->ip_equals(other, entry->other))
 		{
 			/* the other host's IP has changed, we must update the hash table */
-			remove_half_open(this, entry);
+			remove_half_open(this, entry->other,
+							 entry->ike_sa_id->is_initiator(entry->ike_sa_id));
 			DESTROY_IF(entry->other);
 			entry->other = other->clone(other);
-			put_half_open(this, entry);
+			put_half_open(this, entry->other,
+						  entry->ike_sa_id->is_initiator(entry->ike_sa_id));
 		}
 		else if (!entry->half_open &&
 				 ike_sa->get_state(ike_sa) == IKE_CONNECTING)
@@ -1763,22 +1920,14 @@ METHOD(ike_sa_manager_t, checkin, void,
 			/* this is a new half-open SA */
 			entry->half_open = TRUE;
 			entry->other = other->clone(other);
-			put_half_open(this, entry);
+			put_half_open(this, entry->other,
+						  entry->ike_sa_id->is_initiator(entry->ike_sa_id));
 		}
 		entry->condvar->signal(entry->condvar);
 	}
 	else
 	{
-		entry = entry_create();
-		entry->ike_sa_id = ike_sa_id->clone(ike_sa_id);
-		entry->ike_sa = ike_sa;
-		if (ike_sa->get_state(ike_sa) == IKE_CONNECTING)
-		{
-			entry->half_open = TRUE;
-			entry->other = other->clone(other);
-			put_half_open(this, entry);
-		}
-		segment = put_entry(this, entry);
+		segment = create_and_put_entry(this, ike_sa, &entry);
 	}
 	DBG2(DBG_MGR, "checkin of IKE_SA successful");
 
@@ -1798,7 +1947,7 @@ METHOD(ike_sa_manager_t, checkin, void,
 				 * entry as checked out while we release the lock so no other
 				 * thread can acquire it.  Since it is not yet in the list of
 				 * connected peers that will not cause a deadlock as no other
-				 * caller of check_unqiueness() will try to check out this SA */
+				 * caller of check_uniqueness() will try to check out this SA */
 				entry->checked_out = thread_current();
 				unlock_single_segment(this, segment);
 
@@ -1850,7 +1999,7 @@ METHOD(ike_sa_manager_t, checkin_and_destroy, void,
 
 	if (get_entry_by_sa(this, ike_sa_id, ike_sa, &entry, &segment) == SUCCESS)
 	{
-		if (entry->driveout_waiting_threads && entry->driveout_new_threads)
+		if (entry->driveout_threads)
 		{	/* it looks like flush() has been called and the SA is being deleted
 			 * anyway, just check it in */
 			DBG2(DBG_MGR, "ignored checkin and destroy of IKE_SA during shutdown");
@@ -1860,10 +2009,8 @@ METHOD(ike_sa_manager_t, checkin_and_destroy, void,
 			return;
 		}
 
-		/* drive out waiting threads, as we are in hurry */
-		entry->driveout_waiting_threads = TRUE;
-		/* mark it, so no new threads can get this entry */
-		entry->driveout_new_threads = TRUE;
+		/* mark it, so no threads can get this entry */
+		entry->driveout_threads = TRUE;
 		/* wait until all workers have done their work */
 		while (entry->waiting_threads)
 		{
@@ -1877,7 +2024,8 @@ METHOD(ike_sa_manager_t, checkin_and_destroy, void,
 
 		if (entry->half_open)
 		{
-			remove_half_open(this, entry);
+			remove_half_open(this, entry->other,
+							 entry->ike_sa_id->is_initiator(entry->ike_sa_id));
 		}
 		if (entry->my_id && entry->other_id)
 		{
@@ -1894,7 +2042,7 @@ METHOD(ike_sa_manager_t, checkin_and_destroy, void,
 	}
 	else
 	{
-		DBG1(DBG_MGR, "tried to checkin and delete nonexisting IKE_SA");
+		DBG1(DBG_MGR, "tried to checkin and delete nonexistent IKE_SA");
 		ike_sa->destroy(ike_sa);
 	}
 	charon->bus->set_sa(charon->bus, NULL);
@@ -2188,6 +2336,12 @@ METHOD(ike_sa_manager_t, get_half_open_count, u_int,
 	return count;
 }
 
+METHOD(ike_sa_manager_t, track_init, void,
+	private_ike_sa_manager_t *this, host_t *ip)
+{
+	put_half_open(this, ip, FALSE);
+}
+
 METHOD(ike_sa_manager_t, set_spi_cb, void,
 	private_ike_sa_manager_t *this, spi_cb_t callback, void *data)
 {
@@ -2195,6 +2349,29 @@ METHOD(ike_sa_manager_t, set_spi_cb, void,
 	this->spi_cb.cb = callback;
 	this->spi_cb.data = data;
 	this->spi_lock->unlock(this->spi_lock);
+}
+
+/**
+ * Destroy a single entry
+ */
+static void remove_and_destroy_entry(private_ike_sa_manager_t *this,
+									 enumerator_t *enumerator, entry_t *entry)
+{
+	if (entry->half_open)
+	{
+		remove_half_open(this, entry->other,
+						 entry->ike_sa_id->is_initiator(entry->ike_sa_id));
+	}
+	if (entry->my_id && entry->other_id)
+	{
+		remove_connected_peers(this, entry);
+	}
+	if (entry->init_hash.ptr)
+	{
+		remove_init_hash(this, entry->init_hash);
+	}
+	remove_entry_at((private_enumerator_t*)enumerator);
+	entry_destroy(entry);
 }
 
 /**
@@ -2210,20 +2387,7 @@ static void destroy_all_entries(private_ike_sa_manager_t *this)
 	while (enumerator->enumerate(enumerator, &entry, &segment))
 	{
 		charon->bus->set_sa(charon->bus, entry->ike_sa);
-		if (entry->half_open)
-		{
-			remove_half_open(this, entry);
-		}
-		if (entry->my_id && entry->other_id)
-		{
-			remove_connected_peers(this, entry);
-		}
-		if (entry->init_hash.ptr)
-		{
-			remove_init_hash(this, entry->init_hash);
-		}
-		remove_entry_at((private_enumerator_t*)enumerator);
-		entry_destroy(entry);
+		remove_and_destroy_entry(this, enumerator, entry);
 	}
 	enumerator->destroy(enumerator);
 	charon->bus->set_sa(charon->bus, NULL);
@@ -2236,53 +2400,51 @@ METHOD(ike_sa_manager_t, flush, void,
 	entry_t *entry;
 	u_int segment;
 
-	lock_all_segments(this);
-	DBG2(DBG_MGR, "going to destroy IKE_SA manager and all managed IKE_SA's");
-	/* Step 1: drive out all waiting threads  */
-	DBG2(DBG_MGR, "set driveout flags for all stored IKE_SA's");
-	enumerator = create_table_enumerator(this);
-	while (enumerator->enumerate(enumerator, &entry, &segment))
-	{
-		/* do not accept new threads, drive out waiting threads */
-		entry->driveout_new_threads = TRUE;
-		entry->driveout_waiting_threads = TRUE;
-	}
-	enumerator->destroy(enumerator);
-	DBG2(DBG_MGR, "wait for all threads to leave IKE_SA's");
-	/* Step 2: wait until all are gone */
-	enumerator = create_table_enumerator(this);
-	while (enumerator->enumerate(enumerator, &entry, &segment))
-	{
-		while (entry->waiting_threads || entry->checked_out)
-		{
-			/* wake up all */
-			entry->condvar->broadcast(entry->condvar);
-			/* go sleeping until they are gone */
-			entry->condvar->wait(entry->condvar, this->segments[segment].mutex);
-		}
-	}
-	enumerator->destroy(enumerator);
-	DBG2(DBG_MGR, "delete all IKE_SA's");
-	/* Step 3: initiate deletion of all IKE_SAs */
-	enumerator = create_table_enumerator(this);
-	while (enumerator->enumerate(enumerator, &entry, &segment))
-	{
-		charon->bus->set_sa(charon->bus, entry->ike_sa);
-		entry->ike_sa->delete(entry->ike_sa, TRUE);
-	}
-	enumerator->destroy(enumerator);
-
-	DBG2(DBG_MGR, "destroy all entries");
-	/* Step 4: destroy all entries */
-	destroy_all_entries(this);
-	unlock_all_segments(this);
-
+	/* prevent threads from creating new SAs */
 	this->spi_lock->write_lock(this->spi_lock);
 	DESTROY_IF(this->rng);
 	this->rng = NULL;
 	this->spi_cb.cb = NULL;
 	this->spi_cb.data = NULL;
 	this->spi_lock->unlock(this->spi_lock);
+
+	lock_all_segments(this);
+	DBG2(DBG_MGR, "going to destroy IKE_SA manager and all managed IKE_SAs");
+	enumerator = create_table_enumerator(this);
+	while (enumerator->enumerate(enumerator, &entry, &segment))
+	{
+		/* mark all entries so threads can't check these IKE_SAs out */
+		entry->driveout_threads = TRUE;
+	}
+	enumerator->destroy(enumerator);
+	DBG2(DBG_MGR, "wait for threads to leave IKE_SAs and delete and destroy "
+		 "them");
+	/* we are intermittently unlocking the segments below, which allows threads
+	 * to create new entries. we want these to get marked directly so other
+	 * threads can't get them again. we re-enumerate the table until all
+	 * entries are gone */
+	this->new_entries_driveout_threads = TRUE;
+	while (ref_cur(&this->total_sa_count))
+	{
+		enumerator = create_table_enumerator(this);
+		while (enumerator->enumerate(enumerator, &entry, &segment))
+		{
+			while (entry->waiting_threads || entry->checked_out)
+			{
+				/* wake up all */
+				entry->condvar->broadcast(entry->condvar);
+				/* go sleeping until they are gone */
+				entry->condvar->wait(entry->condvar,
+									 this->segments[segment].mutex);
+			}
+			charon->bus->set_sa(charon->bus, entry->ike_sa);
+			entry->ike_sa->delete(entry->ike_sa, TRUE);
+			remove_and_destroy_entry(this, enumerator, entry);
+			charon->bus->set_sa(charon->bus, NULL);
+		}
+		enumerator->destroy(enumerator);
+	}
+	unlock_all_segments(this);
 }
 
 METHOD(ike_sa_manager_t, destroy, void,
@@ -2310,6 +2472,10 @@ METHOD(ike_sa_manager_t, destroy, void,
 	free(this->half_open_segments);
 	free(this->connected_peers_segments);
 	free(this->init_hashes_segments);
+
+	array_destroy(this->config_checkouts);
+	this->config_mutex->destroy(this->config_mutex);
+	this->config_condvar->destroy(this->config_condvar);
 
 	this->spi_lock->destroy(this->spi_lock);
 	free(this);
@@ -2339,12 +2505,14 @@ static u_int get_nearest_powerof2(u_int n)
 ike_sa_manager_t *ike_sa_manager_create()
 {
 	private_ike_sa_manager_t *this;
+	char *spi_val;
 	u_int i;
 
 	INIT(this,
 		.public = {
-			.checkout = _checkout,
+			.create_new = _create_new,
 			.checkout_new = _checkout_new,
+			.checkout = _checkout,
 			.checkout_by_message = _checkout_by_message,
 			.checkout_by_config = _checkout_by_config,
 			.checkout_by_id = _checkout_by_id,
@@ -2358,6 +2526,7 @@ ike_sa_manager_t *ike_sa_manager_create()
 			.checkin_and_destroy = _checkin_and_destroy,
 			.get_count = _get_count,
 			.get_half_open_count = _get_half_open_count,
+			.track_init = _track_init,
 			.flush = _flush,
 			.set_spi_cb = _set_spi_cb,
 			.destroy = _destroy,
@@ -2372,6 +2541,20 @@ ike_sa_manager_t *ike_sa_manager_create()
 		return NULL;
 	}
 	this->spi_lock = rwlock_create(RWLOCK_TYPE_DEFAULT);
+	spi_val = lib->settings->get_str(lib->settings, "%s.spi_mask", NULL,
+									 lib->ns);
+	this->spi_mask = settings_value_as_uint64(spi_val, 0);
+	spi_val = lib->settings->get_str(lib->settings, "%s.spi_label", NULL,
+									 lib->ns);
+	this->spi_label = settings_value_as_uint64(spi_val, 0);
+	if (this->spi_mask || this->spi_label)
+	{
+		DBG1(DBG_IKE, "using SPI label 0x%.16"PRIx64" and mask 0x%.16"PRIx64,
+			 this->spi_label, this->spi_mask);
+		/* the allocated SPI is assumed to be in network order */
+		this->spi_mask = htobe64(this->spi_mask);
+		this->spi_label = htobe64(this->spi_label);
+	}
 
 	this->ikesa_limit = lib->settings->get_int(lib->settings,
 											   "%s.ikesa_limit", 0, lib->ns);
@@ -2418,6 +2601,9 @@ ike_sa_manager_t *ike_sa_manager_create()
 	{
 		this->init_hashes_segments[i].mutex = mutex_create(MUTEX_TYPE_RECURSIVE);
 	}
+
+	this->config_mutex = mutex_create(MUTEX_TYPE_DEFAULT);
+	this->config_condvar = condvar_create(CONDVAR_TYPE_DEFAULT);
 
 	this->reuse_ikesa = lib->settings->get_bool(lib->settings,
 											"%s.reuse_ikesa", TRUE, lib->ns);

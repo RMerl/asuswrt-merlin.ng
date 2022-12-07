@@ -28,7 +28,7 @@ void ff_flv_encode_picture_header(MpegEncContext *s, int picture_number)
 {
     int format;
 
-    avpriv_align_put_bits(&s->pb);
+    align_put_bits(&s->pb);
 
     put_bits(&s->pb, 17, 1);
     /* 0: H.263 escape codes 1: 11-bit escape codes */
@@ -107,6 +107,7 @@ AVCodec ff_flv_encoder = {
     .init           = ff_mpv_encode_init,
     .encode2        = ff_mpv_encode_picture,
     .close          = ff_mpv_encode_end,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
     .pix_fmts       = (const enum AVPixelFormat[]) { AV_PIX_FMT_YUV420P,
                                                      AV_PIX_FMT_NONE},
     .priv_class     = &flv_class,

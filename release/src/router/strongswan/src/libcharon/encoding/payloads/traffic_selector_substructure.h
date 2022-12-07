@@ -1,7 +1,9 @@
 /*
+ * Copyright (C) 2022 Tobias Brunner
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,6 +29,7 @@ typedef struct traffic_selector_substructure_t traffic_selector_substructure_t;
 #include <library.h>
 #include <networking/host.h>
 #include <selectors/traffic_selector.h>
+#include <selectors/sec_label.h>
 #include <encoding/payloads/payload.h>
 
 /**
@@ -35,88 +38,29 @@ typedef struct traffic_selector_substructure_t traffic_selector_substructure_t;
  * The TRAFFIC SELECTOR format is described in RFC section 3.13.1.
  */
 struct traffic_selector_substructure_t {
+
 	/**
 	 * The payload_t interface.
 	 */
 	payload_t payload_interface;
 
 	/**
-	 * Get the type of Traffic selector.
+	 * Get a traffic_selector_t from this substructure if possible.
 	 *
-	 * @return			type of traffic selector
+	 * @warning the returned object must be destroyed after use
 	 *
+	 * @return			contained traffic_selector_t (NULL if type mismatch)
 	 */
-	ts_type_t (*get_ts_type) (traffic_selector_substructure_t *this);
+	traffic_selector_t *(*get_traffic_selector)(traffic_selector_substructure_t *this);
 
 	/**
-	 * Set the type of Traffic selector.
+	 * Get a sec_label_t from this substructure if possible.
 	 *
-	 * @param ts_type	type of traffic selector
+	 * @warning the returned object must be destroyed after use
+	 *
+	 * @return			contained sec_label_t (NULL if type mismatch)
 	 */
-	void (*set_ts_type) (traffic_selector_substructure_t *this,
-						 ts_type_t ts_type);
-
-	/**
-	 * Get the IP protocol ID of Traffic selector.
-	 *
-	 * @return			type of traffic selector
-	 *
-	 */
-	uint8_t (*get_protocol_id) (traffic_selector_substructure_t *this);
-
-	/**
-	 * Set the IP protocol ID of Traffic selector
-	 *
-	 * @param protocol_id	protocol ID of traffic selector
-	 */
-	void (*set_protocol_id) (traffic_selector_substructure_t *this,
-							  uint8_t protocol_id);
-
-	/**
-	 * Get the start port and address as host_t object.
-	 *
-	 * Returned host_t object has to get destroyed by the caller.
-	 *
-	 * @return			start host as host_t object
-	 *
-	 */
-	host_t *(*get_start_host) (traffic_selector_substructure_t *this);
-
-	/**
-	 * Set the start port and address as host_t object.
-	 *
-	 * @param start_host	start host as host_t object
-	 */
-	void (*set_start_host) (traffic_selector_substructure_t *this,
-							host_t *start_host);
-
-	/**
-	 * Get the end port and address as host_t object.
-	 *
-	 * Returned host_t object has to get destroyed by the caller.
-	 *
-	 * @return			end host as host_t object
-	 *
-	 */
-	host_t *(*get_end_host) (traffic_selector_substructure_t *this);
-
-	/**
-	 * Set the end port and address as host_t object.
-	 *
-	 * @param end_host	end host as host_t object
-	 */
-	void (*set_end_host) (traffic_selector_substructure_t *this,
-						  host_t *end_host);
-
-	/**
-	 * Get a traffic_selector_t from this substructure.
-	 *
-	 * @warning traffic_selector_t must be destroyed after usage.
-	 *
-	 * @return			contained traffic_selector_t
-	 */
-	traffic_selector_t *(*get_traffic_selector) (
-										traffic_selector_substructure_t *this);
+	sec_label_t *(*get_sec_label)(traffic_selector_substructure_t *this);
 
 	/**
 	 * Destroys an traffic_selector_substructure_t object.
@@ -134,13 +78,21 @@ struct traffic_selector_substructure_t {
 traffic_selector_substructure_t *traffic_selector_substructure_create(void);
 
 /**
- * Creates an initialized traffif selector substructure using
- * the values from a traffic_selector_t.
+ * Creates a traffic selector substructure based on a traffic_selector_t.
  *
- * @param traffic_selector	traffic_selector_t to use for initialization
+ * @param traffic_selector	data to use
  * @return					traffic_selector_substructure_t object
  */
 traffic_selector_substructure_t *traffic_selector_substructure_create_from_traffic_selector(
 										traffic_selector_t *traffic_selector);
+
+/**
+ * Creates a traffic selector substructure based on a sec_label_t.
+ *
+ * @param label				data to use
+ * @return					traffic_selector_substructure_t object
+ */
+traffic_selector_substructure_t *traffic_selector_substructure_create_from_sec_label(
+										sec_label_t *label);
 
 #endif /** TRAFFIC_SELECTOR_SUBSTRUCTURE_H_ @}*/

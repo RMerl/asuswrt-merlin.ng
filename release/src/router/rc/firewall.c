@@ -1689,7 +1689,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 			char *nv, *nvp, *item, *nextp, *ptr;
 			char proto[16], *next;
 		case WAN_V6PLUS:
-			if (nvram_get_int("s46_hgw_case") == S46_CASE_MAP_HGW_ON)
+			if (nvram_get_int("s46_hgw_case") <= S46_CASE_MAP_HGW_ON)
 				break;
 			fprintf(fp, "-A PREROUTING -i %s -d %s -j MAPE\n", lan_if, wan_ip);
 			foreach(proto, "tcp udp", next) {
@@ -1933,6 +1933,7 @@ void nat_setting(char *wan_if, char *wan_ip, char *wanx_if, char *wanx_ip, char 
 				char proto[16], *next;
 				int offset, psidlen, psid;
 			case WAN_V6PLUS:
+			case WAN_OCNVC:
 				if (nvram_get_int("s46_hgw_case") == S46_CASE_MAP_HGW_ON)
 					break;
 			case WAN_LW4O6:
@@ -2149,6 +2150,10 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 					":CLIENT_TO_INTERNET - [0:0]\n");
 			}
 #endif
+#ifdef RTCONFIG_VPN_FUSION
+			fprintf(fp,
+				":VPN_FUSION - [0:0]\n");
+#endif
 		}
 
 		_dprintf("writting prerouting 2 %s %s %s %s %s %s\n", wan_if, wan_ip, wanx_if, wanx_ip, lan_if, lan_ip);
@@ -2223,6 +2228,10 @@ void nat_setting2(char *lan_if, char *lan_ip, char *logaccept, char *logdrop)	//
 			fprintf(fp,
 				":CLIENT_TO_INTERNET - [0:0]\n");
 		}
+#endif
+#ifdef RTCONFIG_VPN_FUSION
+		fprintf(fp,
+				":VPN_FUSION - [0:0]\n");
 #endif
 	}
 
@@ -3808,6 +3817,7 @@ TRACE_PT("writing Parental Control\n");
 		case WAN_LW4O6:
 		case WAN_MAPE:
 		case WAN_V6PLUS:
+		case WAN_OCNVC:
 #endif
 		case WAN_DISABLED:
 			break;
@@ -3946,6 +3956,7 @@ TRACE_PT("writing Parental Control\n");
 			case WAN_LW4O6:
 			case WAN_MAPE:
 			case WAN_V6PLUS:
+			case WAN_OCNVC:
 				fprintf(fp_ipv6, "-A INPUT -p 4 -j %s\n", "ACCEPT");
 				break;
 			}
@@ -4087,7 +4098,7 @@ TRACE_PT("writing Parental Control\n");
 	    dualwan_unit__usbif(wan_unit) ||
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-	    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS ||
+	    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC ||
 #endif
 	    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		fprintf(fp, "-A FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
@@ -5233,6 +5244,7 @@ TRACE_PT("writing Parental Control\n");
 			case WAN_LW4O6:
 			case WAN_MAPE:
 			case WAN_V6PLUS:
+			case WAN_OCNVC:
 #endif
 			case WAN_DISABLED:
 				continue;
@@ -5353,6 +5365,7 @@ TRACE_PT("writing Parental Control\n");
 				case WAN_LW4O6:
 				case WAN_MAPE:
 				case WAN_V6PLUS:
+				case WAN_OCNVC:
 					fprintf(fp_ipv6, "-A INPUT -p 4 -j %s\n", "ACCEPT");
 					break;
 				default:
@@ -5500,7 +5513,7 @@ TRACE_PT("writing Parental Control\n");
 		    dualwan_unit__usbif(unit) ||
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-		    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS ||
+		    wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC ||
 #endif
 		    wan_proto == WAN_PPPOE || wan_proto == WAN_PPTP || wan_proto == WAN_L2TP) {
 		clamp_mss:
@@ -6468,6 +6481,7 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 		case WAN_LW4O6:
 		case WAN_MAPE:
 		case WAN_V6PLUS:
+		case WAN_OCNVC:
 #ifdef RTCONFIG_BCMARM
 #ifdef HND_ROUTER
 			if (!nvram_match("fc_pt_war", "1"))
@@ -6890,6 +6904,7 @@ int start_firewall(int wanunit, int lanunit)
 	char wanx_if[IFNAMSIZ+1], wanx_ip[32];
 	char prefix[] = "wanXXXXXXXXXX_", tmp[100];
 	int lock;
+	char rp_if[32] = {0};
 
 	if (!is_routing_enabled())
 		return -1;
@@ -6973,6 +6988,23 @@ int start_firewall(int wanunit, int lanunit)
 	} else
 		perror("/proc/sys/net/ipv4/conf");
 
+#if defined(RTCONFIG_MULTICAST_IPTV) && defined(RTCONFIG_HND_ROUTER_AX_6756)
+	/*
+		Movistar IPTV mcast issue :
+		vlan2 can't receive igmp packets with multi-routing, need to enable rp_filter = 2.
+		In SDK 5.02, BRCM add bypass igmp in fib_validate_source() to let packets go to ip_route_input_mc().
+		In Kernel 4.X, BRCM uses proc instead of kernel modifcation. 
+	*/
+	snprintf(rp_if, sizeof(rp_if), "%s", nvram_safe_get("wan10_ifname"));
+
+	if (nvram_get_int("switch_stb_x") > 6 && nvram_match("switch_wantag", "movistar")) {
+		if (strcmp(rp_if, "")) {
+			snprintf(name, sizeof(name), "/proc/sys/net/ipv4/conf/%s/rp_filter", rp_if);
+			f_write_string(name, "2", 0, 0);
+		}
+	}
+#endif
+
 	/* Determine the log type */
 	if (nvram_match("fw_log_x", "accept") || nvram_match("fw_log_x", "both"))
 		strcpy(logaccept, "logaccept");
@@ -6987,11 +7019,11 @@ int start_firewall(int wanunit, int lanunit)
 		if (!f_exists("/proc/sys/net/netfilter/nf_conntrack_frag6_timeout"))
 			modprobe("nf_conntrack_ipv6");
 #ifndef HND_ROUTER
-		modprobe("ip6t_REJECT");
-		modprobe("ip6t_ROUTE");
-		modprobe("ip6t_LOG");
+		modprobe_q("ip6t_REJECT");
+		modprobe_q("ip6t_ROUTE");
+		modprobe_q("ip6t_LOG");
 #endif
-		modprobe("xt_length");
+		modprobe_q("xt_length");
 	} else {
 		modprobe_r("xt_length");
 #ifndef HND_ROUTER

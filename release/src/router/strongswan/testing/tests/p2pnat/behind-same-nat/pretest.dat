@@ -6,9 +6,9 @@ moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p udp -j SNAT --to-
 moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to-source PH_IP_MOON:2000-2100
 moon::iptables -A FORWARD -i eth1 -o eth0 -s 10.1.0.0/16  -j ACCEPT
 moon::iptables -A FORWARD -i eth0 -o eth1 -d 10.1.0.0/16  -j ACCEPT
-carol::ipsec start
+carol::systemctl start strongswan
 carol::expect-connection medsrv
-alice::ipsec start
+alice::systemctl start strongswan
 alice::sleep 1
-venus::ipsec start
+venus::systemctl start strongswan
 venus::sleep 2

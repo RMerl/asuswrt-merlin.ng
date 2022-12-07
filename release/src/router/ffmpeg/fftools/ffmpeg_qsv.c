@@ -28,6 +28,7 @@
 
 #include "ffmpeg.h"
 
+static AVBufferRef *hw_device_ctx;
 char *qsv_device = NULL;
 
 static int qsv_get_buffer(AVCodecContext *s, AVFrame *frame, int flags)
@@ -93,7 +94,7 @@ int qsv_init(AVCodecContext *s)
     frames_ctx->height            = FFALIGN(s->coded_height, 32);
     frames_ctx->format            = AV_PIX_FMT_QSV;
     frames_ctx->sw_format         = s->sw_pix_fmt;
-    frames_ctx->initial_pool_size = 64;
+    frames_ctx->initial_pool_size = 64 + s->extra_hw_frames;
     frames_hwctx->frame_type      = MFX_MEMTYPE_VIDEO_MEMORY_DECODER_TARGET;
 
     ret = av_hwframe_ctx_init(ist->hw_frames_ctx);

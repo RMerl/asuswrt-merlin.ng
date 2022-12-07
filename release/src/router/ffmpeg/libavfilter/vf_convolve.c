@@ -91,7 +91,7 @@ static int query_formats(AVFilterContext *ctx)
         AV_PIX_FMT_GBRP, AV_PIX_FMT_GBRP9, AV_PIX_FMT_GBRP10,
         AV_PIX_FMT_GBRP12, AV_PIX_FMT_GBRP14, AV_PIX_FMT_GBRP16,
         AV_PIX_FMT_GBRAP, AV_PIX_FMT_GBRAP10, AV_PIX_FMT_GBRAP12, AV_PIX_FMT_GBRAP16,
-        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY16,
+        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14, AV_PIX_FMT_GRAY16,
         AV_PIX_FMT_NONE
     };
 
@@ -590,7 +590,9 @@ static av_cold void uninit(AVFilterContext *ctx)
 
         for (j = 0; j < MAX_THREADS; j++) {
             av_fft_end(s->fft[i][j]);
+            s->fft[i][j] = NULL;
             av_fft_end(s->ifft[i][j]);
+            s->ifft[i][j] = NULL;
         }
     }
 

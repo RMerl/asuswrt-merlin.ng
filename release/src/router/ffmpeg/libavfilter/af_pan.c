@@ -266,7 +266,7 @@ static int query_formats(AVFilterContext *ctx)
 
     // inlink supports any channel layout
     layouts = ff_all_channel_counts();
-    if ((ret = ff_channel_layouts_ref(layouts, &inlink->out_channel_layouts)) < 0)
+    if ((ret = ff_channel_layouts_ref(layouts, &inlink->outcfg.channel_layouts)) < 0)
         return ret;
 
     // outlink supports only requested output channel layout
@@ -275,7 +275,7 @@ static int query_formats(AVFilterContext *ctx)
                           pan->out_channel_layout ? pan->out_channel_layout :
                           FF_COUNT2LAYOUT(pan->nb_output_channels))) < 0)
         return ret;
-    return ff_channel_layouts_ref(layouts, &outlink->in_channel_layouts);
+    return ff_channel_layouts_ref(layouts, &outlink->incfg.channel_layouts);
 }
 
 static int config_props(AVFilterLink *link)
@@ -424,7 +424,7 @@ static av_cold void uninit(AVFilterContext *ctx)
 #define OFFSET(x) offsetof(PanContext, x)
 
 static const AVOption pan_options[] = {
-    { "args", NULL, OFFSET(args), AV_OPT_TYPE_STRING, { .str = NULL }, CHAR_MIN, CHAR_MAX, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_FILTERING_PARAM },
+    { "args", NULL, OFFSET(args), AV_OPT_TYPE_STRING, { .str = NULL }, 0, 0, AV_OPT_FLAG_AUDIO_PARAM | AV_OPT_FLAG_FILTERING_PARAM },
     { NULL }
 };
 

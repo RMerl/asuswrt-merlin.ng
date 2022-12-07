@@ -562,7 +562,7 @@ function applyRule(){
 		var isFromWAN = (function(){
 			var lanIpAddr = '<% nvram_get("lan_ipaddr"); %>';
 			if(location.hostname == lanIpAddr) return false;
-			else if(location.hostname == "router.asus.com") return false;
+			else if(location.hostname == "<#Web_DOMAIN_NAME#>") return false;
 			else if(location.hostname == "repeater.asus.com") return false;
 			else if(location.hostname == "cellspot.asus.com") return false;
 			else return true;
@@ -1270,10 +1270,12 @@ function hide_https_lanport(_value){
 		$("#https_download_cert").css("display", "");
 		if(orig_http_enable == "0"){
 			$("#download_cert_btn").css("display", "none");
+			$("#clear_cert_btn").css("display", "none");
 			$("#download_cert_desc").css("display", "");
 		}
 		else{
 			$("#download_cert_btn").css("display", "");
+			$("#clear_cert_btn").css("display", "");
 			$("#download_cert_desc").css("display", "none");
 		}
 	}
@@ -1944,6 +1946,14 @@ function myisPortConflict(_val, service){
 
 function save_cert_key(){
 	location.href = "cert.tar";
+}
+
+function clear_cert_key(){
+	if(confirm("You will be automatically logged out for the renewal, are you sure you want to continue?")){
+		$.ajax({url: "clear_file.cgi?clear_file_name=cert.tgz"})
+		showLoading();
+		setTimeout(refreshpage, 1000);
+	}
 }
 
 var NTPListArray = [
@@ -2852,6 +2862,7 @@ function build_boostkey_options() {
 					<th><#Local_access_certificate_download#></th>
 					<td>
 						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
+						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
 						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>

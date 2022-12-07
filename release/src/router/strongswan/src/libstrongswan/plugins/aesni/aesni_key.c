@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -141,9 +142,11 @@ static __m128i _mm_shuffle_i01(__m128i a, __m128i b)
 static void expand192(__m128i *key, __m128i *schedule)
 {
 	__m128i t1, t2, t3;
+	u_char buf[16] = {};
 
 	schedule[0] = t1 = _mm_loadu_si128(key);
-	t2 = t3 = _mm_loadu_si128(key + 1);
+	memcpy(buf, key + 1, 8);
+	t2 = t3 = _mm_loadu_si128((__m128i*)buf);
 
 	t2 = assist192(_mm_aeskeygenassist_si128(t2, 0x1), t2, &t1);
 	schedule[1] = _mm_shuffle_i00(t3, t1);

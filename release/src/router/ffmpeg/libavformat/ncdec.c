@@ -26,7 +26,7 @@
 
 #define NC_VIDEO_FLAG 0x1A5
 
-static int nc_probe(AVProbeData *probe_packet)
+static int nc_probe(const AVProbeData *probe_packet)
 {
     int size;
 
@@ -83,7 +83,6 @@ static int nc_read_packet(AVFormatContext *s, AVPacket *pkt)
 
     ret = av_get_packet(s->pb, pkt, size);
     if (ret != size) {
-        if (ret > 0) av_packet_unref(pkt);
         return AVERROR(EIO);
     }
 

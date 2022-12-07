@@ -429,6 +429,7 @@ typedef enum _RT_802_11_PHY_MODE {
 #else
 #define OFFSET_PSK		0x4ff80 //15bytes
 #endif
+#define OFFSET_EISN		0x4ff70 // 32 bytes
 #define OFFSET_TERRITORY_CODE	0x4ff90	/* 5 bytes, e.g., US/01, US/02, TW/01, etc. */
 #define OFFSET_DEV_FLAGS	0x4ffa0 //device dependent flags
 #define OFFSET_ODMPID		0x4ffb0 //the shown model name (for Bestbuy and others)

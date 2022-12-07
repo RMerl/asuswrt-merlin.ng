@@ -1,9 +1,8 @@
 /*
- * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
- *
  * Copyright (C) 2016-2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014 Martin Willi
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +19,7 @@
 #include <stdio.h>
 #include <errno.h>
 
+#include "swanctl.h"
 #include "command.h"
 
 #include <collections/hashtable.h>
@@ -135,6 +135,7 @@ CALLBACK(children_sn, int,
 		}
 		printf("\n");
 
+		print_label("    label:  ", child->get(child, "label"));
 		printf("    local:  %s\n", child->get(child, "local-ts"));
 		printf("    remote: %s\n", child->get(child, "remote-ts"));
 
@@ -182,6 +183,10 @@ CALLBACK(conn_sn, int,
 			if (auth->get(auth, "id"))
 			{
 				printf("    id: %s\n", auth->get(auth, "id"));
+			}
+			if (auth->get(auth, "ca_id"))
+			{
+				printf("    ca_id: %s\n", auth->get(auth, "ca_id"));
 			}
 			if (auth->get(auth, "eap_id"))
 			{

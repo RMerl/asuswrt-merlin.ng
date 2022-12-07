@@ -1,0 +1,47 @@
+.TH "idevicecrashreport" 1
+.SH NAME
+idevicecrashreport \- Retrieve crash reports from a device.
+.SH SYNOPSIS
+.B idevicecrashreport
+[OPTIONS] DIRECTORY
+
+.SH DESCRIPTION
+
+Simple utility to move crash reports from a device to a local directory.
+
+The utility outputs lines prefixed with either "Link:", "Copy:" or "Move:"
+depending on whether a symlink was created, a file was copied or moved from
+the device to the target DIRECTORY.
+
+.SH OPTIONS
+.TP
+.B \-u, \-\-udid UDID
+target specific device by UDID.
+.TP
+.B \-n, \-\-network
+connect to network device.
+.TP
+.B \-e, \-\-extract
+extract raw crash report into separate '.crash' files.
+.TP
+.B \-k, \-\-keep
+copy but do not remove crash reports from device.
+.TP
+.B \-d, \-\-debug
+enable communication debugging.
+.TP
+.B \-h, \-\-help
+prints usage information.
+.TP
+.B \-v, \-\-version
+prints version information.
+
+.SH AUTHOR
+Martin Szulecki
+
+Nikias Bassen
+
+.SH ON THE WEB
+https://libimobiledevice.org
+
+https://github.com/libimobiledevice/libimobiledevice

@@ -30,7 +30,6 @@ const AVProfile ff_aac_profiles[] = {
     { FF_PROFILE_AAC_LD,    "LD"       },
     { FF_PROFILE_AAC_ELD,   "ELD"      },
     { FF_PROFILE_AAC_MAIN,  "Main" },
-    { FF_PROFILE_AAC_LOW,   "LC"   },
     { FF_PROFILE_AAC_SSR,   "SSR"  },
     { FF_PROFILE_AAC_LTP,   "LTP"  },
     { FF_PROFILE_UNKNOWN },
@@ -75,6 +74,12 @@ const AVProfile ff_h264_profiles[] = {
     { FF_PROFILE_UNKNOWN },
 };
 
+const AVProfile ff_vvc_profiles[] = {
+    { FF_PROFILE_VVC_MAIN_10,                   "Main 10" },
+    { FF_PROFILE_VVC_MAIN_10_444,               "Main 10 4:4:4" },
+    { FF_PROFILE_UNKNOWN },
+};
+
 const AVProfile ff_hevc_profiles[] = {
     { FF_PROFILE_HEVC_MAIN,                 "Main"                },
     { FF_PROFILE_HEVC_MAIN_10,              "Main 10"             },
@@ -99,7 +104,6 @@ const AVProfile ff_mpeg2_video_profiles[] = {
     { FF_PROFILE_MPEG2_SNR_SCALABLE, "SNR Scalable"       },
     { FF_PROFILE_MPEG2_MAIN,         "Main"               },
     { FF_PROFILE_MPEG2_SIMPLE,       "Simple"             },
-    { FF_PROFILE_RESERVED,           "Reserved"           },
     { FF_PROFILE_RESERVED,           "Reserved"           },
     { FF_PROFILE_UNKNOWN                                  },
 };
@@ -150,6 +154,31 @@ const AVProfile ff_av1_profiles[] = {
 const AVProfile ff_sbc_profiles[] = {
     { FF_PROFILE_SBC_MSBC, "mSBC" },
     { FF_PROFILE_UNKNOWN },
+};
+
+const AVProfile ff_prores_profiles[] = {
+    { FF_PROFILE_PRORES_PROXY,    "Proxy"    },
+    { FF_PROFILE_PRORES_LT,       "LT"       },
+    { FF_PROFILE_PRORES_STANDARD, "Standard" },
+    { FF_PROFILE_PRORES_HQ,       "HQ"       },
+    { FF_PROFILE_PRORES_4444,     "4444"     },
+    { FF_PROFILE_PRORES_XQ,       "XQ"       },
+    { FF_PROFILE_UNKNOWN }
+};
+
+const AVProfile ff_mjpeg_profiles[] = {
+    { FF_PROFILE_MJPEG_HUFFMAN_BASELINE_DCT,            "Baseline"    },
+    { FF_PROFILE_MJPEG_HUFFMAN_EXTENDED_SEQUENTIAL_DCT, "Sequential"  },
+    { FF_PROFILE_MJPEG_HUFFMAN_PROGRESSIVE_DCT,         "Progressive" },
+    { FF_PROFILE_MJPEG_HUFFMAN_LOSSLESS,                "Lossless"    },
+    { FF_PROFILE_MJPEG_JPEG_LS,                         "JPEG LS"     },
+    { FF_PROFILE_UNKNOWN }
+};
+
+const AVProfile ff_arib_caption_profiles[] = {
+    { FF_PROFILE_ARIB_PROFILE_A, "Profile A" },
+    { FF_PROFILE_ARIB_PROFILE_C, "Profile C" },
+    { FF_PROFILE_UNKNOWN }
 };
 
 #endif /* !CONFIG_SMALL */

@@ -72,12 +72,12 @@ case "$1" in
 	echo "	rereadsecrets|rereadcacerts|rereadaacerts"
 	echo "	rereadocspcerts|rereadacerts|rereadcrls|rereadall"
 	echo "	purgecerts|purgecrls|purgeike|purgeocsp"
-	echo "	scepclient|pki"
+	echo "	pki"
 	echo "	stroke"
 	echo "	version"
 	echo
 	echo "Refer to the $IPSEC_SCRIPT(8) man page for details."
-	echo "Some commands have their own man pages, e.g. pki(1) or scepclient(8)."
+	echo "Some commands have their own man pages, e.g. pki(1)."
 	exit 0
 	;;
 --versioncode)
@@ -100,8 +100,8 @@ down)
 	shift
 	if [ "$#" -ne 1 ]
 	then
-	    echo "Usage: $IPSEC_SCRIPT down <connection name>"
-	    exit 2
+		echo "Usage: $IPSEC_SCRIPT down <connection name>"
+		exit 2
 	fi
 	rc=7
 	if [ -e $IPSEC_CHARON_PID ]
@@ -115,8 +115,8 @@ down-srcip)
 	shift
 	if [ "$#" -lt 1 ]
 	then
-	    echo "Usage: $IPSEC_SCRIPT down-srcip <start> [<end>]"
-	    exit 2
+		echo "Usage: $IPSEC_SCRIPT down-srcip <start> [<end>]"
+		exit 2
 	fi
 	rc=7
 	if [ -e $IPSEC_CHARON_PID ]
@@ -283,8 +283,8 @@ up)
 	shift
 	if [ "$#" -ne 1 ]
 	then
-	    echo "Usage: $IPSEC_SCRIPT up <connection name>"
-	    exit 2
+		echo "Usage: $IPSEC_SCRIPT up <connection name>"
+		exit 2
 	fi
 	rc=7
 	if [ -e $IPSEC_CHARON_PID ]
@@ -310,19 +310,14 @@ aikgen|pki)
 	command_dir="$IPSEC_BINDIR"
 	# fall through
 	;;
-attest|conftest|dumm|irdumm|pool|pt-tls-client|scepclient|stroke|\
+attest|conftest|dumm|irdumm|pool|pt-tls-client|stroke|\
 duplicheck|error-notify|imv_policy_manager|load-tester|lookip|whitelist|\
 _updown|_imv_policy)
-	# fall through
-	;;
-copyright|--copyright)
-	set _copyright
 	# fall through
 	;;
 version|--version)
 	printf "$OS_NAME $IPSEC_NAME $IPSEC_VERSION\n"
 	printf "$IPSEC_DISTRO\n"
-	printf "See '$IPSEC_SCRIPT --copyright' for copyright information.\n"
 	exit 0
 	;;
 --*)

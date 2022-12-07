@@ -21,8 +21,10 @@ export BWDPI_BCM6750 := y
 endif
 
 # BCM4912 : seperate bin / header / modules from bcm6756
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),ET12 XT12 GT-AX6000 GT-AX11000_PRO GT-AXE16000))
+#ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),ET12 XT12 GT-AX6000 GT-AX11000_PRO GT-AXE16000))
+ifeq ($(BRCM_CHIP),4912)
 export BWDPI_BCM4912 := y
+CFLAGS += -DBRCM_CHIP4912
 endif
 
 # BCM6753 : seperate bin / header / modules from bcm6756
@@ -36,16 +38,12 @@ export BWDPI_MTK7621_NEW := y
 endif
 
 # signature version
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX56_XD4 CT-AX56_XD4 RT-AX55 XD4PRO))
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX56_XD4 CT-AX56_XD4 RT-AX55 XD4PRO RT-AX3000N XC5 XD4S))
 export LITE_VERSION := y
 else ifeq ($(or $(RTCONFIG_QCA956X),$(RTCONFIG_QCN550X)),y)
 export LITE_VERSION := y
 else ifeq ($(or $(BWDPI_MTK7621_NEW)),y)
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),TUF-AX4200 TX-AX4200))
-export FULL_VERSION := y
-else
 export LITE_VERSION := y
-endif
 else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AC85U RT-AC65U RT-AC56S RT-N18U))
 export PART_VERSION := y
 else
@@ -84,6 +82,10 @@ ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/tdts/sysdeps/mtk7622-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7622
 	@cp include/udb/sysdeps/mtk7622-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk7622
 	@cp bin/mtk7622/* bin/ -rf                                                           # mtk7622
+else ifeq ($(RTCONFIG_MT798X),y)
+	@cp include/tdts/sysdeps/mtk798X-tmcfg.h include/tdts/tmcfg.h -f                     # mtk798X
+	@cp include/udb/sysdeps/mtk798X-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk798X
+	@cp bin/mtk798X/* bin/ -rf                                                           # mtk798X
 else
 ifeq ($(BWDPI_MTK7621_NEW),y)
 	@cp include/tdts/sysdeps/mtk7621-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7621 new
@@ -186,6 +188,9 @@ else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp include/tdts/sysdeps/mtk7622-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7622
 	@cp include/udb/sysdeps/mtk7622-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk7622
+else ifeq ($(RTCONFIG_MT798X),y)
+	@cp include/tdts/sysdeps/mtk798X-tmcfg.h include/tdts/tmcfg.h -f                     # mtk798X
+	@cp include/udb/sysdeps/mtk798X-tmcfg_udb.h include/udb/tmcfg_udb.h -f               # mtk798X
 else
 ifeq ($(BWDPI_MTK7621_NEW),y)
 	@cp include/tdts/sysdeps/mtk7621-tmcfg.h include/tdts/tmcfg.h -f                     # mtk7621 new
@@ -296,6 +301,8 @@ endif
 else ifeq ($(RTCONFIG_RALINK),y)
 ifeq ($(RTCONFIG_RALINK_MT7622),y)
 	@cp -f modules/mtk7622/* RC_INDEP/
+else ifeq ($(RTCONFIG_MT798X),y)
+	@cp -f modules/mtk798X/* RC_INDEP/
 else
 ifeq ($(BWDPI_MTK7621_NEW),y)
 	@cp -f modules/mtk7621/* RC_INDEP/

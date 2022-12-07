@@ -1,4 +1,4 @@
-moon::ipsec stop
-carol::ipsec stop
+moon::systemctl stop strongswan
+carol::systemctl stop strongswan
 moon::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush

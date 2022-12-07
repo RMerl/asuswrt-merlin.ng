@@ -2,7 +2,8 @@
  * Copyright (C) 2012-2013 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -109,6 +110,18 @@ METHOD(packet_t, set_dscp, void,
 	private_esp_packet_t *this, uint8_t value)
 {
 	this->packet->set_dscp(this->packet, value);
+}
+
+METHOD(packet_t, get_metadata, metadata_t*,
+	private_esp_packet_t *this, const char *key)
+{
+	return this->packet->get_metadata(this->packet, key);
+}
+
+METHOD(packet_t, set_metadata, void,
+	private_esp_packet_t *this, const char *key, metadata_t *data)
+{
+	this->packet->set_metadata(this->packet, key, data);
 }
 
 METHOD(packet_t, skip_bytes, void,
@@ -415,6 +428,8 @@ static private_esp_packet_t *esp_packet_create_internal(packet_t *packet)
 				.set_data = _set_data,
 				.get_dscp = _get_dscp,
 				.set_dscp = _set_dscp,
+				.get_metadata = _get_metadata,
+				.set_metadata = _set_metadata,
 				.skip_bytes = _skip_bytes,
 				.clone = _clone_,
 				.destroy = _destroy,

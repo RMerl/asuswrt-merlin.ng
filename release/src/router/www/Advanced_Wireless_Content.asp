@@ -73,13 +73,6 @@ var faq_fref = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq
 var faq_href_hide_ssid = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=162";
 
 function initial(){
-	if(smart_connect_support && Qcawifi_support && document.form.smart_connect_x.value === '1'){
-		httpApi.nvramSet({
-			"action_mode":"apply",
-			"smart_connect_x": "0",
-		});
-	}
-
 	show_menu();
 	if (he_frame_support) {
 		$("#he_mode_field").show();
@@ -258,7 +251,7 @@ function initial(){
 		}
 	}
 
-	if(smart_connect_support && !Qcawifi_support && (isSwMode("rt") || isSwMode("ap"))){
+	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
 		var flag = '<% get_parameter("flag"); %>';		
 		var smart_connect_flag_t;
 		document.getElementById("smartcon_enable_field").style.display = "";
@@ -577,10 +570,12 @@ function applyRule(){
 				}
 			}
 			else {
-				//if(!AiMesh_confirm_msg("Wireless_Hide", radio_value))
-					//return false;
-				confirm_flag=6;
-				confirm_content="<#AiMesh_confirm_msg6#>";
+				if(radio_value) {
+					//if(!AiMesh_confirm_msg("Wireless_Hide", radio_value))
+						//return false;
+					confirm_flag=6;
+					confirm_content="<#AiMesh_confirm_msg6#>";
+				}
 			}
 		}
 		else {
@@ -699,6 +694,11 @@ function applyRule(){
 			if($(".confirm_block").length > 0){
 				$(".confirm_block").remove();
 			}
+			if(window.scrollTo)
+				window.scrollTo(0,0);
+			htmlbodyforIE = document.getElementsByTagName("html");
+			htmlbodyforIE[0].style.overflow = "hidden";
+
 			$("#Loading").css('visibility', 'visible');
 			$("#loadingBlock").css('visibility', 'hidden');
 
@@ -712,6 +712,8 @@ function applyRule(){
 						document.form.wps_enable.value = "0";
 					}
 					confirm_cancel();
+					htmlbodyforIE = document.getElementsByTagName("html");
+					htmlbodyforIE[0].style.overflow = "";
 					$("#loadingBlock").css('visibility', 'visible');
 					showLoading();
 					document.form.submit();
@@ -720,6 +722,8 @@ function applyRule(){
 				right_button: "<#CTL_Cancel#>",
 				right_button_callback: function(){
 					confirm_cancel();
+					htmlbodyforIE = document.getElementsByTagName("html");
+					htmlbodyforIE[0].style.overflow = "";
 					$("#Loading").css('visibility', 'hidden');
 					return false;
 				},
@@ -730,7 +734,7 @@ function applyRule(){
 			});
 			$(".confirm_block").css( "zIndex", 10001 );
 			$("#ssid_hide_faq").attr('target', '_blank')
-							.attr('style', 'color:#FC0;text-decoration:underline;')
+							.attr('style', 'color:#FFCC00;text-decoration:underline;')
 							.attr("href", faq_href_hide_ssid);
 
 		}

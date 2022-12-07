@@ -1,6 +1,8 @@
 /*
+ * Copyright (C) 2022 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,7 +41,7 @@ struct cert_validator_t {
 	 *
 	 * If this function returns SUCCESS or FAILED, the certificate lifetime is
 	 * considered definitely (in-)valid, without asking other validators.
-	 * If all registered validaters return NEED_MORE, the default
+	 * If all registered validators return NEED_MORE, the default
 	 * lifetime check is performed.
 	 *
 	 * @param cert			certificate to check lifetime
@@ -50,6 +52,7 @@ struct cert_validator_t {
 	 */
 	status_t (*check_lifetime)(cert_validator_t *this, certificate_t *cert,
 							   int pathlen, bool anchor, auth_cfg_t *auth);
+
 	/**
 	 * Validate a subject certificate in relation to its issuer.
 	 *
@@ -58,15 +61,35 @@ struct cert_validator_t {
 	 *
 	 * @param subject		subject certificate to check
 	 * @param issuer		issuer of subject
-	 * @param online		whether to do online revocation checking
 	 * @param pathlen		the current length of the path bottom-up
 	 * @param anchor		is issuer trusted root anchor
 	 * @param auth			container for resulting authentication info
 	 * @return				TRUE if subject certificate valid
 	 */
 	bool (*validate)(cert_validator_t *this, certificate_t *subject,
-					 certificate_t *issuer, bool online, u_int pathlen,
-					 bool anchor, auth_cfg_t *auth);
+					 certificate_t *issuer, u_int pathlen, bool anchor,
+					 auth_cfg_t *auth);
+
+	/**
+	 * Do extended online revocation checking for the given subject certificate
+	 * in relation to its issuer.
+	 *
+	 * If FALSE is returned, the validator should call_hook() on the
+	 * credential manager with an appropriate type and the certificate.
+	 *
+	 * @note This is called after successful basic validation of the complete
+	 * trust chain including validation via validate().
+	 *
+	 * @param subject		subject certificate to check
+	 * @param issuer		issuer of subject
+	 * @param pathlen		the current length of the path bottom-up
+	 * @param anchor		is issuer trusted root anchor
+	 * @param auth			container for resulting authentication info
+	 * @return				TRUE if subject certificate valid
+	 */
+	bool (*validate_online)(cert_validator_t *this, certificate_t *subject,
+							certificate_t *issuer, u_int pathlen, bool anchor,
+							auth_cfg_t *auth);
 };
 
 #endif /** CERT_VALIDATOR_H_ @}*/

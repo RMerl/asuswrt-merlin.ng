@@ -1,0 +1,185 @@
+.TH "PKI \-\-SCEP" 1 "2022-08-22" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-scep \- Enroll an X.509 certificate with a SCEP server
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-scep
+.BI\-\-\-url\~ url
+.OP \-\-in file
+.BI \-\-dn\~ distinguished-name
+.OP \-\-san subjectAltName
+.OP \-\-profile profile
+.OP \-\-password password
+.BI \-\-ca-cert-enc\~ file
+.BI \-\-ca-cert-sig\~ file
+.OP \-\-cacert file
+.BI [\-\-cert\~ file
+.BI \-\-key\~ file ]
+.OP \-\-cipher cipher
+.OP \-\-digest digest
+.OP \-\-rsa-padding padding
+.OP \-\-interval time
+.OP \-\-maxpolltime time
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-scep
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-scep"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+sends a PKCS#10 certificate request in an encrypted and signed PKCS#7 container
+via HTTP to a SCEP server using the Simple Certificate Enrollment Protocol
+(RFC 8894). After successful authorization which with manual authentication
+requires periodic polling by the enrollment client, the SCEP server returns an
+X.509 certificate signed by the CA.
+
+Before the expiry of the current certificate, a new client certificate based on
+a fresh RSA private key can be requested, using the old certificate and the old
+key for automatic authentication with the SCEP server.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-u, \-\-url " url
+URL of the SCEP server.
+.TP
+.BI "\-i, \-\-in " file
+RSA private key. If not given the key is read from \fISTDIN\fR.
+.TP
+.BI "\-d, \-\-dn " distinguished-name
+Subject distinguished name (DN). Required.
+.TP
+.BI "\-a, \-\-san " subjectAltName
+subjectAltName extension to include in request. Can be used multiple times.
+.TP
+.BI "\-P, \-\-profile " profile
+Certificate profile name to be included in the certificate request. Can be any
+UTF8 string. Supported e.g. by the
+.B openxpki
+SCEP server with profiles (\fIpc-client\fR, \fItls-server\fR, etc.) that are
+translated into corresponding Extended Key Usage (EKU) flags in the generated
+X.509 certificate.
+.TP
+.BI "\-p, \-\-password " password
+The challengePassword to include in the certificate request.
+.TP
+.BI "\-e, \-\-cacert-enc " file
+CA or RA certificate for encryption
+.TP
+.BI "\-s, \-\-cacert-sig " file
+CA certificate for signature verification
+.TP
+.BI "\-C, \-\-cacert " file
+Additional CA certificate in the trust chain used for signature verification.
+Can be used multiple times.
+.TP
+.BI "\-c, \-\-cert " file
+Client certificate to be renewed.
+.TP
+.BI "\-k, \-\-key " file
+Client RSA private key to be replaced.
+.TP
+.BI "\-E, \-\-cipher " cipher
+Cipher used for symmetric encryption. Either \fIaes\fR (the default) or \fIdes3\fR.
+.TP
+.BI "\-g, \-\-digest " digest
+Digest to use for signature creation. One of \fIsha256\fR (the default),
+\fIsha384\fR, \fIsha512\fR, or \fIsha1\fR.
+.TP
+.BI "\-R, \-\-rsa\-padding " padding
+Padding to use for RSA signatures. Either \fIpkcs1\fR (the default) or \fIpss\fR.
+.TP
+.BI "\-t, \-\-interval " time
+Poll interval in seconds, defaults to \fI60s\fR.
+.TP
+.BI "\-m, \-\-maxpolltime " time
+Maximum poll time in seconds, defaults to \fI0\fR which means unlimited polling.
+.TP
+.BI "\-f, \-\-outform " encoding
+Encoding of the created certificate file. Either \fIder\fR (ASN.1 DER) or
+\fIpem\fR (Base64 PEM), defaults to \fIder\fR.
+.
+.SH "EXAMPLES"
+.
+To save some typing work the following command line options are stored in a
+\fIscep.opt\fR file:
+.PP
+.EX
+\-\-url http://pki.strongswan.org:8080/scep
+\-\-cacert-enc myra.crt
+\-\-cacert-sig myca-1.crt
+\-\-cacert myca.crt
+.EE
+.PP
+With the following command, an X.509 certificate signed by the intermediate CA is
+requested from a SCEP server:
+.PP
+.EX
+pki \-\-options scep.opt \-\-in moonKey.der \-\-san "moon.strongswan.org" \\
+    \-\-dn "C=CH, O=strongSec GmbH, CN=moon.strongswan.org" > moonCert.der
+
+transaction ID: 4DFCF31CB18A9B5333CCEC6F99CF230E4524E334
+  using certificate "C=CH, O=strongSwan Project, CN=SCEP RA"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+  SCEP request pending, polling indefinitely every 60 seconds
+  going to sleep for 60 seconds
+transaction ID: 4DFCF31CB18A9B5333CCEC6F99CF230E4524E334
+  ...
+  going to sleep for 60 seconds
+Issued certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  serial: 1e:ff:22:7b:6e:d7:4c:c1:8a:06
+  using certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+Issued certificate is trusted, valid from Aug 22 18:56:23 2022 until Aug 22 18:56:23 2023 (currently valid)
+.EE
+.PP
+A certificate about to expire can be renewed with the command:
+.PP
+.EX
+pki \-\-options scep.opt \-\-in moonNewKey.der \-\-san "moon.strongswan.org" \\
+    \-\-dn "C=CH, O=strongSec GmbH, CN=moon.strongswan.org" \\
+    \-\-cert moonCert.der \-\-key moonKey.der > moonNewCert.der
+
+transaction ID: A9A63D028CC439F68452D125C4DBA025E67DBA95
+  using certificate "C=CH, O=strongSwan Project, CN=SCEP RA"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+Issued certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  serial: 1f:ff:b2:78:43:a2:9d:85:00:38
+  using certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+Issued certificate is trusted, valid from Jul 20 15:05:33 2023 until Jul 20 15:05:33 2024 (currently valid)
+.
+.SH "SEE ALSO"
+.
+.BR pki (1)

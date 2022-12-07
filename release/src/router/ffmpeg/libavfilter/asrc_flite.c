@@ -54,10 +54,10 @@ static const AVOption flite_options[] = {
     { "list_voices", "list voices and exit",              OFFSET(list_voices), AV_OPT_TYPE_BOOL, {.i64=0}, 0, 1, FLAGS },
     { "nb_samples",  "set number of samples per frame",   OFFSET(frame_nb_samples), AV_OPT_TYPE_INT, {.i64=512}, 0, INT_MAX, FLAGS },
     { "n",           "set number of samples per frame",   OFFSET(frame_nb_samples), AV_OPT_TYPE_INT, {.i64=512}, 0, INT_MAX, FLAGS },
-    { "text",        "set text to speak",                 OFFSET(text),      AV_OPT_TYPE_STRING, {.str=NULL}, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "textfile",    "set filename of the text to speak", OFFSET(textfile),  AV_OPT_TYPE_STRING, {.str=NULL}, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "v",           "set voice",                         OFFSET(voice_str), AV_OPT_TYPE_STRING, {.str="kal"}, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "voice",       "set voice",                         OFFSET(voice_str), AV_OPT_TYPE_STRING, {.str="kal"}, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "text",        "set text to speak",                 OFFSET(text),      AV_OPT_TYPE_STRING, {.str=NULL}, 0, 0, FLAGS },
+    { "textfile",    "set filename of the text to speak", OFFSET(textfile),  AV_OPT_TYPE_STRING, {.str=NULL}, 0, 0, FLAGS },
+    { "v",           "set voice",                         OFFSET(voice_str), AV_OPT_TYPE_STRING, {.str="kal"}, 0, 0, FLAGS },
+    { "voice",       "set voice",                         OFFSET(voice_str), AV_OPT_TYPE_STRING, {.str="kal"}, 0, 0, FLAGS },
     { NULL }
 };
 
@@ -196,10 +196,12 @@ static av_cold void uninit(AVFilterContext *ctx)
 {
     FliteContext *flite = ctx->priv;
 
-    if (!--flite->voice_entry->usage_count)
-        flite->voice_entry->unregister_fn(flite->voice);
-    flite->voice = NULL;
-    flite->voice_entry = NULL;
+    if (flite->voice_entry) {
+        if (!--flite->voice_entry->usage_count) {
+            flite->voice_entry->unregister_fn(flite->voice);
+            flite->voice_entry->voice = NULL;
+        }
+    }
     delete_wave(flite->wave);
     flite->wave = NULL;
 }

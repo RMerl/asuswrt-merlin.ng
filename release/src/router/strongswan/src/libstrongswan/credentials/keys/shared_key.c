@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -77,7 +78,7 @@ METHOD(shared_key_t, destroy, void,
 {
 	if (ref_put(&this->ref))
 	{
-		free(this->key.ptr);
+		chunk_clear(&this->key);
 		free(this);
 	}
 }

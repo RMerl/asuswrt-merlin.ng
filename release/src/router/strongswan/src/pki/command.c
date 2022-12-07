@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -243,7 +244,7 @@ int command_usage(char *error)
 /**
  * Show usage information
  */
-static int help(int argc, char *argv[])
+static int help(int c, char *v[])
 {
 	return command_usage(NULL);
 }

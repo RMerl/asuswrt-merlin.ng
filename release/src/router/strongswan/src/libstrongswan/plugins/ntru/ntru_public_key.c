@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2014-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2009-2013  Security Innovation
  *
@@ -52,7 +51,7 @@ struct private_ntru_public_key_t {
 	/**
 	 * Deterministic Random Bit Generator
 	 */
-	ntru_drbg_t *drbg;
+	drbg_t *drbg;
 
 };
 
@@ -152,9 +151,7 @@ METHOD(ntru_public_key_t, encrypt, bool,
 	/* loop until a message representative with proper weight is achieved */
 	do
 	{
-		if (!this->drbg->generate(this->drbg,
-								  this->params->sec_strength_len * BITS_PER_BYTE,
-								  this->params->sec_strength_len, b))
+		if (!this->drbg->generate(this->drbg, this->params->sec_strength_len, b))
 		{
 			goto err;
 		}
@@ -319,7 +316,7 @@ METHOD(ntru_public_key_t, destroy, void,
 /*
  * Described in header.
  */
-ntru_public_key_t *ntru_public_key_create(ntru_drbg_t *drbg,
+ntru_public_key_t *ntru_public_key_create(drbg_t *drbg,
 										  const ntru_param_set_t *params,
 										  uint16_t *pubkey)
 {
@@ -352,7 +349,7 @@ ntru_public_key_t *ntru_public_key_create(ntru_drbg_t *drbg,
 /*
  * Described in header.
  */
-ntru_public_key_t *ntru_public_key_create_from_data(ntru_drbg_t *drbg,
+ntru_public_key_t *ntru_public_key_create_from_data(drbg_t *drbg,
 													chunk_t data)
 {
 	private_ntru_public_key_t *this;

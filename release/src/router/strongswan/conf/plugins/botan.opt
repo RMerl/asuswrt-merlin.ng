@@ -1,0 +1,6 @@
+charon.plugins.botan.internal_rng_only = no
+	Force the use of Botan's internal RNG.
+
+	If enabled, only Botan's internal RNG will be used throughout the plugin.
+	Otherwise, and if supported by Botan, rng_t implementations provided by
+	other loaded plugins will be used as RNG.

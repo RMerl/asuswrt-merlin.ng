@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -190,6 +191,14 @@ static void setup_tunnel(private_ha_tunnel_t *this,
 	auth_cfg_t *auth_cfg;
 	child_cfg_t *child_cfg;
 	traffic_selector_t *ts;
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = local,
+		.local_port = charon->socket->get_port(charon->socket, FALSE),
+		.remote = remote,
+		.remote_port = IKEV2_UDP_PORT,
+		.no_certreq = TRUE,
+	};
 	peer_cfg_create_t peer = {
 		.cert_policy = CERT_NEVER_SEND,
 		.unique = UNIQUE_KEEP,
@@ -222,9 +231,7 @@ static void setup_tunnel(private_ha_tunnel_t *this,
 	lib->credmgr->add_set(lib->credmgr, &this->creds.public);
 
 	/* create config and backend */
-	ike_cfg = ike_cfg_create(IKEV2, FALSE, FALSE, local,
-							 charon->socket->get_port(charon->socket, FALSE),
-							 remote, IKEV2_UDP_PORT, FRAGMENTATION_NO, 0);
+	ike_cfg = ike_cfg_create(&ike);
 	ike_cfg->add_proposal(ike_cfg, proposal_create_default(PROTO_IKE));
 	ike_cfg->add_proposal(ike_cfg, proposal_create_default_aead(PROTO_IKE));
 	peer_cfg = peer_cfg_create(HA_CFG_NAME, ike_cfg, &peer);
@@ -250,8 +257,8 @@ static void setup_tunnel(private_ha_tunnel_t *this,
 	child_cfg->add_traffic_selector(child_cfg, FALSE, ts);
 	ts = traffic_selector_create_dynamic(IPPROTO_ICMP, 0, 65535);
 	child_cfg->add_traffic_selector(child_cfg, FALSE, ts);
-	child_cfg->add_proposal(child_cfg, proposal_create_default(PROTO_ESP));
 	child_cfg->add_proposal(child_cfg, proposal_create_default_aead(PROTO_ESP));
+	child_cfg->add_proposal(child_cfg, proposal_create_default(PROTO_ESP));
 	peer_cfg->add_child_cfg(peer_cfg, child_cfg);
 
 	this->backend.cfg = peer_cfg;

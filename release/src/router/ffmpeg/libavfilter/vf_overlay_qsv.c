@@ -160,7 +160,7 @@ release:
 
 static int have_alpha_planar(AVFilterLink *link)
 {
-    enum AVPixelFormat pix_fmt;
+    enum AVPixelFormat pix_fmt = link->format;
     const AVPixFmtDescriptor *desc;
     AVHWFramesContext *fctx;
 
@@ -345,7 +345,7 @@ static int overlay_qsv_init(AVFilterContext *ctx)
     return 0;
 }
 
-static void overlay_qsv_uninit(AVFilterContext *ctx)
+static av_cold void overlay_qsv_uninit(AVFilterContext *ctx)
 {
     QSVOverlayContext *vpp = ctx->priv;
 
@@ -381,12 +381,12 @@ static int overlay_qsv_query_formats(AVFilterContext *ctx)
     };
 
     for (i = 0; i < ctx->nb_inputs; i++) {
-        ret = ff_formats_ref(ff_make_format_list(main_in_fmts), &ctx->inputs[i]->out_formats);
+        ret = ff_formats_ref(ff_make_format_list(main_in_fmts), &ctx->inputs[i]->outcfg.formats);
         if (ret < 0)
             return ret;
     }
 
-    ret = ff_formats_ref(ff_make_format_list(out_pix_fmts), &ctx->outputs[0]->in_formats);
+    ret = ff_formats_ref(ff_make_format_list(out_pix_fmts), &ctx->outputs[0]->incfg.formats);
     if (ret < 0)
         return ret;
 
@@ -398,13 +398,11 @@ static const AVFilterPad overlay_qsv_inputs[] = {
         .name          = "main",
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_main_input,
-        .needs_fifo    = 1,
     },
     {
         .name          = "overlay",
         .type          = AVMEDIA_TYPE_VIDEO,
         .config_props  = config_overlay_input,
-        .needs_fifo    = 1,
     },
     { NULL }
 };

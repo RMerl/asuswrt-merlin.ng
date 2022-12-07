@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -124,12 +125,27 @@ END_TEST
  * clear
  */
 
+ADDRESS_SANITIZER_EXCLUDE
+static bool cleared(u_char *ptr)
+{
+	int i;
+
+	for (i = 0; i < 64; i += 2)
+	{
+		if (ptr[i] != 0 && ptr[i] == i &&
+			ptr[i+1] != 0 && ptr[i+1] == i+1)
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
 START_TEST(test_chunk_clear)
 {
 	chunk_t chunk;
 	u_char *ptr;
 	int i;
-	bool cleared = TRUE;
 
 	chunk = chunk_empty;
 	chunk_clear(&chunk);
@@ -146,17 +162,8 @@ START_TEST(test_chunk_clear)
 	 * test directly, as it might allocate data at the freed area.  comparing
 	 * two bytes at once reduces the chances of conflicts if memory got
 	 * overwritten already */
-	for (i = 0; i < 64; i += 2)
-	{
-		if (ptr[i] != 0 && ptr[i] == i &&
-			ptr[i+1] != 0 && ptr[i+1] == i+1)
-		{
-			cleared = FALSE;
-			break;
-		}
-	}
+	ck_assert(cleared(ptr));
 	assert_chunk_empty(chunk);
-	ck_assert(cleared);
 }
 END_TEST
 
@@ -198,6 +205,27 @@ END_TEST
  * chunk_create_cat
  */
 
+ADDRESS_SANITIZER_EXCLUDE
+bool chunk_equals_nosan(chunk_t a, chunk_t b)
+{
+	int i;
+
+	/* can't use memcmp() or any function using it, as that is again
+	 * sanitize-checked */
+	if (a.len != b.len)
+	{
+		return FALSE;
+	}
+	for (i = 0; i < b.len; i++)
+	{
+		if (a.ptr[i] != b.ptr[i])
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
 START_TEST(test_chunk_create_cat)
 {
 	chunk_t foo, bar;
@@ -235,8 +263,8 @@ START_TEST(test_chunk_create_cat)
 	ck_assert_int_eq(c.len, 6);
 	ck_assert(chunk_equals(c, chunk_from_str("foobar")));
 	/* check memory area of cleared chunk */
-	ck_assert(!chunk_equals(foo, chunk_create(ptra, 3)));
-	ck_assert(!chunk_equals(bar, chunk_create(ptrb, 3)));
+	ck_assert(!chunk_equals_nosan(foo, chunk_create(ptra, 3)));
+	ck_assert(!chunk_equals_nosan(bar, chunk_create(ptrb, 3)));
 }
 END_TEST
 
@@ -574,6 +602,40 @@ START_TEST(test_increment)
 END_TEST
 
 /*******************************************************************************
+ * chunk_copy_pad tests
+ */
+
+static struct {
+	size_t len;
+	u_char chr;
+	chunk_t src;
+	chunk_t exp;
+} copy_pad_data[] = {
+	{0, 0x00, { NULL, 0 }, { NULL, 0 }},
+	{4, 0x00, { NULL, 0 }, chunk_from_chars(0x00,0x00,0x00,0x00)},
+	{0, 0x00, chunk_from_chars(0x01), { NULL, 0 }},
+	{1, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x01)},
+	{2, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x00,0x01)},
+	{3, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x00,0x00,0x01)},
+	{4, 0x00, chunk_from_chars(0x01), chunk_from_chars(0x00,0x00,0x00,0x01)},
+	{4, 0x02, chunk_from_chars(0x01), chunk_from_chars(0x02,0x02,0x02,0x01)},
+	{1, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x04)},
+	{2, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x03,0x04)},
+	{3, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x02,0x03,0x04)},
+	{4, 0x00, chunk_from_chars(0x01,0x02,0x03,0x04), chunk_from_chars(0x01,0x02,0x03,0x04)},
+};
+
+START_TEST(test_copy_pad)
+{
+	chunk_t chunk;
+
+	chunk = chunk_copy_pad(chunk_alloca(copy_pad_data[_i].len),
+						   copy_pad_data[_i].src, copy_pad_data[_i].chr);
+	ck_assert_chunk_eq(chunk, copy_pad_data[_i].exp);
+}
+END_TEST
+
+/*******************************************************************************
  * chunk_printable tests
  */
 
@@ -905,6 +967,44 @@ START_TEST(test_chunk_map)
 }
 END_TEST
 
+START_TEST(test_chunk_map_clear)
+{
+	chunk_t *map, contents = chunk_from_chars(0x01,0x02,0x03,0x04,0x05);
+#ifdef WIN32
+	char *path = "C:\\Windows\\Temp\\strongswan-chunk-map-test";
+#else
+	char *path = "/tmp/strongswan-chunk-map-clear-test";
+#endif
+
+	ck_assert(chunk_write(contents, path, 022, TRUE));
+
+	/* read */
+	map = chunk_map(path, FALSE);
+	ck_assert(map != NULL);
+	ck_assert_msg(chunk_equals(*map, contents), "%B", map);
+	ck_assert(chunk_unmap_clear(map));
+	/* we can't verify that clearing worked as we don't have access to the
+	 * memory anymore and mmap with MAP_ANONYMOUS | MAP_UNINITIALIZED of the
+	 * same area will only work if the kernel allows this */
+
+	/* write */
+	map = chunk_map(path, TRUE);
+	ck_assert(map != NULL);
+	ck_assert_msg(chunk_equals(*map, contents), "%B", map);
+	map->ptr[0] = 0x42;
+	ck_assert(chunk_unmap_clear(map));
+
+	/* verify write */
+	contents.ptr[0] = 0x42;
+	map = chunk_map(path, FALSE);
+	ck_assert(map != NULL);
+	ck_assert_msg(chunk_equals(*map, contents), "%B", map);
+	ck_assert(chunk_unmap_clear(map));
+
+	unlink(path);
+}
+END_TEST
+
 /*******************************************************************************
  * test for chunk_from_fd
  */
@@ -1076,6 +1176,10 @@ Suite *chunk_suite_create()
 	tcase_add_loop_test(tc, test_increment, 0, countof(increment_data));
 	suite_add_tcase(s, tc);
 
+	tc = tcase_create("chunk_copy_pad");
+	tcase_add_loop_test(tc, test_copy_pad, 0, countof(copy_pad_data));
+	suite_add_tcase(s, tc);
+
 	tc = tcase_create("chunk_printable");
 	tcase_add_loop_test(tc, test_printable, 0, countof(printable_data));
 	tcase_add_loop_test(tc, test_printable_sanitize, 0, countof(printable_data));
@@ -1106,6 +1210,7 @@ Suite *chunk_suite_create()
 
 	tc = tcase_create("chunk_map");
 	tcase_add_test(tc, test_chunk_map);
+	tcase_add_test(tc, test_chunk_map_clear);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("chunk_from_fd");

@@ -85,3 +85,10 @@
  * can use libexif without issues if they never share handles.
  *
  */
+
+#ifndef LIBEXIF_EXIF_H
+#define LIBEXIF_EXIF_H
+
+/* Empty header file content. */
+
+#endif /* !defined(LIBEXIF_EXIF_H) */

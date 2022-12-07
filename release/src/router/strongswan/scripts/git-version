@@ -1,0 +1,16 @@
+#!/bin/sh
+
+SRCDIR=$1
+TARBALL=$SRCDIR/.tarball-git-version
+
+if test -f $TARBALL; then
+	V=$(cat $TARBALL)
+elif test -e $SRCDIR/.git; then
+	V=$(git -C $SRCDIR describe --exclude 'android-*' --tags HEAD 2>/dev/null)
+fi
+
+if test -z "$V"; then
+	V="UNKNOWN"
+fi
+
+echo $V

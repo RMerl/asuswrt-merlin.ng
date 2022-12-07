@@ -1,5 +1,5 @@
 carol::swanctl --terminate --ike home
 dave::swanctl --terminate --ike home
-carol::systemctl stop strongswan-swanctl
-dave::systemctl stop strongswan-swanctl
-moon::systemctl stop strongswan-swanctl
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan

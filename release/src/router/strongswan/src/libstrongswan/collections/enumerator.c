@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2017 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,6 +28,8 @@
 
 #ifdef HAVE_GLOB_H
 #include <glob.h>
+#elif defined(WIN32)
+#include <fileapi.h>
 #endif /* HAVE_GLOB_H */
 
 #include <utils/debug.h>
@@ -129,9 +132,10 @@ METHOD(enumerator_t, enumerate_dir_enum, bool,
 		{
 			*absolute = this->full;
 		}
-		if (st)
+		if (st && stat(this->full, st))
 		{
-			if (stat(this->full, st))
+			/* try lstat() e.g. if a symlink is not valid anymore */
+			if ((errno != ENOENT && errno != ENOTDIR) || lstat(this->full, st))
 			{
 				DBG1(DBG_LIB, "stat() on '%s' failed: %s", this->full,
 					 strerror(errno));
@@ -170,9 +174,9 @@ enumerator_t* enumerator_create_directory(const char *path)
 		return NULL;
 	}
 	/* append a '/' if not already done */
-	if (this->full[len-1] != '/')
+	if (!path_is_separator(this->full[len-1]))
 	{
-		this->full[len++] = '/';
+		this->full[len++] = DIRECTORY_SEPARATOR[0];
 		this->full[len] = '\0';
 	}
 	this->full_end = &this->full[len];
@@ -200,8 +204,6 @@ typedef struct {
 	glob_t glob;
 	/** iteration count */
 	u_int pos;
-	/** absolute path of current file */
-	char full[PATH_MAX];
 } glob_enum_t;
 
 METHOD(enumerator_t, destroy_glob_enum, void,
@@ -268,6 +270,143 @@ enumerator_t* enumerator_create_glob(const char *pattern)
 	{
 		DBG1(DBG_LIB, "expanding file pattern '%s' failed: %s", pattern,
 			 strerror(errno));
+	}
+	return &this->public;
+}
+
+#elif defined(WIN32) /* HAVE_GLOB_H */
+
+/**
+ * Enumerator implementation for glob enumerator on Windows
+ */
+typedef struct {
+	/** implements enumerator_t */
+	enumerator_t public;
+	/** search handle */
+	HANDLE handle;
+	/** current file path */
+	char path[PATH_MAX];
+	/** base path */
+	char *base;
+} glob_enum_t;
+
+METHOD(enumerator_t, destroy_glob_enum, void,
+	glob_enum_t *this)
+{
+	if (this->handle != INVALID_HANDLE_VALUE)
+	{
+		FindClose(this->handle);
+	}
+	free(this->base);
+	free(this);
+}
+
+/**
+ * Create the combined path from the given file data
+ */
+static bool combine_glob_path(glob_enum_t *this, WIN32_FIND_DATA *data)
+{
+	if (snprintf(this->path, sizeof(this->path), "%s%s%s", this->base,
+				 DIRECTORY_SEPARATOR, data->cFileName) >= sizeof(this->path))
+	{
+		DBG1(DBG_LIB, "path for '%s' too long, ignored", data->cFileName);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * Return the path and stat data for the current file
+ */
+static bool enumerate_glob_enum_data(glob_enum_t *this, va_list args)
+{
+	struct stat *st;
+	char **file;
+
+	VA_ARGS_VGET(args, file, st);
+
+	if (file)
+	{
+		*file = this->path;
+	}
+	if (st && stat(this->path, st))
+	{
+		DBG1(DBG_LIB, "stat() on '%s' failed: %s", this->path,
+			 strerror(errno));
+		return FALSE;
+	}
+	return TRUE;
+}
+
+METHOD(enumerator_t, enumerate_glob_enum, bool,
+	glob_enum_t *this, va_list args)
+{
+	WIN32_FIND_DATA data;
+
+	do
+	{
+		if (!FindNextFile(this->handle, &data))
+		{
+			return FALSE;
+		}
+	}
+	while (!combine_glob_path(this, &data));
+
+	return enumerate_glob_enum_data(this, args);
+}
+
+METHOD(enumerator_t, enumerate_glob_enum_first, bool,
+	glob_enum_t *this, va_list args)
+{
+	if (enumerate_glob_enum_data(this, args))
+	{
+		this->public.venumerate = _enumerate_glob_enum;
+		return TRUE;
+	}
+	return FALSE;
+}
+
+/*
+ * Described in header
+ */
+enumerator_t *enumerator_create_glob(const char *pattern)
+{
+	glob_enum_t *this;
+	WIN32_FIND_DATA data;
+
+	if (!pattern)
+	{
+		return enumerator_create_empty();
+	}
+
+	INIT(this,
+		.public = {
+			.enumerate = enumerator_enumerate_default,
+			.venumerate = _enumerate_glob_enum_first,
+			.destroy = _destroy_glob_enum,
+		},
+		.base = path_dirname(pattern),
+	);
+
+	this->handle = FindFirstFile(pattern, &data);
+	if (this->handle == INVALID_HANDLE_VALUE)
+	{
+		if (GetLastError() == ERROR_FILE_NOT_FOUND ||
+			GetLastError() == ERROR_PATH_NOT_FOUND)
+		{
+			DBG1(DBG_LIB, "no files found matching '%s'", pattern);
+		}
+		else
+		{
+			DBG1(DBG_LIB, "FindFirstFile failed for pattern '%s' (%d)", pattern,
+				 GetLastError());
+		}
+		destroy_glob_enum(this);
+		return enumerator_create_empty();
+	}
+	else if (!combine_glob_path(this, &data))
+	{	/* check the next file if we can't combine the path for the first one */
+		this->public.venumerate = _enumerate_glob_enum;
 	}
 	return &this->public;
 }

@@ -23,6 +23,11 @@
 
 #include <stdint.h>
 #include <msa.h>
+#include <config.h>
+
+#if HAVE_MSA2
+#include <msa2.h>
+#endif
 
 #define ALIGNMENT           16
 #define ALLOC_ALIGNED(align) __attribute__ ((aligned((align) << 1)))
@@ -106,10 +111,11 @@
         uint32_t val_lw_m;                           \
                                                      \
         __asm__ volatile (                           \
-            "ulw  %[val_lw_m],  %[psrc_lw_m]  \n\t"  \
+            "lwr %[val_lw_m], 0(%[psrc_lw_m]) \n\t"  \
+            "lwl %[val_lw_m], 3(%[psrc_lw_m]) \n\t"  \
                                                      \
-            : [val_lw_m] "=r" (val_lw_m)             \
-            : [psrc_lw_m] "m" (*psrc_lw_m)           \
+            : [val_lw_m] "=&r"(val_lw_m)             \
+            : [psrc_lw_m] "r"(psrc_lw_m)             \
         );                                           \
                                                      \
         val_lw_m;                                    \
@@ -122,10 +128,11 @@
             uint64_t val_ld_m = 0;                       \
                                                          \
             __asm__ volatile (                           \
-                "uld  %[val_ld_m],  %[psrc_ld_m]  \n\t"  \
+                "ldr %[val_ld_m], 0(%[psrc_ld_m]) \n\t"  \
+                "ldl %[val_ld_m], 7(%[psrc_ld_m]) \n\t"  \
                                                          \
-                : [val_ld_m] "=r" (val_ld_m)             \
-                : [psrc_ld_m] "m" (*psrc_ld_m)           \
+                : [val_ld_m] "=&r" (val_ld_m)            \
+                : [psrc_ld_m] "r" (psrc_ld_m)            \
             );                                           \
                                                          \
             val_ld_m;                                    \
@@ -294,6 +301,7 @@
 #define LD_SB4(...) LD_V4(v16i8, __VA_ARGS__)
 #define LD_UH4(...) LD_V4(v8u16, __VA_ARGS__)
 #define LD_SH4(...) LD_V4(v8i16, __VA_ARGS__)
+#define LD_SW4(...) LD_V4(v4i32, __VA_ARGS__)
 
 #define LD_V5(RTYPE, psrc, stride, out0, out1, out2, out3, out4)  \
 {                                                                 \
@@ -332,6 +340,7 @@
 #define LD_SB8(...) LD_V8(v16i8, __VA_ARGS__)
 #define LD_UH8(...) LD_V8(v8u16, __VA_ARGS__)
 #define LD_SH8(...) LD_V8(v8i16, __VA_ARGS__)
+#define LD_SW8(...) LD_V8(v4i32, __VA_ARGS__)
 
 #define LD_V16(RTYPE, psrc, stride,                                   \
                out0, out1, out2, out3, out4, out5, out6, out7,        \
@@ -343,19 +352,6 @@
           out8, out9, out10, out11, out12, out13, out14, out15);      \
 }
 #define LD_SH16(...) LD_V16(v8i16, __VA_ARGS__)
-
-/* Description : Load as 4x4 block of signed halfword elements from 1D source
-                 data into 4 vectors (Each vector with 4 signed halfwords)
-   Arguments   : Inputs  - psrc
-                 Outputs - out0, out1, out2, out3
-*/
-#define LD4x4_SH(psrc, out0, out1, out2, out3)                \
-{                                                             \
-    out0 = LD_SH(psrc);                                       \
-    out2 = LD_SH(psrc + 8);                                   \
-    out1 = (v8i16) __msa_ilvl_d((v2i64) out0, (v2i64) out0);  \
-    out3 = (v8i16) __msa_ilvl_d((v2i64) out2, (v2i64) out2);  \
-}
 
 /* Description : Store vectors with stride
    Arguments   : Inputs  - in0, in1, stride
@@ -400,198 +396,127 @@
 #define ST_SH8(...) ST_V8(v8i16, __VA_ARGS__)
 #define ST_SW8(...) ST_V8(v4i32, __VA_ARGS__)
 
-/* Description : Store as 2x4 byte block to destination memory from input vector
-   Arguments   : Inputs  - in, stidx, pdst, stride
-                 Return Type - unsigned byte
-   Details     : Index stidx halfword element from 'in' vector is copied and
-                 stored on first line
-                 Index stidx+1 halfword element from 'in' vector is copied and
-                 stored on second line
-                 Index stidx+2 halfword element from 'in' vector is copied and
-                 stored on third line
-                 Index stidx+3 halfword element from 'in' vector is copied and
-                 stored on fourth line
-*/
-#define ST2x4_UB(in, stidx, pdst, stride)              \
-{                                                      \
-    uint16_t out0_m, out1_m, out2_m, out3_m;           \
-    uint8_t *pblk_2x4_m = (uint8_t *) (pdst);          \
-                                                       \
-    out0_m = __msa_copy_u_h((v8i16) in, (stidx));      \
-    out1_m = __msa_copy_u_h((v8i16) in, (stidx + 1));  \
-    out2_m = __msa_copy_u_h((v8i16) in, (stidx + 2));  \
-    out3_m = __msa_copy_u_h((v8i16) in, (stidx + 3));  \
-                                                       \
-    SH(out0_m, pblk_2x4_m);                            \
-    SH(out1_m, pblk_2x4_m + stride);                   \
-    SH(out2_m, pblk_2x4_m + 2 * stride);               \
-    SH(out3_m, pblk_2x4_m + 3 * stride);               \
+/* Description : Store half word elements of vector with stride
+ * Arguments   : Inputs  - in   source vector
+ *                       - pdst    (destination pointer to store to)
+ *                       - stride
+ * Details     : Stores half word 'idx0' from 'in' to (pdst)
+ *               Stores half word 'idx1' from 'in' to (pdst + stride)
+ *               Similar for other elements
+ */
+#define ST_H1(in, idx, pdst)                             \
+{                                                        \
+    uint16_t out0_m;                                     \
+    out0_m = __msa_copy_u_h((v8i16) in, idx);            \
+    SH(out0_m, (pdst));                                  \
+}
+#define ST_H2(in, idx0, idx1, pdst, stride)              \
+{                                                        \
+    uint16_t out0_m, out1_m;                             \
+    out0_m = __msa_copy_u_h((v8i16) in, idx0);           \
+    out1_m = __msa_copy_u_h((v8i16) in, idx1);           \
+    SH(out0_m, (pdst));                                  \
+    SH(out1_m, (pdst) + stride);                         \
+}
+#define ST_H4(in, idx0, idx1, idx2, idx3, pdst, stride)  \
+{                                                        \
+    uint16_t out0_m, out1_m, out2_m, out3_m;             \
+    out0_m = __msa_copy_u_h((v8i16) in, idx0);           \
+    out1_m = __msa_copy_u_h((v8i16) in, idx1);           \
+    out2_m = __msa_copy_u_h((v8i16) in, idx2);           \
+    out3_m = __msa_copy_u_h((v8i16) in, idx3);           \
+    SH(out0_m, (pdst));                                  \
+    SH(out1_m, (pdst) + stride);                         \
+    SH(out2_m, (pdst) + 2 * stride);                     \
+    SH(out3_m, (pdst) + 3 * stride);                     \
+}
+#define ST_H8(in, idx0, idx1, idx2, idx3, idx4, idx5,            \
+              idx6, idx7, pdst, stride)                          \
+{                                                                \
+    ST_H4(in, idx0, idx1, idx2, idx3, pdst, stride)              \
+    ST_H4(in, idx4, idx5, idx6, idx7, (pdst) + 4*stride, stride) \
 }
 
-/* Description : Store as 4x2 byte block to destination memory from input vector
-   Arguments   : Inputs  - in, pdst, stride
-                 Return Type - unsigned byte
-   Details     : Index 0 word element from input vector is copied and stored
-                 on first line
-                 Index 1 word element from input vector is copied and stored
-                 on second line
-*/
-#define ST4x2_UB(in, pdst, stride)             \
+/* Description : Store word elements of vector with stride
+ * Arguments   : Inputs  - in   source vector
+ *                       - pdst    (destination pointer to store to)
+ *                       - stride
+ * Details     : Stores word 'idx0' from 'in' to (pdst)
+ *               Stores word 'idx1' from 'in' to (pdst + stride)
+ *               Similar for other elements
+ */
+#define ST_W1(in, idx, pdst)                             \
+{                                                        \
+    uint32_t out0_m;                                     \
+    out0_m = __msa_copy_u_w((v4i32) in, idx);            \
+    SW(out0_m, (pdst));                                  \
+}
+#define ST_W2(in, idx0, idx1, pdst, stride)              \
+{                                                        \
+    uint32_t out0_m, out1_m;                             \
+    out0_m = __msa_copy_u_w((v4i32) in, idx0);           \
+    out1_m = __msa_copy_u_w((v4i32) in, idx1);           \
+    SW(out0_m, (pdst));                                  \
+    SW(out1_m, (pdst) + stride);                         \
+}
+#define ST_W4(in, idx0, idx1, idx2, idx3, pdst, stride)  \
+{                                                        \
+    uint32_t out0_m, out1_m, out2_m, out3_m;             \
+    out0_m = __msa_copy_u_w((v4i32) in, idx0);           \
+    out1_m = __msa_copy_u_w((v4i32) in, idx1);           \
+    out2_m = __msa_copy_u_w((v4i32) in, idx2);           \
+    out3_m = __msa_copy_u_w((v4i32) in, idx3);           \
+    SW(out0_m, (pdst));                                  \
+    SW(out1_m, (pdst) + stride);                         \
+    SW(out2_m, (pdst) + 2*stride);                       \
+    SW(out3_m, (pdst) + 3*stride);                       \
+}
+#define ST_W8(in0, in1, idx0, idx1, idx2, idx3,                 \
+              idx4, idx5, idx6, idx7, pdst, stride)             \
+{                                                               \
+    ST_W4(in0, idx0, idx1, idx2, idx3, pdst, stride)            \
+    ST_W4(in1, idx4, idx5, idx6, idx7, pdst + 4*stride, stride) \
+}
+
+/* Description : Store double word elements of vector with stride
+ * Arguments   : Inputs  - in   source vector
+ *                       - pdst    (destination pointer to store to)
+ *                       - stride
+ * Details     : Stores double word 'idx0' from 'in' to (pdst)
+ *               Stores double word 'idx1' from 'in' to (pdst + stride)
+ *               Similar for other elements
+ */
+#define ST_D1(in, idx, pdst)                   \
 {                                              \
-    uint32_t out0_m, out1_m;                   \
-    uint8_t *pblk_4x2_m = (uint8_t *) (pdst);  \
-                                               \
-    out0_m = __msa_copy_u_w((v4i32) in, 0);    \
-    out1_m = __msa_copy_u_w((v4i32) in, 1);    \
-                                               \
-    SW(out0_m, pblk_4x2_m);                    \
-    SW(out1_m, pblk_4x2_m + stride);           \
+    uint64_t out0_m;                           \
+    out0_m = __msa_copy_u_d((v2i64) in, idx);  \
+    SD(out0_m, (pdst));                        \
 }
-
-/* Description : Store as 4x4 byte block to destination memory from input vector
-   Arguments   : Inputs  - in0, in1, pdst, stride
-                 Return Type - unsigned byte
-   Details     : Idx0 word element from input vector 'in0' is copied and stored
-                 on first line
-                 Idx1 word element from input vector 'in0' is copied and stored
-                 on second line
-                 Idx2 word element from input vector 'in1' is copied and stored
-                 on third line
-                 Idx3 word element from input vector 'in1' is copied and stored
-                 on fourth line
-*/
-#define ST4x4_UB(in0, in1, idx0, idx1, idx2, idx3, pdst, stride)  \
-{                                                                 \
-    uint32_t out0_m, out1_m, out2_m, out3_m;                      \
-    uint8_t *pblk_4x4_m = (uint8_t *) (pdst);                     \
-                                                                  \
-    out0_m = __msa_copy_u_w((v4i32) in0, idx0);                   \
-    out1_m = __msa_copy_u_w((v4i32) in0, idx1);                   \
-    out2_m = __msa_copy_u_w((v4i32) in1, idx2);                   \
-    out3_m = __msa_copy_u_w((v4i32) in1, idx3);                   \
-                                                                  \
-    SW4(out0_m, out1_m, out2_m, out3_m, pblk_4x4_m, stride);      \
-}
-#define ST4x8_UB(in0, in1, pdst, stride)                            \
-{                                                                   \
-    uint8_t *pblk_4x8 = (uint8_t *) (pdst);                         \
-                                                                    \
-    ST4x4_UB(in0, in0, 0, 1, 2, 3, pblk_4x8, stride);               \
-    ST4x4_UB(in1, in1, 0, 1, 2, 3, pblk_4x8 + 4 * stride, stride);  \
-}
-
-/* Description : Store as 6x4 byte block to destination memory from input
-                 vectors
-   Arguments   : Inputs  - in0, in1, pdst, stride
-                 Return Type - unsigned byte
-   Details     : Index 0 word element from input vector 'in0' is copied and
-                 stored on first line followed by index 2 halfword element
-                 Index 2 word element from input vector 'in0' is copied and
-                 stored on second line followed by index 2 halfword element
-                 Index 0 word element from input vector 'in1' is copied and
-                 stored on third line followed by index 2 halfword element
-                 Index 2 word element from input vector 'in1' is copied and
-                 stored on fourth line followed by index 2 halfword element
-*/
-#define ST6x4_UB(in0, in1, pdst, stride)       \
-{                                              \
-    uint32_t out0_m, out1_m, out2_m, out3_m;   \
-    uint16_t out4_m, out5_m, out6_m, out7_m;   \
-    uint8_t *pblk_6x4_m = (uint8_t *) (pdst);  \
-                                               \
-    out0_m = __msa_copy_u_w((v4i32) in0, 0);   \
-    out1_m = __msa_copy_u_w((v4i32) in0, 2);   \
-    out2_m = __msa_copy_u_w((v4i32) in1, 0);   \
-    out3_m = __msa_copy_u_w((v4i32) in1, 2);   \
-                                               \
-    out4_m = __msa_copy_u_h((v8i16) in0, 2);   \
-    out5_m = __msa_copy_u_h((v8i16) in0, 6);   \
-    out6_m = __msa_copy_u_h((v8i16) in1, 2);   \
-    out7_m = __msa_copy_u_h((v8i16) in1, 6);   \
-                                               \
-    SW(out0_m, pblk_6x4_m);                    \
-    SH(out4_m, (pblk_6x4_m + 4));              \
-    pblk_6x4_m += stride;                      \
-    SW(out1_m, pblk_6x4_m);                    \
-    SH(out5_m, (pblk_6x4_m + 4));              \
-    pblk_6x4_m += stride;                      \
-    SW(out2_m, pblk_6x4_m);                    \
-    SH(out6_m, (pblk_6x4_m + 4));              \
-    pblk_6x4_m += stride;                      \
-    SW(out3_m, pblk_6x4_m);                    \
-    SH(out7_m, (pblk_6x4_m + 4));              \
-}
-
-/* Description : Store as 8x1 byte block to destination memory from input vector
-   Arguments   : Inputs  - in, pdst
-   Details     : Index 0 double word element from input vector 'in' is copied
-                 and stored to destination memory at (pdst)
-*/
-#define ST8x1_UB(in, pdst)                   \
-{                                            \
-    uint64_t out0_m;                         \
-    out0_m = __msa_copy_u_d((v2i64) in, 0);  \
-    SD(out0_m, pdst);                        \
-}
-
-/* Description : Store as 8x2 byte block to destination memory from input vector
-   Arguments   : Inputs  - in, pdst, stride
-   Details     : Index 0 double word element from input vector 'in' is copied
-                 and stored to destination memory at (pdst)
-                 Index 1 double word element from input vector 'in' is copied
-                 and stored to destination memory at (pdst + stride)
-*/
-#define ST8x2_UB(in, pdst, stride)             \
+#define ST_D2(in, idx0, idx1, pdst, stride)    \
 {                                              \
     uint64_t out0_m, out1_m;                   \
-    uint8_t *pblk_8x2_m = (uint8_t *) (pdst);  \
-                                               \
-    out0_m = __msa_copy_u_d((v2i64) in, 0);    \
-    out1_m = __msa_copy_u_d((v2i64) in, 1);    \
-                                               \
-    SD(out0_m, pblk_8x2_m);                    \
-    SD(out1_m, pblk_8x2_m + stride);           \
+    out0_m = __msa_copy_u_d((v2i64) in, idx0); \
+    out1_m = __msa_copy_u_d((v2i64) in, idx1); \
+    SD(out0_m, (pdst));                        \
+    SD(out1_m, (pdst) + stride);               \
 }
-
-/* Description : Store as 8x4 byte block to destination memory from input
-                 vectors
-   Arguments   : Inputs  - in0, in1, pdst, stride
-   Details     : Index 0 double word element from input vector 'in0' is copied
-                 and stored to destination memory at (pblk_8x4_m)
-                 Index 1 double word element from input vector 'in0' is copied
-                 and stored to destination memory at (pblk_8x4_m + stride)
-                 Index 0 double word element from input vector 'in1' is copied
-                 and stored to destination memory at (pblk_8x4_m + 2 * stride)
-                 Index 1 double word element from input vector 'in1' is copied
-                 and stored to destination memory at (pblk_8x4_m + 3 * stride)
-*/
-#define ST8x4_UB(in0, in1, pdst, stride)                      \
+#define ST_D4(in0, in1, idx0, idx1, idx2, idx3, pdst, stride) \
 {                                                             \
     uint64_t out0_m, out1_m, out2_m, out3_m;                  \
-    uint8_t *pblk_8x4_m = (uint8_t *) (pdst);                 \
-                                                              \
-    out0_m = __msa_copy_u_d((v2i64) in0, 0);                  \
-    out1_m = __msa_copy_u_d((v2i64) in0, 1);                  \
-    out2_m = __msa_copy_u_d((v2i64) in1, 0);                  \
-    out3_m = __msa_copy_u_d((v2i64) in1, 1);                  \
-                                                              \
-    SD4(out0_m, out1_m, out2_m, out3_m, pblk_8x4_m, stride);  \
+    out0_m = __msa_copy_u_d((v2i64) in0, idx0);               \
+    out1_m = __msa_copy_u_d((v2i64) in0, idx1);               \
+    out2_m = __msa_copy_u_d((v2i64) in1, idx2);               \
+    out3_m = __msa_copy_u_d((v2i64) in1, idx3);               \
+    SD(out0_m, (pdst));                                       \
+    SD(out1_m, (pdst) + stride);                              \
+    SD(out2_m, (pdst) + 2 * stride);                          \
+    SD(out3_m, (pdst) + 3 * stride);                          \
 }
-#define ST8x8_UB(in0, in1, in2, in3, pdst, stride)        \
-{                                                         \
-    uint8_t *pblk_8x8_m = (uint8_t *) (pdst);             \
-                                                          \
-    ST8x4_UB(in0, in1, pblk_8x8_m, stride);               \
-    ST8x4_UB(in2, in3, pblk_8x8_m + 4 * stride, stride);  \
-}
-#define ST12x4_UB(in0, in1, in2, pdst, stride)                \
-{                                                             \
-    uint8_t *pblk_12x4_m = (uint8_t *) (pdst);                \
-                                                              \
-    /* left 8x4 */                                            \
-    ST8x4_UB(in0, in1, pblk_12x4_m, stride);                  \
-    /* right 4x4 */                                           \
-    ST4x4_UB(in2, in2, 0, 1, 2, 3, pblk_12x4_m + 8, stride);  \
+#define ST_D8(in0, in1, in2, in3, idx0, idx1, idx2, idx3,              \
+              idx4, idx5, idx6, idx7, pdst, stride)                    \
+{                                                                      \
+    ST_D4(in0, in1, idx0, idx1, idx2, idx3, pdst, stride)              \
+    ST_D4(in2, in3, idx4, idx5, idx6, idx7, pdst + 4 * stride, stride) \
 }
 
 /* Description : Store as 12x8 byte block to destination memory from
@@ -681,66 +606,47 @@
 }
 #define AVER_UB4_UB(...) AVER_UB4(v16u8, __VA_ARGS__)
 
-/* Description : Immediate number of columns to slide with zero
-   Arguments   : Inputs  - in0, in1, slide_val
-                 Outputs - out0, out1
-                 Return Type - as per RTYPE
-   Details     : Byte elements from 'zero_m' vector are slide into 'in0' by
-                 number of elements specified by 'slide_val'
-*/
-#define SLDI_B2_0(RTYPE, in0, in1, out0, out1, slide_val)                 \
-{                                                                         \
-    v16i8 zero_m = { 0 };                                                 \
-    out0 = (RTYPE) __msa_sldi_b((v16i8) zero_m, (v16i8) in0, slide_val);  \
-    out1 = (RTYPE) __msa_sldi_b((v16i8) zero_m, (v16i8) in1, slide_val);  \
-}
-#define SLDI_B2_0_UB(...) SLDI_B2_0(v16u8, __VA_ARGS__)
-#define SLDI_B2_0_SB(...) SLDI_B2_0(v16i8, __VA_ARGS__)
-#define SLDI_B2_0_SW(...) SLDI_B2_0(v4i32, __VA_ARGS__)
-
-#define SLDI_B3_0(RTYPE, in0, in1, in2, out0, out1, out2,  slide_val)     \
-{                                                                         \
-    v16i8 zero_m = { 0 };                                                 \
-    SLDI_B2_0(RTYPE, in0, in1, out0, out1, slide_val);                    \
-    out2 = (RTYPE) __msa_sldi_b((v16i8) zero_m, (v16i8) in2, slide_val);  \
-}
-#define SLDI_B3_0_UB(...) SLDI_B3_0(v16u8, __VA_ARGS__)
-#define SLDI_B3_0_SB(...) SLDI_B3_0(v16i8, __VA_ARGS__)
-
-#define SLDI_B4_0(RTYPE, in0, in1, in2, in3,            \
-                  out0, out1, out2, out3, slide_val)    \
-{                                                       \
-    SLDI_B2_0(RTYPE, in0, in1, out0, out1, slide_val);  \
-    SLDI_B2_0(RTYPE, in2, in3, out2, out3, slide_val);  \
-}
-#define SLDI_B4_0_UB(...) SLDI_B4_0(v16u8, __VA_ARGS__)
-#define SLDI_B4_0_SB(...) SLDI_B4_0(v16i8, __VA_ARGS__)
-#define SLDI_B4_0_SH(...) SLDI_B4_0(v8i16, __VA_ARGS__)
-
 /* Description : Immediate number of columns to slide
-   Arguments   : Inputs  - in0_0, in0_1, in1_0, in1_1, slide_val
-                 Outputs - out0, out1
+   Arguments   : Inputs  - s, d, slide_val
+                 Outputs - out
                  Return Type - as per RTYPE
-   Details     : Byte elements from 'in0_0' vector are slide into 'in1_0' by
+   Details     : Byte elements from 'd' vector are slide into 's' by
                  number of elements specified by 'slide_val'
 */
-#define SLDI_B2(RTYPE, in0_0, in0_1, in1_0, in1_1, out0, out1, slide_val)  \
-{                                                                          \
-    out0 = (RTYPE) __msa_sldi_b((v16i8) in0_0, (v16i8) in1_0, slide_val);  \
-    out1 = (RTYPE) __msa_sldi_b((v16i8) in0_1, (v16i8) in1_1, slide_val);  \
+#define SLDI_B(RTYPE, d, s, slide_val, out)                       \
+{                                                                 \
+    out = (RTYPE) __msa_sldi_b((v16i8) d, (v16i8) s, slide_val);  \
+}
+
+#define SLDI_B2(RTYPE, d0, s0, d1, s1, slide_val, out0, out1)  \
+{                                                              \
+    SLDI_B(RTYPE, d0, s0, slide_val, out0)                     \
+    SLDI_B(RTYPE, d1, s1, slide_val, out1)                     \
 }
 #define SLDI_B2_UB(...) SLDI_B2(v16u8, __VA_ARGS__)
 #define SLDI_B2_SB(...) SLDI_B2(v16i8, __VA_ARGS__)
 #define SLDI_B2_SH(...) SLDI_B2(v8i16, __VA_ARGS__)
+#define SLDI_B2_SW(...) SLDI_B2(v4i32, __VA_ARGS__)
 
-#define SLDI_B3(RTYPE, in0_0, in0_1, in0_2, in1_0, in1_1, in1_2,           \
-                out0, out1, out2, slide_val)                               \
-{                                                                          \
-    SLDI_B2(RTYPE, in0_0, in0_1, in1_0, in1_1, out0, out1, slide_val)      \
-    out2 = (RTYPE) __msa_sldi_b((v16i8) in0_2, (v16i8) in1_2, slide_val);  \
+#define SLDI_B3(RTYPE, d0, s0, d1, s1, d2, s2, slide_val,  \
+                out0, out1, out2)                          \
+{                                                          \
+    SLDI_B2(RTYPE, d0, s0, d1, s1, slide_val, out0, out1)  \
+    SLDI_B(RTYPE, d2, s2, slide_val, out2)                 \
 }
+#define SLDI_B3_UB(...) SLDI_B3(v16u8, __VA_ARGS__)
 #define SLDI_B3_SB(...) SLDI_B3(v16i8, __VA_ARGS__)
 #define SLDI_B3_UH(...) SLDI_B3(v8u16, __VA_ARGS__)
+
+#define SLDI_B4(RTYPE, d0, s0, d1, s1, d2, s2, d3, s3,     \
+                slide_val, out0, out1, out2, out3)         \
+{                                                          \
+    SLDI_B2(RTYPE, d0, s0, d1, s1, slide_val, out0, out1)  \
+    SLDI_B2(RTYPE, d2, s2, d3, s3, slide_val, out2, out3)  \
+}
+#define SLDI_B4_UB(...) SLDI_B4(v16u8, __VA_ARGS__)
+#define SLDI_B4_SB(...) SLDI_B4(v16i8, __VA_ARGS__)
+#define SLDI_B4_SH(...) SLDI_B4(v8i16, __VA_ARGS__)
 
 /* Description : Shuffle byte vector elements as per mask vector
    Arguments   : Inputs  - in0, in1, in2, in3, mask0, mask1
@@ -1012,99 +918,78 @@
 
 /* Description : Clips all halfword elements of input vector between min & max
                  out = ((in) < (min)) ? (min) : (((in) > (max)) ? (max) : (in))
-   Arguments   : Inputs  - in       (input vector)
-                         - min      (min threshold)
-                         - max      (max threshold)
-                 Outputs - out_m    (output vector with clipped elements)
+   Arguments   : Inputs  - in    (input vector)
+                         - min   (min threshold)
+                         - max   (max threshold)
+                 Outputs - in    (output vector with clipped elements)
                  Return Type - signed halfword
 */
-#define CLIP_SH(in, min, max)                           \
-( {                                                     \
-    v8i16 out_m;                                        \
-                                                        \
-    out_m = __msa_max_s_h((v8i16) min, (v8i16) in);     \
-    out_m = __msa_min_s_h((v8i16) max, (v8i16) out_m);  \
-    out_m;                                              \
-} )
+#define CLIP_SH(in, min, max)                     \
+{                                                 \
+    in = __msa_max_s_h((v8i16) min, (v8i16) in);  \
+    in = __msa_min_s_h((v8i16) max, (v8i16) in);  \
+}
 
 /* Description : Clips all signed halfword elements of input vector
                  between 0 & 255
-   Arguments   : Inputs  - in       (input vector)
-                 Outputs - out_m    (output vector with clipped elements)
-                 Return Type - signed halfword
+   Arguments   : Inputs  - in    (input vector)
+                 Outputs - in    (output vector with clipped elements)
+                 Return Type - signed halfwords
 */
-#define CLIP_SH_0_255(in)                                 \
-( {                                                       \
-    v8i16 max_m = __msa_ldi_h(255);                       \
-    v8i16 out_m;                                          \
-                                                          \
-    out_m = __msa_maxi_s_h((v8i16) in, 0);                \
-    out_m = __msa_min_s_h((v8i16) max_m, (v8i16) out_m);  \
-    out_m;                                                \
-} )
+#define CLIP_SH_0_255(in)                       \
+{                                               \
+    in = __msa_maxi_s_h((v8i16) in, 0);         \
+    in = (v8i16) __msa_sat_u_h((v8u16) in, 7);  \
+}
+
 #define CLIP_SH2_0_255(in0, in1)  \
 {                                 \
-    in0 = CLIP_SH_0_255(in0);     \
-    in1 = CLIP_SH_0_255(in1);     \
+    CLIP_SH_0_255(in0);           \
+    CLIP_SH_0_255(in1);           \
 }
+
 #define CLIP_SH4_0_255(in0, in1, in2, in3)  \
 {                                           \
     CLIP_SH2_0_255(in0, in1);               \
     CLIP_SH2_0_255(in2, in3);               \
 }
 
-#define CLIP_SH_0_255_MAX_SATU(in)                    \
-( {                                                   \
-    v8i16 out_m;                                      \
-                                                      \
-    out_m = __msa_maxi_s_h((v8i16) in, 0);            \
-    out_m = (v8i16) __msa_sat_u_h((v8u16) out_m, 7);  \
-    out_m;                                            \
-} )
-#define CLIP_SH2_0_255_MAX_SATU(in0, in1)  \
-{                                          \
-    in0 = CLIP_SH_0_255_MAX_SATU(in0);     \
-    in1 = CLIP_SH_0_255_MAX_SATU(in1);     \
-}
-#define CLIP_SH4_0_255_MAX_SATU(in0, in1, in2, in3)  \
-{                                                    \
-    CLIP_SH2_0_255_MAX_SATU(in0, in1);               \
-    CLIP_SH2_0_255_MAX_SATU(in2, in3);               \
+#define CLIP_SH8_0_255(in0, in1, in2, in3,  \
+                       in4, in5, in6, in7)  \
+{                                           \
+    CLIP_SH4_0_255(in0, in1, in2, in3);     \
+    CLIP_SH4_0_255(in4, in5, in6, in7);     \
 }
 
 /* Description : Clips all signed word elements of input vector
                  between 0 & 255
-   Arguments   : Inputs  - in       (input vector)
-                 Outputs - out_m    (output vector with clipped elements)
+   Arguments   : Inputs  - in    (input vector)
+                 Outputs - in    (output vector with clipped elements)
                  Return Type - signed word
 */
-#define CLIP_SW_0_255(in)                                 \
-( {                                                       \
-    v4i32 max_m = __msa_ldi_w(255);                       \
-    v4i32 out_m;                                          \
-                                                          \
-    out_m = __msa_maxi_s_w((v4i32) in, 0);                \
-    out_m = __msa_min_s_w((v4i32) max_m, (v4i32) out_m);  \
-    out_m;                                                \
-} )
-
-#define CLIP_SW_0_255_MAX_SATU(in)                    \
-( {                                                   \
-    v4i32 out_m;                                      \
-                                                      \
-    out_m = __msa_maxi_s_w((v4i32) in, 0);            \
-    out_m = (v4i32) __msa_sat_u_w((v4u32) out_m, 7);  \
-    out_m;                                            \
-} )
-#define CLIP_SW2_0_255_MAX_SATU(in0, in1)  \
-{                                          \
-    in0 = CLIP_SW_0_255_MAX_SATU(in0);     \
-    in1 = CLIP_SW_0_255_MAX_SATU(in1);     \
+#define CLIP_SW_0_255(in)                       \
+{                                               \
+    in = __msa_maxi_s_w((v4i32) in, 0);         \
+    in = (v4i32) __msa_sat_u_w((v4u32) in, 7);  \
 }
-#define CLIP_SW4_0_255_MAX_SATU(in0, in1, in2, in3)  \
-{                                                    \
-    CLIP_SW2_0_255_MAX_SATU(in0, in1);               \
-    CLIP_SW2_0_255_MAX_SATU(in2, in3);               \
+
+#define CLIP_SW2_0_255(in0, in1)  \
+{                                 \
+    CLIP_SW_0_255(in0);           \
+    CLIP_SW_0_255(in1);           \
+}
+
+#define CLIP_SW4_0_255(in0, in1, in2, in3)  \
+{                                           \
+    CLIP_SW2_0_255(in0, in1);               \
+    CLIP_SW2_0_255(in2, in3);               \
+}
+
+#define CLIP_SW8_0_255(in0, in1, in2, in3,  \
+                       in4, in5, in6, in7)  \
+{                                           \
+    CLIP_SW4_0_255(in0, in1, in2, in3);     \
+    CLIP_SW4_0_255(in4, in5, in6, in7);     \
 }
 
 /* Description : Addition of 4 signed word elements
@@ -1234,6 +1119,15 @@
                  unsigned absolute diff values, even-odd pairs are added
                  together to generate 8 halfword results.
 */
+#if HAVE_MSA2
+#define SAD_UB2_UH(in0, in1, ref0, ref1)                                 \
+( {                                                                      \
+    v8u16 sad_m = { 0 };                                                 \
+    sad_m += __builtin_msa2_sad_adj2_u_w2x_b((v16u8) in0, (v16u8) ref0); \
+    sad_m += __builtin_msa2_sad_adj2_u_w2x_b((v16u8) in1, (v16u8) ref1); \
+    sad_m;                                                               \
+} )
+#else
 #define SAD_UB2_UH(in0, in1, ref0, ref1)                        \
 ( {                                                             \
     v16u8 diff0_m, diff1_m;                                     \
@@ -1247,6 +1141,7 @@
                                                                 \
     sad_m;                                                      \
 } )
+#endif // #if HAVE_MSA2
 
 /* Description : Insert specified word elements from input vectors to 1
                  destination vector
@@ -1491,6 +1386,7 @@
             out4, out5, out6, out7);                              \
 }
 #define ILVR_B8_UH(...) ILVR_B8(v8u16, __VA_ARGS__)
+#define ILVR_B8_SW(...) ILVR_B8(v4i32, __VA_ARGS__)
 
 /* Description : Interleave right half of halfword elements from vectors
    Arguments   : Inputs  - in0, in1, in2, in3, in4, in5, in6, in7
@@ -2287,6 +2183,12 @@
                  extracted and interleaved with same vector 'in0' to generate
                  4 word elements keeping sign intact
 */
+#if HAVE_MSA2
+#define UNPCK_R_SH_SW(in, out)                           \
+{                                                        \
+    out = (v4i32) __builtin_msa2_w2x_lo_s_h((v8i16) in); \
+}
+#else
 #define UNPCK_R_SH_SW(in, out)                       \
 {                                                    \
     v8i16 sign_m;                                    \
@@ -2294,6 +2196,7 @@
     sign_m = __msa_clti_s_h((v8i16) in, 0);          \
     out = (v4i32) __msa_ilvr_h(sign_m, (v8i16) in);  \
 }
+#endif // #if HAVE_MSA2
 
 /* Description : Sign extend byte elements from input vector and return
                  halfword results in pair of vectors
@@ -2306,6 +2209,13 @@
                  Then interleaved left with same vector 'in0' to
                  generate 8 signed halfword elements in 'out1'
 */
+#if HAVE_MSA2
+#define UNPCK_SB_SH(in, out0, out1)                       \
+{                                                         \
+    out0 = (v4i32) __builtin_msa2_w2x_lo_s_b((v16i8) in); \
+    out1 = (v4i32) __builtin_msa2_w2x_hi_s_b((v16i8) in); \
+}
+#else
 #define UNPCK_SB_SH(in, out0, out1)                  \
 {                                                    \
     v16i8 tmp_m;                                     \
@@ -2313,6 +2223,7 @@
     tmp_m = __msa_clti_s_b((v16i8) in, 0);           \
     ILVRL_B2_SH(tmp_m, in, out0, out1);              \
 }
+#endif // #if HAVE_MSA2
 
 /* Description : Zero extend unsigned byte elements to halfword elements
    Arguments   : Inputs  - in           (1 input unsigned byte vector)
@@ -2339,6 +2250,13 @@
                  Then interleaved left with same vector 'in0' to
                  generate 4 signed word elements in 'out1'
 */
+#if HAVE_MSA2
+#define UNPCK_SH_SW(in, out0, out1)                       \
+{                                                         \
+    out0 = (v4i32) __builtin_msa2_w2x_lo_s_h((v8i16) in); \
+    out1 = (v4i32) __builtin_msa2_w2x_hi_s_h((v8i16) in); \
+}
+#else
 #define UNPCK_SH_SW(in, out0, out1)                  \
 {                                                    \
     v8i16 tmp_m;                                     \
@@ -2346,6 +2264,7 @@
     tmp_m = __msa_clti_s_h((v8i16) in, 0);           \
     ILVRL_H2_SW(tmp_m, in, out0, out1);              \
 }
+#endif // #if HAVE_MSA2
 
 /* Description : Swap two variables
    Arguments   : Inputs  - in0, in1
@@ -2479,6 +2398,7 @@
 {                                                                        \
     v16i8 tmp0_m, tmp1_m, tmp2_m, tmp3_m;                                \
     v16i8 tmp4_m, tmp5_m, tmp6_m, tmp7_m;                                \
+    v16i8 zeros = { 0 };                                                 \
                                                                          \
     ILVR_B4_SB(in2, in0, in3, in1, in6, in4, in7, in5,                   \
                tmp0_m, tmp1_m, tmp2_m, tmp3_m);                          \
@@ -2486,8 +2406,8 @@
     ILVRL_B2_SB(tmp3_m, tmp2_m, tmp6_m, tmp7_m);                         \
     ILVRL_W2(RTYPE, tmp6_m, tmp4_m, out0, out2);                         \
     ILVRL_W2(RTYPE, tmp7_m, tmp5_m, out4, out6);                         \
-    SLDI_B2_0(RTYPE, out0, out2, out1, out3, 8);                         \
-    SLDI_B2_0(RTYPE, out4, out6, out5, out7, 8);                         \
+    SLDI_B4(RTYPE, zeros, out0, zeros, out2, zeros, out4, zeros, out6,   \
+            8, out1, out3, out5, out7);                                  \
 }
 #define TRANSPOSE8x8_UB_UB(...) TRANSPOSE8x8_UB(v16u8, __VA_ARGS__)
 #define TRANSPOSE8x8_UB_UH(...) TRANSPOSE8x8_UB(v8u16, __VA_ARGS__)
@@ -2569,8 +2489,6 @@
     out5 = (v16u8) __msa_ilvod_w((v4i32) tmp3_m, (v4i32) tmp2_m);            \
                                                                              \
     tmp2_m = (v16u8) __msa_ilvod_h((v8i16) tmp5_m, (v8i16) tmp4_m);          \
-    tmp2_m = (v16u8) __msa_ilvod_h((v8i16) tmp5_m, (v8i16) tmp4_m);          \
-    tmp3_m = (v16u8) __msa_ilvod_h((v8i16) tmp7_m, (v8i16) tmp6_m);          \
     tmp3_m = (v16u8) __msa_ilvod_h((v8i16) tmp7_m, (v8i16) tmp6_m);          \
     out3 = (v16u8) __msa_ilvev_w((v4i32) tmp3_m, (v4i32) tmp2_m);            \
     out7 = (v16u8) __msa_ilvod_w((v4i32) tmp3_m, (v4i32) tmp2_m);            \
@@ -2850,13 +2768,11 @@
 */
 #define DPADD_SH3_SH(in0, in1, in2, coeff0, coeff1, coeff2)         \
 ( {                                                                 \
-    v8i16 tmp1_m;                                                   \
     v8i16 out0_m;                                                   \
                                                                     \
     out0_m = __msa_dotp_s_h((v16i8) in0, (v16i8) coeff0);           \
     out0_m = __msa_dpadd_s_h(out0_m, (v16i8) in1, (v16i8) coeff1);  \
-    tmp1_m = __msa_dotp_s_h((v16i8) in2, (v16i8) coeff2);           \
-    out0_m = __msa_adds_s_h(out0_m, tmp1_m);                        \
+    out0_m = __msa_dpadd_s_h(out0_m, (v16i8) in2, (v16i8) coeff2);  \
                                                                     \
     out0_m;                                                         \
 } )
@@ -2890,7 +2806,7 @@
     tmp0_m = PCKEV_XORI128_UB(in0, in1);                      \
     tmp1_m = PCKEV_XORI128_UB(in2, in3);                      \
     AVER_UB2_UB(tmp0_m, dst0, tmp1_m, dst1, tmp0_m, tmp1_m);  \
-    ST8x4_UB(tmp0_m, tmp1_m, pdst_m, stride);                 \
+    ST_D4(tmp0_m, tmp1_m, 0, 1, 0, 1, pdst_m, stride);        \
 }
 
 /* Description : Pack even byte elements, extract 0 & 2 index words from pair

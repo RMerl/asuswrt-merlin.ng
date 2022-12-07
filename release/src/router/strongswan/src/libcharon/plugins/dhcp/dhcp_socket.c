@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2012-2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -307,11 +306,13 @@ static bool discover(private_dhcp_socket_t *this,
 {
 	dhcp_option_t *option;
 	dhcp_t dhcp;
+	chunk_t mac;
 	int optlen;
 
 	optlen = prepare_dhcp(this, transaction, DHCP_DISCOVER, &dhcp);
 
-	DBG1(DBG_CFG, "sending DHCP DISCOVER to %H", this->dst);
+	mac = chunk_from_thing(dhcp.client_hw_addr);
+	DBG1(DBG_CFG, "sending DHCP DISCOVER for %#B to %H", &mac, this->dst);
 
 	option = (dhcp_option_t*)&dhcp.options[optlen];
 	option->type = DHCP_PARAM_REQ_LIST;
@@ -383,11 +384,24 @@ static bool request(private_dhcp_socket_t *this,
 	return TRUE;
 }
 
+/**
+ * Calculate the timeout to wait for a response for the given try
+ */
+static inline void get_timeout(int try, timeval_t *timeout)
+{
+	timeval_t delay = { .tv_sec = try };
+
+	time_monotonic(timeout);
+	timeradd(timeout, &delay, timeout);
+}
+
 METHOD(dhcp_socket_t, enroll, dhcp_transaction_t*,
 	private_dhcp_socket_t *this, identification_t *identity)
 {
 	dhcp_transaction_t *transaction;
+	timeval_t timeout;
 	uint32_t id;
+	bool got_response;
 	int try;
 
 	if (!this->rng->get_bytes(this->rng, sizeof(id), (uint8_t*)&id))
@@ -399,11 +413,21 @@ METHOD(dhcp_socket_t, enroll, dhcp_transaction_t*,
 
 	this->mutex->lock(this->mutex);
 	this->discover->insert_last(this->discover, transaction);
+
 	try = 1;
+	got_response = FALSE;
 	while (try <= DHCP_TRIES && discover(this, transaction))
 	{
-		if (!this->condvar->timed_wait(this->condvar, this->mutex, 1000 * try) &&
-			this->request->find_first(this->request, NULL, (void**)&transaction))
+		get_timeout(try, &timeout);
+		while (!this->condvar->timed_wait_abs(this->condvar, this->mutex, timeout))
+		{
+			if (this->request->find_first(this->request, NULL, (void**)&transaction))
+			{
+				got_response = TRUE;
+				break;
+			}
+		}
+		if (got_response)
 		{
 			break;
 		}
@@ -416,12 +440,24 @@ METHOD(dhcp_socket_t, enroll, dhcp_transaction_t*,
 		DBG1(DBG_CFG, "DHCP DISCOVER timed out");
 		return NULL;
 	}
+	DBG1(DBG_CFG, "received DHCP OFFER %H from %H",
+		 transaction->get_address(transaction),
+		 transaction->get_server(transaction));
 
 	try = 1;
+	got_response = FALSE;
 	while (try <= DHCP_TRIES && request(this, transaction))
 	{
-		if (!this->condvar->timed_wait(this->condvar, this->mutex, 1000 * try) &&
-			this->completed->remove(this->completed, transaction, NULL))
+		get_timeout(try, &timeout);
+		while (!this->condvar->timed_wait_abs(this->condvar, this->mutex, timeout))
+		{
+			if (this->completed->remove(this->completed, transaction, NULL))
+			{
+				got_response = TRUE;
+				break;
+			}
+		}
+		if (got_response)
 		{
 			break;
 		}
@@ -435,6 +471,8 @@ METHOD(dhcp_socket_t, enroll, dhcp_transaction_t*,
 		return NULL;
 	}
 	this->mutex->unlock(this->mutex);
+	DBG1(DBG_CFG, "received DHCP ACK for %H",
+		 transaction->get_address(transaction));
 
 	return transaction;
 }
@@ -548,7 +586,6 @@ static void handle_offer(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
 			server = host_create_from_chunk(AF_INET,
 				chunk_from_thing(dhcp->server_address), DHCP_SERVER_PORT);
 		}
-		DBG1(DBG_CFG, "received DHCP OFFER %H from %H", offer, server);
 		transaction->set_address(transaction, offer->clone(offer));
 		transaction->set_server(transaction, server);
 	}
@@ -564,10 +601,6 @@ static void handle_ack(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
 {
 	dhcp_transaction_t *transaction;
 	enumerator_t *enumerator;
-	host_t *offer;
-
-	offer = host_create_from_chunk(AF_INET,
-						chunk_from_thing(dhcp->your_address), 0);
 
 	this->mutex->lock(this->mutex);
 	enumerator = this->request->create_enumerator(this->request);
@@ -575,7 +608,6 @@ static void handle_ack(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
 	{
 		if (transaction->get_id(transaction) == dhcp->transaction_id)
 		{
-			DBG1(DBG_CFG, "received DHCP ACK for %H", offer);
 			this->request->remove_at(this->request, enumerator);
 			this->completed->insert_last(this->completed, transaction);
 			break;
@@ -584,7 +616,6 @@ static void handle_ack(private_dhcp_socket_t *this, dhcp_t *dhcp, int optlen)
 	enumerator->destroy(enumerator);
 	this->mutex->unlock(this->mutex);
 	this->condvar->broadcast(this->condvar);
-	offer->destroy(offer);
 }
 
 /**
@@ -675,7 +706,7 @@ METHOD(dhcp_socket_t, destroy, void,
  */
 static bool bind_to_device(int fd, char *iface)
 {
-	struct ifreq ifreq;
+	struct ifreq ifreq = {};
 
 	if (strlen(iface) > sizeof(ifreq.ifr_name))
 	{

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -410,7 +411,7 @@ int load_conns_cfg(vici_conn_t *conn, command_format_options_t format,
 	}
 	if (found == 0)
 	{
-		fprintf(stderr, "no connections found, %u unloaded\n", unloaded);
+		printf("no connections found, %u unloaded\n", unloaded);
 		return 0;
 	}
 	if (loaded == found)
@@ -462,7 +463,7 @@ static int load_conns(vici_conn_t *conn)
 
 	ret = load_conns_cfg(conn, format, cfg);
 
-	cfg->destroy(cfg);
+	cfg->destroy_clear(cfg);
 
 	return ret;
 }

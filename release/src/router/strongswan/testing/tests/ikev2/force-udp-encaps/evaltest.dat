@@ -1,8 +1,0 @@
-alice::ipsec status 2> /dev/null::nat-t.*ESTABLISHED.*alice@strongswan.org.*sun.strongswan.org::YES
-sun::  ipsec status 2> /dev/null::nat.t.*ESTABLISHED.*sun.strongswan.org.*alice@strongswan.org::YES
-alice::ipsec status 2> /dev/null::nat-t.*INSTALLED, TUNNEL::YES
-sun::  ipsec status 2> /dev/null::nat-t.*INSTALLED, TUNNEL::YES
-alice::cat /var/log/daemon.log::faking NAT situation to enforce UDP encapsulation::YES
-alice:: ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
-moon::tcpdump::IP alice.strongswan.org.* > sun.strongswan.org.\(4500\|ipsec-nat-t\): UDP::YES
-moon::tcpdump::IP sun.strongswan.org.\(4500\|ipsec-nat-t\) > alice.strongswan.org.*: UDP::YES

@@ -2654,11 +2654,20 @@ void blog_l2_dump( BlogHeader_t * bHdr_p )
 void blog_virdev_dump( Blog_t * blog_p )
 {
     int i;
+    int dev_dir;
 
-    printk( " VirtDev: ");
+    printk( "    VirtDev: ");
 
     for (i=0; i<MAX_VIRT_DEV; i++)
-        printk("<%p> ", blog_p->virt_dev_p[i]);
+    {
+        struct net_device *dev_p = (struct net_device *) blog_p->virt_dev_p[i];
+
+        if ( dev_p == (void *)NULL ) continue;
+
+        dev_dir = DEV_DIR(dev_p);
+        dev_p = DEVP_DETACH_DIR( dev_p );
+        printk("<%p: %s: %d: %d> ", dev_p, dev_p ? dev_p->name : " ", dev_dir, dev_p->mtu);
+    }
 
     printk("\n");
 }
@@ -2712,23 +2721,56 @@ void blog_dump( Blog_t * blog_p )
 
     blog_assertv( (_IS_BPTR_(blog_p)) );
 
-    printk( "BLOG <%p> owner<%p> delCt<%p> pldCt<%p>\n"
-            "\t\tL1 channel<%u> phyLen<%u> phy<%u> <%s>\n"
-            "\t\tfdb_src<%p> fdb_dst<%p> tos_mode<%u:%u>\n"
-            "\t\thash<%u> prot<%u> prio<0x%08x> mark<0x%08x> Mtu<%u>\n",
-            blog_p, blog_p->skb_p,
-            blog_p->ct_p[BLOG_CT_DEL],
-            blog_p->ct_p[BLOG_CT_PLD],
+    printk( "BLOG <%p> owner<%p> flags<0x%08x> tos_mode<%u:%u>\n"
+            "\tL1 channel<%u> phyLen<%u> phy<%u> <%s> match<0x%08x>\n"
+            "\thash<0x%08x> prot<%u> wl<0x%08x>\n"
+            "\tprio<0x%08x> mark<0x%08x> minMTU<%u> tuple_offset<%u>\n"
+            "\teth_type<0x%04x> vtag_num<%u> vtag[0]<0x%8x> vtag[1]<0x%08x>\n",
+            blog_p, blog_p->skb_p, blog_p->flags,
+            (int)blog_p->tos_mode_us, (int)blog_p->tos_mode_ds, 
             blog_p->key.l1_tuple.channel,
             rfc2684HdrLength[blog_p->key.l1_tuple.phyLen],
             blog_p->key.l1_tuple.phy,
-            strBlogPhy[blog_p->key.l1_tuple.phyType],
-            blog_p->fdb[0], blog_p->fdb[1], 
-            (int)blog_p->tos_mode_us, (int)blog_p->tos_mode_ds, 
-            blog_p->hash, blog_p->key.protocol,
-            blog_p->priority, (uint32_t)blog_p->mark, blog_p->minMtu);
+            strBlogPhy[blog_p->key.l1_tuple.phyType], blog_p->key.match,
+            blog_p->hash, blog_p->key.protocol, blog_p->wl, 
+            blog_p->priority, (uint32_t)blog_p->mark, blog_p->minMtu, 
+            blog_p->tuple_offset,
+            ntohs(blog_p->eth_type), blog_p->vtag_num, 
+            ntohl(blog_p->vtag[0]), ntohl(blog_p->vtag[1]));
 
 #if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
+    printk( "\tdelCt<%p> key[0x%08x:%d] pldCt<%p> key[0x%08x:%d]\n",
+            blog_p->ct_p[BLOG_CT_DEL],
+            blog_p->ct_p[BLOG_CT_DEL] ?
+            ((struct nf_conn *)blog_p->ct_p[BLOG_CT_DEL])->blog_key[blog_p->nf_dir_del] : 0, blog_p->nf_dir_del,
+            blog_p->ct_p[BLOG_CT_PLD],
+            blog_p->ct_p[BLOG_CT_PLD] ?
+            ((struct nf_conn *)blog_p->ct_p[BLOG_CT_PLD])->blog_key[blog_p->nf_dir_pld] : 0, blog_p->nf_dir_pld);
+
+#endif
+
+    printk( "\tfdb_src<%p> key[0x%08x] fdb_dst<%p> key[0x%08x]\n",
+            blog_p->fdb[0], blog_p->fdb[0] ? 
+            ((struct net_bridge_fdb_entry *)blog_p->fdb[0])->fdb_key : 0, 
+            blog_p->fdb[1], blog_p->fdb[1] ? 
+            ((struct net_bridge_fdb_entry *)blog_p->fdb[1])->fdb_key : 0 ); 
+
+#if defined(CONFIG_BCM_KF_MAP) || defined(CONFIG_BCM_MAP_MODULE)
+    {
+        struct map_tuple *map_p = (struct map_tuple *) blog_p->map_p;
+        printk("\tMAPT: map<0x%p>, key[US:0x%08x] key[DS:0x%08x] \n",
+                map_p, 
+                map_p ? map_p->blog_key[BLOG_PARAM1_MAP_DIR_US]: 0,  
+                map_p ? map_p->blog_key[BLOG_PARAM1_MAP_DIR_DS]: 0 );
+    }
+#endif
+    printk( "\tfeature<0x%08x> offsets[0]<0x%08x> offsets[1]<0x%08x> \n"
+            "\tprehook<0x%p> posthook<0x%p>\n",
+            blog_p->feature, blog_p->offsets[0], blog_p->offsets[1],
+            blog_p->preHook, blog_p->postHook );
+
+#if defined(CONFIG_NF_CONNTRACK) || defined(CONFIG_NF_CONNTRACK_MODULE)
+
     if ( blog_p->ct_p[BLOG_CT_PLD] )
         blog_nfct_dump( blog_p->skb_p, blog_p->ct_p[BLOG_CT_PLD], 
                         blog_p->nf_dir_pld );

@@ -366,6 +366,14 @@ do {					\
 #define USB_CONNECT		0x06	//For WRTSL54GS
 #define USB_DISCONNECT		0x07	//For WRTSL54GS
 
+#ifdef RTCONFIG_HND_ROUTER
+#define FC_STATUS_TXT "fc_status.txt"
+#endif /* RTCONFIG_HND_ROUTER */
+
+#ifdef RTCONFIG_CFGSYNC
+#define CFGMNT_FILE "/tmp/cfgmnt_log.txt"
+#endif /* RTCONFIG_CFGSYNC */
+
 /* USB attached SCSI protocol */
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,15,0)
 #define MODPROBE__UAS		modprobe("uas")
@@ -415,7 +423,7 @@ extern int isValidChannel(int is_2G, char *channel);
 extern int setPSK(const char *psk);
 extern int getPSK(void);
 #if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
-extern void start_envrams(void);
+extern int start_envrams(void);
 extern int chk_envrams_proc(void);
 #endif
 extern int ate_run_arpstrom(void);
@@ -493,7 +501,7 @@ extern int setAllLedOn(void);
 extern int setAllOrangeLedOn(void);
 #endif
 extern int setAllLedOff(void);
-#if defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_SW_CTRL_ALLLED) || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
+#if defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_SW_CTRL_ALLLED) || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
 extern void setAllLedNormal(void);
 #endif
 #ifdef RTCONFIG_SW_CTRL_ALLLED
@@ -526,6 +534,8 @@ extern int setCountryCode_2G(const char *cc);
 extern int setCountryCode_5G(const char *cc);
 extern int setSN(const char *SN);
 extern int getSN(void);
+extern int setEISN(const char *EISN);
+extern int getEISN(void);
 extern int setPIN(const char *pin);
 extern int getPIN(void);
 extern int set40M_Channel_2G(char *channel);
@@ -935,8 +945,14 @@ extern void update_cfe_basemac();
 extern void update_misc1();
 extern void update_cfe_ax82u();
 #endif
-#if defined(RTAX58U_V2) || defined(GTAX6000)
-void wan_phy_led_pinmux(int force);
+#ifdef GTAX6000
+extern void update_cfe_ax6000();
+#endif
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
+extern void wan_phy_led_pinmux(int force);
+#endif
+#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
+extern void lan_phy_led_pinmux(int force);
 #endif
 #ifdef RTCONFIG_BCM_MFG
 extern void brcm_mfg_init();
@@ -1026,11 +1042,26 @@ extern void config_obw_off();
 extern void set_owe_transition_bss_enabled(int unit, int subunit);
 #endif
 
-#if defined(CONFIG_BCMWL5) && defined(HND_ROUTER)
+#ifdef RTCONFIG_HND_ROUTER_AX
 /* GPY211 WAR */
 extern void GPY211_INIT_SPEED();
-extern void GPY211_WAN_SPEED();
+extern void GPY211_SPEED_WAR_1G();
+extern void GPY211_SPEED_WAR_AUTO();
+extern void GPY211_WAR_ANEG();
 extern void reset_ext_phy();
+extern int GPY211_ext_phy_model(void);
+extern int gpy211_monitor_main(int argc, char **argv);
+extern void stop_gpy211_monitor();
+extern void start_gpy211_monitor();
+
+/* ifname for war */
+#if defined(XT12) || defined(ET12)
+#define GPY211_IFNAME "eth3"
+#else
+#define GPY211_IFNAME "eth0"
+#endif
+
+extern int hnd_boardid_cmp();
 #endif
 
 #if defined(RTCONFIG_MULTISERVICE_WAN)
@@ -1050,6 +1081,7 @@ typedef struct {
 extern void config_mswan(int wan_unit);
 extern void clean_mswan_vitf(int wan_unit);
 extern void set_mswan_vitf(MSWAN_PARAM *p);
+extern void update_iptv_ifname(int wan_base_unit);
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -1110,6 +1142,21 @@ extern int check_eth_time;
 extern int eth_down_time;
 #endif
 #endif
+
+//The definition comes from Sungmin_Lin
+typedef struct backhaul_period_s {
+	long int bhc_st_init; // initial state
+	long int bhc_st_0; // no backhaul
+	long int bhc_st_1; // eth
+	long int bhc_st_2; // 2G
+	long int bhc_st_4; // 2G+5G
+	long int bhc_st_6; // 2G+5G
+	long int bhc_st_8; // 2G+5G1
+	long int bhc_st_10; // eth_2
+	long int bhc_st_20; // eth_3
+	long int bhc_st_40; // eth_4
+	long int bhc_st_128; // 2G+5G(5G1)+6G
+} backhaul_period_t;
 
 #ifdef RTCONFIG_DSL
 /* sysdeps/init-*-dsl.c */
@@ -1577,10 +1624,11 @@ extern int is_vpnc_dns_active(void);
 
 /*rc_ipsec.c*/
 #ifdef RTCONFIG_IPSEC
+#define WAIT_FOR_NTP_READY_TIME (2*1000*1000)
+#define WAIT_FOR_NTP_READY_LOOP (5)
 extern void rc_ipsec_nvram_convert_check(void);
 extern void rc_ipsec_config_init(void);
 extern void run_ipsec_firewall_scripts(void);
-extern void rc_ipsec_nvram_convert_check(void);
 #endif
 
 // network.c
@@ -2166,28 +2214,6 @@ extern void start_ipv6_tunnel(void);
 extern void stop_ipv6_tunnel(void);
 #ifdef RTCONFIG_SOFTWIRE46
 #define S46_LOG_PATH	"/jffs/s46.log"
-extern void set_s46_ra_addr(int wan_type, char *wan_ifname);
-extern int s46_mapcalc(int wan_proto, char *rules, char *peerbuf, size_t peerbufsz,
-	char *addr6buf, size_t addr6bufsz, char *addr4buf, size_t addr4bufsz,
-	int *poffset, int *ppsidlen, int *ppsid, char **fmrs, int draft);
-extern void start_s46_tunnel(int unit);
-extern void stop_s46_tunnel(int unit, int unload);
-// s46map_rptd.c
-extern void s46print(const char * logpath, const char * format, ...);
-#define S46_DBG(fmt, args...) \
-	do { \
-		s46print(S46_LOG_PATH, "[%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
-	} while(0)
-extern int s46_jpne_hgw(void);
-extern char *s46_jpne_maprules(char *id, char *idbuf, size_t idlen, long *rsp_code);
-extern void s46_jpne_report(char *id, int act, int reason);
-extern int s46_mapcalc_chcek(char *id, char *rules, int draft);
-extern int s46map_rptd_main(int argc, char **argv);
-extern char *calc_s46_port_range(int usable, int psid, int psidlen, int offset, char *ret, int retsz);
-extern int check_s46map_rptd();
-extern void start_s46map_rptd(void);
-extern void stop_s46map_rptd(void);
-extern void restart_s46map_rptd(void);
 enum S46_MAPSVR_STATE {
 	S46_MAPSVR_INIT			= 0,
 	S46_MAPSVR_OK			= 1,
@@ -2196,6 +2222,40 @@ enum S46_MAPSVR_STATE {
 	S46_MAPSVR_NO_RESPONSE		= 4,
 	S46_MAPSVR_MAX
 };
+extern void set_s46_ra_addr(int wan_type, char *wan_ifname);
+extern int s46_mapcalc(int wan_proto, char *rules, char *peerbuf, size_t peerbufsz,
+		       char *addr6buf, size_t addr6bufsz, char *addr4buf, size_t addr4bufsz,
+		       int *poffset, int *ppsidlen, int *ppsid, char **fmrs, int draft);
+extern void start_s46_tunnel(int unit);
+extern void stop_s46_tunnel(int unit, int unload);
+extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
+
+extern void start_v6plusd(void);
+extern void stop_v6plusd(void);
+extern void restart_v6plusd(void);
+extern void start_ocnvcd(void);
+extern void stop_ocnvcd(void);
+extern void restart_ocnvcd(void);
+//s46comm.c
+extern void s46print(const char *logpath, const char *format, ...);
+#define S46_DBG(fmt, args...) \
+	do { \
+		s46print(S46_LOG_PATH, "[%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	} while(0)
+extern int _nvram_check(const char *name, const char *value);
+extern int _nvram_set_check(const char *name, const char *value);
+extern void fmrs2file(char *path);
+extern int ce_dad_check(void);
+extern int s46_ntt_hgw(void);
+extern char *calc_s46_port_range(int usable, int psid, int psidlen, int offset, char *ret, int retsz);
+// v6plusd.c
+extern char *s46_jpne_maprules(char *id, char *idbuf, size_t idlen, long *rsp_code);
+extern int check_v6plusd();
+extern int v6plusd_main(int argc, char **argv);
+// ocnvcd.c
+extern char *s46_ocn_maprules(char *v6perfix, int prefixlen, long *rsp_code);
+extern int check_ocnvcd();
+extern int ocnvcd_main(int argc, char **argv);
 #endif
 extern void start_rdisc6(void);
 extern void stop_rdisc6(void);
@@ -2599,6 +2659,9 @@ void start_amas_service(void);
 #endif	/* RTCONFIG_WIRELESSREPEATER */
 #if defined(RTCONFIG_QCA_LBD)
 extern void duplicate_wl_ifaces(void);
+#endif
+#if defined(RTCONFIG_QCA) && LINUX_KERNEL_VERSION >= KERNEL_VERSION(3,14,0)
+extern void config_mssid_isolate(char *ifname, int vif);
 #endif
 
 #ifdef RTCONFIG_PARENTALCTRL
@@ -3012,6 +3075,7 @@ extern char *cfe_nvram_safe_get_raw(const char *name);
 extern int cfe_nvram_set(const char *name);
 extern int refresh_cfe_nvram();
 extern int factory_debug();
+extern int dfs_override();
 #if defined(RTCONFIG_TCODE) && defined(CONFIG_BCMWL5)
 #ifdef RTCONFIG_BCMARM
 extern char *ATE_BRCM_PREFIX(void);
@@ -3218,6 +3282,8 @@ typedef struct probe_PCIE_param_s {
 	int bPCIE_down;
 } probe_PCIE_param_t;
 #endif /* RTAX88U */
+
+#define MTD_BAD_BLKS_JFFS_FILE "/jffs/mtd_bad_blks.json"
 
 #if defined(RTCONFIG_ASUSCTRL)
 /* asusctrl */

@@ -1,6 +1,6 @@
-sun::ipsec stop
-alice::ipsec stop
-venus::ipsec stop
+sun::systemctl stop strongswan
+alice::systemctl stop strongswan
+venus::systemctl stop strongswan
 alice::iptables-restore < /etc/iptables.flush
 venus::iptables-restore < /etc/iptables.flush
 sun::iptables-restore < /etc/iptables.flush

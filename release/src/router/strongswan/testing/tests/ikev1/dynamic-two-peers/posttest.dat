@@ -1,7 +1,0 @@
-carol::ipsec stop
-dave::ipsec stop
-moon::ipsec stop
-moon::mv /etc/hosts.ori /etc/hosts
-moon::iptables-restore < /etc/iptables.flush
-carol::iptables-restore < /etc/iptables.flush
-dave::iptables-restore < /etc/iptables.flush

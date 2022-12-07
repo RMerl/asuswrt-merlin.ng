@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2012-2015 Tobias Brunner
+ * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -51,9 +52,10 @@ struct file_logger_t {
 	 * @param add_ms		TRUE to add the number of milliseconds within the
 	 *						current second after the timestamp
 	 * @param ike_name		TRUE to prefix the name of the IKE_SA
+	 * @param log_level		TRUE to include the log level in the message
 	 */
 	void (*set_options) (file_logger_t *this, char *time_format, bool add_ms,
-						 bool ike_name);
+						 bool ike_name, bool log_level);
 
 	/**
 	 * Open (or reopen) the log file according to the given parameters

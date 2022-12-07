@@ -15,10 +15,6 @@
 #ifndef _STARTER_FILES_H_
 #define _STARTER_FILES_H_
 
-#define PROC_NETKEY             "/proc/net/pfkey"
-#define PROC_KLIPS              "/proc/net/pf_key"
-#define PROC_MODULES    "/proc/modules"
-
 #define CONFIG_FILE     IPSEC_CONFDIR "/ipsec.conf"
 #define SECRETS_FILE    IPSEC_CONFDIR "/ipsec.secrets"
 
@@ -28,7 +24,4 @@ extern char *daemon_name;
 extern char *cmd;
 extern char *pid_file;
 
-#define DYNIP_DIR       IPSEC_PIDDIR "/dynip"
-
 #endif /* _STARTER_FILES_H_ */
-

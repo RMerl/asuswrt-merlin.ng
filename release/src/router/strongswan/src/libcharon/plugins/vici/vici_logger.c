@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -80,7 +81,7 @@ static job_requeue_t raise_events(private_vici_logger_t *this)
 /**
  * Queue a message for async processing
  */
-static void queue_messsage(private_vici_logger_t *this, vici_message_t *message)
+static void queue_message(private_vici_logger_t *this, vici_message_t *message)
 {
 	this->queue->insert_last(this->queue, message);
 	if (this->queue->get_count(this->queue) == 1)
@@ -124,7 +125,7 @@ METHOD(logger_t, log_, void,
 		message = builder->finalize(builder);
 		if (message)
 		{
-			queue_messsage(this, message);
+			queue_message(this, message);
 		}
 	}
 	this->recursive--;

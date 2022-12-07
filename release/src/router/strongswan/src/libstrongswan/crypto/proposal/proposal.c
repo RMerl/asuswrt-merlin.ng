@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2008-2018 Tobias Brunner
+ * Copyright (C) 2008-2020 Tobias Brunner
  * Copyright (C) 2006-2010 Martin Willi
  * Copyright (C) 2013-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -70,7 +71,12 @@ struct private_proposal_t {
 	/**
 	 * Proposal number
 	 */
-	u_int number;
+	uint8_t number;
+
+	/**
+	 * Transform number (IKEv1 only)
+	 */
+	uint8_t transform_number;
 };
 
 /**
@@ -246,34 +252,37 @@ METHOD(proposal_t, get_algorithm, bool,
 	return found;
 }
 
-METHOD(proposal_t, has_dh_group, bool,
-	private_proposal_t *this, diffie_hellman_group_t group)
+METHOD(proposal_t, has_transform, bool,
+	private_proposal_t *this, transform_type_t type, uint16_t alg)
 {
 	bool found = FALSE, any = FALSE;
 	enumerator_t *enumerator;
 	uint16_t current;
 
-	enumerator = create_enumerator(this, DIFFIE_HELLMAN_GROUP);
+	enumerator = create_enumerator(this, type);
 	while (enumerator->enumerate(enumerator, &current, NULL))
 	{
-		any = TRUE;
-		if (current == group)
+		if (current)
 		{
-			found = TRUE;
-			break;
+			any = TRUE;
+			if (alg && current == alg)
+			{
+				found = TRUE;
+				break;
+			}
 		}
 	}
 	enumerator->destroy(enumerator);
 
-	if (!any && group == MODP_NONE)
+	if (!any && !alg)
 	{
 		found = TRUE;
 	}
 	return found;
 }
 
-METHOD(proposal_t, promote_dh_group, bool,
-	private_proposal_t *this, diffie_hellman_group_t group)
+METHOD(proposal_t, promote_transform, bool,
+	private_proposal_t *this, transform_type_t type, uint16_t alg)
 {
 	enumerator_t *enumerator;
 	entry_t *entry;
@@ -282,8 +291,8 @@ METHOD(proposal_t, promote_dh_group, bool,
 	enumerator = array_create_enumerator(this->transforms);
 	while (enumerator->enumerate(enumerator, &entry))
 	{
-		if (entry->type == DIFFIE_HELLMAN_GROUP &&
-			entry->alg == group)
+		if (entry->type == type &&
+			entry->alg == alg)
 		{
 			array_remove_at(this->transforms, enumerator);
 			found = TRUE;
@@ -294,58 +303,26 @@ METHOD(proposal_t, promote_dh_group, bool,
 	if (found)
 	{
 		entry_t entry = {
-			.type = DIFFIE_HELLMAN_GROUP,
-			.alg = group,
+			.type = type,
+			.alg = alg,
 		};
 		array_insert(this->transforms, ARRAY_HEAD, &entry);
 	}
 	return found;
 }
 
-METHOD(proposal_t, strip_dh, void,
-	private_proposal_t *this, diffie_hellman_group_t keep)
-{
-	enumerator_t *enumerator;
-	entry_t *entry;
-	bool found = FALSE;
-
-	enumerator = array_create_enumerator(this->transforms);
-	while (enumerator->enumerate(enumerator, &entry))
-	{
-		if (entry->type == DIFFIE_HELLMAN_GROUP)
-		{
-			if (entry->alg != keep)
-			{
-				array_remove_at(this->transforms, enumerator);
-			}
-			else
-			{
-				found = TRUE;
-			}
-		}
-	}
-	enumerator->destroy(enumerator);
-	array_compress(this->transforms);
-
-	if (keep == MODP_NONE || !found)
-	{
-		remove_type(this, DIFFIE_HELLMAN_GROUP);
-		array_compress(this->types);
-	}
-}
-
 /**
  * Select a matching proposal from this and other.
  */
 static bool select_algo(private_proposal_t *this, proposal_t *other,
-						transform_type_t type, bool priv, bool log,
-						uint16_t *alg, uint16_t *ks)
+						transform_type_t type, proposal_selection_flag_t flags,
+						bool log, uint16_t *alg, uint16_t *ks)
 {
 	enumerator_t *e1, *e2;
 	uint16_t alg1, alg2, ks1, ks2;
 	bool found = FALSE, optional = FALSE;
 
-	if (type == DIFFIE_HELLMAN_GROUP)
+	if (type == KEY_EXCHANGE_METHOD)
 	{
 		optional = this->protocol == PROTO_ESP || this->protocol == PROTO_AH;
 	}
@@ -390,7 +367,7 @@ static bool select_algo(private_proposal_t *this, proposal_t *other,
 		{
 			if (alg1 == alg2 && ks1 == ks2)
 			{
-				if (!priv && alg1 >= 1024)
+				if ((flags & PROPOSAL_SKIP_PRIVATE) && alg1 >= 1024)
 				{
 					if (log)
 					{
@@ -417,7 +394,7 @@ static bool select_algo(private_proposal_t *this, proposal_t *other,
  * is stored there and errors are logged.
  */
 static bool select_algos(private_proposal_t *this, proposal_t *other,
-						 proposal_t *selected, bool private)
+						 proposal_t *selected, proposal_selection_flag_t flags)
 {
 	transform_type_t type;
 	array_t *types;
@@ -434,7 +411,11 @@ static bool select_algos(private_proposal_t *this, proposal_t *other,
 		{
 			continue;
 		}
-		if (select_algo(this, other, type, private, selected != NULL, &alg, &ks))
+		if (type == KEY_EXCHANGE_METHOD && (flags & PROPOSAL_SKIP_KE))
+		{
+			continue;
+		}
+		if (select_algo(this, other, type, flags, selected != NULL, &alg, &ks))
 		{
 			if (alg == 0 && type != EXTENDED_SEQUENCE_NUMBERS)
 			{	/* 0 is "valid" for extended sequence numbers, for other
@@ -468,8 +449,8 @@ static bool select_algos(private_proposal_t *this, proposal_t *other,
 }
 
 METHOD(proposal_t, select_proposal, proposal_t*,
-	private_proposal_t *this, proposal_t *other, bool other_remote,
-	bool private)
+	private_proposal_t *this, proposal_t *other,
+	proposal_selection_flag_t flags)
 {
 	proposal_t *selected;
 
@@ -481,18 +462,20 @@ METHOD(proposal_t, select_proposal, proposal_t*,
 		return NULL;
 	}
 
-	if (other_remote)
+	if (flags & PROPOSAL_PREFER_SUPPLIED)
 	{
-		selected = proposal_create(this->protocol, other->get_number(other));
-		selected->set_spi(selected, other->get_spi(other));
+		selected = proposal_create_v1(this->protocol, this->number,
+									  this->transform_number);
+		selected->set_spi(selected, this->spi);
 	}
 	else
 	{
-		selected = proposal_create(this->protocol, this->number);
-		selected->set_spi(selected, this->spi);
+		selected = proposal_create_v1(this->protocol, other->get_number(other),
+									  other->get_transform_number(other));
+		selected->set_spi(selected, other->get_spi(other));
 	}
 
-	if (!select_algos(this, other, selected, private))
+	if (!select_algos(this, other, selected, flags))
 	{
 		selected->destroy(selected);
 		return NULL;
@@ -502,13 +485,14 @@ METHOD(proposal_t, select_proposal, proposal_t*,
 }
 
 METHOD(proposal_t, matches, bool,
-	private_proposal_t *this, proposal_t *other, bool private)
+	private_proposal_t *this, proposal_t *other,
+	proposal_selection_flag_t flags)
 {
 	if (this->protocol != other->get_protocol(other))
 	{
 		return FALSE;
 	}
-	return select_algos(this, other, NULL, private);
+	return select_algos(this, other, NULL, flags);
 }
 
 METHOD(proposal_t, get_protocol, protocol_id_t,
@@ -566,10 +550,16 @@ static bool algo_list_equals(private_proposal_t *this, proposal_t *other,
 	return equals;
 }
 
-METHOD(proposal_t, get_number, u_int,
+METHOD(proposal_t, get_number, uint8_t,
 	private_proposal_t *this)
 {
 	return this->number;
+}
+
+METHOD(proposal_t, get_transform_number, uint8_t,
+	private_proposal_t *this)
+{
+	return this->transform_number;
 }
 
 METHOD(proposal_t, equals, bool,
@@ -599,30 +589,33 @@ METHOD(proposal_t, equals, bool,
 }
 
 METHOD(proposal_t, clone_, proposal_t*,
-	private_proposal_t *this)
+	private_proposal_t *this, proposal_selection_flag_t flags)
 {
 	private_proposal_t *clone;
 	enumerator_t *enumerator;
 	entry_t *entry;
-	transform_type_t *type;
 
 	clone = (private_proposal_t*)proposal_create(this->protocol, 0);
 
 	enumerator = array_create_enumerator(this->transforms);
 	while (enumerator->enumerate(enumerator, &entry))
 	{
+		if (entry->alg >= 1024 && (flags & PROPOSAL_SKIP_PRIVATE))
+		{
+			continue;
+		}
+		if (entry->type == KEY_EXCHANGE_METHOD && (flags & PROPOSAL_SKIP_KE))
+		{
+			continue;
+		}
 		array_insert(clone->transforms, ARRAY_TAIL, entry);
-	}
-	enumerator->destroy(enumerator);
-	enumerator = array_create_enumerator(this->types);
-	while (enumerator->enumerate(enumerator, &type))
-	{
-		array_insert(clone->types, ARRAY_TAIL, type);
+		add_type(clone->types, entry->type);
 	}
 	enumerator->destroy(enumerator);
 
 	clone->spi = this->spi;
 	clone->number = this->number;
+	clone->transform_number = this->transform_number;
 
 	return &clone->public;
 }
@@ -702,17 +695,17 @@ static bool check_proposal(private_proposal_t *this)
 			DBG1(DBG_CFG, "a PRF algorithm is mandatory in IKE proposals");
 			return FALSE;
 		}
-		/* remove MODP_NONE from IKE proposal */
+		/* remove KE_NONE from IKE proposal */
 		e = array_create_enumerator(this->transforms);
 		while (e->enumerate(e, &entry))
 		{
-			if (entry->type == DIFFIE_HELLMAN_GROUP && !entry->alg)
+			if (entry->type == KEY_EXCHANGE_METHOD && !entry->alg)
 			{
 				array_remove_at(this->transforms, e);
 			}
 		}
 		e->destroy(e);
-		if (!get_algorithm(this, DIFFIE_HELLMAN_GROUP, NULL, NULL))
+		if (!get_algorithm(this, KEY_EXCHANGE_METHOD, NULL, NULL))
 		{
 			DBG1(DBG_CFG, "a DH group is mandatory in IKE proposals");
 			return FALSE;
@@ -943,7 +936,8 @@ METHOD(proposal_t, destroy, void,
 /*
  * Described in header
  */
-proposal_t *proposal_create(protocol_id_t protocol, u_int number)
+proposal_t *proposal_create_v1(protocol_id_t protocol, uint8_t number,
+							   uint8_t transform)
 {
 	private_proposal_t *this;
 
@@ -952,26 +946,35 @@ proposal_t *proposal_create(protocol_id_t protocol, u_int number)
 			.add_algorithm = _add_algorithm,
 			.create_enumerator = _create_enumerator,
 			.get_algorithm = _get_algorithm,
-			.has_dh_group = _has_dh_group,
-			.promote_dh_group = _promote_dh_group,
-			.strip_dh = _strip_dh,
+			.has_transform = _has_transform,
+			.promote_transform = _promote_transform,
 			.select = _select_proposal,
 			.matches = _matches,
 			.get_protocol = _get_protocol,
 			.set_spi = _set_spi,
 			.get_spi = _get_spi,
 			.get_number = _get_number,
+			.get_transform_number = _get_transform_number,
 			.equals = _equals,
 			.clone = _clone_,
 			.destroy = _destroy,
 		},
 		.protocol = protocol,
 		.number = number,
+		.transform_number = transform,
 		.transforms = array_create(sizeof(entry_t), 0),
 		.types = array_create(sizeof(transform_type_t), 0),
 	);
 
 	return &this->public;
+}
+
+/*
+ * Described in header
+ */
+proposal_t *proposal_create(protocol_id_t protocol, uint8_t number)
+{
+	return proposal_create_v1(protocol, number, 0);
 }
 
 /**
@@ -983,7 +986,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 	encryption_algorithm_t encryption;
 	integrity_algorithm_t integrity;
 	pseudo_random_function_t prf;
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 	const char *plugin_name;
 
 	if (aead)
@@ -1115,6 +1118,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 					break;
 				case AUTH_HMAC_MD5_96:
 					/* no, thanks */
+					break;
 				default:
 					break;
 			}
@@ -1131,6 +1135,20 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 			case PRF_HMAC_SHA2_256:
 			case PRF_HMAC_SHA2_384:
 			case PRF_HMAC_SHA2_512:
+				add_algorithm(this, PSEUDO_RANDOM_FUNCTION, prf, 0);
+				break;
+			default:
+				break;
+		}
+	}
+	enumerator->destroy(enumerator);
+
+	/* Round 2 adds rarely used algorithms with at least 128 bit strength */
+	enumerator = lib->crypto->create_prf_enumerator(lib->crypto);
+	while (enumerator->enumerate(enumerator, &prf, &plugin_name))
+	{
+		switch (prf)
+		{
 			case PRF_AES128_XCBC:
 			case PRF_AES128_CMAC:
 				add_algorithm(this, PSEUDO_RANDOM_FUNCTION, prf, 0);
@@ -1141,7 +1159,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 	}
 	enumerator->destroy(enumerator);
 
-	/* Round 2 adds algorithms with less than 128 bit security strength */
+	/* Round 3 adds algorithms with less than 128 bit security strength */
 	enumerator = lib->crypto->create_prf_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &prf, &plugin_name))
 	{
@@ -1160,7 +1178,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 	enumerator->destroy(enumerator);
 
 	/* Round 1 adds ECC and NTRU algorithms with at least 128 bit security strength */
-	enumerator = lib->crypto->create_dh_enumerator(lib->crypto);
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &group, &plugin_name))
 	{
 		switch (group)
@@ -1177,7 +1195,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 			case NTRU_192_BIT:
 			case NTRU_256_BIT:
 			case NH_128_BIT:
-				add_algorithm(this, DIFFIE_HELLMAN_GROUP, group, 0);
+				add_algorithm(this, KEY_EXCHANGE_METHOD, group, 0);
 				break;
 			default:
 				break;
@@ -1186,7 +1204,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 	enumerator->destroy(enumerator);
 
 	/* Round 2 adds other algorithms with at least 128 bit security strength */
-	enumerator = lib->crypto->create_dh_enumerator(lib->crypto);
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &group, &plugin_name))
 	{
 		switch (group)
@@ -1195,7 +1213,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 			case MODP_4096_BIT:
 			case MODP_6144_BIT:
 			case MODP_8192_BIT:
-				add_algorithm(this, DIFFIE_HELLMAN_GROUP, group, 0);
+				add_algorithm(this, KEY_EXCHANGE_METHOD, group, 0);
 				break;
 			default:
 				break;
@@ -1204,7 +1222,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 	enumerator->destroy(enumerator);
 
 	/* Round 3 adds algorithms with less than 128 bit security strength */
-	enumerator = lib->crypto->create_dh_enumerator(lib->crypto);
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &group, &plugin_name))
 	{
 		switch (group)
@@ -1229,7 +1247,7 @@ static bool proposal_add_supported_ike(private_proposal_t *this, bool aead)
 				/* rarely used */
 				break;
 			case MODP_2048_BIT:
-				add_algorithm(this, DIFFIE_HELLMAN_GROUP, group, 0);
+				add_algorithm(this, KEY_EXCHANGE_METHOD, group, 0);
 				break;
 			default:
 				break;
@@ -1299,9 +1317,14 @@ proposal_t *proposal_create_default_aead(protocol_id_t protocol)
 			}
 			return &this->public;
 		case PROTO_ESP:
-			/* we currently don't include any AEAD proposal for ESP, as we
-			 * don't know if our kernel backend actually supports it. */
-			return NULL;
+			/* AES-GCM should be supported by pretty much all current kernels,
+			 * RFC 8221 even made it mandatory */
+			this = (private_proposal_t*)proposal_create(protocol, 0);
+			add_algorithm(this, ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16, 128);
+			add_algorithm(this, ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16, 192);
+			add_algorithm(this, ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16, 256);
+			add_algorithm(this, EXTENDED_SEQUENCE_NUMBERS, NO_EXT_SEQ_NUMBERS, 0);
+			return &this->public;
 		case PROTO_AH:
 		default:
 			return NULL;
@@ -1340,4 +1363,60 @@ proposal_t *proposal_create_from_string(protocol_id_t protocol, const char *algs
 	}
 
 	return &this->public;
+}
+
+/*
+ * Described in header
+ */
+proposal_t *proposal_select(linked_list_t *configured, linked_list_t *supplied,
+							proposal_selection_flag_t flags)
+{
+	enumerator_t *prefer_enum, *match_enum;
+	proposal_t *proposal, *match, *selected = NULL;
+
+	if (flags & PROPOSAL_PREFER_SUPPLIED)
+	{
+		prefer_enum = supplied->create_enumerator(supplied);
+		match_enum = configured->create_enumerator(configured);
+	}
+	else
+	{
+		prefer_enum = configured->create_enumerator(configured);
+		match_enum = supplied->create_enumerator(supplied);
+	}
+
+	while (prefer_enum->enumerate(prefer_enum, &proposal))
+	{
+		if (flags & PROPOSAL_PREFER_SUPPLIED)
+		{
+			configured->reset_enumerator(configured, match_enum);
+		}
+		else
+		{
+			supplied->reset_enumerator(supplied, match_enum);
+		}
+		while (match_enum->enumerate(match_enum, &match))
+		{
+			selected = proposal->select(proposal, match, flags);
+			if (selected)
+			{
+				DBG2(DBG_CFG, "received proposals: %#P", supplied);
+				DBG2(DBG_CFG, "configured proposals: %#P", configured);
+				DBG1(DBG_CFG, "selected proposal: %P", selected);
+				break;
+			}
+		}
+		if (selected)
+		{
+			break;
+		}
+	}
+	prefer_enum->destroy(prefer_enum);
+	match_enum->destroy(match_enum);
+	if (!selected)
+	{
+		DBG1(DBG_CFG, "received proposals: %#P", supplied);
+		DBG1(DBG_CFG, "configured proposals: %#P", configured);
+	}
+	return selected;
 }

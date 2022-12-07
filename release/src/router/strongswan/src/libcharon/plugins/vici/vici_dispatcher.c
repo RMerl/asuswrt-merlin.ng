@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -495,6 +496,11 @@ METHOD(vici_dispatcher_t, raise_event, void,
 	enumerator_t *enumerator;
 	event_t *event;
 	u_int *current;
+
+	if (!message)
+	{
+		return;
+	}
 
 	this->mutex->lock(this->mutex);
 	event = this->events->get(this->events, name);

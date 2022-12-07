@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,7 +41,7 @@ struct bliss_signature_t {
 	chunk_t (*get_encoding)(bliss_signature_t *this);
 
 	/**
-	 * Get signature parameters extracted from compressd binary encoding
+	 * Get signature parameters extracted from compressed binary encoding
 	 *
 	 * @param z1		signature vector z1 of size n
 	 * @param z2d		signature vector z2d of size n

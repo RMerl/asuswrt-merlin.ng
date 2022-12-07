@@ -2,7 +2,8 @@
  * Copyright (C) 2008-2012 Tobias Brunner
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -33,10 +34,18 @@
 #define COOKIE_LIFETIME 10
 /** time we wait before disabling cookies */
 #define COOKIE_CALMDOWN_DELAY 10
-/** how many times to reuse the secret */
-#define COOKIE_REUSE 10000
+/** number of per-IP timestamps we keep track of (must be a power of 2) */
+#define COOKIE_CALMDOWN_BUCKETS 32
+/** mask applied to IP address hashes to determine the timestamp index */
+#define COOKIE_CALMDOWN_MASK (COOKIE_CALMDOWN_BUCKETS-1)
+/** time in seconds we use a secret at most (since we keep two secrets, must
+ * be at least COOKIE_LIFETIME to process all outstanding valid cookies)  */
+#define COOKIE_SECRET_SWITCH 120
 /** default value for private_receiver_t.cookie_threshold */
-#define COOKIE_THRESHOLD_DEFAULT 10
+#define COOKIE_THRESHOLD_DEFAULT 30
+/** default value for private_receiver_t.cookie_threshold_ip (must be lower
+ * than BLOCK_THRESHOLD_DEFAULT) */
+#define COOKIE_THRESHOLD_IP_DEFAULT 3
 /** default value for private_receiver_t.block_threshold */
 #define BLOCK_THRESHOLD_DEFAULT 5
 /** length of the secret to use for cookie calculation */
@@ -79,14 +88,9 @@ struct private_receiver_t {
 	char secret_old[SECRET_LENGTH];
 
 	/**
-	 * how many times we have used "secret" so far
+	 * time we used the current secret first
 	 */
-	uint32_t secret_used;
-
-	/**
-	 * time we did the cookie switch
-	 */
-	uint32_t secret_switch;
+	uint32_t secret_first_use;
 
 	/**
 	 * time offset to use, hides our system time
@@ -106,17 +110,23 @@ struct private_receiver_t {
 	/**
 	 * require cookies after this many half open IKE_SAs
 	 */
-	uint32_t cookie_threshold;
+	u_int cookie_threshold;
 
 	/**
-	 * timestamp of last cookie requested
+	 * require cookies for a specific IP after this many half open IKE_SAs
 	 */
-	time_t last_cookie;
+	u_int cookie_threshold_ip;
+
+	/**
+	 * global (0) and per-IP hash (1..n) timestamps of when the threshold was
+	 * last reached
+	 */
+	time_t last_threshold[COOKIE_CALMDOWN_BUCKETS+1];
 
 	/**
 	 * how many half open IKE_SAs per peer before blocking
 	 */
-	uint32_t block_threshold;
+	u_int block_threshold;
 
 	/**
 	 * Drop IKE_SA_INIT requests if processor job load exceeds this limit
@@ -176,8 +186,8 @@ static void send_notify(message_t *request, int major, exchange_type_t exchange,
 	if (major == IKEV2_MAJOR_VERSION)
 	{
 		response->set_request(response, FALSE);
+		response->set_message_id(response, request->get_message_id(request));
 	}
-	response->set_message_id(response, 0);
 	ike_sa_id = request->get_ike_sa_id(request);
 	ike_sa_id->switch_initiator(ike_sa_id);
 	response->set_ike_sa_id(response, ike_sa_id);
@@ -232,7 +242,7 @@ static bool cookie_verify(private_receiver_t *this, message_t *message,
 	}
 
 	/* check if cookie is derived from old_secret */
-	if (t + this->secret_offset > this->secret_switch)
+	if (t + this->secret_offset >= this->secret_first_use)
 	{
 		secret = chunk_from_thing(this->secret);
 	}
@@ -287,30 +297,67 @@ static bool check_cookie(private_receiver_t *this, message_t *message)
 }
 
 /**
- * Check if we currently require cookies
+ * Struct to keep track of half-open SA counts
+ */
+typedef struct {
+	u_int count;
+	bool determined;
+} half_open_count_t;
+
+/**
+ * Get the number of half-open SAs, cached or from the manager, either global
+ * or for a single IP.
+ */
+static u_int get_half_open_count(half_open_count_t *this, host_t *src)
+{
+	if (!this->determined)
+	{
+		this->determined = TRUE;
+		this->count = charon->ike_sa_manager->get_half_open_count(
+											charon->ike_sa_manager, src, TRUE);
+	}
+	return this->count;
+}
+
+/**
+ * Check if we currently require cookies either globally or for the given IP
  */
 static bool cookie_required(private_receiver_t *this,
-							u_int half_open, uint32_t now)
+							half_open_count_t *half_open, host_t *src,
+							uint32_t now)
 {
-	if (this->cookie_threshold && half_open >= this->cookie_threshold)
+	u_int threshold = src ? this->cookie_threshold_ip : this->cookie_threshold;
+	u_int idx = 0;
+
+	if (!threshold)
 	{
-		this->last_cookie = now;
+		return FALSE;
+	}
+	if (src)
+	{
+		/* keep track of IPs in segments so not all are affected if a single
+		 * IP is targeted */
+		idx = 1 + (chunk_hash(src->get_address(src)) & COOKIE_CALMDOWN_MASK);
+	}
+	if (get_half_open_count(half_open, src) >= threshold)
+	{
+		this->last_threshold[idx] = now;
 		return TRUE;
 	}
-	if (this->last_cookie && now < this->last_cookie + COOKIE_CALMDOWN_DELAY)
+	if (this->last_threshold[idx] &&
+		now < this->last_threshold[idx] + COOKIE_CALMDOWN_DELAY)
 	{
-		/* We don't disable cookies unless we haven't seen IKE_SA_INITs
-		 * for COOKIE_CALMDOWN_DELAY seconds. This avoids jittering between
+		/* We don't disable cookies unless the threshold was not reached for
+		 * COOKIE_CALMDOWN_DELAY seconds. This avoids jittering between
 		 * cookie on / cookie off states, which is problematic. Consider the
-		 * following: A legitimiate initiator sends a IKE_SA_INIT while we
+		 * following: A legitimate initiator sends an IKE_SA_INIT while we
 		 * are under a DoS attack. If we toggle our cookie behavior,
 		 * multiple retransmits of this IKE_SA_INIT might get answered with
 		 * and without cookies. The initiator goes on and retries with
 		 * a cookie, but it can't know if the completing IKE_SA_INIT response
 		 * is to its IKE_SA_INIT request with or without cookies. This is
-		 * problematic, as the cookie is part of AUTH payload data.
+		 * problematic, as the cookie is part of the AUTH payload data.
 		 */
-		this->last_cookie = now;
 		return TRUE;
 	}
 	return FALSE;
@@ -321,70 +368,74 @@ static bool cookie_required(private_receiver_t *this,
  */
 static bool drop_ike_sa_init(private_receiver_t *this, message_t *message)
 {
-	u_int half_open;
+	half_open_count_t half_open = {}, half_open_ip = {};
+	host_t *src;
 	uint32_t now;
 
+	src = message->get_source(message);
 	now = time_monotonic(NULL);
-	half_open = charon->ike_sa_manager->get_half_open_count(
-										charon->ike_sa_manager, NULL, TRUE);
 
 	/* check for cookies in IKEv2 */
 	if (message->get_major_version(message) == IKEV2_MAJOR_VERSION &&
-		cookie_required(this, half_open, now) && !check_cookie(this, message))
+		(cookie_required(this, &half_open, NULL, now) ||
+		 cookie_required(this, &half_open_ip, src, now)) &&
+		!check_cookie(this, message))
 	{
 		chunk_t cookie;
 
-		DBG2(DBG_NET, "received packet from: %#H to %#H",
-			 message->get_source(message),
-			 message->get_destination(message));
-		if (!cookie_build(this, message, now - this->secret_offset,
-						  chunk_from_thing(this->secret), &cookie))
+		DBG2(DBG_NET, "received packet: from %#H to %#H (%zu bytes)",
+			 src, message->get_destination(message),
+			 message->get_packet_data(message).len);
+
+		if (!this->secret_first_use)
 		{
-			return TRUE;
+			this->secret_first_use = now;
 		}
-		DBG2(DBG_NET, "sending COOKIE notify to %H",
-			 message->get_source(message));
-		send_notify(message, IKEV2_MAJOR_VERSION, IKE_SA_INIT, COOKIE, cookie);
-		chunk_free(&cookie);
-		if (++this->secret_used > COOKIE_REUSE)
+		else if (now - this->secret_first_use > COOKIE_SECRET_SWITCH)
 		{
 			char secret[SECRET_LENGTH];
 
-			DBG1(DBG_NET, "generating new cookie secret after %d uses",
-				 this->secret_used);
+			DBG1(DBG_NET, "generating new cookie secret after %ds since first "
+				 "use", now - this->secret_first_use);
 			if (this->rng->get_bytes(this->rng, SECRET_LENGTH, secret))
 			{
 				memcpy(this->secret_old, this->secret, SECRET_LENGTH);
 				memcpy(this->secret, secret, SECRET_LENGTH);
 				memwipe(secret, SECRET_LENGTH);
-				this->secret_switch = now;
-				this->secret_used = 0;
+				this->secret_first_use = now;
 			}
 			else
 			{
 				DBG1(DBG_NET, "failed to allocated cookie secret, keeping old");
 			}
 		}
+		if (!cookie_build(this, message, now - this->secret_offset,
+						  chunk_from_thing(this->secret), &cookie))
+		{
+			return TRUE;
+		}
+		DBG2(DBG_NET, "sending COOKIE notify to %H", src);
+		send_notify(message, IKEV2_MAJOR_VERSION, IKE_SA_INIT, COOKIE, cookie);
+		chunk_free(&cookie);
 		return TRUE;
 	}
 
 	/* check if peer has too many IKE_SAs half open */
 	if (this->block_threshold &&
-		charon->ike_sa_manager->get_half_open_count(charon->ike_sa_manager,
-				message->get_source(message), TRUE) >= this->block_threshold)
+		get_half_open_count(&half_open_ip, src) >= this->block_threshold)
+
 	{
-		DBG1(DBG_NET, "ignoring IKE_SA setup from %H, "
-			 "peer too aggressive", message->get_source(message));
+		DBG1(DBG_NET, "ignoring IKE_SA setup from %H, per-IP half-open IKE_SA "
+			 "limit of %d reached", src, this->block_threshold);
 		return TRUE;
 	}
 
 	/* check if global half open IKE_SA limit reached */
 	if (this->init_limit_half_open &&
-	    half_open >= this->init_limit_half_open)
+	    get_half_open_count(&half_open, NULL) >= this->init_limit_half_open)
 	{
-		DBG1(DBG_NET, "ignoring IKE_SA setup from %H, half open IKE_SA "
-			 "count of %d exceeds limit of %d", message->get_source(message),
-			 half_open, this->init_limit_half_open);
+		DBG1(DBG_NET, "ignoring IKE_SA setup from %H, half-open IKE_SA "
+			 "limit of %d reached", src, this->init_limit_half_open);
 		return TRUE;
 	}
 
@@ -400,8 +451,7 @@ static bool drop_ike_sa_init(private_receiver_t *this, message_t *message)
 		if (jobs > this->init_limit_job_load)
 		{
 			DBG1(DBG_NET, "ignoring IKE_SA setup from %H, job load of %d "
-				 "exceeds limit of %d", message->get_source(message),
-				 jobs, this->init_limit_job_load);
+				 "exceeds limit of %d", src, jobs, this->init_limit_job_load);
 			return TRUE;
 		}
 	}
@@ -486,8 +536,7 @@ static job_requeue_t receive_packets(private_receiver_t *this)
 	message = message_create_from_packet(packet);
 	if (message->parse_header(message) != SUCCESS)
 	{
-		DBG1(DBG_NET, "received invalid IKE header from %H - ignored",
-			 packet->get_source(packet));
+		DBG1(DBG_NET, "received invalid IKE header from %H - ignored", src);
 		charon->bus->alert(charon->bus, ALERT_PARSE_ERROR_HEADER, message);
 		message->destroy(message);
 		return JOB_REQUEUE_DIRECT;
@@ -520,7 +569,8 @@ static job_requeue_t receive_packets(private_receiver_t *this)
 			break;
 		default:
 #ifdef USE_IKEV2
-			send_notify(message, IKEV2_MAJOR_VERSION, INFORMATIONAL,
+			send_notify(message, IKEV2_MAJOR_VERSION,
+						message->get_exchange_type(message),
 						INVALID_MAJOR_VERSION, chunk_empty);
 #elif defined(USE_IKEV1)
 			send_notify(message, IKEV1_MAJOR_VERSION, INFORMATIONAL_V1,
@@ -533,7 +583,7 @@ static job_requeue_t receive_packets(private_receiver_t *this)
 	{
 		DBG1(DBG_NET, "received unsupported IKE version %d.%d from %H, sending "
 			 "INVALID_MAJOR_VERSION", message->get_major_version(message),
-			 message->get_minor_version(message), packet->get_source(packet));
+			 message->get_minor_version(message), src);
 		message->destroy(message);
 		return JOB_REQUEUE_DIRECT;
 	}
@@ -627,8 +677,7 @@ receiver_t *receiver_create()
 			.destroy = _destroy,
 		},
 		.esp_cb_mutex = mutex_create(MUTEX_TYPE_DEFAULT),
-		.secret_switch = now,
-		.secret_offset = random() % now,
+		.secret_offset = now ? random() % now : 0,
 	);
 
 	if (lib->settings->get_bool(lib->settings,
@@ -636,8 +685,18 @@ receiver_t *receiver_create()
 	{
 		this->cookie_threshold = lib->settings->get_int(lib->settings,
 					"%s.cookie_threshold", COOKIE_THRESHOLD_DEFAULT, lib->ns);
+		this->cookie_threshold_ip = lib->settings->get_int(lib->settings,
+					"%s.cookie_threshold_ip", COOKIE_THRESHOLD_IP_DEFAULT, lib->ns);
 		this->block_threshold = lib->settings->get_int(lib->settings,
 					"%s.block_threshold", BLOCK_THRESHOLD_DEFAULT, lib->ns);
+
+		if (this->cookie_threshold_ip >= this->block_threshold)
+		{
+			this->block_threshold = this->cookie_threshold_ip + 1;
+			DBG1(DBG_NET, "increasing block threshold to %u due to per-IP "
+				 "cookie threshold of %u", this->block_threshold,
+				 this->cookie_threshold_ip);
+		}
 	}
 	this->init_limit_job_load = lib->settings->get_int(lib->settings,
 					"%s.init_limit_job_load", 0, lib->ns);

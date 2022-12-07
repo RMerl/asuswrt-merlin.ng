@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -230,8 +231,8 @@ METHOD(plugin_t, get_features, int,
 	private_load_tester_plugin_t *this, plugin_feature_t *features[])
 {
 	static plugin_feature_t f[] = {
-		PLUGIN_REGISTER(DH, load_tester_diffie_hellman_create),
-			PLUGIN_PROVIDE(DH, MODP_NULL),
+		PLUGIN_REGISTER(KE, load_tester_diffie_hellman_create),
+			PLUGIN_PROVIDE(KE, MODP_NULL),
 				PLUGIN_DEPENDS(CUSTOM, "load-tester"),
 		PLUGIN_CALLBACK((plugin_feature_callback_t)register_load_tester, NULL),
 			PLUGIN_PROVIDE(CUSTOM, "load-tester"),

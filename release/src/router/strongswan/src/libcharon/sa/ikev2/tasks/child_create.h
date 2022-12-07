@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2018 Tobias Brunner
+ * Copyright (C) 2018-2019 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -58,7 +59,22 @@ struct child_create_t {
 	 * @param in		inbound mark value
 	 * @param out		outbound mark value
 	 */
-	void (*use_marks)(child_create_t *this, u_int in, u_int out);
+	void (*use_marks)(child_create_t *this, uint32_t in, uint32_t out);
+
+	/**
+	 * Use specific interface IDs, overriding configuration.
+	 *
+	 * @param in			inbound interface ID
+	 * @param out			outbound interface ID
+	 */
+	void (*use_if_ids)(child_create_t *this, uint32_t in, uint32_t out);
+
+	/**
+	 * Use specific security label, overriding configuration.
+	 *
+	 * @param label			security label
+	 */
+	void (*use_label)(child_create_t *this, sec_label_t *label);
 
 	/**
 	 * Initially propose a specific DH group to override configuration.
@@ -67,7 +83,7 @@ struct child_create_t {
 	 *
 	 * @param dh_group	DH group to use
 	 */
-	void (*use_dh_group)(child_create_t *this, diffie_hellman_group_t dh_group);
+	void (*use_dh_group)(child_create_t *this, key_exchange_method_t dh_group);
 
 	/**
 	 * Get the lower of the two nonces, used for rekey collisions.

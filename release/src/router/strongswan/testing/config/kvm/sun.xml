@@ -1,8 +1,8 @@
 <domain type='kvm'>
   <name>sun</name>
   <uuid>35341843-346c-a63a-786b-9df0fd5e6264</uuid>
-  <memory unit='KiB'>131072</memory>
-  <currentMemory unit='KiB'>131072</currentMemory>
+  <memory unit='KiB'>147456</memory>
+  <currentMemory unit='KiB'>147456</currentMemory>
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>
@@ -10,11 +10,7 @@
     <cmdline>root=/dev/vda1 loglevel=1 console=hvc0 net.ifnames=0</cmdline>
     <boot dev='hd'/>
   </os>
-  <cpu>
-    <model fallback='allow'>core2duo</model>
-    <feature policy='optional' name='aes'/>
-    <feature policy='optional' name='pclmuldq'/>
-  </cpu>
+  <cpu mode='host-passthrough'></cpu>
   <features>
     <acpi/>
     <apic/>
@@ -25,7 +21,7 @@
   <on_reboot>restart</on_reboot>
   <on_crash>restart</on_crash>
   <devices>
-    <emulator>/usr/bin/kvm</emulator>
+    <emulator>/usr/bin/qemu-system-x86_64</emulator>
     <disk type='file' device='disk'>
       <driver name='qemu' type='qcow2' cache='writethrough'/>
       <source file='/var/lib/libvirt/images/sun.qcow2'/>
@@ -73,5 +69,8 @@
     <memballoon model='virtio'>
       <address type='pci' domain='0x0000' bus='0x00' slot='0x06' function='0x0'/>
     </memballoon>
+    <rng model='virtio'>
+      <backend model='random'>/dev/urandom</backend>
+    </rng>
   </devices>
 </domain>

@@ -1,0 +1,5 @@
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+moon::expect-connection duck
+carol::expect-connection home
+carol::swanctl --initiate --child duck 2> /dev/null

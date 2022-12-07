@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -35,7 +36,7 @@ struct eap_entry_t {
 	/**
 	 * vendor ID, 0 for default EAP methods
 	 */
-	uint32_t vendor;
+	pen_t vendor;
 
 	/**
 	 * Role of the method returned by the constructor, EAP_SERVER or EAP_PEER
@@ -70,7 +71,7 @@ struct private_eap_manager_t {
 };
 
 METHOD(eap_manager_t, add_method, void,
-	private_eap_manager_t *this, eap_type_t type, uint32_t vendor,
+	private_eap_manager_t *this, eap_type_t type, pen_t vendor,
 	eap_role_t role, eap_constructor_t constructor)
 {
 	eap_entry_t *entry = malloc_thing(eap_entry_t);
@@ -110,7 +111,7 @@ CALLBACK(filter_methods, bool,
 {
 	eap_entry_t *entry;
 	eap_type_t *type;
-	uint32_t *vendor;
+	pen_t *vendor;
 
 	VA_ARGS_VGET(args, type, vendor);
 
@@ -151,7 +152,7 @@ METHOD(eap_manager_t, create_enumerator, enumerator_t*,
 }
 
 METHOD(eap_manager_t, create_instance, eap_method_t*,
-	private_eap_manager_t *this, eap_type_t type, uint32_t vendor,
+	private_eap_manager_t *this, eap_type_t type, pen_t vendor,
 	eap_role_t role, identification_t *server, identification_t *peer)
 {
 	enumerator_t *enumerator;

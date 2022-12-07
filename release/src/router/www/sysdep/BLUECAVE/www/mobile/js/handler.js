@@ -1016,7 +1016,7 @@ apply.wireless = function(){
 		}
 		else if(isSupport('wifi6e') && qisPostData.smart_connect_x == '3'){
 			qisPostData.wl0_auth_mode_x = "psk2";
-			qisPostData.wl0_mfp = "1";
+			qisPostData.wl0_mfp = "0";
 		}
 		else{
 			qisPostData.wl0_auth_mode_x = "psk2";
@@ -1043,7 +1043,7 @@ apply.wireless = function(){
 		}
 		else if(isSupport('wifi6e') && qisPostData.smart_connect_x == '3'){
 			qisPostData.wl1_auth_mode_x = "psk2";
-			qisPostData.wl1_mfp = "1";
+			qisPostData.wl1_mfp = "0";
 		}
 		else{
 			qisPostData.wl1_auth_mode_x = "psk2";			
@@ -1092,6 +1092,19 @@ apply.wireless = function(){
 			if(check_dwb_ssid())
 				return false;
 		}
+	}
+
+	if(systemVariable.productid == 'GT10' && qisPostData.smart_connect_x == '1'){
+		qisPostData.wl1_ssid = qisPostData.wl0_ssid;
+		qisPostData.wl1_wpa_psk = qisPostData.wl0_wpa_psk;
+		qisPostData.wl1_auth_mode_x = qisPostData.wl0_auth_mode_x;
+		qisPostData.wl1_crypto = qisPostData.wl0_crypto;
+		qisPostData.wl1_mfp = qisPostData.wl0_mfp;
+		qisPostData.wl2_ssid = qisPostData.wl0_ssid;
+		qisPostData.wl2_wpa_psk = qisPostData.wl0_wpa_psk;
+		qisPostData.wl2_auth_mode_x = qisPostData.wl0_auth_mode_x;
+		qisPostData.wl2_crypto = qisPostData.wl0_crypto;
+		qisPostData.wl2_mfp = qisPostData.wl0_mfp;
 	}
 
 	if(isSupport("11AX") && !isSupport("qis_hide_he_features")){
@@ -3764,9 +3777,9 @@ goTo.Conncap = function(){
 	systemVariable.macAddr = httpApi.nvramGet(["et0macaddr"]).et0macaddr;
 
 	setInterval(function(){
-		httpApi.checkCap("http://router.asus.com", function(){
+		httpApi.checkCap("http://<#Web_DOMAIN_NAME#>", function(){
 			setTimeout(function(){
-				if(isPage("amasconncap_page")) window.location.href = "http://router.asus.com/cfg_onboarding.cgi?flag=AMesh&id=" + systemVariable.macAddr.split(":").join("");
+				if(isPage("amasconncap_page")) window.location.href = "http://<#Web_DOMAIN_NAME#>/cfg_onboarding.cgi?flag=AMesh&id=" + systemVariable.macAddr.split(":").join("");
 			}, 3000);
 
 			$("#loginCapAlert").fadeIn(500);
@@ -4339,7 +4352,7 @@ goTo.amasOnboarding = function(){
 		if(wl_nband_array != "")
 			wl_nband_array = JSON.parse(wl_nband_array);
 
-		var re_isAX_model = (systemVariable.onboardingInfo.name.toUpperCase().indexOf("AX") >= 0 || systemVariable.onboardingInfo.name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || systemVariable.onboardingInfo.name.toUpperCase().indexOf("ZENWIFI_E") >= 0);
+		var re_isAX_model = (systemVariable.onboardingInfo.name.toUpperCase().indexOf("AX") >= 0 || systemVariable.onboardingInfo.name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || systemVariable.onboardingInfo.name.toUpperCase().indexOf("ZENWIFI_E") >= 0 || systemVariable.onboardingInfo.name.toUpperCase().indexOf("GT6") >= 0);
 		var auth_flag = false;
 		var wps_flag = false;
 		var band6g = 4;

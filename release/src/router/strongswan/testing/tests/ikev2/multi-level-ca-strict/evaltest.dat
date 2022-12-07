@@ -1,6 +1,0 @@
-carol::ipsec status 2> /dev/null::alice.*INSTALLED, TUNNEL::YES
-carol::ipsec status 2> /dev/null::venus.*INSTALLED, TUNNEL::YES
-moon:: ipsec status 2> /dev/null::ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
-dave:: ipsec status 2> /dev/null::venus.*INSTALLED, TUNNEL::YES
-dave:: ipsec status 2> /dev/null::alice.*INSTALLED, TUNNEL::YES
-moon:: ipsec status 2> /dev/null::ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::YES

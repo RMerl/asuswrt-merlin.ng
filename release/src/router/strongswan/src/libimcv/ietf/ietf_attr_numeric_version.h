@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012-2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -14,7 +15,7 @@
  */
 
 /**
- * @defgroup ietf_attr_numeric_versiont ietf_attr_numeric_version
+ * @defgroup ietf_attr_numeric_version ietf_attr_numeric_version
  * @{ @ingroup ietf_attr
  */
 
@@ -59,7 +60,7 @@ struct ietf_attr_numeric_version_t {
 	 * Gets the Major and Minor Numbers of the Service Pack
 	 *
 	 * @param major			Service Pack Major Number
-	 * @param minor			Servcie Pack Minor Number
+	 * @param minor			Service Pack Minor Number
 	 */
 	void (*get_service_pack)(ietf_attr_numeric_version_t *this,
 							 uint16_t *major, uint16_t *minor);

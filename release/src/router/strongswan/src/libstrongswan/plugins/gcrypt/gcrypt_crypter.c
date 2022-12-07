@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -44,7 +45,7 @@ struct private_gcrypt_crypter_t {
 	/**
 	 * are we using counter mode?
 	 */
-	bool ctr_mode;
+	int mode;
 
 	/**
 	 * counter state
@@ -61,13 +62,17 @@ struct private_gcrypt_crypter_t {
  */
 static bool set_iv(private_gcrypt_crypter_t *this, chunk_t iv)
 {
-	if (this->ctr_mode)
+	if (this->mode == GCRY_CIPHER_MODE_CTR)
 	{
 		memcpy(this->ctr.iv, iv.ptr, sizeof(this->ctr.iv));
 		this->ctr.counter = htonl(1);
 		return gcry_cipher_setctr(this->h, &this->ctr, sizeof(this->ctr)) == 0;
 	}
-	return gcry_cipher_setiv(this->h, iv.ptr, iv.len) == 0;
+	if (iv.len)
+	{
+		return gcry_cipher_setiv(this->h, iv.ptr, iv.len) == 0;
+	}
+	return TRUE;
 }
 
 METHOD(crypter_t, decrypt, bool,
@@ -107,7 +112,7 @@ METHOD(crypter_t, get_block_size, size_t,
 {
 	size_t len = 0;
 
-	if (this->ctr_mode)
+	if (this->mode == GCRY_CIPHER_MODE_CTR)
 	{	/* counter mode does not need any padding */
 		return 1;
 	}
@@ -120,9 +125,14 @@ METHOD(crypter_t, get_iv_size, size_t,
 {
 	size_t len = 0;
 
-	if (this->ctr_mode)
+	switch (this->mode)
 	{
-		return sizeof(this->ctr.iv);
+		case GCRY_CIPHER_MODE_CTR:
+			return sizeof(this->ctr.iv);
+		case GCRY_CIPHER_MODE_ECB:
+			return 0;
+		default:
+			break;
 	}
 	gcry_cipher_algo_info(this->alg, GCRYCTL_GET_BLKLEN, NULL, &len);
 	return len;
@@ -134,7 +144,7 @@ METHOD(crypter_t, get_key_size, size_t,
 	size_t len = 0;
 
 	gcry_cipher_algo_info(this->alg, GCRYCTL_GET_KEYLEN, NULL, &len);
-	if (this->ctr_mode)
+	if (this->mode == GCRY_CIPHER_MODE_CTR)
 	{
 		return len + sizeof(this->ctr.nonce);
 	}
@@ -144,7 +154,7 @@ METHOD(crypter_t, get_key_size, size_t,
 METHOD(crypter_t, set_key, bool,
 	private_gcrypt_crypter_t *this, chunk_t key)
 {
-	if (this->ctr_mode)
+	if (this->mode == GCRY_CIPHER_MODE_CTR)
 	{
 		/* last 4 bytes are the nonce */
 		memcpy(this->ctr.nonce, key.ptr + key.len - sizeof(this->ctr.nonce),
@@ -198,9 +208,29 @@ gcrypt_crypter_t *gcrypt_crypter_create(encryption_algorithm_t algo,
 			gcrypt_alg = GCRY_CIPHER_BLOWFISH;
 			break;
 		case ENCR_AES_CTR:
-			mode = GCRY_CIPHER_MODE_CTR;
+		case ENCR_AES_ECB:
+			mode = (algo == ENCR_AES_CTR) ? GCRY_CIPHER_MODE_CTR :
+											GCRY_CIPHER_MODE_ECB;
 			/* fall */
 		case ENCR_AES_CBC:
+			switch (key_size)
+			{
+				case 0:
+				case 16:
+					gcrypt_alg = GCRY_CIPHER_AES128;
+					break;
+				case 24:
+					gcrypt_alg = GCRY_CIPHER_AES192;
+					break;
+				case 32:
+					gcrypt_alg = GCRY_CIPHER_AES256;
+					break;
+				default:
+					return NULL;
+			}
+			break;
+		case ENCR_AES_CFB:
+			mode = GCRY_CIPHER_MODE_CFB;
 			switch (key_size)
 			{
 				case 0:
@@ -287,7 +317,7 @@ gcrypt_crypter_t *gcrypt_crypter_create(encryption_algorithm_t algo,
 			},
 		},
 		.alg = gcrypt_alg,
-		.ctr_mode = mode == GCRY_CIPHER_MODE_CTR,
+		.mode = mode,
 	);
 
 	err = gcry_cipher_open(&this->h, gcrypt_alg, mode, 0);

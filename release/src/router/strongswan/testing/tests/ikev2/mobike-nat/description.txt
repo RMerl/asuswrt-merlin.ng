@@ -1,7 +1,0 @@
-The roadwarrior <b>alice</b> is sitting behind the NAT router <b>moon</b> but
-at the outset of the scenario is also directly connected to the 192.168.0.0/24 network
-via an additional <b>eth1</b> interface. <b>alice</b> builds up a tunnel to gateway <b>sun</b>
-in order to reach <b>bob</b> in the subnet behind. When the <b>eth1</b> interface
-goes away, <b>alice</b> switches to <b>eth0</b> and signals the IP address change 
-via a MOBIKE ADDRESS_UPDATE notification to peer <b>sun</b>. <b>alice</b> sets
-a virtual IP of 10.3.0.3, so that the IPsec policies don't have to be changed.

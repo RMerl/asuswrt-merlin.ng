@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -20,10 +20,10 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "curl_setup.h"
-/* scheme is not URL encoded, the longest libcurl supported ones are... */
-#define MAX_SCHEME_LEN 40
 
 bool Curl_is_absolute_url(const char *url, char *scheme, size_t buflen);
 

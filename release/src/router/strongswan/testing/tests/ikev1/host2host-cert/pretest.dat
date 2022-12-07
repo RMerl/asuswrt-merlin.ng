@@ -1,7 +1,8 @@
 moon::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
-sun::ipsec start
-moon::ipsec start
-sun::expect-connection host-host
+moon::systemctl start strongswan
+sun::systemctl start strongswan
 moon::expect-connection host-host
-moon::ipsec up host-host
+sun::expect-connection host-host
+moon::swanctl --initiate --child host-host 2> /dev/null
+moon::sleep 1

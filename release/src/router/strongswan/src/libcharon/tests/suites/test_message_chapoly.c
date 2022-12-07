@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -73,7 +74,7 @@ START_TEST(test_chacha20poly1305)
 	chunk_t chunk, exp;
 	keymat_t keymat = {
 		.get_version = _get_version,
-		.create_dh = (void*)return_null,
+		.create_ke = (void*)return_null,
 		.create_nonce_gen = (void*)return_null,
 		.get_aead = _get_aead,
 	};

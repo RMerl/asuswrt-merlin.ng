@@ -566,7 +566,8 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 						code += "<div class='vertical_line pairing'></div>";
 						code += "<div class='amesh_router_info_bg'>";
 							code += "<div class='amesh_router_info_title'>";
-							code += handle_ui_model_name(model_name, ui_model_name);
+							var display_model_name = handle_ui_model_name(model_name, ui_model_name);
+							code += "<div class='amesh_model_name' title='" + display_model_name + "'>" + display_model_name + "</div>";
 							code += "<div class='device_reset' onclick='reset_re_device(\"" + mac + "\", \"" + model_name + "\", \"" + ui_model_name + "\", event, \"" + online + "\");'></div>";
 							code += "</div>";
 							code += "<div class='horizontal_line'></div>";
@@ -1073,7 +1074,7 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 				$amesh_action_bg.append($amesh_apply);
 				$amesh_apply.click(
 					function() {
-						var re_isAX_model = (_model_name.toUpperCase().indexOf("AX") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_E") >= 0);
+						var re_isAX_model = (_model_name.toUpperCase().indexOf("AX") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_E") >= 0 || _model_name.toUpperCase().indexOf("GT6") >= 0);
 						var auth_flag = false;
 						var postData = {};
 						var band6g = 4;
@@ -2674,8 +2675,6 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					option_text = option_text.replace("#CONNPRIOTYPE", conn_prio_type);
 					var option_conn_type = conn_type;
 					if(_eap_flag && conn_type == "wifi")
-						return true;
-					if(conn_type == "plc" && !isSupport("qca_plc2"))
 						return true;
 					option_array.push(gen_option_attr(option_value, option_text, option_conn_type));
 				});

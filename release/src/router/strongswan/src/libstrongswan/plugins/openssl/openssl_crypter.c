@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2008 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2008-2022 Tobias Brunner
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +21,12 @@
 typedef struct private_openssl_crypter_t private_openssl_crypter_t;
 
 /**
+ * These are as defined by RFC 3686
+ */
+#define CTR_NONCE_LEN	4
+#define CTR_IV_LEN		8
+
+/**
  * Private data of openssl_crypter_t
  */
 struct private_openssl_crypter_t {
@@ -30,12 +37,17 @@ struct private_openssl_crypter_t {
 	openssl_crypter_t public;
 
 	/*
-	 * the key
+	 * The key
 	 */
 	chunk_t	key;
 
+	/**
+	 * Nonce value (CTR mode)
+	 */
+	chunk_t nonce;
+
 	/*
-	 * the cipher to use
+	 * The cipher to use
 	 */
 	const EVP_CIPHER *cipher;
 };
@@ -95,9 +107,24 @@ static bool crypt(private_openssl_crypter_t *this, chunk_t data, chunk_t iv,
 {
 	EVP_CIPHER_CTX *ctx;
 	int len;
-	u_char *out;
+	u_char iv_buf[EVP_CIPHER_iv_length(this->cipher)], *iv_ptr = iv_buf, *out;
 	bool success = FALSE;
 
+	if (this->nonce.len && (this->nonce.len + iv.len) <= sizeof(iv_buf))
+	{
+		memset(iv_buf, 0, sizeof(iv_buf));
+		memcpy(iv_buf, this->nonce.ptr, this->nonce.len);
+		memcpy(iv_buf + this->nonce.len, iv.ptr, iv.len);
+		iv_buf[sizeof(iv_buf) - 1] = 1;
+	}
+	else if (iv.len == sizeof(iv_buf))
+	{
+		iv_ptr = iv.ptr;
+	}
+	else
+	{
+		return FALSE;
+	}
 	out = data.ptr;
 	if (dst)
 	{
@@ -108,7 +135,7 @@ static bool crypt(private_openssl_crypter_t *this, chunk_t data, chunk_t iv,
 	if (EVP_CipherInit_ex(ctx, this->cipher, NULL, NULL, NULL, enc) &&
 		EVP_CIPHER_CTX_set_padding(ctx, 0) /* disable padding */ &&
 		EVP_CIPHER_CTX_set_key_length(ctx, this->key.len) &&
-		EVP_CipherInit_ex(ctx, NULL, NULL, this->key.ptr, iv.ptr, enc) &&
+		EVP_CipherInit_ex(ctx, NULL, NULL, this->key.ptr, iv_ptr, enc) &&
 		EVP_CipherUpdate(ctx, out, &len, data.ptr, data.len) &&
 		/* since padding is disabled this does nothing */
 		EVP_CipherFinal_ex(ctx, out + len, &len))
@@ -140,19 +167,28 @@ METHOD(crypter_t, get_block_size, size_t,
 METHOD(crypter_t, get_iv_size, size_t,
 	private_openssl_crypter_t *this)
 {
+	if (this->nonce.len)
+	{
+		return CTR_IV_LEN;
+	}
 	return EVP_CIPHER_iv_length(this->cipher);
 }
 
 METHOD(crypter_t, get_key_size, size_t,
 	private_openssl_crypter_t *this)
 {
-	return this->key.len;
+	return this->key.len + this->nonce.len;
 }
 
 METHOD(crypter_t, set_key, bool,
 	private_openssl_crypter_t *this, chunk_t key)
 {
-	memcpy(this->key.ptr, key.ptr, min(key.len, this->key.len));
+	if (key.len != get_key_size(this))
+	{
+		return FALSE;
+	}
+	memcpy(this->nonce.ptr, key.ptr + key.len - this->nonce.len, this->nonce.len);
+	memcpy(this->key.ptr, key.ptr, this->key.len);
 	return TRUE;
 }
 
@@ -160,6 +196,7 @@ METHOD(crypter_t, destroy, void,
 	private_openssl_crypter_t *this)
 {
 	chunk_clear(&this->key);
+	chunk_clear(&this->nonce);
 	free(this);
 }
 
@@ -170,6 +207,7 @@ openssl_crypter_t *openssl_crypter_create(encryption_algorithm_t algo,
 												  size_t key_size)
 {
 	private_openssl_crypter_t *this;
+	size_t nonce_size = 0;
 
 	INIT(this,
 		.public = {
@@ -211,6 +249,67 @@ openssl_crypter_t *openssl_crypter_create(encryption_algorithm_t algo,
 					return NULL;
 			}
 			break;
+		case ENCR_AES_CTR:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 16;
+					/* FALL */
+				case 16:        /* AES 128 */
+					this->cipher = EVP_get_cipherbyname("aes-128-ctr");
+					break;
+				case 24:        /* AES-192 */
+					this->cipher = EVP_get_cipherbyname("aes-192-ctr");
+					break;
+				case 32:        /* AES-256 */
+					this->cipher = EVP_get_cipherbyname("aes-256-ctr");
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			nonce_size = CTR_NONCE_LEN;
+			break;
+		case ENCR_AES_ECB:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 16;
+					/* FALL */
+				case 16:        /* AES 128 */
+					this->cipher = EVP_get_cipherbyname("aes-128-ecb");
+					break;
+				case 24:        /* AES-192 */
+					this->cipher = EVP_get_cipherbyname("aes-192-ecb");
+					break;
+				case 32:        /* AES-256 */
+					this->cipher = EVP_get_cipherbyname("aes-256-ecb");
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			break;
+		case ENCR_AES_CFB:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 16;
+					/* FALL */
+				case 16:        /* AES 128 */
+					this->cipher = EVP_get_cipherbyname("aes-128-cfb");
+					break;
+				case 24:        /* AES-192 */
+					this->cipher = EVP_get_cipherbyname("aes-192-cfb");
+					break;
+				case 32:        /* AES-256 */
+					this->cipher = EVP_get_cipherbyname("aes-256-cfb");
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			break;
 		case ENCR_CAMELLIA_CBC:
 			switch (key_size)
 			{
@@ -230,6 +329,27 @@ openssl_crypter_t *openssl_crypter_create(encryption_algorithm_t algo,
 					free(this);
 					return NULL;
 			}
+			break;
+		case ENCR_CAMELLIA_CTR:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 16;
+					/* FALL */
+				case 16:        /* CAMELLIA 128 */
+					this->cipher = EVP_get_cipherbyname("camellia-128-ctr");
+					break;
+				case 24:        /* CAMELLIA 192 */
+					this->cipher = EVP_get_cipherbyname("camellia-192-ctr");
+					break;
+				case 32:        /* CAMELLIA 256 */
+					this->cipher = EVP_get_cipherbyname("camellia-256-ctr");
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			nonce_size = CTR_NONCE_LEN;
 			break;
 #ifndef OPENSSL_NO_DES
 		case ENCR_DES_ECB:
@@ -261,6 +381,7 @@ openssl_crypter_t *openssl_crypter_create(encryption_algorithm_t algo,
 	}
 
 	this->key = chunk_alloc(key_size);
+	this->nonce = chunk_alloc(nonce_size);
 
 	return &this->public;
 }

@@ -1056,7 +1056,7 @@ static void init_switch_qca(void)
 #elif defined(RTCONFIG_SOC_IPQ8074)
 		"qca-nss-bridge-mgr",
 		"qca-nss-l2tpv2", "qca-nss-lag-mgr", "qca-nss-map-t",
-		"qca-nss-pptp", "qca-nss-vlan-mgr",
+		"qca-nss-pppoe", "qca-nss-pptp", "qca-nss-vlan-mgr",
 
 		/* 52-diag-char */
 		"diagchar",

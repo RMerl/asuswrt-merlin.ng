@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -30,7 +31,7 @@ START_TEST(test_dh_creation)
 	fail_if(!dh, "MODP_4096 not created");
 	fail_if(!dh->get_id(dh), "Invalid context id (0)");
 
-	dh->dh.destroy(&dh->dh);
+	dh->ke.destroy(&dh->ke);
 }
 END_TEST
 
@@ -40,8 +41,8 @@ START_TEST(test_dh_get_my_pubvalue)
 	fail_if(!dh, "Unable to create DH");
 
 	chunk_t value;
-	ck_assert(dh->dh.get_my_public_value(&dh->dh, &value));
-	dh->dh.destroy(&dh->dh);
+	ck_assert(dh->ke.get_public_key(&dh->ke, &value));
+	dh->ke.destroy(&dh->ke);
 
 	fail_if(value.ptr == NULL, "Pubvalue is NULL");
 	fail_if(value.len != 512, "Pubvalue size mismatch");

@@ -1,9 +1,10 @@
 /*
- * Copyright (C) 2006-2018 Tobias Brunner
+ * Copyright (C) 2006-2020 Tobias Brunner
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,6 +29,8 @@ typedef enum ike_extension_t ike_extension_t;
 typedef enum ike_condition_t ike_condition_t;
 typedef enum ike_sa_state_t ike_sa_state_t;
 typedef enum statistic_t statistic_t;
+typedef enum update_hosts_flag_t update_hosts_flag_t;
+typedef struct child_init_args_t child_init_args_t;
 typedef struct ike_sa_t ike_sa_t;
 
 #include <library.h>
@@ -161,6 +164,11 @@ enum ike_extension_t {
 	 * Postquantum Preshared Keys, draft-ietf-ipsecme-qr-ikev2
 	 */
 	EXT_PPK = (1<<15),
+
+	/**
+	 * Responder accepts childless IKE_SAs, RFC 6023
+	 */
+	EXT_IKE_CHILDLESS = (1<<16),
 };
 
 /**
@@ -237,13 +245,18 @@ enum ike_condition_t {
 	 * A Postquantum Preshared Key was used when this IKE_SA was created
 	 */
 	COND_PPK = (1<<13),
+
+	/**
+	 * All authentication rounds have been completed successfully
+	 */
+	COND_AUTHENTICATED = (1<<14),
 };
 
 /**
  * Timing information and statistics to query from an SA
  */
 enum statistic_t {
-	/** Timestamp of SA establishement */
+	/** Timestamp of SA establishment */
 	STAT_ESTABLISHED = 0,
 	/** Timestamp of scheduled rekeying */
 	STAT_REKEY,
@@ -257,6 +270,25 @@ enum statistic_t {
 	STAT_OUTBOUND,
 
 	STAT_MAX
+};
+
+/**
+ * Flags used when updating addresses
+ */
+enum update_hosts_flag_t {
+	/** Force updating the local address (otherwise not updated if an address
+	 * is already set). */
+	UPDATE_HOSTS_FORCE_LOCAL = (1<<0),
+	/** Force updating the remote address (otherwise only updated if peer is
+	 * behind a NAT). */
+	UPDATE_HOSTS_FORCE_REMOTE = (1<<1),
+	/** Force updating both addresses. */
+	UPDATE_HOSTS_FORCE_ADDRS = UPDATE_HOSTS_FORCE_LOCAL|UPDATE_HOSTS_FORCE_REMOTE,
+	/** Force updating the CHILD_SAs even if no addresses changed, useful if
+	 * NAT state may have changed. */
+	UPDATE_HOSTS_FORCE_CHILDREN = (1<<2),
+	/** Force updating everything. */
+	UPDATE_HOSTS_FORCE_ALL = UPDATE_HOSTS_FORCE_ADDRS|UPDATE_HOSTS_FORCE_CHILDREN,
 };
 
 /**
@@ -343,6 +375,20 @@ enum ike_sa_state_t {
  * enum names for ike_sa_state_t.
  */
 extern enum_name_t *ike_sa_state_names;
+
+/**
+ * Optional arguments passed when initiating a CHILD_SA.
+ */
+struct child_init_args_t {
+	/** Reqid to use for CHILD_SA, 0 to assign automatically */
+	uint32_t reqid;
+	/** Optional source of triggering packet */
+	traffic_selector_t *src;
+	/** Optional destination of triggering packet */
+	traffic_selector_t *dst;
+	/** Optional security label of triggering packet */
+	sec_label_t *label;
+};
 
 /**
  * Class ike_sa_t representing an IKE_SA.
@@ -449,15 +495,16 @@ struct ike_sa_t {
 	void (*float_ports)(ike_sa_t *this);
 
 	/**
-	 * Update the IKE_SAs host.
+	 * Update the IKE_SAs host and CHILD_SAs.
 	 *
 	 * Hosts may be NULL to use current host.
 	 *
 	 * @param me			new local host address, or NULL
 	 * @param other			new remote host address, or NULL
-	 * @param force			force update
+	 * @param flags			flags to force certain updates
 	 */
-	void (*update_hosts)(ike_sa_t *this, host_t *me, host_t *other, bool force);
+	void (*update_hosts)(ike_sa_t *this, host_t *me, host_t *other,
+						 update_hosts_flag_t flags);
 
 	/**
 	 * Get the own identification.
@@ -761,16 +808,13 @@ struct ike_sa_t {
 	 * to the CHILD_SA.
 	 *
 	 * @param child_cfg		child config to create CHILD from
-	 * @param reqid			reqid to use for CHILD_SA, 0 assigne uniquely
-	 * @param tsi			source of triggering packet
-	 * @param tsr			destination of triggering packet.
+	 * @param args			optional arguments for the CHILD initiation
 	 * @return
 	 *						- SUCCESS if initialization started
 	 *						- DESTROY_ME if initialization failed
 	 */
 	status_t (*initiate) (ike_sa_t *this, child_cfg_t *child_cfg,
-						  uint32_t reqid, traffic_selector_t *tsi,
-						  traffic_selector_t *tsr);
+						  child_init_args_t *args);
 
 	/**
 	 * Retry initiation of this IKE_SA after it got deferred previously.
@@ -867,10 +911,11 @@ struct ike_sa_t {
 	 *
 	 * @param message_id	ID of the request to retransmit
 	 * @return
-	 *						- SUCCESS
-	 *						- NOT_FOUND if request doesn't have to be retransmitted
+	 *						- SUCCESS if retransmit was sent
+	 *						- INVALID_STATE if no retransmit required
+	 *						- DESTROY_ME if this IKE_SA MUST be deleted
 	 */
-	status_t (*retransmit) (ike_sa_t *this, uint32_t message_id);
+	status_t (*retransmit)(ike_sa_t *this, uint32_t message_id);
 
 	/**
 	 * Sends a DPD request to the peer.
@@ -1031,7 +1076,7 @@ struct ike_sa_t {
 	status_t (*reauth) (ike_sa_t *this);
 
 	/**
-	 * Restablish the IKE_SA.
+	 * Reestablish the IKE_SA.
 	 *
 	 * Reestablish an IKE_SA after it has been closed.
 	 *
@@ -1067,6 +1112,14 @@ struct ike_sa_t {
 	 * @param local			TRUE to clear local addresses, FALSE for remote
 	 */
 	void (*clear_virtual_ips) (ike_sa_t *this, bool local);
+
+	/**
+	 * Get interface ID to use as default for children of this IKE_SA.
+	 *
+	 * @param inbound		TRUE for inbound interface ID
+	 * @return				interface ID
+	 */
+	uint32_t (*get_if_id)(ike_sa_t *this, bool inbound);
 
 	/**
 	 * Create an enumerator over virtual IPs.
@@ -1127,7 +1180,7 @@ struct ike_sa_t {
 	/**
 	 * Remove the task the given enumerator points to.
 	 *
-	 * @note This should be used with caution, in partciular, for tasks in the
+	 * @note This should be used with caution, in particular, for tasks in the
 	 * active and passive queues.
 	 *
 	 * @param enumerator	enumerator created with the method above
@@ -1135,14 +1188,14 @@ struct ike_sa_t {
 	void (*remove_task)(ike_sa_t *this, enumerator_t *enumerator);
 
 	/**
-	 * Flush a task queue, cancelling all tasks in it.
+	 * Flush a task queue, canceling all tasks in it.
 	 *
 	 * @param queue			queue type to flush
 	 */
 	void (*flush_queue)(ike_sa_t *this, task_queue_t queue);
 
 	/**
-	 * Queue a task for initiaton to the task manager.
+	 * Queue a task for initiation to the task manager.
 	 *
 	 * @param task			task to queue
 	 */
@@ -1203,9 +1256,27 @@ struct ike_sa_t {
  * @param ike_sa_id		ike_sa_id_t to associate with new IKE_SA/ISAKMP_SA
  * @param initiator		TRUE to create this IKE_SA as initiator
  * @param version		IKE version of this SA
- * @return				ike_sa_t object
+ * @return			ike_sa_t object
  */
 ike_sa_t *ike_sa_create(ike_sa_id_t *ike_sa_id, bool initiator,
 						ike_version_t version);
+
+/**
+ * Check if the given IKE_SA can be reauthenticated actively or if config
+ * parameters or the authentication method prevent it.
+ *
+ * @param this			IKE_SA to check
+ * @return			TRUE if active reauthentication is possible
+ */
+bool ike_sa_can_reauthenticate(ike_sa_t *this);
+
+/**
+ * Get hosts, virtual or physical, for deriving dynamic traffic selectors.
+ *
+ * @param this			IKE_SA to retrieve addresses from
+ * @param local			TRUE to get local hosts
+ * @return			list of hosts (internal objects)
+ */
+linked_list_t *ike_sa_get_dynamic_hosts(ike_sa_t *this, bool local);
 
 #endif /** IKE_SA_H_ @}*/

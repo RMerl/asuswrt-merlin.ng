@@ -70,109 +70,15 @@ int ff_fill_rgba_map(uint8_t *rgba_map, enum AVPixelFormat pix_fmt)
     case AV_PIX_FMT_GBRAP12BE:
     case AV_PIX_FMT_GBRAP16LE:
     case AV_PIX_FMT_GBRAP16BE:
+    case AV_PIX_FMT_GBRPF32LE:
+    case AV_PIX_FMT_GBRPF32BE:
+    case AV_PIX_FMT_GBRAPF32LE:
+    case AV_PIX_FMT_GBRAPF32BE:
     case AV_PIX_FMT_GBRP:  rgba_map[GREEN] = 0; rgba_map[BLUE ] = 1; rgba_map[RED  ] = 2; rgba_map[ALPHA] = 3; break;
     default:                    /* unsupported */
         return AVERROR(EINVAL);
     }
     return 0;
-}
-
-int ff_fill_line_with_color(uint8_t *line[4], int pixel_step[4], int w, uint8_t dst_color[4],
-                            enum AVPixelFormat pix_fmt, uint8_t rgba_color[4],
-                            int *is_packed_rgba, uint8_t rgba_map_ptr[4])
-{
-    uint8_t rgba_map[4] = {0};
-    int i;
-    const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(pix_fmt);
-    int hsub;
-
-    av_assert0(pix_desc);
-
-    hsub = pix_desc->log2_chroma_w;
-
-    *is_packed_rgba = ff_fill_rgba_map(rgba_map, pix_fmt) >= 0;
-
-    if (*is_packed_rgba) {
-        pixel_step[0] = (av_get_bits_per_pixel(pix_desc))>>3;
-        for (i = 0; i < 4; i++)
-            dst_color[rgba_map[i]] = rgba_color[i];
-
-        line[0] = av_malloc_array(w, pixel_step[0]);
-        if (!line[0])
-            return AVERROR(ENOMEM);
-        for (i = 0; i < w; i++)
-            memcpy(line[0] + i * pixel_step[0], dst_color, pixel_step[0]);
-        if (rgba_map_ptr)
-            memcpy(rgba_map_ptr, rgba_map, sizeof(rgba_map[0]) * 4);
-    } else {
-        int plane;
-
-        dst_color[0] = RGB_TO_Y_CCIR(rgba_color[0], rgba_color[1], rgba_color[2]);
-        dst_color[1] = RGB_TO_U_CCIR(rgba_color[0], rgba_color[1], rgba_color[2], 0);
-        dst_color[2] = RGB_TO_V_CCIR(rgba_color[0], rgba_color[1], rgba_color[2], 0);
-        dst_color[3] = rgba_color[3];
-
-        for (plane = 0; plane < 4; plane++) {
-            int line_size;
-            int hsub1 = (plane == 1 || plane == 2) ? hsub : 0;
-
-            pixel_step[plane] = 1;
-            line_size = AV_CEIL_RSHIFT(w, hsub1) * pixel_step[plane];
-            line[plane] = av_malloc(line_size);
-            if (!line[plane]) {
-                while(plane && line[plane-1])
-                    av_freep(&line[--plane]);
-                return AVERROR(ENOMEM);
-            }
-            memset(line[plane], dst_color[plane], line_size);
-        }
-    }
-
-    return 0;
-}
-
-void ff_draw_rectangle(uint8_t *dst[4], int dst_linesize[4],
-                       uint8_t *src[4], int pixelstep[4],
-                       int hsub, int vsub, int x, int y, int w, int h)
-{
-    int i, plane;
-    uint8_t *p;
-
-    for (plane = 0; plane < 4 && dst[plane]; plane++) {
-        int hsub1 = plane == 1 || plane == 2 ? hsub : 0;
-        int vsub1 = plane == 1 || plane == 2 ? vsub : 0;
-        int width  = AV_CEIL_RSHIFT(w, hsub1);
-        int height = AV_CEIL_RSHIFT(h, vsub1);
-
-        p = dst[plane] + (y >> vsub1) * dst_linesize[plane];
-        for (i = 0; i < height; i++) {
-            memcpy(p + (x >> hsub1) * pixelstep[plane],
-                   src[plane], width * pixelstep[plane]);
-            p += dst_linesize[plane];
-        }
-    }
-}
-
-void ff_copy_rectangle(uint8_t *dst[4], int dst_linesize[4],
-                       uint8_t *src[4], int src_linesize[4], int pixelstep[4],
-                       int hsub, int vsub, int x, int y, int y2, int w, int h)
-{
-    int i, plane;
-    uint8_t *p;
-
-    for (plane = 0; plane < 4 && dst[plane]; plane++) {
-        int hsub1 = plane == 1 || plane == 2 ? hsub : 0;
-        int vsub1 = plane == 1 || plane == 2 ? vsub : 0;
-        int width  = AV_CEIL_RSHIFT(w, hsub1);
-        int height = AV_CEIL_RSHIFT(h, vsub1);
-
-        p = dst[plane] + (y >> vsub1) * dst_linesize[plane];
-        for (i = 0; i < height; i++) {
-            memcpy(p + (x >> hsub1) * pixelstep[plane],
-                   src[plane] + src_linesize[plane]*(i+(y2>>vsub1)), width * pixelstep[plane]);
-            p += dst_linesize[plane];
-        }
-    }
 }
 
 int ff_draw_init(FFDrawContext *draw, enum AVPixelFormat format, unsigned flags)
@@ -181,6 +87,7 @@ int ff_draw_init(FFDrawContext *draw, enum AVPixelFormat format, unsigned flags)
     const AVComponentDescriptor *c;
     unsigned i, nb_planes = 0;
     int pixelstep[MAX_PLANES] = { 0 };
+    int full_range = 0;
 
     if (!desc || !desc->name)
         return AVERROR(EINVAL);
@@ -188,6 +95,9 @@ int ff_draw_init(FFDrawContext *draw, enum AVPixelFormat format, unsigned flags)
         return AVERROR(ENOSYS);
     if (format == AV_PIX_FMT_P010LE || format == AV_PIX_FMT_P010BE || format == AV_PIX_FMT_P016LE || format == AV_PIX_FMT_P016BE)
         return AVERROR(ENOSYS);
+    if (format == AV_PIX_FMT_YUVJ420P || format == AV_PIX_FMT_YUVJ422P || format == AV_PIX_FMT_YUVJ444P ||
+        format == AV_PIX_FMT_YUVJ411P || format == AV_PIX_FMT_YUVJ440P)
+        full_range = 1;
     for (i = 0; i < desc->nb_components; i++) {
         c = &desc->comp[i];
         /* for now, only 8-16 bits formats */
@@ -214,6 +124,7 @@ int ff_draw_init(FFDrawContext *draw, enum AVPixelFormat format, unsigned flags)
     draw->format    = format;
     draw->nb_planes = nb_planes;
     draw->flags     = flags;
+    draw->full_range = full_range;
     memcpy(draw->pixelstep, pixelstep, sizeof(draw->pixelstep));
     draw->hsub[1] = draw->hsub[2] = draw->hsub_max = desc->log2_chroma_w;
     draw->vsub[1] = draw->vsub[2] = draw->vsub_max = desc->log2_chroma_h;
@@ -249,9 +160,9 @@ void ff_draw_color(FFDrawContext *draw, FFDrawColor *color, const uint8_t rgba[4
     } else if (draw->nb_planes >= 2) {
         /* assume YUV */
         const AVPixFmtDescriptor *desc = draw->desc;
-        color->comp[desc->comp[0].plane].u8[desc->comp[0].offset] = RGB_TO_Y_CCIR(rgba[0], rgba[1], rgba[2]);
-        color->comp[desc->comp[1].plane].u8[desc->comp[1].offset] = RGB_TO_U_CCIR(rgba[0], rgba[1], rgba[2], 0);
-        color->comp[desc->comp[2].plane].u8[desc->comp[2].offset] = RGB_TO_V_CCIR(rgba[0], rgba[1], rgba[2], 0);
+        color->comp[desc->comp[0].plane].u8[desc->comp[0].offset] = draw->full_range ? RGB_TO_Y_JPEG(rgba[0], rgba[1], rgba[2]) : RGB_TO_Y_CCIR(rgba[0], rgba[1], rgba[2]);
+        color->comp[desc->comp[1].plane].u8[desc->comp[1].offset] = draw->full_range ? RGB_TO_U_JPEG(rgba[0], rgba[1], rgba[2]) : RGB_TO_U_CCIR(rgba[0], rgba[1], rgba[2], 0);
+        color->comp[desc->comp[2].plane].u8[desc->comp[2].offset] = draw->full_range ? RGB_TO_V_JPEG(rgba[0], rgba[1], rgba[2]) : RGB_TO_V_CCIR(rgba[0], rgba[1], rgba[2], 0);
         color->comp[3].u8[0] = rgba[3];
 #define EXPAND(compn) \
         if (desc->comp[compn].depth > 8) \
@@ -266,7 +177,8 @@ void ff_draw_color(FFDrawContext *draw, FFDrawColor *color, const uint8_t rgba[4
                draw->format == AV_PIX_FMT_GRAY16LE || draw->format == AV_PIX_FMT_YA16LE ||
                draw->format == AV_PIX_FMT_GRAY9LE  ||
                draw->format == AV_PIX_FMT_GRAY10LE ||
-               draw->format == AV_PIX_FMT_GRAY12LE) {
+               draw->format == AV_PIX_FMT_GRAY12LE ||
+               draw->format == AV_PIX_FMT_GRAY14LE) {
         const AVPixFmtDescriptor *desc = draw->desc;
         color->comp[0].u8[0] = RGB_TO_Y_CCIR(rgba[0], rgba[1], rgba[2]);
         EXPAND(0);

@@ -102,6 +102,7 @@ sa/ikev2/tasks/ike_cert_post.c sa/ikev2/tasks/ike_cert_post.h \
 sa/ikev2/tasks/ike_config.c sa/ikev2/tasks/ike_config.h \
 sa/ikev2/tasks/ike_delete.c sa/ikev2/tasks/ike_delete.h \
 sa/ikev2/tasks/ike_dpd.c sa/ikev2/tasks/ike_dpd.h \
+sa/ikev2/tasks/ike_establish.c sa/ikev2/tasks/ike_establish.h \
 sa/ikev2/tasks/ike_init.c sa/ikev2/tasks/ike_init.h \
 sa/ikev2/tasks/ike_natd.c sa/ikev2/tasks/ike_natd.h \
 sa/ikev2/tasks/ike_mid_sync.c sa/ikev2/tasks/ike_mid_sync.h \
@@ -726,10 +727,23 @@ if MONOLITHIC
 endif
 endif
 
+if USE_SELINUX
+  SUBDIRS += plugins/selinux
+if MONOLITHIC
+  libcharon_la_LIBADD += plugins/selinux/libstrongswan-selinux.la
+endif
+endif
+
 if USE_ATTR_SQL
   SUBDIRS += plugins/attr_sql
 if MONOLITHIC
   libcharon_la_LIBADD += plugins/attr_sql/libstrongswan-attr-sql.la
+endif
+endif
+
+if USE_TPM
+if MONOLITHIC
+  libcharon_la_LIBADD += $(top_builddir)/src/libtpmtss/libtpmtss.la
 endif
 endif
 

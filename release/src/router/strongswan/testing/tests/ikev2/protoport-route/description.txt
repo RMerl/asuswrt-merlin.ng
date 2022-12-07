@@ -1,8 +1,0 @@
-Using the <b>left|rightprotoport</b> selectors, two IPsec tunnels 
-between the roadwarrior <b>carol</b> and the gateway <b>moon</b> are
-defined. The first IPsec SA is restricted to ICMP packets and the second
-covers TCP-based SSH connections. Using <b>add=route</b> %trap
-eroutes for these IPsec SAs are prepared on <b>carol</b>. By sending
-a ping to the client <b>alice</b> behind <b>moon</b>, the ICMP eroute
-is triggered and the corresponding IPsec tunnel is set up. In the same
-way an ssh session to <b>alice</b> over the second IPsec SA is established.

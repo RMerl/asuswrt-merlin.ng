@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -53,9 +54,9 @@ START_TEST(test_imcv_seg_env)
 	pa_tnc_attr_t *attr, *attr1, *base_attr, *base_attr1, *error;
 	tcg_seg_attr_seg_env_t *seg_env_attr;
 	ita_attr_command_t *ita_attr;
-	seg_env_t *seg_env, *seg_env1;
+	seg_env_t *seg_env, *seg_env1 = NULL;
 	pen_type_t type;
-	uint32_t base_attr_id, max_seg_size, last_seg_size, seg_size, offset;
+	uint32_t base_msg_id, max_seg_size, last_seg_size, seg_size, offset;
 	uint8_t flags;
 	bool last, last_seg;
 	chunk_t value, segment, seg;
@@ -75,7 +76,7 @@ START_TEST(test_imcv_seg_env)
 	}
 	else
 	{
-		ck_assert(seg_env->get_base_attr_id(seg_env) == id);
+		ck_assert(seg_env->get_base_msg_id(seg_env) == id);
 		base_attr1 = seg_env->get_base_attr(seg_env);
 		ck_assert(base_attr == base_attr1);
 		base_attr1->destroy(base_attr1);
@@ -116,7 +117,7 @@ START_TEST(test_imcv_seg_env)
 			value = attr->get_value(attr);
 			ck_assert(value.len == 4 + seg_size);
 			ck_assert(segment.len == seg_size);
-			ck_assert(seg_env_attr->get_base_attr_id(seg_env_attr) == id);
+			ck_assert(seg_env_attr->get_base_msg_id(seg_env_attr) == id);
 
 			/* create parse segment envelope attribute from data */
 			attr1 = tcg_seg_attr_seg_env_create_from_data(value.len, value);
@@ -125,14 +126,14 @@ START_TEST(test_imcv_seg_env)
 
 			seg_env_attr = (tcg_seg_attr_seg_env_t*)attr1;
 			segment = seg_env_attr->get_segment(seg_env_attr, &flags);
-			base_attr_id = seg_env_attr->get_base_attr_id(seg_env_attr);
-			ck_assert(base_attr_id == id);
+			base_msg_id = seg_env_attr->get_base_msg_id(seg_env_attr);
+			ck_assert(base_msg_id == id);
 
 			/* create and update seg_env object on the receiving side */
-		 	if (n == 0)
+			if (n == 0)
 			{
 				ck_assert(flags == (SEG_ENV_FLAG_MORE | SEG_ENV_FLAG_START));
-				seg_env1 = seg_env_create_from_data(base_attr_id, segment,
+				seg_env1 = seg_env_create_from_data(base_msg_id, segment,
 													max_seg_size, &error);
 			}
 			else
@@ -145,6 +146,7 @@ START_TEST(test_imcv_seg_env)
 		}
 
 		/* check reconstructed base attribute */
+		ck_assert(seg_env1);
 		base_attr1 = seg_env1->get_base_attr(seg_env1);
 		ck_assert(base_attr1);
 		type = base_attr1->get_type(base_attr1);
@@ -201,7 +203,7 @@ START_TEST(test_imcv_seg_env_special)
 	/* check some standard methods */
 	type = attr->get_type(attr);
 	ck_assert(type.vendor_id == PEN_TCG);
-	ck_assert(type.type == TCG_SEG_ATTR_SEG_ENV);
+	ck_assert(type.type == TCG_SEG_ENVELOPE);
 	ck_assert(attr->get_noskip_flag(attr) == FALSE);
 	attr->set_noskip_flag(attr, TRUE);
 	ck_assert(attr->get_noskip_flag(attr) == TRUE);
@@ -221,7 +223,7 @@ START_TEST(test_imcv_seg_env_special)
 	ck_assert(attr1->process(attr1, &offset) == SUCCESS);
 	type = attr1->get_type(attr1);
 	ck_assert(type.vendor_id == PEN_TCG);
-	ck_assert(type.type == TCG_SEG_ATTR_SEG_ENV);
+	ck_assert(type.type == TCG_SEG_ENVELOPE);
 	attr1->destroy(attr1);
 
 	/* cleanup */
@@ -294,17 +296,17 @@ START_TEST(test_imcv_seg_contract)
 	ita_attr_command_t *ita_attr;
 	pa_tnc_attr_t *attr, *base_attr_i, *base_attr_r, *error;
 	pen_type_t type, msg_type = { PEN_ITA, PA_SUBTYPE_ITA_TEST };
-	uint32_t max_seg_size, max_attr_size = 1000, issuer_id = 1;
-	uint32_t base_attr_id;
+	uint32_t max_seg_size, max_msg_size = 1000, issuer_id = 1;
+	uint32_t base_msg_id;
 	bool more;
 
 	libimcv_init(FALSE);
 	max_seg_size  = seg_env_tests[_i].max_seg_size;
 	base_attr_r = ita_attr_command_create(command);
 	base_attr_r->build(base_attr_r);
-	contract_i = seg_contract_create(msg_type, max_attr_size, max_seg_size,
+	contract_i = seg_contract_create(msg_type, max_msg_size, max_seg_size,
 									 TRUE, issuer_id, FALSE);
-	contract_r = seg_contract_create(msg_type, max_attr_size, max_seg_size,
+	contract_r = seg_contract_create(msg_type, max_msg_size, max_seg_size,
 									 FALSE, issuer_id, TRUE);
 	attr = contract_r->first_segment(contract_r,
 									 base_attr_r->get_ref(base_attr_r), 0);
@@ -317,19 +319,19 @@ START_TEST(test_imcv_seg_contract)
 	{
 		ck_assert(attr);
 		seg_env_attr = (tcg_seg_attr_seg_env_t*)attr;
-		base_attr_id = seg_env_attr->get_base_attr_id(seg_env_attr);
-		ck_assert(base_attr_id == 1);
+		base_msg_id = seg_env_attr->get_base_msg_id(seg_env_attr);
+		ck_assert(base_msg_id == 1);
 		base_attr_i = contract_i->add_segment(contract_i, attr, &error, &more);
 		ck_assert(base_attr_i == NULL);
 		attr->destroy(attr);
 		ck_assert(more);
 		while (more)
 		{
-			attr = contract_r->next_segment(contract_r, base_attr_id);
+			attr = contract_r->next_segment(contract_r, base_msg_id);
 			ck_assert(attr);
 			seg_env_attr = (tcg_seg_attr_seg_env_t*)attr;
-			base_attr_id = seg_env_attr->get_base_attr_id(seg_env_attr);
-			ck_assert(base_attr_id == 1);
+			base_msg_id = seg_env_attr->get_base_msg_id(seg_env_attr);
+			ck_assert(base_msg_id == 1);
 			base_attr_i = contract_i->add_segment(contract_i, attr, &error,
 												  &more);
 			attr->destroy(attr);
@@ -357,7 +359,7 @@ START_TEST(test_imcv_seg_contract_special)
 	pa_tnc_attr_t *base_attr1_i, *base_attr2_i, *base_attr1_r, *base_attr2_r;
 	pa_tnc_attr_t *attr1_f, *attr2_f, *attr1_n, *attr2_n, *attr3, *error;
 	pen_type_t type, msg_type = { PEN_ITA, PA_SUBTYPE_ITA_TEST };
-	uint32_t max_seg_size, max_attr_size, issuer_id = 1;
+	uint32_t max_seg_size, max_msg_size, issuer_id = 1;
 	uint32_t base_attr1_id, base_attr2_id;
 	char info[512];
 	bool oversize, more;
@@ -378,34 +380,34 @@ START_TEST(test_imcv_seg_contract_special)
 	ck_assert(!contract_i->is_null(contract_i));
 
 	/* set null contract */
-	contract_i->set_max_size(contract_i, SEG_CONTRACT_MAX_SIZE_VALUE,
-										 SEG_CONTRACT_MAX_SIZE_VALUE);
+	contract_i->set_max_size(contract_i, SEG_CONTRACT_NO_MSG_SIZE_LIMIT,
+										 SEG_CONTRACT_NO_SEGMENTATION);
 	ck_assert(contract_i->is_null(contract_i));
 
-	/* set and get maximum attribute and segment sizes */
+	/* set and get maximum message and segment sizes */
 	contract_i->set_max_size(contract_i, 1000, 47);
 	contract_i->get_max_size(contract_i, NULL, NULL);
-	contract_i->get_max_size(contract_i, &max_attr_size, &max_seg_size);
+	contract_i->get_max_size(contract_i, &max_msg_size, &max_seg_size);
 	contract_i->get_info_string(contract_i, info, sizeof(info), TRUE);
-	ck_assert(max_attr_size == 1000 && max_seg_size == 47);
+	ck_assert(max_msg_size == 1000 && max_seg_size == 47);
 	ck_assert(!contract_i->is_null(contract_i));
 
 	/* create a null responder contract*/
-	contract_r = seg_contract_create(msg_type, SEG_CONTRACT_MAX_SIZE_VALUE,
-											   SEG_CONTRACT_MAX_SIZE_VALUE,
+	contract_r = seg_contract_create(msg_type, SEG_CONTRACT_NO_MSG_SIZE_LIMIT,
+											   SEG_CONTRACT_NO_SEGMENTATION,
 											   FALSE, issuer_id, TRUE);
 	ck_assert(!contract_r->is_issuer(contract_r));
 	ck_assert(!contract_r->check_size(contract_r, base_attr2_r, &oversize));
 	ck_assert(!oversize);
 
-	/* allow no fragmentation */
-	contract_r->set_max_size(contract_r, 1000, SEG_CONTRACT_MAX_SIZE_VALUE);
+	/* allow no segmentation */
+	contract_r->set_max_size(contract_r, 1000, SEG_CONTRACT_NO_SEGMENTATION);
 	ck_assert(!contract_r->is_null(contract_r));
 	ck_assert(!contract_r->check_size(contract_r, base_attr2_r, &oversize));
 	ck_assert(!oversize);
 
-	/* no maximum size limit and no fragmentation needed */
-	contract_r->set_max_size(contract_r, SEG_CONTRACT_MAX_SIZE_VALUE, 141);
+	/* no maximum size limit and no segmentation needed */
+	contract_r->set_max_size(contract_r, SEG_CONTRACT_NO_MSG_SIZE_LIMIT, 141);
 	ck_assert(!contract_r->is_null(contract_r));
 	ck_assert(!contract_r->check_size(contract_r, base_attr2_r, &oversize));
 	ck_assert(!oversize);
@@ -429,8 +431,8 @@ START_TEST(test_imcv_seg_contract_special)
 	ck_assert(attr2_f);
 	seg_env_attr1 = (tcg_seg_attr_seg_env_t*)attr1_f;
 	seg_env_attr2 = (tcg_seg_attr_seg_env_t*)attr2_f;
-	base_attr1_id = seg_env_attr1->get_base_attr_id(seg_env_attr1);
-	base_attr2_id = seg_env_attr2->get_base_attr_id(seg_env_attr2);
+	base_attr1_id = seg_env_attr1->get_base_msg_id(seg_env_attr1);
+	base_attr2_id = seg_env_attr2->get_base_msg_id(seg_env_attr2);
 	ck_assert(base_attr1_id == 1);
 	ck_assert(base_attr2_id == 2);
 
@@ -574,7 +576,7 @@ static struct {
 
 START_TEST(test_imcv_seg_contract_invalid)
 {
-	uint32_t max_seg_size = 12, max_attr_size = 100, issuer_id = 1;
+	uint32_t max_seg_size = 12, max_msg_size = 100, issuer_id = 1;
 	pen_type_t msg_type = { PEN_ITA, PA_SUBTYPE_ITA_TEST };
 	pa_tnc_attr_t *attr_f, *attr_n, *base_attr, *error;
 	chunk_t value_f, value_n;
@@ -590,7 +592,7 @@ START_TEST(test_imcv_seg_contract_invalid)
 	ck_assert(attr_f->process(attr_f, &offset) == SUCCESS);
 	ck_assert(attr_n->process(attr_n, &offset) == SUCCESS);
 
-	contract = seg_contract_create(msg_type, max_attr_size, max_seg_size,
+	contract = seg_contract_create(msg_type, max_msg_size, max_seg_size,
 									 TRUE, issuer_id, FALSE);
 	base_attr = contract->add_segment(contract, attr_f, &error, &more);
 	ck_assert(base_attr == NULL);
@@ -632,7 +634,7 @@ END_TEST
 START_TEST(test_imcv_seg_contract_mgr)
 {
 	char buf[BUF_LEN];
-	uint32_t max_seg_size = 12, max_attr_size = 100;
+	uint32_t max_seg_size = 12, max_msg_size = 100;
 	pen_type_t msg_type1 = { PEN_ITA, PA_SUBTYPE_ITA_TEST };
 	pen_type_t msg_type2 = { PEN_IETF, PA_SUBTYPE_IETF_OPERATING_SYSTEM };
 	seg_contract_manager_t *contracts;
@@ -641,7 +643,7 @@ START_TEST(test_imcv_seg_contract_mgr)
 	contracts = seg_contract_manager_create();
 
 	/* add contract template as issuer */
-	c1 = seg_contract_create(msg_type1, max_attr_size, max_seg_size,
+	c1 = seg_contract_create(msg_type1, max_msg_size, max_seg_size,
 							 TRUE, 1, FALSE);
 	c1->get_info_string(c1, buf, BUF_LEN, TRUE);
 
@@ -652,7 +654,7 @@ START_TEST(test_imcv_seg_contract_mgr)
 	ck_assert(cx == NULL);
 
 	/* add directed contract as responder */
-	c2 = seg_contract_create(msg_type1, max_attr_size, max_seg_size,
+	c2 = seg_contract_create(msg_type1, max_msg_size, max_seg_size,
 							 FALSE, 2, FALSE);
 	c2->set_responder(c2, 1);
 	c2->get_info_string(c2, buf, BUF_LEN, TRUE);
@@ -685,7 +687,7 @@ START_TEST(test_imcv_seg_contract_mgr)
 	ck_assert(cx == NULL);
 
 	/* add directed contract as responder */
-	c4 = seg_contract_create(msg_type2, max_attr_size, max_seg_size,
+	c4 = seg_contract_create(msg_type2, max_msg_size, max_seg_size,
 							 FALSE, 2, FALSE);
 	c4->set_responder(c4, 1);
 	contracts->add_contract(contracts, c4);

@@ -44,7 +44,7 @@ int  set_pid(int pid);	//deliver process id to driver
 void sig_usr1(int sig);	//signal handler to handle signal send from driver
 void sig_usr2(int sig);
 int processReq(int sockfd);
-extern char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port);
+extern char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port, char *client_ip);
 
 int timeup=0;
 
@@ -63,6 +63,9 @@ char productid_g[32];
 char firmver_g[16];
 unsigned char mac[6] = { 0x00, 0x0c, 0x6e, 0xbd, 0xf3, 0xc5};
 unsigned char label_mac[6] = { 0x00, 0x0c, 0x6e, 0xbd, 0xf3, 0xc5};
+char last_client_ip[64] = {0};
+int last_opcode = 0;
+time_t last_timestamp = 0;
 #if defined(RTCONFIG_AMAS)
 unsigned char cfg_group_g[20];
 int cfg_groupid_is_null;
@@ -211,6 +214,7 @@ int processReq(int sockfd)
     socklen_t		 fromlen;
     char		*hdr;
     char		pdubuf[INFO_PDU_LENGTH];
+    char client_ip[64] = {0};
     struct sockaddr_in  from_addr;
     unsigned short cli_port;
 
@@ -235,9 +239,10 @@ int processReq(int sockfd)
     }
 
     hdr = pdubuf;
+    strlcpy(client_ip, inet_ntoa(from_addr.sin_addr), sizeof(client_ip));
     cli_port = ntohs(from_addr.sin_port);
     //_dprintf("[InfoSvr] Client Port: %d\n", cli_port);
-    processPacket(sockfd, hdr, cli_port);
+    processPacket(sockfd, hdr, cli_port, client_ip);
 /*						J++
     closesocket(sockfd);
 */

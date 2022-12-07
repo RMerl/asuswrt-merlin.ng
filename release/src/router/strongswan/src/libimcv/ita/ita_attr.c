@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2011-2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2011-2020 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,9 +20,10 @@
 #include "ita/ita_attr_get_settings.h"
 #include "ita/ita_attr_settings.h"
 #include "ita/ita_attr_angel.h"
+#include "ita/ita_attr_symlinks.h"
 #include "generic/generic_attr_string.h"
 
-ENUM(ita_attr_names, ITA_ATTR_COMMAND, ITA_ATTR_DEVICE_ID,
+ENUM(ita_attr_names, ITA_ATTR_COMMAND, ITA_ATTR_SYMLINKS,
 	"Command",
 	"Dummy",
 	"Get Settings",
@@ -29,7 +31,9 @@ ENUM(ita_attr_names, ITA_ATTR_COMMAND, ITA_ATTR_DEVICE_ID,
 	"Start Angel",
 	"Stop Angel",
 	"Echo",
-	"Device ID"
+	"Device ID",
+	"Get Symlinks",
+	"Symlinks"
 );
 
 /**
@@ -55,6 +59,11 @@ pa_tnc_attr_t* ita_attr_create_from_data(uint32_t type, size_t length,
 		case ITA_ATTR_DEVICE_ID:
 			return generic_attr_string_create_from_data(length, value,
 									pen_type_create(PEN_ITA, type));
+		case ITA_ATTR_GET_SYMLINKS:
+			return generic_attr_string_create_from_data(length, value,
+									pen_type_create(PEN_ITA, type));
+		case ITA_ATTR_SYMLINKS:
+			return ita_attr_symlinks_create_from_data(length, value);
 		default:
 			return NULL;
 	}

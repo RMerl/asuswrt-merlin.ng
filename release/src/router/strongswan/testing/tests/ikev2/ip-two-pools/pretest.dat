@@ -1,12 +1,12 @@
 moon::iptables-restore < /etc/iptables.rules
 carol::iptables-restore < /etc/iptables.rules
 alice::iptables-restore < /etc/iptables.rules
-moon::ipsec start
-carol::ipsec start
-alice::ipsec start
-moon::expect-connection int
-moon::expect-connection ext
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+alice::systemctl start strongswan
+moon::expect-connection rw1
 carol::expect-connection home
-carol::ipsec up home
+carol::swanctl --initiate --child home 2> /dev/null
+moon::expect-connection rw2
 alice::expect-connection home
-alice::ipsec up home
+alice::swanctl --initiate --child home 2> /dev/null

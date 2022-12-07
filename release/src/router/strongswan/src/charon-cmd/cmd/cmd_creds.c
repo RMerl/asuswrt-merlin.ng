@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -112,6 +111,7 @@ static shared_key_t* callback_shared(private_cmd_creds_t *this,
 		*match_other = ID_MATCH_PERFECT;
 	}
 	shared = shared_key_create(type, chunk_clone(chunk_from_str(pwd)));
+	memwipe(pwd, strlen(pwd));
 	/* cache password in case it is required more than once */
 	this->creds->add_shared(this->creds, shared, NULL);
 	return shared->get_ref(shared);

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2012 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -48,7 +49,7 @@ struct private_mutex_t {
 	pthread_mutex_t mutex;
 
 	/**
-	 * is this a recursiv emutex, implementing private_r_mutex_t?
+	 * is this a recursive mutex, implementing private_r_mutex_t?
 	 */
 	bool recursive;
 
@@ -239,7 +240,8 @@ METHOD(condvar_t, wait_, void,
 }
 
 /* use the monotonic clock based version of this function if available */
-#ifdef HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC
+#if defined(HAVE_PTHREAD_COND_TIMEDWAIT_MONOTONIC) && \
+	!defined(HAVE_CONDATTR_CLOCK_MONOTONIC)
 #define pthread_cond_timedwait pthread_cond_timedwait_monotonic
 #endif
 
@@ -336,7 +338,7 @@ condvar_t *condvar_create(condvar_type_t type)
 				pthread_condattr_t condattr;
 				pthread_condattr_init(&condattr);
 #ifdef HAVE_CONDATTR_CLOCK_MONOTONIC
-				pthread_condattr_setclock(&condattr, CLOCK_MONOTONIC);
+				pthread_condattr_setclock(&condattr, TIME_CLOCK_ID);
 #endif
 				pthread_cond_init(&this->condvar, &condattr);
 				pthread_condattr_destroy(&condattr);

@@ -147,7 +147,7 @@ static av_cold int vqa_decode_init(AVCodecContext *avctx)
     }
     s->width = AV_RL16(&s->avctx->extradata[6]);
     s->height = AV_RL16(&s->avctx->extradata[8]);
-    if ((ret = av_image_check_size(s->width, s->height, 0, avctx)) < 0) {
+    if ((ret = ff_set_dimensions(avctx, s->width, s->height)) < 0) {
         s->width= s->height= 0;
         return ret;
     }
@@ -588,13 +588,14 @@ static int vqa_decode_chunk(VqaContext *s, AVFrame *frame)
         if (s->partial_countdown <= 0) {
             bytestream2_init(&s->gb, s->next_codebook_buffer, s->next_codebook_buffer_index);
             /* decompress codebook */
-            if ((res = decode_format80(s, s->next_codebook_buffer_index,
-                                       s->codebook, s->codebook_size, 0)) < 0)
-                return res;
+            res = decode_format80(s, s->next_codebook_buffer_index,
+                                  s->codebook, s->codebook_size, 0);
 
             /* reset accounting */
             s->next_codebook_buffer_index = 0;
             s->partial_countdown = s->partial_count;
+            if (res < 0)
+                return res;
         }
     }
 
@@ -637,6 +638,11 @@ static av_cold int vqa_decode_end(AVCodecContext *avctx)
     return 0;
 }
 
+static const AVCodecDefault vqa_defaults[] = {
+    { "max_pixels", "320*240" },
+    { NULL },
+};
+
 AVCodec ff_vqa_decoder = {
     .name           = "vqavideo",
     .long_name      = NULL_IF_CONFIG_SMALL("Westwood Studios VQA (Vector Quantized Animation) video"),
@@ -647,4 +653,5 @@ AVCodec ff_vqa_decoder = {
     .close          = vqa_decode_end,
     .decode         = vqa_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .defaults       = vqa_defaults,
 };

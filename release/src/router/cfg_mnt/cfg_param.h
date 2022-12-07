@@ -1226,8 +1226,31 @@ static struct wlcsuffix_mapping_s wlcsuffix_mapping_list[] __attribute__ ((unuse
 	{ "radius_ipaddr", NULL },
 	{ "radius_key", NULL },
 	{ "radius_port", NULL },
+	{ "ap_isolate", NULL},
 	{ NULL, 		NULL }
 };
 
+struct smart_connect_nvsuffix_t {
+	char *name;
+	char *converted_name;
+};
+
+static struct smart_connect_nvsuffix_t smart_connect_nvsuffix_list[] = {
+	{ "ssid\0", NULL },
+	{ "wpa_psk\0", NULL },
+	{ "crypto\0", NULL },
+	{ "auth_mode_x\0", "auth_mode\0" },
+	{ "wep_x\0", "wep\0" },
+	{ "key\0", NULL },
+	{ "key1\0", NULL },
+	{ "key2\0", NULL },
+	{ "key3\0", NULL },
+	{ "key4\0", NULL },
+	{ "closed\0", NULL },
+	{ "radius_ipaddr\0", NULL },
+	{ "radius_key\0", NULL },
+	{ "radius_port\0", NULL },
+	{ NULL }
+};
 #endif /* __CFG_PARAM_H__ */
 /* End of cfg_param.h */

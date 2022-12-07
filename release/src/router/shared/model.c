@@ -83,6 +83,8 @@ static const struct model_s model_list[] = {
 	{ "PANTHERB",		MODEL_PANTHERB		},
 	{ "CHEETAH",		MODEL_CHEETAH		},
 	{ "TUF-AX4200",		MODEL_TUFAX4200		},
+	{ "TUF-AX6000",		MODEL_TUFAX6000		},
+	{ "RT-AX59U",		MODEL_RTAX59U		},
 #elif defined(RTCONFIG_QCA)
 	{ "RT-AC55U",		MODEL_RTAC55U		},
 	{ "RT-AC55UHP",		MODEL_RTAC55UHP		},
@@ -163,6 +165,7 @@ static const struct model_s model_list[] = {
 	{ "RT-AX82U_V2",	MODEL_RTAX82U_V2	},
 	{ "RT-AX82_XD6S",	MODEL_RTAX82_XD6S	},
 	{ "RT-AX3000N",		MODEL_RTAX3000N		},
+	{ "BR63",		MODEL_BR63		},
 	{ "RT-AX58U_V2",	MODEL_RTAX58U_V2	},
 	{ "TUF-AX3000_V2",	MODEL_TUFAX3000_V2	},
 	{ "RT-AXE7800",		MODEL_RTAXE7800		},
@@ -184,6 +187,7 @@ static const struct model_s model_list[] = {
 	{ "ET12",		MODEL_ET12		},
 	{ "XT12",		MODEL_XT12		},
 	{ "RT-AX86U_PRO",	MODEL_RTAX86U_PRO	},
+	{ "RT-AX88U_PRO",       MODEL_RTAX88U_PRO       },
 	{ "DSL-AX82U",		MODEL_DSLAX82U		},
 	{ "RT-N53",		MODEL_RTN53		},
 	{ "RT-N16",		MODEL_RTN16		},
@@ -207,6 +211,10 @@ static const struct model_s model_list[] = {
 	{ "DSL-AC68U",		MODEL_DSLAC68U		},
 	{ "RT-AC1200G",		MODEL_RTAC1200G		},
 	{ "RT-AC1200G+",	MODEL_RTAC1200GP	},
+	{ "BM68",		MODEL_BM68		},
+	{ "ET8_V2",		MODEL_ET8_V2		},
+	{ "XD6_V2",		MODEL_XD6_V2		},
+	{ "RT-AX5400",		MODEL_RTAX5400		},
 #endif	/* !RTCONFIG_RALINK */
 	{ NULL, 0 },
 };
@@ -366,6 +374,7 @@ int is_shared_modelid(int model, char *build_name)
 		if(!strcmp(build_name, "GT-AC2900"))
 			return model + CFID_BASE_2 + 2 + 30;
 		break;
+/*
         case MODEL_RTAX58U:
 		if(!strcmp(build_name, "RT-AX58U"))
 			return model + CFID_BASE_2 + 1 + 30*2;
@@ -382,6 +391,7 @@ int is_shared_modelid(int model, char *build_name)
 		if(!strcmp(build_name, "GS-AX5400"))
 			return model + CFID_BASE_2 + 7 + 30*2;
 		break;
+*/
         case MODEL_RTAX55:
 		if(!strcmp(build_name, "RT-AX55"))
 			return model + CFID_BASE_2 + 1 + 30*3;
@@ -411,18 +421,26 @@ int get_cf_id(int model, char *name) {
 
 	snprintf(tmp, sizeof(tmp), "CF_%s", asus_models_str[model] + strlen("MODEL_"));
 
-	// some models use same modelid
+	// some models use same modelid, specify them in cfid table (comfw.h)
 	if(model == MODEL_RTAX58U) {
 #ifdef RTAX82_XD6
 		return CF_RTAX82_XD6;
+#elif defined(RTAX82U)
+		return CF_RTAX82U;
 #elif defined(TUFAX3000)
 		return CF_TUFAX3000;
+#elif defined(TUFAX5400)
+		return CF_TUFAX5400;
+#elif defined(GSAX3000)
+		return CF_GSAX3000;
+#elif defined(GSAX5400)
+		return CF_GSAX5400;
 #else
 		return CF_RTAX58U;
 #endif
 	}
 
-	for(i = 0; i < MAX_FTYPE; ++i) {
+	for(i = 0; i < MAX_FTYPE; ++i) {	// for those independent modelid and defined in cfid table
 		if((strncmp(tmp, comfw_modid_s[i], strlen(tmp)) == 0) && (strlen(tmp)==strlen(comfw_modid_s[i])))
 			return i;
 	}

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2015-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -30,7 +31,7 @@
 #include <ietf/ietf_attr_fwd_enabled.h>
 #include <pwg/pwg_attr.h>
 #include <pwg/pwg_attr_vendor_smi_code.h>
-#include "tcg/seg/tcg_seg_attr_max_size.h"
+#include "tcg/seg/tcg_seg_attr_seg_contract.h"
 #include "tcg/seg/tcg_seg_attr_seg_env.h"
 
 #include <tncif_names.h>
@@ -38,8 +39,6 @@
 
 #include <pen/pen.h>
 #include <utils/debug.h>
-
-#define HCD_MAX_ATTR_SIZE	10000000
 
 typedef struct private_imv_hcd_agent_t private_imv_hcd_agent_t;
 
@@ -176,7 +175,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 	imv_msg_t *out_msg;
 	imv_hcd_state_t *hcd_state;
 	pa_tnc_attr_t *attr;
-	enum_name_t *pa_subtype_names; 
+	enum_name_t *pa_subtype_names;
 	pen_type_t type, msg_type;
 	TNC_Result result;
 	bool fatal_error = FALSE, assessment = FALSE;
@@ -328,7 +327,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 					{
 						/* do not request user applications */
 						hcd_state->set_user_app_disabled(hcd_state);
-					}		
+					}
 					break;
 				}
 				case PWG_HCD_FORWARDING_ENABLED:
@@ -533,7 +532,7 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 
 	if (handshake_state == IMV_HCD_STATE_INIT)
 	{
-		size_t max_attr_size = HCD_MAX_ATTR_SIZE;
+		size_t max_msg_size = SEG_CONTRACT_NO_MSG_SIZE_LIMIT;
 		size_t max_seg_size;
 		seg_contract_t *contract;
 		seg_contract_manager_t *contracts;
@@ -543,11 +542,9 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 
 		/* Determine maximum PA-TNC attribute segment size */
 		max_seg_size = state->get_max_msg_len(state)
-								- PA_TNC_HEADER_SIZE 
-								- PA_TNC_ATTR_HEADER_SIZE
-								- TCG_SEG_ATTR_SEG_ENV_HEADER
-								- PA_TNC_ATTR_HEADER_SIZE
-								- TCG_SEG_ATTR_MAX_SIZE_SIZE;
+						- PA_TNC_HEADER_SIZE
+						- PA_TNC_ATTR_HEADER_SIZE
+						- TCG_SEG_ATTR_SEG_ENV_HEADER;
 		contracts = state->get_contracts(state);
 
 		for (i = 1; i < countof(msg_types); i++)
@@ -556,16 +553,16 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 									 TNC_IMCID_ANY, msg_types[i]);
 
 			/* Announce support of PA-TNC segmentation to IMC */
-			contract = seg_contract_create(msg_types[i], max_attr_size,
+			contract = seg_contract_create(msg_types[i], max_msg_size,
 										   max_seg_size, TRUE, imv_id, FALSE);
 			contract->get_info_string(contract, buf, BUF_LEN, TRUE);
 			DBG2(DBG_IMV, "%s", buf);
 			contracts->add_contract(contracts, contract);
-			attr = tcg_seg_attr_max_size_create(max_attr_size, max_seg_size,
+			attr = tcg_seg_attr_seg_contract_create(max_msg_size, max_seg_size,
 												TRUE);
 			out_msg->add_attribute(out_msg, attr);
 
-			hcd_state->set_subtype(hcd_state, msg_types[i].type);	
+			hcd_state->set_subtype(hcd_state, msg_types[i].type);
 			received = state->get_action_flags(state);
 
 			if ((received & IMV_HCD_ATTR_MUST) != IMV_HCD_ATTR_MUST)

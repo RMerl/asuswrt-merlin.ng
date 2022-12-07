@@ -1,0 +1,30 @@
+moon::cat /usr/local/share/strongswan/templates/database/sql/sqlite.sql > /etc/db.d/ipsec.sql
+moon::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
+moon::ipsec pool --add extpool --start 10.3.0.1 --end 10.3.1.244 --timeout 48 2> /dev/null
+moon::ipsec pool --add intpool --start 10.4.0.1 --end 10.4.1.244 --timeout  0 2> /dev/null
+moon::ipsec pool --addattr dns --server PH_IP_VENUS --pool intpool --identity venus.strongswan.org 2> /dev/null
+moon::ipsec pool --addattr dns --server PH_IP_ALICE --pool intpool --identity alice@strongswan.org 2> /dev/null
+moon::ipsec pool --addattr dns --server PH_IP_WINNETOU --pool extpool 2> /dev/null
+moon::ipsec pool --statusattr 2> /dev/null
+moon::ip route add 10.3.0.0/16 via PH_IP_MOON
+moon::ip route add 10.4.0.0/16 via PH_IP_MOON1
+alice::iptables-restore < /etc/iptables.rules
+venus::iptables-restore < /etc/iptables.rules
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::ipsec start
+alice::ipsec start
+venus::ipsec start
+carol::ipsec start
+dave::ipsec start
+moon::expect-connection int
+moon::expect-connection ext
+carol::expect-connection home
+carol::ipsec up home
+dave::expect-connection home
+dave::ipsec up home
+alice::expect-connection home
+alice::ipsec up home
+venus::expect-connection home
+venus::ipsec up home

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2016-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -126,6 +127,8 @@ enum builder_part_t {
 	BUILD_BASE_CRL,
 	/** PKCS#10 challenge password */
 	BUILD_CHALLENGE_PWD,
+	/** PKCS#10 certificate type extension */
+	BUILD_CERT_TYPE_EXT,
 	/** PKCS#7 attribute, int oid, chunk_t with ASN1 type encoded value */
 	BUILD_PKCS7_ATTRIBUTE,
 	/** friendly name of a PKCS#11 module, null terminated char* */
@@ -160,6 +163,8 @@ enum builder_part_t {
 	BUILD_EDDSA_PUB,
 	/** DER encoded ASN.1 EdDSA private key */
 	BUILD_EDDSA_PRIV_ASN1_DER,
+	/** OID of an [unsupported] critical extension */
+	BUILD_CRITICAL_EXTENSION,
 	/** end of variable argument builder list */
 	BUILD_END,
 };

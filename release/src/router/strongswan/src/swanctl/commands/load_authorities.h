@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2015 Andreas Stefffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2015 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -13,6 +14,9 @@
  * for more details.
  */
 
+#ifndef LOAD_AUTHORITIES_H_
+#define LOAD_AUTHORITIES_H_
+
 #include "command.h"
 
 /**
@@ -24,3 +28,5 @@
  */
 int load_authorities_cfg(vici_conn_t *conn, command_format_options_t format,
 						 settings_t *cfg);
+
+#endif /** LOAD_AUTHORITIES_H_ */

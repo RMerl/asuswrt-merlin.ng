@@ -40,15 +40,15 @@ enum Jpeg2000Markers {
     JPEG2000_SIZ = 0xff51, // image and tile size
     JPEG2000_COD,          // coding style default
     JPEG2000_COC,          // coding style component
-    JPEG2000_TLM = 0xff55, // packed packet headers, tile-part header
-    JPEG2000_PLM = 0xff57, // tile-part lengths
-    JPEG2000_PLT,          // packet length, main header
+    JPEG2000_TLM = 0xff55, // tile-part length, main header
+    JPEG2000_PLM = 0xff57, // packet length, main header
+    JPEG2000_PLT,          // packet length, tile-part header
     JPEG2000_QCD = 0xff5c, // quantization default
     JPEG2000_QCC,          // quantization component
     JPEG2000_RGN,          // region of interest
     JPEG2000_POC,          // progression order change
-    JPEG2000_PPM,          // packet length, tile-part header
-    JPEG2000_PPT,          // packed packet headers, main header
+    JPEG2000_PPM,          // packed packet headers, main header
+    JPEG2000_PPT,          // packed packet headers, tile-part header
     JPEG2000_CRG = 0xff63, // component registration
     JPEG2000_COM,          // comment
     JPEG2000_SOT = 0xff90, // start of tile-part
@@ -127,6 +127,7 @@ typedef struct Jpeg2000T1Context {
 
 typedef struct Jpeg2000TgtNode {
     uint8_t val;
+    uint8_t temp_val;
     uint8_t vis;
     struct Jpeg2000TgtNode *parent;
 } Jpeg2000TgtNode;
@@ -144,6 +145,7 @@ typedef struct Jpeg2000CodingStyle {
     uint8_t prog_order;       // progression order
     uint8_t log2_prec_widths[JPEG2000_MAX_RESLEVELS];  // precincts size according resolution levels
     uint8_t log2_prec_heights[JPEG2000_MAX_RESLEVELS]; // TODO: initialize prec_size array with 0?
+    uint8_t init;
 } Jpeg2000CodingStyle;
 
 typedef struct Jpeg2000QuantStyle {
@@ -160,10 +162,19 @@ typedef struct Jpeg2000Pass {
     int flushed_len;
 } Jpeg2000Pass;
 
+typedef struct Jpeg2000Layer {
+    uint8_t *data_start;
+    int data_len;
+    int npasses;
+    double disto;
+    int cum_passes;
+} Jpeg2000Layer;
+
 typedef struct Jpeg2000Cblk {
     uint8_t npasses;
     uint8_t ninclpasses; // number coding of passes included in codestream
     uint8_t nonzerobits;
+    uint8_t incl;
     uint16_t length;
     uint16_t *lengthinc;
     uint8_t nb_lengthinc;
@@ -174,6 +185,7 @@ typedef struct Jpeg2000Cblk {
     int nb_terminationsinc;
     int *data_start;
     Jpeg2000Pass *passes;
+    Jpeg2000Layer *layers;
     int coord[2][2]; // border coordinates {{x0, x1}, {y0, y1}}
 } Jpeg2000Cblk; // code block
 
@@ -210,6 +222,7 @@ typedef struct Jpeg2000Component {
     int *i_data;
     int coord[2][2];   // border coordinates {{x0, x1}, {y0, y1}} -- can be reduced with lowres option
     int coord_o[2][2]; // border coordinates {{x0, x1}, {y0, y1}} -- original values from jpeg2000 headers
+    uint8_t roi_shift; // ROI scaling value for the component
 } Jpeg2000Component;
 
 /* misc tools */
@@ -218,9 +231,9 @@ static inline int ff_jpeg2000_ceildivpow2(int a, int b)
     return -((-(int64_t)a) >> b);
 }
 
-static inline int ff_jpeg2000_ceildiv(int a, int b)
+static inline int ff_jpeg2000_ceildiv(int a, int64_t b)
 {
-    return (a + (int64_t)b - 1) / b;
+    return (a + b - 1) / b;
 }
 
 /* TIER-1 routines */
@@ -287,5 +300,8 @@ static inline int needs_termination(int style, int passno) {
         return 1;
     return 0;
 }
+
+int32_t ff_tag_tree_size(int w, int h);
+void ff_tag_tree_zero(Jpeg2000TgtNode *t, int w, int h, int val);
 
 #endif /* AVCODEC_JPEG2000_H */

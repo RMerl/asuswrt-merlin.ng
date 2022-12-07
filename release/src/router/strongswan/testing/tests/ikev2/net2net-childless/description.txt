@@ -1,0 +1,13 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b>
+is set up using childless initiation of IKEv2 SAs (RFC 6023).
+<p/>
+The IKE_SA is established without CHILD_SA during IKE_AUTH. Instead, the
+CHILD_SA is created right afterwards with a CREATE_CHILD_SA exchange, allowing
+the use of a separate DH exchange for the first CHILD_SA, which is not possible
+if it is created during IKE_AUTH.
+<p/>
+The authentication is based on <b>X.509 certificates</b>. Upon the successful
+establishment of the IPsec tunnel, the updown script automatically
+inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, client <b>alice</b> behind gateway
+<b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b>.

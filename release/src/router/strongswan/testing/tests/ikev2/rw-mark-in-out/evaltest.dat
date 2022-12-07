@@ -1,9 +1,7 @@
-alice::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
-venus::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
-sun::  ipsec status 2> /dev/null::alice.*ESTABLISHED.*sun.strongswan.org.*alice@strongswan.org::YES
-sun::  ipsec status 2> /dev/null::venus.*ESTABLISHED.*sun.strongswan.org.*venus.strongswan.org::YES
-sun::  ipsec statusall 2> /dev/null::alice.*10.2.0.0/16 === 10.1.0.0/25::YES
-sun::  ipsec statusall 2> /dev/null::venus.*10.2.0.0/16 === 10.1.0.0/25::YES
+alice::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=PH_IP_ALICE local-port=4500 local-id=alice@strongswan.org remote-host=PH_IP_SUN remote-port=4500 remote-id=sun.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*reqid=1 state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/25] remote-ts=\[10.2.0.0/16]::YES
+venus::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=PH_IP_VENUS local-port=4500 local-id=venus.strongswan.org remote-host=PH_IP_SUN remote-port=4500 remote-id=sun.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*reqid=1 state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/25] remote-ts=\[10.2.0.0/16]::YES
+sun::  swanctl --list-sas --raw --ike-id 1 2> /dev/null::alice.*version=2 state=ESTABLISHED local-host=PH_IP_SUN local-port=4500 local-id=sun.strongswan.org remote-host=PH_IP_ALICE.*remote-id=alice@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*name=home.*reqid=1 state=INSTALLED mode=TUNNEL protocol=ESP.*mark-in=0000000a mark-out=0000000b encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.2.0.0/16] remote-ts=\[10.1.0.0/25]::YES
+sun::  swanctl --list-sas --raw --ike-id 2 2> /dev/null::venus.*version=2 state=ESTABLISHED local-host=PH_IP_SUN local-port=4500 local-id=sun.strongswan.org remote-host=PH_IP_VENUS.*remote-id=venus.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*name=home.*reqid=2 state=INSTALLED mode=TUNNEL protocol=ESP.*mark-in=00000014 mark-out=00000015 encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.2.0.0/16] remote-ts=\[10.1.0.0/25]::YES
 alice::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
 venus::ping -c 1 PH_IP_BOB::64 bytes from PH_IP_BOB: icmp_.eq=1::YES
 moon::tcpdump::IP alice.strongswan.org > sun.strongswan.org: ESP::YES

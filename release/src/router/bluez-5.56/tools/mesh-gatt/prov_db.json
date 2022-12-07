@@ -1,0 +1,37 @@
+{
+  "$schema":"file:\/\/\/BlueZ\/Mesh\/schema\/mesh.jsonschema",
+  "meshName":"BT Mesh",
+  "IVindex":5,
+  "IVupdate":0,
+  "netKeys":[
+    {
+      "index":0,
+      "keyRefresh":0,
+      "key":"18eed9c2a56add85049ffc3c59ad0e12"
+    }
+  ],
+  "appKeys":[
+    {
+      "index":0,
+      "boundNetKey":0,
+      "key":"4f68ad85d9f48ac8589df665b6b49b8a"
+    },
+    {
+      "index":1,
+      "boundNetKey":0,
+      "key":"2aa2a6ded5a0798ceab5787ca3ae39fc"
+    }
+  ],
+  "provisioners":[
+    {
+      "provisionerName":"BT Mesh Provisioner",
+      "unicastAddress":"0077",
+      "allocatedUnicastRange":[
+        {
+          "lowAddress":"0100",
+          "highAddress":"7fff"
+        }
+      ]
+    }
+  ],
+}

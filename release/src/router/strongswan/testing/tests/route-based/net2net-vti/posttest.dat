@@ -1,6 +1,6 @@
 moon::swanctl --terminate --ike gw-gw
-moon::systemctl stop strongswan-swanctl
-sun::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan
+sun::systemctl stop strongswan
 moon::iptables-restore < /etc/iptables.flush
 sun::iptables-restore < /etc/iptables.flush
 moon::ip tunnel del vti-moon

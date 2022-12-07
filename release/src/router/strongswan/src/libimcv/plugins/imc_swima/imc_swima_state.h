@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,7 +53,7 @@ struct imc_swima_subscription_t {
 	swima_inventory_t *targets;
 
 	/**
-	 * Retrieve SW Identifieres only
+	 * Retrieve SW Identifiers only
 	 */
 	bool sw_id_only;
 

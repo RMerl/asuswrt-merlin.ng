@@ -288,7 +288,7 @@ endif
 export $(MODEL):=y
 endif
 
-ifeq ($(and $(HND_ROUTER_AX_6756),$(BCM_MFG),$(WLTEST)),y)
+ifneq ($(filter-out n,$(and $(HND_ROUTER_AX_6756),$(BCM_MFG)) $(WL_TEST)),)
 export WLTEST := 1
 endif
 
@@ -694,7 +694,6 @@ ifeq ($(HND_ROUTER),y)
 	@rm -rf image
 	@ln -sf targets/${PROFILE} image
 	$(MAKE) buildimage
-	@rm -rf targets/${PROFILE}/*cferom*
 else
 	@-mkdir -p image
 
@@ -3519,8 +3518,10 @@ define RouterOptions
 		fi; \
 		sed -i "/RTCONFIG_AMAS_SYNC_2G_BW/d" $(1); \
 		echo "RTCONFIG_AMAS_SYNC_2G_BW=y" >>$(1); \
-		sed -i "/RTCONFIG_ACCOUNT_BINDING/d" $(1); \
-		echo "RTCONFIG_ACCOUNT_BINDING=y" >>$(1); \
+		if [ "$(findstring RP-, $(BUILD_NAME))" != "RP-" ]; then \
+			sed -i "/RTCONFIG_ACCOUNT_BINDING/d" $(1); \
+			echo "RTCONFIG_ACCOUNT_BINDING=y" >>$(1); \
+		fi; \
 		sed -i "/RTCONFIG_NOTIFICATION_CENTER/d" $(1); \
 		echo "RTCONFIG_NOTIFICATION_CENTER=y" >>$(1); \
 		sed -i "/RTCONFIG_BHSWITCH_RE_SELFOPT/d" $(1); \
@@ -3669,7 +3670,7 @@ define RouterOptions
 			echo "# RTCONFIG_BCM_MFG is not set" >>$(1); \
 		fi; \
 	fi;
-	if [ "$(WLTEST)" = "y" ] || [ "$(WLTEST)" = "1" ]; then \
+	if [ "$(WL_TEST)" = "y" ] || [ "$(WLTEST)" = "1" ]; then \
 		sed -i "/RTCONFIG_WLTEST/d" $(1); \
 		echo "RTCONFIG_WLTEST=y" >>$(1); \
 	fi;
@@ -3807,9 +3808,12 @@ define RouterOptions
 		sed -i "/RTCONFIG_OUTFOX/d" $(1); \
 		echo "RTCONFIG_OUTFOX=y" >>$(1); \
 	fi;
-	if [ -n "$(CAPTCHA)" ]; then \
+	if [ "$(CAPTCHA)" = "y" ]; then \
 		sed -i "/RTCONFIG_CAPTCHA/d" $(1); \
 		echo "RTCONFIG_CAPTCHA=y" >>$(1); \
+	elif [ "$(CAPTCHA)" = "n" ]; then \
+		sed -i "/RTCONFIG_CAPTCHA/d" $(1); \
+		echo "# RTCONFIG_CAPTCHA is not set" >>$(1); \
 	fi;
 	if [ "$(REMOVE_ROUTER_UI)" = "y" ]; then \
 		sed -i "/RTCONFIG_L2TP\>/d" $(1); \
@@ -3909,9 +3913,19 @@ define RouterOptions
 		sed -i "/RTCONFIG_SECUREBOOT/d" $(1); \
 		echo "RTCONFIG_SECUREBOOT=y" >>$(1); \
 	fi;
+	if [ "$(FSCRYPTCTL)" = "y" ]; then \
+		sed -i "/RTCONFIG_FSCRYPTCTL/d" $(1); \
+		echo "RTCONFIG_FSCRYPTCTL=y" >>$(1); \
+	fi;
 	if [ "$(BSC_SR)" = "y" ]; then \
 		sed -i "/RTCONFIG_BSC_SR/d" $(1); \
 		echo "RTCONFIG_BSC_SR=y" >>$(1); \
+	fi;
+	sed -i "/RTCONFIG_AMAS_SS2/d" $(1); \
+	if [ "$(AMAS_SS2)" = "y" ]; then \
+		echo "RTCONFIG_AMAS_SS2=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_AMAS_SS2 is not set" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef
@@ -5524,6 +5538,8 @@ fi;
 	if [ "$(BUILD_NAME)" = "RT-AX55" ] || [ "$(BUILD_NAME)" = "RT-AX1800" ]; then \
 		sed -i "/CONFIG_BCM_PKTFLOW_MAX_FLOWS/d" $(1); \
 		echo "CONFIG_BCM_PKTFLOW_MAX_FLOWS=4096" >>$(1); \
+		sed -i "/CONFIG_BCM_BPM_BUF_MEM_PRCNT/d" $(1); \
+		echo "CONFIG_BCM_BPM_BUF_MEM_PRCNT=10" >>$(1); \
 	fi;
 	if [ "$(BUILD_NAME)" = "RT-AX3000N" ]; then \
 		sed -i "/CONFIG_BCM_MAX_UCAST_FLOWS/d" $(1); \
@@ -5569,6 +5585,18 @@ fi;
 	else \
 		sed -i "/CONFIG_WIREGUARD/d" $(1); \
 		echo "# CONFIG_WIREGUARD is not set" >>$(1); \
+	fi;
+	if [ "$(FSCRYPTCTL)" = "y" ]; then \
+		sed -i "/CONFIG_FS_ENCRYPTION/d" $(1); \
+		echo "CONFIG_FS_ENCRYPTION=y" >>$(1); \
+		sed -i "/CONFIG_UBIFS_FS_ADVANCED_COMPR/d" $(1); \
+		echo "CONFIG_UBIFS_FS_ADVANCED_COMPR=y" >>$(1); \
+		sed -i "/CONFIG_UBIFS_FS_XATTR/d" $(1); \
+		echo "CONFIG_UBIFS_FS_XATTR=y" >>$(1); \
+		sed -i "/CONFIG_UBIFS_FS_ENCRYPTION/d" $(1); \
+		echo "CONFIG_UBIFS_FS_ENCRYPTION=y" >>$(1); \
+		sed -i "/CONFIG_UBIFS_FS_SECURITY/d" $(1); \
+		echo "CONFIG_UBIFS_FS_SECURITY=y" >>$(1); \
 	fi;
 	$(call platformKernelConfig, $(1))
 	$(call extraKernelConfig, $(1))
@@ -5844,7 +5872,7 @@ ETJ etj:
 	$(call save_src_config,$@,_CFG)
 	$(MAKE) bin
 
-ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro ET8PRO et8pro GT10 gt10:
+ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro BM68 bm68 XT8_V2 xt8_v2 ET8PRO et8pro ET8_V2 et8_v2 GT10 gt10 XD6_V2 xd6_v2 BR63 br63:
 	$(call save_src_config, $@,_CFG)
 ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
 	@echo "Copy router-sysdep.$(lowercase_B) content"

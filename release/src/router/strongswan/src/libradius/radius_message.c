@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -45,7 +46,7 @@ struct rmsg_t {
 struct rattr_t {
 	/** attribute type, radius_attribute_type_t */
 	uint8_t type;
-	/** length of the attriubte, including the Type, Length and Value fields */
+	/** length of the attribute, including the Type, Length and Value fields */
 	uint8_t length;
 	/** variable length attribute value */
 	uint8_t value[];

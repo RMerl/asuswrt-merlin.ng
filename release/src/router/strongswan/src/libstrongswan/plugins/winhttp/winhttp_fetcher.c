@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -165,7 +166,7 @@ static bool read_result(private_winhttp_fetcher_t *this, HINTERNET request,
 		}
 		if (!this->cb(user, chunk_create(buf, received)))
 		{
-			DBG1(DBG_LIB, "processing response failed or cancelled");
+			DBG1(DBG_LIB, "processing response failed or canceled");
 			return FALSE;
 		}
 	}

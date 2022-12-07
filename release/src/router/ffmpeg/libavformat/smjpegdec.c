@@ -36,7 +36,7 @@ typedef struct SMJPEGContext {
     int video_stream_index;
 } SMJPEGContext;
 
-static int smjpeg_probe(AVProbeData *p)
+static int smjpeg_probe(const AVProbeData *p)
 {
     if (!memcmp(p->buf, SMJPEG_MAGIC, 8))
         return AVPROBE_SCORE_MAX;
@@ -50,6 +50,9 @@ static int smjpeg_read_header(AVFormatContext *s)
     AVIOContext *pb = s->pb;
     uint32_t version, htype, hlength, duration;
     char *comment;
+
+    sc->audio_stream_index =
+    sc->video_stream_index = -1;
 
     avio_skip(pb, 8); // magic
     version = avio_rb32(pb);
@@ -147,6 +150,8 @@ static int smjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
     dtype = avio_rl32(s->pb);
     switch (dtype) {
     case SMJPEG_SNDD:
+        if (sc->audio_stream_index < 0)
+            return AVERROR_INVALIDDATA;
         timestamp = avio_rb32(s->pb);
         size = avio_rb32(s->pb);
         ret = av_get_packet(s->pb, pkt, size);
@@ -155,6 +160,8 @@ static int smjpeg_read_packet(AVFormatContext *s, AVPacket *pkt)
         pkt->pos = pos;
         break;
     case SMJPEG_VIDD:
+        if (sc->video_stream_index < 0)
+            return AVERROR_INVALIDDATA;
         timestamp = avio_rb32(s->pb);
         size = avio_rb32(s->pb);
         ret = av_get_packet(s->pb, pkt, size);

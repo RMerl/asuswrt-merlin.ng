@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2014-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,6 +16,7 @@
 
 #include "seg_contract.h"
 #include "seg_env.h"
+#include "imcv.h"
 #include "ietf/ietf_attr_pa_tnc_error.h"
 #include "tcg/seg/tcg_seg_attr_seg_env.h"
 
@@ -41,19 +43,19 @@ struct private_seg_contract_t {
 	pen_type_t msg_type;
 
 	/**
-	 * Maximum PA-TNC attribute size
+	 * Maximum PA-TNC message size
 	 */
-	uint32_t max_attr_size;
+	uint32_t max_msg_size;
 
 	/**
-	 * Maximum PA-TNC attribute segment size
+	 * Maximum PA-TNC segment value size
 	 */
 	uint32_t max_seg_size;
 
 	/**
-	 * Maximum PA-TNC attribute segment size
+	 * Last base message ID
 	 */
-	uint32_t last_base_attr_id;
+	uint32_t last_base_msg_id;
 
 	/**
 	 * List of attribute segment envelopes
@@ -95,20 +97,20 @@ METHOD(seg_contract_t, get_msg_type, pen_type_t,
 }
 
 METHOD(seg_contract_t, set_max_size, void,
-	private_seg_contract_t *this, uint32_t max_attr_size, uint32_t max_seg_size)
+	private_seg_contract_t *this, uint32_t max_msg_size, uint32_t max_seg_size)
 {
-	this->max_attr_size = max_attr_size;
+	this->max_msg_size = max_msg_size;
 	this->max_seg_size = max_seg_size;
-	this->is_null = max_attr_size == SEG_CONTRACT_MAX_SIZE_VALUE &&
-					max_seg_size  == SEG_CONTRACT_MAX_SIZE_VALUE;
+	this->is_null = max_msg_size == SEG_CONTRACT_NO_MSG_SIZE_LIMIT &&
+					max_seg_size == SEG_CONTRACT_NO_SEGMENTATION;
 }
 
 METHOD(seg_contract_t, get_max_size, void,
-	private_seg_contract_t *this, uint32_t *max_attr_size, uint32_t *max_seg_size)
+	private_seg_contract_t *this, uint32_t *max_msg_size, uint32_t *max_seg_size)
 {
-	if (max_attr_size)
+	if (max_msg_size)
 	{
-		*max_attr_size = this->max_attr_size;
+		*max_msg_size = this->max_msg_size;
 	}
 	if (max_seg_size)
 	{
@@ -133,15 +135,15 @@ METHOD(seg_contract_t, check_size, bool,
 	attr_value = attr->get_value(attr);
 	attr_len = PA_TNC_ATTR_HEADER_SIZE + attr_value.len;
 
-	if (attr_len > this->max_attr_size)
+	if (attr_len > this->max_msg_size)
 	{
 		/* oversize attribute */
 		*oversize = TRUE;
 		return FALSE;
 	}
-	if (this->max_seg_size == SEG_CONTRACT_NO_FRAGMENTATION)
+	if (this->max_seg_size == SEG_CONTRACT_NO_SEGMENTATION)
 	{
-		/* no fragmentation wanted */
+		/* no segmentation wanted */
 		return FALSE;
 	}
 	return attr_value.len > this->max_seg_size + TCG_SEG_ATTR_SEG_ENV_HEADER;
@@ -151,8 +153,12 @@ METHOD(seg_contract_t, first_segment, pa_tnc_attr_t*,
 	private_seg_contract_t *this, pa_tnc_attr_t *attr, size_t max_attr_len)
 {
 	seg_env_t *seg_env;
+	pen_type_t type;
 
-	seg_env = seg_env_create(++this->last_base_attr_id, attr,
+	type = attr->get_type(attr);
+	imcv_list_pa_tnc_attribute_type("creating", type.vendor_id, type.type);
+
+	seg_env = seg_env_create(++this->last_base_msg_id, attr,
 							 this->max_seg_size);
 	if (!seg_env)
 	{
@@ -164,7 +170,7 @@ METHOD(seg_contract_t, first_segment, pa_tnc_attr_t*,
 }
 
 METHOD(seg_contract_t, next_segment, pa_tnc_attr_t*,
-	private_seg_contract_t *this, uint32_t base_attr_id)
+	private_seg_contract_t *this, uint32_t base_msg_id)
 {
 	pa_tnc_attr_t *seg_env_attr = NULL;
 	seg_env_t *seg_env;
@@ -174,7 +180,7 @@ METHOD(seg_contract_t, next_segment, pa_tnc_attr_t*,
 	enumerator = this->seg_envs->create_enumerator(this->seg_envs);
 	while (enumerator->enumerate(enumerator, &seg_env))
 	{
-		if (seg_env->get_base_attr_id(seg_env) == base_attr_id)
+		if (seg_env->get_base_msg_id(seg_env) == base_msg_id)
 		{
 			seg_env_attr = seg_env->next_segment(seg_env, &last_segment);
 			if (!seg_env_attr)
@@ -202,13 +208,13 @@ METHOD(seg_contract_t, add_segment, pa_tnc_attr_t*,
 	seg_env_t *current, *seg_env = NULL;
 	pa_tnc_attr_t *base_attr;
 	pen_type_t error_code;
-	uint32_t base_attr_id;
+	uint32_t base_msg_id;
 	uint8_t flags;
 	chunk_t segment_data, msg_info;
 	enumerator_t *enumerator;
 
 	seg_env_attr = (tcg_seg_attr_seg_env_t*)attr;
-	base_attr_id = seg_env_attr->get_base_attr_id(seg_env_attr);
+	base_msg_id = seg_env_attr->get_base_msg_id(seg_env_attr);
 	segment_data = seg_env_attr->get_segment(seg_env_attr, &flags);
 	*more = flags & SEG_ENV_FLAG_MORE;
 	*error = NULL;
@@ -216,7 +222,7 @@ METHOD(seg_contract_t, add_segment, pa_tnc_attr_t*,
 	enumerator = this->seg_envs->create_enumerator(this->seg_envs);
 	while (enumerator->enumerate(enumerator, &current))
 	{
-		if (current->get_base_attr_id(current) == base_attr_id)
+		if (current->get_base_msg_id(current) == base_msg_id)
 		{
 			seg_env = current;
 			this->seg_envs->remove_at(this->seg_envs, enumerator);
@@ -229,14 +235,13 @@ METHOD(seg_contract_t, add_segment, pa_tnc_attr_t*,
 	{
 		if (seg_env)
 		{
-			DBG1(DBG_TNC, "base attribute ID %d is already in use",
-						   base_attr_id);
+			DBG1(DBG_TNC, "base message ID %d is already in use", base_msg_id);
 			this->seg_envs->insert_last(this->seg_envs, seg_env);
 			return NULL;
 		}
-		DBG2(DBG_TNC, "received first segment for base attribute ID %d "
-					  "(%d bytes)", base_attr_id, segment_data.len);
-		seg_env = seg_env_create_from_data(base_attr_id, segment_data,
+		DBG2(DBG_TNC, "received first segment for base message ID %d "
+					  "(%d bytes)", base_msg_id, segment_data.len);
+		seg_env = seg_env_create_from_data(base_msg_id, segment_data,
 										   this->max_seg_size, error);
 		if (!seg_env)
 		{
@@ -247,11 +252,11 @@ METHOD(seg_contract_t, add_segment, pa_tnc_attr_t*,
 	{
 		if (!seg_env)
 		{
-			DBG1(DBG_TNC, "base attribute ID %d not found", base_attr_id);
+			DBG1(DBG_TNC, "base message ID %d not found", base_msg_id);
 			return NULL;
 		}
-		DBG2(DBG_TNC, "received %s segment for base attribute ID %d "
-					  "(%d bytes)", (*more) ? "next" : "last", base_attr_id,
+		DBG2(DBG_TNC, "received %s segment for base message ID %d "
+					  "(%d bytes)", (*more) ? "next" : "last", base_msg_id,
 					   segment_data.len);
 		if (!seg_env->add_segment(seg_env, segment_data, error))
 		{
@@ -338,12 +343,12 @@ METHOD(seg_contract_t, get_info_string, void,
 
 	if (this->is_issuer && request)
 	{
-		written = snprintf(pos, len, "%s %d requests",
+		written = snprintf(pos, len, "%s %lu requests",
 						  this->is_imc ? "IMC" : "IMV", this->issuer_id);
 	}
 	else
 	{
-		written = snprintf(pos, len, "%s %d received",
+		written = snprintf(pos, len, "%s %lu received",
 						   this->is_imc ? "IMC" : "IMV",
 						   this->is_issuer ? this->issuer_id :
 											 this->responder_id);
@@ -368,7 +373,7 @@ METHOD(seg_contract_t, get_info_string, void,
 	if ((!this->is_issuer && this->issuer_id != TNC_IMVID_ANY) ||
 		( this->is_issuer && this->responder_id != TNC_IMVID_ANY))
 	{
-		written = snprintf(pos, len, "from %s %d ",
+		written = snprintf(pos, len, "from %s %lu ",
 						   this->is_imc ? "IMV" : "IMC",
 						   this->is_issuer ? this->responder_id :
 											 this->issuer_id);
@@ -405,8 +410,15 @@ METHOD(seg_contract_t, get_info_string, void,
 
 	if (!this->is_null)
 	{
-		written = snprintf(pos, len, "\n  maximum attribute size of %u bytes "
-						   "with ", this->max_attr_size);
+		if (this->max_msg_size == SEG_CONTRACT_NO_MSG_SIZE_LIMIT)
+		{
+			written = snprintf(pos, len, "\n  no message size limit, ");
+		}
+		else
+		{
+			written = snprintf(pos, len, "\n  maximum message size of %u bytes, "
+										 "with ", this->max_msg_size);
+		}
 		if (written < 0 || written > len)
 		{
 			return;
@@ -414,14 +426,14 @@ METHOD(seg_contract_t, get_info_string, void,
 		pos += written;
 		len -= written;
 
-		if (this->max_seg_size == SEG_CONTRACT_MAX_SIZE_VALUE)
+		if (this->max_seg_size == SEG_CONTRACT_NO_SEGMENTATION)
 		{
 			written = snprintf(pos, len, "no segmentation");
 		}
 		else
 		{
 			written = snprintf(pos, len, "maximum segment size of %u bytes",
-							   this->max_seg_size);
+										  this->max_seg_size);
 		}
 	}
 }
@@ -437,7 +449,7 @@ METHOD(seg_contract_t, destroy, void,
  * See header
  */
 seg_contract_t *seg_contract_create(pen_type_t msg_type,
-								    uint32_t max_attr_size,
+								    uint32_t max_msg_size,
 									uint32_t max_seg_size,
 									bool is_issuer, TNC_UInt32 issuer_id,
 									bool is_imc)
@@ -463,15 +475,15 @@ seg_contract_t *seg_contract_create(pen_type_t msg_type,
 			.destroy = _destroy,
 		},
 		.msg_type = msg_type,
-		.max_attr_size = max_attr_size,
+		.max_msg_size = max_msg_size,
 		.max_seg_size = max_seg_size,
 		.seg_envs = linked_list_create(),
 		.is_issuer = is_issuer,
 		.issuer_id = issuer_id,
 		.responder_id = is_imc ? TNC_IMVID_ANY : TNC_IMCID_ANY,
 		.is_imc = is_imc,
-		.is_null = max_attr_size == SEG_CONTRACT_MAX_SIZE_VALUE &&
-				   max_seg_size  == SEG_CONTRACT_MAX_SIZE_VALUE,
+		.is_null = max_msg_size == SEG_CONTRACT_NO_MSG_SIZE_LIMIT &&
+				   max_seg_size == SEG_CONTRACT_NO_SEGMENTATION,
 	);
 
 	return &this->public;

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,16 +21,13 @@
 /*******************************************************************************
  * continuous enum
  */
-enum {
+enum test_enum_cont {
 	CONT1,
 	CONT2,
 	CONT3,
 	CONT4,
 	CONT5,
-} test_enum_cont;
-
-/* can't be static */
-enum_name_t *test_enum_cont_names;
+};
 
 ENUM_BEGIN(test_enum_cont_names, CONT1, CONT5,
 	"CONT1", "CONT2", "CONT3", "CONT4", "CONT5");
@@ -38,16 +36,13 @@ ENUM_END(test_enum_cont_names, CONT5);
 /*******************************************************************************
  * split enum
  */
-enum {
+enum test_enum_split {
 	SPLIT1 = 1,
 	SPLIT2,
 	SPLIT3 = 5,
 	SPLIT4,
 	SPLIT5 = 255,
-} test_enum_split;
-
-/* can't be static */
-enum_name_t *test_enum_split_names;
+};
 
 ENUM_BEGIN(test_enum_split_names, SPLIT1, SPLIT2,
 	"SPLIT1", "SPLIT2");
@@ -60,7 +55,7 @@ ENUM_END(test_enum_split_names, SPLIT5);
 /*******************************************************************************
  * enum flags
  */
-enum {
+enum test_enum_flags {
 	FLAG1 = (1 << 0),
 	FLAG2 = (1 << 1),
 	FLAG3 = (1 << 2),
@@ -73,18 +68,18 @@ enum {
 	FLAG10 = (1 << 9),
 	FLAG11 = (1 << 10),
 	FLAG12 = (1 << 11),
-} test_enum_flags;
+};
 
 ENUM_FLAGS(test_enum_flags_names, FLAG1, FLAG5,
-	"FLAG1", "FLAG2", "FLAG3", "FLAG4", "FLAG5");
+	"(unset)", "FLAG1", "FLAG2", "FLAG3", "FLAG4", "FLAG5");
 
 ENUM_FLAGS(test_enum_flags_incomplete_names, FLAG3, FLAG4,
-	"FLAG3", "FLAG4");
+	"(unset)", "FLAG3", "FLAG4");
 
 ENUM_FLAGS(test_enum_flags_null_names, FLAG1, FLAG4,
-	"FLAG1", NULL, "FLAG3", NULL);
+	"(unset)", "FLAG1", NULL, "FLAG3", NULL);
 
-ENUM_FLAGS(test_enum_flags_overflow_names, FLAG1, FLAG12,
+ENUM_FLAGS(test_enum_flags_overflow_names, FLAG1, FLAG12, "(unset)",
 	"OVERFLOWFLAGLONGNAME1",  "OVERFLOWFLAGLONGNAME2",  "OVERFLOWFLAGLONGNAME3",
 	"OVERFLOWFLAGLONGNAME4",  "OVERFLOWFLAGLONGNAME5",  "OVERFLOWFLAGLONGNAME6",
 	"OVERFLOWFLAGLONGNAME7",  "OVERFLOWFLAGLONGNAME8",  "OVERFLOWFLAGLONGNAME9",
@@ -269,6 +264,30 @@ static struct {
 }, enum_flags_to_string_tests[] = {
 	{-1, NULL},
 	{6435, NULL},
+}, enum_flags_from_string_tests[] = {
+	{0, NULL},
+	{0, ""},
+	{0, "(unset)"},
+	{FLAG1, "FLAG1"},
+	{FLAG2, "flag2"},
+	{FLAG3, "fLaG3"},
+	{FLAG4, "FLAG4"},
+	{FLAG5, "FLAG5"},
+	{FLAG1 | FLAG3, "FLAG1 | FLAG3"},
+	{FLAG1 | FLAG3, "flag3|flag1"},
+	{FLAG1 | FLAG3, "flag1|flag3 | (unset)"},
+	{FLAG1 | FLAG2 | FLAG3 | FLAG4 | FLAG5, "flag1|flag2|flag3|flag4|flag5"},
+	{FLAG1 | FLAG2 | FLAG3 | FLAG4 | FLAG5, "flag3|flag4|flag5|flag2|flag1"},
+	{FLAG5, "(unset)|flag5"},
+	{FLAG1, "FLAG1 | flag1 | flAg1"},
+	{-1, "FLAG6"},
+	{-1, "flag1 | asdf"},
+}, enum_flags_from_string_noflagenum_tests[] = {
+	{0, NULL},
+	{0, ""},
+	{CONT2, "CONT2"},
+	{CONT5, "CONT5"},
+	{-1, "asdf"},
 };
 
 START_TEST(test_enum_printf_hook_cont)
@@ -377,6 +396,38 @@ START_TEST(test_enum_flags_to_string_noflagenum)
 }
 END_TEST
 
+START_TEST(test_enum_flags_from_string)
+{
+	enum test_enum_flags val;
+
+	if (enum_flags_from_string(test_enum_flags_names,
+							   enum_flags_from_string_tests[_i].str, &val))
+	{
+		ck_assert_int_eq(enum_flags_from_string_tests[_i].val, val);
+	}
+	else
+	{
+		ck_assert_int_eq(enum_flags_from_string_tests[_i].val, -1);
+	}
+}
+END_TEST
+
+START_TEST(test_enum_flags_from_string_noflagenum)
+{
+	enum test_enum_cont val;
+
+	if (enum_flags_from_string(test_enum_cont_names,
+						enum_flags_from_string_noflagenum_tests[_i].str, &val))
+	{
+		ck_assert_int_eq(enum_flags_from_string_noflagenum_tests[_i].val, val);
+	}
+	else
+	{
+		ck_assert_int_eq(enum_flags_from_string_noflagenum_tests[_i].val, -1);
+	}
+}
+END_TEST
+
 START_TEST(test_enum_printf_hook_width)
 {
 	char buf[128];
@@ -410,6 +461,11 @@ Suite *enum_suite_create()
 	tc = tcase_create("enum_flags_to_string");
 	tcase_add_loop_test(tc, test_enum_flags_to_string, 0, countof(enum_flags_to_string_tests));
 	tcase_add_loop_test(tc, test_enum_flags_to_string_noflagenum, 0, countof(printf_tests_flags_noflagenum));
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("enum_flags_from_string");
+	tcase_add_loop_test(tc, test_enum_flags_from_string, 0, countof(enum_flags_from_string_tests));
+	tcase_add_loop_test(tc, test_enum_flags_from_string_noflagenum, 0, countof(enum_flags_from_string_noflagenum_tests));
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("enum_printf_hook");

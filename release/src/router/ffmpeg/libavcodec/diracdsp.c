@@ -195,12 +195,12 @@ static void dequant_subband_ ## PX ## _c(uint8_t *src, uint8_t *dst, ptrdiff_t s
 {                                                                                          \
     int i, y;                                                                              \
     for (y = 0; y < tot_v; y++) {                                                          \
-        PX c, sign, *src_r = (PX *)src, *dst_r = (PX *)dst;                                \
+        PX c, *src_r = (PX *)src, *dst_r = (PX *)dst;                                      \
         for (i = 0; i < tot_h; i++) {                                                      \
             c = *src_r++;                                                                  \
-            sign = FFSIGN(c)*(!!c);                                                        \
-            c = (FFABS(c)*(unsigned)qf + qs) >> 2;                                                   \
-            *dst_r++ = c*sign;                                                             \
+            if     (c < 0) c = -((-(unsigned)c*qf + qs) >> 2);                             \
+            else if(c > 0) c =  (( (unsigned)c*qf + qs) >> 2);                             \
+            *dst_r++ = c;                                                                  \
         }                                                                                  \
         src += tot_h << (sizeof(PX) >> 1);                                                 \
         dst += stride;                                                                     \

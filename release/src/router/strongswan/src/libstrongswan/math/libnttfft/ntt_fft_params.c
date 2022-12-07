@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -563,7 +564,7 @@ static const uint16_t wi_12289_512[] = {
  * Bit-reversed indices for n = 512
  */
 static const uint16_t rev_512[] = {
-	  0, 256, 128, 384,  64, 320, 192, 448,  32, 288, 
+	  0, 256, 128, 384,  64, 320, 192, 448,  32, 288,
 	160, 416,  96, 352, 224, 480,  16, 272, 144, 400,
 	 80, 336, 208, 464,  48, 304, 176, 432, 112, 368,
 	240, 496,   8, 264, 136, 392,  72, 328, 200, 456,

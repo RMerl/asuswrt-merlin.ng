@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -144,7 +145,7 @@ METHOD(tncif_identity_t, process, bool,
 	reader->read_uint8 (reader, &reserved);
 	reader->read_uint24(reader, &vendor_id);
 	reader->read_uint32(reader, &type);
-	this->subject_type = pen_type_create(vendor_id, type);		
+	this->subject_type = pen_type_create(vendor_id, type);
 
 	reader->read_uint8 (reader, &reserved);
 	reader->read_uint24(reader, &vendor_id);

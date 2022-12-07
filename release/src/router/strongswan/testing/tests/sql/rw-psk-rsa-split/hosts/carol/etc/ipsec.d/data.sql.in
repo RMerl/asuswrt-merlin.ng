@@ -1,0 +1,128 @@
+/* Identities */
+
+INSERT INTO identities (
+  type, data
+) VALUES ( /* C=CH, O=strongSwan Project, CN=strongSwan Root CA */
+  9, X'3047310b3009060355040613024348311b3019060355040a13127374726f6e675377616e2050726f6a656374311b3019060355040313127374726f6e675377616e20526f6f74204341'
+);
+
+INSERT INTO identities (
+  type, data
+) VALUES ( /* subjkey of 'C=CH, O=strongSwan Project, CN=strongSwan Root CA' */
+  11, X'CA_SPK_HEX'
+);
+
+INSERT INTO identities (
+  type, data
+) VALUES ( /* keyid of 'C=CH, O=strongSwan Project, CN=strongSwan Root CA' */
+  11, X'CA_SPKI_HEX'
+);
+
+INSERT INTO identities (
+  type, data
+) VALUES ( /* carol@strongswan.org */
+  3, X'6361726f6c407374726f6e677377616e2e6f7267'
+ );
+
+INSERT INTO identities (
+  type, data
+) VALUES ( /* moon.strongswan.org */
+  2, X'6d6f6f6e2e7374726f6e677377616e2e6f7267'
+ );
+
+/* Certificates */
+
+INSERT INTO certificates (
+   type, keytype, data
+) VALUES ( /* C=CH, O=strongSwan Project, CN=strongSwan Root CA */
+  1, 1, X'CA_CERT_HEX'
+);
+
+INSERT INTO certificate_identity (
+  certificate, identity
+) VALUES (
+  1, 1
+);
+
+INSERT INTO certificate_identity (
+  certificate, identity
+) VALUES (
+  1, 2
+);
+
+INSERT INTO certificate_identity (
+  certificate, identity
+) VALUES (
+  1, 3
+);
+
+/* Shared Secrets */
+
+INSERT INTO shared_secrets (
+   type, data
+) VALUES (
+  1, X'16964066a10de938bdb2ab7864fe4459cab1'
+);
+
+INSERT INTO shared_secret_identity (
+  shared_secret, identity
+) VALUES (
+  1, 4
+);
+
+INSERT INTO shared_secret_identity (
+  shared_secret, identity
+) VALUES (
+  1, 5
+);
+
+/* Configurations */
+
+INSERT INTO ike_configs (
+  local, remote
+) VALUES (
+  'PH_IP_CAROL', 'PH_IP_MOON'
+);
+
+INSERT INTO peer_configs (
+  name, ike_cfg, local_id, remote_id, auth_method
+) VALUES (
+  'home', 1, 4, 5, 2
+);
+
+INSERT INTO child_configs (
+  name, updown
+) VALUES (
+  'home', '/usr/local/libexec/ipsec/_updown iptables'
+);
+
+INSERT INTO peer_config_child_config (
+  peer_cfg, child_cfg
+) VALUES (
+  1, 1
+);
+
+INSERT INTO traffic_selectors (
+  type, start_addr, end_addr
+) VALUES ( /* 10.1.0.0/16 */
+  7, X'0a010000', X'0a01ffff'
+);
+
+INSERT INTO traffic_selectors (
+  type
+) VALUES ( /* dynamic/32 */
+  7
+);
+
+INSERT INTO child_config_traffic_selector (
+  child_cfg, traffic_selector, kind
+) VALUES (
+  1, 1, 1
+);
+
+INSERT INTO child_config_traffic_selector (
+	child_cfg, traffic_selector, kind
+) VALUES (
+  1, 2, 2
+);
+

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012-2018 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -340,6 +341,41 @@ traffic_selector_t* parse_ts(char *str)
 	return traffic_selector_create_from_cidr(str, 0, 0, 65535);
 }
 
+/*
+ * Described in header
+ */
+bool allocate_serial(size_t len, chunk_t *serial)
+{
+	rng_t *rng;
+
+	if (!len)
+	{
+		len = 1;
+	}
+	rng = lib->crypto->create_rng(lib->crypto, RNG_WEAK);
+	if (!rng)
+	{
+		fprintf(stderr, "no random number generator found\n");
+		return FALSE;
+	}
+	if (!rng_allocate_bytes_not_zero(rng, len, serial, FALSE))
+	{
+		rng->destroy(rng);
+		return FALSE;
+	}
+	/* ensure the serial is positive but doesn't start with 0 */
+	while (!(serial->ptr[0] &= 0x7F))
+	{
+		if (!rng->get_bytes(rng, 1, serial->ptr))
+		{
+			rng->destroy(rng);
+			return FALSE;
+		}
+	}
+	rng->destroy(rng);
+	return TRUE;
+}
+
 /**
  * Callback credential set pki uses
  */
@@ -393,6 +429,7 @@ static shared_key_t* cb(void *data, shared_key_type_t type,
 			*match_other = ID_MATCH_NONE;
 		}
 		shared = shared_key_create(type, chunk_clone(chunk_from_str(secret)));
+		memwipe(secret, strlen(secret));
 		/* cache password in case it is required more than once */
 		cb_creds->add_shared(cb_creds, shared, NULL);
 		return shared->get_ref(shared);
@@ -427,6 +464,8 @@ static void remove_callback()
  */
 int main(int argc, char *argv[])
 {
+	char *plugins;
+
 	atexit(library_deinit);
 	if (!library_init(NULL, "pki"))
 	{
@@ -438,8 +477,12 @@ int main(int argc, char *argv[])
 		fprintf(stderr, "integrity check of pki failed\n");
 		exit(SS_RC_DAEMON_INTEGRITY);
 	}
-	if (!lib->plugins->load(lib->plugins,
-			lib->settings->get_str(lib->settings, "pki.load", PLUGINS)))
+	plugins = getenv("PKI_PLUGINS");
+	if (!plugins)
+	{
+		plugins = lib->settings->get_str(lib->settings, "pki.load", PLUGINS);
+	}
+	if (!lib->plugins->load(lib->plugins, plugins))
 	{
 		exit(SS_RC_INITIALIZATION_FAILED);
 	}

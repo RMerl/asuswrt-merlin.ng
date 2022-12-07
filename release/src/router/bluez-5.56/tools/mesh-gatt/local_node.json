@@ -1,0 +1,61 @@
+{
+  "$schema":"file:\/\/\/BlueZ\/Mesh\/local_schema\/mesh.jsonschema",
+  "meshName":"BT Mesh",
+  "netKeys":[
+    {
+      "index": 0,
+      "keyRefresh": 0
+    }
+  ],
+  "appKeys":[
+    {
+      "index": 0,
+      "boundNetKey": 0
+    },
+    {
+      "index": 1,
+      "boundNetKey": 0
+    }
+  ],
+"node": {
+	"IVindex":"00000005",
+	"IVupdate":"0",
+	"sequenceNumber": 0,
+    "composition": {
+        "cid": "0002",
+        "pid": "0010",
+        "vid": "0001",
+        "crpl": "000a",
+        "features": {
+            "relay": false,
+            "proxy": true,
+            "friend": false,
+            "lowPower": false
+        },
+        "elements": [
+            {
+                "elementIndex": 0,
+                "location": "0001",
+                "models": ["0000", "0001", "1001"]
+            }
+        ]
+    },
+    "configuration":{
+        "netKeys": [0],
+        "appKeys": [ 0, 1],
+        "defaultTTL": 10,
+        "elements": [
+          {
+            "elementIndex": 0,
+            "unicastAddress":"0077",
+            "models": [
+               {
+                 "modelId": "1001",
+                 "bind": [1]
+                }
+            ]
+          }
+        ]
+    }
+  }
+}

@@ -29,7 +29,7 @@
 #include "avformat.h"
 #include "rawdec.h"
 
-static int dts_probe(AVProbeData *p)
+static int dts_probe(const AVProbeData *p)
 {
     const uint8_t *buf, *bufp;
     uint32_t state = -1;
@@ -37,6 +37,7 @@ static int dts_probe(AVProbeData *p)
     int exss_markers = 0, exss_nextpos = 0;
     int sum, max, pos, ret, i;
     int64_t diff = 0;
+    int diffcount = 1;
     uint8_t hdr[DCA_CORE_FRAME_HEADER_SIZE + AV_INPUT_BUFFER_PADDING_SIZE] = { 0 };
 
     for (pos = FFMIN(4096, p->buf_size); pos < p->buf_size - 2; pos += 2) {
@@ -47,8 +48,12 @@ static int dts_probe(AVProbeData *p)
         bufp = buf = p->buf + pos;
         state = (state << 16) | bytestream_get_be16(&bufp);
 
-        if (pos >= 4)
-            diff += FFABS(((int16_t)AV_RL16(buf)) - (int16_t)AV_RL16(buf-4));
+        if (pos >= 4) {
+            if (AV_RL16(buf) || AV_RL16(buf-4)) {
+                diff += FFABS(((int16_t)AV_RL16(buf)) - (int16_t)AV_RL16(buf-4));
+                diffcount ++;
+            }
+        }
 
         /* extension substream (EXSS) */
         if (state == DCA_SYNCWORD_SUBSTREAM) {
@@ -121,12 +126,13 @@ static int dts_probe(AVProbeData *p)
 
     if (markers[max] > 3 && p->buf_size / markers[max] < 32*1024 &&
         markers[max] * 4 > sum * 3 &&
-        diff / p->buf_size > 200)
+        diff / diffcount > 600)
         return AVPROBE_SCORE_EXTENSION + 1;
 
     return 0;
 }
 
+FF_RAW_DEMUXER_CLASS(dts)
 AVInputFormat ff_dts_demuxer = {
     .name           = "dts",
     .long_name      = NULL_IF_CONFIG_SMALL("raw DTS"),
@@ -136,4 +142,5 @@ AVInputFormat ff_dts_demuxer = {
     .flags          = AVFMT_GENERIC_INDEX,
     .extensions     = "dts",
     .raw_codec_id   = AV_CODEC_ID_DTS,
-};
+    .priv_data_size = sizeof(FFRawDemuxerContext),
+    .priv_class     = &dts_demuxer_class,};

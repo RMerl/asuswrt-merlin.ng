@@ -84,14 +84,6 @@ void ff_amf_write_object_end(uint8_t **dst)
     bytestream_put_be24(dst, AMF_DATA_TYPE_OBJECT_END);
 }
 
-int ff_amf_read_bool(GetByteContext *bc, int *val)
-{
-    if (bytestream2_get_byte(bc) != AMF_DATA_TYPE_BOOL)
-        return AVERROR_INVALIDDATA;
-    *val = bytestream2_get_byte(bc);
-    return 0;
-}
-
 int ff_amf_read_number(GetByteContext *bc, double *val)
 {
     uint64_t read;
@@ -569,6 +561,7 @@ int ff_amf_get_field_value(const uint8_t *data, const uint8_t *data_end,
     return amf_get_field_value2(&gb, name, dst, dst_size);
 }
 
+#ifdef DEBUG
 static const char* rtmp_packet_type(int type)
 {
     switch (type) {
@@ -685,6 +678,7 @@ void ff_rtmp_packet_dump(void *ctx, RTMPPacket *p)
         av_log(ctx, AV_LOG_DEBUG, "\n");
     }
 }
+#endif
 
 int ff_amf_match_string(const uint8_t *data, int size, const char *str)
 {

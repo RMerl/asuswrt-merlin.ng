@@ -1,6 +1,6 @@
-bob::ipsec stop
-alice::ipsec stop
-carol::ipsec stop
+bob::systemctl stop strongswan
+alice::systemctl stop strongswan
+carol::systemctl stop strongswan
 alice::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush
 bob::iptables-restore < /etc/iptables.flush

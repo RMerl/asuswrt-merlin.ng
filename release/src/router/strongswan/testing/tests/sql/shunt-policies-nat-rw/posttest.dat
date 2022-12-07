@@ -1,5 +1,5 @@
-alice::systemctl stop strongswan-swanctl
-venus::systemctl stop strongswan-swanctl
-sun::systemctl stop strongswan-swanctl
+alice::systemctl stop strongswan
+venus::systemctl stop strongswan
+sun::systemctl stop strongswan
 sun::iptables-restore < /etc/iptables.flush
 moon::iptables -t nat -F

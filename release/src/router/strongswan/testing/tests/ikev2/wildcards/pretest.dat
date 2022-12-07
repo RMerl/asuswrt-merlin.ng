@@ -1,13 +1,11 @@
-carol::ipsec start
-dave::ipsec start
-moon::ipsec start
-moon::expect-connection alice
-moon::expect-connection venus
-carol::expect-connection alice
-carol::expect-connection venus
-carol::ipsec up alice
-carol::ipsec up venus
-dave::expect-connection alice
-dave::expect-connection venus
-dave::ipsec up venus
-dave::ipsec up alice
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
+oon::expect-connection research
+moon::expect-connection accounting
+carol::expect-connection home
+carol::swanctl --initiate --child alice 2> /dev/null
+carol::swanctl --initiate --child venus 2> /dev/null
+dave::expect-connection home
+dave::swanctl --initiate --child alice 2> /dev/null
+dave::swanctl --initiate --child venus 2> /dev/null

@@ -1,0 +1,7 @@
+# -*- Makefile -*-
+noinst_LTLIBRARIES += libmnote-apple.la
+libmnote_apple_la_SOURCES = \
+    apple/mnote-apple-entry.c apple/mnote-apple-entry.h \
+    apple/exif-mnote-data-apple.c apple/exif-mnote-data-apple.h \
+    apple/mnote-apple-tag.c apple/mnote-apple-tag.h
+libmnote_apple_la_LIBADD = $(LTLIBINTL)

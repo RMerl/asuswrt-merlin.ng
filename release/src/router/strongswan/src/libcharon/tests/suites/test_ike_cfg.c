@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,11 +20,17 @@
 
 static void assert_family(int expected, char *addr, bool local)
 {
+	ike_cfg_create_t ike = {
+		.version = IKEV2,
+		.local = local ? addr : "%any",
+		.local_port = 500,
+		.remote = local ? "%any" : addr,
+		.remote_port = 500,
+	};
 	ike_cfg_t *cfg;
 	int family;
 
-	cfg = ike_cfg_create(IKEV2, FALSE, FALSE, local ? addr : "%any", 500,
-						 local ? "%any" : addr, 500, FRAGMENTATION_NO, 0);
+	cfg = ike_cfg_create(&ike);
 	family = ike_cfg_get_family(cfg, local);
 	ck_assert_msg(expected == family, "expected family %d != %d (addr: '%s')",
 				  expected, family, addr);

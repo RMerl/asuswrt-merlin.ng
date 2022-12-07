@@ -2,7 +2,8 @@
  * Copyright (C) 2015 Tobias Brunner
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +26,7 @@
 #include "tkm_utils.h"
 #include "tkm_diffie_hellman.h"
 #include "tkm_keymat.h"
+#include "tkm_aead.h"
 
 typedef struct private_tkm_keymat_t private_tkm_keymat_t;
 
@@ -44,14 +46,9 @@ struct private_tkm_keymat_t {
 	bool initiator;
 
 	/**
-	 * Inbound AEAD.
+	 * AEAD implementation.
 	 */
-	aead_t *aead_in;
-
-	/**
-	 * Outbound AEAD.
-	 */
-	aead_t *aead_out;
+	aead_t *aead;
 
 	/**
 	 * ISA context id.
@@ -79,101 +76,16 @@ struct private_tkm_keymat_t {
 	hash_algorithm_set_t *hash_algorithms;
 };
 
-/**
- * Create AEAD transforms from given key chunks.
- *
- * @param in			inbound AEAD transform to allocate, NULL if failed
- * @param out			outbound AEAD transform to allocate, NULL if failed
- * @param sk_ai			SK_ai key chunk
- * @param sk_ar			SK_ar key chunk
- * @param sk_ei			SK_ei key chunk
- * @param sk_er			SK_er key chunk
- * @param enc_alg		encryption algorithm to use
- * @param int_alg		integrity algorithm to use
- * @param key_size		encryption key size in bytes
- * @param initiator		TRUE if initiator
- */
-static void aead_create_from_keys(aead_t **in, aead_t **out,
-	   const chunk_t * const sk_ai, const chunk_t * const sk_ar,
-	   const chunk_t * const sk_ei, const chunk_t * const sk_er,
-	   const uint16_t enc_alg, const uint16_t int_alg,
-	   const uint16_t key_size, bool initiator)
-{
-	*in = *out = NULL;
-	signer_t *signer_i, *signer_r;
-	crypter_t *crypter_i, *crypter_r;
-	iv_gen_t *ivg_i, *ivg_r;
-
-	signer_i = lib->crypto->create_signer(lib->crypto, int_alg);
-	signer_r = lib->crypto->create_signer(lib->crypto, int_alg);
-	if (signer_i == NULL || signer_r == NULL)
-	{
-		DBG1(DBG_IKE, "%N %N not supported!",
-			 transform_type_names, INTEGRITY_ALGORITHM,
-			 integrity_algorithm_names, int_alg);
-		return;
-	}
-	crypter_i = lib->crypto->create_crypter(lib->crypto, enc_alg, key_size);
-	crypter_r = lib->crypto->create_crypter(lib->crypto, enc_alg, key_size);
-	if (crypter_i == NULL || crypter_r == NULL)
-	{
-		signer_i->destroy(signer_i);
-		signer_r->destroy(signer_r);
-		DBG1(DBG_IKE, "%N %N (key size %d) not supported!",
-			 transform_type_names, ENCRYPTION_ALGORITHM,
-			 encryption_algorithm_names, enc_alg, key_size);
-		return;
-	}
-
-	DBG4(DBG_IKE, "Sk_ai %B", sk_ai);
-	if (!signer_i->set_key(signer_i, *sk_ai))
-	{
-		return;
-	}
-	DBG4(DBG_IKE, "Sk_ar %B", sk_ar);
-	if (!signer_r->set_key(signer_r, *sk_ar))
-	{
-		return;
-	}
-	DBG4(DBG_IKE, "Sk_ei %B", sk_ei);
-	if (!crypter_i->set_key(crypter_i, *sk_ei))
-	{
-		return;
-	}
-	DBG4(DBG_IKE, "Sk_er %B", sk_er);
-	if (!crypter_r->set_key(crypter_r, *sk_er))
-	{
-		return;
-	}
-
-	ivg_i = iv_gen_create_for_alg(enc_alg);
-	ivg_r = iv_gen_create_for_alg(enc_alg);
-	if (!ivg_i || !ivg_r)
-	{
-		return;
-	}
-	if (initiator)
-	{
-		*in = aead_create(crypter_r, signer_r, ivg_r);
-		*out = aead_create(crypter_i, signer_i, ivg_i);
-	}
-	else
-	{
-		*in = aead_create(crypter_i, signer_i, ivg_i);
-		*out = aead_create(crypter_r, signer_r, ivg_r);
-	}
-}
-
 METHOD(keymat_t, get_version, ike_version_t,
 	private_tkm_keymat_t *this)
 {
 	return IKEV2;
 }
 
-METHOD(keymat_t, create_dh, diffie_hellman_t*,
-	private_tkm_keymat_t *this, diffie_hellman_group_t group)
+METHOD(keymat_t, create_ke, key_exchange_t*,
+	private_tkm_keymat_t *this, key_exchange_method_t ke)
 {
-	return lib->crypto->create_dh(lib->crypto, group);
+	return lib->crypto->create_ke(lib->crypto, ke);
 }
 
 METHOD(keymat_t, create_nonce_gen, nonce_gen_t*,
@@ -183,50 +95,19 @@ METHOD(keymat_t, create_nonce_gen, nonce_gen_t*,
 }
 
 METHOD(keymat_v2_t, derive_ike_keys, bool,
-	private_tkm_keymat_t *this, proposal_t *proposal, diffie_hellman_t *dh,
+	private_tkm_keymat_t *this, proposal_t *proposal, key_exchange_t *ke,
 	chunk_t nonce_i, chunk_t nonce_r, ike_sa_id_t *id,
 	pseudo_random_function_t rekey_function, chunk_t rekey_skd)
 {
-	uint16_t enc_alg, int_alg, key_size;
 	uint64_t nc_id, spi_loc, spi_rem;
-	chunk_t *nonce, c_ai, c_ar, c_ei, c_er;
+	chunk_t *nonce;
 	tkm_diffie_hellman_t *tkm_dh;
 	dh_id_type dh_id;
 	nonce_type nonce_rem;
 	result_type res;
-	key_type sk_ai, sk_ar, sk_ei, sk_er;
-
-	/* Check encryption and integrity algorithms */
-	if (!proposal->get_algorithm(proposal, ENCRYPTION_ALGORITHM, &enc_alg,
-								 &key_size))
-	{
-		DBG1(DBG_IKE, "no %N selected", transform_type_names,
-			 ENCRYPTION_ALGORITHM);
-		return FALSE;
-	}
-	if (encryption_algorithm_is_aead(enc_alg))
-	{
-		DBG1(DBG_IKE, "AEAD algorithm %N not supported",
-			 encryption_algorithm_names, enc_alg);
-		return FALSE;
-	}
-	if (!proposal->get_algorithm(proposal, INTEGRITY_ALGORITHM, &int_alg, NULL))
-	{
-		DBG1(DBG_IKE, "no %N selected", transform_type_names,
-			 INTEGRITY_ALGORITHM);
-		return FALSE;
-	}
-	if (!(enc_alg == ENCR_AES_CBC && key_size == 256 &&
-		  int_alg == AUTH_HMAC_SHA2_512_256))
-	{
-		DBG1(DBG_IKE, "the TKM only supports aes256-sha512 at the moment, "
-			 "please update your configuration");
-		return FALSE;
-	}
-
-	DBG2(DBG_IKE, "using %N for encryption, %N for integrity",
-		 encryption_algorithm_names, enc_alg, integrity_algorithm_names,
-		 int_alg);
+	block_len_type block_len;
+	icv_len_type icv_len;
+	iv_len_type iv_len;
 
 	/* Acquire nonce context id */
 	nonce = this->initiator ? &nonce_i : &nonce_r;
@@ -238,7 +119,7 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 	}
 
 	/* Get DH context id */
-	tkm_dh = (tkm_diffie_hellman_t *)dh;
+	tkm_dh = (tkm_diffie_hellman_t *)ke;
 	dh_id = tkm_dh->get_id(tkm_dh);
 
 	if (this->initiator)
@@ -266,7 +147,7 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 			 "spi_rem: %llx)", nc_id, dh_id, spi_loc, spi_rem);
 		res = ike_isa_create(this->isa_ctx_id, this->ae_ctx_id, 1, dh_id, nc_id,
 							 nonce_rem, this->initiator, spi_loc, spi_rem,
-							 &sk_ai, &sk_ar, &sk_ei, &sk_er);
+							 &block_len, &icv_len, &iv_len);
 	}
 	else
 	{
@@ -291,8 +172,8 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 		this->ae_ctx_id = isa_info.ae_id;
 		res = ike_isa_create_child(this->isa_ctx_id, isa_info.parent_isa_id, 1,
 								   dh_id, nc_id, nonce_rem, this->initiator,
-								   spi_loc, spi_rem, &sk_ai, &sk_ar, &sk_ei,
-								   &sk_er);
+								   spi_loc, spi_rem, &block_len, &icv_len,
+								   &iv_len);
 		chunk_free(&rekey_skd);
 	}
 
@@ -302,25 +183,7 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 		return FALSE;
 	}
 
-	sequence_to_chunk(sk_ai.data, sk_ai.size, &c_ai);
-	sequence_to_chunk(sk_ar.data, sk_ar.size, &c_ar);
-	sequence_to_chunk(sk_ei.data, sk_ei.size, &c_ei);
-	sequence_to_chunk(sk_er.data, sk_er.size, &c_er);
-
-	aead_create_from_keys(&this->aead_in, &this->aead_out, &c_ai, &c_ar, &c_ei,
-						  &c_er, enc_alg, int_alg, key_size / 8,
-						  this->initiator);
-
-	chunk_clear(&c_ai);
-	chunk_clear(&c_ar);
-	chunk_clear(&c_ei);
-	chunk_clear(&c_er);
-
-	if (!this->aead_in || !this->aead_out)
-	{
-		DBG1(DBG_IKE, "could not initialize AEAD transforms");
-		return FALSE;
-	}
+	this->aead = tkm_aead_create(this->isa_ctx_id, block_len, icv_len, iv_len);
 
 	/* TODO: Add failure handler (see keymat_v2.c) */
 
@@ -335,16 +198,16 @@ METHOD(keymat_v2_t, derive_ike_keys, bool,
 }
 
 METHOD(keymat_v2_t, derive_child_keys, bool,
-	private_tkm_keymat_t *this, proposal_t *proposal, diffie_hellman_t *dh,
+	private_tkm_keymat_t *this, proposal_t *proposal, key_exchange_t *ke,
 	chunk_t nonce_i, chunk_t nonce_r, chunk_t *encr_i, chunk_t *integ_i,
 	chunk_t *encr_r, chunk_t *integ_r)
 {
 	esa_info_t *esa_info_i, *esa_info_r;
 	dh_id_type dh_id = 0;
 
-	if (dh)
+	if (ke)
 	{
-		dh_id = ((tkm_diffie_hellman_t *)dh)->get_id((tkm_diffie_hellman_t *)dh);
+		dh_id = ((tkm_diffie_hellman_t *)ke)->get_id((tkm_diffie_hellman_t *)ke);
 	}
 
 	INIT(esa_info_i,
@@ -380,7 +243,7 @@ METHOD(keymat_v2_t, derive_child_keys, bool,
 METHOD(keymat_t, get_aead, aead_t*,
 	private_tkm_keymat_t *this, bool in)
 {
-	return in ? this->aead_in : this->aead_out;
+	return this->aead;
 }
 
 METHOD(keymat_v2_t, get_auth_octets, bool,
@@ -474,8 +337,7 @@ METHOD(keymat_t, destroy, void,
 	}
 
 	DESTROY_IF(this->hash_algorithms);
-	DESTROY_IF(this->aead_in);
-	DESTROY_IF(this->aead_out);
+	DESTROY_IF(this->aead);
 	chunk_free(&this->auth_payload);
 	chunk_free(&this->other_init_msg);
 	free(this);
@@ -517,7 +379,7 @@ tkm_keymat_t *tkm_keymat_create(bool initiator)
 			.keymat_v2 = {
 				.keymat = {
 					.get_version = _get_version,
-					.create_dh = _create_dh,
+					.create_ke = _create_ke,
 					.create_nonce_gen = _create_nonce_gen,
 					.get_aead = _get_aead,
 					.destroy = _destroy,

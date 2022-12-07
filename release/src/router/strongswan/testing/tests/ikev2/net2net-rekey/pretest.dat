@@ -1,7 +1,7 @@
 moon::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
-sun::ipsec start
-moon::ipsec start
-sun::expect-connection net-net
-moon::expect-connection net-net
-moon::ipsec up net-net
+sun::systemctl start strongswan
+moon::systemctl start strongswan
+sun::expect-connection gw-gw
+moon::expect-connection gw-gw
+moon::swanctl --initiate --child net-net 2> /dev/null

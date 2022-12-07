@@ -1,0 +1,434 @@
+File canon_makernote_variant_1.jpg
+Byte order: Intel
+  Content 0: ifd=0
+    Entry 0: Make (ASCII)
+      Size, Comps: 6, 6
+      Value: Canon
+    Entry 1: Model (ASCII)
+      Size, Comps: 20, 20
+      Value: Canon PowerShot S70
+    Entry 2: Orientation (Short)
+      Size, Comps: 2, 1
+      Value: Right-top
+    Entry 3: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 180
+    Entry 4: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 180
+    Entry 5: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+    Entry 6: DateTime (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:10:10 16:42:32
+    Entry 7: YCbCrPositioning (Short)
+      Size, Comps: 2, 1
+      Value: Centered
+  Content 1: ifd=1
+    Entry 0: Compression (Short)
+      Size, Comps: 2, 1
+      Value: JPEG compression
+    Entry 1: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 180
+    Entry 2: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 180
+    Entry 3: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+  Content 2: ifd=2
+    Entry 0: ExposureTime (Rational)
+      Size, Comps: 8, 1
+      Value: 1 sec.
+    Entry 1: FNumber (Rational)
+      Size, Comps: 8, 1
+      Value: f/2.8
+    Entry 2: ExifVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: Exif Version 2.2
+    Entry 3: DateTimeOriginal (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:10:10 16:42:32
+    Entry 4: DateTimeDigitized (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:10:10 16:42:32
+    Entry 5: ComponentsConfiguration (Undefined)
+      Size, Comps: 4, 4
+      Value: Y Cb Cr -
+    Entry 6: CompressedBitsPerPixel (Rational)
+      Size, Comps: 8, 1
+      Value:  5
+    Entry 7: ShutterSpeedValue (SRational)
+      Size, Comps: 8, 1
+      Value: 0.00 EV (1 sec.)
+    Entry 8: ApertureValue (Rational)
+      Size, Comps: 8, 1
+      Value: 2.97 EV (f/2.8)
+    Entry 9: ExposureBiasValue (SRational)
+      Size, Comps: 8, 1
+      Value: 0.00 EV
+    Entry 10: MaxApertureValue (Rational)
+      Size, Comps: 8, 1
+      Value: 2.97 EV (f/2.8)
+    Entry 11: MeteringMode (Short)
+      Size, Comps: 2, 1
+      Value: Pattern
+    Entry 12: Flash (Short)
+      Size, Comps: 2, 1
+      Value: Flash did not fire, compulsory flash mode
+    Entry 13: FocalLength (Rational)
+      Size, Comps: 8, 1
+      Value: 5.8 mm
+    Entry 14: MakerNote (Undefined)
+      Size, Comps: 904, 904
+      Value: 904 bytes undefined data
+    Entry 15: UserComment (Undefined)
+      Size, Comps: 264, 264
+      Value: 
+    Entry 16: FlashpixVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: FlashPix Version 1.0
+    Entry 17: ColorSpace (Short)
+      Size, Comps: 2, 1
+      Value: sRGB
+    Entry 18: PixelXDimension (Short)
+      Size, Comps: 2, 1
+      Value: 640
+    Entry 19: PixelYDimension (Short)
+      Size, Comps: 2, 1
+      Value: 480
+    Entry 20: FocalPlaneXResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 2253.521
+    Entry 21: FocalPlaneYResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 2253.521
+    Entry 22: FocalPlaneResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+    Entry 23: SensingMethod (Short)
+      Size, Comps: 2, 1
+      Value: One-chip color area sensor
+    Entry 24: FileSource (Undefined)
+      Size, Comps: 1, 1
+      Value: DSC
+    Entry 25: CustomRendered (Short)
+      Size, Comps: 2, 1
+      Value: Normal process
+    Entry 26: ExposureMode (Short)
+      Size, Comps: 2, 1
+      Value: Auto exposure
+    Entry 27: WhiteBalance (Short)
+      Size, Comps: 2, 1
+      Value: Auto white balance
+    Entry 28: DigitalZoomRatio (Rational)
+      Size, Comps: 8, 1
+      Value: 1.0000
+    Entry 29: SceneCaptureType (Short)
+      Size, Comps: 2, 1
+      Value: Landscape
+  Content 3: ifd=3
+  Content 4: ifd=4
+    Entry 0: InteroperabilityIndex (ASCII)
+      Size, Comps: 4, 4
+      Value: R98
+    Entry 1: InteroperabilityVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: 0100
+    Entry 2: RelatedImageWidth (Short)
+      Size, Comps: 2, 1
+      Value: 640
+    Entry 3: RelatedImageLength (Short)
+      Size, Comps: 2, 1
+      Value: 480
+  MakerNote
+    Entry 0: 1, Macro Mode
+      Size: 6
+      Value: Normal
+    Entry 1: 1, Self-timer
+      Size: 3
+      Value: Off
+    Entry 2: 1, Quality
+      Size: 9
+      Value: Superfine
+    Entry 3: 1, Flash Mode
+      Size: 3
+      Value: Off
+    Entry 4: 1, Drive Mode
+      Size: 6
+      Value: Single
+    Entry 5: 1, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 6: 1, Focus Mode
+      Size: 6
+      Value: Single
+    Entry 7: 1, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 8: 1, Record Mode
+      Size: 4
+      Value: JPEG
+    Entry 9: 1, Image Size
+      Size: 5
+      Value: Small
+    Entry 10: 1, Easy Shooting Mode
+      Size: 9
+      Value: Landscape
+    Entry 11: 1, Digital Zoom
+      Size: 4
+      Value: None
+    Entry 12: 1, Contrast
+      Size: 6
+      Value: Normal
+    Entry 13: 1, Saturation
+      Size: 6
+      Value: Normal
+    Entry 14: 1, Sharpness
+      Size: 6
+      Value: Normal
+    Entry 15: 1, ISO
+      Size: 4
+      Value: Auto
+    Entry 16: 1, Metering Mode
+      Size: 10
+      Value: Evaluative
+    Entry 17: 1, Focus Range
+      Size: 4
+      Value: Auto
+    Entry 18: 1, AF Point
+      Size: 23
+      Value: Auto AF point selection
+    Entry 19: 1, Exposure Mode
+      Size: 13
+      Value: Easy shooting
+    Entry 20: 1, (unknown)
+      Size: 6
+      Value: 0x7fff
+    Entry 21: 1, Lens Type
+      Size: 6
+      Value: 0xffff
+    Entry 22: 1, Long Focal Length of Lens
+      Size: 3
+      Value: 662
+    Entry 23: 1, Short Focal Length of Lens
+      Size: 3
+      Value: 186
+    Entry 24: 1, Focal Units per mm
+      Size: 2
+      Value: 32
+    Entry 25: 1, Maximal Aperture
+      Size: 4
+      Value: 2.89
+    Entry 26: 1, Minimal Aperture
+      Size: 4
+      Value: 8.00
+    Entry 27: 1, Flash Activity
+      Size: 6
+      Value: 0xffff
+    Entry 28: 1, Flash Details
+      Size: 0
+      Value: 
+    Entry 29: 1, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 30: 1, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 31: 1, Focus Mode
+      Size: 6
+      Value: Single
+    Entry 32: 1, AE Setting
+      Size: 9
+      Value: Normal AE
+    Entry 33: 1, Image Stabilization
+      Size: 6
+      Value: 0xffff
+    Entry 34: 1, Display Aperture
+      Size: 4
+      Value: 0.00
+    Entry 35: 1, Zoom Source Width
+      Size: 4
+      Value: 3072
+    Entry 36: 1, Zoom Target Width
+      Size: 4
+      Value: 3072
+    Entry 37: 1, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 38: 1, Spot Metering Mode
+      Size: 6
+      Value: 0x0000
+    Entry 39: 1, Photo Effect
+      Size: 3
+      Value: Off
+    Entry 40: 1, Manual Flash Output
+      Size: 3
+      Value: Off
+    Entry 41: 1, Color Tone
+      Size: 6
+      Value: 0x7fff
+    Entry 42: 1, (unknown)
+      Size: 6
+      Value: 0x7fff
+    Entry 43: 1, (unknown)
+      Size: 6
+      Value: 0x0001
+    Entry 44: 1, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 45: 2, Focal Type
+      Size: 4
+      Value: Zoom
+    Entry 46: 2, Focal Length
+      Size: 3
+      Value: 186
+    Entry 47: 2, Focal Plane X Size
+      Size: 7
+      Value: 7.39 mm
+    Entry 48: 2, Focal Plane Y Size
+      Size: 7
+      Value: 5.54 mm
+    Entry 49: 3, (unknown)
+      Size: 8
+      Value: 0 0 0 0 
+    Entry 50: 4, Auto ISO
+      Size: 5
+      Value: 1.000
+    Entry 51: 4, Shot ISO
+      Size: 2
+      Value: 50
+    Entry 52: 4, Measured EV
+      Size: 8
+      Value: -9.94 EV
+    Entry 53: 4, Target Aperture
+      Size: 4
+      Value: 2.80
+    Entry 54: 4, Target Exposure Time
+      Size: 1
+      Value: 1
+    Entry 55: 4, Exposure Compensation
+      Size: 7
+      Value: 0.00 EV
+    Entry 56: 4, White Balance
+      Size: 4
+      Value: Auto
+    Entry 57: 4, Slow Shutter
+      Size: 3
+      Value: Off
+    Entry 58: 4, Sequence Number
+      Size: 1
+      Value: 0
+    Entry 59: 4, Optical Zoom Code
+      Size: 6
+      Value: 0x0000
+    Entry 60: 4, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 61: 4, Camera Temperature
+      Size: 6
+      Value: 0x0000
+    Entry 62: 4, Flash Guide Number
+      Size: 4
+      Value: 0.00
+    Entry 63: 4, AF Point
+      Size: 6
+      Value: 0x0000
+    Entry 64: 4, Flash Exposure Compensation
+      Size: 7
+      Value: 0.00 EV
+    Entry 65: 4, AE Bracketing
+      Size: 3
+      Value: Off
+    Entry 66: 4, AE Bracket Value
+      Size: 7
+      Value: 0.00 EV
+    Entry 67: 4, Control Mode
+      Size: 6
+      Value: 0x0001
+    Entry 68: 4, Focus Distance Upper
+      Size: 7
+      Value: 6553 mm
+    Entry 69: 4, Focus Distance Lower
+      Size: 4
+      Value: 0 mm
+    Entry 70: 4, F-Number
+      Size: 4
+      Value: 2.89
+    Entry 71: 4, Exposure Time
+      Size: 1
+      Value: 1
+    Entry 72: 4, Measured EV 2
+      Size: 6
+      Value: 0x0000
+    Entry 73: 4, Bulb Duration
+      Size: 6
+      Value: 0x0000
+    Entry 74: 4, (unknown)
+      Size: 6
+      Value: 0xffd0
+    Entry 75: 4, Camera Type
+      Size: 7
+      Value: Compact
+    Entry 76: 4, Auto Rotate
+      Size: 12
+      Value: Rotate 90 CW
+    Entry 77: 4, ND Filter
+      Size: 3
+      Value: Off
+    Entry 78: 4, Self-timer
+      Size: 3
+      Value: Off
+    Entry 79: 4, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 80: 4, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 81: 4, (unknown)
+      Size: 6
+      Value: 0x0000
+    Entry 82: 4, Manual Flash Output
+      Size: 3
+      Value: Off
+    Entry 83: 0, (unknown)
+      Size: 12
+      Value: 0 0 0 0 0 0 
+    Entry 84: 0, (unknown)
+      Size: 8
+      Value: 0 0 0 0 
+    Entry 85: 18, AFInfo
+      Size: 101
+      Value: 9 9 640 480 3072 230 553 41 64982 0 554 64982 0 554 64982 0 554 65492 65492 65492 0 0 0 44 44 44 0 0 
+    Entry 86: 19, ThumbnailValidArea
+      Size: 8
+      Value: 0 0 0 0 
+    Entry 87: 6, ImageType
+      Size: 22
+      Value: IMG:PowerShot S70 JPEG
+    Entry 88: 7, FirmwareVersion
+      Size: 21
+      Value: Firmware Version 1.01
+    Entry 89: 8, ImageNumber
+      Size: 8
+      Value: 123-4567
+    Entry 90: 9, OwnerName
+      Size: 0
+      Value: 
+    Entry 91: 16, ModelID
+      Size: 9
+      Value: 20447232 
+    Entry 92: 0, (unknown)
+      Size: 15
+      Value: 10 2 2 640 480 
+    Entry 93: 24, (unknown)
+      Size: 22
+      Value: 256 bytes unknown data
+    Entry 94: 25, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 95: 13, CameraInfo
+      Size: 118
+      Value: 72 9 512 512 512 512 512 512 512 512 512 65 0 0 65125 2 0 10 65504 65488 0 43 161 0 48 992 1024 0 0 0 0 0 0 0 192 351 

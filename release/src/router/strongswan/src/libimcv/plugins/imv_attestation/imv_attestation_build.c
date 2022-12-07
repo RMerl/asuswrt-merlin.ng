@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2011-2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2011-2020 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,6 +24,8 @@
 #include <tcg/pts/tcg_pts_attr_get_aik.h>
 #include <tcg/pts/tcg_pts_attr_req_func_comp_evid.h>
 #include <tcg/pts/tcg_pts_attr_gen_attest_evid.h>
+#include <generic/generic_attr_string.h>
+#include <ita/ita_attr.h>
 
 #include <utils/debug.h>
 
@@ -68,7 +71,7 @@ bool imv_attestation_build(imv_msg_t *out_msg, imv_state_t *state,
 			}
 
 			/* Send DH nonce finish attribute */
-			selected_algorithm = pts->get_meas_algorithm(pts);
+			selected_algorithm = pts->get_dh_hash_algorithm(pts);
 			if (!pts->get_my_public_value(pts, &initiator_value,
 										  &initiator_nonce))
 			{
@@ -138,6 +141,11 @@ bool imv_attestation_build(imv_msg_t *out_msg, imv_state_t *state,
 
 			if (attr)
 			{
+				/* Send Get Symlinks attribute */
+				out_msg->add_attribute(out_msg, generic_attr_string_create(
+							chunk_from_str("/"),
+							pen_type_create(PEN_ITA, ITA_ATTR_GET_SYMLINKS)));
+
 				/* Send Request Functional Component Evidence attribute */
 				out_msg->add_attribute(out_msg, attr);
 

@@ -444,6 +444,8 @@ static int truemotion1_decode_header(TrueMotion1Context *s)
     if (s->flags & FLAG_KEYFRAME) {
         /* no change bits specified for a keyframe; only index bytes */
         s->index_stream = s->mb_change_bits;
+        if (s->avctx->width * s->avctx->height / 2048 + header.header_size > s->size)
+            return AVERROR_INVALIDDATA;
     } else {
         /* one change bit per 4x4 block */
         s->index_stream = s->mb_change_bits +
@@ -489,10 +491,8 @@ static av_cold int truemotion1_decode_init(AVCodecContext *avctx)
     /* there is a vertical predictor for each pixel in a line; each vertical
      * predictor is 0 to start with */
     av_fast_malloc(&s->vert_pred, &s->vert_pred_size, s->avctx->width * sizeof(unsigned int));
-    if (!s->vert_pred) {
-        av_frame_free(&s->frame);
+    if (!s->vert_pred)
         return AVERROR(ENOMEM);
-    }
 
     return 0;
 }
@@ -882,7 +882,7 @@ static int truemotion1_decode_frame(AVCodecContext *avctx,
     if ((ret = truemotion1_decode_header(s)) < 0)
         return ret;
 
-    if ((ret = ff_reget_buffer(avctx, s->frame)) < 0)
+    if ((ret = ff_reget_buffer(avctx, s->frame, 0)) < 0)
         return ret;
 
     if (compression_types[s->compression].algorithm == ALGO_RGB24H) {
@@ -920,4 +920,5 @@ AVCodec ff_truemotion1_decoder = {
     .close          = truemotion1_decode_end,
     .decode         = truemotion1_decode_frame,
     .capabilities   = AV_CODEC_CAP_DR1,
+    .caps_internal  = FF_CODEC_CAP_INIT_CLEANUP,
 };

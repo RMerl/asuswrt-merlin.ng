@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012-2018 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -56,7 +57,7 @@ struct private_eap_radius_t {
 	/**
 	 * EAP vendor, if any
 	 */
-	uint32_t vendor;
+	pen_t vendor;
 
 	/**
 	 * EAP message identifier
@@ -383,7 +384,7 @@ static void process_filter_id(radius_message_t *msg)
 }
 
 /**
- * Handle Session-Timeout attribte and Interim updates
+ * Handle Session-Timeout attribute and Interim updates
  */
 static void process_timeout(radius_message_t *msg)
 {
@@ -502,7 +503,7 @@ static void add_unity_split_attribute(eap_radius_provider_t *provider,
 		}
 		writer->write_data(writer, net->get_address(net));
 		writer->write_data(writer, mask->get_address(mask));
-		padding = writer->skip(writer, 6); /* 6 bytes pdding */
+		padding = writer->skip(writer, 6); /* 6 bytes padding */
 		memset(padding.ptr, 0, padding.len);
 		mask->destroy(mask);
 		net->destroy(net);
@@ -716,7 +717,7 @@ METHOD(eap_method_t, process, status_t,
 }
 
 METHOD(eap_method_t, get_type, eap_type_t,
-	private_eap_radius_t *this, uint32_t *vendor)
+	private_eap_radius_t *this, pen_t *vendor)
 {
 	*vendor = this->vendor;
 	return this->type;
@@ -733,7 +734,9 @@ METHOD(eap_method_t, get_msk, status_t,
 		*out = msk;
 		return SUCCESS;
 	}
-	return FAILED;
+	/* we assume the selected method did not establish an MSK, if it failed
+	 * to establish one, process() would have failed */
+	return NOT_SUPPORTED;
 }
 
 METHOD(eap_method_t, get_identifier, uint8_t,

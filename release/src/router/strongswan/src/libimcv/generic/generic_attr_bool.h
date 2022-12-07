@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,7 +29,7 @@ typedef struct generic_attr_bool_t generic_attr_bool_t;
 
 /**
  * Class implementing a generic PA-TNC attribute containing a boolean status
- * value encoded as a 32 bit unsigned integer (0,1) in network order 
+ * value encoded as a 32 bit unsigned integer (0,1) in network order
  */
 struct generic_attr_bool_t {
 

@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,12 +30,12 @@ typedef enum {
 
 /**
  * Next Segment
- * see TCG IF-M Segmentation Specification
+ * see TCG IF-M Segmentation Specification Version 1.0 Rev. 5, 4 April 2016
  *
  *	                     1                   2				     3
  *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |C|   Reserved  |              Base Attribute ID                |
+ *  |C|   Reserved  |               Base Message ID                 |
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  */
 
@@ -74,9 +75,9 @@ struct private_tcg_seg_attr_next_seg_t {
 	bool cancel_flag;
 
 	/**
-	 * Base Attribute ID
+	 * Base Message ID
 	 */
-	uint32_t base_attr_id;
+	uint32_t base_msg_id;
 
 	/**
 	 * Reference count
@@ -120,7 +121,7 @@ METHOD(pa_tnc_attr_t, build, void,
 	writer = bio_writer_create(TCG_SEG_ATTR_NEXT_SEG_SIZE);
 	writer->write_uint8 (writer, this->cancel_flag ? NEXT_SEG_FLAG_CANCEL :
 													 NEXT_SEG_FLAG_NONE);
-	writer->write_uint24(writer, this->base_attr_id);
+	writer->write_uint24(writer, this->base_msg_id);
 
 	this->value = writer->extract_buf(writer);
 	this->length = this->value.len;
@@ -149,7 +150,7 @@ METHOD(pa_tnc_attr_t, process, status_t,
 	}
 	reader = bio_reader_create(this->value);
 	reader->read_uint8 (reader, &flags);
-	reader->read_uint24(reader, &this->base_attr_id);
+	reader->read_uint24(reader, &this->base_msg_id);
 	reader->destroy(reader);
 
 	this->cancel_flag = (flags & NEXT_SEG_FLAG_CANCEL);
@@ -180,10 +181,10 @@ METHOD(pa_tnc_attr_t, destroy, void,
 	}
 }
 
-METHOD(tcg_seg_attr_next_seg_t, get_base_attr_id, uint32_t,
+METHOD(tcg_seg_attr_next_seg_t, get_base_msg_id, uint32_t,
 	private_tcg_seg_attr_next_seg_t *this)
 {
-	return this->base_attr_id;
+	return this->base_msg_id;
 }
 
 METHOD(tcg_seg_attr_next_seg_t, get_cancel_flag, bool,
@@ -195,7 +196,7 @@ METHOD(tcg_seg_attr_next_seg_t, get_cancel_flag, bool,
 /**
  * Described in header.
  */
-pa_tnc_attr_t* tcg_seg_attr_next_seg_create(uint32_t base_attr_id, bool cancel)
+pa_tnc_attr_t* tcg_seg_attr_next_seg_create(uint32_t base_msg_id, bool cancel)
 {
 	private_tcg_seg_attr_next_seg_t *this;
 
@@ -212,11 +213,11 @@ pa_tnc_attr_t* tcg_seg_attr_next_seg_create(uint32_t base_attr_id, bool cancel)
 				.get_ref = _get_ref,
 				.destroy = _destroy,
 			},
-			.get_base_attr_id = _get_base_attr_id,
+			.get_base_msg_id = _get_base_msg_id,
 			.get_cancel_flag = _get_cancel_flag,
 		},
-		.type = { PEN_TCG, TCG_SEG_NEXT_SEG_REQ },
-		.base_attr_id = base_attr_id,
+		.type = { PEN_TCG, TCG_SEG_NEXT_SEGMENT },
+		.base_msg_id = base_msg_id,
 		.cancel_flag = cancel,
 		.ref = 1,
 	);
@@ -245,10 +246,10 @@ pa_tnc_attr_t *tcg_seg_attr_next_seg_create_from_data(size_t length,
 				.get_ref = _get_ref,
 				.destroy = _destroy,
 			},
-			.get_base_attr_id = _get_base_attr_id,
+			.get_base_msg_id = _get_base_msg_id,
 			.get_cancel_flag = _get_cancel_flag,
 		},
-		.type = { PEN_TCG, TCG_SEG_NEXT_SEG_REQ },
+		.type = { PEN_TCG, TCG_SEG_NEXT_SEGMENT },
 		.length = length,
 		.value = chunk_clone(data),
 		.ref = 1,

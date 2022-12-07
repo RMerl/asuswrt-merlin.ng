@@ -30,11 +30,13 @@
 #include "libavutil/internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/channel_layout.h"
+#include "libavutil/mem_internal.h"
+#include "libavutil/thread.h"
 #include "get_bits.h"
 #include "internal.h"
 #include "libavutil/crc.h"
 #include "parser.h"
-#include "mlp_parser.h"
+#include "mlp_parse.h"
 #include "mlpdsp.h"
 #include "mlp.h"
 #include "config.h"
@@ -205,16 +207,13 @@ static VLC huff_vlc[3];
 
 static av_cold void init_static(void)
 {
-    if (!huff_vlc[0].bits) {
-        INIT_VLC_STATIC(&huff_vlc[0], VLC_BITS, 18,
-                    &ff_mlp_huffman_tables[0][0][1], 2, 1,
-                    &ff_mlp_huffman_tables[0][0][0], 2, 1, VLC_STATIC_SIZE);
-        INIT_VLC_STATIC(&huff_vlc[1], VLC_BITS, 16,
-                    &ff_mlp_huffman_tables[1][0][1], 2, 1,
-                    &ff_mlp_huffman_tables[1][0][0], 2, 1, VLC_STATIC_SIZE);
-        INIT_VLC_STATIC(&huff_vlc[2], VLC_BITS, 15,
-                    &ff_mlp_huffman_tables[2][0][1], 2, 1,
-                    &ff_mlp_huffman_tables[2][0][0], 2, 1, VLC_STATIC_SIZE);
+    for (int i = 0; i < 3; i++) {
+        static VLC_TYPE vlc_buf[3 * VLC_STATIC_SIZE][2];
+        huff_vlc[i].table           = &vlc_buf[i * VLC_STATIC_SIZE];
+        huff_vlc[i].table_allocated = VLC_STATIC_SIZE;
+        init_vlc(&huff_vlc[i], VLC_BITS, 18,
+                 &ff_mlp_huffman_tables[i][0][1], 2, 1,
+                 &ff_mlp_huffman_tables[i][0][0], 2, 1, INIT_VLC_USE_NEW_STATIC);
     }
 
     ff_mlp_init_crc();
@@ -266,7 +265,7 @@ static inline int read_huff_channels(MLPDecodeContext *m, GetBitContext *gbp,
             return AVERROR_INVALIDDATA;
 
         if (lsb_bits > 0)
-            result = (result << lsb_bits) + get_bits(gbp, lsb_bits);
+            result = (result << lsb_bits) + get_bits_long(gbp, lsb_bits);
 
         result  += cp->sign_huff_offset;
         result *= 1 << quant_step_size;
@@ -279,14 +278,16 @@ static inline int read_huff_channels(MLPDecodeContext *m, GetBitContext *gbp,
 
 static av_cold int mlp_decode_init(AVCodecContext *avctx)
 {
+    static AVOnce init_static_once = AV_ONCE_INIT;
     MLPDecodeContext *m = avctx->priv_data;
     int substr;
 
-    init_static();
     m->avctx = avctx;
     for (substr = 0; substr < MAX_SUBSTREAMS; substr++)
         m->substream[substr].lossless_check_data = 0xffffffff;
     ff_mlpdsp_init(&m->dsp);
+
+    ff_thread_once(&init_static_once, init_static);
 
     return 0;
 }
@@ -829,7 +830,7 @@ static int read_channel_params(MLPDecodeContext *m, unsigned int substr,
     cp->codebook  = get_bits(gbp, 2);
     cp->huff_lsbs = get_bits(gbp, 5);
 
-    if (cp->huff_lsbs > 24) {
+    if (cp->codebook > 0 && cp->huff_lsbs > 24) {
         av_log(m->avctx, AV_LOG_ERROR, "Invalid huff_lsbs.\n");
         cp->huff_lsbs = 0;
         return AVERROR_INVALIDDATA;
@@ -1195,7 +1196,7 @@ static int read_access_unit(AVCodecContext *avctx, void* data,
         }
 
         if (length < header_size + substr_header_size) {
-            av_log(m->avctx, AV_LOG_ERROR, "Insuffient data for headers\n");
+            av_log(m->avctx, AV_LOG_ERROR, "Insufficient data for headers\n");
             goto error;
         }
 
@@ -1338,7 +1339,8 @@ AVCodec ff_mlp_decoder = {
     .priv_data_size = sizeof(MLPDecodeContext),
     .init           = mlp_decode_init,
     .decode         = read_access_unit,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif
 #if CONFIG_TRUEHD_DECODER
@@ -1350,6 +1352,7 @@ AVCodec ff_truehd_decoder = {
     .priv_data_size = sizeof(MLPDecodeContext),
     .init           = mlp_decode_init,
     .decode         = read_access_unit,
-    .capabilities   = AV_CODEC_CAP_DR1,
+    .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_CHANNEL_CONF,
+    .caps_internal  = FF_CODEC_CAP_INIT_THREADSAFE,
 };
 #endif /* CONFIG_TRUEHD_DECODER */

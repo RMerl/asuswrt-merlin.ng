@@ -26,6 +26,7 @@
  * @sa http://wiki.multimedia.cx/index.php?title=Vivo
  */
 
+#include "libavutil/avstring.h"
 #include "libavutil/parseutils.h"
 #include "avformat.h"
 #include "internal.h"
@@ -36,11 +37,12 @@ typedef struct VivoContext {
     int type;
     int sequence;
     int length;
+    int duration;
 
     uint8_t  text[1024 + 1];
 } VivoContext;
 
-static int vivo_probe(AVProbeData *p)
+static int vivo_probe(const AVProbeData *p)
 {
     const unsigned char *buf = p->buf;
     unsigned c, length = 0;
@@ -59,9 +61,10 @@ static int vivo_probe(AVProbeData *p)
     if (c & 0x80 || length > 1024 || length < 21)
         return 0;
 
-    if (memcmp(buf, "\r\nVersion:Vivo/", 15))
+    buf += 2;
+    if (memcmp(buf, "Version:Vivo/", 13))
         return 0;
-    buf += 15;
+    buf += 13;
 
     if (*buf < '0' || *buf > '2')
         return 0;
@@ -118,7 +121,7 @@ static int vivo_get_packet_header(AVFormatContext *s)
 static int vivo_read_header(AVFormatContext *s)
 {
     VivoContext *vivo = s->priv_data;
-    AVRational fps = { 1, 25};
+    AVRational fps = { 0 };
     AVStream *ast, *vst;
     unsigned char *line, *line_end, *key, *value;
     long value_int;
@@ -166,7 +169,7 @@ static int vivo_read_header(AVFormatContext *s)
             value = strchr(key, ':');
             if (!value) {
                 av_log(s, AV_LOG_WARNING, "missing colon in key:value pair '%s'\n",
-                       value);
+                       key);
                 continue;
             }
 
@@ -204,17 +207,21 @@ static int vivo_read_header(AVFormatContext *s)
                     return AVERROR_INVALIDDATA;
                 value_used = 1;
             } else if (!strcmp(key, "FPS")) {
-                AVRational tmp;
+                double d;
+                if (av_sscanf(value, "%f", &d) != 1)
+                    return AVERROR_INVALIDDATA;
 
                 value_used = 1;
-                if (!av_parse_ratio(&tmp, value, 10000, AV_LOG_WARNING, s))
-                    fps = av_inv_q(tmp);
+                if (!fps.num && !fps.den)
+                    fps = av_inv_q(av_d2q(d, 10000));
             }
 
             if (!value_used)
                 av_dict_set(&s->metadata, key, value, 0);
         }
     }
+    if (!fps.num || !fps.den)
+        fps = (AVRational){ 1, 25 };
 
     avpriv_set_pts_info(ast, 64, 1, ast->codecpar->sample_rate);
     avpriv_set_pts_info(vst, 64, fps.num, fps.den);
@@ -231,6 +238,12 @@ static int vivo_read_header(AVFormatContext *s)
         ast->codecpar->bits_per_coded_sample = 8;
         ast->codecpar->block_align = 24;
         ast->codecpar->bit_rate = 6400;
+    } else {
+        ast->codecpar->codec_id = AV_CODEC_ID_SIREN;
+        ast->codecpar->bits_per_coded_sample = 16;
+        ast->codecpar->block_align = 40;
+        ast->codecpar->bit_rate = 6400;
+        vivo->duration = 320;
     }
 
     ast->start_time        = 0;
@@ -246,7 +259,7 @@ static int vivo_read_packet(AVFormatContext *s, AVPacket *pkt)
     VivoContext *vivo = s->priv_data;
     AVIOContext *pb = s->pb;
     unsigned old_sequence = vivo->sequence, old_type = vivo->type;
-    int stream_index, ret = 0;
+    int stream_index, duration, ret = 0;
 
 restart:
 
@@ -262,10 +275,12 @@ restart:
     case 1:
     case 2: // video
         stream_index = 0;
+        duration = 1;
         break;
     case 3:
     case 4: // audio
         stream_index = 1;
+        duration = vivo->duration;
         break;
     default:
         av_log(s, AV_LOG_ERROR, "unknown packet type %d\n", vivo->type);
@@ -273,32 +288,29 @@ restart:
     }
 
     if ((ret = av_get_packet(pb, pkt, vivo->length)) < 0)
-        goto fail;
+        return ret;
 
     // get next packet header
     if ((ret = vivo_get_packet_header(s)) < 0)
-        goto fail;
+        return ret;
 
     while (vivo->sequence == old_sequence &&
            (((vivo->type - 1) >> 1) == ((old_type - 1) >> 1))) {
         if (avio_feof(pb)) {
-            ret = AVERROR_EOF;
-            break;
+            return AVERROR_EOF;
         }
 
         if ((ret = av_append_packet(pb, pkt, vivo->length)) < 0)
-            break;
+            return ret;
 
         // get next packet header
         if ((ret = vivo_get_packet_header(s)) < 0)
-            break;
+            return ret;
     }
 
     pkt->stream_index = stream_index;
+    pkt->duration = duration;
 
-fail:
-    if (ret < 0)
-        av_packet_unref(pkt);
     return ret;
 }
 

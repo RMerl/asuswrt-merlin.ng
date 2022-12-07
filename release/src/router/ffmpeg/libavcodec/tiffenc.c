@@ -421,7 +421,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
             if (s->compr == TIFF_LZW) {
                 ff_lzw_encode_init(s->lzws, ptr,
                                    s->buf_size - (*s->buf - s->buf_start),
-                                   12, FF_LZW_TIFF, put_bits);
+                                   12, FF_LZW_TIFF, 0);
             }
             s->strip_offsets[i / s->rps] = ptr - pkt->data;
         }
@@ -440,7 +440,7 @@ static int encode_frame(AVCodecContext *avctx, AVPacket *pkt,
         ptr                     += ret;
         if (s->compr == TIFF_LZW &&
             (i == s->height - 1 || i % s->rps == s->rps - 1)) {
-            ret = ff_lzw_encode_flush(s->lzws, flush_put_bits);
+            ret = ff_lzw_encode_flush(s->lzws);
             s->strip_sizes[(i / s->rps)] += ret;
             ptr                          += ret;
         }
@@ -582,7 +582,7 @@ AVCodec ff_tiff_encoder = {
     .priv_data_size = sizeof(TiffEncoderContext),
     .init           = encode_init,
     .close          = encode_close,
-    .capabilities   = AV_CODEC_CAP_FRAME_THREADS | AV_CODEC_CAP_INTRA_ONLY,
+    .capabilities   = AV_CODEC_CAP_FRAME_THREADS,
     .encode2        = encode_frame,
     .pix_fmts       = (const enum AVPixelFormat[]) {
         AV_PIX_FMT_RGB24, AV_PIX_FMT_RGB48LE, AV_PIX_FMT_PAL8,

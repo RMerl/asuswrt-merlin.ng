@@ -1,5 +1,5 @@
 /*
- * Copyright (c) 2015 Rodger Combs
+ * Copyright (c) 2015 rcombs
  *
  * This file is part of FFmpeg.
  *
@@ -251,8 +251,7 @@ static int tls_close(URLContext *h)
     }
     if (c->ca_array)
         CFRelease(c->ca_array);
-    if (c->tls_shared.tcp)
-        ffurl_close(c->tls_shared.tcp);
+    ffurl_closep(&c->tls_shared.tcp);
     return 0;
 }
 
@@ -397,6 +396,12 @@ static int tls_get_file_handle(URLContext *h)
     return ffurl_get_file_handle(c->tls_shared.tcp);
 }
 
+static int tls_get_short_seek(URLContext *h)
+{
+    TLSContext *s = h->priv_data;
+    return ffurl_get_short_seek(s->tls_shared.tcp);
+}
+
 static const AVOption options[] = {
     TLS_COMMON_OPTIONS(TLSContext, tls_shared),
     { NULL }
@@ -416,6 +421,7 @@ const URLProtocol ff_tls_protocol = {
     .url_write      = tls_write,
     .url_close      = tls_close,
     .url_get_file_handle = tls_get_file_handle,
+    .url_get_short_seek  = tls_get_short_seek,
     .priv_data_size = sizeof(TLSContext),
     .flags          = URL_PROTOCOL_FLAG_NETWORK,
     .priv_data_class = &tls_class,

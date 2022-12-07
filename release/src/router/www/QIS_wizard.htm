@@ -85,7 +85,7 @@
 <script>
 var isFirst = ('<% nvram_get("x_Setting"); %>' == '1') ? false : true;
 var header_info = [<% get_header_info(); %>][0];
-var ROUTERHOSTNAME = '<% nvram_get("local_domain"); %>';
+var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
 var chdom = function(){window.location.href=domainNameUrl};
 (function(){

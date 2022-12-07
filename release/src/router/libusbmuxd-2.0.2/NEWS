@@ -1,0 +1,76 @@
+Version 2.0.2
+~~~~~~~~~~~~~
+
+* Changes:
+  - Fix compiler warnings
+  - Handle USB and network devices with new options in tools
+  - Make connecting sockets non-blocking
+  - Fix win32 build
+  - Switch from concurrent threads to loop with select()
+  - Allow to specify source address for listening socket in iproxy
+  - Allow to map multiple ports in iproxy
+  - Fix crash when no UDID is provided
+  - Add man pages for iproxy and inetcat tools
+  - Improve `socket_create()` with proper use of getaddrinfo
+  - Allow proper listening on localhost for IPv6 and IPv4 in iproxy
+  - Bump dependency to libplist 2.2.0
+  - Add new "--version" argument to output version information to tools
+  - Improve README.md with project description, installation, contributing and
+    usage sections
+  - Rename library and all related files by adding an API version resulting
+    in "libusbmuxd-2.0"
+
+Version 2.0.1
+~~~~~~~~~~~~~
+
+* Changes:
+  - Rename 'icat' tool to 'inetcat' due to name conflict with sleuthkit's icat
+
+Version 2.0.0
+~~~~~~~~~~~~~
+
+* Changes:
+  - Add proper support for USB and network (WiFi sync) devices reported by usbmuxd
+  - Add new usbmuxd_events_subscribe/unsubscribe functions with a context so it can be used in different threads
+  - Add new tool 'icat'
+  - Lots of bug fixes and other improvements
+
+Version 1.0.10
+~~~~~~~~~~~~~~
+
+* Changes:
+  - Retry to connect to usbmuxd socket if first attempt failed (Linux/inotify)
+  - Avoid exporting non-public symbols
+  - Allow multiple connections to iproxy listen port
+  - Add ability to target device by UDID to iproxy
+  - Remove outdated/unmaintained Python and sftp examples
+  - Update README and rename license to more generic COPYING
+  - Rename header guards according to C++ standard
+  - Fix a few crashes related to using old usbmuxd daemon and broken pair
+    records
+  - Fix out of tree build
+  - Fix leaking socket handles by properly closing them
+  - Check for validity of socket file descriptor
+  - Properly handle segmented send/receive situations to improve reliability
+
+Version 1.0.9
+~~~~~~~~~~~~~
+
+* Changes:
+  - Avoid SIGPIPE where possible
+  - Plugged several memory leaks and invalid frees
+  - Fixed concurrency issues caused by tag mismatch
+  - Added new interface functions for pair record management via usbmuxd:
+    - usbmuxd_read_pair_record()
+    - usbmuxd_save_pair_record()
+    - usbmuxd_delete_pair_record()
+    - usbmuxd_read_buid()
+  - Made libplist dependency (and thus protocol v1 support) mandatory
+  - Improved usbmuxd_get_device_list() with new ListDevices usbmuxd command
+  - Fix various memory leaks
+  - Add libusbmuxd_set_use_inotify() to control inotify support (Linux)
+  - Add libusbmuxd_set_debug_level() to enable debugging
+  - Fixed WIN32 (MinGW) build
+
+This is the first release after the usbmuxd/libusbmuxd project split.
+

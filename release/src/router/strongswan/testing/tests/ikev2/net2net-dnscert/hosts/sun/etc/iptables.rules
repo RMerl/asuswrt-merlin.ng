@@ -25,4 +25,8 @@
 -A INPUT  -i eth0 -p udp --sport 53 -s PH_IP_WINNETOU -j ACCEPT
 -A OUTPUT -o eth0 -p udp --dport 53 -d PH_IP_WINNETOU -j ACCEPT
 
+# allow DNSSEC fetch from winnetou via TCP
+-A INPUT  -i eth0 -p tcp --sport 53 -s PH_IP_WINNETOU -j ACCEPT
+-A OUTPUT -o eth0 -p tcp --dport 53 -d PH_IP_WINNETOU -j ACCEPT
+
 COMMIT

@@ -26,7 +26,7 @@ echo "0.commonName_value=$LANIP" >> $OPENSSL_CONF
 echo "0.organizationName=O" >> $OPENSSL_CONF
 echo "0.organizationName_value=$(uname -o)" >> $OPENSSL_CONF
 echo "0.emailAddress=E" >> $OPENSSL_CONF
-echo "0.emailAddress_value=admin@router.asus.com" >> $OPENSSL_CONF
+echo "0.emailAddress_value=admin@www.asusrouter.com" >> $OPENSSL_CONF
 
 # Required extension
 sed -i "/\[ v3_ca \]/aextendedKeyUsage = serverAuth" $OPENSSL_CONF
@@ -43,7 +43,7 @@ echo "DNS.1 = $LANIP" >> $OPENSSL_CONF # For broken clients like IE
 I=$(($I + 1))
 
 # DUT
-echo "DNS.$I = router.asus.com" >> $OPENSSL_CONF
+echo "DNS.$I = www.asusrouter.com" >> $OPENSSL_CONF
 I=$(($I + 1))
 
 # User-defined SANs (if we have any)

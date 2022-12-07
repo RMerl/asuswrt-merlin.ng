@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2008-2011 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
- * Copyright (C) 2011 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -117,7 +117,7 @@ struct fetcher_t {
 	 *
 	 * The fetcher returns NOT_SUPPORTED to indicate that it is uncappable
 	 * to handle such URLs. Other return values indicate a failure, and
-	 * fetching of that URL gets cancelled.
+	 * fetching of that URL gets canceled.
 	 * If no FETCH_CALLBACK function is set as option, userdata must be
 	 * a chunk_t*. This chunk gets allocated, accumulated data using the
 	 * fetcher_default_callback() function.

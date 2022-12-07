@@ -951,13 +951,14 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;BUILDING_LIBCURL;DEBUGBUILD;USE_WOLFSSL;USE_IPV6;WOLFSSL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1018,13 +1019,14 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;BUILDING_LIBCURL;DEBUGBUILD;USE_WOLFSSL;USE_IPV6;WOLFSSL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1084,12 +1086,13 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;BUILDING_LIBCURL;USE_WOLFSSL;USE_IPV6;WOLFSSL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1149,12 +1152,13 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;BUILDING_LIBCURL;USE_WOLFSSL;USE_IPV6;WOLFSSL_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1193,13 +1197,14 @@
   <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='LIB Debug - LIB wolfSSL|Win32'">
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;BUILDING_LIBCURL;DEBUGBUILD;CURL_STATICLIB;USE_WOLFSSL;USE_IPV6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1239,13 +1244,14 @@
     </Midl>
     <ClCompile>
       <Optimization>Disabled</Optimization>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>_DEBUG;BUILDING_LIBCURL;DEBUGBUILD;CURL_STATICLIB;USE_WOLFSSL;USE_IPV6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <MinimalRebuild>true</MinimalRebuild>
       <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
       <RuntimeLibrary>MultiThreadedDebugDLL</RuntimeLibrary>
       <WarningLevel>Level4</WarningLevel>
       <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1280,12 +1286,13 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;BUILDING_LIBCURL;CURL_STATICLIB;USE_WOLFSSL;USE_IPV6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -1326,12 +1333,13 @@
     <ClCompile>
       <Optimization>MaxSpeed</Optimization>
       <InlineFunctionExpansion>OnlyExplicitInline</InlineFunctionExpansion>
-      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\include;..\..\..\..\lib;..\..\..\..\..\wolfssl;..\..\..\..\..\wolfssl\wolfssl;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
       <PreprocessorDefinitions>NDEBUG;BUILDING_LIBCURL;CURL_STATICLIB;USE_WOLFSSL;USE_IPV6;%(PreprocessorDefinitions)</PreprocessorDefinitions>
       <StringPooling>true</StringPooling>
       <RuntimeLibrary>MultiThreadedDLL</RuntimeLibrary>
       <FunctionLevelLinking>true</FunctionLevelLinking>
       <WarningLevel>Level4</WarningLevel>
+      <DisableSpecificWarnings>4214</DisableSpecificWarnings>
     </ClCompile>
     <ResourceCompile>
       <PreprocessorDefinitions>NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
@@ -2418,16 +2426,18 @@
     <ClCompile Include="..\..\..\..\lib\escape.c" />
     <ClCompile Include="..\..\..\..\lib\file.c" />
     <ClCompile Include="..\..\..\..\lib\fileinfo.c" />
+    <ClCompile Include="..\..\..\..\lib\fopen.c" />
     <ClCompile Include="..\..\..\..\lib\formdata.c" />
     <ClCompile Include="..\..\..\..\lib\ftp.c" />
     <ClCompile Include="..\..\..\..\lib\ftplistparser.c" />
     <ClCompile Include="..\..\..\..\lib\getenv.c" />
     <ClCompile Include="..\..\..\..\lib\getinfo.c" />
     <ClCompile Include="..\..\..\..\lib\gopher.c" />
+    <ClCompile Include="..\..\..\..\lib\h2h3.c" />
     <ClCompile Include="..\..\..\..\lib\hash.c" />
+    <ClCompile Include="..\..\..\..\lib\headers.c" />
     <ClCompile Include="..\..\..\..\lib\hmac.c" />
     <ClCompile Include="..\..\..\..\lib\hostasyn.c" />
-    <ClCompile Include="..\..\..\..\lib\hostcheck.c" />
     <ClCompile Include="..\..\..\..\lib\hostip4.c" />
     <ClCompile Include="..\..\..\..\lib\hostip6.c" />
     <ClCompile Include="..\..\..\..\lib\hostip.c" />
@@ -2457,7 +2467,6 @@
     <ClCompile Include="..\..\..\..\lib\mqtt.c" />
     <ClCompile Include="..\..\..\..\lib\multi.c" />
     <ClCompile Include="..\..\..\..\lib\netrc.c" />
-    <ClCompile Include="..\..\..\..\lib\non-ascii.c" />
     <ClCompile Include="..\..\..\..\lib\nonblock.c" />
     <ClCompile Include="..\..\..\..\lib\openldap.c" />
     <ClCompile Include="..\..\..\..\lib\parsedate.c" />
@@ -2490,6 +2499,7 @@
     <ClCompile Include="..\..\..\..\lib\system_win32.c" />
     <ClCompile Include="..\..\..\..\lib\telnet.c" />
     <ClCompile Include="..\..\..\..\lib\tftp.c" />
+    <ClCompile Include="..\..\..\..\lib\timediff.c" />
     <ClCompile Include="..\..\..\..\lib\timeval.c" />
     <ClCompile Include="..\..\..\..\lib\transfer.c" />
     <ClCompile Include="..\..\..\..\lib\urlapi.c" />
@@ -2498,7 +2508,6 @@
     <ClCompile Include="..\..\..\..\lib\version_win32.c" />
     <ClCompile Include="..\..\..\..\lib\warnless.c" />
     <ClCompile Include="..\..\..\..\lib\wildcard.c" />
-    <ClCompile Include="..\..\..\..\lib\x509asn1.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\cleartext.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\cram.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\digest.c" />
@@ -2512,6 +2521,7 @@
     <ClCompile Include="..\..\..\..\lib\vauth\spnego_gssapi.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\spnego_sspi.c" />
     <ClCompile Include="..\..\..\..\lib\vauth\vauth.c" />
+    <ClCompile Include="..\..\..\..\lib\vquic\msh3.c" />
     <ClCompile Include="..\..\..\..\lib\vquic\ngtcp2.c" />
     <ClCompile Include="..\..\..\..\lib\vquic\quiche.c" />
     <ClCompile Include="..\..\..\..\lib\vquic\vquic.c" />
@@ -2521,10 +2531,10 @@
     <ClCompile Include="..\..\..\..\lib\vtls\bearssl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gskit.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\gtls.c" />
+    <ClCompile Include="..\..\..\..\lib\vtls\hostcheck.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\keylog.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mbedtls.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\mbedtls_threadlock.c" />
-    <ClCompile Include="..\..\..\..\lib\vtls\mesalink.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\nss.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\openssl.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\rustls.c" />
@@ -2533,6 +2543,7 @@
     <ClCompile Include="..\..\..\..\lib\vtls\sectransp.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\vtls.c" />
     <ClCompile Include="..\..\..\..\lib\vtls\wolfssl.c" />
+    <ClCompile Include="..\..\..\..\lib\vtls\x509asn1.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\lib\altsvc.h" />
@@ -2581,17 +2592,20 @@
     <ClInclude Include="..\..\..\..\lib\dotdot.h" />
     <ClInclude Include="..\..\..\..\lib\dynbuf.h" />
     <ClInclude Include="..\..\..\..\lib\easyif.h" />
+    <ClInclude Include="..\..\..\..\lib\easy_lock.h" />
     <ClInclude Include="..\..\..\..\lib\easyoptions.h" />
     <ClInclude Include="..\..\..\..\lib\escape.h" />
     <ClInclude Include="..\..\..\..\lib\file.h" />
     <ClInclude Include="..\..\..\..\lib\fileinfo.h" />
+    <ClInclude Include="..\..\..\..\lib\fopen.h" />
     <ClInclude Include="..\..\..\..\lib\formdata.h" />
     <ClInclude Include="..\..\..\..\lib\ftp.h" />
     <ClInclude Include="..\..\..\..\lib\ftplistparser.h" />
     <ClInclude Include="..\..\..\..\lib\getinfo.h" />
     <ClInclude Include="..\..\..\..\lib\gopher.h" />
+    <ClInclude Include="..\..\..\..\lib\h2h3.h" />
     <ClInclude Include="..\..\..\..\lib\hash.h" />
-    <ClInclude Include="..\..\..\..\lib\hostcheck.h" />
+    <ClInclude Include="..\..\..\..\lib\headers.h" />
     <ClInclude Include="..\..\..\..\lib\hostip.h" />
     <ClInclude Include="..\..\..\..\lib\hsts.h" />
     <ClInclude Include="..\..\..\..\lib\http2.h" />
@@ -2613,7 +2627,6 @@
     <ClInclude Include="..\..\..\..\lib\multihandle.h" />
     <ClInclude Include="..\..\..\..\lib\multiif.h" />
     <ClInclude Include="..\..\..\..\lib\netrc.h" />
-    <ClInclude Include="..\..\..\..\lib\non-ascii.h" />
     <ClInclude Include="..\..\..\..\lib\nonblock.h" />
     <ClInclude Include="..\..\..\..\lib\parsedate.h" />
     <ClInclude Include="..\..\..\..\lib\pingpong.h" />
@@ -2646,6 +2659,7 @@
     <ClInclude Include="..\..\..\..\lib\system_win32.h" />
     <ClInclude Include="..\..\..\..\lib\telnet.h" />
     <ClInclude Include="..\..\..\..\lib\tftp.h" />
+    <ClInclude Include="..\..\..\..\lib\timediff.h" />
     <ClInclude Include="..\..\..\..\lib\timeval.h" />
     <ClInclude Include="..\..\..\..\lib\transfer.h" />
     <ClInclude Include="..\..\..\..\lib\urlapi-int.h" />
@@ -2654,10 +2668,10 @@
     <ClInclude Include="..\..\..\..\lib\version_win32.h" />
     <ClInclude Include="..\..\..\..\lib\warnless.h" />
     <ClInclude Include="..\..\..\..\lib\wildcard.h" />
-    <ClInclude Include="..\..\..\..\lib\x509asn1.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\digest.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\ntlm.h" />
     <ClInclude Include="..\..\..\..\lib\vauth\vauth.h" />
+    <ClInclude Include="..\..\..\..\lib\vquic\msh3.h" />
     <ClInclude Include="..\..\..\..\lib\vquic\ngtcp2.h" />
     <ClInclude Include="..\..\..\..\lib\vquic\quiche.h" />
     <ClInclude Include="..\..\..\..\lib\vquic\vquic.h" />
@@ -2665,10 +2679,10 @@
     <ClInclude Include="..\..\..\..\lib\vtls\bearssl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gskit.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\gtls.h" />
+    <ClInclude Include="..\..\..\..\lib\vtls\hostcheck.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\keylog.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mbedtls.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\mbedtls_threadlock.h" />
-    <ClInclude Include="..\..\..\..\lib\vtls\mesalink.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\nssg.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\openssl.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\rustls.h" />
@@ -2676,6 +2690,7 @@
     <ClInclude Include="..\..\..\..\lib\vtls\sectransp.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\vtls.h" />
     <ClInclude Include="..\..\..\..\lib\vtls\wolfssl.h" />
+    <ClInclude Include="..\..\..\..\lib\vtls\x509asn1.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\..\lib\libcurl.rc" />

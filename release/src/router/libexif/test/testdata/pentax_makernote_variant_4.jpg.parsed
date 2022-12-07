@@ -1,0 +1,629 @@
+File pentax_makernote_variant_4.jpg
+Byte order: Motorola
+  Content 0: ifd=0
+    Entry 0: Make (ASCII)
+      Size, Comps: 24, 24
+      Value: CASIO COMPUTER CO.,LTD.
+    Entry 1: Model (ASCII)
+      Size, Comps: 12, 12
+      Value: EX-S12     
+    Entry 2: Orientation (Short)
+      Size, Comps: 2, 1
+      Value: Top-left
+    Entry 3: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 4: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 5: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+    Entry 6: Software (ASCII)
+      Size, Comps: 18, 18
+      Value: 1.01             
+    Entry 7: DateTime (ASCII)
+      Size, Comps: 20, 20
+      Value: 2011:05:06 02:53:37
+    Entry 8: YCbCrPositioning (Short)
+      Size, Comps: 2, 1
+      Value: Co-sited
+    Entry 9: PrintImageMatching (Undefined)
+      Size, Comps: 46, 46
+      Value: 46 bytes undefined data
+  Content 1: ifd=1
+    Entry 0: Compression (Short)
+      Size, Comps: 2, 1
+      Value: JPEG compression
+    Entry 1: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 2: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 3: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+  Content 2: ifd=2
+    Entry 0: ExposureTime (Rational)
+      Size, Comps: 8, 1
+      Value: 1/60 sec.
+    Entry 1: FNumber (Rational)
+      Size, Comps: 8, 1
+      Value: f/2.8
+    Entry 2: ExposureProgram (Short)
+      Size, Comps: 2, 1
+      Value: Normal program
+    Entry 3: ISOSpeedRatings (Short)
+      Size, Comps: 2, 1
+      Value: 400
+    Entry 4: ExifVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: Exif Version 2.21
+    Entry 5: DateTimeOriginal (ASCII)
+      Size, Comps: 20, 20
+      Value: 2011:05:06 02:53:37
+    Entry 6: DateTimeDigitized (ASCII)
+      Size, Comps: 20, 20
+      Value: 2011:05:06 02:53:37
+    Entry 7: ComponentsConfiguration (Undefined)
+      Size, Comps: 4, 4
+      Value: Y Cb Cr -
+    Entry 8: CompressedBitsPerPixel (Rational)
+      Size, Comps: 8, 1
+      Value: 5.066667
+    Entry 9: ExposureBiasValue (SRational)
+      Size, Comps: 8, 1
+      Value: 0.00 EV
+    Entry 10: MaxApertureValue (Rational)
+      Size, Comps: 8, 1
+      Value: 3.00 EV (f/2.8)
+    Entry 11: MeteringMode (Short)
+      Size, Comps: 2, 1
+      Value: Pattern
+    Entry 12: LightSource (Short)
+      Size, Comps: 2, 1
+      Value: Unknown
+    Entry 13: Flash (Short)
+      Size, Comps: 2, 1
+      Value: Flash fired, auto mode
+    Entry 14: FocalLength (Rational)
+      Size, Comps: 8, 1
+      Value: 6.3 mm
+    Entry 15: MakerNote (Undefined)
+      Size, Comps: 8216, 8216
+      Value: 8216 bytes undefined data
+    Entry 16: FlashpixVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: FlashPix Version 1.0
+    Entry 17: ColorSpace (Short)
+      Size, Comps: 2, 1
+      Value: sRGB
+    Entry 18: PixelXDimension (Long)
+      Size, Comps: 4, 1
+      Value: 640
+    Entry 19: PixelYDimension (Long)
+      Size, Comps: 4, 1
+      Value: 480
+    Entry 20: FileSource (Undefined)
+      Size, Comps: 1, 1
+      Value: DSC
+    Entry 21: CustomRendered (Short)
+      Size, Comps: 2, 1
+      Value: Normal process
+    Entry 22: ExposureMode (Short)
+      Size, Comps: 2, 1
+      Value: Auto exposure
+    Entry 23: WhiteBalance (Short)
+      Size, Comps: 2, 1
+      Value: Auto white balance
+    Entry 24: DigitalZoomRatio (Rational)
+      Size, Comps: 8, 1
+      Value: 0/0
+    Entry 25: FocalLengthIn35mmFilm (Short)
+      Size, Comps: 2, 1
+      Value: 36
+    Entry 26: SceneCaptureType (Short)
+      Size, Comps: 2, 1
+      Value: Standard
+    Entry 27: GainControl (Short)
+      Size, Comps: 2, 1
+      Value: High gain up
+    Entry 28: Contrast (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 29: Saturation (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 30: Sharpness (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+  Content 3: ifd=3
+  Content 4: ifd=4
+    Entry 0: InteroperabilityIndex (ASCII)
+      Size, Comps: 4, 4
+      Value: R98
+    Entry 1: InteroperabilityVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: 0100
+  MakerNote
+    Entry 0: 16386, PentaxPreviewSize
+      Size: 8
+      Value: 320 240 
+    Entry 1: 16387, PentaxPreviewLength
+      Size: 2
+      Value: 4 
+    Entry 2: 16388, PentaxPreviewStart
+      Size: 5
+      Value: 9112 
+    Entry 3: 16389, ModelID
+      Size: 5
+      Value: 8216 
+    Entry 4: 24576, CasioPreviewStart
+      Size: 20
+      Value: 4 bytes unknown data
+    Entry 5: 24577, (unknown)
+      Size: 4
+      Value: 0906
+    Entry 6: 24578, (unknown)
+      Size: 0
+      Value: 
+    Entry 7: 24579, (unknown)
+      Size: 20
+      Value: 8 bytes unknown data
+    Entry 8: 24580, (unknown)
+      Size: 20
+      Value: 4 bytes unknown data
+    Entry 9: 24581, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 10: 24582, (unknown)
+      Size: 20
+      Value: 1 bytes unknown data
+    Entry 11: 24593, WhiteBalanceBias
+      Size: 8
+      Value: 531 375 
+    Entry 12: 24594, WhiteBalance
+      Size: 3
+      Value: 12 
+    Entry 13: 24595, (unknown)
+      Size: 2
+      Value: 2 
+    Entry 14: 24596, (unknown)
+      Size: 21
+      Value: 36 bytes unknown data
+    Entry 15: 24609, (unknown)
+      Size: 24
+      Value: 65535 65535 65535 65535 
+    Entry 16: 24610, ObjectDistance
+      Size: 5
+      Value: 3221 
+    Entry 17: 24611, (unknown)
+      Size: 2
+      Value: 3 
+    Entry 18: 24625, (unknown)
+      Size: 20
+      Value: 2 bytes unknown data
+    Entry 19: 24626, (unknown)
+      Size: 20
+      Value: 2 bytes unknown data
+    Entry 20: 24627, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 21: 24628, FlashDistance
+      Size: 4
+      Value: 806 
+    Entry 22: 24629, (unknown)
+      Size: 4
+      Value: 100 
+    Entry 23: 24630, (unknown)
+      Size: 10
+      Value: 144214016 
+    Entry 24: 24631, (unknown)
+      Size: 10
+      Value: 554106865 
+    Entry 25: 24632, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 26: 24633, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 27: 24634, (unknown)
+      Size: 5
+      Value: 1680 
+    Entry 28: 24635, (unknown)
+      Size: 10
+      Value: 1392 1993 
+    Entry 29: 24636, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 30: 24637, (unknown)
+      Size: 6
+      Value: 15625 
+    Entry 31: 24638, (unknown)
+      Size: 6
+      Value: 62000 
+    Entry 32: 24641, (unknown)
+      Size: 5
+      Value: 1385 
+    Entry 33: 24642, (unknown)
+      Size: 5
+      Value: 1379 
+    Entry 34: 24643, (unknown)
+      Size: 3
+      Value: 33 
+    Entry 35: 24644, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 36: 24645, (unknown)
+      Size: 2
+      Value: 6 
+    Entry 37: 24646, (unknown)
+      Size: 5
+      Value: 8265 
+    Entry 38: 24647, (unknown)
+      Size: 7
+      Value: 983040 
+    Entry 39: 24648, (unknown)
+      Size: 4
+      Value: 971 
+    Entry 40: 24649, (unknown)
+      Size: 5
+      Value: 1385 
+    Entry 41: 24650, (unknown)
+      Size: 2
+      Value: 6 
+    Entry 42: 24651, (unknown)
+      Size: 21
+      Value: 80 bytes unknown data
+    Entry 43: 24657, (unknown)
+      Size: 2
+      Value: 6 
+    Entry 44: 24658, (unknown)
+      Size: 9
+      Value: 55943347 
+    Entry 45: 24659, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 46: 24660, (unknown)
+      Size: 11
+      Value: 2172740352 
+    Entry 47: 24661, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 48: 24662, (unknown)
+      Size: 20
+      Value: 1 bytes unknown data
+    Entry 49: 24663, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 50: 24664, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 51: 24665, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 52: 24666, (unknown)
+      Size: 23
+      Value: 2200 bytes unknown data
+    Entry 53: 24667, (unknown)
+      Size: 11
+      Value: 1845559811 
+    Entry 54: 24668, (unknown)
+      Size: 10
+      Value: 671219712 
+    Entry 55: 24669, (unknown)
+      Size: 7
+      Value: 131072 
+    Entry 56: 24670, (unknown)
+      Size: 7
+      Value: 131072 
+    Entry 57: 24673, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 58: 24674, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 59: 24675, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 60: 24676, (unknown)
+      Size: 22
+      Value: 100 bytes unknown data
+    Entry 61: 24677, (unknown)
+      Size: 10
+      Value: 920694200 
+    Entry 62: 24678, (unknown)
+      Size: 10
+      Value: 439355600 
+    Entry 63: 24689, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 64: 24691, (unknown)
+      Size: 4
+      Value: 100 
+    Entry 65: 24693, (unknown)
+      Size: 20
+      Value: 3 bytes unknown data
+    Entry 66: 24694, (unknown)
+      Size: 20
+      Value: 3 bytes unknown data
+    Entry 67: 24695, (unknown)
+      Size: 20
+      Value: 3 bytes unknown data
+    Entry 68: 24697, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 69: 24698, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 70: 24699, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 71: 24700, (unknown)
+      Size: 5
+      Value: 1536 
+    Entry 72: 24701, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 73: 24702, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 74: 24703, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 75: 24705, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 76: 24706, (unknown)
+      Size: 5
+      Value: 4112 
+    Entry 77: 24707, (unknown)
+      Size: 22
+      Value: 256 bytes unknown data
+    Entry 78: 24708, (unknown)
+      Size: 20
+      Value: 1 bytes unknown data
+    Entry 79: 24709, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 80: 24710, (unknown)
+      Size: 4
+      Value: 223 
+    Entry 81: 24711, (unknown)
+      Size: 4
+      Value: 255 
+    Entry 82: 24712, (unknown)
+      Size: 22
+      Value: 800 bytes unknown data
+    Entry 83: 24713, (unknown)
+      Size: 23
+      Value: 1216 bytes unknown data
+    Entry 84: 24714, (unknown)
+      Size: 23
+      Value: 1216 bytes unknown data
+    Entry 85: 24715, (unknown)
+      Size: 21
+      Value: 30 bytes unknown data
+    Entry 86: 24716, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 87: 24717, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 88: 24718, (unknown)
+      Size: 2
+      Value: 3 
+    Entry 89: 24721, (unknown)
+      Size: 20
+      Value: 1 bytes unknown data
+    Entry 90: 24722, (unknown)
+      Size: 20
+      Value: 1 bytes unknown data
+    Entry 91: 24723, (unknown)
+      Size: 6
+      Value: 65280 
+    Entry 92: 24724, (unknown)
+      Size: 21
+      Value: 60 bytes unknown data
+    Entry 93: 24725, (unknown)
+      Size: 4
+      Value: 255 
+    Entry 94: 24726, (unknown)
+      Size: 20
+      Value: 4 bytes unknown data
+    Entry 95: 24727, (unknown)
+      Size: 21
+      Value: 40 bytes unknown data
+    Entry 96: 24728, (unknown)
+      Size: 21
+      Value: 10 bytes unknown data
+    Entry 97: 24729, (unknown)
+      Size: 21
+      Value: 10 bytes unknown data
+    Entry 98: 24730, (unknown)
+      Size: 22
+      Value: 120 bytes unknown data
+    Entry 99: 24737, (unknown)
+      Size: 3
+      Value: 16 
+    Entry 100: 24738, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 101: 24739, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 102: 24740, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 103: 24741, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 104: 24753, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 105: 24754, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 106: 24755, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 107: 24756, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 108: 24757, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 109: 24768, (unknown)
+      Size: 21
+      Value: 16 bytes unknown data
+    Entry 110: 24769, (unknown)
+      Size: 21
+      Value: 16 bytes unknown data
+    Entry 111: 28672, RecordMode
+      Size: 2
+      Value: 2 
+    Entry 112: 28673, SelfTimer
+      Size: 2
+      Value: 1 
+    Entry 113: 28674, CasioQuality
+      Size: 2
+      Value: 2 
+    Entry 114: 28675, CasioFocusMode
+      Size: 2
+      Value: 3 
+    Entry 115: 28677, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 116: 28678, TimeZone
+      Size: 6
+      Value: London
+    Entry 117: 28679, BestshotMode
+      Size: 2
+      Value: On
+    Entry 118: 28680, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 119: 28681, (unknown)
+      Size: 2
+      Value: 3 
+    Entry 120: 28682, (unknown)
+      Size: 6
+      Value: 4 217 
+    Entry 121: 28689, (unknown)
+      Size: 20
+      Value: 2 bytes unknown data
+    Entry 122: 28690, (unknown)
+      Size: 20
+      Value: 2 bytes unknown data
+    Entry 123: 28691, (unknown)
+      Size: 20
+      Value: 2 bytes unknown data
+    Entry 124: 28692, CCSISOSensitivity
+      Size: 4
+      Value: 400 
+    Entry 125: 28693, ColorMode
+      Size: 2
+      Value: 0 
+    Entry 126: 28694, Enhancement
+      Size: 2
+      Value: 0 
+    Entry 127: 28695, Finer
+      Size: 2
+      Value: 0 
+    Entry 128: 28696, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 129: 28697, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 130: 28698, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 131: 28699, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 132: 28700, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 133: 28701, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 134: 28702, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 135: 28703, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 136: 28704, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 137: 28705, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 138: 28706, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 139: 28707, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 140: 28708, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 141: 28709, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 142: 28710, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 143: 28711, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 144: 28712, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 145: 28713, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 146: 28714, (unknown)
+      Size: 2
+      Value: 6 
+    Entry 147: 28715, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 148: 28716, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 149: 28717, (unknown)
+      Size: 2
+      Value: 1 
+    Entry 150: 28718, (unknown)
+      Size: 4
+      Value: 0 0 
+    Entry 151: 28719, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 152: 28720, (unknown)
+      Size: 2
+      Value: 6 
+    Entry 153: 28929, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 154: 28930, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 155: 28931, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 156: 28933, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 157: 28934, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 158: 28935, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 159: 28936, (unknown)
+      Size: 2
+      Value: 0 

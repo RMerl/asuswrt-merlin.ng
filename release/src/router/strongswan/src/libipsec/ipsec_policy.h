@@ -2,7 +2,8 @@
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -94,7 +95,7 @@ struct ipsec_policy_t {
 	 * @param direction		traffic direction
 	 * @param reqid			reqid of the policy
 	 * @param mark			mark for this policy
-	 * @param prioirty		policy priority
+	 * @param priority		policy priority
 	 * @return				TRUE if policy matches all parameters
 	 */
 	bool (*match)(ipsec_policy_t *this, traffic_selector_t *src_ts,

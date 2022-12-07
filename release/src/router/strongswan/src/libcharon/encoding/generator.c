@@ -2,7 +2,8 @@
  * Copyright (C) 2011 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -205,7 +206,6 @@ static void generate_u_int_type(private_generator_t *this,
 		case U_INT_4:
 			number_of_bits = 4;
 			break;
-		case TS_TYPE:
 		case RESERVED_BYTE:
 		case SPI_SIZE:
 		case U_INT_8:
@@ -254,7 +254,7 @@ static void generate_u_int_type(private_generator_t *this,
 				*(this->out_position) = high | low;
 				if (this->debug)
 				{
-					DBG3(DBG_ENC, "   => %d", *(this->out_position));
+					DBG3(DBG_ENC, "   => %hhu", *(this->out_position) >> 4);
 				}
 				/* write position is not changed, just bit position is moved */
 				this->current_bit = 4;
@@ -268,7 +268,7 @@ static void generate_u_int_type(private_generator_t *this,
 				*(this->out_position) = high | low;
 				if (this->debug)
 				{
-					DBG3(DBG_ENC, "   => %d", *(this->out_position));
+					DBG3(DBG_ENC, "   => %hhu", *(this->out_position) & 0x0F);
 				}
 				this->out_position++;
 				this->current_bit = 0;
@@ -281,7 +281,6 @@ static void generate_u_int_type(private_generator_t *this,
 			}
 			break;
 		}
-		case TS_TYPE:
 		case RESERVED_BYTE:
 		case SPI_SIZE:
 		case U_INT_8:
@@ -290,7 +289,7 @@ static void generate_u_int_type(private_generator_t *this,
 			*this->out_position = *((uint8_t *)(this->data_struct + offset));
 			if (this->debug)
 			{
-				DBG3(DBG_ENC, "   => %d", *(this->out_position));
+				DBG3(DBG_ENC, "   => %hhu", *(this->out_position));
 			}
 			this->out_position++;
 			break;
@@ -318,7 +317,7 @@ static void generate_u_int_type(private_generator_t *this,
 			val = htons(val);
 			if (this->debug)
 			{
-				DBG3(DBG_ENC, "   => %d", val);
+				DBG3(DBG_ENC, "   => %hu", val);
 			}
 			/* write bytes to buffer (set bit is overwritten) */
 			write_bytes_to_buffer(this, &val, sizeof(uint16_t));
@@ -392,7 +391,7 @@ static void generate_flag(private_generator_t *this, uint32_t offset)
 	*(this->out_position) = *(this->out_position) | flag;
 	if (this->debug)
 	{
-		DBG3(DBG_ENC, "   => %d", *this->out_position);
+		DBG3(DBG_ENC, "   => %hhu", *this->out_position);
 	}
 
 	this->current_bit++;
@@ -412,7 +411,7 @@ static void generate_from_chunk(private_generator_t *this, uint32_t offset)
 
 	if (this->current_bit != 0)
 	{
-		DBG1(DBG_ENC, "can not generate a chunk at bitpos %d",
+		DBG1(DBG_ENC, "can not generate a chunk at bitpos %hhu",
 			 this->current_bit);
 		return ;
 	}
@@ -478,7 +477,6 @@ METHOD(generator_t, generate_payload, void,
 			case IKE_SPI:
 			case RESERVED_BYTE:
 			case SPI_SIZE:
-			case TS_TYPE:
 			case ATTRIBUTE_TYPE:
 			case ATTRIBUTE_LENGTH:
 				generate_u_int_type(this, rules[i].type, rules[i].offset);
@@ -491,7 +489,6 @@ METHOD(generator_t, generate_payload, void,
 				this->header_length_offset = get_offset(this);
 				generate_u_int_type(this, U_INT_32, rules[i].offset);
 				break;
-			case ADDRESS:
 			case SPI:
 			case CHUNK_DATA:
 			case ENCRYPTED_DATA:

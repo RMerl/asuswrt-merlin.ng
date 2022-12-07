@@ -384,7 +384,7 @@ export SRCBASE_FW := $(SRCBASE)/../../43684/src
 export SRCBASE_SYS := $(SRCBASE_DHD)
 export DHDAP_BUILD_TYPE := ram
 export CONFIG_MBO_AP=y
-ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AX11000 GT-AXE11000 RT-AX95Q DSL-AX82U RT-AX88U))
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), GT-AX11000 GT-AXE11000 RT-AX95Q DSL-AX82U RT-AX88U GS-AX5400 RT-AX82_XD6))
 export BUILD_43684_COMBO := y
 else ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX86U))
 export BUILD_43684b0 := y
@@ -641,6 +641,9 @@ HOSTAPD_PKG:=hostapd-2.6
 QCA_HOSTAPD_DIR:=$(TOP)/$(HOSTAPD_PKG)
 endif
 
+ifneq ($(findstring CONFIG_BRIDGE_NF_EBTABLES=y, $(shell cat $(LINUXDIR)/.config)),)
+CFLAGS += -DEBTABLES_BUILTIN
+endif
 #
 #
 #
@@ -806,7 +809,7 @@ endif
 endif
 
 obj-$(RTCONFIG_CLOUDSYNC) += neon
-LIBBLUETOOTH_VER=3.18.13
+LIBBLUETOOTH_VER=3.19.4
 ifeq ($(RTCONFIG_REALTEK)$(RTCONFIG_ALPINE),y)
 obj-$(RTCONFIG_BT_CONN) += rtk_hciattach
 ifeq ($(RPAC55), y)
@@ -830,7 +833,7 @@ obj-$(RTCONFIG_BT_CONN) += ncurses-6.0
 endif
 obj-$(RTCONFIG_BT_CONN) += readline-6.2
 obj-$(RTCONFIG_BT_CONN) += json-c
-obj-$(RTCONFIG_BT_CONN) += bluez-5.41
+obj-$(RTCONFIG_BT_CONN) += bluez-5.56
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756)),y)
 obj-$(RTCONFIG_BT_CONN) += btconfig
 endif
@@ -952,7 +955,7 @@ endif
 ifneq ($(RTCONFIG_NTPD),y)
 obj-y += ntpclient
 endif
-ifeq ($(BUILD_NAME),RT-AX82_XD6)
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX82_XD6 XD6_V2))
 obj-y += ntp-4.2.8p15
 endif
 
@@ -1145,6 +1148,14 @@ obj-$(RTCONFIG_USB_MODEM) += usbmode
 endif
 endif
 
+ifeq ($(RTCONFIG_HND_ROUTER),y)
+# iphone
+obj-$(RTCONFIG_USB_MODEM) += libplist-2.2.0
+obj-$(RTCONFIG_USB_MODEM) += libusbmuxd-2.0.2
+obj-$(RTCONFIG_USB_MODEM) += libimobiledevice-1.3.0
+obj-$(RTCONFIG_USB_MODEM) += usbmuxd-1.1.1
+endif
+
 ifeq ($(KPATH_3X),y)
 ifeq ($(or $(RTCONFIG_SOC_IPQ8064),$(RTCONFIG_SOC_IPQ8074),$(RTCONFIG_ALPINE),$(RTCONFIG_LANTIQ)),y)
 obj-$(RTCONFIG_USB_MODEM) += usb-modeswitch
@@ -1197,19 +1208,6 @@ ifeq ($(RTCONFIG_USB_EXTRAS),y)
 NEED_EX_USB = y
 endif
 endif
-
-ifeq ($(RTCONFIG_SAMBASRV),y)
-ifeq ($(or $(RTCONFIG_SAMBA3),$(RTCONFIG_SAMBA36X)),y)
-NEED_SAMBA3 = y
-else
-NEED_SAMBA2 = y
-endif
-ifeq ($(and $(RTCONFIG_SAMBA3),$(RTCONFIG_SAMBA36X)),y)
-NEED_SAMBA3BOTH = y
-else
-NEED_SAMBA3BOTH = n
-endif
-endif
 endif
 
 ifeq ($(RTCONFIG_IPV6),y)
@@ -1219,24 +1217,7 @@ RTCONFIG_IPV6 :=
 endif
 # install before samba3 for not overwriting some binaries
 obj-$(RTCONFIG_WEBDAV) += samba-3.5.8
-obj-$(NEED_SAMBA2) += samba
-ifeq ($(or $(CONFIG_BCMWL5),$(RTCONFIG_RALINK),$(RTCONFIG_REALTEK)),y)
-ifneq ($(RTCONFIG_8M_SFP),y)
-#ifeq ($(HND_ROUTER),y)
-#obj-$(NEED_SAMBA3) += brcmssp_util
-#endif
-obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba-3.0.33)
-obj-$(NEED_SAMBA3BOTH) += samba-3.0.33
-else
-obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba3)
-endif
-else
-ifeq ($(RTCONFIG_QCA),y)
-obj-$(NEED_SAMBA3) += $(if $(RTCONFIG_SAMBA36X),samba-3.6.x,samba3)
-else
-obj-$(NEED_SAMBA3) += samba3
-endif
-endif
+obj-$(RTCONFIG_SAMBASRV) += samba-3.6.x_opwrt
 
 ifeq ($(RTCONFIG_NTFS),y)
 obj-$(RTCONFIG_OPEN_NTFS3G) += ntfs-3g
@@ -1256,6 +1237,9 @@ obj-$(RTCONFIG_IPV6) += ndisc6
 obj-$(RTCONFIG_6RELAYD) += 6relayd
 #obj-$(RTCONFIG_IPV6) += ecmh
 
+ifneq ($(RTCONFIG_LANTIQ),y)
+export FFMPEG_ZLIB_REQD := y
+endif
 ifeq ($(FFMPEG_ZLIB_REQD),y)
 obj-$(RTCONFIG_MEDIA_SERVER) += zlib
 endif
@@ -1641,7 +1625,9 @@ obj-$(HND_ROUTER) += bpmctl
 obj-$(HND_ROUTER) += dnsspoof
 ifeq ($(RTCONFIG_HND_ROUTER_AX_6756),y)
 obj-$(RTCONFIG_SECUREBOOT) += sotpctl
-obj-$(RTCONFIG_SECUREBOOT) += fscryptctl
+ifeq ($(or $(RTCONFIG_SECUREBOOT),$(RTCONFIG_FSCRYPTCTL)),y)
+obj-y += fscryptctl
+endif
 endif
 obj-$(HND_ROUTER) += ethctl
 obj-$(HND_ROUTER) += ethctl_lib
@@ -1678,6 +1664,8 @@ obj-$(HND_ROUTER) += mcpd
 obj-$(HND_ROUTER) += memaccess
 obj-$(HND_ROUTER_AX) += bdmf_lib
 ifeq ($(HND_ROUTER_AX_6756),y)
+obj-$(HND_ROUTER) += iqctl
+obj-$(HND_ROUTER) += iqctl_lib
 else
 obj-$(HND_ROUTER_AX) += mdkshell
 endif
@@ -3221,7 +3209,7 @@ rc: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdisk $(if $(R
 rc-install:
 	$(MAKE) -C rc INSTALLDIR=$(INSTALLDIR)/rc install
 
-networkmap: shared $(if $(BCM_502L07P2),ethctl_lib) json-c
+networkmap: shared json-c libasc libletsencrypt $(if $(BCM_502L07P2),ethctl_lib) $(if $(RTCONFIG_BWDPI),bwdpi_source) 
 
 networkmap-install:
 	$(MAKE) -C networkmap INSTALLDIR=$(INSTALLDIR)/networkmap install
@@ -3329,7 +3317,9 @@ endif
 extfdimg-install :
 ifneq ($(BCM_EXTFDIMAGE_PATH),)
 	install -d $(INSTALLDIR)/rom/rom$(BCM_EXTFDIMAGE_PATH)
+ifneq ($(wildcard $(SRCBASE_DHD)/dongle/bin/*),)
 	cp -r $(SRCBASE_DHD)/dongle/bin/* $(INSTALLDIR)/rom/rom$(BCM_EXTFDIMAGE_PATH)
+endif
 endif
 
 dhd:
@@ -4060,15 +4050,9 @@ odhcp6c-clean:
 	-@$(MAKE) -C odhcp6c clean
 
 ndisc6/stamp-h1:
-ifeq ($(RTCONFIG_BCMARM),y)
-	cd ndisc6 && autoreconf -i -f && CFLAGS="-Os $(EXTRACFLAGS) -ffunction-sections -fdata-sections -I$(SRCBASE)/include -I$(TOP)/shared $(if $(RTCONFIG_HTTPS),-I$(TOP)/openssl/include/openssl)" \
-	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections $(if $(RTCONFIG_HTTPS),-L$(TOP)/openssl -lcrypto -lssl)" \
+	cd ndisc6 && autoreconf -i -f && CFLAGS="-Os -ffunction-sections -fdata-sections" \
+	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections" \
 	$(CONFIGURE) --prefix="" --disable-dependency-tracking
-else
-	cd ndisc6 && autoreconf -i -f && CFLAGS="-Os $(if $(QCA),$(EXTRACFLAGS)) -ffunction-sections -fdata-sections -I$(SRCBASE)/include -I$(TOP)/shared $(if $(RTCONFIG_HTTPS),-I$(TOP)/openssl/include/openssl)" \
-	LDFLAGS="-ffunction-sections -fdata-sections -Wl,--gc-sections -L$(TOP)/nvram$(BCMEX) -L$(TOP)/shared $(if $(RTCONFIG_HTTPS),-L$(TOP)/openssl -lcrypto -lssl)" \
-	$(CONFIGURE) --prefix="" LIBS='-lnvram -lshared' --disable-dependency-tracking
-endif
 	-@$(MAKE) -C ndisc6 clean
 	@touch $@
 
@@ -4082,9 +4066,9 @@ ndisc6-clean:
 
 ndisc6-install: ndisc6
 	install -D ndisc6/src/rdisc6 $(INSTALLDIR)/ndisc6/usr/sbin/rdisc6
-	install -D ndisc6/src/rdisc6 $(INSTALLDIR)/ndisc6/usr/sbin/ndisc6
+#	install -D ndisc6/src/ndisc6 $(INSTALLDIR)/ndisc6/usr/sbin/ndisc6
 	$(STRIP) $(INSTALLDIR)/ndisc6/usr/sbin/rdisc6
-	$(STRIP) $(INSTALLDIR)/ndisc6/usr/sbin/ndisc6
+#	$(STRIP) $(INSTALLDIR)/ndisc6/usr/sbin/ndisc6
 ifneq ($(RTCONFIG_BCMWL6),y)
 ifneq ($(or $(MUSL32),$(MUSL64)),y)
 	install -D $(shell dirname $(shell which $(CXX)))/../lib/librt.so.0 $(TARGETDIR)/lib/librt.so.0
@@ -4974,7 +4958,7 @@ ntpclient: nvram$(BCMEX)$(EX7) shared $(if $(BCM_502L07P2),ethctl_lib)
 
 ntpclient-install:
 	$(MAKE) -C ntpclient INSTALLDIR=$(INSTALLDIR)/ntpclient install
-ifeq ($(BUILD_NAME),RT-AX82_XD6)
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), RT-AX82_XD6 XD6_V2))
 ntp-4.2.8p15: ntp-4.2.8p15/Makefile
 	$(MAKE) -C ntp-4.2.8p15
 
@@ -5245,7 +5229,7 @@ ifneq ($(MEDIA_SERVER_STATIC),y)
 endif
 
 libexif/stamp-h1:
-	cd libexif && CFLAGS="-Os -Wall $(EXTRACFLAGS) -fPIC -ffunction-sections -fdata-sections" \
+	cd libexif && autoreconf -i -f && CFLAGS="-Os -Wall $(EXTRACFLAGS) -fPIC -ffunction-sections -fdata-sections" \
 	LDFLAGS="-fPIC -ffunction-sections -fdata-sections -Wl,--gc-sections" \
 	$(CONFIGURE) --enable-shared --enable-static --prefix='' \
 		--disable-docs --disable-rpath --disable-nls --without-libiconv-prefix --without-libintl-prefix
@@ -6514,11 +6498,11 @@ fb_wifi-clean:
 #libssh2
 libssh2-stage:
 	@$(SEP)
-	@$(MAKE) libssh2-1.9.0-stage
+	@$(MAKE) libssh2-1.10.0-stage
 
-libssh2-1.9.0/Makefile:
+libssh2-1.10.0/Makefile:
 	@$(SEP)
-	cd libssh2-1.9.0 && autoreconf -fi && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
+	cd libssh2-1.10.0 && autoreconf -fi && $(CONFIGURE) --prefix=/usr CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) --enable-shared --enable-static \
 	$(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),--with-libssl-prefix=$(STAGEDIR)/usr,--without-openssl) \
 	--with-libz-prefix=$(STAGEDIR)/usr \
 	--with-libgcrypt-prefix=$(TOP)/libgcrypt-1.5.1 \
@@ -6527,24 +6511,24 @@ libssh2-1.9.0/Makefile:
 	LDFLAGS="-ldl -Wl,-rpath=$(STAGEDIR)/usr/lib,--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib -lz -L$(SRCBASE)/router/openssl -lcrypto -L$(TOP)/libgcrypt-1.5.1/src/.libs" && \
 	LIBS="-lcrypto (if $(RTCONFIG_OPENSSL11),-lpthread,) -fPIC" 
 
-libssh2: libgcrypt-1.5.1 zlib libssh2-1.9.0/Makefile
+libssh2: libgcrypt-1.5.1 zlib libssh2-1.10.0/Makefile
 	@$(SEP)
-	$(MAKE) -j 8 -C libssh2-1.9.0 && $(MAKE) $@-stage
+	$(MAKE) -j 8 -C libssh2-1.10.0 && $(MAKE) $@-stage
 
 libssh2-install:
 	@$(SEP)
-	pwd & install -D libssh2-1.9.0/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
+	pwd & install -D libssh2-1.10.0/src/.libs/libssh2.so.1.0.1 $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	$(STRIP) $(INSTALLDIR)/libssh2/usr/lib/libssh2.so.1.0.1
 	cd $(INSTALLDIR)/libssh2/usr/lib &&\
 	rm -f libssh2.so && ln -sf libssh2.so.1.0.1 libssh2.so && \
 	rm -f libssh2.so.1 && ln -sf libssh2.so.1.0.1 libssh2.so.1
 
 libssh2-clean:
-	cd libssh2-1.9.0 && make distclean
+	cd libssh2-1.10.0 && make distclean
 
 #libcurl
 curl/configure:
-	@cd curl && ./buildconf
+	@cd curl && autoreconf -fi
 
 curl/Makefile: curl/configure
 	@cd curl && $(CONFIGURE) CC=$(CC) \
@@ -6583,11 +6567,11 @@ curl: $(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),openssl,) $(if $(RTCONFIG_
 
 curl-install:
 	@$(SEP)
-	install -D curl/lib/.libs/libcurl.so.4.7.0 $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.7.0
-	$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.7.0
+	install -D curl/lib/.libs/libcurl.so.4.8.0 $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.8.0
+	$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.8.0
 	cd $(INSTALLDIR)/curl/usr/lib && \
-		ln -sf libcurl.so.4.7.0 libcurl.so && \
-		ln -sf libcurl.so.4.7.0 libcurl.so.4
+		ln -sf libcurl.so.4.8.0 libcurl.so && \
+		ln -sf libcurl.so.4.8.0 libcurl.so.4
 #ifeq ($(or $(RTCONFIG_SPEEDTEST),$(RTCONFIG_LETSENCRYPT)),y)
 	# for speedtest
 	install -D curl/src/.libs/curl $(INSTALLDIR)/curl/usr/sbin/curl
@@ -6832,7 +6816,7 @@ netaconfig netatalk-3.0.5/stamp-h1:
 		touch $(TOP)/netatalk-3.0.5/* ; \
 		cd $(TOP)/netatalk-3.0.5 && \
 		CC=$(CC) CFLAGS="-Os -Wall -ffunction-sections -fdata-sections -I$(TOP)/db-4.8.30/build_unix -I$(TOP)/libgcrypt-1.5.1/src" \
-		LDFLAGS="-L$(TOP)/db-4.8.30/build_unix/.libs -L$(TOP)/libgcrypt-1.5.1/src/.libs -L$(TOP)/libgpg-error-1.10/src/.libs -L$(TOP)/libevent-2.0.21/.libs -lgpg-error -lgcrypt" \
+		LDFLAGS="-L$(TOP)/db-4.8.30/build_unix/.libs -L$(TOP)/libgcrypt-1.5.1/src/.libs -L$(TOP)/libgpg-error-1.10/src/.libs -L$(TOP)/libevent-2.0.21/.libs -lgpg-error -lgcrypt -lcrypt" \
 		$(CONFIGURE) \
 		ac_cv_path_LIBGCRYPT_CONFIG=$(TOP)/libgcrypt-1.5.1/src/libgcrypt-config \
 		--without-kerberos \
@@ -7354,7 +7338,7 @@ qca-ssdk30:
 qca-ssdk30-stage:
 	$(MAKE) -C qca-ssdk30 stage
 
-.PHONY: lm-sensors-master btconfig ethtool-3.7 i2c-tools-3.1.2 i2c-tools-2013-12-15 bluez-5.41
+.PHONY: lm-sensors-master btconfig ethtool-3.7 i2c-tools-3.1.2 i2c-tools-2013-12-15 bluez-5.56
 ethtool-3.7/configure:
 	cd ethtool-3.7 && ./autogen.sh
 
@@ -7475,15 +7459,15 @@ lm-sensors-master:
 AQIS = --enable-extaqis
 
 ifeq ($(HND_ROUTER_AX_6756),y)
-BLUEZ_5.41_LDFLAGS_EXT := -lncurses
+BLUEZ_5.56_LDFLAGS_EXT := -lncurses
 else
-BLUEZ_5.41_LDFLAGS_EXT :=
+BLUEZ_5.56_LDFLAGS_EXT :=
 endif
 
-bluez-5.41/stamp-h1:
-ifeq ($(wildcard bluez-5.41/prebuild),)
-	cd bluez-5.41 && ./autogen.sh --no-configure
-	cd bluez-5.41 && $(CONFIGURE) \
+bluez-5.56/stamp-h1:
+ifeq ($(wildcard bluez-5.56/prebuild),)
+	cd bluez-5.56 && ./autogen.sh --no-configure
+	cd bluez-5.56 && $(CONFIGURE) \
 		--enable-library --program-prefix= --program-suffix= --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib --sysconfdir=/etc\
 		--datadir=/usr/share --localstatedir=/var --mandir=/usr/man --infodir=/usr/info --disable-systemd --with-udevdir=$(STAGEDIR)/usr/lib/udev\
 		--enable-experimental --enable-maintainer-mode $(AQIS) \
@@ -7496,79 +7480,63 @@ ifeq ($(wildcard bluez-5.41/prebuild),)
 			-L$(TOP)/openssl -lssl -lcrypto \
 			-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram \
 			-L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib -lethctl) \
-			-L$(INSTALLDIR)/zlib/usr/lib -lz -lm -lc -ljson-c $(BLUEZ_5.41_LDFLAGS_EXT)"
+			-L$(INSTALLDIR)/zlib/usr/lib -lz -lm -lc -ljson-c $(BLUEZ_5.56_LDFLAGS_EXT)"
 		touch $@
 endif
-bluez-5.41: bluez-5.41/stamp-h1
+bluez-5.56: bluez-5.56/stamp-h1
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
-bluez-5.41-clean:
-	[ ! -f bluez-5.41/Makefile ] || $(MAKE) -C bluez-5.41 distclean
-	@rm -f bluez-5.41/stamp-h1
+bluez-5.56-clean:
+	[ ! -f bluez-5.56/Makefile ] || $(MAKE) -C bluez-5.56 distclean
+	@rm -f bluez-5.56/stamp-h1
 
-bluez-5.41-install: btconfig bluez-5.41
+bluez-5.56-install: btconfig bluez-5.56
 	mkdir -p $(TARGETDIR)/rom/etc/bluetooth
 ifeq ($(RTCONFIG_REALTEK),y)
 	mkdir -p $(TARGETDIR)/lib/
 	install $(LIBDIR)/librt.so.1 $(TARGETDIR)/lib/
 	install $(LIBDIR)/libubacktrace.so.1 $(TARGETDIR)/lib/
 endif
-	install -D bluez-5.41/tools/bccmd $(INSTALLDIR)/bluez-5.41/usr/bin/bccmd
-	install -D bluez-5.41/tools/bluemoon $(INSTALLDIR)/bluez-5.41/usr/bin/bluemoon
-	install -D bluez-5.41/tools/btmgmt $(INSTALLDIR)/bluez-5.41/usr/bin/btmgmt
-	install -D bluez-5.41/tools/ciptool $(INSTALLDIR)/bluez-5.41/usr/bin/ciptool
-	install -D bluez-5.41/tools/hcitool $(INSTALLDIR)/bluez-5.41/usr/bin/hcitool
-	install -D bluez-5.41/tools/hcidump $(INSTALLDIR)/bluez-5.41/usr/bin/hcidump
-	install -D bluez-5.41/tools/hciattach $(INSTALLDIR)/bluez-5.41/usr/bin/hciattach
-	install -D bluez-5.41/tools/hciconfig $(INSTALLDIR)/bluez-5.41/usr/bin/hciconfig
-	install -D bluez-5.41/tools/hid2hci $(INSTALLDIR)/bluez-5.41/usr/bin/hid2hci
-	install -D bluez-5.41/tools/l2ping $(INSTALLDIR)/bluez-5.41/usr/bin/l2ping
-	install -D bluez-5.41/tools/l2test $(INSTALLDIR)/bluez-5.41/usr/bin/l2test
-	install -D bluez-5.41/client/bluetoothctl $(INSTALLDIR)/bluez-5.41/usr/bin/bluetoothctl
-	install -D bluez-5.41/tools/mpris-proxy $(INSTALLDIR)/bluez-5.41/usr/bin/mpris-proxy
-	install -D bluez-5.41/tools/rctest $(INSTALLDIR)/bluez-5.41/usr/bin/rctest
-	install -D bluez-5.41/tools/rfcomm $(INSTALLDIR)/bluez-5.41/usr/bin/rfcomm
-	install -D bluez-5.41/tools/sdptool $(INSTALLDIR)/bluez-5.41/usr/bin/sdptool
-	install -D bluez-5.41/tools/btmgmt $(INSTALLDIR)/bluez-5.41/usr/bin/btmgmt
+	install -D bluez-5.56/tools/btmgmt $(INSTALLDIR)/bluez-5.56/usr/bin/btmgmt
+	install -D bluez-5.56/tools/hcitool $(INSTALLDIR)/bluez-5.56/usr/bin/hcitool
+	install -D bluez-5.56/tools/hcidump $(INSTALLDIR)/bluez-5.56/usr/bin/hcidump
+	install -D bluez-5.56/tools/hciattach $(INSTALLDIR)/bluez-5.56/usr/bin/hciattach
+	install -D bluez-5.56/tools/hciconfig $(INSTALLDIR)/bluez-5.56/usr/bin/hciconfig
+	install -D bluez-5.56/tools/l2ping $(INSTALLDIR)/bluez-5.56/usr/bin/l2ping
+	install -D bluez-5.56/client/bluetoothctl $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothctl
+	install -D bluez-5.56/tools/rfcomm $(INSTALLDIR)/bluez-5.56/usr/bin/rfcomm
+	install -D bluez-5.56/tools/sdptool $(INSTALLDIR)/bluez-5.56/usr/bin/sdptool
+	install -D bluez-5.56/tools/bccmd $(INSTALLDIR)/bluez-5.56/usr/bin/bccmd
 ifeq ($(RTCONFIG_SOC_IPQ40XX),y)
-	install -D bluez-5.41/btconfig_1.16 $(INSTALLDIR)/bluez-5.41/usr/bin/btconfig
-	install -D bluez-5.41/btchk.sh $(INSTALLDIR)/bluez-5.41/usr/bin/btchk.sh
+	install -D bluez-5.56/btconfig_1.16 $(INSTALLDIR)/bluez-5.56/usr/bin/btconfig
+	install -D bluez-5.56/btchk.sh $(INSTALLDIR)/bluez-5.56/usr/bin/btchk.sh
 else ifeq ($(RTCONFIG_BT_CONN_UART),y)
-	install -D bluez-5.41/btchk_uart.sh $(INSTALLDIR)/bluez-5.41/usr/bin/btchk_uart.sh
+	install -D bluez-5.56/btchk_uart.sh $(INSTALLDIR)/bluez-5.56/usr/bin/btchk_uart.sh
 else ifeq ($(or $(QCA953X),$(QCA955X),$(QCA956X)),y)
-	install -D bluez-5.41/btconfig_4.02 $(INSTALLDIR)/bluez-5.41/usr/bin/btconfig
+	install -D bluez-5.56/btconfig_4.02 $(INSTALLDIR)/bluez-5.56/usr/bin/btconfig
 else ifeq ($(RTCONFIG_LANTIQ),y)
 	install -D btconfig/btconfig $(TARGETDIR)/usr/bin/btconfig
 endif
-	install -D bluez-5.41/lib/.libs/libbluetooth.so.$(LIBBLUETOOTH_VER) $(TARGETDIR)/usr/lib/libbluetooth.so.$(LIBBLUETOOTH_VER)
-	install -D bluez-5.41/src/bluetoothd $(INSTALLDIR)/bluez-5.41/usr/bin/bluetoothd
-	install -D bluez-5.41/attrib/gatttool $(INSTALLDIR)/bluez-5.41/usr/bin/gatttool
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/bccmd
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/bluemoon
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/btmgmt
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/ciptool
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/hcitool
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/hcidump
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/hciattach
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/hciconfig
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/hid2hci
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/l2ping
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/l2test
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/bluetoothctl
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/mpris-proxy
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/rctest
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/rfcomm
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/sdptool
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/btmgmt
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/bluetoothd
-	$(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/gatttool
-	# $(STRIP) $(INSTALLDIR)/bluez-5.41/usr/bin/btconfig
+	install -D bluez-5.56/lib/.libs/libbluetooth.so.$(LIBBLUETOOTH_VER) $(TARGETDIR)/usr/lib/libbluetooth.so.$(LIBBLUETOOTH_VER)
+	install -D bluez-5.56/src/bluetoothd $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothd
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/btmgmt
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/hcitool
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/hcidump
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/hciattach
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/hciconfig
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/l2ping
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothctl
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/rfcomm
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/sdptool
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/bccmd
+	$(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/bluetoothd
+	# $(STRIP) $(INSTALLDIR)/bluez-5.56/usr/bin/btconfig
 	$(STRIP) $(TARGETDIR)/usr/lib/libbluetooth.so.$(LIBBLUETOOTH_VER)
 ifeq ($(RTCONFIG_LANTIQ),y)
-	cp -f bluez-5.41/src/main.conf $(TARGETDIR)/rom/etc/bluetooth
+	cp -f bluez-5.56/src/main.conf $(TARGETDIR)/rom/etc/bluetooth
 endif
-	cp -f bluez-5.41/profiles/aqis/bleencrypt/pem2048/public.pem $(TARGETDIR)/rom/etc/bluetooth
-	cp -f bluez-5.41/profiles/aqis/bleencrypt/pem2048/private.pem $(TARGETDIR)/rom/etc/bluetooth
+	cp -f bluez-5.56/profiles/aqis/bleencrypt/pem2048/public.pem $(TARGETDIR)/rom/etc/bluetooth
+	cp -f bluez-5.56/profiles/aqis/bleencrypt/pem2048/private.pem $(TARGETDIR)/rom/etc/bluetooth
 	rm -rf $(TARGETDIR)/usr/obex
 	cd $(TARGETDIR)/usr/lib && \
 		ln -sf libbluetooth.so.$(LIBBLUETOOTH_VER) libbluetooth.so.3 && \
@@ -8411,7 +8379,7 @@ endif
 wlcsm:
 	echo $(TOP_PLATFORM)
 	$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
-	$(MAKE) -C $(TOPX_DIR) MODEL=$(MODEL)
+	$(MAKE) -C $(TOPX_DIR) MODEL=$(MODEL) BUILD_DIR=$(BUILD_DIR)
 	install -m 755 $(TOPX_DIR)/libwlcsm.so $(INSTALL_DIR)/lib
 
 .PHONY : wlcsm
@@ -8419,7 +8387,7 @@ wlcsm:
 
 wlan: wlcsm libxml2 json-c sqlite
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
-	$(MAKE) -C $(TOPX_DIR)
+	$(MAKE) -C $(TOPX_DIR) BUILD_DIR=$(BUILD_DIR)
 
 .PHONY : wlan
 
@@ -8479,7 +8447,7 @@ fdt-install: fdt
 
 bcm_flashutil: bcm_util $(if $(HND_ROUTER_AX_6756),fdt)
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
-	$(MAKE) -C $(TOPX_DIR)
+	$(MAKE) -C $(TOPX_DIR) BUILD_DIR=$(BUILD_DIR)
 
 bcm_flashutil-install:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/bcm_flashutil) $(wildcard bcm_flashutil)))
@@ -8506,7 +8474,7 @@ cms_boardctl: bcm_util
 
 bcm_boardctl:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
-	$(MAKE) -C $(TOPX_DIR)
+	$(MAKE) -C $(TOPX_DIR) BUILD_DIR=$(BUILD_DIR)
 
 .PHONY : bcm_boardctl
 
@@ -9023,7 +8991,7 @@ blogctl-install:
 blogctl-clean:
 	$(MAKE) -C $(TOP_PLATFORM)/blogctl clean
 
-iqctl:
+iqctl: iqctl_lib
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
 	$(MAKE) -C $(TOPX_DIR)
 
@@ -9249,6 +9217,162 @@ dhcpfwd-clean:
 dhcpfwd-install:
 	install -D dhcpfwd/dhcpfwd $(INSTALLDIR)/dhcpfwd/usr/sbin/dhcpfwd
 	$(STRIP) $(INSTALLDIR)/dhcpfwd/usr/sbin/dhcpfwd
+
+ifeq ($(RTCONFIG_HND_ROUTER),y)
+ifeq ($(RTCONFIG_USB_MODEM),y)
+# iphone ethernet support
+libplist-2.2.0-configure:
+	cd libplist-2.2.0 && autoreconf --force --install && \
+		$(CONFIGURE) --without-cython \
+		--disable-shared
+
+libplist-2.2.0/Makefile:
+	$(MAKE) libplist-2.2.0-configure
+
+libplist-2.2.0: libplist-2.2.0/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libplist-2.2.0-install: libplist-2.2.0
+	install -D libplist-2.2.0/tools/plistutil $(INSTALLDIR)/libplist-2.2.0/usr/bin/plistutil
+	$(STRIP) $(INSTALLDIR)/libplist-2.2.0/usr/bin/plistutil
+	#install -D libplist-2.2.0/src/.libs/libplist-2.0.so.3.3.0 $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist-2.0.so.3.3.0
+	#cd $(INSTALLDIR)/libplist-2.2.0/usr/lib/ && \
+	#	ln -sf libplist-2.0.so.3.3.0 libplist-2.0.so.3 && \
+	#	ln -sf libplist-2.0.so.3.3.0 libplist-2.0.so
+	#$(STRIP) $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist-2.0.so.3.3.0
+	#install -D libplist-2.2.0/src/.libs/libplist++-2.0.so.3.3.0 $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist++-2.0.so.3.3.0
+	#cd $(INSTALLDIR)/libplist-2.2.0/usr/lib/ && \
+	#	ln -sf libplist++-2.0.so.3.3.0 libplist++-2.0.so.3 && \
+	#	ln -sf libplist++-2.0.so.3.3.0 libplist++-2.0.so
+	#$(STRIP) $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist++-2.0.so.3.3.0
+
+libplist-2.2.0-clean:
+	[ ! -f libplist-2.2.0/Makefile ] || $(MAKE) -C libplist-2.2.0 distclean
+	@rm -rf libplist-2.2.0/Makefile libplist-2.2.0/*/.deps
+
+libusbmuxd-2.0.2-configure:
+	cd libusbmuxd-2.0.2 && autoreconf --force --install && \
+		$(CONFIGURE) \
+		LDFLAGS="-lm" \
+		--disable-shared \
+		libplist_CFLAGS="-I$(TOP)/libplist-2.2.0/include" \
+		libplist_LIBS="-L$(TOP)/libplist-2.2.0/src/.libs -lplist-2.0"
+
+libusbmuxd-2.0.2/Makefile:
+	$(MAKE) libusbmuxd-2.0.2-configure
+
+libusbmuxd-2.0.2: libusbmuxd-2.0.2/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libusbmuxd-2.0.2-install: libusbmuxd-2.0.2
+	install -D libusbmuxd-2.0.2/tools/inetcat $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/inetcat
+	$(STRIP) $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/inetcat
+	install -D libusbmuxd-2.0.2/tools/iproxy $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/iproxy
+	$(STRIP) $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/iproxy
+	#install -D libusbmuxd-2.0.2/src/.libs/libusbmuxd-2.0.so.6.0.0 $(INSTALLDIR)/libusbmuxd-2.0.2/usr/lib/libusbmuxd-2.0.so.6.0.0
+	#cd $(INSTALLDIR)/libusbmuxd-2.0.2/usr/lib/ && \
+	#	ln -sf libusbmuxd-2.0.so.6.0.0 libusbmuxd-2.0.so.6 && \
+	#	ln -sf libusbmuxd-2.0.so.6.0.0 libusbmuxd-2.0.so
+	#$(STRIP) $(INSTALLDIR)/libusbmuxd-2.0.2/usr/lib/libusbmuxd-2.0.so.6.0.0
+
+libusbmuxd-2.0.2-clean:
+	[ ! -f libusbmuxd-2.0.2/Makefile ] || $(MAKE) -C libusbmuxd-2.0.2 distclean
+	@rm -rf libusbmuxd-2.0.2/Makefile libusbmuxd-2.0.2/*/.deps
+
+libimobiledevice-1.3.0-configure:
+	cd libimobiledevice-1.3.0 && autoreconf --force --install && \
+		$(CONFIGURE) --without-cython \
+		--disable-shared \
+		libplist_CFLAGS="-I$(TOP)/libplist-2.2.0/include" \
+		libplist_LIBS="-L$(TOP)/libplist-2.2.0/src/.libs -lplist-2.0" \
+		libusbmuxd_CFLAGS="-I$(TOP)/libusbmuxd-2.0.2/include" \
+		libusbmuxd_LIBS="-L$(TOP)/libusbmuxd-2.0.2/src/.libs -lusbmuxd-2.0" \
+		openssl_CFLAGS="-I$(TOP)/openssl/include" \
+		openssl_LIBS="-L$(TOP)/openssl -lssl -lcrypto"
+
+libimobiledevice-1.3.0/Makefile:
+	$(MAKE) libimobiledevice-1.3.0-configure
+
+libimobiledevice-1.3.0: libimobiledevice-1.3.0/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libimobiledevice-1.3.0-install: libimobiledevice-1.3.0
+	install -D libimobiledevice-1.3.0/tools/idevicebackup $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup
+	install -D libimobiledevice-1.3.0/tools/idevicebackup2 $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup2
+	install -D libimobiledevice-1.3.0/tools/idevicecrashreport $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicecrashreport
+	install -D libimobiledevice-1.3.0/tools/idevicedate $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedate
+	install -D libimobiledevice-1.3.0/tools/idevicedebug $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebug
+	install -D libimobiledevice-1.3.0/tools/idevicedebugserverproxy $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebugserverproxy
+	install -D libimobiledevice-1.3.0/tools/idevicediagnostics $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicediagnostics
+	install -D libimobiledevice-1.3.0/tools/ideviceenterrecovery $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceenterrecovery
+	install -D libimobiledevice-1.3.0/tools/idevice_id $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevice_id
+	install -D libimobiledevice-1.3.0/tools/ideviceimagemounter $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceimagemounter
+	install -D libimobiledevice-1.3.0/tools/ideviceinfo $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceinfo
+	install -D libimobiledevice-1.3.0/tools/idevicename $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicename
+	install -D libimobiledevice-1.3.0/tools/idevicenotificationproxy $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicenotificationproxy
+	install -D libimobiledevice-1.3.0/tools/idevicepair $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicepair
+	install -D libimobiledevice-1.3.0/tools/ideviceprovision $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceprovision
+	install -D libimobiledevice-1.3.0/tools/idevicescreenshot $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicescreenshot
+	install -D libimobiledevice-1.3.0/tools/idevicesetlocation $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesetlocation
+	install -D libimobiledevice-1.3.0/tools/idevicesyslog $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesyslog
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup2
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicecrashreport
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedate
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebug
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebugserverproxy
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicediagnostics
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceenterrecovery
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevice_id
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceimagemounter
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceinfo
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicename
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicenotificationproxy
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicepair
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceprovision
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicescreenshot
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesetlocation
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesyslog
+	#install -D libimobiledevice-1.3.0/src/.libs/libimobiledevice-1.0.so.6.0.0 $(INSTALLDIR)/libimobiledevice-1.3.0/usr/lib/libimobiledevice-1.0.so.6.0.0
+	#cd $(INSTALLDIR)/libimobiledevice-1.3.0/usr/lib/ && \
+	#	ln -sf libimobiledevice-1.0.so.6.0.0 libimobiledevice-1.0.so.6 && \
+	#	ln -sf libimobiledevice-1.0.so.6.0.0 libimobiledevice-1.0.so
+	#$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/lib/libimobiledevice-1.0.so.6.0.0
+
+libimobiledevice-1.3.0-clean:
+	[ ! -f libimobiledevice-1.3.0/Makefile ] || $(MAKE) -C libimobiledevice-1.3.0 distclean
+	@rm -rf libimobiledevice-1.3.0/Makefile libimobiledevice-1.3.0/*/.deps
+
+usbmuxd-1.1.1-configure:
+	cd usbmuxd-1.1.1 && autoreconf --force --install && \
+		$(CONFIGURE) \
+		--disable-shared \
+		ac_cv_func_malloc_0_nonnull=yes \
+		ac_cv_func_realloc_0_nonnull=yes \
+		ac_cv_enum_idevice_connection_type=yes \
+		libusb_CFLAGS="-I$(TOP)/libusb10/libusb" \
+		libusb_LIBS="-L$(TOP)/libusb10/libusb/.libs -lusb-1.0" \
+		libplist_CFLAGS="-I$(TOP)/libplist-2.2.0/include" \
+		libplist_LIBS="-L$(TOP)/libplist-2.2.0/src/.libs -lplist-2.0" \
+		libimobiledevice_CFLAGS="-I$(TOP)/libimobiledevice-1.3.0/include" \
+		libimobiledevice_LIBS="-L$(TOP)/libimobiledevice-1.3.0/src/.libs -limobiledevice-1.0"
+
+usbmuxd-1.1.1/Makefile:
+	$(MAKE) usbmuxd-1.1.1-configure
+
+usbmuxd-1.1.1: usbmuxd-1.1.1/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+usbmuxd-1.1.1-install: usbmuxd-1.1.1
+	install -D usbmuxd-1.1.1/src/usbmuxd $(INSTALLDIR)/usbmuxd-1.1.1/usr/bin/usbmuxd
+	$(STRIP) $(INSTALLDIR)/usbmuxd-1.1.1/usr/bin/usbmuxd
+
+usbmuxd-1.1.1-clean:
+	[ ! -f usbmuxd-1.1.1/Makefile ] || $(MAKE) -C usbmuxd-1.1.1 distclean
+	@rm -rf usbmuxd-1.1.1/Makefile usbmuxd-1.1.1/*/.deps
+endif
+endif
+
 
 #
 # Generic rules

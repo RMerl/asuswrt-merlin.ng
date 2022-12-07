@@ -20,8 +20,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __EXIF_TAG_H__
-#define __EXIF_TAG_H__
+#ifndef LIBEXIF_EXIF_TAG_H
+#define LIBEXIF_EXIF_TAG_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -73,6 +73,7 @@ typedef enum {
 	EXIF_TAG_RELATED_IMAGE_FILE_FORMAT	= 0x1000,
 	EXIF_TAG_RELATED_IMAGE_WIDTH		= 0x1001,
 	EXIF_TAG_RELATED_IMAGE_LENGTH		= 0x1002,
+	EXIF_TAG_IMAGE_DEPTH			= 0x80e5,
 	EXIF_TAG_CFA_REPEAT_PATTERN_DIM		= 0x828d,
 	EXIF_TAG_CFA_PATTERN			= 0x828e,
 	EXIF_TAG_BATTERY_LEVEL			= 0x828f,
@@ -89,9 +90,18 @@ typedef enum {
 	EXIF_TAG_ISO_SPEED_RATINGS		= 0x8827,
 	EXIF_TAG_OECF				= 0x8828,
 	EXIF_TAG_TIME_ZONE_OFFSET		= 0x882a,
+	EXIF_TAG_SENSITIVITY_TYPE		= 0x8830,
+	EXIF_TAG_STANDARD_OUTPUT_SENSITIVITY	= 0x8831,
+	EXIF_TAG_RECOMMENDED_EXPOSURE_INDEX	= 0x8832,
+	EXIF_TAG_ISO_SPEED			= 0x8833,
+	EXIF_TAG_ISO_SPEEDLatitudeYYY		= 0x8834,
+	EXIF_TAG_ISO_SPEEDLatitudeZZZ		= 0x8835,
 	EXIF_TAG_EXIF_VERSION			= 0x9000,
 	EXIF_TAG_DATE_TIME_ORIGINAL		= 0x9003,
 	EXIF_TAG_DATE_TIME_DIGITIZED		= 0x9004,
+	EXIF_TAG_OFFSET_TIME			= 0x9010,
+	EXIF_TAG_OFFSET_TIME_ORIGINAL		= 0x9011,
+	EXIF_TAG_OFFSET_TIME_DIGITIZED		= 0x9012,
 	EXIF_TAG_COMPONENTS_CONFIGURATION	= 0x9101,
 	EXIF_TAG_COMPRESSED_BITS_PER_PIXEL	= 0x9102,
 	EXIF_TAG_SHUTTER_SPEED_VALUE		= 0x9201,
@@ -146,8 +156,18 @@ typedef enum {
 	EXIF_TAG_DEVICE_SETTING_DESCRIPTION	= 0xa40b,
 	EXIF_TAG_SUBJECT_DISTANCE_RANGE		= 0xa40c,
 	EXIF_TAG_IMAGE_UNIQUE_ID		= 0xa420,
+	EXIF_TAG_CAMERA_OWNER_NAME 		= 0xa430,
+	EXIF_TAG_BODY_SERIAL_NUMBER 		= 0xa431,
+	EXIF_TAG_LENS_SPECIFICATION 		= 0xa432,
+	EXIF_TAG_LENS_MAKE	 		= 0xa433,
+	EXIF_TAG_LENS_MODEL	 		= 0xa434,
+	EXIF_TAG_LENS_SERIAL_NUMBER 		= 0xa435,
+	EXIF_TAG_COMPOSITE_IMAGE 		= 0xa460,
+	EXIF_TAG_SOURCE_IMAGE_NUMBER_OF_COMPOSITE_IMAGE 		= 0xa461,
+	EXIF_TAG_SOURCE_EXPOSURE_TIMES_OF_COMPOSITE_IMAGE 		= 0xa462,
 	EXIF_TAG_GAMMA				= 0xa500,
-	EXIF_TAG_PRINT_IMAGE_MATCHING		= 0xc4a5
+	EXIF_TAG_PRINT_IMAGE_MATCHING		= 0xc4a5,
+	EXIF_TAG_PADDING			= 0xea1c
 } ExifTag;
 
 /* GPS tags overlap with above ones. */
@@ -182,6 +202,7 @@ typedef enum {
 #define EXIF_TAG_GPS_AREA_INFORMATION   0x001c
 #define EXIF_TAG_GPS_DATE_STAMP         0x001d
 #define EXIF_TAG_GPS_DIFFERENTIAL       0x001e
+#define EXIF_TAG_GPS_H_POSITIONING_ERROR 0x001f
 
 /*! What level of support a tag enjoys in the EXIF standard */
 typedef enum {
@@ -201,7 +222,9 @@ typedef enum {
 /*! Return the tag ID given its unique textual name.
  *
  * \param[in] name tag name
- * \return tag ID
+ * \return tag ID, or 0 if tag not found
+ * \note The tag not found value cannot be distinguished from a legitimate
+ *   tag number 0.
  */
 ExifTag          exif_tag_from_name                (const char *name);
 
@@ -281,4 +304,4 @@ unsigned int exif_tag_table_count    (void);
 }
 #endif /* __cplusplus */
 
-#endif /* __EXIF_TAG_H__ */
+#endif /* !defined(LIBEXIF_EXIF_TAG_H) */

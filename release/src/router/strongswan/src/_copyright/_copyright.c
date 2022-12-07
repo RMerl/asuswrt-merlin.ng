@@ -58,14 +58,14 @@ static const char *copyright[] = {
 	NULL,
 };
 
-char usage[] = "Usage: ipsec _copyright";
-struct option opts[] = {
+static const char usage[] = "Usage: ipsec _copyright";
+static const struct option opts[] = {
   {"help",	0,	NULL,	'h',},
   {"version",	0,	NULL,	'v',},
   {0,		0,	NULL,	0, },
 };
 
-char me[] = "ipsec _copyright";	/* for messages */
+static const char me[] = "ipsec _copyright";	/* for messages */
 
 int
 main(int argc, char *argv[])

@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -19,6 +19,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 #include "tool_setup.h"
@@ -50,8 +52,6 @@ struct State {
 
 struct OperationConfig {
   bool remote_time;
-  char *random_file;
-  char *egd_file;
   char *useragent;
   struct curl_slist *cookies;  /* cookies to serialize into a single line */
   char *cookiejar;          /* write to this file */
@@ -110,7 +110,7 @@ struct OperationConfig {
   struct curl_slist *mail_rcpt;
   char *mail_auth;
   bool mail_rcpt_allowfails; /* --mail-rcpt-allowfails */
-  char *sasl_authzid;       /* Authorisation identity (identity to use) */
+  char *sasl_authzid;       /* Authorization identity (identity to use) */
   bool sasl_ir;             /* Enable/disable SASL initial response */
   bool proxytunnel;
   bool ftp_append;          /* APPE on ftp */
@@ -158,6 +158,7 @@ struct OperationConfig {
   char *proxy_key_passwd;
   char *pubkey;
   char *hostpubmd5;
+  char *hostpubsha256;
   char *engine;
   char *etag_save_file;
   char *etag_compare_file;
@@ -188,6 +189,7 @@ struct OperationConfig {
   bool proxydigest;
   bool proxybasic;
   bool proxyanyauth;
+  bool jsoned; /* added json content-type */
   char *writeout;           /* %-styled format string to output */
   struct curl_slist *quote;
   struct curl_slist *postquote;
@@ -238,6 +240,7 @@ struct OperationConfig {
   char *ftp_account;        /* for ACCT */
   char *ftp_alternative_to_user;  /* send command if USER/PASS fails */
   int ftp_filemethod;
+  long mime_options;        /* Mime option flags. */
   long tftp_blksize;        /* TFTP BLKSIZE option */
   bool tftp_no_options;     /* do not send TFTP options requests */
   bool ignorecl;            /* --ignore-content-length */
@@ -287,10 +290,21 @@ struct OperationConfig {
   bool haproxy_protocol;          /* whether to send HAProxy protocol v1 */
   bool disallow_username_in_url;  /* disallow usernames in URLs */
   char *aws_sigv4;
+  enum {
+    CLOBBER_DEFAULT, /* Provides compatibility with previous versions of curl,
+                        by using the default behavior for -o, -O, and -J.
+                        If those options would have overwritten files, like
+                        -o and -O would, then overwrite them. In the case of
+                        -J, this will not overwrite any files. */
+    CLOBBER_NEVER, /* If the file exists, always fail */
+    CLOBBER_ALWAYS /* If the file exists, always overwrite it */
+  } file_clobber_mode;
   struct GlobalConfig *global;
   struct OperationConfig *prev;
   struct OperationConfig *next;   /* Always last in the struct */
   struct State state;             /* for create_transfer() */
+  bool rm_partial;                /* on error, remove partially written output
+                                     files */
 };
 
 struct GlobalConfig {
@@ -311,6 +325,8 @@ struct GlobalConfig {
   char *libcurl;                  /* Output libcurl code to this file name */
   bool fail_early;                /* exit on first transfer error */
   bool styled_output;             /* enable fancy output style detection */
+  long ms_per_transfer;           /* start next transfer after (at least) this
+                                     many milliseconds */
 #ifdef CURLDEBUG
   bool test_event_based;
 #endif

@@ -1,0 +1,7 @@
+carol::swanctl --terminate --ike home 2> /dev/null
+dave::swanctl --terminate --ike home 2> /dev/null
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan
+winnetou::systemctl stop slapd
+moon::rm /etc/swanctl/x509ca/*

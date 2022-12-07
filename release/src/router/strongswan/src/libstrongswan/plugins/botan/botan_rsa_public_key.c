@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
  * Copyright (C) 2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2018 René Korthaus
  * Rohde & Schwarz Cybersecurity GmbH
@@ -139,10 +138,11 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt, bool,
 	private_botan_rsa_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t plain, chunk_t *crypto)
+	void *params, chunk_t plain, chunk_t *crypto)
 {
 	botan_pk_op_encrypt_t encrypt_op;
 	botan_rng_t rng;
+	chunk_t label = chunk_empty;
 	const char* padding;
 
 	switch (scheme)
@@ -171,7 +171,17 @@ METHOD(public_key_t, encrypt, bool,
 			return FALSE;
 	}
 
-	if (botan_rng_init(&rng, "user"))
+	if (scheme != ENCRYPT_RSA_PKCS1 && params != NULL)
+	{
+		label = *(chunk_t *)params;
+		if (label.len > 0)
+		{
+			DBG1(DBG_LIB, "RSA OAEP encryption with a label not supported");
+			return FALSE;
+		}
+	}
+
+	if (!botan_get_rng(&rng, RNG_STRONG))
 	{
 		return FALSE;
 	}
@@ -215,7 +225,7 @@ METHOD(public_key_t, get_keysize, int,
 		return 0;
 	}
 
-	if (botan_pubkey_rsa_get_n(n, this->key) ||
+	if (botan_pubkey_get_field(n, this->key, "n") ||
 		botan_mp_num_bits(n, &bits))
 	{
 		botan_mp_destroy(n);

@@ -23,6 +23,8 @@
 
 #include "libavutil/float_dsp.h"
 #include "libavutil/internal.h"
+#include "libavutil/mem_internal.h"
+
 #include "checkasm.h"
 
 #define LEN 256
@@ -51,7 +53,31 @@ static void test_vector_fmul(const float *src0, const float *src1)
     call_ref(cdst, src0, src1, LEN);
     call_new(odst, src0, src1, LEN);
     for (i = 0; i < LEN; i++) {
-        if (!float_near_abs_eps(cdst[i], odst[i], FLT_EPSILON)) {
+        double t = fabs(src0[i]) + fabs(src1[i]) + fabs(src0[i] * src1[i]) + 1.0;
+        if (!float_near_abs_eps(cdst[i], odst[i], t * 2 * FLT_EPSILON)) {
+            fprintf(stderr, "%d: %- .12f - %- .12f = % .12g\n",
+                    i, cdst[i], odst[i], cdst[i] - odst[i]);
+            fail();
+            break;
+        }
+    }
+    bench_new(odst, src0, src1, LEN);
+}
+
+static void test_vector_dmul(const double *src0, const double *src1)
+{
+    LOCAL_ALIGNED_32(double, cdst, [LEN]);
+    LOCAL_ALIGNED_32(double, odst, [LEN]);
+    int i;
+
+    declare_func(void, double *dst, const double *src0, const double *src1,
+                 int len);
+
+    call_ref(cdst, src0, src1, LEN);
+    call_new(odst, src0, src1, LEN);
+    for (i = 0; i < LEN; i++) {
+        double t = fabs(src0[i]) + fabs(src1[i]) + fabs(src0[i] * src1[i]) + 1.0;
+        if (!double_near_abs_eps(cdst[i], odst[i], t * 2 * DBL_EPSILON)) {
             fprintf(stderr, "%d: %- .12f - %- .12f = % .12g\n",
                     i, cdst[i], odst[i], cdst[i] - odst[i]);
             fail();
@@ -95,7 +121,8 @@ static void test_vector_fmul_scalar(const float *src0, const float *src1)
     call_ref(cdst, src0, src1[0], LEN);
     call_new(odst, src0, src1[0], LEN);
         for (i = 0; i < LEN; i++) {
-            if (!float_near_abs_eps(cdst[i], odst[i], FLT_EPSILON)) {
+            double t = fabs(src0[i]) + fabs(src1[0]) + fabs(src0[i] * src1[0]) + 1.0;
+            if (!float_near_abs_eps(cdst[i], odst[i], t * 2 * FLT_EPSILON)) {
                 fprintf(stderr, "%d: %- .12f - %- .12f = % .12g\n",
                         i, cdst[i], odst[i], cdst[i] - odst[i]);
                 fail();
@@ -294,6 +321,8 @@ void checkasm_check_float_dsp(void)
     if (check_func(fdsp->vector_fmac_scalar, "vector_fmac_scalar"))
         test_vector_fmac_scalar(src0, src1, src2);
     report("vector_fmac");
+    if (check_func(fdsp->vector_dmul, "vector_dmul"))
+        test_vector_dmul(dbl_src0, dbl_src1);
     if (check_func(fdsp->vector_dmul_scalar, "vector_dmul_scalar"))
         test_vector_dmul_scalar(dbl_src0, dbl_src1);
     report("vector_dmul");

@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2014 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -87,7 +86,7 @@ void array_compress(array_t *array);
 /**
  * Create an enumerator over an array.
  *
- * The enumerater enumerates directly over the array element (pass a pointer to
+ * The enumerator enumerates directly over the array element (pass a pointer to
  * element types), unless the array is pointer based. If zero is passed as
  * element size during construction, the enumerator enumerates over the
  * dereferenced pointer values.

@@ -300,6 +300,8 @@ function check_duplicate_result(result_obj){
 	return duplicate;
 }
 
+var LEVEL_ERR_MAX = 50;
+var level_err_cnt = 0;
 function get_speedTest_result(){
 	speedTest_result = httpApi.hookGet("ookla_speedtest_get_result", true);
 	var result_time = {};
@@ -316,11 +318,20 @@ function get_speedTest_result(){
 		setTimeout("get_speedTest_result();", 200);
 	}
 	else{
-		if((typeof speedTest_result[speedTest_result.length - 2].error != "undefined") ||
-		   (typeof speedTest_result[speedTest_result.length - 2].level != "undefined" && speedTest_result[speedTest_result.length - 2].level == "error"))
+		if(typeof speedTest_result[speedTest_result.length - 2].error != "undefined")
 		{
 			error_handling(ookla_states.ERR_TERMINATE);
 			return;
+		}
+		else if(typeof speedTest_result[speedTest_result.length - 2].level != "undefined" && speedTest_result[speedTest_result.length - 2].level == "error"){
+			if(level_err_cnt < LEVEL_ERR_MAX){
+				level_err_cnt++;
+			}
+			else{
+				error_handling(ookla_states.ERR_TERMINATE);
+				level_err_cnt = 0;
+				return;
+			}
 		}
 
 		for(var i = 0; i < speedTest_result.length - 1; i++){
@@ -383,6 +394,7 @@ function get_speedTest_result(){
 
 				change_speedTestBtn('go');
 				setTimeout("check_wan_status()", 3000);
+				level_err_cnt = 0;
 			}
 		}
 
@@ -1132,22 +1144,22 @@ function close_info(){
 				</div>
 				<div class="download_upload_container">
 					<div class="speedResult_container">
-						<div style="width: 60%; height: 15px;">
+						<div class="result_title_container">
 							<div class="download_result_icon">
 								<span class="download_upload_text"><#InternetSpeed_Download#></span>
 							</div>
 						</div>
 						<div class="test_result"><div id="download_test_result">--</div></div>
-						<div style="width: 60%;  height: 15px; color:#B2BBC1"><#InternetSpeed_Mbps#></div>
+						<div class="result_unit"><#InternetSpeed_Mbps#></div>
 					</div>
 					<div class="speedResult_container">
-						<div style="width: 60%; height: 15px;">
+						<div class="result_title_container">
 							<div class="upload_result_icon">
 								<span class="download_upload_text"><#InternetSpeed_Upload#></span>
 							</div>
 						</div>
 						<div class="test_result"><div id="upload_test_result">--</div></div>
-						<div style="width: 60%; height: 15px; color:#B2BBC1"><#InternetSpeed_Mbps#></div>
+						<div class="result_unit"><#InternetSpeed_Mbps#></div>
 					</div>
 				</div>
 			</div>

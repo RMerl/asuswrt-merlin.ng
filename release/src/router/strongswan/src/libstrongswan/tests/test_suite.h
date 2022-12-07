@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -51,7 +51,7 @@ typedef void (*test_function_cb_t)(int);
 /**
  * Fixture for a test case.
  */
-typedef void (*test_fixture_cb_t)(void);
+typedef void (*test_fixture_cb_t)(int);
 
 /**
  * A test suite; a collection of test cases with fixtures
@@ -218,6 +218,18 @@ void test_setup_timeout(int s);
  * @return			source code line number
  */
 int test_failure_get(char *msg, int len, const char **file);
+
+/**
+ * Get info about warnings if any were issued during the test. Resets the
+ * warning state.
+ *
+ * @param cb		callback that receives a custom context object, message,
+ *					source file and line of each warning
+ * @param ctx		context object
+ * @return			TRUE if any warnings were issued
+ */
+bool test_warnings_get(void (*cb)(void *ctx, const char *msg, const char *file,
+								  const int line), void *ctx);
 
 /**
  * Get info about a warning if one was issued during the test. Resets the
@@ -388,9 +400,9 @@ void test_fail_if_worker_failed();
 #define suite_add_tcase test_suite_add_case
 #define START_TEST(name) static void name (int _i) {
 #define END_TEST test_fail_if_worker_failed(); }
-#define START_SETUP(name) static void name() {
+#define START_SETUP(name) static void name(int _i) {
 #define END_SETUP test_fail_if_worker_failed(); }
-#define START_TEARDOWN(name) static void name() {
+#define START_TEARDOWN(name) static void name(int _i) {
 #define END_TEARDOWN test_fail_if_worker_failed(); }
 
 #endif /** TEST_SUITE_H_ @}*/

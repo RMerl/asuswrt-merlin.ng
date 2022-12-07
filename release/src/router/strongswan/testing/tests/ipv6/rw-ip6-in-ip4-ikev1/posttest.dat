@@ -1,6 +1,6 @@
-moon::systemctl stop strongswan-swanctl
-carol::systemctl stop strongswan-swanctl
-dave::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
 moon::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush
 dave::iptables-restore < /etc/iptables.flush

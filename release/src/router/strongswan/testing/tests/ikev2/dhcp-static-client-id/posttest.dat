@@ -1,9 +1,11 @@
-moon::ipsec stop
-carol::ipsec stop
-dave::ipsec stop
+carol::swanctl --terminate --ike home
+dave::swanctl --terminate --ike home
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan
 venus::service isc-dhcp-server stop 2> /dev/null
 moon::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush
 dave::iptables-restore < /etc/iptables.flush
-alice::arp -d 10.1.0.30
-alice::arp -d 10.1.0.40
+alice::ip neigh del 10.1.0.30 dev eth0
+alice::ip neigh del 10.1.0.40 dev eth0

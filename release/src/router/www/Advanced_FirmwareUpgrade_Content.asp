@@ -1292,18 +1292,7 @@ function gen_AiMesh_fw_status(_manual_status, _node_info) {
 	return html;
 }
 function check_AiMesh_fw_version(_fw) {
-	var support_manual_fw_id = 382;
-	var support_manual_fw_num = 18000;
-	var manual_status = false;
-	var fw_array = _fw.match(/(\d+)\.(\d+)\.(\d+)\.(\d+)\.([^_]+)_([^-]+)/);
-	if(fw_array){
-		var fw_id = parseInt(fw_array[5]) || 0;
-		var fw_num = parseInt(fw_array[6]) || 0;
-		if(fw_id > support_manual_fw_id ||
-				(fw_id == support_manual_fw_id && fw_num >= support_manual_fw_num)){
-			manual_status = true;
-		}
-	}
+	var manual_status = true;
 	if(support_site_modelid == "GT-AC2900_SH"){
 		manual_status = false;
 	}

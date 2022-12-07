@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,6 +19,7 @@
 #include <errno.h>
 
 #include "command.h"
+#include "swanctl.h"
 
 #include <collections/hashtable.h>
 
@@ -85,6 +87,7 @@ CALLBACK(policies, int,
 	ret = vici_parse_cb(res, NULL, policy_values, policy_list, pol);
 
 	printf("%s, %s\n", name, pol->get(pol, "mode"));
+	print_label("  label:  ", pol->get(pol, "label"));
 	printf("  local:  %s\n", pol->get(pol, "local-ts"));
 	printf("  remote: %s\n", pol->get(pol, "remote-ts"));
 

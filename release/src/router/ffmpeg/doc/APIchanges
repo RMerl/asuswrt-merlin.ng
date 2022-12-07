@@ -15,6 +15,314 @@ libavutil:     2017-10-21
 
 API changes, most recent first:
 
+-------- 8< --------- FFmpeg 4.4 was cut here -------- 8< ---------
+
+2021-03-19 - e8c0bca6bd - lavu 56.69.100 - adler32.h
+  Added a typedef for the type of the Adler-32 checksums
+  used by av_adler32_update(). It will be changed to uint32_t
+  at the next major bump.
+  The type of the parameter for the length of the input buffer
+  will also be changed to size_t at the next major bump.
+
+2021-03-19 - e318438f2f - lavf 58.75.100  - avformat.h
+  AVChapter.id will be changed from int to int64_t
+  on the next major version bump.
+
+2021-03-17 - f7db77bd87 - lavc 58.133.100 - codec.h
+  Deprecated av_init_packet(). Once removed, sizeof(AVPacket) will
+  no longer be a part of the public ABI.
+  Deprecated AVPacketList.
+
+2021-03-16 - 7d09579190 - lavc 58.132.100 - codec.h
+  Add AV_CODEC_CAP_OTHER_THREADS as a new name for
+  AV_CODEC_CAP_AUTO_THREADS. AV_CODEC_CAP_AUTO_THREADS
+  is now deprecated.
+
+2021-03-12 - 6e7e3a3820 - lavc 58.131.100 - avcodec.h codec.h
+  Add a get_encode_buffer callback to AVCodecContext, similar to
+  get_buffer2 but for encoders.
+  Add avcodec_default_get_encode_buffer().
+  Add AV_GET_ENCODE_BUFFER_FLAG_REF.
+  Encoders may now be flagged as AV_CODEC_CAP_DR1 capable.
+
+2021-03-10 - 42e68fe015 - lavf 58.72.100 - avformat.h
+  Change AVBufferRef related AVStream function and struct size
+  parameter and fields type to size_t at next major bump.
+
+2021-03-10 - d79e0fe65c - lavc 58.130.100 - packet.h
+  Change AVBufferRef related AVPacket function and struct size
+  parameter and fields type to size_t at next major bump.
+
+2021-03-10 - 14040a1d91 - lavu 56.68.100 - buffer.h frame.h
+  Change AVBufferRef and relevant AVFrame function and struct size
+  parameter and fields type to size_t at next major bump.
+
+2021-03-04 - a0eec776b6 - lavc 58.128.101 - avcodec.h
+  Enable err_recognition to be set for encoders.
+
+2021-03-03 - 2ff40b98ec - lavf 58.70.100 - avformat.h
+  Deprecate AVFMT_FLAG_PRIV_OPT. It will do nothing
+  as soon as av_demuxer_open() is removed.
+
+2021-02-27 - dd9227e48f - lavc 58.126.100 - avcodec.h
+  Deprecated avcodec_get_frame_class().
+
+2021-02-21 - 5ca40d6d94 - lavu 56.66.100 - tx.h
+  Add enum AVTXFlags and AVTXFlags.AV_TX_INPLACE
+
+2021-02-14 - 4f49ca7bbc - lavd 58.12.100 - avdevice.h
+  Deprecated avdevice_capabilities_create() and
+  avdevice_capabilities_free().
+
+2021-02-10 - 1bda9bb68a - lavu 56.65.100 - common.h
+  Add FFABS64U()
+
+2021-01-26 - 5dd9567080 - lavu 56.64.100 - common.h
+  Add FFABSU()
+
+2021-01-25 - 56709ca8aa - lavc 58.119.100 - avcodec.h
+  Deprecate AVCodecContext.debug_mv, FF_DEBUG_VIS_MV_P_FOR, FF_DEBUG_VIS_MV_B_FOR,
+  FF_DEBUG_VIS_MV_B_BACK
+
+2021-01-11 - ebdd33086a - lavc 58.116.100 - avcodec.h
+  Add FF_PROFILE_VVC_MAIN_10 and FF_PROFILE_VVC_MAIN_10_444.
+
+2020-01-01 - baecaa16c1 - lavu 56.63.100 - video_enc_params.h
+  Add AV_VIDEO_ENC_PARAMS_MPEG2
+
+2020-12-03 - eca12f4d5a - lavu 56.62.100 - timecode.h
+  Add av_timecode_init_from_components.
+
+2020-11-27 - a83098ab03 - lavc 58.114.100 - avcodec.h
+  Deprecate AVCodecContext.thread_safe_callbacks. Starting with
+  LIBAVCODEC_VERSION_MAJOR=60, user callbacks must always be
+  thread-safe when frame threading is used.
+
+2020-11-25 - d243dd540a - lavc 58.113.100 - avcodec.h
+  Adds a new flag AV_CODEC_EXPORT_DATA_FILM_GRAIN for export_side_data.
+
+2020-11-25 - 4f9ee87253 - lavu 56.61.100 - film_grain_params.h
+  Adds a new API for extracting codec film grain parameters as side data.
+  Adds a new AVFrameSideDataType entry AV_FRAME_DATA_FILM_GRAIN_PARAMS for it.
+
+2020-10-28 - f95d9510ff - lavf 58.64.100 - avformat.h
+  Add AVSTREAM_EVENT_FLAG_NEW_PACKETS.
+
+2020-09-28 - 68918d3b7f - lavu 56.60.100 - buffer.h
+  Add a av_buffer_replace() convenience function.
+
+2020-09-13 - 837b6eb90e - lavu 56.59.100 - timecode.h
+  Add av_timecode_make_smpte_tc_string2.
+
+2020-08-21 - 06f2651204 - lavu 56.58.100 - avstring.h
+  Deprecate av_d2str(). Use av_asprintf() instead.
+
+2020-08-04 - 34de0abbe7 - lavu 56.58.100 - channel_layout.h
+  Add AV_CH_LAYOUT_22POINT2 together with its newly required pieces:
+  AV_CH_TOP_SIDE_LEFT, AV_CH_TOP_SIDE_RIGHT, AV_CH_BOTTOM_FRONT_CENTER,
+  AV_CH_BOTTOM_FRONT_LEFT, AV_CH_BOTTOM_FRONT_RIGHT.
+
+2020-07-23 - 84655b7101 - lavu 56.57.100 - cpu.h
+  Add AV_CPU_FLAG_MMI and AV_CPU_FLAG_MSA.
+
+2020-07-22 - 3a8e927176 - lavu 56.56.100 - imgutils.h
+  Add av_image_fill_plane_sizes().
+
+2020-07-15 - 448a9aaa78 - lavc 58.96.100 - packet.h
+  Add AV_PKT_DATA_S12M_TIMECODE.
+
+2020-06-12 - b09fb030c1 - lavu 56.55.100 - pixdesc.h
+  Add AV_PIX_FMT_X2RGB10.
+
+2020-06-11 - bc8ab084fb - lavu 56.54.100 - frame.h
+  Add AV_FRAME_DATA_SEI_UNREGISTERED.
+
+2020-06-10 - 1b4a98b029 - lavu 56.53.100 - log.h opt.h
+  Add av_opt_child_class_iterate() and AVClass.child_class_iterate().
+  Deprecate av_opt_child_class_next() and AVClass.child_class_next().
+
+-------- 8< --------- FFmpeg 4.3 was cut here -------- 8< ---------
+
+2020-06-05 - ec39c2276a - lavu 56.50.100 - buffer.h
+  Passing NULL as alloc argument to av_buffer_pool_init2() is now allowed.
+
+2020-05-27 - ba6cada92e - lavc 58.88.100 - avcodec.h codec.h
+  Move AVCodec-related public API to new header codec.h.
+
+2020-05-23 - 064b875e89 - lavu 56.49.100 - video_enc_params.h
+  Add AV_VIDEO_ENC_PARAMS_H264.
+
+2020-05-23 - 2e08b39444 - lavu 56.48.100 - hwcontext.h
+  Add av_hwdevice_ctx_create_derived_opts.
+
+2020-05-23 - 6b65c4ec54 - lavu 56.47.100 - rational.h
+  Add av_gcd_q().
+
+2020-05-22 - af9e622776 - lavu 56.46.101 - opt.h
+  Add AV_OPT_FLAG_CHILD_CONSTS.
+
+2020-05-22 - 9d443c3e68 - lavc 58.87.100 - avcodec.h codec_par.h
+  Move AVBitstreamFilter-related public API to new header bsf.h.
+  Move AVCodecParameters-related public API to new header codec_par.h.
+
+2020-05-21 - 13b1bbff0b - lavc 58.86.101 - avcodec.h
+  Deprecated AV_CODEC_CAP_INTRA_ONLY and AV_CODEC_CAP_LOSSLESS.
+
+2020-05-17 - 84af196c65 - lavu 56.46.100 - common.h
+  Add av_sat_add64() and av_sat_sub64()
+
+2020-05-12 - 991d417692 - lavu 56.45.100 - video_enc_params.h
+                          lavc 58.84.100 - avcodec.h
+  Add a new API for exporting video encoding information.
+  Replaces the deprecated API for exporting QP tables from decoders.
+  Add AV_CODEC_EXPORT_DATA_VIDEO_ENC_PARAMS to request this information from
+  decoders.
+
+2020-05-10 - dccd07f66d - lavu 56.44.100 - hwcontext_vulkan.h
+  Add enabled_inst_extensions, num_enabled_inst_extensions, enabled_dev_extensions
+  and num_enabled_dev_extensions fields to AVVulkanDeviceContext
+
+2020-04-22 - 0e1db79e37 - lavc 58.81.100 - packet.h
+                        - lavu 56.43.100 - dovi_meta.h
+  Add AV_PKT_DATA_DOVI_CONF and AVDOVIDecoderConfigurationRecord.
+
+2020-04-15 - 22b25b3ea5 - lavc 58.79.100 - avcodec.h
+  Add formal support for calling avcodec_flush_buffers() on encoders.
+  Encoders that set the cap AV_CODEC_CAP_ENCODER_FLUSH will be flushed.
+  For all other encoders, the call is now a no-op rather than undefined
+  behaviour.
+
+2020-04-10 - 672946c7fe - lavc 58.78.100 - avcodec.h codec_desc.h codec_id.h packet.h
+  Move AVCodecDesc-related public API to new header codec_desc.h.
+  Move AVCodecID enum to new header codec_id.h.
+  Move AVPacket-related public API to new header packet.h.
+
+2020-03-29 - 4cb0dda555 - lavf 58.42.100 - avformat.h
+  av_read_frame() now guarantees to handle uninitialized input packets
+  and to return refcounted packets on success.
+
+2020-03-27 - c52ec0367d - lavc 58.77.100 - avcodec.h
+  av_packet_ref() now guarantees to return the destination packet
+  in a blank state on error.
+
+2020-03-10 - 05d27f342b - lavc 58.75.100 - avcodec.h
+  Add AV_PKT_DATA_ICC_PROFILE.
+
+2020-02-21 - d005a7cdfd - lavc 58.73.101 - avcodec.h
+  Add AV_CODEC_EXPORT_DATA_PRFT.
+
+2020-02-21 - c666689491 - lavc 58.73.100 - avcodec.h
+  Add AVCodecContext.export_side_data and AV_CODEC_EXPORT_DATA_MVS.
+
+2020-02-13 - e8f054b095 - lavu 56.41.100 - tx.h
+  Add AV_TX_INT32_FFT and AV_TX_INT32_MDCT
+
+2020-02-12 - 3182114f88 - lavu 56.40.100 - log.h
+  Add av_log_once().
+
+2020-02-04 - a88449ffb2 - lavu 56.39.100 - hwcontext.h
+  Add AV_PIX_FMT_VULKAN
+  Add AV_HWDEVICE_TYPE_VULKAN and implementation.
+
+2020-01-30 - 27529eeb27 - lavf 58.37.100 - avio.h
+  Add avio_protocol_get_class().
+
+2020-01-15 - 717b2074ec - lavc 58.66.100 - avcodec.h
+  Add AV_PKT_DATA_PRFT and AVProducerReferenceTime.
+
+2019-12-27 - 45259a0ee4 - lavu 56.38.100 - eval.h
+  Add av_expr_count_func().
+
+2019-12-26 - 16685114d5 - lavu 56.37.100 - buffer.h
+  Add av_buffer_pool_buffer_get_opaque().
+
+2019-11-17 - 1c23abc88f - lavu 56.36.100 - eval API
+  Add av_expr_count_vars().
+
+2019-10-14 - f3746d31f9 - lavu 56.35.101 - opt.h
+  Add AV_OPT_FLAG_RUNTIME_PARAM.
+
+2019-09-25 - f8406ab4b9 - lavc 58.59.100 - avcodec.h
+  Add max_samples
+
+2019-09-04 - 2a9d461abc - lavu 56.35.100 - hwcontext_videotoolbox.h
+  Add av_map_videotoolbox_format_from_pixfmt2() for full range pixfmt
+
+2019-09-01 - 8821d1f56e - lavu 56.34.100 - pixfmt.h
+  Add EBU Tech. 3213-E AVColorPrimaries value
+
+2019-08-17 - 95fa73a2b4 - lavf 58.31.101 - avio.h
+  4K limit removed from avio_printf.
+
+2019-08-17 - a82f8f2f10 - lavf 58.31.100 - avio.h
+  Add avio_print_string_array and avio_print.
+
+2019-07-27 - 42e2319ba9 - lavu 56.33.100 - tx.h
+  Add AV_TX_DOUBLE_FFT and AV_TX_DOUBLE_MDCT
+
+-------- 8< --------- FFmpeg 4.2 was cut here -------- 8< ---------
+
+2019-06-21 - a30e44098a - lavu 56.30.100 - frame.h
+  Add FF_DECODE_ERROR_DECODE_SLICES
+
+2019-06-14 - edfced8c04 - lavu 56.29.100 - frame.h
+  Add FF_DECODE_ERROR_CONCEALMENT_ACTIVE
+
+2019-05-15 - b79b29ddb1 - lavu 56.28.100 - tx.h
+  Add av_tx_init(), av_tx_uninit() and related definitions.
+
+2019-04-20 - 3153a6502a - lavc 58.52.100 - avcodec.h
+  Add AV_CODEC_FLAG_DROPCHANGED to allow avcodec_receive_frame to drop
+  frames whose parameters differ from first decoded frame in stream.
+
+2019-04-12 - abfeba9724 - lavf 58.27.102
+  Rename hls,applehttp demuxer to hls
+
+2019-01-27 - 5bcefceec8 - lavc 58.46.100 - avcodec.h
+  Add discard_damaged_percentage
+
+2019-01-08 - 1ef4828276 - lavu 56.26.100 - frame.h
+  Add AV_FRAME_DATA_REGIONS_OF_INTEREST
+
+2018-12-21 - 2744d6b364 - lavu 56.25.100 - hdr_dynamic_metadata.h
+  Add AV_FRAME_DATA_DYNAMIC_HDR_PLUS enum value, av_dynamic_hdr_plus_alloc(),
+  av_dynamic_hdr_plus_create_side_data() functions, and related structs.
+
+-------- 8< --------- FFmpeg 4.1 was cut here -------- 8< ---------
+
+2018-10-27 - 718044dc19 - lavu 56.21.100 - pixdesc.h
+  Add av_read_image_line2(), av_write_image_line2()
+
+2018-10-24 - f9d4126f28 - lavu 56.20.100 - frame.h
+  Add AV_FRAME_DATA_S12M_TIMECODE
+
+2018-10-11 - f6d48b618a - lavc 58.33.100 - mediacodec.h
+  Add av_mediacodec_render_buffer_at_time().
+
+2018-09-09 - 35498c124a - lavc 58.29.100 - avcodec.h
+  Add AV_PKT_DATA_AFD
+
+2018-08-16 - b33f5299a5 - lavc 58.23.100 - avcodec.h
+  Add av_bsf_flush().
+
+2018-05-18 - 2b2f2f65f3 - lavf 58.15.100 - avformat.h
+  Add pmt_version field to AVProgram
+
+2018-05-17 - 5dfeb7f081 - lavf 58.14.100 - avformat.h
+  Add AV_DISPOSITION_STILL_IMAGE
+
+2018-05-10 - c855683427 - lavu 56.18.101 - hwcontext_cuda.h
+  Add AVCUDADeviceContext.stream.
+
+2018-04-30 - 56b081da57 - lavu 56.18.100 - pixdesc.h
+  Add AV_PIX_FMT_FLAG_ALPHA to AV_PIX_FMT_PAL8.
+
+2018-04-26 - 5be0410cb3 - lavu 56.17.100 - opt.h
+  Add AV_OPT_FLAG_DEPRECATED.
+
+2018-04-26 - 71fa82bed6 - lavu 56.16.100 - threadmessage.h
+  Add av_thread_message_queue_nb_elems().
+
 -------- 8< --------- FFmpeg 4.0 was cut here -------- 8< ---------
 
 2018-04-03 - d6fc031caf - lavu 56.13.100 - pixdesc.h

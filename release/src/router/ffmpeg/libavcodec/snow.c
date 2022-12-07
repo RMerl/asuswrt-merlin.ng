@@ -21,6 +21,7 @@
 #include "libavutil/intmath.h"
 #include "libavutil/log.h"
 #include "libavutil/opt.h"
+#include "libavutil/thread.h"
 #include "avcodec.h"
 #include "me_cmp.h"
 #include "snow_dwt.h"
@@ -427,10 +428,19 @@ mca( 8, 0,8)
 mca( 0, 8,8)
 mca( 8, 8,8)
 
+static av_cold void snow_static_init(void)
+{
+    for (int i = 0; i < MAX_REF_FRAMES; i++)
+        for (int j = 0; j < MAX_REF_FRAMES; j++)
+            ff_scale_mv_ref[i][j] = 256 * (i + 1) / (j + 1);
+    init_qexp();
+}
+
 av_cold int ff_snow_common_init(AVCodecContext *avctx){
+    static AVOnce init_static_once = AV_ONCE_INIT;
     SnowContext *s = avctx->priv_data;
     int width, height;
-    int i, j;
+    int i;
 
     s->avctx= avctx;
     s->max_ref_frames=1; //just make sure it's not an invalid value in case of no initial keyframe
@@ -480,35 +490,32 @@ av_cold int ff_snow_common_init(AVCodecContext *avctx){
     mcfh(0, 8)
     mcfh(8, 8)
 
-    init_qexp();
-
 //    dec += FFMAX(s->chroma_h_shift, s->chroma_v_shift);
 
     width= s->avctx->width;
     height= s->avctx->height;
 
-    FF_ALLOCZ_ARRAY_OR_GOTO(avctx, s->spatial_idwt_buffer, width, height * sizeof(IDWTELEM), fail);
-    FF_ALLOCZ_ARRAY_OR_GOTO(avctx, s->spatial_dwt_buffer,  width, height * sizeof(DWTELEM),  fail); //FIXME this does not belong here
-    FF_ALLOCZ_ARRAY_OR_GOTO(avctx, s->temp_dwt_buffer,     width, sizeof(DWTELEM),  fail);
-    FF_ALLOCZ_ARRAY_OR_GOTO(avctx, s->temp_idwt_buffer,    width, sizeof(IDWTELEM), fail);
-    FF_ALLOC_ARRAY_OR_GOTO(avctx,  s->run_buffer,          ((width + 1) >> 1), ((height + 1) >> 1) * sizeof(*s->run_buffer), fail);
+    if (!FF_ALLOCZ_TYPED_ARRAY(s->spatial_idwt_buffer, width * height) ||
+        !FF_ALLOCZ_TYPED_ARRAY(s->spatial_dwt_buffer,  width * height) ||  //FIXME this does not belong here
+        !FF_ALLOCZ_TYPED_ARRAY(s->temp_dwt_buffer,     width)          ||
+        !FF_ALLOCZ_TYPED_ARRAY(s->temp_idwt_buffer,    width)          ||
+        !FF_ALLOCZ_TYPED_ARRAY(s->run_buffer, ((width + 1) >> 1) * ((height + 1) >> 1)))
+        return AVERROR(ENOMEM);
 
     for(i=0; i<MAX_REF_FRAMES; i++) {
-        for(j=0; j<MAX_REF_FRAMES; j++)
-            ff_scale_mv_ref[i][j] = 256*(i+1)/(j+1);
         s->last_picture[i] = av_frame_alloc();
         if (!s->last_picture[i])
-            goto fail;
+            return AVERROR(ENOMEM);
     }
 
     s->mconly_picture = av_frame_alloc();
     s->current_picture = av_frame_alloc();
     if (!s->mconly_picture || !s->current_picture)
-        goto fail;
+        return AVERROR(ENOMEM);
+
+    ff_thread_once(&init_static_once, snow_static_init);
 
     return 0;
-fail:
-    return AVERROR(ENOMEM);
 }
 
 int ff_snow_common_init_after_header(AVCodecContext *avctx) {
@@ -520,9 +527,10 @@ int ff_snow_common_init_after_header(AVCodecContext *avctx) {
         if ((ret = ff_get_buffer(s->avctx, s->mconly_picture,
                                  AV_GET_BUFFER_FLAG_REF)) < 0)
             return ret;
-        FF_ALLOCZ_ARRAY_OR_GOTO(avctx, s->scratchbuf, FFMAX(s->mconly_picture->linesize[0], 2*avctx->width+256), 7*MB_SIZE, fail);
         emu_buf_size = FFMAX(s->mconly_picture->linesize[0], 2*avctx->width+256) * (2 * MB_SIZE + HTAPS_MAX - 1);
-        FF_ALLOC_OR_GOTO(avctx, s->emu_edge_buffer, emu_buf_size, fail);
+        if (!FF_ALLOCZ_TYPED_ARRAY(s->scratchbuf,      FFMAX(s->mconly_picture->linesize[0], 2*avctx->width+256) * 7 * MB_SIZE) ||
+            !FF_ALLOCZ_TYPED_ARRAY(s->emu_edge_buffer, emu_buf_size))
+            return AVERROR(ENOMEM);
     }
 
     if(s->mconly_picture->format != avctx->pix_fmt) {
@@ -571,7 +579,7 @@ int ff_snow_common_init_after_header(AVCodecContext *avctx) {
                 av_freep(&b->x_coeff);
                 b->x_coeff=av_mallocz_array(((b->width+1) * b->height+1), sizeof(x_and_coeff));
                 if (!b->x_coeff)
-                    goto fail;
+                    return AVERROR(ENOMEM);
             }
             w= (w+1)>>1;
             h= (h+1)>>1;
@@ -579,8 +587,6 @@ int ff_snow_common_init_after_header(AVCodecContext *avctx) {
     }
 
     return 0;
-fail:
-    return AVERROR(ENOMEM);
 }
 
 #define USE_HALFPEL_PLANE 0

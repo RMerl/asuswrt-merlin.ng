@@ -1,5 +1,5 @@
-sun::ipsec stop
-alice::ipsec stop
-venus::ipsec stop
+alice::systemctl stop strongswan
+venus::systemctl stop strongswan
+sun::systemctl stop strongswan
 sun::iptables-restore < /etc/iptables.flush
 moon::iptables -t nat -F

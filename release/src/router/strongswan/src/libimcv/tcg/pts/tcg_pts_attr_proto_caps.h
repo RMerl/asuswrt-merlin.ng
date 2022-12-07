@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2011 Sansar Choinyambuu
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,7 +40,7 @@ struct tcg_pts_attr_proto_caps_t {
 	pa_tnc_attr_t pa_tnc_attribute;
 
 	/**
-	 * Get PTS procol capabilities flags
+	 * Get PTS protocol capabilities flags
 	 *
 	 * @return				set of flags
 	 */

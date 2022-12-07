@@ -1,7 +1,8 @@
 %{
 /*
  * Copyright (C) 2009-2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,7 +20,7 @@
 #include <crypto/transform.h>
 #include <crypto/crypters/crypter.h>
 #include <crypto/signers/signer.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 
 %}
 struct proposal_token {
@@ -45,36 +46,42 @@ aes128ccm12,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV12,      128
 aes128ccm96,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV12,      128
 aes128ccm16,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      128
 aes128ccm128,     ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      128
+aes128ccm,        ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      128
 aes192ccm8,       ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV8,       192
 aes192ccm64,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV8,       192
 aes192ccm12,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV12,      192
 aes192ccm96,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV12,      192
 aes192ccm16,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      192
 aes192ccm128,     ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      192
+aes192ccm,        ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      192
 aes256ccm8,       ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV8,       256
 aes256ccm64,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV8,       256
 aes256ccm12,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV12,      256
 aes256ccm96,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV12,      256
 aes256ccm16,      ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      256
 aes256ccm128,     ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      256
+aes256ccm,        ENCRYPTION_ALGORITHM, ENCR_AES_CCM_ICV16,      256
 aes128gcm8,       ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV8,       128
 aes128gcm64,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV8,       128
 aes128gcm12,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV12,      128
 aes128gcm96,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV12,      128
 aes128gcm16,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      128
 aes128gcm128,     ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      128
+aes128gcm,        ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      128
 aes192gcm8,       ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV8,       192
 aes192gcm64,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV8,       192
 aes192gcm12,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV12,      192
 aes192gcm96,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV12,      192
 aes192gcm16,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      192
 aes192gcm128,     ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      192
+aes192gcm,        ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      192
 aes256gcm8,       ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV8,       256
 aes256gcm64,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV8,       256
 aes256gcm12,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV12,      256
 aes256gcm96,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV12,      256
 aes256gcm16,      ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      256
 aes256gcm128,     ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      256
+aes256gcm,        ENCRYPTION_ALGORITHM, ENCR_AES_GCM_ICV16,      256
 aes128gmac,       ENCRYPTION_ALGORITHM, ENCR_NULL_AUTH_AES_GMAC, 128
 aes192gmac,       ENCRYPTION_ALGORITHM, ENCR_NULL_AUTH_AES_GMAC, 192
 aes256gmac,       ENCRYPTION_ALGORITHM, ENCR_NULL_AUTH_AES_GMAC, 256
@@ -142,34 +149,37 @@ prfmd5,           PSEUDO_RANDOM_FUNCTION, PRF_HMAC_MD5,            0
 prfaesxcbc,       PSEUDO_RANDOM_FUNCTION, PRF_AES128_XCBC,         0
 prfcamelliaxcbc,  PSEUDO_RANDOM_FUNCTION, PRF_CAMELLIA128_XCBC,    0
 prfaescmac,       PSEUDO_RANDOM_FUNCTION, PRF_AES128_CMAC,         0
-modpnone,         DIFFIE_HELLMAN_GROUP, MODP_NONE,                 0
-modpnull,         DIFFIE_HELLMAN_GROUP, MODP_NULL,                 0
-modp768,          DIFFIE_HELLMAN_GROUP, MODP_768_BIT,              0
-modp1024,         DIFFIE_HELLMAN_GROUP, MODP_1024_BIT,             0
-modp1536,         DIFFIE_HELLMAN_GROUP, MODP_1536_BIT,             0
-modp2048,         DIFFIE_HELLMAN_GROUP, MODP_2048_BIT,             0
-modp3072,         DIFFIE_HELLMAN_GROUP, MODP_3072_BIT,             0
-modp4096,         DIFFIE_HELLMAN_GROUP, MODP_4096_BIT,             0
-modp6144,         DIFFIE_HELLMAN_GROUP, MODP_6144_BIT,             0
-modp8192,         DIFFIE_HELLMAN_GROUP, MODP_8192_BIT,             0
-ecp192,           DIFFIE_HELLMAN_GROUP, ECP_192_BIT,               0
-ecp224,           DIFFIE_HELLMAN_GROUP, ECP_224_BIT,               0
-ecp256,           DIFFIE_HELLMAN_GROUP, ECP_256_BIT,               0
-ecp384,           DIFFIE_HELLMAN_GROUP, ECP_384_BIT,               0
-ecp521,           DIFFIE_HELLMAN_GROUP, ECP_521_BIT,               0
-modp1024s160,     DIFFIE_HELLMAN_GROUP, MODP_1024_160,             0
-modp2048s224,     DIFFIE_HELLMAN_GROUP, MODP_2048_224,             0
-modp2048s256,     DIFFIE_HELLMAN_GROUP, MODP_2048_256,             0
-ecp224bp,         DIFFIE_HELLMAN_GROUP, ECP_224_BP,                0
-ecp256bp,         DIFFIE_HELLMAN_GROUP, ECP_256_BP,                0
-ecp384bp,         DIFFIE_HELLMAN_GROUP, ECP_384_BP,                0
-ecp512bp,         DIFFIE_HELLMAN_GROUP, ECP_512_BP,                0
-curve25519,       DIFFIE_HELLMAN_GROUP, CURVE_25519,               0
-x25519,           DIFFIE_HELLMAN_GROUP, CURVE_25519,               0
-ntru112,          DIFFIE_HELLMAN_GROUP, NTRU_112_BIT,              0
-ntru128,          DIFFIE_HELLMAN_GROUP, NTRU_128_BIT,              0
-ntru192,          DIFFIE_HELLMAN_GROUP, NTRU_192_BIT,              0
-ntru256,          DIFFIE_HELLMAN_GROUP, NTRU_256_BIT,              0
-newhope128,       DIFFIE_HELLMAN_GROUP, NH_128_BIT,                0
+none,             KEY_EXCHANGE_METHOD, KE_NONE,                    0
+modpnone,         KEY_EXCHANGE_METHOD, KE_NONE,                    0
+modpnull,         KEY_EXCHANGE_METHOD, MODP_NULL,                  0
+modp768,          KEY_EXCHANGE_METHOD, MODP_768_BIT,               0
+modp1024,         KEY_EXCHANGE_METHOD, MODP_1024_BIT,              0
+modp1536,         KEY_EXCHANGE_METHOD, MODP_1536_BIT,              0
+modp2048,         KEY_EXCHANGE_METHOD, MODP_2048_BIT,              0
+modp3072,         KEY_EXCHANGE_METHOD, MODP_3072_BIT,              0
+modp4096,         KEY_EXCHANGE_METHOD, MODP_4096_BIT,              0
+modp6144,         KEY_EXCHANGE_METHOD, MODP_6144_BIT,              0
+modp8192,         KEY_EXCHANGE_METHOD, MODP_8192_BIT,              0
+ecp192,           KEY_EXCHANGE_METHOD, ECP_192_BIT,                0
+ecp224,           KEY_EXCHANGE_METHOD, ECP_224_BIT,                0
+ecp256,           KEY_EXCHANGE_METHOD, ECP_256_BIT,                0
+ecp384,           KEY_EXCHANGE_METHOD, ECP_384_BIT,                0
+ecp521,           KEY_EXCHANGE_METHOD, ECP_521_BIT,                0
+modp1024s160,     KEY_EXCHANGE_METHOD, MODP_1024_160,              0
+modp2048s224,     KEY_EXCHANGE_METHOD, MODP_2048_224,              0
+modp2048s256,     KEY_EXCHANGE_METHOD, MODP_2048_256,              0
+ecp224bp,         KEY_EXCHANGE_METHOD, ECP_224_BP,                 0
+ecp256bp,         KEY_EXCHANGE_METHOD, ECP_256_BP,                 0
+ecp384bp,         KEY_EXCHANGE_METHOD, ECP_384_BP,                 0
+ecp512bp,         KEY_EXCHANGE_METHOD, ECP_512_BP,                 0
+curve25519,       KEY_EXCHANGE_METHOD, CURVE_25519,                0
+x25519,           KEY_EXCHANGE_METHOD, CURVE_25519,                0
+curve448,         KEY_EXCHANGE_METHOD, CURVE_448,                  0
+x448,             KEY_EXCHANGE_METHOD, CURVE_448,                  0
+ntru112,          KEY_EXCHANGE_METHOD, NTRU_112_BIT,               0
+ntru128,          KEY_EXCHANGE_METHOD, NTRU_128_BIT,               0
+ntru192,          KEY_EXCHANGE_METHOD, NTRU_192_BIT,               0
+ntru256,          KEY_EXCHANGE_METHOD, NTRU_256_BIT,               0
+newhope128,       KEY_EXCHANGE_METHOD, NH_128_BIT,                 0
 noesn,            EXTENDED_SEQUENCE_NUMBERS, NO_EXT_SEQ_NUMBERS,   0
 esn,              EXTENDED_SEQUENCE_NUMBERS, EXT_SEQ_NUMBERS,      0

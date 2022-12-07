@@ -34,6 +34,7 @@
 #include "libavutil/imgutils.h"
 #include "libavutil/internal.h"
 #include "libavutil/mathematics.h"
+#include "libavutil/mem_internal.h"
 #include "avcodec.h"
 #include "mpegvideo.h"
 #include "h263.h"
@@ -51,7 +52,6 @@
 // reading vlc values. Changing these may improve speed and data cache needs
 // be aware though that decreasing them may need the number of stages that is
 // passed to get_vlc* to be increased.
-#define MV_VLC_BITS 9
 #define H263_MBTYPE_B_VLC_BITS 6
 #define CBPC_B_VLC_BITS 3
 
@@ -98,7 +98,7 @@ void ff_h263_show_pict_info(MpegEncContext *s){
 VLC ff_h263_intra_MCBPC_vlc;
 VLC ff_h263_inter_MCBPC_vlc;
 VLC ff_h263_cbpy_vlc;
-static VLC mv_vlc;
+VLC ff_h263_mv_vlc;
 static VLC h263_mbtype_b_vlc;
 static VLC cbpc_b_vlc;
 
@@ -119,13 +119,12 @@ av_cold void ff_h263_decode_init_vlc(void)
         INIT_VLC_STATIC(&ff_h263_cbpy_vlc, CBPY_VLC_BITS, 16,
                  &ff_h263_cbpy_tab[0][1], 2, 1,
                  &ff_h263_cbpy_tab[0][0], 2, 1, 64);
-        INIT_VLC_STATIC(&mv_vlc, MV_VLC_BITS, 33,
+        INIT_VLC_STATIC(&ff_h263_mv_vlc, H263_MV_VLC_BITS, 33,
                  &ff_mvtab[0][1], 2, 1,
                  &ff_mvtab[0][0], 2, 1, 538);
-        ff_rl_init(&ff_h263_rl_inter, ff_h263_static_rl_table_store[0]);
-        ff_rl_init(&ff_rl_intra_aic, ff_h263_static_rl_table_store[1]);
+        ff_h263_init_rl_inter();
         INIT_VLC_RL(ff_h263_rl_inter, 554);
-        INIT_VLC_RL(ff_rl_intra_aic, 554);
+        INIT_FIRST_VLC_RL(ff_rl_intra_aic, 554);
         INIT_VLC_STATIC(&h263_mbtype_b_vlc, H263_MBTYPE_B_VLC_BITS, 15,
                  &ff_h263_mbtype_b_tab[0][1], 2, 1,
                  &ff_h263_mbtype_b_tab[0][0], 2, 1, 80);
@@ -222,7 +221,7 @@ int ff_h263_resync(MpegEncContext *s){
             get_bits(&s->gb, 8);
         }
 
-        if (show_bits_long(&s->gb, 32) == SLICE_START_CODE)
+        if (get_bits_left(&s->gb) >= 32 && show_bits_long(&s->gb, 32) == SLICE_START_CODE)
             return get_bits_count(&s->gb);
         else
             return -1;
@@ -270,7 +269,7 @@ int ff_h263_resync(MpegEncContext *s){
 int ff_h263_decode_motion(MpegEncContext * s, int pred, int f_code)
 {
     int code, val, sign, shift;
-    code = get_vlc2(&s->gb, mv_vlc.table, MV_VLC_BITS, 2);
+    code = get_vlc2(&s->gb, ff_h263_mv_vlc.table, H263_MV_VLC_BITS, 2);
 
     if (code == 0)
         return pred;
@@ -467,7 +466,7 @@ static int h263_decode_block(MpegEncContext * s, int16_t * block,
             level = s->last_dc[component];
             if (s->rv10_first_dc_coded[component]) {
                 diff = ff_rv_decode_dc(s, n);
-                if (diff == 0xffff)
+                if (diff < 0)
                     return -1;
                 level += diff;
                 level = level & 0xff; /* handle wrap round */
@@ -1218,6 +1217,11 @@ int ff_h263_decode_picture_header(MpegEncContext *s)
     if ((ret = av_image_check_size(s->width, s->height, 0, s)) < 0)
         return ret;
 
+    if (!(s->avctx->flags2 & AV_CODEC_FLAG2_CHUNKS)) {
+        if ((s->width * s->height / 256 / 8) > get_bits_left(&s->gb))
+            return AVERROR_INVALIDDATA;
+    }
+
     s->mb_width = (s->width  + 15) / 16;
     s->mb_height = (s->height  + 15) / 16;
     s->mb_num = s->mb_width * s->mb_height;
@@ -1281,7 +1285,7 @@ int ff_h263_decode_picture_header(MpegEncContext *s)
         for(i=0; i<13; i++){
             for(j=0; j<3; j++){
                 int v= get_bits(&s->gb, 8);
-                v |= get_sbits(&s->gb, 8)<<8;
+                v |= get_sbits(&s->gb, 8) * (1 << 8);
                 av_log(s->avctx, AV_LOG_DEBUG, " %5d", v);
             }
             av_log(s->avctx, AV_LOG_DEBUG, "\n");

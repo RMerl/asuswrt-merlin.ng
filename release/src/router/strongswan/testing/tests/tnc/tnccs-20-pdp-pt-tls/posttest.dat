@@ -1,7 +1,7 @@
 carol::ip route del 10.1.0.0/16 via 192.168.0.1
 dave::ip route del 10.1.0.0/16 via 192.168.0.1
 winnetou::ip route del 10.1.0.0/16 via 192.168.0.1
-alice::systemctl stop strongswan-swanctl
+alice::systemctl stop strongswan
 alice::systemctl stop apache2
 alice::rm /etc/swanctl/rsa/aaaKey.pem
 alice::rm /etc/swanctl/x509/aaaCert.pem

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -43,7 +42,7 @@ struct private_diffie_hellman_t {
 	/**
 	 * Public interface
 	 */
-	diffie_hellman_t public;
+	key_exchange_t public;
 
 	/**
 	 * Private key
@@ -51,25 +50,30 @@ struct private_diffie_hellman_t {
 	botan_privkey_t key;
 
 	/**
+	 * Public key value provided by peer
+	 */
+	chunk_t pubkey;
+
+	/**
 	 * Shared secret
 	 */
 	chunk_t shared_secret;
 };
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_diffie_hellman_t *this, chunk_t value)
 {
-	if (!diffie_hellman_verify_value(CURVE_25519, value))
+	if (!key_exchange_verify_pubkey(CURVE_25519, value))
 	{
 		return FALSE;
 	}
 
-	chunk_clear(&this->shared_secret);
-
-	return botan_dh_key_derivation(this->key, value, &this->shared_secret);
+	chunk_clear(&this->pubkey);
+	this->pubkey = chunk_clone(value);
+	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_diffie_hellman_t *this, chunk_t *value)
 {
 	value->len = 0;
@@ -89,7 +93,7 @@ METHOD(diffie_hellman_t, get_my_public_value, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, set_private_value, bool,
+METHOD(key_exchange_t, set_private_key, bool,
 	private_diffie_hellman_t *this, chunk_t value)
 {
 	if (value.len != 32)
@@ -111,10 +115,11 @@ METHOD(diffie_hellman_t, set_private_value, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_diffie_hellman_t *this, chunk_t *secret)
 {
-	if (!this->shared_secret.len)
+	if (!this->shared_secret.len &&
+		!botan_dh_key_derivation(this->key, this->pubkey, &this->shared_secret))
 	{
 		return FALSE;
 	}
@@ -122,24 +127,25 @@ METHOD(diffie_hellman_t, get_shared_secret, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_diffie_hellman_t *this)
 {
 	return CURVE_25519;
 }
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_diffie_hellman_t *this)
 {
 	botan_privkey_destroy(this->key);
 	chunk_clear(&this->shared_secret);
+	chunk_clear(&this->pubkey);
 	free(this);
 }
 
 /*
  * Described in header
  */
-diffie_hellman_t *botan_x25519_create(diffie_hellman_group_t group)
+key_exchange_t *botan_x25519_create(key_exchange_method_t ke)
 {
 	private_diffie_hellman_t *this;
 	botan_rng_t rng;
@@ -147,21 +153,21 @@ diffie_hellman_t *botan_x25519_create(diffie_hellman_group_t group)
 	INIT(this,
 		.public = {
 			.get_shared_secret = _get_shared_secret,
-			.set_other_public_value = _set_other_public_value,
-			.get_my_public_value = _get_my_public_value,
-			.set_private_value = _set_private_value,
-			.get_dh_group = _get_dh_group,
+			.set_public_key = _set_public_key,
+			.get_public_key = _get_public_key,
+			.set_private_key = _set_private_key,
+			.get_method = _get_method,
 			.destroy = _destroy,
 		},
 	);
 
-	if (botan_rng_init(&rng, "user"))
+	if (!botan_get_rng(&rng, RNG_STRONG))
 	{
 		free(this);
 		return NULL;
 	}
 
-	if (botan_privkey_create_ecdh(&this->key, rng, "curve25519"))
+	if (botan_privkey_create(&this->key, "Curve25519", "", rng))
 	{
 		DBG1(DBG_LIB, "x25519 private key generation failed");
 		botan_rng_destroy(rng);

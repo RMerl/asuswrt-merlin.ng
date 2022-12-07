@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,14 +29,14 @@ typedef struct tkm_diffie_hellman_t tkm_diffie_hellman_t;
 #include <tkm/types.h>
 
 /**
- * diffie_hellman_t implementation using the trusted key manager.
+ * key_exchange_t implementation using the trusted key manager.
  */
 struct tkm_diffie_hellman_t {
 
 	/**
-	 * Implements diffie_hellman_t interface.
+	 * Implements key_exchange_t interface.
 	 */
-	diffie_hellman_t dh;
+	key_exchange_t ke;
 
 	/**
 	 * Get Diffie-Hellman context id.
@@ -65,6 +66,6 @@ void destroy_dh_mapping();
  * @param group			Diffie Hellman group number to use
  * @return				tkm_diffie_hellman_t object, NULL if not supported
  */
-tkm_diffie_hellman_t *tkm_diffie_hellman_create(diffie_hellman_group_t group);
+tkm_diffie_hellman_t *tkm_diffie_hellman_create(key_exchange_method_t group);
 
 #endif /** TKM_DIFFIE_HELLMAN_H_ @}*/

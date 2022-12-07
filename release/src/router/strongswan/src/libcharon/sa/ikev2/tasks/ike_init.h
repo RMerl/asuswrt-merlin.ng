@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -38,6 +39,18 @@ struct ike_init_t {
 	 * Implements the task_t interface
 	 */
 	task_t task;
+
+	/**
+	 * Derive the keys for this IKE_SA when not used during a rekeying.
+	 *
+	 * @return
+	 *					- FAILED if key derivation failed
+	 *					- NEED_MORE if key drivation was successful but more
+	 *					  key exchanges are necessary
+	 *					- SUCCESS if key derivation was successful and the task
+	 *					  can be removed from the queue
+	 */
+    status_t (*derive_keys)(ike_init_t *this);
 
 	/**
 	 * Get the lower of the two nonces, used for rekey collisions.

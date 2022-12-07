@@ -1,0 +1,15 @@
+moon::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::/usr/local/libexec/ipsec/xfrmi -n xfrm-moon-out -d eth0 -i 1337
+moon::/usr/local/libexec/ipsec/xfrmi -n xfrm-moon-in  -d eth0 -i 42
+moon::ip link set xfrm-moon-out up
+moon::ip link set xfrm-moon-in up
+moon::ip route add 10.2.0.0/16 dev xfrm-moon-out
+moon::iptables -A FORWARD -o xfrm-moon-out -j ACCEPT
+moon::iptables -A FORWARD -i xfrm-moon-in -j ACCEPT
+moon::systemctl start strongswan
+sun::systemctl start strongswan
+moon::expect-connection gw-gw
+sun::expect-connection gw-gw
+moon::swanctl --initiate --child alice-net
+moon::swanctl --initiate --child venus-net

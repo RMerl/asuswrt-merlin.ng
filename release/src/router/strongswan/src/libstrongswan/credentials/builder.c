@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2016-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -58,6 +59,7 @@ ENUM(builder_part_names, BUILD_FROM_FILE, BUILD_END,
 	"BUILD_REVOKED_ENUMERATOR",
 	"BUILD_BASE_CRL",
 	"BUILD_CHALLENGE_PWD",
+	"BUILD_CERT_TYPE_EXT",
 	"BUILD_PKCS7_ATTRIBUTE",
 	"BUILD_PKCS11_MODULE",
 	"BUILD_PKCS11_SLOT",
@@ -75,5 +77,6 @@ ENUM(builder_part_names, BUILD_FROM_FILE, BUILD_END,
 	"BUILD_THRESHOLD",
 	"BUILD_EDDSA_PUB",
 	"BUILD_EDDSA_PRIV_ASN1_DER",
+	"BUILD_CRITICAL_EXTENSION",
 	"BUILD_END",
 );

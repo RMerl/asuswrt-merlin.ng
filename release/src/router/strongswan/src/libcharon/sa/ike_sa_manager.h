@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2008-2017 Tobias Brunner
+ * Copyright (C) 2008-2021 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -50,6 +51,32 @@ typedef uint64_t (*spi_cb_t)(void *data);
 struct ike_sa_manager_t {
 
 	/**
+	 * Create a new IKE_SA.
+	 *
+	 * @param version			IKE version of this SA
+	 * @param initiator			TRUE for initiator, FALSE otherwise
+	 * @returns 				created IKE_SA (not registered/checked out)
+	 */
+	ike_sa_t *(*create_new)(ike_sa_manager_t* this, ike_version_t version,
+							bool initiator);
+
+	/**
+	 * Register/checkout an IKE_SA created with create_new().
+	 *
+	 * This may be used shortly before calling checkin() for unregistered SAs
+	 * created via create_new() to avoid race conditions so e.g. jobs may
+	 * find the SA and block on it until checkin() is called.
+	 *
+	 * @note There is no check that verifies that the IKE_SA is not yet
+	 * registered.
+	 *
+	 * @note The IKE_SA on the bus is not changed by this method.
+	 *
+	 * @param ike_sa			IKE_SA to register
+	 */
+	void (*checkout_new)(ike_sa_manager_t* this, ike_sa_t *ike_sa);
+
+	/**
 	 * Checkout an existing IKE_SA.
 	 *
 	 * @param ike_sa_id			the SA identifier, will be updated
@@ -60,14 +87,14 @@ struct ike_sa_manager_t {
 	ike_sa_t* (*checkout) (ike_sa_manager_t* this, ike_sa_id_t *sa_id);
 
 	/**
-	 * Create and check out a new IKE_SA.
+	 * Track an initial IKE message as responder by increasing the number of
+	 * half-open IKE_SAs.
 	 *
-	 * @param version			IKE version of this SA
-	 * @param initiator			TRUE for initiator, FALSE otherwise
-	 * @returns 				created and checked out IKE_SA
+	 * @note It's expected that checkout_by_message() is called afterwards.
+	 *
+	 * @param ip				IP of sender
 	 */
-	ike_sa_t* (*checkout_new) (ike_sa_manager_t* this, ike_version_t version,
-							   bool initiator);
+	void (*track_init)(ike_sa_manager_t *this, host_t *ip);
 
 	/**
 	 * Checkout an IKE_SA by a message.
@@ -81,9 +108,12 @@ struct ike_sa_manager_t {
 	 *    retransmission. If so, we have to drop the message, we would
 	 *    create another unneeded IKE_SA for each retransmitted packet.
 	 *
-	 * A call to checkout_by_message() returns a (maybe new created) IKE_SA.
+	 * A call to checkout_by_message() returns a (maybe newly created) IKE_SA.
 	 * If processing the message does not make sense (for the reasons above),
 	 * NULL is returned.
+	 *
+	 * @note For initial IKE messages, track_init() has to be called before
+	 * calling this.
 	 *
 	 * @param ike_sa_id			the SA identifier, will be updated
 	 * @returns
@@ -99,14 +129,16 @@ struct ike_sa_manager_t {
 	 * This call checks for an existing IKE_SA by comparing the configuration.
 	 * If the CHILD_SA can be created in an existing IKE_SA, the matching SA
 	 * is returned.
-	 * If no IKE_SA is found, a new one is created. This is also the case when
-	 * the found IKE_SA is in the DELETING state.
+	 * If no IKE_SA is found, a new one is created and registered in the
+	 * manager. This is also the case when the found IKE_SA is in an unusable
+	 * state (e.g. DELETING).
+	 *
+	 * @note The peer_config is always set on the returned IKE_SA.
 	 *
 	 * @param peer_cfg			configuration used to find an existing IKE_SA
 	 * @return					checked out/created IKE_SA
 	 */
-	ike_sa_t* (*checkout_by_config) (ike_sa_manager_t* this,
-									 peer_cfg_t *peer_cfg);
+	ike_sa_t *(*checkout_by_config)(ike_sa_manager_t* this, peer_cfg_t *peer_cfg);
 
 	/**
 	 * Reset initiator SPI.
@@ -124,7 +156,7 @@ struct ike_sa_manager_t {
 	 *
 	 * Measures are taken according to the uniqueness policy of the IKE_SA.
 	 * The return value indicates whether duplicates have been found and if
-	 * further measures should be taken (e.g. cancelling an IKE_AUTH exchange).
+	 * further measures should be taken (e.g. canceling an IKE_AUTH exchange).
 	 * check_uniqueness() must be called before the IKE_SA is complete,
 	 * deadlocks occur otherwise.
 	 *

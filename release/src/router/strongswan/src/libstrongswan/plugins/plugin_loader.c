@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2010-2014 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -65,7 +66,7 @@ struct private_plugin_loader_t {
 	/**
 	 * Hashtable for registered features, as registered_feature_t
 	 */
-	hashtable_t *features;
+	hashlist_t *features;
 
 	/**
 	 * Loaded features (stored in reverse order), as provided_feature_t
@@ -93,6 +94,12 @@ struct private_plugin_loader_t {
 		/** Number of features in critical plugins that failed to load */
 		int critical;
 	} stats;
+
+	/**
+	 * Fetch features from the given plugin, can optionally be overridden to
+	 * modify feature arrays at loading time
+	 */
+	int (*get_features)(plugin_t *plugin, plugin_feature_t *features[]);
 };
 
 /**
@@ -351,19 +358,12 @@ void plugin_constructor_register(char *name, void *constructor)
  *          FAILED, if the plugin could not be constructed
  */
 static status_t create_plugin(private_plugin_loader_t *this, void *handle,
-							  char *name, bool integrity, bool critical,
-							  plugin_entry_t **entry)
+							  char *name, char *create, bool integrity,
+							  bool critical, plugin_entry_t **entry)
 {
-	char create[128];
 	plugin_t *plugin;
 	plugin_constructor_t constructor = NULL;
 
-	if (snprintf(create, sizeof(create), "%s_plugin_create",
-				 name) >= sizeof(create))
-	{
-		return FAILED;
-	}
-	translate(create, "-", "_");
 #ifdef STATIC_PLUGIN_CONSTRUCTORS
 	if (plugin_constructors)
 	{
@@ -410,11 +410,19 @@ static status_t create_plugin(private_plugin_loader_t *this, void *handle,
 static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 								   char *file, bool critical)
 {
+	char create[128];
 	plugin_entry_t *entry;
 	void *handle;
 	int flag = RTLD_LAZY;
 
-	switch (create_plugin(this, RTLD_DEFAULT, name, FALSE, critical, &entry))
+	if (snprintf(create, sizeof(create), "%s_plugin_create",
+				 name) >= sizeof(create))
+	{
+		return NULL;
+	}
+	translate(create, "-", "_");
+	switch (create_plugin(this, RTLD_DEFAULT, name, create, FALSE, critical,
+						  &entry))
 	{
 		case SUCCESS:
 			this->plugins->insert_last(this->plugins, entry);
@@ -424,6 +432,8 @@ static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 			{	/* try to load the plugin from a file */
 				break;
 			}
+			DBG1(DBG_LIB, "plugin '%s': failed to load - %s not found and no "
+				 "plugin file available", name, create);
 			/* fall-through */
 		default:
 			return NULL;
@@ -455,10 +465,17 @@ static plugin_entry_t *load_plugin(private_plugin_loader_t *this, char *name,
 		DBG1(DBG_LIB, "plugin '%s' failed to load: %s", name, dlerror());
 		return NULL;
 	}
-	if (create_plugin(this, handle, name, TRUE, critical, &entry) != SUCCESS)
+	switch (create_plugin(this, handle, name, create, TRUE, critical, &entry))
 	{
-		dlclose(handle);
-		return NULL;
+		case SUCCESS:
+			break;
+		case NOT_FOUND:
+			DBG1(DBG_LIB, "plugin '%s': failed to load - %s not found", name,
+				 create);
+			/* fall-through */
+		default:
+			dlclose(handle);
+			return NULL;
 	}
 	entry->handle = handle;
 	this->plugins->insert_last(this->plugins, entry);
@@ -658,7 +675,7 @@ static bool loadable_feature_matches(registered_feature_t *a,
 }
 
 /**
- * Returns a compatible plugin feature for the given depencency
+ * Returns a compatible plugin feature for the given dependency
  */
 static bool find_compatible_feature(private_plugin_loader_t *this,
 									plugin_feature_t *dependency)
@@ -887,6 +904,14 @@ static void load_features(private_plugin_loader_t *this)
 }
 
 /**
+ * Default implementation for plugin feature retrieval
+ */
+static int get_features_default(plugin_t *plugin, plugin_feature_t *features[])
+{
+	return plugin->get_features(plugin, features);
+}
+
+/**
  * Register plugin features provided by the given plugin
  */
 static void register_features(private_plugin_loader_t *this,
@@ -904,21 +929,23 @@ static void register_features(private_plugin_loader_t *this,
 		return;
 	}
 	reg = NULL;
-	count = entry->plugin->get_features(entry->plugin, &feature);
+	count = this->get_features(entry->plugin, &feature);
 	for (i = 0; i < count; i++)
 	{
 		switch (feature->kind)
 		{
 			case FEATURE_PROVIDE:
 				lookup.feature = feature;
-				registered = this->features->get(this->features, &lookup);
+				registered = this->features->ht.get(&this->features->ht,
+													&lookup);
 				if (!registered)
 				{
 					INIT(registered,
 						.feature = feature,
 						.plugins = linked_list_create(),
 					);
-					this->features->put(this->features, registered, registered);
+					this->features->ht.put(&this->features->ht, registered,
+										   registered);
 				}
 				INIT(provided,
 					.entry = entry,
@@ -950,13 +977,13 @@ static void unregister_feature(private_plugin_loader_t *this,
 	registered_feature_t *registered, lookup;
 
 	lookup.feature = provided->feature;
-	registered = this->features->get(this->features, &lookup);
+	registered = this->features->ht.get(&this->features->ht, &lookup);
 	if (registered)
 	{
 		registered->plugins->remove(registered->plugins, provided, NULL);
 		if (registered->plugins->get_count(registered->plugins) == 0)
 		{
-			this->features->remove(this->features, &lookup);
+			this->features->ht.remove(&this->features->ht, &lookup);
 			registered->plugins->destroy(registered->plugins);
 			free(registered);
 		}
@@ -1444,10 +1471,16 @@ plugin_loader_t *plugin_loader_create()
 		},
 		.plugins = linked_list_create(),
 		.loaded = linked_list_create(),
-		.features = hashtable_create(
+		.features = hashlist_create(
 							(hashtable_hash_t)registered_feature_hash,
 							(hashtable_equals_t)registered_feature_equals, 64),
+		.get_features = dlsym(RTLD_DEFAULT, "plugin_loader_feature_filter"),
 	);
+
+	if (!this->get_features)
+	{
+		this->get_features = get_features_default;
+	}
 
 	return &this->public;
 }

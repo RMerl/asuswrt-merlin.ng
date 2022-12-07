@@ -1,5 +1,6 @@
 charon.plugins.tpm.use_rng = no
-	Whether the TPM should be used as RNG.
+	Whether the TPM should be used as RNG. For security reasons enable only if
+	an authenticated session can be set up (see _ek_handle_ option).
 
 charon.plugins.tpm.fips_186_4 = no
 	Is the TPM 2.0 FIPS-186-4 compliant, forcing e.g. the use of the default
@@ -14,3 +15,7 @@ charon.plugins.tpm.tcti.name = device|tabrmd
 charon.plugins.tpm.tcti.opts = /dev/tpmrm0|<none>
 	Options for the TPM 2.0 TCTI library. Defaults are _/dev/tpmrm0_ if the
 	TCTI library name is _device_ and no options otherwise.
+
+charon.plugins.tpm.ek_handle =
+	Handle of the RSA or ECC Endorsement Key (EK) to be used to set up an
+	authenticated session with a TPM 2.0 (e.g. 0x81010001).

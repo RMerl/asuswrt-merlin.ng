@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2006-2018 Tobias Brunner
  * Copyright (C) 2005-2010 Martin Willi
- * Copyright (C) 2010 revosec AG
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -462,6 +462,14 @@ METHOD(payload_t, verify, status_t,
 		case NO_PROPOSAL_CHOSEN:
 		{
 			if (this->type == PLV2_NOTIFY && this->notify_data.len != 0)
+			{
+				bad_length = TRUE;
+			}
+			break;
+		}
+		case COOKIE:
+		{
+			if (this->notify_data.len < 1 || this->notify_data.len > 64)
 			{
 				bad_length = TRUE;
 			}

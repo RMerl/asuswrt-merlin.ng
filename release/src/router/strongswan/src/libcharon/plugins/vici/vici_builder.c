@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -145,6 +146,7 @@ static void vadd_kv_or_li(private_vici_builder_t *this, char *key,
 	{
 		value = chunk_alloc(len + 1);
 		len = vsnprintf(value.ptr, value.len, fmt, args);
+		value.len = len;
 	}
 	else
 	{

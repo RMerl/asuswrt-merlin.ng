@@ -2,7 +2,7 @@
  *
  * Test various functions that involve the tag table.
  *
- * Copyright © 2009 Dan Fandrich <dan@coneharvesters.com>
+ * Copyright (c) 2009 Dan Fandrich <dan@coneharvesters.com>
  *
  * This library is free software; you can redistribute it and/or
  * modify it under the terms of the GNU Lesser General Public
@@ -56,7 +56,7 @@ static int support_level(void)
              EXIF_SUPPORT_LEVEL_NOT_RECORDED)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_PLANAR_CONFIGURATION,
-               EXIF_IFD_0, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_0, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_UNKNOWN)
 
     /*
@@ -93,7 +93,7 @@ static int support_level(void)
              EXIF_SUPPORT_LEVEL_OPTIONAL)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_GPS_VERSION_ID,
-               EXIF_IFD_GPS, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_GPS, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_OPTIONAL)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_GPS_VERSION_ID,
@@ -101,12 +101,12 @@ static int support_level(void)
              EXIF_SUPPORT_LEVEL_NOT_RECORDED)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_GPS_VERSION_ID,
-               EXIF_IFD_0, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_0, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_UNKNOWN)
 
     /* The unused tag 0xffff should NOT be treated specially */
     VALIDATE(exif_tag_get_support_level_in_ifd(0xffff,
-               EXIF_IFD_0, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_0, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_UNKNOWN)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(0xffff,
@@ -119,7 +119,7 @@ static int support_level(void)
      * instead of not recorded.
      */
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_DOCUMENT_NAME,
-               EXIF_IFD_0, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_0, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_UNKNOWN)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_DOCUMENT_NAME,
@@ -137,7 +137,7 @@ static int support_level(void)
              EXIF_SUPPORT_LEVEL_OPTIONAL)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_INTEROPERABILITY_INDEX,
-               EXIF_IFD_INTEROPERABILITY, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_INTEROPERABILITY, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_OPTIONAL)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_INTEROPERABILITY_INDEX,
@@ -145,7 +145,7 @@ static int support_level(void)
              EXIF_SUPPORT_LEVEL_NOT_RECORDED)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_INTEROPERABILITY_INDEX,
-               EXIF_IFD_0, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_0, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_UNKNOWN)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_GPS_LATITUDE_REF,
@@ -153,12 +153,12 @@ static int support_level(void)
              EXIF_SUPPORT_LEVEL_OPTIONAL)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_GPS_LATITUDE_REF,
-               EXIF_IFD_GPS, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_GPS, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_OPTIONAL)
 
     /* The result of an unknown IFD should always be unknown */
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_EXIF_VERSION,
-               EXIF_IFD_COUNT, EXIF_DATA_TYPE_COUNT) == 
+               EXIF_IFD_COUNT, EXIF_DATA_TYPE_UNKNOWN) == 
              EXIF_SUPPORT_LEVEL_UNKNOWN)
 
     VALIDATE(exif_tag_get_support_level_in_ifd(EXIF_TAG_EXIF_VERSION,

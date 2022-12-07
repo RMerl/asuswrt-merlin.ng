@@ -833,6 +833,8 @@ width:122px;
 	height:54px;
 }
 .menu_Desc{
+	word-break: keep-all;
+	font-weight: bold;
 }
 .menu_Split{
 	margin-top:10px;

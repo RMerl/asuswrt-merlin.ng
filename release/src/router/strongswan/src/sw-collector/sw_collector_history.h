@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,11 +56,11 @@ struct sw_collector_history_t {
 							  char *buf);
 
 	/**
-	 * Extract packages from event in installation history 
+	 * Extract packages from event in installation history
 	 *
 	 * @param args			Arguments to be processed
 	 * @param eid			Primary key pointing to current event
-	 * @param op			Extraction operation 
+	 * @param op			Extraction operation
 	 * @return				TRUE if extraction succeeded
 	 */
 	bool (*extract_packages)(sw_collector_history_t *this, chunk_t args,

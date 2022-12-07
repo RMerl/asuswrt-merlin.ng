@@ -3,7 +3,8 @@
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +18,6 @@
  */
 
 /*
- * Copyright (C) 2016 secunet Security Networks AG
  * Copyright (C) 2016 Thomas Egerer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -150,7 +150,7 @@
  * synchronization:
  * Each IKE_SA must be checked out strictly and checked in again after use. The
  * manager guarantees that only one thread may check out a single IKE_SA. This
- * allows us to write the (complex) IKE_SAs routines non-threadsave.
+ * allows us to write the (complex) IKE_SAs routines non-threadsafe.
  * The IKE_SA contain the state and the logic of each IKE_SA and handle the
  * messages.
  *

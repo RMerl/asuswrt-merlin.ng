@@ -36,12 +36,15 @@
 #include "libavformat/avformat.h"
 
 #include "qsvvpp.h"
+#include "transpose.h"
 
 #define OFFSET(x) offsetof(VPPContext, x)
 #define FLAGS (AV_OPT_FLAG_VIDEO_PARAM | AV_OPT_FLAG_FILTERING_PARAM)
 
 /* number of video enhancement filters */
-#define ENH_FILTERS_COUNT (5)
+#define ENH_FILTERS_COUNT (7)
+#define QSV_HAVE_ROTATION  QSV_VERSION_ATLEAST(1, 17)
+#define QSV_HAVE_MIRRORING QSV_VERSION_ATLEAST(1, 19)
 
 typedef struct VPPContext{
     const AVClass *class;
@@ -54,9 +57,15 @@ typedef struct VPPContext{
     mfxExtVPPDenoise denoise_conf;
     mfxExtVPPDetail detail_conf;
     mfxExtVPPProcAmp procamp_conf;
+    mfxExtVPPRotation rotation_conf;
+    mfxExtVPPMirroring mirroring_conf;
 
     int out_width;
     int out_height;
+    /**
+     * Output sw format. AV_PIX_FMT_NONE for no conversion.
+     */
+    enum AVPixelFormat out_format;
 
     AVRational framerate;       /* target framerate */
     int use_frc;                /* use framerate conversion */
@@ -70,6 +79,10 @@ typedef struct VPPContext{
     int crop_x;
     int crop_y;
 
+    int transpose;
+    int rotate;                 /* rotate angle : [0, 90, 180, 270] */
+    int hflip;                  /* flip mode : 0 = off, 1 = HORIZONTAL flip */
+
     /* param for the procamp */
     int    procamp;            /* enable procamp */
     float  hue;
@@ -79,6 +92,7 @@ typedef struct VPPContext{
 
     char *cx, *cy, *cw, *ch;
     char *ow, *oh;
+    char *output_format_str;
 } VPPContext;
 
 static const AVOption options[] = {
@@ -95,15 +109,26 @@ static const AVOption options[] = {
     { "contrast",    "ProcAmp contrast",             OFFSET(contrast),    AV_OPT_TYPE_FLOAT,    { .dbl = 1.0 }, 0.0, 10.0, .flags = FLAGS},
     { "brightness",  "ProcAmp brightness",           OFFSET(brightness),  AV_OPT_TYPE_FLOAT,    { .dbl = 0.0 }, -100.0, 100.0, .flags = FLAGS},
 
-    { "cw",   "set the width crop area expression",   OFFSET(cw), AV_OPT_TYPE_STRING, { .str = "iw" }, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "ch",   "set the height crop area expression",  OFFSET(ch), AV_OPT_TYPE_STRING, { .str = "ih" }, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "cx",   "set the x crop area expression",       OFFSET(cx), AV_OPT_TYPE_STRING, { .str = "(in_w-out_w)/2" }, CHAR_MIN, CHAR_MAX, FLAGS },
-    { "cy",   "set the y crop area expression",       OFFSET(cy), AV_OPT_TYPE_STRING, { .str = "(in_h-out_h)/2" }, CHAR_MIN, CHAR_MAX, FLAGS },
+    { "transpose",  "set transpose direction",       OFFSET(transpose),   AV_OPT_TYPE_INT,      { .i64 = -1 }, -1, 6, FLAGS, "transpose"},
+        { "cclock_hflip",  "rotate counter-clockwise with horizontal flip",  0, AV_OPT_TYPE_CONST, { .i64 = TRANSPOSE_CCLOCK_FLIP }, .flags=FLAGS, .unit = "transpose" },
+        { "clock",         "rotate clockwise",                               0, AV_OPT_TYPE_CONST, { .i64 = TRANSPOSE_CLOCK       }, .flags=FLAGS, .unit = "transpose" },
+        { "cclock",        "rotate counter-clockwise",                       0, AV_OPT_TYPE_CONST, { .i64 = TRANSPOSE_CCLOCK      }, .flags=FLAGS, .unit = "transpose" },
+        { "clock_hflip",   "rotate clockwise with horizontal flip",          0, AV_OPT_TYPE_CONST, { .i64 = TRANSPOSE_CLOCK_FLIP  }, .flags=FLAGS, .unit = "transpose" },
+        { "reversal",      "rotate by half-turn",                            0, AV_OPT_TYPE_CONST, { .i64 = TRANSPOSE_REVERSAL    }, .flags=FLAGS, .unit = "transpose" },
+        { "hflip",         "flip horizontally",                              0, AV_OPT_TYPE_CONST, { .i64 = TRANSPOSE_HFLIP       }, .flags=FLAGS, .unit = "transpose" },
+        { "vflip",         "flip vertically",                                0, AV_OPT_TYPE_CONST, { .i64 = TRANSPOSE_VFLIP       }, .flags=FLAGS, .unit = "transpose" },
+
+    { "cw",   "set the width crop area expression",   OFFSET(cw), AV_OPT_TYPE_STRING, { .str = "iw" }, 0, 0, FLAGS },
+    { "ch",   "set the height crop area expression",  OFFSET(ch), AV_OPT_TYPE_STRING, { .str = "ih" }, 0, 0, FLAGS },
+    { "cx",   "set the x crop area expression",       OFFSET(cx), AV_OPT_TYPE_STRING, { .str = "(in_w-out_w)/2" }, 0, 0, FLAGS },
+    { "cy",   "set the y crop area expression",       OFFSET(cy), AV_OPT_TYPE_STRING, { .str = "(in_h-out_h)/2" }, 0, 0, FLAGS },
 
     { "w",      "Output video width",  OFFSET(ow), AV_OPT_TYPE_STRING, { .str="cw" }, 0, 255, .flags = FLAGS },
     { "width",  "Output video width",  OFFSET(ow), AV_OPT_TYPE_STRING, { .str="cw" }, 0, 255, .flags = FLAGS },
     { "h",      "Output video height", OFFSET(oh), AV_OPT_TYPE_STRING, { .str="w*ch/cw" }, 0, 255, .flags = FLAGS },
     { "height", "Output video height", OFFSET(oh), AV_OPT_TYPE_STRING, { .str="w*ch/cw" }, 0, 255, .flags = FLAGS },
+    { "format", "Output pixel format", OFFSET(output_format_str), AV_OPT_TYPE_STRING, { .str = "same" }, .flags = FLAGS },
+
     { NULL }
 };
 
@@ -207,6 +232,23 @@ release:
     return ret;
 }
 
+static av_cold int vpp_init(AVFilterContext *ctx)
+{
+    VPPContext  *vpp  = ctx->priv;
+
+    if (!strcmp(vpp->output_format_str, "same")) {
+        vpp->out_format = AV_PIX_FMT_NONE;
+    } else {
+        vpp->out_format = av_get_pix_fmt(vpp->output_format_str);
+        if (vpp->out_format == AV_PIX_FMT_NONE) {
+            av_log(ctx, AV_LOG_ERROR, "Unrecognized output pixel format: %s\n", vpp->output_format_str);
+            return AVERROR(EINVAL);
+        }
+    }
+
+    return 0;
+}
+
 static int config_input(AVFilterLink *inlink)
 {
     AVFilterContext *ctx = inlink->dst;
@@ -251,6 +293,7 @@ static int config_output(AVFilterLink *outlink)
     QSVVPPCrop      crop  = { 0 };
     mfxExtBuffer    *ext_buf[ENH_FILTERS_COUNT];
     AVFilterLink    *inlink = ctx->inputs[0];
+    enum AVPixelFormat in_format;
 
     outlink->w          = vpp->out_width;
     outlink->h          = vpp->out_height;
@@ -258,9 +301,20 @@ static int config_output(AVFilterLink *outlink)
     outlink->time_base  = av_inv_q(vpp->framerate);
 
     param.filter_frame  = NULL;
-    param.out_sw_format = AV_PIX_FMT_NV12;
     param.num_ext_buf   = 0;
     param.ext_buf       = ext_buf;
+
+    if (inlink->format == AV_PIX_FMT_QSV) {
+         if (!inlink->hw_frames_ctx || !inlink->hw_frames_ctx->data)
+             return AVERROR(EINVAL);
+         else
+             in_format = ((AVHWFramesContext*)inlink->hw_frames_ctx->data)->sw_format;
+    } else
+        in_format = inlink->format;
+
+    if (vpp->out_format == AV_PIX_FMT_NONE)
+        vpp->out_format = in_format;
+    param.out_sw_format  = vpp->out_format;
 
     if (vpp->use_crop) {
         crop.in_idx = 0;
@@ -322,8 +376,87 @@ static int config_output(AVFilterLink *outlink)
         param.ext_buf[param.num_ext_buf++] = (mfxExtBuffer*)&vpp->procamp_conf;
     }
 
+    if (vpp->transpose >= 0) {
+#ifdef QSV_HAVE_ROTATION
+        switch (vpp->transpose) {
+        case TRANSPOSE_CCLOCK_FLIP:
+            vpp->rotate = MFX_ANGLE_270;
+            vpp->hflip  = MFX_MIRRORING_HORIZONTAL;
+            break;
+        case TRANSPOSE_CLOCK:
+            vpp->rotate = MFX_ANGLE_90;
+            vpp->hflip  = MFX_MIRRORING_DISABLED;
+            break;
+        case TRANSPOSE_CCLOCK:
+            vpp->rotate = MFX_ANGLE_270;
+            vpp->hflip  = MFX_MIRRORING_DISABLED;
+            break;
+        case TRANSPOSE_CLOCK_FLIP:
+            vpp->rotate = MFX_ANGLE_90;
+            vpp->hflip  = MFX_MIRRORING_HORIZONTAL;
+            break;
+        case TRANSPOSE_REVERSAL:
+            vpp->rotate = MFX_ANGLE_180;
+            vpp->hflip  = MFX_MIRRORING_DISABLED;
+            break;
+        case TRANSPOSE_HFLIP:
+            vpp->rotate = MFX_ANGLE_0;
+            vpp->hflip  = MFX_MIRRORING_HORIZONTAL;
+            break;
+        case TRANSPOSE_VFLIP:
+            vpp->rotate = MFX_ANGLE_180;
+            vpp->hflip  = MFX_MIRRORING_HORIZONTAL;
+            break;
+        default:
+            av_log(ctx, AV_LOG_ERROR, "Failed to set transpose mode to %d.\n", vpp->transpose);
+            return AVERROR(EINVAL);
+        }
+#else
+        av_log(ctx, AV_LOG_WARNING, "The QSV VPP transpose option is "
+            "not supported with this MSDK version.\n");
+        vpp->transpose = 0;
+#endif
+    }
+
+    if (vpp->rotate) {
+#ifdef QSV_HAVE_ROTATION
+        memset(&vpp->rotation_conf, 0, sizeof(mfxExtVPPRotation));
+        vpp->rotation_conf.Header.BufferId  = MFX_EXTBUFF_VPP_ROTATION;
+        vpp->rotation_conf.Header.BufferSz  = sizeof(mfxExtVPPRotation);
+        vpp->rotation_conf.Angle = vpp->rotate;
+
+        if (MFX_ANGLE_90 == vpp->rotate || MFX_ANGLE_270 == vpp->rotate) {
+            FFSWAP(int, vpp->out_width, vpp->out_height);
+            FFSWAP(int, outlink->w, outlink->h);
+            av_log(ctx, AV_LOG_DEBUG, "Swap width and height for clock/cclock rotation.\n");
+        }
+
+        param.ext_buf[param.num_ext_buf++] = (mfxExtBuffer*)&vpp->rotation_conf;
+#else
+        av_log(ctx, AV_LOG_WARNING, "The QSV VPP rotate option is "
+            "not supported with this MSDK version.\n");
+        vpp->rotate = 0;
+#endif
+    }
+
+    if (vpp->hflip) {
+#ifdef QSV_HAVE_MIRRORING
+        memset(&vpp->mirroring_conf, 0, sizeof(mfxExtVPPMirroring));
+        vpp->mirroring_conf.Header.BufferId = MFX_EXTBUFF_VPP_MIRRORING;
+        vpp->mirroring_conf.Header.BufferSz = sizeof(mfxExtVPPMirroring);
+        vpp->mirroring_conf.Type = vpp->hflip;
+
+        param.ext_buf[param.num_ext_buf++] = (mfxExtBuffer*)&vpp->mirroring_conf;
+#else
+        av_log(ctx, AV_LOG_WARNING, "The QSV VPP hflip option is "
+            "not supported with this MSDK version.\n");
+        vpp->hflip = 0;
+#endif
+    }
+
     if (vpp->use_frc || vpp->use_crop || vpp->deinterlace || vpp->denoise ||
-        vpp->detail || vpp->procamp || inlink->w != outlink->w || inlink->h != outlink->h)
+        vpp->detail || vpp->procamp || vpp->rotate || vpp->hflip ||
+        inlink->w != outlink->w || inlink->h != outlink->h || in_format != vpp->out_format)
         return ff_qsvvpp_create(ctx, &vpp->qsv, &param);
     else {
         av_log(ctx, AV_LOG_VERBOSE, "qsv vpp pass through mode.\n");
@@ -356,7 +489,6 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *picref)
 static int query_formats(AVFilterContext *ctx)
 {
     int ret;
-    AVFilterFormats *in_fmts, *out_fmts;
     static const enum AVPixelFormat in_pix_fmts[] = {
         AV_PIX_FMT_YUV420P,
         AV_PIX_FMT_NV12,
@@ -367,20 +499,17 @@ static int query_formats(AVFilterContext *ctx)
     };
     static const enum AVPixelFormat out_pix_fmts[] = {
         AV_PIX_FMT_NV12,
+        AV_PIX_FMT_P010,
         AV_PIX_FMT_QSV,
         AV_PIX_FMT_NONE
     };
 
-    in_fmts  = ff_make_format_list(in_pix_fmts);
-    out_fmts = ff_make_format_list(out_pix_fmts);
-    ret = ff_formats_ref(in_fmts, &ctx->inputs[0]->out_formats);
+    ret = ff_formats_ref(ff_make_format_list(in_pix_fmts),
+                         &ctx->inputs[0]->outcfg.formats);
     if (ret < 0)
         return ret;
-    ret = ff_formats_ref(out_fmts, &ctx->outputs[0]->in_formats);
-    if (ret < 0)
-        return ret;
-
-    return 0;
+    return ff_formats_ref(ff_make_format_list(out_pix_fmts),
+                          &ctx->outputs[0]->incfg.formats);
 }
 
 static av_cold void vpp_uninit(AVFilterContext *ctx)
@@ -421,6 +550,7 @@ AVFilter ff_vf_vpp_qsv = {
     .description   = NULL_IF_CONFIG_SMALL("Quick Sync Video VPP."),
     .priv_size     = sizeof(VPPContext),
     .query_formats = query_formats,
+    .init          = vpp_init,
     .uninit        = vpp_uninit,
     .inputs        = vpp_inputs,
     .outputs       = vpp_outputs,

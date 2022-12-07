@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008-2011 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -76,7 +77,7 @@ struct simaka_manager_t {
 							 char kc[SIM_KC_LEN]);
 
 	/**
-	 * Calculate AKA quitpulets on one of the registered SIM cards.
+	 * Calculate AKA quintuplets on one of the registered SIM cards.
 	 *
 	 * @param id		permanent identity to request quintuplet for
 	 * @param rand		random value rand
@@ -192,7 +193,7 @@ struct simaka_manager_t {
 	/**
 	 * Pass AKA resynchronization data to one of the registered providers.
 	 *
-	 * @param id		permanent identity of peer requesting resynchronisation
+	 * @param id		permanent identity of peer requesting resynchronization
 	 * @param rand		random value rand
 	 * @param auts		synchronization parameter auts
 	 * @return			TRUE if resynchronized, FALSE if not handled

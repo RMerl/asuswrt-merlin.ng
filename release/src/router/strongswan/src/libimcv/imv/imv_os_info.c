@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -78,7 +79,7 @@ METHOD(imv_os_info_t, set_name, void,
 		this->info = NULL;
 	}
 	this->name = chunk_clone(name);
-	this->type = os_type_from_name(name); 
+	this->type = os_type_from_name(name);
 }
 
 METHOD(imv_os_info_t, get_name, chunk_t,

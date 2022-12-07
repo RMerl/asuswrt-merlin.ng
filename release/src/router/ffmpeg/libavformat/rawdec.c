@@ -34,12 +34,13 @@
 
 int ff_raw_read_partial_packet(AVFormatContext *s, AVPacket *pkt)
 {
+    FFRawDemuxerContext *raw = s->priv_data;
     int ret, size;
 
-    size = RAW_PACKET_SIZE;
+    size = raw->raw_packet_size;
 
-    if (av_new_packet(pkt, size) < 0)
-        return AVERROR(ENOMEM);
+    if ((ret = av_new_packet(pkt, size)) < 0)
+        return ret;
 
     pkt->pos= avio_tell(s->pb);
     pkt->stream_index = 0;
@@ -91,6 +92,17 @@ fail:
     return ret;
 }
 
+int ff_raw_subtitle_read_header(AVFormatContext *s)
+{
+    AVStream *st = avformat_new_stream(s, NULL);
+    if (!st)
+        return AVERROR(ENOMEM);
+    st->codecpar->codec_type = AVMEDIA_TYPE_SUBTITLE;
+    st->codecpar->codec_id = s->iformat->raw_codec_id;
+    st->start_time = 0;
+    return 0;
+}
+
 int ff_raw_data_read_header(AVFormatContext *s)
 {
     AVStream *st = avformat_new_stream(s, NULL);
@@ -108,10 +120,19 @@ int ff_raw_data_read_header(AVFormatContext *s)
 #define DEC AV_OPT_FLAG_DECODING_PARAM
 const AVOption ff_rawvideo_options[] = {
     { "framerate", "", OFFSET(framerate), AV_OPT_TYPE_VIDEO_RATE, {.str = "25"}, 0, INT_MAX, DEC},
+    { "raw_packet_size", "", OFFSET(raw_packet_size), AV_OPT_TYPE_INT, {.i64 = RAW_PACKET_SIZE }, 1, INT_MAX, DEC},
+    { NULL },
+};
+#undef OFFSET
+#define OFFSET(x) offsetof(FFRawDemuxerContext, x)
+const AVOption ff_raw_options[] = {
+    { "raw_packet_size", "", OFFSET(raw_packet_size), AV_OPT_TYPE_INT, {.i64 = RAW_PACKET_SIZE }, 1, INT_MAX, DEC},
     { NULL },
 };
 
 #if CONFIG_DATA_DEMUXER
+FF_RAW_DEMUXER_CLASS(raw_data)
+
 AVInputFormat ff_data_demuxer = {
     .name           = "data",
     .long_name      = NULL_IF_CONFIG_SMALL("raw data"),
@@ -119,11 +140,13 @@ AVInputFormat ff_data_demuxer = {
     .read_packet    = ff_raw_read_partial_packet,
     .raw_codec_id   = AV_CODEC_ID_NONE,
     .flags          = AVFMT_NOTIMESTAMPS,
+    .priv_data_size = sizeof(FFRawDemuxerContext),\
+    .priv_class     = &raw_data_demuxer_class,\
 };
 #endif
 
 #if CONFIG_MJPEG_DEMUXER
-static int mjpeg_probe(AVProbeData *p)
+static int mjpeg_probe(const AVProbeData *p)
 {
     int i;
     int state = -1;
@@ -185,6 +208,8 @@ static int mjpeg_probe(AVProbeData *p)
             return AVPROBE_SCORE_EXTENSION / 2;
         return AVPROBE_SCORE_EXTENSION / 4;
     }
+    if (!nb_invalid && nb_frames)
+        return AVPROBE_SCORE_EXTENSION / 4;
 
     return 0;
 }

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -429,7 +430,6 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 					written = snprintf(pos, len, " %u", port);
 					if (written < 0 || written >= len)
 					{
-						pos += len - 1;
 						*pos = '\0';
 					}
 					else

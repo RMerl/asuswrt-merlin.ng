@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -81,7 +82,7 @@ struct tpm_tss_quote_info_t {
 	chunk_t (*get_pcr_digest)(tpm_tss_quote_info_t *this);
 
 	/**
-	 * Get TPM Quote Info digest, the basis of the TPM Quote Singature
+	 * Get TPM Quote Info digest, the basis of the TPM Quote Signature
 	 *
 	 * @param nonce				Derived from the Diffie-Hellman exchange
 	 * @param composite			PCR Composite as computed by IMV
@@ -102,7 +103,7 @@ struct tpm_tss_quote_info_t {
 	/**
 	 * Get TPM 2.0 version info (needed for TPM 2.0)
 	 *
-	 * @return					TPM 2.0 firmwareVersioin
+	 * @return					TPM 2.0 firmwareVersion
 	 */
 	chunk_t (*get_version_info)(tpm_tss_quote_info_t *this);
 

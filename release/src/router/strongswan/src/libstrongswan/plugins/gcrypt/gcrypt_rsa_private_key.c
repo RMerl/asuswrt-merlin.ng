@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2017 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -278,53 +279,57 @@ METHOD(private_key_t, sign, bool,
 
 METHOD(private_key_t, decrypt, bool,
 	private_gcrypt_rsa_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t encrypted, chunk_t *plain)
+	void *params, chunk_t encrypted, chunk_t *plain)
 {
 	gcry_error_t err;
-	gcry_sexp_t in, out;
-	chunk_t padded;
-	u_char *pos = NULL;;
+	gcry_sexp_t in, out = NULL;
+	chunk_t label = chunk_empty, decrypted = chunk_empty;
+	u_char *sexp;
 
-	if (scheme != ENCRYPT_RSA_PKCS1)
+	switch (scheme)
 	{
-		DBG1(DBG_LIB, "encryption scheme %N not supported",
-			 encryption_scheme_names, scheme);
-		return FALSE;
+		case ENCRYPT_RSA_PKCS1:
+			sexp = "(enc-val(flags pkcs1)(rsa(a %b)))";
+			break;
+		case ENCRYPT_RSA_OAEP_SHA1:
+			sexp = "(enc-val(flags oaep)(rsa(a %b)))";
+			break;
+		default:
+			DBG1(DBG_LIB, "encryption scheme %N not supported",
+				 encryption_scheme_names, scheme);
+			return FALSE;
 	}
-	err = gcry_sexp_build(&in, NULL, "(enc-val(flags)(rsa(a %b)))",
-						  encrypted.len, encrypted.ptr);
+
+	if (scheme == ENCRYPT_RSA_OAEP_SHA1 && params != NULL)
+	{
+		label = *(chunk_t *)params;
+		if (label.len > 0)
+		{
+			DBG1(DBG_LIB, "RSA OAEP decryption with a label not supported");
+			return FALSE;
+		}
+	}
+
+	err = gcry_sexp_build(&in, NULL, sexp, encrypted.len, encrypted.ptr);
 	if (err)
 	{
 		DBG1(DBG_LIB, "building decryption S-expression failed: %s",
 			 gpg_strerror(err));
 		return FALSE;
 	}
+
 	err = gcry_pk_decrypt(&out, in, this->key);
 	gcry_sexp_release(in);
 	if (err)
 	{
-		DBG1(DBG_LIB, "decrypting pkcs1 data failed: %s", gpg_strerror(err));
+		DBG1(DBG_LIB, "RSA decryption failed: %s", gpg_strerror(err));
 		return FALSE;
 	}
-	padded.ptr = (u_char*)gcry_sexp_nth_data(out, 1, &padded.len);
-	/* result is padded, but gcrypt strips leading zero:
-	 *  00 | 02 | RANDOM | 00 | DATA */
-	if (padded.ptr && padded.len > 2 && padded.ptr[0] == 0x02)
-	{
-		pos = memchr(padded.ptr, 0x00, padded.len - 1);
-		if (pos)
-		{
-			pos++;
-			*plain = chunk_clone(chunk_create(
-										pos, padded.len - (pos - padded.ptr)));
-		}
-	}
+
+	decrypted.ptr = (u_char*)gcry_sexp_nth_data(out, 1, &decrypted.len);
+	*plain = chunk_clone(decrypted);
 	gcry_sexp_release(out);
-	if (!pos)
-	{
-		DBG1(DBG_LIB, "decrypted data has invalid pkcs1 padding");
-		return FALSE;
-	}
+
 	return TRUE;
 }
 

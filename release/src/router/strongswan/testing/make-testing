@@ -21,7 +21,12 @@ then
 	$DIR/scripts/build-guestkernel || exit 1
 fi
 
-if [ $ENABLE_BUILD_GUESTIMAGES = "yes" ]
+if [ $ENABLE_BUILD_CERTIFICATES = "yes" ]
 then
-	$DIR/scripts/build-guestimages $HOSTS || exit 1
+	# this always builds the guest images too
+	$DIR/scripts/build-certs || exit 1
+
+elif [ $ENABLE_BUILD_GUESTIMAGES = "yes" ]
+then
+	$DIR/scripts/build-guestimages || exit 1
 fi

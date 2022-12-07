@@ -57,6 +57,10 @@ log_action "Mounting $SHAREDDIR as /root/shared"
 execute "mount -o bind $SHAREDDIR $LOOPDIR/root/shared"
 do_on_exit umount $LOOPDIR/root/shared
 
+log_action "Copy /etc/resolv.conf"
+execute "cp /etc/resolv.conf $LOOPDIR/etc/resolv.conf"
+do_on_exit rm $LOOPDIR/etc/resolv.conf
+
 if [ -n "$affected" ]; then
 echo
 echo "Rebuild the $affected images after making changes to this image!"

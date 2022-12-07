@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,8 +16,11 @@
  */
 
 #include <stdarg.h>
+#include <inttypes.h>
 
 #include <daemon.h>
+#include <collections/array.h>
+#include <collections/hashtable.h>
 #include <encoding/payloads/auth_payload.h>
 #include <utils/chunk.h>
 #include <tkm/types.h>
@@ -29,6 +33,8 @@
 #include "tkm_utils.h"
 
 typedef struct private_tkm_listener_t private_tkm_listener_t;
+
+static hashtable_t *ca_map = NULL;
 
 /**
  * Private data of a tkm_listener_t object.
@@ -45,7 +51,7 @@ struct private_tkm_listener_t {
 /**
  * Return id of remote identity.
  *
- * TODO: Replace this with the lookup for the remote identitiy id.
+ * TODO: Replace this with the lookup for the remote identity id.
  *
  * Currently the reqid of the first child SA in peer config of IKE SA is
  * returned. Might choose wrong reqid if IKE SA has multiple child configs
@@ -90,97 +96,132 @@ static bool build_cert_chain(const ike_sa_t * const ike_sa, cc_id_type cc_id)
 	rounds = ike_sa->create_auth_cfg_enumerator((ike_sa_t *)ike_sa, FALSE);
 	while (rounds->enumerate(rounds, &auth))
 	{
-		cert = auth->get(auth, AUTH_RULE_SUBJECT_CERT);
+		cert = auth->get(auth, AUTH_RULE_CA_CERT);
 		if (cert)
 		{
-			chunk_t enc_user_cert;
-			ri_id_type ri_id;
-			certificate_type user_cert;
 			auth_rule_t rule;
 			enumerator_t *enumerator;
+			ca_id_type ca_id;
+			public_key_t *pubkey;
+			certificate_type ca_cert;
+			chunk_t enc_ca_cert, fp;
+			array_t *im_certs = NULL;
+			uint64_t *raw_id;
 
-			/* set user certificate */
-			if (!cert->get_encoding(cert, CERT_ASN1_DER, &enc_user_cert))
+			pubkey = cert->get_public_key(cert);
+			if (!pubkey)
 			{
-				DBG1(DBG_IKE, "unable to extract encoded user certificate");
+				DBG1(DBG_IKE, "unable to get CA certificate pubkey");
+				rounds->destroy(rounds);
+				return FALSE;
+			}
+			if (!pubkey->get_fingerprint(pubkey, KEYID_PUBKEY_SHA1, &fp))
+			{
+				DBG1(DBG_IKE, "unable to extract CA certificate fingerprint");
+				rounds->destroy(rounds);
+				pubkey->destroy(pubkey);
+				return FALSE;
+			}
+			pubkey->destroy(pubkey);
+
+			raw_id = ca_map->get(ca_map, &fp);
+			if (!raw_id || *raw_id == 0)
+			{
+				DBG1(DBG_IKE, "error mapping CA certificate (fp: %#B) to "
+					 "ID", &fp);
+				rounds->destroy(rounds);
+				return FALSE;
+			}
+			ca_id = *raw_id;
+
+			if (!cert->get_encoding(cert, CERT_ASN1_DER, &enc_ca_cert))
+			{
+				DBG1(DBG_IKE, "unable to extract encoded CA certificate");
 				rounds->destroy(rounds);
 				return FALSE;
 			}
 
-			ri_id = get_remote_identity_id(ike_sa->get_peer_cfg((ike_sa_t *)ike_sa));
-			chunk_to_sequence(&enc_user_cert, &user_cert, sizeof(certificate_type));
-			chunk_free(&enc_user_cert);
-			if (ike_cc_set_user_certificate(cc_id, ri_id, 1, user_cert) != TKM_OK)
+			chunk_to_sequence(&enc_ca_cert, &ca_cert,
+							  sizeof(certificate_type));
+			chunk_free(&enc_ca_cert);
+
+			if (ike_cc_check_ca(cc_id, ca_id, ca_cert) != TKM_OK)
 			{
-				DBG1(DBG_IKE, "error setting user certificate of cert chain"
-					 " (cc_id: %llu)", cc_id);
+				DBG1(DBG_IKE, "CA certificate (fp: %#B, cc_id: %llu) does not"
+					 " match trusted CA (ca_id: %llu)", &fp, cc_id, ca_id);
 				rounds->destroy(rounds);
 				return FALSE;
 			}
 
-			/* process intermediate CA certificates */
+			/* process intermediate CA certificates in reverse order */
 			enumerator = auth->create_enumerator(auth);
 			while (enumerator->enumerate(enumerator, &rule, &cert))
 			{
 				if (rule == AUTH_RULE_IM_CERT)
 				{
-					chunk_t enc_im_cert;
-					certificate_type im_cert;
-
-					if (!cert->get_encoding(cert, CERT_ASN1_DER, &enc_im_cert))
-					{
-						DBG1(DBG_IKE, "unable to extract encoded intermediate CA"
-							 " certificate");
-						rounds->destroy(rounds);
-						enumerator->destroy(enumerator);
-						return FALSE;
-					}
-
-					chunk_to_sequence(&enc_im_cert, &im_cert,
-									  sizeof(certificate_type));
-					chunk_free(&enc_im_cert);
-					if (ike_cc_add_certificate(cc_id, 1, im_cert) != TKM_OK)
-					{
-						DBG1(DBG_IKE, "error adding intermediate certificate to"
-							 " cert chain (cc_id: %llu)", cc_id);
-						rounds->destroy(rounds);
-						enumerator->destroy(enumerator);
-						return FALSE;
-					}
+					array_insert_create(&im_certs, ARRAY_TAIL, cert);
 				}
 			}
 			enumerator->destroy(enumerator);
 
-			/* finally add CA certificate */
-			cert = auth->get(auth, AUTH_RULE_CA_CERT);
+			while (array_remove(im_certs, ARRAY_TAIL, &cert))
+			{
+				chunk_t enc_im_cert;
+				certificate_type im_cert;
+
+				if (!cert->get_encoding(cert, CERT_ASN1_DER, &enc_im_cert))
+				{
+					DBG1(DBG_IKE, "unable to extract encoded intermediate CA"
+						 " certificate");
+					rounds->destroy(rounds);
+					array_destroy(im_certs);
+					return FALSE;
+				}
+
+				chunk_to_sequence(&enc_im_cert, &im_cert,
+								  sizeof(certificate_type));
+				chunk_free(&enc_im_cert);
+				if (ike_cc_add_certificate(cc_id, 1, im_cert) != TKM_OK)
+				{
+					DBG1(DBG_IKE, "error adding intermediate certificate to"
+						 " cert chain (cc_id: %llu)", cc_id);
+					rounds->destroy(rounds);
+					array_destroy(im_certs);
+					return FALSE;
+				}
+			}
+			array_destroy(im_certs);
+
+			/* finally add user certificate and check chain */
+			cert = auth->get(auth, AUTH_RULE_SUBJECT_CERT);
 			if (cert)
 			{
-				const ca_id_type ca_id = 1;
-				certificate_type ca_cert;
-				chunk_t enc_ca_cert;
+				chunk_t enc_user_cert;
+				ri_id_type ri_id;
+				certificate_type user_cert;
 
-				if (!cert->get_encoding(cert, CERT_ASN1_DER, &enc_ca_cert))
+				/* set user certificate */
+				if (!cert->get_encoding(cert, CERT_ASN1_DER, &enc_user_cert))
 				{
-					DBG1(DBG_IKE, "unable to extract encoded CA certificate");
+					DBG1(DBG_IKE, "unable to extract encoded user certificate");
 					rounds->destroy(rounds);
 					return FALSE;
 				}
 
-				chunk_to_sequence(&enc_ca_cert, &ca_cert,
-								  sizeof(certificate_type));
-				chunk_free(&enc_ca_cert);
-				if (ike_cc_add_certificate(cc_id, 1, ca_cert) != TKM_OK)
+				chunk_to_sequence(&enc_user_cert, &user_cert, sizeof(certificate_type));
+				chunk_free(&enc_user_cert);
+				if (ike_cc_add_certificate(cc_id, 1, user_cert) != TKM_OK)
 				{
-					DBG1(DBG_IKE, "error adding CA certificate to cert chain "
-						 "(cc_id: %llu)", cc_id);
+					DBG1(DBG_IKE, "error adding user certificate to cert chain"
+						 " (cc_id: %llu)", cc_id);
 					rounds->destroy(rounds);
 					return FALSE;
 				}
 
-				if (ike_cc_check_ca(cc_id, ca_id) != TKM_OK)
+				ri_id = get_remote_identity_id(ike_sa->get_peer_cfg((ike_sa_t *)ike_sa));
+				if (ike_cc_check_chain(cc_id, ri_id) != TKM_OK)
 				{
-					DBG1(DBG_IKE, "certificate chain (cc_id: %llu) not based on"
-						 " trusted CA (ca_id: %llu)", cc_id, ca_id);
+					DBG1(DBG_IKE, "error checking cert chain (cc_id: %llu)", cc_id);
 					rounds->destroy(rounds);
 					return FALSE;
 				}
@@ -190,12 +231,12 @@ static bool build_cert_chain(const ike_sa_t * const ike_sa, cc_id_type cc_id)
 			}
 			else
 			{
-				DBG1(DBG_IKE, "no CA certificate");
+				DBG1(DBG_IKE, "no subject certificate for remote peer");
 			}
 		}
 		else
 		{
-			DBG1(DBG_IKE, "no subject certificate for remote peer");
+			DBG1(DBG_IKE, "no CA certificate");
 		}
 	}
 
@@ -367,4 +408,113 @@ tkm_listener_t *tkm_listener_create()
 	);
 
 	return &this->public;
+}
+
+static u_int hash(const chunk_t *key)
+{
+	return chunk_hash(*key);
+}
+
+static bool equals(const chunk_t *key, const chunk_t *other_key)
+{
+	return chunk_equals(*key, *other_key);
+}
+
+static u_int id_hash(const uint64_t *key)
+{
+	return chunk_hash(chunk_create((u_char*)key, sizeof(uint64_t)));
+}
+
+static bool id_equals(const uint64_t *key, const uint64_t *other_key)
+{
+	return *key == *other_key;
+}
+
+/*
+ * Described in header.
+ */
+int register_ca_mapping()
+{
+	char *section, *tkm_ca_id_str, *key_fp_str;
+	chunk_t *key_fp;
+	uint64_t *tkm_ca_id;
+	hashtable_t *id_map;
+	enumerator_t *enumerator;
+	bool err = FALSE;
+
+	ca_map = hashtable_create((hashtable_hash_t)hash,
+							  (hashtable_equals_t)equals, 8);
+	id_map = hashtable_create((hashtable_hash_t)id_hash,
+							  (hashtable_equals_t)id_equals, 8);
+
+	enumerator = lib->settings->create_section_enumerator(lib->settings,
+														  "%s.ca_mapping",
+														  lib->ns);
+	while (enumerator->enumerate(enumerator, &section))
+	{
+		tkm_ca_id_str = lib->settings->get_str(lib->settings,
+											   "%s.ca_mapping.%s.id", NULL,
+											   lib->ns, section);
+		tkm_ca_id = malloc_thing(uint64_t);
+		*tkm_ca_id = settings_value_as_uint64(tkm_ca_id_str, 0);
+
+		key_fp_str = lib->settings->get_str(lib->settings,
+											"%s.ca_mapping.%s.fingerprint", NULL,
+											lib->ns, section);
+		if (key_fp_str)
+		{
+			key_fp = malloc_thing(chunk_t);
+			*key_fp = chunk_from_hex(chunk_from_str(key_fp_str), NULL);
+		}
+
+		if (!*tkm_ca_id || !key_fp_str || !key_fp->len ||
+			id_map->get(id_map, tkm_ca_id) != NULL)
+		{
+			DBG1(DBG_CFG, "error adding CA ID mapping '%s': ID %s, FP '%s'",
+				 section, tkm_ca_id_str, key_fp_str);
+			free(tkm_ca_id);
+			if (key_fp_str)
+			{
+				chunk_free(key_fp);
+				free(key_fp);
+			}
+			err = TRUE;
+		}
+		else
+		{
+			DBG2(DBG_CFG, "adding CA ID mapping '%s': ID %" PRIu64 ", FP '%#B'",
+				 section, *tkm_ca_id, key_fp);
+			ca_map->put(ca_map, key_fp, tkm_ca_id);
+			/* track CA IDs for uniqueness, set value to not-NULL */
+			id_map->put(id_map, tkm_ca_id, id_map);
+		}
+	}
+	enumerator->destroy(enumerator);
+	id_map->destroy(id_map);
+
+	return err ? 0 : ca_map->get_count(ca_map);
+}
+
+/*
+ * Described in header.
+ */
+void destroy_ca_mapping()
+{
+	enumerator_t *enumerator;
+	chunk_t *key;
+	uint64_t *value;
+
+	if (ca_map)
+	{
+		enumerator = ca_map->create_enumerator(ca_map);
+		while (enumerator->enumerate(enumerator, &key, &value))
+		{
+			chunk_free(key);
+			free(key);
+			free(value);
+		}
+		enumerator->destroy(enumerator);
+		ca_map->destroy(ca_map);
+	}
+	ca_map = NULL;
 }

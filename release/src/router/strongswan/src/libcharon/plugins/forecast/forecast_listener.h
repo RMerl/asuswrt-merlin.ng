@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010-2014 Martin Willi
- * Copyright (C) 2010-2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,7 +40,7 @@ struct forecast_listener_t {
 	 * Create an enumerator over active tunnels.
 	 *
 	 * The enumerator enumerates over local or remote traffic selectors,
-	 * associated firewall marks and if decasulated packets should get
+	 * associated firewall marks and if decapsulated packets should get
 	 * reinjected into other tunnels.
 	 *
 	 * @param local		TRUE to enumerate local, FALSE to enumerate remote TS

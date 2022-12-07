@@ -51,7 +51,7 @@ static const struct {
 	{MNOTE_PENTAX_TAG_UNKNOWN_17, NULL, NULL, NULL},
 	{MNOTE_PENTAX_TAG_UNKNOWN_18, NULL, NULL, NULL},
 	{MNOTE_PENTAX_TAG_UNKNOWN_19, NULL, NULL, NULL},
-	{MNOTE_PENTAX_TAG_ISO_SPEED, "ISOSpeed", N_("ISOSpeed"), ""},
+	{MNOTE_PENTAX_TAG_ISO_SPEED, "ISOSpeed", N_("ISO Speed"), ""},
 	{MNOTE_PENTAX_TAG_UNKNOWN_21, NULL, NULL, NULL},
 	{MNOTE_PENTAX_TAG_COLOR, "Color", N_("Colors"), ""},
 	{MNOTE_PENTAX_TAG_UNKNOWN_24, NULL, NULL, NULL},
@@ -69,7 +69,7 @@ static const struct {
 	{MNOTE_PENTAX2_TAG_TIME, "Time", N_("Time"), ""},
 	{MNOTE_PENTAX2_TAG_QUALITY, "Quality", N_("Quality Level"), ""},
 	{MNOTE_PENTAX2_TAG_IMAGE_SIZE, "ImageSize", N_("Image Size"), ""},
-	{MNOTE_PENTAX2_TAG_PICTURE_MODE, "PictureMode", N_("PictureMode"), ""},
+	{MNOTE_PENTAX2_TAG_PICTURE_MODE, "PictureMode", N_("Picture Mode"), ""},
 	{MNOTE_PENTAX2_TAG_FLASH_MODE, "FlashMode", N_("Flash Mode"), ""},
 	{MNOTE_PENTAX2_TAG_FOCUS_MODE, "FocusMode", N_("Focus Mode"), ""},
 	{MNOTE_PENTAX2_TAG_AFPOINT_SELECTED, "AFPointSelected", N_("AF Point Selected"), ""},
@@ -125,7 +125,7 @@ static const struct {
 	{MNOTE_CASIO2_TAG_OBJECT_DISTANCE, "ObjectDistance", N_("Object Distance"), N_("Distance of photographed object in millimeters.")},
 	{MNOTE_CASIO2_TAG_FLASH_DISTANCE, "FlashDistance", N_("Flash Distance"), ""},
 	{MNOTE_CASIO2_TAG_RECORD_MODE, "RecordMode", N_("Record Mode"), ""},
-	{MNOTE_CASIO2_TAG_SELF_TIMER, "SelfTimer", N_("Self Timer"), ""},
+	{MNOTE_CASIO2_TAG_SELF_TIMER, "SelfTimer", N_("Self-timer"), ""},
 	{MNOTE_CASIO2_TAG_QUALITY, "CasioQuality", N_("Quality Level"), ""},
 	{MNOTE_CASIO2_TAG_FOCUS_MODE, "CasioFocusMode", N_("Focus Mode"), ""},
 	{MNOTE_CASIO2_TAG_TIME_ZONE, "TimeZone", N_("Time Zone"), ""},
@@ -153,7 +153,7 @@ mnote_pentax_tag_get_title (MnotePentaxTag t)
 {
 	unsigned int i;
 
-	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+	(void) bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
 	for (i = 0; i < sizeof (table) / sizeof (table[0]); i++)
 		if (table[i].tag == t) return (_(table[i].title));
 	return NULL;
@@ -164,12 +164,12 @@ mnote_pentax_tag_get_description (MnotePentaxTag t)
 {
 	unsigned int i;
 
-	bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
 	for (i = 0; i < sizeof (table) / sizeof (table[0]); i++)
 		if (table[i].tag == t) {
 			if (!table[i].description || !*table[i].description)
 				return "";
-			return (_(table[i].description));
+			(void) bindtextdomain (GETTEXT_PACKAGE, LOCALEDIR);
+			return _(table[i].description);
 		}
 	return NULL;
 }

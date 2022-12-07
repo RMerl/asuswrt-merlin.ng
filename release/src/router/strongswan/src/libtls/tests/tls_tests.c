@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -35,8 +36,13 @@ static bool test_runner_init(bool init)
 {
 	if (init)
 	{
-		plugin_loader_add_plugindirs(PLUGINDIR, PLUGINS);
-		if (!lib->plugins->load(lib->plugins, PLUGINS))
+		char *plugins;
+
+		plugins = getenv("TESTS_PLUGINS") ?:
+					lib->settings->get_str(lib->settings,
+										"tests.load", PLUGINS);
+		plugin_loader_add_plugindirs(PLUGINDIR, plugins);
+		if (!lib->plugins->load(lib->plugins, plugins))
 		{
 			return FALSE;
 		}

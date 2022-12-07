@@ -28,6 +28,7 @@
 #include "libavcodec/mpegaudio.h"
 #include "libavcodec/mpegaudiodata.h"
 #include "libavcodec/mpegaudiodecheader.h"
+#include "libavcodec/packet_internal.h"
 #include "libavutil/intreadwrite.h"
 #include "libavutil/opt.h"
 #include "libavutil/dict.h"
@@ -45,6 +46,7 @@ static int id3v1_set_string(AVFormatContext *s, const char *key,
     return !!tag;
 }
 
+// refer to: http://id3.org/ID3v1
 static int id3v1_create_tag(AVFormatContext *s, uint8_t *buf)
 {
     AVDictionaryEntry *tag;
@@ -58,7 +60,17 @@ static int id3v1_create_tag(AVFormatContext *s, uint8_t *buf)
     count += id3v1_set_string(s, "TIT2",    buf +  3, 30 + 1);       //title
     count += id3v1_set_string(s, "TPE1",    buf + 33, 30 + 1);       //author|artist
     count += id3v1_set_string(s, "TALB",    buf + 63, 30 + 1);       //album
-    count += id3v1_set_string(s, "TDRC",    buf + 93,  4 + 1);       //date
+    if ((tag = av_dict_get(s->metadata, "TYER", NULL, 0))) {         //year
+        av_strlcpy(buf + 93, tag->value, 4 + 1);
+        count++;
+    } else if ((tag = av_dict_get(s->metadata, "TDRC", NULL, 0))) {
+        av_strlcpy(buf + 93, tag->value, 4 + 1);
+        count++;
+    } else if ((tag = av_dict_get(s->metadata, "TDAT", NULL, 0))) {
+        av_strlcpy(buf + 93, tag->value, 4 + 1);
+        count++;
+    }
+
     count += id3v1_set_string(s, "comment", buf + 97, 30 + 1);
     if ((tag = av_dict_get(s->metadata, "TRCK", NULL, 0))) { //track
         buf[125] = 0;
@@ -120,7 +132,7 @@ typedef struct MP3Context {
     int pics_to_write;
 
     /* audio packets are queued here until we get all the attached pictures */
-    AVPacketList *queue, *queue_end;
+    PacketList *queue, *queue_end;
 } MP3Context;
 
 static const uint8_t xing_offtbl[2][2] = {{32, 17}, {17, 9}};
@@ -343,7 +355,7 @@ static int mp3_write_audio_packet(AVFormatContext *s, AVPacket *pkt)
 
         if (mp3->xing_offset) {
             uint8_t *side_data = NULL;
-            int side_data_size = 0;
+            buffer_size_t side_data_size;
 
             mp3_xing_add_frame(mp3, pkt);
             mp3->audio_size += pkt->size;
@@ -376,7 +388,7 @@ static int mp3_queue_flush(AVFormatContext *s)
     mp3_write_xing(s);
 
     while (mp3->queue) {
-        ff_packet_list_get(&mp3->queue, &mp3->queue_end, &pkt);
+        avpriv_packet_list_get(&mp3->queue, &mp3->queue_end, &pkt);
         if (write && (ret = mp3_write_audio_packet(s, &pkt)) < 0)
             write = 0;
         av_packet_unref(&pkt);
@@ -390,7 +402,9 @@ static void mp3_update_xing(AVFormatContext *s)
     AVReplayGain *rg;
     uint16_t tag_crc;
     uint8_t *toc;
-    int i, rg_size;
+    buffer_size_t rg_size;
+    int i;
+    int64_t old_pos = avio_tell(s->pb);
 
     /* replace "Xing" identification string with "Info" for CBR files. */
     if (!mp3->has_variable_bitrate)
@@ -450,7 +464,7 @@ static void mp3_update_xing(AVFormatContext *s)
 
     avio_seek(s->pb,  mp3->xing_frame_offset, SEEK_SET);
     avio_write(s->pb, mp3->xing_frame, mp3->xing_frame_size);
-    avio_seek(s->pb, 0, SEEK_END);
+    avio_seek(s->pb, old_pos, SEEK_SET);
 }
 
 static int mp3_write_trailer(struct AVFormatContext *s)
@@ -471,8 +485,6 @@ static int mp3_write_trailer(struct AVFormatContext *s)
 
     if (mp3->xing_offset)
         mp3_update_xing(s);
-
-    av_freep(&mp3->xing_frame);
 
     return 0;
 }
@@ -512,7 +524,7 @@ static int mp3_write_packet(AVFormatContext *s, AVPacket *pkt)
     if (pkt->stream_index == mp3->audio_stream_idx) {
         if (mp3->pics_to_write) {
             /* buffer audio packets until we get all the pictures */
-            int ret = ff_packet_list_put(&mp3->queue, &mp3->queue_end, pkt, FF_PACKETLIST_FLAG_REF_PACKET);
+            int ret = avpriv_packet_list_put(&mp3->queue, &mp3->queue_end, pkt, av_packet_ref, 0);
 
             if (ret < 0) {
                 av_log(s, AV_LOG_WARNING, "Not enough memory to buffer audio. Skipping picture streams\n");
@@ -550,10 +562,10 @@ static int mp3_write_packet(AVFormatContext *s, AVPacket *pkt)
  * Write an ID3v2 header at beginning of stream
  */
 
-static int mp3_write_header(struct AVFormatContext *s)
+static int mp3_init(struct AVFormatContext *s)
 {
     MP3Context  *mp3 = s->priv_data;
-    int ret, i;
+    int i;
 
     if (mp3->id3v2_version      &&
         mp3->id3v2_version != 3 &&
@@ -592,6 +604,14 @@ static int mp3_write_header(struct AVFormatContext *s)
         return AVERROR(EINVAL);
     }
 
+    return 0;
+}
+
+static int mp3_write_header(struct AVFormatContext *s)
+{
+    MP3Context  *mp3 = s->priv_data;
+    int ret;
+
     if (mp3->id3v2_version) {
         ff_id3v2_start(&mp3->id3, s->pb, mp3->id3v2_version, ID3v2_DEFAULT_MAGIC);
         ret = ff_id3v2_write_metadata(s, &mp3->id3);
@@ -608,6 +628,14 @@ static int mp3_write_header(struct AVFormatContext *s)
     return 0;
 }
 
+static void mp3_deinit(struct AVFormatContext *s)
+{
+    MP3Context *mp3 = s->priv_data;
+
+    avpriv_packet_list_free(&mp3->queue, &mp3->queue_end);
+    av_freep(&mp3->xing_frame);
+}
+
 AVOutputFormat ff_mp3_muxer = {
     .name              = "mp3",
     .long_name         = NULL_IF_CONFIG_SMALL("MP3 (MPEG audio layer 3)"),
@@ -616,9 +644,11 @@ AVOutputFormat ff_mp3_muxer = {
     .priv_data_size    = sizeof(MP3Context),
     .audio_codec       = AV_CODEC_ID_MP3,
     .video_codec       = AV_CODEC_ID_PNG,
+    .init              = mp3_init,
     .write_header      = mp3_write_header,
     .write_packet      = mp3_write_packet,
     .write_trailer     = mp3_write_trailer,
+    .deinit            = mp3_deinit,
     .query_codec       = query_codec,
     .flags             = AVFMT_NOTIMESTAMPS,
     .priv_class        = &mp3_muxer_class,

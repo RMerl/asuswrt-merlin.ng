@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2017 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -225,7 +226,7 @@ struct listener_message_rule_t {
 	payload_type_t payload;
 
 	/**
-	 * Notify type to expect/not expect (paylod type does not have to be
+	 * Notify type to expect/not expect (payload type does not have to be
 	 * specified)
 	 */
 	notify_type_t notify;
@@ -298,6 +299,26 @@ bool exchange_test_asserts_message(listener_t *this, ike_sa_t *ike_sa,
 				_assert_payload(#dir, 1, { TRUE, expected, 0 })
 
 /**
+ * Assert that the next in- or outbound plaintext message contains a payload
+ * of the given type.
+ *
+ * @param dir			IN or OUT to check the next in- or outbound message
+ * @param expected		expected payload type
+ */
+#define assert_payload(dir, expected) \
+				_assert_payload(#dir, -1, { TRUE, expected, 0 })
+
+/**
+ * Assert that the next in- or outbound plaintext message contains no payload
+ * of the given type.
+ *
+ * @param dir			IN or OUT to check the next in- or outbound message
+ * @param unexpected	not expected payload type
+ */
+#define assert_no_payload(dir, unexpected) \
+				_assert_payload(#dir, -1, { FALSE, unexpected, 0 })
+
+/**
  * Assert that the next in- or outbound plaintext message contains exactly
  * one notify of the given type.
  *
@@ -329,16 +350,18 @@ bool exchange_test_asserts_message(listener_t *this, ike_sa_t *ike_sa,
 
 #define _assert_payload(dir, c, ...) ({ \
 	listener_message_rule_t _rules[] = { __VA_ARGS__ }; \
-	listener_message_assert_t _listener = { \
+	listener_message_assert_t *_listener; \
+	INIT(_listener, \
 		.listener = { .message = exchange_test_asserts_message, }, \
 		.file = __FILE__, \
 		.line = __LINE__, \
 		.incoming = streq(dir, "IN") ? TRUE : FALSE, \
 		.count = c, \
-		.rules = _rules, \
+		.rules = malloc(sizeof(_rules)), \
 		.num_rules = countof(_rules), \
-	}; \
-	exchange_test_helper->add_listener(exchange_test_helper, &_listener.listener); \
+	); \
+	memcpy(_listener->rules, _rules, sizeof(_rules)); \
+	exchange_test_helper->add_listener(exchange_test_helper, &_listener->listener); \
 })
 
 /**

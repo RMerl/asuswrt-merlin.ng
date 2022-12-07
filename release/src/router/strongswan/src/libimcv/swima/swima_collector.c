@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -437,7 +438,8 @@ static bool collect_tags(private_swima_collector_t *this, char *pathname,
 
 		sw_locator = chunk_empty;
 		pos = strstr(pathname, "/swidtag");
-		if (pos && asprintf(&uri, "file://%.*s", pos - pathname, pathname) > 0)
+		if (pos &&
+			asprintf(&uri, "file://%.*s", (int)(pos - pathname), pathname) > 0)
 		{
 			sw_locator = chunk_from_str(uri);
 		}
@@ -588,7 +590,7 @@ swima_collector_t *swima_collector_create(void)
 	}
 	if (!this->db)
 	{
-		/* Set the event ID epoch and last event ID smanually */
+		/* Set the event ID epoch and last event ID manually */
 		eid_epoch = lib->settings->get_int(lib->settings,
 								"%s.plugins.imc-swima.eid_epoch",
 								 eid_epoch, lib->ns);

@@ -19,8 +19,8 @@
 0x55                         "X.500"
   0x04                       "X.509"
     0x03                     "CN"						OID_COMMON_NAME
-    0x04                     "S"						OID_SURNAME
-    0x05                     "SN"						OID_SERIAL_NUMBER
+    0x04                     "SN"						OID_SURNAME
+    0x05                     "serialNumber"				OID_SERIAL_NUMBER
     0x06                     "C"						OID_COUNTRY
     0x07                     "L"						OID_LOCALITY
     0x08                     "ST"						OID_STATE_OR_PROVINCE
@@ -212,7 +212,7 @@
                   0x03       "msSGC"
                   0x04       "msEncryptingFileSystem"
               0x14           "msEnrollmentInfrastructure"
-                0x02         "msCertificateTypeExtension"
+                0x02         "msCertTypeExtension"		OID_MS_CERT_TYPE_EXT
                   0x02       "msSmartcardLogon"			OID_MS_SMARTCARD_LOGON
                   0x03       "msUPN"					OID_USER_PRINCIPAL_NAME
               0x15           "msCertSrvInfrastructure"

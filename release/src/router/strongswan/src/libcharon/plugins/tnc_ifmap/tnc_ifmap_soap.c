@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -877,7 +878,7 @@ static bool soap_init(private_tnc_ifmap_soap_t *this)
 
 	/* open TLS socket */
 	this->tls = tls_socket_create(FALSE, server_id, client_id, this->fd,
-								  NULL, TLS_1_2, FALSE);
+								  NULL, TLS_UNSPEC, TLS_UNSPEC, 0);
 	if (!this->tls)
 	{
 		DBG1(DBG_TNC, "creating TLS socket failed");

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -17,7 +18,7 @@
 TEST_SUITE(make_id_manager_tests)
 TEST_SUITE(make_chunk_map_tests)
 TEST_SUITE(make_utility_tests)
-TEST_SUITE(make_nonceg_tests)
-TEST_SUITE(make_diffie_hellman_tests)
-TEST_SUITE(make_keymat_tests)
+TEST_SUITE_DEPEND(make_nonceg_tests, CUSTOM, "tkm")
+TEST_SUITE_DEPEND(make_diffie_hellman_tests, CUSTOM, "tkm")
+TEST_SUITE_DEPEND(make_keymat_tests, CUSTOM, "tkm")
 TEST_SUITE(make_kernel_sad_tests)

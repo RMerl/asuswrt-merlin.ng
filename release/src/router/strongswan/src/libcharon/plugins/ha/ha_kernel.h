@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -50,7 +51,7 @@ struct ha_kernel_t {
 	/**
 	 * Get the segment an arbitrary integer is in.
 	 *
-	 * @param n			integer to segmentate
+	 * @param n			integer to segment
 	 */
 	u_int (*get_segment_int)(ha_kernel_t *this, int n);
 

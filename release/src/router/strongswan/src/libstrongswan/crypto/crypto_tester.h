@@ -1,6 +1,8 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2016-2019 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,8 +33,11 @@ typedef struct signer_test_vector_t signer_test_vector_t;
 typedef struct hasher_test_vector_t hasher_test_vector_t;
 typedef struct prf_test_vector_t prf_test_vector_t;
 typedef struct xof_test_vector_t xof_test_vector_t;
+typedef struct kdf_test_vector_t kdf_test_vector_t;
+typedef struct kdf_test_args_t kdf_test_args_t;
+typedef struct drbg_test_vector_t drbg_test_vector_t;
 typedef struct rng_test_vector_t rng_test_vector_t;
-typedef struct dh_test_vector_t dh_test_vector_t;
+typedef struct ke_test_vector_t ke_test_vector_t;
 
 struct crypter_test_vector_t {
 	/** encryption algorithm this vector tests */
@@ -128,6 +133,39 @@ struct xof_test_vector_t {
 	u_char *out;
 };
 
+struct kdf_test_vector_t {
+	/** kdf algorithm this test vector tests */
+	key_derivation_function_t alg;
+	/** argument passed to constructor, type depends on alg */
+	union {
+		pseudo_random_function_t prf;
+	} arg;
+	/** optional key */
+	chunk_t key;
+	/** optional salt */
+	chunk_t salt;
+	/** expected output */
+	chunk_t out;
+};
+
+struct kdf_test_args_t {
+	/** the arguments used to construct the KDF */
+	va_list args;
+};
+
+struct drbg_test_vector_t {
+	/** drbg type this test vector tests */
+	drbg_type_t type;
+	/** security strength in bits */
+	uint32_t strength;
+	/** optional personalization string */
+	chunk_t personalization_str;
+	/** entropy_input | nonce | entropy_input_reseed */
+	chunk_t entropy;
+	/** returned output bits */
+	chunk_t out;
+};
+
 /**
  * Test vector for a RNG.
  *
@@ -144,20 +182,20 @@ struct rng_test_vector_t {
 	void *user;
 };
 
-struct dh_test_vector_t {
-	/** diffie hellman group to test */
-	diffie_hellman_group_t group;
-	/** private value of alice */
+struct ke_test_vector_t {
+	/** key exchange method to test */
+	key_exchange_method_t method;
+	/** private key of alice */
 	u_char *priv_a;
-	/** private value of bob */
+	/** private key of bob */
 	u_char *priv_b;
-	/** length of private values */
+	/** length of private keys */
 	size_t priv_len;
-	/** expected public value of alice */
+	/** expected public key of alice */
 	u_char *pub_a;
-	/** expected public value of bob */
+	/** expected public key of bob */
 	u_char *pub_b;
-	/** size of public values */
+	/** size of public keys */
 	size_t pub_len;
 	/** expected shared secret */
 	u_char *shared;
@@ -242,6 +280,33 @@ struct crypto_tester_t {
 					 xof_constructor_t create,
 					 u_int *speed, const char *plugin_name);
 	/**
+	 * Test a KDF algorithm.
+	 *
+	 * If constructor arguments are passed, only matching test vectors are
+	 * tried. Otherwise, all are tried and implementations are allowed to fail
+	 * construction with unsupported arguments.
+	 *
+	 * @param alg			algorithm to test
+	 * @param create		constructor function for the XOF
+	 * @param args			optional arguments to pass to constructor
+	 * @param speed			speed test result, NULL to omit
+	 * @return				TRUE if test passed
+	 */
+	bool (*test_kdf)(crypto_tester_t *this, key_derivation_function_t alg,
+					 kdf_constructor_t create, kdf_test_args_t *args,
+					 u_int *speed, const char *plugin_name);
+	/**
+	 * Test a DRBG type.
+	 *
+	 * @param type			DRBG type to test
+	 * @param create		constructor function for the DRBG
+	 * @param speed			speed test result, NULL to omit
+	 * @return				TRUE if test passed
+	 */
+	bool (*test_drbg)(crypto_tester_t *this, drbg_type_t type,
+					  drbg_constructor_t create,
+					  u_int *speed, const char *plugin_name);
+	/**
 	 * Test a RNG implementation.
 	 *
 	 * @param alg			algorithm to test
@@ -253,15 +318,15 @@ struct crypto_tester_t {
 					 rng_constructor_t create,
 					 u_int *speed, const char *plugin_name);
 	/**
-	 * Test a Diffie-Hellman implementation.
+	 * Test a key exchange implementation.
 	 *
-	 * @param group			group to test
-	 * @param create		constructor function for the DH backend
+	 * @param ke			key exchange method to test
+	 * @param create		constructor function for the key exchange method
 	 * @param speed			speeed test result, NULL to omit
 	 * @return				TRUE if test passed
 	 */
-	bool (*test_dh)(crypto_tester_t *this, diffie_hellman_group_t group,
-					dh_constructor_t create,
+	bool (*test_ke)(crypto_tester_t *this, key_exchange_method_t ke,
+					ke_constructor_t create,
 					u_int *speed, const char *plugin_name);
 
 	/**
@@ -307,6 +372,20 @@ struct crypto_tester_t {
 	void (*add_xof_vector)(crypto_tester_t *this, xof_test_vector_t *vector);
 
 	/**
+	 * Add a test vector to test a KDF.
+	 *
+	 * @param vector		pointer to test vector
+	 */
+	void (*add_kdf_vector)(crypto_tester_t *this, kdf_test_vector_t *vector);
+
+	/**
+	 * Add a test vector to test a DRBG.
+	 *
+	 * @param vector		pointer to test vector
+	 */
+	void (*add_drbg_vector)(crypto_tester_t *this, drbg_test_vector_t *vector);
+
+	/**
 	 * Add a test vector to test a RNG.
 	 *
 	 * @param vector		pointer to test vector
@@ -318,7 +397,7 @@ struct crypto_tester_t {
 	 *
 	 * @param vector		pointer to test vector
 	 */
-	void (*add_dh_vector)(crypto_tester_t *this, dh_test_vector_t *vector);
+	void (*add_ke_vector)(crypto_tester_t *this, ke_test_vector_t *vector);
 
 	/**
 	 * Destroy a crypto_tester_t.

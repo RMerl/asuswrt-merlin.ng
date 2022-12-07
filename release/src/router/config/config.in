@@ -2636,10 +2636,17 @@ config RTCONFIG_BANDINDEX_NEW
         default n
 
 config RTCONFIG_SECUREBOOT
-	bool " SecureBoot fw"
-	default n
+        bool "SecureBoot fw"
+        default n
+
+config RTCONFIG_FSCRYPTCTL
+        bool "fscryptctl tool"
+        default n
 
 config RTCONFIG_BSC_SR
         bool " sync bsscolor and enable spatial-reuse"
         default n
 
+config RTCONFIG_AMAS_SS2
+	bool "AiMesh Site Survey strategy-2"
+	default n

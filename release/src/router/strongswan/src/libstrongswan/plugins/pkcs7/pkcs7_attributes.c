@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2008 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +21,7 @@
 #include <asn1/oid.h>
 #include <asn1/asn1.h>
 #include <asn1/asn1_parser.h>
+#include <collections/array.h>
 #include <collections/linked_list.h>
 
 #include "pkcs7_attributes.h"
@@ -93,6 +95,14 @@ static attribute_t *attribute_create(int oid, chunk_t value)
 }
 
 /**
+ * Compare two encoded attributes
+ */
+static int cmp_attributes(const chunk_t *a, const chunk_t *b, void *unused)
+{
+	return chunk_compare(*a, *b);
+}
+
+/**
  * Build encoding of the attribute list
  */
 static void build_encoding(private_pkcs7_attributes_t *this)
@@ -100,31 +110,35 @@ static void build_encoding(private_pkcs7_attributes_t *this)
 	enumerator_t *enumerator;
 	attribute_t *attribute;
 	u_int len = 0, count, i = 0;
-	chunk_t *chunks;
+	array_t *chunks;
+	chunk_t chunk;
 	u_char *pos;
 
 	count = this->attributes->get_count(this->attributes);
-	chunks = malloc(sizeof(chunk_t) * count);
+	chunks = array_create(sizeof(chunk_t), count);
 
 	enumerator = this->attributes->create_enumerator(this->attributes);
 	while (enumerator->enumerate(enumerator, &attribute))
 	{
-		chunks[i] = asn1_wrap(ASN1_SEQUENCE, "mm",
-								asn1_build_known_oid(attribute->oid),
-								asn1_wrap(ASN1_SET, "c", attribute->value));
-		len += chunks[i].len;
-		i++;
+		chunk = asn1_wrap(ASN1_SEQUENCE, "mm",
+						  asn1_build_known_oid(attribute->oid),
+						  asn1_wrap(ASN1_SET, "c", attribute->value));
+		array_insert(chunks, ARRAY_TAIL, &chunk);
+		len += chunk.len;
 	}
 	enumerator->destroy(enumerator);
+
+	array_sort(chunks, (void*)cmp_attributes, NULL);
 
 	pos = asn1_build_object(&this->encoding, ASN1_SET, len);
 	for (i = 0; i < count; i++)
 	{
-		memcpy(pos, chunks[i].ptr, chunks[i].len);
-		pos += chunks[i].len;
-		free(chunks[i].ptr);
+		array_get(chunks, i, &chunk);
+		memcpy(pos, chunk.ptr, chunk.len);
+		pos += chunk.len;
+		free(chunk.ptr);
 	}
-	free(chunks);
+	array_destroy(chunks);
 }
 
 METHOD(pkcs7_attributes_t, get_encoding, chunk_t,

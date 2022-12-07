@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2017 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,6 +32,20 @@
  * Maximum time since epoch causing wrap-around on Jan 19 03:14:07 UTC 2038
  */
 #define TIME_32_BIT_SIGNED_MAX	0x7fffffff
+
+/**
+ * The clock that should be used for time_monotonic() and conditional variables
+ */
+#ifdef HAVE_CLOCK_GETTIME
+#ifdef HAVE_CONDATTR_CLOCK_MONOTONIC
+/* only can use different clocks if we can set it via attribute */
+#ifndef TIME_CLOCK_ID
+#define TIME_CLOCK_ID CLOCK_MONOTONIC
+#endif
+#else
+#define TIME_CLOCK_ID CLOCK_MONOTONIC
+#endif
+#endif
 
 /**
  * Handle struct timeval like an own type.

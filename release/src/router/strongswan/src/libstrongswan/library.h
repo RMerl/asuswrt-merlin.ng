@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2010-2018 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -112,6 +113,7 @@
 #include "credentials/credential_factory.h"
 #include "credentials/credential_manager.h"
 #include "credentials/cred_encoding.h"
+#include "metadata/metadata_factory.h"
 #include "utils/chunk.h"
 #include "utils/capabilities.h"
 #include "utils/integrity_checker.h"
@@ -188,6 +190,11 @@ struct library_t {
 	 * Credential encoding registry and factory
 	 */
 	cred_encoding_t *encoding;
+
+	/**
+	 * Registry and factory for metadata creation
+	 */
+	metadata_factory_t *metadata;
 
 	/**
 	 * URL fetching facility

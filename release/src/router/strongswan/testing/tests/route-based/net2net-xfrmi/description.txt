@@ -1,0 +1,17 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b>
+is set up using XFRM interfaces.
+<p/>
+The gateways use <b>route-based forwarding</b> with <b>XFRM interfaces</b>, with
+firewall rules to allow traffic to pass. The IPsec traffic selector used is
+0.0.0.0/0, however, specific routing is achieved with routes on the XFRM
+interfaces. The IKE daemon does not install routes for CHILD_SAs with outbound
+interface ID, so static routes are installed for the target subnets.
+<p/>
+Both gateways use separate interfaces for in- and outbound traffic (which is
+completely optional and mainly for testing purposes, a single interface will
+usually be enough). Gateway <b>moon</b> creates them before initiating the
+connection, while gateway <b>sun</b> dynamically creates the interfaces via
+updown script using the passed unique generated interface IDs.
+<p/>
+Client <b>alice</b> behind gateway <b>moon</b> pings client <b>bob</b> located
+behind gateway <b>sun</b>.

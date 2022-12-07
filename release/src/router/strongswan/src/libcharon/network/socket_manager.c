@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2010-2012 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -66,7 +66,7 @@ METHOD(socket_manager_t, receiver, status_t,
 		this->lock->unlock(this->lock);
 		return NOT_SUPPORTED;
 	}
-	/* receive is blocking and the thread can be cancelled */
+	/* receive is blocking and the thread can be canceled */
 	thread_cleanup_push((thread_cleanup_t)this->lock->unlock, this->lock);
 	status = this->socket->receive(this->socket, packet);
 	thread_cleanup_pop(TRUE);

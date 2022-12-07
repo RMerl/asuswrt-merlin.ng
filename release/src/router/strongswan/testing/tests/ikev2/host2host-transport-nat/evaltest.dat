@@ -1,9 +1,16 @@
-alice::ipsec status 2> /dev/null::nat-t.*ESTABLISHED.*alice@strongswan.org.*sun.strongswan.org::YES
-sun:: ipsec status 2> /dev/null::nat-t.*ESTABLISHED.*sun.strongswan.org.*alice@strongswan.org::YES
-alice::ipsec status 2> /dev/null::nat-t.*INSTALLED, TRANSPORT, reqid 1::YES
-venus::ipsec status 2> /dev/null::nat-t.*INSTALLED, TRANSPORT, reqid 1::YES
-sun:: ipsec status 2> /dev/null::nat-t.*INSTALLED, TRANSPORT, reqid 1::YES
+alice::swanctl --list-sas --raw 2> /dev/null::host-host.*version=2 state=ESTABLISHED local-host=PH_IP_ALICE local-port=4500 local-id=alice@strongswan.org remote-host=PH_IP_SUN remote-port=4500 remote-id=sun.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*host-host.*state=INSTALLED mode=TRANSPORT.*ESP encap=yes.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[PH_IP_ALICE/32] remote-ts=\[PH_IP_SUN/32]::YES
+sun::  swanctl --list-sas --raw 2> /dev/null::host-host.*version=2 state=ESTABLISHED local-host=PH_IP_SUN local-port=4500 local-id=sun.strongswan.org remote-host=PH_IP_MOON remote-port=4500 remote-id=alice@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*host-host.*state=INSTALLED mode=TRANSPORT.*ESP encap=yes.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[PH_IP_SUN/32] remote-ts=\[PH_IP_MOON/32]::YES
+alice::ping -c 1 PH_IP_SUN::64 bytes from PH_IP_SUN: icmp_.eq=1::YES
+# this won't work due to the IPsec policy on sun for the NAT's public IP
+venus::ping -c 1 -W 1 PH_IP_SUN::64 bytes from PH_IP_SUN: icmp_.eq=1::NO
+venus::expect-connection host-host
+venus::swanctl --initiate --child host-host 2> /dev/null
+venus::swanctl --list-sas --raw 2> /dev/null::host-host.*version=2 state=ESTABLISHED local-host=PH_IP_VENUS local-port=4500 local-id=venus.strongswan.org remote-host=PH_IP_SUN remote-port=4500 remote-id=sun.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*host-host.*state=INSTALLED mode=TRANSPORT.*ESP encap=yes.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[PH_IP_VENUS/32] remote-ts=\[PH_IP_SUN/32]::YES
+sun::  swanctl --list-sas --raw 2> /dev/null::host-host.*version=2 state=ESTABLISHED local-host=PH_IP_SUN local-port=4500 local-id=sun.strongswan.org remote-host=PH_IP_MOON remote-port=.* remote-id=venus.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*host-host.*state=INSTALLED mode=TRANSPORT.*ESP encap=yes.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[PH_IP_SUN/32] remote-ts=\[PH_IP_MOON/32]::YES
+# now traffic goes via the newer SA between sun and venus
 alice::ping -c 1 -W 1 PH_IP_SUN::64 bytes from PH_IP_SUN: icmp_.eq=1::NO
 venus::ping -c 1 -W 1 PH_IP_SUN::64 bytes from PH_IP_SUN: icmp_.eq=1::YES
 sun::tcpdump::IP moon.strongswan.org.* > sun.strongswan.org.*: UDP::YES
 sun::tcpdump::IP sun.strongswan.org.* > moon.strongswan.org.*: UDP::YES
+sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ICMP echo request::YES
+sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ICMP echo reply::NO

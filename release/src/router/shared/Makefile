@@ -148,7 +148,7 @@ ifeq ($(RTCONFIG_AHS),y)
 OBJS += $(if $(wildcard notify_ahs.c),notify_ahs.o,prebuild/notify_ahs.o)
 endif
 ifeq ($(RTCONFIG_AMAS_WGN),y)
-OBJS += amas_wgn_shared.o
+OBJS += $(if $(wildcard amas_wgn_shared.c),amas_wgn_shared.o,prebuild/amas_wgn_shared.o)
 endif
 ifeq ($(RTCONFIG_RGBLED),y)
 OBJS += $(if $(wildcard aura_rgb.c),aura_rgb.o,prebuild/aura_rgb.o)
@@ -410,7 +410,7 @@ else
 vpath %.c sysdeps/broadcom  $(SRCBASE)/shared/bcmwifi/src
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
-ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
+ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63)),y)
 OBJS += rtkswitch.o
 endif
 endif

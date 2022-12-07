@@ -5,7 +5,8 @@
  * Copyright (C) 2000-2017 Andreas Steffen
  * Copyright (C) 2006-2009 Martin Willi
  * Copyright (C) 2008-2017 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -137,7 +138,7 @@ struct private_x509_cert_t {
 	linked_list_t *permitted_names;
 
 	/**
-	 * List of exluced name constraints
+	 * List of excluded name constraints
 	 */
 	linked_list_t *excluded_names;
 
@@ -170,6 +171,11 @@ struct private_x509_cert_t {
 	 * Authority Key Serial Number
 	 */
 	chunk_t authKeySerialNumber;
+
+	/**
+	 * Optional OID of an [unsupported] critical extension
+	 */
+	chunk_t critical_extension_oid;
 
 	/**
 	 * Path Length Constraint
@@ -1705,6 +1711,7 @@ METHOD(certificate_t, issued_by, bool,
 	public_key_t *key;
 	bool valid;
 	x509_t *x509 = (x509_t*)issuer;
+	chunk_t keyid = chunk_empty;
 
 	if (&this->public.interface.interface == issuer)
 	{
@@ -1728,9 +1735,22 @@ METHOD(certificate_t, issued_by, bool,
 			return FALSE;
 		}
 	}
-	if (!this->issuer->equals(this->issuer, issuer->get_subject(issuer)))
+
+	/* compare keyIdentifiers if available, otherwise use DNs */
+	if (this->authKeyIdentifier.ptr)
 	{
-		return FALSE;
+		keyid = x509->get_subjectKeyIdentifier(x509);
+		if (keyid.len && !chunk_equals(keyid, this->authKeyIdentifier))
+		{
+			return FALSE;
+		}
+	}
+	if (!keyid.len)
+	{
+		if (!this->issuer->equals(this->issuer, issuer->get_subject(issuer)))
+		{
+			return FALSE;
+		}
 	}
 
 	/* get the public key of the issuer */
@@ -1951,6 +1971,7 @@ METHOD(certificate_t, destroy, void,
 		chunk_free(&this->authKeyIdentifier);
 		chunk_free(&this->encoding);
 		chunk_free(&this->encoding_hash);
+		chunk_free(&this->critical_extension_oid);
 		if (!this->parsed)
 		{	/* only parsed certificates point these fields to "encoded" */
 			chunk_free(&this->signature);
@@ -2192,6 +2213,8 @@ static chunk_t generate_ts(traffic_selector_t *ts)
 static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 					 private_key_t *sign_key, int digest_alg)
 {
+	const chunk_t keyUsageCrlSign = chunk_from_chars(0x01, 0x02);
+	const chunk_t keyUsageCertSignCrlSign = chunk_from_chars(0x01, 0x06);
 	chunk_t extensions = chunk_empty, extendedKeyUsage = chunk_empty;
 	chunk_t serverAuth = chunk_empty, clientAuth = chunk_empty;
 	chunk_t ocspSigning = chunk_empty, certPolicies = chunk_empty;
@@ -2203,6 +2226,7 @@ static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 	chunk_t policyConstraints = chunk_empty, inhibitAnyPolicy = chunk_empty;
 	chunk_t ikeIntermediate = chunk_empty, msSmartcardLogon = chunk_empty;
 	chunk_t ipAddrBlocks = chunk_empty, sig_scheme = chunk_empty;
+	chunk_t criticalExtension = chunk_empty;
 	identification_t *issuer, *subject;
 	chunk_t key_info;
 	hasher_t *hasher;
@@ -2310,11 +2334,11 @@ static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 												chunk_from_chars(0xFF)),
 											pathLenConstraint)));
 		/* set CertificateSign and implicitly CRLsign */
-		keyUsageBits = chunk_from_chars(0x01, 0x06);
+		keyUsageBits = keyUsageCertSignCrlSign;
 	}
 	else if (cert->flags & X509_CRL_SIGN)
 	{
-		keyUsageBits = chunk_from_chars(0x01, 0x02);
+		keyUsageBits = keyUsageCrlSign;
 	}
 	if (keyUsageBits.len)
 	{
@@ -2570,17 +2594,25 @@ static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 						chunk_from_thing(cert->inhibit_any))));
 	}
 
+	if (cert->critical_extension_oid.len > 0)
+	{
+		criticalExtension = asn1_wrap(ASN1_SEQUENCE, "mmm",
+					asn1_simple_object(ASN1_OID, cert->critical_extension_oid),
+					asn1_simple_object(ASN1_BOOLEAN, chunk_from_chars(0xFF)),
+					asn1_simple_object(ASN1_OCTET_STRING, chunk_empty));
+	}
+
 	if (basicConstraints.ptr || subjectAltNames.ptr || authKeyIdentifier.ptr ||
 		crlDistributionPoints.ptr || nameConstraints.ptr || ipAddrBlocks.ptr)
 	{
 		extensions = asn1_wrap(ASN1_CONTEXT_C_3, "m",
-						asn1_wrap(ASN1_SEQUENCE, "mmmmmmmmmmmmmm",
+						asn1_wrap(ASN1_SEQUENCE, "mmmmmmmmmmmmmmm",
 							basicConstraints, keyUsage, subjectKeyIdentifier,
 							authKeyIdentifier, subjectAltNames,
 							extendedKeyUsage, crlDistributionPoints,
 							authorityInfoAccess, nameConstraints, certPolicies,
 							policyMappings, policyConstraints, inhibitAnyPolicy,
-							ipAddrBlocks));
+							ipAddrBlocks, criticalExtension));
 	}
 
 	cert->tbsCertificate = asn1_wrap(ASN1_SEQUENCE, "mmccmcmm",
@@ -2863,6 +2895,9 @@ x509_cert_t *x509_cert_gen(certificate_type_t type, va_list args)
 				continue;
 			case BUILD_DIGEST_ALG:
 				digest_alg = va_arg(args, int);
+				continue;
+			case BUILD_CRITICAL_EXTENSION:
+				cert->critical_extension_oid = chunk_clone(va_arg(args, chunk_t));
 				continue;
 			case BUILD_END:
 				break;

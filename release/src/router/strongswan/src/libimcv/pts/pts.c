@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2012-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2012-2020 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -21,14 +22,15 @@
 #include <bio/bio_writer.h>
 #include <bio/bio_reader.h>
 
-#include <tpm_tss.h>
 #include <tpm_tss_trousers.h>
 
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <libgen.h>
 #include <unistd.h>
+#include <dirent.h>
 #include <errno.h>
+
 
 #ifndef TPM_TAG_QUOTE_INFO2
 #define TPM_TAG_QUOTE_INFO2 0x0036
@@ -68,7 +70,7 @@ struct private_pts_t {
 	/**
 	 * PTS Diffie-Hellman Secret
 	 */
-	diffie_hellman_t *dh;
+	key_exchange_t *dh;
 
 	/**
 	 * PTS Diffie-Hellman Initiator Nonce
@@ -91,17 +93,27 @@ struct private_pts_t {
 	int platform_id;
 
 	/**
+	 * List of directory symlinks received from IMC
+	 */
+	pts_symlinks_t *symlinks;
+
+	/**
 	 * TRUE if IMC-PTS, FALSE if IMV-PTS
 	 */
 	bool is_imc;
 
 	/**
-	 * Active TPM
+	 * IMC-PTS: own TPM / IMV-PTS: unused
 	 */
 	tpm_tss_t *tpm;
 
 	/**
-	 * Contains a TPM_CAP_VERSION_INFO struct
+	 * IMC-PTS: own TPM version / IMV-PTS: peer TPM version
+	 */
+	tpm_version_t tpm_version;
+
+	/**
+	 * Contains a TPM Version Info struct
 	 */
 	chunk_t tpm_version_info;
 
@@ -116,7 +128,7 @@ struct private_pts_t {
 	certificate_t *aik_cert;
 
 	/**
-	 * Primary key referening AIK in database
+	 * Primary key referencing AIK in database
 	 */
 	int aik_id;
 
@@ -188,15 +200,15 @@ METHOD(pts_t, set_dh_hash_algorithm, void,
 METHOD(pts_t, create_dh_nonce, bool,
 	private_pts_t *this, pts_dh_group_t group, int nonce_len)
 {
-	diffie_hellman_group_t dh_group;
+	key_exchange_method_t dh_group;
 	chunk_t *nonce;
 	rng_t *rng;
 
 	dh_group = pts_dh_group_to_ike(group);
 	DBG2(DBG_PTS, "selected PTS DH group is %N",
-				   diffie_hellman_group_names, dh_group);
+				   key_exchange_method_names, dh_group);
 	DESTROY_IF(this->dh);
-	this->dh = lib->crypto->create_dh(lib->crypto, dh_group);
+	this->dh = lib->crypto->create_ke(lib->crypto, dh_group);
 
 	rng = lib->crypto->create_rng(lib->crypto, RNG_STRONG);
 	if (!rng)
@@ -220,7 +232,7 @@ METHOD(pts_t, create_dh_nonce, bool,
 METHOD(pts_t, get_my_public_value, bool,
 	private_pts_t *this, chunk_t *value, chunk_t *nonce)
 {
-	if (!this->dh->get_my_public_value(this->dh, value))
+	if (!this->dh->get_public_key(this->dh, value))
 	{
 		return FALSE;
 	}
@@ -231,7 +243,7 @@ METHOD(pts_t, get_my_public_value, bool,
 METHOD(pts_t, set_peer_public_value, bool,
 	private_pts_t *this, chunk_t value, chunk_t nonce)
 {
-	if (!this->dh->set_other_public_value(this->dh, value))
+	if (!this->dh->set_public_key(this->dh, value))
 	{
 		return FALSE;
 	}
@@ -286,16 +298,10 @@ METHOD(pts_t, calculate_secret, bool,
 		return FALSE;
 	}
 	hasher->destroy(hasher);
-
-	/* The DH secret must be destroyed */
 	chunk_clear(&shared_secret);
 
-	/*
-	 * Truncate the hash to 20 bytes to fit the ExternalData
-	 * argument of the TPM Quote command
-	 */
-	this->secret.len = min(this->secret.len, 20);
 	DBG3(DBG_PTS, "secret assessment value: %B", &this->secret);
+
 	return TRUE;
 }
 
@@ -311,17 +317,181 @@ METHOD(pts_t, set_platform_id, void,
 	this->platform_id = pid;
 }
 
+METHOD(pts_t, extract_symlinks, pts_symlinks_t*,
+	private_pts_t *this, chunk_t pathname)
+{
+#ifndef WIN32
+	char path[BUF_LEN], real_path[BUF_LEN];
+	size_t path_len, real_path_len;
+	struct dirent *entry;
+	struct stat st;
+	DIR *dir;
+
+	/* open directory and prepare pathnames */
+	snprintf(path, BUF_LEN-1, "%.*s", (int)pathname.len, pathname.ptr);
+	dir = opendir(path);
+	if (!dir)
+	{
+		DBG1(DBG_PTS, "opening directory '%s' failed: %s", path,
+					   strerror(errno));
+		return NULL;
+	}
+	if (pathname.len == 1 && path[0] == '/')
+	{
+		path_len = 1;
+	}
+	else
+	{
+		path[pathname.len] = '/';
+		path_len = pathname.len + 1;
+	}
+	real_path[0] = '/';
+
+	/* symlinks object is owned by pts object */
+	DESTROY_IF(this->symlinks);
+	this->symlinks = pts_symlinks_create();
+
+	while (TRUE)
+	{
+
+		entry = readdir(dir);
+		if (!entry)
+		{
+			/* no more entries -> exit */
+			break;
+		}
+		if (streq(entry->d_name, ".") || streq(entry->d_name, ".."))
+		{
+			continue;
+		}
+
+		/* assemble absolute path */
+		snprintf(path + path_len, BUF_LEN - path_len, "%s", entry->d_name);
+
+		/* only evaluate symlinks pointing to directories */
+		if (lstat(path, &st) == -1 || !S_ISLNK(st.st_mode) ||
+			 stat(path, &st) == -1 || !S_ISDIR(st.st_mode))
+		{
+			continue;
+		}
+
+		real_path_len = readlink(path, real_path + 1, BUF_LEN - 1);
+		if (real_path_len <= 0)
+		{
+			continue;
+		}
+		this->symlinks->add(this->symlinks, chunk_from_str(path),
+							chunk_create(real_path, 1 + real_path_len));
+	}
+	closedir(dir);
+#endif
+
+	return this->symlinks;
+}
+
+
+METHOD(pts_t, get_symlinks, pts_symlinks_t*,
+	private_pts_t *this)
+{
+	return this->symlinks;
+}
+
+METHOD(pts_t, set_symlinks, void,
+	private_pts_t *this, pts_symlinks_t *symlinks)
+{
+	enumerator_t *enumerator;
+	chunk_t symlink, dir;
+
+	DESTROY_IF(this->symlinks);
+	this->symlinks = symlinks->get_ref(symlinks);
+
+	DBG2(DBG_PTS, "adding directory symlinks:");
+	enumerator = symlinks->create_enumerator(symlinks);
+	while (enumerator->enumerate(enumerator, &symlink, &dir))
+	{
+		DBG2(DBG_PTS, "  %.*s -> %.*s", (int)symlink.len, symlink.ptr,
+										(int)dir.len, dir.ptr);
+	}
+	enumerator->destroy(enumerator);
+}
+
+METHOD(pts_t, get_tpm, tpm_tss_t*,
+	private_pts_t *this)
+{
+	return this->tpm;
+}
+
 METHOD(pts_t, get_tpm_version_info, bool,
 	private_pts_t *this, chunk_t *info)
 {
-	*info = this->tpm ? this->tpm->get_version_info(this->tpm) :
-						this->tpm_version_info;
+	*info = this->tpm_version_info;
+
 	return info->len > 0;
 }
+
+#define TPM_VERSION_INFO_TAG_1_2	0x0030
+#define TPM_VERSION_INFO_TAG_2_0	0x0200
+#define TPM_VERSION_INFO_LABEL		"Version Information: TPM"
 
 METHOD(pts_t, set_tpm_version_info, void,
 	private_pts_t *this, chunk_t info)
 {
+	bio_reader_t *reader;
+	uint16_t tpm_version_info_tag;
+	chunk_t vendor;
+
+	reader = bio_reader_create(info);
+	reader->read_uint16(reader, &tpm_version_info_tag);
+
+	if (tpm_version_info_tag == TPM_VERSION_INFO_TAG_1_2)
+	{
+		uint8_t major, minor, rev_major, rev_minor, errata_rev;
+		uint16_t spec_level;
+
+		this->tpm_version = TPM_VERSION_1_2;
+
+		if (reader->read_uint8 (reader, &major)      &&
+			reader->read_uint8 (reader, &minor)      &&
+			reader->read_uint8 (reader, &rev_major)  &&
+			reader->read_uint8 (reader, &rev_minor)  &&
+			reader->read_uint16(reader, &spec_level) &&
+			reader->read_uint8 (reader, &errata_rev) &&
+			reader->read_data  (reader, 4, &vendor))
+		{
+			DBG2(DBG_PTS, "%s 1.2 rev. %u.%u.%u.%u %.*s", TPM_VERSION_INFO_LABEL,
+				(uint32_t)major, (uint32_t)minor, (uint32_t)rev_major,
+				(uint32_t)rev_minor, (int)vendor.len, vendor.ptr);
+		}
+		else
+		{
+			DBG2(DBG_PTS, "%s 1.2", TPM_VERSION_INFO_LABEL);
+		}
+
+	}
+	else if (tpm_version_info_tag == TPM_VERSION_INFO_TAG_2_0)
+	{
+		uint32_t revision, year;
+		uint8_t reserved, locality;
+
+		this->tpm_version = TPM_VERSION_2_0;
+
+		if (reader->read_uint8 (reader, &reserved)  &&
+			reader->read_uint8 (reader, &locality)  &&
+			reader->read_uint32(reader, &revision)  &&
+			reader->read_uint32(reader, &year)      &&
+			reader->read_data  (reader, 4, &vendor))
+		{
+			DBG2(DBG_PTS, "%s 2.0 rev. %4.2f %u %.*s - startup locality: %u",
+				 TPM_VERSION_INFO_LABEL, revision/100.0, year,
+				 (int)vendor.len, vendor.ptr, (uint32_t)locality);
+		}
+		else
+		{
+			DBG2(DBG_PTS, "%s 2.0", TPM_VERSION_INFO_LABEL);
+		}
+	}
+	reader->destroy(reader);
+
 	this->tpm_version_info = chunk_clone(info);
 }
 
@@ -629,15 +799,18 @@ METHOD(pts_t, quote, bool,
 	tpm_tss_quote_info_t **quote_info, chunk_t *quote_sig)
 {
 	chunk_t pcr_value, pcr_computed;
+	hash_algorithm_t hash_alg;
 	uint32_t pcr, pcr_sel = 0;
 	enumerator_t *enumerator;
+
+	hash_alg = pts_meas_algo_to_hash(this->pcrs->get_pcr_algo(this->pcrs));
 
 	/* select PCRs */
 	DBG2(DBG_PTS, "PCR values hashed into PCR Composite:");
 	enumerator = this->pcrs->create_enumerator(this->pcrs);
 	while (enumerator->enumerate(enumerator, &pcr))
 	{
-		if (this->tpm->read_pcr(this->tpm, pcr, &pcr_value, HASH_SHA1))
+		if (this->tpm->read_pcr(this->tpm, pcr, &pcr_value, hash_alg))
 		{
 			pcr_computed = this->pcrs->get(this->pcrs, pcr);
 			DBG2(DBG_PTS, "PCR %2d %#B  %s", pcr, &pcr_value,
@@ -651,7 +824,7 @@ METHOD(pts_t, quote, bool,
 	enumerator->destroy(enumerator);
 
 	/* TPM Quote */
-	return this->tpm->quote(this->tpm, this->aik_handle, pcr_sel, HASH_SHA1,
+	return this->tpm->quote(this->tpm, this->aik_handle, pcr_sel, hash_alg,
 							this->secret, quote_mode, quote_info, quote_sig);
 }
 
@@ -772,9 +945,30 @@ METHOD(pts_t, verify_quote_signature, bool,
 	return TRUE;
 }
 
+/**
+ * Extracts the locality from a TPM 2.0 Version Info struct
+ */
+static uint8_t get_tpm_locality(chunk_t tpm_version_info)
+{
+	if (tpm_version_info.len < 4 ||
+	    tpm_version_info.ptr[0] != 0x02 || tpm_version_info.ptr[1] != 0x00)
+	{
+		return 0;
+	}
+	else
+	{
+		return tpm_version_info.ptr[3];
+	}
+}
+
 METHOD(pts_t, get_pcrs, pts_pcr_t*,
 	private_pts_t *this)
 {
+	if (!this->pcrs)
+	{
+		this->pcrs = pts_pcr_create(this->tpm_version, this->algorithm,
+							get_tpm_locality(this->tpm_version_info));
+	}
 	return this->pcrs;
 }
 
@@ -785,6 +979,7 @@ METHOD(pts_t, destroy, void,
 	DESTROY_IF(this->pcrs);
 	DESTROY_IF(this->aik_cert);
 	DESTROY_IF(this->dh);
+	DESTROY_IF(this->symlinks);
 	free(this->initiator_nonce.ptr);
 	free(this->responder_nonce.ptr);
 	free(this->secret.ptr);
@@ -798,14 +993,6 @@ METHOD(pts_t, destroy, void,
 pts_t *pts_create(bool is_imc)
 {
 	private_pts_t *this;
-	pts_pcr_t *pcrs;
-
-	pcrs = pts_pcr_create();
-	if (!pcrs)
-	{
-		DBG1(DBG_PTS, "shadow PCR set could not be created");
-		return NULL;
-	}
 
 	INIT(this,
 		.public = {
@@ -821,6 +1008,10 @@ pts_t *pts_create(bool is_imc)
 			.calculate_secret = _calculate_secret,
 			.get_platform_id = _get_platform_id,
 			.set_platform_id = _set_platform_id,
+			.extract_symlinks = _extract_symlinks,
+			.get_symlinks = _get_symlinks,
+			.set_symlinks = _set_symlinks,
+			.get_tpm = _get_tpm,
 			.get_tpm_version_info = _get_tpm_version_info,
 			.set_tpm_version_info = _set_tpm_version_info,
 			.get_aik = _get_aik,
@@ -838,9 +1029,8 @@ pts_t *pts_create(bool is_imc)
 		},
 		.is_imc = is_imc,
 		.proto_caps = PTS_PROTO_CAPS_V,
-		.algorithm = PTS_MEAS_ALGO_SHA256,
-		.dh_hash_algorithm = PTS_MEAS_ALGO_SHA256,
-		.pcrs = pcrs,
+		.algorithm = PTS_MEAS_ALGO_SHA384,
+		.dh_hash_algorithm = PTS_MEAS_ALGO_SHA384,
 	);
 
 	if (is_imc)
@@ -849,12 +1039,16 @@ pts_t *pts_create(bool is_imc)
 		if (this->tpm)
 		{
 			this->proto_caps |= PTS_PROTO_CAPS_T | PTS_PROTO_CAPS_D;
+			this->tpm_version = this->tpm->get_version(this->tpm);
+			this->tpm_version_info = chunk_clone(
+										this->tpm->get_version_info(this->tpm));
 			load_aik(this);
 		}
 	}
 	else
 	{
 		this->proto_caps |= PTS_PROTO_CAPS_T | PTS_PROTO_CAPS_D;
+		this->tpm_version = TPM_VERSION_2_0;
 	}
 
 	return &this->public;

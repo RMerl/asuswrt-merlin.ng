@@ -46,7 +46,7 @@ void ff_end_tag(AVIOContext *pb, int64_t start);
  */
 int ff_get_bmp_header(AVIOContext *pb, AVStream *st, uint32_t *size);
 
-void ff_put_bmp_header(AVIOContext *pb, AVCodecParameters *par, int for_asf, int ignore_extradata);
+void ff_put_bmp_header(AVIOContext *pb, AVCodecParameters *par, int for_asf, int ignore_extradata, int rgb_frame_is_flipped);
 
 /**
  * Tell ff_put_wav_header() to use WAVEFORMATEX even for PCM codecs.
@@ -72,6 +72,12 @@ int ff_get_wav_header(AVFormatContext *s, AVIOContext *pb, AVCodecParameters *pa
 
 extern const AVCodecTag ff_codec_bmp_tags[]; // exposed through avformat_get_riff_video_tags()
 extern const AVCodecTag ff_codec_wav_tags[];
+/* The following list contains both ff_codec_bmp_tags and ff_codec_wav_tags. */
+extern const AVCodecTag *const ff_riff_codec_tags_list[];
+/* The following list contains only ff_codec_wav_tags. */
+extern const AVCodecTag *const ff_wav_codec_tags_list[];
+
+extern const AVCodecTag ff_codec_bmp_tags_unofficial[];
 
 void ff_parse_specific_params(AVStream *st, int *au_rate, int *au_ssize, int *au_scale);
 

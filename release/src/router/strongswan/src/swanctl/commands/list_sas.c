@@ -1,10 +1,9 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
- *
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
-
+ *
+ * Copyright (C) secunet Security Networks AG
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
@@ -43,6 +42,7 @@
 #include <errno.h>
 
 #include "command.h"
+#include "swanctl.h"
 
 #include <collections/hashtable.h>
 
@@ -80,7 +80,6 @@ CALLBACK(sa_values, int,
 	}
 	return 0;
 }
-
 
 CALLBACK(sa_list, int,
 	hashtable_t *sa, vici_res_t *res, char *name, void *value, int len)
@@ -166,12 +165,24 @@ CALLBACK(child_sas, int,
 		printf("    in  %s%s%s", child->get(child, "spi-in"),
 			child->get(child, "cpi-in") ? "/" : "",
 			child->get(child, "cpi-in") ?: "");
-		if (child->get(child, "mark-in"))
+		if (child->get(child, "mark-in") || child->get(child, "if-id-in"))
 		{
-			printf(" (0x%s", child->get(child, "mark-in"));
-			if (child->get(child, "mark-mask-in"))
+			printf(" (");
+			if (child->get(child, "mark-in"))
 			{
-				printf("/0x%s", child->get(child, "mark-mask-in"));
+				printf("0x%s", child->get(child, "mark-in"));
+				if (child->get(child, "mark-mask-in"))
+				{
+					printf("/0x%s", child->get(child, "mark-mask-in"));
+				}
+			}
+			else
+			{
+				printf("-");
+			}
+			if (child->get(child, "if-id-in"))
+			{
+				printf("|0x%s", child->get(child, "if-id-in"));
 			}
 			printf(")");
 		}
@@ -186,12 +197,24 @@ CALLBACK(child_sas, int,
 		printf("    out %s%s%s", child->get(child, "spi-out"),
 			child->get(child, "cpi-out") ? "/" : "",
 			child->get(child, "cpi-out") ?: "");
-		if (child->get(child, "mark-out"))
+		if (child->get(child, "mark-out") || child->get(child, "if-id-out"))
 		{
-			printf(" (0x%s", child->get(child, "mark-out"));
-			if (child->get(child, "mark-mask-out"))
+			printf(" (");
+			if (child->get(child, "mark-out"))
 			{
-				printf("/0x%s", child->get(child, "mark-mask-out"));
+				printf("0x%s", child->get(child, "mark-out"));
+				if (child->get(child, "mark-mask-out"))
+				{
+					printf("/0x%s", child->get(child, "mark-mask-out"));
+				}
+			}
+			else
+			{
+				printf("-");
+			}
+			if (child->get(child, "if-id-out"))
+			{
+				printf("|0x%s", child->get(child, "if-id-out"));
 			}
 			printf(")");
 		}
@@ -203,6 +226,7 @@ CALLBACK(child_sas, int,
 		}
 		printf("\n");
 
+		print_label("    label  ", child->get(child, "label"));
 		printf("    local  %s\n", child->get(child, "local-ts"));
 		printf("    remote %s\n", child->get(child, "remote-ts"));
 	}
@@ -348,8 +372,8 @@ static int list_sas(vici_conn_t *conn)
 	vici_res_t *res;
 	bool noblock = FALSE;
 	command_format_options_t format = COMMAND_FORMAT_NONE;
-	char *arg, *ike = NULL;
-	int ike_id = 0, ret;
+	char *arg, *ike = NULL, *child = NULL;
+	int ike_id = 0, child_id = 0, ret;
 
 	while (TRUE)
 	{
@@ -362,6 +386,12 @@ static int list_sas(vici_conn_t *conn)
 				continue;
 			case 'I':
 				ike_id = atoi(arg);
+				continue;
+			case 'c':
+				child = arg;
+				continue;
+			case 'C':
+				child_id = atoi(arg);
 				continue;
 			case 'n':
 				noblock = TRUE;
@@ -393,6 +423,14 @@ static int list_sas(vici_conn_t *conn)
 	if (ike_id)
 	{
 		vici_add_key_valuef(req, "ike-id", "%d", ike_id);
+	}
+	if (child)
+	{
+		vici_add_key_valuef(req, "child", "%s", child);
+	}
+	if (child_id)
+	{
+		vici_add_key_valuef(req, "child-id", "%d", child_id);
 	}
 	if (noblock)
 	{
@@ -465,11 +503,14 @@ static void __attribute__ ((constructor))reg()
 {
 	command_register((command_t) {
 		list_sas, 'l', "list-sas", "list currently active IKE_SAs",
-		{"[--raw|--pretty]"},
+		{"[--ike <name>|--ike-id <id>] [--child <name>|--child-id <id>]",
+		 "[--raw|--pretty]"},
 		{
 			{"help",		'h', 0, "show usage information"},
 			{"ike",			'i', 1, "filter IKE_SAs by name"},
 			{"ike-id",		'I', 1, "filter IKE_SAs by unique identifier"},
+			{"child",		'c', 1, "filter CHILD_SAs by name"},
+			{"child-id",	'C', 1, "filter CHILD_SAs by unique identifier"},
 			{"noblock",		'n', 0, "don't wait for IKE_SAs in use"},
 			{"raw",			'r', 0, "dump raw response message"},
 			{"pretty",		'P', 0, "dump raw response message in pretty print"},

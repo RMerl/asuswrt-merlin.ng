@@ -32,27 +32,6 @@
 #include "pixfmt.h"
 #include "pixdesc.h"
 
-typedef struct VDPAUDeviceContext {
-    VdpVideoSurfaceQueryGetPutBitsYCbCrCapabilities *get_transfer_caps;
-    VdpVideoSurfaceGetBitsYCbCr                     *get_data;
-    VdpVideoSurfacePutBitsYCbCr                     *put_data;
-    VdpVideoSurfaceCreate                           *surf_create;
-    VdpVideoSurfaceDestroy                          *surf_destroy;
-
-    enum AVPixelFormat *pix_fmts[3];
-    int              nb_pix_fmts[3];
-} VDPAUDeviceContext;
-
-typedef struct VDPAUFramesContext {
-    VdpVideoSurfaceGetBitsYCbCr *get_data;
-    VdpVideoSurfacePutBitsYCbCr *put_data;
-    VdpChromaType chroma_type;
-    int chroma_idx;
-
-    const enum AVPixelFormat *pix_fmts;
-    int                       nb_pix_fmts;
-} VDPAUFramesContext;
-
 typedef struct VDPAUPixFmtMap {
     VdpYCbCrFormat vdpau_fmt;
     enum AVPixelFormat pix_fmt;
@@ -61,6 +40,10 @@ typedef struct VDPAUPixFmtMap {
 static const VDPAUPixFmtMap pix_fmts_420[] = {
     { VDP_YCBCR_FORMAT_NV12, AV_PIX_FMT_NV12    },
     { VDP_YCBCR_FORMAT_YV12, AV_PIX_FMT_YUV420P },
+#ifdef VDP_YCBCR_FORMAT_P016
+    { VDP_YCBCR_FORMAT_P016, AV_PIX_FMT_P016    },
+    { VDP_YCBCR_FORMAT_P010, AV_PIX_FMT_P010    },
+#endif
     { 0,                     AV_PIX_FMT_NONE,   },
 };
 
@@ -73,8 +56,13 @@ static const VDPAUPixFmtMap pix_fmts_422[] = {
 };
 
 static const VDPAUPixFmtMap pix_fmts_444[] = {
-    { VDP_YCBCR_FORMAT_YV12, AV_PIX_FMT_YUV444P },
-    { 0,                     AV_PIX_FMT_NONE,   },
+#ifdef VDP_YCBCR_FORMAT_Y_U_V_444
+    { VDP_YCBCR_FORMAT_Y_U_V_444, AV_PIX_FMT_YUV444P },
+#endif
+#ifdef VDP_YCBCR_FORMAT_P016
+    {VDP_YCBCR_FORMAT_Y_U_V_444_16, AV_PIX_FMT_YUV444P16},
+#endif
+    { 0,                          AV_PIX_FMT_NONE,   },
 };
 
 static const struct {
@@ -85,7 +73,35 @@ static const struct {
     { VDP_CHROMA_TYPE_420, AV_PIX_FMT_YUV420P, pix_fmts_420 },
     { VDP_CHROMA_TYPE_422, AV_PIX_FMT_YUV422P, pix_fmts_422 },
     { VDP_CHROMA_TYPE_444, AV_PIX_FMT_YUV444P, pix_fmts_444 },
+#ifdef VDP_YCBCR_FORMAT_P016
+    { VDP_CHROMA_TYPE_420_16, AV_PIX_FMT_YUV420P10, pix_fmts_420 },
+    { VDP_CHROMA_TYPE_420_16, AV_PIX_FMT_YUV420P12, pix_fmts_420 },
+    { VDP_CHROMA_TYPE_422_16, AV_PIX_FMT_YUV422P10, pix_fmts_422 },
+    { VDP_CHROMA_TYPE_444_16, AV_PIX_FMT_YUV444P10, pix_fmts_444 },
+    { VDP_CHROMA_TYPE_444_16, AV_PIX_FMT_YUV444P12, pix_fmts_444 },
+#endif
 };
+
+typedef struct VDPAUDeviceContext {
+    VdpVideoSurfaceQueryGetPutBitsYCbCrCapabilities *get_transfer_caps;
+    VdpVideoSurfaceGetBitsYCbCr                     *get_data;
+    VdpVideoSurfacePutBitsYCbCr                     *put_data;
+    VdpVideoSurfaceCreate                           *surf_create;
+    VdpVideoSurfaceDestroy                          *surf_destroy;
+
+    enum AVPixelFormat *pix_fmts[FF_ARRAY_ELEMS(vdpau_pix_fmts)];
+    int              nb_pix_fmts[FF_ARRAY_ELEMS(vdpau_pix_fmts)];
+} VDPAUDeviceContext;
+
+typedef struct VDPAUFramesContext {
+    VdpVideoSurfaceGetBitsYCbCr *get_data;
+    VdpVideoSurfacePutBitsYCbCr *put_data;
+    VdpChromaType chroma_type;
+    int chroma_idx;
+
+    const enum AVPixelFormat *pix_fmts;
+    int                       nb_pix_fmts;
+} VDPAUFramesContext;
 
 static int count_pixfmts(const VDPAUPixFmtMap *map)
 {
@@ -209,7 +225,7 @@ static void vdpau_buffer_free(void *opaque, uint8_t *data)
     device_priv->surf_destroy(surf);
 }
 
-static AVBufferRef *vdpau_pool_alloc(void *opaque, int size)
+static AVBufferRef *vdpau_pool_alloc(void *opaque, buffer_size_t size)
 {
     AVHWFramesContext             *ctx = opaque;
     VDPAUFramesContext           *priv = ctx->internal->priv;
@@ -349,7 +365,14 @@ static int vdpau_transfer_data_from(AVHWFramesContext *ctx, AVFrame *dst,
         return AVERROR(EINVAL);
     }
 
-    if (vdpau_format == VDP_YCBCR_FORMAT_YV12)
+    if ((vdpau_format == VDP_YCBCR_FORMAT_YV12)
+#ifdef VDP_YCBCR_FORMAT_Y_U_V_444
+            || (vdpau_format == VDP_YCBCR_FORMAT_Y_U_V_444)
+#endif
+#ifdef VDP_YCBCR_FORMAT_P016
+            || (vdpau_format == VDP_YCBCR_FORMAT_Y_U_V_444_16)
+#endif
+            )
         FFSWAP(void*, data[1], data[2]);
 
     err = priv->get_data(surf, vdpau_format, data, linesize);
@@ -400,7 +423,11 @@ static int vdpau_transfer_data_to(AVHWFramesContext *ctx, AVFrame *dst,
         return AVERROR(EINVAL);
     }
 
-    if (vdpau_format == VDP_YCBCR_FORMAT_YV12)
+    if ((vdpau_format == VDP_YCBCR_FORMAT_YV12)
+#ifdef VDP_YCBCR_FORMAT_Y_U_V_444
+            || (vdpau_format == VDP_YCBCR_FORMAT_Y_U_V_444)
+#endif
+            )
         FFSWAP(const void*, data[1], data[2]);
 
     err = priv->put_data(surf, vdpau_format, data, linesize);

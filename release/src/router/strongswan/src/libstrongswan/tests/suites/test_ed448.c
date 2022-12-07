@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -440,7 +441,7 @@ START_TEST(test_ed448_gen)
 	key2->destroy(key2);
 
 	/* decryption not supported */
-	ck_assert(!key->decrypt(key, ENCRYPT_UNKNOWN, msg, NULL));
+	ck_assert(!key->decrypt(key, ENCRYPT_UNKNOWN, NULL, msg, NULL));
 
 	/* wrong signature scheme */
 	ck_assert(!key->sign(key, SIGN_ED25519, NULL, msg, &sig));
@@ -475,7 +476,7 @@ START_TEST(test_ed448_gen)
 	pubkey2->destroy(pubkey2);
 
 	/* encryption not supported */
-	ck_assert(!pubkey->encrypt(pubkey, ENCRYPT_UNKNOWN, msg, NULL));
+	ck_assert(!pubkey->encrypt(pubkey, ENCRYPT_UNKNOWN, NULL, msg, NULL));
 
 	/* verify with wrong signature scheme */
 	ck_assert(!pubkey->verify(pubkey, SIGN_ED25519, NULL, msg, sig));
@@ -602,10 +603,11 @@ START_TEST(test_ed448_fail)
 			 "signatures");
 	}
 
-	/* malformed signature */
+	/* malformed signature (most significant 10 bits should always be zero) */
 	sig = chunk_from_thing(sig1);
 	memcpy(sig1, sig_tests[0].sig.ptr, sig_tests[0].sig.len);
-	sig1[113] |= 0xFF;
+	sig1[112] |= 0xc0;
+	sig1[113] |= 0xff;
 	ck_assert(!pubkey->verify(pubkey, SIGN_ED448, NULL, sig_tests[0].msg,
 							  sig));
 

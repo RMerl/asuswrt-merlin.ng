@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2014-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,7 +26,7 @@ typedef struct ntru_poly_t ntru_poly_t;
 #include <crypto/xofs/xof.h>
 
 /**
- * Implements a trinary polynomial storing the indices of non-zero coefficients 
+ * Implements a trinary polynomial storing the indices of non-zero coefficients
  */
 struct ntru_poly_t {
 

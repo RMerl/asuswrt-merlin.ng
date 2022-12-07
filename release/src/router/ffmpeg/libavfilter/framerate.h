@@ -19,7 +19,7 @@
 #ifndef AVFILTER_FRAMERATE_H
 #define AVFILTER_FRAMERATE_H
 
-#include "libavutil/pixelutils.h"
+#include "scene_sad.h"
 #include "avfilter.h"
 
 #define BLEND_FUNC_PARAMS const uint8_t *src1, ptrdiff_t src1_linesize, \
@@ -28,8 +28,7 @@
                           ptrdiff_t width, ptrdiff_t height, \
                           int factor1, int factor2, int half
 
-#define BLEND_FACTOR_DEPTH8   7
-#define BLEND_FACTOR_DEPTH16 15
+#define BLEND_FACTOR_DEPTH(n) (n-1)
 
 typedef void (*blend_func)(BLEND_FUNC_PARAMS);
 
@@ -43,12 +42,13 @@ typedef struct FrameRateContext {
     int interp_end;                     ///< end of range to apply linear interpolation
 
     int line_size[4];                   ///< bytes of pixel data per line for each plane
+    int height[4];                      ///< height of each plane
     int vsub;
 
     AVRational srce_time_base;          ///< timebase of source
     AVRational dest_time_base;          ///< timebase of destination
 
-    av_pixelutils_sad_fn sad;           ///< Sum of the absolute difference function (scene detect only)
+    ff_scene_sad_fn sad;                ///< Sum of the absolute difference function (scene detect only)
     double prev_mafd;                   ///< previous MAFD                           (scene detect only)
 
     int blend_factor_max;

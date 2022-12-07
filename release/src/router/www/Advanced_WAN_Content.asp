@@ -280,12 +280,9 @@ function initial(){
 				document.form.bond_wan_radio.value = "0";
 				document.getElementById("wanports_bond_menu").style.display = "none";
 			}
+		}
 
-			change_wanAggre_desc();
-		}
-		else if(based_modelid == "XT12" || based_modelid == "ET12"){
-			change_wanAggre_desc();
-		}
+		change_wanAggre_desc();
 	}
 
 	if(wan_bonding_support){
@@ -416,7 +413,7 @@ function genWANSoption(){
 				(productid == "DSL-N55U" || productid == "DSL-N55U-B" || productid == "DSL-AC68U" || productid == "DSL-AC68R"))
 			wans_dualwan_NAME = "Ethernet WAN";
 		else if(wans_dualwan_NAME == "LAN"){
-			if((productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000" || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000" || productid == "RT-AX86U_PRO") && wans_lanport == "5"){
+			if((productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000" || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000" || productid == "RT-AX86U_PRO" || productid == "RT-AX88U_PRO") && wans_lanport == "5"){
 				if(wans_extwan == "0")
 					wans_dualwan_NAME = "2.5G WAN";
 				else
@@ -425,7 +422,7 @@ function genWANSoption(){
 			else
 				wans_dualwan_NAME = "Ethernet LAN";
 		}
-		else if(wans_dualwan_NAME == "WAN" && (productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000"  || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000" || productid == "RT-AX86U_PRO") && wans_extwan == "1")
+		else if(wans_dualwan_NAME == "WAN" && (productid == "GT-AX11000" || productid == "RT-AX86U" || productid == "GT-AXE11000" || productid == "GT-AX6000"  || productid == "GT-AX11000_PRO" || productid == "GT-AXE16000" || productid == "RT-AX86U_PRO" || productid == "RT-AX88U_PRO") && wans_extwan == "1")
 			wans_dualwan_NAME = "2.5G WAN";
 		else if(wans_dualwan_NAME == "USB" && (based_modelid == "4G-AC53U" || based_modelid == "4G-AC55U" || based_modelid == "4G-AC68U"))
 			wans_dualwan_NAME = "<#Mobile_title#>";
@@ -838,6 +835,8 @@ function validForm(){
 				else{
 					document.form.wans_dualwan.disabled = false;
 					document.form.wans_dualwan.value = "wan none";
+					document.form.wans_mode.disabled = false;
+					document.form.wans_mode.value = "fo";
 					document.form.switch_wantag.disabled = false;
 					document.form.switch_wantag.value = "none";
 					document.form.switch_stb_x.disabled = false;
@@ -1461,16 +1460,30 @@ function show_dnspriv_rulelist(){
 
 var cur_bond_port = /LAN-*\D* 4/;
 function change_wanAggre_desc(){
-	var selectedIndex = document.getElementById("wanports_bond_menu").selectedIndex;
-	var selectedName = document.getElementById("wanports_bond_menu").options[selectedIndex].text;
 	var orig_desc = $("#wanAgg_desc").html();
+	var selectedName = "";
 
-	if(based_modelid == "XT12" || based_modelid == "ET12"){
+	if(based_modelid == "RT-AXE7800")
+		orig_desc = orig_desc.replace("#WAN", "1G WAN");
+	else
+		orig_desc = orig_desc.replace("#WAN", "WAN");
+
+	if(based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000" || based_modelid == "TUF-AX4200" || based_modelid == "TUF-AX6000"){
+		var selectedIndex = document.getElementById("wanports_bond_menu").selectedIndex;
+		selectedName = document.getElementById("wanports_bond_menu").options[selectedIndex].text;
+	}
+	else if(based_modelid == "XT12" || based_modelid == "ET12"){
 		orig_desc = orig_desc.replace("2Gbps", "5Gbps");
 		selectedName = "2.5G/1G LAN";
 	}
+	else if(based_modelid == "RT-AXE7800"){
+		selectedName = "LAN 2";
+	}
 
-	$("#wanAgg_desc").html(orig_desc.replace(cur_bond_port, selectedName));
+	if(selectedName != "")
+		orig_desc = orig_desc.replace(cur_bond_port, selectedName);
+
+	$("#wanAgg_desc").html(orig_desc);
 	cur_bond_port = selectedName;
 }
 
@@ -1587,7 +1600,7 @@ function create_DNSlist_view(){
 	document.getElementById("dns_list_Block").onclick = function() {show_DNSList_view_block();}
 
 	var DNSListTableIndex=[array_Ab, array_Fm, array_FD, array_Sf, array_Pr];
-	var DNSListTableCategory=["Ad block", "Family", "Fast DNS", "Safe", "Privacy-respecting"];
+	var DNSListTableCategory=["<#IPConnection_x_DNS_List_adB#>", "<#IPConnection_x_DNS_List_Family#>", "<#IPConnection_x_DNS_List_Fast#>", "Safe", "<#IPConnection_x_DNS_List_Priv-resp#>"];
 
 	var code="";
 
@@ -1891,6 +1904,7 @@ function DNSList_match(ip1, ip2){
 <input type="hidden" name="wan_dns2_x" value="<% nvram_get("wan_dns2_x"); %>">
 <input type="hidden" name="dnspriv_rulelist" value="" disabled>
 <input type="hidden" name="ipv6_service" value="<% nvram_get("ipv6_service"); %>" disabled>
+<input type="hidden" name="wans_mode" value="<% nvram_get("wans_mode"); %>" disabled>
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
@@ -2107,7 +2121,7 @@ function DNSList_match(ip1, ip2){
 							</tr>
 						</table>
 
-						<table id="S46setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
+						<table id="S46setting" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable" style="display:none">
 							<thead>
 							<tr>
 								<td colspan="2"><#IPConnection_ExternalIPAddress_sectionname#></td>

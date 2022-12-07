@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008 Thomas Kallenberg
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,7 +25,7 @@
 typedef struct private_padlock_sha1_hasher_t private_padlock_sha1_hasher_t;
 
 /**
- * Private data structure with hasing context.
+ * Private data structure with hashing context.
  */
 struct private_padlock_sha1_hasher_t {
 	/**

@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2011-2015 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -211,8 +210,8 @@ METHOD(public_key_t, verify, bool,
 	chunk_t hash = chunk_empty, parse, r, s;
 	size_t len;
 
-	mechanism = pkcs11_signature_scheme_to_mech(scheme, this->type, this->k,
-												&hash_alg);
+	mechanism = pkcs11_signature_scheme_to_mech(this->lib, this->slot, scheme,
+												this->type, this->k, &hash_alg);
 	if (!mechanism)
 	{
 		DBG1(DBG_LIB, "signature scheme %N not supported",
@@ -277,6 +276,21 @@ METHOD(public_key_t, verify, bool,
 			return FALSE;
 		}
 		hasher->destroy(hasher);
+		switch (scheme)
+		{
+			case SIGN_RSA_EMSA_PKCS1_SHA1:
+			case SIGN_RSA_EMSA_PKCS1_SHA2_256:
+			case SIGN_RSA_EMSA_PKCS1_SHA2_384:
+			case SIGN_RSA_EMSA_PKCS1_SHA2_512:
+				/* encode PKCS#1 digestInfo if the token does not support it */
+				hash = asn1_wrap(ASN1_SEQUENCE, "mm",
+								 asn1_algorithmIdentifier(
+									hasher_algorithm_to_oid(hash_alg)),
+								 asn1_wrap(ASN1_OCTET_STRING, "m", hash));
+				break;
+			default:
+				break;
+		}
 		data = hash;
 	}
 	rv = this->lib->f->C_Verify(session, data.ptr, data.len, sig.ptr, sig.len);
@@ -292,7 +306,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt, bool,
 	private_pkcs11_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t plain, chunk_t *crypt)
+	void *params, chunk_t plain, chunk_t *crypt)
 {
 	CK_MECHANISM_PTR mechanism;
 	CK_SESSION_HANDLE session;
@@ -416,7 +430,7 @@ static bool fingerprint_ecdsa(private_pkcs11_public_key_t *this,
 	}
 	hasher->destroy(hasher);
 	chunk_clear(&asn1);
-	lib->encoding->cache(lib->encoding, type, this, *fp);
+	lib->encoding->cache(lib->encoding, type, this, fp);
 	return TRUE;
 }
 
@@ -873,7 +887,8 @@ static private_pkcs11_public_key_t *find_key_by_keyid(pkcs11_library_t *p11,
 
 	enumerator = p11->create_object_enumerator(p11, session, tmpl, count, attr,
 											   countof(attr));
-	if (enumerator->enumerate(enumerator, &object))
+	if (enumerator->enumerate(enumerator, &object) &&
+		attr[0].ulValueLen != CK_UNAVAILABLE_INFORMATION)
 	{
 		switch (type)
 		{

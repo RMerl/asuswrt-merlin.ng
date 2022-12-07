@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2018 René Korthaus
  * Rohde & Schwarz Cybersecurity GmbH
@@ -124,5 +123,22 @@ bool botan_verify_signature(botan_pubkey_t key, const char* scheme,
  * @return			TRUE if derivation was successful
  */
 bool botan_dh_key_derivation(botan_privkey_t key, chunk_t pub, chunk_t *secret);
+
+/**
+ * Map the given RNG quality to a name as used by Botan.
+ *
+ * @param quality	RNG quality
+ * @return			name of the Botan RNG
+ */
+const char *botan_map_rng_quality(rng_quality_t quality);
+
+/**
+ * Get RNG for Botan API calls.
+ *
+ * @param botan_rng Botan RNG
+ * @param quality   RNG quality requested
+ * @return          TRUE if Botan RNG creation was successful
+ */
+bool botan_get_rng(botan_rng_t *botan_rng, rng_quality_t quality);
 
 #endif /** BOTAN_UTIL_H_ @}*/

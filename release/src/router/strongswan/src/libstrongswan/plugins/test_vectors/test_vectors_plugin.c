@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,8 +26,10 @@
 #define TEST_VECTOR_HASHER(x) extern hasher_test_vector_t x;
 #define TEST_VECTOR_PRF(x) extern prf_test_vector_t x;
 #define TEST_VECTOR_XOF(x) extern xof_test_vector_t x;
+#define TEST_VECTOR_KDF(x) extern kdf_test_vector_t x;
+#define TEST_VECTOR_DRBG(x) extern drbg_test_vector_t x;
 #define TEST_VECTOR_RNG(x) extern rng_test_vector_t x;
-#define TEST_VECTOR_DH(x) extern dh_test_vector_t x;
+#define TEST_VECTOR_KE(x) extern ke_test_vector_t x;
 
 #include "test_vectors.h"
 
@@ -36,8 +39,10 @@
 #undef TEST_VECTOR_HASHER
 #undef TEST_VECTOR_PRF
 #undef TEST_VECTOR_XOF
+#undef TEST_VECTOR_KDF
+#undef TEST_VECTOR_DRBG
 #undef TEST_VECTOR_RNG
-#undef TEST_VECTOR_DH
+#undef TEST_VECTOR_KE
 
 #define TEST_VECTOR_CRYPTER(x)
 #define TEST_VECTOR_AEAD(x)
@@ -45,8 +50,10 @@
 #define TEST_VECTOR_HASHER(x)
 #define TEST_VECTOR_PRF(x)
 #define TEST_VECTOR_XOF(x)
+#define TEST_VECTOR_KDF(x)
+#define TEST_VECTOR_DRBG(x)
 #define TEST_VECTOR_RNG(x)
-#define TEST_VECTOR_DH(x)
+#define TEST_VECTOR_KE(x)
 
 /* create test vector arrays */
 #undef TEST_VECTOR_CRYPTER
@@ -97,6 +104,22 @@ static xof_test_vector_t *xof[] = {
 #undef TEST_VECTOR_XOF
 #define TEST_VECTOR_XOF(x)
 
+#undef TEST_VECTOR_KDF
+#define TEST_VECTOR_KDF(x) &x,
+static kdf_test_vector_t *kdf[] = {
+#include "test_vectors.h"
+};
+#undef TEST_VECTOR_KDF
+#define TEST_VECTOR_KDF(x)
+
+#undef TEST_VECTOR_DRBG
+#define TEST_VECTOR_DRBG(x) &x,
+static drbg_test_vector_t *drbg[] = {
+#include "test_vectors.h"
+};
+#undef TEST_VECTOR_DRBG
+#define TEST_VECTOR_DRBG(x)
+
 #undef TEST_VECTOR_RNG
 #define TEST_VECTOR_RNG(x) &x,
 static rng_test_vector_t *rng[] = {
@@ -105,13 +128,13 @@ static rng_test_vector_t *rng[] = {
 #undef TEST_VECTOR_RNG
 #define TEST_VECTOR_RNG(x)
 
-#undef TEST_VECTOR_DH
-#define TEST_VECTOR_DH(x) &x,
-static dh_test_vector_t *dh[] = {
+#undef TEST_VECTOR_KE
+#define TEST_VECTOR_KE(x) &x,
+static ke_test_vector_t *ke[] = {
 #include "test_vectors.h"
 };
-#undef TEST_VECTOR_DH
-#define TEST_VECTOR_DH(x)
+#undef TEST_VECTOR_KE
+#define TEST_VECTOR_KE(x)
 
 typedef struct private_test_vectors_plugin_t private_test_vectors_plugin_t;
 
@@ -197,15 +220,25 @@ plugin_t *test_vectors_plugin_create()
 		lib->crypto->add_test_vector(lib->crypto,
 									 EXTENDED_OUTPUT_FUNCTION, xof[i]);
 	}
+	for (i = 0; i < countof(kdf); i++)
+	{
+		lib->crypto->add_test_vector(lib->crypto,
+									 KEY_DERIVATION_FUNCTION, kdf[i]);
+	}
+	for (i = 0; i < countof(drbg); i++)
+	{
+		lib->crypto->add_test_vector(lib->crypto,
+									 DETERMINISTIC_RANDOM_BIT_GENERATOR, drbg[i]);
+	}
 	for (i = 0; i < countof(rng); i++)
 	{
 		lib->crypto->add_test_vector(lib->crypto,
 									 RANDOM_NUMBER_GENERATOR, rng[i]);
 	}
-	for (i = 0; i < countof(dh); i++)
+	for (i = 0; i < countof(ke); i++)
 	{
 		lib->crypto->add_test_vector(lib->crypto,
-									 DIFFIE_HELLMAN_GROUP, dh[i]);
+									 KEY_EXCHANGE_METHOD, ke[i]);
 	}
 
 	return &this->public.plugin;

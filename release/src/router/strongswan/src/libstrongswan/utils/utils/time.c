@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2017 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,7 +53,7 @@ time_t time_monotonic(timeval_t *tv)
 	 * monotonic time source only if it is also supported by pthread. */
 	timespec_t ts;
 
-	if (clock_gettime(CLOCK_MONOTONIC, &ts) == 0)
+	if (clock_gettime(TIME_CLOCK_ID, &ts) == 0)
 	{
 		if (tv)
 		{

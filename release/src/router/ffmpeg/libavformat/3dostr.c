@@ -19,17 +19,56 @@
  * Foundation, Inc., 51 Franklin Street, Fifth Floor, Boston, MA 02110-1301 USA
  */
 
+#include "libavutil/intreadwrite.h"
 #include "avformat.h"
 #include "internal.h"
 
-static int threedostr_probe(AVProbeData *p)
+static int threedostr_probe(const AVProbeData *p)
 {
-    if (memcmp(p->buf, "CTRL", 4) &&
-        memcmp(p->buf, "SHDR", 4) &&
-        memcmp(p->buf, "SNDS", 4))
-        return 0;
+    for (int i = 0; i < p->buf_size;) {
+        unsigned chunk = AV_RL32(p->buf + i);
+        unsigned size  = AV_RB32(p->buf + i + 4);
 
-    return AVPROBE_SCORE_MAX / 3 * 2;
+        if (size < 8 || p->buf_size - i < size)
+            return 0;
+        i += 8;
+        size -= 8;
+        switch (chunk) {
+        case MKTAG('C','T','R','L'):
+            break;
+        case MKTAG('S','N','D','S'):
+            if (size < 56)
+                return 0;
+            i += 8;
+            if (AV_RL32(p->buf + i) != MKTAG('S','H','D','R'))
+                return 0;
+            i += 28;
+
+            if (AV_RB32(p->buf + i) <= 0)
+                return 0;
+            i += 4;
+            if (AV_RB32(p->buf + i) <= 0)
+                return 0;
+            i += 4;
+            if (AV_RL32(p->buf + i) == MKTAG('S','D','X','2'))
+                return AVPROBE_SCORE_MAX;
+            else
+                return 0;
+            break;
+        case MKTAG('S','H','D','R'):
+            if (size > 0x78) {
+                i += 0x78;
+                size -= 0x78;
+            }
+            break;
+        default:
+            break;
+        }
+
+        i += size;
+    }
+
+    return 0;
 }
 
 static int threedostr_read_header(AVFormatContext *s)
@@ -64,7 +103,7 @@ static int threedostr_read_header(AVFormatContext *s)
             st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
             st->codecpar->sample_rate = avio_rb32(s->pb);
             st->codecpar->channels    = avio_rb32(s->pb);
-            if (st->codecpar->channels <= 0)
+            if (st->codecpar->channels <= 0 || st->codecpar->sample_rate <= 0)
                 return AVERROR_INVALIDDATA;
             codec                  = avio_rl32(s->pb);
             avio_skip(s->pb, 4);
@@ -110,15 +149,12 @@ static int threedostr_read_header(AVFormatContext *s)
 
 static int threedostr_read_packet(AVFormatContext *s, AVPacket *pkt)
 {
-    unsigned chunk, size, found_ssmp = 0;
+    unsigned chunk, size;
     AVStream *st = s->streams[0];
     int64_t pos;
     int ret = 0;
 
-    while (!found_ssmp) {
-        if (avio_feof(s->pb))
-            return AVERROR_EOF;
-
+    while (!avio_feof(s->pb)) {
         pos   = avio_tell(s->pb);
         chunk = avio_rl32(s->pb);
         size  = avio_rb32(s->pb);
@@ -143,9 +179,7 @@ static int threedostr_read_packet(AVFormatContext *s, AVPacket *pkt)
             pkt->pos = pos;
             pkt->stream_index = 0;
             pkt->duration = size / st->codecpar->channels;
-            size = 0;
-            found_ssmp = 1;
-            break;
+            return ret;
         default:
             av_log(s, AV_LOG_DEBUG, "skipping unknown chunk: %X\n", chunk);
             break;
@@ -154,7 +188,7 @@ static int threedostr_read_packet(AVFormatContext *s, AVPacket *pkt)
         avio_skip(s->pb, size);
     }
 
-    return ret;
+    return AVERROR_EOF;
 }
 
 AVInputFormat ff_threedostr_demuxer = {

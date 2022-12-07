@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2011-2016 Tobias Brunner
+ * Copyright (C) 2011-2020 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -91,7 +92,7 @@ struct listener_t {
 	 * @param method	auth method for key derivation (IKEv1-non-PSK only)
 	 * @return			TRUE to stay registered, FALSE to unregister
 	 */
-	bool (*ike_keys)(listener_t *this, ike_sa_t *ike_sa, diffie_hellman_t *dh,
+	bool (*ike_keys)(listener_t *this, ike_sa_t *ike_sa, key_exchange_t *dh,
 					 chunk_t dh_other, chunk_t nonce_i, chunk_t nonce_r,
 					 ike_sa_t *rekey, shared_key_t *shared,
 					 auth_method_t method);
@@ -100,13 +101,17 @@ struct listener_t {
 	 * Hook called with derived IKE_SA keys.
 	 *
 	 * @param ike_sa	IKE_SA these keys belong to
-	 * @param sk_ei		SK_ei, or Ka for IKEv1
-	 * @param sk_er		SK_er
+	 * @param sk_d		SK_d, or SKEYID_d for IKEv1
 	 * @param sk_ai		SK_ai, or SKEYID_a for IKEv1
 	 * @param sk_ar		SK_ar
+	 * @param sk_ei		SK_ei, or Ka for IKEv1
+	 * @param sk_er		SK_er
+	 * @param sk_pi		SK_pi
+	 * @param sk_pr		SK_pr
 	 */
-	bool (*ike_derived_keys)(listener_t *this, ike_sa_t *ike_sa, chunk_t sk_ei,
-							 chunk_t sk_er, chunk_t sk_ai, chunk_t sk_ar);
+	bool (*ike_derived_keys)(listener_t *this, ike_sa_t *ike_sa, chunk_t sk_d,
+							 chunk_t sk_ai, chunk_t sk_ar, chunk_t sk_ei,
+							 chunk_t sk_er, chunk_t sk_pi, chunk_t sk_pr);
 
 	/**
 	 * Hook called with CHILD_SA key material.
@@ -120,7 +125,7 @@ struct listener_t {
 	 * @return			TRUE to stay registered, FALSE to unregister
 	 */
 	bool (*child_keys)(listener_t *this, ike_sa_t *ike_sa, child_sa_t *child_sa,
-					   bool initiator, diffie_hellman_t *dh,
+					   bool initiator, key_exchange_t *dh,
 					   chunk_t nonce_i, chunk_t nonce_r);
 
 	/**
@@ -160,13 +165,15 @@ struct listener_t {
 	/**
 	 * Hook called for IKE_SA peer endpoint updates.
 	 *
+	 * At least one endpoint has changed when this is invoked.
+	 *
 	 * @param ike_sa	updated IKE_SA, having old endpoints set
-	 * @param local		TRUE if local endpoint gets updated, FALSE for remote
-	 * @param new		new endpoint address and port
+	 * @param local		new/current local endpoint address and port
+	 * @param remote	new/current remote endpoint address and port
 	 * @return			TRUE to stay registered, FALSE to unregister
 	 */
 	bool (*ike_update)(listener_t *this, ike_sa_t *ike_sa,
-					   bool local, host_t *new);
+					   host_t *local, host_t *remote);
 
 	/**
 	 * Hook called when an initiator reestablishes an IKE_SA.

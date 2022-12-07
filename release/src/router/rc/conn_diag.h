@@ -68,6 +68,7 @@ enum {
 	DIAGMODE_CHANNEL_CHANGE = 0x4000,
 	DIAGMODE_PORT_STATUS_CHANGE = 0x8000,
 	DIAGMODE_ALL_CHAN_RADAR = 0x10000,
+	DIAGMODE_MIX = 0xF000, //for indicating received pkt are mixed(multi-mode)
 	DIAGMODE_MAX
 };
 
@@ -80,6 +81,17 @@ typedef struct _if_stats {
 	time_t ts;
 } _if_stats;
 
+//for ui actions to conn diag SQL
+enum {
+	UI_ACTION_NONE=0,
+	UI_ACTION_GET_PORTSTATUS,
+	UI_ACTION_RUN_CABLEDIAG,
+	UI_ACTION_RUN_IPERF,
+	UI_ACTION_GET_STAINFO,  // for networkmap use
+	UI_ACTION_MAX
+};
+
+#define CONNDIAG_SQL_IPC_SOCKET_PATH	"/var/run/conndiag_sql_ipc_socket"
 #define DIAG_EVENT_SYS "SYS" // DIAG_EVENT_SYS>node type>IP>MAC>FW version>t-code>AiProtection>USB mode>CTF or Runner/FC disable
 #define DIAG_EVENT_SYS2 "SYS2" // DIAG_EVENT_SYS2>node type>IP>MAC>CPU freq>MemFree>CPU temperature>2G's temperature>5G's temperature
 #define DIAG_EVENT_WIFISYS "WIFISYS" // DIAG_EVENT_WIFISYS>node type>IP>MAC>2G's ifname,2G's chip,2G's country/rev>5G's ifname,5G's chip,5G's country/rev

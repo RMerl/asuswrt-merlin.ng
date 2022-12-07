@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2014-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -30,11 +31,11 @@ typedef struct seg_contract_t seg_contract_t;
 
 #include <tncif.h>
 
-#define SEG_CONTRACT_MAX_SIZE_VALUE		0xffffffff
-#define SEG_CONTRACT_NO_FRAGMENTATION	SEG_CONTRACT_MAX_SIZE_VALUE
+#define SEG_CONTRACT_NO_MSG_SIZE_LIMIT	0xffffffff
+#define SEG_CONTRACT_NO_SEGMENTATION	0xffffffff
 
 /**
- * Interface for a PA-TNC attribute segmentation contract
+ * Interface for a PA-TNC message segmentation contract
  *
  */
 struct seg_contract_t {
@@ -47,21 +48,21 @@ struct seg_contract_t {
 	pen_type_t (*get_msg_type)(seg_contract_t *this);
 
 	/**
-	 * Set maximum PA-TNC attribute and segment size in octets
+	 * Set maximum PA-TNC message and segment size in octets
 	 *
-	 * @param max_attr_size	Maximum PA-TNC attribute size in octets
-	 * @param max_seg_size	Maximum PA-TNC attribute segment size in octets
+	 * @param max_msg_size	Maximum PA-TNC message size in octets
+	 * @param max_seg_size	Maximum PA-TNC message segment size in octets
 	 */
-	void (*set_max_size)(seg_contract_t *this, uint32_t max_attr_size,
+	void (*set_max_size)(seg_contract_t *this, uint32_t max_msg_size,
 											   uint32_t max_seg_size);
 
 	/**
-	 * Get maximum PA-TNC attribute and segment size in octets
+	 * Get maximum PA-TNC message and segment size in octets
 	 *
-	 * @param max_attr_size	Maximum PA-TNC attribute size in octets
+	 * @param max_msg_size	Maximum PA-TNC attribute size in octets
 	 * @param max_seg_size	Maximum PA-TNC attribute segment size in octets
 	 */
-	void (*get_max_size)(seg_contract_t *this, uint32_t *max_attr_size,
+	void (*get_max_size)(seg_contract_t *this, uint32_t *max_msg_size,
 											   uint32_t *max_seg_size);
 
 	/**
@@ -85,15 +86,15 @@ struct seg_contract_t {
 									size_t max_attr_len);
 
 	/**
-	 * Generate next segment of a PA-TNC attribute according to the contract
+	 * Generate next segment of a PA-TNC message according to the contract
 	 *
-	 * @param base_attr_id	Base Attribute ID
+	 * @param base_msg_id	Base Message ID
 	 * @return				Next segment envelope attribute
 	 */
-	pa_tnc_attr_t* (*next_segment)(seg_contract_t *this, uint32_t base_attr_id);
+	pa_tnc_attr_t* (*next_segment)(seg_contract_t *this, uint32_t base_msg_id);
 
 	/**
-	 * Add an attribute segments until the PA-TNC attribute is reconstructed
+	 * Add segments until the PA-TNC attribute is reconstructed
 	 *
 	 * @param attr			Segment envelope attribute
 	 * @param error			Error attribute if an error occurred or NULL
@@ -167,14 +168,14 @@ struct seg_contract_t {
  * Create a PA-TNC attribute segmentation contract
  *
  * @param msg_type			PA-TNC message type
- * @param max_attr_size		Maximum PA-TNC attribute size in octets
- * @param max_seg_size		Maximum PA-TNC attribute segment size in octets
+ * @param max_msg_size		Maximum PA-TNC message size in octets
+ * @param max_seg_size		Maximum PA-TNC message segment size in octets
  * @param is_issuer			TRUE if issuer of the contract
  * @param issuer_id			IMC or IMV ID of issuer
  * @param is_imc			TRUE if IMC, FALSE if IMV
  */
 seg_contract_t* seg_contract_create(pen_type_t msg_type,
-									uint32_t max_attr_size,
+									uint32_t max_msg_size,
 									uint32_t max_seg_size,
 									bool is_issuer, TNC_UInt32 issuer_id,
 									bool is_imc);

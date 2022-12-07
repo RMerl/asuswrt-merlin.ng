@@ -15,7 +15,6 @@ project Build_Common is
                              "-gnatygAdISuxo",
                              "-gnata",
                              "-gnatVa",
-                             "-gnat05",
                              "-gnatf",
                              "-fstack-check",
                              "-gnato",

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2013-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -103,7 +102,7 @@ ntru_trits_t *ntru_trits_create(size_t len, ext_out_function_t alg,
 			return NULL;
 		}
 		if (octet < 243)  /* 243 = 3^5 */
-		{		
+		{
 			ntru_octet_2_trits(octet, (trits_needed < 5) ? buf : trits);
 			if (trits_needed < 5)
 			{

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,8 +19,8 @@
  * @{ @ingroup aesni
  */
 
-#ifndef CMAC_H_
-#define CMAC_H_
+#ifndef AESNI_CMAC_H_
+#define AESNI_CMAC_H_
 
 #include <crypto/mac.h>
 #include <crypto/prfs/prf.h>
@@ -49,4 +50,4 @@ prf_t *aesni_cmac_prf_create(pseudo_random_function_t algo);
  */
 signer_t *aesni_cmac_signer_create(integrity_algorithm_t algo);
 
-#endif /** CMAC_H_ @}*/
+#endif /** AESNI_CMAC_H_ @}*/

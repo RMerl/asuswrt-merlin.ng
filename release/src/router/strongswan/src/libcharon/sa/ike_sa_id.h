@@ -2,7 +2,8 @@
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -128,10 +129,10 @@ struct ike_sa_id_t {
  * @param ike_version			major IKE version
  * @param initiator_spi			initiators SPI
  * @param responder_spi			responders SPI
- * @param is_initiaor			TRUE if we are the original initiator
+ * @param is_initiator			TRUE if we are the original initiator
  * @return						ike_sa_id_t object
  */
 ike_sa_id_t * ike_sa_id_create(uint8_t ike_version, uint64_t initiator_spi,
-							   uint64_t responder_spi, bool is_initiaor);
+							   uint64_t responder_spi, bool is_initiator);
 
 #endif /** IKE_SA_ID_H_ @}*/

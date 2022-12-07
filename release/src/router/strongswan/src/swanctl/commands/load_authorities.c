@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -76,7 +77,7 @@ static bool add_file_key_value(vici_req_t *req, char *key, char *value)
 }
 
 /**
- * Translate sletting key/values from a section enumerator into vici
+ * Translate setting key/values from a section enumerator into vici
  * key-values/lists. Destroys the enumerator.
  */
 static bool add_key_values(vici_req_t *req, enumerator_t *enumerator)
@@ -292,7 +293,7 @@ int load_authorities_cfg(vici_conn_t *conn, command_format_options_t format,
 	}
 	if (found == 0)
 	{
-		fprintf(stderr, "no authorities found, %u unloaded\n", unloaded);
+		printf("no authorities found, %u unloaded\n", unloaded);
 		return 0;
 	}
 	if (loaded == found)
@@ -301,6 +302,7 @@ int load_authorities_cfg(vici_conn_t *conn, command_format_options_t format,
 			   loaded, unloaded);
 		return 0;
 	}
+
 	fprintf(stderr, "loaded %u of %u authorities, %u failed to load, "
 			"%u unloaded\n", loaded, found, found - loaded, unloaded);
 	return EINVAL;
@@ -344,7 +346,7 @@ static int load_authorities(vici_conn_t *conn)
 
 	ret = load_authorities_cfg(conn, format, cfg);
 
-	cfg->destroy(cfg);
+	cfg->destroy_clear(cfg);
 
 	return ret;
 }

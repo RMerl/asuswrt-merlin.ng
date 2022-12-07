@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -118,7 +119,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt, bool,
 	private_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "encryption scheme %N not supported", encryption_scheme_names,
 		 scheme);
@@ -174,7 +175,7 @@ bool openssl_ed_fingerprint(EVP_PKEY *key, cred_encoding_type_t type,
 		return FALSE;
 	}
 	hasher->destroy(hasher);
-	lib->encoding->cache(lib->encoding, type, key, *fp);
+	lib->encoding->cache(lib->encoding, type, key, fp);
 	return TRUE;
 }
 

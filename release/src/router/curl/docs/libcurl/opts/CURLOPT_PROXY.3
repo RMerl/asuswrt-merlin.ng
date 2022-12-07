@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY 3 "September 08, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_PROXY 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY \- proxy to use
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY, char *proxy);
+.fi
 .SH DESCRIPTION
 Set the \fIproxy\fP to use for the upcoming request. The parameter should be a
 char * to a null-terminated string holding the host name or dotted numerical
@@ -62,7 +66,7 @@ which kind of proxy the string identifies.
 When you tell the library to use an HTTP proxy, libcurl will transparently
 convert operations to HTTP even if you specify an FTP URL etc. This may have
 an impact on what other features of the library you can use, such as
-\fICURLOPT_QUOTE(3)\fP and similar FTP specifics that don't work unless you
+\fICURLOPT_QUOTE(3)\fP and similar FTP specifics that do not work unless you
 tunnel through the HTTP proxy. Such tunneling is activated with
 \fICURLOPT_HTTPPROXYTUNNEL(3)\fP.
 
@@ -71,6 +75,9 @@ use of a proxy, even if there is an environment variable set for it.
 
 A proxy host string can also include protocol scheme (http://) and embedded
 user + password.
+
+Unix domain sockets are supported for socks proxies since 7.84.0. Set
+localhost for the host part. e.g. socks5h://localhost/path/to/socket.sock
 
 The application does not have to keep the string around after setting this
 option.
@@ -91,7 +98,7 @@ Default is NULL, meaning no proxy is used.
 When you set a host name to use, do not assume that there's any particular
 single port number used widely for proxies. Specify it!
 .SH PROTOCOLS
-All except file://. Note that some protocols don't do very well over proxy.
+All except file://. Note that some protocols do not work well over proxy.
 .SH EXAMPLE
 .nf
 CURL *curl = curl_easy_init();

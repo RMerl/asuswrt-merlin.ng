@@ -7,9 +7,9 @@ dave::ip6tables-restore < /etc/ip6tables.rules
 alice::"ip route add fec0:\:/16 via fec1:\:1"
 carol::"ip route add fec1:\:/16 via fec0:\:1"
 dave::"ip route add fec1:\:/16 via fec0:\:1"
-moon::systemctl start strongswan-swanctl
-carol::systemctl start strongswan-swanctl
-dave::systemctl start strongswan-swanctl
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::expect-connection rw
 carol::expect-connection home
 dave::expect-connection home

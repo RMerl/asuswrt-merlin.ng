@@ -72,6 +72,10 @@ struct ieee80211_channel {
     uint16_t        ic_vhtop_freq_seg1;           /* seg1 Center Channel frequency */
     uint16_t        ic_vhtop_freq_seg2;           /* Seg2 center Channel frequency index for 80+80MHz mode or
 						   * center Channel frequency of operating span for 160Mhz mode */
+#else
+    u_int8_t        ic_vhtop_ch_freq_seg1;         /* Channel Center frequency */
+    u_int8_t        ic_vhtop_ch_freq_seg2;         /* Channel Center frequency applicable
+                                                    * for 80+80MHz mode of operation */
 #endif
 };
 #endif

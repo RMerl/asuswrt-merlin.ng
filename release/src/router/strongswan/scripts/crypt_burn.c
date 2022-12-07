@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -196,6 +197,11 @@ int main(int argc, char *argv[])
 	if (argc > 2)
 	{
 		len = atoi(argv[2]);
+		if (len > (1 << 30))
+		{
+			fprintf(stderr, "buffer too large (1 GiB limit)\n");
+			return 1;
+		}
 	}
 	if (argc > 3)
 	{

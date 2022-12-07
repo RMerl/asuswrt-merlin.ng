@@ -1,0 +1,9 @@
+alice::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+sun::ip route add 10.1.0.0/16 via PH_IP_MOON
+winnetou::ip route add 10.1.0.0/16 via PH_IP_MOON
+alice::systemctl start strongswan
+sun::systemctl start strongswan
+sun::expect-connection nat-t
+alice::expect-connection nat-t
+alice::swanctl --initiate --child nat-t

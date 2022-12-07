@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,8 +35,6 @@ ENUM(encoding_type_names, U_INT_4, ENCRYPTED_DATA,
 	"ATTRIBUTE_LENGTH_OR_VALUE",
 	"ATTRIBUTE_LENGTH",
 	"ATTRIBUTE_VALUE",
-	"TS_TYPE",
-	"ADDRESS",
 	"CHUNK_DATA",
 	"IKE_SPI",
 	"ENCRYPTED_DATA",

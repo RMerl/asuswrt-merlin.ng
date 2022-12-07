@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2009-2018 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -72,7 +73,7 @@ struct private_library_t {
 #define MAX_NAMESPACES 5
 
 /**
- * Additional namespaces registered using __atrribute__((constructor))
+ * Additional namespaces registered using __attribute__((constructor))
  */
 static char *namespaces[MAX_NAMESPACES];
 static int ns_count;
@@ -170,6 +171,7 @@ void library_deinit()
 	this->public.credmgr->destroy(this->public.credmgr);
 	this->public.creds->destroy(this->public.creds);
 	this->public.encoding->destroy(this->public.encoding);
+	this->public.metadata->destroy(this->public.metadata);
 	this->public.crypto->destroy(this->public.crypto);
 	this->public.caps->destroy(this->public.caps);
 	this->public.proposal->destroy(this->public.proposal);
@@ -399,6 +401,7 @@ bool library_init(char *settings, const char *namespace)
 	this->public.creds = credential_factory_create();
 	this->public.credmgr = credential_manager_create();
 	this->public.encoding = cred_encoding_create();
+	this->public.metadata = metadata_factory_create();
 	this->public.fetcher = fetcher_manager_create();
 	this->public.resolver = resolver_manager_create();
 	this->public.db = database_factory_create();

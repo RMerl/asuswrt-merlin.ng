@@ -105,16 +105,23 @@ static int erp_check_wl_stat(int model)
 	int ret = 0;
 
 	/* wifi scheduler casse */
-	if (nvram_match("wl0_timesched", "1") || nvram_match("wl1_timesched", "1") || nvram_match("wl2_timesched", "1")) {
+	if (nvram_match("wl0_timesched", "1") || nvram_match("wl1_timesched", "1") || nvram_match("wl2_timesched", "1")
+#ifdef RTCONFIG_QUADBAND
+	|| nvram_match("wl3_timesched", "1")
+#endif
+	) {
+
 		return -1;
 	}
 
 	if (nvram_get_int("wl0_radio")) ret++;
 	if (nvram_get_int("wl1_radio")) ret++;
 
-	/* special case */
 #ifdef RTCONFIG_HAS_5G_2
 	if (nvram_get_int("wl2_radio")) ret++;
+#endif
+#ifdef RTCONFIG_QUADBAND
+	if (nvram_get_int("wl3_radio")) ret++;
 #endif
 
 	return ret;
@@ -445,6 +452,19 @@ static int erp_check_gphy_stat(int model)
 					ret = 2;
 				}
 			}
+			else if(len == 36) {
+				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];L5=%[^;];L6=%[^;];", v0, v1, v2, v3, v4, v5, v6);
+				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
+					&& !strcmp(v1, "X") && !strcmp(v2, "X") && !strcmp(v3, "X")
+					&& !strcmp(v4, "X") && !strcmp(v5, "X") && !strcmp(v6, "X"))
+				{
+					ret = 0;
+				}
+				else if (strcmp(v0, "X") && (model!=MODEL_DSLAC68U)) /* no DSL-model */
+				{
+					ret = 2;
+				}
+			}
 			else if(len == 31) {
 				sscanf(buf, "W0=%[^;];L1=%[^;];L2=%[^;];L3=%[^;];L4=%[^;];L5=%[^;];", v0, v1, v2, v3, v4, v5);
 				if ( (!strcmp(v0, "X") || (model==MODEL_DSLAC68U)) /* DSL-AC68U v0 always = "M" */
@@ -594,6 +614,89 @@ static void post_erp_standby_mode(int model)
 }
 #endif
 
+static int ERP_CHECK_MODEL_LIST()
+{
+	int ret = 0;
+
+	int model = get_model();
+	if (
+#if defined(RTCONFIG_QCA)
+		   model == MODEL_RTAX89U
+		|| model == MODEL_GTAXY16000
+#else
+		   model == MODEL_RTAC88U
+		|| model == MODEL_RTAC3100
+		|| model == MODEL_RTAC5300
+		|| model == MODEL_RTAC3200
+		|| model == MODEL_RTAC68U
+		|| model == MODEL_RTAC87U
+		|| model == MODEL_DSLAC68U
+		|| model == MODEL_RTAC66U
+		|| model == MODEL_RTN66U
+		|| model == MODEL_GTAC5300
+		|| model == MODEL_RTAX88U
+		|| model == MODEL_GTAX11000
+		|| model == MODEL_RTAX92U
+		|| model == MODEL_RTAX95Q
+		|| model == MODEL_XT8PRO
+		|| model == MODEL_BM68
+		|| model == MODEL_XT8_V2
+		|| model == MODEL_RTAXE95Q
+		|| model == MODEL_ET8PRO
+		|| model == MODEL_ET8_V2
+		|| model == MODEL_RTAX56_XD4
+		|| model == MODEL_XD4PRO
+		|| model == MODEL_CTAX56_XD4
+		|| model == MODEL_RTAX58U
+		|| model == MODEL_RTAX82U_V2
+		|| model == MODEL_TUFAX5400_V2
+		|| model == MODEL_RTAX5400
+		|| model == MODEL_RTAX82_XD6S
+		|| model == MODEL_XD6_V2
+		|| model == MODEL_GT10
+		|| model == MODEL_RTAX58U_V2
+		|| model == MODEL_RTAX3000N
+		|| model == MODEL_BR63
+		|| model == MODEL_RTAXE7800
+		|| model == MODEL_TUFAX3000_V2
+		|| model == MODEL_RTAX55
+		|| model == MODEL_RTAX56U
+		|| model == MODEL_RPAX56
+		|| model == MODEL_RPAX58
+		|| model == MODEL_GTAXE11000
+		|| model == MODEL_GTAX6000
+		|| model == MODEL_GTAX11000_PRO
+		|| model == MODEL_GTAXE16000
+		|| model == MODEL_ET12
+		|| model == MODEL_XT12
+		|| model == MODEL_RTAX86U_PRO
+		|| model == MODEL_RTAX88U_PRO
+#endif
+	) {
+		ret = 1;
+	}
+
+	return ret;
+}
+
+static int ERP_CHECK_TCODE_LIST()
+{
+	int ret = 1;
+
+	/* tcode support in EE / WE / UK / EU */
+	char *tcode = nvram_safe_get("territory_code");
+	if (strstr(tcode, "EE") == NULL && strstr(tcode, "WE") == NULL
+		&& strstr(tcode, "UK") == NULL && strstr(tcode, "EU") == NULL
+#if defined(RTAX89U)
+	    && !strstr(tcode, "IL")
+#endif
+	   ) {
+		ret = 0;
+	}
+
+	return ret;
+}
+
 static void erp_standby_mode(int model)
 {
 	ERP_DBG("enter standby mode, model = %d\n", model);
@@ -616,6 +719,7 @@ static void erp_standby_mode(int model)
 		case MODEL_GTAX6000:
 		case MODEL_GTAX11000_PRO:
 		case MODEL_RTAX86U_PRO:
+		case MODEL_RTAX88U_PRO:
 			eval("wl", "-i", "eth6", "down");
 			eval("wl", "-i", "eth7", "down"); // turn off 5g radio
 			break;
@@ -625,9 +729,11 @@ static void erp_standby_mode(int model)
 			break;
 		case MODEL_RTAX95Q:
 		case MODEL_XT8PRO:
+		case MODEL_BM68:
 		case MODEL_XT8_V2:
 		case MODEL_RTAXE95Q:
 		case MODEL_ET8PRO:
+		case MODEL_ET8_V2:
 		case MODEL_ET12:
 		case MODEL_XT12:
 			eval("wl", "-i", "eth4", "down");
@@ -648,6 +754,8 @@ static void erp_standby_mode(int model)
 		case MODEL_TUFAX3000_V2:
 		case MODEL_RTAX82U_V2:
 		case MODEL_TUFAX5400_V2:
+		case MODEL_RTAX5400:
+		case MODEL_XD6_V2:
 			eval("wl", "-i", "eth5", "down");
 			eval("wl", "-i", "eth6", "down"); // turn off 5g radio
 			break;
@@ -660,6 +768,7 @@ static void erp_standby_mode(int model)
 		case MODEL_RTAX58U_V2:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX3000N:
+		case MODEL_BR63:
 			eval("wl", "-i", "eth2", "down");
 			eval("wl", "-i", "eth3", "down"); // turn off 5g radio
 			break;
@@ -707,6 +816,7 @@ static void erp_standby_mode(int model)
 	if (model == MODEL_GTAXE16000) {
 		// triple band
 		eval("wl", "-i", "eth8", "down"); // turn off 5g-2 radio
+		eval("wl", "-i", "eth9", "down"); // turn off 6g radio
 	}
 
 	if (model == MODEL_ET12 || model == MODEL_XT12) {
@@ -719,7 +829,7 @@ static void erp_standby_mode(int model)
 		eval("wl", "-i", "eth5", "down"); // turn off 2g radio
 	}
 
-	if (model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_XT8_V2 || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO) {
+	if (model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_BM68 || model == MODEL_XT8_V2 || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_ET8_V2) {
 		// triple band
 		eval("wl", "-i", "eth4", "down"); // turn off 2g radio
 	}
@@ -990,78 +1100,19 @@ static void ERP_STANDBY_LED()
 
 static void ERP_CHECK_MODE()
 {
-	// step1. check support model list
-	/*
-		support list for BRCM only
-		RT-AC5300 / RT-AC3100 / RT-AC5300
-		RT-AC3200
-		RT-AC68U / RT-AC87U / DSL-AC68U
-		RT-AC66U / RT-N66U
-	*/
 	int model = get_model();
-	if (
-#if defined(RTCONFIG_QCA)
-		   model != MODEL_RTAX89U
-		&& model != MODEL_GTAXY16000
-#else
-		   model != MODEL_RTAC88U
-		&& model != MODEL_RTAC3100
-		&& model != MODEL_RTAC5300
-		&& model != MODEL_RTAC3200
-		&& model != MODEL_RTAC68U
-		&& model != MODEL_RTAC87U
-		&& model != MODEL_DSLAC68U
-		&& model != MODEL_RTAC66U
-		&& model != MODEL_RTN66U
-		&& model != MODEL_GTAC5300
-		&& model != MODEL_RTAX88U
-		&& model != MODEL_GTAX11000
-		&& model != MODEL_RTAX92U
-		&& model != MODEL_RTAX95Q
-		&& model != MODEL_XT8PRO
-		&& model != MODEL_XT8_V2
-		&& model != MODEL_RTAXE95Q
-		&& model != MODEL_ET8PRO
-		&& model != MODEL_RTAX56_XD4
-		&& model != MODEL_XD4PRO
-		&& model != MODEL_CTAX56_XD4
-		&& model != MODEL_RTAX58U
-		&& model != MODEL_RTAX82U_V2
-		&& model != MODEL_TUFAX5400_V2
-		&& model != MODEL_RTAX82_XD6S
-		&& model != MODEL_GT10
-		&& model != MODEL_RTAX58U_V2
-		&& model != MODEL_RTAX3000N
-		&& model != MODEL_RTAXE7800
-		&& model != MODEL_TUFAX3000_V2
-		&& model != MODEL_RTAX55
-		&& model != MODEL_RTAX56U
-		&& model != MODEL_RPAX56
-		&& model != MODEL_RPAX58
-		&& model != MODEL_GTAXE11000
-		&& model != MODEL_GTAX6000
-		&& model != MODEL_GTAX11000_PRO
-		&& model != MODEL_GTAXE16000
-		&& model != MODEL_ET12
-		&& model != MODEL_XT12
-		&& model != MODEL_RTAX86U_PRO
-#endif
-	   )
+
+	// step1. check support model list
+	if (ERP_CHECK_MODEL_LIST() == 0)
 	{
-//		ERP_DBG("The model isn't under support list!\n");
+		ERP_DBG("The model isn't under support list!\n");
 		return;
 	}
 
 	// step2. tcode in EE / WE / UK / EU
-	char *tcode = nvram_safe_get("territory_code");
-	if (strstr(tcode, "EE") == NULL && strstr(tcode, "WE") == NULL
-		&& strstr(tcode, "UK") == NULL && strstr(tcode, "EU") == NULL
-#if defined(RTAX89U)
-	    && !strstr(tcode, "IL")
-#endif
-	   ) {
-
-//		ERP_DBG("The model isn't under EU SKU!\n");
+	if (ERP_CHECK_TCODE_LIST() == 0)
+	{
+		ERP_DBG("The model isn't under EU SKU!\n");
 		return;
 	}
 
@@ -1084,12 +1135,7 @@ static void ERP_CHECK_MODE()
 	int erp_arp  = erp_check_arp_stat(model);
 	int erp_gphy = erp_check_gphy_stat(model);
 	int erp_dsl  = erp_check_dsl_stat(model); // DSL model
-#if defined(RTCONFIG_QCA)
 	erp_wl_sta_num = erp_check_wl_auth_stat();
-#else
-	if (model == MODEL_GTAC5300 || model == MODEL_RTAX88U || model == MODEL_GTAX11000 || model == MODEL_RTAX92U || model == MODEL_RTAX95Q || model == MODEL_XT8PRO || model == MODEL_XT8_V2 || model == MODEL_RTAXE95Q || model == MODEL_ET8PRO || model == MODEL_RTAX56_XD4 || model == MODEL_XD4PRO || model == MODEL_CTAX56_XD4 || model == MODEL_RTAX58U || model == MODEL_RTAX82U_V2 || model == MODEL_TUFAX5400_V2 || model == MODEL_RTAX82_XD6S || model == MODEL_GT10 || model == MODEL_RTAX58U_V2 || model == MODEL_RTAX3000N || model == MODEL_TUFAX3000_V2 || model == MODEL_RTAXE7800 || model == MODEL_RTAX55 || model == MODEL_RTAX56U || model == MODEL_RPAX56 || model == MODEL_RPAX58 || model == MODEL_GTAXE11000 || model == MODEL_RTAX86U_PRO)
-		erp_wl_sta_num = erp_check_wl_auth_stat();
-#endif
 
 	ERP_DBG("erp_usb=%d, erp_wl=%d, erp_arp=%d, erp_gphy=%d, erp_dsl=%d, erp_status=%d, erp_wl_sta_num=%d, erp_count=%d\n",
 		erp_usb, erp_wl, erp_arp, erp_gphy, erp_dsl, erp_status, erp_wl_sta_num, erp_count);
@@ -1184,75 +1230,16 @@ int erp_monitor_main(int argc, char **argv)
 	FILE *fp;
 	sigset_t sigs_to_catch;
 
-	/*
-		support list for BRCM only
-		RT-AC5300 / RT-AC3100 / RT-AC5300
-		RT-AC3200
-		RT-AC68U / RT-AC87U / DSL-AC68U
-		RT-AC66U / RT-N66U
-	*/
-	int model = get_model();
-	if (
-#if defined(RTCONFIG_QCA)
-		   model != MODEL_RTAX89U
-		&& model != MODEL_GTAXY16000
-#else
-		   model != MODEL_RTAC88U
-		&& model != MODEL_RTAC3100
-		&& model != MODEL_RTAC5300
-		&& model != MODEL_RTAC3200
-		&& model != MODEL_RTAC68U
-		&& model != MODEL_RTAC87U
-		&& model != MODEL_DSLAC68U
-		&& model != MODEL_RTAC66U
-		&& model != MODEL_RTN66U
-		&& model != MODEL_GTAC5300
-		&& model != MODEL_RTAX88U
-		&& model != MODEL_GTAX11000
-		&& model != MODEL_RTAX92U
-		&& model != MODEL_RTAX95Q
-		&& model != MODEL_XT8PRO
-		&& model != MODEL_XT8_V2
-		&& model != MODEL_RTAXE95Q
-		&& model != MODEL_ET8PRO
-		&& model != MODEL_RTAX56_XD4
-		&& model != MODEL_XD4PRO
-		&& model != MODEL_CTAX56_XD4
-		&& model != MODEL_RTAX58U
-		&& model != MODEL_RTAX82U_V2
-		&& model != MODEL_TUFAX5400_V2
-		&& model != MODEL_RTAX82_XD6S
-		&& model != MODEL_GT10
-		&& model != MODEL_RTAX58U_V2
-		&& model != MODEL_RTAX3000N
-		&& model != MODEL_RTAXE7800
-		&& model != MODEL_TUFAX3000_V2
-		&& model != MODEL_RTAX55
-		&& model != MODEL_RTAX56U
-		&& model != MODEL_RPAX56
-		&& model != MODEL_RPAX58
-		&& model != MODEL_GTAXE11000
-		&& model != MODEL_GTAX6000
-		&& model != MODEL_GTAX11000_PRO
-		&& model != MODEL_GTAXE16000
-		&& model != MODEL_ET12
-		&& model != MODEL_XT12
-		&& model != MODEL_RTAX86U_PRO
-#endif
-	   )
+	/* check model list */
+	if (ERP_CHECK_MODEL_LIST() == 0)
 	{
 //		logmessage("ERP", "The model isn't under support list!\n");
 		return -1;
 	}
 
-	/* tcode support in EE / WE / UK / EU */
-	char *tcode = nvram_safe_get("territory_code");
-	if (strstr(tcode, "EE") == NULL && strstr(tcode, "WE") == NULL
-		&& strstr(tcode, "UK") == NULL && strstr(tcode, "EU") == NULL
-#if defined(RTAX89U)
-	    && !strstr(tcode, "IL")
-#endif
-	   ) {
+	/* check tcode */
+	if (ERP_CHECK_TCODE_LIST() == 0)
+	{
 //		logmessage("ERP", "The model isn't under EU SKU!\n");
 		return -2;
 	}

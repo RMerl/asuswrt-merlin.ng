@@ -40,8 +40,8 @@
 
 typedef struct film_sample {
   int stream;
-  int64_t sample_offset;
   unsigned int sample_size;
+  int64_t sample_offset;
   int64_t pts;
   int keyframe;
 } film_sample;
@@ -64,7 +64,7 @@ typedef struct FilmDemuxContext {
     unsigned int version;
 } FilmDemuxContext;
 
-static int film_probe(AVProbeData *p)
+static int film_probe(const AVProbeData *p)
 {
     if (AV_RB32(&p->buf[0]) != FILM_TAG)
         return 0;
@@ -144,8 +144,11 @@ static int film_read_header(AVFormatContext *s)
         film->video_type = AV_CODEC_ID_NONE;
     }
 
+    if (film->video_type == AV_CODEC_ID_NONE && film->audio_type == AV_CODEC_ID_NONE)
+        return AVERROR_INVALIDDATA;
+
     /* initialize the decoder streams */
-    if (film->video_type) {
+    if (film->video_type != AV_CODEC_ID_NONE) {
         st = avformat_new_stream(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
@@ -166,7 +169,7 @@ static int film_read_header(AVFormatContext *s)
         }
     }
 
-    if (film->audio_type) {
+    if (film->audio_type != AV_CODEC_ID_NONE) {
         st = avformat_new_stream(s, NULL);
         if (!st)
             return AVERROR(ENOMEM);
@@ -241,7 +244,7 @@ static int film_read_header(AVFormatContext *s)
             film->sample_table[i].pts = AV_RB32(&scratch[8]) & 0x7FFFFFFF;
             film->sample_table[i].keyframe = (scratch[8] & 0x80) ? 0 : AVINDEX_KEYFRAME;
             video_frame_counter++;
-            if (film->video_type)
+            if (film->video_type != AV_CODEC_ID_NONE)
                 av_add_index_entry(s->streams[film->video_stream_index],
                                    film->sample_table[i].sample_offset,
                                    film->sample_table[i].pts,
@@ -250,10 +253,10 @@ static int film_read_header(AVFormatContext *s)
         }
     }
 
-    if (film->audio_type)
+    if (film->audio_type != AV_CODEC_ID_NONE)
         s->streams[film->audio_stream_index]->duration = audio_frame_counter;
 
-    if (film->video_type)
+    if (film->video_type != AV_CODEC_ID_NONE)
         s->streams[film->video_stream_index]->duration = video_frame_counter;
 
     film->current_sample = 0;

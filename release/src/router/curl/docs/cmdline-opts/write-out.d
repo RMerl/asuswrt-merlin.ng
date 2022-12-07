@@ -1,9 +1,13 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: write-out
 Short: w
 Arg: <format>
 Help: Use output FORMAT after completion
 Category: verbose
 Example: -w '%{http_code}\\n' $URL
+Added: 6.5
+See-also: verbose head
 ---
 Make curl display information on stdout after a completed transfer. The format
 is a string that may contain plain text mixed with any number of
@@ -19,6 +23,11 @@ output a newline by using \\n, a carriage return with \\r and a tab space with
 
 The output will be written to standard output, but this can be switched to
 standard error by using %{stderr}.
+
+Output HTTP headers from the most recent request by using \fB%header{name}\fP
+where \fBname\fP is the case insensitive name of the header (without the
+trailing colon). The header contents are exactly as sent over the network,
+with leading and trailing whitespace trimmed. Added in curl 7.84.0.
 
 .B NOTE:
 The %-symbol is a special symbol in the win32-environment, where all
@@ -46,10 +55,18 @@ option. (Added in 7.26.0)
 The initial path curl ended up in when logging on to the remote FTP
 server. (Added in 7.15.4)
 .TP
+.B header_json
+A JSON object with all HTTP response headers from the recent transfer. Values
+are provided as arrays, since in the case of multiple headers there can be
+multiple values.
+
+The header names provided in lowercase, listed in order of appearance over the
+wire. Except for duplicated headers. They are grouped on the first occurrence
+of that header, each value is presented in the JSON array.
+.TP
 .B http_code
 The numerical response code that was found in the last retrieved HTTP(S) or
-FTP(s) transfer. In 7.18.2 the alias **response_code** was added to show the
-same info.
+FTP(s) transfer.
 .TP
 .B http_connect
 The numerical code that was found in the last response (from a proxy) to a
@@ -76,7 +93,7 @@ Number of new connects made in the recent transfer. (Added in 7.12.3)
 .TP
 .B num_headers
 The number of response headers in the most recent request (restarted at each
- redirect). Note that the status line IS NOT a header. (Added in 7.73.0)
+redirect). Note that the status line IS NOT a header. (Added in 7.73.0)
 .TP
 .B num_redirects
 Number of redirects that were followed in the request. (Added in 7.12.3)
@@ -113,7 +130,7 @@ The URL scheme (sometimes called protocol) that was effectively used. (Added in 
 .TP
 .B size_download
 The total amount of bytes that were downloaded. This is the size of the
-body/data that was transfered, excluding headers.
+body/data that was transferred, excluding headers.
 .TP
 .B size_header
 The total amount of bytes of the downloaded headers.
@@ -123,7 +140,7 @@ The total amount of bytes that were sent in the HTTP request.
 .TP
 .B size_upload
 The total amount of bytes that were uploaded. This is the size of the
-body/data that was transfered, excluding headers.
+body/data that was transferred, excluding headers.
 .TP
 .B speed_download
 The average download speed that curl measured for the complete download. Bytes
@@ -185,7 +202,7 @@ The URL index number of this transfer, 0-indexed. De-globbed URLs share the
 same index number as the origin globbed URL. (Added in 7.75.0)
 .TP
 .B url_effective
-The URL that was fetched last. This is most meaningful if you've told curl
+The URL that was fetched last. This is most meaningful if you have told curl
 to follow location: headers.
 .RE
 .IP

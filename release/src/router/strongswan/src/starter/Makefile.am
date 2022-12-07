@@ -4,8 +4,7 @@ ipsec_PROGRAMS = starter
 starter_SOURCES = \
 starter.c files.h \
 args.c args.h confread.c confread.h keywords.c keywords.h cmp.c cmp.h \
-invokecharon.c invokecharon.h starterstroke.c starterstroke.h \
-netkey.c netkey.h klips.c klips.h
+invokecharon.c invokecharon.h starterstroke.c starterstroke.h
 
 # parser is also used by tests
 noinst_LTLIBRARIES = libstarter.la
@@ -51,11 +50,12 @@ keywords.h: $(srcdir)/keywords.h.in
 		$(AM_V_GEN) \
 		sed \
 		-e "s:\@GPERF_LEN_TYPE\@:$(GPERF_LEN_TYPE):" \
-		$< > $@
+		$(srcdir)/keywords.h.in > $@
 
 keywords.c:	$(srcdir)/keywords.txt keywords.h
 		$(AM_V_GEN) \
-		$(GPERF) -m 10 -C -G -D -t < $(srcdir)/keywords.txt > $@
+		$(GPERF) -m 10 -C -G -D -t \
+			--output-file=$@ $(srcdir)/keywords.txt
 
 install-exec-local :
 		test -e "$(DESTDIR)${sysconfdir}/ipsec.d" || $(INSTALL) -d "$(DESTDIR)$(sysconfdir)/ipsec.d" || true

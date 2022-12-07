@@ -41,7 +41,7 @@ do_on_exit umount $LOOPDIR
 for host in $STRONGSWANHOSTS
 do
 	log_action "Creating guest image for $host"
-	execute "qemu-img create -b $ROOTIMG -f $IMGEXT $IMGDIR/$host.$IMGEXT" 0
+	execute "qemu-img create -b $ROOTIMG -f $IMGEXT -F $IMGEXT $IMGDIR/$host.$IMGEXT" 0
 	execute "qemu-nbd -c $NBDEV $IMGDIR/$host.$IMGEXT" 0
 	partprobe $NBDEV
 	execute "mount $NBDPARTITION $LOOPDIR" 0
@@ -56,17 +56,19 @@ do
 		execute_chroot "chgrp www-data /etc/pts" 0
 		execute_chroot "chmod g+w /etc/pts" 0
 	fi
-    if [ "$host" = "winnetou" ]
+	if [ "$host" = "winnetou" ]
 	then
 		execute "mkdir $LOOPDIR/var/log/apache2/ocsp" 0
 		execute "cp -rf $DIR/../images $LOOPDIR/var/www/" 0
+		execute "cp -rf $DIR/../css $LOOPDIR/var/www/" 0
 		execute "mkdir $LOOPDIR/var/www/testresults" 0
 		echo "echo /testresults ... >> $LOOPDIR/etc/fstab" >>$LOGFILE 2>&1
 		echo "/testresults /var/www/testresults 9p trans=virtio,version=9p2000.L 0 0" >> $LOOPDIR/etc/fstab
 		execute_chroot "a2enmod -q cgid" 0
 		execute_chroot "a2enmod -q rewrite" 0
-		execute_chroot "ln -s /etc/openssl/certs /var/www/certs" 0
-		execute_chroot "/etc/openssl/generate-crl" 0
+		execute_chroot "mkdir /var/www/certs" 0
+		execute_chroot "mkdir /var/www/certs/research /var/www/certs/sales" 0
+		execute_chroot "/etc/ca/generate-crl" 0
 		execute_chroot "rm -rf /var/lib/ldap/*" 0
 		execute_chroot "slapadd -l /etc/ldap/ldif.txt -f /etc/ldap/slapd.conf" 0
 		execute_chroot "chown -R openldap:openldap /var/lib/ldap" 0
@@ -74,7 +76,10 @@ do
 		execute_chroot "dnssec-signzone -K /etc/bind -o org. /etc/bind/db.org" 0
 		execute_chroot "dnssec-signzone -K /etc/bind -o . /etc/bind/db.root" 0
 
-		for service in "apache2 slapd bind9"
+		# on bullseye, enabling via bind9 doesn't work, while disabling does, so
+		# use named there. on the other hand, older releases don't have named
+		# service files (systemctl returns 0 even if files are not found)
+		for service in apache2 slapd bind9 named
 		do
 			execute_chroot "systemctl enable $service" 0
 		done

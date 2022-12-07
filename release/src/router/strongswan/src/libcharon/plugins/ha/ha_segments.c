@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -82,7 +83,7 @@ struct private_ha_segments_t {
 	bool heartbeat_active;
 
 	/**
-	 * Interval we send hearbeats
+	 * Interval we send heartbeats
 	 */
 	int heartbeat_delay;
 

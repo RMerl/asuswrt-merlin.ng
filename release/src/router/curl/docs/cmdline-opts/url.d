@@ -1,8 +1,12 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: url
 Arg: <url>
 Help: URL to work with
 Category: curl
 Example: --url $URL
+Added: 7.5
+See-also: next config
 ---
 Specify a URL to fetch. This option is mostly handy when you want to specify
 URL(s) in a config file.

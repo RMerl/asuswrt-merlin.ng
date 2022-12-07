@@ -2,7 +2,8 @@
  * Copyright (C) 2013 Tobias Brunner
  * Copyright (C) 2012-2014 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -41,21 +42,31 @@ static test_configuration_t tests[] = {
 	{ .suite = NULL, }
 };
 
-static bool tkm_initialized = false;
+static bool tkm_initialized, use_tkm;
 
 static bool test_runner_init(bool init)
 {
 	bool result = TRUE;
 
-	if (init)
+	if (init && use_tkm)
 	{
+		int level = LEVEL_SILENT;
+		char *verbosity;
+
 		libcharon_init();
-		lib->settings->set_int(lib->settings,
-							   "test-runner.filelog.stdout.default", 0);
+		verbosity = getenv("TESTS_VERBOSITY");
+		if (verbosity)
+		{
+			level = atoi(verbosity);
+		}
+		lib->settings->set_int(lib->settings, "%s.filelog.stderr.default",
+			lib->settings->get_int(lib->settings, "%s.filelog.stderr.default",
+								   level, lib->ns), lib->ns);
 		charon->load_loggers(charon);
 
 		/* Register TKM specific plugins */
 		static plugin_feature_t features[] = {
+			PLUGIN_PROVIDE(CUSTOM, "tkm"),
 			PLUGIN_REGISTER(NONCE_GEN, tkm_nonceg_create),
 				PLUGIN_PROVIDE(NONCE_GEN),
 			PLUGIN_CALLBACK(kernel_ipsec_register, tkm_kernel_ipsec_create),
@@ -97,6 +108,8 @@ static bool test_runner_init(bool init)
 int main(int argc, char *argv[])
 {
 	bool result;
+
+	use_tkm = getenv("TESTS_TKM") != NULL;
 
 	/* disable leak detective because of how tkm_init/deinit is called, which
 	 * does not work otherwise due to limitations of the external libraries */

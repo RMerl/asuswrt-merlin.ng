@@ -20,11 +20,10 @@
 
 #include <string.h>
 
-#include "avcodec.h"
 #include "bsf.h"
+#include "bsf_internal.h"
 
 #include "libavutil/log.h"
-#include "libavutil/mem.h"
 #include "libavutil/opt.h"
 
 enum DumpFreq {
@@ -34,22 +33,25 @@ enum DumpFreq {
 
 typedef struct DumpExtradataContext {
     const AVClass *class;
+    AVPacket pkt;
     int freq;
 } DumpExtradataContext;
 
 static int dump_extradata(AVBSFContext *ctx, AVPacket *out)
 {
     DumpExtradataContext *s = ctx->priv_data;
-    AVPacket *in;
+    AVPacket *in = &s->pkt;
     int ret = 0;
 
-    ret = ff_bsf_get_packet(ctx, &in);
+    ret = ff_bsf_get_packet_ref(ctx, in);
     if (ret < 0)
         return ret;
 
     if (ctx->par_in->extradata &&
         (s->freq == DUMP_FREQ_ALL ||
-         (s->freq == DUMP_FREQ_KEYFRAME && in->flags & AV_PKT_FLAG_KEY))) {
+         (s->freq == DUMP_FREQ_KEYFRAME && in->flags & AV_PKT_FLAG_KEY)) &&
+         (in->size < ctx->par_in->extradata_size ||
+          memcmp(in->data, ctx->par_in->extradata, ctx->par_in->extradata_size))) {
         if (in->size >= INT_MAX - ctx->par_in->extradata_size) {
             ret = AVERROR(ERANGE);
             goto fail;
@@ -72,7 +74,7 @@ static int dump_extradata(AVBSFContext *ctx, AVPacket *out)
     }
 
 fail:
-    av_packet_free(&in);
+    av_packet_unref(in);
 
     return ret;
 }
@@ -80,7 +82,7 @@ fail:
 #define OFFSET(x) offsetof(DumpExtradataContext, x)
 #define FLAGS (AV_OPT_FLAG_VIDEO_PARAM|AV_OPT_FLAG_BSF_PARAM)
 static const AVOption options[] = {
-    { "freq", "When do dump extradata", OFFSET(freq), AV_OPT_TYPE_INT,
+    { "freq", "When to dump extradata", OFFSET(freq), AV_OPT_TYPE_INT,
         { .i64 = DUMP_FREQ_KEYFRAME }, DUMP_FREQ_KEYFRAME, DUMP_FREQ_ALL, FLAGS, "freq" },
         { "k",        NULL, 0, AV_OPT_TYPE_CONST, { .i64 = DUMP_FREQ_KEYFRAME }, .flags = FLAGS, .unit = "freq" },
         { "keyframe", NULL, 0, AV_OPT_TYPE_CONST, { .i64 = DUMP_FREQ_KEYFRAME }, .flags = FLAGS, .unit = "freq" },

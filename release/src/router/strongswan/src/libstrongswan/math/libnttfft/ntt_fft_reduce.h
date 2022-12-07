@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,7 +33,7 @@
 static inline uint32_t ntt_fft_mreduce(uint32_t x, const ntt_fft_params_t *p)
 {
 	uint32_t m, t;
-	
+
 	m = (x * p->q_inv) & p->rmask;
 	t = (x + m * p->q) >> p->rlog;
 

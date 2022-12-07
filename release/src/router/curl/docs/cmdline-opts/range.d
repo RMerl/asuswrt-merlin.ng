@@ -1,3 +1,5 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: range
 Short: r
 Help: Retrieve only the bytes within RANGE
@@ -5,6 +7,8 @@ Arg: <range>
 Protocols: HTTP FTP SFTP FILE
 Category: http ftp sftp file
 Example: --range 22-44 $URL
+Added: 4.0
+See-also: continue-at append
 ---
 Retrieve a byte range (i.e. a partial document) from an HTTP/1.1, FTP or SFTP
 server or a local FILE. Ranges can be specified in a number of ways.
@@ -39,8 +43,8 @@ the server's response will be unspecified, depending on the server's
 configuration.
 
 You should also be aware that many HTTP/1.1 servers do not have this feature
-enabled, so that when you attempt to get a range, you'll instead get the whole
-document.
+enabled, so that when you attempt to get a range, you will instead get the
+whole document.
 
 FTP and SFTP range downloads only support the simple 'start-stop' syntax
 (optionally with one of the numbers omitted). FTP use depends on the extended

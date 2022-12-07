@@ -1825,6 +1825,29 @@ function network_set_fronthaul_info(_node_info){
 	if(isReNode)
 		wifi_radio_control = manage_get_wifi_radio_control(_node_info, select_node_capability);
 
+	var band_info = "";
+	if(_node_info.band_info != undefined){
+		band_info = JSON.parse(JSON.stringify(_node_info.band_info));
+		$.each(band_info, function(index, item){
+			switch(index){
+				case "0":
+					item.ap_name = "ap2g";
+					break;
+				case "1":
+					item.ap_name = "ap5g";
+					break;
+				case "2":
+					item.ap_name = "ap5g";
+					break;
+				case "3":
+					item.ap_name = "ap5g1";
+					break;
+				case "4":
+					item.ap_name = "ap6g";
+					break;
+			}
+		});
+	}
 	cfg_clientlist_ap_list.forEach(function(item, index, array){
 		var specific_data = "";
 		if(wifi_radio_control.length > 0){
@@ -1859,18 +1882,30 @@ function network_set_fronthaul_info(_node_info){
 			}();
 			ap_info["is_dwb"] = function(){
 				var result = false;
-				if(dwb_info.mode == "1" && ap_list_idx == dwb_info.band){
-					var wl_closed = httpApi.nvramGet(["wl" + dwb_info.band + "_closed"])["wl" + dwb_info.band + "_closed"];
-					if(isSupport("amas_fronthaul_network")){
-						var fh_ap_enabled = httpApi.nvramGet(["fh_ap_enabled"]).fh_ap_enabled;
-						if(fh_ap_enabled == "0"){
+				if(dwb_info.mode == "1"){
+					var cur_ap_unit = "";
+					$.each(band_info, function(band_idx, band_item){
+						if(band_item.ap_name == item){
+							cur_ap_unit = band_item.unit;
+							return false;
+						}
+					});
+					if(cur_ap_unit === ""){
+						cur_ap_unit = ap_list_idx;
+					}
+					if(cur_ap_unit == dwb_info.band){
+						var wl_closed = httpApi.nvramGet(["wl" + dwb_info.band + "_closed"])["wl" + dwb_info.band + "_closed"];
+						if(isSupport("amas_fronthaul_network")){
+							var fh_ap_enabled = httpApi.nvramGet(["fh_ap_enabled"]).fh_ap_enabled;
+							if(fh_ap_enabled == "0"){
+								if(wl_closed == "1")
+									result = true;
+							}
+						}
+						else{
 							if(wl_closed == "1")
 								result = true;
 						}
-					}
-					else{
-						if(wl_closed == "1")
-							result = true;
 					}
 				}
 				return result;
@@ -3438,7 +3473,7 @@ function jstree_re_draw_connect_line(){
 function aimesh_introduction_control(){
 	var all_node = $('#jstree').jstree(true).get_json("#", {flat:true});
 	$(".aimesh_introduction").hide();
-	if(all_node.length < 4)
+	if(all_node.length < 2)
 		$(".aimesh_introduction").show();
 }
 function client_list_refresh(){
@@ -3683,8 +3718,9 @@ function initial_AiMesh(){
 		})[0];
 		if(specific_node_data != undefined){
 			change_node(specific_node_data);
-			if(jstree_load_ready)
-				update_model_icon(specific_node_data);
+			if(jstree_load_ready){
+				setTimeout(function(){update_model_icon(specific_node_data);}, 1000);
+			}
 		}
 	});
 	$('#jstree').on("ready.jstree", function(e, data) {
@@ -4005,8 +4041,6 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					option_text = option_text.replace("#CONNPRIOTYPE", conn_prio_type);
 					var option_conn_type = conn_type;
 					if(_eap_flag && conn_type == "wifi")
-						return true;
-					if(conn_type == "plc" && !isSupport("qca_plc2"))
 						return true;
 					option_array.push(gen_option_attr(option_value, option_text, option_conn_type));
 				});

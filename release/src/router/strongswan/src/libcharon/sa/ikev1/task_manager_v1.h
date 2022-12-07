@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Martin Willi
- * Copyright (C) 2011 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -42,5 +43,21 @@ struct task_manager_v1_t {
  * @param ike_sa		IKE_SA to manage.
  */
 task_manager_v1_t *task_manager_v1_create(ike_sa_t *ike_sa);
+
+/**
+ * Check if the given CHILD_SA is redundant (i.e. another CHILD_SA with the same
+ * name and TS is currently INSTALLED).
+ *
+ * Optionally, the two currently installed CHILD_SAs may be further compared.
+ *
+ * @param ike_sa		IKE_SA whose CHILD_SAs should be checked
+ * @param child_sa		CHILD_SA to check for duplicates
+ * @param cmp			Optional comparison function, first argument is the
+ *						passed CHILD_SA, the second a found matching one, return
+ *						TRUE if the former should be considered redundant
+ * @return				TRUE if the CHILD_SA is redundant
+ */
+bool ikev1_child_sa_is_redundant(ike_sa_t *ike_sa, child_sa_t *child_sa,
+								 bool (*cmp)(child_sa_t*,child_sa_t*));
 
 #endif /** TASK_MANAGER_V1_H_ @}*/

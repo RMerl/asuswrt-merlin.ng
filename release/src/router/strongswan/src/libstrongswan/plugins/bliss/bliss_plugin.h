@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,7 +30,7 @@
 typedef struct bliss_plugin_t bliss_plugin_t;
 
 /**
- * Plugin implementing the BLISS post-quantu authentication algorithm
+ * Plugin implementing the BLISS post-quantum authentication algorithm
  */
 struct bliss_plugin_t {
 

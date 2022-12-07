@@ -1,17 +1,16 @@
 moon::iptables-restore < /etc/iptables.rules
 carol::iptables-restore < /etc/iptables.rules
 dave::iptables-restore < /etc/iptables.rules
-carol::ipsec start
-dave::ipsec start
-moon::ipsec start
-moon::expect-connection rw
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::ipsec whitelist add alice@strongswan.org
 moon::ipsec whitelist add bob@strongswan.org
 moon::ipsec whitelist add carol@strongswan.org
 moon::ipsec whitelist enable
 moon::ipsec whitelist list
+moon::expect-connection rw
 carol::expect-connection home
-carol::ipsec up home
+carol::swanctl --initiate --child home 2> /dev/null
 dave::expect-connection home
-dave::ipsec up home
-carol::sleep 1
+dave::swanctl --initiate --child home 2> /dev/null

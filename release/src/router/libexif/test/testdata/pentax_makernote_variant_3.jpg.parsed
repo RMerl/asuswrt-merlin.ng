@@ -1,0 +1,260 @@
+File pentax_makernote_variant_3.jpg
+Byte order: Intel
+  Content 0: ifd=0
+    Entry 0: Make (ASCII)
+      Size, Comps: 19, 19
+      Value: PENTAX Corporation
+    Entry 1: Model (ASCII)
+      Size, Comps: 18, 18
+      Value: PENTAX Optio 750Z
+    Entry 2: Orientation (Short)
+      Size, Comps: 2, 1
+      Value: Top-left
+    Entry 3: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 4: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 5: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+    Entry 6: Software (ASCII)
+      Size, Comps: 20, 20
+      Value: Optio 750Z Ver 1.01
+    Entry 7: DateTime (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:10:11 19:06:04
+    Entry 8: YCbCrPositioning (Short)
+      Size, Comps: 2, 1
+      Value: Co-sited
+    Entry 9: PrintImageMatching (Undefined)
+      Size, Comps: 94, 94
+      Value: 94 bytes undefined data
+  Content 1: ifd=1
+    Entry 0: Compression (Short)
+      Size, Comps: 2, 1
+      Value: JPEG compression
+    Entry 1: XResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 2: YResolution (Rational)
+      Size, Comps: 8, 1
+      Value: 72
+    Entry 3: ResolutionUnit (Short)
+      Size, Comps: 2, 1
+      Value: Inch
+  Content 2: ifd=2
+    Entry 0: ExposureTime (Rational)
+      Size, Comps: 8, 1
+      Value: 1 sec.
+    Entry 1: FNumber (Rational)
+      Size, Comps: 8, 1
+      Value: f/2.8
+    Entry 2: ISOSpeedRatings (Short)
+      Size, Comps: 2, 1
+      Value: 200
+    Entry 3: ExifVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: Exif Version 2.2
+    Entry 4: DateTimeOriginal (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:10:11 19:06:04
+    Entry 5: DateTimeDigitized (ASCII)
+      Size, Comps: 20, 20
+      Value: 2009:10:11 19:06:04
+    Entry 6: ComponentsConfiguration (Undefined)
+      Size, Comps: 4, 4
+      Value: Y Cb Cr -
+    Entry 7: CompressedBitsPerPixel (Rational)
+      Size, Comps: 8, 1
+      Value:  3
+    Entry 8: ExposureBiasValue (SRational)
+      Size, Comps: 8, 1
+      Value: 0.00 EV
+    Entry 9: MaxApertureValue (Rational)
+      Size, Comps: 8, 1
+      Value: 3.00 EV (f/2.8)
+    Entry 10: MeteringMode (Short)
+      Size, Comps: 2, 1
+      Value: Pattern
+    Entry 11: Flash (Short)
+      Size, Comps: 2, 1
+      Value: Flash did not fire, compulsory flash mode
+    Entry 12: FocalLength (Rational)
+      Size, Comps: 8, 1
+      Value: 7.8 mm
+    Entry 13: MakerNote (Undefined)
+      Size, Comps: 986, 986
+      Value: 986 bytes undefined data
+    Entry 14: FlashpixVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: FlashPix Version 1.0
+    Entry 15: ColorSpace (Short)
+      Size, Comps: 2, 1
+      Value: sRGB
+    Entry 16: PixelXDimension (Long)
+      Size, Comps: 4, 1
+      Value: 640
+    Entry 17: PixelYDimension (Long)
+      Size, Comps: 4, 1
+      Value: 480
+    Entry 18: CustomRendered (Short)
+      Size, Comps: 2, 1
+      Value: Custom process
+    Entry 19: ExposureMode (Short)
+      Size, Comps: 2, 1
+      Value: Auto exposure
+    Entry 20: WhiteBalance (Short)
+      Size, Comps: 2, 1
+      Value: Auto white balance
+    Entry 21: DigitalZoomRatio (Rational)
+      Size, Comps: 8, 1
+      Value: 1.00
+    Entry 22: FocalLengthIn35mmFilm (Short)
+      Size, Comps: 2, 1
+      Value: 37
+    Entry 23: SceneCaptureType (Short)
+      Size, Comps: 2, 1
+      Value: Standard
+    Entry 24: Contrast (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 25: Saturation (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 26: Sharpness (Short)
+      Size, Comps: 2, 1
+      Value: Normal
+    Entry 27: SubjectDistanceRange (Short)
+      Size, Comps: 2, 1
+      Value: Unknown
+  Content 3: ifd=3
+  Content 4: ifd=4
+    Entry 0: InteroperabilityIndex (ASCII)
+      Size, Comps: 4, 4
+      Value: R98
+    Entry 1: InteroperabilityVersion (Undefined)
+      Size, Comps: 4, 4
+      Value: 0100
+  MakerNote
+    Entry 0: 16385, Mode
+      Size: 6
+      Value: Manual
+    Entry 1: 16386, PentaxPreviewSize
+      Size: 8
+      Value: 640 480 
+    Entry 2: 16387, PentaxPreviewLength
+      Size: 2
+      Value: 4 
+    Entry 3: 16388, PentaxPreviewStart
+      Size: 5
+      Value: 1898 
+    Entry 4: 16389, ModelID
+      Size: 6
+      Value: 76390 
+    Entry 5: 16390, Date
+      Size: 10
+      Value: 2009:10:11
+    Entry 6: 16391, Time
+      Size: 8
+      Value: 19:06:04
+    Entry 7: 16392, Quality
+      Size: 4
+      Value: Good
+    Entry 8: 16393, ImageSize
+      Size: 7
+      Value: 640x480
+    Entry 9: 16395, PictureMode
+      Size: 33
+      Value: Internal error (unknown value 21)
+    Entry 10: 16396, FlashMode
+      Size: 3
+      Value: Off
+    Entry 11: 16397, FocusMode
+      Size: 6
+      Value: Normal
+    Entry 12: 16398, AFPointSelected
+      Size: 4
+      Value: Auto
+    Entry 13: 16399, AutoAFPoint
+      Size: 8
+      Value: Multiple
+    Entry 14: 16400, FocusPosition
+      Size: 5
+      Value: 1013 
+    Entry 15: 16402, ExposureTime
+      Size: 7
+      Value: 100000 
+    Entry 16: 16403, FNumber
+      Size: 3
+      Value: 28 
+    Entry 17: 16404, ISO
+      Size: 2
+      Value: 9 
+    Entry 18: 16405, (unknown)
+      Size: 6
+      Value: 65533 
+    Entry 19: 16406, ExposureCompensation
+      Size: 3
+      Value: 50 
+    Entry 20: 16407, MeteringMode
+      Size: 2
+      Value: 0 
+    Entry 21: 16408, AutoBracketing
+      Size: 2
+      Value: 0 
+    Entry 22: 16409, WhiteBalance
+      Size: 4
+      Value: Auto
+    Entry 23: 16411, BlueBalance
+      Size: 2
+      Value: 0 
+    Entry 24: 16412, RedBalance
+      Size: 2
+      Value: 0 
+    Entry 25: 16413, FocalLength
+      Size: 3
+      Value: 78 
+    Entry 26: 16414, DigitalZoom
+      Size: 4
+      Value: 100 
+    Entry 27: 16415, Saturation
+      Size: 2
+      Value: 1 
+    Entry 28: 16416, Contrast
+      Size: 2
+      Value: 1 
+    Entry 29: 16417, Sharpness
+      Size: 2
+      Value: 1 
+    Entry 30: 16418, WorldTimeLocation
+      Size: 2
+      Value: 0 
+    Entry 31: 16419, HometownCity
+      Size: 3
+      Value: 20 
+    Entry 32: 16420, DestinationCity
+      Size: 3
+      Value: 15 
+    Entry 33: 16421, HometownDST,
+      Size: 2
+      Value: 0 
+    Entry 34: 16422, DestinationDST
+      Size: 2
+      Value: 0 
+    Entry 35: 16423, (unknown)
+      Size: 20
+      Value: 4 bytes unknown data
+    Entry 36: 16425, FrameNumber
+      Size: 2
+      Value: 0 
+    Entry 37: 16434, ImageProcessing
+      Size: 20
+      Value: 4 bytes unknown data
+    Entry 38: 16449, (unknown)
+      Size: 2
+      Value: 0 
+    Entry 39: 17406, (unknown)
+      Size: 22
+      Value: 494 bytes unknown data

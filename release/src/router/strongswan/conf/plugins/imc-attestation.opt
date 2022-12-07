@@ -10,6 +10,9 @@ libimcv.plugins.imc-attestation.aik_pubkey =
 libimcv.plugins.imc-attestation.aik_handle =
 	AIK object handle.
 
+libimcv.plugins.imc-attestation.hash_algorithm = sha384
+	Preferred measurement hash algorithm.
+
 libimcv.plugins.imc-attestation.mandatory_dh_groups = yes
 	Enforce mandatory Diffie-Hellman groups.
 
@@ -26,19 +29,25 @@ libimcv.plugins.imc-attestation.pcr_info = no
 	Whether to send pcr_before and pcr_after info.
 
 libimcv.plugins.imc-attestation.pcr17_before =
-        PCR17 value before measurement.
+	PCR17 value before measurement.
 
 libimcv.plugins.imc-attestation.pcr17_meas =
-        Dummy measurement value extended into PCR17 if the TBOOT log is not available.
+	Dummy measurement value extended into PCR17 if the TBOOT log is not
+	available.
 
 libimcv.plugins.imc-attestation.pcr17_after =
-        PCR17 value after measurement.
+	PCR17 value after measurement.
 
 libimcv.plugins.imc-attestation.pcr18_before =
-        PCR18 value before measurement.
+	PCR18 value before measurement.
 
 libimcv.plugins.imc-attestation.pcr18_meas =
-       Dummy measurement value extended into PCR17 if the TBOOT log is not available. 
+	Dummy measurement value extended into PCR17 if the TBOOT log is not
+	available.
 
 libimcv.plugins.imc-attestation.pcr18_after =
-        PCR18 value after measurement.
+	PCR18 value after measurement.
+
+libimcv.plugins.imc-attestation.pcr_padding = no
+	Whether to pad IMA SHA1 measurements values when extending into
+	SHA256 PCR bank.

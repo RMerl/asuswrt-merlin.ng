@@ -233,13 +233,10 @@ static void avc_idct8_addblk_msa(uint8_t *dst, int16_t *src, int32_t dst_stride)
          res0, res1, res2, res3);
     ADD4(res4, tmp4, res5, tmp5, res6, tmp6, res7, tmp7,
          res4, res5, res6, res7);
-    CLIP_SH4_0_255(res0, res1, res2, res3);
-    CLIP_SH4_0_255(res4, res5, res6, res7);
+    CLIP_SH8_0_255(res0, res1, res2, res3, res4, res5, res6, res7);
     PCKEV_B4_SB(res1, res0, res3, res2, res5, res4, res7, res6,
                 dst0, dst1, dst2, dst3);
-    ST8x4_UB(dst0, dst1, dst, dst_stride);
-    dst += (4 * dst_stride);
-    ST8x4_UB(dst2, dst3, dst, dst_stride);
+    ST_D8(dst0, dst1, dst2, dst3, 0, 1, 0, 1, 0, 1, 0, 1, dst, dst_stride)
 }
 
 static void avc_idct8_dc_addblk_msa(uint8_t *dst, int16_t *src,
@@ -265,13 +262,11 @@ static void avc_idct8_dc_addblk_msa(uint8_t *dst, int16_t *src,
          dst0_r, dst1_r, dst2_r, dst3_r);
     ADD4(dst4_r, dc, dst5_r, dc, dst6_r, dc, dst7_r, dc,
          dst4_r, dst5_r, dst6_r, dst7_r);
-    CLIP_SH4_0_255(dst0_r, dst1_r, dst2_r, dst3_r);
-    CLIP_SH4_0_255(dst4_r, dst5_r, dst6_r, dst7_r);
+    CLIP_SH8_0_255(dst0_r, dst1_r, dst2_r, dst3_r,
+                   dst4_r, dst5_r, dst6_r, dst7_r);
     PCKEV_B4_SB(dst1_r, dst0_r, dst3_r, dst2_r, dst5_r, dst4_r, dst7_r, dst6_r,
                 dst0, dst1, dst2, dst3);
-    ST8x4_UB(dst0, dst1, dst, dst_stride);
-    dst += (4 * dst_stride);
-    ST8x4_UB(dst2, dst3, dst, dst_stride);
+    ST_D8(dst0, dst1, dst2, dst3, 0, 1, 0, 1, 0, 1, 0, 1, dst, dst_stride)
 }
 
 void ff_h264_idct_add_msa(uint8_t *dst, int16_t *src, int32_t dst_stride)
@@ -340,7 +335,7 @@ void ff_h264_idct4x4_addblk_dc_msa(uint8_t *dst, int16_t *src,
     ADD2(pred_r, input_dc, pred_l, input_dc, pred_r, pred_l);
     CLIP_SH2_0_255(pred_r, pred_l);
     out = __msa_pckev_b((v16i8) pred_l, (v16i8) pred_r);
-    ST4x4_UB(out, out, 0, 1, 2, 3, dst, dst_stride);
+    ST_W4(out, 0, 1, 2, 3, dst, dst_stride);
 }
 
 void ff_h264_idct8_dc_addblk_msa(uint8_t *dst, int16_t *src,

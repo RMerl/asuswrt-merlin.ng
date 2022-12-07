@@ -75,7 +75,7 @@ ADSL_FW_item3=Version dernière
 APSurvey_action_ConnectingStatus0=Il se peut que le point d'accès parent soit désactivé. S'il vous plaît vérifier à nouveau.
 APSurvey_action_ConnectingStatus1=Échec de la connexion. Le mot de passe est incorrect. Veuillez cliquer sur [Réessayer].
 APSurvey_action_ConnectingStatus24=La connexion sans fil a été établie avec succès.
-APSurvey_action_ConnectingStatus3=Relancez votre navigateur Internet, puis entrez "http://router.asus.com/" dans la barre d\'adresse pour visualiser l\'état de connexion du répéteur.
+APSurvey_action_ConnectingStatus3=Relancez votre navigateur Internet, puis entrez "http://ZVDOMAIN_NAMEVZ/" dans la barre d\'adresse pour visualiser l\'état de connexion du répéteur.
 APSurvey_action_renew_success=Mise à jour des paramètres IP effectuée avec succès. Vous allez être redirigé vers l'interface de configuration en ligne de votre ZVMODELVZ.
 APSurvey_action_search_again_hint1=Sélectionnez un autre réseau
 APSurvey_action_search_again_hint2=Modifier le réseau auquel le ZVMODELVZ doit se connecter.
@@ -115,12 +115,12 @@ ASUS_eula_withdraw_desc2_AlexaIFTTT=Si vous souhaitez ensuite activer les foncti
 ASUS_eula_withdraw_note=Vous n'êtes pas en mesure de terminer la procédure de retrait sans connexion internet. Veuillez réessayer après vous être connecté à Internet.
 ASUS_eula_withdraw_unstable=Vous n'êtes pas en mesure de terminer la procédure de retrait car votre connexion internet est instable. Veuillez réessayer ultérieurement.
 TM_eula_confirm=En utilisant ASUS AiProtection, vous acceptez la
-TM_eula_desc1=En utilisant AiProtection, le dispositif d\'analyse du trafic, l\'analyseur d\'applications, le service QoS adaptatif/Game Boost, l\'historique internet, vous acceptez le <a id="eula_url" style="text-decoration:underline;" target="_blank">Contrat de licence de l\'utilisateur final de Trend Micro</a>.
-TM_eula_desc2=Veuillez noter que vos informations seront collectées par Trend Micro via AiProtection, le dispositif d\'analyse du trafic, l\'analyseur d\'applications, le service QoS adaptatif et l\'historique internet. Vous reconnaissez et acceptez également qu\'ASUS n\'est en aucun cas pas tenu responsable de l\'accord entre vous et Trend Micro ni du contenu du service fourni par Trend Micro. Si vous avez des questions sur la manière dont Trend Micro collecte, traite et utilise vos informations ci-dessus, Veuillez vous reporter à la déclaration relative à la confidentialité publiée par Trend Micro ou contacter Trend Micro pour plus de détails.
+TM_eula_desc1=En utilisant AiProtection, Contrôle parental( Filtrage de sites et d'applications ), le dispositif d\'analyse du trafic, l\'analyseur d\'applications, le service QoS adaptatif/Game Boost, l\'historique internet, vous acceptez le <a id="eula_url" style="text-decoration:underline;" target="_blank">Contrat de licence de l\'utilisateur final de Trend Micro</a>.
+TM_eula_desc2=Veuillez noter que vos informations seront collectées par Trend Micro via AiProtection, Contrôle parental( Filtrage de sites et d'applications ), le dispositif d\'analyse du trafic, l\'analyseur d\'applications, le service QoS adaptatif et l\'historique internet. Vous reconnaissez et acceptez également qu\'ASUS n\'est en aucun cas pas tenu responsable de l\'accord entre vous et Trend Micro ni du contenu du service fourni par Trend Micro. Si vous avez des questions sur la manière dont Trend Micro collecte, traite et utilise vos informations ci-dessus, Veuillez vous reporter à la déclaration relative à la confidentialité publiée par Trend Micro ou contacter Trend Micro pour plus de détails.
 TM_eula_desc3=Si vous souhaitez désactiver le partage de vos informations avec Trend Micro via les fonctions ci-dessus, accédez à: Interface utilisateur du routeur Web> Paramètres avancés> Administration> Confidentialité.
 TM_privacy_policy=<a id="tm_eula_url" style="text-decoration:underline;" target="_blank">TrendMicro Privacy Policy</a>
 TM_data_collection=<a id="tm_disclosure_url" style="text-decoration:underline;" target="_blank">Privacy and Personal Data Collection Disclosure</a>
-TM_eula_withdraw0=Pour AiProtection, le dispositif d'analyse du trafic, l'analyseur d'applications, le service QoS adaptatif/Game Boost, l'historique internet:
+TM_eula_withdraw0=Pour AiProtection, Contrôle parental( Filtrage de sites et d'applications ), le dispositif d'analyse du trafic, l'analyseur d'applications, le service QoS adaptatif/Game Boost, l'historique internet:
 TM_eula_withdraw_desc1=Veuillez noter que vos informations seront collectées par Trend Micro via les fonctions ci-dessus.
 TM_eula_withdraw_desc2=Si vous souhaitez désactiver le partage de vos informations avec Trend Micro via les fonctions suivantes, cliquez sur <span style="font-weight: bold;">[<Retirer]</span> ci-dessous. Cependant, veuillez noter que de telles fonctionnalités/fonctions peuvent ne pas fonctionner si vous décidez de ne pas partager vos informations avec Trend Micro.
 withdraw_confirm=Êtes-vous sûr de vouloir vous retirer ?
@@ -276,6 +276,10 @@ IPConnection_x_DNS_DB_CLOUDFLARE_1=Sélectionnez ce serveur DNS pour avoir un mo
 IPConnection_x_DNS_DB_CLOUDFLARE_2=Sélectionnez ce serveur DNS pour bloquer le contenu malveillant
 IPConnection_x_DNS_DB_CLOUDFLARE_3=Sélectionnez ce serveur DNS pour bloquer le contenu malveillant et adulte
 IPConnection_x_DNS_List=Liste de DNS
+IPConnection_x_DNS_List_adB=Bloqueur de publicités
+IPConnection_x_DNS_List_Family=Famille
+IPConnection_x_DNS_List_Fast=DNS rapide
+IPConnection_x_DNS_List_Priv-resp=Respect de la vie privée
 IPConnection_x_DNSServerEnable_itemdesc=Permet au routeur d'obtenir les adresses de serveur DNS automatiquement auprès du FAI (Fournisseur d'accès à Internet).
 IPConnection_x_DNSServerEnable_itemname=Se connecter automatiquement au serveur DNS
 IPConnection_x_ExternalGateway_itemdesc=Si votre connexion Internet nécessite une adresse IP fixe, entrez l\'adresse de la passerelle dans ce champ.
@@ -311,9 +315,9 @@ JS_validrange=Veuillez entrer une valeur comprise entre
 JS_validrange_to=et
 JS_validSSID1=Le SSID ne peut pas contenir le caractère \"
 JS_validSSID2=\".
-JS_validstr1=Cette phrase ne peut pas commencer par:
+JS_validstr1=Le premier caractère ne peut pas contenir:
 JS_validstr2=Cette phrase ne peut pas contenir:
-JS_validstr3=This string cannot end with:
+JS_validstr3=Le dernier caractère ne peut pas contenir:
 JS_wepkey=Veuillez entrer la bonne clé WEP.
 JS_wpapass=La clé pré-partagée doit contenir moins de 64!
 LAN_IP_changed_suggedtion1=L'adresse IP LAN du ZVMODELVZ est
@@ -429,7 +433,7 @@ OP_MB_desc8=Veuillez télécharger <a href='http://dlcdnet.asus.com/pub/ASUS/Liv
 OP_MB_desc9=Veuillez vérifier l'état de connexion du câble Ethernet au port WAN (réseau étendu).
 OP_RE_desc=En mode Répéteur, le ZVMODELVZ se connecte à un signal sans fil existant et étend la portée de ce signal pour maximiser la couverture du réseau sans fil et garantir une qualité de connexion optimale.
 OP_RE_desc1=Il est possible que l'adresse IP locale du ZVMODELVZ ai été modifiée.
-OP_RE_desc2=Fermez cette fenêtre et rendez-vous sur http://router.asus.com.
+OP_RE_desc2=Fermez cette fenêtre et rendez-vous sur http://ZVDOMAIN_NAMEVZ.
 OP_RE_item=Répéteur
 OP_RE2G_desc=En mode Express Way 2.4GHz, le ZVMODELVZ se connecte à un canal WiFi 2.4 GHz existant et étend la couverture sans fil par un canal WiFi 5 GHz uniquement.
 OP_RE2G_item=Express Way 2.4GHz
@@ -786,7 +790,7 @@ Radio=Radio
 remote=distant
 Retype_New_Login_Password=Réécrivez le nouveau mot de passe de connexion
 ROG_finish_info=Utilisez les informations ci-dessous pour vous connecter au réseau WiFi.
-ROG_finish_login_info=Rendez-vous sur <a href='http://router.asus.com' target='_blank' style='text-decoration:underline'>router.asus.com</a> pour vous connecter au périphérique.
+ROG_finish_login_info=Rendez-vous sur <a href='http://ZVDOMAIN_NAMEVZ' target='_blank' style='text-decoration:underline'>ZVDOMAIN_NAMEVZ</a> pour vous connecter au périphérique.
 [###MODEL_DEP###][RP-AC87][RP-AC68U][RP-AC66U][RP-AC55][RP-AC53][RP-AC52][RP-AC51][RP-AC92]ROG_finish_login_info=Rendez-vous sur <a href='http://repeater.asus.com' target='_blank' style='text-decoration:underline'>repeater.asus.com</a> pour vous connecter au périphérique.
 Router_Account=Compte de routeur
 Router_Login_Name=Identifiant de connexion au routeur
@@ -920,6 +924,7 @@ Web_Title=ASUS Wireless Router ZVMODELVZ
 [###MODEL_DEP###][DSL-AC68U]Web_Title=ASUS ZVMODELVZ Dual-Band Wireless-AC1900 Gigabit VDSL2/ADSL2+ Modem Router
 [###MODEL_DEP###][DSL-N55U][DSL-N55U-B]Web_Title=ASUS ZVMODELVZ Dual-Band Wireless-N Gigabit ADSL2/2+ Modem Router
 Web_Title2=ZVMODELVZ
+Web_DOMAIN_NAME=ZVDOMAIN_NAMEVZ
 wireless_configured=Configuré
 Wireless_name=Nom sans fil
 wireless_router=Routeur sans fil
@@ -1010,10 +1015,10 @@ aicloud_bandwidth2_3=15 Mbps (ou plus) pour les vidéos d'une résolution de 720
 aicloud_bandwidth2_4=30 Mbps (ou plus) pour les vidéos d'une résolution de 1080p.
 aicloud_bandwidth3=La vitesse de téléchargement en amont varie en fonction des FAI (Fournisseurs d'accès Internet) et d'autres facteurs. Contactez votre FAI ou visitez un site Web de mesure du débit Internet pour tester la vitesse d'un ordinateur connecté à votre routeur ASUS.
 aicloud_cloud_list=Liste des services sur le nuage
-aicloud_disk_case0=Adresse d\'accès au disque sur le nuage : <a id="cloud_url" style="font-weight: bolder;text-decoration: underline;" href="https://router.asus.com" target="_blank">https://router.asus.com</a>.
+aicloud_disk_case0=Adresse d\'accès au disque sur le nuage : <a id="cloud_url" style="font-weight: bolder;text-decoration: underline;" href="https://ZVDOMAIN_NAMEVZ" target="_blank">https://ZVDOMAIN_NAMEVZ</a>.
 aicloud_disk_case11=URL d\'acces au disque sur le nuage :
 aicloud_disk_case12=Pour modifier le nom du service DDNS, veuillez cliquer <a style="font-weight: bolder;text-decoration: underline;" href="/Advanced_ASUSDDNS_Content.asp?af=DDNSName" target="_blank">ici</a>.
-aicloud_disk_case21=Adresse d\'accès au disque sur le nuage : <a style="font-weight: bolder;text-decoration: underline;" href="https://router.asus.com" target="_blank">https://router.asus.com</a>.
+aicloud_disk_case21=Adresse d\'accès au disque sur le nuage : <a style="font-weight: bolder;text-decoration: underline;" href="https://ZVDOMAIN_NAMEVZ" target="_blank">https://ZVDOMAIN_NAMEVZ</a>.
 aicloud_disk_case22=Créez un compte ASUS DDNS <a style="font-weight: bolder;text-decoration: underline;" href="/Advanced_ASUSDDNS_Content.asp" target="_blank">ici</a>.
 aicloud_disk_desc=Permet d'accéder, de diffuser et de partager le contenu des dispositifs de stockage USB connectés par le biais d'un appareil connecté à Internet.
 aicloud_disk1=Pour créer un disque de stockage sur le nuage, vous devez connecter un périphérique de stockage USB au routeur puis activer la fonction Cloud Disk (Disque sur le nuage) <b>ON</b>.
@@ -1089,7 +1094,7 @@ AiMesh_confirm_msg9=Compte tenu de la compatibilité du système AiMesh et des t
 AiMesh_confirm_msg10=Pour assurer la connexion de votre système AiMesh et de vos appareils terminaux, veuillez lire ceci :<a id="wpa3FaqLink">FAQ</a> avant de passer à WPA3-Personal.
 AiMesh_confirm_msg11=Vous utilisez actuellement WPA3-personal. Pour créer un système AiMesh, votre méthode d'authentification sera modifiée en WPA2/WPA3-personal. Voulez-vous continuer ?
 AiMesh_confirm_msg12=You can read this <a id='wpa3FaqLink'>FAQ</a> for more information.
-AiMesh_confirm_msg13=Pour plus de détails, rendez-vous sur <a style='font-weight: bolder;text-decoration: underline;color:#000000;' href='' target='_blank'>cette FAQ</a>
+AiMesh_confirm_msg13=Pour plus de détails, rendez-vous sur <a style='font-weight: bolder;text-decoration: underline;' href='' target='_blank'>cette FAQ</a>
 AiMesh_Feature_Desc=Advanced ASUS AiMesh est une nouvelle fonctionnalité innovante pour routeur qui connecte plusieurs routeurs ASUS entre eux et crée un réseau WiFi pour toute la maison.
 AiMesh_FAQ=En savoir plus sur ASUS AiMesh
 AiMesh_FindNode=Trouver un nœud AiMesh
@@ -1175,6 +1180,9 @@ AiMesh_NodeLocation22=Balcon
 AiMesh_NodeLocation23=Salle de réunions
 AiMesh_NodeLocation24=Personnalisé
 AiMesh_NodeLocation25=Garage
+AiMesh_NodeLocation26=Premier étage
+AiMesh_NodeLocation27=Salle de jeu
+AiMesh_NodeLocation28=Gymnase
 AiMesh_OfflineTips=Astuces hors ligne
 AiMesh_OfflineTips1=Assurez-vous que votre nœud AiMesh est sous tension.
 AiMesh_OfflineTips2=Redémarrez votre nœud AiMesh et réessayez.
@@ -1618,6 +1626,7 @@ btn_Disabled=Désactivé
 btn_Enabled=Activé
 btn_Export=Exporter
 btn_go=ALLER
+btn_goSetting=Réglage de l'accès
 btn_remove=Retirer
 btn_send=Envoyer
 btn_to_WAN=Paramètres WAN
@@ -1795,6 +1804,8 @@ DDNS_https_cert_Import=Importer votre propre certificat
 DDNS_https_cert_Import_desc=Téléchargez un certificat émis par une autorité de certificate ici. Votre clé privée et votre certificat SSL sont nécessaires.
 DDNS_https_cert_PrivateKey=Clé privée
 DDNS_https_cert_PrivateKey_note=Les clés privées ne peuvent pas être protégées par une phrase secrète.
+DDNS_ipv6_update=Mise à jour IPv6
+DDNS_ipv6_update_desc=Si l'environnement réseau du client utilise une adresse réseau IPv6, l'activation de cette fonction permettra de résoudre le domaine vers une adresse réseau IPv6 en premier lieu lors de l'accès à un appareil distant.
 DDNS_ssl_cert=Certificat SSL
 DDNS_termofservice_Title=Conditions du service
 DDNS_transfer=Transfer ASUS DDNS name
@@ -2139,11 +2150,11 @@ FirewallConfig_display2_sectiondesc=Activez le pare-feu pour protéger votre ré
 FirewallConfig_display3_sectiondesc=<b>Liste noire :</b> lors de la période définie, les client faisant parti de la liste noire ne pourront pas utiliser les services réseau spécifiés. Une fois la période écoulée, les clients de cette liste ainsi que tous les autres clients du réseau local pourront accéder à Internet ou à tout autre service nécessitant l'accès à Internet.<br><b>Liste blanche :</b> lors de la période définie, les client faisant parti de la liste blanche ne peut utiliser que les services spécifiés. Une fois la période écoulée, les clients de cette liste ainsi que tous les autres clients du réseau ne pourront pas accéder à Internet ou à tout autre service nécessitant l'accès à Internet.
 FirewallConfig_display4_sectiondesc=<b>REMARQUE :</b> si vous définissez un sous-réseau pour la liste blanche, les adresses IP ne faisant pas parti de ce sous-réseau ne pourront pas accéder à Internet ou à tout autre service nécessitant l'accès à Internet.
 FirewallConfig_display5_sectiondesc=Le filtrage d'adresses MAC permet d'autoriser ou de bloquer l'accès de périphériques réseau en fonction de leur identifiant MAC.<p>Vous pouvez définir le filtrage MAC en mode Accepter ou Rejeter.<p>En mode Bloquer, les dispositifs de la liste ne peuvent pas accéder au réseau.<p>En mode Autoriser, seuls les dispositifs de la liste peuvent accéder au réseau.
-FirewallConfig_DoSEnable_itemdesc=Une attaque de \"Déni de service\" se caractérise par une tentative de déni à des utilisateurs légitimes d'utiliser un service ou une ressource du réseau.<p>L'activation de cette fonction aide à protéger le routeur contre les attaques de déni de service mais a pour effet d'augmenter la charge de travail du routeur.
+FirewallConfig_DoSEnable_itemdesc=L'activation de cette fonction aide à protéger le routeur contre les attaques de DoS (Denial- of-Service) déni de service mais a pour effet d'augmenter la charge de travail du routeur.
 FirewallConfig_DoSEnable_itemname=Activer la protection DoS
 FirewallConfig_FirewallEnable_itemdesc=La désactivation du pare-feu mettra fin à toutes les fonctions associées.
 FirewallConfig_FirewallEnable_itemname=Activer le pare-feu
-FirewallIPv4_enable=Activer le IPv4 Pare-feu
+FirewallIPv4_enable=Activer le IPv4 règles de pare-feu entrant
 FirewallIPv4=Pare-feu IPv4
 FirewallConfig_FTPPrompt_itemdesc=Si vous utilisez le port 20:21 pour votre serveur FTP, celui-ci entrera en conflit avec le serveur FTP du ZVMODELVZ.
 FirewallConfig_KeywordFilterEnable_itemname=Activer le filtrage par mots clés
@@ -2251,6 +2262,9 @@ FW_updated=Updated
 FW_new_firmware_available=Un nouveau firmware est disponible.
 FW_rlnote_loading=Chargement de la note de mise à jour ; veuillez patienter...
 FW_rlnote_failed=Impossible de trouver la note de version.
+FW_rollback=Retour en arrière
+FW_rollback_choose=Choisissez une version du firmware
+FW_rollback_selector=Sélecteur de retour en arrière du firmware
 Game_acceleration=Accélération de jeu
 Game_Boost=Game Boost
 Game_Boost_acceleration=Accélération de jeu triple niveau
@@ -2344,6 +2358,25 @@ GuestNetwork_Guests=invités
 GuestNetwork_Access_Limit=Limite d'accès
 GuestNetwork_Internet_Only=Accès internet uniquement
 GuestNetwork_Using_Same=Utiliser les mêmes paramètres que
+GuestNetwork_Business=Réseau d'entreprises
+GuestNetwork_Customized=Réseau personnalisé
+GuestNetwork_Employee_desc=Mettre en place un réseau sûr et sécurisé
+GuestNetwork_Guest_desc=Créez rapidement un réseau d'invités
+GuestNetwork_IoT=Réseau IoT
+GuestNetwork_IoT_desc=Séparer facilement un réseau pour vos appareils IoT
+GuestNetwork_Kid=Réseau pour enfants
+GuestNetwork_Kid_desc=Assurer la sécurité de l'accès à l'internet pour les enfants
+GuestNetwork_Portal=Portail des invités
+GuestNetwork_Portal_desc=Créez un portail invité ou un Facebook Wi-Fi
+GuestNetwork_Portal_type=Type de portail
+GuestNetwork_VPN=Réseau VPN
+GuestNetwork_VPN_desc=Établir une connexion Internet sécurisée
+GuestNetwork_VPN_errHint0=Ce profil VPN est désactivé. Veuillez accéder à la page de configuration du serveur VPN et l'activer.
+GuestNetwork_VPN_errHint1=Cliquez sur « Réglage de l'accès » ci-dessous pour accéder à la page de configuration du VPN.
+GuestNetwork_VPN_errHint2=Ce paramètre ne peut pas être sélectionné lors de l'utilisation d'un autre profil créé.
+GuestNetwork_Home=Réseau domestique
+GuestNetwork_ProfileAdd=Ajouter un réseau
+GuestNetwork_ProfileList=Liste des profils
 Hardware_version=Version du matériel
 Help=Help
 Help_init_word1=Le fichier d'Aide vous fournit des directives et des informations concernant les différentes fonctions du routeur.
@@ -2542,7 +2575,7 @@ JS_basiconfig1=Ce champ vous permet d'activer ou désactiver Download Master.
 JS_basiconfig3=Ce champ vous permet de partager les fichiers téléchargés avec les utilisateurs d'Internet.
 JS_basiconfig8=Ce champ vous permet d'activer ou désactiver l'option UPnP.
 JS_cleanLog=Les données ne pourront pas être récupérées une fois supprimées ; êtes-vous sûr de vouloir procéder au nettoyage ?
-JS_conflict_LANIP=onflict with LAN IP
+JS_conflict_LANIP=Conflict with LAN IP
 JS_create_policy=Create New Policy
 JS_DHCP1=Votre adresse IP LAN et votre masque de sous-réseau ont été modifiés. Votre pool d’adresses IP ZVMODELVZ doit être mis à jour. Souhaitez-vous mettre à jour automatiquement votre pool d’adresses IP ?
 JS_DHCP3=La nouvelle plage d'adresses IP ne correspond pas au masque de sous-réseau. Souhaitez-vous autoriser le ZVMODELVZ à modifier la plage d'adresses IP automatiquement ?
@@ -2689,7 +2722,7 @@ List_limit=Limite maximum :
 liveupdate=Vérifier
 liveupdate_up2date=The version is up-to-date.
 Local_access_config=Configuration d'accès local
-Local_access_certificate_desc=Download and install SSL certificate on your browser to trust accessing your local domain “router.asus.com” with HTTPS protocol. To export certificate after applying setting.
+Local_access_certificate_desc=Download and install SSL certificate on your browser to trust accessing your local domain “ZVDOMAIN_NAMEVZ” with HTTPS protocol. To export certificate after applying setting.
 Local_access_certificate_download=Download Certificate
 Log=Journal
 login_hint1=Adresse IP de l'utilisateur connecté:
@@ -2911,6 +2944,7 @@ note_auth_wpa_WPS=Pour activer le WPS, changez la méthode d'authentification po
 note_hide_SSID_WPS=Si vous souhaitez activer WPS, vous devez d'abord désactiver le masquage du SSID.
 note_up_to_date=Note: New patch will be updated regularly, please keep your firmware stay up to date.
 Notification_Item=Élément de notification
+number_of_client=Nombre de clients
 NSlookup_help=Rendez-vous sur <a href="https://iplookup.asus.com/nslookup.php" target="_blank" style="font-family:Lucida Console;text-decoration:underline;">https://iplookup.asus.com/nslookup.php</a> pour rechercher une adresse statique à utiliser pour le service ASUS DDNS.
 OCN_Virt_Conn=OCN Virtual Connect
 OFDMA_title=OFDMA/802.11ax MU-MIMO
@@ -2994,6 +3028,7 @@ PM_RADIUS_Create=Créer un nouveau client RADIUS
 PM_Group_Table=Tableau de groupe
 PoolName=Nom de la partition
 Port_format=Pour la gamme de port source ou de destination vous pouvez au choix : a) entrer un port spécifique, tel que \"95\"; ou b) entrer une gamme de port, telle que \"103:315\", \">100\", or \"<65535\".
+Port_Gaming=Port de jeu
 Port_Mapping_desc1=Mappage de port
 Port_Mapping_desc2=Le Mappage de port supporte l'interface IPTV WAN pour un port spécifique du réseau local. Sélectionnez le port réseau souhaité puis cliquez sur Appliquer.
 Port_Mapping_desc3=Activer le mappage de port
@@ -3474,7 +3509,7 @@ TZ40_2=Kaliningrad
 TZ41=Athens
 TZ42=Jerusalem
 TZ43=Harare, Pretoria
-TZ43_2=Kiev
+TZ43_2=Kyiv
 TZ44=Moscow, St. Petersburg
 TZ45=Volgograd
 TZ46=Kuwait, Riyadh
@@ -3537,10 +3572,10 @@ Uplink_rate=Données envoyées/Sec
 Uplink_traffic=Données envoyées
 upnp_Desc=Configurer le serveur iTunes et UPnP médias.
 [###MODEL_DEP###][RT-AC1200G+][RT-AC1200G][RT-AC82U]upnp_Desc=Mettre en place le serveur multimédia UPnP.
-UPnPMediaServer_Help=Le ZVMODELVZ supporte les standards UPnP. Vous pouvez les activer et permettre aux périphériques UPnP, comme par exemple une playstation 3 ou une lecteur multimédia numérique, d'accéder aux fichiers multimédia contenus dans le disque USB.
-[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Le ZVMODELVZ supporte les standards UPnP. Vous pouvez les activer et permettre aux périphériques UPnP, comme par exemple une playstation 3 ou une lecteur multimédia numérique, d'accéder aux fichiers multimédia contenus dans le disque USB.
-[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Le ZVMODELVZ supporte les standards UPnP. Vous pouvez les activer et permettre aux périphériques UPnP, comme par exemple une playstation 3 ou une lecteur multimédia numérique, d'accéder aux fichiers multimédia contenus dans le disque USB.
-[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Le ZVMODELVZ supporte les standards UPnP. Vous pouvez les activer et permettre aux périphériques UPnP, comme par exemple une playstation 3 ou une lecteur multimédia numérique, d'accéder aux fichiers multimédia contenus dans le disque USB.
+UPnPMediaServer_Help=Configurer <a id='upnp_link'>UPnP, iTunes</a>, <a id='ftp_link'>FTP</a> et <a id='samba_link'>Emplacement réseau (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200][RT-N600]UPnPMediaServer_Help=Configurer <a id='upnp_link'>UPnP, iTunes</a> et <a id='samba_link'>Emplacement réseau (Samba)</a>.
+[###MODEL_DEP###][RT-AC1200G][RT-AC82U]UPnPMediaServer_Help=Configurer <a id='upnp_link'>UPnP</a>, <a id='ftp_link'>FTP</a> et <a id='samba_link'>Emplacement réseau (Samba)</a>.
+[###MODEL_DEP###][AC2900]UPnPMediaServer_Help=Configurer <a id='upnp_link'>UPnP</a> et <a id='samba_link'>Emplacement réseau (Samba)</a>.
 url_keyword_alert=Keyword URL
 USB_Application_check=Veuillez consulter la page Applications USB.
 USB_Application_disk_checking=Vérification du disque
@@ -3577,7 +3612,7 @@ usb_tethering_hint1=Connectez votre téléphone Android au routeur ASUS avec un 
 usb_tethering_hint2=Sélectionnez un périphérique USB dans [Téléphone Android] et cliquez sur [Appliquer].
 usb_tethering_hint3=Activer manuellement le partage de connexion USB sur votre téléphone Android.
 usb_tls_disabled_hint=Désactiver TLS n'est pas sécurisé.
-usb_tls_conflict=Autoriser la connexion anonyme est en conflit avec les paramètres TLS.
+usb_tls_conflict=L’autorisation de la connexion anonyme est en conflit avec les paramètres TLS.
 usb_uninstalling=Désinstallation de l'application du périphérique de stockage USB
 usb_unmount=La fonction USB est désactivée
 use_DevDiscoveryUtil=Installez puis utilisez <a href=\"http://dlcdnet.asus.com/pub/ASUS/LiveUpdate/Release/Wireless/Discovery.zip\" target=\"_blank\" style=\"font-family:Lucida Console;text-decoration:underline;color:#FC0;\">l'utilitaire Device Discovery</a> pour détecter la nouvelle adresse IP du routeur.
@@ -3641,7 +3676,7 @@ vpn_openvpn_CustomConf=Configuration personnalisée
 vpn_openvpn_desc1=Le ZVMODELVZ génèrera un fichier .ovpn à partir de la clé de l'Autorité de Certificate. Vous pouvez fournir le fichier .ovpn ainsi qu'un nom d'utilisateur et mot de passe à tous les clients se connectant au serveur OpenVPN.
 vpn_openvpn_desc2=Pour modifier les paramètres du serveur OpenVPN, allez dans Paramètres Avancés
 vpn_openvpn_desc3=Vous pouvez modifier  les paramètres par défaut du serveur OpenVPN afin de fournir un fichier .ovpn dédié à un type de connexion spécifique.
-vpn_openvpn_desc4=If your WAN IP address is dynamic, please click <a href="http://router.asus.com/Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration:underline;">here</a> to set the DDNS.
+vpn_openvpn_desc4=If your WAN IP address is dynamic, please click <a href="http://ZVDOMAIN_NAMEVZ/Advanced_ASUSDDNS_Content.asp" target="_blank" style="text-decoration:underline;">here</a> to set the DDNS.
 vpn_openvpn_dhcp=Allocation DHCP
 vpn_openvpn_Encrypt=Chiffrage
 vpn_openvpn_fail1=Routing conflict! <p>Please check the client's IP address settings from the Paramètres avancés page or check the routing table on System log.
@@ -3815,18 +3850,18 @@ wandog_enable2=Enable Ping to Internet
 WANTCPMSSOptionText=Options TCP MSS
 WANTCPMSSOptionComm1Text=octets
 WANVLANIDText=Identifiant VLAN
-WANAggregation_desc=L'agrégation WAN combine deux connexions réseau pour augmenter la vitesse de votre réseau étendu (WAN) jusqu'à 2 Gb/s. Connectez le port WAN et le port LAN 4 de votre routeur aux ports LAN de votre modem (veillez à utiliser deux câbles de même spécification). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ sur l'agrégation WAN</a>
+WANAggregation_desc=L'agrégation WAN combine deux connexions réseau pour augmenter la vitesse de votre réseau étendu (WAN) jusqu'à 2 Gb/s. Connectez le port #WAN et le port LAN 4 de votre routeur aux ports LAN de votre modem (veillez à utiliser deux câbles de même spécification). <a id="wanAgg_faq" target="_blank" style="color:#FFCC00;text-decoration:underline;">FAQ sur l'agrégation WAN</a>
 WANAggregation_enable=Activer l’agrégation WAN
 WANAggregation_disable_dualwan=Le double WAN est activé sur votre routeur. L'activation de l'agrégation WAN désactive le double WAN. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_disable_WANAggregation=L'agrégation WAN est activée sur votre routeur. L'activation du double WAN désactive l'agrégation WAN. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_PortConflict_hint1=L'agrégation WAN utilise le port LAN 4 de votre routeur. L'activation de l'IPTV désactive l'agrégation WAN. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_PortConflict_hint2=L'IPTV utilise le port LAN 4 de votre routeur. L'activation de l'agrégation WAN désactive l'IPTV. Êtes-vous sûr(e) de vouloir continuer ?
 WANAggregation_disable_IPTVDualWAN=Le double WAN et l'IPTV sont activés sur votre routeur. L'activation de l'agrégation WAN désactive le double WAN et l'IPTV afin d'éviter les conflits de ports. Êtes-vous sûr(e) de vouloir continuer ?
-WANAggregation_help_WAN=Vérifiez que le port WAN de votre routeur et le port LAN de votre modem ont été connectés à l'aide de deux câbles de même spécification.
+WANAggregation_help_WAN=Vérifiez que le port #WAN de votre routeur et le port LAN de votre modem ont été connectés à l'aide de deux câbles de même spécification.
 WANAggregation_help_LAN=Vérifiez que le port LAN 4 de votre routeur et le port LAN de votre modem ont été connectés à l'aide de deux câbles de même spécification.
 WANAggregation_goto_WAN=Pour activer l'agrégation WAN, accédez à la page de <a href="Advanced_WAN_Content.asp" style="color:#FFCC00;text-decoration:underline;">connexion WAN-Internet</a>.
 WANAggregation_help_desc=Si la configuration de l'agrégation WAN échoue, suivez les étapes ci-dessous pour réessayer.
-WANAggregation_help_step1=Assurez-vous que les ports LAN de votre modem sont déjà connectés au WAN et au LAN 4 de votre routeur à l'aide de câbles.
+WANAggregation_help_step1=Assurez-vous que les ports LAN de votre modem sont déjà connectés au #WAN et au LAN 4 de votre routeur à l'aide de câbles.
 WANAggregation_help_step2=Assurez-vous que votre modem a activé 802.3ad
 WANAggregation_help_step3=Confirmez que vous utilisez deux câbles avec les mêmes spécifications (gigabit et gigabit ou 10 / 100 et 10 / 100 Mb/s)
 WANAggregation_help_step4=Redémarrez votre routeur
@@ -3863,6 +3898,7 @@ WLANAuthentication11a_ExAuthDBPassword_itemname=Phrase secrète
 WLANAuthentication11a_ExAuthDBPortNumber_itemdesc=Le numéro de port UDP pour la connexion au serveur RADIUS.
 WLANAuthentication11a_ExAuthDBPortNumber_itemname=Port serveur
 WLANConfig11b_AgileMultiband_itemdesc=WiFi Agile Multiband
+WLANConfig11b_AgileMultiband_note=*Si le WiFi Agile Multiband est activé, les trames de gestion protégées doivent être activées (compatible ou requis).
 WLANConfig11b_AuthenticationMethod_itemdesc=Ce champ permet d'activer les méthodes d'authentification pour les clients sans fil.
 WLANConfig11b_AuthenticationMethod_itemname=Méthode d&#39;authentification
 WLANConfig11b_Channel_HighPower_desc1=Pour optimiser la réception du signal sans fil, il est recommandé de configurer le routeur sur le canal 2. Pour ce faire, cliquez sur OK. Sinon, cliquez sur Annuler.
@@ -4231,7 +4267,7 @@ VPN_Fusion_Default_Alert=Configuration en tant que connexion par défaut pour la
 Beta_test_only=Beta test only
 FIRM_fupgrade_desc=You can also select [Cancel], the device will automatically start downloading the update during the night time.
 QIS_internet_success_desc4_1=Si vous utilisez un modem câble ou un modem avec une IP statique, veuillez essayer la procédure suivante :
-qis_summary_description_step2=Once the new SSID is connected, go back to router.asus.com for more advanced settings.
+qis_summary_description_step2=Once the new SSID is connected, go back to ZVDOMAIN_NAMEVZ for more advanced settings.
 RemoteAccessHint=Disable Web Access from WAN will not allow you to control your router via $Apps$ from Internet. Do you want to continue?
 RemoteAccessHint_RouterApp=ASUS ROUTER APP
 RemoteAccessHint_AlexaIFTTT=Alexa enabled device or IFTTT
@@ -4270,6 +4306,7 @@ BoostKey_GeForce=GeForce Now
 BoostKey_GeForce_desc=Sélectionnez GeForce Now pour donner la priorité aux dispositifs de jeu GeForce Now pour une expérience de jeu améliorée et plus rapide.
 BoostKey_LED=LED On/Off
 BoostKey_LED_desc=The LED on/off control is used to turn off all LEDs includes Aura light.
+AURA_enable_notice_1=Pour activer Aura RGB, la LED doit rester allumée. Veuillez allumer la LED en appuyant sur le bouton matériel du routeur pendant 3 secondes ou activez-la via l'interface Web/de l’application.
 AURA_Event=Événement
 AURA_Event_desc=Le système détecte les événements suivants et déclenche différents effets LED.
 AURA_Event_Boost_desc=En cas d’activation de Game Boost, vous pouvez voir la barre LED utiliser un effet de respiration rouge.
@@ -4337,6 +4374,6 @@ Click_to_Continue=Cliquez ici pour continuer.
 Scan_QR_Code_For_Details=Scannez le code QR pour plus de détails.
 Access_HTTP_Protocol=Vous souhaitez toujours accéder à la page de configuration avec le <span>protocole HTTP</span> ?
 HTTPS_Protocol_Desc1=Lors de l'utilisation du protocole HTTPS, un message d'avertissement peut s'afficher pour informer de la délivrance du certificat de sécurité par votre navigateur.
-HTTPS_Protocol_Desc2=La connexion entre votre navigateur et la page de configuration du routeur ASUS (router.asus.com) reste sécurisée malgré ce message d'avertissement.
+HTTPS_Protocol_Desc2=La connexion entre votre navigateur et la page de configuration du routeur ASUS (ZVDOMAIN_NAMEVZ) reste sécurisée malgré ce message d'avertissement.
 Do_Not_Show_Message_Again=Ne plus afficher ce message.
 HTTP_Protocol_Desc=HTTP est un protocole d'accès Web relativement moins sécurisé. Vous souhaitez toujours accéder à la page de configuration avec le protocole HTTP ?

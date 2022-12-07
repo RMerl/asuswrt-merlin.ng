@@ -1,0 +1,63 @@
+.TH "iproxy" 1
+.SH NAME
+iproxy \- A proxy that binds local TCP ports to be forwarded to the specified ports on a usbmux device
+.SH SYNOPSIS
+.B iproxy
+[OPTIONS]
+LOCAL_PORT:DEVICE_PORT [LOCAL_PORT2:DEVICE_PORT2 ...]
+.SH DESCRIPTION
+iproxy allows binding local TCP ports so that a connection to one (or more) of
+the local ports will be forwarded to the specified port (or ports) on a usbmux
+device.
+.SH OPTIONS
+.TP
+.B \-u, \-\-udid UDID
+Target specific device by UDID. Note that if this option is \f[I]not\f[] specified,
+iproxy will make connection attempts to the first device found.
+.TP
+.B \-n, \-\-network
+Connect to network device. The device needs to have WiFi sync enabled and
+needs to be paired with this computer for this to work. Please note that
+a device might close connections at any time to save power.
+This option will make iproxy try to connect to network attched devices only,
+unless \f[B]-l\f[] is passed too (see below).
+.TP
+.B \-l, \-\-local
+Connect to USB device. This is the default if no option is passed. If used
+together with \f[B]-n\f[], iproxy will first attempt a connection to a device
+attached via USB, and if not available attempt to reach a device via network.
+.TP
+.B \-s, \-\-source ADDR
+Allows setting a source address for the listening socket. The default is
+127.0.0.1 (local connections only). While not needed in normal setups,
+this option allows other than local connections, for example 0.0.0.0 would
+make the TCP proxy port(s) accessible from other computers in the network.
+
+\f[B]WARNING:\f[] Use with caution since this could expose a device over
+the network!
+.TP
+.B \-h, \-\-help
+Prints usage information.
+.TP
+.B \-d, \-\-debug
+Increase debug level.
+.SH EXAMPLES
+.TP
+.B iproxy 2222:44
+Bind local TCP port 2222 and forward to port 44 of the first device connected via USB.
+.TP
+.B iproxy -u 3fac232fbdd684bdb1e3b65973922ae8b7db174a 2222:44
+Bind local TCP port 2222 and forward to port 44 of the device with UDID
+3fac232fbdd684bdb1e3b65973922ae8b7db174a connected via USB.
+.TP
+.B iproxy -n -u 3fac232fbdd684bdb1e3b65973922ae8b7db174a 2222:44 8080:8080
+Bind local TCP ports 2222 and 8080 and forward to ports 44 and 8080 respectively
+of the device with UDID 3fac232fbdd684bdb1e3b65973922ae8b7db174a connected via network.
+.SH AUTHOR
+Nikias Bassen
+.SH SEE ALSO
+inetcat(1)
+.SH ON THE WEB
+https://libimobiledevice.org
+
+https://github.com/libimobiledevice/libusbmuxd

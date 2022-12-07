@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +26,7 @@
 #include <unistd.h>
 #include <sys/stat.h>
 #include <fcntl.h>
+#include <inttypes.h>
 
 #include <ClearSilver/ClearSilver.h>
 
@@ -303,7 +305,7 @@ METHOD(fast_request_t, sendfile, bool,
 		return FALSE;
 	}
 	/* FCGX does not like large integers, print to a buffer using libc */
-	snprintf(buf, sizeof(buf), "%lld", (int64_t)data->len);
+	snprintf(buf, sizeof(buf), "%"PRId64, (int64_t)data->len);
 	FCGX_FPrintF(this->req.out, "Content-Length: %s\n", buf);
 	if (mime)
 	{

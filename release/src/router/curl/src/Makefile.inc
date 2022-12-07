@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -18,12 +18,13 @@
 # This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 # KIND, either express or implied.
 #
+# SPDX-License-Identifier: curl
+#
 ###########################################################################
 # ./src/Makefile.inc
-# Using the backslash as line continuation character might be problematic
-# with some make flavours, as Watcom's wmake showed us already. If we
-# ever want to change this in a portable manner then we should consider
-# this idea (posted to the libcurl list by Adam Kellas):
+# Using the backslash as line continuation character might be problematic with
+# some make flavours. If we ever want to change this in a portable manner then
+# we should consider this idea :
 # CSRC1 = file1.c file2.c file3.c
 # CSRC2 = file4.c file5.c file6.c
 # CSOURCES = $(CSRC1) $(CSRC2)
@@ -32,6 +33,7 @@
 # the official API, but we re-use the code here to avoid duplication.
 CURLX_CFILES = \
   ../lib/strtoofft.c \
+  ../lib/timediff.c \
   ../lib/nonblock.c \
   ../lib/warnless.c \
   ../lib/curl_ctype.c \
@@ -42,6 +44,7 @@ CURLX_CFILES = \
 CURLX_HFILES = \
   ../lib/curl_setup.h \
   ../lib/strtoofft.h \
+  ../lib/timediff.h \
   ../lib/nonblock.h \
   ../lib/warnless.h \
   ../lib/curl_ctype.h \
@@ -60,19 +63,19 @@ CURL_CFILES = \
   tool_cb_see.c \
   tool_cb_wrt.c \
   tool_cfgable.c \
-  tool_convert.c \
   tool_dirhie.c \
   tool_doswin.c \
   tool_easysrc.c \
   tool_filetime.c \
+  tool_findfile.c \
   tool_formparse.c \
   tool_getparam.c \
   tool_getpass.c \
   tool_help.c \
   tool_helpers.c \
-  tool_homedir.c \
   tool_hugehelp.c \
   tool_libinfo.c \
+  tool_listhelp.c \
   tool_main.c \
   tool_msgs.c \
   tool_operate.c \
@@ -102,17 +105,16 @@ CURL_HFILES = \
   tool_cb_see.h \
   tool_cb_wrt.h \
   tool_cfgable.h \
-  tool_convert.h \
   tool_dirhie.h \
   tool_doswin.h \
   tool_easysrc.h \
   tool_filetime.h \
+  tool_findfile.h \
   tool_formparse.h \
   tool_getparam.h \
   tool_getpass.h \
   tool_help.h \
   tool_helpers.h \
-  tool_homedir.h \
   tool_hugehelp.h \
   tool_libinfo.h \
   tool_main.h \

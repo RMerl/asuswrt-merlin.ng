@@ -229,7 +229,10 @@ function overHint(itemNum){
 	var title5_2 = 0;
 
 	if(itemNum == 101){
-		statusmenu ="<span><#WANAggregation_help_WAN#></span>";
+		if(based_modelid == "RT-AXE7800")
+			statusmenu ="<span><#WANAggregation_help_WAN#></span>".replace("#WAN", "1G WAN");
+		else
+			statusmenu ="<span><#WANAggregation_help_WAN#></span>".replace("#WAN", "WAN");
 	}
 	else if(itemNum == 102){
 		statusmenu ="<span><#WANAggregation_help_LAN#></span>".replace(/LAN-*\D* 4/, wanAggr_p2_name(orig_wnaports_bond));
@@ -1100,7 +1103,10 @@ function openHint(hint_array_id, hint_show_id, flag){
 		statusmenu = "<div>";
 		statusmenu += "<#WANAggregation_help_desc#>";
 		statusmenu += "<ol>";
-		statusmenu += "<li><#WANAggregation_help_step1#></li>".replace("LAN 4", wanAggr_p2_name(orig_wnaports_bond));
+		if(based_modelid == "RT-AXE7800")
+			statusmenu += "<li><#WANAggregation_help_step1#></li>".replace("LAN 4", wanAggr_p2_name(orig_wanports_bond)).replace("#WAN", "1G WAN");
+		else
+			statusmenu += "<li><#WANAggregation_help_step1#></li>".replace("LAN 4", wanAggr_p2_name(orig_wanports_bond)).replace("#WAN", "WAN");
 		statusmenu += "<li><#WANAggregation_help_step2#></li>";
 		statusmenu += "<li><#WANAggregation_help_step3#></li>";
 		statusmenu += "<li><#WANAggregation_help_step4#></li>";

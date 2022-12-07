@@ -76,7 +76,7 @@ int der_decode_utf8_string(const unsigned char *in,  unsigned long inlen,
       /* count number of bytes */
       for (z = 0; (tmp & 0x80) && (z <= 4); z++, tmp = (tmp << 1) & 0xFF);
 
-      if (z > 4 || (x + (z - 1) > inlen)) {
+      if (z == 1 || z > 4 || (x + (z - 1) > inlen)) {
          return CRYPT_INVALID_PACKET;
       }
 

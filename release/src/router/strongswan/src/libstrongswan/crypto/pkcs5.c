@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012-2013 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -131,7 +132,7 @@ static bool verify_padding(crypter_t *crypter, chunk_t *blob)
 /**
  * Prototype for key derivation functions.
  */
-typedef bool (*kdf_t)(private_pkcs5_t *this, chunk_t password, chunk_t key);
+typedef bool (*derive_t)(private_pkcs5_t *this, chunk_t password, chunk_t key);
 
 /**
  * Try to decrypt the given data with the given password using the given
@@ -139,7 +140,7 @@ typedef bool (*kdf_t)(private_pkcs5_t *this, chunk_t password, chunk_t key);
  * to, key and iv point to the actual keys and initialization vectors resp.
  */
 static bool decrypt_generic(private_pkcs5_t *this, chunk_t password,
-							chunk_t data, chunk_t *decrypted, kdf_t kdf,
+							chunk_t data, chunk_t *decrypted, derive_t kdf,
 							chunk_t keymat, chunk_t key, chunk_t iv)
 {
 	if (!kdf(this, password, keymat))
@@ -341,7 +342,7 @@ METHOD(pkcs5_t, decrypt, bool,
 	private_pkcs5_t *this, chunk_t password, chunk_t data, chunk_t *decrypted)
 {
 	chunk_t keymat, key, iv;
-	kdf_t kdf;
+	derive_t kdf;
 
 	if (!ensure_crypto_primitives(this, data) || !decrypted)
 	{

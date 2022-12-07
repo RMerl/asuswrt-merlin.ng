@@ -1,13 +1,9 @@
-moon::ipsec stop
-carol::ipsec stop
-dave::ipsec stop
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan
+moon::cd /etc/swanctl; rm rsa/* x509aa/*
+carol::rm /etc/swanctl/x509ac/*
+dave::rm /etc/swanctl/x509ac/*
 moon::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush
 dave::iptables-restore < /etc/iptables.flush
-carol::rm /etc/ipsec.d/acerts/carol-sales.pem
-dave::rm /etc/ipsec.d/acerts/dave-expired-aa.pem
-dave::rm /etc/ipsec.d/acerts/dave-marketing.pem
-moon::rm /etc/ipsec.d/private/aa-expired.pem
-moon::rm /etc/ipsec.d/private/aa.pem
-moon::rm /etc/ipsec.d/aacerts/aa-expired.pem
-moon::rm /etc/ipsec.d/aacerts/aa.pem

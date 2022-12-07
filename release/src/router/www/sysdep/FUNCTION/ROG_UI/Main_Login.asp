@@ -106,6 +106,14 @@ body{
 	justify-content: center;
 	margin: 0 0 20px 0;
 }
+.warming_desc{
+	margin:0px 30px 0px 185px;
+	font-size: 14px;
+	align-items: center;
+	color:#FC0;
+	line-height:20px;
+	width: 520px;
+}
 .error-hint-bg{
 	width: 537px;
 	height: 70px;
@@ -366,7 +374,7 @@ var cloud_file = '<% get_parameter("file"); %>';
 var isRouterMode = ('<% nvram_get("sw_mode"); %>' == '1') ? true : false;
 
 var header_info = [<% get_header_info(); %>][0];
-var ROUTERHOSTNAME = '<% nvram_get("local_domain"); %>';
+var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
 var chdom = function(){window.location.href=domainNameUrl};
 (function(){
@@ -386,10 +394,11 @@ function isSupport(_ptn){
 var odm_support = isSupport("odm");
 var captcha_support = isSupport("captcha");
 if(captcha_support)
-	var captcha_on = (login_info.error_num >= 2 && login_info.error_status != "7")? true : false;
+	var captcha_on = (login_info.error_num >= 2 && login_info.error_status != "7" && login_info.error_status != "11")? true : false;
 else
 	var captcha_on = false;
 
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=SG_TeleStand&lang=&kw=&num=";
 function initial(){
 	/*handle sysdep for ROG or ODM product*/
 	if(odm_support){
@@ -409,6 +418,11 @@ function initial(){
 	if(isIE8 || isIE9){
 		document.getElementById("name_title_ie").style.display ="";
 		document.getElementById("password_title_ie").style.display ="";
+	}
+
+	if(flag != 11 && login_info.last_time_lock_warning){
+		document.getElementById("last_time_lock_warning").style.display ="";
+		document.getElementById("last_time_lock_warning").innerHTML ="You have entered an incorrect username or password 9 times. If there's one more failed account or password attempt, your router will be blocked from accessing, and need to be reset to factory setting.";
 	}
 
 	if(flag != ""){
@@ -473,6 +487,13 @@ function initial(){
 		else if(flag == 10){
 			document.getElementById("error_status_field").style.display ="none";
 			document.getElementById("error_captcha_field").style.display ="";
+		}
+		else if(flag == 11){
+			document.getElementById("error_status_field").innerHTML ="For security reasons, this router has been locked out because of 10 times of incorrect username and password attempts.<br>To unlock, please manually reset your router to factory setting by pressing the reset button on the back.<br>Click <a id=\"faq_SG\" href=\"\" target=\"_blank\" style=\"color:#FC0;text-decoration:underline;\">here</a> for more details.";
+			document.getElementById("faq_SG").href = faq_href;
+			document.getElementById("error_status_field").className = "error_hint error_hint1";
+			disable_input(1);
+			disable_button(1);
 		}
 		else{
 			document.getElementById("error_status_field").style.display ="none";
@@ -541,8 +562,11 @@ function initial(){
 	if(history.pushState != undefined) history.pushState("", document.title, window.location.pathname);
 }
 
-function countdownfunc(){ 
-	rtime_obj.innerHTML=remaining_time;
+function countdownfunc(){
+	remaining_time_min = checkTime(Math.floor(remaining_time/60));
+	remaining_time_sec = checkTime(Math.floor(remaining_time%60));
+	remaining_time_show = remaining_time_min +":"+ remaining_time_sec;
+	rtime_obj.innerHTML = remaining_time_show;
 	if (remaining_time==0){
 		clearInterval(countdownid);
 		setTimeout("top.location.href='/Main_Login.asp';", 2000);
@@ -701,6 +725,7 @@ function regen_captcha(){
 					<div class="input-container">
 						<input type="password" name="login_passwd" tabindex="2" class="form-input" maxlength="200" placeholder="<#HSDPAConfig_Password_itemname#>" autocapitalize="off" autocomplete="off">
 					</div>
+					<div class="warming_desc" style="display:none;" id="last_time_lock_warning"></div>
 					<div id="error_status_field" class="error-hint-bg" style="display: none;" ></div>
 					<div class="input-container">
 						<div id="captcha_field" style="display: none;">

@@ -42,7 +42,7 @@ struct SAPState {
     int eof;
 };
 
-static int sap_probe(AVProbeData *p)
+static int sap_probe(const AVProbeData *p)
 {
     if (av_strstart(p->filename, "sap:", NULL))
         return AVPROBE_SCORE_MAX;
@@ -54,8 +54,7 @@ static int sap_read_close(AVFormatContext *s)
     struct SAPState *sap = s->priv_data;
     if (sap->sdp_ctx)
         avformat_close_input(&sap->sdp_ctx);
-    if (sap->ann_fd)
-        ffurl_close(sap->ann_fd);
+    ffurl_closep(&sap->ann_fd);
     av_freep(&sap->sdp);
     ff_network_close();
     return 0;
@@ -68,7 +67,7 @@ static int sap_read_header(AVFormatContext *s)
     uint8_t recvbuf[RTP_MAX_PACKET_LENGTH];
     int port;
     int ret, i;
-    AVInputFormat* infmt;
+    ff_const59 AVInputFormat* infmt;
 
     if (!ff_network_init())
         return AVERROR(EIO);
@@ -142,6 +141,10 @@ static int sap_read_header(AVFormatContext *s)
         }
 
         sap->sdp = av_strdup(&recvbuf[pos]);
+        if (!sap->sdp) {
+            ret = AVERROR(ENOMEM);
+            goto fail;
+        }
         break;
     }
 
@@ -221,7 +224,6 @@ static int sap_fetch_packet(AVFormatContext *s, AVPacket *pkt)
             int i = s->nb_streams;
             AVStream *st = avformat_new_stream(s, NULL);
             if (!st) {
-                av_packet_unref(pkt);
                 return AVERROR(ENOMEM);
             }
             st->id = i;

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2009-2016 Tobias Brunner
  * Copyright (C) 2006-2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -312,12 +313,13 @@ static void process_payloads(private_child_delete_t *this, message_t *message)
  */
 static status_t destroy_and_reestablish(private_child_delete_t *this)
 {
+	child_init_args_t args = {};
 	enumerator_t *enumerator;
 	entry_t *entry;
 	child_sa_t *child_sa;
 	child_cfg_t *child_cfg;
 	protocol_id_t protocol;
-	uint32_t spi, reqid;
+	uint32_t spi;
 	action_t action;
 	status_t status = SUCCESS;
 	time_t now, expire;
@@ -340,11 +342,13 @@ static status_t destroy_and_reestablish(private_child_delete_t *this)
 		}
 		else
 		{
+			/* the following two calls are only relevant as responder/loser of
+			 * rekeyings as the initiator/winner already did this right after
+			 * the rekeying was completed, either way, we delay destroying
+			 * the CHILD_SA, by default, so we can process delayed packets */
 			install_outbound(this, protocol, child_sa->get_rekey_spi(child_sa));
-			/* for rekeyed CHILD_SAs we uninstall the outbound SA but don't
-			 * immediately destroy it, by default, so we can process delayed
-			 * packets */
 			child_sa->remove_outbound(child_sa);
+
 			expire = child_sa->get_lifetime(child_sa, TRUE);
 			if (delay && (!expire || ((now + delay) < expire)))
 			{
@@ -360,32 +364,34 @@ static status_t destroy_and_reestablish(private_child_delete_t *this)
 			/* no delay and no lifetime, destroy it immediately */
 		}
 		spi = child_sa->get_spi(child_sa, TRUE);
-		reqid = child_sa->get_reqid(child_sa);
 		child_cfg = child_sa->get_config(child_sa);
 		child_cfg->get_ref(child_cfg);
+		args.reqid = child_sa->get_reqid(child_sa);
+		args.label = child_sa->get_label(child_sa);
+		if (args.label)
+		{
+			args.label = args.label->clone(args.label);
+		}
 		action = child_sa->get_close_action(child_sa);
 
 		this->ike_sa->destroy_child_sa(this->ike_sa, protocol, spi);
 
 		if (entry->check_delete_action)
 		{	/* enforce child_cfg policy if deleted passively */
-			switch (action)
+			if (action & ACTION_TRAP)
 			{
-				case ACTION_RESTART:
-					child_cfg->get_ref(child_cfg);
-					status = this->ike_sa->initiate(this->ike_sa, child_cfg,
-													reqid, NULL, NULL);
-					break;
-				case ACTION_ROUTE:
-					charon->traps->install(charon->traps,
-									this->ike_sa->get_peer_cfg(this->ike_sa),
-									child_cfg);
-					break;
-				default:
-					break;
+				charon->traps->install(charon->traps,
+									   this->ike_sa->get_peer_cfg(this->ike_sa),
+									   child_cfg);
+			}
+			if (action & ACTION_START)
+			{
+				child_cfg->get_ref(child_cfg);
+				status = this->ike_sa->initiate(this->ike_sa, child_cfg, &args);
 			}
 		}
 		child_cfg->destroy(child_cfg);
+		DESTROY_IF(args.label);
 		if (status != SUCCESS)
 		{
 			break;

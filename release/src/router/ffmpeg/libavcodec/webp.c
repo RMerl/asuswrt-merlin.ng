@@ -189,6 +189,7 @@ typedef struct WebPContext {
     VP8Context v;                       /* VP8 Context used for lossy decoding */
     GetBitContext gb;                   /* bitstream reader for main image chunk */
     AVFrame *alpha_frame;               /* AVFrame for alpha data decompressed from VP8L */
+    AVPacket *pkt;                      /* AVPacket to be passed to the underlying VP8 decoder */
     AVCodecContext *avctx;              /* parent AVCodecContext */
     int initialized;                    /* set once the VP8 context is initialized */
     int has_alpha;                      /* has a separate alpha chunk */
@@ -232,44 +233,6 @@ static void image_ctx_free(ImageContext *img)
     memset(img, 0, sizeof(*img));
 }
 
-
-/* Differs from get_vlc2() in the following ways:
- *   - codes are bit-reversed
- *   - assumes 8-bit table to make reversal simpler
- *   - assumes max depth of 2 since the max code length for WebP is 15
- */
-static av_always_inline int webp_get_vlc(GetBitContext *gb, VLC_TYPE (*table)[2])
-{
-    int n, nb_bits;
-    unsigned int index;
-    int code;
-
-    OPEN_READER(re, gb);
-    UPDATE_CACHE(re, gb);
-
-    index = SHOW_UBITS(re, gb, 8);
-    index = ff_reverse[index];
-    code  = table[index][0];
-    n     = table[index][1];
-
-    if (n < 0) {
-        LAST_SKIP_BITS(re, gb, 8);
-        UPDATE_CACHE(re, gb);
-
-        nb_bits = -n;
-
-        index = SHOW_UBITS(re, gb, nb_bits);
-        index = (ff_reverse[index] >> (8 - nb_bits)) + code;
-        code  = table[index][0];
-        n     = table[index][1];
-    }
-    SKIP_BITS(re, gb, n);
-
-    CLOSE_READER(re, gb);
-
-    return code;
-}
-
 static int huff_reader_get_symbol(HuffReader *r, GetBitContext *gb)
 {
     if (r->simple) {
@@ -278,10 +241,10 @@ static int huff_reader_get_symbol(HuffReader *r, GetBitContext *gb)
         else
             return r->simple_symbols[get_bits1(gb)];
     } else
-        return webp_get_vlc(gb, r->vlc.table);
+        return get_vlc2(gb, r->vlc.table, 8, 2);
 }
 
-static int huff_reader_build_canonical(HuffReader *r, int *code_lengths,
+static int huff_reader_build_canonical(HuffReader *r, const uint8_t *code_lengths,
                                        int alphabet_size)
 {
     int len = 0, sym, code = 0, ret;
@@ -332,7 +295,7 @@ static int huff_reader_build_canonical(HuffReader *r, int *code_lengths,
 
     ret = init_vlc(&r->vlc, 8, alphabet_size,
                    code_lengths, sizeof(*code_lengths), sizeof(*code_lengths),
-                   codes, sizeof(*codes), sizeof(*codes), 0);
+                   codes, sizeof(*codes), sizeof(*codes), INIT_VLC_OUTPUT_LE);
     if (ret < 0) {
         av_free(codes);
         return ret;
@@ -362,13 +325,12 @@ static int read_huffman_code_normal(WebPContext *s, HuffReader *hc,
                                     int alphabet_size)
 {
     HuffReader code_len_hc = { { 0 }, 0, 0, { 0 } };
-    int *code_lengths = NULL;
-    int code_length_code_lengths[NUM_CODE_LENGTH_CODES] = { 0 };
+    uint8_t *code_lengths;
+    uint8_t code_length_code_lengths[NUM_CODE_LENGTH_CODES] = { 0 };
     int i, symbol, max_symbol, prev_code_len, ret;
     int num_codes = 4 + get_bits(&s->gb, 4);
 
-    if (num_codes > NUM_CODE_LENGTH_CODES)
-        return AVERROR_INVALIDDATA;
+    av_assert1(num_codes <= NUM_CODE_LENGTH_CODES);
 
     for (i = 0; i < num_codes; i++)
         code_length_code_lengths[code_length_code_order[i]] = get_bits(&s->gb, 3);
@@ -376,9 +338,9 @@ static int read_huffman_code_normal(WebPContext *s, HuffReader *hc,
     ret = huff_reader_build_canonical(&code_len_hc, code_length_code_lengths,
                                       NUM_CODE_LENGTH_CODES);
     if (ret < 0)
-        goto finish;
+        return ret;
 
-    code_lengths = av_mallocz_array(alphabet_size, sizeof(*code_lengths));
+    code_lengths = av_mallocz(alphabet_size);
     if (!code_lengths) {
         ret = AVERROR(ENOMEM);
         goto finish;
@@ -664,6 +626,9 @@ static int decode_entropy_coded_image(WebPContext *s, enum ImageRole role,
     x = 0; y = 0;
     while (y < img->frame->height) {
         int v;
+
+        if (get_bits_left(&s->gb) < 0)
+            return AVERROR_INVALIDDATA;
 
         hg = get_huffman_group(s, img, x, y);
         v = huff_reader_get_symbol(&hg[HUFF_IDX_GREEN], &s->gb);
@@ -1329,7 +1294,6 @@ static int vp8_lossy_decode_frame(AVCodecContext *avctx, AVFrame *p,
                                   unsigned int data_size)
 {
     WebPContext *s = avctx->priv_data;
-    AVPacket pkt;
     int ret;
 
     if (!s->initialized) {
@@ -1345,11 +1309,11 @@ static int vp8_lossy_decode_frame(AVCodecContext *avctx, AVFrame *p,
         return AVERROR_PATCHWELCOME;
     }
 
-    av_init_packet(&pkt);
-    pkt.data = data_start;
-    pkt.size = data_size;
+    av_packet_unref(s->pkt);
+    s->pkt->data = data_start;
+    s->pkt->size = data_size;
 
-    ret = ff_vp8_decode_frame(avctx, p, got_frame, &pkt);
+    ret = ff_vp8_decode_frame(avctx, p, got_frame, s->pkt);
     if (ret < 0)
         return ret;
 
@@ -1412,8 +1376,11 @@ static int webp_decode_frame(AVCodecContext *avctx, void *data, int *got_frame,
             return AVERROR_INVALIDDATA;
         chunk_size += chunk_size & 1;
 
-        if (bytestream2_get_bytes_left(&gb) < chunk_size)
-            return AVERROR_INVALIDDATA;
+        if (bytestream2_get_bytes_left(&gb) < chunk_size) {
+           /* we seem to be running out of data, but it could also be that the
+              bitstream has trailing junk leading to bogus chunk_size. */
+            break;
+        }
 
         switch (chunk_type) {
         case MKTAG('V', 'P', '8', ' '):
@@ -1563,9 +1530,22 @@ exif_end:
     return avpkt->size;
 }
 
+static av_cold int webp_decode_init(AVCodecContext *avctx)
+{
+    WebPContext *s = avctx->priv_data;
+
+    s->pkt = av_packet_alloc();
+    if (!s->pkt)
+        return AVERROR(ENOMEM);
+
+    return 0;
+}
+
 static av_cold int webp_decode_close(AVCodecContext *avctx)
 {
     WebPContext *s = avctx->priv_data;
+
+    av_packet_free(&s->pkt);
 
     if (s->initialized)
         return ff_vp8_decode_free(avctx);
@@ -1579,6 +1559,7 @@ AVCodec ff_webp_decoder = {
     .type           = AVMEDIA_TYPE_VIDEO,
     .id             = AV_CODEC_ID_WEBP,
     .priv_data_size = sizeof(WebPContext),
+    .init           = webp_decode_init,
     .decode         = webp_decode_frame,
     .close          = webp_decode_close,
     .capabilities   = AV_CODEC_CAP_DR1 | AV_CODEC_CAP_FRAME_THREADS,

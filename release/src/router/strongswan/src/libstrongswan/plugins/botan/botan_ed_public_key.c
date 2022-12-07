@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -82,7 +81,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt, bool,
 	private_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "EdDSA public key encryption not implemented");
 	return FALSE;

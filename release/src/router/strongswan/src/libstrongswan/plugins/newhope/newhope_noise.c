@@ -1,9 +1,10 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Based on public domain code by Erdem Alkim, Léo Ducas, Thomas Pöppelmann,
  * and Peter Schwabe.
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -140,7 +141,7 @@ newhope_noise_t *newhope_noise_create(chunk_t seed)
 	{
 		DBG1(DBG_LIB, "could not instantiate ChaCha20 stream");
 		return NULL;
-	}	
+	}
 
 	INIT(this,
 		.public = {

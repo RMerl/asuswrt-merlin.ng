@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2012-2016 Tobias Brunner
+ * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2006-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -355,7 +356,7 @@ struct bus_t {
 	 * @param shared	shared key used for key derivation (IKEv1-PSK only)
 	 * @param method	auth method for key derivation (IKEv1-non-PSK only)
 	 */
-	void (*ike_keys)(bus_t *this, ike_sa_t *ike_sa, diffie_hellman_t *dh,
+	void (*ike_keys)(bus_t *this, ike_sa_t *ike_sa, key_exchange_t *dh,
 					 chunk_t dh_other, chunk_t nonce_i, chunk_t nonce_r,
 					 ike_sa_t *rekey, shared_key_t *shared,
 					 auth_method_t method);
@@ -363,13 +364,17 @@ struct bus_t {
 	/**
 	 * IKE_SA derived keys hook.
 	 *
-	 * @param sk_ei		SK_ei, or Ka for IKEv1
-	 * @param sk_er		SK_er
+	 * @param sk_d		SK_d, or SKEYID_d for IKEv1
 	 * @param sk_ai		SK_ai, or SKEYID_a for IKEv1
 	 * @param sk_ar		SK_ar
+	 * @param sk_ei		SK_ei, or Ka for IKEv1
+	 * @param sk_er		SK_er
+	 * @param sk_pi		SK_pi
+	 * @param sk_pr		SK_pr
 	 */
-	void (*ike_derived_keys)(bus_t *this, chunk_t sk_ei, chunk_t sk_er,
-							 chunk_t sk_ai, chunk_t sk_ar);
+	void (*ike_derived_keys)(bus_t *this, chunk_t sk_d, chunk_t sk_ai,
+							 chunk_t sk_ar, chunk_t sk_ei, chunk_t sk_er,
+							 chunk_t sk_pi, chunk_t sk_pr);
 
 	/**
 	 * CHILD_SA keymat hook.
@@ -381,7 +386,7 @@ struct bus_t {
 	 * @param nonce_r	responder's nonce
 	 */
 	void (*child_keys)(bus_t *this, child_sa_t *child_sa, bool initiator,
-					   diffie_hellman_t *dh, chunk_t nonce_i, chunk_t nonce_r);
+					   key_exchange_t *dh, chunk_t nonce_i, chunk_t nonce_r);
 
 	/**
 	 * CHILD_SA derived keys hook.
@@ -417,10 +422,11 @@ struct bus_t {
 	 * IKE_SA peer endpoint update hook.
 	 *
 	 * @param ike_sa	updated IKE_SA, having old endpoints set
-	 * @param local		TRUE if local endpoint gets updated, FALSE for remote
-	 * @param new		new endpoint address and port
+	 * @param local		new/current local endpoint address and port
+	 * @param remote	new/current remote endpoint address and port
 	 */
-	void (*ike_update)(bus_t *this, ike_sa_t *ike_sa, bool local, host_t *new);
+	void (*ike_update)(bus_t *this, ike_sa_t *ike_sa, host_t *local,
+					   host_t *remote);
 
 	/**
 	 * IKE_SA reestablishing hook (before resolving hosts).
@@ -461,7 +467,7 @@ struct bus_t {
 	 * CHILD_SA migration hook.
 	 *
 	 * @param new		ID of new SA when called for the old, NULL otherwise
-	 * @param uniue		unique ID of new SA when called for the old, 0 otherwise
+	 * @param unique	unique ID of new SA when called for the old, 0 otherwise
 	 */
 	void (*children_migrate)(bus_t *this, ike_sa_id_t *new, uint32_t unique);
 

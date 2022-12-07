@@ -1466,6 +1466,7 @@ int get_wan_proto(char *prefix)
 		{ "lw4o6",	WAN_LW4O6 },
 		{ "map-e",	WAN_MAPE },
 		{ "v6plus",	WAN_V6PLUS },
+		{ "ocnvc",	WAN_OCNVC },
 #endif
 		{ NULL }
 	};
@@ -2054,6 +2055,11 @@ const char *getifaddr(const char *ifname, int family, int flags)
 	return _getifaddr(ifname, family, flags, buf, sizeof(buf));
 }
 
+/**
+ *  1: interface exist and up
+ *  0: interface exist and down
+ * -1: interface not exist, NULL or empty
+ */
 int is_intf_up(const char* ifname)
 {
 	struct ifreq ifr;
@@ -2061,7 +2067,7 @@ int is_intf_up(const char* ifname)
 	int ret = 0;
 
 	if (!ifname || !strlen(ifname))
-		return 0;
+		return -1;
 
 	if (!((sfd = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) < 0))
 	{
@@ -3221,7 +3227,11 @@ int is_dpsr(int unit)
 	char ifname[32];
 
 	if (dpsr_mode()) {
+#ifdef GT10
+		if ((num_of_wl_if() == 2) || (unit == 2) || unit == nvram_get_int("dpsta_band"))
+#else
 		if ((num_of_wl_if() == 2) || !unit || unit == nvram_get_int("dpsta_band"))
+#endif
 			return 1;
 
 		if (strlen(nvram_safe_get("dpsr_ifnames"))) {
@@ -3562,7 +3572,9 @@ int get_upstream_wan_unit(void)
 }
 
 /* Return WiFi unit number in accordance with interface name.
- * @wif:	pointer to WiFi interface name.
+ * @wif:	pointer to WiFi interface name. VAP interfaces for guest network is support.
+ * 		VLAN interface that derived from VAP interfaces for guest network is considered as invalid unit.
+ * 		See fec2ddeebe5d8d024c853d0d6eec3943430c8b20.
  * @return:
  * 	< 0:	invalid
  *  otherwise:	unit
@@ -3582,7 +3594,7 @@ int get_wifi_unit(char *wif)
 		if (strncmp(word, wif, strlen(word)))
 			continue;
 #if defined(RTCONFIG_AMAS_WGN) && defined(RTCONFIG_QCA) 
-		if (strlen(word)!=strlen(wif))
+		if (strchr(wif, '.') && strlen(word)!=strlen(wif))
 			continue;
 #endif
 		for (i = 0; i <= MAX_NR_WL_IF; ++i) {
@@ -5981,11 +5993,11 @@ int find_clientlist_groupid(char *groupid_list, char *groupname, char *groupid, 
 	return have_data;
 }
 
-int gen_random_num(int max)
+int gen_random_num(int max, int seed_ext)
 {
 	int i, ret;
 
-	srand(time(NULL));
+	srand(uptime() + seed_ext);
 	ret = rand() % max;
 
         printf("%d\n", ret);

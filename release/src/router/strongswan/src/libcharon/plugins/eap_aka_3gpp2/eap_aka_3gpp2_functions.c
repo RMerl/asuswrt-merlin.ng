@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,7 +53,7 @@ struct private_eap_aka_3gpp2_functions_t {
 static chunk_t fmk = chunk_from_chars(0x41, 0x48, 0x41, 0x47);
 
 /**
- * Binary represnation of the polynom T^160 + T^5 + T^3 + T^2 + 1
+ * Binary representation of the polynomial T^160 + T^5 + T^3 + T^2 + 1
  */
 static uint8_t g[] = {
 	0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00,
@@ -63,7 +64,7 @@ static uint8_t g[] = {
 /**
  * Predefined random bits from the RAND Corporation book
  */
-static uint8_t a[] = {
+static uint8_t a_def[] = {
 	0x9d, 0xe9, 0xc9, 0xc8, 0xef, 0xd5, 0x78, 0x11,
 	0x48, 0x23, 0x14, 0x01, 0x90, 0x1f, 0x2d, 0x49,
 	0x3f, 0x4c, 0x63, 0x65
@@ -72,14 +73,14 @@ static uint8_t a[] = {
 /**
  * Predefined random bits from the RAND Corporation book
  */
-static uint8_t b[] = {
+static uint8_t b_def[] = {
 	0x75, 0xef, 0xd1, 0x5c, 0x4b, 0x8f, 0x8f, 0x51,
 	0x4e, 0xf3, 0xbc, 0xc3, 0x79, 0x4a, 0x76, 0x5e,
 	0x7e, 0xec, 0x45, 0xe0
 };
 
 /**
- * Multiplicate two mpz_t with bits interpreted as polynoms.
+ * Multiply two mpz_t with bits interpreted as polynomials.
  */
 static void mpz_mul_poly(mpz_t r, mpz_t a, mpz_t b)
 {
@@ -105,16 +106,16 @@ static void mpz_mul_poly(mpz_t r, mpz_t a, mpz_t b)
 }
 
 /**
- * Calculate the sum of a + b interpreted as polynoms.
+ * Calculate the sum of a + b interpreted as polynomials.
  */
 static void mpz_add_poly(mpz_t res, mpz_t a, mpz_t b)
 {
-	/* addition of polynominals is just the XOR */
+	/* addition of polynomials is just the XOR */
 	mpz_xor(res, a, b);
 }
 
 /**
- * Calculate the remainder of a/b interpreted as polynoms.
+ * Calculate the remainder of a/b interpreted as polynomials.
  */
 static void mpz_mod_poly(mpz_t r, mpz_t a, mpz_t b)
 {
@@ -134,7 +135,7 @@ static void mpz_mod_poly(mpz_t r, mpz_t a, mpz_t b)
 	/* don't do anything if b > a */
 	if (a_bit >= b_bit)
 	{
-		/* shift b left to align up most signaficant "1" to a:
+		/* shift b left to align up most significant "1" to a:
 		 * a = 10001010
 		 * b = 10100000
 		 */
@@ -192,8 +193,8 @@ static void step4(u_char x[HASH_SIZE_SHA1])
 	mpz_init(gm);
 
 	mpz_import(xm, HASH_SIZE_SHA1, 1, 1, 1, 0, x);
-	mpz_import(am, sizeof(a), 1, 1, 1, 0, a);
-	mpz_import(bm, sizeof(b), 1, 1, 1, 0, b);
+	mpz_import(am, sizeof(a_def), 1, 1, 1, 0, a_def);
+	mpz_import(bm, sizeof(b_def), 1, 1, 1, 0, b_def);
 	mpz_import(gm, sizeof(g), 1, 1, 1, 0, g);
 
 	mpz_mul_poly(xm, am, xm);

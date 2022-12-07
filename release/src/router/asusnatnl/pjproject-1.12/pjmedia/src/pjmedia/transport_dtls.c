@@ -1534,6 +1534,8 @@ static void calculate_certs_fingerprint(transport_dtls *dtls)
 	unsigned char         tmp[10];
 
 	/* Active local certificate */
+	if (!dtls || !dtls->ossl_ssl)
+		return;
 	x = SSL_get_certificate(dtls->ossl_ssl);
 	if (x) {
 		if (!X509_digest(x, digest, md, &n))
@@ -1563,6 +1565,8 @@ static void update_certs_info(transport_dtls *dtls)
     pj_assert(dtls->ssl_state == SSL_STATE_ESTABLISHED);
 
     /* Active local certificate */
+	if (!dtls || !dtls->ossl_ssl)
+		return;
     x = SSL_get_certificate(dtls->ossl_ssl);
     if (x) {
 	get_cert_info(dtls->pool, &dtls->local_cert_info, x);
@@ -2232,6 +2236,9 @@ PJ_DEF(pj_status_t) pjmedia_transport_dtls_start(
 
 	PJ_ASSERT_RETURN(tp, PJ_EINVAL);
 
+    if (dtls->bypass_dtls)
+	return PJ_SUCCESS;
+
 #ifdef USE_GLOBAL_LOCK
 	MUTEX_LOCK(global_mutex);
 #endif
@@ -2241,35 +2248,43 @@ PJ_DEF(pj_status_t) pjmedia_transport_dtls_start(
 #endif
 
     if (dtls->session_inited) {
+#ifdef USE_GLOBAL_LOCK
+	MUTEX_UNLOCK(global_mutex);
+#endif
 	pjmedia_transport_dtls_stop(tp);
+#ifdef USE_GLOBAL_LOCK
+	MUTEX_LOCK(global_mutex);
+#endif
+
+		if (!dtls->ossl_ssl) {
+			/* Create SSL context */
+			status = create_ssl(dtls);
+			if (status != PJ_SUCCESS)
+				return status;
+		}
 	}
 
-	if (!dtls->bypass_dtls) {
 #if 1
-		if (/*(dtls->media_type_app && dtls->offerer_side) ||*/ // DEAN. Offerer side always play tls client side.
-			(!dtls->media_type_app && !dtls->offerer_side) || 
-			(dtls->base.remote_ua_is_sdk && !dtls->offerer_side)) {
+	if (/*(dtls->media_type_app && dtls->offerer_side) ||*/ // DEAN. Offerer side always play tls client side.
+		(!dtls->media_type_app && !dtls->offerer_side) || 
+		(dtls->base.remote_ua_is_sdk && !dtls->offerer_side)) {
 #else
-		if ((dtls->media_type_app && dtls->offerer_side) ||
-			(!dtls->media_type_app && !dtls->offerer_side)) {
+	if ((dtls->media_type_app && dtls->offerer_side) ||
+		(!dtls->media_type_app && !dtls->offerer_side)) {
 #endif
-				if (dtls->ssl_state == SSL_STATE_NULL) {
-					SSL_set_accept_state(dtls->ossl_ssl);   // tls server side.
-
-					PJ_LOG(4, (THIS_FILE, "pjmedia_transport_dtls_start SSL_set_accept_state."));
-					// Try to do handshaking.
-					dtls->ssl_state = SSL_STATE_INITIALIZED;
-				}
-		} else {
 			if (dtls->ssl_state == SSL_STATE_NULL) {
-				SSL_set_connect_state(dtls->ossl_ssl);  // tls client side.
+				SSL_set_accept_state(dtls->ossl_ssl);   // tls server side.
 
-				PJ_LOG(4, (THIS_FILE, "pjmedia_transport_dtls_start SSL_set_connect_state."));
 				// Try to do handshaking.
 				dtls->ssl_state = SSL_STATE_INITIALIZED;
 			}
-		}
+	} else {
+		if (dtls->ssl_state == SSL_STATE_NULL) {
+			SSL_set_connect_state(dtls->ossl_ssl);  // tls client side.
 
+			// Try to do handshaking.
+			dtls->ssl_state = SSL_STATE_INITIALIZED;
+		}
 	}
 
 	/* Declare DTLS session initialized */

@@ -26,7 +26,7 @@ else
 	uname_a=`uname -a 2>&1` # ''
 	AC_MSG_ERROR([
 
-* POSIX sh \$() command substition does not work with this shell.
+* POSIX sh \$() command substitution does not work with this shell.
 *
 * You are running a very rare species of shell. Please report this
 * sighting to <${PACKAGE_BUGREPORT}>:

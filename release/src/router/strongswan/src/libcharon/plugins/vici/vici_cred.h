@@ -1,9 +1,8 @@
 /*
- * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
- *
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014 Martin Willi
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +24,7 @@
 #define VICI_CRED_H_
 
 #include "vici_dispatcher.h"
+#include "vici_authority.h"
 
 #include <credentials/credential_set.h>
 
@@ -58,8 +58,10 @@ struct vici_cred_t {
  * Create a vici_cred instance.
  *
  * @param dispatcher		dispatcher to receive requests from
+ * @param authority			CA certificate storage
  * @return					credential backend
  */
-vici_cred_t *vici_cred_create(vici_dispatcher_t *dispatcher);
+vici_cred_t *vici_cred_create(vici_dispatcher_t *dispatcher,
+							  vici_authority_t *authority);
 
 #endif /** VICI_CRED_H_ @}*/

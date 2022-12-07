@@ -74,7 +74,6 @@ extern const ff_asf_guid ff_asf_file_header;
 extern const ff_asf_guid ff_asf_stream_header;
 extern const ff_asf_guid ff_asf_ext_stream_header;
 extern const ff_asf_guid ff_asf_audio_stream;
-extern const ff_asf_guid ff_asf_audio_conceal_none;
 extern const ff_asf_guid ff_asf_audio_conceal_spread;
 extern const ff_asf_guid ff_asf_video_stream;
 extern const ff_asf_guid ff_asf_jfif_media;
@@ -165,7 +164,5 @@ extern const AVMetadataConv ff_asf_metadata_conv[];
 #define ASF_PL_MASK_PAYLOAD_LENGTH_FIELD_SIZE     0xc0 //1100 0000
 
 #define ASF_PL_FLAG_KEY_FRAME 0x80 //1000 0000
-
-extern AVInputFormat ff_asf_demuxer;
 
 #endif /* AVFORMAT_ASF_H */

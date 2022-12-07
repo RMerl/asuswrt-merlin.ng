@@ -35,7 +35,7 @@ int ff_h264_pred_weight_table(GetBitContext *gb, const SPS *sps,
     pwt->use_weight             = 0;
     pwt->use_weight_chroma      = 0;
 
-    pwt->luma_log2_weight_denom = get_ue_golomb(gb);
+    pwt->luma_log2_weight_denom = get_ue_golomb_31(gb);
     if (pwt->luma_log2_weight_denom > 7U) {
         av_log(logctx, AV_LOG_ERROR, "luma_log2_weight_denom %d is out of range\n", pwt->luma_log2_weight_denom);
         pwt->luma_log2_weight_denom = 0;
@@ -43,7 +43,7 @@ int ff_h264_pred_weight_table(GetBitContext *gb, const SPS *sps,
     luma_def = 1 << pwt->luma_log2_weight_denom;
 
     if (sps->chroma_format_idc) {
-        pwt->chroma_log2_weight_denom = get_ue_golomb(gb);
+        pwt->chroma_log2_weight_denom = get_ue_golomb_31(gb);
         if (pwt->chroma_log2_weight_denom > 7U) {
             av_log(logctx, AV_LOG_ERROR, "chroma_log2_weight_denom %d is out of range\n", pwt->chroma_log2_weight_denom);
             pwt->chroma_log2_weight_denom = 0;
@@ -120,7 +120,7 @@ int ff_h264_pred_weight_table(GetBitContext *gb, const SPS *sps,
     pwt->use_weight = pwt->use_weight || pwt->use_weight_chroma;
     return 0;
 out_range_weight:
-    avpriv_request_sample(logctx, "Out of range weight\n");
+    avpriv_request_sample(logctx, "Out of range weight");
     return AVERROR_INVALIDDATA;
 }
 
@@ -242,18 +242,23 @@ int ff_h264_parse_ref_count(int *plist_count, int ref_count[2],
                 ref_count[1] = 1;
         }
 
-        if (ref_count[0] - 1 > max[0] || ref_count[1] - 1 > max[1]) {
+        if (slice_type_nos == AV_PICTURE_TYPE_B)
+            list_count = 2;
+        else
+            list_count = 1;
+
+        if (ref_count[0] - 1 > max[0] || (list_count == 2 && (ref_count[1] - 1 > max[1]))) {
             av_log(logctx, AV_LOG_ERROR, "reference overflow %u > %u or %u > %u\n",
                    ref_count[0] - 1, max[0], ref_count[1] - 1, max[1]);
             ref_count[0] = ref_count[1] = 0;
             *plist_count = 0;
             goto fail;
+        } else if (ref_count[1] - 1 > max[1]) {
+            av_log(logctx, AV_LOG_DEBUG, "reference overflow %u > %u \n",
+                   ref_count[1] - 1, max[1]);
+            ref_count[1] = 0;
         }
 
-        if (slice_type_nos == AV_PICTURE_TYPE_B)
-            list_count = 2;
-        else
-            list_count = 1;
     } else {
         list_count   = 0;
         ref_count[0] = ref_count[1] = 0;
@@ -282,6 +287,8 @@ int ff_h264_init_poc(int pic_field_poc[2], int *pic_poc,
 
     if (sps->poc_type == 0) {
         const int max_poc_lsb = 1 << sps->log2_max_poc_lsb;
+        if (pc->prev_poc_lsb < 0)
+            pc->prev_poc_lsb =  pc->poc_lsb;
 
         if (pc->poc_lsb < pc->prev_poc_lsb &&
             pc->prev_poc_lsb - pc->poc_lsb >= max_poc_lsb / 2)
@@ -296,7 +303,8 @@ int ff_h264_init_poc(int pic_field_poc[2], int *pic_poc,
         if (picture_structure == PICT_FRAME)
             field_poc[1] += pc->delta_poc_bottom;
     } else if (sps->poc_type == 1) {
-        int abs_frame_num, expected_delta_per_poc_cycle, expectedpoc;
+        int abs_frame_num;
+        int64_t expected_delta_per_poc_cycle, expectedpoc;
         int i;
 
         if (sps->poc_cycle_length != 0)
@@ -359,7 +367,7 @@ static int decode_extradata_ps(const uint8_t *data, int size, H264ParamSets *ps,
     H2645Packet pkt = { 0 };
     int i, ret = 0;
 
-    ret = ff_h2645_packet_split(&pkt, data, size, logctx, is_avc, 2, AV_CODEC_ID_H264, 1);
+    ret = ff_h2645_packet_split(&pkt, data, size, logctx, is_avc, 2, AV_CODEC_ID_H264, 1, 0);
     if (ret < 0) {
         ret = 0;
         goto fail;
@@ -368,11 +376,22 @@ static int decode_extradata_ps(const uint8_t *data, int size, H264ParamSets *ps,
     for (i = 0; i < pkt.nb_nals; i++) {
         H2645NAL *nal = &pkt.nals[i];
         switch (nal->type) {
-        case H264_NAL_SPS:
-            ret = ff_h264_decode_seq_parameter_set(&nal->gb, logctx, ps, 0);
+        case H264_NAL_SPS: {
+            GetBitContext tmp_gb = nal->gb;
+            ret = ff_h264_decode_seq_parameter_set(&tmp_gb, logctx, ps, 0);
+            if (ret >= 0)
+                break;
+            av_log(logctx, AV_LOG_DEBUG,
+                   "SPS decoding failure, trying again with the complete NAL\n");
+            init_get_bits8(&tmp_gb, nal->raw_data + 1, nal->raw_size - 1);
+            ret = ff_h264_decode_seq_parameter_set(&tmp_gb, logctx, ps, 0);
+            if (ret >= 0)
+                break;
+            ret = ff_h264_decode_seq_parameter_set(&nal->gb, logctx, ps, 1);
             if (ret < 0)
                 goto fail;
             break;
+        }
         case H264_NAL_PPS:
             ret = ff_h264_decode_picture_parameter_set(&nal->gb, logctx, ps,
                                                        nal->size_bits);

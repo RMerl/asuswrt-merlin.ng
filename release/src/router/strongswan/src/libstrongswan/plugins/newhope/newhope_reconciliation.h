@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -35,7 +36,7 @@ struct newhope_reconciliation_t {
 	 * Generate reconciliation polynomial
 	 *
 	 * @param v			polynomial v
-	 * @param rbits		pseudo random bit array	
+	 * @param rbits		pseudo random bit array
 	 * @return			return array with reconciliation polynomial
 	 */
 	uint8_t* (*help_reconcile)(newhope_reconciliation_t *this,

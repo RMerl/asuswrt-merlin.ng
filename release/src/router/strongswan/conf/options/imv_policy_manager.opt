@@ -10,4 +10,4 @@ imv_policy_manager.command_allow =
 	Shell command to be executed with recommendation allow.
 
 imv_policy_manager.command_block =
-	Shell command to be executed with all other recommendations. 
+	Shell command to be executed with all other recommendations.

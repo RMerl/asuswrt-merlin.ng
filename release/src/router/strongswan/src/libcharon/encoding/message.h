@@ -3,7 +3,8 @@
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -403,6 +404,23 @@ struct message_t {
 	 * @return			enumerator internal packet_t* objects
 	 */
 	enumerator_t *(*get_fragments)(message_t *this);
+
+	/**
+	 * Get metadata of this message.
+	 *
+	 * @param key		key of the metadata to retrieve
+	 * @return			metadata object (internal data), NULL if not found
+	 */
+	metadata_t *(*get_metadata)(message_t *message, const char *key);
+
+	/**
+	 * Set/remove metadata of this message.
+	 *
+	 * @param key		key of the metadata (cloned)
+	 * @param data		metadata object (adopted), NULL to remove and destroy
+	 *					existing object with the given key
+	 */
+	void (*set_metadata)(message_t *message, const char *key, metadata_t *data);
 
 	/**
 	 * Destroys a message and all including objects.

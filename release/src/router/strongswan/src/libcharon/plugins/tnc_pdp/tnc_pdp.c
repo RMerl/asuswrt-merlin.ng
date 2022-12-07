@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -477,7 +478,7 @@ static void process_eap(private_tnc_pdp_t *this, radius_message_t *request,
 	eap_payload_t *in, *out = NULL;
 	eap_method_t *method;
 	eap_type_t eap_type;
-	uint32_t eap_vendor;
+	pen_t eap_vendor;
 	chunk_t data, message = chunk_empty, msk = chunk_empty;
 	chunk_t user_name = chunk_empty, nas_id = chunk_empty;
 	identification_t *group = NULL;

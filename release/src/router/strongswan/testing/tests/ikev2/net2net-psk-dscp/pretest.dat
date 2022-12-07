@@ -1,7 +1,7 @@
-moon::rm /etc/ipsec.d/cacerts/*
-sun::rm /etc/ipsec.d/cacerts/*
 moon::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
+moon::cd /etc/swanctl; rm rsa/* x509/* x509ca/*
+sun::cd /etc/swanctl; rm rsa/* x509/* x509ca/*
 alice::iptables -t mangle -A OUTPUT -p icmp -j DSCP --set-dscp-class BE
 venus::iptables -t mangle -A OUTPUT -p icmp -j DSCP --set-dscp-class EF
 moon::iptables -t mangle -A PREROUTING -m dscp --dscp-class BE -j MARK --set-mark 10
@@ -10,10 +10,10 @@ bob::iptables -t mangle -A OUTPUT -d PH_IP_ALICE -p icmp -j DSCP --set-dscp-clas
 bob::iptables -t mangle -A OUTPUT -d PH_IP_VENUS -p icmp -j DSCP --set-dscp-class EF
 sun::iptables -t mangle -A PREROUTING -m dscp --dscp-class BE -j MARK --set-mark 10
 sun::iptables -t mangle -A PREROUTING -m dscp --dscp-class EF -j MARK --set-mark 20
-sun::ipsec start
-moon::ipsec start
+sun::systemctl start strongswan
+moon::systemctl start strongswan
 sun::expect-connection dscp-ef
 moon::expect-connection dscp-be
-moon::ipsec up dscp-be
+moon::swanctl --initiate --ike dscp-be --child net-net
 moon::expect-connection dscp-ef
-moon::ipsec up dscp-ef
+moon::swanctl --initiate --ike dscp-ef --child net-net

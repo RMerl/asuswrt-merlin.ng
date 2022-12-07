@@ -1,7 +1,9 @@
-carol::ipsec stop
-dave::ipsec stop
-moon::ipsec stop
-alice::ipsec stop
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan
+alice::systemctl stop strongswan
+moon::cd /etc/swanctl; rm rsa/marsKey.pem x509/marsCert.pem
+alice::cd /etc/swanctl; rm rsa/marsKey.pem x509/marsCert.pem
 moon::iptables-restore < /etc/iptables.flush
 alice::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush

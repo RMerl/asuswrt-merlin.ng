@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -58,7 +59,7 @@ struct cp_payload_t {
 	/**
 	 * Creates an enumerator of stored configuration_attribute_t objects.
 	 *
-	 * @return			enumerator over configration_attribute_T
+	 * @return			enumerator over configuration_attribute_t
 	 */
 	enumerator_t *(*create_attribute_enumerator) (cp_payload_t *this);
 

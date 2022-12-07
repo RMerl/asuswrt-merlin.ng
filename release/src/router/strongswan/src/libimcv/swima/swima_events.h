@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2017-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,8 +21,6 @@
 
 #ifndef SWIMA_EVENTS_H_
 #define SWIMA_EVENTS_H_
-
-#define SWIMA_MAX_ATTR_SIZE	10000000
 
 #include "swima_event.h"
 

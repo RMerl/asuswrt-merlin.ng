@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,17 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH curl_version_info 3 "April 03, 2021" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_version_info 3 "June 13, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
-curl_version_info - returns run-time libcurl version info
+curl_version_info - returns runtime libcurl version info
 .SH SYNOPSIS
-.B #include <curl/curl.h>
-.sp
-.BI "curl_version_info_data *curl_version_info( CURLversion "age ");"
-.ad
+.nf
+#include <curl/curl.h>
+
+curl_version_info_data *curl_version_info( CURLversion age);
+.fi
 .SH DESCRIPTION
 Returns a pointer to a filled in static struct with information about various
 features in the running version of libcurl. \fIage\fP should be set to the
@@ -37,9 +40,9 @@ libcurl will always return a proper struct that your program understands,
 while programs in the future might get a different
 struct. \fBCURLVERSION_NOW\fP will be the most recent one for the library you
 have installed:
-
-        data = curl_version_info(CURLVERSION_NOW);
-
+.nf
+  data = curl_version_info(CURLVERSION_NOW);
+.fi
 Applications should use this information to judge if things are possible to do
 or not, instead of using compile-time checks, as dynamic/DLL libraries can be
 changed independent of applications.
@@ -57,7 +60,7 @@ typedef struct {
   char *ssl_version;        /* human readable string */
   long ssl_version_num;     /* not used, always zero */
   const char *libz_version; /* human readable string */
-  const char * const *protocols; /* protocols */
+  const char *const *protocols; /* protocols */
 
   /* when 'age' is CURLVERSION_SECOND or higher, the members below exist */
   const char *ares;         /* human readable string */
@@ -108,7 +111,7 @@ typedef struct {
 .fi
 
 \fIage\fP describes what the age of this struct is. The number depends on how
-new the libcurl you're using is. You are however guaranteed to get a struct
+new the libcurl you are using is. You are however guaranteed to get a struct
 that you have a matching struct for in the header, as you tell libcurl your
 "age" with the input argument.
 
@@ -172,8 +175,8 @@ supports IPv6
 .IP CURL_VERSION_KERBEROS4
 supports Kerberos V4 (when using FTP). Legacy bit. Deprecated since 7.33.0.
 .IP CURL_VERSION_KERBEROS5
-supports Kerberos V5 authentication for FTP, IMAP, POP3, SMTP and SOCKSv5 proxy
-(Added in 7.40.0)
+supports Kerberos V5 authentication for FTP, IMAP, LDAP, POP3, SMTP and
+SOCKSv5 proxy. (Added in 7.40.0)
 .IP CURL_VERSION_LARGEFILE
 libcurl was built with support for large files. (Added in 7.11.1)
 .IP CURL_VERSION_UNICODE
@@ -192,7 +195,7 @@ libcurl was built with support for NTLM delegation to a winbind helper.
 (Added in 7.22.0)
 .IP CURL_VERSION_PSL
 libcurl was built with support for Mozilla's Public Suffix List. This makes
-libcurl ignore cookies with a domain that's on the list.
+libcurl ignore cookies with a domain that is on the list.
 (Added in 7.47.0)
 .IP CURL_VERSION_SPNEGO
 libcurl was built with support for SPNEGO authentication (Simple and Protected
@@ -204,6 +207,10 @@ libcurl was built with support for SSPI. This is only available on Windows and
 makes libcurl use Windows-provided functions for Kerberos, NTLM, SPNEGO and
 Digest authentication. It also allows libcurl to use the current user
 credentials without the app having to pass them on. (Added in 7.13.2)
+.IP CURL_VERSION_THREADSAFE
+libcurl was built with thread-safety support (Atomic or SRWLOCK) to protect
+curl initialisation. (Added in 7.84.0)
+See \fIlibcurl-thread(3)\fP
 .IP CURL_VERSION_TLSAUTH_SRP
 libcurl was built with support for TLS-SRP (in one or more of the built-in TLS
 backends). (Added in 7.21.4)
@@ -224,6 +231,16 @@ libcurl has no libz support, this is NULL.
 names protocols that libcurl supports (using lowercase letters). The protocol
 names are the same as would be used in URLs. The array is terminated by a NULL
 entry.
+.SH EXAMPLE
+.nf
+curl_version_info_data *ver = curl_version_info(CURLVERSION_NOW);
+printf("libcurl version %u.%u.%u\\n",
+       (ver->version_num >> 16) & 0xff,
+       (ver->version_num >> 8) & 0xff,
+       ver->version_num & 0xff,
+.fi
+.SH AVAILABILITY
+Added in 7.10
 .SH RETURN VALUE
 A pointer to a curl_version_info_data struct.
 .SH "SEE ALSO"

@@ -16,6 +16,7 @@ endif
 libstrongswan_aesni_la_SOURCES = \
 	aesni_key.h aesni_key.c \
 	aesni_cbc.h aesni_cbc.c \
+	aesni_ecb.h aesni_ecb.c \
 	aesni_ctr.h aesni_ctr.c \
 	aesni_ccm.h aesni_ccm.c \
 	aesni_gcm.h aesni_gcm.c \

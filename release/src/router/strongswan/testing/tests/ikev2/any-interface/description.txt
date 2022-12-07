@@ -1,8 +1,0 @@
-By setting <b>left=%any</b> this scenario tests the ability of the IKEv2 daemon
-to automatically determine its own IP address of an IPsec SA to be established.
-This is achieved by finding a route via the correct network interface to the remote IPsec peer.
-<p>
-The hosts <b>moon</b> and <b>bob</b> act as initiators by setting <b>auto=route</b>
-whereas the hosts <b>alice</b> and <b>sun</b> act as responders by setting <b>auto=add</b>.
-Pings from <b>moon</b> to <b>alice</b> and <b>sun</b> as well as a ping from <b>bob</b>
-to <b>sun</b> set up three compressed IPsec Transport Mode connections.

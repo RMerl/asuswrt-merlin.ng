@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -70,6 +71,12 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 16),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 24),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 32),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 16),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 24),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 32),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CFB, 16),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CFB, 24),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CFB, 32),
 			/* gcrypt only supports 128 bit blowfish */
 			PLUGIN_PROVIDE(CRYPTER, ENCR_BLOWFISH, 16),
 #ifdef HAVE_GCRY_CIPHER_CAMELLIA
@@ -99,20 +106,20 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(HASHER, HASH_SHA384),
 			PLUGIN_PROVIDE(HASHER, HASH_SHA512),
 		/* MODP DH groups */
-		PLUGIN_REGISTER(DH, gcrypt_dh_create),
-			PLUGIN_PROVIDE(DH, MODP_3072_BIT),
-			PLUGIN_PROVIDE(DH, MODP_4096_BIT),
-			PLUGIN_PROVIDE(DH, MODP_6144_BIT),
-			PLUGIN_PROVIDE(DH, MODP_8192_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_224),
-			PLUGIN_PROVIDE(DH, MODP_2048_256),
-			PLUGIN_PROVIDE(DH, MODP_1536_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_160),
-			PLUGIN_PROVIDE(DH, MODP_768_BIT),
-		PLUGIN_REGISTER(DH, gcrypt_dh_create_custom),
-			PLUGIN_PROVIDE(DH, MODP_CUSTOM),
+		PLUGIN_REGISTER(KE, gcrypt_dh_create),
+			PLUGIN_PROVIDE(KE, MODP_3072_BIT),
+			PLUGIN_PROVIDE(KE, MODP_4096_BIT),
+			PLUGIN_PROVIDE(KE, MODP_6144_BIT),
+			PLUGIN_PROVIDE(KE, MODP_8192_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_224),
+			PLUGIN_PROVIDE(KE, MODP_2048_256),
+			PLUGIN_PROVIDE(KE, MODP_1536_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_160),
+			PLUGIN_PROVIDE(KE, MODP_768_BIT),
+		PLUGIN_REGISTER(KE, gcrypt_dh_create_custom),
+			PLUGIN_PROVIDE(KE, MODP_CUSTOM),
 		/* RSA private/public key loading */
 		PLUGIN_REGISTER(PUBKEY, gcrypt_rsa_public_key_load, TRUE),
 			PLUGIN_PROVIDE(PUBKEY, KEY_RSA),
@@ -131,6 +138,8 @@ METHOD(plugin_t, get_features, int,
 		PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_RSA_EMSA_PKCS1_SHA2_512),
 		PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_RSA_EMSA_PKCS1_SHA1),
 		PLUGIN_PROVIDE(PRIVKEY_SIGN, SIGN_RSA_EMSA_PKCS1_MD5),
+		PLUGIN_PROVIDE(PRIVKEY_DECRYPT, ENCRYPT_RSA_PKCS1),
+		PLUGIN_PROVIDE(PRIVKEY_DECRYPT, ENCRYPT_RSA_OAEP_SHA1),
 		/* signature verification schemes */
 #if GCRYPT_VERSION_NUMBER >= 0x010700
 		PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_RSA_EMSA_PSS),
@@ -142,6 +151,8 @@ METHOD(plugin_t, get_features, int,
 		PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_RSA_EMSA_PKCS1_SHA2_512),
 		PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_RSA_EMSA_PKCS1_SHA1),
 		PLUGIN_PROVIDE(PUBKEY_VERIFY, SIGN_RSA_EMSA_PKCS1_MD5),
+		PLUGIN_PROVIDE(PUBKEY_ENCRYPT, ENCRYPT_RSA_PKCS1),
+		PLUGIN_PROVIDE(PUBKEY_ENCRYPT, ENCRYPT_RSA_OAEP_SHA1),
 		/* random numbers */
 		PLUGIN_REGISTER(RNG, gcrypt_rng_create),
 			PLUGIN_PROVIDE(RNG, RNG_WEAK),
@@ -164,6 +175,7 @@ METHOD(plugin_t, destroy, void,
 plugin_t *gcrypt_plugin_create()
 {
 	private_gcrypt_plugin_t *this;
+	u_char *dummy[1];
 
 #if GCRYPT_VERSION_NUMBER < 0x010600
 	gcry_control(GCRYCTL_SET_THREAD_CBS, &gcry_threads_pthread);
@@ -185,7 +197,7 @@ plugin_t *gcrypt_plugin_create()
 	gcry_control(GCRYCTL_INITIALIZATION_FINISHED, 0);
 
 	/* initialize static allocations we want to exclude from leak-detective */
-	gcry_create_nonce(NULL, 0);
+	gcry_create_nonce(dummy, sizeof(dummy));
 
 	INIT(this,
 		.public = {

@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2012-2015 Tobias Brunner
+ * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -75,6 +76,11 @@ struct private_file_logger_t {
 	bool ike_name;
 
 	/**
+	 * Print the log level
+	 */
+	bool log_level;
+
+	/**
 	 * Mutex to ensure multi-line log messages are not torn apart
 	 */
 	mutex_t *mutex;
@@ -89,7 +95,7 @@ METHOD(logger_t, log_, void,
 	private_file_logger_t *this, debug_t group, level_t level, int thread,
 	ike_sa_t* ike_sa, const char *message)
 {
-	char timestr[128], namestr[128] = "";
+	char groupstr[5], timestr[128], namestr[128] = "";
 	const char *current = message, *next;
 	struct tm tm;
 	timeval_t tv;
@@ -102,6 +108,7 @@ METHOD(logger_t, log_, void,
 		this->lock->unlock(this->lock);
 		return;
 	}
+
 	if (this->time_format)
 	{
 		gettimeofday(&tv, NULL);
@@ -110,6 +117,17 @@ METHOD(logger_t, log_, void,
 		localtime_r(&s, &tm);
 		strftime(timestr, sizeof(timestr), this->time_format, &tm);
 	}
+
+	if (this->log_level)
+	{
+		snprintf(groupstr, sizeof(groupstr), "%N%d", debug_names, group,
+				 level);
+	}
+	else
+	{
+		snprintf(groupstr, sizeof(groupstr), "%N", debug_names, group);
+	}
+
 	if (this->ike_name && ike_sa)
 	{
 		if (ike_sa->get_peer_cfg(ike_sa))
@@ -137,19 +155,19 @@ METHOD(logger_t, log_, void,
 		{
 			if (this->add_ms)
 			{
-				fprintf(this->out, "%s.%03u %.2d[%N]%s ",
-						timestr, ms, thread, debug_names, group, namestr);
+				fprintf(this->out, "%s.%03u %.2d[%s]%s ",
+						timestr, ms, thread, groupstr, namestr);
 			}
 			else
 			{
-				fprintf(this->out, "%s %.2d[%N]%s ",
-						timestr, thread, debug_names, group, namestr);
+				fprintf(this->out, "%s %.2d[%s]%s ",
+						timestr, thread, groupstr, namestr);
 			}
 		}
 		else
 		{
-			fprintf(this->out, "%.2d[%N]%s ",
-					thread, debug_names, group, namestr);
+			fprintf(this->out, "%.2d[%s]%s ",
+					thread, groupstr, namestr);
 		}
 		if (next == NULL)
 		{
@@ -199,13 +217,15 @@ METHOD(file_logger_t, set_level, void,
 }
 
 METHOD(file_logger_t, set_options, void,
-	private_file_logger_t *this, char *time_format, bool add_ms, bool ike_name)
+	private_file_logger_t *this, char *time_format, bool add_ms, bool ike_name,
+	bool log_level)
 {
 	this->lock->write_lock(this->lock);
 	free(this->time_format);
 	this->time_format = strdupnull(time_format);
 	this->add_ms = add_ms;
 	this->ike_name = ike_name;
+	this->log_level = log_level;
 	this->lock->unlock(this->lock);
 }
 
@@ -243,6 +263,25 @@ METHOD(file_logger_t, open_, void,
 				 this->filename, strerror(errno));
 			return;
 		}
+#ifdef HAVE_CHOWN
+		if (lib->caps->check(lib->caps, CAP_CHOWN))
+		{
+			if (chown(this->filename, lib->caps->get_uid(lib->caps),
+					  lib->caps->get_gid(lib->caps)) != 0)
+			{
+				DBG1(DBG_NET, "changing owner/group for '%s' failed: %s",
+					 this->filename, strerror(errno));
+			}
+		}
+		else
+		{
+			if (chown(this->filename, -1, lib->caps->get_gid(lib->caps)) != 0)
+			{
+				DBG1(DBG_NET, "changing group for '%s' failed: %s",
+					 this->filename, strerror(errno));
+			}
+		}
+#endif /* HAVE_CHOWN */
 #ifdef HAVE_SETLINEBUF
 		if (flush_line)
 		{

@@ -23,7 +23,7 @@
 #include "riff.h"
 #include "libavutil/intreadwrite.h"
 
-static int probe(AVProbeData *p)
+static int probe(const AVProbeData *p)
 {
     if (AV_RL32(p->buf) == MKTAG('D','K','I','F')
         && !AV_RL16(p->buf+4) && AV_RL16(p->buf+6) == 32)
@@ -53,7 +53,8 @@ static int read_header(AVFormatContext *s)
     st->codecpar->height     = avio_rl16(s->pb);
     time_base.den         = avio_rl32(s->pb);
     time_base.num         = avio_rl32(s->pb);
-    st->duration          = avio_rl64(s->pb);
+    st->duration          = avio_rl32(s->pb);
+    avio_skip(s->pb, 4); // unused
 
     st->need_parsing      = AVSTREAM_PARSE_HEADERS;
 

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 Martin Willi
- * Copyright (C) 2012 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -203,7 +204,6 @@ static int interactive(int fd)
 		int res;
 
 		printf("> ");
-		fflush(stdout);
 
 		if (fgets(line, sizeof(line), stdin))
 		{
@@ -265,6 +265,8 @@ int main(int argc, char *argv[])
 	{
 		return 1;
 	}
+
+	setvbuf(stdout, NULL, _IOLBF, 0);
 
 	if (argc == 1)
 	{

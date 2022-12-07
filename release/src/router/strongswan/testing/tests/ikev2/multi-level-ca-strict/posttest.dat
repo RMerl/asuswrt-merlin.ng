@@ -1,5 +1,0 @@
-moon::ipsec stop
-carol::ipsec stop
-dave::ipsec stop
-moon::rm /etc/ipsec.d/cacerts/*
-

@@ -1,4 +1,4 @@
-.TH "PKI \-\-REQ" 1 "2013-07-31" "@PACKAGE_VERSION@" "strongSwan"
+.TH "PKI \-\-REQ" 1 "2022-08-30" "@PACKAGE_VERSION@" "strongSwan"
 .
 .SH "NAME"
 .
@@ -13,6 +13,20 @@ pki \-\-req \- Create a PKCS#10 certificate request
 .OP \-\-type type
 .BI \-\-dn\~ distinguished-name
 .OP \-\-san subjectAltName
+.OP \-\-profile profile
+.OP \-\-password password
+.OP \-\-digest digest
+.OP \-\-rsa\-padding padding
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-req
+.RB [ \-\-in
+.IR file | \fB\-\-keyid\fR
+.IR hex ]
+.OP \-\-type type
+.BI \-\-oldreq\~ file
 .OP \-\-password password
 .OP \-\-digest digest
 .OP \-\-rsa\-padding padding
@@ -29,7 +43,7 @@ pki \-\-req \- Create a PKCS#10 certificate request
 |
 .B \-\-help
 .YS
-.
+.q
 .SH "DESCRIPTION"
 .
 This sub-command of
@@ -60,18 +74,40 @@ Type of the input key. Either \fIpriv\fR, \fIrsa\fR, \fIecdsa\fR or \fIbliss\fR,
 defaults to \fIpriv\fR.
 .TP
 .BI "\-d, \-\-dn " distinguished-name
-Subject distinguished name (DN). Required.
+Subject distinguished name (DN). Required if the
+.B \-\-dn
+option is not set.
 .TP
 .BI "\-a, \-\-san " subjectAltName
 subjectAltName extension to include in request. Can be used multiple times.
 .TP
+.BI "\-P, \-\-profile " profile
+Certificate profile name to be included in the certificate request. Can be any
+UTF8 string. Supported e.g. by
+.B openxpki
+(with profiles \fIpc-client\fR, \fItls-server\fR, etc.) or
+.B pki \-\-issue
+(with profiles \fIserver\fR, \fIclient\fR, \fIdual\fR, or \fIocsp\fR) that are
+translated into corresponding Extended Key Usage (EKU) flags in the generated
+X.509 certificate.
+.TP
 .BI "\-p, \-\-password " password
 The challengePassword to include in the certificate request.
 .TP
+.BI "\-o, \-\-oldreq " file
+Old certificate request to be used as a template. Required if the
+.B --dn
+option is not set. The public key in the old certificate request is replaced and
+a fresh signature is generated using the new private key. Optionally a new
+challengePassword may be set using the
+.B --password
+option.
+.TP
 .BI "\-g, \-\-digest " digest
-Digest to use for signature creation. One of \fImd5\fR, \fIsha1\fR,
-\fIsha224\fR, \fIsha256\fR, \fIsha384\fR, or \fIsha512\fR.  The default is
-determined based on the type and size of the signature key.
+Digest to use for signature creation. One of \fIsha1\fR, \fIsha224\fR,
+\fIsha256\fR, \fIsha384\fR, \fIsha512\fR, \fIsha3_224\fR, \fIsha3_256\fR,
+\fIsha3_384\fR, or \fIsha3_512\fR. The default is determined based on
+the type and size of the signature key.
 .TP
 .BI "\-R, \-\-rsa\-padding " padding
 Padding to use for RSA signatures. Either \fIpkcs1\fR or \fIpss\fR, defaults
@@ -83,11 +119,18 @@ Encoding of the created certificate file. Either \fIder\fR (ASN.1 DER) or
 .
 .SH "EXAMPLES"
 .
-Generate a certificate request for an RSA key, with a subjectAltName extension:
+Generate a certificate request for an RSA key, with a subjectAltName extension
+and a TLS-server profile:
 .PP
 .EX
   pki \-\-req \-\-in key.der \-\-dn "C=CH, O=strongSwan, CN=moon" \\
-       \-\-san moon@strongswan.org > req.der
+      \-\-san moon@strongswan.org \-\-profile server > req.der
+.EE
+.PP
+Generate a certificate request for a renewed key based on an existing template
+.PP
+.EX
+  pki \-\-req \-\-in myNewKey.der \-\-oldreq myReq.der > myNewReq.der
 .EE
 .PP
 Generate a certificate request for an ECDSA key and a different digest:

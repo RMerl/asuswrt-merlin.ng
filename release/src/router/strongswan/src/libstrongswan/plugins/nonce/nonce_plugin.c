@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -43,7 +44,7 @@ METHOD(plugin_t, get_features, int,
 	static plugin_feature_t f[] = {
 		PLUGIN_REGISTER(NONCE_GEN, nonce_nonceg_create),
 			PLUGIN_PROVIDE(NONCE_GEN),
-				PLUGIN_DEPENDS(RNG, RNG_WEAK),
+				PLUGIN_DEPENDS(RNG, NONCE_RNG_QUALITY),
 	};
 	*features = f;
 	return countof(f);

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -133,5 +134,22 @@ process_message_job_t *process_message_job_create(message_t *message)
 		.message = message,
 	);
 
+	if (message->get_request(message) &&
+		message->get_exchange_type(message) == IKE_SA_INIT)
+	{
+		charon->ike_sa_manager->track_init(charon->ike_sa_manager,
+										   message->get_source(message));
+	}
+	if (message->get_exchange_type(message) == ID_PROT ||
+		message->get_exchange_type(message) == AGGRESSIVE)
+	{
+		ike_sa_id_t *id = message->get_ike_sa_id(message);
+
+		if (id->get_responder_spi(id) == 0)
+		{
+			charon->ike_sa_manager->track_init(charon->ike_sa_manager,
+											   message->get_source(message));
+		}
+	}
 	return &(this->public);
 }

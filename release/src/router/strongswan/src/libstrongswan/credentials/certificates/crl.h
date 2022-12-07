@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008 Martin Willi
  * Copyright (C) 2006 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,9 +29,10 @@ typedef enum crl_reason_t crl_reason_t;
 #include <library.h>
 #include <credentials/certificates/certificate.h>
 
-/* <wincrypt.h> comes with CRL_REASON clashing with ours. Even if the values
- * are identical, we undef them here to use our enum instead of defines. */
-#ifdef WIN32
+/* <wincrypt.h> comes with CRL_REASON clashing with ours. The same is true for
+ * OpenSSL 3.0. Even if the values are identical, we undef them here to use our
+ * enum instead of defines. */
+#ifdef CRL_REASON_UNSPECIFIED
 # undef CRL_REASON_UNSPECIFIED
 # undef CRL_REASON_KEY_COMPROMISE
 # undef CRL_REASON_CA_COMPROMISE

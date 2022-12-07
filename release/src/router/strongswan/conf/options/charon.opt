@@ -8,6 +8,10 @@ charon {}
 	**charon-cmd** instead of **charon**). For many options defaults can be
 	defined in the **libstrongswan** section.
 
+charon.accept_private_algs = no
+	Deliberately violate the IKE standard's requirement and allow the use of
+	private algorithm identifiers, even if the peer implementation is unknown.
+
 charon.accept_unencrypted_mainmode_messages = no
 	Accept unencrypted ID and HASH payloads in IKEv1 Main Mode.
 
@@ -24,7 +28,8 @@ charon.accept_unencrypted_mainmode_messages = no
 	example, some SonicWall boxes).
 
 charon.block_threshold = 5
-	Maximum number of half-open IKE_SAs for a single peer IP.
+	Maximum number of half-open IKE_SAs (including unprocessed IKE_SA_INITs)
+	for a single peer IP.
 
 charon.cert_cache = yes
 	Whether relations in validated certificate chains should be cached in
@@ -36,14 +41,42 @@ charon.cache_crls = no
 	Certification Authority (CA) to **/etc/ipsec.d/crls** (stroke) or
 	**/etc/swanctl/x509crl** (vici), respectively.
 
+charon.check_current_path = no
+	Whether to use DPD to check if the current path still works after any
+	changes to interfaces/addresses.
+
+	By default, after detecting any changes to interfaces and/or addresses no
+	action is taken if the current path to the remote peer still looks usable.
+	Enabling this option will use DPD to check if the path actually still works,
+	or, for instance, the peer removed the state after a longer phase without
+	connectivity.  It will also trigger a MOBIKE update if NAT mappings were
+	removed during the downtime.
+
+charon.cisco_flexvpn = no
+	Send the Cisco FlexVPN vendor ID payload (IKEv2 only).
+
+	Send the Cisco FlexVPN vendor ID payload, which is required in order to make
+	Cisco brand devices allow negotiating a local traffic selector (from
+	strongSwan's point of view) that is not the assigned virtual IP address if
+	such an address is requested by	strongSwan.  Sending the Cisco FlexVPN
+	vendor ID prevents the peer from narrowing the initiator's local traffic
+	selector and allows it to e.g. negotiate a TS of 0.0.0.0/0 == 0.0.0.0/0
+	instead.  This has been tested with a "tunnel mode ipsec ipv4" Cisco
+	template but should also work for GRE encapsulation.
+
 charon.cisco_unity = no
 	Send Cisco Unity vendor ID payload (IKEv1 only).
 
 charon.close_ike_on_child_failure = no
 	Close the IKE_SA if setup of the CHILD_SA along with IKE_AUTH failed.
 
-charon.cookie_threshold = 10
-	Number of half-open IKE_SAs that activate the cookie mechanism.
+charon.cookie_threshold = 30
+	Number of half-open IKE_SAs (including unprocessed IKE_SA_INITs) that
+	activate the cookie mechanism.
+
+charon.cookie_threshold_ip = 3
+	Number of half-open IKE_SAs (including unprocessed IKE_SA_INITs) for a
+	single peer IP that activate the cookie	mechanism.
 
 charon.crypto_test.bench = no
 	Benchmark crypto algorithms and order them by efficiency.
@@ -102,9 +135,6 @@ charon.dns2
 charon.dos_protection = yes
 	Enable Denial of Service protection using cookies and aggressiveness checks.
 
-charon.ecp_x_coordinate_only = yes
-	Compliance with the errata for RFC 4753.
-
 charon.flush_auth_cfg = no
 	Free objects during authentication (might conflict with plugins).
 
@@ -115,6 +145,10 @@ charon.flush_auth_cfg = no
 
 charon.follow_redirects = yes
 	Whether to follow IKEv2 redirects (RFC 5685).
+
+charon.force_eap_only_authentication = no
+	Violate RFC 5998 and use EAP-only authentication even if the peer did not
+	send an EAP_ONLY_AUTHENTICATION notify during IKE_AUTH.
 
 charon.fragment_size = 1280
 	Maximum size (complete IP datagram size in bytes) of a sent IKE fragment
@@ -212,15 +246,21 @@ charon.interfaces_use
 charon.keep_alive = 20s
 	NAT keep alive interval.
 
+charon.keep_alive_dpd_margin = 0s
+	Number of seconds the keep alive interval may be exceeded before a DPD is
+	sent instead of a NAT keep alive (0 to disable).  This is only useful if a
+	clock is used that includes time spent suspended (e.g. CLOCK_BOOTTIME).
+
 charon.leak_detective.detailed = yes
 	Includes source file names and line numbers in leak detective output.
 
 charon.leak_detective.usage_threshold = 10240
-	Threshold in bytes for leaks to be reported (0 to report all).
+	Threshold in bytes for allocations to be included in usage reports (0 to
+	include all).
 
 charon.leak_detective.usage_threshold_count = 0
-	Threshold in number of allocations for leaks to be reported (0 to report
-	all).
+	Threshold in number of allocations for allocations to be included in usage
+	reports (0 to include all).
 
 charon.load
 	Plugins to load in the IKE daemon charon.
@@ -286,8 +326,16 @@ charon.prefer_configured_proposals = yes
 	notifies).
 
 charon.prefer_temporary_addrs = no
-	By default public IPv6 addresses are preferred over temporary ones (RFC
-	4941), to make connections more stable. Enable this option to reverse this.
+	Controls whether permanent or temporary IPv6 addresses are used as source,
+	or announced as additional addresses if MOBIKE is used.
+
+	By default, permanent IPv6 source addresses are preferred over temporary
+	ones (RFC 4941), to make connections more stable. Enable this option to
+	reverse this.
+
+	It also affects which IPv6 addresses are announced as additional addresses
+	if MOBIKE is used.  If the option is disabled, only permanent addresses are
+	sent, and only temporary ones if it is enabled.
 
 charon.process_route = yes
 	Process RTM_NEWROUTE and RTM_DELROUTE events.
@@ -295,6 +343,22 @@ charon.process_route = yes
 charon.processor.priority_threads {}
 	Section to configure the number of reserved threads per priority class
 	see JOB PRIORITY MANAGEMENT in **strongswan.conf**(5).
+
+charon.rdn_matching = strict
+	How RDNs in subject DNs of certificates are matched against configured
+	identities (_strict_, _reordered_, or _relaxed_).
+
+	How RDNs in subject DNs of certificates are matched against configured
+	identities. Possible values are _strict_ (the default), _reordered_, and
+	_relaxed_. With _strict_ the number, type and order of all RDNs has to
+	match, wildcards (*) for the values of RDNs are allowed (that's the case
+	for all three variants). Using _reordered_ also matches DNs if the RDNs
+	appear in a different order, the number and type still has to match.
+	Finally, _relaxed_ also allows matches of DNs that contain more RDNs than
+	the configured identity (missing RDNs are treated like a wildcard match).
+
+	Note that _reordered_ and _relaxed_ impose a considerable overhead on memory
+	usage and runtime, in particular, for mismatches, compared to _strict_.
 
 charon.receive_delay = 0
 	Delay in ms for receiving packets, to simulate larger RTT.
@@ -344,6 +408,10 @@ charon.routing_table_prio
 charon.rsa_pss = no
 	Whether to use RSA with PSS padding instead of PKCS#1 padding by default.
 
+charon.rsa_pss_trailerfield = no
+	Whether to encode an explicit trailerField value of 0x01 in the RSA-PSS
+	algorithmIdentifier (CONTEXT3) or using the DEFAULT value by omitting it.
+
 charon.send_delay = 0
 	Delay in ms for sending packets, to simulate larger RTT.
 
@@ -369,6 +437,13 @@ charon.signature_authentication_constraints = yes
 	getting used as constraints against signature schemes employed in the
 	certificate chain, are also used as constraints against the signature scheme
 	used by peers during IKEv2.
+
+charon.spi_label = 0x0000000000000000
+	Value mixed into the local IKE SPIs after applying _spi_mask_.
+
+charon.spi_mask = 0x0000000000000000
+	Mask applied to local IKE SPIs before mixing in _spi_label_ (bits set will
+	be replaced with _spi_label_).
 
 charon.spi_min = 0xc0000000
 	The lower limit for SPIs requested from the kernel for IPsec SAs.
@@ -408,6 +483,24 @@ charon.tls.mac
 
 charon.tls.suites
 	List of TLS cipher suites.
+
+charon.tls.ke_group
+	List of TLS key exchange groups.
+
+charon.tls.signature
+	List of TLS signature schemes.
+
+charon.tls.send_certreq_authorities = yes
+	Whether to include CAs in a server's CertificateRequest message.
+
+	Whether to include CAs in a server's CertificateRequest message. May be
+	disabled if clients can't handle a long list of CAs.
+
+charon.tls.version_min = 1.2
+	Minimum TLS version to negotiate.
+
+charon.tls.version_max = 1.2
+	Maximum TLS version to negotiate.
 
 charon.user
 	Name of the user the daemon changes to after startup.

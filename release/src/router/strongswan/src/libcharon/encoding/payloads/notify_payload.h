@@ -3,7 +3,8 @@
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -153,11 +154,11 @@ enum notify_type_t {
 	FRAGMENTATION_SUPPORTED = 16430,
 	/* Signature Hash Algorithms, RFC 7427 */
 	SIGNATURE_HASH_ALGORITHMS = 16431,
-	/* Use Postquantum Preshared Key (draft-ietf-ipsecme-qr-ikev2) */
+	/* Use Postquantum Preshared Key, RFC 8784 */
 	USE_PPK = 16435,
-	/* Postquantum Preshared Key Identity (draft-ietf-ipsecme-qr-ikev2) */
+	/* Postquantum Preshared Key Identity, RFC 8784 */
 	PPK_IDENTITY = 16436,
-	/* No Postquantum Preshared Key Auth (draft-ietf-ipsecme-qr-ikev2) */
+	/* No Postquantum Preshared Key Auth, RFC 8784 */
 	NO_PPK_AUTH = 16437,
 	/* IKEv1 initial contact */
 	INITIAL_CONTACT_IKEV1 = 24578,

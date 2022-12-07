@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CAPATH 3 "September 08, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_CAPATH 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_CAPATH \- directory holding CA certificates
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_CAPATH, char *capath);
+.fi
 .SH DESCRIPTION
 Pass a char * to a null-terminated string naming a directory holding multiple
 CA certificates to verify the peer with. If libcurl is built against OpenSSL,
@@ -40,6 +44,8 @@ to some limitation in openssl.
 
 The application does not have to keep the string around after setting this
 option.
+
+The default value for this can be figured out with \fICURLINFO_CAPATH(3)\fP.
 .SH DEFAULT
 A default path detected at build time.
 .SH PROTOCOLS
@@ -68,3 +74,4 @@ CURLE_OUT_OF_MEMORY
 .SH "SEE ALSO"
 .BR CURLOPT_CAINFO "(3), "
 .BR CURLOPT_STDERR "(3), " CURLOPT_DEBUGFUNCTION "(3), "
+.BR CURLINFO_CAPATH "(3), "

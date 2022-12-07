@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -92,7 +93,7 @@ pb_tnc_msg_t* pb_pdp_referral_msg_create(pen_type_t identifier_type,
  * Create a PB-PDP-Referral message of TCG Type PDP FQDN Identifier
  *
  * @param fqdn				Fully Qualified Domain Name of PDP
- * @param port				PT-TLS port the PDP is listening on 
+ * @param port				PT-TLS port the PDP is listening on
  */
 pb_tnc_msg_t* pb_pdp_referral_msg_create_from_fqdn(chunk_t fqdn, uint16_t port);
 

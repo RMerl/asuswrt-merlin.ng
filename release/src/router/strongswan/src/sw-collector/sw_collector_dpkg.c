@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -98,7 +99,7 @@ METHOD(enumerator_t, enumerator_destroy, void,
 	dpkg_enumerator_t *this)
 {
 	pclose(this->file);
-	free(this);	
+	free(this);
 }
 
 METHOD(sw_collector_dpkg_t, create_sw_enumerator, enumerator_t*,

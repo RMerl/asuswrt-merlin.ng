@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -80,11 +81,12 @@ struct credential_factory_t {
 	 * @param type			type of credential the builder creates
 	 * @param subtype		subtype of the credential, type specific
 	 * @param final			TRUE if this build does not invoke other builders
+	 * @param plugin_name	plugin that registered this builder
 	 * @param constructor	builder constructor function to register
 	 */
 	void (*add_builder)(credential_factory_t *this,
 						credential_type_t type, int subtype, bool final,
-						builder_function_t constructor);
+						const char *plugin_name, builder_function_t constructor);
 	/**
 	 * Unregister a credential builder function.
 	 *

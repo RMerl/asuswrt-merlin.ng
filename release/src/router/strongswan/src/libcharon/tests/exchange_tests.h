@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,3 +20,4 @@ TEST_SUITE(ike_rekey_suite_create)
 TEST_SUITE(child_create_suite_create)
 TEST_SUITE(child_delete_suite_create)
 TEST_SUITE(child_rekey_suite_create)
+TEST_SUITE(childless_suite_create)

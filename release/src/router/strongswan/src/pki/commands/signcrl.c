@@ -1,9 +1,8 @@
 /*
+ * Copyright (C) 2017-2019 Andreas Steffen
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
  *
- * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,6 +24,7 @@
 #include <credentials/certificates/certificate.h>
 #include <credentials/certificates/x509.h>
 #include <credentials/certificates/crl.h>
+#include <asn1/asn1.h>
 
 
 /**
@@ -133,6 +133,7 @@ static int sign_crl()
 	enumerator_t *enumerator, *lastenum = NULL;
 	x509_cdp_t *cdp;
 	chunk_t crl_serial = chunk_empty, baseCrlNumber = chunk_empty;
+	chunk_t critical_extension_oid = chunk_empty;
 	chunk_t encoding = chunk_empty;
 	bool pss = lib->settings->get_bool(lib->settings, "%s.rsa_pss", FALSE,
 									   lib->ns);
@@ -279,6 +280,10 @@ static int sign_crl()
 					goto usage;
 				}
 				continue;
+			case 'X':
+				chunk_free(&critical_extension_oid);
+				critical_extension_oid = asn1_oid_from_string(arg);
+				continue;
 			case EOF:
 				break;
 			default:
@@ -379,10 +384,6 @@ static int sign_crl()
 	}
 	else
 	{
-		if (!crl_serial.ptr)
-		{
-			crl_serial = chunk_from_chars(0x00);
-		}
 		lastenum = enumerator_create_empty();
 	}
 
@@ -414,11 +415,9 @@ static int sign_crl()
 			BUILD_REVOKED_ENUMERATOR, enumerator,
 			BUILD_REVOKED_ENUMERATOR, lastenum, BUILD_SIGNATURE_SCHEME, scheme,
 			BUILD_CRL_DISTRIBUTION_POINTS, cdps, BUILD_BASE_CRL, baseCrlNumber,
+			BUILD_CRITICAL_EXTENSION, critical_extension_oid,
 			BUILD_END);
 	enumerator->destroy(enumerator);
-	lastenum->destroy(lastenum);
-	DESTROY_IF((certificate_t*)lastcrl);
-	free(crl_serial.ptr);
 
 	if (!crl)
 	{
@@ -442,9 +441,13 @@ error:
 	DESTROY_IF(private);
 	DESTROY_IF(ca);
 	DESTROY_IF(crl);
+	DESTROY_IF(lastenum);
+	DESTROY_IF((certificate_t*)lastcrl);
 	signature_params_destroy(scheme);
+	free(critical_extension_oid.ptr);
 	free(encoding.ptr);
 	free(baseCrlNumber.ptr);
+	free(crl_serial.ptr);
 	list->destroy_function(list, (void*)revoked_destroy);
 	cdps->destroy_function(cdps, (void*)x509_cdp_destroy);
 	if (error)
@@ -457,6 +460,7 @@ error:
 usage:
 	list->destroy_function(list, (void*)revoked_destroy);
 	cdps->destroy_function(cdps, (void*)x509_cdp_destroy);
+	free(critical_extension_oid.ptr);
 	return command_usage(error);
 }
 
@@ -474,7 +478,7 @@ static void __attribute__ ((constructor))reg()
 		 "           superseded|cessation-of-operation|certificate-hold]",
 		 " [--date timestamp] --cert file|--serial hex]*",
 		 "[--digest md5|sha1|sha224|sha256|sha384|sha512|sha3_224|sha3_256|sha3_384|sha3_512]",
-		 "[--rsa-padding pkcs1|pss]",
+		 "[--rsa-padding pkcs1|pss] [--critical oid]",
 		 "[--outform der|pem]"},
 		{
 			{"help",		'h', 0, "show usage information"},
@@ -494,6 +498,7 @@ static void __attribute__ ((constructor))reg()
 			{"date",		'd', 1, "revocation date as unix timestamp, default: now"},
 			{"digest",		'g', 1, "digest for signature creation, default: key-specific"},
 			{"rsa-padding",	'R', 1, "padding for RSA signatures, default: pkcs1"},
+			{"critical",	'X', 1, "critical extension OID to include for test purposes"},
 			{"outform",		'f', 1, "encoding of generated crl, default: der"},
 		}
 	});

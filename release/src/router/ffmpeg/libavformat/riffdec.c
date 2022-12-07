@@ -58,7 +58,7 @@ enum AVCodecID ff_codec_guid_get_id(const AVCodecGuid *guids, ff_asf_guid guid)
  * an openended structure.
  */
 
-static void parse_waveformatex(AVIOContext *pb, AVCodecParameters *par)
+static void parse_waveformatex(AVFormatContext *s, AVIOContext *pb, AVCodecParameters *par)
 {
     ff_asf_guid subformat;
     int bps;
@@ -81,7 +81,7 @@ static void parse_waveformatex(AVIOContext *pb, AVCodecParameters *par)
     } else {
         par->codec_id = ff_codec_guid_get_id(ff_codec_wav_guids, subformat);
         if (!par->codec_id)
-            av_log(pb, AV_LOG_WARNING,
+            av_log(s, AV_LOG_WARNING,
                    "unknown subformat:"FF_PRI_GUID"\n",
                    FF_ARG_GUID(subformat));
     }
@@ -140,12 +140,11 @@ int ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,
         size  -= 18;
         cbSize = FFMIN(size, cbSize);
         if (cbSize >= 22 && id == 0xfffe) { /* WAVEFORMATEXTENSIBLE */
-            parse_waveformatex(pb, par);
+            parse_waveformatex(s, pb, par);
             cbSize -= 22;
             size   -= 22;
         }
         if (cbSize > 0) {
-            av_freep(&par->extradata);
             if (ff_get_extradata(s, par, pb, cbSize) < 0)
                 return AVERROR(ENOMEM);
             size -= cbSize;
@@ -158,7 +157,6 @@ int ff_get_wav_header(AVFormatContext *s, AVIOContext *pb,
         int nb_streams, i;
 
         size -= 4;
-        av_freep(&par->extradata);
         if (ff_get_extradata(s, par, pb, size) < 0)
             return AVERROR(ENOMEM);
         nb_streams         = AV_RL16(par->extradata + 4);
@@ -204,7 +202,7 @@ enum AVCodecID ff_wav_codec_get_id(unsigned int tag, int bps)
         id = ff_get_pcm_codec_id(bps, 1, 0,  0);
 
     if (id == AV_CODEC_ID_ADPCM_IMA_WAV && bps == 8)
-        id = AV_CODEC_ID_PCM_ZORK;
+        id = AV_CODEC_ID_ADPCM_ZORK;
     return id;
 }
 

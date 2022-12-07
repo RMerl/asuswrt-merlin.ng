@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2012-2018 Tobias Brunner
+ * Copyright (C) 2012-2019 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -131,6 +132,11 @@ struct private_ike_auth_t {
 	bool eap_acceptable;
 
 	/**
+	 * Whether we already handled the first IKE_AUTH message
+	 */
+	bool first_auth;
+
+	/**
 	 * Gateway ID if redirected
 	 */
 	identification_t *redirect_to;
@@ -153,20 +159,15 @@ static status_t collect_my_init_data(private_ike_auth_t *this,
 {
 	nonce_payload_t *nonce;
 
-	/* get the nonce that was generated in ike_init */
+	/* get the nonce that was generated in ike_init and a copy of the complete
+	 * packet */
 	nonce = (nonce_payload_t*)message->get_payload(message, PLV2_NONCE);
-	if (!nonce)
+	if (!nonce || !message->is_encoded(message))
 	{
 		return FAILED;
 	}
 	this->my_nonce = nonce->get_nonce(nonce);
-
-	/* pre-generate the message, keep a copy */
-	if (this->ike_sa->generate_message(this->ike_sa, message,
-									   &this->my_packet) != SUCCESS)
-	{
-		return FAILED;
-	}
+	this->my_packet = message->get_packet(message);
 	return NEED_MORE;
 }
 
@@ -330,7 +331,9 @@ static bool load_cfg_candidates(private_ike_auth_t *this)
 	my_id = this->ike_sa->get_my_id(this->ike_sa);
 	other_id = this->ike_sa->get_other_id(this->ike_sa);
 	ike_proposal = this->ike_sa->get_proposal(this->ike_sa);
-	private = this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN);
+	private = this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN) ||
+			  lib->settings->get_bool(lib->settings, "%s.accept_private_algs",
+									  FALSE, lib->ns);
 
 	DBG1(DBG_CFG, "looking for peer configs matching %H[%Y]...%H[%Y]",
 		 me, my_id, other, other_id);
@@ -585,10 +588,18 @@ METHOD(task_t, build_i, status_t,
 	private_ike_auth_t *this, message_t *message)
 {
 	auth_cfg_t *cfg;
+	bool first_auth = FALSE;
 
-	if (message->get_exchange_type(message) == IKE_SA_INIT)
+	switch (message->get_exchange_type(message))
 	{
-		return collect_my_init_data(this, message);
+		case IKE_AUTH:
+			if (!this->first_auth)
+			{	/* some special handling for the first IKE_AUTH message below */
+				first_auth = this->first_auth = TRUE;
+			}
+			break;
+		default:
+			return NEED_MORE;
 	}
 
 	if (!this->peer_cfg)
@@ -597,7 +608,7 @@ METHOD(task_t, build_i, status_t,
 		this->peer_cfg->get_ref(this->peer_cfg);
 	}
 
-	if (message->get_message_id(message) == 1)
+	if (first_auth)
 	{	/* in the first IKE_AUTH ... */
 		if (this->ike_sa->supports_extension(this->ike_sa, EXT_MULTIPLE_AUTH))
 		{	/* indicate support for multiple authentication */
@@ -665,8 +676,7 @@ METHOD(task_t, build_i, status_t,
 		get_reserved_id_bytes(this, id_payload);
 		message->add_payload(message, (payload_t*)id_payload);
 
-		if (idr && !idr->contains_wildcards(idr) &&
-			message->get_message_id(message) == 1 &&
+		if (idr && !idr->contains_wildcards(idr) && first_auth &&
 			this->peer_cfg->get_unique_policy(this->peer_cfg) != UNIQUE_NEVER)
 		{
 			host_t *host;
@@ -734,6 +744,18 @@ METHOD(task_t, build_i, status_t,
 	return NEED_MORE;
 }
 
+METHOD(task_t, post_build_i, status_t,
+	private_ike_auth_t *this, message_t *message)
+{
+	switch (message->get_exchange_type(message))
+	{
+		case IKE_SA_INIT:
+			return collect_my_init_data(this, message);
+		default:
+			return NEED_MORE;
+	}
+}
+
 METHOD(task_t, process_r, status_t,
 	private_ike_auth_t *this, message_t *message)
 {
@@ -741,9 +763,14 @@ METHOD(task_t, process_r, status_t,
 	id_payload_t *id_payload;
 	identification_t *id;
 
-	if (message->get_exchange_type(message) == IKE_SA_INIT)
+	switch (message->get_exchange_type(message))
 	{
-		return collect_other_init_data(this, message);
+		case IKE_SA_INIT:
+			return collect_other_init_data(this, message);
+		case IKE_AUTH:
+			break;
+		default:
+			return NEED_MORE;
 	}
 
 	if (!this->my_auth && this->do_another_auth)
@@ -766,7 +793,7 @@ METHOD(task_t, process_r, status_t,
 		return NEED_MORE;
 	}
 
-	if (message->get_message_id(message) == 1)
+	if (!this->first_auth)
 	{	/* check for extensions in the first IKE_AUTH */
 		if (message->get_notify(message, MULTIPLE_AUTH_SUPPORTED))
 		{
@@ -781,6 +808,7 @@ METHOD(task_t, process_r, status_t,
 		{
 			this->initial_contact = TRUE;
 		}
+		this->first_auth = TRUE;
 	}
 
 	if (!this->other_auth)
@@ -885,7 +913,7 @@ METHOD(task_t, process_r, status_t,
 	/* another auth round done, invoke authorize hook */
 	if (!charon->bus->authorize(charon->bus, FALSE))
 	{
-		DBG1(DBG_IKE, "authorization hook forbids IKE_SA, cancelling");
+		DBG1(DBG_IKE, "authorization hook forbids IKE_SA, canceling");
 		this->authentication_failed = TRUE;
 		return NEED_MORE;
 	}
@@ -947,14 +975,19 @@ METHOD(task_t, build_r, status_t,
 	identification_t *gateway;
 	auth_cfg_t *cfg;
 
-	if (message->get_exchange_type(message) == IKE_SA_INIT)
+	switch (message->get_exchange_type(message))
 	{
-		if (multiple_auth_enabled())
-		{
-			message->add_notify(message, FALSE, MULTIPLE_AUTH_SUPPORTED,
-								chunk_empty);
-		}
-		return collect_my_init_data(this, message);
+		case IKE_SA_INIT:
+			if (multiple_auth_enabled())
+			{
+				message->add_notify(message, FALSE, MULTIPLE_AUTH_SUPPORTED,
+									chunk_empty);
+			}
+			return NEED_MORE;
+		case IKE_AUTH:
+			break;
+		default:
+			return NEED_MORE;
 	}
 
 	if (this->authentication_failed || !this->peer_cfg)
@@ -1007,9 +1040,19 @@ METHOD(task_t, build_r, status_t,
 			if (!this->ike_sa->supports_extension(this->ike_sa,
 												  EXT_EAP_ONLY_AUTHENTICATION))
 			{
-				DBG1(DBG_IKE, "configured EAP-only authentication, but peer "
-					 "does not support it");
-				goto peer_auth_failed;
+				if (lib->settings->get_bool(lib->settings,
+							"%s.force_eap_only_authentication", FALSE, lib->ns))
+				{
+					DBG1(DBG_IKE, "ignore missing %N notify and use EAP-only "
+						 "authentication", notify_type_names,
+						 EAP_ONLY_AUTHENTICATION);
+				}
+				else
+				{
+					DBG1(DBG_IKE, "configured EAP-only authentication, but "
+						 "peer does not support it");
+					goto peer_auth_failed;
+				}
 			}
 		}
 		else
@@ -1092,7 +1135,7 @@ METHOD(task_t, build_r, status_t,
 	if (charon->ike_sa_manager->check_uniqueness(charon->ike_sa_manager,
 										this->ike_sa, this->initial_contact))
 	{
-		DBG1(DBG_IKE, "cancelling IKE_SA setup due to uniqueness policy");
+		DBG1(DBG_IKE, "canceling IKE_SA setup due to uniqueness policy");
 		charon->bus->alert(charon->bus, ALERT_UNIQUE_KEEP);
 		message->add_notify(message, TRUE, AUTHENTICATION_FAILED,
 							chunk_empty);
@@ -1100,7 +1143,7 @@ METHOD(task_t, build_r, status_t,
 	}
 	if (!charon->bus->authorize(charon->bus, TRUE))
 	{
-		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, cancelling");
+		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, canceling");
 		goto peer_auth_failed;
 	}
 	if (this->ike_sa->supports_extension(this->ike_sa, EXT_IKE_REDIRECTION) &&
@@ -1124,15 +1167,8 @@ METHOD(task_t, build_r, status_t,
 							"%s.half_open_timeout", HALF_OPEN_IKE_SA_TIMEOUT,
 							lib->ns));
 	}
-	DBG0(DBG_IKE, "IKE_SA %s[%d] established between %H[%Y]...%H[%Y]",
-		 this->ike_sa->get_name(this->ike_sa),
-		 this->ike_sa->get_unique_id(this->ike_sa),
-		 this->ike_sa->get_my_host(this->ike_sa),
-		 this->ike_sa->get_my_id(this->ike_sa),
-		 this->ike_sa->get_other_host(this->ike_sa),
-		 this->ike_sa->get_other_id(this->ike_sa));
-	this->ike_sa->set_state(this->ike_sa, IKE_ESTABLISHED);
-	charon->bus->ike_updown(charon->bus, this->ike_sa, TRUE);
+
+	this->ike_sa->set_condition(this->ike_sa, COND_AUTHENTICATED, TRUE);
 	return SUCCESS;
 
 peer_auth_failed:
@@ -1144,6 +1180,18 @@ local_auth_failed:
 	message->add_notify(message, TRUE, AUTHENTICATION_FAILED, chunk_empty);
 	charon->bus->alert(charon->bus, ALERT_LOCAL_AUTH_FAILED);
 	return FAILED;
+}
+
+METHOD(task_t, post_build_r, status_t,
+	private_ike_auth_t *this, message_t *message)
+{
+	switch (message->get_exchange_type(message))
+	{
+		case IKE_SA_INIT:
+			return collect_my_init_data(this, message);
+		default:
+			return NEED_MORE;
+	}
 }
 
 /**
@@ -1174,7 +1222,7 @@ static void send_auth_failed_informational(private_ike_auth_t *this,
 }
 
 /**
- * Check if strict constraint fullfillment required to continue current auth
+ * Check if strict constraint fulfillment required to continue current auth
  */
 static bool require_strict(private_ike_auth_t *this, bool mutual_eap)
 {
@@ -1212,14 +1260,19 @@ METHOD(task_t, process_i, status_t,
 	auth_cfg_t *cfg;
 	bool mutual_eap = FALSE, ppk_id_received = FALSE;
 
-	if (message->get_exchange_type(message) == IKE_SA_INIT)
+	switch (message->get_exchange_type(message))
 	{
-		if (message->get_notify(message, MULTIPLE_AUTH_SUPPORTED) &&
-			multiple_auth_enabled())
-		{
-			this->ike_sa->enable_extension(this->ike_sa, EXT_MULTIPLE_AUTH);
-		}
-		return collect_other_init_data(this, message);
+		case IKE_SA_INIT:
+			if (message->get_notify(message, MULTIPLE_AUTH_SUPPORTED) &&
+				multiple_auth_enabled())
+			{
+				this->ike_sa->enable_extension(this->ike_sa, EXT_MULTIPLE_AUTH);
+			}
+			return collect_other_init_data(this, message);
+		case IKE_AUTH:
+			break;
+		default:
+			return NEED_MORE;
 	}
 
 	enumerator = message->create_payload_enumerator(message);
@@ -1350,7 +1403,7 @@ METHOD(task_t, process_i, status_t,
 		/* another auth round done, invoke authorize hook */
 		if (!charon->bus->authorize(charon->bus, FALSE))
 		{
-			DBG1(DBG_IKE, "authorization forbids IKE_SA, cancelling");
+			DBG1(DBG_IKE, "authorization forbids IKE_SA, canceling");
 			goto peer_auth_failed;
 		}
 
@@ -1441,18 +1494,11 @@ METHOD(task_t, process_i, status_t,
 	if (!charon->bus->authorize(charon->bus, TRUE))
 	{
 		DBG1(DBG_IKE, "final authorization hook forbids IKE_SA, "
-				      "cancelling");
+				      "canceling");
 		goto peer_auth_failed;
 	}
-	DBG0(DBG_IKE, "IKE_SA %s[%d] established between %H[%Y]...%H[%Y]",
-		 this->ike_sa->get_name(this->ike_sa),
-		 this->ike_sa->get_unique_id(this->ike_sa),
-		 this->ike_sa->get_my_host(this->ike_sa),
-		 this->ike_sa->get_my_id(this->ike_sa),
-		 this->ike_sa->get_other_host(this->ike_sa),
-		 this->ike_sa->get_other_id(this->ike_sa));
-	this->ike_sa->set_state(this->ike_sa, IKE_ESTABLISHED);
-	charon->bus->ike_updown(charon->bus, this->ike_sa, TRUE);
+
+	this->ike_sa->set_condition(this->ike_sa, COND_AUTHENTICATED, TRUE);
 
 	if (this->redirect_to)
 	{
@@ -1501,6 +1547,7 @@ METHOD(task_t, migrate, void,
 	this->expect_another_auth = TRUE;
 	this->authentication_failed = FALSE;
 	this->candidates = linked_list_create();
+	this->first_auth = FALSE;
 }
 
 METHOD(task_t, destroy, void,
@@ -1532,6 +1579,7 @@ ike_auth_t *ike_auth_create(ike_sa_t *ike_sa, bool initiator)
 				.get_type = _get_type,
 				.migrate = _migrate,
 				.build = _build_r,
+				.post_build = _post_build_r,
 				.process = _process_r,
 				.destroy = _destroy,
 			},
@@ -1545,6 +1593,7 @@ ike_auth_t *ike_auth_create(ike_sa_t *ike_sa, bool initiator)
 	if (initiator)
 	{
 		this->public.task.build = _build_i;
+		this->public.task.post_build = _post_build_i;
 		this->public.task.process = _process_i;
 	}
 	return &this->public;

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 Martin Willi
- * Copyright (C) 2012 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -524,6 +525,21 @@ pt_tls_server_t *pt_tls_server_create(identification_t *server, int fd,
 									  pt_tls_auth_t auth, tnccs_t *tnccs)
 {
 	private_pt_tls_server_t *this;
+	identification_t *client = NULL;
+	tls_flag_t flags = 0;
+
+	switch (auth)
+	{
+		case PT_TLS_AUTH_TLS_OR_SASL:
+			flags |= TLS_FLAG_CLIENT_AUTH_OPTIONAL;
+			/* fall-through */
+		case PT_TLS_AUTH_TLS:
+		case PT_TLS_AUTH_TLS_AND_SASL:
+			client = identification_create_from_encoding(ID_ANY, chunk_empty);
+			break;
+		default:
+			break;
+	}
 
 	INIT(this,
 		.public = {
@@ -532,10 +548,13 @@ pt_tls_server_t *pt_tls_server_create(identification_t *server, int fd,
 			.destroy = _destroy,
 		},
 		.state = PT_TLS_SERVER_VERSION,
-		.tls = tls_socket_create(TRUE, server, NULL, fd, NULL, TLS_1_2, FALSE),
+		.tls = tls_socket_create(TRUE, server, client, fd, NULL, TLS_UNSPEC,
+								 TLS_UNSPEC, flags),
 		.tnccs = (tls_t*)tnccs,
 		.auth = auth,
 	);
+
+	DESTROY_IF(client);
 
 	if (!this->tls)
 	{

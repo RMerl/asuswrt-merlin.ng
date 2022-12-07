@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,9 +18,11 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_MIMEPOST 3 "September 08, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_MIMEPOST 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_MIMEPOST \- send data from mime structure
@@ -35,7 +37,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_MIMEPOST, mime);
 Pass a mime handle previously obtained from \fIcurl_mime_init(3)\fP.
 
 This setting is supported by the HTTP protocol to post forms and by the
-SMTP and IMAP protocols to provide the e-mail data to send/upload.
+SMTP and IMAP protocols to provide the email data to send/upload.
 
 This option is the preferred way of posting an HTTP form, replacing and
 extending the deprecated \fICURLOPT_HTTPPOST(3)\fP option.
@@ -46,7 +48,7 @@ Using this option implies the use of several mime structure building
 functions: see https://curl.se/libcurl/c/smtp-mime.html for a complete
 example.
 .SH AVAILABILITY
-Since 7.56.0.
+Added in 7.56.0
 .SH RETURN VALUE
 This will return CURLE_OK.
 .SH "SEE ALSO"

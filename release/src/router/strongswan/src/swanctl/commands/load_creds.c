@@ -1,10 +1,9 @@
 /*
  * Copyright (C) 2016-2017 Tobias Brunner
  * Copyright (C) 2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -97,7 +96,7 @@ static bool load_cert(load_ctx_t *ctx, char *dir, certificate_type_t type,
 }
 
 /**
- * Load certficiates from a directory
+ * Load certificates from a directory
  */
 static void load_certs(load_ctx_t *ctx, char *type_str, char *dir)
 {
@@ -195,26 +194,21 @@ static bool load_key_anytype(load_ctx_t *ctx, char *path,
 {
 	bool loaded = FALSE;
 	chunk_t encoding;
+	char *type;
 
 	if (!private->get_encoding(private, PRIVKEY_ASN1_DER, &encoding))
 	{
 		fprintf(stderr, "encoding private key from '%s' failed\n", path);
 		return FALSE;
 	}
-	switch (private->get_type(private))
+	type = enum_to_name(key_type_names, private->get_type(private));
+	if (type)
 	{
-		case KEY_RSA:
-			loaded = load_key(ctx, path, "rsa", encoding);
-			break;
-		case KEY_ECDSA:
-			loaded = load_key(ctx, path, "ecdsa", encoding);
-			break;
-		case KEY_BLISS:
-			loaded = load_key(ctx, path, "bliss", encoding);
-			break;
-		default:
-			fprintf(stderr, "unsupported key type in '%s'\n", path);
-			break;
+		loaded = load_key(ctx, path, type, encoding);
+	}
+	if (!loaded)
+	{
+		fprintf(stderr, "unsupported key type in '%s'\n", path);
 	}
 	chunk_clear(&encoding);
 	return loaded;
@@ -259,6 +253,7 @@ CALLBACK(password_cb, shared_key_t*,
 		*match_other = ID_MATCH_PERFECT;
 	}
 	shared = shared_key_create(type, chunk_clone(chunk_from_str(pwd)));
+	memwipe(pwd, strlen(pwd));
 	/* cache secret if it is required more than once (PKCS#12) */
 	data->cache->add_shared(data->cache, shared, NULL);
 	return shared->get_ref(shared);
@@ -450,7 +445,7 @@ static void load_keys(load_ctx_t *ctx, char *type, char *dir)
 					{
 						load_key(ctx, path, type, *map);
 					}
-					chunk_unmap(map);
+					chunk_unmap_clear(map);
 				}
 				else
 				{
@@ -557,7 +552,7 @@ static void load_containers(load_ctx_t *ctx, char *type, char *dir)
 				if (map)
 				{
 					load_encrypted_container(ctx, rel, path, type, *map);
-					chunk_unmap(map);
+					chunk_unmap_clear(map);
 				}
 				else
 				{
@@ -640,14 +635,13 @@ static void load_tokens(load_ctx_t *ctx)
 			{
 #ifdef HAVE_GETPASS
 				snprintf(prompt, sizeof(prompt), "PIN for %s: ", section);
-				pin = strdupnull(getpass(prompt));
+				pin = getpass(prompt);
 #endif
 			}
 			load_token(ctx, section, pin);
 			if (pin)
 			{
 				memwipe(pin, strlen(pin));
-				free(pin);
 				pin = NULL;
 			}
 		}
@@ -995,7 +989,7 @@ static int load_creds(vici_conn_t *conn)
 
 	ret = load_creds_cfg(conn, format, cfg, clear, noprompt);
 
-	cfg->destroy(cfg);
+	cfg->destroy_clear(cfg);
 
 	return ret;
 }

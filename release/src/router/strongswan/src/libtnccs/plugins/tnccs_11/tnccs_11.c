@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2010-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -360,7 +359,7 @@ METHOD(tls_t, process, status_t,
 		this->mutex->lock(this->mutex);
 		if (this->batch)
 		{
-			DBG1(DBG_TNC, "cancelling TNCCS batch");
+			DBG1(DBG_TNC, "canceling TNCCS batch");
 			this->batch->destroy(this->batch);
 			this->batch_id--;
 		 }
@@ -443,7 +442,7 @@ static void check_and_build_recommendation(private_tnccs_11_t *this)
 		}
 		enumerator->destroy(enumerator);
 
-		/* we have reache the final state */
+		/* we have reached the final state */
 		this->delete_state = TRUE;
 	}
 }

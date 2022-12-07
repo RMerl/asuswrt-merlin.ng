@@ -1,9 +1,10 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Based on public domain code by Erdem Alkim, Léo Ducas, Thomas Pöppelmann,
  * and Peter Schwabe.
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -14,7 +15,7 @@
  * WITHOUT ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
  * or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
  * for more details.
- * 
+ *
  */
 
 #include "newhope_reconciliation.h"
@@ -166,7 +167,7 @@ METHOD(newhope_reconciliation_t, reconcile, chunk_t,
 			i2 = i1 + this->n4;
 			i3 = i2 + this->n4;
 
-			tmp[0] = this->q16 + 8 * (int32_t)v[i0] - 
+			tmp[0] = this->q16 + 8 * (int32_t)v[i0] -
 					 this->q  * (2*r[i0] + r[i3]);
 			tmp[1] = this->q16 + 8 * (int32_t)v[i1] -
 					 this->q  * (2*r[i1] + r[i3]);

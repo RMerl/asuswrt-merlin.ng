@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2015 Tobias Brunner
  * Copyright (C) 2007-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -84,6 +85,8 @@ enum auth_rule_t {
 	AUTH_RULE_XAUTH_BACKEND,
 	/** XAuth identity to use or require, identification_t* */
 	AUTH_RULE_XAUTH_IDENTITY,
+	/** subject of certificate authority, identification_t* */
+	AUTH_RULE_CA_IDENTITY,
 	/** certificate authority, certificate_t* */
 	AUTH_RULE_CA_CERT,
 	/** intermediate certificate in trustchain, certificate_t* */

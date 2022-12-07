@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007-2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -27,7 +28,7 @@
 typedef struct mysql_database_t mysql_database_t;
 
 /**
- * MySQL databse_t implementation.
+ * MySQL database_t implementation.
  */
 struct mysql_database_t {
 

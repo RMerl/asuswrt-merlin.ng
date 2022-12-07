@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -148,7 +149,7 @@ static job_requeue_t monitor_changes(private_keychain_creds_t *this)
 	{
 		this->loop = CFRunLoopGetCurrent();
 
-		/* does not return until cancelled */
+		/* does not return until canceled */
 		CFRunLoopRun();
 
 		this->loop = NULL;

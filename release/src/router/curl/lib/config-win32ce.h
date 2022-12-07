@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -19,6 +19,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -103,21 +105,18 @@
 #define HAVE_TIME_H 1
 
 /* Define if you have the <unistd.h> header file.  */
-#if defined(__MINGW32__) || defined(__WATCOMC__) || defined(__LCC__)
+#if defined(__MINGW32__) || defined(__LCC__)
 #define HAVE_UNISTD_H 1
 #endif
 
 /* Define if you have the <windows.h> header file.  */
 #define HAVE_WINDOWS_H 1
 
-/* Define if you have the <winsock.h> header file.  */
-#define HAVE_WINSOCK_H 1
-
 /* Define if you have the <winsock2.h> header file.  */
-/* #define HAVE_WINSOCK2_H 1 */
+#define HAVE_WINSOCK2_H 1
 
 /* Define if you have the <ws2tcpip.h> header file.  */
-/* #define HAVE_WS2TCPIP_H 1 */
+#define HAVE_WS2TCPIP_H 1
 
 /* ---------------------------------------------------------------- */
 /*                        OTHER HEADER INFO                         */
@@ -194,7 +193,7 @@
 #define HAVE_STRSTR 1
 
 /* Define if you have the strtoll function.  */
-#if defined(__MINGW32__) || defined(__WATCOMC__)
+#if defined(__MINGW32__)
 #define HAVE_STRTOLL 1
 #endif
 
@@ -272,7 +271,7 @@
 #define in_addr_t unsigned long
 
 /* Define ssize_t if it is not an available 'typedefed' type */
-#if (defined(__WATCOMC__) && (__WATCOMC__ >= 1240)) || defined(__POCC__)
+#if defined(__POCC__)
 #elif defined(_WIN64)
 #define ssize_t __int64
 #else

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,7 +33,7 @@ struct peer_t {
 	/** sa id of the peer, NULL if offline */
 	ike_sa_id_t *ike_sa_id;
 
-	/** list of peer ids that reuested this peer */
+	/** list of peer ids that requested this peer */
 	linked_list_t *requested_by;
 };
 
@@ -74,7 +75,7 @@ struct private_mediation_manager_t {
 	 mediation_manager_t public;
 
 	 /**
-	  * Lock for exclusivly accessing the manager.
+	  * Lock for exclusively accessing the manager.
 	  */
 	 mutex_t *mutex;
 

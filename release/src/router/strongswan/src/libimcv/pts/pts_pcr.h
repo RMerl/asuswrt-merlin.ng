@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,8 +24,11 @@
 
 typedef struct pts_pcr_t pts_pcr_t;
 
+#include "pts_meas_algo.h"
+
 #include <library.h>
 
+#include <tpm_tss.h>
 #include <tpm_tss_quote_info.h>
 
 /**
@@ -33,14 +37,16 @@ typedef struct pts_pcr_t pts_pcr_t;
 #define PTS_PCR_MAX_NUM				24
 
 /**
- * Number of bytes that can be saved in a PCR of TPM, TPM Spec 1.2
- */
-#define PTS_PCR_LEN					20
-
-/**
  * Class implementing a shadow PCR register set
  */
 struct pts_pcr_t {
+
+	/**
+	 * Get the hash algorithm used by the PCR bank
+	 *
+	 * @return				hash_measurement algorithm
+	 */
+	pts_meas_algorithms_t(*get_pcr_algo)(pts_pcr_t *this);
 
 	/**
 	 * Get the number of selected PCRs
@@ -114,7 +120,12 @@ struct pts_pcr_t {
 
 /**
  * Creates an pts_pcr_t object
+ *
+ * @param tpm_version		TPM version
+ * @param algo				Hash algorithm used by PCR bank
+ * @param locality			TPM locality in which the PCR bank was initialized
  */
-pts_pcr_t* pts_pcr_create(void);
+pts_pcr_t* pts_pcr_create(tpm_version_t tpm_version, pts_meas_algorithms_t algo,
+						  uint8_t locality);
 
 #endif /** PTS_PCR_H_ @}*/

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* <DESC>
@@ -39,7 +41,7 @@
  *
  * Synchronising your computer clock via Internet time server usually relies
  * on DAYTIME, TIME, or NTP protocols. These protocols provide good accurate
- * time synchronisation but it does not work very well through a
+ * time synchronization but it does not work very well through a
  * firewall/proxy. Some adjustment has to be made to the firewall/proxy for
  * these protocols to work properly.
  *
@@ -218,7 +220,7 @@ int SyncTime_CURL_Fetch(CURL *curl, char *URL_Str, char *OutFileName,
 
   curl_easy_setopt(curl, CURLOPT_URL, URL_Str);
   res = curl_easy_perform(curl);
-  if(outfile != NULL)
+  if(outfile)
     fclose(outfile);
   return res;  /* (CURLE_OK) */
 }

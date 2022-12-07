@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Sansar Choinyambuu, Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -48,7 +49,7 @@ enum pts_pcr_transform_t {
  * PTS Component Evidence Validation Result Flags
  */
 enum pts_comp_evid_validation_t {
-	/** No Validation was attempted */		
+	/** No Validation was attempted */
 	PTS_COMP_EVID_VALIDATION_NONE =		0x00,
 	/** Attempted validation, unable to verify */
 	PTS_COMP_EVID_VALIDATION_UNABLE =	0x20,
@@ -59,7 +60,7 @@ enum pts_comp_evid_validation_t {
 };
 
 /**
- * PTS Functional Component Interface 
+ * PTS Functional Component Interface
  */
 struct pts_comp_evidence_t {
 
@@ -140,7 +141,7 @@ struct pts_comp_evidence_t {
 
 /**
  * Creates a pts_comp_evidence_t object
- * 
+ *
  * @param name					Component Functional Name
  * @param depth					Sub-component depth
  * @param extended_pcr			PCR the measurement was extended into
@@ -160,7 +161,7 @@ pts_comp_evidence_t* pts_comp_evidence_create(pts_comp_func_name_t *name,
 /**
  * Determine transform to fit measurement hash into PCR register
  *
- * @param algo					Measurement hash algorithm 
+ * @param algo					Measurement hash algorithm
  * @param pcr_len				Length of the PCR registers in bytes
  * @return						PCR transform type
  */

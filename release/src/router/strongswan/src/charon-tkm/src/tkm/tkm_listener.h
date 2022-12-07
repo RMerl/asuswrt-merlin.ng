@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -41,6 +42,18 @@ struct tkm_listener_t {
 	 */
 	void (*destroy)(tkm_listener_t *this);
 };
+
+/**
+ * Loads CA certificate fingerprint to TKM CA id mapping from config.
+ *
+ * @return          number of registered mappings
+ */
+int register_ca_mapping();
+
+/**
+ * Destroy CA certificate fingerprint to TKM CA id mapping.
+ */
+void destroy_ca_mapping();
 
 /**
  * Create a tkm_listener instance.

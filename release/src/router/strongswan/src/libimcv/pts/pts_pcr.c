@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2012 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2012-2020 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -53,11 +54,27 @@ struct private_pts_pcr_t {
 	uint8_t pcr_select[PTS_PCR_MAX_NUM / 8];
 
 	/**
+	 * Length in bytes of a PCR register (size of hash used)
+	 */
+	size_t pcr_len;
+
+	/**
+	 * Hash algorithm of PCR bank
+	 */
+	pts_meas_algorithms_t pcr_algo;
+
+	/**
 	 * Hasher used to extend shadow PCRs
 	 */
 	hasher_t *hasher;
 
 };
+
+METHOD(pts_pcr_t, get_pcr_algo, pts_meas_algorithms_t,
+	private_pts_pcr_t *this)
+{
+	return this->pcr_algo;
+}
 
 METHOD(pts_pcr_t, get_count, uint32_t,
 	private_pts_pcr_t *this)
@@ -162,14 +179,14 @@ METHOD(pts_pcr_t, get, chunk_t,
 METHOD(pts_pcr_t, set, bool,
 	private_pts_pcr_t *this, uint32_t pcr, chunk_t value)
 {
-	if (value.len != PTS_PCR_LEN)
+	if (value.len != this->pcr_len)
 	{
 		DBG1(DBG_PTS, "PCR %2u: value does not fit", pcr);
 		return FALSE;
 	}
 	if (select_pcr(this, pcr))
 	{
-		memcpy(this->pcrs[pcr].ptr, value.ptr, PTS_PCR_LEN);
+		memcpy(this->pcrs[pcr].ptr, value.ptr, this->pcr_len);
 		return TRUE;
 	}
 	return FALSE;
@@ -178,7 +195,7 @@ METHOD(pts_pcr_t, set, bool,
 METHOD(pts_pcr_t, extend, chunk_t,
 	private_pts_pcr_t *this, uint32_t pcr, chunk_t measurement)
 {
-	if (measurement.len != PTS_PCR_LEN)
+	if (measurement.len != this->pcr_len)
 	{
 		DBG1(DBG_PTS, "PCR %2u: measurement does not fit", pcr);
 		return chunk_empty;
@@ -206,7 +223,7 @@ METHOD(pts_pcr_t, get_composite, tpm_tss_pcr_composite_t*,
 	u_char *pos;
 
 	selection_size = get_selection_size(this);
-	pcr_field_size = this->pcr_count * PTS_PCR_LEN;
+	pcr_field_size = this->pcr_count * this->pcr_len;
 
 	INIT(pcr_composite,
 		.pcr_select    = chunk_alloc(selection_size),
@@ -219,8 +236,8 @@ METHOD(pts_pcr_t, get_composite, tpm_tss_pcr_composite_t*,
 	enumerator = create_enumerator(this);
 	while (enumerator->enumerate(enumerator, &pcr))
 	{
-		memcpy(pos, this->pcrs[pcr].ptr, PTS_PCR_LEN);
-		pos += PTS_PCR_LEN;
+		memcpy(pos, this->pcrs[pcr].ptr, this->pcr_len);
+		pos += this->pcr_len;
 	}
 	enumerator->destroy(enumerator);
 
@@ -243,22 +260,26 @@ METHOD(pts_pcr_t, destroy, void,
 /**
  * See header
  */
-pts_pcr_t *pts_pcr_create(void)
+pts_pcr_t *pts_pcr_create(tpm_version_t tpm_version, pts_meas_algorithms_t algo,
+						  uint8_t locality)
 {
 	private_pts_pcr_t *this;
+	hash_algorithm_t hash_alg;
 	hasher_t *hasher;
 	uint32_t i;
 
-	hasher = lib->crypto->create_hasher(lib->crypto, HASH_SHA1);
+	hash_alg = pts_meas_algo_to_hash(algo);
+	hasher = lib->crypto->create_hasher(lib->crypto, hash_alg);
 	if (!hasher)
 	{
 		DBG1(DBG_PTS, "%N hasher could not be created",
-			 hash_algorithm_short_names, HASH_SHA1);
+			 hash_algorithm_short_names, hash_alg);
 		return NULL;
 	}
 
 	INIT(this,
 		.public = {
+			.get_pcr_algo = _get_pcr_algo,
 			.get_count = _get_count,
 			.select_pcr = _select_pcr,
 			.get_selection_size = _get_selection_size,
@@ -269,13 +290,23 @@ pts_pcr_t *pts_pcr_create(void)
 			.get_composite = _get_composite,
 			.destroy = _destroy,
 		},
+		.pcr_algo = algo,
+		.pcr_len = pts_meas_algo_hash_size(algo),
 		.hasher = hasher,
 	);
 
 	for (i = 0; i < PTS_PCR_MAX_NUM; i++)
 	{
-		this->pcrs[i] = chunk_alloc(PTS_PCR_LEN);
-		memset(this->pcrs[i].ptr, 0x00, PTS_PCR_LEN);
+		this->pcrs[i] = chunk_alloc(this->pcr_len);
+		memset(this->pcrs[i].ptr, 0x00, this->pcr_len);
+	}
+
+	/* Set locality indicator in PCR[0] */
+	if (tpm_version == TPM_VERSION_2_0)
+	{
+		DBG2(DBG_PTS, "TPM 2.0 - locality indicator set to %u",
+					  (uint32_t)locality);
+		this->pcrs[0].ptr[this->pcr_len - 1] = locality;
 	}
 
 	return &this->public;

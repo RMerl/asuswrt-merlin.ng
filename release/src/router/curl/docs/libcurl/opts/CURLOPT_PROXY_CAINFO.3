@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_CAINFO 3 "July 13, 2020" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_PROXY_CAINFO 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_PROXY_CAINFO \- path to proxy Certificate Authority (CA) bundle
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_CAINFO, char *path);
+.fi
 .SH DESCRIPTION
 This option is for connecting to an HTTPS proxy, not an HTTPS server.
 
@@ -52,6 +56,8 @@ preferred method of verifying the peer's certificate chain.
 
 The application does not have to keep the string around after setting this
 option.
+
+The default value for this can be figured out with \fICURLINFO_CAINFO(3)\fP.
 .SH DEFAULT
 Built-in system specific
 .SH PROTOCOLS
@@ -71,7 +77,7 @@ if(curl) {
 .SH AVAILABILITY
 Added in 7.52.0
 
-For TLS backends that don't support certificate files, the
+For TLS backends that do not support certificate files, the
 \fICURLOPT_PROXY_CAINFO(3)\fP option is ignored. Refer to
 https://curl.se/docs/ssl-compared.html
 .SH RETURN VALUE

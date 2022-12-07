@@ -45,6 +45,16 @@ testing "awk handles empty function f(arg){}" \
 	"" ""
 
 prg='
+function empty_fun(){}
+END {empty_fun()
+  print "Ok"
+}'
+testing "awk handles empty function f(){}" \
+	"awk '$prg'" \
+	"Ok\n" \
+	"" ""
+
+prg='
 function outer_fun() {
   return 1
 }
@@ -71,12 +81,33 @@ testing "awk properly handles undefined function" \
 	"L1\n\nawk: cmd. line:5: Call to undefined function\n" \
 	"" ""
 
+prg='
+BEGIN {
+  v=1
+  a=2
+  print v (a)
+}'
+testing "awk 'v (a)' is not a function call, it is a concatenation" \
+	"awk '$prg' 2>&1" \
+	"12\n" \
+	"" ""
+
+prg='func f(){print"F"};func g(){print"G"};BEGIN{f(g(),g())}'
+testing "awk unused function args are evaluated" \
+	"awk '$prg' 2>&1" \
+	"G\nG\nF\n" \
+	"" ""
+
 
 optional DESKTOP
 testing "awk hex const 1" "awk '{ print or(0xffffffff,1) }'" "4294967295\n" "" "\n"
 testing "awk hex const 2" "awk '{ print or(0x80000000,1) }'" "2147483649\n" "" "\n"
-testing "awk oct const"   "awk '{ print or(01234,1) }'"      "669\n"         "" "\n"
+testing "awk oct const"   "awk '{ print or(01234,1) }'"      "669\n"        "" "\n"
 SKIP=
+
+# check that "hex/oct integer" heuristic doesn't kick in on input
+# (must be done only when parsing program text)
+testing "awk input is never oct" "awk '{ print \$1, \$1+1 }'" "011 12\n"    "" "011\n"
 
 # check that "hex/oct integer" heuristic doesn't kick in on 00NN.NNN
 testing "awk floating const with leading zeroes" \
@@ -85,7 +116,8 @@ testing "awk floating const with leading zeroes" \
 	"" "\n"
 
 # long field seps requiring regex
-testing "awk long field sep" "awk -F-- '{ print NF, length(\$NF), \$NF }'" \
+testing "awk long field sep" \
+	"awk -F-- '{ print NF, length(\$NF), \$NF }'" \
 	"2 0 \n3 0 \n4 0 \n5 0 \n" \
 	"" \
 	"a--\na--b--\na--b--c--\na--b--c--d--"
@@ -261,6 +293,37 @@ end d
 " \
 	"" ""
 
+prg='
+BEGIN{
+cnt = 0
+a[cnt] = "zeroth"
+a[++cnt] = "first"
+delete a[cnt--]
+print cnt
+print "[0]:" a[0]
+print "[1]:" a[1]
+}'
+testing "awk 'delete a[v--]' evaluates v-- once" \
+	"awk '$prg'" \
+	"\
+0
+[0]:zeroth
+[1]:
+" \
+	"" ""
+
+testing "awk func arg parsing 1" \
+	"awk 'func f(,) { }' 2>&1" "awk: cmd. line:1: Unexpected token\n" "" ""
+
+testing "awk func arg parsing 2" \
+	"awk 'func f(a,,b) { }' 2>&1" "awk: cmd. line:1: Unexpected token\n" "" ""
+
+testing "awk func arg parsing 3" \
+	"awk 'func f(a,) { }' 2>&1" "awk: cmd. line:1: Unexpected token\n" "" ""
+
+testing "awk func arg parsing 4" \
+	"awk 'func f(a b) { }' 2>&1" "awk: cmd. line:1: Unexpected token\n" "" ""
+
 testing "awk handles empty ()" \
 	"awk 'BEGIN {print()}' 2>&1" "awk: cmd. line:1: Empty sequence\n" "" ""
 
@@ -286,6 +349,26 @@ testing "awk length()" \
 	"3\n3\n3\n3\n" \
 	"" "qwe"
 
+testing "awk print length, 1" \
+	"awk '{ print length, 1 }'" \
+	"0 1\n" \
+	"" "\n"
+
+testing "awk print length 1" \
+	"awk '{ print length 1 }'" \
+	"01\n" \
+	"" "\n"
+
+testing "awk length == 0" \
+	"awk 'length == 0 { print \"foo\" }'" \
+	"foo\n" \
+	"" "\n"
+
+testing "awk if (length == 0)" \
+	"awk '{ if (length == 0) { print \"bar\" } }'" \
+	"bar\n" \
+	"" "\n"
+
 testing "awk -f and ARGC" \
 	"awk -f - input" \
 	"re\n2\n" \
@@ -300,22 +383,106 @@ testing "awk -e and ARGC" \
 	""
 SKIP=
 
-# The examples are in fact not valid awk programs (break/continue
-# can only be used inside loops).
-# But we do accept them outside of loops.
-# We had a bug with misparsing "break ; else" sequence.
-# Test that *that* bug is fixed, using simplest possible scripts:
 testing "awk break" \
 	"awk -f - 2>&1; echo \$?" \
-	"0\n" \
+	"awk: -:1: 'break' not in a loop\n1\n" \
 	"" \
 	'BEGIN { if (1) break; else a = 1 }'
 testing "awk continue" \
 	"awk -f - 2>&1; echo \$?" \
-	"0\n" \
+	"awk: -:1: 'continue' not in a loop\n1\n" \
 	"" \
 	'BEGIN { if (1) continue; else a = 1 }'
 
+optional FEATURE_AWK_GNU_EXTENSIONS
+testing "awk handles invalid for loop" \
+	"awk -e '{ for() }' 2>&1" "awk: cmd. line:1: Unexpected token\n" "" ""
+SKIP=
+
+optional FEATURE_AWK_GNU_EXTENSIONS
+testing "awk handles colon not preceded by ternary" \
+	"awk -e foo:bar: 2>&1" "awk: cmd. line:1: Unexpected token\n" "" ""
+SKIP=
+
+optional FEATURE_AWK_GNU_EXTENSIONS
+testing "awk errors on missing delete arg" \
+	"awk -e '{delete}' 2>&1" "awk: cmd. line:1: Too few arguments\n" "" ""
+SKIP=
+
+optional FEATURE_AWK_GNU_EXTENSIONS
+testing "awk printf('%c') can output NUL" \
+	"awk '{printf(\"hello%c null\n\", 0)}'" "hello\0 null\n" "" "\n"
+SKIP=
+
+optional FEATURE_AWK_GNU_EXTENSIONS DESKTOP
+testing "awk printf('%-10c') can output NUL" \
+	"awk 'BEGIN { printf \"[%-10c]\n\", 0 }' | od -tx1" "\
+0000000 5b 00 20 20 20 20 20 20 20 20 20 5d 0a
+0000015
+" "" ""
+SKIP=
+
 # testing "description" "command" "result" "infile" "stdin"
+testing 'awk negative field access' \
+	'awk 2>&1 -- '\''{ $(-1) }'\' \
+	"awk: cmd. line:1: Access to negative field\n" \
+	'' \
+	'anything'
+
+# was misinterpreted as (("str"++) i) instead of ("str" (++i))
+# (and was executed: "str"++ is "0", thus concatenating "0" and "1"):
+testing 'awk do not allow "str"++' \
+	'awk -v i=1 "BEGIN {print \"str\" ++i}"' \
+	"str2\n" \
+	'' \
+	'anything'
+
+# gawk compat: FS regex matches only non-empty separators:
+# with -*, the splitting is NOT f o o b a r, but foo bar:
+testing 'awk FS regex which can match empty string' \
+	"awk -F '-*' '{print \$1 \"-\" \$2 \"=\" \$3 \"*\" \$4}'" \
+	"foo-bar=*\n" \
+	'' \
+	'foo--bar'
+
+# last+1 field should be empty (had a bug where it wasn't)
+testing 'awk $NF is empty' \
+	"awk -F '=+' '{print \$NF}'" \
+	"\n" \
+	'' \
+	'a=====123='
+
+testing "awk exit N propagates through END's exit" \
+	"awk 'BEGIN { exit 42 } END { exit }'; echo \$?" \
+	"42\n" \
+	'' ''
+
+testing "awk print + redirect" \
+	"awk 'BEGIN { print \"STDERR %s\" >\"/dev/stderr\" }' 2>&1" \
+	"STDERR %s\n" \
+	'' ''
+
+testing "awk \"cmd\" | getline" \
+	"awk 'BEGIN { \"echo HELLO\" | getline; print }'" \
+	"HELLO\n" \
+	'' ''
+
+# printf %% should print one % (had a bug where it didn't)
+testing 'awk printf %% prints one %' \
+	"awk 'BEGIN { printf \"%%\n\" }'" \
+	"%\n" \
+	'' ''
+
+testing 'awk backslash+newline eaten with no trace' \
+	"awk 'BEGIN { printf \"Hello\\
+ world\n\" }'" \
+	"Hello world\n" \
+	'' ''
+
+testing 'awk assign while test' \
+	"awk '\$1==\$1=\"foo\" {print \$1}'" \
+	"foo\n" \
+	"" \
+	"foo"
 
 exit $FAILCOUNT

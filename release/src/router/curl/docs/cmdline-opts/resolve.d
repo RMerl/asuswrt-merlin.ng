@@ -1,9 +1,12 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: resolve
 Arg: <[+]host:port:addr[,addr]...>
 Help: Resolve the host+port to this address
 Added: 7.21.3
 Category: connection
 Example: --resolve example.com:443:127.0.0.1 $URL
+See-also: connect-to alt-svc
 ---
 Provide a custom address for a specific host and port pair. Using this, you
 can make the curl requests(s) use a specified address and prevent the

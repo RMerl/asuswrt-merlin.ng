@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 2001 Jari Ruusu.
  *
  * Ported from strongSwans implementation written by Jari Ruusu.
@@ -24,7 +23,7 @@
 typedef struct private_sha512_hasher_t private_sha512_hasher_t;
 
 /**
- * Private data structure with hasing context for SHA384 and SHA512
+ * Private data structure with hashing context for SHA384 and SHA512
  */
 struct private_sha512_hasher_t {
 	/**
@@ -43,7 +42,7 @@ struct private_sha512_hasher_t {
 typedef struct private_sha256_hasher_t private_sha256_hasher_t;
 
 /**
- * Private data structure with hasing context for SHA256
+ * Private data structure with hashing context for SHA256
  */
 struct private_sha256_hasher_t {
 	/**

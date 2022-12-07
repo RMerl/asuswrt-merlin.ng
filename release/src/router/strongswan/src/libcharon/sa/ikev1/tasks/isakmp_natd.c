@@ -2,7 +2,8 @@
  * Copyright (C) 2006-2011 Tobias Brunner,
  * Copyright (C) 2006-2007 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -352,7 +353,7 @@ METHOD(task_t, process_i, status_t,
 	status_t result = NEED_MORE;
 
 	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_NATT))
-	{	/* we didn't receive VIDs inidcating support for NAT-T */
+	{	/* we didn't receive VIDs indicating support for NAT-T */
 		return SUCCESS;
 	}
 

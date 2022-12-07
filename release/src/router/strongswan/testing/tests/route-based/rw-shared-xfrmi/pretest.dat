@@ -1,0 +1,16 @@
+moon::iptables-restore < /etc/iptables.rules
+carol::iptables-restore < /etc/iptables.rules
+dave::iptables-restore < /etc/iptables.rules
+moon::/usr/local/libexec/ipsec/xfrmi -n xfrm-moon -i 42 -d eth0
+moon::ip link set xfrm-moon up
+moon::ip route add 10.3.0.0/28 dev xfrm-moon
+moon::iptables -A FORWARD -i xfrm-moon -j ACCEPT
+moon::iptables -A FORWARD -o xfrm-moon -j ACCEPT
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
+moon::expect-connection rw
+carol::expect-connection home
+carol::swanctl --initiate --child home
+dave::expect-connection home
+dave::swanctl --initiate --child home

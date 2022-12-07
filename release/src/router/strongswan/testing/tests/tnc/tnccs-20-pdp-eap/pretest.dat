@@ -13,15 +13,15 @@ dave::cat /etc/tnc_config
 carol::echo 0 > /proc/sys/net/ipv4/ip_forward
 dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
 alice::sed -i "s/NOW/`date +%s`/g" /etc/pts/data1.sql
-alice::sed -i "s:DEBIAN_VERSION:\`cat /etc/debian_version\`:" /etc/pts/data1.sql
+alice::sed -i "s:DEBIAN_VERSION:\`. /etc/os-release\; echo \$VERSION_ID\`:" /etc/pts/data1.sql
 alice::cd /usr/local/share/strongswan/templates/database/imv; cat tables.sql data.sql /etc/pts/data1.sql | sqlite3 /etc/db.d/config.db
 alice::chgrp -R www-data /etc/db.d/config.db; chmod -R g+w /etc/db.d/config.db
 alice::/usr/local/bin/init_tnc
 alice::systemctl start apache2
-alice::systemctl start strongswan-swanctl
-moon::systemctl start strongswan-swanctl
-dave::systemctl start strongswan-swanctl
-carol::systemctl start strongswan-swanctl
+alice::systemctl start strongswan
+moon::systemctl start strongswan
+dave::systemctl start strongswan
+carol::systemctl start strongswan
 moon::expect-connection rw-allow
 moon::expect-connection rw-isolate
 dave::expect-connection home

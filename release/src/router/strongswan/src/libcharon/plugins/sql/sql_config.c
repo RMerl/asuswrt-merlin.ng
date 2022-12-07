@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2006-2008 Martin Willi
  * Copyright (C) 2010 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -153,8 +154,8 @@ static void add_esp_proposals(private_sql_config_t *this,
 	}
 	if (use_default)
 	{
-		child->add_proposal(child, proposal_create_default(PROTO_ESP));
 		child->add_proposal(child, proposal_create_default_aead(PROTO_ESP));
+		child->add_proposal(child, proposal_create_default(PROTO_ESP));
 	}
 }
 
@@ -272,10 +273,18 @@ static ike_cfg_t *build_ike_cfg(private_sql_config_t *this, enumerator_t *e,
 	while (e->enumerate(e, &id, &certreq, &force_encap, &local, &remote))
 	{
 		ike_cfg_t *ike_cfg;
+		ike_cfg_create_t ike = {
+			.version = IKEV2,
+			.local = local,
+			.local_port = charon->socket->get_port(charon->socket, FALSE),
+			.remote = remote,
+			.remote_port = IKEV2_UDP_PORT,
+			.no_certreq = !certreq,
+			.force_encap = force_encap,
+			.fragmentation = FRAGMENTATION_YES,
+		};
 
-		ike_cfg = ike_cfg_create(IKEV2, certreq, force_encap, local,
-								 charon->socket->get_port(charon->socket, FALSE),
-								 remote, IKEV2_UDP_PORT, FRAGMENTATION_NO, 0);
+		ike_cfg = ike_cfg_create(&ike);
 		add_ike_proposals(this, ike_cfg, id);
 		return ike_cfg;
 	}

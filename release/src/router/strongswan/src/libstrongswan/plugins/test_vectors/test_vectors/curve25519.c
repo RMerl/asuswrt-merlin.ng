@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,8 +19,8 @@
 /**
  * From RFC 7748
  */
-dh_test_vector_t curve25519_1 = {
-	.group = CURVE_25519, .priv_len = 32, .pub_len = 32, .shared_len = 32,
+ke_test_vector_t curve25519_1 = {
+	.method = CURVE_25519, .priv_len = 32, .pub_len = 32, .shared_len = 32,
 	.priv_a	= "\x77\x07\x6d\x0a\x73\x18\xa5\x7d\x3c\x16\xc1\x72\x51\xb2\x66\x45"
 			  "\xdf\x4c\x2f\x87\xeb\xc0\x99\x2a\xb1\x77\xfb\xa5\x1d\xb9\x2c\x2a",
 	.priv_b	= "\x5d\xab\x08\x7e\x62\x4a\x8a\x4b\x79\xe1\x7f\x8b\x83\x80\x0e\xe6"
@@ -35,8 +36,8 @@ dh_test_vector_t curve25519_1 = {
 /**
  * From RFC 8031
  */
-dh_test_vector_t curve25519_2 = {
-	.group = CURVE_25519, .priv_len = 32, .pub_len = 32, .shared_len = 32,
+ke_test_vector_t curve25519_2 = {
+	.method = CURVE_25519, .priv_len = 32, .pub_len = 32, .shared_len = 32,
 	.priv_a	= "\x75\x1f\xb4\x30\x86\x55\xb4\x76\xb6\x78\x9b\x73\x25\xf9\xea\x8c"
 			  "\xdd\xd1\x6a\x58\x53\x3f\xf6\xd9\xe6\x00\x09\x46\x4a\x5f\x9d\x94",
 	.priv_b	= "\x0a\x54\x64\x52\x53\x29\x0d\x60\xdd\xad\xd0\xe0\x30\xba\xcd\x9e"

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2016 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -46,7 +47,7 @@ struct private_openssl_ec_private_key_t {
 	/**
 	 * EC key object
 	 */
-	EC_KEY *ec;
+	EVP_PKEY *key;
 
 	/**
 	 * TRUE if the key is from an OpenSSL ENGINE and might not be readable
@@ -59,25 +60,78 @@ struct private_openssl_ec_private_key_t {
 	refcount_t ref;
 };
 
-/* from ec public key */
-bool openssl_ec_fingerprint(EC_KEY *ec, cred_encoding_type_t type, chunk_t *fp);
+/* from openssl_ec_public_key */
+bool openssl_check_ec_key_curve(EVP_PKEY *key, int nid_curve);
+
+/**
+ * Build a DER encoded signature as in RFC 3279
+ */
+static bool build_der_signature(private_openssl_ec_private_key_t *this,
+								int nid_hash, chunk_t data, chunk_t *signature)
+{
+	EVP_MD_CTX *ctx;
+	const EVP_MD *md;
+
+	md = EVP_get_digestbynid(nid_hash);
+	if (!md)
+	{
+		return FALSE;
+	}
+	*signature = chunk_alloc(EVP_PKEY_size(this->key));
+	ctx = EVP_MD_CTX_create();
+	if (!ctx ||
+		EVP_DigestSignInit(ctx, NULL, md, NULL, this->key) <= 0 ||
+		EVP_DigestSignUpdate(ctx, data.ptr, data.len) <= 0 ||
+		EVP_DigestSignFinal(ctx, signature->ptr, &signature->len) != 1)
+	{
+		chunk_free(signature);
+		EVP_MD_CTX_destroy(ctx);
+		return FALSE;
+	}
+	EVP_MD_CTX_destroy(ctx);
+	return TRUE;
+}
 
 /**
  * Build a signature as in RFC 4754
  */
 static bool build_signature(private_openssl_ec_private_key_t *this,
-							chunk_t hash, chunk_t *signature)
+							int nid_hash, chunk_t data, chunk_t *signature)
 {
-	const BIGNUM *r, *s;
+	EVP_PKEY_CTX *ctx;
 	ECDSA_SIG *sig;
+	const BIGNUM *r, *s;
+	const u_char *p;
+	chunk_t der_sig;
 	bool built = FALSE;
 
-	sig = ECDSA_do_sign(hash.ptr, hash.len, this->ec);
+	if (!nid_hash)
+	{	/* EVP_DigestSign*() has issues with NULL EVP_MD */
+		der_sig = chunk_alloc(EVP_PKEY_size(this->key));
+		ctx = EVP_PKEY_CTX_new(this->key, NULL);
+		if (!ctx ||
+			EVP_PKEY_sign_init(ctx) <= 0 ||
+			EVP_PKEY_sign(ctx, der_sig.ptr, &der_sig.len, data.ptr, data.len) <= 0)
+		{
+			chunk_free(&der_sig);
+			EVP_PKEY_CTX_free(ctx);
+			return FALSE;
+		}
+		EVP_PKEY_CTX_free(ctx);
+	}
+	else if (!build_der_signature(this, nid_hash, data, &der_sig))
+	{
+		return FALSE;
+	}
+	/* extract r and s from the DER-encoded signature */
+	p = der_sig.ptr;
+	sig = d2i_ECDSA_SIG(NULL, &p, der_sig.len);
+	chunk_free(&der_sig);
 	if (sig)
 	{
 		ECDSA_SIG_get0(sig, &r, &s);
 		/* concatenate BNs r/s to a signature chunk */
-		built = openssl_bn_cat(EC_FIELD_ELEMENT_LEN(EC_KEY_get0_group(this->ec)),
+		built = openssl_bn_cat((EVP_PKEY_bits(this->key) + 7) / 8,
 							   r, s, signature);
 		ECDSA_SIG_free(sig);
 	}
@@ -91,62 +145,13 @@ static bool build_curve_signature(private_openssl_ec_private_key_t *this,
 								signature_scheme_t scheme, int nid_hash,
 								int nid_curve, chunk_t data, chunk_t *signature)
 {
-	const EC_GROUP *my_group;
-	EC_GROUP *req_group;
-	chunk_t hash;
-	bool built;
-
-	req_group = EC_GROUP_new_by_curve_name(nid_curve);
-	if (!req_group)
+	if (!openssl_check_ec_key_curve(this->key, nid_curve))
 	{
-		DBG1(DBG_LIB, "signature scheme %N not supported in EC (required curve "
-			 "not supported)", signature_scheme_names, scheme);
-		return FALSE;
-	}
-	my_group = EC_KEY_get0_group(this->ec);
-	if (EC_GROUP_cmp(my_group, req_group, NULL) != 0)
-	{
-		DBG1(DBG_LIB, "signature scheme %N not supported by private key",
+		DBG1(DBG_LIB, "signature scheme %N not supported by key",
 			 signature_scheme_names, scheme);
 		return FALSE;
 	}
-	EC_GROUP_free(req_group);
-	if (!openssl_hash_chunk(nid_hash, data, &hash))
-	{
-		return FALSE;
-	}
-	built = build_signature(this, hash, signature);
-	chunk_free(&hash);
-	return built;
-}
-
-/**
- * Build a DER encoded signature as in RFC 3279
- */
-static bool build_der_signature(private_openssl_ec_private_key_t *this,
-								int hash_nid, chunk_t data, chunk_t *signature)
-{
-	chunk_t hash, sig;
-	int siglen = 0;
-	bool built;
-
-	if (!openssl_hash_chunk(hash_nid, data, &hash))
-	{
-		return FALSE;
-	}
-	sig = chunk_alloc(ECDSA_size(this->ec));
-	built = ECDSA_sign(0, hash.ptr, hash.len, sig.ptr, &siglen, this->ec) == 1;
-	sig.len = siglen;
-	if (built)
-	{
-		*signature = sig;
-	}
-	else
-	{
-		free(sig.ptr);
-	}
-	free(hash.ptr);
-	return built;
+	return build_signature(this, nid_hash, data, signature);
 }
 
 METHOD(private_key_t, sign, bool,
@@ -156,7 +161,7 @@ METHOD(private_key_t, sign, bool,
 	switch (scheme)
 	{
 		case SIGN_ECDSA_WITH_NULL:
-			return build_signature(this, data, signature);
+			return build_signature(this, 0, data, signature);
 		case SIGN_ECDSA_WITH_SHA1_DER:
 			return build_der_signature(this, NID_sha1, data, signature);
 		case SIGN_ECDSA_WITH_SHA256_DER:
@@ -183,7 +188,7 @@ METHOD(private_key_t, sign, bool,
 
 METHOD(private_key_t, decrypt, bool,
 	private_openssl_ec_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "EC private key decryption not implemented");
 	return FALSE;
@@ -192,7 +197,7 @@ METHOD(private_key_t, decrypt, bool,
 METHOD(private_key_t, get_keysize, int,
 	private_openssl_ec_private_key_t *this)
 {
-	return EC_GROUP_get_degree(EC_KEY_get0_group(this->ec));
+	return EVP_PKEY_bits(this->key);
 }
 
 METHOD(private_key_t, get_type, key_type_t,
@@ -206,12 +211,8 @@ METHOD(private_key_t, get_public_key, public_key_t*,
 {
 	public_key_t *public;
 	chunk_t key;
-	u_char *p;
 
-	key = chunk_alloc(i2d_EC_PUBKEY(this->ec, NULL));
-	p = key.ptr;
-	i2d_EC_PUBKEY(this->ec, &p);
-
+	key = openssl_i2chunk(PUBKEY, this->key);
 	public = lib->creds->create(lib->creds, CRED_PUBLIC_KEY, KEY_ECDSA,
 								BUILD_BLOB_ASN1_DER, key, BUILD_END);
 	free(key.ptr);
@@ -222,20 +223,17 @@ METHOD(private_key_t, get_fingerprint, bool,
 	private_openssl_ec_private_key_t *this, cred_encoding_type_t type,
 	chunk_t *fingerprint)
 {
-	return openssl_ec_fingerprint(this->ec, type, fingerprint);
+	return openssl_fingerprint(this->key, type, fingerprint);
 }
 
 METHOD(private_key_t, get_encoding, bool,
 	private_openssl_ec_private_key_t *this, cred_encoding_type_t type,
 	chunk_t *encoding)
 {
-	u_char *p;
-
 	if (this->engine)
 	{
 		return FALSE;
 	}
-
 	switch (type)
 	{
 		case PRIVKEY_ASN1_DER:
@@ -243,9 +241,7 @@ METHOD(private_key_t, get_encoding, bool,
 		{
 			bool success = TRUE;
 
-			*encoding = chunk_alloc(i2d_ECPrivateKey(this->ec, NULL));
-			p = encoding->ptr;
-			i2d_ECPrivateKey(this->ec, &p);
+			*encoding = openssl_i2chunk(PrivateKey, this->key);
 
 			if (type == PRIVKEY_PEM)
 			{
@@ -275,10 +271,10 @@ METHOD(private_key_t, destroy, void,
 {
 	if (ref_put(&this->ref))
 	{
-		if (this->ec)
+		if (this->key)
 		{
-			lib->encoding->clear_cache(lib->encoding, this->ec);
-			EC_KEY_free(this->ec);
+			lib->encoding->clear_cache(lib->encoding, this->key);
+			EVP_PKEY_free(this->key);
 		}
 		free(this);
 	}
@@ -287,7 +283,7 @@ METHOD(private_key_t, destroy, void,
 /**
  * Internal generic constructor
  */
-static private_openssl_ec_private_key_t *create_empty(void)
+static private_openssl_ec_private_key_t *create_internal(EVP_PKEY *key)
 {
 	private_openssl_ec_private_key_t *this;
 
@@ -309,6 +305,7 @@ static private_openssl_ec_private_key_t *create_empty(void)
 			},
 		},
 		.ref = 1,
+		.key = key,
 	);
 
 	return this;
@@ -320,16 +317,13 @@ static private_openssl_ec_private_key_t *create_empty(void)
 private_key_t *openssl_ec_private_key_create(EVP_PKEY *key, bool engine)
 {
 	private_openssl_ec_private_key_t *this;
-	EC_KEY *ec;
 
-	ec = EVP_PKEY_get1_EC_KEY(key);
-	EVP_PKEY_free(key);
-	if (!ec)
+	if (EVP_PKEY_base_id(key) != EVP_PKEY_EC)
 	{
+		EVP_PKEY_free(key);
 		return NULL;
 	}
-	this = create_empty();
-	this->ec = ec;
+	this = create_internal(key);
 	this->engine = engine;
 	return &this->public.key;
 }
@@ -341,6 +335,7 @@ openssl_ec_private_key_t *openssl_ec_private_key_gen(key_type_t type,
 													 va_list args)
 {
 	private_openssl_ec_private_key_t *this;
+	EVP_PKEY *key = NULL;
 	u_int key_size = 0;
 
 	while (TRUE)
@@ -361,32 +356,58 @@ openssl_ec_private_key_t *openssl_ec_private_key_gen(key_type_t type,
 	{
 		return NULL;
 	}
-	this = create_empty();
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
 	switch (key_size)
 	{
 		case 256:
-			this->ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+			key = EVP_EC_gen("P-256");
 			break;
 		case 384:
-			this->ec = EC_KEY_new_by_curve_name(NID_secp384r1);
+			key = EVP_EC_gen("P-384");
 			break;
 		case 521:
-			this->ec = EC_KEY_new_by_curve_name(NID_secp521r1);
+			key = EVP_EC_gen("P-521");
 			break;
 		default:
 			DBG1(DBG_LIB, "EC private key size %d not supported", key_size);
-			destroy(this);
 			return NULL;
 	}
-	if (EC_KEY_generate_key(this->ec) != 1)
+#else /* OPENSSL_VERSION_NUMBER */
+	EC_KEY *ec;
+
+	switch (key_size)
 	{
-		DBG1(DBG_LIB, "EC private key generation failed", key_size);
-		destroy(this);
+		case 256:
+			ec = EC_KEY_new_by_curve_name(NID_X9_62_prime256v1);
+			break;
+		case 384:
+			ec = EC_KEY_new_by_curve_name(NID_secp384r1);
+			break;
+		case 521:
+			ec = EC_KEY_new_by_curve_name(NID_secp521r1);
+			break;
+		default:
+			DBG1(DBG_LIB, "EC private key size %d not supported", key_size);
+			return NULL;
+	}
+	if (ec && EC_KEY_generate_key(ec) == 1)
+	{
+		key = EVP_PKEY_new();
+		if (!EVP_PKEY_assign_EC_KEY(key, ec))
+		{
+			EC_KEY_free(ec);
+			EVP_PKEY_free(key);
+			key = NULL;
+		}
+	}
+#endif /* OPENSSL_VERSION_NUMBER */
+
+	if (!key)
+	{
 		return NULL;
 	}
-	/* encode as a named curve key (no parameters), uncompressed public key */
-	EC_KEY_set_asn1_flag(this->ec, OPENSSL_EC_NAMED_CURVE);
-	EC_KEY_set_conv_form(this->ec, POINT_CONVERSION_UNCOMPRESSED);
+	this = create_internal(key);
 	return &this->public;
 }
 
@@ -397,7 +418,8 @@ openssl_ec_private_key_t *openssl_ec_private_key_load(key_type_t type,
 													  va_list args)
 {
 	private_openssl_ec_private_key_t *this;
-	chunk_t par = chunk_empty, key = chunk_empty;
+	chunk_t par = chunk_empty, blob = chunk_empty;
+	EVP_PKEY *key = NULL;
 
 	while (TRUE)
 	{
@@ -407,7 +429,7 @@ openssl_ec_private_key_t *openssl_ec_private_key_load(key_type_t type,
 				par = va_arg(args, chunk_t);
 				continue;
 			case BUILD_BLOB_ASN1_DER:
-				key = va_arg(args, chunk_t);
+				blob = va_arg(args, chunk_t);
 				continue;
 			case BUILD_END:
 				break;
@@ -417,36 +439,46 @@ openssl_ec_private_key_t *openssl_ec_private_key_load(key_type_t type,
 		break;
 	}
 
-	this = create_empty();
-
 	if (par.ptr)
 	{
-		this->ec = d2i_ECParameters(NULL, (const u_char**)&par.ptr, par.len);
-		if (!this->ec)
+		/* for OpenSSL 3, the combination of d2i_KeyParams/d2i_PrivateKey, which
+		 * are intended to replace the functions below, does currently not work
+		 * because OpenSSL does not pass the internal EC_KEY that stores the
+		 * parameters from the first call to the call that parses the private
+		 * key. however, since parsing PKCS#8 is the only use case for this and
+		 * OpenSSL 3 parses this format directly, there isn't really any need
+		 * for it anyway */
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+		EC_KEY *ec;
+
+		ec = d2i_ECParameters(NULL, (const u_char**)&par.ptr, par.len);
+		if (ec && d2i_ECPrivateKey(&ec, (const u_char**)&blob.ptr, blob.len))
 		{
-			goto error;
+			key = EVP_PKEY_new();
+			if (!EVP_PKEY_assign_EC_KEY(key, ec))
+			{
+				EC_KEY_free(ec);
+				EVP_PKEY_free(key);
+				key = NULL;
+			}
 		}
-		if (!d2i_ECPrivateKey(&this->ec, (const u_char**)&key.ptr, key.len))
+		else
 		{
-			goto error;
+			EC_KEY_free(ec);
 		}
+#endif
 	}
 	else
 	{
-		this->ec = d2i_ECPrivateKey(NULL, (const u_char**)&key.ptr, key.len);
-		if (!this->ec)
-		{
-			goto error;
-		}
+		key = d2i_PrivateKey(EVP_PKEY_EC, NULL, (const u_char**)&blob.ptr,
+							 blob.len);
 	}
-	if (!EC_KEY_check_key(this->ec))
-	{
-		goto error;
-	}
-	return &this->public;
 
-error:
-	destroy(this);
-	return NULL;
+	if (!key)
+	{
+		return NULL;
+	}
+	this = create_internal(key);
+	return &this->public;
 }
 #endif /* OPENSSL_NO_ECDSA */

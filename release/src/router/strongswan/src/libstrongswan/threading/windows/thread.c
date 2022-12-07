@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -87,7 +88,7 @@ struct private_thread_t {
 	bool cancelability;
 
 	/**
-	 * Has the thread been cancelled by thread->cancel()?
+	 * Has the thread been canceled by thread->cancel()?
 	 */
 	bool canceled;
 

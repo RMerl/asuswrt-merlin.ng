@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,13 +18,16 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "tool_setup.h"
 
 #ifdef HAVE_FSETXATTR
 #  include <sys/xattr.h> /* header from libc, not from libattr */
 #  define USE_XATTR
-#elif defined(__FreeBSD_version) && (__FreeBSD_version > 500000)
+#elif (defined(__FreeBSD_version) && (__FreeBSD_version > 500000)) || \
+      defined(__MidnightBSD_version)
 #  include <sys/types.h>
 #  include <sys/extattr.h>
 #  define USE_XATTR
@@ -99,7 +102,7 @@ int fwrite_xattr(CURL *curl, int fd)
   int err = 0;
 
   /* loop through all xattr-curlinfo pairs and abort on a set error */
-  while(err == 0 && mappings[i].attr != NULL) {
+  while(err == 0 && mappings[i].attr) {
     char *value = NULL;
     CURLcode result = curl_easy_getinfo(curl, mappings[i].info, &value);
     if(!result && value) {
@@ -111,7 +114,7 @@ int fwrite_xattr(CURL *curl, int fd)
         err = fsetxattr(fd, mappings[i].attr, value, strlen(value), 0, 0);
 #elif defined(HAVE_FSETXATTR_5)
         err = fsetxattr(fd, mappings[i].attr, value, strlen(value), 0);
-#elif defined(__FreeBSD_version)
+#elif defined(__FreeBSD_version) || defined(__MidnightBSD_version)
         {
           ssize_t rc = extattr_set_fd(fd, EXTATTR_NAMESPACE_USER,
                                       mappings[i].attr, value, strlen(value));

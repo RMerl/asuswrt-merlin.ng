@@ -237,7 +237,7 @@ add_routes(char *prefix, char *var, char *ifname)
 	char word[80], *next;
 	char *ipaddr, *netmask, *gateway, *metric;
 	char tmp[100], *buf;
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -1255,13 +1255,42 @@ start_wan_if(int unit)
 			phy_pwr_skip = 1;
 		}
 #endif
+#if defined(RTAX86U_PRO)
+		phy_pwr_skip = 1;
+#endif
 		if(!phy_pwr_skip) {
-			nvram_set("freeze_duck", "5");
+			nvram_set("freeze_duck", "7");
 				doSystem("ethctl %s phy-power down", wan_ifname);
-				sleep(1);
+				usleep(100*1000);
 				doSystem("ethctl %s phy-power up", wan_ifname);
+			/* add delay to wait wan link up, in order to avoid skip by add_multi_routes() */
+			if (nvram_match(strcat_r(prefix, "proto", tmp), "static"))
+				sleep(7);
+		}
+		else
+			_dprintf("%s: skip to power recycle %s\n", __func__, wan_ifname);
+	}
+#elif defined(RTCONFIG_HND_ROUTER_AX)
+#if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
+	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
+#else
+	snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+	if (strlen(wan_ifname) && !strcmp(wan_ifname, WAN_IF_ETH) &&
+		!strcmp(wan_ifname, GPY211_IFNAME)) {
+		int gpy211_war = 0;
+#ifdef RTCONFIG_DUALWAN
+		if (!nvram_contains_word("wans_dualwan", "none") &&
+			WAN_STATE_CONNECTED == nvram_get_int(strcat_r(prefix, "state_t", tmp))) {
+			gpy211_war = 1;
+		}
+#endif
+		if (!gpy211_war) {
+			nvram_set("freeze_duck", "5");
+			_dprintf("[%s(%d)] GPY211 ANEG ...\n", __func__, __LINE__);
+			GPY211_WAR_ANEG();
 		}
 	}
+#endif
 #endif
 
 #if defined(RTCONFIG_DUALWAN) || defined(RTCONFIG_USB_MODEM)
@@ -1613,16 +1642,16 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			return;
 		}
 #if defined(TUFAX3000_V2) || defined(RTAXE7800)
-		if (!strcmp(wan_ifname, "eth1"))
+		if (!strcmp(wan_ifname, "eth1") || !strcmp(wan_ifname, "eth2") || !strcmp(wan_ifname, "eth3") || !strcmp(wan_ifname, "eth4"))
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
 #endif
-#if defined(XT8PRO) || defined(ET8PRO) || defined(XT8_V2)
+#if defined(XT8PRO) || defined(BM68) || defined(ET8PRO) || defined(ET8_V2) || defined(XT8_V2)
 		if (!strcmp(wan_ifname, "eth3")){
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
 		}
 #endif
 #ifdef RTCONFIG_IPV6
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 		if ((wan_proto == WAN_STATIC) &&
 			!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 			ipv6_enabled() &&
@@ -1761,10 +1790,26 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		update_wan_state(prefix, WAN_STATE_CONNECTING, 0);
 
 #ifdef RTCONFIG_SOFTWIRE46
-		if (wan_proto != WAN_V6PLUS) {
-			stop_s46map_rptd();
+		if (wan_proto != WAN_V6PLUS ||
+		    wan_proto != WAN_OCNVC) {
+			stop_v6plusd();
+			stop_ocnvcd();
 			nvram_set_int("s46_hgw_case", S46_CASE_INIT);
 		}
+#if defined(RTCONFIG_RALINK)
+		switch (wan_proto) {
+		case WAN_MAPE:
+		case WAN_V6PLUS:
+		case WAN_OCNVC:
+			/* Enable mtkhnat to support map-e. */
+			system("echo 1 > /sys/kernel/debug/hnat/mape_toggle");
+			break;
+		default:
+			/* Enable mtkhnat to support ds-lite.(As Default) */
+			system("echo 0 > /sys/kernel/debug/hnat/mape_toggle");
+			break;
+		}
+#endif
 #endif
 		/*
 		 * Configure PPPoE connection. The PPPoE client will run
@@ -2124,11 +2169,15 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			break;
 		}
 		case WAN_V6PLUS:
+		case WAN_OCNVC:
 		{
 			char v6tun_dev[IFNAMSIZ];
 
 			nvram_set_int("s46_hgw_case", S46_CASE_INIT);
-			restart_s46map_rptd();
+			if (wan_proto == WAN_V6PLUS)
+				restart_v6plusd();
+			else
+				restart_ocnvcd();
 
 			/* Bring up WAN interface */
 			dbG("ifup:%s\n", wan_ifname);
@@ -2137,6 +2186,11 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			/* Start pre-authenticator */
 			dbG("start auth:%d\n", unit);
 			start_auth(unit, 0);
+
+#if defined(RTCONFIG_RALINK)
+			/* Enable mtkhnat to support map-e. */
+			system("echo 1 > /sys/kernel/debug/hnat/mape_toggle");
+#endif
 
 #ifdef RTCONFIG_DSL
 			nvram_set(strcat_r(prefix, "clientid_type", tmp), nvram_safe_get("dslx_dhcp_clientid_type"));
@@ -2173,6 +2227,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 		 || nvram_get_int("ipsec_ig_enable")
 #endif
 		) {
+		wait_ntp_repeat(WAIT_FOR_NTP_READY_TIME, WAIT_FOR_NTP_READY_LOOP); //wait for ntp_ready, for rc_ipsec_config_init().
 		rc_ipsec_config_init();
 		start_dnsmasq();
 	}
@@ -2279,6 +2334,7 @@ stop_wan_if(int unit)
 	case WAN_LW4O6:
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+	case WAN_OCNVC:
 		wan6_down(wan_ifname);
 		break;
 #endif
@@ -2499,7 +2555,7 @@ int update_resolvconf(void)
 		fclose(fp);
 		goto error;
 	}
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -2631,7 +2687,7 @@ int update_resolvconf(void)
 	write_ovpn_resolv_dnsmasq(fp_servers);
 #endif
 
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 NOIP:
 #endif
 #ifdef RTCONFIG_IPV6
@@ -2771,7 +2827,7 @@ void wan6_up(const char *pwan_ifname)
 	char wan_ifname[16];
 	char gateway[INET6_ADDRSTRLEN];
 	int mtu, service, accept_defrtr;
-#if defined(RTCONFIG_SOFTWIRE46) || (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_SOFTWIRE46) || (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	char prefix[sizeof("wanXXXXXXXXXX_")];
 	int wan_unit;
 #endif
@@ -2893,6 +2949,17 @@ void wan6_up(const char *pwan_ifname)
 			type = "map-e";
 			prefix4len = nvram_get_int(strcat_r(prefix, "s46_prefix4len_x", tmp));
 			ealen = nvram_get_int(strcat_r(prefix, "s46_ealen_x", tmp));
+			goto s46_maprules;
+		case WAN_OCNVC:
+			draft = 1;
+			if (nvram_get_int(strcat_r(prefix, "dhcpenble_x", tmp))) {
+				rules = s46_ocn_maprules(nvram_safe_get("ipv6_ra_addr"), nvram_get_int("ipv6_ra_length"), &rsp_code);
+				goto s46_mapcalc;
+			}
+			type = "map-e";
+			prefix4len = nvram_get_int(strcat_r(prefix, "s46_prefix4len_x", tmp));
+			ealen = nvram_get_int(strcat_r(prefix, "s46_ealen_x", tmp));
+			goto s46_maprules;
 		s46_maprules:
 			if (asprintf(&rules,
 				     "type=%s,ipv6prefix=%s,prefix6len=%d,ipv4prefix=%s,prefix4len=%d,"
@@ -2994,7 +3061,7 @@ void wan6_up(const char *pwan_ifname)
 		sleep(2);
 		break;
 	}
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	if ((wan_unit = wan_ifunit(wan_ifname)) != -1) {
 		if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 			ipv6_enabled() &&
@@ -3123,6 +3190,118 @@ static void adjust_netdev_if_of_wan_bled(int action, int wan_unit, char *wan_ifn
 }
 #endif
 
+#ifdef RTCONFIG_SOFTWIRE46
+int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc)
+{
+	int ret = 0;
+	int hgwret;
+	int wan_proto;
+	char cmd[2048], tmp[100], tmp1[100];
+	char prefix[sizeof("wanXXXXXXXXX_")];
+	char prefix_x[sizeof("wanXXXXXXXXX_")];
+
+	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
+	wan_proto = get_wan_proto(prefix);
+
+	switch (wan_proto) {
+	case WAN_MAPE:
+		if (nvram_invmatch(ipv6_nvname("ipv6_ra_route"), "")) {
+			eval("ip", "-6", "route", "add", "::/0", "via", nvram_safe_get(ipv6_nvname("ipv6_ra_route")), "dev", wan_ifname);
+			S46_DBG("[CMD]:[ip -6 route add ::/0 via %s dev %s]\n", nvram_safe_get(ipv6_nvname("ipv6_ra_route")), wan_ifname);
+		}
+		break;
+	case WAN_V6PLUS:
+	case WAN_OCNVC:
+		if (!strcmp(prc, "udhcpc_wan") && nvram_get_int("s46_hgw_case") == S46_CASE_INIT) {
+			if (inet_addr_(nvram_safe_get(strcat_r(prefix, "gateway", tmp))) != INADDR_ANY) {
+				snprintf(cmd, sizeof(cmd), "ip route replace %s dev %s proto kernel", nvram_safe_get(strcat_r(prefix, "gateway", tmp)), wan_ifname);
+				S46_DBG("[CMD]:[%s]\n", cmd);
+				system(cmd);
+			}
+			snprintf(cmd, sizeof(cmd), "ip route replace default via %s dev %s", nvram_safe_get(strcat_r(prefix, "gateway", tmp)), wan_ifname);
+			S46_DBG("[CMD][%s]\n", cmd);
+			system(cmd);
+			system("ip route flush cache");
+			hgwret = s46_ntt_hgw();
+			/* Debug only */
+			if (nvram_get("s46_debug_hgwret")) {
+				S46_DBG("Using nvram s46_debug_hgwret val.\n");
+				hgwret = nvram_get_int("s46_debug_hgwret");
+			}
+			if (hgwret == 1) {
+				nvram_set_int("s46_hgw_case", S46_CASE_MAP_HGW_ON);
+				wan6_up(get_wan6face());
+				ret = 0;
+			} else {
+				if (hgwret < 0)
+					S46_DBG("HGW did not respond[%d].\n", hgwret);
+				snprintf(prefix_x, sizeof(prefix_x), "wan%d_x", wan_unit);
+				nvram_set(strcat_r(prefix_x, "ipaddr", tmp), nvram_safe_get(strcat_r(prefix, "ipaddr", tmp1)));
+				nvram_set(strcat_r(prefix_x, "gateway", tmp), nvram_safe_get(strcat_r(prefix, "gateway", tmp1)));
+				nvram_set(strcat_r(prefix_x, "dns", tmp), nvram_safe_get(strcat_r(prefix, "dns", tmp1)));
+				nvram_set(strcat_r(prefix_x, "netmask", tmp), nvram_safe_get(strcat_r(prefix, "netmask", tmp1)));
+				nvram_set(strcat_r(prefix, "gateway", tmp), "0.0.0.0");
+				nvram_set(strcat_r(prefix, "dns", tmp), "0.0.0.0");
+				nvram_set_int("s46_hgw_case", S46_CASE_MAP_HGW_OFF);
+				S46_DBG("[%s] done.\n", wan_ifname);
+				ret = 1;
+			}
+		}
+	}
+	return ret;
+}
+#endif
+
+int is_starlink_wan(char *gateway)
+{
+	unsigned int pkt_size = 79; //odd packet size
+	unsigned int ping_cnt = 2;
+	unsigned int wait_sec = 1;
+	double loss_rate = 40.0;
+	int ret = -1;
+
+	if(gateway && (strlen(gateway) > 0))
+	{
+		//Step 01:ping with odd packet size
+		ret = ping_target_with_size(gateway, pkt_size, ping_cnt, wait_sec, loss_rate);
+		if(ret == 0)
+		{
+			//Step 02:ping with even packet size if step 01 is failed.
+			ret = ping_target_with_size(gateway, pkt_size + 1, ping_cnt, wait_sec, loss_rate);
+			if(ret == 1)
+			{
+				return 1;
+			}
+		}
+	}
+	return 0;
+}
+
+void modify_tx_pad(char *func_name, char *wan_ifname, int option)
+{
+	char cmd[128] = {0};
+
+	if(func_name && (strlen(func_name) > 0) && wan_ifname && (strlen(wan_ifname) > 0))
+	{
+		if(option == 1)
+		{
+			logmessage(func_name, "Enable tx_pad for Starlink...\n");
+			snprintf(cmd, sizeof(cmd), "ethctl %s tx_pad %d", wan_ifname, option);
+			system(cmd);
+		}
+		else if(option == 0)
+		{
+			logmessage(func_name, "Disable tx_pad feature...\n");
+			snprintf(cmd, sizeof(cmd), "ethctl %s tx_pad %d", wan_ifname, option);
+			system(cmd);
+		}
+		else
+		{
+			logmessage(func_name, "Wrong tx_pad option...\n");
+		}
+	}
+}
+
 void
 wan_up(const char *pwan_ifname)
 {
@@ -3142,8 +3321,6 @@ wan_up(const char *pwan_ifname)
 	FILE *fp;
 	char word[100], *next;
 #ifdef RTCONFIG_SOFTWIRE46
-	int hgwret;
-	char cmd[2048], tmp1[100];
 	char prc[16] = {0};
 
 	prctl(PR_GET_NAME, prc);
@@ -3156,6 +3333,7 @@ wan_up(const char *pwan_ifname)
 
 	switch (wan_proto) {
 		case WAN_V6PLUS:
+		case WAN_OCNVC:
 			S46_DBG("Callby:[%s]\n", prc);
 		default:
 			break;
@@ -3197,7 +3375,8 @@ wan_up(const char *pwan_ifname)
 				    nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp"))
 					break;
 #ifdef RTCONFIG_SOFTWIRE46
-				if (wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS)
+				if (wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE ||
+				    wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC)
 					break;
 #endif
 				/* fall through */
@@ -3210,7 +3389,7 @@ wan_up(const char *pwan_ifname)
 #endif
 
 		start_firewall(wan_unit, 0);
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 		if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 			ipv6_enabled() &&
 			nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -3268,7 +3447,7 @@ wan_up(const char *pwan_ifname)
 
 	snprintf(prefix, sizeof(prefix), "wan%d_", wan_unit);
 	wan_proto = get_wan_proto(prefix);
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
@@ -3286,6 +3465,7 @@ wan_up(const char *pwan_ifname)
 	case WAN_LW4O6:
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+	case WAN_OCNVC:
 #endif
 		/* the gateway is in the local network */
 		if (*gateway &&
@@ -3322,6 +3502,7 @@ wan_up(const char *pwan_ifname)
 	case WAN_LW4O6:
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+	case WAN_OCNVC:
 #endif
 		nvram_set(strcat_r(prefix, "xgateway", tmp), strlen(gateway) > 0 ? gateway : "0.0.0.0");
 		add_routes(prefix, "mroute", wan_ifname);
@@ -3357,7 +3538,7 @@ wan_up(const char *pwan_ifname)
 		)
 			route_add(wan_ifname, is_private_dns?0:2, word, gateway, "255.255.255.255");
 	}
-#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S))
+#if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 NOIP:
 #endif
 #ifdef RTCONFIG_IPV6
@@ -3372,7 +3553,8 @@ NOIP:
 			    nvram_match(ipv6_nvname("ipv6_ifdev"), "ppp"))
 				break;
 #ifdef RTCONFIG_SOFTWIRE46
-			if (wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE || wan_proto == WAN_V6PLUS)
+			if (wan_proto == WAN_LW4O6 || wan_proto == WAN_MAPE ||
+			    wan_proto == WAN_V6PLUS || wan_proto == WAN_OCNVC)
 				break;
 #endif
 			/* fall through */
@@ -3444,49 +3626,8 @@ NOIP:
 	update_resolvconf();
 
 #ifdef RTCONFIG_SOFTWIRE46
-	switch (wan_proto) {
-	case WAN_MAPE:
-		if (nvram_invmatch(ipv6_nvname("ipv6_ra_route"), "")) {
-			eval("ip", "-6", "route", "add", "::/0", "via", nvram_safe_get(ipv6_nvname("ipv6_ra_route")), "dev", wan_ifname);
-			S46_DBG("[CMD]:[ip -6 route add ::/0 via %s dev %s]\n", nvram_safe_get(ipv6_nvname("ipv6_ra_route")), wan_ifname);
-		}
-		break;
-	case WAN_V6PLUS:
-		if (!strcmp(prc, "udhcpc_wan") && nvram_get_int("s46_hgw_case") == S46_CASE_INIT) {
-			if (inet_addr_(nvram_safe_get(strcat_r(prefix, "gateway", tmp))) != INADDR_ANY) {
-				snprintf(cmd, sizeof(cmd), "ip route replace %s dev %s proto kernel", nvram_safe_get(strcat_r(prefix, "gateway", tmp)), wan_ifname);
-				S46_DBG("[CMD]:[%s]\n", cmd);
-				system(cmd);
-			}
-			snprintf(cmd, sizeof(cmd), "ip route replace default via %s dev %s", nvram_safe_get(strcat_r(prefix, "gateway", tmp)), wan_ifname);
-			S46_DBG("[CMD][%s]\n", cmd);
-			system(cmd);
-			system("ip route flush cache");
-			hgwret = s46_jpne_hgw();
-			/* Debug only */
-			if (nvram_get("s46_debug_hgwret")) {
-				S46_DBG("Using nvram s46_debug_hgwret val.\n");
-				hgwret = nvram_get_int("s46_debug_hgwret");
-			}
-			if (hgwret == 1) {
-				nvram_set_int("s46_hgw_case", S46_CASE_MAP_HGW_ON);
-				wan6_up(get_wan6face());
-			} else {
-				if (hgwret < 0)
-					S46_DBG("HGW did not respond[%d].\n", hgwret);
-				snprintf(prefix_x, sizeof(prefix_x), "wan%d_x", wan_unit);
-				nvram_set(strcat_r(prefix_x, "ipaddr", tmp), nvram_safe_get(strcat_r(prefix, "ipaddr", tmp1)));
-				nvram_set(strcat_r(prefix_x, "gateway", tmp), nvram_safe_get(strcat_r(prefix, "gateway", tmp1)));
-				nvram_set(strcat_r(prefix_x, "dns", tmp), nvram_safe_get(strcat_r(prefix, "dns", tmp1)));
-				nvram_set(strcat_r(prefix_x, "netmask", tmp), nvram_safe_get(strcat_r(prefix, "netmask", tmp1)));
-				nvram_set(strcat_r(prefix, "gateway", tmp), "0.0.0.0");
-				nvram_set(strcat_r(prefix, "dns", tmp), "0.0.0.0");
-				nvram_set_int("s46_hgw_case", S46_CASE_MAP_HGW_OFF);
-				S46_DBG("[%s] done.\n", wan_ifname);
-				return;
-			}
-		}
-	}
+	if (wan_hgw_detect(wan_unit, wan_ifname, prc))
+		return;
 #endif
 
 	/* default route via default gateway */
@@ -3589,6 +3730,7 @@ NOIP:
 		 || nvram_get_int("ipsec_ig_enable")
 #endif
 		) {
+		wait_ntp_repeat(WAIT_FOR_NTP_READY_TIME, WAIT_FOR_NTP_READY_LOOP); //wait for ntp_ready, for rc_ipsec_config_init().
 		rc_ipsec_config_init();
 		start_dnsmasq();
 	}
@@ -3645,10 +3787,6 @@ NOIP:
 
 		//_eval(getip, ">>/tmp/log.txt", 0, &pid);
 		_eval(getip, ">>/dev/null", 0, &pid);
-#endif
-
-#ifdef RTCONFIG_TCPDUMP
-		eval("killall", "tcpdump");
 #endif
 	}
 
@@ -3792,6 +3930,17 @@ NOIP:
 	}
 #endif
 
+#if 0
+	//A workaround for Starlink.
+	//Reset workaround state
+	modify_tx_pad(__FUNCTION__, wan_ifname, 0);
+
+	if(is_starlink_wan(gateway) == 1)
+	{
+		modify_tx_pad(__FUNCTION__, wan_ifname, 1);
+	}
+#endif
+
 _dprintf("%s(%s): done.\n", __FUNCTION__, wan_ifname);
 }
 
@@ -3811,6 +3960,10 @@ wan_down(char *wan_ifname)
 
 #ifdef RTCONFIG_FPROBE
 	stop_fprobe();
+#endif
+
+#if 0
+	modify_tx_pad(__FUNCTION__, wan_ifname, 0);
 #endif
 
 	/* Skip physical interface of VPN connections */
@@ -3876,6 +4029,7 @@ wan_down(char *wan_ifname)
 	case WAN_LW4O6:
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+	case WAN_OCNVC:
 #endif
 		ifconfig(wan_ifname, IFUP, NULL, NULL);
 		break;
@@ -3929,6 +4083,7 @@ wan_ifunit(char *wan_ifname)
 #ifdef RTCONFIG_SOFTWIRE46
 		case WAN_MAPE:
 		case WAN_V6PLUS:
+		case WAN_OCNVC:
 #endif
 			if (nvram_match(strcat_r(prefix, "ifname", tmp), wan_ifname))
 				return unit;
@@ -3981,6 +4136,7 @@ wanx_ifunit(char *wan_ifname)
 #ifdef RTCONFIG_SOFTWIRE46
 		case WAN_MAPE:
 		case WAN_V6PLUS:
+		case WAN_OCNVC:
 #endif
 			if (nvram_match(strcat_r(prefix, "ifname", tmp), wan_ifname))
 				return unit;

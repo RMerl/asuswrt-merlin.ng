@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 /* <DESC>
@@ -35,7 +37,7 @@
 #include <curl/curl.h>
 
 #ifndef CURLPIPE_MULTIPLEX
-#error "too old libcurl, can't do HTTP/2 server push!"
+#error "too old libcurl, cannot do HTTP/2 server push!"
 #endif
 
 static
@@ -180,7 +182,7 @@ static int server_push_callback(CURL *parent,
   /* here's a new stream, save it in a new file for each new push */
   out = fopen(filename, "wb");
   if(!out) {
-    /* if we can't save it, deny it */
+    /* if we cannot save it, deny it */
     fprintf(stderr, "Failed to create output file for push\n");
     return CURL_PUSH_DENY;
   }

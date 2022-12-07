@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -56,6 +57,10 @@ int main(int argc, char *argv[])
 	}
 
 	rounds = atoi(argv[3]);
+	if (rounds < 0 || rounds > (1 << 26))
+	{	/* arbitrary limit to the number of chunk_t/sigs that fit into 1 GiB */
+		usage();
+	}
 
 	if (streq(argv[2], "rsa"))
 	{

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013-2019 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,8 +16,6 @@
 
 #include <openssl/opensslv.h>
 
-#if OPENSSL_VERSION_NUMBER >= 0x1000100fL
-
 #include "openssl_aead.h"
 
 #include <openssl/evp.h>
@@ -29,10 +28,17 @@
 #define EVP_CTRL_AEAD_GET_TAG EVP_CTRL_GCM_GET_TAG
 #endif
 
+/* not defined for older versions of BoringSSL */
+#ifndef EVP_CIPH_CCM_MODE
+#define EVP_CIPH_CCM_MODE 0xffff
+#endif
+
 /** as defined in RFC 4106 */
-#define IV_LEN		8
-#define SALT_LEN	4
-#define NONCE_LEN	(IV_LEN + SALT_LEN)
+#define IV_LEN			8
+#define SALT_LEN		4
+#define NONCE_LEN		(IV_LEN + SALT_LEN)
+/** as defined in RFC 4309 */
+#define CCM_SALT_LEN	3
 
 typedef struct private_aead_t private_aead_t;
 
@@ -55,6 +61,11 @@ struct private_aead_t {
 	 * Salt value
 	 */
 	char salt[SALT_LEN];
+
+	/**
+	 * Size of the salt
+	 */
+	size_t salt_size;
 
 	/**
 	 * Size of the integrity check value
@@ -83,27 +94,39 @@ static bool crypt(private_aead_t *this, chunk_t data, chunk_t assoc, chunk_t iv,
 	bool success = FALSE;
 	int len;
 
-	memcpy(nonce, this->salt, SALT_LEN);
-	memcpy(nonce + SALT_LEN, iv.ptr, IV_LEN);
+	memcpy(nonce, this->salt, this->salt_size);
+	memcpy(nonce + this->salt_size, iv.ptr, IV_LEN);
 
 	ctx = EVP_CIPHER_CTX_new();
 	EVP_CIPHER_CTX_set_padding(ctx, 0);
 	if (!EVP_CipherInit_ex(ctx, this->cipher, NULL, NULL, NULL, enc) ||
-		!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN, NONCE_LEN, NULL) ||
-		!EVP_CipherInit_ex(ctx, NULL, NULL, this->key.ptr, nonce, enc))
+		!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_IVLEN,
+							 this->salt_size + IV_LEN, NULL))
 	{
 		goto done;
 	}
-	if (!enc && !EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, this->icv_size,
-									 data.ptr + data.len))
-	{	/* set ICV for verification on decryption */
+	if ((!enc || EVP_CIPHER_mode(this->cipher) == EVP_CIPH_CCM_MODE) &&
+		!EVP_CIPHER_CTX_ctrl(ctx, EVP_CTRL_AEAD_SET_TAG, this->icv_size,
+							 enc ? NULL : data.ptr + data.len))
+	{	/* set ICV for verification on decryption, CCM requires the ICV length
+		 * when encrypting */
+		goto done;
+	}
+	if (!EVP_CipherInit_ex(ctx, NULL, NULL, this->key.ptr, nonce, enc))
+	{	/* set key and nonce */
+		goto done;
+	}
+	if (EVP_CIPHER_mode(this->cipher) == EVP_CIPH_CCM_MODE &&
+		!EVP_CipherUpdate(ctx, NULL, &len, NULL, data.len))
+	{	/* CCM requires setting the total input length (plain or cipher+ICV) */
 		goto done;
 	}
 	if (assoc.len && !EVP_CipherUpdate(ctx, NULL, &len, assoc.ptr, assoc.len))
 	{	/* set AAD if specified */
 		goto done;
 	}
-	if (!EVP_CipherUpdate(ctx, out, &len, data.ptr, data.len) ||
+	/* CCM doesn't like NULL pointers as input, make sure we don't pass one */
+	if (!EVP_CipherUpdate(ctx, out, &len, data.ptr ?: out, data.len) ||
 		!EVP_CipherFinal_ex(ctx, out + len, &len))
 	{	/* EVP_CipherFinal_ex fails if ICV is incorrect on decryption */
 		goto done;
@@ -183,7 +206,7 @@ METHOD(aead_t, get_iv_gen, iv_gen_t*,
 METHOD(aead_t, get_key_size, size_t,
 	private_aead_t *this)
 {
-	return this->key.len + SALT_LEN;
+	return this->key.len + this->salt_size;
 }
 
 METHOD(aead_t, set_key, bool,
@@ -193,7 +216,7 @@ METHOD(aead_t, set_key, bool,
 	{
 		return FALSE;
 	}
-	memcpy(this->salt, key.ptr + key.len - SALT_LEN, SALT_LEN);
+	memcpy(this->salt, key.ptr + key.len - this->salt_size, this->salt_size);
 	memcpy(this->key.ptr, key.ptr, this->key.len);
 	return TRUE;
 }
@@ -226,17 +249,21 @@ aead_t *openssl_aead_create(encryption_algorithm_t algo,
 			.set_key = _set_key,
 			.destroy = _destroy,
 		},
+		.salt_size = SALT_LEN,
 	);
 
 	switch (algo)
 	{
 		case ENCR_AES_GCM_ICV8:
+		case ENCR_AES_CCM_ICV8:
 			this->icv_size = 8;
 			break;
 		case ENCR_AES_GCM_ICV12:
+		case ENCR_AES_CCM_ICV12:
 			this->icv_size = 12;
 			break;
 		case ENCR_AES_GCM_ICV16:
+		case ENCR_AES_CCM_ICV16:
 			this->icv_size = 16;
 			break;
 		case ENCR_CHACHA20_POLY1305:
@@ -245,13 +272,6 @@ aead_t *openssl_aead_create(encryption_algorithm_t algo,
 		default:
 			free(this);
 			return NULL;
-	}
-
-	if (salt_size && salt_size != SALT_LEN)
-	{
-		/* currently not supported */
-		free(this);
-		return NULL;
 	}
 
 	switch (algo)
@@ -278,6 +298,31 @@ aead_t *openssl_aead_create(encryption_algorithm_t algo,
 					return NULL;
 			}
 			break;
+#if OPENSSL_VERSION_NUMBER >= 0x1010000fL
+		case ENCR_AES_CCM_ICV8:
+		case ENCR_AES_CCM_ICV12:
+		case ENCR_AES_CCM_ICV16:
+			switch (key_size)
+			{
+				case 0:
+					key_size = 16;
+					/* FALL */
+				case 16:
+					this->cipher = EVP_aes_128_ccm();
+					break;
+				case 24:
+					this->cipher = EVP_aes_192_ccm();
+					break;
+				case 32:
+					this->cipher = EVP_aes_256_ccm();
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			this->salt_size = CCM_SALT_LEN;
+			break;
+#endif /* OPENSSL_VERSION_NUMBER */
 #if OPENSSL_VERSION_NUMBER >= 0x1010000fL && !defined(OPENSSL_NO_CHACHA)
 		case ENCR_CHACHA20_POLY1305:
 			switch (key_size)
@@ -299,6 +344,13 @@ aead_t *openssl_aead_create(encryption_algorithm_t algo,
 			return NULL;
 	}
 
+	if (salt_size && salt_size != this->salt_size)
+	{
+		/* currently not supported */
+		free(this);
+		return NULL;
+	}
+
 	if (!this->cipher)
 	{
 		free(this);
@@ -310,5 +362,3 @@ aead_t *openssl_aead_create(encryption_algorithm_t algo,
 
 	return &this->public;
 }
-
-#endif /* OPENSSL_VERSION_NUMBER */

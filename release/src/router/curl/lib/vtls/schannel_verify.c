@@ -7,7 +7,7 @@
  *
  * Copyright (C) 2012 - 2016, Marc Hoersken, <info@marc-hoersken.de>
  * Copyright (C) 2012, Mark Salisbury, <mark.salisbury@hp.com>
- * Copyright (C) 2012 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 2012 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -19,6 +19,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -286,7 +288,6 @@ static CURLcode add_certs_file_to_store(HCERTSTORE trust_store,
     goto cleanup;
   }
 
-  result = CURLE_OK;
   while(total_bytes_read < ca_file_bufsize) {
     DWORD bytes_to_read = (DWORD)(ca_file_bufsize - total_bytes_read);
     DWORD bytes_read = 0;
@@ -313,9 +314,6 @@ static CURLcode add_certs_file_to_store(HCERTSTORE trust_store,
   /* Null terminate the buffer */
   ca_file_buffer[ca_file_bufsize] = '\0';
 
-  if(result != CURLE_OK) {
-    goto cleanup;
-  }
   result = add_certs_data_to_store(trust_store,
                                    ca_file_buffer, ca_file_bufsize,
                                    ca_file,
@@ -355,7 +353,7 @@ static DWORD cert_get_name_string(struct Curl_easy *data,
   DWORD i;
 
   /* CERT_NAME_SEARCH_ALL_NAMES_FLAG is available from Windows 8 onwards. */
-  if(curlx_verify_windows_version(6, 2, PLATFORM_WINNT,
+  if(curlx_verify_windows_version(6, 2, 0, PLATFORM_WINNT,
                                   VERSION_GREATER_THAN_EQUAL)) {
 #ifdef CERT_NAME_SEARCH_ALL_NAMES_FLAG
     /* CertGetNameString will provide the 8-bit character string without
@@ -465,6 +463,7 @@ static CURLcode verify_host(struct Curl_easy *data,
   CURLcode result = CURLE_PEER_FAILED_VERIFICATION;
   TCHAR *cert_hostname_buff = NULL;
   size_t cert_hostname_buff_index = 0;
+  size_t hostlen = strlen(conn_hostname);
   DWORD len = 0;
   DWORD actual_len = 0;
 
@@ -520,10 +519,8 @@ static CURLcode verify_host(struct Curl_easy *data,
       result = CURLE_OUT_OF_MEMORY;
     }
     else {
-      int match_result;
-
-      match_result = Curl_cert_hostcheck(cert_hostname, conn_hostname);
-      if(match_result == CURL_HOST_MATCH) {
+      if(Curl_cert_hostcheck(cert_hostname, strlen(cert_hostname),
+                             conn_hostname, hostlen)) {
         infof(data,
               "schannel: connection hostname (%s) validated "
               "against certificate name (%s)",
@@ -577,6 +574,8 @@ CURLcode Curl_verify_certificate(struct Curl_easy *data,
   HCERTSTORE trust_store = NULL;
   const char * const conn_hostname = SSL_HOST_NAME();
 
+  DEBUGASSERT(BACKEND);
+
   sspi_status =
     s_pSecFn->QueryContextAttributes(&BACKEND->ctxt->ctxt_handle,
                                      SECPKG_ATTR_REMOTE_CERT_CONTEXT,
@@ -597,7 +596,8 @@ CURLcode Curl_verify_certificate(struct Curl_easy *data,
      * trusted certificates. This is only supported on Windows 7+.
      */
 
-    if(curlx_verify_windows_version(6, 1, PLATFORM_WINNT, VERSION_LESS_THAN)) {
+    if(curlx_verify_windows_version(6, 1, 0, PLATFORM_WINNT,
+                                    VERSION_LESS_THAN)) {
       failf(data, "schannel: this version of Windows is too old to support "
             "certificate verification via CA bundle file.");
       result = CURLE_SSL_CACERT_BADFILE;

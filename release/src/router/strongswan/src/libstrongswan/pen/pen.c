@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -49,3 +50,38 @@ ENUM_NEXT(pen_names, PEN_UNASSIGNED, PEN_RESERVED, PEN_OPENPTS,
 	"Unassigned",
 	"Reserved");
 ENUM_END(pen_names, PEN_RESERVED);
+
+ENUM_BEGIN(pen_short_names, PEN_IETF, PEN_IETF,
+	"IETF");
+ENUM_NEXT(pen_short_names, PEN_IBM, PEN_IBM, PEN_IETF,
+	"IBM");
+ENUM_NEXT(pen_short_names, PEN_MICROSOFT, PEN_MICROSOFT, PEN_IBM,
+	"MS");
+ENUM_NEXT(pen_short_names, PEN_REDHAT, PEN_REDHAT, PEN_MICROSOFT,
+	"RH");
+ENUM_NEXT(pen_short_names, PEN_PWG, PEN_PWG, PEN_REDHAT,
+	"PWG");
+ENUM_NEXT(pen_short_names, PEN_ALTIGA, PEN_ALTIGA, PEN_PWG,
+	"ALT");
+ENUM_NEXT(pen_short_names, PEN_OSC, PEN_OSC, PEN_ALTIGA,
+	"OSC");
+ENUM_NEXT(pen_short_names, PEN_DEBIAN, PEN_DEBIAN, PEN_OSC,
+	"DEB");
+ENUM_NEXT(pen_short_names, PEN_GOOGLE, PEN_GOOGLE, PEN_DEBIAN,
+	"GOO");
+ENUM_NEXT(pen_short_names, PEN_TCG, PEN_TCG, PEN_GOOGLE,
+	"TCG");
+ENUM_NEXT(pen_short_names, PEN_CANONICAL, PEN_CANONICAL, PEN_TCG,
+	"CAN");
+ENUM_NEXT(pen_short_names, PEN_FEDORA, PEN_FEDORA, PEN_CANONICAL,
+	"FED");
+ENUM_NEXT(pen_short_names, PEN_FHH, PEN_FHH, PEN_FEDORA,
+	"FHH");
+ENUM_NEXT(pen_short_names, PEN_ITA, PEN_ITA, PEN_FHH,
+	"ITA");
+ENUM_NEXT(pen_short_names, PEN_OPENPTS, PEN_OPENPTS, PEN_ITA,
+	"PTS");
+ENUM_NEXT(pen_short_names, PEN_UNASSIGNED, PEN_RESERVED, PEN_OPENPTS,
+	"UNAS",
+	"RES");
+ENUM_END(pen_short_names, PEN_RESERVED);

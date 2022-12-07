@@ -2,7 +2,8 @@
  * Copyright (C) 2008 Thomas Kallenberg
  * Copyright (C) 2008 Martin Willi
  * Copyright (C) 2008 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -41,7 +42,7 @@ struct private_uci_creds_t {
 typedef struct {
 	/** implements enumerator */
 	enumerator_t public;
-	/** inneer UCI enumerator */
+	/** inner UCI enumerator */
 	enumerator_t *inner;
 	/** currently enumerated shared shared */
 	shared_key_t *current;

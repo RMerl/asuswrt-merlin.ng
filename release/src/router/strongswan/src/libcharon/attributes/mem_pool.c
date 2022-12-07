@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2010 Tobias Brunner
  * Copyright (C) 2008-2010 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -85,7 +86,7 @@ typedef struct {
  * Lease entry.
  */
 typedef struct {
-	/* identitiy reference */
+	/* identity reference */
 	identification_t *id;
 	/* array of online leases, as unique_lease_t */
 	array_t *online;
@@ -307,8 +308,9 @@ static int get_existing(private_mem_pool_t *this, identification_t *id,
 	enumerator = array_create_enumerator(entry->online);
 	while (enumerator->enumerate(enumerator, &lease))
 	{
-		if (lease->offset == host2offset(this, requested) &&
-			lease->hash == hash_addr(peer))
+		if (lease->hash == hash_addr(peer) &&
+			(requested->is_anyaddr(requested) ||
+			 lease->offset == host2offset(this, requested)))
 		{
 			offset = lease->offset;
 			/* add an additional "online" entry */

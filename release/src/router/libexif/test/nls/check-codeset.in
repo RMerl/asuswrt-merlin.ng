@@ -1,0 +1,39 @@
+#!/bin/sh
+
+# NLS nuisances. (stolen and adapted from configure)
+for as_var in \
+  LANG LANGUAGE LC_ADDRESS LC_ALL LC_COLLATE LC_CTYPE LC_IDENTIFICATION \
+  LC_MEASUREMENT LC_MESSAGES LC_MONETARY LC_NAME LC_NUMERIC LC_PAPER \
+  LC_TELEPHONE LC_TIME
+do
+  eval $as_var=""
+  unset $as_var
+  export $as_var
+done
+
+if test -d "@localedir@"; then
+    : # use built-in default
+elif test -d "@DESTDIR@@localedir@"; then
+    export LOCALEDIR="@DESTDIR@@localedir@"
+else
+    echo "This test only works after \"make install\". Aborting."
+    exit 0
+fi
+
+# set | grep '^L[AC]'
+
+set -x
+
+errors=0
+for test in @codeset_tests@
+do
+	for locale in `./${test} --list`
+	do
+		echo "Testing locale $locale..."
+		if env "LANG=$locale" "./${test}"; then :; else
+			errors=`expr $errors + 1`
+		fi
+	done
+done
+
+test $errors -eq 0

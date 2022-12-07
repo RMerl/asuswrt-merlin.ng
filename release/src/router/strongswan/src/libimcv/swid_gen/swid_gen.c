@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -65,14 +66,14 @@ METHOD(swid_gen_t, generate_tag, char*,
 
 	/* Compose the SWID generator command */
 	if (full || !package || !version)
-	{ 
+	{
 		snprintf(command, BUF_LEN, "%s swid --entity-name \"%s\" "
 				 "--regid %s --software-id %s%s%s",
 				 this->generator, this->entity, this->regid, sw_id,
 				 full ? " --full" : "", pretty ? " --pretty" : "");
 	}
 	else
-	{ 
+	{
 		snprintf(command, BUF_LEN, "%s swid --entity-name \"%s\" "
 				 "--regid %s --name %s --version-string %s%s",
 				 this->generator, this->entity, this->regid, package,

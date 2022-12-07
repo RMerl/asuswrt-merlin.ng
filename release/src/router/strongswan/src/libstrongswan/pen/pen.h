@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -105,5 +106,10 @@ static inline bool pen_type_is(pen_type_t pen_type,
  * enum names for pen_t.
  */
 extern enum_name_t *pen_names;
+
+/**
+ * short enum names for pen_t.
+ */
+extern enum_name_t *pen_short_names;
 
 #endif /** PEN_H_ @}*/

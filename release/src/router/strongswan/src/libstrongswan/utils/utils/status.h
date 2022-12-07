@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2008-2014 Tobias Brunner
+ * Copyright (C) 2008-2018 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -68,5 +69,10 @@ status_t return_failed();
  * returns SUCCESS
  */
 status_t return_success();
+
+/**
+ * returns NEED_MORE
+ */
+status_t return_need_more();
 
 #endif /** STATUS_H_ @} */

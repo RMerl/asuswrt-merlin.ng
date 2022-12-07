@@ -185,6 +185,26 @@ botan_crypter_t *botan_crypter_create(encryption_algorithm_t algo,
 					return NULL;
 			}
 			break;
+		case ENCR_AES_CFB:
+			switch (key_size)
+			{
+				case 16:
+					/* AES 128 */
+					this->cipher_name = "AES-128/CFB";
+					break;
+				case 24:
+					/* AES-192 */
+					this->cipher_name = "AES-192/CFB";
+					break;
+				case 32:
+					/* AES-256 */
+					this->cipher_name = "AES-256/CFB";
+					break;
+				default:
+					free(this);
+					return NULL;
+			}
+			break;
 		default:
 			free(this);
 			return NULL;

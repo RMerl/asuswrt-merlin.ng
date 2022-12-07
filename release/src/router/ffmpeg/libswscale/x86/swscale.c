@@ -27,16 +27,8 @@
 #include "libavutil/intreadwrite.h"
 #include "libavutil/x86/cpu.h"
 #include "libavutil/cpu.h"
+#include "libavutil/mem_internal.h"
 #include "libavutil/pixdesc.h"
-
-#if HAVE_INLINE_ASM
-
-#define DITHER1XBPP
-
-DECLARE_ASM_CONST(8, uint64_t, bF8)=       0xF8F8F8F8F8F8F8F8LL;
-DECLARE_ASM_CONST(8, uint64_t, bFC)=       0xFCFCFCFCFCFCFCFCLL;
-DECLARE_ASM_CONST(8, uint64_t, w10)=       0x0010001000100010LL;
-DECLARE_ASM_CONST(8, uint64_t, w02)=       0x0002000200020002LL;
 
 const DECLARE_ALIGNED(8, uint64_t, ff_dither4)[2] = {
     0x0103010301030103LL,
@@ -46,12 +38,12 @@ const DECLARE_ALIGNED(8, uint64_t, ff_dither8)[2] = {
     0x0602060206020602LL,
     0x0004000400040004LL,};
 
-DECLARE_ASM_CONST(8, uint64_t, b16Mask)=   0x001F001F001F001FLL;
-DECLARE_ASM_CONST(8, uint64_t, g16Mask)=   0x07E007E007E007E0LL;
-DECLARE_ASM_CONST(8, uint64_t, r16Mask)=   0xF800F800F800F800LL;
-DECLARE_ASM_CONST(8, uint64_t, b15Mask)=   0x001F001F001F001FLL;
-DECLARE_ASM_CONST(8, uint64_t, g15Mask)=   0x03E003E003E003E0LL;
-DECLARE_ASM_CONST(8, uint64_t, r15Mask)=   0x7C007C007C007C00LL;
+#if HAVE_INLINE_ASM
+
+#define DITHER1XBPP
+
+DECLARE_ASM_CONST(8, uint64_t, bF8)=       0xF8F8F8F8F8F8F8F8LL;
+DECLARE_ASM_CONST(8, uint64_t, bFC)=       0xFCFCFCFCFCFCFCFCLL;
 
 DECLARE_ASM_ALIGNED(8, const uint64_t, ff_M24A)         = 0x00FF0000FF0000FFLL;
 DECLARE_ASM_ALIGNED(8, const uint64_t, ff_M24B)         = 0xFF0000FF0000FF00LL;
@@ -79,8 +71,7 @@ DECLARE_ASM_ALIGNED(8, const uint64_t, ff_w1111)        = 0x0001000100010001ULL;
 #include "swscale_template.c"
 #endif
 
-void ff_updateMMXDitherTables(SwsContext *c, int dstY, int lumBufIndex, int chrBufIndex,
-                           int lastInLumBuf, int lastInChrBuf)
+void ff_updateMMXDitherTables(SwsContext *c, int dstY)
 {
     const int dstH= c->dstH;
     const int flags= c->flags;
@@ -160,7 +151,7 @@ void ff_updateMMXDitherTables(SwsContext *c, int dstY, int lumBufIndex, int chrB
                 *(const void**)&lumMmxFilter[s*i+APCK_PTR2/4  ]= lumSrcPtr[i+(vLumFilterSize>1)];
                 lumMmxFilter[s*i+APCK_COEF/4  ]=
                 lumMmxFilter[s*i+APCK_COEF/4+1]= vLumFilter[dstY*vLumFilterSize + i    ]
-                + (vLumFilterSize>1 ? vLumFilter[dstY*vLumFilterSize + i + 1]<<16 : 0);
+                    + (vLumFilterSize>1 ? vLumFilter[dstY*vLumFilterSize + i + 1] * (1 << 16) : 0);
                 if (CONFIG_SWSCALE_ALPHA && hasAlpha) {
                     *(const void**)&alpMmxFilter[s*i              ]= alpSrcPtr[i  ];
                     *(const void**)&alpMmxFilter[s*i+APCK_PTR2/4  ]= alpSrcPtr[i+(vLumFilterSize>1)];
@@ -173,7 +164,7 @@ void ff_updateMMXDitherTables(SwsContext *c, int dstY, int lumBufIndex, int chrB
                 *(const void**)&chrMmxFilter[s*i+APCK_PTR2/4  ]= chrUSrcPtr[i+(vChrFilterSize>1)];
                 chrMmxFilter[s*i+APCK_COEF/4  ]=
                 chrMmxFilter[s*i+APCK_COEF/4+1]= vChrFilter[chrDstY*vChrFilterSize + i    ]
-                + (vChrFilterSize>1 ? vChrFilter[chrDstY*vChrFilterSize + i + 1]<<16 : 0);
+                    + (vChrFilterSize>1 ? vChrFilter[chrDstY*vChrFilterSize + i + 1] * (1 << 16) : 0);
             }
         } else {
             for (i=0; i<vLumFilterSize; i++) {
@@ -196,86 +187,55 @@ void ff_updateMMXDitherTables(SwsContext *c, int dstY, int lumBufIndex, int chrB
         }
     }
 }
-
-#if HAVE_MMXEXT
-static void yuv2yuvX_sse3(const int16_t *filter, int filterSize,
-                           const int16_t **src, uint8_t *dest, int dstW,
-                           const uint8_t *dither, int offset)
-{
-    if(((uintptr_t)dest) & 15){
-        yuv2yuvX_mmxext(filter, filterSize, src, dest, dstW, dither, offset);
-        return;
-    }
-    filterSize--;
-#define MAIN_FUNCTION \
-        "pxor       %%xmm0, %%xmm0 \n\t" \
-        "punpcklbw  %%xmm0, %%xmm3 \n\t" \
-        "movd           %4, %%xmm1 \n\t" \
-        "punpcklwd  %%xmm1, %%xmm1 \n\t" \
-        "punpckldq  %%xmm1, %%xmm1 \n\t" \
-        "punpcklqdq %%xmm1, %%xmm1 \n\t" \
-        "psllw          $3, %%xmm1 \n\t" \
-        "paddw      %%xmm1, %%xmm3 \n\t" \
-        "psraw          $4, %%xmm3 \n\t" \
-        "movdqa     %%xmm3, %%xmm4 \n\t" \
-        "movdqa     %%xmm3, %%xmm7 \n\t" \
-        "movl           %3, %%ecx  \n\t" \
-        "mov                                 %0, %%"FF_REG_d"        \n\t"\
-        "mov                        (%%"FF_REG_d"), %%"FF_REG_S"     \n\t"\
-        ".p2align                             4             \n\t" /* FIXME Unroll? */\
-        "1:                                                 \n\t"\
-        "movddup                  8(%%"FF_REG_d"), %%xmm0   \n\t" /* filterCoeff */\
-        "movdqa              (%%"FF_REG_S", %%"FF_REG_c", 2), %%xmm2 \n\t" /* srcData */\
-        "movdqa            16(%%"FF_REG_S", %%"FF_REG_c", 2), %%xmm5 \n\t" /* srcData */\
-        "add                                $16, %%"FF_REG_d"        \n\t"\
-        "mov                        (%%"FF_REG_d"), %%"FF_REG_S"     \n\t"\
-        "test                         %%"FF_REG_S", %%"FF_REG_S"     \n\t"\
-        "pmulhw                           %%xmm0, %%xmm2      \n\t"\
-        "pmulhw                           %%xmm0, %%xmm5      \n\t"\
-        "paddw                            %%xmm2, %%xmm3      \n\t"\
-        "paddw                            %%xmm5, %%xmm4      \n\t"\
-        " jnz                                1b             \n\t"\
-        "psraw                               $3, %%xmm3      \n\t"\
-        "psraw                               $3, %%xmm4      \n\t"\
-        "packuswb                         %%xmm4, %%xmm3      \n\t"\
-        "movntdq                          %%xmm3, (%1, %%"FF_REG_c") \n\t"\
-        "add                         $16, %%"FF_REG_c"        \n\t"\
-        "cmp                          %2, %%"FF_REG_c"        \n\t"\
-        "movdqa                   %%xmm7, %%xmm3            \n\t" \
-        "movdqa                   %%xmm7, %%xmm4            \n\t" \
-        "mov                                 %0, %%"FF_REG_d"        \n\t"\
-        "mov                        (%%"FF_REG_d"), %%"FF_REG_S"     \n\t"\
-        "jb                                  1b             \n\t"
-
-    if (offset) {
-        __asm__ volatile(
-            "movq          %5, %%xmm3  \n\t"
-            "movdqa    %%xmm3, %%xmm4  \n\t"
-            "psrlq        $24, %%xmm3  \n\t"
-            "psllq        $40, %%xmm4  \n\t"
-            "por       %%xmm4, %%xmm3  \n\t"
-            MAIN_FUNCTION
-              :: "g" (filter),
-              "r" (dest-offset), "g" ((x86_reg)(dstW+offset)), "m" (offset),
-              "m"(filterSize), "m"(((uint64_t *) dither)[0])
-              : XMM_CLOBBERS("%xmm0" , "%xmm1" , "%xmm2" , "%xmm3" , "%xmm4" , "%xmm5" , "%xmm7" ,)
-                "%"FF_REG_d, "%"FF_REG_S, "%"FF_REG_c
-              );
-    } else {
-        __asm__ volatile(
-            "movq          %5, %%xmm3   \n\t"
-            MAIN_FUNCTION
-              :: "g" (filter),
-              "r" (dest-offset), "g" ((x86_reg)(dstW+offset)), "m" (offset),
-              "m"(filterSize), "m"(((uint64_t *) dither)[0])
-              : XMM_CLOBBERS("%xmm0" , "%xmm1" , "%xmm2" , "%xmm3" , "%xmm4" , "%xmm5" , "%xmm7" ,)
-                "%"FF_REG_d, "%"FF_REG_S, "%"FF_REG_c
-              );
-    }
-}
-#endif
-
 #endif /* HAVE_INLINE_ASM */
+
+#define YUV2YUVX_FUNC_MMX(opt, step)  \
+void ff_yuv2yuvX_ ##opt(const int16_t *filter, int filterSize, int srcOffset, \
+                           uint8_t *dest, int dstW,  \
+                           const uint8_t *dither, int offset); \
+static void yuv2yuvX_ ##opt(const int16_t *filter, int filterSize, \
+                           const int16_t **src, uint8_t *dest, int dstW, \
+                           const uint8_t *dither, int offset) \
+{ \
+    if(dstW > 0) \
+        ff_yuv2yuvX_ ##opt(filter, filterSize - 1, 0, dest - offset, dstW + offset, dither, offset); \
+    return; \
+}
+
+#define YUV2YUVX_FUNC(opt, step)  \
+void ff_yuv2yuvX_ ##opt(const int16_t *filter, int filterSize, int srcOffset, \
+                           uint8_t *dest, int dstW,  \
+                           const uint8_t *dither, int offset); \
+static void yuv2yuvX_ ##opt(const int16_t *filter, int filterSize, \
+                           const int16_t **src, uint8_t *dest, int dstW, \
+                           const uint8_t *dither, int offset) \
+{ \
+    int remainder = (dstW % step); \
+    int pixelsProcessed = dstW - remainder; \
+    if(((uintptr_t)dest) & 15){ \
+        yuv2yuvX_mmx(filter, filterSize, src, dest, dstW, dither, offset); \
+        return; \
+    } \
+    if(pixelsProcessed > 0) \
+        ff_yuv2yuvX_ ##opt(filter, filterSize - 1, 0, dest - offset, pixelsProcessed + offset, dither, offset); \
+    if(remainder > 0){ \
+      ff_yuv2yuvX_mmx(filter, filterSize - 1, pixelsProcessed, dest - offset, pixelsProcessed + remainder + offset, dither, offset); \
+    } \
+    return; \
+}
+
+#if HAVE_MMX_EXTERNAL
+YUV2YUVX_FUNC_MMX(mmx, 16)
+#endif
+#if HAVE_MMXEXT_EXTERNAL
+YUV2YUVX_FUNC_MMX(mmxext, 16)
+#endif
+#if HAVE_SSE3_EXTERNAL
+YUV2YUVX_FUNC(sse3, 32)
+#endif
+#if HAVE_AVX2_EXTERNAL
+YUV2YUVX_FUNC(avx2, 64)
+#endif
 
 #define SCALE_FUNC(filter_n, from_bpc, to_bpc, opt) \
 void ff_hscale ## from_bpc ## to ## to_bpc ## _ ## filter_n ## _ ## opt( \
@@ -381,6 +341,17 @@ INPUT_FUNCS(sse2);
 INPUT_FUNCS(ssse3);
 INPUT_FUNCS(avx);
 
+#if ARCH_X86_64
+#define YUV2NV_DECL(fmt, opt) \
+void ff_yuv2 ## fmt ## cX_ ## opt(enum AVPixelFormat format, const uint8_t *dither, \
+                                  const int16_t *filter, int filterSize, \
+                                  const int16_t **u, const int16_t **v, \
+                                  uint8_t *dst, int dstWidth)
+
+YUV2NV_DECL(nv12, avx2);
+YUV2NV_DECL(nv21, avx2);
+#endif
+
 av_cold void ff_sws_init_swscale_x86(SwsContext *c)
 {
     int cpu_flags = av_get_cpu_flags();
@@ -392,11 +363,25 @@ av_cold void ff_sws_init_swscale_x86(SwsContext *c)
 #if HAVE_MMXEXT_INLINE
     if (INLINE_MMXEXT(cpu_flags))
         sws_init_swscale_mmxext(c);
-    if (cpu_flags & AV_CPU_FLAG_SSE3){
-        if(c->use_mmx_vfilter && !(c->flags & SWS_ACCURATE_RND))
-            c->yuv2planeX = yuv2yuvX_sse3;
-    }
 #endif
+    if(c->use_mmx_vfilter && !(c->flags & SWS_ACCURATE_RND)) {
+#if HAVE_MMX_EXTERNAL
+        if (EXTERNAL_MMX(cpu_flags))
+            c->yuv2planeX = yuv2yuvX_mmx;
+#endif
+#if HAVE_MMXEXT_EXTERNAL
+        if (EXTERNAL_MMXEXT(cpu_flags))
+            c->yuv2planeX = yuv2yuvX_mmxext;
+#endif
+#if HAVE_SSE3_EXTERNAL
+        if (EXTERNAL_SSE3(cpu_flags))
+            c->yuv2planeX = yuv2yuvX_sse3;
+#endif
+#if HAVE_AVX2_EXTERNAL
+        if (EXTERNAL_AVX2_FAST(cpu_flags))
+            c->yuv2planeX = yuv2yuvX_avx2;
+#endif
+    }
 
 #define ASSIGN_SCALE_FUNC2(hscalefn, filtersize, opt1, opt2) do { \
     if (c->srcBpc == 8) { \
@@ -581,4 +566,21 @@ switch(c->dstBpc){ \
             break;
         }
     }
+
+#if ARCH_X86_64
+    if (EXTERNAL_AVX2_FAST(cpu_flags)) {
+        switch (c->dstFormat) {
+        case AV_PIX_FMT_NV12:
+        case AV_PIX_FMT_NV24:
+            c->yuv2nv12cX = ff_yuv2nv12cX_avx2;
+            break;
+        case AV_PIX_FMT_NV21:
+        case AV_PIX_FMT_NV42:
+            c->yuv2nv12cX = ff_yuv2nv21cX_avx2;
+            break;
+        default:
+            break;
+        }
+    }
+#endif
 }

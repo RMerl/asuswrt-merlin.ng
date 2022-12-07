@@ -22,7 +22,7 @@
 #include "avformat.h"
 #include "internal.h"
 
-static int dcstr_probe(AVProbeData *p)
+static int dcstr_probe(const AVProbeData *p)
 {
     if (p->buf_size < 224 || memcmp(p->buf + 213, "Sega Stream", 11))
         return 0;
@@ -43,6 +43,8 @@ static int dcstr_read_header(AVFormatContext *s)
     st->codecpar->codec_type  = AVMEDIA_TYPE_AUDIO;
     st->codecpar->channels    = avio_rl32(s->pb);
     st->codecpar->sample_rate = avio_rl32(s->pb);
+    if (st->codecpar->sample_rate <= 0)
+        return AVERROR_INVALIDDATA;
     codec                  = avio_rl32(s->pb);
     align                  = avio_rl32(s->pb);
     avio_skip(s->pb, 4);

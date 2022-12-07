@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2020, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,17 +18,19 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
-.TH curl_multi_info_read 3 "November 04, 2020" "libcurl 7.79.1" "libcurl Manual"
+.TH curl_multi_info_read 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
 
 .SH NAME
 curl_multi_info_read - read multi stack informationals
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
-CURLMsg *curl_multi_info_read( CURLM *multi_handle,
-                               int *msgs_in_queue);
-.ad
+CURLMsg *curl_multi_info_read(CURLM *multi_handle, int *msgs_in_queue);
+.fi
 .SH DESCRIPTION
 Ask the multi handle if there are any messages/informationals from the
 individual transfers. Messages may include informationals such as an error
@@ -49,10 +51,10 @@ is emptied.
 calling \fIcurl_multi_cleanup(3)\fP, \fIcurl_multi_remove_handle(3)\fP or
 \fIcurl_easy_cleanup(3)\fP.
 
-The 'CURLMsg' struct is very simple and only contains very basic information.
-If more involved information is wanted, the particular "easy handle" is
-present in that struct and can be used in subsequent regular
-\fIcurl_easy_getinfo(3)\fP calls (or similar):
+The 'CURLMsg' struct is simple and only contains basic information. If more
+involved information is wanted, the particular "easy handle" is present in
+that struct and can be used in subsequent regular \fIcurl_easy_getinfo(3)\fP
+calls (or similar):
 
 .nf
  struct CURLMsg {
@@ -87,7 +89,9 @@ do {
   }
 } while(m);
 .fi
-.SH "RETURN VALUE"
+.SH AVAILABILITY
+Added in 7.9.6
+.SH RETURN VALUE
 A pointer to a filled-in struct, or NULL if it failed or ran out of
 structs. It also writes the number of messages left in the queue (after this
 read) in the integer the second argument points to.

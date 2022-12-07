@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -14,6 +15,8 @@
  */
 
 #include <stdio.h>
+
+#include <library.h>
 #include <utils/identification.h>
 
 /**
@@ -24,6 +27,9 @@ int main(int argc, char *argv[])
 	identification_t *id;
 	chunk_t enc;
 	int i;
+
+	library_init(NULL, "id2sql");
+	atexit(library_deinit);
 
 	if (argc < 2)
 	{
@@ -45,6 +51,7 @@ int main(int argc, char *argv[])
 		printf("%02x", (unsigned int)enc.ptr[i]);
 	}
 	printf("'\n");
+	id->destroy(id);
 	return 0;
 }
 

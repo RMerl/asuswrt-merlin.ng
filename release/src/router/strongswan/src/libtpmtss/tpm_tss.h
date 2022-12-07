@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * Copyright (C) 2016-2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2016-2020 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -90,6 +91,14 @@ struct tpm_tss_t {
 												 uint32_t handle);
 
 	/**
+	 * Check if there is an assigned PCR bank for the given hash algorithm
+	 *
+	 * @param alg			hash algorithm
+	 * @return				TRUE if a PCR bank for this algorithm exists
+	 */
+	bool (*has_pcr_bank)(tpm_tss_t *this, hash_algorithm_t alg);
+
+	/**
 	 * Retrieve the current value of a PCR register in a given PCR bank
 	 *
 	 * @param pcr_num		PCR number
@@ -167,28 +176,39 @@ struct tpm_tss_t {
 					 chunk_t pin, chunk_t *data);
 
 	/**
+	 * Get an event digest from a TPM measurement log
+	 *
+	 * @param fd			file descriptor of the measurement log
+	 * @param hash			hash algorithm of the digest to be extracted
+	 * @param digest		allocated chunk_t containing event digest
+	 * @return				TRUE if event digest was successfully extracted
+	 */
+	bool (*get_event_digest)(tpm_tss_t *this, int fd, hash_algorithm_t alg,
+							 chunk_t *digest);
+
+	/**
 	 * Destroy a tpm_tss_t.
 	 */
 	void (*destroy)(tpm_tss_t *this);
 };
 
 /**
- * Create a tpm_tss instance.
- *
- * @param version	TPM version that must be supported by TSS
- */
-tpm_tss_t *tpm_tss_probe(tpm_version_t version);
-
-/**
- * libtpmtss initialization function
+ * Initialize libtpmtss
  *
  * @return					TRUE if initialization was successful
  */
 bool libtpmtss_init(void);
 
 /**
- * libtpmtss de-initialization function
+ * Deinitialize libtpmtss
  */
 void libtpmtss_deinit(void);
+
+/**
+ * Create a tpm_tss instance.
+ *
+ * @param version			TPM version that must be supported by TSS
+ */
+tpm_tss_t *tpm_tss_probe(tpm_version_t version);
 
 #endif /** TPM_TSS_H_ @}*/

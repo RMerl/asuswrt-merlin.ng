@@ -582,7 +582,7 @@ function eraseDatabase(){
 }
 
 function showEraseConfirm(){
-	$('#model_name').html(based_modelid)
+	$('#model_name').html("<#Web_Title2#>");
 	cal_panel_block("erase_confirm", 0.25);
 	$('#erase_confirm').fadeIn(300);
 }

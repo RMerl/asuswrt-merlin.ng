@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -25,11 +26,21 @@
 #endif
 
 /**
+ * Reference counter for library initialization
+ */
+static refcount_t libtpmtss_ref = 0;
+
+/**
  * Described in header.
  */
 bool libtpmtss_init(void)
 {
-	return tpm_tss_tss2_init();
+	if (ref_cur(&libtpmtss_ref) || tpm_tss_tss2_init())
+	{
+		ref_get(&libtpmtss_ref);
+		return TRUE;
+	}
+	return FALSE;
 }
 
 /**
@@ -37,7 +48,10 @@ bool libtpmtss_init(void)
  */
 void libtpmtss_deinit(void)
 {
-	tpm_tss_tss2_deinit();
+	if (ref_cur(&libtpmtss_ref) && ref_put(&libtpmtss_ref))
+	{
+		tpm_tss_tss2_deinit();
+	}
 }
 
 typedef tpm_tss_t*(*tpm_tss_create)(void);

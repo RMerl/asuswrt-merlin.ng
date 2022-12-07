@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2006-2013 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -144,6 +144,32 @@ void backtrace_deinit()
 #include <collections/hashtable.h>
 #include <threading/mutex.h>
 
+/* interface changes for newer BFD versions, note that older versions declared
+ * some of the new functions as macros but with different arguments */
+#if HAVE_DECL_BFD_GET_SECTION_FLAGS
+#define get_section_flags(a, s) bfd_get_section_flags(a, s)
+#elif HAVE_DECL_BFD_SECTION_FLAGS
+#define get_section_flags(a, s) bfd_section_flags(s)
+#else
+#error Unknown BFD API
+#endif
+
+#if HAVE_DECL_BFD_GET_SECTION_VMA
+#define get_section_vma(a, s) bfd_get_section_vma(a, s)
+#elif HAVE_DECL_BFD_SECTION_VMA
+#define get_section_vma(a, s) bfd_section_vma(s)
+#else
+#error Unknown BFD API
+#endif
+
+#if HAVE_DECL_BFD_GET_SECTION_SIZE
+#define get_section_size bfd_get_section_size
+#elif HAVE_DECL_BFD_SECTION_SIZE
+#define get_section_size bfd_section_size
+#else
+#error Unknown BFD API
+#endif
+
 /**
  * Hashtable-cached bfd handle
  */
@@ -248,12 +274,12 @@ static void find_addr(bfd *abfd, asection *section, bfd_find_data_t *data)
 	char fbuf[512] = "", sbuf[512] = "";
 	u_int line;
 
-	if (!data->found || (bfd_get_section_flags(abfd, section) & SEC_ALLOC) != 0)
+	if (!data->found || (get_section_flags(abfd, section) & SEC_ALLOC) != 0)
 	{
-		vma = bfd_get_section_vma(abfd, section);
+		vma = get_section_vma(abfd, section);
 		if (data->vma >= vma)
 		{
-			size = bfd_get_section_size(section);
+			size = get_section_size(section);
 			if (data->vma < vma + size)
 			{
 				data->found = bfd_find_nearest_line(abfd, section,

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012-2014 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -118,6 +119,8 @@ void tkm_deinit()
 	this->public.sad->destroy(this->public.sad);
 
 	ees_server_finalize();
+
+	ike_finalize();
 
 	tkmlib_final();
 	free(this);

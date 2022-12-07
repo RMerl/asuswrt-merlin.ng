@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -71,7 +72,7 @@ typedef struct {
 /**
  * Check if the SQLite library is thread safe
  */
-static bool is_threadsave()
+static bool is_threadsafe()
 {
 #if SQLITE_VERSION_NUMBER >= 3005000
 	return sqlite3_threadsafe() > 0;
@@ -178,7 +179,7 @@ METHOD(enumerator_t, sqlite_enumerator_destroy, void,
 	sqlite_enumerator_t *this)
 {
 	sqlite3_finalize(this->stmt);
-	if (!is_threadsave())
+	if (!is_threadsafe())
 	{
 		this->database->mutex->unlock(this->database->mutex);
 	}
@@ -254,7 +255,7 @@ METHOD(database_t, query, enumerator_t*,
 	sqlite_enumerator_t *enumerator = NULL;
 	int i;
 
-	if (!is_threadsave())
+	if (!is_threadsafe())
 	{
 		this->mutex->lock(this->mutex);
 	}

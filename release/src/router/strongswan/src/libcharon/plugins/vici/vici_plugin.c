@@ -1,9 +1,8 @@
 /*
- * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
- *
  * Copyright (C) 2015-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014 Martin Willi
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -127,9 +126,8 @@ static bool register_vici(private_vici_plugin_t *this,
 		{
 			this->query = vici_query_create(this->dispatcher);
 			this->control = vici_control_create(this->dispatcher);
-			this->cred = vici_cred_create(this->dispatcher);
-			this->authority = vici_authority_create(this->dispatcher,
-													this->cred);
+			this->authority = vici_authority_create(this->dispatcher);
+			this->cred = vici_cred_create(this->dispatcher, this->authority);
 			lib->credmgr->add_set(lib->credmgr, &this->cred->set);
 			lib->credmgr->add_set(lib->credmgr, &this->authority->set);
 			this->config = vici_config_create(this->dispatcher, this->authority,

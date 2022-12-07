@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,14 +20,18 @@
 #include <crypto/hashers/hasher.h>
 #include <utils/debug.h>
 
+#ifdef HAVE_SYSLOG
 #include <syslog.h>
+#endif
 #include <getopt.h>
 #include <errno.h>
 
 
 /* logging */
 static bool log_to_stderr = TRUE;
+#ifdef HAVE_SYSLOG
 static bool log_to_syslog = TRUE;
+#endif
 static level_t default_loglevel = 1;
 
 /* global variables */
@@ -39,8 +44,6 @@ chunk_t pcr_value;
  */
 static void tpm_extendpcr_dbg(debug_t group, level_t level, char *fmt, ...)
 {
-	char buffer[8192];
-	char *current = buffer, *next;
 	va_list args;
 
 	if (level <= default_loglevel)
@@ -52,8 +55,12 @@ static void tpm_extendpcr_dbg(debug_t group, level_t level, char *fmt, ...)
 			va_end(args);
 			fprintf(stderr, "\n");
 		}
+#ifdef HAVE_SYSLOG
 		if (log_to_syslog)
 		{
+			char buffer[8192];
+			char *current = buffer, *next;
+
 			/* write in memory buffer first */
 			va_start(args, fmt);
 			vsnprintf(buffer, sizeof(buffer), fmt, args);
@@ -71,6 +78,7 @@ static void tpm_extendpcr_dbg(debug_t group, level_t level, char *fmt, ...)
 				current = next;
 			}
 		}
+#endif /* HAVE_SYSLOG*/
 	}
 }
 
@@ -85,10 +93,12 @@ static void init_log(const char *program)
 	{
 		setbuf(stderr, NULL);
 	}
+#ifdef HAVE_SYSLOG
 	if (log_to_syslog)
 	{
 		openlog(program, LOG_CONS | LOG_NDELAY | LOG_PID, LOG_AUTHPRIV);
 	}
+#endif /* HAVE_SYSLOG */
 }
 
 /**
@@ -117,7 +127,6 @@ static void exit_tpm_extendpcr(err_t message, ...)
 		fprintf(stderr, "tpm_extendpcr error: %s\n", m);
 		status = -1;
 	}
-	library_deinit();
 	exit(status);
 }
 
@@ -166,17 +175,23 @@ int main(int argc, char *argv[])
 	uint32_t pcr = 16;
 	bool hash = FALSE;
 
-	atexit(library_deinit);
 	if (!library_init(NULL, "tpm_extendpcr"))
 	{
 		exit(SS_RC_LIBSTRONGSWAN_INTEGRITY);
 	}
+	atexit(library_deinit);
 	if (lib->integrity &&
 		!lib->integrity->check_file(lib->integrity, "tpm_extendpcr", argv[0]))
 	{
 		fprintf(stderr, "integrity check of tpm_extendpcr failed\n");
 		exit(SS_RC_DAEMON_INTEGRITY);
 	}
+	if (!libtpmtss_init())
+	{
+		fprintf(stderr, "libtpmtss initialization failed\n");
+		exit(SS_RC_INITIALIZATION_FAILED);
+	}
+	atexit(libtpmtss_deinit);
 
 	for (;;)
 	{
@@ -250,7 +265,7 @@ int main(int argc, char *argv[])
 
 	if (!lib->plugins->load(lib->plugins,
 			lib->settings->get_str(lib->settings, "tpm_extendpcr.load",
-												  "tpm sha1 sha2")))
+												  "sha1 sha2")))
 	{
 		exit_tpm_extendpcr("plugin loading failed");
 	}

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2017 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -110,6 +111,23 @@ void utils_deinit();
  */
 #define BUILD_ASSERT_ARRAY(a) \
 		BUILD_ASSERT(!__builtin_types_compatible_p(typeof(a), typeof(&(a)[0])))
+
+/**
+ * LLVM/Clang __has_feature support
+ */
+#ifndef __has_feature
+# define __has_feature(x) 0
+#endif
+
+/**
+ * Address santizer support
+ */
+#if __has_feature(address_sanitizer) || \
+	(defined(__GNUC__) && defined(__SANITIZE_ADDRESS__))
+# define ADDRESS_SANITIZER_EXCLUDE __attribute__((no_sanitize_address))
+#else
+# define ADDRESS_SANITIZER_EXCLUDE
+#endif
 
 /**
  * Debug macro to follow control flow

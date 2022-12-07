@@ -1,8 +1,8 @@
 #!/usr/bin/make
 
 PKG = tkm
-SRC = http://git.codelabs.ch/git/$(PKG).git
-REV = 53d224a7312124516aa6220743355c896be6345a
+SRC = https://git.codelabs.ch/git/$(PKG).git
+REV = e46eef9f0991ba2777dcde845c2e00b8df9c72f7
 
 export ADA_PROJECT_PATH=/usr/local/ada/lib/gnat
 
@@ -14,11 +14,11 @@ all: install
 
 .$(PKG)-checkout-$(REV): .$(PKG)-cloned
 	cd $(PKG) && git fetch && git checkout $(REV)
-	@touch $@
+	@rm -f .$(PKG)-checkout-* && touch $@
 
 .$(PKG)-built-$(REV): .$(PKG)-checkout-$(REV)
-	cd $(PKG) && make
-	@touch $@
+	cd $(PKG) && make tests && make
+	@rm -f .$(PKG)-built-* && touch $@
 
 install: .$(PKG)-built-$(REV)
 	cd $(PKG) && make install

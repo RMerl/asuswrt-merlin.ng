@@ -236,7 +236,7 @@ typedef struct AVIOContext {
     int (*write_packet)(void *opaque, uint8_t *buf, int buf_size);
     int64_t (*seek)(void *opaque, int64_t offset, int whence);
     int64_t pos;            /**< position in the file of the current buffer */
-    int eof_reached;        /**< true if eof reached */
+    int eof_reached;        /**< true if was unable to read due to error or eof */
     int write_flag;         /**< true if open for writing */
     int max_packet_size;
     unsigned long checksum;
@@ -566,13 +566,33 @@ static av_always_inline int64_t avio_tell(AVIOContext *s)
 int64_t avio_size(AVIOContext *s);
 
 /**
- * feof() equivalent for AVIOContext.
- * @return non zero if and only if end of file
+ * Similar to feof() but also returns nonzero on read errors.
+ * @return non zero if and only if at end of file or a read error happened when reading.
  */
 int avio_feof(AVIOContext *s);
 
-/** @warning Writes up to 4 KiB per call */
+/**
+ * Writes a formatted string to the context.
+ * @return number of bytes written, < 0 on error.
+ */
 int avio_printf(AVIOContext *s, const char *fmt, ...) av_printf_format(2, 3);
+
+/**
+ * Write a NULL terminated array of strings to the context.
+ * Usually you don't need to use this function directly but its macro wrapper,
+ * avio_print.
+ */
+void avio_print_string_array(AVIOContext *s, const char *strings[]);
+
+/**
+ * Write strings (const char *) to the context.
+ * This is a convenience macro around avio_print_string_array and it
+ * automatically creates the string array from the variable argument list.
+ * For simple string concatenations this function is more performant than using
+ * avio_printf since it does not need a temporary buffer.
+ */
+#define avio_print(s, ...) \
+    avio_print_string_array(s, (const char*[]){__VA_ARGS__, NULL})
 
 /**
  * Force flushing of buffered data.
@@ -786,6 +806,13 @@ int avio_close_dyn_buf(AVIOContext *s, uint8_t **pbuffer);
  * @return A static string containing the name of current protocol or NULL
  */
 const char *avio_enum_protocols(void **opaque, int output);
+
+/**
+ * Get AVClass by names of available protocols.
+ *
+ * @return A AVClass of input protocol name or NULL
+ */
+const AVClass *avio_protocol_get_class(const char *name);
 
 /**
  * Pause and resume playing - only meaningful if using a network streaming

@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -155,7 +156,7 @@ static void load_configs(private_eap_radius_plugin_t *this)
 									  retransmit_base);
 		if (!config)
 		{
-			DBG1(DBG_CFG, "no RADUIS server defined");
+			DBG1(DBG_CFG, "no RADIUS server defined");
 			return;
 		}
 		this->configs->insert_last(this->configs, config);

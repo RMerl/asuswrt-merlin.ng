@@ -8,6 +8,8 @@
 <script type="text/javascript" src="/light_effect/specific_schema.js"></script>
 </head>
 <script >
+var ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=166";
 var model_info = httpApi.nvramGet(["productid", "CoBrand"]);
 $(function(){
 	var getUrlParameter = function getUrlParameter(param){
@@ -765,6 +767,13 @@ $(document).ready(initial_led_control);
 		</div>
 	</div>
 	<div class="all_led_off">LEDs are currently disabled - please re-enable them to be able to use AuraRGB.</div><!-- untranslated -->
+	<script>
+		$("#faq_turnOnLED")
+			.attr("target", "_blank")
+			.attr("href", faq_href)
+			.css({"color": "#FC0", "text-decoration": "underline"})
+	</script>
+
 </div>
 
 <div class="light_effect_bg" id="antenna_bg" mode_group="antenna">

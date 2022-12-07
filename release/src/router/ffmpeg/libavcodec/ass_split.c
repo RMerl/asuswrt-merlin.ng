@@ -249,7 +249,7 @@ static const char *ass_split_section(ASSSplitContext *ctx, const char *buf)
     const ASSSection *section = &ass_sections[ctx->current_section];
     int *number = &ctx->field_number[ctx->current_section];
     int *order = ctx->field_order[ctx->current_section];
-    int *tmp, i, len;
+    int i, len;
 
     while (buf && *buf) {
         if (buf[0] == '[') {
@@ -280,9 +280,9 @@ static const char *ass_split_section(ASSSplitContext *ctx, const char *buf)
                 while (!is_eol(*buf)) {
                     buf = skip_space(buf);
                     len = strcspn(buf, ", \r\n");
-                    if (!(tmp = av_realloc_array(order, (*number + 1), sizeof(*order))))
+                    if (av_reallocp_array(&order, (*number + 1), sizeof(*order)) != 0)
                         return NULL;
-                    order = tmp;
+
                     order[*number] = -1;
                     for (i=0; section->fields[i].name; i++)
                         if (!strncmp(buf, section->fields[i].name, len)) {
@@ -376,6 +376,8 @@ ASSSplitContext *ff_ass_split(const char *buf)
     ASSSplitContext *ctx = av_mallocz(sizeof(*ctx));
     if (!ctx)
         return NULL;
+    if (buf && !strncmp(buf, "\xef\xbb\xbf", 3)) // Skip UTF-8 BOM header
+        buf += 3;
     ctx->current_section = -1;
     if (ass_split(ctx, buf) < 0) {
         ff_ass_split_free(ctx);

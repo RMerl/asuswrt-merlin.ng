@@ -1,9 +1,12 @@
+c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+SPDX-License-Identifier: curl
 Long: preproxy
 Arg: [protocol://]host[:port]
 Help: Use this proxy first
 Added: 7.52.0
 Category: proxy
 Example: --preproxy socks5://proxy.example -x http://http.example $URL
+See-also: proxy socks5
 ---
 Use the specified SOCKS proxy before connecting to an HTTP or HTTPS --proxy. In
 such a case curl first connects to the SOCKS proxy and then connects (through

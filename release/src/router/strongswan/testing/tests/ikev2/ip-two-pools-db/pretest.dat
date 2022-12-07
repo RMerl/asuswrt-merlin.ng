@@ -8,23 +8,23 @@ moon::ipsec pool --addattr dns --server PH_IP_WINNETOU --pool extpool 2> /dev/nu
 moon::ipsec pool --statusattr 2> /dev/null
 moon::ip route add 10.3.0.0/16 via PH_IP_MOON
 moon::ip route add 10.4.0.0/16 via PH_IP_MOON1
-alice::iptables-restore < /etc/iptables.rules
-venus::iptables-restore < /etc/iptables.rules
 moon::iptables-restore < /etc/iptables.rules
 carol::iptables-restore < /etc/iptables.rules
 dave::iptables-restore < /etc/iptables.rules
-moon::ipsec start
-alice::ipsec start
-venus::ipsec start
-carol::ipsec start
-dave::ipsec start
+alice::iptables-restore < /etc/iptables.rules
+venus::iptables-restore < /etc/iptables.rules
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
+alice::systemctl start strongswan
+venus::systemctl start strongswan
 moon::expect-connection int
 moon::expect-connection ext
 carol::expect-connection home
-carol::ipsec up home
+carol::swanctl --initiate --child home 2> /dev/null
 dave::expect-connection home
-dave::ipsec up home
+dave::swanctl --initiate --child home 2> /dev/null
 alice::expect-connection home
-alice::ipsec up home
+alice::swanctl --initiate --child home 2> /dev/null
 venus::expect-connection home
-venus::ipsec up home
+venus::swanctl --initiate --child home 2> /dev/null

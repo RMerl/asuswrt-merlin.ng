@@ -1,7 +1,8 @@
 /* Analyzes the concurrent use of charon's threads
  *
  * Copyright (C) 2008 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -258,11 +259,6 @@ int main(int argc, char *argv[])
 	printf("    </tr>\n");
 	printf("  </table>\n");
 	printf("  <p>\n");
-	printf("  <hr/>\n");
-	printf("  <em>&copy; 2008\n");
-	printf("    <a href=\"http://www.hsr.ch/?&L=1\" target=\"popup\">\n");
-	printf("       HSR Hochschule f&uuml;r Technik Rapperswil</a>\n");
-	printf("  </em>\n");
 	printf("</body>\n");
 	printf("</html>\n");
 

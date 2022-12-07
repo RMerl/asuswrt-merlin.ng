@@ -1,5 +1,0 @@
-eap {
-  default_eap_type = md5
-  md5 {
-  }
-}

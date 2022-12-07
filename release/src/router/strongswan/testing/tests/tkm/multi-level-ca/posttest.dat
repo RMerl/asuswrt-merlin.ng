@@ -1,0 +1,7 @@
+moon::service charon-tkm stop
+moon::killall tkm_keymanager
+moon::rm -f /tmp/tkm.rpc.ike /tmp/tkm.rpc.ees /tmp/tkm.log
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::rm /etc/swanctl/x509ca/*
+carol::rm /etc/swanctl/x509ca/*

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2014-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2009-2013  Security Innovation
  *
@@ -321,7 +320,7 @@ ntru_poly_t *ntru_poly_create_from_seed(ext_out_function_t mgf1_type,
 		/* generate indices for a single polynomial */
 		while (num_indices)
 		{
-			/* generate a random candidate index with a size of c_bits */		
+			/* generate a random candidate index with a size of c_bits */
 			do
 			{
 				if (!bitspender->get_bits(bitspender, c_bits, &index))

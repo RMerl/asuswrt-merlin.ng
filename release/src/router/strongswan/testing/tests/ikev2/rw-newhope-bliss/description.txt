@@ -4,9 +4,8 @@ with a cryptographical strength of 128 bits. Authentication is based on the BLIS
 algorithm with strengths 128 bits (BLISS I), 160 bits (BLISS III) and 192 bits (BLISS IV) for
 <b>carol</b>, <b>dave</b> and <b>moon</b>, respectively.
 <p>
-Both <b>carol</b> and <b>dave</b> request a <b>virtual IP</b> via the IKEv2 configuration payload
-by using the <b>leftsourceip=%config</b> parameter. The gateway <b>moon</b> assigns virtual
-IP addresses from a simple pool defined by <b>rightsourceip=10.3.0.0/28</b> in a monotonously
+Both <b>carol</b> and <b>dave</b> request a <b>virtual IP</b> via the IKEv2 configuration payload.
+The gateway <b>moon</b> assigns virtual IP addresses from the pool 10.3.0.0/28 in a monotonously
 increasing order. 
 <p>
 <b>leftfirewall=yes</b> automatically inserts iptables-based firewall rules that let pass

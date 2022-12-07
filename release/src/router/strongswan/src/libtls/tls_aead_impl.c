@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,13 +56,13 @@ typedef struct __attribute__((__packed__)) {
 
 METHOD(tls_aead_t, encrypt, bool,
 	private_tls_aead_t *this, tls_version_t version,
-	tls_content_type_t type, uint64_t seq, chunk_t *data)
+	tls_content_type_t *type, uint64_t seq, chunk_t *data)
 {
 	chunk_t assoc, mac, padding;
 	uint8_t bs, padlen;
 	sigheader_t hdr;
 
-	hdr.type = type;
+	hdr.type = *type;
 	htoun64(&hdr.seq, seq);
 	htoun16(&hdr.version, version);
 	htoun16(&hdr.length, data->len);
@@ -95,7 +96,7 @@ METHOD(tls_aead_t, encrypt, bool,
 
 METHOD(tls_aead_t, decrypt, bool,
 	private_tls_aead_t *this, tls_version_t version,
-	tls_content_type_t type, uint64_t seq, chunk_t *data)
+	tls_content_type_t *type, uint64_t seq, chunk_t *data)
 {
 	chunk_t assoc, mac, iv;
 	uint8_t bs, padlen;
@@ -135,7 +136,7 @@ METHOD(tls_aead_t, decrypt, bool,
 	mac = chunk_skip(*data, data->len - bs);
 	data->len -= bs;
 
-	hdr.type = type;
+	hdr.type = *type;
 	htoun64(&hdr.seq, seq);
 	htoun16(&hdr.version, version);
 	htoun16(&hdr.length, data->len);

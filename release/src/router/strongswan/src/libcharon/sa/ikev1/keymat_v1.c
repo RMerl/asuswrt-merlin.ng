@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -313,7 +314,7 @@ static void adjust_keylen(uint16_t alg, chunk_t *key)
 }
 
 METHOD(keymat_v1_t, derive_ike_keys, bool,
-	private_keymat_v1_t *this, proposal_t *proposal, diffie_hellman_t *dh,
+	private_keymat_v1_t *this, proposal_t *proposal, key_exchange_t *dh,
 	chunk_t dh_other, chunk_t nonce_i, chunk_t nonce_r, ike_sa_id_t *id,
 	auth_method_t auth, shared_key_t *shared_key)
 {
@@ -416,6 +417,7 @@ METHOD(keymat_v1_t, derive_ike_keys, bool,
 	{
 		chunk_clear(&g_xy);
 		chunk_clear(&data);
+		chunk_clear(&skeyid);
 		return FALSE;
 	}
 	chunk_clear(&data);
@@ -427,6 +429,7 @@ METHOD(keymat_v1_t, derive_ike_keys, bool,
 	{
 		chunk_clear(&g_xy);
 		chunk_clear(&data);
+		chunk_clear(&skeyid);
 		return FALSE;
 	}
 	chunk_clear(&data);
@@ -438,6 +441,7 @@ METHOD(keymat_v1_t, derive_ike_keys, bool,
 	{
 		chunk_clear(&g_xy);
 		chunk_clear(&data);
+		chunk_clear(&skeyid);
 		return FALSE;
 	}
 	chunk_clear(&data);
@@ -481,7 +485,8 @@ METHOD(keymat_v1_t, derive_ike_keys, bool,
 	{
 		return FALSE;
 	}
-	charon->bus->ike_derived_keys(charon->bus, ka, chunk_empty, this->skeyid_a,
+	charon->bus->ike_derived_keys(charon->bus, this->skeyid_d, this->skeyid_a,
+								  chunk_empty, ka, chunk_empty, chunk_empty,
 								  chunk_empty);
 	chunk_clear(&ka);
 	if (!this->hasher && !this->public.create_hasher(&this->public, proposal))
@@ -489,7 +494,7 @@ METHOD(keymat_v1_t, derive_ike_keys, bool,
 		return FALSE;
 	}
 
-	if (!dh->get_my_public_value(dh, &dh_me))
+	if (!dh->get_public_key(dh, &dh_me))
 	{
 		return FALSE;
 	}
@@ -503,15 +508,44 @@ METHOD(keymat_v1_t, derive_ike_keys, bool,
 										this->aead->get_block_size(this->aead));
 }
 
+/**
+ * Derive key material for CHILD_SAs according to section 5.5. in RFC 2409.
+ */
+static bool derive_child_keymat(private_keymat_v1_t *this, chunk_t seed,
+								uint16_t enc_size, chunk_t *encr,
+								uint16_t int_size, chunk_t *integ)
+{
+	size_t block_size, i;
+	chunk_t keymat, prev = chunk_empty;
+
+	block_size = this->prf->get_block_size(this->prf);
+	keymat = chunk_alloc(round_up(enc_size + int_size, block_size));
+	keymat.len = enc_size + int_size;
+
+	for (i = 0; i < keymat.len; i += block_size)
+	{
+		if (!this->prf->get_bytes(this->prf, prev, NULL) ||
+			!this->prf->get_bytes(this->prf, seed, keymat.ptr + i))
+		{
+			chunk_clear(&keymat);
+			return FALSE;
+		}
+		prev = chunk_create(keymat.ptr + i, block_size);
+	}
+
+	chunk_split(keymat, "aa", enc_size, encr, int_size, integ);
+	chunk_clear(&keymat);
+	return TRUE;
+}
+
 METHOD(keymat_v1_t, derive_child_keys, bool,
-	private_keymat_v1_t *this, proposal_t *proposal, diffie_hellman_t *dh,
+	private_keymat_v1_t *this, proposal_t *proposal, key_exchange_t *dh,
 	uint32_t spi_i, uint32_t spi_r, chunk_t nonce_i, chunk_t nonce_r,
 	chunk_t *encr_i, chunk_t *integ_i, chunk_t *encr_r, chunk_t *integ_r)
 {
 	uint16_t enc_alg, int_alg, enc_size = 0, int_size = 0;
 	uint8_t protocol;
-	prf_plus_t *prf_plus;
-	chunk_t seed, secret = chunk_empty;
+	chunk_t seed = chunk_empty, secret = chunk_empty;
 	bool success = FALSE;
 
 	if (proposal->get_algorithm(proposal, ENCRYPTION_ALGORITHM,
@@ -595,11 +629,7 @@ METHOD(keymat_v1_t, derive_child_keys, bool,
 	seed = chunk_cata("ccccc", secret, chunk_from_thing(protocol),
 					  chunk_from_thing(spi_r), nonce_i, nonce_r);
 	DBG4(DBG_CHD, "initiator SA seed %B", &seed);
-
-	prf_plus = prf_plus_create(this->prf, FALSE, seed);
-	if (!prf_plus ||
-		!prf_plus->allocate_bytes(prf_plus, enc_size, encr_i) ||
-		!prf_plus->allocate_bytes(prf_plus, int_size, integ_i))
+	if (!derive_child_keymat(this, seed, enc_size, encr_i, int_size, integ_i))
 	{
 		goto failure;
 	}
@@ -607,11 +637,7 @@ METHOD(keymat_v1_t, derive_child_keys, bool,
 	seed = chunk_cata("ccccc", secret, chunk_from_thing(protocol),
 					  chunk_from_thing(spi_i), nonce_i, nonce_r);
 	DBG4(DBG_CHD, "responder SA seed %B", &seed);
-	prf_plus->destroy(prf_plus);
-	prf_plus = prf_plus_create(this->prf, FALSE, seed);
-	if (!prf_plus ||
-		!prf_plus->allocate_bytes(prf_plus, enc_size, encr_r) ||
-		!prf_plus->allocate_bytes(prf_plus, int_size, integ_r))
+	if (!derive_child_keymat(this, seed, enc_size, encr_r, int_size, integ_r))
 	{
 		goto failure;
 	}
@@ -636,7 +662,7 @@ failure:
 		chunk_clear(encr_r);
 		chunk_clear(integ_r);
 	}
-	DESTROY_IF(prf_plus);
+	memwipe(seed.ptr, seed.len);
 	chunk_clear(&secret);
 
 	return success;
@@ -888,10 +914,10 @@ METHOD(keymat_t, get_version, ike_version_t,
 	return IKEV1;
 }
 
-METHOD(keymat_t, create_dh, diffie_hellman_t*,
-	private_keymat_v1_t *this, diffie_hellman_group_t group)
+METHOD(keymat_t, create_ke, key_exchange_t*,
+	private_keymat_v1_t *this, key_exchange_method_t method)
 {
-	return lib->crypto->create_dh(lib->crypto, group);
+	return lib->crypto->create_ke(lib->crypto, method);
 }
 
 METHOD(keymat_t, create_nonce_gen, nonce_gen_t*,
@@ -930,7 +956,7 @@ keymat_v1_t *keymat_v1_create(bool initiator)
 		.public = {
 			.keymat = {
 				.get_version = _get_version,
-				.create_dh = _create_dh,
+				.create_ke = _create_ke,
 				.create_nonce_gen = _create_nonce_gen,
 				.get_aead = _get_aead,
 				.destroy = _destroy,

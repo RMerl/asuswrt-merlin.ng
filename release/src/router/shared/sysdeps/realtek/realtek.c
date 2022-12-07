@@ -398,7 +398,7 @@ void stop_wlc_connect(int band) {
 	else if(mediabridge_mode())
 		ifname = get_wififname(band);
 
-	if (is_intf_up(ifname))
+	if (is_intf_up(ifname) > 0)
 		eval("ifconfig", ifname, "down");
 }
 
@@ -420,7 +420,7 @@ int get_wlan_status(int band) {
 	int length =sizeof(tmp);
 
 	char* ifname = get_wififname(band);
-	if(is_intf_up(ifname)){
+	if(is_intf_up(ifname) > 0){
 		getmibInfo(ifname, tmp, &length);
 		//*tmp = 0 normal mode 1 is wlan off
 #if defined(RPAC92)

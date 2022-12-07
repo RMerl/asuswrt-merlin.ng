@@ -1,0 +1,54 @@
+.TH "inetcat" 1
+.SH NAME
+inetcat \- Opens a read/write interface via STDIN/STDOUT to a TCP port on a usbmux device
+.SH SYNOPSIS
+.B inetcat
+[OPTIONS]
+<DEVICE_TCP_PORT>
+.SH DESCRIPTION
+inetcat is a simple netcat-like tool that allows opening a read/write
+interface to a TCP port on a usbmux device and exposing it via STDIN/STDOUT.
+.SH OPTIONS
+.TP
+.B \-u, \-\-udid UDID
+Target specific device by UDID. Note that if this option is \f[I]not\f[] specified,
+inetcat will connect to the first device found.
+.TP
+.B \-n, \-\-network
+Connect to network device. The device needs to have WiFi sync enabled and
+needs to be paired with this computer for this to work. Please note that
+a device might close connections at any time to save power.
+This option will make inetcat connect to network attched devices only,
+unless \f[B]-l\f[] is passed too (see below).
+.TP
+.B \-l, \-\-local
+Connect to USB device. This is the default if no option is passed. If used
+together with \f[B]-n\f[], inetcat will first attempt a connection to a device
+attached via USB, and if not available attempt to reach a device via network.
+.TP
+.B \-h, \-\-help
+Prints usage information.
+.TP
+.B \-d, \-\-debug
+Increase debug level.
+.SH EXAMPLE
+Use ssh ProxyCommand to connect to a jailbroken iOS device via SSH:
+
+$ ssh -oProxyCommand="inetcat 22" root@localhost
+
+Used in SSH config file to connect to iOS Device:
+
+$ cat ~/.ssh/config
+Host myiphone
+  User root
+  ProxyCommand "icat 22 UDID_of_my_iphone"
+$ ssh myiphone
+
+.SH AUTHOR
+Adrien Guinet
+.SH SEE ALSO
+iproxy(1)
+.SH ON THE WEB
+https://libimobiledevice.org
+
+https://github.com/libimobiledevice/libusbmuxd

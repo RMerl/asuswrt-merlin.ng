@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,7 +16,7 @@
 
 /**
  * @defgroup tnc_ifmap_soap_msg tnc_ifmap_soap_msg
- * @{ @ingroup tnc_ifmap 
+ * @{ @ingroup tnc_ifmap
  */
 
 #ifndef TNC_IFMAP_SOAP_MSG_H_

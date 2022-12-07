@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2015-2017 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -78,5 +79,14 @@ signature_params_t *get_signature_scheme(private_key_t *private,
  * @return			traffic selector, NULL on error
  */
 traffic_selector_t* parse_ts(char *str);
+
+/**
+ * Generate a random serial number for certificates.
+ *
+ * @param len       length of the generated serial number
+ * @param serial    allocated serial number
+ * @return          TRUE if allocation was successful
+ */
+bool allocate_serial(size_t len, chunk_t *serial);
 
 #endif /** PKI_H_ @}*/

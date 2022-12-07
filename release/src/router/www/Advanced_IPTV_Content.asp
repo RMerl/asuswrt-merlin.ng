@@ -61,7 +61,17 @@ var orig_ttl_inc_enable = '<% nvram_get("ttl_inc_enable"); %>';
 var iptv_profiles = [<% get_iptvSettings();%>][0];
 var isp_profiles = iptv_profiles.isp_profiles;
 var stbPortMappings = [<% get_stbPortMappings();%>][0];
-var orig_wnaports_bond = '<% nvram_get("wanports_bond"); %>';
+var orig_wanports_bond = '<% nvram_get("wanports_bond"); %>';
+if(lacp_support){
+	if(based_modelid == "GT-AC5300")
+		var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
+	else if(based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900")
+		var bonding_port_settings = [{"val": "4", "text": "LAN1"}, {"val": "3", "text": "LAN2"}];
+	else if(based_modelid == "XT8PRO" || based_modelid == "BM68")
+		var bonding_port_settings = [{"val": "2", "text": "LAN2"}, {"val": "3", "text": "LAN3"}];
+	else
+		var bonding_port_settings = [{"val": "1", "text": "LAN1"}, {"val": "2", "text": "LAN2"}];
+}
 
 if(wan_bonding_support)
 	var orig_bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
@@ -484,22 +494,27 @@ function validForm(){
 }
 
 function turn_off_lacp_if_conflicts(){
+	var turn_off_lacp = false;
+
 	if (!lacp_enabled)
 		return;
 
-	if((based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+	if(bonding_port_settings[0].val == "1"  && bonding_port_settings[1].val == "2"){
 		// LAN1 and/or LAN2.
 		if(document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == "1" || document.form.switch_stb_x0.value == "2" || document.form.switch_stb_x0.value == "5")){
-			document.form.lacp_enabled.disabled = false;
-			document.form.lacp_enabled.value = "0";
+			turn_off_lacp = true;
 		}
 	}
-	else if(based_modelid == "XT8PRO"){
+	else if(bonding_port_settings[0].val == "2"  && bonding_port_settings[1].val == "3"){
 		//LAN 2 and/or LAN3
-		if((document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == "2" || document.form.switch_stb_x0.value == "3" || document.form.switch_stb_x0.value == "5" || document.form.switch_stb_x0.value == "6"))){
-			document.form.lacp_enabled.disabled = false;
-			document.form.lacp_enabled.value = "0";
+		if(document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == "2" || document.form.switch_stb_x0.value == "3" || document.form.switch_stb_x0.value == "5" || document.form.switch_stb_x0.value == "6" || document.form.switch_stb_x0.value == "8")){
+			turn_off_lacp = true;
 		}
+	}
+
+	if(turn_off_lacp){
+		document.form.lacp_enabled.disabled = false;
+		document.form.lacp_enabled.value = "0";
 	}
 }
 

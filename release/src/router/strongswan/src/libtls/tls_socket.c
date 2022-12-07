@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -101,6 +102,11 @@ struct private_tls_socket_t {
 	 * Underlying OS socket
 	 */
 	int fd;
+
+	/**
+	 * Whether the socket returned EOF
+	 */
+	bool eof;
 };
 
 METHOD(tls_application_t, process, status_t,
@@ -158,9 +164,9 @@ static bool exchange(private_tls_socket_t *this, bool wr, bool block)
 	char buf[CRYPTO_BUF_SIZE], *pos;
 	ssize_t in, out;
 	size_t len;
-	int round = 0, flags;
+	int flags;
 
-	for (round = 0; TRUE; round++)
+	while (TRUE)
 	{
 		while (TRUE)
 		{
@@ -188,6 +194,12 @@ static bool exchange(private_tls_socket_t *this, bool wr, bool block)
 				case SUCCESS:
 					return TRUE;
 				default:
+					if (!wr && this->app.in_done > 0)
+					{	/* return data after proper termination via fatal close
+						 * notify to which we responded with one */
+						this->eof = TRUE;
+						return TRUE;
+					}
 					return FALSE;
 			}
 			break;
@@ -232,6 +244,7 @@ static bool exchange(private_tls_socket_t *this, bool wr, bool block)
 		}
 		if (in == 0)
 		{	/* EOF */
+			this->eof = TRUE;
 			return TRUE;
 		}
 		switch (this->tls->process(this->tls, buf, in))
@@ -264,11 +277,20 @@ METHOD(tls_socket_t, read_, ssize_t,
 		}
 		return cache;
 	}
+	if (this->eof)
+	{
+		return 0;
+	}
 	this->app.in.ptr = buf;
 	this->app.in.len = len;
 	this->app.in_done = 0;
 	if (exchange(this, FALSE, block))
 	{
+		if (!this->app.in_done && !this->eof)
+		{
+			errno = EWOULDBLOCK;
+			return -1;
+		}
 		return this->app.in_done;
 	}
 	return -1;
@@ -292,13 +314,13 @@ METHOD(tls_socket_t, splice, bool,
 {
 	char buf[PLAIN_BUF_SIZE], *pos;
 	ssize_t in, out;
-	bool old, plain_eof = FALSE, crypto_eof = FALSE;
+	bool old, crypto_eof = FALSE;
 	struct pollfd pfd[] = {
 		{ .fd = this->fd,	.events = POLLIN, },
 		{ .fd = rfd,		.events = POLLIN, },
 	};
 
-	while (!plain_eof && !crypto_eof)
+	while (!this->eof && !crypto_eof)
 	{
 		old = thread_cancelability(TRUE);
 		in = poll(pfd, countof(pfd), -1);
@@ -308,14 +330,11 @@ METHOD(tls_socket_t, splice, bool,
 			DBG1(DBG_TLS, "TLS select error: %s", strerror(errno));
 			return FALSE;
 		}
-		while (!plain_eof && pfd[0].revents & (POLLIN | POLLHUP | POLLNVAL))
+		while (!this->eof && pfd[0].revents & (POLLIN | POLLHUP | POLLNVAL))
 		{
 			in = read_(this, buf, sizeof(buf), FALSE);
 			switch (in)
 			{
-				case 0:
-					plain_eof = TRUE;
-					break;
 				case -1:
 					if (errno != EWOULDBLOCK)
 					{
@@ -405,11 +424,11 @@ METHOD(tls_socket_t, destroy, void,
  * See header
  */
 tls_socket_t *tls_socket_create(bool is_server, identification_t *server,
-							identification_t *peer, int fd, tls_cache_t *cache,
-							tls_version_t max_version, bool nullok)
+								identification_t *peer, int fd,
+								tls_cache_t *cache, tls_version_t min_version,
+								tls_version_t max_version, tls_flag_t flags)
 {
 	private_tls_socket_t *this;
-	tls_purpose_t purpose;
 
 	INIT(this,
 		.public = {
@@ -431,23 +450,13 @@ tls_socket_t *tls_socket_create(bool is_server, identification_t *server,
 		.fd = fd,
 	);
 
-	if (nullok)
-	{
-		purpose = TLS_PURPOSE_GENERIC_NULLOK;
-	}
-	else
-	{
-		purpose = TLS_PURPOSE_GENERIC;
-	}
-
-	this->tls = tls_create(is_server, server, peer, purpose,
-						   &this->app.application, cache);
-	if (!this->tls)
+	this->tls = tls_create(is_server, server, peer, TLS_PURPOSE_GENERIC,
+						   &this->app.application, cache, flags);
+	if (!this->tls ||
+		!this->tls->set_version(this->tls, min_version, max_version))
 	{
 		free(this);
 		return NULL;
 	}
-	this->tls->set_version(this->tls, max_version);
-
 	return &this->public;
 }

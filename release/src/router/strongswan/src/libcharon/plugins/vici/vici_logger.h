@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -47,7 +48,7 @@ struct vici_logger_t {
  * Create a vici_logger instance.
  *
  * @param dispatcher		dispatcher to receive requests from
- * @return					loggerential backend
+ * @return					logger backend
  */
 vici_logger_t *vici_logger_create(vici_dispatcher_t *dispatcher);
 

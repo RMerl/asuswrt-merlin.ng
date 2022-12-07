@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -220,7 +221,7 @@ METHOD(public_key_t, verify, bool,
 
 METHOD(public_key_t, encrypt_, bool,
 	private_bliss_public_key_t *this, encryption_scheme_t scheme,
-	chunk_t plain, chunk_t *crypto)
+	void *params, chunk_t plain, chunk_t *crypto)
 {
 	DBG1(DBG_LIB, "encryption scheme %N not supported",
 				   encryption_scheme_names, scheme);
@@ -266,7 +267,7 @@ METHOD(public_key_t, get_fingerprint, bool,
 										   this->set, type, fp);
 	if (success)
 	{
-		lib->encoding->cache(lib->encoding, type, this, *fp);
+		lib->encoding->cache(lib->encoding, type, this, fp);
 	}
 	return success;
 }

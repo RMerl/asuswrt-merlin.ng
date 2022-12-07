@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2012 Reto Buerki
  * Copyright (C) 2012 Adrian-Ken Rueegsegger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -39,12 +40,12 @@ struct private_tkm_diffie_hellman_t {
 	tkm_diffie_hellman_t public;
 
 	/**
-	 * Diffie Hellman group number.
+	 * Diffie-Hellman group number.
 	 */
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 
 	/**
-	 * Diffie Hellman public value.
+	 * Diffie-Hellman public value.
 	 */
 	dh_pubvalue_type pubvalue;
 
@@ -55,14 +56,14 @@ struct private_tkm_diffie_hellman_t {
 
 };
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_tkm_diffie_hellman_t *this, chunk_t *value)
 {
 	sequence_to_chunk(this->pubvalue.data, this->pubvalue.size, value);
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_tkm_diffie_hellman_t *this, chunk_t *secret)
 {
 	*secret = chunk_empty;
@@ -70,7 +71,7 @@ METHOD(diffie_hellman_t, get_shared_secret, bool,
 }
 
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_tkm_diffie_hellman_t *this, chunk_t value)
 {
 	dh_pubvalue_type othervalue;
@@ -80,13 +81,13 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 	return ike_dh_generate_key(this->context_id, othervalue) == TKM_OK;
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_tkm_diffie_hellman_t *this)
 {
 	return this->group;
 }
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_tkm_diffie_hellman_t *this)
 {
 	if (ike_dh_reset(this->context_id) != TKM_OK)
@@ -106,13 +107,13 @@ METHOD(tkm_diffie_hellman_t, get_id, dh_id_type,
 
 static u_int hash(void *key)
 {
-	diffie_hellman_group_t k = *(diffie_hellman_group_t*)key;
+	key_exchange_method_t k = *(key_exchange_method_t*)key;
 	return chunk_hash(chunk_from_thing(k));
 }
 
 static bool equals(void *key, void *other_key)
 {
-	return *(diffie_hellman_group_t*)key == *(diffie_hellman_group_t*)other_key;
+	return *(key_exchange_method_t*)key == *(key_exchange_method_t*)other_key;
 }
 
 /*
@@ -122,7 +123,7 @@ int register_dh_mapping()
 {
 	int count, i;
 	char *iana_id_str, *tkm_id_str;
-	diffie_hellman_group_t *iana_id;
+	key_exchange_method_t *iana_id;
 	uint64_t *tkm_id;
 	hashtable_t *map;
 	enumerator_t *enumerator;
@@ -136,7 +137,7 @@ int register_dh_mapping()
 
 	while (enumerator->enumerate(enumerator, &iana_id_str, &tkm_id_str))
 	{
-		iana_id = malloc_thing(diffie_hellman_group_t);
+		iana_id = malloc_thing(key_exchange_method_t);
 		*iana_id = settings_value_as_int(iana_id_str, 0);
 		tkm_id = malloc_thing(uint64_t);
 		*tkm_id = settings_value_as_int(tkm_id_str, 0);
@@ -147,13 +148,13 @@ int register_dh_mapping()
 
 	count = map->get_count(map);
 	plugin_feature_t f[count + 1];
-	f[0] = PLUGIN_REGISTER(DH, tkm_diffie_hellman_create);
+	f[0] = PLUGIN_REGISTER(KE, tkm_diffie_hellman_create);
 
 	i = 1;
 	enumerator = map->create_enumerator(map);
 	while (enumerator->enumerate(enumerator, &iana_id, &tkm_id))
 	{
-		f[i] = PLUGIN_PROVIDE(DH, *iana_id);
+		f[i] = PLUGIN_PROVIDE(KE, *iana_id);
 		i++;
 	}
 	enumerator->destroy(enumerator);
@@ -197,7 +198,7 @@ void destroy_dh_mapping()
 /*
  * Described in header.
  */
-tkm_diffie_hellman_t *tkm_diffie_hellman_create(diffie_hellman_group_t group)
+tkm_diffie_hellman_t *tkm_diffie_hellman_create(key_exchange_method_t group)
 {
 	private_tkm_diffie_hellman_t *this;
 
@@ -208,11 +209,11 @@ tkm_diffie_hellman_t *tkm_diffie_hellman_create(diffie_hellman_group_t group)
 
 	INIT(this,
 		.public = {
-			.dh = {
+			.ke = {
 				.get_shared_secret = _get_shared_secret,
-				.set_other_public_value = _set_other_public_value,
-				.get_my_public_value = _get_my_public_value,
-				.get_dh_group = _get_dh_group,
+				.set_public_key = _set_public_key,
+				.get_public_key = _get_public_key,
+				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 			.get_id = _get_id,

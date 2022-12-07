@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2007-2012 Martin Willi
- * Copyright (C) 2012 revosec AG
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -44,7 +44,7 @@ struct private_eap_gtc_t {
 	identification_t *peer;
 
 	/**
-	 * EAP message identififier
+	 * EAP message identifier
 	 */
 	uint8_t identifier;
 };
@@ -186,7 +186,7 @@ METHOD(eap_method_t, process_server, status_t,
 }
 
 METHOD(eap_method_t, get_type, eap_type_t,
-	private_eap_gtc_t *this, uint32_t *vendor)
+	private_eap_gtc_t *this, pen_t *vendor)
 {
 	*vendor = 0;
 	return EAP_GTC;
@@ -195,7 +195,7 @@ METHOD(eap_method_t, get_type, eap_type_t,
 METHOD(eap_method_t, get_msk, status_t,
 	private_eap_gtc_t *this, chunk_t *msk)
 {
-	return FAILED;
+	return NOT_SUPPORTED;
 }
 
 METHOD(eap_method_t, get_identifier, uint8_t,

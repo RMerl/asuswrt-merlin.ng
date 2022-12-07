@@ -1,8 +1,9 @@
 /*
- * Copyright (C) 2008-2018 Tobias Brunner
+ * Copyright (C) 2008-2019 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,7 +24,7 @@
 #include <bio/bio_reader.h>
 #include <bio/bio_writer.h>
 #include <sa/ikev2/keymat_v2.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 #include <crypto/hashers/hash_algorithm_set.h>
 #include <encoding/payloads/sa_payload.h>
 #include <encoding/payloads/ke_payload.h>
@@ -55,14 +56,24 @@ struct private_ike_init_t {
 	bool initiator;
 
 	/**
+	 * Whether the key exchange is done
+	 */
+	bool ke_done;
+
+	/**
+	 * Whether keys have already been derived
+	 */
+	bool ke_derived;
+
+	/**
 	 * diffie hellman group to use
 	 */
-	diffie_hellman_group_t dh_group;
+	key_exchange_method_t dh_group;
 
 	/**
 	 * diffie hellman key exchange
 	 */
-	diffie_hellman_t *dh;
+	key_exchange_t *dh;
 
 	/**
 	 * Applying DH public value failed?
@@ -332,7 +343,8 @@ static bool build_payloads(private_ike_init_t *this, message_t *message)
 				proposal->set_spi(proposal, id->get_initiator_spi(id));
 			}
 			/* move the selected DH group to the front of the proposal */
-			if (!proposal->promote_dh_group(proposal, this->dh_group))
+			if (!proposal->promote_transform(proposal, KEY_EXCHANGE_METHOD,
+											 this->dh_group))
 			{	/* the proposal does not include the group, move to the back */
 				proposal_list->remove_at(proposal_list, enumerator);
 				other_dh_groups->insert_last(other_dh_groups, proposal);
@@ -362,8 +374,8 @@ static bool build_payloads(private_ike_init_t *this, message_t *message)
 	}
 	message->add_payload(message, (payload_t*)sa_payload);
 
-	ke_payload = ke_payload_create_from_diffie_hellman(PLV2_KEY_EXCHANGE,
-													   this->dh);
+	ke_payload = ke_payload_create_from_key_exchange(PLV2_KEY_EXCHANGE,
+													 this->dh);
 	if (!ke_payload)
 	{
 		DBG1(DBG_IKE, "creating KE payload failed");
@@ -433,6 +445,13 @@ static bool build_payloads(private_ike_init_t *this, message_t *message)
 	{
 		message->add_notify(message, FALSE, USE_PPK, chunk_empty);
 	}
+	/* notify the peer if we accept childless IKE_SAs */
+	if (!this->old_sa && !this->initiator &&
+		 ike_cfg->childless(ike_cfg) != CHILDLESS_NEVER)
+	{
+		message->add_notify(message, FALSE, CHILDLESS_IKEV2_SUPPORTED,
+							chunk_empty);
+	}
 	return TRUE;
 }
 
@@ -446,17 +465,23 @@ static void process_sa_payload(private_ike_init_t *this, message_t *message,
 	enumerator_t *enumerator;
 	linked_list_t *proposal_list;
 	host_t *me, *other;
-	bool private, prefer_configured;
+	proposal_selection_flag_t flags = 0;
 
 	ike_cfg = this->ike_sa->get_ike_cfg(this->ike_sa);
 
 	proposal_list = sa_payload->get_proposals(sa_payload);
-	private = this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN);
-	prefer_configured = lib->settings->get_bool(lib->settings,
-							"%s.prefer_configured_proposals", TRUE, lib->ns);
-
-	this->proposal = ike_cfg->select_proposal(ike_cfg, proposal_list, private,
-											  prefer_configured);
+	if (!this->ike_sa->supports_extension(this->ike_sa, EXT_STRONGSWAN) &&
+		!lib->settings->get_bool(lib->settings, "%s.accept_private_algs",
+								 FALSE, lib->ns))
+	{
+		flags |= PROPOSAL_SKIP_PRIVATE;
+	}
+	if (!lib->settings->get_bool(lib->settings,
+							"%s.prefer_configured_proposals", TRUE, lib->ns))
+	{
+		flags |= PROPOSAL_PREFER_SUPPLIED;
+	}
+	this->proposal = ike_cfg->select_proposal(ike_cfg, proposal_list, flags);
 	if (!this->proposal)
 	{
 		if (!this->initiator && !this->old_sa)
@@ -474,7 +499,7 @@ static void process_sa_payload(private_ike_init_t *this, message_t *message,
 				DBG1(DBG_IKE, "no matching proposal found, trying alternative "
 					 "config");
 				this->proposal = cfg->select_proposal(cfg, proposal_list,
-													private, prefer_configured);
+													  flags);
 				if (this->proposal)
 				{
 					alt_cfg = cfg->get_ref(cfg);
@@ -505,6 +530,7 @@ static void process_payloads(private_ike_init_t *this, message_t *message)
 {
 	enumerator_t *enumerator;
 	payload_t *payload;
+	ike_sa_id_t *id;
 	ke_payload_t *ke_payload = NULL;
 
 	enumerator = message->create_payload_enumerator(message);
@@ -521,7 +547,7 @@ static void process_payloads(private_ike_init_t *this, message_t *message)
 			{
 				ke_payload = (ke_payload_t*)payload;
 
-				this->dh_group = ke_payload->get_dh_group_number(ke_payload);
+				this->dh_group = ke_payload->get_key_exchange_method(ke_payload);
 				break;
 			}
 			case PLV2_NONCE:
@@ -578,6 +604,13 @@ static void process_payloads(private_ike_init_t *this, message_t *message)
 														   EXT_IKE_REDIRECTION);
 						}
 						break;
+					case CHILDLESS_IKEV2_SUPPORTED:
+						if (this->initiator && !this->old_sa)
+						{
+							this->ike_sa->enable_extension(this->ike_sa,
+														   EXT_IKE_CHILDLESS);
+						}
+						break;
 					default:
 						/* other notifies are handled elsewhere */
 						break;
@@ -593,23 +626,39 @@ static void process_payloads(private_ike_init_t *this, message_t *message)
 	if (this->proposal)
 	{
 		this->ike_sa->set_proposal(this->ike_sa, this->proposal);
+
+		if (this->old_sa)
+		{	/* retrieve SPI of new IKE_SA when rekeying */
+			id = this->ike_sa->get_id(this->ike_sa);
+			if (this->initiator)
+			{
+				id->set_responder_spi(id,
+									  this->proposal->get_spi(this->proposal));
+			}
+			else
+			{
+				id->set_initiator_spi(id,
+									  this->proposal->get_spi(this->proposal));
+			}
+		}
 	}
 
 	if (ke_payload && this->proposal &&
-		this->proposal->has_dh_group(this->proposal, this->dh_group))
+		this->proposal->has_transform(this->proposal, KEY_EXCHANGE_METHOD,
+									  this->dh_group))
 	{
 		if (!this->initiator)
 		{
-			this->dh = this->keymat->keymat.create_dh(
+			this->dh = this->keymat->keymat.create_ke(
 								&this->keymat->keymat, this->dh_group);
 		}
 		else if (this->dh)
 		{
-			this->dh_failed = this->dh->get_dh_group(this->dh) != this->dh_group;
+			this->dh_failed = this->dh->get_method(this->dh) != this->dh_group;
 		}
 		if (this->dh && !this->dh_failed)
 		{
-			this->dh_failed = !this->dh->set_other_public_value(this->dh,
+			this->dh_failed = !this->dh->set_public_key(this->dh,
 								ke_payload->get_key_exchange_data(ke_payload));
 		}
 	}
@@ -644,38 +693,40 @@ METHOD(task_t, build_i, status_t,
 			uint16_t dh_group;
 
 			proposal = this->old_sa->get_proposal(this->old_sa);
-			if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP,
+			if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD,
 										&dh_group, NULL))
 			{
 				this->dh_group = dh_group;
 			}
 			else
 			{	/* this shouldn't happen, but let's be safe */
-				this->dh_group = ike_cfg->get_dh_group(ike_cfg);
+				this->dh_group = ike_cfg->get_algorithm(ike_cfg,
+														KEY_EXCHANGE_METHOD);
 			}
 		}
 		else
 		{
-			this->dh_group = ike_cfg->get_dh_group(ike_cfg);
+			this->dh_group = ike_cfg->get_algorithm(ike_cfg,
+													KEY_EXCHANGE_METHOD);
 		}
-		this->dh = this->keymat->keymat.create_dh(&this->keymat->keymat,
+		this->dh = this->keymat->keymat.create_ke(&this->keymat->keymat,
 												  this->dh_group);
 		if (!this->dh)
 		{
 			DBG1(DBG_IKE, "configured DH group %N not supported",
-				diffie_hellman_group_names, this->dh_group);
+				key_exchange_method_names, this->dh_group);
 			return FAILED;
 		}
 	}
-	else if (this->dh->get_dh_group(this->dh) != this->dh_group)
+	else if (this->dh->get_method(this->dh) != this->dh_group)
 	{	/* reset DH instance if group changed (INVALID_KE_PAYLOAD) */
 		this->dh->destroy(this->dh);
-		this->dh = this->keymat->keymat.create_dh(&this->keymat->keymat,
+		this->dh = this->keymat->keymat.create_ke(&this->keymat->keymat,
 												  this->dh_group);
 		if (!this->dh)
 		{
 			DBG1(DBG_IKE, "requested DH group %N not supported",
-				 diffie_hellman_group_names, this->dh_group);
+				 key_exchange_method_names, this->dh_group);
 			return FAILED;
 		}
 	}
@@ -744,8 +795,8 @@ METHOD(task_t, process_r,  status_t,
 /**
  * Derive the keymat for the IKE_SA
  */
-static bool derive_keys(private_ike_init_t *this,
-						chunk_t nonce_i, chunk_t nonce_r)
+static bool derive_keys_internal(private_ike_init_t *this, chunk_t nonce_i,
+								 chunk_t nonce_r)
 {
 	keymat_v2_t *old_keymat;
 	pseudo_random_function_t prf_alg = PRF_UNDEFINED;
@@ -758,14 +809,6 @@ static bool derive_keys(private_ike_init_t *this,
 		/* rekeying: Include old SKd, use old PRF, apply SPI */
 		old_keymat = (keymat_v2_t*)this->old_sa->get_keymat(this->old_sa);
 		prf_alg = old_keymat->get_skd(old_keymat, &skd);
-		if (this->initiator)
-		{
-			id->set_responder_spi(id, this->proposal->get_spi(this->proposal));
-		}
-		else
-		{
-			id->set_initiator_spi(id, this->proposal->get_spi(this->proposal));
-		}
 	}
 	if (!this->keymat->derive_ike_keys(this->keymat, this->proposal, this->dh,
 									   nonce_i, nonce_r, id, prf_alg, skd))
@@ -775,6 +818,35 @@ static bool derive_keys(private_ike_init_t *this,
 	charon->bus->ike_keys(charon->bus, this->ike_sa, this->dh, chunk_empty,
 						  nonce_i, nonce_r, this->old_sa, NULL, AUTH_NONE);
 	return TRUE;
+}
+
+METHOD(ike_init_t, derive_keys, status_t,
+	private_ike_init_t *this)
+{
+	bool success;
+
+	if (!this->ke_done || this->ke_derived)
+	{
+		return NEED_MORE;
+	}
+
+	if (this->initiator)
+	{
+		success = derive_keys_internal(this, this->my_nonce, this->other_nonce);
+	}
+	else
+	{
+		success = derive_keys_internal(this, this->other_nonce, this->my_nonce);
+	}
+
+	this->ke_derived = TRUE;
+
+	if (!success)
+	{
+		DBG1(DBG_IKE, "key derivation failed");
+		return FAILED;
+	}
+	return SUCCESS;
 }
 
 METHOD(task_t, build_r, status_t,
@@ -808,16 +880,17 @@ METHOD(task_t, build_r, status_t,
 	}
 
 	if (this->dh == NULL ||
-		!this->proposal->has_dh_group(this->proposal, this->dh_group))
+		!this->proposal->has_transform(this->proposal, KEY_EXCHANGE_METHOD,
+									   this->dh_group))
 	{
 		uint16_t group;
 
-		if (this->proposal->get_algorithm(this->proposal, DIFFIE_HELLMAN_GROUP,
+		if (this->proposal->get_algorithm(this->proposal, KEY_EXCHANGE_METHOD,
 										  &group, NULL))
 		{
 			DBG1(DBG_IKE, "DH group %N unacceptable, requesting %N",
-				 diffie_hellman_group_names, this->dh_group,
-				 diffie_hellman_group_names, group);
+				 key_exchange_method_names, this->dh_group,
+				 key_exchange_method_names, group);
 			this->dh_group = group;
 			group = htons(group);
 			message->add_notify(message, FALSE, INVALID_KE_PAYLOAD,
@@ -838,18 +911,25 @@ METHOD(task_t, build_r, status_t,
 		return FAILED;
 	}
 
-	if (!derive_keys(this, this->other_nonce, this->my_nonce))
-	{
-		DBG1(DBG_IKE, "key derivation failed");
-		message->add_notify(message, TRUE, NO_PROPOSAL_CHOSEN, chunk_empty);
-		return FAILED;
-	}
 	if (!build_payloads(this, message))
 	{
 		message->add_notify(message, TRUE, NO_PROPOSAL_CHOSEN, chunk_empty);
 		return FAILED;
 	}
-	return SUCCESS;
+	this->ke_done = TRUE;
+
+	if (this->old_sa)
+	{
+		/* during rekeying, we derive keys here directly */
+		if (derive_keys(this) != SUCCESS)
+		{
+			message->add_notify(message, FALSE, NO_PROPOSAL_CHOSEN, chunk_empty);
+			return FAILED;
+		}
+		return SUCCESS;
+	}
+	/* key derivation is done before the next request is processed */
+	return NEED_MORE;
 }
 
 /**
@@ -955,14 +1035,14 @@ METHOD(task_t, process_i, status_t,
 				case INVALID_KE_PAYLOAD:
 				{
 					chunk_t data;
-					diffie_hellman_group_t bad_group;
+					key_exchange_method_t bad_group;
 
 					bad_group = this->dh_group;
 					data = notify->get_notification_data(notify);
 					this->dh_group = ntohs(*((uint16_t*)data.ptr));
 					DBG1(DBG_IKE, "peer didn't accept DH group %N, "
-						 "it requested %N", diffie_hellman_group_names,
-						 bad_group, diffie_hellman_group_names, this->dh_group);
+						 "it requested %N", key_exchange_method_names,
+						 bad_group, key_exchange_method_names, this->dh_group);
 
 					if (this->old_sa == NULL)
 					{	/* reset the IKE_SA if we are not rekeying */
@@ -982,6 +1062,12 @@ METHOD(task_t, process_i, status_t,
 					break;
 				case COOKIE:
 				{
+					if (this->old_sa)
+					{
+						DBG1(DBG_IKE, "received COOKIE notify during rekeying"
+						     ", ignored");
+						break;
+					}
 					chunk_free(&this->cookie);
 					this->cookie = chunk_clone(notify->get_notification_data(notify));
 					this->ike_sa->reset(this->ike_sa, FALSE);
@@ -1043,7 +1129,8 @@ METHOD(task_t, process_i, status_t,
 	}
 
 	if (this->dh == NULL ||
-		!this->proposal->has_dh_group(this->proposal, this->dh_group))
+		!this->proposal->has_transform(this->proposal, KEY_EXCHANGE_METHOD,
+									   this->dh_group))
 	{
 		DBG1(DBG_IKE, "peer DH group selection invalid");
 		return FAILED;
@@ -1054,13 +1141,15 @@ METHOD(task_t, process_i, status_t,
 		DBG1(DBG_IKE, "applying DH public value failed");
 		return FAILED;
 	}
+	this->ke_done = TRUE;
 
-	if (!derive_keys(this, this->my_nonce, this->other_nonce))
+	if (this->old_sa)
 	{
-		DBG1(DBG_IKE, "key derivation failed");
-		return FAILED;
+		/* during rekeying, we derive keys here directly */
+		return derive_keys(this);
 	}
-	return SUCCESS;
+	/* key derivation is done before we send the next message */
+	return NEED_MORE;
 }
 
 METHOD(task_t, get_type, task_type_t,
@@ -1074,6 +1163,8 @@ METHOD(task_t, migrate, void,
 {
 	DESTROY_IF(this->proposal);
 	chunk_free(&this->other_nonce);
+	this->ke_done = FALSE;
+	this->ke_derived = FALSE;
 
 	this->ike_sa = ike_sa;
 	this->keymat = (keymat_v2_t*)ike_sa->get_keymat(ike_sa);
@@ -1121,11 +1212,12 @@ ike_init_t *ike_init_create(ike_sa_t *ike_sa, bool initiator, ike_sa_t *old_sa)
 				.migrate = _migrate,
 				.destroy = _destroy,
 			},
+			.derive_keys = _derive_keys,
 			.get_lower_nonce = _get_lower_nonce,
 		},
 		.ike_sa = ike_sa,
 		.initiator = initiator,
-		.dh_group = MODP_NONE,
+		.dh_group = KE_NONE,
 		.keymat = (keymat_v2_t*)ike_sa->get_keymat(ike_sa),
 		.old_sa = old_sa,
 		.signature_authentication = lib->settings->get_bool(lib->settings,

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -66,6 +67,9 @@ METHOD(plugin_t, get_features, int,
 		PLUGIN_REGISTER(PRIVKEY, pem_private_key_load, FALSE),
 			PLUGIN_PROVIDE(PRIVKEY, KEY_ED25519),
 				PLUGIN_DEPENDS(PRIVKEY, KEY_ED25519),
+		PLUGIN_REGISTER(PRIVKEY, pem_private_key_load, FALSE),
+			PLUGIN_PROVIDE(PRIVKEY, KEY_ED448),
+				PLUGIN_DEPENDS(PRIVKEY, KEY_ED448),
 
 		/* public key PEM decoding */
 		PLUGIN_REGISTER(PUBKEY, pem_public_key_load, FALSE),
@@ -86,6 +90,9 @@ METHOD(plugin_t, get_features, int,
 		PLUGIN_REGISTER(PUBKEY, pem_public_key_load, FALSE),
 			PLUGIN_PROVIDE(PUBKEY, KEY_ED25519),
 				PLUGIN_DEPENDS(PUBKEY, KEY_ED25519),
+		PLUGIN_REGISTER(PUBKEY, pem_public_key_load, FALSE),
+			PLUGIN_PROVIDE(PUBKEY, KEY_ED448),
+				PLUGIN_DEPENDS(PUBKEY, KEY_ED448),
 
 		/* certificate PEM decoding */
 		PLUGIN_REGISTER(CERT_DECODE, pem_certificate_load, FALSE),
@@ -121,6 +128,8 @@ METHOD(plugin_t, get_features, int,
 		PLUGIN_REGISTER(CONTAINER_DECODE, pem_container_load, FALSE),
 			PLUGIN_PROVIDE(CONTAINER_DECODE, CONTAINER_PKCS12),
 				PLUGIN_DEPENDS(CONTAINER_DECODE, CONTAINER_PKCS12),
+			PLUGIN_PROVIDE(CONTAINER_DECODE, CONTAINER_PKCS7),
+				PLUGIN_DEPENDS(CONTAINER_DECODE, CONTAINER_PKCS7),
 	};
 	*features = f;
 	return countof(f);

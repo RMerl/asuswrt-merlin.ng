@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -538,7 +539,7 @@ METHOD(private_key_t, sign, bool,
 
 METHOD(private_key_t, decrypt, bool,
 	private_bliss_private_key_t *this, encryption_scheme_t scheme,
-	chunk_t crypto, chunk_t *plain)
+	void *params, chunk_t crypto, chunk_t *plain)
 {
 	DBG1(DBG_LIB, "encryption scheme %N not supported",
 				   encryption_scheme_names, scheme);
@@ -645,7 +646,7 @@ METHOD(private_key_t, get_fingerprint, bool,
 										   this->set, type, fp);
 	if (success)
 	{
-		lib->encoding->cache(lib->encoding, type, this, *fp);
+		lib->encoding->cache(lib->encoding, type, this, fp);
 	}
 	return success;
 }
@@ -1071,7 +1072,7 @@ bliss_private_key_t *bliss_private_key_gen(key_type_t type, va_list args)
 	/* We derive the public key from the private key using the FFT */
 	fft = ntt_fft_create(set->fft_params);
 
-	/* Some vectors needed to derive the publi key */
+	/* Some vectors needed to derive the public key */
 	S1 = malloc(n * sizeof(uint32_t));
 	S2 = malloc(n * sizeof(uint32_t));
 	a  = malloc(n * sizeof(uint32_t));

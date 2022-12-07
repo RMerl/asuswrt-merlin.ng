@@ -21,7 +21,7 @@ sub new {
     my $class = shift;
     my $socket = shift;
     my $self = {
-       Transport => Vici::Transport->new($socket),
+        Transport => Vici::Transport->new($socket),
     };
     bless($self, $class);
     return $self;
@@ -98,7 +98,7 @@ sub streamed_request {
     my ($self, $command, $event, $vars) = @_;
     my $out = defined $vars ? $vars->encode() : '';
 
-   $self->register($event);
+    $self->register($event);
 
     my $request = pack('CC/a*a*', CMD_REQUEST, $command, $out);
     $self->{'Transport'}->send($request);
@@ -112,13 +112,13 @@ sub streamed_request {
 
         if ( $type == EVENT )
         {
-           (my $event_name, $data) = unpack('C/a*a*', $data);
+            (my $event_name, $data) = unpack('C/a*a*', $data);
 
-           if ($event_name eq $event)
-           {
-               my $msg = Vici::Message->from_data($data);
-               push(@list, $msg);
-           }
+            if ($event_name eq $event)
+            {
+                my $msg = Vici::Message->from_data($data);
+                push(@list, $msg);
+            }
         }
         elsif ( $type == CMD_RESPONSE )
         {
@@ -142,7 +142,7 @@ Vici::Packet - Perl extension for sending and receiving strongSwan VICI packets
 
 =head1 SYNOPSIS
 
-  use Vici::Packet;
+use Vici::Packet;
 
 =head1 DESCRIPTION
 
@@ -158,9 +158,7 @@ None by default.
 
 =head1 SEE ALSO
 
-strongSwan Wiki:  https://wiki.strongswan.org/projects/strongswan/wiki/Vici
-
-strongSwan Mailing list:  users@lists.strongswan.org
+strongSwan Documentation:  https://docs.strongswan.org/docs/5.9/plugins/vici.html
 
 =head1 AUTHOR
 

@@ -25,8 +25,8 @@
  # ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 
 CC=$(CROSS_COMPILER)gcc
-LDFLAGS=-L$(TARGETDIR)/usr/lib/ -L$(TOP)/bluez-5.41/lib/.libs/ -lbluetooth
-CFLAGS=-I$(TOP)/bluez-5.41/lib/
+LDFLAGS=-L$(TARGETDIR)/usr/lib/ -L$(TOP)/bluez-5.56/lib/.libs/ -lbluetooth
+CFLAGS=-I$(TOP)/bluez-5.56/lib/
 
 ifeq ($(wildcard $(SRCBASE)/router/btconfig/*.c),)
 all:

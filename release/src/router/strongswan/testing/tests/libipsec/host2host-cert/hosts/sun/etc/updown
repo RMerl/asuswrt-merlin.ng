@@ -43,7 +43,7 @@
 #              is the name of the ipsec interface to be used.
 #
 #       PLUTO_REQID
-#              is the requid of the AH|ESP policy
+#              is the reqid of the AH|ESP policy
 #
 #       PLUTO_PROTO
 #              is the negotiated IPsec protocol, ah|esp
@@ -118,6 +118,12 @@
 #
 #       PLUTO_MARK_OUT
 #              is an optional XFRM mark set on the outbound IPsec SA
+#
+#       PLUTO_IF_ID_IN
+#              is an optional XFRM interface ID set on the inbound IPsec SA
+#
+#       PLUTO_IF_ID_OUT
+#              is an optional XFRM interface ID set on the outbound IPsec SA
 #
 #       PLUTO_UDP_ENC
 #              contains the remote UDP port in the case of ESP_IN_UDP

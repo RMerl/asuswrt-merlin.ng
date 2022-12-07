@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -654,8 +655,7 @@ static bool check_policy_constraints(x509_t *issuer, u_int pathlen,
 
 METHOD(cert_validator_t, validate, bool,
 	private_constraints_validator_t *this, certificate_t *subject,
-	certificate_t *issuer, bool online, u_int pathlen, bool anchor,
-	auth_cfg_t *auth)
+	certificate_t *issuer, u_int pathlen, bool anchor, auth_cfg_t *auth)
 {
 	if (issuer->get_type(issuer) == CERT_X509 &&
 		subject->get_type(subject) == CERT_X509)

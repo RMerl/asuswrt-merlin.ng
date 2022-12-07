@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -18,6 +18,8 @@
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
  *
+ * SPDX-License-Identifier: curl
+ *
  ***************************************************************************/
 #include "tool_setup.h"
 
@@ -28,7 +30,6 @@
 #include "curlx.h"
 
 #include "tool_cfgable.h"
-#include "tool_convert.h"
 #include "tool_msgs.h"
 #include "tool_binmode.h"
 #include "tool_getparam.h"
@@ -126,21 +127,20 @@ static struct tool_mime *tool_mime_new_filedata(struct tool_mime *parent,
     else {  /* Not suitable for direct use, buffer stdin data. */
       size_t stdinsize = 0;
 
-      if(file2memory(&data, &stdinsize, stdin) != PARAM_OK) {
-        /* Out of memory. */
+      switch(file2memory(&data, &stdinsize, stdin)) {
+      case PARAM_NO_MEM:
         return m;
-      }
-
-      if(ferror(stdin)) {
+      case PARAM_READ_ERROR:
         result = CURLE_READ_ERROR;
-        Curl_safefree(data);
-        data = NULL;
-      }
-      else if(!stdinsize) {
-        /* Zero-length data has been freed. Re-create it. */
-        data = strdup("");
-        if(!data)
-          return m;
+        break;
+      default:
+        if(!stdinsize) {
+          /* Zero-length data has been freed. Re-create it. */
+          data = strdup("");
+          if(!data)
+            return m;
+        }
+        break;
       }
       size = curlx_uztoso(stdinsize);
       origin = 0;
@@ -268,25 +268,7 @@ static CURLcode tool2curlparts(CURL *curl, struct tool_mime *m,
         break;
 
       case TOOLMIME_DATA:
-#ifdef CURL_DOES_CONVERSIONS
-        /* Our data is always textual: convert it to ASCII. */
-        {
-          size_t size = strlen(m->data);
-          char *cp = malloc(size + 1);
-
-          if(!cp)
-            ret = CURLE_OUT_OF_MEMORY;
-          else {
-            memcpy(cp, m->data, size + 1);
-            ret = convert_to_network(cp, size);
-            if(!ret)
-              ret = curl_mime_data(part, cp, CURL_ZERO_TERMINATED);
-            free(cp);
-          }
-        }
-#else
         ret = curl_mime_data(part, m->data, CURL_ZERO_TERMINATED);
-#endif
         break;
 
       case TOOLMIME_FILE:

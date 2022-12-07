@@ -11,7 +11,7 @@ AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libtncif \
 	-I$(top_srcdir)/src/libtnccs \
 	-DIPSEC_CONFDIR=\"${sysconfdir}\" \
-	-DPLUGINS="\"x509 pem pkcs1 pubkey openssl nonce tnc-tnccs tnc-imc tnccs-20\""
+	-DPLUGINS="\"x509 pem pkcs1 pubkey openssl wolfssl nonce tnc-tnccs tnc-imc tnccs-20\""
 
 pt_tls_client_LDADD = \
 	$(top_builddir)/src/libstrongswan/libstrongswan.la \

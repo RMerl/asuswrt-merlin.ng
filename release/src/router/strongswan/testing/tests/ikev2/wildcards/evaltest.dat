@@ -1,8 +1,8 @@
-carol::ipsec status 2> /dev/null::alice..*PH_IP_CAROL.*PH_IP_ALICE::YES
-moon:: ipsec status 2> /dev/null::alice.*PH_IP_ALICE.*PH_IP_CAROL::YES
-carol::ipsec status 2> /dev/null::venus.*PH_IP_CAROL.*PH_IP_VENUS::NO
-moon:: ipsec status 2> /dev/null::venus.*PH_IP_VENUS.*PH_IP_CAROL::NO
-dave:: ipsec status 2> /dev/null::venus.*PH_IP_DAVE.*PH_IP_VENUS::YES
-moon:: ipsec status 2> /dev/null::venus.*PH_IP_VENUS.*PH_IP_DAVE::YES
-dave:: ipsec status 2> /dev/null::alice.*PH_IP_DAVE.*PH_IP_ALICE::NO
-moon:: ipsec status 2> /dev/null::alice.*PH_IP_ALICE.*PH_IP_DAVE::NO
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=C=CH, O=strongSwan Project, OU=Research, CN=carol@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*alice.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.10/32]::YES
+dave :: swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.200 local-port=4500 local-id=C=CH, O=strongSwan Project, OU=Accounting, CN=dave@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*venus.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[192.168.0.200/32] remote-ts=\[10.1.0.20/32]::YES
+moon :: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::research.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=C=CH, O=strongSwan Project, OU=Research, CN=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*alice-net.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.10/32] remote-ts=\[192.168.0.100/32]::YES
+moon :: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::accounting.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.200 remote-port=4500 remote-id=C=CH, O=strongSwan Project, OU=Accounting, CN=dave@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*venus-net.*reqid=2 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.20/32] remote-ts=\[192.168.0.200/32]::YES
+moon ::cat /var/log/daemon.log::CHILD_SA alice-net.*established.*TS 10.1.0.10/32 === 192.168.0.100/32
+moon ::cat /var/log/daemon.log::CHILD_SA venus-net.*established.*TS 10.1.0.20/32 === 192.168.0.200/32
+moon ::cat /var/log/daemon.log::traffic selectors 10.1.0.20/32 === 192.168.0.100/32 unacceptable::YES
+moon ::cat /var/log/daemon.log::traffic selectors 10.1.0.10/32 === 192.168.0.200/32 unacceptable::YES

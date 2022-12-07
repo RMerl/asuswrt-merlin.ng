@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2009-2018 Tobias Brunner
+ * Copyright (C) 2009-2020 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,6 +24,7 @@
 #define PROPOSAL_H_
 
 typedef enum protocol_id_t protocol_id_t;
+typedef enum proposal_selection_flag_t proposal_selection_flag_t;
 typedef enum extended_sequence_numbers_t extended_sequence_numbers_t;
 typedef struct proposal_t proposal_t;
 
@@ -33,7 +35,7 @@ typedef struct proposal_t proposal_t;
 #include <crypto/transform.h>
 #include <crypto/crypters/crypter.h>
 #include <crypto/signers/signer.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 
 /**
  * Protocol ID of a proposal.
@@ -52,26 +54,32 @@ enum protocol_id_t {
 extern enum_name_t *protocol_id_names;
 
 /**
+ * Flags for selecting proposals.
+ */
+enum proposal_selection_flag_t {
+	/** Whether to prefer configured (default) or supplied proposals. */
+	PROPOSAL_PREFER_SUPPLIED = (1<<0),
+	/** Whether to skip and ignore algorithms from a private range. */
+	PROPOSAL_SKIP_PRIVATE = (1<<1),
+	/** Whether to skip and ignore key exchange methods. */
+	PROPOSAL_SKIP_KE = (1<<2),
+};
+
+/**
  * Stores a set of algorithms used for an SA.
  *
- * A proposal stores algorithms for a specific
- * protocol. It can store algorithms for one protocol.
- * Proposals with multiple protocols are not supported,
- * as it's not specified in RFC4301 anymore.
+ * A proposal stores algorithms for a specific protocol.
+ * Proposals with multiple protocols are not supported, as that's not specified
+ * in RFC 7296 anymore.
  */
 struct proposal_t {
 
 	/**
 	 * Add an algorithm to the proposal.
 	 *
-	 * The algorithms are stored by priority, first added
-	 * is the most preferred.
-	 * Key size is only needed for encryption algorithms
-	 * with variable key size (such as AES). Must be set
-	 * to zero if key size is not specified.
-	 * The alg parameter accepts encryption_algorithm_t,
-	 * integrity_algorithm_t, dh_group_number_t and
-	 * extended_sequence_numbers_t.
+	 * The algorithms are stored by priority, first added is the most preferred.
+	 * Key size is only needed for encryption algorithms with variable key
+	 * size (such as AES). Must be set to zero if the key size is not specified.
 	 *
 	 * @param type			kind of algorithm
 	 * @param alg			identifier for algorithm
@@ -81,7 +89,7 @@ struct proposal_t {
 						   uint16_t alg, uint16_t key_size);
 
 	/**
-	 * Get an enumerator over algorithms for a specific algo type.
+	 * Get an enumerator over algorithms for a specific transform type.
 	 *
 	 * @param type			kind of algorithm
 	 * @return				enumerator over uint16_t alg, uint16_t key_size
@@ -102,45 +110,44 @@ struct proposal_t {
 						   uint16_t *alg, uint16_t *key_size);
 
 	/**
-	 * Check if the proposal has a specific DH group.
+	 * Check if the proposal has a specific transform.
 	 *
-	 * @param group			group to check for
+	 * @param type			kind of algorithm
+	 * @param alg			algorithm to check for (if 0, TRUE is returned if
+	 *						no transform of the given type is found)
 	 * @return				TRUE if algorithm included
 	 */
-	bool (*has_dh_group)(proposal_t *this, diffie_hellman_group_t group);
+	bool (*has_transform)(proposal_t *this, transform_type_t type,
+						  uint16_t alg);
 
 	/**
-	 * Move the given DH group to the front of the list if it was contained in
+	 * Move the given transform to the front of the list if it was contained in
 	 * the proposal.
 	 *
-	 * @param group			group to promote
+	 * @param type			kind of algorithm
+	 * @param alg			algorithm to promote
 	 * @return				TRUE if algorithm included
 	 */
-	bool (*promote_dh_group)(proposal_t *this, diffie_hellman_group_t group);
+	bool (*promote_transform)(proposal_t *this, transform_type_t type,
+							  uint16_t alg);
 
 	/**
-	 * Strip DH groups from proposal to use it without PFS.
-	 *
-	 * @param keep			group to keep (MODP_NONE to remove all)
-	 */
-	void (*strip_dh)(proposal_t *this, diffie_hellman_group_t keep);
-
-	/**
-	 * Compare two proposal, and select a matching subset.
+	 * Compare two proposals and select a matching subset.
 	 *
 	 * If the proposals are for the same protocols (AH/ESP), they are
 	 * compared. If they have at least one algorithm of each type
 	 * in common, a resulting proposal of this kind is created.
 	 *
+	 * Unless the flag PROPOSAL_PREFER_SUPPLIED is set, other is expected to be
+	 * the remote proposal from which to copy SPI and proposal number to the
+	 * result, otherwise copy from this proposal.
+	 *
 	 * @param other			proposal to compare against
-	 * @param other_remote	whether other is the remote proposal from which to
-	 *						copy SPI and proposal number to the result,
-	 *						otherwise copy from this proposal
-	 * @param private		accepts algorithms allocated in a private range
+	 * @param flags			flags to consider during proposal selection
 	 * @return				selected proposal, NULL if proposals don't match
 	 */
 	proposal_t *(*select)(proposal_t *this, proposal_t *other,
-						  bool other_remote, bool private);
+						  proposal_selection_flag_t flags);
 
 	/**
 	 * Check if the given proposal matches this proposal.
@@ -148,10 +155,11 @@ struct proposal_t {
 	 * This is similar to select, but no resulting proposal is selected.
 	 *
 	 * @param other			proposal to compare against
-	 * @param private		accepts algorithms allocated in a private range
+	 * @param flags			flags to consider during proposal selection
 	 * @return				TRUE if the proposals match
 	 */
-	bool (*matches)(proposal_t *this, proposal_t *other, bool private);
+	bool (*matches)(proposal_t *this, proposal_t *other,
+					proposal_selection_flag_t flags);
 
 	/**
 	 * Get the protocol ID of the proposal.
@@ -163,38 +171,46 @@ struct proposal_t {
 	/**
 	 * Get the SPI of the proposal.
 	 *
-	 * @return				spi for proto
+	 * @return				SPI of the proposal
 	 */
 	uint64_t (*get_spi) (proposal_t *this);
 
 	/**
 	 * Set the SPI of the proposal.
 	 *
-	 * @param spi			spi to set for proto
+	 * @param spi			SPI to set for proposal
 	 */
 	void (*set_spi) (proposal_t *this, uint64_t spi);
 
 	/**
-	 * Get the proposal number, as encoded in SA payload
+	 * Get the proposal number, as encoded in the SA payload.
 	 *
 	 * @return				proposal number
 	 */
-	u_int (*get_number)(proposal_t *this);
+	uint8_t (*get_number)(proposal_t *this);
 
 	/**
-	 * Check for the eqality of two proposals.
+	 * Get number of the transform on which this proposal is based (IKEv1 only)
+	 *
+	 * @return				transform number (or 0)
+	 */
+	uint8_t (*get_transform_number)(proposal_t *this);
+
+	/**
+	 * Check for the equality of two proposals.
 	 *
 	 * @param other			other proposal to check for equality
-	 * @return				TRUE if other equal to this
+	 * @return				TRUE if proposals are equal
 	 */
 	bool (*equals)(proposal_t *this, proposal_t *other);
 
 	/**
 	 * Clone a proposal.
 	 *
+	 * @param flags			flags to consider during cloning
 	 * @return				clone of proposal
 	 */
-	proposal_t *(*clone) (proposal_t *this);
+	proposal_t *(*clone)(proposal_t *this, proposal_selection_flag_t flags);
 
 	/**
 	 * Destroys the proposal object.
@@ -203,16 +219,27 @@ struct proposal_t {
 };
 
 /**
- * Create a child proposal for AH, ESP or IKE.
+ * Create a proposal for IKE, ESP or AH.
  *
  * @param protocol			protocol, such as PROTO_ESP
  * @param number			proposal number, as encoded in SA payload
  * @return					proposal_t object
  */
-proposal_t *proposal_create(protocol_id_t protocol, u_int number);
+proposal_t *proposal_create(protocol_id_t protocol, uint8_t number);
 
 /**
- * Create a default proposal if nothing further specified.
+ * Create a proposal for IKE, ESP or AH that includes a transform number.
+ *
+ * @param protocol			protocol, such as PROTO_ESP
+ * @param number			proposal number, as encoded in SA payload
+ * @param transform			transform number, as encoded in payload
+ * @return					proposal_t object
+ */
+proposal_t *proposal_create_v1(protocol_id_t protocol, uint8_t number,
+							   uint8_t transform);
+
+/**
+ * Create a default proposal.
  *
  * @param protocol			protocol, such as PROTO_ESP
  * @return					proposal_t object
@@ -220,7 +247,7 @@ proposal_t *proposal_create(protocol_id_t protocol, u_int number);
 proposal_t *proposal_create_default(protocol_id_t protocol);
 
 /**
- * Create a default proposal for supported AEAD algorithms
+ * Create a default proposal for supported AEAD algorithms.
  *
  * @param protocol			protocol, such as PROTO_ESP
  * @return					proposal_t object, NULL if none supported
@@ -230,25 +257,43 @@ proposal_t *proposal_create_default_aead(protocol_id_t protocol);
 /**
  * Create a proposal from a string identifying the algorithms.
  *
- * The string is in the same form as a in the ipsec.conf file.
- * E.g.:	aes128-sha2_256-modp2048
- *		  3des-md5
- * An additional '!' at the end of the string forces this proposal,
- * without it the peer may choose another algorithm we support.
+ * Each algorithm identifier is separated with a '-' character e.g.
+ * aes256-sha2-curve25519. Multiple algorithms of the same transform type can be
+ * given (they don't have to be grouped together), the order is preserved e.g.
+ * curve25519-sha2-aes256-sha1-modp3072-aes128 is the same as
+ * aes256-aes128-sha2-sha1-curve25519-modp3072.
+ *
+ * The proposal is validated (e.g. PROTO_IKE proposals must contain a key
+ * exchange method, AEAD algorithms can't be combined with classic encryption
+ * algorithms etc.) and in some cases modified (e.g. by adding missing PRFs for
+ * PROTO_IKE, or by adding noesn in PROTO_ESP/AH proposals if neither esn, nor
+ * noesn is contained in the string etc.).
  *
  * @param protocol			protocol, such as PROTO_ESP
  * @param algs				algorithms as string
- * @return					proposal_t object
+ * @return					proposal_t object, NULL if invalid
  */
-proposal_t *proposal_create_from_string(protocol_id_t protocol, const char *algs);
+proposal_t *proposal_create_from_string(protocol_id_t protocol,
+										const char *algs);
+
+/**
+ * Select a common proposal from the given lists of proposals.
+ *
+ * @param configured		list of configured/local proposals
+ * @param supplied			list of supplied/remote proposals
+ * @param flags				flags to consider during proposal selection
+ * @return					selected proposal, or NULL (allocated)
+ */
+proposal_t *proposal_select(linked_list_t *configured, linked_list_t *supplied,
+							proposal_selection_flag_t flags);
 
 /**
  * printf hook function for proposal_t.
  *
  * Arguments are:
- *	proposal_t *proposal
+ *	proposal_t*
  * With the #-specifier, arguments are:
- *	linked_list_t *list containing proposal_t*
+ *	linked_list_t* (containing proposal_t*)
  */
 int proposal_printf_hook(printf_hook_data_t *data, printf_hook_spec_t *spec,
 						 const void *const *args);

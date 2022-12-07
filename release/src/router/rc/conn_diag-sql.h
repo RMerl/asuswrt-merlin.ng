@@ -6,7 +6,7 @@
 #define DIAG_TAB_NAME "conn_diag"
 #define DATA_TAB_NAME "diag_data"
 #define MAX_DB_SIZE 4194304 // 4MB
-#define MAX_DATA 1024
+#define MAX_DATA 8192
 #define MAX_DB_COUNT 2
 
 #define SYS_DIR         "/jffs/.sys"
@@ -22,6 +22,22 @@ enum {
 	INIT_DB_YES,
 	INIT_DB_CLOUD,
 	INIT_DB_MAX
+};
+
+struct stainfo {
+	char sta_mac[18];
+	double tx_rate;
+	double rx_rate;
+	int conn_time;
+	int inactive_flag;
+	//time_t last_update;
+	struct stainfo *next;
+};
+
+struct stainfo_table {
+	char node_mac[18];
+	struct stainfo *stalist;
+	struct stainfo_table *next;
 };
 
 typedef struct _json_result json_result_t;
@@ -105,3 +121,5 @@ extern int run_upload_file_by_name(const char *uploaded_file);
 extern int run_download_file_at_ts(unsigned long ts, unsigned long ts2);
 extern int run_download_file_by_name(const char *downloaded_file);
 #endif
+extern int query_stainfo(char *sta_mac,char **buf);
+extern void free_stainfo(char **buf);

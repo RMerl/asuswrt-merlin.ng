@@ -2,8 +2,8 @@ Name: @PACKAGE@
 Summary: EXIF tag library
 Version: @VERSION@
 Release: 1
-Source: http://prdownloads.sourceforge.net/libexif/%{name}-%{version}.tar.bz2
-Url: http://sourceforge.net/projects/libexif/
+Source: https://prdownloads.sourceforge.net/libexif/%{name}-%{version}.tar.bz2
+Url: https://libexif.github.io/
 Group: System Environment/Libraries
 License: LGPL
 # replaced Packager: header, as most people making packages will be somebody

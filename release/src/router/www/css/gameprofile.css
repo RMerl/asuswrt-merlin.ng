@@ -223,6 +223,10 @@
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/diablo3.jpg'), url('../images/gameprofile/default-game.png');
 }
 
+.game-p-diabloImmortal {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/diabloImmortal.jpg'), url('../images/gameprofile/default-game.png');
+}
+
 .game-p-fifa17 {
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fifa17.jpg'), url('../images/gameprofile/default-game.png');
 }
@@ -486,6 +490,9 @@
 .game-p-nba2k20 {
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/nba2k20.jpg'), url('../images/gameprofile/default-game.png');
 }
+.game-p-nba2k23 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/nba2k23.jpg'), url('../images/gameprofile/default-game.png');
+}
 
 .game-p-residentEvil2 {
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/residentEvil2.jpg'), url('../images/gameprofile/default-game.png');
@@ -557,6 +564,9 @@
 
 .game-p-fifa22 {
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fifa22.jpg'), url('../images/gameprofile/default-game.png');
+}
+.game-p-fifa23 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fifa23.jpg'), url('../images/gameprofile/default-game.png');
 }
 
 .game-p-granTurismo7 {

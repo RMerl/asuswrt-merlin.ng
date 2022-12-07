@@ -22,7 +22,7 @@
 #include "internal.h"
 
 
-static int probe(AVProbeData *p)
+static int probe(const AVProbeData *p)
 {
     // the single file I have starts with that, I do not know if others do, too
     if(   p->buf[0] == 1
@@ -92,7 +92,6 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
             ret = av_append_packet(s->pb, pkt, size);
             if (ret < 0) {
                 av_log(s, AV_LOG_ERROR, "failed to grow packet\n");
-                av_packet_unref(pkt);
                 return ret;
             }
         }

@@ -22,7 +22,6 @@
 #include "libavutil/avassert.h"
 #include "libavutil/dict.h"
 #include "libavutil/mathematics.h"
-#include "libavutil/parseutils.h"
 #include "libavutil/opt.h"
 #include "avformat.h"
 #include "avlanguage.h"
@@ -259,6 +258,10 @@ static const AVCodecTag codec_asf_bmp_tags[] = {
     { AV_CODEC_ID_NONE,      0 },
 };
 
+static const AVCodecTag *const asf_codec_tags[] = {
+        codec_asf_bmp_tags, ff_codec_bmp_tags, ff_codec_wav_tags, NULL
+};
+
 #define PREROLL_TIME 3100
 
 static void put_str16(AVIOContext *s, const char *tag)
@@ -358,12 +361,12 @@ static int asf_write_markers(AVFormatContext *s)
         int64_t pres_time = av_rescale_q(c->start, c->time_base, scale);
         uint64_t offset;
         int32_t send_time = get_send_time(asf, pres_time, &offset);
-        int len = 0;
+        int len = 0, ret;
         uint8_t *buf;
         AVIOContext *dyn_buf;
         if (t) {
-            if (avio_open_dyn_buf(&dyn_buf) < 0)
-                return AVERROR(ENOMEM);
+            if ((ret = avio_open_dyn_buf(&dyn_buf)) < 0)
+                return ret;
             avio_put_str16le(dyn_buf, t->value);
             len = avio_close_dyn_buf(dyn_buf, &buf);
         }
@@ -580,12 +583,12 @@ static int asf_write_header1(AVFormatContext *s, int64_t file_size,
 
     /* title and other info */
     if (has_title) {
-        int len;
+        int len, ret;
         uint8_t *buf;
         AVIOContext *dyn_buf;
 
-        if (avio_open_dyn_buf(&dyn_buf) < 0)
-            return AVERROR(ENOMEM);
+        if ((ret = avio_open_dyn_buf(&dyn_buf)) < 0)
+            return ret;
 
         hpos = put_header(pb, &ff_asf_comment_header);
 
@@ -683,7 +686,7 @@ static int asf_write_header1(AVFormatContext *s, int64_t file_size,
             avio_wl16(pb, 40 + par->extradata_size); /* size */
 
             /* BITMAPINFOHEADER header */
-            ff_put_bmp_header(pb, par, 1, 0);
+            ff_put_bmp_header(pb, par, 1, 0, 0);
         }
         end_header(pb, hpos);
     }
@@ -715,10 +718,10 @@ static int asf_write_header1(AVFormatContext *s, int64_t file_size,
         if (desc) {
             AVIOContext *dyn_buf;
             uint8_t *buf;
-            int len;
+            int len, ret;
 
-            if (avio_open_dyn_buf(&dyn_buf) < 0)
-                return AVERROR(ENOMEM);
+            if ((ret = avio_open_dyn_buf(&dyn_buf)) < 0)
+                return ret;
 
             avio_put_str16le(dyn_buf, desc);
             len = avio_close_dyn_buf(dyn_buf, &buf);
@@ -801,8 +804,6 @@ static int asf_write_header(AVFormatContext *s)
         av_freep(&asf->index_ptr);
         return -1;
     }
-
-    avio_flush(s->pb);
 
     asf->packet_nb_payloads     = 0;
     asf->packet_timestamp_start = -1;
@@ -895,7 +896,8 @@ static void flush_packet(AVFormatContext *s)
 
     avio_write(s->pb, asf->packet_buf, s->packet_size - packet_hdr_size);
 
-    avio_flush(s->pb);
+    avio_write_marker(s->pb, AV_NOPTS_VALUE, AVIO_DATA_MARKER_FLUSH_POINT);
+
     asf->nb_packets++;
     asf->packet_nb_payloads     = 0;
     asf->packet_timestamp_start = -1;
@@ -1133,7 +1135,6 @@ static int asf_write_trailer(AVFormatContext *s)
             return ret;
         asf_write_index(s, asf->index_ptr, asf->maximum_packet, asf->next_start_sec);
     }
-    avio_flush(s->pb);
 
     if (asf->is_streamed || !(s->pb->seekable & AVIO_SEEKABLE_NORMAL)) {
         put_chunk(s, 0x4524, 0, 0); /* end of stream */
@@ -1173,9 +1174,7 @@ AVOutputFormat ff_asf_muxer = {
     .write_packet   = asf_write_packet,
     .write_trailer  = asf_write_trailer,
     .flags          = AVFMT_GLOBALHEADER,
-    .codec_tag      = (const AVCodecTag * const []) {
-        codec_asf_bmp_tags, ff_codec_bmp_tags, ff_codec_wav_tags, 0
-    },
+    .codec_tag      = asf_codec_tags,
     .priv_class        = &asf_muxer_class,
 };
 #endif /* CONFIG_ASF_MUXER */
@@ -1200,9 +1199,7 @@ AVOutputFormat ff_asf_stream_muxer = {
     .write_packet   = asf_write_packet,
     .write_trailer  = asf_write_trailer,
     .flags          = AVFMT_GLOBALHEADER,
-    .codec_tag      = (const AVCodecTag * const []) {
-        codec_asf_bmp_tags, ff_codec_bmp_tags, ff_codec_wav_tags, 0
-    },
+    .codec_tag      = asf_codec_tags,
     .priv_class        = &asf_stream_muxer_class,
 };
 #endif /* CONFIG_ASF_STREAM_MUXER */

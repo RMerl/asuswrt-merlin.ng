@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2011-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2011-2020 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -173,6 +174,10 @@ METHOD(pts_component_t, measure, status_t,
 	}
 
 	pcrs = pts->get_pcrs(pts);
+	if (!pcrs)
+	{
+		return FAILED;
+	}
 	pcrs->set(pcrs, extended_pcr, pcr_after);
 	evid = *evidence = pts_comp_evidence_create(this->name->clone(this->name),
 							this->depth, extended_pcr, hash_algo, pcr_transform,
@@ -198,6 +203,10 @@ METHOD(pts_component_t, verify, status_t,
 
 	this->aik_id = pts->get_aik_id(pts);
 	pcrs = pts->get_pcrs(pts);
+	if (!pcrs)
+	{
+		return FAILED;
+	}
 	measurement = evidence->get_measurement(evidence, &extended_pcr,
 								&algo, &transform, &measurement_time);
 

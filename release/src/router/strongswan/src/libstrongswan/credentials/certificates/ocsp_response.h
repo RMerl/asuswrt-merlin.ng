@@ -1,6 +1,8 @@
 /*
+ * Copyright (C) 2019 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,6 +57,13 @@ struct ocsp_response_t {
 	certificate_t certificate;
 
 	/**
+	 * Get the nonce received with this OCSP response.
+	 *
+	 * @return					nonce in the response (internal data)
+	 */
+	chunk_t (*get_nonce)(ocsp_response_t *this);
+
+	/**
 	 * Check the status of a certificate by this OCSP response.
 	 *
 	 * @param subject			certificate to check status
@@ -62,7 +71,7 @@ struct ocsp_response_t {
 	 * @param revocation_time	receives time of revocation, if revoked
 	 * @param revocation_reason	receives reason of revocation, if revoked
 	 * @param this_update		creation time of revocation list
-	 * @param next_update		exptected time of next revocation list
+	 * @param next_update		expected time of next revocation list
 	 * @return					certificate revocation status
 	 */
 	cert_validation_t (*get_status)(ocsp_response_t *this,

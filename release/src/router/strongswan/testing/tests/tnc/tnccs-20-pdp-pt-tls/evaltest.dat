@@ -5,10 +5,10 @@ carol::cat /var/log/auth.log::collected ... SW ID records::YES
 carol::cat /var/log/auth.log::strongswan.org__strongSwan.*swidtag::YES
 carol::cat /var/log/auth.log::collected 1 SW record::YES
 alice::cat /var/log/daemon.log::accepting PT-TLS stream from PH_IP_DAVE::YES
-alice::cat /var/log/daemon.log::checking certificate status of.*C=CH, O=Linux strongSwan, OU=Accounting, CN=dave@strongswan.org::YES
+alice::cat /var/log/daemon.log::checking certificate status of.*C=CH, O=strongSwan Project, OU=Accounting, CN=dave@strongswan.org::YES
 alice::cat /var/log/daemon.log::certificate status is good::YES
 alice::cat /var/log/daemon.log::skipping SASL, client already authenticated by TLS certificate::YES
-alice::cat /var/log/daemon.log::user AR identity.*C=CH, O=Linux strongSwan, OU=Accounting, CN=dave@strongswan.org.*authenticated by certificate::YES
+alice::cat /var/log/daemon.log::user AR identity.*C=CH, O=strongSwan Project, OU=Accounting, CN=dave@strongswan.org.*authenticated by certificate::YES
 alice::cat /var/log/daemon.log::received software inventory with ... items for request 3 at last eid 1 of epoch::YES
 alice::cat /var/log/daemon.log::successful system command: ssh root@moon.*logger -t charon-systemd -p auth.alert.*host with IP address 192.168.0.200 is blocked::YES
 moon:: cat /var/log/auth.log::host with IP address 192.168.0.200 is blocked::YES

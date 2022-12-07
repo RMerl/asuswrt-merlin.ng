@@ -2,12 +2,12 @@
 #
 # LEAK_DETECTIVE_LOG is set for automated runs, however, this is not passed
 # to a process started via systemctl. This wrapper is used to set the variable
-# for the strongswan-swanctl.service unit.
+# for the strongswan.service unit.
 
 ORIG=/bin/systemctl
-CONF=/lib/systemd/system/strongswan-swanctl.service
+CONF=/lib/systemd/system/strongswan.service
 
-if [[ "$2" != "strongswan-swanctl" ]]; then
+if [[ "$2" != "strongswan" ]]; then
 	$ORIG "$@"
 fi
 

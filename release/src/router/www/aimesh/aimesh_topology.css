@@ -224,8 +224,10 @@
 }
 .model_info_bg{
 	position: absolute;
-	top: 96px;
 	left: 16px;
+	bottom: 5px;
+	z-index: 10;
+	max-width: 220px;
 }
 .model_name{
 	margin-bottom: 3px;
@@ -585,7 +587,7 @@
 	font-size: 30px;
 	margin-left: 18px;
 	font-family: Roboto-Light, "Microsoft JhengHei";
-	height: 30px;
+	height: 32px;
 	overflow: hidden;
 	text-overflow: ellipsis;
 	white-space: nowrap;

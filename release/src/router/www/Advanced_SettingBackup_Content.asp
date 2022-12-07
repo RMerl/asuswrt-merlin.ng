@@ -24,10 +24,13 @@ var varload = 0;
 var lan_ipaddr = '<% nvram_get("lan_ipaddr"); %>';
 var ddns_enable = '<% nvram_get("ddns_enable_x"); %>';	//0: disable, 1: enable
 var ddns_server = '<% nvram_get("ddns_server_x"); %>';	//WWW.ASUS.COM
+var oauth_auth_status_tmp = '<% nvram_get("oauth_auth_status"); %>';	//2: registed
 
 function initial(){
 	show_menu();
-	if(ddns_enable == 1 && ddns_server == "WWW.ASUS.COM")
+	if(account_binding_support && oauth_auth_status_tmp == '2')
+		document.getElementById("transfer_ddns_field").style.display = "none";
+	else if(ddns_enable == 1 && ddns_server == "WWW.ASUS.COM")
 		document.getElementById("transfer_ddns_field").style.display = "";
 	else
 		document.getElementById("transfer_ddns_field").style.display = "none";
@@ -78,11 +81,13 @@ function restoreRule(_flag){
 function saveSetting(mode){
 	var flag = 0;
 	var remove_passwd = 0;
-	if(ddns_enable == 1 && ddns_server != "WWW.ASUS.COM"){
-		flag = 1;
-	}
-	else{	//ASUS DDNS
-		flag = document.getElementById("transfer_ddns").checked ? 1 : 0;
+	if(ddns_enable == 1){
+		if(ddns_server != "WWW.ASUS.COM"){
+			flag = 1;
+		}
+		else{	//ASUS DDNS
+			flag = document.getElementById("transfer_ddns").checked ? 1 : 0;
+		}
 	}
 	remove_passwd = document.getElementById("remove_passwd").checked ? 1 : 0;
 

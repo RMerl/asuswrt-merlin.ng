@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -16,6 +17,8 @@
 #include <limits.h>
 #include <ctype.h>
 #include <stdarg.h>
+#include <sys/types.h>
+#include <sys/stat.h>
 
 #include "parser_helper.h"
 
@@ -93,6 +96,7 @@ METHOD(parser_helper_t, file_next, FILE*,
 	private_parser_helper_t *this)
 {
 	parser_helper_file_t *file, *next;
+	struct stat st;
 	char *name;
 
 	array_get(this->files, ARRAY_TAIL, &file);
@@ -112,7 +116,8 @@ METHOD(parser_helper_t, file_next, FILE*,
 				.file = fopen(name, "r"),
 			);
 
-			if (next->file)
+			if (next->file && fstat(fileno(next->file), &st) == 0 &&
+				S_ISREG(st.st_mode))
 			{
 				array_insert(this->files, ARRAY_TAIL, next);
 				return next->file;

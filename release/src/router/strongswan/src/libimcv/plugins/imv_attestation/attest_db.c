@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -337,7 +338,7 @@ METHOD(attest_db_t, set_directory, bool,
 
 	/* remove trailing '/' or '\' character if not root directory */
 	len = strlen(dir);
-	if (len > 1 && dir[len-1] == DIRECTORY_SEPARATOR[0])
+	if (len > 1 && path_is_separator(dir[len-1]))
 	{
 		dir[len-1] = '\0';
 	}

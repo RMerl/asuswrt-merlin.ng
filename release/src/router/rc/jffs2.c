@@ -104,9 +104,11 @@ unsigned int get_root_type(void)
 		case MODEL_RTAX92U:
 		case MODEL_RTAX95Q:
 		case MODEL_XT8PRO:
+		case MODEL_BM68:
 		case MODEL_XT8_V2:
 		case MODEL_RTAXE95Q:
 		case MODEL_ET8PRO:
+		case MODEL_ET8_V2:
 		case MODEL_RTAX56_XD4:
 		case MODEL_XD4PRO:
 		case MODEL_CTAX56_XD4:
@@ -114,6 +116,7 @@ unsigned int get_root_type(void)
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX58U_V2:
 		case MODEL_RTAX3000N:
+		case MODEL_BR63:
 		case MODEL_RTAX55:
 		case MODEL_RTAX56U:
 		case MODEL_RPAX56:
@@ -127,6 +130,7 @@ unsigned int get_root_type(void)
 		case MODEL_RTAX86U:
 		case MODEL_RTAX68U:
 		case MODEL_RTAX86U_PRO:
+		case MODEL_RTAX88U_PRO:
 			return 0x24051905;      /* ubifs */
 		case MODEL_DSLAX82U:
 		{

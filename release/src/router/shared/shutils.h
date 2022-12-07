@@ -19,6 +19,10 @@
 #include <stdlib.h>
 #include <unistd.h>	//pid_t
 #include <rtconfig.h>
+#include <errno.h>
+#include <linux/unistd.h>       /* for _syscallX macros/related stuff */
+#include <sys/sysinfo.h>       /* for struct sysinfo */
+#include <sys/sysinfo.h>
 
 #ifndef MAX_NVPARSE
 #define MAX_NVPARSE 16
@@ -571,6 +575,20 @@ struct strbuf {
         unsigned int origsize;  /* unmodified orignal buffer size in bytes */
 };
 
+typedef struct ping_result_s
+{
+	int name_valid;
+	char alias[160];
+	char ip_addr[64];
+	int data_valid;
+	unsigned long pkt_sent;
+	unsigned long pkt_recv;
+	double pkt_loss_rate;
+	double min;
+	double avg;
+	double max;
+}ping_result_t;
+
 extern void str_binit(struct strbuf *b, char *buf, unsigned int size);
 extern int str_bprintf(struct strbuf *b, const char *fmt, ...);
 extern int generate_wireless_key(unsigned char *key);
@@ -592,4 +610,8 @@ extern int ether_inc(unsigned char *e, const unsigned char n);
 #ifdef RTCONFIG_AMAS
 extern int check_if_exist_ifnames(char *need_check_ifname, char *ifname);
 #endif
+extern long get_sys_uptime();
+extern void wait_ntp_repeat(unsigned long usec, unsigned int count);
+extern int ping_target_with_size(char *target, unsigned int size, unsigned int count, unsigned int wait_time, double loss_rate);
+extern int parse_ping_content(char *fname, ping_result_t *out);
 #endif /* _shutils_h_ */

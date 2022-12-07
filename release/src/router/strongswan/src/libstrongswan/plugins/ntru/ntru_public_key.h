@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,9 +23,9 @@
 typedef struct ntru_public_key_t ntru_public_key_t;
 
 #include "ntru_param_set.h"
-#include "ntru_drbg.h"
 
 #include <library.h>
+#include <crypto/drbgs/drbg.h>
 
 /**
  * Implements an NTRU encryption public key
@@ -70,7 +69,7 @@ struct ntru_public_key_t {
  * @param params		NTRU encryption parameter set to be used
  * @param pubkey		Coefficients of public key polynomial h
  */
-ntru_public_key_t *ntru_public_key_create(ntru_drbg_t *drbg,
+ntru_public_key_t *ntru_public_key_create(drbg_t *drbg,
 										  const ntru_param_set_t *params,
 										  uint16_t *pubkey);
 
@@ -80,7 +79,7 @@ ntru_public_key_t *ntru_public_key_create(ntru_drbg_t *drbg,
  * @param drbg			Deterministic random bit generator
  * @param data			Encoded NTRU public key
  */
-ntru_public_key_t *ntru_public_key_create_from_data(ntru_drbg_t *drbg,
+ntru_public_key_t *ntru_public_key_create_from_data(drbg_t *drbg,
 													chunk_t data);
 
 

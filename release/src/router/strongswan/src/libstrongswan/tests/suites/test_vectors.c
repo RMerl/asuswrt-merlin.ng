@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2014 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,8 +27,11 @@ static transform_type_t tfs[] = {
 	INTEGRITY_ALGORITHM,
 	HASH_ALGORITHM,
 	PSEUDO_RANDOM_FUNCTION,
+	EXTENDED_OUTPUT_FUNCTION,
+	KEY_DERIVATION_FUNCTION,
+	DETERMINISTIC_RANDOM_BIT_GENERATOR,
 	RANDOM_NUMBER_GENERATOR,
-	DIFFIE_HELLMAN_GROUP,
+	KEY_EXCHANGE_METHOD,
 };
 
 START_TEST(test_vectors)
@@ -60,7 +62,7 @@ Suite *vectors_suite_create()
 
 	tc = tcase_create("transforms");
 	tcase_add_loop_test(tc, test_vectors, 0, countof(tfs));
-	tcase_set_timeout(tc, 20);
+	tcase_set_timeout(tc, 30);
 	suite_add_tcase(s, tc);
 
 	return s;

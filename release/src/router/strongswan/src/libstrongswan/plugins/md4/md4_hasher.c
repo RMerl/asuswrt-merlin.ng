@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 1990-1992, RSA Data Security, Inc. Created 1990.
  * All rights reserved.
  *
@@ -76,7 +75,7 @@ static uint8_t PADDING[64] = {
 typedef struct private_md4_hasher_t private_md4_hasher_t;
 
 /**
- * Private data structure with hasing context.
+ * Private data structure with hashing context.
  */
 struct private_md4_hasher_t {
 	/**

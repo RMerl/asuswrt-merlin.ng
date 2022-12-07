@@ -31,6 +31,8 @@
 #include <stdint.h>
 
 #include "libavutil/float_dsp.h"
+#include "libavutil/mem_internal.h"
+
 #include "atrac.h"
 #include "avcodec.h"
 #include "fft.h"
@@ -179,9 +181,9 @@ int ff_atrac3p_decode_channel_unit(GetBitContext *gb, Atrac3pChanUnitCtx *ctx,
 void ff_atrac3p_init_imdct(AVCodecContext *avctx, FFTContext *mdct_ctx);
 
 /**
- * Initialize sine waves synthesizer.
+ * Initialize sine waves synthesizer and ff_sine_* tables.
  */
-void ff_atrac3p_init_wave_synth(void);
+void ff_atrac3p_init_dsp_static(void);
 
 /**
  * Synthesize sine waves for a particular subband.

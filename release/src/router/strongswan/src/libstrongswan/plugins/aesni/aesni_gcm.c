@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -1393,15 +1394,12 @@ aesni_gcm_t *aesni_gcm_create(encryption_algorithm_t algo,
 	switch (algo)
 	{
 		case ENCR_AES_GCM_ICV8:
-			algo = ENCR_AES_CBC;
 			icv_size = 8;
 			break;
 		case ENCR_AES_GCM_ICV12:
-			algo = ENCR_AES_CBC;
 			icv_size = 12;
 			break;
 		case ENCR_AES_GCM_ICV16:
-			algo = ENCR_AES_CBC;
 			icv_size = 16;
 			break;
 		default:

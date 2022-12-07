@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -17,6 +17,8 @@
  *
  * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
  * KIND, either express or implied.
+ *
+ * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
 
@@ -198,6 +200,12 @@ CURLcode Curl_output_ntlm(struct Curl_easy *data, bool proxy)
 #endif
 
   Curl_bufref_init(&ntlmmsg);
+
+  /* connection is already authenticated, don't send a header in future
+   * requests so go directly to NTLMSTATE_LAST */
+  if(*state == NTLMSTATE_TYPE3)
+    *state = NTLMSTATE_LAST;
+
   switch(*state) {
   case NTLMSTATE_TYPE1:
   default: /* for the weird cases we (re)start here */
@@ -207,8 +215,7 @@ CURLcode Curl_output_ntlm(struct Curl_easy *data, bool proxy)
                                                  ntlm, &ntlmmsg);
     if(!result) {
       DEBUGASSERT(Curl_bufref_len(&ntlmmsg) != 0);
-      result = Curl_base64_encode(data,
-                                  (const char *) Curl_bufref_ptr(&ntlmmsg),
+      result = Curl_base64_encode((const char *) Curl_bufref_ptr(&ntlmmsg),
                                   Curl_bufref_len(&ntlmmsg), &base64, &len);
       if(!result) {
         free(*allocuserpwd);
@@ -227,8 +234,7 @@ CURLcode Curl_output_ntlm(struct Curl_easy *data, bool proxy)
     result = Curl_auth_create_ntlm_type3_message(data, userp, passwdp,
                                                  ntlm, &ntlmmsg);
     if(!result && Curl_bufref_len(&ntlmmsg)) {
-      result = Curl_base64_encode(data,
-                                  (const char *) Curl_bufref_ptr(&ntlmmsg),
+      result = Curl_base64_encode((const char *) Curl_bufref_ptr(&ntlmmsg),
                                   Curl_bufref_len(&ntlmmsg), &base64, &len);
       if(!result) {
         free(*allocuserpwd);
@@ -246,11 +252,6 @@ CURLcode Curl_output_ntlm(struct Curl_easy *data, bool proxy)
     }
     break;
 
-  case NTLMSTATE_TYPE3:
-    /* connection is already authenticated,
-     * don't send a header in future requests */
-    *state = NTLMSTATE_LAST;
-    /* FALLTHROUGH */
   case NTLMSTATE_LAST:
     Curl_safefree(*allocuserpwd);
     authp->done = TRUE;

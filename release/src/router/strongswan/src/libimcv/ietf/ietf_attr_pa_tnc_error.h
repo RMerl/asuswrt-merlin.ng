@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -117,7 +118,7 @@ pa_tnc_attr_t* ietf_attr_pa_tnc_error_create(pen_type_t error_code,
 /**
  * Creates an ietf_attr_pa_tnc_error_t object from an error code with offset
  *
- * @param error_code		Vendor-specifica PA-TNC error code
+ * @param error_code		Vendor-specific PA-TNC error code
  * @param header			PA-TNC message header (first 8 bytes)
  * @param error_offset		PA-TNC error offset in bytes
  *

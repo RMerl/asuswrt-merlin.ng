@@ -18,8 +18,8 @@
  * Boston, MA  02110-1301  USA.
  */
 
-#ifndef __MNOTE_OLYMPUS_ENTRY_H__
-#define __MNOTE_OLYMPUS_ENTRY_H__
+#ifndef LIBEXIF_MNOTE_OLYMPUS_ENTRY_H
+#define LIBEXIF_MNOTE_OLYMPUS_ENTRY_H
 
 #include <libexif/exif-format.h>
 #include <libexif/exif-byte-order.h>
@@ -40,4 +40,4 @@ struct _MnoteOlympusEntry {
 
 char *mnote_olympus_entry_get_value (MnoteOlympusEntry *entry, char *val, unsigned int maxlen);
 
-#endif /* __MNOTE_OLYMPUS_ENTRY_H__ */
+#endif /* !defined(LIBEXIF_MNOTE_OLYMPUS_ENTRY_H) */

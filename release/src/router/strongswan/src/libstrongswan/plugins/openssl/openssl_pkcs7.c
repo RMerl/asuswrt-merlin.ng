@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 Martin Willi
- * Copyright (C) 2012 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -441,7 +442,7 @@ METHOD(pkcs7_t, get_attribute, bool,
 		return FALSE;
 	}
 
-	/* "i" gets incremeneted after enumerate(), hence read from previous */
+	/* "i" gets incremented after enumerate(), hence read from previous */
 	si = sk_CMS_SignerInfo_value(e->signers, e->i - 1);
 	for (i = 0; i < CMS_signed_get_attr_count(si); i++)
 	{
@@ -644,7 +645,7 @@ static bool decrypt(private_openssl_pkcs7_t *this,
 				{
 					/* get encryptedKey from internal structure; TODO fixup */
 					chunk = openssl_asn1_str2chunk(ri->ktri->encryptedKey);
-					if (private->decrypt(private, ENCRYPT_RSA_PKCS1,
+					if (private->decrypt(private, ENCRYPT_RSA_PKCS1, NULL,
 										 chunk, &key))
 					{
 						private->destroy(private);

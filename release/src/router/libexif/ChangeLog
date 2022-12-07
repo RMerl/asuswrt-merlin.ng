@@ -1,3 +1,229 @@
+2016-09-01  Dan Fandrich <dan@coneharvesters.com>
+	* po/sv.po: Updated Swedish translation by Sebastian Rasmussen
+	* Updated many translations from launchpad.net
+	* Added new translation from launchpad.net's "yakkety" translations:
+	* po/ms.po: Added Malay translation by abuyop
+
+2014-01-05  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/es.po: Updated Spanish translation by Antonio Ceballos
+
+2013-07-13  Dan Fandrich <dan@coneharvesters.com>
+
+	* Fixed a C89 compatibility issue (bug #117 reported by
+	  Guenter Knauf)
+	* po/da.po: Updated Danish translation by Joe Hansen
+	* po/de.po: Updated German translation by Christian Kirbach
+	* po/fr.po: Updated French translation by Frédéric Marchal
+	* po/uk.po: Updated Ukrainian translation by Yuri Chornoivan
+
+2013-02-23  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/pl.po: Updated Polish translation by Jakub Bogusz
+
+2012-07-12  Dan Fandrich <dan@coneharvesters.com>
+
+	* Fixed some buffer overflows in exif_entry_format_value()
+	  This fixes CVE-2012-2814.  Reported by Mateusz Jurczyk of
+	  Google Security Team
+	* Fixed an off-by-one error in exif_convert_utf16_to_utf8()
+	  This can cause a one-byte NUL write past the end of the buffer.
+	  This fixes CVE-2012-2840
+	* Don't read past the end of a tag when converting from UTF-16
+	  This fixes CVE-2012-2813. Reported by Mateusz Jurczyk of
+	  Google Security Team
+	* Fixed an out of bounds read on corrupted input
+	  The EXIF_TAG_COPYRIGHT tag ought to be, but perhaps is not,
+	  NUL-terminated.
+	  This fixes CVE-2012-2812. Reported by Mateusz Jurczyk of
+	  Google Security Team
+	* Fixed a buffer overflow problem in exif_entry_get_value
+	  If the application passed in a buffer length of 0, then it would
+	  be treated as the buffer had unlimited length.
+	  This fixes CVE-2012-2841
+	* Fix a buffer overflow on corrupt EXIF data.
+	  This fixes bug #3434540 and fixes part of CVE-2012-2836
+	  Reported by Yunho Kim
+	* Fix a buffer overflow on corrupted JPEG data
+	  An unsigned data length might wrap around when decremented
+	  below zero, bypassing sanity checks on length.
+	  This code path can probably only occur if exif_data_load_data()
+	  is called directly by the application on data that wasn't parsed
+	  by libexif itself.
+	  This solves the other part of CVE-2012-2836
+	* Fixed some possible division-by-zeros in Olympus-style makernotes
+	  This fixes bug #3434545, a.k.a. CVE-2012-2837
+	  Reported by Yunho Kim
+	* Released 0.6.21
+
+2012-07-09  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/da.po: Updated Danish translation by Joe Hansen
+	* po/de.po: Updated German translation by Christian Kirbach
+	* po/pl.po: Updated Polish translation by Jakub Bogusz
+	* po/sk.po: Updated Slovak translation by Ivan Masár
+	* po/uk.po: Updated Ukrainian translation by Yuri Chornoivan
+	* po/vi.po: Updated Vietnamese translation by Trần Ngọc Quân
+	* Mention that uk.po must now be updated through translationproject.org
+
+2012-06-25  Dan Fandrich <dan@coneharvesters.com>
+
+	* Updated non-TP translations from launchpad.net's "precise"
+	  translations:
+	  be.po bs.po en_GB.po pt.po pt_BR.po ru.po sq.po sr.po tr.po zh_CN.po
+	* Added new translations from launchpad.net's "precise" translations:
+	* po/en_AU.po: Added English (Australian) translation by Joel Pickett
+	* po/uk.po: Added Ukrainian translation by Yuri Chornoivan
+	* po/bs.po: Removed some erroneous embedded \r\n in the translations
+	* Updated non-TP translations to the latest strings in the source code
+	* po/en_CA.po: Updated Canadian English translation
+
+2012-05-16  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/vi.po: Updated Vietnamese translation by Trần Ngọc Quân
+
+2011-11-07  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/de.po: Updated German translation by Christian Kirbach
+
+2011-08-26  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/cs.po: Updated Czech translation by Jan Patera
+	* po/da.po: Updated Danish translation by Joe Hansen
+	* po/nl.po: Updated Dutch translation by Erwin Poeze
+	* po/pl.po: Updated Polish translation by Jakub Bogusz
+	* po/sk.po: Updated Slovak translation by Ivan Masár
+	* po/sv.po: Updated Swedish translation by Daniel Nylander
+
+2011-07-11  Dan Fandrich <dan@coneharvesters.com>
+
+	* Made mnote_fuji_tag_get_description and
+	  mnote_canon_tag_get_descripton more robust should any NULL
+	  descriptions be added to the table (bug #3307219)
+
+2011-05-12  Dan Fandrich <dan@coneharvesters.com>
+
+	* Added more Canon lenses (from Adrian von Bidder and drochner)
+
+2011-02-16  Dan Fandrich <dan@coneharvesters.com>
+
+	* Changed "knots" to more clear "nautical miles" (Ubuntu Launchpad bug
+	  https://bugs.launchpad.net/bugs/712115 reported by Daniel Thibault).
+
+2010-12-15  Dan Fandrich <dan@coneharvesters.com>
+
+	* Released 0.6.20
+
+2010-12-13  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/da.po: Updated Danish translation by Joe Hansen
+	* Updated non-TP translations from launchpad.net:
+	  be.po en_GB.po pt_BR.po pt.po ru.po sq.po sr.po zh_CN.po
+	* po/bs.po: Added Bosnian translation from launchpad.net
+	* po/tr.po: Added Turkish translation from launchpad.net
+
+2010-12-10  Dan Fandrich <dan@coneharvesters.com>
+
+	* Changed the display of rational numbers to estimate the number of
+	  significant figures (based on the size of the denominator) and show
+	  that number of decimal places.  This simplifies the output in the
+	  case of integers (e.g. resolution), and shows all the available
+	  accuracy in the case of rationals (e.g. latitude & longitude).
+
+2010-10-14  Dan Fandrich <dan@coneharvesters.com>
+
+	* Fixed some invalid format specifiers and typecasts. This caused a
+	  problem on mingw32, at least.
+
+2010-10-07  Dan Fandrich <dan@coneharvesters.com>
+
+	* Refactored MakerNote detection code to put detection of each type
+	  into the module handling that type
+
+2010-09-23  Dan Fandrich <dan@coneharvesters.com>
+
+	* exif_entry_dump() now displays the correct tag name for GPS tags by
+	  taking the IFD into account when looking up the name. Fixes
+	  bug #3073307.
+
+2010-08-11  Dan Fandrich <dan@coneharvesters.com>
+
+	* Removed redundant sentence. Fixes Ubuntu bug #197306
+
+2010-07-23  Dan Fandrich <dan@coneharvesters.com>
+
+	* Canon EOS 5D Mark II writes Aperture values as invalid values
+	  0x80000000/1 which makes pow() throw floating-point exceptions
+
+2010-06-16  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/da.po: Updated Danish translation by Joe Hansen
+	* po/it.po: Updated Italian translation by Sergio Zanchetta 
+	* po/nl.po: Updated Dutch translation by Erwin Poeze
+
+2010-02-18  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/da.po: Updated Danish translation by Joe Hansen
+	* po/de.po: Updated German translation by Marcus Meissner
+	* po/ja.po: Updated Japanese translation by Tadashi Jokagi
+	* po/pl.po: Updated Polish translation by Jakub Bogusz
+	* po/vi.po: Updated Vietnamese translation by Clytie Siddall
+	* po/en_CA.po: Updated Canadian English translation
+
+2010-02-05  Dan Fandrich <dan@coneharvesters.com>
+
+	* Made the case of text output be more consistent. Now, tag titles
+	  have each word capitalized (like a title) and tag values
+	  are always lower case, except the first word which is capitalized
+	  (more like a sentence).
+
+2010-01-25  Dan Fandrich <dan@coneharvesters.com>
+
+	* configure.ac: Turned on the --enable-silent-rules configure option
+
+2009-12-30  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/da.po: Updated Danish translation by Joe Hansen
+	* po/sk.po: Updated Slovak translation by Ivan Masár
+	* po/sv.po: Updated Swedish translation by Daniel Nylander
+
+2009-12-17  Dan Fandrich <dan@coneharvesters.com>
+
+	* Don't warn "No thumbnail but entries on thumbnail." unless
+	  there actually are entries.
+
+2009-12-15  Dan Fandrich <dan@coneharvesters.com>
+
+	* libexif.pc.in: Move -lm flag into Libs.private since it's only
+	  needed when statically linking. A future enhancement would be to
+	  make even this dependent on the check for -lm done in configure.
+
+2009-12-11  Dan Fandrich <dan@coneharvesters.com>
+
+	* Added tag 0xEA1C, the Padding tag from the Microsoft HD Photo
+	  specification.
+
+2009-12-08  Dan Fandrich <dan@coneharvesters.com>
+
+	* Fixed some memory leaks in the write-exif.c example program and
+	  added some examples of allocating a new tag.
+
+2009-11-27  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/ja.po: Updated Japanese translation by Tadashi Jokagi
+
+2009-11-25  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/da.po: Updated Danish translation by Joe Hansen
+
+2009-11-23  Dan Fandrich <dan@coneharvesters.com>
+
+	* Include README-Win32.txt in all source distributions
+
+2009-11-16  Dan Fandrich <dan@coneharvesters.com>
+
+	* po/ja.po: Updated Japanese translation by Tadashi Jokagi
+
 2009-11-12  Dan Fandrich <dan@coneharvesters.com>
 
 	* Fixed a heap buffer overflow during tag format conversion.

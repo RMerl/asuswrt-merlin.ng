@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2007-2008 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -54,7 +55,7 @@ struct private_connect_manager_t {
 	 connect_manager_t public;
 
 	 /**
-	  * Lock for exclusivly accessing the manager.
+	  * Lock for exclusively accessing the manager.
 	  */
 	 mutex_t *mutex;
 

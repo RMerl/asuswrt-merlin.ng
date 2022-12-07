@@ -48,7 +48,7 @@ typedef struct TLSContext {
 #endif
 } TLSContext;
 
-#if HAVE_THREADS
+#if HAVE_THREADS && OPENSSL_VERSION_NUMBER < 0x10100000L
 #include <openssl/crypto.h>
 pthread_mutex_t *openssl_mutexes;
 static void openssl_lock(int mode, int type, const char *file, int line)
@@ -70,9 +70,16 @@ int ff_openssl_init(void)
 {
     ff_lock_avformat();
     if (!openssl_init) {
+        /* OpenSSL 1.0.2 or below, then you would use SSL_library_init. If you are
+         * using OpenSSL 1.1.0 or above, then the library will initialize
+         * itself automatically.
+         * https://wiki.openssl.org/index.php/Library_Initialization
+         */
+#if OPENSSL_VERSION_NUMBER < 0x10100000L
         SSL_library_init();
         SSL_load_error_strings();
-#if HAVE_THREADS
+#endif
+#if HAVE_THREADS && OPENSSL_VERSION_NUMBER < 0x10100000L
         if (!CRYPTO_get_locking_callback()) {
             int i;
             openssl_mutexes = av_malloc_array(sizeof(pthread_mutex_t), CRYPTO_num_locks());
@@ -101,7 +108,7 @@ void ff_openssl_deinit(void)
     ff_lock_avformat();
     openssl_init--;
     if (!openssl_init) {
-#if HAVE_THREADS
+#if HAVE_THREADS && OPENSSL_VERSION_NUMBER < 0x10100000L
         if (CRYPTO_get_locking_callback() == openssl_lock) {
             int i;
             CRYPTO_set_locking_callback(NULL);
@@ -119,7 +126,7 @@ static int print_tls_error(URLContext *h, int ret)
     TLSContext *c = h->priv_data;
     if (h->flags & AVIO_FLAG_NONBLOCK) {
         int err = SSL_get_error(c->ssl, ret);
-        if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_READ)
+        if (err == SSL_ERROR_WANT_READ || err == SSL_ERROR_WANT_WRITE)
             return AVERROR(EAGAIN);
     }
     av_log(h, AV_LOG_ERROR, "%s\n", ERR_error_string(ERR_get_error(), NULL));
@@ -135,8 +142,7 @@ static int tls_close(URLContext *h)
     }
     if (c->ctx)
         SSL_CTX_free(c->ctx);
-    if (c->tls_shared.tcp)
-        ffurl_close(c->tls_shared.tcp);
+    ffurl_closep(&c->tls_shared.tcp);
 #if OPENSSL_VERSION_NUMBER >= 0x1010000fL
     if (c->url_bio_method)
         BIO_meth_free(c->url_bio_method);
@@ -345,6 +351,12 @@ static int tls_get_file_handle(URLContext *h)
     return ffurl_get_file_handle(c->tls_shared.tcp);
 }
 
+static int tls_get_short_seek(URLContext *h)
+{
+    TLSContext *s = h->priv_data;
+    return ffurl_get_short_seek(s->tls_shared.tcp);
+}
+
 static const AVOption options[] = {
     TLS_COMMON_OPTIONS(TLSContext, tls_shared),
     { NULL }
@@ -364,6 +376,7 @@ const URLProtocol ff_tls_protocol = {
     .url_write      = tls_write,
     .url_close      = tls_close,
     .url_get_file_handle = tls_get_file_handle,
+    .url_get_short_seek  = tls_get_short_seek,
     .priv_data_size = sizeof(TLSContext),
     .flags          = URL_PROTOCOL_FLAG_NETWORK,
     .priv_data_class = &tls_class,

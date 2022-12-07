@@ -1,11 +1,7 @@
-carol::ipsec status 2> /dev/null::home.*ESTABLISHED.*carol@strongswan.org.*moon.strongswan.org::YES
-carol::ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
-dave:: ipsec status 2> /dev/null::home.*ESTABLISHED.*dave@strongswan.org.*moon.strongswan.org::YES
-dave:: ipsec status 2> /dev/null::home.*INSTALLED, TUNNEL::YES
-moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::YES
-moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED.*moon.strongswan.org.*dave@strongswan.org::YES
-moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL, reqid 1::YES
-moon:: ipsec status 2> /dev/null::rw.*INSTALLED, TUNNEL, reqid 2::YES
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=PH_IP_CAROL local-port=4500 local-id=carol@strongswan.org remote-host=PH_IP_MOON remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.129/32 10.1.255.255/32 224.0.0.0/4] remote-ts=\[10.1.0.0/16 224.0.0.0/4]::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=PH_IP_DAVE local-port=4500 local-id=dave@strongswan.org remote-host=PH_IP_MOON remote-port=4500 remote-id=moon.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*home.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.130/32 10.1.255.255/32 224.0.0.0/4] remote-ts=\[10.1.0.0/16 224.0.0.0/4]::YES
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=PH_IP_MOON local-port=4500 local-id=moon.strongswan.org remote-host=PH_IP_CAROL remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*rw.*reqid=1 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16 224.0.0.0/4] remote-ts=\[10.1.0.129/32 10.1.255.255/32 224.0.0.0/4]::YES
+moon:: swanctl --list-sas --ike-id 2 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=PH_IP_MOON local-port=4500 local-id=moon.strongswan.org remote-host=PH_IP_DAVE remote-port=4500 remote-id=dave@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*rw.*reqid=2 state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.0/16 224.0.0.0/4] remote-ts=\[10.1.0.130/32 10.1.255.255/32 224.0.0.0/4]::YES
 alice::ping -W 1 -c 1 239.0.0.1 2>&1> /dev/null
 carol::ping -W 1 -c 1 239.0.0.2 2>&1> /dev/null
 dave::ping -W 1 -c 1 239.0.0.3 2>&1> /dev/null

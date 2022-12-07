@@ -2,7 +2,8 @@
  * Copyright (C) 2013 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -54,7 +55,7 @@ typedef struct cache_entry_t cache_entry_t;
  * Cache line in the interface name cache.
  */
 struct cache_entry_t {
-	/** requid of the CHILD_SA */
+	/** reqid of the CHILD_SA */
 	uint32_t reqid;
 	/** cached interface name */
 	char *iface;
@@ -258,6 +259,7 @@ static void invoke_once(private_updown_listener_t *this, ike_sa_t *ike_sa,
 	host_t *me, *other, *host;
 	char *iface;
 	uint8_t mask;
+	uint32_t if_id;
 	mark_t mark;
 	bool is_host, is_ipv6;
 	int out;
@@ -288,7 +290,9 @@ static void invoke_once(private_updown_listener_t *this, ike_sa_t *ike_sa,
 			 config->get_name(config));
 	if (up)
 	{
-		if (charon->kernel->get_interface(charon->kernel, me, &iface))
+		host = charon->kernel->get_nexthop(charon->kernel, other, -1, me,
+										   &iface);
+		if (host && iface)
 		{
 			cache_iface(this, child_sa->get_reqid(child_sa), iface);
 		}
@@ -296,6 +300,7 @@ static void invoke_once(private_updown_listener_t *this, ike_sa_t *ike_sa,
 		{
 			iface = NULL;
 		}
+		DESTROY_IF(host);
 	}
 	else
 	{
@@ -355,6 +360,16 @@ static void invoke_once(private_updown_listener_t *this, ike_sa_t *ike_sa,
 	{
 		push_env(envp, countof(envp), "PLUTO_MARK_OUT=%u/0x%08x",
 				 mark.value, mark.mask);
+	}
+	if_id = child_sa->get_if_id(child_sa, TRUE);
+	if (if_id)
+	{
+		push_env(envp, countof(envp), "PLUTO_IF_ID_IN=%u", if_id);
+	}
+	if_id = child_sa->get_if_id(child_sa, FALSE);
+	if (if_id)
+	{
+		push_env(envp, countof(envp), "PLUTO_IF_ID_OUT=%u", if_id);
 	}
 	if (ike_sa->has_condition(ike_sa, COND_NAT_ANY))
 	{

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,7 +19,7 @@
 #include <assert.h>
 #include <library.h>
 #include <utils/debug.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 
 static void usage()
 {
@@ -28,7 +29,7 @@ static void usage()
 
 struct {
 	char *name;
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 } groups[] = {
 	{"modp768",			MODP_768_BIT},
 	{"modp1024",		MODP_1024_BIT},
@@ -64,43 +65,43 @@ static double end_timing(struct timespec *start)
 			(end.tv_sec - start->tv_sec) * 1.0;
 }
 
-static void run_test(diffie_hellman_group_t group, int rounds)
+static void run_test(key_exchange_method_t group, int rounds)
 {
-	diffie_hellman_t *l[rounds], *r;
+	key_exchange_t *l[rounds], *r;
 	chunk_t chunk, chunks[rounds], lsecrets[rounds], rsecrets[rounds];
 	struct timespec timing;
 	int round;
 
-	r = lib->crypto->create_dh(lib->crypto, group);
+	r = lib->crypto->create_ke(lib->crypto, group);
 	if (!r)
 	{
-		printf("skipping %N, not supported\n",
-				diffie_hellman_group_names, group);
+		printf("skipping %N, not supported\n", key_exchange_method_names,
+			   group);
 		return;
 	}
 
-	printf("%N:\t", diffie_hellman_group_names, group);
+	printf("%N:\t", key_exchange_method_names, group);
 
 	start_timing(&timing);
 	for (round = 0; round < rounds; round++)
 	{
-		l[round] = lib->crypto->create_dh(lib->crypto, group);
-		assert(l[round]->get_my_public_value(l[round], &chunks[round]));
+		l[round] = lib->crypto->create_ke(lib->crypto, group);
+		assert(l[round]->get_public_key(l[round], &chunks[round]));
 	}
 	printf("A = g^a/s: %8.1f", rounds / end_timing(&timing));
 
 	for (round = 0; round < rounds; round++)
 	{
-		assert(r->set_other_public_value(r, chunks[round]));
+		assert(r->set_public_key(r, chunks[round]));
 		assert(r->get_shared_secret(r, &rsecrets[round]));
 		chunk_free(&chunks[round]);
 	}
 
-	assert(r->get_my_public_value(r, &chunk));
+	assert(r->get_public_key(r, &chunk));
 	start_timing(&timing);
 	for (round = 0; round < rounds; round++)
 	{
-		assert(l[round]->set_other_public_value(l[round], chunk));
+		assert(l[round]->set_public_key(l[round], chunk));
 		assert(l[round]->get_shared_secret(l[round], &lsecrets[round]));
 	}
 	printf(" | S = B^a/s: %8.1f\n", rounds / end_timing(&timing));

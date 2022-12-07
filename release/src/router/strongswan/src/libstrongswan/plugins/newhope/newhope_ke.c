@@ -1,9 +1,10 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Based on public domain code by Erdem Alkim, Léo Ducas, Thomas Pöppelmann,
  * and Peter Schwabe.
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,7 +23,7 @@
 
 #include <ntt_fft.h>
 #include <ntt_fft_reduce.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 #include <utils/debug.h>
 
 static const int seed_len =   32;  /* 256 bits */
@@ -277,7 +278,7 @@ static uint8_t* unpack_rec(private_newhope_ke_t *this, uint8_t *x)
 	return r;
 }
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_newhope_ke_t *this, chunk_t *value)
 {
 	uint16_t n, q;
@@ -396,7 +397,7 @@ METHOD(diffie_hellman_t, get_my_public_value, bool,
 	}
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_newhope_ke_t *this, chunk_t *secret)
 {
 	if (this->shared_secret.len == 0)
@@ -409,7 +410,7 @@ METHOD(diffie_hellman_t, get_shared_secret, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_newhope_ke_t *this, chunk_t value)
 {
 	newhope_reconciliation_t * rec;
@@ -435,7 +436,7 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 		if (value.len != poly_len + seed_len)
 		{
 			DBG1(DBG_LIB, "received %N KE payload of incorrect size",
-						   diffie_hellman_group_names, NH_128_BIT);
+						   key_exchange_method_names, NH_128_BIT);
 			return FALSE;
 		}
 		a_seed = chunk_create(value.ptr + poly_len, seed_len);
@@ -544,7 +545,7 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 		if (value.len != poly_len + rec_len)
 		{
 			DBG1(DBG_LIB, "received %N KE payload of incorrect size",
-						   diffie_hellman_group_names, NH_128_BIT);
+						   key_exchange_method_names, NH_128_BIT);
 			return FALSE;
 		}
 
@@ -580,13 +581,13 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 	}
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_newhope_ke_t *this)
 {
 	return NH_128_BIT;
 }
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_newhope_ke_t *this)
 {
 	chunk_clear(&this->shared_secret);
@@ -600,17 +601,17 @@ METHOD(diffie_hellman_t, destroy, void,
 /*
  * Described in header.
  */
-newhope_ke_t *newhope_ke_create(diffie_hellman_group_t group, chunk_t g, chunk_t p)
+newhope_ke_t *newhope_ke_create(key_exchange_method_t ke, chunk_t g, chunk_t p)
 {
 	private_newhope_ke_t *this;
 
 	INIT(this,
 		.public = {
-			.dh = {
+			.ke = {
 				.get_shared_secret = _get_shared_secret,
-				.set_other_public_value = _set_other_public_value,
-				.get_my_public_value = _get_my_public_value,
-				.get_dh_group = _get_dh_group,
+				.set_public_key = _set_public_key,
+				.get_public_key = _get_public_key,
+				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},

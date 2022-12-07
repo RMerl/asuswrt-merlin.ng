@@ -1,7 +1,0 @@
-<!ELEMENT character (#PCDATA)>
-
-<!ATTLIST character 
-entity	CDATA	#REQUIRED
-arguments	CDATA	#IMPLIED
->
-

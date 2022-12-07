@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -26,7 +27,7 @@ const int count = 1000;
 START_TEST(test_newhope_ke_good)
 {
 	chunk_t i_msg, r_msg, i_shared_secret, r_shared_secret;
-	diffie_hellman_t *i_nh, *r_nh;
+	key_exchange_t *i_nh, *r_nh;
 	struct timespec start, stop;
 	int i;
 
@@ -34,24 +35,24 @@ START_TEST(test_newhope_ke_good)
 
 	for (i = 0; i < count; i++)
 	{
-		i_nh = lib->crypto->create_dh(lib->crypto, NH_128_BIT);
+		i_nh = lib->crypto->create_ke(lib->crypto, NH_128_BIT);
 		ck_assert(i_nh != NULL);
-		ck_assert(i_nh->get_dh_group(i_nh) == NH_128_BIT);
+		ck_assert(i_nh->get_method(i_nh) == NH_128_BIT);
 
-		ck_assert(i_nh->get_my_public_value(i_nh, &i_msg));
+		ck_assert(i_nh->get_public_key(i_nh, &i_msg));
 		ck_assert(i_msg.len = 1824);
 
-		r_nh = lib->crypto->create_dh(lib->crypto, NH_128_BIT);
+		r_nh = lib->crypto->create_ke(lib->crypto, NH_128_BIT);
 		ck_assert(r_nh != NULL);
 
-		ck_assert(r_nh->set_other_public_value(r_nh, i_msg));
-		ck_assert(r_nh->get_my_public_value(r_nh, &r_msg));
+		ck_assert(r_nh->set_public_key(r_nh, i_msg));
+		ck_assert(r_nh->get_public_key(r_nh, &r_msg));
 		ck_assert(r_msg.len == 2048);
 
 		ck_assert(r_nh->get_shared_secret(r_nh, &r_shared_secret));
 		ck_assert(r_shared_secret.len == 32);
 
-		ck_assert(i_nh->set_other_public_value(i_nh, r_msg));
+		ck_assert(i_nh->set_public_key(i_nh, r_msg));
 		ck_assert(i_nh->get_shared_secret(i_nh, &i_shared_secret));
 		ck_assert(i_shared_secret.len == 32);
 		ck_assert(chunk_equals(i_shared_secret, r_shared_secret));
@@ -76,26 +77,26 @@ END_TEST
 START_TEST(test_newhope_ke_wrong)
 {
 	chunk_t i_msg, r_msg, i_shared_secret, r_shared_secret;
-	diffie_hellman_t *i_nh, *r_nh;
+	key_exchange_t *i_nh, *r_nh;
 
-	i_nh = lib->crypto->create_dh(lib->crypto, NH_128_BIT);
+	i_nh = lib->crypto->create_ke(lib->crypto, NH_128_BIT);
 	ck_assert(i_nh != NULL);
-	ck_assert(i_nh->get_my_public_value(i_nh, &i_msg));
+	ck_assert(i_nh->get_public_key(i_nh, &i_msg));
 
-	r_nh = lib->crypto->create_dh(lib->crypto, NH_128_BIT);
+	r_nh = lib->crypto->create_ke(lib->crypto, NH_128_BIT);
 	ck_assert(r_nh != NULL);
-	ck_assert(r_nh->set_other_public_value(r_nh, i_msg));
-	ck_assert(r_nh->get_my_public_value(r_nh, &r_msg));
+	ck_assert(r_nh->set_public_key(r_nh, i_msg));
+	ck_assert(r_nh->get_public_key(r_nh, &r_msg));
 
 	/* destroy 1st instance of i_nh */
 	i_nh->destroy(i_nh);
 	chunk_free(&i_msg);
 
 	/* create 2nd instance of i_nh */
-	i_nh = lib->crypto->create_dh(lib->crypto, NH_128_BIT);
+	i_nh = lib->crypto->create_ke(lib->crypto, NH_128_BIT);
 	ck_assert(i_nh != NULL);
-	ck_assert(i_nh->get_my_public_value(i_nh, &i_msg));
-	ck_assert(i_nh->set_other_public_value(i_nh, r_msg));
+	ck_assert(i_nh->get_public_key(i_nh, &i_msg));
+	ck_assert(i_nh->set_public_key(i_nh, r_msg));
 
 	ck_assert(r_nh->get_shared_secret(r_nh, &r_shared_secret));
 	ck_assert(i_nh->get_shared_secret(i_nh, &i_shared_secret));
@@ -113,7 +114,7 @@ END_TEST
 
 START_TEST(test_newhope_ke_fail_i)
 {
-	diffie_hellman_t *i_nh;
+	key_exchange_t *i_nh;
 	char buf_ff[2048];
 	int i;
 
@@ -130,10 +131,10 @@ START_TEST(test_newhope_ke_fail_i)
 
 		for (i = 0; i < countof(r_msg); i++)
 	{
-		i_nh = lib->crypto->create_dh(lib->crypto, NH_128_BIT);
+		i_nh = lib->crypto->create_ke(lib->crypto, NH_128_BIT);
 		ck_assert(i_nh != NULL);
-		ck_assert(i_nh->get_my_public_value(i_nh, &i_msg));
-		ck_assert(!i_nh->set_other_public_value(i_nh, r_msg[i]));
+		ck_assert(i_nh->get_public_key(i_nh, &i_msg));
+		ck_assert(!i_nh->set_public_key(i_nh, r_msg[i]));
 		chunk_free(&i_msg);
 		i_nh->destroy(i_nh);
 	}
@@ -142,7 +143,7 @@ END_TEST
 
 START_TEST(test_newhope_ke_fail_r)
 {
-	diffie_hellman_t *r_nh;
+	key_exchange_t *r_nh;
 	char buf_ff[1824];
 	int i;
 
@@ -157,9 +158,9 @@ START_TEST(test_newhope_ke_fail_r)
 
 	for (i = 0; i < countof(i_msg); i++)
 	{
-		r_nh = lib->crypto->create_dh(lib->crypto, NH_128_BIT);
+		r_nh = lib->crypto->create_ke(lib->crypto, NH_128_BIT);
 		ck_assert(r_nh != NULL);
-		ck_assert(!r_nh->set_other_public_value(r_nh, i_msg[i]));
+		ck_assert(!r_nh->set_public_key(r_nh, i_msg[i]));
 		r_nh->destroy(r_nh);
 	}
 }

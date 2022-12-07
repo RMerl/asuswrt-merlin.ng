@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2018, 2021, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) 1998 - 2022, 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -18,16 +18,20 @@
 .\" * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 .\" * KIND, either express or implied.
 .\" *
+.\" * SPDX-License-Identifier: curl
+.\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_UPLOAD_BUFFERSIZE 3 "September 08, 2021" "libcurl 7.79.1" "curl_easy_setopt options"
+.TH CURLOPT_UPLOAD_BUFFERSIZE 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_UPLOAD_BUFFERSIZE \- upload buffer size
 .SH SYNOPSIS
+.nf
 #include <curl/curl.h>
 
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_UPLOAD_BUFFERSIZE, long size);
+.fi
 .SH DESCRIPTION
 Pass a long specifying your preferred \fIsize\fP (in bytes) for the upload
 buffer in libcurl. It makes libcurl uses a larger buffer that gets passed to
@@ -43,7 +47,7 @@ allowed to be set is 2 megabytes. The minimum buffer size allowed to be set is
 16 kilobytes.
 
 Since curl 7.61.1 the upload buffer is allocated on-demand - so if the handle
-isn't used for upload, this buffer will not be allocated at all.
+is not used for upload, this buffer will not be allocated at all.
 
 DO NOT set this option on a handle that is currently used for an active
 transfer as that may lead to unintended consequences.

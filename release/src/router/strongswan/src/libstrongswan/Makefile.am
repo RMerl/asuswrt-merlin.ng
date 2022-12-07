@@ -4,16 +4,18 @@ libstrongswan_la_SOURCES = \
 library.c \
 asn1/asn1.c asn1/asn1_parser.c asn1/oid.c bio/bio_reader.c bio/bio_writer.c \
 collections/blocking_queue.c collections/enumerator.c collections/hashtable.c \
-collections/array.c \
-collections/linked_list.c crypto/crypters/crypter.c crypto/hashers/hasher.c \
+collections/hashlist.c collections/array.c \
+collections/linked_list.c crypto/crypters/crypter.c \
+crypto/drbgs/drbg.c crypto/hashers/hasher.c \
 crypto/hashers/hash_algorithm_set.c crypto/proposal/proposal.c \
 crypto/proposal/proposal_keywords.c crypto/proposal/proposal_keywords_static.c \
 crypto/prfs/prf.c crypto/prfs/mac_prf.c crypto/pkcs5.c \
-crypto/rngs/rng.c crypto/prf_plus.c crypto/signers/signer.c \
+crypto/rngs/rng.c crypto/rngs/rng_tester.c \
+crypto/signers/signer.c \
 crypto/signers/mac_signer.c crypto/crypto_factory.c crypto/crypto_tester.c \
-crypto/diffie_hellman.c crypto/aead.c crypto/transform.c \
+crypto/key_exchange.c crypto/aead.c crypto/transform.c \
 crypto/iv/iv_gen.c crypto/iv/iv_gen_rand.c crypto/iv/iv_gen_seq.c \
-crypto/iv/iv_gen_null.c \
+crypto/iv/iv_gen_null.c crypto/kdfs/kdf.c \
 crypto/xofs/xof.c crypto/xofs/xof_bitspender.c \
 credentials/credential_factory.c credentials/builder.c \
 credentials/cred_encoding.c credentials/keys/private_key.c \
@@ -29,6 +31,7 @@ credentials/sets/cert_cache.c credentials/sets/mem_cred.c \
 credentials/sets/callback_cred.c credentials/auth_cfg.c database/database.c \
 database/database_factory.c fetcher/fetcher.c fetcher/fetcher_manager.c eap/eap.c \
 ipsec/ipsec_types.c \
+metadata/metadata_factory.c metadata/metadata_int.c metadata/metadata_set.c \
 networking/host.c networking/host_resolver.c networking/packet.c \
 networking/tun_device.c networking/streams/stream_manager.c \
 networking/streams/stream.c networking/streams/stream_service.c \
@@ -36,7 +39,8 @@ networking/streams/stream_tcp.c networking/streams/stream_service_tcp.c \
 pen/pen.c plugins/plugin_loader.c plugins/plugin_feature.c processing/jobs/job.c \
 processing/jobs/callback_job.c processing/processor.c processing/scheduler.c \
 processing/watcher.c resolver/resolver_manager.c resolver/rr_set.c \
-selectors/traffic_selector.c settings/settings.c settings/settings_types.c \
+selectors/sec_label.c selectors/traffic_selector.c \
+settings/settings.c settings/settings_types.c \
 settings/settings_parser.y settings/settings_lexer.l utils/cpu_feature.c \
 utils/utils.c utils/chunk.c utils/debug.c utils/enum.c utils/identification.c \
 utils/lexparser.c utils/optionsfrom.c utils/capabilities.c utils/backtrace.c \
@@ -67,16 +71,19 @@ nobase_strongswan_include_HEADERS = \
 library.h \
 asn1/asn1.h asn1/asn1_parser.h asn1/oid.h bio/bio_reader.h bio/bio_writer.h \
 collections/blocking_queue.h collections/enumerator.h collections/hashtable.h \
+collections/hashtable_profiler.h \
 collections/linked_list.h collections/array.h collections/dictionary.h \
-crypto/crypters/crypter.h crypto/hashers/hasher.h \
+crypto/crypters/crypter.h crypto/drbgs/drbg.h crypto/hashers/hasher.h \
 crypto/hashers/hash_algorithm_set.h crypto/mac.h crypto/proposal/proposal.h \
 crypto/proposal/proposal_keywords.h crypto/proposal/proposal_keywords_static.h \
-crypto/prfs/prf.h crypto/prfs/mac_prf.h crypto/rngs/rng.h crypto/nonce_gen.h \
-crypto/prf_plus.h crypto/signers/signer.h crypto/signers/mac_signer.h \
-crypto/crypto_factory.h crypto/crypto_tester.h crypto/diffie_hellman.h \
+crypto/rngs/rng.h crypto/rngs/rng_tester.h \
+crypto/prfs/prf.h crypto/prfs/mac_prf.h crypto/nonce_gen.h \
+crypto/signers/signer.h crypto/signers/mac_signer.h \
+crypto/crypto_factory.h crypto/crypto_tester.h crypto/key_exchange.h \
 crypto/aead.h crypto/transform.h crypto/pkcs5.h crypto/iv/iv_gen.h \
 crypto/iv/iv_gen_rand.h crypto/iv/iv_gen_seq.h crypto/iv/iv_gen_null.h \
 crypto/xofs/xof.h crypto/xofs/xof_bitspender.h crypto/xofs/mgf1.h \
+crypto/kdfs/kdf.h \
 credentials/credential_factory.h credentials/builder.h \
 credentials/cred_encoding.h credentials/keys/private_key.h \
 credentials/keys/public_key.h credentials/keys/shared_key.h \
@@ -95,6 +102,8 @@ credentials/sets/mem_cred.h credentials/sets/callback_cred.h \
 credentials/auth_cfg.h credentials/credential_set.h credentials/cert_validator.h \
 database/database.h database/database_factory.h fetcher/fetcher.h \
 fetcher/fetcher_manager.h eap/eap.h pen/pen.h ipsec/ipsec_types.h \
+metadata/metadata.h metadata/metadata_factory.h metadata/metadata_int.h \
+metadata/metadata_set.h \
 networking/host.h networking/host_resolver.h networking/packet.h \
 networking/tun_device.h networking/streams/stream.h \
 networking/streams/stream_unix.h networking/streams/stream_service_unix.h \
@@ -105,7 +114,8 @@ resolver/resolver.h resolver/resolver_response.h resolver/rr_set.h \
 resolver/rr.h resolver/resolver_manager.h \
 plugins/plugin_loader.h plugins/plugin.h plugins/plugin_feature.h \
 processing/jobs/job.h processing/jobs/callback_job.h processing/processor.h \
-processing/scheduler.h processing/watcher.h selectors/traffic_selector.h \
+processing/scheduler.h processing/watcher.h \
+selectors/sec_label.h selectors/traffic_selector.h \
 settings/settings.h settings/settings_parser.h threading/thread_value.h \
 threading/thread.h threading/windows/thread.h \
 threading/mutex.h threading/condvar.h threading/spinlock.h threading/semaphore.h \
@@ -125,7 +135,8 @@ library.lo :	$(top_builddir)/config.status
 
 libstrongswan_la_LIBADD = \
 	$(DLLIB) $(ATOMICLIB)  $(BTLIB) $(SOCKLIB) \
-	$(RTLIB) $(BFDLIB) $(UNWINDLIB)
+	$(RTLIB) $(BFDLIB) $(UNWINDLIB) \
+	$(selinux_LIBS)
 
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/src/libstrongswan \
@@ -135,6 +146,7 @@ AM_CPPFLAGS = \
 	-DSTRONGSWAN_CONF=\"${strongswan_conf}\"
 
 AM_CFLAGS = \
+	$(selinux_CFLAGS) \
 	@COVERAGE_CFLAGS@
 
 AM_LDFLAGS = \
@@ -231,13 +243,13 @@ $(srcdir)/crypto/proposal/proposal_keywords_static.h: $(srcdir)/crypto/proposal/
 		$(AM_V_GEN) \
 		sed \
 		-e "s:\@GPERF_LEN_TYPE\@:$(GPERF_LEN_TYPE):" \
-		$< > $@
+		$(srcdir)/crypto/proposal/proposal_keywords_static.h.in > $@
 
 $(srcdir)/crypto/proposal/proposal_keywords_static.c:	$(srcdir)/crypto/proposal/proposal_keywords_static.txt \
 														$(srcdir)/crypto/proposal/proposal_keywords_static.h
 		$(AM_V_GEN) \
-		$(GPERF) -N proposal_get_token_static -m 10 -C -G -c -t -D < \
-												$(srcdir)/crypto/proposal/proposal_keywords_static.txt > $@
+		$(GPERF) -N proposal_get_token_static -m 10 -C -G -c -t -D \
+			--output-file=$@ $(srcdir)/crypto/proposal/proposal_keywords_static.txt
 
 if STATIC_PLUGIN_CONSTRUCTORS
 BUILT_SOURCES += $(srcdir)/plugin_constructors.c
@@ -380,6 +392,13 @@ if USE_HMAC
   SUBDIRS += plugins/hmac
 if MONOLITHIC
   libstrongswan_la_LIBADD += plugins/hmac/libstrongswan-hmac.la
+endif
+endif
+
+if USE_KDF
+  SUBDIRS += plugins/kdf
+if MONOLITHIC
+  libstrongswan_la_LIBADD += plugins/kdf/libstrongswan-kdf.la
 endif
 endif
 
@@ -558,6 +577,13 @@ if MONOLITHIC
 endif
 endif
 
+if USE_WOLFSSL
+  SUBDIRS += plugins/wolfssl
+if MONOLITHIC
+  libstrongswan_la_LIBADD += plugins/wolfssl/libstrongswan-wolfssl.la
+endif
+endif
+
 if USE_GCRYPT
   SUBDIRS += plugins/gcrypt
 if MONOLITHIC
@@ -653,6 +679,13 @@ if USE_NEWHOPE
   SUBDIRS += plugins/newhope
 if MONOLITHIC
   libstrongswan_la_LIBADD += plugins/newhope/libstrongswan-newhope.la
+endif
+endif
+
+if USE_DRBG
+  SUBDIRS += plugins/drbg
+if MONOLITHIC
+  libstrongswan_la_LIBADD += plugins/drbg/libstrongswan-drbg.la
 endif
 endif
 

@@ -1,7 +1,8 @@
 %{
 /*
  * Copyright (C) 2014-2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,20 +56,27 @@ static void add_references(parser_helper_t *ctx, array_t *references);
  * Make sure to call lexer with the proper context
  */
 #undef yylex
-static int yylex(YYSTYPE *lvalp, parser_helper_t *ctx)
+static int yylex(SETTINGS_PARSER_STYPE *yylval, parser_helper_t *ctx)
 {
-	return settings_parser_lex(lvalp, ctx->scanner);
+	return settings_parser_lex(yylval, ctx->scanner);
 }
 
 %}
 %debug
 
 /* generate verbose error messages */
-%error-verbose
+%define parse.error verbose
 /* generate a reentrant parser */
 %define api.pure
 /* prefix function/variable declarations */
-%name-prefix "settings_parser_"
+%define api.prefix {settings_parser_}
+/* make sure flex uses the right definition */
+%code provides
+{
+	#define YY_DECL \
+		int settings_parser_lex(SETTINGS_PARSER_STYPE *yylval, void *yyscanner)
+	YY_DECL;
+}
 
 /* interact properly with the reentrant lexer */
 %lex-param {parser_helper_t *ctx}
@@ -200,14 +208,7 @@ valuepart:
  */
 static void settings_parser_error(parser_helper_t *ctx, const char *s)
 {
-	char *text = settings_parser_get_text(ctx->scanner);
-	int len = settings_parser_get_leng(ctx->scanner);
-
-	if (len && text[len-1] == '\n')
-	{	/* cut off newline at the end to avoid muti-line log messages */
-		len--;
-	}
-	PARSER_DBG1(ctx, "%s [%.*s]", s, len, text);
+	PARSER_DBG1(ctx, "%s", s);
 }
 
 /**

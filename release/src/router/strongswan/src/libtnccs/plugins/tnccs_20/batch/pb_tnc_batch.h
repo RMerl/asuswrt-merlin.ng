@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -73,7 +74,7 @@ struct pb_tnc_batch_t {
 	/**
 	 * Add a PB-TNC Message
 	 *
-	 * @param msg			PB-TNC message to be addedd
+	 * @param msg			PB-TNC message to be added
 	 * @return				TRUE if message fit into batch and was added
 	 */
 	bool (*add_msg)(pb_tnc_batch_t *this, pb_tnc_msg_t* msg);

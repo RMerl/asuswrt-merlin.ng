@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -29,7 +30,7 @@ typedef struct eap_inner_method_t eap_inner_method_t;
 
 /**
  * Interface of a weak inner EAP method like EAP-TNC or PT-EAP
- * that must be encapsulated in a strong TLS-based EAP method 
+ * that must be encapsulated in a strong TLS-based EAP method
  */
 struct eap_inner_method_t {
 
@@ -43,14 +44,14 @@ struct eap_inner_method_t {
 	 *
 	 * @return			outer EAP authentication type
 	 */
-	eap_type_t (*get_auth_type)(eap_inner_method_t *this); 
+	eap_type_t (*get_auth_type)(eap_inner_method_t *this);
 
 	/*
 	 * Set type of outer EAP Client/Server authentication
 	 *
 	 * @param type		outer EAP authentication type
 	 */
-	void (*set_auth_type)(eap_inner_method_t *this, eap_type_t type); 
+	void (*set_auth_type)(eap_inner_method_t *this, eap_type_t type);
 
 };
 

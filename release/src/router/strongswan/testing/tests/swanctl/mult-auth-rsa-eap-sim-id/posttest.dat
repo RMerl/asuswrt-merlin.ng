@@ -1,4 +1,0 @@
-carol::systemctl stop strongswan-swanctl
-dave::systemctl stop strongswan-swanctl
-moon::systemctl stop strongswan-swanctl
-alice::killall freeradius

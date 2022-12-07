@@ -148,7 +148,7 @@ define platformRouterOptions
 		sed -i "/RTCONFIG_HAS_5G_2/d" $(1); \
 		echo "RTCONFIG_HAS_5G_2=y" >>$(1); \
 	fi; \
-	if [ "$(RTAX92U)" = "y" -o "$(GTAX11000)" = "y" -o "$(RTAX95Q)" = "y" -o "$(XT8PRO)" = "y" -o "$(XT8_V2)" = "y" ]; then \
+	if [ "$(RTAX92U)" = "y" -o "$(GTAX11000)" = "y" -o "$(RTAX95Q)" = "y" -o "$(XT8PRO)" = "y" -o "$(BM68)" = "y" -o "$(XT8_V2)" = "y" ]; then \
 		sed -i "/RTCONFIG_HAS_5G_2/d" $(1); \
 		echo "RTCONFIG_HAS_5G_2=y" >>$(1); \
 	fi; \

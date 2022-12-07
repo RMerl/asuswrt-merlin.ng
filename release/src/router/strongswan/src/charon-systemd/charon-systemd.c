@@ -3,8 +3,8 @@
  * Copyright (C) 2005-2014 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -281,6 +281,7 @@ static bool lookup_uid_gid()
 	return TRUE;
 }
 
+#ifndef DISABLE_SIGNAL_HANDLER
 /**
  * Handle SIGSEGV/SIGILL signals raised by threads
  */
@@ -297,6 +298,7 @@ static void segv_handler(int signal)
 	DBG1(DBG_DMN, "killing ourself, received critical signal");
 	abort();
 }
+#endif /* DISABLE_SIGNAL_HANDLER */
 
 /**
  * Add namespace alias
@@ -380,17 +382,22 @@ int main(int argc, char *argv[])
 		goto error;
 	}
 
-	/* add handler for SEGV and ILL,
+	/* add handler for fatal signals,
 	 * INT, TERM and HUP are handled by sigwaitinfo() in run() */
-	action.sa_handler = segv_handler;
 	action.sa_flags = 0;
 	sigemptyset(&action.sa_mask);
 	sigaddset(&action.sa_mask, SIGINT);
 	sigaddset(&action.sa_mask, SIGTERM);
 	sigaddset(&action.sa_mask, SIGHUP);
+
+	/* optionally let the external system handle fatal signals */
+#ifndef DISABLE_SIGNAL_HANDLER
+	action.sa_handler = segv_handler;
 	sigaction(SIGSEGV, &action, NULL);
 	sigaction(SIGILL, &action, NULL);
 	sigaction(SIGBUS, &action, NULL);
+#endif /* DISABLE_SIGNAL_HANDLER */
+
 	action.sa_handler = SIG_IGN;
 	sigaction(SIGPIPE, &action, NULL);
 

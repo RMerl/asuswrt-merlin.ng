@@ -142,7 +142,7 @@ static int ring_size_of_read_back(RingBuffer *ring)
 static int ring_drain(RingBuffer *ring, int offset)
 {
     av_assert2(offset >= -ring_size_of_read_back(ring));
-    av_assert2(offset <= -ring_size(ring));
+    av_assert2(offset <= ring_size(ring));
     ring->read_pos += offset;
     return 0;
 }
@@ -262,24 +262,28 @@ static int async_open(URLContext *h, const char *arg, int flags, AVDictionary **
 
     ret = pthread_mutex_init(&c->mutex, NULL);
     if (ret != 0) {
+        ret = AVERROR(ret);
         av_log(h, AV_LOG_ERROR, "pthread_mutex_init failed : %s\n", av_err2str(ret));
         goto mutex_fail;
     }
 
     ret = pthread_cond_init(&c->cond_wakeup_main, NULL);
     if (ret != 0) {
+        ret = AVERROR(ret);
         av_log(h, AV_LOG_ERROR, "pthread_cond_init failed : %s\n", av_err2str(ret));
         goto cond_wakeup_main_fail;
     }
 
     ret = pthread_cond_init(&c->cond_wakeup_background, NULL);
     if (ret != 0) {
+        ret = AVERROR(ret);
         av_log(h, AV_LOG_ERROR, "pthread_cond_init failed : %s\n", av_err2str(ret));
         goto cond_wakeup_background_fail;
     }
 
     ret = pthread_create(&c->async_buffer_thread, NULL, async_buffer_task, h);
     if (ret) {
+        ret = AVERROR(ret);
         av_log(h, AV_LOG_ERROR, "pthread_create failed : %s\n", av_err2str(ret));
         goto thread_fail;
     }
@@ -293,7 +297,7 @@ cond_wakeup_background_fail:
 cond_wakeup_main_fail:
     pthread_mutex_destroy(&c->mutex);
 mutex_fail:
-    ffurl_close(c->inner);
+    ffurl_closep(&c->inner);
 url_fail:
     ring_destroy(&c->ring);
 fifo_fail:
@@ -317,7 +321,7 @@ static int async_close(URLContext *h)
     pthread_cond_destroy(&c->cond_wakeup_background);
     pthread_cond_destroy(&c->cond_wakeup_main);
     pthread_mutex_destroy(&c->mutex);
-    ffurl_close(c->inner);
+    ffurl_closep(&c->inner);
     ring_destroy(&c->ring);
 
     return 0;
@@ -608,7 +612,8 @@ int main(void)
     /*
      * test normal read
      */
-    ret = ffurl_open(&h, "async:async-test:", AVIO_FLAG_READ, NULL, NULL);
+    ret = ffurl_open_whitelist(&h, "async:async-test:", AVIO_FLAG_READ,
+                               NULL, NULL, NULL, NULL, NULL);
     printf("open: %d\n", ret);
 
     size = ffurl_size(h);
@@ -684,7 +689,8 @@ int main(void)
      */
     ffurl_close(h);
     av_dict_set_int(&opts, "async-test-read-error", -10000, 0);
-    ret = ffurl_open(&h, "async:async-test:", AVIO_FLAG_READ, NULL, &opts);
+    ret = ffurl_open_whitelist(&h, "async:async-test:", AVIO_FLAG_READ,
+                               NULL, &opts, NULL, NULL, NULL);
     printf("open: %d\n", ret);
 
     ret = ffurl_read(h, buf, 1);

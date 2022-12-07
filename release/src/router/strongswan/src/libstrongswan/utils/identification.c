@@ -1,9 +1,10 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * Copyright (C) 2009-2015 Tobias Brunner
+ * Copyright (C) 2009-2019 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -26,6 +27,7 @@
 #include <asn1/oid.h>
 #include <asn1/asn1.h>
 #include <crypto/hashers/hasher.h>
+#include <collections/array.h>
 
 ENUM_BEGIN(id_match_names, ID_MATCH_NONE, ID_MATCH_MAX_WILDCARDS,
 	"MATCH_NONE",
@@ -66,8 +68,7 @@ static const x501rdn_t x501rdns[] = {
 	{"UID", 				OID_PILOT_USERID,			ASN1_PRINTABLESTRING},
 	{"DC", 					OID_PILOT_DOMAIN_COMPONENT, ASN1_PRINTABLESTRING},
 	{"CN",					OID_COMMON_NAME,			ASN1_PRINTABLESTRING},
-	{"S", 					OID_SURNAME,				ASN1_PRINTABLESTRING},
-	{"SN", 					OID_SERIAL_NUMBER,			ASN1_PRINTABLESTRING},
+	{"SN", 					OID_SURNAME,				ASN1_PRINTABLESTRING},
 	{"serialNumber", 		OID_SERIAL_NUMBER,			ASN1_PRINTABLESTRING},
 	{"C", 					OID_COUNTRY,				ASN1_PRINTABLESTRING},
 	{"L", 					OID_LOCALITY,				ASN1_PRINTABLESTRING},
@@ -216,8 +217,8 @@ METHOD(enumerator_t, rdn_part_enumerate, bool,
 		id_part_t type;
 	} oid2part[] = {
 		{OID_COMMON_NAME,		ID_PART_RDN_CN},
-		{OID_SURNAME,			ID_PART_RDN_S},
-		{OID_SERIAL_NUMBER,		ID_PART_RDN_SN},
+		{OID_SURNAME,			ID_PART_RDN_SN},
+		{OID_SERIAL_NUMBER,		ID_PART_RDN_SERIAL_NUMBER},
 		{OID_COUNTRY,			ID_PART_RDN_C},
 		{OID_LOCALITY,			ID_PART_RDN_L},
 		{OID_STATE_OR_PROVINCE,	ID_PART_RDN_ST},
@@ -567,6 +568,14 @@ METHOD(identification_t, get_type, id_type_t,
 	return this->type;
 }
 
+/**
+ * Check if this is a wildcard value
+ */
+static inline bool is_wildcard(chunk_t data)
+{
+	return data.len == 1 && data.ptr[0] == '*';
+}
+
 METHOD(identification_t, contains_wildcards_dn, bool,
 	private_identification_t *this)
 {
@@ -578,7 +587,7 @@ METHOD(identification_t, contains_wildcards_dn, bool,
 	enumerator = create_part_enumerator(this);
 	while (enumerator->enumerate(enumerator, &type, &data))
 	{
-		if (data.len == 1 && data.ptr[0] == '*')
+		if (is_wildcard(data))
 		{
 			contains = TRUE;
 			break;
@@ -622,7 +631,172 @@ METHOD(identification_t, equals_binary, bool,
 }
 
 /**
- * Compare to DNs, for equality if wc == NULL, for match otherwise
+ * Compare two RDNs for equality, comparing some string types case insensitive
+ */
+static bool rdn_equals(chunk_t oid, u_char a_type, chunk_t a, u_char b_type,
+					   chunk_t b)
+{
+	if (a_type == b_type &&
+		(a_type == ASN1_PRINTABLESTRING ||
+		 (a_type == ASN1_IA5STRING &&
+		  asn1_known_oid(oid) == OID_EMAIL_ADDRESS)))
+	{	/* ignore case for printableStrings and email RDNs */
+		return strncaseeq(a.ptr, b.ptr, a.len);
+	}
+	else
+	{	/* respect case and length for everything else */
+		return memeq(a.ptr, b.ptr, a.len);
+	}
+}
+
+/**
+ * RDNs when matching DNs
+ */
+typedef struct {
+	chunk_t oid;
+	u_char type;
+	chunk_t data;
+	bool matched;
+} rdn_t;
+
+/**
+ * Match DNs (o_dn may contain wildcards and RDNs in a different order, if
+ * allow_unmatched is TRUE, t_dn may contain unmatched RDNs)
+ */
+static bool match_dn(chunk_t t_dn, chunk_t o_dn, int *wc, bool allow_unmatched)
+{
+	enumerator_t *enumerator;
+	array_t *rdns;
+	rdn_t *rdn, *found;
+	chunk_t oid, data;
+	u_char type;
+	bool finished = FALSE;
+	int i, regular = 0;
+
+	*wc = 0;
+
+	/* try a binary compare */
+	if (chunk_equals(t_dn, o_dn))
+	{
+		return TRUE;
+	}
+
+	rdns = array_create(0, 8);
+
+	enumerator = create_rdn_enumerator(o_dn);
+	while (TRUE)
+	{
+		if (!enumerator->enumerate(enumerator, &oid, &type, &data))
+		{
+			break;
+		}
+		INIT(rdn,
+			.oid = oid,
+			.type = type,
+			.data = data,
+		);
+		if (is_wildcard(data))
+		{
+			/* insert wildcards at the end, to perform exact matches first */
+			array_insert(rdns, ARRAY_TAIL, rdn);
+		}
+		else
+		{
+			array_insert(rdns, regular++, rdn);
+		}
+		/* the enumerator returns FALSE on parse error, we are finished
+		 * if we have reached the end of the DN only */
+		if ((data.ptr + data.len == o_dn.ptr + o_dn.len))
+		{
+			finished = TRUE;
+		}
+	}
+	enumerator->destroy(enumerator);
+
+	if (!finished)
+	{	/* invalid DN */
+		array_destroy_function(rdns, (void*)free, NULL);
+		return FALSE;
+	}
+	finished = FALSE;
+
+	enumerator = create_rdn_enumerator(t_dn);
+	while (TRUE)
+	{
+		if (!enumerator->enumerate(enumerator, &oid, &type, &data))
+		{
+			break;
+		}
+		for (i = 0, found = NULL; i < array_count(rdns); i++)
+		{
+			array_get(rdns, i, &rdn);
+			if (!rdn->matched && chunk_equals(rdn->oid, oid))
+			{
+				if (is_wildcard(rdn->data))
+				{
+					(*wc)++;
+				}
+				else if (data.len != rdn->data.len ||
+						 !rdn_equals(oid, type, data, rdn->type, rdn->data))
+				{
+					continue;
+				}
+				rdn->matched = TRUE;
+				found = rdn;
+				break;
+			}
+		}
+		if (!found)
+		{
+			/* treat unmatched RDNs like wildcards if allowed */
+			if (!allow_unmatched)
+			{
+				break;
+			}
+			(*wc)++;
+		}
+		/* the enumerator returns FALSE on parse error, we are finished
+		 * if we have reached the end of the DN only */
+		if ((data.ptr + data.len == t_dn.ptr + t_dn.len))
+		{
+			finished = TRUE;
+		}
+	}
+	enumerator->destroy(enumerator);
+
+	if (finished)
+	{
+		for (i = 0; i < array_count(rdns); i++)
+		{
+			array_get(rdns, i, &rdn);
+			if (!rdn->matched)
+			{
+				finished = FALSE;
+			}
+		}
+	}
+	array_destroy_function(rdns, (void*)free, NULL);
+	return finished;
+}
+
+/**
+ * Reordered RDNs are fine, but match all
+ */
+static bool match_dn_reordered(chunk_t t_dn, chunk_t o_dn, int *wc)
+{
+	return match_dn(t_dn, o_dn, wc, FALSE);
+}
+
+/**
+ * t_dn may contain more RDNs than o_dn
+ */
+static bool match_dn_relaxed(chunk_t t_dn, chunk_t o_dn, int *wc)
+{
+	return match_dn(t_dn, o_dn, wc, TRUE);
+}
+
+/**
+ * Compare two DNs, for equality if wc == NULL, with wildcard matching otherwise
  */
 static bool compare_dn(chunk_t t_dn, chunk_t o_dn, int *wc)
 {
@@ -635,14 +809,11 @@ static bool compare_dn(chunk_t t_dn, chunk_t o_dn, int *wc)
 	{
 		*wc = 0;
 	}
-	else
+	else if (t_dn.len != o_dn.len)
 	{
-		if (t_dn.len != o_dn.len)
-		{
-			return FALSE;
-		}
+		return FALSE;
 	}
-	/* try a binary compare */
+
 	if (chunk_equals(t_dn, o_dn))
 	{
 		return TRUE;
@@ -668,7 +839,7 @@ static bool compare_dn(chunk_t t_dn, chunk_t o_dn, int *wc)
 		{
 			break;
 		}
-		if (wc && o_data.len == 1 && o_data.ptr[0] == '*')
+		if (wc && is_wildcard(o_data))
 		{
 			(*wc)++;
 		}
@@ -678,22 +849,9 @@ static bool compare_dn(chunk_t t_dn, chunk_t o_dn, int *wc)
 			{
 				break;
 			}
-			if (t_type == o_type &&
-				(t_type == ASN1_PRINTABLESTRING ||
-				 (t_type == ASN1_IA5STRING &&
-				  asn1_known_oid(t_oid) == OID_EMAIL_ADDRESS)))
-			{	/* ignore case for printableStrings and email RDNs */
-				if (strncasecmp(t_data.ptr, o_data.ptr, t_data.len) != 0)
-				{
-					break;
-				}
-			}
-			else
-			{	/* respect case and length for everything else */
-				if (!memeq(t_data.ptr, o_data.ptr, t_data.len))
-				{
-					break;
-				}
+			if (!rdn_equals(t_oid, t_type, t_data, o_type, o_data))
+			{
+				break;
 			}
 		}
 		/* the enumerator returns FALSE on parse error, we are finished
@@ -706,6 +864,31 @@ static bool compare_dn(chunk_t t_dn, chunk_t o_dn, int *wc)
 	}
 	t->destroy(t);
 	o->destroy(o);
+	return finished;
+}
+
+/**
+ * Check if the data in the given chunk represents a valid DN.
+ */
+static bool is_valid_dn(chunk_t dn)
+{
+	enumerator_t *enumerator;
+	chunk_t oid, data;
+	u_char type;
+	bool finished = FALSE;
+
+	enumerator = create_rdn_enumerator(dn);
+	while (enumerator->enumerate(enumerator, &oid, &type, &data))
+	{
+		/* the enumerator returns FALSE on parse error, we are finished
+		 * if we have reached the end of the DN only */
+		if ((data.ptr + data.len == dn.ptr + dn.len))
+		{
+			finished = TRUE;
+		}
+	}
+	enumerator->destroy(enumerator);
+
 	return finished;
 }
 
@@ -817,8 +1000,12 @@ METHOD(identification_t, matches_any, id_match_t,
 	return ID_MATCH_NONE;
 }
 
-METHOD(identification_t, matches_dn, id_match_t,
-	private_identification_t *this, identification_t *other)
+/**
+ * Match DNs given the matching function
+ */
+static id_match_t matches_dn_internal(private_identification_t *this,
+									  identification_t *other,
+									  bool (*match)(chunk_t,chunk_t,int*))
 {
 	int wc;
 
@@ -829,13 +1016,31 @@ METHOD(identification_t, matches_dn, id_match_t,
 
 	if (this->type == other->get_type(other))
 	{
-		if (compare_dn(this->encoded, other->get_encoding(other), &wc))
+		if (match(this->encoded, other->get_encoding(other), &wc))
 		{
 			wc = min(wc, ID_MATCH_ONE_WILDCARD - ID_MATCH_MAX_WILDCARDS);
 			return ID_MATCH_PERFECT - wc;
 		}
 	}
 	return ID_MATCH_NONE;
+}
+
+METHOD(identification_t, matches_dn, id_match_t,
+	private_identification_t *this, identification_t *other)
+{
+	return matches_dn_internal(this, other, compare_dn);
+}
+
+METHOD(identification_t, matches_dn_reordered, id_match_t,
+	private_identification_t *this, identification_t *other)
+{
+	return matches_dn_internal(this, other, match_dn_reordered);
+}
+
+METHOD(identification_t, matches_dn_relaxed, id_match_t,
+	private_identification_t *this, identification_t *other)
+{
+	return matches_dn_internal(this, other, match_dn_relaxed);
 }
 
 /**
@@ -1150,6 +1355,7 @@ METHOD(identification_t, destroy, void,
 static private_identification_t *identification_create(id_type_t type)
 {
 	private_identification_t *this;
+	char *rdn_matching;
 
 	INIT(this,
 		.public = {
@@ -1182,6 +1388,17 @@ static private_identification_t *identification_create(id_type_t type)
 			this->public.equals = _equals_dn;
 			this->public.matches = _matches_dn;
 			this->public.contains_wildcards = _contains_wildcards_dn;
+			/* check for more relaxed matching config */
+			rdn_matching = lib->settings->get_str(lib->settings,
+											"%s.rdn_matching", NULL, lib->ns);
+			if (streq("reordered", rdn_matching))
+			{
+				this->public.matches = _matches_dn_reordered;
+			}
+			else if (streq("relaxed", rdn_matching))
+			{
+				this->public.matches = _matches_dn_relaxed;
+			}
 			break;
 		case ID_IPV4_ADDR:
 		case ID_IPV6_ADDR:
@@ -1521,7 +1738,7 @@ identification_t * identification_create_from_data(chunk_t data)
 {
 	char buf[data.len + 1];
 
-	if (is_asn1(data))
+	if (is_asn1(data) && is_valid_dn(data))
 	{
 		return identification_create_from_encoding(ID_DER_ASN1_DN, data);
 	}

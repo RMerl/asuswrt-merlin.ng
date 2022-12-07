@@ -42,6 +42,10 @@
  * This is stored as BGRA on little-endian CPU architectures and ARGB on
  * big-endian CPUs.
  *
+ * @note
+ * If the resolution is not a multiple of the chroma subsampling factor
+ * then the chroma plane resolution must be rounded up.
+ *
  * @par
  * When the pixel format is palettized RGB32 (AV_PIX_FMT_PAL8), the palettized
  * image data is stored in AVFrame.data[0]. The palette is transported in
@@ -253,18 +257,18 @@ enum AVPixelFormat {
     AV_PIX_FMT_GBRP14LE,    ///< planar GBR 4:4:4 42bpp, little-endian
     AV_PIX_FMT_YUVJ411P,    ///< planar YUV 4:1:1, 12bpp, (1 Cr & Cb sample per 4x1 Y samples) full scale (JPEG), deprecated in favor of AV_PIX_FMT_YUV411P and setting color_range
 
-    AV_PIX_FMT_BAYER_BGGR8,    ///< bayer, BGBG..(odd line), GRGR..(even line), 8-bit samples */
-    AV_PIX_FMT_BAYER_RGGB8,    ///< bayer, RGRG..(odd line), GBGB..(even line), 8-bit samples */
-    AV_PIX_FMT_BAYER_GBRG8,    ///< bayer, GBGB..(odd line), RGRG..(even line), 8-bit samples */
-    AV_PIX_FMT_BAYER_GRBG8,    ///< bayer, GRGR..(odd line), BGBG..(even line), 8-bit samples */
-    AV_PIX_FMT_BAYER_BGGR16LE, ///< bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, little-endian */
-    AV_PIX_FMT_BAYER_BGGR16BE, ///< bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, big-endian */
-    AV_PIX_FMT_BAYER_RGGB16LE, ///< bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, little-endian */
-    AV_PIX_FMT_BAYER_RGGB16BE, ///< bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, big-endian */
-    AV_PIX_FMT_BAYER_GBRG16LE, ///< bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, little-endian */
-    AV_PIX_FMT_BAYER_GBRG16BE, ///< bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, big-endian */
-    AV_PIX_FMT_BAYER_GRBG16LE, ///< bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, little-endian */
-    AV_PIX_FMT_BAYER_GRBG16BE, ///< bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, big-endian */
+    AV_PIX_FMT_BAYER_BGGR8,    ///< bayer, BGBG..(odd line), GRGR..(even line), 8-bit samples
+    AV_PIX_FMT_BAYER_RGGB8,    ///< bayer, RGRG..(odd line), GBGB..(even line), 8-bit samples
+    AV_PIX_FMT_BAYER_GBRG8,    ///< bayer, GBGB..(odd line), RGRG..(even line), 8-bit samples
+    AV_PIX_FMT_BAYER_GRBG8,    ///< bayer, GRGR..(odd line), BGBG..(even line), 8-bit samples
+    AV_PIX_FMT_BAYER_BGGR16LE, ///< bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, little-endian
+    AV_PIX_FMT_BAYER_BGGR16BE, ///< bayer, BGBG..(odd line), GRGR..(even line), 16-bit samples, big-endian
+    AV_PIX_FMT_BAYER_RGGB16LE, ///< bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, little-endian
+    AV_PIX_FMT_BAYER_RGGB16BE, ///< bayer, RGRG..(odd line), GBGB..(even line), 16-bit samples, big-endian
+    AV_PIX_FMT_BAYER_GBRG16LE, ///< bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, little-endian
+    AV_PIX_FMT_BAYER_GBRG16BE, ///< bayer, GBGB..(odd line), RGRG..(even line), 16-bit samples, big-endian
+    AV_PIX_FMT_BAYER_GRBG16LE, ///< bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, little-endian
+    AV_PIX_FMT_BAYER_GRBG16BE, ///< bayer, GRGR..(odd line), BGBG..(even line), 16-bit samples, big-endian
 
     AV_PIX_FMT_XVMC,///< XVideo Motion Acceleration via common packet passing
 
@@ -330,6 +334,32 @@ enum AVPixelFormat {
      */
     AV_PIX_FMT_OPENCL,
 
+    AV_PIX_FMT_GRAY14BE,   ///<        Y        , 14bpp, big-endian
+    AV_PIX_FMT_GRAY14LE,   ///<        Y        , 14bpp, little-endian
+
+    AV_PIX_FMT_GRAYF32BE,  ///< IEEE-754 single precision Y, 32bpp, big-endian
+    AV_PIX_FMT_GRAYF32LE,  ///< IEEE-754 single precision Y, 32bpp, little-endian
+
+    AV_PIX_FMT_YUVA422P12BE, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), 12b alpha, big-endian
+    AV_PIX_FMT_YUVA422P12LE, ///< planar YUV 4:2:2,24bpp, (1 Cr & Cb sample per 2x1 Y samples), 12b alpha, little-endian
+    AV_PIX_FMT_YUVA444P12BE, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), 12b alpha, big-endian
+    AV_PIX_FMT_YUVA444P12LE, ///< planar YUV 4:4:4,36bpp, (1 Cr & Cb sample per 1x1 Y samples), 12b alpha, little-endian
+
+    AV_PIX_FMT_NV24,      ///< planar YUV 4:4:4, 24bpp, 1 plane for Y and 1 plane for the UV components, which are interleaved (first byte U and the following byte V)
+    AV_PIX_FMT_NV42,      ///< as above, but U and V bytes are swapped
+
+    /**
+     * Vulkan hardware images.
+     *
+     * data[0] points to an AVVkFrame
+     */
+    AV_PIX_FMT_VULKAN,
+
+    AV_PIX_FMT_Y210BE,    ///< packed YUV 4:2:2 like YUYV422, 20bpp, data in the high bits, big-endian
+    AV_PIX_FMT_Y210LE,    ///< packed YUV 4:2:2 like YUYV422, 20bpp, data in the high bits, little-endian
+
+    AV_PIX_FMT_X2RGB10LE, ///< packed RGB 10:10:10, 30bpp, (msb)2X 10R 10G 10B(lsb), little-endian, X=unused/undefined
+    AV_PIX_FMT_X2RGB10BE, ///< packed RGB 10:10:10, 30bpp, (msb)2X 10R 10G 10B(lsb), big-endian, X=unused/undefined
     AV_PIX_FMT_NB         ///< number of pixel formats, DO NOT USE THIS if you want to link with shared libav* because the number of formats might differ between versions
 };
 
@@ -349,6 +379,7 @@ enum AVPixelFormat {
 #define AV_PIX_FMT_GRAY9  AV_PIX_FMT_NE(GRAY9BE,  GRAY9LE)
 #define AV_PIX_FMT_GRAY10 AV_PIX_FMT_NE(GRAY10BE, GRAY10LE)
 #define AV_PIX_FMT_GRAY12 AV_PIX_FMT_NE(GRAY12BE, GRAY12LE)
+#define AV_PIX_FMT_GRAY14 AV_PIX_FMT_NE(GRAY14BE, GRAY14LE)
 #define AV_PIX_FMT_GRAY16 AV_PIX_FMT_NE(GRAY16BE, GRAY16LE)
 #define AV_PIX_FMT_YA16   AV_PIX_FMT_NE(YA16BE,   YA16LE)
 #define AV_PIX_FMT_RGB48  AV_PIX_FMT_NE(RGB48BE,  RGB48LE)
@@ -397,12 +428,16 @@ enum AVPixelFormat {
 #define AV_PIX_FMT_GBRPF32    AV_PIX_FMT_NE(GBRPF32BE,  GBRPF32LE)
 #define AV_PIX_FMT_GBRAPF32   AV_PIX_FMT_NE(GBRAPF32BE, GBRAPF32LE)
 
+#define AV_PIX_FMT_GRAYF32    AV_PIX_FMT_NE(GRAYF32BE, GRAYF32LE)
+
 #define AV_PIX_FMT_YUVA420P9  AV_PIX_FMT_NE(YUVA420P9BE , YUVA420P9LE)
 #define AV_PIX_FMT_YUVA422P9  AV_PIX_FMT_NE(YUVA422P9BE , YUVA422P9LE)
 #define AV_PIX_FMT_YUVA444P9  AV_PIX_FMT_NE(YUVA444P9BE , YUVA444P9LE)
 #define AV_PIX_FMT_YUVA420P10 AV_PIX_FMT_NE(YUVA420P10BE, YUVA420P10LE)
 #define AV_PIX_FMT_YUVA422P10 AV_PIX_FMT_NE(YUVA422P10BE, YUVA422P10LE)
 #define AV_PIX_FMT_YUVA444P10 AV_PIX_FMT_NE(YUVA444P10BE, YUVA444P10LE)
+#define AV_PIX_FMT_YUVA422P12 AV_PIX_FMT_NE(YUVA422P12BE, YUVA422P12LE)
+#define AV_PIX_FMT_YUVA444P12 AV_PIX_FMT_NE(YUVA444P12BE, YUVA444P12LE)
 #define AV_PIX_FMT_YUVA420P16 AV_PIX_FMT_NE(YUVA420P16BE, YUVA420P16LE)
 #define AV_PIX_FMT_YUVA422P16 AV_PIX_FMT_NE(YUVA422P16BE, YUVA422P16LE)
 #define AV_PIX_FMT_YUVA444P16 AV_PIX_FMT_NE(YUVA444P16BE, YUVA444P16LE)
@@ -412,6 +447,9 @@ enum AVPixelFormat {
 #define AV_PIX_FMT_AYUV64     AV_PIX_FMT_NE(AYUV64BE, AYUV64LE)
 #define AV_PIX_FMT_P010       AV_PIX_FMT_NE(P010BE,  P010LE)
 #define AV_PIX_FMT_P016       AV_PIX_FMT_NE(P016BE,  P016LE)
+
+#define AV_PIX_FMT_Y210       AV_PIX_FMT_NE(Y210BE,  Y210LE)
+#define AV_PIX_FMT_X2RGB10    AV_PIX_FMT_NE(X2RGB10BE, X2RGB10LE)
 
 /**
   * Chromaticity coordinates of the source primaries.
@@ -433,7 +471,8 @@ enum AVColorPrimaries {
     AVCOL_PRI_SMPTEST428_1 = AVCOL_PRI_SMPTE428,
     AVCOL_PRI_SMPTE431    = 11, ///< SMPTE ST 431-2 (2011) / DCI P3
     AVCOL_PRI_SMPTE432    = 12, ///< SMPTE ST 432-1 (2010) / P3 D65 / Display P3
-    AVCOL_PRI_JEDEC_P22   = 22, ///< JEDEC P22 phosphors
+    AVCOL_PRI_EBU3213     = 22, ///< EBU Tech. 3213-E / JEDEC P22 phosphors
+    AVCOL_PRI_JEDEC_P22   = AVCOL_PRI_EBU3213,
     AVCOL_PRI_NB                ///< Not part of ABI
 };
 
@@ -491,12 +530,60 @@ enum AVColorSpace {
 };
 
 /**
- * MPEG vs JPEG YUV range.
+ * Visual content value range.
+ *
+ * These values are based on definitions that can be found in multiple
+ * specifications, such as ITU-T BT.709 (3.4 - Quantization of RGB, luminance
+ * and colour-difference signals), ITU-T BT.2020 (Table 5 - Digital
+ * Representation) as well as ITU-T BT.2100 (Table 9 - Digital 10- and 12-bit
+ * integer representation). At the time of writing, the BT.2100 one is
+ * recommended, as it also defines the full range representation.
+ *
+ * Common definitions:
+ *   - For RGB and luminance planes such as Y in YCbCr and I in ICtCp,
+ *     'E' is the original value in range of 0.0 to 1.0.
+ *   - For chrominance planes such as Cb,Cr and Ct,Cp, 'E' is the original
+ *     value in range of -0.5 to 0.5.
+ *   - 'n' is the output bit depth.
+ *   - For additional definitions such as rounding and clipping to valid n
+ *     bit unsigned integer range, please refer to BT.2100 (Table 9).
  */
 enum AVColorRange {
     AVCOL_RANGE_UNSPECIFIED = 0,
-    AVCOL_RANGE_MPEG        = 1, ///< the normal 219*2^(n-8) "MPEG" YUV ranges
-    AVCOL_RANGE_JPEG        = 2, ///< the normal     2^n-1   "JPEG" YUV ranges
+
+    /**
+     * Narrow or limited range content.
+     *
+     * - For luminance planes:
+     *
+     *       (219 * E + 16) * 2^(n-8)
+     *
+     *   F.ex. the range of 16-235 for 8 bits
+     *
+     * - For chrominance planes:
+     *
+     *       (224 * E + 128) * 2^(n-8)
+     *
+     *   F.ex. the range of 16-240 for 8 bits
+     */
+    AVCOL_RANGE_MPEG        = 1,
+
+    /**
+     * Full range content.
+     *
+     * - For RGB and luminance planes:
+     *
+     *       (2^n - 1) * E
+     *
+     *   F.ex. the range of 0-255 for 8 bits
+     *
+     * - For chrominance planes:
+     *
+     *       (2^n - 1) * E + 2^(n - 1)
+     *
+     *   F.ex. the range of 1-255 for 8 bits
+     */
+    AVCOL_RANGE_JPEG        = 2,
     AVCOL_RANGE_NB               ///< Not part of ABI
 };
 

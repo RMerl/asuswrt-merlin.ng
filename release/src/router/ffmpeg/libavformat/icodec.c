@@ -43,7 +43,7 @@ typedef struct {
     IcoImage * images;
 } IcoDemuxContext;
 
-static int probe(AVProbeData *p)
+static int probe(const AVProbeData *p)
 {
     unsigned i, frames, checked = 0;
 
@@ -84,6 +84,9 @@ static int read_header(AVFormatContext *s)
     avio_skip(pb, 4);
     ico->nb_images = avio_rl16(pb);
 
+    if (!ico->nb_images)
+        return AVERROR_INVALIDDATA;
+
     ico->images = av_malloc_array(ico->nb_images, sizeof(IcoImage));
     if (!ico->images)
         return AVERROR(ENOMEM);
@@ -93,11 +96,13 @@ static int read_header(AVFormatContext *s)
         int tmp;
 
         if (avio_seek(pb, 6 + i * 16, SEEK_SET) < 0)
-            break;
+            goto fail;
 
         st = avformat_new_stream(s, NULL);
-        if (!st)
+        if (!st) {
+            av_freep(&ico->images);
             return AVERROR(ENOMEM);
+        }
 
         st->codecpar->codec_type = AVMEDIA_TYPE_VIDEO;
         st->codecpar->width      = avio_r8(pb);
@@ -111,12 +116,12 @@ static int read_header(AVFormatContext *s)
         ico->images[i].size   = avio_rl32(pb);
         if (ico->images[i].size <= 0) {
             av_log(s, AV_LOG_ERROR, "Invalid image size %d\n", ico->images[i].size);
-            return AVERROR_INVALIDDATA;
+            goto fail;
         }
         ico->images[i].offset = avio_rl32(pb);
 
         if (avio_seek(pb, ico->images[i].offset, SEEK_SET) < 0)
-            break;
+            goto fail;
 
         codec = avio_rl32(pb);
         switch (codec) {
@@ -126,8 +131,9 @@ static int read_header(AVFormatContext *s)
             st->codecpar->height   = 0;
             break;
         case 40:
-            if (ico->images[i].size < 40)
-                return AVERROR_INVALIDDATA;
+            if (ico->images[i].size < 40) {
+                goto fail;
+            }
             st->codecpar->codec_id = AV_CODEC_ID_BMP;
             tmp = avio_rl32(pb);
             if (tmp)
@@ -138,11 +144,14 @@ static int read_header(AVFormatContext *s)
             break;
         default:
             avpriv_request_sample(s, "codec %d", codec);
-            return AVERROR_INVALIDDATA;
+            goto fail;
         }
     }
 
     return 0;
+fail:
+    av_freep(&ico->images);
+    return AVERROR_INVALIDDATA;
 }
 
 static int read_packet(AVFormatContext *s, AVPacket *pkt)
@@ -150,11 +159,13 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
     IcoDemuxContext *ico = s->priv_data;
     IcoImage *image;
     AVIOContext *pb = s->pb;
-    AVStream *st = s->streams[0];
+    AVStream *st;
     int ret;
 
     if (ico->current_image >= ico->nb_images)
         return AVERROR_EOF;
+
+    st = s->streams[0];
 
     image = &ico->images[ico->current_image];
 
@@ -179,7 +190,6 @@ static int read_packet(AVFormatContext *s, AVPacket *pkt)
         bytestream_put_le32(&buf, 0);
 
         if ((ret = avio_read(pb, buf, image->size)) != image->size) {
-            av_packet_unref(pkt);
             return ret < 0 ? ret : AVERROR_INVALIDDATA;
         }
 

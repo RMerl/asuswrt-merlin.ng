@@ -1,0 +1,62 @@
+libssh2 1.10
+
+This release includes the following enhancements and bugfixes:
+
+ o adds agent forwarding support
+ o adds OpenSSH Agent support on Windows
+ o adds ECDSA key support using the Mbed TLS backend
+ o adds ECDSA cert authentication
+ o adds diffie-hellman-group14-sha256, diffie-hellman-group16-sha512,
+   diffie-hellman-group18-sha512 key exchanges
+ o adds support for PKIX key reading when using ed25519 with OpenSSL
+ o adds support for EWOULDBLOCK on VMS systems
+ o adds support for building with OpenSSL 3
+ o adds support for using FIPS mode in OpenSSL
+ o adds debug symbols when building with MSVC
+ o adds support for building on the 3DS
+ o adds unicode build support on Windows
+ o restores os400 building
+ o increases min, max and opt Diffie Hellman group values
+ o improves portiablity of the make file
+ o improves timeout behavior with 2FA keyboard auth
+ o various improvements to the Wincng backend
+ o fixes reading parital packet replies when using an agent
+ o fixes Diffie Hellman key exchange on Windows 1903+ builds
+ o fixes building tests with older versions of OpenSSL
+ o fixes possible multiple definition warnings
+ o fixes potential cast issues _libssh2_ecdsa_key_get_curve_type()
+ o fixes potential use after free if libssh2_init() is called twice
+ o improved linking when using Mbed TLS
+ o fixes call to libssh2_crypto_exit() if crypto hasn't been initialized
+ o fixes crash when loading public keys with no id
+ o fixes possible out of bounds read when exchanging keys
+ o fixes possible out of bounds read when reading packets
+ o fixes possible out of bounds read when opening an X11 connection
+ o fixes possible out of bounds read when ecdh host keys
+ o fixes possible hang when trying to read a disconnected socket
+ o fixes a crash when using the delayed compression option
+ o fixes read error with large known host entries
+ o fixes various warnings
+ o fixes various small memory leaks
+ o improved error handling, various detailed errors will now be reported
+ o builds are now using OSS-Fuzz
+ o builds now use autoreconf instead of a custom build script
+ o cmake now respects install directory
+ o improved CI backend
+ o updated HACKING-CRYPTO documentation
+ o use markdown file extensions
+ o improved unit tests
+
+This release would not have looked like this without help, code, reports and
+advice from friends like these:
+
+  katzer, Orgad Shaneh, mark-i-m, Zenju, axjowa, Thilo Schulz,
+  Etienne Samson, hlefebvre, seba30, Panos, jethrogb, Fabrice Fontaine,
+  Will Cosgrove, Daniel Stenberg, Michael Buckley, Wallace Souza Silva,
+  Romain-Geissler-1A, meierha, Tseng Jun, Thomas Klausner, Brendan Shanks,
+  Harry Sintonen, monnerat, Koutheir Attouchi, Marc Hörsken, yann-morin-1998,
+  Wez Furlong, TDi-jonesds, David Benjamin, Max Dymond, Igor Klevanets,
+  Viktor Szakats, Laurent Stacul, Mstrodl, Gabriel Smith, MarcT512,
+  Paul Capron, teottin, Tor Erik Ottinsen, Brian Inglis
+
+  (40 contributors)

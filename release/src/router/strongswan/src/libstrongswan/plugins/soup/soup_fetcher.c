@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -118,7 +119,7 @@ METHOD(fetcher_t, fetch, status_t,
 	soup_message_set_http_version(message, this->version);
 	soup_message_body_set_accumulate(message->response_body, FALSE);
 	g_signal_connect(message, "got-chunk", G_CALLBACK(soup_cb), &data);
-	data.session = soup_session_sync_new();
+	data.session = soup_session_new();
 	g_object_set(G_OBJECT(data.session),
 				 SOUP_SESSION_TIMEOUT, (guint)this->timeout, NULL);
 

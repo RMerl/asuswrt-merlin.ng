@@ -1,4 +1,4 @@
-.TH "PKI \-\-SELF" 1 "2016-12-13" "@PACKAGE_VERSION@" "strongSwan"
+.TH "PKI \-\-SELF" 1 "2019-05-06" "@PACKAGE_VERSION@" "strongSwan"
 .
 .SH "NAME"
 .
@@ -26,6 +26,7 @@ pki \-\-self \- Create a self-signed certificate
 .OP \-\-addrblock block
 .OP \-\-nc-permitted name
 .OP \-\-nc-excluded name
+.OP \-\-critical oid
 .OP \-\-policy\-mapping mapping
 .OP \-\-policy\-explicit len
 .OP \-\-policy\-inhibit len
@@ -71,8 +72,8 @@ Smartcard or TPM private key object handle in hex format with an optional
 0x prefix.
 .TP
 .BI "\-t, \-\-type " type
-Type of the input key. Either \fIpriv\fR, \fIrsa\fR, \fIecdsa\fR, \fIed25519\fR
-or \fIbliss\fR, defaults to \fIpriv\fR.
+Type of the input key. Either \fIpriv\fR, \fIrsa\fR, \fIecdsa\fR, \fIed25519\fR,
+\fIed448\fR or \fIbliss\fR, defaults to \fIpriv\fR.
 .TP
 .BI "\-d, \-\-dn " distinguished-name
 Subject and issuer distinguished name (DN). Required.
@@ -159,6 +160,9 @@ the
 or
 .B email:
 prefix to force a constraint type.
+.TP
+.BI "\-X, \-\-critical " oid
+Add a critical extension with the given OID.
 .TP
 .BI "\-M, \-\-policy-mapping " issuer-oid:subject-oid
 Add policyMapping from issuer to subject OID.

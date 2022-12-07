@@ -181,8 +181,8 @@ function close_s46_ports(){
 function pop_s46_ports_conflict(){
 
 	var conflict_links = gen_conflict_links();
-	var confilct_content = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer;margin:-28px -28px 0 0;' onclick='close_s46_ports_conflict();'></div>The following port related settings may not work properly since port number mismatch in current v6plus usable port range. Please set up a usable port listed in <a target='_self' style='text-decoration:underline;' href='Main_IPV6Status_Content.asp'>IPv6 Log</a>.<br><br>"+conflict_links;
-	
+	var confilct_content = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer;margin:-28px -28px 0 0;' onclick='close_s46_ports_conflict();'></div>Port mismatch issue may occur under the special port range of v6plus. It will not affect your internet but the following port related settings. If you would like to use them, please refer to usable port range in <a target='_self' style='text-decoration:underline;' href='Main_IPV6Status_Content.asp'>IPv6 Log</a>, and alter the port number of these features to matching range.<br><br>"+conflict_links;
+	/* Untranslated */
 	var left_tuned=0;
 	var top_tuned=130;
 	var margin_set=top_tuned +"px 0px 0px "+left_tuned+"px";
@@ -633,7 +633,7 @@ var notification = {
 			if(check_ipv6_s46_ports != "0" && exist_conflict>0){
 				notification.s46_ports = 1;
 				notification.array[20] = 'noti_s46_ports';
-				notification.desc[20] = 'Port settings mismatch v6plus usable port range.';  /* Untranslated */
+				notification.desc[20] = 'Port related settings may encounter mismatch issue in current v6plus port range.';  /* Untranslated */
 				notification.action_desc[20] = "Detail";
 				notification.clickCallBack[20] = "setTimeout('pop_s46_ports_conflict()', 100);"
 			}

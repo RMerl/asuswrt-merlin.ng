@@ -1,0 +1,16 @@
+alice::iptables-restore < /etc/iptables.rules
+venus::iptables-restore < /etc/iptables.rules
+sun::iptables-restore < /etc/iptables.rules
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p udp -j SNAT --to-source PH_IP_MOON:1024-1100
+moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to-source PH_IP_MOON:2000-2100
+alice::rm /etc/ipsec.d/cacerts/*
+venus::rm /etc/ipsec.d/cacerts/*
+sun::rm /etc/ipsec.d/cacerts/*
+sun::ipsec start
+alice::ipsec start
+venus::ipsec start
+sun::expect-connection nat-t
+alice::expect-connection nat-t
+alice::ipsec up nat-t
+venus::expect-connection nat-t
+venus::ipsec up nat-t

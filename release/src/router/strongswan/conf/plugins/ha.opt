@@ -2,7 +2,7 @@ charon.plugins.ha.autobalance = 0
 	Interval in seconds to automatically balance handled segments between nodes.
 	Set to 0 to disable.
 
-charon.plugin.ha.buflen = 2048
+charon.plugins.ha.buflen = 2048
 	Buffer size for received HA messages.
 
 	Buffer size for received HA messages. For IKEv1 the public DH factors are

@@ -1,6 +1,10 @@
 The roadwarriors <b>carol</b> and <b>dave</b> each set up a connection to gateway <b>moon</b>.
 <b>carol</b>'s authentication is based on a Pre-Shared Key (<b>PSK</b>) whereas <b>dave</b>'s
-is based on an RSA signature (<b>RSASIG</b>). Gateway <b>moon</b> supports both authentication modes
-and selects the correct roadwarrior connection definition based on the gateway ID
-requested by the roadwarrior.
-
+is based on an Public key signature (<b>Pubkey</b>). Gateway <b>moon</b> supports both
+authentication modes and selects the correct roadwarrior connection definition based on the
+gateway ID requested by the roadwarrior.
+<p/>
+Upon the successful establishment of the IPsec tunnels, the updown-script automatically
+inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both
+<b>carol</b> and <b>dave</b> ping the client <b>alice</b> behind the gateway <b>moon</b>.

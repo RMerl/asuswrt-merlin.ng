@@ -26,14 +26,14 @@ static int FUNC(sequence_header)(CodedBitstreamContext *ctx, RWContext *rw,
 
     ui(8,  sequence_header_code);
 
-    ui(12, horizontal_size_value);
-    ui(12, vertical_size_value);
+    uir(12, horizontal_size_value);
+    uir(12, vertical_size_value);
 
     mpeg2->horizontal_size = current->horizontal_size_value;
     mpeg2->vertical_size   = current->vertical_size_value;
 
-    ui(4,  aspect_ratio_information);
-    ui(4,  frame_rate_code);
+    uir(4, aspect_ratio_information);
+    uir(4, frame_rate_code);
     ui(18, bit_rate_value);
 
     marker_bit();
@@ -44,13 +44,13 @@ static int FUNC(sequence_header)(CodedBitstreamContext *ctx, RWContext *rw,
     ui(1, load_intra_quantiser_matrix);
     if (current->load_intra_quantiser_matrix) {
         for (i = 0; i < 64; i++)
-            ui(8, intra_quantiser_matrix[i]);
+            uirs(8, intra_quantiser_matrix[i], 1, i);
     }
 
     ui(1, load_non_intra_quantiser_matrix);
     if (current->load_non_intra_quantiser_matrix) {
         for (i = 0; i < 64; i++)
-            ui(8, non_intra_quantiser_matrix[i]);
+            uirs(8, non_intra_quantiser_matrix[i], 1, i);
     }
 
     return 0;
@@ -71,7 +71,7 @@ static int FUNC(user_data)(CodedBitstreamContext *ctx, RWContext *rw,
     av_assert0(k % 8 == 0);
     current->user_data_length = k /= 8;
     if (k > 0) {
-        current->user_data_ref = av_buffer_alloc(k);
+        current->user_data_ref = av_buffer_allocz(k + AV_INPUT_BUFFER_PADDING_SIZE);
         if (!current->user_data_ref)
             return AVERROR(ENOMEM);
         current->user_data = current->user_data_ref->data;
@@ -79,7 +79,7 @@ static int FUNC(user_data)(CodedBitstreamContext *ctx, RWContext *rw,
 #endif
 
     for (k = 0; k < current->user_data_length; k++)
-        xui(8, user_data, current->user_data[k]);
+        uis(8, user_data[k], 1, k);
 
     return 0;
 }
@@ -125,9 +125,29 @@ static int FUNC(sequence_display_extension)(CodedBitstreamContext *ctx, RWContex
 
     ui(1, colour_description);
     if (current->colour_description) {
-        ui(8, colour_primaries);
-        ui(8, transfer_characteristics);
-        ui(8, matrix_coefficients);
+#ifdef READ
+#define READ_AND_PATCH(name) do { \
+        ui(8, name); \
+        if (current->name == 0) { \
+            current->name = 2; \
+            av_log(ctx->log_ctx, AV_LOG_WARNING, "%s in a sequence display " \
+                   "extension had the invalid value 0. Setting it to 2 " \
+                   "(meaning unknown) instead.\n", #name); \
+        } \
+    } while (0)
+        READ_AND_PATCH(colour_primaries);
+        READ_AND_PATCH(transfer_characteristics);
+        READ_AND_PATCH(matrix_coefficients);
+#undef READ_AND_PATCH
+#else
+        uir(8, colour_primaries);
+        uir(8, transfer_characteristics);
+        uir(8, matrix_coefficients);
+#endif
+    } else {
+        infer(colour_primaries,         2);
+        infer(transfer_characteristics, 2);
+        infer(matrix_coefficients,      2);
     }
 
     ui(14, display_horizontal_size);
@@ -153,6 +173,40 @@ static int FUNC(group_of_pictures_header)(CodedBitstreamContext *ctx, RWContext 
     return 0;
 }
 
+static int FUNC(extra_information)(CodedBitstreamContext *ctx, RWContext *rw,
+                                   MPEG2RawExtraInformation *current,
+                                   const char *element_name, const char *marker_name)
+{
+    int err;
+    size_t k;
+#ifdef READ
+    GetBitContext start = *rw;
+    uint8_t bit;
+
+    for (k = 0; nextbits(1, 1, bit); k++)
+        skip_bits(rw, 1 + 8);
+    current->extra_information_length = k;
+    if (k > 0) {
+        *rw = start;
+        current->extra_information_ref =
+            av_buffer_allocz(k + AV_INPUT_BUFFER_PADDING_SIZE);
+        if (!current->extra_information_ref)
+            return AVERROR(ENOMEM);
+        current->extra_information = current->extra_information_ref->data;
+    }
+#endif
+
+    for (k = 0; k < current->extra_information_length; k++) {
+        bit(marker_name, 1);
+        xuia(8, element_name,
+             current->extra_information[k], 0, 255, 1, k);
+    }
+
+    bit(marker_name, 0);
+
+    return 0;
+}
+
 static int FUNC(picture_header)(CodedBitstreamContext *ctx, RWContext *rw,
                                 MPEG2RawPictureHeader *current)
 {
@@ -163,7 +217,7 @@ static int FUNC(picture_header)(CodedBitstreamContext *ctx, RWContext *rw,
     ui(8,  picture_start_code);
 
     ui(10, temporal_reference);
-    ui(3,  picture_coding_type);
+    uir(3, picture_coding_type);
     ui(16, vbv_delay);
 
     if (current->picture_coding_type == 2 ||
@@ -177,7 +231,8 @@ static int FUNC(picture_header)(CodedBitstreamContext *ctx, RWContext *rw,
         ui(3, backward_f_code);
     }
 
-    ui(1, extra_bit_picture);
+    CHECK(FUNC(extra_information)(ctx, rw, &current->extra_information_picture,
+                                  "extra_information_picture[k]", "extra_bit_picture"));
 
     return 0;
 }
@@ -190,10 +245,10 @@ static int FUNC(picture_coding_extension)(CodedBitstreamContext *ctx, RWContext 
 
     HEADER("Picture Coding Extension");
 
-    ui(4, f_code[0][0]);
-    ui(4, f_code[0][1]);
-    ui(4, f_code[1][0]);
-    ui(4, f_code[1][1]);
+    uir(4, f_code[0][0]);
+    uir(4, f_code[0][1]);
+    uir(4, f_code[1][0]);
+    uir(4, f_code[1][1]);
 
     ui(2, intra_dc_precision);
     ui(2, picture_structure);
@@ -250,25 +305,25 @@ static int FUNC(quant_matrix_extension)(CodedBitstreamContext *ctx, RWContext *r
     ui(1, load_intra_quantiser_matrix);
     if (current->load_intra_quantiser_matrix) {
         for (i = 0; i < 64; i++)
-            ui(8, intra_quantiser_matrix[i]);
+            uirs(8, intra_quantiser_matrix[i], 1, i);
     }
 
     ui(1, load_non_intra_quantiser_matrix);
     if (current->load_non_intra_quantiser_matrix) {
         for (i = 0; i < 64; i++)
-            ui(8, non_intra_quantiser_matrix[i]);
+            uirs(8, non_intra_quantiser_matrix[i], 1, i);
     }
 
     ui(1, load_chroma_intra_quantiser_matrix);
     if (current->load_chroma_intra_quantiser_matrix) {
         for (i = 0; i < 64; i++)
-            ui(8, intra_quantiser_matrix[i]);
+            uirs(8, intra_quantiser_matrix[i], 1, i);
     }
 
     ui(1, load_chroma_non_intra_quantiser_matrix);
     if (current->load_chroma_non_intra_quantiser_matrix) {
         for (i = 0; i < 64; i++)
-            ui(8, chroma_non_intra_quantiser_matrix[i]);
+            uirs(8, chroma_non_intra_quantiser_matrix[i], 1, i);
     }
 
     return 0;
@@ -283,9 +338,9 @@ static int FUNC(picture_display_extension)(CodedBitstreamContext *ctx, RWContext
     HEADER("Picture Display Extension");
 
     for (i = 0; i < mpeg2->number_of_frame_centre_offsets; i++) {
-        ui(16, frame_centre_horizontal_offset[i]);
+        sis(16, frame_centre_horizontal_offset[i], 1, i);
         marker_bit();
-        ui(16, frame_centre_vertical_offset[i]);
+        sis(16, frame_centre_vertical_offset[i],   1, i);
         marker_bit();
     }
 
@@ -303,25 +358,25 @@ static int FUNC(extension_data)(CodedBitstreamContext *ctx, RWContext *rw,
     ui(4, extension_start_code_identifier);
 
     switch (current->extension_start_code_identifier) {
-    case 1:
+    case MPEG2_EXTENSION_SEQUENCE:
         return FUNC(sequence_extension)
             (ctx, rw, &current->data.sequence);
-    case 2:
+    case MPEG2_EXTENSION_SEQUENCE_DISPLAY:
         return FUNC(sequence_display_extension)
             (ctx, rw, &current->data.sequence_display);
-    case 3:
+    case MPEG2_EXTENSION_QUANT_MATRIX:
         return FUNC(quant_matrix_extension)
             (ctx, rw, &current->data.quant_matrix);
-    case 7:
+    case MPEG2_EXTENSION_PICTURE_DISPLAY:
         return FUNC(picture_display_extension)
             (ctx, rw, &current->data.picture_display);
-    case 8:
+    case MPEG2_EXTENSION_PICTURE_CODING:
         return FUNC(picture_coding_extension)
             (ctx, rw, &current->data.picture_coding);
     default:
-        av_log(ctx->log_ctx, AV_LOG_ERROR, "Invalid extension ID %d.\n",
+        av_log(ctx->log_ctx, AV_LOG_ERROR, "Extension ID %d not supported.\n",
                current->extension_start_code_identifier);
-        return AVERROR_INVALIDDATA;
+        return AVERROR_PATCHWELCOME;
     }
 }
 
@@ -342,44 +397,29 @@ static int FUNC(slice_header)(CodedBitstreamContext *ctx, RWContext *rw,
             ui(7, priority_breakpoint);
     }
 
-    ui(5, quantiser_scale_code);
+    uir(5, quantiser_scale_code);
 
     if (nextbits(1, 1, current->slice_extension_flag)) {
         ui(1, slice_extension_flag);
         ui(1, intra_slice);
         ui(1, slice_picture_id_enable);
         ui(6, slice_picture_id);
-
-        {
-            size_t k;
-#ifdef READ
-            GetBitContext start;
-            uint8_t bit;
-            start = *rw;
-            for (k = 0; nextbits(1, 1, bit); k++)
-                skip_bits(rw, 8);
-            current->extra_information_length = k;
-            if (k > 0) {
-                *rw = start;
-                current->extra_information =
-                    av_malloc(current->extra_information_length);
-                if (!current->extra_information)
-                    return AVERROR(ENOMEM);
-                for (k = 0; k < current->extra_information_length; k++) {
-                    xui(1, extra_bit_slice, bit);
-                    xui(8, extra_information_slice,
-                        current->extra_information[k]);
-                }
-            }
-#else
-            for (k = 0; k < current->extra_information_length; k++) {
-                xui(1, extra_bit_slice, 1);
-                xui(8, extra_information_slice, current->extra_information[k]);
-            }
-#endif
-        }
     }
-    ui(1, extra_bit_slice);
+
+    CHECK(FUNC(extra_information)(ctx, rw, &current->extra_information_slice,
+                                  "extra_information_slice[k]", "extra_bit_slice"));
+
+    return 0;
+}
+
+static int FUNC(sequence_end)(CodedBitstreamContext *ctx, RWContext *rw,
+                              MPEG2RawSequenceEnd *current)
+{
+    int err;
+
+    HEADER("Sequence End");
+
+    ui(8, sequence_end_code);
 
     return 0;
 }

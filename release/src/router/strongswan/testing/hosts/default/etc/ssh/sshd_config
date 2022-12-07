@@ -3,7 +3,6 @@ Protocol 2
 Ciphers aes128-gcm@openssh.com
 HostKey /etc/ssh/ssh_host_rsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
-UsePrivilegeSeparation no
 PermitRootLogin yes
 StrictModes no
 PubkeyAuthentication no
@@ -11,4 +10,5 @@ PermitEmptyPasswords yes
 PrintMotd no
 PrintLastLog no
 UsePAM no
+AcceptEnv LANG LC_*
 AcceptEnv LEAK_DETECTIVE_LOG

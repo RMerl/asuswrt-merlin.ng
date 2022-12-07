@@ -23,6 +23,7 @@
 #include "libavutil/pixdesc.h"
 #include "libavutil/timestamp.h"
 #include "avfilter.h"
+#include "filters.h"
 #include "internal.h"
 
 #define INPUT_MAIN     0
@@ -43,6 +44,7 @@ typedef struct DecimateContext {
     AVFrame **clean_src;    ///< frame queue for the clean source
     int got_frame[2];       ///< frame request flag for each input stream
     AVRational ts_unit;     ///< timestamp units for the output frames
+    int64_t last_pts;       ///< last output timestamp
     int64_t start_pts;      ///< base for output timestamps
     uint32_t eof;           ///< bitmask for end of stream
     int hsub, vsub;         ///< chroma subsampling values
@@ -165,11 +167,11 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     dm->got_frame[INPUT_MAIN] = dm->got_frame[INPUT_CLEANSRC] = 0;
 
     if (dm->ppsrc)
-        in = dm->clean_src[dm->fid];
+        in = dm->queue[dm->fid].frame;
 
     if (in) {
         /* update frame metrics */
-        prv = dm->fid ? (dm->ppsrc ? dm->clean_src[dm->fid - 1] : dm->queue[dm->fid - 1].frame) : dm->last;
+        prv = dm->fid ? dm->queue[dm->fid - 1].frame : dm->last;
         if (!prv) {
             dm->queue[dm->fid].maxbdiff = INT64_MAX;
             dm->queue[dm->fid].totdiff  = INT64_MAX;
@@ -217,14 +219,19 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
             av_frame_free(&dm->queue[i].frame);
         } else {
             AVFrame *frame = dm->queue[i].frame;
+            dm->queue[i].frame = NULL;
             if (frame->pts != AV_NOPTS_VALUE && dm->start_pts == AV_NOPTS_VALUE)
                 dm->start_pts = frame->pts;
             if (dm->ppsrc) {
                 av_frame_free(&frame);
                 frame = dm->clean_src[i];
+                if (!frame)
+                    continue;
+                dm->clean_src[i] = NULL;
             }
             frame->pts = av_rescale_q(outlink->frame_count_in, dm->ts_unit, (AVRational){1,1}) +
                          (dm->start_pts == AV_NOPTS_VALUE ? 0 : dm->start_pts);
+            dm->last_pts = frame->pts;
             ret = ff_filter_frame(outlink, frame);
             if (ret < 0)
                 break;
@@ -234,11 +241,143 @@ static int filter_frame(AVFilterLink *inlink, AVFrame *in)
     return ret;
 }
 
-static int config_input(AVFilterLink *inlink)
+static int activate(AVFilterContext *ctx)
 {
-    int max_value;
-    AVFilterContext *ctx = inlink->dst;
     DecimateContext *dm = ctx->priv;
+    AVFrame *frame = NULL;
+    int ret = 0, status;
+    int64_t pts;
+
+    FF_FILTER_FORWARD_STATUS_BACK_ALL(ctx->outputs[0], ctx);
+
+    if ((dm->got_frame[INPUT_MAIN] == 0) && !(dm->eof & (1 << INPUT_MAIN)) &&
+        (ret = ff_inlink_consume_frame(ctx->inputs[INPUT_MAIN], &frame)) > 0) {
+        ret = filter_frame(ctx->inputs[INPUT_MAIN], frame);
+        if (ret < 0)
+            return ret;
+    }
+    if (ret < 0)
+        return ret;
+    if (dm->ppsrc &&
+        (dm->got_frame[INPUT_CLEANSRC] == 0) && !(dm->eof & (1 << INPUT_CLEANSRC)) &&
+        (ret = ff_inlink_consume_frame(ctx->inputs[INPUT_CLEANSRC], &frame)) > 0) {
+        ret = filter_frame(ctx->inputs[INPUT_CLEANSRC], frame);
+        if (ret < 0)
+            return ret;
+    }
+    if (ret < 0) {
+        return ret;
+    } else if (dm->eof == ((1 << INPUT_MAIN) | (dm->ppsrc << INPUT_CLEANSRC))) {
+        ff_outlink_set_status(ctx->outputs[0], AVERROR_EOF, dm->last_pts);
+        return 0;
+    } else if (!(dm->eof & (1 << INPUT_MAIN)) && ff_inlink_acknowledge_status(ctx->inputs[INPUT_MAIN], &status, &pts)) {
+        if (status == AVERROR_EOF) { // flushing
+            dm->eof |= 1 << INPUT_MAIN;
+            if (dm->ppsrc)
+                filter_frame(ctx->inputs[INPUT_CLEANSRC], NULL);
+            filter_frame(ctx->inputs[INPUT_MAIN], NULL);
+            ff_outlink_set_status(ctx->outputs[0], AVERROR_EOF, dm->last_pts);
+            return 0;
+        }
+    } else if (dm->ppsrc && !(dm->eof & (1 << INPUT_CLEANSRC)) && ff_inlink_acknowledge_status(ctx->inputs[INPUT_CLEANSRC], &status, &pts)) {
+        if (status == AVERROR_EOF) { // flushing
+            dm->eof |= 1 << INPUT_CLEANSRC;
+            filter_frame(ctx->inputs[INPUT_MAIN], NULL);
+            filter_frame(ctx->inputs[INPUT_CLEANSRC], NULL);
+            ff_outlink_set_status(ctx->outputs[0], AVERROR_EOF, dm->last_pts);
+            return 0;
+        }
+    }
+
+    if (ff_inlink_queued_frames(ctx->inputs[INPUT_MAIN]) > 0 &&
+        (dm->ppsrc && ff_inlink_queued_frames(ctx->inputs[INPUT_CLEANSRC]) > 0)) {
+        ff_filter_set_ready(ctx, 100);
+    } else if (ff_outlink_frame_wanted(ctx->outputs[0])) {
+        if (dm->got_frame[INPUT_MAIN] == 0)
+            ff_inlink_request_frame(ctx->inputs[INPUT_MAIN]);
+        if (dm->ppsrc && (dm->got_frame[INPUT_CLEANSRC] == 0))
+            ff_inlink_request_frame(ctx->inputs[INPUT_CLEANSRC]);
+    }
+    return 0;
+}
+
+static av_cold int decimate_init(AVFilterContext *ctx)
+{
+    DecimateContext *dm = ctx->priv;
+    AVFilterPad pad = {
+        .name         = "main",
+        .type         = AVMEDIA_TYPE_VIDEO,
+    };
+    int ret;
+
+    if ((ret = ff_insert_inpad(ctx, INPUT_MAIN, &pad)) < 0)
+        return ret;
+
+    if (dm->ppsrc) {
+        pad.name = "clean_src";
+        pad.config_props = NULL;
+        if ((ret = ff_insert_inpad(ctx, INPUT_CLEANSRC, &pad)) < 0)
+            return ret;
+    }
+
+    if ((dm->blockx & (dm->blockx - 1)) ||
+        (dm->blocky & (dm->blocky - 1))) {
+        av_log(ctx, AV_LOG_ERROR, "blockx and blocky settings must be power of two\n");
+        return AVERROR(EINVAL);
+    }
+
+    dm->start_pts = AV_NOPTS_VALUE;
+
+    return 0;
+}
+
+static av_cold void decimate_uninit(AVFilterContext *ctx)
+{
+    int i;
+    DecimateContext *dm = ctx->priv;
+
+    av_frame_free(&dm->last);
+    av_freep(&dm->bdiffs);
+    if (dm->queue) {
+        for (i = 0; i < dm->cycle; i++)
+            av_frame_free(&dm->queue[i].frame);
+    }
+    av_freep(&dm->queue);
+    if (dm->clean_src) {
+        for (i = 0; i < dm->cycle; i++)
+            av_frame_free(&dm->clean_src[i]);
+    }
+    av_freep(&dm->clean_src);
+}
+
+static int query_formats(AVFilterContext *ctx)
+{
+    static const enum AVPixelFormat pix_fmts[] = {
+#define PF_NOALPHA(suf) AV_PIX_FMT_YUV420##suf,  AV_PIX_FMT_YUV422##suf,  AV_PIX_FMT_YUV444##suf
+#define PF_ALPHA(suf)   AV_PIX_FMT_YUVA420##suf, AV_PIX_FMT_YUVA422##suf, AV_PIX_FMT_YUVA444##suf
+#define PF(suf)         PF_NOALPHA(suf), PF_ALPHA(suf)
+        PF(P), PF(P9), PF(P10), PF_NOALPHA(P12), PF_NOALPHA(P14), PF(P16),
+        AV_PIX_FMT_YUV440P10, AV_PIX_FMT_YUV440P12,
+        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
+        AV_PIX_FMT_YUVJ444P, AV_PIX_FMT_YUVJ440P, AV_PIX_FMT_YUVJ422P, AV_PIX_FMT_YUVJ420P,
+        AV_PIX_FMT_YUVJ411P,
+        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY9, AV_PIX_FMT_GRAY10, AV_PIX_FMT_GRAY12, AV_PIX_FMT_GRAY14,
+        AV_PIX_FMT_GRAY16,
+        AV_PIX_FMT_NONE
+    };
+    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
+    if (!fmts_list)
+        return AVERROR(ENOMEM);
+    return ff_set_common_formats(ctx, fmts_list);
+}
+
+static int config_output(AVFilterLink *outlink)
+{
+    AVFilterContext *ctx = outlink->src;
+    DecimateContext *dm = ctx->priv;
+    const AVFilterLink *inlink = ctx->inputs[INPUT_MAIN];
+    AVRational fps = inlink->frame_rate;
+    int max_value;
     const AVPixFmtDescriptor *pix_desc = av_pix_fmt_desc_get(inlink->format);
     const int w = inlink->w;
     const int h = inlink->h;
@@ -264,119 +403,6 @@ static int config_input(AVFilterLink *inlink)
             return AVERROR(ENOMEM);
     }
 
-    return 0;
-}
-
-static av_cold int decimate_init(AVFilterContext *ctx)
-{
-    DecimateContext *dm = ctx->priv;
-    AVFilterPad pad = {
-        .name         = av_strdup("main"),
-        .type         = AVMEDIA_TYPE_VIDEO,
-        .filter_frame = filter_frame,
-        .config_props = config_input,
-    };
-    int ret;
-
-    if (!pad.name)
-        return AVERROR(ENOMEM);
-    if ((ret = ff_insert_inpad(ctx, INPUT_MAIN, &pad)) < 0) {
-        av_freep(&pad.name);
-        return ret;
-    }
-
-    if (dm->ppsrc) {
-        pad.name = av_strdup("clean_src");
-        pad.config_props = NULL;
-        if (!pad.name)
-            return AVERROR(ENOMEM);
-        if ((ret = ff_insert_inpad(ctx, INPUT_CLEANSRC, &pad)) < 0) {
-            av_freep(&pad.name);
-            return ret;
-        }
-    }
-
-    if ((dm->blockx & (dm->blockx - 1)) ||
-        (dm->blocky & (dm->blocky - 1))) {
-        av_log(ctx, AV_LOG_ERROR, "blockx and blocky settings must be power of two\n");
-        return AVERROR(EINVAL);
-    }
-
-    dm->start_pts = AV_NOPTS_VALUE;
-
-    return 0;
-}
-
-static av_cold void decimate_uninit(AVFilterContext *ctx)
-{
-    int i;
-    DecimateContext *dm = ctx->priv;
-
-    av_frame_free(&dm->last);
-    av_freep(&dm->bdiffs);
-    av_freep(&dm->queue);
-    av_freep(&dm->clean_src);
-    for (i = 0; i < ctx->nb_inputs; i++)
-        av_freep(&ctx->input_pads[i].name);
-}
-
-static int request_inlink(AVFilterContext *ctx, int lid)
-{
-    int ret = 0;
-    DecimateContext *dm = ctx->priv;
-
-    if (!dm->got_frame[lid]) {
-        AVFilterLink *inlink = ctx->inputs[lid];
-        ret = ff_request_frame(inlink);
-        if (ret == AVERROR_EOF) { // flushing
-            dm->eof |= 1 << lid;
-            ret = filter_frame(inlink, NULL);
-        }
-    }
-    return ret;
-}
-
-static int request_frame(AVFilterLink *outlink)
-{
-    int ret;
-    AVFilterContext *ctx = outlink->src;
-    DecimateContext *dm = ctx->priv;
-    const uint32_t eof_mask = 1<<INPUT_MAIN | dm->ppsrc<<INPUT_CLEANSRC;
-
-    if ((dm->eof & eof_mask) == eof_mask) // flush done?
-        return AVERROR_EOF;
-    if ((ret = request_inlink(ctx, INPUT_MAIN)) < 0)
-        return ret;
-    if (dm->ppsrc && (ret = request_inlink(ctx, INPUT_CLEANSRC)) < 0)
-        return ret;
-    return 0;
-}
-
-static int query_formats(AVFilterContext *ctx)
-{
-    static const enum AVPixelFormat pix_fmts[] = {
-#define PF_NOALPHA(suf) AV_PIX_FMT_YUV420##suf,  AV_PIX_FMT_YUV422##suf,  AV_PIX_FMT_YUV444##suf
-#define PF_ALPHA(suf)   AV_PIX_FMT_YUVA420##suf, AV_PIX_FMT_YUVA422##suf, AV_PIX_FMT_YUVA444##suf
-#define PF(suf)         PF_NOALPHA(suf), PF_ALPHA(suf)
-        PF(P), PF(P9), PF(P10), PF_NOALPHA(P12), PF_NOALPHA(P14), PF(P16),
-        AV_PIX_FMT_YUV440P, AV_PIX_FMT_YUV411P, AV_PIX_FMT_YUV410P,
-        AV_PIX_FMT_GRAY8, AV_PIX_FMT_GRAY16,
-        AV_PIX_FMT_NONE
-    };
-    AVFilterFormats *fmts_list = ff_make_format_list(pix_fmts);
-    if (!fmts_list)
-        return AVERROR(ENOMEM);
-    return ff_set_common_formats(ctx, fmts_list);
-}
-
-static int config_output(AVFilterLink *outlink)
-{
-    AVFilterContext *ctx = outlink->src;
-    DecimateContext *dm = ctx->priv;
-    const AVFilterLink *inlink =
-        ctx->inputs[dm->ppsrc ? INPUT_CLEANSRC : INPUT_MAIN];
-    AVRational fps = inlink->frame_rate;
-
     if (!fps.num || !fps.den) {
         av_log(ctx, AV_LOG_ERROR, "The input needs a constant frame rate; "
                "current rate of %d/%d is invalid\n", fps.num, fps.den);
@@ -388,8 +414,13 @@ static int config_output(AVFilterLink *outlink)
     outlink->time_base  = inlink->time_base;
     outlink->frame_rate = fps;
     outlink->sample_aspect_ratio = inlink->sample_aspect_ratio;
-    outlink->w = inlink->w;
-    outlink->h = inlink->h;
+    if (dm->ppsrc) {
+        outlink->w = ctx->inputs[INPUT_CLEANSRC]->w;
+        outlink->h = ctx->inputs[INPUT_CLEANSRC]->h;
+    } else {
+        outlink->w = inlink->w;
+        outlink->h = inlink->h;
+    }
     dm->ts_unit = av_inv_q(av_mul_q(fps, outlink->time_base));
     return 0;
 }
@@ -398,7 +429,6 @@ static const AVFilterPad decimate_outputs[] = {
     {
         .name          = "default",
         .type          = AVMEDIA_TYPE_VIDEO,
-        .request_frame = request_frame,
         .config_props  = config_output,
     },
     { NULL }
@@ -408,6 +438,7 @@ AVFilter ff_vf_decimate = {
     .name          = "decimate",
     .description   = NULL_IF_CONFIG_SMALL("Decimate frames (post field matching filter)."),
     .init          = decimate_init,
+    .activate      = activate,
     .uninit        = decimate_uninit,
     .priv_size     = sizeof(DecimateContext),
     .query_formats = query_formats,

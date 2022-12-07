@@ -340,6 +340,13 @@
 	font-size: 14px;
 	word-break: break-all;
 	margin: 10px 0px 10px 5px;
+	position: relative;
+}
+.amesh_router_info_title .amesh_model_name{
+	width: 84%;
+	overflow: hidden;
+	text-overflow: ellipsis;
+	white-space: nowrap;
 }
 
 @keyframes rotate-loading {
@@ -601,7 +608,8 @@
 	cursor: pointer;
 	float: right;
 	top: -6px;
-	position: relative;
+	position: absolute;
+	right: 0;
 }
 .amesh_title {
 	font-size: 13px;

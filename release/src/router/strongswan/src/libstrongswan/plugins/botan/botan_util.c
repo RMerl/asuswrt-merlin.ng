@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
  * Copyright (C) 2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2018 René Korthaus
  * Rohde & Schwarz Cybersecurity GmbH
@@ -201,7 +200,7 @@ bool botan_get_fingerprint(botan_pubkey_t pubkey, void *cache,
 
 	if (cache)
 	{
-		lib->encoding->cache(lib->encoding, type, cache, *fp);
+		lib->encoding->cache(lib->encoding, type, cache, fp);
 	}
 	return TRUE;
 }
@@ -238,7 +237,7 @@ bool botan_get_signature(botan_privkey_t key, const char *scheme,
 		return FALSE;
 	}
 
-	if (botan_rng_init(&rng, "user"))
+	if (!botan_get_rng(&rng, RNG_STRONG))
 	{
 		botan_pk_op_sign_destroy(sign_op);
 		return FALSE;
@@ -311,5 +310,97 @@ bool botan_dh_key_derivation(botan_privkey_t key, chunk_t pub, chunk_t *secret)
 		return FALSE;
 	}
 	botan_pk_op_key_agreement_destroy(ka);
+	return TRUE;
+}
+
+/*
+ * Described in header
+ */
+const char *botan_map_rng_quality(rng_quality_t quality)
+{
+	const char *rng_name;
+
+	switch (quality)
+	{
+		case RNG_WEAK:
+		case RNG_STRONG:
+			/* some rng_t instances of this class (e.g. in the ike-sa-manager)
+			 * may be called concurrently by different threads. the Botan RNGs
+			 * are not reentrant, by default, so use the threadsafe version.
+			 * because we build without threading support when running tests
+			 * with leak-detective (lots of reports of frees of unknown memory)
+			 * there is a fallback to the default */
+#ifdef BOTAN_TARGET_OS_HAS_THREADS
+			rng_name = "user-threadsafe";
+#else
+			rng_name = "user";
+#endif
+			break;
+		case RNG_TRUE:
+			rng_name = "system";
+			break;
+		default:
+			return NULL;
+	}
+	return rng_name;
+}
+
+#ifdef HAVE_BOTAN_RNG_INIT_CUSTOM
+
+CALLBACK(get_random, int,
+	rng_t *rng, uint8_t *out, size_t out_len)
+{
+	if (!rng->get_bytes(rng, out_len, out))
+	{
+		return -1;
+	}
+	return 0;
+}
+
+CALLBACK(destroy_rng, void,
+	rng_t *rng)
+{
+	if (rng)
+	{
+		rng->destroy(rng);
+	}
+}
+
+#endif /* HAVE_BOTAN_RNG_INIT_CUSTOM */
+
+/*
+ * Described in header
+ */
+bool botan_get_rng(botan_rng_t *botan_rng, rng_quality_t quality)
+{
+#ifdef HAVE_BOTAN_RNG_INIT_CUSTOM
+	if (!lib->settings->get_bool(lib->settings,
+						"%s.plugins.botan.internal_rng_only", FALSE, lib->ns))
+	{
+		rng_t *rng = lib->crypto->create_rng(lib->crypto, quality);
+
+		if (!rng)
+		{
+			DBG1(DBG_LIB, "no RNG found for quality %N", rng_quality_names,
+				 quality);
+			return FALSE;
+		}
+		if (botan_rng_init_custom(botan_rng, "strongswan", rng,
+								  get_random, NULL, destroy_rng))
+		{
+			DBG1(DBG_LIB, "Botan RNG creation failed");
+			return FALSE;
+		}
+	}
+	else
+#endif /* HAVE_BOTAN_RNG_INIT_CUSTOM */
+	{
+		const char *rng_name = botan_map_rng_quality(quality);
+
+		if (!rng_name || botan_rng_init(botan_rng, rng_name))
+		{
+			return FALSE;
+		}
+	}
 	return TRUE;
 }

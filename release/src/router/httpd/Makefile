@@ -107,7 +107,9 @@ CFLAGS += -DCAPTCHA
 endif
 
 ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
+ifneq ($(RTCONFIG_HND_ROUTER_AX_6756),y)
 export CFLAGS += -DBCM_KF_NETFILTER
+endif
 endif
 
 OBJS = httpd.o cgi.o ej.o 

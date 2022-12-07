@@ -26,13 +26,13 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Nov 23 20:25:36 2021
+ * Date: Tue Mar 29 11:23:24 2022
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
 
 #define TMCFG_BRAND "asus"
-#define TMCFG_MODEL "rt-ax58u_v2"
+#define TMCFG_MODEL "gt10"
 
 /*
  * Target device information
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/linux-4.19"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/linux-4.19"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n
@@ -60,7 +60,7 @@
 /*
  * Target device toolchain (cross utilities)
  */
-#define TMCFG_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax58u_v2/bin/arm-linux-"
+#define TMCFG_TC_PFX "/opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/bin/arm-buildroot-linux-gnueabi-"
 #define TMCFG_TC_BIT_FIELD_ORDER_LITTLE_ENDIAN 1 // y
 #define TMCFG_TC_BIT_FIELD_ORDER_BIG_ENDIAN 0 // n
 #define TMCFG_TC_CC "$(TMCFG_TC_PFX)gcc"
@@ -72,8 +72,8 @@
 /*
  * (CAUTION) Shared CC flags. Do not change if u are not sure.
  */
-#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -I/opt/ASUS/asuswrt_AX58U_V2_GPL_386_46737/release/src-rt-5.04axhnd.675x/kernel/bcmkernel/include"
-#define TMCFG_TC_EXTRA_LDFLAGS "-L/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax58u_v2/lib"
+#define TMCFG_TC_EXTRA_CFLAGS "-fsigned-char -Wno-incompatible-pointer-types"
+#define TMCFG_TC_EXTRA_LDFLAGS ""
 #define TMCFG_TC_RUN_STRIP 1 // y
 
 /*
@@ -93,7 +93,7 @@
 /*
  * Engine
  */
-#define TMCFG_E_EXTRA_CFLAGS ""
+#define TMCFG_E_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_GT10_3.0.0.4.386.48238/kernel/bcmkernel/include"
 #define TMCFG_E_KMOD_NAME "tdts"
 #define TMCFG_E_KMOD_IOCTL_DEV_NAME "idp"
 #define TMCFG_E_KMOD_IOCTL_DEV_MAJ 190
@@ -106,7 +106,7 @@
 #define TMCFG_E_MAJ_VER 2
 #define TMCFG_E_MID_VER 0
 #define TMCFG_E_MIN_VER 1
-#define TMCFG_E_LOCAL_VER "b29357d"
+#define TMCFG_E_LOCAL_VER "12022021"
 
 /*
  * Engine core
@@ -222,7 +222,7 @@
  * DevID
  */
 #define TMCFG_E_CORE_DEVID_UA 1 // y
-#define TMCFG_E_CORE_DEVID_COLLECT_UN 0 // n
+#define TMCFG_E_CORE_DEVID_COLLECT_UN 1 // y
 
 /*
  * Engine shell
@@ -250,7 +250,7 @@
 /*
  * Userspace toolchain
  */
-#define TMCFG_APP_U_TC_PFX "/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax58u_v2/bin/arm-linux-"
+#define TMCFG_APP_U_TC_PFX "/opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/bin/arm-buildroot-linux-gnueabi-"
 #define TMCFG_APP_U_TC_CC "$(TMCFG_APP_U_TC_PFX)gcc"
 #define TMCFG_APP_U_TC_AR "$(TMCFG_APP_U_TC_PFX)ar"
 #define TMCFG_APP_U_TC_LD "$(TMCFG_APP_U_TC_PFX)ld"
@@ -258,7 +258,7 @@
 #define TMCFG_APP_U_TC_STRIP "$(TMCFG_APP_U_TC_PFX)strip"
 #define TMCFG_APP_U_TC_OBJDUMP "$(TMCFG_APP_U_TC_PFX)objdump"
 #define TMCFG_APP_U_EXTRA_CFLAGS ""
-#define TMCFG_APP_U_EXTRA_LDFLAGS "-L/opt/ASUS/toolchains/asus-toolchain-arm-rt_ax58u_v2/lib"
+#define TMCFG_APP_U_EXTRA_LDFLAGS ""
 #define TMCFG_APP_U_KA_API 1 // y
 #define TMCFG_APP_U_TDTS_RULE_AGENT 1 // y
 #define TMCFG_APP_U_TDTS_RULE_AGENT_SAMPLE 0 // n

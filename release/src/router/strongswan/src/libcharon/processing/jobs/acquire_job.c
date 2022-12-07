@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -30,34 +31,29 @@ struct private_acquire_job_t {
 	acquire_job_t public;
 
 	/**
-	 * reqid of the child to rekey
+	 * reqid of the triggered policy
 	 */
 	uint32_t reqid;
 
 	/**
-	 * acquired source traffic selector
+	 * Data from the acquire
 	 */
-	traffic_selector_t *src_ts;
-
-	/**
-	 * acquired destination traffic selector
-	 */
-	traffic_selector_t *dst_ts;
+	kernel_acquire_data_t data;
 };
 
 METHOD(job_t, destroy, void,
 	private_acquire_job_t *this)
 {
-	DESTROY_IF(this->src_ts);
-	DESTROY_IF(this->dst_ts);
+	DESTROY_IF(this->data.src);
+	DESTROY_IF(this->data.dst);
+	DESTROY_IF(this->data.label);
 	free(this);
 }
 
 METHOD(job_t, execute, job_requeue_t,
 	private_acquire_job_t *this)
 {
-	charon->traps->acquire(charon->traps, this->reqid,
-						   this->src_ts, this->dst_ts);
+	charon->traps->acquire(charon->traps, this->reqid, &this->data);
 	return JOB_REQUEUE_NONE;
 }
 
@@ -70,9 +66,7 @@ METHOD(job_t, get_priority, job_priority_t,
 /*
  * Described in header
  */
-acquire_job_t *acquire_job_create(uint32_t reqid,
-								  traffic_selector_t *src_ts,
-								  traffic_selector_t *dst_ts)
+acquire_job_t *acquire_job_create(uint32_t reqid, kernel_acquire_data_t *data)
 {
 	private_acquire_job_t *this;
 
@@ -85,10 +79,21 @@ acquire_job_t *acquire_job_create(uint32_t reqid,
 			},
 		},
 		.reqid = reqid,
-		.src_ts = src_ts,
-		.dst_ts = dst_ts,
+		.data = *data,
 	);
+
+	if (this->data.src)
+	{
+		this->data.src = this->data.src->clone(this->data.src);
+	}
+	if (this->data.dst)
+	{
+		this->data.dst = this->data.dst->clone(this->data.dst);
+	}
+	if (this->data.label)
+	{
+		this->data.label = this->data.label->clone(this->data.label);
+	}
 
 	return &this->public;
 }
-

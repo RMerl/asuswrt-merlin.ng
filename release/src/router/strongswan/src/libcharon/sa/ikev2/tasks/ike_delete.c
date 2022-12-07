@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2016 Tobias Brunner
  * Copyright (C) 2006-2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -64,9 +65,8 @@ METHOD(task_t, build_i, status_t,
 	delete_payload = delete_payload_create(PLV2_DELETE, PROTO_IKE);
 	message->add_payload(message, (payload_t*)delete_payload);
 
-	if (this->ike_sa->get_state(this->ike_sa) == IKE_REKEYING ||
-		this->ike_sa->get_state(this->ike_sa) == IKE_REKEYED)
-	{
+	if (this->ike_sa->get_state(this->ike_sa) == IKE_REKEYED)
+	{	/* suppress events when deleting old or redundant SAs */
 		this->rekeyed = TRUE;
 	}
 	this->ike_sa->set_state(this->ike_sa, IKE_DELETING);
@@ -91,7 +91,7 @@ METHOD(task_t, process_i, status_t,
 }
 
 /**
- * Check if this delete happened after a rekey collsion
+ * Check if this delete happened after a rekey collision
  */
 static bool after_rekey_collision(private_ike_delete_t *this)
 {
@@ -156,7 +156,14 @@ METHOD(task_t, process_r, status_t,
 			/* fall-through */
 		case IKE_ESTABLISHED:
 			this->ike_sa->set_state(this->ike_sa, IKE_DELETING);
-			this->ike_sa->reestablish(this->ike_sa);
+			/* if we are reauthenticating, we don't need to call this: for MBB
+			 * reauths, we are concurrently trying to establish a new SA and
+			 * would create a duplicate, and for BBM reauths, we are already in
+			 * state IKE_DELETING here and call reestablish() in build_r() */
+			if (!this->ike_sa->has_condition(this->ike_sa, COND_REAUTHENTICATING))
+			{
+				this->ike_sa->reestablish(this->ike_sa);
+			}
 			return NEED_MORE;
 		case IKE_REKEYED:
 			this->rekeyed = TRUE;
@@ -168,6 +175,33 @@ METHOD(task_t, process_r, status_t,
 	return NEED_MORE;
 }
 
+/**
+ * Check if we are currently deleting this IKE_SA in a break-before-make reauth.
+ */
+static bool is_reauthenticating(private_ike_delete_t *this)
+{
+	enumerator_t *tasks;
+	task_t *task;
+
+	if (!this->ike_sa->has_condition(this->ike_sa, COND_REAUTHENTICATING))
+	{
+		return FALSE;
+	}
+
+	tasks = this->ike_sa->create_task_enumerator(this->ike_sa,
+												 TASK_QUEUE_ACTIVE);
+	while (tasks->enumerate(tasks, &task))
+	{
+		if (task->get_type(task) == TASK_IKE_REAUTH)
+		{
+			tasks->destroy(tasks);
+			return TRUE;
+		}
+	}
+	tasks->destroy(tasks);
+	return FALSE;
+}
+
 METHOD(task_t, build_r, status_t,
 	private_ike_delete_t *this, message_t *message)
 {
@@ -177,6 +211,18 @@ METHOD(task_t, build_r, status_t,
 	{	/* invoke ike_down() hook if SA has not been rekeyed */
 		charon->bus->ike_updown(charon->bus, this->ike_sa, FALSE);
 	}
+
+	/* if we are currently deleting this IKE_SA due to a break-before-make
+	 * reauthentication, make sure to not just silently destroy the SA if
+	 * the peer concurrently deletes it */
+	if (is_reauthenticating(this))
+	{
+		if (this->ike_sa->reestablish(this->ike_sa) != SUCCESS)
+		{
+			DBG1(DBG_IKE, "reauthenticating IKE_SA failed");
+		}
+	}
+
 	/* completed, delete IKE_SA by returning DESTROY_ME */
 	return DESTROY_ME;
 }

@@ -32,6 +32,7 @@
 #include "rtp.h"
 #include "rtpproto.h"
 #include "url.h"
+#include "ip.h"
 
 #include <stdarg.h>
 #include "internal.h"
@@ -39,14 +40,14 @@
 #include "os_support.h"
 #include <fcntl.h>
 #if HAVE_POLL_H
-#include <sys/poll.h>
+#include <poll.h>
 #endif
 
 typedef struct RTPContext {
     const AVClass *class;
     URLContext *rtp_hd, *rtcp_hd, *fec_hd;
-    int rtp_fd, rtcp_fd, nb_ssm_include_addrs, nb_ssm_exclude_addrs;
-    struct sockaddr_storage **ssm_include_addrs, **ssm_exclude_addrs;
+    int rtp_fd, rtcp_fd;
+    IPSourceFilters filters;
     int write_to_source;
     struct sockaddr_storage last_rtp_source, last_rtcp_source;
     socklen_t last_rtp_source_len, last_rtcp_source_len;
@@ -59,6 +60,7 @@ typedef struct RTPContext {
     char *sources;
     char *block;
     char *fec_options_str;
+    int64_t rw_timeout;
 } RTPContext;
 
 #define OFFSET(x) offsetof(RTPContext, x)
@@ -74,6 +76,7 @@ static const AVOption options[] = {
     { "write_to_source",    "Send packets to the source address of the latest received packet", OFFSET(write_to_source), AV_OPT_TYPE_BOOL,   { .i64 =  0 },     0, 1,       .flags = D|E },
     { "pkt_size",           "Maximum packet size",                                              OFFSET(pkt_size),        AV_OPT_TYPE_INT,    { .i64 = -1 },    -1, INT_MAX, .flags = D|E },
     { "dscp",               "DSCP class",                                                       OFFSET(dscp),            AV_OPT_TYPE_INT,    { .i64 = -1 },    -1, INT_MAX, .flags = D|E },
+    { "timeout",            "set timeout (in microseconds) of socket I/O operations",           OFFSET(rw_timeout),      AV_OPT_TYPE_INT64,  { .i64 = -1 },    -1, INT64_MAX, .flags = D|E },
     { "sources",            "Source list",                                                      OFFSET(sources),         AV_OPT_TYPE_STRING, { .str = NULL },               .flags = D|E },
     { "block",              "Block list",                                                       OFFSET(block),           AV_OPT_TYPE_STRING, { .str = NULL },               .flags = D|E },
     { "fec",                "FEC",                                                              OFFSET(fec_options_str), AV_OPT_TYPE_STRING, { .str = NULL },               .flags = E },
@@ -126,45 +129,6 @@ int ff_rtp_set_remote_url(URLContext *h, const char *uri)
     return 0;
 }
 
-static struct addrinfo* rtp_resolve_host(const char *hostname, int port,
-                                         int type, int family, int flags)
-{
-    struct addrinfo hints = { 0 }, *res = 0;
-    int error;
-    char service[16];
-
-    snprintf(service, sizeof(service), "%d", port);
-    hints.ai_socktype = type;
-    hints.ai_family   = family;
-    hints.ai_flags    = flags;
-    if ((error = getaddrinfo(hostname, service, &hints, &res))) {
-        res = NULL;
-        av_log(NULL, AV_LOG_ERROR, "rtp_resolve_host: %s\n", gai_strerror(error));
-    }
-
-    return res;
-}
-
-static int compare_addr(const struct sockaddr_storage *a,
-                        const struct sockaddr_storage *b)
-{
-    if (a->ss_family != b->ss_family)
-        return 1;
-    if (a->ss_family == AF_INET) {
-        return (((const struct sockaddr_in *)a)->sin_addr.s_addr !=
-                ((const struct sockaddr_in *)b)->sin_addr.s_addr);
-    }
-
-#if HAVE_STRUCT_SOCKADDR_IN6
-    if (a->ss_family == AF_INET6) {
-        const uint8_t *s6_addr_a = ((const struct sockaddr_in6 *)a)->sin6_addr.s6_addr;
-        const uint8_t *s6_addr_b = ((const struct sockaddr_in6 *)b)->sin6_addr.s6_addr;
-        return memcmp(s6_addr_a, s6_addr_b, 16);
-    }
-#endif
-    return 1;
-}
-
 static int get_port(const struct sockaddr_storage *ss)
 {
     if (ss->ss_family == AF_INET)
@@ -184,25 +148,6 @@ static void set_port(struct sockaddr_storage *ss, int port)
     else if (ss->ss_family == AF_INET6)
         ((struct sockaddr_in6 *)ss)->sin6_port = htons(port);
 #endif
-}
-
-static int rtp_check_source_lists(RTPContext *s, struct sockaddr_storage *source_addr_ptr)
-{
-    int i;
-    if (s->nb_ssm_exclude_addrs) {
-        for (i = 0; i < s->nb_ssm_exclude_addrs; i++) {
-            if (!compare_addr(source_addr_ptr, s->ssm_exclude_addrs[i]))
-                return 1;
-        }
-    }
-    if (s->nb_ssm_include_addrs) {
-        for (i = 0; i < s->nb_ssm_include_addrs; i++) {
-            if (!compare_addr(source_addr_ptr, s->ssm_include_addrs[i]))
-                return 0;
-        }
-        return 1;
-    }
-    return 0;
 }
 
 /**
@@ -250,48 +195,6 @@ static void build_udp_url(RTPContext *s,
         url_add_option(buf, buf_size, "sources=%s", include_sources);
     if (exclude_sources && exclude_sources[0])
         url_add_option(buf, buf_size, "block=%s", exclude_sources);
-}
-
-static void rtp_parse_addr_list(URLContext *h, char *buf,
-                                struct sockaddr_storage ***address_list_ptr,
-                                int *address_list_size_ptr)
-{
-    struct addrinfo *ai = NULL;
-    struct sockaddr_storage *source_addr;
-    char tmp = '\0', *p = buf, *next;
-
-    /* Resolve all of the IPs */
-
-    while (p && p[0]) {
-        next = strchr(p, ',');
-
-        if (next) {
-            tmp = *next;
-            *next = '\0';
-        }
-
-        ai = rtp_resolve_host(p, 0, SOCK_DGRAM, AF_UNSPEC, 0);
-        if (ai) {
-            source_addr = av_mallocz(sizeof(struct sockaddr_storage));
-            if (!source_addr) {
-                freeaddrinfo(ai);
-                break;
-            }
-
-            memcpy(source_addr, ai->ai_addr, ai->ai_addrlen);
-            freeaddrinfo(ai);
-            dynarray_add(address_list_ptr, address_list_size_ptr, source_addr);
-        } else {
-            av_log(h, AV_LOG_WARNING, "Unable to resolve %s\n", p);
-        }
-
-        if (next) {
-            *next = tmp;
-            p = next + 1;
-        } else {
-            p = NULL;
-        }
-    }
 }
 
 /**
@@ -364,22 +267,26 @@ static int rtp_open(URLContext *h, const char *uri, int flags)
         if (av_find_info_tag(buf, sizeof(buf), "dscp", p)) {
             s->dscp = strtol(buf, NULL, 10);
         }
+        if (av_find_info_tag(buf, sizeof(buf), "timeout", p)) {
+            s->rw_timeout = strtol(buf, NULL, 10);
+        }
         if (av_find_info_tag(buf, sizeof(buf), "sources", p)) {
             av_strlcpy(include_sources, buf, sizeof(include_sources));
-
-            rtp_parse_addr_list(h, buf, &s->ssm_include_addrs, &s->nb_ssm_include_addrs);
+            ff_ip_parse_sources(h, buf, &s->filters);
         } else {
-            rtp_parse_addr_list(h, s->sources, &s->ssm_include_addrs, &s->nb_ssm_include_addrs);
+            ff_ip_parse_sources(h, s->sources, &s->filters);
             sources = s->sources;
         }
         if (av_find_info_tag(buf, sizeof(buf), "block", p)) {
             av_strlcpy(exclude_sources, buf, sizeof(exclude_sources));
-            rtp_parse_addr_list(h, buf, &s->ssm_exclude_addrs, &s->nb_ssm_exclude_addrs);
+            ff_ip_parse_blocks(h, buf, &s->filters);
         } else {
-            rtp_parse_addr_list(h, s->block, &s->ssm_exclude_addrs, &s->nb_ssm_exclude_addrs);
+            ff_ip_parse_blocks(h, s->block, &s->filters);
             block = s->block;
         }
     }
+    if (s->rw_timeout >= 0)
+        h->rw_timeout = s->rw_timeout;
 
     if (s->fec_options_str) {
         p = s->fec_options_str;
@@ -401,8 +308,7 @@ static int rtp_open(URLContext *h, const char *uri, int flags)
             goto fail;
         }
         if (s->ttl > 0) {
-            snprintf(buf, sizeof (buf), "%d", s->ttl);
-            av_dict_set(&fec_opts, "ttl", buf, 0);
+            av_dict_set_int(&fec_opts, "ttl", s->ttl, 0);
         }
     }
 
@@ -463,10 +369,8 @@ static int rtp_open(URLContext *h, const char *uri, int flags)
     return 0;
 
  fail:
-    if (s->rtp_hd)
-        ffurl_close(s->rtp_hd);
-    if (s->rtcp_hd)
-        ffurl_close(s->rtcp_hd);
+    ffurl_closep(&s->rtp_hd);
+    ffurl_closep(&s->rtcp_hd);
     ffurl_closep(&s->fec_hd);
     av_free(fec_protocol);
     av_dict_free(&fec_opts);
@@ -478,9 +382,10 @@ static int rtp_read(URLContext *h, uint8_t *buf, int size)
     RTPContext *s = h->priv_data;
     int len, n, i;
     struct pollfd p[2] = {{s->rtp_fd, POLLIN, 0}, {s->rtcp_fd, POLLIN, 0}};
-    int poll_delay = h->flags & AVIO_FLAG_NONBLOCK ? 0 : 100;
+    int poll_delay = h->flags & AVIO_FLAG_NONBLOCK ? 0 : POLLING_TIME;
     struct sockaddr_storage *addrs[2] = { &s->last_rtp_source, &s->last_rtcp_source };
     socklen_t *addr_lens[2] = { &s->last_rtp_source_len, &s->last_rtcp_source_len };
+    int runs = h->rw_timeout / 1000 / POLLING_TIME;
 
     for(;;) {
         if (ff_check_interrupt(&h->interrupt_callback))
@@ -500,10 +405,12 @@ static int rtp_read(URLContext *h, uint8_t *buf, int size)
                         continue;
                     return AVERROR(EIO);
                 }
-                if (rtp_check_source_lists(s, addrs[i]))
+                if (ff_ip_check_source_lists(addrs[i], &s->filters))
                     continue;
                 return len;
             }
+        } else if (n == 0 && h->rw_timeout > 0 && --runs <= 0) {
+            return AVERROR(ETIMEDOUT);
         } else if (n < 0) {
             if (ff_neterrno() == AVERROR(EINTR))
                 continue;
@@ -603,17 +510,11 @@ static int rtp_write(URLContext *h, const uint8_t *buf, int size)
 static int rtp_close(URLContext *h)
 {
     RTPContext *s = h->priv_data;
-    int i;
 
-    for (i = 0; i < s->nb_ssm_include_addrs; i++)
-        av_freep(&s->ssm_include_addrs[i]);
-    av_freep(&s->ssm_include_addrs);
-    for (i = 0; i < s->nb_ssm_exclude_addrs; i++)
-        av_freep(&s->ssm_exclude_addrs[i]);
-    av_freep(&s->ssm_exclude_addrs);
+    ff_ip_reset_filters(&s->filters);
 
-    ffurl_close(s->rtp_hd);
-    ffurl_close(s->rtcp_hd);
+    ffurl_closep(&s->rtp_hd);
+    ffurl_closep(&s->rtcp_hd);
     ffurl_closep(&s->fec_hd);
     return 0;
 }

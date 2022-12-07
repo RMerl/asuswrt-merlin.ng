@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,7 +16,6 @@
 
 #include "test_suite.h"
 
-#include <tests/utils/test_rng.h>
 #include <utils/test.h>
 #include <crypto/xofs/xof.h>
 #include <crypto/xofs/xof_bitspender.h>

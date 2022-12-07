@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,8 +19,8 @@
 /**
  * From RFC 7748
  */
-dh_test_vector_t curve448_1 = {
-	.group = CURVE_448, .priv_len = 56, .pub_len = 56, .shared_len = 56,
+ke_test_vector_t curve448_1 = {
+	.method = CURVE_448, .priv_len = 56, .pub_len = 56, .shared_len = 56,
 	.priv_a	= "\x9a\x8f\x49\x25\xd1\x51\x9f\x57\x75\xcf\x46\xb0\x4b\x58\x00\xd4"
 			  "\xee\x9e\xe8\xba\xe8\xbc\x55\x65\xd4\x98\xc2\x8d\xd9\xc9\xba\xf5"
 			  "\x74\xa9\x41\x97\x44\x89\x73\x91\x00\x63\x82\xa6\xf1\x27\xab\x1d"

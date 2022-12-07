@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,9 +31,9 @@ typedef struct gmp_diffie_hellman_t gmp_diffie_hellman_t;
 struct gmp_diffie_hellman_t {
 
 	/**
-	 * Implements diffie_hellman_t interface.
+	 * Implements key_exchange_t interface.
 	 */
-	diffie_hellman_t dh;
+	key_exchange_t ke;
 };
 
 /**
@@ -43,7 +42,7 @@ struct gmp_diffie_hellman_t {
  * @param group			Diffie Hellman group number to use
  * @return				gmp_diffie_hellman_t object, NULL if not supported
  */
-gmp_diffie_hellman_t *gmp_diffie_hellman_create(diffie_hellman_group_t group);
+gmp_diffie_hellman_t *gmp_diffie_hellman_create(key_exchange_method_t group);
 
 /**
  * Creates a new gmp_diffie_hellman_t object for MODP_CUSTOM.
@@ -53,7 +52,7 @@ gmp_diffie_hellman_t *gmp_diffie_hellman_create(diffie_hellman_group_t group);
  * @return				gmp_diffie_hellman_t object, NULL if not supported
  */
 gmp_diffie_hellman_t *gmp_diffie_hellman_create_custom(
-							diffie_hellman_group_t group, ...);
+							key_exchange_method_t group, ...);
 
 #endif /** GMP_DIFFIE_HELLMAN_H_ @}*/
 

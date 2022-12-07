@@ -8,8 +8,9 @@ This document is just a short introduction of the strongSwan **swanctl** command
 which uses the modern [**vici**](src/libcharon/plugins/vici/README.md) *Versatile
 IKE Configuration Interface*. The deprecated **ipsec** command using the legacy
 **stroke** configuration interface is described [**here**](README_LEGACY.md).
-For more detailed information consult the man pages and
-[**our wiki**](https://wiki.strongswan.org).
+For more detailed information consult the man pages, our new
+[**documentation site**](https://docs.strongswan.org) and the legacy
+[**wiki**](https://wiki.strongswan.org).
 
 
 ## Quickstart ##
@@ -565,12 +566,12 @@ to generate a traditional 3072 bit RSA key and store it in binary DER format.
 As an alternative a **TPM 2.0** *Trusted Platform Module* available on every
 recent Intel platform could be used as a virtual smartcard to securely store an
 RSA or ECDSA private key. For details, refer to the TPM 2.0
-[HOWTO](https://wiki.strongswan.org/projects/strongswan/wiki/TpmPlugin).
+[HOWTO](https://docs.strongswan.org/docs/5.9/tpm/tpm2.html).
 
 In a next step the command
 
     pki --req --type priv --in moonKey.pem \
-              --dn "C=CH, O=strongswan, CN=moon.strongswan.org \
+              --dn "C=CH, O=strongswan, CN=moon.strongswan.org" \
               --san moon.strongswan.org --outform pem > moonReq.pem
 
 creates a PKCS#10 certificate request that has to be signed by the CA.

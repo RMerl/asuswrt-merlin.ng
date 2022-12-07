@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -128,11 +129,11 @@ static void __attribute__ ((constructor))reg()
 {
 	command_register((command_t) {
 		initiate, 'i', "initiate", "initiate a connection",
-		{"--child <name> [--ike <name>] [--timeout <s>] [--raw|--pretty]"},
+		{"[--child <name>] [--ike <name>] [--timeout <s>] [--raw|--pretty]"},
 		{
 			{"help",		'h', 0, "show usage information"},
 			{"child",		'c', 1, "initiate a CHILD_SA configuration"},
-			{"ike",			'i', 1, "name of the connection to which the child belongs"},
+			{"ike",			'i', 1, "initiate an IKE_SA, or name of child's parent"},
 			{"timeout",		't', 1, "timeout in seconds before detaching"},
 			{"raw",			'r', 0, "dump raw response message"},
 			{"pretty",		'P', 0, "dump raw response message in pretty print"},

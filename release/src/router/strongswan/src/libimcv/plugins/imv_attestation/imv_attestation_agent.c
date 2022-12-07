@@ -1,7 +1,8 @@
 /*
+ * Copyright (C) 2011-2022 Andreas Steffen
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2011-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,16 +35,18 @@
 #include <ietf/ietf_attr_product_info.h>
 #include <ietf/ietf_attr_string_version.h>
 #include <ita/ita_attr.h>
+#include <ita/ita_attr_symlinks.h>
 #include <tcg/tcg_attr.h>
 #include <tcg/pts/tcg_pts_attr_meas_algo.h>
 #include <tcg/pts/tcg_pts_attr_proto_caps.h>
 #include <tcg/pts/tcg_pts_attr_req_file_meas.h>
 #include <tcg/pts/tcg_pts_attr_req_file_meta.h>
-#include "tcg/seg/tcg_seg_attr_max_size.h"
-#include "tcg/seg/tcg_seg_attr_seg_env.h"
+#include <tcg/seg/tcg_seg_attr_seg_contract.h>
+#include <tcg/seg/tcg_seg_attr_seg_env.h>
 #include <pts/pts.h>
 #include <pts/pts_database.h>
 #include <pts/pts_creds.h>
+#include <pts/pts_symlinks.h>
 #include <pts/components/ita/ita_comp_func_name.h>
 
 #include <tncif_pa_subtypes.h>
@@ -52,8 +55,6 @@
 #include <utils/debug.h>
 #include <credentials/credential_manager.h>
 #include <collections/linked_list.h>
-
-#define FILE_MEAS_MAX_ATTR_SIZE	100000000
 
 typedef struct private_imv_attestation_agent_t private_imv_attestation_agent_t;
 
@@ -287,6 +288,20 @@ static TNC_Result receive_msg(private_imv_attestation_agent_t *this,
 					session->set_device_id(session, value);
 					break;
 				}
+				case ITA_ATTR_SYMLINKS:
+				{
+					imv_attestation_state_t *attestation_state;
+					ita_attr_symlinks_t *attr_cast;
+					pts_symlinks_t *symlinks;
+					pts_t *pts;
+
+					attr_cast = (ita_attr_symlinks_t*)attr;
+					symlinks = attr_cast->get_symlinks(attr_cast);
+					attestation_state = (imv_attestation_state_t*)state;
+					pts = attestation_state->get_pts(attestation_state);
+					pts->set_symlinks(pts, symlinks);
+					break;
+				}
 				default:
 					break;
 			}
@@ -472,7 +487,7 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 
 	if (handshake_state == IMV_ATTESTATION_STATE_INIT)
 	{
-		size_t max_attr_size = FILE_MEAS_MAX_ATTR_SIZE;
+		size_t max_msg_size = SEG_CONTRACT_NO_MSG_SIZE_LIMIT;
 		size_t max_seg_size;
 		seg_contract_t *contract;
 		seg_contract_manager_t *contracts;
@@ -490,13 +505,13 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 								- TCG_SEG_ATTR_SEG_ENV_HEADER;
 
 		/* Announce support of PA-TNC segmentation to IMC */
-		contract = seg_contract_create(msg_types[0], max_attr_size,
+		contract = seg_contract_create(msg_types[0], max_msg_size,
 										max_seg_size, TRUE, imv_id, FALSE);
 		contract->get_info_string(contract, buf, BUF_LEN, TRUE);
 		DBG2(DBG_IMV, "%s", buf);
 		contracts = state->get_contracts(state);
 		contracts->add_contract(contracts, contract);
-		attr = tcg_seg_attr_max_size_create(max_attr_size, max_seg_size, TRUE);
+		attr = tcg_seg_attr_seg_contract_create(max_msg_size, max_seg_size, TRUE);
 		out_msg->add_attribute(out_msg, attr);
 
 		/* Send Request Protocol Capabilities attribute */
@@ -859,7 +874,7 @@ METHOD(imv_agent_if_t, destroy, void,
 	if (this->pts_creds)
 	{
 		this->pts_credmgr->remove_set(this->pts_credmgr,
-						 			  this->pts_creds->get_set(this->pts_creds));
+									  this->pts_creds->get_set(this->pts_creds));
 		this->pts_creds->destroy(this->pts_creds);
 	}
 	DESTROY_IF(this->pts_db);
@@ -887,7 +902,7 @@ imv_agent_if_t *imv_attestation_agent_create(const char *name, TNC_IMVID id,
 	}
 
 	hash_alg = lib->settings->get_str(lib->settings,
-				"%s.plugins.imv-attestation.hash_algorithm", "sha256", lib->ns);
+				"%s.plugins.imv-attestation.hash_algorithm", "sha384", lib->ns);
 	dh_group = lib->settings->get_str(lib->settings,
 				"%s.plugins.imv-attestation.dh_group", "ecp256", lib->ns);
 	mandatory_dh_groups = lib->settings->get_bool(lib->settings,

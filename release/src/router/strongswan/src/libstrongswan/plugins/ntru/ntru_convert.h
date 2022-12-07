@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2009-2013  Security Innovation
  *
@@ -91,7 +90,7 @@ void ntru_indices_2_trits(uint16_t in_len, uint16_t const *in, bool plus1,
 						  uint8_t *out);
 
 /**
- * Unpacks an array of N trits and creates a list of array indices 
+ * Unpacks an array of N trits and creates a list of array indices
  * corresponding to trits = +1, and list of array indices corresponding to
  * trits = -1.
  *

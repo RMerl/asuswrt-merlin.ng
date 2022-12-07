@@ -1,10 +1,10 @@
 /*
  * Copyright (C) 2012 Martin Willi
- * Copyright (C) 2012 revosec AG
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2002-2008 Andreas Steffen
  * Copyright (C) 2005 Jan Hutter, Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -137,7 +137,7 @@ static bool decrypt(private_key_t *private, chunk_t key, chunk_t iv, int oid,
 		DBG1(DBG_LIB, "unsupported content encryption algorithm");
 		return FALSE;
 	}
-	if (!private->decrypt(private, ENCRYPT_RSA_PKCS1, key, &plain_key))
+	if (!private->decrypt(private, ENCRYPT_RSA_PKCS1, NULL, key, &plain_key))
 	{
 		DBG1(DBG_LIB, "symmetric key could not be decrypted with rsa");
 		return FALSE;
@@ -438,7 +438,7 @@ static bool encrypt_key(certificate_t *cert, chunk_t in, chunk_t *out)
 	{
 		return FALSE;
 	}
-	if (!key->encrypt(key, ENCRYPT_RSA_PKCS1, in, out))
+	if (!key->encrypt(key, ENCRYPT_RSA_PKCS1, NULL, in, out))
 	{
 		key->destroy(key);
 		return FALSE;

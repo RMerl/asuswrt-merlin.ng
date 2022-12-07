@@ -1,0 +1,8 @@
+moon::swanctl --terminate --ike gw-gw
+moon::systemctl stop strongswan
+sun::systemctl stop strongswan
+moon::iptables-restore < /etc/iptables.flush
+sun::iptables-restore < /etc/iptables.flush
+moon::ip -s link show xfrm-moon
+moon::ip link del xfrm-moon
+sun::rm /etc/updown

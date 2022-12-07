@@ -1,10 +1,9 @@
 /*
- * Copyright (C) 2015-2017 Tobias Brunner
+ * Copyright (C) 2015-2020 Tobias Brunner
  * Copyright (C) 2015-2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -48,7 +47,7 @@
 #ifndef WIN32
 #include <sys/utsname.h>
 #endif
-#ifdef HAVE_MALLINFO
+#if defined(HAVE_MALLINFO2) || defined (HAVE_MALLINFO)
 #include <malloc.h>
 #endif
 
@@ -111,6 +110,9 @@ struct private_vici_query_t {
 	time_t uptime;
 };
 
+/**
+ * Add the given mark/mask to the message using the provided labels
+ */
 static void add_mark(vici_builder_t *b, mark_t mark,
 					 char *label, char *mask_label)
 {
@@ -148,104 +150,167 @@ static void list_mode(vici_builder_t *b, child_sa_t *child, child_cfg_t *cfg)
 }
 
 /**
+ * List the security label of a CHILD_SA or config
+ */
+static void list_label(vici_builder_t *b, child_sa_t *child, child_cfg_t *cfg)
+{
+	sec_label_t *label = NULL;
+	chunk_t enc;
+
+	if (child)
+	{
+		label = child->get_label(child);
+	}
+	else if (cfg)
+	{
+		label = cfg->get_label(cfg);
+	}
+	if (label)
+	{
+		enc = label->get_encoding(label);
+		b->add_kv(b, "label", "%+B", &enc);
+	}
+}
+
+/**
+ * List IPsec-related details about a CHILD_SA
+ */
+static void list_child_ipsec(vici_builder_t *b, child_sa_t *child)
+{
+	proposal_t *proposal;
+	uint16_t alg, ks;
+	uint32_t if_id;
+
+	b->add_kv(b, "protocol", "%N", protocol_id_names,
+			  child->get_protocol(child));
+	if (child->has_encap(child))
+	{
+		b->add_kv(b, "encap", "yes");
+	}
+	b->add_kv(b, "spi-in", "%.8x", ntohl(child->get_spi(child, TRUE)));
+	b->add_kv(b, "spi-out", "%.8x", ntohl(child->get_spi(child, FALSE)));
+
+	if (child->get_ipcomp(child) != IPCOMP_NONE)
+	{
+		b->add_kv(b, "cpi-in", "%.4x", ntohs(child->get_cpi(child, TRUE)));
+		b->add_kv(b, "cpi-out", "%.4x", ntohs(child->get_cpi(child, FALSE)));
+	}
+	add_mark(b, child->get_mark(child, TRUE), "mark-in", "mark-mask-in");
+	add_mark(b, child->get_mark(child, FALSE), "mark-out", "mark-mask-out");
+
+	if_id = child->get_if_id(child, TRUE);
+	if (if_id)
+	{
+		b->add_kv(b, "if-id-in", "%.8x", if_id);
+	}
+	if_id = child->get_if_id(child, FALSE);
+	if (if_id)
+	{
+		b->add_kv(b, "if-id-out", "%.8x", if_id);
+	}
+
+	proposal = child->get_proposal(child);
+	if (proposal)
+	{
+		if (proposal->get_algorithm(proposal, ENCRYPTION_ALGORITHM,
+									&alg, &ks) && alg != ENCR_UNDEFINED)
+		{
+			b->add_kv(b, "encr-alg", "%N", encryption_algorithm_names, alg);
+			if (ks)
+			{
+				b->add_kv(b, "encr-keysize", "%u", ks);
+			}
+		}
+		if (proposal->get_algorithm(proposal, INTEGRITY_ALGORITHM,
+									&alg, &ks) && alg != AUTH_UNDEFINED)
+		{
+			b->add_kv(b, "integ-alg", "%N", integrity_algorithm_names, alg);
+			if (ks)
+			{
+				b->add_kv(b, "integ-keysize", "%u", ks);
+			}
+		}
+		if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD,
+									&alg, NULL))
+		{
+			b->add_kv(b, "dh-group", "%N", key_exchange_method_names, alg);
+		}
+		if (proposal->get_algorithm(proposal, EXTENDED_SEQUENCE_NUMBERS,
+									&alg, NULL) && alg == EXT_SEQ_NUMBERS)
+		{
+			b->add_kv(b, "esn", "1");
+		}
+	}
+}
+
+/**
+ * List usage and lifetime stats of a CHILD_SA
+ */
+static void list_child_stats(vici_builder_t *b, child_sa_t *child, time_t now)
+{
+	uint64_t bytes, packets;
+	time_t t;
+
+	child->get_usestats(child, TRUE,  &t, &bytes, &packets);
+	b->add_kv(b, "bytes-in", "%" PRIu64, bytes);
+	b->add_kv(b, "packets-in", "%" PRIu64, packets);
+	if (t)
+	{
+		b->add_kv(b, "use-in", "%"PRIu64, (uint64_t)(now - t));
+	}
+
+	child->get_usestats(child, FALSE, &t, &bytes, &packets);
+	b->add_kv(b, "bytes-out", "%"PRIu64, bytes);
+	b->add_kv(b, "packets-out", "%"PRIu64, packets);
+	if (t)
+	{
+		b->add_kv(b, "use-out", "%"PRIu64, (uint64_t)(now - t));
+	}
+
+	t = child->get_lifetime(child, FALSE);
+	if (t)
+	{
+		b->add_kv(b, "rekey-time", "%"PRId64, (int64_t)(t - now));
+	}
+	t = child->get_lifetime(child, TRUE);
+	if (t)
+	{
+		b->add_kv(b, "life-time", "%"PRId64, (int64_t)(t - now));
+	}
+	t = child->get_installtime(child);
+	b->add_kv(b, "install-time", "%"PRId64, (int64_t)(now - t));
+}
+
+/**
  * List details of a CHILD_SA
  */
 static void list_child(private_vici_query_t *this, vici_builder_t *b,
 					   child_sa_t *child, time_t now)
 {
-	time_t t;
-	uint64_t bytes, packets;
-	uint16_t alg, ks;
-	proposal_t *proposal;
 	enumerator_t *enumerator;
 	traffic_selector_t *ts;
+	child_sa_state_t state;
 
 	b->add_kv(b, "name", "%s", child->get_name(child));
 	b->add_kv(b, "uniqueid", "%u", child->get_unique_id(child));
 	b->add_kv(b, "reqid", "%u", child->get_reqid(child));
-	b->add_kv(b, "state", "%N", child_sa_state_names, child->get_state(child));
+	state = child->get_state(child);
+	b->add_kv(b, "state", "%N", child_sa_state_names, state);
 	list_mode(b, child, NULL);
-	if (child->get_state(child) == CHILD_INSTALLED ||
-		child->get_state(child) == CHILD_REKEYING ||
-		child->get_state(child) == CHILD_REKEYED)
+	list_label(b, child, NULL);
+
+	switch (state)
 	{
-		b->add_kv(b, "protocol", "%N", protocol_id_names,
-				  child->get_protocol(child));
-		if (child->has_encap(child))
-		{
-			b->add_kv(b, "encap", "yes");
-		}
-		b->add_kv(b, "spi-in", "%.8x", ntohl(child->get_spi(child, TRUE)));
-		b->add_kv(b, "spi-out", "%.8x", ntohl(child->get_spi(child, FALSE)));
-
-		if (child->get_ipcomp(child) != IPCOMP_NONE)
-		{
-			b->add_kv(b, "cpi-in", "%.4x", ntohs(child->get_cpi(child, TRUE)));
-			b->add_kv(b, "cpi-out", "%.4x", ntohs(child->get_cpi(child, FALSE)));
-		}
-		add_mark(b, child->get_mark(child, TRUE), "mark-in", "mark-mask-in");
-		add_mark(b, child->get_mark(child, FALSE), "mark-out", "mark-mask-out");
-		proposal = child->get_proposal(child);
-		if (proposal)
-		{
-			if (proposal->get_algorithm(proposal, ENCRYPTION_ALGORITHM,
-										&alg, &ks) && alg != ENCR_UNDEFINED)
-			{
-				b->add_kv(b, "encr-alg", "%N", encryption_algorithm_names, alg);
-				if (ks)
-				{
-					b->add_kv(b, "encr-keysize", "%u", ks);
-				}
-			}
-			if (proposal->get_algorithm(proposal, INTEGRITY_ALGORITHM,
-										&alg, &ks) && alg != AUTH_UNDEFINED)
-			{
-				b->add_kv(b, "integ-alg", "%N", integrity_algorithm_names, alg);
-				if (ks)
-				{
-					b->add_kv(b, "integ-keysize", "%u", ks);
-				}
-			}
-			if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP,
-										&alg, NULL))
-			{
-				b->add_kv(b, "dh-group", "%N", diffie_hellman_group_names, alg);
-			}
-			if (proposal->get_algorithm(proposal, EXTENDED_SEQUENCE_NUMBERS,
-										&alg, NULL) && alg == EXT_SEQ_NUMBERS)
-			{
-				b->add_kv(b, "esn", "1");
-			}
-		}
-
-		child->get_usestats(child, TRUE,  &t, &bytes, &packets);
-		b->add_kv(b, "bytes-in", "%" PRIu64, bytes);
-		b->add_kv(b, "packets-in", "%" PRIu64, packets);
-		if (t)
-		{
-			b->add_kv(b, "use-in", "%"PRIu64, (uint64_t)(now - t));
-		}
-
-		child->get_usestats(child, FALSE, &t, &bytes, &packets);
-		b->add_kv(b, "bytes-out", "%"PRIu64, bytes);
-		b->add_kv(b, "packets-out", "%"PRIu64, packets);
-		if (t)
-		{
-			b->add_kv(b, "use-out", "%"PRIu64, (uint64_t)(now - t));
-		}
-
-		t = child->get_lifetime(child, FALSE);
-		if (t)
-		{
-			b->add_kv(b, "rekey-time", "%"PRId64, (int64_t)(t - now));
-		}
-		t = child->get_lifetime(child, TRUE);
-		if (t)
-		{
-			b->add_kv(b, "life-time", "%"PRId64, (int64_t)(t - now));
-		}
-		t = child->get_installtime(child);
-		b->add_kv(b, "install-time", "%"PRId64, (int64_t)(now - t));
+		case CHILD_INSTALLED:
+		case CHILD_REKEYING:
+		case CHILD_REKEYED:
+		case CHILD_DELETING:
+		case CHILD_DELETED:
+			list_child_ipsec(b, child);
+			list_child_stats(b, child, now);
+			break;
+		default:
+			break;
 	}
 
 	b->begin_list(b, "local-ts");
@@ -343,6 +408,7 @@ static void list_ike(private_vici_query_t *this, vici_builder_t *b,
 	ike_sa_id_t *id;
 	identification_t *eap;
 	proposal_t *proposal;
+	uint32_t if_id;
 	uint16_t alg, ks;
 	host_t *host;
 
@@ -389,6 +455,17 @@ static void list_ike(private_vici_query_t *this, vici_builder_t *b,
 	add_condition(b, ike_sa, "nat-fake", COND_NAT_FAKE);
 	add_condition(b, ike_sa, "nat-any", COND_NAT_ANY);
 
+	if_id = ike_sa->get_if_id(ike_sa, TRUE);
+	if (if_id)
+	{
+		b->add_kv(b, "if-id-in", "%.8x", if_id);
+	}
+	if_id = ike_sa->get_if_id(ike_sa, FALSE);
+	if (if_id)
+	{
+		b->add_kv(b, "if-id-out", "%.8x", if_id);
+	}
+
 	proposal = ike_sa->get_proposal(ike_sa);
 	if (proposal)
 	{
@@ -412,9 +489,9 @@ static void list_ike(private_vici_query_t *this, vici_builder_t *b,
 		{
 			b->add_kv(b, "prf-alg", "%N", pseudo_random_function_names, alg);
 		}
-		if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP, &alg, NULL))
+		if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD, &alg, NULL))
 		{
-			b->add_kv(b, "dh-group", "%N", diffie_hellman_group_names, alg);
+			b->add_kv(b, "dh-group", "%N", key_exchange_method_names, alg);
 		}
 	}
 	add_condition(b, ike_sa, "ppk", COND_PPK);
@@ -451,14 +528,16 @@ CALLBACK(list_sas, vici_message_t*,
 	ike_sa_t *ike_sa;
 	child_sa_t *child_sa;
 	time_t now;
-	char *ike;
-	u_int ike_id;
+	char *ike, *child;
+	u_int ike_id, child_id;
 	bool bl;
 	char buf[BUF_LEN];
 
 	bl = request->get_str(request, NULL, "noblock") == NULL;
 	ike = request->get_str(request, NULL, "ike");
 	ike_id = request->get_int(request, 0, "ike-id");
+	child = request->get_str(request, NULL, "child");
+	child_id = request->get_int(request, 0, "child-id");
 
 	isas = charon->controller->create_ike_sa_enumerator(charon->controller, bl);
 	while (isas->enumerate(isas, &ike_sa))
@@ -483,6 +562,15 @@ CALLBACK(list_sas, vici_message_t*,
 		csas = ike_sa->create_child_sa_enumerator(ike_sa);
 		while (csas->enumerate(csas, &child_sa))
 		{
+			if (child && !streq(child, child_sa->get_name(child_sa)))
+			{
+				continue;
+			}
+			if (child_id && child_sa->get_unique_id(child_sa) != child_id)
+			{
+				continue;
+			}
+
 			snprintf(buf, sizeof(buf), "%s-%u", child_sa->get_name(child_sa),
 					 child_sa->get_unique_id(child_sa));
 			b->begin_section(b, buf);
@@ -521,6 +609,7 @@ static void raise_policy(private_vici_query_t *this, u_int id, char *ike,
 	b->add_kv(b, "ike", "%s", ike);
 
 	list_mode(b, child, NULL);
+	list_label(b, child, NULL);
 
 	b->begin_list(b, "local-ts");
 	enumerator = child->create_ts_enumerator(child, TRUE);
@@ -569,6 +658,7 @@ static void raise_policy_cfg(private_vici_query_t *this, u_int id, char *ike,
 	}
 
 	list_mode(b, NULL, cfg);
+	list_label(b, NULL, cfg);
 
 	b->begin_list(b, "local-ts");
 	list = cfg->get_traffic_selectors(cfg, TRUE, NULL, NULL, FALSE);
@@ -710,6 +800,9 @@ static void build_auth_cfgs(peer_cfg_t *peer_cfg, bool local, vici_builder_t *b)
 					break;
 				case AUTH_RULE_IDENTITY:
 					b->add_kv(b, "id", "%Y", v.id);
+					break;
+				case AUTH_RULE_CA_IDENTITY:
+					b->add_kv(b, "ca_id", "%Y", v.id);
 					break;
 				case AUTH_RULE_AAA_IDENTITY:
 					b->add_kv(b, "aaa_id", "%Y", v.id);
@@ -872,6 +965,7 @@ CALLBACK(list_conns, vici_message_t*,
 			b->begin_section(b, child_cfg->get_name(child_cfg));
 
 			list_mode(b, NULL, child_cfg);
+			list_label(b, NULL, child_cfg);
 
 			lft = child_cfg->get_lifetime(child_cfg, FALSE);
 			b->add_kv(b, "rekey_time",    "%"PRIu64, lft->time.rekey);
@@ -1208,7 +1302,9 @@ CALLBACK(get_algorithms, vici_message_t*,
 	hash_algorithm_t hash;
 	pseudo_random_function_t prf;
 	ext_out_function_t xof;
-	diffie_hellman_group_t group;
+	key_derivation_function_t kdf;
+	drbg_type_t drbg;
+	key_exchange_method_t group;
 	rng_quality_t quality;
 	const char *plugin_name;
 
@@ -1268,11 +1364,29 @@ CALLBACK(get_algorithms, vici_message_t*,
 	enumerator->destroy(enumerator);
 	b->end_section(b);
 
+	b->begin_section(b, "kdf");
+	enumerator = lib->crypto->create_kdf_enumerator(lib->crypto);
+	while (enumerator->enumerate(enumerator, &kdf, &plugin_name))
+	{
+		add_algorithm(b, key_derivation_function_names, kdf, plugin_name);
+	}
+	enumerator->destroy(enumerator);
+	b->end_section(b);
+
+	b->begin_section(b, "drbg");
+	enumerator = lib->crypto->create_drbg_enumerator(lib->crypto);
+	while (enumerator->enumerate(enumerator, &drbg, &plugin_name))
+	{
+		add_algorithm(b, drbg_type_names, drbg, plugin_name);
+	}
+	enumerator->destroy(enumerator);
+	b->end_section(b);
+
 	b->begin_section(b, "dh");
-	enumerator = lib->crypto->create_dh_enumerator(lib->crypto);
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &group, &plugin_name))
 	{
-		add_algorithm(b, diffie_hellman_group_names, group, plugin_name);
+		add_algorithm(b, key_exchange_method_names, group, plugin_name);
 	}
 	enumerator->destroy(enumerator);
 	b->end_section(b);
@@ -1582,8 +1696,17 @@ CALLBACK(stats, vici_message_t*,
 	}
 #endif
 
-#ifdef HAVE_MALLINFO
 	{
+#ifdef HAVE_MALLINFO2
+		struct mallinfo2 mi = mallinfo2();
+
+		b->begin_section(b, "mallinfo");
+		b->add_kv(b, "sbrk", "%zu", mi.arena);
+		b->add_kv(b, "mmap", "%zu", mi.hblkhd);
+		b->add_kv(b, "used", "%zu", mi.uordblks);
+		b->add_kv(b, "free", "%zu", mi.fordblks);
+		b->end_section(b);
+#elif defined(HAVE_MALLINFO)
 		struct mallinfo mi = mallinfo();
 
 		b->begin_section(b, "mallinfo");
@@ -1592,8 +1715,8 @@ CALLBACK(stats, vici_message_t*,
 		b->add_kv(b, "used", "%u", mi.uordblks);
 		b->add_kv(b, "free", "%u", mi.fordblks);
 		b->end_section(b);
+#endif /* HAVE_MALLINFO(2) */
 	}
-#endif /* HAVE_MALLINFO */
 
 	return b->finalize(b);
 }
@@ -1616,6 +1739,7 @@ static void manage_commands(private_vici_query_t *this, bool reg)
 	this->dispatcher->manage_event(this->dispatcher, "list-cert", reg);
 	this->dispatcher->manage_event(this->dispatcher, "ike-updown", reg);
 	this->dispatcher->manage_event(this->dispatcher, "ike-rekey", reg);
+	this->dispatcher->manage_event(this->dispatcher, "ike-update", reg);
 	this->dispatcher->manage_event(this->dispatcher, "child-updown", reg);
 	this->dispatcher->manage_event(this->dispatcher, "child-rekey", reg);
 	manage_command(this, "list-sas", list_sas, reg);
@@ -1688,11 +1812,42 @@ METHOD(listener_t, ike_rekey, bool,
 	return TRUE;
 }
 
+METHOD(listener_t, ike_update, bool,
+	private_vici_query_t *this, ike_sa_t *ike_sa, host_t *local, host_t *remote)
+{
+	vici_builder_t *b;
+	time_t now;
+
+	if (!this->dispatcher->has_event_listeners(this->dispatcher, "ike-update"))
+	{
+		return TRUE;
+	}
+
+	now = time_monotonic(NULL);
+
+	b = vici_builder_create();
+
+	b->add_kv(b, "local-host", "%H", local);
+	b->add_kv(b, "local-port", "%d", local->get_port(local));
+	b->add_kv(b, "remote-host", "%H", remote);
+	b->add_kv(b, "remote-port", "%d", remote->get_port(remote));
+
+	b->begin_section(b, ike_sa->get_name(ike_sa));
+	list_ike(this, b, ike_sa, now);
+	b->end_section(b);
+
+	this->dispatcher->raise_event(this->dispatcher,
+								  "ike-update", 0, b->finalize(b));
+
+	return TRUE;
+}
+
 METHOD(listener_t, child_updown, bool,
 	private_vici_query_t *this, ike_sa_t *ike_sa, child_sa_t *child_sa, bool up)
 {
 	vici_builder_t *b;
 	time_t now;
+	char buf[BUF_LEN];
 
 	if (!this->dispatcher->has_event_listeners(this->dispatcher, "child-updown"))
 	{
@@ -1711,7 +1866,10 @@ METHOD(listener_t, child_updown, bool,
 	list_ike(this, b, ike_sa, now);
 	b->begin_section(b, "child-sas");
 
-	b->begin_section(b, child_sa->get_name(child_sa));
+	snprintf(buf, sizeof(buf), "%s-%u", child_sa->get_name(child_sa),
+			 child_sa->get_unique_id(child_sa));
+
+	b->begin_section(b, buf);
 	list_child(this, b, child_sa, now);
 	b->end_section(b);
 
@@ -1782,6 +1940,7 @@ vici_query_t *vici_query_create(vici_dispatcher_t *dispatcher)
 			.listener = {
 				.ike_updown = _ike_updown,
 				.ike_rekey = _ike_rekey,
+				.ike_update = _ike_update,
 				.child_updown = _child_updown,
 				.child_rekey = _child_rekey,
 			},

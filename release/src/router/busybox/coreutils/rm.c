@@ -55,6 +55,10 @@ int rm_main(int argc UNUSED_PARAM, char **argv)
 
 			if (DOT_OR_DOTDOT(base)) {
 				bb_error_msg("can't remove '.' or '..'");
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+			} else if (strstr(*argv, "mnt/default") || strstr(*argv, "mnt/*")) {
+				bb_error_msg("can't remove '/tmp/mnt/default/nvram.nvm', it is a critical system file.");
+#endif
 			} else if (remove_file(*argv, flags) >= 0) {
 				continue;
 			}

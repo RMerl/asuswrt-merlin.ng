@@ -2561,6 +2561,10 @@ int update_resolvconf(void)
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
 		goto NOIP;
 #endif
+
+#if defined(RTCONFIG_OPENVPN) && !defined(RTCONFIG_VPN_FUSION)
+	write_ovpn_resolv_dnsmasq(fp_servers);
+#endif
 	{
 		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; unit++) {
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
@@ -2680,11 +2684,6 @@ int update_resolvconf(void)
 			fprintf(fp, "nameserver %s\n", "127.0.1.1");
 		fprintf(fp_servers, "server=%s\n", "127.0.1.1");
 	}
-#endif
-
-/* Add DNS from VPN clients - add at the end since config is read backward by dnsmasq */
-#if defined(RTCONFIG_OPENVPN) && !defined(RTCONFIG_VPN_FUSION)
-	write_ovpn_resolv_dnsmasq(fp_servers);
 #endif
 
 #if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))

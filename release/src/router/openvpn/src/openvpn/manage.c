@@ -314,8 +314,7 @@ virtual_output_callback_func(void *arg, const unsigned int flags, const char *st
 
 #define AF_DID_PUSH  (1<<0)
 #define AF_DID_RESET (1<<1)
-
-    if (!recursive_level) /* don't allow recursion */
+    if (recursive_level < 5) /* limit recursion */
     {
         struct gc_arena gc = gc_new();
         struct log_entry e;
@@ -382,6 +381,12 @@ virtual_output_callback_func(void *arg, const unsigned int flags, const char *st
 
         --recursive_level;
     }
+    else
+    {
+        /* cannot use msg here */
+        printf("virtual_output: message to management interface "
+               "dropped due to recursion: <%s>\n", str);
+    }
 }
 
 /*
@@ -428,13 +433,10 @@ man_signal(struct management *man, const char *name)
         }
         else
         {
+            msg(M_CLIENT, "ERROR: signal '%s' is currently ignored", name);
             if (man->persist.special_state_msg)
             {
                 msg(M_CLIENT, "%s", man->persist.special_state_msg);
-            }
-            else
-            {
-                msg(M_CLIENT, "ERROR: signal '%s' is currently ignored", name);
             }
         }
     }
@@ -766,6 +768,7 @@ static void
 man_forget_passwords(struct management *man)
 {
     ssl_purge_auth(false);
+    (void)ssl_clean_auth_token();
     msg(M_CLIENT, "SUCCESS: Passwords were forgotten");
 }
 
@@ -2005,6 +2008,7 @@ man_reset_client_socket(struct management *man, const bool exiting)
         if (man->settings.flags & MF_FORGET_DISCONNECT)
         {
             ssl_purge_auth(false);
+            (void)ssl_clean_auth_token();
         }
 
         if (man->settings.flags & MF_SIGNAL)
@@ -2970,17 +2974,14 @@ management_notify_client_cr_response(unsigned mda_key_id,
     {
         gc = gc_new();
 
-        struct buffer out = alloc_buf_gc(256, &gc);
         msg(M_CLIENT, ">CLIENT:CR_RESPONSE,%lu,%u,%s",
             mdac->cid, mda_key_id, response);
         man_output_extra_env(management, "CLIENT");
-        if (management->connection.env_filter_level>0)
+        if (management->connection.env_filter_level > 0)
         {
             man_output_peer_info_env(management, mdac);
         }
         man_output_env(es, true, management->connection.env_filter_level, "CLIENT");
-        management_notify_generic(management, BSTR(&out));
-
         gc_free(&gc);
     }
 }

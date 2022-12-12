@@ -79,7 +79,7 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 	DO(http_status_valid(trans->status));
 
-	if (strstr(resp, "NOERROR"))
+	if (strstr(resp, "NOERROR") || strstr(resp, "no update required"))
 		return 0;
 
 	if (strstr(resp, "TOOSOON"))

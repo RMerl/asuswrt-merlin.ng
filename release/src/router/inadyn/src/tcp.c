@@ -34,6 +34,7 @@
 #include <netinet/in.h>
 #include <resolv.h>
 
+#include "http.h"
 #include "log.h"
 #include "tcp.h"
 
@@ -105,6 +106,16 @@ static void set_timeouts(int sd, int timeout)
 		logit(LOG_INFO, "Failed setting send timeout socket option: %s", strerror(errno));
 }
 
+static void set_params(tcp_sock_t *tcp)
+{
+	int port = 0;
+
+	tcp_get_port(tcp, &port);
+	if (port == 0)
+		tcp_set_port(tcp, HTTP_DEFAULT_PORT);
+
+}
+
 int tcp_init(tcp_sock_t *tcp, char *msg)
 {
 	int rc = 0;
@@ -114,6 +125,7 @@ int tcp_init(tcp_sock_t *tcp, char *msg)
 	if (tcp->initialized == 1)
 		return 0;
 
+	set_params(tcp);
 	do {
 		int s, sd, tries = 0;
 		char port[10];

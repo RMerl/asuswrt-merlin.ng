@@ -51,15 +51,10 @@ int http_destruct(http_t *client, int num)
 static int local_set_params(http_t *client)
 {
 	int timeout = 0;
-	int port = 0;
 
 	http_get_remote_timeout(client, &timeout);
 	if (timeout == 0)
 		http_set_remote_timeout(client, HTTP_DEFAULT_TIMEOUT);
-
-	http_get_port(client, &port);
-	if (port == 0)
-		http_set_port(client, HTTP_DEFAULT_PORT);
 
 	return 0;
 }

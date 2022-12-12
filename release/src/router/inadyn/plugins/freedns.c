@@ -59,7 +59,7 @@ static char *fetch_keys(ddns_t *ctx, ddns_info_t *info)
 	http_trans_t  trans;
 	http_t        client;
 	char          buffer[384];
-	int           i, rc;
+	int           i, rc, level;
 
 	rc = (http_construct(&client));
 	if (rc)
@@ -88,7 +88,11 @@ static char *fetch_keys(ddns_t *ctx, ddns_info_t *info)
 	trans.max_rsp_len = ctx->work_buflen - 1;	/* Save place for a \0 at the end */
 
 	rc = http_transaction(&client, &trans);
-	logit((strstr(trans.rsp_body, "ERROR:") ? LOG_ERR : LOG_DEBUG), "=> %s", trans.rsp_body);
+	if (strstr(trans.rsp_body, "ERROR:"))
+		level = LOG_ERR;
+	else
+		level = LOG_DEBUG;
+	logit(level, "=> %s", trans.rsp_body);
 	http_exit(&client);
 	http_destruct(&client, 1);
 

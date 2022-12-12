@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -53,6 +53,3 @@ struct prefix_opt {
 #define ICMP6_OPT_RT_INFO     24
 #define ICMP6_OPT_RDNSS       25
 #define ICMP6_OPT_DNSSL       31
-
-
-

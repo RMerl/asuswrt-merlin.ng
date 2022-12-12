@@ -153,7 +153,11 @@ int main(int argc, char **argv)
       exit(1);
     }
  
-  lease.s_addr = inet_addr(argv[1]);
+  if (inet_pton(AF_INET, argv[1], &lease) < 1)
+    {
+      fprintf(stderr, "invalid address: %s\n", argv[1]);
+      exit(1);
+    }
    
   memset(&packet, 0, sizeof(packet));
  
@@ -176,8 +180,8 @@ int main(int argc, char **argv)
   
   *(p++) = OPTION_END;
  
-  dest.sin_family = AF_INET; 
-  dest.sin_addr.s_addr = inet_addr("127.0.0.1");
+  dest.sin_family = AF_INET;
+  (void)inet_pton(AF_INET, "127.0.0.1", &dest.sin_addr);
   dest.sin_port = ntohs(DHCP_SERVER_PORT);
   
   if (sendto(fd, &packet, sizeof(packet), 0, 

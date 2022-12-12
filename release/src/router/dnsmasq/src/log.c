@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -100,10 +100,23 @@ int log_start(struct passwd *ent_pw, int errfd)
   /* If we're running as root and going to change uid later,
      change the ownership here so that the file is always owned by
      the dnsmasq user. Then logrotate can just copy the owner.
-     Failure of the chown call is OK, (for instance when started as non-root) */
-  if (log_to_file && !log_stderr && ent_pw && ent_pw->pw_uid != 0 && 
-      fchown(log_fd, ent_pw->pw_uid, -1) != 0)
-    ret = errno;
+     Failure of the chown call is OK, (for instance when started as non-root).
+     
+     If we've created a file with group-id root, we also make
+     the file group-writable. This gives processes in the root group
+     write access to the file and avoids the problem that on some systems,
+     once the file is owned by the dnsmasq user, it can't be written
+     whilst dnsmasq is running as root during startup.
+ */
+  if (log_to_file && !log_stderr && ent_pw && ent_pw->pw_uid != 0)
+    {
+      struct stat ls;
+      if (getgid() == 0 && fstat(log_fd, &ls) == 0 && ls.st_gid == 0 &&
+	  (ls.st_mode & S_IWGRP) == 0)
+	(void)fchmod(log_fd, S_IRUSR|S_IWUSR|S_IRGRP|S_IWGRP);
+      if (fchown(log_fd, ent_pw->pw_uid, -1) != 0)
+	ret = errno;
+    }
 
   return ret;
 }
@@ -118,7 +131,7 @@ int log_reopen(char *log_file)
       /* NOTE: umask is set to 022 by the time this gets called */
       
       if (log_file)
-	log_fd = open(log_file, O_WRONLY|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR|S_IRGRP);      
+	log_fd = open(log_file, O_WRONLY|O_CREAT|O_APPEND, S_IRUSR|S_IWUSR|S_IRGRP);
       else
 	{
 #if defined(HAVE_SOLARIS_NETWORK) || defined(__ANDROID__)

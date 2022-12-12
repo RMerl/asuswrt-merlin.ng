@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
  
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -133,74 +133,112 @@ void inotify_dnsmasq_init()
     }
 }
 
+static struct hostsfile *dyndir_addhosts(struct dyndir *dd, char *path)
+{
+  /* Check if this file is already known in dd->files */
+  struct hostsfile *ah = NULL;
+  for(ah = dd->files; ah; ah = ah->next)
+    if(ah && ah->fname && strcmp(path, ah->fname) == 0)
+      return ah;
+
+  /* Not known, create new hostsfile record for this dyndir */
+  struct hostsfile *newah = NULL;
+  if(!(newah = whine_malloc(sizeof(struct hostsfile))))
+    return NULL;
+
+  /* Add this file to the tip of the linked list */
+  newah->next = dd->files;
+  dd->files = newah;
+
+  /* Copy flags, set index and the full file path */
+  newah->flags = dd->flags;
+  newah->index = daemon->host_index++;
+  newah->fname = path;
+
+  return newah;
+}
+
 
 /* initialisation for dynamic-dir. Set inotify watch for each directory, and read pre-existing files */
 void set_dynamic_inotify(int flag, int total_size, struct crec **rhash, int revhashsz)
 {
-  struct hostsfile *ah;
-  
-  for (ah = daemon->dynamic_dirs; ah; ah = ah->next)
+  struct dyndir *dd;
+
+  for (dd = daemon->dynamic_dirs; dd; dd = dd->next)
     {
       DIR *dir_stream = NULL;
       struct dirent *ent;
       struct stat buf;
-     
-      if (!(ah->flags & flag))
+
+      if (!(dd->flags & flag))
 	continue;
- 
-      if (stat(ah->fname, &buf) == -1 || !(S_ISDIR(buf.st_mode)))
+
+      if (stat(dd->dname, &buf) == -1)
 	{
 	  my_syslog(LOG_ERR, _("bad dynamic directory %s: %s"), 
-		    ah->fname, strerror(errno));
+		    dd->dname, strerror(errno));
 	  continue;
 	}
-      
-       if (!(ah->flags & AH_WD_DONE))
+
+      if (!(S_ISDIR(buf.st_mode)))
+	{
+	  my_syslog(LOG_ERR, _("bad dynamic directory %s: %s"), 
+		    dd->dname, _("not a directory"));
+	  continue;
+	}
+
+       if (!(dd->flags & AH_WD_DONE))
 	 {
-	   ah->wd = inotify_add_watch(daemon->inotifyfd, ah->fname, IN_CLOSE_WRITE | IN_MOVED_TO);
-	   ah->flags |= AH_WD_DONE;
+	   dd->wd = inotify_add_watch(daemon->inotifyfd, dd->dname, IN_CLOSE_WRITE | IN_MOVED_TO | IN_DELETE);
+	   dd->flags |= AH_WD_DONE;
 	 }
 
        /* Read contents of dir _after_ calling add_watch, in the hope of avoiding
 	  a race which misses files being added as we start */
-       if (ah->wd == -1 || !(dir_stream = opendir(ah->fname)))
+       if (dd->wd == -1 || !(dir_stream = opendir(dd->dname)))
 	 {
 	   my_syslog(LOG_ERR, _("failed to create inotify for %s: %s"),
-		     ah->fname, strerror(errno));
+		     dd->dname, strerror(errno));
 	   continue;
 	 }
 
        while ((ent = readdir(dir_stream)))
 	 {
-	   size_t lendir = strlen(ah->fname);
+	   size_t lendir = strlen(dd->dname);
 	   size_t lenfile = strlen(ent->d_name);
 	   char *path;
-	   
+
 	   /* ignore emacs backups and dotfiles */
 	   if (lenfile == 0 || 
 	       ent->d_name[lenfile - 1] == '~' ||
 	       (ent->d_name[0] == '#' && ent->d_name[lenfile - 1] == '#') ||
 	       ent->d_name[0] == '.')
 	     continue;
-	   
+
 	   if ((path = whine_malloc(lendir + lenfile + 2)))
 	     {
-	       strcpy(path, ah->fname);
+	       struct hostsfile *ah;
+
+	       strcpy(path, dd->dname);
 	       strcat(path, "/");
 	       strcat(path, ent->d_name);
+
+	       if (!(ah = dyndir_addhosts(dd, path)))
+		 {
+		   free(path);
+		   continue;
+		 }
 	       
 	       /* ignore non-regular files */
 	       if (stat(path, &buf) != -1 && S_ISREG(buf.st_mode))
 		 {
-		   if (ah->flags & AH_HOSTS)
+		   if (dd->flags & AH_HOSTS)
 		     total_size = read_hostsfile(path, ah->index, total_size, rhash, revhashsz);
 #ifdef HAVE_DHCP
-		   else if (ah->flags & (AH_DHCP_HST | AH_DHCP_OPT))
-		     option_read_dynfile(path, ah->flags);
+		   else if (dd->flags & (AH_DHCP_HST | AH_DHCP_OPT))
+		     option_read_dynfile(path, dd->flags);
 #endif		   
 		 }
-
-	       free(path);
 	     }
 	 }
 
@@ -211,7 +249,7 @@ void set_dynamic_inotify(int flag, int total_size, struct crec **rhash, int revh
 int inotify_check(time_t now)
 {
   int hit = 0;
-  struct hostsfile *ah;
+  struct dyndir *dd;
 
   while (1)
     {
@@ -242,36 +280,51 @@ int inotify_check(time_t now)
 	    if (res->wd == in->wd && strcmp(res->file, in->name) == 0)
 	      hit = 1;
 
-	  for (ah = daemon->dynamic_dirs; ah; ah = ah->next)
-	    if (ah->wd == in->wd)
+	  for (dd = daemon->dynamic_dirs; dd; dd = dd->next)
+	    if (dd->wd == in->wd)
 	      {
-		size_t lendir = strlen(ah->fname);
+		size_t lendir = strlen(dd->dname);
 		char *path;
-		
+				
 		if ((path = whine_malloc(lendir + in->len + 2)))
 		  {
-		    strcpy(path, ah->fname);
+		    struct hostsfile *ah = NULL;
+
+		    strcpy(path, dd->dname);
 		    strcat(path, "/");
 		    strcat(path, in->name);
-		     
-		    my_syslog(LOG_INFO, _("inotify, new or changed file %s"), path);
 
-		    if (ah->flags & AH_HOSTS)
+		    /* Is this is a deletion event? */
+		    if (in->mask & IN_DELETE)
+		      my_syslog(LOG_INFO, _("inotify: %s removed"), path);
+		    else 
+		      my_syslog(LOG_INFO, _("inotify: %s new or modified"), path);
+
+		    if (dd->flags & AH_HOSTS)
 		      {
-			read_hostsfile(path, ah->index, 0, NULL, 0);
-#ifdef HAVE_DHCP
-			if (daemon->dhcp || daemon->doing_dhcp6) 
+			if ((ah = dyndir_addhosts(dd, path)))
 			  {
-			    /* Propagate the consequences of loading a new dhcp-host */
-			    dhcp_update_configs(daemon->dhcp_conf);
-			    lease_update_from_configs(); 
-			    lease_update_file(now); 
-			    lease_update_dns(1);
-			  }
+			    const unsigned int removed = cache_remove_uid(ah->index);
+			    if (removed > 0)
+			      my_syslog(LOG_INFO, _("inotify: flushed %u names read from %s"), removed, path);
+
+			    /* (Re-)load hostsfile only if this event isn't triggered by deletion */
+			    if (!(in->mask & IN_DELETE))
+			      read_hostsfile(path, ah->index, 0, NULL, 0);
+#ifdef HAVE_DHCP
+			    if (daemon->dhcp || daemon->doing_dhcp6) 
+			      {
+				/* Propagate the consequences of loading a new dhcp-host */
+				dhcp_update_configs(daemon->dhcp_conf);
+				lease_update_from_configs(); 
+				lease_update_file(now); 
+				lease_update_dns(1);
+			      }
 #endif
+			  }
 		      }
 #ifdef HAVE_DHCP
-		    else if (ah->flags & AH_DHCP_HST)
+		    else if (dd->flags & AH_DHCP_HST)
 		      {
 			if (option_read_dynfile(path, AH_DHCP_HST))
 			  {
@@ -282,11 +335,12 @@ int inotify_check(time_t now)
 			    lease_update_dns(1);
 			  }
 		      }
-		    else if (ah->flags & AH_DHCP_OPT)
+		    else if (dd->flags & AH_DHCP_OPT)
 		      option_read_dynfile(path, AH_DHCP_OPT);
 #endif
 		    
-		    free(path);
+		    if (!ah)
+		      free(path);
 		  }
 	      }
 	}
@@ -295,4 +349,3 @@ int inotify_check(time_t now)
 }
 
 #endif  /* INOTIFY */
-  

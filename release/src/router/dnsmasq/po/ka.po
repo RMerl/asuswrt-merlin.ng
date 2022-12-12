@@ -1,0 +1,2746 @@
+# Georgian translation for dnsmasq
+# This file is distributed under the same license as the dnsmasq package.
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2022.
+msgid ""
+msgstr ""
+"Project-Id-Version: \n"
+"POT-Creation-Date: \n"
+"PO-Revision-Date: \n"
+"Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
+"Language-Team: \n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.1.1\n"
+
+#: cache.c:652
+msgid "Internal error in cache."
+msgstr "შიდა შეცდომა ქეშში."
+
+#: cache.c:1179
+#, c-format
+msgid "failed to load names from %s: %s"
+msgstr "შეცდომა სახელების %s-დან წაკითხვისას: %s"
+
+#: cache.c:1201 dhcp.c:943
+#, c-format
+msgid "bad address at %s line %d"
+msgstr "ცუდი მისამართი %s ხაზი %d"
+
+#: cache.c:1254 dhcp.c:959
+#, c-format
+msgid "bad name at %s line %d"
+msgstr "ცუდი სახელი %s ხაზზე %d"
+
+#: cache.c:1265
+#, fuzzy, c-format
+msgid "read %s - %d names"
+msgstr "წავიკითხე %s - %d მისამართი"
+
+#: cache.c:1381
+msgid "cleared cache"
+msgstr "ქეში გასუფთავდა"
+
+#: cache.c:1445
+#, c-format
+msgid "No IPv4 address found for %s"
+msgstr "%s-სთვის IPv4 მისამართი ვერ ვიპოვე"
+
+#: cache.c:1491
+#, c-format
+msgid "%s is a CNAME, not giving it to the DHCP lease of %s"
+msgstr "%s CNAME-ა. %s-ის DHCP იჯარა არ გადაეცემა"
+
+#: cache.c:1515
+#, c-format
+msgid "not giving name %s to the DHCP lease of %s because the name exists in %s with address %s"
+msgstr "სახელი %s DHCP იჯარა %s-ზე მინიჭებული არ იქნება იმიტომ, რომ სახელი %s-ში მისამართით %s უკვე არსებობს"
+
+#: cache.c:1760
+#, c-format
+msgid "time %lu"
+msgstr "დრო %lu"
+
+#: cache.c:1761
+#, c-format
+msgid "cache size %d, %d/%d cache insertions re-used unexpired cache entries."
+msgstr "ქეშის ზომა %d, %d;%d ქეშში ჩამატებებმა ქეშის ვადაგაუსვლელი ჩანაწერები თავიდან გამოიყენეს."
+
+#: cache.c:1763
+#, c-format
+msgid "queries forwarded %u, queries answered locally %u"
+msgstr "მოთხოვნები გადაგზავნილია %u, ლოკალურად ნაპასუხები %u"
+
+#: cache.c:1766
+#, c-format
+msgid "queries answered from stale cache %u"
+msgstr ""
+
+#: cache.c:1768
+#, c-format
+msgid "queries for authoritative zones %u"
+msgstr "მოთხოვნები ავტორიტეტული ზონებისთვის %u"
+
+#: cache.c:1796
+#, fuzzy, c-format
+msgid "server %s#%d: queries sent %u, retried %u, failed %u, nxdomain replies %u, avg. latency %ums"
+msgstr "სერვერი %s#%d: %u გაგზავნილი მოთხოვნა, %u თავიდან ნაცადი ან შეცდომით დასრულებული"
+
+#: util.c:51
+#, c-format
+msgid "failed to seed the random number generator: %s"
+msgstr "შემთხვევითი რიცხვების გენერაციისათვის თესლის გადაცემის შეცდომა: %s"
+
+#: util.c:246
+msgid "failed to allocate memory"
+msgstr "მეხსიერების გამოყოფის შეცდომა"
+
+#: util.c:305 option.c:696
+msgid "could not get memory"
+msgstr "მეხსიერების მიღების შეცდომა"
+
+#: util.c:326
+#, c-format
+msgid "cannot create pipe: %s"
+msgstr "ფაიფის შექმნის შეცდომა: %s"
+
+#: util.c:334
+#, c-format
+msgid "failed to allocate %d bytes"
+msgstr "%d ბაიტის გამოყოფის შეცდომა"
+
+#: util.c:344
+#, c-format
+msgid "failed to reallocate %d bytes"
+msgstr "%d ბაიტის თავიდან გამოყოფის შეცდომა"
+
+#: util.c:465
+#, c-format
+msgid "cannot read monotonic clock: %s"
+msgstr "მონოტონური საათის წაკითხვის შეცდომა: %s"
+
+#: util.c:579
+#, c-format
+msgid "infinite"
+msgstr "უსასრულო"
+
+#: util.c:867
+#, c-format
+msgid "failed to find kernel version: %s"
+msgstr "ბირთვის ვერსიის პოვნის შეცდომა: %s"
+
+#: option.c:393
+msgid "Specify local address(es) to listen on."
+msgstr "მიუთითეთ მოსასმენი ლოკალური მისამართები."
+
+#: option.c:394
+msgid "Return ipaddr for all hosts in specified domains."
+msgstr "მითითებულ დომენებში ყველა ჰოსტისთვის ipaddr-ის დაბრუნება."
+
+#: option.c:395
+msgid "Fake reverse lookups for RFC1918 private address ranges."
+msgstr "ყალბი უკუღმა-ძებნები RFC1918 მისამართების პირადი დიაპაზონებისტვის."
+
+#: option.c:396
+msgid "Treat ipaddr as NXDOMAIN (defeats Verisign wildcard)."
+msgstr "\"ipaddr\"-ის განხილვა, როგორც NXDOMAIN-ის (სჯობნის Verisign ვაილდ-კარდს)."
+
+#: option.c:397
+#, c-format
+msgid "Specify the size of the cache in entries (defaults to %s)."
+msgstr "მიუთითეთ ჩანაწერებში ქეშის ზომა (ნაგულისხმები %s)."
+
+#: option.c:398
+#, c-format
+msgid "Specify configuration file (defaults to %s)."
+msgstr "კონფიგურაციის ფაილის მითითება (ნაგულისხმები %s)."
+
+#: option.c:399
+msgid "Do NOT fork into the background: run in debug mode."
+msgstr "*არ გადახვიდე* ფონში: გამართვის რეჟიმში გაშვება."
+
+#: option.c:400
+msgid "Do NOT forward queries with no domain part."
+msgstr "მოთხოვნები დომენის ნაწილის გარეშე *არ* გადააგზავნო."
+
+#: option.c:401
+msgid "Return self-pointing MX records for local hosts."
+msgstr "ლოკალური ჰოსტებისთვის თავის-თავზე მაჩვენებელი MX ჩანაწერების დაბრუნება."
+
+#: option.c:402
+msgid "Expand simple names in /etc/hosts with domain-suffix."
+msgstr "/etc/hosts-ის მარტივი სახელებისთვის დომენის სუფიქსის მიწერა."
+
+#: option.c:403
+msgid "Don't forward spurious DNS requests from Windows hosts."
+msgstr "Windows-ის ჰოსტებიდან მოსული ყალბი DNS მოთხოვნები არ გადაიგზავნება."
+
+#: option.c:404
+msgid "Don't include IPv4 addresses in DNS answers."
+msgstr "DNS-ის პასუხებში IPv4 მისამართები ჩასმული არ იქნება."
+
+#: option.c:405
+msgid "Don't include IPv6 addresses in DNS answers."
+msgstr "DNS-ის პასუხებში IPv6 მისამართები ჩასმული არ იქნება."
+
+#: option.c:406
+msgid "Enable DHCP in the range given with lease duration."
+msgstr "DHCP-ის იჯარის ხანგრძლივობაში მითითებული დიაპაზონით შექმნა."
+
+#: option.c:407
+#, c-format
+msgid "Change to this group after startup (defaults to %s)."
+msgstr "გაშვების შემდეგ ამ ჯგუფზე გადასვლა (ნაგულისხმები %s)"
+
+#: option.c:408
+msgid "Set address or hostname for a specified machine."
+msgstr "მითითებული მანქანისთვის მისამართის ან ჰოსტის სახელის დაყენება."
+
+#: option.c:409
+msgid "Read DHCP host specs from file."
+msgstr "DHCP-ის ჰოსტის სპეციფიკაციის ფაილიდან წაკითხვა."
+
+#: option.c:410
+msgid "Read DHCP option specs from file."
+msgstr "DHCP-ის პარამეტრების სპეციფიკაციის ფაილიდან წაკითხვა."
+
+#: option.c:411
+msgid "Read DHCP host specs from a directory."
+msgstr "DHCP-ის ჰოსტის სპეციფიკაციის საქაღალდიდან წაკითხვა."
+
+#: option.c:412
+msgid "Read DHCP options from a directory."
+msgstr "DHCP-ის პარამეტრების სპეციფიკაციის საქაღალდიდან წაკითხვა."
+
+#: option.c:413
+msgid "Evaluate conditional tag expression."
+msgstr "ჭდის პირობითი გამოსახულების შემოწმება."
+
+#: option.c:414
+#, c-format
+msgid "Do NOT load %s file."
+msgstr "არ ჩატვირთო %s ფაილი."
+
+#: option.c:415
+#, c-format
+msgid "Specify a hosts file to be read in addition to %s."
+msgstr "მიუთითეთ %s-სთან ერთად, დამატებით წასაკითხი hosts ფაილი."
+
+#: option.c:416
+msgid "Read hosts files from a directory."
+msgstr "წავიკითხე hosts ფაილი საქაღალდიდან."
+
+#: option.c:417
+msgid "Specify interface(s) to listen on."
+msgstr "მიუთითეთ მოსასმენი ინტერფეისები."
+
+#: option.c:418
+msgid "Specify interface(s) NOT to listen on."
+msgstr "მიუთითეთ ინტერფეისები, რომელზეც არ მოვუსმენ."
+
+#: option.c:419
+msgid "Map DHCP user class to tag."
+msgstr "DHCP-ის მომხმარებლის კლასის ჭდეზე მიბმა."
+
+#: option.c:420
+msgid "Map RFC3046 circuit-id to tag."
+msgstr "RFC3046 circuit-id-ის ჭდეზე მიბმა."
+
+#: option.c:421
+msgid "Map RFC3046 remote-id to tag."
+msgstr "RFC3046 remote-id-ის ჭდეზე მიბმა."
+
+#: option.c:422
+msgid "Map RFC3993 subscriber-id to tag."
+msgstr "RFC3046 subscriber-id-ის ჭდეზე მიბმა."
+
+#: option.c:423
+msgid "Specify vendor class to match for PXE requests."
+msgstr "მიუთითეთ PXE მოთხოვნებში დასამთხვევი მომწოდებლის კლასი."
+
+#: option.c:424
+msgid "Don't do DHCP for hosts with tag set."
+msgstr "ჭდე-დაყენებული ჰოსტებისთვის DHCP არ იმუშავებს."
+
+#: option.c:425
+msgid "Force broadcast replies for hosts with tag set."
+msgstr "ჭდედაყენებული ჰოსტებისთვის მაუწყებლობის პაკეტების გაგზავნა."
+
+#: option.c:426
+msgid "Do NOT fork into the background, do NOT run in debug mode."
+msgstr "*არ* გადახვიდე ფონში. *არ* გაეშვა გამართვის რეჟიში."
+
+#: option.c:427
+msgid "Assume we are the only DHCP server on the local network."
+msgstr "ჩავთვალოთ, რომ ჩვენ ლოკალურ ქსელში ერთადერთი DHCP სერვერი ვართ."
+
+#: option.c:428
+#, c-format
+msgid "Specify where to store DHCP leases (defaults to %s)."
+msgstr "მიუთითეთ, სად უნდა შევინახოთ DHCP იჯარები (ნაგულისხმებია %s)."
+
+#: option.c:429
+msgid "Return MX records for local hosts."
+msgstr "ლოკალური ჰოსტებისთვის MX ჩანაწერების დაბრუნება."
+
+#: option.c:430
+msgid "Specify an MX record."
+msgstr "მიუთითეთ MX ჩანაწერი."
+
+#: option.c:431
+msgid "Specify BOOTP options to DHCP server."
+msgstr "DHCP სერვერისთვის საჭიროა BOOTP-ის პარამეტრების მითითება."
+
+#: option.c:432
+#, c-format
+msgid "Do NOT poll %s file, reload only on SIGHUP."
+msgstr ""
+
+#: option.c:433
+msgid "Do NOT cache failed search results."
+msgstr "შეცდომით დასრულებული შედეგები *არ* დაიქეშება."
+
+#: option.c:434
+msgid "Use expired cache data for faster reply."
+msgstr ""
+
+#: option.c:435
+#, c-format
+msgid "Use nameservers strictly in the order given in %s."
+msgstr "DNS სერვერების მხოლოდ %s-ში მითითებული მიმდევრობით გამოყენება."
+
+#: option.c:436
+msgid "Specify options to be sent to DHCP clients."
+msgstr "მიუთითეთ DHCP კლიენტებისთვის გასაგზავნი პარამეტრები."
+
+#: option.c:437
+msgid "DHCP option sent even if the client does not request it."
+msgstr "DHCP პარამეტრები იგზავნება მაშინაც კი, როცა კლიენტი მათ არ ითხოვს."
+
+#: option.c:438
+msgid "Specify port to listen for DNS requests on (defaults to 53)."
+msgstr "მიუთითეთ პორტი DNS მოთხოვნების მოსასმენად (ნაგულისხმებია 53)."
+
+#: option.c:439
+#, c-format
+msgid "Maximum supported UDP packet size for EDNS.0 (defaults to %s)."
+msgstr "UDP პაკეტის მაქსიმალური მხარდაჭერილი ზომა EDNS.0-სთვის (ნაგულისხმებია %s)."
+
+#: option.c:440
+msgid "Log DNS queries."
+msgstr "DNS მოთხოვნების ჟურნალში ჩაწერა."
+
+#: option.c:441
+msgid "Force the originating port for upstream DNS queries."
+msgstr "აღმავალი DNS მოთხოვნების საწყისი პორტის ძალით დაყენება."
+
+#: option.c:442
+msgid "Set maximum number of random originating ports for a query."
+msgstr ""
+
+#: option.c:443
+msgid "Do NOT read resolv.conf."
+msgstr "არ წაიკითხო resolv.conf."
+
+#: option.c:444
+#, c-format
+msgid "Specify path to resolv.conf (defaults to %s)."
+msgstr "მიუთითეთ ბილიკი resolv.conf-მდე (ნაგულისხმებია %s)."
+
+#: option.c:445
+msgid "Specify path to file with server= options"
+msgstr "პარამეტრისთვის server= ფაილის ბილიკის მითითება აუცილებელია"
+
+#: option.c:446
+msgid "Specify address(es) of upstream servers with optional domains."
+msgstr "არასავალდებული დომენების მქონე აღმავალი სერვერების მისამართების მითითება."
+
+#: option.c:447
+msgid "Specify address of upstream servers for reverse address queries"
+msgstr "რევერსული მისამართების მოთხოვნებისთვის აღმავალი სერვერების მისამართების მითითება"
+
+#: option.c:448
+msgid "Never forward queries to specified domains."
+msgstr "მითითებული დომენების მოთხოვნები არასდროს გადაიგზავნება."
+
+#: option.c:449
+msgid "Specify the domain to be assigned in DHCP leases."
+msgstr "მიუთითეთ DHCP -ის იჯარებში მისანიჭებელი დომენი."
+
+#: option.c:450
+msgid "Specify default target in an MX record."
+msgstr "მიუთითეთ MX ჩანაწერის ნაგულისხმები სამიზნე."
+
+#: option.c:451
+msgid "Specify time-to-live in seconds for replies from /etc/hosts."
+msgstr "მიუთითეთ /etc/hosts-დან პასუხების სიცოცხლის-დრო, წამებში."
+
+#: option.c:452
+msgid "Specify time-to-live in seconds for negative caching."
+msgstr "მიუთითეთ უარყოფითი ქეშის სიცოცხლის-დრო, წამებში."
+
+#: option.c:453
+msgid "Specify time-to-live in seconds for maximum TTL to send to clients."
+msgstr "კლიენტებისთვის გასაგზავნი სიცოცხლის-დროის მითითება წამებში, მაქსიმალური TTL-ისთვის."
+
+#: option.c:454
+msgid "Specify time-to-live ceiling for cache."
+msgstr "ქეშის სიცოცხლის-დროის მაქსიმუმის მითითება."
+
+#: option.c:455
+msgid "Specify time-to-live floor for cache."
+msgstr "ქეშის სიცოცხლის-დროის მინიმუმის მითითება."
+
+#: option.c:456
+msgid "Retry DNS queries after this many milliseconds."
+msgstr ""
+
+#: option.c:457
+#, c-format
+msgid "Change to this user after startup. (defaults to %s)."
+msgstr "გაშვების შემდეგ ამ მომხმარებელზე გადასვლა (ნაგულისხმები %s)"
+
+#: option.c:458
+msgid "Map DHCP vendor class to tag."
+msgstr "DHCP-ის მომწოდებლის კლასის ჭდეზე მიბმა."
+
+#: option.c:459
+msgid "Display dnsmasq version and copyright information."
+msgstr "Dnsmasq-ის ვერსიის და ლიცენზირების ინფორმაციის გამოტანა."
+
+#: option.c:460
+msgid "Translate IPv4 addresses from upstream servers."
+msgstr "აღმავალი სერვერებიდან IPv4 მისამართების თარგმნა."
+
+#: option.c:461
+msgid "Specify a SRV record."
+msgstr "მიუთითეთ SRV ჩანაწერი."
+
+#: option.c:462
+msgid "Display this message. Use --help dhcp or --help dhcp6 for known DHCP options."
+msgstr "ამ შეტყობინების გამოტანა. ცნობილი DHCP პარამეტრების სანახავად გამოიყენეთ --help dhcp ან --help dhcp6 ."
+
+#: option.c:463
+#, c-format
+msgid "Specify path of PID file (defaults to %s)."
+msgstr "მიუთითეთ ბილიკი PID ფაილამდე (ნაგულისხმებია %s)."
+
+#: option.c:464
+#, c-format
+msgid "Specify maximum number of DHCP leases (defaults to %s)."
+msgstr "DHCP იჯარების მაქსიმალური რაოდენობის მითითება (ნაგულისხმებია %s)."
+
+#: option.c:465
+msgid "Answer DNS queries based on the interface a query was sent to."
+msgstr "DNS სერვერების პასუხი იმის მიხედვით, რომელი ინტერფეისიდან მოვიდა მოთხოვნა."
+
+#: option.c:466
+msgid "Specify TXT DNS record."
+msgstr "მიუთითეთ TXT DNS ჩანაწერი."
+
+#: option.c:467
+msgid "Specify PTR DNS record."
+msgstr "მიუთითეთ PTR DNS ჩანაწერი."
+
+#: option.c:468
+msgid "Give DNS name to IPv4 address of interface."
+msgstr "საჭიროა ინტერფეისის IPv4 მისამართისთვის DNS სახელის მინიჭება."
+
+#: option.c:469
+msgid "Bind only to interfaces in use."
+msgstr "მხოლოდ ჩართულ ინტერფეისებზე მიბმა."
+
+#: option.c:470
+#, c-format
+msgid "Read DHCP static host information from %s."
+msgstr "DHCP სტატიკური ჰოსტის ინფორმაციის %s-დან წაკითხვა."
+
+#: option.c:471
+msgid "Enable the DBus interface for setting upstream servers, etc."
+msgstr "აღმავალი სერვერების დასაყენებლად და სხვა ფუნქციონალისთვის DBus-ის ინტერფეისი ჩართეთ."
+
+#: option.c:472
+msgid "Enable the UBus interface."
+msgstr "UBus ინტერფეისის ჩართვა."
+
+#: option.c:473
+msgid "Do not provide DHCP on this interface, only provide DNS."
+msgstr "ამ ინტერფეისზე DHCP მიწოდებული არ იქნება. მხოლოდ DNS."
+
+#: option.c:474
+msgid "Enable dynamic address allocation for bootp."
+msgstr "\"bootp\"-სთვის დინამიკური მისამართების გამოყოფის ჩაართვა."
+
+#: option.c:475
+msgid "Map MAC address (with wildcards) to option set."
+msgstr "MAC მისამართის (ზოგადობის ნიშნებით) პარამეტრების ნაკრებისთვის მიბმა."
+
+#: option.c:476
+msgid "Treat DHCP requests on aliases as arriving from interface."
+msgstr "მეტსახელებიდან მოსული DHCP მოთხოვნების ისე დამუშავება, თითქოს ისინი ინტერფეისიდან მოვიდნენ."
+
+#: option.c:477
+msgid "Specify extra networks sharing a broadcast domain for DHCP"
+msgstr "DHCP-სთვის სამაუწყებლო დომენის გამზიარებელი დამატებითი ქსელების მითითება"
+
+#: option.c:478
+msgid "Disable ICMP echo address checking in the DHCP server."
+msgstr "DHCP სერვერში ICMP echo მისამართის შემოწმების გამორთვა."
+
+#: option.c:479
+msgid "Shell script to run on DHCP lease creation and destruction."
+msgstr "DHCP იჯარის შესაქმნელად ან წასაშლელად გასაშვები გარსის სკრიპტი."
+
+#: option.c:480
+msgid "Lua script to run on DHCP lease creation and destruction."
+msgstr "DHCP იჯარის შესაქმნელად ან წასაშლელად გასაშვები Lua სკრიპტი."
+
+#: option.c:481
+msgid "Run lease-change scripts as this user."
+msgstr "\"lease-change\" სკრიპტები ამ მომხმარებლით გაეშვება."
+
+#: option.c:482
+msgid "Call dhcp-script with changes to local ARP table."
+msgstr "\"dhcp-script\"-ის ლოკალურ ARP ცხრილში ცვლილებებით გამოძახება."
+
+#: option.c:483
+msgid "Read configuration from all the files in this directory."
+msgstr "კონფიგურაციის ამ საქაღალდეში მყოფი ყველა ფაილიდან წაკითხვა."
+
+#: option.c:484
+msgid "Execute file and read configuration from stdin."
+msgstr "ფაილის შესრულება და კონფიგურაციის stdin-დან წაკითხვა."
+
+#: option.c:485
+msgid "Log to this syslog facility or file. (defaults to DAEMON)"
+msgstr "ჟურნალის syslog-ში ან ფაილში ჩაწერა (ნაგულისხმებია DAEMON)"
+
+#: option.c:486
+msgid "Do not use leasefile."
+msgstr "იჯარების ფაილი გამოყენებული არ იქნება."
+
+#: option.c:487
+#, c-format
+msgid "Maximum number of concurrent DNS queries. (defaults to %s)"
+msgstr "ერთდროული DNS მოთხოვნების მაქსიმალური რაოდენობა (ნაგულისხმებია %s)"
+
+#: option.c:488
+#, c-format
+msgid "Clear DNS cache when reloading %s."
+msgstr "%s-ის გადატვირთვისას DNS ქეშის გასუფთავება."
+
+#: option.c:489
+msgid "Ignore hostnames provided by DHCP clients."
+msgstr "DHCP კლიენტების მიერ მოწოდებული ჰოსტი სახელების იგორირება."
+
+#: option.c:490
+msgid "Do NOT reuse filename and server fields for extra DHCP options."
+msgstr "ფაილის სახელისა და სერვერის ველები DHCP პარამეტრებისთვის თავიდან გამოყენებული *არ* იქნება."
+
+#: option.c:491
+msgid "Enable integrated read-only TFTP server."
+msgstr "ჩაშენებული მხოლოდ-წაკითხვადი TFTP სერვერის ჩართვა."
+
+#: option.c:492
+msgid "Export files by TFTP only from the specified subtree."
+msgstr "TFTP-ით ფაილების მხოლოდ მითითებული ქვეხიდან გატანა."
+
+#: option.c:493
+msgid "Add client IP or hardware address to tftp-root."
+msgstr "\"tftp-root\" -ს კლიენტის ან აპარატურული მისამართი დაამატეთ."
+
+#: option.c:494
+msgid "Allow access only to files owned by the user running dnsmasq."
+msgstr "წვდომის მხოლოდ იმ ფაილებზე მინიჭება, რომლებიც იმ მომხმარებელს მიეკუთვნებიან, რომლითაც dnsmasq-ია გაშვებული."
+
+#: option.c:495
+msgid "Do not terminate the service if TFTP directories are inaccessible."
+msgstr "სერვისი იმ შემთხვევაშიც კი არ შეჩერდება, თუ TFTP-ის საქაღალდეები მიუწვდომელია."
+
+#: option.c:496
+#, c-format
+msgid "Maximum number of concurrent TFTP transfers (defaults to %s)."
+msgstr "ერთდროული TFTP გადაცემების მაქსიმალური რაოდენობა (ნაგულისხმებია %s)."
+
+#: option.c:497
+msgid "Maximum MTU to use for TFTP transfers."
+msgstr "TFTP გადაცემისთვის გამოყენებული მაქსიმალური MTU."
+
+#: option.c:498
+msgid "Disable the TFTP blocksize extension."
+msgstr "TFTP-ის blocksize გაფართოების გამორთვა."
+
+#: option.c:499
+msgid "Convert TFTP filenames to lowercase"
+msgstr "TFTP ფაილების სახელების დაბალ რეგისტრში გადაყვანა"
+
+#: option.c:500
+msgid "Ephemeral port range for use by TFTP transfers."
+msgstr "TFTP გადაცემების მიერ გამოყენებული ეფემერული პორტის დიაპაზონი."
+
+#: option.c:501
+msgid "Use only one port for TFTP server."
+msgstr "TFTP სერვერისთვის მხოლოდ ერთი პორტის გამოყენება."
+
+#: option.c:502
+msgid "Extra logging for DHCP."
+msgstr "ჟურნალის დამატებითი ჩანაწერები DHCP-სთვის."
+
+#: option.c:503
+msgid "Enable async. logging; optionally set queue length."
+msgstr "ასინქრონული ჟურნალის გამოყენება. შეგიძლიათ ასევე დააყენოთ რიგის სიგრძეც."
+
+#: option.c:504
+msgid "Stop DNS rebinding. Filter private IP ranges when resolving."
+msgstr "DNS-ის თავიდან მიბმის შეწყვეტა. ამოხნისას პირადი IP დიაპაზონების გაფილტვრა."
+
+#: option.c:505
+msgid "Allow rebinding of 127.0.0.0/8, for RBL servers."
+msgstr "127.0.0.0/8-ის თავიდან მიბმის დაშვება, RBL სერვერებისთვის."
+
+#: option.c:506
+msgid "Inhibit DNS-rebind protection on this domain."
+msgstr "ამ დომენზე DNS-ის თავიდან მიბმის დაცვის მემკვიდრეობით მიღება."
+
+#: option.c:507
+msgid "Always perform DNS queries to all servers."
+msgstr "DNS მოთხოვნების ყველა სერვერისთვის ყოველთვის ჩატარება."
+
+#: option.c:508
+msgid "Set tag if client includes matching option in request."
+msgstr "ჭდის დაყენება, თუ კლიენტი მოთხოვნაში შესაბამის პარამეტრს შეიცავს."
+
+#: option.c:509
+msgid "Set tag if client provides given name."
+msgstr "თუ კლიენტი მოგვაწოდებს მითითებულ სახელს, ჭდის დაყენება."
+
+#: option.c:510
+msgid "Use alternative ports for DHCP."
+msgstr "DHCP-სთვის ალტერნატიული პორტების გამოყენება."
+
+#: option.c:511
+msgid "Specify NAPTR DNS record."
+msgstr "მიუთითეთ NAPTR DNS ჩანაწერი."
+
+#: option.c:512
+msgid "Specify lowest port available for DNS query transmission."
+msgstr "DNS მოთხოვნის გადაცემისთვის ხელმისაწვდომი პორტის უმცირესი ნომრის მითითება."
+
+#: option.c:513
+msgid "Specify highest port available for DNS query transmission."
+msgstr "DNS მოთხოვნის გადაცემისთვის ხელმისაწვდომი პორტის უდიდესი ნომრის მითითება."
+
+#: option.c:514
+msgid "Use only fully qualified domain names for DHCP clients."
+msgstr "DHCP კლიენტებისთვის მხოლოდ სრული დომენური სახელების გამოყენება."
+
+#: option.c:515
+msgid "Generate hostnames based on MAC address for nameless clients."
+msgstr "უსახელო კლიენტებისთვის MAC მისამართზე დაფუძნებული ჰოსტის სახელების გენერაცია."
+
+#: option.c:516
+msgid "Use these DHCP relays as full proxies."
+msgstr "ამ DHCP გადამგზავნების სრული პროქსის სახით გამოყენება."
+
+#: option.c:517
+msgid "Relay DHCP requests to a remote server"
+msgstr "DHCP მოთხოვნების სხვა სერვერზე გადაგზავნა"
+
+#: option.c:518
+msgid "Specify alias name for LOCAL DNS name."
+msgstr "მიუთითეთ მეტსახელი LOCAL DNS სახელისთვის."
+
+#: option.c:519
+msgid "Prompt to send to PXE clients."
+msgstr "PXE კლიენტებისთვის გასაგზავნი ტექსტი."
+
+#: option.c:520
+msgid "Boot service for PXE menu."
+msgstr "ჩატვირთვის სერვისი PXE მენიუსთვის."
+
+#: option.c:521
+msgid "Check configuration syntax."
+msgstr "შეამოწმეთ კონფიგურაციის სინტაქსი."
+
+#: option.c:522
+msgid "Add requestor's MAC address to forwarded DNS queries."
+msgstr "გადაგზავნილი DNS მოთხოვნებისთვის მომთხოვნის MAC მისამართის დამატება."
+
+#: option.c:523
+msgid "Strip MAC information from queries."
+msgstr "მოთხოვნებიდან MAC ინფორმაციის მოცილება."
+
+#: option.c:524
+msgid "Add specified IP subnet to forwarded DNS queries."
+msgstr "გადაგზავნილი DNS მოთხოვნებისთვის მითითებული IP ქვექსელის დამატება."
+
+#: option.c:525
+msgid "Strip ECS information from queries."
+msgstr "მოთხოვნებიდან ECS ინფორამციის მოცილება."
+
+#: option.c:526
+msgid "Add client identification to forwarded DNS queries."
+msgstr "გადაგზავნილი DNS მოთხოვნებისთვის კლიენტის იდენტიფიკატორის დამატება."
+
+#: option.c:527
+msgid "Proxy DNSSEC validation results from upstream nameservers."
+msgstr "აღმავალი DNS სერვერებიდან DNSSEC გადამოწმების შედეგების გადმოგზავნა."
+
+#: option.c:528
+msgid "Attempt to allocate sequential IP addresses to DHCP clients."
+msgstr "DHCP კლიენტებისთვის IP მისამართების მიმდევრობით გამოყოფის მცდელობა."
+
+#: option.c:529
+msgid "Ignore client identifier option sent by DHCP clients."
+msgstr "DHCP კლიენტების მიერ გამოგზავნილი კლიენტის იდენტიფიკატორის იგნორირება."
+
+#: option.c:530
+msgid "Copy connection-track mark from queries to upstream connections."
+msgstr "აღმავალი შეერთებებისთვის მოთხოვნებიდან Connection-mark ნიშნის კოპირება."
+
+#: option.c:531
+msgid "Allow DHCP clients to do their own DDNS updates."
+msgstr "DHCP კლიენტებისთვის საკუთარი DDNS განახლებების გაკეთების ნების დართვა."
+
+#: option.c:532
+msgid "Send router-advertisements for interfaces doing DHCPv6"
+msgstr "ინტერფეისიდან, რომელზეც DHCPv6-ია მიბმული, router-advertisements პაკეტის გაგზავნა"
+
+#: option.c:533
+msgid "Specify DUID_EN-type DHCPv6 server DUID"
+msgstr "მიუთითეთ DUID_EN-ტიპის DHCPv6 სერვერის DUID"
+
+#: option.c:534
+msgid "Specify host (A/AAAA and PTR) records"
+msgstr "მიუთითეთ ჰოსტის (A/AAAA და PTR) ჩანაწერები"
+
+#: option.c:535
+msgid "Specify host record in interface subnet"
+msgstr "ინტერფეისის ქვექსელში ჰოსტის ჩანაწერის მითითება აუცილებელია"
+
+#: option.c:536
+msgid "Specify certification authority authorization record"
+msgstr "სერტიფიკატის ორგანის ავტორიზაციის ჩანაწერის მითითება"
+
+#: option.c:537
+msgid "Specify arbitrary DNS resource record"
+msgstr "DNS-ის ტექსტური ჩანაწერის მითითება"
+
+#: option.c:538
+msgid "Bind to interfaces in use - check for new interfaces"
+msgstr "გამოყენებულ ინტერფეისზე მიბმა - ახალი ინტერფეისებს შემოწმება"
+
+#: option.c:539
+msgid "Export local names to global DNS"
+msgstr "ლოკალური სახელების გლობალურ DNS-ში გატანა"
+
+#: option.c:540
+msgid "Domain to export to global DNS"
+msgstr "გლობალურ DNS-ში გასატანი დომენი"
+
+#: option.c:541
+msgid "Set TTL for authoritative replies"
+msgstr "ავტორიტეტული პასუხებისთვის TTL-ის დაყენება"
+
+#: option.c:542
+msgid "Set authoritative zone information"
+msgstr "ავტორიტეტული ზონის ინფორმაციის დაყენება"
+
+#: option.c:543
+msgid "Secondary authoritative nameservers for forward domains"
+msgstr "მეორადი ავტორიტეტული DNS სერვერები დომენების გადასაგზავნად"
+
+#: option.c:544
+msgid "Peers which are allowed to do zone transfer"
+msgstr "პარტნიორები, რომლებსაც უფლება აქვთ, ზონის გადაცემა შეასრულონ"
+
+#: option.c:545
+msgid "Specify ipsets to which matching domains should be added"
+msgstr "მიუთითეთ ipset-ები, რომელშიც შესაბამისი დომენები უნდა დაემატოს"
+
+#: option.c:546
+msgid "Specify nftables sets to which matching domains should be added"
+msgstr "მიუთითეთ nfstables-ის სეტი, რომელშიც შესაბამისი დომენები დაემატება"
+
+#: option.c:547
+msgid "Enable filtering of DNS queries with connection-track marks."
+msgstr "Connection-track ნიშნების მქონე DNS მოთხოვნების ფილტრაციის ჩართვა."
+
+#: option.c:548
+msgid "Set allowed DNS patterns for a connection-track mark."
+msgstr "Connection track ნიშნებისთვის DNS-ის ნებადართული შაბლონების დაყენება."
+
+#: option.c:549
+msgid "Specify a domain and address range for synthesised names"
+msgstr "აწყობილი სახელებისთვის დომენის და მისამართების დიაპაზონის მითითება"
+
+#: option.c:550
+msgid "Activate DNSSEC validation"
+msgstr "DNSSEC გადამოწმების აქტივაცია"
+
+#: option.c:551
+msgid "Specify trust anchor key digest."
+msgstr ""
+
+#: option.c:552
+msgid "Disable upstream checking for DNSSEC debugging."
+msgstr "DNSSEC-ის გასამართად აღმავლის შემოწმების გამორთვა."
+
+#: option.c:553
+msgid "Ensure answers without DNSSEC are in unsigned zones."
+msgstr "დარწმუნდით, რომ DNSSEC-ის გარეშე პასუხები ხელმოუწერელ ზონებშია."
+
+#: option.c:554
+msgid "Don't check DNSSEC signature timestamps until first cache-reload"
+msgstr "პირველ cache-reload-მდე DNSSEC-ის ხელმოწერის დროის შტამპები არ შემოწმდება"
+
+#: option.c:555
+msgid "Timestamp file to verify system clock for DNSSEC"
+msgstr "DNSSEC-ისთვის სისტემის საათის შესამოწმებელი დროის შტამპის ფაილი"
+
+#: option.c:556
+msgid "Set MTU, priority, resend-interval and router-lifetime"
+msgstr "დააყენეთ MTU, პრიორიტეტი, resend-interval და router-lifetime"
+
+#: option.c:557
+msgid "Do not log routine DHCP."
+msgstr "DHCP-ის ფუნქციები ჟურნალში არ ჩაიწერება."
+
+#: option.c:558
+msgid "Do not log routine DHCPv6."
+msgstr "DHCPv6-ის ფუნქციები ჟურნალში არ ჩაიწერება."
+
+#: option.c:559
+msgid "Do not log RA."
+msgstr "RA ჟურნალში არ ჩაიწერება."
+
+#: option.c:560
+msgid "Log debugging information."
+msgstr "გამართვის ინფორმაციის ჟურნალში ჩაწერა."
+
+#: option.c:561
+msgid "Accept queries only from directly-connected networks."
+msgstr "მოთხოვნების მხოლოდ პირდაპირ-დაერთებული ქსელებიდან მიღება."
+
+#: option.c:562
+msgid "Detect and remove DNS forwarding loops."
+msgstr "DNS-ის გადაგზავნის მარყუჟების აღმოჩენა და მოცილება."
+
+#: option.c:563
+msgid "Ignore DNS responses containing ipaddr."
+msgstr "IP მისამართის შემცველი DNS პასუხების იგნორი."
+
+#: option.c:564
+msgid "Set TTL in DNS responses with DHCP-derived addresses."
+msgstr "DHCP-ით დაცემულ მისამართებთან ერთად DNS პასუხებში TTL-ის დაყენება."
+
+#: option.c:565
+msgid "Delay DHCP replies for at least number of seconds."
+msgstr "DHCP პასუხების გადაგზავნის მითითებული წამების რაოდენობით დაყოვნება."
+
+#: option.c:566
+msgid "Enables DHCPv4 Rapid Commit option."
+msgstr "DHCPv4-ის Rapid Commit პარამეტრის ჩართვა."
+
+#: option.c:567
+msgid "Path to debug packet dump file"
+msgstr "ბილიკი გამართვის პაკეტის ჩასაწერ ფაილამდე"
+
+#: option.c:568
+msgid "Mask which packets to dump"
+msgstr "ჩასაწერი პაკეტების შენიღბვა"
+
+#: option.c:569
+msgid "Call dhcp-script when lease expiry changes."
+msgstr "იჯარის ვადის ცვლილებსას dhcp-script -ის გამოძახება."
+
+#: option.c:570
+msgid "Send Cisco Umbrella identifiers including remote IP."
+msgstr "Cisco Umbrella იდენტიფიკატორების, დაშორებული IP-ის ჩათვლით, გაგზავნა."
+
+#: option.c:571
+msgid "Do not log routine TFTP."
+msgstr "\"TFTP\" რუტინები ჟურნალში არ ჩაიწერება."
+
+#: option.c:572
+msgid "Suppress round-robin ordering of DNS records."
+msgstr ""
+
+#: option.c:802
+#, c-format
+msgid ""
+"Usage: dnsmasq [options]\n"
+"\n"
+msgstr ""
+"გამოყენება: dnsmasq [პარამეტრები]\n"
+"\n"
+
+#: option.c:804
+#, c-format
+msgid "Use short options only on the command line.\n"
+msgstr "მოკლე პარამეტრების მხოლოდ ბრძანებების სტრიქონში გამოყენება.\n"
+
+#: option.c:806
+#, c-format
+msgid "Valid options are:\n"
+msgstr "სწორი პარამეტრებია:\n"
+
+#: option.c:853 option.c:1055
+msgid "bad address"
+msgstr "ცუდი მისამართი"
+
+#: option.c:882 option.c:886
+msgid "bad port"
+msgstr "არასწორი პორტი"
+
+#: option.c:899 option.c:1002 option.c:1048
+msgid "interface binding not supported"
+msgstr "ინტერფეისზე მიბმა მხარდაუჭერელია"
+
+#: option.c:955
+msgid "Cannot resolve server name"
+msgstr ""
+
+#: option.c:991
+msgid "cannot use IPv4 server address with IPv6 source address"
+msgstr ""
+
+#: option.c:997 option.c:1043
+msgid "interface can only be specified once"
+msgstr "ინტერფეისი მხოლოდ ერთხელ შეგიძლიათ მიუთითოთ"
+
+#: option.c:1011 option.c:4785
+msgid "bad interface name"
+msgstr "ინტერფეისის არასწორი სახელი"
+
+#: option.c:1037
+msgid "cannot use IPv6 server address with IPv4 source address"
+msgstr ""
+
+#: option.c:1124
+msgid "bad IPv4 prefix length"
+msgstr "არასწორი IPv4 პრეფიქსის სიგრძე"
+
+#: option.c:1155 option.c:1165 option.c:1240 option.c:1250 option.c:5360
+msgid "error"
+msgstr "შეცდომა"
+
+#: option.c:1207
+msgid "bad IPv6 prefix length"
+msgstr "არასწორი IPv6 პრეფიქსის სიგრძე"
+
+#: option.c:1467
+msgid "inappropriate vendor:"
+msgstr "შეუფერებელი მომწოდებელი:"
+
+#: option.c:1474
+msgid "inappropriate encap:"
+msgstr "შეუფერებელი ენკაფსულაცია:"
+
+#: option.c:1500
+msgid "unsupported encapsulation for IPv6 option"
+msgstr "მხარდაუჭერელი ენკაფსულაცია IPv6 პარამეტრისთვის"
+
+#: option.c:1514
+msgid "bad dhcp-option"
+msgstr "არასწორი dhcp-option"
+
+#: option.c:1592
+msgid "bad IP address"
+msgstr "არასწორი IP მისამართი"
+
+#: option.c:1595 option.c:1734 option.c:3928
+msgid "bad IPv6 address"
+msgstr "არასწორი IPv6 მისამართი"
+
+#: option.c:1688
+msgid "bad IPv4 address"
+msgstr "არასწორი IPv4 მისამართ"
+
+#: option.c:1761 option.c:1856
+msgid "bad domain in dhcp-option"
+msgstr "dhcp-option-ში მითითებული დომენი არასწორია"
+
+#: option.c:1900
+msgid "dhcp-option too long"
+msgstr "dhcp-option ძალიან გრძელია"
+
+#: option.c:1907
+msgid "illegal dhcp-match"
+msgstr "არასწორი dhcp-match"
+
+#: option.c:1966
+msgid "illegal repeated flag"
+msgstr "არასწორი გამეორებული ალამი"
+
+#: option.c:1974
+msgid "illegal repeated keyword"
+msgstr "არასწორი გამეორებული საკვანზო სიტყვა"
+
+#: option.c:2056 option.c:5533
+#, c-format
+msgid "cannot access directory %s: %s"
+msgstr "%s საქაღალდესთან წვდომის შეცდომა: %s"
+
+#: option.c:2102 tftp.c:573 dump.c:72
+#, c-format
+msgid "cannot access %s: %s"
+msgstr "%s-სთან წვდომის შეცდომა: %s"
+
+#: option.c:2219
+msgid "setting log facility is not possible under Android"
+msgstr "ჟურნალის დონეების მითითება Android_ის ქვეშ შეუძლებელია"
+
+#: option.c:2228
+msgid "bad log facility"
+msgstr "ჟურნალის არასწორი სამიზნე"
+
+#: option.c:2281
+msgid "bad MX preference"
+msgstr "არასწორი MX პრიორიტეტი"
+
+#: option.c:2289
+msgid "bad MX name"
+msgstr "არასწორი MX სახელი"
+
+#: option.c:2304
+msgid "bad MX target"
+msgstr "არასწორი MX სამიზნე"
+
+#: option.c:2324
+msgid "recompile with HAVE_SCRIPT defined to enable lease-change scripts"
+msgstr "lease-change სკრიპტების ჩასართავად კონფიგურაციაში ჩართეთ HAVE_SCRIPT და ააგეთ პროგრამა თავიდან"
+
+#: option.c:2328
+msgid "recompile with HAVE_LUASCRIPT defined to enable Lua scripts"
+msgstr "lua სკრიპტების ჩასართავად კონფიგურაციაში ჩართეთ HAVE_LUASCRIPT და ააგეთ პროგრამა თავიდან"
+
+#: option.c:2447
+msgid "invalid auth-zone"
+msgstr "auth-zone არასწორია"
+
+#: option.c:2589 option.c:2621
+msgid "bad prefix length"
+msgstr "არასწორი პრეფიქსის სიგრძე"
+
+#: option.c:2601 option.c:2642 option.c:2696
+msgid "bad prefix"
+msgstr "არასწორი პრეფიქსი"
+
+#: option.c:2716
+msgid "prefix length too small"
+msgstr "პრეფიქსის სიგრძე ძალიან პატარაა"
+
+#: option.c:3010
+msgid "Bad address in --address"
+msgstr "არასწორი მისამართი --address -ში"
+
+#: option.c:3110
+msgid "recompile with HAVE_IPSET defined to enable ipset directives"
+msgstr "ipset-ის დირექტივების ჩასართავად კონფიგურაციაში ჩართეთ HAVE_IPSET და ააგეთ პროგრამა თავიდან"
+
+#: option.c:3117
+msgid "recompile with HAVE_NFTSET defined to enable nftset directives"
+msgstr "nftset-ის დირექტივების ჩასართავად კონფიგურაციაში ჩართეთ HAVE_NFTSET და ააგეთ პროგრამა თავიდან"
+
+#: option.c:3192 option.c:3210
+msgid "recompile with HAVE_CONNTRACK defined to enable connmark-allowlist directives"
+msgstr "connmark-allowlist-ის დირექტივების ჩასართავად კონფიგურაციაში ჩართეთ HAVE_CONNTRACK და ააგეთ პროგრამა თავიდან"
+
+#: option.c:3496
+msgid "bad port range"
+msgstr "არასწორი პორტის დიაპაზონი"
+
+#: option.c:3522
+msgid "bad bridge-interface"
+msgstr "არასწორი bridge-interface"
+
+#: option.c:3566
+msgid "bad shared-network"
+msgstr "არასწორი shared-network"
+
+#: option.c:3620
+msgid "only one tag allowed"
+msgstr "დაშვებულია მხოლოდ ერთი ჭდე"
+
+#: option.c:3641 option.c:3657 option.c:3783 option.c:3791 option.c:3834
+msgid "bad dhcp-range"
+msgstr "არასწორი dhcp-range"
+
+#: option.c:3675
+msgid "inconsistent DHCP range"
+msgstr "არამდგრადი DHCP დიაპაზონი"
+
+#: option.c:3741
+msgid "prefix length must be exactly 64 for RA subnets"
+msgstr "\"RA\" ქვექსელებისთვის პრეფიქსის სიგრძე ზუსტად 64-ის ტოლი უნდა იყოს"
+
+#: option.c:3743
+msgid "prefix length must be exactly 64 for subnet constructors"
+msgstr "ქვექსელის კონსტრუქტორებისთვის პრეფიქსის სიგრძე ზუსტად 64-ის ტოლი უნდა იყოს"
+
+#: option.c:3746
+msgid "prefix length must be at least 64"
+msgstr "პრეფიქსის სიგრძე მინიმუმ 64-ის ტოლი უნდა იყოს"
+
+#: option.c:3749
+msgid "inconsistent DHCPv6 range"
+msgstr "არამდგრადი DHCPv6 დიაპაზონი"
+
+#: option.c:3768
+msgid "prefix must be zero with \"constructor:\" argument"
+msgstr "პრეფიქსი \"constructor:\" არგუმენტთან ერთად ნულის ტოლი უნდა იყოს"
+
+#: option.c:3893 option.c:3971
+msgid "bad hex constant"
+msgstr "არასწორი თექვს, კონსტანტა"
+
+#: option.c:3946
+msgid "bad IPv6 prefix"
+msgstr "არასწორი IPv6 პრეფიქსი"
+
+#: option.c:3994
+#, c-format
+msgid "duplicate dhcp-host IP address %s"
+msgstr "dhcp-host-ის IP მისამართი %s ორჯერაა მითითებული"
+
+#: option.c:4056
+msgid "bad DHCP host name"
+msgstr "არასწორი DHCP ჰოსტის სახელი"
+
+#: option.c:4142
+msgid "bad tag-if"
+msgstr "არასწორი tag-if"
+
+#: option.c:4490 option.c:5046
+msgid "invalid port number"
+msgstr "პორტის არასწორი ნომერი"
+
+#: option.c:4546
+msgid "bad dhcp-proxy address"
+msgstr "არასწორი dhcp-proxy მისამართი"
+
+#: option.c:4627
+msgid "Bad dhcp-relay"
+msgstr "არასწორი dhcp-relay"
+
+#: option.c:4671
+msgid "bad RA-params"
+msgstr "არასწორი RA-params"
+
+#: option.c:4681
+msgid "bad DUID"
+msgstr "არასწორი DUID"
+
+#: option.c:4715
+msgid "missing address in alias"
+msgstr "მეტსახელში მისამართი მითითებული არაა"
+
+#: option.c:4721
+msgid "invalid alias range"
+msgstr "მეტსახელების არასწორი დიაპაზონი"
+
+#: option.c:4770
+msgid "missing address in dynamic host"
+msgstr "დინამიკურ ჰოსტში მისამართი მითითებული არაა"
+
+#: option.c:4785
+msgid "bad dynamic host"
+msgstr "ცუდი დინამიკური ჰოსტი"
+
+#: option.c:4803 option.c:4819
+msgid "bad CNAME"
+msgstr "არასწორი CNAME"
+
+#: option.c:4827
+msgid "duplicate CNAME"
+msgstr "დუბლირებული CNAME"
+
+#: option.c:4854
+msgid "bad PTR record"
+msgstr "ცუდი PTR ჩანაწერი"
+
+#: option.c:4889
+msgid "bad NAPTR record"
+msgstr "არასწორი NAPTR ჩანაწერი"
+
+#: option.c:4925
+msgid "bad RR record"
+msgstr "ცუდი RR ჩანაწერი"
+
+#: option.c:4958
+msgid "bad CAA record"
+msgstr "ცუდი CAA ჩანაწერი"
+
+#: option.c:4987
+msgid "bad TXT record"
+msgstr "ცუდი TXT ჩანაწერი"
+
+#: option.c:5030
+msgid "bad SRV record"
+msgstr "ცუდი SRV ჩანაწერი"
+
+#: option.c:5037
+msgid "bad SRV target"
+msgstr "ცუდი SRV სამიზნე"
+
+#: option.c:5056
+msgid "invalid priority"
+msgstr "არასწორი პრიორიტეტი"
+
+#: option.c:5061
+msgid "invalid weight"
+msgstr "არასწორი წონა"
+
+#: option.c:5084
+msgid "Bad host-record"
+msgstr "არასწორი host-record"
+
+#: option.c:5123
+msgid "Bad name in host-record"
+msgstr "არასწორი სახელი host-record -ში"
+
+#: option.c:5165
+msgid "bad value for dnssec-check-unsigned"
+msgstr "dnssec-check-unsigned-ის არასწორი მნიშვნელობა"
+
+#: option.c:5201
+msgid "bad trust anchor"
+msgstr ""
+
+#: option.c:5217
+msgid "bad HEX in trust anchor"
+msgstr ""
+
+#: option.c:5228
+msgid "unsupported option (check that dnsmasq was compiled with DHCP/TFTP/DNSSEC/DBus support)"
+msgstr "მხარდაუჭერელი პარამეტრი (შეამოწმეთ, dnsmasq აგებულია, თუ არა DHCP/TFTP/DNSSEC/DBus-ის მხარდაჭერით)"
+
+#: option.c:5290
+msgid "missing \""
+msgstr "აკლია \""
+
+#: option.c:5347
+msgid "bad option"
+msgstr "არასწორი პარამეტრი"
+
+#: option.c:5349
+msgid "extraneous parameter"
+msgstr "დამატებითი პარამეტრი"
+
+#: option.c:5351
+msgid "missing parameter"
+msgstr "ნაკლული პარამეტრი"
+
+#: option.c:5353
+msgid "illegal option"
+msgstr "დაუშვებელი პარამეტრი"
+
+#: option.c:5363
+#, c-format
+msgid " in output from %s"
+msgstr " %s-ის გამოტანილში"
+
+#: option.c:5365
+#, c-format
+msgid " at line %d of %s"
+msgstr " %2$s-ის %1$d -ე ხაზზე"
+
+#: option.c:5380 option.c:5683 option.c:5694
+#, c-format
+msgid "read %s"
+msgstr "%s წავიკითხე"
+
+#: option.c:5446
+#, c-format
+msgid "cannot execute %s: %s"
+msgstr "%s-ის შესრულების შეცდომა: %s"
+
+#: option.c:5454 option.c:5615 tftp.c:790
+#, c-format
+msgid "cannot read %s: %s"
+msgstr "%s -ის წაკითხვის შეცდომა: %s"
+
+#: option.c:5473
+#, c-format
+msgid "error executing %s: %s"
+msgstr "შესრულების შეცდომა %s: %s"
+
+#: option.c:5476
+#, c-format
+msgid "%s returns non-zero error code"
+msgstr "%s არანულოვან შეცდომის კოდს აბრუნებს"
+
+#: option.c:5775
+msgid "junk found in command line"
+msgstr "ბრძანების სტრიქონში ნაპოვნია ნაგავი"
+
+#: option.c:5815
+#, c-format
+msgid "Dnsmasq version %s  %s\n"
+msgstr "Dnsmasq -ის ვერსია %s  %s\n"
+
+#: option.c:5816
+#, c-format
+msgid ""
+"Compile time options: %s\n"
+"\n"
+msgstr ""
+"აგების პარამეტრები: %s\n"
+"\n"
+
+#: option.c:5817
+#, c-format
+msgid "This software comes with ABSOLUTELY NO WARRANTY.\n"
+msgstr "ეს პროგრამა ყველანაირი გარანტიის გარეშეა.\n"
+
+#: option.c:5818
+#, c-format
+msgid "Dnsmasq is free software, and you are welcome to redistribute it\n"
+msgstr "Dnsmasq უფასო პროგრამაა და თავისუფლად შეგიძლიათ, გაავრცელოთ ის\n"
+
+#: option.c:5819
+#, c-format
+msgid "under the terms of the GNU General Public License, version 2 or 3.\n"
+msgstr "ვრცელდება GNU საჯარო ლიცენზიით, ვერსია 2 ან 3.\n"
+
+#: option.c:5836
+msgid "try --help"
+msgstr "სცადეთ --help"
+
+#: option.c:5838
+msgid "try -w"
+msgstr "სცადეთ -w"
+
+#: option.c:5840
+#, c-format
+msgid "bad command line options: %s"
+msgstr "ბრძანების სტრიქონის არასწორი პარამეტრები: %s"
+
+#: option.c:5909
+#, c-format
+msgid "CNAME loop involving %s"
+msgstr "CNAME-ის მარყუჟი %s -ის მონაწილეობით"
+
+#: option.c:5950
+#, c-format
+msgid "cannot get host-name: %s"
+msgstr "host-name -ის მიღების შეცდომა: %s"
+
+#: option.c:5978
+msgid "only one resolv.conf file allowed in no-poll mode."
+msgstr "no-poll რეჟიმში მხოლოდ ერთი resolv.conf-ის მითითებაა შესაძლებელი."
+
+#: option.c:5988
+msgid "must have exactly one resolv.conf to read domain from."
+msgstr "დომენის წასაკითხად საჭიროა ზუსტად ერთი resolv.conf-ის ქონა."
+
+#: option.c:5991 network.c:1727 dhcp.c:892
+#, c-format
+msgid "failed to read %s: %s"
+msgstr "%s-ის წაკითხვის შეცდომა: %s"
+
+#: option.c:6008
+#, c-format
+msgid "no search directive found in %s"
+msgstr "%s-ში ძებნის დირექტივა ნაპოვნი არა"
+
+#: option.c:6029
+msgid "there must be a default domain when --dhcp-fqdn is set"
+msgstr "როცა --dhcp-fqdn დაყენებულია, ნაგულისხმები დომენის არსებობა აუცილებელია"
+
+#: option.c:6038
+msgid "syntax check OK"
+msgstr "სინტაქსის გადამოწმება წარმატებით დასრულდა"
+
+#: forward.c:107
+#, c-format
+msgid "failed to send packet: %s"
+msgstr "პაკეტის გაგზავნის შეცდომა: %s"
+
+#: forward.c:715
+msgid "discarding DNS reply: subnet option mismatch"
+msgstr "\"DNS\" პასუხის გაუქმება: ქვექსელის პარამეტრი არ ემთხვევა"
+
+#: forward.c:780
+#, c-format
+msgid "nameserver %s refused to do a recursive query"
+msgstr "სერვერი %s რეკურსიული მოთხოვნის შესრულებაზე უარს აცხადებს"
+
+#: forward.c:826
+#, c-format
+msgid "possible DNS-rebind attack detected: %s"
+msgstr "აღმოჩენილია შესაძლო DNS-rebind შეტევა: %s"
+
+#: forward.c:1239
+#, c-format
+msgid "reducing DNS packet size for nameserver %s to %d"
+msgstr "სერვერისთვის %s DNS პაკეტის ზომის %d-მდე შემცირება"
+
+#: forward.c:1565
+#, c-format
+msgid "ignoring query from non-local network %s (logged only once)"
+msgstr "არა-ლოკალური ქსელიდან (%s) მოსული მოთხოვნის იგნორირება (ჟურნალში იწერება მხოლოდ ერთხელ)"
+
+#: forward.c:2139
+#, c-format
+msgid "ignoring query from non-local network %s"
+msgstr "არალოკალური ქსელიდან (%s) მოსული მოთხოვნის იგნორირება"
+
+#: forward.c:2501
+#, c-format
+msgid "failed to bind server socket to %s: %s"
+msgstr "სერვერის სოკეტის %s-ზე მიბმის შეცდომა: %s"
+
+#: forward.c:2867
+#, c-format
+msgid "Maximum number of concurrent DNS queries reached (max: %d)"
+msgstr "მიღწეულია ერთდრული DNS მოთხოვნების ლიმიტი (მაქს: %d)"
+
+#: forward.c:2869
+#, c-format
+msgid "Maximum number of concurrent DNS queries to %s reached (max: %d)"
+msgstr "მიღწეულია %s-მდე ერთდროული DNS მოთხოვნების ლიმიტი (მაქს: %d)"
+
+#: network.c:700
+#, c-format
+msgid "stopped listening on %s(#%d): %s port %d"
+msgstr "მოსმენა შეწყდა: %s(#%d): %s პორტი %d"
+
+#: network.c:911
+#, c-format
+msgid "failed to create listening socket for %s: %s"
+msgstr "%s-სთვის მოსასმენი სოკეტის შექმნის შეცდომა: %s"
+
+#: network.c:1192
+#, c-format
+msgid "listening on %s(#%d): %s port %d"
+msgstr "ვუსმენ %s(#%d)-ზე: %s პორტი %d"
+
+#: network.c:1219
+#, c-format
+msgid "listening on %s port %d"
+msgstr "ვუსმენ %s -ზე, პორტი %d"
+
+#: network.c:1252
+#, c-format
+msgid "LOUD WARNING: listening on %s may accept requests via interfaces other than %s"
+msgstr "ხმამაღალი გაფრთხილება: %s-ზე მოსმენამ მოთხოვნების %s-ის გარდა სხვა ინტერფეისებიდანაც მიღებაც შეიძლება გამოიწვიოს"
+
+#: network.c:1259
+msgid "LOUD WARNING: use --bind-dynamic rather than --bind-interfaces to avoid DNS amplification attacks via these interface(s)"
+msgstr "ხმამაღალი გაფრთხილება: ამ ინტერფეისებიდან DNS-ით გაძლიერებული შეტევების თავიდან ასაცილებლად --bind-dynamic -ის მაგიერ --bind-interfaces გამოიყენეთ"
+
+#: network.c:1268
+#, c-format
+msgid "warning: using interface %s instead"
+msgstr "გაფრთხილება: სამაგიეროდ გამოიყენება ინტერფეისი %s"
+
+#: network.c:1277
+#, c-format
+msgid "warning: no addresses found for interface %s"
+msgstr "გაფრთხილება: ინტერფეისისთვის (%s) მისამართის პოვნა შეუძლებელია"
+
+#: network.c:1335
+#, c-format
+msgid "interface %s failed to join DHCPv6 multicast group: %s"
+msgstr "ინტერფეისის (%s) შეცდომა DHCPv6-ის მულტიკასტის ჯგუფში გაწევრებისას: %s"
+
+#: network.c:1340
+msgid "try increasing /proc/sys/net/core/optmem_max"
+msgstr "სცადეთ გაზარდოთ /proc/sys/net/core/optmem_max"
+
+#: network.c:1545
+#, c-format
+msgid "failed to bind server socket for %s: %s"
+msgstr "%s-სთვის სერვერის სოკეტის მიბმის შეცდომა: %s"
+
+#: network.c:1622
+#, c-format
+msgid "ignoring nameserver %s - local interface"
+msgstr "\"DNS\" სერვერის (%s) იგნორი - ლოკალური ინტერფეისი"
+
+#: network.c:1633
+#, c-format
+msgid "ignoring nameserver %s - cannot make/bind socket: %s"
+msgstr "\"DNS\" სერვერის (%s) იგნორი - სოკეტის შექმნის/მიბმის შეცდომა: %s"
+
+#: network.c:1643
+msgid "more servers are defined but not logged"
+msgstr "აღწერილი მეტი სერვერია, მაგრამ ჟურნალში არ იწერება"
+
+#: network.c:1654
+msgid "(no DNSSEC)"
+msgstr "(DNSSEC-ის გარეშე)"
+
+#: network.c:1657
+msgid "unqualified"
+msgstr "არაკვალიფიციური"
+
+#: network.c:1657
+msgid "names"
+msgstr "სახელები"
+
+#: network.c:1659
+msgid "default"
+msgstr "ნაგულისხმები"
+
+#: network.c:1661
+msgid "domain"
+msgstr "დომენი"
+
+#: network.c:1663
+#, c-format
+msgid "using nameserver %s#%d for %s %s%s %s"
+msgstr "გამოიყენება DNS სერვერი %s#%d -ი %s %s%s %s -სთვის"
+
+#: network.c:1667
+#, c-format
+msgid "NOT using nameserver %s#%d - query loop detected"
+msgstr "DNS სერვერი გამოყენებული *არ* იქნება %s#%d - აღმოჩენილია მოთხოვნის მარყუჟი"
+
+#: network.c:1670
+#, c-format
+msgid "using nameserver %s#%d(via %s)"
+msgstr "გამოიყენება DNS სერვერ %s#%d(%s-ის გავლით)"
+
+#: network.c:1672
+#, c-format
+msgid "using nameserver %s#%d"
+msgstr "გამოიყენება DNS სერვერი %s#%d"
+
+#: network.c:1687
+#, c-format
+msgid "using only locally-known addresses for %s"
+msgstr "%s-სთვის მხოლოდ ლოკალურად-ცნობილი მისამართების დაყენება"
+
+#: network.c:1690
+#, c-format
+msgid "using standard nameservers for %s"
+msgstr "%s-სთვის სტანდარტული DNS სერვერები გამოიყენება"
+
+#: network.c:1694
+#, c-format
+msgid "using %d more local addresses"
+msgstr "გამოიყენება კიდევ %d ლოკალური მისამართი"
+
+#: network.c:1696
+#, c-format
+msgid "using %d more nameservers"
+msgstr "გამოიყენება კიდევ %d DNS სერვერი"
+
+#: dnsmasq.c:192
+msgid "dhcp-hostsdir, dhcp-optsdir and hostsdir are not supported on this platform"
+msgstr "dhcp-hostsdir, dhcp-optsdir და hostsdir ამ პლატფორმაზე მხარდაჭერილი არაა"
+
+#: dnsmasq.c:207
+msgid "no root trust anchor provided for DNSSEC"
+msgstr ""
+
+#: dnsmasq.c:210
+msgid "cannot reduce cache size from default when DNSSEC enabled"
+msgstr "ნაგულისხმები ქეშის ზომის შეცვლა მაშინ, როცა DNSSEC ჩართულია, შეუძლებელია"
+
+#: dnsmasq.c:212
+msgid "DNSSEC not available: set HAVE_DNSSEC in src/config.h"
+msgstr "DNSSEC მიუწვდომელია: დააყენეთ HAVE_DNSSEC src/config.h -ში"
+
+#: dnsmasq.c:218
+msgid "TFTP server not available: set HAVE_TFTP in src/config.h"
+msgstr "TFTP სერვერი მიუწვდომელია: დააყენეთ HAVE_TFTP src/config.h -ში"
+
+#: dnsmasq.c:225
+msgid "cannot use --conntrack AND --query-port"
+msgstr "--conntrack -ისა და --query-port -ის ერთად გამოყენება შეუძლებელია"
+
+#: dnsmasq.c:231
+msgid "conntrack support not available: set HAVE_CONNTRACK in src/config.h"
+msgstr "conntrack-ის მხარდაჭერა მიუწვდომელია: დააყენეთ HAVE_CONNTRACK ფაილში src/config.h"
+
+#: dnsmasq.c:236
+msgid "asynchronous logging is not available under Solaris"
+msgstr "solaris-ში ასინქრონული ჟურნალი ხელმიუწვდომელია"
+
+#: dnsmasq.c:241
+msgid "asynchronous logging is not available under Android"
+msgstr "android-ში ასინქრონული ჟურნალი ხელმიუწვდომელია"
+
+#: dnsmasq.c:246
+msgid "authoritative DNS not available: set HAVE_AUTH in src/config.h"
+msgstr "ავტორიტეტული DNS მიუწვდომელია: დააყენეთ HAVE_AUTH src/confg.h-ში"
+
+#: dnsmasq.c:251
+msgid "loop detection not available: set HAVE_LOOP in src/config.h"
+msgstr "მარყუჟის აღმოჩენა ხელმიუწვდომელია: დააყენეთ HAVE_LOOP src/config.h -ში"
+
+#: dnsmasq.c:256
+msgid "Ubus not available: set HAVE_UBUS in src/config.h"
+msgstr "Ubus-ის მხარდაჭერა მიუწვდომელია: დააყენეთ HAVE_UBUS ფაილში src/config.h"
+
+#: dnsmasq.c:267
+msgid "max_port cannot be smaller than min_port"
+msgstr "max_port-ის მნიშვნელობა min_port-ზე მცირე ვერ იქნება"
+
+#: dnsmasq.c:271
+msgid "port_limit must not be larger than available port range"
+msgstr ""
+
+#: dnsmasq.c:278
+msgid "--auth-server required when an auth zone is defined."
+msgstr "--auth-server აუცილებელია, როცა ავთენტიკაციის ზონა აღწერილია."
+
+#: dnsmasq.c:283
+msgid "zone serial must be configured in --auth-soa"
+msgstr "ზონის სერიული აუცილებლად უნდა მიუთითოთ --auth-soa -ში"
+
+#: dnsmasq.c:303
+msgid "dhcp-range constructor not available on this platform"
+msgstr "dhcp-range -ის კონსტრუქტორი ამ პლატფორმაზე ხელმიუწვდომელია"
+
+#: dnsmasq.c:377
+msgid "cannot set --bind-interfaces and --bind-dynamic"
+msgstr "--bind-interfaces -ისა და --bind-dyanamic -ის ერთად გამოყენება შეუძლებელია"
+
+#: dnsmasq.c:380
+#, c-format
+msgid "failed to find list of interfaces: %s"
+msgstr "ინტერფეისების სიის პოვნა შეუძლებელია: %s"
+
+#: dnsmasq.c:389
+#, c-format
+msgid "unknown interface %s"
+msgstr "უცნობი ინტერფეისი %s"
+
+#: dnsmasq.c:396
+#, c-format
+msgid "failed to set SO_BINDTODEVICE on DHCP socket: %s"
+msgstr "შეცდომა DHCP სოკეტზე SO_BINDTODEVICE-ის დაყენებისას: %s"
+
+#: dnsmasq.c:440
+msgid "Packet dumps not available: set HAVE_DUMP in src/config.h"
+msgstr "პაკეტების ჩაწერა ხელმიუწვდომელია. დააყენეთ HAVE_DUMP src/config.h-ში"
+
+#: dnsmasq.c:448 dnsmasq.c:1232
+#, c-format
+msgid "DBus error: %s"
+msgstr "DBus-ის შეცდომა: %s"
+
+#: dnsmasq.c:451
+msgid "DBus not available: set HAVE_DBUS in src/config.h"
+msgstr "DBUS ხელმიუწვდომელია: დააყენეთ HAVE_DBUS src/config.h-ში"
+
+#: dnsmasq.c:459 dnsmasq.c:1253
+#, c-format
+msgid "UBus error: %s"
+msgstr "UBus -ის შეცდომა: %s"
+
+#: dnsmasq.c:462
+msgid "UBus not available: set HAVE_UBUS in src/config.h"
+msgstr "UBUS ხელმიუწვდომელია: დააყენეთ HAVE_UBUS src/config.h-ში"
+
+#: dnsmasq.c:492
+#, c-format
+msgid "unknown user or group: %s"
+msgstr "უცნობი მომხმარებელი ან ჯგუფი: %s"
+
+#: dnsmasq.c:568
+#, c-format
+msgid "process is missing required capability %s"
+msgstr "პროცესს აუცილებელი შესაძლებლობა აკლია: %s"
+
+#: dnsmasq.c:600
+#, c-format
+msgid "cannot chdir to filesystem root: %s"
+msgstr "ფაილური სისტემის საწყის საქაღალდეში chdir-ის შეცდომა: %s"
+
+#: dnsmasq.c:852
+#, c-format
+msgid "started, version %s DNS disabled"
+msgstr "გაეშვა, ვერსია %s DNS გამორთულია"
+
+#: dnsmasq.c:857
+#, c-format
+msgid "started, version %s cachesize %d"
+msgstr "გაეშვა, ვერსია %s ქეშის ზომაა %d"
+
+#: dnsmasq.c:859
+msgid "cache size greater than 10000 may cause performance issues, and is unlikely to be useful."
+msgstr "თუ ქეშის ზომა 10000-ზე დიდია, მას წარმადობის პრობლემები შეუძლია გამოიწვიოს, სარგებლობა კი ნაკლებად."
+
+#: dnsmasq.c:862
+#, c-format
+msgid "started, version %s cache disabled"
+msgstr "გაეშვა, ვერსია %s ქეში გამორთულია"
+
+#: dnsmasq.c:865
+msgid "DNS service limited to local subnets"
+msgstr "DNS სერვისი შეზღუდულია ლოკალურ ქვექსელებამდე"
+
+#: dnsmasq.c:868
+#, c-format
+msgid "compile time options: %s"
+msgstr "აგების პარამეტრები: %s"
+
+#: dnsmasq.c:877
+msgid "DBus support enabled: connected to system bus"
+msgstr "DBUS-ის მხარდაჭერა ჩართულია: სისტემურ მატარებელზე დაერთება წარმატებულია"
+
+#: dnsmasq.c:879
+msgid "DBus support enabled: bus connection pending"
+msgstr "DBUS-ის მხარდაჭერა ჩართულია: სისტემურ მატარებელზე დაერთების მოლოდინი"
+
+#: dnsmasq.c:887
+msgid "UBus support enabled: connected to system bus"
+msgstr "UBUS-ის მხარდაჭერა ჩართულია: სისტემურ მატარებელზე დაერთება წარმატებულია"
+
+#: dnsmasq.c:889
+msgid "UBus support enabled: bus connection pending"
+msgstr "UBUS-ის მხარდაჭერა ჩართულია: სისტემურ მატარებელზე დაერთების მოლოდინი"
+
+#: dnsmasq.c:909
+msgid "DNSSEC validation enabled but all unsigned answers are trusted"
+msgstr "DNSSEC გადამოწმება ჩართულია, მაგრამ ყველა ხელმოუწერელი პასუხი, როგორც სანდოა გამოცხადებული"
+
+#: dnsmasq.c:911
+msgid "DNSSEC validation enabled"
+msgstr "DNSSEC -ის გადამოწმება ჩართულია"
+
+#: dnsmasq.c:915
+msgid "DNSSEC signature timestamps not checked until receipt of SIGINT"
+msgstr "DNSSEC-ის ხელმოწერის დროის შტამპები SIGINT-ის მიღებამდე არ მოწმდება"
+
+#: dnsmasq.c:918
+msgid "DNSSEC signature timestamps not checked until system time valid"
+msgstr "DNSSEC-ის ხელმოწერის დროის შტამპები არ მოწმდება, სანამ სისტემური დრო სწორი არაა"
+
+#: dnsmasq.c:921
+#, c-format
+msgid "configured with trust anchor for %s keytag %u"
+msgstr ""
+
+#: dnsmasq.c:927
+#, c-format
+msgid "warning: failed to change owner of %s: %s"
+msgstr "გაფრთხილება: %s-ის მფლობელის შეცვლის შეცდომა: %s"
+
+#: dnsmasq.c:932
+msgid "setting --bind-interfaces option because of OS limitations"
+msgstr "--bind-interfaces პარამეტრი აირთო OS-ის შეზღუდვების გამო"
+
+#: dnsmasq.c:945
+#, c-format
+msgid "warning: interface %s does not currently exist"
+msgstr "გაფრთხილება: ინტერფეისი %s ამჟამად არ არსებობს"
+
+#: dnsmasq.c:950
+msgid "warning: ignoring resolv-file flag because no-resolv is set"
+msgstr "გაფრთხილება: იმის გამო, რომ no-resolv დაყენებულია, resolv-file ალამი იგნორირებული იქნება"
+
+#: dnsmasq.c:953
+msgid "warning: no upstream servers configured"
+msgstr "გაფრთხილება: აღმავალი სერვერები მორგებული არაა"
+
+#: dnsmasq.c:957
+#, c-format
+msgid "asynchronous logging enabled, queue limit is %d messages"
+msgstr "ასინქრონული ჟურნალი ჩართულია. რიგის ზღვარი %d შეტყობინებაა"
+
+#: dnsmasq.c:978
+msgid "IPv6 router advertisement enabled"
+msgstr "IPv6 რაუტერის გამოცხადება ჩარტულია"
+
+#: dnsmasq.c:983
+#, c-format
+msgid "DHCP, sockets bound exclusively to interface %s"
+msgstr "DHCP და სოკეტები ექსკლუზიურადაა მიბმული ინტერფეისზე %s"
+
+#: dnsmasq.c:1000
+msgid "root is "
+msgstr "საწყისი საქაღალდეა "
+
+#: dnsmasq.c:1000
+msgid "enabled"
+msgstr "ჩართულია"
+
+#: dnsmasq.c:1002
+msgid "secure mode"
+msgstr "დაცული რეჟიმი"
+
+#: dnsmasq.c:1003
+msgid "single port mode"
+msgstr "ერთი პორტის რეჟიმი"
+
+#: dnsmasq.c:1006
+#, c-format
+msgid "warning: %s inaccessible"
+msgstr "გაფრთხილება: %s მიუწვდომელია"
+
+#: dnsmasq.c:1010
+#, c-format
+msgid "warning: TFTP directory %s inaccessible"
+msgstr "გაფრთხილება: TFTP საქაღალდე %s მუწვდომელია"
+
+#: dnsmasq.c:1036
+#, c-format
+msgid "restricting maximum simultaneous TFTP transfers to %d"
+msgstr "მაქსიმალურად ერთდროული TFTP მიმოცვლების %d-მდე შეზღუდვა"
+
+#: dnsmasq.c:1095
+#, c-format
+msgid "error binding DHCP socket to device %s"
+msgstr "შეცდომა DHCP სოკეტის %s-ზე მიბმისას"
+
+#: dnsmasq.c:1229
+msgid "connected to system DBus"
+msgstr "სისტემურ DBus-თან დაკავშირება ვერ მოხერხდა"
+
+#: dnsmasq.c:1250
+msgid "connected to system UBus"
+msgstr "სისტემურ UBus-თან დაკავშირება ვერ მოხერხდა"
+
+#: dnsmasq.c:1416
+#, c-format
+msgid "cannot fork into background: %s"
+msgstr "ფონში გაშვების პრობლემა: %s"
+
+#: dnsmasq.c:1420
+#, c-format
+msgid "failed to create helper: %s"
+msgstr "დამხმარე პროცესის შექმნის შეცდომა: %s"
+
+#: dnsmasq.c:1424
+#, c-format
+msgid "setting capabilities failed: %s"
+msgstr "შესაძლებლობების დაყენების შეცდომა: %s"
+
+#: dnsmasq.c:1428
+#, c-format
+msgid "failed to change user-id to %s: %s"
+msgstr "user-id-ის %s-ზე შეცვლის შეცდომა: %s"
+
+#: dnsmasq.c:1432
+#, c-format
+msgid "failed to change group-id to %s: %s"
+msgstr "group-id-ის %s-ზე შეცვლის შეცდომა: %s"
+
+#: dnsmasq.c:1436
+#, c-format
+msgid "failed to open pidfile %s: %s"
+msgstr "pid-ის ფაილის, %s-ის გახსნის შეცდომა: %s"
+
+#: dnsmasq.c:1440
+#, c-format
+msgid "cannot open log %s: %s"
+msgstr "ჟურნალის (%s) გახსნის შეცდომა: %s"
+
+#: dnsmasq.c:1444
+#, c-format
+msgid "failed to load Lua script: %s"
+msgstr "lua-ის სკრიპტის ჩატვირთვის შეცდომა: %s"
+
+#: dnsmasq.c:1448
+#, c-format
+msgid "TFTP directory %s inaccessible: %s"
+msgstr "TFTP საქაღალდე %s მიუწვდომელია: %s"
+
+#: dnsmasq.c:1452
+#, c-format
+msgid "cannot create timestamp file %s: %s"
+msgstr "დროის შტამპის ფაილის (%s) შექმნის შეცდომა: %s"
+
+#: dnsmasq.c:1536
+#, c-format
+msgid "script process killed by signal %d"
+msgstr "სკრიპტის პროცესი მოკვდა სიგნალით %d"
+
+#: dnsmasq.c:1540
+#, c-format
+msgid "script process exited with status %d"
+msgstr "სკრიპტის პროცესმა მუშაობა დაასრულა სტატუსით %d"
+
+#: dnsmasq.c:1544
+#, c-format
+msgid "failed to execute %s: %s"
+msgstr "%s-ის შესრულების შეცდომა: %s"
+
+#: dnsmasq.c:1584
+msgid "now checking DNSSEC signature timestamps"
+msgstr "ახლა DNSSEC-ის ხელმოწერის დროის შტამპები შემოწმდება"
+
+#: dnsmasq.c:1619 dnssec.c:160 dnssec.c:204
+#, c-format
+msgid "failed to update mtime on %s: %s"
+msgstr "%s-ზე mtime-ის განახლების შეცდომა: %s"
+
+#: dnsmasq.c:1631
+msgid "exiting on receipt of SIGTERM"
+msgstr "მუშაობის დასრულება SIGTERM-ის გამო"
+
+#: dnsmasq.c:1659
+#, c-format
+msgid "failed to access %s: %s"
+msgstr "\"%s\"-სთან წვდომის შეცდომა: %s"
+
+#: dnsmasq.c:1690
+#, c-format
+msgid "reading %s"
+msgstr "%s-ის წაკითხვა"
+
+#: dnsmasq.c:1706
+#, c-format
+msgid "no servers found in %s, will retry"
+msgstr "%s-ში სერვერები ვერ ვიპოვე. კიდევ ვცდი"
+
+#: dhcp.c:51
+#, c-format
+msgid "cannot create DHCP socket: %s"
+msgstr "შეცდომა DHCP სოკეტის შექმნისას: %s"
+
+#: dhcp.c:66
+#, c-format
+msgid "failed to set options on DHCP socket: %s"
+msgstr "შეცდომა DHCP სოკეტის პარამეტრების დაყენებისას: %s"
+
+#: dhcp.c:87
+#, c-format
+msgid "failed to set SO_REUSE{ADDR|PORT} on DHCP socket: %s"
+msgstr "შეცდომა SO_REUSE{ADDR|PORT}-ის DHCP სოკეტზე დაყენებისას: %s"
+
+#: dhcp.c:99
+#, c-format
+msgid "failed to bind DHCP server socket: %s"
+msgstr "შეცდომა DHCP სერვერის სოკეტზე მიბმისას: %s"
+
+#: dhcp.c:125
+#, c-format
+msgid "cannot create ICMP raw socket: %s."
+msgstr "\"ICMP\" დაუმუშავებელი სოკეტის შექმნის შეცდომა: %s."
+
+#: dhcp.c:254 dhcp6.c:186
+#, c-format
+msgid "unknown interface %s in bridge-interface"
+msgstr "bride-interface-ის უცნობი ინტერფეისი: %s"
+
+#: dhcp.c:295
+#, c-format
+msgid "DHCP packet received on %s which has no address"
+msgstr "DHCP პაკეტი მიღებულია %s-დან, რომელსაც მისამართი არ გააჩნია"
+
+#: dhcp.c:429
+#, c-format
+msgid "ARP-cache injection failed: %s"
+msgstr "ARP-ქეშში ჩაწერის შეცდომა: %s"
+
+#: dhcp.c:490
+#, c-format
+msgid "Error sending DHCP packet to %s: %s"
+msgstr "%s-სთვის DHCP პაკეტის გაგზავნის შეცდომა: %s"
+
+#: dhcp.c:547
+#, c-format
+msgid "DHCP range %s -- %s is not consistent with netmask %s"
+msgstr "DHCP დიაპაზონი %s -- %s ქსელის ნიღაბს %s არ შეესაბამება"
+
+#: dhcp.c:930
+#, c-format
+msgid "bad line at %s line %d"
+msgstr "არასწორი ხაზი მისამართზე %s ხაზი %d"
+
+#: dhcp.c:973
+#, c-format
+msgid "ignoring %s line %d, duplicate name or IP address"
+msgstr "%s-ის ხაზი %d დაიგნორდება. სახელი ან IP მისამართი დუბლირებულია"
+
+#: dhcp.c:1034
+#, c-format
+msgid "read %s - %d addresses"
+msgstr "წავიკითხე %s - %d მისამართი"
+
+#: dhcp.c:1136
+#, c-format
+msgid "Cannot broadcast DHCP relay via interface %s"
+msgstr "DHCP გადაგზავნის მაუწყებლობა ინტერფეისით %s შეუძლებელია"
+
+#: dhcp.c:1160
+#, c-format
+msgid "broadcast via %s"
+msgstr "მაუწყებლობა %s-ის გავლით"
+
+#: dhcp.c:1163 rfc3315.c:2219
+#, c-format
+msgid "DHCP relay at %s -> %s"
+msgstr "DHCP გადაგზავნა %s -> %s"
+
+#: lease.c:64
+#, c-format
+msgid "ignoring invalid line in lease database: %s %s %s %s ..."
+msgstr "იჯარების ბაზის არასწორი ხაზი იგნორირებულია: %s %s %s %s ..."
+
+#: lease.c:101
+#, c-format
+msgid "ignoring invalid line in lease database, bad address: %s"
+msgstr "იჯარების ბაზის არასწორი ხაზი. არასწორი მისამართი: %s"
+
+#: lease.c:108
+msgid "too many stored leases"
+msgstr "მეტისმეტად ბევრი დამახსოვრებული იჯარა"
+
+#: lease.c:176
+#, c-format
+msgid "cannot open or create lease file %s: %s"
+msgstr "იჯარების ფაილის (%s) გახსნის ან შექმნის შეცდომა: %s"
+
+#: lease.c:185
+msgid "failed to parse lease database cleanly"
+msgstr "იჯარების ბაზის სუფთად დამუშავების შეცდომა"
+
+#: lease.c:188
+#, c-format
+msgid "failed to read lease file %s: %s"
+msgstr "იჯარის ფაილის (%s) წაკითხვის შეცდომა: %s"
+
+#: lease.c:204
+#, c-format
+msgid "cannot run lease-init script %s: %s"
+msgstr "lease-init სკრიპტის (%s) გაშვების შეცდომა: %s"
+
+#: lease.c:210
+#, c-format
+msgid "lease-init script returned exit code %s"
+msgstr "lease-init-ის სკრიპტის დაბრუნებული გამოსვლის კოდია: %s"
+
+#: lease.c:381
+#, c-format
+msgid "failed to write %s: %s (retry in %u s)"
+msgstr "%s-ში ჩაწერის შეცდომა: %s (თავიდან ვცდი %u წამში)"
+
+#: lease.c:955
+#, c-format
+msgid "Ignoring domain %s for DHCP host name %s"
+msgstr "დომენის (%s) იგნორირება DHCP ჰოსტის სახელისთვის %s"
+
+#: rfc2131.c:378
+msgid "with subnet selector"
+msgstr "ქვექსელის გადამრთველით"
+
+#: rfc2131.c:383
+msgid "via"
+msgstr "გავლით"
+
+#: rfc2131.c:389
+#, c-format
+msgid "no address range available for DHCP request %s %s"
+msgstr "მისამართების დიაპაზონი მიუწვდომელია DHCP მოთხოვნისთვის %s %s"
+
+#: rfc2131.c:403
+#, c-format
+msgid "%u available DHCP subnet: %s/%s"
+msgstr "%u ხელმისაწვდომი DHCP ქვექსელი: %s/%s"
+
+#: rfc2131.c:409 rfc3315.c:320
+#, c-format
+msgid "%u available DHCP range: %s -- %s"
+msgstr "%u ხელმისაწვდომი DHCP დიაპაზონი: %s -- %s"
+
+#: rfc2131.c:521
+#, c-format
+msgid "%u vendor class: %s"
+msgstr "%u მომწოდებლის კლასი: %s"
+
+#: rfc2131.c:523
+#, c-format
+msgid "%u user class: %s"
+msgstr "%u მომხმარებლის კლასი: %s"
+
+#: rfc2131.c:557
+msgid "disabled"
+msgstr "გამორთულია"
+
+#: rfc2131.c:598 rfc2131.c:1087 rfc2131.c:1536 rfc3315.c:633 rfc3315.c:816
+#: rfc3315.c:1122
+msgid "ignored"
+msgstr "იგნორირებულია"
+
+#: rfc2131.c:613 rfc2131.c:1340 rfc3315.c:868
+msgid "address in use"
+msgstr "მისამართი გამოიყენება"
+
+#: rfc2131.c:627 rfc2131.c:1141
+msgid "no address available"
+msgstr "მისამართი მიუწვდომელია"
+
+#: rfc2131.c:634 rfc2131.c:1302
+msgid "wrong network"
+msgstr "არასწორი ქსელი"
+
+#: rfc2131.c:649
+msgid "no address configured"
+msgstr "მორგებული მისამართის გარეშე"
+
+#: rfc2131.c:655 rfc2131.c:1353
+msgid "no leases left"
+msgstr "იჯარები აღარ დარჩა"
+
+#: rfc2131.c:756 rfc3315.c:500
+#, c-format
+msgid "%u client provides name: %s"
+msgstr "%u კლიენტის მომწოდებლის სახელი: %s"
+
+#: rfc2131.c:885
+msgid "PXE BIS not supported"
+msgstr "PXE BIS მხარდაუჭერელია"
+
+#: rfc2131.c:1054 rfc3315.c:1223
+#, c-format
+msgid "disabling DHCP static address %s for %s"
+msgstr "\"DHCP\" სტატიკური მისამართის (%s) გათიშვა %s-სთვის"
+
+#: rfc2131.c:1075
+msgid "unknown lease"
+msgstr "უცნობი იჯარა"
+
+#: rfc2131.c:1110
+#, c-format
+msgid "not using configured address %s because it is leased to %s"
+msgstr "მითითებული მისამართი (%s) არ გამოიყენება. ის უკვეა იჯარით გაცემული %s-ზე"
+
+#: rfc2131.c:1120
+#, c-format
+msgid "not using configured address %s because it is in use by the server or relay"
+msgstr "მითითებული მისამართი %s გამოყენებული არ იქნება, რადგან ის სერვერის ან გადამგზავნის მიერ უკვე გამოიყენება"
+
+#: rfc2131.c:1123
+#, c-format
+msgid "not using configured address %s because it was previously declined"
+msgstr "მითითებული მისამართი %s გამოყენებული არ იქნება, რადგან ის წარსულში უკვე უარყოფილი იყო"
+
+#: rfc2131.c:1139 rfc2131.c:1346
+msgid "no unique-id"
+msgstr "unique-id -ის გარეშე"
+
+#: rfc2131.c:1238
+msgid "wrong server-ID"
+msgstr "არასწორი server-ID"
+
+#: rfc2131.c:1257
+msgid "wrong address"
+msgstr "არასწორი მისამართი"
+
+#: rfc2131.c:1275 rfc3315.c:976
+msgid "lease not found"
+msgstr "იჯარა ვერ ვიპოვე"
+
+#: rfc2131.c:1310
+msgid "address not available"
+msgstr "მისამართი მიუწვდომელია"
+
+#: rfc2131.c:1321
+msgid "static lease available"
+msgstr "ხელმისაწვდომია სტატიკური იჯარა"
+
+#: rfc2131.c:1325
+msgid "address reserved"
+msgstr "მისამართი დარეზერვებულია"
+
+#: rfc2131.c:1334
+#, c-format
+msgid "abandoning lease to %s of %s"
+msgstr "%2$s-ის იჯარის მოცილება: %1$s"
+
+#: rfc2131.c:1870
+#, c-format
+msgid "%u bootfile name: %s"
+msgstr "%u ჩასატვირთი ფაილის სახელი: %s"
+
+#: rfc2131.c:1879
+#, c-format
+msgid "%u server name: %s"
+msgstr "%u სერვერის სახელი: %s"
+
+#: rfc2131.c:1889
+#, c-format
+msgid "%u next server: %s"
+msgstr "%u შემდეგი სერვერი: %s"
+
+#: rfc2131.c:1893
+#, c-format
+msgid "%u broadcast response"
+msgstr "%u სამაუწყებლო პასუხი"
+
+#: rfc2131.c:1956
+#, c-format
+msgid "cannot send DHCP/BOOTP option %d: no space left in packet"
+msgstr "შეცდომა DHCP/BOOTP პარამეტრის %d გაგზავნისას: პაკეტში ადგილი აღარაა"
+
+#: rfc2131.c:2267
+msgid "PXE menu too large"
+msgstr "PXE მენიუ ძალიან დიდია"
+
+#: rfc2131.c:2430 rfc3315.c:1517
+#, c-format
+msgid "%u requested options: %s"
+msgstr "%u მოთხოვნილ პარამეტრები: %s"
+
+#: rfc2131.c:2747
+#, c-format
+msgid "cannot send RFC3925 option: too many options for enterprise number %d"
+msgstr "შეცდომა RFC3825 პარამეტრის გაგზავნისას: საწარმოო რიცხვისთვის %d მეტისმეტად ბევრი პარამეტრი"
+
+#: rfc2131.c:2810
+#, c-format
+msgid "%u reply delay: %d"
+msgstr "%u პასუხის დაყოვნება: %d"
+
+#: netlink.c:86
+#, c-format
+msgid "cannot create netlink socket: %s"
+msgstr "netlink სოკეტის შექმნის შეცდომა: %s"
+
+#: netlink.c:379
+#, c-format
+msgid "netlink returns error: %s"
+msgstr "netlink -ის დაბრუნებული შეცდომა: %s"
+
+#: dbus.c:491
+#, c-format
+msgid "Enabling --%s option from D-Bus"
+msgstr "ჩართვა --%s პარამეტრი D-Bus -დან"
+
+#: dbus.c:496
+#, c-format
+msgid "Disabling --%s option from D-Bus"
+msgstr "გამორთვა --%s პარამეტრი D-Bus -დან"
+
+#: dbus.c:857
+msgid "setting upstream servers from DBus"
+msgstr "აღმავალი სერვერების DBus-დან დაყენება"
+
+#: dbus.c:907
+msgid "could not register a DBus message handler"
+msgstr "\"DBus\"-ის შეტყობინების დამმუშავებლის რეგისტრაციის შეცდომა"
+
+#: bpf.c:261
+#, c-format
+msgid "cannot create DHCP BPF socket: %s"
+msgstr "\"DHCP BPF სოკეტის\" შექმნის შეცდომა: %s"
+
+#: bpf.c:289
+#, c-format
+msgid "DHCP request for unsupported hardware type (%d) received on %s"
+msgstr "%2$s-ზე მიღებულია DHCP მოთხოვნა მხარდაუჭერელი აპარატურის ტიპისთვის (%1$d)"
+
+#: bpf.c:374
+#, c-format
+msgid "cannot create PF_ROUTE socket: %s"
+msgstr "შეცდომა PF_ROUTE სოკეტის შექმნისას: %s"
+
+#: bpf.c:395
+msgid "Unknown protocol version from route socket"
+msgstr "უცნობი პროტოკოლი რაუტის სოკეტიდან"
+
+#: helper.c:150
+msgid "lease() function missing in Lua script"
+msgstr "lua-ის სკრიპტს lease() ფუნქცია აკლია"
+
+#: tftp.c:353
+msgid "unable to get free port for TFTP"
+msgstr "შეცდომა TFTP-სთვის თავისუფალი პორტის მიღებისას"
+
+#: tftp.c:369
+#, c-format
+msgid "unsupported request from %s"
+msgstr "მხარდაუჭერელი მოთხოვნა %s-დან"
+
+#: tftp.c:520
+#, c-format
+msgid "file %s not found for %s"
+msgstr "ფაილი %s ვერ ვიპოვე %s_სთვის"
+
+#: tftp.c:609
+#, c-format
+msgid "ignoring packet from %s (TID mismatch)"
+msgstr "%s-დან მოსული პაკეტის იგნორირება (TID არ ემთხვევა)"
+
+#: tftp.c:662
+#, c-format
+msgid "failed sending %s to %s"
+msgstr "%s-ის %s-სთვის გაგზავნის შეცდომა"
+
+#: tftp.c:662
+#, c-format
+msgid "sent %s to %s"
+msgstr "%s გაგზავნილია %s-სთან"
+
+#: tftp.c:712
+#, c-format
+msgid "error %d %s received from %s"
+msgstr "შეცდომა %d %s მიღებულია %s -გან"
+
+#: log.c:203
+#, c-format
+msgid "overflow: %d log entries lost"
+msgstr "გადავსება: დაკარგულია %d ჟურნალის ჩანაწერი"
+
+#: log.c:281
+#, c-format
+msgid "log failed: %s"
+msgstr "ჟურნალის შეცდომა: %s"
+
+#: log.c:490
+msgid "FAILED to start up"
+msgstr "გაშვების შეცდომა"
+
+#: conntrack.c:63
+#, c-format
+msgid "Conntrack connection mark retrieval failed: %s"
+msgstr "Conntrack-ის შეერთების ნიშნის მიღების შეცდომა: %s"
+
+#: dhcp6.c:51
+#, c-format
+msgid "cannot create DHCPv6 socket: %s"
+msgstr "შეცდომა DHCPv6 სოკეტის შექმნისას: %s"
+
+#: dhcp6.c:72
+#, c-format
+msgid "failed to set SO_REUSE{ADDR|PORT} on DHCPv6 socket: %s"
+msgstr "შეცდომა SO_REUSE{ADDR|PORT}-ის DHCPv6 სოკეტზე დაყენებისას: %s"
+
+#: dhcp6.c:84
+#, c-format
+msgid "failed to bind DHCPv6 server socket: %s"
+msgstr "შეცდომა DHCPv6 სერვერის სოკეტზე მიბმისას: %s"
+
+#: rfc3315.c:173
+#, c-format
+msgid "no address range available for DHCPv6 request from relay at %s"
+msgstr "გადამგზავნელიდან (%s) DHCPv6 მოთხოვნისთვის მისამართის დიაპაზონი ხელმისაწვდომი არაა"
+
+#: rfc3315.c:182
+#, c-format
+msgid "no address range available for DHCPv6 request via %s"
+msgstr "%s-ის გავლით DHCPv6 მოთხოვნისთვის მისამართის დიაპაზონი ხელმისაწვდომი არაა"
+
+#: rfc3315.c:317
+#, c-format
+msgid "%u available DHCPv6 subnet: %s/%d"
+msgstr "%u ხელმისაწვდომი DHCPv6 ქვექსელი: %s/%d"
+
+#: rfc3315.c:400
+#, c-format
+msgid "%u vendor class: %u"
+msgstr "%u მომწოდებლის კლასი: %u"
+
+#: rfc3315.c:448
+#, c-format
+msgid "%u client MAC address: %s"
+msgstr "%u კლიენტის MAC მისამართი: %s"
+
+#: rfc3315.c:763 rfc3315.c:860
+msgid "address unavailable"
+msgstr "მისამართი ხელმიუწვდომელია"
+
+#: rfc3315.c:775 rfc3315.c:904 rfc3315.c:1273
+msgid "success"
+msgstr "წარმატება"
+
+#: rfc3315.c:790 rfc3315.c:799 rfc3315.c:912 rfc3315.c:914 rfc3315.c:1048
+msgid "no addresses available"
+msgstr "მისამართები მიუწვდომელია"
+
+#: rfc3315.c:891
+msgid "not on link"
+msgstr "შეერთებული არაა"
+
+#: rfc3315.c:980 rfc3315.c:1181 rfc3315.c:1262
+msgid "no binding found"
+msgstr "მიბმა ვერ ვპოვე"
+
+#: rfc3315.c:1017
+msgid "deprecated"
+msgstr "მოძველებული"
+
+#: rfc3315.c:1024
+msgid "address invalid"
+msgstr "მისამართი არასწორია"
+
+#: rfc3315.c:1082 rfc3315.c:1084
+msgid "confirm failed"
+msgstr "დადასტურების შეცდომა"
+
+#: rfc3315.c:1099
+msgid "all addresses still on link"
+msgstr "ყველა მისამართი ჯერ კიდევ მიერთებულია"
+
+#: rfc3315.c:1190
+msgid "release received"
+msgstr "გათავისუფლება მიღებულია"
+
+#: rfc3315.c:2200
+#, c-format
+msgid "Cannot multicast DHCP relay via interface %s"
+msgstr "DHCP გადაგზავნის მაუწყებლობა შეუძლებელია ინტერფეისის გავლით: %s"
+
+#: rfc3315.c:2216
+#, c-format
+msgid "multicast via %s"
+msgstr "მულტიკასტი %s-ის გავლით"
+
+#: dhcp-common.c:187
+#, c-format
+msgid "Ignoring duplicate dhcp-option %d"
+msgstr "ორჯერ აღწერილი dhcp-option %d იგნორირებულია"
+
+#: dhcp-common.c:264
+#, c-format
+msgid "%u tags: %s"
+msgstr "%u ჭდე: %s"
+
+#: dhcp-common.c:484
+#, c-format
+msgid "%s has more than one address in hostsfile, using %s for DHCP"
+msgstr "%s -ს hosts ფაილში ერთზე მეტი მისამართი აქვს მითითებული. DHCP-სთვის გამოყენებული იქნება %s"
+
+#: dhcp-common.c:518
+#, c-format
+msgid "duplicate IP address %s (%s) in dhcp-config directive"
+msgstr "დუბლირებული IP მისამართი %s (%s) dhcp-config-დირექტივაში"
+
+#: dhcp-common.c:738
+#, c-format
+msgid "Known DHCP options:\n"
+msgstr "ცნობილი DHCP პარამეტრები:\n"
+
+#: dhcp-common.c:749
+#, c-format
+msgid "Known DHCPv6 options:\n"
+msgstr "ცნობილი DHCPv6 პარამეტრები:\n"
+
+#: dhcp-common.c:946
+msgid ", prefix deprecated"
+msgstr ", პრეფიქსი მოძველებულია"
+
+#: dhcp-common.c:949
+#, c-format
+msgid ", lease time "
+msgstr ", იჯარის დრო "
+
+#: dhcp-common.c:991
+#, c-format
+msgid "%s stateless on %s%.0s%.0s%s"
+msgstr ""
+
+#: dhcp-common.c:993
+#, c-format
+msgid "%s, static leases only on %.0s%s%s%.0s"
+msgstr "%s, სტატიკური იჯარები მხოლოდ %.0s%s%s%.0s"
+
+#: dhcp-common.c:995
+#, c-format
+msgid "%s, proxy on subnet %.0s%s%.0s%.0s"
+msgstr "%s, პროქსი ქვექსელზე %.0s%s%.0s%.0s"
+
+#: dhcp-common.c:996
+#, c-format
+msgid "%s, IP range %s -- %s%s%.0s"
+msgstr "%s, IP დიაპაზონი %s -- %s%s%.0s"
+
+#: dhcp-common.c:1009
+#, c-format
+msgid "DHCPv4-derived IPv6 names on %s%s"
+msgstr "DHCPv4-დან მიღებული IPv6 სახელები %s%s -ზე"
+
+#: dhcp-common.c:1012
+#, c-format
+msgid "router advertisement on %s%s"
+msgstr "რაუტერის გამოცხადება %s%s-ზე"
+
+#: dhcp-common.c:1043
+#, c-format
+msgid "DHCP relay from %s via %s"
+msgstr "DHCP გადაგზავნა %s-დან %s-ის გავლით"
+
+#: dhcp-common.c:1045
+#, c-format
+msgid "DHCP relay from %s to %s via %s"
+msgstr "DHCP გადაგზავნა %s-დან %s-მდე %s-ის ჩათვლით"
+
+#: dhcp-common.c:1048
+#, c-format
+msgid "DHCP relay from %s to %s"
+msgstr "DHCP გადაგზავნა %s -დან %s -მდე"
+
+#: radv.c:110
+#, c-format
+msgid "cannot create ICMPv6 socket: %s"
+msgstr "შეცდომა ICMPv6 სოკეტის შექმნისას: %s"
+
+#: auth.c:462
+#, c-format
+msgid "ignoring zone transfer request from %s"
+msgstr "%s-დან ზონის გადაცემის მოთხოვნის იგნორირება"
+
+#: ipset.c:99
+#, c-format
+msgid "failed to create IPset control socket: %s"
+msgstr "ipset-ის საკონტროლო სოკეტის შექმნის შეცდომა: %s"
+
+#: ipset.c:211
+#, c-format
+msgid "failed to update ipset %s: %s"
+msgstr "ipset-ის (%s) განახლების შეცდომა: %s"
+
+#: pattern.c:29
+#, c-format
+msgid "[pattern.c:%d] Assertion failure: %s"
+msgstr "[pattern.c:%d] მტკიცების შეცდომა: %s"
+
+#: pattern.c:142
+#, c-format
+msgid "Invalid DNS name: Invalid character %c."
+msgstr "არასწორი DNS სახელი: არასწორი სიმბოლო %c."
+
+#: pattern.c:151
+msgid "Invalid DNS name: Empty label."
+msgstr "არასწორი DNS სახელი: ჭდე ცარიელია."
+
+#: pattern.c:156
+msgid "Invalid DNS name: Label starts with hyphen."
+msgstr "არასწორი DNS სახელი: ჭდე გამოტოვებით იწყება."
+
+#: pattern.c:170
+msgid "Invalid DNS name: Label ends with hyphen."
+msgstr "არასწორი DNS სახელი: ჭდე გამოტოვებით მთავრდება."
+
+#: pattern.c:176
+#, c-format
+msgid "Invalid DNS name: Label is too long (%zu)."
+msgstr "არასწორი DNS სახელი: ჭდე ძალიან გრძელია (%zu)"
+
+#: pattern.c:184
+#, c-format
+msgid "Invalid DNS name: Not enough labels (%zu)."
+msgstr "არასწორი DNS სახელი: ჭდეების არასაკმარისი რაოდენობა (%zu)"
+
+#: pattern.c:189
+msgid "Invalid DNS name: Final label is fully numeric."
+msgstr "არასწორი DNS სახელი: საბოლოო ჭდე სრულად რიცხვითია."
+
+#: pattern.c:199
+msgid "Invalid DNS name: \"local\" pseudo-TLD."
+msgstr "არასწორი DNS სახელი: ფსევდო-TLD \"local\"."
+
+#: pattern.c:204
+#, c-format
+msgid "DNS name has invalid length (%zu)."
+msgstr "DNS სახელის არასწორი სიგრძე (%zu)."
+
+#: pattern.c:258
+#, c-format
+msgid "Invalid DNS name pattern: Invalid character %c."
+msgstr "DNS სახელის არასწორი შაბლონი: არასწორი სიმბოლო %c."
+
+#: pattern.c:267
+msgid "Invalid DNS name pattern: Empty label."
+msgstr "DNS სახელის არასწორი შაბლონი: ჭდე ცარიელია."
+
+#: pattern.c:272
+msgid "Invalid DNS name pattern: Label starts with hyphen."
+msgstr "DNS სახელის არასწორი შაბლონი: ჭდე გამოტოვებით იწყება."
+
+#: pattern.c:285
+msgid "Invalid DNS name pattern: Wildcard character used more than twice per label."
+msgstr "DNS სახელის არასწორი შაბლონი: შაბლონის სახელში ვაილდკარდი ერთზე მეტჯერ გამოიყენება."
+
+#: pattern.c:295
+msgid "Invalid DNS name pattern: Label ends with hyphen."
+msgstr "DNS სახელის არასწორი შაბლონი: ჭდე გამოტოვებით მთავრდება."
+
+#: pattern.c:301
+#, c-format
+msgid "Invalid DNS name pattern: Label is too long (%zu)."
+msgstr "DNS სახელის არასწორი შაბლონი: ჭდე ძალიან გრძელია (%zu)."
+
+#: pattern.c:309
+#, c-format
+msgid "Invalid DNS name pattern: Not enough labels (%zu)."
+msgstr "DNS სახელის არასწორი შაბლონი: ჭდეების არასაკმარისი რაოდენობა (%zu)."
+
+#: pattern.c:314
+msgid "Invalid DNS name pattern: Wildcard within final two labels."
+msgstr "DNS სახელის არასწორი შაბლონი: ვაილდკარდი ბოლო ორ ჭდეში."
+
+#: pattern.c:319
+msgid "Invalid DNS name pattern: Final label is fully numeric."
+msgstr "DNS სახელის არასწორი შაბლონი: საბოლოო ჭდე სრულად რიცხვითია."
+
+#: pattern.c:329
+msgid "Invalid DNS name pattern: \"local\" pseudo-TLD."
+msgstr "DNS სახელის არასწორი შაბლონი: ფსევდო-TLD \"local\"."
+
+#: pattern.c:334
+#, c-format
+msgid "DNS name pattern has invalid length after removing wildcards (%zu)."
+msgstr "DNS სახელის შაბლონის არასწორი სიგრძე * და ?-ის მოცილების შემდეგ (%zu)"
+
+#: dnssec.c:206
+msgid "system time considered valid, now checking DNSSEC signature timestamps."
+msgstr "სისტემური დრო ჩათვლილია, როგორც სწორი. ახლა DNSSEC ხელმოწერის დროის შტამპები შემოწმებული იქნება."
+
+#: dnssec.c:1018
+#, c-format
+msgid "Insecure DS reply received for %s, check domain configuration and upstream DNS server DNSSEC support"
+msgstr ""
+
+#: blockdata.c:55
+#, c-format
+msgid "pool memory in use %zu, max %zu, allocated %zu"
+msgstr "პულისთვის გამოყოფილი მეხსიერება %zu, მაქს %zu, გამოყოფილი %zu"
+
+#: tables.c:61
+#, c-format
+msgid "failed to access pf devices: %s"
+msgstr "pf მოწყობილობებთან წვდომის შეცდომა: %s"
+
+#: tables.c:74
+#, c-format
+msgid "warning: no opened pf devices %s"
+msgstr "გაფრთხილება: ღია pf მოწყობილობის გარეშე: %s"
+
+#: tables.c:82
+#, c-format
+msgid "error: cannot use table name %s"
+msgstr "შეცდომა: ცხრილის ამ სახელს ვერ გამოიყენებთ: %s"
+
+#: tables.c:90
+#, c-format
+msgid "error: cannot strlcpy table name %s"
+msgstr "შეცდომა: ცხრილის სახელის strlcpy()-ის შეცდომა: %s"
+
+#: tables.c:101
+#, c-format
+msgid "IPset: error: %s"
+msgstr "IPset: შეცდომა: %s"
+
+#: tables.c:108
+msgid "info: table created"
+msgstr "ინფორმაცია: ცხრილი შეიქმნა"
+
+#: tables.c:133
+#, c-format
+msgid "warning: DIOCR%sADDRS: %s"
+msgstr "გაფრთხილება: DIOCR%sADDRS: %s"
+
+#: tables.c:137
+#, c-format
+msgid "%d addresses %s"
+msgstr "%d მისამართი %s"
+
+#: inotify.c:62
+#, c-format
+msgid "cannot access path %s: %s"
+msgstr "ბილიკთან წვდომის შეცდომა %s: %s"
+
+#: inotify.c:95
+#, c-format
+msgid "failed to create inotify: %s"
+msgstr "inotify-ის შექმნის შეცდომა: %s"
+
+#: inotify.c:111
+#, c-format
+msgid "too many symlinks following %s"
+msgstr "მეტისმეტად ბევრი სიმბმული მისდევს %s-ს"
+
+#: inotify.c:127
+#, c-format
+msgid "directory %s for resolv-file is missing, cannot poll"
+msgstr "საქაღალდე %s resolv-file-სთვის არ არსებობს.პოლინგი შეუძლებელია"
+
+#: inotify.c:131 inotify.c:200
+#, c-format
+msgid "failed to create inotify for %s: %s"
+msgstr "%s -თვის inotify-ის შექმნის შეცდომა: %s"
+
+#: inotify.c:178 inotify.c:185
+#, c-format
+msgid "bad dynamic directory %s: %s"
+msgstr "%s არასწორი დინამიკური საქაღალდეა: %s"
+
+#: inotify.c:186
+msgid "not a directory"
+msgstr "არ წარმოადგეს საქაღალდეს"
+
+#: inotify.c:299
+#, c-format
+msgid "inotify: %s removed"
+msgstr ""
+
+#: inotify.c:301
+#, fuzzy, c-format
+msgid "inotify: %s new or modified"
+msgstr "inotify, ახალი ან შეცვლილი ფაილი %s"
+
+#: inotify.c:309
+#, c-format
+msgid "inotify: flushed %u names read from %s"
+msgstr ""
+
+#: dump.c:68
+#, c-format
+msgid "cannot create %s: %s"
+msgstr "%s-ის შექმნის შეცდომა: %s"
+
+#: dump.c:74
+#, c-format
+msgid "bad header in %s"
+msgstr "არასწორი თავსართი %s-ში"
+
+#: dump.c:287
+msgid "failed to write packet dump"
+msgstr "პაკეტების ჩაწერის შეცდომა"
+
+#: dump.c:289
+#, c-format
+msgid "%u dumping packet %u mask 0x%04x"
+msgstr "%u პაკეტის ჩაწერა %u ნიღაბი 0x%04x"
+
+#: dump.c:291
+#, c-format
+msgid "dumping packet %u mask 0x%04x"
+msgstr "იწერება პაკეტი %u ნიღბით 0x%04x"
+
+#: ubus.c:79
+#, c-format
+msgid "UBus subscription callback: %s subscriber(s)"
+msgstr "Ubus-ის გამოწერის უკუგამოძახება: %s გამომწერი"
+
+#: ubus.c:99
+#, c-format
+msgid "Cannot reconnect to UBus: %s"
+msgstr "UBus -თან თავიდან მიერთების შეცდომა: %s"
+
+#: ubus.c:135
+msgid "Cannot set UBus listeners: no connection"
+msgstr "UBus-ის მომსმენების დაყენების შეცდომა: შეერთების გარეშე"
+
+#: ubus.c:155
+msgid "Cannot poll UBus listeners: no connection"
+msgstr "Ubus-ის მომსმენებიდან პოლინგის შეცდომა: შეერთების გარეშე"
+
+#: ubus.c:168
+msgid "Disconnecting from UBus"
+msgstr "UBus– დან გათიშვა"
+
+#: ubus.c:179 ubus.c:326
+#, c-format
+msgid "UBus command failed: %d (%s)"
+msgstr "UBus -ის ბრძანების შეცდომა: %d (%s)"
+
+#: hash-questions.c:40
+msgid "Failed to create SHA-256 hash object"
+msgstr "SHA-256 ჰეშის ობიექტის შექმნის შეცდომა"
+
+#: nftset.c:35
+msgid "failed to create nftset context"
+msgstr "nftset-ის კონტექსტის შექნის შეცდომა"

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,6 +22,8 @@ const char * metric_names[] = {
     "dns_queries_forwarded",
     "dns_auth_answered",
     "dns_local_answered",
+    "dns_stale_answered",
+    "dns_unanswered",
     "bootp",
     "pxe",
     "dhcp_ack",
@@ -42,3 +44,23 @@ const char * metric_names[] = {
 const char* get_metric_name(int i) {
     return metric_names[i];
 }
+
+void clear_metrics(void)
+{
+  int i;
+  struct server *serv;
+  
+  for (i = 0; i < __METRIC_MAX; i++)
+    daemon->metrics[i] = 0;
+
+  for (serv = daemon->servers; serv; serv = serv->next)
+    {
+      serv->queries = 0;
+      serv->failed_queries = 0;
+      serv->failed_queries = 0;
+      serv->retrys = 0;
+      serv->nxdomain_replies = 0;
+      serv->query_latency = 0;
+    }
+}
+	

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -52,7 +52,7 @@ void blockdata_init(void)
 
 void blockdata_report(void)
 {
-  my_syslog(LOG_INFO, _("pool memory in use %u, max %u, allocated %u"), 
+  my_syslog(LOG_INFO, _("pool memory in use %zu, max %zu, allocated %zu"), 
 	    blockdata_count * sizeof(struct blockdata),  
 	    blockdata_hwm * sizeof(struct blockdata),  
 	    blockdata_alloced * sizeof(struct blockdata));
@@ -174,4 +174,3 @@ struct blockdata *blockdata_read(int fd, size_t len)
 {
   return blockdata_alloc_real(fd, NULL, len);
 }
-

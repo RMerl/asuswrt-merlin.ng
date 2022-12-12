@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1075,6 +1075,7 @@ void lease_set_hostname(struct dhcp_lease *lease, const char *name, int auth, ch
 	    }
 	
 	  kill_name(lease_tmp);
+	  lease_tmp->flags |= LEASE_CHANGED; /* run script on change */
 	  break;
 	}
     }
@@ -1233,17 +1234,11 @@ void lease_add_extradata(struct dhcp_lease *lease, unsigned char *data, unsigned
   if ((lease->extradata_size - lease->extradata_len) < (len + 1))
     {
       size_t newsz = lease->extradata_len + len + 100;
-      unsigned char *new = whine_malloc(newsz);
+      unsigned char *new = whine_realloc(lease->extradata, newsz);
   
       if (!new)
 	return;
       
-      if (lease->extradata)
-	{
-	  memcpy(new, lease->extradata, lease->extradata_len);
-	  free(lease->extradata);
-	}
-
       lease->extradata = new;
       lease->extradata_size = newsz;
     }
@@ -1255,8 +1250,4 @@ void lease_add_extradata(struct dhcp_lease *lease, unsigned char *data, unsigned
 }
 #endif
 
-#endif
-	  
-
-      
-
+#endif /* HAVE_DHCP */

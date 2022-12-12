@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,50 +30,100 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
 				  time_t now,  unsigned long ttl, unsigned int flags);
 
 /* type->string mapping: this is also used by the name-hash function as a mixing table. */
+/* taken from https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml */
 static const struct {
   unsigned int type;
   const char * const name;
 } typestr[] = {
-  { 1,   "A" },
-  { 2,   "NS" },
-  { 5,   "CNAME" },
-  { 6,   "SOA" },
-  { 10,  "NULL" },
-  { 11,  "WKS" },
-  { 12,  "PTR" },
-  { 13,  "HINFO" },	
-  { 15,  "MX" },
-  { 16,  "TXT" },
-  { 22,  "NSAP" },
-  { 23,  "NSAP_PTR" },
-  { 24,  "SIG" },
-  { 25,  "KEY" },
-  { 28,  "AAAA" },
-  { 29,  "LOC" },
-  { 33,  "SRV" },
-  { 35,  "NAPTR" },
-  { 36,  "KX" },
-  { 37,  "CERT" },
-  { 38,  "A6" },
-  { 39,  "DNAME" },
-  { 41,  "OPT" },
-  { 43,  "DS" },
-  { 46,  "RRSIG" },
-  { 47,  "NSEC" },
-  { 48,  "DNSKEY" },
-  { 50,  "NSEC3" },
-  { 51,  "NSEC3PARAM" },
-  { 52,  "TLSA" },
-  { 53,  "SMIMEA" },
-  { 55,  "HIP" },
-  { 249, "TKEY" },
-  { 250, "TSIG" },
-  { 251, "IXFR" },
-  { 252, "AXFR" },
-  { 253, "MAILB" },
-  { 254, "MAILA" },
-  { 255, "ANY" },
-  { 257, "CAA" }
+  { 1,   "A" }, /* a host address [RFC1035] */
+  { 2,   "NS" }, /* an authoritative name server [RFC1035] */
+  { 3,   "MD" }, /* a mail destination (OBSOLETE - use MX) [RFC1035] */
+  { 4,   "MF" }, /* a mail forwarder (OBSOLETE - use MX) [RFC1035] */
+  { 5,   "CNAME" }, /* the canonical name for an alias [RFC1035] */
+  { 6,   "SOA" }, /* marks the start of a zone of authority [RFC1035] */
+  { 7,   "MB" }, /* a mailbox domain name (EXPERIMENTAL) [RFC1035] */
+  { 8,   "MG" }, /* a mail group member (EXPERIMENTAL) [RFC1035] */
+  { 9,   "MR" }, /* a mail rename domain name (EXPERIMENTAL) [RFC1035] */
+  { 10,  "NULL" }, /* a null RR (EXPERIMENTAL) [RFC1035] */
+  { 11,  "WKS" }, /* a well known service description [RFC1035] */
+  { 12,  "PTR" }, /* a domain name pointer [RFC1035] */
+  { 13,  "HINFO" }, /* host information [RFC1035] */
+  { 14,  "MINFO" }, /* mailbox or mail list information [RFC1035] */
+  { 15,  "MX" }, /* mail exchange [RFC1035] */
+  { 16,  "TXT" }, /* text strings [RFC1035] */
+  { 17,  "RP" }, /* for Responsible Person [RFC1183] */
+  { 18,  "AFSDB" }, /* for AFS Data Base location [RFC1183][RFC5864] */
+  { 19,  "X25" }, /* for X.25 PSDN address [RFC1183] */
+  { 20,  "ISDN" }, /* for ISDN address [RFC1183] */
+  { 21,  "RT" }, /* for Route Through [RFC1183] */
+  { 22,  "NSAP" }, /* for NSAP address, NSAP style A record [RFC1706] */
+  { 23,  "NSAP_PTR" }, /* for domain name pointer, NSAP style [RFC1348][RFC1637][RFC1706] */
+  { 24,  "SIG" }, /* for security signature [RFC2535][RFC2536][RFC2537][RFC2931][RFC3008][RFC3110][RFC3755][RFC4034] */
+  { 25,  "KEY" }, /* for security key [RFC2535][RFC2536][RFC2537][RFC2539][RFC3008][RFC3110][RFC3755][RFC4034] */
+  { 26,  "PX" }, /* X.400 mail mapping information [RFC2163] */
+  { 27,  "GPOS" }, /* Geographical Position [RFC1712] */
+  { 28,  "AAAA" }, /* IP6 Address [RFC3596] */
+  { 29,  "LOC" }, /* Location Information [RFC1876] */
+  { 30,  "NXT" }, /* Next Domain (OBSOLETE) [RFC2535][RFC3755] */
+  { 31,  "EID" }, /* Endpoint Identifier [Michael_Patton][http://ana-3.lcs.mit.edu/~jnc/nimrod/dns.txt] 1995-06*/
+  { 32,  "NIMLOC" }, /* Nimrod Locator [1][Michael_Patton][http://ana-3.lcs.mit.edu/~jnc/nimrod/dns.txt] 1995-06*/
+  { 33,  "SRV" }, /* Server Selection [1][RFC2782] */
+  { 34,  "ATMA" }, /* ATM Address [ ATM Forum Technical Committee, "ATM Name System, V2.0", Doc ID: AF-DANS-0152.000, July 2000. Available from and held in escrow by IANA.] */
+  { 35,  "NAPTR" }, /* Naming Authority Pointer [RFC2168][RFC2915][RFC3403] */
+  { 36,  "KX" }, /* Key Exchanger [RFC2230] */
+  { 37,  "CERT" }, /* CERT [RFC4398] */
+  { 38,  "A6" }, /* A6 (OBSOLETE - use AAAA) [RFC2874][RFC3226][RFC6563] */
+  { 39,  "DNAME" }, /* DNAME [RFC6672] */
+  { 40,  "SINK" }, /* SINK [Donald_E_Eastlake][http://tools.ietf.org/html/draft-eastlake-kitchen-sink] 1997-11*/
+  { 41,  "OPT" }, /* OPT [RFC3225][RFC6891] */
+  { 42,  "APL" }, /* APL [RFC3123] */
+  { 43,  "DS" }, /* Delegation Signer [RFC3658][RFC4034] */
+  { 44,  "SSHFP" }, /* SSH Key Fingerprint [RFC4255] */
+  { 45,  "IPSECKEY" }, /* IPSECKEY [RFC4025] */
+  { 46,  "RRSIG" }, /* RRSIG [RFC3755][RFC4034] */
+  { 47,  "NSEC" }, /* NSEC [RFC3755][RFC4034][RFC9077] */
+  { 48,  "DNSKEY" }, /* DNSKEY [RFC3755][RFC4034] */
+  { 49,  "DHCID" }, /* DHCID [RFC4701] */
+  { 50,  "NSEC3" }, /* NSEC3 [RFC5155][RFC9077] */
+  { 51,  "NSEC3PARAM" }, /* NSEC3PARAM [RFC5155] */
+  { 52,  "TLSA" }, /* TLSA [RFC6698] */
+  { 53,  "SMIMEA" }, /* S/MIME cert association [RFC8162] SMIMEA/smimea-completed-template 2015-12-01*/
+  { 55,  "HIP" }, /* Host Identity Protocol [RFC8005] */
+  { 56,  "NINFO" }, /* NINFO [Jim_Reid] NINFO/ninfo-completed-template 2008-01-21*/
+  { 57,  "RKEY" }, /* RKEY [Jim_Reid] RKEY/rkey-completed-template 2008-01-21*/
+  { 58,  "TALINK" }, /* Trust Anchor LINK [Wouter_Wijngaards] TALINK/talink-completed-template 2010-02-17*/
+  { 59,  "CDS" }, /* Child DS [RFC7344] CDS/cds-completed-template 2011-06-06*/
+  { 60,  "CDNSKEY" }, /* DNSKEY(s) the Child wants reflected in DS [RFC7344] 2014-06-16*/
+  { 61,  "OPENPGPKEY" }, /* OpenPGP Key [RFC7929] OPENPGPKEY/openpgpkey-completed-template 2014-08-12*/
+  { 62,  "CSYNC" }, /* Child-To-Parent Synchronization [RFC7477] 2015-01-27*/
+  { 63,  "ZONEMD" }, /* Message Digest Over Zone Data [RFC8976] ZONEMD/zonemd-completed-template 2018-12-12*/
+  { 64,  "SVCB" }, /* Service Binding [draft-ietf-dnsop-svcb-https-00] SVCB/svcb-completed-template 2020-06-30*/
+  { 65,  "HTTPS" }, /* HTTPS Binding [draft-ietf-dnsop-svcb-https-00] HTTPS/https-completed-template 2020-06-30*/
+  { 99,  "SPF" }, /* [RFC7208] */
+  { 100, "UINFO" }, /* [IANA-Reserved] */
+  { 101, "UID" }, /* [IANA-Reserved] */
+  { 102, "GID" }, /* [IANA-Reserved] */
+  { 103, "UNSPEC" }, /* [IANA-Reserved] */
+  { 104, "NID" }, /* [RFC6742] ILNP/nid-completed-template */
+  { 105, "L32" }, /* [RFC6742] ILNP/l32-completed-template */
+  { 106, "L64" }, /* [RFC6742] ILNP/l64-completed-template */
+  { 107, "LP" }, /* [RFC6742] ILNP/lp-completed-template */
+  { 108, "EUI48" }, /* an EUI-48 address [RFC7043] EUI48/eui48-completed-template 2013-03-27*/
+  { 109, "EUI64" }, /* an EUI-64 address [RFC7043] EUI64/eui64-completed-template 2013-03-27*/
+  { 249, "TKEY" }, /* Transaction Key [RFC2930] */
+  { 250, "TSIG" }, /* Transaction Signature [RFC8945] */
+  { 251, "IXFR" }, /* incremental transfer [RFC1995] */
+  { 252, "AXFR" }, /* transfer of an entire zone [RFC1035][RFC5936] */
+  { 253, "MAILB" }, /* mailbox-related RRs (MB, MG or MR) [RFC1035] */
+  { 254, "MAILA" }, /* mail agent RRs (OBSOLETE - see MX) [RFC1035] */
+  { 255, "ANY" }, /* A request for some or all records the server has available [RFC1035][RFC6895][RFC8482] */
+  { 256, "URI" }, /* URI [RFC7553] URI/uri-completed-template 2011-02-22*/
+  { 257, "CAA" }, /* Certification Authority Restriction [RFC8659] CAA/caa-completed-template 2011-04-07*/
+  { 258, "AVC" }, /* Application Visibility and Control [Wolfgang_Riedel] AVC/avc-completed-template 2016-02-26*/
+  { 259, "DOA" }, /* Digital Object Architecture [draft-durand-doa-over-dns] DOA/doa-completed-template 2017-08-30*/
+  { 260, "AMTRELAY" }, /* Automatic Multicast Tunneling Relay [RFC8777] AMTRELAY/amtrelay-completed-template 2019-02-06*/
+  { 32768,  "TA" }, /* DNSSEC Trust Authorities [Sam_Weiler][http://cameo.library.cmu.edu/][ Deploying DNSSEC Without a Signed Root. Technical Report 1999-19, Information Networking Institute, Carnegie Mellon University, April 2004.] 2005-12-13*/
+  { 32769,  "DLV" }, /* DNSSEC Lookaside Validation (OBSOLETE) [RFC8749][RFC4431] */
 };
 
 static void cache_free(struct crec *crecp);
@@ -139,7 +189,7 @@ static void rehash(int size)
   else if (new_size <= hash_size || !(new = whine_malloc(new_size * sizeof(struct crec *))))
     return;
 
-  for(i = 0; i < new_size; i++)
+  for (i = 0; i < new_size; i++)
     new[i] = NULL;
 
   old = hash_table;
@@ -183,7 +233,8 @@ static void cache_hash(struct crec *crecp)
      immortal entries are at the end of the hash-chain.
      This allows reverse searches and garbage collection to be optimised */
 
-  struct crec **up = hash_bucket(cache_get_name(crecp));
+  char *name = cache_get_name(crecp);
+  struct crec **up = hash_bucket(name);
 
   if (!(crecp->flags & F_REVERSE))
     {
@@ -194,6 +245,11 @@ static void cache_hash(struct crec *crecp)
 	while (*up && !((*up)->flags & F_IMMORTAL))
 	  up = &((*up)->hash_next);
     }
+
+  /* Preserve order when inserting the same name multiple times. */
+  while (*up && hostname_isequal(cache_get_name(*up), name))
+    up = &((*up)->hash_next);
+  
   crecp->hash_next = *up;
   *up = crecp;
 }
@@ -324,6 +380,19 @@ static int is_outdated_cname_pointer(struct crec *crecp)
 
 static int is_expired(time_t now, struct crec *crecp)
 {
+  /* Don't dump expired entries if they are within the accepted timeout range.
+     The cache becomes approx. LRU. Never use expired DS or DNSKEY entries.
+     Possible values for daemon->cache_max_expiry:
+      -1  == serve cached content regardless how long ago it expired
+       0  == the option is disabled, expired content isn't served
+      <n> == serve cached content only if it expire less than <n> seconds
+             ago (where n is a positive integer) */
+  if (daemon->cache_max_expiry != 0 &&
+      (daemon->cache_max_expiry == -1 ||
+       difftime(now, crecp->ttd) < daemon->cache_max_expiry) &&
+      !(crecp->flags & (F_DS | F_DNSKEY)))
+    return 0;
+
   if (crecp->flags & F_IMMORTAL)
     return 0;
 
@@ -331,6 +400,27 @@ static int is_expired(time_t now, struct crec *crecp)
     return 0;
   
   return 1;
+}
+
+/* Remove entries with a given UID from the cache */
+unsigned int cache_remove_uid(const unsigned int uid)
+{
+  int i;
+  unsigned int removed = 0;
+  struct crec *crecp, **up;
+
+  for (i = 0; i < hash_size; i++)
+    for (crecp = hash_table[i], up = &hash_table[i]; crecp; crecp = crecp->hash_next)
+      if ((crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG)) && crecp->uid == uid)
+	{
+	  *up = crecp->hash_next;
+	  free(crecp);
+	  removed++;
+	}
+      else
+	up = &crecp->hash_next;
+  
+  return removed;
 }
 
 static struct crec *cache_scan_free(char *name, union all_addr *addr, unsigned short class, time_t now,
@@ -363,7 +453,7 @@ static struct crec *cache_scan_free(char *name, union all_addr *addr, unsigned s
 	  if ((crecp->flags & F_FORWARD) && hostname_isequal(cache_get_name(crecp), name))
 	    {
 	      /* Don't delete DNSSEC in favour of a CNAME, they can co-exist */
-	      if ((flags & crecp->flags & (F_IPV4 | F_IPV6 | F_SRV)) || 
+	      if ((flags & crecp->flags & (F_IPV4 | F_IPV6 | F_SRV | F_NXDOMAIN)) || 
 		  (((crecp->flags | flags) & F_CNAME) && !(crecp->flags & (F_DNSKEY | F_DS))))
 		{
 		  if (crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG))
@@ -433,7 +523,7 @@ static struct crec *cache_scan_free(char *name, union all_addr *addr, unsigned s
 	  else if (!(crecp->flags & (F_HOSTS | F_DHCP | F_CONFIG)) &&
 		   (flags & crecp->flags & F_REVERSE) && 
 		   (flags & crecp->flags & (F_IPV4 | F_IPV6)) &&
-		   memcmp(&crecp->addr, addr, addrlen) == 0)
+		   addr && memcmp(&crecp->addr, addr, addrlen) == 0)
 	    {
 	      *up = crecp->hash_next;
 	      cache_unlink(crecp);
@@ -488,8 +578,6 @@ struct crec *cache_insert(char *name, union all_addr *addr, unsigned short class
   else
 #endif
     {
-      /* Don't log DNSSEC records here, done elsewhere */
-      log_query(flags | F_UPSTREAM, name, addr, NULL);
       if (daemon->max_cache_ttl != 0 && daemon->max_cache_ttl < ttl)
 	ttl = daemon->max_cache_ttl;
       if (daemon->min_cache_ttl != 0 && daemon->min_cache_ttl > ttl)
@@ -505,7 +593,7 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
 {
   struct crec *new, *target_crec = NULL;
   union bigname *big_name = NULL;
-  int freed_all = flags & F_REVERSE;
+  int freed_all = (flags & F_REVERSE);
   int free_avail = 0;
   unsigned int target_uid;
   
@@ -580,8 +668,12 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
 	{
 	  /* For DNSSEC records, uid holds class. */
 	  free_avail = 1; /* Must be free space now. */
+	  
+	  /* condition valid when stale-caching */
+	  if (difftime(now, new->ttd) < 0)
+	    daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED]++;
+	  
 	  cache_scan_free(cache_get_name(new), &new->addr, new->uid, now, new->flags, NULL, NULL);
-	  daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED]++;
 	}
       else
 	{
@@ -644,7 +736,7 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
   new->ttd = now + (time_t)ttl;
   new->next = new_chain;
   new_chain = new;
-
+  
   return new;
 }
 
@@ -822,7 +914,7 @@ int cache_find_non_terminal(char *name, time_t now)
 struct crec *cache_find_by_name(struct crec *crecp, char *name, time_t now, unsigned int prot)
 {
   struct crec *ans;
-  int no_rr = prot & F_NO_RR;
+  int no_rr = (prot & F_NO_RR) || option_bool(OPT_NORR);
 
   prot &= ~F_NO_RR;
   
@@ -970,16 +1062,17 @@ struct crec *cache_find_by_addr(struct crec *crecp, union all_addr *addr,
 static void add_hosts_entry(struct crec *cache, union all_addr *addr, int addrlen, 
 			    unsigned int index, struct crec **rhash, int hashsz)
 {
-  struct crec *lookup = cache_find_by_name(NULL, cache_get_name(cache), 0, cache->flags & (F_IPV4 | F_IPV6));
   int i;
   unsigned int j; 
+  struct crec *lookup = NULL;
 
   /* Remove duplicates in hosts files. */
-  if (lookup && (lookup->flags & F_HOSTS) && memcmp(&lookup->addr, addr, addrlen) == 0)
-    {
-      free(cache);
-      return;
-    }
+  while ((lookup = cache_find_by_name(lookup, cache_get_name(cache), 0, cache->flags & (F_IPV4 | F_IPV6))))
+    if ((lookup->flags & F_HOSTS) && memcmp(&lookup->addr, addr, addrlen) == 0)
+      {
+	free(cache);
+	return;
+      }
     
   /* Ensure there is only one address -> name mapping (first one trumps) 
      We do this by steam here, The entries are kept in hash chains, linked
@@ -1084,7 +1177,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 {  
   FILE *f = fopen(filename, "r");
   char *token = daemon->namebuff, *domain_suffix = NULL;
-  int addr_count = 0, name_count = cache_size, lineno = 1;
+  int names_done = 0, name_count = cache_size, lineno = 1;
   unsigned int flags = 0;
   union all_addr addr;
   int atnl, addrlen = 0;
@@ -1120,8 +1213,6 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 	  continue;
 	}
       
-      addr_count++;
-      
       /* rehash every 1000 names. */
       if (rhash && ((name_count - cache_size) > 1000))
 	{
@@ -1153,6 +1244,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 		  cache->ttd = daemon->local_ttl;
 		  add_hosts_entry(cache, &addr, addrlen, index, rhash, hashsz);
 		  name_count++;
+		  names_done++;
 		}
 	      if ((cache = whine_malloc(SIZEOF_BARE_CREC + strlen(canon) + 1)))
 		{
@@ -1161,6 +1253,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
 		  cache->ttd = daemon->local_ttl;
 		  add_hosts_entry(cache, &addr, addrlen, index, rhash, hashsz);
 		  name_count++;
+		  names_done++;
 		}
 	      free(canon);
 	      
@@ -1177,7 +1270,7 @@ int read_hostsfile(char *filename, unsigned int index, int cache_size, struct cr
   if (rhash)
     rehash(name_count); 
   
-  my_syslog(LOG_INFO, _("read %s - %d addresses"), filename, addr_count);
+  my_syslog(LOG_INFO, _("read %s - %d names"), filename, names_done);
   
   return name_count;
 }
@@ -1351,10 +1444,12 @@ struct in_addr a_record_from_hosts(char *name, time_t now)
   struct crec *crecp = NULL;
   struct in_addr ret;
   
-  while ((crecp = cache_find_by_name(crecp, name, now, F_IPV4)))
-    if (crecp->flags & F_HOSTS)
-      return crecp->addr.addr4;
-
+  /* If no DNS service, cache not initialised. */
+  if (daemon->port != 0)
+    while ((crecp = cache_find_by_name(crecp, name, now, F_IPV4)))
+      if (crecp->flags & F_HOSTS)
+	return crecp->addr.addr4;
+  
   my_syslog(MS_DHCP | LOG_WARNING, _("No IPv4 address found for %s"), name);
   
   ret.s_addr = 0;
@@ -1549,7 +1644,8 @@ static void make_non_terminals(struct crec *source)
       if (crecp)
 	{
 	  crecp->flags = (source->flags | F_NAMEP) & ~(F_IPV4 | F_IPV6 | F_CNAME | F_SRV | F_DNSKEY | F_DS | F_REVERSE);
-	  crecp->ttd = source->ttd;
+	  if (!(crecp->flags & F_IMMORTAL))
+	    crecp->ttd = source->ttd;
 	  crecp->name.namep = name;
 	  
 	  cache_hash(crecp);
@@ -1602,21 +1698,18 @@ int cache_make_stat(struct txt_record *t)
     case TXT_STAT_SERVERS:
       /* sum counts from different records for same server */
       for (serv = daemon->servers; serv; serv = serv->next)
-	serv->flags &= ~SERV_COUNTED;
+	serv->flags &= ~SERV_MARK;
       
       for (serv = daemon->servers; serv; serv = serv->next)
-	if (!(serv->flags & 
-	      (SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)))
+	if (!(serv->flags & SERV_MARK))
 	  {
 	    char *new, *lenp;
 	    int port, newlen, bytes_avail, bytes_needed;
 	    unsigned int queries = 0, failed_queries = 0;
 	    for (serv1 = serv; serv1; serv1 = serv1->next)
-	      if (!(serv1->flags & 
-		    (SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)) && 
-		  sockaddr_isequal(&serv->addr, &serv1->addr))
+	      if (!(serv1->flags & SERV_MARK) && sockaddr_isequal(&serv->addr, &serv1->addr))
 		{
-		  serv1->flags |= SERV_COUNTED;
+		  serv1->flags |= SERV_MARK;
 		  queries += serv1->queries;
 		  failed_queries += serv1->failed_queries;
 		}
@@ -1628,10 +1721,8 @@ int cache_make_stat(struct txt_record *t)
 	      {
 		/* expand buffer if necessary */
 		newlen = bytes_needed + 1 + bufflen - bytes_avail;
-		if (!(new = whine_malloc(newlen)))
+		if (!(new = whine_realloc(buff, newlen)))
 		  return 0;
-		memcpy(new, buff, bufflen);
-		free(buff);
 		p = new + (p - buff);
 		lenp = p - 1;
 		buff = new;
@@ -1644,6 +1735,7 @@ int cache_make_stat(struct txt_record *t)
 	  }
       t->txt = (unsigned char *)buff;
       t->len = p - buff;
+
       return 1;
     }
   
@@ -1678,6 +1770,8 @@ void dump_cache(time_t now)
 	    daemon->cachesize, daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED], daemon->metrics[METRIC_DNS_CACHE_INSERTED]);
   my_syslog(LOG_INFO, _("queries forwarded %u, queries answered locally %u"), 
 	    daemon->metrics[METRIC_DNS_QUERIES_FORWARDED], daemon->metrics[METRIC_DNS_LOCAL_ANSWERED]);
+  if (daemon->cache_max_expiry != 0)
+    my_syslog(LOG_INFO, _("queries answered from stale cache %u"), daemon->metrics[METRIC_DNS_STALE_ANSWERED]);
 #ifdef HAVE_AUTH
   my_syslog(LOG_INFO, _("queries for authoritative zones %u"), daemon->metrics[METRIC_DNS_AUTH_ANSWERED]);
 #endif
@@ -1686,32 +1780,37 @@ void dump_cache(time_t now)
 
   /* sum counts from different records for same server */
   for (serv = daemon->servers; serv; serv = serv->next)
-    serv->flags &= ~SERV_COUNTED;
+    serv->flags &= ~SERV_MARK;
   
   for (serv = daemon->servers; serv; serv = serv->next)
-    if (!(serv->flags & 
-	  (SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)))
+    if (!(serv->flags & SERV_MARK))
       {
 	int port;
-	unsigned int queries = 0, failed_queries = 0;
+	unsigned int queries = 0, failed_queries = 0, nxdomain_replies = 0, retrys = 0;
+	unsigned int sigma_latency = 0, count_latency = 0;
+
 	for (serv1 = serv; serv1; serv1 = serv1->next)
-	  if (!(serv1->flags & 
-		(SERV_NO_ADDR | SERV_LITERAL_ADDRESS | SERV_COUNTED | SERV_USE_RESOLV | SERV_NO_REBIND)) && 
-	      sockaddr_isequal(&serv->addr, &serv1->addr))
+	  if (!(serv1->flags & SERV_MARK) && sockaddr_isequal(&serv->addr, &serv1->addr))
 	    {
-	      serv1->flags |= SERV_COUNTED;
+	      serv1->flags |= SERV_MARK;
 	      queries += serv1->queries;
 	      failed_queries += serv1->failed_queries;
+	      nxdomain_replies += serv1->nxdomain_replies;
+	      retrys += serv1->retrys;
+	      sigma_latency += serv1->query_latency;
+	      count_latency++;
 	    }
 	port = prettyprint_addr(&serv->addr, daemon->addrbuff);
-	my_syslog(LOG_INFO, _("server %s#%d: queries sent %u, retried or failed %u"), daemon->addrbuff, port, queries, failed_queries);
+	my_syslog(LOG_INFO, _("server %s#%d: queries sent %u, retried %u, failed %u, nxdomain replies %u, avg. latency %ums"),
+		  daemon->addrbuff, port, queries, retrys, failed_queries, nxdomain_replies, sigma_latency/count_latency);
       }
-  
+
   if (option_bool(OPT_DEBUG) || option_bool(OPT_LOG))
     {
       struct crec *cache ;
       int i;
-      my_syslog(LOG_INFO, "Host                                     Address                        Flags      Expires");
+      my_syslog(LOG_INFO, "Host                           Address                                  Flags      Expires                  Source");
+      my_syslog(LOG_INFO, "------------------------------ ---------------------------------------- ---------- ------------------------ ------------");
     
       for (i=0; i<hash_size; i++)
 	for (cache = hash_table[i]; cache; cache = cache->hash_next)
@@ -1769,7 +1868,10 @@ void dump_cache(time_t now)
 	    else if (cache->flags & F_DNSKEY)
 	      t = "K";
 #endif
-	    p += sprintf(p, "%-40.40s %s%s%s%s%s%s%s%s%s  ", a, t,
+	    else /* non-terminal */
+	      t = "!";
+
+	    p += sprintf(p, "%-40.40s %s%s%s%s%s%s%s%s%s%s ", a, t,
 			 cache->flags & F_FORWARD ? "F" : " ",
 			 cache->flags & F_REVERSE ? "R" : " ",
 			 cache->flags & F_IMMORTAL ? "I" : " ",
@@ -1777,14 +1879,16 @@ void dump_cache(time_t now)
 			 cache->flags & F_NEG ? "N" : " ",
 			 cache->flags & F_NXDOMAIN ? "X" : " ",
 			 cache->flags & F_HOSTS ? "H" : " ",
+			 cache->flags & F_CONFIG ? "C" : " ",
 			 cache->flags & F_DNSSECOK ? "V" : " ");
 #ifdef HAVE_BROKEN_RTC
-	    p += sprintf(p, "%lu", cache->flags & F_IMMORTAL ? 0: (unsigned long)(cache->ttd - now));
+	    p += sprintf(p, "%-24lu", cache->flags & F_IMMORTAL ? 0: (unsigned long)(cache->ttd - now));
 #else
-	    p += sprintf(p, "%s", cache->flags & F_IMMORTAL ? "\n" : ctime(&(cache->ttd)));
-	    /* ctime includes trailing \n - eat it */
-	    *(p-1) = 0;
+	    p += sprintf(p, "%-24.24s", cache->flags & F_IMMORTAL ? "" : ctime(&(cache->ttd)));
 #endif
+	    if(cache->flags & (F_HOSTS | F_CONFIG) && cache->uid > 0)
+		p += sprintf(p, " %s", record_source(cache->uid));
+
 	    my_syslog(LOG_INFO, "%s", daemon->namebuff);
 	  }
     }
@@ -1793,7 +1897,10 @@ void dump_cache(time_t now)
 char *record_source(unsigned int index)
 {
   struct hostsfile *ah;
-
+#ifdef HAVE_INOTIFY
+  struct dyndir *dd;
+#endif
+  
   if (index == SRC_CONFIG)
     return "config";
   else if (index == SRC_HOSTS)
@@ -1804,15 +1911,17 @@ char *record_source(unsigned int index)
       return ah->fname;
 
 #ifdef HAVE_INOTIFY
-  for (ah = daemon->dynamic_dirs; ah; ah = ah->next)
-     if (ah->index == index)
-       return ah->fname;
+  /* Dynamic directories contain multiple files */
+  for (dd = daemon->dynamic_dirs; dd; dd = dd->next)
+    for (ah = dd->files; ah; ah = ah->next)
+      if (ah->index == index)
+	return ah->fname;
 #endif
 
   return "<unknown>";
 }
 
-char *querystr(char *desc, unsigned short type)
+static char *querystr(char *desc, unsigned short type)
 {
   unsigned int i;
   int len = 10; /* strlen("type=xxxxx") */
@@ -1860,47 +1969,105 @@ char *querystr(char *desc, unsigned short type)
 	  if (types)
 	    sprintf(buff, "<%s>", types);
 	  else
-	    sprintf(buff, "type=%d", type);
+	    sprintf(buff, "<type=%d>", type);
 	}
     }
   
   return buff ? buff : "";
 }
 
-void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg)
+static char *edestr(int ede)
 {
-  char *source, *dest = daemon->addrbuff;
+  switch (ede)
+    {
+    case EDE_OTHER:                       return "other";
+    case EDE_USUPDNSKEY:                  return "unsupported DNSKEY algorithm";
+    case EDE_USUPDS:                      return "unsupported DS digest";
+    case EDE_STALE:                       return "stale answer";
+    case EDE_FORGED:                      return "forged";
+    case EDE_DNSSEC_IND:                  return "DNSSEC indeterminate";
+    case EDE_DNSSEC_BOGUS:                return "DNSSEC bogus";
+    case EDE_SIG_EXP:                     return "DNSSEC signature expired";
+    case EDE_SIG_NYV:                     return "DNSSEC sig not yet valid";
+    case EDE_NO_DNSKEY:                   return "DNSKEY missing";
+    case EDE_NO_RRSIG:                    return "RRSIG missing";
+    case EDE_NO_ZONEKEY:                  return "no zone key bit set";
+    case EDE_NO_NSEC:                     return "NSEC(3) missing";
+    case EDE_CACHED_ERR:                  return "cached error";
+    case EDE_NOT_READY:                   return "not ready";
+    case EDE_BLOCKED:                     return "blocked";
+    case EDE_CENSORED:                    return "censored";
+    case EDE_FILTERED:                    return "filtered";
+    case EDE_PROHIBITED:                  return "prohibited";
+    case EDE_STALE_NXD:                   return "stale NXDOMAIN";
+    case EDE_NOT_AUTH:                    return "not authoritative";
+    case EDE_NOT_SUP:                     return "not supported";
+    case EDE_NO_AUTH:                     return "no reachable authority";
+    case EDE_NETERR:                      return "network error";
+    case EDE_INVALID_DATA:                return "invalid data";
+    default:                              return "unknown";
+    }
+}
+
+void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg, unsigned short type)
+{
+  char *source, *dest = arg;
   char *verb = "is";
+  char *extra = "";
+  char portstring[7]; /* space for #<portnum> */
   
   if (!option_bool(OPT_LOG))
     return;
+
+  /* build query type string if requested */
+  if (!(flags & (F_SERVER | F_IPSET)) && type > 0)
+    arg = querystr(arg, type);
+
+#ifdef HAVE_DNSSEC
+  if ((flags & F_DNSSECOK) && option_bool(OPT_EXTRALOG))
+    extra = " (DNSSEC signed)";
+#endif
 
   name = sanitise(name);
 
   if (addr)
     {
+      dest = daemon->addrbuff;
+
       if (flags & F_KEYTAG)
 	sprintf(daemon->addrbuff, arg, addr->log.keytag, addr->log.algo, addr->log.digest);
       else if (flags & F_RCODE)
 	{
 	  unsigned int rcode = addr->log.rcode;
 
-	   if (rcode == SERVFAIL)
-	     dest = "SERVFAIL";
-	   else if (rcode == REFUSED)
-	     dest = "REFUSED";
-	   else if (rcode == NOTIMP)
-	     dest = "not implemented";
-	   else
-	     sprintf(daemon->addrbuff, "%u", rcode);
+	  if (rcode == SERVFAIL)
+	    dest = "SERVFAIL";
+	  else if (rcode == REFUSED)
+	    dest = "REFUSED";
+	  else if (rcode == NOTIMP)
+	    dest = "not implemented";
+	  else
+	    sprintf(daemon->addrbuff, "%u", rcode);
+
+	  if (addr->log.ede != EDE_UNSET)
+	    {
+	      extra = daemon->addrbuff;
+	      sprintf(extra, " (EDE: %s)", edestr(addr->log.ede));
+	    }
+	}
+      else if (flags & (F_IPV4 | F_IPV6))
+	{
+	  inet_ntop(flags & F_IPV4 ? AF_INET : AF_INET6,
+		    addr, daemon->addrbuff, ADDRSTRLEN);
+	  if ((flags & F_SERVER) && type != NAMESERVER_PORT)
+	    {
+	      extra = portstring;
+	      sprintf(portstring, "#%u", type);
+	    }
 	}
       else
-	inet_ntop(flags & F_IPV4 ? AF_INET : AF_INET6,
-		  addr, daemon->addrbuff, ADDRSTRLEN);
-      
+	dest = arg;
     }
-  else
-    dest = arg;
 
   if (flags & F_REVERSE)
     {
@@ -1938,10 +2105,23 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg)
   else if (flags & F_UPSTREAM)
     source = "reply";
   else if (flags & F_SECSTAT)
-    source = "validation";
+    {
+      if (addr && addr->log.ede != EDE_UNSET && option_bool(OPT_EXTRALOG))
+	{
+	  extra = daemon->addrbuff;
+	  sprintf(extra, " (EDE: %s)", edestr(addr->log.ede));
+	}
+      source = "validation";
+      dest = arg;
+    }
   else if (flags & F_AUTH)
     source = "auth";
-  else if (flags & F_SERVER)
+   else if (flags & F_DNSSEC)
+    {
+      source = arg;
+      verb = "to";
+    }
+   else if (flags & F_SERVER)
     {
       source = "forwarded";
       verb = "to";
@@ -1951,34 +2131,31 @@ void log_query(unsigned int flags, char *name, union all_addr *addr, char *arg)
       source = arg;
       verb = "from";
     }
-  else if (flags & F_DNSSEC)
-    {
-      source = arg;
-      verb = "to";
-    }
   else if (flags & F_IPSET)
     {
-      source = "ipset add";
+      source = type ? "ipset add" : "nftset add";
       dest = name;
       name = arg;
       verb = daemon->addrbuff;
     }
+  else if (flags & F_STALE)
+    source = "cached-stale";
   else
     source = "cached";
   
-  if (strlen(name) == 0)
+  if (name && !name[0])
     name = ".";
 
   if (option_bool(OPT_EXTRALOG))
     {
-      int port = prettyprint_addr(daemon->log_source_addr, daemon->addrbuff2);
       if (flags & F_NOEXTRA)
-	my_syslog(LOG_INFO, "* %s/%u %s %s %s %s", daemon->addrbuff2, port, source, name, verb, dest);
+	my_syslog(LOG_INFO, "%u %s %s %s %s%s", daemon->log_display_id, source, name, verb, dest, extra);
       else
-	my_syslog(LOG_INFO, "%u %s/%u %s %s %s %s", daemon->log_display_id, daemon->addrbuff2, port, source, name, verb, dest);
+	{
+	   int port = prettyprint_addr(daemon->log_source_addr, daemon->addrbuff2);
+	   my_syslog(LOG_INFO, "%u %s/%u %s %s %s %s%s", daemon->log_display_id, daemon->addrbuff2, port, source, name, verb, dest, extra);
+	}
     }
   else
-    my_syslog(LOG_INFO, "%s %s %s %s", source, name, verb, dest);
+    my_syslog(LOG_INFO, "%s %s %s %s%s", source, name, verb, dest, extra);
 }
-
- 

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -66,17 +66,10 @@ char *netlink_init(void)
   addr.nl_pad = 0;
   addr.nl_pid = 0; /* autobind */
   addr.nl_groups = RTMGRP_IPV4_ROUTE;
-  if (option_bool(OPT_CLEVERBIND))
-    addr.nl_groups |= RTMGRP_IPV4_IFADDR;  
+  addr.nl_groups |= RTMGRP_IPV4_IFADDR;  
   addr.nl_groups |= RTMGRP_IPV6_ROUTE;
-  if (option_bool(OPT_CLEVERBIND))
-    addr.nl_groups |= RTMGRP_IPV6_IFADDR;
+  addr.nl_groups |= RTMGRP_IPV6_IFADDR;
 
-#ifdef HAVE_DHCP6
-  if (daemon->doing_ra || daemon->doing_dhcp6)
-    addr.nl_groups |= RTMGRP_IPV6_IFADDR;
-#endif
-  
   /* May not be able to have permission to set multicast groups don't die in that case */
   if ((daemon->netlinkfd = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE)) != -1)
     {
@@ -265,7 +258,16 @@ int iface_enumerate(int family, void *parm, int (*callback)())
 		    
 		    while (RTA_OK(rta, len1))
 		      {
-			if (rta->rta_type == IFA_ADDRESS)
+			/*
+			 * Important comment: (from if_addr.h)
+			 * IFA_ADDRESS is prefix address, rather than local interface address.
+			 * It makes no difference for normally configured broadcast interfaces,
+			 * but for point-to-point IFA_ADDRESS is DESTINATION address,
+			 * local address is supplied in IFA_LOCAL attribute.
+			 */
+			if (rta->rta_type == IFA_LOCAL)
+			  addrp = ((struct in6_addr *)(rta+1));
+			else if (rta->rta_type == IFA_ADDRESS && !addrp)
 			  addrp = ((struct in6_addr *)(rta+1)); 
 			else if (rta->rta_type == IFA_CACHEINFO)
 			  {
@@ -402,6 +404,4 @@ static unsigned nl_async(struct nlmsghdr *h, unsigned state)
     }
   return state;
 }
-#endif
-
-      
+#endif /* HAVE_LINUX_NETWORK */

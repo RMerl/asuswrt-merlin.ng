@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -18,7 +18,11 @@
 
 #ifdef HAVE_DUMPFILE
 
+#include <netinet/icmp6.h>
+
 static u32 packet_count;
+static void do_dump_packet(int mask, void *packet, size_t len,
+			   union mysockaddr *src, union mysockaddr *dst, int port, int proto);
 
 /* https://wiki.wireshark.org/Development/LibpcapFileFormat */
 struct pcap_hdr_s {
@@ -79,7 +83,45 @@ void dump_init(void)
     }
 }
 
-void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, union mysockaddr *dst)
+void dump_packet_udp(int mask, void *packet, size_t len,
+		     union mysockaddr *src, union mysockaddr *dst, int fd)
+{
+  union mysockaddr fd_addr;
+  socklen_t addr_len = sizeof(fd_addr);
+
+  if (daemon->dumpfd != -1 && (mask & daemon->dump_mask))
+     {
+       /* if fd is negative it carries a port number (negated) 
+	  which we use as a source or destination when not otherwise
+	  specified so wireshark can ID the packet. 
+	  If both src and dst are specified, set this to -1 to avoid
+	  a spurious getsockname() call. */
+       int port = (fd < 0) ? -fd : -1;
+       
+       /* fd >= 0 is a file descriptor and the address of that file descriptor is used
+	  in place of a NULL src or dst. */
+       if (fd >= 0 && getsockname(fd, (struct sockaddr *)&fd_addr, &addr_len) != -1)
+	 {
+	   if (!src)
+	     src = &fd_addr;
+	   
+	   if (!dst)
+	     dst = &fd_addr;
+	 }
+       
+       do_dump_packet(mask, packet, len, src, dst, port, IPPROTO_UDP);
+     }
+}
+
+void dump_packet_icmp(int mask, void *packet, size_t len,
+		      union mysockaddr *src, union mysockaddr *dst)
+{
+  if (daemon->dumpfd != -1 && (mask & daemon->dump_mask))
+    do_dump_packet(mask, packet, len, src, dst, -1, IPPROTO_ICMP);
+}
+
+static void do_dump_packet(int mask, void *packet, size_t len,
+			   union mysockaddr *src, union mysockaddr *dst, int port, int proto)
 {
   struct ip ip;
   struct ip6_hdr ip6;
@@ -96,13 +138,14 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
   void *iphdr;
   size_t ipsz;
   int rc;
+     
+  /* if port != -1 it carries a port number 
+     which we use as a source or destination when not otherwise
+     specified so wireshark can ID the packet. 
+     If both src and dst are specified, set this to -1 to avoid
+     a spurious getsockname() call. */
+  udp.uh_sport = udp.uh_dport = htons(port < 0 ? 0 : port);
   
-  if (daemon->dumpfd == -1 || !(mask & daemon->dump_mask))
-    return;
-  
-  /* So wireshark can Id the packet. */
-  udp.uh_sport = udp.uh_dport = htons(NAMESERVER_PORT);
-
   if (src)
     family = src->sa.sa_family;
   else
@@ -115,10 +158,16 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
       memset(&ip6, 0, sizeof(ip6));
       
       ip6.ip6_vfc = 6 << 4;
-      ip6.ip6_plen = htons(sizeof(struct udphdr) + len);
-      ip6.ip6_nxt = IPPROTO_UDP;
       ip6.ip6_hops = 64;
 
+      if ((ip6.ip6_nxt = proto) == IPPROTO_UDP)
+	ip6.ip6_plen = htons(sizeof(struct udphdr) + len);
+      else
+	{
+	  proto = ip6.ip6_nxt = IPPROTO_ICMPV6;
+	  ip6.ip6_plen = htons(len);
+	}
+      
       if (src)
 	{
 	  memcpy(&ip6.ip6_src, &src->in6.sin6_addr, IN6ADDRSZ);
@@ -134,9 +183,8 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
       /* start UDP checksum */
       for (sum = 0, i = 0; i < IN6ADDRSZ; i+=2)
 	{
-	  sum += ip6.ip6_src.s6_addr[i] + (ip6.ip6_src.s6_addr[i+1] << 8) ;
-	  sum += ip6.ip6_dst.s6_addr[i] + (ip6.ip6_dst.s6_addr[i+1] << 8) ;
-	  
+	  sum += ntohs((ip6.ip6_src.s6_addr[i] << 8) + (ip6.ip6_src.s6_addr[i+1])) ;
+	  sum += ntohs((ip6.ip6_dst.s6_addr[i] << 8) + (ip6.ip6_dst.s6_addr[i+1])) ; 
 	}
     }
   else
@@ -147,9 +195,15 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
       
       ip.ip_v = IPVERSION;
       ip.ip_hl = sizeof(struct ip) / 4;
-      ip.ip_len = htons(sizeof(struct ip) + sizeof(struct udphdr) + len); 
       ip.ip_ttl = IPDEFTTL;
-      ip.ip_p = IPPROTO_UDP;
+
+      if ((ip.ip_p = proto) == IPPROTO_UDP)
+	ip.ip_len = htons(sizeof(struct ip) + sizeof(struct udphdr) + len);
+      else
+	{
+	  ip.ip_len = htons(sizeof(struct ip) + len);
+	  proto = ip.ip_p = IPPROTO_ICMP;
+	}
       
       if (src)
 	{
@@ -170,7 +224,7 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
 	sum = (sum & 0xffff) + (sum >> 16);  
       ip.ip_sum = (sum == 0xffff) ? sum : ~sum;
       
-      /* start UDP checksum */
+      /* start UDP/ICMP checksum */
       sum = ip.ip_src.s_addr & 0xffff;
       sum += (ip.ip_src.s_addr >> 16) & 0xffff;
       sum += ip.ip_dst.s_addr & 0xffff;
@@ -180,31 +234,61 @@ void dump_packet(int mask, void *packet, size_t len, union mysockaddr *src, unio
   if (len & 1)
     ((unsigned char *)packet)[len] = 0; /* for checksum, in case length is odd. */
 
-  udp.uh_sum = 0;
-  udp.uh_ulen = htons(sizeof(struct udphdr) + len);
-  sum += htons(IPPROTO_UDP);
-  sum += htons(sizeof(struct udphdr) + len);
-  for (i = 0; i < sizeof(struct udphdr)/2; i++)
-    sum += ((u16 *)&udp)[i];
-  for (i = 0; i < (len + 1) / 2; i++)
-    sum += ((u16 *)packet)[i];
-  while (sum >> 16)
-    sum = (sum & 0xffff) + (sum >> 16);
-  udp.uh_sum = (sum == 0xffff) ? sum : ~sum;
+  if (proto == IPPROTO_UDP)
+    {
+      /* Add Remaining part of the pseudoheader. Note that though the
+	 IPv6 pseudoheader is very different to the IPv4 one, the 
+	 net result of this calculation is correct as long as the 
+	 packet length is less than 65536, which is fine for us. */
+      sum += htons(IPPROTO_UDP);
+      sum += htons(sizeof(struct udphdr) + len);
+      
+      udp.uh_sum = 0;
+      udp.uh_ulen = htons(sizeof(struct udphdr) + len);
+      
+      for (i = 0; i < sizeof(struct udphdr)/2; i++)
+	sum += ((u16 *)&udp)[i];
+      for (i = 0; i < (len + 1) / 2; i++)
+	sum += ((u16 *)packet)[i];
+      while (sum >> 16)
+	sum = (sum & 0xffff) + (sum >> 16);
+      udp.uh_sum = (sum == 0xffff) ? sum : ~sum;
 
+      pcap_header.incl_len = pcap_header.orig_len = ipsz + sizeof(udp) + len;
+    }
+  else
+    {
+      /* ICMP - ICMPv6 packet is a superset of ICMP */
+      struct icmp6_hdr *icmp = packet;
+      
+      /* See comment in UDP code above. */
+      sum += htons(proto);
+      sum += htons(len);
+      
+      icmp->icmp6_cksum = 0;
+      for (i = 0; i < (len + 1) / 2; i++)
+	sum += ((u16 *)packet)[i];
+      while (sum >> 16)
+	sum = (sum & 0xffff) + (sum >> 16);
+      icmp->icmp6_cksum = (sum == 0xffff) ? sum : ~sum;
+
+      pcap_header.incl_len = pcap_header.orig_len = ipsz + len;
+    }
+    
   rc = gettimeofday(&time, NULL);
   pcap_header.ts_sec = time.tv_sec;
   pcap_header.ts_usec = time.tv_usec;
-  pcap_header.incl_len = pcap_header.orig_len = ipsz + sizeof(udp) + len;
   
   if (rc == -1 ||
       !read_write(daemon->dumpfd, (void *)&pcap_header, sizeof(pcap_header), 0) ||
       !read_write(daemon->dumpfd, iphdr, ipsz, 0) ||
-      !read_write(daemon->dumpfd, (void *)&udp, sizeof(udp), 0) ||
+      (proto == IPPROTO_UDP && !read_write(daemon->dumpfd, (void *)&udp, sizeof(udp), 0)) ||
       !read_write(daemon->dumpfd, (void *)packet, len, 0))
     my_syslog(LOG_ERR, _("failed to write packet dump"));
+  else if (option_bool(OPT_EXTRALOG))
+    my_syslog(LOG_INFO, _("%u dumping packet %u mask 0x%04x"),  daemon->log_display_id, ++packet_count, mask);
   else
-    my_syslog(LOG_INFO, _("dumping UDP packet %u mask 0x%04x"), ++packet_count, mask);
+    my_syslog(LOG_INFO, _("dumping packet %u mask 0x%04x"), ++packet_count, mask);
 
 }
 

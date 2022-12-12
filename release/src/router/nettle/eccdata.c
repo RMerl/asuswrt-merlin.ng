@@ -1111,6 +1111,17 @@ output_bignum (const char *name, const mpz_t x,
 }
 
 static void
+output_bignum_redc (const char *name, const mpz_t x, const mpz_t p,
+		    unsigned size, unsigned bits_per_limb)
+{
+  mpz_t t;
+  mpz_init (t);
+  mpz_mul_2exp (t, x, size * bits_per_limb);
+  mpz_mod (t, t, p);
+  output_bignum (name, t, size, bits_per_limb);
+}
+
+static void
 output_point (const struct ecc_curve *ecc,
 	      const struct ecc_point *p, int use_redc,
 	      unsigned size, unsigned bits_per_limb)
@@ -1164,11 +1175,13 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
 {
   unsigned limb_size = (ecc->bit_size + bits_per_limb - 1)/bits_per_limb;
   unsigned i;
-  unsigned bits, e;
+  unsigned bits;
   int redc_limbs;
   mpz_t t;
+  mpz_t z;
 
   mpz_init (t);
+  mpz_init (z);
 
   printf ("/* For NULL. */\n#include <stddef.h>\n");
 
@@ -1294,20 +1307,16 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
   if (mpz_fdiv_ui (ecc->p, 4) == 3)
     {
       /* x = a^{(p+1)/4} gives square root of a (if it exists,
-	 otherwise the square root of -a). */
-      e = 1;
-      mpz_add_ui (t, ecc->p, 1);
-      mpz_fdiv_q_2exp (t, t, 2); 
+	 otherwise the square root of -a). We use no precomputed
+	 values for this. */
     }
   else
     {
       /* p-1 = 2^e s, s odd, t = (s-1)/2*/
-      unsigned g, i;
+      unsigned g, i, e;
       mpz_t s;
-      mpz_t z;
 
       mpz_init (s);
-      mpz_init (z);
 
       mpz_sub_ui (s, ecc->p, 1);
       e = mpz_scan1 (s, 0);
@@ -1334,20 +1343,16 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
 	}
       mpz_add_ui (t, t, 1);
       assert (mpz_cmp (t, ecc->p) == 0);
-      output_bignum ("ecc_sqrt_z", z, limb_size, bits_per_limb);
 
       mpz_fdiv_q_2exp (t, s, 1);
 
       mpz_clear (s);
-      mpz_clear (z);
+      printf ("#define ECC_SQRT_E %u\n", e);
     }
-  printf ("#define ECC_SQRT_E %u\n", e);
-  printf ("#define ECC_SQRT_T_BITS %u\n",
-	  (unsigned) mpz_sizeinbase (t, 2));
-  output_bignum ("ecc_sqrt_t", t, limb_size, bits_per_limb);      
-
   printf ("#if USE_REDC\n");
   printf ("#define ecc_unit ecc_Bmodp\n");
+  if (mpz_sgn(z) > 0)
+    output_bignum_redc ("ecc_sqrt_z", z, ecc->p, limb_size, bits_per_limb);
 
   printf ("static const mp_limb_t ecc_table[%lu] = {",
 	 (unsigned long) (2*ecc->table_size * limb_size));
@@ -1360,6 +1365,8 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
 
   mpz_set_ui (t, 1);
   output_bignum ("ecc_unit", t, limb_size, bits_per_limb);
+  if (mpz_sgn(z) > 0)
+    output_bignum ("ecc_sqrt_z", z, limb_size, bits_per_limb);
   
   printf ("static const mp_limb_t ecc_table[%lu] = {",
 	 (unsigned long) (2*ecc->table_size * limb_size));
@@ -1370,6 +1377,7 @@ output_curve (const struct ecc_curve *ecc, unsigned bits_per_limb)
   printf ("#endif\n");
   
   mpz_clear (t);
+  mpz_clear (z);
 }
 
 int

@@ -55,14 +55,15 @@ int
 ecc_point_set (struct ecc_point *p, const mpz_t x, const mpz_t y)
 {
   mp_size_t size;  
-  mpz_t lhs, rhs;
+  mpz_t m, lhs, rhs;
   mpz_t t;
   int res;
 
   size = p->ecc->p.size;
+  mpz_roinit_n (m, p->ecc->p.m, size);
   
-  if (mpz_sgn (x) < 0 || mpz_limbs_cmp (x, p->ecc->p.m, size) >= 0
-      || mpz_sgn (y) < 0 || mpz_limbs_cmp (y, p->ecc->p.m, size) >= 0)
+  if (mpz_sgn (x) < 0 || mpz_cmp (x, m) >= 0
+      || mpz_sgn (y) < 0 || mpz_cmp (y, m) >= 0)
     return 0;
 
   mpz_init (lhs);

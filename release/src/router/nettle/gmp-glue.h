@@ -35,10 +35,9 @@
 
 #include "bignum.h"
 
-#define mpz_limbs_cmp _nettle_mpz_limbs_cmp
-#define mpz_limbs_read_n _nettle_mpz_limbs_read_n
 #define mpz_limbs_copy _nettle_mpz_limbs_copy
 #define mpz_set_n _nettle_mpz_set_n
+#define sec_zero_p _nettle_sec_zero_p
 #define mpn_set_base256 _nettle_mpn_set_base256
 #define mpn_set_base256_le _nettle_mpn_set_base256_le
 #define mpn_get_base256 _nettle_mpn_get_base256
@@ -69,18 +68,14 @@ void
 mpn_cnd_swap (mp_limb_t cnd, volatile mp_limb_t *ap, volatile mp_limb_t *bp, mp_size_t n);
 #endif
 
+/* Side-channel silent variant of mpn_zero_p. */
+int
+sec_zero_p (const mp_limb_t *ap, mp_size_t n);
+
 #define NETTLE_OCTET_SIZE_TO_LIMB_SIZE(n) \
   (((n) * 8 + GMP_NUMB_BITS - 1) / GMP_NUMB_BITS)
 
 /* Convenience functions */
-int
-mpz_limbs_cmp (mpz_srcptr a, const mp_limb_t *bp, mp_size_t bn);
-
-/* Get a pointer to an n limb area, for read-only operation. n must be
-   greater or equal to the current size, and the mpz is zero-padded if
-   needed. */
-const mp_limb_t *
-mpz_limbs_read_n (mpz_ptr x, mp_size_t n);
 
 /* Copy limbs, with zero-padding. */
 /* FIXME: Reorder arguments, on the theory that the first argument of

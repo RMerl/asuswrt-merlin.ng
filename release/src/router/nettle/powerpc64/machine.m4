@@ -1,7 +1,7 @@
 define(`PROLOGUE',
 `.globl C_NAME($1)
 DECLARE_FUNC(C_NAME($1))
-ifelse(WORDS_BIGENDIAN,no,
+ifelse(ELFV2_ABI,yes,
 `ifdef(`FUNC_ALIGN',`.align FUNC_ALIGN')
 C_NAME($1):
 addis 2,12,(.TOC.-C_NAME($1))@ha
@@ -17,7 +17,7 @@ ifdef(`FUNC_ALIGN',`.align FUNC_ALIGN')
 undefine(`FUNC_ALIGN')')
 
 define(`EPILOGUE',
-`ifelse(WORDS_BIGENDIAN,no,
+`ifelse(ELFV2_ABI,yes,
 `.size C_NAME($1), . - C_NAME($1)',
 `.size .C_NAME($1), . - .C_NAME($1)
 .size C_NAME($1), . - .C_NAME($1)')')

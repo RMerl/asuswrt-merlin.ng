@@ -42,24 +42,11 @@
 #include "nettle-internal.h"
 
 static int
-zero_p (const struct ecc_modulo *m,
-	const mp_limb_t *xp)
-{
-  mp_limb_t t;
-  mp_size_t i;
-
-  for (i = t = 0; i < m->size; i++)
-    t |= xp[i];
-
-  return t == 0;
-}
-
-static int
 ecdsa_in_range (const struct ecc_modulo *m,
 		const mp_limb_t *xp, mp_limb_t *scratch)
 {
   /* Check if 0 < x < q, with data independent timing. */
-  return !zero_p (m, xp)
+  return !sec_zero_p (xp, m->size)
     & (mpn_sub_n (scratch, xp, m->m, m->size) != 0);
 }
 

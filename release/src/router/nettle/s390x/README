@@ -1,0 +1,60 @@
+Registers Conventions[1]
+
+Register Status Use
+
+r0, r1     General purpose                                       Volatile
+r2         Parameter passing and return values                   Volatile
+r3, r4, r5 Parameter passing                                     Volatile
+r6         Parameter passing                                     Saved
+r7 - r11   Local variables                                       Saved
+r12        Local variable, commonly used as GOT pointer          Saved
+r13        Local variable, commonly used as Literal Pool pointer Saved
+r14        Return address                                        Volatile
+r15        Stack pointer                                         Saved
+
+f0, f2, f4, f6 Parameter passing and return values Volatile
+f1, f3, f5, f7 General purpose                     Volatile
+f8 – f15       General purpose                     Saved
+
+Vector Register Conventions
+
+Register Use
+
+VR0 - VR7    Volatile
+VR8 - VR15   Bytes 0-7 are non-volatile, Bytes 8-15 are volatile
+VR16 - VR23  Non-volatile
+VR24 - VR31  Volatile
+
+General Registers[2]
+
+In addition to their use as accumulators in general
+arithmetic and logical operations, 15 of the 16 general
+registers are also used as base-address and
+index registers in address generation. In these
+cases, the registers are designated by a four-bit B
+field or X field in an instruction. A value of zero in the
+B or X field specifies that no base or index is to be
+applied, and, thus, general register 0 cannot be designated
+as containing a base address or index.
+
+Parameter passing[1]
+
+Values shorter than 64 bits are sign- or zero-extended (as appropriate)
+to 64 bits. Arguments not handled in the registers are passed in the parameter
+words of the caller’s stack frame.
+
+Dynamic stack space allocation[1]
+
+1. After a new stack frame is acquired, and before the first dynamic space
+allocation, a new register, the frame pointer or FP, is set to the value of the
+stack pointer.
+2. The amount of dynamic space to be allocated is rounded up to a multiple of 8
+bytes, so that 8-byte stack alignment is maintained.
+3. The stack pointer is decreased by the rounded byte count, and the address of
+the previous stack frame (the back chain) may be stored at the word addressed
+by the new stack pointer. The back chain is not necessary to restore from this
+allocation at the end of the function since the frame pointer can be used to
+restore the stack pointer.
+
+[1] http://legacy.redhat.com/pub/redhat/linux/7.1/es/os/s390x/doc/lzsabi0.pdf
+[2] https://www.ibm.com/support/pages/zarchitecture-principles-operation

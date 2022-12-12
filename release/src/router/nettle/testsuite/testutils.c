@@ -11,7 +11,9 @@
 #include "nettle-internal.h"
 
 #include <assert.h>
+#include <errno.h>
 #include <ctype.h>
+#include <sys/time.h>
 
 void
 die(const char *format, ...)
@@ -798,63 +800,83 @@ test_aead(const struct nettle_aead *aead,
   void *ctx = xalloc(aead->context_size);
   uint8_t *data;
   uint8_t *buffer = xalloc(aead->digest_size);
-  size_t length;
+  size_t offset;
 
   ASSERT (cleartext->length == ciphertext->length);
-  length = cleartext->length;
 
   ASSERT (key->length == aead->key_size);
-  ASSERT (digest->length <= aead->digest_size);
 
-  data = xalloc(length);
-  
-  /* encryption */
-  memset(buffer, 0, aead->digest_size);
-  aead->set_encrypt_key(ctx, key->data);
+  data = xalloc(cleartext->length);
 
-  if (nonce->length != aead->nonce_size)
+  ASSERT(aead->block_size > 0);
+
+  for (offset = 0; offset <= cleartext->length; offset += aead->block_size)
     {
-      ASSERT (set_nonce);
-      set_nonce (ctx, nonce->length, nonce->data);
+      /* encryption */
+      aead->set_encrypt_key(ctx, key->data);
+
+      if (nonce->length != aead->nonce_size)
+	{
+	  ASSERT (set_nonce);
+	  set_nonce (ctx, nonce->length, nonce->data);
+	}
+      else
+	aead->set_nonce(ctx, nonce->data);
+
+      if (aead->update && authtext->length)
+	aead->update(ctx, authtext->length, authtext->data);
+
+      if (offset > 0)
+	aead->encrypt(ctx, offset, data, cleartext->data);
+
+      if (offset < cleartext->length)
+	aead->encrypt(ctx, cleartext->length - offset,
+		      data + offset, cleartext->data + offset);
+
+      if (digest)
+	{
+	  ASSERT (digest->length <= aead->digest_size);
+	  memset(buffer, 0, aead->digest_size);
+	  aead->digest(ctx, digest->length, buffer);
+	  ASSERT(MEMEQ(digest->length, buffer, digest->data));
+	}
+      else
+	ASSERT(!aead->digest);
+
+      ASSERT(MEMEQ(cleartext->length, data, ciphertext->data));
+
+      /* decryption */
+      if (aead->set_decrypt_key)
+	{
+	  aead->set_decrypt_key(ctx, key->data);
+
+	  if (nonce->length != aead->nonce_size)
+	    {
+	      ASSERT (set_nonce);
+	      set_nonce (ctx, nonce->length, nonce->data);
+	    }
+	  else
+	    aead->set_nonce(ctx, nonce->data);
+
+	  if (aead->update && authtext->length)
+	    aead->update(ctx, authtext->length, authtext->data);
+
+	  if (offset > 0)
+	    aead->decrypt (ctx, offset, data, data);
+
+	  if (offset < cleartext->length)
+	    aead->decrypt(ctx, cleartext->length - offset,
+			  data + offset, data + offset);
+
+	  if (digest)
+	    {
+	      memset(buffer, 0, aead->digest_size);
+	      aead->digest(ctx, digest->length, buffer);
+	      ASSERT(MEMEQ(digest->length, buffer, digest->data));
+	    }
+	  ASSERT(MEMEQ(cleartext->length, data, cleartext->data));
+	}
     }
-  else
-    aead->set_nonce(ctx, nonce->data);
-
-  if (authtext->length)
-    aead->update(ctx, authtext->length, authtext->data);
-    
-  if (length)
-    aead->encrypt(ctx, length, data, cleartext->data);
-
-  aead->digest(ctx, digest->length, buffer);
-
-  ASSERT(MEMEQ(length, data, ciphertext->data));
-  ASSERT(MEMEQ(digest->length, buffer, digest->data));
-
-  /* decryption */
-  memset(buffer, 0, aead->digest_size);
-
-  aead->set_decrypt_key(ctx, key->data);
-
-  if (nonce->length != aead->nonce_size)
-    {
-      ASSERT (set_nonce);
-      set_nonce (ctx, nonce->length, nonce->data);
-    }
-  else
-    aead->set_nonce(ctx, nonce->data);
-
-  if (authtext->length)
-    aead->update(ctx, authtext->length, authtext->data);
-    
-  if (length)
-    aead->decrypt(ctx, length, data, data);
-
-  aead->digest(ctx, digest->length, buffer);
-
-  ASSERT(MEMEQ(length, data, cleartext->data));
-  ASSERT(MEMEQ(digest->length, buffer, digest->data));
-
   free(ctx);
   free(data);
   free(buffer);
@@ -1087,7 +1109,63 @@ mpz_urandomb (mpz_t r, struct knuth_lfib_ctx *ctx, mp_bitcnt_t bits)
   nettle_mpz_set_str_256_u (r, bytes, buf);
   free (buf);
 }
-#endif /* NETTLE_USE_MINI_GMP */
+#else /* !NETTLE_USE_MINI_GMP */
+static void
+get_random_seed(mpz_t seed)
+{
+  struct timeval tv;
+  FILE *f;
+  f = fopen ("/dev/urandom", "rb");
+  if (f)
+    {
+      uint8_t buf[8];
+      size_t res;
+
+      setbuf (f, NULL);
+      res = fread (&buf, sizeof(buf), 1, f);
+      fclose(f);
+      if (res == 1)
+	{
+	  nettle_mpz_set_str_256_u (seed, sizeof(buf), buf);
+	  return;
+	}
+      fprintf (stderr, "Read of /dev/urandom failed: %s\n",
+	       strerror (errno));
+    }
+  gettimeofday(&tv, NULL);
+  mpz_set_ui (seed, tv.tv_sec);
+  mpz_mul_ui (seed, seed, 1000000UL);
+  mpz_add_ui (seed, seed, tv.tv_usec);
+}
+
+int
+test_randomize(gmp_randstate_t rands)
+{
+  const char *nettle_test_seed;
+
+  nettle_test_seed = getenv ("NETTLE_TEST_SEED");
+  if (nettle_test_seed && *nettle_test_seed)
+    {
+      mpz_t seed;
+      mpz_init (seed);
+      if (mpz_set_str (seed, nettle_test_seed, 0) < 0
+	  || mpz_sgn (seed) < 0)
+	die ("Invalid NETTLE_TEST_SEED: %s\n",
+	     nettle_test_seed);
+      if (mpz_sgn (seed) == 0)
+	get_random_seed (seed);
+      fprintf (stderr, "Using NETTLE_TEST_SEED=");
+      mpz_out_str (stderr, 10, seed);
+      fprintf (stderr, "\n");
+
+      gmp_randseed (rands, seed);
+      mpz_clear (seed);
+      return 1;
+    }
+  else 
+    return 0;
+}
+#endif /* !NETTLE_USE_MINI_GMP */
 
 mp_limb_t *
 xalloc_limbs (mp_size_t n)
@@ -1362,7 +1440,6 @@ test_rsa_key(struct rsa_public_key *pub,
   
   if (verbose)
     {
-      /* FIXME: Use gmp_printf */
       fprintf(stderr, "Public key: n=");
       mpz_out_str(stderr, 16, pub->n);
       fprintf(stderr, "\n    e=");
@@ -1668,17 +1745,85 @@ const struct ecc_curve * const ecc_curves[] = {
   NULL
 };
 
+int
+test_ecc_point_valid_p (struct ecc_point *pub)
+{
+  mpz_t t, x, y;
+  mpz_t lhs, rhs;
+  int res;
+  mp_size_t size;
+
+  size = pub->ecc->p.size;
+
+  /* First check range */
+  if (mpn_cmp (pub->p, pub->ecc->p.m, size) >= 0
+      || mpn_cmp (pub->p + size, pub->ecc->p.m, size) >= 0)
+    return 0;
+
+  mpz_init (lhs);
+  mpz_init (rhs);
+
+  mpz_roinit_n (x, pub->p, size);
+  mpz_roinit_n (y, pub->p + size, size);
+
+  mpz_mul (lhs, y, y);
+
+  if (pub->ecc->p.bit_size == 255)
+    {
+      /* Check that
+	 121666 (1 + x^2 - y^2) = 121665 x^2 y^2 */
+      mpz_t x2;
+      mpz_init (x2);
+      mpz_mul (x2, x, x); /* x^2 */
+      mpz_mul (rhs, x2, lhs); /* x^2 y^2 */
+      mpz_sub (lhs, x2, lhs); /* x^2 - y^2 */
+      mpz_add_ui (lhs, lhs, 1); /* 1 + x^2 - y^2 */
+      mpz_mul_ui (lhs, lhs, 121666);
+      mpz_mul_ui (rhs, rhs, 121665);
+
+      mpz_clear (x2);
+    }
+  else if (pub->ecc->p.bit_size == 448)
+    {
+      /* Check that
+	 x^2 + y^2 = 1 - 39081 x^2 y^2 */
+      mpz_t x2, d;
+      mpz_init (x2);
+      mpz_init_set_ui (d, 39081);
+      mpz_mul (x2, x, x); /* x^2 */
+      mpz_mul (d, d, x2); /* 39081 x^2 */
+      mpz_set_ui (rhs, 1);
+      mpz_submul (rhs, d, lhs); /* 1 - 39081 x^2 y^2 */
+      mpz_add (lhs, x2, lhs);	/* x^2 + y^2 */
+
+      mpz_clear (d);
+      mpz_clear (x2);
+    }
+  else
+    {
+      /* Check y^2 = x^3 - 3 x + b */
+      mpz_mul (rhs, x, x);
+      mpz_sub_ui (rhs, rhs, 3);
+      mpz_mul (rhs, rhs, x);
+      mpz_add (rhs, rhs, mpz_roinit_n (t, pub->ecc->b, size));
+    }
+  res = mpz_congruent_p (lhs, rhs, mpz_roinit_n (t, pub->ecc->p.m, size));
+
+  mpz_clear (lhs);
+  mpz_clear (rhs);
+
+  return res;
+}
+
 static int
 test_mpn (const char *ref, const mp_limb_t *xp, mp_size_t n)
 {
-  mpz_t r;
+  mpz_t r, x;
   int res;
 
   mpz_init_set_str (r, ref, 16);
-  while (n > 0 && xp[n-1] == 0)
-    n--;
   
-  res = (mpz_limbs_cmp (r, xp, n) == 0);
+  res = (mpz_cmp (r, mpz_roinit_n (x, xp, n)) == 0);
   mpz_clear (r);
   return res;
 }
@@ -1918,5 +2063,8 @@ test_ecc_get_ga (unsigned curve, mp_limb_t *rp)
   mpz_clear (y);
 }
 
-#endif /* WITH_HOGWEED */
+#else /* !WITH_HOGWEED */
+/* Make sure either gmp or mini-gmp is available for tests. */
+#include "mini-gmp.c"
+#endif /* !WITH_HOGWEED */
 

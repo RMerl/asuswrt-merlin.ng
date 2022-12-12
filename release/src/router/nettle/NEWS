@@ -1,3 +1,110 @@
+NEWS for the Nettle 3.8.1 release
+
+	This is a bugfix release, fixing a few portability issues
+	reported for Nettle-3.8.
+
+	Bug fixes:
+
+	* Avoid non-posix m4 argument references in the chacha
+	  implementation for arm64, powerpc64 and s390x. Reported by
+	  Christian Weisgerber, fix contributed by Mamone Tarsha.
+
+	* Use explicit .machine pseudo-ops where needed in s390x
+	  assembly files. Bug report by Andreas K. Huettel, fix
+	  contributed by Mamone Tarsha.
+
+	Optimizations:
+
+	* Implemented runtime detection of cpu features for OpenBSD on
+	  arm64. Contributed by Christian Weisgerber.
+
+	The new version is intended to be fully source and binary
+	compatible with Nettle-3.6. The shared library names are
+	libnettle.so.8.6 and libhogweed.so.6.6, with sonames
+	libnettle.so.8 and libhogweed.so.6.
+
+NEWS for the Nettle 3.8 release
+
+	This release includes a couple of new features, and many
+	performance improvements. It adds assembly code for two more
+	architectures: ARM64 and S390x.
+
+	The new version is intended to be fully source and binary
+	compatible with Nettle-3.6. The shared library names are
+	libnettle.so.8.5 and libhogweed.so.6.5, with sonames
+	libnettle.so.8 and libhogweed.so.6.
+
+	New features:
+
+	* AES keywrap (RFC 3394), contributed by Nicolas Mora.
+
+	* SM3 hash function, contributed by Tianjia Zhang.
+
+	* New functions cbc_aes128_encrypt, cbc_aes192_encrypt,
+	  cbc_aes256_encrypt.
+
+	  On processors where AES is fast enough, e.g., x86_64 with
+	  aesni instructions, the overhead of using Nettle's general
+	  cbc_encrypt can be significant. The new functions can be
+	  implemented in assembly, to do multiple blocks with reduced
+	  per-block overhead.
+
+	  Note that there's no corresponding new decrypt functions,
+	  since the general cbc_decrypt doesn't suffer from the same
+	  performance problem.
+
+	Bug fixes:
+
+	* Fix fat builds for x86_64 windows, these appear to never
+          have worked.
+
+	Optimizations:
+
+	* New ARM64 implementation of AES, GCM, Chacha, SHA1 and
+	  SHA256, for processors supporting crypto extensions. Great
+	  speedups, and fat builds are supported. Contributed by
+	  Mamone Tarsha.
+
+	* New s390x implementation of AES, GCM, Chacha, memxor, SHA1,
+	  SHA256, SHA512 and SHA3. Great speedups, and fat builds are
+	  supported. Contributed by Mamone Tarsha.
+
+	* New PPC64 assembly for ecc modulo/redc operations,
+	  contributed by Amitay Isaacs, Martin Schwenke and Alastair
+	  D´Silva.
+
+	* The x86_64 AES implementation using aesni instructions has
+	  been reorganized with one separate function per key size,
+	  each interleaving the processing of two blocks at a time
+	  (when the caller processes multiple blocks with each call).
+	  This gives a modest performance improvement on some
+	  processors.
+
+	* Rewritten and faster x86_64 poly1305 assembly.
+
+	Known issues:
+
+	* Nettle's testsuite doesn't work out-of-the-box on recent
+	  MacOS, due to /bin/sh discarding the DYLD_LIBRARY_PATH
+	  environment variable. Nettle's test scripts handle this in
+	  some cases, but currently fails the test cases that are
+	  themselves written as /bin/sh scripts. As a workaround, use
+
+	  make check EMULATOR='env DYLD_LIBRARY_PATH=$(TEST_SHLIB_DIR)'
+
+	Miscellaneous:
+
+	* Updated manual to current makeinfo conventions, with no
+	  explicit node pointers. Generate pdf version with texi2pdf,
+	  to get working hyper links.
+
+	* Added square root functions for NIST ecc curves, as a
+	  preparation for supporting compact point representation.
+
+	* Reworked internal GCM/ghash interfaces, simplifying assembly
+	  implementations. Deleted unused GCM C implementation
+	  variants with less than 8-bit lookup table.
+
 NEWS for the Nettle 3.7.3 release
 
 	This is bugfix release, fixing bugs that could make the RSA

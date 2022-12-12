@@ -14,6 +14,7 @@ const char* macs[] = {
   "hmac_sha512",
   "hmac_streebog256",
   "hmac_streebog512",
+  "hmac_sm3",
 };
 
 void

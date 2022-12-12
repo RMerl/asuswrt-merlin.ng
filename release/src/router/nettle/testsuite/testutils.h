@@ -30,7 +30,10 @@
 /* Undo dsa-compat name mangling */
 #undef dsa_generate_keypair
 #define dsa_generate_keypair nettle_dsa_generate_keypair
-#endif /* WITH_HOGWEED */
+#else /* !WITH_HOGWEED */
+/* Make sure either gmp or mini-gmp is available for tests. */
+#include "mini-gmp.h"
+#endif /* !WITH_HOGWEED */
 
 #include "nettle-meta.h"
 
@@ -163,8 +166,13 @@ void gmp_randinit_default (struct knuth_lfib_ctx *ctx);
 void mpz_urandomb (mpz_t r, struct knuth_lfib_ctx *ctx, mp_bitcnt_t bits);
 /* This is cheating */
 #define mpz_rrandomb mpz_urandomb
+static inline int
+test_randomize (gmp_randstate_t rands UNUSED) { return 0; }
+#else /* !NETTLE_USE_MINI_GMP */
+int
+test_randomize (gmp_randstate_t rands);
 
-#endif /* NETTLE_USE_MINI_GMP */
+#endif /* !NETTLE_USE_MINI_GMP */
 
 void
 mpn_out_str (FILE *f, int base, const mp_limb_t *xp, mp_size_t xn);
@@ -235,6 +243,10 @@ test_dsa_key(const struct dsa_params *params,
 	     unsigned q_size);
 
 extern const struct ecc_curve * const ecc_curves[];
+
+/* Check that given point satisfyes curve equation. */
+int
+test_ecc_point_valid_p (struct ecc_point *pub);
 
 struct ecc_ref_point
 {

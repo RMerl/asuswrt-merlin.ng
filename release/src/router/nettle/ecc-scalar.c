@@ -55,8 +55,8 @@ int
 ecc_scalar_set (struct ecc_scalar *s, const mpz_t z)
 {
   mp_size_t size = s->ecc->p.size;
-
-  if (mpz_sgn (z) <= 0 || mpz_limbs_cmp (z, s->ecc->q.m, size) >= 0)
+  mpz_t t;
+  if (mpz_sgn (z) <= 0 || mpz_cmp (z, mpz_roinit_n(t, s->ecc->q.m, size)) >= 0)
     return 0;
 
   mpz_limbs_copy (s->p, z, size);

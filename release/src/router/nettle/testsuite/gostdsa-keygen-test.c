@@ -2,77 +2,6 @@
 #include "gostdsa.h"
 #include "knuth-lfib.h"
 
-/* Check if y^2 = x^3 - 3x + b */
-static int
-ecc_valid_p (struct ecc_point *pub)
-{
-  mpz_t t, x, y;
-  mpz_t lhs, rhs;
-  int res;
-  mp_size_t size;
-
-  size = pub->ecc->p.size;
-
-  /* First check range */
-  if (mpn_cmp (pub->p, pub->ecc->p.m, size) >= 0
-      || mpn_cmp (pub->p + size, pub->ecc->p.m, size) >= 0)
-    return 0;
-
-  mpz_init (lhs);
-  mpz_init (rhs);
-
-  mpz_roinit_n (x, pub->p, size);
-  mpz_roinit_n (y, pub->p + size, size);
-
-  mpz_mul (lhs, y, y);
-
-  if (pub->ecc->p.bit_size == 255)
-    {
-      /* Check that
-	 121666 (1 + x^2 - y^2) = 121665 x^2 y^2 */
-      mpz_t x2;
-      mpz_init (x2);
-      mpz_mul (x2, x, x); /* x^2 */
-      mpz_mul (rhs, x2, lhs); /* x^2 y^2 */
-      mpz_sub (lhs, x2, lhs); /* x^2 - y^2 */
-      mpz_add_ui (lhs, lhs, 1); /* 1 + x^2 - y^2 */
-      mpz_mul_ui (lhs, lhs, 121666);
-      mpz_mul_ui (rhs, rhs, 121665);
-
-      mpz_clear (x2);
-    }
-  else if (pub->ecc->p.bit_size == 448)
-    {
-      /* Check that
-	 x^2 + y^2 = 1 - 39081 x^2 y^2 */
-      mpz_t x2, d;
-      mpz_init (x2);
-      mpz_init_set_ui (d, 39081);
-      mpz_mul (x2, x, x); /* x^2 */
-      mpz_mul (d, d, x2); /* 39081 x^2 */
-      mpz_set_ui (rhs, 1);
-      mpz_submul (rhs, d, lhs); /* 1 - 39081 x^2 y^2 */
-      mpz_add (lhs, x2, lhs);	/* x^2 + y^2 */
-
-      mpz_clear (d);
-      mpz_clear (x2);
-    }
-  else
-    {
-      /* Check y^2 = x^3 - 3 x + b */
-      mpz_mul (rhs, x, x);
-      mpz_sub_ui (rhs, rhs, 3);
-      mpz_mul (rhs, rhs, x);
-      mpz_add (rhs, rhs, mpz_roinit_n (t, pub->ecc->b, size));
-    }
-  res = mpz_congruent_p (lhs, rhs, mpz_roinit_n (t, pub->ecc->p.m, size));
-
-  mpz_clear (lhs);
-  mpz_clear (rhs);
-
-  return res;
-}
-
 void
 test_main (void)
 {
@@ -119,7 +48,7 @@ test_main (void)
 	  write_mpn (stderr, 16, key.p, ecc->p.size);
 	  fprintf (stderr, "\n");
 	}
-      if (!ecc_valid_p (&pub))
+      if (!test_ecc_point_valid_p (&pub))
 	die ("gostdsa_generate_keypair produced an invalid point.\n");
 
       gostdsa_sign (&key,
@@ -134,19 +63,19 @@ test_main (void)
       digest->data[3] ^= 17;
       if (gostdsa_verify (&pub, digest->length, digest->data,
 			  &signature))
-	die ("gostdsa_verify  returned success with invalid digest.\n");
+	die ("gostdsa_verify returned success with invalid digest.\n");
       digest->data[3] ^= 17;
 
       mpz_combit (signature.r, 117);
       if (gostdsa_verify (&pub, digest->length, digest->data,
 			  &signature))
-	die ("gostdsa_verify  returned success with invalid signature.r.\n");
+	die ("gostdsa_verify returned success with invalid signature.r.\n");
 
       mpz_combit (signature.r, 117);
       mpz_combit (signature.s, 93);
       if (gostdsa_verify (&pub, digest->length, digest->data,
 			  &signature))
-	die ("gostdsa_verify  returned success with invalid signature.s.\n");
+	die ("gostdsa_verify returned success with invalid signature.s.\n");
 
       ecc_point_clear (&pub);
       ecc_scalar_clear (&key);

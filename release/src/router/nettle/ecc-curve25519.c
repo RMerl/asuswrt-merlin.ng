@@ -37,7 +37,6 @@
 
 #include <assert.h>
 
-#include "ecc.h"
 #include "ecc-internal.h"
 
 #define USE_REDC 0
@@ -171,24 +170,17 @@ ecc_curve25519_inv (const struct ecc_modulo *p,
   ecc_mod_mul (p, rp, ap, rp, scratch);
 }
 
-/* First, do a canonical reduction, then check if zero */
 static int
 ecc_curve25519_zero_p (const struct ecc_modulo *p, mp_limb_t *xp)
 {
-  mp_limb_t cy;
-  mp_limb_t w;
-  mp_size_t i;
+/* First, reduce to < 2p. */
 #if PHIGH_BITS > 0
   mp_limb_t hi = xp[ECC_LIMB_SIZE-1];
   xp[ECC_LIMB_SIZE-1] = (hi & (GMP_NUMB_MASK >> PHIGH_BITS))
     + sec_add_1 (xp, xp, ECC_LIMB_SIZE - 1, 19 * (hi >> (GMP_NUMB_BITS - PHIGH_BITS)));
 #endif
-  cy = mpn_sub_n (xp, xp, p->m, ECC_LIMB_SIZE);
-  mpn_cnd_add_n (cy, xp, xp, p->m, ECC_LIMB_SIZE);
 
-  for (i = 0, w = 0; i < ECC_LIMB_SIZE; i++)
-    w |= xp[i];
-  return w == 0;
+  return ecc_mod_zero_p (p, xp);
 }
 
 /* Compute x such that x^2 = u/v (mod p). Returns one on success, zero
@@ -206,12 +198,12 @@ ecc_curve25519_zero_p (const struct ecc_modulo *p, mp_limb_t *xp)
 #endif
 
 /* Needs 2*n space + scratch for ecc_mod_pow_252m3. */
-#define ECC_25519_SQRT_ITCH (6*ECC_LIMB_SIZE)
+#define ECC_25519_SQRT_RATIO_ITCH (6*ECC_LIMB_SIZE)
 
 static int
-ecc_curve25519_sqrt(const struct ecc_modulo *p, mp_limb_t *rp,
-		    const mp_limb_t *up, const mp_limb_t *vp,
-		    mp_limb_t *scratch)
+ecc_curve25519_sqrt_ratio(const struct ecc_modulo *p, mp_limb_t *rp,
+			  const mp_limb_t *up, const mp_limb_t *vp,
+			  mp_limb_t *scratch)
 {
   int pos, neg;
 
@@ -268,7 +260,8 @@ const struct ecc_curve _nettle_curve25519 =
     ECC_BMODP_SIZE,
     0,
     ECC_25519_INV_ITCH,
-    ECC_25519_SQRT_ITCH,
+    0,
+    ECC_25519_SQRT_RATIO_ITCH,
 
     ecc_p,
     ecc_Bmodp,
@@ -279,7 +272,8 @@ const struct ecc_curve _nettle_curve25519 =
     ecc_curve25519_modp,
     ecc_curve25519_modp,
     ecc_curve25519_inv,
-    ecc_curve25519_sqrt,
+    NULL,
+    ecc_curve25519_sqrt_ratio,
   },
   {
     253,
@@ -287,6 +281,7 @@ const struct ecc_curve _nettle_curve25519 =
     ECC_BMODQ_SIZE,
     0,
     ECC_MOD_INV_ITCH (ECC_LIMB_SIZE),
+    0,
     0,
 
     ecc_q,
@@ -298,6 +293,7 @@ const struct ecc_curve _nettle_curve25519 =
     ecc_curve25519_modq,
     ecc_curve25519_modq,
     ecc_mod_inv,
+    NULL,
     NULL,
   },
 

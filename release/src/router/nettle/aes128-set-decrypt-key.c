@@ -40,14 +40,28 @@
 #include "aes-internal.h"
 #include "macros.h"
 
+/* For fat builds */
+#if HAVE_NATIVE_aes128_invert_key
 void
-aes128_invert_key (struct aes128_ctx *dst, const struct aes128_ctx *src)
+_nettle_aes128_invert_key_c(struct aes128_ctx *dst,
+		  const struct aes128_ctx *src);
+# define nettle_aes128_invert_key _nettle_aes128_invert_key_c
+#endif
+
+#if HAVE_NATIVE_aes128_set_decrypt_key
+void
+_nettle_aes128_set_decrypt_key_c(struct aes128_ctx *ctx, const uint8_t *key);
+# define nettle_aes128_set_decrypt_key _nettle_aes128_set_decrypt_key_c
+#endif
+
+void
+nettle_aes128_invert_key (struct aes128_ctx *dst, const struct aes128_ctx *src)
 {
   _nettle_aes_invert (_AES128_ROUNDS, dst->keys, src->keys);
 }
 
 void
-aes128_set_decrypt_key(struct aes128_ctx *ctx, const uint8_t *key)
+nettle_aes128_set_decrypt_key(struct aes128_ctx *ctx, const uint8_t *key)
 {
   aes128_set_encrypt_key (ctx, key);
   aes128_invert_key (ctx, ctx);

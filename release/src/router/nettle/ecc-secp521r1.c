@@ -37,12 +37,13 @@
 # include "config.h"
 #endif
 
-#include "ecc.h"
 #include "ecc-internal.h"
 
 #define USE_REDC 0
 
 #include "ecc-secp521r1.h"
+
+#define B_SHIFT (521 % GMP_NUMB_BITS)
 
 #if HAVE_NATIVE_ecc_secp521r1_modp
 #define ecc_secp521r1_modp _nettle_ecc_secp521r1_modp
@@ -51,7 +52,6 @@ ecc_secp521r1_modp (const struct ecc_modulo *m, mp_limb_t *rp, mp_limb_t *xp);
 
 #else
 
-#define B_SHIFT (521 % GMP_NUMB_BITS)
 #define BMODP_SHIFT (GMP_NUMB_BITS - B_SHIFT)
 #define BMODP ((mp_limb_t) 1 << BMODP_SHIFT)
 
@@ -119,8 +119,41 @@ ecc_secp521r1_inv (const struct ecc_modulo *p,
   ecc_mod_mul (p, rp, rp, ap, tp);	/* a^{2^519 - 1} */
   ecc_mod_sqr (p, rp, rp, tp);		/* a^{2^520 - 2} */
   ecc_mod_sqr (p, rp, rp, tp);		/* a^{2^521 - 4} */
-  ecc_mod_mul (p, rp, rp, ap, tp);	/* a^{2^519 - 3} */
+  ecc_mod_mul (p, rp, rp, ap, tp);	/* a^{2^521 - 3} */
 }
+
+#define ECC_SECP521R1_SQRT_ITCH (2*ECC_LIMB_SIZE)
+
+static int
+ecc_secp521r1_sqrt (const struct ecc_modulo *m,
+		    mp_limb_t *rp,
+		    const mp_limb_t *cp,
+		    mp_limb_t *scratch)
+{
+  mp_limb_t hi;
+
+  /* This computes the square root modulo p256 using the identity:
+
+     sqrt(c) = c^(2^519) (mod P-521)
+
+     which can be seen as a special case of Tonelli-Shanks with e=1.
+  */
+
+  ecc_mod_pow_2k (m, rp, cp, 519, scratch);
+
+  /* Check result. */
+  ecc_mod_sqr (m, scratch, rp, scratch);
+  ecc_mod_sub (m, scratch, scratch, cp);
+
+  /* Reduce top bits, since ecc_mod_zero_p requires input < 2p */
+  hi = scratch[ECC_LIMB_SIZE-1] >> B_SHIFT;
+  scratch[ECC_LIMB_SIZE-1] = (scratch[ECC_LIMB_SIZE-1]
+			      & (((mp_limb_t) 1 << B_SHIFT)-1))
+    + sec_add_1 (scratch, scratch, ECC_LIMB_SIZE - 1, hi);
+
+  return ecc_mod_zero_p (m, scratch);
+}
+
 
 const struct ecc_curve _nettle_secp_521r1 =
 {
@@ -130,6 +163,7 @@ const struct ecc_curve _nettle_secp_521r1 =
     ECC_BMODP_SIZE,
     ECC_REDC_SIZE,
     ECC_SECP521R1_INV_ITCH,
+    ECC_SECP521R1_SQRT_ITCH,
     0,
 
     ecc_p,
@@ -141,6 +175,7 @@ const struct ecc_curve _nettle_secp_521r1 =
     ecc_secp521r1_modp,
     ecc_secp521r1_modp,
     ecc_secp521r1_inv,
+    ecc_secp521r1_sqrt,
     NULL,
   },
   {
@@ -149,6 +184,7 @@ const struct ecc_curve _nettle_secp_521r1 =
     ECC_BMODQ_SIZE,
     0,
     ECC_MOD_INV_ITCH (ECC_LIMB_SIZE),
+    0,
     0,
 
     ecc_q,
@@ -160,6 +196,7 @@ const struct ecc_curve _nettle_secp_521r1 =
     ecc_mod,
     ecc_mod,
     ecc_mod_inv,
+    NULL,
     NULL,
   },
   

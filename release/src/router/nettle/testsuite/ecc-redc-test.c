@@ -51,6 +51,7 @@ test_main (void)
   mpz_t r;
 
   gmp_randinit_default (rands);
+  test_randomize(rands);
   
   mpz_init (r);
   

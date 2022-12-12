@@ -8,6 +8,8 @@ test_main (void)
   unsigned i;
 
   gmp_randinit_default (rands);
+  test_randomize(rands);
+
   mpz_init (r);
 
   for (i = 0; ecc_curves[i]; i++)

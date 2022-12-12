@@ -42,6 +42,32 @@
 /* Routines for modp arithmetic. All values are ecc->size limbs, but
    not necessarily < p. */
 
+int
+ecc_mod_zero_p (const struct ecc_modulo *m, const mp_limb_t *xp_in)
+{
+  volatile mp_limb_t is_non_zero, is_not_p;
+  const volatile mp_limb_t *xp;
+  mp_size_t i;
+
+  for (xp = xp_in, i = 0, is_non_zero = is_not_p = 0; i < m->size; i++)
+    {
+      is_non_zero |= xp[i];
+      is_not_p |= (xp[i] ^ m->m[i]);
+    }
+
+  return (is_non_zero == 0) | (is_not_p == 0);
+}
+
+int
+ecc_mod_equal_p (const struct ecc_modulo *m, const mp_limb_t *a,
+		 const mp_limb_t *ref, mp_limb_t *scratch)
+{
+  mp_limb_t cy;
+  cy = mpn_sub_n (scratch, a, ref, m->size);
+  /* If cy > 0, i.e., a < ref, then they can't be equal mod m. */
+  return (cy == 0) & ecc_mod_zero_p (m, scratch);
+}
+
 void
 ecc_mod_add (const struct ecc_modulo *m, mp_limb_t *rp,
 	     const mp_limb_t *ap, const mp_limb_t *bp)

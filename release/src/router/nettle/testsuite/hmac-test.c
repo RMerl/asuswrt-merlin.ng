@@ -883,4 +883,10 @@ test_main(void)
 	    SHEX("0126bdb87800af214341456563780100"),
 	    SHEX("a1aa5f7de402d7b3d323f2991c8d4534"
 	         "013137010a83754fd0af6d7cd4922ed9"));
+
+  HMAC_TEST(sm3,
+	    SDATA("monkey monkey monkey monkey"),
+	    SDATA("abc"),
+            SHEX("7a9388e2ca5343b5d76e7c2c3d84f239"
+                 "f306c0b60d5e0dc4d2771e42860a6a2b"));
 }

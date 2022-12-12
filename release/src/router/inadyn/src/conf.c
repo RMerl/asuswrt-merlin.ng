@@ -211,7 +211,8 @@ static int getserver(const char *server, ddns_name_t *name)
 		if (-1 == name->port)
 			name->port = HTTP_DEFAULT_PORT;
 	} else {
-		name->port = HTTP_DEFAULT_PORT;
+		/* Let *ssl.c and tcp.c figure it out later */
+		name->port = 0;
 	}
 
 	strlcpy(name->name, str, sizeof(name->name));
@@ -354,6 +355,7 @@ static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 	str = cfg_getstr(cfg, "password");
 	if (str && strlen(str) <= sizeof(info->creds.password))
 		strlcpy(info->creds.password, str, sizeof(info->creds.password));
+	info->ifname = cfg_getstr(cfg, "iface");
 
 	for (j = 0; j < cfg_size(cfg, "hostname"); j++) {
 		size_t pos = info->alias_count;
@@ -544,6 +546,7 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 		CFG_BOOL    ("wildcard",     cfg_false, CFGF_NONE),
 		CFG_INT     ("ttl",          -1, CFGF_NODEFAULT),
 		CFG_BOOL    ("proxied",      cfg_false, CFGF_NONE),
+		CFG_STR     ("iface",          NULL, CFGF_NONE), /* interface name */
 		CFG_STR     ("checkip-server", NULL, CFGF_NONE), /* Syntax:  name:port */
 		CFG_STR     ("checkip-path",   NULL, CFGF_NONE), /* Default: "/" */
 		CFG_BOOL    ("checkip-ssl",    cfg_true, CFGF_NONE),
@@ -563,6 +566,7 @@ cfg_t *conf_parse_file(char *file, ddns_t *ctx)
 		CFG_BOOL    ("wildcard",     cfg_false, CFGF_NONE),
 		CFG_INT     ("ttl",          -1, CFGF_NODEFAULT),
 		CFG_BOOL    ("proxied",      cfg_false, CFGF_NONE),
+		CFG_STR     ("iface",          NULL, CFGF_NONE), /* interface name */
 		CFG_STR     ("checkip-server", NULL, CFGF_NONE), /* Syntax:  name:port */
 		CFG_STR     ("checkip-path",   NULL, CFGF_NONE), /* Default: "/" */
 		CFG_BOOL    ("checkip-ssl",    cfg_true, CFGF_NONE),

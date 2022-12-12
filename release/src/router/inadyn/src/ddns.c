@@ -477,7 +477,12 @@ static int get_address_backend(ddns_t *ctx, ddns_info_t *info, char *address, si
 	if (!get_address_cmd   (ctx, info, address, len))
 		return 0;
 
-	if (!get_address_iface (ctx, iface,address, len))
+	/* Check info specific interface */
+	if (!get_address_iface (ctx, info->ifname, address, len))
+		return 0;
+
+	/* Check the global interface */
+	if (!get_address_iface (ctx, iface, address, len))
 		return 0;
 
 	if (!get_address_remote(ctx, info, address, len))

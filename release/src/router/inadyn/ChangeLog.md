@@ -4,13 +4,32 @@ Change Log
 All notable changes to the project are documented in this file.
 
 
+[v2.10.0][] - 2022-11-12
+------------------------
+
+### Changes
+- Add support for MbedTLS, courtesy of Vicente Bergas
+- Add support for per-provider interface to bind to, by Iain Henderson
+- Use HTTP-only for api.ipify.org, default (fallback) checkip service
+- Mention static builds and how to stop a systemd service in README
+
+### Fixes
+- Issue #374: handle easyDNS `no update required` as OK status
+- Issue #382: update docs on how to use IPv6 and dynv6
+- Issue #385: use configured server:port, don't force port 443 for HTTPS
+- Issue #388: update docs on how to use custom config with format
+  specifiers, and fix the Namecheap URL in the process, by Martin Butt
+- Issue #390: serious memory leak in GnuTLS backend (Debian default)
+- Issue #391: ca-trust-file has no effect for GnuTLS
+
+
 [v2.9.1][] - 2021-12-09
 -----------------------
 
 ### Changes
 - `debian/` directory and packaging dropped in favor of downstream
   official packaging.  Too difficult to support different versions and
-  derivatives, not just Debian but also Ubuntu, etc.
+  derivatives, not just Debian but also Ubuntu, etc.  Issue #366
 - Source `$INADYN_ARGS`, or `$INADYN_OPTS`, for the command line from an
   `EnvironmentFile` in the systemd unit file
 - Reference the README in the systemd unit file instead of home page
@@ -896,7 +915,8 @@ First stable version.
 - port to pSOS
 
 
-[UNRELEASED]: https://github.com/troglobit/inadyn/compare/v2.9.1...HEAD
+[UNRELEASED]: https://github.com/troglobit/inadyn/compare/v2.10.0...HEAD
+[v2.10.0]: https://github.com/troglobit/inadyn/compare/v2.9.1...v2.10.0
 [v2.9.1]: https://github.com/troglobit/inadyn/compare/v2.9.0...v2.9.1
 [v2.9.0]: https://github.com/troglobit/inadyn/compare/v2.8.1...v2.9.0
 [v2.8.1]: https://github.com/troglobit/inadyn/compare/v2.8...v2.8.1

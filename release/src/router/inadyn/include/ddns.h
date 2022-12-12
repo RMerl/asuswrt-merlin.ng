@@ -47,7 +47,7 @@
  */
 #define DDNS_MY_IP_SERVER       "api.ipify.org"
 #define DDNS_MY_CHECKIP_URL	"/"
-#define DDNS_MY_IP_SSL          DDNS_CHECKIP_SSL_SUPPORTED
+#define DDNS_MY_IP_SSL          DDNS_CHECKIP_SSL_UNSUPPORTED
 
 /* Some default settings */
 #define DDNS_DEFAULT_STARTUP_SLEEP        0       /* sec */
@@ -141,6 +141,9 @@ typedef struct di {
 	/* Possble "OK" responses from DDNS provider */
 	char           server_response[MAX_NUM_RESPONSES][MAX_RESPONSE_LEN];
 	size_t         server_response_num;
+
+	/* Interface for IP */
+	char           *ifname;
 
 	/* Address of "What's my IP" checker */
 	ddns_name_t    checkip_name;

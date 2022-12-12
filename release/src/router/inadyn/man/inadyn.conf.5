@@ -51,7 +51,7 @@ can get an IPv6 address from an interface, or with an external checkip
 script.  This option controls if IPv6 addresses should be allowed or
 discarded.  By default this option is
 .Ar false ,
-i.e. IPv6 addresses are discarded.
+i.e. any IPv6 addresses found are discarded.
 .It Cm iface = IFNAME
 Use network interface
 .Nm IFNAME
@@ -166,6 +166,8 @@ record.  Default is to use HTTPS (true).
 The username, if applicable.  This might be referred to as hash by some providers.
 .It Cm password = PASSWORD
 The password, if applicable.
+.It Cm iface = IFNAME
+Same as the global setting, but only for this provider.  For more information, see above.
 .It Cm checkip-server = <default | checkip.example.com[:port]>
 This setting allows you to override the default checkip server with
 either the string
@@ -466,11 +468,15 @@ provider strato.com {
     hostname   = example.com
 }
 
-# dynv6.com
-provider dynv6.com {
+# dynv6.com update using a custom checkip-command, which works
+# if you have access to an Internet-connected interface.  Make
+# sure to verify the command works on your system first
+allow-ipv6 = true                # required option for IPv6 atm.
+provider default@dynv6.com {
     username   = your_token
     password   = not_used
-    hostname   = your_host.dynv6.net
+    hostname = { my.dynv6.net }  # second host with comma
+    checkip-command = "/sbin/ip -6 addr | grep inet6 | awk -F '[ \t]+|/' '{print $3}' | grep -v ^::1 | grep -v ^fe80"
 }
 
 # IPv6 account at https://tunnelbroker.net

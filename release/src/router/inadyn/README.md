@@ -9,17 +9,20 @@ The latest release is always available from GitHub at
 Table of Contents
 -----------------
 
-* [Introduction](#introduction)
-* [Supported Providers](#supported-providers)
-* [Configuration](#configuration)
-* [Custom DDNS Providers](#custom-ddns-providers)
-* [Build & Install](#build--install)
-* [Building from GIT](#building-from-git)
-* [Origin & References](#origin--references)
+  * [Introduction](#introduction)
+  * [Supported Providers](#supported-providers)
+  * [Configuration](#configuration)
+  * [Custom DDNS Providers](#custom-ddns-providers)
+  * [Build & Install](#build--install)
+  * [Building from GIT](#building-from-git)
+  * [Origin & References](#origin--references)
 
 
 Introduction
 ------------
+
+> **Tip:** the HTML UNIX manual is at https://man.troglobit.com, e.g.,
+> [inadyn.conf(5)](https://man.troglobit.com/man5/inadyn.conf.5.html)
 
 Inadyn, or In-a-Dyn, is a small and simple Dynamic DNS, [DDNS][], client
 with HTTPS support.  Commonly available in many GNU/Linux distributions,
@@ -58,36 +61,36 @@ The following tier-one providers have dedicated "plugins", even though
 many share the original DynDNS plugin.  Below is a list of known DDNS
 providers, ordered by the plugin that support them:
 
-   * <https://freedns.afraid.org>
-   * <https://www.nsupdate.info>
-   * <https://duckdns.org>
-   * <https://freemyip.com>
-   * <https://www.dyndns.org>, <https://dyn.com>
-     * <https://dns.he.net>
-     * <https://www.dnsomatic.com>
-     * <https://domains.google>
-     * <https://www.dynu.com>
-     * <https://www.loopia.com>
-     * <https://www.noip.com>
-     * <https://www.pubyun.com>, formerly <http://www.3322.org>
-     * <https://www.selfhost.de>
-     * <https://spdyn.de>
-   * <https://www.easydns.com>
-   * <https://www.tunnelbroker.net>
-   * <https://www.sitelutions.com>
-   * <https://www.dnsexit.com>, parent of <https://www.zoneedit.com>
-   * <https://www.changeip.com>
-     * <https://www.ovh.com>
-     * <https://www.strato.com>
-   * <https://www.dhis.org>
-   * <https://giradns.com>, <https://gira.de>
-   * <https://www.duiadns.net>
-   * <https://ddnss.de>
-   * <https://dynv6.com>
-   * <https://www.cloudxns.net>
-   * <https://www.dnspod.cn>
-   * <https://connect.yandex.ru>
-   * <https://www.cloudflare.com>
+  * <https://freedns.afraid.org>
+  * <https://www.nsupdate.info>
+  * <https://duckdns.org>
+  * <https://freemyip.com>
+  * <https://www.dyndns.org>, <https://dyn.com>
+    * <https://dns.he.net>
+    * <https://www.dnsomatic.com>
+    * <https://domains.google>
+    * <https://www.dynu.com>
+    * <https://www.loopia.com>
+    * <https://www.noip.com>
+    * <https://www.pubyun.com>, formerly <http://www.3322.org>
+    * <https://www.selfhost.de>
+    * <https://spdyn.de>
+  * <https://www.easydns.com>
+  * <https://www.tunnelbroker.net>
+  * <https://www.sitelutions.com>
+  * <https://www.dnsexit.com>, parent of <https://www.zoneedit.com>
+  * <https://www.changeip.com>
+    * <https://www.ovh.com>
+    * <https://www.strato.com>
+  * <https://www.dhis.org>
+  * <https://giradns.com>, <https://gira.de>
+  * <https://www.duiadns.net>
+  * <https://ddnss.de>
+  * <https://dynv6.com>
+  * <https://www.cloudxns.net>
+  * <https://www.dnspod.cn>
+  * <https://connect.yandex.ru>
+  * <https://www.cloudflare.com>
 
 DDNS providers not supported natively can be enabled using the custom,
 or generic, DDNS plugin.  E.g. <https://www.namecheap.com>.  See below
@@ -157,15 +160,15 @@ This looks for the default `.conf` file, to check any file, use:
         username    = ian
         password    = secret
         hostname    = flemming.no-ip.com
-		user-agent  = inadyn/2.2
-	}
+        user-agent  = inadyn/2.2
+    }
 
     # With multiple usernames at the same provider, index with :#
     provider no-ip.com:2 {
         username       = james
         password       = bond
         hostname       = spectre.no-ip.com
-		checkip-ssl    = false
+        checkip-ssl    = false
         checkip-server = api.ipify.org
     }
 
@@ -183,6 +186,7 @@ This looks for the default `.conf` file, to check any file, use:
         username = your_username
         password = your_password
     }
+
     # Wildcard subdomains - notice the quotes (required!)
     provider domains.google.com:2 {
         hostname = "*.mydomain.com"
@@ -195,12 +199,17 @@ This looks for the default `.conf` file, to check any file, use:
         username    = futurekid
         password    = dreoadsad/+dsad21321    # update-key-in-advanced-tab
         hostname    = 1234534245321           # tunnel-id
-	}
+    }
 
+    # dynv6.com update using a custom checkip-command, which works
+    # if you have access to an Internet-connected interface.  Make
+    # sure to verify the command works on your system first
+    allow-ipv6 = true                # required option for IPv6 atm.
     provider dynv6.com {
         username = your_token
-        password = n/a
+        password = not_used
         hostname = { host1.dynv6.net, host2.dynv6.net }
+        checkip-command = "/sbin/ip -6 addr | grep inet6 | awk -F '[ \t]+|/' '{print $3}' | grep -v ^::1 | grep -v ^fe80"
     }
 
     provider cloudxns.net {
@@ -246,6 +255,11 @@ provided by Hurricane Electric.  Here `hostname` is set to the tunnel ID
 and password **must** be the *Update key* found in the *Advanced*
 configuration tab.
 
+> **Note:** the `checkip-command` for dynv6, above, is just one way to
+> do it.  Here's another variant, from their own script: `ip -6
+> addr list scope global $device | grep -v " fd" | sed -n 's/.*inet6
+> \([0-9a-f:]\+\).*/\1/p' | head -n 1`
+
 Sometimes the default `checkip-server` for a DDNS provider can be very
 slow to respond, to this end In-a-dyn now support overriding it with a
 custom one, or a custom command.  The easiest way to change it is to set
@@ -285,8 +299,15 @@ A custom DDNS provider can be setup like this:
         ddns-server    = update.example.com
         ddns-path      = "/update?hostname="
         hostname       = myhostname.example.net
-	}
+    }
 
+The following variables can be substituted into the configuration:
+
+     %u - username
+     %p - password, if HTTP basic auth is not used
+     %h - hostname
+     %i - IP address
+    
 For <https://www.namecheap.com> it can look as follows.  Notice how the
 hostname syntax differs from above:
 
@@ -294,9 +315,9 @@ hostname syntax differs from above:
         username    = YOURDOMAIN.TLD
         password    = mypass
         ddns-server = dynamicdns.park-your-domain.com
-        ddns-path   = "/update?domain=%u&password=%p&host=%h"
+        ddns-path   = "/update?domain=%u&password=%p&host=%h&ip=%i"
         hostname    = { "@", "www", "test" }
-	}
+    }
 
 Here three hostnames are updated, one HTTP GET update request for every
 listed hostname.  Some providers, like FreeDNS, support setting up CNAME
@@ -320,7 +341,7 @@ under an API section, or similar.
         ddns-server = members.dyndns.org
         ddns-path   = "/nic/update?hostname=%h.dyndns.org&myip=%i"
         hostname    = { YOURHOST, alias }
-	}
+    }
 
 Here a fully custom `ddns-path` with format specifiers are used, see the
 `inadyn.conf(5)` man page for details on this.
@@ -356,11 +377,26 @@ in the last example above.
 Build & Install
 ---------------
 
-### Debian/Ubuntu
+### Debian/Ubuntu/Mint
 
-    curl -sS https://deb.troglobit.com/pubkey.gpg | sudo apt-key add -
-    echo "deb [arch=amd64] https://deb.troglobit.com/debian stable main" | sudo tee /etc/apt/sources.list.d/troglobit.list
-    sudo apt-get update && sudo apt-get install inadyn
+For a long time, the project maintained its own `.deb` packaging and
+basic apt infrastructure.  However, the increasing level of features in
+In-a-dyn, and thus amount of dependencies, as well as the demands for
+supporting more architectures and different distributions, the pre-built
+`.deb` support has been discontinued as of v2.9.1.
+
+The Debian project now has an active maintainer for inadyn, which is the
+upstream for Ubuntu and others.  Please report issues and requests to
+your respective distribution:
+
+  * https://packages.debian.org/sid/inadyn
+  * https://packages.ubuntu.com/jammy/inadyn
+
+> **Note:** the project's packaging files have been moved to a separate
+> [debian][] branch in the GIT repository.  It is not actively updated
+> or supported for releases.  To use it, check out the branch and edit
+> `debian/changelog`) to build new `.deb` files for your system.
+
 
 ### Docker
 
@@ -425,6 +461,7 @@ a few useful options that are recommended to use:
 
 You may want to remove the `--prefix=/usr` option.
 
+
 ### SSL/TLS Support
 
 By default inadyn tries to build with GnuTLS for HTTPS support.  GnuTLS
@@ -441,8 +478,18 @@ To completely disable inadyn HTTPS support (not recommended!):
 
 For more details on the OpenSSL and GNU GPL license issue, see:
 
-* <https://lists.debian.org/debian-legal/2004/05/msg00595.html>
-* <https://people.gnome.org/~markmc/openssl-and-the-gpl>
+  * <https://lists.debian.org/debian-legal/2004/05/msg00595.html>
+  * <https://people.gnome.org/~markmc/openssl-and-the-gpl>
+
+
+### Static Build
+
+Some people want to build statically, to do this with `autoconf` add the
+following `LDFLAGS=` *after* the configure script.  You may also need to
+add `LIBS=...`, which will depend on your particular system:
+
+    ./configure LDFLAGS="-static" ...
+
 
 ### RedHat, Fedora, CentOS
 
@@ -473,6 +520,11 @@ simply call `systemctl` to enable and start `inadyn`:
 Check that it started properly by inspecting the system log, or:
 
     $ sudo systemctl status inadyn.service
+
+To stop the service:
+
+    $ sudo systemctl stop   inadyn.service
+
 
 ### Embedded applications
 
@@ -521,6 +573,9 @@ This is the continuation of Narcis Ilisei's [original][] INADYN.  Now
 maintained by [Joachim Wiberg][].  Please file bug reports, or send
 pull requests for bug fixes and proposed extensions at [GitHub][].
 
+> A personal *Thank you!* goes out to Robert Högberg, who sponsored a
+> little D-Link DIR-645 router so I could get back on the interwebs :-)
+
 [original]:         http://www.inatech.eu/inadyn/
 [DDNS]:             http://en.wikipedia.org/wiki/Dynamic_DNS
 [tunnelbroker]:     https://tunnelbroker.net/
@@ -534,6 +589,7 @@ pull requests for bug fixes and proposed extensions at [GitHub][].
 [buildsystem]:      https://airs.com/ian/configure/
 [License]:          https://www.gnu.org/licenses/old-licenses/gpl-2.0.en.html
 [License Badge]:    https://img.shields.io/badge/License-GPL%20v2-blue.svg
+[debian]:           https://github.com/troglobit/inadyn/tree/debian/debian
 [GitHub]:           https://github.com/troglobit/inadyn/actions/workflows/build.yml/
 [GitHub Status]:    https://github.com/troglobit/inadyn/actions/workflows/build.yml/badge.svg
 [Coverity Scan]:    https://scan.coverity.com/projects/2981

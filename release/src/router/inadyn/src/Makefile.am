@@ -10,15 +10,19 @@ inadyn_SOURCES	 = main.c	ddns.c		cache.c		\
 		   http.c	plugin.c	tcp.c		\
 		   json.c	jsmn.c		log.c		\
 		   makepath.c
-inadyn_CFLAGS    = $(confuse_CFLAGS) $(OpenSSL_CFLAGS) $(GnuTLS_CFLAGS)
-inadyn_LDADD     = $(confuse_LIBS)   $(OpenSSL_LIBS)   $(GnuTLS_LIBS)
+inadyn_CFLAGS    = $(confuse_CFLAGS) $(OpenSSL_CFLAGS) $(MbedTLS_CFLAGS) $(GnuTLS_CFLAGS)
+inadyn_LDADD     = $(confuse_LIBS)   $(OpenSSL_LIBS)   $(MbedTLS_LIBS)   $(GnuTLS_LIBS)
 inadyn_LDADD    += $(LIBS) $(LIBOBJS)
 
 if ENABLE_SSL
 if ENABLE_OPENSSL
 inadyn_SOURCES  += openssl.c openssl_base64.c openssl_hash.c
 else
+if ENABLE_MBEDTLS
+inadyn_SOURCES  += mbedtls.c mbedtls_base64.c mbedtls_hash.c
+else
 inadyn_SOURCES  += gnutls.c gnutls_base64.c gnutls_hash.c
+endif
 endif
 else
 inadyn_SOURCES  += base64.c md5.c sha1.c

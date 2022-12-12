@@ -1,5 +1,5 @@
 AC_PREREQ(2.61)
-AC_INIT([In-a-dyn], [2.9.1], [https://github.com/troglobit/inadyn/issues],
+AC_INIT([In-a-dyn], [2.10.0], [https://github.com/troglobit/inadyn/issues],
 	[inadyn], [https://troglobit.com/projects/inadyn/])
 AC_CONFIG_AUX_DIR(aux)
 AM_INIT_AUTOMAKE([1.11 foreign dist-xz])
@@ -26,6 +26,12 @@ AC_ARG_ENABLE(openssl,
         [AS_HELP_STRING([--enable-openssl], [Use OpenSSL/LibreSSL for HTTPS, default: GnuTLS])],
         [ac_enable_openssl="$enableval"],
         [ac_enable_openssl="no"]
+)
+
+AC_ARG_ENABLE(mbedtls,
+        [AS_HELP_STRING([--enable-mbedtls], [Use MbedTLS for HTTPS, default: GnuTLS])],
+        [ac_enable_mbedtls="$enableval"],
+        [ac_enable_mbedtls="no"]
 )
 
 AC_ARG_ENABLE(reduced,
@@ -106,7 +112,7 @@ AC_CHECK_LIB([confuse], [cfg_init], [],
 AC_CHECK_HEADERS([confuse.h], [],
              AC_MSG_ERROR([*** Cannot find required header files!]))
 
-# If HTTPS is enabled we check for either OpenSSL/LibreSSL or GnuTLS libs+headers
+# If HTTPS is enabled we check for either OpenSSL/LibreSSL, MbedTLS or GnuTLS libs+headers
 if test "x$ac_enable_ssl" = "xyes"; then
    if test "x$ac_enable_openssl" = "xyes"; then
       ac_enable_gnutls="no"
@@ -125,6 +131,17 @@ if test "x$ac_enable_ssl" = "xyes"; then
 			#include <openssl/conf.h>
 			])
       AC_DEFINE([CONFIG_OPENSSL], [], [Enable HTTPS support using OpenSSL/LibreSSL library])
+   elif test "x$ac_enable_mbedtls" = "xyes"; then
+      ac_enable_gnutls="no"
+      PKG_CHECK_MODULES([MbedTLS], [mbedtls])
+      LDFLAGS="$LDFLAGS $MbedTLS_LIBS"
+      CPPFLAGS="$CPPFLAGS $MbedTLS_CFLAGS"
+      AC_CHECK_LIB([mbedcrypto], [mbedtls_entropy_init], [], AC_MSG_ERROR([*** Mbed Crypto library not found!]))
+      AC_CHECK_LIB([mbedx509], [mbedtls_x509_crt_init], [], AC_MSG_ERROR([*** Mbed X509 library not found!]))
+      AC_CHECK_LIB([mbedtls], [mbedtls_ssl_init], [], AC_MSG_ERROR([*** Mbed TLS library not found!]))
+      AC_CHECK_HEADERS([mbedtls/base64.h mbedtls/ctr_drbg.h mbedtls/entropy.h mbedtls/md5.h mbedtls/net_sockets.h \
+         mbedtls/sha1.h mbedtls/ssl.h], [], AC_MSG_ERROR([*** Cannot find required header files!]))
+      AC_DEFINE([CONFIG_MBEDTLS], [], [Enable HTTPS support using MbedTLS library])
    else
       ac_enable_gnutls="yes"
       PKG_CHECK_MODULES([GnuTLS], [gnutls >= 3.0])
@@ -144,10 +161,11 @@ if test "x$ac_enable_ssl" = "xyes"; then
 else
    ac_enable_gnutls="no"
    ac_enable_openssl="no"
+   ac_enable_mbedtls="no"
 fi
 
 
-# By default we rely on the built-in locations of Open/LibreSSL and GnuTLS,
+# By default we rely on the built-in locations of Open/LibreSSL, MbedTLS and GnuTLS,
 # on error we fall back to these two locations
 # For more excellent information on the topic, see this blog post
 #   https://www.happyassassin.net/2015/01/12/a-note-about-ssltls-trusted-certificate-stores-and-platforms/
@@ -166,11 +184,12 @@ darwin*)
    ;;
 esac
 
-AC_DEFINE_UNQUOTED([CAFILE1], "$CAFILE1", [First fallback location for Open/LibreSSL and GnuTLS trust db])
-AC_DEFINE_UNQUOTED([CAFILE2], "$CAFILE2", [Second location for Open/LibreSSL and GnuTLS trust db])
+AC_DEFINE_UNQUOTED([CAFILE1], "$CAFILE1", [First fallback location for Open/LibreSSL, MbedTLS and GnuTLS trust db])
+AC_DEFINE_UNQUOTED([CAFILE2], "$CAFILE2", [Second location for Open/LibreSSL, MbedTLS and GnuTLS trust db])
 
 AM_CONDITIONAL([ENABLE_SSL], test "x$ac_enable_ssl" = "xyes")
 AM_CONDITIONAL([ENABLE_OPENSSL], test "x$ac_enable_openssl" = "xyes")
+AM_CONDITIONAL([ENABLE_MBEDTLS], test "x$ac_enable_mbedtls" = "xyes")
 
 AS_IF([test "x$ac_enable_simulation" = "xyes"], [
    AC_DEFINE([ENABLE_SIMULATION], [], [Enable developer-only simulation mode])])
@@ -233,6 +252,7 @@ cat <<EOF
   HTTPS support..: $ac_enable_ssl
     GnuTLS.......: $ac_enable_gnutls
     Open/LibreSSL: $ac_enable_openssl
+    MbedTLS      : $ac_enable_mbedtls
   systemd........: $with_systemd
   Unit tests.....: $ac_enable_test
 

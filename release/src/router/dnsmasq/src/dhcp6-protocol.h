@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -55,12 +55,15 @@
 #define OPTION6_RECONF_ACCEPT   20
 #define OPTION6_DNS_SERVER      23
 #define OPTION6_DOMAIN_SEARCH   24
+#define OPTION6_IA_PD           25
+#define OPTION6_IAPREFIX        26
 #define OPTION6_REFRESH_TIME    32
 #define OPTION6_REMOTE_ID       37
 #define OPTION6_SUBSCRIBER_ID   38
 #define OPTION6_FQDN            39
 #define OPTION6_NTP_SERVER      56
 #define OPTION6_CLIENT_MAC      79
+#define OPTION6_MUD_URL         112
 
 #define NTP_SUBOPTION_SRV_ADDR  1
 #define NTP_SUBOPTION_MC_ADDR   2
@@ -72,4 +75,3 @@
 #define DHCP6NOBINDING   3
 #define DHCP6NOTONLINK   4
 #define DHCP6USEMULTI    5
-

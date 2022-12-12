@@ -1,4 +1,4 @@
-.TH DNSMASQ 8 2020-04-05
+.TH DNSMASQ 8 2021-08-16
 .SH NAME
 dnsmasq \- A lightweight DHCP and caching DNS server.
 .SH SYNOPSIS
@@ -55,11 +55,13 @@ Don't read the hostnames in /etc/hosts.
 .B \-H, --addn-hosts=<file>
 Additional hosts file. Read the specified file as well as /etc/hosts. If \fB--no-hosts\fP is given, read
 only the specified file. This option may be repeated for more than one
-additional hosts file. If a directory is given, then read all the files contained in that directory. 
+additional hosts file. If a directory is given, then read all the files contained in that directory
+in alphabetical order.
 .TP
 .B --hostsdir=<path>
 Read all the hosts files contained in the directory. New or changed files
-are read automatically. See \fB--dhcp-hostsdir\fP for details.
+are read automatically and modified and deleted files have removed records
+automatically deleted.
 .TP
 .B \-E, --expand-hosts
 Add the domain to simple names (without a period) in /etc/hosts
@@ -103,6 +105,16 @@ Dnsmasq limits the value of this option to one hour, unless recompiled.
 .TP
 .B --auth-ttl=<time>
 Set the TTL value returned in answers from the authoritative server.
+.TP
+.B --fast-dns-retry=[<initial retry delay in ms>[,<time to continue retries in ms>]]
+Under normal circumstances, dnsmasq relies on DNS clients to do retries; it
+does not generate timeouts itself. Setting this option
+instructs dnsmasq to generate its own retries starting after a delay
+which defaults to 1000ms. If the second parameter is given this controls
+how long the retries will continue for
+otherwise this defaults to 10000ms. Retries are repeated with exponential
+backoff. Using this option increases memory usage and
+network bandwidth.
 .TP
 .B \-k, --keep-in-foreground
 Do not go into the background at startup but otherwise run as
@@ -179,7 +191,15 @@ specific UDP port <query_port> instead of using random ports. NOTE
 that using this option will make dnsmasq less secure against DNS
 spoofing attacks but it may be faster and use less resources.  Setting this option
 to zero makes dnsmasq use a single port allocated to it by the
-OS: this was the default behaviour in versions prior to 2.43. 
+OS: this was the default behaviour in versions prior to 2.43.
+.TP
+.B --port-limit=<#ports>
+By default, when sending a query via random ports to multiple upstream servers or
+retrying a query dnsmasq will use a single random port for all the tries/retries.
+This option allows a larger number of ports to be used, which can increase robustness
+in certain network configurations. Note that increasing this to more than
+two or three can have security and resource implications and should only
+be done with understanding of those.
 .TP
 .B --min-port=<port>
 Do not use ports less than that given as source for outbound DNS
@@ -303,7 +323,8 @@ Return answers to DNS queries from /etc/hosts and \fB--interface-name\fP and \fB
 received. If a name has more than one address associated with
 it, and at least one of those addresses is on the same subnet as the
 interface to which the query was sent, then return only the
-address(es) on that subnet. This allows for a server  to have multiple
+address(es) on that subnet and return all the available addresses otherwise.
+This allows for a server  to have multiple
 addresses in /etc/hosts corresponding to each of its interfaces, and
 hosts will get the correct address based on which network they are
 attached to. Currently this facility is limited to IPv4.
@@ -327,8 +348,8 @@ are re-written. So
 maps 192.168.0.10->192.168.0.40 to 10.0.0.10->10.0.0.40
 .TP 
 .B \-B, --bogus-nxdomain=<ipaddr>[/prefix]
-Transform replies which contain the IP specified address or subnet into "No such
-domain" replies. This is intended to counteract a devious move made by
+Transform replies which contain the specified address or subnet into "No such
+domain" replies. IPv4 and IPv6 are supported. This is intended to counteract a devious move made by
 Verisign in September 2003 when they started returning the address of
 an advertising web page in response to queries for unregistered names,
 instead of the correct NXDOMAIN response. This option tells dnsmasq to
@@ -336,7 +357,7 @@ fake the correct response when it sees this behaviour. As at Sept 2003
 the IP address being returned by Verisign is 64.94.110.11
 .TP 
 .B --ignore-address=<ipaddr>[/prefix]
-Ignore replies to A-record queries which include the specified address or subnet. 
+Ignore replies to A or AAAA queries which include the specified address or subnet. 
 No error is generated, dnsmasq simply continues to listen for another reply. 
 This is useful to defeat blocking strategies which rely on quickly supplying a
 forged answer to a DNS request for certain domain, before the correct answer can arrive.
@@ -344,8 +365,15 @@ forged answer to a DNS request for certain domain, before the correct answer can
 .B \-f, --filterwin2k
 Later versions of windows make periodic DNS requests which don't get sensible answers from
 the public DNS and can cause problems by triggering dial-on-demand links. This flag turns on an option
-to filter such requests. The requests blocked are for records of types SOA and SRV, and type ANY where the 
-requested name has underscores, to catch LDAP requests.
+to filter such requests. The requests blocked are for records of type ANY
+where the requested name has underscores, to catch LDAP requests, and for
+\fBall\fP records of types SOA and SRV.
+.TP
+.B --filter-A
+Remove A records from answers. No IPv4 addresses will be returned.
+.TP
+.B --filter-AAAA
+Remove AAAA records from answers. No IPv6 addresses will be returned.
 .TP
 .B \-r, --resolv-file=<file>
 Read the IP addresses of the upstream nameservers from <file>, instead of
@@ -371,7 +399,10 @@ provides service at that name, rather than the default which is
 .TP 
 .B --enable-ubus[=<service-name>]
 Enable dnsmasq UBus interface. It sends notifications via UBus on
-DHCPACK and DHCPRELEASE events. Furthermore it offers metrics.
+DHCPACK and DHCPRELEASE events. Furthermore it offers metrics
+and allows configuration of Linux connection track mark based filtering.
+When DNS query filtering based on Linux connection track marks is enabled
+UBus notifications are generated for each resolved or filtered DNS query.
 Requires that dnsmasq has been built with UBus support. If the service
 name is given, dnsmasq provides service at that namespace, rather than
 the default which is
@@ -431,8 +462,8 @@ Tells dnsmasq to never forward A or AAAA queries for plain names, without dots
 or domain parts, to upstream nameservers. If the name is not known
 from /etc/hosts or DHCP then a "not found" answer is returned.
 .TP
-.B \-S, --local, --server=[/[<domain>]/[domain/]][<ipaddr>[#<port>]][@<interface>][@<source-ip>[#<port>]]
-Specify IP address of upstream servers directly. Setting this flag does
+.B \-S, --local, --server=[/[<domain>]/[domain/]][<server>[#<port>]][@<interface>][@<source-ip>[#<port>]]
+Specify upstream servers directly. Setting this flag does
 not suppress reading of /etc/resolv.conf, use \fB--no-resolv\fP to do that. If one or more
 optional domains are given, that server is used only for those domains
 and they are queried only using the specified server. This is
@@ -457,13 +488,22 @@ repeated domain or ipaddr parts as required.
 More specific domains take precedence over less specific domains, so:
 .B --server=/google.com/1.2.3.4
 .B --server=/www.google.com/2.3.4.5
-will send queries for *.google.com to 1.2.3.4, except *www.google.com,
-which will go to 2.3.4.5
+will send queries for google.com and gmail.google.com to 1.2.3.4, but www.google.com
+will go to 2.3.4.5
+
+Matching of domains is normally done on complete labels, so /google.com/ matches google.com and www.google.com
+but NOT supergoogle.com. This can be overridden with a * at the start of a pattern only: /*google.com/
+will match google.com and www.google.com AND supergoogle.com. The non-wildcard form has priority, so
+if /google.com/ and /*google.com/ are both specified then google.com and www.google.com will match /google.com/
+and /*google.com/ will only match supergoogle.com.
+
+For historical reasons, the pattern /.google.com/ is equivalent to /google.com/ if you wish to match any subdomain
+of google.com but NOT google.com itself, use /*.google.com/
 
 The special server address '#' means, "use the standard servers", so
 .B --server=/google.com/1.2.3.4
 .B --server=/www.google.com/#
-will send queries for *.google.com to 1.2.3.4, except *www.google.com which will
+will send queries for google.com and its subdomains to 1.2.3.4, except www.google.com (and its subdomains) which will
 be forwarded as usual.
 
 Also permitted is a -S
@@ -491,26 +531,31 @@ The query-port flag is ignored for any servers which have a
 source address specified but the port may be specified directly as
 part of the source address. Forcing queries to an interface is not
 implemented on all platforms supported by dnsmasq.
+
+Upstream servers may be specified with a hostname rather than an IP address.
+In this case, dnsmasq will try to use the system resolver to get the IP address
+of a server during startup. If name resolution fails, starting dnsmasq fails, too.
+If the system's configuration is such that the system resolver sends DNS queries
+through the dnsmasq instance which is starting up then this will time-out and fail.
 .TP
-.B --rev-server=<ip-address>/<prefix-len>[,<ipaddr>][#<port>][@<interface>][@<source-ip>[#<port>]]
+.B --rev-server=<ip-address>[/<prefix-len>][,<server>][#<port>][@<interface>][@<source-ip>[#<port>]]
 This is functionally the same as 
 .B --server, 
 but provides some syntactic sugar to make specifying address-to-name queries easier. For example
 .B --rev-server=1.2.3.0/24,192.168.0.1
 is exactly equivalent to 
 .B --server=/3.2.1.in-addr.arpa/192.168.0.1
+Allowed prefix lengths are 1-32 (IPv4) and 1-128 (IPv6). If the prefix length is omitted, dnsmasq substitutes either 32 (IPv4) or 128 (IPv6).
 .TP
 .B \-A, --address=/<domain>[/<domain>...]/[<ipaddr>]
 Specify an IP address to return for any host in the given domains.
-Queries in the domains are never forwarded and always replied to
+A (or AAAA) queries in the domains are never forwarded and always replied to
 with the specified IP address which may be IPv4 or IPv6. To give
-both IPv4 and IPv6 addresses for a domain, use repeated \fB--address\fP flags.
-To include multiple IP addresses for a single query, use
-\fB--addn-hosts=<path>\fP instead.
+multiple addresses or both IPv4 and IPv6 addresses for a domain, use repeated \fB--address\fP flags.
 Note that /etc/hosts and DHCP leases override this for individual
 names. A common use of this is to redirect the entire doubleclick.net
 domain to some friendly local web server to avoid banner ads. The
-domain specification works in the same was as for \fB--server\fP, with
+domain specification works in the same way as for \fB--server\fP, with
 the additional facility that \fB/#/\fP matches any domain. Thus
 \fB--address=/#/1.2.3.4\fP will always return \fB1.2.3.4\fP for any
 query not answered from \fB/etc/hosts\fP or DHCP and not sent to an
@@ -524,6 +569,11 @@ address of 0.0.0.0 and its IPv6 equivalent of :: so
 its subdomains. This is partly syntactic sugar for \fB--address=/example.com/0.0.0.0\fP
 and \fB--address=/example.com/::\fP but is also more efficient than including both
 as separate configuration lines. Note that NULL addresses normally work in the same way as localhost, so beware that clients looking up these names are likely to end up talking to themselves.
+
+Note that the behaviour for queries which don't match the specified address literal changed in version 2.86.
+Previous versions, configured with (eg) --address=/example.com/1.2.3.4 and then queried for a RR type other than
+A would return a NoData answer. From  2.86, the query is sent upstream. To restore the pre-2.86 behaviour,
+use the configuration --address=/example.com/1.2.3.4 --local=/example.com/
 .TP
 .B --ipset=/<domain>[/<domain>...]/<ipset>[,<ipset>...]
 Places the resolved IP addresses of queries for one or more domains in
@@ -535,6 +585,41 @@ versa).  Domains and subdomains are matched in the same way as
 These IP sets must already exist. See
 .BR ipset (8)
 for more details.
+.TP
+.B --nftset=/<domain>[/<domain>...]/[(6|4)#[<family>#]<table>#<set>[,[(6|4)#[<family>#]<table>#<set>]...]
+Similar to the \fB--ipset\fP option, but accepts one or more nftables 
+sets to add IP addresses into.
+These sets must already exist. See
+.BR nft (8)
+for more details. The family, table and set are passed directly to the nft. If the spec starts with 4# or 6# then
+only A or AAAA records respectively are added to the set. Since an nftset can hold only IPv4 or IPv6 addresses, this
+avoids errors being logged for addresses of the wrong type.
+.TP
+.B --connmark-allowlist-enable[=<mask>]
+Enables filtering of incoming DNS queries with associated Linux connection track marks
+according to individual allowlists configured via a series of \fB--connmark-allowlist\fP
+options. Disallowed queries are not forwarded; they are rejected with a REFUSED error code.
+DNS queries are only allowed if they do not have an associated Linux connection
+track mark, or if the queried domains match the configured DNS patterns for the
+associated Linux connection track mark. If no allowlist is configured for a
+Linux connection track mark, all DNS queries associated with that mark are rejected.
+If a mask is specified, Linux connection track marks are first bitwise ANDed
+with the given mask before being processed.
+.TP
+.B --connmark-allowlist=<connmark>[/<mask>][,<pattern>[/<pattern>...]]
+Configures the DNS patterns that are allowed in DNS queries associated with
+the given Linux connection track mark.
+If a mask is specified, Linux connection track marks are first bitwise ANDed
+with the given mask before they are compared to the given connection track mark.
+Patterns follow the syntax of DNS names, but additionally allow the wildcard
+character "*" to be used up to twice per label to match 0 or more characters
+within that label. Note that the wildcard never matches a dot (e.g., "*.example.com"
+matches "api.example.com" but not "api.us.example.com"). Patterns must be
+fully qualified, i.e., consist of at least two labels. The final label must not be
+fully numeric, and must not be the "local" pseudo-TLD. A pattern must end with at least
+two literal (non-wildcard) labels.
+Instead of a pattern, "*" can be specified to disable allowlist filtering
+for a given Linux connection track mark entirely.
 .TP
 .B \-m, --mx-host=<mx name>[[,<hostname>],<preference>]
 Return an MX record named <mx name> pointing to the given hostname (if
@@ -667,14 +752,15 @@ configured a zero is added in front of the label. ::1 becomes 0--1.
 V4 mapped IPv6 addresses, which have a representation like ::ffff:1.2.3.4 are handled specially, and become like 0--ffff-1-2-3-4
 
 The address range can be of the form
-<ip address>,<ip address> or <ip address>/<netmask> in both forms of the option.
+<start address>,<end address> or <ip address>/<prefix-length> in both forms of the option. For IPv6 the start and end addresses
+must fall in the same /64 network, or prefix-length must be greater than or equal to 64 except that shorter prefix lengths than 64 are allowed only if non-sequential names are in use.
 .TP
 .B --dumpfile=<path/to/file>
 Specify the location of a pcap-format file which dnsmasq uses to dump copies of network packets for debugging purposes. If the file exists when dnsmasq starts, it is not deleted; new packets are added to the end.
 .TP
 .B --dumpmask=<mask>
 Specify which types of packets should be added to the dumpfile. The argument should be the OR of the bitmasks for each type of packet to be dumped: it can be specified in hex by preceding the number with 0x in  the normal way. Each time a packet is written to the dumpfile, dnsmasq logs the packet sequence and the mask
-representing its type. The current types are: 0x0001 - DNS queries from clients 0x0002 DNS replies to clients 0x0004 - DNS queries to upstream 0x0008 - DNS replies from upstream 0x0010 - queries send upstream for DNSSEC validation 0x0020 - replies to queries for DNSSEC validation 0x0040 - replies to client queries which fail DNSSEC validation 0x0080 replies to queries for DNSSEC validation which fail validation.
+representing its type. The current types are: 0x0001 - DNS queries from clients, 0x0002 DNS replies to clients, 0x0004 - DNS queries to upstream, 0x0008 - DNS replies from upstream, 0x0010 - queries send upstream for DNSSEC validation, 0x0020 - replies to queries for DNSSEC validation, 0x0040 - replies to client queries which fail DNSSEC validation, 0x0080 replies to queries for DNSSEC validation which fail validation, 0x1000 - DHCPv4, 0x2000 - DHCPv6, 0x4000 - Router advertisement, 0x8000 - TFTP.
 .TP
 .B --add-mac[=base64|text]
 Add the MAC address of the requestor to DNS queries which are
@@ -686,6 +772,9 @@ experimental. Also note that exposing MAC addresses in this way may
 have security and privacy implications. The warning about caching
 given for \fB--add-subnet\fP applies to \fB--add-mac\fP too. An alternative encoding of the
 MAC, as base64, is enabled by adding the "base64" parameter and a human-readable encoding of hex-and-colons is enabled by added the "text" parameter.
+.TP
+.B --strip-mac
+Remove any MAC address information already in downstream queries before forwarding upstream.  
 .TP
 .B --add-cpe-id=<string>
 Add an arbitrary identifying string to DNS queries which are
@@ -711,7 +800,19 @@ will add the /24 and /96 subnets of the requestor for IPv4 and IPv6 requestors, 
 will add 1.2.3.0/24 for IPv4 requestors and ::/0 for IPv6 requestors.
 .B --add-subnet=1.2.3.4/24,1.2.3.4/24
 will add 1.2.3.0/24 for both IPv4 and IPv6 requestors.
-
+.TP
+.B --strip-subnet
+Remove any subnet address already present in a downstream query before forwarding it upstream. If --add-subnet is set this also
+ensures that any downstream-provided subnet is replaced by the one added by dnsmasq. Otherwise, dnsmasq will NOT replace an
+existing subnet in the query.
+.TP
+.B --umbrella[=[deviceid:<deviceid>][,orgid:<orgid>][,assetid:<id>]]
+Embeds the requestor's IP address in DNS queries forwarded upstream.
+If device id or, asset id or organization id are specified, the information is
+included in the forwarded queries and may be able to be used in
+filtering policies and reporting. The order of the id
+attributes is irrelevant, but they must be separated by a comma. Deviceid is
+a sixteen digit hexadecimal number, org and asset ids are decimal numbers.
 .TP
 .B \-c, --cache-size=<cachesize>
 Set the size of dnsmasq's cache. The default is 150 names. Setting the cache size to zero disables caching. Note: huge cache size impacts performance.
@@ -721,11 +822,25 @@ Disable negative caching. Negative caching allows dnsmasq to remember
 "no such domain" answers from upstream nameservers and answer
 identical queries without forwarding them again. 
 .TP
+.B --no-round-robin
+Dnsmasq normally permutes the order of A or AAAA records for the same
+name on successive queries, for load-balancing. This turns off that
+behaviour, so that the records are always returned in the order
+that they are received from upstream.
+.TP
+.B --use-stale-cache[=<max TTL excess in s>]
+When set, if a DNS name exists in the cache, but its time-to-live has expired, dnsmasq will return the data anyway. (It attempts to refresh the
+data with an upstream query after returning the stale data.) This can improve speed and reliability. It comes at the expense
+of sometimes returning out-of-date data and less efficient cache utilisation, since old data cannot be flushed when its TTL expires, so the cache becomes
+mostly least-recently-used. To mitigate issues caused by massively outdated DNS replies, the maximum overaging of cached records can be specified in seconds
+(defaulting to not serve anything older than one day). Setting the TTL excess time to zero will serve stale cache data regardless how long it has expired.
+.TP
 .B \-0, --dns-forward-max=<queries>
 Set the maximum number of concurrent DNS queries. The default value is
 150, which should be fine for most setups. The only known situation
 where this needs to be increased is when using web-server log file
-resolvers, which can generate large numbers of concurrent queries.
+resolvers, which can generate large numbers of concurrent queries. This
+parameter actually controls the number of concurrent queries per server group, where a server group is the set of server(s) associated with a single domain. So if a domain has it's own server via --server=/example.com/1.2.3.4 and 1.2.3.4 is not responding, but queries for *.example.com cannot go elsewhere, then other queries will not be affected. On configurations with many such server groups and tight resources, this value may need to be reduced.
 .TP
 .B --dnssec
 Validate DNS replies and cache DNSSEC data. When forwarding DNS queries, dnsmasq requests the 
@@ -859,7 +974,7 @@ compiled in and the kernel must have conntrack support
 included and configured. This option cannot be combined with
 .B --query-port.
 .TP
-.B \-F, --dhcp-range=[tag:<tag>[,tag:<tag>],][set:<tag>,]<start-addr>[,<end-addr>|<mode>][,<netmask>[,<broadcast>]][,<lease time>]
+.B \-F, --dhcp-range=[tag:<tag>[,tag:<tag>],][set:<tag>,]<start-addr>[,<end-addr>|<mode>[,<netmask>[,<broadcast>]]][,<lease time>]
 .TP
 .B \-F, --dhcp-range=[tag:<tag>[,tag:<tag>],][set:<tag>,]<start-IPv6addr>[,<end-IPv6addr>|constructor:<interface>][,<mode>][,<prefix-len>][,<lease time>]
 
@@ -869,7 +984,7 @@ in
 .B --dhcp-host
 options. If the lease time is given, then leases
 will be given for that length of time. The lease time is in seconds,
-or minutes (eg 45m) or hours (eg 1h) or "infinite". If not given,
+or minutes (eg 45m) or hours (eg 1h) or days (2d) or weeks (1w) or "infinite". If not given,
 the default lease time is one hour for IPv4 and one day for IPv6. The
 minimum lease time is two minutes. For IPv6 ranges, the lease time
 maybe "deprecated"; this sets the preferred lifetime sent in a DHCP
@@ -989,7 +1104,7 @@ is also included, as described in RFC-3775 section 7.3.
 tells dnsmasq to advertise the prefix without the on-link (aka L) bit set.
 
 .TP
-.B \-G, --dhcp-host=[<hwaddr>][,id:<client_id>|*][,set:<tag>][tag:<tag>][,<ipaddr>][,<hostname>][,<lease_time>][,ignore]
+.B \-G, --dhcp-host=[<hwaddr>][,id:<client_id>|*][,set:<tag>][,tag:<tag>][,<ipaddr>][,<hostname>][,<lease_time>][,ignore]
 Specify per host parameters for the DHCP server. This allows a machine
 with a particular hardware address to be always allocated the same
 hostname, IP address and lease time. A hostname specified like this
@@ -1052,7 +1167,8 @@ given in a
 .B --dhcp-host
 option, but aliases are possible by using CNAMEs. (See 
 .B --cname
-).
+). Note that /etc/hosts is NOT used when the DNS server side of dnsmasq
+is disabled by setting the DNS server port to zero.
 
 More than one
 .B --dhcp-host
@@ -1088,7 +1204,10 @@ ignore requests from unknown machines using
 If the host matches only a \fB--dhcp-host\fP directive which cannot
 be used because it specifies an address on different subnet, the tag "known-othernet" is set.
 
-The tag:<tag> construct filters which dhcp-host directives are used. Tagged directives are used in preference to untagged ones.
+The tag:<tag> construct filters which dhcp-host directives are used; more than
+one can be provided, in this case the request must match all of them. Tagged
+directives are used in preference to untagged ones. Note that one of <hwaddr>,
+<client_id> or <hostname> still needs to be specified (can be a wildcard).
 
 Ethernet addresses (but not client-ids) may have
 wildcard bytes, so for example 
@@ -1119,7 +1238,7 @@ has both wired and wireless interfaces.
 .TP
 .B --dhcp-hostsfile=<path>
 Read DHCP host information from the specified file. If a directory
-is given, then read all the files contained in that directory. The file contains 
+is given, then read all the files contained in that directory in alphabetical order. The file contains 
 information about one host per line. The format of a line is the same
 as text to the right of '=' in \fB--dhcp-host\fP. The advantage of storing DHCP host information
 in this file is that it can be changed without re-starting dnsmasq:
@@ -1127,7 +1246,7 @@ the file will be re-read when dnsmasq receives SIGHUP.
 .TP
 .B --dhcp-optsfile=<path>
 Read DHCP option information from the specified file.  If a directory
-is given, then read all the files contained in that directory. The advantage of 
+is given, then read all the files contained in that directory in alphabetical order. The advantage of 
 using this option is the same as for \fB--dhcp-hostsfile\fP: the
 \fB--dhcp-optsfile\fP will be re-read when dnsmasq receives SIGHUP. Note that
 it is possible to encode the information in a
@@ -1142,7 +1261,8 @@ directory, and not an individual file. Changed or new files within
 the directory are read automatically, without the need to send SIGHUP.
 If a file is deleted or changed after it has been read by dnsmasq, then the
 host record it contained will remain until dnsmasq receives a SIGHUP, or 
-is restarted; ie host records are only added dynamically.
+is restarted; ie host records are only added dynamically. The order in which the
+files in a directory are read is not defined.
 .TP
 .B --dhcp-optsdir=<path>
 This is equivalent to \fB--dhcp-optsfile\fP, with the differences noted for \fB--dhcp-hostsdir\fP.
@@ -1261,7 +1381,7 @@ DHCP options. This make extra space available in the DHCP packet for
 options but can, rarely, confuse old or broken clients. This flag
 forces "simple and safe" behaviour to avoid problems in such a case.
 .TP
-.B --dhcp-relay=<local address>,<server address>[,<interface]
+.B --dhcp-relay=<local address>[,<server address>[#<server port>]][,<interface]
 Configure dnsmasq to do DHCP relay. The local address is an address
 allocated to an interface on the host running dnsmasq. All DHCP
 requests arriving on that interface will we relayed to a remote DHCP
@@ -1269,10 +1389,12 @@ server at the server address. It is possible to relay from a single local
 address to multiple remote servers by using multiple \fB--dhcp-relay\fP
 configs with the same local address and different server
 addresses. A server address must be an IP literal address, not a
-domain name. In the case of DHCPv6, the server address may be the
-ALL_SERVERS multicast address, ff05::1:3. In this case the interface
-must be given, not be wildcard, and is used to direct the multicast to the
-correct interface to reach the DHCP server. 
+domain name. If the server address is omitted, the request will be
+forwarded by broadcast (IPv4) or multicast (IPv6). In this case the interface
+must be given and not be wildcard. The server address may specify a non-standard
+port to relay to. If this is used then \fB--dhcp-proxy\fP should likely also be set,
+otherwise parts of the DHCP conversation which do not pass through the relay
+will be delivered to the wrong port.
 
 Access control for DHCP clients has the same rules as for the DHCP
 server, see \fB--interface\fP, \fB--except-interface\fP, etc. The optional
@@ -1292,6 +1414,11 @@ supported: the relay function will take precedence.
 
 Both DHCPv4 and DHCPv6 relay is supported. It's not possible to relay
 DHCPv4 to a DHCPv6 server or vice-versa.
+
+The DHCP relay function for IPv6 includes the ability to snoop
+prefix-delegation from relayed DHCP transactions. See
+.B --dhcp-script
+for details. 
 .TP
 .B \-U, --dhcp-vendorclass=set:<tag>,[enterprise:<IANA-enterprise number>,]<vendor-class>
 Map from a vendor-class string to a tag. Most DHCP clients provide a 
@@ -1387,6 +1514,12 @@ Any number of set: and tag: forms may appear, in any order.
 tag set by another
 .B --tag-if,
 the line which sets the tag must precede the one which tests it.
+
+As an extension, the tag:<tag> clauses support limited wildcard matching,
+similar to the matching in the \fB--interface\fP directive.  This allows, for
+example, using \fB--tag-if=set:ppp,tag:ppp*\fP to set the tag 'ppp' for all requests
+received on any matching interface (ppp0, ppp1, etc).  This can be used in conjunction
+with the tag:!<tag> format meaning that no tag matching the wildcard may be set.
 .TP
 .B \-J, --dhcp-ignore=tag:<tag>[,tag:<tag>]
 When all the given tags appear in the tag set ignore the host and do
@@ -1517,7 +1650,6 @@ instance
 will enable dnsmasq to also provide proxy PXE service to those PXE clients with
 .I HW-Client
 in as their identifier.
->>>>>>> 907def3... pxe: support pxe clients with custom vendor-class
 .TP  
 .B \-X, --dhcp-lease-max=<number>
 Limits dnsmasq to the specified maximum number of DHCP leases. The
@@ -1568,10 +1700,11 @@ tried. This flag disables this check. Use with caution.
 Extra logging for DHCP: log all the options sent to DHCP clients and
 the tags used to determine them.
 .TP
-.B --quiet-dhcp, --quiet-dhcp6, --quiet-ra
+.B --quiet-dhcp, --quiet-dhcp6, --quiet-ra, --quiet-tftp
 Suppress logging of the routine operation of these protocols. Errors and
-problems will still be logged. \fB--quiet-dhcp\fP and quiet-dhcp6 are
-over-ridden by \fB--log-dhcp\fP.
+problems will still be logged. \fB--quiet-tftp\fP does not consider file not
+found to be an error. \fB--quiet-dhcp\fP and quiet-dhcp6 are over-ridden by
+\fB--log-dhcp\fP.
 .TP
 .B \-l, --dhcp-leasefile=<path>
 Use the specified file to store DHCP lease information.
@@ -1621,7 +1754,13 @@ If dnsmasq was compiled with HAVE_BROKEN_RTC, then
 the length of the lease (in seconds) is stored in
 DNSMASQ_LEASE_LENGTH, otherwise the time of lease expiry is stored in
 DNSMASQ_LEASE_EXPIRES. The number of seconds until lease expiry is
-always stored in DNSMASQ_TIME_REMAINING. 
+always stored in DNSMASQ_TIME_REMAINING.
+
+DNSMASQ_DATA_MISSING is set to "1" during "old" events for existing
+leases generated at startup to indicate that data not stored in the
+persistent lease database will not be present. This comprises everything
+other than IP address, hostname, MAC address, DUID, IAID and lease length
+or expiry time.
 
 If a lease used to have a hostname, which is
 removed, an "old" event is generated with the new state of the lease, 
@@ -1643,6 +1782,11 @@ DNSMASQ_LOG_DHCP is set if
 .B --log-dhcp
 is in effect.
 
+DNSMASQ_REQUESTED_OPTIONS a string containing the decimal values in the Parameter Request List option, comma separated, if the parameter request list option is provided by the client.
+
+DNSMASQ_MUD_URL the Manufacturer Usage Description URL if provided by the client. (See RFC8520 for details.)
+
+
 For IPv4 only:
 
 DNSMASQ_CLIENT_ID if the host provided a client-id.
@@ -1651,8 +1795,6 @@ DNSMASQ_CIRCUIT_ID, DNSMASQ_SUBSCRIBER_ID, DNSMASQ_REMOTE_ID if a
 DHCP relay-agent added any of these options.
  
 If the client provides vendor-class, DNSMASQ_VENDOR_CLASS.
-
-DNSMASQ_REQUESTED_OPTIONS a string containing the decimal values in the Parameter Request List option, comma separated, if the parameter request list option is provided by the client.
 
 For IPv6 only:
 
@@ -1696,15 +1838,25 @@ receives a HUP signal, the script will be invoked for existing leases
 with an "old" event.
 
 
-There are four further actions which may appear as the first argument
-to the script, "init", "arp-add", "arp-del" and "tftp". More may be added in the future, so
+There are five further actions which may appear as the first argument
+to the script, "init", "arp-add", "arp-del", "relay-snoop" and "tftp".
+More may be added in the future, so
 scripts should be written to ignore unknown actions. "init" is
 described below in 
 .B --leasefile-ro
+
 The "tftp" action is invoked when a TFTP file transfer completes: the
 arguments are the file size in bytes, the address to which the file
 was sent, and the complete pathname of the file.
- 
+
+The "relay-snoop" action is invoked when dnsmasq is configured as a DHCP
+relay for DHCPv6 and it relays a prefx delegation to a client. The arguments
+are the name of the interface where the client is conected, its (link-local)
+address on that interface and the delegated prefix. This information is
+sufficient to install routes to the delegated prefix of a router. See
+.B --dhcp-relay
+for more details on configuring DHCP relay.
+
 The "arp-add" and "arp-del" actions are only called if enabled with
 .B --script-arp
 They are are supplied with a MAC address and IP address as arguments. "arp-add" indicates
@@ -1835,7 +1987,7 @@ is the address of the relay and the second, as before, specifies an extra subnet
 addresses may be allocated from.
 
 .TP
-.B \-s, --domain=<domain>[,<address range>[,local]]
+.B \-s, --domain=<domain>[[,<address range>[,local]]|<interface>]
 Specifies DNS domains for the DHCP server. Domains may be be given 
 unconditionally (without the IP range) or for limited IP ranges. This has two effects;
 firstly it causes the DHCP server to return the domain to any hosts
@@ -1869,7 +2021,11 @@ additional flag "local" may be supplied which has the effect of adding
 is identical to
 .B --domain=thekelleys.org.uk,192.168.0.0/24
 .B --local=/thekelleys.org.uk/ --local=/0.168.192.in-addr.arpa/
-The network size must be 8, 16 or 24 for this to be legal.
+
+The address range can also be given as a network interface name, in which case
+all of the subnets currently assigned to the interface are used in matching the
+address. This allows hosts on different physical subnets to be given different
+domains in a way which updates automatically as the interface addresses change.
 .TP
 .B --dhcp-fqdn
 In the default mode, dnsmasq inserts the unqualified names of
@@ -2042,6 +2198,23 @@ A special case of
 which differs in two respects. Firstly, only \fB--server\fP and \fB--rev-server\fP are allowed
 in the configuration file included. Secondly, the file is re-read and the configuration
 therein is updated when dnsmasq receives SIGHUP.
+.TP
+.B \--conf-script=<file>[ <arg]
+Execute <file>, and treat what it emits to stdout as the contents of a configuration file.
+If the script exits with a non-zero exit code, dnsmasq treats this as a fatal error.
+The script can be passed arguments, space seperated from the filename and each other so, for instance
+.B --conf-dir="/etc/dnsmasq-uncompress-ads /share/ads-domains.gz"
+
+with /etc/dnsmasq-uncompress-ads containing 
+
+set -e
+
+zcat ${1} | sed -e "s:^:address=/:" -e "s:$:/:" 
+
+exit 0
+
+and /share/ads-domains.gz containing a compressed
+list of ad server domains will save disk space with large ad-server blocklists.
 .SH CONFIG FILE
 At startup, dnsmasq reads
 .I /etc/dnsmasq.conf,
@@ -2373,6 +2546,10 @@ following data is used to populate the authoritative zone.
 .B --mx-host, --srv-host, --dns-rr, --txt-record, --naptr-record, --caa-record,
 as long as the record names are in the authoritative domain.
 .PP
+.B --synth-domain
+as long as the domain is in the authoritative zone and, for
+reverse (PTR) queries, the address is in the relevant subnet.
+.PP
 .B --cname
 as long as the record name is in  the authoritative domain. If the
 target of the CNAME is unqualified, then it  is qualified with the
@@ -2434,7 +2611,9 @@ file/directory, permissions).
 5 - Other miscellaneous problem.
 .PP
 11 or greater - a non zero return code was received from the
-lease-script process "init" call. The exit code from dnsmasq is the
+lease-script process "init" call or a
+.B \--conf-script
+file. The exit code from dnsmasq is the
 script's exit code with 10 added. 
 
 .SH LIMITS

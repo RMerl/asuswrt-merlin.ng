@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -96,28 +96,21 @@ void poll_listen(int fd, short event)
      pollfds[i].events |= event;
    else
      {
-       if (arrsize != nfds)
-	 memmove(&pollfds[i+1], &pollfds[i], (nfds - i) * sizeof(struct pollfd));
-       else
+       if (arrsize == nfds)
 	 {
 	   /* Array too small, extend. */
 	   struct pollfd *new;
 
 	   arrsize = (arrsize == 0) ? 64 : arrsize * 2;
 
-	   if (!(new = whine_malloc(arrsize * sizeof(struct pollfd))))
+	   if (!(new = whine_realloc(pollfds, arrsize * sizeof(struct pollfd))))
 	     return;
 
-	   if (pollfds)
-	     {
-	       memcpy(new, pollfds, i * sizeof(struct pollfd));
-	       memcpy(&new[i+1], &pollfds[i], (nfds - i) * sizeof(struct pollfd));
-	       free(pollfds);
-	     }
-	   
 	   pollfds = new;
 	 }
-       
+
+       memmove(&pollfds[i+1], &pollfds[i], (nfds - i) * sizeof(struct pollfd));
+
        pollfds[i].fd = fd;
        pollfds[i].events = event;
        nfds++;

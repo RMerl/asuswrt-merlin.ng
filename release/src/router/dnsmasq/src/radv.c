@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -123,7 +123,11 @@ void ra_start_unsolicited(time_t now, struct dhcp_context *context)
      and pick up new interfaces */
   
   if (context)
-    context->ra_short_period_start = context->ra_time = now;
+    {
+      context->ra_short_period_start = now;
+      /* start after 1 second to get logging right at startup. */
+      context->ra_time = now + 1;
+    }
   else
     for (context = daemon->dhcp6; context; context = context->next)
       if (!(context->flags & CONTEXT_TEMPLATE))
@@ -162,7 +166,7 @@ void icmp6_packet(time_t now)
     return;
    
   packet = (unsigned char *)daemon->outpacket.iov_base;
-  
+
   for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
     if (cmptr->cmsg_level == IPPROTO_IPV6 && cmptr->cmsg_type == daemon->v6pktinfo)
       {
@@ -187,24 +191,36 @@ void icmp6_packet(time_t now)
  
   if (packet[1] != 0)
     return;
-  
+
   if (packet[0] == ICMP6_ECHO_REPLY)
     lease_ping_reply(&from.sin6_addr, packet, interface); 
   else if (packet[0] == ND_ROUTER_SOLICIT)
     {
       char *mac = "";
       struct dhcp_bridge *bridge, *alias;
+      ssize_t rem;
+      unsigned char *p;
+      int opt_sz;
+      
+#ifdef HAVE_DUMPFILE
+      dump_packet_icmp(DUMP_RA, (void *)packet, sz, (union mysockaddr *)&from, NULL);
+#endif           
       
       /* look for link-layer address option for logging */
-      if (sz >= 16 && packet[8] == ICMP6_OPT_SOURCE_MAC && (packet[9] * 8) + 8 <= sz)
+      for (rem = sz - 8, p = &packet[8]; rem >= 2; rem -= opt_sz, p += opt_sz)
 	{
-	  if ((packet[9] * 8 - 2) * 3 - 1 >= MAXDNAME) {
-	    return;
-	  }
-	  print_mac(daemon->namebuff, &packet[10], (packet[9] * 8) - 2);
-	  mac = daemon->namebuff;
+	  opt_sz = p[1] * 8;
+	  
+	  if (opt_sz == 0 || opt_sz > rem)
+	    return; /* Bad packet */
+	  
+	  if (p[0] == ICMP6_OPT_SOURCE_MAC && ((opt_sz - 2) * 3 - 1 < MAXDNAME))
+	    {
+	      print_mac(daemon->namebuff, &p[2], opt_sz - 2);
+	      mac = daemon->namebuff;
+	    }
 	}
-         
+      
       if (!option_bool(OPT_QUIET_RA))
 	my_syslog(MS_DHCP | LOG_INFO, "RTR-SOLICIT(%s) %s", interface, mac);
 
@@ -543,6 +559,16 @@ static void send_ra_alias(time_t now, int iface, char *iface_name, struct in6_ad
       setsockopt(daemon->icmp6fd, IPPROTO_IPV6, IPV6_MULTICAST_IF, &send_iface, sizeof(send_iface));
     }
   
+#ifdef HAVE_DUMPFILE
+  {
+    struct sockaddr_in6 src;
+    src.sin6_family = AF_INET6;
+    src.sin6_addr = parm.link_local;
+    
+    dump_packet_icmp(DUMP_RA, (void *)daemon->outpacket.iov_base, save_counter(-1), (union mysockaddr *)&src, (union mysockaddr *)&addr);
+  }
+#endif
+
   while (retry_send(sendto(daemon->icmp6fd, daemon->outpacket.iov_base, 
 			   save_counter(-1), 0, (struct sockaddr *)&addr, 
 			   sizeof(addr))));
@@ -746,6 +772,8 @@ static int add_lla(int index, unsigned int type, char *mac, size_t maclen, void 
 	 add 7 to round up */
       int len = (maclen + 9) >> 3;
       unsigned char *p = expand(len << 3);
+      if (!p)
+	return 1;
       memset(p, 0, len << 3);
       *p++ = ICMP6_OPT_SOURCE_MAC;
       *p++ = len;

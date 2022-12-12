@@ -85,6 +85,16 @@
 # subdomains to the vpn and search ipsets:
 #ipset=/yahoo.com/google.com/vpn,search
 
+# Add the IPs of all queries to yahoo.com, google.com, and their
+# subdomains to netfilters sets, which is equivalent to
+# 'nft add element ip test vpn { ... }; nft add element ip test search { ... }'
+#nftset=/yahoo.com/google.com/ip#test#vpn,ip#test#search
+
+# Use netfilters sets for both IPv4 and IPv6:
+# This adds all addresses in *.yahoo.com to vpn4 and vpn6 for IPv4 and IPv6 addresses.
+#nftset=/yahoo.com/4#ip#test#vpn4
+#nftset=/yahoo.com/6#ip#test#vpn6
+
 # You can control how dnsmasq talks to a server: this forces
 # queries to 10.1.2.3 to be routed via eth1
 # server=10.1.2.3@eth1

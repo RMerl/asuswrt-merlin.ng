@@ -280,6 +280,7 @@ int main(int argc, char **argv)
   
   /* This voodoo fakes up a packet coming from the correct interface, which really matters for 
      a DHCP server */
+  memset(&ifr, 0, sizeof(ifr));
   strncpy(ifr.ifr_name, argv[1], sizeof(ifr.ifr_name)-1);
   ifr.ifr_name[sizeof(ifr.ifr_name)-1] = '\0';
   if (setsockopt(fd, SOL_SOCKET, SO_BINDTODEVICE, &ifr, sizeof(ifr)) == -1)
@@ -288,13 +289,12 @@ int main(int argc, char **argv)
       exit(1);
     }
   
-  if (inet_addr(argv[2]) == INADDR_NONE)
+  if (inet_pton(AF_INET, argv[2], &lease.s_addr) < 1)
     {
       perror("invalid ip address");
       exit(1);
     }
   
-  lease.s_addr = inet_addr(argv[2]);
   server = find_interface(lease, nl, if_nametoindex(argv[1]), fd, &ifr);
   
   memset(&packet, 0, sizeof(packet));

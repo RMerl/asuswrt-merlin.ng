@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2021 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -22,8 +22,7 @@
 
 struct iface_param {
   struct dhcp_context *current;
-  struct dhcp_relay *relay;
-  struct in6_addr fallback, relay_local, ll_addr, ula_addr;
+  struct in6_addr fallback, ll_addr, ula_addr;
   int ind, addr_match;
 };
 
@@ -90,7 +89,6 @@ void dhcp6_init(void)
 void dhcp6_packet(time_t now)
 {
   struct dhcp_context *context;
-  struct dhcp_relay *relay;
   struct iface_param parm;
   struct cmsghdr *cmptr;
   struct msghdr msg;
@@ -105,7 +103,8 @@ void dhcp6_packet(time_t now)
   struct iname *tmp;
   unsigned short port;
   struct in6_addr dst_addr;
-
+  struct in6_addr all_servers;
+  
   memset(&dst_addr, 0, sizeof(dst_addr));
 
   msg.msg_control = control_u.control6;
@@ -118,6 +117,11 @@ void dhcp6_packet(time_t now)
   
   if ((sz = recv_dhcp_packet(daemon->dhcp6fd, &msg)) == -1)
     return;
+  
+#ifdef HAVE_DUMPFILE
+  dump_packet_udp(DUMP_DHCPV6, (void *)daemon->dhcp_packet.iov_base, sz,
+		  (union mysockaddr *)&from, NULL, daemon->dhcp6fd);
+#endif
   
   for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
     if (cmptr->cmsg_level == IPPROTO_IPV6 && cmptr->cmsg_type == daemon->v6pktinfo)
@@ -135,9 +139,13 @@ void dhcp6_packet(time_t now)
   if (!indextoname(daemon->dhcp6fd, if_index, ifr.ifr_name))
     return;
 
-  if ((port = relay_reply6(&from, sz, ifr.ifr_name)) != 0)
+  if (relay_reply6(&from, sz, ifr.ifr_name))
     {
-      from.sin6_port = htons(port);
+#ifdef HAVE_DUMPFILE
+      dump_packet_udp(DUMP_DHCPV6, (void *)daemon->outpacket.iov_base, save_counter(-1), NULL,
+		      (union mysockaddr *)&from, daemon->dhcp6fd);
+#endif
+      
       while (retry_send(sendto(daemon->dhcp6fd, daemon->outpacket.iov_base, 
 			       save_counter(-1), 0, (struct sockaddr *)&from, 
 			       sizeof(from))));
@@ -145,7 +153,7 @@ void dhcp6_packet(time_t now)
   else
     {
       struct dhcp_bridge *bridge, *alias;
-
+      
       for (tmp = daemon->if_except; tmp; tmp = tmp->next)
 	if (tmp->name && wildcard_match(tmp->name, ifr.ifr_name))
 	  return;
@@ -155,14 +163,12 @@ void dhcp6_packet(time_t now)
 	  return;
       
       parm.current = NULL;
-      parm.relay = NULL;
-      memset(&parm.relay_local, 0, IN6ADDRSZ);
       parm.ind = if_index;
       parm.addr_match = 0;
       memset(&parm.fallback, 0, IN6ADDRSZ);
       memset(&parm.ll_addr, 0, IN6ADDRSZ);
       memset(&parm.ula_addr, 0, IN6ADDRSZ);
-
+      
       /* If the interface on which the DHCPv6 request was received is
          an alias of some other interface (as specified by the
          --bridge-interface option), change parm.ind so that we look
@@ -200,13 +206,25 @@ void dhcp6_packet(time_t now)
 	    context->current = context;
 	    memset(&context->local6, 0, IN6ADDRSZ);
 	  }
-
-      for (relay = daemon->relay6; relay; relay = relay->next)
-	relay->current = relay;
+      
+      /* Ignore requests sent to the ALL_SERVERS multicast address for relay when
+	 we're listening there for DHCPv6 server reasons. */
+      inet_pton(AF_INET6, ALL_SERVERS, &all_servers);
+      
+      if (!IN6_ARE_ADDR_EQUAL(&dst_addr, &all_servers) &&
+	  relay_upstream6(if_index, (size_t)sz, &from.sin6_addr, from.sin6_scope_id, now))
+	return;
       
       if (!iface_enumerate(AF_INET6, &parm, complete_context6))
 	return;
-
+      
+      /* Check for a relay again after iface_enumerate/complete_context has had
+	 chance to fill in relay->iface_index fields. This handles first time through
+	 and any changes in interface config. */
+      if (!IN6_ARE_ADDR_EQUAL(&dst_addr, &all_servers) &&
+	  relay_upstream6(if_index, (size_t)sz, &from.sin6_addr, from.sin6_scope_id, now))
+	return;
+      
       if (daemon->if_names || daemon->if_addrs)
 	{
 	  
@@ -218,23 +236,10 @@ void dhcp6_packet(time_t now)
 	    return;
 	}
       
-      if (parm.relay)
-	{
-	  /* Ignore requests sent to the ALL_SERVERS multicast address for relay when
-	     we're listening there for DHCPv6 server reasons. */
-	  struct in6_addr all_servers;
-	  
-	  inet_pton(AF_INET6, ALL_SERVERS, &all_servers);
-	  
-	  if (!IN6_ARE_ADDR_EQUAL(&dst_addr, &all_servers))
-	    relay_upstream6(parm.relay, sz, &from.sin6_addr, from.sin6_scope_id, now);
-	  return;
-	}
-      
       /* May have configured relay, but not DHCP server */
       if (!daemon->doing_dhcp6)
 	return;
-
+      
       lease_prune(NULL, now); /* lose any expired leases */
       
       port = dhcp6_reply(parm.current, if_index, ifr.ifr_name, &parm.fallback, 
@@ -247,11 +252,16 @@ void dhcp6_packet(time_t now)
       if (port != 0)
 	{
 	  from.sin6_port = htons(port);
-	  while (retry_send(sendto(daemon->dhcp6fd, daemon->outpacket.iov_base, 
-				   save_counter(-1), 0, (struct sockaddr *)&from, 
-				   sizeof(from))));
+	  
+#ifdef HAVE_DUMPFILE
+	  dump_packet_udp(DUMP_DHCPV6, (void *)daemon->outpacket.iov_base, save_counter(-1),
+			  NULL, (union mysockaddr *)&from, daemon->dhcp6fd);
+#endif 
+	  
+	  while (retry_send(sendto(daemon->dhcp6fd, daemon->outpacket.iov_base,
+				   save_counter(-1), 0, (struct sockaddr *)&from, sizeof(from))));
 	}
-
+      
       /* These need to be called _after_ we send DHCPv6 packet, since lease_update_file()
 	 may trigger sending an RA packet, which overwrites our buffer. */
       lease_update_file(now);
@@ -292,7 +302,7 @@ void get_client_mac(struct in6_addr *client, int iface, unsigned char *mac, unsi
       if ((maclen = find_mac(&addr, mac, 0, now)) != 0)
 	break;
 	  
-      sendto(daemon->icmp6fd, &neigh, sizeof(neigh), 0, &addr.sa, sizeof(addr));
+      while(retry_send(sendto(daemon->icmp6fd, &neigh, sizeof(neigh), 0, &addr.sa, sizeof(addr))));
       
       ts.tv_sec = 0;
       ts.tv_nsec = 100000000; /* 100ms */
@@ -312,6 +322,7 @@ static int complete_context6(struct in6_addr *local,  int prefix,
   struct dhcp_relay *relay;
   struct iface_param *param = vparam;
   struct iname *tmp;
+  int match = !daemon->if_addrs;
  
   (void)scope; /* warning */
   
@@ -333,7 +344,7 @@ static int complete_context6(struct in6_addr *local,  int prefix,
   for (tmp = daemon->if_addrs; tmp; tmp = tmp->next)
     if (tmp->addr.sa.sa_family == AF_INET6 &&
 	IN6_ARE_ADDR_EQUAL(&tmp->addr.in6.sin6_addr, local))
-      param->addr_match = 1;
+      match = param->addr_match = 1;
   
   /* Determine a globally address on the arrival interface, even
      if we have no matching dhcp-context, because we're only
@@ -405,16 +416,12 @@ static int complete_context6(struct in6_addr *local,  int prefix,
 	      }
 	  }      
       }
-
-  for (relay = daemon->relay6; relay; relay = relay->next)
-    if (IN6_ARE_ADDR_EQUAL(local, &relay->local.addr6) && relay->current == relay &&
-	(IN6_IS_ADDR_UNSPECIFIED(&param->relay_local) || IN6_ARE_ADDR_EQUAL(local, &param->relay_local)))
-      {
-	relay->current = param->relay;
-	param->relay = relay;
-	param->relay_local = *local;
-      }
-     
+  
+  if (match)
+    for (relay = daemon->relay6; relay; relay = relay->next)
+      if (IN6_ARE_ADDR_EQUAL(local, &relay->local.addr6))
+	relay->iface_index = if_index;
+  
   return 1;
 }
 
@@ -825,6 +832,4 @@ void dhcp_construct_contexts(time_t now)
     }
 }
 
-#endif
-
-
+#endif /* HAVE_DHCP6 */

@@ -97,9 +97,17 @@ extern const struct nettle_aead nettle_arcfour128;
 extern const struct nettle_aead nettle_chacha;
 extern const struct nettle_aead nettle_salsa20;
 extern const struct nettle_aead nettle_salsa20r12;
+
+/* All-in-one CBC encrypt fucntinos treated as AEAD with no
+   authentication and no decrypt method. */
+extern const struct nettle_aead nettle_cbc_aes128;
+extern const struct nettle_aead nettle_cbc_aes192;
+extern const struct nettle_aead nettle_cbc_aes256;
+
 extern const struct nettle_aead nettle_openssl_gcm_aes128;
 extern const struct nettle_aead nettle_openssl_gcm_aes192;
 extern const struct nettle_aead nettle_openssl_gcm_aes256;
+
 
 /* Glue to openssl, for comparative benchmarking. Code in
  * examples/nettle-openssl.c. */

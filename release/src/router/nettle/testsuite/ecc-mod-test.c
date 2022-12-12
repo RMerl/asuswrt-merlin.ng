@@ -1,9 +1,5 @@
 #include "testutils.h"
 
-#include <errno.h>
-#include <limits.h>
-#include <sys/time.h>
-
 static void
 ref_mod (mp_limb_t *rp, const mp_limb_t *ap, const mp_limb_t *mp, mp_size_t mn)
 {
@@ -122,10 +118,39 @@ test_modulo (gmp_randstate_t rands, const char *name,
 
   for (j = 0; j < count; j++)
     {
-      if (j & 1)
-	mpz_rrandomb (r, rands, 2*m->size * GMP_NUMB_BITS);
+      if (j & 2)
+	{
+	  if (j & 1)
+	    mpz_rrandomb (r, rands, 2*m->size * GMP_NUMB_BITS);
+	  else
+	    mpz_urandomb (r, rands, 2*m->size * GMP_NUMB_BITS);
+	}
       else
-	mpz_urandomb (r, rands, 2*m->size * GMP_NUMB_BITS);
+	{
+	  /* Test inputs close to a multiple of m. */
+	  mpz_t q;
+	  unsigned q_size;
+	  int diff;
+
+	  mpz_urandomb(r, rands, 30);
+	  q_size = 11 + mpz_get_ui(r) % (m->size * GMP_NUMB_BITS - 10);
+	  mpz_urandomb(r, rands, 30);
+	  diff = mpz_get_si(r) % 20 - 10;
+
+	  if (j & 1)
+	    mpz_rrandomb (r, rands, q_size);
+	  else
+	    mpz_urandomb (r, rands, q_size);
+
+	  mpz_mul (r, r, mpz_roinit_n(q, m->m, m->size));
+	  if (diff >= 0)
+	    mpz_add_ui (r, r, diff);
+	  else
+	    mpz_sub_ui (r, r, -diff);
+
+	  if (mpz_sgn(r) < 0)
+	    continue;
+	}
 
       test_one (name, m, r);
     }
@@ -173,48 +198,22 @@ test_patterns (const char *name,
 
   for (j = m->bit_size; j < 2*m->bit_size; j++)
     {
+      /* Single one bit */
       mpz_set_ui (r, 1);
       mpz_mul_2exp (r, r, j);
+      test_one (name, m, r);
 
+      /* All ones. */
+      mpz_mul_2exp (r, r, 1);
+      mpz_sub_ui (r, r, 1);
       test_one (name, m, r);
     }
   mpz_clear (r);
 }
 
-#if !NETTLE_USE_MINI_GMP
-static void
-get_random_seed(mpz_t seed)
-{
-  struct timeval tv;
-  FILE *f;
-  f = fopen ("/dev/urandom", "rb");
-  if (f)
-    {
-      uint8_t buf[8];
-      size_t res;
-
-      setbuf (f, NULL);
-      res = fread (&buf, sizeof(buf), 1, f);
-      fclose(f);
-      if (res == 1)
-	{
-	  nettle_mpz_set_str_256_u (seed, sizeof(buf), buf);
-	  return;
-	}
-      fprintf (stderr, "Read of /dev/urandom failed: %s\n",
-	       strerror (errno));
-    }
-  gettimeofday(&tv, NULL);
-  mpz_set_ui (seed, tv.tv_sec);
-  mpz_mul_ui (seed, seed, 1000000UL);
-  mpz_add_ui (seed, seed, tv.tv_usec);
-}
-#endif /* !NETTLE_USE_MINI_GMP */
-
 void
 test_main (void)
 {
-  const char *nettle_test_seed;
   gmp_randstate_t rands;
   unsigned count = COUNT;
   unsigned i;
@@ -229,27 +228,8 @@ test_main (void)
       test_patterns ("q", &ecc_curves[i]->p);
     }
 
-#if !NETTLE_USE_MINI_GMP
-  nettle_test_seed = getenv ("NETTLE_TEST_SEED");
-  if (nettle_test_seed && *nettle_test_seed)
-    {
-      mpz_t seed;
-      mpz_init (seed);
-      if (mpz_set_str (seed, nettle_test_seed, 0) < 0
-	  || mpz_sgn (seed) < 0)
-	die ("Invalid NETTLE_TEST_SEED: %s\n",
-	     nettle_test_seed);
-      if (mpz_sgn (seed) == 0)
-	get_random_seed (seed);
-      fprintf (stderr, "Using NETTLE_TEST_SEED=");
-      mpz_out_str (stderr, 10, seed);
-      fprintf (stderr, "\n");
-
-      gmp_randseed (rands, seed);
-      mpz_clear (seed);
-      count *= 20;
-    }
-#endif /* !NETTLE_USE_MINI_GMP */
+  if (test_randomize(rands))
+    count *= 20;
 
   for (i = 0; ecc_curves[i]; i++)
     {

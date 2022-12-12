@@ -66,6 +66,7 @@ const struct ecc_curve _nettle_gost_gc512a =
     ECC_REDC_SIZE,
     ECC_MOD_INV_ITCH (ECC_LIMB_SIZE),
     0,
+    0,
 
     ecc_p,
     ecc_Bmodp,
@@ -77,6 +78,7 @@ const struct ecc_curve _nettle_gost_gc512a =
     ecc_gost_gc512a_modp,
     ecc_mod_inv,
     NULL,
+    NULL,
   },
   {
     512,
@@ -84,6 +86,7 @@ const struct ecc_curve _nettle_gost_gc512a =
     ECC_BMODQ_SIZE,
     0,
     ECC_MOD_INV_ITCH (ECC_LIMB_SIZE),
+    0,
     0,
 
     ecc_q,
@@ -95,6 +98,7 @@ const struct ecc_curve _nettle_gost_gc512a =
     ecc_gost_gc512a_modq,
     ecc_gost_gc512a_modq,
     ecc_mod_inv,
+    NULL,
     NULL,
   },
 

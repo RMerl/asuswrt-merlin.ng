@@ -1,4 +1,5 @@
 #include "testutils.h"
+#include <assert.h>
 
 static int
 ref_modinv (mp_limb_t *rp, const mp_limb_t *ap,
@@ -37,20 +38,6 @@ ref_modinv (mp_limb_t *rp, const mp_limb_t *ap,
   return res;
 }
 
-static int
-zero_p (const struct ecc_modulo *m, const mp_limb_t *xp)
-{
-  return mpn_zero_p (xp, m->size)
-    || mpn_cmp (xp, m->m, m->size) == 0;
-}
-
-static int
-mod_eq_p (const struct ecc_modulo *m, const mp_limb_t *a, const mp_limb_t *b,
-	  mp_limb_t *scratch) {
-  ecc_mod_sub (m, scratch, a, b);
-  return zero_p (m, scratch);
-}
-
 #define MAX_ECC_SIZE (1 + 521 / GMP_NUMB_BITS)
 #define COUNT 500
 
@@ -68,7 +55,7 @@ test_modulo (gmp_randstate_t rands, const char *name,
   mpz_init (r);
 
   a = xalloc_limbs (m->size);
-  ai = xalloc_limbs (2*m->size);
+  ai = xalloc_limbs (m->size);
   ref = xalloc_limbs (m->size);;
   scratch = xalloc_limbs (m->invert_itch);
 
@@ -76,7 +63,7 @@ test_modulo (gmp_randstate_t rands, const char *name,
   mpn_zero (a, m->size);
   memset (ai, 17, m->size * sizeof(*ai));
   m->invert (m, ai, a, scratch);
-  if (!zero_p (m, ai))
+  if (!ecc_mod_zero_p (m, ai))
     {
       fprintf (stderr, "%s->invert failed for zero input (bit size %u):\n",
 	       name, m->bit_size);
@@ -91,7 +78,7 @@ test_modulo (gmp_randstate_t rands, const char *name,
   /* Check behaviour for a = m */
   memset (ai, 17, m->size * sizeof(*ai));
   m->invert (m, ai, m->m, scratch);
-  if (!zero_p (m, ai))
+  if (!ecc_mod_zero_p (m, ai))
     {
       fprintf (stderr, "%s->invert failed for a = p input (bit size %u):\n",
 	       name, m->bit_size);
@@ -121,7 +108,7 @@ test_modulo (gmp_randstate_t rands, const char *name,
 	  continue;
 	}
       m->invert (m, ai, a, scratch);
-      if (!mod_eq_p (m, ai, ref, scratch))
+      if (!ecc_mod_equal_p (m, ai, ref, scratch))
 	{
 	  fprintf (stderr, "%s->invert failed (test %u, bit size %u):\n",
 		   name, j, m->bit_size);
@@ -153,6 +140,7 @@ test_main (void)
   unsigned i;
 
   gmp_randinit_default (rands);
+  test_randomize(rands);
 
   for (i = 0; ecc_curves[i]; i++)
     {

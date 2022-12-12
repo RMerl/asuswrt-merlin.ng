@@ -39,7 +39,6 @@
 
 #include <assert.h>
 
-#include "ecc.h"
 #include "ecc-internal.h"
 
 #define USE_REDC 0
@@ -148,6 +147,69 @@ ecc_secp384r1_modp (const struct ecc_modulo *p, mp_limb_t *rp, mp_limb_t *xp)
 #define ecc_secp384r1_modp ecc_mod
 #endif
 
+/* Computes a^{2^{288} -2^{32} - 1} mod m. Also produces the
+   intermediate value a^{2^{30} - 1}. Needs 5*ECC_LIMB_SIZE
+   scratch. */
+static void
+ecc_mod_pow_288m32m1 (const struct ecc_modulo *m,
+		      mp_limb_t *rp, mp_limb_t *a30m1,
+		      const mp_limb_t *ap, mp_limb_t *scratch)
+{
+  /*
+    Addition chain for 2^{288} - 2^{32} - 1:
+
+    2^2 - 1 = 1 + 2
+    2^4 - 1 = (2^2 + 1) * (2^2 - 1)
+    2^5 - 1 = 1 + 2(2^4 - 1)
+    2^{10} - 1 = (2^5 + 1) (2^5 - 1)
+    2^{15} - 1 = 2^5 (2^{10} - 1) + (2^5-1)
+    2^{30} - 1 = (2^{15} + 1) (2^{15} - 1)
+    2^{32} - 4 = 2^2 (2^{30} - 1)
+    2^{32} - 1 = (2^{32} - 4) + 3
+    2^{60} - 1 = 2^{28}(2^{32} - 4) + (2^{30} - 1)
+    2^{120} - 1 = (2^{60} + 1) (2^{60} - 1)
+    2^{240} - 1 = (2^{120} + 1)(2^{120} - 1)
+    2^{255} - 1 = 2^{15} (2^{240} - 1) + 2^{15} - 1
+    2^{288} - 2^{32} - 1 = 2^{33} (2^{255} - 1) + 2^{32} - 1
+
+    Total 287 squarings, and 12 multiplies.
+
+    The specific sqr/mul schedule is from Routine 3.2.12 of
+    "Mathematical routines for the NIST prime elliptic curves", April
+    5, 2010, author unknown.
+  */
+
+#define t0 scratch
+#define a3 (scratch + ECC_LIMB_SIZE)
+#define a5m1 a30m1
+#define a15m1 (scratch + 2*ECC_LIMB_SIZE)
+#define a32m1 a3
+#define tp (scratch + 3*ECC_LIMB_SIZE)
+
+  ecc_mod_sqr        (m, t0, ap, tp);			/* a^2 */
+  ecc_mod_mul        (m, a3, t0, ap, tp);		/* a^3 */
+  ecc_mod_pow_2kp1   (m, rp, a3, 2, tp);		/* a^(2^4 - 1) */
+  ecc_mod_sqr        (m, t0, rp, tp);			/* a^(2^5 - 2) */
+  ecc_mod_mul        (m, a5m1, t0, ap, tp);		/* a^(2^5 - 1) */
+  ecc_mod_pow_2kp1   (m, t0, a5m1, 5, tp);		/* a^(2^10 - 1) */
+  ecc_mod_pow_2k_mul (m, a15m1, t0, 5, a5m1, tp);	/* a^(2^15 - 1) a5m1*/
+  ecc_mod_pow_2kp1   (m, a30m1, a15m1, 15, tp);		/* a^(2^30 - 1) */
+  ecc_mod_pow_2k     (m, t0, a30m1, 2, tp);		/* a^(2^32 - 4) */
+  ecc_mod_mul        (m, a32m1, t0, a3, tp);		/* a^(2^32 - 1) a3 */
+  ecc_mod_pow_2k_mul (m, rp, t0, 28, a30m1, tp);	/* a^(2^60 - 1) a32m4 */
+  ecc_mod_pow_2kp1   (m, t0, rp, 60, tp);		/* a^(2^120 - 1) */
+  ecc_mod_pow_2kp1   (m, rp, t0, 120, tp);		/* a^(2^240 - 1) */
+  ecc_mod_pow_2k_mul (m, t0, rp, 15, a15m1, tp);	/* a^(2^255 - 1) a15m1 */
+  ecc_mod_pow_2k_mul (m, rp, t0, 33, a32m1, tp);	/* a^(2^288 - 2^32 - 1) a32m1 */
+
+#undef t0
+#undef a3
+#undef a5m1
+#undef a15m1
+#undef a32m1
+#undef tp
+}
+
 #define ECC_SECP384R1_INV_ITCH (6*ECC_LIMB_SIZE)
 
 static void
@@ -155,55 +217,88 @@ ecc_secp384r1_inv (const struct ecc_modulo *p,
 		   mp_limb_t *rp, const mp_limb_t *ap,
 		   mp_limb_t *scratch)
 {
-#define a3 scratch
-#define a5m1 (scratch + ECC_LIMB_SIZE)
-#define a15m1 (scratch + 2*ECC_LIMB_SIZE)
-#define a30m1 a5m1
-#define t0 (scratch + 3*ECC_LIMB_SIZE)
-#define tp (scratch + 4*ECC_LIMB_SIZE)
   /*
     Addition chain for
 
     p - 2 = 2^{384} - 2^{128} - 2^{96} + 2^{32} - 3
 
-    3 = 1 + 2
-    2^4 - 1 = 15 = (2^2 + 1) * 3
-    2^5 - 1 = 1 + 2(2^4 - 1)
-    2^{15} - 1 = (1 + 2^5(1 + 2^5)) (2^5-1)
-    2^{30} - 1 = (2^{15} + 1) (2^{15} - 1)
-    2^{60} - 1 = (2^{30} + 1) (2^{30} - 1)
-    2^{120} - 1 = (2^{60} + 1) (2^{60} - 1)
-    2^{240} - 1 = (2^{120} + 1)(2^{120} - 1)
-    2^{255} - 1 = 2^{15} (2^{240} - 1) + 2^{15} - 1
-    2^{286} - 2^{30} - 1 = 2^{31} (2^{255} - 1) + 2^{30} - 1
+    Start with
 
-    2^{288} - 2^{32} - 1 = 2^2 (2^{286} - 2^{30} - 1) + 3
-    2^{382} - 2^{126} - 2^{94} + 2^{30} - 1
+      a^{2^{288} - 2^{32} - 1}
+
+    and then use
+
+      2^{382} - 2^{126} - 2^{94} + 2^{30} - 1
          = 2^{94} (2^{288} - 2^{32} - 1) + 2^{30} - 1
 
-    This addition chain needs 383 squarings and 14 multiplies.
+      2^{384} - 2^{128} - 2^{96} + 2^{32} - 3
+         = 2^2 (2^{382} - 2^{126} - 2^{94} + 2^{30} - 1) + 1
 
+    This addition chain needs 96 additional squarings and 2
+    multiplies, for a total of 383 squarings and 14 multiplies.
   */
-  ecc_mod_sqr (p, rp, ap, tp);		/* a^2 */
-  ecc_mod_mul (p, a3, rp, ap, tp);	/* a^3 */
-  ecc_mod_pow_2kp1 (p, rp, a3, 2, tp);	/* a^{2^4 - 1}, a3 */
-  ecc_mod_sqr (p, rp, rp, tp);		/* a^{2^5 - 2} */
-  ecc_mod_mul (p, a5m1, rp, ap, tp);	/* a^{2^5 - 1}, a3 a5m1 */
 
-  ecc_mod_pow_2kp1 (p, rp, a5m1, 5, tp); /* a^{2^{10} - 1, a3, a5m1*/
-  ecc_mod_pow_2k_mul (p, a15m1, rp, 5, a5m1, tp); /* a^{2^{15} - 1}, a3, a5m1 a15m1 */
-  ecc_mod_pow_2kp1 (p, a30m1, a15m1, 15, tp);  /* a^{2^{30} - 1}, a3 a15m1 a30m1 */
-  
-  ecc_mod_pow_2kp1 (p, rp, a30m1, 30, tp); /* a^{2^{60} - 1, a3 a15m1 a30m1 */
-  ecc_mod_pow_2kp1 (p, t0, rp, 60, tp); /* a^{2^{120} - 1, a3 a15m1 a30m1 */
-  ecc_mod_pow_2kp1 (p, rp, t0, 120, tp); /* a^{2^{240} - 1, a3 a15m1 a30m1 */
-  ecc_mod_pow_2k_mul (p, rp, rp, 15, a15m1, tp); /* a^{2^{255} - 1, a3 a30m1 */
-  ecc_mod_pow_2k_mul (p, rp, rp, 31, a30m1, tp); /* a^{2^{286} - 2^{30} - 1}, a3 a30m1 */
+#define a30m1 scratch
+#define tp (scratch + ECC_LIMB_SIZE)
 
-  ecc_mod_pow_2k_mul (p, rp, rp, 2, a3, tp); /* a^{2^{288} - 2^{32} - 1, a30m1 */
-  ecc_mod_pow_2k_mul (p, rp, rp, 94, a30m1, tp); /* a^{2^{392} - 2^{126} - 2^{94} + 2^{30} - 1 */
+  ecc_mod_pow_288m32m1 (p, rp, a30m1, ap, tp);
+  ecc_mod_pow_2k_mul (p, rp, rp, 94, a30m1, tp); /* a^{2^{382} - 2^{126} - 2^{94} + 2^{30} - 1 */
   ecc_mod_pow_2k_mul (p, rp, rp, 2, ap, tp);
+
+#undef a30m1
+#undef tp
 }
+
+/* To guarantee that inputs to ecc_mod_zero_p are in the required range. */
+#if ECC_LIMB_SIZE * GMP_NUMB_BITS != 384
+#error Unsupported limb size
+#endif
+
+#define ECC_SECP384R1_SQRT_ITCH (6*ECC_LIMB_SIZE)
+
+static int
+ecc_secp384r1_sqrt (const struct ecc_modulo *m,
+		    mp_limb_t *rp,
+		    const mp_limb_t *cp,
+		    mp_limb_t *scratch)
+{
+  /* This computes the square root modulo p384 using the identity:
+
+     sqrt(c) = c^(2^382 − 2^126 - 2^94 + 2^30)  (mod P-384)
+
+     which can be seen as a special case of Tonelli-Shanks with e=1.
+
+     Starting with
+
+       a^{2^{288} - 2^{32} - 1}
+
+     and then use
+
+       2^352 - 2^96 - 2^64 + 1
+         = 2^64 (2^{288} - 2^{32} - 1) + 1
+       2^382 − 2^126 - 2^94 + 2^30
+         = 2^30 (2^352 - 2^96 - 2^64 + 1)
+
+     An additional 94 squarings and 2 multiplies, for a total of for a
+     total of 381 squarings and 14 multiplies.
+  */
+
+#define t0 scratch
+#define tp (scratch + ECC_LIMB_SIZE)
+
+  ecc_mod_pow_288m32m1 (m, rp, t0, cp, tp);
+  ecc_mod_pow_2k_mul (m, t0, rp, 64, cp, tp);		/* c^(2^352 - 2^96 - 2^64 + 1) */
+  ecc_mod_pow_2k     (m, rp, t0, 30, tp);		/* c^(2^382 - 2^126 - 2^94 + 2^30) */
+
+  ecc_mod_sqr (m, t0, rp, tp);
+  ecc_mod_sub (m, t0, t0, cp);
+
+  return ecc_mod_zero_p (m, t0);
+
+#undef t0
+#undef tp
+}
+
 
 const struct ecc_curve _nettle_secp_384r1 =
 {
@@ -213,6 +308,7 @@ const struct ecc_curve _nettle_secp_384r1 =
     ECC_BMODP_SIZE,
     ECC_REDC_SIZE,
     ECC_SECP384R1_INV_ITCH,
+    ECC_SECP384R1_SQRT_ITCH,
     0,
 
     ecc_p,
@@ -224,6 +320,7 @@ const struct ecc_curve _nettle_secp_384r1 =
     ecc_secp384r1_modp,
     ecc_secp384r1_modp,
     ecc_secp384r1_inv,
+    ecc_secp384r1_sqrt,
     NULL,
   },
   {
@@ -232,6 +329,7 @@ const struct ecc_curve _nettle_secp_384r1 =
     ECC_BMODQ_SIZE,
     0,
     ECC_MOD_INV_ITCH (ECC_LIMB_SIZE),
+    0,
     0,
 
     ecc_q,
@@ -243,6 +341,7 @@ const struct ecc_curve _nettle_secp_384r1 =
     ecc_mod,
     ecc_mod,
     ecc_mod_inv,
+    NULL,
     NULL,
   },
 

@@ -45,6 +45,13 @@
 
 #define WORD_T_THRESH 16
 
+/* For fat builds */
+#if HAVE_NATIVE_memxor3
+void *
+_nettle_memxor3_c(void *dst_in, const void *a_in, const void *b_in, size_t n);
+# define nettle_memxor3 _nettle_memxor3_c
+#endif
+
 /* XOR word-aligned areas. n is the number of words, not bytes. */
 static void
 memxor3_common_alignment (word_t *dst,
@@ -236,7 +243,8 @@ memxor3_different_alignment_all (word_t *dst,
    internally by cbc decrypt, and it is not advertised or documented
    to nettle users. */
 void *
-memxor3(void *dst_in, const void *a_in, const void *b_in, size_t n)
+nettle_memxor3(void *dst_in, const void *a_in, 
+				 const void *b_in, size_t n)
 {
   unsigned char *dst = dst_in;
   const unsigned char *a = a_in;

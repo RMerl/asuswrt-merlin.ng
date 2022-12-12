@@ -101,43 +101,19 @@ mpn_cnd_swap (mp_limb_t cnd, volatile mp_limb_t *ap, volatile mp_limb_t *bp, mp_
 
 #endif /* NETTLE_USE_MINI_GMP */
 
-/* Additional convenience functions. */
-
 int
-mpz_limbs_cmp (mpz_srcptr a, const mp_limb_t *bp, mp_size_t bn)
+sec_zero_p (const mp_limb_t *ap, mp_size_t n)
 {
-  mp_size_t an = mpz_size (a);
-  assert (mpz_sgn (a) >= 0);
-  assert (bn >= 0);
+  volatile mp_limb_t w;
+  mp_size_t i;
 
-  if (an < bn)
-    return -1;
-  if (an > bn)
-    return 1;
-  if (an == 0)
-    return 0;
+  for (i = 0, w = 0; i < n; i++)
+    w |= ap[i];
 
-  return mpn_cmp (mpz_limbs_read(a), bp, an);
+  return w == 0;
 }
 
-/* Get a pointer to an n limb area, for read-only operation. n must be
-   greater or equal to the current size, and the mpz is zero-padded if
-   needed. */
-const mp_limb_t *
-mpz_limbs_read_n (mpz_ptr x, mp_size_t n)
-{
-  mp_size_t xn = mpz_size (x);
-  mp_ptr xp;
-  
-  assert (xn <= n);
-
-  xp = mpz_limbs_modify (x, n);
-
-  if (xn < n)
-    mpn_zero (xp + xn, n - xn);
-
-  return xp;
-}
+/* Additional convenience functions. */
 
 void
 mpz_limbs_copy (mp_limb_t *xp, mpz_srcptr x, mp_size_t n)

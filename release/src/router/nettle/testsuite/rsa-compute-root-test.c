@@ -1,9 +1,6 @@
 #include "testutils.h"
 
 #include <assert.h>
-#include <errno.h>
-#include <limits.h>
-#include <sys/time.h>
 
 #include "rsa.h"
 
@@ -74,7 +71,6 @@ test_one (gmp_randstate_t *rands, struct rsa_public_key *pub,
 #if !NETTLE_USE_MINI_GMP
 /* We want to generate keypairs that are not "standard" but have more size
  * variance between q and p.
- * Function is otherwise the same as standard rsa_generate_keypair()
  */
 static void
 generate_keypair (gmp_randstate_t rands,
@@ -142,40 +138,9 @@ generate_keypair (gmp_randstate_t rands,
 }
 #endif
 
-#if !NETTLE_USE_MINI_GMP
-static void
-get_random_seed(mpz_t seed)
-{
-  struct timeval tv;
-  FILE *f;
-  f = fopen ("/dev/urandom", "rb");
-  if (f)
-    {
-      uint8_t buf[8];
-      size_t res;
-
-      setbuf (f, NULL);
-      res = fread (&buf, sizeof(buf), 1, f);
-      fclose(f);
-      if (res == 1)
-	{
-	  nettle_mpz_set_str_256_u (seed, sizeof(buf), buf);
-	  return;
-	}
-      fprintf (stderr, "Read of /dev/urandom failed: %s\n",
-	       strerror (errno));
-    }
-  gettimeofday(&tv, NULL);
-  mpz_set_ui (seed, tv.tv_sec);
-  mpz_mul_ui (seed, seed, 1000000UL);
-  mpz_add_ui (seed, seed, tv.tv_usec);
-}
-#endif /* !NETTLE_USE_MINI_GMP */
-
 void
 test_main (void)
 {
-  const char *nettle_test_seed;
   gmp_randstate_t rands;
   struct rsa_public_key pub;
   struct rsa_private_key key;
@@ -187,27 +152,7 @@ test_main (void)
   mpz_init (plaintext);
 
   gmp_randinit_default (rands);
-
-#if !NETTLE_USE_MINI_GMP
-  nettle_test_seed = getenv ("NETTLE_TEST_SEED");
-  if (nettle_test_seed && *nettle_test_seed)
-    {
-      mpz_t seed;
-      mpz_init (seed);
-      if (mpz_set_str (seed, nettle_test_seed, 0) < 0
-	  || mpz_sgn (seed) < 0)
-	die ("Invalid NETTLE_TEST_SEED: %s\n",
-	     nettle_test_seed);
-      if (mpz_sgn (seed) == 0)
-	get_random_seed (seed);
-      fprintf (stderr, "Using NETTLE_TEST_SEED=");
-      mpz_out_str (stderr, 10, seed);
-      fprintf (stderr, "\n");
-
-      gmp_randseed (rands, seed);
-      mpz_clear (seed);
-    }
-#endif
+  test_randomize(rands);
 
   for (j = 0; j < KEY_COUNT; j++)
     {

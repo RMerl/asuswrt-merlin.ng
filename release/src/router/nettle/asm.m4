@@ -94,10 +94,10 @@ C For 64-bit implementation
 STRUCTURE(P1305)
   STRUCT(R0, 8)
   STRUCT(R1, 8)
+  STRUCT(S0, 8)
   STRUCT(S1, 8)
-  STRUCT(PAD, 12)
-  STRUCT(H2, 4)
   STRUCT(H0, 8)
   STRUCT(H1, 8)
+  STRUCT(H2, 8)
 
 divert

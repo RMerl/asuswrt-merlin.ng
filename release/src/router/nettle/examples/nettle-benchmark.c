@@ -390,7 +390,9 @@ time_umac(void)
   struct umac96_ctx ctx96;
   struct umac128_ctx ctx128;
 
-  uint8_t key[16];
+  uint8_t key[UMAC_KEY_SIZE];
+
+  init_key (sizeof(key), key);
 
   umac32_set_key (&ctx32, key);
   info.ctx = &ctx32;
@@ -432,7 +434,9 @@ time_cmac(void)
   struct bench_hash_info info;
   struct cmac_aes128_ctx ctx;
 
-  uint8_t key[16];
+  uint8_t key[AES128_KEY_SIZE];
+
+  init_key (sizeof(key), key);
 
   cmac_aes128_set_key (&ctx, key);
   info.ctx = &ctx;
@@ -449,7 +453,9 @@ time_poly1305_aes(void)
   static uint8_t data[BENCH_BLOCK];
   struct bench_hash_info info;
   struct poly1305_aes_ctx ctx;
-  uint8_t key[32];
+  uint8_t key[POLY1305_AES_KEY_SIZE];
+
+  init_key (sizeof(key), key);
 
   poly1305_aes_set_key (&ctx, key);
   info.ctx = &ctx;
@@ -763,21 +769,22 @@ time_aead(const struct nettle_aead *aead)
     display(aead->name, "encrypt", aead->block_size,
 	    time_function(bench_aead_crypt, &info));
   }
-  
-  {
-    struct bench_aead_info info;
-    info.ctx = ctx;
-    info.crypt = aead->decrypt;
-    info.data = data;
-    
-    init_key(aead->key_size, key);
-    aead->set_decrypt_key(ctx, key);
-    if (aead->set_nonce)
-      aead->set_nonce (ctx, nonce);
 
-    display(aead->name, "decrypt", aead->block_size,
-	    time_function(bench_aead_crypt, &info));
-  }
+  if (aead->decrypt)
+    {
+      struct bench_aead_info info;
+      info.ctx = ctx;
+      info.crypt = aead->decrypt;
+      info.data = data;
+    
+      init_key(aead->key_size, key);
+      aead->set_decrypt_key(ctx, key);
+      if (aead->set_nonce)
+	aead->set_nonce (ctx, nonce);
+
+      display(aead->name, "decrypt", aead->block_size,
+	      time_function(bench_aead_crypt, &info));
+    }
 
   if (aead->update)
     {
@@ -902,7 +909,7 @@ main(int argc, char **argv)
       &nettle_sha3_384, &nettle_sha3_512,
       &nettle_ripemd160, &nettle_gosthash94,
       &nettle_gosthash94cp, &nettle_streebog256,
-      &nettle_streebog512,
+      &nettle_streebog512, &nettle_sm3,
       NULL
     };
 
@@ -927,6 +934,8 @@ main(int argc, char **argv)
       /* Stream ciphers */
       &nettle_arcfour128,
       &nettle_salsa20, &nettle_salsa20r12, &nettle_chacha,
+      /* CBC encrypt */
+      &nettle_cbc_aes128, &nettle_cbc_aes192, &nettle_cbc_aes256,
       /* Proper AEAD algorithme. */
       &nettle_gcm_aes128,
       &nettle_gcm_aes192,

@@ -43,6 +43,13 @@
 #include "memxor.h"
 
 static inline void
+block16_zero (union nettle_block16 *r)
+{
+  static const union nettle_block16 zero_block;
+  *r = zero_block;
+}
+
+static inline void
 block16_xor (union nettle_block16 *r,
 	     const union nettle_block16 *x)
 {

@@ -38,7 +38,6 @@
 
 #include <assert.h>
 
-#include "ecc.h"
 #include "ecc-internal.h"
 
 #define USE_REDC 0
@@ -155,20 +154,10 @@ static void ecc_curve448_inv (const struct ecc_modulo *p,
   ecc_mod_mul (p, rp, ap, rp, tp);	/* a^{2^448-2^224-3} */
 }
 
-/* First, do a canonical reduction, then check if zero */
-static int
-ecc_curve448_zero_p (const struct ecc_modulo *p, mp_limb_t *xp)
-{
-  mp_limb_t cy;
-  mp_limb_t w;
-  mp_size_t i;
-  cy = mpn_sub_n (xp, xp, p->m, ECC_LIMB_SIZE);
-  mpn_cnd_add_n (cy, xp, xp, p->m, ECC_LIMB_SIZE);
-
-  for (i = 0, w = 0; i < ECC_LIMB_SIZE; i++)
-    w |= xp[i];
-  return w == 0;
-}
+/* To guarantee that inputs to ecc_mod_zero_p are in the required range. */
+#if ECC_LIMB_SIZE * GMP_NUMB_BITS != 448
+#error Unsupported limb size
+#endif
 
 /* Compute x such that x^2 = u/v (mod p). Returns one on success, zero
    on failure.
@@ -180,12 +169,12 @@ ecc_curve448_zero_p (const struct ecc_modulo *p, mp_limb_t *xp)
 */
 
 /* Needs 2*n space + scratch for ecc_mod_pow_446m224m1. */
-#define ECC_CURVE448_SQRT_ITCH (6*ECC_LIMB_SIZE)
+#define ECC_CURVE448_SQRT_RATIO_ITCH (6*ECC_LIMB_SIZE)
 
 static int
-ecc_curve448_sqrt(const struct ecc_modulo *p, mp_limb_t *rp,
-	     const mp_limb_t *up, const mp_limb_t *vp,
-	     mp_limb_t *scratch)
+ecc_curve448_sqrt_ratio(const struct ecc_modulo *p, mp_limb_t *rp,
+			const mp_limb_t *up, const mp_limb_t *vp,
+			mp_limb_t *scratch)
 {
 #define uv scratch
 #define u3v (scratch + ECC_LIMB_SIZE)
@@ -209,7 +198,7 @@ ecc_curve448_sqrt(const struct ecc_modulo *p, mp_limb_t *rp,
   ecc_mod_mul (p, t0, t0, vp, scratch_out);	/* v x^2 */
   ecc_mod_sub (p, t0, t0, up);
 
-  return ecc_curve448_zero_p (p, t0);
+  return ecc_mod_zero_p (p, t0);
 #undef uv
 #undef u3v
 #undef u5v3
@@ -225,7 +214,8 @@ const struct ecc_curve _nettle_curve448 =
     ECC_BMODP_SIZE,
     0,
     ECC_CURVE448_INV_ITCH,
-    ECC_CURVE448_SQRT_ITCH,
+    0,
+    ECC_CURVE448_SQRT_RATIO_ITCH,
 
     ecc_p,
     ecc_Bmodp,
@@ -236,7 +226,8 @@ const struct ecc_curve _nettle_curve448 =
     ecc_curve448_modp,
     ecc_curve448_modp,
     ecc_curve448_inv,
-    ecc_curve448_sqrt,
+    NULL,
+    ecc_curve448_sqrt_ratio,
   },
   {
     446,
@@ -245,6 +236,7 @@ const struct ecc_curve _nettle_curve448 =
     0,
     ECC_MOD_INV_ITCH (ECC_LIMB_SIZE),
     0,
+    0,
 
     ecc_q,
     ecc_Bmodq,
@@ -252,9 +244,10 @@ const struct ecc_curve _nettle_curve448 =
     NULL,
     ecc_qp1h,
 
-    ecc_mod,	      /* FIXME: Implement optimized mod function */
-    ecc_mod,	      /* FIXME: Implement optimized reduce function */
+    ecc_mod,
+    ecc_mod,
     ecc_mod_inv,
+    NULL,
     NULL,
   },
 

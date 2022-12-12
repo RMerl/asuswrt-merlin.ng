@@ -244,7 +244,6 @@ sec_equal(const mp_limb_t *a, const mp_limb_t *b, size_t limbs)
       z |= (a[i] ^ b[i]);
     }
 
-  /* FIXME: Might compile to a branch instruction on some platforms. */
   return z == 0;
 }
 

@@ -66,7 +66,111 @@ mpz_ui_kronecker (mp_limb_t ul, const mpz_t p)
 #endif /* NETTLE_USE_MINI_GMP */
 
 static void
-test_modulo (gmp_randstate_t rands, const struct ecc_modulo *m)
+test_sqrt (gmp_randstate_t rands, const struct ecc_modulo *m, int use_redc)
+{
+  mpz_t u;
+  mpz_t p;
+  mpz_t r;
+  mpz_t t;
+
+  unsigned z, i;
+  mp_limb_t *up;
+  mp_limb_t *rp;
+  mp_limb_t *scratch;
+
+  mpz_init (u);
+  mpz_init (t);
+
+  mpz_roinit_n (p, m->m, m->size);
+
+  up = xalloc_limbs (m->size);
+  rp = xalloc_limbs (m->size);
+  scratch = xalloc_limbs (m->sqrt_itch);
+
+  /* Check behaviour for zero input */
+  mpn_zero (up, m->size);
+  memset (rp, 17, m->size * sizeof(*rp));
+  if (!m->sqrt (m, rp, up, scratch))
+    {
+      fprintf (stderr, "m->sqrt returned failure for zero input, bit_size = %d\n",
+	       m->bit_size);
+      abort();
+    }
+  if (!ecc_mod_zero_p (m, rp))
+    {
+      fprintf (stderr, "m->sqrt failed for zero input (bit size %u):\n",
+	       m->bit_size);
+      fprintf (stderr, "r = ");
+      mpn_out_str (stderr, 16, rp, m->size);
+      fprintf (stderr, " (bad)\n");
+      abort ();
+    }
+
+  /* Find a non-square */
+  for (z = 2; mpz_ui_kronecker (z, p) != -1; z++)
+    ;
+
+  if (verbose)
+    fprintf(stderr, "test_sqrt on %d-bit modulo. Non square: %d\n", m->bit_size, z);
+
+  for (i = 0; i < COUNT; i++)
+    {
+      if (i & 1)
+	mpz_rrandomb (u, rands, m->bit_size);
+      else
+	mpz_urandomb (u, rands, m->bit_size);
+
+      if (use_redc)
+	{
+	  /* We get non-redc sqrt if we reduce u before calling m->sqrt */
+	  mpz_limbs_copy (scratch, u, m->size);
+	  mpn_zero (scratch + m->size, m->size);
+	  m->reduce (m, up, scratch);
+	}
+      else
+	{
+	  mpz_limbs_copy (up, u, m->size);
+	}
+      if (!m->sqrt (m, rp, up, scratch))
+	{
+	  mpz_mul_ui (u, u, z);
+	  mpz_mod (u, u, p);
+	  ecc_mod_mul_1 (m, up, up, z);
+
+	  if (!m->sqrt (m, rp, up, scratch))
+	    {
+	      fprintf (stderr, "m->sqrt returned failure, bit_size = %d\n"
+		       "u = 0x",
+		       m->bit_size);
+	      mpz_out_str (stderr, 16, u);
+	      fprintf (stderr, "\n");
+	      abort ();
+	    }
+	}
+      /* Check that r^2 = u */
+      mpz_roinit_n (r, rp, m->size);
+      mpz_mul (t, r, r);
+      if (!mpz_congruent_p (t, u, p))
+	{
+	  fprintf (stderr, "m->sqrt gave incorrect result, bit_size = %d\n"
+		   "u = 0x",
+		   m->bit_size);
+	  mpz_out_str (stderr, 16, u);
+	  fprintf (stderr, "\nr = 0x");
+	  mpz_out_str (stderr, 16, r);
+	  fprintf (stderr, "\n");
+	  abort ();
+	}
+    }
+  mpz_clear (u);
+  mpz_clear (t);
+  free (up);
+  free (rp);
+  free (scratch);
+}
+
+static void
+test_sqrt_ratio (gmp_randstate_t rands, const struct ecc_modulo *m)
 {
   mpz_t u;
   mpz_t v;
@@ -88,15 +192,36 @@ test_modulo (gmp_randstate_t rands, const struct ecc_modulo *m)
 
   up = xalloc_limbs (m->size);
   vp = xalloc_limbs (m->size);
-  rp = xalloc_limbs (2*m->size);
-  scratch = xalloc_limbs (m->sqrt_itch);
+  rp = xalloc_limbs (m->size);
+  scratch = xalloc_limbs (m->sqrt_ratio_itch);
+
+  /* Check behaviour for zero input */
+  mpn_zero (up, m->size);
+  mpn_zero (vp, m->size);
+  vp[0] = 1;
+  memset (rp, 17, m->size * sizeof(*rp));
+  if (!m->sqrt_ratio (m, rp, up, vp, scratch))
+    {
+      fprintf (stderr, "m->sqrt_ratio returned failure for zero input, bit_size = %d\n",
+	       m->bit_size);
+      abort();
+    }
+  if (!ecc_mod_zero_p (m, rp))
+    {
+      fprintf (stderr, "m->sqrt_ratio failed for zero input (bit size %u):\n",
+	       m->bit_size);
+      fprintf (stderr, "r = ");
+      mpn_out_str (stderr, 16, rp, m->size);
+      fprintf (stderr, " (bad)\n");
+      abort ();
+    }
 
   /* Find a non-square */
   for (z = 2; mpz_ui_kronecker (z, p) != -1; z++)
     ;
 
   if (verbose)
-    fprintf(stderr, "Non square: %d\n", z);
+    fprintf(stderr, "test_sqrt_ratio on %d-bit modulo. Non square: %d\n", m->bit_size, z);
 
   for (i = 0; i < COUNT; i++)
     {
@@ -112,14 +237,18 @@ test_modulo (gmp_randstate_t rands, const struct ecc_modulo *m)
 	}
       mpz_limbs_copy (up, u, m->size);
       mpz_limbs_copy (vp, v, m->size);
-      if (!m->sqrt (m, rp, up, vp, scratch))
+      if (!m->sqrt_ratio (m, rp, up, vp, scratch))
 	{
 	  mpz_mul_ui (u, u, z);
 	  mpz_mod (u, u, p);
 	  mpz_limbs_copy (up, u, m->size);
-	  if (!m->sqrt (m, rp, up, vp, scratch))
+	  if (!m->sqrt_ratio (m, rp, up, vp, scratch))
 	    {
-	      fprintf (stderr, "m->sqrt returned failure, bit_size = %d\n"
+	      if (mpz_divisible_p (v, p))
+		/* v = 0 (mod p), sqrt_ratio should fail. */
+		continue;
+
+	      fprintf (stderr, "m->sqrt_ratio returned failure, bit_size = %d\n"
 		       "u = 0x",
 		       m->bit_size);
 	      mpz_out_str (stderr, 16, u);
@@ -135,7 +264,7 @@ test_modulo (gmp_randstate_t rands, const struct ecc_modulo *m)
       mpz_mul (t, t, v);
       if (!mpz_congruent_p (t, u, p))
 	{
-	  fprintf (stderr, "m->sqrt gave incorrect result, bit_size = %d\n"
+	  fprintf (stderr, "m->sqrt_ratio gave incorrect result, bit_size = %d\n"
 		   "u = 0x",
 		   m->bit_size);
 	  mpz_out_str (stderr, 16, u);
@@ -163,10 +292,14 @@ test_main (void)
   unsigned i;
 
   gmp_randinit_default (rands);
+  test_randomize(rands);
+
   for (i = 0; ecc_curves[i]; i++)
     {
       if (ecc_curves[i]->p.sqrt)
-	test_modulo (rands, &ecc_curves[i]->p);
+	test_sqrt (rands, &ecc_curves[i]->p, ecc_curves[i]->use_redc);
+      if (ecc_curves[i]->p.sqrt_ratio)
+	test_sqrt_ratio (rands, &ecc_curves[i]->p);
     }
   gmp_randclear (rands);
 }

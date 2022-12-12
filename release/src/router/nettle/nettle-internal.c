@@ -38,12 +38,14 @@
 
 #include <assert.h>
 #include <stdlib.h>
+#include <string.h>
 
 #include "nettle-internal.h"
 #include "arcfour.h"
 #include "blowfish.h"
-#include "des.h"
+#include "cbc.h"
 #include "chacha.h"
+#include "des.h"
 #include "salsa20.h"
 
 /* Wrapper functions discarding the return value. Needed for the
@@ -147,5 +149,102 @@ nettle_salsa20r12 = {
   NULL,
   (nettle_crypt_func *) salsa20r12_crypt,
   (nettle_crypt_func *) salsa20r12_crypt,
+  NULL,
+};
+
+struct cbc_aes128_ctx CBC_CTX(struct aes128_ctx, AES_BLOCK_SIZE);
+static void
+cbc_aes128_set_encrypt_key(struct cbc_aes128_ctx *ctx, const uint8_t *key)
+{
+  aes128_set_encrypt_key(&ctx->ctx, key);
+}
+static void
+cbc_aes128_set_iv(struct cbc_aes128_ctx *ctx, const uint8_t *iv)
+{
+  CBC_SET_IV(ctx, iv);
+}
+static void
+cbc_aes128_encrypt_wrapper(struct cbc_aes128_ctx *ctx,
+			   size_t length, uint8_t *dst,
+			   const uint8_t *src)
+{
+  cbc_aes128_encrypt(&ctx->ctx, ctx->iv, length, dst, src);
+}
+
+const struct nettle_aead
+nettle_cbc_aes128 = {
+  "cbc_aes128", sizeof(struct cbc_aes128_ctx),
+  AES_BLOCK_SIZE, AES128_KEY_SIZE,
+  AES_BLOCK_SIZE, 0,
+  (nettle_set_key_func*) cbc_aes128_set_encrypt_key,
+  NULL,
+  (nettle_set_key_func*) cbc_aes128_set_iv,
+  NULL,
+  (nettle_crypt_func *) cbc_aes128_encrypt_wrapper,
+  NULL,
+  NULL,
+};
+
+struct cbc_aes192_ctx CBC_CTX(struct aes192_ctx, AES_BLOCK_SIZE);
+static void
+cbc_aes192_set_encrypt_key(struct cbc_aes192_ctx *ctx, const uint8_t *key)
+{
+  aes192_set_encrypt_key(&ctx->ctx, key);
+}
+static void
+cbc_aes192_set_iv(struct cbc_aes192_ctx *ctx, const uint8_t *iv)
+{
+  CBC_SET_IV(ctx, iv);
+}
+static void
+cbc_aes192_encrypt_wrapper(struct cbc_aes192_ctx *ctx,
+			   size_t length, uint8_t *dst,
+			   const uint8_t *src)
+{
+  cbc_aes192_encrypt(&ctx->ctx, ctx->iv, length, dst, src);
+}
+const struct nettle_aead
+nettle_cbc_aes192 = {
+  "cbc_aes192", sizeof(struct cbc_aes192_ctx),
+  AES_BLOCK_SIZE, AES192_KEY_SIZE,
+  AES_BLOCK_SIZE, 0,
+  (nettle_set_key_func*) cbc_aes192_set_encrypt_key,
+  NULL,
+  (nettle_set_key_func*) cbc_aes192_set_iv,
+  NULL,
+  (nettle_crypt_func *) cbc_aes192_encrypt_wrapper,
+  NULL,
+  NULL,
+};
+
+struct cbc_aes256_ctx CBC_CTX(struct aes256_ctx, AES_BLOCK_SIZE);
+static void
+cbc_aes256_set_encrypt_key(struct cbc_aes256_ctx *ctx, const uint8_t *key)
+{
+  aes256_set_encrypt_key(&ctx->ctx, key);
+}
+static void
+cbc_aes256_set_iv(struct cbc_aes256_ctx *ctx, const uint8_t *iv)
+{
+  CBC_SET_IV(ctx, iv);
+}
+static void
+cbc_aes256_encrypt_wrapper(struct cbc_aes256_ctx *ctx,
+			   size_t length, uint8_t *dst,
+			   const uint8_t *src)
+{
+  cbc_aes256_encrypt(&ctx->ctx, ctx->iv, length, dst, src);
+}
+const struct nettle_aead
+nettle_cbc_aes256 = {
+  "cbc_aes256", sizeof(struct cbc_aes256_ctx),
+  AES_BLOCK_SIZE, AES256_KEY_SIZE,
+  AES_BLOCK_SIZE, 0,
+  (nettle_set_key_func*) cbc_aes256_set_encrypt_key,
+  NULL,
+  (nettle_set_key_func*) cbc_aes256_set_iv,
+  NULL,
+  (nettle_crypt_func *) cbc_aes256_encrypt_wrapper,
+  NULL,
   NULL,
 };

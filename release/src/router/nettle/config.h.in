@@ -56,8 +56,27 @@
 
 /* Define to 1 each of the following for which a native (ie. CPU specific)
     implementation of the corresponding routine exists.  */
+#undef HAVE_NATIVE_memxor3
 #undef HAVE_NATIVE_aes_decrypt
 #undef HAVE_NATIVE_aes_encrypt
+#undef HAVE_NATIVE_aes128_decrypt
+#undef HAVE_NATIVE_aes128_encrypt
+#undef HAVE_NATIVE_aes128_invert_key
+#undef HAVE_NATIVE_aes128_set_decrypt_key
+#undef HAVE_NATIVE_aes128_set_encrypt_key
+#undef HAVE_NATIVE_aes192_decrypt
+#undef HAVE_NATIVE_aes192_encrypt
+#undef HAVE_NATIVE_aes192_invert_key
+#undef HAVE_NATIVE_aes192_set_decrypt_key
+#undef HAVE_NATIVE_aes192_set_encrypt_key
+#undef HAVE_NATIVE_aes256_decrypt
+#undef HAVE_NATIVE_aes256_encrypt
+#undef HAVE_NATIVE_aes256_invert_key
+#undef HAVE_NATIVE_aes256_set_decrypt_key
+#undef HAVE_NATIVE_aes256_set_encrypt_key
+#undef HAVE_NATIVE_cbc_aes128_encrypt
+#undef HAVE_NATIVE_cbc_aes192_encrypt
+#undef HAVE_NATIVE_cbc_aes256_encrypt
 #undef HAVE_NATIVE_chacha_core
 #undef HAVE_NATIVE_chacha_2core
 #undef HAVE_NATIVE_chacha_3core
@@ -77,11 +96,8 @@
 #undef HAVE_NATIVE_ecc_secp384r1_redc
 #undef HAVE_NATIVE_ecc_secp521r1_modp
 #undef HAVE_NATIVE_ecc_secp521r1_redc
-#undef HAVE_NATIVE_gcm_init_key
-#undef HAVE_NATIVE_fat_gcm_init_key
-#undef HAVE_NATIVE_gcm_hash
-#undef HAVE_NATIVE_fat_gcm_hash
-#undef HAVE_NATIVE_gcm_hash8
+#undef HAVE_NATIVE_ghash_set_key
+#undef HAVE_NATIVE_ghash_update
 #undef HAVE_NATIVE_salsa20_core
 #undef HAVE_NATIVE_salsa20_2core
 #undef HAVE_NATIVE_fat_salsa20_2core

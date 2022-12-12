@@ -26,7 +26,6 @@ include config.make
 PRE_CPPFLAGS = -I.
 EXTRA_CFLAGS = $(CCPIC)
 
-# FIXME: Add configuration of LIBEXT?
 LIBTARGETS = @IF_STATIC@ libnettle.a @IF_HOGWEED@ libhogweed.a
 SHLIBTARGETS = @IF_SHARED@ $(LIBNETTLE_FORLINK) @IF_HOGWEED@ $(LIBHOGWEED_FORLINK)
 
@@ -67,15 +66,12 @@ check-fat:
 	    NETTLE_FAT_OVERRIDE=$$f $(MAKE) check ; \
 	  done
 
-# FIXME: Remove. These targets aren't supported, but they are expected by the
-# automake generated Makefiles in the lsh build.
-dvi installcheck uninstallcheck:
-	true
-
 all-here: $(TARGETS) $(DOCTARGETS)
 
-nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
+nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c aes-decrypt-table.c \
+		 aes128-decrypt.c aes192-decrypt.c aes256-decrypt.c \
 		 aes-encrypt-internal.c aes-encrypt.c aes-encrypt-table.c \
+		 aes128-encrypt.c aes192-encrypt.c aes256-encrypt.c \
 		 aes-invert-internal.c aes-set-key-internal.c \
 		 aes-set-encrypt-key.c aes-set-decrypt-key.c \
 		 aes128-set-encrypt-key.c aes128-set-decrypt-key.c \
@@ -84,6 +80,7 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 aes192-meta.c \
 		 aes256-set-encrypt-key.c aes256-set-decrypt-key.c \
 		 aes256-meta.c \
+		 nist-keywrap.c \
 		 arcfour.c arcfour-crypt.c \
 		 arctwo.c arctwo-meta.c blowfish.c blowfish-bcrypt.c \
 		 base16-encode.c base16-decode.c base16-meta.c \
@@ -99,7 +96,8 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 camellia256-set-encrypt-key.c camellia256-crypt.c \
 		 camellia256-set-decrypt-key.c \
 		 camellia256-meta.c \
-		 cast128.c cast128-meta.c cbc.c \
+		 cast128.c cast128-meta.c \
+		 cbc.c cbc-aes128-encrypt.c cbc-aes192-encrypt.c cbc-aes256-encrypt.c \
 		 ccm.c ccm-aes128.c ccm-aes192.c ccm-aes256.c cfb.c \
 		 siv-cmac.c siv-cmac-aes128.c siv-cmac-aes256.c \
 		 cnd-memcpy.c \
@@ -108,7 +106,7 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 chacha-set-key.c chacha-set-nonce.c \
 		 ctr.c ctr16.c des.c des3.c \
 		 eax.c eax-aes128.c eax-aes128-meta.c \
-		 gcm.c gcm-aes.c \
+		 ghash-set-key.c ghash-update.c gcm.c gcm-aes.c \
 		 gcm-aes128.c gcm-aes128-meta.c \
 		 gcm-aes192.c gcm-aes192-meta.c \
 		 gcm-aes256.c gcm-aes256-meta.c \
@@ -119,10 +117,10 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 gost28147.c gosthash94.c gosthash94-meta.c \
 		 hmac.c hmac-gosthash94.c hmac-md5.c hmac-ripemd160.c \
 		 hmac-sha1.c hmac-sha224.c hmac-sha256.c hmac-sha384.c \
-		 hmac-sha512.c hmac-streebog.c \
+		 hmac-sha512.c hmac-streebog.c hmac-sm3.c \
 		 hmac-md5-meta.c hmac-ripemd160-meta.c hmac-sha1-meta.c \
 		 hmac-sha224-meta.c hmac-sha256-meta.c hmac-sha384-meta.c \
-		 hmac-sha512-meta.c hmac-streebog-meta.c \
+		 hmac-sha512-meta.c hmac-streebog-meta.c hmac-sm3-meta.c \
 		 knuth-lfib.c hkdf.c \
 		 md2.c md2-meta.c md4.c md4-meta.c \
 		 md5.c md5-compress.c md5-compat.c md5-meta.c \
@@ -147,6 +145,7 @@ nettle_SOURCES = aes-decrypt-internal.c aes-decrypt.c \
 		 sha3-224.c sha3-224-meta.c sha3-256.c sha3-256-meta.c \
 		 sha3-384.c sha3-384-meta.c sha3-512.c sha3-512-meta.c \
 		 shake256.c \
+		 sm3.c sm3-meta.c \
 		 serpent-set-key.c serpent-encrypt.c serpent-decrypt.c \
 		 serpent-meta.c \
 		 streebog.c streebog-meta.c \
@@ -217,7 +216,7 @@ hogweed_SOURCES = sexp.c sexp-format.c \
 		  ed448-shake256.c ed448-shake256-pubkey.c \
 		  ed448-shake256-sign.c ed448-shake256-verify.c
 
-OPT_SOURCES = fat-arm.c fat-ppc.c fat-x86_64.c mini-gmp.c
+OPT_SOURCES = fat-arm.c fat-arm64.c fat-ppc.c fat-s390x.c fat-x86_64.c mini-gmp.c
 
 HEADERS = aes.h arcfour.h arctwo.h asn1.h blowfish.h \
 	  base16.h base64.h bignum.h buffer.h camellia.h cast128.h \
@@ -235,8 +234,8 @@ HEADERS = aes.h arcfour.h arctwo.h asn1.h blowfish.h \
 	  pbkdf2.h \
 	  pgp.h pkcs1.h pss.h pss-mgf1.h realloc.h ripemd160.h rsa.h \
 	  salsa20.h sexp.h \
-	  serpent.h sha.h sha1.h sha2.h sha3.h streebog.h twofish.h \
-	  umac.h yarrow.h xts.h poly1305.h
+	  serpent.h sha.h sha1.h sha2.h sha3.h sm3.h streebog.h twofish.h \
+	  umac.h yarrow.h xts.h poly1305.h nist-keywrap.h
 
 INSTALL_HEADERS = $(HEADERS) version.h @IF_MINI_GMP@ mini-gmp.h
 
@@ -259,7 +258,7 @@ DISTFILES = $(SOURCES) $(HEADERS) getopt.h getopt_int.h \
 	nettle.pc.in hogweed.pc.in \
 	desdata.stamp $(des_headers) descore.README \
 	aes-internal.h block-internal.h blowfish-internal.h camellia-internal.h \
-	gcm-internal.h gost28147-internal.h poly1305-internal.h \
+	ghash-internal.h gost28147-internal.h poly1305-internal.h \
 	serpent-internal.h cast128_sboxes.h desinfo.h desCode.h \
 	ripemd160-internal.h sha2-internal.h \
 	memxor-internal.h nettle-internal.h nettle-write.h \
@@ -436,17 +435,8 @@ ecc-secp521r1.$(OBJEXT): ecc-secp521r1.h
 	  --output $@T `basename "$<"` \
 	  && test -s $@T && mv -f $@T $@
 
-%.dvi: %.texinfo
-	cd $(srcdir) && texi2dvi -b `basename "$<"`
-
-%.ps: %.dvi
-	cd $(srcdir) && dvips -Ppdf -G0 -o `basename "$<" .dvi`.ps `basename "$<"`
-
-# Avoid rebuilding .dvi and .ps files when the .texinfo source is unchanged.
-PS2PDFFLAGS=-dCompatibilityLevel=1.3 -dMAxSubsetPct=100 -dSubsetFonts=true -dEmbedAllFonts=true
 %.pdf: %.texinfo
-	$(MAKE) `basename "$<" .texinfo`.ps
-	cd $(srcdir) && ps2pdf $(PS2PDFFLAGS) `basename "$<" .texinfo`.ps
+	cd $(srcdir) && texi2pdf `basename "$<"`
 
 # Configure-related rules, mostly copied from the autoconf manual. No
 # $(srcdir) prefixes on the targets, though.
@@ -614,9 +604,11 @@ distdir: $(DISTFILES)
 	  fi ; \
 	done
 	set -e; for d in sparc32 sparc64 x86 \
-		x86_64 x86_64/aesni x86_64/sha_ni x86_64/fat \
+		x86_64 x86_64/aesni x86_64/sha_ni x86_64/pclmul x86_64/fat \
 		arm arm/neon arm/v6 arm/fat \
-		powerpc64 powerpc64/p7 powerpc64/p8 powerpc64/fat ; do \
+		arm64 arm64/crypto arm64/fat \
+		powerpc64 powerpc64/p7 powerpc64/p8 powerpc64/fat \
+		s390x s390x/vf s390x/msa s390x/msa_x1 s390x/msa_x2 s390x/msa_x4 s390x/fat ; do \
 	  mkdir "$(distdir)/$$d" ; \
 	  find "$(srcdir)/$$d" -maxdepth 1 '(' -name '*.asm' -o -name '*.m4' -o -name README ')' \
 	    -exec cp '{}' "$(distdir)/$$d" ';' ; \

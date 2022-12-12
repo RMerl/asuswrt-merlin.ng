@@ -41,7 +41,7 @@ C output pointer: %rsi
 	.text
 	ALIGN(16)
 PROLOGUE(_nettle_cpuid)
-	W64_ENTRY(2)
+	W64_ENTRY(2, 0)
 	push	%rbx
 
 	movl	%edi, %eax
@@ -53,7 +53,7 @@ PROLOGUE(_nettle_cpuid)
 	mov	%edx, 12(%rsi)
 
 	pop	%rbx
-	W64_EXIT(2)
+	W64_EXIT(2, 0)
 	ret
 EPILOGUE(_nettle_cpuid)
 

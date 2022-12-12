@@ -35,7 +35,6 @@
 # include "config.h"
 #endif
 
-#include <assert.h>
 #include <stdlib.h>
 
 #include "aes-internal.h"
@@ -61,34 +60,4 @@ aes_encrypt(const struct aes_ctx *ctx,
       aes256_encrypt(&ctx->u.ctx256, length, dst, src);
       break;
     }
-}
-
-void
-aes128_encrypt(const struct aes128_ctx *ctx,
-	       size_t length, uint8_t *dst,
-	       const uint8_t *src)
-{
-  assert(!(length % AES_BLOCK_SIZE) );
-  _nettle_aes_encrypt(_AES128_ROUNDS, ctx->keys, &_nettle_aes_encrypt_table,
-		      length, dst, src);
-}
-
-void
-aes192_encrypt(const struct aes192_ctx *ctx,
-	       size_t length, uint8_t *dst,
-	       const uint8_t *src)
-{
-  assert(!(length % AES_BLOCK_SIZE) );
-  _nettle_aes_encrypt(_AES192_ROUNDS, ctx->keys, &_nettle_aes_encrypt_table,
-		      length, dst, src);
-}
-
-void
-aes256_encrypt(const struct aes256_ctx *ctx,
-	       size_t length, uint8_t *dst,
-	       const uint8_t *src)
-{
-  assert(!(length % AES_BLOCK_SIZE) );
-  _nettle_aes_encrypt(_AES256_ROUNDS, ctx->keys, &_nettle_aes_encrypt_table,
-		      length, dst, src);
 }

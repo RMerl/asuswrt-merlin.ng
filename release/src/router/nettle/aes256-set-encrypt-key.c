@@ -37,8 +37,15 @@
 
 #include "aes-internal.h"
 
+/* For fat builds */
+#if HAVE_NATIVE_aes256_set_encrypt_key
 void
-aes256_set_encrypt_key(struct aes256_ctx *ctx, const uint8_t *key)
+_nettle_aes256_set_encrypt_key_c(struct aes256_ctx *ctx, const uint8_t *key);
+# define nettle_aes256_set_encrypt_key _nettle_aes256_set_encrypt_key_c
+#endif
+
+void
+nettle_aes256_set_encrypt_key(struct aes256_ctx *ctx, const uint8_t *key)
 {
   _nettle_aes_set_key (_AES256_ROUNDS, AES256_KEY_SIZE / 4, ctx->keys, key);
 }

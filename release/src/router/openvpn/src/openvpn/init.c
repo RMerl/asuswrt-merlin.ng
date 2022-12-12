@@ -596,6 +596,7 @@ init_query_passwords(const struct context *c)
     /* Auth user/pass input */
     if (c->options.auth_user_pass_file)
     {
+        enable_auth_user_pass();
 #ifdef ENABLE_MANAGEMENT
         auth_user_pass_setup(c->options.auth_user_pass_file, &c->options.sc_info);
 #else
@@ -1595,19 +1596,6 @@ initialization_sequence_completed(struct context *c, const unsigned int flags)
 
     /* If we delayed UID/GID downgrade or chroot, do it now */
     do_uid_gid_chroot(c, true);
-
-
-    /*
-     * In some cases (i.e. when receiving auth-token via
-     * push-reply) the auth-nocache option configured on the
-     * client is overridden; for this reason we have to wait
-     * for the push-reply message before attempting to wipe
-     * the user/pass entered by the user
-     */
-    if (c->options.mode == MODE_POINT_TO_POINT)
-    {
-        ssl_clean_user_pass();
-    }
 
     /* Test if errors */
     if (flags & ISC_ERRORS)
@@ -2766,14 +2754,35 @@ do_init_crypto_tls_c1(struct context *c)
 #endif /* if P2MP */
         }
 
-        /* Do not warn if we only have BF-CBC in options->ciphername
-         * because it is still the default cipher */
-        bool warn = !streq(options->ciphername, "BF-CBC")
-             || options->enable_ncp_fallback;
-        /* Get cipher & hash algorithms */
-        init_key_type(&c->c1.ks.key_type, options->ciphername, options->authname,
-                      options->keysize, true, warn);
-
+        /*
+         * BF-CBC is allowed to be used only when explicitly configured
+         * as NCP-fallback or when NCP has been disabled or explicitly
+         * allowed in the in ncp_ciphers list.
+         * In all other cases do not attempt to initialize BF-CBC as it
+         * may not even be supported by the underlying SSL library.
+         *
+         * Therefore, the key structure has to be initialized when:
+         * - any non-BF-CBC cipher was selected; or
+         * - BF-CBC is selected and NCP is disabled (explicit request to
+         *   use the BF-CBC cipher); or
+         * - BF-CBC is selected, NCP is enabled and fallback is enabled
+         *   (BF-CBC will be the fallback).
+         * - BF-CBC is in data-ciphers and we negotiate to use BF-CBC:
+         *   If the negotiated cipher and options->ciphername are the
+         *   same we do not reinit the cipher
+         *
+         * Note that BF-CBC will still be part of the OCC string to retain
+         * backwards compatibility with older clients.
+         */
+        if (!streq(options->ciphername, "BF-CBC") || !options->ncp_enabled
+            || (options->ncp_enabled && tls_item_in_cipher_list("BF-CBC", options->ncp_ciphers))
+            || options->enable_ncp_fallback)
+        {
+            /* Do not warn if the if the cipher is used only in OCC */
+            bool warn = !options->ncp_enabled || options->enable_ncp_fallback;
+            init_key_type(&c->c1.ks.key_type, options->ciphername, options->authname,
+                          options->keysize, true, warn);
+        }
         /* Initialize PRNG with config-specified digest */
         prng_init(options->prng_hash, options->prng_nonce_secret_len);
 

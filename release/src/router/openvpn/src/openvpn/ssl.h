@@ -419,6 +419,9 @@ void tls_post_encrypt(struct tls_multi *multi, struct buffer *buf);
  */
 void pem_password_setup(const char *auth_file);
 
+/* Enables the use of user/password authentication */
+void enable_auth_user_pass();
+
 /*
  * Setup authentication username and password. If auth_file is given, use the
  * credentials stored in the file.
@@ -433,6 +436,7 @@ void ssl_set_auth_nocache(void);
 /*
  * Purge any stored authentication information, both for key files and tunnel
  * authentication. If PCKS #11 is enabled, purge authentication for that too.
+ * Note that auth_token is not cleared.
  */
 void ssl_purge_auth(const bool auth_user_pass_only);
 
@@ -599,12 +603,6 @@ void extract_x509_field_test(void);
  *
  */
 bool is_hard_reset_method2(int op);
-
-/**
- * Cleans the saved user/password unless auth-nocache is in use.
- */
-void ssl_clean_user_pass(void);
-
 
 /*
  * Show the TLS ciphers that are available for us to use in the SSL

@@ -71,7 +71,7 @@ int main(int argc, char ** argv)
 #endif
 
 #if DROPBEAR_DO_REEXEC
-	if (svr_opts.reexec_child) {
+	if (svr_opts.reexec_childpipe >= 0) {
 #ifdef PR_SET_NAME
 		/* Fix the "Name:" in /proc/pid/status, otherwise it's
 		a FD number from fexecve.
@@ -102,7 +102,7 @@ static void main_inetd() {
 
 	seedrandom();
 
-	if (!svr_opts.reexec_child) {
+	if (svr_opts.reexec_childpipe < 0) {
 		/* In case our inetd was lax in logging source addresses */
 		get_socket_address(0, NULL, NULL, &host, &port, 0);
 			dropbear_log(LOG_INFO, "Child connection from %s:%s", host, port);
@@ -115,10 +115,8 @@ static void main_inetd() {
 		setsid();
 	}
 
-	/* Start service program 
-	 * -1 is a dummy childpipe, just something we can close() without 
-	 * mattering. */
-	svr_session(0, -1);
+	/* -1 for childpipe in the inetd case is discarded */
+	svr_session(0, svr_opts.reexec_childpipe);
 
 	/* notreached */
 }
@@ -332,7 +330,7 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 				m_free(remote_host);
 				m_free(remote_port);
 
-#ifndef DEBUG_NOFORK
+#if !DEBUG_NOFORK
 				if (setsid() < 0) {
 					dropbear_exit("setsid: %s", strerror(errno));
 				}
@@ -347,9 +345,10 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 
 				if (execfd >= 0) {
 #if DROPBEAR_DO_REEXEC
-					/* Add "-2" to the args and re-execute ourself. */
-					char **new_argv = m_malloc(sizeof(char*) * (argc+3));
-					int pos0 = 0, new_argc = argc+1;
+					/* Add "-2 childpipe[1]" to the args and re-execute ourself. */
+					char **new_argv = m_malloc(sizeof(char*) * (argc+4));
+					char buf[10];
+					int pos0 = 0, new_argc = argc+2;
 
 					/* We need to specially handle "dropbearmulti dropbear". */
 					if (multipath) {
@@ -359,7 +358,9 @@ static void main_noinetd(int argc, char ** argv, const char* multipath) {
 					}
 
 					memcpy(&new_argv[pos0], argv, sizeof(char*) * argc);
-					new_argv[new_argc-1] = "-2";
+					new_argv[new_argc-2] = "-2";
+					snprintf(buf, sizeof(buf), "%d", childpipe[1]);
+					new_argv[new_argc-1] = buf;
 					new_argv[new_argc] = NULL;
 
 					if ((dup2(childsock, STDIN_FILENO) < 0)) {

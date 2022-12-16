@@ -64,6 +64,7 @@
 #include "ssh.h"
 #include "packet.h"
 #include "algo.h"
+#include "runopts.h"
 
 #if DROPBEAR_SVR_PUBKEY_AUTH
 
@@ -182,6 +183,16 @@ void svr_auth_pubkey(int valid_user) {
 		goto out;
 	}
 
+#if DROPBEAR_SK_ECDSA || DROPBEAR_SK_ED25519
+	key->sk_flags_mask = SSH_SK_USER_PRESENCE_REQD;
+	if (ses.authstate.pubkey_options && ses.authstate.pubkey_options->no_touch_required_flag) {
+		key->sk_flags_mask &= ~SSH_SK_USER_PRESENCE_REQD;
+	}
+	if (ses.authstate.pubkey_options && ses.authstate.pubkey_options->verify_required_flag) {
+		key->sk_flags_mask |= SSH_SK_USER_VERIFICATION_REQD;
+	}
+#endif
+
 	/* create the data which has been signed - this a string containing
 	 * session_id, concatenated with the payload packet up to the signature */
 	assert(ses.payload_beginning <= ses.payload->pos);
@@ -201,17 +212,29 @@ void svr_auth_pubkey(int valid_user) {
 	/* ... and finally verify the signature */
 	fp = sign_key_fingerprint(keyblob, keybloblen);
 	if (buf_verify(ses.payload, key, sigtype, signbuf) == DROPBEAR_SUCCESS) {
-		dropbear_log(LOG_NOTICE,
-				"Pubkey auth succeeded for '%s' with %s key %s from %s",
-				ses.authstate.pw_name,
-				signkey_name_from_type(keytype, NULL), fp,
-				svr_ses.addrstring);
+		if (svr_opts.multiauthmethod && (ses.authstate.authtypes & ~AUTH_TYPE_PUBKEY)) {
+			/* successful pubkey authentication, but extra auth required */
+			dropbear_log(LOG_NOTICE,
+					"Pubkey auth succeeded for '%s' with %s key %s from %s, extra auth required",
+					ses.authstate.pw_name,
+					signkey_name_from_type(keytype, NULL), fp,
+					svr_ses.addrstring);
+			ses.authstate.authtypes &= ~AUTH_TYPE_PUBKEY; /* pubkey auth ok, delete the method flag */
+			send_msg_userauth_failure(1, 0); /* Send partial success */
+		} else {
+			/* successful authentication */
+			dropbear_log(LOG_NOTICE,
+					"Pubkey auth succeeded for '%s' with %s key %s from %s",
+					ses.authstate.pw_name,
+					signkey_name_from_type(keytype, NULL), fp,
+					svr_ses.addrstring);
 #ifdef SECURITY_NOTIFY
-		SEND_PTCSRV_EVENT(PROTECTION_SERVICE_SSH,
+			SEND_PTCSRV_EVENT(PROTECTION_SERVICE_SSH,
 				RPT_SUCCESS, svr_ses.hoststring,
 				"From dropbear , LOGIN SUCCESS(authpubkey)");
 #endif
-		send_msg_userauth_success();
+			send_msg_userauth_success();
+		}
 #if DROPBEAR_PLUGIN
                 if ((ses.plugin_session != NULL) && (svr_ses.plugin_instance->auth_success != NULL)) {
                     /* Was authenticated through the external plugin. tell plugin that signature verification was ok */
@@ -590,7 +613,7 @@ static int checkfileperm(char * filename) {
 	if (badperm) {
 		if (!ses.authstate.perm_warn) {
 			ses.authstate.perm_warn = 1;
-			dropbear_log(LOG_INFO, "%s must be owned by user or root, and not writable by others", filename);
+			dropbear_log(LOG_INFO, "%s must be owned by user or root, and not writable by group or others", filename);
 		}
 		TRACE(("leave checkfileperm: failure perms/owner"))
 		return DROPBEAR_FAILURE;

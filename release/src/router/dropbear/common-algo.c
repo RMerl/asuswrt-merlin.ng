@@ -114,10 +114,6 @@ static const struct dropbear_hash dropbear_sha2_256 =
 static const struct dropbear_hash dropbear_sha2_512 =
 	{&sha512_desc, 64, 64};
 #endif
-#if DROPBEAR_MD5_HMAC
-static const struct dropbear_hash dropbear_md5 = 
-	{&md5_desc, 16, 16};
-#endif
 
 const struct dropbear_hash dropbear_nohash =
 	{NULL, 16, 0}; /* used initially */
@@ -185,9 +181,6 @@ algo_type sshhashes[] = {
 #endif
 #if DROPBEAR_SHA2_512_HMAC
 	{"hmac-sha2-512", 0, &dropbear_sha2_512, 1, NULL},
-#endif
-#if DROPBEAR_MD5_HMAC
-	{"hmac-md5", 0, (void*)&dropbear_md5, 1, NULL},
 #endif
 	{NULL, 0, NULL, 0, NULL}
 };

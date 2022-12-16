@@ -3,6 +3,7 @@
 #include "dbutil.h"
 #include "session.h"
 #include "debug.h"
+#include "runopts.h"
 
 struct dropbear_progress_connection {
 	struct addrinfo *res;
@@ -377,6 +378,7 @@ void set_sock_priority(int sock, enum dropbear_prio prio) {
 	/* Don't log ENOTSOCK errors so that this can harmlessly be called
 	 * on a client '-J' proxy pipe */
 
+	if (opts.disable_ip_tos == 0) {
 #ifdef IP_TOS
 	/* Set the DSCP field for outbound IP packet priority.
 	rfc4594 has some guidance to meanings.
@@ -409,6 +411,7 @@ void set_sock_priority(int sock, enum dropbear_prio prio) {
 		TRACE(("Couldn't set IP_TOS (%s)", strerror(errno)));
 	}
 #endif /* IP_TOS */
+	}
 
 #ifdef HAVE_LINUX_PKT_SCHED_H
 	/* Set scheduling priority within the local Linux network stack */

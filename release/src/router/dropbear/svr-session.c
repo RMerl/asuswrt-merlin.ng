@@ -215,7 +215,7 @@ void svr_session(int sock, int childpipe) {
 
 }
 
-/* failure exit - format must be <= 100 chars */
+/* cleanup and exit - format must be <= 100 chars */
 void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 	char exitmsg[150];
 	char fullmsg[300];
@@ -224,10 +224,12 @@ void svr_dropbear_exit(int exitcode, const char* format, va_list param) {
 	int add_delay = 0;
 
 #if DROPBEAR_PLUGIN
-        if ((ses.plugin_session != NULL)) {
-            svr_ses.plugin_instance->delete_session(ses.plugin_session);
-        }
-        ses.plugin_session = NULL;
+	if ((ses.plugin_session != NULL)) {
+		svr_ses.plugin_instance->delete_session(ses.plugin_session);
+	}
+	ses.plugin_session = NULL;
+	svr_opts.pubkey_plugin_options = NULL;
+	m_free(svr_opts.pubkey_plugin);
 #endif
 
 	/* Render the formatted exit message */

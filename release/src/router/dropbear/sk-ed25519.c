@@ -8,7 +8,9 @@
 #include "ed25519.h"
 #include "ssh.h"
 
-int buf_sk_ed25519_verify(buffer *buf, const dropbear_ed25519_key *key, const buffer *data_buf, const char* app, unsigned int applen) {
+int buf_sk_ed25519_verify(buffer *buf, const dropbear_ed25519_key *key, const buffer *data_buf,
+			const char* app, unsigned int applen,
+			unsigned char sk_flags_mask) {
 
 	int ret = DROPBEAR_FAILURE;
 	unsigned char *s;
@@ -52,10 +54,15 @@ int buf_sk_ed25519_verify(buffer *buf, const dropbear_ed25519_key *key, const bu
 		ret = DROPBEAR_SUCCESS;
 	}
 
-	/* TODO: allow "no-touch-required" or "verify-required" authorized_keys options */
-	if (!(flags & SSH_SK_USER_PRESENCE_REQD)) {
+	if (~flags & sk_flags_mask & SSH_SK_USER_PRESENCE_REQD) {
 		if (ret == DROPBEAR_SUCCESS) {
 			dropbear_log(LOG_WARNING, "Rejecting, user-presence not set");
+		}
+		ret = DROPBEAR_FAILURE;
+	}
+	if (~flags & sk_flags_mask & SSH_SK_USER_VERIFICATION_REQD) {
+		if (ret == DROPBEAR_SUCCESS) {
+			dropbear_log(LOG_WARNING, "Rejecting, user-verification not set");
 		}
 		ret = DROPBEAR_FAILURE;
 	}

@@ -3,6 +3,7 @@
 #include "fuzz-wrapfd.h"
 #include "debug.h"
 #include "dss.h"
+#include "ed25519.h"
 
 static void setup_fuzzer(void) {
 	fuzz_common_setup();
@@ -57,6 +58,21 @@ int LLVMFuzzerTestOneInput(const uint8_t *Data, size_t Size) {
 					assert(mp_prime_is_prime(key->dsskey->q, trials, &qprime) == MP_OKAY);
 					boguskey = !(pprime && qprime);
 					/* Could also check g**q mod p == 1 */
+				}
+
+				if (keytype == DROPBEAR_SIGNKEY_SK_ED25519 || keytype == DROPBEAR_SIGNKEY_ED25519) {
+					dropbear_ed25519_key **eck = (dropbear_ed25519_key**)signkey_key_ptr(key, keytype);
+					if (eck && *eck) {
+						int i;
+						/* we've seen all-zero keys validate */
+						boguskey = 1;
+						for (i = 0; i < CURVE25519_LEN; i++) {
+							if ((*eck)->priv[i] != 0x00 || (*eck)->pub[i] != 0x00) {
+								boguskey = 0;
+							}
+						}
+
+					}
 				}
 
 				if (!boguskey) {

@@ -8,7 +8,9 @@
 #include "sk-ecdsa.h"
 #include "ssh.h"
 
-int buf_sk_ecdsa_verify(buffer *buf, const ecc_key *key, const buffer *data_buf, const char* app, unsigned int applen) {
+int buf_sk_ecdsa_verify(buffer *buf, const ecc_key *key, const buffer *data_buf,
+			const char* app, unsigned int applen,
+			unsigned char sk_flags_mask) {
 	hash_state hs;
 	unsigned char subhash[SHA256_HASH_SIZE];
 	buffer *sk_buffer = NULL, *sig_buffer = NULL;
@@ -41,10 +43,15 @@ int buf_sk_ecdsa_verify(buffer *buf, const ecc_key *key, const buffer *data_buf,
 	buf_free(sk_buffer);
 	buf_free(sig_buffer);
 
-	/* TODO: allow "no-touch-required" or "verify-required" authorized_keys options */
-	if (!(flags & SSH_SK_USER_PRESENCE_REQD)) {
+	if (~flags & sk_flags_mask & SSH_SK_USER_PRESENCE_REQD) {
 		if (ret == DROPBEAR_SUCCESS) {
 			dropbear_log(LOG_WARNING, "Rejecting, user-presence not set");
+		}
+		ret = DROPBEAR_FAILURE;
+	}
+	if (~flags & sk_flags_mask & SSH_SK_USER_VERIFICATION_REQD) {
+		if (ret == DROPBEAR_SUCCESS) {
+			dropbear_log(LOG_WARNING, "Rejecting, user-verification not set");
 		}
 		ret = DROPBEAR_FAILURE;
 	}

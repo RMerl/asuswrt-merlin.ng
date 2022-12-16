@@ -25,7 +25,13 @@ endif
 
 coverage: LIBNAME:=-Wl,--whole-archive $(LIBNAME)  -Wl,--no-whole-archive
 
+# Dropbear sets its own flags below
+IGNORE_SPEED=1
+
 include $(srcdir)/makefile_include.mk
+
+# override makefile_include.mk flags
+LTM_CFLAGS += @DROPBEAR_LTM_CFLAGS@
 
 %.o: %.c $(HEADERS)
 ifneq ($V,1)

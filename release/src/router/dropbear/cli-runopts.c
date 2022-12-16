@@ -83,6 +83,7 @@ static void printhelp() {
 					"-W <receive_window_buffer> (default %d, larger may be faster, max 10MB)\n"
 					"-K <keepalive>  (0 is never, default %d)\n"
 					"-I <idle_timeout>  (0 is never, default %d)\n"
+					"-z    disable QoS\n"
 #if DROPBEAR_CLI_NETCAT
 					"-B <endhost:endport> Netcat-alike forwarding\n"
 #endif				
@@ -324,6 +325,9 @@ void cli_getopts(int argc, char ** argv) {
 					break;
 				case 'b':
 					next = &bind_arg;
+					break;
+				case 'z':
+					opts.disable_ip_tos = 1;
 					break;
 				default:
 					fprintf(stderr,

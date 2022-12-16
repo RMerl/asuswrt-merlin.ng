@@ -53,6 +53,10 @@ Disable password logins.
 .B \-g
 Disable password logins for root.
 .TP
+.B \-t
+Enable two-factor authentication. Both password login and public key authentication are
+required. Should not be used with the '-s' option.
+.TP
 .B \-j
 Disable local port forwarding.
 .TP
@@ -96,6 +100,9 @@ of 0 disables keepalives. If no response is received for 3 consecutive keepalive
 .TP
 .B \-I \fIidle_timeout
 Disconnect the session if no traffic is transmitted or received for \fIidle_timeout\fR seconds.
+.TP
+.B \-z
+By default Dropbear will send network traffic with the \fBAF21\fR setting for QoS, letting network devices give it higher priority. Some devices may have problems with that, \fI-z\fR can be used to disable it.
 .TP
 .B \-T \fImax_authentication_attempts
 Set the number of authentication attempts allowed per connection. If unspecified the default is 10 (MAX_AUTH_TRIES)
@@ -143,6 +150,14 @@ same functionality with other means even if no-pty is set.
 .TP
 .B restrict
 Applies all the no- restrictions listed above.
+
+.TP
+.B permitopen=\fR"\fIhost:port\fR"
+Restrict local port forwarding so that connection is allowed only to the
+specified host and port. Multiple permitopen options separated by commas
+can be set in authorized_keys. Wildcard character ('*') may be used in
+port specification for matching any port. Hosts must be literal domain names or
+IP addresses.
 
 .TP
 .B command=\fR"\fIforced_command\fR"

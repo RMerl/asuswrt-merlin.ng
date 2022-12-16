@@ -47,4 +47,10 @@ deciding.
 
 Of course using small C libraries such as uClibc and dietlibc can also help.
 
+---
+
+Libtommath has its own default CFLAGS to improve speed. You can use
+./configure LTM_CFLAGS=-Os
+to reduce size at the expense of speed.
+
 If you have any queries, mail me and I'll see if I can help.

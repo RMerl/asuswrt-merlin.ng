@@ -430,44 +430,32 @@ static buffer* buf_decompress(const buffer* buf, unsigned int len) {
 	z_streamp zstream;
 
 	zstream = ses.keys->recv.zstream;
-	ret = buf_new(len);
+	/* We use RECV_MAX_PAYLOAD_LEN+1 here to ensure that
+	   we can detect an oversized payload after inflate() */
+	ret = buf_new(RECV_MAX_PAYLOAD_LEN+1);
 
 	zstream->avail_in = len;
 	zstream->next_in = buf_getptr(buf, len);
+	zstream->avail_out = ret->size;
+	zstream->next_out = ret->data;
 
-	/* decompress the payload, incrementally resizing the output buffer */
-	while (1) {
-
-		zstream->avail_out = ret->size - ret->pos;
-		zstream->next_out = buf_getwriteptr(ret, zstream->avail_out);
-
-		result = inflate(zstream, Z_SYNC_FLUSH);
-
-		buf_setlen(ret, ret->size - zstream->avail_out);
-		buf_setpos(ret, ret->len);
-
-		if (result != Z_BUF_ERROR && result != Z_OK) {
-			dropbear_exit("zlib error");
-		}
-
-		if (zstream->avail_in == 0 &&
-		   		(zstream->avail_out != 0 || result == Z_BUF_ERROR)) {
-			/* we can only exit if avail_out hasn't all been used,
-			 * and there's no remaining input */
-			return ret;
-		}
-
-		if (zstream->avail_out == 0) {
-			int new_size = 0;
-			if (ret->size >= RECV_MAX_PAYLOAD_LEN) {
-				/* Already been increased as large as it can go,
-				 * yet didn't finish up the decompression */
-				dropbear_exit("bad packet, oversized decompressed");
-			}
-			new_size = MIN(RECV_MAX_PAYLOAD_LEN, ret->size + ZLIB_DECOMPRESS_INCR);
-			ret = buf_resize(ret, new_size);
-		}
+	result = inflate(zstream, Z_SYNC_FLUSH);
+	if (result != Z_OK) {
+		dropbear_exit("zlib error");
 	}
+
+	buf_setlen(ret, ret->size - zstream->avail_out);
+
+	if (zstream->avail_in > 0 || ret->len > RECV_MAX_PAYLOAD_LEN) {
+		/* The remote side sent larger than a payload size
+		 * of uncompressed data.
+		 */
+		dropbear_exit("bad packet, oversized decompressed");
+	}
+
+	/* Success. All input was consumed and avail_out > 0 */
+	return ret;
+
 }
 #endif
 

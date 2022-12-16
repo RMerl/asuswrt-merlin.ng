@@ -122,30 +122,43 @@ IMPORTANT: Some options will require "make clean" after changes */
    sha1 for compatibility */
 #define DROPBEAR_SHA1_HMAC 1
 #define DROPBEAR_SHA2_256_HMAC 1
+#define DROPBEAR_SHA2_512_HMAC 0
 #define DROPBEAR_SHA1_96_HMAC 0
 
 /* Hostkey/public key algorithms - at least one required, these are used
  * for hostkey as well as for verifying signatures with pubkey auth.
- * Removing either of these won't save very much space.
  * RSA is recommended.
- * DSS may be necessary to connect to some systems though
- * is not recommended for new keys.
+ *
  * See: RSA_PRIV_FILENAME and DSS_PRIV_FILENAME */
 #define DROPBEAR_RSA 1
+/* Newer SSH implementations use SHA256 for RSA signatures. SHA1
+ * support is required to communicate with some older implementations.
+ * It will be removed in future due to SHA1 insecurity, it can be
+ * disabled with DROPBEAR_RSA_SHA1 set to 0 */
+#define DROPBEAR_RSA_SHA1 1
+
+/* DSS may be necessary to connect to some systems but is not
+ * recommended for new keys (1024 bits is small, and it uses SHA1).
+ * RSA key generation will be faster with bundled libtommath
+ * if DROPBEAR_DSS is disabled.
+ * https://github.com/mkj/dropbear/issues/174#issuecomment-1267374858 */
 #define DROPBEAR_DSS 0
 /* ECDSA is significantly faster than RSA or DSS. Compiling in ECC
  * code (either ECDSA or ECDH) increases binary size - around 30kB
  * on x86-64.
  * See: ECDSA_PRIV_FILENAME  */
 #define DROPBEAR_ECDSA 1
+
 /* Ed25519 is faster than ECDSA. Compiling in Ed25519 code increases
  * binary size - around 7,5kB on x86-64.
  * See: ED25519_PRIV_FILENAME  */
 #define DROPBEAR_ED25519 1
-/* SK_ECDSA/SK_ED25519 allows u2f security keys for public key auth.
+
+/* Allow U2F security keys for public key auth, with
+ * sk-ecdsa-sha2-nistp256@openssh.com or sk-ssh-ed25519@openssh.com keys.
+ * The corresponding DROPBEAR_ECDSA or DROPBEAR_ED25519 also needs to be set.
  * This is currently server-only. */
-#define DROPBEAR_SK_ECDSA 1
-#define DROPBEAR_SK_ED25519 1
+#define DROPBEAR_SK_KEYS 1
 
 /* RSA must be >=1024 */
 #define DROPBEAR_DEFAULT_RSA_SIZE 2048

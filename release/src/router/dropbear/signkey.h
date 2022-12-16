@@ -127,6 +127,7 @@ struct SIGN_key {
 	/* application ID for U2F/FIDO key types, a malloced string */
 	char * sk_app;
 	unsigned int sk_applen;
+	unsigned char sk_flags_mask;
 #endif
 };
 

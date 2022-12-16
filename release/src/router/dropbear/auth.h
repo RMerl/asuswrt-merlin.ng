@@ -28,6 +28,7 @@
 #include "includes.h"
 #include "signkey.h"
 #include "chansession.h"
+#include "list.h"
 
 void svr_authinitialise(void);
 
@@ -45,6 +46,7 @@ int svr_pubkey_allows_agentfwd(void);
 int svr_pubkey_allows_tcpfwd(void);
 int svr_pubkey_allows_x11fwd(void);
 int svr_pubkey_allows_pty(void);
+int svr_pubkey_allows_local_tcpfwd(const char *host, unsigned int port);
 void svr_pubkey_set_forced_command(struct ChanSess *chansess);
 void svr_pubkey_options_cleanup(void);
 int svr_add_pubkey_options(buffer *options_buf, int line_num, const char* filename);
@@ -54,6 +56,9 @@ int svr_add_pubkey_options(buffer *options_buf, int line_num, const char* filena
 #define svr_pubkey_allows_tcpfwd() 1
 #define svr_pubkey_allows_x11fwd() 1
 #define svr_pubkey_allows_pty() 1
+static inline int svr_pubkey_allows_local_tcpfwd(const char *host, unsigned int port)
+	{ (void)host; (void)port; return 1; }
+
 static inline void svr_pubkey_set_forced_command(struct ChanSess *chansess) { }
 static inline void svr_pubkey_options_cleanup(void) { }
 #define svr_add_pubkey_options(x,y,z) DROPBEAR_SUCCESS
@@ -93,6 +98,7 @@ void cli_auth_pubkey_cleanup(void);
 #define AUTH_METHOD_INTERACT "keyboard-interactive"
 #define AUTH_METHOD_INTERACT_LEN 20
 
+#define PUBKEY_OPTIONS_ANY_PORT UINT_MAX
 
 
 /* This structure is shared between server and client - it contains
@@ -139,6 +145,18 @@ struct PubKeyOptions {
 	int no_pty_flag;
 	/* "command=" option. */
 	char * forced_command;
+	/* "permitopen=" option */
+	m_list *permit_open_destinations;
+	
+#if DROPBEAR_SK_ECDSA || DROPBEAR_SK_ED25519
+	int no_touch_required_flag;
+	int verify_required_flag;
+#endif
+};
+
+struct PermitTCPFwdEntry {
+	char *host;
+	unsigned int port;
 };
 #endif
 

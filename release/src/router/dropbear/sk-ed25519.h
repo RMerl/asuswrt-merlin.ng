@@ -8,7 +8,9 @@
 #include "buffer.h"
 #include "ed25519.h"
 
-int buf_sk_ed25519_verify(buffer *buf, const dropbear_ed25519_key *key, const buffer *data_buf, const char* app, unsigned int applen);
+int buf_sk_ed25519_verify(buffer *buf, const dropbear_ed25519_key *key, const buffer *data_buf,
+			const char* app, unsigned int applen,
+			unsigned char sk_flags_mask);
 
 #endif
 

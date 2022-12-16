@@ -302,6 +302,7 @@ static int ber_read_id_len(void *source, int sourcelen,
  * Will avoid writing anything if dest is NULL, but still return
  * amount of space required.
  */
+#if DROPBEAR_DSS
 static int ber_write_id_len(void *dest, int id, int length, int flags)
 {
 	unsigned char *d = (unsigned char *)dest;
@@ -356,6 +357,7 @@ static int ber_write_id_len(void *dest, int id, int length, int flags)
 
 	return len;
 }
+#endif /* DROPBEAR_DSS */
 
 
 /* Simple structure to point to an mp-int within a blob. */
@@ -899,15 +901,16 @@ static int openssh_write(const char *filename, sign_key *key,
 	buffer * extrablob = NULL; /* used for calculated values to write */
 	unsigned char *outblob = NULL;
 	int outlen = -9999;
-	struct mpint_pos numbers[9];
-	int nnumbers = -1, pos = 0, len = 0, seqlen, i;
+	int pos = 0, len = 0, i;
 	char *header = NULL, *footer = NULL;
-	char zero[1];
 	int ret = 0;
 	FILE *fp;
 
 #if DROPBEAR_DSS
 	if (key->type == DROPBEAR_SIGNKEY_DSS) {
+		char zero[1];
+		struct mpint_pos numbers[9];
+		int nnumbers = -1, seqlen;
 		/*
 		 * Fetch the key blobs.
 		 */
@@ -924,7 +927,6 @@ static int openssh_write(const char *filename, sign_key *key,
 		 */
 		numbers[0].start = zero; numbers[0].bytes = 1; zero[0] = '\0';
 
-	#if DROPBEAR_DSS
 		if (key->type == DROPBEAR_SIGNKEY_DSS) {
 
 			/* p */
@@ -956,7 +958,6 @@ static int openssh_write(const char *filename, sign_key *key,
 			header = "-----BEGIN DSA PRIVATE KEY-----\n";
 			footer = "-----END DSA PRIVATE KEY-----\n";
 		}
-	#endif /* DROPBEAR_DSS */
 
 		/*
 		 * Now count up the total size of the ASN.1 encoded integers,

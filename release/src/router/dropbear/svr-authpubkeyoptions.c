@@ -46,6 +46,7 @@
 #include "dbutil.h"
 #include "signkey.h"
 #include "auth.h"
+#include "runopts.h"
 
 #if DROPBEAR_SVR_PUBKEY_OPTIONS_BUILT
 
@@ -88,6 +89,29 @@ int svr_pubkey_allows_pty() {
 	return 1;
 }
 
+/* Returns 1 if pubkey allows local tcp fowarding to the provided destination,
+ * 0 otherwise */
+int svr_pubkey_allows_local_tcpfwd(const char *host, unsigned int port) {
+	if (ses.authstate.pubkey_options
+		&& ses.authstate.pubkey_options->permit_open_destinations) {
+		m_list_elem *iter = ses.authstate.pubkey_options->permit_open_destinations->first;
+		while (iter) {
+			struct PermitTCPFwdEntry *entry = (struct PermitTCPFwdEntry*)iter->item;
+			if (strcmp(entry->host, host) == 0) {
+				if ((entry->port == PUBKEY_OPTIONS_ANY_PORT) || (entry->port == port)) {
+					return 1;
+				}
+			}
+
+			iter = iter->next;
+		}
+
+		return 0;
+	}
+
+	return 1;
+}
+
 /* Set chansession command to the one forced 
  * by any 'command' public key option. */
 void svr_pubkey_set_forced_command(struct ChanSess *chansess) {
@@ -112,6 +136,16 @@ void svr_pubkey_options_cleanup() {
 	if (ses.authstate.pubkey_options) {
 		if (ses.authstate.pubkey_options->forced_command) {
 			m_free(ses.authstate.pubkey_options->forced_command);
+		}
+		if (ses.authstate.pubkey_options->permit_open_destinations) {
+			m_list_elem *iter = ses.authstate.pubkey_options->permit_open_destinations->first;
+			while (iter) {
+				struct PermitTCPFwdEntry *entry = (struct PermitTCPFwdEntry*)list_remove(iter);
+				m_free(entry->host);
+				m_free(entry);
+				iter = ses.authstate.pubkey_options->permit_open_destinations->first;
+			}
+			m_free(ses.authstate.pubkey_options->permit_open_destinations);
 		}
 		m_free(ses.authstate.pubkey_options);
 	}
@@ -204,6 +238,69 @@ int svr_add_pubkey_options(buffer *options_buf, int line_num, const char* filena
 			}
 			dropbear_log(LOG_WARNING, "Badly formatted command= authorized_keys option");
 			goto bad_option;
+		}
+
+		if (match_option(options_buf, "permitopen=\"") == DROPBEAR_SUCCESS) {
+			int valid_option = 0;
+			const unsigned char* permitopen_start = buf_getptr(options_buf, 0);
+
+			if (!ses.authstate.pubkey_options->permit_open_destinations) {
+				ses.authstate.pubkey_options->permit_open_destinations = list_new();
+			}
+
+			while (options_buf->pos < options_buf->len) {
+				const char c = buf_getbyte(options_buf);
+				if (c == '"') {
+					char *spec = NULL;
+					char *portstring = NULL;
+					const int permitopen_len = buf_getptr(options_buf, 0) - permitopen_start;
+					struct PermitTCPFwdEntry *entry =
+							(struct PermitTCPFwdEntry*)m_malloc(sizeof(struct PermitTCPFwdEntry));
+
+					list_append(ses.authstate.pubkey_options->permit_open_destinations, entry);
+					spec = m_malloc(permitopen_len);
+					memcpy(spec, permitopen_start, permitopen_len - 1);
+					spec[permitopen_len - 1] = '\0';
+					if ((split_address_port(spec, &entry->host, &portstring) == DROPBEAR_SUCCESS)
+						&& entry->host && portstring) {
+						if (strcmp(portstring, "*") == 0) {
+							valid_option = 1;
+							entry->port = PUBKEY_OPTIONS_ANY_PORT;
+							TRACE(("local port forwarding allowed to host '%s'", entry->host));
+						} else if (m_str_to_uint(portstring, &entry->port) == DROPBEAR_SUCCESS) {
+							valid_option = 1;
+							TRACE(("local port forwarding allowed to host '%s' and port '%u'",
+									entry->host, entry->port));
+						}
+					}
+
+					m_free(spec);
+					m_free(portstring);
+					break;
+				}
+			}
+
+			if (valid_option) {
+				goto next_option;
+			} else {
+				dropbear_log(LOG_WARNING, "Badly formatted permitopen= authorized_keys option");
+				goto bad_option;
+			}
+		}
+
+		if (match_option(options_buf, "no-touch-required") == DROPBEAR_SUCCESS) {
+#if DROPBEAR_SK_ECDSA || DROPBEAR_SK_ED25519
+			dropbear_log(LOG_WARNING, "No user presence check required for U2F/FIDO key.");
+			ses.authstate.pubkey_options->no_touch_required_flag = 1;
+#endif
+			goto next_option;
+		}
+		if (match_option(options_buf, "verify-required") == DROPBEAR_SUCCESS) {
+#if DROPBEAR_SK_ECDSA || DROPBEAR_SK_ED25519
+			dropbear_log(LOG_WARNING, "User verification required for U2F/FIDO key.");
+			ses.authstate.pubkey_options->verify_required_flag = 1;
+#endif
+			goto next_option;
 		}
 
 next_option:

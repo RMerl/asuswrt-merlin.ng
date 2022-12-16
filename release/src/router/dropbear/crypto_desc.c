@@ -34,9 +34,6 @@ void crypto_init() {
 #if DROPBEAR_SHA1_HMAC
 		&sha1_desc,
 #endif
-#if DROPBEAR_MD5_HMAC
-		&md5_desc,
-#endif
 #if DROPBEAR_SHA256
 		&sha256_desc,
 #endif

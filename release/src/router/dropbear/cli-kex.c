@@ -229,6 +229,8 @@ static void ask_to_confirm(const unsigned char* keyblob, unsigned int keybloblen
 		fclose(tty);
 	} else {
 		response = getc(stdin);
+		/* flush stdin buffer */
+		while ((getchar()) != '\n');
 	}
 
 	if (response == 'y') {

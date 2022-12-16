@@ -54,10 +54,6 @@
 #define LTC_SHA1
 #endif
 
-#if DROPBEAR_MD5
-#define LTC_MD5
-#endif
-
 /* ECC */
 #if DROPBEAR_ECC
 #define LTC_MECC

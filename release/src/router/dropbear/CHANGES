@@ -1,3 +1,108 @@
+2022.83 - 14 November 2022
+
+Features and Changes:
+  Note >> for compatibility/configuration changes
+
+- >> Disable DROPBEAR_DSS by default
+  It is only 1024 bit and uses sha1, most distros disable it by default already.
+
+- Added DROPBEAR_RSA_SHA1 option to allow disabling sha1 rsa signatures.
+  >> RSA with sha1 will be disabled in a future release (rsa keys will continue
+  to work OK, with sha256 signatures used instead).
+
+- Add option for requiring both password and pubkey (-t)
+  Patch from Jackkal
+
+- Add 'no-touch-required' and 'verify-required' options for sk keys
+  Patch from Egor Duda
+
+  - >> DROPBEAR_SK_KEYS config option now replaces separate DROPBEAR_SK_ECDSA
+  and DROPBEAR_SK_ED25519 options.
+
+- Add 'permitopen' option for authorized_keys to restrict forwarded ports
+  Patch from Tuomas Haikarainen
+
+- >> Added LTM_CFLAGS configure argument to set flags for building
+  bundled libtommath. This also restores the previous arguments used
+  in 2020.81 (-O3 -funroll-loops). That gives a big speedup for RSA
+  key generation, which regressed in 2022.82.
+  There is a tradeoff with code size, so -Os can be used if required.
+  https://github.com/mkj/dropbear/issues/174
+  Reported by David Bernard
+
+- Add '-z' flag to disable setting QoS traffic class. This may be necessary
+  to work with broken networks or network drivers, exposed after changes to use
+  AF21 in 2022.82
+  https://github.com/mkj/dropbear/issues/193
+  Reported by yuhongwei380, patch from Petr Štetiar
+
+- Allow overriding user shells with COMPAT_USER_SHELLS
+  Based on a patch from Matt Robinson
+
+- Improve permission error message
+  Patch from k-kurematsu
+
+- >> Remove HMAC_MD5 entirely
+
+Regression fixes from 2022.82:
+
+- Fix X11 build
+
+- Fix build warning
+
+- Fix compilation when disabling pubkey authentication
+  Patch from MaxMougg
+
+- Fix MAX_UNAUTH_CLIENTS regression
+  Reported by ptpt52
+
+- Avoid using slower prime testing in bundled libtomcrypt when DSS is disabled
+  https://github.com/mkj/dropbear/issues/174
+  Suggested by Steffen Jaeckel
+
+- Fix Dropbear plugin support
+  https://github.com/mkj/dropbear/issues/194
+  Reported by Struan Bartlett
+
+Other fixes:
+
+- Fix long standing incorrect compression size check. Dropbear
+  (client or server) would erroneously exit with
+  "bad packet, oversized decompressed"
+  when receiving a compressed packet of exactly the maximum size.
+
+- Fix missing setsid() removed in 2020.79
+  https://github.com/mkj/dropbear/issues/180
+  Reported and debugged by m5jt and David Bernard
+
+- Try keyboard-interactive auth before password, in dbclient.
+  This was unintentionally changed back in 2013
+  https://github.com/mkj/dropbear/pull/190
+  Patch from Michele Giacomoli
+
+- Drain the terminal when reading the fingerprint confirmation response
+  https://github.com/mkj/dropbear/pull/191
+  Patch from Michele Giacomoli
+
+- Fix utx wtmp variable typo. This has been wrong for a long time but
+  only recently became a problem when wtmp was detected.
+  https://github.com/mkj/dropbear/pull/189
+  Patch from Michele Giacomoli
+
+- Improve configure test for hardening options.
+  Fixes building on AIX
+  https://github.com/mkj/dropbear/issues/158
+
+- Fix debian/dropbear.init newline
+  From wulei-student
+
+Infrastructure:
+
+- Test off-by-default compile options
+
+- Set -Wundef to catch typos in #if statements
+
+
 2022.82 - 1 April 2022
 
 Features and Changes:
@@ -54,10 +159,13 @@ Features and Changes:
   Patch from Raphaël Hertzog
   https://bugs.debian.org/cgi-bin/bugreport.cgi?bug=903403
 
-- Added client option "-o DisableTrivialAuth". This can be used to prevent
-  the server immediately accepting successful authentication (before any auth
-  request) which could cause UI confusion and security issues with agent
-  forwarding - it isn't clear which host is prompting to use a key.
+- Added client option "-o DisableTrivialAuth". It disallows a server immediately
+  giving successful authentication (without presenting any password/pubkey prompt).
+  This avoids a UI confusion issue where it may appear that the user is accepting
+  a SSH agent prompt from their local machine, but are actually accepting a prompt
+  sent immediately by the remote server. 
+  CVE-2021-36369 though the description there is a bit confused. It only applies
+  to Dropbear as a client.
   Thanks to Manfred Kaiser from Austrian MilCERT
 
 - Add -q client option to hide remote banner, from Hans Harder

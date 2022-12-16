@@ -81,6 +81,7 @@ static void printhelp(const char * progname) {
 					"-s		Disable password logins\n"
 					"-g		Disable password logins for root\n"
 					"-B		Allow blank password logins\n"
+					"-t		Enable two-factor authentication (both password and public key required)\n"
 #endif
 					"-T		Maximum authentication tries (default %d)\n"
 #if DROPBEAR_SVR_LOCALTCPFWD
@@ -103,6 +104,7 @@ static void printhelp(const char * progname) {
 					"-W <receive_window_buffer> (default %d, larger may be faster, max 10MB)\n"
 					"-K <keepalive>  (0 is never, default %d, in seconds)\n"
 					"-I <idle_timeout>  (0 is never, default %d, in seconds)\n"
+					"-z    disable QoS\n"
 #if DROPBEAR_PLUGIN
                                         "-A <authplugin>[,<options>]\n"
                                         "               Enable external public key auth through <authplugin>\n"
@@ -138,6 +140,7 @@ void svr_getopts(int argc, char ** argv) {
 	char* keepalive_arg = NULL;
 	char* idle_timeout_arg = NULL;
 	char* maxauthtries_arg = NULL;
+	char* reexec_fd_arg = NULL;
 	char* keyfile = NULL;
 	char c;
 #if DROPBEAR_PLUGIN
@@ -158,6 +161,7 @@ void svr_getopts(int argc, char ** argv) {
 	svr_opts.noauthpass = 0;
 	svr_opts.norootpass = 0;
 	svr_opts.allowblankpass = 0;
+	svr_opts.multiauthmethod = 0;
 	svr_opts.maxauthtries = MAX_AUTH_TRIES;
 	svr_opts.inetdmode = 0;
 	svr_opts.portcount = 0;
@@ -175,6 +179,7 @@ void svr_getopts(int argc, char ** argv) {
         svr_opts.pubkey_plugin_options = NULL;
 #endif
 	svr_opts.pass_on_env = 0;
+	svr_opts.reexec_childpipe = -1;
 
 #ifndef DISABLE_ZLIB
 	opts.compress_mode = DROPBEAR_COMPRESS_DELAYED;
@@ -197,6 +202,7 @@ void svr_getopts(int argc, char ** argv) {
 #if DROPBEAR_SVR_REMOTETCPFWD
 	opts.listen_fwd_all = 0;
 #endif
+	opts.disable_ip_tos = 0;
 
 	for (i = 1; i < (unsigned int)argc; i++) {
 		if (argv[i][0] != '-' || argv[i][1] == '\0')
@@ -250,12 +256,12 @@ void svr_getopts(int argc, char ** argv) {
 #if DROPBEAR_DO_REEXEC && NON_INETD_MODE
 				/* For internal use by re-exec */
 				case '2':
-					svr_opts.reexec_child = 1;
+					next = &reexec_fd_arg;
 					break;
 #endif
 				case 'p':
-				  nextisport = 1;
-				  break;
+					nextisport = 1;
+					break;
 				case 'P':
 					next = &svr_opts.pidfile;
 					break;
@@ -295,6 +301,9 @@ void svr_getopts(int argc, char ** argv) {
 				case 'B':
 					svr_opts.allowblankpass = 1;
 					break;
+				case 't':
+					svr_opts.multiauthmethod = 1;
+					break;
 #endif
 				case 'h':
 					printhelp(argv[0]);
@@ -316,6 +325,9 @@ void svr_getopts(int argc, char ** argv) {
 				case 'V':
 					print_version();
 					exit(EXIT_SUCCESS);
+					break;
+				case 'z':
+					opts.disable_ip_tos = 1;
 					break;
 				default:
 					fprintf(stderr, "Invalid option -%c\n", c);
@@ -426,6 +438,13 @@ void svr_getopts(int argc, char ** argv) {
 		dropbear_log(LOG_INFO, "Forced command set to '%s'", svr_opts.forced_command);
 	}
 
+	if (reexec_fd_arg) {
+		if (m_str_to_uint(reexec_fd_arg, &svr_opts.reexec_childpipe) == DROPBEAR_FAILURE
+			|| svr_opts.reexec_childpipe < 0) {
+			dropbear_exit("Bad -2");
+		}
+	}
+
 #if INETD_MODE
 	if (svr_opts.inetdmode && (
 		opts.usingsyslog == 0
@@ -438,16 +457,20 @@ void svr_getopts(int argc, char ** argv) {
 	}
 #endif
 
+	if (svr_opts.multiauthmethod && svr_opts.noauthpass) {
+		dropbear_exit("-t and -s are incompatible");
+	}
+
 #if DROPBEAR_PLUGIN
-        if (pubkey_plugin) {
-            char *args = strchr(pubkey_plugin, ',');
-            if (args) {
-                *args='\0';
-                ++args;
-            }
-            svr_opts.pubkey_plugin = pubkey_plugin;
-            svr_opts.pubkey_plugin_options = args;
-        }
+	if (pubkey_plugin) {
+		svr_opts.pubkey_plugin = m_strdup(pubkey_plugin);
+		char *args = strchr(svr_opts.pubkey_plugin, ',');
+		if (args) {
+			*args='\0';
+			++args;
+		}
+		svr_opts.pubkey_plugin_options = args;
+	}
 #endif
 }
 

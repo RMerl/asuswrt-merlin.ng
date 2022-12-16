@@ -33,6 +33,7 @@
 
 typedef struct runopts {
 
+	int disable_ip_tos;
 #if DROPBEAR_SVR_REMOTETCPFWD || DROPBEAR_CLI_LOCALTCPFWD \
     || DROPBEAR_CLI_REMOTETCPFWD
 	int listen_fwd_all;
@@ -79,8 +80,9 @@ typedef struct svr_runopts {
 	char *addresses[DROPBEAR_MAX_PORTS];
 
 	int inetdmode;
-	/* Hidden "-2" flag indicates it's re-executing itself */
-	int reexec_child;
+	/* Hidden "-2 childpipe_fd" flag indicates it's re-executing itself,
+	   stores the childpipe preauth file descriptor. Set to -1 otherwise. */
+	int reexec_childpipe;
 
 	/* Flags indicating whether to use ipv4 and ipv6 */
 	/* not used yet
@@ -105,6 +107,7 @@ typedef struct svr_runopts {
 	int noauthpass;
 	int norootpass;
 	int allowblankpass;
+	int multiauthmethod;
 	unsigned int maxauthtries;
 
 #if DROPBEAR_SVR_REMOTETCPFWD
@@ -127,8 +130,10 @@ typedef struct svr_runopts {
 	char * forced_command;
 
 #if DROPBEAR_PLUGIN 
-        char *pubkey_plugin;
-        char *pubkey_plugin_options;
+	/* malloced */
+	char *pubkey_plugin;
+	/* points into pubkey_plugin */
+	char *pubkey_plugin_options;
 #endif
 
 	int pass_on_env;

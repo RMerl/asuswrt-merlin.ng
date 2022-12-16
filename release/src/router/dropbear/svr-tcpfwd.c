@@ -289,6 +289,11 @@ static int newtcpdirect(struct Channel * channel) {
 		goto out;
 	}
 
+	if (!svr_pubkey_allows_local_tcpfwd(desthost, destport)) {
+		TRACE(("leave newtcpdirect: local tcp forwarding not permitted to requested destination"));
+		goto out;
+	}
+
 	snprintf(portstring, sizeof(portstring), "%u", destport);
 	channel->conn_pending = connect_remote(desthost, portstring, channel_connect_done,
 		channel, NULL, NULL, DROPBEAR_PRIO_NORMAL);

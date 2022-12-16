@@ -296,18 +296,6 @@ int cli_auth_try() {
 	}
 #endif
 
-#if DROPBEAR_CLI_PASSWORD_AUTH
-	if (!finished && (ses.authstate.authtypes & AUTH_TYPE_PASSWORD)) {
-		if (ses.keys->trans.algo_crypt->cipherdesc == NULL) {
-			fprintf(stderr, "Sorry, I won't let you use password auth unencrypted.\n");
-		} else {
-			cli_auth_password();
-			finished = 1;
-			cli_ses.lastauthtype = AUTH_TYPE_PASSWORD;
-		}
-	}
-#endif
-
 #if DROPBEAR_CLI_INTERACT_AUTH
 	if (!finished && (ses.authstate.authtypes & AUTH_TYPE_INTERACT)) {
 		if (ses.keys->trans.algo_crypt->cipherdesc == NULL) {
@@ -318,6 +306,18 @@ int cli_auth_try() {
 				cli_ses.lastauthtype = AUTH_TYPE_INTERACT;
 				finished = 1;
 			}
+		}
+	}
+#endif
+
+#if DROPBEAR_CLI_PASSWORD_AUTH
+	if (!finished && (ses.authstate.authtypes & AUTH_TYPE_PASSWORD)) {
+		if (ses.keys->trans.algo_crypt->cipherdesc == NULL) {
+			fprintf(stderr, "Sorry, I won't let you use password auth unencrypted.\n");
+		} else {
+			cli_auth_password();
+			finished = 1;
+			cli_ses.lastauthtype = AUTH_TYPE_PASSWORD;
 		}
 	}
 #endif

@@ -25,7 +25,7 @@ set -e
 cancel() { echo "$1" >&2; exit 0; };
 test ! -r /etc/default/dropbear || . /etc/default/dropbear
 test -x "$DAEMON" || cancel "$DAEMON does not exist or is not executable."
-test ! -x /usr/sbin/update-service || ! update-service --check dropbear ||
+test ! -x /usr/sbin/update-service || ! update-service --check dropbear || \
   cancel 'The dropbear service is controlled through runit, use the sv(8) program'
 
 test -z "$DROPBEAR_BANNER" || \

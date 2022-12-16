@@ -23,15 +23,15 @@ AC_PROG_CC
 if test -z "$LD" ; then
 	LD=$CC
 fi
-AC_SUBST(LD)	
+AC_SUBST(LD)
 
-AC_DEFUN(DB_TRYADDCFLAGS, 
+AC_DEFUN(DB_TRYADDCFLAGS,
 [{
 		OLDFLAGS="$CFLAGS"
 		TESTFLAGS="$1"
-		CFLAGS="$CFLAGS $TESTFLAGS"
-		AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], 
-			[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+		CFLAGS="$TESTFLAGS $CFLAGS"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+			[AC_MSG_NOTICE([Setting $TESTFLAGS])],
 			[AC_MSG_NOTICE([Not setting $TESTFLAGS]); CFLAGS="$OLDFLAGS" ]
 			)
 }])
@@ -42,11 +42,24 @@ if test -z "$ORIGCFLAGS" && test "$GCC" = "yes"; then
 	CFLAGS="-Os -W -Wall"
 fi
 
+# LTM_CFLAGS is given to ./configure by the user, 
+# DROPBEAR_LTM_CFLAGS is substituted in the LTM Makefile.in
+DROPBEAR_LTM_CFLAGS="$LTM_CFLAGS"
+if test -z "$DROPBEAR_LTM_CFLAGS"; then
+	DROPBEAR_LTM_CFLAGS="-O3 -funroll-loops -fomit-frame-pointer"
+fi
+AC_MSG_NOTICE(Setting LTM_CFLAGS to $DROPBEAR_LTM_CFLAGS)
+AC_ARG_VAR(LTM_CFLAGS, CFLAGS for bundled libtommath. Default -O3 -funroll-loops -fomit-frame-pointer)
+AC_SUBST(DROPBEAR_LTM_CFLAGS)
+
 AC_MSG_NOTICE([Checking if compiler '$CC' supports -Wno-pointer-sign])
 DB_TRYADDCFLAGS([-Wno-pointer-sign])
 
 AC_MSG_NOTICE([Checking if compiler '$CC' supports -fno-strict-overflow])
 DB_TRYADDCFLAGS([-fno-strict-overflow])
+
+AC_MSG_NOTICE([Checking if compiler '$CC' supports -Wundef])
+DB_TRYADDCFLAGS([-Wundef])
 
 # needed for various extensions. define early before autoconf tests
 AC_DEFINE([_GNU_SOURCE], [], [Use GNU extensions if glibc])
@@ -81,15 +94,15 @@ if test "$hardenbuild" -eq 1; then
 
 		OLDLDFLAGS="$LDFLAGS"
 		TESTFLAGS="-Wl,-pie"
-		LDFLAGS="$LDFLAGS $TESTFLAGS"
-		AC_LINK_IFELSE([AC_LANG_PROGRAM([])], 
-			[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+		LDFLAGS="$TESTFLAGS $LDFLAGS"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+			[AC_MSG_NOTICE([Setting $TESTFLAGS])],
 			[
 				LDFLAGS="$OLDLDFLAGS"
 				TESTFLAGS="-pie"
-				LDFLAGS="$LDFLAGS $TESTFLAGS"
-				AC_LINK_IFELSE([AC_LANG_PROGRAM([])], 
-					[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+				LDFLAGS="$TESTFLAGS $LDFLAGS"
+				AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+					[AC_MSG_NOTICE([Setting $TESTFLAGS])],
 					[AC_MSG_NOTICE([Not setting $TESTFLAGS]); LDFLAGS="$OLDLDFLAGS" ]
 					)
 			]
@@ -97,24 +110,24 @@ if test "$hardenbuild" -eq 1; then
 		# readonly elf relocation sections (relro)
 		OLDLDFLAGS="$LDFLAGS"
 		TESTFLAGS="-Wl,-z,now -Wl,-z,relro"
-		LDFLAGS="$LDFLAGS $TESTFLAGS"
-		AC_LINK_IFELSE([AC_LANG_PROGRAM([])], 
-			[AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+		LDFLAGS="$TESTFLAGS $LDFLAGS"
+		AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+			[AC_MSG_NOTICE([Setting $TESTFLAGS])],
 			[AC_MSG_NOTICE([Not setting $TESTFLAGS]); LDFLAGS="$OLDLDFLAGS" ]
 			)
 	fi # non-static
 	# stack protector. -strong is good but only in gcc 4.9 or later
 	OLDCFLAGS="$CFLAGS"
 	TESTFLAGS="-fstack-protector-strong"
-	CFLAGS="$CFLAGS $TESTFLAGS"
-	AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], 
-	    [AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+	CFLAGS="$TESTFLAGS $CFLAGS"
+	AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+	    [AC_MSG_NOTICE([Setting $TESTFLAGS])],
 	    [
 			CFLAGS="$OLDCFLAGS"
 			TESTFLAGS="-fstack-protector --param=ssp-buffer-size=4"
-			CFLAGS="$CFLAGS $TESTFLAGS"
-			AC_COMPILE_IFELSE([AC_LANG_PROGRAM([])], 
-			    [AC_MSG_NOTICE([Setting $TESTFLAGS])], 
+			CFLAGS="$TESTFLAGS $CFLAGS"
+			AC_LINK_IFELSE([AC_LANG_PROGRAM([])],
+			    [AC_MSG_NOTICE([Setting $TESTFLAGS])],
 			    [AC_MSG_NOTICE([Not setting $TESTFLAGS]); CFLAGS="$OLDCFLAGS" ]
 			    )
 	    ]
@@ -174,7 +187,7 @@ case "$host" in
 	# OpenSSH thinks it's broken. If it isn't, let me know.
 	AC_DEFINE(BROKEN_GETADDRINFO,1,Broken getaddrinfo)
 	;;
-	
+
 *-*-hpux*)
 	LIBS="$LIBS -lsec"
 	# It's probably broken.
@@ -191,7 +204,7 @@ AC_CHECK_TOOL(STRIP, strip, :)
 AC_CHECK_TOOL(INSTALL, install, :)
 
 dnl Can't use login() or logout() with uclibc
-AC_CHECK_DECL(__UCLIBC__, 
+AC_CHECK_DECL(__UCLIBC__,
 	[
 	no_loginfunc_check=1
 	AC_MSG_NOTICE([Using uClibc - login() and logout() probably don't work, so we won't use them.])
@@ -199,14 +212,14 @@ AC_CHECK_DECL(__UCLIBC__,
 
 dnl We test for crypt() specially. On Linux (and others?) it resides in libcrypt
 dnl but we don't want link all binaries to -lcrypt, just dropbear server.
-dnl OS X doesn't need -lcrypt 
+dnl OS X doesn't need -lcrypt
 AC_CHECK_FUNC(crypt, found_crypt_func=here)
-AC_CHECK_LIB(crypt, crypt, 
+AC_CHECK_LIB(crypt, crypt,
 	[
 	CRYPTLIB="-lcrypt"
 	found_crypt_func=here
 	])
-AC_SUBST(CRYPTLIB)	
+AC_SUBST(CRYPTLIB)
 if test "t$found_crypt_func" = there; then
 AC_DEFINE(HAVE_CRYPT, 1, [crypt() function])
 fi
@@ -568,7 +581,7 @@ AC_ARG_ENABLE(bundled-libtom,
 )
 
 if test $BUNDLED_LIBTOM = 1 ; then
-	AC_DEFINE(BUNDLED_LIBTOM,1,Use bundled libtom) 
+	AC_DEFINE(BUNDLED_LIBTOM,1,Use bundled libtom)
 fi
 
 AC_SUBST(LIBTOM_LIBS)
@@ -641,7 +654,7 @@ AC_ARG_ENABLE(pututxline,
 AC_ARG_WITH(lastlog,
   [  --with-lastlog=FILE|DIR specify lastlog location [common locations]],
 	[
-		if test "x$withval" = "xno" ; then	
+		if test "x$withval" = "xno" ; then
 			AC_DEFINE(DISABLE_LASTLOG)
 		else
 			conf_lastlog_location=$withval
@@ -716,7 +729,7 @@ fi
 
 if test -n "$conf_lastlog_location"; then
 	AC_DEFINE_UNQUOTED(CONF_LASTLOG_FILE, "$conf_lastlog_location", lastlog file location)
-fi	
+fi
 
 dnl utmp detection
 AC_MSG_CHECKING([if your system defines UTMP_FILE])
@@ -746,7 +759,7 @@ if test -z "$conf_utmp_location"; then
 fi
 if test -n "$conf_utmp_location"; then
 	AC_DEFINE_UNQUOTED(CONF_UTMP_FILE, "$conf_utmp_location", utmp file location)
-fi	
+fi
 
 dnl wtmp detection
 AC_MSG_CHECKING([if your system defines WTMP_FILE])
@@ -778,7 +791,7 @@ if test -z "$conf_wtmp_location"; then
 fi
 if test -n "$conf_wtmp_location"; then
 	AC_DEFINE_UNQUOTED(CONF_WTMP_FILE, "$conf_wtmp_location", wtmp file location)
-fi	
+fi
 
 
 dnl utmpx detection - I don't know any system so perverse as to require
@@ -806,7 +819,7 @@ if test -z "$conf_utmpx_location"; then
 	fi
 else
 	AC_DEFINE_UNQUOTED(CONF_UTMPX_FILE, "$conf_utmpx_location", utmpx file location)
-fi	
+fi
 
 dnl wtmpx detection
 AC_MSG_CHECKING([if your system defines WTMPX_FILE])
@@ -833,7 +846,7 @@ if test -z "$conf_wtmpx_location"; then
 	fi
 else
 	AC_DEFINE_UNQUOTED(CONF_WTMPX_FILE, "$conf_wtmpx_location", wtmpx file location)
-fi	
+fi
 
 # Checks for library functions.
 AC_PROG_GCC_TRADITIONAL
@@ -869,7 +882,7 @@ fi
 AC_EXEEXT
 
 if test $BUNDLED_LIBTOM = 1 ; then
-(cd $srcdir; find libtomcrypt -type d) | xargs mkdir -pv 
+(cd $srcdir; find libtomcrypt -type d) | xargs mkdir -pv
 LIBTOM_FILES="libtomcrypt/Makefile libtommath/Makefile"
 fi
 

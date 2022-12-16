@@ -127,13 +127,13 @@ static void check_signkey_bits(enum signkey_type type, int bits)
 #endif
 #if DROPBEAR_RSA
 		case DROPBEAR_SIGNKEY_RSA:
-			if (bits < 512 || bits > 4096 || (bits % 8 != 0)) {
-				dropbear_exit("Bits must satisfy 512 <= bits <= 4096, and be a"
+			if (bits < 1024 || bits > 4096 || (bits % 8 != 0)) {
+				dropbear_exit("Bits must satisfy 1024 <= bits <= 4096, and be a"
 				              " multiple of 8\n");
 			}
 			break;
 #endif
-#if DROPEAR_DSS
+#if DROPBEAR_DSS
 		case DROPBEAR_SIGNKEY_DSS:
 			if (bits != 1024) {
 				dropbear_exit("DSS keys have a fixed size of 1024 bits\n");

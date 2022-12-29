@@ -3,7 +3,7 @@ Asuswrt-Merlin Changelog
 
 386.9 (xx-xxx-xxxx)
   - NOTE: 386_xx release are only for Wifi 5 (802.11ac) models.
-  - NEW: Merged with GPL 386_50527.
+  - NEW: Merged with GPL 386_50757.
 
   - UPDATED: getdns/stubby to 1.7.2/0.4.2.
   - UPDATED: zlib to 1.2.12 + backports.
@@ -11,6 +11,7 @@ Asuswrt-Merlin Changelog
   - UPDATED: inadyn to 2.10.0.
   - UPDATED: nettle to 3.8.1.
   - UPDATED: openvpn to 2.5.8.
+  - UPDATED: dropbear to 2022.83.
   - CHANGED: Rebranded DNSFilter as DNS Director.  This will prevent
              confusion with the company sharing the same name, and
              also better describes what the feature does.
@@ -33,9 +34,10 @@ Asuswrt-Merlin Changelog
   - FIXED: Guest Network clients couldn't route through VPN
            (regression in 386.4 following a GPL merge).
   - FIXED: Clients connected to Guest Network 1 aren't
-           redirected if NTP interception is enabled.
-  - FIXED: Name was truncated to 31 chars when enabling OpenVPN client's
-           Server Certificate Name Validation.
+           redirected to the router's NTP if NTP interception is
+           enabled.
+  - FIXED: Name was truncated to 31 chars when enabling OpenVPN
+           client's Server Certificate Name Validation.
   - FIXED: CVE-2022-37434 in zlib.
   - REMOVED: Interface selector on Speedtest page (no longer
              working, possibly due to an ookla client update)

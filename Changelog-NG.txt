@@ -12,6 +12,7 @@ Asuswrt-Merlin Changelog
   - UPDATED: nettle to 3.8.1.
   - UPDATED: openvpn to 2.5.8.
   - UPDATED: dropbear to 2022.83.
+  - UPDATED: dnsmasq to 2.88.
   - CHANGED: Rebranded DNSFilter as DNS Director.  This will prevent
              confusion with the company sharing the same name, and
              also better describes what the feature does.

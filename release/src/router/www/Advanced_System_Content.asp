@@ -2857,15 +2857,6 @@ function build_boostkey_options() {
 						<span>(<#zero_disable#>)</span>
 					</td>
 				</tr>
-
-				<tr id="https_download_cert" style="display: none;">
-					<th><#Local_access_certificate_download#></th>
-					<td>
-						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
-						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
-					</td>
-				</tr>
 			</table>
 
 			<table id ="http_auth_table" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">
@@ -2951,7 +2942,14 @@ function build_boostkey_options() {
 						<div id="cert_manage_link" style="padding-top:10px;"><span>Click <a style="color:#FC0;text-decoration: underline;" href="Advanced_ASUSDDNS_Content.asp">here</a> to manage.</span></div>
 					</td>
 				</tr>
-
+				<tr id="https_download_cert" style="display: none;">
+					<th><#Local_access_certificate_download#></th>
+					<td>
+						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
+						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
+						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
+					</td>
+				</tr>
 			</table>
 
 			<table id="accessfromwan_settings" width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable" style="margin-top:8px;">

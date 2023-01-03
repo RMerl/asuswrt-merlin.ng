@@ -478,6 +478,11 @@ done:
     return ip_p;
 }
 
+BlogIpv4Hdr_t * blog_parse_l2hdr( struct fkbuff *fkb_p, uint32_t h_proto )
+{
+    return _blog_parse_l2hdr(fkb_p, h_proto);
+}
+
 int blog_rcv_chk_gre(struct fkbuff *fkb_p, uint32_t h_proto, uint16_t *gflags_p) 
 {
 	BlogIpv4Hdr_t* ip_p;

@@ -156,6 +156,22 @@ int change_default_wan()
 	stop_aae_sip_conn(1);
 #endif
 
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X))
+	int i;
+	for (i = 0; i < vpnc_profile_num; ++i)
+	{
+		if (vpnc_profile[i].active
+		 && vpnc_profile[i].protocol == VPNC_PROTO_WG
+		 && vpnc_profile[i].vpnc_idx == default_wan_new
+		) {
+			hnd_skip_wg_all_lan(1);
+			break;
+		}
+	}
+	if (i == vpnc_profile_num)
+		hnd_skip_wg_all_lan(0);
+#endif
+
 	set_default_routing_table(VPNC_ROUTE_ADD, default_wan_new);
 
 	nvram_set_int("vpnc_default_wan", default_wan_new);
@@ -372,6 +388,14 @@ int vpnc_up(const int unit, const char *vpnc_ifname)
 
 	// set up default wan
 	change_default_wan_as_vpnc_updown(unit, 1);
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X))
+	if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, strlen(WG_CLIENT_IF_PREFIX))
+	 && unit == nvram_get_int("vpnc_default_wan")
+	){
+		hnd_skip_wg_all_lan(1);
+	}
+#endif
+
 	return 0;
 }
 
@@ -451,6 +475,13 @@ void vpnc_down(const int vpnc_idx, char *vpnc_ifname)
 
 	// set up default wan
 	change_default_wan_as_vpnc_updown(vpnc_idx, 0);
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X))
+	if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, strlen(WG_CLIENT_IF_PREFIX))
+	 && vpnc_idx == nvram_get_int("vpnc_default_wan")
+	){
+		hnd_skip_wg_all_lan(0);
+	}
+#endif
 
 	// clean setting value.
 	clean_vpnc_setting_value(vpnc_idx);
@@ -1143,6 +1174,12 @@ int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action)
 				// Can not support destination ip
 				set_routing_rule(VPNC_ROUTE_ADD, policy);
 			}
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X))
+			if (!strncmp(vpnc_ifname, WG_CLIENT_IF_PREFIX, strlen(WG_CLIENT_IF_PREFIX)))
+			{
+				hnd_skip_wg_network(action, policy->src_ip);
+			}
+#endif
 		}
 	}
 	return 0;
@@ -1183,6 +1220,20 @@ int vpnc_handle_policy_rule(const int action, const VPNC_DEV_POLICY *policy)
 			set_routing_rule(VPNC_ROUTE_ADD, policy);
 		}
 	}
+
+#if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X))
+	int i;
+	for (i = 0; i < vpnc_profile_num; ++i)
+	{
+		if (vpnc_profile[i].protocol == VPNC_PROTO_WG
+		 && vpnc_profile[i].vpnc_idx == policy->vpnc_idx
+		) {
+			hnd_skip_wg_network(action, policy->src_ip);
+			break;
+		}
+	}
+#endif
+
 	return 0;
 }
 

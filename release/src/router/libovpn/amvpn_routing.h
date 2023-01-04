@@ -23,6 +23,9 @@ extern void amvpn_update_exclusive_dns_rules();
 extern void ovpn_set_exclusive_dns(int unit);
 #ifdef RTCONFIG_WIREGUARD
 extern void wgc_set_exclusive_dns(int unit);
+extern void amvpn_clear_wg_bypass_rules();
+void _amvpn_apply_wg_bypass(int unit, int add);
+extern void amvpn_refresh_wg_bypass_rules();
 #endif
 
 extern void amvpn_set_wan_routing_rules();

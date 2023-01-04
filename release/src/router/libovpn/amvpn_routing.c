@@ -99,7 +99,54 @@ void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
 		fclose(fp);
 	}
 	unlink(buffer);
+
+#ifdef RTCONFIG_WIREGUARD
+	// Remove all bypass for this unit
+	if (proto == VPNDIR_PROTO_WIREGUARD) {
+		_amvpn_apply_wg_bypass(unit, 0);
+	}
+#endif
+
 }
+
+#ifdef RTCONFIG_WIREGUARD
+/* Add or remove WG bypass rules for a specific unit */
+void _amvpn_apply_wg_bypass(int unit, int add) {
+	char buffer[32], buffer2[128];
+	FILE *fp;
+
+	snprintf(buffer, sizeof (buffer), "/etc/wg/vpndirector%d", unit);
+	fp = fopen(buffer, "r");
+	if (fp) {
+		while (fgets(buffer2, sizeof(buffer2), fp) != NULL) {
+			if (buffer2[strlen(buffer2)-1] == '\n')
+				buffer2[strlen(buffer2)-1] = '\0';
+			if (!strcmp(buffer2, "LAN"))
+				hnd_skip_wg_all_lan(add);
+			else
+				hnd_skip_wg_network(add, buffer2);
+		}
+		fclose(fp);
+	}
+
+	if (!add)
+		unlink(buffer);
+}
+
+/* Re-apply all WGC bypass rules (following a removal) in case we have overlaps */
+void amvpn_refresh_wg_bypass_rules() {
+	int unit;
+	char buffer[32];
+
+	for (unit = 1; unit <= WG_CLIENT_MAX; unit++ ) {
+		sprintf(buffer, "wgc%d_enable", unit);
+		if (nvram_get_int(buffer)) {
+			_amvpn_apply_wg_bypass(unit, 1);
+		}
+	}
+}
+#endif
+
 
 /*
 	Rule priority allocations:
@@ -177,9 +224,10 @@ void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto) {
 	char *buffer_tmp, *buffer_tmp2, *rule;
 	char buffer[128], table[16];
-	int ruleprio, vpnprio, wanprio;
+	int ruleprio, vpnprio, wanprio, ret;
 	char *enable, *desc, *target, *src, *dst;
 	char srcstr[64], dststr[64];
+	char bypass_filename[64];
 
 	wanprio = VPNDIR_PRIO_WAN;
 
@@ -221,10 +269,40 @@ void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto)
 		else
 			continue;
 
-		if (*src && strcmp(src, "0.0.0.0"))
+		if (*src && strcmp(src, "0.0.0.0")) {
 			snprintf(srcstr, sizeof (srcstr), "from %s", src);
-		else
+#ifdef RTCONFIG_WIREGUARD
+			if ((proto == VPNDIR_PROTO_WIREGUARD) && (!strncmp(target,"WGC", 3))) {
+				snprintf(bypass_filename, sizeof (bypass_filename), "/etc/wg/vpndirector%d", unit);
+
+				if (strchr(src, '/'))
+					snprintf(buffer, sizeof(buffer), "%s\n", src);
+				else {
+					ret = is_valid_ip(src);
+					if (ret > 1)
+						snprintf(buffer, sizeof(buffer), "%s/128\n", src);
+					else if (ret > 0)
+						snprintf(buffer, sizeof(buffer), "%s/32\n", src);
+				}
+				f_write_string(bypass_filename, buffer, FW_APPEND, 0);
+				sprintf(buffer, "wgc%d_enable", unit);
+				if (nvram_get_int(buffer))
+					hnd_skip_wg_network(1, src);
+			}
+#endif
+		}
+		else {
 			*srcstr = '\0';
+#ifdef RTCONFIG_WIREGUARD
+			if ((proto == VPNDIR_PROTO_WIREGUARD) && (!strncmp(target,"WGC", 3))) {
+				snprintf(bypass_filename, sizeof (bypass_filename), "/etc/wg/vpndirector%d", unit);
+				f_write_string(bypass_filename, "LAN\n", FW_APPEND, 0);
+				sprintf(buffer, "wgc%d_enable", unit);
+				if (nvram_get_int(buffer))
+					hnd_skip_wg_all_lan(1);
+			}
+#endif
+		}
 
 		if (*dst && strcmp(dst, "0.0.0.0"))
 			snprintf(dststr, sizeof (dststr), "to %s", dst);

@@ -16880,6 +16880,7 @@ retry_wps_enr:
 					amvpn_clear_exclusive_dns(i, VPNDIR_PROTO_WIREGUARD);
 					wgc_set_exclusive_dns(i);
 				}
+				amvpn_refresh_wg_bypass_rules();
 #endif
 				for (i = OVPN_CLIENT_MAX; i > 0; i --) {
 					amvpn_set_routing_rules(i, VPNDIR_PROTO_OPENVPN);
@@ -16888,6 +16889,7 @@ retry_wps_enr:
 				}
 			} else {
 				// unit-specific only called for OpenVPN for now
+				// NOTE: doing it for a single WGC would mess with other bypass rules
 				amvpn_set_wan_routing_rules();
 				amvpn_set_routing_rules(unit, VPNDIR_PROTO_OPENVPN);
 				amvpn_clear_exclusive_dns(unit, VPNDIR_PROTO_OPENVPN);

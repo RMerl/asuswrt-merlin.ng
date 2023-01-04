@@ -3420,6 +3420,7 @@ extern void run_wgs_fw_scripts();
 extern void run_wgc_fw_scripts();
 extern int is_wg_enabled();
 extern void check_wgc_endpoint();
+#if 0	// Moved to vpn_utils.h
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
 typedef enum {
 	WG_PORT_DST = 0,
@@ -3430,6 +3431,7 @@ extern void hnd_skip_wg_port(int add, int port, wg_port_t type);
 extern void hnd_skip_wg_network(int add, const char* net);
 extern void hnd_skip_wg_all_lan(int add);
 #endif
+#endif	// Moved to vpn_utils.h
 #endif
 
 extern int get_active_wan_unit(void);

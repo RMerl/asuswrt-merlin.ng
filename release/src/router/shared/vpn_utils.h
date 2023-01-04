@@ -134,4 +134,28 @@ extern int read_wgc_config_file(const char* file_path, int wgc_unit);
 extern int is_wgc_connected(int unit);
 #endif
 
+#ifdef RTCONFIG_WIREGUARD
+typedef enum wg_type{
+        WG_TYPE_SERVER = 0,
+        WG_TYPE_CLIENT
+}wg_type_t;
+
+enum {
+        WG_NF_DEL = 0,
+        WG_NF_ADD
+};
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#define WG_DIR_CONF    "/etc/wg"
+typedef enum {
+        WG_PORT_DST = 0,
+        WG_PORT_SRC,
+        WG_PORT_BOTH,
+}wg_port_t;
+extern void hnd_skip_wg_port(int add, int port, wg_port_t type);
+extern void hnd_skip_wg_network(int add, const char* net);
+extern void hnd_skip_wg_all_lan(int add);
+extern int _wg_check_same_port(wg_type_t type, int unit, int port);
+#endif
+#endif
+
 #endif

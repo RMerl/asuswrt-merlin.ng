@@ -16,6 +16,7 @@
 #define WG_PRG_CRU     "/usr/sbin/cru"
 #define WG_WAIT_SYNC   5
 
+#if 0	// Moved to vpn_utils.c
 typedef enum wg_type{
 	WG_TYPE_SERVER = 0,
 	WG_TYPE_CLIENT
@@ -25,6 +26,7 @@ enum {
 	WG_NF_DEL = 0,
 	WG_NF_ADD
 };
+#endif
 
 #ifdef RTCONFIG_HND_ROUTER
 #define BLOG_SKIP_PORT "/proc/blog/skip_wireguard_port"
@@ -275,6 +277,7 @@ static void _wg_config_route(char* prefix, char* ifname, int table)
 	}
 }
 
+#if 0	// Moved to vpn_utils.c
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
 static int _wg_check_same_port(wg_type_t type, int unit, int port)
 {
@@ -361,6 +364,7 @@ void hnd_skip_wg_all_lan(int add)
 	}
 }
 #endif
+#endif  // Moved to vpn_utils.c
 
 static void _wg_client_config_sysdeps(int wg_enable, int unit, const char* prefix)
 {

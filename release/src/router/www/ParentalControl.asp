@@ -949,7 +949,7 @@ function show_inner_tab(){
 }
 </script></head>
 
-<body onload="initial();" onunload="unload_body();" class="bg">
+<body onload="initial();" onunload="unload_body();" onselectstart="return false;" class="bg">
 <div id="TopBanner"></div>
 <div id="Loading" class="popup_bg"></div>
 

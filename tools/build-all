@@ -25,7 +25,7 @@ RSYNC_TREE=y
 COMBINED=y
 
 # Build ROG UI image for GT models in addition to regular image
-BUILD_ROGUI=n
+BUILD_ROGUI=y
 
 ### Uncomment the models you wish to build.
 
@@ -56,14 +56,14 @@ BGTAX11000_PRO=y
 BAX86_PRO=y
 
 ### Branches for each model
-BRANCH_AC68=386.7_x
+BRANCH_AC68=386_x
 
-BRANCH_AC88=386.7_x
-BRANCH_AC3100=386.7_x
-BRANCH_AC5300=49335
+BRANCH_AC88=386_x
+BRANCH_AC3100=386_x
+BRANCH_AC5300=386_x
 
-BRANCH_AC86=386.7_x
-BRANCH_GTAC2900=386.7_x
+BRANCH_AC86=386_x
+BRANCH_GTAC2900=386_x
 
 BRANCH_AX88=388_20566
 BRANCH_GTAX11000=388_20566
@@ -71,10 +71,10 @@ BRANCH_GTAX11000=388_20566
 BRANCH_AX58=master
 BRANCH_AX56=master
 
-BRANCH_AX86=386.7_x
-BRANCH_AX68=386.7_x
+BRANCH_AX86=master
+BRANCH_AX68=master
 BRANCH_GTAXE11000=master
-BRANCH_AC68V4=386.7_x
+BRANCH_AC68V4=386_x
 
 BRANCH_GTAX6000=master
 BRANCH_XT12=master
@@ -115,7 +115,7 @@ build_fw()
 			FWNAME="$(find -- *_puresqubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_puresqubi.w~~g').zip"
 		elif [ "$FWMODEL" = "rt-ax86u" ] || [ "$FWMODEL" = "rt-ax68u" ] ; then
-#			rm *_cferom_pureubi.w	# Broken cferom, do not use until fixed upstream
+			rm *_cferom_pureubi.w	# Broken cferom, do not use until fixed upstream
 			FWNAME="$(find -- *_pureubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_pureubi.w~~g').zip"
 		elif [ "$FWMODEL" = "rt-ax56u" ] || [ "$FWMODEL" = "gt-axe11000" ] ; then
@@ -226,7 +226,7 @@ if [ "$BAX88" = "y" ]; then
 	clean_tree amng.ax88 release/src-rt-5.02axhnd rt-ax88u $BRANCH_AX88
 fi
 if [ "$BGTAX11000" = "y" ]; then
-	clean_tree amng.gt11000 release/src-rt-5.02axhnd gt-ax11000 $BRANCH_GTAX11000
+	clean_tree amng.gtax11000 release/src-rt-5.02axhnd gt-ax11000 $BRANCH_GTAX11000
 fi
 if [ "$BAX58" = "y" ]; then
 	clean_tree amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u $BRANCH_AX58
@@ -300,7 +300,7 @@ if [ "$BAX88" = "y" ]; then
 fi
 
 if [ "$BGTAX11000" = "y" ]; then
-	build_fw amng.gt11000/release/src-rt-5.02axhnd gt-ax11000 &
+	build_fw amng.gtax11000/release/src-rt-5.02axhnd gt-ax11000 &
 fi
 
 if [ "$BGTAXE11000" = "y" ]; then

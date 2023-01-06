@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.9 (xx-xxx-xxxx)
+386.9 (6-Jan-2023)
   - NOTE: 386_xx release are only for Wifi 5 (802.11ac) models.
   - NEW: Merged with GPL 386_50757.
 

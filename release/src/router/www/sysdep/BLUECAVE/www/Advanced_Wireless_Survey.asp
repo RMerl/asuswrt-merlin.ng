@@ -176,7 +176,11 @@ function showSiteTable(){
 				htmlCode += '<td id="ssid" onclick="oui_query_full_vendor(\'' + aplist[i][6].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">' + ssid_str + '</td>';
 
 				// channel
-				htmlCode += '<td width="15%" style="text-align:center;">' + aplist[i][2] + ' (' + aplist[i][7] + ')</td>';
+				htmlCode += '<td width="15%" style="text-align:center;">';
+				if (aplist[i][0] == "6G")
+					htmlCode += '6g' + aplist[i][2] + ' (ax)</td>';
+				else
+					htmlCode += aplist[i][2] + ' (' + aplist[i][7] + ')</td>';
 
 				// security
 				if(aplist[i][3] == "Open System" && aplist[i][4] == "NONE")
@@ -188,6 +192,8 @@ function showSiteTable(){
 				// band
 				if(aplist[i][0] == "2G")
 					htmlCode += '<td width="10%" style="text-align:center;">2.4GHz</td>';
+				else if (aplist[i][0] == "6G")
+					htmlCode += '<td width="10%" style="text-align:center;">6GHz</td>';
 				else
 					htmlCode += '<td width="10%" style="text-align:center;">5GHz</td>';
 

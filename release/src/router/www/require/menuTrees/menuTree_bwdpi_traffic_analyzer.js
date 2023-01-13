@@ -223,8 +223,6 @@ define(function(){
 					{url: "Advanced_WAdvanced_Content.asp", tabName: "<#menu5_1_6#>"},
 					{url: "Advanced_WProxy_Content.asp", tabName: "<#WiFi_Proxy_item#>"},
 					{url: "Advanced_Roaming_Block_Content.asp", tabName: "<#WiFi_Roaming_Block_List#>"},
-					{url: "Advanced_Wireless_Survey.asp", tabName: "Site Survey"},
-					{url: "WiFi_Insight.asp", tabName: "<#WiFi_radar#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				] 
 			},
@@ -352,6 +350,8 @@ define(function(){
 					{url: "Main_WOL_Content.asp", tabName: "<#NetworkTools_WOL#>"},
 					// {url: "Main_ChkSta_Content.asp", tabName: "<#NetworkTools_ChkSta#>"},
 					{url: "Advanced_Smart_Connect.asp", tabName: "<#smart_connect_rule#>"},
+					{url: "Advanced_Wireless_Survey.asp", tabName: "Site Survey"},
+					{url: "WiFi_Insight.asp", tabName: "<#WiFi_radar#>"},
 					{url: "NULL", tabName: "__INHERIT__"}
 				]
 			}
@@ -885,10 +885,7 @@ define(function(){
 					retArray.push("Advanced_IPTV_Content.asp");
 				}
 
-				if(hnd_support){
-					retArray.push("Advanced_Wireless_Survey.asp");
-				}
-				else{
+				if(!hnd_support){
 					retArray.push("WiFi_Insight.asp");
 				}
 

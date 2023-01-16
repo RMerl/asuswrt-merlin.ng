@@ -37,6 +37,8 @@ p{
 </style>
 
 <script>
+// disable auto log out
+AUTOLOGOUT_MAX_MINUTE = 0;
 overlib_str_tmp = "";
 overlib.isOut = true;
 

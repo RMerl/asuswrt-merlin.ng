@@ -17,6 +17,8 @@
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script>
+// disable auto log out
+AUTOLOGOUT_MAX_MINUTE = 0;
 var clockinterval;
 var bootinterval;
 function showclock(){

@@ -16855,12 +16855,16 @@ retry_wps_enr:
 
 #ifdef RTCONFIG_OPENVPN
 	else if (strncmp(script, "vpnclient", 9) == 0) {
-		if (action & RC_SERVICE_STOP) stop_ovpn_client(atoi(&script[9]));
-		if (action & RC_SERVICE_START) start_ovpn_client(atoi(&script[9]));
+		if (strlen(script) == 10) {
+			if (action & RC_SERVICE_STOP) stop_ovpn_client(atoi(&script[9]));
+			if (action & RC_SERVICE_START) start_ovpn_client(atoi(&script[9]));
+		}
 	}
 	else if (strncmp(script, "vpnserver" ,9) == 0) {
-		if (action & RC_SERVICE_STOP) stop_ovpn_server(atoi(&script[9]));
-		if (action & RC_SERVICE_START) start_ovpn_server(atoi(&script[9]));
+		if (strlen(script) == 10) {
+			if (action & RC_SERVICE_STOP) stop_ovpn_server(atoi(&script[9]));
+			if (action & RC_SERVICE_START) start_ovpn_server(atoi(&script[9]));
+		}
 	}
 	else if (strncmp(script, "vpnrouting" ,10) == 0) {
 		int unit, lock;

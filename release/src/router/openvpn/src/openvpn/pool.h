@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -23,8 +23,6 @@
 
 #ifndef POOL_H
 #define POOL_H
-
-#if P2MP
 
 /*#define IFCONFIG_POOL_TEST*/
 
@@ -102,5 +100,4 @@ void ifconfig_pool_test(in_addr_t start, in_addr_t end);
 
 #endif
 
-#endif /* if P2MP */
 #endif /* ifndef POOL_H */

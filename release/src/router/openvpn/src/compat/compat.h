@@ -24,11 +24,8 @@
 #ifndef COMPAT_H
 #define COMPAT_H
 
-#ifdef HAVE_WINSOCK2_H
+#ifdef _WIN32
 #include <winsock2.h>
-#endif
-
-#ifdef HAVE_WS2TCPIP_H
 #include <ws2tcpip.h>
 #endif
 
@@ -57,16 +54,6 @@ int gettimeofday(struct timeval *tv, void *tz);
 
 #ifndef HAVE_DAEMON
 int daemon(int nochdir, int noclose);
-
-#endif
-
-#ifndef HAVE_INET_NTOP
-const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);
-
-#endif
-
-#ifndef HAVE_INET_PTON
-int inet_pton(int af, const char *src, void *dst);
 
 #endif
 

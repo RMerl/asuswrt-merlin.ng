@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -46,11 +46,11 @@
  * (2 * renogiation timeout)
  *
  * The session id is a random string of 12 byte (or 16 in base64) that is not
- * used by OpenVPN itself but kept intact so that external logging/managment
- * can track the session multiple reconnects/servers. It is delibrately chosen
+ * used by OpenVPN itself but kept intact so that external logging/management
+ * can track the session multiple reconnects/servers. It is deliberately chosen
  * be a multiple of 3 bytes to have a base64 encoding without padding.
  *
- * The hmac is calculated over the username contactinated with the
+ * The hmac is calculated over the username concatenated with the
  * raw auth-token bytes to include authentication of the username in the token
  *
  * We encode the auth-token with base64 and then prepend "SESS_ID_" before
@@ -117,7 +117,7 @@ void wipe_auth_token(struct tls_multi *multi);
 /**
  * Return if the password string has the format of a password.
  *
- * This fuction will always read as many bytes as SESSION_ID_PREFIX is longer
+ * This function will always read as many bytes as SESSION_ID_PREFIX is longer
  * the caller needs ensure that password memory is at least that long (true for
  * calling with struct user_pass)
  * @param password
@@ -129,4 +129,21 @@ is_auth_token(const char *password)
     return (memcmp_constant_time(SESSION_ID_PREFIX, password,
                                  strlen(SESSION_ID_PREFIX)) == 0);
 }
+/**
+ * Checks if a client should be sent a new auth token to update its
+ * current auth-token
+ * @param multi     Pointer the multi object of the TLS session
+ * @param session   Pointer to the TLS session itself
+ */
+void
+resend_auth_token_renegotiation(struct tls_multi *multi, struct tls_session *session);
+
+
+/**
+ * Checks if the timer to resend the auth-token has expired and if a new
+ * auth-token should be send to the client and triggers the resending
+ */
+void
+check_send_auth_token(struct context *c);
+
 #endif /* AUTH_TOKEN_H */

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *                2019 Lev Stipakov <lev@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -116,7 +116,7 @@ register_ring_buffers(HANDLE device,
     rr.receive.tail_moved = receive_tail_moved;
 
     res = DeviceIoControl(device, TUN_IOCTL_REGISTER_RINGS, &rr, sizeof(rr),
-      NULL, 0, &bytes_returned, NULL);
+                          NULL, 0, &bytes_returned, NULL);
 
     return res != FALSE;
 }

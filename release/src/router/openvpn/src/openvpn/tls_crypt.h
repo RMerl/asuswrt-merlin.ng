@@ -101,8 +101,6 @@
 #define TLS_CRYPT_V2_MAX_METADATA_LEN (unsigned)(TLS_CRYPT_V2_MAX_WKC_LEN \
                                                  - (TLS_CRYPT_V2_CLIENT_KEY_LEN + TLS_CRYPT_V2_TAG_SIZE \
                                                     + sizeof(uint16_t)))
-#define TLS_CRYPT_V2_MAX_B64_METADATA_LEN \
-    OPENVPN_BASE64_LENGTH(TLS_CRYPT_V2_MAX_METADATA_LEN - 1)
 
 /**
  * Initialize a key_ctx_bi structure for use with --tls-crypt.
@@ -122,11 +120,6 @@ void tls_crypt_init_key(struct key_ctx_bi *key, const char *key_file,
  * tls_crypt_wrap().
  */
 int tls_crypt_buf_overhead(void);
-
-/**
- * Adjust frame parameters for --tls-crypt overhead.
- */
-void tls_crypt_adjust_frame_parameters(struct frame *frame);
 
 /**
  * Wrap a control channel packet (both authenticates and encrypts the data).

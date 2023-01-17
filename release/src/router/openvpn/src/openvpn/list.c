@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -572,7 +572,7 @@ list_test(void)
  * --------------------------------------------------------------------
  */
 
-#define mix(a,b,c)               \
+#define mix(a, b, c)               \
     {                                \
         a -= b; a -= c; a ^= (c>>13);  \
         b -= c; b -= a; b ^= (a<<8);   \

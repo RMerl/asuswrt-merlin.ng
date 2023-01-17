@@ -21,12 +21,12 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
 #
 
 #  SPDX-License-Identifier: GPL-2.0-only
 #
-#  Copyright (C) 2020-2022 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2020-2023 OpenVPN Inc <sales@openvpn.net>
 #
 
 am__is_gnu_make = { \
@@ -104,13 +104,12 @@ build_triplet = x86_64-pc-linux-gnu
 host_triplet = x86_64-pc-linux-gnu
 subdir = sample/sample-plugins
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_emptyarray.m4 \
-	$(top_srcdir)/m4/ax_socklen_t.m4 \
-	$(top_srcdir)/m4/ax_varargs.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/version.m4 \
-	$(top_srcdir)/compat.m4 $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_socklen_t.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/version.m4 $(top_srcdir)/compat.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -142,18 +141,18 @@ am__tagged_files = $(HEADERS) $(SOURCES) $(TAGS_FILES) $(LISP)
 am__DIST_COMMON = $(srcdir)/Makefile.in $(srcdir)/Makefile.plugins \
 	README
 DISTFILES = $(DIST_COMMON) $(DIST_SOURCES) $(TEXINFOS) $(EXTRA_DIST)
-ACLOCAL = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/missing' aclocal-1.16
+ACLOCAL = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/missing' aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 1
 AR = ar
 AS = as
-AUTOCONF = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/missing' autoconf
-AUTOHEADER = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/missing' autoheader
-AUTOMAKE = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/missing' automake-1.16
+AUTOCONF = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/missing' autoconf
+AUTOHEADER = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/missing' autoheader
+AUTOMAKE = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/missing' automake-1.16
 AWK = gawk
 CC = gcc
 CCDEPMODE = depmode=gcc3
-CFLAGS = -Wall -Wno-stringop-truncation -g -O2 -std=c99
+CFLAGS = -Wall -Wno-stringop-truncation -g -O2 -std=c99 
 CMOCKA_CFLAGS = 
 CMOCKA_LIBS = -lcmocka
 CPP = gcc -E
@@ -186,10 +185,14 @@ INSTALL_STRIP_PROGRAM = $(install_sh) -c -s
 IPROUTE = /usr/sbin/ip
 LD = /usr/bin/ld -m elf_x86_64
 LDFLAGS = 
+LIBCAPNG_CFLAGS = 
+LIBCAPNG_LIBS = -lcap-ng
+LIBNL_GENL_CFLAGS = 
+LIBNL_GENL_LIBS = 
 LIBOBJS = 
 LIBPAM_CFLAGS = 
 LIBPAM_LIBS = -lpam
-LIBS = 
+LIBS =  -lcap-ng
 LIBTOOL = $(SHELL) $(top_builddir)/libtool
 LIPO = 
 LN_S = ln -s
@@ -199,7 +202,7 @@ LZ4_CFLAGS =
 LZ4_LIBS = -llz4
 LZO_CFLAGS = 
 LZO_LIBS = -llzo2
-MAKEINFO = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/missing' makeinfo
+MAKEINFO = ${SHELL} '/home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/missing' makeinfo
 MANIFEST_TOOL = :
 MBEDTLS_CFLAGS = 
 MBEDTLS_LIBS = 
@@ -212,8 +215,8 @@ OBJEXT = o
 OPENSSL_CFLAGS = 
 OPENSSL_LIBS = -lssl -lcrypto
 OPENVPN_VERSION_MAJOR = 2
-OPENVPN_VERSION_MINOR = 5
-OPENVPN_VERSION_PATCH = .8
+OPENVPN_VERSION_MINOR = 6
+OPENVPN_VERSION_PATCH = .0
 OPTIONAL_CRYPTO_CFLAGS =  
 OPTIONAL_CRYPTO_LIBS =  -lssl -lcrypto
 OPTIONAL_DL_LIBS = -ldl
@@ -234,13 +237,13 @@ P11KIT_LIBS =
 PACKAGE = openvpn
 PACKAGE_BUGREPORT = openvpn-users@lists.sourceforge.net
 PACKAGE_NAME = OpenVPN
-PACKAGE_STRING = OpenVPN 2.5.8
+PACKAGE_STRING = OpenVPN 2.6.0
 PACKAGE_TARNAME = openvpn
 PACKAGE_URL = 
-PACKAGE_VERSION = 2.5.8
+PACKAGE_VERSION = 2.6.0
 PATH_SEPARATOR = :
 PKCS11_HELPER_CFLAGS = 
-PKCS11_HELPER_LIBS = 
+PKCS11_HELPER_LIBS = -lpthread -ldl -lcrypto -lpkcs11-helper
 PKG_CONFIG = /usr/bin/pkg-config
 PKG_CONFIG_LIBDIR = 
 PKG_CONFIG_PATH = 
@@ -267,11 +270,14 @@ TAP_WIN_MIN_MINOR = 9
 TEST_CFLAGS =     -I$(top_srcdir)/include 
 TEST_LDFLAGS =  -lssl -lcrypto  -llzo2 -lcmocka
 TMPFILES_DIR = 
-VERSION = 2.5.8
-abs_builddir = /home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/sample/sample-plugins
-abs_srcdir = /home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/sample/sample-plugins
-abs_top_builddir = /home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn
-abs_top_srcdir = /home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn
+VERSION = 2.6.0
+WOLFSSL_CFLAGS = 
+WOLFSSL_INCLUDEDIR = 
+WOLFSSL_LIBS = 
+abs_builddir = /home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/sample/sample-plugins
+abs_srcdir = /home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/sample/sample-plugins
+abs_top_builddir = /home/flichtenheld/openvpn/community/openvpn-build/src/openvpn
+abs_top_srcdir = /home/flichtenheld/openvpn/community/openvpn-build/src/openvpn
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_DUMPBIN = 
@@ -300,7 +306,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/flichtenheld/openvpn/community/openvpn-release-scripts/release/openvpn/install-sh
+install_sh = ${SHELL} /home/flichtenheld/openvpn/community/openvpn-build/src/openvpn/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 libsystemd_CFLAGS = 
@@ -338,7 +344,6 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) \
 # Plug-ins to build - listed entries should not carry any extensions
 #
 PLUGINS = \
-	defer/simple \
 	defer/multi-auth \
 	keying-material-exporter-demo/keyingmaterialexporter \
 	log/log log/log_v3 \

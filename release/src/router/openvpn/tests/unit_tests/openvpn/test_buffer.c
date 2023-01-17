@@ -67,18 +67,18 @@ static int
 test_buffer_list_setup(void **state)
 {
     struct test_buffer_list_aggregate_ctx *ctx  = calloc(1, sizeof(*ctx));
-    ctx->empty = buffer_list_new(0);
+    ctx->empty = buffer_list_new();
 
-    ctx->one_two_three = buffer_list_new(3);
+    ctx->one_two_three = buffer_list_new();
     buffer_list_push(ctx->one_two_three, teststr1);
     buffer_list_push(ctx->one_two_three, teststr2);
     buffer_list_push(ctx->one_two_three, teststr3);
 
-    ctx->zero_length_strings = buffer_list_new(2);
+    ctx->zero_length_strings = buffer_list_new();
     buffer_list_push(ctx->zero_length_strings, "");
     buffer_list_push(ctx->zero_length_strings, "");
 
-    ctx->empty_buffers = buffer_list_new(2);
+    ctx->empty_buffers = buffer_list_new();
     uint8_t data = 0;
     buffer_list_push_data(ctx->empty_buffers, &data, 0);
     buffer_list_push_data(ctx->empty_buffers, &data, 0);
@@ -98,17 +98,6 @@ test_buffer_list_teardown(void **state)
     buffer_list_free(ctx->empty_buffers);
     free(ctx);
     return 0;
-}
-
-static void
-test_buffer_list_full(void **state)
-{
-    struct test_buffer_list_aggregate_ctx *ctx = *state;
-
-    /* list full */
-    assert_int_equal(ctx->one_two_three->size, 3);
-    buffer_list_push(ctx->one_two_three, teststr4);
-    assert_int_equal(ctx->one_two_three->size, 3);
 }
 
 static void
@@ -242,14 +231,42 @@ test_buffer_free_gc_two(void **state)
     gc_free(&gc);
 }
 
+
+static void
+test_buffer_gc_realloc(void **state)
+{
+    struct gc_arena gc = gc_new();
+
+    void *p1 = gc_realloc(NULL, 512, &gc);
+    void *p2 = gc_realloc(NULL, 512, &gc);
+
+    assert_ptr_not_equal(p1, p2);
+
+    memset(p1, '1', 512);
+    memset(p2, '2', 512);
+
+    p1 = gc_realloc(p1, 512, &gc);
+
+    /* allocate 512kB to ensure the pointer needs to change */
+    void *p1new = gc_realloc(p1, 512ul * 1024, &gc);
+    assert_ptr_not_equal(p1, p1new);
+
+    void *p2new = gc_realloc(p2, 512ul * 1024, &gc);
+    assert_ptr_not_equal(p2, p2new);
+
+    void *p3 = gc_realloc(NULL, 512, &gc);
+    memset(p3, '3', 512);
+
+
+    gc_free(&gc);
+}
+
+
 int
 main(void)
 {
     const struct CMUnitTest tests[] = {
         cmocka_unit_test(test_buffer_strprefix),
-        cmocka_unit_test_setup_teardown(test_buffer_list_full,
-                                        test_buffer_list_setup,
-                                        test_buffer_list_teardown),
         cmocka_unit_test_setup_teardown(test_buffer_list_aggregate_separator_empty,
                                         test_buffer_list_setup,
                                         test_buffer_list_teardown),
@@ -273,6 +290,7 @@ main(void)
                                         test_buffer_list_teardown),
         cmocka_unit_test(test_buffer_free_gc_one),
         cmocka_unit_test(test_buffer_free_gc_two),
+        cmocka_unit_test(test_buffer_gc_realloc),
     };
 
     return cmocka_run_group_tests_name("buffer", tests, NULL, NULL);

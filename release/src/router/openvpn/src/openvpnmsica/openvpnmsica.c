@@ -2,7 +2,7 @@
  *  openvpnmsica -- Custom Action DLL to provide OpenVPN-specific support to MSI packages
  *                  https://community.openvpn.net/openvpn/wiki/OpenVPNMSICA
  *
- *  Copyright (C) 2018-2022 Simon Rozman <simon@rozman.si>
+ *  Copyright (C) 2018-2023 Simon Rozman <simon@rozman.si>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -43,6 +43,10 @@
 #include <stdbool.h>
 #include <stdlib.h>
 #include <tchar.h>
+#include <setupapi.h>
+#include <newdev.h>
+#include <initguid.h>
+#include <devguid.h>
 
 #ifdef _MSC_VER
 #pragma comment(lib, "advapi32.lib")
@@ -60,6 +64,8 @@
 #define MSICA_ADAPTER_TICK_SIZE (16*1024) /** Amount of tick space to reserve for one TAP/TUN adapter creation/deletition. */
 
 #define FILE_NEED_REBOOT        L".ovpn_need_reboot"
+
+#define OPENVPN_CONNECT_ADAPTER_SUBSTR L"OpenVPN Connect"
 
 /**
  * Joins an argument sequence and sets it to the MSI property.
@@ -102,13 +108,14 @@ setup_sequence(
  *                        title.
  */
 static void
-_debug_popup(_In_z_ LPCTSTR szFunctionName)
+_debug_popup(_In_z_ LPCSTR szFunctionName)
 {
     TCHAR szTitle[0x100], szMessage[0x100+MAX_PATH], szProcessPath[MAX_PATH];
 
     /* Compose pop-up title. The dialog title will contain function name to ease the process
      * locating. Mind that Visual Studio displays window titles on the process list. */
-    _stprintf_s(szTitle, _countof(szTitle), TEXT("%s v%s"), szFunctionName, TEXT(PACKAGE_VERSION));
+    _stprintf_s(szTitle, _countof(szTitle), TEXT("%hs v%") TEXT(PRIsLPTSTR),
+                szFunctionName, TEXT(PACKAGE_VERSION));
 
     /* Get process name. */
     GetModuleFileName(NULL, szProcessPath, _countof(szProcessPath));
@@ -118,7 +125,8 @@ _debug_popup(_In_z_ LPCTSTR szFunctionName)
     /* Compose the pop-up message. */
     _stprintf_s(
         szMessage, _countof(szMessage),
-        TEXT("The %s process (PID: %u) has started to execute the %s custom action.\r\n")
+        TEXT("The %") TEXT(PRIsLPTSTR) TEXT(" process (PID: %u) has started to execute the %hs")
+        TEXT(" custom action.\r\n")
         TEXT("\r\n")
         TEXT("If you would like to debug the custom action, attach a debugger to this process and set breakpoints before dismissing this dialog.\r\n")
         TEXT("\r\n")
@@ -134,120 +142,6 @@ _debug_popup(_In_z_ LPCTSTR szFunctionName)
 #else  /* ifdef _DEBUG */
 #define debug_popup(f)
 #endif /* ifdef _DEBUG */
-
-
-/**
- * Detects if the OpenVPNService service is in use (running or paused) and sets
- * OPENVPNSERVICE to the service process PID, or its path if it is set to
- * auto-start, but not running.
- *
- * @param hInstall      Handle to the installation provided to the DLL custom action
- *
- * @return ERROR_SUCCESS on success; An error code otherwise
- *         See: https://msdn.microsoft.com/en-us/library/windows/desktop/aa368072.aspx
- */
-static UINT
-set_openvpnserv_state(_In_ MSIHANDLE hInstall)
-{
-    UINT uiResult;
-
-    /* Get Service Control Manager handle. */
-    SC_HANDLE hSCManager = OpenSCManager(NULL, SERVICES_ACTIVE_DATABASE, SC_MANAGER_CONNECT);
-    if (hSCManager == NULL)
-    {
-        uiResult = GetLastError();
-        msg(M_NONFATAL | M_ERRNO, "%s: OpenSCManager() failed", __FUNCTION__);
-        return uiResult;
-    }
-
-    /* Get OpenVPNService service handle. */
-    SC_HANDLE hService = OpenService(hSCManager, TEXT("OpenVPNService"), SERVICE_QUERY_STATUS | SERVICE_QUERY_CONFIG);
-    if (hService == NULL)
-    {
-        uiResult = GetLastError();
-        if (uiResult == ERROR_SERVICE_DOES_NOT_EXIST)
-        {
-            /* This is not actually an error. */
-            goto cleanup_OpenSCManager;
-        }
-        msg(M_NONFATAL | M_ERRNO, "%s: OpenService(\"OpenVPNService\") failed", __FUNCTION__);
-        goto cleanup_OpenSCManager;
-    }
-
-    /* Query service status. */
-    SERVICE_STATUS_PROCESS ssp;
-    DWORD dwBufSize;
-    if (QueryServiceStatusEx(hService, SC_STATUS_PROCESS_INFO, (LPBYTE)&ssp, sizeof(ssp), &dwBufSize))
-    {
-        switch (ssp.dwCurrentState)
-        {
-            case SERVICE_START_PENDING:
-            case SERVICE_RUNNING:
-            case SERVICE_STOP_PENDING:
-            case SERVICE_PAUSE_PENDING:
-            case SERVICE_PAUSED:
-            case SERVICE_CONTINUE_PENDING:
-            {
-                /* Service is started (kind of). Set OPENVPNSERVICE property to service PID. */
-                TCHAR szPID[10 /*MAXDWORD in decimal*/ + 1 /*terminator*/];
-                _stprintf_s(
-                    szPID, _countof(szPID),
-                    TEXT("%u"),
-                    ssp.dwProcessId);
-
-                uiResult = MsiSetProperty(hInstall, TEXT("OPENVPNSERVICE"), szPID);
-                if (uiResult != ERROR_SUCCESS)
-                {
-                    SetLastError(uiResult); /* MSDN does not mention MsiSetProperty() to set GetLastError(). But we do have an error code. Set last error manually. */
-                    msg(M_NONFATAL | M_ERRNO, "%s: MsiSetProperty(\"OPENVPNSERVICE\") failed", __FUNCTION__);
-                }
-
-                /* We know user is using the service. Skip auto-start setting check. */
-                goto cleanup_OpenService;
-            }
-            break;
-        }
-    }
-    else
-    {
-        uiResult = GetLastError();
-        msg(M_NONFATAL | M_ERRNO, "%s: QueryServiceStatusEx(\"OpenVPNService\") failed", __FUNCTION__);
-    }
-
-    /* Service is not started. Is it set to auto-start? */
-    /* MSDN describes the maximum buffer size for QueryServiceConfig() to be 8kB. */
-    /* This is small enough to fit on stack. */
-    BYTE _buffer_8k[8192];
-    LPQUERY_SERVICE_CONFIG pQsc = (LPQUERY_SERVICE_CONFIG)_buffer_8k;
-    dwBufSize = sizeof(_buffer_8k);
-    if (!QueryServiceConfig(hService, pQsc, dwBufSize, &dwBufSize))
-    {
-        uiResult = GetLastError();
-        msg(M_NONFATAL | M_ERRNO, "%s: QueryServiceStatusEx(\"QueryServiceConfig\") failed", __FUNCTION__);
-        goto cleanup_OpenService;
-    }
-
-    if (pQsc->dwStartType <= SERVICE_AUTO_START)
-    {
-        /* Service is set to auto-start. Set OPENVPNSERVICE property to its path. */
-        uiResult = MsiSetProperty(hInstall, TEXT("OPENVPNSERVICE"), pQsc->lpBinaryPathName);
-        if (uiResult != ERROR_SUCCESS)
-        {
-            SetLastError(uiResult); /* MSDN does not mention MsiSetProperty() to set GetLastError(). But we do have an error code. Set last error manually. */
-            msg(M_NONFATAL | M_ERRNO, "%s: MsiSetProperty(\"OPENVPNSERVICE\") failed", __FUNCTION__);
-            goto cleanup_OpenService;
-        }
-    }
-
-    uiResult = ERROR_SUCCESS;
-
-cleanup_OpenService:
-    CloseServiceHandle(hService);
-cleanup_OpenSCManager:
-    CloseServiceHandle(hSCManager);
-    return uiResult;
-}
-
 
 static void
 find_adapters(
@@ -332,6 +226,13 @@ find_adapters(
 
     for (struct tap_adapter_node *pAdapter = pAdapterList; pAdapter; pAdapter = pAdapter->pNext)
     {
+        /* exclude adapters created by OpenVPN Connect, since they're removed on Connect uninstallation */
+        if (_tcsstr(pAdapter->szName, OPENVPN_CONNECT_ADAPTER_SUBSTR))
+        {
+            msg(M_WARN, "%s: skip OpenVPN Connect adapter '%ls'", __FUNCTION__, pAdapter->szName);
+            continue;
+        }
+
         /* Convert adapter GUID to UTF-16 string. (LPOLESTR defaults to LPWSTR) */
         LPOLESTR szAdapterId = NULL;
         StringFromIID((REFIID)&pAdapter->guid, &szAdapterId);
@@ -405,13 +306,12 @@ FindSystemInfo(_In_ MSIHANDLE hInstall)
 #pragma comment(linker, DLLEXP_EXPORT)
 #endif
 
-    debug_popup(TEXT(__FUNCTION__));
+    debug_popup(__FUNCTION__);
 
     BOOL bIsCoInitialized = SUCCEEDED(CoInitialize(NULL));
 
     OPENVPNMSICA_SAVE_MSI_SESSION(hInstall);
 
-    set_openvpnserv_state(hInstall);
     find_adapters(
         hInstall,
         TEXT("root\\") TEXT(TAP_WIN_COMPONENT_ID) TEXT("\0") TEXT(TAP_WIN_COMPONENT_ID) TEXT("\0"),
@@ -422,6 +322,11 @@ FindSystemInfo(_In_ MSIHANDLE hInstall)
         TEXT("Wintun") TEXT("\0"),
         TEXT("WINTUNADAPTERS"),
         TEXT("ACTIVEWINTUNADAPTERS"));
+    find_adapters(
+        hInstall,
+        TEXT("ovpn-dco") TEXT("\0"),
+        TEXT("OVPNDCOADAPTERS"),
+        TEXT("ACTIVEOVPNDCOADAPTERS"));
 
     if (bIsCoInitialized)
     {
@@ -439,7 +344,7 @@ CloseOpenVPNGUI(_In_ MSIHANDLE hInstall)
 #endif
     UNREFERENCED_PARAMETER(hInstall); /* This CA is does not interact with MSI session (report errors, access properties, tables, etc.). */
 
-    debug_popup(TEXT(__FUNCTION__));
+    debug_popup(__FUNCTION__);
 
     /* Find OpenVPN GUI window. */
     HWND hWnd = FindWindow(TEXT("OpenVPN-GUI"), NULL);
@@ -461,7 +366,7 @@ StartOpenVPNGUI(_In_ MSIHANDLE hInstall)
 #pragma comment(linker, DLLEXP_EXPORT)
 #endif
 
-    debug_popup(TEXT(__FUNCTION__));
+    debug_popup(__FUNCTION__);
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(CoInitialize(NULL));
@@ -734,7 +639,7 @@ EvaluateTUNTAPAdapters(_In_ MSIHANDLE hInstall)
 #pragma comment(linker, DLLEXP_EXPORT)
 #endif
 
-    debug_popup(TEXT(__FUNCTION__));
+    debug_popup(__FUNCTION__);
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(CoInitialize(NULL));
@@ -1040,15 +945,15 @@ parse_guid(
 static void
 CreateRebootFile(_In_z_ LPCWSTR szTmpDir)
 {
-    TCHAR path[MAX_PATH];
+    WCHAR path[MAX_PATH];
     swprintf_s(path, _countof(path), L"%s%s", szTmpDir, FILE_NEED_REBOOT);
 
-    msg(M_WARN, "%s: Reboot required, create reboot indication file \"%" PRIsLPTSTR "\"", __FUNCTION__, path);
+    msg(M_WARN, "%s: Reboot required, create reboot indication file \"%ls\"", __FUNCTION__, path);
 
-    HANDLE file = CreateFile(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
+    HANDLE file = CreateFileW(path, GENERIC_WRITE, 0, NULL, CREATE_ALWAYS, FILE_ATTRIBUTE_NORMAL, NULL);
     if (file == INVALID_HANDLE_VALUE)
     {
-        msg(M_NONFATAL | M_ERRNO, "%s: CreateFile(\"%" PRIsLPTSTR "\") failed", __FUNCTION__, path);
+        msg(M_NONFATAL | M_ERRNO, "%s: CreateFile(\"%ls\") failed", __FUNCTION__, path);
     }
     else
     {
@@ -1063,7 +968,7 @@ ProcessDeferredAction(_In_ MSIHANDLE hInstall)
 #pragma comment(linker, DLLEXP_EXPORT)
 #endif
 
-    debug_popup(TEXT(__FUNCTION__));
+    debug_popup(__FUNCTION__);
 
     UINT uiResult;
     BOOL bIsCoInitialized = SUCCEEDED(CoInitialize(NULL));
@@ -1138,7 +1043,7 @@ ProcessDeferredAction(_In_ MSIHANDLE hInstall)
             if (dwResult == ERROR_SUCCESS)
             {
                 /* Set adapter name. May fail on some machines, but that is not critical - use silent
-                   flag to mute messagebox and print error only to log */
+                 * flag to mute messagebox and print error only to log */
                 tap_set_adapter_name(&guidAdapter, szName, TRUE);
             }
         }
@@ -1263,28 +1168,27 @@ CheckAndScheduleReboot(_In_ MSIHANDLE hInstall)
 #pragma comment(linker, DLLEXP_EXPORT)
 #endif
 
-    debug_popup(TEXT(__FUNCTION__));
+    debug_popup(__FUNCTION__);
 
-    UINT ret = ERROR_SUCCESS;
     BOOL bIsCoInitialized = SUCCEEDED(CoInitialize(NULL));
 
     OPENVPNMSICA_SAVE_MSI_SESSION(hInstall);
 
     /* get user-specific temp path, to where we create reboot indication file */
-    TCHAR tempPath[MAX_PATH];
-    GetTempPath(MAX_PATH, tempPath);
+    WCHAR tempPath[MAX_PATH];
+    GetTempPathW(MAX_PATH, tempPath);
 
     /* check if reboot file exists */
-    TCHAR path[MAX_PATH];
-    _stprintf_s(path, _countof(path), L"%s%s", tempPath, FILE_NEED_REBOOT);
+    WCHAR path[MAX_PATH];
+    swprintf_s(path, _countof(path), L"%s%s", tempPath, FILE_NEED_REBOOT);
     WIN32_FIND_DATA data = { 0 };
-    HANDLE searchHandle = FindFirstFile(path, &data);
+    HANDLE searchHandle = FindFirstFileW(path, &data);
     if (searchHandle != INVALID_HANDLE_VALUE)
     {
         msg(M_WARN, "%s: Reboot file exists, schedule reboot", __FUNCTION__);
 
         FindClose(searchHandle);
-        DeleteFile(path);
+        DeleteFileW(path);
 
         MsiSetMode(hInstall, MSIRUNMODE_REBOOTATEND, TRUE);
     }
@@ -1293,5 +1197,5 @@ CheckAndScheduleReboot(_In_ MSIHANDLE hInstall)
     {
         CoUninitialize();
     }
-    return ret;
+    return ERROR_SUCCESS;
 }

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2012-2022 Heiko Hund <heiko.hund@sophos.com>
+ *  Copyright (C) 2012-2023 Heiko Hund <heiko.hund@sophos.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -92,6 +92,7 @@ typedef enum {
     undo_dns4,
     undo_dns6,
     undo_domain,
+    undo_ring_buffer,
     _undo_type_max
 } undo_type_t;
 typedef list_item_t *undo_lists_t[_undo_type_max];
@@ -104,12 +105,9 @@ typedef struct {
 } block_dns_data_t;
 
 typedef struct {
-    HANDLE send_ring_handle;
-    HANDLE receive_ring_handle;
-    HANDLE send_tail_moved;
-    HANDLE receive_tail_moved;
-    HANDLE device;
-} ring_buffer_handles_t;
+    struct tun_ring *send_ring;
+    struct tun_ring *receive_ring;
+} ring_buffer_maps_t;
 
 
 static DWORD
@@ -165,25 +163,21 @@ CloseHandleEx(LPHANDLE handle)
     return INVALID_HANDLE_VALUE;
 }
 
-static HANDLE
-OvpnUnmapViewOfFile(LPHANDLE handle)
+static void
+OvpnUnmapViewOfFile(struct tun_ring **ring)
 {
-    if (handle && *handle && *handle != INVALID_HANDLE_VALUE)
+    if (ring && *ring)
     {
-        UnmapViewOfFile(*handle);
-        *handle = INVALID_HANDLE_VALUE;
+        UnmapViewOfFile(*ring);
+        *ring = NULL;
     }
-    return INVALID_HANDLE_VALUE;
 }
 
 static void
-CloseRingBufferHandles(ring_buffer_handles_t *ring_buffer_handles)
+UnmapRingBuffer(ring_buffer_maps_t *ring_buffer_maps)
 {
-    CloseHandleEx(&ring_buffer_handles->device);
-    CloseHandleEx(&ring_buffer_handles->receive_tail_moved);
-    CloseHandleEx(&ring_buffer_handles->send_tail_moved);
-    OvpnUnmapViewOfFile(&ring_buffer_handles->send_ring_handle);
-    OvpnUnmapViewOfFile(&ring_buffer_handles->receive_ring_handle);
+    OvpnUnmapViewOfFile(&ring_buffer_maps->send_ring);
+    OvpnUnmapViewOfFile(&ring_buffer_maps->receive_ring);
 }
 
 static HANDLE
@@ -307,7 +301,7 @@ ReturnProcessId(HANDLE pipe, DWORD pid, DWORD count, LPHANDLE events)
      * Same format as error messages (3 line string) with error = 0 in
      * 0x%08x format, PID on line 2 and a description "Process ID" on line 3
      */
-    openvpn_swprintf(buf, _countof(buf), L"0x%08x\n0x%08x\n%s", 0, pid, msg);
+    openvpn_swprintf(buf, _countof(buf), L"0x%08x\n0x%08x\n%ls", 0, pid, msg);
 
     WritePipeAsync(pipe, buf, (DWORD)(wcslen(buf) * 2), count, events);
 }
@@ -338,11 +332,7 @@ ReturnError(HANDLE pipe, DWORD error, LPCWSTR func, DWORD count, LPHANDLE events
                                 (LPWSTR) &result, 0, (va_list *) args);
 
     WritePipeAsync(pipe, result, (DWORD)(wcslen(result) * 2), count, events);
-#ifdef UNICODE
     MsgToEventLog(MSG_FLAGS_ERROR, result);
-#else
-    MsgToEventLog(MSG_FLAGS_ERROR, "%S", result);
-#endif
 
     if (error != ERROR_OPENVPN_STARTUP)
     {
@@ -373,21 +363,21 @@ ValidateOptions(HANDLE pipe, const WCHAR *workdir, const WCHAR *options, WCHAR *
     int argc;
     BOOL ret = FALSE;
     int i;
-    const WCHAR *msg1 = L"You have specified a config file location (%s relative to %s)"
+    const WCHAR *msg1 = L"You have specified a config file location (%ls relative to %ls)"
                         L" that requires admin approval. This error may be avoided"
-                        L" by adding your account to the \"%s\" group";
+                        L" by adding your account to the \"%ls\" group";
 
-    const WCHAR *msg2 = L"You have specified an option (%s) that may be used"
+    const WCHAR *msg2 = L"You have specified an option (%ls) that may be used"
                         L" only with admin approval. This error may be avoided"
-                        L" by adding your account to the \"%s\" group";
+                        L" by adding your account to the \"%ls\" group";
 
     argv = CommandLineToArgvW(options, &argc);
 
     if (!argv)
     {
         openvpn_swprintf(errmsg, capacity,
-	                 L"Cannot validate options: CommandLineToArgvW failed with error = 0x%08x",
-	                 GetLastError());
+                         L"Cannot validate options: CommandLineToArgvW failed with error = 0x%08x",
+                         GetLastError());
         goto out;
     }
 
@@ -568,19 +558,19 @@ InterfaceLuid(const char *iface_name, PNET_LUID luid)
 static DWORD
 ConvertInterfaceNameToIndex(const wchar_t *ifname, NET_IFINDEX *index)
 {
-   NET_LUID luid;
-   DWORD err;
+    NET_LUID luid;
+    DWORD err;
 
-   err = ConvertInterfaceAliasToLuid(ifname, &luid);
-   if (err == ERROR_SUCCESS)
-   {
-       err = ConvertInterfaceLuidToIndex(&luid, index);
-   }
-   if (err != ERROR_SUCCESS)
-   {
-       MsgToEventLog(M_ERR, L"Failed to find interface index for <%s>", ifname);
-   }
-   return err;
+    err = ConvertInterfaceAliasToLuid(ifname, &luid);
+    if (err == ERROR_SUCCESS)
+    {
+        err = ConvertInterfaceLuidToIndex(&luid, index);
+    }
+    if (err != ERROR_SUCCESS)
+    {
+        MsgToEventLog(M_ERR, L"Failed to find interface index for <%ls>", ifname);
+    }
+    return err;
 }
 
 static BOOL
@@ -776,17 +766,12 @@ BlockDNSErrHandler(DWORD err, const char *msg)
         err_str = buf;
     }
 
-#ifdef UNICODE
-    MsgToEventLog(M_ERR, L"%S (status = %lu): %s", msg, err, err_str);
-#else
-    MsgToEventLog(M_ERR, "%s (status = %lu): %s", msg, err, err_str);
-#endif
-
+    MsgToEventLog(M_ERR, L"%hs (status = %lu): %ls", msg, err, err_str);
 }
 
 /* Use an always-true match_fn to get the head of the list */
 static BOOL
-CmpEngine(LPVOID item, LPVOID any)
+CmpAny(LPVOID item, LPVOID any)
 {
     return TRUE;
 }
@@ -799,13 +784,7 @@ HandleBlockDNSMessage(const block_dns_message_t *msg, undo_lists_t *lists)
     HANDLE engine = NULL;
     LPCWSTR exe_path;
 
-#ifdef UNICODE
     exe_path = settings.exe_path;
-#else
-    WCHAR wide_path[MAX_PATH];
-    MultiByteToWideChar(CP_UTF8, 0, settings.exe_path, MAX_PATH, wide_path, MAX_PATH);
-    exe_path = wide_path;
-#endif
 
     if (msg->header.type == msg_add_block_dns)
     {
@@ -847,7 +826,7 @@ HandleBlockDNSMessage(const block_dns_message_t *msg, undo_lists_t *lists)
     }
     else
     {
-        interface_data = RemoveListItem(&(*lists)[block_dns], CmpEngine, NULL);
+        interface_data = RemoveListItem(&(*lists)[block_dns], CmpAny, NULL);
         if (interface_data)
         {
             engine = interface_data->engine;
@@ -899,7 +878,7 @@ ExecCommand(const WCHAR *argv0, const WCHAR *cmdline, DWORD timeout)
     si.cb = sizeof(si);
 
     /* CreateProcess needs a modifiable cmdline: make a copy */
-    cmdline_dup = wcsdup(cmdline);
+    cmdline_dup = _wcsdup(cmdline);
     if (cmdline_dup && CreateProcessW(argv0, cmdline_dup, NULL, NULL, FALSE,
                                       proc_flags, NULL, NULL, &si, &pi) )
     {
@@ -915,17 +894,17 @@ ExecCommand(const WCHAR *argv0, const WCHAR *cmdline, DWORD timeout)
 
             /* kill without impunity */
             TerminateProcess(pi.hProcess, exit_code);
-            MsgToEventLog(M_ERR, TEXT("ExecCommand: \"%s %s\" killed after timeout"),
+            MsgToEventLog(M_ERR, TEXT("ExecCommand: \"%ls %ls\" killed after timeout"),
                           argv0, cmdline);
         }
         else if (exit_code)
         {
-            MsgToEventLog(M_ERR, TEXT("ExecCommand: \"%s %s\" exited with status = %lu"),
+            MsgToEventLog(M_ERR, TEXT("ExecCommand: \"%ls %ls\" exited with status = %lu"),
                           argv0, cmdline, exit_code);
         }
         else
         {
-            MsgToEventLog(M_INFO, TEXT("ExecCommand: \"%s %s\" completed"), argv0, cmdline);
+            MsgToEventLog(M_INFO, TEXT("ExecCommand: \"%ls %ls\" completed"), argv0, cmdline);
         }
 
         CloseHandle(pi.hProcess);
@@ -934,7 +913,7 @@ ExecCommand(const WCHAR *argv0, const WCHAR *cmdline, DWORD timeout)
     else
     {
         exit_code = GetLastError();
-        MsgToEventLog(M_SYSERR, TEXT("ExecCommand: could not run \"%s %s\" :"),
+        MsgToEventLog(M_SYSERR, TEXT("ExecCommand: could not run \"%ls %ls\" :"),
                       argv0, cmdline);
     }
 
@@ -967,7 +946,7 @@ RegisterDNS(LPVOID unused)
 
     HANDLE wait_handles[2] = {rdns_semaphore, exit_event};
 
-    openvpn_swprintf(ipcfg, MAX_PATH, L"%s\\%s", get_win_sys_path(), L"ipconfig.exe");
+    openvpn_swprintf(ipcfg, MAX_PATH, L"%ls\\%ls", get_win_sys_path(), L"ipconfig.exe");
 
     if (WaitForMultipleObjects(2, wait_handles, FALSE, timeout) == WAIT_OBJECT_0)
     {
@@ -1046,13 +1025,12 @@ netsh_dns_cmd(const wchar_t *action, const wchar_t *proto, const wchar_t *if_nam
     }
 
     /* Path of netsh */
-    swprintf(argv0, _countof(argv0), L"%s\\%s", get_win_sys_path(), L"netsh.exe");
-    argv0[_countof(argv0) - 1] = L'\0';
+    openvpn_swprintf(argv0, _countof(argv0), L"%ls\\%ls", get_win_sys_path(), L"netsh.exe");
 
     /* cmd template:
      * netsh interface $proto $action dns $if_name $addr [validate=no]
      */
-    const wchar_t *fmt = L"netsh interface %s %s dns \"%s\" %s";
+    const wchar_t *fmt = L"netsh interface %ls %ls dns \"%ls\" %ls";
 
     /* max cmdline length in wchars -- include room for worst case and some */
     size_t ncmdline = wcslen(fmt) + wcslen(if_name) + wcslen(addr) + 32 + 1;
@@ -1063,11 +1041,11 @@ netsh_dns_cmd(const wchar_t *action, const wchar_t *proto, const wchar_t *if_nam
         goto out;
     }
 
-    openvpn_sntprintf(cmdline, ncmdline, fmt, proto, action, if_name, addr);
+    openvpn_swprintf(cmdline, ncmdline, fmt, proto, action, if_name, addr);
 
     if (IsWindows7OrGreater())
     {
-        wcsncat(cmdline, L" validate=no", ncmdline - wcslen(cmdline) - 1);
+        wcscat_s(cmdline, ncmdline, L" validate=no");
     }
     err = ExecCommand(argv0, cmdline, timeout);
 
@@ -1093,30 +1071,29 @@ wmic_nicconfig_cmd(const wchar_t *action, const NET_IFINDEX if_index,
     wchar_t *cmdline = NULL;
     int timeout = 10000; /* in msec */
 
-    swprintf(argv0, _countof(argv0), L"%s\\%s", get_win_sys_path(), L"wbem\\wmic.exe");
-    argv0[_countof(argv0) - 1] = L'\0';
+    openvpn_swprintf(argv0, _countof(argv0), L"%ls\\%ls", get_win_sys_path(), L"wbem\\wmic.exe");
 
     const wchar_t *fmt;
     /* comma separated list must be enclosed in parenthesis */
     if (data && wcschr(data, L','))
     {
-       fmt = L"wmic nicconfig where (InterfaceIndex=%ld) call %s (%s)";
+        fmt = L"wmic nicconfig where (InterfaceIndex=%ld) call %ls (%ls)";
     }
     else
     {
-       fmt = L"wmic nicconfig where (InterfaceIndex=%ld) call %s \"%s\"";
+        fmt = L"wmic nicconfig where (InterfaceIndex=%ld) call %ls \"%ls\"";
     }
 
     size_t ncmdline = wcslen(fmt) + 20 + wcslen(action) /* max 20 for ifindex */
-                    + (data ? wcslen(data) + 1 : 1);
+                      + (data ? wcslen(data) + 1 : 1);
     cmdline = malloc(ncmdline*sizeof(wchar_t));
     if (!cmdline)
     {
         return ERROR_OUTOFMEMORY;
     }
 
-    openvpn_sntprintf(cmdline, ncmdline, fmt, if_index, action,
-                      data? data : L"");
+    openvpn_swprintf(cmdline, ncmdline, fmt, if_index, action,
+                     data ? data : L"");
     err = ExecCommand(argv0, cmdline, timeout);
 
     free(cmdline);
@@ -1156,41 +1133,41 @@ CmpWString(LPVOID item, LPVOID str)
 static DWORD
 SetDNSDomain(const wchar_t *if_name, const char *domain, undo_lists_t *lists)
 {
-   NET_IFINDEX if_index;
+    NET_IFINDEX if_index;
 
-   DWORD err  = ConvertInterfaceNameToIndex(if_name, &if_index);
-   if (err != ERROR_SUCCESS)
-   {
-       return err;
-   }
+    DWORD err  = ConvertInterfaceNameToIndex(if_name, &if_index);
+    if (err != ERROR_SUCCESS)
+    {
+        return err;
+    }
 
-   wchar_t *wdomain = utf8to16(domain); /* utf8 to wide-char */
-   if (!wdomain)
-   {
-       return ERROR_OUTOFMEMORY;
-   }
+    wchar_t *wdomain = utf8to16(domain); /* utf8 to wide-char */
+    if (!wdomain)
+    {
+        return ERROR_OUTOFMEMORY;
+    }
 
-   /* free undo list if previously set */
-   if (lists)
-   {
-       free(RemoveListItem(&(*lists)[undo_domain], CmpWString, (void *)if_name));
-   }
+    /* free undo list if previously set */
+    if (lists)
+    {
+        free(RemoveListItem(&(*lists)[undo_domain], CmpWString, (void *)if_name));
+    }
 
-   err = wmic_nicconfig_cmd(L"SetDNSDomain", if_index, wdomain);
+    err = wmic_nicconfig_cmd(L"SetDNSDomain", if_index, wdomain);
 
-   /* Add to undo list if domain is non-empty */
-   if (err == 0 && wdomain[0] && lists)
-   {
-        wchar_t *tmp_name = wcsdup(if_name);
+    /* Add to undo list if domain is non-empty */
+    if (err == 0 && wdomain[0] && lists)
+    {
+        wchar_t *tmp_name = _wcsdup(if_name);
         if (!tmp_name || AddListItem(&(*lists)[undo_domain], tmp_name))
         {
             free(tmp_name);
             err = ERROR_OUTOFMEMORY;
         }
-   }
+    }
 
-   free(wdomain);
-   return err;
+    free(wdomain);
+    return err;
 }
 
 static DWORD
@@ -1272,7 +1249,7 @@ HandleDNSConfigMessage(const dns_cfg_message_t *msg, undo_lists_t *lists)
 
     if (msg->addr_len > 0)
     {
-        wchar_t *tmp_name = wcsdup(wide_name);
+        wchar_t *tmp_name = _wcsdup(wide_name);
         if (!tmp_name || AddListItem(&(*lists)[undo_type], tmp_name))
         {
             free(tmp_name);
@@ -1300,8 +1277,7 @@ HandleEnableDHCPMessage(const enable_dhcp_message_t *dhcp)
     wchar_t argv0[MAX_PATH];
 
     /* Path of netsh */
-    swprintf(argv0, _countof(argv0), L"%s\\%s", get_win_sys_path(), L"netsh.exe");
-    argv0[_countof(argv0) - 1] = L'\0';
+    openvpn_swprintf(argv0, _countof(argv0), L"%ls\\%ls", get_win_sys_path(), L"netsh.exe");
 
     /* cmd template:
      * netsh interface ipv4 set address name=$if_index source=dhcp
@@ -1319,7 +1295,7 @@ HandleEnableDHCPMessage(const enable_dhcp_message_t *dhcp)
         return err;
     }
 
-    openvpn_sntprintf(cmdline, ncmdline, fmt, dhcp->iface.index);
+    openvpn_swprintf(cmdline, ncmdline, fmt, dhcp->iface.index);
 
     err = ExecCommand(argv0, cmdline, timeout);
 
@@ -1332,7 +1308,7 @@ HandleEnableDHCPMessage(const enable_dhcp_message_t *dhcp)
 }
 
 static DWORD
-OvpnDuplicateHandle(HANDLE ovpn_proc, HANDLE orig_handle, HANDLE* new_handle)
+OvpnDuplicateHandle(HANDLE ovpn_proc, HANDLE orig_handle, HANDLE *new_handle)
 {
     DWORD err = ERROR_SUCCESS;
 
@@ -1347,16 +1323,19 @@ OvpnDuplicateHandle(HANDLE ovpn_proc, HANDLE orig_handle, HANDLE* new_handle)
 }
 
 static DWORD
-DuplicateAndMapRing(HANDLE ovpn_proc, HANDLE orig_handle, HANDLE *new_handle, struct tun_ring **ring)
+DuplicateAndMapRing(HANDLE ovpn_proc, HANDLE orig_handle, struct tun_ring **ring)
 {
     DWORD err = ERROR_SUCCESS;
 
-    err = OvpnDuplicateHandle(ovpn_proc, orig_handle, new_handle);
+    HANDLE dup_handle = NULL;
+
+    err = OvpnDuplicateHandle(ovpn_proc, orig_handle, &dup_handle);
     if (err != ERROR_SUCCESS)
     {
         return err;
     }
-    *ring = (struct tun_ring *)MapViewOfFile(*new_handle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(struct tun_ring));
+    *ring = (struct tun_ring *)MapViewOfFile(dup_handle, FILE_MAP_ALL_ACCESS, 0, 0, sizeof(struct tun_ring));
+    CloseHandleEx(&dup_handle);
     if (*ring == NULL)
     {
         err = GetLastError();
@@ -1369,51 +1348,75 @@ DuplicateAndMapRing(HANDLE ovpn_proc, HANDLE orig_handle, HANDLE *new_handle, st
 
 static DWORD
 HandleRegisterRingBuffers(const register_ring_buffers_message_t *rrb, HANDLE ovpn_proc,
-                          ring_buffer_handles_t *ring_buffer_handles)
+                          undo_lists_t *lists)
 {
     DWORD err = 0;
-    struct tun_ring *send_ring;
-    struct tun_ring *receive_ring;
 
-    CloseRingBufferHandles(ring_buffer_handles);
+    ring_buffer_maps_t *ring_buffer_maps = RemoveListItem(&(*lists)[undo_ring_buffer], CmpAny, NULL);
 
-    err = OvpnDuplicateHandle(ovpn_proc, rrb->device, &ring_buffer_handles->device);
-    if (err != ERROR_SUCCESS)
+    if (ring_buffer_maps)
     {
-        return err;
+        UnmapRingBuffer(ring_buffer_maps);
+    }
+    else if ((ring_buffer_maps = calloc(1, sizeof(*ring_buffer_maps))) == NULL)
+    {
+        return ERROR_OUTOFMEMORY;
     }
 
-    err = DuplicateAndMapRing(ovpn_proc, rrb->send_ring_handle, &ring_buffer_handles->send_ring_handle, &send_ring);
+    HANDLE device = NULL;
+    HANDLE send_tail_moved = NULL;
+    HANDLE receive_tail_moved = NULL;
+
+    err = OvpnDuplicateHandle(ovpn_proc, rrb->device, &device);
     if (err != ERROR_SUCCESS)
     {
-        return err;
+        goto out;
     }
 
-    err = DuplicateAndMapRing(ovpn_proc, rrb->receive_ring_handle, &ring_buffer_handles->receive_ring_handle, &receive_ring);
+    err = DuplicateAndMapRing(ovpn_proc, rrb->send_ring_handle, &ring_buffer_maps->send_ring);
     if (err != ERROR_SUCCESS)
     {
-        return err;
+        goto out;
     }
 
-    err = OvpnDuplicateHandle(ovpn_proc, rrb->send_tail_moved, &ring_buffer_handles->send_tail_moved);
+    err = DuplicateAndMapRing(ovpn_proc, rrb->receive_ring_handle, &ring_buffer_maps->receive_ring);
     if (err != ERROR_SUCCESS)
     {
-        return err;
+        goto out;
     }
 
-    err = OvpnDuplicateHandle(ovpn_proc, rrb->receive_tail_moved, &ring_buffer_handles->receive_tail_moved);
+    err = OvpnDuplicateHandle(ovpn_proc, rrb->send_tail_moved, &send_tail_moved);
     if (err != ERROR_SUCCESS)
     {
-        return err;
+        goto out;
     }
 
-    if (!register_ring_buffers(ring_buffer_handles->device, send_ring, receive_ring,
-                               ring_buffer_handles->send_tail_moved, ring_buffer_handles->receive_tail_moved))
+    err = OvpnDuplicateHandle(ovpn_proc, rrb->receive_tail_moved, &receive_tail_moved);
+    if (err != ERROR_SUCCESS)
+    {
+        goto out;
+    }
+
+    if (!register_ring_buffers(device, ring_buffer_maps->send_ring,
+                               ring_buffer_maps->receive_ring,
+                               send_tail_moved, receive_tail_moved))
     {
         err = GetLastError();
         MsgToEventLog(M_SYSERR, TEXT("Could not register ring buffers"));
+        goto out;
     }
 
+    err = AddListItem(&(*lists)[undo_ring_buffer], ring_buffer_maps);
+
+out:
+    if (err != ERROR_SUCCESS && ring_buffer_maps)
+    {
+        UnmapRingBuffer(ring_buffer_maps);
+        free(ring_buffer_maps);
+    }
+    CloseHandleEx(&device);
+    CloseHandleEx(&send_tail_moved);
+    CloseHandleEx(&receive_tail_moved);
     return err;
 }
 
@@ -1441,7 +1444,7 @@ HandleMTUMessage(const set_mtu_message_t *mtu)
 }
 
 static VOID
-HandleMessage(HANDLE pipe, HANDLE ovpn_proc, ring_buffer_handles_t *ring_buffer_handles,
+HandleMessage(HANDLE pipe, HANDLE ovpn_proc,
               DWORD bytes, DWORD count, LPHANDLE events, undo_lists_t *lists)
 {
     DWORD read;
@@ -1525,7 +1528,7 @@ HandleMessage(HANDLE pipe, HANDLE ovpn_proc, ring_buffer_handles_t *ring_buffer_
         case msg_register_ring_buffers:
             if (msg.header.size == sizeof(msg.rrb))
             {
-                ack.error_number = HandleRegisterRingBuffers(&msg.rrb, ovpn_proc, ring_buffer_handles);
+                ack.error_number = HandleRegisterRingBuffers(&msg.rrb, ovpn_proc, lists);
             }
             break;
 
@@ -1594,6 +1597,14 @@ Undo(undo_lists_t *lists)
                                              interface_data->metric_v6);
                     }
                     break;
+
+                case undo_ring_buffer:
+                    UnmapRingBuffer(item->data);
+                    break;
+
+                case _undo_type_max:
+                    /* unreachable */
+                    break;
             }
 
             /* Remove from the list and free memory */
@@ -1623,7 +1634,6 @@ RunOpenvpn(LPVOID p)
     WCHAR *cmdline = NULL;
     size_t cmdline_size;
     undo_lists_t undo_lists;
-    ring_buffer_handles_t ring_buffer_handles;
     WCHAR errmsg[512] = L"";
 
     SECURITY_ATTRIBUTES inheritable = {
@@ -1645,7 +1655,6 @@ RunOpenvpn(LPVOID p)
     ZeroMemory(&startup_info, sizeof(startup_info));
     ZeroMemory(&undo_lists, sizeof(undo_lists));
     ZeroMemory(&proc_info, sizeof(proc_info));
-    ZeroMemory(&ring_buffer_handles, sizeof(ring_buffer_handles));
 
     if (!GetStartupData(pipe, &sud))
     {
@@ -1787,8 +1796,8 @@ RunOpenvpn(LPVOID p)
         goto out;
     }
 
-    openvpn_sntprintf(ovpn_pipe_name, _countof(ovpn_pipe_name),
-                      TEXT("\\\\.\\pipe\\" PACKAGE "%s\\service_%lu"), service_instance, GetCurrentThreadId());
+    openvpn_swprintf(ovpn_pipe_name, _countof(ovpn_pipe_name),
+                     TEXT("\\\\.\\pipe\\" PACKAGE "%ls\\service_%lu"), service_instance, GetCurrentThreadId());
     ovpn_pipe = CreateNamedPipe(ovpn_pipe_name,
                                 PIPE_ACCESS_DUPLEX | FILE_FLAG_FIRST_PIPE_INSTANCE | FILE_FLAG_OVERLAPPED,
                                 PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE | PIPE_WAIT, 1, 128, 128, 0, NULL);
@@ -1820,8 +1829,8 @@ RunOpenvpn(LPVOID p)
         ReturnLastError(pipe, L"malloc");
         goto out;
     }
-    openvpn_sntprintf(cmdline, cmdline_size, L"openvpn %s --msg-channel %lu",
-                      sud.options, svc_pipe);
+    openvpn_swprintf(cmdline, cmdline_size, L"openvpn %ls --msg-channel %lu",
+                     sud.options, svc_pipe);
 
     if (!CreateEnvironmentBlock(&user_env, imp_token, FALSE))
     {
@@ -1836,13 +1845,7 @@ RunOpenvpn(LPVOID p)
     startup_info.hStdOutput = stdout_write;
     startup_info.hStdError = stdout_write;
 
-#ifdef UNICODE
     exe_path = settings.exe_path;
-#else
-    WCHAR wide_path[MAX_PATH];
-    MultiByteToWideChar(CP_UTF8, 0, settings.exe_path, MAX_PATH, wide_path, MAX_PATH);
-    exe_path = wide_path;
-#endif
 
     /* TODO: make sure HKCU is correct or call LoadUserProfile() */
     if (!CreateProcessAsUserW(pri_token, exe_path, cmdline, &ovpn_sa, NULL, TRUE,
@@ -1884,7 +1887,7 @@ RunOpenvpn(LPVOID p)
             break;
         }
 
-        HandleMessage(ovpn_pipe, proc_info.hProcess, &ring_buffer_handles, bytes, 1, &exit_event, &undo_lists);
+        HandleMessage(ovpn_pipe, proc_info.hProcess, bytes, 1, &exit_event, &undo_lists);
     }
 
     WaitForSingleObject(proc_info.hProcess, IO_TIMEOUT);
@@ -1911,7 +1914,6 @@ out:
     free(cmdline);
     DestroyEnvironmentBlock(user_env);
     FreeStartupData(&sud);
-    CloseRingBufferHandles(&ring_buffer_handles);
     CloseHandleEx(&proc_info.hProcess);
     CloseHandleEx(&proc_info.hThread);
     CloseHandleEx(&stdin_read);
@@ -1992,7 +1994,7 @@ CreateClientPipeInstance(VOID)
         initialized = TRUE;
     }
 
-    openvpn_sntprintf(pipe_name, _countof(pipe_name), TEXT("\\\\.\\pipe\\" PACKAGE "%s\\service"), service_instance);
+    openvpn_swprintf(pipe_name, _countof(pipe_name), TEXT("\\\\.\\pipe\\" PACKAGE "%ls\\service"), service_instance);
     pipe = CreateNamedPipe(pipe_name, flags,
                            PIPE_TYPE_MESSAGE | PIPE_READMODE_MESSAGE,
                            PIPE_UNLIMITED_INSTANCES, 1024, 1024, 0, NULL);

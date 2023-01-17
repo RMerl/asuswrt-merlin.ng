@@ -50,25 +50,7 @@ static const uint8_t TLS_CRYPT_METADATA_TYPE_TIMESTAMP      = 0x01;
 static struct key_type
 tls_crypt_kt(void)
 {
-    struct key_type kt;
-    kt.cipher = cipher_kt_get("AES-256-CTR");
-    kt.digest = md_kt_get("SHA256");
-
-    if (!kt.cipher)
-    {
-        msg(M_WARN, "ERROR: --tls-crypt requires AES-256-CTR support.");
-        return (struct key_type) { 0 };
-    }
-    if (!kt.digest)
-    {
-        msg(M_WARN, "ERROR: --tls-crypt requires HMAC-SHA-256 support.");
-        return (struct key_type) { 0 };
-    }
-
-    kt.cipher_length = cipher_kt_key_size(kt.cipher);
-    kt.hmac_length = md_kt_size(kt.digest);
-
-    return kt;
+    return create_kt("AES-256-CTR", "SHA256", "tls-crypt");
 }
 
 int
@@ -91,16 +73,6 @@ tls_crypt_init_key(struct key_ctx_bi *key, const char *key_file,
     crypto_read_openvpn_key(&kt, key, key_file, key_inline, key_direction,
                             "Control Channel Encryption", "tls-crypt");
 }
-
-void
-tls_crypt_adjust_frame_parameters(struct frame *frame)
-{
-    frame_add_to_extra_frame(frame, tls_crypt_buf_overhead());
-
-    msg(D_MTU_DEBUG, "%s: Adjusting frame parameters for tls-crypt by %i bytes",
-        __func__, tls_crypt_buf_overhead());
-}
-
 
 bool
 tls_crypt_wrap(const struct buffer *src, struct buffer *dst,
@@ -655,15 +627,11 @@ tls_crypt_v2_write_client_key_file(const char *filename,
     }
     ASSERT(buf_write(&dst, client_key.keys, sizeof(client_key.keys)));
 
-    struct buffer metadata = alloc_buf_gc(TLS_CRYPT_V2_MAX_METADATA_LEN, &gc);
+    struct buffer metadata;
     if (b64_metadata)
     {
-        if (TLS_CRYPT_V2_MAX_B64_METADATA_LEN < strlen(b64_metadata))
-        {
-            msg(M_FATAL,
-                "ERROR: metadata too long (%d bytes, max %u bytes)",
-                (int)strlen(b64_metadata), TLS_CRYPT_V2_MAX_B64_METADATA_LEN);
-        }
+        size_t b64_length = strlen(b64_metadata);
+        metadata = alloc_buf_gc(OPENVPN_BASE64_DECODED_LENGTH(b64_length) + 1, &gc);
         ASSERT(buf_write(&metadata, &TLS_CRYPT_METADATA_TYPE_USER, 1));
         int decoded_len = openvpn_base64_decode(b64_metadata, BEND(&metadata),
                                                 BCAP(&metadata));
@@ -672,10 +640,18 @@ tls_crypt_v2_write_client_key_file(const char *filename,
             msg(M_FATAL, "ERROR: failed to base64 decode provided metadata");
             goto cleanup;
         }
+        if (decoded_len > TLS_CRYPT_V2_MAX_METADATA_LEN - 1)
+        {
+            msg(M_FATAL,
+                "ERROR: metadata too long (%d bytes, max %u bytes)",
+                decoded_len, TLS_CRYPT_V2_MAX_METADATA_LEN - 1);
+            goto cleanup;
+        }
         ASSERT(buf_inc_len(&metadata, decoded_len));
     }
     else
     {
+        metadata = alloc_buf_gc(1 + sizeof(int64_t), &gc);
         int64_t timestamp = htonll((uint64_t)now);
         ASSERT(buf_write(&metadata, &TLS_CRYPT_METADATA_TYPE_TIMESTAMP, 1));
         ASSERT(buf_write(&metadata, &timestamp, sizeof(timestamp)));

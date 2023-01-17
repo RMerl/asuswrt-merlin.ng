@@ -377,6 +377,199 @@ ul.auto-toc {
 <h1>INTRODUCTION</h1>
 <p>This man page gives a few simple examples to create OpenVPN setups and configuration files.</p>
 </div>
+<div class="section" id="small-openvpn-setup-with-peer-fingerprint">
+<h1>Small OpenVPN setup with peer-fingerprint</h1>
+<p>This section consists of instructions how to build a small OpenVPN setup with the
+<code>peer-fingerprint</code> option. This has the advantage of being easy to setup
+and should be suitable for most small lab and home setups without the need for a PKI.
+For bigger scale setup setting up a PKI (e.g. via easy-rsa) is still recommended.</p>
+<p>Both server and client configuration can be further modified to customise the
+setup.</p>
+<div class="section" id="server-setup">
+<h2>Server setup</h2>
+<ol class="arabic">
+<li><p class="first">Install openvpn</p>
+<p>Compile from source-code (see <cite>INSTALL</cite> file) or install via a distribution (apt/yum/ports)
+or via installer (Windows).</p>
+</li>
+<li><p class="first">Generate a self-signed certificate for the server:</p>
+<pre class="literal-block">
+openssl req -x509 -newkey ec:&lt;(openssl ecparam -name secp384r1) -keyout server.key -out server.crt -nodes -sha256 -days 3650 -subj '/CN=server'
+</pre>
+</li>
+<li><p class="first">Generate SHA256 fingerprint of the server certificate</p>
+<p>Use the OpenSSL command line utility to view the fingerprint of just
+created certificate:</p>
+<pre class="literal-block">
+openssl x509 -fingerprint -sha256 -in server.crt -noout
+</pre>
+<p>This output something similar to:</p>
+<pre class="literal-block">
+SHA256 Fingerprint=00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
+</pre>
+</li>
+</ol>
+<p>3. Write a server configuration (<cite>server.conf</cite>):</p>
+<pre class="literal-block">
+# The server certificate we created in step 1
+cert server.crt
+key server.key
+
+dh none
+dev tun
+
+# Listen on IPv6+IPv4 simultaneously
+proto udp6
+
+# The ip address the server will distribute
+server 10.8.0.0 255.255.255.0
+server-ipv6 fd00:6f76:706e::/64
+
+# A tun-mtu of 1400 avoids problems of too big packets after VPN encapsulation
+tun-mtu 1400
+
+# The fingerprints of your clients. After adding/removing one here restart the
+# server
+&lt;peer-fingerprint&gt;
+&lt;/peer-fingerprint&gt;
+
+# Notify clients when you restart the server to reconnect quickly
+explicit-exit-notify 1
+
+# Ping every 60s, restart if no data received for 5 minutes
+keepalive 60 300
+</pre>
+<ol class="arabic" start="4">
+<li><p class="first">Add at least one client as described in the client section.</p>
+</li>
+<li><dl class="first docutils">
+<dt>Start the server.</dt>
+<dd><ul class="first last">
+<li><p class="first">On systemd based distributions move <cite>server.crt</cite>, <cite>server.key</cite> and
+<cite>server.conf</cite> to <code>/etc/openvpn/server</code> and start it via systemctl</p>
+<pre class="literal-block">
+sudo mv server.conf server.key server.crt /etc/openvpn/server
+
+sudo systemctl start openvpn-server&#64;server
+</pre>
+</li>
+</ul>
+</dd>
+</dl>
+</li>
+</ol>
+</div>
+<div class="section" id="adding-a-client">
+<h2>Adding a client</h2>
+<ol class="arabic">
+<li><p class="first">Install OpenVPN</p>
+</li>
+<li><p class="first">Generate a self-signed certificate for the client. In this example the client
+name is alice. Each client should have a unique name. Replace alice with a
+different name for each client.</p>
+<pre class="literal-block">
+openssl req -x509 -newkey ec:&lt;(openssl ecparam -name secp384r1) -nodes -sha256 -days 3650 -subj '/CN=alice'
+</pre>
+<p>This generate a certificate and a key for the client. The output of the command will look
+something like this:</p>
+<pre class="literal-block">
+-----BEGIN PRIVATE KEY-----
+[base64 content]
+-----END PRIVATE KEY-----
+-----
+-----BEGIN CERTIFICATE-----
+[base 64 content]
+-----END CERTIFICATE-----
+</pre>
+</li>
+<li><p class="first">Create a new client configuration file. In this example we will name the file
+<cite>alice.ovpn</cite>:</p>
+<pre class="literal-block">
+# The name of your server to connect to
+remote yourserver.example.net
+client
+# use a random source port instead the fixed 1194
+nobind
+
+# Uncomment the following line if you want to route
+# all traffic via the VPN
+# redirect-gateway def1 ipv6
+
+# To set a DNS server
+# dhcp-option DNS 192.168.234.1
+
+&lt;key&gt;
+-----BEGIN PRIVATE KEY-----
+[Insert here the key created in step 2]
+-----END PRIVATE KEY-----
+&lt;/key&gt;
+&lt;cert&gt;
+-----BEGIN CERTIFICATE-----
+[Insert here the certificate created in step 2]
+-----END CERTIFICATE-----
+&lt;/cert&gt;
+
+# This is the fingerprint of the server that we trust. We generated this fingerprint
+# in step 2 of the server setup
+peer-fingerprint 00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
+
+# The tun-mtu of the client should match the server MTU
+tun-mtu 1400
+dev tun
+</pre>
+</li>
+<li><p class="first">Generate the fingerprint of the client certificate. For that we will
+let OpenSSL read the client configuration file as the x509 command will
+ignore anything that is not between the begin and end markers of the certificate:</p>
+<pre class="literal-block">
+openssl x509 -fingerprint -sha256 -noout -in alice.ovpn
+</pre>
+<p>This will again output something like</p>
+<pre class="literal-block">
+SHA256 Fingerprint=ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00
+</pre>
+</li>
+<li><p class="first">Edit the <cite>server.conf</cite> configuration file and add this new client
+fingerprint as additional line  between <code>&lt;peer-fingerprint&gt;</code>
+and <code>&lt;/peer-fingerprint&gt;</code></p>
+<p>After adding <em>two</em> clients the part of configuration would look like this:</p>
+<pre class="literal-block">
+&lt;peer-fingerprint&gt;
+ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00
+99:88:77:66:55:44:33:22:11:00:ff:ee:dd:cc:bb:aa:99:88:77:66:55:44:33:22:11:00:88:77:66:55:44:33
+&lt;/peer-fingperint&gt;
+</pre>
+</li>
+<li><p class="first">(optional) if the client is an older client that does not support the
+<code>peer-fingerprint</code> (e.g. OpenVPN 2.5 and older, OpenVPN Connect 3.3
+and older), the client config <cite>alice.ovpn</cite> can be modified to still work with
+these clients.</p>
+<p>Remove the line starting with <code>peer-fingerprint</code>. Then
+add a new <code>&lt;ca&gt;</code> section at the end of the configuration file
+with the contents of the <code>server.crt</code> created in step 2 of the
+server setup. The end of <cite>alice.ovpn</cite> file should like:</p>
+<pre class="literal-block">
+[...]  # Beginning of the file skipped
+&lt;/cert&gt;
+
+# The tun-mtu of the client should match the server MTU
+tun-mtu 1400
+dev tun
+
+&lt;ca&gt;
+[contents of the server.crt]
+&lt;/ca&gt;
+</pre>
+<p>Note that we put the <code>&lt;ca&gt;</code> section after the <code>&lt;cert&gt;</code> section
+to make the fingerprint generation from step 4 still work since it will
+only use the first certificate it finds.</p>
+</li>
+<li><p class="first">Import the file into the OpenVPN client or just use the
+<code>openvpn alice.ovpn</code> to start the VPN.</p>
+</li>
+</ol>
+</div>
+</div>
 <div class="section" id="examples">
 <h1>EXAMPLES</h1>
 <p>Prior to running these examples, you should have OpenVPN installed on
@@ -428,8 +621,8 @@ networks of either peer, unless you are bridging. If you use an address
 that is part of your local subnet for either of the tunnel endpoints,
 you will get a weird feedback loop.</p>
 </div>
-<div class="section" id="example-1-a-simple-tunnel-without-security">
-<h2>Example 1: A simple tunnel without security</h2>
+<div class="section" id="example-1-a-simple-tunnel-without-security-not-recommended">
+<h2>Example 1: A simple tunnel without security (not recommended)</h2>
 <p>On bob:</p>
 <pre class="literal-block">
 openvpn --remote alice.example.com --dev tun1 \
@@ -453,26 +646,34 @@ ping 10.4.0.1
 <tt class="docutils literal">tcpdump</tt>(8) program. Omit the <tt class="docutils literal"><span class="pre">--verb</span> 9</tt> option to have OpenVPN run
 quietly.</p>
 </div>
-<div class="section" id="example-2-a-tunnel-with-static-key-security-i-e-using-a-pre-shared-secret">
-<h2>Example 2: A tunnel with static-key security (i.e. using a pre-shared secret)</h2>
-<p>First build a static key on bob.</p>
+<div class="section" id="example-2-a-tunnel-with-self-signed-certificates-and-fingerprint">
+<h2>Example 2: A tunnel with self-signed certificates and fingerprint</h2>
+<p>First build a self-signed certificate on bob and display its fingerprint.</p>
 <pre class="literal-block">
-openvpn --genkey --secret key
+openssl req -x509 -newkey ec:&lt;(openssl ecparam -name secp384r1) -keyout bob.pem -out bob.pem -nodes -sha256 -days 3650 -subj '/CN=bob'
+openssl x509 -noout -sha256 -fingerprint -in bob.pem
 </pre>
-<p>This command will build a key file called <tt class="docutils literal">key</tt> (in ascii format). Now
-copy <tt class="docutils literal">key</tt> to <tt class="docutils literal">alice.example.com</tt> over a secure medium such as by using
-the <tt class="docutils literal">scp</tt>(1) program.</p>
+<p>and the same on alice:</p>
+<pre class="literal-block">
+openssl req -x509 -newkey ec:&lt;(openssl ecparam -name secp384r1) -keyout alice.pem -out alice.pem -nodes -sha256 -days 3650 -subj '/CN=alice'
+openssl x509 -noout -sha256 -fingerprint -in alice.pem
+</pre>
+<p>These commands will build a text file called <tt class="docutils literal">bob.pem</tt> or <tt class="docutils literal">alice.pem</tt> (in ascii format)
+that contain both self-signed certificate and key and show the fingerprint of the certificates.
+Transfer the fingerprints  over a secure medium such as by using
+the <tt class="docutils literal">scp</tt>(1) or <tt class="docutils literal">ssh</tt>(1) program.</p>
 <p>On bob:</p>
 <pre class="literal-block">
-openvpn --remote alice.example.com --dev tun1  \
-         --ifconfig 10.4.0.1 10.4.0.2 --verb 5 \
-         --secret key
+openvpn --ifconfig 10.4.0.1 10.4.0.2 --tls-server --dev tun --dh none \
+        --cert bob.pem --key bob.pem --cipher AES-256-GCM \
+        --peer-fingerprint &quot;$fingerprint_of_alices_cert&quot;
 </pre>
 <p>On alice:</p>
 <pre class="literal-block">
-openvpn --remote bob.example.com --dev tun1   \
-        --ifconfig 10.4.0.2 10.4.0.1 --verb 5 \
-        --secret key
+openvpn --remote bob.example.com --tls-client --dev tun1   \
+        --ifconfig 10.4.0.2 10.4.0.1 --cipher AES-256-GCM  \
+        --cert alice.pem --key alice.pem
+        --peer-fingerprint &quot;$fingerprint_of_bobs_cert&quot;
 </pre>
 <p>Now verify the tunnel is working by pinging across the tunnel.</p>
 <p>On bob:</p>
@@ -483,9 +684,11 @@ ping 10.4.0.2
 <pre class="literal-block">
 ping 10.4.0.1
 </pre>
+<p>Note: This example use a elliptic curve (<cite>secp384</cite>), which allows
+<tt class="docutils literal"><span class="pre">--dh</span></tt> to be set to <tt class="docutils literal">none</tt>.</p>
 </div>
-<div class="section" id="example-3-a-tunnel-with-full-tls-based-security">
-<h2>Example 3: A tunnel with full TLS-based security</h2>
+<div class="section" id="example-3-a-tunnel-with-full-pki-and-tls-based-security">
+<h2>Example 3: A tunnel with full PKI and TLS-based security</h2>
 <p>For this test, we will designate <tt class="docutils literal">bob</tt> as the TLS client and <tt class="docutils literal">alice</tt>
 as the TLS server.</p>
 <dl class="docutils">

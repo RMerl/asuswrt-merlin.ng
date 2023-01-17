@@ -17,8 +17,8 @@
 #
 #  openvpnmsica -- Custom Action DLL to provide OpenVPN-specific support to MSI packages
 #
-#  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
-#  Copyright (C) 2018-2022 Simon Rozman <simon@rozman.si>
+#  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2018-2023 Simon Rozman <simon@rozman.si>
 #
 #  This program is free software; you can redistribute it and/or modify
 #  it under the terms of the GNU General Public License version 2
@@ -121,13 +121,12 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = src/openvpnmsica
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_emptyarray.m4 \
-	$(top_srcdir)/m4/ax_socklen_t.m4 \
-	$(top_srcdir)/m4/ax_varargs.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/version.m4 \
-	$(top_srcdir)/compat.m4 $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_socklen_t.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/version.m4 $(top_srcdir)/compat.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -291,6 +290,10 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 IPROUTE = @IPROUTE@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBCAPNG_CFLAGS = @LIBCAPNG_CFLAGS@
+LIBCAPNG_LIBS = @LIBCAPNG_LIBS@
+LIBNL_GENL_CFLAGS = @LIBNL_GENL_CFLAGS@
+LIBNL_GENL_LIBS = @LIBNL_GENL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBPAM_CFLAGS = @LIBPAM_CFLAGS@
 LIBPAM_LIBS = @LIBPAM_LIBS@
@@ -373,6 +376,9 @@ TEST_CFLAGS = @TEST_CFLAGS@
 TEST_LDFLAGS = @TEST_LDFLAGS@
 TMPFILES_DIR = @TMPFILES_DIR@
 VERSION = @VERSION@
+WOLFSSL_CFLAGS = @WOLFSSL_CFLAGS@
+WOLFSSL_INCLUDEDIR = @WOLFSSL_INCLUDEDIR@
+WOLFSSL_LIBS = @WOLFSSL_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -439,7 +445,6 @@ LTRCCOMPILE = $(LIBTOOL) --mode=compile --tag=RC $(RCCOMPILE)
 MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
 EXTRA_DIST = \
 	openvpnmsica.vcxproj \
-	openvpnmsica.vcxproj.filters \
 	openvpnmsica.props \
 	openvpnmsica-Debug.props \
 	openvpnmsica-Release.props
@@ -457,7 +462,7 @@ AM_CFLAGS = \
 @WIN32_TRUE@	-D_WIN32_WINNT=_WIN32_WINNT_VISTA \
 @WIN32_TRUE@	-Wl,--kill-at
 
-@WIN32_TRUE@libopenvpnmsica_la_LDFLAGS = -ladvapi32 -lole32 -lmsi -lsetupapi -liphlpapi -lshell32 -lshlwapi -lversion -no-undefined -avoid-version
+@WIN32_TRUE@libopenvpnmsica_la_LDFLAGS = -ladvapi32 -lole32 -lmsi -lsetupapi -liphlpapi -lshell32 -lshlwapi -lversion -lnewdev -no-undefined -avoid-version
 libopenvpnmsica_la_SOURCES = \
 	dllmain.c \
 	msiex.c msiex.h \

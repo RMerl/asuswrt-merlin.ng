@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -30,7 +30,7 @@
  * Baseline maximum number of events
  * to wait for.
  */
-#define BASE_N_EVENTS 4
+#define BASE_N_EVENTS 5
 
 void context_clear(struct context *c);
 
@@ -56,7 +56,7 @@ bool print_openssl_info(const struct options *options);
 
 bool do_genkey(const struct options *options);
 
-bool do_persist_tuntap(const struct options *options, openvpn_net_ctx_t *ctx);
+bool do_persist_tuntap(struct options *options, openvpn_net_ctx_t *ctx);
 
 bool possibly_become_daemon(const struct options *options);
 
@@ -71,12 +71,9 @@ void init_instance(struct context *c, const struct env_set *env, const unsigned 
  */
 void init_query_passwords(const struct context *c);
 
-void do_route(const struct options *options,
-              struct route_list *route_list,
-              struct route_ipv6_list *route_ipv6_list,
-              const struct tuntap *tt,
-              const struct plugin_list *plugins,
-              struct env_set *es,
+bool do_route(const struct options *options, struct route_list *route_list,
+              struct route_ipv6_list *route_ipv6_list, const struct tuntap *tt,
+              const struct plugin_list *plugins, struct env_set *es,
               openvpn_net_ctx_t *ctx);
 
 void close_instance(struct context *c);
@@ -116,6 +113,7 @@ void free_context_buffers(struct context_buffers *b);
 
 #define ISC_ERRORS (1<<0)
 #define ISC_SERVER (1<<1)
+#define ISC_ROUTE_ERRORS (1<<2)
 void initialization_sequence_completed(struct context *c, const unsigned int flags);
 
 #ifdef ENABLE_MANAGEMENT
@@ -144,6 +142,9 @@ void open_plugins(struct context *c, const bool import_options, int init_point);
 void tun_abort(void);
 
 void write_pid_file(const char *filename, const char *chroot_dir);
+
 void remove_pid_file(void);
+
+void persist_client_stats(struct context *c);
 
 #endif /* ifndef INIT_H */

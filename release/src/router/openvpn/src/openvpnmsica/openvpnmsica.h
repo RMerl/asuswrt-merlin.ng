@@ -2,7 +2,7 @@
  *  openvpnmsica -- Custom Action DLL to provide OpenVPN-specific support to MSI packages
  *                  https://community.openvpn.net/openvpn/wiki/OpenVPNMSICA
  *
- *  Copyright (C) 2018-2022 Simon Rozman <simon@rozman.si>
+ *  Copyright (C) 2018-2023 Simon Rozman <simon@rozman.si>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -52,10 +52,10 @@ extern DWORD openvpnmsica_thread_data_idx;
  * Set MSI session handle in thread local storage.
  */
 #define OPENVPNMSICA_SAVE_MSI_SESSION(hInstall) \
-{ \
-    struct openvpnmsica_thread_data *s = (struct openvpnmsica_thread_data *)TlsGetValue(openvpnmsica_thread_data_idx); \
-    s->hInstall = (hInstall); \
-}
+    { \
+        struct openvpnmsica_thread_data *s = (struct openvpnmsica_thread_data *)TlsGetValue(openvpnmsica_thread_data_idx); \
+        s->hInstall = (hInstall); \
+    }
 
 
 /*
@@ -85,6 +85,10 @@ extern "C" {
  *   GUIDs and active adapter GUIDs respectively.
  *
  * - Finds existing Wintun adapters and set WINTUNADAPTERS and ACTIVEWINTUNADAPTERS properties
+ *   with semicolon delimited list of all installed adapter GUIDs and active adapter GUIDs
+ *   respectively.
+ *
+ * - Finds existing ovpn-dco adapters and set OVPNDCOADAPTERS and ACTIVEOVPNDCOADAPTERS properties
  *   with semicolon delimited list of all installed adapter GUIDs and active adapter GUIDs
  *   respectively.
  *

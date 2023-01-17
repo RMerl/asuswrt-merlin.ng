@@ -5,8 +5,8 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
- *  Copyright (C) 2016-2022 Selva Nair <selva.nair@gmail.com>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2016-2023 Selva Nair <selva.nair@gmail.com>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -49,7 +49,7 @@
 #include <syslog.h>
 #include <limits.h>
 #include "utils.h"
-
+#include <arpa/inet.h>
 #include <openvpn-plugin.h>
 
 #define DEBUG(verb) ((verb) >= 4)
@@ -121,6 +121,7 @@ struct user_pass {
     char password[128];
     char common_name[128];
     char response[128];
+    char remote[INET6_ADDRSTRLEN];
 
     const struct name_value_list *name_value_list;
 };
@@ -215,10 +216,17 @@ daemonize(const char *envp[])
         {
             fd = dup(2);
         }
+#if defined(__APPLE__) && defined(__clang__)
+#pragma clang diagnostic push
+#pragma clang diagnostic ignored "-Wdeprecated-declarations"
+#endif
         if (daemon(0, 0) < 0)
         {
             plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "daemonization failed");
         }
+#if defined(__APPLE__) && defined(__clang__)
+#pragma clang diagnostic pop
+#endif
         else if (fd >= 3)
         {
             dup2(fd, 2);
@@ -507,10 +515,7 @@ openvpn_plugin_open_v3(const int v3structver,
     }
 
 error:
-    if (context)
-    {
-        free(context);
-    }
+    free(context);
     return OPENVPN_PLUGIN_FUNC_ERROR;
 }
 
@@ -525,6 +530,17 @@ openvpn_plugin_func_v1(openvpn_plugin_handle_t handle, const int type, const cha
         const char *username = get_env("username", envp);
         const char *password = get_env("password", envp);
         const char *common_name = get_env("common_name", envp) ? get_env("common_name", envp) : "";
+        const char *remote = get_env("untrusted_ip6", envp);
+
+        if (remote == NULL)
+        {
+            remote = get_env("untrusted_ip", envp);
+        }
+
+        if (remote == NULL)
+        {
+            remote = "";
+        }
 
         /* should we do deferred auth?
          *  yes, if there is "auth_control_file" and "deferred_auth_pam" env
@@ -550,7 +566,8 @@ openvpn_plugin_func_v1(openvpn_plugin_handle_t handle, const int type, const cha
                 || send_string(context->foreground_fd, username) == -1
                 || send_string(context->foreground_fd, password) == -1
                 || send_string(context->foreground_fd, common_name) == -1
-                || send_string(context->foreground_fd, auth_control_file) == -1)
+                || send_string(context->foreground_fd, auth_control_file) == -1
+                || send_string(context->foreground_fd, remote) == -1)
             {
                 plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "Error sending auth info to background process");
             }
@@ -657,9 +674,9 @@ my_conv(int n, const struct pam_message **msg_array,
         if (DEBUG(up->verb))
         {
             plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: my_conv[%d] query='%s' style=%d",
-                    i,
-                    msg->msg ? msg->msg : "NULL",
-                    msg->msg_style);
+                       i,
+                       msg->msg ? msg->msg : "NULL",
+                       msg->msg_style);
         }
 
         if (up->name_value_list && up->name_value_list->len > 0)
@@ -682,9 +699,9 @@ my_conv(int n, const struct pam_message **msg_array,
                     if (DEBUG(up->verb))
                     {
                         plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: name match found, query/match-string ['%s', '%s'] = '%s'",
-                                msg->msg,
-                                match_name,
-                                match_value);
+                                   msg->msg,
+                                   match_name,
+                                   match_value);
                     }
 
                     if (strstr(match_value, "USERNAME"))
@@ -785,8 +802,16 @@ pam_auth(const char *service, const struct user_pass *up)
     status = pam_start(service, name_value_list_provided ? NULL : up->username, &conv, &pamh);
     if (status == PAM_SUCCESS)
     {
+        /* Set PAM_RHOST environment variable */
+        if (*(up->remote))
+        {
+            status = pam_set_item(pamh, PAM_RHOST, up->remote);
+        }
         /* Call PAM to verify username/password */
-        status = pam_authenticate(pamh, 0);
+        if (status == PAM_SUCCESS)
+        {
+            status = pam_authenticate(pamh, 0);
+        }
         if (status == PAM_SUCCESS)
         {
             status = pam_acct_mgmt(pamh, 0);
@@ -800,8 +825,8 @@ pam_auth(const char *service, const struct user_pass *up)
         if (!ret)
         {
             plugin_log(PLOG_ERR, MODULE, "BACKGROUND: user '%s' failed to authenticate: %s",
-                    up->username,
-                    pam_strerror(pamh, status));
+                       up->username,
+                       pam_strerror(pamh, status));
         }
 
         /* Close PAM */
@@ -952,10 +977,11 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
                 if (recv_string(fd, up.username, sizeof(up.username)) == -1
                     || recv_string(fd, up.password, sizeof(up.password)) == -1
                     || recv_string(fd, up.common_name, sizeof(up.common_name)) == -1
-                    || recv_string(fd, ac_file_name, sizeof(ac_file_name)) == -1)
+                    || recv_string(fd, ac_file_name, sizeof(ac_file_name)) == -1
+                    || recv_string(fd, up.remote, sizeof(up.remote)) == -1)
                 {
                     plugin_log(PLOG_ERR|PLOG_ERRNO, MODULE, "BACKGROUND: read error on command channel: code=%d, exiting",
-                            command);
+                               command);
                     goto done;
                 }
 
@@ -963,9 +989,10 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
                 {
 #if 0
                     plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: USER/PASS: %s/%s",
-                            up.username, up.password);
+                               up.username, up.password);
 #else
                     plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: USER: %s", up.username);
+                    plugin_log(PLOG_NOTE, MODULE, "BACKGROUND: REMOTE: %s", up.remote);
 #endif
                 }
 
@@ -1012,7 +1039,7 @@ pam_server(int fd, const char *service, int verb, const struct name_value_list *
 
             default:
                 plugin_log(PLOG_ERR, MODULE, "BACKGROUND: unknown command code: code=%d, exiting",
-                        command);
+                           command);
                 goto done;
         }
         plugin_secure_memzero(up.response, sizeof(up.response));

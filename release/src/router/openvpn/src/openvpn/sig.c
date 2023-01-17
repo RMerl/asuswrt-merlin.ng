@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -47,16 +47,17 @@ struct signal_info siginfo_static; /* GLOBAL */
 
 struct signame {
     int value;
+    int priority;
     const char *upper;
     const char *lower;
 };
 
 static const struct signame signames[] = {
-    { SIGINT,  "SIGINT",  "sigint"},
-    { SIGTERM, "SIGTERM", "sigterm" },
-    { SIGHUP,  "SIGHUP",  "sighup" },
-    { SIGUSR1, "SIGUSR1", "sigusr1" },
-    { SIGUSR2, "SIGUSR2", "sigusr2" }
+    { SIGINT, 5, "SIGINT",  "sigint"},
+    { SIGTERM, 4, "SIGTERM", "sigterm" },
+    { SIGHUP, 3, "SIGHUP",  "sighup" },
+    { SIGUSR1, 2, "SIGUSR1", "sigusr1" },
+    { SIGUSR2, 1, "SIGUSR2", "sigusr2" }
 };
 
 int
@@ -68,6 +69,19 @@ parse_signal(const char *signame)
         if (!strcmp(signame, signames[i].upper))
         {
             return signames[i].value;
+        }
+    }
+    return -1;
+}
+
+static int
+signal_priority(int sig)
+{
+    for (size_t i = 0; i < SIZE(signames); ++i)
+    {
+        if (sig == signames[i].value)
+        {
+            return signames[i].priority;
         }
     }
     return -1;
@@ -103,19 +117,25 @@ signal_description(const int signum, const char *sigtext)
 void
 throw_signal(const int signum)
 {
-    siginfo_static.signal_received = signum;
-    siginfo_static.source = SIG_SOURCE_HARD;
+    if (signal_priority(signum) >= signal_priority(siginfo_static.signal_received))
+    {
+        siginfo_static.signal_received = signum;
+        siginfo_static.source = SIG_SOURCE_HARD;
+    }
 }
 
 void
 throw_signal_soft(const int signum, const char *signal_text)
 {
-    siginfo_static.signal_received = signum;
-    siginfo_static.source = SIG_SOURCE_SOFT;
-    siginfo_static.signal_text = signal_text;
+    if (signal_priority(signum) >= signal_priority(siginfo_static.signal_received))
+    {
+        siginfo_static.signal_received = signum;
+        siginfo_static.source = SIG_SOURCE_SOFT;
+        siginfo_static.signal_text = signal_text;
+    }
 }
 
-static void
+void
 signal_reset(struct signal_info *si)
 {
     if (si)
@@ -214,8 +234,7 @@ signal_restart_status(const struct signal_info *si)
 #endif /* ifdef ENABLE_MANAGEMENT */
 }
 
-#ifdef HAVE_SIGNAL_H
-
+#ifndef _WIN32
 /* normal signal handler, when we are in event loop */
 static void
 signal_handler(const int signum)
@@ -223,23 +242,20 @@ signal_handler(const int signum)
     throw_signal(signum);
     signal(signum, signal_handler);
 }
-
 #endif
+
 
 /* set handlers for unix signals */
 
-#ifdef HAVE_SIGNAL_H
 #define SM_UNDEF     0
 #define SM_PRE_INIT  1
 #define SM_POST_INIT 2
 static int signal_mode; /* GLOBAL */
-#endif
 
 void
 pre_init_signal_catch(void)
 {
 #ifndef _WIN32
-#ifdef HAVE_SIGNAL_H
     signal_mode = SM_PRE_INIT;
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -247,7 +263,6 @@ pre_init_signal_catch(void)
     signal(SIGUSR1, SIG_IGN);
     signal(SIGUSR2, SIG_IGN);
     signal(SIGPIPE, SIG_IGN);
-#endif /* HAVE_SIGNAL_H */
 #endif /* _WIN32 */
 }
 
@@ -255,7 +270,6 @@ void
 post_init_signal_catch(void)
 {
 #ifndef _WIN32
-#ifdef HAVE_SIGNAL_H
     signal_mode = SM_POST_INIT;
     signal(SIGINT, signal_handler);
     signal(SIGTERM, signal_handler);
@@ -263,7 +277,6 @@ post_init_signal_catch(void)
     signal(SIGUSR1, signal_handler);
     signal(SIGUSR2, signal_handler);
     signal(SIGPIPE, SIG_IGN);
-#endif /* HAVE_SIGNAL_H */
 #endif
 }
 
@@ -271,7 +284,6 @@ post_init_signal_catch(void)
 void
 restore_signal_state(void)
 {
-#ifdef HAVE_SIGNAL_H
     if (signal_mode == SM_PRE_INIT)
     {
         pre_init_signal_catch();
@@ -280,7 +292,6 @@ restore_signal_state(void)
     {
         post_init_signal_catch();
     }
-#endif
 }
 
 /*
@@ -340,20 +351,46 @@ print_status(const struct context *c, struct status_output *so)
     gc_free(&gc);
 }
 
+
+/* Small helper function to determine if we should send the exit notification
+ * via control channel */
+static inline bool
+cc_exit_notify_enabled(struct context *c)
+{
+    /* Check if we have TLS active at all */
+    if (!c->c2.tls_multi)
+    {
+        return false;
+    }
+
+    const struct key_state *ks = get_primary_key(c->c2.tls_multi);
+    return (ks->crypto_options.flags & CO_USE_CC_EXIT_NOTIFY);
+}
+
 /*
  * Handle the triggering and time-wait of explicit
  * exit notification.
  */
-
 static void
 process_explicit_exit_notification_init(struct context *c)
 {
     msg(M_INFO, "SIGTERM received, sending exit notification to peer");
+    /* init the timeout to send the OCC_EXIT messages if cc exit is not
+     * enabled and also to exit after waiting for retries of resending of
+     * exit messages */
     event_timeout_init(&c->c2.explicit_exit_notification_interval, 1, 0);
     reset_coarse_timers(c);
+
     signal_reset(c->sig);
     halt_non_edge_triggered_signals();
     c->c2.explicit_exit_notification_time_wait = now;
+
+    /* Check if we are in TLS mode and should send the notification via data
+     * channel */
+    if (cc_exit_notify_enabled(c))
+    {
+        send_control_channel_string(c, "EXIT", D_PUSH);
+    }
 }
 
 void
@@ -367,10 +404,9 @@ process_explicit_exit_notification_timer_wakeup(struct context *c)
         if (now >= c->c2.explicit_exit_notification_time_wait + c->options.ce.explicit_exit_notification)
         {
             event_timeout_clear(&c->c2.explicit_exit_notification_interval);
-            c->sig->signal_received = SIGTERM;
-            c->sig->signal_text = "exit-with-notification";
+            register_signal(c->sig, SIGTERM, "exit-with-notification");
         }
-        else
+        else if (!cc_exit_notify_enabled(c))
         {
             c->c2.occ_op = OCC_EXIT;
         }
@@ -386,7 +422,7 @@ remap_signal(struct context *c)
 {
     if (c->sig->signal_received == SIGUSR1 && c->options.remap_sigusr1)
     {
-        c->sig->signal_received = c->options.remap_sigusr1;
+        register_signal(c->sig, c->options.remap_sigusr1, c->sig->signal_text);
     }
 }
 
@@ -435,7 +471,7 @@ ignore_restart_signals(struct context *c)
         {
             msg(M_INFO, "Converting soft %s received during exit notification to SIGTERM",
                 signal_name(c->sig->signal_received, true));
-            register_signal(c, SIGTERM, "exit-with-notification");
+            register_signal(c->sig, SIGTERM, "exit-with-notification");
             ret = false;
         }
     }
@@ -464,11 +500,12 @@ process_signal(struct context *c)
 }
 
 void
-register_signal(struct context *c, int sig, const char *text)
+register_signal(struct signal_info *si, int sig, const char *text)
 {
-    if (c->sig->signal_received != SIGTERM)
+    if (signal_priority(sig) >= signal_priority(si->signal_received))
     {
-        c->sig->signal_received = sig;
+        si->signal_received = sig;
+        si->signal_text = text;
+        si->source = SIG_SOURCE_SOFT;
     }
-    c->sig->signal_text = text;
 }

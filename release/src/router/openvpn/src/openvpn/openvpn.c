@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -97,6 +97,8 @@ tunnel_point_to_point(struct context *c)
         perf_pop();
     }
 
+    persist_client_stats(c);
+
     uninit_management_callback();
 
     /* tear down tunnel instance (unless --persist-tun) */
@@ -105,7 +107,8 @@ tunnel_point_to_point(struct context *c)
 
 #undef PROCESS_SIGNAL_P2P
 
-void init_early(struct context *c)
+void
+init_early(struct context *c)
 {
     net_ctx_init(c, &c->net_ctx);
 
@@ -113,25 +116,26 @@ void init_early(struct context *c)
     init_verb_mute(c, IVM_LEVEL_1);
 
     /* Initialise OpenSSL provider, this needs to be initialised this
-    * early since option post-processing and also openssl info
-    * printing depends on it */
-    for (int j=1; j < MAX_PARMS && c->options.providers.names[j]; j++)
+     * early since option post-processing and also openssl info
+     * printing depends on it */
+    for (int j = 1; j < MAX_PARMS && c->options.providers.names[j]; j++)
     {
         c->options.providers.providers[j] =
             crypto_load_provider(c->options.providers.names[j]);
     }
 }
 
-static void uninit_early(struct context *c)
+static void
+uninit_early(struct context *c)
 {
-    net_ctx_free(&c->net_ctx);
-    for (int j=1; j < MAX_PARMS && c->options.providers.providers[j]; j++)
+    for (int j = 1; j < MAX_PARMS && c->options.providers.providers[j]; j++)
     {
         crypto_unload_provider(c->options.providers.names[j],
                                c->options.providers.providers[j]);
     }
     net_ctx_free(&c->net_ctx);
 }
+
 
 /**************************************************************************/
 /**
@@ -246,7 +250,7 @@ openvpn_main(int argc, char *argv[])
             }
 
             /* sanity check on options */
-            options_postprocess(&c.options);
+            options_postprocess(&c.options, c.es);
 
             /* show all option settings */
             show_settings(&c.options);

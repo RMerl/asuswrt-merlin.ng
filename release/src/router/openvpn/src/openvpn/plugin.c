@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -102,7 +102,7 @@ plugin_type_name(const int type)
             return "PLUGIN_CLIENT_CONNECT";
 
         case OPENVPN_PLUGIN_CLIENT_CONNECT_V2:
-            return "PLUGIN_CLIENT_CONNECT";
+            return "PLUGIN_CLIENT_CONNECT_V2";
 
         case OPENVPN_PLUGIN_CLIENT_CONNECT_DEFER:
             return "PLUGIN_CLIENT_CONNECT_DEFER";
@@ -119,11 +119,11 @@ plugin_type_name(const int type)
         case OPENVPN_PLUGIN_TLS_FINAL:
             return "PLUGIN_TLS_FINAL";
 
-        case OPENVPN_PLUGIN_ENABLE_PF:
-            return "PLUGIN_ENABLE_PF";
-
         case OPENVPN_PLUGIN_ROUTE_PREDOWN:
             return "PLUGIN_ROUTE_PREDOWN";
+
+        case OPENVPN_PLUGIN_CLIENT_CRRESPONSE:
+            return "PLUGIN_CRRESPONSE";
 
         default:
             return "PLUGIN_???";
@@ -804,7 +804,6 @@ plugin_call_ssl(const struct plugin_list *pl,
         int i;
         const char **envp;
         const int n = plugin_n(pl);
-        bool success = false;
         bool error = false;
         bool deferred_auth_done = false;
 
@@ -825,7 +824,6 @@ plugin_call_ssl(const struct plugin_list *pl,
             switch (status)
             {
                 case OPENVPN_PLUGIN_FUNC_SUCCESS:
-                    success = true;
                     break;
 
                 case OPENVPN_PLUGIN_FUNC_DEFERRED:
@@ -872,11 +870,7 @@ plugin_call_ssl(const struct plugin_list *pl,
 
         gc_free(&gc);
 
-        if (type == OPENVPN_PLUGIN_ENABLE_PF && success)
-        {
-            return OPENVPN_PLUGIN_FUNC_SUCCESS;
-        }
-        else if (error)
+        if (error)
         {
             return OPENVPN_PLUGIN_FUNC_ERROR;
         }
@@ -1041,10 +1035,4 @@ plugin_return_print(const int msglevel, const char *prefix, const struct plugin_
     }
 }
 #endif /* ifdef ENABLE_DEBUG */
-
-#else  /* ifdef ENABLE_PLUGIN */
-static void
-dummy(void)
-{
-}
 #endif /* ENABLE_PLUGIN */

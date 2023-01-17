@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
  *
  *  This program is free software; you can redistribute it and/or modify
@@ -37,13 +37,6 @@
 #include <openssl/provider.h>
 #endif
 
-
-/** Generic cipher key type %context. */
-typedef EVP_CIPHER cipher_kt_t;
-
-/** Generic message digest key type %context. */
-typedef EVP_MD md_kt_t;
-
 /** Generic cipher %context. */
 typedef EVP_CIPHER_CTX cipher_ctx_t;
 
@@ -51,13 +44,30 @@ typedef EVP_CIPHER_CTX cipher_ctx_t;
 typedef EVP_MD_CTX md_ctx_t;
 
 /** Generic HMAC %context. */
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
 typedef HMAC_CTX hmac_ctx_t;
 
-#if OPENSSL_VERSION_NUMBER < 0x30000000L
 /* Use a dummy type for the provider */
 typedef void provider_t;
 #else
+typedef struct {
+    OSSL_PARAM params[3];
+    uint8_t key[EVP_MAX_KEY_LENGTH];
+    EVP_MAC_CTX *ctx;
+} hmac_ctx_t;
+
 typedef OSSL_PROVIDER provider_t;
+#endif
+
+/* In OpenSSL 3.0 the method that returns EVP_CIPHER, the cipher needs to be
+ * freed afterwards, thus needing a non-const type. In constrast OpenSSL 1.1.1
+ * and lower returns a const type, needing a const type */
+#if OPENSSL_VERSION_NUMBER < 0x30000000L
+typedef const EVP_CIPHER evp_cipher_type;
+typedef const EVP_MD evp_md_type;
+#else
+typedef EVP_CIPHER evp_cipher_type;
+typedef EVP_MD evp_md_type;
 #endif
 
 /** Maximum length of an IV */
@@ -107,12 +117,6 @@ void crypto_print_openssl_errors(const unsigned int flags);
         crypto_print_openssl_errors(nonfatal(flags)); \
         msg((flags), __VA_ARGS__); \
     } while (false)
-
-static inline bool
-cipher_kt_var_key_size(const cipher_kt_t *cipher)
-{
-    return EVP_CIPHER_flags(cipher) & EVP_CIPH_VARIABLE_LENGTH;
-}
 
 /**
  * Load a key file from an engine

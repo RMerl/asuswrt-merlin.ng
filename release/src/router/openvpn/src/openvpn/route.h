@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -230,7 +230,6 @@ struct route_ipv6_list {
     struct gc_arena gc;
 };
 
-#if P2MP
 /* internal OpenVPN route */
 struct iroute {
     in_addr_t network;
@@ -243,7 +242,6 @@ struct iroute_ipv6 {
     unsigned int netbits;
     struct iroute_ipv6 *next;
 };
-#endif
 
 struct route_option_list *new_route_option_list(struct gc_arena *a);
 
@@ -261,15 +259,12 @@ void copy_route_ipv6_option_list(struct route_ipv6_option_list *dest,
 
 void route_ipv6_clear_host_bits( struct route_ipv6 *r6 );
 
-void add_route_ipv6(struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
+bool add_route_ipv6(struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
 
 void delete_route_ipv6(const struct route_ipv6 *r, const struct tuntap *tt, unsigned int flags, const struct env_set *es, openvpn_net_ctx_t *ctx);
 
-void add_route(struct route_ipv4 *r,
-               const struct tuntap *tt,
-               unsigned int flags,
-               const struct route_gateway_info *rgi,
-               const struct env_set *es,
+bool add_route(struct route_ipv4 *r, const struct tuntap *tt, unsigned int flags,
+               const struct route_gateway_info *rgi, const struct env_set *es,
                openvpn_net_ctx_t *ctx);
 
 void add_route_to_option_list(struct route_option_list *l,
@@ -303,12 +298,9 @@ void route_list_add_vpn_gateway(struct route_list *rl,
                                 struct env_set *es,
                                 const in_addr_t addr);
 
-void add_routes(struct route_list *rl,
-                struct route_ipv6_list *rl6,
-                const struct tuntap *tt,
-                unsigned int flags,
-                const struct env_set *es,
-                openvpn_net_ctx_t *ctx);
+bool add_routes(struct route_list *rl, struct route_ipv6_list *rl6,
+                const struct tuntap *tt, unsigned int flags,
+                const struct env_set *es, openvpn_net_ctx_t *ctx);
 
 void delete_routes(struct route_list *rl,
                    struct route_ipv6_list *rl6,
@@ -358,10 +350,6 @@ void print_routes(const struct route_list *rl, int level);
 void show_routes(int msglev);
 
 bool test_routes(const struct route_list *rl, const struct tuntap *tt);
-
-bool add_route_ipapi(const struct route_ipv4 *r, const struct tuntap *tt, DWORD adapter_index);
-
-bool del_route_ipapi(const struct route_ipv4 *r, const struct tuntap *tt);
 
 #else  /* ifdef _WIN32 */
 static inline bool

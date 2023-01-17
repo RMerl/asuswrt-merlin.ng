@@ -21,12 +21,12 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
 #
 
 #  SPDX-License-Identifier: GPL-2.0-only
 #
-#  Copyright (C) 2020-2022 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2020-2023 OpenVPN Inc <sales@openvpn.net>
 #
 VPATH = @srcdir@
 am__is_gnu_make = { \
@@ -104,13 +104,12 @@ build_triplet = @build@
 host_triplet = @host@
 subdir = sample/sample-plugins
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
-am__aclocal_m4_deps = $(top_srcdir)/m4/ax_emptyarray.m4 \
-	$(top_srcdir)/m4/ax_socklen_t.m4 \
-	$(top_srcdir)/m4/ax_varargs.m4 $(top_srcdir)/m4/libtool.m4 \
-	$(top_srcdir)/m4/ltoptions.m4 $(top_srcdir)/m4/ltsugar.m4 \
-	$(top_srcdir)/m4/ltversion.m4 $(top_srcdir)/m4/lt~obsolete.m4 \
-	$(top_srcdir)/m4/pkg.m4 $(top_srcdir)/version.m4 \
-	$(top_srcdir)/compat.m4 $(top_srcdir)/configure.ac
+am__aclocal_m4_deps = $(top_srcdir)/m4/ax_socklen_t.m4 \
+	$(top_srcdir)/m4/libtool.m4 $(top_srcdir)/m4/ltoptions.m4 \
+	$(top_srcdir)/m4/ltsugar.m4 $(top_srcdir)/m4/ltversion.m4 \
+	$(top_srcdir)/m4/lt~obsolete.m4 $(top_srcdir)/m4/pkg.m4 \
+	$(top_srcdir)/version.m4 $(top_srcdir)/compat.m4 \
+	$(top_srcdir)/configure.ac
 am__configure_deps = $(am__aclocal_m4_deps) $(CONFIGURE_DEPENDENCIES) \
 	$(ACLOCAL_M4)
 DIST_COMMON = $(srcdir)/Makefile.am $(am__DIST_COMMON)
@@ -186,6 +185,10 @@ INSTALL_STRIP_PROGRAM = @INSTALL_STRIP_PROGRAM@
 IPROUTE = @IPROUTE@
 LD = @LD@
 LDFLAGS = @LDFLAGS@
+LIBCAPNG_CFLAGS = @LIBCAPNG_CFLAGS@
+LIBCAPNG_LIBS = @LIBCAPNG_LIBS@
+LIBNL_GENL_CFLAGS = @LIBNL_GENL_CFLAGS@
+LIBNL_GENL_LIBS = @LIBNL_GENL_LIBS@
 LIBOBJS = @LIBOBJS@
 LIBPAM_CFLAGS = @LIBPAM_CFLAGS@
 LIBPAM_LIBS = @LIBPAM_LIBS@
@@ -268,6 +271,9 @@ TEST_CFLAGS = @TEST_CFLAGS@
 TEST_LDFLAGS = @TEST_LDFLAGS@
 TMPFILES_DIR = @TMPFILES_DIR@
 VERSION = @VERSION@
+WOLFSSL_CFLAGS = @WOLFSSL_CFLAGS@
+WOLFSSL_INCLUDEDIR = @WOLFSSL_INCLUDEDIR@
+WOLFSSL_LIBS = @WOLFSSL_LIBS@
 abs_builddir = @abs_builddir@
 abs_srcdir = @abs_srcdir@
 abs_top_builddir = @abs_top_builddir@
@@ -338,7 +344,6 @@ AM_CPPFLAGS = -I$(top_srcdir) -I$(top_builddir) \
 # Plug-ins to build - listed entries should not carry any extensions
 #
 PLUGINS = \
-	defer/simple \
 	defer/multi-auth \
 	keying-material-exporter-demo/keyingmaterialexporter \
 	log/log log/log_v3 \

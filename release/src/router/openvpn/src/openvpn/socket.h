@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -34,6 +34,7 @@
 #include "proxy.h"
 #include "socks.h"
 #include "misc.h"
+#include "tun.h"
 
 /*
  * OpenVPN's default port number as assigned by IANA.
@@ -167,6 +168,7 @@ struct link_socket
 
     socket_descriptor_t sd;
     socket_descriptor_t ctrl_sd; /* only used for UDP over Socks */
+    bool dco_installed;
 
 #ifdef _WIN32
     struct overlapped_io reads;
@@ -187,11 +189,6 @@ struct link_socket
     const char *local_port;
     struct cached_dns_entry *dns_cache;
     bool bind_local;
-
-#define INETD_NONE   0
-#define INETD_WAIT   1
-#define INETD_NOWAIT 2
-    int inetd;
 
 #define LS_MODE_DEFAULT           0
 #define LS_MODE_TCP_LISTEN        1
@@ -267,17 +264,50 @@ int socket_send_queue(struct link_socket *sock,
                       struct buffer *buf,
                       const struct link_socket_actual *to);
 
-int socket_finalize(
-    SOCKET s,
-    struct overlapped_io *io,
-    struct buffer *buf,
-    struct link_socket_actual *from);
+typedef struct {
+    union {
+        SOCKET s;
+        HANDLE h;
+    };
+    bool is_handle;
+} sockethandle_t;
+
+int sockethandle_finalize(sockethandle_t sh,
+                          struct overlapped_io *io,
+                          struct buffer *buf,
+                          struct link_socket_actual *from);
+
+static inline BOOL
+SocketHandleGetOverlappedResult(sockethandle_t sh, struct overlapped_io *io)
+{
+    return sh.is_handle ?
+           GetOverlappedResult(sh.h, &io->overlapped, &io->size, FALSE) :
+           WSAGetOverlappedResult(sh.s, &io->overlapped, &io->size, FALSE, &io->flags);
+}
+
+static inline int
+SocketHandleGetLastError(sockethandle_t sh)
+{
+    return sh.is_handle ? (int)GetLastError() : WSAGetLastError();
+}
+
+inline static void
+SocketHandleSetLastError(sockethandle_t sh, DWORD err)
+{
+    sh.is_handle ? SetLastError(err) : WSASetLastError(err);
+}
+
+static inline void
+SocketHandleSetInvalError(sockethandle_t sh)
+{
+    sh.is_handle ? SetLastError(ERROR_INVALID_FUNCTION) : WSASetLastError(WSAEINVAL);
+}
 
 #else  /* ifdef _WIN32 */
 
 #define openvpn_close_socket(s) close(s)
 
-#endif
+#endif /* ifdef _WIN32 */
 
 struct link_socket *link_socket_new(void);
 
@@ -297,50 +327,11 @@ int openvpn_connect(socket_descriptor_t sd,
 /*
  * Initialize link_socket object.
  */
-/* *INDENT-OFF* uncrustify misparses this function declarion because of
- * embedded #if/#endif tell it to skip this section */
-void
-link_socket_init_phase1(struct link_socket *sock,
-                        const char *local_host,
-                        const char *local_port,
-                        const char *remote_host,
-                        const char *remote_port,
-                        struct cached_dns_entry *dns_cache,
-                        int proto,
-                        sa_family_t af,
-                        bool bind_ipv6_only,
-                        int mode,
-                        const struct link_socket *accept_from,
-                        struct http_proxy_info *http_proxy,
-                        struct socks_proxy_info *socks_proxy,
-#ifdef ENABLE_DEBUG
-                        int gremlin,
-#endif
-                        bool bind_local,
-                        bool remote_float,
-                        int inetd,
-                        struct link_socket_addr *lsa,
-                        const char *ipchange_command,
-                        const struct plugin_list *plugins,
-                        int resolve_retry_seconds,
-                        int mtu_discover_type,
-                        int rcvbuf,
-                        int sndbuf,
-                        int mark,
-                        const char *bind_dev,
-                        struct event_timeout *server_poll_timeout,
-                        unsigned int sockflags);
-/* Reenable uncrustify *INDENT-ON* */
+void link_socket_init_phase1(struct context *c, int mode);
 
-void link_socket_init_phase2(struct link_socket *sock,
-                             const struct frame *frame,
-                             struct signal_info *sig_info);
+void link_socket_init_phase2(struct context *c);
 
 void do_preresolve(struct context *c);
-
-void socket_adjust_frame_parameters(struct frame *frame, int proto);
-
-void frame_adjust_path_mtu(struct frame *frame, int pmtu, int proto);
 
 void link_socket_close(struct link_socket *sock);
 
@@ -399,6 +390,8 @@ const char *print_link_socket_actual(const struct link_socket_actual *act,
 const char *print_in_addr_t(in_addr_t addr, unsigned int flags, struct gc_arena *gc);
 
 const char *print_in6_addr(struct in6_addr addr6, unsigned int flags, struct gc_arena *gc);
+
+const char *print_in_port_t(in_port_t port, struct gc_arena *gc);
 
 struct in6_addr add_in6_addr( struct in6_addr base, uint32_t add );
 
@@ -480,18 +473,6 @@ socket_descriptor_t socket_do_accept(socket_descriptor_t sd,
                                      struct link_socket_actual *act,
                                      const bool nowait);
 
-/*
- * proto related
- */
-bool proto_is_net(int proto);
-
-bool proto_is_dgram(int proto);
-
-bool proto_is_udp(int proto);
-
-bool proto_is_tcp(int proto);
-
-
 #if UNIX_SOCK_SUPPORT
 
 socket_descriptor_t create_socket_unix(void);
@@ -545,7 +526,7 @@ in_addr_t getaddr(unsigned int flags,
                   const char *hostname,
                   int resolve_retry_seconds,
                   bool *succeeded,
-                  volatile int *signal_received);
+                  struct signal_info *sig_info);
 
 /**
  * Translate an IPv6 addr or hostname from string form to in6_addr
@@ -557,7 +538,7 @@ int openvpn_getaddrinfo(unsigned int flags,
                         const char *hostname,
                         const char *servname,
                         int resolve_retry_seconds,
-                        volatile int *signal_received,
+                        struct signal_info *sig_info,
                         int ai_family,
                         struct addrinfo **res);
 
@@ -578,6 +559,44 @@ enum proto_num {
     PROTO_N
 };
 
+static inline bool
+proto_is_net(int proto)
+{
+    ASSERT(proto >= 0 && proto < PROTO_N);
+    return proto != PROTO_NONE;
+}
+
+/**
+ * @brief Returns if the protocol being used is UDP
+ */
+static inline bool
+proto_is_udp(int proto)
+{
+    ASSERT(proto >= 0 && proto < PROTO_N);
+    return proto == PROTO_UDP;
+}
+
+/**
+ * @brief Return if the protocol is datagram (UDP)
+ *
+ */
+static inline bool
+proto_is_dgram(int proto)
+{
+    return proto_is_udp(proto);
+}
+
+/**
+ * @brief returns if the proto is a TCP variant (tcp-server, tcp-client or tcp)
+ */
+static inline bool
+proto_is_tcp(int proto)
+{
+    ASSERT(proto >= 0 && proto < PROTO_N);
+    return proto == PROTO_TCP_CLIENT || proto == PROTO_TCP_SERVER;
+}
+
+
 int ascii2proto(const char *proto_name);
 
 sa_family_t ascii2af(const char *proto_name);
@@ -593,18 +612,13 @@ const char *addr_family_name(int af);
 /*
  * Overhead added to packets by various protocols.
  */
-#define IPv4_UDP_HEADER_SIZE              28
-#define IPv4_TCP_HEADER_SIZE              40
-#define IPv6_UDP_HEADER_SIZE              48
-#define IPv6_TCP_HEADER_SIZE              60
-
-extern const int proto_overhead[];
-
 static inline int
-datagram_overhead(int proto)
+datagram_overhead(sa_family_t af, int proto)
 {
-    ASSERT(proto >= 0 && proto < PROTO_N);
-    return proto_overhead [proto];
+    int overhead = 0;
+    overhead += (proto == PROTO_UDP) ? 8 : 20;
+    overhead += (af == AF_INET) ? 20 : 40;
+    return overhead;
 }
 
 /*
@@ -849,20 +863,6 @@ addr_zero_host(struct openvpn_sockaddr *addr)
     }
 }
 
-static inline void
-addr_copy_sa(struct openvpn_sockaddr *dst, const struct openvpn_sockaddr *src)
-{
-    dst->addr = src->addr;
-}
-
-static inline bool
-addr_inet4or6(struct sockaddr *addr)
-{
-    return addr->sa_family == AF_INET || addr->sa_family == AF_INET6;
-}
-
-int addr_guess_family(sa_family_t af,const char *name);
-
 static inline int
 af_addr_size(sa_family_t af)
 {
@@ -924,7 +924,8 @@ socket_connection_reset(const struct link_socket *sock, int status)
         {
             const int err = openvpn_errno();
 #ifdef _WIN32
-            return err == WSAECONNRESET || err == WSAECONNABORTED;
+            return err == WSAECONNRESET || err == WSAECONNABORTED
+                   || err == ERROR_CONNECTION_ABORTED;
 #else
             return err == ECONNRESET;
 #endif
@@ -1034,7 +1035,13 @@ link_socket_read_udp_win32(struct link_socket *sock,
                            struct buffer *buf,
                            struct link_socket_actual *from)
 {
-    return socket_finalize(sock->sd, &sock->reads, buf, from);
+    sockethandle_t sh = { .s = sock->sd };
+    if (sock->dco_installed)
+    {
+        *from = sock->info.lsa->actual;
+        sh.is_handle = true;
+    }
+    return sockethandle_finalize(sh, &sock->reads, buf, from);
 }
 
 #else  /* ifdef _WIN32 */
@@ -1043,7 +1050,7 @@ int link_socket_read_udp_posix(struct link_socket *sock,
                                struct buffer *buf,
                                struct link_socket_actual *from);
 
-#endif
+#endif /* ifdef _WIN32 */
 
 /* read a TCP or UDP packet from link */
 static inline int
@@ -1051,7 +1058,13 @@ link_socket_read(struct link_socket *sock,
                  struct buffer *buf,
                  struct link_socket_actual *from)
 {
-    if (proto_is_udp(sock->info.proto)) /* unified UDPv4 and UDPv6 */
+#ifdef _WIN32
+    if (proto_is_udp(sock->info.proto) || sock->dco_installed)
+#else
+    if (proto_is_udp(sock->info.proto))
+#endif
+    /* unified UDPv4 and UDPv6, for DCO the kernel
+     * will strip the length header */
     {
         int res;
 
@@ -1065,7 +1078,7 @@ link_socket_read(struct link_socket *sock,
     else if (proto_is_tcp(sock->info.proto)) /* unified TCPv4 and TCPv6 */
     {
         /* from address was returned by accept */
-        addr_copy_sa(&from->dest, &sock->info.lsa->actual.dest);
+        from->dest = sock->info.lsa->actual.dest;
         return link_socket_read_tcp(sock, buf);
     }
     else
@@ -1092,18 +1105,19 @@ link_socket_write_win32(struct link_socket *sock,
 {
     int err = 0;
     int status = 0;
+    sockethandle_t sh = { .s = sock->sd, .is_handle = sock->dco_installed };
     if (overlapped_io_active(&sock->writes))
     {
-        status = socket_finalize(sock->sd, &sock->writes, NULL, NULL);
+        status = sockethandle_finalize(sh, &sock->writes, NULL, NULL);
         if (status < 0)
         {
-            err = WSAGetLastError();
+            err = SocketHandleGetLastError(sh);
         }
     }
     socket_send_queue(sock, buf, to);
     if (status < 0)
     {
-        WSASetLastError(err);
+        SocketHandleSetLastError(sh, err);
         return status;
     }
     else
@@ -1165,8 +1179,9 @@ link_socket_write(struct link_socket *sock,
                   struct buffer *buf,
                   struct link_socket_actual *to)
 {
-    if (proto_is_udp(sock->info.proto)) /* unified UDPv4 and UDPv6 */
+    if (proto_is_udp(sock->info.proto) || sock->dco_installed)
     {
+        /* unified UDPv4 and UDPv6 and DCO (kernel adds size header) */
         return link_socket_write_udp(sock, buf, to);
     }
     else if (proto_is_tcp(sock->info.proto)) /* unified TCPv4 and TCPv6 */

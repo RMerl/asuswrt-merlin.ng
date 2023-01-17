@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -187,6 +187,19 @@ struct buffer string_alloc_buf(const char *str, struct gc_arena *gc);
 
 void gc_addspecial(void *addr, void (*free_function)(void *), struct gc_arena *a);
 
+/**
+ * allows to realloc a pointer previously allocated by gc_malloc or gc_realloc
+ *
+ * @note only use this function on pointers returned by gc_malloc or re_alloc
+ *       with the same gc_arena
+ *
+ * @param ptr   Pointer of the previously allocated memory
+ * @param size  New size
+ * @param a     gc_arena to use
+ * @return      new pointer
+ */
+void *
+gc_realloc(void *ptr, size_t size, struct gc_arena *a);
 
 #ifdef BUF_INIT_TRACKING
 #define buf_init(buf, offset) buf_init_debug(buf, offset, __FILE__, __LINE__)
@@ -198,7 +211,7 @@ bool buf_init_debug(struct buffer *buf, int offset, const char *file, int line);
 
 
 /* inline functions */
-inline static void
+static inline void
 gc_freeaddrinfo_callback(void *addr)
 {
     freeaddrinfo((struct addrinfo *) addr);
@@ -332,13 +345,13 @@ buf_set_write(struct buffer *buf, uint8_t *data, int size)
 }
 
 static inline void
-buf_set_read(struct buffer *buf, const uint8_t *data, int size)
+buf_set_read(struct buffer *buf, const uint8_t *data, size_t size)
 {
     if (!buf_size_valid(size))
     {
         buf_size_error(size);
     }
-    buf->len = buf->capacity = size;
+    buf->len = buf->capacity = (int)size;
     buf->offset = 0;
     buf->data = (uint8_t *)data;
 }
@@ -356,9 +369,9 @@ strncpynt(char *dest, const char *src, size_t maxlen)
 
 /* return true if string contains at least one numerical digit */
 static inline bool
-has_digit(const unsigned char *src)
+has_digit(const char *src)
 {
-    unsigned char c;
+    char c;
     while ((c = *src++))
     {
         if (isdigit(c))
@@ -522,10 +535,10 @@ struct buffer buf_sub(struct buffer *buf, int size, bool prepend);
  */
 
 static inline bool
-buf_safe(const struct buffer *buf, int len)
+buf_safe(const struct buffer *buf, size_t len)
 {
     return buf_valid(buf) && buf_size_valid(len)
-           && buf->offset + buf->len + len <= buf->capacity;
+           && buf->offset + buf->len + (int)len <= buf->capacity;
 }
 
 static inline bool
@@ -533,7 +546,7 @@ buf_safe_bidir(const struct buffer *buf, int len)
 {
     if (buf_valid(buf) && buf_size_valid_signed(len))
     {
-        const int newlen = buf->len + len;
+        int newlen = buf->len + len;
         return newlen >= 0 && buf->offset + newlen <= buf->capacity;
     }
     else
@@ -637,7 +650,7 @@ buf_advance(struct buffer *buf, int size)
  */
 
 static inline uint8_t *
-buf_write_alloc(struct buffer *buf, int size)
+buf_write_alloc(struct buffer *buf, size_t size)
 {
     uint8_t *ret;
     if (!buf_safe(buf, size))
@@ -645,7 +658,7 @@ buf_write_alloc(struct buffer *buf, int size)
         return NULL;
     }
     ret = BPTR(buf) + buf->len;
-    buf->len += size;
+    buf->len += (int)size;
     return ret;
 }
 
@@ -670,7 +683,7 @@ buf_read_alloc(struct buffer *buf, int size)
 }
 
 static inline bool
-buf_write(struct buffer *dest, const void *src, int size)
+buf_write(struct buffer *dest, const void *src, size_t size)
 {
     uint8_t *cp = buf_write_alloc(dest, size);
     if (!cp)
@@ -694,23 +707,22 @@ buf_write_prepend(struct buffer *dest, const void *src, int size)
 }
 
 static inline bool
-buf_write_u8(struct buffer *dest, int data)
+buf_write_u8(struct buffer *dest, uint8_t data)
 {
-    uint8_t u8 = (uint8_t) data;
-    return buf_write(dest, &u8, sizeof(uint8_t));
+    return buf_write(dest, &data, sizeof(uint8_t));
 }
 
 static inline bool
-buf_write_u16(struct buffer *dest, int data)
+buf_write_u16(struct buffer *dest, uint16_t data)
 {
-    uint16_t u16 = htons((uint16_t) data);
+    uint16_t u16 = htons(data);
     return buf_write(dest, &u16, sizeof(uint16_t));
 }
 
 static inline bool
-buf_write_u32(struct buffer *dest, int data)
+buf_write_u32(struct buffer *dest, uint32_t data)
 {
-    uint32_t u32 = htonl((uint32_t) data);
+    uint32_t u32 = htonl(data);
     return buf_write(dest, &u32, sizeof(uint32_t));
 }
 
@@ -1102,11 +1114,9 @@ struct buffer_list
 /**
  * Allocate an empty buffer list of capacity \c max_size.
  *
- * @param max_size  the capacity of the list to allocate
- *
  * @return the new list
  */
-struct buffer_list *buffer_list_new(const int max_size);
+struct buffer_list *buffer_list_new(void);
 
 /**
  * Frees a buffer list and all the buffers in it.

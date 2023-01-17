@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -32,14 +32,13 @@ struct context;
 struct multi_context;
 
 
-/**************************************************************************/
 /**
- * Main event loop wrapper function for OpenVPN in UDP server mode.
+ * Main event loop for OpenVPN in UDP server mode.
  * @ingroup eventloop
  *
- * This function simply calls \c tunnel_server_udp_single_threaded().
+ * This function implements OpenVPN's main event loop for UDP server mode.
  *
- * @param top          - Top-level context structure.
+ * @param top - Top-level context structure.
  */
 void tunnel_server_udp(struct context *top);
 

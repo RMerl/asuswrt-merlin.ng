@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -160,8 +160,8 @@ lzo_compress(struct buffer *buf, struct buffer work,
      */
     if (buf->len >= COMPRESS_THRESHOLD && lzo_compression_enabled(compctx))
     {
-        const size_t ps = PAYLOAD_SIZE(frame);
-        ASSERT(buf_init(&work, FRAME_HEADROOM(frame)));
+        const size_t ps = frame->buf.payload_size;
+        ASSERT(buf_init(&work, frame->buf.headroom));
         ASSERT(buf_safe(&work, ps + COMP_EXTRA_BUFFER(ps)));
 
         if (buf->len > ps)
@@ -213,7 +213,7 @@ lzo_decompress(struct buffer *buf, struct buffer work,
                struct compress_context *compctx,
                const struct frame *frame)
 {
-    lzo_uint zlen = EXPANDED_SIZE(frame);
+    lzo_uint zlen = frame->buf.payload_size;
     int err;
     uint8_t c;          /* flag indicating whether or not our peer compressed */
 
@@ -222,7 +222,7 @@ lzo_decompress(struct buffer *buf, struct buffer work,
         return;
     }
 
-    ASSERT(buf_init(&work, FRAME_HEADROOM(frame)));
+    ASSERT(buf_init(&work, frame->buf.headroom));
 
     c = *BPTR(buf);
     ASSERT(buf_advance(buf, 1));
@@ -250,6 +250,7 @@ lzo_decompress(struct buffer *buf, struct buffer work,
     }
     else if (c == NO_COMPRESS_BYTE)     /* packet was not compressed */
     {
+        /* nothing to do */
     }
     else
     {
@@ -265,10 +266,4 @@ const struct compress_alg lzo_alg = {
     lzo_compress,
     lzo_decompress
 };
-
-#else  /* if defined(ENABLE_LZO) */
-static void
-dummy(void)
-{
-}
 #endif /* ENABLE_LZO */

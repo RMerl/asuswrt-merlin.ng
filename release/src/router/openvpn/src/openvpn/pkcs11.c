@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -396,6 +396,45 @@ pkcs11_addProvider(
         provider
         );
 
+#if PKCS11H_VERSION >= ((1<<16) | (28<<8) | (0<<0))
+    if ((rv = pkcs11h_registerProvider(provider)) != CKR_OK)
+    {
+        msg(M_WARN, "PKCS#11: Cannot register provider '%s' %ld-'%s'", provider, rv, pkcs11h_getMessage(rv));
+    }
+    else
+    {
+        PKCS11H_BOOL allow_protected_auth = protected_auth;
+        PKCS11H_BOOL cert_is_private = cert_private;
+
+        rv = pkcs11h_setProviderProperty(provider, PKCS11H_PROVIDER_PROPERTY_LOCATION, provider, strlen(provider) + 1);
+
+        if (rv == CKR_OK)
+        {
+            rv = pkcs11h_setProviderProperty(provider, PKCS11H_PROVIDER_PROPERTY_ALLOW_PROTECTED_AUTH, &allow_protected_auth, sizeof(allow_protected_auth));
+        }
+        if (rv == CKR_OK)
+        {
+            rv = pkcs11h_setProviderProperty(provider, PKCS11H_PROVIDER_PROPERTY_MASK_PRIVATE_MODE, &private_mode, sizeof(private_mode));
+        }
+        if (rv == CKR_OK)
+        {
+            rv = pkcs11h_setProviderProperty(provider, PKCS11H_PROVIDER_PROPERTY_CERT_IS_PRIVATE, &cert_is_private, sizeof(cert_is_private));
+        }
+#if defined(WIN32) && defined(PKCS11H_PROVIDER_PROPERTY_LOADER_FLAGS)
+        if (rv == CKR_OK && platform_absolute_pathname(provider))
+        {
+            unsigned loader_flags = LOAD_LIBRARY_SEARCH_DEFAULT_DIRS | LOAD_LIBRARY_SEARCH_DLL_LOAD_DIR;
+            rv = pkcs11h_setProviderProperty(provider, PKCS11H_PROVIDER_PROPERTY_LOADER_FLAGS, &loader_flags, sizeof(loader_flags));
+        }
+#endif
+
+        if (rv != CKR_OK || (rv = pkcs11h_initializeProvider(provider)) != CKR_OK)
+        {
+            msg(M_WARN, "PKCS#11: Cannot initialize provider '%s' %ld-'%s'", provider, rv, pkcs11h_getMessage(rv));
+            pkcs11h_removeProvider(provider);
+        }
+    }
+#else  /* if PKCS11H_VERSION >= ((1<<16) | (28<<8) | (0<<0)) */
     if (
         (rv = pkcs11h_addProvider(
              provider,
@@ -410,6 +449,7 @@ pkcs11_addProvider(
     {
         msg(M_WARN, "PKCS#11: Cannot initialize provider '%s' %ld-'%s'", provider, rv, pkcs11h_getMessage(rv));
     }
+#endif /* if PKCS11H_VERSION >= ((1<<16) | (28<<8) | (0<<0)) */
 
     dmsg(
         D_PKCS11_DEBUG,
@@ -461,11 +501,8 @@ pkcs11_management_id_count(void)
 
 cleanup:
 
-    if (id_list != NULL)
-    {
-        pkcs11h_certificate_freeCertificateIdList(id_list);
-        id_list = NULL;
-    }
+    pkcs11h_certificate_freeCertificateIdList(id_list);
+    id_list = NULL;
 
     dmsg(
         D_PKCS11_DEBUG,
@@ -630,29 +667,17 @@ pkcs11_management_id_get(
 
 cleanup:
 
-    if (id_list != NULL)
-    {
-        pkcs11h_certificate_freeCertificateIdList(id_list);
-        id_list = NULL;
-    }
+    pkcs11h_certificate_freeCertificateIdList(id_list);
+    id_list = NULL;
 
-    if (internal_id != NULL)
-    {
-        free(internal_id);
-        internal_id = NULL;
-    }
+    free(internal_id);
+    internal_id = NULL;
 
-    if (internal_base64 != NULL)
-    {
-        free(internal_base64);
-        internal_base64 = NULL;
-    }
+    free(internal_base64);
+    internal_base64 = NULL;
 
-    if (certificate_blob != NULL)
-    {
-        free(certificate_blob);
-        certificate_blob = NULL;
-    }
+    free(certificate_blob);
+    certificate_blob = NULL;
 
     dmsg(
         D_PKCS11_DEBUG,
@@ -868,19 +893,9 @@ show_pkcs11_ids(
         goto cleanup;
     }
 
-    if (
-        (rv = pkcs11h_addProvider(
-             provider,
-             provider,
-             TRUE,
-             0,
-             FALSE,
-             0,
-             cert_private ? TRUE : FALSE
-             )) != CKR_OK
-        )
+    if (!pkcs11_addProvider(provider, TRUE, 0, cert_private ? TRUE : FALSE))
     {
-        msg(M_FATAL, "PKCS#11: Cannot add provider '%s' %ld-'%s'", provider, rv, pkcs11h_getMessage(rv));
+        msg(M_FATAL, "Failed to add PKCS#11 provider '%s", provider);
         goto cleanup;
     }
 
@@ -1005,29 +1020,15 @@ cleanup1:
             certificate = NULL;
         }
 
-        if (ser != NULL)
-        {
-            free(ser);
-            ser = NULL;
-        }
+        free(ser);
+        ser = NULL;
     }
 
 cleanup:
-    if (user_certificates != NULL)
-    {
-        pkcs11h_certificate_freeCertificateIdList(user_certificates);
-        user_certificates = NULL;
-    }
+    pkcs11h_certificate_freeCertificateIdList(user_certificates);
+    user_certificates = NULL;
 
     pkcs11h_terminate();
     gc_free(&gc);
 }
-
-#else  /* if defined(ENABLE_PKCS11) */
-#ifdef _MSC_VER  /* Dummy function needed to avoid empty file compiler warning in Microsoft VC */
-static void
-dummy(void)
-{
-}
-#endif
 #endif /* ENABLE_PKCS11 */

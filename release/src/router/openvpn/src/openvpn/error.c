@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -62,7 +62,7 @@ static int mute_category;   /* GLOBAL */
  * Output mode priorities are as follows:
  *
  *  (1) --log-x overrides everything
- *  (2) syslog is used if --daemon or --inetd is defined and not --log-x
+ *  (2) syslog is used if --daemon is defined and not --log-x
  *  (3) if OPENVPN_DEBUG_COMMAND_LINE is defined, output
  *      to constant logfile name.
  *  (4) Output to stdout.
@@ -220,7 +220,7 @@ x_msg(const unsigned int flags, const char *format, ...)
     va_end(arglist);
 }
 
-static const char*
+static const char *
 openvpn_strerror(int err, bool crt_error, struct gc_arena *gc)
 {
 #ifdef _WIN32
@@ -248,13 +248,11 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
 
     void usage_small(void);
 
-#ifndef HAVE_VARARG_MACROS
     /* the macro has checked this otherwise */
     if (!msg_test(flags))
     {
         return;
     }
-#endif
 
     bool crt_error = false;
     e = openvpn_errno_maybe_crt(&crt_error);
@@ -262,13 +260,11 @@ x_msg_va(const unsigned int flags, const char *format, va_list arglist)
     /*
      * Apply muting filter.
      */
-#ifndef HAVE_VARARG_MACROS
     /* the macro has checked this otherwise */
     if (!dont_mute(flags))
     {
         return;
     }
-#endif
 
     gc_init(&gc);
 
@@ -494,7 +490,7 @@ open_syslog(const char *pgmname, bool stdio_to_null)
         }
     }
 #else  /* if SYSLOG_CAPABILITY */
-    msg(M_WARN, "Warning on use of --daemon/--inetd: this operating system lacks daemon logging features, therefore when I become a daemon, I won't be able to log status or error messages");
+    msg(M_WARN, "Warning on use of --daemon: this operating system lacks daemon logging features, therefore when I become a daemon, I won't be able to log status or error messages");
 #endif
 }
 
@@ -506,11 +502,8 @@ close_syslog(void)
     {
         closelog();
         use_syslog = false;
-        if (pgmname_syslog)
-        {
-            free(pgmname_syslog);
-            pgmname_syslog = NULL;
-        }
+        free(pgmname_syslog);
+        pgmname_syslog = NULL;
     }
 #endif
 }
@@ -518,7 +511,8 @@ close_syslog(void)
 #ifdef _WIN32
 static int orig_stderr;
 
-int get_orig_stderr()
+int
+get_orig_stderr()
 {
     return orig_stderr ? orig_stderr : _fileno(stderr);
 }
@@ -669,6 +663,9 @@ x_check_status(int status,
 {
     const char *extended_msg = NULL;
 
+    bool crt_error = false;
+    int my_errno = openvpn_errno_maybe_crt(&crt_error);
+
     msg(x_cs_verbose_level, "%s %s returned %d",
         sock ? proto2ascii(sock->info.proto, sock->info.af, true) : "",
         description,
@@ -699,22 +696,21 @@ x_check_status(int status,
         }
 #endif
 
-        bool crt_error = false;
-        int my_errno = openvpn_errno_maybe_crt(&crt_error);
-
         if (!ignore_sys_error(my_errno, crt_error))
         {
             if (extended_msg)
             {
-                msg(x_cs_info_level, "%s %s [%s]: %s (code=%d)", description,
+                msg(x_cs_info_level, "%s %s [%s]: %s (fd=%d,code=%d)", description,
                     sock ? proto2ascii(sock->info.proto, sock->info.af, true) : "",
-                    extended_msg, openvpn_strerror(my_errno, crt_error, &gc), my_errno);
+                    extended_msg, openvpn_strerror(my_errno, crt_error, &gc),
+                    sock ? sock->sd : -1, my_errno);
             }
             else
             {
-                msg(x_cs_info_level, "%s %s: %s (code=%d)", description,
+                msg(x_cs_info_level, "%s %s: %s (fd=%d,code=%d)", description,
                     sock ? proto2ascii(sock->info.proto, sock->info.af, true) : "",
-                    openvpn_strerror(my_errno, crt_error, &gc), my_errno);
+                    openvpn_strerror(my_errno, crt_error, &gc),
+                    sock ? sock->sd : -1, my_errno);
             }
 
             if (x_cs_err_delay_ms)
@@ -816,15 +812,6 @@ msg_flags_string(const unsigned int flags, struct gc_arena *gc)
     }
     return BSTR(&out);
 }
-
-#ifdef ENABLE_DEBUG
-void
-crash(void)
-{
-    char *null = NULL;
-    *null = 0;
-}
-#endif
 
 #ifdef _WIN32
 

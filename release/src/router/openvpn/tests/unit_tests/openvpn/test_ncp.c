@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2019-2022 Arne Schwabe <arne@rfc2549.org>
+ *  Copyright (C) 2019-2023 Arne Schwabe <arne@rfc2549.org>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -30,7 +30,6 @@
 #include "syshead.h"
 
 #include <stdio.h>
-#include <unistd.h>
 #include <stdlib.h>
 #include <stdarg.h>
 #include <string.h>
@@ -45,12 +44,23 @@ const char *bf_chacha = "BF-CBC:CHACHA20-POLY1305";
 const char *aes_chacha = "AES-128-CBC:CHACHA20-POLY1305";
 const char *aes_ciphers = "AES-256-GCM:AES-128-GCM";
 
+
+/* Define this function here as dummy since including the ssl_*.c files
+ * leads to having to include even more unrelated code */
+bool
+key_state_export_keying_material(struct tls_session *session,
+                                 const char *label, size_t label_size,
+                                 void *ekm, size_t ekm_size)
+{
+    ASSERT(0);
+}
+
 static void
 test_check_ncp_ciphers_list(void **state)
 {
     struct gc_arena gc = gc_new();
-    bool have_chacha = cipher_kt_get("CHACHA20-POLY1305");
-    bool have_blowfish = cipher_kt_get("BF-CBC");
+    bool have_chacha = cipher_valid("CHACHA20-POLY1305");
+    bool have_blowfish = cipher_valid("BF-CBC");
 
     assert_string_equal(mutate_ncp_cipher_list("none", &gc), "none");
     assert_string_equal(mutate_ncp_cipher_list("AES-256-GCM:none", &gc),
@@ -74,9 +84,29 @@ test_check_ncp_ciphers_list(void **state)
         assert_ptr_equal(mutate_ncp_cipher_list(bf_chacha, &gc), NULL);
     }
 
+    /* Check that optional ciphers work */
+    assert_string_equal(mutate_ncp_cipher_list("AES-256-GCM:?vollbit:AES-128-GCM", &gc),
+                        aes_ciphers);
+
+    /* Check that optional ciphers work */
+    assert_string_equal(mutate_ncp_cipher_list("?AES-256-GCM:?AES-128-GCM", &gc),
+                        aes_ciphers);
+
+    /* All unsupported should still yield an empty list */
+    assert_ptr_equal(mutate_ncp_cipher_list("?kugelfisch:?grasshopper", &gc), NULL);
+
+    /* If the last is optional, previous invalid ciphers should be ignored */
+    assert_ptr_equal(mutate_ncp_cipher_list("Vollbit:Littlebit:AES-256-CBC:BF-CBC:?nixbit", &gc), NULL);
+
+    /* We do not support CCM ciphers */
+    assert_ptr_equal(mutate_ncp_cipher_list("AES-256-GCM:AES-128-CCM", &gc), NULL);
+
+    assert_string_equal(mutate_ncp_cipher_list("AES-256-GCM:?AES-128-CCM:AES-128-GCM", &gc),
+                        aes_ciphers);
+
     /* For testing that with OpenSSL 1.1.0+ that also accepts ciphers in
      * a different spelling the normalised cipher output is the same */
-    bool have_chacha_mixed_case = cipher_kt_get("ChaCha20-Poly1305");
+    bool have_chacha_mixed_case = cipher_valid("ChaCha20-Poly1305");
     if (have_chacha_mixed_case)
     {
         assert_string_equal(mutate_ncp_cipher_list("AES-128-CBC:ChaCha20-Poly1305", &gc),
@@ -114,7 +144,7 @@ test_extract_client_ciphers(void **state)
 
     client_peer_info = "foo=bar\nIV_foo=y\nIV_NCP=2";
     peer_list = tls_peer_ncp_list(client_peer_info, &gc);
-    assert_string_equal(aes_ciphers,peer_list);
+    assert_string_equal(aes_ciphers, peer_list);
     assert_true(tls_peer_supports_ncp(client_peer_info));
 
     client_peer_info = "foo=bar\nIV_foo=y\nIV_NCP=2\nIV_CIPHERS=BF-CBC";
@@ -186,7 +216,7 @@ test_poor_man(void **state)
                                       "none", &gc);
     assert_string_equal(best_cipher, "none");
 
-    best_cipher = ncp_get_best_cipher(serverlist, NULL,NULL, &gc);
+    best_cipher = ncp_get_best_cipher(serverlist, NULL, NULL, &gc);
     assert_ptr_equal(best_cipher, NULL);
 
     gc_free(&gc);

@@ -1,0 +1,14 @@
+.TH "LIBDROP_AMBIENT" "3" "Nov 2020" "Red Hat" "Libcap-ng API"
+.SH NAME
+libdrop_ambient
+
+.SH "DESCRIPTION
+
+This library can be used via LD_PRELOAD to force an application started with ambient capabilities to drop them. It leaves other capabilities intact. This can also be linked against and automatically does the right thing. You do not need to make any calls into the library because all the work is done in the constructor which runs before main() is called.
+
+.SH "SEE ALSO"
+
+.BR capabilities (7)
+
+.SH AUTHOR
+Steve Grubb

@@ -1,0 +1,29 @@
+.TH "CAPNG_GET_CAPS_PROCESS" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_get_caps_process \- get the capabilities from a process
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+int capng_get_caps_process(void);
+
+.SH "DESCRIPTION"
+
+capng_get_caps_process will get the capabilities and bounding set of the pid stored inside libcap-ng's state table. The default is the pid of the running process. This can be changed by using the capng_setpid function.
+
+.SH "RETURN VALUE"
+
+This returns 0 on success and -1 on failure.
+
+.SH NOTES
+
+If you are doing multi-threaded programming, calling this function will only get capabilities on the calling thread. If you want to get overall capabilities for a multi-threaded process, you can only do that before creating any threads. Afterwards, threads may be able to independantly set capabilities.
+
+capng_get_caps_process needs a mounted /proc to read the current bounding set, otherwise it will fail.
+
+.SH "SEE ALSO"
+
+.BR capng_setpid (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

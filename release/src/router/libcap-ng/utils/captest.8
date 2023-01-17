@@ -1,0 +1,39 @@
+.TH CAPTEST: "8" "Sept 2020" "Red Hat" "System Administration Utilities"
+.SH NAME
+captest \- a program to demonstrate capabilities
+.SH SYNOPSIS
+.B captest [ \-\-ambient \-\-drop-all | \-\-drop-caps | \-\-id ] [ \-\-init-grp ] [ \-\-lock ] [ \-\-text ]
+.SH DESCRIPTION
+\fBcaptest\fP is a program that demonstrates and prints out the current process capabilities. Each option prints the same report. It will output current capabilities. then it will try to access /etc/shadow directly to show if that can be done. Then it creates a child process that attempts to read /etc/shadow and outputs the results of that. Then it outputs the capabilities that a child process would have.
+
+You can also apply file system capabilities to this program to study how they work. For example, filecap /usr/bin/captest chown. Then run captest as a normal user. Another interesting test is to make captest suid root so that you can see what the interaction is between root's credentials and capabilities. For example, chmod 4755 /usr/bin/captest. When run as a normal user, the program will see if privilege escalation is possible. But do not leave this app setuid root after you are don testing so that an attacker cannot take advantage of it.
+
+.SH OPTIONS
+.TP
+.B \-\-ambient
+This attempts to add CAP_CHOWN ambient capability.
+.TP
+.B \-\-drop-all
+This drops all capabilities including ambient and clears the bounding set.
+.TP
+.B \-\-drop-caps
+This drops just traditional capabilities.
+.TP
+.B \-\-id
+This changes to uid and gid 99, drops supplemental groups, and clears the bounding set.
+.TP
+.B \-\-init-grp
+This changes to uid and gid 99 and then adds any supplemental groups that comes with that account. You would have add them prior to testing because by default there are no supplemental groups on account 99.
+.TP
+.B \-\-text
+This option outputs the effective capabilities in text rather than numerically.
+.TP
+.B \-\-lock
+This prevents the ability for child processes to regain privileges if the uid is 0.
+
+.SH "SEE ALSO"
+.BR filecap (8),
+.BR capabilities (7)
+
+.SH AUTHOR
+Steve Grubb

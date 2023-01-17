@@ -1,0 +1,23 @@
+.TH "CAPNG_SET_ROOTID" "3" "Sept 2020" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_set_rootid \- set namespace root id
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+int capng_set_rootid(int rootid);
+
+.SH "DESCRIPTION"
+
+capng_set_rootid sets the rootid for capabilities operations. This is only applicable for file system operations.
+
+.SH "RETURN VALUE"
+
+On success, it returns 0. It returns -1 if there is an internal error or the kernel does not suppor V3 filesystem capabilities.
+
+.SH "SEE ALSO"
+
+.BR capng_set_caps_fd (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

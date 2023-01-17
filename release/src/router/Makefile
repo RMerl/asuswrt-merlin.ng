@@ -1363,6 +1363,7 @@ LZO_VER :=
 endif
 obj-$(RTCONFIG_LZO) += lzo$(LZO_VER)
 obj-$(RTCONFIG_OPENVPN) += lz4
+obj-$(RTCONFIG_OPENVPN) += libcap-ng
 obj-$(RTCONFIG_OPENVPN) += openpam
 obj-$(RTCONFIG_OPENVPN) += easy-rsa
 obj-$(RTCONFIG_OPENVPN) += openssl openvpn
@@ -5968,6 +5969,32 @@ lzo$(LZO_VER)-install: lzo$(LZO_VER)
 lz4:
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
+libcap-ng/configure:
+	cd libcap-ng && autoreconf -i -f ; \
+	CFLAGS="-O3 -Wall $(EXTRACFLAGS)" $(CONFIGURE) --enable-shared \
+		--prefix=/usr \
+		--bindir=/usr/sbin \
+		--libdir=/usr/lib
+	touch $@
+
+libcap-ng: libcap-ng/configure
+	@$(SEP)
+	$(MAKE) -C $@
+
+libcap-ng-clean:
+	$(MAKE) -C libcap-ng clean
+	@rm -f libcap-ng/configure
+
+libcap-ng-install: libcap-ng
+	install -D libcap-ng/src/.libs/libcap-ng.so.0.0.0 $(INSTALLDIR)/libcap-ng/usr/lib/libcap-ng.so.0.0.0
+	install -D libcap-ng/src/.libs/libdrop_ambient.so.0.0.0 $(INSTALLDIR)/libcap-ng/usr/lib/libdrop_ambient.so.0.0.0
+	$(STRIP) $(INSTALLDIR)/libcap-ng/usr/lib/libcap-ng.so.0.0.0
+	$(STRIP) $(INSTALLDIR)/libcap-ng/usr/lib/libdrop_ambient.so.0.0.0
+	cd $(INSTALLDIR)/libcap-ng/usr/lib && ln -sf libcap-ng.so.0.0.0 libcap-ng.so.0 && \
+		ln -sf libcap-ng.so.0.0.0 libcap-ng.so && \
+		ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so.0 && \
+		ln -sf libdrop_ambient.so.0.0.0 libdrop_ambient.so
+
 lz4-install:
 	install -D lz4/lib/liblz4.so.1.9.2 $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
 	$(STRIP) $(INSTALLDIR)/lz4/usr/lib/liblz4.so.1.9.2
@@ -6005,7 +6032,7 @@ easy-rsa-install:
 	mkdir -p $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
 	install easy-rsa/2.0/* $(TARGETDIR)/rom/$(EX_ROM)/easy-rsa
 
-openvpn: shared $(if $(BCM_502L07P2),ethctl_lib) openssl lzo$(LZO_VER) openpam zlib openvpn/Makefile
+openvpn: shared $(if $(BCM_502L07P2),ethctl_lib) openssl lzo$(LZO_VER) libcap-ng openpam zlib openvpn/Makefile
 	$(MAKE) -C $@ $(PARALLEL_BUILD)
 
 openvpn/Makefile:
@@ -6018,8 +6045,10 @@ openvpn/Makefile:
 		LZO_LIBS="-L$(TOP)/lzo$(LZO_VER)/src/.libs -llzo2" \
 		LZ4_CFLAGS="-I$(TOP)/lz4/lib" \
 		LZ4_LIBS="-L$(TOP)/lz4/lib -llz4" \
+		LIBCAPNG_CFLAGS="-I$(TOP)/libcap-ng/src" \
+		LIBCAPNG_LIBS="-L$(TOP)/libcap-ng/src/.libs -lcap-ng" \
 		CFLAGS="-O3 -Wall $(EXTRACFLAGS) -ffunction-sections -fdata-sections -std=gnu99 \
-			-DASUSWRT" \
+			-DASUSWRT -I$(TOP)/libcap-ng/src" \
 		LDFLAGS="$(EXTRALDFLAGS) -ffunction-sections -fdata-sections \
 			-Wl,--gc-sections \
 			-lpthread -ldl \

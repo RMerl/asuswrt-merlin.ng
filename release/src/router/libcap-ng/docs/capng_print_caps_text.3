@@ -1,0 +1,24 @@
+.TH "CAPNG_PRINT_CAPS_NUMERIC" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_print_caps_text \- print names of values for capabilities set
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+char *capng_print_caps_text(capng_print_t where, capng_type_t which);
+
+.SH "DESCRIPTION"
+
+capng_print_caps_text will create a text string representation of the internal capability set specified. The representation can be sent to either stdout or a buffer by passing CAPNG_PRINT_STDOUT or CAPNG_PRINT_BUFFER respectively for the where parameter. If the option was for a buffer, this function will malloc a buffer that the caller must free.
+
+The legal values for the which paramemeter is CAPNG_EFFECTIVE, CAPNG_PERMITTED, CAPNG_INHERITABLE, CAPNG_BOUNDING_SET, or CAPNG_AMBIENT.
+
+.SH "RETURN VALUE"
+
+If CAPNG_PRINT_BUFFER was selected for where, this will be the text buffer and NULL on failure. If CAPNG_PRINT_STDOUT was selected then this value will be NULL no matter what.
+
+.SH "SEE ALSO"
+
+.BR capng_print_caps_numeric (3) , capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

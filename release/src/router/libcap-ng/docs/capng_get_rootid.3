@@ -1,0 +1,23 @@
+.TH "CAPNG_GET_ROOTID" "3" "Sept 2020" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_get_rootid \- get namespace root id
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+int capng_get_rootid(void);
+
+.SH "DESCRIPTION"
+
+capng_get_rootid gets the rootid for capabilities operations. This is only applicable for file system operations.
+
+.SH "RETURN VALUE"
+
+If the file is in the init namespace or the kernel does not support V3 file system capabilities, it returns CAPNG_UNSET_ROOTID. Otherwise it return an integer for the namespace root id.
+
+.SH "SEE ALSO"
+
+.BR capng_get_caps_fd (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

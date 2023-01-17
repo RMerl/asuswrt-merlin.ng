@@ -1,0 +1,23 @@
+.TH "CAPNG_CAPABILITY_TO_NAME" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_capability_to_name \- convert capability integer to text
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+const char *capng_capability_to_name(unsigned int capability);
+
+.SH "DESCRIPTION"
+
+capng_capability_to_name will take the integer being passed and look it up to see what its text string representation would be. The integer being input must be in the valid range defined in linux/capabiliy.h. The string that is output is the same as the define text from linux/capabiliy.h with the CAP_ prefix removed and lower case. This is useful for taking integer representation and converting it to something more user friendly for display.
+
+.SH "RETURN VALUE"
+
+This returns a NULL pointer on failure and the correct string otherwise.
+
+.SH "SEE ALSO"
+
+.BR capng_name_to_capability (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

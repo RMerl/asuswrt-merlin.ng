@@ -1,0 +1,31 @@
+.TH "CAPNG_HAVE_CAPABILITIES" "3" "Sept 2020" "Red Hat" "Libcap-ng API"
+.SH NAME
+.nf
+capng_have_capabilities, capng_have_permitted_capabilities \- check for capabilities
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+capng_results_t capng_have_capabilities(capng_select_t set);
+capng_results_t capng_have_permitted_capabilities(void);
+
+.SH "DESCRIPTION"
+
+capng_have_capabilities will check the selected internal capabilities sets to see what the status is. The capabilities sets must be previously setup with calls to capng_get_caps_process, capng_get_caps_fd, or in some other way setup. The options are CAPNG_SELECT_CAPS for the traditional capabilities, CAPNG_SELECT_BOUNDS for the bounding set, CAPNG_SELECT_BOTH if checking both are desired, CAPNG_SELECT_AMBIENT if only checking the ambient capabilities, or CAPNG_SELECT_ALL if testing all sets is desired. When capabilities are checked, it will only look at the effective capabilities.
+
+If, however, the source of capabilities comes from a file, then you may need to additionally check the permitted capabilities. It's for this reason that
+.B capng_have_permitted_capabilities
+was created. It takes no arguments because it simply checks the permitted set.
+
+.SH "RETURN VALUE"
+
+This funtion will return one of the following four self explanatory values: CAPNG_FAIL, CAPNG_NONE, CAPNG_PARTIAL, CAPNG_FULL.
+
+.SH "SEE ALSO"
+
+.BR capng_get_caps_process (3),
+.BR capng_get_caps_fd (3),
+.BR capng_have_capability (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

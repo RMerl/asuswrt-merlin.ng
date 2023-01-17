@@ -1,0 +1,46 @@
+.TH FILECAP: "8" "Aug 2018" "Red Hat" "System Administration Utilities"
+.SH NAME
+filecap \- a program to see capabilities
+.SH SYNOPSIS
+.B filecap [ \-a | \-d | /dir | /dir/file [cap1 cap2 ...] ]
+.SH DESCRIPTION
+\fBfilecap\fP is a program that prints out a report of programs with file based capabilities. If a file is not in the report or there is no report at all, no capabilities were found. For expedience, the default is to check only the directories in the PATH environmental variable. If the \-a command line option is given, then all directories will be checked. If a directory is passed, it will recursively check that directory. If a path to a file is given, it will only check that file. If a file is given followed by capabilities, then the capabilities are written to the file.
+
+.SH OPTIONS
+.TP
+.B \-a
+This tells the program to show all capabilities starting from the / directory. Normally the PATH environmental variable is used to show you capabilities on files you are likely to execute.
+.TP
+.B \-d
+This dumps all capabilities for reference.
+
+.SH "EXAMPLES"
+.nf
+To check file capabilities in $PATH:
+.B filecap
+
+To check file capabilities of whole system:
+.B filecap -a
+
+To check file capabilities recursively in a directory:
+.B filecap /usr
+
+To check file capabilities of a specific program:
+.B filecap /bin/passwd
+
+To list all possible capabilities:
+.B filecap -d
+
+To set a file capability on a specific program:
+.B filecap /bin/ping net_raw net_admin
+
+To remove file capabilities on a specific program:
+.B filecap /bin/ping none 
+.fi
+.SH "SEE ALSO"
+.BR pscap (8),
+.BR netcap (8),
+.BR capabilities (7).
+
+.SH AUTHOR
+Steve Grubb

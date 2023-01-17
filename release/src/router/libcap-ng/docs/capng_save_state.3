@@ -1,0 +1,27 @@
+.TH "CAPNG_SAVE_STATE" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_save_state \- get the internal library state
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+void *capng_save_state(void);
+
+.SH "DESCRIPTION"
+
+capng_save_state is a function that returns a pointer to the internal state of the libcap-ng library. It should be considered opaque and not for alteration directly. This function should be used when you suspect a third party library may use libcap-ng also and want to make sure it doesn't alter something important. This function is not available in the python bindings.
+
+.SH "RETURN VALUE"
+
+This returns NULL on failure and a non-NULL pointer otherwise.
+
+.SH NOTES
+
+The structure returned by capng_save_state is malloc'd;  it should be free'd if not used.
+
+.SH "SEE ALSO"
+
+.BR capng_restore_state (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

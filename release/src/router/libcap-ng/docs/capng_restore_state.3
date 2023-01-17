@@ -1,0 +1,30 @@
+.TH "CAPNG_SAVE_STATE" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_restore_state \- set the internal library state
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+void capng_restore_state(void **state);
+
+.SH "DESCRIPTION"
+
+capng_restore_state is a function that takes the state information previously saved by capng_save_state and restores the libraries internal state. This function is not available in the python bindings.
+
+.SH "RETURN VALUE"
+
+None.
+
+.SH NOTES
+
+capng_restore_state free's the previously malloc'd state, thus the state can't be restored multiple times.
+
+The working pid is part of the restored state, if restoring the state to a different thread, capng_setpid
+can be used to update it.
+
+.SH "SEE ALSO"
+
+.BR capng_save_state (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

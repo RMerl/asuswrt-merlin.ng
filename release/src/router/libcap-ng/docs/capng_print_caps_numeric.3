@@ -1,0 +1,24 @@
+.TH "CAPNG_PRINT_CAPS_NUMERIC" "3" "Sept 2020" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_print_caps_numeric \- print numeric values for capabilities set
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+char *capng_print_caps_numeric(capng_print_t where, capng_select_t set);
+
+.SH "DESCRIPTION"
+
+capng_print_caps_numeric will create a numeric representation of the internal capabilities. The representation can be sent to either stdout or a buffer by passing CAPNG_PRINT_STDOUT or CAPNG_PRINT_BUFFER respectively for the where parameter. If the option was for a buffer, this function will malloc a buffer that the caller must free.
+
+The set parameter controls what is included in the representation. The legal options are CAPNG_SELECT_CAPS for the traditional capabilities, CAPNG_SELECT_BOUNDS for the bounding set, CAPNG_SELECT_BOTH if printing both is desired, CAPNG_SELECT_AMBIENT if only printing the ambient capabilities, or CAPNG_SELECT_ALL if printing all is desired.
+
+.SH "RETURN VALUE"
+
+If CAPNG_PRINT_BUFFER was selected for where, this will be the text buffer and NULL on failure. If CAPNG_PRINT_STDOUT was selected then this value will be NULL no matter what.
+
+.SH "SEE ALSO"
+
+.BR capng_print_caps_text (3) , capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

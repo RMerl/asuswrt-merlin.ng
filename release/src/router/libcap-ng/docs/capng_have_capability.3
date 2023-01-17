@@ -1,0 +1,25 @@
+.TH "CAPNG_HAVE_CAPABILITY" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_have_capability \- check for specific capability
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+int capng_have_capability(capng_type_t which, unsigned int capability);
+
+.SH "DESCRIPTION"
+
+capng_have_capability will check the specified internal capabilities set to see if the specified capability is set. The capabilities sets must be previously setup with calls to capng_get_caps_process, capng_get_caps_fd, or in some other way setup. The values for which should be one of: CAPNG_EFFECTIVE, CAPNG_PERMITTED, CAPNG_INHERITABLE, CAPNG_BOUNDING_SET, or CAPNG_AMBIENT.
+
+.SH "RETURN VALUE"
+
+This funtion will return 1 if yes and 0 otherwise.
+
+.SH "SEE ALSO"
+
+.BR capng_get_caps_process (3),
+.BR capng_get_caps_fd (3),
+.BR capng_have_capabilities (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

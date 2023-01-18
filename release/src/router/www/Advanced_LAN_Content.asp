@@ -23,6 +23,7 @@
 
 var origin_lan_ip = '<% nvram_get("lan_ipaddr"); %>';
 var origin_lan_mask = '<% nvram_get("lan_netmask"); %>';
+var origin_hostname = '<% nvram_get("lan_hostname"); %>';
 
 if(pptpd_support){	
 	var pptpd_clients = '<% nvram_get("pptpd_clients"); %>';
@@ -78,6 +79,14 @@ function applyRule(){
 	if(validForm()){
 		if(based_modelid == "MAP-AC1300" || based_modelid == "MAP-AC2200" || based_modelid == "VZW-AC1300" || based_modelid == "MAP-AC1750")
 			alert("By applying new LAN settings, please reboot all Lyras connected to main Lyra manually.");
+
+		if ((('<% nvram_get("http_enable"); %>' != '0') &&
+		     ('<% nvram_get("le_enable"); %>' == '0')) &&
+		    ((origin_hostname != document.form.lan_hostname.value) ||
+		     (origin_lan_ip != document.form.lan_ipaddr.value) ||
+		     (origin_lan_mask != document.form.lan_netmask.value))) {
+			document.form.https_crt_gen.value = 1;
+		}
 
 		if(tagged_based_vlan){
 			var subnet_netmask = document.form.lan_ipaddr.value + '/' + netmask_to_bits(document.form.lan_netmask.value);
@@ -415,6 +424,7 @@ function check_vpn(){		//true: lAN ip & VPN client ip conflict
 <input type="hidden" name="lan_ipaddr_rt" value="<% nvram_get("lan_ipaddr_rt"); %>">
 <input type="hidden" name="lan_netmask_rt" value="<% nvram_get("lan_netmask_rt"); %>">
 <input type="hidden" name="subnet_rulelist_ext" value='<% nvram_get("subnet_rulelist_ext"); %>' disabled>
+<input type="hidden" name="https_crt_gen" value='<% nvram_get("https_crt_gen"); %>' >
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>

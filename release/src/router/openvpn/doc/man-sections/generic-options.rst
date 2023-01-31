@@ -48,13 +48,34 @@ which mode OpenVPN is configured as.
 
   Note: The SSL library will probably need /dev/urandom to be available
   inside the chroot directory ``dir``. This is because SSL libraries
-  occasionally need to collect fresh random. Newer linux kernels and some
+  occasionally need to collect fresh randomness. Newer linux kernels and some
   BSDs implement a getrandom() or getentropy() syscall that removes the
   need for /dev/urandom to be available.
 
+--compat-mode version
+  This option provides a way to alter the default of OpenVPN to be more
+  compatible with the version ``version`` specified. All of the changes
+  this option does can also be achieved using individual configuration
+  options.
+
+  Note: Using this option reverts defaults to no longer recommended
+  values and should be avoided if possible.
+
+  The following table details what defaults are changed depending on the
+  version specified.
+
+  - 2.5.x or lower: ``--allow-compression asym`` is automatically added
+    to the configuration if no other compression options are present.
+  - 2.4.x or lower: The cipher in ``--cipher`` is appended to
+    ``--data-ciphers``
+  - 2.3.x or lower: ``--data-cipher-fallback`` is automatically added with
+    the same cipher as ``--cipher``
+  - 2.3.6 or lower: ``--tls-version-min 1.0`` is added to the configuration
+    when ``--tls-version-min`` is not explicitly set.
+
 --config file
   Load additional config options from ``file`` where each line corresponds
-  to one command line option, but with the leading '--' removed.
+  to one command line option, but with the leading :code:`--` removed.
 
   If ``--config file`` is the only option to the openvpn command, the
   ``--config`` can be removed, and the command can be given as ``openvpn
@@ -109,8 +130,14 @@ which mode OpenVPN is configured as.
       secret static.key
 
 --daemon progname
-  Become a daemon after all initialization functions are completed. This
-  option will cause all message and error output to be sent to the syslog
+  Become a daemon after all initialization functions are completed.
+
+  Valid syntaxes::
+
+    daemon
+    daemon progname
+
+  This option will cause all message and error output to be sent to the syslog
   file (such as :code:`/var/log/messages`), except for the output of
   scripts and ifconfig commands, which will go to :code:`/dev/null` unless
   otherwise redirected. The syslog redirection occurs immediately at the
@@ -121,7 +148,7 @@ which mode OpenVPN is configured as.
   The optional ``progname`` parameter will cause OpenVPN to report its
   program name to the system logger as ``progname``. This can be useful in
   linking OpenVPN messages in the syslog file with specific tunnels. When
-  unspecified, ``progname`` defaults to "openvpn".
+  unspecified, ``progname`` defaults to :code:`openvpn`.
 
   When OpenVPN is run with the ``--daemon`` option, it will try to delay
   daemonization until the majority of initialization functions which are
@@ -144,7 +171,19 @@ which mode OpenVPN is configured as.
   on console) and ``--auth-nocache`` will fail as soon as key
   renegotiation (and reauthentication) occurs.
 
+--disable-dco
+  Disable "data channel offload" (DCO).
+
+  On Linux don't use the ovpn-dco device driver, but rather rely on the
+  legacy tun module.
+
+  You may want to use this option if your server needs to allow clients
+  older than version 2.4 to connect.
+
 --disable-occ
+  **DEPRECATED** Disable "options consistency check" (OCC) in configurations
+  that do not use TLS.
+
   Don't output a warning message if option inconsistencies are detected
   between peers. An example of an option inconsistency would be where one
   peer uses ``--dev tun`` while the other peer uses ``--dev tap``.
@@ -155,6 +194,11 @@ which mode OpenVPN is configured as.
 
 --engine engine-name
   Enable OpenSSL hardware-based crypto engine functionality.
+
+  Valid syntaxes::
+
+    engine
+    engine engine-name
 
   If ``engine-name`` is specified, use a specific crypto engine. Use the
   ``--show-engines`` standalone option to list the crypto engines which
@@ -170,7 +214,7 @@ which mode OpenVPN is configured as.
   call, improving CPU efficiency by 5% to 10%.
 
   This option can only be used on non-Windows systems, when ``--proto
-  udp`` is specified, and when ``--shaper`` is NOT specified.
+  udp`` is specified, and when ``--shaper`` is *NOT* specified.
 
 --group group
   Similar to the ``--user`` option, this option changes the group ID of
@@ -200,7 +244,7 @@ which mode OpenVPN is configured as.
   May be used in order to execute OpenVPN in unprivileged environment.
 
 --keying-material-exporter args
-  Save Exported Keying Material [RFC5705] of len bytes (must be between 16
+  Save Exported Keying Material [RFC5705] of ``len`` bytes (must be between 16
   and 4095 bytes) using ``label`` in environment
   (:code:`exported_keying_material`) for use by plugins in
   :code:`OPENVPN_PLUGIN_TLS_FINAL` callback.
@@ -237,6 +281,13 @@ which mode OpenVPN is configured as.
   likely fail. The limit can be increased using ulimit or systemd
   directives depending on how OpenVPN is started.
 
+  If the platform has the getrlimit(2) system call, OpenVPN will check
+  for the amount of mlock-able memory before calling mlockall(2), and
+  tries to increase the limit to 100 MB if less than this is configured.
+  100 Mb is somewhat arbitrary - it is enough for a moderately-sized
+  OpenVPN deployment, but the memory usage might go beyond that if the
+  number of concurrent clients is high.
+
 --nice n
   Change process priority after initialization (``n`` greater than 0 is
   lower priority, ``n`` less than zero is higher priority).
@@ -244,7 +295,7 @@ which mode OpenVPN is configured as.
 --persist-key
   Don't re-read key files across :code:`SIGUSR1` or ``--ping-restart``.
 
-  This option can be combined with ``--user nobody`` to allow restarts
+  This option can be combined with ``--user`` to allow restarts
   triggered by the :code:`SIGUSR1` signal. Normally if you drop root
   privileges in OpenVPN, the daemon cannot be restarted since it will now
   be unable to re-read protected key files.
@@ -261,13 +312,13 @@ which mode OpenVPN is configured as.
 
       --providers legacy default
 
-  Behaviour of changing this option between SIGHUP might not be well behaving.
+  Behaviour of changing this option between :code:`SIGHUP` might not be well behaving.
   If you need to change/add/remove this option, fully restart OpenVPN.
 
 --remap-usr1 signal
   Control whether internally or externally generated :code:`SIGUSR1` signals
   are remapped to :code:`SIGHUP` (restart without persisting state) or
-  SIGTERM (exit).
+  :code:`SIGTERM` (exit).
 
   ``signal`` can be set to :code:`SIGHUP` or :code:`SIGTERM`. By default,
   no remapping occurs.
@@ -344,7 +395,8 @@ which mode OpenVPN is configured as.
   consider using the ``--persist-key`` and ``--persist-tun`` options.
 
 --status args
-  Write operational status to ``file`` every ``n`` seconds.
+  Write operational status to ``file`` every ``n`` seconds. ``n`` defaults
+  to :code:`60` if not specified.
 
   Valid syntaxes:
   ::
@@ -421,10 +473,7 @@ which mode OpenVPN is configured as.
 
   * :code:`OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY` plug-in hooks returns
     success/failure via :code:`auth_control_file` when using deferred auth
-    method
-
-  * :code:`OPENVPN_PLUGIN_ENABLE_PF` plugin hook to pass filtering rules
-    via ``pf_file``
+    method and pending authentification via :code:`pending_auth_file`.
 
 --use-prediction-resistance
   Enable prediction resistance on mbed TLS's RNG.
@@ -443,7 +492,7 @@ which mode OpenVPN is configured as.
   able to gain control of an OpenVPN session. Though OpenVPN's security
   features make this unlikely, it is provided as a second line of defense.
 
-  By setting ``user`` to :code:`nobody` or somebody similarly unprivileged,
+  By setting ``user`` to an unprivileged user dedicated to run openvpn,
   the hostile party would be limited in what damage they could cause. Of
   course once you take away privileges, you cannot return them to an
   OpenVPN session. This means, for example, that if you want to reset an
@@ -452,6 +501,11 @@ which mode OpenVPN is configured as.
   options to ensure that OpenVPN doesn't need to execute any privileged
   operations in order to restart (such as re-reading key files or running
   ``ifconfig`` on the TUN device).
+
+  NOTE: Previous versions of openvpn used :code:`nobody` as the example
+  unpriviledged user. It is not recommended to actually use that user
+  since it is usually used by other system services already. Always
+  create a dedicated user for openvpn.
 
 --writepid file
   Write OpenVPN's main process ID to ``file``.

@@ -1,0 +1,24 @@
+.TH "CAPNG_APPLY_CAPS_FD" "3" "Sept 2020" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_apply_caps_fd \- 
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+int capng_apply_caps_fd(int fd);
+
+.SH "DESCRIPTION"
+
+This function will write the file based capabilities to the extended attributes of the file that the descriptor was opened against. The bounding set is not included in file based capabilities operations. Note that this function will only work if compiled on a kernel that supports file based capabilities such as 2.6.2
+6 and later.
+
+.SH "RETURN VALUE"
+
+This returns 0 on success, -1 if something besides a regular file is passed, and -2 if a non-root namespace id is being used for rootid.
+
+.SH "SEE ALSO"
+
+.BR capng_get_caps_fd (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

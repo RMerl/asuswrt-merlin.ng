@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -23,8 +23,6 @@
 
 #ifndef PUSH_H
 #define PUSH_H
-
-#if P2MP
 
 #include "forward.h"
 
@@ -49,6 +47,8 @@ bool send_push_request(struct context *c);
 void receive_auth_failed(struct context *c, const struct buffer *buffer);
 
 void server_pushed_signal(struct context *c, const struct buffer *buffer, const bool restart, const int adv);
+
+void receive_exit_message(struct context *c);
 
 void server_pushed_info(struct context *c, const struct buffer *buffer,
                         const int adv);
@@ -77,7 +77,9 @@ void send_auth_failed(struct context *c, const char *client_reason);
  * doc/management-notes.txt under client-pending-auth for
  * more details on message format
  */
-bool send_auth_pending_messages(struct context *c, const char *extra);
+bool
+send_auth_pending_messages(struct tls_multi *tls_multi, const char *extra,
+                           unsigned int timeout);
 
 void send_restart(struct context *c, const char *kill_msg);
 
@@ -89,5 +91,13 @@ void send_restart(struct context *c, const char *kill_msg);
  */
 void send_push_reply_auth_token(struct tls_multi *multi);
 
-#endif /* if P2MP */
+/**
+ * Parses an AUTH_PENDING message and if in pull mode extends the timeout
+ *
+ * @param c             The context struct
+ * @param buffer        Buffer containing the control message with AUTH_PENDING
+ */
+void
+receive_auth_pending(struct context *c, const struct buffer *buffer);
+
 #endif /* ifndef PUSH_H */

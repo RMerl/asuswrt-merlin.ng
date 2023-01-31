@@ -5,7 +5,7 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2017-2022 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2017-2023 OpenVPN Inc <sales@openvpn.net>
 #
 
 %.service: %.service.in Makefile
@@ -21,6 +21,7 @@ if ENABLE_SYSTEMD
 systemdunit_DATA = \
 	openvpn-client@.service \
 	openvpn-server@.service
+CLEANFILES = $(systemdunit_DATA)
 tmpfiles_DATA = \
 	tmpfiles-openvpn.conf
 dist_doc_DATA = \

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -41,6 +41,7 @@
 #include "mtu.h"
 #include "run_command.h"
 #include "sig.h"
+#include "win32-util.h"
 #include "win32.h"
 #include "openvpn-msg.h"
 
@@ -185,7 +186,7 @@ overlapped_io_init(struct overlapped_io *o,
     }
 
     /* allocate buffer for overlapped I/O */
-    alloc_buf_sock_tun(&o->buf_init, frame, tuntap_buffer, 0);
+    alloc_buf_sock_tun(&o->buf_init, frame, tuntap_buffer);
 }
 
 void
@@ -641,51 +642,44 @@ int
 win32_signal_get(struct win32_signal *ws)
 {
     int ret = 0;
-    if (siginfo_static.signal_received)
+
+    if (ws->mode == WSO_MODE_SERVICE)
     {
-        ret = siginfo_static.signal_received;
-    }
-    else
-    {
-        if (ws->mode == WSO_MODE_SERVICE)
+        if (win32_service_interrupt(ws))
         {
-            if (win32_service_interrupt(ws))
-            {
+            ret = SIGTERM;
+        }
+    }
+    else if (ws->mode == WSO_MODE_CONSOLE)
+    {
+        switch (win32_keyboard_get(ws))
+        {
+            case 0x3B: /* F1 -> USR1 */
+                ret = SIGUSR1;
+                break;
+
+            case 0x3C: /* F2 -> USR2 */
+                ret = SIGUSR2;
+                break;
+
+            case 0x3D: /* F3 -> HUP */
+                ret = SIGHUP;
+                break;
+
+            case 0x3E: /* F4 -> TERM */
                 ret = SIGTERM;
-            }
-        }
-        else if (ws->mode == WSO_MODE_CONSOLE)
-        {
-            switch (win32_keyboard_get(ws))
-            {
-                case 0x3B: /* F1 -> USR1 */
-                    ret = SIGUSR1;
-                    break;
+                break;
 
-                case 0x3C: /* F2 -> USR2 */
-                    ret = SIGUSR2;
-                    break;
-
-                case 0x3D: /* F3 -> HUP */
-                    ret = SIGHUP;
-                    break;
-
-                case 0x3E: /* F4 -> TERM */
-                    ret = SIGTERM;
-                    break;
-
-                case 0x03: /* CTRL-C -> TERM */
-                    ret = SIGTERM;
-                    break;
-            }
-        }
-        if (ret)
-        {
-            siginfo_static.signal_received = ret;
-            siginfo_static.source = SIG_SOURCE_HARD;
+            case 0x03: /* CTRL-C -> TERM */
+                ret = SIGTERM;
+                break;
         }
     }
-    return ret;
+    if (ret)
+    {
+        throw_signal(ret); /* this will update signinfo_static.signal received */
+    }
+    return (siginfo_static.signal_received);
 }
 
 void
@@ -888,92 +882,6 @@ netcmd_semaphore_release(void)
 }
 
 /*
- * Return true if filename is safe to be used on Windows,
- * by avoiding the following reserved names:
- *
- * CON, PRN, AUX, NUL, COM1, COM2, COM3, COM4, COM5, COM6, COM7, COM8, COM9,
- * LPT1, LPT2, LPT3, LPT4, LPT5, LPT6, LPT7, LPT8, LPT9, and CLOCK$
- *
- * See: http://msdn.microsoft.com/en-us/library/aa365247.aspx
- *  and http://msdn.microsoft.com/en-us/library/86k9f82k(VS.80).aspx
- */
-
-static bool
-cmp_prefix(const char *str, const bool n, const char *pre)
-{
-    size_t i = 0;
-
-    if (!str)
-    {
-        return false;
-    }
-
-    while (true)
-    {
-        const int c1 = pre[i];
-        int c2 = str[i];
-        ++i;
-        if (c1 == '\0')
-        {
-            if (n)
-            {
-                if (isdigit(c2))
-                {
-                    c2 = str[i];
-                }
-                else
-                {
-                    return false;
-                }
-            }
-            return c2 == '\0' || c2 == '.';
-        }
-        else if (c2 == '\0')
-        {
-            return false;
-        }
-        if (c1 != tolower(c2))
-        {
-            return false;
-        }
-    }
-}
-
-bool
-win_safe_filename(const char *fn)
-{
-    if (cmp_prefix(fn, false, "con"))
-    {
-        return false;
-    }
-    if (cmp_prefix(fn, false, "prn"))
-    {
-        return false;
-    }
-    if (cmp_prefix(fn, false, "aux"))
-    {
-        return false;
-    }
-    if (cmp_prefix(fn, false, "nul"))
-    {
-        return false;
-    }
-    if (cmp_prefix(fn, true, "com"))
-    {
-        return false;
-    }
-    if (cmp_prefix(fn, true, "lpt"))
-    {
-        return false;
-    }
-    if (cmp_prefix(fn, false, "clock$"))
-    {
-        return false;
-    }
-    return true;
-}
-
-/*
  * Service functions for openvpn_execve
  */
 
@@ -1133,13 +1041,13 @@ openvpn_execve(const struct argv *a, const struct env_set *es, const unsigned in
                 }
                 else
                 {
-                    msg(M_WARN|M_ERRNO, "openvpn_execve: GetExitCodeProcess %S failed", cmd);
+                    msg(M_WARN|M_ERRNO, "openvpn_execve: GetExitCodeProcess %ls failed", cmd);
                 }
                 CloseHandle(proc_info.hProcess);
             }
             else
             {
-                msg(M_WARN|M_ERRNO, "openvpn_execve: CreateProcess %S failed", cmd);
+                msg(M_WARN|M_ERRNO, "openvpn_execve: CreateProcess %ls failed", cmd);
             }
             free(env);
             gc_free(&gc);
@@ -1159,15 +1067,6 @@ openvpn_execve(const struct argv *a, const struct env_set *es, const unsigned in
         msg(M_WARN, "openvpn_execve: called with empty argv");
     }
     return ret;
-}
-
-WCHAR *
-wide_string(const char *utf8, struct gc_arena *gc)
-{
-    int n = MultiByteToWideChar(CP_UTF8, 0, utf8, -1, NULL, 0);
-    WCHAR *ucs16 = gc_malloc(n * sizeof(WCHAR), false, gc);
-    MultiByteToWideChar(CP_UTF8, 0, utf8, -1, ucs16, n);
-    return ucs16;
 }
 
 /*
@@ -1439,18 +1338,106 @@ win32_version_info(void)
     return WIN_10;
 }
 
-bool
-win32_is_64bit(void)
+typedef enum {
+    ARCH_X86,
+    ARCH_AMD64,
+    ARCH_ARM64,
+    ARCH_NATIVE, /* means no emulation, makes sense for host arch */
+    ARCH_UNKNOWN
+} arch_t;
+
+static void
+win32_get_arch(arch_t *process_arch, arch_t *host_arch)
 {
-#if defined(_WIN64)
-    return true;  /* 64-bit programs run only on Win64 */
+    *process_arch = ARCH_UNKNOWN;
+    *host_arch = ARCH_NATIVE;
+
+    typedef BOOL (__stdcall *is_wow64_process2_t)(HANDLE, USHORT *, USHORT *);
+    is_wow64_process2_t is_wow64_process2 = (is_wow64_process2_t)
+                                            GetProcAddress(GetModuleHandle("Kernel32.dll"), "IsWow64Process2");
+
+    USHORT process_machine = 0;
+    USHORT native_machine = 0;
+    BOOL is_wow64 = FALSE;
+
+#ifdef _ARM64_
+    *process_arch = ARCH_ARM64;
+#elif defined(_WIN64)
+    *process_arch = ARCH_AMD64;
+    if (is_wow64_process2)
+    {
+        /* this could be amd64 on arm64 */
+        BOOL is_wow64 = is_wow64_process2(GetCurrentProcess(),
+                                          &process_machine, &native_machine);
+        if (is_wow64 && native_machine == IMAGE_FILE_MACHINE_ARM64)
+        {
+            *host_arch = ARCH_ARM64;
+        }
+    }
 #elif defined(_WIN32)
-    /* 32-bit programs run on both 32-bit and 64-bit Windows */
-    BOOL f64 = FALSE;
-    return IsWow64Process(GetCurrentProcess(), &f64) && f64;
-#else  /* if defined(_WIN64) */
-    return false; /* Win64 does not support Win16 */
-#endif
+    *process_arch = ARCH_X86;
+
+    if (is_wow64_process2)
+    {
+        /* check if we're running on arm64 or amd64 machine */
+        is_wow64 = is_wow64_process2(GetCurrentProcess(),
+                                     &process_machine, &native_machine);
+        if (is_wow64)
+        {
+            switch (native_machine)
+            {
+                case IMAGE_FILE_MACHINE_ARM64:
+                    *host_arch = ARCH_ARM64;
+                    break;
+
+                case IMAGE_FILE_MACHINE_AMD64:
+                    *host_arch = ARCH_AMD64;
+                    break;
+
+                default:
+                    *host_arch = ARCH_UNKNOWN;
+                    break;
+            }
+        }
+    }
+    else
+    {
+        BOOL w64 = FALSE;
+        is_wow64 = IsWow64Process(GetCurrentProcess(), &w64) && w64;
+        if (is_wow64)
+        {
+            /* we are unable to differentiate between arm64 and amd64
+             * machines here, so assume we are running on amd64 */
+            *host_arch = ARCH_AMD64;
+        }
+    }
+#endif /* _ARM64_ */
+}
+
+static void
+win32_print_arch(arch_t arch, struct buffer *out)
+{
+    switch (arch)
+    {
+        case ARCH_X86:
+            buf_printf(out, "x86");
+            break;
+
+        case ARCH_AMD64:
+            buf_printf(out, "amd64");
+            break;
+
+        case ARCH_ARM64:
+            buf_printf(out, "arm64");
+            break;
+
+        case ARCH_UNKNOWN:
+            buf_printf(out, "(unknown)");
+            break;
+
+        default:
+            break;
+    }
 }
 
 const char *
@@ -1491,7 +1478,20 @@ win32_version_string(struct gc_arena *gc, bool add_name)
             break;
     }
 
-    buf_printf(&out, win32_is_64bit() ? " 64bit" : " 32bit");
+    buf_printf(&out, ", ");
+
+    arch_t process_arch, host_arch;
+    win32_get_arch(&process_arch, &host_arch);
+    win32_print_arch(process_arch, &out);
+
+    buf_printf(&out, " executable");
+
+    if (host_arch != ARCH_NATIVE)
+    {
+        buf_printf(&out, " running on ");
+        win32_print_arch(host_arch, &out);
+        buf_printf(&out, " host");
+    }
 
     return (const char *)out.data;
 }
@@ -1597,4 +1597,47 @@ set_openssl_env_vars()
     }
 }
 
+void
+win32_sleep(const int n)
+{
+    if (n < 0)
+    {
+        return;
+    }
+
+    /* Sleep() is not interruptible. Use a WAIT_OBJECT to catch signal */
+
+    if (!HANDLE_DEFINED(win32_signal.in.read))
+    {
+        if (n > 0)
+        {
+            Sleep(n*1000);
+        }
+        return;
+    }
+
+    update_time();
+    time_t expire = now + n;
+
+    while (expire >= now)
+    {
+        DWORD status = WaitForSingleObject(win32_signal.in.read, (expire-now)*1000);
+        if ((status == WAIT_OBJECT_0 && win32_signal_get(&win32_signal))
+            || status == WAIT_TIMEOUT)
+        {
+            return;
+        }
+
+        update_time();
+
+        if (status != WAIT_OBJECT_0) /* wait failed or some unexpected error ? */
+        {
+            if (expire > now)
+            {
+                Sleep((expire-now)*1000);
+            }
+            return;
+        }
+    }
+}
 #endif /* ifdef _WIN32 */

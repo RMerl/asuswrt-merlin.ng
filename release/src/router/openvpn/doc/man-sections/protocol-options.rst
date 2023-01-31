@@ -18,13 +18,13 @@ configured in a compatible way between both the local and remote side.
 
   The ``mode`` argument can be one of the following values:
 
-  :code:`asym`  (default)
+  :code:`asym`
       OpenVPN will only *decompress downlink packets* but *not compress
       uplink packets*.  This also allows migrating to disable compression
       when changing both server and client configurations to remove
       compression at the same time is not a feasible option.
 
-  :code:`no`
+  :code:`no`  (default)
       OpenVPN will refuse any non-stub compression.
 
   :code:`yes`
@@ -57,37 +57,42 @@ configured in a compatible way between both the local and remote side.
   http://www.cs.ucsd.edu/users/mihir/papers/hmac.html
 
 --cipher alg
-  This option is deprecated for server-client mode. ``--data-ciphers``
-  or possibly `--data-ciphers-fallback`` should be used instead.
+  This option should not be used any longer in TLS mode and still
+  exists for two reasons:
 
-  Encrypt data channel packets with cipher algorithm ``alg``.
+  * compatibility with old configurations still carrying it
+    around;
 
-  The default is :code:`BF-CBC`, an abbreviation for Blowfish in Cipher
-  Block Chaining mode. When cipher negotiation (NCP) is allowed,
-  OpenVPN 2.4 and newer on both client and server side will automatically
-  upgrade to :code:`AES-256-GCM`.  See ``--data-ciphers`` and
-  ``--ncp-disable`` for more details on NCP.
+  * allow users connecting to OpenVPN peers older than 2.6.0
+    to have ``--cipher`` configured the same way as the remote
+    counterpart. This can avoid MTU/frame size warnings.
 
-  Using :code:`BF-CBC` is no longer recommended, because of its 64-bit
-  block size. This small block size allows attacks based on collisions, as
-  demonstrated by SWEET32. See
-  https://community.openvpn.net/openvpn/wiki/SWEET32
-  for details. Due to this, support for :code:`BF-CBC`, :code:`DES`,
-  :code:`CAST5`, :code:`IDEA` and :code:`RC2` ciphers will be removed in
-  OpenVPN 2.6.
+  Before 2.4.0, this option was used to select the cipher to be
+  configured on the data channel, however, later versions usually
+  ignored this directive in favour of a negotiated cipher.
+  Starting with 2.6.0, this option is always ignored in TLS mode
+  when it comes to configuring the cipher and will only control the
+  cipher for ``--secret`` pre-shared-key mode (note: this mode is
+  deprecated and strictly not recommended).
 
-  To see other ciphers that are available with OpenVPN, use the
+  If you wish to specify the cipher to use on the data channel,
+  please see ``--data-ciphers`` (for regular negotiation) and
+  ``--data-ciphers-fallback`` (for a fallback option when the
+  negotiation cannot take place because the other peer is old or
+  has negotiation disabled).
+
+  To see ciphers that are available with OpenVPN, use the
   ``--show-ciphers`` option.
 
   Set ``alg`` to :code:`none` to disable encryption.
 
 --compress algorithm
-  **DEPRECATED** Enable a compression algorithm.  Compression is generally
-  not recommended.  VPN tunnels which use compression are susceptible to
-  the VORALCE attack vector.
+  **DEPRECATED** Enable a compression algorithm. Compression is generally
+  not recommended. VPN tunnels which use compression are susceptible to
+  the VORALCE attack vector. See also the :code:`migrate` parameter below.
 
   The ``algorithm`` parameter may be :code:`lzo`, :code:`lz4`,
-  :code:`lz4-v2`, :code:`stub`, :code:`stub-v2` or empty.
+  :code:`lz4-v2`, :code:`stub`, :code:`stub-v2`, :code:`migrate` or empty.
   LZO and LZ4 are different compression algorithms, with LZ4 generally
   offering the best performance with least CPU usage.
 
@@ -95,6 +100,11 @@ configured in a compatible way between both the local and remote side.
   framing that does not add overhead when packets cannot be compressed. All
   other variants always add one extra framing byte compared to no
   compression framing.
+
+  Especially :code:`stub-v2` is essentially identical to no compression and
+  no compression framing as its header indicates IP version 5 in a tun setup
+  and can (ab)used to complete disable compression to clients. (See the
+  :code:`migrate` option below)
 
   If the ``algorithm`` parameter is :code:`stub`, :code:`stub-v2` or empty,
   compression will be turned off, but the packet framing for compression
@@ -105,6 +115,15 @@ configured in a compatible way between both the local and remote side.
 
   Note: the :code:`stub` (or empty) option is NOT compatible with the older
   option ``--comp-lzo no``.
+
+  Using :code:`migrate` as compression algorithm enables a special migration mode.
+  It allows migration away from the ``--compress``/``--comp-lzo`` options to no compression.
+  This option sets the server to no compression mode and the server behaves identical to
+  a server without a compression option for all clients without a compression in their
+  config. However, if a client is detected that indicates that compression is used (via OCC),
+  the server will automatically add ``--push compress stub-v2`` to the client specific
+  configuration if supported by the client and otherwise switch to ``comp-lzo no``
+  and add ``--push comp-lzo`` to the client specific configuration.
 
   ***Security Considerations***
 
@@ -164,46 +183,39 @@ configured in a compatible way between both the local and remote side.
   ``--tls-auth`` and ``--secret`` options. Useful when using inline files
   (See section on inline files).
 
---keysize n
-  **DEPRECATED** This option will be removed in OpenVPN 2.6.
-
-  Size of cipher key in bits (optional). If unspecified, defaults to
-  cipher-specific default. The ``--show-ciphers`` option (see below) shows
-  all available OpenSSL ciphers, their default key sizes, and whether the
-  key size can be changed. Use care in changing a cipher's default key
-  size. Many ciphers have not been extensively cryptanalyzed with
-  non-standard key lengths, and a larger key may offer no real guarantee
-  of greater security, or may even reduce security.
-
 --data-ciphers cipher-list
   Restrict the allowed ciphers to be negotiated to the ciphers in
   ``cipher-list``. ``cipher-list`` is a colon-separated list of ciphers,
-  and defaults to :code:`AES-256-GCM:AES-128-GCM`.
+  and defaults to :code:`AES-256-GCM:AES-128-GCM:CHACHA20-POLY1305` when
+  Chacha20-Poly1305 is available and otherwise :code:`AES-256-GCM:AES-128-GCM`.
 
   For servers, the first cipher from ``cipher-list`` that is also
   supported by the client will be pushed to clients that support cipher
   negotiation.
 
+  For more details see the chapter on `Data channel cipher negotiation`_.
+  *Especially* if you need to support clients with OpenVPN versions older
+  than 2.4!
+
+  Starting with OpenVPN 2.6 a cipher can be prefixed with a :code:`?` to mark
+  it as optional. This allows including ciphers in the list that may not be
+  available on all platforms.
+  E.g. :code:`AES-256-GCM:AES-128-GCM:?CHACHA20-POLY1305` would only enable
+  Chacha20-Poly1305 if the underlying SSL library (and its configuration)
+  supports it.
+
   Cipher negotiation is enabled in client-server mode only. I.e. if
-  ``--mode`` is set to 'server' (server-side, implied by setting
+  ``--mode`` is set to `server` (server-side, implied by setting
   ``--server`` ), or if ``--pull`` is specified (client-side, implied by
-  setting --client).
+  setting ``--client``).
 
   If no common cipher is found during cipher negotiation, the connection
   is terminated. To support old clients/old servers that do not provide any
   cipher negotiation support see ``--data-ciphers-fallback``.
 
-  Additionally, to allow for more smooth transition, if NCP is enabled,
-  OpenVPN will inherit the cipher of the peer if that cipher is different
-  from the local ``--cipher`` setting, but the peer cipher is one of the
-  ciphers specified in ``--data-ciphers``. E.g. a non-NCP client (<=v2.3,
-  or with --ncp-disabled set) connecting to a NCP server (v2.4+) with
-  ``--cipher BF-CBC`` and ``--data-ciphers AES-256-GCM:AES-256-CBC`` set can
-  either specify ``--cipher BF-CBC`` or ``--cipher AES-256-CBC`` and both
-  will work.
-
-  Note for using NCP with an OpenVPN 2.4 peer: This list must include the
-  :code:`AES-256-GCM` and :code:`AES-128-GCM` ciphers.
+  If ``--compat-mode`` is set to a version older than 2.5.0 the cipher
+  specified by ``--cipher`` will be appended to ``--data-ciphers`` if
+  not already present.
 
   This list is restricted to be 127 chars long after conversion to OpenVPN
   ciphers.
@@ -212,21 +224,16 @@ configured in a compatible way between both the local and remote side.
   to ``--data-ciphers`` in OpenVPN 2.5 to more accurately reflect its meaning.
 
 --data-ciphers-fallback alg
+  Configure a cipher that is used to fall back to if we could not determine
+  which cipher the peer is willing to use.
 
-    Configure a cipher that is used to fall back to if we could not determine
-    which cipher the peer is willing to use.
-
-    This option should only be needed to
-    connect to peers that are running OpenVPN 2.3 and older version, and
-    have been configured with `--enable-small`
-    (typically used on routers or other embedded devices).
-
---ncp-disable
-  **DEPRECATED** Disable "Negotiable Crypto Parameters". This completely
-  disables cipher negotiation.
+  This option should only be needed to
+  connect to peers that are running OpenVPN 2.3 or older versions, and
+  have been configured with ``--enable-small``
+  (typically used on routers or other embedded devices).
 
 --secret args
-  Enable Static Key encryption mode (non-TLS). Use pre-shared secret
+  **DEPRECATED** Enable Static Key encryption mode (non-TLS). Use pre-shared secret
   ``file`` which was generated with ``--genkey``.
 
   Valid syntaxes:

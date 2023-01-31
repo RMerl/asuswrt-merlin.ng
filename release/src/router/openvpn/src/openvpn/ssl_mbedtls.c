@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *  Copyright (C) 2010-2021 Fox Crypto B.V. <openvpn@foxcrypto.com>
  *  Copyright (C) 2006-2010, Brainspark B.V.
  *
@@ -46,8 +46,6 @@
 #include "pkcs11_backend.h"
 #include "ssl_common.h"
 
-#include <mbedtls/havege.h>
-
 #include "ssl_verify_mbedtls.h"
 #include <mbedtls/debug.h>
 #include <mbedtls/error.h>
@@ -61,6 +59,25 @@
 
 #include <mbedtls/oid.h>
 #include <mbedtls/pem.h>
+
+/**
+ * Compatibility: mbedtls_ctr_drbg_update was deprecated in mbedtls 2.16 and
+ * replaced with mbedtls_ctr_drbg_update_ret, which returns an error code.
+ * For older versions, we call mbedtls_ctr_drbg_update and return 0 (success).
+ *
+ * Note: this change was backported to other mbedTLS branches, therefore we
+ * rely on function detection at configure time.
+ */
+#ifndef HAVE_CTR_DRBG_UPDATE_RET
+static int
+mbedtls_ctr_drbg_update_ret(mbedtls_ctr_drbg_context *ctx,
+                            const unsigned char *additional,
+                            size_t add_len)
+{
+    mbedtls_ctr_drbg_update(ctx, additional, add_len);
+    return 0;
+}
+#endif
 
 static const mbedtls_x509_crt_profile openvpn_x509_crt_profile_legacy =
 {
@@ -101,11 +118,6 @@ tls_free_lib(void)
 }
 
 void
-tls_clear_error(void)
-{
-}
-
-void
 tls_ctx_server_new(struct tls_root_ctx *ctx)
 {
     ASSERT(NULL != ctx);
@@ -138,53 +150,37 @@ tls_ctx_free(struct tls_root_ctx *ctx)
     if (ctx)
     {
         mbedtls_pk_free(ctx->priv_key);
-        if (ctx->priv_key)
-        {
-            free(ctx->priv_key);
-        }
+        free(ctx->priv_key);
 
         mbedtls_x509_crt_free(ctx->ca_chain);
-        if (ctx->ca_chain)
-        {
-            free(ctx->ca_chain);
-        }
+        free(ctx->ca_chain);
 
         mbedtls_x509_crt_free(ctx->crt_chain);
-        if (ctx->crt_chain)
-        {
-            free(ctx->crt_chain);
-        }
+        free(ctx->crt_chain);
 
         mbedtls_dhm_free(ctx->dhm_ctx);
-        if (ctx->dhm_ctx)
-        {
-            free(ctx->dhm_ctx);
-        }
+        free(ctx->dhm_ctx);
 
         mbedtls_x509_crl_free(ctx->crl);
-        if (ctx->crl)
-        {
-            free(ctx->crl);
-        }
+        free(ctx->crl);
 
 #if defined(ENABLE_PKCS11)
-        pkcs11h_certificate_freeCertificate(ctx->pkcs11_cert);
+        /* ...freeCertificate() can handle NULL ptrs, but if pkcs11 helper
+         * has not been initialized, it will ASSERT() - so, do not pass NULL
+         */
+        if (ctx->pkcs11_cert)
+        {
+            pkcs11h_certificate_freeCertificate(ctx->pkcs11_cert);
+        }
 #endif
 
-        if (ctx->allowed_ciphers)
-        {
-            free(ctx->allowed_ciphers);
-        }
+        free(ctx->allowed_ciphers);
 
-        if (ctx->groups)
-        {
-            free(ctx->groups);
-        }
+        free(ctx->groups);
 
         CLEAR(*ctx);
 
         ctx->initialised = false;
-
     }
 }
 
@@ -206,51 +202,61 @@ mbedtls_ssl_export_keys_cb(void *p_expkey, const unsigned char *ms,
 {
     struct tls_session *session = p_expkey;
     struct key_state_ssl *ks_ssl = &session->key[KS_PRIMARY].ks_ssl;
-    unsigned char client_server_random[64];
+    struct tls_key_cache *cache = &ks_ssl->tls_key_cache;
 
-    ks_ssl->exported_key_material = gc_malloc(session->opt->ekm_size,
-                                              true, NULL);
+    static_assert(sizeof(ks_ssl->ctx->session->master)
+                  == sizeof(cache->master_secret), "master size mismatch");
 
-    memcpy(client_server_random, client_random, 32);
-    memcpy(client_server_random + 32, server_random, 32);
+    memcpy(cache->client_server_random, client_random, 32);
+    memcpy(cache->client_server_random + 32, server_random, 32);
+    memcpy(cache->master_secret, ms, sizeof(cache->master_secret));
+    cache->tls_prf_type = tls_prf_type;
 
-    const size_t ms_len = sizeof(ks_ssl->ctx->session->master);
-    int ret = mbedtls_ssl_tls_prf(tls_prf_type, ms, ms_len,
-                                  session->opt->ekm_label, client_server_random,
-                                  sizeof(client_server_random), ks_ssl->exported_key_material,
-                                  session->opt->ekm_size);
+    return true;
+}
 
-    if (!mbed_ok(ret))
+bool
+key_state_export_keying_material(struct tls_session *session,
+                                 const char *label, size_t label_size,
+                                 void *ekm, size_t ekm_size)
+{
+    ASSERT(strlen(label) == label_size);
+
+    struct tls_key_cache *cache = &session->key[KS_PRIMARY].ks_ssl.tls_key_cache;
+
+    /* If the type is NONE, we either have no cached secrets or
+     * there is no PRF, in both cases we cannot generate key material */
+    if (cache->tls_prf_type == MBEDTLS_SSL_TLS_PRF_NONE)
     {
-        secure_memzero(ks_ssl->exported_key_material, session->opt->ekm_size);
+        return false;
     }
 
-    secure_memzero(client_server_random, sizeof(client_server_random));
+    int ret = mbedtls_ssl_tls_prf(cache->tls_prf_type, cache->master_secret,
+                                  sizeof(cache->master_secret),
+                                  label, cache->client_server_random,
+                                  sizeof(cache->client_server_random),
+                                  ekm, ekm_size);
 
-    return ret;
+    if (mbed_ok(ret))
+    {
+        return true;
+    }
+    else
+    {
+        secure_memzero(ekm, session->opt->ekm_size);
+        return false;
+    }
+}
+#else  /* ifdef HAVE_EXPORT_KEYING_MATERIAL */
+bool
+key_state_export_keying_material(struct tls_session *session,
+                                 const char *label, size_t label_size,
+                                 void *ekm, size_t ekm_size)
+{
+    /* Dummy function to avoid ifdefs in the common code */
+    return false;
 }
 #endif /* HAVE_EXPORT_KEYING_MATERIAL */
-
-void
-key_state_export_keying_material(struct key_state_ssl *ssl,
-                                 struct tls_session *session)
-{
-    if (ssl->exported_key_material)
-    {
-        unsigned int size = session->opt->ekm_size;
-        struct gc_arena gc = gc_new();
-        unsigned int len = (size * 2) + 2;
-
-        const char *key = format_hex_ex(ssl->exported_key_material,
-                                        size, len, 0, NULL, &gc);
-        setenv_str(session->opt->es, "exported_keying_material", key);
-
-        dmsg(D_TLS_DEBUG_MED, "%s: exported keying material: %s",
-             __func__, key);
-        gc_free(&gc);
-    }
-}
-
 
 bool
 tls_ctx_set_options(struct tls_root_ctx *ctx, unsigned int ssl_flags)
@@ -435,8 +441,9 @@ tls_ctx_load_ecdh_params(struct tls_root_ctx *ctx, const char *curve_name
 {
     if (NULL != curve_name)
     {
-        msg(M_WARN, "WARNING: mbed TLS builds do not support specifying an ECDH "
-            "curve, using default curves.");
+        msg(M_WARN, "WARNING: mbed TLS builds do not support specifying an "
+            "ECDH curve with --ecdh-curve, using default curves. Use "
+            "--tls-groups to specify curves.");
     }
 }
 
@@ -953,17 +960,19 @@ tls_ctx_personalise_random(struct tls_root_ctx *ctx)
 
     if (NULL != ctx->crt_chain)
     {
-        const md_kt_t *sha256_kt = md_kt_get("SHA256");
         mbedtls_x509_crt *cert = ctx->crt_chain;
 
-        if (!md_full(sha256_kt, cert->tbs.p, cert->tbs.len, sha256_hash))
+        if (!md_full("SHA256", cert->tbs.p, cert->tbs.len, sha256_hash))
         {
             msg(M_WARN, "WARNING: failed to personalise random");
         }
 
         if (0 != memcmp(old_sha256_hash, sha256_hash, sizeof(sha256_hash)))
         {
-            mbedtls_ctr_drbg_update(cd_ctx, sha256_hash, 32);
+            if (!mbed_ok(mbedtls_ctr_drbg_update_ret(cd_ctx, sha256_hash, 32)))
+            {
+                msg(M_WARN, "WARNING: failed to personalise random, could not update CTR_DRBG");
+            }
             memcpy(old_sha256_hash, sha256_hash, sizeof(old_sha256_hash));
         }
     }
@@ -1101,8 +1110,8 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl,
     }
 
     /* Disable TLS renegotiations if the mbedtls library supports that feature.
-     * OpenVPN's renegotiation creates new SSL sessions and does not depend on
-     * this feature and TLS renegotiations have been problematic in the past. */
+    * OpenVPN's renegotiation creates new SSL sessions and does not depend on
+    * this feature and TLS renegotiations have been problematic in the past. */
 #if defined(MBEDTLS_SSL_RENEGOTIATION)
     mbedtls_ssl_conf_renegotiation(ks_ssl->ssl_config, MBEDTLS_SSL_RENEGOTIATION_DISABLED);
 #endif /* MBEDTLS_SSL_RENEGOTIATION */
@@ -1174,11 +1183,8 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl,
 
 #ifdef HAVE_EXPORT_KEYING_MATERIAL
     /* Initialize keying material exporter */
-    if (session->opt->ekm_size)
-    {
-        mbedtls_ssl_conf_export_keys_ext_cb(ks_ssl->ssl_config,
-                                            mbedtls_ssl_export_keys_cb, session);
-    }
+    mbedtls_ssl_conf_export_keys_ext_cb(ks_ssl->ssl_config,
+                                        mbedtls_ssl_export_keys_cb, session);
 #endif
 
     /* Initialise SSL context */
@@ -1197,7 +1203,7 @@ key_state_ssl_free(struct key_state_ssl *ks_ssl)
 {
     if (ks_ssl)
     {
-        free(ks_ssl->exported_key_material);
+        CLEAR(ks_ssl->tls_key_cache);
 
         if (ks_ssl->ctx)
         {
@@ -1285,8 +1291,7 @@ key_state_write_plaintext_const(struct key_state_ssl *ks, const uint8_t *data, i
 }
 
 int
-key_state_read_ciphertext(struct key_state_ssl *ks, struct buffer *buf,
-                          int maxlen)
+key_state_read_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
 {
     int retval = 0;
     int len = 0;
@@ -1304,10 +1309,6 @@ key_state_read_ciphertext(struct key_state_ssl *ks, struct buffer *buf,
     }
 
     len = buf_forward_capacity(buf);
-    if (maxlen < len)
-    {
-        len = maxlen;
-    }
 
     retval = endless_buf_read(&ks->bio_ctx->out, BPTR(buf), len);
 
@@ -1388,8 +1389,7 @@ key_state_write_ciphertext(struct key_state_ssl *ks, struct buffer *buf)
 }
 
 int
-key_state_read_plaintext(struct key_state_ssl *ks, struct buffer *buf,
-                         int maxlen)
+key_state_read_plaintext(struct key_state_ssl *ks, struct buffer *buf)
 {
     int retval = 0;
     int len = 0;
@@ -1407,10 +1407,6 @@ key_state_read_plaintext(struct key_state_ssl *ks, struct buffer *buf,
     }
 
     len = buf_forward_capacity(buf);
-    if (maxlen < len)
-    {
-        len = maxlen;
-    }
 
     retval = mbedtls_ssl_read(ks->ctx, BPTR(buf), len);
 
@@ -1543,6 +1539,12 @@ get_ssl_library_version(void)
     sprintf( mbedtls_version, "mbed TLS %d.%d.%d",
              (pv>>24)&0xff, (pv>>16)&0xff, (pv>>8)&0xff );
     return mbedtls_version;
+}
+
+void
+load_xkey_provider(void)
+{
+    return; /* no external key provider in mbedTLS build */
 }
 
 #endif /* defined(ENABLE_CRYPTO_MBEDTLS) */

@@ -1,0 +1,165 @@
+0.8.3
+- Fix parameters to capng_updatev python bindings to be signed
+- Detect capability options at runtime to make containerization easier (ntkme)
+- Initialize the library when linked statically
+- Add gcc function attributes for deallocation
+
+0.8.2
+- In capng_apply, if we blew up in bounding set, allow setting capabilities
+- If PR_CAP_AMBIENT is not available, do not build libdrop_ambient
+- Improve last_cap check
+
+0.8.1
+- If procfs is not available, leave last_cap as CAP_LAST_CAP
+- If bounding and ambient not found in status, try prctl method
+- In capng_apply, move ambient caps to the end of the transaction
+- In capng_apply, return errors more aggressively.
+- In capng_apply, if the action includes the bounding set,resync with the kernel
+- Fix signed/unsigned warning in cap-ng.c
+- In capng_apply, return a unique error code to diagnose any failure
+- In capng_have_capability, return 0 for failure
+- Add the libdrop_ambient admin tool
+
+0.8
+- Add vararg support to python bindings for capng_updatev
+- Add support for ambient capabilities
+- Add support for V3 filesystem capabilities
+
+0.7.11
+- Really clear bounding set if asked in capng_change_id
+- Add CAP_PERFMON, CAP_BPF, & CAP_CHECKPOINT_RESTORE
+- Avoid malloc/free in capng_apply (Natanael Copa)
+- If procfs is not available, get bounding set via prctl
+- Cleanup some compiler warnings
+
+0.7.10
+- Update capng_change_id man page
+- Add capng_have_permitted_capabilities function
+- Update filecap to output which set the capabilities are in
+- Fix filecap to not output an error when a file has no capabilities
+- Add udplite support to netcap
+- Fix usage of pthread_atfork (Joe Orton)
+- Mark processes in child user namespaces with * (Danila Kiver)
+
+0.7.9
+- Fix byte compiling python3 bindings
+- Detect and output a couple errors in filecap
+- Use pthread_atfork to optionally reset the pid and related info on fork
+- Rework spec file to show new python2/3 separation
+
+0.7.8
+- Improve Python3 support
+- Fix the thread separation test
+- Correct typo in cap_pacct text
+- Update man page for captest
+- Fix sscanf string lengths in netcap
+- Correct linking of python3 module
+
+0.7.7
+- Make sure all types used in _lnode are defined in proc-llist.h
+- Fix python binding test for old kernels
+- Fix leaked FD in library init 
+
+0.7.6
+- Fix python3 support
+
+0.7.5
+- Make python3 supported
+- In python bindings test, clamp CAP_LAST_CAP with /proc/.../cap_last_cap
+- Update table for 3.16 kernel
+
+0.7.4
+- In pscap, remove unused code
+- Add CAPNG_INIT_SUPP_GRP to capng_change_id
+- Drop CAP_COMPROMISE_KERNEL
+- Update the autotools components
+- Dynamically detect last capability (#895105)
+- Add PR_SET_NO_NEW_PRIVS to capng_lock if kernel supports it
+
+0.7.3
+- Make sure stderr is used consistently in utils
+- Fix logic causing file based capabilities to not be supported when it should
+
+0.7.1
+- Add CAP_COMPROMISE_KERNEL
+- Define FTW_CONTINUE in case its not defined in libc
+- Use glibc for xattr.h if available
+
+0.7
+- Make file opens use the cloexec flag (Cristian Rodríguez)
+- Add CAP_BLOCK_SUSPEND
+- Fix possible segfaults when CAP_LAST_CAP is larger than the lookup table
+- In pscap, don't drop capabilities when running with capabilities
+
+0.6.6
+- In netcap, make sure readlink is handled properly
+- Add CAP_SYSLOG
+- In netcap and pscap, ensure euid is initialized
+- Add CAP_WAKE_ALARM
+
+0.6.5
+- Fix self test build problem on clean system (Sterling X. Winter)
+- Only open regular files in filecap
+- Make building Python bindings optional
+- Python bindings update (arfrever.fta)
+- Fix filecap segfault when checking a specific file
+- Add define for missing XATTR_NAME_CAPS since 2.6.36 makes it private
+
+0.6.4
+- Update packet socket code to print interface
+- Fix effective capabilities read from file descriptor
+- Use thread ID for capget/set calls
+
+0.6.3
+- In netcap and pscap use the effective uid
+- In capng_change_id, only retain setpcap if clearing the bounding set
+
+0.6.2
+- Make pscap drop capabilities so its not listed in report
+- Review prctl calls to make sure we are passing 5 args
+- Add package config support
+
+0.6.1
+- In netcap, don't complain about missing udp or raw network files
+- Adjusted data read in for file based capabilities
+
+0.6
+- In netcap, don't complain about missing network files
+- Add python bindings
+- Add m4 macro file to help developers configure libcap-ng in their apps
+- Fake applying bounding set for old OS
+- Ignore setpcap for old OS when changing id
+- Remove capabilities v1 data handling from reading file attributes
+- Set the SECURE_NO_SETUID_FIXUP and LOCKED securebits flags in capng_lock
+
+0.5.1
+- Remove unnecessary uid check in change_uid when dropping supplemental groups
+- Add credential printout and other improvements to captest
+- In the init routine, set hdr.pid to current process
+- Use bit mask on effective capabilities check in have_capabilities
+- Numeric printing of bounding set bits were in wrong order
+- In update function, reverse the order of bounding set vs capabilities
+- Revise the tests used to determine if bounding set should be updated
+
+0.5
+- If attr/xattr.h is not available disable file system capabilities
+- Initialize capng_have_capability with capng_get_caps_process if unknown
+- Make capng_change_id drop the gid if given
+- Fixed cap_update for bounding set
+- Fix have_capability for bounding set
+- Added more tests to the make check target
+- Remove CAPNG_LOCK_PERMS for change_id flags
+- Added captest program
+
+0.4.2
+- Fix missing includes for various OS and platforms
+- Correct misplaced #ifdef for older OS
+- Reorder clearing of bounding set in capng_change_id
+- Make locking a noop in capng_change_id for the moment
+
+0.4.1
+- spec file clean ups
+- Man pages for all library functions
+
+0.4
+- Initial public release

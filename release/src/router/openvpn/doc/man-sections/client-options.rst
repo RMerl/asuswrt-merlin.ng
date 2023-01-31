@@ -138,12 +138,19 @@ configuration.
   Set ``--verb 6`` for debugging info showing the transformation of
   src/dest addresses in packets.
 
---connect-retry n
-  Wait ``n`` seconds between connection attempts (default :code:`5`).
+--connect-retry args
+  Wait ``n`` seconds between connection attempts (default :code:`1`).
   Repeated reconnection attempts are slowed down after 5 retries per
-  remote by doubling the wait time after each unsuccessful attempt. An
-  optional argument ``max`` specifies the maximum value of wait time in
-  seconds at which it gets capped (default :code:`300`).
+  remote by doubling the wait time after each unsuccessful attempt.
+
+  Valid syntaxes:
+  ::
+
+     connect retry n
+     connect retry n max
+
+  If the optional argument ``max`` is specified, the maximum wait time in
+  seconds gets capped at that value (default :code:`300`).
 
 --connect-retry-max n
   ``n`` specifies the number of times each ``--remote`` or
@@ -154,6 +161,65 @@ configuration.
 --connect-timeout n
   See ``--server-poll-timeout``.
 
+--dns args
+  Client DNS configuration to be used with the connection.
+
+  Valid syntaxes:
+  ::
+
+     dns search-domains domain [domain ...]
+     dns server n address addr[:port] [addr[:port]]
+     dns server n resolve-domains|exclude-domains domain [domain ...]
+     dns server n dnssec yes|optional|no
+     dns server n transport DoH|DoT|plain
+     dns server n sni server-name
+
+  The ``--dns search-domains`` directive takes one or more domain names
+  to be added as DNS domain suffixes. If it is repeated multiple times within
+  a configuration the domains are appended, thus e.g. domain names pushed by
+  a server will amend locally defined ones.
+
+  The ``--dns server`` directive is used to configure DNS server ``n``.
+  The server id ``n`` must be a value between -128 and 127. For pushed
+  DNS server options it must be between 0 and 127. The server id is used
+  to group options and also for ordering the list of configured DNS servers;
+  lower numbers come first. DNS servers being pushed to a client replace
+  already configured DNS servers with the same server id.
+
+  The ``address`` option configures the IPv4 and / or IPv6 address of
+  the DNS server. Optionally a port can be appended after a colon. IPv6
+  addresses need to be enclosed in brackets if a port is appended.
+
+  The ``resolve-domains`` and ``exclude-domains`` options take one or
+  more DNS domains which are explicitly resolved or explicitly not resolved
+  by a server. Only one of the options can be configured for a server.
+  ``resolve-domains`` is used to define a split-dns setup, where only
+  given domains are resolved by a server. ``exclude-domains`` is used to
+  define domains which will never be resolved by a server (e.g. domains
+  which can only be resolved locally). Systems which do not support fine
+  grained DNS domain configuration, will ignore these settings.
+
+  The ``dnssec`` option is used to configure validation of DNSSEC records.
+  While the exact semantics may differ for resolvers on different systems,
+  ``yes`` likely makes validation mandatory, ``no`` disables it, and ``optional``
+  uses it opportunistically.
+
+  The ``transport`` option enables DNS-over-HTTPS (``DoH``) or DNS-over-TLS (``DoT``)
+  for a DNS server. The ``sni`` option can be used with them to specify the
+  ``server-name`` for TLS server name indication.
+
+  Each server has to have at least one address configured for a configuration
+  to be valid. All the other options can be omitted.
+
+  Note that not all options may be supported on all platforms. As soon support
+  for different systems is implemented, information will be added here how
+  unsupported options are treated.
+
+  The ``--dns`` option will eventually obsolete the ``--dhcp-option`` directive.
+  Until then it will replace configuration at the places ``--dhcp-option`` puts it,
+  so that ``--dns`` overrides ``--dhcp-option``. Thus, ``--dns`` can be used today
+  to migrate from ``--dhcp-option``.
+
 --explicit-exit-notify n
   In UDP client mode or point-to-point mode, send server/peer an exit
   notification if tunnel is restarted or OpenVPN process is exited. In
@@ -161,9 +227,14 @@ configuration.
   immediately close its client instance object rather than waiting for a
   timeout.
 
+  If both server and client support sending this message using the control
+  channel, the message will be sent as control-channel message. Otherwise
+  the message is sent as data-channel message, which will be ignored by
+  data-channel offloaded peers.
+
   The **n** parameter (default :code:`1` if not present) controls the
   maximum number of attempts that the client will try to resend the exit
-  notification message.
+  notification message if messages are sent in data-channel mode.
 
   In UDP server mode, send :code:`RESTART` control channel command to
   connected clients. The ``n`` parameter (default :code:`1` if not present)
@@ -299,6 +370,10 @@ configuration.
         The client announces the list of supported ciphers configured with the
         ``--data-ciphers`` option to the server.
 
+  :code:`IV_MTU=<max_mtu>`
+        The client announces the support of pushable MTU and the maximum MTU
+        it is willing to accept.
+
   :code:`IV_GUI_VER=<gui_id> <version>`
         The UI version of a UI if one is running, for example
         :code:`de.blinkt.openvpn 0.5.47` for the Android app.
@@ -408,7 +483,7 @@ configuration.
   If hostname resolve fails for ``--remote``, retry resolve for ``n``
   seconds before failing.
 
-  Set ``n`` to "infinite" to retry indefinitely.
+  Set ``n`` to :code:`infinite` to retry indefinitely.
 
   By default, ``--resolv-retry infinite`` is enabled. You can disable by
   setting n=0.
@@ -427,7 +502,7 @@ configuration.
 --server-poll-timeout n
   When connecting to a remote server do not wait for more than ``n``
   seconds for a response before trying the next server. The default value
-  is 120s. This timeout includes proxy and TCP connect timeouts.
+  is :code:`120`. This timeout includes proxy and TCP connect timeouts.
 
 --static-challenge args
   Enable static challenge/response protocol

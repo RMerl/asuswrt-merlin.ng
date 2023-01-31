@@ -5,8 +5,8 @@
 #             packet encryption, packet authentication, and
 #             packet compression.
 #
-#  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
-#  Copyright (C) 2010-2022 David Sommerseth <dazo@eurephia.org>
+#  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
+#  Copyright (C) 2010-2023 David Sommerseth <dazo@eurephia.org>
 #  Copyright (C) 2006-2012 Alon Bar-Lev <alon.barlev@gmail.com>
 #
 #  This program is free software; you can redistribute it and/or modify
@@ -54,7 +54,6 @@ SUBDIRS = build distro include src sample doc tests
 
 dist_doc_DATA = \
 	README \
-	README.IPv6 \
 	README.mbedtls \
 	Changes.rst \
 	COPYRIGHT.GPL \
@@ -64,7 +63,6 @@ dist_noinst_DATA = \
 	.gitignore \
 	.gitattributes \
 	PORTS \
-	README.IPv6 TODO.IPv6 \
 	README.mbedtls \
 	openvpn.sln
 

@@ -37,39 +37,39 @@
     <ConfigurationType>Application</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <WholeProgramOptimization>true</WholeProgramOptimization>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM64'" Label="Configuration">
     <ConfigurationType>Application</ConfigurationType>
     <CharacterSet>NotSet</CharacterSet>
-    <PlatformToolset>v142</PlatformToolset>
+    <PlatformToolset>v143</PlatformToolset>
     <SpectreMitigation>Spectre</SpectreMitigation>
   </PropertyGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
@@ -276,8 +276,11 @@
     <ClCompile Include="crypto.c" />
     <ClCompile Include="crypto_openssl.c" />
     <ClCompile Include="cryptoapi.c" />
-    <ClCompile Include="env_set.c" />
+    <ClCompile Include="dco.c" />
+    <ClCompile Include="dco_win.c" />
     <ClCompile Include="dhcp.c" />
+    <ClCompile Include="dns.c" />
+    <ClCompile Include="env_set.c" />
     <ClCompile Include="error.c" />
     <ClCompile Include="event.c" />
     <ClCompile Include="fdmisc.c" />
@@ -305,10 +308,10 @@
     <ClCompile Include="occ.c" />
     <ClCompile Include="openvpn.c" />
     <ClCompile Include="options.c" />
+    <ClCompile Include="options_util.c" />
     <ClCompile Include="otime.c" />
     <ClCompile Include="packet_id.c" />
     <ClCompile Include="perf.c" />
-    <ClCompile Include="pf.c" />
     <ClCompile Include="ping.c" />
     <ClCompile Include="pkcs11.c" />
     <ClCompile Include="pkcs11_openssl.c" />
@@ -319,6 +322,7 @@
     <ClCompile Include="proxy.c" />
     <ClCompile Include="ps.c" />
     <ClCompile Include="push.c" />
+    <ClCompile Include="reflect_filter.c" />
     <ClCompile Include="reliable.c" />
     <ClCompile Include="route.c" />
     <ClCompile Include="run_command.c" />
@@ -331,6 +335,8 @@
     <ClCompile Include="ssl.c" />
     <ClCompile Include="ssl_openssl.c" />
     <ClCompile Include="ssl_ncp.c" />
+    <ClCompile Include="ssl_pkt.c" />
+    <ClCompile Include="ssl_util.c" />
     <ClCompile Include="ssl_verify.c" />
     <ClCompile Include="ssl_verify_openssl.c" />
     <ClCompile Include="status.c" />
@@ -338,6 +344,9 @@
     <ClCompile Include="tun.c" />
     <ClCompile Include="vlan.c" />
     <ClCompile Include="win32.c" />
+    <ClCompile Include="win32-util.c" />
+    <ClCompile Include="xkey_helper.c" />
+    <ClCompile Include="xkey_provider.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="argv.h" />
@@ -357,7 +366,11 @@
     <ClInclude Include="crypto_backend.h" />
     <ClInclude Include="crypto_openssl.h" />
     <ClInclude Include="cryptoapi.h" />
+    <ClInclude Include="dco.h" />
+    <ClInclude Include="dco_internal.h" />
+    <ClInclude Include="dco_win.h" />
     <ClInclude Include="dhcp.h" />
+    <ClInclude Include="dns.h" />
     <ClInclude Include="env_set.h" />
     <ClInclude Include="errlevel.h" />
     <ClInclude Include="error.h" />
@@ -387,13 +400,13 @@
     <ClInclude Include="multi.h" />
     <ClInclude Include="ntlm.h" />
     <ClInclude Include="occ.h" />
-    <ClInclude Include="openssl_compat.h" />
     <ClInclude Include="openvpn.h" />
     <ClInclude Include="options.h" />
+    <ClInclude Include="options_util.h" />
     <ClInclude Include="otime.h" />
+    <ClInclude Include="ovpn_dco_win.h" />
     <ClInclude Include="packet_id.h" />
     <ClInclude Include="perf.h" />
-    <ClInclude Include="pf.h" />
     <ClInclude Include="ping.h" />
     <ClInclude Include="pkcs11.h" />
     <ClInclude Include="pkcs11_backend.h" />
@@ -405,6 +418,7 @@
     <ClInclude Include="ps.h" />
     <ClInclude Include="push.h" />
     <ClInclude Include="pushlist.h" />
+    <ClInclude Include="reflect_filter.h" />
     <ClInclude Include="reliable.h" />
     <ClInclude Include="ring_buffer.h" />
     <ClInclude Include="route.h" />
@@ -420,6 +434,8 @@
     <ClInclude Include="ssl_common.h" />
     <ClInclude Include="ssl_ncp.h" />
     <ClInclude Include="ssl_openssl.h" />
+    <ClInclude Include="ssl_pkt.h" />
+    <ClInclude Include="ssl_util.h" />
     <ClInclude Include="ssl_verify.h" />
     <ClInclude Include="ssl_verify_backend.h" />
     <ClInclude Include="ssl_verify_openssl.h" />
@@ -429,6 +445,8 @@
     <ClInclude Include="tun.h" />
     <ClInclude Include="vlan.h" />
     <ClInclude Include="win32.h" />
+    <ClInclude Include="win32-util.h" />
+    <ClInclude Include="xkey_common.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="openvpn_win32_resources.rc" />

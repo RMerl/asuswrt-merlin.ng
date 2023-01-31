@@ -14,7 +14,7 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   Valid syntax:
   ::
 
-     auth-gen-token [lifetime] [external-auth]
+     auth-gen-token [lifetime] [renewal-time] [external-auth]
 
   After successful user/password authentication, the OpenVPN server will
   with this option generate a temporary authentication token and push that
@@ -31,13 +31,17 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   The lifetime is defined in seconds. If lifetime is not set or it is set
   to :code:`0`, the token will never expire.
 
+  If ``renewal-time`` is not set it defaults to ``reneg-sec``.
+
+
   The token will expire either after the configured ``lifetime`` of the
   token is reached or after not being renewed for more than 2 \*
-  ``reneg-sec`` seconds. Clients will be sent renewed tokens on every TLS
-  renogiation to keep the client's token updated. This is done to
-  invalidate a token if a client is disconnected for a sufficently long
-  time, while at the same time permitting much longer token lifetimes for
-  active clients.
+  ``renewal-time`` seconds. Clients will be sent renewed tokens on every TLS
+  renegotiation. If ``renewal-time`` is lower than ``reneg-sec`` the server
+  will push an  updated temporary authentication token every ``reneweal-time``
+  seconds. This is done to invalidate a token if a client is disconnected for a
+  sufficiently long time, while at the same time permitting much longer token
+  lifetimes for active clients.
 
   This feature is useful for environments which are configured to use One
   Time Passwords (OTP) as part of the user/password authentications and
@@ -46,7 +50,7 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   When the :code:`external-auth` keyword is present the normal
   authentication method will always be called even if auth-token succeeds.
   Normally other authentications method are skipped if auth-token
-  verification suceeds or fails.
+  verification succeeds or fails.
 
   This option postpones this decision to the external authentication
   methods and checks the validity of the account and do other checks.
@@ -146,6 +150,10 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   server. Don't use this option if you want to firewall tunnel traffic
   using custom, per-client rules.
 
+  Please note that when using data channel offload this option has no
+  effect. Packets are always sent to the tunnel interface and then
+  routed based on the system routing table.
+
 --disable
   Disable a particular client (based on the common name) from connecting.
   Don't use this option to disable a client due to key or password
@@ -170,11 +178,35 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   with connection requests using certificates which will ultimately fail
   to authenticate.
 
+  This limit applies after ``--connect-freq-initial`` and
+  only applies to client that have completed the three-way handshake
+  or client that use ``--tls-crypt-v2`` without cookie support
+  (``allow-noncookie`` argument to ``--tls-crypt-v2``).
+
   This is an imperfect solution however, because in a real DoS scenario,
   legitimate connections might also be refused.
 
   For the best protection against DoS attacks in server mode, use
   ``--proto udp`` and either ``--tls-auth`` or ``--tls-crypt``.
+
+--connect-freq-initial args
+  (UDP only) Allow a maximum of ``n`` initial connection packet responses
+  per ``sec`` seconds from the OpenVPN server to clients.
+
+  Valid syntax:
+  ::
+
+     connect-freq-initial n sec
+
+  OpenVPN starting at 2.6 is very efficient in responding to initial
+  connection packets. When not limiting the initial responses
+  an OpenVPN daemon can be abused in reflection attacks.
+  This option is designed to limit the rate OpenVPN will respond to initial
+  attacks.
+
+  Connection attempts that complete the initial three-way handshake
+  will not be counted against the limit. The default is to allow
+  100 initial connection per 10s.
 
 --duplicate-cn
   Allow multiple clients with the same common name to concurrently
@@ -286,37 +318,6 @@ fast hardware. SSL/TLS authentication must be used in this mode.
 
      ifconfig-ipv6-push ipv6addr/bits ipv6remote
 
---inetd args
-  Valid syntaxes:
-  ::
-
-     inetd
-     inetd wait
-     inetd nowait
-     inetd wait progname
-
-  Use this option when OpenVPN is being run from the inetd or ``xinetd``\(8)
-  server.
-
-  The :code:`wait` and :code:`nowait` option must match what is specified
-  in the inetd/xinetd config file. The :code:`nowait` mode can only be used
-  with ``--proto tcp-server`` The default is :code:`wait`.  The
-  :code:`nowait` mode can be used to instantiate the OpenVPN daemon as a
-  classic TCP server, where client connection requests are serviced on a
-  single port number. For additional information on this kind of
-  configuration, see the OpenVPN FAQ:
-  https://community.openvpn.net/openvpn/wiki/325-openvpn-as-a--forking-tcp-server-which-can-service-multiple-clients-over-a-single-tcp-port
-
-  This option precludes the use of ``--daemon``, ``--local`` or
-  ``--remote``.  Note that this option causes message and error output to
-  be handled in the same way as the ``--daemon`` option. The optional
-  ``progname`` parameter is also handled exactly as in ``--daemon``.
-
-  Also note that in ``wait`` mode, each OpenVPN tunnel requires a separate
-  TCP/UDP port and a separate inetd or xinetd entry. See the OpenVPN 1.x
-  HOWTO for an example on using OpenVPN with xinetd:
-  https://openvpn.net/community-resources/1xhowto/
-
 --multihome
   Configure a multi-homed UDP server. This option needs to be used when a
   server has more than one IP address (e.g. multiple interfaces, or
@@ -351,6 +352,12 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   routes are needed is that the ``--route`` directive routes the packet
   from the kernel to OpenVPN. Once in OpenVPN, the ``--iroute`` directive
   routes to the specific client.
+
+  However, when using DCO, the ``--iroute`` directive is usually enough
+  for DCO to fully configure the routing table. The extra ``--route``
+  directive is required only if the expected behaviour is to route the
+  traffic for a specific network to the VPN interface also when the
+  responsible client is not connected (traffic will then be dropped).
 
   This option must be specified either in a client instance config file
   using ``--client-config-dir`` or dynamically generated using a
@@ -393,8 +400,8 @@ fast hardware. SSL/TLS authentication must be used in this mode.
   the kernel routing table.
 
 --opt-verify
-  Clients that connect with options that are incompatible with those of the
-  server will be disconnected.
+  **DEPRECATED** Clients that connect with options that are incompatible with
+  those of the server will be disconnected.
 
   Options that will be compared for compatibility include ``dev-type``,
   ``link-mtu``, ``tun-mtu``, ``proto``, ``ifconfig``,
@@ -443,11 +450,11 @@ fast hardware. SSL/TLS authentication must be used in this mode.
 
   This is a partial list of options which can currently be pushed:
   ``--route``, ``--route-gateway``, ``--route-delay``,
-  ``--redirect-gateway``, ``--ip-win32``, ``--dhcp-option``,
+  ``--redirect-gateway``, ``--ip-win32``, ``--dhcp-option``, ``--dns``,
   ``--inactive``, ``--ping``, ``--ping-exit``, ``--ping-restart``,
   ``--setenv``, ``--auth-token``, ``--persist-key``, ``--persist-tun``,
   ``--echo``, ``--comp-lzo``, ``--socket-flags``, ``--sndbuf``,
-  ``--rcvbuf``
+  ``--rcvbuf``, ``--session-timeout``
 
 --push-remove opt
   Selectively remove all ``--push`` options matching "opt" from the option

@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -432,7 +432,7 @@ proxy_entry_new(struct proxy_connection **list,
         msg(M_WARN|M_ERRNO, "PORT SHARE PROXY: cannot create socket");
         return false;
     }
-    status = openvpn_connect(sd_server,(const struct sockaddr *)  &server_addr, 5, NULL);
+    status = openvpn_connect(sd_server, (const struct sockaddr *)  &server_addr, 5, NULL);
     if (status)
     {
         msg(M_WARN, "PORT SHARE PROXY: connect to port-share server failed");
@@ -912,9 +912,6 @@ port_share_open(const char *host,
 
         /* no blocking on control channel back to parent */
         set_nonblock(fd[1]);
-
-        /* initialize prng */
-        prng_init(NULL, 0);
 
         /* execute the event loop */
         port_share_proxy(hostaddr, fd[1], max_initial_buf, journal_dir);

@@ -5,9 +5,9 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *  Copyright (C) 2014-2015 David Sommerseth <davids@redhat.com>
- *  Copyright (C) 2016-2022 David Sommerseth <davids@openvpn.net>
+ *  Copyright (C) 2016-2023 David Sommerseth <davids@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -72,26 +72,6 @@ set_std_files_to_null(bool stdin_only)
             close(fd);
         }
     }
-#endif
-}
-
-/*
- *  dup inetd/xinetd socket descriptor and save
- */
-
-int inetd_socket_descriptor = SOCKET_UNDEFINED; /* GLOBAL */
-
-void
-save_inetd_socket_descriptor(void)
-{
-    inetd_socket_descriptor = INETD_SOCKET_DESCRIPTOR;
-#if defined(HAVE_DUP) && defined(HAVE_DUP2)
-    /* use handle passed by inetd/xinetd */
-    if ((inetd_socket_descriptor = dup(INETD_SOCKET_DESCRIPTOR)) < 0)
-    {
-        msg(M_ERR, "INETD_SOCKET_DESCRIPTOR dup(%d) failed", INETD_SOCKET_DESCRIPTOR);
-    }
-    set_std_files_to_null(true);
 #endif
 }
 
@@ -217,6 +197,11 @@ get_user_pass_cr(struct user_pass *up,
                 buf_parse(&buf, '\n', up->username, USER_PASS_LEN);
             }
             buf_parse(&buf, '\n', up->password, USER_PASS_LEN);
+
+            if (strlen(up->password) == 0)
+            {
+                password_from_stdin = 1;
+            }
         }
         /*
          * Read from auth file unless this is a dynamic challenge request.
@@ -273,6 +258,7 @@ get_user_pass_cr(struct user_pass *up,
                 msg(D_LOW, "No password found in %s authfile '%s'. Querying the management interface", prefix, auth_file);
                 if (!auth_user_pass_mgmt(up, prefix, flags, auth_challenge))
                 {
+                    fclose(fp);
                     return false;
                 }
             }

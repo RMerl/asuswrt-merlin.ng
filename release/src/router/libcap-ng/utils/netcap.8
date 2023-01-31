@@ -1,0 +1,18 @@
+.TH NETCAP: "8" "Sept 2020" "Red Hat" "System Administration Utilities"
+.SH NAME
+netcap \- a program to see capabilities
+.SH SYNOPSIS
+.B netcap
+.SH DESCRIPTION
+\fBnetcap\fP is a program that prints out a report of process capabilities. If the application is using tcp, udp, raw, or packet family of sockets AND has any capabilities, it will be in the report. If the process has partial capabilities, it is further examined to see if it has an open-ended bounding set. If this is found to be true, a '+' symbol is added.  If the process has ambient capabilities, a '@' symbols is added.
+
+Some directories in the /proc file system are readonly by root. The program will try to access and report what it can. But if nothing comes out, try changing to the root user and re-run this program. 
+
+.SH "SEE ALSO"
+.BR pscap (8),
+.BR filecap (8),
+.BR capabilities (7),
+.BR netstat (8).
+
+.SH AUTHOR
+Steve Grubb

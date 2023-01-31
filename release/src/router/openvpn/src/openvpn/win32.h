@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -30,6 +30,7 @@
 #include "mtu.h"
 #include "openvpn-msg.h"
 #include "argv.h"
+#include "win32-util.h"
 
 /* location of executables */
 #define SYS_PATH_ENV_VAR_NAME "SystemRoot"  /* environmental variable name that normally contains the system path */
@@ -45,7 +46,7 @@
 
 /* MSVC headers do not define this macro, so do it here */
 #ifndef IN6_ARE_ADDR_EQUAL
-#define IN6_ARE_ADDR_EQUAL(a,b) \
+#define IN6_ARE_ADDR_EQUAL(a, b) \
     (memcmp((const void *)(a), (const void *)(b), sizeof(struct in6_addr)) == 0)
 #endif
 
@@ -272,9 +273,6 @@ void netcmd_semaphore_release(void);
 /* Set Win32 security attributes structure to allow all access */
 bool init_security_attributes_allow_all(struct security_attributes *obj);
 
-/* return true if filename is safe to be used on Windows */
-bool win_safe_filename(const char *fn);
-
 /* add constant environmental variables needed by Windows */
 struct env_set;
 
@@ -290,9 +288,6 @@ void fork_to_self(const char *cmdline);
 
 /* Find temporary directory */
 const char *win_get_tempdir(void);
-
-/* Convert a string from UTF-8 to UCS-2 */
-WCHAR *wide_string(const char *utf8, struct gc_arena *gc);
 
 bool win_wfp_block_dns(const NET_IFINDEX index, const HANDLE msg_channel);
 
@@ -334,6 +329,9 @@ openvpn_execve(const struct argv *a, const struct env_set *es, const unsigned in
  */
 bool
 openvpn_swprintf(wchar_t *const str, const size_t size, const wchar_t *const format, ...);
+
+/* Sleep that can be interrupted by signals and exit event */
+void win32_sleep(const int n);
 
 #endif /* ifndef OPENVPN_WIN32_H */
 #endif /* ifdef _WIN32 */

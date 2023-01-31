@@ -5,7 +5,7 @@
  *             packet encryption, packet authentication, and
  *             packet compression.
  *
- *  Copyright (C) 2002-2022 OpenVPN Inc <sales@openvpn.net>
+ *  Copyright (C) 2002-2023 OpenVPN Inc <sales@openvpn.net>
  *
  *  This program is free software; you can redistribute it and/or modify
  *  it under the terms of the GNU General Public License version 2
@@ -32,19 +32,12 @@
 #include "buffer.h"
 #include "platform.h"
 
-/* socket descriptor passed by inetd/xinetd server to us */
-#define INETD_SOCKET_DESCRIPTOR 0
-
 /* forward declarations */
 struct plugin_list;
 
 
 /* Set standard file descriptors to /dev/null */
 void set_std_files_to_null(bool stdin_only);
-
-/* dup inetd/xinetd socket descriptor and save */
-extern int inetd_socket_descriptor;
-void save_inetd_socket_descriptor(void);
 
 /* Make arrays of strings */
 
@@ -74,6 +67,7 @@ struct user_pass
 #else
 #define USER_PASS_LEN 128
 #endif
+    /* Note that username and password are expected to be null-terminated */
     char username[USER_PASS_LEN];
     char password[USER_PASS_LEN];
 };
@@ -219,10 +213,12 @@ struct buffer
 prepend_dir(const char *dir, const char *path, struct gc_arena *gc);
 
 #define _STRINGIFY(S) #S
+/* *INDENT-OFF* - uncrustify need to ignore this macro */
 #define MAC_FMT _STRINGIFY(%02hhx:%02hhx:%02hhx:%02hhx:%02hhx:%02hhx)
+/* *INDENT-ON* */
 #define MAC_PRINT_ARG(_mac) _mac[0], _mac[1], _mac[2],  \
-        _mac[3], _mac[4], _mac[5]
+    _mac[3], _mac[4], _mac[5]
 #define MAC_SCAN_ARG(_mac) &_mac[0], &_mac[1], &_mac[2], \
-        &_mac[3], &_mac[4], &_mac[5]
+    &_mac[3], &_mac[4], &_mac[5]
 
 #endif /* ifndef MISC_H */

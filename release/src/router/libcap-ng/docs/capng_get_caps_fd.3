@@ -1,0 +1,23 @@
+.TH "CAPNG_GET_CAPS_FD" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_get_caps_fd \- Read file based capabilities
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+int capng_get_caps_fd(int fd);
+
+.SH "DESCRIPTION"
+
+This function will read the file based capabilities stored in extended attributes of the file that the descriptor was opened against. The bounding set is not included in file based capabilities operations. Note that this function will only work if compiled on a kernel that supports file based capabilities such as 2.6.26 and later. If the "magic" bit is set, then all effect capability bits are set. Otherwise the bits are cleared.
+
+.SH "RETURN VALUE"
+
+This returns 0 on success and -1 on failure.
+
+.SH "SEE ALSO"
+
+.BR capng_set_caps_fd (3),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

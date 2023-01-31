@@ -52,6 +52,11 @@ Script Order of Execution
    Executed in ``--mode server`` mode on new client connections, when the
    client is still untrusted.
 
+#. ``--client-crresponse``
+
+    Execute in ``--mode server`` whenever a client sends a
+    :code:`CR_RESPONSE` message
+
 SCRIPT HOOKS
 ------------
 
@@ -72,7 +77,7 @@ SCRIPT HOOKS
   double-quoted and/or escaped using a backslash, and should be separated
   by one or more spaces.
 
-  If ``method`` is set to :code:`via-env`, OpenVPN will call ``script``
+  If ``method`` is set to :code:`via-env`, OpenVPN will call ``cmd``
   with the environmental variables :code:`username` and :code:`password`
   set to the username/password strings provided by the client. *Beware*
   that this method is insecure on some platforms which make the environment
@@ -80,7 +85,7 @@ SCRIPT HOOKS
 
   If ``method`` is set to :code:`via-file`, OpenVPN will write the username
   and password to the first two lines of a temporary file. The filename
-  will be passed as an argument to ``script``, and the file will be
+  will be passed as an argument to ``cmd``, and the file will be
   automatically deleted by OpenVPN after the script returns. The location
   of the temporary file is controlled by the ``--tmp-dir`` option, and
   will default to the current directory if unspecified. For security,
@@ -90,7 +95,55 @@ SCRIPT HOOKS
 
   The script should examine the username and password, returning a success
   exit code (:code:`0`) if the client's authentication request is to be
-  accepted, or a failure code (:code:`1`) to reject the client.
+  accepted, a failure code (:code:`1`) to reject the client, or a that
+  the authentication is deferred (:code:`2`). If the authentication is
+  deferred, the script must fork/start a background or another non-blocking
+  operation to continue the authentication in the background. When finshing
+  the authentication, a :code:`1` or :code:`0` must be written to the
+  file specified by the :code:`auth_control_file`.
+
+  If the file specified by :code:`auth_failed_reason_file` exists and has
+  non-empty content, the content of this file will be used as AUTH_FAILED
+  message. To avoid race conditions, this file should be written before
+  :code:`auth_control_file`.
+
+  This auth fail reason can be something simple like "User has been permanently
+  disabled" but there are also some special auth failed messages.
+
+  The ``TEMP`` message indicates that the authentication
+  temporarily failed and that the client should continue to retry to connect.
+  The server can optionally give a user readable message and hint the client a
+  behavior how to proceed. The keywords of the ``AUTH_FAILED,TEMP`` message
+  are comma separated keys/values and provide a hint to the client how to
+  proceed. Currently defined keywords are:
+
+  ``backoff`` :code:`s`
+        instructs the client to wait at least :code:`s` seconds before the next
+        connection attempt. If the client already uses a higher delay for
+        reconnection attempt, the delay will not be shortened.
+
+  ``advance addr``
+        Instructs the client to reconnect to the next (IP) address of the
+        current server.
+
+  ``advance remote``
+        Instructs the client to skip the remaining IP addresses of the current
+        server and instead connect to the next server specified in the
+        configuration file.
+
+  ``advance no``
+        Instructs the client to retry connecting to the same server again.
+
+  For example, the message ``TEMP[backoff 42,advance no]: No free IP addresses``
+  indicates that the VPN connection can currently not succeed and instructs
+  the client to retry in 42 seconds again.
+
+  When deferred authentication is in use, the script can also request
+  pending authentication by writing to the file specified by the
+  :code:`auth_pending_file`. The first line must be the timeout in
+  seconds, the required method on the second line (e.g. crtext) and
+  third line must be the EXTRA as documented in the
+  ``client-pending-auth`` section of `doc/management.txt`.
 
   This directive is designed to enable a plugin-style interface for
   extending OpenVPN's authentication capabilities.
@@ -110,6 +163,28 @@ SCRIPT HOOKS
 
   For a sample script that performs PAM authentication, see
   :code:`sample-scripts/auth-pam.pl` in the OpenVPN source distribution.
+
+--client-crresponse
+    Executed when the client sends a text based challenge response.
+
+    Valid syntax:
+    ::
+
+        client-crresponse cmd
+
+  OpenVPN will write the response of the client into a temporary file.
+  The filename will be passed as an argument to ``cmd``, and the file will be
+  automatically deleted by OpenVPN after the script returns.
+
+  The response is passed as is from the client. The script needs to check
+  itself if the input is valid, e.g. if the input is valid base64 encoding.
+
+  The script can either directly write the result of the verification to
+  :code:`auth_control_file or further defer it. See ``--auth-user-pass-verify``
+  for details.
+
+  For a sample script that implement TOTP (RFC 6238) based two-factor
+  authentication, see :code:`sample-scripts/totpauth.py`.
 
 --client-connect cmd
   Run command ``cmd`` on client connection.
@@ -364,15 +439,17 @@ SCRIPT HOOKS
   For ``--dev tun`` execute as:
   ::
 
-      cmd tun_dev tun_mtu link_mtu ifconfig_local_ip ifconfig_remote_ip [init | restart]
+      cmd tun_dev tun_mtu 0 ifconfig_local_ip ifconfig_remote_ip [init | restart]
 
   For ``--dev tap`` execute as:
   ::
 
-       cmd tap_dev tap_mtu link_mtu ifconfig_local_ip ifconfig_netmask [init | restart]
+       cmd tap_dev tap_mtu 0 ifconfig_local_ip ifconfig_netmask [init | restart]
 
   See the `Environmental Variables`_ section below for additional
-  parameters passed as environmental variables.
+  parameters passed as environmental variables.  The ``0`` argument
+  used to be ``link_mtu`` which is no longer passed to scripts - to
+  keep the argument order, it was replaced with ``0``.
 
   Note that if ``cmd`` includes arguments, all OpenVPN-generated arguments
   will be appended to them to build an argument list with which the
@@ -574,6 +651,25 @@ instances.
     netsh.exe calls which sometimes just do not work right with interface
     names). Set prior to ``--up`` or ``--down`` script execution.
 
+:code:`dns_*`
+    The ``--dns`` configuration options will be made available to script
+    execution through this set of environment variables. Variables appear
+    only if the corresponding option has a value assigned. For the semantics
+    of each individual variable, please refer to the documentation for ``--dns``.
+
+    ::
+
+       dns_search_domain_{n}
+       dns_server_{n}_address4
+       dns_server_{n}_port4
+       dns_server_{n}_address6
+       dns_server_{n}_port6
+       dns_server_{n}_resolve_domain_{m}
+       dns_server_{n}_exclude_domain_{m}
+       dns_server_{n}_dnssec
+       dns_server_{n}_transport
+       dns_server_{n}_sni
+
 :code:`foreign_option_{n}`
     An option pushed via ``--push`` to a client which does not natively
     support it, such as ``--dhcp-option`` on a non-Windows system, will be
@@ -652,9 +748,9 @@ instances.
     ``--client-connect`` and ``--client-disconnect`` scripts.
 
 :code:`link_mtu`
-    The maximum packet size (not including the IP header) of tunnel data in
-    UDP tunnel transport mode. Set prior to ``--up`` or ``--down`` script
-    execution.
+    No longer passed to scripts since OpenVPN 2.6.0.  Used to be the
+    maximum packet size (not including the IP header) of tunnel data in
+    UDP tunnel transport mode.
 
 :code:`local`
     The ``--local`` parameter. Set on program initiation and reset on

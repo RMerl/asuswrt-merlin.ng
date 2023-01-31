@@ -1,0 +1,25 @@
+.TH "CAPNG_LOCK" "3" "June 2009" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_lock \- lock the current process capabilities settings
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+int capng_lock(void);
+
+.SH "DESCRIPTION"
+
+capng_lock will take steps to prevent children of the current process to regain full privileges if the uid is 0. This should be called while possessing the CAP_SETPCAP capability in the kernel. This function will do the following if permitted by the kernel: Set the NOROOT option on for PR_SET_SECUREBITS, set the NOROOT_LOCKED option to on for PR_SET_SECUREBITS, set the PR_NO_SETUID_FIXUP option on for PR_SET_SECUREBITS, and set the PR_NO_SETUID_FIXUP_LOCKED option on for PR_SET_SECUREBITS.
+
+
+.SH "RETURN VALUE"
+
+This returns 0 on success and a negative number on failure. -1 means a failure setting any of the PR_SET_SECUREBITS options.
+
+.SH "SEE ALSO"
+
+.BR capng_apply (3),
+.BR prctl (2),
+.BR capabilities (7) 
+
+.SH AUTHOR
+Steve Grubb

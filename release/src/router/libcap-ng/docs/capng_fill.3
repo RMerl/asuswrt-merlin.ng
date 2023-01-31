@@ -1,0 +1,26 @@
+.TH "CAPNG_FILL" "3" "Sept 2020" "Red Hat" "Libcap-ng API"
+.SH NAME
+capng_fill \- fill chosen capabilities set
+.SH "SYNOPSIS"
+.B #include <cap-ng.h>
+.sp
+void capng_fill(capng_select_t set);
+
+.SH "DESCRIPTION"
+
+capng_fill sets all bits to a 1 in the selected posix capabilities set. The options are CAPNG_SELECT_CAPS for the traditional capabilities, CAPNG_SELECT_BOUNDS for the bounding set, CAPNG_SELECT_BOTH if filling both is desired, CAPNG_SELECT_AMBIENT if only operating on the ambient capabilities, or CAPNG_SELECT_ALL if clearing all is desired..
+
+.SH "RETURN VALUE"
+
+None.
+
+.SH NOTES
+
+During capng_apply, bits in the bounding set can only be dropped. You cannot set them.
+
+.SH "SEE ALSO"
+
+.BR capabilities (7), capng_apply (3)
+
+.SH AUTHOR
+Steve Grubb

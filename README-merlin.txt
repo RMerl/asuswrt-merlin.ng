@@ -141,6 +141,12 @@ reset to factory defaults (see note below for exceptions).
 You can revert back to an original Asus firmware at any time just
 by flashing a firmware downloaded from Asus's website.
 
+Note that the archive for ROG models (like the GT-AX6000) may
+contain two different firmware images.  The one with _rog in
+the filename uses the original ROG themed user interface, while
+the other one uses the traditionnal blue/grey visuals used by
+non-ROG models.
+
 If the firmware upgrade fails, try rebooting your router to free 
 up sufficient memory, without any USB disk plugged in,
 then try flashing it again.

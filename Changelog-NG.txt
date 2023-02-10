@@ -5,11 +5,12 @@ Asuswrt-Merlin Changelog
   - NEW: Added Site Survey page under Network Tools tab.
          This is the same network scan that is available
          for pre-HND models, with Wifi 6E support added.
-  - UPDATED: dnsmasq to 2.88.
-  - UPDATED: openvpn to 2.5.8.
+  - UPDATED: dnsmasq to 2.89.
+  - UPDATED: openvpn to 2.6.0.
   - UPDATED: nettle to 3.8.1.
   - UPDATED: inadyn to 2.10.0.
   - UPDATED: dropbear to 2022.83.
+  - UPDATED: miniupnpd to 2.3.2.
   - CHANGED: Implemented Flow Cache bypass for WireGuard
              (backport from upstream).  WireGuard can
              now be used with Flow Cache enabled,

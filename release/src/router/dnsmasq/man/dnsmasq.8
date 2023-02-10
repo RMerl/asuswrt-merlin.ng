@@ -2215,6 +2215,20 @@ exit 0
 
 and /share/ads-domains.gz containing a compressed
 list of ad server domains will save disk space with large ad-server blocklists.
+.TP
+.B --no-ident
+Do not respond to class CHAOS and type TXT in domain bind queries.
+
+Without this option being set, the cache statistics are also available in the
+DNS as answers to queries of class CHAOS and type TXT in domain bind. The domain
+names are cachesize.bind, insertions.bind, evictions.bind, misses.bind,
+hits.bind, auth.bind and servers.bind unless disabled at compile-time. An
+example command to query this, using the
+.B dig
+utility would be
+
+dig +short chaos txt cachesize.bind
+
 .SH CONFIG FILE
 At startup, dnsmasq reads
 .I /etc/dnsmasq.conf,
@@ -2264,15 +2278,6 @@ resulted in an error. In
 mode or when full logging is enabled (\fB--log-queries\fP), a complete dump of the
 contents of the cache is made. 
 
-The cache statistics are also available in the DNS as answers to 
-queries of class CHAOS and type TXT in domain bind. The domain names are cachesize.bind, insertions.bind, evictions.bind, 
-misses.bind, hits.bind, auth.bind and servers.bind. An example command to query this, using the 
-.B dig
-utility would be
-
-dig +short chaos txt cachesize.bind
-
-.PP 
 When it receives SIGUSR2 and it is logging direct to a file (see
 .B --log-facility
 ) 

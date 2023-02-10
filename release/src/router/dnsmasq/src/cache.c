@@ -28,6 +28,7 @@ static int bignames_left, hash_size;
 static void make_non_terminals(struct crec *source);
 static struct crec *really_insert(char *name, union all_addr *addr, unsigned short class,
 				  time_t now,  unsigned long ttl, unsigned int flags);
+static void dump_cache_entry(struct crec *cache, time_t now);
 
 /* type->string mapping: this is also used by the name-hash function as a mixing table. */
 /* taken from https://www.iana.org/assignments/dns-parameters/dns-parameters.xhtml */
@@ -235,19 +236,23 @@ static void cache_hash(struct crec *crecp)
 
   char *name = cache_get_name(crecp);
   struct crec **up = hash_bucket(name);
-
-  if (!(crecp->flags & F_REVERSE))
+  unsigned int flags = crecp->flags & (F_IMMORTAL | F_REVERSE);
+  
+  if (!(flags & F_REVERSE))
     {
       while (*up && ((*up)->flags & F_REVERSE))
 	up = &((*up)->hash_next); 
       
-      if (crecp->flags & F_IMMORTAL)
+      if (flags & F_IMMORTAL)
 	while (*up && !((*up)->flags & F_IMMORTAL))
 	  up = &((*up)->hash_next);
     }
 
-  /* Preserve order when inserting the same name multiple times. */
-  while (*up && hostname_isequal(cache_get_name(*up), name))
+  /* Preserve order when inserting the same name multiple times.
+     Do not mess up the flag invariants. */
+  while (*up &&
+	 hostname_isequal(cache_get_name(*up), name) &&
+	 flags == ((*up)->flags & (F_IMMORTAL | F_REVERSE)))
     up = &((*up)->hash_next);
   
   crecp->hash_next = *up;
@@ -594,7 +599,7 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
   struct crec *new, *target_crec = NULL;
   union bigname *big_name = NULL;
   int freed_all = (flags & F_REVERSE);
-  int free_avail = 0;
+  struct crec *free_avail = NULL;
   unsigned int target_uid;
   
   /* if previous insertion failed give up now. */
@@ -642,7 +647,7 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
       
       /* Free entry at end of LRU list, use it. */
       if (!(new->flags & (F_FORWARD | F_REVERSE)))
-	break;
+	break; 
 
       /* End of LRU list is still in use: if we didn't scan all the hash
 	 chains for expired entries do that now. If we already tried that
@@ -654,12 +659,9 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
 	 insert. Once in this state, all inserts will probably fail. */
       if (free_avail)
 	{
-	  static int warned = 0;
-	  if (!warned)
-	    {
-	      my_syslog(LOG_ERR, _("Internal error in cache."));
-	      warned = 1;
-	    }
+	  my_syslog(LOG_ERR, _("Internal error in cache."));
+	  /* Log the entry we tried to delete. */
+	  dump_cache_entry(free_avail, now);
 	  insert_error = 1;
 	  return NULL;
 	}
@@ -667,13 +669,13 @@ static struct crec *really_insert(char *name, union all_addr *addr, unsigned sho
       if (freed_all)
 	{
 	  /* For DNSSEC records, uid holds class. */
-	  free_avail = 1; /* Must be free space now. */
+	  free_avail = new; /* Must be free space now. */
 	  
 	  /* condition valid when stale-caching */
 	  if (difftime(now, new->ttd) < 0)
 	    daemon->metrics[METRIC_DNS_CACHE_LIVE_FREED]++;
 	  
-	  cache_scan_free(cache_get_name(new), &new->addr, new->uid, now, new->flags, NULL, NULL);
+	  cache_scan_free(cache_get_name(new), &new->addr, new->uid, now, new->flags, NULL, NULL); 
 	}
       else
 	{
@@ -1080,7 +1082,6 @@ static void add_hosts_entry(struct crec *cache, union all_addr *addr, int addrle
      the array rhash, hashed on address. Note that rhash and the values
      in ->next are only valid  whilst reading hosts files: the buckets are
      then freed, and the ->next pointer used for other things. 
-
      Only insert each unique address once into this hashing structure.
 
      This complexity avoids O(n^2) divergent CPU use whilst reading
@@ -1760,6 +1761,94 @@ static char *sanitise(char *name)
   return name;
 }
 
+static void dump_cache_entry(struct crec *cache, time_t now)
+{
+  (void)now;
+  static char *buff = NULL;
+  
+  char *p, *t = " ";
+  char *a = daemon->addrbuff, *n = cache_get_name(cache);
+
+  /* String length is limited below */
+  if (!buff && !(buff = whine_malloc(150)))
+    return;
+  
+  p = buff;
+  
+  *a = 0;
+  if (strlen(n) == 0 && !(cache->flags & F_REVERSE))
+    n = "<Root>";
+  p += sprintf(p, "%-30.30s ", sanitise(n));
+  if ((cache->flags & F_CNAME) && !is_outdated_cname_pointer(cache))
+    a = sanitise(cache_get_cname_target(cache));
+  else if ((cache->flags & F_SRV) && !(cache->flags & F_NEG))
+    {
+      int targetlen = cache->addr.srv.targetlen;
+      ssize_t len = sprintf(a, "%u %u %u ", cache->addr.srv.priority,
+			    cache->addr.srv.weight, cache->addr.srv.srvport);
+      
+      if (targetlen > (40 - len))
+	targetlen = 40 - len;
+      blockdata_retrieve(cache->addr.srv.target, targetlen, a + len);
+      a[len + targetlen] = 0;		
+    }
+#ifdef HAVE_DNSSEC
+  else if (cache->flags & F_DS)
+    {
+      if (!(cache->flags & F_NEG))
+	sprintf(a, "%5u %3u %3u", cache->addr.ds.keytag,
+		cache->addr.ds.algo, cache->addr.ds.digest);
+    }
+  else if (cache->flags & F_DNSKEY)
+    sprintf(a, "%5u %3u %3u", cache->addr.key.keytag,
+	    cache->addr.key.algo, cache->addr.key.flags);
+#endif
+  else if (!(cache->flags & F_NEG) || !(cache->flags & F_FORWARD))
+    { 
+      a = daemon->addrbuff;
+      if (cache->flags & F_IPV4)
+	inet_ntop(AF_INET, &cache->addr, a, ADDRSTRLEN);
+      else if (cache->flags & F_IPV6)
+	inet_ntop(AF_INET6, &cache->addr, a, ADDRSTRLEN);
+    }
+  
+  if (cache->flags & F_IPV4)
+    t = "4";
+  else if (cache->flags & F_IPV6)
+    t = "6";
+  else if (cache->flags & F_CNAME)
+    t = "C";
+  else if (cache->flags & F_SRV)
+    t = "V";
+#ifdef HAVE_DNSSEC
+  else if (cache->flags & F_DS)
+    t = "S";
+  else if (cache->flags & F_DNSKEY)
+    t = "K";
+#endif
+  else if (!(cache->flags & F_NXDOMAIN)) /* non-terminal */
+    t = "!";
+  
+  p += sprintf(p, "%-40.40s %s%s%s%s%s%s%s%s%s%s ", a, t,
+	       cache->flags & F_FORWARD ? "F" : " ",
+	       cache->flags & F_REVERSE ? "R" : " ",
+	       cache->flags & F_IMMORTAL ? "I" : " ",
+	       cache->flags & F_DHCP ? "D" : " ",
+	       cache->flags & F_NEG ? "N" : " ",
+	       cache->flags & F_NXDOMAIN ? "X" : " ",
+	       cache->flags & F_HOSTS ? "H" : " ",
+	       cache->flags & F_CONFIG ? "C" : " ",
+	       cache->flags & F_DNSSECOK ? "V" : " ");
+#ifdef HAVE_BROKEN_RTC
+  p += sprintf(p, "%-24lu", cache->flags & F_IMMORTAL ? 0: (unsigned long)(cache->ttd - now));
+#else
+  p += sprintf(p, "%-24.24s", cache->flags & F_IMMORTAL ? "" : ctime(&(cache->ttd)));
+#endif
+  if(cache->flags & (F_HOSTS | F_CONFIG) && cache->uid > 0)
+    p += sprintf(p, " %-40.40s", record_source(cache->uid));
+  
+  my_syslog(LOG_INFO, "%s", buff);
+}
 
 void dump_cache(time_t now)
 {
@@ -1807,90 +1896,14 @@ void dump_cache(time_t now)
 
   if (option_bool(OPT_DEBUG) || option_bool(OPT_LOG))
     {
-      struct crec *cache ;
+      struct crec *cache;
       int i;
       my_syslog(LOG_INFO, "Host                           Address                                  Flags      Expires                  Source");
       my_syslog(LOG_INFO, "------------------------------ ---------------------------------------- ---------- ------------------------ ------------");
     
       for (i=0; i<hash_size; i++)
 	for (cache = hash_table[i]; cache; cache = cache->hash_next)
-	  {
-	    char *t = " ";
-	    char *a = daemon->addrbuff, *p = daemon->namebuff, *n = cache_get_name(cache);
-	    *a = 0;
-	    if (strlen(n) == 0 && !(cache->flags & F_REVERSE))
-	      n = "<Root>";
-	    p += sprintf(p, "%-30.30s ", sanitise(n));
-	    if ((cache->flags & F_CNAME) && !is_outdated_cname_pointer(cache))
-	      a = sanitise(cache_get_cname_target(cache));
-	    else if ((cache->flags & F_SRV) && !(cache->flags & F_NEG))
-	      {
-		int targetlen = cache->addr.srv.targetlen;
-		ssize_t len = sprintf(a, "%u %u %u ", cache->addr.srv.priority,
-				      cache->addr.srv.weight, cache->addr.srv.srvport);
-
-		if (targetlen > (40 - len))
-		  targetlen = 40 - len;
-		blockdata_retrieve(cache->addr.srv.target, targetlen, a + len);
-		a[len + targetlen] = 0;		
-	      }
-#ifdef HAVE_DNSSEC
-	    else if (cache->flags & F_DS)
-	      {
-		if (!(cache->flags & F_NEG))
-		  sprintf(a, "%5u %3u %3u", cache->addr.ds.keytag,
-			  cache->addr.ds.algo, cache->addr.ds.digest);
-	      }
-	    else if (cache->flags & F_DNSKEY)
-	      sprintf(a, "%5u %3u %3u", cache->addr.key.keytag,
-		      cache->addr.key.algo, cache->addr.key.flags);
-#endif
-	    else if (!(cache->flags & F_NEG) || !(cache->flags & F_FORWARD))
-	      { 
-		a = daemon->addrbuff;
-		if (cache->flags & F_IPV4)
-		  inet_ntop(AF_INET, &cache->addr, a, ADDRSTRLEN);
-		else if (cache->flags & F_IPV6)
-		  inet_ntop(AF_INET6, &cache->addr, a, ADDRSTRLEN);
-	      }
-
-	    if (cache->flags & F_IPV4)
-	      t = "4";
-	    else if (cache->flags & F_IPV6)
-	      t = "6";
-	    else if (cache->flags & F_CNAME)
-	      t = "C";
-	    else if (cache->flags & F_SRV)
-	      t = "V";
-#ifdef HAVE_DNSSEC
-	    else if (cache->flags & F_DS)
-	      t = "S";
-	    else if (cache->flags & F_DNSKEY)
-	      t = "K";
-#endif
-	    else /* non-terminal */
-	      t = "!";
-
-	    p += sprintf(p, "%-40.40s %s%s%s%s%s%s%s%s%s%s ", a, t,
-			 cache->flags & F_FORWARD ? "F" : " ",
-			 cache->flags & F_REVERSE ? "R" : " ",
-			 cache->flags & F_IMMORTAL ? "I" : " ",
-			 cache->flags & F_DHCP ? "D" : " ",
-			 cache->flags & F_NEG ? "N" : " ",
-			 cache->flags & F_NXDOMAIN ? "X" : " ",
-			 cache->flags & F_HOSTS ? "H" : " ",
-			 cache->flags & F_CONFIG ? "C" : " ",
-			 cache->flags & F_DNSSECOK ? "V" : " ");
-#ifdef HAVE_BROKEN_RTC
-	    p += sprintf(p, "%-24lu", cache->flags & F_IMMORTAL ? 0: (unsigned long)(cache->ttd - now));
-#else
-	    p += sprintf(p, "%-24.24s", cache->flags & F_IMMORTAL ? "" : ctime(&(cache->ttd)));
-#endif
-	    if(cache->flags & (F_HOSTS | F_CONFIG) && cache->uid > 0)
-		p += sprintf(p, " %s", record_source(cache->uid));
-
-	    my_syslog(LOG_INFO, "%s", daemon->namebuff);
-	  }
+	  dump_cache_entry(cache, now);
     }
 }
 

@@ -394,7 +394,7 @@
 
 # The following DHCP options set up dnsmasq in the same way as is specified
 # for the ISC dhcpcd in
-# http://www.samba.org/samba/ftp/docs/textdocs/DHCP-Server-Configuration.txt
+# https://web.archive.org/web/20040313070105/http://us1.samba.org/samba/ftp/docs/textdocs/DHCP-Server-Configuration.txt
 # adapted for a typical dnsmasq installation where the host running
 # dnsmasq is also the host running samba.
 # you may want to uncomment some or all of them if you use

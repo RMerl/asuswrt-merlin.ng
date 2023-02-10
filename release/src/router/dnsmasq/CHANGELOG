@@ -1,7 +1,21 @@
+version 2.89
+        Fix bug introduced in 2.88 (commit fe91134b) which can result
+	in corruption of the DNS cache internal data structures and
+	logging of "cache internal error". This has only been seen
+	in one place in the wild, and it took considerable effort
+	to even generate a test case to reproduce it, but there's
+	no way to be sure it won't strike, and the effect is to break
+	the cache badly. Installations with DNSSEC enabled are more
+	likely to see the problem, but not running DNSSEC does not
+	guarantee that it won't happen. Thanks to Timo van Roermund
+	for reporting the bug and for his great efforts in chasing
+	it down.
+
+
 version 2.88
 	Fix bug in --dynamic-host when an interface has /16 IPv4
-	address. Thanks to Mark Dietzer for spotting this.
-	
+  	address. Thanks to Mark Dietzer for spotting this.
+
 	Add --fast-dns-retry option. This gives dnsmasq the ability
 	to originate retries for upstream DNS queries itself, rather
 	than relying on the downstream client. This is most useful
@@ -12,11 +26,17 @@ version 2.88
 	in the cache, but its time-to-live has expired, dnsmasq will
 	return the data anyway. (It attempts to refresh the
 	data with an upstream query after returning the stale data.)
-	This can improve speed and reliability. It comes 
+	This can improve speed and reliability. It comes
 	at the expense of sometimes returning out-of-date data and
 	less efficient cache utilisation, since old data cannot be
 	flushed when its TTL expires, so the cache becomes
 	strictly least-recently-used.
+
+	Add --port-limit option which allows tuning for robustness in
+	the face of some upstream network errors. Thanks to
+	Prashant Kumar Singh, Ravi Nagayach and Mike Danilov,
+	all of Amazon Web Services, for their efforts in developing this
+	and the stale-cache and fast-retry options.
 
 	Make --hostsdir (but NOT --dhcp-hostsdir and --dhcp-optsdir)
 	handle removal of whole files or entries within files.

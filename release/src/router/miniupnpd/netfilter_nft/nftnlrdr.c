@@ -5,7 +5,7 @@
  * (c) 2015 Tomofumi Hayashi
  * (c) 2019 Sven Auhagen
  * (c) 2019 Paul Chambers
- * (c) 2020 Thomas Bernard
+ * (c) 2020-2022 Thomas Bernard
  *
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution.
@@ -698,6 +698,8 @@ update_portmapping(const char * ifname, unsigned short eport, int proto,
 
 	d_printf(("update_portmapping()\n"));
 
+	iaddr_str[0] = '\0';
+	rhost[0] = '\0';
 	if (get_redirect_rule(NULL, eport, proto, iaddr_str, INET_ADDRSTRLEN, NULL, NULL, 0, rhost, INET_ADDRSTRLEN, NULL, 0, 0) < 0)
 		return -1;
 

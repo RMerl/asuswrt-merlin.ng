@@ -1,8 +1,8 @@
-/* $Id: obsdrdr.c,v 1.98 2020/05/29 22:29:11 nanard Exp $ */
+/* $Id: obsdrdr.c,v 1.101 2022/02/19 19:15:24 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2020 Thomas Bernard
+ * (c) 2006-2022 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -33,11 +33,12 @@
  * - USE_IFNAME_IN_RULES
  *   If set the interface name is set in the rule.
  * - PFRULE_INOUT_COUNTS
- *   Must be set with OpenBSD version 3.8 and up.
+ *   Must be set with OpenBSD version 3.8 and up, FreeBSD 7.0+, DragonFly 2.8+
+ *   and OS X with pf.
  * - PFRULE_HAS_RTABLEID
  *   Must be set with OpenBSD version 4.0 and up.
- * - PF_NEWSSTYLE
- *   Must be set with OpenBSD version 4.7 and up.
+ * - PF_NEWSTYLE
+ *   Must be set with OpenBSD version 4.7 and up. FreeBSD/pfSense is old style.
  */
 
 #include <sys/types.h>
@@ -302,19 +303,28 @@ int add_nat_rule(const char * ifname,
 #endif
 	const char * extaddr;
 	char extaddr_buf[INET_ADDRSTRLEN];
+	struct in_addr wan_addr;
 
 	if(dev<0) {
 		syslog(LOG_ERR, "pf device is not open");
 		return -1;
 	}
-	if(use_ext_ip_addr && use_ext_ip_addr[0] != '\0') {
-		extaddr = use_ext_ip_addr;
-	} else {
-		if(getifaddr(ifname, extaddr_buf, INET_ADDRSTRLEN, NULL, NULL) < 0) {
-			syslog(LOG_WARNING, "failed to get address for interface %s", ifname);
-			return -1;
+	if(getifaddr(ifname, extaddr_buf, INET_ADDRSTRLEN, &wan_addr, NULL) < 0) {
+		syslog(LOG_WARNING, "failed to get address for interface %s", ifname);
+		if(use_ext_ip_addr && use_ext_ip_addr[0] != '\0') {
+			extaddr = use_ext_ip_addr;
+		} else {
+			return -1;	/* no address to use => failure */
 		}
-		extaddr = extaddr_buf;
+	} else {
+		if (addr_is_reserved(&wan_addr)) {
+			syslog(LOG_DEBUG, "WAN IP is reserved, it will be used for NAT");
+			extaddr = extaddr_buf;
+		} else if (use_ext_ip_addr && use_ext_ip_addr[0] != '\0') {
+			extaddr = use_ext_ip_addr;
+		} else {
+			extaddr = extaddr_buf;
+		}
 	}
 	syslog(LOG_DEBUG, "use external ip %s", extaddr);
 	r = 0;
@@ -341,7 +351,12 @@ int add_nat_rule(const char * ifname,
 		pcr.rule.src.addr.type = PF_ADDR_ADDRMASK;
 		pcr.rule.dst.addr.type = PF_ADDR_ADDRMASK;
 
+#ifndef PF_NEWSTYLE
 		pcr.rule.action = PF_NAT;
+#else
+		pcr.rule.action = PF_PASS;	/* or PF_MATCH as we dont expect outbound packets to be blocked */
+		pcr.rule.direction = PF_OUT;
+#endif
 		pcr.rule.af = AF_INET;
 #ifdef USE_IFNAME_IN_RULES
 		if(ifname)
@@ -456,7 +471,12 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 	}
 	memset(&pr, 0, sizeof(pr));
 	strlcpy(pr.anchor, anchor_name, MAXPATHLEN);
+#ifndef PF_NEWSTYLE
 	pr.rule.action = PF_NAT;
+#else
+	pr.rule.action = PF_PASS;	/* or PF_MATCH as we dont expect outbound packets to be blocked */
+	pr.rule.direction = PF_OUT;
+#endif
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");

@@ -1,8 +1,8 @@
 #!/bin/sh
-# $Id: miniupnpd.init.d.script,v 1.2 2007/09/23 16:11:12 nanard Exp $
+# $Id: miniupnpd.init.d.script,v 1.4 2022/02/19 22:45:06 nanard Exp $
 # MiniUPnP project
 # author: Thomas Bernard
-# website: http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+# website: http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 
 ### BEGIN INIT INFO
 # Provides:          miniupnpd
@@ -15,11 +15,17 @@
 
 set -e
 
+ETCPATH=/etc/miniupnpd
 MINIUPNPD=/usr/sbin/miniupnpd
-ARGS='-f /etc/miniupnpd/miniupnpd.conf'
+ARGS="-f $ETCPATH/miniupnpd.conf"
 
-IPTABLES_CREATE=/etc/miniupnpd/iptables_init.sh
-IPTABLES_REMOVE=/etc/miniupnpd/iptables_removeall.sh
+if [ -f $ETCPATH/nft_init.sh ] ; then
+IPTABLES_CREATE=$ETCPATH/nft_init.sh
+IPTABLES_REMOVE=$ETCPATH/nft_removeall.sh
+else
+IPTABLES_CREATE=$ETCPATH/iptables_init.sh
+IPTABLES_REMOVE=$ETCPATH/iptables_removeall.sh
+fi
 
 test -f $MINIUPNPD || exit 0
 
@@ -47,7 +53,7 @@ case "$1" in
 	log_end_msg $?
 	;;
   status)
-	status_of_proc /usr/sbin/miniupnpd miniupnpd
+	status_of_proc $MINIUPNPD miniupnpd
 	;;
   *)
 	log_action_msg "Usage: /etc/init.d/miniupnpd {start|stop|restart|reload|force-reload}"

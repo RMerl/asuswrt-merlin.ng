@@ -1,8 +1,8 @@
-/* $Id: getifaddr.c,v 1.26 2019/05/20 19:54:08 nanard Exp $ */
+/* $Id: getifaddr.c,v 1.28 2022/02/19 18:58:25 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2019 Thomas Bernard
+ * (c) 2006-2022 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -104,6 +104,7 @@ getifaddr(const char * ifname, char * buf, int len,
 	/* Works for all address families (both ip v4 and ip v6) */
 	struct ifaddrs * ifap;
 	struct ifaddrs * ife;
+	struct ifaddrs * candidate = NULL;
 
 	if(!ifname || ifname[0]=='\0')
 		return -1;
@@ -122,14 +123,14 @@ getifaddr(const char * ifname, char * buf, int len,
 		switch(ife->ifa_addr->sa_family)
 		{
 		case AF_INET:
-			if(buf)
-			{
-				inet_ntop(ife->ifa_addr->sa_family,
-				          &((struct sockaddr_in *)ife->ifa_addr)->sin_addr,
-				          buf, len);
-			}
-			if(addr) *addr = ((struct sockaddr_in *)ife->ifa_addr)->sin_addr;
-			if(mask) *mask = ((struct sockaddr_in *)ife->ifa_netmask)->sin_addr;
+			/* only consider the address if it is the 1st candidate or
+			   if it is not privante AND the current candidate is a private address.
+			   So we return a private address only if there is no public address
+			   on this interface */
+			if(!candidate ||
+			   (addr_is_reserved(&((struct sockaddr_in *)candidate->ifa_addr)->sin_addr) &&
+			    !addr_is_reserved(&((struct sockaddr_in *)ife->ifa_addr)->sin_addr)))
+				candidate = ife;
 			break;
 /*
 		case AF_INET6:
@@ -138,6 +139,17 @@ getifaddr(const char * ifname, char * buf, int len,
 			          buf, len);
 */
 		}
+	}
+	if(candidate)
+	{
+		if(buf)
+		{
+			inet_ntop(candidate->ifa_addr->sa_family,
+			          &((struct sockaddr_in *)candidate->ifa_addr)->sin_addr,
+			          buf, len);
+		}
+		if(addr) *addr = ((struct sockaddr_in *)candidate->ifa_addr)->sin_addr;
+		if(mask) *mask = ((struct sockaddr_in *)candidate->ifa_netmask)->sin_addr;
 	}
 	freeifaddrs(ifap);
 #endif

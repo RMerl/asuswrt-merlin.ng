@@ -1,4 +1,4 @@
-/* $Id: pcpserver.c,v 1.51 2019/05/21 08:39:44 nanard Exp $ */
+/* $Id: pcpserver.c,v 1.56 2022/10/16 06:03:56 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * Website : http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
@@ -73,6 +73,7 @@ POSSIBILITY OF SUCH DAMAGE.
 #include "pcpserver.h"
 #include "natpmp.h"
 #include "macros.h"
+#include "rw_unaligned.h"
 #include "upnpglobalvars.h"
 #include "pcplearndscp.h"
 #include "upnpredirect.h"
@@ -933,7 +934,7 @@ static int CreatePCPMap_NAT(pcp_info_t *pcp_msg_info)
 		     (!check_upnp_rule_against_permissions(upnppermlist,
 							   num_upnpperm, pcp_msg_info->ext_port,
 							   ((struct in_addr*)pcp_msg_info->mapped_ip->s6_addr)[3],
-							   pcp_msg_info->int_port)))) {
+							   pcp_msg_info->int_port, pcp_msg_info->desc)))) {
 			if (pcp_msg_info->pfailure_present) {
 				return PCP_ERR_CANNOT_PROVIDE_EXTERNAL;
 			}
@@ -1095,60 +1096,73 @@ static void DeletePCPMap(pcp_info_t *pcp_msg_info)
 	int r=-1;
 	/* remove the mapping */
 	/* remove all the mappings for this client */
-	int index;
 	unsigned short eport2, iport2;
 	char iaddr2[INET6_ADDRSTRLEN];
 	int proto2;
 	char desc[64];
 	unsigned int timestamp;
-#ifdef ENABLE_UPNPPINHOLE
-	int uid = -1;
-#endif /* ENABLE_UPNPPINHOLE */
 
-	/* iterate through all rules and delete the requested ones */
-	for (index = 0 ;
-	     (!pcp_msg_info->is_fw &&
-	      get_redirect_rule_by_index(index, 0,
+	syslog(LOG_DEBUG, "is_fw=%d addr=%s iport=%hu proto=%d",
+	       pcp_msg_info->is_fw,  pcp_msg_info->mapped_str, iport, (int)proto);
+	if (!pcp_msg_info->is_fw) {
+		int index;
+		/* iterate through all rules and delete the requested ones */
+		for (index = 0;
+		     get_redirect_rule_by_index(index, 0,
 					 &eport2, iaddr2, sizeof(iaddr2),
 					 &iport2, &proto2,
 					 desc, sizeof(desc),
-					 0, 0, &timestamp, 0, 0) >= 0)
+					 0, 0, &timestamp, 0, 0) >= 0;
+		     index++) {
+			syslog(LOG_DEBUG, "%d: %s %hu %d", index, iaddr2, iport2, proto2);
+			if(0 == strcmp(iaddr2, pcp_msg_info->mapped_str)
+			   && (proto2==proto)
+			   && ((iport2==iport) || (iport==0))) {
+				if(0 != strcmp(desc, pcp_msg_info->desc)) {
+					/* nonce does not match */
+					pcp_msg_info->result_code = PCP_ERR_NOT_AUTHORIZED;
+					syslog(LOG_ERR, "Unauthorized to remove PCP mapping internal port %hu, protocol %s",
+					       iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+					return;
+				} else {
+					r = _upnp_delete_redir(eport2, proto2);
+				}
+				break;
+			}
+		}
+	} else {
 #ifdef ENABLE_UPNPPINHOLE
-	       ||
-	     (pcp_msg_info->is_fw &&
-	      (uid=upnp_get_pinhole_uid_by_index(index))>=0 &&
-	      upnp_get_pinhole_info((unsigned short)uid,
-				    NULL, 0, NULL,
-				    iaddr2, sizeof(iaddr2), &iport2,
-				    &proto2, desc, sizeof(desc),
-				    &timestamp, NULL) >= 0)
-#endif /* ENABLE_UPNPPINHOLE */
-		     ;
-	     index++)
-		if(0 == strcmp(iaddr2, pcp_msg_info->mapped_str)
-		   && (proto2==proto)
-		   && ((iport2==iport) || (iport==0))) {
+		int uid;
+		uid = upnp_find_inboundpinhole(NULL, 0,
+						pcp_msg_info->mapped_str, iport,
+						pcp_msg_info->protocol,
+						desc, sizeof(desc),
+						NULL /* lifetime */);
+		if (uid < 0) {
+			syslog(LOG_ERR, "Failed to find mapping to %s:%hu, protocol %s",
+			       pcp_msg_info->mapped_str, iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+			return;
+		} else {
 			if(0 != strcmp(desc, pcp_msg_info->desc)) {
 				/* nonce does not match */
 				pcp_msg_info->result_code = PCP_ERR_NOT_AUTHORIZED;
 				syslog(LOG_ERR, "Unauthorized to remove PCP mapping internal port %hu, protocol %s",
 				       iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
 				return;
-			} else if (!pcp_msg_info->is_fw) {
-				r = _upnp_delete_redir(eport2, proto2);
 			} else {
-#ifdef ENABLE_UPNPPINHOLE
 				r = upnp_delete_inboundpinhole(uid);
-#endif /* ENABLE_UPNPPINHOLE */
 			}
-			break;
 		}
+#else
+		syslog(LOG_WARNING, "ENABLE_UPNPPINHOLE was not enabled at compile time");
+#endif /* ENABLE_UPNPPINHOLE */
+	}
 	if (r >= 0) {
 		syslog(LOG_INFO, "PCP: %s port %hu mapping removed",
 		       proto2==IPPROTO_TCP?"TCP":"UDP", eport2);
 	} else {
-		syslog(LOG_ERR, "Failed to remove PCP mapping internal port %hu, protocol %s",
-		       iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
+		syslog(LOG_ERR, "Failed to remove PCP mapping to %s:%hu %s",
+		       pcp_msg_info->mapped_str, iport, (pcp_msg_info->protocol == IPPROTO_TCP)?"TCP":"UDP");
 		pcp_msg_info->result_code = PCP_ERR_NO_RESOURCES;
 	}
 }

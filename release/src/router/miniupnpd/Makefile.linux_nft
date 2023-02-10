@@ -1,5 +1,5 @@
 # MiniUPnP project
-# (c) 2018-2021 Thomas Bernard
+# (c) 2018-2022 Thomas Bernard
 # (c) 2015 Tomofumi Hayashi
 # http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
 # Author : Tomofumi Hayashi
@@ -129,6 +129,7 @@ install:	miniupnpd $(SRCDIR)/miniupnpd.8 $(SRCDIR)/miniupnpd.conf \
 	$(INSTALL) $(SRCDIR)/netfilter_nft/scripts/nft_removeall.sh $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) $(SRCDIR)/netfilter_nft/scripts/nft_flush.sh $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) $(SRCDIR)/netfilter_nft/scripts/nft_delete_chain.sh $(DESTDIR)$(ETCINSTALLDIR)
+	$(INSTALL) $(SRCDIR)/netfilter_nft/scripts/miniupnpd_functions.sh $(DESTDIR)$(ETCINSTALLDIR)
 	$(INSTALL) --mode=0644 -b $(SRCDIR)/miniupnpd.conf $(DESTDIR)$(ETCINSTALLDIR)
 	sed -i -e "s/^uuid=[-0-9a-f]*/uuid=$(UUID)/" $(DESTDIR)$(ETCINSTALLDIR)/miniupnpd.conf
 	$(INSTALL) -d $(DESTDIR)$(PREFIX)/etc/init.d

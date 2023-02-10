@@ -1,4 +1,4 @@
-/* $Id: ipfwrdr.c,v 1.17 2020/05/10 22:25:45 nanard Exp $ */
+/* $Id: ipfwrdr.c,v 1.18 2022/02/19 21:44:51 nanard Exp $ */
 /*
  * MiniUPnP project
  * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
@@ -69,6 +69,13 @@ struct file;
 #include "ipfwrdr.h"
 
 #include "../upnpglobalvars.h"
+
+/* This ipfw backend is known to work with OS X up to 10.6.
+ * Some work is needed to support FreeBSD ipfw.
+ */
+#ifndef IP_FW_CURRENT_API_VERSION
+#error "ip_fw.h does not contain supported API"
+#endif
 
 /* init and shutdown functions */
 

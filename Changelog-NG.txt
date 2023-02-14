@@ -2,13 +2,17 @@ Asuswrt-Merlin Changelog
 ========================
 
 386.10 (x-xxx-2023)
+  - NOTE: 386_xx releases are only for Wifi 5 (AC) models.
   - NEW: Added Site Survey page under Network Tools tab.
-         This is the same network scan that is available
-         for pre-HND models, with Wifi 6E support added.
+         (RT-AC86U/GT-AC2900).
   - UPDATED: dnsmasq to 2.89.
   - UPDATED: openvpn to 2.6.0.
   - UPDATED: openssl to 1.1.1t.
-  - CHANGED: Moved WiFi Radar to the Network Tools tab.
+  - UPDATED: miniupnpd to 2.3.2.
+  - UPDATED: Asus security daemon updated to 2.0 engine (patch
+             from Asus)
+  - CHANGED: Moved WiFi Radar and Site Survey to the
+             Network Tools tab
   - CHANGED: Disabled auto logout on System Log and
              Wireless Log pages.
   - CHANGED: Reduced EDNS packet size from 1280 to 1232

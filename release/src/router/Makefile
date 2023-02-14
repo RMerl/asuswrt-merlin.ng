@@ -8054,7 +8054,9 @@ asd: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) curl openssl li
 
 asd-install:
 	install -D asd/asd $(INSTALLDIR)/asd/usr/bin/asd
+	install -D asd/libasd.so $(INSTALLDIR)/asd/usr/lib/libasd.so
 	$(STRIP) $(INSTALLDIR)/asd/usr/bin/asd
+	$(STRIP) $(INSTALLDIR)/asd/usr/lib/libasd.so
 
 asd-clean:
 	$(MAKE) -C asd clean

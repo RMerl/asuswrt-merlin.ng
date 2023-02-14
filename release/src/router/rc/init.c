@@ -206,6 +206,10 @@ extern int set_tcode_misc();
 extern int g_upgrade;
 int def_boot = 0;
 
+#ifdef RTCONFIG_ASD
+	extern int monitor_asd(void);
+#endif
+
 #ifdef RTCONFIG_WPS
 static void
 wps_restore_defaults(void)
@@ -20865,7 +20869,6 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 		}
 
 #ifdef RTCONFIG_ASD
-		extern int monitor_asd(void);
 		monitor_asd();
 #endif
 		do {

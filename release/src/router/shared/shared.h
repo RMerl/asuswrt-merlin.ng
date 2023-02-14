@@ -4245,7 +4245,7 @@ extern char *server6_table[][2];
 
 #define CD_IPC_MAX_CONNECTION 5
 #endif
-
+#define SAFE_FREE(x)	if(x) {free(x); x=NULL;}
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_AMAS_ADTBW)
 #define ACSD_SCORE_FILE	"/tmp/auto_chan_score.txt"
 #endif

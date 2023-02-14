@@ -225,6 +225,10 @@ CFLAGS  += -I$(TOP)/nt_center/actMail
 CFLAGS  += -DASUSWRT_SDK
 endif
 
+ifeq ($(RTCONFIG_ASD),y)
+CFLAGS  += -I$(TOP)/asd
+endif
+
 ifeq ($(RTCONFIG_PROTECTION_SERVER),y)
 CFLAGS  += -I$(TOP)/protect_srv/include
 endif

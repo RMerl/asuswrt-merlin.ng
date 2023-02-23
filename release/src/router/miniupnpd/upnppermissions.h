@@ -1,7 +1,7 @@
-/* $Id: upnppermissions.h,v 1.13 2022/10/21 19:44:23 nanard Exp $ */
+/* $Id: upnppermissions.h,v 1.14 2023/02/11 23:02:17 nanard Exp $ */
 /* MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2022 Thomas Bernard
+ * (c) 2006-2023 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -12,11 +12,11 @@
 #include <sys/socket.h>
 #include <netinet/in.h>
 
+#include "config.h"
+
 #ifdef ENABLE_REGEX
 #include <regex.h>
 #endif
-
-#include "config.h"
 
 /* UPnP permission rule samples:
  * allow 1024-65535 192.168.3.0/24 1024-65535

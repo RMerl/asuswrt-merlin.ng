@@ -16,7 +16,8 @@ endif
 
 OBJS = webapi.o
 
-OBJS += $(if $(wildcard priv_webapi.c), priv_webapi.o, prebuild/priv_webapi.o)
+#OBJS += $(if $(wildcard priv_webapi.c), priv_webapi.o, prebuild/priv_webapi.o)
+OBJS += priv_webapi.o
 
 CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
@@ -54,7 +55,7 @@ endif
 all: libwebapi.so
 
 # handle prebuilt object here
-ifneq ($(wildcard, ./prebuild),)
+ifneq ($(wildcard ./prebuild/$(BUILD_NAME)/priv_webapi.o),)
 priv_webapi.o:
 	@-cp -f ./prebuild/$(BUILD_NAME)/priv_webapi.o .
 endif

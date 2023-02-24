@@ -454,6 +454,7 @@ int main(int argc, char *argv[])
 
 		fprintf(fp, "hosts deny = 0.0.0.0/0\n");
 	}
+#endif
 #endif //#if 0
 #if LINUX_VERSION_CODE < KERNEL_VERSION(2,6,36)
 	fprintf(fp, "use sendfile = no\n");

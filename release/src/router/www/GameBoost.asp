@@ -156,7 +156,7 @@ function initial(){
 		$('#android_cn_link').show();
 	}
 
-	if(wtfast_support){
+	if(wtfast_support || wtfast_v2_support){
 		$('#wtfast_1').show();
 		$('#wtfast_2').show();
 		$('#wtfast_3').show();
@@ -482,7 +482,22 @@ function applyRule(){
 	document.form.submit();
 }
 
+var faq_fref = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=152";
+var wtfast_v2_go = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=GO&lang="+ui_lang+"&kw=&num=";
+var siteInfo = [faq_fref,
+				'Advanced_WTFast_Content.asp',
+				'QoS_EZQoS.asp',
+				outfox_site,
+				wtfast_v2_go];
+
 function redirectSite(url){
+	if(url == "wtfast"){
+		if(wtfast_v2_support)
+			url = siteInfo[4];
+		else if(wtfast_support)
+			url = siteInfo[1];
+	}
+
 	window.open(url, '_blank');
 }
 </script>
@@ -685,13 +700,14 @@ function redirectSite(url){
 											</tr>
 											<tr id='wtfast_3' style="display:none">
 												<td align="center" style="width:85px">
-													<img style="padding-right:10px;;" src="/images/New_ui/GameBoost_WTFast.png" >
+													<img style="padding-right:10px;;" src="/images/New_ui/triLv3_wtfast.png" >
 												</td>
 												<td style="width:400px;height:120px;">
-													<div style="font-size:16px;color:#949393;padding-left:10px;"><#Game_Boost_desc#></div>
+													<div style="font-size:16px;color:#949393;padding-left:10px; margin-top: 10px;"><#Game_WTFast_desc#></div>
+													<div style="font-size:16px;color:#949393;padding-left:10px; margin-top: 15px; margin-bottom: 10px;">*Please be aware this is a third-party service provided by WTFast®, and WTFast® is fully responsible for warranties and liabilities of this game server acceleration service.</div><!--untranslated-->
 												</td>
 												<td>
-													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="location.href='Advanced_WTFast_Content.asp';"><#btn_go#></div>
+													<div class="btn" style="margin:auto;width:100px;height:40px;text-align:center;line-height:40px;font-size:18px;cursor:pointer;border-radius:5px;" onclick="redirectSite('wtfast');"><#btn_go#></div>
 												</td>
 											</tr>
 											<!-- Tencent -->

@@ -53,6 +53,9 @@
 #ifdef HAVE_LINUX_FD_H
 #include <linux/fd.h>
 #endif
+#ifdef HAVE_LINUX_FS_H
+#include <linux/fs.h>
+#endif
 
 #include "types.h"
 #include "mst.h"
@@ -140,8 +143,26 @@ static int ntfs_device_unix_io_open(struct ntfs_device *dev, int flags)
 	*(int*)dev->d_private = open(dev->d_name, flags);
 	if (*(int*)dev->d_private == -1) {
 		err = errno;
+			/* if permission error and rw, retry read-only */
+		if ((err == EACCES) && ((flags & O_RDWR) == O_RDWR))
+			err = EROFS;
 		goto err_out;
 	}
+#ifdef HAVE_LINUX_FS_H
+		/* Check whether the device was forced read-only */
+	if (NDevBlock(dev) && ((flags & O_RDWR) == O_RDWR)) {
+		int r;
+		int state;
+
+		r = ioctl(DEV_FD(dev), BLKROGET, &state);
+		if (!r && state) {
+			err = EROFS;
+			if (close(DEV_FD(dev)))
+				err = errno;
+			goto err_out;
+   		}
+	}
+#endif
 	
 	if ((flags & O_RDWR) != O_RDWR)
 		NDevSetReadOnly(dev);
@@ -348,8 +369,8 @@ static int ntfs_device_unix_io_stat(struct ntfs_device *dev, struct stat *buf)
  *
  * Returns:
  */
-static int ntfs_device_unix_io_ioctl(struct ntfs_device *dev, int request,
-		void *argp)
+static int ntfs_device_unix_io_ioctl(struct ntfs_device *dev,
+		unsigned long request, void *argp)
 {
 	return ioctl(DEV_FD(dev), request, argp);
 }

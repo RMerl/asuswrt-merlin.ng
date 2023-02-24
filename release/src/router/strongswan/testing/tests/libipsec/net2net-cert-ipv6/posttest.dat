@@ -1,6 +1,6 @@
 moon::swanctl --terminate --ike gw-gw 2> /dev/null
-moon::systemctl stop strongswan-swanctl
-sun::systemctl stop strongswan-swanctl
+moon::systemctl stop strongswan
+sun::systemctl stop strongswan
 alice::"ip route del fec2:\:/16 via fec1:\:1"
 moon::"ip route del fec2:\:/16 via fec0:\:2"
 sun::"ip route del fec1:\:/16 via fec0:\:1"

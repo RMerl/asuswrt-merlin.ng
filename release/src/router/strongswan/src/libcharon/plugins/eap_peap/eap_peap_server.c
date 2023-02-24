@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -167,7 +168,7 @@ METHOD(tls_application_t, process, status_t,
 	eap_payload_t *in;
 	eap_code_t code;
 	eap_type_t type = EAP_NAK, received_type;
-	uint32_t vendor, received_vendor;
+	pen_t vendor, received_vendor;
 
 	status = this->avp->process(this->avp, reader, &data,
 							this->ph1_method->get_identifier(this->ph1_method));
@@ -316,8 +317,8 @@ METHOD(tls_application_t, process, status_t,
 		default:
 			if (vendor)
 			{
-				DBG1(DBG_IKE, "vendor specific EAP method %d-%d failed",
-							   type, vendor);
+				DBG1(DBG_IKE, "vendor specific EAP method %d-%N failed",
+							   type, pen_names, vendor);
 			}
 			else
 			{
@@ -338,7 +339,7 @@ METHOD(tls_application_t, build, status_t,
 	chunk_t data;
 	eap_code_t code;
 	eap_type_t type;
-	uint32_t vendor;
+	pen_t vendor;
 
 	if (this->ph2_method == NULL && this->start_phase2 && this->start_phase2_id)
 	{

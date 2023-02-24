@@ -57,6 +57,10 @@
 
 #include <model.h>
 
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
+#include <aae_ipc.h>
+#endif
+
 #ifndef ARRAYSIZE
 #define ARRAYSIZE(a) (sizeof(a) / sizeof(a[0]))
 #endif /* ARRAYSIZE */
@@ -442,12 +446,18 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "rc_service")==0) {
 		notify_rc(argv[2]);
 	}
-#if defined(CONFIG_BCMWL5) && defined(HND_ROUTER)
+#ifdef RTCONFIG_HND_ROUTER_AX
 	else if (strcmp(argv[1], "gpy211")==0) {
 		GPY211_INIT_SPEED();
 	}
-	else if (strcmp(argv[1], "gpy211_wan")==0) {
-		GPY211_WAN_SPEED();
+	else if (strcmp(argv[1], "gpy211_1g")==0) {
+		GPY211_SPEED_WAR_1G();
+	}
+	else if (strcmp(argv[1], "gpy211_auto")==0) {
+		GPY211_SPEED_WAR_AUTO();
+	}
+	else if (strcmp(argv[1], "gpy211_aneg")==0) {
+		GPY211_WAR_ANEG();
 	}
 #endif
 #if defined(RTCONFIG_FRS_FEEDBACK)
@@ -568,14 +578,14 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "pregr")==0) {
 		unsigned int reg;
 		sscanf(argv[2], "%x", &reg);
-		_dprintf("pregaccess rd 0x%x\n", reg);
+		_dprintf("pmdioaccess rd 0x%x\n", reg);
 		hnd_ethswctl(PMDIOACCESS, reg, 2, 0, 0);
 	}
 	else if (strcmp(argv[1], "pregw")==0) {
 		unsigned int reg, data;
 		sscanf(argv[2], "%x", &reg);
 		sscanf(argv[3], "%x", &data);
-		_dprintf("pregaccess wr 0x%x, 0x%x\n", reg, data);
+		_dprintf("pmdioaccess wr 0x%x, 0x%x\n", reg, data);
 		hnd_ethswctl(PMDIOACCESS, reg, 2, 1, data);
 	}
 	else if (strcmp(argv[1], "set_phy_ctrl")==0) {
@@ -596,7 +606,7 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "lanports_ctrl")==0) {
 		int val;
 		val = atoi(argv[2]);
-		_dprintf("lan ctrl %d\n", lanport_ctrl(val));
+		_dprintf("Lan ctrl %d\n", lanport_ctrl(val));
 	}
 	else if (strcmp(argv[1], "handle_notifications")==0) {
 		handle_notifications();
@@ -828,18 +838,7 @@ static int rctest_main(int argc, char *argv[])
 	else if (strcmp(argv[1], "codb_test")==0) {
 		codb_test();
 #if 0		
-		if(nvram_get_int("iperf_test")==1){
-			char capmac[] = "04:D9:F5:B5:93:E0";
-			char remac[]  = "04:D9:F5:B5:94:70";
-			char smac[32],cmac[32];
-
-			snprintf(smac,sizeof(smac),"%s",nvram_safe_get("iperf_test_smac"));
-			snprintf(cmac,sizeof(cmac),"%s",nvram_safe_get("iperf_test_cmac"));
-			if(strlen(smac)==17 && strlen(cmac)==17)
-				exec_iperf(smac,cmac);
-			else
-				_dprintf("server mac or client mac error\n");
-		} else if(nvram_get_int("cablediag_test")==1)
+		if(nvram_get_int("cablediag_test")==1)
 		{
 			char capmac[] = "04:D9:F5:B5:93:E0";
 			char remac[]  = "04:D9:F5:B5:94:70";
@@ -850,18 +849,38 @@ static int rctest_main(int argc, char *argv[])
 	}
 #endif
 #if defined(RTCONFIG_CD_IPERF)
-        else if (strcmp(argv[1], "run_iperf")==0) {
-                if (argv[2] && argv[3]) {
-                        char smac[32],cmac[32];
-                        snprintf(smac,sizeof(smac),"%s",argv[2]);
-                        snprintf(cmac,sizeof(cmac),"%s",argv[3]);
-                        if(strlen(smac)==17 && strlen(cmac)==17)
-                                exec_iperf(smac, cmac);
-                        else
-                                _dprintf("server mac or client mac error\n");
-                }
-        }
-#endif	
+	else if (strcmp(argv[1], "run_iperf")==0) {
+
+		char caller[32];
+		snprintf(caller, sizeof(caller), "%s", argv[2]);
+
+		if (strlen(caller)>0) {
+			if (argv[3] && argv[4]) {
+				if (strncmp(argv[4], "all", 3)==0) {
+					//- rc run_iperf type smac all
+					char smac[32];
+					snprintf(smac, sizeof(smac), "%s",argv[3]);
+					if(strlen(smac)==17) {
+						exec_iperf(caller, smac, "all");
+						return;
+					}
+				}
+				else {
+					//- rc run_iperf type smac cmac
+					char smac[32], cmac[32];
+					snprintf(smac, sizeof(smac), "%s",argv[3]);
+					snprintf(cmac, sizeof(cmac), "%s",argv[4]);
+					if(strlen(smac)==17 && strlen(cmac)==17) {
+						exec_iperf(caller, smac, cmac);
+						return;
+					}
+				}
+			}
+		}
+
+		_dprintf("Fail to run iperf\n");
+	}
+#endif
 #if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
 	else if (strcmp(argv[1], "aae_refresh_userticket")==0) {
 		char event[AAE_MAX_IPC_PACKET_SIZE];
@@ -1121,12 +1140,77 @@ static int rctest_main(int argc, char *argv[])
 				start_mastiff();
 		}
 #endif
+#ifdef CONFIG_BCMWL5
 		else if (strcmp(argv[1], "gpiow") == 0) {
+#ifdef HND_ROUTER
+			if (argc>=4) set_gpio_rc(atoi(argv[2]), atoi(argv[3]));
+#else
 			if (argc>=4) set_gpio(atoi(argv[2]), atoi(argv[3]));
+#endif
 		}
 		else if (strcmp(argv[1], "gpior") == 0) {
+#ifdef HND_ROUTER
+			printf("%d\n", get_gpio_rc(atoi(argv[2])));
+#else
 			printf("%d\n", get_gpio(atoi(argv[2])));
+#endif
 		}
+#ifdef HND_ROUTER
+#if defined(RTCONFIG_BONDING) && defined(RTCONFIG_HND_ROUTER_AX)
+		else if (strcmp(argv[1], "get_bonding_port_status") == 0) {
+			int port = atoi(argv[2]);
+			int ret = 0;
+
+			ret = get_bonding_port_status(port);
+			printf("get bonding port [%d] status is %d\n", port, ret);
+		}
+#endif
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756) || defined(BCM4906_504)
+		else if (strcmp(argv[1], "hnd_phy_status") == 0) {
+			char *hnd_phy = argv[2];
+
+			if(hnd_phy)
+				printf("[%s] phy status is %d\n", hnd_phy, hnd_get_phy_status(hnd_phy));
+
+		} else if (strcmp(argv[1], "hnd_phy_speed") == 0) {
+			char *hnd_phy = argv[2];
+
+			if(hnd_phy) {
+				printf("[%s] phy speed is %d\n", hnd_phy, hnd_get_phy_speed(hnd_phy));
+			}
+
+		} else if (strcmp(argv[1], "hnd_phy_duplex") == 0) {
+			char *hnd_phy = argv[2];
+
+			if(hnd_phy)
+				printf("[%s] phy duplex is %d\n", hnd_phy, hnd_get_phy_duplex(hnd_phy));
+
+		} else if (strcmp(argv[1], "hnd_phy_mib") == 0) {
+			char *hnd_phy = argv[2];
+			char *type = argv[3];
+
+			if(hnd_phy && type)
+				printf("[%s] phy mib[%s] is %d\n", hnd_phy, type, hnd_get_phy_mib(hnd_phy, type));
+
+		} 
+#endif
+		else if (strcmp(argv[1], "gled") == 0) {
+			int gpio = atoi(argv[2]);
+			int act_low = _gpio_active_low(gpio & 0xff);
+			int on = !strcmp(argv[3], "on")?1:0;
+
+			if (argc>=4) {
+				printf("turn %s gpio led %d\n", on?"on":"off", atoi(argv[2]));
+				set_gpio_rc(gpio, on?(act_low?0:1):(act_low?1:0));	
+			}
+		}
+#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(EBG19)
+		else if (strcmp(argv[1], "led_53134") == 0) {
+			bcm53134_led_control(atoi(argv[2]));
+		}
+#endif
+#endif
+#endif
 #if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTAX58U) || defined(TUFAX3000) || defined(TUFAX5400) || defined(RTAX82U) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(GSAX3000) || defined(GSAX5400) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(XD6_V2) || defined(RTAX5400)
 		else if (strcmp(argv[1], "gpio2r") == 0) {
 			printf("%d\n", get_gpio2(atoi(argv[2])));
@@ -1283,10 +1367,10 @@ char *fix_fw_name(char *orig_fw_name)
 static inline char *fix_fw_name(char *orig_fw_name) { return orig_fw_name; }
 #endif
 
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -1702,7 +1786,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -1986,9 +2070,10 @@ static const applets_t applets[] = {
 	{ "netool", 			netool_main			},
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
-	{ "v6plusd", 		v6plusd_main		},
+	{ "v6plusd", 			v6plusd_main			},
+	{ "ocnvcd", 			ocnvcd_main			},
 #endif
-#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N)
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 	{ "rtkswitch",			config_rtkswitch		},
 #if defined(RTAC53) || defined(RTAC51UP)
 	{ "mtkswitch",			config_mtkswitch		},
@@ -2141,6 +2226,9 @@ static const applets_t applets[] = {
  #endif
 #ifdef RTCONFIG_IPSEC
 	{ "ipsec_updown",		ipsec_updown_main      },
+#endif
+#ifdef RTCONFIG_HND_ROUTER_AX
+	{ "gpy211_monitor",		gpy211_monitor_main      },
 #endif
 	{NULL, NULL}
 };
@@ -3428,6 +3516,15 @@ int main(int argc, char **argv)
 	}
 #endif
 #if RTCONFIG_SOFTWIRE46
+	else if (!strcmp(base, "s46reset")) {
+		if (argc != 2) {
+			printf("Usage: %s <wan unit>.\n", argv[0]);
+			return 0;
+		}
+		s46reset(atoi(argv[1]));
+		printf("WAN Unit:[%d] MAP nvarm is reset.\n", atoi(argv[1]));
+		return 0;
+	}
 	else if (!strcmp(base, "mapcalc")) {
 		char peerbuf[INET6_ADDRSTRLEN];
 		char addr6buf[INET6_ADDRSTRLEN];
@@ -3441,11 +3538,13 @@ int main(int argc, char **argv)
 			wan_proto = WAN_MAPE;
 		else if (!strcmp(argv[2], "lw4o6"))
 			wan_proto = WAN_LW4O6;
-		else
+		else if (!strcmp(argv[2], "v6plus"))
 			wan_proto = WAN_V6PLUS;
+		else
+			wan_proto = WAN_OCNVC;
 
 		while (fgets(rules, sizeof(rules), stdin) != NULL) {
-			if (s46_mapcalc(wan_proto, rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),
+			if (s46_mapcalc(0, wan_proto, rules, peerbuf, sizeof(peerbuf), addr6buf, sizeof(addr6buf),
 					addr4buf, sizeof(addr4buf), &offset, &psidlen, &psid, &fmrs, draft) <= 0) {
 				peerbuf[0] = addr6buf[0] = addr4buf[0] = '\0';
 				offset = 0, psidlen = 0, psid = 0;
@@ -3499,6 +3598,20 @@ int main(int argc, char **argv)
 		}
 		return 0;
 	}
+#if defined(RTCONFIG_AMAS_CENTRAL_ADS)
+	else if (!strcmp(base, "start_ds_measure")) {
+		start_ds_measure();
+		return 0;
+	}
+	else if (!strcmp(base, "monitor_ds_sta_status")) {
+		monitor_ds_sta_status();
+		return 0;
+	}
+	else if (!strcmp(base, "monitor_ds_ap_status")) {
+		monitor_ds_ap_status();
+		return 0;
+	}
+#endif
 	printf("Unknown applet: %s\n", base);
 	return 0;
 }

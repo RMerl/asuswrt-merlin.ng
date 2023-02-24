@@ -1,9 +1,10 @@
 
 include ../common.mak
+$(info RTCONFIG_DEBUG=$(RTCONFIG_DEBUG))
 
-CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall -Os -fPIC
+CFLAGS	+= -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(SRCBASE)/common/include -Wall $(if $(RTCONFIG_DEBUG),,-Os) -fPIC
 CFLAGS	+= $(if $(WLAN_ComponentIncPath),$(WLAN_ComponentIncPath),$(addprefix -I,$(wildcard $(SRCBASE)/shared/bcmwifi/include)))
-CFLAGS	+= -s -O2
+CFLAGS	+= $(if $(RTCONFIG_DEBUG),-g,-s -O2)
 ifeq ($(HND_ROUTER_AX_6756),y)
 CFLAGS += -Wno-stringop-overflow
 endif
@@ -71,7 +72,7 @@ wlc_debug: main.o wlc_nt_lib.o
 wlc_nt: wlc_nt.o
 	@echo " [wlc_nt] CC $@"
 	@$(CC) $(CFLAGS) -o $@ $^ $(LDFLAGS)
-	@$(STRIP) wlc_nt
+	@$(if $(RTCONFIG_DEBUG),,$(STRIP) wlc_nt)
 
 wlc_monitor: wlc_monitor.o
 	@echo " [wlc_monitor] CC $@"
@@ -81,7 +82,7 @@ wlc_monitor: wlc_monitor.o
 libwlc_nt_client.so : wlc_nt_client.o
 	@echo " [wlc_nt] LD $@"
 	@$(LD) $(LDFLAGS) -shared -o $@ $^
-	@$(STRIP) libwlc_nt_client.so
+	@$(if $(RTCONFIG_DEBUG),,$(STRIP) libwlc_nt_client.so)
 
 libwlc_nt_lib.so : wlc_nt_lib.o
 	@echo " [wlc_nt] LD $@"
@@ -99,7 +100,7 @@ install: all
 
 %.o: %.c
 	@echo " [wlc_nt] CC $@"
-	@$(CC) $(CFLAGS) -c $<
+	$(CC) $(CFLAGS) -c $<
 
 clean:
 	rm -f *.so *.o wlc_nt wlc_monitor

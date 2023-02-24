@@ -1,5 +1,5 @@
-alice::ipsec stop
-sun::ipsec stop
+alice::systemctl stop strongswan
+sun::systemctl stop strongswan
 alice::ifdown eth1
 alice::iptables-restore < /etc/iptables.flush
 sun::iptables-restore < /etc/iptables.flush

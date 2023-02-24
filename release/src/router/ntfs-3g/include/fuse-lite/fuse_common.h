@@ -32,6 +32,11 @@
 #define FUSE_MAKE_VERSION(maj, min)  ((maj) * 10 + (min))
 #define FUSE_VERSION FUSE_MAKE_VERSION(FUSE_MAJOR_VERSION, FUSE_MINOR_VERSION)
 
+/* This interface uses 64 bit off_t */
+#if defined(__SOLARIS__) && !defined(__x86_64__) && (_FILE_OFFSET_BITS != 64)
+#error Please add -D_FILE_OFFSET_BITS=64 to your compile flags!
+#endif
+
 #ifdef __cplusplus
 extern "C" {
 #endif
@@ -39,9 +44,29 @@ extern "C" {
 #ifdef POSIXACLS
 /*
  * FUSE_CAP_DONT_MASK: don't apply umask to file mode on create operations
+ * FUSE_CAP_POSIX_ACL: process Posix ACLs within the kernel
  */
 #define FUSE_CAP_DONT_MASK	(1 << 6)
+#define FUSE_CAP_POSIX_ACL	(1 << 18)
 #endif
+
+#define FUSE_CAP_BIG_WRITES	(1 << 5)
+#define FUSE_CAP_IOCTL_DIR	(1 << 11)
+
+/**
+ * Ioctl flags
+ *
+ * FUSE_IOCTL_COMPAT: 32bit compat ioctl on 64bit machine
+ * FUSE_IOCTL_UNRESTRICTED: not restricted to well-formed ioctls, retry allowed
+ * FUSE_IOCTL_RETRY: retry with new iovecs
+ * FUSE_IOCTL_DIR: is a directory 
+ */
+#define FUSE_IOCTL_COMPAT	(1 << 0)
+#define FUSE_IOCTL_UNRESTRICTED (1 << 1)
+#define FUSE_IOCTL_RETRY	(1 << 2)
+#define FUSE_IOCTL_DIR		(1 << 4)
+
+#define FUSE_IOCTL_MAX_IOV	256
 
 /**
  * Information about open files
@@ -116,19 +141,12 @@ struct fuse_conn_info {
 	 */
 	unsigned max_readahead;
 
-#ifdef POSIXACLS
 	unsigned capable;
 	unsigned want;
 	/**
 	 * For future use.
 	 */
 	unsigned reserved[25];
-#else
-	/**
-	 * For future use.
-	 */
-	unsigned reserved[27];
-#endif
     };
 
 struct fuse_session;
@@ -153,6 +171,41 @@ struct fuse_chan *fuse_mount(const char *mountpoint, struct fuse_args *args);
  * @param ch the communication channel
  */
 void fuse_unmount(const char *mountpoint, struct fuse_chan *ch);
+
+#ifdef __SOLARIS__
+/**
+ * Parse common options
+ *
+ * The following options are parsed:
+ *
+ *   '-f'            foreground
+ *   '-d' '-odebug'  foreground, but keep the debug option
+ *   '-s'            single threaded
+ *   '-h' '--help'   help
+ *   '-ho'           help without header
+ *   '-ofsname=..'   file system name, if not present, then set to the program
+ *                   name
+ *
+ * All parameters may be NULL
+ *
+ * @param args argument vector
+ * @param mountpoint the returned mountpoint, should be freed after use
+ * @param multithreaded set to 1 unless the '-s' option is present
+ * @param foreground set to 1 if one of the relevant options is present
+ * @return 0 on success, -1 on failure
+ */
+int fuse_parse_cmdline(struct fuse_args *args, char **mountpoint,
+                       int *multithreaded, int *foreground);
+
+/**
+ * Go into the background
+ *
+ * @param foreground if true, stay in the foreground
+ * @return 0 on success, -1 on failure
+ */
+int fuse_daemonize(int foreground);
+
+#endif /* __SOLARIS__ */
 
 /**
  * Get the version of the library

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,8 +20,8 @@
  * Test vectors from RFC5114
  */
 
-dh_test_vector_t ecp192 = {
-	.group = ECP_192_BIT, .priv_len = 24, .pub_len = 48, .shared_len = 24,
+ke_test_vector_t ecp192 = {
+	.method = ECP_192_BIT, .priv_len = 24, .pub_len = 48, .shared_len = 24,
 	.priv_a	= "\x32\x3f\xa3\x16\x9d\x8e\x9c\x65\x93\xf5\x94\x76\xbc\x14\x20\x00"
 			  "\xab\x5b\xe0\xe2\x49\xc4\x34\x26",
 	.priv_b	= "\x63\x1f\x95\xbb\x4a\x67\x63\x2c\x9c\x47\x6e\xee\x9a\xb6\x95\xab"
@@ -35,8 +36,8 @@ dh_test_vector_t ecp192 = {
 			  "\xe5\xff\x4f\x83\x7f\x54\xfe\xbe",
 };
 
-dh_test_vector_t ecp224 = {
-	.group = ECP_224_BIT, .priv_len = 28, .pub_len = 56, .shared_len = 28,
+ke_test_vector_t ecp224 = {
+	.method = ECP_224_BIT, .priv_len = 28, .pub_len = 56, .shared_len = 28,
 	.priv_a	= "\xb5\x58\xeb\x6c\x28\x8d\xa7\x07\xbb\xb4\xf8\xfb\xae\x2a\xb9\xe9"
 			  "\xcb\x62\xe3\xbc\x5c\x75\x73\xe2\x2e\x26\xd3\x7f",
 	.priv_b	= "\xac\x3b\x1a\xdd\x3d\x97\x70\xe6\xf6\xa7\x08\xee\x9f\x3b\x8e\x0a"
@@ -53,8 +54,8 @@ dh_test_vector_t ecp224 = {
 			  "\xd9\x6e\xcc\x3b\x6d\xc1\x71\x4a\x4e\xa9\x49\xfa",
 };
 
-dh_test_vector_t ecp256 = {
-	.group = ECP_256_BIT, .priv_len = 32, .pub_len = 64, .shared_len = 32,
+ke_test_vector_t ecp256 = {
+	.method = ECP_256_BIT, .priv_len = 32, .pub_len = 64, .shared_len = 32,
 	.priv_a	= "\x81\x42\x64\x14\x5f\x2f\x56\xf2\xe9\x6a\x8e\x33\x7a\x12\x84\x99"
 			  "\x3f\xaf\x43\x2a\x5a\xbc\xe5\x9e\x86\x7b\x72\x91\xd5\x07\xa3\xaf",
 	.priv_b	= "\x2c\xe1\x78\x8e\xc1\x97\xe0\x96\xdb\x95\xa2\x00\xcc\x0a\xb2\x6a"
@@ -71,8 +72,8 @@ dh_test_vector_t ecp256 = {
 			  "\xf5\x81\x1e\x9d\xc8\xec\x8e\xea\x7f\x80\xd2\x1c\x82\x0c\x27\x88",
 };
 
-dh_test_vector_t ecp384 = {
-	.group = ECP_384_BIT, .priv_len = 48, .pub_len = 96, .shared_len = 48,
+ke_test_vector_t ecp384 = {
+	.method = ECP_384_BIT, .priv_len = 48, .pub_len = 96, .shared_len = 48,
 	.priv_a	= "\xd2\x73\x35\xea\x71\x66\x4a\xf2\x44\xdd\x14\xe9\xfd\x12\x60\x71"
 			  "\x5d\xfd\x8a\x79\x65\x57\x1c\x48\xd7\x09\xee\x7a\x79\x62\xa1\x56"
 			  "\xd7\x06\xa9\x0c\xbc\xb5\xdf\x29\x86\xf0\x5f\xea\xdb\x93\x76\xf1",
@@ -96,8 +97,8 @@ dh_test_vector_t ecp384 = {
 			  "\x27\xaa\x8a\x45\x40\x88\x4c\x37\xde\x15\x9a\x58\x02\x8a\xbc\x0e",
 };
 
-dh_test_vector_t ecp521 = {
-	.group = ECP_521_BIT, .priv_len = 66, .pub_len = 132, .shared_len = 66,
+ke_test_vector_t ecp521 = {
+	.method = ECP_521_BIT, .priv_len = 66, .pub_len = 132, .shared_len = 66,
 	.priv_a	= "\x01\x13\xf8\x2d\xa8\x25\x73\x5e\x3d\x97\x27\x66\x83\xb2\xb7\x42"
 			  "\x77\xba\xd2\x73\x35\xea\x71\x66\x4a\xf2\x43\x0c\xc4\xf3\x34\x59"
 			  "\xb9\x66\x9e\xe7\x8b\x3f\xfb\x9b\x86\x83\x01\x5d\x34\x4d\xcb\xfe"

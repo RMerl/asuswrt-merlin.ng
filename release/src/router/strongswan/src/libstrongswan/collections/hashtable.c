@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008-2020 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -289,7 +290,7 @@ static inline pair_t *find_key(private_hashtable_t *this, const void *key,
 								u_int *out_hash, u_int *out_row)
 {
 	pair_t *pair;
-	u_int hash, row, p = 0, removed, index;
+	u_int hash, row, p = 0, removed = 0, index;
 	bool found_removed = FALSE;
 
 	if (!this->count && !out_hash && !out_row)

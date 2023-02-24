@@ -1,9 +1,8 @@
 /*
+ * Copyright (C) 2018-2021 Andreas Steffen
  * Copyright (C) 2018 Tobias Brunner
- * Copyright (C) 2018-2020 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
- * Copyright (C) 2021 Andreas Steffen, strongSec GmbH
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -481,9 +480,9 @@ static bool initialize_sys_context(private_tpm_tss_tss2_t *this)
 
 	TSS2_ABI_VERSION abi_version = {
 		.tssCreator = 1,
-    	.tssFamily = 2,
-    	.tssLevel = 1,
-    	.tssVersion = 108
+		.tssFamily = 2,
+		.tssLevel = 1,
+		.tssVersion = 108
 	};
 
 	/* determine size of sys context */
@@ -805,7 +804,7 @@ static bool init_pcr_selection(private_tpm_tss_tss2_t *this, uint32_t pcrs,
 	if (!has_pcr_bank(this, alg))
 	{
 		DBG1(DBG_PTS, LABEL "%N hash algorithm not supported by any PCR bank",
-			 		  hash_algorithm_short_names, alg);
+					  hash_algorithm_short_names, alg);
 		return FALSE;
 	}
 
@@ -888,7 +887,7 @@ METHOD(tpm_tss_t, extend_pcr, bool,
 	if (!has_pcr_bank(this, alg))
 	{
 		DBG1(DBG_PTS, LABEL "%N hash algorithm not supported by any PCR bank",
-			 		  hash_algorithm_short_names, alg);
+					  hash_algorithm_short_names, alg);
 		return FALSE;
 	}
 
@@ -1114,7 +1113,7 @@ METHOD(tpm_tss_t, sign, bool,
 	if (!is_supported_alg(this, alg_id))
 	{
 		DBG1(DBG_PTS, LABEL "%N hash algorithm not supported by TPM",
-			 		  hash_algorithm_short_names, hash_alg);
+					  hash_algorithm_short_names, hash_alg);
 		return FALSE;
 	}
 
@@ -1146,7 +1145,7 @@ METHOD(tpm_tss_t, sign, bool,
 	else
 	{
 		DBG1(DBG_PTS, LABEL "signature scheme %N not supported by TPM key",
-			 		  signature_scheme_names, scheme);
+					  signature_scheme_names, scheme);
 		return FALSE;
 	}
 
@@ -1177,7 +1176,7 @@ METHOD(tpm_tss_t, sign, bool,
 		if (rval != TPM2_RC_SUCCESS)
 		{
 			DBG1(DBG_PTS, LABEL "Tss2_Sys_HashSequenceStart failed: 0x%06x",
-				 		  rval);
+						  rval);
 			this->mutex->unlock(this->mutex);
 			return FALSE;
 		}
@@ -1194,7 +1193,7 @@ METHOD(tpm_tss_t, sign, bool,
 			if (rval != TPM2_RC_SUCCESS)
 			{
 				DBG1(DBG_PTS, LABEL "Tss2_Sys_SequenceUpdate failed: 0x%06x",
-					 		  rval);
+							  rval);
 				this->mutex->unlock(this->mutex);
 				return FALSE;
 			}
@@ -1208,7 +1207,7 @@ METHOD(tpm_tss_t, sign, bool,
 		if (rval != TPM2_RC_SUCCESS)
 		{
 			DBG1(DBG_PTS, LABEL "Tss2_Sys_SequenceComplete failed: 0x%06x",
-				 		  rval);
+						  rval);
 			return FALSE;
 		}
 	}
@@ -1355,7 +1354,7 @@ METHOD(tpm_tss_t, get_random, bool,
 		if (rval != TSS2_RC_SUCCESS)
 		{
 			DBG1(DBG_PTS, LABEL "Tss2_Sys_GetRandom_Complete failed: 0x%06x",
-				 		  rval);
+						  rval);
 			goto error;
 		}
 		success = TRUE;
@@ -1618,7 +1617,7 @@ bool tpm_tss_tss2_init(void)
 		return FALSE;
 	}
 
- 	infofn = (TSS2_TCTI_INFO_FUNC)dlsym(tcti_handle, TSS2_TCTI_INFO_SYMBOL);
+	infofn = (TSS2_TCTI_INFO_FUNC)dlsym(tcti_handle, TSS2_TCTI_INFO_SYMBOL);
     if (!infofn)
 	{
         DBG1(DBG_PTS, LABEL "symbol \"%s\" not found in \"%s\"",

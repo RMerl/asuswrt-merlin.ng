@@ -18,7 +18,7 @@ extern "C" {
 #endif
 
 #include <shared.h>
-
+#include <aae_ipc.h>
 
 #include <assert.h>
 // #include <time.h>
@@ -72,7 +72,13 @@ void init_basic_data()
 
         int oauth_auth_status = nvram_get_int("oauth_auth_status"); // 2 -> account_binding
 
-        if((svc_ready == 1) && (ntp_ready == 1) && (link_internet == 2) && (oauth_auth_status == 2)) {
+#ifdef RTCONFIG_ACCOUNT_BINDING
+        int account_bound = is_account_bound();
+#else
+        int account_bound = 0;
+#endif
+        
+        if((svc_ready == 1) && (ntp_ready == 1) && (link_internet == 2) && account_bound) {
             Cdbg(APP_DBG, "svc_ready -> %d, ntp_ready -> %d, link_internet -> %d, oauth_auth_status -> %d", svc_ready, ntp_ready, link_internet, oauth_auth_status);
             break;
         } else {

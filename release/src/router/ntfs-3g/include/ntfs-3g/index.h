@@ -129,6 +129,7 @@ typedef struct {
 	VCN parent_vcn[MAX_PARENT_VCN]; /* entry's parent nodes */
 	int pindex;	     /* maximum it's the number of the parent nodes  */
 	BOOL ib_dirty;
+	BOOL bad_index;
 	u32 block_size;
 	u8 vcn_size_bits;
 } ntfs_index_context;
@@ -138,6 +139,10 @@ extern ntfs_index_context *ntfs_index_ctx_get(ntfs_inode *ni,
 extern void ntfs_index_ctx_put(ntfs_index_context *ictx);
 extern void ntfs_index_ctx_reinit(ntfs_index_context *ictx);
 
+extern int ntfs_index_block_inconsistent(const INDEX_BLOCK *ib, u32 block_size,
+			u64 inum, VCN vcn);
+extern int ntfs_index_entry_inconsistent(const INDEX_ENTRY *ie,
+			COLLATION_RULES collation_rule, u64 inum);
 extern int ntfs_index_lookup(const void *key, const int key_len,
 		ntfs_index_context *ictx) __attribute_warn_unused_result__;
 

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal
@@ -34,9 +33,9 @@
 /**
  * Creates a new X25519 implementation using Botan.
  *
- * @param group		DH group, must be CURVE_25519
+ * @param ke		key exchange method, must be CURVE_25519
  * @return			object, NULL if not supported
  */
-diffie_hellman_t *botan_x25519_create(diffie_hellman_group_t group);
+key_exchange_t *botan_x25519_create(key_exchange_method_t ke);
 
 #endif /** BOTAN_X25519_H_ @}*/

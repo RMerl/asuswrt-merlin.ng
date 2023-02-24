@@ -94,6 +94,7 @@ var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq
 var oauth_auth_status = httpApi.nvramGet(["oauth_auth_status"], true).oauth_auth_status;
 var aae_ddnsinfo = httpApi.nvramGet(["aae_ddnsinfo"], true).aae_ddnsinfo;
 var ipv6_service = httpApi.nvramGet(["ipv6_service"], true).ipv6_service;
+var asusddns_token_state = httpApi.nvramGet(["asusddns_token_state"], true).asusddns_token_state;
 
 function init(){
 	show_menu();
@@ -235,6 +236,21 @@ function show_ipv6update_setting(){
 		showhide("ddns_ipv6update_tr", 0);
 }
 
+function show_deregister_btn(){
+	$("#deregister_btn").css("display", "inline");
+	if(asusddns_token_state == "1"){
+		$("#deregister_btn").click(function(){
+			alert("The host name has been bound to the login account of the router app, please delete/deregister it from the router app.");//untranslated
+		});
+	}
+	else{
+		$("#deregister_btn").click(function(){
+			showLoading();
+			asuscomm_deregister();
+		});
+	}
+}
+
 function ddns_load_body(){
     if(ddns_enable_x == 1){
         inputCtrl(document.form.ddns_server_x, 1);
@@ -307,18 +323,9 @@ function ddns_load_body(){
 			showhide("wan_ip_hide2", 0);
 			if(ddns_server_x.indexOf("WWW.ASUS.COM") != -1){
 				showhide("wan_ip_hide3", 1);
-				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
-				if(inadyn)
-					$("#deregister_btn").css("display", "inline");
 			}
 		}
 		else{
-			if(ddns_server_x.indexOf("WWW.ASUS.COM") != -1){
-				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
-				if(ddnsStatus != "")
-					$("#ddns_status_detail").css("display", "inline");
-			}
-
 			if((ddns_return_code == "ddns_query" || ddns_return_code_chk == "Time-out" || ddns_return_code_chk == "connect_fail" || ddns_return_code_chk.indexOf('-1') != -1) && le_re_ddns != "1")
 				checkDDNSReturnCode_noRefresh();
 		}
@@ -496,7 +503,7 @@ function checkDDNSReturnCode_noRefresh(){
 					showhide("wan_ip_hide3", 1);
 					document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
 					if(inadyn)
-						$("#deregister_btn").css("display", "inline");
+						show_deregister_btn();
 				}
 			}
 			else{
@@ -610,7 +617,7 @@ function change_ddns_setting(v){
 				(ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
 				document.getElementById("ddns_status").innerHTML = "<#Status_Active#>";
 				if(inadyn)
-					$("#deregister_btn").css("display", "inline");
+					show_deregister_btn();
 			}
 			else
 				document.getElementById("ddns_status").innerHTML = "<#Status_Inactive#>";
@@ -974,7 +981,7 @@ function check_unregister_result(){
 			</tr>
 			<tr id="ddns_status_tr" style="display:none;">
 				<th>DDNS Status</th>
-				<td><sapn id="ddns_status" style="color:#FFCC00"></sapn><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
+				<td><span id="ddns_status" style="color:#FFCC00"></span><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
 			</tr>
 			<tr id="ddns_result_tr" style="display:none;">
 				<th>DDNS Registration Result</th>
@@ -1018,11 +1025,11 @@ function check_unregister_result(){
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
-					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="Deregister" onclick="showLoading();asuscomm_deregister();"/>
-				<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>
-				<a id="linkToHome" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#ddns_home_link#></a>
-				<div id="customnote" style="display:none;"><span>For the Custom DDNS you must manually create a ddns-start script that handles your custom notification.</span></div>
-				<div id="need_custom_scripts" style="display:none;"><span>WARNING: you must enable both the JFFS2 partition and custom scripts support!<br>Click <a href="Advanced_System_Content.asp" style="text-decoration: underline;">HERE</a> to proceed.</span></div>
+					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="Deregister"/>
+					<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>
+					<a id="linkToHome" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#ddns_home_link#></a>
+					<div id="customnote" style="display:none;"><span>For the Custom DDNS you must manually create a ddns-start script that handles your custom notification.</span></div>
+					<div id="need_custom_scripts" style="display:none;"><span>WARNING: you must enable both the JFFS2 partition and custom scripts support!<br>Click <a href="Advanced_System_Content.asp" style="text-decoration: underline;">HERE</a> to proceed.</span></div>
 				</td>
 			</tr>
 			<tr id="ddns_hostname_tr">

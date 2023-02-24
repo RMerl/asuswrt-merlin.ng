@@ -2,7 +2,8 @@
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2005-2010 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -224,7 +225,7 @@ METHOD(eap_payload_t, get_identifier, uint8_t,
  * @return	the new offset or 0 if failed
  */
 static size_t extract_type(private_eap_payload_t *this, size_t offset,
-					       eap_type_t *type, uint32_t *vendor)
+					       eap_type_t *type, pen_t *vendor)
 {
 	if (this->data.len > offset)
 	{
@@ -245,7 +246,7 @@ static size_t extract_type(private_eap_payload_t *this, size_t offset,
 }
 
 METHOD(eap_payload_t, get_type, eap_type_t,
-	private_eap_payload_t *this, uint32_t *vendor)
+	private_eap_payload_t *this, pen_t *vendor)
 {
 	eap_type_t type;
 
@@ -273,7 +274,7 @@ METHOD(enumerator_t, enumerate_types, bool,
 	type_enumerator_t *this, va_list args)
 {
 	eap_type_t *type;
-	uint32_t *vendor;
+	pen_t *vendor;
 
 	VA_ARGS_VGET(args, type, vendor);
 	this->offset = extract_type(this->payload, this->offset, type, vendor);
@@ -285,7 +286,7 @@ METHOD(eap_payload_t, get_types, enumerator_t*,
 {
 	type_enumerator_t *enumerator;
 	eap_type_t type;
-	uint32_t vendor;
+	pen_t vendor;
 	size_t offset;
 
 	offset = extract_type(this, 4, &type, &vendor);
@@ -390,7 +391,7 @@ eap_payload_t *eap_payload_create_code(eap_code_t code, uint8_t identifier)
 /**
  * Write the given type either expanded or not
  */
-static void write_type(bio_writer_t *writer, eap_type_t type, uint32_t vendor,
+static void write_type(bio_writer_t *writer, eap_type_t type, pen_t vendor,
 					   bool expanded)
 {
 	if (expanded)
@@ -409,11 +410,11 @@ static void write_type(bio_writer_t *writer, eap_type_t type, uint32_t vendor,
  * Described in header
  */
 eap_payload_t *eap_payload_create_nak(uint8_t identifier, eap_type_t type,
-									  uint32_t vendor, bool expanded)
+									  pen_t vendor, bool expanded)
 {
 	enumerator_t *enumerator;
 	eap_type_t reg_type;
-	uint32_t reg_vendor;
+	pen_t reg_vendor;
 	bio_writer_t *writer;
 	chunk_t data;
 	bool added_any = FALSE, found_vendor = FALSE;

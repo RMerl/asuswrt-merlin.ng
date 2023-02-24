@@ -43,7 +43,7 @@
 #              is the name of the ipsec interface to be used.
 #
 #       PLUTO_REQID
-#              is the requid of the AH|ESP policy
+#              is the reqid of the AH|ESP policy
 #
 #       PLUTO_PROTO
 #              is the negotiated IPsec protocol, ah|esp
@@ -119,6 +119,12 @@
 #       PLUTO_MARK_OUT
 #              is an optional XFRM mark set on the outbound IPsec SA
 #
+#       PLUTO_IF_ID_IN
+#              is an optional XFRM interface ID set on the inbound IPsec SA
+#
+#       PLUTO_IF_ID_OUT
+#              is an optional XFRM interface ID set on the outbound IPsec SA
+#
 #       PLUTO_UDP_ENC
 #              contains the remote UDP port in the case of ESP_IN_UDP
 #              encapsulation
@@ -155,18 +161,6 @@ OUT_NET="10.8.0.0/14"
 # define internal interface
 INT_INTERFACE="eth1"
 
-# is there an inbound mark to be set?
-if [ -n "$PLUTO_MARK_IN" ]
-then
-	if [ -n "$PLUTO_UDP_ENC" ]
-	then
-	    SET_MARK_IN="-p udp --sport $PLUTO_UDP_ENC"
-	else
-		SET_MARK_IN="-p esp"
-	fi
-	SET_MARK_IN="$SET_MARK_IN -s $PLUTO_PEER -j MARK --set-mark $PLUTO_MARK_IN"
-fi
-
 # is there an outbound mark to be set?
 if [ -n "$PLUTO_MARK_OUT" ]
 then
@@ -183,16 +177,15 @@ up-client:)
 	# If you are doing a custom version, firewall commands go here.
 	if [ -n "$PLUTO_MARK_IN" ]
 	then
-	    iptables -t mangle -A PREROUTING $SET_MARK_IN
 	    iptables -t nat -A PREROUTING -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN \
-		     -d $IN_NET -j NETMAP --to $SAME_NET 
+		     -d $IN_NET -j NETMAP --to $SAME_NET
 	    iptables -I FORWARD 1 -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN -j ACCEPT
 	    iptables -t nat -A POSTROUTING -o $INT_INTERFACE -m mark --mark $PLUTO_MARK_IN \
-	             -s $SAME_NET -j NETMAP --to $OUT_NET 
+	             -s $SAME_NET -j NETMAP --to $OUT_NET
 	fi
 	if [ -n "$PLUTO_MARK_OUT" ]
 	then
-	    iptables -t mangle -A PREROUTING $SET_MARK_OUT 
+	    iptables -t mangle -A PREROUTING $SET_MARK_OUT
 	    iptables -t nat -A PREROUTING -i $INT_INTERFACE -m mark --mark $PLUTO_MARK_OUT \
 	             -d $OUT_NET -j NETMAP --to $SAME_NET
 	    iptables -I FORWARD 1 -o $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_OUT -j ACCEPT
@@ -205,12 +198,11 @@ down-client:)
 	# If you are doing a custom version, firewall commands go here.
 	if [ -n "$PLUTO_MARK_IN" ]
 	then
-	    iptables -t mangle -D PREROUTING $SET_MARK_IN
 	    iptables -t nat -D PREROUTING -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN \
-	             -d $IN_NET -j NETMAP --to $SAME_NET 
+	             -d $IN_NET -j NETMAP --to $SAME_NET
 	    iptables -D FORWARD -i $PLUTO_INTERFACE -m mark --mark $PLUTO_MARK_IN -j ACCEPT
 	    iptables -t nat -D POSTROUTING -o eth1 -m mark --mark $PLUTO_MARK_IN \
-	             -s $SAME_NET -j NETMAP --to $OUT_NET 
+	             -s $SAME_NET -j NETMAP --to $OUT_NET
 	fi
 	if [ -n "$PLUTO_MARK_OUT" ]
 	then

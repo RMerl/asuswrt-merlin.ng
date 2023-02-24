@@ -1696,7 +1696,7 @@ int stop_vpnc_by_unit(const int unit)
 		_dprintf("[%s]Stop WireGuard(%d).\n", __FUNCTION__, prof->config.wg.wg_idx);
 		stop_wgc(prof->config.wg.wg_idx);
 		snprintf(vpnc_ifname, sizeof(vpnc_ifname), "%s%d", WG_CLIENT_IF_PREFIX, prof->config.wg.wg_idx);
-		vpnc_down(prof->config.wg.wg_idx, vpnc_ifname);
+		vpnc_down(prof->vpnc_idx, vpnc_ifname);
 	}
 	else if (VPNC_PROTO_NORDVPN == prof->protocol)
 	{
@@ -2249,13 +2249,14 @@ int write_vpn_fusion_filter(FILE *fp, const char *lan_ip)
 			{
 				if(dev_policy[j].active && dev_policy[j].vpnc_idx == i && dev_policy[j].iif[0] != '\0')
 				{
-					fprintf(fp, "-A FORWARD -o %s -i %s -j ACCEPT\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))), dev_policy[j].iif);
+					fprintf(fp, "-A VPNCF -o %s -i %s -j ACCEPT\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))), dev_policy[j].iif);
 				}
 			}
 #endif
 				// set FORWARD
 				fprintf(fp, "-I FORWARD -p tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n");
-				fprintf(fp, "-A FORWARD -o %s ! -i %s -j DROP\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))), lan_if);
+				fprintf(fp, "-A VPNCF -o %s ! -i %s -j DROP\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))), lan_if);
+				fprintf(fp, "-A VPNCF -i %s -j ACCEPT\n", nvram_safe_get(strlcat_r(vpnc_prefix, "ifname", tmp, sizeof(tmp))));
 			}
 		}
 	}

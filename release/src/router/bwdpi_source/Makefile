@@ -9,8 +9,12 @@ endif
 ifeq ($(wildcard $(TOP)/bwdpi_source/prebuild/$(BUILD_NAME)/*),)
 
 ifeq ($(RTCONFIG_LIBASUSLOG),y)
-CFLAGS += -I$(TOP)/libasuslog
+CFLAGS += -I$(TOP)/libasuslog -I$(TOP)/rc
 LIBS += -L$(TOP)/libasuslog -lasuslog
+endif
+
+ifeq ($(RTCONFIG_VPN_FUSION),y)
+CFLAGS += -I$(TOP)/rc
 endif
 
 CFLAGS += -I$(TOP)/json-c
@@ -283,8 +287,6 @@ install: all
 ifeq ($(RTCONFIG_SOC_IPQ8064),y)
 	@cp -f modules/ipq806x/* RC_INDEP/
 else ifeq ($(RTCONFIG_SOC_IPQ8074),y)
-	@$(if $(RTCONFIG_SPF8_QSDK),cp -f modules/ipq807x/* RC_INDEP/)				# SPF8
-	@$(if $(RTCONFIG_SPF11_QSDK),cp -f modules/ipq807x_spf11/* RC_INDEP/)			# SPF11.0
 	@$(if $(RTCONFIG_SPF11_1_QSDK),cp -f modules/ipq807x_spf11.1/* RC_INDEP/)		# SPF11.1
 	@$(if $(RTCONFIG_SPF11_4_QSDK),cp -f modules/ipq807x_spf11.4/* RC_INDEP/)		# SPF11.4
 else ifeq ($(RTCONFIG_SOC_IPQ40XX),y)

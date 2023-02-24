@@ -5,7 +5,8 @@
  * Copyright (C) 2006-2007 Fabian Hartmann, Noah Heusser
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -1410,7 +1411,7 @@ static void netlink_find_offload_feature(const char *ifname)
 		.cmd = ETHTOOL_GSSET_INFO,
 		.sset_mask = 1ULL << ETH_SS_FEATURES,
 	);
-	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
 	ifr.ifr_name[IFNAMSIZ-1] = '\0';
 	ifr.ifr_data = (void*)sset_info;
 
@@ -1426,7 +1427,7 @@ static void netlink_find_offload_feature(const char *ifname)
 		.cmd = ETHTOOL_GSTRINGS,
 		.string_set = ETH_SS_FEATURES,
 	);
-	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
 	ifr.ifr_name[IFNAMSIZ-1] = '\0';
 	ifr.ifr_data = (void*)cmd;
 
@@ -1485,7 +1486,7 @@ static bool netlink_detect_offload(const char *ifname)
 		.cmd = ETHTOOL_GFEATURES,
 		.size = netlink_hw_offload.total_blocks,
 	);
-	strncpy(ifr.ifr_name, ifname, IFNAMSIZ);
+	strncpy(ifr.ifr_name, ifname, IFNAMSIZ-1);
 	ifr.ifr_name[IFNAMSIZ-1] = '\0';
 	ifr.ifr_data = (void*)cmd;
 
@@ -1777,8 +1778,8 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 			}
 			algo->alg_key_len = data->enc_key.len * 8;
 			algo->alg_icv_len = icv_size;
-			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name));
-			algo->alg_name[sizeof(algo->alg_name) - 1] = '\0';
+			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name)-1);
+			algo->alg_name[sizeof(algo->alg_name)-1] = '\0';
 			memcpy(algo->alg_key, data->enc_key.ptr, data->enc_key.len);
 			break;
 		}
@@ -1804,8 +1805,8 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 				goto failed;
 			}
 			algo->alg_key_len = data->enc_key.len * 8;
-			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name));
-			algo->alg_name[sizeof(algo->alg_name) - 1] = '\0';
+			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name)-1);
+			algo->alg_name[sizeof(algo->alg_name)-1] = '\0';
 			memcpy(algo->alg_key, data->enc_key.ptr, data->enc_key.len);
 		}
 	}
@@ -1861,8 +1862,8 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 			}
 			algo->alg_key_len = data->int_key.len * 8;
 			algo->alg_trunc_len = trunc_len;
-			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name));
-			algo->alg_name[sizeof(algo->alg_name) - 1] = '\0';
+			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name)-1);
+			algo->alg_name[sizeof(algo->alg_name)-1] = '\0';
 			memcpy(algo->alg_key, data->int_key.ptr, data->int_key.len);
 		}
 		else
@@ -1876,8 +1877,8 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 				goto failed;
 			}
 			algo->alg_key_len = data->int_key.len * 8;
-			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name));
-			algo->alg_name[sizeof(algo->alg_name) - 1] = '\0';
+			strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name)-1);
+			algo->alg_name[sizeof(algo->alg_name)-1] = '\0';
 			memcpy(algo->alg_key, data->int_key.ptr, data->int_key.len);
 		}
 	}
@@ -1903,8 +1904,8 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 			goto failed;
 		}
 		algo->alg_key_len = 0;
-		strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name));
-		algo->alg_name[sizeof(algo->alg_name) - 1] = '\0';
+		strncpy(algo->alg_name, alg_name, sizeof(algo->alg_name)-1);
+		algo->alg_name[sizeof(algo->alg_name)-1] = '\0';
 	}
 
 	if (data->encap)
@@ -2059,7 +2060,7 @@ static void get_replay_state(private_kernel_netlink_ipsec_t *this,
 
 	memset(&request, 0, sizeof(request));
 
-	DBG2(DBG_KNL, "querying replay state from SAD entry with SPI %.8x",
+	DBG3(DBG_KNL, "querying replay state from SAD entry with SPI %.8x",
 		 ntohl(sa->spi));
 
 	hdr = &request.hdr;
@@ -2163,7 +2164,7 @@ METHOD(kernel_ipsec_t, query_sa, status_t,
 	memset(&request, 0, sizeof(request));
 	format_mark(markstr, sizeof(markstr), id->mark);
 
-	DBG2(DBG_KNL, "querying SAD entry with SPI %.8x%s", ntohl(id->spi),
+	DBG3(DBG_KNL, "querying SAD entry with SPI %.8x%s", ntohl(id->spi),
 		 markstr);
 
 	hdr = &request.hdr;
@@ -2352,7 +2353,7 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 	memset(&request, 0, sizeof(request));
 	format_mark(markstr, sizeof(markstr), id->mark);
 
-	DBG2(DBG_KNL, "querying SAD entry with SPI %.8x%s for update",
+	DBG3(DBG_KNL, "querying SAD entry with SPI %.8x%s for update",
 		 ntohl(id->spi), markstr);
 
 	/* query the existing SA first */
@@ -3046,7 +3047,7 @@ METHOD(kernel_ipsec_t, query_policy, status_t,
 	format_mark(markstr, sizeof(markstr), id->mark);
 	format_label(labelstr, sizeof(labelstr), id->label);
 
-	DBG2(DBG_KNL, "querying policy %R === %R %N%s%s", id->src_ts, id->dst_ts,
+	DBG3(DBG_KNL, "querying policy %R === %R %N%s%s", id->src_ts, id->dst_ts,
 		 policy_dir_names, id->dir, markstr, labelstr);
 
 	hdr = &request.hdr;

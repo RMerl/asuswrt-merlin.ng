@@ -197,7 +197,7 @@ extern int ntfs_inode_nidata_hash(const struct CACHED_GENERIC *item);
 
 
 extern ntfs_inode *ntfs_extent_inode_open(ntfs_inode *base_ni,
-		const MFT_REF mref);
+		const leMFT_REF mref);
 
 extern int ntfs_inode_attach_all_extents(ntfs_inode *ni);
 

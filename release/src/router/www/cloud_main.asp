@@ -62,7 +62,7 @@ var https_port = '<% nvram_get("webdav_https_port"); %>';
 if(tmo_support)
 	var theUrl = "cellspot.router"; 
 else
-	var theUrl = "router.asus.com";
+	var theUrl = "<#Web_DOMAIN_NAME#>";
 
 function initial(){
 	show_menu();
@@ -124,9 +124,9 @@ function initial(){
 
 			/*
 			if(https_port == 443)
-				document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://router.asus.com\" target=\"_blank\">https://router.asus.com</a>";
+				document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://<#Web_DOMAIN_NAME#>\" target=\"_blank\">https://<#Web_DOMAIN_NAME#></a>";
 			else{
-				document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://router.asus.com\" target=\"_blank\">https://router.asus.com</a>";
+				document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://<#Web_DOMAIN_NAME#>\" target=\"_blank\">https://<#Web_DOMAIN_NAME#></a>";
 				document.getElementById('cloud_url').href = "https://"+ theUrl +":" + https_port;
 				document.getElementById('cloud_url').innerHTML = "https://"+ theUrl +":" + https_port;
 			}
@@ -144,9 +144,9 @@ function initial(){
 			}
 			else{
 				if(https_port == 443) // if the port number of https is 443, hide it
-					document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://router.asus.com\" target=\"_blank\">https://router.asus.com</a>";
+					document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://<#Web_DOMAIN_NAME#>\" target=\"_blank\">https://<#Web_DOMAIN_NAME#></a>";
 				else{
-					document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://router.asus.com\" target=\"_blank\">https://router.asus.com</a>";
+					document.getElementById("accessMethod").innerHTML = "<#AiCloud_enter#> <a id=\"cloud_url\" style=\"font-weight: bolder;text-decoration: underline;\" href=\"https://<#Web_DOMAIN_NAME#>\" target=\"_blank\">https://<#Web_DOMAIN_NAME#></a>";
                                 	document.getElementById('cloud_url').href = "https://"+ theUrl +":" + https_port;
 	                                document.getElementById('cloud_url').innerHTML = "https://"+ theUrl +":" + https_port;
 				}	
@@ -344,7 +344,7 @@ function divdisplayctrl(flag1, flag2, flag3, flag4){
 	else if(flag4 != "none"){ // Have AiCloud 2.0 installed
 		document.getElementById("return_btn").style.display = "none";
 		//calHeight(1);
-		getStyleSheet('index_style', '.tab').style.display = "";
+		getStyleSheet('index_style', '.tab').style.display = "flex";
 	}
 	else{
 		document.getElementById("return_btn").style.display = "none";		

@@ -1,0 +1,4 @@
+moon:: cat /var/log/daemon.log::path length of 2 violates constraint of 1::YES
+carol::cat /var/log/daemon.log::received AUTHENTICATION_FAILED notify error::YES
+moon:: swanctl --list-sas --raw 2> /dev/null::duck.*state=ESTABLISHED.*child-sas.*duck.*state=INSTALLED::NO
+carol::swanctl --list-sas --raw 2> /dev/null::home.*state=ESTABLISHED.*child-sas.*duck.*state=INSTALLED::NO

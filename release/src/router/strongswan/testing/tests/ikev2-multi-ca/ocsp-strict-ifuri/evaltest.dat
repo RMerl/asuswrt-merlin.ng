@@ -1,0 +1,8 @@
+moon:: cat /var/log/daemon.log::authentication of.*carol.*successful::YES
+moon:: cat /var/log/daemon.log::libcurl request failed::YES
+moon:: cat /var/log/daemon.log::certificate status is not available::YES
+moon:: cat /var/log/daemon.log::constraint check failed: RULE_CRL_VALIDATION is FAILED, but requires at least SKIPPED::YES
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*alice.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[192.168.0.100/32] remote-ts=\[10.1.0.10/32]::YES
+moon:: swanctl --list-sas --raw 2> /dev/null::research.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=ECP_256.*child-sas.*alice.*state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128.*local-ts=\[10.1.0.10/32] remote-ts=\[192.168.0.100/32]::YES
+dave:: swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED.*child-sas.*venus.*state=INSTALLED::NO
+moon:: swanctl --list-sas --raw 2> /dev/null::sales.*version=2 state=ESTABLISHED.*remote-host=192.168.0.200 remote-port=4500 remote-id=dave@strongswan.org.*child-sas.*venus.*state=INSTALLED::NO

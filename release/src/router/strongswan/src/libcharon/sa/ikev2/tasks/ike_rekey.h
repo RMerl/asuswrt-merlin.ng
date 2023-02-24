@@ -1,7 +1,8 @@
 /*
- * Copyright (C) 2016 Tobias Brunner
+ * Copyright (C) 2016-2020 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -46,15 +47,17 @@ struct ike_rekey_t {
 	bool (*did_collide)(ike_rekey_t *this);
 
 	/**
-	 * Register a rekeying task which collides with this one.
+	 * Register a rekeying/delete task which collides with this one.
 	 *
 	 * If two peers initiate rekeying at the same time, the collision must
 	 * be handled gracefully. The task manager is aware of what exchanges
-	 * are going on and notifies the outgoing task by passing the incoming.
+	 * are going on and notifies the active task by passing the passive.
 	 *
-	 * @param other		incoming task
+	 * @param other		passive task
+	 * @return			whether the task was adopted and should be removed from
+	 *					the task manager's control
 	 */
-	void (*collide)(ike_rekey_t* this, task_t *other);
+	bool (*collide)(ike_rekey_t* this, task_t *other);
 };
 
 /**

@@ -50,6 +50,9 @@ var gradient_color_GT10 = {
 	"id10":{"color" :[128,0,10,128,0,50,60,0,100],"left":261},
 	"id11":{"color" :[128,0,10,128,0,40,128,0,100],"left":290}
 };
+var gradient_color_GT10_CB_5 = {
+	"id6": {"color" :[0,21,90,0,56,90,0,90,63],"left":145}
+}
 
 function retune_gradient_color(parm){
 	var gradient_color_temp = gradient_color;
@@ -70,6 +73,9 @@ function retune_gradient_color(parm){
 		}
 		else if(parm.productid == "GT10"){
 			gradient_color = gradient_color_GT10;
+			if(parm.CoBrand == "5"){
+				gradient_color = $.extend(gradient_color_GT10 , gradient_color_GT10_CB_5);
+			}
 		}
 		else{
 			$.each(gradient_color_temp, function(key, value) {
@@ -98,6 +104,9 @@ function retune_wave_color(parm){
 		if(parm.ledg_group == 5)
 			ledg_rgb = "128,70,0,128,70,0,128,70,0,128,70,0,128,70,0";
 	}
+	else if(parm.productid == "TUF-AX6000"){
+		ledg_rgb = "128,115,0,128,115,0,128,115,0,128,115,0";
+	}
 	else if(parm.productid == "GT-AX6000"){
 		if(parm.CoBrand == "3"){
 			ledg_rgb = "128,100,0,128,100,0,128,100,0";
@@ -110,6 +119,8 @@ function retune_wave_color(parm){
 	}
 	else if(parm.productid == "GT10"){
 		ledg_rgb = "128,0,10,128,0,40,128,0,100";
+		if(parm.CoBrand == "5")
+			ledg_rgb = "0,5,120,0,48,70,0,110,50";
 	}
 	else{
 		if(parm.CoBrand == "2"){

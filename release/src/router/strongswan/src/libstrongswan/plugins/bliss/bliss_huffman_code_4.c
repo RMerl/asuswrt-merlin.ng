@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Optimum Huffman code for BLISS-X signatures
  *

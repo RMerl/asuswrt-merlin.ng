@@ -7,12 +7,9 @@ include $(CLEAR_VARS)
 # possible executables are
 #   starter - allows to control and configure the daemon from the command line
 #   charon - the IKE daemon
-#   scepclient - SCEP client
 
-# if you enable starter or scepclient (see above) uncomment the proper
-# lines here
+# if you enable starter (see above) uncomment the following line
 # strongswan_BUILD_STARTER := true
-# strongswan_BUILD_SCEPCLIENT := true
 
 # this is the list of plugins that are built into libstrongswan and charon
 # also these plugins are loaded by default (if not changed in strongswan.conf)
@@ -20,17 +17,11 @@ strongswan_CHARON_PLUGINS := android-log openssl fips-prf random nonce pubkey \
 	pkcs1 pkcs8 pem xcbc hmac kdf kernel-netlink socket-default android-dns \
 	stroke eap-identity eap-mschapv2 eap-md5 eap-gtc
 
-ifneq ($(strongswan_BUILD_SCEPCLIENT),)
-# plugins loaded by scepclient
-strongswan_SCEPCLIENT_PLUGINS := openssl curl fips-prf random pkcs1 pkcs7 pem
-endif
-
 strongswan_STARTER_PLUGINS := kernel-netlink
 
 # list of all plugins - used to enable them with the function below
 strongswan_PLUGINS := $(sort $(strongswan_CHARON_PLUGINS) \
-	$(strongswan_STARTER_PLUGINS) \
-	$(strongswan_SCEPCLIENT_PLUGINS))
+	$(strongswan_STARTER_PLUGINS))
 
 include $(LOCAL_PATH)/Android.common.mk
 
@@ -104,11 +95,6 @@ strongswan_BUILD += \
 	starter \
 	stroke \
 	ipsec
-endif
-
-ifneq ($(strongswan_BUILD_SCEPCLIENT),)
-strongswan_BUILD += \
-	scepclient
 endif
 
 include $(addprefix $(LOCAL_PATH)/src/,$(addsuffix /Android.mk, \

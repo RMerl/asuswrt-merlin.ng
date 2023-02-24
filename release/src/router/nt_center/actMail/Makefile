@@ -20,6 +20,11 @@ LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 #LDFLAGS += -L$(TOP)/nvram$(BCMEX)$(EX7) -lnvram
 LIBS = -lpthread -lgcc_s
 
+ifeq ($(or $(RTCONFIG_DMALLOC),$(DMALLOC)),y)
+CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
+LDFLAGS += -L$(STAGEDIR)/usr/lib -ldmalloc
+endif
+
 ifeq ($(wildcard $(SRCBASE)/router/nt_center/actMail/*.c),)
 all: 
 	-cp -f prebuild/$(BUILD_NAME)/nt_actMail nt_actMail

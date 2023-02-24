@@ -4,6 +4,7 @@
  * Copyright (c) 2000-2004 Anton Altaparmakov
  * Copyright (c) 2004-2005 Yura Pakhuchiy
  * Copyright (c) 2006-2007 Szabolcs Szakacsits
+ * Copyright (c) 2010      Jean-Pierre Andre
  *
  * This program/include file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published
@@ -56,6 +57,13 @@ typedef enum {
 	LCN_EINVAL		= -4,
 	LCN_EIO			= -5,
 } ntfs_lcn_special_values;
+
+typedef enum {			/* ways of processing holes when expanding */
+	HOLES_NO,
+	HOLES_OK,
+	HOLES_DELAY,
+	HOLES_NONRES
+} hole_type;
 
 /**
  * struct ntfs_attr_search_ctx - search context used in attribute search functions
@@ -201,7 +209,9 @@ typedef enum {
 	NA_NonResident,		/* 1: Attribute is not resident. */
 	NA_BeingNonResident,	/* 1: Attribute is being made not resident. */
 	NA_FullyMapped,		/* 1: Attribute has been fully mapped */
+	NA_DataAppending,	/* 1: Attribute is being appended to */
 	NA_ComprClosing,	/* 1: Compressed attribute is being closed */
+	NA_RunlistDirty,	/* 1: Runlist has been updated */
 } ntfs_attr_state_bits;
 
 #define  test_nattr_flag(na, flag)	 test_bit(NA_##flag, (na)->state)
@@ -223,6 +233,14 @@ typedef enum {
 #define NAttrFullyMapped(na)		test_nattr_flag(na, FullyMapped)
 #define NAttrSetFullyMapped(na)		set_nattr_flag(na, FullyMapped)
 #define NAttrClearFullyMapped(na)	clear_nattr_flag(na, FullyMapped)
+
+#define NAttrDataAppending(na)		test_nattr_flag(na, DataAppending)
+#define NAttrSetDataAppending(na)	set_nattr_flag(na, DataAppending)
+#define NAttrClearDataAppending(na)	clear_nattr_flag(na, DataAppending)
+
+#define NAttrRunlistDirty(na)		test_nattr_flag(na, RunlistDirty)
+#define NAttrSetRunlistDirty(na)	set_nattr_flag(na, RunlistDirty)
+#define NAttrClearRunlistDirty(na)	clear_nattr_flag(na, RunlistDirty)
 
 #define NAttrComprClosing(na)		test_nattr_flag(na, ComprClosing)
 #define NAttrSetComprClosing(na)	set_nattr_flag(na, ComprClosing)
@@ -308,17 +326,18 @@ int ntfs_attr_force_non_resident(ntfs_attr *na);
 extern int ntfs_make_room_for_attr(MFT_RECORD *m, u8 *pos, u32 size);
 
 extern int ntfs_resident_attr_record_add(ntfs_inode *ni, ATTR_TYPES type,
-		ntfschar *name, u8 name_len, u8 *val, u32 size,
+		const ntfschar *name, u8 name_len, const u8 *val, u32 size,
 		ATTR_FLAGS flags);
 extern int ntfs_non_resident_attr_record_add(ntfs_inode *ni, ATTR_TYPES type,
-		ntfschar *name, u8 name_len, VCN lowest_vcn, int dataruns_size,
-		ATTR_FLAGS flags);
+		const ntfschar *name, u8 name_len, VCN lowest_vcn,
+		int dataruns_size, ATTR_FLAGS flags);
 extern int ntfs_attr_record_rm(ntfs_attr_search_ctx *ctx);
 
 extern int ntfs_attr_add(ntfs_inode *ni, ATTR_TYPES type,
-		ntfschar *name, u8 name_len, u8 *val, s64 size);
+		ntfschar *name, u8 name_len, const u8 *val, s64 size);
 extern int ntfs_attr_set_flags(ntfs_inode *ni, ATTR_TYPES type,
-		ntfschar *name, u8 name_len, ATTR_FLAGS flags, ATTR_FLAGS mask);
+		const ntfschar *name, u8 name_len, ATTR_FLAGS flags,
+		ATTR_FLAGS mask);
 extern int ntfs_attr_rm(ntfs_attr *na);
 
 extern int ntfs_attr_record_resize(MFT_RECORD *m, ATTR_RECORD *a, u32 new_size);
@@ -332,6 +351,7 @@ extern int ntfs_attr_record_move_away(ntfs_attr_search_ctx *ctx, int extra);
 extern int ntfs_attr_update_mapping_pairs(ntfs_attr *na, VCN from_vcn);
 
 extern int ntfs_attr_truncate(ntfs_attr *na, const s64 newsize);
+extern int ntfs_attr_truncate_solid(ntfs_attr *na, const s64 newsize);
 
 /**
  * get_attribute_value_length - return the length of the value of an attribute
@@ -366,10 +386,19 @@ extern s64 ntfs_get_attribute_value(const ntfs_volume *vol,
 extern void  ntfs_attr_name_free(char **name);
 extern char *ntfs_attr_name_get(const ntfschar *uname, const int uname_len);
 extern int   ntfs_attr_exist(ntfs_inode *ni, const ATTR_TYPES type,
-			     ntfschar *name, u32 name_len);
+		const ntfschar *name, u32 name_len);
 extern int   ntfs_attr_remove(ntfs_inode *ni, const ATTR_TYPES type,
 			      ntfschar *name, u32 name_len);
 extern s64   ntfs_attr_get_free_bits(ntfs_attr *na);
+extern int ntfs_attr_data_read(ntfs_inode *ni,
+		ntfschar *stream_name, int stream_name_len,
+		char *buf, size_t size, off_t offset);
+extern int ntfs_attr_data_write(ntfs_inode *ni,
+		ntfschar *stream_name, int stream_name_len,
+		const char *buf, size_t size, off_t offset);
+extern int ntfs_attr_shrink_size(ntfs_inode *ni, ntfschar *stream_name,
+		int stream_name_len, off_t offset);
+extern int ntfs_attr_inconsistent(const ATTR_RECORD *a, const MFT_REF mref);
 
 #endif /* defined _NTFS_ATTRIB_H */
 

@@ -1,4 +1,0 @@
-The roadwarrior <b>carol</b> possesses a certificate issued by the Research CA.
-The certificate of the Research CA has been revoked by the Root CA by entering
-the serial number in the CRL. Therefore upon verification of the trust path
-the gateway <b>moon</b> will reject the roadwarrior's certificate  

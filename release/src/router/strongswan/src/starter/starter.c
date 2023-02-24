@@ -66,7 +66,7 @@ static bool log_to_syslog = TRUE;
 static level_t current_loglevel = 1;
 
 /**
- * logging function for scepclient
+ * logging function for starter
  */
 static void starter_dbg(debug_t group, level_t level, char *fmt, ...)
 {
@@ -471,7 +471,7 @@ int main (int argc, char **argv)
 		{
 			DBG1(DBG_APP, "!! Your strongswan.conf contains manual plugin load options for charon.");
 			DBG1(DBG_APP, "!! This is recommended for experts only, see");
-			DBG1(DBG_APP, "!! http://wiki.strongswan.org/projects/strongswan/wiki/PluginLoad");
+			DBG1(DBG_APP, "!! https://docs.strongswan.org/docs/5.9/plugins/pluginLoad.html");
 		}
 	}
 

@@ -74,7 +74,7 @@ function initial(){
 	bootinterval = setInterval(showbootTime, 1000);
 	showDST();
 	document.getElementById('textarea').scrollTop = 9999999;//make Scroll_y bottom
-	setTimeout("get_log_data();", 100);
+	setTimeout(get_log_data, 100);
 }
 
 function applySettings(){
@@ -121,11 +121,11 @@ var filter = [
     "already exist in UDB, can't add it", 
     "not mesh client, can't update it's ip",
     "not exist in UDB, can't update it",
-    "send_redir_page",
+    "send_redir_page"
 ]
 
 $.getJSON("/ajax/logFilter.json", function(data){
-	filter = data.filter;
+	filter = filter.concat(data.filter);
 })
 
 var height = 0;
@@ -135,7 +135,7 @@ function get_log_data(){
 		url: '/appGet.cgi?hook=nvram_dump(\"syslog.log\",\"syslog.sh\")',
 		dataType: 'text',
 		error: function(xhr){
-      		setTimeout("get_log_data();", 1000);
+      		setTimeout(get_log_data, 1000);
 		},
 		success: function(response){
 			var logString = htmlEnDeCode.htmlEncode(response.toString().slice(26,-4));
@@ -144,13 +144,11 @@ function get_log_data(){
 			if((document.getElementById("auto_refresh").checked) && !(height > 0 && h < height)){
 				var _string = logString.split('\n');
 				for(var i=0;i<_string.length;i++){
+					var found = filter.find(function(e){
+						return (_string[i].indexOf(e) != -1)
+					});
 
-					if((_string[i].indexOf(filter[0]) != -1)
-					|| (_string[i].indexOf(filter[1]) != -1)
-					|| (_string[i].indexOf(filter[2]) != -1)){
-						continue;						
-					}
-					else{
+					if(!found){
 						_log += _string[i] + '\n';
 					}
 				}
@@ -159,7 +157,8 @@ function get_log_data(){
 				$("#textarea").animate({ scrollTop: 9999999 }, "slow");
 				setTimeout('height = $("#textarea").scrollTop();', 500);
 			}
-			setTimeout("get_log_data();", 5000);
+
+			setTimeout(get_log_data, 3000);
 		}
    });
 }

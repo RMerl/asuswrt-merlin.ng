@@ -1987,7 +1987,6 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 
 			foreach(word, nvram_safe_get("bond_wan_ifnames"), next) {
 				link_wan_nvname(bond_unit, wired_link_nvram, sizeof(wired_link_nvram));
-
 				link = hnd_get_phy_status(word);
 				if(nvram_get_int(wired_link_nvram) != link)
 					nvram_set_int(wired_link_nvram, link);

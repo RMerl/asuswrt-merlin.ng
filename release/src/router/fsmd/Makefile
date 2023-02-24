@@ -30,7 +30,7 @@ else
 all: fsmd req_fsm
 endif
 
-fsmd: fsmd.o jffs.o
+fsmd: fsmd.o jffs.o tmpfs.o
 	@$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 req_fsm: req_fsm.o

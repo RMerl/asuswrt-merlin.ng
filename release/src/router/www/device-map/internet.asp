@@ -353,6 +353,9 @@ function update_connection_type(dualwan_unit){
 		wanlink_type_conv = "MAP-E";
 	else if(wanlink_type_conv == "v6plus")
 		wanlink_type_conv = "<#IPv6_plus#>";
+	else if(wanlink_type_conv == "ocnvc")
+		wanlink_type_conv = "<#IPv6_ocnvc#>";
+ 
 
 	showtext($("#connectionType")[0], wanlink_type_conv);
 }

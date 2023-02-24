@@ -212,7 +212,7 @@
                   0x03       "msSGC"
                   0x04       "msEncryptingFileSystem"
               0x14           "msEnrollmentInfrastructure"
-                0x02         "msCertificateTypeExtension"
+                0x02         "msCertTypeExtension"		OID_MS_CERT_TYPE_EXT
                   0x02       "msSmartcardLogon"			OID_MS_SMARTCARD_LOGON
                   0x03       "msUPN"					OID_USER_PRINCIPAL_NAME
               0x15           "msCertSrvInfrastructure"

@@ -10,7 +10,7 @@ Gem::Specification.new do |s|
     script automated tasks in a reliable way.
   }
   s.summary       = "Native Ruby interface for strongSwan VICI"
-  s.homepage      = "https://wiki.strongswan.org/projects/strongswan/wiki/Vici"
+  s.homepage      = "https://docs.strongswan.org/docs/5.9/plugins/vici.html"
   s.license       = "MIT"
   s.files         = "lib/vici.rb"
 end

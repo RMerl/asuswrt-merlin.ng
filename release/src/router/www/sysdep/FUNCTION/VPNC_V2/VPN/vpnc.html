@@ -13,22 +13,21 @@
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script>
+var getUrlParameter = function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
+
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+		}
+	}
+	return "";
+};
 $(function () {
 	$('link[group="extend_css"]').remove();
-	var getUrlParameter = function getUrlParameter(param){
-		var url_parm = window.location.search.substring(1);
-		var parm_array = url_parm.split("&");
-		var key_value;
-
-		for(var i = 0; i < parm_array.length; i += 1){
-			key_value = parm_array[i].split("=");
-			if (key_value[0] == param) {
-				return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
-			}
-		}
-		return "";
-	};
-
 	var theme = getUrlParameter("current_theme").toLocaleUpperCase();
 	if(theme == "WHITE" || theme == "GT" || theme == "TUF"){
 		$('link').last().after('<link group="extend_css" rel="stylesheet" type="text/css" href="/VPN/vpnc' + theme + '.css">');
@@ -43,7 +42,7 @@ $(function () {
 		}
 	}
 });
-var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=132";
+var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=167";
 var switch_time = 0;
 var selected_profile_idx = "";
 var client_upload_icon = new Array();
@@ -60,6 +59,7 @@ if(support_WG){
 	var wg_max = 5;
 	var wg_unit_edit = 5;
 }
+var support_ig_s2s = (!isSupport("mtlancfg") && isSupport("ig_site2site"));
 var vpnc_clientlist_json = [];
 var vpnc_dev_policy_list_json = [];
 var dhcp_staticlist_json = [];
@@ -146,6 +146,11 @@ var vpnc_profile_attr = function(){
 	this.vpnc_idx = 0;
 	this.default_wan_support = false;
 	this.default_wan_selected = false;
+	this.region = "";
+	this.conntype = "";
+	this.tunnel = 0;
+	this.wan_idx = 0;
+	this.caller = "Web";
 };
 var vpnc_dev_policy_attr = function(){
 	this.activate = false;
@@ -155,6 +160,7 @@ var vpnc_dev_policy_attr = function(){
 	this.vpnc_idx = "";
 	this.dns = "";
 	this.hostname = "";
+	this.brifname = "";
 };
 function show_popup(_type){
 	$(".popup_element").css("display", "flex");
@@ -186,7 +192,9 @@ function show_popup_second(_type){
 		$(".popup_container.popup_element_second").append(Get_Component_Del_Profile());
 		if($(".popup_container.popup_element").css("display") == "flex"){
 			$(".popup_container.popup_element").addClass("blur_effect");
-			var profile_setting_height = parseInt($(".popup_container.popup_element").find(".profile_setting").css("height")) + 40;
+			var profile_setting_height = parseInt($(".popup_container.popup_element").find(".profile_setting").css("height"));
+			if(profile_setting_height > 1000)
+				profile_setting_height = profile_setting_height / 2;
 			$(".popup_container.popup_element_second").css("height", profile_setting_height);
 		}
 	}
@@ -282,11 +290,18 @@ function Get_Component_Svr_Item(_profile_data){
 	if((specific_data.idx).toString() == selected_profile_idx)
 		$svr_item_container.addClass("selected");
 	if(isSupport("vpn_fusion")){
-		if(_profile_data.default_wan_selected == true)
+		var $item_tag_cntr = $("<div>").addClass("item_tag_container").appendTo($svr_item_container);
+		if(_profile_data.default_wan_selected == true){
 			$svr_item_container.addClass("default_wan_selected");
-
-		var $default_wan_tag = $("<div>").addClass("default_wan_tag").appendTo($svr_item_container);
-		$default_wan_tag.html("<div>Default Connection</div>");
+			$("<div>").addClass("item_tag VPN").html("Default Connection").appendTo($item_tag_cntr);/* untranslated */
+		}
+		if(support_ig_s2s){
+			var specific_vpnc_data = vpnc_dev_policy_list_json.filter(function(item, index, array){
+				return ((item.brifname == "br1" || item.brifname == "br2") && item.vpnc_idx == specific_data.vpnc_idx);
+			});
+			if(specific_vpnc_data.length > 0)
+				$("<div>").addClass("item_tag VPN").html("VPN WiFi").appendTo($item_tag_cntr);/* untranslated */
+		}
 	}
 
 	var $svr_item_text_container = $("<div>").addClass("svr_item_text_container");
@@ -583,12 +598,12 @@ function Get_Component_Internet_Item(){
 	if("-1" == selected_profile_idx)
 		$svr_item_container.addClass("selected");
 	if(isSupport("vpn_fusion")){
+		var $item_tag_cntr = $("<div>").addClass("item_tag_container").appendTo($svr_item_container);
 		var vpnc_default_wan = httpApi.nvramGet(["vpnc_default_wan"]).vpnc_default_wan;
-		if(vpnc_default_wan == "0")
+		if(vpnc_default_wan == "0"){
 			$svr_item_container.addClass("default_wan_selected");
-
-		var $default_wan_tag = $("<div>").addClass("default_wan_tag").appendTo($svr_item_container);
-		$default_wan_tag.html("<div>Default Connection</div>");
+			$("<div>").addClass("item_tag VPN").html("Default Connection").appendTo($item_tag_cntr);/* untranslated */
+		}
 	}
 	$svr_item_container.unbind("click").click(function(e){
 		e = e || event;
@@ -823,6 +838,8 @@ function Get_Component_Internet_Info(_type){
 			var specific_data = vpnc_dev_policy_list_json.filter(function(vpnc_item){
 				return (vpnc_item.mac == item.mac);
 			})[0];
+			if(specific_data.brifname != undefined && (specific_data.brifname == "br1" || specific_data.brifname == "br2"))
+				return true;
 			$client_list_content_container.append(Get_Component_Client_List_Item(specific_data, "switch").component);
 		}
 	});
@@ -1033,7 +1050,7 @@ function Get_Component_Setting_Profile(_type){
 		var wgc_psk_parm = {"title":"<#vpn_ipsec_PreShared_Key#> (option)", "type":"text", "id":"wgc_psk", "need_check":false, "show_item":["wireguard"], "maxlength":63};
 		$peer_content_container.append(Get_Component_Input(wgc_psk_parm));
 
-		var wgc_aips_parm = {"title":"Allowed IPs", "type":"text", "id":"wgc_aips", "need_check":true, "show_item":["wireguard"], "maxlength":1023};/* untranslated */
+		var wgc_aips_parm = {"title":"Allowed IPs", "type":"text", "id":"wgc_aips", "need_check":true, "show_item":["wireguard"], "maxlength":4095};/* untranslated */
 		$peer_content_container.append(Get_Component_Input(wgc_aips_parm));
 
 		var wgc_ep_addr_parm = {"title":"Endpoint Address", "type":"text", "id":"wgc_ep_addr", "need_check":true, "show_item":["wireguard"], "maxlength":63};/* untranslated */
@@ -1047,6 +1064,29 @@ function Get_Component_Setting_Profile(_type){
 	}
 
 	if(isSupport("vpn_fusion")){
+		if(support_ig_s2s){
+			var wl_gn_2g = "wl" +  get_wl_unit_by_band("2G") + ".1_ssid";
+			var wl_gn_5g = "wl" +  get_wl_unit_by_band("5G") + ".1_ssid";
+			var wl_gn_ssid = httpApi.nvramCharToAscii([wl_gn_2g, wl_gn_5g]);
+			var wifi_band_options = [
+				{"text":"2.4GHz / 5GHz","value":"3"},
+				{"text":"2.4GHz","value":"1"},
+				{"text":"5GHz","value":"2"},
+				{"text":"<#wl_securitylevel_0#>","value":"0"}
+			];
+			var wifi_band_options_parm = {"title": "<#TBVLAN_WirelessInf#>", "id": "ig_s2s_wl_interface", "options": wifi_band_options, "set_value": "0"};
+			Get_Component_Custom_Select(wifi_band_options_parm).appendTo($content_container)
+				.find("#select_" + wifi_band_options_parm.id + "").children("div").click(function(e){
+					var $hint_obj = $(this).closest(".profile_setting").find("[data-component=ig_s2s_wl_interface_hint]").empty();
+					var options = parseInt($(this).attr("value"));
+					if(options & 1)
+						$("<div>").addClass("item_hint").html("2.4 GHz : " + htmlEnDeCode.htmlEncode(decodeURIComponent(wl_gn_ssid[wl_gn_2g]))).appendTo($hint_obj);
+					if(options & 2)
+						$("<div>").addClass("item_hint").html("5 GHz : " + htmlEnDeCode.htmlEncode(decodeURIComponent(wl_gn_ssid[wl_gn_5g]))).appendTo($hint_obj);
+					resize_iframe_height();
+				});
+			$("<div>").attr({"data-component":"ig_s2s_wl_interface_hint"}).appendTo($content_container);
+		}
 		$content_container.append(Get_Component_Default_Connection());
 		$content_container.append(Get_Component_Client_List_Title());
 		$content_container.append($("<div>").addClass("client_list_content_container"));
@@ -1207,6 +1247,8 @@ function Get_Component_Setting_Client_Policy(){
 	})
 
 	$.each(clientList, function(index, item) {
+		if(item == "")
+			return true;
 		var clientObj = clientList[item];
 		if(clientObj.amesh_isRe)
 			return true;
@@ -1268,11 +1310,15 @@ function Get_Component_Setting_Client_Policy(){
 		var vpnc_dev_policy_list_tmp = [];
 		$.each(vpnc_dev_policy_list_json, function(index, vpnc_item){
 			if(vpnc_item.vpnc_idx == edit_client_policy_parm.vpnc_idx){
-				var specific_client = selected_vpnc_policy_list.filter(function(client){
-					return (client.ip == vpnc_item.ip);
-				})[0];
-				if(specific_client != undefined){
+				if(vpnc_item.brifname != undefined && (vpnc_item.brifname == "br1" || vpnc_item.brifname == "br2"))
 					vpnc_dev_policy_list_tmp.push(JSON.parse(JSON.stringify(vpnc_item)));
+				else{
+					var specific_client = selected_vpnc_policy_list.filter(function(client){
+						return (client.ip == vpnc_item.ip);
+					})[0];
+					if(specific_client != undefined){
+						vpnc_dev_policy_list_tmp.push(JSON.parse(JSON.stringify(vpnc_item)));
+					}
 				}
 			}
 			else{
@@ -1293,6 +1339,8 @@ function Get_Component_Setting_Client_Policy(){
 				var specific_data = vpnc_dev_policy_list_json.filter(function(vpnc_item){
 					return (vpnc_item.mac == item.mac);
 				})[0];
+				if(specific_data.brifname != undefined && (specific_data.brifname == "br1" || specific_data.brifname == "br2"))
+					return true;
 				$edit_profile_container.find(".client_list_content_container").append(Get_Component_Client_List_Item(specific_data, "switch").component);
 			}
 		});
@@ -1437,6 +1485,10 @@ function Get_Component_Custom_Select(_parm){
 	$custom_select_container.unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
+		if(_parm.options.length == 0)
+			return;
+		if($(this).attr("temp_disable") == "disabled")
+			return;
 		$(this).toggleClass("arrow_up");
 		$(this).children(".select_options_container").toggleClass("container_hide");
 	});
@@ -1738,6 +1790,8 @@ function Get_Component_Switch(_parm) {
 	var $switch_icon = $("<div>").attr("id", _parm.id).addClass("switch on").appendTo($input_container).unbind("click").click(function(e){
 		e = e || event;
 		e.stopPropagation();
+		if($(this).attr("temp_disable") == "disabled")
+			return;
 		$(this).toggleClass("off on");
 	});
 
@@ -1911,13 +1965,12 @@ function check_profile_status(){
 									connect_status_text = "<#usb_initializing#>";
 									break;
 								case "1" :
+								case "7" :
 									connect_error_text = "<#vpn_openvpn_conflict#>";
 									break;
 								case "2" :
 									connect_error_text = "<#qis_fail_desc1#>";
 									break;
-								default :
-									connect_status_text = "<#Adaptive_Others#>";
 							}
 							break;
 						case "1" :
@@ -2123,9 +2176,7 @@ function show_vpnc_clientlist(){
 }
 function set_profile_data(_obj, _data){
 	var $conn_name = $(_obj).find("#vpnc_des_edit");
-	var $vpn_type = $(_obj).find("#vpn_type");
 	var $select_vpn_type = $(_obj).find("#select_vpn_type");
-	var $pptp_options = $(_obj).find("#pptp_options");
 	var $select_pptp_options = $(_obj).find("#select_pptp_options");
 	var $vpn_svr = $(_obj).find("#vpnc_svr_edit");
 	var $vpn_username = $(_obj).find("#vpnc_account_edit");
@@ -2233,15 +2284,8 @@ function set_profile_data(_obj, _data){
 			$(_obj).find("#vpnc_default_wan").closest(".profile_setting_item").remove();
 	}
 
-	$select_vpn_type.children().removeClass("selected");
-	$select_vpn_type.children("[value='" + vpn_proto + "']").addClass("selected");
-	var select_vpn_type_txt = $select_vpn_type.children(".selected").html();
-	$vpn_type.html(htmlEnDeCode.htmlEncode(select_vpn_type_txt));
-
-	$select_pptp_options.children().removeClass("selected");
-	$select_pptp_options.children("[value='" + vpn_pptp_options + "']").addClass("selected");
-	var select_pptp_options_txt = $select_pptp_options.children(".selected").html();
-	$pptp_options.html(htmlEnDeCode.htmlEncode(select_pptp_options_txt));
+	set_value_Custom_Select(_obj, "vpn_type", vpn_proto);
+	set_value_Custom_Select(_obj, "pptp_options", vpn_pptp_options);
 
 	vpn_type_change_control(_obj.find(".profile_setting"), vpn_proto);
 
@@ -2259,6 +2303,8 @@ function set_profile_data(_obj, _data){
 					var specific_data = vpnc_dev_policy_list_json.filter(function(vpnc_item){
 						return (vpnc_item.mac == item.mac);
 					})[0];
+					if(specific_data.brifname != undefined && (specific_data.brifname == "br1" || specific_data.brifname == "br2"))
+						return true;
 					_obj.find(".client_list_content_container").append(Get_Component_Client_List_Item(specific_data, "switch").component);
 				}
 			});
@@ -2274,6 +2320,41 @@ function set_profile_data(_obj, _data){
 			vpnc_idx = httpApi.hookGet("get_new_vpnc_index", true).toString();
 		}
 		$(_obj).find(".popup_edit_profile_container").attr("vpnc_idx", vpnc_idx);
+	}
+
+	if(support_ig_s2s){
+		var $hint_obj = $(_obj).find("[data-component=ig_s2s_wl_interface_hint]").empty();
+		var selected_brifname = vpnc_dev_policy_list_json.filter(function(item, index, array){
+			return ((item.brifname == "br1" || item.brifname == "br2"));
+		});
+		var wl_gn_2g = "wl" +  get_wl_unit_by_band("2G") + ".1_ssid";
+		var wl_gn_5g = "wl" +  get_wl_unit_by_band("5G") + ".1_ssid";
+		var wl_gn_ssid = httpApi.nvramGet([wl_gn_2g, wl_gn_5g]);
+		var $ig_s2s_wl_interface_obj = $(_obj).find("#ig_s2s_wl_interface").closest(".profile_setting_item");
+		if(selected_brifname.length > 0){
+			if(selected_brifname[0].vpnc_idx == _data.vpnc_idx){
+				var wl_option = 0;
+				$.each(selected_brifname, function(index, item){
+					if(item.brifname == "br1"){
+						wl_option += 1;
+						$("<div>").addClass("item_hint").html("2.4 GHz : " + wl_gn_ssid[wl_gn_2g]).appendTo($hint_obj);
+					}
+					else if(item.brifname == "br2"){
+						wl_option += 2;
+						$("<div>").addClass("item_hint").html("5 GHz : " + wl_gn_ssid[wl_gn_5g]).appendTo($hint_obj);
+					}
+				});
+				set_value_Custom_Select($(_obj), "ig_s2s_wl_interface", wl_option);
+			}
+			else{
+				$(_obj).find("#ig_s2s_wl_interface").closest(".custom_select_container").attr("temp_disable", "disabled").addClass("no_arrow");
+				$("<div>").addClass("item_hint").html("* VPN WiFi already in use.").appendTo($hint_obj);/* untranslated */
+				set_value_Custom_Select($(_obj), "ig_s2s_wl_interface", "0");
+			}
+		}
+		else{
+			set_value_Custom_Select($(_obj), "ig_s2s_wl_interface", "0");
+		}
 	}
 }
 function set_apply_btn_status(_obj, _data){
@@ -2302,6 +2383,7 @@ function set_apply_btn_status(_obj, _data){
 		var $valid_password = $(_obj).find("#vpnc_pwd_edit");
 		var vpn_proto = $(_obj).find("#select_vpn_type").children(".selected").html();
 		var pptp_option = $(_obj).find("#select_pptp_options").children(".selected").attr("value");
+		var vpnc_idx = "0";
 
 		if((vpn_proto == "OpenVPN") && _data == "new")
 			$valid_server.val(vpnc_openvpn_unit_edit);
@@ -2343,6 +2425,7 @@ function set_apply_btn_status(_obj, _data){
 							vpnc_profile.activate = "0";
 						vpnc_profile.vpnc_idx = httpApi.hookGet("get_new_vpnc_index", true);
 					}
+					vpnc_idx = vpnc_profile.vpnc_idx;
 					vpnc_clientlist_json.push(JSON.parse(JSON.stringify(vpnc_profile)));
 				}
 				else{
@@ -2359,6 +2442,7 @@ function set_apply_btn_status(_obj, _data){
 					else
 						specific_data.pptp_options = pptp_option;
 
+					vpnc_idx = specific_data.vpnc_idx;
 					if(specific_data.activate){
 						nvramSet_obj.rc_service = "restart_vpncall";
 						nvramSet_obj.vpnc_proto = vpn_proto.toLowerCase();
@@ -2405,7 +2489,37 @@ function set_apply_btn_status(_obj, _data){
 							rc_service += "restart_default_wan;";
 						}
 					}
-
+					if(support_ig_s2s){
+						var specific_vpnc_data = vpnc_dev_policy_list_json.filter(function(item, index, array){
+							return ((item.brifname == "br1" || item.brifname == "br2"));
+						});
+						var handle_brifname = false;
+						if(specific_vpnc_data.length > 0){
+							if(specific_vpnc_data[0].vpnc_idx == vpnc_idx)
+								handle_brifname = true;
+						}
+						else{
+							handle_brifname = true;
+						}
+						if(handle_brifname){
+							vpnc_dev_policy_list_json = vpnc_dev_policy_list_json.filter(item => !(item.brifname == "br1" || item.brifname == "br2"));
+							var ig_s2s_wl_interface_option = $(_obj).find("#select_ig_s2s_wl_interface").children(".selected").attr("value");
+							if(ig_s2s_wl_interface_option & 1){
+								var vpnc_dev_policy = new vpnc_dev_policy_attr();
+								vpnc_dev_policy.activate = "1";
+								vpnc_dev_policy.vpnc_idx = vpnc_idx;
+								vpnc_dev_policy.brifname = "br1";
+								vpnc_dev_policy_list_json.push(JSON.parse(JSON.stringify(vpnc_dev_policy)));
+							}
+							if(ig_s2s_wl_interface_option & 2){
+								var vpnc_dev_policy = new vpnc_dev_policy_attr();
+								vpnc_dev_policy.activate = "1";
+								vpnc_dev_policy.vpnc_idx = vpnc_idx;
+								vpnc_dev_policy.brifname = "br2";
+								vpnc_dev_policy_list_json.push(JSON.parse(JSON.stringify(vpnc_dev_policy)));
+							}
+						}
+					}
 					var vpnc_dev_policy_str = parse_JSONToStr_vpnc_dev_policy_list();
 					if(vpnc_dev_policy_str.vpnc_dev_policy_list != vpnc_dev_policy_ori_data.vpnc_dev_policy_list){
 						if(!(rc_service.indexOf("restart_vpnc") >= 0)){
@@ -2768,6 +2882,9 @@ function update_vpnc_clientlist_json(){
 				vpnc_profile.default_wan_support = vpnc_default_wan_parm["prof_list"][vpnc_profile.vpnc_idx];
 				vpnc_profile.default_wan_selected = ((vpnc_profile.vpnc_idx == vpnc_default_wan_parm["default_wan"]) ? true : false);
 			}
+			vpnc_profile.tunnel = ((profile_data[9] == undefined) ? 0 : profile_data[9]);
+			vpnc_profile.wan_idx = ((profile_data[10] == undefined) ? 0 : profile_data[10]);
+			vpnc_profile.caller = ((profile_data[11] == undefined) ? "Web" : profile_data[11]);
 			vpnc_clientlist_json.push(JSON.parse(JSON.stringify(vpnc_profile)));
 			profile_count++;
 		}
@@ -2798,16 +2915,19 @@ function update_vpnc_dev_policy_list_json(){
 	$.each(each_profile, function(index, value){
 		if(value != ""){
 			var profile_data = value.split(">");
-			if(profile_data.length == 4){
-				if(dhcp_staticlist_json[profile_data[1]] != undefined){
+			if(profile_data.length >= 4){
+				if((dhcp_staticlist_json[profile_data[1]] != undefined) || (profile_data[4] == "br1" || profile_data[4] == "br2")){
 					var vpnc_dev_policy = new vpnc_dev_policy_attr();
 					vpnc_dev_policy.activate = profile_data[0];
 					vpnc_dev_policy.ip = profile_data[1];
 					vpnc_dev_policy.dest_ip = profile_data[2];
 					vpnc_dev_policy.vpnc_idx = profile_data[3];
-					vpnc_dev_policy.mac = dhcp_staticlist_json[profile_data[1]].mac;
-					vpnc_dev_policy.dns = dhcp_staticlist_json[profile_data[1]].dns;
-					vpnc_dev_policy.hostname = dhcp_staticlist_json[profile_data[1]].hostname;
+					vpnc_dev_policy.brifname = ((profile_data[4] == undefined) ? "" : profile_data[4]);
+					if(profile_data[1] != ""){
+						vpnc_dev_policy.mac = dhcp_staticlist_json[profile_data[1]].mac;
+						vpnc_dev_policy.dns = dhcp_staticlist_json[profile_data[1]].dns;
+						vpnc_dev_policy.hostname = dhcp_staticlist_json[profile_data[1]].hostname;
+					}
 					vpnc_dev_policy_list_json.push(JSON.parse(JSON.stringify(vpnc_dev_policy)));
 				}
 			}
@@ -2894,6 +3014,9 @@ function parse_JSONToStr_vpnc_clientlist(){
 		else
 			vpnc_clientlist += "";
 		vpnc_clientlist += ">>";
+		vpnc_clientlist += ">" + ((item.tunnel == undefined) ? "0" : item.tunnel);
+		vpnc_clientlist += ">" + ((item.wan_idx == undefined) ? "0" : item.wan_idx);
+		vpnc_clientlist += ">" + ((item.caller == undefined) ? "Web" : item.caller);
 
 		vpnc_pptp_options_x_list += "<" + item.pptp_options;
 	});
@@ -2915,6 +3038,7 @@ function parse_JSONToStr_vpnc_dev_policy_list(){
 		vpnc_dev_policy_list += item.dest_ip;
 		vpnc_dev_policy_list += ">";
 		vpnc_dev_policy_list += item.vpnc_idx;
+		vpnc_dev_policy_list += ">" + ((item.brifname == undefined) ? "" : item.brifname);
 		dhcp_staticlist += "<" + item.mac + ">" + item.ip + ">" + item.dns + ">" + item.hostname;
 	});
 	result.vpnc_dev_policy_list = vpnc_dev_policy_list;
@@ -3413,9 +3537,18 @@ function validate_format(_obj){
 
 	return true;
 }
+function set_value_Custom_Select(_obj, _id, _value){
+	var $items = $(_obj).find("#" + _id + ", #select_" + _id + "");
+	var $text = $items.eq(0);
+	var $select = $items.eq(1);
+	var selected_text = $select.children().removeClass("selected").filter("[value='" + _value + "']").addClass("selected").html();
+	if(selected_text == undefined)
+		selected_text = "";
+	$text.html(htmlEnDeCode.htmlEncode(selected_text));
+}
 function resize_iframe_height(_preheight){
-	if(window.parent.$("#vpnc_iframe").length == "1"){
-		var menu_height = window.parent.$("#mainMenu").height();
+	if($(parent.document).find(".rwd_iframe").length == "1"){
+		var menu_height = $(parent.document).find("#mainMenu").height();
 		var container_height = $(".container").height();
 
 		if(_preheight != undefined && (typeof _preheight == "number"))
@@ -3431,7 +3564,7 @@ function resize_iframe_height(_preheight){
 		});
 
 		var margin_bottom = 30;
-		window.parent.$("#vpnc_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
+		$(parent.document).find(".rwd_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
 	}
 }
 function adjust_popup_container_top(_obj, _offsetHeight){
@@ -3444,6 +3577,49 @@ function adjust_popup_container_top(_obj, _offsetHeight){
 	if(final_scrollTop != 0){
 		$(_obj).css({top: (final_scrollTop + _offsetHeight)});
 	}
+}
+function get_wl_unit_by_band(_band){
+	if(_band == undefined)
+		return "";
+
+	_band = (_band).toString().toUpperCase();
+	var wl_nband = "";
+	switch(_band){
+		case "2G":
+			wl_nband = "2";
+			break;
+		case "5G":
+		case "5G1":
+		case "5G2":
+			wl_nband = "1";
+			break;
+		case "6G":
+			wl_nband = "4";
+			break;
+		case "60G":
+			wl_nband = "6";
+			break;
+	}
+	if(wl_nband == "")
+		return "";
+
+	var wl_unit = "";
+	var suffix_num = _band.substr(_band.indexOf("G") + 1);
+	var ordinal_num = (suffix_num == "") ? 1 : parseInt(suffix_num);
+	var count = 1;
+	var wl_nband_array = httpApi.hookGet("wl_nband_info");
+	$.each(wl_nband_array, function(wlx, value){
+		if(value == wl_nband){
+			if(count == ordinal_num){
+				wl_unit = wlx;
+				return false;
+			}
+			else{
+				count+=1;
+			}
+		}
+	});
+	return wl_unit.toString();
 }
 function initial(){
 	show_loading_obj();
@@ -3486,9 +3662,6 @@ function initial(){
 	});
 	$(".function_desc_container .title").html(((isSupport("vpn_fusion")) ? "<#VPN_Fusion#>" : "<#vpnc_title#>"));
 	update_vpnc_clientlist_json();
-	show_vpnc_clientlist();
-	show_get_start();
-
 	if(isSupport("vpn_fusion")){
 		update_vpnc_dev_policy_list_json();
 		vpnc_dev_policy_list_json.forEach(function(item, index, array){
@@ -3519,11 +3692,36 @@ function initial(){
 			}
 		});
 	}
+	show_vpnc_clientlist();
+	show_get_start();
 
 	check_profile_status();
 	interval_profile = setInterval(function(){
 		check_profile_status();
 	}, 1000*5);
+
+	var referer = getUrlParameter("referer").toLocaleLowerCase();
+	if(referer != "" && referer == "vpn_wifi"){
+		var specific_vpnc_policy_data = vpnc_dev_policy_list_json.filter(function(item, index, array){
+			return (item.brifname == "br1" || item.brifname == "br2");
+		})[0];
+		if(specific_vpnc_policy_data != undefined){
+			var specific_vpnc_data = vpnc_clientlist_json.filter(function(item, index, array){
+				return (item.vpnc_idx == specific_vpnc_policy_data.vpnc_idx);
+			})[0];
+			if(specific_vpnc_data != undefined){
+				$("#srv_profile_list [profile_id=" + specific_vpnc_data.idx + "]").find(".svr_item_text_container").click();
+			}
+		}
+	}
+
+	showLoading = (function(seconds, flag){//overwrite function
+		$("#Loading").css({"width":"", "height":""});
+		progress = 100/seconds;
+		y = 0;
+		LoadingTime(seconds, flag);
+	});
+	resize_iframe_height();
 }
 $(document).ready(initial);
 </script>

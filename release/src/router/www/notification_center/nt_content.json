@@ -354,7 +354,7 @@
 	"item":"Download Master Notification",
 	"contents":"(task name) download is completed. Do you want to open containing folder?",
 	"buttom1":"Check",
-	"callback":"router.asus.com:8081",
+	"callback":"<#Web_DOMAIN_NAME#>:8081",
 	"buttom2":"Skip",
 	"icon":"2"
 	},

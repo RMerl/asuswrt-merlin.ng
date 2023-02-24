@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2014 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,7 +31,7 @@ static transform_type_t tfs[] = {
 	KEY_DERIVATION_FUNCTION,
 	DETERMINISTIC_RANDOM_BIT_GENERATOR,
 	RANDOM_NUMBER_GENERATOR,
-	DIFFIE_HELLMAN_GROUP,
+	KEY_EXCHANGE_METHOD,
 };
 
 START_TEST(test_vectors)

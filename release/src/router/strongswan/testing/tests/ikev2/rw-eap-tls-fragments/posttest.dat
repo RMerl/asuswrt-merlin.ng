@@ -1,10 +1,6 @@
-moon::ipsec stop
-carol::ipsec stop
+carol::systemctl stop strongswan
+moon::systemctl stop strongswan
+carol::cd /etc/swanctl; rm rsa/* x509/* x509ca/*
+moon::cd  /etc/swanctl; rm rsa/* x509/* x509ca/*
 moon::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush
-moon::rm /etc/ipsec.d/cacerts/*
-moon::rm /etc/ipsec.d/certs/*
-moon::rm /etc/ipsec.d/private/*
-carol::rm /etc/ipsec.d/cacerts/*
-carol::rm /etc/ipsec.d/certs/*
-carol::rm /etc/ipsec.d/private/*

@@ -11,30 +11,32 @@
 <title><#Web_Title#> - AiMesh</title>
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<link rel="stylesheet" type="text/css" href="/other.css">
 <link rel="stylesheet" type="text/css" href="/device-map/device-map.css" />
 <link rel="stylesheet" type="text/css" href="/aimesh/aimesh_topology.css" />
-<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings.css" />
 <script type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/calendar/jquery-ui.js"></script>
-<script type="text/javascript" src="/js/jstree/jstree.js"></script>
-<script type="text/javascript" src="/state.js"></script>
-<script type="text/javascript" src="/general.js"></script>
-<script type="text/javascript" src="/popup.js"></script>
+<script type="text/javascript" src="/js/jstree/jstree.min.js"></script>
+<script type="text/javascript" src="/js/jstree/jstree_customize.js"></script>
 <script type="text/javascript" src="/help.js"></script>
-<script type="text/javascript" src="/validator.js"></script>
-<script type="text/javascript" src="/disk_functions.js"></script>
-<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script type="text/javascript" src="/form.js"></script>
+<script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
-<script type="text/javascript" src="/js/sorterApi.js"></script>
-<script type="text/javascript" src="/form.js"></script>
-<script type="text/javascript" src="/help.js"></script>
 <script>
 function initial(){
 	show_menu();
-	change_tab(1);
+	$("#AiMesh_Topology").load("/aimesh/aimesh_topology.html", function(){
+		setTimeout(function(){
+			$('link').filter("[href='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings.css">');
+			$("#AiMesh_System_Settings").load("/aimesh/aimesh_system_settings.html");
+			addNewScript("/general.js");
+			addNewScript("/popup.js");
+			addNewScript("/validator.js");
+			addNewScript("/disk_functions.js");
+			addNewScript("/form.js");
+			addNewScript("/switcherplugin/jquery.iphone-switch.js");
+			change_tab(1);
+		}, 100);
+	});
 }
 function change_tab(_index){
 	$(".aimesh_tab span").removeClass("clicked");
@@ -91,10 +93,6 @@ function change_tab(_index){
 										<div class="splitLine"></div>
 										<div id="AiMesh_Topology" class="aimesh_tab_content idx1"></div>
 										<div id="AiMesh_System_Settings" class="aimesh_tab_content idx2"></div>
-										<script>
-											$("#AiMesh_Topology").load("/aimesh/aimesh_topology.html");
-											$("#AiMesh_System_Settings").load("/aimesh/aimesh_system_settings.html");
-										</script>
 									</td>
 								</tr>
 							</tbody>

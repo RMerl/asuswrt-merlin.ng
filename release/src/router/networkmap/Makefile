@@ -7,7 +7,7 @@ ifeq ($(HND_ROUTER),y)
 CFLAGS += -Werror=return-type -Werror=uninitialized -Wno-date-time 
 endif
 CFLAGS  += -I. -I$(TOP)/shared -I$(TOP)/kernel_header/include -I$(SRCBASE)/include -I$(TOP)/json-c
-CFLAGS  += -s -O2 -DNO_PARALLEL
+CFLAGS  += $(if $(RTCONFIG_DEBUG),,-s) -O2 -DNO_PARALLEL
 CFLAGS  += -I$(TOP)/libasc
 CFLAGS  += -I$(TOP)/curl/include
 
@@ -197,17 +197,17 @@ endif
 
 install:
 	install -D $(EXEC) $(INSTALLDIR)/usr/sbin/$(EXEC)
-	$(STRIP) $(INSTALLDIR)/usr/sbin/$(EXEC)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/usr/sbin/$(EXEC))
 ifneq ($(AC2900),y)
 	install -D asusdiscovery $(INSTALLDIR)/usr/sbin/asusdiscovery
-	$(STRIP) $(INSTALLDIR)/usr/sbin/asusdiscovery
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/usr/sbin/asusdiscovery)
 ifeq ($(RTCONFIG_AMAS),y)
 	install -D find_cap $(INSTALLDIR)/usr/sbin/find_cap
-	$(STRIP) $(INSTALLDIR)/usr/sbin/find_cap
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/usr/sbin/find_cap)
 endif
 ifneq ($(wildcard $(SRCBASE)/router/networkmap/arpstorm),)
 	install -D arpstorm $(INSTALLDIR)/usr/sbin/arpstorm
-	$(STRIP) $(INSTALLDIR)/usr/sbin/arpstorm
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/usr/sbin/arpstorm)
 endif
 endif
 	install -d $(INSTALLDIR)/usr/networkmap

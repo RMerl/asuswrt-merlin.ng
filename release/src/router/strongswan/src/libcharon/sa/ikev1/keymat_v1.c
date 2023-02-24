@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -313,7 +314,7 @@ static void adjust_keylen(uint16_t alg, chunk_t *key)
 }
 
 METHOD(keymat_v1_t, derive_ike_keys, bool,
-	private_keymat_v1_t *this, proposal_t *proposal, diffie_hellman_t *dh,
+	private_keymat_v1_t *this, proposal_t *proposal, key_exchange_t *dh,
 	chunk_t dh_other, chunk_t nonce_i, chunk_t nonce_r, ike_sa_id_t *id,
 	auth_method_t auth, shared_key_t *shared_key)
 {
@@ -493,7 +494,7 @@ METHOD(keymat_v1_t, derive_ike_keys, bool,
 		return FALSE;
 	}
 
-	if (!dh->get_my_public_value(dh, &dh_me))
+	if (!dh->get_public_key(dh, &dh_me))
 	{
 		return FALSE;
 	}
@@ -538,7 +539,7 @@ static bool derive_child_keymat(private_keymat_v1_t *this, chunk_t seed,
 }
 
 METHOD(keymat_v1_t, derive_child_keys, bool,
-	private_keymat_v1_t *this, proposal_t *proposal, diffie_hellman_t *dh,
+	private_keymat_v1_t *this, proposal_t *proposal, key_exchange_t *dh,
 	uint32_t spi_i, uint32_t spi_r, chunk_t nonce_i, chunk_t nonce_r,
 	chunk_t *encr_i, chunk_t *integ_i, chunk_t *encr_r, chunk_t *integ_r)
 {
@@ -913,10 +914,10 @@ METHOD(keymat_t, get_version, ike_version_t,
 	return IKEV1;
 }
 
-METHOD(keymat_t, create_dh, diffie_hellman_t*,
-	private_keymat_v1_t *this, diffie_hellman_group_t group)
+METHOD(keymat_t, create_ke, key_exchange_t*,
+	private_keymat_v1_t *this, key_exchange_method_t method)
 {
-	return lib->crypto->create_dh(lib->crypto, group);
+	return lib->crypto->create_ke(lib->crypto, method);
 }
 
 METHOD(keymat_t, create_nonce_gen, nonce_gen_t*,
@@ -955,7 +956,7 @@ keymat_v1_t *keymat_v1_create(bool initiator)
 		.public = {
 			.keymat = {
 				.get_version = _get_version,
-				.create_dh = _create_dh,
+				.create_ke = _create_ke,
 				.create_nonce_gen = _create_nonce_gen,
 				.get_aead = _get_aead,
 				.destroy = _destroy,

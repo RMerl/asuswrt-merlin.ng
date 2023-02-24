@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,7 +29,7 @@ typedef struct ke_payload_t ke_payload_t;
 #include <encoding/payloads/payload.h>
 #include <encoding/payloads/transform_substructure.h>
 #include <collections/linked_list.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 
 /**
  * Class representing an IKEv1 or IKEv2 key exchange payload.
@@ -48,11 +49,11 @@ struct ke_payload_t {
 	chunk_t (*get_key_exchange_data) (ke_payload_t *this);
 
 	/**
-	 * Gets the Diffie-Hellman Group Number of this KE payload (IKEv2 only).
+	 * Gets the key exchange method of this KE payload (IKEv2 only).
 	 *
-	 * @return 					DH Group Number of this payload
+	 * @return 		key exchange method of this payload
 	 */
-	diffie_hellman_group_t (*get_dh_group_number) (ke_payload_t *this);
+	key_exchange_method_t (*get_key_exchange_method)(ke_payload_t *this);
 
 	/**
 	 * Destroys a ke_payload_t object.
@@ -69,13 +70,13 @@ struct ke_payload_t {
 ke_payload_t *ke_payload_create(payload_type_t type);
 
 /**
- * Creates a ke_payload_t from a diffie_hellman_t.
+ * Creates a ke_payload_t from a key_exchange_t.
  *
  * @param type		PLV2_KEY_EXCHANGE or PLV1_KEY_EXCHANGE
- * @param dh		diffie hellman object containing group and key
+ * @param ke		key exchange object containing method and public key
  * @return 			ke_payload_t object, NULL on error
  */
-ke_payload_t *ke_payload_create_from_diffie_hellman(payload_type_t type,
-													diffie_hellman_t *dh);
+ke_payload_t *ke_payload_create_from_key_exchange(payload_type_t type,
+												  key_exchange_t *ke);
 
 #endif /** KE_PAYLOAD_H_ @}*/

@@ -1,12 +1,12 @@
-sun::ipsec start
-moon::rm /etc/ipsec.secrets
-moon::tkm_cfgtool -c /etc/tkm/tkm.conf -i /etc/ipsec.conf -t /etc/tkm/tkm.bin -s /usr/local/share/tkm/tkmconfig.xsd
-moon::cat /etc/ipsec.conf
-moon::tkm_keymanager -c /etc/tkm/tkm.bin -k /etc/tkm/moonKey.der -r /etc/tkm/strongswanCert.der >/tmp/tkm.log 2>&1 &
+sun::systemctl start strongswan
+moon::rm /etc/swanctl/rsa/*
+moon::tkm_cfgtool -c /etc/tkm/tkm.conf -i /etc/swanctl/swanctl.conf -t /etc/tkm/tkm.bin -s /usr/local/share/tkm/tkmconfig.xsd
+moon::cat /etc/swanctl/swanctl.conf
+moon::tkm_keymanager -c /etc/tkm/tkm.bin -k /etc/tkm/moonKey.der -r /etc/tkm/strongswanCert.der:1 >/tmp/tkm.log 2>&1 &
 moon::expect-file /tmp/tkm.rpc.ike
-moon::DAEMON_NAME=charon-tkm ipsec start
+moon::service charon-tkm start
 moon::expect-file /tmp/tkm.rpc.ees
 moon::xfrm_proxy >/tmp/xfrm_proxy.log 2>&1 &
-moon::DAEMON_NAME=charon-tkm expect-connection conn1
+moon::expect-connection conn1
 sun::expect-connection host-host
-moon::ping -c 3 192.168.0.2
+moon::ping -c 3 -W 1 -i 0.2 192.168.0.2

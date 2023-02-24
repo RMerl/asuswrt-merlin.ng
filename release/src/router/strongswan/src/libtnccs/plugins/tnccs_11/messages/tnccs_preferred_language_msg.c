@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2010 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2006 Mike McCauley (mikem@open.com.au)
  *

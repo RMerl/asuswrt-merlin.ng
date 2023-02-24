@@ -1,0 +1,267 @@
+﻿<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta http-equiv="X-UA-Compatible" content="ie=edge">
+<script type="text/javascript" src="/js/httpApi.js"></script>
+<script type="text/javascript" src="https://code.jquery.com/jquery-3.5.1.js"></script>
+<script type="text/javascript" src="https://cdn.datatables.net/1.11.5/js/jquery.dataTables.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/1.11.5/css/jquery.dataTables.min.css">
+
+<script type="text/javascript" src="https://cdn.datatables.net/select/1.4.0/js/dataTables.select.min.js"></script>
+<link rel="stylesheet" type="text/css" href="https://cdn.datatables.net/select/1.4.0/css/select.dataTables.min.css">
+
+<style>
+    #deselect_all_rows {
+		margin-left: 30px;	
+	}
+	#id_freq_label {
+		margin-left: 30px;
+	}
+  #id_record_button {
+    width: fit-content;
+    height: fit-content;
+    margin-left: 30px;
+    margin-right: 30px;
+
+  }
+  #id_app_name {
+    width: 100px;
+    height: 25px;
+  }
+</style>	
+<script>
+let filter_mac;
+let start_time;
+let start_record = 0;
+let app_name;
+let mac_lists = [];
+let json = {
+		"contents": []
+	};
+
+var myUpdateTimer = setInterval(get_app_client_stats_update, 10*1000);
+	$(document).ready(function(){
+	$("#myInput").on("keyup", function() {
+		var value = $(this).val().toLowerCase();
+		$("#myTable tr").filter(function() {
+		$(this).toggle($(this).text().toLowerCase().indexOf(value) > -1)
+			});
+		});
+	});
+
+function intToIP(int) {
+    var part1 = int & 255;
+    var part2 = ((int >> 8) & 255);
+    var part3 = ((int >> 16) & 255);
+    var part4 = ((int >> 24) & 255);
+
+    return part1 + "." + part2+ "." + part3 + "." + part4;
+}
+
+
+function updateUI() {
+
+	
+	$("#stat_table").DataTable().destroy();
+	
+	let statsArray = [];
+    console.log(`filter mac: ${filter_mac}`);
+	json.contents.forEach(function(e, idx) {
+      if(filter_mac == e.mac)
+	     if(e.is_v4)
+			  statsArray.push([e.mac, intToIP(e.client_ip), e.host, e.up_bytes, e.dn_bytes]);
+		  else
+			  statsArray.push([e.mac, e.client_ip6, e.host, e.up_bytes, e.dn_bytes]);
+		  
+      if(!mac_lists.includes(e.mac))
+          mac_lists.push(e.mac);
+	});
+	
+	var t = $("#stat_table").DataTable(
+	{   pageLength: 100,
+		select: true,
+		data: statsArray,
+		columns: [
+			{title: "mac"},
+			{title: "client_ip"},
+			{title: "host"},
+			{title: "up_bytes"},
+			{title: "dn_bytes"},
+
+		],
+	});
+
+  // update avaiable ip options
+  console.log(mac_lists);
+  macs = document.getElementById('id_avaiable_ip')
+  while (macs.options.length) {
+    macs.remove(0);
+  }
+  for( i = 0; i < mac_lists.length; i++){
+    let mac;
+    let selected = mac_lists[i] == filter_mac ? true : false;
+    if(mac_lists.length == 1) 
+     {
+      selected = true;
+      filter_mac = mac_lists[0];
+     }
+    mac = new Option(mac_lists[i], i, selected, selected );
+    macs.options.add(mac);
+  }
+
+
+}
+
+function get_app_client_stats_update(){
+  if(!start_record)
+    return;
+	// unix timestamp in second
+	var now = Math.round((new Date()).getTime() / 1000);
+	var queryparam = `start=${start_time}&end=${now}&app_or_cli=1&up_or_dn=1`;
+	httpApi.get_app_client_stats(queryparam, update_handler);
+}
+
+function update_handler(response){
+	json = response;
+	updateUI();
+}
+
+function selectAll(){
+	console.log("select all rows");
+	var table = $('#stat_table').DataTable();
+	select_rows = table.rows({
+	 page: 'all'
+	}).select();
+	
+	let select_count =  select_rows.length;
+	for (i = 0; i < select_count; i++)
+    console.log(select_rows[i][2]);
+  
+}
+
+function deselectAll(){
+	console.log("deselect all rows");
+	var table = $('#stat_table').DataTable();
+	select_rows = table.rows({
+	 page: 'all'
+	}).deselect();
+}
+
+function updateFreq(){
+	var freq = document.getElementById('freq_id');
+	clearInterval(myUpdateTimer);
+	myUpdateTimer = setInterval(get_app_client_stats_update, freq.value*1000);
+}
+
+function updateRecord(){
+  start_time = Math.round((new Date()).getTime() / 1000);	
+  start_time = start_time - (60); // 1 minute ago
+  let freq = document.getElementById('freq_id');
+	
+  if (start_record) 
+  {
+    start_record = 0;
+    document.getElementById('id_record_button').value = "stop";
+    clearInterval(myUpdateTimer);
+ 
+  }
+  else
+  {
+    start_record = 1;
+    clearInterval(myUpdateTimer);
+    document.getElementById('id_record_button').value = "recording";
+    app_name = document.getElementById('id_app_name').value;
+    console.log(`app-name: ${app_name}`);
+    myUpdateTimer = setInterval(get_app_client_stats_update, freq.value*1000);
+
+  }
+}
+
+function updateFilterIp(){
+  let idx = document.getElementById('id_avaiable_ip').value;
+  filter_mac = mac_lists[idx];
+  console.log(`idx: ${idx} - filter_mac: ${filter_mac}`);
+  document.getElementById('id_avaiable_ip').text = filter_mac;
+  //alert(`filter ip: ${filter_ip}`);
+}
+
+function download_csv(){
+  
+  let table = $('#stat_table').DataTable();
+  let hosts = [];
+  let select_rows = table.rows('.selected').data();
+  let select_count =  select_rows.length;
+  for (i = 0; i < select_count; i++)
+    hosts.push({'host': select_rows[i][2]});
+  
+  //let hosts = json.contents !=null ? json.contents : [];
+  var csv = 'app_name,host\n';  
+  //merge the data with CSV  
+  hosts.forEach(function(e) {
+          line = app_name + ',' + e.host;
+          csv += line;  
+          csv += "\n";  
+  });  
+  document.write(csv);  
+  
+  var hiddenElement = document.createElement('a');  
+  hiddenElement.href = 'data:text/csv;charset=utf-8,' + encodeURI(csv);  
+  hiddenElement.target = '_blank';  
+    
+  //provide the name for the CSV file to be downloaded  
+  hiddenElement.download = `${app_name}.csv`;  
+  hiddenElement.click();  
+  
+}
+
+$(document).ready(function () {
+    var table = $('#stat_table').DataTable();
+ 
+    $('#stat_table tbody').on('click', 'tr', function () {
+        $(this).toggleClass('selected');
+    });
+ 
+});
+</script>
+<body onload="updateUI();">
+<div>
+	<form>
+	<input type="button" id="select_all_rows" value="select all" onclick="selectAll()" >
+	<input type="button" id="deselect_all_rows" value="deselect all" onclick="deselectAll()" >
+	<label>update freq:</label>
+  	
+    <select name="freq" id="freq_id" onchange="updateFreq()">
+		  <option value="3" selected="selected">3</option>
+		  <option value="10">10</option>
+		  <option value="30">30</option>
+		  <option value="60">60</option>
+      <option value="9999">9999</option>
+		</select>
+	</form>	
+</div>
+<div id="id_record_filter">
+	<form>
+    <label>record app:</label>
+    <input type="text" id="id_app_name" name="app_name" >  
+    <input type="button" id="id_record_button" value="start_record" name="start_record" onclick="updateRecord()" >
+		<label id="id_for_target" for="avaiable_ip">client mac:</label>
+		<select name="avaiable_ip" id="id_avaiable_ip" onchange="updateFilterIp()">
+		</select>
+	</form>	
+</div>	
+
+<table id="stat_table" class="display">
+	<thead>
+		<tr>
+		<th>mac</th>		
+		<th>client_ip</th>
+		<th>host</th>
+		<th>up_bytes</th>
+		<th>dn_bytes</th>
+		</tr>
+    <tbody></tbody>
+	</thead>
+</table>
+<button onclick="download_csv()">download</button>
+</body>
+</html>
+

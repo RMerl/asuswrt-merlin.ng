@@ -1,0 +1,82 @@
+.\" Copyright (c) 2005-2006 Szabolcs Szakacsits.
+.\" Copyright (c) 2005 Richard Russon.
+.\" Copyright (c) 2011-2013 Jean-Pierre Andre
+.\" This file may be copied under the terms of the GNU Public License.
+.\"
+.TH NTFSFIX 8 "January 2013" "ntfs-3g @VERSION@"
+.SH NAME
+ntfsfix \- fix common errors and force Windows to check NTFS
+.SH SYNOPSIS
+.B ntfsfix
+[\fIoptions\fR] \fIdevice\fR
+.SH DESCRIPTION
+.B ntfsfix
+is a utility that fixes some common NTFS problems.
+.B ntfsfix
+is
+.B NOT
+a Linux version of chkdsk.  It only repairs some fundamental NTFS
+inconsistencies, resets the NTFS journal file and schedules an NTFS consistency
+check for the first boot into Windows.
+.sp
+You may run
+.B ntfsfix
+on an NTFS volume if you think it was damaged by Windows or some other way 
+and it cannot be mounted.
+.SH OPTIONS
+Below is a summary of all the options that
+.B ntfsfix
+accepts.  Nearly all options have two equivalent names.  The short name is
+preceded by
+.B \-
+and the long name is preceded by
+.BR \-\- .
+Any single letter options, that don't take an argument, can be combined into a
+single command, e.g.
+.B \-fv
+is equivalent to
+.BR "\-f \-v" .
+Long named options can be abbreviated to any unique prefix of their name.
+.TP
+\fB\-b\fR, \fB\-\-clear\-bad\-sectors\fR
+Clear the list of bad sectors. This is useful after cloning an old disk
+with bad sectors to a new disk.
+.TP
+\fB\-d\fR, \fB\-\-clear\-dirty\fR
+Clear the volume dirty flag if the volume can be fixed and mounted.
+If the option is not present or the volume cannot be fixed, the dirty
+volume flag is set to request a volume checking at next mount.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show a list of options with a brief description of each one.
+.TP
+\fB\-n\fR, \fB\-\-no\-action\fR
+Do not write anything, just show what would have been done.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Show the version number, copyright and license
+.SH BUGS
+There are no known problems with
+.BR ntfsfix .
+If you find a bug please send an email describing the problem to the
+development team:
+.br
+.nh
+ntfs\-3g\-devel@lists.sf.net
+.hy
+.SH AUTHORS
+.B ntfsfix
+was written by Anton Altaparmakov, with contributions from Szabolcs Szakacsits.
+It was ported to ntfs-3g by Erik Larsson and Jean-Pierre Andre.
+.SH AVAILABILITY
+.B ntfsfix
+is part of the
+.B ntfs-3g
+package and is available from:
+.br
+.nh
+https://github.com/tuxera/ntfs-3g/wiki/
+.hy
+.SH SEE ALSO
+.BR mkntfs (8),
+.BR ntfsprogs (8)

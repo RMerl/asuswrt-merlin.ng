@@ -1,7 +1,6 @@
 /*
  * Copyright (c) 2014 Vyronas Tsingaras (vtsingaras@it.auth.gr)
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
  * of this software and associated documentation files (the "Software"), to deal

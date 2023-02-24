@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
  * Copyright (C) 2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2018 René Korthaus
  * Rohde & Schwarz Cybersecurity GmbH
@@ -201,7 +200,7 @@ bool botan_get_fingerprint(botan_pubkey_t pubkey, void *cache,
 
 	if (cache)
 	{
-		lib->encoding->cache(lib->encoding, type, cache, *fp);
+		lib->encoding->cache(lib->encoding, type, cache, fp);
 	}
 	return TRUE;
 }

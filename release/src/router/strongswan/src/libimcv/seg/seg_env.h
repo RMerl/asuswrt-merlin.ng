@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2014-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -43,11 +44,11 @@ enum seg_env_flags_t {
 struct seg_env_t {
 
 	/**
-	 * Get Base Attribute ID
+	 * Get Base Message ID
 	 *
-	 * @return				Base Attribute ID
+	 * @return				Base Message ID
 	 */
-	uint32_t (*get_base_attr_id)(seg_env_t *this);
+	uint32_t (*get_base_msg_id)(seg_env_t *this);
 
 	/**
 	 * Get Base Attribute if it contains processed [incremental] data
@@ -98,22 +99,22 @@ struct seg_env_t {
 /**
  * Create a PA-TNC attribute segment envelope object
  *
- * @param base_attr_id		Base Attribute ID
- * @param base_attr			Base Attribute to be segmented, owned by seg_env_t
+ * @param base_msg_id		Base Message ID
+ * @param base_attr			Base Message to be segmented, owned by seg_env_t
  * @param max_seg_size		Maximum segment size
  */
-seg_env_t* seg_env_create(uint32_t base_attr_id, pa_tnc_attr_t *base_attr,
+seg_env_t* seg_env_create(uint32_t base_msg_id, pa_tnc_attr_t *base_attr,
 						  uint32_t max_seg_size);
 
 /**
  * Create a PA-TNC attribute segment envelope object
  *
- * @param base_attr_id		Base Attribute ID
+ * @param base_msg_id		Base Message ID
  * @param data				First attribute segment
  * @param max_seg_size		Maximum segment size
  * @param error				Error attribute if a parsing error occurred
  */
-seg_env_t* seg_env_create_from_data(uint32_t base_attr_id, chunk_t data,
+seg_env_t* seg_env_create_from_data(uint32_t base_msg_id, chunk_t data,
 									uint32_t max_seg_size,
 									pa_tnc_attr_t** error);
 

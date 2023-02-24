@@ -89,7 +89,7 @@ function initial(){
 	show_menu();
 	$("#faq").attr('target','_blank')
 		 .attr("href", faq_href);
-	if(wan_proto=="v6plus" && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+	if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 
 		$("#v6plus_port_range_note").show();
 		$(".setup_info_icon_game").show();
@@ -609,9 +609,9 @@ function newProfileOK(){
 		else{
 			if(!check_multi_range(document.getElementById("new_profile_externalPort"), 1, 65535, true))
 				return false;
-			if(wan_proto=="v6plus" && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+			if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 				if (!check_multi_range_s46_ports(document.getElementById("new_profile_externalPort"))){
-					if(!confirm("The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?"))
+					if(!confirm(port_confirm))
 					{
 						document.getElementById("new_profile_externalPort").focus();
 						return false;
@@ -720,7 +720,7 @@ function newProfileOK(){
 				<!-- Content field -->
 				<div class="description-container"><#OpenNAT_desc#></div>
 				<div class="description-container" id="v6plus_port_range_note" style="color:#FFCC00;display:none;">* When using v6plus, the number of available assigned ports is limited. Kindly understand that this may result in an interruption of this services and functions.</div>		<!-- Untranslated -->
-				<div class="description-container" style="color:#FFCC00;position:relative;z-index:9;"><#OpenNAT_note#></div>
+				<div class="description-container" style="display:none;color:#FFCC00;position:relative;z-index:9;"><#OpenNAT_note#></div>
 				<div class="world-map">
 					<div class="map-connection-line"></div>
 					<div class="location-indicator location-US3"></div>

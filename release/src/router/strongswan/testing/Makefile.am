@@ -1,6 +1,6 @@
 EXTRA_DIST = do-tests make-testing ssh start-testing stop-testing \
-             testing.conf ssh_config config hosts images scripts tests \
-			 README
+			 testing.conf ssh_config config hosts images css scripts \
+			 tests README
 
 # exclude all files ignored by Git from the tarball
 dist-hook:

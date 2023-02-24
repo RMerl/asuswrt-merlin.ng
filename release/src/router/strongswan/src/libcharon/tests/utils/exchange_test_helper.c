@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -299,17 +300,33 @@ METHOD(exchange_test_helper_t, add_listener, void,
  */
 static void initialize_logging()
 {
-	int level = LEVEL_SILENT;
-	char *verbosity;
+	char buf[BUF_LEN], *verbosity;
+	level_t level;
+	debug_t group;
+
+	lib->settings->set_default_str(lib->settings, "%s.filelog.stderr.default",
+								   "-1", lib->ns);
 
 	verbosity = getenv("TESTS_VERBOSITY");
 	if (verbosity)
 	{
 		level = atoi(verbosity);
+		lib->settings->set_int(lib->settings, "%s.filelog.stderr.default",
+							   level, lib->ns);
 	}
-	lib->settings->set_int(lib->settings, "%s.filelog.stderr.default",
-			lib->settings->get_int(lib->settings, "%s.filelog.stderr.default",
-								   level, lib->ns), lib->ns);
+
+	for (group = 0; group < DBG_MAX; group++)
+	{
+		snprintf(buf, sizeof(buf), "TESTS_VERBOSITY_%s",
+				 enum_to_name(debug_names, group));
+		verbosity = getenv(buf);
+		if (verbosity)
+		{
+			level = atoi(verbosity);
+			lib->settings->set_int(lib->settings, "%s.filelog.stderr.%N",
+								   level, lib->ns, debug_lower_names, group);
+		}
+	}
 	lib->settings->set_bool(lib->settings, "%s.filelog.stderr.ike_name", TRUE,
 							lib->ns);
 	charon->load_loggers(charon);
@@ -331,11 +348,11 @@ void exchange_test_helper_init(char *plugins)
 	private_exchange_test_helper_t *this;
 	private_backend_t *backend;
 	plugin_feature_t features[] = {
-		PLUGIN_REGISTER(DH, mock_dh_create),
+		PLUGIN_REGISTER(KE, mock_dh_create),
 			/* we only need to support a limited number of DH groups */
-			PLUGIN_PROVIDE(DH, MODP_2048_BIT),
-			PLUGIN_PROVIDE(DH, MODP_3072_BIT),
-			PLUGIN_PROVIDE(DH, ECP_256_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_BIT),
+			PLUGIN_PROVIDE(KE, MODP_3072_BIT),
+			PLUGIN_PROVIDE(KE, ECP_256_BIT),
 		PLUGIN_REGISTER(NONCE_GEN, create_nonce_gen),
 			PLUGIN_PROVIDE(NONCE_GEN),
 				PLUGIN_DEPENDS(RNG, RNG_WEAK),

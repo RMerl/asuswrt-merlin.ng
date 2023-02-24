@@ -28,6 +28,8 @@ DUMPDIR=${DUMPPATH}/$(date +"%d:%m:%Y_%H:%M")
 LOOP_TIME=10
 NR_RUNS=0
 HOSTAPD_CONF=/tmp/wlX_hapd.conf
+HOSTAPD_CONF_1=/tmp/wlX.1_hapd.conf
+WPASUPP_CONF=/tmp/wlX_wpa_supplicant.conf
 MODE="auto"
 NR_REPEATS=0
 DUMP_CLEAR=0
@@ -65,6 +67,23 @@ dump_hapd () {
        if test -f $HAPDFILE; then
            echo "------- Dumping $HAPDFILE ----------"
            cat $HAPDFILE
+       fi
+
+       HAPDFILE_1=${HOSTAPD_CONF_1//X/$i}
+       if test -f $HAPDFILE_1; then
+           echo "------- Dumping $HAPDFILE_1 ----------"
+           cat $HAPDFILE_1
+       fi
+   done
+}
+
+dump_wpasupp () {
+   for i in 0 1 2 3
+   do
+       WPASUPPFILE=${WPASUPP_CONF//X/$i}
+       if test -f $WPASUPPFILE; then
+           echo "------- Dumping $WPASUPPFILE ----------"
+           cat $WPASUPPFILE
        fi
    done
 }
@@ -331,6 +350,8 @@ wl_stats () {
     display_cmd_op "MACMODE DUMP: wl -i $IFNAME macmode" "$WLCMD -i $IFNAME macmode"
     display_cmd_op "MAC DUMP: wl -i $IFNAME mac" "$WLCMD -i $IFNAME mac"
     display_cmd_op "LAST ADJ EST POWER: wl -i $IFNAME txpwr_adj_est" "$WLCMD -i $IFNAME txpwr_adj_est"
+    display_cmd_op "BSS: wl -i $IFNAME bss" "$WLCMD -i $IFNAME bss"
+    display_cmd_op "KEEP AP UP: wl -i $IFNAME keep_ap_up" "$WLCMD -i $IFNAME keep_ap_up"
 }
 
 dhd_stats () {
@@ -499,6 +520,14 @@ host_side_dump () {
     ###
 }
 
+beacon_info () {
+    echo "================================="
+    echo "beacon content for $IFNAME"
+    echo "================================="
+
+    display_cmd_op "BEACON INFO: wl -i $IFNAME beacon_info" "$WLCMD -i $IFNAME beacon_info"
+}
+
 loop_commands () {
     NR_RUNS=`expr $NR_RUNS + 1`
     if [[ "$VERSION" -eq 2 ]]; then
@@ -589,7 +618,9 @@ else
 while [[ $NR_REPEATS -gt $NR_RUNS ]]; do
     loop_commands
 done
+beacon_info
 dump_hapd
+dump_wpasupp
 # restore msglevel
 wl -i $IFNAME msglevel $WLMSGLVL
 if [ $MODE == "dhd" ]; then

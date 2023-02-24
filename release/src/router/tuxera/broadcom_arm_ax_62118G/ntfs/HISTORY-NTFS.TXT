@@ -1,0 +1,56 @@
+HISTORY OF MICROSOFT NTFS BY TUXERA
+
+NTFS 3021.4.23.18
+
+- Documentation now provided in README-NTFS.TXT and HISTORY-NTFS.TXT.
+- Includes security update and is recommended for all users.
+- Update supported kernel versions. Now support kernels up to 5.12.
+- Add support for kernel symbol namespaces to enable build on latest Android 12
+  kernel 5.10.
+- Fix boundary checks in splice_write() which could result in kernel crash if
+  there was an overflow over 2^63-1.
+- Fix file size overflow boundary check when size approaches 2^63-1 which was
+  resulting in a kernel bug being hit.
+- Fix rare deadlocks/crashes when attempting to add a new entry to a directory
+  when the volume is full.
+- Treat stale references through lookup as no entries.
+- Fix very unlikely but potential integer overflow.
+- Fix crash when writing to a fragmented file and the volume runs out of space.
+- Improve behaviour when allocating large files under memory pressure.
+- Fix a regression in driver which happens in workloads where multiple threads
+  are doing I/O in parallel to same inode. Some of those threads extend the
+  allocation and some might shrink the allocation.
+
+NTFS 3021.4.23.8
+  
+- Update supported kernel versions. Now support kernels up to 5.8.  
+- Add consistency checks for MFT record and attributes.
+- Make the driver interruptible while extending initialized size of a file.
+- Fix a rare bug which happens when volume is full but $MFT file has space and
+  we are creating a long symlink which doesn't fit in a single MFT record.
+- Implement getxattr() for "system.ntfs_times".
+- Add sanity check for volume label attribute.
+- Make "utf8" the default character set. New mount option "-o noutf8" to disable
+  the default behaviour during mount time.
+- Fix missing sync between file attributes readonly flag and writeable
+  permission when the readonly flag is modified using the
+  FAT_IOCTL_SET_ATTRIBUTES ioctl.
+- Extend maximum cluster size to 2MiB.
+- Fix a rare bug in extension of volume bitmap when volume has specific size and
+  it runs out of space.
+- Fix a bug where the inode would not be marked dirty in case we are updating
+  the initialized size of a non-resident inode without updating its file size.
+- Fix rare panic on unplug USB drive.
+- Disable use of movable memory on kernels with CONFIG_CMA=y.
+- Update documentation.
+- Fix error message after Windows hibernation status check.
+- Significantly improve performance when allocation small files.
+- Add support for 2 new ioctl() FAT_IOCTL_GET_ATTRIBUTES and
+  FAT_IOCTL_SET_ATTRIBUTES.
+- Add configuration to make driver read only.
+- Significantly increase the maximum number of files user can create on NTFS
+  volume.
+
+This file contains the history since NTFS 3018.6.5.3.
+
+Copyright (c) 2008-2023 Tuxera Inc. All Rights Reserved.

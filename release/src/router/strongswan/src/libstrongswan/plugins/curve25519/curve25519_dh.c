@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -42,6 +43,11 @@ struct private_curve25519_dh_t {
 	bool computed;
 
 	/**
+	 * Public key provided by peer
+	 */
+	u_char pubkey[CURVE25519_KEY_SIZE];
+
+	/**
 	 * Curve25519 backend
 	 */
 	curve25519_drv_t *drv;
@@ -72,21 +78,18 @@ static bool generate_key(private_curve25519_dh_t *this)
 	return this->drv->set_key(this->drv, key);
 }
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_curve25519_dh_t *this, chunk_t value)
 {
 	if (value.len == CURVE25519_KEY_SIZE)
 	{
-		if (this->drv->curve25519(this->drv, value.ptr, this->shared))
-		{
-			this->computed = TRUE;
-			return TRUE;
-		}
+		memcpy(this->pubkey, value.ptr, value.len);
+		return TRUE;
 	}
 	return FALSE;
 }
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_curve25519_dh_t *this, chunk_t *value)
 {
 	u_char basepoint[CURVE25519_KEY_SIZE] = { 9 };
@@ -100,7 +103,7 @@ METHOD(diffie_hellman_t, get_my_public_value, bool,
 	return FALSE;
 }
 
-METHOD(diffie_hellman_t, set_private_value, bool,
+METHOD(key_exchange_t, set_private_key, bool,
 	private_curve25519_dh_t *this, chunk_t value)
 {
 	if (value.len != CURVE25519_KEY_SIZE)
@@ -110,24 +113,26 @@ METHOD(diffie_hellman_t, set_private_value, bool,
 	return this->drv->set_key(this->drv, value.ptr);
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_curve25519_dh_t *this, chunk_t *secret)
 {
-	if (!this->computed)
+	if (!this->computed &&
+		!this->drv->curve25519(this->drv, this->pubkey, this->shared))
 	{
 		return FALSE;
 	}
+	this->computed = TRUE;
 	*secret = chunk_clone(chunk_from_thing(this->shared));
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_curve25519_dh_t *this)
 {
 	return CURVE_25519;
 }
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_curve25519_dh_t *this)
 {
 	this->drv->destroy(this->drv);
@@ -137,7 +142,7 @@ METHOD(diffie_hellman_t, destroy, void,
 /*
  * Described in header.
  */
-curve25519_dh_t *curve25519_dh_create(diffie_hellman_group_t group)
+curve25519_dh_t *curve25519_dh_create(key_exchange_method_t group)
 {
 	private_curve25519_dh_t *this;
 
@@ -148,12 +153,12 @@ curve25519_dh_t *curve25519_dh_create(diffie_hellman_group_t group)
 
 	INIT(this,
 		.public = {
-			.dh = {
+			.ke = {
 				.get_shared_secret = _get_shared_secret,
-				.set_other_public_value = _set_other_public_value,
-				.get_my_public_value = _get_my_public_value,
-				.set_private_value = _set_private_value,
-				.get_dh_group = _get_dh_group,
+				.set_public_key = _set_public_key,
+				.get_public_key = _get_public_key,
+				.set_private_key = _set_private_key,
+				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},

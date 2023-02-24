@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
  * Copyright (C) 2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2018 René Korthaus
  * Rohde & Schwarz Cybersecurity GmbH

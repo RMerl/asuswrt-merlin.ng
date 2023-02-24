@@ -463,8 +463,8 @@ function set_value_Custom_Select(_obj, _id, _value){
 	$text.html(htmlEnDeCode.htmlEncode(selected_text));
 }
 function resize_iframe_height(_preheight){
-	if(window.parent.$("#vpns_iframe").length == "1"){
-		var menu_height = window.parent.$("#mainMenu").height();
+	if($(parent.document).find(".rwd_iframe").length == "1"){
+		var menu_height = $(parent.document).find("#mainMenu").height();
 		var container_height = $(".container").height();
 
 		if(_preheight != undefined && (typeof _preheight == "number"))
@@ -480,7 +480,7 @@ function resize_iframe_height(_preheight){
 		});
 
 		var margin_bottom = 30;
-		window.parent.$("#vpns_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
+		$(parent.document).find(".rwd_iframe").css("height", (Math.max(menu_height, container_height, pop_height) + margin_bottom));
 	}
 }
 function showLoading(seconds, flag){

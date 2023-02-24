@@ -1,1 +1,1 @@
-sun::systemctl stop strongswan-swanctl
+sun::systemctl stop strongswan

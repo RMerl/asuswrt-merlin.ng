@@ -61,13 +61,16 @@ extern char *ntfs_uppercase_mbs(const char *low,
 		const ntfschar *upcase, u32 upcase_len);
 
 extern void ntfs_upcase_table_build(ntfschar *uc, u32 uc_len);
+extern u32 ntfs_upcase_build_default(ntfschar **upcase);
 extern ntfschar *ntfs_locase_table_build(const ntfschar *uc, u32 uc_cnt);
 
 extern ntfschar *ntfs_str2ucs(const char *s, int *len);
 
 extern void ntfs_ucsfree(ntfschar *ucs);
 
-extern BOOL ntfs_forbidden_chars(const ntfschar *name, int len);
+extern BOOL ntfs_forbidden_chars(const ntfschar *name, int len, BOOL strict);
+extern BOOL ntfs_forbidden_names(ntfs_volume *vol,
+				const ntfschar *name, int len, BOOL strict);
 extern BOOL ntfs_collapsible_chars(ntfs_volume *vol,
 				const ntfschar *shortname, int shortlen,
 				const ntfschar *longname, int longlen);

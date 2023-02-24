@@ -75,6 +75,8 @@ ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(B
 ifneq ($(BCM_CHIP),)
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U_V2 TUF-AX5400_V2 RT-AX5400))
 SRCFILE = broadcom_arm_ax_$(BCM_CHIP)_src-rt-5.04axhnd.675x
+else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),EBG19 EBG15))
+SRCFILE = broadcom_arm_ax_62118G
 else
 SRCFILE = broadcom_arm_ax_$(BCM_CHIP)
 endif
@@ -115,7 +117,7 @@ clean:
 	@[ ! -f $(SRCFILE)/Makefile ] || $(MAKE) -C $(SRCFILE) $@
 
 install:
-	@echo "[tuxera] Installing..."
+	@echo "[tuxera] Installing...from $(SRCFILE)"
 	@install -d $(DSTDIR)
 	@install -d $(INSTALLDIR)/usr/sbin
 ifeq ($(RTCONFIG_TFAT),y)

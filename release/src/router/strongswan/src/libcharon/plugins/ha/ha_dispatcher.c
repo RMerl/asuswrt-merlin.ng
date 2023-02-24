@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -66,9 +67,9 @@ struct private_ha_dispatcher_t {
 struct ha_diffie_hellman_t {
 
 	/**
-	 * Implements diffie_hellman_t
+	 * Implements key_exchange_t
 	 */
-	diffie_hellman_t dh;
+	key_exchange_t dh;
 
 	/**
 	 * Shared secret
@@ -81,21 +82,21 @@ struct ha_diffie_hellman_t {
 	chunk_t pub;
 };
 
-METHOD(diffie_hellman_t, dh_get_shared_secret, bool,
+METHOD(key_exchange_t, dh_get_shared_secret, bool,
 	ha_diffie_hellman_t *this, chunk_t *secret)
 {
 	*secret = chunk_clone(this->secret);
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, dh_get_my_public_value, bool,
+METHOD(key_exchange_t, dh_get_public_key, bool,
 	ha_diffie_hellman_t *this, chunk_t *value)
 {
 	*value = chunk_clone(this->pub);
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, dh_destroy, void,
+METHOD(key_exchange_t, dh_destroy, void,
 	ha_diffie_hellman_t *this)
 {
 	free(this);
@@ -104,14 +105,14 @@ METHOD(diffie_hellman_t, dh_destroy, void,
 /**
  * Create a HA synced DH implementation
  */
-static diffie_hellman_t *ha_diffie_hellman_create(chunk_t secret, chunk_t pub)
+static key_exchange_t *ha_diffie_hellman_create(chunk_t secret, chunk_t pub)
 {
 	ha_diffie_hellman_t *this;
 
 	INIT(this,
 		.dh = {
 			.get_shared_secret = _dh_get_shared_secret,
-			.get_my_public_value = _dh_get_my_public_value,
+			.get_public_key = _dh_get_public_key,
 			.destroy = _dh_destroy,
 		},
 		.secret = secret,
@@ -209,7 +210,7 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 	if (ike_sa)
 	{
 		proposal_t *proposal;
-		diffie_hellman_t *dh;
+		key_exchange_t *dh;
 
 		proposal = proposal_create(PROTO_IKE, 0);
 		if (integ)
@@ -226,7 +227,7 @@ static void process_ike_add(private_ha_dispatcher_t *this, ha_message_t *message
 		}
 		if (dh_grp)
 		{
-			proposal->add_algorithm(proposal, DIFFIE_HELLMAN_GROUP, dh_grp, 0);
+			proposal->add_algorithm(proposal, KEY_EXCHANGE_METHOD, dh_grp, 0);
 		}
 		charon->bus->set_sa(charon->bus, ike_sa);
 		dh = ha_diffie_hellman_create(secret, dh_local);
@@ -661,7 +662,7 @@ static void process_child_add(private_ha_dispatcher_t *this,
 	chunk_t nonce_i = chunk_empty, nonce_r = chunk_empty, secret = chunk_empty;
 	chunk_t encr_i, integ_i, encr_r, integ_r;
 	linked_list_t *local_ts, *remote_ts;
-	diffie_hellman_t *dh = NULL;
+	key_exchange_t *dh = NULL;
 
 	enumerator = message->create_attribute_enumerator(message);
 	while (enumerator->enumerate(enumerator, &attribute, &value))
@@ -761,7 +762,7 @@ static void process_child_add(private_ha_dispatcher_t *this,
 	}
 	if (dh_grp)
 	{
-		proposal->add_algorithm(proposal, DIFFIE_HELLMAN_GROUP, dh_grp, 0);
+		proposal->add_algorithm(proposal, KEY_EXCHANGE_METHOD, dh_grp, 0);
 	}
 	proposal->add_algorithm(proposal, EXTENDED_SEQUENCE_NUMBERS, esn, 0);
 	if (secret.len)

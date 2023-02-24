@@ -20,7 +20,6 @@ options = \
 	options/medsrv.opt \
 	options/pki.opt \
 	options/pool.opt \
-	options/scepclient.opt \
 	options/starter.opt \
 	options/swanctl.opt \
 	options/tnc.opt \

@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2005-2010 Martin Willi
- * Copyright (C) 2010 revosec AG
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -59,9 +59,9 @@ struct private_ke_payload_t {
 	uint16_t payload_length;
 
 	/**
-	 * DH Group Number.
+	 * Key exchange method number.
 	 */
-	uint16_t dh_group_number;
+	uint16_t ke_method;
 
 	/**
 	 * Key Exchange Data of this KE payload.
@@ -92,8 +92,8 @@ static encoding_rule_t encodings_v2[] = {
 	{ RESERVED_BIT,			offsetof(private_ke_payload_t, reserved_bit[6])	},
 	/* Length of the whole payload*/
 	{ PAYLOAD_LENGTH,		offsetof(private_ke_payload_t, payload_length)	},
-	/* DH Group number as 16 bit field*/
-	{ U_INT_16,				offsetof(private_ke_payload_t, dh_group_number)	},
+	/* Key exchange method number as 16 bit field*/
+	{ U_INT_16,				offsetof(private_ke_payload_t, ke_method)		},
 	/* 2 reserved bytes */
 	{ RESERVED_BYTE,		offsetof(private_ke_payload_t, reserved_byte[0])},
 	{ RESERVED_BYTE,		offsetof(private_ke_payload_t, reserved_byte[1])},
@@ -107,7 +107,7 @@ static encoding_rule_t encodings_v2[] = {
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       ! Next Payload  !C!  RESERVED   !         Payload Length        !
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
-      !          DH Group #           !           RESERVED            !
+      !          KE method #          !           RESERVED            !
       +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
       !                                                               !
       ~                       Key Exchange Data                       ~
@@ -197,10 +197,10 @@ METHOD(ke_payload_t, get_key_exchange_data, chunk_t,
 	return this->key_exchange_data;
 }
 
-METHOD(ke_payload_t, get_dh_group_number, diffie_hellman_group_t,
+METHOD(ke_payload_t, get_key_exchange_method, key_exchange_method_t,
 	private_ke_payload_t *this)
 {
-	return this->dh_group_number;
+	return this->ke_method;
 }
 
 METHOD2(payload_t, ke_payload_t, destroy, void,
@@ -230,11 +230,11 @@ ke_payload_t *ke_payload_create(payload_type_t type)
 				.destroy = _destroy,
 			},
 			.get_key_exchange_data = _get_key_exchange_data,
-			.get_dh_group_number = _get_dh_group_number,
+			.get_key_exchange_method = _get_key_exchange_method,
 			.destroy = _destroy,
 		},
 		.next_payload = PL_NONE,
-		.dh_group_number = MODP_NONE,
+		.ke_method = KE_NONE,
 		.type = type,
 	);
 	this->payload_length = get_header_length(this);
@@ -244,19 +244,19 @@ ke_payload_t *ke_payload_create(payload_type_t type)
 /*
  * Described in header
  */
-ke_payload_t *ke_payload_create_from_diffie_hellman(payload_type_t type,
-													diffie_hellman_t *dh)
+ke_payload_t *ke_payload_create_from_key_exchange(payload_type_t type,
+												  key_exchange_t *ke)
 {
 	private_ke_payload_t *this;
 	chunk_t value;
 
-	if (!dh->get_my_public_value(dh, &value))
+	if (!ke->get_public_key(ke, &value))
 	{
 		return NULL;
 	}
 	this = (private_ke_payload_t*)ke_payload_create(type);
 	this->key_exchange_data = value;
-	this->dh_group_number = dh->get_dh_group(dh);
+	this->ke_method = ke->get_method(ke);
 	this->payload_length += this->key_exchange_data.len;
 
 	return &this->public;

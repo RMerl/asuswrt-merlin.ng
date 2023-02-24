@@ -653,7 +653,20 @@ var httpApi ={
 	},
 
 	"getWanInfo": function(_index){
-		var connect_proto_array = {"dhcp":"<#BOP_ctype_title1#>", "static": "<#BOP_ctype_title5#>", "pppoe": "PPPoE","pptp": "PPTP","l2tp": "L2TP"};
+		var connect_proto_array = {
+			"dhcp": "<#BOP_ctype_title1#>",
+			"static": "<#BOP_ctype_title5#>",
+			"pppoe": "PPPoE",
+			"pptp": "PPTP",
+			"l2tp": "L2TP",
+			"pppoa": "PPPoA",
+			"ipoa": "IPoA",
+			"lw4o6": "LW 4over6",
+			"map-e": "MAP-E",
+			"v6plus": "<#IPv6_plus#>",
+			"ocnvc": "<#IPv6_ocnvc#>",
+			"usb modem": "USB Modem"
+		};
 		var result = {
 			"status": "",
 			"status_text": "",
@@ -684,10 +697,23 @@ var httpApi ={
 			var wanInfo = httpApi.nvramGet(["wan" + wan_index + "_ipaddr", "wan" + wan_index + "_proto"], true);
 			result.ipaddr = wanInfo["wan" + wan_index + "_ipaddr"];
 			result.proto = wanInfo["wan" + wan_index + "_proto"];
-			if(result.proto != "")
-				result.proto_text = connect_proto_array[result.proto];
-			if(usb_index == wan_index)
-				result.proto_text = "USB Modem";
+			if(isSupport("dsl")){
+				if(wans_info.wans_dualwan.split(" ")[wan_index] == "dsl"){
+					var dslInfo = httpApi.nvramGet(["dsl0_proto", "dslx_transmode"], true);
+					if(dslInfo.dslx_transmode == "atm") {
+						if(dslInfo.dsl0_proto == "pppoa" || dslInfo.dsl0_proto == "ipoa")
+							result.proto = dslInfo.dsl0_proto;
+					}
+				}
+			}
+			if(result.proto != ""){
+				var proto_text = connect_proto_array[(result.proto).toLowerCase()];
+				result.proto_text = ((proto_text != undefined) ? proto_text : result.proto);
+				if(isSupport("gobi") && result.proto == "USB Modem"){
+					var modem_operation = httpApi.nvramGet(["usb_modem_act_operation"], true).usb_modem_act_operation;
+					result.proto_text = ((modem_operation != "") ? modem_operation : "<#Mobile_title#>");
+				}
+			}
 		}
 		return result;
 	},
@@ -1150,8 +1176,9 @@ var httpApi ={
 		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
 			var get_cfg_clientlist = httpApi.hookGet("get_cfg_clientlist", true);
 			if(get_cfg_clientlist != undefined && get_cfg_clientlist.length > 1) {
-				get_cfg_clientlist.shift();//filter CAP
-				var online_node_list = get_cfg_clientlist.filter(function(item) { return item.online == "1"; });
+				var cfg_clientlist_tmp = JSON.parse(JSON.stringify(get_cfg_clientlist));
+				cfg_clientlist_tmp.shift();//filter CAP
+				var online_node_list = cfg_clientlist_tmp.filter(function(item) { return item.online == "1"; });
 				if(online_node_list.length > 0)
 					status = true;
 			}
@@ -1653,17 +1680,35 @@ var httpApi ={
 	},
 	"aimesh_get_misc_info" : function(_node_info){
 		var misc_info_type_list = {
-			"cobrand" : {"idx" : 1}
+			"cobrand" : {"idx" : 1},
+			"rc_support" : {
+				"idx" : 2,
+				"def" : {
+					"wpa3" : {"bit" : 0}
+				}
+			}
 		};
 		var misc_info_status = {};
 		if("misc_info" in _node_info) {
 			for(var type in misc_info_type_list) {
 				if(misc_info_type_list.hasOwnProperty(type)) {
 					var type_idx = misc_info_type_list[type].idx;
-					var value = "";
-					if(type_idx in _node_info.misc_info)
-						value = (_node_info.misc_info[type_idx] == "") ? "" : _node_info.misc_info[type_idx];
-					misc_info_status[type] = value;
+					var type_def_list = misc_info_type_list[type].def;
+					var type_value = "";
+					if(type_idx in _node_info.misc_info){
+						type_value = (_node_info.misc_info[type_idx] == "") ? "" : _node_info.misc_info[type_idx];
+					}
+					if(type_def_list != undefined){
+						for(var def_item in type_def_list) {
+							if(type_def_list.hasOwnProperty(def_item)) {
+								var def_item_bitwise = type_def_list[def_item]["bit"];
+								misc_info_status[def_item] = ((type_value & (1 << def_item_bitwise)) ? true : false);
+							}
+						}
+					}
+					else{
+						misc_info_status[type] = type_value;
+					}
 				}
 			}
 		}
@@ -1802,7 +1847,20 @@ var httpApi ={
 
 		return statusCode;
 	},
-
+	"get_app_client_stats": function(queryParam, handler){
+                $.ajax({
+                        url: '/get_app_client_stats.cgi?' + queryParam,
+                        dataType: 'json',
+                        type: "GET",
+                        error: function(jqXHR, textStatus, errorThrown){
+                                //console.log("status:${jqXHR.status} error:${jqXHR.responseText}");
+                                console.log("error:${textStatus}");
+                        },
+                        success: function(response){
+                                if(handler) handler(response);
+                        }
+                });
+        },
 	"log": function(funcName, content, sessionId){
 		var deviceId = httpApi.nvramGet(["extendno", "productid"]);
 
@@ -1810,10 +1868,14 @@ var httpApi ={
 		if(!sessionId) sessionId = deviceId.productid + "#" + deviceId.extendno;
 
 		try{
-			window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+			setTimeout(function(){
+				window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+			}, 100*Math.random())
 		}catch(err){
 			localStorage.clear();
-			window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+			setTimeout(function(){
+				window.localStorage.setItem(Date.now(), "[" + sessionId + "][" + funcName + "] " + content);
+			}, 100*Math.random())
 		}
 	},
 	

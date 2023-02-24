@@ -255,11 +255,12 @@ charon.leak_detective.detailed = yes
 	Includes source file names and line numbers in leak detective output.
 
 charon.leak_detective.usage_threshold = 10240
-	Threshold in bytes for leaks to be reported (0 to report all).
+	Threshold in bytes for allocations to be included in usage reports (0 to
+	include all).
 
 charon.leak_detective.usage_threshold_count = 0
-	Threshold in number of allocations for leaks to be reported (0 to report
-	all).
+	Threshold in number of allocations for allocations to be included in usage
+	reports (0 to include all).
 
 charon.load
 	Plugins to load in the IKE daemon charon.
@@ -406,6 +407,10 @@ charon.routing_table_prio
 
 charon.rsa_pss = no
 	Whether to use RSA with PSS padding instead of PKCS#1 padding by default.
+
+charon.rsa_pss_trailerfield = no
+	Whether to encode an explicit trailerField value of 0x01 in the RSA-PSS
+	algorithmIdentifier (CONTEXT3) or using the DEFAULT value by omitting it.
 
 charon.send_delay = 0
 	Delay in ms for sending packets, to simulate larger RTT.

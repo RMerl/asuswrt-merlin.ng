@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2015 Martin Willi
- * Copyright (C) 2015 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,8 +20,8 @@
  * Test vectors from RFC5114
  */
 
-dh_test_vector_t modp1024_160 = {
-	.group = MODP_1024_160, .priv_len = 20, .pub_len = 128, .shared_len = 128,
+ke_test_vector_t modp1024_160 = {
+	.method = MODP_1024_160, .priv_len = 20, .pub_len = 128, .shared_len = 128,
 	.priv_a	= "\xB9\xA3\xB3\xAE\x8F\xEF\xC1\xA2\x93\x04\x96\x50\x70\x86\xF8\x45"
 			  "\x5D\x48\x94\x3E",
 	.priv_b	= "\x93\x92\xC9\xF9\xEB\x6A\x7A\x6A\x90\x22\xF7\xD8\x3E\x72\x23\xC6"
@@ -51,8 +52,8 @@ dh_test_vector_t modp1024_160 = {
 			  "\x16\x7E\xCD\x91\x55\x41\x6F\x46\xF4\x08\xED\x31\xB6\x3C\x6E\x6D",
 };
 
-dh_test_vector_t modp2048_224 = {
-	.group = MODP_2048_224, .priv_len = 28, .pub_len = 256, .shared_len = 256,
+ke_test_vector_t modp2048_224 = {
+	.method = MODP_2048_224, .priv_len = 28, .pub_len = 256, .shared_len = 256,
 	.priv_a	= "\x22\xe6\x26\x01\xdb\xff\xd0\x67\x08\xa6\x80\xf7\x47\xf3\x61\xf7"
 			  "\x6d\x8f\x4f\x72\x1a\x05\x48\xe4\x83\x29\x4b\x0c",
 	.priv_b	= "\x4f\xf3\xbc\x96\xc7\xfc\x6a\x6d\x71\xd3\xb3\x63\x80\x0a\x7c\xdf"
@@ -107,8 +108,8 @@ dh_test_vector_t modp2048_224 = {
 			  "\x7f\xcb\x51\x0b\x69\x98\xff\xd3\xaa\x6d\xe7\x3c\xf9\xf6\x38\x69",
 };
 
-dh_test_vector_t modp2048_256 = {
-	.group = MODP_2048_256, .priv_len = 32, .pub_len = 256, .shared_len = 256,
+ke_test_vector_t modp2048_256 = {
+	.method = MODP_2048_256, .priv_len = 32, .pub_len = 256, .shared_len = 256,
 	.priv_a	= "\x08\x81\x38\x2c\xdb\x87\x66\x0c\x6d\xc1\x3e\x61\x49\x38\xd5\xb9"
 			  "\xc8\xb2\xf2\x48\x58\x1c\xc5\xe3\x1b\x35\x45\x43\x97\xfc\xe5\x0e",
 	.priv_b	= "\x7d\x62\xa7\xe3\xef\x36\xde\x61\x7b\x13\xd1\xaf\xb8\x2c\x78\x0d"

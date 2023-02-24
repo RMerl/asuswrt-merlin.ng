@@ -41,7 +41,7 @@
 	height: auto;
 }
 .vpn_icon_all_collect{
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 }
 .server_list_container{
@@ -338,7 +338,7 @@
 	width: 24px;
 	height: 24px;
 	background-position: -108px -163px;
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 }
 .profile_setting_item.clientlist, .profile_setting_item.allowed_clientlist{
@@ -612,7 +612,7 @@
 .btn_item .btn_container .text.import_file:before{
 	position: absolute;
 	content: "";
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 	background-position: 0px -163px;
 	width: 24px;
@@ -749,16 +749,16 @@
 	font-weight: 500;
 	font-size: 12px;
 }
-.notice_container  .notice_title{
+.notice_container .notice_title{
 	color: #00DEDA;
 }
-.notice_container  .notice_desc{
+.notice_container .notice_desc{
 	color: #FFFFFF;
 	line-height: 160%;
 }
 .export_btn_container{
-	    display: flex;
-    justify-content: space-between;
+	display: flex;
+	justify-content: space-between;
 }
 .export_btn_container > .desc{
 	flex-basis: 60%;
@@ -1251,7 +1251,7 @@
 	left: -60px;
 	border-radius: 24px;
 	background-color: rgba(164, 183, 195, 0.2);
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 }
 .feature_desc .step_text.add:before{

@@ -58,6 +58,7 @@ for(var i = 1; i <= ledg_group; i += 1){
 	$.extend(true, scheme_item_post.LED_Set, led_group);
 }
 var gradient_color = retune_gradient_color({"ledg_group":ledg_group, "productid":model_info.productid, "CoBrand":model_info.CoBrand});
+var hue_bar_color = 360;
 function initial_led_control() {
 	var set_scheme_item_post = function(_ledg_rgb) {
 		var ledg_rgb_array = _ledg_rgb.split(",");
@@ -371,7 +372,7 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 				}
 			});
 			$hue_slider.css("left", gradient_transform_left(left));
-			hsl.h = Math.round(parseInt($hue_slider.css("left")) / get_offset($hue_bar).width * 360);
+			hsl.h = Math.round(parseInt($hue_slider.css("left")) / get_offset($hue_bar).width * hue_bar_color);
 			$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 			var gradient_css = set_gradient_css({"ledg_group":ledg_group, "rgb":gradient_display_rgb});
 			$light_effect_bg.css(gradient_css);
@@ -380,10 +381,8 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 			break;
 		case "4" :
 			$light_effect_bg.addClass("evolution");
-			if(model_info.CoBrand == "2")
-				$light_effect_bg.addClass("CoBrand_2");
-			else if(model_info.CoBrand == "3")
-				$light_effect_bg.addClass("CoBrand_3");
+			if(model_info.CoBrand != undefined && model_info.CoBrand != "")
+				$light_effect_bg.addClass("CoBrand_" + model_info.CoBrand + "");
 			$("#light_effect_setting .setting_hue").fadeTo(0, 0);
 			scheme_item_post.Mode = "4";//evolution
 			break;
@@ -437,7 +436,7 @@ var color_converter = {
 		S = Math.round(S * 100);
 		H = Math.round(H * 60);
 		if(H < 0)
-			H += 360;
+			H += hue_bar_color;
 
 		HSL = [H, S, L];
 		return HSL;
@@ -452,7 +451,7 @@ var color_converter = {
 		return "#" + R + G + B;
 	},
 	"HSLtoRGB" : function(hslArr) {
-		var H = hslArr[0] / 360;
+		var H = hslArr[0] / hue_bar_color;
 		var S = hslArr[1] / 100;
 		var L = hslArr[2] / 100;
 		var RGB = [];
@@ -507,9 +506,9 @@ function set_hue_value(e) {
 	left = Math.max(Math.min(x, get_offset($hue_bar).width),0);
 	$hue_slider.css("left", left);
 	$hue_slider.addClass("active");
-	hsl.h = Math.round(parseInt($hue_slider.css("left")) / get_offset($hue_bar).width * 360);
-	if(hsl.h == 360)
-		hsl.h = 359;//avoid slider same as 255,0,0
+	hsl.h = Math.round(parseInt($hue_slider.css("left")) / get_offset($hue_bar).width * hue_bar_color);
+	if(hsl.h == hue_bar_color)
+		hsl.h = (hue_bar_color - 1);//avoid slider same as 255,0,0
 	$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 	if(scheme_item_post.Mode == "1") {
 		var select_id = "id1";
@@ -585,7 +584,7 @@ function rgbToLeft(_rgb) {
 	hsl.h = hsl_array[0];
 	hsl.s = 100;
 	hsl.l = 50;
-	var left = Math.round((parseInt(hsl.h) / 360) * get_offset($hue_bar).width);
+	var left = Math.round((parseInt(hsl.h) / hue_bar_color) * get_offset($hue_bar).width);
 	$hue_slider.css("left", left);
 	$hue_slider.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");
 	$light_effect_bg.css("background" , "hsl(" + hsl.h + ", " + hsl.s + "%" + ", " + hsl.l + "%" + ")");

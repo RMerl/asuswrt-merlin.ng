@@ -230,7 +230,7 @@ METHOD(crypter_t, decrypt, bool,
 	return success;
 }
 
-METHOD(crypter_t, encrypt, bool,
+METHOD(crypter_t, encrypt_, bool,
 	private_wolfssl_crypter_t *this, chunk_t data, chunk_t iv, chunk_t *dst)
 {
 	u_char *out;
@@ -578,7 +578,7 @@ wolfssl_crypter_t *wolfssl_crypter_create(encryption_algorithm_t algo,
 	INIT(this,
 		.public = {
 			.crypter = {
-				.encrypt = _encrypt,
+				.encrypt = _encrypt_,
 				.decrypt = _decrypt,
 				.get_block_size = _get_block_size,
 				.get_iv_size = _get_iv_size,

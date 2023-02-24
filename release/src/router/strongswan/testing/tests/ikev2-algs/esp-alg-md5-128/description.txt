@@ -1,0 +1,4 @@
+Roadwarrior <b>carol</b> proposes to gateway <b>moon</b> the ESP cipher suite
+<b>3des-md5_128-modp1024</b>.
+<p/>
+A ping from <b>carol</b> to <b>alice</b> successfully checks the established tunnel.

@@ -24,6 +24,7 @@
 #define NORMAL_PERIOD           5*TIMER_HZ      /* minisecond */
 
 static int g_prev_block_all = 0;
+static int g_prev_multifilter_all = 0;
 
 static void pctime_loop(struct timer_entry *timer, void *data);
 static void pctime_config(struct timer_entry *timer, void *data);	
@@ -54,6 +55,8 @@ static int oppc_count = -1;
 static void 
 pctime_free(struct timer_entry *timer, void *data)
 {
+	if (pcdbg)
+		_dprintf("enter pctime_free\n");
 	if(mfpc_list)
 		free_pc_list(&mfpc_list);
 	printf("bye\n");
@@ -70,6 +73,8 @@ static void
 pctime_config(struct timer_entry *timer, void *data)
 {
 	printf("config pc-list\n");
+	if (pcdbg)
+		_dprintf("enter pctime_config\n");
 
 #ifdef RTCONFIG_ISP_OPTUS
 	if (nvram_get_int("OPTUS_MULTIFILTER_ALL") != 0 && oppc_list) {
@@ -127,12 +132,25 @@ SKIP_OP:
 		}
 	}
 	get_all_pc_list(&mfpc_list);
-	mfpc_count = count_pc_rules(mfpc_list, 1);
+	mfpc_count = count_pc_rules(mfpc_list, -1); // count those enabled=1 or 2.
+}
+
+static void
+set_pc_list_state(pc_s *pc_list, int state, int verb)
+{
+	pc_s *follow_pc;
+	if(pc_list == NULL)
+		return;
+	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		follow_pc->state = state;
+	}
 }
 
 static void 
 pctime_flush(struct timer_entry *timer, void *data)
 {
+	if (pcdbg)
+		_dprintf("enter pctime_flush\n");
 #ifdef RTCONFIG_ISP_OPTUS
 	/* Optus Pause : Optus customization */
 	if (nvram_get_int("OPTUS_MULTIFILTER_ALL") != 0) {
@@ -140,6 +158,7 @@ pctime_flush(struct timer_entry *timer, void *data)
 	}
 #endif /* RTCONFIG_ISP_OPTUS */
 	int curr_block_all = nvram_get_int("MULTIFILTER_BLOCK_ALL");
+	int curr_multifilter_all = nvram_get_int("MULTIFILTER_ALL");
 	// Block all devices enabled clean all conntracks
 	if (g_prev_block_all == 0 && curr_block_all == 1) {
 		eval("conntrack", "-F");
@@ -154,8 +173,15 @@ pctime_flush(struct timer_entry *timer, void *data)
 	}
 	g_prev_block_all = curr_block_all;
 
-    if(nvram_get_int("MULTIFILTER_ALL")==0 || mfpc_count==0)
-        return;
+	if (g_prev_multifilter_all == 1 && curr_multifilter_all == 0) {
+		if (pcdbg)
+			_dprintf("\n[pc] reset all pc list to NONBLOCK.");
+		set_pc_list_state(mfpc_list, NONBLOCK, pcdbg);
+	}
+	g_prev_multifilter_all = curr_multifilter_all;
+
+	if(curr_multifilter_all==0 || mfpc_count==0)
+		return;
     if ((nvram_get_int("ntp_ready") != 1) && (nvram_get_int("qtn_ntp_ready") != 1))
         return;
 
@@ -172,6 +198,8 @@ pctime_flush(struct timer_entry *timer, void *data)
 static void
 pctime_loop(struct timer_entry *timer, void *data)
 {
+	if (pcdbg)
+		_dprintf("enter pctime_loop\n");
 #if 0
 #ifdef RTCONFIG_ISP_OPTUS
 	/* Optus Pause : Optus customization */
@@ -207,8 +235,10 @@ pctime_loop(struct timer_entry *timer, void *data)
 #else
     cleantrack_daytime_pc_list(mfpc_list, pnow->tm_wday, pnow->tm_hour, pcdbg);
 #endif
+#else
+	pctime_flush(timer, data);
 #endif
-pctimer:
+//pctimer:
 	mod_timer(timer, next_expires);
 }
 

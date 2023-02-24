@@ -8,14 +8,21 @@ include ../common.mak
 include $(SRCBASE)/.config
 include ../.config
 
-CFLAGS += -I$(TOP)/libev-4.33 -I$(TOP)/libnfnetlink-1.0.1/include 
-CFLAGS += -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-1.0.1/include 
+
+ifeq ($(HND_ROUTER), y)
+NETLINK_LIB_VER := 1.0.1
+else
+NETLINK_LIB_VER := 1.0.2
+endif
+
+CFLAGS += -I$(TOP)/libev-4.33 -I$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/include 
+CFLAGS += -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/include 
 CFLAGS += -I$(TOP)/libnetfilter_conntrack-1.0.7/include -I$(TOP)/libnetfilter_conntrack-1.0.7/include/libnetfilter_conntrack
 CFLAGS += -I$(TOP)/sqlite -DSQL -I$(TOP)/json-c
-CFLAGS += -I$(TOP)/shared
+CFLAGS += -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include
 
 LDFLAGS += -L$(TOP)/libev-4.33/.libs -lev 
-LDFLAGS += -L$(TOP)/libnfnetlink-1.0.1/src/.libs -lnfnetlink 
+LDFLAGS += -L$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/src/.libs -lnfnetlink 
 LDFLAGS += -L$(TOP)/libmnl-1.0.4/src/.libs -lmnl 
 LDFLAGS += -L$(TOP)/libnetfilter_conntrack-1.0.7/src/.libs -lnetfilter_conntrack
 LDFLAGS += -L$(TOP)/sqlite/.libs -lsqlite3
@@ -52,7 +59,10 @@ endif
 OBJS = log.o nfsw.o nfct.o nfarp.o nfjs.o nfsql.o nfcm.o
 
 ifeq ($(QCA), y)
-  OBJS += nffdb.o nfssdk.o 
+ifeq ($(SUPPORT_SWITCH_DUMP), y)
+  CFLAGS += -DSUPPORT_SWITCH_DUMP
+  OBJS += nffdb.o nfssdk.o
+endif
   CFLAGS += -DQCA -DISISC # -DUMAC_SUPPORT_CFG80211=1 -DUMAC_SUPPORT_WEXT=1 -DATH_SUPPORT_EXT_STAT=1 -DATH_EXTRA_RATE_INFO_STA=0
 
   CFLAGS += -I$(SRCBASE)/$(PLATFORM_ROUTER)/qca-ssdk-shell/source/include
@@ -75,11 +85,14 @@ ifeq ($(QCA), y)
   CFLAGS += -I$(TOP)/kernel_header/include -I$(SRCBASE)/include
   LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)
 else ifeq ($(HND), y)
+ifeq ($(SUPPORT_SWITCH_DUMP), y)
+  CFLAGS += -DSUPPORT_SWITCH_DUMP
   OBJS += nfmc.o
+  LDFLAGS += -I$(HND_SRC)/targets/$(PROFILE)/$(PROFILE).$(BUILD_NAME)/fs.build/private/lib -lethswctl
+endif
   CFLAGS += -DHND -I$(HND_SRC)/userspace/private/include 
   CFLAGS += -I$(INC_BRCMDRIVER_PUB_PATH)/bcm963xx/bcm
   CFLAGS += -I$(SRCBASE)/wl/sys
-  LDFLAGS += -lethswctl
   ifeq ($(AX), y)
     CFLAGS += -I$(SRCBASE)/../components/proto/include
     CFLAGS += -I$(SRCBASE)/../components/wlioctl/include
@@ -93,17 +106,19 @@ else ifeq ($(HND), y)
     LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
   else
     CFLAGS += -I$(HND_SRC)/bcmdrivers/opensource/include/bcm963xx
-	CFLAGS += -I$(SRCBASE)/include
+    CFLAGS += -I$(SRCBASE)/include
     CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
     CFLAGS += -I$(SRCBASE)/common/include
 
-    LDFLAGS += -L$(SRCBASE)/router/ethswctl_lib
     LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) 
     LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)
     LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
   endif
 else
+ifeq ($(SUPPORT_SWITCH_DUMP), y)
+  CFLAGS += -DSUPPORT_SWITCH_DUMP
   OBJS += nfmc.o
+endif
   CFLAGS += -I$(SRCBASE)/wl/sys
   CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include/
   CFLAGS += -I$(SRCBASE)/common/include
@@ -118,6 +133,16 @@ ifeq ($(RTCONFIG_CFGSYNC), y)
   CFLAGS += -DAIMESH
 endif
 
+# for ET12
+ifeq ($(USE_BR), y) # dean : et12 will crash when perform timer_bridge. disable temporarily.
+ifeq ($(HND_ROUTER_AX_6756), y)
+  OBJS += nfbr_init.o nfbr.o
+  CFLAGS += -DHND_ROUTER_AX_6756 -I$(HND_SRC)/kernel
+  CFLAGS += -I$(TOP_PLATFORM)/bridge-utils/
+#  LDFLAGS += -L$(TOP_PLATFORM)/bridgeutil -lbridgeutil
+endif
+endif
+
 #CFLAGS += -DNFCMDBG
 #CFLAGS += -D_MACDBG_
 
@@ -127,19 +152,20 @@ all: nfcm
 	$(CC) -c $*.c $(CFLAGS)
 
 nfcm: $(OBJS)
-#	@echo LDFLAGS=$(LDFLAGS)
-#	@echo "=============================";
-#	@echo TOP=$(TOP)
-#	@echo TOP_PLATFORM=$(TOP_PLATFORM)
-#	@echo SRCBASE=$(SRCBASE)
-#	@echo HND_SRC=$(HND_SRC)
-#	@echo BCMEX=${BCMEX}
-#	@echo EX7=$(EX7)
-#	@echo HND=$(HND)
-#	@echo AX=$(AX)
-#	@echo QCA=$(QCA)
-#	@echo LINUXDIR=$(LINUXDIR)
-#	@echo "=============================";
+	@echo LDFLAGS=$(LDFLAGS)
+	@echo "=============================";
+	@echo TOP=$(TOP)
+	@echo TOP_PLATFORM=$(TOP_PLATFORM)
+	@echo SRCBASE=$(SRCBASE)
+	@echo HND_SRC=$(HND_SRC)
+	@echo BCMEX=${BCMEX}
+	@echo EX7=$(EX7)
+	@echo HND=$(HND)
+	@echo AX=$(AX)
+	@echo QCA=$(QCA)
+	@echo LINUXDIR=$(LINUXDIR)
+	@echo RTCONFIG_EXT_BCM53134=$(RTCONFIG_EXT_BCM53134)
+	@echo "=============================";
 	$(CC) -o nfcm $(OBJS) $(LDFLAGS)
 
 .PHONY: clean

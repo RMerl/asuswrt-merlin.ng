@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2014 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,8 +41,8 @@
 /**
  * Object allocation/initialization macro, using designated initializer.
  */
-#define INIT(this, ...) { (this) = malloc(sizeof(*(this))); \
-						   *(this) = (typeof(*(this))){ __VA_ARGS__ }; }
+#define INIT(this, ...) ({ (this) = malloc(sizeof(*(this))); \
+						   *(this) = (typeof(*(this))){ __VA_ARGS__ }; (this); })
 
 /**
  * Aligning version of INIT().
@@ -120,7 +121,7 @@
 #define CALLBACK(name, ret, param1, ...) \
 	static ret _cb_##name(union {void *_generic; param1;} \
 	__attribute__((transparent_union)), ##__VA_ARGS__); \
-	static typeof(_cb_##name) *name = (typeof(_cb_##name)*)_cb_##name; \
+	static ret (*name)(void*, ##__VA_ARGS__) = _cb_##name; \
 	static ret _cb_##name(param1, ##__VA_ARGS__)
 
 /**
@@ -131,7 +132,7 @@
 	__attribute__((transparent_union)), \
 	union {void *_generic; param2;} \
 	__attribute__((transparent_union)), ##__VA_ARGS__); \
-	static typeof(_cb_##name) *name = (typeof(_cb_##name)*)_cb_##name; \
+	static ret (*name)(void*, void*, ##__VA_ARGS__) = _cb_##name; \
 	static ret _cb_##name(param1, param2, ##__VA_ARGS__)
 
 #endif /** OBJECT_H_ @} */

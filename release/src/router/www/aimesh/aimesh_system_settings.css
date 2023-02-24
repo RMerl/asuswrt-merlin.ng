@@ -1,12 +1,4 @@
-﻿@font-face{
-	font-family: Roboto-Regular;
-	src: url(/fonts/Roboto-Regular.ttf) format("opentype");
-}
-@font-face{
-	font-family: Roboto-Light;
-	src: url(/fonts/Roboto-Light.ttf) format("opentype");
-}
-.system_settings_bg{
+﻿.system_settings_bg{
 	height: 50px;
 	margin: 10px;
 	padding: 10px 0px;
@@ -248,7 +240,7 @@
 	background: #1EA2FF;
 	border-radius: 50%;
 	position: absolute;
-	top: 2px;
+	top: 4px;
 	bottom: 0;
 	left: 0;
 	right: 0;

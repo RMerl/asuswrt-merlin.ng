@@ -1,0 +1,9 @@
+Using <b>[&lt;protocol&gt;/&lt;port&gt;]</b> selectors in the
+<b>local_ts</b> and <b>remote_ts</b> child parameters, two IPsec tunnels
+between the roadwarrior <b>carol</b> and the gateway <b>moon</b> are defined.
+The first CHILD_SA is restricted to ICMP packets and the second
+covers TCP-based SSH connections.
+<p/>
+By sending a ping to the client <b>alice</b> behind <b>moon</b>, the ICMP trap
+is triggered and the corresponding IPsec tunnel is set up. In the same
+way an ssh session to <b>alice</b> over the second IPsec SA is established.

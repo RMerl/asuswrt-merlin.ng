@@ -710,6 +710,20 @@ width:122px;
 	background: url(images/New_ui/bottom_help.png);
 	background-position: -0px -0px; width: 19px; height: 19px;
 }
+.setup_help_icon{
+	width: 40px;
+	height: 40px;
+	border-radius: 24px;
+	background-color: rgba(164, 183, 195, 0.2);
+	background-image: url(images/New_ui/vpn_icon_all_collect.svg);
+    background-repeat: no-repeat;
+	background-position: -324px 0px;
+	width: 24px;
+	height: 24px;
+	margin-top: -24px;
+	margin-left: 180px;
+	cursor: pointer;
+}
 .setup_info_icon_game{
 	cursor:pointer;
 	margin-left:155px;
@@ -1016,7 +1030,9 @@ width:122px;
 	text-decoration: none;
 	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	font-size: 12px;
-	border-radius: 5px;
+	border-radius: 5px 5px 0 0;
+	display: flex;
+	align-items: center;
 }
 .tabClicked{
 	cursor:pointer;
@@ -1032,7 +1048,9 @@ width:122px;
 	text-decoration: none;
 	font-family: Verdana, MS UI Gothic, MS P Gothic, Microsoft Yahei UI, sans-serif;
 	font-size: 12px;
-	border-radius: 5px;
+	border-radius: 5px 5px 0 0;
+	display: flex;
+	align-items: center;
 }
 .submenuBlock{
 	margin-bottom: -10px;

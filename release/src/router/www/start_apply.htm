@@ -28,7 +28,7 @@ var wan_unit = '<% get_parameter("wan_unit"); %>';
 if(tmo_support)
 	var theUrl = "cellspot.router"; 
 else
-	var theUrl = "router.asus.com";
+	var theUrl = "<#Web_DOMAIN_NAME#>";
 
 var htmlEnDeCode = (function() {
 	var charToEntityRegex,
@@ -326,8 +326,16 @@ function showWlHint(){
 			}
 			else if(smart_connect_nvram == 2){
 				// 5GHz band steering
-				wlObj.length = 2;
-				wlObj[1].band = "5 GHz Smart Connect";
+				var band_5g = 1;
+				for(var i=0; i<wlObj.length; i++){
+					if(wlObj[i].band.indexOf("5") != -1){
+						band_5g = i;
+						break;
+					}
+				}
+
+				wlObj[band_5g].band = "5 GHz Smart Connect";
+				wlObj.splice(band_5g+1, 1);
 			}
 		}
 		else if(applyParam.smartConnect == 1){
@@ -344,8 +352,16 @@ function showWlHint(){
 		}
 		else if(applyParam.smartConnect == 2){
 			// 5GHz band steering
-			wlObj.length = 2;
-			wlObj[1].band = "5 GHz Smart Connect";
+			var band_5g = 1;
+			for(var i=0; i<wlObj.length; i++){
+				if(wlObj[i].band.indexOf("5") != -1){
+					band_5g = i;
+					break;
+				}
+			}
+
+			wlObj[band_5g].band = "5 GHz Smart Connect";
+			wlObj.splice(band_5g+1, 1);
 		}
 
 		return wlObj;

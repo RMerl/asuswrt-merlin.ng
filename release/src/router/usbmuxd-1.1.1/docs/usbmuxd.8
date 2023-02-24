@@ -1,0 +1,80 @@
+.TH "usbmuxd" 8
+.SH NAME
+usbmuxd \- Expose a socket to multiplex connections from and to iOS devices.
+.SH SYNOPSIS
+.B usbmuxd
+[OPTIONS]
+
+.SH DESCRIPTION
+
+usbmuxd stands for "USB multiplexing daemon". This daemon is in charge of
+multiplexing connections over USB to an iOS device. To users, it means
+you can sync your music, contacts, photos, etc. over USB. To developers, it
+means you can connect to any listening localhost socket on the device. usbmuxd
+is not used for tethering data transfer which uses a dedicated USB interface as
+a virtual network device. Multiple connections to different TCP ports can happen
+in parallel. The higher-level layers are handled by libimobiledevice.
+
+When usbmuxd is running (normally started, or stopped as a result of "udev"
+auto-insertion messages or by systemd) it provides a socket interface in
+"/var/run/usbmuxd" that is designed to be compatible with the socket interface
+that is provided on Mac OS X.
+
+You should also create a "usbmux" user that has access to USB devices on your
+system. Alternatively, you can pass a different username using the -U argument.
+
+Due to iOS 7 the daemon now also manages pairing records with iOS devices and
+the host in "/var/lib/lockdown" (Linux) or "/var/db/lockdown" (Mac OS X).
+Ensure proper permissions are setup for the daemon to access the directory.
+
+.SH OPTIONS
+.TP
+.B \-U, \-\-user USER
+Change to this user after startup (needs USB privileges).
+.TP
+.B \-f, \-\-foreground
+Do not daemonize (implies one -v).
+.TP
+.B \-n, \-\-disable-hotplug
+Disables automatic discovery of devices on hotplug. Starting another instance
+will trigger discovery instead.
+.TP
+.B \-z, \-\-enable-exit
+Enable "--exit" request from other instances and exit automatically if no
+device is attached.
+.TP
+.B \-u, \-\-udev
+Run in udev operation mode (implies -n and -z).
+.TP
+.B \-s, \-\-systemd
+Run in systemd operation mode (implies -z and -f).
+.TP
+.B \-x, \-\-exit
+Notify a running instance to exit if there are no devices connected (sends
+SIGUSR1 to running instance) and exit.
+.TP
+.B \-X, \-\-force-exit
+Notify a running instance to exit even if there are still devices connected
+(always works) and exit.
+.TP
+.B \-v, \-\-verbose
+be verbose (use twice or more to increase verbose level).
+.TP
+.B \-V, \-\-version
+print version information and exit.
+.TP
+.B \-h, \-\-help
+prints usage information.
+
+.SH AUTHOR
+The first usbmuxd daemon implementation was authored by Hector Martin.
+
+Now mainly developed by Nikias Bassen, Martin Szulecki and contributors (see AUTHORS file).
+
+.SH SEE ALSO
+idevice_id(1), iproxy(1).
+
+.SH ON THE WEB
+https://libimobiledevice.org
+
+https://github.com/libimobiledevice/usbmuxd

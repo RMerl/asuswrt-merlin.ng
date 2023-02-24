@@ -566,7 +566,7 @@ to generate a traditional 3072 bit RSA key and store it in binary DER format.
 As an alternative a **TPM 2.0** *Trusted Platform Module* available on every
 recent Intel platform could be used as a virtual smartcard to securely store an
 RSA or ECDSA private key. For details, refer to the TPM 2.0
-[HOWTO](https://wiki.strongswan.org/projects/strongswan/wiki/TpmPlugin).
+[HOWTO](https://docs.strongswan.org/docs/5.9/tpm/tpm2.html).
 
 In a next step the command
 

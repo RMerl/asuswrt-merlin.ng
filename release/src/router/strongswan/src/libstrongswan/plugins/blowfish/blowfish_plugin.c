@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2009 Andreas Steffen
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

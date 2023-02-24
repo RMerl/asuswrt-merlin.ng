@@ -2,10 +2,9 @@
  * Copyright (C) 2020 Tobias Brunner
  * Copyright (C) 2020-2021 Pascal Knecht
  * Copyright (C) 2020 Méline Sieber
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -465,9 +464,9 @@ struct tls_crypto_t {
 	/**
 	 * Get the Diffie-Hellman group to use, if any.
 	 *
-	 * @return				Diffie Hellman group, ord MODP_NONE
+	 * @return				Diffie-Hellman group, or KE_NONE
 	 */
-	diffie_hellman_group_t (*get_dh_group)(tls_crypto_t *this);
+	key_exchange_method_t (*get_dh_group)(tls_crypto_t *this);
 
 	/**
 	 * Write the list of supported signature schemes, either for certificates
@@ -482,7 +481,7 @@ struct tls_crypto_t {
 	/**
 	 * Create an enumerator over supported ECDH groups.
 	 *
-	 * Enumerates over (diffie_hellman_group_t, tls_named_group_t)
+	 * Enumerates over (key_exchange_method_t, tls_named_group_t)
 	 *
 	 * @return				enumerator
 	 */
@@ -681,7 +680,7 @@ int tls_crypto_get_supported_suites(bool null, tls_version_t version,
  * @param groups		pointer to allocated DH group array, to free(), or NULL
  * @return				number of curves supported
  */
-int tls_crypto_get_supported_groups(diffie_hellman_group_t **groups);
+int tls_crypto_get_supported_groups(key_exchange_method_t **groups);
 
 /**
  * Get a list of all supported TLS signature schemes.
@@ -699,7 +698,7 @@ int tls_crypto_get_supported_signatures(tls_version_t version,
  * @param group			diffie hellman group indicator
  * @return				TLS group indicator
  */
-tls_named_group_t tls_ec_group_to_curve(diffie_hellman_group_t group);
+tls_named_group_t tls_ec_group_to_curve(key_exchange_method_t group);
 
 /**
  * Get the key type from a TLS signature scheme

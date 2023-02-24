@@ -63,7 +63,6 @@ static struct hsearch_data htab;
 void
 unescape(char *s, size_t len)
 {
-	char s_tmp[65535];
 	unsigned int c;
 
 	while ((s = strpbrk(s, "%+"))) {
@@ -72,10 +71,9 @@ unescape(char *s, size_t len)
 			if(isxdigit(s[1]) && isxdigit(s[2])){
 				sscanf(s + 1, "%02x", &c);
 				*s++ = (char) c;
-				strlcpy(s_tmp, s + 2, sizeof(s_tmp));
-				strncpy(s, s_tmp, strlen(s) + 1);
+				memmove(s, s+2, strlen(s+2)+1);	//including the '\0'
 			}else
-				*s++;
+				s++;
 		}
 		/* Space is special */
 		else if (*s == '+')

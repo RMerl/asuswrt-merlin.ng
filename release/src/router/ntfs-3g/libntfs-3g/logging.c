@@ -3,6 +3,7 @@
  *
  * Copyright (c) 2005 Richard Russon
  * Copyright (c) 2005-2008 Szabolcs Szakacsits
+ * Copyright (c) 2010      Jean-Pierre Andre
  *
  * This program/include file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published
@@ -387,6 +388,29 @@ out:
 	return ret;
 }
 #endif
+
+/*
+ *			Early logging before the logs are redirected
+ *
+ *	(not quite satisfactory : this appears before the ntfs-g banner,
+ *	and with a different pid)
+ */
+
+void ntfs_log_early_error(const char *format, ...)
+{
+	va_list args;
+
+	va_start(args, format);
+#ifdef HAVE_SYSLOG_H
+	openlog("ntfs-3g", LOG_PID, LOG_USER);
+	ntfs_log_handler_syslog(NULL, NULL, 0,
+		NTFS_LOG_LEVEL_ERROR, NULL,
+		format, args);
+#else
+	vfprintf(stderr,format,args);
+#endif
+	va_end(args);
+}
 
 /**
  * ntfs_log_handler_fprintf - Basic logging handler

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2013-2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -53,8 +54,8 @@ IMPORT_FUNCTION_FOR_TESTS(ntru, ntru_public_key_create_from_data, ntru_public_ke
  * NTRU parameter sets to test
  */
 static struct {
-	diffie_hellman_group_t group;
-	char *group_name;
+	key_exchange_method_t ke;
+	char *name;
 } params[] = {
 	{ NTRU_112_BIT, "NTRU_112" },
 	{ NTRU_128_BIT, "NTRU_128" },
@@ -810,39 +811,39 @@ END_TEST
 START_TEST(test_ntru_ke)
 {
 	chunk_t pub_key, cipher_text, i_shared_secret, r_shared_secret;
-	diffie_hellman_t *i_ntru, *r_ntru;
+	key_exchange_t *i_ntru, *r_ntru;
 	char buf[10];
 	int k, n, len;
 
 	k = (_i) / countof(parameter_sets);
 	n = (_i) % countof(parameter_sets);
 
-	len = snprintf(buf, sizeof(buf), "%N", diffie_hellman_group_names,
-				   params[k].group);
+	len = snprintf(buf, sizeof(buf), "%N", key_exchange_method_names,
+				   params[k].ke);
 	ck_assert(len == 8);
-	ck_assert(streq(buf, params[k].group_name));
+	ck_assert(streq(buf, params[k].name));
 
 	lib->settings->set_str(lib->settings,
 				"libstrongswan.plugins.ntru.parameter_set", parameter_sets[n]);
 
-	i_ntru = lib->crypto->create_dh(lib->crypto, params[k].group);
+	i_ntru = lib->crypto->create_ke(lib->crypto, params[k].ke);
 	ck_assert(i_ntru != NULL);
-	ck_assert(i_ntru->get_dh_group(i_ntru) == params[k].group);
+	ck_assert(i_ntru->get_method(i_ntru) == params[k].ke);
 
-	ck_assert(i_ntru->get_my_public_value(i_ntru, &pub_key));
+	ck_assert(i_ntru->get_public_key(i_ntru, &pub_key));
 	ck_assert(pub_key.len > 0);
 
-	r_ntru = lib->crypto->create_dh(lib->crypto, params[k].group);
+	r_ntru = lib->crypto->create_ke(lib->crypto, params[k].ke);
 	ck_assert(r_ntru != NULL);
 
-	ck_assert(r_ntru->set_other_public_value(r_ntru, pub_key));
-	ck_assert(r_ntru->get_my_public_value(r_ntru, &cipher_text));
+	ck_assert(r_ntru->set_public_key(r_ntru, pub_key));
+	ck_assert(r_ntru->get_public_key(r_ntru, &cipher_text));
 	ck_assert(cipher_text.len > 0);
 
 	ck_assert(r_ntru->get_shared_secret(r_ntru, &r_shared_secret));
 	ck_assert(r_shared_secret.len > 0);
 
-	ck_assert(i_ntru->set_other_public_value(i_ntru, cipher_text));
+	ck_assert(i_ntru->set_public_key(i_ntru, cipher_text));
 	ck_assert(i_ntru->get_shared_secret(i_ntru, &i_shared_secret));
 	ck_assert(chunk_equals(i_shared_secret, r_shared_secret));
 
@@ -857,12 +858,12 @@ END_TEST
 
 START_TEST(test_ntru_retransmission)
 {
-	diffie_hellman_t *i_ntru;
+	key_exchange_t *i_ntru;
 	chunk_t pub_key1, pub_key2;
 
-	i_ntru = lib->crypto->create_dh(lib->crypto, NTRU_256_BIT);
-	ck_assert(i_ntru->get_my_public_value(i_ntru, &pub_key1));
-	ck_assert(i_ntru->get_my_public_value(i_ntru, &pub_key2));
+	i_ntru = lib->crypto->create_ke(lib->crypto, NTRU_256_BIT);
+	ck_assert(i_ntru->get_public_key(i_ntru, &pub_key1));
+	ck_assert(i_ntru->get_public_key(i_ntru, &pub_key2));
 	ck_assert(chunk_equals(pub_key1, pub_key2));
 
 	chunk_free(&pub_key1);
@@ -884,12 +885,12 @@ chunk_t oid_tests[] = {
 
 START_TEST(test_ntru_pubkey_oid)
 {
-	diffie_hellman_t *r_ntru;
+	key_exchange_t *r_ntru;
 	chunk_t cipher_text;
 
-	r_ntru = lib->crypto->create_dh(lib->crypto, NTRU_128_BIT);
-	ck_assert(!r_ntru->set_other_public_value(r_ntru, oid_tests[_i]));
-	ck_assert(r_ntru->get_my_public_value(r_ntru, &cipher_text));
+	r_ntru = lib->crypto->create_ke(lib->crypto, NTRU_128_BIT);
+	ck_assert(!r_ntru->set_public_key(r_ntru, oid_tests[_i]));
+	ck_assert(r_ntru->get_public_key(r_ntru, &cipher_text));
 	ck_assert(cipher_text.len == 0);
 	r_ntru->destroy(r_ntru);
 }
@@ -897,21 +898,21 @@ END_TEST
 
 START_TEST(test_ntru_wrong_set)
 {
-	diffie_hellman_t *i_ntru, *r_ntru;
+	key_exchange_t *i_ntru, *r_ntru;
 	chunk_t pub_key, cipher_text;
 
 	lib->settings->set_str(lib->settings,
 						  "libstrongswan.plugins.ntru.parameter_set",
 			 			  "x9_98_bandwidth");
-	i_ntru = lib->crypto->create_dh(lib->crypto, NTRU_112_BIT);
-	ck_assert(i_ntru->get_my_public_value(i_ntru, &pub_key));
+	i_ntru = lib->crypto->create_ke(lib->crypto, NTRU_112_BIT);
+	ck_assert(i_ntru->get_public_key(i_ntru, &pub_key));
 
 	lib->settings->set_str(lib->settings,
 						  "libstrongswan.plugins.ntru.parameter_set",
 						  "optimum");
-	r_ntru = lib->crypto->create_dh(lib->crypto, NTRU_112_BIT);
-	ck_assert(!r_ntru->set_other_public_value(r_ntru, pub_key));
-	ck_assert(r_ntru->get_my_public_value(r_ntru, &cipher_text));
+	r_ntru = lib->crypto->create_ke(lib->crypto, NTRU_112_BIT);
+	ck_assert(!r_ntru->set_public_key(r_ntru, pub_key));
+	ck_assert(r_ntru->get_public_key(r_ntru, &cipher_text));
 	ck_assert(cipher_text.len == 0);
 
 	chunk_free(&pub_key);
@@ -932,7 +933,7 @@ START_TEST(test_ntru_ciphertext)
 		chunk_create(buf_ff, sizeof(buf_ff)),
 	};
 
-	diffie_hellman_t *i_ntru;
+	key_exchange_t *i_ntru;
 	chunk_t pub_key, shared_secret;
 	int i;
 
@@ -941,9 +942,9 @@ START_TEST(test_ntru_ciphertext)
 
 	for (i = 0; i < countof(test); i++)
 	{
-		i_ntru = lib->crypto->create_dh(lib->crypto, NTRU_128_BIT);
-		ck_assert(i_ntru->get_my_public_value(i_ntru, &pub_key));
-		ck_assert(!i_ntru->set_other_public_value(i_ntru, test[i]));
+		i_ntru = lib->crypto->create_ke(lib->crypto, NTRU_128_BIT);
+		ck_assert(i_ntru->get_public_key(i_ntru, &pub_key));
+		ck_assert(!i_ntru->set_public_key(i_ntru, test[i]));
 		ck_assert(!i_ntru->get_shared_secret(i_ntru, &shared_secret));
 		ck_assert(shared_secret.len == 0);
 
@@ -955,18 +956,18 @@ END_TEST
 
 START_TEST(test_ntru_wrong_ciphertext)
 {
-	diffie_hellman_t *i_ntru, *r_ntru, *m_ntru;
+	key_exchange_t *i_ntru, *r_ntru, *m_ntru;
 	chunk_t pub_key_i, pub_key_m, cipher_text, shared_secret;
 
-	i_ntru = lib->crypto->create_dh(lib->crypto, NTRU_128_BIT);
-	r_ntru = lib->crypto->create_dh(lib->crypto, NTRU_128_BIT);
-	m_ntru = lib->crypto->create_dh(lib->crypto, NTRU_128_BIT);
+	i_ntru = lib->crypto->create_ke(lib->crypto, NTRU_128_BIT);
+	r_ntru = lib->crypto->create_ke(lib->crypto, NTRU_128_BIT);
+	m_ntru = lib->crypto->create_ke(lib->crypto, NTRU_128_BIT);
 
-	ck_assert(i_ntru->get_my_public_value(i_ntru, &pub_key_i));
-	ck_assert(m_ntru->get_my_public_value(m_ntru, &pub_key_m));
-	ck_assert(r_ntru->set_other_public_value(r_ntru, pub_key_m));
-	ck_assert(r_ntru->get_my_public_value(r_ntru, &cipher_text));
-	ck_assert(!i_ntru->set_other_public_value(i_ntru, cipher_text));
+	ck_assert(i_ntru->get_public_key(i_ntru, &pub_key_i));
+	ck_assert(m_ntru->get_public_key(m_ntru, &pub_key_m));
+	ck_assert(r_ntru->set_public_key(r_ntru, pub_key_m));
+	ck_assert(r_ntru->get_public_key(r_ntru, &cipher_text));
+	ck_assert(!i_ntru->set_public_key(i_ntru, cipher_text));
 	ck_assert(!i_ntru->get_shared_secret(i_ntru, &shared_secret));
 	ck_assert(shared_secret.len == 0);
 

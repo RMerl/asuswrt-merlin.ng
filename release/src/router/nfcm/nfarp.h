@@ -2,7 +2,7 @@
 #define __NFARP_H__
 
 #include "log.h"
-
+#include "list.h"
 enum arp_node_attr {
 	ARP_ATTR_HOSTNAME = 0,
 	ARP_ATTR_IP,
@@ -32,5 +32,5 @@ typedef struct arp_node_s {
 
 extern void arp_list_free(struct list_head *list);
 extern void arp_list_parse(struct list_head *arlist, struct list_head *list);
-
+extern bool is_v4_addr(char *ip);
 #endif // __NFARP_H__

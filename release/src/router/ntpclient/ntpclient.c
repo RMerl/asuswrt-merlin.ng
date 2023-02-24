@@ -543,12 +543,6 @@ int main(int argc, char *argv[]) {
 #endif
 #endif
 					doSystem("kill -SIGTSTP `cat %s`", "/var/run/ntp.pid");
-#ifdef RTCONFIG_CFGSYNC
-					if (pidof("cfg_server") >= 0)
-						kill_pidfile_s("/var/run/cfg_server.pid", SIGUSR1);
-					if (pidof("cfg_client") >= 0)
-						kill_pidfile_s("/var/run/cfg_client.pid", SIGUSR1);
-#endif
 				}
 				file_unlock(fd);
 			}

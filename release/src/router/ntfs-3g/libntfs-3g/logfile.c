@@ -84,13 +84,21 @@ static BOOL ntfs_check_restart_page_header(RESTART_PAGE_HEADER *rp, s64 pos)
 				"position in $LogFile.\n");
 		return FALSE;
 	}
-	/* We only know how to handle version 1.1. */
-	if (sle16_to_cpu(rp->major_ver) != 1 ||
-			sle16_to_cpu(rp->minor_ver) != 1) {
+	/*
+	 * We only know how to handle version 1.1 and 2.0, though
+	 * version 2.0 is probably related to cached metadata in
+	 * Windows 8, and we will refuse to mount.
+	 * Nevertheless, do all the relevant checks before rejecting.
+	 */
+	if (((rp->major_ver != const_cpu_to_sle16(1))
+			 || (rp->minor_ver != const_cpu_to_sle16(1)))
+	   && ((rp->major_ver != const_cpu_to_sle16(2))
+			 || (rp->minor_ver != const_cpu_to_sle16(0)))) {
 		ntfs_log_error("$LogFile version %i.%i is not "
-				"supported.  (This driver supports version "
-				"1.1 only.)\n", (int)sle16_to_cpu(rp->major_ver),
-				(int)sle16_to_cpu(rp->minor_ver));
+				"supported.\n   (This driver supports version "
+				"1.1 and 2.0 only.)\n",
+					(int)sle16_to_cpu(rp->major_ver),
+					(int)sle16_to_cpu(rp->minor_ver));
 		return FALSE;
 	}
 	/*
@@ -111,7 +119,7 @@ static BOOL ntfs_check_restart_page_header(RESTART_PAGE_HEADER *rp, s64 pos)
 	/* Verify the position of the update sequence array. */
 	usa_ofs = le16_to_cpu(rp->usa_ofs);
 	usa_end = usa_ofs + usa_count * sizeof(u16);
-	if (usa_ofs < sizeof(RESTART_PAGE_HEADER) ||
+	if (usa_ofs < offsetof(RESTART_PAGE_HEADER, usn) ||
 			usa_end > NTFS_BLOCK_SIZE - sizeof(u16)) {
 		ntfs_log_error("$LogFile restart page specifies "
 				"inconsistent update sequence array offset.\n");
@@ -126,7 +134,7 @@ skip_usa_checks:
 	 */
 	ra_ofs = le16_to_cpu(rp->restart_area_offset);
 	if (ra_ofs & 7 || (have_usa ? ra_ofs < usa_end :
-			ra_ofs < sizeof(RESTART_PAGE_HEADER)) ||
+			ra_ofs < offsetof(RESTART_PAGE_HEADER, usn)) ||
 			ra_ofs > logfile_system_page_size) {
 		ntfs_log_error("$LogFile restart page specifies "
 				"inconsistent restart area offset.\n");
@@ -279,9 +287,19 @@ static BOOL ntfs_check_log_client_array(RESTART_PAGE_HEADER *rp)
 	LOG_CLIENT_RECORD *ca, *cr;
 	u16 nr_clients, idx;
 	BOOL in_free_list, idx_is_first;
+	u32 offset_clients;
 
 	ntfs_log_trace("Entering.\n");
+		/* The restart area must be fully within page */
+	if ((le16_to_cpu(rp->restart_area_offset) + sizeof(RESTART_AREA))
+			> le32_to_cpu(rp->system_page_size))
+		goto err_out;
 	ra = (RESTART_AREA*)((u8*)rp + le16_to_cpu(rp->restart_area_offset));
+	offset_clients = le16_to_cpu(rp->restart_area_offset)
+			+ le16_to_cpu(ra->client_array_offset);
+		/* The clients' records must begin within page */
+	if (offset_clients >= le32_to_cpu(rp->system_page_size))
+		goto err_out;
 	ca = (LOG_CLIENT_RECORD*)((u8*)ra +
 			le16_to_cpu(ra->client_array_offset));
 	/*
@@ -299,6 +317,10 @@ check_list:
 	for (idx_is_first = TRUE; idx != LOGFILE_NO_CLIENT_CPU; nr_clients--,
 			idx = le16_to_cpu(cr->next_client)) {
 		if (!nr_clients || idx >= le16_to_cpu(ra->log_clients))
+			goto err_out;
+			/* The client record must be fully within page */
+		if ((offset_clients + (idx + 1)*sizeof(LOG_CLIENT_RECORD))
+				> le32_to_cpu(rp->system_page_size))
 			goto err_out;
 		/* Set @cr to the current log client record. */
 		cr = ca + idx;
@@ -372,7 +394,14 @@ static int ntfs_check_and_load_restart_page(ntfs_attr *log_na,
 	/*
 	 * Allocate a buffer to store the whole restart page so we can multi
 	 * sector transfer deprotect it.
+	 * For safety, make sure this is consistent with the usa_count
+	 * and shorter than the full log size
 	 */
+	if ((le32_to_cpu(rp->system_page_size)
+			> (u32)(le16_to_cpu(rp->usa_count) - 1)*NTFS_BLOCK_SIZE)
+	   || (le32_to_cpu(rp->system_page_size)
+			> le64_to_cpu(log_na->data_size)))
+		return (EINVAL);
 	trp = ntfs_malloc(le32_to_cpu(rp->system_page_size));
 	if (!trp)
 		return errno;
@@ -468,7 +497,7 @@ BOOL ntfs_check_logfile(ntfs_attr *log_na, RESTART_PAGE_HEADER **rp)
 	u8 *kaddr = NULL;
 	RESTART_PAGE_HEADER *rstr1_ph = NULL;
 	RESTART_PAGE_HEADER *rstr2_ph = NULL;
-	int log_page_size, log_page_mask, err;
+	int log_page_size, err;
 	BOOL logfile_is_empty = TRUE;
 	u8 log_page_bits;
 
@@ -481,7 +510,6 @@ BOOL ntfs_check_logfile(ntfs_attr *log_na, RESTART_PAGE_HEADER **rp)
 	if (size > (s64)MaxLogFileSize)
 		size = MaxLogFileSize;
 	log_page_size = DefaultLogPageSize;
-	log_page_mask = log_page_size - 1;
 	/*
 	 * Use generic_ffs() instead of ffs() to enable the compiler to
 	 * optimize log_page_size and log_page_bits into constants.

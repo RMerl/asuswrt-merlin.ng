@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2014-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,13 +24,13 @@
 typedef struct private_tcg_seg_attr_seg_env_t private_tcg_seg_attr_seg_env_t;
 
 /**
- * Attribute Segment Envelope
- * see TCG IF-M Segmentation Specification
+ * Segment Envelope
+ * see TCG IF-M Segmentation Specification Version 1.0 Rev. 5, 4 April 2016
  *
  *	                     1                   2				     3
  *   0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9 0 1
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
- *  |M|S| Reserved  |              Base Attribute ID                |
+ *  |M|S| Reserved  |               Base Message ID                 |
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
  *  |                 Segment Value (Variable Length)               |
  *  +-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+-+
@@ -71,9 +72,9 @@ struct private_tcg_seg_attr_seg_env_t {
 	uint8_t flags;
 
 	/**
-	 * Base Attribute ID
+	 * Base Message ID
 	 */
-	uint32_t base_attr_id;
+	uint32_t base_msg_id;
 
 	/**
 	 * Attribute value
@@ -139,7 +140,7 @@ METHOD(pa_tnc_attr_t, process, status_t,
 	}
 	reader = bio_reader_create(this->value);
 	reader->read_uint8 (reader, &this->flags);
-	reader->read_uint24(reader, &this->base_attr_id);
+	reader->read_uint24(reader, &this->base_msg_id);
 	reader->destroy(reader);
 
 	return SUCCESS;
@@ -178,17 +179,17 @@ METHOD(tcg_seg_attr_seg_env_t, get_segment, chunk_t,
 	return chunk_skip(this->value, TCG_SEG_ATTR_SEG_ENV_HEADER);
 }
 
-METHOD(tcg_seg_attr_seg_env_t, get_base_attr_id, uint32_t,
+METHOD(tcg_seg_attr_seg_env_t, get_base_msg_id, uint32_t,
 	private_tcg_seg_attr_seg_env_t *this)
 {
-	return this->base_attr_id;
+	return this->base_msg_id;
 }
 
 /**
  * Described in header.
  */
 pa_tnc_attr_t* tcg_seg_attr_seg_env_create(chunk_t segment, uint8_t flags,
-										   uint32_t base_attr_id)
+										   uint32_t base_msg_id)
 {
 	private_tcg_seg_attr_seg_env_t *this;
 
@@ -205,17 +206,17 @@ pa_tnc_attr_t* tcg_seg_attr_seg_env_create(chunk_t segment, uint8_t flags,
 				.get_ref = _get_ref,
 				.destroy = _destroy,
 			},
-			.get_base_attr_id = _get_base_attr_id,
+			.get_base_msg_id = _get_base_msg_id,
 			.get_segment = _get_segment,
 		},
-		.type = { PEN_TCG, TCG_SEG_ATTR_SEG_ENV },
+		.type = { PEN_TCG, TCG_SEG_ENVELOPE },
 		.flags = flags,
-		.base_attr_id = base_attr_id,
+		.base_msg_id = base_msg_id,
 		.value = chunk_alloc(TCG_SEG_ATTR_SEG_ENV_HEADER + segment.len),
 		.ref = 1,
 	);
 
-	htoun32(this->value.ptr, base_attr_id);
+	htoun32(this->value.ptr, base_msg_id);
 	*this->value.ptr = flags;
 	memcpy(this->value.ptr + TCG_SEG_ATTR_SEG_ENV_HEADER,
 		   segment.ptr, segment.len);
@@ -226,8 +227,7 @@ pa_tnc_attr_t* tcg_seg_attr_seg_env_create(chunk_t segment, uint8_t flags,
 /**
  * Described in header.
  */
-pa_tnc_attr_t *tcg_seg_attr_seg_env_create_from_data(size_t length,
-													 chunk_t data)
+pa_tnc_attr_t *tcg_seg_attr_seg_env_create_from_data(size_t length, chunk_t data)
 {
 	private_tcg_seg_attr_seg_env_t *this;
 
@@ -244,10 +244,10 @@ pa_tnc_attr_t *tcg_seg_attr_seg_env_create_from_data(size_t length,
 				.get_ref = _get_ref,
 				.destroy = _destroy,
 			},
-			.get_base_attr_id = _get_base_attr_id,
+			.get_base_msg_id = _get_base_msg_id,
 			.get_segment = _get_segment,
 		},
-		.type = { PEN_TCG, TCG_SEG_ATTR_SEG_ENV },
+		.type = { PEN_TCG, TCG_SEG_ENVELOPE },
 		.length = length,
 		.value = chunk_clone(data),
 		.ref = 1,

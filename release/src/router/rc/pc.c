@@ -781,6 +781,8 @@ pc_s *match_day_pc_list(pc_s *pc_list, pc_s **target_list, int target_day){
 
 #ifdef RTCONFIG_CONNTRACK
 #ifdef RTCONFIG_PC_SCHED_V3
+#define DAY1_END_MIN  24*60
+#define DAY2_START_MIN  0
 int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, int target_min, int verb){
 	pc_s *follow_pc;
 	pc_event_s *follow_e;
@@ -807,26 +809,55 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 			continue;
 
 		follow_pc->prev_state = follow_pc->state;
-		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
-			s_min = follow_e->start_hour*60+follow_e->start_min;
-			e_min = follow_e->end_hour*60+follow_e->end_min;
-			follow_pc->state = NONBLOCK;
-			if (s_min >= e_min) {
-				if ((((follow_e->day_of_week & (1 << target_day)) > 0) && target_num >= s_min) ||
-					(((follow_e->day_of_week & (1 << (target_day+1))) > 0) && target_num < e_min)) {
-					in_period = 1;
-					break;
+#ifdef RTCONFIG_PC_REWARD
+		if (!is_in_pc_reward_period(follow_pc->mac))
+#endif
+		{
+			if (follow_pc->enabled == 1) { // time schedule
+				for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
+					s_min = follow_e->start_hour*60+follow_e->start_min;
+					e_min = follow_e->end_hour*60+follow_e->end_min;
+					if (verb) {
+						_dprintf("start day/hr/min:%d/%d/%d\n", follow_e->day_of_week, follow_e->start_hour, follow_e->start_min);
+						_dprintf("end day/hr/min:%d/%d/%d\n", follow_e->day_of_week, follow_e->end_hour, follow_e->end_min);
+					}
+					int over_wday = !target_day ? 6 : (target_day-1);
+					//follow_pc->state = NONBLOCK;
+					if (s_min >= e_min) {  // over one day
+						if ((((follow_e->day_of_week & (1 << target_day)) > 0) && (s_min <= target_num) && (target_num < DAY1_END_MIN)) ||
+							(((follow_e->day_of_week & (1 << (over_wday))) > 0) && (DAY2_START_MIN <= target_num) && (target_num < e_min))) {
+							in_period = 1;
+							if(verb)
+								_dprintf("%s is in time sched (over one day) situation!!!!!!\n", follow_pc->mac);
+							break;
+						}
+					} else {
+						if (((follow_e->day_of_week & (1 << target_day)) > 0) && target_num >= s_min && target_num < e_min) {
+							in_period = 1;
+							if(verb)
+								_dprintf("%s is in time sched situation!!!!!!\n", follow_pc->mac);
+							break;
+						}
+					}
 				}
-			} else {
-				if (((follow_e->day_of_week & (1 << target_day)) > 0) && target_num >= s_min && target_num < e_min) {
-					in_period = 1;
-					break;
-				}
+			} else if (follow_pc->enabled == 2) { // pause internet
+				in_period = 1;
+				if(verb)
+					_dprintf("%s is in pause internet situation!!!!!!\n", follow_pc->mac);
+				//break;
 			}
 		}
+#ifdef RTCONFIG_PC_REWARD
+		else {
+			if(verb)
+				_dprintf("%s is in pc reward period!!!!!!\n", follow_pc->mac);
+		}
+#endif
 		if (in_period) {
 			follow_pc->state = BLOCKED;
 			follow_pc->dtimes = nvram_get_int("questcf")?:0;
+		} else {
+			follow_pc->state = NONBLOCK;
 		}
 
 		if(verb) {
@@ -846,6 +877,8 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 				eval("conntrack", "-D", "-s", tip);
 			}
 #ifdef HND_ROUTER
+			if(verb)
+				_dprintf("\n[pc] (%d)fc flush!!!! [%s]\n", fcf, follow_pc->mac);
 			eval("fc", "flush");
 #elif defined(RTCONFIG_BCMARM)
 			/* TBD. ctf ipct entries cleanup. */
@@ -912,6 +945,8 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 			}
 #ifdef HND_ROUTER
 			eval("fc", "flush");
+			if(verb)
+				_dprintf("\n[pc] (%d)fc flush!!![%s]\n", fcf, follow_pc->mac);
 #elif defined(RTCONFIG_BCMARM)
 			/* TBD. ctf ipct entries cleanup. */
 #endif

@@ -11,9 +11,14 @@
 #include <version.h>
 #include <shared.h>
 #include <sm.h>
+#include <json.h>
 
+#ifndef FALSE
 #define FALSE	0
+#endif
+#ifndef TRUE
 #define TRUE	1
+#endif
 #define INTERFACE	"br0"
 #define MODEL_NAME	RT_BUILD_NAME
 #define ARP_BUFFER_SIZE	512
@@ -73,12 +78,17 @@ enum
 };
 #endif
 
+#define USERAGENT           "Asuswrt/networkmap"
+#define NMPDB_FILE_LOCK     "nmpdb"
+#define USERAGENT           "Asuswrt/networkmap"
+#define NMP_VC_FILE_LOCK    "nmpvc"
 
-#define USERAGENT			"Asuswrt/networkmap"
-#define NMPDB_FILE_LOCK			"nmpdb"
-#define USERAGENT			"Asuswrt/networkmap"
-#define NMP_VC_FILE_LOCK		"nmpvc"
-
+#define CFG_FILE_LOCK                "cfg_mnt"
+#define ALLWEVENT_FILE_LOCK          "allwevent"
+#define ALLWCLIENT_LIST_JSON_PATH    "/tmp/allwclientlist.json"
+#define CLIENTLIST_FILE_LOCK         "clientlist"
+#define CLIENT_LIST_JSON_PATH        "/tmp/clientlist.json"
+#define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
 
 #define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
@@ -96,9 +106,9 @@ enum
 #define NMP_CL_JSON_FILE		"/tmp/nmp_cl_json.js"
 #define NMP_VC_JSON_FILE		"/tmp/nmp_vc_json.js"
 #endif
+
+#define DEV_TYPE_PATH		"/jffs/dev_type_query.json"
 #define ARP_PATH			"/proc/net/arp"
-
-
 
 #define NMP_CONSOLE_DEBUG(fmt, args...) do{ \
 	if(nvram_match("nmp_debug", "1")) { \
@@ -217,6 +227,10 @@ typedef struct {
 /* wireless: 0:wired 1:2.4G 2:5G 3:5G-2
 */
 	unsigned char	wireless[MAX_NR_CLIENT_LIST];
+
+	unsigned char	is_wireless[MAX_NR_CLIENT_LIST];
+	int        		conn_ts[MAX_NR_CLIENT_LIST];		// connect  timestamp
+	int        		offline_time[MAX_NR_CLIENT_LIST];
 /* wireless log information
 */
 #ifdef RTCONFIG_LANTIQ
@@ -259,7 +273,7 @@ typedef struct
 	unsigned char	dest_ipaddr[4];
 } ARP_HEADER;
 
-int FindHostname(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
+int FindHostname(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
 int FindDevice(unsigned char *pIP, unsigned char *pMac, int replaceMac);
 void find_wireless_device(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int offline);
 void rc_diag_stainfo(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
@@ -267,5 +281,21 @@ void type_filter(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int x, uns
 int isBaseType(int type);
 
 int QueryConvTypes(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
+
+#ifdef RTCONFIG_DNSQUERY_INTERCEPT
+void QueryDevType(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, int i);
+#endif
+
+int get_brctl_macs(char * mac);
+
+int check_wrieless_info(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab, const int i, const int is_file, struct json_object *clients);
+
+void regularly_check_devices(P_CLIENT_DETAIL_INFO_TABLE p_client_detail_info_tab);
+
+void check_clientlist_offline(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+void network_ip_scan();
 
 #endif  /*__NETWORKMAP_H__*/

@@ -2,8 +2,8 @@ moon::iptables-restore < /etc/iptables.drop
 sun::iptables-restore < /etc/iptables.drop
 moon::ip6tables-restore < /etc/ip6tables.rules
 sun::ip6tables-restore < /etc/ip6tables.rules
-moon::systemctl start strongswan-swanctl
-sun::systemctl start strongswan-swanctl
+moon::systemctl start strongswan
+sun::systemctl start strongswan
 sun::expect-connection host-host
 moon::expect-connection host-host
 moon::swanctl --initiate --child host-host 2> /dev/null

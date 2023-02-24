@@ -30,6 +30,11 @@ endif
 
 LIBS = -lpthread -lgcc_s
 
+ifeq ($(RTCONFIG_DMALLOC),y)
+CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
+LDFLAGS += -L$(STAGEDIR)/usr/lib -ldmalloc
+endif
+
 ifeq ($(RTCONFIG_TUNNEL),y)
 CURL_DIR=$(TOP)/curl-7.21.7
 OPENSSL_DIR=$(TOP)/openssl
@@ -82,15 +87,15 @@ ntdir:
 	set -e; for d in ${MDIRS}; do $(MAKE) -C $${d}; done
 nt_center:
 	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
-	@$(STRIP) $@
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $@)
 
 Notify_Event2NC:
 	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
-	@$(STRIP) $@
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $@)
 
 nt_monitor:
 	@$(CC) ${CFLAGS} $< -o $@ ${LDFLAGS} $(LIBS)
-	@$(STRIP) $@
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $@)
 
 else # DSL_ASUSWRT_SDK 
 

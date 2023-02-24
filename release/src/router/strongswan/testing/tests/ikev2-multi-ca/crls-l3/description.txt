@@ -1,0 +1,9 @@
+The VPN gateway <b>moon</b> controls the access to the hosts <b>alice</b> and
+<b>venus</b> by means of two different PKIs. Access to <b>alice</b> is granted
+to users presenting a certificate issued by the Levels Root CA (or any of its
+intermediate CAs) whereas <b>venus</b> can only be reached with a certificate
+issued by the regular strongSwan Root CA.
+The roadwarriors <b>carol</b> and <b>dave</b> have certificates from the
+Levels CA (actually from an second level intermediate CA) and strongSwan CA,
+respectively. Therefore <b>carol</b> can access <b>alice</b> and <b>dave</b>
+can reach <b>venus</b>.

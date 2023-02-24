@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2011 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -198,27 +197,27 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(HASHER, HASH_SHA512),
 	};
 	static plugin_feature_t f_dh[] = {
-		PLUGIN_REGISTER(DH, pkcs11_dh_create),
-			PLUGIN_PROVIDE(DH, MODP_2048_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_224),
-			PLUGIN_PROVIDE(DH, MODP_2048_256),
-			PLUGIN_PROVIDE(DH, MODP_1536_BIT),
-			PLUGIN_PROVIDE(DH, MODP_3072_BIT),
-			PLUGIN_PROVIDE(DH, MODP_4096_BIT),
-			PLUGIN_PROVIDE(DH, MODP_6144_BIT),
-			PLUGIN_PROVIDE(DH, MODP_8192_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_160),
-			PLUGIN_PROVIDE(DH, MODP_768_BIT),
-			PLUGIN_PROVIDE(DH, MODP_CUSTOM),
+		PLUGIN_REGISTER(KE, pkcs11_dh_create),
+			PLUGIN_PROVIDE(KE, MODP_2048_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_224),
+			PLUGIN_PROVIDE(KE, MODP_2048_256),
+			PLUGIN_PROVIDE(KE, MODP_1536_BIT),
+			PLUGIN_PROVIDE(KE, MODP_3072_BIT),
+			PLUGIN_PROVIDE(KE, MODP_4096_BIT),
+			PLUGIN_PROVIDE(KE, MODP_6144_BIT),
+			PLUGIN_PROVIDE(KE, MODP_8192_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_160),
+			PLUGIN_PROVIDE(KE, MODP_768_BIT),
+			PLUGIN_PROVIDE(KE, MODP_CUSTOM),
 	};
 	static plugin_feature_t f_ecdh[] = {
-		PLUGIN_REGISTER(DH, pkcs11_dh_create),
-			PLUGIN_PROVIDE(DH, ECP_192_BIT),
-			PLUGIN_PROVIDE(DH, ECP_224_BIT),
-			PLUGIN_PROVIDE(DH, ECP_256_BIT),
-			PLUGIN_PROVIDE(DH, ECP_384_BIT),
-			PLUGIN_PROVIDE(DH, ECP_521_BIT),
+		PLUGIN_REGISTER(KE, pkcs11_dh_create),
+			PLUGIN_PROVIDE(KE, ECP_192_BIT),
+			PLUGIN_PROVIDE(KE, ECP_224_BIT),
+			PLUGIN_PROVIDE(KE, ECP_256_BIT),
+			PLUGIN_PROVIDE(KE, ECP_384_BIT),
+			PLUGIN_PROVIDE(KE, ECP_521_BIT),
 	};
 	static plugin_feature_t f_rng[] = {
 		PLUGIN_REGISTER(RNG, pkcs11_rng_create),

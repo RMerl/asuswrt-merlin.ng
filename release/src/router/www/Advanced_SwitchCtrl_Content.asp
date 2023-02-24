@@ -17,6 +17,7 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/help.js"></script>
 <script type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .perNode_app_table{
 	width: 740px;
@@ -44,6 +45,7 @@ var iptv_port_settings_orig = '<%nvram_get("iptv_port_settings"); %>' == ""? "12
 var switch_wantag_orig = '<% nvram_get("switch_wantag"); %>';
 var switch_stb_x_orig = '<% nvram_get("switch_stb_x"); %>';
 var no_jumbo_frame_support = isSupport("no_jumbo_frame");
+var wans_extwan = '<% nvram_get("wans_extwan"); %>';
 if(lacp_support){
 	if(based_modelid == "GT-AC5300")
 		var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
@@ -58,23 +60,34 @@ if(lacp_support){
 function disable_lacp_if_conflicts_with_dualwan(){
 	var wan_lanport_text = "";
 
+	if(based_modelid == "GT10" && wans_extwan == "1")
+		var wan_lanport_num = "1";
+	else
+		var wan_lanport_num = "";
+
 	for(var i = 0; i < bonding_port_settings.length; i++){
-		if(wans_lanport == bonding_port_settings[i].val){
+		if((wans_lanport == bonding_port_settings[i].val) || (wan_lanport_num == bonding_port_settings[i].val)){
 			wan_lanport_text = bonding_port_settings[i].text.toUpperCase();
 		}
 	}
 
 	if(wan_lanport_text!= ""){
-		var note_str = "This function is disabled because " + wan_lanport_text + " is configured as WAN. If you want to enable it, please click <a href=\"http://router.asus.com/Advanced_WANPort_Content.asp\" target=\"_blank\" style=\"text-decoration:underline;\">here</a> to change dual wan settings."; //untranslated
+		var hint_str1 = "<#PortConflict_DisableFunc_Reason#>";
+		var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
+		var note_str = hint_str1.replace("%1$@", wan_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
+
 		document.form.lacp_enabled.style.display = "none";
 		document.getElementById("lacp_note").innerHTML = note_str;
+		document.getElementById("setting_link_1").href = "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_WANPort_Content.asp";
 		document.getElementById("lacp_desc").style.display = "";
 		document.form.lacp_enabled.disabled = true;
 	}
 }
 
 function disable_lacp_if_conflicts_with_iptv(){
-	var note_str = "This function is disabled because " + bonding_port_settings[0].text.toUpperCase() + " or " + bonding_port_settings[1].text.toUpperCase() + " is configured as IPTV STB port."; //untranslated
+	var hint_str1 = "<#PortConflict_SamePort_Hint#>";
+	var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_2");
+	var note_str = hint_str1.replace("%1$@", "<#NAT_lacp#>").replace("%2$@", "IPTV") + " " + hint_str2;
 	var disable_lacp = false;
 
 	if(bonding_port_settings[0].val == "1"  && bonding_port_settings[1].val == "2"){
@@ -93,6 +106,7 @@ function disable_lacp_if_conflicts_with_iptv(){
 	if(disable_lacp){
 		document.form.lacp_enabled.style.display = "none";
 		document.getElementById("lacp_note").innerHTML = note_str;
+		document.getElementById("setting_link_2").href = "http://"+"<#Web_DOMAIN_NAME#>"+"/Advanced_IPTV_Content.asp";
 		document.getElementById("lacp_desc").style.display = "";
 		document.form.lacp_enabled.value = "0";
 	}
@@ -206,7 +220,8 @@ function initial(){
 	}
 
 	if(lacp_support){
-		if(wans_dualwan_array.indexOf("lan") != -1)
+		if(wans_dualwan_array.indexOf("lan") != -1 ||
+			(based_modelid == "GT10" && wans_extwan == "1"))
 			disable_lacp_if_conflicts_with_dualwan();
 
 		disable_lacp_if_conflicts_with_iptv();

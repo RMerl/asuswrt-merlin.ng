@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
- *
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -48,8 +47,8 @@ METHOD(plugin_t, get_features, int,
 {
 	static plugin_feature_t f[] = {
 		/* X25519 DH group */
-		PLUGIN_REGISTER(DH, curve25519_dh_create),
-			PLUGIN_PROVIDE(DH, CURVE_25519),
+		PLUGIN_REGISTER(KE, curve25519_dh_create),
+			PLUGIN_PROVIDE(KE, CURVE_25519),
 				PLUGIN_DEPENDS(RNG, RNG_STRONG),
 		/* Ed25519 private/public keys */
 		PLUGIN_REGISTER(PRIVKEY, curve25519_private_key_load, TRUE),

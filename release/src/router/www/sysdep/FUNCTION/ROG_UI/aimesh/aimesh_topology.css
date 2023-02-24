@@ -224,8 +224,10 @@
 }
 .model_info_bg{
 	position: absolute;
-	top: 96px;
 	left: 16px;
+	bottom: 5px;
+	z-index: 10;
+	max-width: 220px;
 }
 .model_name{
 	margin-bottom: 3px;
@@ -267,7 +269,7 @@
 	bottom: 6px;
 	right: 6px;
 	z-index: 9;
-	background-position: 0% 0%;
+	background-position: 40% 0%;
 }
 .model_icon.web{
 	background-size: contain;
@@ -1412,7 +1414,7 @@
 	background: #cf0a2c;
 	border-radius: 50%;
 	position: absolute;
-	top: 2px;
+	top: 4px;
 	bottom: 0;
 	left: 0;
 	right: 0;

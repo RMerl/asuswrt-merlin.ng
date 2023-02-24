@@ -1,14 +1,14 @@
 moon::iptables-restore < /etc/iptables.rules
 carol::iptables-restore < /etc/iptables.rules
 dave::iptables-restore < /etc/iptables.rules
-moon::rm /etc/ipsec.d/cacerts/strongswanCert.pem
-carol::rm /etc/ipsec.d/cacerts/strongswanCert.pem
-dave::rm /etc/ipsec.d/cacerts/strongswanCert.pem
-moon::ipsec start
-carol::ipsec start
-dave::ipsec start
+moon::cd /etc/swanctl;  rm rsa/* x509/moonCert.pem  x509ca/strongswanCert.pem
+carol::cd /etc/swanctl; rm rsa/* x509/carolCert.pem x509ca/strongswanCert.pem
+dave::cd /etc/swanctl;  rm rsa/* x509/daveCert.pem  x509ca/strongswanCert.pem
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::expect-connection rw
 carol::expect-connection home
-carol::ipsec up home
+carol::swanctl --initiate --child home 2> /dev/null
 dave::expect-connection home
-dave::ipsec up home
+dave::swanctl --initiate --child home 2> /dev/null

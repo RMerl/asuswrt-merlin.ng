@@ -1,0 +1,90 @@
+Version 1.1.1
+~~~~~~~~~~~~~
+
+* Changes:
+  - Make use of libusb hotplug events for device discovery
+  - Use clock_gettime() instead of gettimeofday() to avoid timing issues
+    when calculating packet timeouts
+  - Get correct USB device speed instead of hardcoded value
+  - Bump libusb dependency to 1.0.9
+  - Use non-blocking sockets for client communication to avoid hanging
+  - Use correct manual section (8) for manpage
+  - Log pid of connecting clients if supported
+  - Implement device discovery using libusb hotplug events
+  - Fix wrong timeout value in debug messages
+  - Log error message if writing a config file fails
+  - Fix blocking by using libusb asynchronous I/O for getting initial device
+    information
+  - Tag all udev events with systemd tag
+  - Fix occasional USB reconfiguration due to udev rules being run again
+  - Fix wrong timestamps when running in foreground
+  - Set socket options for client connections to improve performance
+  - Implement "ListListeners" usbmux command handling
+  - Bump libimobiledevice dependency to 1.3.0
+  - Bump libplist dependency to 2.2.0
+  - Add support for iPhone XS/XR UDID format
+  - Add option to allow logging to dedicated logfile
+  - Convert README file to markdown format
+  - Fix USB reconnection issues on virtual machines with iOS 11+ devices
+  - Add support for connecting with T2 chip
+  - Various memory leak, deadlock and invalid free fixes
+  - Show actualy libusb version in debug message on startup
+  - Enable libusb debugging output
+  - Log client process name alongside pid if possible on Linux
+  - Unify and improve log message output
+  - Improve README.md with project description, installation, contributing and
+    usage sections
+
+Version 1.1.0
+~~~~~~~~~~~~~
+
+* Changes:
+  - Check for pkg-config availability in autogen.sh
+  - Fix missing "usbmuxd-proto.h" in released tarbal
+  - Fix typo which broke udev support in rule for udev activation mode
+  - Fix broken configure summary on OS X and change activation method
+    to "manual"
+  - Compile bits of udev and systemd support only if needed
+  - Bump autoconf requirement to 2.64
+
+Version 1.0.9
+~~~~~~~~~~~~~
+
+* Changes:
+  - Fix broken handling of "--user" argument value
+  - Add new "--enable-exit" argument to enable handling of "--exit" requests
+  - Add new "--disable-hotplug" argument to disable automatic device discovery
+  - Add new "--systemd" argument to startup with right settings for systemd
+  - Add man page for usbmuxd
+  - Update copyright headers to match best practice
+  - Flush input buffer on connection teardown
+  - Add systemd based activation with fallback for udev and manual activation
+  - Add initial NEWS file and update README with latest information
+  - Rename header guards according to C++ standard
+  - Implement support for usbmux protocol version 2 which improves stability
+  - Fix crash when old libusbmuxd was used as a client
+  - Add "--version" argument to print version number and exit
+  - Update command line usage to match best practice and other tools
+  - Massively improve read performance by using 3 parallel transfers
+  - Bump requirement to libplist 1.11
+  - Remove trailing "\n" from usbmuxd_log() messages
+  - Improve thread safety
+  - Fix crash on 64bit systems in process_send()
+  - Fix possible leak of file descriptors
+  - Implement "ReadBUID", "ReadPairRecord", "SavePairRecord" and
+    "DeletePairRecord" commands
+  - Make plist based protocol support mandatory
+  - Return proper error packet on client version mismatch
+  - Implement "ListDevices" command
+  - Manage pair records in a directory compatible to native usbmuxd
+  - Output USB configuration changes in log
+  - Set "deactivated" USB configuration on iOS device by default as usbmuxd will
+    bring device to "life" on it's own now
+  - Add udev rule installation with autotools
+  - Lower udev rules numbering to make sure to start as early as possible
+  - Split out client library into "libusbmuxd" and depend on "libimobiledevice"
+  - Implement preflight worker to support iOS 7 based trust dialog handling
+  - Install usbmuxd binary to sbindir instead of bindir
+  - Switch from CMake to autotools build system
+
+This is the first release after the usbmuxd/libusbmuxd project split.

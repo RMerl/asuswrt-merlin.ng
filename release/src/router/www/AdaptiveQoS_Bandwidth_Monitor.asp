@@ -687,12 +687,12 @@ function render_apps(apps_array, obj_icon, apps_field){
 		code +='<tr>';
 		code +='<td style="width:70px;">';
 		img = new Image();
-		img.src = 'images/New_ui/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png';	// to check image file exist
+		img.src = 'https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png';	// to check image file exist
 		if(img.height == 0){	//default image, if image file doesn't exist
 			code +='<div class="appIcons"></div>';
 		}
 		else{
-			code +='<div class="appIcons" style="background-image:url(\'images/New_ui/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png\')"></div>';
+			code +='<div class="appIcons" style="background-image:url(\'https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png\')"></div>';
 		}
 
 		code +='</td>';

@@ -356,14 +356,15 @@ static inline char *wan_if_eth(void)
 #endif
 
 #if defined(RTCONFIG_DEFAULT_AP_MODE)
-#define DUT_DOMAIN_NAME "ap.asus.com"
+#define DUT_DOMAIN_NAME "www.asusrouter.com"
+#define OLD_DUT_DOMAIN_NAME "ap.asus.com"
 #elif defined(RTCONFIG_CONCURRENTREPEATER)
-#define DUT_DOMAIN_NAME "repeater.asus.com"
+#define DUT_DOMAIN_NAME "www.asusrouter.com"
+#define OLD_DUT_DOMAIN_NAME "repeater.asus.com"
 #else
-#define DUT_DOMAIN_NAME "router.asus.com"
+#define DUT_DOMAIN_NAME "www.asusrouter.com"
+#define OLD_DUT_DOMAIN_NAME "router.asus.com"
 #endif
-#define OLD_DUT_DOMAIN_NAME1 "www.asusnetwork.net"
-#define OLD_DUT_DOMAIN_NAME2 "www.asusrouter.com"
 
 #define NETWORKMAP_PAGE "index.asp"
 
@@ -416,6 +417,7 @@ enum {
 	WAN_LW4O6,
 	WAN_MAPE,
 	WAN_V6PLUS,
+	WAN_OCNVC,
 };
 
 #ifdef RTCONFIG_IPV6
@@ -672,6 +674,7 @@ enum {
 	FROM_ALEXA,
 	FROM_WebView,
 	FROM_ATE,
+	FROM_MyASUS,
 	FROM_UNKNOWN
 };
 
@@ -824,6 +827,10 @@ extern void chld_reap(int sig);
 extern int get_wan_proto(char *prefix);
 extern int get_ipv4_service(void);
 extern int get_ipv4_service_by_unit(int unit);
+#ifdef RTCONFIG_SOFTWIRE46
+extern int is_s46_service(void);
+extern int is_s46_service_by_unit(int unit);
+#endif
 #ifdef RTCONFIG_IPV6
 extern char *ipv6_nvname(const char *name);
 extern char *ipv6_nvname_by_unit(const char *name, int unit);
@@ -1277,7 +1284,7 @@ enum led_id {
 	PWR_USB,
 #endif
 #if defined(RTCONFIG_USB) \
- && (defined(RTAX89U) || defined(GTAXY16000))
+ && (defined(RTAX89U) || defined(GTAXY16000) || defined(BR63))
 	PWR_USB2,
 #endif
 #if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12) || defined(XD6_V2)
@@ -1326,7 +1333,7 @@ enum led_id {
 	LED_GROUP3_RED,
 	LED_GROUP3_GREEN,
 	LED_GROUP3_BLUE,
-#if !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10)
 	LED_GROUP4_RED,
 	LED_GROUP4_GREEN,
 	LED_GROUP4_BLUE,
@@ -1355,6 +1362,28 @@ enum led_id {
 	LED_10G_RGB_GREEN,
 	LED_10G_RGB_BLUE,
 	LED_10G_WHITE,
+#endif
+#if defined(BC109) || defined(BC105)
+        LED_53134_INT,
+        LED_SPD_G0,
+        LED_SPD_G1,
+        LED_SPD_G2,
+        LED_SPD_G3,
+        LED_SPD_G4,
+        LED_53134_RST,
+        LED_AR3012_DIS,
+        LED_ACT_G0,
+        LED_ACT_G1,
+        LED_ACT_G2,
+        LED_ACT_G3,
+        LED_ACT_G4,
+        LED_AR3012_RST,
+        LED_ETHALL,
+#endif
+#if defined(EBG15) || defined(EBG19)
+        LED_AR3012_DIS,
+        LED_AR3012_RST,
+        LED_ETHALL,
 #endif
 	LED_ID_MAX,	/* last item */
 };
@@ -1395,6 +1424,11 @@ static inline int have_usb3_led(int model)
 		case MODEL_RTAC5300:
 		case MODEL_GTAC5300:
 		case MODEL_RTAX88U:
+		case MODEL_BC109:
+		case MODEL_BC105:
+		case MODEL_EBG19:
+		case MODEL_EBG15:
+		case MODEL_EBP15:
 			return 1;
 	}
 	return 0;
@@ -1468,6 +1502,10 @@ enum wl_band_id {
 	WL_5G_2_BAND = 1,
 	WL_6G_BAND = 2,
 	WL_2G_BAND = 3,
+#elif defined(GT10)
+	WL_5G_BAND = 0,
+	WL_5G_2_BAND = 1,
+	WL_2G_BAND = 2,
 #elif defined(RTCONFIG_QCA) || defined(RTCONFIG_MTK)
 	WL_2G_BAND = 0,
 	WL_5G_BAND = 1,
@@ -2277,6 +2315,7 @@ extern void set_cpufreq_attr(char *attr, char *val);
 extern int get_ap_mac(const char *ifname, struct iwreq *pwrq);
 #endif
 extern int chk_assoc(const char *ifname);
+extern int get_ch_cch_bw(const char *vap, int *ch, int *cch, int *bw);
 extern int match_radio_status(int unit, int status);
 #if defined(RTCONFIG_CFG80211)
 extern int get_iwphy_name(int unit, char *iwphy, size_t size);
@@ -2287,6 +2326,7 @@ extern int get_ch(int freq);
 extern int get_channel(const char *ifname);
 extern unsigned long long get_bitrate(const char *ifname);
 extern int get_channel_list(const char *ifname, int ch_list[], int size);
+extern uint64_t get_channel_list_mask(enum wl_band_id band);
 extern int has_dfs_channel(void);
 extern int get_radar_channel_list(const char *vphy, int radar_list[], int size);
 extern int get_bw_nctrlsb(const char *ifname, int *bw, int *nctrlsb);
@@ -2359,11 +2399,18 @@ extern int get_wl_count();
 extern int get_eth_count();
 extern int cal_space(char *s1);
 extern int is_self_optmz_stage(int band);
+#ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
+extern int is_optmz_ss_stage(int band);
+extern int is_optmz_conn_stage(int band);
+#endif
 extern int enable_ETH_U(int unit);
 extern void add_led_ctrl_capability(int val);
 extern void del_led_ctrl_capability(int val);
+#ifdef RTCONFIG_PRELINK
+extern int get_prelink_unit();
 #ifdef RTCONFIG_MSSID_PRELINK
 extern void check_mssid_prelink_reset(uint32_t sf);
+#endif
 #endif
 extern void unset_selected_channel_info();
 extern int get_unit_by_wlc_bandindex(int bandindex);
@@ -2494,6 +2541,7 @@ extern int __mt7620_wan_bytecount(int unit, unsigned long *tx, unsigned long *rx
 extern int __mt7621_wan_bytecount(int unit, unsigned long *tx, unsigned long *rx);
 #endif
 extern int get_channel_list(int unit, int ch_list[], int size);
+extern uint64_t get_channel_list_mask(enum wl_band_id band);
 extern int get_radar_channel_list(int, int radar_list[], int size);
 extern int set_acl_entry(const char *ifname, char *addr);
 extern int set_channel(const char* ifname, int channel);
@@ -2587,7 +2635,7 @@ static inline void set_power_save_mode(void) { }
 extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 /* port statistic counter structure */
 typedef struct rtk_stat_port_cntr_s
 {
@@ -2656,7 +2704,12 @@ typedef struct rtk_stat_port_cntr_s
 } rtk_stat_port_cntr_t;
 #endif
 #ifdef HND_ROUTER
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
+extern uint32_t hnd_get_phy_status(int port);
+extern uint32_t hnd_get_phy_speed(int port);
+extern uint32_t hnd_get_phy_duplex(int port);
+extern uint64_t hnd_get_phy_mib(int port, char *type);
+#elif defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756) || defined(BCM4906_504)
 extern uint32_t hnd_get_phy_status(char *ifname);
 extern uint32_t hnd_get_phy_speed(char *ifname);
 extern uint32_t hnd_get_phy_duplex(char *ifname);
@@ -2666,7 +2719,7 @@ extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
 extern uint32_t hnd_get_phy_duplex(int port);
 extern uint64_t hnd_get_phy_mib(int port, char *type);
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 extern int rtkswitch_port_speed(int port);
 extern int rtkswitch_port_duplex(int port);
 extern int rtkswitch_port_stat(int port);
@@ -2678,6 +2731,9 @@ extern uint32_t hnd_get_phy_status(int port, int offs, unsigned int regv, unsign
 extern uint32_t hnd_get_phy_speed(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint32_t hnd_get_phy_duplex(int port, int offs, unsigned int regv, unsigned int pmdv);
 extern uint64_t hnd_get_phy_mib(int port, int offs, char *type);
+#endif
+#ifdef RTCONFIG_SW_SPDLED
+extern uint32_t hnd_get_phy_speed_rc(char *ifname);
 #endif
 extern uint32_t set_ex53134_ctrl(uint32_t portmask, int ctrl);
 extern int ethctl_phy_op(char* phy_type, int addr, unsigned int reg, unsigned int value, int wr);
@@ -2747,7 +2803,6 @@ extern int discover_interface(const char *current_wan_ifname, int dhcp_det);
 extern int discover_all(int wan_unit);
 
 // strings.c
-extern int all_char_to_ascii(const char *output, const char *input, int outsize);
 extern int char_to_ascii_safe(const char *output, const char *input, int outsize);
 extern void char_to_ascii(const char *output, const char *input);
 #if defined(RTCONFIG_UTF8_SSID)
@@ -2832,6 +2887,7 @@ extern int nvram_set_file(const char *key, const char *fname, int max);
 #endif
 extern int free_caches(const char *clean_mode, const int clean_time, const unsigned int threshold);
 extern int update_6rd_info(void);
+extern int update_6rd_info_by_unit(int unit);
 extern int is_private_subnet(const char *ip);
 extern const char *get_wanface(void);
 extern const char *get_wanip(void);
@@ -2878,7 +2934,7 @@ extern int psr_exist(void);
 extern int psr_exist_except(int unit);
 #endif
 
-#if defined(RTCONFIG_VPN_FUSION)
+#if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_TPVPN) || defined(RTCONFIG_IG_SITE2SITE) || defined(RTCONFIG_WIREGUARD)
 #define VPNC_LOAD_CLIENT_LIST          0x01
 #define VPNC_LOAD_PPTP_OPT                     0x02
 extern int _get_new_vpnc_index(void);
@@ -2933,6 +2989,7 @@ extern int u_readl(unsigned long addr, unsigned long *value);
 extern int set_irq_smp_affinity(unsigned int irq, unsigned int cpu_mask);
 extern int set_irq_smp_affinity_by_name(const char *name, int order, unsigned int cpu_mask);
 extern int get_active_fw_num(void);
+extern int exec_and_return_string(const char *cmd, const char *keyword, char *buf, size_t buf_len);
 extern int exec_and_parse(const char *cmd, const char *keyword, const char *fmt, int cnt, ...);
 extern char *iwpriv_get(const char *iface, char *cmd);
 extern int iwpriv_get_int(const char *iface, char *cmd, int *result);
@@ -2987,6 +3044,7 @@ extern char *get_wl_led_gpio_nv(int band);
 #define CH169_M	(1U << 28)
 #define CH173_M	(1U << 29)
 #define CH177_M	(1U << 30)
+#define DFS_CH_M	(CH52_M | CH56_M | CH60_M | CH64_M | CH68_M | CH96_M | CH100_M | CH104_M | CH108_M | CH112_M | CH116_M | CH120_M | CH124_M | CH128_M | CH132_M | CH136_M | CH140_M | CH144_M)
 extern int ch2g2bit(int ch);
 extern int ch5g2bit(int ch);
 extern uint64_t ch2g2bitmask(int ch);
@@ -3023,6 +3081,7 @@ extern void set_maclist_del_kick(char *ifname, int mode, char *sta_addr);
 #include <stdio.h>
 void set_macfilter_unit(int unit, int subnet, FILE *fp);
 void set_macfilter_all(FILE *fp);
+extern int nat_acceleration_status(void);
 extern int get_wifi_temperature(enum wl_band_id band);
 #else
 static inline char *get_wsup_drvname(__attribute__ ((unused)) int band) { return ""; }
@@ -4131,69 +4190,6 @@ typedef struct __amaslib_notification__t_
 #define TQ_RULE_PERSIST_LOCK	"tq_rules_persist"
 #endif /* defined(RTCONFIG_TIME_QUOTA) */
 
-#ifdef RTCONFIG_TUNNEL
-
-#define AWSIOT_IPC_SOCKET_PATH  "/var/run/awsiot_ipc_socket"
-#define MASTIFF_IPC_SOCKET_PATH  "/var/run/mastiff_ipc_socket"
-#define MASTIFF_IPC_MAX_CONNECTION       10
-
-
-#define AAE_MAX_IPC_PACKET_SIZE   1024
-
-/* for ipc packet handler */
-struct aaeIpcArgStruct {
-  unsigned char data[AAE_MAX_IPC_PACKET_SIZE];
-  size_t dataLen;
-  char waitResp;
-  int sock;
-}aaeIpcArgs;
-
-#define AAE_IPC_EVENT_ID "eid"
-#define AAE_IPC_STATUS "status"
-
-#ifdef RTCONFIG_AWSIOT
-#define AWSIOT_PREFIX "awsiot"
-enum awsiotEventType {
-	EID_AWSIOT_NONE = 0,
-	EID_AWSIOT_TUNNEL_ENABLE = 1,
-	EID_AWSIOT_MAX
-};
-#define AWSIOT_GENERIC_MSG	 "{\""AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
-#endif
-
-//#ifdef RTCONFIG_ACCOUNT_BINDING
-#define AAE_DDNS_PREFIX "ddns"
-enum aaeDdnsEventType {
-	AAE_EID_DDNS_NONE = 0,
-	AAE_EID_DDNS_REFRESH_TOKEN = 1,
-	AAE_EID_DDNS_MAX
-};
-#define AAE_DDNS_GENERIC_MSG	 "{\""AAE_DDNS_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
-#define AAE_DDNS_GENERIC_RESP_MSG	 "{\""AAE_DDNS_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\"}}"
-
-#define AAE_NTC_PREFIX "nt_center"
-enum aaeNtcEventType {
-	AAE_EID_NTC_NONE = 0,
-	AAE_EID_NTC_REFRESH_DEVICE_TICKET = 1,
-	AAE_EID_NTC_MAX
-};
-#define AAE_NTC_GENERIC_MSG	 "{\""AAE_NTC_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
-#define AAE_NTC_GENERIC_RESP_MSG	 "{\""AAE_NTC_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\"}}"
-
-#define AAE_HTTPD_PREFIX "httpd"
-#define AAE_HTTPD_PAYLOAD2_PREFIX "payload2"
-enum aaeHttpdEventType {
-	AAE_EID_HTTPD_NONE = 0,
-	AAE_EID_HTTPD_PAYLOAD2 = 1,
-	AAE_EID_HTTPD_MAX
-};
-#define AAE_HTTPD_PAYLOAD2_MSG	 "{\""AAE_HTTPD_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_HTTPD_PAYLOAD2_PREFIX"\":%s}}"
-#define AAE_HTTPD_PAYLOAD2_RESP_MSG	 "{\""AAE_HTTPD_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\"}}"
-//#endif
-
-int aae_sendIpcMsgAndWaitResp(char *ipcPath, char *data, int dataLen, char *out, int outLen, int timeout_sec);
-#endif //#ifdef RTCONFIG_TUNNEL
-
 extern int get_discovery_ssid(char *ssid_g, int size);
 extern int get_index_page(char *page, int size);
 extern int get_chance_to_control(void);
@@ -4359,6 +4355,11 @@ enum {
 	WLIF_5G1 = 0,
 	WLIF_5G2 = 1,
 	WLIF_6G	 = 2,
+#elif defined(GT10)
+	WLIF_2G  = 2,
+	WLIF_5G1 = 0,
+	WLIF_5G2 = 1,
+	WLIF_6G  = 3,
 #else
 	WLIF_2G	 = 0,
 	WLIF_5G1 = 1,
@@ -4425,6 +4426,26 @@ extern int is_tpvpn_configured(int provider, const char* region, const char* con
 
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_AMAS_ADTBW)
 #define ACSD_SCORE_FILE	"/tmp/auto_chan_score.txt"
+#endif
+
+#if defined(RTCONFIG_AMAS_CENTRAL_ADS)
+struct ads_info {
+	int tx_rssi[4];
+	int tx_datarate;
+};
+#endif
+
+#if defined(RTCONFIG_ACCOUNT_BINDING)
+extern int is_account_bound();
+#endif
+
+#ifdef RTCONFIG_SW_SPDLED
+struct devif_spdled {
+	char *ifname;
+	int  gpio;
+};
+extern struct devif_spdled devif_spdled_list[];
+
 #endif
 
 #endif	/* !__SHARED_H__ */

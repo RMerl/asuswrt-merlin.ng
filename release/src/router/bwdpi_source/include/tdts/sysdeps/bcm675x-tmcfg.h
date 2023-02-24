@@ -26,7 +26,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Nov 16 11:36:52 2021
+ * Date: Wed Nov 30 13:45:30 2022
  */
 #ifndef __TMCFG__AUTOCONF_OUTPUT_H_
 #define __TMCFG__AUTOCONF_OUTPUT_H_
@@ -47,7 +47,7 @@
 #define TMCFG_ARCH_POWERPC 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX56U_GPL_386_41034/release/src-rt-5.02axhnd.675x/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt-GPL_RT-AX95Q_3.0.0.4.388.21224-g702a50f/release/src-rt-5.02axhnd.675x/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm"
 #define TMCFG_CPU_32BITS 1 // y
 #define TMCFG_CPU_64BITS 0 // n

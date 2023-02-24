@@ -177,7 +177,7 @@ static const struct led_btn_table_s {
 #endif
 #ifdef RTCONFIG_USB
 	{ "pwr_usb_gpio",	&led_gpio_table[PWR_USB] },
-#if defined(RTAX89U) || defined(GTAXY16000)
+#if defined(RTAX89U) || defined(GTAXY16000) || defined(BR63)
 	{ "pwr_usb_gpio2",	&led_gpio_table[PWR_USB2] },
 #endif
 #endif
@@ -210,7 +210,7 @@ static const struct led_btn_table_s {
 	{ "led_group3_red_gpio",	&led_gpio_table[LED_GROUP3_RED] },
 	{ "led_group3_green_gpio",	&led_gpio_table[LED_GROUP3_GREEN] },
 	{ "led_group3_blue_gpio",	&led_gpio_table[LED_GROUP3_BLUE] },
-#if !defined(GTAXE11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10)
+#if !defined(GTAX11000_PRO) && !defined(GTAXE16000) && !defined(GTAX6000) && !defined(GT10)
 	{ "led_group4_red_gpio",	&led_gpio_table[LED_GROUP4_RED] },
 	{ "led_group4_green_gpio",	&led_gpio_table[LED_GROUP4_GREEN] },
 	{ "led_group4_blue_gpio",	&led_gpio_table[LED_GROUP4_BLUE] },
@@ -330,6 +330,28 @@ static const struct led_btn_table_s {
 	{ "led_10g_green_gpio",		&led_gpio_table[LED_10G_RGB_GREEN] },
 	{ "led_10g_blue_gpio",		&led_gpio_table[LED_10G_RGB_BLUE] },
 	{ "led_10g_white_gpio",		&led_gpio_table[LED_10G_WHITE] },
+#endif
+#if defined(BC109) || defined(BC105)
+        { "led_53134_int_gpio",           &led_gpio_table[LED_53134_INT] },
+        { "led_spd_g0_gpio",              &led_gpio_table[LED_SPD_G0] },
+        { "led_spd_g1_gpio",              &led_gpio_table[LED_SPD_G1] },
+        { "led_spd_g2_gpio",              &led_gpio_table[LED_SPD_G2] },
+        { "led_spd_g3_gpio",              &led_gpio_table[LED_SPD_G3] },
+        { "led_spd_g4_gpio",              &led_gpio_table[LED_SPD_G4] },
+        { "led_53134_rst_gpio",           &led_gpio_table[LED_53134_RST] },
+        { "led_ar3012_dis_gpio",          &led_gpio_table[LED_AR3012_DIS] },
+        { "led_act_g0_gpio",              &led_gpio_table[LED_ACT_G0] },
+        { "led_act_g1_gpio",              &led_gpio_table[LED_ACT_G1] },
+        { "led_act_g2_gpio",              &led_gpio_table[LED_ACT_G2] },
+        { "led_act_g3_gpio",              &led_gpio_table[LED_ACT_G3] },
+        { "led_act_g4_gpio",              &led_gpio_table[LED_ACT_G4] },
+        { "led_ar3012_rst_gpio",          &led_gpio_table[LED_AR3012_RST] },
+        { "led_ethall_gpio",          	  &led_gpio_table[LED_ETHALL] },
+#endif
+#if defined(EBG19) || defined(EBG15)
+        { "led_ar3012_dis_gpio",          &led_gpio_table[LED_AR3012_DIS] },
+        { "led_ar3012_rst_gpio",          &led_gpio_table[LED_AR3012_RST] },
+        { "led_ethall_gpio",          	  &led_gpio_table[LED_ETHALL] },
 #endif
 	{ NULL, NULL },
 };
@@ -522,9 +544,11 @@ int init_gpio(void)
 		gpio_dir(gpio_pin, GPIO_DIR_IN);
 	}
 
+//	_dprintf("%s, chk rc gpio init(%d), (pwr_enum is %d)\n", __func__, ASIZE(led_list), LED_POWER);
 	/* led output */
 	for(i = 0; i < ASIZE(led_list); i++)
 	{
+		_dprintf("led_list[%d], nv=%s\n", i, nvram_safe_get(led_list[i]));
 		if (!nvram_get(led_list[i]))
 			continue;
 #if defined(RTCONFIG_ETRON_XHCI_USB3_LED)
@@ -581,6 +605,11 @@ int init_gpio(void)
 #endif
 
 #if !defined(RTCONFIG_CONCURRENTREPEATER)
+#if defined(EBG15) || defined(EBG19)
+		if(i == LED_POWER)
+			set_gpio(gpio_pin, enable);
+		else	
+#endif
 		set_gpio(gpio_pin, disable);
 #endif
 
@@ -636,6 +665,7 @@ int init_gpio(void)
 	}
 #endif
 
+//	_dprintf("%s rc gpio init fin..\n", __func__);
 	// TODO: system dependent initialization
 	return 0;
 }
@@ -701,9 +731,27 @@ int set_pwr_usb(int boolOn) {
 			break;
 	}
 #endif
+#if defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
+	if (boolOn) {
+		if (!nvram_get_int("bcm_usb")) {
+			nvram_set_int("bcm_usb", 1);
+			eval("insmod", "bcm_usb", (nvram_get_int("usb_usb3") == 1) ? "usb3_enable=1" : "usb3_enable=0");
+		}
+	} else {
+		eval("rmmod", "bcm_usb");
+		nvram_set_int("bcm_usb", 0);
+	}
+	return;
+#endif
 
 	if ((gpio_pin = (use_gpio = nvram_get_int("pwr_usb_gpio"))&0xff) != 0xff) {
 #ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(GT10) || defined(BR63)
+		/* set pinmux of GPIO 80 as 4 to enable GPIO mode */
+		system("sw 0xff800554 0");
+		system("sw 0xff800558 0x4050");
+		system("sw 0xff80055c 0x21");
+#endif
 		enable = ((use_gpio&GPIO_ACTIVE_LOW) == 0 ? 0 : 1);
 		if (boolOn)
 			set_gpio(gpio_pin, enable);
@@ -719,6 +767,12 @@ int set_pwr_usb(int boolOn) {
 
 	if ((gpio_pin = (use_gpio = nvram_get_int("pwr_usb_gpio2"))&0xff) != 0xff) {
 #ifdef RTCONFIG_HND_ROUTER_AX_6756
+#if defined(BR63)
+		/* set pinmux of GPIO 82 as 4 to enable GPIO mode */
+		system("sw 0xff800554 0");
+		system("sw 0xff800558 0x4052");
+		system("sw 0xff80055c 0x21");
+#endif
 		enable = ((use_gpio&GPIO_ACTIVE_LOW) == 0 ? 0 : 1);
 		if (boolOn)
 			set_gpio(gpio_pin, enable);
@@ -1113,7 +1167,7 @@ int lanport_status(void)
 
 #elif defined(RTCONFIG_QCA)
 	return rtkswitch_lanPorts_phyStatus();
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 	return rtkswitch_lanPorts_phyStatus();
 #elif defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(RTCONFIG_BCM_502L07P2)
 	int status = 0;
@@ -1234,7 +1288,7 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 	if (ctrl)
 		rtkswitch_LanPort_linkUp();
 	else
@@ -1274,11 +1328,13 @@ int lanport_ctrl(int ctrl)
 				doSystem("ethctl eth%d phy-reset", atoi(word));
 		}
 #endif
-#if defined(GTAXE16000) || defined(GTAX11000_PRO)
+#if defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(RTAX88U_PRO)
 		if(atoi(word) == 5 || atoi(word) == 6)
 		{
-			if(ctrl)
+			if(ctrl) {
+				_dprintf("%s: perform PHY reset upon eth%d...\n", __func__, atoi(word));
 				doSystem("ethctl eth%d phy-reset", atoi(word));
+			}
 		}
 		else
 #endif

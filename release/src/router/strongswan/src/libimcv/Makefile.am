@@ -125,7 +125,7 @@ libimcv_la_SOURCES = \
 	tcg/pts/tcg_pts_attr_file_meas.h tcg/pts/tcg_pts_attr_file_meas.c \
 	tcg/pts/tcg_pts_attr_req_file_meta.h tcg/pts/tcg_pts_attr_req_file_meta.c \
 	tcg/pts/tcg_pts_attr_unix_file_meta.h tcg/pts/tcg_pts_attr_unix_file_meta.c \
-	tcg/seg/tcg_seg_attr_max_size.h tcg/seg/tcg_seg_attr_max_size.c \
+	tcg/seg/tcg_seg_attr_seg_contract.h tcg/seg/tcg_seg_attr_seg_contract.c \
 	tcg/seg/tcg_seg_attr_seg_env.h tcg/seg/tcg_seg_attr_seg_env.c \
 	tcg/seg/tcg_seg_attr_next_seg.h tcg/seg/tcg_seg_attr_next_seg.c
 
@@ -199,25 +199,9 @@ TESTS = imcv_tests
 check_PROGRAMS = $(TESTS)
 
 imcv_tests_SOURCES = \
-	ita/ita_attr_command.c \
-	pa_tnc/pa_tnc_attr_manager.c \
-	seg/seg_env.c seg/seg_contract.c \
-	seg/seg_contract_manager.c \
-	swid_gen/swid_gen.c \
-	swima/swima_data_model.c \
-	swima/swima_event.c \
-	swima/swima_events.c \
-	swima/swima_record.c \
-	swima/swima_inventory.c \
-	swima/swima_collector.c \
 	suites/test_imcv_seg.c \
 	suites/test_imcv_swima.c \
-	ietf/ietf_attr_pa_tnc_error.c \
-	ietf/swima/ietf_swima_attr_req.c \
-	ietf/swima/ietf_swima_attr_sw_inv.c \
-	ietf/swima/ietf_swima_attr_sw_ev.c \
-	tcg/seg/tcg_seg_attr_seg_env.c \
-	imcv.c imcv_tests.h imcv_tests.c
+	imcv_tests.h imcv_tests.c
 
 imcv_tests_CFLAGS = \
 	-I$(top_srcdir)/src/libimcv \

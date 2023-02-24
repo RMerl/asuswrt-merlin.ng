@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
  *
  * libvici.h is MIT-licensed to simplify reuse, but please note that libvici.c
  * is not, as it depends on the GPLv2 licensed libstrongswan.

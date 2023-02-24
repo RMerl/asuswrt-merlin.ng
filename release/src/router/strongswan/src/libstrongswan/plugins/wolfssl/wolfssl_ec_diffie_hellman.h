@@ -38,19 +38,19 @@ typedef struct wolfssl_ec_diffie_hellman_t wolfssl_ec_diffie_hellman_t;
 struct wolfssl_ec_diffie_hellman_t {
 
 	/**
-	 * Implements diffie_hellman_t interface.
+	 * Implements key_exchange_t interface.
 	 */
-	diffie_hellman_t dh;
+	key_exchange_t ke;
 };
 
 /**
  * Creates a new wolfssl_ec_diffie_hellman_t object.
  *
- * @param group			EC Diffie Hellman group number to use
+ * @param group			EC Diffie-Hellman group number to use
  * @return				wolfssl_ec_diffie_hellman_t object, NULL if not
  *						supported
  */
 wolfssl_ec_diffie_hellman_t *wolfssl_ec_diffie_hellman_create(
-												diffie_hellman_group_t group);
+												key_exchange_method_t group);
 
 #endif /** WOLFSSL_PLUGIN_EC_DIFFIE_HELLMAN_H_ @}*/

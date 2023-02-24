@@ -27,6 +27,10 @@
 #include <bcmnvram.h>
 #include <shutils.h>
 #include <shared.h>
+#ifdef RTCONFIG_WIREGUARD
+#include <vpn_utils.h>
+#include <network_utility.h>
+#endif
 
 #include "usb_info.h"
 #include "disk_initial.h"
@@ -187,6 +191,58 @@ int get_ipsec_subnet(char *buf, int len)
 	return 0;
 }
 
+#ifdef RTCONFIG_WIREGUARD
+void get_wgsc_subnet(char *buf, size_t len)
+{
+	int unit, c_unit;
+	char prefix[32] = {0}, c_prefix[32] = {0};
+	char addrs[64] = {0}, addr[INET6_ADDRSTRLEN] = {0}, *next = NULL;
+	char *p, mask[INET_ADDRSTRLEN] = {0};
+	unsigned long prefixlen;
+
+	if (!buf)
+		return;
+
+	memset(buf, 0, len);
+	for (unit = 1; unit <= WG_SERVER_MAX; unit++) {
+		snprintf(prefix, sizeof(prefix), "wgs%d_", unit);
+		if (!nvram_pf_get_int(prefix, "enable"))
+			continue;
+		if (!nvram_pf_get_int(prefix, "lanaccess"))
+			continue;
+
+		for (c_unit = 1; c_unit <= WG_SERVER_CLIENT_MAX; c_unit++) {
+			snprintf(c_prefix, sizeof(c_prefix), "wgs%d_c%d_", unit, c_unit);
+			if (!nvram_pf_get_int(c_prefix, "enable"))
+				continue;
+
+			strlcpy(addrs, nvram_pf_safe_get(c_prefix, "addr"), sizeof(addrs));
+			foreach_44 (addr, addrs, next) {
+				p = strchr(addr, '/');
+				if (p) {
+					*p = '\0';
+					if (is_valid_ip4(addr)) {
+						prefixlen = strtoul(p+1, NULL, 10);
+						memset(mask, 0, sizeof(mask));
+						if (prefixlen != 32)
+							convert_cidr_to_subnet_mask(prefixlen, mask, sizeof(mask));
+						strlcat(buf, addr, len);
+						if (mask[0]) {
+							strlcat(buf, "/", len);
+							strlcat(buf, mask, len);
+						}
+						strlcat(buf, " ", len);
+					}
+				}
+			}
+		}
+	}
+
+	if (buf[0])
+		trimWS(buf);
+}
+#endif
+
 int main(int argc, char *argv[])
 {
 	FILE *fp;
@@ -219,6 +275,9 @@ int main(int argc, char *argv[])
 	int st_samba_mode = nvram_get_int("st_samba_mode");
 #if defined(RTCONFIG_SAMBA36X)
 	spnego = 1;
+#endif
+#ifdef RTCONFIG_WIREGUARD
+	char wgsc_subnet[1024] = {0};
 #endif
 
 	if (access(SAMBA_CONF, F_OK) == 0)
@@ -368,13 +427,31 @@ int main(int argc, char *argv[])
 			get_ipsec_subnet(ipsec_subnet, sizeof(ipsec_subnet));
 		}
 #endif /* RTCONFIG_IPSEC */
+#ifdef RTCONFIG_WIREGUARD
+		get_wgsc_subnet(wgsc_subnet, sizeof(wgsc_subnet));
+#endif /* RTCONFIG_IPSEC */
 	}
 	if(nvram_invmatch("re_mode", "1"))
 	{
-		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s %s %s %s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), pptpd_subnet, openvpn_subnet, ipsec_subnet);
-#else
-		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s\n", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+		fprintf(fp, "hosts allow = 127.0.0.1 %s/%s", nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"));
+#if defined(RTCONFIG_PPTPD) || defined(RTCONFIG_ACCEL_PPTPD)
+		if (pptpd_subnet[0])
+			fprintf(fp, " %s", pptpd_subnet);
 #endif
+#ifdef RTCONFIG_OPENVPN
+		if (openvpn_subnet[0])
+			fprintf(fp, " %s", openvpn_subnet);
+#endif
+#ifdef RTCONFIG_IPSEC
+		if (ipsec_subnet[0])
+			fprintf(fp, " %s", ipsec_subnet);
+#endif
+#ifdef RTCONFIG_WIREGUARD
+		if (wgsc_subnet[0])
+			fprintf(fp, " %s", wgsc_subnet);
+#endif
+		fprintf(fp, "\n");
+
 		fprintf(fp, "hosts deny = 0.0.0.0/0\n");
 	}
 #endif //#if 0

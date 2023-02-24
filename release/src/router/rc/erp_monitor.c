@@ -634,6 +634,11 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTN66U
 		|| model == MODEL_GTAC5300
 		|| model == MODEL_RTAX88U
+		|| model == MODEL_BC109
+		|| model == MODEL_BC105
+		|| model == MODEL_EBG19
+		|| model == MODEL_EBG15
+		|| model == MODEL_EBP15
 		|| model == MODEL_GTAX11000
 		|| model == MODEL_RTAX92U
 		|| model == MODEL_RTAX95Q
@@ -655,6 +660,7 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_GT10
 		|| model == MODEL_RTAX58U_V2
 		|| model == MODEL_RTAX3000N
+		|| model == MODEL_BR63
 		|| model == MODEL_RTAXE7800
 		|| model == MODEL_TUFAX3000_V2
 		|| model == MODEL_RTAX55
@@ -766,6 +772,7 @@ static void erp_standby_mode(int model)
 		case MODEL_RTAX58U_V2:
 		case MODEL_RTAX82_XD6S:
 		case MODEL_RTAX3000N:
+		case MODEL_BR63:
 			eval("wl", "-i", "eth2", "down");
 			eval("wl", "-i", "eth3", "down"); // turn off 5g radio
 			break;

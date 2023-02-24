@@ -771,7 +771,11 @@ function parseOpenVPNClients(client_status){ //192.168.123.82:46954 10.8.0.6 pin
 	for (i = 0; i < lines.length; i++){
 		var fields = lines[i].split(' ');
 		if ( fields.length != 3 ) continue;
-		openvpnd_connected_clients.push({"username":fields[2],"remoteIP":fields[0],"VPNIP":fields[1]});
+		openvpnd_connected_clients.push({
+			"username": htmlEnDeCode.htmlEncode(fields[2]),
+			"remoteIP": htmlEnDeCode.htmlEncode(fields[0]),
+			"VPNIP": htmlEnDeCode.htmlEncode(fields[1])
+		});
 	}
 }
 function openvpnd_connected_status(_obj){
@@ -1095,9 +1099,9 @@ function validate_format_OpenVPN(_obj, _validField){
 			return false;
 		}
 
-		if(wan_proto=="v6plus" && array_ipv6_s46_ports.length > 1){
+		if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
 			if (!validator.range_s46_ports($vpn_server_port[0], "none")){
-				if(!confirm("The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?")){
+				if(!confirm(port_confirm)){
 					$vpn_server_port.focus();
 					return false;
 				}
@@ -1836,14 +1840,16 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 			return validator.isNumber(this,event);
 		});
 	var $vpn_server_port_hint_obj = $("<div>").addClass("item_hint").html("* <#SSH_Port_Suggestion#>").appendTo($detail_general);
-	if(wan_proto=="v6plus"){
-		var get_ipv6_s46_ports = (Softwire46_support && wan_proto=="v6plus") ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
+	if(wan_proto == "v6plus" || wan_proto == "ocnvc"){
+		var get_s46_hgw_case = '<% nvram_get("s46_hgw_case"); %>';      //topology 2,3,6
+		var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;        //true for topology 3||6
+		var get_ipv6_s46_ports = (Softwire46_support && (wan_proto == "v6plus" || wan_proto == "ocnvc")) ? httpApi.nvramGet(["ipv6_s46_ports"]).ipv6_s46_ports : '0';
 		var array_ipv6_s46_ports = new Array("");
 		if(get_ipv6_s46_ports!="0" && get_ipv6_s46_ports!=""){
 			array_ipv6_s46_ports = get_ipv6_s46_ports.split(" ");
 		}
-		if(array_ipv6_s46_ports.length > 1){
-			var v6plus_hint = "Since you are currently using v6plus connection, please make sure your external port settings are within the following port range:<br>"+get_ipv6_s46_ports;
+		if(s46_ports_check_flag && array_ipv6_s46_ports.length > 1){
+			var v6plus_hint = port_confirm + "<br>" + get_ipv6_s46_ports;
 			$vpn_server_port_hint_obj.html(v6plus_hint);
 		}
 	}

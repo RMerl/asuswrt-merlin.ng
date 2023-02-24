@@ -120,7 +120,7 @@ function update_ipsec_log() {
 		},
 		success: function(xml) {
 			var ipsecXML = xml.getElementsByTagName("ipsec");
-			var ipsec_log = ipsecXML[0].firstChild.nodeValue.trim();
+			var ipsec_log = htmlEnDeCode.htmlEncode(ipsecXML[0].innerHTML);
 			$("textarea#textarea").html(ipsec_log);
 		}
 	});

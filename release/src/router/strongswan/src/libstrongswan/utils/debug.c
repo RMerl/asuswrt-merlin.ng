@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -62,9 +63,10 @@ ENUM(debug_lower_names, DBG_DMN, DBG_ANY,
 );
 
 /**
- * level logged by the default logger
+ * level logged by the default logger for specific groups, to simplify things
+ * we store level-1, so initialization to 0 is like setting it to 1
  */
-static level_t default_level = 1;
+static level_t default_level[DBG_MAX];
 
 /**
  * stream logged to by the default logger
@@ -80,7 +82,8 @@ void dbg_default(debug_t group, level_t level, char *fmt, ...)
 	{
 		default_stream = stderr;
 	}
-	if (level <= default_level)
+	/* levels are stored as level-1 */
+	if (level <= default_level[group]+1)
 	{
 		va_list args;
 
@@ -91,16 +94,34 @@ void dbg_default(debug_t group, level_t level, char *fmt, ...)
 	}
 }
 
-/**
- * set the level logged by the default stderr logger
+/*
+ * Described in header
+ */
+void dbg_default_set_level_group(debug_t group, level_t level)
+{
+	if (group < DBG_ANY)
+	{
+		default_level[group] = level-1;
+	}
+	else
+	{
+		for (group = 0; group < DBG_MAX; group++)
+		{
+			default_level[group] = level-1;
+		}
+	}
+}
+
+/*
+ * Described in header
  */
 void dbg_default_set_level(level_t level)
 {
-	default_level = level;
+	dbg_default_set_level_group(DBG_ANY, level);
 }
 
-/**
- * set the stream logged by dbg_default() to
+/*
+ * Described in header
  */
 void dbg_default_set_stream(FILE *stream)
 {
@@ -111,4 +132,3 @@ void dbg_default_set_stream(FILE *stream)
  * The registered debug hook.
  */
 void (*dbg) (debug_t group, level_t level, char *fmt, ...) = dbg_default;
-

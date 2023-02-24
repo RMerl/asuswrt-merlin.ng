@@ -245,9 +245,7 @@ None by default.
 
 =head1 SEE ALSO
 
-strongSwan Wiki:  https://wiki.strongswan.org/projects/strongswan/wiki/Vici
-
-strongSwan Mailing list:  users@lists.strongswan.org
+strongSwan Documentation:  https://docs.strongswan.org/docs/5.9/plugins/vici.html
 
 =head1 AUTHOR
 

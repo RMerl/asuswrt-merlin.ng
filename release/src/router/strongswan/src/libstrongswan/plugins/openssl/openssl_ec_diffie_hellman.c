@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008-2021 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -53,7 +54,7 @@ struct private_openssl_ec_diffie_hellman_t {
 	/**
 	 * Diffie Hellman group number.
 	 */
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 
 	/**
 	 * EC private (public) key
@@ -197,10 +198,10 @@ error:
 }
 #endif /* OPENSSL_VERSION_NUMBER < ... */
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_openssl_ec_diffie_hellman_t *this, chunk_t value)
 {
-	if (!diffie_hellman_verify_value(this->group, value))
+	if (!key_exchange_verify_pubkey(this->group, value))
 	{
 		return FALSE;
 	}
@@ -231,7 +232,7 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_openssl_ec_diffie_hellman_t *this, chunk_t *value)
 {
 #if OPENSSL_VERSION_NUMBER < 0x1010000fL
@@ -252,7 +253,7 @@ METHOD(diffie_hellman_t, get_my_public_value, bool,
 #endif
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_openssl_ec_diffie_hellman_t *this, chunk_t *secret)
 {
 	if (!this->shared_secret.len &&
@@ -265,7 +266,7 @@ METHOD(diffie_hellman_t, get_shared_secret, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_openssl_ec_diffie_hellman_t *this)
 {
 	return this->group;
@@ -274,7 +275,7 @@ METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
 /*
  * Described in header
  */
-int openssl_ecdh_group_to_nid(diffie_hellman_group_t group)
+int openssl_ecdh_group_to_nid(key_exchange_method_t group)
 {
 	switch (group)
 	{
@@ -336,7 +337,7 @@ static bool ecp2chunk(EC_GROUP *group, EC_POINT *point, chunk_t *chunk)
 	return chunk->len;
 }
 
-METHOD(diffie_hellman_t, set_private_value, bool,
+METHOD(key_exchange_t, set_private_key, bool,
 	private_openssl_ec_diffie_hellman_t *this, chunk_t value)
 {
 	BIGNUM *priv = NULL;
@@ -389,7 +390,7 @@ METHOD(diffie_hellman_t, set_private_value, bool,
 
 #else /* OPENSSL_VERSION_NUMBER */
 
-METHOD(diffie_hellman_t, set_private_value, bool,
+METHOD(key_exchange_t, set_private_key, bool,
 	private_openssl_ec_diffie_hellman_t *this, chunk_t value)
 {
 	EC_KEY *key = NULL;
@@ -429,7 +430,7 @@ error:
 
 #endif /* OPENSSL_VERSION_NUMBER */
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_openssl_ec_diffie_hellman_t *this)
 {
 	EC_GROUP_free(this->ec_group);
@@ -442,7 +443,7 @@ METHOD(diffie_hellman_t, destroy, void,
 /*
  * Described in header
  */
-openssl_ec_diffie_hellman_t *openssl_ec_diffie_hellman_create(diffie_hellman_group_t group)
+openssl_ec_diffie_hellman_t *openssl_ec_diffie_hellman_create(key_exchange_method_t group)
 {
 	private_openssl_ec_diffie_hellman_t *this;
 	int curve;
@@ -455,12 +456,12 @@ openssl_ec_diffie_hellman_t *openssl_ec_diffie_hellman_create(diffie_hellman_gro
 
 	INIT(this,
 		.public = {
-			.dh = {
+			.ke = {
 				.get_shared_secret = _get_shared_secret,
-				.set_other_public_value = _set_other_public_value,
-				.get_my_public_value = _get_my_public_value,
-				.set_private_value = _set_private_value,
-				.get_dh_group = _get_dh_group,
+				.set_public_key = _set_public_key,
+				.get_public_key = _get_public_key,
+				.set_private_key = _set_private_key,
+				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},

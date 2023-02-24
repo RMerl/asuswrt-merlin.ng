@@ -205,7 +205,7 @@ static void _wg_client_check_conf(char* prefix)
 
 static void _wg_config_route(char* prefix, char* ifname, int table)
 {
-	char aips[1024] = {0};
+	char aips[4096] = {0};
 	char buf[128] = {0};
 	char *p = NULL;
 	char table_str[8] = {0};
@@ -385,7 +385,7 @@ static void _wg_server_config_sysdeps_client(const char* c_prefix)
 {
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
 	char path[128] = {0};
-	char aips[1024] = {0};
+	char aips[4096] = {0};
 	char net[64] = {0};
 	char *next = NULL;
 
@@ -411,7 +411,7 @@ static void _wg_server_config_sysdeps(int wg_enable, int unit, const char* prefi
 	int port = 0;
 	int c_unit = 0;
 	char c_prefix[16] = {0};
-	char aips[1024] = {0};
+	char aips[4096] = {0};
 	char buf[64] = {0};
 	char *next = NULL;
 
@@ -435,7 +435,6 @@ static void _wg_server_config_sysdeps(int wg_enable, int unit, const char* prefi
 	}
 #endif
 }
-
 
 static void _wg_server_nf_del_nat6(const char* ifname)
 {
@@ -570,14 +569,24 @@ static void _wg_client_nf_add(char* prefix, char* ifname)
 		fprintf(fp, "ip6tables -t mangle -I POSTROUTING -o %s -j MARK --or 0x1\n", ifname);
 #endif
 
-		if (nvram_pf_get_int(prefix, "nat"))
-		{
-			char addr[64] = {0};
-			char tmp[64] = {0};
-			char *next = NULL;
-			char *p = NULL;
-			int ret = -1;
+		fclose(fp);
+		chmod(path, S_IRUSR|S_IWUSR|S_IXUSR);
+		eval(path);
+	}
 
+	if (nvram_pf_get_int(prefix, "nat"))
+	{
+		char addr[64] = {0};
+		char tmp[64] = {0};
+		char *next = NULL;
+		char *p = NULL;
+		int ret = -1;
+
+		snprintf(path, sizeof(path), "%s/fw_%s_nat.sh", WG_DIR_CONF, ifname);
+		fp = fopen(path, "w");
+		if (fp)
+		{
+			fprintf(fp, "#!/bin/sh\n\n");
 			snprintf(addr, sizeof(addr), "%s", nvram_pf_safe_get(prefix, "addr"));
 			foreach_44 (tmp, addr, next)
 			{
@@ -588,11 +597,11 @@ static void _wg_client_nf_add(char* prefix, char* ifname)
 					fprintf(fp, "%s -t nat -I POSTROUTING ! -s %s -o %s -j MASQUERADE\n",
 						(ret > 1) ? "ip6tables" : "iptables", tmp, ifname);
 			}
-		}
 
-		fclose(fp);
-		chmod(path, S_IRUSR|S_IWUSR|S_IXUSR);
-		eval(path);
+			fclose(fp);
+			chmod(path, S_IRUSR|S_IWUSR|S_IXUSR);
+			eval(path);
+		}
 	}
 }
 
@@ -601,6 +610,14 @@ static void _wg_x_nf_del(const char* ifname)
 	char path[128] = {0};
 
 	snprintf(path, sizeof(path), "%s/fw_%s.sh", WG_DIR_CONF, ifname);
+	if(f_exists(path)) {
+		eval("sed", "-i", "s/-I/-D/", path);
+		eval("sed", "-i", "s/-A/-D/", path);
+		eval(path);
+		unlink(path);
+	}
+
+	snprintf(path, sizeof(path), "%s/fw_%s_nat.sh", WG_DIR_CONF, ifname);
 	if(f_exists(path)) {
 		eval("sed", "-i", "s/-I/-D/", path);
 		eval("sed", "-i", "s/-A/-D/", path);
@@ -681,7 +698,7 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 	char priv[WG_KEY_SIZE] = {0};
 	char ppub[WG_KEY_SIZE] = {0};
 	char psk[WG_KEY_SIZE] = {0};
-	char aips[1024] = {0};
+	char aips[4096] = {0};
 	char ep_addr[128] = {0};
 	int alive = nvram_pf_get_int(prefix, "alive");
 	char *p;
@@ -716,7 +733,6 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 			fprintf(fp, "PresharedKey = %s\n", psk);
 		if (alive)
 			fprintf(fp, "PersistentKeepalive = %d\n", alive);
-
 
 		fclose(fp);
 
@@ -828,7 +844,7 @@ static void _wg_server_gen_client_conf(char* s_prefix, char* c_prefix, char* c_p
 	char cpriv[WG_KEY_SIZE] = {0};
 	char spub[WG_KEY_SIZE] = {0};
 	char cpsk[WG_KEY_SIZE] = {0};
-	char caips[1024] = {0};
+	char caips[4096] = {0};
 	char buf[64] = {0};
 	int psk = nvram_pf_get_int(s_prefix, "psk");
 	int dns = nvram_pf_get_int(s_prefix, "dns");
@@ -910,7 +926,7 @@ static void _wg_server_gen_conf(char* prefix, char* path)
 	char priv[WG_KEY_SIZE] = {0};
 	char cpub[WG_KEY_SIZE] = {0};
 	char cpsk[WG_KEY_SIZE] = {0};
-	char caips[1024] = {0};
+	char caips[4096] = {0};
 	int c;
 	char c_prefix[16] = {0};
 	int psk = nvram_pf_get_int(prefix, "psk");
@@ -994,7 +1010,7 @@ void _wg_server_set_peer(char* ifname, const char* s_prefix, const char* c_prefi
 void _wg_server_route_update(char* ifname, const char* c_prefix)
 {
 	char path[128] = {0};
-	char aips[1024] = {0};
+	char aips[4096] = {0};
 	char buf[128] = {0};
 	char *p = NULL;
 
@@ -1062,6 +1078,17 @@ static int _wgc_jobs_remove(void)
 		NULL };
 
 	return _eval(argv, NULL, 0, NULL);
+}
+
+static void _wg_server_update_service(const char* prefix)
+{
+#ifdef RTCONFIG_SAMBASRV
+	if (nvram_pf_get_int(prefix, "lanaccess"))
+	{
+		stop_samba(0);
+		start_samba();
+	}
+#endif
 }
 
 void start_wgsall()
@@ -1182,6 +1209,9 @@ void start_wgs(int unit)
 			continue;
 		_wg_config_route(c_prefix, ifname, 0);
 	}
+
+	/// related services
+	_wg_server_update_service(prefix);
 
 	snprintf(tmp, sizeof(tmp), "%d", unit);
 	run_custom_script("wgserver-start", 0, tmp, NULL);
@@ -1403,6 +1433,19 @@ void run_wgs_fw_scripts()
 	}
 }
 
+void run_wgs_fw_nat_scripts()
+{
+	int unit;
+	char buf[128] = {0};
+
+	for(unit = 1; unit <= WG_CLIENT_MAX; unit++)
+	{
+		snprintf(buf, sizeof(buf), "%s/fw_%s%d_nat6.sh", WG_DIR_CONF, WG_SERVER_IF_PREFIX, unit);
+		if(f_exists(buf))
+			eval(buf);
+	}
+}
+
 void run_wgc_fw_scripts()
 {
 	int unit;
@@ -1414,6 +1457,19 @@ void run_wgc_fw_scripts()
 			eval(buf);
 
 		snprintf(buf, sizeof(buf), "%s/dns%d.sh", WG_DIR_CONF, unit);
+		if(f_exists(buf))
+			eval(buf);
+	}
+}
+
+void run_wgc_fw_nat_scripts()
+{
+	int unit;
+	char buf[128] = {0};
+
+	for(unit = 1; unit <= WG_CLIENT_MAX; unit++)
+	{
+		snprintf(buf, sizeof(buf), "%s/fw_%s%d_nat.sh", WG_DIR_CONF, WG_CLIENT_IF_PREFIX, unit);
 		if(f_exists(buf))
 			eval(buf);
 	}
@@ -1455,6 +1511,9 @@ void update_wgs_client(int s_unit, int c_unit)
 
 	// sysdeps
 	_wg_server_config_sysdeps_client(c_prefix);
+
+	// related services
+	_wg_server_update_service(s_prefix);
 }
 
 void update_wgs_client_ep()

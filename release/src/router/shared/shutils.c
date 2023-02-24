@@ -2860,3 +2860,173 @@ void wait_ntp_repeat(unsigned long usec, unsigned int count)
 	}
 }
 
+int parse_ping_content(char *fname, ping_result_t *out)
+{
+	FILE *fp = NULL;
+	char linebuf[256] = {0};
+	char alias[160] = {0};
+	char ip_addr[64] = {0};
+	char scan_format[64] = {0};
+	int n = 0;
+	int ps;
+	int pr;
+	double t_min;
+	double t_avg;
+	double t_max;
+
+	if(!fname)
+	{
+		_dprintf("Null filename.\n");
+		return -1;
+	}
+
+	fp = fopen(fname, "r");
+	if(fp)
+	{
+		memset(linebuf, 0, sizeof(linebuf));
+		while(fgets(linebuf, sizeof(linebuf), fp))
+		{
+			if(strstr(linebuf, "PING "))
+			{
+				snprintf(scan_format, sizeof(scan_format), "PING %%%us (%%%u[^)]", sizeof(alias) -1, sizeof(ip_addr) -1);
+				n = sscanf(linebuf, scan_format, alias, ip_addr);
+				if(n == 2)
+				{
+					snprintf(out->alias, sizeof(out->alias), "%s", alias);
+					snprintf(out->ip_addr, sizeof(out->ip_addr), "%s", ip_addr);
+					out->name_valid = 1;
+				}
+			}
+			else if(strstr(linebuf, "packet loss"))
+			{
+				n = sscanf(linebuf, "%d packets transmitted, %d packets received", &ps, &pr);
+				if(n == 2)
+				{
+					out->pkt_sent = ps;
+					out->pkt_recv = pr;
+					if(ps > 0)
+					{
+						out->pkt_loss_rate = (ps - pr)*100.0/ps;
+						if(pr > 0)
+						{
+							out->data_valid = 1;
+						}
+					}
+				}
+				else
+				{
+					_dprintf("Failed to parse the [%s].\n", linebuf);
+					break;
+				}
+			}
+			else if(strstr(linebuf, "round-trip min/avg/max"))
+			{
+				n = sscanf(linebuf, "round-trip min/avg/max = %lf/%lf/%lf ms", &t_min, &t_avg, &t_max);
+				if(n == 3)
+				{
+					out->min = t_min;
+					out->avg = t_avg;
+					out->max = t_max;
+					out->data_valid = 1;
+					break;
+				}
+				else
+				{
+					_dprintf("Failed to parse the [%s].\n", linebuf);
+					break;
+				}
+			}
+			memset(linebuf, 0, sizeof(linebuf));
+		}
+		fclose(fp);
+	}
+	else
+	{
+		_dprintf("Cannot open [%s].\n", fname);
+	}
+
+	return 0;
+}
+
+/*******************************************************************
+* NAME: ping_target_with_size
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2022/10/07
+* DESCRIPTION: Ping a target with specific packet size.
+* INPUT:  target, the target for ping command
+*         pkt_size, send pkt_size data bytes in packets (default:56)
+*         ping_cnt, send only ping_cnt pings
+*         wait_time, seconds to wait for the first response (default:10) (after all -c CNT packets are sent)
+*         loss_rate, packet loss rate, 0.0 <= loss_rate <= 100.0
+* OUTPUT: None
+* RETURN: 0, if something wrong; 1, function works correctly.
+* NOTE:
+*******************************************************************/
+int ping_target_with_size(char *target, unsigned int pkt_size, unsigned int ping_cnt, unsigned int wait_time, double loss_rate)
+{
+	char ping_result[160] = {0};
+	char ping_done[160] = {0};
+	char cmdbuf[1024] = {0};
+	ping_result_t data;
+	int sig;
+	sigset_t set;
+
+	if(!target || (pkt_size <= 0) || (ping_cnt <= 0) || (wait_time <= 0) || (loss_rate < 0))
+	{
+		return 0;
+	}
+	else
+	{
+		snprintf(ping_result, sizeof(ping_result), "/tmp/ping_%s_%d", target, pkt_size);
+		unlink(ping_result);
+		snprintf(ping_done, sizeof(ping_done), "/tmp/ping_%s_%d.done", target, pkt_size);
+		unlink(ping_done);
+
+		if(fork() == 0)
+		{
+			//child
+
+			setsid();
+
+			// reset signal handlers
+			for (sig = 1; sig < _NSIG; sig++)
+			{
+				signal(sig, SIG_DFL);
+			}
+
+			// unblock signals if called from signal handler
+			sigemptyset(&set);
+			sigprocmask(SIG_SETMASK, &set, NULL);
+
+			snprintf(cmdbuf, sizeof(cmdbuf), "ping -c %d -W %d -s %d %s > %s 2>&1 || true && echo \"\" >> %s", ping_cnt, wait_time, pkt_size, target, ping_result, ping_done);
+			system(cmdbuf);
+			logmessage("ping_target_with_size", "Ping test is complete.\n");
+		}
+		else
+		{
+			//parent
+			sleep(3);
+
+			if(f_exists(ping_result))
+			{
+				memset(&data, 0, sizeof(ping_result_t));
+				if(parse_ping_content(ping_result, &data) == 0)
+				{
+					//_dprintf("pkt_loss_rate=[%lf]\n", data.pkt_loss_rate);
+					if(data.pkt_loss_rate <= loss_rate)
+					{
+						logmessage("ping_target_with_size", "Successful to ping target(%s) with size(%d)\n", target, pkt_size);
+						return 1;
+					}
+					else
+					{
+						logmessage("ping_target_with_size", "Failed to ping target(%s) with size(%d)\n", target, pkt_size);
+						return 0;
+					}
+				}
+			}
+			logmessage("ping_target_with_size", "Cannot find ping result(%s)\n", ping_result);
+			return 0;
+		}
+	}
+}

@@ -227,77 +227,93 @@ METHOD(plugin_t, get_features, int,
 #endif
 #ifdef HAVE_ECC_DHE
 		/* EC DH groups */
-		PLUGIN_REGISTER(DH, wolfssl_ec_diffie_hellman_create),
+		PLUGIN_REGISTER(KE, wolfssl_ec_diffie_hellman_create),
 	#if (!defined(NO_ECC256) || defined(HAVE_ALL_CURVES)) && \
 		(!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 256)
-			PLUGIN_PROVIDE(DH, ECP_256_BIT),
+			PLUGIN_PROVIDE(KE, ECP_256_BIT),
 	#endif
 	#if (defined(HAVE_ECC384) || defined(HAVE_ALL_CURVES)) && \
 		(!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 384)
-			PLUGIN_PROVIDE(DH, ECP_384_BIT),
+			PLUGIN_PROVIDE(KE, ECP_384_BIT),
 	#endif
 	#if (defined(HAVE_ECC521) || defined(HAVE_ALL_CURVES)) && \
 		(!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 521)
-			PLUGIN_PROVIDE(DH, ECP_521_BIT),
+			PLUGIN_PROVIDE(KE, ECP_521_BIT),
 	#endif
 	#if (defined(HAVE_ECC224) || defined(HAVE_ALL_CURVES)) && \
 		 (!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 224)
-			PLUGIN_PROVIDE(DH, ECP_224_BIT),
+			PLUGIN_PROVIDE(KE, ECP_224_BIT),
 	#endif
 	#if (defined(HAVE_ECC192) || defined(HAVE_ALL_CURVES)) && \
 		 (!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 192)
-			PLUGIN_PROVIDE(DH, ECP_192_BIT),
+			PLUGIN_PROVIDE(KE, ECP_192_BIT),
 	#endif
 	#ifdef HAVE_ECC_BRAINPOOL
 		#if (!defined(NO_ECC256) || defined(HAVE_ALL_CURVES)) && \
 			(!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 256)
-			PLUGIN_PROVIDE(DH, ECP_256_BP),
+			PLUGIN_PROVIDE(KE, ECP_256_BP),
 		#endif
 		#if (defined(HAVE_ECC384) || defined(HAVE_ALL_CURVES))  && \
 			(!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 384)
-			PLUGIN_PROVIDE(DH, ECP_384_BP),
+			PLUGIN_PROVIDE(KE, ECP_384_BP),
 		#endif
 		#if (defined(HAVE_ECC512) || defined(HAVE_ALL_CURVES)) && \
 			(!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 512)
-			PLUGIN_PROVIDE(DH, ECP_512_BP),
+			PLUGIN_PROVIDE(KE, ECP_512_BP),
 		#endif
 		#if (defined(HAVE_ECC224) || defined(HAVE_ALL_CURVES)) && \
 			(!defined(ECC_MIN_KEY_SZ) || ECC_MIN_KEY_SZ <= 224)
-			PLUGIN_PROVIDE(DH, ECP_224_BP),
+			PLUGIN_PROVIDE(KE, ECP_224_BP),
 		#endif
 	#endif
 #endif /* HAVE_ECC_DHE */
 #ifndef NO_DH
 		/* MODP DH groups */
-		PLUGIN_REGISTER(DH, wolfssl_diffie_hellman_create),
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (3072 * 2)
-			PLUGIN_PROVIDE(DH, MODP_3072_BIT),
+		PLUGIN_REGISTER(KE, wolfssl_diffie_hellman_create),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (3072 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 3072) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_3072_BIT),
 	#endif
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (4096 * 2)
-			PLUGIN_PROVIDE(DH, MODP_4096_BIT),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (4096 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 4096) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_4096_BIT),
 	#endif
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (6144 * 2)
-			PLUGIN_PROVIDE(DH, MODP_6144_BIT),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (6144 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 6144) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_6144_BIT),
 	#endif
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (8192 * 2)
-			PLUGIN_PROVIDE(DH, MODP_8192_BIT),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (8192 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 8192) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_8192_BIT),
 	#endif
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (2048 * 2)
-			PLUGIN_PROVIDE(DH, MODP_2048_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_224),
-			PLUGIN_PROVIDE(DH, MODP_2048_256),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (2048 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 2048) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_2048_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_224),
+			PLUGIN_PROVIDE(KE, MODP_2048_256),
 	#endif
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (1536 * 2)
-			PLUGIN_PROVIDE(DH, MODP_1536_BIT),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (1536 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 1536) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_1536_BIT),
 	#endif
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (1024 * 2)
-			PLUGIN_PROVIDE(DH, MODP_1024_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_160),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (1024 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 1024) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_1024_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_160),
 	#endif
-	#if !defined(USE_FAST_MATH) || FP_MAX_BITS >= (768 * 2)
-			PLUGIN_PROVIDE(DH, MODP_768_BIT),
+	#if (defined(USE_FAST_MATH) && FP_MAX_BITS >= (768 * 2)) || \
+		(defined(WOLFSSL_SP_MATH_ALL) && SP_INT_BITS >= 768) || \
+		defined(USE_INTEGER_HEAP_MATH)
+			PLUGIN_PROVIDE(KE, MODP_768_BIT),
 	#endif
-			PLUGIN_PROVIDE(DH, MODP_CUSTOM),
+			PLUGIN_PROVIDE(KE, MODP_CUSTOM),
 #endif /* NO_DH */
 #ifndef NO_RSA
 		/* RSA private/public key loading */
@@ -439,12 +455,12 @@ METHOD(plugin_t, get_features, int,
 	#endif /* HAVE_ECC_VERIFY */
 #endif /* HAVE_ECC */
 #if defined (HAVE_CURVE25519) || defined(HAVE_CURVE448)
-		PLUGIN_REGISTER(DH, wolfssl_x_diffie_hellman_create),
+		PLUGIN_REGISTER(KE, wolfssl_x_diffie_hellman_create),
 	#ifdef HAVE_CURVE25519
-			PLUGIN_PROVIDE(DH, CURVE_25519),
+			PLUGIN_PROVIDE(KE, CURVE_25519),
 	#endif
 	#ifdef HAVE_CURVE448
-			PLUGIN_PROVIDE(DH, CURVE_448),
+			PLUGIN_PROVIDE(KE, CURVE_448),
 	#endif
 #endif /* HAVE_CURVE25519 || HAVE_CURVE448 */
 #if defined(HAVE_ED25519) || defined(HAVE_ED448)

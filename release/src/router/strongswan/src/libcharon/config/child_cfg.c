@@ -3,7 +3,8 @@
  * Copyright (C) 2016 Andreas Steffen
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -215,16 +216,16 @@ CALLBACK(match_proposal, bool,
 }
 
 METHOD(child_cfg_t, get_proposals, linked_list_t*,
-	private_child_cfg_t *this, bool strip_dh)
+	private_child_cfg_t *this, bool strip_ke)
 {
 	enumerator_t *enumerator;
 	proposal_t *current;
 	proposal_selection_flag_t flags = 0;
 	linked_list_t *proposals = linked_list_create();
 
-	if (strip_dh)
+	if (strip_ke)
 	{
-		flags |= PROPOSAL_SKIP_DH;
+		flags |= PROPOSAL_SKIP_KE;
 	}
 
 	enumerator = this->proposals->create_enumerator(this->proposals);
@@ -297,6 +298,12 @@ METHOD(child_cfg_t, get_traffic_selectors, linked_list_t*,
 				e2 = hosts->create_enumerator(hosts);
 				while (e2->enumerate(e2, &host))
 				{
+					if (!dynamic && !host->is_anyaddr(host) &&
+						!ts1->includes(ts1, host))
+					{	/* for transport mode, we skip TS that don't match
+						 * specific IPs */
+						continue;
+					}
 					ts2 = ts1->clone(ts1);
 					if (dynamic || !host->is_anyaddr(host))
 					{	/* don't make regular TS larger than they were */
@@ -483,23 +490,23 @@ METHOD(child_cfg_t, get_close_action, action_t,
 	return this->close_action;
 }
 
-METHOD(child_cfg_t, get_dh_group, diffie_hellman_group_t,
-	private_child_cfg_t *this)
+METHOD(child_cfg_t, get_algorithm, uint16_t,
+	private_child_cfg_t *this, transform_type_t type)
 {
 	enumerator_t *enumerator;
 	proposal_t *proposal;
-	uint16_t dh_group = MODP_NONE;
+	uint16_t alg = 0;
 
 	enumerator = this->proposals->create_enumerator(this->proposals);
 	while (enumerator->enumerate(enumerator, &proposal))
 	{
-		if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP, &dh_group, NULL))
+		if (proposal->get_algorithm(proposal, type, &alg, NULL))
 		{
 			break;
 		}
 	}
 	enumerator->destroy(enumerator);
-	return dh_group;
+	return alg;
 }
 
 METHOD(child_cfg_t, get_inactivity, uint32_t,
@@ -757,7 +764,7 @@ child_cfg_t *child_cfg_create(char *name, child_cfg_create_t *data)
 			.get_dpd_action = _get_dpd_action,
 			.get_close_action = _get_close_action,
 			.get_lifetime = _get_lifetime,
-			.get_dh_group = _get_dh_group,
+			.get_algorithm = _get_algorithm,
 			.get_inactivity = _get_inactivity,
 			.get_reqid = _get_reqid,
 			.get_if_id = _get_if_id,

@@ -2,8 +2,8 @@ moon::sysctl -w net.ipv4.conf.all.rp_filter=2
 sun::sysctl -w net.ipv4.conf.all.rp_filter=2
 moon::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
-moon::systemctl start strongswan-swanctl
-sun::systemctl start strongswan-swanctl
+moon::systemctl start strongswan
+sun::systemctl start strongswan
 sun::expect-connection host-host
 moon::expect-connection host-host
 moon::swanctl --initiate --child host-host 2> /dev/null

@@ -228,21 +228,50 @@ function showWlHint(updateFlag){
 	})();
 
 	var genWlObj = (function(){
+		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
 		var wlObj = [];
+		var odmpid = '<% nvram_get("odmpid"); %>';
 		var wlUnit = function(_band, _ssid, _key){
 			this.band = _band;
 			this.ssid = _ssid;
 			this.key = _key;
 		}
 
-		var ssid_nvram = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'))];
-		var auth_nvram = [decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'), decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')];
-		var key_nvram = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'))];
-		var smart_connect_nvram = '<% nvram_get("smart_connect_x"); %>';
+		var ssid_nvram = [
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>'))
+		];
+		
+		var auth_nvram = [
+			decodeURIComponent('<% nvram_char_to_ascii("", "wl0_auth_mode_x"); %>'), 
+			decodeURIComponent('<% nvram_char_to_ascii("", "wl1_auth_mode_x"); %>'), 
+			decodeURIComponent('<% nvram_char_to_ascii("", "wl2_auth_mode_x"); %>')
+		];
+		
+		var key_nvram = [
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>'))
+		];
 
-		var ssid_param = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>'))];
-		var auth_param = [decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'), decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')];
-		var key_param = [htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>')), htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>'))];
+		var ssid_param = [
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_ssid"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_ssid"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_ssid"); %>'))
+		];
+		
+		var auth_param = [
+			decodeURIComponent('<% get_ascii_parameter("wl0_auth_mode_x"); %>'), 
+			decodeURIComponent('<% get_ascii_parameter("wl1_auth_mode_x"); %>'), 
+			decodeURIComponent('<% get_ascii_parameter("wl2_auth_mode_x"); %>')
+		];
+		
+		var key_param = [
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl0_wpa_psk"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl1_wpa_psk"); %>')), 
+			htmlEnDeCode.htmlEncode(decodeURIComponent('<% get_ascii_parameter("wl2_wpa_psk"); %>'))
+		];
 
 		var applyParam = {
 			unit: decodeURIComponent('<% get_ascii_parameter("wl_unit"); %>'),
@@ -285,11 +314,27 @@ function showWlHint(updateFlag){
 						wlObj[0].band = "<#smart_connect_dual#>";
 					}
 				}
+
+				if(odmpid === 'GT6'){
+					[wlObj[0], wlObj[1], wlObj[2]] = [wlObj[2], wlObj[0], wlObj[1]];
+				}
 			}
 			else if(smart_connect_nvram == 2){
 				// 5GHz band steering
-				wlObj.length = 2;
-				wlObj[1].band = "5 GHz Smart Connect";
+				var band_5g = 1;
+				for(var i=0; i<wlObj.length; i++){
+					if(wlObj[i].band.indexOf("5") != -1){
+						band_5g = i;
+						break;
+					}
+				}
+
+				wlObj[band_5g].band = "5 GHz Smart Connect";
+				wlObj.splice(band_5g+1, 1);
+
+				if(odmpid === 'GT6'){
+					[wlObj[0], wlObj[1]] = [wlObj[1], wlObj[0]];
+				}
 			}
 		}
 		else if(applyParam.smartConnect == 1){
@@ -306,8 +351,23 @@ function showWlHint(updateFlag){
 		}
 		else if(applyParam.smartConnect == 2){
 			// 5GHz band steering
-			wlObj.length = 2;
-			wlObj[1].band = "5 GHz Smart Connect";
+			var band_5g = 1;
+			for(var i=0; i<wlObj.length; i++){
+				if(wlObj[i].band.indexOf("5") != -1){
+					band_5g = i;
+					break;
+				}
+			}
+
+			wlObj[band_5g].band = "5 GHz Smart Connect";
+			wlObj.splice(band_5g+1, 1);
+
+			if(odmpid === 'GT6'){
+				[wlObj[0], wlObj[1]] = [wlObj[1], wlObj[0]];
+			}
+		}
+		else if(applyParam.smartConnect && odmpid === 'GT6'){
+			[wlObj[0], wlObj[1], wlObj[2]] = [wlObj[2], wlObj[0], wlObj[1]];
 		}
 
 		return wlObj;

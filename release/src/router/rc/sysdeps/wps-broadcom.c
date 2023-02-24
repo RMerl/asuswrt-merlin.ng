@@ -41,6 +41,8 @@
 #include <wlutils.h>
 #include <wlscan.h>
 
+#ifdef RTCONFIG_WPS
+
 #if defined(RTCONFIG_WPS) || defined(RTCONFIG_BRCM_HOSTAPD)
 #define WPS_UI_PORT                     40500
 
@@ -883,4 +885,47 @@ int hapd_cmd_chk_status(char* cmd) {
 	}
 	return success;
 }
+#endif
+
+#else // RTCONFIG_WPS
+
+int
+start_wps_method(void)
+{
+	return 0;
+}
+
+int
+stop_wps_method(void)
+{
+	return 0;
+}
+
+int
+stop_wps_method_ob(void)
+{
+	return 0;
+}
+
+int
+start_wps_method_ob(void)
+{
+	return 0;
+}
+
+int start_wps_enr(void)
+{
+	return 0;
+}
+
+int is_wps_stopped(void)
+{
+	return 1;
+}
+
+int is_wps_success(void)
+{
+	return 0;
+}
+
 #endif

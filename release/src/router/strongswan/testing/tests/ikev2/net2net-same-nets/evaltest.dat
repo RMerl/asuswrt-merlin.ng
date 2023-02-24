@@ -1,7 +1,5 @@
-moon:: ipsec status 2> /dev/null::net-net.*ESTABLISHED.*moon.strongswan.org.*sun.strongswan.org::YES
-sun::  ipsec status 2> /dev/null::net-net.*ESTABLISHED.*sun.strongswan.org.*moon.strongswan.org::YES
-moon:: ipsec status 2> /dev/null::net-net.*INSTALLED, TUNNEL::YES
-sun::  ipsec status 2> /dev/null::net-net.*INSTALLED, TUNNEL::YES
+moon::swanctl --list-sas --raw 2> /dev/null::gw-gw.*version=2 state=ESTABLISHED local-host=PH_IP_MOON local-port=500 local-id=moon.strongswan.org remote-host=PH_IP_SUN remote-port=500 remote-id=sun.strongswan.org initiator=yes.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net-net.*state=INSTALLED mode=TUNNEL.*ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.0.0.0/14] remote-ts=\[10.4.0.0/14]::YES
+sun:: swanctl --list-sas --raw 2> /dev/null::gw-gw.*version=2 state=ESTABLISHED local-host=PH_IP_SUN local-port=500 local-id=sun.strongswan.org remote-host=PH_IP_MOON remote-port=500 remote-id=moon.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*net-net.*state=INSTALLED mode=TUNNEL.*ESP.*mark-in=00000008 mark-out=00000004 encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.4.0.0/14] remote-ts=\[10.0.0.0/14]::YES
 alice::ping -c 1 10.6.0.10::64 bytes from 10.6.0.10: icmp_.eq=1::YES
 bob::  ping -c 1 10.9.0.10::64 bytes from 10.9.0.10: icmp_.eq=1::YES
 sun::tcpdump::IP moon.strongswan.org > sun.strongswan.org: ESP::YES
@@ -9,4 +7,4 @@ sun::tcpdump::IP sun.strongswan.org > moon.strongswan.org: ESP::YES
 bob::tcpdump::IP 10.9.0.10 > bob.strongswan.org: ICMP echo request::YES
 bob::tcpdump::IP bob.strongswan.org > 10.9.0.10: ICMP echo reply::YES
 bob::tcpdump::IP bob.strongswan.org > 10.9.0.10: ICMP echo request::YES
-bob::tcpdump::IP 10.9.0.10 > bob.strongswan.org: ICMP echo reply::YES 
+bob::tcpdump::IP 10.9.0.10 > bob.strongswan.org: ICMP echo reply::YES

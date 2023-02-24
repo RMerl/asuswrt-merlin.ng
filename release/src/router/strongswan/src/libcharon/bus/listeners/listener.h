@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2011-2020 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -91,7 +92,7 @@ struct listener_t {
 	 * @param method	auth method for key derivation (IKEv1-non-PSK only)
 	 * @return			TRUE to stay registered, FALSE to unregister
 	 */
-	bool (*ike_keys)(listener_t *this, ike_sa_t *ike_sa, diffie_hellman_t *dh,
+	bool (*ike_keys)(listener_t *this, ike_sa_t *ike_sa, key_exchange_t *dh,
 					 chunk_t dh_other, chunk_t nonce_i, chunk_t nonce_r,
 					 ike_sa_t *rekey, shared_key_t *shared,
 					 auth_method_t method);
@@ -124,7 +125,7 @@ struct listener_t {
 	 * @return			TRUE to stay registered, FALSE to unregister
 	 */
 	bool (*child_keys)(listener_t *this, ike_sa_t *ike_sa, child_sa_t *child_sa,
-					   bool initiator, diffie_hellman_t *dh,
+					   bool initiator, key_exchange_t *dh,
 					   chunk_t nonce_i, chunk_t nonce_r);
 
 	/**

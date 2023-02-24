@@ -1,0 +1,124 @@
+.\" Copyright (c) 2014 Jean-Pierre Andre
+.\" This file may be copied under the terms of the GNU Public License.
+.\"
+.TH NTFSTRUNCATE 8 "June 2014" "ntfs-3g @VERSION@"
+.SH NAME
+ntfstruncate \- truncate a file on an NTFS volume
+.SH SYNOPSIS
+\fBntfstruncate\fR [\fIoptions\fR] \fIdevice\fR \fIfile\fR \fI[attr-type\fR [\fIattr-name\fR]] \fInew-length\fR
+.SH DESCRIPTION
+.B ntfstruncate
+truncates (or extends) a specified attribute belonging to a
+file or directory, to a specified length.
+.SH OPTIONS
+Below is a summary of all the options that
+.B ntfstruncate
+accepts.  Nearly all options have two equivalent names.  The short name is
+preceded by
+.B \-
+and the long name is preceded by
+.BR \-\- .
+Any single letter options, that don't take an argument, can be combined into a
+single command, e.g.
+.B \-fv
+is equivalent to
+.BR "\-f \-v" .
+Long named options can be abbreviated to any unique prefix of their name.
+.TP
+\fB\-f\fR, \fB\-\-force\fR
+This will override some sensible defaults, such as not using a mounted volume.
+Use this option with caution.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show a list of options with a brief description of each one.
+.TP
+\fB\-l\fR
+Display licensing information.
+.TP
+\fB\-n\fR, \fB\-\-no-action\fR
+Simulate the truncation without actually write to device.
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+Suppress some debug/warning/error messages.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Display more debug/warning/error messages.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Show the version number, copyright and license of
+.BR ntfstruncate .
+.TP
+\fBattr-type\fR
+Define a particular attribute type to be truncated (advanced use only).
+By default, the unnamed $DATA attribute (the contents of a plain file) will
+be truncated. The attribute has to be specified by a number in decimal
+or hexadecimal :
+.TS
+box;
+lB lB lB
+l l l.
+Hex	Decimal	Name
+0x10	16	"$STANDARD_INFORMATION"
+0x20	32	"$ATTRIBUTE_LIST"
+0x30	48	"$FILE_NAME"
+0x40	64	"$OBJECT_ID"
+0x50	80	"$SECURITY_DESCRIPTOR"
+0x60	96	"$VOLUME_NAME"
+0x70	112	"$VOLUME_INFORMATION"
+0x80	128	"$DATA"
+0x90	144	"$INDEX_ROOT"
+0xA0	160	"$INDEX_ALLOCATION"
+0xB0	176	"$BITMAP"
+0xC0	192	"$REPARSE_POINT"
+0xD0	208	"$EA_INFORMATION"
+0xE0	224	"$EA"
+0xF0	240	"$PROPERTY_SET"
+0x100	256	"$LOGGED_UTILITY_STREAM"
+.TE
+.sp
+.TP
+\fBattr-name\fR
+Define the name of the particular attribute type to be truncated
+(advanced use only).
+.sp
+.TP
+\fBnew-length\fR
+Specify the target size of the file.
+It will be rounded up to a multiple of the cluster size.
+A suffix of K, M, G, T, P or E may be appended to
+mean a multiplicative factor of a power of 1000. Similarly a suffix of
+Ki, Mi, Gi, Ti, Pi or Ei may be appended to mean a multiplicative factor
+of a power of 1024.
+.SH EXAMPLES
+Resize to 100MB the file database.db located in the Data directory
+which is at the root of an NTFS file system.
+.RS
+.sp
+.B ntfstruncate /dev/sda1 Data/database.db 100M
+.sp
+.RE
+.SH BUGS
+There are no known problems with
+.BR ntfstruncate .
+If you find a bug, please send an email
+describing the problem to the development team:
+.br
+.nh
+ntfs\-3g\-devel@lists.sf.net
+.hy
+.SH AUTHORS
+.B ntfstruncate
+was written by Anton Altaparmakov.
+.SH AVAILABILITY
+.B ntfstruncate
+is part of the
+.B ntfs-3g
+package and is available from:
+.br
+.nh
+https://github.com/tuxera/ntfs-3g/wiki/
+.hy
+.SH SEE ALSO
+.BR ntfs-3g (8),
+.BR ntfsfallocate (8),
+.BR ntfsprogs (8).

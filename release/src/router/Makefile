@@ -43,7 +43,11 @@ endif
 endif
 
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
-export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
+ifeq ($(CUR_CHIP_PROFILE_RAW),62118G)
+  export PROFILE ?= 9$(CUR_CHIP_PROFILE)G
+else
+  export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
+endif
 include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
 export BCM_WLIMPL
 ifeq ($(BRCM_CHIP),4908)
@@ -91,6 +95,13 @@ ifneq ($(HND_ROUTER),y)
 include $(SRCBASE)/.config
 else
 export CFLAGS += -DBCM$(BCM_CHIP)
+ifeq ($(RTCONFIG_BCM4906_504),y)
+export CFLAGS += -DBCM4906_504 -DSUPPORT_MLD
+export CFLAGS += -I$(HND_SRC)/userspace/public/include/ -I$(HND_SRC)/bcmdrivers/opensource/include/bcm963xx/ -I$(HND_SRC)/shared/opensource/include/bcm963xx/
+export CFLAGS += -I$(HND_SRC)/kernel
+export BCM4906_504 := y
+include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE).$(BUILD_NAME)
+endif
 endif
 
 ifeq ($(RTCONFIG_RALINK),y)
@@ -327,16 +338,20 @@ ifeq ($(HND_ROUTER),y)
 KDIR=$(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/usr
 KERNEL_HEADER_DIR=$(KDIR)/include
 TOOL_SYS_INCLUDE=$(TOOLCHAIN)/arm-buildroot-linux-gnueabi/sysroot/usr/include
+export SRCBASE_ROUTER=$(SRCBASE)/router
 ifeq ($(RTCONFIG_VISUALIZATION),y)
 export TOOLCHAIN_LIB_DIR=$(KDIR)/lib
-export SRCBASE_ROUTER=$(SRCBASE)/router
 endif
 ifeq ($(HND_ROUTER_AX),y)
-ifeq ($(BRCM_CHIP),4908)
-export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin/aarch64-buildroot-linux-gnu-
-else ifeq ($(BRCM_CHIP),4912)
-export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/usr/bin/aarch64-buildroot-linux-gnu-
-endif
+  ifeq ($(BRCM_CHIP),4908)
+    ifeq ($(BCM4906_504),y)
+    export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/usr/bin/aarch64-buildroot-linux-gnu-
+    else
+    export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin/aarch64-buildroot-linux-gnu-
+    endif
+  else ifeq ($(BRCM_CHIP),4912)
+  export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/usr/bin/aarch64-buildroot-linux-gnu-
+  endif
 else
 export CROSS_COMPILE_64 := /opt/toolchains/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin/aarch64-buildroot-linux-gnu-
 endif
@@ -346,9 +361,11 @@ export TOOLCHAIN_64 := $(shell cd $(dir $(shell which $(CROSS_COMPILE_64)gcc))/.
 export TOOL_SYS_INCLUDE_64=$(TOOLCHAIN_64)/aarch64-buildroot-linux-gnu/sysroot/usr/include
 endif
 ifeq ($(HND_ROUTER_AX),y)
-ifeq ($(BRCM_CHIP),4908)
-export PATH:=$(PATH):/opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin
-endif
+  ifeq ($(BRCM_CHIP),4908)
+  ifneq ($(BCM4906_504),y)
+    export PATH:=$(PATH):/opt/toolchains/crosstools-aarch64-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/usr/bin
+  endif
+  endif
 else
 export PATH:=$(PATH):/opt/toolchains/crosstools-aarch64-gcc-5.3-linux-4.1-glibc-2.22-binutils-2.25/usr/bin
 endif
@@ -393,10 +410,14 @@ export BUILD_43684C0 := y
 endif
 #only if 4908 platform
 ifeq ($(BRCM_CHIP),4908)
+ifneq ($(RTCONFIG_BCM4906_504),y)
 export CONFIG_CSIMOND := y
 endif
+endif
 #endif 4908
+ifneq ($(RTCONFIG_NOWL),y)
 include Makefile.fw.ax
+endif
 else ifeq ($(HND_ROUTER),y)
 export SRCBASE_DHD := $(SRCBASE)/../../dhd/src
 export SRCBASE_FW := $(SRCBASE)/../../4365/src
@@ -423,9 +444,13 @@ ifeq ($(HND_ROUTER_AX),y)
 export SRCBASE_SYS := $(SRCBASE)/../../sys/src
 export CONFIG_MBO_AP=y
 ifeq ($(BRCM_CHIP),4908)
+ifneq ($(RTCONFIG_BCM4906_504),y)
 export CONFIG_CSIMOND := y
 endif
+endif
+ifneq ($(RTCONFIG_NOWL),y)
 include Makefile.fw.ax
+endif
 endif	# HND_ROUTER_AX
 endif	# RTCONFIG_DHDAP
 
@@ -641,6 +666,9 @@ HOSTAPD_PKG:=hostapd-2.6
 QCA_HOSTAPD_DIR:=$(TOP)/$(HOSTAPD_PKG)
 endif
 
+ifneq ($(findstring CONFIG_BRIDGE_NF_EBTABLES=y, $(shell cat $(LINUXDIR)/.config)),)
+CFLAGS += -DEBTABLES_BUILTIN
+endif
 #
 #
 #
@@ -821,7 +849,12 @@ obj-$(RTCONFIG_BT_CONN) += expat-2.0.1
 obj-$(RTCONFIG_BT_CONN) += dbus-1.8.8
 obj-$(RTCONFIG_BT_CONN) += libffi-3.0.11
 obj-$(RTCONFIG_BT_CONN) += zlib
+ifeq ($(RTCONFIG_BCM4906_504),y)
 obj-$(RTCONFIG_BT_CONN) += glib-2.37.7
+else
+obj-$(RTCONFIG_BT_CONN) += pcre-8.31
+obj-$(RTCONFIG_BT_CONN) += glib-2.59.0
+endif
 obj-$(RTCONFIG_BT_CONN) += udev-173
 obj-$(RTCONFIG_BT_CONN) += libical-2.0.0
 ifeq ($(RTCONFIG_NCURSES_6_1),y)
@@ -832,14 +865,14 @@ endif
 obj-$(RTCONFIG_BT_CONN) += readline-6.2
 obj-$(RTCONFIG_BT_CONN) += json-c
 obj-$(RTCONFIG_BT_CONN) += bluez-5.41
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756)),y)
+ifeq ($(HND_ROUTER_AX),y)
 obj-$(RTCONFIG_BT_CONN) += btconfig
 endif
 ifneq ($(RTCONFIG_LANTIQ),y)
 obj-$(RTCONFIG_BT_CONN) += i2c-tools-2013-12-15
 endif
 #FIXME, flag for AR3012
-ifeq ($(RTCONFIG_QCA)$(RTCONFIG_LANTIQ)$(HND_ROUTER_AX_675X)$(HND_ROUTER_AX_6756),y)
+ifeq ($(RTCONFIG_QCA)$(RTCONFIG_LANTIQ)$(HND_ROUTER_AX),y)
 obj-$(RTCONFIG_BT_CONN) += qca-ar3k-fw
 endif
 
@@ -862,6 +895,8 @@ IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,) -liptc
 obj-y += iptables-1.4.x
 ifeq ($(HND_ROUTER),y)
 obj-y += iproute2-4.3
+else ifeq ($(or $(RTAX53U),$(RTAX54),$(RT4GAX56),$(RTCONFIG_MT798X),$(if $(filter $(BUILD_NAME),XD4S),y,)),y)
+obj-y += iproute2-5.18.0
 else
 obj-y += iproute2-3.x
 endif
@@ -891,8 +926,14 @@ obj-y += iptables-1.4.18
 obj-y += iproute2-4.4.0
 endif
 
+
+ifeq ($(HND_ROUTER),y)
+NETLINK_LIB_VER := 1.0.1
+else
+NETLINK_LIB_VER := 1.0.2
+endif
 obj-$(RTCONFIG_CONNTRACK) += conntrack
-obj-$(RTCONFIG_CONNTRACK) += libnfnetlink-1.0.1
+obj-$(RTCONFIG_CONNTRACK) += libnfnetlink-$(NETLINK_LIB_VER)
 obj-$(RTCONFIG_CONNTRACK) += libmnl-1.0.4
 obj-$(RTCONFIG_CONNTRACK) += libnetfilter_conntrack-1.0.7
 obj-$(RTCONFIG_CONNTRACK) += libnetfilter_cttimeout-1.0.0
@@ -938,7 +979,7 @@ obj-y += rc
 obj-y += rom
 obj-y += others
 obj-y += libpasswd
-obj-y += httpd json-c
+obj-y += httpd json-c libwebapi
 obj-$(RTCONFIG_CALC_NVRAM) += calc_nvram
 obj-$(RTCONFIG_VISUALIZATION) += sqlite3 json-c libxml2 visdcoll visdcon
 obj-y += www
@@ -1035,7 +1076,9 @@ obj-$(RTCONFIG_EMF) += emf$(BCMEX)$(EX7)
 obj-$(RTCONFIG_EMF) += igs$(BCMEX)$(EX7)
 obj-y += wlconf$(BCMEX)$(EX7)
 ifneq ($(RTCONFIG_BRCM_HOSTAPD),y)
+ifneq ($(RTCONFIG_BCM4906_504),y)
 obj-y += nas$(BCMEX)$(EX7)
+endif
 endif
 obj-$(RTCONFIG_HSPOT) += hspot_ap$(BCMEX)$(EX7)
 obj-y += eapd$(BCMEX)$(EX7)/linux
@@ -1047,7 +1090,9 @@ obj-$(CONFIG_LIBBCM) += libbcm
 obj-$(CONFIG_LIBUPNP) += libupnp$(BCMEX)$(EX7)
 ifeq ($(RTCONFIG_BCMWL6),y)
 ifneq ($(HND_ROUTER_AX),y)
+ifneq ($(RTCONFIG_NOWL),y)
 obj-y += acsd$(BCMEX)$(EX7)
+endif
 endif
 endif
 obj-$(RTCONFIG_BCMARM) += wl$(BCMEX)$(EX7)
@@ -1055,7 +1100,9 @@ ifneq ($(HND_ROUTER),y)
 obj-$(RTCONFIG_BCMARM) += et_arm$(EX7)
 endif
 ifeq ($(HND_ROUTER_AX),y)
+ifneq ($(RTCONFIG_NOWL),y)
 obj-y += acsdv2
+endif
 obj-$(RTCONFIG_BCM_CEVENTD) += cevent_app
 endif
 endif
@@ -1147,6 +1194,14 @@ obj-$(RTCONFIG_USB_MODEM) += comgt-0.32
 obj-$(RTCONFIG_USB_MODEM) += json-c libubox uqmi
 obj-$(RTCONFIG_USB_MODEM) += usbmode
 endif
+endif
+
+ifeq ($(RTCONFIG_HND_ROUTER),y)
+# iphone
+obj-$(RTCONFIG_USB_MODEM) += libplist-2.2.0
+obj-$(RTCONFIG_USB_MODEM) += libusbmuxd-2.0.2
+obj-$(RTCONFIG_USB_MODEM) += libimobiledevice-1.3.0
+obj-$(RTCONFIG_USB_MODEM) += usbmuxd-1.1.1
 endif
 
 ifeq ($(KPATH_3X),y)
@@ -1512,10 +1567,13 @@ obj-$(RTCONFIG_FPROBE) += tcpdump-4.4.0
 obj-$(RTCONFIG_NFCM) += sqlite
 obj-$(RTCONFIG_NFCM) += json-c
 obj-$(RTCONFIG_NFCM) += nfcm
-obj-$(RTCONFIG_NFCM) += libnfnetlink-1.0.1
+obj-$(RTCONFIG_NFCM) += libnfnetlink-$(NETLINK_LIB_VER)
 obj-$(RTCONFIG_NFCM) += libmnl-1.0.4
 obj-$(RTCONFIG_NFCM) += libnetfilter_conntrack-1.0.7
 obj-$(RTCONFIG_NFCM) += libnetfilter_cttimeout-1.0.0
+
+obj-$(RTCONFIG_DNSQUERY_INTERCEPT) += dnsqd
+obj-$(RTCONFIG_DNSQUERY_INTERCEPT) += libnetfilter_queue
 
 # add the utility 'pstree' to show the processes relationship
 obj-y += pstree
@@ -1659,7 +1717,9 @@ obj-$(HND_ROUTER) += scratchpadctl
 obj-$(HND_ROUTER) += drvlogs_scripts
 obj-$(HND_ROUTER) += wdtctl
 #obj-$(HND_ROUTER) += expat
+ifeq ($(BUILD_WEB_SOCKETS),y)
 obj-$(HND_ROUTER) += httpdshared
+endif
 ifeq ($(HND_ROUTER_AX_6756),y)
 else
 obj-$(HND_ROUTER) += swmdk
@@ -1677,6 +1737,8 @@ obj-$(HND_ROUTER) += mcpd
 obj-$(HND_ROUTER) += memaccess
 obj-$(HND_ROUTER_AX) += bdmf_lib
 ifeq ($(HND_ROUTER_AX_6756),y)
+obj-$(HND_ROUTER) += iqctl
+obj-$(HND_ROUTER) += iqctl_lib
 else
 obj-$(HND_ROUTER_AX) += mdkshell
 endif
@@ -2795,7 +2857,8 @@ infosvr: shared $(if $(BCM_502L07P2),ethctl_lib) nvram${BCMEX}$(EX7)
 infosvr-install:
 	$(MAKE) -C infosvr INSTALLDIR=$(INSTALLDIR)/infosvr install
 
-httpd: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) rc libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG)) libpasswd
+httpd: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) rc libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_BWDPI),bwdpi_source) json-c $(if $(RTCONFIG_CFGSYNC), $(CFGSYNC_PKG)) libpasswd libwebapi $(if $(RTCONFIG_DNSQUERY_INTERCEPT), dnsqd)
+
 	@$(SEP)
 ifeq ($(HND_ROUTER),y)
 ifeq ($(HND_ROUTER_AX),y)
@@ -2810,6 +2873,26 @@ endif
 httpd-install:
 	$(MAKE) -C httpd INSTALLDIR=$(INSTALLDIR)/httpd install
 
+libwebapi-dep:json-c $(if $(RTCONFIG_BWDPI),bwdpi_source)
+
+libwebapi/stamp-h1:
+	touch $@
+	$(MAKE) libwebapi-dep
+
+libwebapi: libwebapi/stamp-h1
+	@$(SEP)
+	@$(MAKE) -C libwebapi CC=$(CC)
+
+libwebapi-install: libwebapi
+	@echo INSTALLDIR=$(INSTALLDIR)
+	install -D libwebapi/libwebapi.so $(INSTALLDIR)/$</usr/lib/libwebapi.so
+	$(STRIP) $(INSTALLDIR)/$</usr/lib/libwebapi.so
+
+libwebapi-clean:
+	@$(SEP)
+	@$(MAKE) -C libwebapi clean
+	rm -rf libwebapi/stamp-h1
+
 httpd_uam: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdisk $(if $(RTCONFIG_HTTPS),mssl) $(if $(RTCONFIG_FBWIFI),fb_wifi)
 	@$(SEP)
 	@$(MAKE) -C httpd_uam
@@ -2820,7 +2903,7 @@ httpd_uam-install:
 calc_nvram: shared
 	@$(MAKE) -C calc_nvram
 
-conntrack: libnfnetlink-1.0.1 libmnl-1.0.4 libnetfilter_conntrack-1.0.7 libnetfilter_cttimeout-1.0.0 conntrack/Makefile
+conntrack: libnfnetlink-$(NETLINK_LIB_VER) libmnl-1.0.4 libnetfilter_conntrack-1.0.7 libnetfilter_cttimeout-1.0.0 conntrack/Makefile
 	$(MAKE) -C conntrack
 
 conntrack/Makefile:
@@ -2829,7 +2912,7 @@ conntrack/Makefile:
 
 conntrack-configure:
 	( cd conntrack ; \
-		LIBNFNETLINK_CFLAGS="-L$(TOP)/libnfnetlink-1.0.1/src/.libs" \
+		LIBNFNETLINK_CFLAGS="-L$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/src/.libs" \
 		LIBNFNETLINK_LIBS="-lnfnetlink" \
 		LIBMNL_CFLAGS="-L$(TOP)/libmnl-1.0.4/src/.libs" \
 		LIBMNL_LIBS="-lmnl" \
@@ -2837,7 +2920,7 @@ conntrack-configure:
 		LIBNETFILTER_CONNTRACK_LIBS="-lnetfilter_conntrack" \
 		LIBNETFILTER_CTTIMEOUT_CFLAGS="-L$(TOP)/libnetfilter_cttimeout-1.0.0/src/.libs" \
 		LIBNETFILTER_CTTIMEOUT_LIBS="-lnetfilter_cttimeout" \
-		CFLAGS="$(CFLAGS) -I$(TOP)/libnfnetlink-1.0.1/include/ -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-1.0.1/include/ -I$(TOP)/libnetfilter_conntrack-1.0.7/include/ -I$(TOP)/libnetfilter_cttimeout-1.0.0/include/ -L$(TOP)/libnfnetlink-1.0.1/src/.libs -lnfnetlink -L$(TOP)/libmnl-1.0.4/src/.libs -lmnl" \
+		CFLAGS="$(CFLAGS) -I$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/include/ -I$(TOP)/libmnl-1.0.4/include -I$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/include/ -I$(TOP)/libnetfilter_conntrack-1.0.7/include/ -I$(TOP)/libnetfilter_cttimeout-1.0.0/include/ -L$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/src/.libs -lnfnetlink -L$(TOP)/libmnl-1.0.4/src/.libs -lmnl" \
 		$(CONFIGURE) \
 		--disable-cthelper \
 		--prefix=/usr \
@@ -2853,27 +2936,27 @@ conntrack-clean:
 	[ ! -f conntrack/Makefile ] || $(MAKE) -C conntrack distclean
 	@rm -f conntrack/Makefile
 
-libnfnetlink-1.0.1: libnfnetlink-1.0.1/Makefile
-	$(MAKE) -C libnfnetlink-1.0.1
+libnfnetlink-$(NETLINK_LIB_VER): libnfnetlink-$(NETLINK_LIB_VER)/Makefile
+	$(MAKE) -C libnfnetlink-$(NETLINK_LIB_VER)
 
-libnfnetlink-1.0.1/Makefile:
-	$(MAKE) libnfnetlink-1.0.1-configure
+libnfnetlink-$(NETLINK_LIB_VER)/Makefile:
+	$(MAKE) libnfnetlink-$(NETLINK_LIB_VER)-configure
 
-libnfnetlink-1.0.1-configure:
-	( cd libnfnetlink-1.0.1 && autoreconf -i -f ; \
+libnfnetlink-$(NETLINK_LIB_VER)-configure:
+	( cd libnfnetlink-$(NETLINK_LIB_VER) && autoreconf -i -f ; \
 		$(CONFIGURE) \
 		--prefix=/usr \
 		--bindir=/usr/sbin \
 		--libdir=/usr/lib \
 	)
 
-libnfnetlink-1.0.1-install:
-	install -D libnfnetlink-1.0.1/src/.libs/libnfnetlink.so $(INSTALLDIR)/libnfnetlink-1.0.1/usr/lib/libnfnetlink.so.0
-	$(STRIP) $(INSTALLDIR)/libnfnetlink-1.0.1/usr/lib/libnfnetlink.so.0
+libnfnetlink-$(NETLINK_LIB_VER)-install:
+	install -D libnfnetlink-$(NETLINK_LIB_VER)/src/.libs/libnfnetlink.so $(INSTALLDIR)/libnfnetlink-$(NETLINK_LIB_VER)/usr/lib/libnfnetlink.so.0
+	$(STRIP) $(INSTALLDIR)/libnfnetlink-$(NETLINK_LIB_VER)/usr/lib/libnfnetlink.so.0
 
-libnfnetlink-1.0.1-clean:
-	[ ! -f libnfnetlink-1.0.1/Makefile ] || $(MAKE) -C libnfnetlink-1.0.1 distclean
-	@rm -f libnfnetlink-1.0.1/Makefile
+libnfnetlink-$(NETLINK_LIB_VER)-clean:
+	[ ! -f libnfnetlink-$(NETLINK_LIB_VER)/Makefile ] || $(MAKE) -C libnfnetlink-$(NETLINK_LIB_VER) distclean
+	@rm -f libnfnetlink-$(NETLINK_LIB_VER)/Makefile
 
 libmnl-1.0.4: libmnl-1.0.4/Makefile
 	$(MAKE) -C $@ && $(MAKE) $@-stage
@@ -2899,7 +2982,7 @@ libmnl-1.0.4-clean:
 	[ ! -f libmnl-1.0.4/Makefile ] || $(MAKE) -C libmnl-1.0.4 distclean
 	@rm -f libmnl-1.0.4/Makefile
 
-libnetfilter_conntrack-1.0.7: libnfnetlink-1.0.1 libmnl-1.0.4 libnetfilter_conntrack-1.0.7/Makefile
+libnetfilter_conntrack-1.0.7: libnfnetlink-$(NETLINK_LIB_VER) libmnl-1.0.4 libnetfilter_conntrack-1.0.7/Makefile
 	$(MAKE) -C libnetfilter_conntrack-1.0.7
 
 libnetfilter_conntrack-1.0.7/Makefile:
@@ -2908,11 +2991,11 @@ libnetfilter_conntrack-1.0.7/Makefile:
 
 libnetfilter_conntrack-1.0.7-configure:
 	( cd libnetfilter_conntrack-1.0.7 ; \
-		LIBNFNETLINK_CFLAGS="-L$(TOP)/libnfnetlink-1.0.1/src/.libs" \
+		LIBNFNETLINK_CFLAGS="-L$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/src/.libs" \
 		LIBNFNETLINK_LIBS="-lnfnetlink" \
 		LIBMNL_CFLAGS="-L$(TOP)/libmnl-1.0.4/src/.libs" \
 		LIBMNL_LIBS="-lmnl" \
-		CFLAGS="$(CFLAGS) -I$(TOP)/libnfnetlink-1.0.1/include/ -I$(TOP)/libmnl-1.0.4/include -L$(TOP)/libnfnetlink-1.0.1/src/.libs -lnfnetlink -L$(TOP)/libmnl-1.0.4/src/.libs -lmnl" \
+		CFLAGS="$(CFLAGS) -I$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/include/ -I$(TOP)/libmnl-1.0.4/include -L$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/src/.libs -lnfnetlink -L$(TOP)/libmnl-1.0.4/src/.libs -lmnl" \
 		$(CONFIGURE) \
 		--prefix=/usr \
 		--bindir=/usr/sbin \
@@ -3004,7 +3087,9 @@ fsbuild:
 	-mkdir -p $(INSTALL_DIR)/lib/public
 	-mkdir -p $(INSTALL_DIR)/lib/private
 ifeq ($(BRCM_CHIP),4908)
+ifneq ($(RTCONFIG_BCM4906_504),y)
 	-mkdir -p $(INSTALL_DIR)/lib/aarch64
+endif
 endif
 	#-mkdir -p $(INSTALL_DIR)/opt
 	-mkdir -p $(INSTALL_DIR)/sbin
@@ -3230,7 +3315,7 @@ rc: shared libev-4.33 $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) libdi
 rc-install:
 	$(MAKE) -C rc INSTALLDIR=$(INSTALLDIR)/rc install
 
-networkmap: shared $(if $(BCM_502L07P2),ethctl_lib) json-c
+networkmap: shared json-c libasc libletsencrypt $(if $(BCM_502L07P2),ethctl_lib) $(if $(RTCONFIG_BWDPI),bwdpi_source) 
 
 networkmap-install:
 	$(MAKE) -C networkmap INSTALLDIR=$(INSTALLDIR)/networkmap install
@@ -3321,6 +3406,20 @@ pciefd-install:
 	@true
 endif	# BCM7
 
+ifeq ($(RTCONFIG_NOWL),y)
+pciefd: 
+	# Nothing to be done here
+	@true
+
+pciefd-clean:
+	# Nothing to be done here
+	@true
+
+pciefd-install:
+	# Nothing to be done here
+	@true
+endif
+
 #ifeq ($(HND_ROUTER),y)
 ifeq ($(RTCONFIG_DHDAP),y)
 extfdimg : $(SRCBASE_DHD)/dongle/bin
@@ -3338,7 +3437,9 @@ endif
 extfdimg-install :
 ifneq ($(BCM_EXTFDIMAGE_PATH),)
 	install -d $(INSTALLDIR)/rom/rom$(BCM_EXTFDIMAGE_PATH)
+ifneq ($(wildcard $(SRCBASE_DHD)/dongle/bin/*),)
 	cp -r $(SRCBASE_DHD)/dongle/bin/* $(INSTALLDIR)/rom/rom$(BCM_EXTFDIMAGE_PATH)
+endif
 endif
 
 dhd:
@@ -4607,7 +4708,7 @@ endif
 nt_center/stamp-h1:
 	touch $@
 
-nt_center: nt_center/stamp-h1 wb curl libxml2
+nt_center: nt_center/stamp-h1 wb curl libxml2 $(if $(RTCONFIG_DMALLOC),dmalloc)
 	$(MAKE) -C nt_center
 
 
@@ -4621,12 +4722,12 @@ nt_center-install: nt_center
 	install -D nt_center/Notify_Event2NC $(INSTALLDIR)/nt_center/usr/sbin/Notify_Event2NC
 	install -D nt_center/lib/nt_db $(INSTALLDIR)/nt_center/usr/sbin/nt_db
 	#install -D nt_center/lib/nt_db_test $(INSTALLDIR)/nt_center/usr/sbin/nt_db_test
-	$(STRIP) $(INSTALLDIR)/nt_center/usr/lib/libnt.so
-	$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_center
-	$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_monitor
-	$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_actMail
-	$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/Notify_Event2NC
-	$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_db
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/lib/libnt.so)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_center)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_monitor)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_actMail)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/Notify_Event2NC)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_db)
 	#$(STRIP) $(INSTALLDIR)/nt_center/usr/sbin/nt_db_test
 
 nt_center-clean:
@@ -4733,7 +4834,7 @@ nfcm/stamp-h1:
 #	@echo MODEL=$(MODEL)
 	touch $@
 
-nfcm: nfcm/stamp-h1 libev-4.33 sqlite3 json-c libnfnetlink-1.0.1 libmnl-1.0.4 libnetfilter_conntrack-1.0.7 $(if $(HND_ROUTER),ethswctl_lib,) $(if $(QCA),$(PLATFORM_ROUTER)/qca-ssdk-shell)
+nfcm: nfcm/stamp-h1 libev-4.33 sqlite3 json-c libnfnetlink-$(NETLINK_LIB_VER) libmnl-1.0.4 libnetfilter_conntrack-1.0.7 $(if $(HND_ROUTER),ethswctl_lib,) $(if $(QCA),$(PLATFORM_ROUTER)/qca-ssdk-shell)
 	@$(SEP)
 	@$(MAKE) -C nfcm CC=$(CC) QCA=$(if $(QCA),y,n) MODEL=$(MODEL) HND=$(if $(HND_ROUTER),y,n) AX=$(if $(RTCONFIG_HND_ROUTER_AX),y,n)
 
@@ -5067,6 +5168,19 @@ iproute2-4.4.0-clean:
 	-@$(MAKE) -C iproute2-4.4.0 clean
 	-rm -f iproute2-4.4.0/src/Config
 
+iproute2-5.18.0:
+	touch iproute2-5.18.0/configure
+	$(MAKE) -C $@ IPTABLES_DIR=$(TOP)/$(IPTABLES) KERNEL_INCLUDE=$(TOP)/kernel_header/include EXTRACFLAGS="$(EXTRACFLAGS) $(if $(RTCONFIG_IPV6),-DUSE_IPV6,-DNO_IPV6)" && $(MAKE) -C $@ stage
+
+iproute2-5.18.0-install:
+	install -D iproute2-5.18.0/tc/tc $(INSTALLDIR)/iproute2-5.18.0/usr/sbin/tc
+	install -D iproute2-5.18.0/ip/ip $(INSTALLDIR)/iproute2-5.18.0/usr/sbin/ip
+	-$(STRIP) $(INSTALLDIR)/iproute2-5.18.0/usr/sbin/*
+
+iproute2-5.18.0-clean:
+	-@$(MAKE) -C iproute2-5.18.0 clean
+	-rm -f iproute2-5.18.0/config.mk
+
 ntpclient: nvram$(BCMEX)$(EX7) shared $(if $(BCM_502L07P2),ethctl_lib)
 
 ntpclient-install:
@@ -5144,8 +5258,8 @@ wtfast-install:
 ifeq ($(RTCONFIG_QCA),y)
 	$(info FIXME wtfast)
 else ifeq ($(HND_ROUTER_AX),y)
-	install -D $(TOP_PLATFORM)/wtfast/wtfslhd/wtfslhd $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
-	$(STRIP) $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
+	-install -D $(TOP_PLATFORM)/wtfast/wtfslhd/wtfslhd $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
+	-$(STRIP) $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
 else
 	install -D wtfast/wtfslhd/prebuilt$(BCMEX)$(EX7)/wtfslhd $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
 	$(STRIP) $(INSTALLDIR)/wtfast/usr/sbin/wtfslhd
@@ -6394,6 +6508,7 @@ pcre-8.31/stamp-h1:
 	[ -d pcre-8.31/m4 ] || mkdir pcre-8.31/m4
 
 pcre-8.31: pcre-8.31/stamp-h1
+	$(MAKE) $@-stage
 
 pcre-8.31-install: pcre-8.31
 	@$(SEP)
@@ -6981,7 +7096,7 @@ netaconfig netatalk-3.0.5/stamp-h1:
 		touch $(TOP)/netatalk-3.0.5/* ; \
 		cd $(TOP)/netatalk-3.0.5 && \
 		CC=$(CC) CFLAGS="-Os -Wall -ffunction-sections -fdata-sections -I$(TOP)/db-4.8.30/build_unix -I$(TOP)/libgcrypt-1.5.1/src" \
-		LDFLAGS="-L$(TOP)/db-4.8.30/build_unix/.libs -L$(TOP)/libgcrypt-1.5.1/src/.libs -L$(TOP)/libgpg-error-1.10/src/.libs -L$(TOP)/libevent-2.0.21/.libs -lgpg-error -lgcrypt" \
+		LDFLAGS="-L$(TOP)/db-4.8.30/build_unix/.libs -L$(TOP)/libgcrypt-1.5.1/src/.libs -L$(TOP)/libgpg-error-1.10/src/.libs -L$(TOP)/libevent-2.0.21/.libs -lgpg-error -lgcrypt -lcrypt" \
 		$(CONFIGURE) \
 		ac_cv_path_LIBGCRYPT_CONFIG=$(TOP)/libgcrypt-1.5.1/src/libgcrypt-config \
 		--without-kerberos \
@@ -7211,7 +7326,7 @@ tftp-hpa-install: tftp-hpa
 tftp-hpa-clean:
 	[ ! -f tftp-hpa/Makefile ] || $(MAKE) -C tftp-hpa distclean
 
-bwdpi_source: sqlite $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(and $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(BCM_502L07P2),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util)
+bwdpi_source: sqlite $(if $(RTCONFIG_HND_ROUTER),bcm_flashutil bcm_util bcm_boardctl) $(if $(and $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(RTCONFIG_BCM4906_504),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(RTCONFIG_HND_ROUTER_AX_6710),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util) $(if $(and $(BCM_502L07P2),$(RTCONFIG_BRCM_HOSTAPD)),sys_util gen_util)
 	cd bwdpi_source && CC=$(CC) && $(MAKE) all
 
 bwdpi_source-clean:
@@ -7428,7 +7543,8 @@ wget-install:
 
 rtk_wifi_eventd: $(if $(RTCONFIG_CFGSYNC), cfg_mnt)
 
-cfg_mnt: $(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite wlc_nt) $(if $(RTCONFIG_AMAS),$(LLDPD) amas-utils) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) libasuslog
+cfg_mnt: $(if $(RTCONFIG_NOTIFICATION_CENTER),nt_center sqlite wlc_nt) $(if $(RTCONFIG_AMAS),$(LLDPD) amas-utils) $(if $(RTCONFIG_LANTIQ),libfapi-0.1) libasuslog \
+	$(if $(RTCONFIG_DMALLOC),dmalloc)
 
 batctl-2016.0: libnl-bf
 	CFLAGS="-Os -ffunction-sections -fdata-sections $(CFLAGS)" \
@@ -7605,12 +7721,12 @@ hostapd-2.6-clean:
 	cd hostapd-2.6/wpa_supplicant; make clean
 
 btconfig:
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756)),y)
+ifeq ($(HND_ROUTER_AX),y)
 	$(MAKE) -C $@
 endif
 
 btconfig-install:
-ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756)),y)
+ifeq ($(HND_ROUTER_AX),y)
 	install -D btconfig/btconfig $(TARGETDIR)/usr/bin/btconfig
 endif
 ifeq ($(RTCONFIG_LANTIQ),y)
@@ -7629,6 +7745,7 @@ else
 BLUEZ_5.41_LDFLAGS_EXT :=
 endif
 
+ifeq ($(RTCONFIG_BCM4906_504),y)
 bluez-5.41/stamp-h1:
 ifeq ($(wildcard bluez-5.41/prebuild),)
 	cd bluez-5.41 && ./autogen.sh --no-configure
@@ -7644,10 +7761,36 @@ ifeq ($(wildcard bluez-5.41/prebuild),)
 			-lglib-2.0 -lical -licalvcal \
 			-L$(TOP)/openssl -lssl -lcrypto \
 			-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram \
+			$(EXTRA_NV_LDFLAGS) \
 			-L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib -lethctl) \
 			-L$(INSTALLDIR)/zlib/usr/lib -lz -lm -lc -ljson-c $(BLUEZ_5.41_LDFLAGS_EXT)"
 		touch $@
 endif
+else
+bluez-5.41/stamp-h1:
+ifeq ($(wildcard bluez-5.41/prebuild),)
+	cd bluez-5.41 && ./autogen.sh --no-configure
+	cd bluez-5.41 && $(CONFIGURE) \
+		--enable-library --program-prefix= --program-suffix= --prefix=/usr --exec-prefix=/usr --bindir=/usr/bin --sbindir=/usr/sbin --libexecdir=/usr/lib --sysconfdir=/etc\
+		--datadir=/usr/share --localstatedir=/var --mandir=/usr/man --infodir=/usr/info --disable-systemd --with-udevdir=$(STAGEDIR)/usr/lib/udev\
+		--enable-experimental --enable-maintainer-mode $(AQIS) \
+		GLIB_CFLAGS="-I$(TOP)/glib-2.59.0/glib" \
+		GLIB_LIBS="$(TOP)/glib-2.59.0//glib/.libs/libglib-2.0.so" \
+		UDEV_CFLAGS="-I$(STAGEDIR)/usr/include" UDEV_LIBS="$(STAGEDIR)/usr/lib/libudev.so" \
+		CFLAGS="-I$(STAGEDIR)/usr/include -I$(STAGEDIR)/usr/local/include -I$(SRCBASE)/include -I$(STAGEDIR)/usr/local/include/glib-2.0 -I$(STAGEDIR)/usr/local/lib/glib-2.0/include -I$(TOP)/shared -DENCRYPT -I$(TOP)/json-c -D$(MODEL)" \
+		LDFLAGS="-L$(STAGEDIR)/lib -L$(STAGEDIR)/usr/lib \
+			-ldbus-1 -liconv -ldl -lpthread \
+			-L$(STAGEDIR)/usr/local/lib \
+			-lglib-2.0 -lical -licalvcal \
+			-L$(TOP)/openssl -lssl -lcrypto \
+			-L$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -L$(TOP)/nvram -L$(INSTALLDIR)/nvram/usr/lib -lnvram \
+			$(EXTRA_NV_LDFLAGS) \
+			-L$(TOP)/shared -L$(INSTALLDIR)/shared/usr/lib -lshared $(if $(BCM_502L07P2),-L$(TOP_PLATFORM)/ethctl_lib -lethctl) \
+			-L$(INSTALLDIR)/zlib/usr/lib -lz -lm -lc -ljson-c -L$(TOP)/pcre-8.31/.libs -lpcre $(BLUEZ_5.56_LDFLAGS_EXT)"
+		touch $@
+endif
+endif
+
 bluez-5.41: bluez-5.41/stamp-h1
 	$(MAKE) -C $@ && $(MAKE) $@-stage
 
@@ -8191,6 +8334,63 @@ glib-2.37.7-install: glib-2.37.7
 		ln -sf libgthread-2.0.so.0.3707.0 libgthread-2.0.so.0 && \
 		ln -sf libgthread-2.0.so.0.3707.0 libgthread-2.0.so
 
+GLIB_2.59.0_CONF=
+ifeq ($(RTCONFIG_REALTEK)$(HND_ROUTER_AX)$(RTCONFIG_MUSL_LIBC),y)
+GLIB_2.59.0_CONF=--enable-iconv=no --with-libiconv=gnu
+endif
+
+ifeq ($(HND_ROUTER_AX_6756),y)
+GLIB_2.59.0_CFLAGS_EXT := -Wno-format-nonliteral -DRTCONFIG_HND_ROUTER_AX_6756
+else
+GLIB_2.59.0_CFLAGS_EXT :=
+endif
+
+glib-2.59.0/configure: libffi-3.0.11 pcre-8.31
+	cd glib-2.59.0 && echo "glib_cv_stack_grows=yes" > asuswrt.cache && echo "glib_cv_uscore=yes" >> asuswrt.cache && ./autogen.sh
+
+glib-2.59.0/Makefile: glib-2.59.0/configure
+	cd glib-2.59.0 && $(CONFIGURE) --cache-file=asuswrt.cache --disable-libmount --disable-nls --enable-debug=no --disable-selinux --disable-fam --with-libiconv $(GLIB_2.59.0_CONF) \
+		PCRE_CFLAGS="-I$(TOP)/pcre-8.31" \
+		PCRE_LIBS="$(TOP)/pcre-8.31/.libs/libpcre.so" \
+		LIBFFI_CFLAGS="-I$(STAGEDIR)/usr/local/lib/libffi-3.0.11/include" \
+		LIBFFI_LIBS="$(STAGEDIR)/usr/local/lib/libffi.so" \
+		CFLAGS="$(GLIB_2.59.0_CFLAGS_EXT) -I$(TOP)/libiconv-1.14/include -I$(TOP)/glib-2.59.0 -I$(STAGEDIR)/usr/include"\
+		LDFLAGS="-L$(TOP)/libiconv-1.14/lib/.libs -liconv -L$(STAGEDIR)/usr/lib -ldl -lpthread -lz -L$(STAGEDIR)/usr/local/lib -lffi -L$(TOP)/pcre-8.31/.libs -lpcre"
+
+glib-2.59.0: glib-2.59.0/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+	@sed 's|\(\W\)/usr/lib|\1$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/local/lib/libgio-2.0.la
+	@sed 's|\(\W\)/usr/lib|\1$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/local/lib/libglib-2.0.la
+	@sed 's|\(\W\)/usr/lib|\1$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/local/lib/libgmodule-2.0.la
+	@sed 's|\(\W\)/usr/lib|\1$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/local/lib/libgobject-2.0.la
+	@sed 's|\(\W\)/usr/lib|\1$(STAGEDIR)/usr/lib|g' -i $(STAGEDIR)/usr/local/lib/libgthread-2.0.la
+
+glib-2.59.0-clean:
+	[ ! -f glib-2.59.0/Makefile ] || $(MAKE) -C glib-2.59.0 distclean
+
+glib-2.59.0-install: glib-2.59.0
+	install -D glib-2.59.0/gio/.libs/libgio-2.0.so.0.5900.0 $(INSTALLDIR)/glib-2.59.0/usr/lib/libgio-2.0.so.0.5900.0
+	install -D glib-2.59.0/glib/.libs/libglib-2.0.so.0.5900.0 $(INSTALLDIR)/glib-2.59.0/usr/lib/libglib-2.0.so.0.5900.0
+	install -D glib-2.59.0/gmodule/.libs/libgmodule-2.0.so.0.5900.0 $(INSTALLDIR)/glib-2.59.0/usr/lib/libgmodule-2.0.so.0.5900.0
+	install -D glib-2.59.0/gobject/.libs/libgobject-2.0.so.0.5900.0 $(INSTALLDIR)/glib-2.59.0/usr/lib/libgobject-2.0.so.0.5900.0
+	install -D glib-2.59.0/gthread/.libs/libgthread-2.0.so.0.5900.0 $(INSTALLDIR)/glib-2.59.0/usr/lib/libgthread-2.0.so.0.5900.0
+	$(STRIP) $(INSTALLDIR)/glib-2.59.0/usr/lib/libgio-2.0.so.0.5900.0
+	$(STRIP) $(INSTALLDIR)/glib-2.59.0/usr/lib/libglib-2.0.so.0.5900.0
+	$(STRIP) $(INSTALLDIR)/glib-2.59.0/usr/lib/libgmodule-2.0.so.0.5900.0
+	$(STRIP) $(INSTALLDIR)/glib-2.59.0/usr/lib/libgobject-2.0.so.0.5900.0
+	$(STRIP) $(INSTALLDIR)/glib-2.59.0/usr/lib/libgthread-2.0.so.0.5900.0
+	cd $(INSTALLDIR)/glib-2.59.0/usr/lib && \
+		ln -sf libgio-2.0.so.0.5900.0 libgio-2.0.so.0 && \
+		ln -sf libgio-2.0.so.0.5900.0 libgio-2.0.so && \
+		ln -sf libglib-2.0.so.0.5900.0 libglib-2.0.so.0 && \
+		ln -sf libglib-2.0.so.0.5900.0 libglib-2.0.so && \
+		ln -sf libgmodule-2.0.so.0.5900.0 libgmodule-2.0.so.0 && \
+		ln -sf libgmodule-2.0.so.0.5900.0 libgmodule-2.0.so && \
+		ln -sf libgobject-2.0.so.0.5900.0 libgobject-2.0.so.0 && \
+		ln -sf libgobject-2.0.so.0.5900.0 libgobject-2.0.so && \
+		ln -sf libgthread-2.0.so.0.5900.0 libgthread-2.0.so.0 && \
+		ln -sf libgthread-2.0.so.0.5900.0 libgthread-2.0.so
+
 stage-tags: dummy
 	ctags -aR -f $(SRCBASE)/tags $(STAGEDIR)/usr/include
 
@@ -8302,6 +8502,48 @@ endif
 aaews-clean:
 	cd aaews && make clean
 
+dnsqd:  libnetfilter_queue libnfnetlink-$(NETLINK_LIB_VER) sqlite json-c libev-4.33
+	cd dnsqd && \
+	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
+	$(MAKE) all
+
+dnsqd-install:
+	install -D dnsqd/dnsqd $(INSTALLDIR)/dnsqd/usr/sbin/dnsqd
+	$(STRIP) -s $(INSTALLDIR)/dnsqd/usr/sbin/dnsqd
+	install -D dnsqd/libdns_app_client.so $(INSTALLDIR)/dnsqd/usr/lib/libdns_app_client.so
+	$(STRIP) $(INSTALLDIR)/dnsqd/usr/lib/libdns_app_client.so
+
+dnsqd-clean:
+	cd dnsqd && make clean
+
+
+libnetfilter_queue: libnfnetlink-$(NETLINK_LIB_VER) ibmnl-1.0.4 libnetfilter_queue/Makefile
+	$(MAKE) -C libnetfilter_queue
+
+libnetfilter_queue/Makefile:
+	$(MAKE) libnetfilter_queue-configure
+
+libnetfilter_queue-configure:
+	( cd libnetfilter_queue && autoreconf -i -f ; \
+                LIBNFNETLINK_CFLAGS="-L$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/src/.libs" \
+                LIBNFNETLINK_LIBS="-lnfnetlink" \
+                LIBMNL_CFLAGS="-L$(TOP)/libmnl-1.0.4/src/.libs" \
+                LIBMNL_LIBS="-lmnl" \
+                CFLAGS="$(CFLAGS) -I$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/include/ -I$(TOP)/libmnl-1.0.4/include -L$(TOP)/libnfnetlink-$(NETLINK_LIB_VER)/src/.libs -lnfnetlink -L$(TOP)/libmnl-1.0.4/src/.libs -lmnl" \
+                $(CONFIGURE) \
+                --prefix=/usr \
+                --bindir=/usr/sbin \
+                --libdir=/usr/lib \
+        )
+
+libnetfilter_queue-install:
+	install -D libnetfilter_queue/src/.libs/libnetfilter_queue.so $(INSTALLDIR)/libnetfilter_queue/usr/lib/libnetfilter_queue.so.1
+	$(STRIP) $(INSTALLDIR)/libnetfilter_queue/usr/lib/libnetfilter_queue.so.1
+
+libnetfilter_queue-clean:
+	[ ! -f libnetfilter_queue/Makefile ] || $(MAKE) -C libnetfilter_queue distclean
+	@rm -f libnetfilter_queue/Makefile
+
 
 uploader_aicam: openssl curl libxml2 json-c shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7)
 	$(MAKE) -C $@ $(shell if [[ "$(HND_ROUTER)" = "y" ]] ; then echo "LD="""; else echo ""; fi)
@@ -8347,9 +8589,9 @@ amas-utils-clean:
 amas-utils-install:
 	install -d $(INSTALLDIR)/amas-utils/usr/lib/
 	install -D amas-utils/libamas-utils.so $(INSTALLDIR)/amas-utils/usr/lib/libamas-utils.so
-	$(STRIP) -s $(INSTALLDIR)/amas-utils/usr/lib/libamas-utils.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/amas-utils/usr/lib/libamas-utils.so)
 	install -D amas-utils/amas-utils-cli $(INSTALLDIR)/amas-utils/usr/sbin/amas-utils-cli
-	$(STRIP) -s $(INSTALLDIR)/amas-utils/usr/sbin/amas-utils-cli
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/amas-utils/usr/sbin/amas-utils-cli)
 
 json-c/stamp-h1:
 ifeq ($(RTCONFIG_LANTIQ),y)
@@ -8363,7 +8605,7 @@ else
 	cd $(TOP)/json-c && \
 	$(CONFIGURE) --prefix=/usr --enable-shared --disable-static \
 	ac_cv_func_realloc_0_nonnull=yes ac_cv_func_malloc_0_nonnull=yes \
-	CFLAGS="-Os -Wno-error $(EXTRACFLAGS)" \
+	CFLAGS="-Os -Wno-error $(EXTRACFLAGS) $(if $(RTCONFIG_DEBUG),-g)" \
 	LDFLAGS="$(EXTRALDFLAGS) -Wl,--as-needed -lm"
 	touch $@
 endif
@@ -8373,7 +8615,7 @@ json-c: json-c/stamp-h1
 
 json-c-install:
 	install -D json-c/.libs/libjson-c.so.2.0.2 $(INSTALLDIR)/json-c/usr/lib/libjson-c.so.2.0.2
-	$(STRIP) $(INSTALLDIR)/json-c/usr/lib/libjson-c.so.2.0.2
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/json-c/usr/lib/libjson-c.so.2.0.2)
 	cd $(INSTALLDIR)/json-c/usr/lib && \
 		ln -sf libjson-c.so.2.0.2 libjson-c.so && \
 		ln -sf libjson-c.so.2.0.2 libjson-c.so.2
@@ -9070,11 +9312,13 @@ bcm_bootstate:
 
 #.PHONY : expat
 
+ifeq ($(BUILD_WEB_SOCKETS),y)
 httpdshared:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
 	$(MAKE) -C $(TOPX_DIR)
 
 .PHONY : httpdshared
+endif
 
 mdk:
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
@@ -9195,7 +9439,7 @@ blogctl-install:
 blogctl-clean:
 	$(MAKE) -C $(TOP_PLATFORM)/blogctl clean
 
-iqctl:
+iqctl: iqctl_lib
 	@$(eval TOPX_DIR:=$(firstword $(wildcard $(TOP_PLATFORM)/$@) $(wildcard $@)))
 	$(MAKE) -C $(TOPX_DIR)
 
@@ -9390,6 +9634,18 @@ qrencode-install:
 qrencode-clean:
 	@rm -rf qrencode/build
 
+strips:
+	@echo $@
+ifeq ($(RTCONFIG_NOWL),y)
+	cd $(MODULESDIR) && find ./ -name "dhd.ko" | xargs rm -f ;
+	cd $(MODULESDIR) && find ./ -name "dpsta.ko" | xargs rm -f ;
+	cd $(INSTALLDIR) && find ./ -name "wl" | xargs rm -f ;	
+	cd $(INSTALLDIR) && find ./ -name "acsd" | xargs rm -f ;
+	cd $(INSTALLDIR) && find ./ -name "ssd" | xargs rm -f ;
+endif
+
+.PHONY : strips
+
 #
 # include rules for platform specific software packages
 #
@@ -9432,6 +9688,162 @@ dns_ping-clean:
 dns_ping-install:
 	install -D dns_ping/dns_ping $(INSTALLDIR)/dns_ping/usr/sbin/dns_ping
 	$(STRIP) $(INSTALLDIR)/dns_ping/usr/sbin/dns_ping
+
+ifeq ($(RTCONFIG_HND_ROUTER),y)
+ifeq ($(RTCONFIG_USB_MODEM),y)
+# iphone ethernet support
+libplist-2.2.0-configure:
+	cd libplist-2.2.0 && autoreconf --force --install && \
+		$(CONFIGURE) --without-cython \
+		--disable-shared
+
+libplist-2.2.0/Makefile:
+	$(MAKE) libplist-2.2.0-configure
+
+libplist-2.2.0: libplist-2.2.0/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libplist-2.2.0-install: libplist-2.2.0
+	install -D libplist-2.2.0/tools/plistutil $(INSTALLDIR)/libplist-2.2.0/usr/bin/plistutil
+	$(STRIP) $(INSTALLDIR)/libplist-2.2.0/usr/bin/plistutil
+	#install -D libplist-2.2.0/src/.libs/libplist-2.0.so.3.3.0 $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist-2.0.so.3.3.0
+	#cd $(INSTALLDIR)/libplist-2.2.0/usr/lib/ && \
+	#	ln -sf libplist-2.0.so.3.3.0 libplist-2.0.so.3 && \
+	#	ln -sf libplist-2.0.so.3.3.0 libplist-2.0.so
+	#$(STRIP) $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist-2.0.so.3.3.0
+	#install -D libplist-2.2.0/src/.libs/libplist++-2.0.so.3.3.0 $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist++-2.0.so.3.3.0
+	#cd $(INSTALLDIR)/libplist-2.2.0/usr/lib/ && \
+	#	ln -sf libplist++-2.0.so.3.3.0 libplist++-2.0.so.3 && \
+	#	ln -sf libplist++-2.0.so.3.3.0 libplist++-2.0.so
+	#$(STRIP) $(INSTALLDIR)/libplist-2.2.0/usr/lib/libplist++-2.0.so.3.3.0
+
+libplist-2.2.0-clean:
+	[ ! -f libplist-2.2.0/Makefile ] || $(MAKE) -C libplist-2.2.0 distclean
+	@rm -rf libplist-2.2.0/Makefile libplist-2.2.0/*/.deps
+
+libusbmuxd-2.0.2-configure:
+	cd libusbmuxd-2.0.2 && autoreconf --force --install && \
+		$(CONFIGURE) \
+		LDFLAGS="-lm" \
+		--disable-shared \
+		libplist_CFLAGS="-I$(TOP)/libplist-2.2.0/include" \
+		libplist_LIBS="-L$(TOP)/libplist-2.2.0/src/.libs -lplist-2.0"
+
+libusbmuxd-2.0.2/Makefile:
+	$(MAKE) libusbmuxd-2.0.2-configure
+
+libusbmuxd-2.0.2: libusbmuxd-2.0.2/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libusbmuxd-2.0.2-install: libusbmuxd-2.0.2
+	install -D libusbmuxd-2.0.2/tools/inetcat $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/inetcat
+	$(STRIP) $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/inetcat
+	install -D libusbmuxd-2.0.2/tools/iproxy $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/iproxy
+	$(STRIP) $(INSTALLDIR)/libusbmuxd-2.0.2/usr/bin/iproxy
+	#install -D libusbmuxd-2.0.2/src/.libs/libusbmuxd-2.0.so.6.0.0 $(INSTALLDIR)/libusbmuxd-2.0.2/usr/lib/libusbmuxd-2.0.so.6.0.0
+	#cd $(INSTALLDIR)/libusbmuxd-2.0.2/usr/lib/ && \
+	#	ln -sf libusbmuxd-2.0.so.6.0.0 libusbmuxd-2.0.so.6 && \
+	#	ln -sf libusbmuxd-2.0.so.6.0.0 libusbmuxd-2.0.so
+	#$(STRIP) $(INSTALLDIR)/libusbmuxd-2.0.2/usr/lib/libusbmuxd-2.0.so.6.0.0
+
+libusbmuxd-2.0.2-clean:
+	[ ! -f libusbmuxd-2.0.2/Makefile ] || $(MAKE) -C libusbmuxd-2.0.2 distclean
+	@rm -rf libusbmuxd-2.0.2/Makefile libusbmuxd-2.0.2/*/.deps
+
+libimobiledevice-1.3.0-configure:
+	cd libimobiledevice-1.3.0 && autoreconf --force --install && \
+		$(CONFIGURE) --without-cython \
+		--disable-shared \
+		libplist_CFLAGS="-I$(TOP)/libplist-2.2.0/include" \
+		libplist_LIBS="-L$(TOP)/libplist-2.2.0/src/.libs -lplist-2.0" \
+		libusbmuxd_CFLAGS="-I$(TOP)/libusbmuxd-2.0.2/include" \
+		libusbmuxd_LIBS="-L$(TOP)/libusbmuxd-2.0.2/src/.libs -lusbmuxd-2.0" \
+		openssl_CFLAGS="-I$(TOP)/openssl/include" \
+		openssl_LIBS="-L$(TOP)/openssl -lssl -lcrypto"
+
+libimobiledevice-1.3.0/Makefile:
+	$(MAKE) libimobiledevice-1.3.0-configure
+
+libimobiledevice-1.3.0: libimobiledevice-1.3.0/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+libimobiledevice-1.3.0-install: libimobiledevice-1.3.0
+	install -D libimobiledevice-1.3.0/tools/idevicebackup $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup
+	install -D libimobiledevice-1.3.0/tools/idevicebackup2 $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup2
+	install -D libimobiledevice-1.3.0/tools/idevicecrashreport $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicecrashreport
+	install -D libimobiledevice-1.3.0/tools/idevicedate $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedate
+	install -D libimobiledevice-1.3.0/tools/idevicedebug $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebug
+	install -D libimobiledevice-1.3.0/tools/idevicedebugserverproxy $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebugserverproxy
+	install -D libimobiledevice-1.3.0/tools/idevicediagnostics $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicediagnostics
+	install -D libimobiledevice-1.3.0/tools/ideviceenterrecovery $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceenterrecovery
+	install -D libimobiledevice-1.3.0/tools/idevice_id $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevice_id
+	install -D libimobiledevice-1.3.0/tools/ideviceimagemounter $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceimagemounter
+	install -D libimobiledevice-1.3.0/tools/ideviceinfo $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceinfo
+	install -D libimobiledevice-1.3.0/tools/idevicename $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicename
+	install -D libimobiledevice-1.3.0/tools/idevicenotificationproxy $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicenotificationproxy
+	install -D libimobiledevice-1.3.0/tools/idevicepair $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicepair
+	install -D libimobiledevice-1.3.0/tools/ideviceprovision $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceprovision
+	install -D libimobiledevice-1.3.0/tools/idevicescreenshot $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicescreenshot
+	install -D libimobiledevice-1.3.0/tools/idevicesetlocation $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesetlocation
+	install -D libimobiledevice-1.3.0/tools/idevicesyslog $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesyslog
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicebackup2
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicecrashreport
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedate
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebug
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicedebugserverproxy
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicediagnostics
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceenterrecovery
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevice_id
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceimagemounter
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceinfo
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicename
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicenotificationproxy
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicepair
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/ideviceprovision
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicescreenshot
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesetlocation
+	$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/bin/idevicesyslog
+	#install -D libimobiledevice-1.3.0/src/.libs/libimobiledevice-1.0.so.6.0.0 $(INSTALLDIR)/libimobiledevice-1.3.0/usr/lib/libimobiledevice-1.0.so.6.0.0
+	#cd $(INSTALLDIR)/libimobiledevice-1.3.0/usr/lib/ && \
+	#	ln -sf libimobiledevice-1.0.so.6.0.0 libimobiledevice-1.0.so.6 && \
+	#	ln -sf libimobiledevice-1.0.so.6.0.0 libimobiledevice-1.0.so
+	#$(STRIP) $(INSTALLDIR)/libimobiledevice-1.3.0/usr/lib/libimobiledevice-1.0.so.6.0.0
+
+libimobiledevice-1.3.0-clean:
+	[ ! -f libimobiledevice-1.3.0/Makefile ] || $(MAKE) -C libimobiledevice-1.3.0 distclean
+	@rm -rf libimobiledevice-1.3.0/Makefile libimobiledevice-1.3.0/*/.deps
+
+usbmuxd-1.1.1-configure:
+	cd usbmuxd-1.1.1 && autoreconf --force --install && \
+		$(CONFIGURE) \
+		--disable-shared \
+		ac_cv_func_malloc_0_nonnull=yes \
+		ac_cv_func_realloc_0_nonnull=yes \
+		ac_cv_enum_idevice_connection_type=yes \
+		libusb_CFLAGS="-I$(TOP)/libusb10/libusb" \
+		libusb_LIBS="-L$(TOP)/libusb10/libusb/.libs -lusb-1.0" \
+		libplist_CFLAGS="-I$(TOP)/libplist-2.2.0/include" \
+		libplist_LIBS="-L$(TOP)/libplist-2.2.0/src/.libs -lplist-2.0" \
+		libimobiledevice_CFLAGS="-I$(TOP)/libimobiledevice-1.3.0/include" \
+		libimobiledevice_LIBS="-L$(TOP)/libimobiledevice-1.3.0/src/.libs -limobiledevice-1.0"
+
+usbmuxd-1.1.1/Makefile:
+	$(MAKE) usbmuxd-1.1.1-configure
+
+usbmuxd-1.1.1: usbmuxd-1.1.1/Makefile
+	$(MAKE) -C $@ && $(MAKE) $@-stage
+
+usbmuxd-1.1.1-install: usbmuxd-1.1.1
+	install -D usbmuxd-1.1.1/src/usbmuxd $(INSTALLDIR)/usbmuxd-1.1.1/usr/bin/usbmuxd
+	$(STRIP) $(INSTALLDIR)/usbmuxd-1.1.1/usr/bin/usbmuxd
+
+usbmuxd-1.1.1-clean:
+	[ ! -f usbmuxd-1.1.1/Makefile ] || $(MAKE) -C usbmuxd-1.1.1 distclean
+	@rm -rf usbmuxd-1.1.1/Makefile usbmuxd-1.1.1/*/.deps
+endif
+endif
+
 
 #
 # Generic rules

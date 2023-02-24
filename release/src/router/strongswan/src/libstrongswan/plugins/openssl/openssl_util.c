@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2009 Martin Willi
  * Copyright (C) 2008 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -124,7 +125,7 @@ bool openssl_fingerprint(EVP_PKEY *key, cred_encoding_type_t type, chunk_t *fp)
 	}
 	free(enc.ptr);
 	hasher->destroy(hasher);
-	lib->encoding->cache(lib->encoding, type, key, *fp);
+	lib->encoding->cache(lib->encoding, type, key, fp);
 	return TRUE;
 }
 

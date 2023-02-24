@@ -22,13 +22,13 @@ static void exit_handler(int sig)
         fuse_session_exit(fuse_instance);
 }
 
-static int set_one_signal_handler(int sig, void (*handler)(int))
+static int set_one_signal_handler(int sig, void (*handler)(int), int remove)
 {
     struct sigaction sa;
     struct sigaction old_sa;
 
     memset(&sa, 0, sizeof(struct sigaction));
-    sa.sa_handler = handler;
+    sa.sa_handler = remove ? SIG_DFL : handler;
     sigemptyset(&(sa.sa_mask));
     sa.sa_flags = 0;
 
@@ -37,7 +37,7 @@ static int set_one_signal_handler(int sig, void (*handler)(int))
         return -1;
     }
 
-    if (old_sa.sa_handler == SIG_DFL &&
+    if (old_sa.sa_handler == (remove ? handler : SIG_DFL) &&
         sigaction(sig, &sa, NULL) == -1) {
         perror("fuse: cannot set signal handler");
         return -1;
@@ -47,10 +47,10 @@ static int set_one_signal_handler(int sig, void (*handler)(int))
 
 int fuse_set_signal_handlers(struct fuse_session *se)
 {
-    if (set_one_signal_handler(SIGHUP, exit_handler) == -1 ||
-        set_one_signal_handler(SIGINT, exit_handler) == -1 ||
-        set_one_signal_handler(SIGTERM, exit_handler) == -1 ||
-        set_one_signal_handler(SIGPIPE, SIG_IGN) == -1)
+    if (set_one_signal_handler(SIGHUP, exit_handler, 0) == -1 ||
+        set_one_signal_handler(SIGINT, exit_handler, 0) == -1 ||
+        set_one_signal_handler(SIGTERM, exit_handler, 0) == -1 ||
+        set_one_signal_handler(SIGPIPE, SIG_IGN, 0) == -1)
         return -1;
 
     fuse_instance = se;
@@ -65,9 +65,9 @@ void fuse_remove_signal_handlers(struct fuse_session *se)
     else
         fuse_instance = NULL;
 
-    set_one_signal_handler(SIGHUP, SIG_DFL);
-    set_one_signal_handler(SIGINT, SIG_DFL);
-    set_one_signal_handler(SIGTERM, SIG_DFL);
-    set_one_signal_handler(SIGPIPE, SIG_DFL);
+    set_one_signal_handler(SIGHUP, exit_handler, 1);
+    set_one_signal_handler(SIGINT, exit_handler, 1);
+    set_one_signal_handler(SIGTERM, exit_handler, 1);
+    set_one_signal_handler(SIGPIPE, SIG_IGN, 1);
 }
 

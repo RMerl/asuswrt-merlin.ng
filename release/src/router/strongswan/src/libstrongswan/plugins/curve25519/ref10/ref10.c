@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Based on the public domain libsodium adaptation by Frank Denis
  * of the SUPERCOP ref10 implementation by  Daniel J. Bernstein,

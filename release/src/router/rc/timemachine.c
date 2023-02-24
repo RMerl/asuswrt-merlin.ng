@@ -500,8 +500,10 @@ int start_timemachine()
 	if(!nvram_match("timemachine_enable", "1"))
 		return -1;
 
+#if defined(RTCONFIG_USB)
 	if(!sd_partition_num() && !nvram_match("usb_debug", "1"))
 		return -1;
+#endif
 
 	if(nvram_safe_get("tm_device_name") == NULL)
 	{

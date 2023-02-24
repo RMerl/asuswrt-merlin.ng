@@ -1,9 +1,9 @@
-
+#include <unistd.h>
 #include <sys/socket.h>
 #include <errno.h>
 #include <fcntl.h>
 #include <sys/un.h>
-
+#include <string.h>
 #include <sys/select.h>
 
 #include <arpa/inet.h>
@@ -77,41 +77,52 @@ void *cm_ipcPacketHandler(void *args)
         goto err;
     }
 
+    json_object *root = NULL;
+    json_object *o_func_name = NULL;
+    root = json_tokener_parse(args);
 
+    if (root) {
+      json_object_object_get_ex(root, "function_name", &o_func_name);
 
-    if(strstr(args, "aae_sip_connected")  && !strstr(args, "topic")) {
-      
-      publish_shadow_remote_connection(1, args); // Temporary function 
+      if (o_func_name) {
+        const char *func_name = json_object_get_string(o_func_name);
+        
+        if (!strcmp(func_name, "send_message")) {
+          json_object *o_topic = NULL;
+          json_object *o_msg = NULL;
+          json_object_object_get_ex(root, "topic", &o_topic);
+          json_object_object_get_ex(root, "msg", &o_msg);
+
+          if (o_topic && o_msg) {
+            const char *topic = json_object_get_string(o_topic);
+            const char *msg = json_object_get_string(o_msg);
+            
+            Cdbg(APC_DBG, "topic = %s", topic);
+            Cdbg(APC_DBG, "msg = %s", msg);
+
+            publish_router_service_topic(topic, msg);
+          } else {
+            Cdbg(APC_DBG, "topic or msg is invalid");
+          }
+        } else if (!strcmp(func_name, "tunnel_status")) {
+          char result[64];
+          json_object *o_status = NULL;
+          json_object_object_get_ex(root, "status", &o_status);
+          if (o_status) {
+            snprintf(result, sizeof(result), "{\"aae_sip_connected\":\"%s\"}", json_object_get_string(o_status));
+            Cdbg(APC_DBG, "%s %s", __FUNCTION__, result);
+            publish_shadow_remote_connection(1, result);
+          } else {
+            LogInfo( ( "%s status is invalid", __FUNCTION__) );
+          }
+        }
+      }
+
+      json_object_put(root);
 
     } else {
-
-      json_object *root = NULL;
-      json_object *o_topic = NULL, *o_msg = NULL;
+      LogInfo( ( "%s root is invalid", __FUNCTION__) );
       
-      root = json_tokener_parse(args);
-
-
-      if (root) {
-
-        json_object_object_get_ex(root, "topic", &o_topic);
-        json_object_object_get_ex(root, "msg", &o_msg);
-         
-        char *topic = json_object_get_string(o_topic);
-        char *msg = json_object_get_string(o_msg);
-
-
-        LogInfo( ( "%s topic = %s", __FUNCTION__, topic) );
-        LogInfo( ( "%s msg = %s", __FUNCTION__, msg) );
-
-
-        publish_router_service_topic(topic, msg);
-
-        json_object_put(root);
-
-      } else {
-        LogInfo( ( "%s root is invalid", __FUNCTION__) );
-        
-      }
     }
 
 

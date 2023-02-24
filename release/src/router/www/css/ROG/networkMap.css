@@ -203,14 +203,14 @@ body{
 	margin-top:-4px;
 	margin-left:-6px;
 }
-input[type="text"]{
+input[type="text"], input[type="password"]{
 	height: 24px;	
 	padding-left: 4px;
 }
 .input_option{
 	height: 28px; 
 }
-input[type="text"], .input_option{
+input[type="text"], input[type="password"], .input_option{
 	border: 1px solid rgb(145,7,31);
 	background-color: rgb(62,3,13);
 	color:#FFFFFF;

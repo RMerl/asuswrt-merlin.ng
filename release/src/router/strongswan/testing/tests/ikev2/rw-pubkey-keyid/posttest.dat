@@ -1,0 +1,9 @@
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan
+moon::rm /etc/swanctl/pubkey/*
+carol::rm /etc/swanctl/pubkey/*
+dave::rm /etc/swanctl/pubkey/*
+moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush
+dave::iptables-restore < /etc/iptables.flush

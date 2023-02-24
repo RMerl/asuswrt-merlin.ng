@@ -2,6 +2,5 @@ moon:: cat /var/log/daemon.log::libcurl request failed::YES
 moon:: cat /var/log/daemon.log::certificate status is not available::YES
 moon:: cat /var/log/daemon.log::constraint check failed::YES
 carol::cat /var/log/daemon.log::received AUTHENTICATION_FAILED::YES
-moon:: ipsec status 2> /dev/null::rw.*ESTABLISHED::NO
-carol::ipsec status 2> /dev/null::home.*ESTABLISHED::NO
-
+carol::swanctl --list-sas --raw 2> /dev/null::home.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=4500 remote-id=moon.strongswan.org::NO
+moon:: swanctl --list-sas --ike-id 1 --raw 2> /dev/null::rw.*version=2 state=ESTABLISHED local-host=192.168.0.1 local-port=4500 local-id=moon.strongswan.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org::NO

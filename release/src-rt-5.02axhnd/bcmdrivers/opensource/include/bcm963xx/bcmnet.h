@@ -113,6 +113,8 @@ enum {
     ETHSETPHYPWROFF,
     ETHMOVESUBPORT,
     ETHPHYMAP,
+    ETHTXPADGET,
+    ETHTXPADSET,
 };
 
 struct ethctl_data {

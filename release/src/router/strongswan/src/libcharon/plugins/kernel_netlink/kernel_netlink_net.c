@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2019 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,7 +16,6 @@
  */
 
 /*
- * Copyright (C) 2010 secunet Security Networks AG
  * Copyright (C) 2010 Thomas Egerer
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy
@@ -1126,7 +1126,7 @@ static void process_link(private_kernel_netlink_net_t *this,
 				);
 				this->ifaces->insert_last(this->ifaces, entry);
 			}
-			strncpy(entry->ifname, name, IFNAMSIZ);
+			strncpy(entry->ifname, name, IFNAMSIZ-1);
 			entry->ifname[IFNAMSIZ-1] = '\0';
 			entry->usable = charon->kernel->is_interface_usable(charon->kernel,
 																name);

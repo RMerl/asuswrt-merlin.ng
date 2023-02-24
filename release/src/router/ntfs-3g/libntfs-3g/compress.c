@@ -5,7 +5,8 @@
  * Copyright (c) 2004-2005 Anton Altaparmakov
  * Copyright (c) 2004-2006 Szabolcs Szakacsits
  * Copyright (c)      2005 Yura Pakhuchiy
- * Copyright (c) 2009-2010 Jean-Pierre Andre
+ * Copyright (c) 2009-2014 Jean-Pierre Andre
+ * Copyright (c)      2014 Eric Biggers
  *
  * This program/include file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published
@@ -21,17 +22,6 @@
  * along with this program (in the main directory of the NTFS-3G
  * distribution in the file COPYING); if not, write to the Free Software
  * Foundation,Inc., 59 Temple Place, Suite 330, Boston, MA  02111-1307  USA
- *
- * A part of the compression algorithm is based on lzhuf.c whose header
- * describes the roles of the original authors (with no apparent copyright
- * notice, and according to http://home.earthlink.net/~neilbawd/pall.html
- * this was put into public domain in 1988 by Haruhiko OKUMURA).
- *
- * LZHUF.C English version 1.0
- * Based on Japanese version 29-NOV-1988   
- * LZSS coded by Haruhiko OKUMURA
- * Adaptive Huffman Coding coded by Haruyasu YOSHIZAKI
- * Edited and translated to English by Kenji RIKITAKE
  */
 
 #ifdef HAVE_CONFIG_H
@@ -62,6 +52,10 @@
 #include "logging.h"
 #include "misc.h"
 
+#undef le16_to_cpup 
+/* the standard le16_to_cpup() crashes for unaligned data on some processors */ 
+#define le16_to_cpup(p) (*(u8*)(p) + (((u8*)(p))[1] << 8))
+
 /**
  * enum ntfs_compression_constants - constants used in the compression code
  */
@@ -77,271 +71,379 @@ typedef enum {
 	NTFS_SB_IS_COMPRESSED	=	0x8000,
 } ntfs_compression_constants;
 
-#define THRESHOLD   3  /* minimal match length for compression */
-#define NIL      NTFS_SB_SIZE   /* End of tree's node  */
+/* Match length at or above which ntfs_best_match() will stop searching for
+ * longer matches.  */
+#define NICE_MATCH_LEN 18
+
+/* Maximum number of potential matches that ntfs_best_match() will consider at
+ * each position.  */
+#define MAX_SEARCH_DEPTH 24
+
+/* log base 2 of the number of entries in the hash table for match-finding.  */
+#define HASH_SHIFT 14
+
+/* Constant for the multiplicative hash function.  */
+#define HASH_MULTIPLIER 0x1E35A7BD
 
 struct COMPRESS_CONTEXT {
 	const unsigned char *inbuf;
-	unsigned int len;
-	unsigned int nbt;
-	int match_position;
-	unsigned int match_length;
-	u16 lson[NTFS_SB_SIZE + 1];
-	u16 rson[NTFS_SB_SIZE + 257];
-	u16 dad[NTFS_SB_SIZE + 1];
+	int bufsize;
+	int size;
+	int rel;
+	int mxsz;
+	s16 head[1 << HASH_SHIFT];
+	s16 prev[NTFS_SB_SIZE];
 } ;
 
 /*
- *		Initialize the match tree
+ *		Hash the next 3-byte sequence in the input buffer
  */
-
-static void ntfs_init_compress_tree(struct COMPRESS_CONTEXT *pctx)
+static inline unsigned int ntfs_hash(const u8 *p)
 {
-   	int i;
+	u32 str;
+	u32 hash;
 
-   	for (i = NTFS_SB_SIZE + 1; i <= NTFS_SB_SIZE + 256; i++)
-      		pctx->rson[i] = NIL;         /* root */
-   	for (i = 0; i < NTFS_SB_SIZE; i++)
-      		pctx->dad[i] = NIL;         /* node */
+#if defined(__i386__) || defined(__x86_64__)
+	/* Unaligned access allowed, and little endian CPU.
+	 * Callers ensure that at least 4 (not 3) bytes are remaining.  */
+	str = *(const u32 *)p & 0xFFFFFF;
+#else
+	str = ((u32)p[0] << 0) | ((u32)p[1] << 8) | ((u32)p[2] << 16);
+#endif
+
+	hash = str * HASH_MULTIPLIER;
+
+	/* High bits are more random than the low bits.  */
+	return hash >> (32 - HASH_SHIFT);
 }
 
 /*
- *		Insert a new node into match tree for quickly locating
- *	further similar strings
- */
-
-static void ntfs_new_node (struct COMPRESS_CONTEXT *pctx,
-		unsigned int r)
-{
-	unsigned int pp;
-	BOOL less;
-	BOOL done;
-	const unsigned char *key;
-	int c;
-	unsigned long mxi;
-	unsigned int mxl;
-
-	mxl = (1 << (16 - pctx->nbt)) + 2;
-	less = FALSE;
-	done = FALSE;
-	key = &pctx->inbuf[r];
-	pp = NTFS_SB_SIZE + 1 + key[0];
-	pctx->rson[r] = pctx->lson[r] = NIL;
-	pctx->match_length = 0;
-	do {
-		if (!less) {
-			if (pctx->rson[pp] != NIL)
-				pp = pctx->rson[pp];
-			else {
-				pctx->rson[pp] = r;
-				pctx->dad[r] = pp;
-				done = TRUE;
-			}
-		} else {
-			if (pctx->lson[pp] != NIL)
-				pp = pctx->lson[pp];
-			else {
-				pctx->lson[pp] = r;
-				pctx->dad[r] = pp;
-				done = TRUE;
-			}
-		}
-		if (!done) {
-			register unsigned long i;
-			register const unsigned char *p1,*p2;
-
-			i = 1;
-			mxi = NTFS_SB_SIZE - r;
-			if (mxi < 2)
-				less = FALSE;
-			else {
-				p1 = key;
-				p2 = &pctx->inbuf[pp];
-			/* this loop has a significant impact on performances */
-				do {
-				} while ((p1[i] == p2[i]) && (++i < mxi));
-				less = (i < mxi) && (p1[i] < p2[i]);
-			}
-			if (i >= THRESHOLD) {
-				if (i > pctx->match_length) {
-					pctx->match_position = 
-						r - pp + 2*NTFS_SB_SIZE - 1;
-					if ((pctx->match_length = i) > mxl) {
-						i = pctx->rson[pp];
-						pctx->rson[r] = i;
-						pctx->dad[i] = r;
-						i = pctx->lson[pp];
-						pctx->lson[r] = i;
-						pctx->dad[i] = r;
-						i = pctx->dad[pp];
-						pctx->dad[r] = i;
-						if (pctx->rson[i] == pp)
-							pctx->rson[i] = r;
-						else
-							pctx->lson[i] = r;
-							  /* remove pp */
-						pctx->dad[pp] = NIL;
-						done = TRUE;
-						pctx->match_length = mxl;
-					}
-				} else
-					if ((i == pctx->match_length)
-					    && ((c = (r - pp + 2*NTFS_SB_SIZE - 1))
-						 < pctx->match_position))
-						pctx->match_position = c;
-			}
-		}
-	} while (!done);
-}
-
-/*
- *		Search for the longest previous string matching the
- *	current one
+ *		Search for the longest sequence matching current position
  *
- *	Returns the end of the longest current string which matched
- *		or zero if there was a bug
+ *	A hash table, each entry of which points to a chain of sequence
+ *	positions sharing the corresponding hash code, is maintained to speed up
+ *	searching for matches.  To maintain the hash table, either
+ *	ntfs_best_match() or ntfs_skip_position() has to be called for each
+ *	consecutive position.
+ *
+ *	This function is heavily used; it has to be optimized carefully.
+ *
+ *	This function sets pctx->size and pctx->rel to the length and offset,
+ *	respectively, of the longest match found.
+ *
+ *	The minimum match length is assumed to be 3, and the maximum match
+ *	length is assumed to be pctx->mxsz.  If this function produces
+ *	pctx->size < 3, then no match was found.
+ *
+ *	Note: for the following reasons, this function is not guaranteed to find
+ *	*the* longest match up to pctx->mxsz:
+ *
+ *	(1) If this function finds a match of NICE_MATCH_LEN bytes or greater,
+ *	    it ends early because a match this long is good enough and it's not
+ *	    worth spending more time searching.
+ *
+ *	(2) If this function considers MAX_SEARCH_DEPTH matches with a single
+ *	    position, it ends early and returns the longest match found so far.
+ *	    This saves a lot of time on degenerate inputs.
  */
-
-static unsigned int ntfs_nextmatch(struct COMPRESS_CONTEXT *pctx,
-				unsigned int rr, int dd)
+static void ntfs_best_match(struct COMPRESS_CONTEXT *pctx, const int i,
+			    int best_len)
 {
-	unsigned int bestlen = 0;
+	const u8 * const inbuf = pctx->inbuf;
+	const u8 * const strptr = &inbuf[i]; /* String we're matching against */
+	s16 * const prev = pctx->prev;
+	const int max_len = min(pctx->bufsize - i, pctx->mxsz);
+	const int nice_len = min(NICE_MATCH_LEN, max_len);
+	int depth_remaining = MAX_SEARCH_DEPTH;
+	const u8 *best_matchptr = strptr;
+	unsigned int hash;
+	s16 cur_match;
+	const u8 *matchptr;
+	int len;
 
-	do {
-		rr++;
-		if (pctx->match_length > 0)
-			pctx->match_length--;
-		if (!pctx->len) {
-			ntfs_log_error("compress bug : void run\n");
-			goto bug;
-		}
-		if (--pctx->len) {
-			if (rr >= NTFS_SB_SIZE) {
-				ntfs_log_error("compress bug : buffer overflow\n");
-				goto bug;
-			}
-			if (((rr + bestlen) < NTFS_SB_SIZE)) {
-				while ((unsigned int)(1 << pctx->nbt)
-						<= (rr - 1))
-					pctx->nbt++;
-				ntfs_new_node(pctx,rr);
-				if (pctx->match_length > bestlen)
-					bestlen = pctx->match_length;
-			} else
-				if (dd > 0) {
-					rr += dd;
-					if ((int)pctx->match_length > dd)
-						pctx->match_length -= dd;
-					else
-						pctx->match_length = 0;
-					if ((int)pctx->len < dd) {
-						ntfs_log_error("compress bug : run overflows\n");
-						goto bug;
-					}
-					pctx->len -= dd;
-					dd = 0;
+	if (max_len < 4)
+		goto out;
+
+	/* Insert the current sequence into the appropriate hash chain.  */
+	hash = ntfs_hash(strptr);
+	cur_match = pctx->head[hash];
+	prev[i] = cur_match;
+	pctx->head[hash] = i;
+
+	if (best_len >= max_len) {
+		/* Lazy match is being attempted, but there aren't enough length
+		 * bits remaining to code a longer match.  */
+		goto out;
+	}
+
+	/* Search the appropriate hash chain for matches.  */
+
+	for (; cur_match >= 0 && depth_remaining--;
+		cur_match = prev[cur_match])
+	{
+
+		matchptr = &inbuf[cur_match];
+
+		/* Considering the potential match at 'matchptr':  is it longer
+		 * than 'best_len'?
+		 *
+		 * The bytes at index 'best_len' are the most likely to differ,
+		 * so check them first.
+		 *
+		 * The bytes at indices 'best_len - 1' and '0' are less
+		 * important to check separately.  But doing so still gives a
+		 * slight performance improvement, at least on x86_64, probably
+		 * because they create separate branches for the CPU to predict
+		 * independently of the branches in the main comparison loops.
+		 */
+		if (matchptr[best_len] != strptr[best_len] ||
+		    matchptr[best_len - 1] != strptr[best_len - 1] ||
+		    matchptr[0] != strptr[0])
+			goto next_match;
+
+		for (len = 1; len < best_len - 1; len++)
+			if (matchptr[len] != strptr[len])
+				goto next_match;
+
+		/* The match is the longest found so far ---
+		 * at least 'best_len' + 1 bytes.  Continue extending it.  */
+
+		best_matchptr = matchptr;
+
+		do {
+			if (++best_len >= nice_len) {
+				/* 'nice_len' reached; don't waste time
+				 * searching for longer matches.  Extend the
+				 * match as far as possible and terminate the
+				 * search.  */
+				while (best_len < max_len &&
+					(best_matchptr[best_len] ==
+						strptr[best_len]))
+				{
+					best_len++;
 				}
-		}
-	}  while (dd-- > 0);
-	return (rr);
-bug :
-	return (0);
+				goto out;
+			}
+		} while (best_matchptr[best_len] == strptr[best_len]);
+
+		/* Found a longer match, but 'nice_len' not yet reached.  */
+
+	next_match:
+		/* Continue to next match in the chain.  */
+		;
+	}
+
+	/* Reached end of chain, or ended early due to reaching the maximum
+	 * search depth.  */
+
+out:
+	/* Return the longest match we were able to find.  */
+	pctx->size = best_len;
+	pctx->rel = best_matchptr - strptr; /* given as a negative number! */
 }
 
 /*
- *		Compress an input block
+ *		Advance the match-finder, but don't search for matches.
+ */
+static void ntfs_skip_position(struct COMPRESS_CONTEXT *pctx, const int i)
+{
+	unsigned int hash;
+
+	if (pctx->bufsize - i < 4)
+		return;
+
+	/* Insert the current sequence into the appropriate hash chain.  */
+	hash = ntfs_hash(pctx->inbuf + i);
+	pctx->prev[i] = pctx->head[hash];
+	pctx->head[hash] = i;
+}
+
+/*
+ *		Compress a 4096-byte block
  *
- *	Returns the size of the compressed block (including header)
- *		or zero if there was an error
+ *	Returns a header of two bytes followed by the compressed data.
+ *	If compression is not effective, the header and an uncompressed
+ *	block is returned.
+ *
+ *	Note : two bytes may be output before output buffer overflow
+ *	is detected, so a 4100-bytes output buffer must be reserved.
+ *
+ *	Returns the size of the compressed block, including the
+ *			header (minimal size is 2, maximum size is 4098)
+ *		0 if an error has been met. 
  */
 
-static unsigned int ntfs_compress_block(const char *inbuf,
-				unsigned int size, char *outbuf)
+static unsigned int ntfs_compress_block(const char *inbuf, const int bufsize,
+				char *outbuf)
 {
 	struct COMPRESS_CONTEXT *pctx;
-	char *ptag;
-	int dd;
-	unsigned int rr;
-	unsigned int last_match_length;
-	unsigned int q;
+	int i; /* current position */
+	int j; /* end of best match from current position */
+	int k; /* end of best match from next position */
+	int offs; /* offset to best match */
+	int bp; /* bits to store offset */
+	int bp_cur; /* saved bits to store offset at current position */
+	int mxoff; /* max match offset : 1 << bp */
 	unsigned int xout;
-	unsigned int ntag;
+	unsigned int q; /* aggregated offset and size */
+	int have_match; /* do we have a match at the current position? */
+	char *ptag; /* location reserved for a tag */
+	int tag;    /* current value of tag */
+	int ntag;   /* count of bits still undefined in tag */
 
-	pctx = (struct COMPRESS_CONTEXT*)malloc(sizeof(struct COMPRESS_CONTEXT));
-	if (pctx) {
-		pctx->inbuf = (const unsigned char*)inbuf;
-		ntfs_init_compress_tree(pctx);
-		xout = 2;
-		ntag = 0;
-		ptag = &outbuf[xout++];
-		*ptag = 0;
-		rr = 0;
-		pctx->nbt = 4;
-		pctx->len = size;
-		pctx->match_length = 0;
-		ntfs_new_node(pctx,0);
-		do {
-			if (pctx->match_length > pctx->len)
-				pctx->match_length = pctx->len;
-			if (pctx->match_length < THRESHOLD) {
-				pctx->match_length = 1;
-				if (ntag >= 8) {
-					ntag = 0;
-					ptag = &outbuf[xout++];
-					*ptag = 0;
-				}
-				outbuf[xout++] = inbuf[rr];
-				ntag++;
-			} else {
-				while ((unsigned int)(1 << pctx->nbt)
-						<= (rr - 1))
-					pctx->nbt++;
-				q = (pctx->match_position << (16 - pctx->nbt))
-				         + pctx->match_length - THRESHOLD;
-				if (ntag >= 8) {
-					ntag = 0;
-					ptag = &outbuf[xout++];
-					*ptag = 0;
-				}
-				*ptag |= 1 << ntag++;
+	pctx = ntfs_malloc(sizeof(struct COMPRESS_CONTEXT));
+	if (!pctx) {
+		errno = ENOMEM;
+		return 0;
+	}
+
+	/* All hash chains start as empty.  The special value '-1' indicates the
+	 * end of each hash chain.  */
+	memset(pctx->head, 0xFF, sizeof(pctx->head));
+
+	pctx->inbuf = (const unsigned char*)inbuf;
+	pctx->bufsize = bufsize;
+	xout = 2;
+	i = 0;
+	bp = 4;
+	mxoff = 1 << bp;
+	pctx->mxsz = (1 << (16 - bp)) + 2;
+	have_match = 0;
+	tag = 0;
+	ntag = 8;
+	ptag = &outbuf[xout++];
+
+	while ((i < bufsize) && (xout < (NTFS_SB_SIZE + 2))) {
+
+		/* This implementation uses "lazy" parsing: it always chooses
+		 * the longest match, unless the match at the next position is
+		 * longer.  This is the same strategy used by the high
+		 * compression modes of zlib.  */
+
+		if (!have_match) {
+			/* Find the longest match at the current position.  But
+			 * first adjust the maximum match length if needed.
+			 * (This loop might need to run more than one time in
+			 * the case that we just output a long match.)  */
+			while (mxoff < i) {
+				bp++;
+				mxoff <<= 1;
+				pctx->mxsz = (pctx->mxsz + 2) >> 1;
+			}
+			ntfs_best_match(pctx, i, 2);
+		}
+
+		if (pctx->size >= 3) {
+
+			/* Found a match at the current position.  */
+
+			j = i + pctx->size;
+			bp_cur = bp;
+			offs = pctx->rel;
+
+			if (pctx->size >= NICE_MATCH_LEN) {
+
+				/* Choose long matches immediately.  */
+
+				q = (~offs << (16 - bp_cur)) + (j - i - 3);
 				outbuf[xout++] = q & 255;
 				outbuf[xout++] = (q >> 8) & 255;
+				tag |= (1 << (8 - ntag));
+
+				if (j == bufsize) {
+					/* Shortcut if the match extends to the
+					 * end of the buffer.  */
+					i = j;
+					--ntag;
+					break;
+				}
+				i += 1;
+				do {
+					ntfs_skip_position(pctx, i);
+				} while (++i != j);
+				have_match = 0;
+			} else {
+				/* Check for a longer match at the next
+				 * position.  */
+
+				/* Doesn't need to be while() since we just
+				 * adjusted the maximum match length at the
+				 * previous position.  */
+				if (mxoff < i + 1) {
+					bp++;
+					mxoff <<= 1;
+					pctx->mxsz = (pctx->mxsz + 2) >> 1;
+				}
+				ntfs_best_match(pctx, i + 1, pctx->size);
+				k = i + 1 + pctx->size;
+
+				if (k > (j + 1)) {
+					/* Next match is longer.
+					 * Output a literal.  */
+					outbuf[xout++] = inbuf[i++];
+					have_match = 1;
+				} else {
+					/* Next match isn't longer.
+					 * Output the current match.  */
+					q = (~offs << (16 - bp_cur)) +
+							(j - i - 3);
+					outbuf[xout++] = q & 255;
+					outbuf[xout++] = (q >> 8) & 255;
+					tag |= (1 << (8 - ntag));
+
+					/* The minimum match length is 3, and
+					 * we've run two bytes through the
+					 * matchfinder already.  So the minimum
+					 * number of positions we need to skip
+					 * is 1.  */
+					i += 2;
+					do {
+						ntfs_skip_position(pctx, i);
+					} while (++i != j);
+					have_match = 0;
+				}
 			}
-			last_match_length = pctx->match_length;
-			dd = last_match_length;
-			if (dd-- > 0) {
-				rr = ntfs_nextmatch(pctx,rr,dd);
-				if (!rr)
-					goto bug;
-			}
-			/*
-			 * stop if input is exhausted or output has exceeded
-			 * the maximum size. Two extra bytes have to be
-			 * reserved in output buffer, as 3 bytes may be
-			 * output in a loop.
-			 */
-		} while ((pctx->len > 0)
-			 && (rr < size) && (xout < (NTFS_SB_SIZE + 2)));
-		/* uncompressed must be full size, so accept if better */
-		if (xout < (NTFS_SB_SIZE + 2)) {
-			outbuf[0] = (xout - 3) & 255;
-			outbuf[1] = 0xb0 + (((xout - 3) >> 8) & 15);
 		} else {
-			memcpy(&outbuf[2],inbuf,size);
-			if (size < NTFS_SB_SIZE)
-				memset(&outbuf[size+2],0,NTFS_SB_SIZE - size);
-			outbuf[0] = 0xff;
-			outbuf[1] = 0x3f;
-			xout = NTFS_SB_SIZE + 2;
+			/* No match at current position.  Output a literal.  */
+			outbuf[xout++] = inbuf[i++];
+			have_match = 0;
 		}
-		free(pctx);
-	} else {
-		xout = 0;
-		errno = ENOMEM;
+
+		/* Store the tag if fully used.  */
+		if (!--ntag) {
+			*ptag = tag;
+			ntag = 8;
+			ptag = &outbuf[xout++];
+			tag = 0;
+		}
 	}
-	return (xout); /* 0 for an error, > size if cannot compress */
-bug :
-	return (0);
+
+	/* Store the last tag if partially used.  */
+	if (ntag == 8)
+		xout--;
+	else
+		*ptag = tag;
+
+	/* Determine whether to store the data compressed or uncompressed.  */
+
+	if ((i >= bufsize) && (xout < (NTFS_SB_SIZE + 2))) {
+		/* Compressed.  */
+		outbuf[0] = (xout - 3) & 255;
+		outbuf[1] = 0xb0 + (((xout - 3) >> 8) & 15);
+	} else {
+		/* Uncompressed.  */
+		memcpy(&outbuf[2], inbuf, bufsize);
+		if (bufsize < NTFS_SB_SIZE)
+			memset(&outbuf[bufsize + 2], 0, NTFS_SB_SIZE - bufsize);
+		outbuf[0] = 0xff;
+		outbuf[1] = 0x3f;
+		xout = NTFS_SB_SIZE + 2;
+	}
+
+	/* Free the compression context and return the total number of bytes
+	 * written to 'outbuf'.  */
+	free(pctx);
+	return (xout);
 }
 
 /**
@@ -389,6 +491,8 @@ do_next_sb:
 	 * first two checks do not detect it.
 	 */
 	if (cb == cb_end || !le16_to_cpup((le16*)cb) || dest == dest_end) {
+		if (dest_end > dest)
+			memset(dest, 0, dest_end - dest);
 		ntfs_log_debug("Completed. Returning success (0).\n");
 		return 0;
 	}
@@ -617,7 +721,7 @@ s64 ntfs_compressed_attr_pread(ntfs_attr *na, s64 pos, s64 count, void *b)
 	unsigned int nr_cbs, cb_clusters;
 
 	ntfs_log_trace("Entering for inode 0x%llx, attr 0x%x, pos 0x%llx, count 0x%llx.\n",
-			(unsigned long long)na->ni->mft_no, na->type,
+			(unsigned long long)na->ni->mft_no, le32_to_cpu(na->type),
 			(long long)pos, (long long)count);
 	data_flags = na->data_flags;
 	compression = na->ni->flags & FILE_ATTR_COMPRESSED;
@@ -648,6 +752,12 @@ s64 ntfs_compressed_attr_pread(ntfs_attr *na, s64 pos, s64 count, void *b)
 	/* If it is a resident attribute, simply use ntfs_attr_pread(). */
 	if (!NAttrNonResident(na))
 		return ntfs_attr_pread(na, pos, count, b);
+	if (na->compression_block_size < NTFS_SB_SIZE) {
+		ntfs_log_error("Unsupported compression block size %ld\n",
+				(long)na->compression_block_size);
+		errno = EOVERFLOW;
+		return (-1);
+	}
 	total = total2 = 0;
 	/* Zero out reads beyond initialized size. */
 	if (pos + count > na->initialized_size) {
@@ -776,6 +886,7 @@ do_next_cb:
 		ofs = 0;
 	} else {
 		s64 tdata_size, tinitialized_size;
+		u32 decompsz;
 
 		/*
 		 * Compressed cb, decompress it into the temporary buffer, then
@@ -833,7 +944,10 @@ do_next_cb:
 		if (cb_pos + 2 <= cb_end)
 			*(u16*)cb_pos = 0;
 		ntfs_log_debug("Successfully read the compression block.\n");
-		if (ntfs_decompress(dest, cb_size, cb, cb_size) < 0) {
+		/* Do not decompress beyond the requested block */
+		to_read = min(count, cb_size - ofs);
+		decompsz = ((ofs + to_read - 1) | (NTFS_SB_SIZE - 1)) + 1;
+		if (ntfs_decompress(dest, decompsz, cb, cb_size) < 0) {
 			err = errno;
 			free(cb);
 			free(dest);
@@ -842,7 +956,6 @@ do_next_cb:
 			errno = err;
 			return -1;
 		}
-		to_read = min(count, cb_size - ofs);
 		memcpy(b, dest + ofs, to_read);
 		total += to_read;
 		count -= to_read;
@@ -1026,6 +1139,7 @@ static s32 ntfs_comp_set(ntfs_attr *na, runlist_element *rl,
 			outbuf[compsz++] = 0;
 			/* write a full cluster, to avoid partial reading */
 			rounded = ((compsz - 1) | (clsz - 1)) + 1;
+			memset(&outbuf[compsz], 0, rounded - compsz);
 			written = write_clusters(vol, rl, offs, rounded, outbuf);
 			if (written != rounded) {
 				/*
@@ -1247,6 +1361,7 @@ static int ntfs_compress_overwr_free(ntfs_attr *na, runlist_element *rl,
 		case 1 :
 			/* there is a single hole, may have to merge */
 			freerl->vcn = freevcn;
+			freerl->length = freecnt;
 			if (freerl[1].lcn == LCN_HOLE) {
 				freerl->length += freerl[1].length;
 				erl = freerl;
@@ -1455,6 +1570,7 @@ static int ntfs_compress_free(ntfs_attr *na, runlist_element *rl,
 		ntfs_log_error("No cluster to free after compression\n");
 		errno = EIO;
 	}
+	NAttrSetRunlistDirty(na);
 	return (res);
 }
 
@@ -1507,12 +1623,12 @@ static int ntfs_read_append(ntfs_attr *na, const runlist_element *rl,
  *		or -1 if there were an irrecoverable error (errno set)
  */
 
-static int ntfs_flush(ntfs_attr *na, runlist_element *rl, s64 offs,
-			const char *outbuf, s32 count, BOOL compress,
+static s32 ntfs_flush(ntfs_attr *na, runlist_element *rl, s64 offs,
+			char *outbuf, s32 count, BOOL compress,
 			BOOL appending, VCN *update_from)
 {
-	int rounded;
-	int written;
+	s32 rounded;
+	s32 written;
 	int clsz;
 
 	if (compress) {
@@ -1529,6 +1645,8 @@ static int ntfs_flush(ntfs_attr *na, runlist_element *rl, s64 offs,
 	if (!compress) {
 		clsz = 1 << na->ni->vol->cluster_size_bits;
 		rounded = ((count - 1) | (clsz - 1)) + 1;
+		if (rounded > count)
+			memset(&outbuf[count], 0, rounded - count);
 		written = write_clusters(na->ni->vol, rl,
 				offs, rounded, outbuf);
 		if (written != rounded)
@@ -1588,6 +1706,12 @@ s64 ntfs_compressed_pwrite(ntfs_attr *na, runlist_element *wrl, s64 wpos,
 	if (na->unused_runs < 2) {
 		ntfs_log_error("No unused runs for compressed write\n");
 		errno = EIO;
+		return (-1);
+	}
+	if (na->compression_block_size < NTFS_SB_SIZE) {
+		ntfs_log_error("Unsupported compression block size %ld\n",
+				(long)na->compression_block_size);
+		errno = EOVERFLOW;
 		return (-1);
 	}
 	if (wrl->vcn < *update_from)
@@ -1650,7 +1774,7 @@ s64 ntfs_compressed_pwrite(ntfs_attr *na, runlist_element *wrl, s64 wpos,
 		 * (we are reopening an existing file to append to it)
 		 * Decompress the data and append
 		 */
-		compsz = compressed_part << vol->cluster_size_bits;
+		compsz = (s32)compressed_part << vol->cluster_size_bits;
 		outbuf = (char*)ntfs_malloc(na->compression_block_size);
 		if (outbuf) {
 			if (appending) {
@@ -1769,6 +1893,12 @@ int ntfs_compressed_close(ntfs_attr *na, runlist_element *wrl, s64 offs,
 	if (*update_from < 0) {
 		ntfs_log_error("Bad update vcn for compressed close\n");
 		errno = EIO;
+		return (-1);
+	}
+	if (na->compression_block_size < NTFS_SB_SIZE) {
+		ntfs_log_error("Unsupported compression block size %ld\n",
+				(long)na->compression_block_size);
+		errno = EOVERFLOW;
 		return (-1);
 	}
 	if (wrl->vcn < *update_from)

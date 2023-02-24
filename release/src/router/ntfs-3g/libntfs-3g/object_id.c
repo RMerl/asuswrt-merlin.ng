@@ -3,7 +3,7 @@
  *
  *	This module is part of ntfs-3g library
  *
- * Copyright (c) 2009 Jean-Pierre Andre
+ * Copyright (c) 2009-2019 Jean-Pierre Andre
  *
  * This program/include file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published
@@ -37,15 +37,11 @@
 #ifdef HAVE_SYS_STAT_H
 #include <sys/stat.h>
 #endif
-
-#ifdef HAVE_SETXATTR
-#include <sys/xattr.h>
-#endif
-
 #ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
 #endif
 
+#include "compat.h"
 #include "types.h"
 #include "debug.h"
 #include "attrib.h"
@@ -58,6 +54,7 @@
 #include "object_id.h"
 #include "logging.h"
 #include "misc.h"
+#include "xattrs.h"
 
 /*
  *			Endianness considerations
@@ -66,9 +63,13 @@
  *	significant byte first, and the six fields be compared individually
  *	for ordering. RFC 4122 does not define the internal representation.
  *
+ *	Windows apparently stores the first three fields in little endian
+ *	order, and the last two fields in big endian order.
+ *
  *	Here we always copy disk images with no endianness change,
  *	and, for indexing, GUIDs are compared as if they were a sequence
- *	of four unsigned 32 bit integers.
+ *	of four little-endian unsigned 32 bit integers (as Windows
+ *	does it that way.)
  *
  * --------------------- begin from RFC 4122 ----------------------
  * Consider each field of the UUID to be an unsigned integer as shown
@@ -107,7 +108,11 @@
  */
 
 typedef struct {
-	GUID object_id;
+	union {
+		/* alignment may be needed to evaluate collations */
+		u32 alignment;
+		GUID guid;
+	} object_id;
 } OBJECT_ID_INDEX_KEY;
 
 typedef struct {
@@ -125,7 +130,6 @@ struct OBJECT_ID_INDEX {		/* index entry in $Extend/$ObjId */
 
 static ntfschar objid_index_name[] = { const_cpu_to_le16('$'),
 					 const_cpu_to_le16('O') };
-#ifdef HAVE_SETXATTR	/* extended attributes interface required */
 
 /*
  *			Set the index for a new object id
@@ -171,8 +175,6 @@ static int set_object_id_index(ntfs_inode *ni, ntfs_index_context *xo,
 	return (ntfs_ie_add(xo,(INDEX_ENTRY*)&indx));
 }
 
-#endif /* HAVE_SETXATTR */
-
 /*
  *		Open the $Extend/$ObjId file and its index
  *
@@ -208,7 +210,6 @@ static ntfs_index_context *open_object_id_index(ntfs_volume *vol)
 	return (xo);
 }
 
-#ifdef HAVE_SETXATTR	/* extended attributes interface required */
 
 /*
  *		Merge object_id data stored in the index into
@@ -258,7 +259,6 @@ static int merge_index_data(ntfs_inode *ni,
 	return (res);
 }
 
-#endif /* HAVE_SETXATTR */
 
 /*
  *		Remove an object id index entry if attribute present
@@ -283,7 +283,6 @@ static int remove_object_id_index(ntfs_attr *na, ntfs_index_context *xo,
 		if (size >= (s64)sizeof(GUID)) {
 			memcpy(&key.object_id,
 				&old_attr->object_id,sizeof(GUID));
-			size = sizeof(GUID);
 			if (!ntfs_index_lookup(&key,
 					sizeof(OBJECT_ID_INDEX_KEY), xo)) {
 				entry = (struct OBJECT_ID_INDEX*)xo->entry;
@@ -296,7 +295,6 @@ static int remove_object_id_index(ntfs_attr *na, ntfs_index_context *xo,
 				memcpy(&old_attr->domain_id,
 					&entry->data.domain_id,
 					sizeof(GUID));
-				size = sizeof(OBJECT_ID_ATTR);
 				if (ntfs_index_rm(xo))
 					ret = -1;
 			}
@@ -308,7 +306,6 @@ static int remove_object_id_index(ntfs_attr *na, ntfs_index_context *xo,
 	return (ret);
 }
 
-#ifdef HAVE_SETXATTR	/* extended attributes interface required */
 
 /*
  *		Update the object id and index
@@ -336,7 +333,7 @@ static int update_object_id(ntfs_inode *ni, ntfs_index_context *xo,
 
 	na = ntfs_attr_open(ni, AT_OBJECT_ID, AT_UNNAMED, 0);
 	if (na) {
-
+		memset(&old_attr, 0, sizeof(OBJECT_ID_ATTR));
 			/* remove the existing index entry */
 		oldsize = remove_object_id_index(na,xo,&old_attr);
 		if (oldsize < 0)
@@ -356,10 +353,12 @@ static int update_object_id(ntfs_inode *ni, ntfs_index_context *xo,
 					res = -1;
 				}
 			}
-				/* write index part if provided */
+				/* overwrite index data with new value */
+			memcpy(&old_attr, value,
+				(size < sizeof(OBJECT_ID_ATTR)
+					? size : sizeof(OBJECT_ID_ATTR)));
 			if (!res
-			    && ((size < sizeof(OBJECT_ID_ATTR))
-				 || set_object_id_index(ni,xo,value))) {
+			    && set_object_id_index(ni,xo,&old_attr)) {
 				/*
 				 * If cannot index, try to remove the object
 				 * id and log the error. There will be an
@@ -414,7 +413,6 @@ static int add_object_id(ntfs_inode *ni, int flags)
 	return (res);
 }
 
-#endif /* HAVE_SETXATTR */
 
 /*
  *		Delete an object_id index entry
@@ -453,7 +451,6 @@ int ntfs_delete_object_id_index(ntfs_inode *ni)
 	return (res);
 }
 
-#ifdef HAVE_SETXATTR	/* extended attributes interface required */
 
 /*
  *		Get the ntfs object id into an extended attribute
@@ -509,9 +506,11 @@ int ntfs_get_ntfs_object_id(ntfs_inode *ni, char *value, size_t size)
 /*
  *		Set the object id from an extended attribute
  *
- *	If the size is 64, the attribute and index are set.
- *	else if the size is not less than 16 only the attribute is set.
- *	The object id index is set accordingly.
+ *	The first 16 bytes are the new object id, they can be followed
+ *	by the birth volume id, the birth object id and the domain id.
+ *	If they are not present, their previous value is kept.
+ *	Only the object id is stored into the attribute, all the fields
+ *	are stored into the index.
  *
  *	Returns 0, or -1 if there is a problem
  */
@@ -528,10 +527,12 @@ int ntfs_set_ntfs_object_id(ntfs_inode *ni,
 	if (ni && value && (size >= sizeof(GUID))) {
 		xo = open_object_id_index(ni->vol);
 		if (xo) {
-			/* make sure the GUID was not used somewhere */
+			/* make sure the GUID was not used elsewhere */
 			memcpy(&key.object_id, value, sizeof(GUID));
-			if (ntfs_index_lookup(&key,
-					sizeof(OBJECT_ID_INDEX_KEY), xo)) {
+			if ((ntfs_index_lookup(&key,
+					sizeof(OBJECT_ID_INDEX_KEY), xo))
+			    || (MREF_LE(((struct OBJECT_ID_INDEX*)xo->entry)
+					->data.file_id) == ni->mft_no)) {
 				ntfs_index_ctx_reinit(xo);
 				res = add_object_id(ni, flags);
 				if (!res) {
@@ -633,5 +634,3 @@ int ntfs_remove_ntfs_object_id(ntfs_inode *ni)
 	}
 	return (res ? -1 : 0);
 }
-
-#endif /* HAVE_SETXATTR */

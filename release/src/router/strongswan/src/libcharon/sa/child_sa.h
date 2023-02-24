@@ -2,7 +2,8 @@
  * Copyright (C) 2006-2019 Tobias Brunner
  * Copyright (C) 2006-2008 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -441,11 +442,13 @@ struct child_sa_t {
 	 * @param integ		integrity key (cloned)
 	 * @param spi		SPI to use, allocated for inbound
 	 * @param cpi		CPI to use, allocated for outbound
+	 * @param initiator	TRUE if initiator of exchange resulting in this SA
 	 * @param tfcv3		TRUE if peer supports ESPv3 TFC
 	 * @return			SUCCESS or FAILED
 	 */
 	status_t (*register_outbound)(child_sa_t *this, chunk_t encr, chunk_t integ,
-								  uint32_t spi, uint16_t cpi, bool tfcv3);
+								  uint32_t spi, uint16_t cpi, bool initiator,
+								  bool tfcv3);
 
 	/**
 	 * Install the outbound policies and, if not already done, the outbound SA

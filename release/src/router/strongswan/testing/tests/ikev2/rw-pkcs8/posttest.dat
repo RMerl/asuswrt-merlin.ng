@@ -1,6 +1,9 @@
-moon::ipsec stop
-carol::ipsec stop
-dave::ipsec stop
+carol::systemctl stop strongswan
+dave::systemctl stop strongswan
+moon::systemctl stop strongswan
+carol::rm /etc/swanctl/pkcs8/*
+dave::rm /etc/swanctl/pkcs8/*
+moon::rm /etc/swanctl/pkcs8/*
 moon::iptables-restore < /etc/iptables.flush
 carol::iptables-restore < /etc/iptables.flush
 dave::iptables-restore < /etc/iptables.flush

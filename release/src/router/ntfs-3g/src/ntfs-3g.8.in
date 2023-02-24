@@ -1,10 +1,10 @@
 .\" Copyright (c) 2005-2006 Yura Pakhuchiy.
 .\" Copyright (c) 2005 Richard Russon.
 .\" Copyright (c) 2006-2009 Szabolcs Szakacsits.
-.\" Copyright (c) 2009 Jean-Pierre Andre
+.\" Copyright (c) 2009-2014 Jean-Pierre Andre
 .\" This file may be copied under the terms of the GNU Public License.
 .\"
-.TH NTFS-3G 8 "February 2010" "ntfs-3g @VERSION@"
+.TH NTFS-3G 8 "Aug 2021" "ntfs-3g @VERSION@"
 .SH NAME
 ntfs-3g \- Third Generation Read/Write NTFS Driver
 .SH SYNOPSIS
@@ -35,7 +35,25 @@ It comes in two variants \fBntfs-3g\fR and \fBlowntfs-3g\fR with
 a few differences mentioned below in relevant options descriptions.
 .PP
 The \fIvolume\fR to be mounted can be either a block device or 
-an image file.
+an image file, either by using the mount command or starting the drive.
+.SS Windows hibernation and fast restarting
+On computers which can be dual-booted into Windows or Linux, Windows has
+to be fully shut down before booting into Linux, otherwise the NTFS file
+systems on internal disks may be left in an inconsistent state and changes
+made by Linux may be ignored by Windows.
+.P
+So, Windows may not be left in hibernation when starting Linux, in order
+to avoid inconsistencies. Moreover, the fast restart feature available on
+recent Windows systems has to be disabled. This can be achieved by issuing
+as an Administrator the Windows command which disables both
+hibernation and fast restarting :
+.RS
+.sp
+powercfg /h off
+.sp
+.RE
+If either Windows is hibernated or its fast restart is enabled, partitions
+on internal disks are forced to be mounted in read-only mode.
 .SS Access Handling and Security
 By default, files and directories are owned by the effective 
 user and group of the mounting process, and everybody has
@@ -52,7 +70,7 @@ and
 .B dmask
 options.
 .PP
-Doing so, Windows users have full access to the files created by 
+Doing so, all Windows users have full access to the files created by 
 .B ntfs-3g.
 .PP
 But, by setting the \fBpermissions\fR option, you can benefit from the full
@@ -78,9 +96,9 @@ data stream and can have many named data streams.  The size of a file is the
 size of its unnamed data stream.  By default, \fBntfs-3g\fR will only read
 the unnamed data stream.
 .PP
-By using the options "streams_interface=windows", with the ntfs-3g driver
+By using the option \fBstreams_interface=windows\fP, with the ntfs-3g driver
 (not possible with lowntfs-3g), you will be able to read any named data
-streams, simply by specifying the stream's name after a colon.
+streams, simply by specifying the stream name after a colon.
 For example:
 .RS
 .sp
@@ -89,76 +107,22 @@ cat some.mp3:artist
 .RE
 Named data streams act like normal files, so you can read from them, write to
 them and even delete them (using rm).  You can list all the named data streams
-a file has by getting the "ntfs.streams.list" extended attribute.
+a file has by getting the \fBntfs.streams.list\fP extended attribute.
 .SH OPTIONS
 Below is a summary of the options that \fBntfs-3g\fR accepts.
 .TP
-\fBuid=\fP\fIvalue\fP and \fBgid=\fP\fIvalue\fP
-Set the owner and the group of files and directories. The values are numerical.
-The defaults are the uid and gid of the current process.
-.TP
-.BI umask= value
-Set the  bitmask of the file and directory permissions that are not
-present. The value is given in octal. The default value is 0 which
-means full access to everybody.
-.TP
-.BI fmask= value
-Set the  bitmask of the file permissions that are not present. 
-The value is given in octal. The default value is 0 which
-means full access to everybody.
-.TP
-.BI dmask= value
-Set the  bitmask of the directory permissions that are not
-present. The value is given in octal. The default value is 0 which
-means full access to everybody.
-.TP
-.BI usermapping= file-name
-Use file \fIfile-name\fP as the user mapping file instead of the default
-\fB.NTFS-3G/UserMapping\fP. If \fIfile-name\fP defines a full path, the
-file must be located on a partition previously mounted. If it defines a
-relative path, it is interpreted relative to the root of NTFS partition
-being mounted.
-.P
-.RS
-When a user mapping file is defined, the options \fBuid=\fP, \fBgid=\fP,
-\fBumask=\fP, \fBfmask=\fP, \fBdmask=\fP and \fBsilent\fP are ignored.
-.RE
-.TP
+.B acl
+Enable setting Posix ACLs on created files and use them for access control.
+This option is only available on specific builds. It is set by default
+when a user mapping file is present and the
 .B permissions
-Set standard permissions on created files and use standard access control.
-This option is set by default when a user mapping file is present.
+mount option is not set.
 .TP
-.B inherit
-When creating a new file, set its initial ownership and protections
-according to inheritance rules defined in parent directory. These rules
-deviate from Posix specifications, but yield a better Windows
-compatibility.
-.TP
-.B ro
-Mount filesystem read\-only. Useful if Windows is hibernated or the
-NTFS journal file is unclean.
-.TP
-.BI locale= value
-This option can be useful when wanting a language specific locale environment.
-It is however discouraged as it leads to files with untranslatable chars
-to not be visible.
-.TP
-.B force
-This option is obsolete. It has been superseded by the \fBrecover\fR and
-\fBnorecover\fR options.
-.TP
-.B ignore_case \fP(only with lowntfs-3g)
-Ignore character case when accessing a file (\fBFOO\fR, \fBFoo\fR, \fBfoo\fR,
-etc. designate the same file). All files are displayed with lower case in
-directory listings.
-.TP
-.B remove_hiberfile
-Unlike in case of read-only mount, the read-write mount is denied if 
-the NTFS volume is hibernated. One needs either to resume Windows and
-shutdown it properly, or use this option which will remove the Windows
-hibernation file. Please note, this means that the saved Windows 
-session will be completely lost. Use this option for your own 
-responsibility.
+.B allow_other
+This option overrides the security measure restricting file access
+to the user mounting the filesystem. This option is only
+allowed to root, but this restriction can be overridden by
+the \fBuser_allow_other\fP option in the /etc/fuse.conf file.
 .TP
 .B atime, noatime, relatime
 The 
@@ -167,7 +131,7 @@ option updates inode access time for each access.
 
 The 
 .B noatime 
-option disables inode access time updates which can speed up
+option disables inode access time updates, which can speed up
 file operations and prevent sleeping (notebook) disks spinning 
 up too often thus saving energy and disk lifetime.
 
@@ -183,14 +147,59 @@ this option doesn't break applications that need to know
 if a file has been read since the last time it was modified.
 This is the default behaviour.
 .TP
-.B show_sys_files
-Show the metafiles in directory listings. Otherwise the default behaviour is
-to hide the metafiles, which are special files used to store the NTFS
-structure. Please note that even when this option is specified, "$MFT" may
-not be visible due to a glibc bug. Furthermore, irrespectively of
-show_sys_files, all files are accessible by name, for example you can always
-do
-"ls \-l '$UpCase'".
+.B big_writes
+This option prevents fuse from splitting write buffers into 4K chunks,
+enabling big write buffers to be transferred from the application in a
+single step (up to some system limit, generally 128K bytes).
+.TP
+.B compression
+This option enables creating new transparently compressed files in
+directories marked for compression. A directory is marked for compression by
+setting the bit 11 (value 0x00000800) in its Windows attribute. In such a
+directory, new files are created compressed and new subdirectories are
+themselves marked for compression. The option and the flag have no effect
+on existing files. Currently this is the default option.
+.TP
+.B debug
+Makes ntfs-3g (or lowntfs-3g) to print a lot of debug output from libntfs-3g
+and FUSE.
+.TP
+.B delay_mtime[= value]
+Only update the file modification time and the file change time of a file
+when it is closed or when the indicated delay since the previous update has
+elapsed. The argument is a number of seconds, with a default value of 60.
+This is mainly useful for big files which are kept open for a long
+time and written to without changing their size, such as databases or file
+system images mounted as loop.
+.TP
+.BI dmask= value
+Set the  bitmask of the directory permissions that are not
+present. The value is given in octal. The default value is 0 which
+means full access to everybody.
+.TP
+.B efs_raw
+This option should only be used in backup or restore situation.
+It changes the apparent size of files and the behavior of read and
+write operation so that encrypted files can be saved and restored
+without being decrypted. The \fBuser.ntfs.efsinfo\fP extended attribute
+has also to be saved and restored for the file to be decrypted.
+.TP
+.BI fmask= value
+Set the  bitmask of the file permissions that are not present. 
+The value is given in octal. The default value is 0 which
+means full access to everybody.
+.TP
+.B force
+This option is obsolete. It has been superseded by the \fBrecover\fR and
+\fBnorecover\fR options.
+.TP
+.B hide_dot_files
+Set the hidden flag in the NTFS attribute for created files and directories
+whose first character of the name is a dot. Such files and directories
+normally do not appear in directory listings, and when the flag is set
+they do not appear in Windows directory displays either.
+When a file is renamed or linked with a new name, the hidden flag is
+adjusted to the latest name.
 .TP
 .B hide_hid_files
 Hide the hidden files and directories in directory listings, the hidden files
@@ -200,88 +209,162 @@ but all files and directories remain accessible by full name, for example you
 can always display the Windows trash bin directory by :
 "ls \-ld '$RECYCLE.BIN'".
 .TP
-.B hide_dot_files
-Set the hidden flag in the NTFS attribute for created files and directories
-whose first character of the name is a dot. Such files and directories
-normally do not appear in directory listings, and when the flag is set
-they do not appear in Windows directory displays either.
+.B ignore_case \fP(only with lowntfs-3g)
+Ignore character case when accessing a file (\fBFOO\fR, \fBFoo\fR, \fBfoo\fR,
+etc. designate the same file). All files are displayed with lower case in
+directory listings.
 .TP
-.B windows_names
-This option prevents files, directories and extended attributes to be
-created with a name not allowed by windows, either because it contains
-some not allowed character (which are the nine characters " * / : < > ? \\ | and
-those whose code is less than 0x20) or because the last character is a space
-or a dot. Existing such files can still be read (and renamed).
+.B inherit
+When creating a new file, set its initial protections
+according to inheritance rules defined in parent directory. These rules
+deviate from Posix specifications, but yield a better Windows
+compatibility. The \fBpermissions\fR (or **acl**) option or a valid user
+mapping file is required for this option to be effective.
 .TP
-.B allow_other
-This option overrides the security measure restricting file access
-to the user mounting the filesystem. This option is only
-allowed to root, but this restriction can be overridden by
-the 'user_allow_other' option in the /etc/fuse.conf file.
+.BI locale= value
+This option can be useful when wanting a language specific locale environment.
+It is however discouraged as it leads to files with untranslatable characters
+to not be visible.
 .TP
 .BI max_read= value
 With this option the maximum size of read operations can be set.
 The default is infinite.  Note that the size of read requests is
-limited anyway to 32 pages (which is 128kbyte on i386).
-.TP
-.B silent
-Do nothing, without returning any error, on chmod and chown operations,
-when the \fBpermissions\fR option is not set and no user mapping file
-is defined. This option is on by default.
+limited anyway by the system (usually to 128kbyte).
 .TP
 .B no_def_opts
-By default ntfs-3g acts as if "silent" (ignore errors on chmod and chown),
-"allow_other" (allow any user to access files) and "nonempty"
-(allow mounting on non-empty directories) were set, and "no_def_opts"
+By default ntfs-3g acts as if \fBsilent\fP (ignore permission errors when
+permissions are not enabled),
+\fBallow_other\fP (allow any user to access files) and \fBnonempty\fP
+(allow mounting on non-empty directories) were set, and \fBno_def_opts\fP
 cancels these default options.
 .TP
-.BI streams_interface= value
-This option controls how the user can access Alternate Data Streams (ADS) or
-in other words, named data streams. It can be set to, one of \fBnone\fR,
-\fBwindows\fR or \fBxattr\fR. If the option is set to \fBnone\fR, the user
-will have no access to the named data streams. If it is set to \fBwindows\fR
-(not possible with lowntfs-3g), then the user can access them just like in
-Windows (eg. cat file:stream). If it's set to \fBxattr\fR, then the named
-data streams are mapped to xattrs and user can manipulate them using
-\fB{get,set}fattr\fR utilities. The default is \fBxattr\fR.
-.TP
-.B user_xattr
-Same as \fBstreams_interface=\fP\fIxattr\fP.
-.TP
-.B efs_raw
-This option should only be used in backup or restore situation.
-It changes the apparent size of files and the behavior of read and
-write operation so that encrypted files can be saved and restored
-without being decrypted. The \fBuser.ntfs.efsinfo\fP extended attribute
-has also to be saved and restored for the file to be decrypted.
-.TP
-.B compression
-This option enables creating new transparently compressed files in
-directories marked for compression. A directory is marked for compression by
-setting the bit 11 (value 0x00000800) in its Windows attribute. In such a
-directory, new files are created compressed and new subdirectories are
-themselves marked for compression. The option and the flag have no effect
-on existing files.
+.B no_detach
+Makes ntfs-3g to not detach from terminal and print some debug output.
 .TP
 .B nocompression
 This option disables creating new transparently compressed files in directories
 marked for compression. Existing compressed files can still be read and
-updated. Currently this is the default option.
+updated.
 .TP
-.B debug
-Makes ntfs-3g to print a lot of debug output from libntfs-3g and FUSE.
+.B norecover
+Do not try to mount a partition which was not unmounted properly by Windows.
 .TP
-.B no_detach
-Makes ntfs-3g to not detach from terminal and print some debug output.
+.B permissions
+Set standard permissions on created files and use standard access control.
+This option is set by default when a user mapping file is present.
+.TP
+.B posix_nlink
+Compute the count of hard links of a file or directory according to
+the POSIX specifications. When this option is not set, a count of 1
+is set for directories, and the short name of files is accounted for.
+Using the option entails some penalty as the count is not stored and
+has to be computed.
+.TP
+.B recover
+Recover and try to mount a partition which was not unmounted properly by
+Windows. The Windows logfile is cleared, which may cause inconsistencies.
+Currently this is the default option.
+.TP
+.B remove_hiberfile
+When the NTFS volume is hibernated, a read-write mount is denied and
+a read-only mount is forced. One needs either to resume Windows and
+shutdown it properly, or use this option which will remove the Windows
+hibernation file. Please note, this means that the saved Windows 
+session will be completely lost. Use this option under your own 
+responsibility.
+.TP
+.B ro
+Mount the filesystem read\-only. Useful if Windows is hibernated or the
+NTFS journal file is unclean.
+.TP
+.B show_sys_files
+Show the metafiles in directory listings. Otherwise the default behaviour is
+to hide the metafiles, which are special files used to store the NTFS
+structure. Please note that even when this option is specified, "$MFT" may
+not be visible due to a glibc bug. Furthermore, irrespectively of
+\fBshow_sys_files\fP, all files are accessible by name, for example you can
+always do
+"ls \-l '$UpCase'".
+.TP
+.B silent
+Do nothing, without returning any error, on chmod and chown operations
+and on permission checking errors,
+when the \fBpermissions\fR option is not set and no user mapping file
+is defined. This option is on by default, and when set off (through option
+\fBno_def_opts\fR) ownership and permissions parameters have to be set.
+.TP
+.BI special_files= mode
+This option selects a mode for representing a special file to be created
+(symbolic link, socket, fifo, character or block device). The \fImode\fP can
+be \fBinterix\fR or \fBwsl\fR, and existing files in either mode are
+recognized irrespective of the selected mode. Interix is the traditional
+mode, used by default, and wsl is interoperable with Windows WSL, but
+it is not compatible with Windows versions earlier than Windows 10.
+Neither mode are interoperable with Windows.
+.TP
+.BI streams_interface= mode
+This option controls how the user can access Alternate Data Streams (ADS) or in
+other words, named data streams. The \fImode\fP can be set to one of \fBnone\fR,
+\fBwindows\fR or \fBxattr\fR. If the option is set to \fBnone\fR, the user
+will have no access to the named data streams. If it is set to \fBwindows\fR
+(not possible with lowntfs-3g), then the user can access them just like in
+Windows (eg. cat file:stream). If it's set to \fBxattr\fR, then the named
+data streams are mapped to extended attributes and a user can manipulate them
+using \fB{get,set}fattr\fR utilities. The default is \fBxattr\fR.
+.TP
+\fBuid=\fP\fIvalue\fP and \fBgid=\fP\fIvalue\fP
+Set the owner and the group of files and directories. The values are numerical.
+The defaults are the uid and gid of the current process.
+.TP
+.BI umask= value
+Set the  bitmask of the file and directory permissions that are not
+present. The value is given in octal. The default value is 0 which
+means full access to everybody.
+.TP
+.BI usermapping= file-name
+Use file \fIfile-name\fP as the user mapping file instead of the default
+\fB.NTFS-3G/UserMapping\fP. If \fIfile-name\fP defines a full path, the
+file must be located on a partition previously mounted. If it defines a
+relative path, it is interpreted relative to the root of NTFS partition
+being mounted.
+.P
+.RS
+When a user mapping file is defined, the options \fBuid=\fP, \fBgid=\fP,
+\fBumask=\fP, \fBfmask=\fP, \fBdmask=\fP and \fBsilent\fP are ignored.
+.RE
+.TP
+.B user_xattr
+Same as \fBstreams_interface=\fP\fIxattr\fP.
+.TP
+.B windows_names
+This option prevents files, directories and extended attributes to be
+created with a name not allowed by windows, because
+.RS
+.RS
+.sp
+- it contains some not allowed character,
+.br
+- or the last character is a space or a dot,
+.br
+- or the name is reserved.
+.sp
+.RE
+The forbidden characters are the nine characters " * / : < > ? \\ | and
+those whose code is less than 0x20, and
+the reserved names are CON, PRN, AUX, NUL, COM1..COM9, LPT1..LPT9,
+with no suffix or followed by a dot.
+.sp
+Existing such files can still be read (and renamed).
+.RE
 .SH USER MAPPING
 NTFS uses specific ids to record the ownership of files instead of
-the \fBuid\fP and \fBgid\fP used by Linux. As a consequence a mapping
-between the ids has to be defined for ownerships to be recorded into
-NTFS and recognized.
+the \fBuid\fP (user id) and \fBgid\fP (group id) used by Linux. As a
+consequence a mapping between the ids has to be defined for ownerships
+to be recorded into NTFS files and recognized.
 .P
 By default, this mapping is fetched from the file \fB.NTFS-3G/UserMapping\fP
 located in the NTFS partition. The option \fBusermapping=\fP may be used
-to define another location. When the option permissions is set and
+to define another location. When the option **permissions** is set and
 no mapping file is found, a default mapping is used.
 .P
 Each line in the user mapping file defines a mapping. It is organized
@@ -298,15 +381,15 @@ both cases, files created on Linux will appear to Windows as owned by a
 foreign user, and files created on Windows will appear to Linux as owned by
 root. Just copy the example below and replace the 9 and 10-digit numbers by
 any number not greater than 4294967295. The resulting behavior is the same as
-the one with the option permission set with no ownership option and no user
-mapping file available.
+the one with the option \fBpermission\fP set with no ownership option and no
+user mapping file available.
 .RS
 .sp
 .B ::S-1-5-21-3141592653-589793238-462643383-10000
 .sp
 .RE
 If a strong interoperation with Windows is needed, the mapping has to be
-defined for each user and group known in both system, and the \fBSID\fPs used
+defined for each user and group known to both system, and the \fBSID\fPs used
 by Windows has to be collected. This will lead to a user mapping file like :
 .RS
 .sp
@@ -317,7 +400,7 @@ by Windows has to be collected. This will lead to a user mapping file like :
 .sp
 .RE
 .P
-The utility \fBntfs-3g.usermap\fP may be used to create such a user
+The utility \fBntfsusermap\fP may be used to create such a user
 mapping file.
 .SH EXAMPLES
 Mount /dev/sda1 to /mnt/windows:
@@ -348,8 +431,10 @@ to be the owner of all files:
 .B ntfs-3g /dev/sda5 /home/user/mnt \-o ro,uid=1000
 .sp
 .RE
-/etc/fstab entry for the above:
+/etc/fstab entry for the above (the sixth and last field has to be zero to
+avoid a file system check at boot time) :
 .RS
+.sp
 .B /dev/sda5 /home/user/mnt ntfs\-3g ro,uid=1000 0 0
 .sp
 .RE
@@ -371,15 +456,18 @@ manual page.
 Please see 
 .RS
 .sp
-http://www.tuxera.com/support/
+https://github.com/tuxera/ntfs-3g/wiki/NTFS-3G-FAQ
 .sp
 .RE
 for common questions and known issues.
 If you would find a new one in the latest release of
-the software then please send an email describing it
-in detail. You can contact the 
-development team on the ntfs\-3g\-devel@lists.sf.net
-address.
+the software then please post an ntfs-3g issue describing it in detail
+so that the development team can be aware of the issue and take care of it:
+.RS
+.sp
+https://github.com/tuxera/ntfs-3g/issues
+.sp
+.RE
 .SH AUTHORS
 .B ntfs-3g 
 was based on and a major improvement to ntfsmount and libntfs which were
@@ -389,7 +477,8 @@ Linux-NTFS team developer Szabolcs Szakacsits (szaka@tuxera.com).
 .SH THANKS
 Several people made heroic efforts, often over five or more
 years which resulted the ntfs-3g driver. Most importantly they are 
-Anton Altaparmakov, Jean-Pierre André, Richard Russon, Szabolcs Szakacsits,
+Anton Altaparmakov, Jean-Pierre André, Erik Larsson, Richard Russon,
+Szabolcs Szakacsits,
 Yura Pakhuchiy, Yuval Fledel, and the author of the groundbreaking FUSE
 filesystem development framework, Miklos Szeredi.
 .SH SEE ALSO

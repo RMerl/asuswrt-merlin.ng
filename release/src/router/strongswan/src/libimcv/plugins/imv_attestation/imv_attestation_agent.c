@@ -1,7 +1,8 @@
 /*
+ * Copyright (C) 2011-2022 Andreas Steffen
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2011-2020 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -40,8 +41,8 @@
 #include <tcg/pts/tcg_pts_attr_proto_caps.h>
 #include <tcg/pts/tcg_pts_attr_req_file_meas.h>
 #include <tcg/pts/tcg_pts_attr_req_file_meta.h>
-#include "tcg/seg/tcg_seg_attr_max_size.h"
-#include "tcg/seg/tcg_seg_attr_seg_env.h"
+#include <tcg/seg/tcg_seg_attr_seg_contract.h>
+#include <tcg/seg/tcg_seg_attr_seg_env.h>
 #include <pts/pts.h>
 #include <pts/pts_database.h>
 #include <pts/pts_creds.h>
@@ -54,8 +55,6 @@
 #include <utils/debug.h>
 #include <credentials/credential_manager.h>
 #include <collections/linked_list.h>
-
-#define FILE_MEAS_MAX_ATTR_SIZE	100000000
 
 typedef struct private_imv_attestation_agent_t private_imv_attestation_agent_t;
 
@@ -488,7 +487,7 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 
 	if (handshake_state == IMV_ATTESTATION_STATE_INIT)
 	{
-		size_t max_attr_size = FILE_MEAS_MAX_ATTR_SIZE;
+		size_t max_msg_size = SEG_CONTRACT_NO_MSG_SIZE_LIMIT;
 		size_t max_seg_size;
 		seg_contract_t *contract;
 		seg_contract_manager_t *contracts;
@@ -506,13 +505,13 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 								- TCG_SEG_ATTR_SEG_ENV_HEADER;
 
 		/* Announce support of PA-TNC segmentation to IMC */
-		contract = seg_contract_create(msg_types[0], max_attr_size,
+		contract = seg_contract_create(msg_types[0], max_msg_size,
 										max_seg_size, TRUE, imv_id, FALSE);
 		contract->get_info_string(contract, buf, BUF_LEN, TRUE);
 		DBG2(DBG_IMV, "%s", buf);
 		contracts = state->get_contracts(state);
 		contracts->add_contract(contracts, contract);
-		attr = tcg_seg_attr_max_size_create(max_attr_size, max_seg_size, TRUE);
+		attr = tcg_seg_attr_seg_contract_create(max_msg_size, max_seg_size, TRUE);
 		out_msg->add_attribute(out_msg, attr);
 
 		/* Send Request Protocol Capabilities attribute */

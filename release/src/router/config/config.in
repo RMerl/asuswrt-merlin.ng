@@ -539,6 +539,10 @@ config RTCONFIG_USB
 	bool "USB Support"
 	default y
 
+config RTCONFIG_USB_WAN_BACKUP
+	bool "USB WAN Backkup Support"
+	default n
+
 config RTCONFIG_USBRESET
 	bool "USB Power Reset Support"
 	default n
@@ -1507,6 +1511,10 @@ config RTCONFIG_DEBUG
 	bool "debug mode"
 	default n
 
+config RTCONFIG_DMALLOC
+	bool "Link with dmalloc that is used to detect memory leak."
+	default n
+
 config RTCONFIG_HAS_5G
 	bool "has 5G band"
 	default y
@@ -1823,6 +1831,11 @@ config RTCONFIG_6RELAYD
 config RTCONFIG_SOFTWIRE46
 	bool "IPv6 Softwire46 tunnel support"
 	depends on RTCONFIG_IPV6
+	default n
+
+config RTCONFIG_OCNVC
+	bool "IPoE - OCN Virtual Connect support"
+	depends on RTCONFIG_SOFTWIRE46
 	default n
 
 config RTCONFIG_PORT_BASED_VLAN
@@ -2321,6 +2334,10 @@ config RTCONFIG_NFCM
 	bool "Network Filter Conntrack Monitor"
 	default n
 
+config RTCONFIG_DNSQUERY_INTERCEPT
+	bool "Intercept DNS Query Result"
+	default n
+
 config RTCONFIG_ASUSCTRL
 	bool "asusctrl support"
 	default n
@@ -2754,6 +2771,35 @@ config RTCONFIG_AMAS_SYNC_LEDG
 config RTCONFIG_AMAS_SS2
 	bool "AiMesh Site Survey strategy-2"
 	default n
+
 config RTCONFIG_WPA3_ENTERPRISE
-        bool "WPA3 enterprise mode/transition mode/suite-b 192 bit mode"
-        default n
+	bool "WPA3 enterprise mode/transition mode/suite-b 192 bit mode"
+	default n
+
+config RTCONFIG_AMAS_CENTRAL_OPTMZ
+	bool "AiMesh central optimization"
+	default n
+
+config RTCONFIG_DNSMQ_USER
+	bool "dnsmasq user local serv"
+	default n
+
+config RTCONFIG_AMAS_CENTRAL_ADS
+	bool "AiMesh central antenna diversity selection"
+	default n
+
+config RTCONFIG_NOWL
+	bool "no wl"
+	default n
+
+config RTCONFIG_INTEL_EVO
+	bool "configuration for Intel EVO program certificate"
+	default n
+
+config RTCONFIG_SW_SPDLED
+	bool "sw speed led"
+	default n
+
+config RTCONFIG_BCM4906_504
+	bool "962118G in 504"
+	default n

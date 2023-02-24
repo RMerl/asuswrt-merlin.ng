@@ -66,7 +66,8 @@ function isPrivateIP(ip){
 	    location_host.indexOf("127") == 0 ||
 	    location_host.indexOf("10") == 0 ||
 	    location_host.indexOf("www.asusnetwork.net") == 0 ||
-	    location_host.indexOf("router.asus.com") == 0 ){
+	    location_host.indexOf("router.asus.com") == 0 ||
+	    location_host.indexOf("www.asusrouter.com") == 0 ){
 		return 1;
 	}
 	

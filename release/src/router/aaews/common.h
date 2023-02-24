@@ -62,6 +62,8 @@
 #define AWS_CERTS_CRT_FILE "/jffs/awscerts/device.pem.crt"
 #define AWS_CERTS_KEY_FILE "/jffs/awscerts/private.pem.key"
 
+#define AAE_TUNNEL_STATUS_RES "{\"function_name\": \"tunnel_status\", \"status\": \"%d\"}"
+
 #define my_memcpy(dst, src, dst_len, src_len) {memcpy(dst, src, dst_len < src_len ? dst_len : src_len);}
 
 extern char *generate_device_desc(int public, char *tnl_sdk_version, char *out_buf, int out_len);

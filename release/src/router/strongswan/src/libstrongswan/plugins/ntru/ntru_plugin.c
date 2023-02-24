@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2013-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -41,20 +40,20 @@ METHOD(plugin_t, get_features, int,
 	private_ntru_plugin_t *this, plugin_feature_t *features[])
 {
 	static plugin_feature_t f[] = {
-		PLUGIN_REGISTER(DH, ntru_ke_create),
-			PLUGIN_PROVIDE(DH, NTRU_112_BIT),
+		PLUGIN_REGISTER(KE, ntru_ke_create),
+			PLUGIN_PROVIDE(KE, NTRU_112_BIT),
 				PLUGIN_DEPENDS(RNG, RNG_TRUE),
 				PLUGIN_DEPENDS(SIGNER, AUTH_HMAC_SHA2_256_256),
 				PLUGIN_DEPENDS(XOF, XOF_MGF1_SHA1),
-			PLUGIN_PROVIDE(DH, NTRU_128_BIT),
+			PLUGIN_PROVIDE(KE, NTRU_128_BIT),
 				PLUGIN_DEPENDS(RNG, RNG_TRUE),
 				PLUGIN_DEPENDS(SIGNER, AUTH_HMAC_SHA2_256_256),
 				PLUGIN_DEPENDS(XOF, XOF_MGF1_SHA1),
-			PLUGIN_PROVIDE(DH, NTRU_192_BIT),
+			PLUGIN_PROVIDE(KE, NTRU_192_BIT),
 				PLUGIN_DEPENDS(RNG, RNG_TRUE),
 				PLUGIN_DEPENDS(SIGNER, AUTH_HMAC_SHA2_256_256),
 				PLUGIN_DEPENDS(XOF, XOF_MGF1_SHA256),
-			PLUGIN_PROVIDE(DH, NTRU_256_BIT),
+			PLUGIN_PROVIDE(KE, NTRU_256_BIT),
 				PLUGIN_DEPENDS(RNG, RNG_TRUE),
 				PLUGIN_DEPENDS(SIGNER, AUTH_HMAC_SHA2_256_256),
 				PLUGIN_DEPENDS(XOF, XOF_MGF1_SHA256),

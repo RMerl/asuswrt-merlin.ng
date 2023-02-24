@@ -154,6 +154,18 @@ enum {
 	IPERF_ACTION_MAX
 };
 
+enum {
+	IPERF_TEST_STATUS_READY=0,
+	IPERF_TEST_STATUS_RUNNING,
+	IPERF_TEST_STATUS_SUCCESS,
+	IPERF_TEST_STATUS_FAIL
+};
+
+enum {
+	IPERF_TEST_ALLSTATUS_STOP=0,
+	IPERF_TEST_ALLSTATUS_RUNNING
+};
+
 #define MAX_CHIN_CNT 4
 #define CONNDIAG_SQL_IPC_SOCKET_PATH	"/var/run/conndiag_sql_ipc_socket"
 #define CONNDIAG_PS_IPC_SOCKET_PATH	"/var/run/conndiag_portstatus_ipc_socket"
@@ -199,7 +211,10 @@ extern int get_wifi_mcs(char *ifname, char *output, int len);
 extern int get_bss_info(char *ifname, int *capability); // TODO: non-Brcm needs to do.
 extern int get_subif_count(char *target, int *count); // TODO: non-Brcm needs to do.
 extern int get_subif_ssid(char *target, char *output, int outputlen); // TODO: non-Brcm needs to do.
+extern int get_wifi_txop(char *ifname,int *txop, int outputlen);
+extern int get_wifi_glitch(char *ifname,int *glitch, int outputlen);
 extern int get_wifi_chanim(char *ifname, char *output, int outputlen);
+extern int get_wifi_counters_info(char *ifname, char *info_name, int *value);
 #endif
 extern int get_wifi_dfs_status(char *output, int len, char *node, char *lan_ipaddr, char *lan_hwaddr);
 
@@ -215,8 +230,26 @@ extern char* diag_get_wl_ifname(int unit, int subunit, char *buffer, size_t buff
 extern int diag_get_sub_if_bss_enabled(int unit, int subunit);
 extern int diag_get_sub_if_closed(int unit, int subunit);
 
-
 extern int special_alphasort(const void *d1, const void *d2);
+extern void create_cd_sql_thread(void);
+extern int mode_str_to_int(char *mode);
+extern int mix_data_handler(char *raw);
+
+#ifdef RTCONFIG_CD_IPERF
+extern int diag_iperf_test_detect();
+extern int run_iperf(char* caller, char *server_mac, char *client_mac);
+extern int update_iperf_test_status(char *server_mac, char *client_mac, int update_status);
+extern int update_iperf_test_allstatus(int update_allstatus);
+extern int check_if_iperf_server_ok();
+extern int iperf3_parse_client(int *bandwidth_list,int *retry_list);
+extern void iperf_client(void *in);
+extern void iperf_server(void);
+extern void create_iperf_client(char* in);
+extern void create_iperf_server(void);
+extern void proc_iperf(char* caller, int is_server,char *smac,char *cmac, char *target_ip,int port);
+extern int send_iperf_client_cmd_to_re(char *smac,char *cmac,char *serverip,int port);
+extern int check_iperf_server_resp(char *in);
+#endif
 
 #define DIAG_DEBUG "/tmp/DIAG_DEBUG"
 

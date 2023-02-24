@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011-2020 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -447,13 +448,11 @@ METHOD(pts_component_t, measure, status_t,
  * Parse a validation URI of the form <hash algorithm>:<event name>
  * into its components
  */
-static pts_meas_algorithms_t parse_validation_uri(pts_comp_evidence_t *evidence,
-								char **ima_name, char **ima_algo, char *algo_buf)
+static pts_meas_algorithms_t parse_validation_uri(char *uri, char **ima_name,
+												  char **ima_algo, char *algo_buf)
 {
     pts_meas_algorithms_t hash_algo;
-	char *uri, *pos, *algo, *name;
-
-	evidence->get_validation(evidence, &uri);
+	char *pos, *algo, *name;
 
 	/* IMA-NG format? */
 	pos = strchr(uri, ':');
@@ -712,13 +711,14 @@ METHOD(pts_component_t, verify, status_t,
 						   PTS_ITA_QUALIFIER_TYPE_OS))
 	{
 		int ima_count;
-		char *ima_algo, *ima_name;
+		char *uri, *ima_algo, *ima_name;
 		char algo_buf[IMA_ALGO_LEN_MAX];
 		uint8_t pcr_buffer[HASH_SIZE_SHA512];
 		chunk_t boot_aggregate;
 		pts_meas_algorithms_t hash_algo;
 
-		hash_algo = parse_validation_uri(evidence, &ima_name, &ima_algo,
+		evidence->get_validation(evidence, &uri);
+		hash_algo = parse_validation_uri(uri, &ima_name, &ima_algo,
 										 algo_buf);
 
 		switch (this->state)

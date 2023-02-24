@@ -2,7 +2,8 @@
  * Copyright (C) 2013-2014 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  * Copyright (C) 2016-2019 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -55,7 +56,7 @@ struct entry_t {
 		drbg_constructor_t create_drbg;
 		rng_constructor_t create_rng;
 		nonce_gen_constructor_t create_nonce_gen;
-		dh_constructor_t create_dh;
+		ke_constructor_t create_ke;
 		void *create;
 	};
 };
@@ -123,9 +124,9 @@ struct private_crypto_factory_t {
 	linked_list_t *nonce_gens;
 
 	/**
-	 * registered diffie hellman, as entry_t
+	 * registered key exchange methods, as entry_t
 	 */
-	linked_list_t *dhs;
+	linked_list_t *kes;
 
 	/**
 	 * test manager to test crypto algorithms
@@ -483,37 +484,33 @@ METHOD(crypto_factory_t, create_nonce_gen, nonce_gen_t*,
 	return nonce_gen;
 }
 
-METHOD(crypto_factory_t, create_dh, diffie_hellman_t*,
-	private_crypto_factory_t *this, diffie_hellman_group_t group, ...)
+METHOD(crypto_factory_t, create_ke, key_exchange_t*,
+	private_crypto_factory_t *this, key_exchange_method_t method, ...)
 {
 	enumerator_t *enumerator;
 	entry_t *entry;
-	va_list args;
 	chunk_t g = chunk_empty, p = chunk_empty;
-	diffie_hellman_t *diffie_hellman = NULL;
+	key_exchange_t *ke = NULL;
 
-	if (group == MODP_CUSTOM)
+	if (method == MODP_CUSTOM)
 	{
-		va_start(args, group);
-		g = va_arg(args, chunk_t);
-		p = va_arg(args, chunk_t);
-		va_end(args);
+		VA_ARGS_GET(method, g, p);
 	}
 
 	this->lock->read_lock(this->lock);
-	enumerator = this->dhs->create_enumerator(this->dhs);
+	enumerator = this->kes->create_enumerator(this->kes);
 	while (enumerator->enumerate(enumerator, &entry))
 	{
-		if (entry->algo == group)
+		if (entry->algo == method)
 		{
-			if (this->test_on_create && group != MODP_CUSTOM &&
-				!this->tester->test_dh(this->tester, group,
-								entry->create_dh, NULL, entry->plugin_name))
+			if (this->test_on_create && method != MODP_CUSTOM &&
+				!this->tester->test_ke(this->tester, method,
+								entry->create_ke, NULL, entry->plugin_name))
 			{
 				continue;
 			}
-			diffie_hellman = entry->create_dh(group, g, p);
-			if (diffie_hellman)
+			ke = entry->create_ke(method, g, p);
+			if (ke)
 			{
 				break;
 			}
@@ -521,7 +518,7 @@ METHOD(crypto_factory_t, create_dh, diffie_hellman_t*,
 	}
 	enumerator->destroy(enumerator);
 	this->lock->unlock(this->lock);
-	return diffie_hellman;
+	return ke;
 }
 
 /**
@@ -934,36 +931,36 @@ METHOD(crypto_factory_t, remove_nonce_gen, void,
 	this->lock->unlock(this->lock);
 }
 
-METHOD(crypto_factory_t, add_dh, bool,
-	private_crypto_factory_t *this, diffie_hellman_group_t group,
-	const char *plugin_name, dh_constructor_t create)
+METHOD(crypto_factory_t, add_ke, bool,
+	private_crypto_factory_t *this, key_exchange_method_t group,
+	const char *plugin_name, ke_constructor_t create)
 {
 	u_int speed = 0;
 
 	if (!this->test_on_add ||
-		this->tester->test_dh(this->tester, group, create,
+		this->tester->test_ke(this->tester, group, create,
 							  this->bench ? &speed : NULL, plugin_name))
 	{
-		add_entry(this, this->dhs, group, plugin_name, 0, create);
+		add_entry(this, this->kes, group, plugin_name, 0, create);
 		return TRUE;
 	}
 	this->test_failures++;
 	return FALSE;
 }
 
-METHOD(crypto_factory_t, remove_dh, void,
-	private_crypto_factory_t *this, dh_constructor_t create)
+METHOD(crypto_factory_t, remove_ke, void,
+	private_crypto_factory_t *this, ke_constructor_t create)
 {
 	entry_t *entry;
 	enumerator_t *enumerator;
 
 	this->lock->write_lock(this->lock);
-	enumerator = this->dhs->create_enumerator(this->dhs);
+	enumerator = this->kes->create_enumerator(this->kes);
 	while (enumerator->enumerate(enumerator, &entry))
 	{
-		if (entry->create_dh == create)
+		if (entry->create_ke == create)
 		{
-			this->dhs->remove_at(this->dhs, enumerator);
+			this->kes->remove_at(this->kes, enumerator);
 			free(entry);
 		}
 	}
@@ -1189,11 +1186,11 @@ METHOD(crypto_factory_t, create_drbg_enumerator, enumerator_t*,
 	return create_enumerator(this, this->drbgs, drbg_filter);
 }
 
-CALLBACK(dh_filter, bool,
+CALLBACK(ke_filter, bool,
 	void *n, enumerator_t *orig, va_list args)
 {
 	entry_t *entry;
-	diffie_hellman_group_t *algo;
+	key_exchange_method_t *algo;
 	const char **plugin_name;
 
 	VA_ARGS_VGET(args, algo, plugin_name);
@@ -1207,10 +1204,10 @@ CALLBACK(dh_filter, bool,
 	return FALSE;
 }
 
-METHOD(crypto_factory_t, create_dh_enumerator, enumerator_t*,
+METHOD(crypto_factory_t, create_ke_enumerator, enumerator_t*,
 	private_crypto_factory_t *this)
 {
-	return create_enumerator(this, this->dhs, dh_filter);
+	return create_enumerator(this, this->kes, ke_filter);
 }
 
 CALLBACK(rng_filter, bool,
@@ -1282,8 +1279,8 @@ METHOD(crypto_factory_t, add_test_vector, void,
 			return this->tester->add_drbg_vector(this->tester, vector);
 		case RANDOM_NUMBER_GENERATOR:
 			return this->tester->add_rng_vector(this->tester, vector);
-		case DIFFIE_HELLMAN_GROUP:
-			return this->tester->add_dh_vector(this->tester, vector);
+		case KEY_EXCHANGE_METHOD:
+			return this->tester->add_ke_vector(this->tester, vector);
 		default:
 			DBG1(DBG_LIB, "%N test vectors not supported, ignored",
 				 transform_type_names, type);
@@ -1353,9 +1350,9 @@ METHOD(enumerator_t, verify_enumerate, bool,
 			*valid = this->tester->test_rng(this->tester, entry->algo,
 							entry->create_rng, NULL, entry->plugin_name);
 			break;
-		case DIFFIE_HELLMAN_GROUP:
-			*valid = this->tester->test_dh(this->tester, entry->algo,
-							entry->create_dh, NULL, entry->plugin_name);
+		case KEY_EXCHANGE_METHOD:
+			*valid = this->tester->test_ke(this->tester, entry->algo,
+							entry->create_ke, NULL, entry->plugin_name);
 			break;
 		default:
 			return FALSE;
@@ -1409,8 +1406,8 @@ METHOD(crypto_factory_t, create_verify_enumerator, enumerator_t*,
 		case RANDOM_NUMBER_GENERATOR:
 			inner = this->rngs->create_enumerator(this->rngs);
 			break;
-		case DIFFIE_HELLMAN_GROUP:
-			inner = this->dhs->create_enumerator(this->dhs);
+		case KEY_EXCHANGE_METHOD:
+			inner = this->kes->create_enumerator(this->kes);
 			break;
 		default:
 			this->lock->unlock(this->lock);
@@ -1443,7 +1440,7 @@ METHOD(crypto_factory_t, destroy, void,
 	this->drbgs->destroy(this->drbgs);
 	this->rngs->destroy(this->rngs);
 	this->nonce_gens->destroy(this->nonce_gens);
-	this->dhs->destroy(this->dhs);
+	this->kes->destroy(this->kes);
 	this->tester->destroy(this->tester);
 	this->lock->destroy(this->lock);
 	free(this);
@@ -1468,7 +1465,7 @@ crypto_factory_t *crypto_factory_create()
 			.create_drbg = _create_drbg,
 			.create_rng = _create_rng,
 			.create_nonce_gen = _create_nonce_gen,
-			.create_dh = _create_dh,
+			.create_ke = _create_ke,
 			.add_crypter = _add_crypter,
 			.remove_crypter = _remove_crypter,
 			.add_aead = _add_aead,
@@ -1489,8 +1486,8 @@ crypto_factory_t *crypto_factory_create()
 			.remove_rng = _remove_rng,
 			.add_nonce_gen = _add_nonce_gen,
 			.remove_nonce_gen = _remove_nonce_gen,
-			.add_dh = _add_dh,
-			.remove_dh = _remove_dh,
+			.add_ke = _add_ke,
+			.remove_ke = _remove_ke,
 			.create_crypter_enumerator = _create_crypter_enumerator,
 			.create_aead_enumerator = _create_aead_enumerator,
 			.create_signer_enumerator = _create_signer_enumerator,
@@ -1499,7 +1496,7 @@ crypto_factory_t *crypto_factory_create()
 			.create_xof_enumerator = _create_xof_enumerator,
 			.create_kdf_enumerator = _create_kdf_enumerator,
 			.create_drbg_enumerator = _create_drbg_enumerator,
-			.create_dh_enumerator = _create_dh_enumerator,
+			.create_ke_enumerator = _create_ke_enumerator,
 			.create_rng_enumerator = _create_rng_enumerator,
 			.create_nonce_gen_enumerator = _create_nonce_gen_enumerator,
 			.add_test_vector = _add_test_vector,
@@ -1516,7 +1513,7 @@ crypto_factory_t *crypto_factory_create()
 		.drbgs = linked_list_create(),
 		.rngs = linked_list_create(),
 		.nonce_gens = linked_list_create(),
-		.dhs = linked_list_create(),
+		.kes = linked_list_create(),
 		.lock = rwlock_create(RWLOCK_TYPE_DEFAULT),
 		.tester = crypto_tester_create(),
 		.test_on_add = lib->settings->get_bool(lib->settings,

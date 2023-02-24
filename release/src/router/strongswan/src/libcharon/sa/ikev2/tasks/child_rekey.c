@@ -2,7 +2,8 @@
  * Copyright (C) 2009-2018 Tobias Brunner
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -196,7 +197,7 @@ METHOD(task_t, build_i, status_t,
 									config->get_ref(config), TRUE, NULL, NULL);
 
 		proposal = this->child_sa->get_proposal(this->child_sa);
-		if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP,
+		if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD,
 									&dh_group, NULL))
 		{	/* reuse the DH group negotiated previously */
 			this->child_create->use_dh_group(this->child_create, dh_group);
@@ -527,7 +528,7 @@ METHOD(child_rekey_t, is_redundant, bool,
 	return FALSE;
 }
 
-METHOD(child_rekey_t, collide, void,
+METHOD(child_rekey_t, collide, bool,
 	private_child_rekey_t *this, task_t *other)
 {
 	/* the task manager only detects exchange collision, but not if
@@ -539,16 +540,14 @@ METHOD(child_rekey_t, collide, void,
 
 		if (rekey->child_sa != this->child_sa)
 		{	/* not the same child => no collision */
-			other->destroy(other);
-			return;
+			return FALSE;
 		}
 		/* ignore passive tasks that did not successfully create a CHILD_SA */
 		other_child = rekey->child_create->get_child(rekey->child_create);
 		if (!other_child ||
 			 other_child->get_state(other_child) != CHILD_INSTALLED)
 		{
-			other->destroy(other);
-			return;
+			return FALSE;
 		}
 	}
 	else if (other->get_type(other) == TASK_CHILD_DELETE)
@@ -557,26 +556,24 @@ METHOD(child_rekey_t, collide, void,
 		if (is_redundant(this, del->get_child(del)))
 		{
 			this->other_child_destroyed = TRUE;
-			other->destroy(other);
-			return;
+			return FALSE;
 		}
 		if (del->get_child(del) != this->child_sa)
 		{
 			/* not the same child => no collision */
-			other->destroy(other);
-			return;
+			return FALSE;
 		}
 	}
 	else
 	{
-		/* any other task is not critical for collisions, ignore */
-		other->destroy(other);
-		return;
+		/* shouldn't happen */
+		return FALSE;
 	}
 	DBG1(DBG_IKE, "detected %N collision with %N", task_type_names,
 		 TASK_CHILD_REKEY, task_type_names, other->get_type(other));
 	DESTROY_IF(this->collision);
 	this->collision = other;
+	return TRUE;
 }
 
 METHOD(task_t, migrate, void,

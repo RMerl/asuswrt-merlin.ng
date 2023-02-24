@@ -527,7 +527,7 @@ PLUGIN_INIT(plugin_init)
 {
 #ifdef RTCONFIG_ACCOUNT_BINDING
 	char ddns_server[64] = {0};
-	if (nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
+	if (is_account_bound() && nvram_match("ddns_replace_status", "1") &&
 		((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 		|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
 		snprintf(ddns_server, sizeof(ddns_server), "%s", nvram_safe_get("aae_ddnsinfo"));
@@ -558,7 +558,7 @@ PLUGIN_EXIT(plugin_exit)
 {
 #ifdef RTCONFIG_ACCOUNT_BINDING
 	char ddns_server[64] = {0};
-	if (nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
+	if (is_account_bound() && nvram_match("ddns_replace_status", "1") &&
 		((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 		|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
 		snprintf(ddns_server, sizeof(ddns_server), "%s", nvram_safe_get("aae_ddnsinfo"));

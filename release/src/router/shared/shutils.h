@@ -212,28 +212,28 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 #define __foreach(word, wordlist, next, sep) \
 		for (next = &wordlist[strspn(wordlist, (sep))], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, (sep))] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, (sep))] = '\0', \
 				next = strchr(next, *(sep)); \
 				strlen(word); \
 				next = next ? &next[strspn(next, (sep))] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, (sep))] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, (sep))] = '\0', \
 				next = strchr(next, *(sep)))
 
 /* Copy each token in wordlist delimited by space into word */
 #define foreach(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, " ")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, " ")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, " ")] = '\0', \
 				next = strchr(next, ' '); \
 				strlen(word); \
 				next = next ? &next[strspn(next, " ")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, " ")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, " ")] = '\0', \
 				next = strchr(next, ' '))
 #endif // endif
 
@@ -241,98 +241,98 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 #define foreach_38(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, "&")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "&")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "&")] = '\0', \
 				next = strchr(next, '&'); \
 				strlen(word); \
 				next = next ? &next[strspn(next, "&")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "&")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "&")] = '\0', \
 				next = strchr(next, '&'))
 
 /* Copy each token in wordlist delimited by ascii_44 into word */
 #define foreach_44(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, ",")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ",")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ",")] = '\0', \
 				next = strchr(next, ','); \
 				strlen(word); \
 				next = next ? &next[strspn(next, ",")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ",")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ",")] = '\0', \
 				next = strchr(next, ','))
 
 /* Copy each token in wordlist delimited by ascii_58 into word */
 #define foreach_58(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, ":")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ":")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ":")] = '\0', \
 				next = strchr(next, ':'); \
 				strlen(word); \
 				next = next ? &next[strspn(next, ":")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ":")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ":")] = '\0', \
 				next = strchr(next, ':'))
 
 /* Copy each token in wordlist delimited by ascii_59 into word */
 #define foreach_59(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, ";")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ";")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ";")] = '\0', \
 				next = strchr(next, ';'); \
 				strlen(word); \
 				next = next ? &next[strspn(next, ";")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ";")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ";")] = '\0', \
 				next = strchr(next, ';'))
 
 /* Copy each token in wordlist delimited by ascii_60 into word */
 #define foreach_60(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, "<")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "<")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "<")] = '\0', \
 				next = strchr(next, '<'); \
 				strlen(word); \
 				next = next ? &next[strspn(next, "<")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "<")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "<")] = '\0', \
 				next = strchr(next, '<'))
 
 /* Copy each token in wordlist delimited by ascii_62 into word */
 #define foreach_62(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, ">")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ">")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ">")] = '\0', \
 				next = strchr(next, '>'); \
 				strlen(word); \
 				next = next ? &next[strspn(next, ">")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ">")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ">")] = '\0', \
 				next = strchr(next, '>'))
 
 /* Copy each token in wordlist delimited by ascii_124 into word */
 #define foreach_124(word, wordlist, next) \
 		for (next = &wordlist[strspn(wordlist, "|")], \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "|")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "|")] = '\0', \
 				next = strchr(next, '|'); \
 				strlen(word); \
 				next = next ? &next[strspn(next, "|")] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "|")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "|")] = '\0', \
 				next = strchr(next, '|'))
 
 /* Copy each token in wordlist delimited by space into word and keep empty string */
@@ -340,14 +340,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, ' '), \
 				next = strchr(wordlist, ' '), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, " ")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, " ")] = '\0', \
 				next = next ? strchr(next, ' ') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, " ")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, " ")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, " ")] = '\0', \
 				next = strchr(next, ' '), \
 				count--)
 
@@ -356,14 +356,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, '&'), \
 				next = strchr(wordlist, '&'), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, "&")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "&")] = '\0', \
 				next = next ? strchr(next, '&') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, "&")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "&")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "&")] = '\0', \
 				next = strchr(next, '&'), \
 				count--)
 
@@ -372,14 +372,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, ','), \
 				next = strchr(wordlist, ','), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, ",")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ",")] = '\0', \
 				next = next ? strchr(next, ',') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, ",")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ",")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ",")] = '\0', \
 				next = strchr(next, ','), \
 				count--)
 
@@ -388,14 +388,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, ':'), \
 				next = strchr(wordlist, ':'), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, ":")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ":")] = '\0', \
 				next = next ? strchr(next, ':') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, ":")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ":")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ":")] = '\0', \
 				next = strchr(next, ':'), \
 				count--)
 
@@ -404,14 +404,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, ';'), \
 				next = strchr(wordlist, ';'), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, ";")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ";")] = '\0', \
 				next = next ? strchr(next, ';') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, ";")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ";")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ";")] = '\0', \
 				next = strchr(next, ';'), \
 				count--)
 
@@ -420,14 +420,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, '<'), \
 				next = strchr(wordlist, '<'), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, "<")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "<")] = '\0', \
 				next = next ? strchr(next, '<') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, "<")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "<")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "<")] = '\0', \
 				next = strchr(next, '<'), \
 				count--)
 
@@ -436,14 +436,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, '>'), \
 				next = strchr(wordlist, '>'), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, ">")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ">")] = '\0', \
 				next = next ? strchr(next, '>') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, ">")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, ">")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, ">")] = '\0', \
 				next = strchr(next, '>'), \
 				count--)
 
@@ -452,14 +452,14 @@ static inline char * strcat_r(const char *s1, const char *s2, char *buf)
 		for (count = get_char_count(wordlist, '|'), \
 				next = strchr(wordlist, '|'), \
 				strncpy(word, wordlist, sizeof(word)), \
-				word[strcspn(word, "|")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "|")] = '\0', \
 				next = next ? strchr(next, '|') : ""; \
 				count >= 0; \
 				next = next ? &next[strcspn(next, "|")+1] : "", \
 				strncpy(word, next, sizeof(word)), \
-				word[strcspn(word, "|")] = '\0', \
 				word[sizeof(word) - 1] = '\0', \
+				word[strcspn(word, "|")] = '\0', \
 				next = strchr(next, '|'), \
 				count--)
 
@@ -605,6 +605,20 @@ struct strbuf {
         unsigned int origsize;  /* unmodified orignal buffer size in bytes */
 };
 
+typedef struct ping_result_s
+{
+	int name_valid;
+	char alias[160];
+	char ip_addr[64];
+	int data_valid;
+	unsigned long pkt_sent;
+	unsigned long pkt_recv;
+	double pkt_loss_rate;
+	double min;
+	double avg;
+	double max;
+}ping_result_t;
+
 extern void str_binit(struct strbuf *b, char *buf, unsigned int size);
 extern int str_bprintf(struct strbuf *b, const char *fmt, ...);
 extern int generate_wireless_key(unsigned char *key);
@@ -628,4 +642,6 @@ extern int check_if_exist_ifnames(char *need_check_ifname, char *ifname);
 #endif
 extern long get_sys_uptime();
 extern void wait_ntp_repeat(unsigned long usec, unsigned int count);
+extern int ping_target_with_size(char *target, unsigned int size, unsigned int count, unsigned int wait_time, double loss_rate);
+extern int parse_ping_content(char *fname, ping_result_t *out);
 #endif /* _shutils_h_ */

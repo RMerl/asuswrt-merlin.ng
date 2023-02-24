@@ -1,2 +1,12 @@
 pki.load =
-	Plugins to load in ipsec pki tool.
+	Plugins to load in the pki tool.
+
+pki.scep.http_bind
+	Source IP address to bind for HTTP operations.
+
+pki.scep.http_timeout = 30s
+	Timeout for HTTP operations.
+
+pki.scep.renewal_via_pkcs_req = no
+	Some SCEP servers (e.g. openxpki) are incorrectly doing certificate renewal
+	via messageType PKCSReq (19) instead of RenewalReq (17).

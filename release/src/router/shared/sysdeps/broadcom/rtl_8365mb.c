@@ -33,6 +33,8 @@
 #include <rtk_switch.h>
 #include <rtk_types.h>
 
+#include <ethernet.h>
+
 #define RTKSWITCH_DEV	"/dev/rtkswitch"
 
 #define CASEID(a)	#a
@@ -41,6 +43,7 @@ char *rtk_switch_cmds[] = RTK_SWITCH_CMDS;
 unsigned int rtk_cmds_pa[MAX_REQ];
 
 void usage(char *cmd);
+int rtkswitch_port_mactable(int port);
 
 int rtkswitch_ioctl(int val, int val2, int val3)
 {
@@ -56,6 +59,9 @@ int rtkswitch_ioctl(int val, int val2, int val3)
 	}
 
 	switch (val) {
+	case DUMP_MACTABLE: /* Dump L2 lookup table of specified LAN port */
+		return rtkswitch_port_mactable(val2 + 1);
+
 	/* w/ no options */
 	case INIT_SWITCH:
 	case INIT_SWITCH_UP:
@@ -355,6 +361,49 @@ int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 	return ret;
 }
 
+typedef struct {
+	uint32  count;
+	struct  ether_addr ea[256];
+} mactable;
+
+void show_port_mactable(mactable *pPort_mactable)
+{
+	int i;
+	char eabuf[18];
+
+	if (pPort_mactable->count)
+	for (i = 0; i < pPort_mactable->count && i < 256; i++)
+		printf("%s\n", ether_etoa((void *)&pPort_mactable->ea[i], eabuf));
+}
+
+int rtkswitch_port_mactable(int port)
+{
+	int fd;
+	int *p = NULL;
+	mactable Port_mactable;
+
+	if ((port < 1) || (port > 4))
+		return -1;
+
+	fd = open("/dev/rtkswitch", O_RDONLY);
+	if (fd < 0) {
+		perror("/dev/rtkswitch");
+	} else {
+		memset(&Port_mactable, 0, sizeof(Port_mactable));
+		p = (int *) &Port_mactable;
+		*p = port - 1;
+		if (ioctl(fd, DUMP_MACTABLE, &Port_mactable) < 0) {
+			perror("rtkswitch ioctl");
+			close(fd);
+		} else
+			show_port_mactable(&Port_mactable);
+
+		close(fd);
+	}
+
+	return 0;
+}
+
 void usage(char *cmd)
 {
 	int ci, pa;
@@ -373,6 +422,7 @@ void usage(char *cmd)
 		case GET_PHY_REG9:
 		case GET_TMODE:
 		case SET_GREEN_ETHERNET:
+		case DUMP_MACTABLE:
 			rtk_cmds_pa[ci] = 1;
                 	break;
 

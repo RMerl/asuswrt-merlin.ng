@@ -18,6 +18,7 @@
 #define PROTO_WG "WireGuard"
 #define PROTO_HMA "HMA"
 #define PROTO_NORDVPN "NordVPN"
+#define PROTO_SURFSHARK "Surfshark"
 
 #define MAX_VPNC_DATA_LEN	256
 #define MAX_VPNC_PROFILE	16

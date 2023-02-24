@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2009-2015 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -238,8 +239,8 @@ struct eap_mschapv2_response_t
 #define HEADER_LEN (sizeof(eap_mschapv2_header_t))
 
 /**
- * Length of the header for MS-CHAPv2 success/failure packets (does not include
- * MS-CHAPv2-ID and MS-Length, i.e. 3 octets)
+ * Length of the header as used for MS-CHAPv2 success packets (does
+ * not include MS-CHAPv2-ID, MS-Length or any data, i.e. 3 octets)
  */
 #define SHORT_HEADER_LEN (HEADER_LEN - 3)
 
@@ -882,7 +883,6 @@ static status_t process_peer_success(private_eap_mschapv2_t *this,
 	chunk_t data, auth_string = chunk_empty;
 	char *message, *token, *msg = NULL;
 	int message_len;
-	uint16_t len = SHORT_HEADER_LEN;
 
 	data = in->get_data(in);
 	eap = (eap_mschapv2_header_t*)data.ptr;
@@ -940,14 +940,14 @@ static status_t process_peer_success(private_eap_mschapv2_t *this,
 
 	DBG1(DBG_IKE, "EAP-MS-CHAPv2 succeeded: '%s'", sanitize(msg));
 
-	eap = alloca(len);
+	eap = alloca(HEADER_LEN);
 	eap->code = EAP_RESPONSE;
 	eap->identifier = this->identifier;
-	eap->length = htons(len);
+	eap->length = htons(SHORT_HEADER_LEN);
 	eap->type = EAP_MSCHAPV2;
 	eap->opcode = MSCHAPV2_SUCCESS;
 
-	*out = eap_payload_create_data(chunk_create((void*) eap, len));
+	*out = eap_payload_create_data(chunk_create((void*)eap, SHORT_HEADER_LEN));
 	status = NEED_MORE;
 	this->state = S_DONE;
 
@@ -1316,7 +1316,7 @@ METHOD(eap_method_t, process_server, status_t,
 }
 
 METHOD(eap_method_t, get_type, eap_type_t,
-	private_eap_mschapv2_t *this, uint32_t *vendor)
+	private_eap_mschapv2_t *this, pen_t *vendor)
 {
 	*vendor = 0;
 	return EAP_MSCHAPV2;

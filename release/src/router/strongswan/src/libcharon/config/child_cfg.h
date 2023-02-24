@@ -3,7 +3,8 @@
  * Copyright (C) 2016 Andreas Steffen
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -88,10 +89,10 @@ struct child_cfg_t {
 	 *
 	 * Resulting list and all of its proposals must be freed after use.
 	 *
-	 * @param strip_dh		TRUE strip out diffie hellman groups
+	 * @param strip_ke		TRUE strip out key exchange methods
 	 * @return				list of proposals
 	 */
-	linked_list_t* (*get_proposals)(child_cfg_t *this, bool strip_dh);
+	linked_list_t* (*get_proposals)(child_cfg_t *this, bool strip_ke);
 
 	/**
 	 * Select a proposal from a supplied list.
@@ -203,11 +204,16 @@ struct child_cfg_t {
 	action_t (*get_close_action) (child_cfg_t *this);
 
 	/**
-	 * Get the DH group to use for CHILD_SA setup.
+	 * Get the first algorithm of a certain transform type that's contained in
+	 * any of the configured proposals.
 	 *
-	 * @return				dh group to use
+	 * For instance, use with KEY_EXCHANGE_METHOD to get the KE method to use
+	 * for the CHILD_SA initiation.
+	 *
+	 * @param type			transform type to look for
+	 * @return				algorithm identifier (0 for none)
 	 */
-	diffie_hellman_group_t (*get_dh_group)(child_cfg_t *this);
+	uint16_t (*get_algorithm)(child_cfg_t *this, transform_type_t type);
 
 	/**
 	 * Get the inactivity timeout value.

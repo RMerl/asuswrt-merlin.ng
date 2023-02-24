@@ -1,2 +1,3 @@
-moon::ipsec stop
-sun::ipsec stop
+moon::swanctl --terminate --ike gw-gw 2> /dev/null
+moon::systemctl stop strongswan
+sun::systemctl stop strongswan

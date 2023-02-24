@@ -11,15 +11,14 @@
 <title><#Web_Title#> - <#vpnc_title#></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<script type="text/javaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <style>
-.vpns_iframe {
+.rwd_iframe {
 	width: 100%;
 }
 </style>
@@ -27,6 +26,9 @@
 
 function initial(){
 	show_menu();
+	setTimeout(function(){
+		document.getElementById("vpns_iframe").setAttribute("src", "/VPN/vpns.html");
+	},((window.location.protocol == "https:") ? 1000 : 50));
 }
 </script>
 </head>
@@ -63,17 +65,7 @@ function initial(){
 							<tbody>
 								<tr>
 									<td bgcolor="#4D595D" valign="top">
-										<iframe id="vpns_iframe" class="vpns_iframe" frameborder="0"></iframe>
-										<script>
-											setTimeout(function(){
-												$("#vpns_iframe").attr("src", "/VPN/vpns.html");
-												$("#vpns_iframe").load(function(){
-													var content_height = $(this).contents().find(".bg").height();
-													var menu_height = $("#FormTitle").height();
-													$("#vpns_iframe").css("height", (Math.max(content_height, menu_height) + 30));
-												});
-											},50);
-										</script>
+										<iframe id="vpns_iframe" class="rwd_iframe" frameborder="0"></iframe>
 									</td>
 								</tr>
 							</tbody>

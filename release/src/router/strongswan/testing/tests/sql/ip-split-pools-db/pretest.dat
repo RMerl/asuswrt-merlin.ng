@@ -8,9 +8,9 @@ moon::ipsec pool --status 2> /dev/null
 carol::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
 dave::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
 moon::cd /etc/swanctl; rm -r rsa/* x509/* x509ca/*
-moon::systemctl start strongswan-swanctl
-carol::systemctl start strongswan-swanctl
-dave::systemctl start strongswan-swanctl
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::expect-connection rw
 carol::expect-connection home
 carol::swanctl --initiate --child home 2> /dev/null

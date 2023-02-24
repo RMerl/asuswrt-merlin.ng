@@ -1,7 +1,7 @@
 /*
  * cache.h : deal with indexed LRU caches
  *
- * Copyright (c) 2008-2009 Jean-Pierre Andre
+ * Copyright (c) 2008-2010 Jean-Pierre Andre
  *
  * This program/include file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published
@@ -29,11 +29,7 @@ struct CACHED_GENERIC {
 	struct CACHED_GENERIC *previous;
 	void *variable;
 	size_t varsize;
-	union {
-		/* force alignment for pointers and u64 */
-		u64 u64align;
-		void *ptralign;
-	} fixed[0];
+	union ALIGNMENT payload[0];
 } ;
 
 struct CACHED_INODE {
@@ -41,6 +37,7 @@ struct CACHED_INODE {
 	struct CACHED_INODE *previous;
 	const char *pathname;
 	size_t varsize;
+	union ALIGNMENT payload[0];
 		/* above fields must match "struct CACHED_GENERIC" */
 	u64 inum;
 } ;
@@ -50,6 +47,7 @@ struct CACHED_NIDATA {
 	struct CACHED_NIDATA *previous;
 	const char *pathname;	/* not used */
 	size_t varsize;		/* not used */
+	union ALIGNMENT payload[0];
 		/* above fields must match "struct CACHED_GENERIC" */
 	u64 inum;
 	ntfs_inode *ni;
@@ -60,6 +58,7 @@ struct CACHED_LOOKUP {
 	struct CACHED_LOOKUP *previous;
 	const char *name;
 	size_t namesize;
+	union ALIGNMENT payload[0];
 		/* above fields must match "struct CACHED_GENERIC" */
 	u64 parent;
 	u64 inum;

@@ -5,6 +5,8 @@ var wgs_faq_href = {
 	"setup_wgc": "https://nw-dlcdnet.asus.com/support/forward_test.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=165"
 };
 
+httpApi.hookGet("get_wgs_parameter", true);
+
 var wgs_unit = 1;
 var wgs_clientlist_limit = 10;
 var wgs_clientlist_data = [];
@@ -111,6 +113,7 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 					nvramSet_obj.wgsc_addr = $(_profileObj).find("#wgsc_addr").val();
 					nvramSet_obj.wgsc_aips = $(_profileObj).find("#wgsc_aips").val();
 					nvramSet_obj.wgsc_caips = $(_profileObj).find("#wgsc_caips").val();
+					nvramSet_obj.wgsc_caller = "Web";
 					httpApi.nvramSet(nvramSet_obj, function(){
 						if(isFirstClient){
 							httpApi.hookGet("get_wgs_parameter", true);
@@ -253,10 +256,10 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 	var wgsc_addr_parm = {"title":"Address", "type":"text", "id":"wgsc_addr", "need_check":true,  "maxlength":63};/* untranslated */
 	var $wgsc_addr = Get_Component_Input(wgsc_addr_parm).appendTo($more_settings_cntr).find("#" + wgsc_addr_parm.id + "");
 
-	var wgsc_aips_parm = {"title":"Allowed IPs (<#LANHostConfig_x_DDNSServer_itemname#>)", "type":"text", "id":"wgsc_aips", "need_check":true,  "maxlength":1023};/* untranslated */
+	var wgsc_aips_parm = {"title":"Allowed IPs (<#LANHostConfig_x_DDNSServer_itemname#>)", "type":"text", "id":"wgsc_aips", "need_check":true,  "maxlength":4095};/* untranslated */
 	var $wgsc_aips = Get_Component_Input(wgsc_aips_parm).appendTo($more_settings_cntr).find("#" + wgsc_aips_parm.id + "");
 
-	var wgsc_caips_parm = {"title":"Allowed IPs (Client)", "type":"text", "id":"wgsc_caips", "need_check":true,  "maxlength":1023};/* untranslated */
+	var wgsc_caips_parm = {"title":"Allowed IPs (Client)", "type":"text", "id":"wgsc_caips", "need_check":true,  "maxlength":4095};/* untranslated */
 	var $wgsc_caips = Get_Component_Input(wgsc_caips_parm).appendTo($more_settings_cntr).find("#" + wgsc_caips_parm.id + "");
 
 	if(show_config){
@@ -419,7 +422,7 @@ function Get_Component_Client_List_WGS(_client_info){
 			var del_wgsc = wgs_clientlist_data.splice(del_idx, 1);
 			var nvramSet_obj = {
 				"action_mode":"apply","wgs_unit":wgs_unit,"wgsc_enable":"0",
-				"wgsc_name":"","wgsc_addr":"","wgsc_aips":"","wgsc_caips":"","wgsc_priv":"","wgsc_psk":"", "wgsc_pub":""
+				"wgsc_name":"","wgsc_addr":"","wgsc_aips":"","wgsc_caips":"","wgsc_caller":"","wgsc_priv":"","wgsc_psk":"", "wgsc_pub":""
 			};
 			var _wgsc_unit =  del_wgsc[0].unit;
 			nvramSet_obj.wgsc_unit =_wgsc_unit

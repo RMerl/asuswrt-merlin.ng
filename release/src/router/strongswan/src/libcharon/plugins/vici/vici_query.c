@@ -1,10 +1,9 @@
 /*
  * Copyright (C) 2015-2020 Tobias Brunner
  * Copyright (C) 2015-2018 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2014 Martin Willi
- * Copyright (C) 2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -231,10 +230,10 @@ static void list_child_ipsec(vici_builder_t *b, child_sa_t *child)
 				b->add_kv(b, "integ-keysize", "%u", ks);
 			}
 		}
-		if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP,
+		if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD,
 									&alg, NULL))
 		{
-			b->add_kv(b, "dh-group", "%N", diffie_hellman_group_names, alg);
+			b->add_kv(b, "dh-group", "%N", key_exchange_method_names, alg);
 		}
 		if (proposal->get_algorithm(proposal, EXTENDED_SEQUENCE_NUMBERS,
 									&alg, NULL) && alg == EXT_SEQ_NUMBERS)
@@ -490,9 +489,9 @@ static void list_ike(private_vici_query_t *this, vici_builder_t *b,
 		{
 			b->add_kv(b, "prf-alg", "%N", pseudo_random_function_names, alg);
 		}
-		if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP, &alg, NULL))
+		if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD, &alg, NULL))
 		{
-			b->add_kv(b, "dh-group", "%N", diffie_hellman_group_names, alg);
+			b->add_kv(b, "dh-group", "%N", key_exchange_method_names, alg);
 		}
 	}
 	add_condition(b, ike_sa, "ppk", COND_PPK);
@@ -1305,7 +1304,7 @@ CALLBACK(get_algorithms, vici_message_t*,
 	ext_out_function_t xof;
 	key_derivation_function_t kdf;
 	drbg_type_t drbg;
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 	rng_quality_t quality;
 	const char *plugin_name;
 
@@ -1384,10 +1383,10 @@ CALLBACK(get_algorithms, vici_message_t*,
 	b->end_section(b);
 
 	b->begin_section(b, "dh");
-	enumerator = lib->crypto->create_dh_enumerator(lib->crypto);
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &group, &plugin_name))
 	{
-		add_algorithm(b, diffie_hellman_group_names, group, plugin_name);
+		add_algorithm(b, key_exchange_method_names, group, plugin_name);
 	}
 	enumerator->destroy(enumerator);
 	b->end_section(b);

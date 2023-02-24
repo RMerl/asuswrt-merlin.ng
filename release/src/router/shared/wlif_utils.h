@@ -299,11 +299,11 @@ int wl_wlif_map_configure_backhaul_sta_interface(wlif_bss_t *bss, wlif_wps_nw_cr
 /* Gets the timeout value for the multiap repeter */
 int wl_wlif_wps_map_timeout();
 #endif	/* MULTIAP */
+void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, uint16 hex_len);
 #ifdef RTCONFIG_HND_ROUTER_AX
 /* Applies DPP credentials to the interface provided in bss */
 int wl_wlif_apply_dpp_creds(wlif_bss_t *bss, wlif_dpp_creds_t *dpp_creds);
 /* convert ascii string to hex string */
-void wl_ascii_str_to_hex_str(char *ascii_str, uint16 ascii_len, char *hex_str, uint16 hex_len);
 /* convert hex string to ascii */
 int wl_wlif_hexstr2ascii(const char *hex_str, unsigned char *buf, size_t len);
 

@@ -17,6 +17,10 @@ typedef struct _capability_ss {
 extern json_object *cm_generateCapability(unsigned int role, capability_s *capablity);
 extern int cm_checkWifiAuthCap(char *mac, int capBandNum, int reBandNum, int type, char *name, char *outAuth, int outAuthLen);
 extern int cm_isCapSupported(char *reMac, int capType, int capSubtype);
+extern int cm_getCapabilityIntValue(char *mac, int capType);
+#ifdef RTCONFIG_AMAS_CENTRAL_ADS
+extern int cm_getAdsDsCapByUnit(int unit);
+#endif
 
 /* type */
 enum capabilityType {
@@ -56,11 +60,15 @@ enum capabilityType {
 	CONN_EAP_MODE = 23,
 #endif
 
-#ifdef RTCONFIG_BANDINDEX_NEW
 #ifdef RTCONFIG_AMAS_WGN
 	GUEST_NETWORK_NO_6G = 24, 	
 #endif
-#endif	
+#ifdef RTCONFIG_AMAS_CENTRAL_ADS
+	DIVERSITY_PORT_STATE_BAND0 = 29,
+	DIVERSITY_PORT_STATE_BAND1 = 30,
+	DIVERSITY_PORT_STATE_BAND2 = 31,
+	DIVERSITY_PORT_STATE_BAND3 = 32,
+#endif
 	CAPABILITY_MAX
 };
 
@@ -98,6 +106,9 @@ enum capabilityType {
 #define NO_FW_MANUAL		BIT(12)
 #define UPDATE			BIT(13)
 #define ROLLBACK_FW		BIT(14)
+#ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
+#define CENTRAL_OPTMZ		BIT(17)
+#endif
 
 /* for LINK_AGGREGATION */
 #define LACP_ENABLE                    BIT(0)

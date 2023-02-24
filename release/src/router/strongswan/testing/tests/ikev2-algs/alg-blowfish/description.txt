@@ -1,0 +1,5 @@
+The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each
+to gateway <b>moon</b> using <b>Blowfish</b> for both IKE and ESP encryption.
+<p/>
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

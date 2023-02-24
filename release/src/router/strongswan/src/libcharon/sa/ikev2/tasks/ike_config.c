@@ -1,7 +1,9 @@
 /*
+ * Copyright (C) 2012-2018 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
  * Copyright (C) 2006-2007 Fabian Hartmann, Noah Heusser
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -239,8 +241,8 @@ static void process_payloads(private_ike_config_t *this, message_t *message)
 METHOD(task_t, build_i, status_t,
 	private_ike_config_t *this, message_t *message)
 {
-	if (message->get_message_id(message) == 1)
-	{	/* in first IKE_AUTH only */
+	if (message->get_exchange_type(message) == IKE_AUTH)
+	{
 		cp_payload_t *cp = NULL;
 		enumerator_t *enumerator;
 		attribute_handler_t *handler;
@@ -249,6 +251,10 @@ METHOD(task_t, build_i, status_t,
 		chunk_t data;
 		linked_list_t *vips;
 		host_t *host;
+
+		/* add attributes to first IKE_AUTH only, keep registered until
+		 * attributes are received in the last IKE_AUTH */
+		this->public.task.build = (void*)return_need_more;
 
 		vips = linked_list_create();
 
@@ -328,9 +334,11 @@ METHOD(task_t, build_i, status_t,
 METHOD(task_t, process_r, status_t,
 	private_ike_config_t *this, message_t *message)
 {
-	if (message->get_message_id(message) == 1)
-	{	/* in first IKE_AUTH only */
+	if (message->get_exchange_type(message) == IKE_AUTH)
+	{
 		process_payloads(this, message);
+		/* process attributes in first IKE_AUTH only */
+		this->public.task.process = (void*)return_need_more;
 	}
 	return NEED_MORE;
 }
@@ -338,7 +346,7 @@ METHOD(task_t, process_r, status_t,
 METHOD(task_t, build_r, status_t,
 	private_ike_config_t *this, message_t *message)
 {
-	if (this->ike_sa->get_state(this->ike_sa) == IKE_ESTABLISHED)
+	if (this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
 	{	/* in last IKE_AUTH exchange */
 		enumerator_t *enumerator;
 		configuration_attribute_type_t type;
@@ -446,7 +454,7 @@ METHOD(task_t, build_r, status_t,
 METHOD(task_t, process_i, status_t,
 	private_ike_config_t *this, message_t *message)
 {
-	if (this->ike_sa->get_state(this->ike_sa) == IKE_ESTABLISHED)
+	if (this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
 	{	/* in last IKE_AUTH exchange */
 		enumerator_t *enumerator;
 		host_t *host;
@@ -485,6 +493,7 @@ METHOD(task_t, migrate, void,
 	this->vips = linked_list_create();
 	this->requested->destroy_function(this->requested, free);
 	this->requested = linked_list_create();
+	this->public.task.build = _build_i;
 }
 
 METHOD(task_t, destroy, void,

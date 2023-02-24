@@ -1,0 +1,183 @@
+.TH "PKI \-\-EST" 1 "2022-08-22" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-est \- Enroll an X.509 certificate with an EST server
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-est
+.BI\-\-\-url\~ url
+.OP \-\-in file
+.BI \-\-cacert\~ file
+.RB [ \-\-cert
+.IR file | \fB\-\-certid\fR
+.IR hex ]
+.RB [ \-\-key
+.IR file | \fB\-\-keyid\fR
+.IR hex ]
+.OP \-\-userpass username:password
+.OP \-\-interval time
+.OP \-\-maxpolltime time
+.OP \-\-outform encoding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-est
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-est"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+sends a PKCS#10 certificate request via HTTPS to a server using the Enrollment
+over Secure Transport (EST) Protocol (RFC 7030). After successful authorization
+which with manual authentication requires periodic polling by the enrollment
+client, the EST server returns an X.509 certificate signed by the CA.
+
+Before the expiry of the current certificate, a new client certificate based on
+a fresh private key can be requested, using the old certificate and the old
+key for automatic TLS client authentication with the EST server.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-u, \-\-url " url
+URL of the EST server.
+.TP
+.BI "\-i, \-\-in " file
+PKCS#10 certificate request. If not given, the certificate request is read from
+\fISTDIN\fR.
+.TP
+.BI "\-C, \-\-cacert " file
+CA certificate in the trust chain used for EST TLS server signature verification
+or in the trust chain to verify the client certificate issued by the CA.
+Can be used multiple times.
+.TP
+.BI "\-c, \-\-cert " file
+Client certificate to be renewed.
+.TP
+.BI "\-X, \-\-certid " hex
+Smartcard or TPM 2.0 client certificate object handle.
+.TP
+.BI "\-k, \-\-key " file
+Client private key to be replaced.
+.TP
+.BI "\-x, \-\-keyid " hex
+Smartcard or TPM 2.0 client private key object handle.
+.TP
+.BI "\-p, \-\-userpass " username:password
+Optional username:password that may be used for HTTP basic authentication.
+.TP
+.BI "\-t, \-\-interval " time
+Poll interval in seconds, defaults to \fI60s\fR. This value might get overridden
+by the
+.B retry-after
+header in the HTTP 202 reply from the EST server.
+.TP
+.BI "\-m, \-\-maxpolltime " time
+Maximum poll time in seconds, defaults to \fI0\fR which means unlimited polling.
+.TP
+.BI "\-f, \-\-outform " encoding
+Encoding of the created certificate file. Either \fIder\fR (ASN.1 DER) or
+\fIpem\fR (Base64 PEM), defaults to \fIder\fR.
+.
+.SH "EXAMPLES"
+.
+To save some typing work the following command line options are stored in a
+\fIest.opt\fR file:
+.PP
+.EX
+\-\-url https://pki.strongswan.org:8443
+\-\-cacert tlsca.crt
+\-\-cacert tlsca-1.crt
+\-\-cacert myca.crt
+\-\-cacert myca-1.crt
+.EE
+.PP
+.B NOTE:
+For a successful HTTPS connection, trust must be established into the EST server
+certificate. The TLS trust chain including the root CA certificate and
+optionally intermediate CA certificates must be given using [multiple]
+.B --cacert*
+options.
+.P
+The
+.B --cacert
+option must also be used to be able to verify the received client certificate
+issued by the CA. This second trust chain might be identical to the TLS trust
+chain (if the EST server is using a TLS server certificate issued by its own CA)
+or might be totally different, e.g. if a Let's Encrypt EST server certificate is
+used.
+.P
+With the following command, an X.509 certificate signed by the intermediate CA is
+requested from an EST server based on a PKCS#10 certificate request:
+.PP
+.EX
+pki \-\-options est.opt --in moonReq.der > moonCert.der
+
+negotiated TLS 1.3 using suite TLS_AES_256_GCM_SHA384
+received TLS server certificate 'C=CH, O=strongSwan Project, CN=pki.strongswan.org'
+  using certificate "C=CH, O=strongSwan Project, CN=pki.strongswan.org"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+  EST request pending, polling indefinitely every 300 seconds
+  going to sleep for 300 seconds
+  ...
+Issued certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  serial: 1a:ff:de:66:d9:38:ea:d5:b6:da
+  using certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+Issued certificate is trusted, valid from Aug 22 15:19:43 2022 until Aug 22 15:19:43 2023 (currently valid)
+.EE
+.PP
+This certificate can be renewed some time before it expires with the command:
+.PP
+.EX
+pki \-\-options est.opt --in moonReqNew.der --cert moonCert.der --key moonKey.der > moonCertNew.der
+
+negotiated TLS 1.3 using suite TLS_AES_256_GCM_SHA384
+received TLS server certificate 'C=CH, O=strongSwan Project, CN=pki.strongswan.org'
+  using certificate "C=CH, O=strongSwan Project, CN=pki.strongswan.org"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+sending TLS client certificate 'C=CH, O=strongSwan Project, CN=moon.strongswan.org'
+sending TLS intermediate certificate 'C=CH, O=strongSwan Project, CN=strongSwan Issuing CA'
+Issued certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  serial: 1b:ff:ad:dc:2f:50:c4:cb:a1:44
+  using certificate "C=CH, O=strongSwan Project, CN=moon.strongswan.org"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+Issued certificate is trusted, valid from Jul 20 12:21:00 2023 until Jul 20 12:21:00 2024 (currently valid)
+.EE
+.PP
+If the private key and the certificate of the client is stored in a TPM 2.0, the
+renewal can be done with the following options:
+.PP
+.EX
+pki \-\-options est.opt --in moonReqNew.der --certid 0x01800004 --keyid 0x81010004 > moonCertNew.der
+
+.SH "SEE ALSO"
+.
+.BR pki (1)

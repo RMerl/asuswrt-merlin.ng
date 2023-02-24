@@ -1,9 +1,9 @@
-moon::rm /etc/ipsec.d/cacerts/strongswanCert.pem
-carol::rm /etc/ipsec.d/cacerts/strongswanCert.pem
+moon::cd /etc/swanctl; rm rsa/moonKey.pem rm x509/moonCert.pem x509ca/strongswanCert.pem
+carol::cd /etc/swanctl; rm rsa/carolKey.pem x509/carolCert.pem x509ca/strongswanCert.pem
 moon::iptables-restore < /etc/iptables.rules
 carol::iptables-restore < /etc/iptables.rules
-moon::ipsec start
-carol::ipsec start
+moon::systemctl start strongswan
+carol::systemctl start strongswan
 moon::expect-connection rw-eap
 carol::expect-connection home
-carol::ipsec up home
+carol::swanctl --initiate --child home 2> /dev/null

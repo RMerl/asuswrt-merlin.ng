@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -52,22 +53,21 @@ struct keymat_t {
 	ike_version_t (*get_version)(keymat_t *this);
 
 	/**
-	 * Create a diffie hellman object for key agreement.
+	 * Create a key exchange object for key agreement.
 	 *
-	 * The diffie hellman is either for IKE negotiation/rekeying or
-	 * CHILD_SA rekeying (using PFS). The resulting DH object must be passed
-	 * to derive_keys or to derive_child_keys and destroyed after use.
+	 * The key exchange is either for IKE negotiation/rekeying or
+	 * CHILD_SA rekeying (using PFS). The resulting object must be passed
+	 * to derive_ike_keys() or to derive_child_keys() and destroyed after use.
 	 *
-	 * Only DH objects allocated through this method are passed to other
-	 * keymat_t methods, allowing private DH implementations. In some cases
-	 * (such as retrying with a COOKIE), a DH object allocated from a different
+	 * Only objects allocated through this method are passed to other
+	 * keymat_t methods, allowing private KE implementations. In some cases
+	 * (such as retrying with a COOKIE), a KE object allocated from a different
 	 * keymat_t instance may be passed to other methods.
 	 *
-	 * @param group			diffie hellman group
-	 * @return				DH object, NULL if group not supported
+	 * @param method		key exchange method
+	 * @return				key exchange object, NULL if method not supported
 	 */
-	diffie_hellman_t* (*create_dh)(keymat_t *this,
-								   diffie_hellman_group_t group);
+	key_exchange_t* (*create_ke)(keymat_t *this, key_exchange_method_t method);
 
 	/**
 	 * Create a nonce generator object.

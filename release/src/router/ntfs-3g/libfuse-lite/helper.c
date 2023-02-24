@@ -15,6 +15,18 @@ struct fuse_chan *fuse_mount(const char *mountpoint, struct fuse_args *args)
     struct fuse_chan *ch;
     int fd;
 
+#ifdef __SOLARIS__
+    /*
+     * Make sure file descriptors 0, 1 and 2 are open, otherwise chaos
+     * would ensue.
+     */
+    do {
+        fd = open("/dev/null", O_RDWR);
+        if (fd > 2)
+            close(fd);
+    } while (fd >= 0 && fd <= 2);
+#endif /* __SOLARIS__ */
+
     fd = fuse_kern_mount(mountpoint, args);
     if (fd == -1)
         return NULL;
@@ -38,3 +50,12 @@ int fuse_version(void)
     return FUSE_VERSION;
 }
 
+#ifdef __SOLARIS__
+#undef fuse_main
+int fuse_main(void);
+int fuse_main(void)
+{
+    fprintf(stderr, "fuse_main(): This function does not exist\n");
+    return -1;
+}
+#endif /* __SOLARIS__ */

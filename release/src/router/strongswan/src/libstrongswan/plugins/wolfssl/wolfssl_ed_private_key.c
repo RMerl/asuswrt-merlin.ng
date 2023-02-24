@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2020 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2019 Sean Parkinson, wolfSSL Inc.
  *

@@ -1,3 +1,71 @@
+strongswan-5.9.8
+----------------
+
+- Fixed a vulnerability related to accessing untrusted OCSP URIs and CDPs in
+  certificates that could lead to a denial-of-service attack.
+  This vulnerability has been registered as CVE-2022-40617.
+
+- The pki --scep|--scepca commands support the HTTP-based "Simple Certificate
+  Enrollment Protocol" (RFC 8894 SCEP) replacing the old and long deprecated
+  scepclient that has been removed.
+
+- The pki --est|estca commands support the HTTPS-based "Enrollment over Secure
+  Transport" (RFC 7030 EST) protocol.
+
+- The pki --req command can create a certificate request based on an existing
+  PKCS#10 template by replacing the public key and re-generating the signature
+  with the new private key.
+
+- For IKEv2, the ike_updown() "up" event and the state change to IKE_ESTABLISHED
+  are now triggered after all IKE-related tasks are done.
+
+- The ike_cfg_t object is now always replaced together with the peer_cfg_t
+  object that's set on an IKE_SA during authentication.
+
+- The gcm plugin has been enabled by default, so that the TLS 1.3 unit tests
+  can be completed successfully with just the default plugins.
+
+- The socket plugins don't set the SO_REUSEADDR option anymore on the IKE UDP
+  sockets, so an error is triggered if e.g. two daemons (e.g. charon and
+  charon-systemd) are running concurrently using the same ports.
+
+- The charon.rsa_pss_trailerfield setting generates an algorithmIdentifier with
+  explicit trailerField.
+
+
+strongswan-5.9.7
+----------------
+
+- The IKEv2 key derivation is now delayed until the keys are actually needed for
+  the next message. Instead of deriving the keys while processing an IKE_SA_INIT
+  request, it's delayed until the corresponding IKE_AUTH request is received.
+  DH implementations now must do costly public key validation and the key
+  derivation in get_shared_secret().
+
+- Inbound IKEv2 messages are not parsed immediately anymore, instead we first
+  check a request's MID and compare its hash to that of the previous request to
+  decide if it's a valid retransmit (for fragmented message we only keep track
+  of the first fragment, so we don't have to wait for all fragments and
+  reconstruct the message, which we did before).
+
+- The retransmission logic in the dhcp plugin has been fixed so that four
+  retransmits are sent per DHCP request over a total of 15 seconds (previously,
+  it could happen that all were sent within the same second without any time
+  to actually wait for a response).
+
+- The connmark plugin now considers configured masks in installed firewall
+  rules, which allows using the upper parts of the mark value for other
+  purposes.  Just consider that the daemon might have to be restarted regularly
+  to reset the global unique mark counter as that's unaware of any masks.
+
+- Child config selection has been improved as responder in cases where multiple
+  children use transport mode traffic selectors.
+
+- The outbound SA/policy is now also removed after IKEv1 CHILD_SA rekeyings.
+
+- The openssl plugin supports AES and Camellia in CTR mode.
+
+
 strongswan-5.9.6
 ----------------
 
@@ -1658,8 +1726,7 @@ strongswan-5.0.0
   keying protocols. The feature-set of IKEv1 in charon is almost on par with
   pluto, but currently does not support AH or bundled AH+ESP SAs. Beside
   RSA/ECDSA, PSK and XAuth, charon also supports the Hybrid authentication
-  mode. Information for interoperability and migration is available at
-  https://wiki.strongswan.org/projects/strongswan/wiki/CharonPlutoIKEv1.
+  mode.
 
 - Charon's bus_t has been refactored so that loggers and other listeners are
   now handled separately.  The single lock was previously cause for deadlocks
@@ -2089,8 +2156,7 @@ strongswan-4.4.0
 
 - The IKEv2 High Availability plugin has been integrated. It provides
   load sharing and failover capabilities in a cluster of currently two nodes,
-  based on an extend ClusterIP kernel module. More information is available at
-  https://wiki.strongswan.org/projects/strongswan/wiki/HighAvailability.
+  based on an extend ClusterIP kernel module.
   The development of the High Availability functionality was sponsored by
   secunet Security Networks AG.
 
@@ -2250,7 +2316,7 @@ strongswan-4.3.4
 ----------------
 
 - IKEv2 charon daemon ported to FreeBSD and Mac OS X. Installation details can
-  be found on wiki.strongswan.org.
+  be found in the documentation.
 
 - ipsec statusall shows the number of bytes transmitted and received over
   ESP connections configured by the IKEv2 charon daemon.
@@ -2797,8 +2863,7 @@ strongswan-4.1.7
   simulate a NAT situation and trick the other peer into NAT mode (IKEv2 only).
 
 - Preview of strongSwan Manager, a web based configuration and monitoring
-  application. It uses a new XML control interface to query the IKEv2 daemon
-  (see https://wiki.strongswan.org/wiki/Manager).
+  application. It uses a new XML control interface to query the IKEv2 daemon.
 
 - Experimental SQLite configuration backend which will provide the configuration
   interface for strongSwan Manager in future releases.

@@ -8,9 +8,6 @@ DIR=$(dirname `readlink -f $0`)
 [ -f "$BASEIMG" ] || die "Base image $BASEIMG not found"
 running_any $STRONGSWANHOSTS && die "Please stop test environment before running $0"
 
-SRCUID=${SUDO_UID:-$(id -u)}
-SRCGID=${SUDO_GID:-$(id -g)}
-
 check_commands partprobe qemu-img qemu-nbd
 
 load_qemu_nbd
@@ -137,15 +134,19 @@ log_action "Remove SWID tags of previous strongSwan versions"
 execute_chroot "find /usr/local/share -path '*strongswan*' -name *.swidtag -delete"
 
 if [ -z "$TARBALL" ]; then
+	SRCUID=$(stat -c '%u' $SWANDIR)
+	SRCGID=$(stat -c '%g' $SWANDIR)
+	SRCUSER=$(stat -c '%U' $SWANDIR)
+
 	mkdir -p $LOOPDIR/root/strongswan
 	log_action "Mounting $SWANDIR as /root/strongswan"
 	execute "bindfs -u $SRCUID -g $SRCGID --create-for-user=$SRCUID --create-for-group=$SRCGID $SWANDIR $LOOPDIR/root/strongswan"
 	do_on_exit umount $LOOPDIR/root/strongswan
 
 	log_action "Determine strongSwan version"
-	desc=`git -C $SWANDIR describe --exclude 'android-*' --dirty`
+	desc=`runuser -u $SRCUSER -- git -C $SWANDIR describe --exclude 'android-*' --dirty`
 	if [ $? -eq 0 ]; then
-		version="$desc (`git -C $SWANDIR rev-parse --abbrev-ref HEAD`)"
+		version="$desc (`runuser -u $SRCUSER -- git -C $SWANDIR rev-parse --abbrev-ref HEAD`)"
 	else
 		version="`cat $SWANDIR/configure.ac | sed -n '/^AC_INIT/{ s/.*,\[\(.*\)\])$/\1/p }'`"
 	fi

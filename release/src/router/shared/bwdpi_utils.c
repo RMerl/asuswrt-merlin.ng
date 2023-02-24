@@ -110,6 +110,7 @@ int check_wan_2P5G_10G_speed()
 	}
 
 	if (debug) dbg("[check_wan_2P5G_10G_speed] wan_speed=%s, speed=%d\n", wan_speed, speed);
+	if (debug) logmessage("BWDPI", "[check_wan_2P5G_10G_speed] wan_speed=%s, speed=%d", wan_speed, speed);
 
 	if (speed >= 2500) ret = 1;
 
@@ -133,6 +134,7 @@ int check_AQoS_only_enabled()
 	}
 
 	if (debug) dbg("[check_AQoS_only_enabled] ret=%d\n", ret);
+	if (debug) logmessage("BWDPI", "[check_AQoS_only_enabled] ret=%d", ret);
 
 	return ret;
 }
@@ -149,7 +151,6 @@ int check_WRS_only_enabled()
 		|| nvram_get_int("wrs_app_enable") == 1 || nvram_get_int("bwdpi_wh_enable") == 1)
 		&& nvram_get_int("bwdpi_db_enable") == 0
 		&& nvram_get_int("apps_analysis") == 0
-		&& nvram_get_int("bwdpi_wh_enable") == 0
 		&& nvram_get_int("qos_enable") == 0) {
 		ret = 1;
 	}
@@ -160,13 +161,13 @@ int check_WRS_only_enabled()
 		|| nvram_get_int("wrs_app_enable") == 1 || nvram_get_int("bwdpi_wh_enable") == 1)
 		&& nvram_get_int("bwdpi_db_enable") == 0
 		&& nvram_get_int("apps_analysis") == 0
-		&& nvram_get_int("bwdpi_wh_enable") == 0
 		&& IS_NON_AQOS()) {
 		ret = 1;
 	}
 #endif
 
 	if (debug) dbg("[check_WRS_only_enabled] ret=%d\n", ret);
+	if (debug) logmessage("BWDPI", "[check_WRS_only_enabled] ret=%d", ret);
 #endif
 
 	return ret;

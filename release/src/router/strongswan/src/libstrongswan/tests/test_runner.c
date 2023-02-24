@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 2013 Martin Willi
- * Copyright (C) 2013 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -50,6 +50,7 @@ static void destroy_case(test_case_t *tcase)
 {
 	array_destroy(tcase->functions);
 	array_destroy(tcase->fixtures);
+	free(tcase);
 }
 
 /**
@@ -289,7 +290,7 @@ static bool call_fixture(test_case_t *tcase, bool up, int i)
 {
 	enumerator_t *enumerator;
 	test_fixture_t *fixture;
-	bool failure = FALSE;
+	volatile bool failure = FALSE;
 
 	enumerator = array_create_enumerator(tcase->fixtures);
 	while (enumerator->enumerate(enumerator, &fixture))
@@ -569,6 +570,37 @@ static double end_timing(struct timespec *start)
 #endif /* CLOCK_THREAD_CPUTIME_ID */
 
 /**
+ * Determine the configured iterations to run
+ */
+static hashtable_t *get_iterations()
+{
+	enumerator_t *enumerator;
+	hashtable_t *config = NULL;
+	char *iterations, *iter;
+
+	iterations = getenv("TESTS_ITERATIONS");
+	if (!iterations)
+	{
+		return NULL;
+	}
+
+	config = hashtable_create(hashtable_hash_ptr, hashtable_equals_ptr, 8);
+	enumerator = enumerator_create_token(iterations, ",", " ");
+	while (enumerator->enumerate(enumerator, &iter))
+	{
+		/* add 1 so we can store 0 */
+		config->put(config, (void*)(uintptr_t)atoi(iter)+1, config);
+	}
+	enumerator->destroy(enumerator);
+	if (!config->get_count(config))
+	{
+		config->destroy(config);
+		config = NULL;
+	}
+	return config;
+}
+
+/**
  * Run a single test case with fixtures
  */
 static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg,
@@ -576,6 +608,7 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg,
 {
 	enumerator_t *enumerator;
 	test_function_t *tfun;
+	hashtable_t *iterations;
 	double *times;
 	double total_time = 0;
 	int tests = 0, ti = 0, passed = 0;
@@ -596,13 +629,20 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg,
 	fprintf(stderr, "    Running case '%s': ", tcase->name);
 	fflush(stderr);
 
+	iterations = get_iterations();
+
 	enumerator = array_create_enumerator(tcase->functions);
 	while (enumerator->enumerate(enumerator, &tfun))
 	{
-		int i, rounds = 0;
+		int i, rounds = 0, skipped = 0;
 
 		for (i = tfun->start; i < tfun->end; i++)
 		{
+			if (iterations && !iterations->get(iterations, (void*)(uintptr_t)i+1))
+			{
+				skipped++;
+				continue;
+			}
 			if (pre_test(init, cfg))
 			{
 				struct timespec start;
@@ -671,7 +711,7 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg,
 			}
 		}
 		fflush(stderr);
-		if (rounds == tfun->end - tfun->start)
+		if (rounds == tfun->end - tfun->start - skipped)
 		{
 			passed++;
 		}
@@ -698,6 +738,8 @@ static bool run_case(test_case_t *tcase, test_runner_init_t init, char *cfg,
 	print_failures(failures, FALSE);
 	array_destroy(failures);
 	array_destroy(warnings);
+	DESTROY_IF(iterations);
+	free(times);
 
 	return passed == array_count(tcase->functions);
 }
@@ -736,6 +778,30 @@ static bool run_suite(test_suite_t *suite, test_runner_init_t init, char *cfg,
 }
 
 /**
+ * Configure log levels for specific groups
+ */
+static void setup_log_levels(level_t *base)
+{
+	char buf[BUF_LEN], *verbosity;
+	debug_t group;
+	level_t level;
+
+	for (group = 0; group < DBG_MAX; group++)
+	{
+		snprintf(buf, sizeof(buf), "TESTS_VERBOSITY_%s",
+				 enum_to_name(debug_names, group));
+
+		verbosity = getenv(buf);
+		if (verbosity)
+		{
+			level = atoi(verbosity);
+			dbg_default_set_level_group(group, level);
+			*base = max(*base, level);
+		}
+	}
+}
+
+/**
  * See header.
  */
 int test_runner_run(const char *name, test_configuration_t configs[],
@@ -771,6 +837,8 @@ int test_runner_run(const char *name, test_configuration_t configs[],
 		level = atoi(verbosity);
 	}
 	dbg_default_set_level(level);
+
+	setup_log_levels(&level);
 
 	fprintf(stderr, "Running %u '%s' test suites:\n", array_count(suites), name);
 

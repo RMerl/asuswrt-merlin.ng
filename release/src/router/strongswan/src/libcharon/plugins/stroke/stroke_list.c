@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -267,10 +266,10 @@ static void log_child_sa(FILE *out, child_sa_t *child_sa, bool all)
 						fprintf(out, "_%u", ks);
 					}
 				}
-				if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP,
+				if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD,
 											&alg, NULL))
 				{
-					fprintf(out, "/%N", diffie_hellman_group_names, alg);
+					fprintf(out, "/%N", key_exchange_method_names, alg);
 				}
 				if (proposal->get_algorithm(proposal, EXTENDED_SEQUENCE_NUMBERS,
 											&alg, NULL) && alg == EXT_SEQ_NUMBERS)
@@ -856,7 +855,7 @@ static void list_algs(FILE *out)
 	ext_out_function_t xof;
 	key_derivation_function_t kdf;
 	drbg_type_t drbg;
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 	rng_quality_t quality;
 	const char *plugin_name;
 	int len;
@@ -929,10 +928,10 @@ static void list_algs(FILE *out)
 	enumerator->destroy(enumerator);
 	fprintf(out, "\n  dh-group:  ");
 	len = 13;
-	enumerator = lib->crypto->create_dh_enumerator(lib->crypto);
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &group, &plugin_name))
 	{
-		print_alg(out, &len, diffie_hellman_group_names, group, plugin_name);
+		print_alg(out, &len, key_exchange_method_names, group, plugin_name);
 	}
 	enumerator->destroy(enumerator);
 	fprintf(out, "\n  random-gen:");

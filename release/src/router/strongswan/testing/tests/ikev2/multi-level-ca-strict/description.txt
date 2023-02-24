@@ -1,7 +1,0 @@
-By setting <b>strictcrlpolicy=yes</b>, a <b>strict CRL policy</b> is enforced
-on all peers.
-The VPN gateway <b>moon</b> grants access to the hosts <b>alice</b> and
-<b>venus</b> to anyone presenting a certificate belonging to a trust
-chain anchored in the strongSwan Root CA. Therefore both road warriors
-<b>carol</b> and <b>dave</b>, holding certificates from the Research CA
-and Sales CA, respectively, can reach both <b>alice</b> and <b>venus</b>.

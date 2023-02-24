@@ -52,7 +52,7 @@ var wpa_mode_5_2 = '<% nvram_get("wl2_wpa_mode"); %>';
 if(parent.tmo_support)
     var theUrl = "cellspot.router"; 
 else
-    var theUrl = "router.asus.com";
+    var theUrl = "<#Web_DOMAIN_NAME#>";
 
 var timezones = {
 	"UTC12":	"(GMT-12:00)",
@@ -65,8 +65,8 @@ var timezones = {
 	"MST7DST_3":	"(GMT-07:00)",
 	"CST6DST_1":	"(GMT-06:00)",
 	"CST6DST_2":	"(GMT-06:00)",
-	"CST6DST_3":	"(GMT-06:00)",
-	"CST6DST_3_1":	"(GMT-06:00)",
+	"CST6_3":	"(GMT-06:00)",
+	"CST6_3_1":	"(GMT-06:00)",
 	"UTC6":	"(GMT-06:00)",
 	"EST5DST":	"(GMT-05:00)",
 	"UTC5_1":	"(GMT-05:00)",

@@ -1,10 +1,9 @@
 /*
+ * Copyright (C) 2008-2022 Tobias Brunner
  * Copyright (C) 2005-2011 Martin Willi
- * Copyright (C) 2011 revosec AG
- *
- * Copyright (C) 2008-2021 Tobias Brunner
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -66,14 +65,9 @@ struct entry_t {
 	thread_t *checked_out;
 
 	/**
-	 * Does this SA drives out new threads?
+	 * Whether threads are prevented from getting this IKE_SA.
 	 */
-	bool driveout_new_threads;
-
-	/**
-	 * Does this SA drives out waiting threads?
-	 */
-	bool driveout_waiting_threads;
+	bool driveout_threads;
 
 	/**
 	 * Identification of an IKE_SA (SPIs).
@@ -350,6 +344,12 @@ struct private_ike_sa_manager_t {
 	 * Mask to map a table row to a segment.
 	 */
 	u_int segment_mask;
+
+	/**
+	 * Enabled while shutting down to mark all new entries so no threads
+	 * will check them out.
+	 */
+	bool new_entries_driveout_threads;
 
 	/**
 	 * Hash table with half_open_t objects.
@@ -632,6 +632,8 @@ static u_int put_entry(private_ike_sa_manager_t *this, entry_t *entry)
 	segment = row & this->segment_mask;
 
 	lock_single_segment(this, segment);
+	/* mark entry during shutdown */
+	entry->driveout_threads = this->new_entries_driveout_threads;
 	current = this->ike_sa_table[row];
 	if (current)
 	{	/* insert at the front of current bucket */
@@ -760,12 +762,12 @@ static status_t get_entry_by_sa(private_ike_sa_manager_t *this,
 static bool wait_for_entry(private_ike_sa_manager_t *this, entry_t *entry,
 						   u_int segment)
 {
-	if (entry->driveout_new_threads)
+	if (entry->driveout_threads)
 	{
 		/* we are not allowed to get this */
 		return FALSE;
 	}
-	while (entry->checked_out && !entry->driveout_waiting_threads)
+	while (entry->checked_out && !entry->driveout_threads)
 	{
 		/* so wait until we can get it for us.
 		 * we register us as waiting. */
@@ -774,7 +776,7 @@ static bool wait_for_entry(private_ike_sa_manager_t *this, entry_t *entry,
 		entry->waiting_threads--;
 	}
 	/* hm, a deletion request forbids us to get this SA, get next one */
-	if (entry->driveout_waiting_threads)
+	if (entry->driveout_threads)
 	{
 		/* we must signal here, others may be waiting on it, too */
 		entry->condvar->signal(entry->condvar);
@@ -1762,7 +1764,7 @@ METHOD(ike_sa_manager_t, new_initiator_spi, bool,
 
 	if (get_entry_by_sa(this, ike_sa_id, ike_sa, &entry, &segment) == SUCCESS)
 	{
-		if (entry->driveout_waiting_threads && entry->driveout_new_threads)
+		if (entry->driveout_threads)
 		{	/* it looks like flush() has been called and the SA is being deleted
 			 * anyway, no need for a new SPI */
 			DBG2(DBG_MGR, "ignored change of initiator SPI during shutdown");
@@ -1834,8 +1836,7 @@ CALLBACK(enumerator_filter_skip, bool,
 
 	while (orig->enumerate(orig, &entry, &segment))
 	{
-		if (!entry->driveout_new_threads &&
-			!entry->driveout_waiting_threads &&
+		if (!entry->driveout_threads &&
 			!entry->checked_out)
 		{
 			*out = entry->ike_sa;
@@ -1880,8 +1881,12 @@ METHOD(ike_sa_manager_t, checkin, void,
 	other_id = ike_sa->get_other_eap_id(ike_sa);
 	other = ike_sa->get_other_host(ike_sa);
 
-	DBG2(DBG_MGR, "checkin IKE_SA %s[%u]", ike_sa->get_name(ike_sa),
-			ike_sa->get_unique_id(ike_sa));
+	DBG2(DBG_MGR, "checkin %N SA %s[%u] with SPIs %.16"PRIx64"_i "
+		 "%.16"PRIx64"_r", ike_version_names,
+		 ike_sa_id->get_ike_version(ike_sa_id), ike_sa->get_name(ike_sa),
+		 ike_sa->get_unique_id(ike_sa),
+		 be64toh(ike_sa_id->get_initiator_spi(ike_sa_id)),
+		 be64toh(ike_sa_id->get_responder_spi(ike_sa_id)));
 
 	/* look for the entry */
 	if (get_entry_by_sa(this, ike_sa_id, ike_sa, &entry, &segment) == SUCCESS)
@@ -1994,7 +1999,7 @@ METHOD(ike_sa_manager_t, checkin_and_destroy, void,
 
 	if (get_entry_by_sa(this, ike_sa_id, ike_sa, &entry, &segment) == SUCCESS)
 	{
-		if (entry->driveout_waiting_threads && entry->driveout_new_threads)
+		if (entry->driveout_threads)
 		{	/* it looks like flush() has been called and the SA is being deleted
 			 * anyway, just check it in */
 			DBG2(DBG_MGR, "ignored checkin and destroy of IKE_SA during shutdown");
@@ -2004,10 +2009,8 @@ METHOD(ike_sa_manager_t, checkin_and_destroy, void,
 			return;
 		}
 
-		/* drive out waiting threads, as we are in hurry */
-		entry->driveout_waiting_threads = TRUE;
-		/* mark it, so no new threads can get this entry */
-		entry->driveout_new_threads = TRUE;
+		/* mark it, so no threads can get this entry */
+		entry->driveout_threads = TRUE;
 		/* wait until all workers have done their work */
 		while (entry->waiting_threads)
 		{
@@ -2349,6 +2352,29 @@ METHOD(ike_sa_manager_t, set_spi_cb, void,
 }
 
 /**
+ * Destroy a single entry
+ */
+static void remove_and_destroy_entry(private_ike_sa_manager_t *this,
+									 enumerator_t *enumerator, entry_t *entry)
+{
+	if (entry->half_open)
+	{
+		remove_half_open(this, entry->other,
+						 entry->ike_sa_id->is_initiator(entry->ike_sa_id));
+	}
+	if (entry->my_id && entry->other_id)
+	{
+		remove_connected_peers(this, entry);
+	}
+	if (entry->init_hash.ptr)
+	{
+		remove_init_hash(this, entry->init_hash);
+	}
+	remove_entry_at((private_enumerator_t*)enumerator);
+	entry_destroy(entry);
+}
+
+/**
  * Destroy all entries
  */
 static void destroy_all_entries(private_ike_sa_manager_t *this)
@@ -2361,21 +2387,7 @@ static void destroy_all_entries(private_ike_sa_manager_t *this)
 	while (enumerator->enumerate(enumerator, &entry, &segment))
 	{
 		charon->bus->set_sa(charon->bus, entry->ike_sa);
-		if (entry->half_open)
-		{
-			remove_half_open(this, entry->other,
-							 entry->ike_sa_id->is_initiator(entry->ike_sa_id));
-		}
-		if (entry->my_id && entry->other_id)
-		{
-			remove_connected_peers(this, entry);
-		}
-		if (entry->init_hash.ptr)
-		{
-			remove_init_hash(this, entry->init_hash);
-		}
-		remove_entry_at((private_enumerator_t*)enumerator);
-		entry_destroy(entry);
+		remove_and_destroy_entry(this, enumerator, entry);
 	}
 	enumerator->destroy(enumerator);
 	charon->bus->set_sa(charon->bus, NULL);
@@ -2388,53 +2400,51 @@ METHOD(ike_sa_manager_t, flush, void,
 	entry_t *entry;
 	u_int segment;
 
-	lock_all_segments(this);
-	DBG2(DBG_MGR, "going to destroy IKE_SA manager and all managed IKE_SA's");
-	/* Step 1: drive out all waiting threads  */
-	DBG2(DBG_MGR, "set driveout flags for all stored IKE_SA's");
-	enumerator = create_table_enumerator(this);
-	while (enumerator->enumerate(enumerator, &entry, &segment))
-	{
-		/* do not accept new threads, drive out waiting threads */
-		entry->driveout_new_threads = TRUE;
-		entry->driveout_waiting_threads = TRUE;
-	}
-	enumerator->destroy(enumerator);
-	DBG2(DBG_MGR, "wait for all threads to leave IKE_SA's");
-	/* Step 2: wait until all are gone */
-	enumerator = create_table_enumerator(this);
-	while (enumerator->enumerate(enumerator, &entry, &segment))
-	{
-		while (entry->waiting_threads || entry->checked_out)
-		{
-			/* wake up all */
-			entry->condvar->broadcast(entry->condvar);
-			/* go sleeping until they are gone */
-			entry->condvar->wait(entry->condvar, this->segments[segment].mutex);
-		}
-	}
-	enumerator->destroy(enumerator);
-	DBG2(DBG_MGR, "delete all IKE_SA's");
-	/* Step 3: initiate deletion of all IKE_SAs */
-	enumerator = create_table_enumerator(this);
-	while (enumerator->enumerate(enumerator, &entry, &segment))
-	{
-		charon->bus->set_sa(charon->bus, entry->ike_sa);
-		entry->ike_sa->delete(entry->ike_sa, TRUE);
-	}
-	enumerator->destroy(enumerator);
-
-	DBG2(DBG_MGR, "destroy all entries");
-	/* Step 4: destroy all entries */
-	destroy_all_entries(this);
-	unlock_all_segments(this);
-
+	/* prevent threads from creating new SAs */
 	this->spi_lock->write_lock(this->spi_lock);
 	DESTROY_IF(this->rng);
 	this->rng = NULL;
 	this->spi_cb.cb = NULL;
 	this->spi_cb.data = NULL;
 	this->spi_lock->unlock(this->spi_lock);
+
+	lock_all_segments(this);
+	DBG2(DBG_MGR, "going to destroy IKE_SA manager and all managed IKE_SAs");
+	enumerator = create_table_enumerator(this);
+	while (enumerator->enumerate(enumerator, &entry, &segment))
+	{
+		/* mark all entries so threads can't check these IKE_SAs out */
+		entry->driveout_threads = TRUE;
+	}
+	enumerator->destroy(enumerator);
+	DBG2(DBG_MGR, "wait for threads to leave IKE_SAs and delete and destroy "
+		 "them");
+	/* we are intermittently unlocking the segments below, which allows threads
+	 * to create new entries. we want these to get marked directly so other
+	 * threads can't get them again. we re-enumerate the table until all
+	 * entries are gone */
+	this->new_entries_driveout_threads = TRUE;
+	while (ref_cur(&this->total_sa_count))
+	{
+		enumerator = create_table_enumerator(this);
+		while (enumerator->enumerate(enumerator, &entry, &segment))
+		{
+			while (entry->waiting_threads || entry->checked_out)
+			{
+				/* wake up all */
+				entry->condvar->broadcast(entry->condvar);
+				/* go sleeping until they are gone */
+				entry->condvar->wait(entry->condvar,
+									 this->segments[segment].mutex);
+			}
+			charon->bus->set_sa(charon->bus, entry->ike_sa);
+			entry->ike_sa->delete(entry->ike_sa, TRUE);
+			remove_and_destroy_entry(this, enumerator, entry);
+			charon->bus->set_sa(charon->bus, NULL);
+		}
+		enumerator->destroy(enumerator);
+	}
+	unlock_all_segments(this);
 }
 
 METHOD(ike_sa_manager_t, destroy, void,

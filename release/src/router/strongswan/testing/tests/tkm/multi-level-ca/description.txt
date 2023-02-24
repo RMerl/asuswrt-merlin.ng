@@ -1,0 +1,6 @@
+Two transport connections to gateway <b>moon</b> are set up, one from client
+<b>carol</b> and the other from client <b>dave</b>. The gateway <b>moon</b> uses
+the Trusted Key Manager (TKM) and is the responder for both connections. The
+authentication is based on X.509 certificates, where <b>carol</b> uses a
+certificate issued by a multi-level CA. In order to test the connections,
+both <b>carol</b> and <b>dave</b> ping gateway <b>moon</b>.

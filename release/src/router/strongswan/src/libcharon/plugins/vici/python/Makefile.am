@@ -40,7 +40,7 @@ install-exec-local: dist/vici-$(PYTHON_PACKAGE_VERSION)-py$(PYTHON_VERSION).egg
 endif
 
 if USE_TOX
-  TESTS_ENVIRONMENT = export TOX=$(TOX);
+  TESTS_ENVIRONMENT += export TOX=$(TOX);
   AM_TESTS_FD_REDIRECT = 1>&2
   TESTS = tox.sh
 endif

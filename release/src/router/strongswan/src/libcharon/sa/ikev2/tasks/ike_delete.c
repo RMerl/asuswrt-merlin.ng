@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2016 Tobias Brunner
  * Copyright (C) 2006-2007 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -64,9 +65,8 @@ METHOD(task_t, build_i, status_t,
 	delete_payload = delete_payload_create(PLV2_DELETE, PROTO_IKE);
 	message->add_payload(message, (payload_t*)delete_payload);
 
-	if (this->ike_sa->get_state(this->ike_sa) == IKE_REKEYING ||
-		this->ike_sa->get_state(this->ike_sa) == IKE_REKEYED)
-	{
+	if (this->ike_sa->get_state(this->ike_sa) == IKE_REKEYED)
+	{	/* suppress events when deleting old or redundant SAs */
 		this->rekeyed = TRUE;
 	}
 	this->ike_sa->set_state(this->ike_sa, IKE_DELETING);

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -105,20 +106,20 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(HASHER, HASH_SHA384),
 			PLUGIN_PROVIDE(HASHER, HASH_SHA512),
 		/* MODP DH groups */
-		PLUGIN_REGISTER(DH, gcrypt_dh_create),
-			PLUGIN_PROVIDE(DH, MODP_3072_BIT),
-			PLUGIN_PROVIDE(DH, MODP_4096_BIT),
-			PLUGIN_PROVIDE(DH, MODP_6144_BIT),
-			PLUGIN_PROVIDE(DH, MODP_8192_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_224),
-			PLUGIN_PROVIDE(DH, MODP_2048_256),
-			PLUGIN_PROVIDE(DH, MODP_1536_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_160),
-			PLUGIN_PROVIDE(DH, MODP_768_BIT),
-		PLUGIN_REGISTER(DH, gcrypt_dh_create_custom),
-			PLUGIN_PROVIDE(DH, MODP_CUSTOM),
+		PLUGIN_REGISTER(KE, gcrypt_dh_create),
+			PLUGIN_PROVIDE(KE, MODP_3072_BIT),
+			PLUGIN_PROVIDE(KE, MODP_4096_BIT),
+			PLUGIN_PROVIDE(KE, MODP_6144_BIT),
+			PLUGIN_PROVIDE(KE, MODP_8192_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_224),
+			PLUGIN_PROVIDE(KE, MODP_2048_256),
+			PLUGIN_PROVIDE(KE, MODP_1536_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_160),
+			PLUGIN_PROVIDE(KE, MODP_768_BIT),
+		PLUGIN_REGISTER(KE, gcrypt_dh_create_custom),
+			PLUGIN_PROVIDE(KE, MODP_CUSTOM),
 		/* RSA private/public key loading */
 		PLUGIN_REGISTER(PUBKEY, gcrypt_rsa_public_key_load, TRUE),
 			PLUGIN_PROVIDE(PUBKEY, KEY_RSA),

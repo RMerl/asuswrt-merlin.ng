@@ -39,10 +39,6 @@
 #include <sys/stat.h>
 #endif
 
-#ifdef HAVE_SETXATTR
-#include <sys/xattr.h>
-#endif
-
 #ifdef HAVE_SYS_SYSMACROS_H
 #include <sys/sysmacros.h>
 #endif
@@ -57,8 +53,7 @@
 #include "logging.h"
 #include "misc.h"
 #include "efs.h"
-
-#ifdef HAVE_SETXATTR	/* extended attributes interface required */
+#include "xattrs.h"
 
 static ntfschar logged_utility_stream_name[] = {
 	const_cpu_to_le16('$'),
@@ -139,7 +134,6 @@ static int fixup_loop(ntfs_inode *ni)
 	ntfs_attr *na;
 	ATTR_RECORD *a;
 	BOOL restart;
-	BOOL first;
 	int cnt;
 	int maxcnt;
 	int res = 0;
@@ -200,7 +194,6 @@ static int fixup_loop(ntfs_inode *ni)
 		if (na)
 			ntfs_attr_close(na);
 		}
-		first = FALSE;
 	} while (restart && !res);
 	if (ctx)
 		ntfs_attr_put_search_ctx(ctx);
@@ -323,8 +316,8 @@ int ntfs_set_efs_info(ntfs_inode *ni, const char *value, size_t size,
 
 int ntfs_efs_fixup_attribute(ntfs_attr_search_ctx *ctx, ntfs_attr *na) 
 {
-	u64 newsize;
-	u64 oldsize;
+	s64 newsize;
+	s64 oldsize;
 	le16 appended_bytes;
 	u16 padding_length;
 	ntfs_inode *ni;
@@ -422,8 +415,8 @@ int ntfs_efs_fixup_attribute(ntfs_attr_search_ctx *ctx, ntfs_attr *na)
 	NInoSetDirty(ni);
 	NInoFileNameSetDirty(ni);
 
-	ctx->attr->data_size = cpu_to_le64(newsize);
-	if (le64_to_cpu(ctx->attr->initialized_size) > newsize)
+	ctx->attr->data_size = cpu_to_sle64(newsize);
+	if (sle64_to_cpu(ctx->attr->initialized_size) > newsize)
 		ctx->attr->initialized_size = ctx->attr->data_size;
 	ctx->attr->flags |= ATTR_IS_ENCRYPTED;
 	if (close_ctx)
@@ -435,5 +428,3 @@ err_out:
 		ntfs_attr_put_search_ctx(ctx);
 	return (-1);
 }
-
-#endif /* HAVE_SETXATTR */

@@ -4,9 +4,9 @@ dave::iptables-restore < /etc/iptables.rules
 moon::cat /etc/tnc_config
 carol::cat /etc/tnc_config
 dave::cat /etc/tnc_config
-moon::systemctl start strongswan-swanctl
-carol::systemctl start strongswan-swanctl
-dave::systemctl start strongswan-swanctl
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::expect-connection rw-allow
 moon::expect-connection rw-isolate
 carol::expect-connection home

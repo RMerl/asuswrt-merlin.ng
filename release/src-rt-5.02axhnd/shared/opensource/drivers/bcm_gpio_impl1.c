@@ -72,6 +72,9 @@ EXPORT_SYMBOL(bcm_gpio_set_dir);
 
 unsigned int bcm_gpio_get_data(unsigned int gpio_num)
 {
+	//printk(KERN_INFO "%s: gpio:%d, Gpio[%d],(mask:%x), 1st res=(%d), 2nd res=%d\n", __func__, gpio_num, GPIO_NUM_TO_ARRAY_IDX(gpio_num), GPIO_NUM_TO_MASK(gpio_num), GPIO->GPIOio[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] & (GPIO_NUM_TO_MASK(gpio_num)), (GPIO->GPIOio[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] & (GPIO_NUM_TO_MASK(gpio_num))) >> GPIO_NUM_TO_ARRAY_SHIFT(gpio_num));
+	//printk(KERN_INFO "bp_gpio_num_mask=%x\n", BP_GPIO_NUM_MASK);
+
     return (GPIO->GPIOio[GPIO_NUM_TO_ARRAY_IDX(gpio_num)] & (GPIO_NUM_TO_MASK(gpio_num))) >> GPIO_NUM_TO_ARRAY_SHIFT(gpio_num);
 }
 #ifndef _CFE_

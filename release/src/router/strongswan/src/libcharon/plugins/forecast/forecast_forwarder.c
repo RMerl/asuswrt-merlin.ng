@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2010-2014 Martin Willi
- * Copyright (C) 2010-2014 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -154,7 +155,8 @@ static bool is_bootp(void *buf, size_t len)
 /**
  * Broadcast/Multicast receiver
  */
-static bool receive_casts(private_forecast_forwarder_t *this)
+CALLBACK(receive_casts, bool,
+	private_forecast_forwarder_t *this, int fd, watcher_event_t event)
 {
 	struct __attribute__((packed)) {
 		struct iphdr hdr;
@@ -170,7 +172,7 @@ static bool receive_casts(private_forecast_forwarder_t *this)
 	socklen_t alen = sizeof(addr);
 	bool reinject;
 
-	len = recvfrom(this->kernel.pkt, &buf, sizeof(buf), MSG_DONTWAIT,
+	len = recvfrom(fd, &buf, sizeof(buf), MSG_DONTWAIT,
 				   (struct sockaddr*)&addr, &alen);
 	if (len < 0)
 	{
@@ -495,7 +497,7 @@ forecast_forwarder_t *forecast_forwarder_create(forecast_listener_t *listener)
 										   &this->kernel.listener);
 
 	lib->watcher->add(lib->watcher, this->kernel.pkt, WATCHER_READ,
-					  (watcher_cb_t)receive_casts, this);
+					  receive_casts, this);
 
 	return &this->public;
 }

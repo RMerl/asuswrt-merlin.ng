@@ -87,7 +87,7 @@ struct private_aead_t {
 	encryption_algorithm_t alg;
 };
 
-METHOD(aead_t, encrypt, bool,
+METHOD(aead_t, encrypt_, bool,
 	private_aead_t *this, chunk_t plain, chunk_t assoc, chunk_t iv,
 	chunk_t *encrypted)
 {
@@ -323,7 +323,7 @@ aead_t *wolfssl_aead_create(encryption_algorithm_t algo,
 
 	INIT(this,
 		.public = {
-			.encrypt = _encrypt,
+			.encrypt = _encrypt_,
 			.decrypt = _decrypt,
 			.get_block_size = _get_block_size,
 			.get_icv_size = _get_icv_size,

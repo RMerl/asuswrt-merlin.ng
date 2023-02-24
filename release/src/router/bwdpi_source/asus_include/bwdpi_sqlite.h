@@ -13,6 +13,9 @@
 #define BWHIS_LOCK   "/var/lock/WebHistory.lock"
 #define BWHIS_PID    "/var/run/WebHistory.pid"
 
+#define BWANA_LOCK   "/var/lock/TrafficAnalyzer.lock"
+#define BWANA_PID    "/var/run/TrafficAnalyzer.pid"
+
 // traffic_analyzer.c
 extern int traffic_analyzer_main(int argc, char **argv);
 extern int sql_integrity_check(sqlite3 *db, char *db_path);

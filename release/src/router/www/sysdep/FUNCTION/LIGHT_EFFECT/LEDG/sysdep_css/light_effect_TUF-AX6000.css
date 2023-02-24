@@ -1,0 +1,61 @@
+﻿/* TUF-AX6000 */
+@-moz-keyframes rainbow {
+	0%   { background: rgb(255, 0, 0);   }
+	8%   { background: rgb(255, 80, 0);  }
+	16%  { background: rgb(255, 160, 0); }
+	24%  { background: rgb(255, 255, 0); }
+	32%  { background: rgb(160, 255, 0); }
+	40%  { background: rgb(80, 255, 0);  }
+	48%  { background: rgb(0, 255, 0);   }
+	56%  { background: rgb(80, 255, 0);  }
+	64%  { background: rgb(160, 255, 0); }
+	72%  { background: rgb(255, 255, 0); }
+	80%  { background: rgb(255, 160, 0); }
+	88%  { background: rgb(255, 80, 0);  }
+	100% { background: rgb(255, 0, 0);   }
+}
+@-webkit-keyframes rainbow {
+	0%   { background: rgb(255, 0, 0);   }
+	8%   { background: rgb(255, 80, 0);  }
+	16%  { background: rgb(255, 160, 0); }
+	24%  { background: rgb(255, 255, 0); }
+	32%  { background: rgb(160, 255, 0); }
+	40%  { background: rgb(80, 255, 0);  }
+	48%  { background: rgb(0, 255, 0);   }
+	56%  { background: rgb(80, 255, 0);  }
+	64%  { background: rgb(160, 255, 0); }
+	72%  { background: rgb(255, 255, 0); }
+	80%  { background: rgb(255, 160, 0); }
+	88%  { background: rgb(255, 80, 0);  }
+	100% { background: rgb(255, 0, 0);   }
+}
+@-o-keyframes rainbow {
+	0%   { background: rgb(255, 0, 0);   }
+	8%   { background: rgb(255, 80, 0);  }
+	16%  { background: rgb(255, 160, 0); }
+	24%  { background: rgb(255, 255, 0); }
+	32%  { background: rgb(160, 255, 0); }
+	40%  { background: rgb(80, 255, 0);  }
+	48%  { background: rgb(0, 255, 0);   }
+	56%  { background: rgb(80, 255, 0);  }
+	64%  { background: rgb(160, 255, 0); }
+	72%  { background: rgb(255, 255, 0); }
+	80%  { background: rgb(255, 160, 0); }
+	88%  { background: rgb(255, 80, 0);  }
+	100% { background: rgb(255, 0, 0);   }
+}
+@keyframes rainbow {
+	0%   { background: rgb(255, 0, 0);   }
+	8%   { background: rgb(255, 80, 0);  }
+	16%  { background: rgb(255, 160, 0); }
+	24%  { background: rgb(255, 255, 0); }
+	32%  { background: rgb(160, 255, 0); }
+	40%  { background: rgb(80, 255, 0);  }
+	48%  { background: rgb(0, 255, 0);   }
+	56%  { background: rgb(80, 255, 0);  }
+	64%  { background: rgb(160, 255, 0); }
+	72%  { background: rgb(255, 255, 0); }
+	80%  { background: rgb(255, 160, 0); }
+	88%  { background: rgb(255, 80, 0);  }
+	100% { background: rgb(255, 0, 0);   }
+}

@@ -1,11 +1,9 @@
-alice::ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*6cu1UTVw@medsrv.org.*carol@strongswan.org::YES
-venus::ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*F1ubAio8@medsrv.org.*carol@strongswan.org::YES
-carol::ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*PH_IP_MOON.*6cu1UTVw@medsrv.org::YES
-carol::ipsec status 2> /dev/null::medsrv.*ESTABLISHED.*PH_IP_MOON.*F1ubAio8@medsrv.org::YES
+alice::swanctl --list-sas --ike-id 2 --raw 2> /dev/null::medsrv.*version=2 state=ESTABLISHED local-host=10.1.0.10 local-port=4500 local-id=6cu1UTVw@medsrv.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org.*nat-local=yes nat-any=yes encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519::YES
+venus::swanctl --list-sas --ike-id 1 --raw 2> /dev/null::medsrv.*version=2 state=ESTABLISHED local-host=10.1.0.20 local-port=4500 local-id=F1ubAio8@medsrv.org remote-host=192.168.0.100 remote-port=4500 remote-id=carol@strongswan.org.*nat-local=yes nat-any=yes encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519::YES
+carol::swanctl --list-sas --ike-id 1 --raw 2> /dev/null::medsrv.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=.*remote-id=6cu1UTVw@medsrv.org.*nat-remote=yes nat-any=yes encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519::YES
+carol::swanctl --list-sas --ike-id 2 --raw 2> /dev/null::medsrv.*version=2 state=ESTABLISHED local-host=192.168.0.100 local-port=4500 local-id=carol@strongswan.org remote-host=192.168.0.1 remote-port=.*remote-id=F1ubAio8@medsrv.org.*nat-remote=yes nat-any=yes encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519::YES
 alice::cat /var/log/daemon.log::received ME_CALLBACK::YES
-alice::ipsec status 2> /dev/null::peer.*ESTABLISHED.*alice@strongswan.org.*venus.strongswan.org::YES
-venus::ipsec status 2> /dev/null::peer.*ESTABLISHED.*venus.strongswan.org.*alice@strongswan.org::YES
-alice::ipsec status 2> /dev/null::peer.*INSTALLED, TUNNEL::YES
-venus::ipsec status 2> /dev/null::peer.*INSTALLED, TUNNEL::YES
+alice::swanctl --list-sas --ike-id 1 --raw 2> /dev/null::peer.*version=2 state=ESTABLISHED local-host=10.1.0.10 local-port=4500 local-id=alice@strongswan.org remote-host=10.1.0.20 remote-port=4500 remote-id=venus.strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*peer.*reqid=1 state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.10/32] remote-ts=\[10.1.0.20/32]::YES
+venus::swanctl --list-sas --ike-id 2 --raw 2> /dev/null::peer.*version=2 state=ESTABLISHED local-host=10.1.0.20 local-port=4500 local-id=venus.strongswan.org remote-host=10.1.0.10 remote-port=4500 remote-id=alice@strongswan.org.*encr-alg=AES_CBC encr-keysize=128 integ-alg=HMAC_SHA2_256_128 prf-alg=PRF_HMAC_SHA2_256 dh-group=CURVE_25519.*child-sas.*peer.*reqid=1 state=INSTALLED mode=TUNNEL protocol=ESP.*encr-alg=AES_GCM_16 encr-keysize=128.*local-ts=\[10.1.0.20/32] remote-ts=\[10.1.0.10/32]::YES
 alice::ping -c 1 PH_IP_VENUS::64 bytes from PH_IP_VENUS: icmp_.eq=1::YES
 venus::ping -c 1 PH_IP_ALICE::64 bytes from PH_IP_ALICE: icmp_.eq=1::YES

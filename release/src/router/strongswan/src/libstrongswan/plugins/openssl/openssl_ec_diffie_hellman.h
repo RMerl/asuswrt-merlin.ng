@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,18 +32,19 @@ typedef struct openssl_ec_diffie_hellman_t openssl_ec_diffie_hellman_t;
 struct openssl_ec_diffie_hellman_t {
 
 	/**
-	 * Implements diffie_hellman_t interface.
+	 * Implements key_exchange_t interface.
 	 */
-	diffie_hellman_t dh;
+	key_exchange_t ke;
 };
 
 /**
  * Creates a new openssl_ec_diffie_hellman_t object.
  *
- * @param group			EC Diffie Hellman group number to use
- * @return				openssl_ec_diffie_hellman_t object, NULL if not supported
+ * @param group			EC Diffie-Hellman group number to use
+ * @return				openssl_ec_diffie_hellman_t object, NULL if unsupported
  */
-openssl_ec_diffie_hellman_t *openssl_ec_diffie_hellman_create(diffie_hellman_group_t group);
+openssl_ec_diffie_hellman_t *openssl_ec_diffie_hellman_create(
+												key_exchange_method_t group);
 
 /**
  * Map ECDH groups to OpenSSL NIDs for the ECC curve.
@@ -50,6 +52,6 @@ openssl_ec_diffie_hellman_t *openssl_ec_diffie_hellman_create(diffie_hellman_gro
  * @param group         ECDH group
  * @return              NID for the curve
  */
-int openssl_ecdh_group_to_nid(diffie_hellman_group_t group);
+int openssl_ecdh_group_to_nid(key_exchange_method_t group);
 
 #endif /** OPENSSL_EC_DIFFIE_HELLMAN_H_ @}*/

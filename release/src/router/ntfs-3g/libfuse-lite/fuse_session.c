@@ -165,8 +165,19 @@ struct fuse_session *fuse_chan_session(struct fuse_chan *ch)
 int fuse_chan_recv(struct fuse_chan **chp, char *buf, size_t size)
 {
     struct fuse_chan *ch = *chp;
+
     return ch->op.receive(chp, buf, size);
 }
+
+#ifdef __SOLARIS__
+int fuse_chan_receive(struct fuse_chan *ch, char *buf, size_t size)
+{
+    int res;
+
+    res = fuse_chan_recv(&ch, buf, size);
+    return res >= 0 ? res : (res != -EINTR && res != -EAGAIN) ? -1 : 0;
+}
+#endif /* __SOLARIS__ */
 
 int fuse_chan_send(struct fuse_chan *ch, const struct iovec iov[], size_t count)
 {
@@ -180,4 +191,3 @@ void fuse_chan_destroy(struct fuse_chan *ch)
         ch->op.destroy(ch);
     free(ch);
 }
-

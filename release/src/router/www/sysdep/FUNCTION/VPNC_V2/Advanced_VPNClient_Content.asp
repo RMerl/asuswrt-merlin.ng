@@ -11,15 +11,14 @@
 <title><#Web_Title#> - <#vpnc_title#></title>
 <link rel="stylesheet" type="text/css" href="/index_style.css">
 <link rel="stylesheet" type="text/css" href="/form_style.css">
-<script type="text/javaScript" src="/js/jquery.js"></script>
-<script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/state.js"></script>
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
 <script type="text/javascript" src="/general.js"></script>
 <script type="text/javascript" src="/help.js"></script>
+<script type="text/javascript" src="/js/jquery.js"></script>
 <style>
-.vpnc_iframe {
+.rwd_iframe {
 	width: 100%;
 }
 </style>
@@ -27,6 +26,26 @@
 
 function initial(){
 	show_menu();
+	setTimeout(function(){
+		var getUrlParameter = function getUrlParameter(param){
+			var url_parm = window.location.search.substring(1);
+			var parm_array = url_parm.split("&");
+			var key_value;
+
+			for(var i = 0; i < parm_array.length; i += 1){
+				key_value = parm_array[i].split("=");
+				if (key_value[0] == param) {
+					return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+				}
+			}
+			return "";
+		};
+		var referer = getUrlParameter("referer").toLocaleLowerCase();
+		var vpnc_iframe_src = "/VPN/vpnc.html";
+		if(referer != "")
+			vpnc_iframe_src += "?referer=" + referer + "";
+		document.getElementById("vpnc_iframe").setAttribute("src", vpnc_iframe_src);
+	},((window.location.protocol == "https:") ? 1000 : 50));
 }
 </script>
 </head>
@@ -63,17 +82,7 @@ function initial(){
 							<tbody>
 								<tr>
 									<td bgcolor="#4D595D" valign="top">
-										<iframe id="vpnc_iframe" class="vpnc_iframe" frameborder="0"></iframe>
-										<script>
-											setTimeout(function(){
-												$("#vpnc_iframe").attr("src", "/VPN/vpnc.html");
-												$("#vpnc_iframe").load(function(){
-													var content_height = $(this).contents().find(".bg").height();
-													var menu_height = $("#FormTitle").height();
-													$("#vpnc_iframe").css("height", (Math.max(content_height, menu_height) + 30));
-												});
-											},50);
-										</script>
+										<iframe id="vpnc_iframe" class="rwd_iframe" frameborder="0"></iframe>
 									</td>
 								</tr>
 							</tbody>

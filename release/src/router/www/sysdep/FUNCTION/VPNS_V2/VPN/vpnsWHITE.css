@@ -56,6 +56,20 @@
 	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect_white.svg);
 	background-position: 0px -163px;
 }
+.export_mode_container .desc{
+	color: rgb(94, 100, 112);
+}
+.qr_code_container{
+	border: 1px solid rgb(85 100 111);
+	border-radius: 8px;
+	background: initial;
+}
+.qr_code_container > .qr_text{
+	color: rgb(94, 100, 112);
+}
+.notice_container .notice_desc{
+	color: rgb(94, 100, 112);
+}
 .textInput, .custom_select_container, .textareaInput, .textView{
 	color: rgb(94, 100, 112);
 }

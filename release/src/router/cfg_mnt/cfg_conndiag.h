@@ -3,7 +3,7 @@
 
 extern void cm_processConnDiagPkt(TLV_Header tlv, unsigned char *data, char *peerIp);
 extern int cm_connDiagPacketProcess(unsigned char *data);
-extern void cm_addConnDiagPktToList(struct udpArgStruct *data);
+extern void cm_addConnDiagPktToList(void *data);
 extern void *cm_connDiagPktListHandler(void *args);
 extern void cm_terminateConnDiagPktList();
 

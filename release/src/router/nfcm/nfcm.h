@@ -182,10 +182,12 @@ typedef struct nf_node_s {
     struct in_addr srcv4;
     uint16_t src_port;
     struct in6_addr srcv6;
+    char src6_ip[INET6_ADDRSTRLEN]; // for db    
 
     struct in_addr dstv4;
     uint16_t dst_port;    //when proto is ICMP, the dst_port is "(type<<8)|code"
     struct in6_addr dstv6;
+    char dst6_ip[INET6_ADDRSTRLEN]; // for db    
 
     uint64_t up_bytes;
     uint64_t up_dif_bytes;
@@ -211,7 +213,6 @@ typedef struct lan_info_s {
     bool enabled;
     struct in_addr addr;
     struct in_addr subnet;
-
     struct list_head list;
 } lan_info_t;
 

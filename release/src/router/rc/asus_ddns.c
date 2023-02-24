@@ -11,6 +11,7 @@
 #endif
 #include <json.h>
 #include <notify_rc.h>
+#include <aae_ipc.h>
 
 #define ASUSDDNS_DBG(fmt,args...) \
         if(1) { \
@@ -213,11 +214,19 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		goto Err;
 	}
 
-	if (strncmp(auth_status, "0", 1) == 0) {
-		sid_obj = json_object_new_string("1001");
-	} else if (strncmp(auth_status, "2", 1) == 0) {
+#ifdef RTCONFIG_ACCOUNT_BINDING
+    	int account_bound = is_account_bound();
+#else
+    	int account_bound = 0;
+#endif
+
+	if (account_bound) {
 		sid_obj = json_object_new_string("1004");
 	}
+	else {
+		sid_obj = json_object_new_string("1001");
+	}
+	
 	if(sid_obj)
 		json_object_object_add(obj, "sid", sid_obj);
 	else
@@ -234,7 +243,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 	if(curl)
 	{
 #ifdef RTCONFIG_ACCOUNT_BINDING
-		if (nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
+		if (account_bound && nvram_match("ddns_replace_status", "1") &&
 			((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 			|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
 			snprintf(ddns_url, sizeof(ddns_url), "https://%s%s",  nvram_safe_get("aae_ddnsinfo"), ASUSDDNS_REQ_TOKEN_PATH);

@@ -4,7 +4,8 @@
  * Copyright (C) 2003 Martin Berner, Lukas Suter
  * Copyright (C) 2002-2017 Andreas Steffen
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

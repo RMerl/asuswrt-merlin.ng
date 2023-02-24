@@ -2445,7 +2445,6 @@ static size_t header_callback(char *buffer, size_t size,
   return nitems * size;
 }
 
-
 int main( int argc, char ** argv )
 {
 

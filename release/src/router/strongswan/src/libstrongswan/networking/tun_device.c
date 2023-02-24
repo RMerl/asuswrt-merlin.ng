@@ -2,8 +2,9 @@
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
- * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 2012 Martin Willi
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -431,7 +432,7 @@ static bool init_tun(private_tun_device_t *this, const char *name_tmpl)
 	}
 
 	/* get a control identifier for the utun kernel extension */
-	strncpy(info.ctl_name, UTUN_CONTROL_NAME, strlen(UTUN_CONTROL_NAME));
+	strncpy(info.ctl_name, UTUN_CONTROL_NAME, sizeof(info.ctl_name)-1);
 	if (ioctl(this->tunfd, CTLIOCGINFO, &info) < 0)
 	{
 		DBG1(DBG_LIB, "failed to ioctl tundevice: %s", strerror(errno));
@@ -465,7 +466,7 @@ static bool init_tun(private_tun_device_t *this, const char *name_tmpl)
 
 	struct ifreq ifr;
 
-	strncpy(this->if_name, name_tmpl ?: "tun%d", IFNAMSIZ);
+	strncpy(this->if_name, name_tmpl ?: "tun%d", IFNAMSIZ-1);
 	this->if_name[IFNAMSIZ-1] = '\0';
 
 	this->tunfd = open("/dev/net/tun", O_RDWR);

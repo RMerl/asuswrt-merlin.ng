@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2009-2020 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,7 +35,7 @@ typedef struct proposal_t proposal_t;
 #include <crypto/transform.h>
 #include <crypto/crypters/crypter.h>
 #include <crypto/signers/signer.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 
 /**
  * Protocol ID of a proposal.
@@ -60,8 +61,8 @@ enum proposal_selection_flag_t {
 	PROPOSAL_PREFER_SUPPLIED = (1<<0),
 	/** Whether to skip and ignore algorithms from a private range. */
 	PROPOSAL_SKIP_PRIVATE = (1<<1),
-	/** Whether to skip and ignore diffie hellman groups. */
-	PROPOSAL_SKIP_DH = (1<<2),
+	/** Whether to skip and ignore key exchange methods. */
+	PROPOSAL_SKIP_KE = (1<<2),
 };
 
 /**
@@ -109,21 +110,26 @@ struct proposal_t {
 						   uint16_t *alg, uint16_t *key_size);
 
 	/**
-	 * Check if the proposal has a specific DH group.
+	 * Check if the proposal has a specific transform.
 	 *
-	 * @param group			group to check for
+	 * @param type			kind of algorithm
+	 * @param alg			algorithm to check for (if 0, TRUE is returned if
+	 *						no transform of the given type is found)
 	 * @return				TRUE if algorithm included
 	 */
-	bool (*has_dh_group)(proposal_t *this, diffie_hellman_group_t group);
+	bool (*has_transform)(proposal_t *this, transform_type_t type,
+						  uint16_t alg);
 
 	/**
-	 * Move the given DH group to the front of the list if it was contained in
+	 * Move the given transform to the front of the list if it was contained in
 	 * the proposal.
 	 *
-	 * @param group			group to promote
+	 * @param type			kind of algorithm
+	 * @param alg			algorithm to promote
 	 * @return				TRUE if algorithm included
 	 */
-	bool (*promote_dh_group)(proposal_t *this, diffie_hellman_group_t group);
+	bool (*promote_transform)(proposal_t *this, transform_type_t type,
+							  uint16_t alg);
 
 	/**
 	 * Compare two proposals and select a matching subset.

@@ -6,7 +6,7 @@
 #include <vpn_utils.h>
 #include <openvpn_config.h>
 
-#if defined(RTCONFIG_VPN_FUSION)
+#if defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_TPVPN) || defined(RTCONFIG_IG_SITE2SITE) || defined(RTCONFIG_WIREGUARD)
 /*******************************************************************
  * NAME: vpnc_set_basic_conf
  * AUTHOR: Andy Chiu
@@ -80,6 +80,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 	int cnt = 0, i;
 	char *desc, *proto, *server, *username, *passwd, *active, *vpnc_idx;
 	char *region, *conntype;
+	char *wan_idx, *caller, *tunnel;
 
 	if (!list || list_size <= 0)
 		return -1;
@@ -94,7 +95,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 		if (VPNC_PROFILE_VER1 == prof_ver)
 		{
 			// proto, server, active and vpnc_idx are mandatory
-			if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx, &region, &conntype) < 4)
+			if (vstrsep(b, ">", &desc, &proto, &server, &username, &passwd, &active, &vpnc_idx, &region, &conntype, &tunnel, &wan_idx, &caller) < 4)
 				continue;
 
 			if (!active || !vpnc_idx)
@@ -129,7 +130,7 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 				_update_ovpn_client_enable(list[cnt].config.ovpn.ovpn_idx, list[cnt].active);
 			}
 #ifdef RTCONFIG_WIREGUARD
-			else if (!strcmp(proto, PROTO_WG))
+			else if (!strcmp(proto, PROTO_WG) || !strcmp(proto, PROTO_SURFSHARK))
 			{
 				char prefix[16] = {0};
 				list[cnt].protocol = VPNC_PROTO_WG;
@@ -309,6 +310,7 @@ int read_wgc_config_file(const char* file_path, int wgc_unit)
 	{
 		while (fgets(buf, sizeof(buf), fp))
 		{
+			strtok(buf, "\r\n");
 			if (buf[0] == '[' || buf[0] == '#' || buf[0] == '\n')
 				continue;
 			else if (!strncmp(buf, "PrivateKey", 10))

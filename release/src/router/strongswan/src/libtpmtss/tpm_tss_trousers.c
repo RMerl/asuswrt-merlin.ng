@@ -1,7 +1,5 @@
 /*
  * Copyright (C) 2016-2020 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (c) 2008 Hal Finney
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

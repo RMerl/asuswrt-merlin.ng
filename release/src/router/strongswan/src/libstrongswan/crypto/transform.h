@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -32,7 +33,7 @@ enum transform_type_t {
 	ENCRYPTION_ALGORITHM = 1,
 	PSEUDO_RANDOM_FUNCTION = 2,
 	INTEGRITY_ALGORITHM = 3,
-	DIFFIE_HELLMAN_GROUP = 4,
+	KEY_EXCHANGE_METHOD = 4,
 	EXTENDED_SEQUENCE_NUMBERS = 5,
 	HASH_ALGORITHM = 256,
 	RANDOM_NUMBER_GENERATOR = 257,

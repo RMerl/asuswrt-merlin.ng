@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2010 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -53,7 +54,7 @@ struct private_openssl_diffie_hellman_t {
 	/**
 	 * Diffie Hellman group number.
 	 */
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
 	/**
@@ -83,13 +84,13 @@ struct private_openssl_diffie_hellman_t {
 	chunk_t shared_secret;
 };
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_openssl_diffie_hellman_t *this)
 {
 	return this->group;
 }
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_openssl_diffie_hellman_t *this, chunk_t *value)
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
@@ -114,7 +115,7 @@ METHOD(diffie_hellman_t, get_my_public_value, bool,
 #endif
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_openssl_diffie_hellman_t *this, chunk_t *secret)
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
@@ -150,10 +151,10 @@ METHOD(diffie_hellman_t, get_shared_secret, bool,
 }
 
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_openssl_diffie_hellman_t *this, chunk_t value)
 {
-	if (!diffie_hellman_verify_value(this->group, value))
+	if (!key_exchange_verify_pubkey(this->group, value))
 	{
 		return FALSE;
 	}
@@ -203,7 +204,7 @@ static BIGNUM *calculate_public_key(BIGNUM *priv, const BIGNUM *g,
 	return pub;
 }
 
-METHOD(diffie_hellman_t, set_private_value, bool,
+METHOD(key_exchange_t, set_private_key, bool,
 	private_openssl_diffie_hellman_t *this, chunk_t value)
 {
 	BIGNUM *priv, *g = NULL, *p = NULL, *pub = NULL;
@@ -253,7 +254,7 @@ error:
 
 #else /* OPENSSL_VERSION_NUMBER */
 
-METHOD(diffie_hellman_t, set_private_value, bool,
+METHOD(key_exchange_t, set_private_key, bool,
 	private_openssl_diffie_hellman_t *this, chunk_t value)
 {
 	BIGNUM *privkey;
@@ -273,7 +274,7 @@ METHOD(diffie_hellman_t, set_private_value, bool,
 
 #endif /* OPENSSL_VERSION_NUMBER */
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_openssl_diffie_hellman_t *this)
 {
 #if OPENSSL_VERSION_NUMBER >= 0x30000000L
@@ -291,7 +292,7 @@ METHOD(diffie_hellman_t, destroy, void,
  * Described in header.
  */
 openssl_diffie_hellman_t *openssl_diffie_hellman_create(
-											diffie_hellman_group_t group, ...)
+											key_exchange_method_t group, ...)
 {
 	private_openssl_diffie_hellman_t *this;
 	BIGNUM *g, *p;
@@ -299,12 +300,12 @@ openssl_diffie_hellman_t *openssl_diffie_hellman_create(
 
 	INIT(this,
 		.public = {
-			.dh = {
+			.ke = {
 				.get_shared_secret = _get_shared_secret,
-				.set_other_public_value = _set_other_public_value,
-				.get_my_public_value = _get_my_public_value,
-				.set_private_value = _set_private_value,
-				.get_dh_group = _get_dh_group,
+				.set_public_key = _set_public_key,
+				.get_public_key = _get_public_key,
+				.set_private_key = _set_private_key,
+				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},

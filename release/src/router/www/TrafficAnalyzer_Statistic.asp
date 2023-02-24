@@ -68,16 +68,46 @@
 
 var flow_obj;
 var pie_obj;
+var switch_nvram_name;
+var asp_suffix;
+var log_name;
 window.onresize = function(){
 	cal_panel_block("client_all_info_block");
 }
 
+function decide_dns_or_bwdpi(){
+    if(dns_dpi_support){
+      switch_nvram_name = 'nfcm_enable';
+      asp_suffix = '_Dns';
+      log_name = 'dns_traffic_analyzer';
+    }
+    else {
+      switch_nvram_name = 'bwdpi_db_enable';
+      asp_suffix = '';
+      log_name = 'traffic_analyzer';
+    }
+}
+
+function clear_traffic_log(){
+     httpApi.cleanLog(log_name, updateTrafficAnalyzer);
+}
 function initial(){
+        var show_refresh;
+
 	show_menu();
 	register_event();
 	load_time();
-
-	if(document.form.bwdpi_db_enable.value == 1){
+ 	
+ 	decide_dns_or_bwdpi();
+        
+        if(dns_dpi_support && document.form.nfcm_enable.value == 1){
+            show_refresh = 1;
+        } else if (document.form.bwdpi_db_enable.value ==1){
+            show_refresh = 1;
+        } else {
+            show_refresh = 0;
+        }
+	if(show_refresh){
 		document.getElementById('statistic_hint').innerHTML = "* <#Traffic_Analyzer_refresh_note#>";
 	}
 	else{
@@ -411,7 +441,7 @@ function get_client_info(list_info, type){
 var router_traffic_array = new Array();
 function get_wan_data(client, mode, dura, time, date_string){
 	$.ajax({
-		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getWanTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 			setTimeout("get_wan_data(client, mode, dura, time, date_string);", 1000);
@@ -426,7 +456,7 @@ function get_wan_data(client, mode, dura, time, date_string){
 var all_client_traffic = new Array();
 function get_every_client_data(client, mode, dura, time, date_string){
 	$.ajax({
-		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getAppTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
@@ -459,7 +489,7 @@ function get_every_client_data(client, mode, dura, time, date_string){
 var all_app_traffic = new Array();
 function get_every_app_data(client, mode, dura, time, date_string){
 	$.ajax({
-		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getWanTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
@@ -491,7 +521,7 @@ function get_every_app_data(client, mode, dura, time, date_string){
 
 function get_app_data(client, mode, dura, time, date_string){
 	$.ajax({
-		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getAppTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
@@ -506,7 +536,7 @@ function get_app_data(client, mode, dura, time, date_string){
 var client_used_app_array = new Array();
 function get_client_used_app_data(client, mode, dura, time, date_string, type, info_type){
 	$.ajax({
-		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getWanTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
@@ -671,7 +701,7 @@ function hide_show_all_info(){
 var app_used_by_client_array = new Array();
 function get_app_used_by_client_data(client, mode, dura, time, date_string, type, info_type, type_detail){
 	$.ajax({
-		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getAppTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
@@ -705,7 +735,7 @@ function get_app_used_by_client_data(client, mode, dura, time, date_string, type
 
 function get_client_used_app_data_individual(client, mode, dura, time, date_string){
 	$.ajax({
-		url: '/getWanTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getWanTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 			//setTimeout("get_app_data(time);", 1000);
@@ -738,7 +768,7 @@ function get_client_used_app_data_individual(client, mode, dura, time, date_stri
 
 function get_app_used_by_client_data_individual(client, mode, dura, time, date_string){
 	$.ajax({
-		url: '/getAppTraffic.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
+		url: '/getAppTraffic' + asp_suffix + '.asp?client=' + client + '&mode=' + mode + '&dura=' + dura + '&date=' + time,
 		dataType: 'script',
 		error: function(xhr){
 
@@ -1441,8 +1471,17 @@ function cal_panel_block(obj){
 }
 
 function eula_confirm(){
-	document.form.TM_EULA.value = 1;
-	document.form.bwdpi_db_enable.value = 1;
+	if(!dns_dpi_support){
+	  document.form.TM_EULA.value = 1;
+    }
+
+        if(!dns_dpi_support) {
+	  document.form.bwdpi_db_enable.value = 1;
+	  document.form.nfcm.value = 1; //align user experince during upgrade/download
+        } else {
+          document.form.nfcm_enable.value = 1;
+	  document.form.bwdpi_db_enable.value = 1; // align user epxerience
+        }
 	document.form.action_wait.value = "15";
 	applyRule();
 }
@@ -1455,22 +1494,42 @@ function cancel(){
 }
 function switch_control(_status){
 	if(_status) {
+              if(!dns_dpi_support){
 		if(reset_wan_to_fo.check_status()) {
 			if(ASUS_EULA.check("tm")){
 				document.form.bwdpi_db_enable.value = 1;
+				document.form.nfcm_enable.value = 1; //align user experience
 				applyRule();
 			}
 		}
 		else
 			cancel();
+               }
+              else {
+
+				document.form.bwdpi_db_enable.value = 1; // align user experience
+				document.form.nfcm_enable.value = 1;
+				applyRule();
+               }
 	}
 	else {
-		document.form.bwdpi_db_enable.value = 0;
+		if(!dns_dpi_support) {
+                  document.form.bwdpi_db_enable.value = 0;
+                  document.form.nfcm_enable.value = 0; //align user experience
+                } else {
+                  document.form.nfcm_enable.value = 0;
+                  document.form.bwdpi_db_enable.value = 0; // align user experience
+                }
 		applyRule();
 	}
 }
 function applyRule(){
-	document.form.action_script.value = "restart_wrs;restart_firewall";
+    if(!dns_dpi_support){
+	  document.form.action_script.value = "restart_wrs;restart_firewall";
+    }
+    else {
+      document.form.action_script.value = "restart_nfcm;restart_dnsqd;restart_firewall";
+    }
 
 	if(reset_wan_to_fo.change_status)
 		reset_wan_to_fo.change_wan_mode(document.form);
@@ -1510,6 +1569,7 @@ function setUnit(unit){
 	$('#current_traffic_field').html('');
 	$('#current_traffic_percent_field').html('');
 }
+
 </script>
 </head>
 <body onload="initial();" onunload="unload_body();" class="bg">
@@ -1534,6 +1594,7 @@ function setUnit(unit){
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
 <input type="hidden" name="bwdpi_db_enable" value="<% nvram_get("bwdpi_db_enable"); %>">
+<input type="hidden" name="nfcm_enable" value="<% nvram_get("nfcm_enable"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
@@ -1563,14 +1624,27 @@ function setUnit(unit){
 																<td >
 																	<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="traffic_analysis_enable"></div>
 																	<script type="text/javascript">
-																		$('#traffic_analysis_enable').iphoneSwitch('<% nvram_get("bwdpi_db_enable"); %>',
+
+if(dns_dpi_support) {
+																		$('#traffic_analysis_enable').iphoneSwitch('<% nvram_get("nfcm_enable"); %>',
 																			function(){
 																				switch_control(1);
 																			},
 																			function(){
 																				switch_control(0);
 																			}
-																		);
+																		)
+} else {
+
+																		$('#traffic_analysis_enable').iphoneSwitch('<% nvram_get("bwdpi_db_enable"); %>',
+																			function(){
+																				switch_control(1);
+																			},
+																			function(){
+																				switch_control(0);
+ 																		})
+
+};
 																	</script>
 																</td>
 															</tr>
@@ -1647,7 +1721,7 @@ function setUnit(unit){
 												</tr>
 											</table>
 										</div>
-										<div class="clean_log" onClick="httpApi.cleanLog('traffic_analyzer', updateTrafficAnalyzer);"></div>
+										<div class="clean_log" onClick="clear_traffic_log();"></div>
 										<div style="clear:both;"></div>
 									</div>
 									<div class="analysis_bg" style="border-radius:4px;width:100%">

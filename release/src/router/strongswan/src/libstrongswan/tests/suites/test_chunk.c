@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -124,12 +125,27 @@ END_TEST
  * clear
  */
 
+ADDRESS_SANITIZER_EXCLUDE
+static bool cleared(u_char *ptr)
+{
+	int i;
+
+	for (i = 0; i < 64; i += 2)
+	{
+		if (ptr[i] != 0 && ptr[i] == i &&
+			ptr[i+1] != 0 && ptr[i+1] == i+1)
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
 START_TEST(test_chunk_clear)
 {
 	chunk_t chunk;
 	u_char *ptr;
 	int i;
-	bool cleared = TRUE;
 
 	chunk = chunk_empty;
 	chunk_clear(&chunk);
@@ -146,17 +162,8 @@ START_TEST(test_chunk_clear)
 	 * test directly, as it might allocate data at the freed area.  comparing
 	 * two bytes at once reduces the chances of conflicts if memory got
 	 * overwritten already */
-	for (i = 0; i < 64; i += 2)
-	{
-		if (ptr[i] != 0 && ptr[i] == i &&
-			ptr[i+1] != 0 && ptr[i+1] == i+1)
-		{
-			cleared = FALSE;
-			break;
-		}
-	}
+	ck_assert(cleared(ptr));
 	assert_chunk_empty(chunk);
-	ck_assert(cleared);
 }
 END_TEST
 
@@ -198,6 +205,27 @@ END_TEST
  * chunk_create_cat
  */
 
+ADDRESS_SANITIZER_EXCLUDE
+bool chunk_equals_nosan(chunk_t a, chunk_t b)
+{
+	int i;
+
+	/* can't use memcmp() or any function using it, as that is again
+	 * sanitize-checked */
+	if (a.len != b.len)
+	{
+		return FALSE;
+	}
+	for (i = 0; i < b.len; i++)
+	{
+		if (a.ptr[i] != b.ptr[i])
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
 START_TEST(test_chunk_create_cat)
 {
 	chunk_t foo, bar;
@@ -235,8 +263,8 @@ START_TEST(test_chunk_create_cat)
 	ck_assert_int_eq(c.len, 6);
 	ck_assert(chunk_equals(c, chunk_from_str("foobar")));
 	/* check memory area of cleared chunk */
-	ck_assert(!chunk_equals(foo, chunk_create(ptra, 3)));
-	ck_assert(!chunk_equals(bar, chunk_create(ptrb, 3)));
+	ck_assert(!chunk_equals_nosan(foo, chunk_create(ptra, 3)));
+	ck_assert(!chunk_equals_nosan(bar, chunk_create(ptrb, 3)));
 }
 END_TEST
 

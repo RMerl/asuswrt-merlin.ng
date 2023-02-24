@@ -565,6 +565,9 @@
 .game-p-fifa22 {
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fifa22.jpg'), url('../images/gameprofile/default-game.png');
 }
+.game-p-fifa23 {
+    background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/fifa23.jpg'), url('../images/gameprofile/default-game.png');
+}
 
 .game-p-granTurismo7 {
     background-image: url('https://nw-dlcdnet.asus.com/plugin/gameImages/granTurismo7.jpg'), url('../images/gameprofile/default-game.png');

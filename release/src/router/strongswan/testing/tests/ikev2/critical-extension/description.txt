@@ -1,5 +1,5 @@
 A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
 The authentication is based on <b>X.509 certificates</b> which contain a <b>critical</b> but
-unsupported 'strongSwan' extension. Whereas <b>moon</b> ignores unsupported critical 
+unsupported 'strongSwan' extension. Whereas <b>moon</b> ignores unsupported critical
 extensions by setting <b>libstrongswan.x509.enforce_critical = no</b> in strongswan.conf,
 <b>sun</b> discards such certificates and aborts the connection setup.

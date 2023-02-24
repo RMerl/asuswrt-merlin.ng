@@ -264,12 +264,17 @@ start_emf(char *lan_ifname)
 		return;
 	}
 #ifdef RTCONFIG_PROXYSTA
+#define BCM_MCAST_SNOOPING_DISABLED_FLOOD	"0"	/* snooping is disabled, IP multicast is flooded */
+#define BCM_MCAST_SNOOPING_STANDARD_MODE	"1"	/* snoping is enabled, unsolicited IP multicast is flooded */
+#define BCM_MCAST_SNOOPING_BLOCKING_MODE	"2"	/* snoping is enabled, unsolicited IP mutlicast is dropped */
 #ifdef RTCONFIG_HND_ROUTER_AX
-	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", (psta_exist() || psr_exist() || (sw_mode() == SW_MODE_AP && !nvram_get_int("bcm_snooping"))) ? "0" : "2");
-	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", (psta_exist() || psr_exist() || (sw_mode() == SW_MODE_AP && !nvram_get_int("bcm_snooping"))) ? "0" : "2");
+	int bcm_client_mode = psta_exist() || psr_exist();
+	int bcm_mcast_snooping_disabled = (sw_mode() == SW_MODE_AP) && !bcm_client_mode && !nvram_get_int("bcm_snooping");
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", bcm_mcast_snooping_disabled ? BCM_MCAST_SNOOPING_DISABLED_FLOOD : BCM_MCAST_SNOOPING_STANDARD_MODE);
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", bcm_mcast_snooping_disabled ? BCM_MCAST_SNOOPING_DISABLED_FLOOD : BCM_MCAST_SNOOPING_STANDARD_MODE);
 #else
-	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", (psta_exist() || psr_exist()) ? "0" : "2");
-	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", (psta_exist() || psr_exist()) ? "0" : "2");
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "1",  "-m", BCM_MCAST_SNOOPING_STANDARD_MODE);
+	eval("bcmmcastctl", "mode", "-i",  "br0",  "-p", "2",  "-m", BCM_MCAST_SNOOPING_STANDARD_MODE);
 #endif
 #endif
 	return;
@@ -418,8 +423,15 @@ void start_wl(void)
 #endif
 					eval("wlconf", ifname, "down");
 					eval("wl", "-i", ifname, "radio", "off");
-				} else
+				} else{
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+					fprintf(stderr, "[%s][%d]: using eval(wlconf(%s)) in background\n", __func__, __LINE__, ifname);
+					eval("wlconf", ifname, "start", "&"); /* start wl iface */
+					sleep(5);
+#else
 					eval("wlconf", ifname, "start"); /* start wl iface */
+#endif
+				}
 				wlconf_post(ifname);
 #endif	// CONFIG_BCMWL5
 			}
@@ -428,7 +440,13 @@ void start_wl(void)
 	}
 	else if (strcmp(lan_ifname, "")) {
 		/* specific non-bridged lan iface */
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+		fprintf(stderr, "[%s][%d]: using eval(wlconf(%s)) in background\n", __func__, __LINE__, ifname);
+		eval("wlconf", ifname, "start", "&"); /* start wl iface */
+		sleep(5);
+#else
 		eval("wlconf", lan_ifname, "start");
+#endif
 	}
 
 #if 0
@@ -1358,8 +1376,8 @@ void start_lan(void)
 
 #ifdef GT10
 	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth4", "gpioout", "0x2002", "0x2002");
 	eval("wl", "-i", "eth5", "gpioout", "0x2002", "0x2002");
-	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
 #endif
 
 #if defined(GTAX6000) || defined(RTAX88U_PRO)
@@ -2562,9 +2580,13 @@ void stop_lan(void)
 	}
 #endif
 
-	if (module_loaded("ebtables")) {
+#ifndef EBTABLES_BUILTIN
+	if (module_loaded("ebtables"))
+#endif
+	{
 		eval("ebtables", "-F");
 		eval("ebtables", "-t", "broute", "-F");
+		eval("ebtables", "-t", "nat", "-F");
 	}
 #ifdef RTCONFIG_WIFI_SON
 	if (sw_mode() != SW_MODE_REPEATER && nvram_match("wifison_ready", "1")) {
@@ -2834,9 +2856,12 @@ void hotplug_net(void)
 	char buf[32];
 	int i = 0;
 #endif
-#if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA)
+#if defined(RTCONFIG_HND_ROUTER) && (defined(RTCONFIG_DPSTA) || defined(RTCONFIG_SW_SPDLED))
 	char *link;
 	bool link_down;
+#ifdef RTCONFIG_SW_SPDLED
+	int act_low=1, gpio=-1, speed=0;
+#endif
 #endif
 #if 0
 #ifdef RTCONFIG_AMAS
@@ -2855,20 +2880,24 @@ void hotplug_net(void)
 	else if (nvram_match("HwId", "B") && !strcmp(interface, "eth4")) // Node have no eth4
 		return;
 #endif
-#if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA)
+#if defined(RTCONFIG_HND_ROUTER) && (defined(RTCONFIG_DPSTA) || defined(RTCONFIG_SW_SPDLED))
 	link = getenv("LINK");
-	_dprintf("hotplug net INTERFACE=%s ACTION=%s LINK=%s\n", interface, action, link);
+	_dprintf("hotplug net INTERFACE=%s ACTION=%s LINK=%s.\n", interface, action, link);
 #else
 	_dprintf("hotplug net INTERFACE=%s ACTION=%s SEQNUM=%s\n", interface, action, getenv("SEQNUM")? : "NULL");
 #endif
 
-#ifdef LINUX26
+#if defined(RTCONFIG_SW_SPDLED)
+	add_event = !strcmp(action, "change") && !strcmp(link, "up");
+#elif defined(LINUX26)
 	add_event = !strcmp(action, "add");
 #else
 	add_event = !strcmp(action, "register");
 #endif
-
-#ifdef LINUX26
+	
+#if defined(RTCONFIG_SW_SPDLED)
+	remove_event = !strcmp(action, "change") && !strcmp(link, "down");
+#elif defined(LINUX26)
 	remove_event = !strcmp(action, "remove");
 #else
 	remove_event = !strcmp(action, "unregister");
@@ -2879,6 +2908,15 @@ void hotplug_net(void)
 #else
 	psta_if = 0;
 #endif
+#ifdef RTCONFIG_SW_SPDLED
+	gpio = get_spdled_gpio(interface);
+	act_low = _gpio_active_low(gpio & 0xff);
+
+	_dprintf("add_event=%d, remove_event=%d, if:%s, gpio:%d\n", add_event, remove_event, interface, gpio);
+
+	if(nvram_match("force_spd", "1"))
+		add_event = 1;
+#endif
 
 #if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA)
 	if (dpsta_mode()) {
@@ -2888,13 +2926,24 @@ void hotplug_net(void)
 	}
 #endif
 
+#ifndef RTCONFIG_SW_SPDLED
 	dyn_if = !strncmp(interface, "wds", 3) || psta_if;
 
 	if (!dyn_if && !remove_event) {
 		goto NEITHER_WDS_OR_PSTA;
 	}
+#endif
 
 	if (add_event) {
+#if defined(BC109) || defined(BC105)
+#if defined(RTCONFIG_SW_SPDLED)
+		speed = hnd_get_phy_speed_rc(interface);
+
+		_dprintf("%sturn on its spd led.(%d)\n", speed<1000?"Don't ":"", speed);
+		if(speed >= 1000)
+			set_gpio_rc(gpio, act_low ? 0:1);
+#endif
+#endif
 #ifdef RTCONFIG_RALINK
 		if (sw_mode() == SW_MODE_REPEATER)
 			return;
@@ -2933,6 +2982,7 @@ void hotplug_net(void)
 		}
 #endif
 
+#if !defined(BC109) && !defined(BC105)
 #if defined(RTCONFIG_AMAS_WGN)	
 		if (!wgn_is_wds_guest_vlan(interface))
 			if (!strncmp(lan_ifname, "br", 2)) {
@@ -2956,6 +3006,7 @@ void hotplug_net(void)
 			}
 #endif
 		}
+#endif
 
 #if 0
 #ifdef RTCONFIG_AMAS
@@ -2978,7 +3029,6 @@ void hotplug_net(void)
 #if defined(RTCONFIG_AMAS_WGN)
 		(void)wgn_hotplug_net(interface, 1);
 #endif	/* RTCONFIG_AMAS_WGN */
-
 		return;
 	}
 
@@ -2999,6 +3049,10 @@ void hotplug_net(void)
 #if defined(RTCONFIG_AMAS_WGN)
 		(void)wgn_hotplug_net(interface, 0);
 #endif	/* RTCONFIG_AMAS_WGN */
+#if defined(RTCONFIG_SW_SPDLED)
+		_dprintf("turn off its spd led\n");
+		set_gpio_rc(gpio, act_low ? 1:0);
+#endif
 	}
 #endif
 
@@ -3038,6 +3092,44 @@ NEITHER_WDS_OR_PSTA:
 		if(!strcmp(action, "add")){
 			logmessage("hotplug", "add net %s.", interface);
 			_dprintf("hotplug net: add net %s.\n", interface);
+
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+			if(nvram_match("wans_usb_bk", "1"))
+			{
+				int wans = get_wans_dualwan();
+				_dprintf("[%s, %d]wans=%x\n", __FUNCTION__, __LINE__, wans);
+				char dualwan[32],  *p;
+				if(get_dualwan_by_unit(WAN_UNIT_SECOND) ==  WANS_DUALWAN_IF_NONE	// must be single wan
+					&&  !(wans & WANSCAP_USB))	//not usb wan
+				{
+					_dprintf("[%s, %d]\n", __FUNCTION__, __LINE__);
+					get_wans_dualwan_str(dualwan, sizeof(dualwan));
+					p = strstr(dualwan, "none");
+					if(!p)
+						strlcat(dualwan, " usb", sizeof(dualwan));
+					else
+						strlcpy(p, "usb", sizeof(dualwan) - (p - dualwan));
+					nvram_set("wans_dualwan", dualwan);
+					nvram_set_int("wans_usb_bk_act", 1);
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+					json_object *root = NULL;
+					char buf[256] = {0};
+					char str[32] = {0};
+
+					_dprintf("[%s]NC send USB_TETHERING_EVENT\n", __FUNCTION__);
+					root = json_object_new_object();
+					if (root)
+					{
+						json_object_object_add(root, "dut", json_object_new_string(get_productid()));
+						snprintf(str, sizeof(str), "0x%x", USB_TETHERING_EVENT);
+						snprintf(buf, sizeof(buf), "%s", json_object_to_json_string(root));
+						eval("Notify_Event2NC", str, buf);
+						json_object_put(root);
+					}
+#endif
+				}
+			}
+#endif
 
 			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
 
@@ -3188,7 +3280,6 @@ NEITHER_WDS_OR_PSTA:
 				nvram_set(tmp2, "2");
 				return;
 			}
-
 #ifdef RTCONFIG_MODEM_BRIDGE
 			if(sw_mode() == SW_MODE_AP && nvram_get_int("modem_bridge")){
 				eval("brctl", "addif", lan_ifname, interface);
@@ -3258,6 +3349,30 @@ NEITHER_WDS_OR_PSTA:
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
 			nvram_set(strcat_r(prefix, "ifname", tmp), "");
+
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+			if(nvram_match("wans_usb_bk", "1") && nvram_match("wans_usb_bk_act", "1"))
+			{
+				int wan1_type, wan2_type;
+				char dualwan[32],  *p;
+
+				wan1_type = get_dualwan_by_unit(WAN_UNIT_FIRST);
+				wan2_type = get_dualwan_by_unit(WAN_UNIT_SECOND);
+				if((wan1_type != WANS_DUALWAN_IF_USB && wan1_type != WANS_DUALWAN_IF_USB2)
+					&& (wan2_type == WANS_DUALWAN_IF_USB || wan2_type == WANS_DUALWAN_IF_USB2))
+				{
+					get_wans_dualwan_str(dualwan, sizeof(dualwan));
+					p = strstr(dualwan, "usb");
+					if(p)
+					{
+						strlcpy(p, "none", sizeof(dualwan) - (p - dualwan));
+						nvram_set("wans_dualwan", dualwan);
+						nvram_set_int("wans_usb_bk_act", 0);
+					}
+				}
+
+			}
+#endif
 		}
 	}
 	// Beceem dongle, ASIX USB to RJ45 converter, ECM, RNDIS(LU-150: ethX with RNDIS).
@@ -3334,6 +3449,42 @@ NEITHER_WDS_OR_PSTA:
 		if(!strcmp(action, "add")){
 			logmessage("hotplug", "add net %s.", interface);
 			_dprintf("hotplug net: add net %s.\n", interface);
+
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+			if(nvram_match("wans_usb_bk", "1"))
+			{
+				int wans = get_wans_dualwan();
+				char dualwan[32], *p;
+				if(get_dualwan_by_unit(WAN_UNIT_SECOND) ==  WANS_DUALWAN_IF_NONE	// must be single wan
+					&&  !(wans & WANSCAP_USB))	//not usb wan
+				{
+					get_wans_dualwan_str(dualwan, sizeof(dualwan));
+					p = strstr(dualwan, "none");
+					if(!p)
+						strlcat(dualwan, " usb", sizeof(dualwan));
+					else
+						strlcpy(p, "usb", sizeof(dualwan) - (p - dualwan));
+					nvram_set("wans_dualwan", dualwan);
+					nvram_set_int("wans_usb_bk_act", 1);
+#if defined(RTCONFIG_NOTIFICATION_CENTER)
+					json_object *root = NULL;
+					char buf[256] = {0};
+					char str[32] = {0};
+
+					_dprintf("[%s]NC send USB_TETHERING_EVENT\n", __FUNCTION__);
+					root = json_object_new_object();
+					if (root)
+					{
+						json_object_object_add(root, "dut", json_object_new_string(get_productid()));
+						snprintf(str, sizeof(str), "0x%x", USB_TETHERING_EVENT);
+						snprintf(buf, sizeof(buf), "%s", json_object_to_json_string(root));
+						eval("Notify_Event2NC", str, buf);
+						json_object_put(root);
+					}
+#endif
+				}
+			}
+#endif
 
 			snprintf(device_path, sizeof(device_path), "%s/%s/device", SYS_NET, interface);
 
@@ -3462,6 +3613,30 @@ NEITHER_WDS_OR_PSTA:
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
 			nvram_set(strcat_r(prefix, "ifname", tmp), "");
+
+#if defined(RTCONFIG_USB_WAN_BACKUP ) && defined (RTCONFIG_DUALWAN)
+			if(nvram_match("wans_usb_bk", "1") && nvram_match("wans_usb_bk_act", "1"))
+			{
+				int wan1_type, wan2_type;
+				char dualwan[32],  *p;
+
+				wan1_type = get_dualwan_by_unit(WAN_UNIT_FIRST);
+				wan2_type = get_dualwan_by_unit(WAN_UNIT_SECOND);
+				if((wan1_type != WANS_DUALWAN_IF_USB && wan1_type != WANS_DUALWAN_IF_USB2)
+					&& (wan2_type == WANS_DUALWAN_IF_USB || wan2_type == WANS_DUALWAN_IF_USB2))
+				{
+					get_wans_dualwan_str(dualwan, sizeof(dualwan));
+					p = strstr(dualwan, "usb");
+					if(p)
+					{
+						strlcpy(p, "none", sizeof(dualwan) - (p - dualwan));
+						nvram_set("wans_dualwan", dualwan);
+						nvram_set_int("wans_usb_bk_act", 0);
+					}
+				}
+
+			}
+#endif
 
 #ifdef RTCONFIG_USB_BECEEM
 			if(strlen(port_path) <= 0)
@@ -4177,11 +4352,15 @@ lan_up(char *lan_ifname)
 		}
 	}
 #endif
-#if defined(RTCONFIG_AMAS) && defined(HND_ROUTER)
-	if (nvram_get_int("re_mode") == 1) {
-		_dprintf("[%s(%d)] RE to do GPY211_INIT_SPEED ...\n", __func__, __LINE__);
-		GPY211_INIT_SPEED();
+#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_HND_ROUTER_AX)
+#if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
+	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
+#else
+	if (nvram_get_int("re_mode") == 1 && nvram_get_int("gpy211_war")) {
+		_dprintf("[%s(%d)] GPY211 ANEG ...\n", __func__, __LINE__);
+		GPY211_WAR_ANEG();
 	}
+#endif
 #endif
 }
 
@@ -4323,9 +4502,13 @@ void stop_lan_wl(void)
 	int dbg=nvram_get_int("hive_dbg");
 #endif
 
-	if (module_loaded("ebtables")) {
+#ifndef EBTABLES_BUILTIN
+	if (module_loaded("ebtables"))
+#endif
+	{
 		eval("ebtables", "-F");
 		eval("ebtables", "-t", "broute", "-F");
+		eval("ebtables", "-t", "nat", "-F");
 	}
 
 #ifdef HND_ROUTER
@@ -5286,8 +5469,15 @@ void restart_wl(void)
 #endif
 				eval("wlconf", ifname, "down");
 				eval("wl", "-i", ifname, "radio", "off");
-			} else
+			} else{
+#if defined(RTCONFIG_HND_ROUTER_BE_4916)
+				fprintf(stderr, "[%s][%d]: using eval(wlconf(%s)) in background\n", __func__, __LINE__, ifname);
+				eval("wlconf", ifname, "start", "&"); /* start wl iface */
+				sleep(5);
+#else
 				eval("wlconf", ifname, "start"); /* start wl iface */
+#endif
+			}
 			wlconf_post(ifname);
 #endif	// CONFIG_BCMWL5
 		}
@@ -6094,8 +6284,14 @@ void restart_wireless(void)
 		}
 	}
 #endif
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING)
+#if defined(RTCONFIG_AMAS)
+#if defined(RTCONFIG_VIF_ONBOARDING)
 	set_onboarding_vif_status();
+#endif	//RTCONFIG_VIF_ONBOARDING
+	if (nvram_get_int("re_mode") == 1) {
+		if (killall("amas_lanctrl", SIGUSR1) != 0)
+			nvram_set_int("amas_recheck_bss", 1);
+	}
 #endif
 #ifdef RTCONFIG_CFGSYNC
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
@@ -6206,25 +6402,30 @@ void start_lan_port(int dt)
 #else
 	lanport_ctrl(1);
 #endif
-#ifdef HND_ROUTER
-#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10)
+#ifdef RTCONFIG_HND_ROUTER_AX
+#if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
+	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
+#elif defined(RTAX86U_PRO)
+	if(client_mode()){
+		_dprintf("%s: power recycle eth5 at the client mode...\n", __func__);
+		reset_ext_phy();
+	}
+#else
 	char lan_ifnames[64], word[64], *next;
 	int gpy211_war = 0;
 
 	strlcpy(lan_ifnames, nvram_safe_get("lan_ifnames"), sizeof(lan_ifnames));
 	foreach (word, lan_ifnames, next) {
-		if (!strcmp(word, "eth0")) {
+		if (!strcmp(word, GPY211_IFNAME)) {
 			gpy211_war = 1;
 			break;
 		}
 	}
 
 	/* add war for 2500BaseX speed issue */
-	if (gpy211_war) {
-#endif
-		_dprintf("[%s(%d)] run GPY211_INIT_SPEED ...\n", __func__, __LINE__);
-		GPY211_INIT_SPEED();
-#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10)
+	if (gpy211_war && nvram_get_int("gpy211_war")) {
+		_dprintf("[%s(%d)] GPY211 ANEG ...\n", __func__, __LINE__);
+		GPY211_WAR_ANEG();
 	}
 #endif
 #endif

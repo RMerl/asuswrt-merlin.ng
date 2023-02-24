@@ -1,0 +1,14 @@
+moon::rm /etc/swanctl/rsa/*
+moon::tkm_cfgtool -c /etc/tkm/tkm.conf -i /etc/swanctl/swanctl.conf -t /etc/tkm/tkm.bin -s /usr/local/share/tkm/tkmconfig.xsd
+moon::cat /etc/swanctl/swanctl.conf
+moon::tkm_keymanager -c /etc/tkm/tkm.bin -k /etc/tkm/moonKey.der -r /etc/tkm/strongswanCert.der:1,/etc/tkm/levelsCert.der:2 >/tmp/tkm.log 2>&1 &
+moon::expect-file /tmp/tkm.rpc.ike
+moon::service charon-tkm start
+carol::systemctl start strongswan
+carol::expect-connection host-host
+dave::systemctl start strongswan
+dave::expect-connection host-host
+moon::expect-connection conn1
+moon::expect-connection conn2
+carol::swanctl --initiate --child host-host 2> /dev/null
+dave::swanctl --initiate --child host-host 2> /dev/null

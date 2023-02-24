@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2012-2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -385,11 +384,24 @@ static bool request(private_dhcp_socket_t *this,
 	return TRUE;
 }
 
+/**
+ * Calculate the timeout to wait for a response for the given try
+ */
+static inline void get_timeout(int try, timeval_t *timeout)
+{
+	timeval_t delay = { .tv_sec = try };
+
+	time_monotonic(timeout);
+	timeradd(timeout, &delay, timeout);
+}
+
 METHOD(dhcp_socket_t, enroll, dhcp_transaction_t*,
 	private_dhcp_socket_t *this, identification_t *identity)
 {
 	dhcp_transaction_t *transaction;
+	timeval_t timeout;
 	uint32_t id;
+	bool got_response;
 	int try;
 
 	if (!this->rng->get_bytes(this->rng, sizeof(id), (uint8_t*)&id))
@@ -401,11 +413,21 @@ METHOD(dhcp_socket_t, enroll, dhcp_transaction_t*,
 
 	this->mutex->lock(this->mutex);
 	this->discover->insert_last(this->discover, transaction);
+
 	try = 1;
+	got_response = FALSE;
 	while (try <= DHCP_TRIES && discover(this, transaction))
 	{
-		if (!this->condvar->timed_wait(this->condvar, this->mutex, 1000 * try) &&
-			this->request->find_first(this->request, NULL, (void**)&transaction))
+		get_timeout(try, &timeout);
+		while (!this->condvar->timed_wait_abs(this->condvar, this->mutex, timeout))
+		{
+			if (this->request->find_first(this->request, NULL, (void**)&transaction))
+			{
+				got_response = TRUE;
+				break;
+			}
+		}
+		if (got_response)
 		{
 			break;
 		}
@@ -423,10 +445,19 @@ METHOD(dhcp_socket_t, enroll, dhcp_transaction_t*,
 		 transaction->get_server(transaction));
 
 	try = 1;
+	got_response = FALSE;
 	while (try <= DHCP_TRIES && request(this, transaction))
 	{
-		if (!this->condvar->timed_wait(this->condvar, this->mutex, 1000 * try) &&
-			this->completed->remove(this->completed, transaction, NULL))
+		get_timeout(try, &timeout);
+		while (!this->condvar->timed_wait_abs(this->condvar, this->mutex, timeout))
+		{
+			if (this->completed->remove(this->completed, transaction, NULL))
+			{
+				got_response = TRUE;
+				break;
+			}
+		}
+		if (got_response)
 		{
 			break;
 		}

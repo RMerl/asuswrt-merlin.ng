@@ -264,9 +264,23 @@ static int process_real_option_group(struct fuse_opt_context *ctx, char *opts)
 
     do {
         int res;
-        sep = strchr(opts, ',');
-        if (sep)
-            *sep = '\0';
+#ifdef __SOLARIS__
+                /*
+                 * On Solaris, the device name contains commas, so the
+                 * option "fsname" has to be the last one and its commas
+                 * should not be interpreted as option separators.
+                 * This had to be hardcoded because the option "fsname"
+                 * may be found though not present in option list.
+                 */
+        if (!strncmp(opts,"fsname=",7))
+            sep = (char*)NULL;
+        else
+#endif /* __SOLARIS__ */
+            {
+            sep = strchr(opts, ',');
+            if (sep)
+                *sep = '\0';
+        }
         res = process_gopt(ctx, opts, 1);
         if (res == -1)
             return -1;

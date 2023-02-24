@@ -2,7 +2,8 @@
  * Copyright (C) 2012-2020 Tobias Brunner
  * Copyright (C) 2005-2010 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -903,7 +904,7 @@ static void add_to_proposal_v1_ike(proposal_t *proposal,
 						get_alg_from_ikev1(PSEUDO_RANDOM_FUNCTION, value), 0);
 				break;
 			case TATTR_PH1_GROUP:
-				proposal->add_algorithm(proposal, DIFFIE_HELLMAN_GROUP,
+				proposal->add_algorithm(proposal, KEY_EXCHANGE_METHOD,
 						value, 0);
 				break;
 			default:
@@ -950,7 +951,7 @@ static void add_to_proposal_v1(proposal_t *proposal,
 										get_alg_from_ikev1_auth(value), 0);
 				break;
 			case TATTR_PH2_GROUP:
-				proposal->add_algorithm(proposal, DIFFIE_HELLMAN_GROUP,
+				proposal->add_algorithm(proposal, KEY_EXCHANGE_METHOD,
 						value, 0);
 				break;
 			case TATTR_PH2_EXT_SEQ_NUMBER:
@@ -1317,7 +1318,7 @@ static void set_from_proposal_v1_ike(private_proposal_substructure_t *this,
 	}
 	enumerator->destroy(enumerator);
 
-	enumerator = proposal->create_enumerator(proposal, DIFFIE_HELLMAN_GROUP);
+	enumerator = proposal->create_enumerator(proposal, KEY_EXCHANGE_METHOD);
 	if (enumerator->enumerate(enumerator, &alg, &key_size))
 	{
 		transform->add_transform_attribute(transform,
@@ -1395,7 +1396,7 @@ static void set_from_proposal_v1(private_proposal_substructure_t *this,
 		return;
 	}
 
-	enumerator = proposal->create_enumerator(proposal, DIFFIE_HELLMAN_GROUP);
+	enumerator = proposal->create_enumerator(proposal, KEY_EXCHANGE_METHOD);
 	if (enumerator->enumerate(enumerator, &alg, &key_size))
 	{
 		transform->add_transform_attribute(transform,
@@ -1488,11 +1489,11 @@ static void set_from_proposal_v2(private_proposal_substructure_t *this,
 	enumerator->destroy(enumerator);
 
 	/* dh groups */
-	enumerator = proposal->create_enumerator(proposal, DIFFIE_HELLMAN_GROUP);
+	enumerator = proposal->create_enumerator(proposal, KEY_EXCHANGE_METHOD);
 	while (enumerator->enumerate(enumerator, &alg, NULL))
 	{
 		transform = transform_substructure_create_type(PLV2_TRANSFORM_SUBSTRUCTURE,
-												DIFFIE_HELLMAN_GROUP, alg);
+												KEY_EXCHANGE_METHOD, alg);
 		add_transform_substructure(this, transform);
 	}
 	enumerator->destroy(enumerator);

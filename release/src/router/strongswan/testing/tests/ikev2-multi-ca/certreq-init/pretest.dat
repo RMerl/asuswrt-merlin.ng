@@ -1,0 +1,9 @@
+carol::systemctl start strongswan
+dave::systemctl start strongswan
+moon::systemctl start strongswan
+carol::expect-connection moon
+moon::expect-connection carol
+moon::swanctl --initiate --child alice 2> /dev/null
+dave::expect-connection moon
+moon::expect-connection dave
+moon::swanctl --initiate --child venus 2> /dev/null

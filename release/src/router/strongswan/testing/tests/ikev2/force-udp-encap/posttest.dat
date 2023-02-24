@@ -1,0 +1,6 @@
+alice::systemctl stop strongswan
+sun::systemctl stop strongswan
+alice::iptables-restore < /etc/iptables.flush
+sun::iptables-restore < /etc/iptables.flush
+sun::ip route del 10.1.0.0/16 via PH_IP_MOON
+winnetou::ip route del 10.1.0.0/16 via PH_IP_MOON

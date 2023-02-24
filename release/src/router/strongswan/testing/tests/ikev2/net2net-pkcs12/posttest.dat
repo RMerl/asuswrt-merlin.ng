@@ -1,6 +1,7 @@
-moon::ipsec stop
-sun::ipsec stop
+moon::swanctl --terminate --ike gw-gw 2> /dev/null
+moon::systemctl stop strongswan
+sun::systemctl stop strongswan
+moon::rm /etc/swanctl/pkcs12/*
+sun::rm /etc/swanctl/pkcs12/*
 moon::iptables-restore < /etc/iptables.flush
 sun::iptables-restore < /etc/iptables.flush
-moon::rm /etc/ipsec.d/private/moonCert.p12
-sun::rm /etc/ipsec.d/private/sunCert.p12

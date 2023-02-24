@@ -16,6 +16,7 @@ extern void cm_weventPacketProcess(unsigned char *data);
 extern void cm_processProbeReq(unsigned char *data);	//for test
 extern int cm_checkReWifiConnected(char *reMac, char *modelName);
 extern void cm_removeReWifiConnectedHistory(char *reMac);
+extern void cm_removeWirelessClientListByMac(char *mac);
 
 #endif /* __CFG_WEVENT_H__ */
 /* End of cfg_wevent.h */

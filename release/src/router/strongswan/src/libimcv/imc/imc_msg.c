@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2012-2015 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2012-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,7 +19,7 @@
 #include "ietf/ietf_attr.h"
 #include "ietf/ietf_attr_assess_result.h"
 #include "ietf/ietf_attr_remediation_instr.h"
-#include "tcg/seg/tcg_seg_attr_max_size.h"
+#include "tcg/seg/tcg_seg_attr_seg_contract.h"
 #include "tcg/seg/tcg_seg_attr_seg_env.h"
 #include "tcg/seg/tcg_seg_attr_next_seg.h"
 
@@ -312,7 +313,7 @@ METHOD(imc_msg_t, receive, TNC_Result,
 	enumerator = this->pa_msg->create_attribute_enumerator(this->pa_msg);
 	while (enumerator->enumerate(enumerator, &attr))
 	{
-		uint32_t max_attr_size, max_seg_size, my_max_attr_size, my_max_seg_size;
+		uint32_t max_msg_size, max_seg_size, my_max_msg_size, my_max_seg_size;
 		seg_contract_t *contract;
 		seg_contract_manager_t *contracts;
 		char buf[BUF_LEN];
@@ -329,23 +330,23 @@ METHOD(imc_msg_t, receive, TNC_Result,
 
 		switch (type.type)
 		{
-			case TCG_SEG_MAX_ATTR_SIZE_REQ:
+			case TCG_SEG_CONTRACT_REQ:
 			{
-				tcg_seg_attr_max_size_t *attr_cast;
+				tcg_seg_attr_seg_contract_t *attr_cast;
 
-				attr_cast = (tcg_seg_attr_max_size_t*)attr;
-				attr_cast->get_attr_size(attr_cast, &max_attr_size,
-													&max_seg_size);
+				attr_cast = (tcg_seg_attr_seg_contract_t*)attr;
+				attr_cast->get_max_size(attr_cast, &max_msg_size,
+												   &max_seg_size);
 				contract = contracts->get_contract(contracts, this->msg_type,
 												   FALSE, this->src_id);
 				if (contract)
 				{
-					contract->set_max_size(contract, max_attr_size,
+					contract->set_max_size(contract, max_msg_size,
 													 max_seg_size);
 				}
 				else
 				{
-					contract = seg_contract_create(this->msg_type, max_attr_size,
+					contract = seg_contract_create(this->msg_type, max_msg_size,
 									max_seg_size, FALSE, this->src_id, TRUE);
 					contract->set_responder(contract, target_imc_id);
 					contracts->add_contract(contracts, contract);
@@ -360,29 +361,29 @@ METHOD(imc_msg_t, receive, TNC_Result,
 									- TCG_SEG_ATTR_SEG_ENV_HEADER;
 
 				/* If segmentation is possible select lower segment size */
-				if (max_seg_size != SEG_CONTRACT_NO_FRAGMENTATION &&
+				if (max_seg_size != SEG_CONTRACT_NO_SEGMENTATION &&
 					max_seg_size > my_max_seg_size)
 				{
 					max_seg_size = my_max_seg_size;
-					contract->set_max_size(contract, max_attr_size,
+					contract->set_max_size(contract, max_msg_size,
 													 max_seg_size);
 					DBG2(DBG_IMC, "  lowered maximum segment size to %u bytes",
 						 max_seg_size);
 				}
 
-				/* Add Maximum Attribute Size Response attribute */
-				attr = tcg_seg_attr_max_size_create(max_attr_size,
-													max_seg_size, FALSE);
+				/* Add Segmentation Contract Response attribute */
+				attr = tcg_seg_attr_seg_contract_create(max_msg_size,
+														max_seg_size, FALSE);
 				out_msg->add_attribute(out_msg, attr);
 				break;
 			}
-			case TCG_SEG_MAX_ATTR_SIZE_RESP:
+			case TCG_SEG_CONTRACT_RESP:
 			{
-				tcg_seg_attr_max_size_t *attr_cast;
+				tcg_seg_attr_seg_contract_t *attr_cast;
 
-				attr_cast = (tcg_seg_attr_max_size_t*)attr;
-				attr_cast->get_attr_size(attr_cast, &max_attr_size,
-													&max_seg_size);
+				attr_cast = (tcg_seg_attr_seg_contract_t*)attr;
+				attr_cast->get_max_size(attr_cast, &max_msg_size,
+												   &max_seg_size);
 				contract = contracts->get_contract(contracts, this->msg_type,
 												   TRUE, this->src_id);
 				if (!contract)
@@ -398,13 +399,13 @@ METHOD(imc_msg_t, receive, TNC_Result,
 				}
 				if (contract)
 				{
-					contract->get_max_size(contract, &my_max_attr_size,
+					contract->get_max_size(contract, &my_max_msg_size,
 													 &my_max_seg_size);
-					if (my_max_seg_size != SEG_CONTRACT_NO_FRAGMENTATION &&
+					if (my_max_seg_size != SEG_CONTRACT_NO_SEGMENTATION &&
 						my_max_seg_size > max_seg_size)
 					{
 						my_max_seg_size = max_seg_size;
-						contract->set_max_size(contract, my_max_attr_size,
+						contract->set_max_size(contract, my_max_msg_size,
 														 my_max_seg_size);
 					}
 					contract->get_info_string(contract, buf, BUF_LEN, FALSE);
@@ -417,22 +418,22 @@ METHOD(imc_msg_t, receive, TNC_Result,
 				}
 				break;
 			}
-			case TCG_SEG_ATTR_SEG_ENV:
+			case TCG_SEG_ENVELOPE:
 			{
 				tcg_seg_attr_seg_env_t *seg_env_attr;
 				pa_tnc_attr_t *error;
-				uint32_t base_attr_id;
+				uint32_t base_msg_id;
 				bool more;
 
 				seg_env_attr = (tcg_seg_attr_seg_env_t*)attr;
-				base_attr_id = seg_env_attr->get_base_attr_id(seg_env_attr);
+				base_msg_id = seg_env_attr->get_base_msg_id(seg_env_attr);
 
 				contract = contracts->get_contract(contracts, this->msg_type,
 												   TRUE, this->src_id);
 				if (!contract)
 				{
-					DBG2(DBG_IMC, "no contract for received attribute segment "
-						 "with base attribute ID %u", base_attr_id);
+					DBG2(DBG_IMC, "no contract for received segment with base "
+								  "message ID %u", base_msg_id);
 					continue;
 				}
 				attr = contract->add_segment(contract, attr, &error, &more);
@@ -447,18 +448,18 @@ METHOD(imc_msg_t, receive, TNC_Result,
 				if (more)
 				{
 					/* Send Next Segment Request */
-					attr = tcg_seg_attr_next_seg_create(base_attr_id, FALSE);
+					attr = tcg_seg_attr_next_seg_create(base_msg_id, FALSE);
 					out_msg->add_attribute(out_msg, attr);
 				}
 				break;
 			}
-			case TCG_SEG_NEXT_SEG_REQ:
+			case TCG_SEG_NEXT_SEGMENT:
 			{
 				tcg_seg_attr_next_seg_t *attr_cast;
-				uint32_t base_attr_id;
+				uint32_t base_msg_id;
 
 				attr_cast = (tcg_seg_attr_next_seg_t*)attr;
-				base_attr_id = attr_cast->get_base_attr_id(attr_cast);
+				base_msg_id = attr_cast->get_base_msg_id(attr_cast);
 
 				contract = contracts->get_contract(contracts, this->msg_type,
 												   FALSE, this->src_id);
@@ -466,10 +467,10 @@ METHOD(imc_msg_t, receive, TNC_Result,
 				{
 					/* TODO no contract - generate error message */
 					DBG1(DBG_IMC, "no contract for received next segment "
-						 "request with base attribute ID %u", base_attr_id);
+						 "request with base message ID %u", base_msg_id);
 					continue;
 				}
-				attr = contract->next_segment(contract, base_attr_id);
+				attr = contract->next_segment(contract, base_msg_id);
 				if (attr)
 				{
 					out_msg->add_attribute(out_msg, attr);
@@ -478,7 +479,7 @@ METHOD(imc_msg_t, receive, TNC_Result,
 				{
 					/* TODO no more segments - generate error message */
 					DBG1(DBG_IMC, "no more segments found for "
-						 "base attribute ID %u", base_attr_id);
+						 "base message ID %u", base_msg_id);
 				}
 				break;
 			}

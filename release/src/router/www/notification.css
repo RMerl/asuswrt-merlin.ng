@@ -40,7 +40,7 @@
 .notification_on{
 	background-image:url(images/New_ui/notification.png);
 	background-repeat:no-repeat;	
-	background-position:2px 2px;
+	background-position: 0px 0px;
 	height: 24px;
 	width: 30px;
 	cursor: pointer;
@@ -52,6 +52,6 @@
 
 .notification_on1{
 	cursor: pointer;
-	width: 30px;
 	height: 24px;
+	width: 30px;
 }

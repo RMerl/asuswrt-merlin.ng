@@ -1,20 +1,8 @@
 #ifndef __NFCFG_H__
 #define __NFCFG_H__
 
-#include <sys/types.h>
-#include <unistd.h>
-#include <stdarg.h>
-#include <stdio.h>
-#include <stdbool.h>
-#include <string.h>
-#include <arpa/inet.h>
-#include <time.h>
-
-#include <ctype.h>
-#include <json.h>
-#include <list.h>
-
-#include <log.h>
+#include "list.h"
+#include "log.h"
 
 #ifndef ETHER_ADDR_LENGTH
 #define ETHER_ADDR_LENGTH 18 // 11:22:33:44:55:66

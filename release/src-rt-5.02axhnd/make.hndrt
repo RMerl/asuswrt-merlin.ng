@@ -1046,6 +1046,7 @@ else
 	make -C $(HOSTTOOLS_DIR) build_execstack;
 endif
 endif
+	make -C router strips;
 	cd $(TARGETS_DIR); ./buildFS;
 ifneq ($(BUILD_MODSW_BEE),)
 	cd $(TARGETS_DIR); ./buildFS_BEE;

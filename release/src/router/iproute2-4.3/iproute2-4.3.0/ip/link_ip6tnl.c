@@ -301,7 +301,7 @@ get_failed:
 				{
 					if(str[strlen(str) - 1] == '\n')
 						str[strlen(str) - 1] = '\0';
-					if(sscanf(str, "%[^/]/%d %[^/]/%d %d %d", ip4_prefix, &ip4_prefix_len, ip6_prefix, &ip6_prefix_len, &ea_len, &offset))
+					if (sscanf(str, "%s %d %s %d %d %d", ip4_prefix, &ip4_prefix_len, ip6_prefix, &ip6_prefix_len, &ea_len, &offset))
 					{
 						if (debug) {
 							printf("[%s, %d]ip4_prefix=%s\n", __FUNCTION__, __LINE__, ip4_prefix);

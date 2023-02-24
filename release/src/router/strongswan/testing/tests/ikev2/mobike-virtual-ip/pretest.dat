@@ -2,8 +2,8 @@ alice::ifup eth1
 alice::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
 sun::ip route add 10.1.0.0/16 via PH_IP_MOON
-alice::ipsec start
-sun::ipsec start
+alice::systemctl start strongswan
+sun::systemctl start strongswan
 alice::expect-connection mobike
 sun::expect-connection mobike
-alice::ipsec up mobike
+alice::swanctl --initiate --child mobike 2> /dev/null

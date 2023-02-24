@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Martin Willi
- * Copyright (C) 2011 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -77,7 +78,7 @@ METHOD(authenticator_t, destroy, void,
  * Described in header.
  */
 hybrid_authenticator_t *hybrid_authenticator_create(ike_sa_t *ike_sa,
-										bool initiator, diffie_hellman_t *dh,
+										bool initiator, key_exchange_t *dh,
 										chunk_t dh_value, chunk_t sa_payload,
 										chunk_t id_payload)
 {

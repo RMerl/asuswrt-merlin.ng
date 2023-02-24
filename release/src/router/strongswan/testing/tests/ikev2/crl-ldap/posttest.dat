@@ -1,7 +1,4 @@
-moon::ipsec stop
-carol::ipsec stop
-winnetou::/etc/init.d/slapd stop
-moon::iptables-restore < /etc/iptables.flush
-carol::iptables-restore < /etc/iptables.flush
-moon::rm /etc/ipsec.d/crls/*
-carol::rm /etc/ipsec.d/crls/*
+carol::systemctl stop strongswan
+moon::systemctl stop strongswan
+moon::rm /etc/swanctl/x509crl/*
+carol::rm /etc/swanctl/x509crl/*

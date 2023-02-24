@@ -5,7 +5,7 @@
  * Copyright (c) 2002-2005 Richard Russon
  * Copyright (c) 2002-2008 Szabolcs Szakacsits
  * Copyright (c) 2004 Yura Pakhuchiy
- * Copyright (c) 2007-2009 Jean-Pierre Andre
+ * Copyright (c) 2007-2022 Jean-Pierre Andre
  *
  * This program/include file is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License as published
@@ -136,9 +136,10 @@ runlist_element *ntfs_rl_extend(ntfs_attr *na, runlist_element *rl,
 		if (!newrl) {
 			errno = ENOMEM;
 			rl = (runlist_element*)NULL;
-		} else
+		} else {
 			na->rl = newrl;
 			rl = &newrl[irl];
+		}
 	} else {
 		ntfs_log_error("Cannot extend unmapped runlist");
 		errno = EIO;
@@ -917,11 +918,18 @@ static runlist_element *ntfs_mapping_pairs_decompress_i(const ntfs_volume *vol,
 						"array.\n");
 				goto err_out;
 			}
+			/* chkdsk accepts zero-sized runs only for holes */
+			if ((lcn != (LCN)-1) && !rl[rlpos].length) {
+				ntfs_log_debug(
+					"Invalid zero-sized data run.\n");
+				goto err_out;
+			}
 			/* Enter the current lcn into the runlist element. */
 			rl[rlpos].lcn = lcn;
 		}
-		/* Get to the next runlist element. */
-		rlpos++;
+		/* Get to the next runlist element, skipping zero-sized holes */
+		if (rl[rlpos].length)
+			rlpos++;
 		/* Increment the buffer position to the next mapping pair. */
 		buf += (*buf & 0xf) + ((*buf >> 4) & 0xf) + 1;
 	}
@@ -938,40 +946,45 @@ mpa_err:
 				"attribute.\n");
 		goto err_out;
 	}
-	/* Setup not mapped runlist element if this is the base extent. */
-	if (!attr->lowest_vcn) {
-		VCN max_cluster;
 
-		max_cluster = ((sle64_to_cpu(attr->allocated_size) +
+	/*
+	 * If this is the base of runlist (if 'lowest_vcn' is 0), then
+	 * 'allocated_size' is valid, and we can use it to compute the total
+	 * number of clusters across all extents.  If the runlist covers all
+	 * clusters, then it fits into a single extent and we can terminate
+	 * the runlist with LCN_NOENT.  Otherwise, we must terminate the runlist
+	 * with LCN_RL_NOT_MAPPED and let the caller look for more extents.
+	 */
+	if (!attr->lowest_vcn) {
+		VCN num_clusters;
+
+		num_clusters = ((sle64_to_cpu(attr->allocated_size) +
 				vol->cluster_size - 1) >>
-				vol->cluster_size_bits) - 1;
-		/*
-		 * A highest_vcn of zero means this is a single extent
-		 * attribute so simply terminate the runlist with LCN_ENOENT).
-		 */
-		if (deltaxcn) {
+				vol->cluster_size_bits);
+
+		if (num_clusters > vcn) {
 			/*
-			 * If there is a difference between the highest_vcn and
-			 * the highest cluster, the runlist is either corrupt
-			 * or, more likely, there are more extents following
-			 * this one.
+			 * The runlist doesn't cover all the clusters, so there
+			 * must be more extents.
 			 */
-			if (deltaxcn < max_cluster) {
-				ntfs_log_debug("More extents to follow; deltaxcn = "
-						"0x%llx, max_cluster = 0x%llx\n",
-						(long long)deltaxcn,
-						(long long)max_cluster);
-				rl[rlpos].vcn = vcn;
-				vcn += rl[rlpos].length = max_cluster - deltaxcn;
-				rl[rlpos].lcn = (LCN)LCN_RL_NOT_MAPPED;
-				rlpos++;
-			} else if (deltaxcn > max_cluster) {
-				ntfs_log_debug("Corrupt attribute. deltaxcn = "
-						"0x%llx, max_cluster = 0x%llx\n",
-						(long long)deltaxcn,
-						(long long)max_cluster);
-				goto mpa_err;
-			}
+			ntfs_log_debug("More extents to follow; vcn = 0x%llx, "
+				       "num_clusters = 0x%llx\n",
+					(long long)vcn,
+					(long long)num_clusters);
+			rl[rlpos].vcn = vcn;
+			vcn += rl[rlpos].length = num_clusters - vcn;
+			rl[rlpos].lcn = (LCN)LCN_RL_NOT_MAPPED;
+			rlpos++;
+		} else if (vcn > num_clusters) {
+			/*
+			 * There are more VCNs in the runlist than expected, so
+			 * the runlist is corrupt.
+			 */
+			ntfs_log_error("Corrupt attribute. vcn = 0x%llx, "
+				       "num_clusters = 0x%llx\n",
+					(long long)vcn,
+					(long long)num_clusters);
+			goto mpa_err;
 		}
 		rl[rlpos].lcn = (LCN)LCN_ENOENT;
 	} else /* Not the base extent. There may be more extents to follow. */
@@ -981,13 +994,18 @@ mpa_err:
 	rl[rlpos].vcn = vcn;
 	rl[rlpos].length = (s64)0;
 	/* If no existing runlist was specified, we are done. */
-	if (!old_rl) {
+	if (!old_rl || !old_rl[0].length) {
 		ntfs_log_debug("Mapping pairs array successfully decompressed:\n");
 		ntfs_debug_runlist_dump(rl);
+		if (old_rl)
+			free(old_rl);
 		return rl;
 	}
 	/* Now combine the new and old runlists checking for overlaps. */
-	old_rl = ntfs_runlists_merge(old_rl, rl);
+	if (rl[0].length)
+		old_rl = ntfs_runlists_merge(old_rl, rl);
+	else
+		free(rl);
 	if (old_rl)
 		return old_rl;
 	err = errno;
@@ -1418,28 +1436,18 @@ int ntfs_write_significant_bytes(u8 *dst, const u8 *dst_max, const s64 n)
 {
 	s64 l = n;
 	int i;
-	s8 j;
 
 	i = 0;
-	do {
+	if (dst > dst_max)
+		goto err_out;
+	*dst++ = l;
+	i++;
+	while ((l > 0x7f) || (l < -0x80)) {
 		if (dst > dst_max)
 			goto err_out;
-		*dst++ = l & 0xffLL;
 		l >>= 8;
+		*dst++ = l;
 		i++;
-	} while (l != 0LL && l != -1LL);
-	j = (n >> 8 * (i - 1)) & 0xff;
-	/* If the sign bit is wrong, we need an extra byte. */
-	if (n < 0LL && j >= 0) {
-		if (dst > dst_max)
-			goto err_out;
-		i++;
-		*dst = (u8)-1;
-	} else if (n > 0LL && j < 0) {
-		if (dst > dst_max)
-			goto err_out;
-		i++;
-		*dst = 0;
 	}
 	return i;
 err_out:
@@ -1633,7 +1641,7 @@ errno_set:
 int ntfs_rl_truncate(runlist **arl, const VCN start_vcn)
 {
 	runlist *rl;
-	BOOL is_end = FALSE;
+	/* BOOL is_end = FALSE; */
 
 	if (!arl || !*arl) {
 		errno = EINVAL;
@@ -1676,8 +1684,10 @@ int ntfs_rl_truncate(runlist **arl, const VCN start_vcn)
 	 */
 	if (rl->length) {
 		++rl;
+/*
 		if (!rl->length)
 			is_end = TRUE;
+*/
 		rl->vcn = start_vcn;
 		rl->length = 0;
 	}
@@ -1685,7 +1695,7 @@ int ntfs_rl_truncate(runlist **arl, const VCN start_vcn)
 	/**
 	 * Reallocate memory if necessary.
 	 * FIXME: Below code is broken, because runlist allocations must be 
-	 * a multiply of 4096. The code caused crashes and corruptions.
+	 * a multiple of 4096. The code caused crashes and corruptions.
 	 */
 /*	
 	 if (!is_end) {

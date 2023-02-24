@@ -1188,8 +1188,8 @@ const zoneinfo_t tz_list[] = {
         {"MST7_2",	"US/Arizona"},		// (GMT-07:00) Arizona
 	{"MST7DST_3",	"America/Chihuahua"},	// (GMT-07:00) Chihuahua, La Paz, Mazatlan
         {"CST6_2",	"Canada/Saskatchewan"},	// (GMT-06:00) Saskatchewan
-        {"CST6DST_3",	"Mexico/General"},	// (GMT-06:00) Guadalajara, Mexico City
-        {"CST6DST_3_1",	"America/Monterrey"},	// (GMT-06:00) Monterrey
+        {"CST6_3",	"Mexico/General"},	// (GMT-06:00) Guadalajara, Mexico City
+        {"CST6_3_1",	"America/Monterrey"},	// (GMT-06:00) Monterrey
         {"UTC6DST",	"US/Central"},		// (GMT-06:00) Central Time (US & Canada)
         {"EST5DST",	"US/Eastern"},		// (GMT-05:00) Eastern Time (US & Canada)
         {"UTC5_1",	"US/East-Indiana"},	// (GMT-05:00) Indiana (East)    US Eastern
@@ -1274,7 +1274,7 @@ const zoneinfo_t tz_list[] = {
         {"UTC-11_1",    "Pacific/Noumea"},	// (GMT+11:00) New Caledonia
         {"UTC-11_3",    "Asia/Srednekolymsk"},	// (GMT+11:00) Chokurdakh, Srednekolymsk
 	{"UTC-12",      "Pacific/Majuro"},	// (GMT+12:00) Marshall IS.
-	{"UTC-12DST",	"Pacific/Fiji"},	// (GMT+12:00) Fiji
+	{"UTC-12_3",	"Pacific/Fiji"},	// (GMT+12:00) Fiji
 	{"UTC-12_2",	"Asia/Anadyr"},		// (GMT+12:00) Anadyr, Petropavlovsk-Kamchatsky
 	{"NZST-12DST",  "Pacific/Auckland"},	// (GMT+12:00) Auckland, Wellington
 	{"UTC-13",      "Pacific/Tongatapu"},	// (GMT+13:00) Nuku'alofa
@@ -1310,7 +1310,16 @@ void time_zone_x_mapping(void)
 #endif
 
 	/* pre mapping because time_zone area changed*/
-	if (nvram_match("time_zone", "KST-9KDT"))
+	if (nvram_match("time_zone", "UTC-12DST")){             /*Fiji*/
+                nvram_set("time_zone", "UTC-12_3");
+                nvram_set("time_zone_dst", "0");
+        }else if (nvram_match("time_zone", "CST6DST_3")){		/*Guadalajara, Mexico City*/
+		nvram_set("time_zone", "CST6_3");
+		nvram_set("time_zone_dst", "0");
+	}else if (nvram_match("time_zone", "CST6DST_3_1")){	/*Monterrey*/
+                nvram_set("time_zone", "CST6_3_1");
+		nvram_set("time_zone_dst", "0");
+	}else if (nvram_match("time_zone", "KST-9KDT"))
 		nvram_set("time_zone", "UCT-9_1");
 	else if (nvram_match("time_zone", "RFT-9RFTDST"))
 		nvram_set("time_zone", "UCT-9_2");

@@ -36,9 +36,9 @@ static int nf_set_tcp_state(nf_node_t *nn, uint8_t state)
 static int nf_set_counters(nf_node_t *nn, const struct nf_conntrack *ct, int dir)
 {
     if (dir == __DIR_ORIG) { // uplink
-        nn->up_bytes += (unsigned long long)ct->counters[dir].bytes;
+        nn->up_bytes = (unsigned long long)ct->counters[dir].bytes;
     } else { // downlink
-        nn->dn_bytes += (unsigned long long)ct->counters[dir].bytes;
+        nn->dn_bytes = (unsigned long long)ct->counters[dir].bytes;
     }
 
     return 0;
@@ -54,14 +54,15 @@ static int nf_set_proto(nf_node_t *nn, const struct __nfct_tuple *tuple)
 static int nf_set_src_address_ipv4(nf_node_t *nn, const struct __nfct_tuple *tuple)
 {
     memcpy(&nn->srcv4, &tuple->src.v4, sizeof(struct in_addr));
-
+    //just for db can be inserted
+    strcpy(nn->src6_ip, DEFAULT_IPV6_ADDR);
     return 0;
 }
 
 static int nf_set_src_address_ipv6(nf_node_t *nn, const struct __nfct_tuple *tuple)
 {
     memcpy(&nn->srcv6, &tuple->src.v6, sizeof(struct in6_addr));
-
+    inet_ntop(AF_INET6, &tuple->src.v6, nn->src6_ip, INET6_ADDRSTRLEN);
     return 0;
 }
 
@@ -112,14 +113,15 @@ int nf_set_src_port(nf_node_t *nn, const struct __nfct_tuple *tuple)
 static int nf_set_dst_address_ipv4(nf_node_t *nn, const struct __nfct_tuple *tuple)
 {
     memcpy(&nn->dstv4, &tuple->dst.v4, sizeof(struct in_addr));
-
+    //just for db can be inserted
+    strcpy(nn->dst6_ip, DEFAULT_IPV6_ADDR);
     return 0;
 }
 
 static int nf_set_dst_address_ipv6(nf_node_t *nn, const struct __nfct_tuple *tuple)
 {
     memcpy(&nn->dstv6, &tuple->dst.v6, sizeof(struct in6_addr));
-
+    inet_ntop(AF_INET6, &tuple->dst.v6, nn->dst6_ip, INET6_ADDRSTRLEN);
     return 0;
 }
 
@@ -178,6 +180,7 @@ bool nf_set_layer1_info(nf_node_t *nn, struct list_head *clilist, struct list_he
                 nn->layer1_info.eth_port = ar->port;
                 nn->layer1_info.is_guest = ar->is_guest;
                 memcpy(nn->layer1_info.ifname, ar->ifname, IFNAMESIZE);
+                memcpy(nn->src_mac, ar->mac, ETHER_ADDR_LENGTH);            
                 return true;
             }
         } else {
@@ -186,7 +189,9 @@ bool nf_set_layer1_info(nf_node_t *nn, struct list_head *clilist, struct list_he
                 nn->layer1_info.eth_port = ar->port;
                 nn->layer1_info.is_guest = ar->is_guest;
                 memcpy(nn->layer1_info.ifname, ar->ifname, IFNAMESIZE);
-                return true;
+                memcpy(nn->src_mac, ar->mac, ETHER_ADDR_LENGTH);            
+                nf_printf("nf_set_layer1_info mac:%s\n", nn->src_mac);    
+            return true;
             }
         }
     }
@@ -202,10 +207,19 @@ bool nf_set_layer1_info(nf_node_t *nn, struct list_head *clilist, struct list_he
                 nn->layer1_info.eth_port = client_list_get_phy_port(cli->type);
                 nn->layer1_info.is_guest = false;
                 memcpy(nn->layer1_info.ifname, "RE", IFNAMESIZE);
+                memcpy(nn->src_mac, cli->mac, ETHER_ADDR_LENGTH);            
                 return true;
             }
         } else {
 //ipv6
+            if (!memcmp(&cli->ipv6, &nn->srcv6, sizeof(struct in6_addr)) || !strcasecmp(cli->mac, nn->src_mac)) {
+                nn->layer1_info.eth_type = client_list_get_phy_type(cli->type);
+                nn->layer1_info.eth_port = client_list_get_phy_port(cli->type);
+                nn->layer1_info.is_guest = false;
+                memcpy(nn->layer1_info.ifname, "RE", IFNAMESIZE);
+                memcpy(nn->src_mac, cli->mac, ETHER_ADDR_LENGTH);            
+                return true;
+            }  
         }
     }
 #endif
@@ -311,11 +325,15 @@ int nf_conntrack_process(const struct nf_conntrack *ct, struct list_head *iplist
 
         // if the src is router's ip, discard it
         nf_set_src_address(nn, &ct->head.orig);
-        if (is_router_addr(&nn->srcv4)) {
+        if (nn->isv4 && (is_router_addr(&nn->srcv4) || !nf_set_layer1_info(nn, clilist, arlist))) {
             nf_node_free(nn);
             return -1;
         }
 
+        if (!nn->isv4 && (is_local_link_addr(&nn->srcv6) || !is_in_lanv6(&nn->srcv6) || !nf_set_layer1_info(nn, clilist, arlist))) {
+          nf_node_free(nn);
+            return -1;
+        }
         list_add_tail(&nn->list, iplist);
 
         nn->up_speed = nn->dn_speed = 0;
@@ -345,7 +363,7 @@ int nf_conntrack_process(const struct nf_conntrack *ct, struct list_head *iplist
         nf_set_counters(nn, ct, __DIR_REPL);
     }
 
-    nf_set_layer1_info(nn, clilist, arlist);
+   // nf_set_layer1_info(nn, clilist, arlist);
 
     return 0;
 }
@@ -364,6 +382,8 @@ const char *const tcp_states[TCP_CONNTRACK_MAX] = {
 	[TCP_CONNTRACK_SYN_SENT2]	= "SYN_SENT2",
 };
 */
+
+#if defined(NFCM_COLLECT_INVALID_TCP)
 
 bool ct_check_valid_tcp_state(const struct nf_conntrack *ct)
 {
@@ -431,16 +451,30 @@ int nf_conntrack_tcp_process(const struct nf_conntrack *ct,
         printf("TCP_STATE is not set\n");
     }
 
-    char ipstr[INET_ADDRSTRLEN];
+    char ipstr[INET6_ADDRSTRLEN] = {0};
 
     printf("ct->head.orig.protonum=[%d] ", ct->head.orig.protonum);
-    inet_ntop(AF_INET, &nn->srcv4, ipstr, INET_ADDRSTRLEN);
-    printf("src[%s][%u] --[%s][%llu][%llu]--> ", ipstr, nn->src_port,
+    if(nn->isv4)
+    {
+      inet_ntop(AF_INET, &nn->srcv4, ipstr, INET_ADDRSTRLEN);
+      printf("src[%s][%u] --[%s][%llu][%llu]--> ", ipstr, nn->src_port,
            tcp_states[nn->state],
            ct->counters[__DIR_ORIG].packets,
            ct->counters[__DIR_REPL].packets);
-    inet_ntop(AF_INET, &nn->dstv4, ipstr, INET_ADDRSTRLEN);
-    printf("dst[%s][%u], ", ipstr, nn->dst_port);
+      inet_ntop(AF_INET, &nn->dstv4, ipstr, INET_ADDRSTRLEN);
+      printf("dst[%s][%u], ", ipstr, nn->dst_port);
+    } else {
+
+      inet_ntop(AF_INET6, &nn->srcv6, ipstr, INET6_ADDRSTRLEN);
+      printf("src[%s][%u] --[%s][%llu][%llu]--> ", ipstr, nn->src_port,
+           tcp_states[nn->state],
+           ct->counters[__DIR_ORIG].packets,
+           ct->counters[__DIR_REPL].packets);
+      inet_ntop(AF_INET6, &nn->dstv6, ipstr, INET6_ADDRSTRLEN);
+      printf("dst[%s][%u], ", ipstr, nn->dst_port);
+
+
+    }
 
     if ((ct->status & IPS_EXPECTED)) 
         printf("[EXPECTED] ");
@@ -477,7 +511,12 @@ int nf_conntrack_tcp_process(const struct nf_conntrack *ct,
 
     // if the src is router's ip, discard it
     nf_set_src_address(nnt, &ct->head.orig);
-    if (is_router_addr(&nnt->srcv4)) {
+    if (nnt->isv4 && is_router_addr(&nnt->srcv4)) {
+        nf_node_free(nnt);
+        return -1;
+    }
+
+    if (!nnt->isv4 && (is_local_link_addr(&nnt->srcv6) || is_router_addr(&nnt->srcv6)) {
         nf_node_free(nnt);
         return -1;
     }
@@ -499,4 +538,4 @@ int nf_conntrack_tcp_process(const struct nf_conntrack *ct,
 
     return 0;
 }
-
+#endif

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -77,7 +78,7 @@ static package_t* create_package(swid_gen_info_t *info, chunk_t package,
 		.package = strndup(package.ptr, package.len),
 		.version = strndup(version.ptr, version.len),
 		.old_version = strndup(old_version.ptr, old_version.len),
-	)
+	);
 
 	this->sw_id = info->create_sw_id(info, this->package, this->version);
 	if (old_version.len)

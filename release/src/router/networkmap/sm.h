@@ -44,7 +44,7 @@ struct _match_rule {
 	unsigned char		baseID;
 };
 
-ac_state *construct_ac_file(convType *type, char * parse_filename);
+ac_state *construct_ac_file(convType *type, const char * parse_filename);
 
 ac_state *construct_ac_trie(convType *type);
 ac_state *find_next_state(ac_state *state, unsigned char transChar);

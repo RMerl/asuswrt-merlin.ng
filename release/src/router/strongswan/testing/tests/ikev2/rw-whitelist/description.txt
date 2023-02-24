@@ -1,3 +1,8 @@
 The roadwarriors <b>carol</b> and <b>dave</b> set up a connection each to gateway <b>moon</b>.
 <b>moon</b> uses whitelisting to grant access to <b>carol</b> with ID <b>carol@strongswan.org</b>
 whereas since ID <b>dave@strongswan.org</b> is not listed, <b>dave</b> gets rejected.
+<p/>
+Upon the successful establishment of the IPsec tunnels, the updown script
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, <b>carol</b> can successfully ping
+the client <b>alice</b> behind the gateway <b>moon</b> whereas <b>dave</b> fails.

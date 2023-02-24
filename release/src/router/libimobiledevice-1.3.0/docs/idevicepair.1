@@ -1,0 +1,56 @@
+.TH "idevicepair" 1
+.SH NAME
+idevicepair \- Manage host pairings with devices and usbmuxd.
+.SH SYNOPSIS
+.B idevicepair
+[OPTIONS] COMMAND
+
+.SH DESCRIPTION
+
+Manage host pairings with devices and usbmuxd.
+
+.SH OPTIONS
+.TP
+.B \-u, \-\-udid UDID
+target specific device by UDID.
+.TP 
+.B \-d, \-\-debug
+enable communication debugging.
+.TP
+.B \-h, \-\-help
+prints usage information.
+.TP
+.B \-v, \-\-version
+prints version information.
+
+.SH COMMANDS
+.TP
+.B systembuid
+print the system buid of the usbmuxd host.
+.TP
+.B hostid
+print the host id for target device.
+.TP
+.B pair
+pair device with this host.
+.TP
+.B validate
+validate if device is paired with this host.
+.TP
+.B unpair
+unpair device with this host.
+.TP
+.B list
+list devices paired with this host.
+
+.SH AUTHORS
+Nikias Bassen
+
+Martin Szulecki
+
+Julien Lavergne
+
+.SH ON THE WEB
+https://libimobiledevice.org
+
+https://github.com/libimobiledevice/libimobiledevice

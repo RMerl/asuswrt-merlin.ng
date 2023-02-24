@@ -1,14 +1,14 @@
-sun::rm /etc/ipsec.secrets
-sun::tkm_cfgtool -c /etc/tkm/tkm.conf -i /etc/ipsec.conf -t /etc/tkm/tkm.bin -s /usr/local/share/tkm/tkmconfig.xsd
-sun::cat /etc/ipsec.conf
-sun::tkm_keymanager -c /etc/tkm/tkm.bin -k /etc/tkm/sunKey.der -r /etc/tkm/strongswanCert.der >/tmp/tkm.log 2>&1 &
+sun::rm /etc/swanctl/rsa/*
+sun::tkm_cfgtool -c /etc/tkm/tkm.conf -i /etc/swanctl/swanctl.conf -t /etc/tkm/tkm.bin -s /usr/local/share/tkm/tkmconfig.xsd
+sun::cat /etc/swanctl/swanctl.conf
+sun::tkm_keymanager -c /etc/tkm/tkm.bin -k /etc/tkm/sunKey.der -r /etc/tkm/strongswanCert.der:1 >/tmp/tkm.log 2>&1 &
 sun::expect-file /tmp/tkm.rpc.ike
-sun::DAEMON_NAME=charon-tkm ipsec start
-carol::ipsec start
+sun::service charon-tkm start
+carol::systemctl start strongswan
 carol::expect-connection host-host
-dave::ipsec start
+dave::systemctl start strongswan
 dave::expect-connection host-host
-sun::DAEMON_NAME=charon-tkm expect-connection conn1
-sun::DAEMON_NAME=charon-tkm expect-connection conn2
-carol::ipsec up host-host
-dave::ipsec up host-host
+sun::expect-connection conn1
+sun::expect-connection conn2
+carol::swanctl --initiate --child host-host 2> /dev/null
+dave::swanctl --initiate --child host-host 2> /dev/null

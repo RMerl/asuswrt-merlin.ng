@@ -136,6 +136,11 @@ struct REPLACE_PRODUCTID_S {
 };
 #endif
 
+struct REPLACE_TAG_S {
+        char *org_name;
+        char *replace_name;
+};
+
 #ifdef RTCONFIG_SAVE_WL_NVRAM_BOTH
 struct wl_sync_nvram {
         int model;
@@ -208,53 +213,11 @@ struct wl_sync_nvram {
 #define IPSEC_UPLOAD_FILE       "/tmp/server_ipsec_file/server_ipsec.tgz"
 #endif
 
-#define PROFILE_HEADER  "HDR1"
-#ifdef RTCONFIG_DSL
-#define PROFILE_HEADER_NEW      "N55U"
-#else
-#ifdef RTCONFIG_QCA
-#define PROFILE_HEADER_NEW      "AC55U"
-#elif defined(RTCONFIG_LANTIQ)
-#define PROFILE_HEADER_NEW      "BLUE"
-#else
-#define PROFILE_HEADER_NEW      "HDR2"
-#endif
-#endif
-#define IH_MAGIC        0x27051956      /* Image Magic Number           */
-#define BLACKLIST_CONFIG_FILE "/tmp/blacklist_config.json"
-#define SAVE_CONFIG_SYNC_FILE "/tmp/save_config_sync.json"
 #define CRC_LEN 8
 
 #ifdef RTCONFIG_WIREGUARD
 #define WG_DIR_CONF    "/etc/wg"
 #endif
-
-enum {
-	HTTP_OK = 200,
-	HTTP_FAIL = 400,
-	HTTP_CHPASS_FAIL,
-	HTTP_CHPASS_FAIL_MAX,
-	HTTP_AUTH_EXPIRE,
-	HTTP_RULE_ADD_SUCCESS = 2001,
-	HTTP_RULE_DEL_SUCCESS,
-	HTTP_NORULE_DEL,
-	HTTP_RULE_MODIFY_SUCCESS,
-	HTTP_OVER_MAX_RULE_LIMIT = 4000,
-	HTTP_INVALID_ACTION,
-	HTTP_INVALID_MAC,
-	HTTP_INVALID_ENABLE_OPT,
-	HTTP_INVALID_NAME,
-	HTTP_INVALID_EMAIL,
-	HTTP_INVALID_INPUT,
-	HTTP_INVALID_IPADDR,
-	HTTP_INVALID_TS,
-	HTTP_INVALID_FILE,
-	HTTP_INVALID_SUPPORT,
-	HTTP_REMOTE_CTRL_DISABLE,
-	HTTP_SHMGET_FAIL = 5000,
-	HTTP_FB_SVR_FAIL,
-	HTTP_DM_SVR_FAIL
-};
 
 /* Exception MIME handler */
 struct except_mime_handler {
@@ -351,6 +314,12 @@ typedef struct kw_s     {
 }
 #endif  // defined TRANSLATE_ON_FLY
 
+struct HTTPD_FILE_LOCK_TABLE {
+	char *Process_name;
+	char *lock_file;
+	char *rc_service;
+	int kill_process;
+};
 
 /* Regular file handler */
 extern void do_file(char *path, FILE *stream);
@@ -539,8 +508,8 @@ extern void add_ifttt_flag(void);
 #endif
 extern char HTTPD_LOGIN_FAIL_LAN[32];
 extern char HTTPD_LOGIN_FAIL_WAN[32];
-extern char HTTPD_LAST_LOGIN_TS[32];
-extern char HTTPD_LAST_LOGIN_TS_W[32];
+extern char HTTPD_LAST_LOGIN_FAIL_TS[32];
+extern char HTTPD_LAST_LOGIN_FAIL_TS_W[32];
 extern char CAPTCHA_FAIL_NUM[32];
 extern char HTTPD_LOCK_NUM[32];
 extern char cloud_file[256];
@@ -573,6 +542,8 @@ extern time_t auth_check_dt;
 extern int lock_flag;
 extern int max_lock_time;
 extern int login_error_status;
+extern char cache_object[];
+extern char cache_long_object[];
 extern char* ipisdomain(char* hostname, char* str);
 #ifdef RTCONFIG_AMAS
 extern char* iscap(char* str);
@@ -637,7 +608,7 @@ extern void replace_char(char *str, char find, char replace);
 extern void reg_default_final_token();
 extern int captcha_on();
 extern void do_webdavInfo_asp(char *url, FILE *stream);
-extern int get_wl_nband_list();
+extern int gen_wl_nband_array();
 extern void do_get_cta_info_cgi(char *url, FILE *stream);
 extern void do_upload_config_sync_post(char *url, FILE *stream, int len, char *boundary);
 extern void do_upload_config_sync_cgi(char *url, FILE *stream);
@@ -654,5 +625,5 @@ extern void store_file_var(char *login_url, char *file);
 extern int get_active_wan_unit(void);
 extern int last_time_lock_warning(void);
 extern int check_lock_status(time_t *dt);
-extern char *wl_nband_to_wlx(char *nv_name, char *wl_name, size_t len);
+extern void check_lock_state();
 #endif /* _httpd_h_ */

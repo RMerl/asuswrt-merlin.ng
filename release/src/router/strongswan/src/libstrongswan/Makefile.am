@@ -13,7 +13,7 @@ crypto/prfs/prf.c crypto/prfs/mac_prf.c crypto/pkcs5.c \
 crypto/rngs/rng.c crypto/rngs/rng_tester.c \
 crypto/signers/signer.c \
 crypto/signers/mac_signer.c crypto/crypto_factory.c crypto/crypto_tester.c \
-crypto/diffie_hellman.c crypto/aead.c crypto/transform.c \
+crypto/key_exchange.c crypto/aead.c crypto/transform.c \
 crypto/iv/iv_gen.c crypto/iv/iv_gen_rand.c crypto/iv/iv_gen_seq.c \
 crypto/iv/iv_gen_null.c crypto/kdfs/kdf.c \
 crypto/xofs/xof.c crypto/xofs/xof_bitspender.c \
@@ -79,7 +79,7 @@ crypto/proposal/proposal_keywords.h crypto/proposal/proposal_keywords_static.h \
 crypto/rngs/rng.h crypto/rngs/rng_tester.h \
 crypto/prfs/prf.h crypto/prfs/mac_prf.h crypto/nonce_gen.h \
 crypto/signers/signer.h crypto/signers/mac_signer.h \
-crypto/crypto_factory.h crypto/crypto_tester.h crypto/diffie_hellman.h \
+crypto/crypto_factory.h crypto/crypto_tester.h crypto/key_exchange.h \
 crypto/aead.h crypto/transform.h crypto/pkcs5.h crypto/iv/iv_gen.h \
 crypto/iv/iv_gen_rand.h crypto/iv/iv_gen_seq.h crypto/iv/iv_gen_null.h \
 crypto/xofs/xof.h crypto/xofs/xof_bitspender.h crypto/xofs/mgf1.h \

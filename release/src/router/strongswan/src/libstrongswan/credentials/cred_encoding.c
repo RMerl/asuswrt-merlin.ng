@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -114,6 +115,34 @@ METHOD(cred_encoding_t, get_cache, bool,
 	return !!chunk;
 }
 
+METHOD(cred_encoding_t, cache, void,
+	private_cred_encoding_t *this, cred_encoding_type_t type, void *cache,
+	chunk_t *encoding)
+{
+	chunk_t *chunk;
+
+	if (type >= CRED_ENCODING_MAX || (int)type < 0)
+	{
+		free(encoding->ptr);
+		return;
+	}
+
+	this->lock->write_lock(this->lock);
+	chunk = this->cache[type]->get(this->cache[type], cache);
+	if (chunk)
+	{
+		free(encoding->ptr);
+		*encoding = *chunk;
+	}
+	else
+	{
+		chunk = malloc_thing(chunk_t);
+		*chunk = *encoding;
+		this->cache[type]->put(this->cache[type], cache, chunk);
+	}
+	this->lock->unlock(this->lock);
+}
+
 /**
  * Implementation of cred_encoding_t.encode
  */
@@ -159,41 +188,9 @@ static bool encode(private_cred_encoding_t *this, cred_encoding_type_t type,
 
 	if (success && cache)
 	{
-		chunk = malloc_thing(chunk_t);
-		*chunk = *encoding;
-		this->lock->write_lock(this->lock);
-		chunk = this->cache[type]->put(this->cache[type], cache, chunk);
-		this->lock->unlock(this->lock);
-		if (chunk)
-		{
-			free(chunk->ptr);
-			free(chunk);
-		}
+		_cache(this, type, cache, encoding);
 	}
 	return success;
-}
-
-METHOD(cred_encoding_t, cache, void,
-	private_cred_encoding_t *this, cred_encoding_type_t type, void *cache,
-	chunk_t encoding)
-{
-	chunk_t *chunk;
-
-	if (type >= CRED_ENCODING_MAX || (int)type < 0)
-	{
-		return free(encoding.ptr);
-	}
-	chunk = malloc_thing(chunk_t);
-	*chunk = encoding;
-	this->lock->write_lock(this->lock);
-	chunk = this->cache[type]->put(this->cache[type], cache, chunk);
-	this->lock->unlock(this->lock);
-	/* free an encoding already associated to the cache */
-	if (chunk)
-	{
-		free(chunk->ptr);
-		free(chunk);
-	}
 }
 
 METHOD(cred_encoding_t, clear_cache, void,

@@ -177,6 +177,7 @@ cat > $INDEX <<@EOF
 <html>
 <head>
   <title>strongSwan KVM Tests</title>
+  <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
   <h2>strongSwan KVM Tests</h2>
@@ -187,6 +188,7 @@ cat > $TESTRESULTSHTML <<@EOF
 <html>
 <head>
   <title>strongSwan KVM Tests - All Tests</title>
+  <link rel="stylesheet" href="css/site.css">
 </head>
 <body>
   <div><a href="index.html">strongSwan KVM Tests</a> / All Tests</div>
@@ -267,6 +269,7 @@ do
 <html>
 <head>
   <title>strongSwan $SUBDIR Tests</title>
+  <link rel="stylesheet" href="../css/site.css">
 </head>
 <body>
   <div><a href="../index.html">strongSwan KVM Tests</a> / $SUBDIR</div>
@@ -456,8 +459,8 @@ do
 		{
 			next
 		}
-		printf("cmd_err=\044(tempfile -p test -s err); ")
-		printf("cmd_out=\044(tempfile -p test -s out); ")
+		printf("cmd_err=\044(mktemp --suff .err test.XXXXXX); ")
+		printf("cmd_out=\044(mktemp --suff .out test.XXXXXX); ")
 		printf("start_time=\044(print_time); ")
 		if (command == "tcpdump")
 		{
@@ -512,6 +515,7 @@ do
 <html>
 <head>
   <title>Test $testname</title>
+  <link rel="stylesheet" href="../../css/site.css">
 </head>
 <body>
 <table border="0" cellpadding="0" cellspacing="0" width="600">

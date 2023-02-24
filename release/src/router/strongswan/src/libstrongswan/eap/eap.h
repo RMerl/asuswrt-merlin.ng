@@ -1,8 +1,8 @@
 /*
  * Copyright (C) 2012 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2010 revosec AG
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -28,6 +28,7 @@ typedef enum eap_type_t eap_type_t;
 typedef struct eap_vendor_type_t eap_vendor_type_t;
 
 #include <library.h>
+#include <pen/pen.h>
 
 /**
  * EAP code, type of an EAP message
@@ -74,6 +75,8 @@ enum eap_type_t {
 	EAP_RADIUS = 256,
 	/** not a method, select method dynamically based on client selection */
 	EAP_DYNAMIC = 257,
+	/** make sure the enum is large enough to hold vendor-specific types */
+	EAP_UNASSIGNED = 0xffffffff,
 };
 
 /**
@@ -99,7 +102,7 @@ struct eap_vendor_type_t {
 	/**
 	 * Vendor Id
 	 */
-	uint32_t vendor;
+	pen_t vendor;
 };
 
 /**

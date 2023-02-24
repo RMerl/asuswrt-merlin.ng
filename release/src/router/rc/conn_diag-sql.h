@@ -7,7 +7,8 @@
 
 #define DIAG_TAB_NAME "conn_diag"
 #define DATA_TAB_NAME "diag_data"
-#define MAX_DB_SIZE 512000 //500k
+// #define MAX_DB_SIZE 512000 //500k
+#define MAX_DB_SIZE 2097152 // 2M
 #define MAX_DATA 8192
 #define MAX_DB_COUNT 2
 #define DB_BACKUP_NO 0
@@ -225,9 +226,15 @@ extern int run_upload_file_at_ts(unsigned long ts, unsigned long ts2);
 extern int run_upload_file_by_name(const char *uploaded_file);
 extern int run_download_file_at_ts(unsigned long ts, unsigned long ts2);
 extern int run_download_file_by_name(const char *downloaded_file);
+extern int is_valid_event(const char *name);
+extern unsigned long get_mem_info(char *name);
+extern int special_alphasort(const void *d1, const void *d2);
+extern struct CONNDIAG_DB_t *find_db_profile_by_mode_and_version(int db_mode,char *version);
+extern struct CONNDIAG_DB_t *find_db_profile_by_type_and_version(int db_type,char *version);
 extern int diagmode_to_dbidx(int mode);
 extern int get_node_eth_port_status(char *node_mac,char **buf);
 extern void free_node_eth_port_status(char **buf);
+extern int query_stainfo(char *sta_mac,char **buf);
 extern int get_wifi_txrxbyte_avg(char *bandmac,char *mac,double *txbyte,double *rxbyte,int diff_range);
 extern int get_eth_txrxbyte_avg(int is_bh,char *mac,double *txbyte,double *rxbyte,int diff_range);
 extern int get_ethphy_txrxbyte_avg(int is_bh,char *mac,double *txbyte,double *rxbyte,int diff_range);
@@ -237,8 +244,12 @@ extern int get_staphy_txrxbyte_avg(char *sta_mac,char *mac,double *txbyte,double
 extern int exec_force_cable_diag(char *node_mac,char *label_name);
 extern int exec_wifi_dfs_diag(char *json_data);
 #ifdef RTCONFIG_CD_IPERF
-int exec_iperf(char *server_mac,char *client_mac);
+extern int exec_iperf(char* caller, char *server_mac,char *client_mac);
 #endif
 
 extern int query_stainfo(char *sta_mac,char **buf);
 extern void free_stainfo(char **buf);
+
+#ifdef RTCONFIG_AWSIOT
+extern int wifi_dfs_on_all_channels_process();
+#endif

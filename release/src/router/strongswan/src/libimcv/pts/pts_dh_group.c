@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Sansar Choinyambuu
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,44 +24,44 @@
 bool pts_dh_group_probe(pts_dh_group_t *dh_groups, bool mandatory_dh_groups)
 {
 	enumerator_t *enumerator;
-	diffie_hellman_group_t dh_group;
+	key_exchange_method_t dh_group;
 	const char *plugin_name;
 	char format1[] = "  %s PTS DH group %N[%s] available";
 	char format2[] = "  %s PTS DH group %N not available";
 
 	*dh_groups = PTS_DH_GROUP_NONE;
 
-	enumerator = lib->crypto->create_dh_enumerator(lib->crypto);
+	enumerator = lib->crypto->create_ke_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &dh_group, &plugin_name))
 	{
 		if (dh_group == MODP_1024_BIT)
 		{
 			*dh_groups |= PTS_DH_GROUP_IKE2;
-			DBG2(DBG_PTS, format1, "optional ", diffie_hellman_group_names,
+			DBG2(DBG_PTS, format1, "optional ", key_exchange_method_names,
 									dh_group, plugin_name);
 		}
 		else if (dh_group == MODP_1536_BIT)
 		{
 			*dh_groups |= PTS_DH_GROUP_IKE5;
-			DBG2(DBG_PTS, format1, "optional ", diffie_hellman_group_names,
+			DBG2(DBG_PTS, format1, "optional ", key_exchange_method_names,
 									dh_group, plugin_name);
 		}
 		else if (dh_group == MODP_2048_BIT)
 		{
 			*dh_groups |= PTS_DH_GROUP_IKE14;
-			DBG2(DBG_PTS, format1, "optional ", diffie_hellman_group_names,
+			DBG2(DBG_PTS, format1, "optional ", key_exchange_method_names,
 									dh_group, plugin_name);
 		}
 		else if (dh_group == ECP_256_BIT)
 		{
 			*dh_groups |= PTS_DH_GROUP_IKE19;
-			DBG2(DBG_PTS, format1, "mandatory", diffie_hellman_group_names,
+			DBG2(DBG_PTS, format1, "mandatory", key_exchange_method_names,
 									dh_group, plugin_name);
 		}
 		else if (dh_group == ECP_384_BIT)
 		{
 			*dh_groups |= PTS_DH_GROUP_IKE20;
-			DBG2(DBG_PTS, format1, "optional ", diffie_hellman_group_names,
+			DBG2(DBG_PTS, format1, "optional ", key_exchange_method_names,
 									dh_group, plugin_name);
 		}
 	}
@@ -78,7 +79,7 @@ bool pts_dh_group_probe(pts_dh_group_t *dh_groups, bool mandatory_dh_groups)
 	}
 	if (mandatory_dh_groups)
 	{
-		DBG1(DBG_PTS, format2, "mandatory", diffie_hellman_group_names,
+		DBG1(DBG_PTS, format2, "mandatory", key_exchange_method_names,
 											ECP_256_BIT);
 		return FALSE;
 	}
@@ -164,7 +165,7 @@ pts_dh_group_t pts_dh_group_select(pts_dh_group_t supported_dh_groups,
 /**
  * Described in header.
  */
-diffie_hellman_group_t pts_dh_group_to_ike(pts_dh_group_t dh_group)
+key_exchange_method_t pts_dh_group_to_ike(pts_dh_group_t dh_group)
 {
 	switch (dh_group)
 	{
@@ -179,6 +180,6 @@ diffie_hellman_group_t pts_dh_group_to_ike(pts_dh_group_t dh_group)
 		case PTS_DH_GROUP_IKE20:
 			return ECP_384_BIT;
 		default:
-			return MODP_NONE;
+			return KE_NONE;
 	}
 }

@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2013-2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -18,7 +17,7 @@
 #include "ntru_private_key.h"
 #include "ntru_public_key.h"
 
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 #include <crypto/drbgs/drbg.h>
 #include <utils/debug.h>
 
@@ -56,7 +55,7 @@ struct private_ntru_ke_t {
 	/**
 	 * Diffie Hellman group number.
 	 */
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 
 	/**
 	 * NTRU Parameter Set
@@ -109,7 +108,7 @@ struct private_ntru_ke_t {
 	drbg_t *drbg;
 };
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_ntru_ke_t *this, chunk_t *value)
 {
 	*value = chunk_empty;
@@ -140,7 +139,7 @@ METHOD(diffie_hellman_t, get_my_public_value, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_ntru_ke_t *this, chunk_t *secret)
 {
 	if (!this->computed || !this->shared_secret.len)
@@ -153,7 +152,7 @@ METHOD(diffie_hellman_t, get_shared_secret, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_ntru_ke_t *this, chunk_t value)
 {
 	if (this->privkey)
@@ -219,13 +218,13 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 	return this->computed;
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_ntru_ke_t *this)
 {
 	return this->group;
 }
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_ntru_ke_t *this)
 {
 	DESTROY_IF(this->privkey);
@@ -239,7 +238,7 @@ METHOD(diffie_hellman_t, destroy, void,
 /*
  * Described in header.
  */
-ntru_ke_t *ntru_ke_create(diffie_hellman_group_t group, chunk_t g, chunk_t p)
+ntru_ke_t *ntru_ke_create(key_exchange_method_t group, chunk_t g, chunk_t p)
 {
 	private_ntru_ke_t *this;
 	const ntru_param_set_id_t *param_sets;
@@ -312,11 +311,11 @@ ntru_ke_t *ntru_ke_create(diffie_hellman_group_t group, chunk_t g, chunk_t p)
 
 	INIT(this,
 		.public = {
-			.dh = {
+			.ke = {
 				.get_shared_secret = _get_shared_secret,
-				.set_other_public_value = _set_other_public_value,
-				.get_my_public_value = _get_my_public_value,
-				.get_dh_group = _get_dh_group,
+				.set_public_key = _set_public_key,
+				.get_public_key = _get_public_key,
+				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},

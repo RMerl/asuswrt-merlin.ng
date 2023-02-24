@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2013-2018 Tobias Brunner
  * Copyright (C) 2006-2013 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -660,6 +661,7 @@ static char *whitelist[] = {
 	"botan_privkey_create",
 	"botan_privkey_load_ecdh",
 	"botan_privkey_load",
+	"botan_privkey_load_rsa_pkcs1",
 	"botan_kdf",
 };
 

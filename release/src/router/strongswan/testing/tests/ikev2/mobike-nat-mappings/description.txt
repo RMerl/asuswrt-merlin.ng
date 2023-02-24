@@ -1,0 +1,6 @@
+The roadwarrior <b>alice</b> is sitting behind the NAT router <b>moon</b>.
+<b>alice</b> builds up a tunnel to gateway <b>sun</b> in order to reach <b>bob</b>
+in the subnet behind. When the NAT router <b>moon</b> is restarted, the NAT
+mappings change. <b>alice</b> notices this when sending a DPD and signals the
+change via a MOBIKE ADDRESS_UPDATE notification to peer <b>sun</b>. <b>alice</b> sets
+a virtual IP of 10.3.0.3, so that the IPsec policies don't have to be changed.

@@ -291,6 +291,7 @@ int get_wan_unit(char *ifname)
 		case WAN_LW4O6:
 		case WAN_MAPE:
 		case WAN_V6PLUS:
+		case WAN_OCNVC:
 #endif
 			if (nvram_match(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)), ifname))
 				return unit;
@@ -361,7 +362,8 @@ char *get_wan_ifname(int unit)
 		break;
 #ifdef RTCONFIG_SOFTWIRE46
 	case WAN_V6PLUS:
-		if (nvram_get_int("s46_hgw_case") >= S46_CASE_MAP_HGW_OFF) {
+	case WAN_OCNVC:
+		if (nvram_pf_get_int(prefix, "s46_hgw_case") >= S46_CASE_MAP_HGW_OFF) {
 			wan_ifname = nvram_safe_get(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)));
 			break;
 		}
@@ -423,6 +425,19 @@ char *get_wan6_ifname(int unit)
 	}
 
 	return wan_ifname;
+}
+
+int get_wan6_unit(char* ifname)
+{
+	if (!ifname)
+		return 0;
+
+	if (!strncmp(ifname, "v6tun", 5)) {
+		return (strlen(ifname) > 5) ? atoi(ifname+5) : 0;
+	}
+	else {
+		return get_wan_unit(ifname);
+	}
 }
 #endif
 
@@ -1330,7 +1345,7 @@ char *get_default_ssid(int unit, int subunit)
 #elif defined(XT8PRO)
 		strlcat(ssid, "_XT9", sizeof(ssid));
 #elif defined(BM68)
-		strlcat(ssid, "_BM68", sizeof(ssid));
+		strlcat(ssid, "_EBM68", sizeof(ssid));
 #elif defined(XT8_V2)
 		strlcat(ssid, "_XT8", sizeof(ssid));
 #else

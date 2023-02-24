@@ -15,14 +15,14 @@
 var lan_ip= '<% nvram_get("lan_ipaddr"); %>';
 var wan_ip= '<% nvram_get("wan_ipaddr"); %>';
 var ddns_host = '<% nvram_get("ddns_hostname_x"); %>';
-var local_domain = '<% nvram_get("local_domain"); %>';
+var local_domain = '<#Web_DOMAIN_NAME#>';
 	
 </script>
 <script>
 var $j = jQuery.noConflict();	
 var href = self.location.hostname;
 	//alert(href);
-	if(href != lan_ip && href != wan_ip && href != local_domain && href != ddns_host)
+	if(href != lan_ip && href != wan_ip && href != '<#Web_DOMAIN_NAME#>' && href != ddns_host)
 	{
  		$j.ajax({
 			url:'fbwifi.cgi?host=' + href,

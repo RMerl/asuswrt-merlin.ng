@@ -1,6 +1,8 @@
 /*
  * Copyright (C) 2001-2006 Andreas Steffen
  *
+ * Copyright (C) secunet Security Networks AG
+ *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
  * Free Software Foundation; either version 2 of the License, or (at your
@@ -32,6 +34,14 @@ bool eat_whitespace(chunk_t *src)
 bool match(const char *pattern, const chunk_t *ch)
 {
 	return ch->len == strlen(pattern) && strncmp(pattern, ch->ptr, ch->len) == 0;
+}
+
+/**
+ * compare string with chunk ignoring the case of the characters
+ */
+bool matchcase(const char *pattern, const chunk_t *ch)
+{
+	return ch->len == strlen(pattern) && strncasecmp(pattern, ch->ptr, ch->len) == 0;
 }
 
 /**

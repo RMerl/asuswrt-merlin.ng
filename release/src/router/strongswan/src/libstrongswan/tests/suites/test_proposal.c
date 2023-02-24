@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -19,24 +20,24 @@
 
 START_TEST(test_dh_group_mapping)
 {
-	enum_name_t *e = diffie_hellman_group_names_short;
-	diffie_hellman_group_t group;
+	enum_name_t *e = key_exchange_method_names_short;
+	key_exchange_method_t ke;
 	const proposal_token_t *token;
 	char *name;
 
 	do
 	{
-		for (group = e->first; group <= e->last; group++)
+		for (ke = e->first; ke <= e->last; ke++)
 		{
-			if (group == MODP_CUSTOM)
+			if (ke == MODP_CUSTOM)
 			{	/* can't be configured */
 				continue;
 			}
-			name = e->names[group - e->first];
+			name = e->names[ke - e->first];
 			token = lib->proposal->get_token(lib->proposal, name);
 			ck_assert_msg(token, "%s can't be mapped", name);
-			ck_assert_int_eq(token->type, DIFFIE_HELLMAN_GROUP);
-			ck_assert_int_eq(token->algorithm, group);
+			ck_assert_int_eq(token->type, KEY_EXCHANGE_METHOD);
+			ck_assert_int_eq(token->algorithm, ke);
 		}
 	}
 	while ((e = e->next));
@@ -54,7 +55,7 @@ static struct {
 	{ PROTO_IKE, "null-sha256-modp3072", "IKE:NULL/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/MODP_3072" },
 	{ PROTO_IKE, "aes128", NULL },
 	{ PROTO_IKE, "aes128-sha256", NULL },
-	{ PROTO_IKE, "aes128-sha256-modpnone", NULL },
+	{ PROTO_IKE, "aes128-sha256-none", NULL },
 	{ PROTO_IKE, "aes128-prfsha256", NULL },
 	{ PROTO_IKE, "aes128-prfsha256-modp2048", NULL },
 	{ PROTO_IKE, "aes128-sha256-modp3072", "IKE:AES_CBC_128/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/MODP_3072" },
@@ -123,25 +124,25 @@ static struct {
 	{ PROTO_ESP, "aes128-aes256-sha1-sha256", "aes256-aes128-sha256-sha1", "aes128-sha1" },
 	{ PROTO_ESP, "aes256-aes128-sha256-sha1", "aes128-aes256-sha1-sha256", "aes256-sha256" },
 	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256", NULL },
-	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256", "aes128-sha256", PROPOSAL_SKIP_DH },
+	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256", "aes128-sha256", PROPOSAL_SKIP_KE },
 	{ PROTO_ESP, "aes128-sha256", "aes128-sha256-modp3072", NULL },
-	{ PROTO_ESP, "aes128-sha256", "aes128-sha256-modp3072", "aes128-sha256", PROPOSAL_SKIP_DH },
-	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256-modp3072", "aes128-sha256", PROPOSAL_SKIP_DH },
-	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256-ecp256", "aes128-sha256", PROPOSAL_SKIP_DH },
-	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256-modpnone", NULL },
-	{ PROTO_ESP, "aes128-sha256-modpnone", "aes128-sha256-modp3072", NULL },
-	{ PROTO_ESP, "aes128-sha256-modp3072-modpnone", "aes128-sha256", "aes128-sha256" },
-	{ PROTO_ESP, "aes128-sha256", "aes128-sha256-modp3072-modpnone", "aes128-sha256" },
-	{ PROTO_ESP, "aes128-sha256-modp3072-modpnone", "aes128-sha256-modpnone-modp3072", "aes128-sha256-modp3072" },
-	{ PROTO_ESP, "aes128-sha256-modpnone-modp3072", "aes128-sha256-modp3072-modpnone", "aes128-sha256" },
+	{ PROTO_ESP, "aes128-sha256", "aes128-sha256-modp3072", "aes128-sha256", PROPOSAL_SKIP_KE },
+	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256-modp3072", "aes128-sha256", PROPOSAL_SKIP_KE },
+	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256-ecp256", "aes128-sha256", PROPOSAL_SKIP_KE },
+	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256-none", NULL },
+	{ PROTO_ESP, "aes128-sha256-none", "aes128-sha256-modp3072", NULL },
+	{ PROTO_ESP, "aes128-sha256-modp3072-none", "aes128-sha256", "aes128-sha256" },
+	{ PROTO_ESP, "aes128-sha256", "aes128-sha256-modp3072-none", "aes128-sha256" },
+	{ PROTO_ESP, "aes128-sha256-modp3072-none", "aes128-sha256-none-modp3072", "aes128-sha256-modp3072" },
+	{ PROTO_ESP, "aes128-sha256-none-modp3072", "aes128-sha256-modp3072-none", "aes128-sha256" },
 	{ PROTO_ESP, "aes128-sha256-esn", "aes128-sha256-esn", "aes128-sha256-esn" },
 	{ PROTO_ESP, "aes128-sha256-noesn", "aes128-sha256-esn", NULL },
 	{ PROTO_ESP, "aes128-sha256-noesn-esn", "aes128-sha256-esn", "aes128-sha256-esn" },
 	{ PROTO_ESP, "aes128-sha256-noesn-esn", "aes128-sha256", "aes128-sha256" },
 	{ PROTO_ESP, "aes128-sha256-esn-noesn", "aes128-sha256-noesn-esn", "aes128-sha256-esn" },
 	{ PROTO_IKE, "aes128-sha256-modp3072", "aes128-sha256-modp3072", "aes128-sha256-modp3072" },
-	{ PROTO_IKE, "aes128-sha256-modp3072", "aes128-sha256-modp3072-modpnone", "aes128-sha256-modp3072" },
-	{ PROTO_IKE, "aes128-sha256-modp3072-modpnone", "aes128-sha256-modp3072", "aes128-sha256-modp3072" },
+	{ PROTO_IKE, "aes128-sha256-modp3072", "aes128-sha256-modp3072-none", "aes128-sha256-modp3072" },
+	{ PROTO_IKE, "aes128-sha256-modp3072-none", "aes128-sha256-modp3072", "aes128-sha256-modp3072" },
 };
 
 START_TEST(test_select)
@@ -245,10 +246,10 @@ static struct {
 				 { "aes256-modp2048", "aes128-modp2048" }, NULL },
 	{ PROTO_ESP, { "aes128-modp1024", "aes256-modp1024" },
 				 { "aes256-modp2048", "aes128-modp2048" }, "aes128",
-		PROPOSAL_SKIP_DH },
+		PROPOSAL_SKIP_KE },
 	{ PROTO_ESP, { "aes128-modp1024", "aes256-modp1024" },
 				 { "aes256-modp2048", "aes128-modp2048" }, "aes256",
-		PROPOSAL_PREFER_SUPPLIED | PROPOSAL_SKIP_DH },
+		PROPOSAL_PREFER_SUPPLIED | PROPOSAL_SKIP_KE },
 };
 
 START_TEST(test_select_proposal)
@@ -300,38 +301,89 @@ START_TEST(test_select_proposal)
 }
 END_TEST
 
-START_TEST(test_promote_dh_group)
+START_TEST(test_has_transform)
 {
 	proposal_t *proposal;
 
 	proposal = proposal_create_from_string(PROTO_IKE,
 										   "aes128-sha256-modp3072-ecp256");
-	ck_assert(proposal->promote_dh_group(proposal, ECP_256_BIT));
+	ck_assert(proposal->has_transform(proposal, KEY_EXCHANGE_METHOD,
+									  MODP_3072_BIT));
+	ck_assert(proposal->has_transform(proposal, KEY_EXCHANGE_METHOD,
+									  ECP_256_BIT));
+	ck_assert(!proposal->has_transform(proposal, KEY_EXCHANGE_METHOD,
+									   MODP_2048_BIT));
+	proposal->destroy(proposal);
+}
+END_TEST
+
+START_TEST(test_has_transform_none)
+{
+	proposal_t *proposal;
+
+	proposal = proposal_create_from_string(PROTO_ESP,
+										   "aes128-sha256");
+	ck_assert(proposal->has_transform(proposal, KEY_EXCHANGE_METHOD,
+									  KE_NONE));
+	proposal->destroy(proposal);
+
+	proposal = proposal_create_from_string(PROTO_ESP,
+										   "aes128-sha256-none");
+	ck_assert(proposal->has_transform(proposal, KEY_EXCHANGE_METHOD,
+									  KE_NONE));
+	proposal->destroy(proposal);
+
+	proposal = proposal_create_from_string(PROTO_ESP,
+										   "aes128-sha256-modp3072");
+	ck_assert(!proposal->has_transform(proposal, KEY_EXCHANGE_METHOD,
+									   KE_NONE));
+	proposal->destroy(proposal);
+
+	/* while actually contained in the proposal, KE_NONE is 0 so we expect
+	 * has_transform() to return FALSE if there are other algorithms */
+	proposal = proposal_create_from_string(PROTO_ESP,
+										   "aes128-sha256-modp3072-none");
+	ck_assert(!proposal->has_transform(proposal, KEY_EXCHANGE_METHOD,
+									   KE_NONE));
+	proposal->destroy(proposal);
+}
+END_TEST
+
+START_TEST(test_promote_transform)
+{
+	proposal_t *proposal;
+
+	proposal = proposal_create_from_string(PROTO_IKE,
+										   "aes128-sha256-modp3072-ecp256");
+	ck_assert(proposal->promote_transform(proposal, KEY_EXCHANGE_METHOD,
+										  ECP_256_BIT));
 	assert_proposal_eq(proposal, "IKE:AES_CBC_128/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/ECP_256/MODP_3072");
 	proposal->destroy(proposal);
 }
 END_TEST
 
-START_TEST(test_promote_dh_group_already_front)
+START_TEST(test_promote_transform_already_front)
 {
 	proposal_t *proposal;
 
 	proposal = proposal_create_from_string(PROTO_IKE,
 										   "aes128-sha256-modp3072-ecp256");
-	ck_assert(proposal->promote_dh_group(proposal, MODP_3072_BIT));
+	ck_assert(proposal->promote_transform(proposal, KEY_EXCHANGE_METHOD,
+										  MODP_3072_BIT));
 	assert_proposal_eq(proposal, "IKE:AES_CBC_128/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/MODP_3072/ECP_256");
 	proposal->destroy(proposal);
 }
 END_TEST
 
-START_TEST(test_promote_dh_group_not_contained)
+START_TEST(test_promote_transform_not_contained)
 {
 	proposal_t *proposal;
 
 	proposal = proposal_create_from_string(PROTO_IKE,
 										   "aes128-sha256-modp3072-ecp256");
 
-	ck_assert(!proposal->promote_dh_group(proposal, MODP_2048_BIT));
+	ck_assert(!proposal->promote_transform(proposal, KEY_EXCHANGE_METHOD,
+										   MODP_2048_BIT));
 	assert_proposal_eq(proposal, "IKE:AES_CBC_128/HMAC_SHA2_256_128/PRF_HMAC_SHA2_256/MODP_3072/ECP_256");
 	proposal->destroy(proposal);
 }
@@ -446,11 +498,11 @@ static struct {
 	{ PROTO_ESP, "aes128-serpent", "aes128-serpent" },
 	{ PROTO_ESP, "aes128-serpent", "aes128", PROPOSAL_SKIP_PRIVATE },
 	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256-modp3072" },
-	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256", PROPOSAL_SKIP_DH },
+	{ PROTO_ESP, "aes128-sha256-modp3072", "aes128-sha256", PROPOSAL_SKIP_KE },
 	{ PROTO_ESP, "aes128-serpent-modp3072", "aes128-serpent",
-		PROPOSAL_SKIP_DH },
+		PROPOSAL_SKIP_KE },
 	{ PROTO_ESP, "aes128-serpent-modp3072", "aes128",
-		PROPOSAL_SKIP_PRIVATE | PROPOSAL_SKIP_DH },
+		PROPOSAL_SKIP_PRIVATE | PROPOSAL_SKIP_KE },
 };
 
 START_TEST(test_clone)
@@ -504,10 +556,15 @@ Suite *proposal_suite_create()
 						countof(select_proposal_data));
 	suite_add_tcase(s, tc);
 
-	tc = tcase_create("promote_dh_group");
-	tcase_add_test(tc, test_promote_dh_group);
-	tcase_add_test(tc, test_promote_dh_group_already_front);
-	tcase_add_test(tc, test_promote_dh_group_not_contained);
+	tc = tcase_create("has_transform");
+	tcase_add_test(tc, test_has_transform);
+	tcase_add_test(tc, test_has_transform_none);
+	suite_add_tcase(s, tc);
+
+	tc = tcase_create("promote_transform");
+	tcase_add_test(tc, test_promote_transform);
+	tcase_add_test(tc, test_promote_transform_already_front);
+	tcase_add_test(tc, test_promote_transform_not_contained);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("unknown transform types");

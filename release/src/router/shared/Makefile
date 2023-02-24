@@ -253,6 +253,7 @@ OBJS += api-tclinux.o
 endif
 ifeq ($(RTCONFIG_EXT_RTL8365MB),y)
 CFLAGS += -I$(LINUXDIR)/drivers/char/rtl8365mb
+CFLAGS += -I$(SRCBASE)/common/include/proto
 OBJS += rtl_8365mb.o
 endif
 ifeq ($(RTCONFIG_EXT_RTL8370MB),y)
@@ -413,8 +414,11 @@ else
 vpath %.c sysdeps/broadcom  $(SRCBASE)/shared/bcmwifi/src
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
-ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
+ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63)),y)
 OBJS += rtkswitch.o
+endif
+ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
+CFLAGS += -DNEW_SWITCH_ORDER
 endif
 endif
 endif
@@ -486,7 +490,7 @@ install: all
 	@echo " [shared] Installing as $(INSTALLDIR)/usr/lib/libshared.so"
 	@install -d $(INSTALLDIR)/usr/lib
 	@install -m 755 libshared.so $(INSTALLDIR)/usr/lib
-	@$(STRIP) $(INSTALLDIR)/usr/lib/libshared.so
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/usr/lib/libshared.so)
 
 clean:
 	rm -f *.o *.so *.a .*.depend *.prep sysdeps/*.o sysdeps/broadcom/*.o sysdeps/ralink/*.o sysdeps/qtn/*.o

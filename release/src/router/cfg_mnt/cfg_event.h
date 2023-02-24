@@ -25,6 +25,12 @@
 #define STA		"sta"
 #define BLOCK_TIME	"block_time"
 #define TARGET_AP	"target_ap"
+#ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
+#define BAND_INDEX	"band_index"
+#endif
+#ifdef RTCONFIG_AMAS_CENTRAL_ADS
+#define SEQUENCE	"seq"
+#endif
 #define WEVENT_GENERIC_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #define WEVENT_MAC_IFNAME_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""MAC_ADDR"\":\"%s\",\""IF_NAME"\":\"%s\"}}"
 #define WEVENT_VSIE_MSG	 "{\""WEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""VSIE"\":\"%s\"}}"
@@ -39,8 +45,14 @@
 #define HTTPD_ACTION_MSG	"{\""HTTPD_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""MAC_LIST"\":%s,\""DATA"\":%s}}"
 #define RC_GENERIC_MSG	 	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\"}}"
 #define RC_CONFIG_CHANGED_MSG	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""CONFIG"\":%s}}"
+#ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
+#define RC_OPT_SS_RESULT_MSG	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""BAND_INDEX"\":%d}}"
+#endif
 #define ETHEVENT_PROBE_MSG	 "{\""ETHEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""E_ETHER_LIST"\":%s}}"
 #define ETHEVENT_STATUS_MSG	 "{\""ETHEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""OB_STATUS"\":%d,\""OB_KEY"\":\"%s\"}}"
+#ifdef RTCONFIG_AMAS_CENTRAL_ADS
+#define RC_ADS_DS_MSG	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""SEQUENCE"\":%d}}"
+#endif
 
 /* source */
 #define FROM_NONE	0x0
@@ -83,7 +95,14 @@ enum rcEventType {
 	EID_RC_GET_TOPOLOGY,
 	EID_RC_FEEDBACK,
 	EID_RC_RESTART_WIRELESS,
-	EID_RC_CONFIG_CHANGED
+	EID_RC_CONFIG_CHANGED,
+	EID_RC_OPT_SS_RESULT,
+	EID_RC_OPT_NOTIFY,
+#ifdef RTCONFIG_AMAS_CENTRAL_ADS
+	EID_RC_REPORT_DS_RESULT,
+	EID_RC_REPORT_DS_SWITCH_STA_DISCONN,
+#endif
+	EID_RC_MAX
 };
 
 #endif /* __CFG_EVENT_H__ */

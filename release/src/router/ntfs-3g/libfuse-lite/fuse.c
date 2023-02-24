@@ -6,6 +6,11 @@
     See the file COPYING.LIB
 */
 
+#ifdef __SOLARIS__
+/* For pthread_rwlock_t */
+#define _GNU_SOURCE
+#endif /* __SOLARIS__ */
+
 #include "config.h"
 #include "fuse_i.h"
 #include "fuse_lowlevel.h"
@@ -27,6 +32,10 @@
 #include <sys/param.h>
 #include <sys/uio.h>
 #include <sys/time.h>
+
+#ifdef __SOLARIS__
+#define FUSE_MAX_PATH 4096
+#endif /* __SOLARIS__ */
 
 #define FUSE_DEFAULT_INTR_SIGNAL SIGUSR1
 
@@ -54,12 +63,26 @@ struct fuse_config {
     int intr;
     int intr_signal;
     int help;
+#ifdef __SOLARIS__
+    int auto_cache;
+    char *modules;
+#endif /* __SOLARIS__ */
 };
 
 struct fuse_fs {
     struct fuse_operations op;
     void *user_data;
+#ifdef __SOLARIS__
+    struct fuse_module *m;
+#endif /* __SOLARIS__ */
 };
+
+#ifdef __SOLARIS__
+struct fusemod_so {
+    void *handle;
+    int ctr;
+};
+#endif /* __SOLARIS__ */
 
 struct fuse {
     struct fuse_session *se;
@@ -75,7 +98,6 @@ struct fuse {
     struct fuse_config conf;
     int intr_installed;
     struct fuse_fs *fs;
-    int utime_omit_ok;
 };
 
 struct lock {
@@ -98,6 +120,12 @@ struct node {
     uint64_t nlookup;
     int open_count;
     int is_hidden;
+#ifdef __SOLARIS__
+    struct timespec stat_updated;
+    struct timespec mtime;
+    off_t size;
+    int cache_valid;
+#endif /* __SOLARIS__ */
     struct lock *locks;
 };
 
@@ -106,7 +134,6 @@ struct fuse_dh {
     struct fuse *fuse;
     fuse_req_t req;
     char *contents;
-    int allocated;
     unsigned len;
     unsigned size;
     unsigned needlen;
@@ -124,6 +151,107 @@ struct fuse_context_i {
 static pthread_key_t fuse_context_key;
 static pthread_mutex_t fuse_context_lock = PTHREAD_MUTEX_INITIALIZER;
 static int fuse_context_ref;
+
+#ifdef __SOLARIS__
+
+static struct fusemod_so *fuse_current_so;
+static struct fuse_module *fuse_modules;
+
+static int fuse_load_so_name(const char *soname)
+{
+    struct fusemod_so *so;
+
+    so = calloc(1, sizeof(struct fusemod_so));
+    if (!so) {
+        fprintf(stderr, "fuse: memory allocation failed\n");
+        return -1;
+    }
+
+    fuse_current_so = so;
+    so->handle = dlopen(soname, RTLD_NOW);
+    fuse_current_so = NULL;
+    if (!so->handle) {
+        fprintf(stderr, "fuse: %s\n", dlerror());
+        goto err;
+    }
+    if (!so->ctr) {
+        fprintf(stderr, "fuse: %s did not register any modules", soname);
+        goto err;
+    }
+    return 0;
+
+ err:
+    if (so->handle)
+        dlclose(so->handle);
+    free(so);
+    return -1;
+}
+
+static int fuse_load_so_module(const char *module)
+{
+    int res;
+    char *soname = malloc(strlen(module) + 64);
+    if (!soname) {
+        fprintf(stderr, "fuse: memory allocation failed\n");
+        return -1;
+    }
+    sprintf(soname, "libfusemod_%s.so", module);
+    res = fuse_load_so_name(soname);
+    free(soname);
+    return res;
+}
+
+static struct fuse_module *fuse_find_module(const char *module)
+{
+    struct fuse_module *m;
+    for (m = fuse_modules; m; m = m->next) {
+        if (strcmp(module, m->name) == 0) {
+            m->ctr++;
+            break;
+        }
+    }
+    return m;
+}
+
+static struct fuse_module *fuse_get_module(const char *module)
+{
+    struct fuse_module *m;
+
+    pthread_mutex_lock(&fuse_context_lock);
+    m = fuse_find_module(module);
+    if (!m) {
+        int err = fuse_load_so_module(module);
+        if (!err)
+            m = fuse_find_module(module);
+    }
+    pthread_mutex_unlock(&fuse_context_lock);
+    return m;
+}
+
+static void fuse_put_module(struct fuse_module *m)
+{
+    pthread_mutex_lock(&fuse_context_lock);
+    assert(m->ctr > 0);
+    m->ctr--;
+    if (!m->ctr && m->so) {
+        struct fusemod_so *so = m->so;
+        assert(so->ctr > 0);
+        so->ctr--;
+        if (!so->ctr) {
+            struct fuse_module **mp;
+            for (mp = &fuse_modules; *mp;) {
+                if ((*mp)->so == so)
+                    *mp = (*mp)->next;
+                else
+                    mp = &(*mp)->next;
+            }
+            dlclose(so->handle);
+            free(so);
+        }
+    }
+    pthread_mutex_unlock(&fuse_context_lock);
+}
+#endif /* __SOLARIS__ */
 
 static struct node *get_node_nocheck(struct fuse *f, fuse_ino_t nodeid)
 {
@@ -297,10 +425,15 @@ static struct node *find_node(struct fuse *f, fuse_ino_t parent,
     return node;
 }
 
+#ifndef __SOLARIS__
 static char *add_name(char **buf, unsigned *bufsize, char *s, const char *name)
+#else /* __SOLARIS__ */
+static char *add_name(char *buf, char *s, const char *name)
+#endif /* __SOLARIS__ */
 {
     size_t len = strlen(name);
 
+#ifndef __SOLARIS__
     if (s - len <= *buf) {
 	unsigned pathlen = *bufsize - (s - *buf);
 	unsigned newbufsize = *bufsize;
@@ -323,7 +456,14 @@ static char *add_name(char **buf, unsigned *bufsize, char *s, const char *name)
 	*bufsize = newbufsize;
     }
     s -= len;
-    strncpy(s, name, len);
+#else /* ! __SOLARIS__ */
+    s -= len;
+    if (s <= buf) {
+        fprintf(stderr, "fuse: path too long: ...%s\n", s + len);
+        return NULL;
+    }
+#endif /* __SOLARIS__ */
+    memcpy(s, name, len);
     s--;
     *s = '/';
 
@@ -332,6 +472,42 @@ static char *add_name(char **buf, unsigned *bufsize, char *s, const char *name)
 
 static char *get_path_name(struct fuse *f, fuse_ino_t nodeid, const char *name)
 {
+#ifdef __SOLARIS__
+    char buf[FUSE_MAX_PATH];
+    char *s = buf + FUSE_MAX_PATH - 1;
+    struct node *node;
+
+    *s = '\0';
+
+    if (name != NULL) {
+        s = add_name(buf, s, name);
+        if (s == NULL)
+            return NULL;
+    }
+
+    pthread_mutex_lock(&f->lock);
+    for (node = get_node(f, nodeid); node && node->nodeid != FUSE_ROOT_ID;
+         node = node->parent) {
+        if (node->name == NULL) {
+            s = NULL;
+            break;
+        }
+
+        s = add_name(buf, s, node->name);
+        if (s == NULL)
+            break;
+    }
+    pthread_mutex_unlock(&f->lock);
+
+    if (node == NULL || s == NULL)
+        return NULL;
+    else if (*s == '\0')
+        return strdup("/");
+    else
+        return strdup(s);
+
+#else /* __SOLARIS__ */
+
     unsigned bufsize = 256;
     char *buf;
     char *s;
@@ -376,6 +552,7 @@ static char *get_path_name(struct fuse *f, fuse_ino_t nodeid, const char *name)
 out_free:
     free(buf);
     return NULL;
+#endif /* __SOLARIS__ */
 }
 
 static char *get_path(struct fuse *f, fuse_ino_t nodeid)
@@ -862,6 +1039,21 @@ int fuse_fs_removexattr(struct fuse_fs *fs, const char *path, const char *name)
         return -ENOSYS;
 }
 
+int fuse_fs_ioctl(struct fuse_fs *fs, const char *path, int cmd, void *arg,
+		  struct fuse_file_info *fi, unsigned int flags, void *data)
+{
+    fuse_get_context()->private_data = fs->user_data;
+    if (fs->op.ioctl) {
+/*
+	if (fs->debug)
+	    fprintf(stderr, "ioctl[%llu] 0x%x flags: 0x%x\n",
+		    (unsigned long long) fi->fh, cmd, flags);
+*/
+	return fs->op.ioctl(path, cmd, arg, fi, flags, data);
+    } else
+	return -ENOSYS;
+}
+
 static int is_open(struct fuse *f, fuse_ino_t dir, const char *name)
 {
     struct node *node;
@@ -930,6 +1122,44 @@ static int hide_node(struct fuse *f, const char *oldpath,
     return err;
 }
 
+#ifdef __SOLARIS__
+
+static int mtime_eq(const struct stat *stbuf, const struct timespec *ts)
+{
+    return stbuf->st_mtime == ts->tv_sec && ST_MTIM_NSEC(stbuf) == ts->tv_nsec;
+}
+
+#ifndef CLOCK_MONOTONIC
+#define CLOCK_MONOTONIC CLOCK_REALTIME
+#endif
+
+static void curr_time(struct timespec *now)
+{
+    static clockid_t clockid = CLOCK_MONOTONIC;
+    int res = clock_gettime(clockid, now);
+    if (res == -1 && errno == EINVAL) {
+        clockid = CLOCK_REALTIME;
+        res = clock_gettime(clockid, now);
+    }
+    if (res == -1) {
+        perror("fuse: clock_gettime");
+        abort();
+    }
+}
+
+static void update_stat(struct node *node, const struct stat *stbuf)
+{
+    if (node->cache_valid && (!mtime_eq(stbuf, &node->mtime) ||
+                              stbuf->st_size != node->size))
+        node->cache_valid = 0;
+    node->mtime.tv_sec = stbuf->st_mtime;
+    node->mtime.tv_nsec = ST_MTIM_NSEC(stbuf);
+    node->size = stbuf->st_size;
+    curr_time(&node->stat_updated);
+}
+
+#endif /* __SOLARIS__ */
+
 static int lookup_path(struct fuse *f, fuse_ino_t nodeid,
                        const char *name, const char *path,
                        struct fuse_entry_param *e, struct fuse_file_info *fi)
@@ -952,6 +1182,13 @@ static int lookup_path(struct fuse *f, fuse_ino_t nodeid,
             e->generation = node->generation;
             e->entry_timeout = f->conf.entry_timeout;
             e->attr_timeout = f->conf.attr_timeout;
+#ifdef __SOLARIS__
+            if (f->conf.auto_cache) {
+                pthread_mutex_lock(&f->lock);
+                update_stat(node, &e->attr);
+                pthread_mutex_unlock(&f->lock);
+            }
+#endif /* __SOLARIS__ */
             set_stat(f, e->ino, &e->attr);
             if (f->conf.debug)
                 fprintf(stderr, "   NODEID: %lu\n", (unsigned long) e->ino);
@@ -1028,7 +1265,11 @@ static struct fuse *req_fuse_prepare(fuse_req_t req)
     return c->ctx.fuse;
 }
 
+#ifndef __SOLARIS__
 static void reply_err(fuse_req_t req, int err)
+#else /* __SOLARIS__ */
+static inline void reply_err(fuse_req_t req, int err)
+#endif /* __SOLARIS__ */
 {
     /* fuse_reply_err() uses non-negated errno values */
     fuse_reply_err(req, -err);
@@ -1039,8 +1280,15 @@ static void reply_entry(fuse_req_t req, const struct fuse_entry_param *e,
 {
     if (!err) {
         struct fuse *f = req_fuse(req);
+#ifdef __SOLARIS__
+                     /* Skip forget for negative result */
+        if ((fuse_reply_entry(req, e) == -ENOENT)
+          && (e->ino != 0))
+            forget_node(f, e->ino, 1);
+#else /* __SOLARIS__ */
         if (fuse_reply_entry(req, e) == -ENOENT)
             forget_node(f, e->ino, 1);
+#endif
     } else
         reply_err(req, err);
 }
@@ -1067,6 +1315,10 @@ void fuse_fs_destroy(struct fuse_fs *fs)
     fuse_get_context()->private_data = fs->user_data;
     if (fs->op.destroy)
         fs->op.destroy(fs->user_data);
+#ifdef __SOLARIS__
+    if (fs->m)
+        fuse_put_module(fs->m);
+#endif /* __SOLARIS__ */
     free(fs);
 }
 
@@ -1143,6 +1395,13 @@ static void fuse_lib_getattr(fuse_req_t req, fuse_ino_t ino,
     }
     pthread_rwlock_unlock(&f->tree_lock);
     if (!err) {
+#ifdef __SOLARIS__
+        if (f->conf.auto_cache) {
+            pthread_mutex_lock(&f->lock);
+            update_stat(get_node(f, ino), &buf);
+            pthread_mutex_unlock(&f->lock);
+        }
+#endif /* __SOLARIS__ */
         set_stat(f, ino, &buf);
         fuse_reply_attr(req, &buf, f->conf.attr_timeout);
     } else
@@ -1189,7 +1448,7 @@ static void fuse_lib_setattr(fuse_req_t req, fuse_ino_t ino, struct stat *attr,
                 err = fuse_fs_truncate(f->fs, path, attr->st_size);
         }
 #ifdef HAVE_UTIMENSAT
-        if (!err && f->utime_omit_ok &&
+        if (!err &&
             (valid & (FUSE_SET_ATTR_ATIME | FUSE_SET_ATTR_MTIME))) {
             struct timespec tv[2];
 
@@ -1227,6 +1486,13 @@ static void fuse_lib_setattr(fuse_req_t req, fuse_ino_t ino, struct stat *attr,
     }
     pthread_rwlock_unlock(&f->tree_lock);
     if (!err) {
+#ifdef __SOLARIS__
+        if (f->conf.auto_cache) {
+            pthread_mutex_lock(&f->lock);
+            update_stat(get_node(f, ino), &buf);
+            pthread_mutex_unlock(&f->lock);
+        }
+#endif /* __SOLARIS__ */
         set_stat(f, ino, &buf);
         fuse_reply_attr(req, &buf, f->conf.attr_timeout);
     } else
@@ -1571,6 +1837,47 @@ static void fuse_lib_create(fuse_req_t req, fuse_ino_t parent,
     pthread_rwlock_unlock(&f->tree_lock);
 }
 
+#ifdef __SOLARIS__
+
+static double diff_timespec(const struct timespec *t1,
+                            const struct timespec *t2)
+{
+    return (t1->tv_sec - t2->tv_sec) + 
+        ((double) t1->tv_nsec - (double) t2->tv_nsec) / 1000000000.0;
+}
+
+static void open_auto_cache(struct fuse *f, fuse_ino_t ino, const char *path,
+                            struct fuse_file_info *fi)
+{
+    struct node *node;
+
+    pthread_mutex_lock(&f->lock);
+    node = get_node(f, ino);
+    if (node->cache_valid) {
+        struct timespec now;
+
+        curr_time(&now);
+        if (diff_timespec(&now, &node->stat_updated) > f->conf.ac_attr_timeout) {
+            struct stat stbuf;
+            int err;
+            pthread_mutex_unlock(&f->lock);
+            err = fuse_fs_fgetattr(f->fs, path, &stbuf, fi);
+            pthread_mutex_lock(&f->lock);
+            if (!err)
+                update_stat(node, &stbuf);
+            else
+                node->cache_valid = 0;
+        }
+    }
+    if (node->cache_valid)
+        fi->keep_cache = 1;
+
+    node->cache_valid = 1;
+    pthread_mutex_unlock(&f->lock);
+}
+
+#endif /* __SOLARIS__ */
+
 static void fuse_lib_open(fuse_req_t req, fuse_ino_t ino,
                           struct fuse_file_info *fi)
 {
@@ -1590,6 +1897,11 @@ static void fuse_lib_open(fuse_req_t req, fuse_ino_t ino,
                 fi->direct_io = 1;
             if (f->conf.kernel_cache)
                 fi->keep_cache = 1;
+#ifdef __SOLARIS__
+
+            if (f->conf.auto_cache)
+                open_auto_cache(f, ino, path, fi);
+#endif /* __SOLARIS__ */
         }
         fuse_finish_interrupt(f, req, &d);
     }
@@ -1789,12 +2101,17 @@ static int extend_contents(struct fuse_dh *dh, unsigned minsize)
         unsigned newsize = dh->size;
         if (!newsize)
             newsize = 1024;
+#ifndef __SOLARIS__
         while (newsize < minsize) {
 	    if (newsize >= 0x80000000)
 	       	newsize = 0xffffffff;
 	    else
 	       	newsize *= 2;
         }
+#else /* __SOLARIS__ */
+        while (newsize < minsize)
+            newsize *= 2;
+#endif /* __SOLARIS__ */
 
         newptr = (char *) realloc(dh->contents, newsize);
         if (!newptr) {
@@ -1906,7 +2223,7 @@ static void fuse_lib_readdir(fuse_req_t req, fuse_ino_t ino, size_t size,
         }
     }
     if (dh->filled) {
-        if (off < dh->len) {
+        if ((off >= 0) && (off < dh->len)) {
             if (off + size > dh->len)
                 size = dh->len - off;
         } else
@@ -2418,6 +2735,62 @@ static void fuse_lib_bmap(fuse_req_t req, fuse_ino_t ino, size_t blocksize,
         reply_err(req, err);
 }
 
+static void fuse_lib_ioctl(fuse_req_t req, fuse_ino_t ino, int cmd, void *arg,
+			   struct fuse_file_info *llfi, unsigned int flags,
+			   const void *in_buf, size_t in_bufsz,
+			   size_t out_bufsz)
+{
+    struct fuse *f = req_fuse_prepare(req);
+    struct fuse_intr_data d;
+    struct fuse_file_info fi;
+    char *path, *out_buf = NULL;
+    int err;
+
+    err = -EPERM;
+    if (flags & FUSE_IOCTL_UNRESTRICTED)
+	goto err;
+
+    if (flags & FUSE_IOCTL_DIR)
+	get_dirhandle(llfi, &fi);
+    else
+	fi = *llfi;
+
+    if (out_bufsz) {
+	err = -ENOMEM;
+	out_buf = malloc(out_bufsz);
+	if (!out_buf)
+	    goto err;
+    }
+
+    assert(!in_bufsz || !out_bufsz || in_bufsz == out_bufsz);
+    if (out_buf)
+	memcpy(out_buf, in_buf, in_bufsz);
+
+    path = get_path(f, ino); /* Should be get_path_nullok() */
+    if (!path) {
+	err = ENOENT;
+	goto err;
+    }
+
+    fuse_prepare_interrupt(f, req, &d);
+
+	/* Note : const qualifier dropped */
+    err = fuse_fs_ioctl(f->fs, path, cmd, arg, &fi, flags,
+			out_buf ? (void*)out_buf : (void*)(uintptr_t)in_buf);
+
+    fuse_finish_interrupt(f, req, &d);
+    free(path);
+
+    if (err >= 0) { /* not an error */
+        fuse_reply_ioctl(req, err, out_buf, out_bufsz);
+	goto out;
+    }
+err:
+    reply_err(req, err);
+out:
+    free(out_buf);
+}
+
 static struct fuse_lowlevel_ops fuse_path_ops = {
     .init = fuse_lib_init,
     .destroy = fuse_lib_destroy,
@@ -2453,6 +2826,7 @@ static struct fuse_lowlevel_ops fuse_path_ops = {
     .getlk = fuse_lib_getlk,
     .setlk = fuse_lib_setlk,
     .bmap = fuse_lib_bmap,
+    .ioctl = fuse_lib_ioctl,
 };
 
 struct fuse_session *fuse_get_session(struct fuse *f)
@@ -2501,6 +2875,10 @@ static const struct fuse_opt fuse_lib_opts[] = {
     FUSE_LIB_OPT("readdir_ino",           readdir_ino, 1),
     FUSE_LIB_OPT("direct_io",             direct_io, 1),
     FUSE_LIB_OPT("kernel_cache",          kernel_cache, 1),
+#ifdef __SOLARIS__
+    FUSE_LIB_OPT("auto_cache",            auto_cache, 1),
+    FUSE_LIB_OPT("noauto_cache",          auto_cache, 0),
+#endif /* __SOLARIS__ */
     FUSE_LIB_OPT("umask=",                set_mode, 1),
     FUSE_LIB_OPT("umask=%o",              umask, 0),
     FUSE_LIB_OPT("uid=",                  set_uid, 1),
@@ -2514,6 +2892,9 @@ static const struct fuse_opt fuse_lib_opts[] = {
     FUSE_LIB_OPT("negative_timeout=%lf",  negative_timeout, 0),
     FUSE_LIB_OPT("intr",                  intr, 1),
     FUSE_LIB_OPT("intr_signal=%d",        intr_signal, 0),
+#ifdef __SOLARIS__
+    FUSE_LIB_OPT("modules=%s",            modules, 0),
+#endif /* __SOLARIS__ */
     FUSE_OPT_END
 };
 
@@ -2525,6 +2906,9 @@ static void fuse_lib_help(void)
 "    -o readdir_ino         try to fill in d_ino in readdir\n"
 "    -o direct_io           use direct I/O\n"
 "    -o kernel_cache        cache files in kernel\n"
+#ifdef __SOLARIS__
+"    -o [no]auto_cache      enable caching based on modification times (off)\n"
+#endif /* __SOLARIS__ */
 "    -o umask=M             set file permissions (octal)\n"
 "    -o uid=N               set file owner\n"
 "    -o gid=N               set file group\n"
@@ -2534,8 +2918,41 @@ static void fuse_lib_help(void)
 "    -o ac_attr_timeout=T   auto cache timeout for attributes (attr_timeout)\n"
 "    -o intr                allow requests to be interrupted\n"
 "    -o intr_signal=NUM     signal to send on interrupt (%i)\n"
+#ifdef __SOLARIS__
+"    -o modules=M1[:M2...]  names of modules to push onto filesystem stack\n"
+#endif /* __SOLARIS__ */
 "\n", FUSE_DEFAULT_INTR_SIGNAL);
 }
+
+#ifdef __SOLARIS__
+
+static void fuse_lib_help_modules(void)
+{
+    struct fuse_module *m;
+    fprintf(stderr, "\nModule options:\n");
+    pthread_mutex_lock(&fuse_context_lock);
+    for (m = fuse_modules; m; m = m->next) {
+        struct fuse_fs *fs = NULL;
+        struct fuse_fs *newfs;
+        struct fuse_args args = FUSE_ARGS_INIT(0, NULL);
+        if (fuse_opt_add_arg(&args, "") != -1 &&
+            fuse_opt_add_arg(&args, "-h") != -1) {
+            fprintf(stderr, "\n[%s]\n", m->name);
+            newfs = m->factory(&args, &fs);
+            assert(newfs == NULL);
+        }
+        fuse_opt_free_args(&args);
+    }
+    pthread_mutex_unlock(&fuse_context_lock);
+}
+
+int fuse_is_lib_option(const char *opt)
+{
+    return fuse_lowlevel_is_lib_option(opt) ||
+        fuse_opt_match(fuse_lib_opts, opt);
+}
+
+#endif /* __SOLARIS__ */
 
 static int fuse_lib_opt_proc(void *data, const char *arg, int key,
                              struct fuse_args *outargs)
@@ -2585,6 +3002,32 @@ static void fuse_restore_intr_signal(int signum)
     sigaction(signum, &sa, NULL);
 }
 
+#ifdef __SOLARIS__
+
+static int fuse_push_module(struct fuse *f, const char *module,
+                            struct fuse_args *args)
+{
+    struct fuse_fs *newfs;
+    struct fuse_module *m = fuse_get_module(module);
+    struct fuse_fs *fs[2];
+
+    fs[0] = f->fs;
+    fs[1] = NULL;
+    if (!m)
+        return -1;
+
+    newfs = m->factory(args, fs);
+    if (!newfs) {
+        fuse_put_module(m);
+        return -1;
+    }
+    newfs->m = m;
+    f->fs = newfs;
+    return 0;
+}
+
+#endif /* __SOLARIS__ */
+
 struct fuse_fs *fuse_fs_new(const struct fuse_operations *op, size_t op_size,
                             void *user_data)
 {
@@ -2630,7 +3073,6 @@ struct fuse *fuse_new(struct fuse_chan *ch, struct fuse_args *args,
         goto out_free;
 
     f->fs = fs;
-    f->utime_omit_ok = fs->op.flag_utime_omit_ok;
 
     /* Oh f**k, this is ugly! */
     if (!fs->op.lock) {
@@ -2646,10 +3088,26 @@ struct fuse *fuse_new(struct fuse_chan *ch, struct fuse_args *args,
     if (fuse_opt_parse(args, &f->conf, fuse_lib_opts, fuse_lib_opt_proc) == -1)
         goto out_free_fs;
 
+#ifdef __SOLARIS__
+    if (f->conf.modules) {
+        char *module;
+        char *next;
+
+        for (module = f->conf.modules; module; module = next) {
+            char *p;
+            for (p = module; *p && *p != ':'; p++);
+            next = *p ? p + 1 : NULL;
+            *p = '\0';
+            if (module[0] && fuse_push_module(f, module, args) == -1)
+                goto out_free_fs;
+        }
+    }
+#endif /* __SOLARIS__ */
+
     if (!f->conf.ac_attr_timeout_set)
         f->conf.ac_attr_timeout = f->conf.attr_timeout;
 
-#ifdef __FreeBSD__
+#if defined(__FreeBSD__) || defined(__FreeBSD_kernel__)
     /*
      * In FreeBSD, we always use these settings as inode numbers are needed to
      * make getcwd(3) work.
@@ -2658,14 +3116,17 @@ struct fuse *fuse_new(struct fuse_chan *ch, struct fuse_args *args,
 #endif
 
     f->se = fuse_lowlevel_new(args, &llop, sizeof(llop), f);
+
     if (f->se == NULL) {
+#ifdef __SOLARIS__
+        if (f->conf.help)
+            fuse_lib_help_modules();
+#endif /* __SOLARIS__ */
         goto out_free_fs;
     }
 
     fuse_session_add_chan(f->se, ch);
 
-    if (f->conf.debug)
-        fprintf(stderr, "utime_omit_ok: %i\n", f->utime_omit_ok);
     f->ctr = 0;
     f->generation = 0;
     /* FIXME: Dynamic hash table */
@@ -2728,6 +3189,9 @@ struct fuse *fuse_new(struct fuse_chan *ch, struct fuse_args *args,
        called on the filesystem without init being called first */
     fs->op.destroy = NULL;
     fuse_fs_destroy(f->fs);
+#ifdef __SOLARIS__
+    free(f->conf.modules);
+#endif /* __SOLARIS__ */
  out_free:
     free(f);
  out_delete_context_key:
@@ -2777,7 +3241,9 @@ void fuse_destroy(struct fuse *f)
     pthread_mutex_destroy(&f->lock);
     pthread_rwlock_destroy(&f->tree_lock);
     fuse_session_destroy(f->se);
+#ifdef __SOLARIS__
+    free(f->conf.modules);
+#endif /* __SOLARIS__ */
     free(f);
     fuse_delete_context_key();
 }
-

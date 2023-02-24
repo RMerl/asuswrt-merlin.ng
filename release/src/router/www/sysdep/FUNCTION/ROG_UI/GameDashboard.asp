@@ -299,6 +299,12 @@ if(based_modelid === 'GT-AXE16000'){
 	wl1_radio = wl0_radio;
 	wl0_radio = t;
 }
+else if(odmpid == 'GT6'){
+	var t = wl2_radio;
+	wl2_radio = wl1_radio;
+	wl1_radio = wl0_radio;
+	wl0_radio = t;
+}
 var label_mac = <% get_label_mac(); %>;
 var CNSku = in_territory_code("CN");
 

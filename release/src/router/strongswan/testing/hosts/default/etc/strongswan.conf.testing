@@ -19,4 +19,13 @@ charon {
   }
 }
 
+swanctl {
+  plugins {
+    # disabled because of entropy issues
+    gcrypt {
+      load = no
+    }
+  }
+}
+
 include strongswan.conf

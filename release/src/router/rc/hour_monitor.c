@@ -20,7 +20,10 @@ static int hm_alarm_status = 0;
 
 void hm_traffic_analyzer_save()
 {
-	eval("TrafficAnalyzer", "-d", BWDPI_ANA_DB_SIZE);
+	char *analyzer_exe_argv[] = {"TrafficAnalyzer", "-e", NULL};
+	char *analyzer_size_argv[] = {"TrafficAnalyzer", "-d", BWDPI_ANA_DB_SIZE, NULL};
+
+	_eval(analyzer_size_argv, NULL, 5, NULL);
 
 	if (!f_exists(DEVNODE) || !f_exists("/dev/idpfw")) {
 		_dprintf("%s : dpi engine doesn't exist, not to save any database\n", __FUNCTION__);
@@ -28,7 +31,7 @@ void hm_traffic_analyzer_save()
 		return;
 	}
 
-	eval("TrafficAnalyzer", "-e");
+	_eval(analyzer_exe_argv, NULL, 5, NULL);
 }
 
 void hm_traffic_limiter_save()

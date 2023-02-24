@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -96,7 +97,7 @@ struct eap_method_t {
 	 * @param vendor	pointer receiving vendor identifier for type, 0 for none
 	 * @return			type of the EAP method
 	 */
-	eap_type_t (*get_type) (eap_method_t *this, uint32_t *vendor);
+	eap_type_t (*get_type) (eap_method_t *this, pen_t *vendor);
 
 	/**
 	 * Check if this EAP method authenticates the server.

@@ -1,9 +1,0 @@
-alice::iptables-restore < /etc/iptables.rules
-sun::iptables-restore < /etc/iptables.rules
-sun::ip route add 10.1.0.0/16 via PH_IP_MOON
-winnetou::ip route add 10.1.0.0/16 via PH_IP_MOON
-alice::ipsec start
-sun::ipsec start
-sun::expect-connection nat-t
-alice::expect-connection nat-t
-alice::ipsec up nat-t

@@ -1,0 +1,152 @@
+{
+	"tmpfs": [
+		{
+			"productid": "RT-AX89U",
+			"features": [
+				{
+					"name": "System Log",
+					"rtconfig": "NOCONFIG_SYSLOG",
+					"data": [
+						{
+							"name": "System Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/tmp/syslog.log"
+						},
+						{
+							"name": "System Log Backup",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 786432,
+							"min_size": 786432,
+							"type": "file",
+							"path": "/tmp/syslog.log-1"
+						}
+					]
+				}
+			]
+		},
+		{
+			"productid": "general",
+			"features": [
+				{
+					"name": "System Log",
+					"rtconfig": "NOCONFIG_SYSLOG",
+					"data": [
+						{
+							"name": "System Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 266240,
+							"min_size": 266240,
+							"type": "file",
+							"path": "/tmp/syslog.log"
+						},
+						{
+							"name": "System Log Backup",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 266240,
+							"min_size": 266240,
+							"type": "file",
+							"path": "/tmp/syslog.log-1"
+						}
+					]
+				},
+				{
+					"name": "AHS",
+					"rtconfig": "RTCONFIG_AHS",
+					"data": [
+						{
+							"name": "AHS Log",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 1048576,
+							"min_size": 1048576,
+							"type": "file",
+							"path": "/tmp/ahs.log"
+						},
+						{
+							"name": "AHS Log Backup",
+							"priority": 3,
+							"__priority": "Debug log",
+							"max_size": 1048576,
+							"min_size": 1048576,
+							"type": "file",
+							"path": "/tmp/ahs.log.1"
+						}
+					]
+				},
+				{
+					"name": "CONNECTION DIAGNOSTIC",
+					"rtconfig": "RTCONFIG_CONNDIAG",
+					"data": [
+						{
+							"name": "The database files of connection diagnostic",
+							"priority": 2,
+							"__priority": "Soft Limit",
+							"max_size": 2097152,
+							"min_size": 0,
+							"type": "dir",
+							"path": "/tmp/.diag"
+						}
+					]
+				},
+				{
+					"name": "AiMesh",
+					"rtconfig": "RTCONFIG_AMAS",
+					"data": [
+						{
+							"name": "The debug log of AiMesh",
+							"priority": 2,
+							"__priority": "Soft Limit",
+							"max_size": 2097152,
+							"min_size": 0,
+							"type": "dir",
+							"path": "/tmp/asusdebuglog"
+						}
+					]
+				},
+				{
+					"name": "BWDPI",
+					"rtconfig": "RTCONFIG_BWDPI",
+					"data": [
+						{
+							"name": "The database files of bwdpi usage",
+							"priority": 2,
+							"__priority": "Soft Limit",
+							"max_size": 1024000,
+							"min_size": 1024000,
+							"type": "dir",
+							"path": "/tmp/bwdpi"
+						}
+					]
+				},
+				{
+					"__name": "##### !!!!! ADD OTHERS ABOVE !!!!! #####",
+					"name": "Misc files",
+					"rtconfig": "NOCONFIG_MISC",
+					"data": [
+						{
+							"name": "Misc files",
+							"priority": 1,
+							"__priority": "Hard Limit",
+							"max_size": 3145728,
+							"min_size": 0,
+							"type": "misc",
+							"path": "/tmp"
+						}
+					]
+				},
+				{
+					"name": "last",
+					"rtconfig": null,
+					"data": null
+				}
+			]
+		}
+	]
+}

@@ -114,5 +114,8 @@ int ntfs_log_redirect(const char *function, const char *file, int line,
 #define ntfs_log_leave(FORMAT, ARGS...)do {} while (0)
 #endif /* DEBUG */
 
+void ntfs_log_early_error(const char *format, ...)
+                __attribute__((format(printf, 1, 2)));
+
 #endif /* _LOGGING_H_ */
 

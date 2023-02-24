@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2011-2014 Andreas Steffen
  *
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -131,7 +132,6 @@ METHOD(pa_tnc_attr_manager_t, create, pa_tnc_attr_t*,
 	pen_t vendor_id;
 	pen_type_t unsupported_type;
 	pen_type_t error_code = { PEN_IETF, PA_ERROR_INVALID_PARAMETER };
-	enum_name_t *pa_attr_names;
 	pa_tnc_attr_t *attr = NULL;
 	enumerator_t *enumerator;
 	entry_t *entry;
@@ -151,20 +151,7 @@ METHOD(pa_tnc_attr_manager_t, create, pa_tnc_attr_t*,
 	reader->read_uint32(reader, &type);
 	reader->read_uint32(reader, &length);
 
-	pa_attr_names = imcv_pa_tnc_attributes->get_names(imcv_pa_tnc_attributes,
-													  vendor_id);
-	if (pa_attr_names)
-	{
-		DBG2(DBG_TNC, "processing PA-TNC attribute type '%N/%N' "
-					  "0x%06x/0x%08x", pen_names, vendor_id,
-					   pa_attr_names, type, vendor_id, type);
-	}
-	else
-	{
-		DBG2(DBG_TNC, "processing PA-TNC attribute type '%N' "
-					  "0x%06x/0x%08x", pen_names, vendor_id,
-					   vendor_id, type);
-	}
+	imcv_list_pa_tnc_attribute_type("processing", vendor_id, type);
 
 	if (length < PA_TNC_ATTR_HEADER_SIZE)
 	{

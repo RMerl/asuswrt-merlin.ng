@@ -125,7 +125,7 @@ void save_arpping_list(void)
 		if(c->mac->used <17)
 			continue;
 
-		char temp[50]="\0";
+		char temp[128]="\0";
 		snprintf(temp, sizeof(temp), "%s<%s<%s<%d>", c->name->ptr, c->ip->ptr, c->mac->ptr, c->online);
 		buffer_append_string(smbdav_list, temp);
 	}
@@ -569,8 +569,10 @@ void query_one_hostname(void)
 			break;
 
 		//Cdbg(DBE, "Query samba server name, ip=[%s]", p->ip->ptr);
-		const char *hostname = smbc_nmblookup(p->ip->ptr);
-		
+		// const char *hostname = smbc_nmblookup(p->ip->ptr);
+		char *hostname = smbc_nmblookup(p->ip->ptr);
+		trim_space(hostname);
+
 		if( strcmp(p->name->ptr, "")!=0&&
 		    hostname!=NULL && 
 		    strcmp(p->name->ptr, hostname)==0 &&
@@ -996,6 +998,7 @@ int main(int argc, char *argv[])
 		}
 	}
 
+
 	//- Check if same process is running.
 	FILE *fp = fopen(LIGHTTPD_ARPPING_PID_FILE_PATH, "r");
 	if (fp) {
@@ -1004,6 +1007,8 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	
+	sleep(10);
+
 	//- Write PID file
 	pid_t pid = getpid();
 	fp = fopen(LIGHTTPD_ARPPING_PID_FILE_PATH, "w");
@@ -1062,7 +1067,7 @@ int main(int argc, char *argv[])
 			query_one_hostname();
 			prv_ts = cur_ts;
 		}
-#else		
+#else
 		if( prv_ts == 0 || cur_ts - prv_ts >= ARP_TIME_INTERVAL ){	
 			on_arpping_timer_handler2(0);	
 			prv_ts = cur_ts;			

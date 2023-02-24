@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -50,7 +51,7 @@ struct private_ha_child_t {
 
 METHOD(listener_t, child_keys, bool,
 	private_ha_child_t *this, ike_sa_t *ike_sa, child_sa_t *child_sa,
-	bool initiator, diffie_hellman_t *dh, chunk_t nonce_i, chunk_t nonce_r)
+	bool initiator, key_exchange_t *dh, chunk_t nonce_i, chunk_t nonce_r)
 {
 	ha_message_t *m;
 	chunk_t secret;
@@ -91,7 +92,7 @@ METHOD(listener_t, child_keys, bool,
 	{
 		m->add_attribute(m, HA_ALG_INTEG, alg);
 	}
-	if (proposal->get_algorithm(proposal, DIFFIE_HELLMAN_GROUP, &alg, NULL))
+	if (proposal->get_algorithm(proposal, KEY_EXCHANGE_METHOD, &alg, NULL))
 	{
 		m->add_attribute(m, HA_ALG_DH, alg);
 	}

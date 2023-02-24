@@ -1,9 +1,8 @@
 moon::iptables-restore < /etc/iptables.rules
 carol::iptables-restore < /etc/iptables.rules
-moon::cat /etc/ipsec.d/triplets.dat
-carol::cat /etc/ipsec.d/triplets.dat
-moon::ipsec start
-carol::ipsec start
-moon::expect-connection rw-eap-sim
+carol::cd /etc/swanctl; rm rsa/* x509/*
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+moon::expect-connection rw-eap
 carol::expect-connection home
-carol::ipsec up home
+carol::swanctl --initiate --child home 2> /dev/null

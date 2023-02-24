@@ -11,9 +11,9 @@ moon::ip link set vti0 up
 moon::"ip route add fec3:\:/16 dev vti0"
 moon::ip6tables -A FORWARD -i vti0 -j ACCEPT
 moon::ip6tables -A FORWARD -o vti0 -j ACCEPT
-moon::systemctl start strongswan-swanctl
-carol::systemctl start strongswan-swanctl
-dave::systemctl start strongswan-swanctl
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::expect-connection rw
 carol::expect-connection home
 carol::swanctl --initiate --child home

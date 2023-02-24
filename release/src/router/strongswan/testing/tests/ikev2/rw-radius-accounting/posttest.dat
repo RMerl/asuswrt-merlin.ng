@@ -1,6 +1,6 @@
-carol::ipsec stop
-moon::ipsec stop
+carol::systemctl stop strongswan
+moon::systemctl stop strongswan
 alice::killall freeradius
 alice::cat /var/log/freeradius/radacct/PH_IP_MOON1/*
-carol::iptables-restore < /etc/iptables.flush
 moon::iptables-restore < /etc/iptables.flush
+carol::iptables-restore < /etc/iptables.flush

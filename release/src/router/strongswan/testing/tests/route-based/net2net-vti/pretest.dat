@@ -12,8 +12,8 @@ sun::ip link set vti-sun up
 sun::ip route add 10.1.0.0/16 dev vti-sun
 sun::iptables -A FORWARD -i vti-sun -j ACCEPT
 sun::iptables -A FORWARD -o vti-sun -j ACCEPT
-moon::systemctl start strongswan-swanctl
-sun::systemctl start strongswan-swanctl
+moon::systemctl start strongswan
+sun::systemctl start strongswan
 moon::expect-connection gw-gw
 sun::expect-connection gw-gw
 moon::swanctl --initiate --child net-net

@@ -25,8 +25,11 @@
 
 #include "types.h"
 #include "layout.h"
+#include "volume.h"
 
 extern int ntfs_mst_post_read_fixup(NTFS_RECORD *b, const u32 size);
+extern int ntfs_mst_post_read_fixup_warn(NTFS_RECORD *b, const u32 size,
+					BOOL warn);
 extern int ntfs_mst_pre_write_fixup(NTFS_RECORD *b, const u32 size);
 extern void ntfs_mst_post_write_fixup(NTFS_RECORD *b);
 

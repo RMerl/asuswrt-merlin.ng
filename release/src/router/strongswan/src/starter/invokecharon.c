@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2006 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2001-2002 Mathieu Lafon
  * Arkoon Network Security

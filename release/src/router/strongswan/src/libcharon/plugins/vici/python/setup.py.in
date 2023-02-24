@@ -10,7 +10,7 @@ setup(
     long_description=long_description,
     author="strongSwan Project",
     author_email="info@strongswan.org",
-    url="https://wiki.strongswan.org/projects/strongswan/wiki/Vici",
+    url="https://docs.strongswan.org/docs/5.9/plugins/vici.html",
     license="MIT",
     packages=["vici"],
     include_package_data=True,

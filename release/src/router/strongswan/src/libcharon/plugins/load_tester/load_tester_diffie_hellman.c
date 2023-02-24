@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -15,33 +16,33 @@
 
 #include "load_tester_diffie_hellman.h"
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	load_tester_diffie_hellman_t *this, chunk_t *value)
 {
 	*value = chunk_empty;
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	load_tester_diffie_hellman_t *this, chunk_t value)
 {
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	load_tester_diffie_hellman_t *this, chunk_t *secret)
 {
 	*secret = chunk_empty;
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	load_tester_diffie_hellman_t *this)
 {
 	return MODP_NULL;
 }
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	load_tester_diffie_hellman_t *this)
 {
 	free(this);
@@ -51,7 +52,7 @@ METHOD(diffie_hellman_t, destroy, void,
  * See header
  */
 load_tester_diffie_hellman_t *load_tester_diffie_hellman_create(
-												diffie_hellman_group_t group)
+												key_exchange_method_t group)
 {
 	load_tester_diffie_hellman_t *this;
 
@@ -61,11 +62,11 @@ load_tester_diffie_hellman_t *load_tester_diffie_hellman_create(
 	}
 
 	INIT(this,
-		.dh = {
+		.ke = {
 			.get_shared_secret = _get_shared_secret,
-			.set_other_public_value = _set_other_public_value,
-			.get_my_public_value = _get_my_public_value,
-			.get_dh_group = _get_dh_group,
+			.set_public_key = _set_public_key,
+			.get_public_key = _get_public_key,
+			.get_method = _get_method,
 			.destroy = _destroy,
 		}
 	);

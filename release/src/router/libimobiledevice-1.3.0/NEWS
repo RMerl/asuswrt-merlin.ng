@@ -1,0 +1,571 @@
+Version 1.3.0
+~~~~~~~~~~~~~
+
+* Development release "Let's get the party started."
+* Changes:
+  - Fix Python 3 support
+  - Add more lockdown error codes
+  - Add new lockdownd_pair_with_options() function
+  - Fix GnuTLS support with iOS 10
+  - Make sure sockets only listen locally due to security reasons
+  - Plug various memory leaks
+  - Fix SSL version negotiation for newer versions of OpenSSL
+  - Optimize lockdown pair record handling
+  - Return proper error code when a lockdown pair record is missing
+  - Fix building with MingGW
+  - Store application information in Info.plist using idevicebackup2
+  - Fix application backup handling to allow the device to restore applications
+    that were installed using idevicebackup2
+  - Make idevicebackup2 reboot after restore the default to allow the device to
+    migrate data correctly and thus improve the restored device data state
+  - Improve console frontend information output in idevicebackup2
+  - Extend ideviceprovision tool to allow retrieving and removing all
+    provisioning profiles
+  - Fix parsing large provisioning profile using ideviceprovision
+  - Fix receiving large property lists in property list service
+  - Propagate lower level errors to callers instead of returning
+    IDEVICE_E_UNKNOWN_ERROR
+  - API: Add IDEVICE_DEVICE_PAIRED event type
+  - Detect screenshot format to support png, tiff and dat formats using
+    idevicescreenshot tool
+  - API: Add mobileactivation service implementation
+  - Wait for passcode entry if required using idevicesyslog
+  - Add HDMI option to diagnostics command for idevicediagnostics
+  - Fix IORegistry command for iOS 11+ devices in idevicediagnostics
+  - Remove 40-digit character limit for UDID in tools to support newer devices
+  - Fix broken validate command in idevicepair with iOS 11+
+  - Fix OpenSSL version checks for configure target when using LibreSSL
+  - Migrate latest improved common code from libusbmuxd
+  - Convert README file to markdown format
+  - Fix idevicecrashreport tool to work with iOS 13+
+  - Fix various errors in SSL communication logic
+  - API: Add preboard service implementation
+  - Output hint to user to enter passcode when changing password using
+    idevicebackup2
+  - Cython: Fix and improve debugserver and diagnostics service bindings
+  - API: Add WiFi device support via new idevice_new_with_options() function
+  - API: Add idevice_get_device_list_extended() to also list network devices
+  - API: Add lockdown_strerror() helper to get error representation as string
+  - Add network device support to idevicesyslog and ideviceinfo tools
+  - Make debug output consistently output to stderr
+  - Add new idevicesetlocation tool (requires mounted developer image)
+  - Add option to exit if device disconnects in idevicesyslog
+  - API: Add syslog_relay_start_capture_raw() for raw syslog capture
+  - Add color output and process filter support to idevicesyslog
+  - API: Add companion_proxy service implementation
+  - Bump dependency to libusbmuxd 2.0.2
+  - Bump dependency to libplist 2.2.0
+  - Improve error handling and reporting in library and tools
+  - Fix various memory leaks in library and tools
+  - Add "--network" and "--version" options to all tools
+  - Fix socket_connect_addr() not connecting to network devices using IPv6
+    in some cases.
+  - Improve IPv6 "scope id" detection to fix connecting to network devices with
+    link-local adresses.
+  - Update man pages
+  - Fix various inconsistent declarations in public headers
+  - Allow OpenSSL >= 1.1.0 to use older/disallowed TLS versions fixing issues
+    where pairing records were getting removed repeatingly
+  - Fixed memory leaks
+  - Cython: Rewrite version detection logic in configure.ac
+  - Rename "--enable-debug-code" configure option to "--enable-debug"
+  - Improve README.md with project description, installation, contributing and
+    usage sections
+  - Rename library and all related files by adding an API version resulting
+    in "libimobiledevice-1.0"
+  - Bump soname version
+* API is UNSTABLE
+
+Version 1.2.0
+~~~~~~~~~~~~~
+
+* Stable release "It took you so long baby!"
+* Changes:
+  - Require autoconf 2.64 or later
+  - Remove dev tools, will return either as proper tools or website examples
+  - Refactor installation proxy service implementation and normalize code
+  - API: Added instproxy_lookup() to efficiently lookup app information
+  - API: Added instproxy_check_capabilities_match() to check device capabilities
+  - API: Added various instproxy command and status plist getters
+  - API: Make debugserver_client_set_ack_mode() public
+  - Fix handling of clients reconnecting in idevicedebugserverproxy which
+    previously didn't work properly
+  - Flush stdout for every line in idevicesyslog
+  - Fix shutdown of idevicedebugserverproxy tool which could hang
+  - Notify user when erroneously using idevicebackup with iOS 4 or later
+  - Enable build of idevicecrashreport on WIN32
+  - Fix thread handle leaks on WIN32 adding thread_new and thread_free
+  - cython: Add receive/receive_timeout methods for iDeviceConnection to
+    receive raw data from a connection
+  - cython: Add new FILE_RELAY_E_PERMISSION_DENIED(-6) error
+  - API: Refactor lockdown service internal error checking and add a bunch of
+    new native errors
+  - Convert int16_t macro error types into enum within common module, too
+  - Add new "idevicenotificationproxy" tool to post or observe notifications
+  - Fix overlong blocking in np_client_free()
+  - Improve maintainability and Requires of pkg-config file
+  - API: Add new LOCKDOWN_E_SERVICE_LIMIT error to detect service limit states
+  - API: Remove const argv requirement for debugserver_command_new
+  - cython: Add get_path_for_bundle_identifier() method to
+    InstallationProxyClient
+  - cython: Add DebugServerClient class to communicate with debugserver
+  - Comply to strict function prototypes by using (void) instead of just ()
+  - Fix notification proxy shutdown process which was incorrectly implemented
+  - Fix linking problems on OS X
+  - Fix missing debug output which broke with the last release
+  - Unify and improve various debug messages
+  - Fix re-pairing if pairing with existing pair record failed initially
+  - Skip printing long plist (16kb+) files to prevent excessive debug output
+  - Move a few common helpers from backup tools to common utility helper code
+  - Remove incorrect flags from afc_file_open() documentation
+  - Fix various memory leaks
+
+Version 1.1.7
+~~~~~~~~~~~~~
+
+* Development release "Cleaning up the yard."
+* Changes:
+  - Fix broken app args, environment handling and memory leaks in idevicedebug
+  - Make all tools print an error if lockdown connection fails
+  - Convert int16_t macro error types into enum for better type-checking and
+    for various debugging benefits
+  - Avoid exporting non-public symbols for better ABI stability
+  - Fix failing backup process for devices having a passcode set and entering
+    lock state during the process in idevicebackup2
+  - API: Added lockdownd_start_service_with_escrow_bag()
+  - API: Added afc_remove_path_and_contents() for recursive deletion
+  - Fix last memory leak with OpenSSL through proper library deinitialization
+  - Add new idevicedebug tool to interact with debugserver on a device
+  - API: Add debugserver service implementation
+  - Handle new PermissionDenied error of file_relay due new security in iOS 8+
+  - Fix retry loop problem when device requests 0 files in idevicebackup2
+  - Add trust dialog related error codes to Cython bindings
+  - Fix various memory leaks in AFC implementation
+  - Fix disk image upload with latest iOS 8 in ideviceimagemounter
+  - Add new "dump" command to print information about a provisioning profile in
+    ideviceprovision
+  - Refactor plist print helper code and move it into common module for better
+    reuse accross the tools
+  - Do not crash if retrieving the system buid fails
+  - API: Make generic "propery_list_service_client" public
+  - Moved doc comments from private to public headers
+  - Fix possible segfault when using lockdownd_get_value() due to always
+    returning success
+  - Do not read files entirely into memory during restore in idevicebackup
+  - Plug a few memory leaks and fix invalid password check in idevicebackup2
+  - Add support for file sizes > 4GB on Win32 in idevicebackup2
+  - Fix declaration for DllMain on Win32
+  - Silence various compiler warnings
+  - Fix assert within pairing logic
+* API is UNSTABLE
+
+Version 1.1.6
+~~~~~~~~~~~~~
+
+* Development release "Way too overdue."
+* Changes:
+  - Remove segmentation code from afc_file_read() to provide raw interface and
+    more control to API consumer I/O logic
+  - Implement global thread safe library initialization, especially to control
+    SSL backend lifecycle
+  - Major refactoring of pair record code and logic to use new usbmuxd pair
+    record management interface
+  - Replace user level with system wide pair record file handling
+  - Bump dependency to libplist 1.11 and remove use of "plist_dict_insert_item"
+  - Bump dependency to libusbmuxd 1.0.9
+  - Finish pair record and trust dialog handling for iOS 7+
+  - Improve AFC write performance and memory usage
+  - Add support for custom output filename to idevicescreenshot
+  - Fix detection and compilation for Python 3.x
+  - API: Added file_relay_request_sources_timeout()
+  - Fix broken HouseArrestClient class in cython bindings
+  - Add new idevicecrashreport tool to retrieve crash reports and logs from a
+    device
+  - Prevent "Failed to restart/shutdown device" messages in idevicediagnostics
+  - Link against ws2_32.dll on Win32
+  - Add support for iOS 7+ disk image mounting to ideviceimagemounter
+  - Add new idevicename tool to get or set the device name
+  - Allow unbacking of encrypted backups with a given password to idevicebackup2
+  - Remove sending "Goodbye" request on lockdown
+  - Add support for newer PLIST_REAL based time type to idevicedate
+  - Add note about setting time not working on iOS 6+ to idevicedate
+  - Handle partial SSL reads correctly now to prevent random crashes
+  - Fix duplicated output in ideviceinfo output
+  - Remove a bunch of dead code
+  - Fix deprecated OpenSSL "RSA_generate_key" with "RSA_generate_key_ex" which
+    is available since OpenSSL 0.9.8 (July 2005)
+  - Improve debug messages
+  - Enforce "-fsigned-char" to fix issues on embedded platforms
+  - Fix compilation with Clang/LLVM
+  - Avoid versioning for shared library on Win32
+  - Add experimental support for controlling cloud backup mode to idevicebackup2
+  - Save EscrowBag when starting service for automatic unlocking in pair record
+  - Remove pairing logic which is obsoleted by usbmuxd's preflight handler
+  - Fix shutdown of SSL connection to be correct and no longer generate errors
+    on device
+  - Add support for GnuTLS 3.x and fix broken GnuTLS backend
+  - Add extensions to generated certificates to match native ones
+  - Add "systembuid" command to idevicepair
+  - Allow starting service without the need for a running SSL session
+  - Refactor more code into common module
+  - Add option to filerelaytest to specify a source to request
+  - Fix support for partial messages in webinspector implementation
+  - Implement support for encrypted backups in idevicebackup2
+  - API: Export SSL control functions for idevice_connection_t
+  - API: Make generic service client public to allow external service
+    implementations
+  - Implement *_start_service() helper for easier creation of service clients
+  - Add public *_SERVICE_NAME defines for each service
+  - Fix a great bunch of memory leaks after intensive valgrind session
+  - Security: Fix insecure use of the /tmp directory (CVE-2013-2142)
+  - A bunch of memory leak fixes
+  - Python: Various fixes and support for "with" statement for AfcFile class
+  - Python: Add Afc2Client class to allow jailbroken filesystem access
+  - Fix linking issue with newer libtool as reported for Ubuntu
+  - Fix stuck thread in idevicesyslog which broke quit from within the tool
+  - Add syslog_relay service implementation and use it in idevicesyslog
+  - API: Add instproxy_client_get_path_for_bundle_identifier() helper
+  - API: Add afc_dictionary_free() helper
+  - Move thread, socket, debug and userpref code to "common" source directory
+    in order to improve code reuse
+  - Fix broken byte order detection in configure.ac which could lead to broken
+    AFC protocol communication on platforms without endian.h (Raspberry PI)
+* API is UNSTABLE
+
+Version 1.1.5
+~~~~~~~~~~~~~
+
+* Development release
+* Changes:
+  - Implement automatic reconnecting in idevicesyslog
+  - Refactor all services to use new base service
+  - Add new generic service_client_factory_start_service() helper
+  - Implement a base service that all services inherit from
+  - API: Refactor use of "port numbers" into a "service descriptor" which is
+    a needed change as all services must now transparently support SSL.
+    Fortunately, only minor changes are needed to migrate your code properly.
+  - Add experimental ideviceheartbeat to allow service checkin over the network
+  - Add heartbeat service implementation to keep alive network connections
+  - Add webinspector service implementation for WebKit remote debugging
+  - Fix idevicebackup2 failing due to integer overflow in free disk space 
+    calculation on 32 bit architectures and large disk capacities
+  - Add support for encrypted and password protected backups to idevicebackup2
+  - Fix major "too long filename received" bug in idevicebackup2
+  - Various fixes for proper and tested WIN32 support including MinGW building
+  - Fix various crashers and improve quality of idevicebackup2 tool
+  - Add endianness helpers for systems lacking support
+  - Fix idevicedate to work on iOS 6+
+  - Add idevicediagnostics tool
+  - Add diagnostics_relay service implementation
+  - Add idevicedebugserverproxy tool for remote lldb debugging
+  - Add ideviceprovision tool
+  - Add misagent service implementation to manage provisioning profiles
+  - Fix crash if $HOME is empty or not defined
+  - Fix non-ASCII characters being stripped when using plist communication
+  - Improve compile support for cython and check it at configure time
+  - Bump cython requirement to 0.17.0+
+  - Fix compilation of cython bindings
+  - Python bindings now cover all C APIs
+  - Fix iOS 6 compatibility for mobilesync, mobilebackup, mobilebackup2 and
+    screenshotr by bumping device link protocol version number
+  - Do not strip non_ASCII characters from XML plists
+  - Fix possible crash when using OpenSSL
+* API is UNSTABLE
+
+Version 1.1.4
+~~~~~~~~~~~~~
+
+* Development release
+* Changes:
+  - Fix a bug in idevicesyslog causing the connection to close after timeout
+  - Bump soname revision
+* API is UNSTABLE
+
+Version 1.1.3
+~~~~~~~~~~~~~
+
+* Development release
+* Changes:
+  - Bump libusbmuxd dependency to 1.0.8
+  - Fix reading from syslog_relay and remove null characters
+  - Relicense ideviceimagemounter and idevicescreenshot to LGPL
+  - Fix a crash when using restored_client_free()
+  - API: Add sbservices_get_interface_orientation()
+  - Update man pages and code comments for documentation
+  - Minor cleanup
+* API is UNSTABLE
+
+Version 1.1.2
+~~~~~~~~~~~~~
+
+* Development release
+* Changes:
+  - Add Python bindings generated by Cython
+  - Bump libplist requirement to latest 1.8
+  - Add support for OpenSSL with fallback to GNUTLS
+  - Improvements and various fixes for Win32 and OS X build
+  - Remove glib dependency
+  - Improve restored implementation
+  - Fix various memory leaks
+  - Fix support for iOS 5 and later
+* SWIG Python Bindings are removed
+* API is UNSTABLE
+
+Version 1.1.1
+~~~~~~~~~~~~~
+
+* Development release
+* Changes:
+  - Add new idevicebackup2 tool for full backup and restore support on iOS 4+
+  - Add a workaround for a bug in iOS 4.3 affecting lockdown_get_value() which
+    most prominently affected libgpod, gvfs, ideviceinfo and some other tools
+  - Read ProxyDeath message to preventing obsolete messages in device syslog
+  - Rework SWIG detection and includes
+  - Add new idevicedate tool to get or set the clock on iDevices
+  - API: Add mobilesync_clear_all_records_on_device()
+  - API: Change device_link_service_disconnect() to accept a message
+  - Add manpages for ideviceenterrecovery, idevicepair, idevicebackup2 and
+    idevicedate
+  - Add missing libgen.h include to silence compiler warnings
+  - Fix a segfault that might occour if locally stored certs could not be read
+  - Fix various memory leaks
+  - Update documentation
+* Python Bindings will get refactored completely
+* API is UNSTABLE
+
+Version 1.1.0
+~~~~~~~~~~~~~
+
+* Development release
+* Changes:
+  - Implement restoring backups using idevicebackup
+  - Allow connecting without pairing using "ideviceinfo -s"
+  - Add ideviceenterrecovery tool
+  - Add mobilesync service implementation
+  - Add restored service implementation for restore mode
+  - Add home_arrest service implementation for document sharing
+  - Add API afc_client_new_from_connection()
+  - Support to fetch wallpaper in sbservices
+  - Support for formatVersion 2 of iOS 4+ in sbservices
+  - Add new lockdownd domains to ideviceinfo
+  - Give the device time to prepare backup data to prevent abort
+  - Improve idevicebackup output
+  - notification_proxy fixes and new notification type
+  - Silence some 64bit compiler warnings
+  - Fix various memory leaks
+  - Update documentation
+* Python Bindings will get refactored completely
+* API is UNSTABLE
+
+Version 1.0.7
+~~~~~~~~~~~~~
+
+* Maintenance release of stable series
+* Changes:
+  - Fix SWIG 2.x detection
+  - Fix support for iOS 5 and later
+  - Flush output of idevicesyslog immediately
+  - Replace deprecated GNUTLS functions properly
+  - Fix segfaults in library and some tools
+  - Fix memory leaks
+  - Build fixes
+
+Version 1.0.6
+~~~~~~~~~~~~~
+
+* Quick follow up release
+* Changes:
+  - Add ideviceenterrecovery which was missing in last release by accident
+
+Version 1.0.5
+~~~~~~~~~~~~~
+
+* Maintenance release of stable series
+* Changes:
+  - Add a workaround for a bug in iOS 4.3 affecting lockdown_get_value() which
+    most prominently affected libgpod, gvfs, ideviceinfo and some other tools
+  - Read ProxyDeath message to preventing obsolete messages in device syslog
+  - Rework SWIG detection and includes
+  - Add manpages for ideviceenterrecovery and idevicepair
+  - Add missing libgen.h include to silence compiler warnings
+
+Version 1.0.4
+~~~~~~~~~~~~~
+
+* Maintenance release of stable series
+* Changes:
+  - Fix a possible crash in lockdownd_client_new_with_handshake()
+  - Do not not check for Swig/Python if --without-swig is set
+  - Fail with an error message if libgcrypt is not found
+  - Pass host certificate with GNUTLS correctly
+  - Fix connecting to iOS 4.2.1+ devices
+
+Version 1.0.3
+~~~~~~~~~~~~~
+
+* Maintenance release of stable series
+* Changes:
+  - Terminate idevicesyslog on receive errors (like device unplug)
+  - Bugfixes for idevicebackup tool
+  - Hopefully the last fixes for big endian machines
+  - Build fixes for FreeBSD Python support
+  - Fix build on Mac OS X
+
+Version 1.0.2
+~~~~~~~~~~~~~
+
+* Maintenance release of stable series
+* Changes:
+  - Backport new idevicepair tool to manage pairings
+  - Fix a bug causing bad backup data
+  - Silence 64bit compiler warnings
+  - Plug some memory leaks
+
+Version 1.0.1
+~~~~~~~~~~~~~
+
+* Maintenance release of stable series
+* Changes:
+  - Cleanup includes of files
+  - Use glib instead of netinet for endianess
+  - Fix installation_proxy not adding client options correctly
+  - idevicebackup: better handle broken or missing plist files
+  - Fix some memory leaks in pairing/handshake process
+  - Fix label not being used in lockdownd_client_new()
+  - Update AUTHORS, README and installation instructions
+
+Version 1.0.0
+~~~~~~~~~~~~~
+
+* Changes:
+  - Update and fix documentation for full coverage
+  - Add man pages for tools
+  - Extend mobilebackup interface
+  - Add user data argument to notification callback function
+  - Fix broken Python bindings
+  - Add Python bindings for notification proxy interface
+  - Add screenshotr interface and tool
+  - Add mobile_image_mounter interface and tool
+  - Remove HAL fdi rules
+
+Version 0.9.7 (RC1)
+~~~~~~~~~~~~~~~~~~~
+
+* Project is now called libimobiledevice due to legal reasons
+* Changes:
+  - Project renamed to libimobiledevice
+  - Add soname versioning for future releases
+  - Fix regression causing never paired devices to not work by adding
+    auto-pairing for devices in lockdownd_client_new_with_handshake
+  - Add file_relay service implementation and dev test tool
+  - Minor device link service fixes 
+  - New idevicebackup tool with support for full and incremental backups
+  - Add mobilebackup service implementation
+
+Version 0.9.6
+~~~~~~~~~~~~~
+
+* Changes:
+  - Minor public API changes to prepare for 1.0 release:
+    * lockdownd_client_new -> lockdownd_client_new_with_handshake
+    * fooservice_recv -> fooservice_receive
+    * iphone_device_send/_recv -> iphone_connection_send/_receive
+  - Rename some code for consistency
+  - Refactor pairing to allow custom pair records
+  - Move SSL handling out of lockdownd code
+  - Refactor lockdown session handling code
+  - Remove debug mask support
+  - No longer do a full lockdown handshake on client_new
+  - Refactor debug code to be consistent and easier to use
+  - Run validate_pair by default during lockdown handshake
+  - Allow retrieving the type for lockdown query_type request
+  - Add new property_list_service and device_link_service abstractions
+  - Detect pairing failure due to having a password set on the device
+  - Implement lockdown phone activation and deactivation
+  - Fix iphoneinfo not printing values in key/value mode
+  - Implement lockdownd_unpair() request
+  - Add more notification ids and lockdown domains
+  - Implement label support for lockdown requests
+  - Add new installation_proxy interface
+  - Add new sbservices interface
+  - Implement lockdownd_validate_pair() request
+  - Add endian safety to AFC
+  - Make lockdown sessions without SSL work
+  - Fix linking on Mandriva Linux
+  - Minor bugfixes and documentation updates
+
+Version 0.9.5
+~~~~~~~~~~~~~
+
+* Changes:
+  - Updated to the latest libplist 0.16 API
+  - Fixed various minor leaks and issues
+  - Updated Python bindings and module name
+
+Version 0.9.4
+~~~~~~~~~~~~~
+
+* Changes:
+  - Update to libplist 0.15 API rework
+  - Update Python bindings
+  - Bufixes around usbmuxd daemon usage
+  - Use automake 1.11 silent rules if available
+  - Various bugfixes
+
+Version 0.9.3
+~~~~~~~~~~~~~
+
+* Changes:
+  - Bump libplist requirement to 0.13 and remove deprecated code
+
+Version 0.9.2
+~~~~~~~~~~~~~
+
+* Changes:
+  - Migrate to use the new usbmuxd daemon
+  - Refactor whole API
+  - Add iPhone 3GS support
+  - Add hard/symlink support for AFC
+  - New iphone_id tool to list connected devices and get the device
+    name
+  - iphoneinfo now allows plist/xml output and queries by
+    domain/key
+  - Fix a lot of bugs/crashes, compiler warnings and comments
+
+Version 0.9.1
+~~~~~~~~~~~~~
+
+* Changes:
+  - Fix make distcheck
+  - Bump libplist requirement to 0.12 and remove deprecated code
+  - A bunch of autotools fixes
+
+Version 0.9.0
+~~~~~~~~~~~~~
+
+* Changes:
+  - Fix pkg-config dependancies
+  - Fix Python binding generation
+  - AFC cleanup and improved error handling
+  - Add support for the notification proxy service
+  - Add tools to show device information and relay syslog
+  - More robust pairing implementation
+  - Remove libiphone-initconf, SSL implementation handles it at
+    runtime now
+  - Fix receive of plists larger than a packet
+  - Return an error if failed to start a service on the device
+  - Fix usb enumeration
+  - Fix udev rule to catch usb hubs, too
+  - Add large file support
+  - Move out plist handling into libplist and depend on it
+  - Add Python bindings
+  - Lots of bugfixes
+
+Version 0.1.0
+~~~~~~~~~~~~~
+
+* Changes:
+  - Use udev to set usb configuration; iphone kmod is obsolete now
+  - Remove HAL mounting
+  - Bugfixes
+

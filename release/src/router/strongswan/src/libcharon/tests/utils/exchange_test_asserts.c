@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2016-2017 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -177,6 +178,8 @@ bool exchange_test_asserts_message(listener_t *listener, ike_sa_t *ike_sa,
 				assert_message_rule(this, message, &this->rules[i]);
 			}
 		}
+		free(this->rules);
+		free(this);
 		return FALSE;
 	}
 	return TRUE;

@@ -4,7 +4,6 @@
  * Copyright (C) 2010 Tobias Brunner
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -42,7 +41,7 @@ struct private_gmp_diffie_hellman_t {
 	/**
 	 * Diffie Hellman group number.
 	 */
-	diffie_hellman_group_t group;
+	key_exchange_method_t group;
 
 	/*
 	 * Generator value.
@@ -85,12 +84,12 @@ struct private_gmp_diffie_hellman_t {
 	bool computed;
 };
 
-METHOD(diffie_hellman_t, set_other_public_value, bool,
+METHOD(key_exchange_t, set_public_key, bool,
 	private_gmp_diffie_hellman_t *this, chunk_t value)
 {
 	mpz_t p_min_1;
 
-	if (!diffie_hellman_verify_value(this->group, value))
+	if (!key_exchange_verify_pubkey(this->group, value))
 	{
 		return FALSE;
 	}
@@ -98,59 +97,33 @@ METHOD(diffie_hellman_t, set_other_public_value, bool,
 	mpz_init(p_min_1);
 	mpz_sub_ui(p_min_1, this->p, 1);
 
+	/* this->computed is not reset in order to prevent reuse of this DH
+	 * instance (see below) */
 	mpz_import(this->yb, value.len, 1, 1, 1, 0, value.ptr);
 
-	/* check public value:
-	 * 1. 0 or 1 is invalid as 0^a = 0 and 1^a = 1
-	 * 2. a public value larger or equal the modulus is invalid */
-	if (mpz_cmp_ui(this->yb, 1) > 0 &&
-		mpz_cmp(this->yb, p_min_1) < 0)
+	/* check that the public value y satisfies 1 < y < p-1.
+	 * according to RFC 6989, section 2.1, this is enough for the common safe-
+	 * prime DH groups (i.e. with q=(p-1)/2 being prime), only for those with
+	 * small subgroups (22, 23, 24) does the RFC require the extended test but
+	 * only if private keys are reused. we never do that anyway and it's
+	 * explicitly prevented in this implementation. so the extended test, which
+	 * optionally happens in get_shared_secret(), is really only useful for full
+	 * NIST SP 800-56A compliance, which only allows the partial check for
+	 * safe-prime groups.
+	 */
+	if (mpz_cmp_ui(this->yb, 1) <= 0 ||
+		mpz_cmp(this->yb, p_min_1) >= 0)
 	{
-#ifdef EXTENDED_DH_TEST
-		/* 3. test if y ^ q mod p = 1, where q = (p - 1)/2. */
-		mpz_t q, one;
-		diffie_hellman_params_t *params;
-
-		mpz_init(q);
-		mpz_init(one);
-
-		params = diffie_hellman_get_params(this->group);
-		if (!params->subgroup.len)
-		{
-			mpz_fdiv_q_2exp(q, p_min_1, 1);
-		}
-		else
-		{
-			mpz_import(q, params->subgroup.len, 1, 1, 1, 0, params->subgroup.ptr);
-		}
-		mpz_powm(one, this->yb, q, this->p);
-		mpz_clear(q);
-		if (mpz_cmp_ui(one, 1) == 0)
-		{
-			mpz_powm(this->zz, this->yb, this->xa, this->p);
-			this->computed = TRUE;
-		}
-		else
-		{
-			DBG1(DBG_LIB, "public DH value verification failed:"
-				 " y ^ q mod p != 1");
-		}
-		mpz_clear(one);
-#else
-		mpz_powm(this->zz, this->yb, this->xa, this->p);
-		this->computed = TRUE;
-#endif
-	}
-	else
-	{
-		DBG1(DBG_LIB, "public DH value verification failed:"
-			 " y < 2 || y > p - 1 ");
+		DBG1(DBG_LIB, "public DH value verification failed: "
+			 "y <= 1 || y >= p - 1");
+		mpz_clear(p_min_1);
+		return FALSE;
 	}
 	mpz_clear(p_min_1);
-	return this->computed;
+	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_my_public_value, bool,
+METHOD(key_exchange_t, get_public_key, bool,
 	private_gmp_diffie_hellman_t *this,chunk_t *value)
 {
 	value->len = this->p_len;
@@ -162,7 +135,7 @@ METHOD(diffie_hellman_t, get_my_public_value, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, set_private_value, bool,
+METHOD(key_exchange_t, set_private_key, bool,
 	private_gmp_diffie_hellman_t *this, chunk_t value)
 {
 	mpz_import(this->xa, value.len, 1, 1, 1, 0, value.ptr);
@@ -171,12 +144,46 @@ METHOD(diffie_hellman_t, set_private_value, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_shared_secret, bool,
+METHOD(key_exchange_t, get_shared_secret, bool,
 	private_gmp_diffie_hellman_t *this, chunk_t *secret)
 {
 	if (!this->computed)
 	{
-		return FALSE;
+#ifdef EXTENDED_DH_TEST
+		/* test if y ^ q mod p = 1, where q = (p - 1)/2 or the actual size of
+		 * the subgroup.  as noted above, this check is not really necessary as
+		 * the plugin does not reuse private keys */
+		mpz_t q, one, p_min_1;
+		diffie_hellman_params_t *params;
+
+		mpz_init(q);
+		mpz_init(one);
+
+		params = diffie_hellman_get_params(this->group);
+		if (!params->subgroup.len)
+		{
+			mpz_init(p_min_1);
+			mpz_sub_ui(p_min_1, this->p, 1);
+			mpz_fdiv_q_2exp(q, p_min_1, 1);
+			mpz_clear(p_min_1);
+		}
+		else
+		{
+			mpz_import(q, params->subgroup.len, 1, 1, 1, 0, params->subgroup.ptr);
+		}
+		mpz_powm(one, this->yb, q, this->p);
+		mpz_clear(q);
+		if (mpz_cmp_ui(one, 1) != 0)
+		{
+			DBG1(DBG_LIB, "public DH value verification failed: "
+				 "y ^ q mod p != 1");
+			mpz_clear(one);
+			return FALSE;
+		}
+		mpz_clear(one);
+#endif
+		mpz_powm(this->zz, this->yb, this->xa, this->p);
+		this->computed = TRUE;
 	}
 	secret->len = this->p_len;
 	secret->ptr = mpz_export(NULL, NULL, 1, secret->len, 1, 0, this->zz);
@@ -187,13 +194,13 @@ METHOD(diffie_hellman_t, get_shared_secret, bool,
 	return TRUE;
 }
 
-METHOD(diffie_hellman_t, get_dh_group, diffie_hellman_group_t,
+METHOD(key_exchange_t, get_method, key_exchange_method_t,
 	private_gmp_diffie_hellman_t *this)
 {
 	return this->group;
 }
 
-METHOD(diffie_hellman_t, destroy, void,
+METHOD(key_exchange_t, destroy, void,
 	private_gmp_diffie_hellman_t *this)
 {
 	mpz_clear(this->p);
@@ -208,7 +215,7 @@ METHOD(diffie_hellman_t, destroy, void,
 /**
  * Generic internal constructor
  */
-static gmp_diffie_hellman_t *create_generic(diffie_hellman_group_t group,
+static gmp_diffie_hellman_t *create_generic(key_exchange_method_t group,
 											size_t exp_len, chunk_t g, chunk_t p)
 {
 	private_gmp_diffie_hellman_t *this;
@@ -217,12 +224,12 @@ static gmp_diffie_hellman_t *create_generic(diffie_hellman_group_t group,
 
 	INIT(this,
 		.public = {
-			.dh = {
+			.ke = {
 				.get_shared_secret = _get_shared_secret,
-				.set_other_public_value = _set_other_public_value,
-				.get_my_public_value = _get_my_public_value,
-				.set_private_value = _set_private_value,
-				.get_dh_group = _get_dh_group,
+				.set_public_key = _set_public_key,
+				.get_public_key = _get_public_key,
+				.set_private_key = _set_private_key,
+				.get_method = _get_method,
 				.destroy = _destroy,
 			},
 		},
@@ -274,7 +281,7 @@ static gmp_diffie_hellman_t *create_generic(diffie_hellman_group_t group,
 /*
  * Described in header
  */
-gmp_diffie_hellman_t *gmp_diffie_hellman_create(diffie_hellman_group_t group)
+gmp_diffie_hellman_t *gmp_diffie_hellman_create(key_exchange_method_t group)
 {
 	diffie_hellman_params_t *params;
 
@@ -291,7 +298,7 @@ gmp_diffie_hellman_t *gmp_diffie_hellman_create(diffie_hellman_group_t group)
  * Described in header
  */
 gmp_diffie_hellman_t *gmp_diffie_hellman_create_custom(
-											diffie_hellman_group_t group, ...)
+											key_exchange_method_t group, ...)
 {
 	if (group == MODP_CUSTOM)
 	{

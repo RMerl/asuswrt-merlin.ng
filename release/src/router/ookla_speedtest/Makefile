@@ -33,6 +33,9 @@ endif # RTCONFIG_BCMARM
 ifeq ($(RTCONFIG_RALINK),y)
 	-cp -f $(OOKLA_PATH)/ookla-MTK7621A prebuild/ookla     # MTK7621A
 endif # RTCONFIG_RALINK
+ifeq ($(RTCONFIG_MT798X),y)
+	-cp -f $(OOKLA_PATH)/ookla-MT7986A  prebuild/ookla     # MT7986A
+endif # RTCONFIG_MT798X
 
 all: prebuild
 

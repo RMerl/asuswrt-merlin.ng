@@ -407,6 +407,7 @@ extern int get_wan_unit(char *ifname);
 extern char *get_wan_ifname(int unit);
 #ifdef RTCONFIG_IPV6
 extern char *get_wan6_ifname(int unit);
+extern int get_wan6_unit(char* ifname);
 #endif
 extern int get_ports_status(unsigned int port_status);
 extern int get_wanports_status(int wan_unit);

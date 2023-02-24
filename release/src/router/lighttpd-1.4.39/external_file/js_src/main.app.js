@@ -1718,12 +1718,13 @@ function createLayout(){
 
 function addtoFavorite(){
 	var favorite_title = "AiCloud";
-	var favorite_url = "https://" + g_storage.get('ddns_host_name');
+	var ddns = g_storage.get('ddns_host_name');
+	var favorite_url = "https://" + ddns;
 	var isIEmac = false;
-    var isMSIE = isBrowser("msie");
+    var isMSIE = isIE();
     
-	if(favorite_url==""||favorite_url==undefined){ 
-		favorite_url="https://router.asus.com/";
+	if(ddns==""){		
+		favorite_url = g_storage.get('request_host_url');//window.location.href;
 	}
 		
 	if ((typeof window.sidebar == "object") && (typeof window.sidebar.addPanel == "function")) {
@@ -1752,8 +1753,7 @@ function addtoFavorite(){
       	str = ((str) ? m.getString('msg_add_favorite1') + str + m.getString('msg_add_favorite2') : str);
         
       	alert(str);
-    }
-        
+    }   
 }
 
 function getRouterInfo(){

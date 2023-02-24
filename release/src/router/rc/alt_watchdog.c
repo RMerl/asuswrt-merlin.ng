@@ -40,6 +40,10 @@ void alt_start_nfcm()
     if (!enb) 
         return;
 
+#ifdef RTCONFIG_AMAS
+    if(aimesh_re_node())
+	return; 
+#endif    
 #if 0
 	if(getpid() != 1) { //not rc init process
 		notify_rc("start_nfcm");

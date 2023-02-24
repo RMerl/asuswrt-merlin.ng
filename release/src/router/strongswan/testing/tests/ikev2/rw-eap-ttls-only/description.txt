@@ -3,7 +3,7 @@ The strong mutual authentication is based on <b>EAP-TTLS</b> only (without a sep
 authentication) with the gateway being authenticated by a server certificate during the
 EAP-TLS tunnel setup (phase1 of EAP-TTLS). This tunnel protects the ensuing weak client
 authentication based on <b>EAP-MD5</b> (phase2 of EAP-TTLS).
-<p/> 
+<p/>
 With the default setting <b>charon.plugins.eap-ttls.phase2_piggyback = no</b> the server
 <b>moon</b> passively waits for the clients to initiate phase2 of the EAP-TTLS protocol by
 sending a tunneled orphan EAP Identity response upon the reception of the server's TLS

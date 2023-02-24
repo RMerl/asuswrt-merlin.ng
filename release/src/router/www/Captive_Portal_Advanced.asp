@@ -85,6 +85,10 @@ function initial(){
 		document.getElementById("faq").href=faq_href;
 	else
 		$(".brt_series").remove();
+
+	document.form.captive_portal_adv_2g_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "captive_portal_adv_2g_ssid"); %>');
+	document.form.captive_portal_adv_5g_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "captive_portal_adv_5g_ssid"); %>');
+	document.form.captive_portal_adv_5g_2_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "captive_portal_adv_5g_2_ssid"); %>');
 }
 function captivePortalAdvShowAndHide(_flag) {
 	if(_flag == 1) {

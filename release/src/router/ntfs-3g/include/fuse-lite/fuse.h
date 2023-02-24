@@ -420,14 +420,29 @@ struct fuse_operations {
 	 * Introduced in version 2.6
 	 */
 	int (*bmap) (const char *, size_t blocksize, uint64_t *idx);
- 	unsigned int flag_nullpath_ok : 1;
  
- 	/**
-	 * Flag indicating that the filesystem accepts special
-	 * UTIME_NOW and UTIME_OMIT values in its utimens operation.
+	/**
+	 * Ioctl
+	 *
+	 * flags will have FUSE_IOCTL_COMPAT set for 32bit ioctls in
+	 * 64bit environment. The size and direction of data is
+	 * determined by _IOC_*() decoding of cmd. For _IOC_NONE,
+	 * data will be NULL, for _IOC_WRITE data is out area, for
+	 * _IOC_READ in area and if both are set in/out area. In all
+	 * non-NULL cases, the area is of _IOC_SIZE(cmd) bytes.
+	 *
+	 * Introduced in version 2.8
+	 *
+	 * Note : the unsigned long request submitted by the application        
+	 * is truncated to 32 bits, and forwarded as a signed int.
 	 */
-	unsigned int flag_utime_omit_ok : 1;
+	int (*ioctl) (const char *, int cmd, void *arg,
+		      struct fuse_file_info *, unsigned int flags, void *data); 
 
+	/*
+	 * The flags below have been discarded, they should not be used
+	 */
+ 	unsigned int flag_nullpath_ok : 1;
 	/**
  	 * Reserved flags, don't set
  	 */
@@ -456,10 +471,8 @@ struct fuse_context {
 	/** Private filesystem data */
 	void *private_data;
 
-#ifdef POSIXACLS
 	/** Umask of the calling process (introduced in version 2.8) */
 	mode_t umask;
-#endif
 };
 
 /* ----------------------------------------------------------- *
@@ -607,6 +620,8 @@ int fuse_fs_removexattr(struct fuse_fs *fs, const char *path,
 			const char *name);
 int fuse_fs_bmap(struct fuse_fs *fs, const char *path, size_t blocksize,
 		 uint64_t *idx);
+int fuse_fs_ioctl(struct fuse_fs *fs, const char *path, int cmd, void *arg,
+		  struct fuse_file_info *fi, unsigned int flags, void *data);
 void fuse_fs_init(struct fuse_fs *fs, struct fuse_conn_info *conn);
 void fuse_fs_destroy(struct fuse_fs *fs);
 
@@ -623,6 +638,47 @@ void fuse_fs_destroy(struct fuse_fs *fs);
  */
 struct fuse_fs *fuse_fs_new(const struct fuse_operations *op, size_t op_size,
 			    void *user_data);
+
+#ifdef __SOLARIS__
+
+/**
+ * Filesystem module
+ *
+ * Filesystem modules are registered with the FUSE_REGISTER_MODULE()
+ * macro.
+ *
+ * If the "-omodules=modname:..." option is present, filesystem
+ * objects are created and pushed onto the stack with the 'factory'
+ * function.
+ */
+struct fuse_module {
+    /**
+     * Name of filesystem
+     */
+    const char *name;
+
+    /**
+     * Factory for creating filesystem objects
+     *
+     * The function may use and remove options from 'args' that belong
+     * to this module.
+     *
+     * For now the 'fs' vector always contains exactly one filesystem.
+     * This is the filesystem which will be below the newly created
+     * filesystem in the stack.
+     *
+     * @param args the command line arguments
+     * @param fs NULL terminated filesystem object vector
+     * @return the new filesystem object
+     */
+    struct fuse_fs *(*factory)(struct fuse_args *args, struct fuse_fs *fs[]);
+
+    struct fuse_module *next;
+    struct fusemod_so *so;
+    int ctr;
+};
+
+#endif /* __SOLARIS__ */
 
 /* ----------------------------------------------------------- *
  * Advanced API for event handling, don't worry about this...  *

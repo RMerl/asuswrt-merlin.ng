@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 Martin Willi
- * Copyright (C) 2012 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -24,7 +25,7 @@
 typedef struct phase1_t phase1_t;
 
 #include <sa/ike_sa.h>
-#include <crypto/diffie_hellman.h>
+#include <crypto/key_exchange.h>
 
 /**
  * Common phase 1 helper for main and aggressive mode.
@@ -44,7 +45,7 @@ struct phase1_t {
 	 * @param group			negotiated DH group
 	 * @return				TRUE if group supported
 	 */
-	bool (*create_dh)(phase1_t *this, diffie_hellman_group_t group);
+	bool (*create_dh)(phase1_t *this, key_exchange_method_t group);
 
 	/**
 	 * Derive key material.

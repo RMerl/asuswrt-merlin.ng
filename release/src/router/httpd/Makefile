@@ -110,7 +110,9 @@ endif
 CFLAGS += -D _FILE_OFFSET_BITS=64
 
 ifneq ($(findstring CONFIG_BCM_KF_NETFILTER=, $(shell cat $(LINUXDIR)/.config)),)
+ifneq ($(RTCONFIG_HND_ROUTER_AX_6756),y)
 export CFLAGS += -DBCM_KF_NETFILTER
+endif
 endif
 
 OBJS = httpd.o cgi.o ej.o 
@@ -327,6 +329,16 @@ CFLAGS += -I$(TOP)/rc
 LIBS += -L$(TOP)/rc -lconn_diag
 endif
 
+ifeq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
+CFLAGS += -I$(TOP)/dnsqd
+CFLAGS += -I$(TOP)/sqlite
+CFLAGS += -I$(TOP)/json-c
+LIBS += -L$(TOP)/dnsqd -ldns_app_client
+LIBS += -L$(TOP)/sqlite/.libs -lsqlite3
+LIBS += -lpthread
+LIBS += -L$(TOP)/json-c/.libs -ljson-c
+endif
+
 CFLAGS += -I$(TOP)/libpasswd
 LIBS += -L$(TOP)/libpasswd -lpasswd
 
@@ -338,6 +350,9 @@ ifeq ($(RTCONFIG_LIBASUSLOG),y)
 CFLAGS += -I$(TOP)/libasuslog
 LIBS += -L$(TOP)/libasuslog -lasuslog
 endif
+
+CFLAGS += -I$(TOP)/libwebapi
+LIBS += -L$(TOP)/libwebapi -lwebapi
 
 all: httpd #test_apps
 
@@ -355,7 +370,7 @@ httpd: $(OBJS)
 install: all
 	@echo " [httpd] Installing to $(INSTALLDIR)"
 	@install -D httpd $(INSTALLDIR)/usr/sbin/httpd
-	@$(STRIP) $(INSTALLDIR)/usr/sbin/httpd
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/usr/sbin/httpd)
 	@cd $(INSTALLDIR)/usr/sbin/; ln -sf httpd httpds
 	@chmod 0500 $(INSTALLDIR)/usr/sbin/httpd
 	#@install -m 0755 test_apps $(INSTALLDIR)/usr/sbin

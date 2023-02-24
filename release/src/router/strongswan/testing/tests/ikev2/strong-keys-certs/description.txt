@@ -1,7 +1,11 @@
-This scenario is derived from <a href="../rw-cert"><b>ikev2/rw-cert</b></a>.
-The gateway <b>moon</b> uses a 2048 bit RSA private key protected by <b>AES-128</b>
+The gateway <b>moon</b> uses a 3072 bit RSA private key protected by <b>AES-128</b>
 encryption whereas the roadwarriors <b>carol</b> and <b>dave</b> have an
-<b>AES-192</b> and <b>AES-256</b> envelope, respectively. 
+<b>AES-192</b> and <b>AES-256</b> envelope, respectively.
 The X.509 certificate of the gateway <b>moon</b> uses a <b>SHA-224</b> hash in
 its signature whereas the certificates of the roadwarriors <b>carol</b>
 and <b>dave</b> use <b>SHA-384</b> and <b>SHA-512</b>, respectively.
+<p/>
+Upon the successful establishment of the IPsec tunnels, the updown script
+automatically inserts iptables-based firewall rules that let pass the tunneled traffic.
+In order to test both tunnel and firewall, both <b>carol</b> and <b>dave</b> ping
+the client <b>alice</b> behind the gateway <b>moon</b>.

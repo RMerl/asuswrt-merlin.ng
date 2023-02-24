@@ -1063,6 +1063,13 @@ get_pidstr( int reset, const char* pfx )
 }
 
 
+#if defined(CONFIG_QCA) || defined(CONFIG_RALINK)
+#define snprintf_nowarn snprintf
+#else
+/* C99 */
+#define snprintf_nowarn(...) (snprintf(__VA_ARGS__) < 0 ? abort() : (void)0)
+#endif
+
 /* retrieve system info string
  */
 const char*
@@ -1079,7 +1086,7 @@ get_sysinfo (int* perr)
 
     if (0 == rc) {
         s_sysinfo [sizeof(s_sysinfo)-1] = '\0';
-        (void) snprintf (s_sysinfo, sizeof(s_sysinfo)-1, "%s %s %s",
+        (void) snprintf_nowarn (s_sysinfo, sizeof(s_sysinfo)-1, "%s %s %s",
             uts.sysname, uts.release, uts.machine);
     }
     return s_sysinfo;

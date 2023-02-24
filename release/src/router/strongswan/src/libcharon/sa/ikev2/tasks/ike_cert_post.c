@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2019 Tobias Brunner
  * Copyright (C) 2006-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -254,8 +255,10 @@ static void build_certs(private_ike_cert_post_t *this, message_t *message)
 METHOD(task_t, build_i, status_t,
 	private_ike_cert_post_t *this, message_t *message)
 {
-	build_certs(this, message);
-
+	if (message->get_exchange_type(message) == IKE_AUTH)
+	{
+		build_certs(this, message);
+	}
 	return NEED_MORE;
 }
 
@@ -268,9 +271,11 @@ METHOD(task_t, process_r, status_t,
 METHOD(task_t, build_r, status_t,
 	private_ike_cert_post_t *this, message_t *message)
 {
-	build_certs(this, message);
-
-	if (this->ike_sa->get_state(this->ike_sa) != IKE_ESTABLISHED)
+	if (message->get_exchange_type(message) == IKE_AUTH)
+	{
+		build_certs(this, message);
+	}
+	if (!this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
 	{	/* stay alive, we might have additional rounds with certs */
 		return NEED_MORE;
 	}
@@ -280,7 +285,7 @@ METHOD(task_t, build_r, status_t,
 METHOD(task_t, process_i, status_t,
 	private_ike_cert_post_t *this, message_t *message)
 {
-	if (this->ike_sa->get_state(this->ike_sa) != IKE_ESTABLISHED)
+	if (!this->ike_sa->has_condition(this->ike_sa, COND_AUTHENTICATED))
 	{	/* stay alive, we might have additional rounds with CERTS */
 		return NEED_MORE;
 	}

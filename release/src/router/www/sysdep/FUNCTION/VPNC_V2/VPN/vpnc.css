@@ -41,7 +41,7 @@
 	height: auto;
 }
 .vpn_icon_all_collect{
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 }
 .server_list_container{
@@ -236,7 +236,7 @@
 	width: 24px;
 	height: 24px;
 	background-position: -108px -163px;
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 }
 .svr_list_add_icon, .client_list_add_icon{
@@ -333,7 +333,7 @@
 	width: 24px;
 	height: 24px;
 	background-position: -540px 0px;
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 }
 .svr_item_main_info > .main_info_text{
@@ -357,7 +357,7 @@
 .svr_item_container.error_hint.active.default_wan_selected .svr_item_main_info:before{
 	background-position: -540px -270px
 }
-.svr_item_container.default_wan_selected .default_wan_tag{
+.svr_item_container .item_tag_container{
 	position: absolute;
 	right: 4%;
 	top: -12px;
@@ -365,30 +365,29 @@
 	color: #FFFFFF;
 	height: 24px;
 	line-height: 24px;
-	padding-left: 20px;
-	padding-right: 8px;
+	display: flex;
+}
+.item_tag_container > .item_tag{
 	background: rgb(54 69 81);
 	border: 1px solid #2597FF;
 	box-shadow: 0px 4px 8px rgb(0 0 0 / 60%), 0px 0px 1px rgb(0 0 0 / 90%);
 	border-radius: 15px;
-	display: block;
-}
-.default_wan_tag{
-	display: none;
-}
-.default_wan_tag > div{
+	padding-left: 22px;
+	padding-right: 8px;
+	line-height: 22px;
+	margin-left: 6px;
 	position: relative;
 }
-.default_wan_tag > div:before{
+.item_tag_container > .item_tag:before{
 	position: absolute;
 	content: "";
 	width: 14px;
 	height: 100%;
+	left: 5px;
 	background-image: url(/images/New_ui/amesh/client_control.svg);
 	background-repeat: no-repeat;
-	background-size: 300px;
-	background-position: -230px 3px;
-	left: -16px;
+	background-size: 320px;
+	background-position: -245px 2px;
 }
 .svr_item_container.internet{
 	justify-content: start;
@@ -469,7 +468,7 @@
 }
 .svr_item_error_hint_container{
 	height: 32px;
-	margin-top: -10px;
+	margin-top: -16px;
 	margin-bottom: 10px;
 	background: rgb(0 0 0 / 50%);
 	border-radius: 0 0 8px 8px;
@@ -493,7 +492,7 @@
 	height: 24px;
 	right: 6%;
 	top: 4px;
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 	background-position: -216px -163px;
 }
@@ -661,7 +660,7 @@
 .btn_item .btn_container .text.import_file:before, .btn_item .btn_container .text.create_account:before{
 	position: absolute;
 	content: "";
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 	background-position: 0px -163px;
 	width: 24px;
@@ -1102,7 +1101,7 @@
 	left: -60px;
 	border-radius: 24px;
 	background-color: rgba(164, 183, 195, 0.2);
-	background-image: url(/images/New_ui/VPN/vpn_icon_all_collect.svg);
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 }
 .feature_desc .step_text.add:before{
@@ -1200,7 +1199,7 @@
 	width: 100%;
 	bottom: 6px;
 }
-.validate_hint, .vpn_type_maxi_hint{
+.validate_hint, .vpn_type_maxi_hint, .item_hint{
 	min-height: 32px;
 	height: auto;
 	background: rgb(0 0 0 / 50%);
@@ -1211,8 +1210,12 @@
 	font-weight: 500;
 	letter-spacing: 0.1px;
 }
-.vpn_type_maxi_hint{
+.vpn_type_maxi_hint, .item_hint{
 	color: #FC0;
+}
+.item_hint > div{
+	width: 100%;
+	margin: 2px 0 2px 0px;
 }
 .client_list_content_container .client_container{
 	display: flex;
@@ -1359,7 +1362,7 @@
 	right: 2%;
 }
 .wan_status_container .connect_icon_container > div{
-	background: url(/images/New_ui/vpn/cards_usage.svg) no-repeat;
+	background: url(/images/New_ui/VPN/cards_usage.svg) no-repeat;
 	background-size: initial;
 	width: 65px;
 	height: 65px;
@@ -1447,7 +1450,7 @@
 		box-shadow: 0px 4px 5px 0px rgb(0 0 0 / 14%), 0px 1px 10px 0px rgb(0 0 0 / 12%), 0px 2px 4px -1px rgb(0 0 0 / 20%);
 		border-color: rgb(54, 71, 82);
 	}
-	.svr_item_container.default_wan_selected .default_wan_tag{
+	.item_tag_container > .item_tag{
 		background: #1E2A41;
 	}
 	.svr_item_error_hint_container{

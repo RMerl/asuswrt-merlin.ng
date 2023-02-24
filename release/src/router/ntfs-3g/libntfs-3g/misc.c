@@ -59,3 +59,19 @@ void *ntfs_malloc(size_t size)
 		ntfs_log_perror("Failed to malloc %lld bytes", (long long)size);
 	return p;
 }
+
+void *ntfs_realloc(void *ptr, size_t size)
+{
+	void *p;
+
+	p = realloc(ptr, size);
+	if (!p)
+		ntfs_log_perror("Failed to realloc %lld bytes",
+				(long long)size);
+	return p;
+}
+
+void ntfs_free(void *p)
+{
+	free(p);
+}

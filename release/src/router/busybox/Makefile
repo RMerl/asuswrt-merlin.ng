@@ -318,6 +318,7 @@ AFLAGS_KERNEL	=
 # Needed to be compatible with the O= option
 ifeq ("$(HND_ROUTER)","y")
 CFLAGS		:= -DHND_ROUTER
+CFLAGS		+= -I$(TOP)/shared
 else
 CFLAGS		:=
 endif

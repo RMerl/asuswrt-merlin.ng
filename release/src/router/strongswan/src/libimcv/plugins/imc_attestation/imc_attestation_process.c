@@ -1,7 +1,8 @@
 /*
+ * Copyright (C) 2011-2022 Andreas Steffen
  * Copyright (C) 2011-2012 Sansar Choinyambuu
- * Copyright (C) 2011-2016 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -474,8 +475,8 @@ bool imc_attestation_process(pa_tnc_attr_t *attr, imc_msg_t *msg,
 			msg->add_attribute(msg, attr);
 			break;
 		}
-		case TCG_SEG_MAX_ATTR_SIZE_REQ:
-		case TCG_SEG_NEXT_SEG_REQ:
+		case TCG_SEG_CONTRACT_REQ:
+		case TCG_SEG_NEXT_SEGMENT:
 			break;
 
 		/* TODO: Not implemented yet */

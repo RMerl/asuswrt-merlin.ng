@@ -309,6 +309,27 @@ void config_pc_reward_redirect(FILE *fp){
 	free_pc_list(&enabled_list);
 }
 
+int is_in_pc_reward_period(char *mac) {
+	pc_s *pc_reward_list = NULL, *follow_pc;
+	int in_period = 0;
+	if (!mac)
+		return in_period;
+
+	get_all_pc_reward_list(&pc_reward_list);
+
+	for(follow_pc = pc_reward_list; follow_pc != NULL; follow_pc = follow_pc->next){
+		if (nvram_get_int("pcdbg"))
+			_dprintf("is_in_pc_reward_period in_mac=%s, mac=%s, enabled=%d\n", mac, follow_pc->mac, follow_pc->enabled);
+		if (!strcmp(follow_pc->mac , mac) && follow_pc->enabled) {
+			in_period = 1;
+			break;
+		}
+	}
+
+	free_pc_list(&pc_reward_list);
+	return in_period;
+}
+
 int pc_reward_main(int argc, char *argv[]){
 	pc_s *pc_list = NULL;
 

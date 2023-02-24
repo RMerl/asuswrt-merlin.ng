@@ -36,7 +36,10 @@ extern int wl_iovar_getint(char *ifname, char *iovar, int *val);
 extern char *mac2str(const unsigned char *e, char *a);
 extern char *str2mac(const unsigned char *a, char *e);
 extern bool is_in_lanv4(struct in_addr *src);
+extern bool is_in_lanv6(struct in6_addr *src);
+extern bool is_local_link_addr(struct in6_addr *addr);
 extern bool is_router_addr(struct in_addr *addr);
+extern bool is_router_v6addr(struct in6_addr *addr);
 extern bool is_broadcast_addr(struct in_addr *addr);
 extern bool is_multi_addr(struct in_addr *addr);
 

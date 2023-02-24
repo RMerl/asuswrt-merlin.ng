@@ -16,10 +16,12 @@
  #include <shutils.h>
  #include <bcmnvram.h>
  #include <shared.h>
+ #include <aae_ipc.h>
 #else /* DSL_ASUSWRT SDK */
  #include <shared.h>
  #include <tcutils.h>
  #include <libtcapi.h>
+ #include <aae_ipc.h>
 #endif
 
 #endif

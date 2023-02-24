@@ -273,11 +273,8 @@ function ajax_onboarding() {
 							Object.keys(newReMacArray).forEach(function(key) {
 								var newReMac = key;
 								if(newReMac == mac) {
-									var model_name = newReMacArray[newReMac].model_name;
-									var ui_model_name = newReMacArray[newReMac].ui_model_name;
-									var rssi = newReMacArray[newReMac].rssi;
 									var source = newReMacArray[newReMac].source;
-									show_connect_msg(reMac, newReMac, model_name, ui_model_name, rssi, source);
+									show_connect_msg(reMac, newReMac, newReMacArray[newReMac]);
 									onboarding_exist = true;
 									document.onboardingLED_form.new_re_mac.disabled = false;
 									document.onboardingLED_form.new_re_mac.value = newReMac;
@@ -290,7 +287,7 @@ function ajax_onboarding() {
 						if(onboarding_exist)
 							id = "";
 						else
-							show_connect_msg("", mac, "New Node", "", "-1");
+							show_connect_msg("", mac, {"model_name": "New Node", "rssi": "-1"});
 					}
 					else
 						id = "";
@@ -420,7 +417,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').unbind('click');
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').click(
 					function() {
-						show_connect_msg(reMac, newReMac, model_name, ui_model_name, rssi, source);
+						show_connect_msg(reMac, newReMac, newReMacArray[newReMac]);
 					}
 				);
 
@@ -435,7 +432,7 @@ function gen_ready_onboardinglist(_onboardingList) {
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').unbind('click');
 				$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').find('.amesh_rotate').click(
 					function() {
-						show_connect_msg(reMac, newReMac, model_name, ui_model_name, rssi, source);
+						show_connect_msg(reMac, newReMac, newReMacArray[newReMac]);
 					}
 				);
 				if(newReMac != aimesh_select_new_re_mac){
@@ -566,7 +563,8 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 						code += "<div class='vertical_line pairing'></div>";
 						code += "<div class='amesh_router_info_bg'>";
 							code += "<div class='amesh_router_info_title'>";
-							code += handle_ui_model_name(model_name, ui_model_name);
+							var display_model_name = handle_ui_model_name(model_name, ui_model_name);
+							code += "<div class='amesh_model_name' title='" + display_model_name + "'>" + display_model_name + "</div>";
 							code += "<div class='device_reset' onclick='reset_re_device(\"" + mac + "\", \"" + model_name + "\", \"" + ui_model_name + "\", event, \"" + online + "\");'></div>";
 							code += "</div>";
 							code += "<div class='horizontal_line'></div>";
@@ -930,14 +928,21 @@ function scenario() {
 	parent.adjust_panel_block_top("amesh_scenario", 170);
 	parent.$("#aimesh_link").attr({"href": aimesh_href});
 }
-function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi, _ob_path) {
+function show_connect_msg(_reMac, _newReMac, _node_info) {
+	var _model_name = "", _ui_model_name = "", _rssi = "", _ob_path = "";
+	if(_node_info != undefined){
+		_model_name = (_node_info.model_name != undefined) ? _node_info.model_name : "";
+		_ui_model_name = (_node_info.ui_model_name != undefined) ? _node_info.ui_model_name : "";
+		_rssi = (_node_info.rssi != undefined) ? _node_info.rssi : "";
+		_ob_path = (_node_info.source != undefined) ? _node_info.source : "";
+	}
 	aimesh_select_new_re_mac = _newReMac;
 	$.ajax({
 		url: '/ajax_onboarding.asp',
 		dataType: 'script',
 		error: function(xhr) {
 			setTimeout(function(){
-				show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi, _ob_path);
+				show_connect_msg(_reMac, _newReMac, _node_info);
 			}, 3000);
 		},
 		success: function() {
@@ -1073,7 +1078,12 @@ function show_connect_msg(_reMac, _newReMac, _model_name, _ui_model_name, _rssi,
 				$amesh_action_bg.append($amesh_apply);
 				$amesh_apply.click(
 					function() {
-						var re_isAX_model = (_model_name.toUpperCase().indexOf("AX") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_E") >= 0);
+						var re_isAX_model = (_model_name.toUpperCase().indexOf("AX") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_X") >= 0 || _model_name.toUpperCase().indexOf("ZENWIFI_E") >= 0 || _model_name.toUpperCase().indexOf("GT6") >= 0);
+						if(!re_isAX_model){
+							if(httpApi.aimesh_get_misc_info(_node_info).wpa3){
+								re_isAX_model = true;
+							}
+						}
 						var auth_flag = false;
 						var postData = {};
 						var band6g = 4;
@@ -2674,8 +2684,6 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					option_text = option_text.replace("#CONNPRIOTYPE", conn_prio_type);
 					var option_conn_type = conn_type;
 					if(_eap_flag && conn_type == "wifi")
-						return true;
-					if(conn_type == "plc" && !isSupport("qca_plc2"))
 						return true;
 					option_array.push(gen_option_attr(option_value, option_text, option_conn_type));
 				});

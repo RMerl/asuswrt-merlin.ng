@@ -5,7 +5,8 @@
  * Copyright (C) 2000-2017 Andreas Steffen
  * Copyright (C) 2006-2009 Martin Willi
  * Copyright (C) 2008-2017 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the

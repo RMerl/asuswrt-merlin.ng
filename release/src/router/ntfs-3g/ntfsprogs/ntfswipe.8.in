@@ -1,0 +1,134 @@
+.\" Copyright (c) 2014 Jean-Pierre Andre
+.\" This file may be copied under the terms of the GNU Public License.
+.\"
+.TH NTFSWIPE 8 "June 2014" "ntfs-3g @VERSION@"
+.SH NAME
+ntfswipe \- overwrite unused space on an NTFS volume
+.SH SYNOPSIS
+\fBntfswipe\fR [\fIoptions\fR] \fIdevice\fR
+.SH DESCRIPTION
+.B ntfswipe
+clears all or part of unused space on an NTFS volume by overwriting
+with zeroes or random bytes.
+.SH OPTIONS
+Below is a summary of all the options that
+.B ntfswipe
+accepts.  Nearly all options have two equivalent names.  The short name is
+preceded by
+.B \-
+and the long name is preceded by
+.BR \-\- .
+Any single letter options, that don't take an argument, can be combined into a
+single command, e.g.
+.B \-fv
+is equivalent to
+.BR "\-f \-v" .
+Long named options can be abbreviated to any unique prefix of their name.
+.TP
+\fB\-a\fR, \fB\-\-all\fR
+Wipe all unused space. This may take significant time. If the option 
+\-\-unused-fast (or -U) is also present, the faster wiping method is used.
+.TP
+\fB\-b\fR, \fB\-\-bytes\fR BYTE-LIST
+Define the allowed replacement bytes which are drawn randomly to overwrite
+the unused space. BYTE-LIST is a comma-separated list of values in
+range 0-255 expressed in octal, decimal or hexadecimal base.
+.TP
+\fB\-c\fR, \fB\-\-count\fR NUM
+Define the number of times the unused space is to be overwritten. If both
+options \fB\-\-bytes\fR and \fB\-\-count\fR are set, the space is
+repeatedly overwritten this number of times by each of the values in the list.
+.TP
+\fB\-d\fR, \fB\-\-directory\fR
+Wipe all the directory indexes, which may contain names of deleted files.
+.TP
+\fB\-f\fR, \fB\-\-force\fR
+This will override some sensible defaults, such as not using a mounted volume.
+Use this option with caution.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show a list of options with a brief description of each one.
+.TP
+\fB\-i\fR, \fB\-\-info\fR
+Display details about unused space, without wiping anything.
+.TP
+\fB\-l\fR, \fB\-\-logfile\fR
+Overwrite the logfile (update journal).
+.TP
+\fB\-m\fR, \fB\-\-mft\fR
+Overwrite the unused space in the MFT (main file table, which contains the
+file names, and the contents of short files).
+.TP
+\fB\-n\fR, \fB\-\-no-action\fR
+Executes the wiping process without writing to device.
+.TP
+\fB\-p\fR, \fB\-\-pagefile\fR
+Overwrite the Windows swap space.
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+Suppress some debug/warning/error messages.
+.TP
+\fB\-s\fR, \fB\-\-undel\fR
+Overwrite the space which had been allocated to a file which has been deleted
+recently and is still undeletable. This option is not compatible with
+\fB\-\-bytes\fR and the replacement bytes are random ones or taken from a
+standard list.
+.TP
+\fB\-t\fR, \fB\-\-tails\fR
+Overwrite the space at the end of files which is unused, but allocated
+because the allocations are always done by full clusters.
+.TP
+\fB\-u\fR, \fB\-\-unused\fR
+Overwrite the space which is currently not allocated to any file (but
+may have been used in the past).
+.TP
+\fB\-U\fR, \fB\-\-unused-fast\fR
+Overwrite the space which is currently not allocated to any file, trying
+not to overwrite the space not written to since the previous wiping.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Display more debug/warning/error messages. This option may be used twice
+to display even more messages.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Show the version number, copyright and license of
+.BR ntfswipe .
+.SH EXAMPLES
+Wipe out all unused space in an NTFS volume.
+.RS
+.sp
+.B ntfswipe -a /dev/sda1
+.sp
+.RE
+Wipe out all deleted file names from an NTFS volume.
+.RS
+.sp
+.B ntfswipe -dms /dev/sda1
+.sp
+.RE
+.SH BUGS
+There are no known problems with
+.BR ntfswipe .
+If you find a bug please send an email describing the problem to the
+development team:
+.br
+.nh
+ntfs\-3g\-devel@lists.sf.net
+.hy
+.SH AUTHORS
+.B ntfswipe
+was written by Richard Russon, Anton Altaparmakov and Yura Pakhuchiy.
+It was ported to ntfs-3g by Erik Larsson.
+.SH AVAILABILITY
+.B ntfswipe
+is part of the
+.B ntfs-3g
+package and is available from:
+.br
+.nh
+https://github.com/tuxera/ntfs-3g/wiki/
+.hy
+.SH SEE ALSO
+.BR ntfs-3g (8),
+.BR ntfsls (8),
+.BR ntfsprogs (8)

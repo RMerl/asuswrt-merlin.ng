@@ -79,6 +79,8 @@ int rtkswitch_ioctl(int val, int val2)
 	case 38:	/* Initialize VLAN. Cherry Cho added in 2011/7/15. */
 	case 39:	/* Create VLAN. Cherry Cho added in 2011/7/15. */
 	case 40:
+	case 46:	/* power up specified LAN port */
+	case 47:	/* power down specified LAN port */
 
 		p = &value;
 		value = (unsigned int)val2;

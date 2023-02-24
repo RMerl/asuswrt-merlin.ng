@@ -1,3 +1,11 @@
+#include <sys/types.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+#include <shared.h>
+#include <json.h>
+
+#include "nfarp.h"
 #include "nfcfg.h"
 
 char* str2lower(char *mac)
@@ -161,17 +169,17 @@ void cli_list_file_parse(struct list_head *cli_list)
 							memset(ip, 0, sizeof(ip));
 							snprintf(ip, sizeof(ip), "%s", json_object_get_string(val));
 							if (strcmp(ip, "")) {
-								printf(" mac=%s, ip=%s\n", mac, ip);
+								//printf(" mac=%s, ip=%s\n", mac, ip);
 								cli = cli_node_new();
 								if (cli) {
 									list_add_tail(&cli->list, cli_list);
-									cli->isv4 = true;
+									cli->isv4 = is_v4_addr(ip);
 									strncpy(cli->mac, mac, sizeof(cli->mac));
 									if (cli->isv4) {
 										inet_pton(AF_INET, ip, &cli->ipv4);
 										//cli->ipv6 = 0;
 									} else {
-										inet6_pton(AF_INET6, ip, &cli->ipv6);
+										inet_pton(AF_INET6, ip, &cli->ipv6);
 										//cli->ipv4 = 0;
 									}
 									strncpy(cli->type, type, sizeof(cli->type));
@@ -183,14 +191,17 @@ void cli_list_file_parse(struct list_head *cli_list)
 				}
 			}
 		}
+#if defined(NFCMDBG)
 		cli_list_dump("ClientList", cli_list);
+#endif
 	}
 
 	json_object_put(clietListObj);
 	file_unlock(lock);
 
+#if defined(NFCMDBG)
 	printf(" Leave.\n");
-
+#endif
 	return;
 }
 

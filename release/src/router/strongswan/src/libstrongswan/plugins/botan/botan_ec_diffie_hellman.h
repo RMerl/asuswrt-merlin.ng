@@ -39,18 +39,18 @@ typedef struct botan_ec_diffie_hellman_t botan_ec_diffie_hellman_t;
 struct botan_ec_diffie_hellman_t {
 
 	/**
-	 * Implements diffie_hellman_t interface.
+	 * Implements key_exchange_t interface.
 	 */
-	diffie_hellman_t dh;
+	key_exchange_t ke;
 };
 
 /**
  * Creates a new botan_ec_diffie_hellman_t object.
  *
- * @param group		EC Diffie Hellman group number to use
+ * @param group		EC Diffie-Hellman group number to use
  * @return			botan_ec_diffie_hellman_t object, NULL if not supported
  */
 botan_ec_diffie_hellman_t *botan_ec_diffie_hellman_create(
-												diffie_hellman_group_t group);
+												key_exchange_method_t group);
 
 #endif /** BOTAN_EC_DIFFIE_HELLMAN_H_ @}*/

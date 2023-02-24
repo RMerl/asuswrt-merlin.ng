@@ -3,11 +3,11 @@ moon::cat /etc/db.d/ipsec.sql | sqlite3 /etc/db.d/ipsec.db
 moon::ipsec pool --add pool0 --start 10.3.0.1 --end 10.3.0.1 --timeout 48 2> /dev/null
 moon::ipsec pool --add pool1 --start 10.3.1.1 --end 10.3.1.1 --timeout 48 2> /dev/null
 moon::ipsec pool --status 2> /dev/null
-moon::ipsec start
-carol::ipsec start
-dave::ipsec start
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::expect-connection rw
 carol::expect-connection home
-carol::ipsec up home
+carol::swanctl --initiate --child home 2> /dev/null
 dave::expect-connection home
-dave::ipsec up home
+dave::swanctl --initiate --child home 2> /dev/null

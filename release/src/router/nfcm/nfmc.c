@@ -25,8 +25,11 @@
 
 extern bool g_swap;
 
-#if defined(HND) || defined(CONFIG_ET)
+#if defined(RTCONFIG_EXT_BCM53134)
+extern int bcm_arl_dump_53134(int unit, char *p);
+#endif
 
+#if defined(HND) || defined(CONFIG_ET)
 #if 0 
   typedef struct {
     uint16          ver;        /* version of this struct */
@@ -215,7 +218,7 @@ int sw_list_parse(struct list_head *list)
     char word[256], *next;
     char *ifname = nvram_get("lan_ifname");
 
-#if 1//defined(_MACDBG_)
+#if defined(_MACDBG_)
     printf("===============================================================\n");
     printf("No.      ifname      vid        MAC         wl guest  phy  port\n");
     printf("=== ================ ===  ================= == =====  ==== ====\n");
@@ -235,8 +238,8 @@ int sw_list_parse(struct list_head *list)
 #endif
             continue;
 
-#if 1//defined(_MACDBG_)
-        printf("%2d: %16s %3d %18s %2d %5d %4d %4d\n", i + 1, ifname, tbl.entry[i].vid,
+#if defined(_MACDBG_)
+        printf("%2d: %16s %3d %18s %2d %5d %4d %4d\n", i + 1, ifname, i, //tbl.entry[i].vid,
                mac2str(tbl.entry[i].mac, macstr), false, false, tbl.entry[i].port,
                nfcm_get_lan_ports(tbl.entry[i].port));
 #endif
@@ -253,8 +256,8 @@ int sw_list_parse(struct list_head *list)
 #if defined(RTCONFIG_EXT_BCM53134) && (defined(RTAX88U) || defined(GTAC5300))
     bcm_arl_dump_53134(2, (char *)&tbl);
     for (i = 0; i < (int)tbl.count; i++) {
-#if 1//defined(_MACDBG_)
-        printf("%2d: %16s %3d %18s %2d %5d %4d %4d\n", i + 1, ifname, tbl.entry[i].vid,
+#if defined(_MACDBG_)
+        printf("%2d: %16s %3d %18s %2d %5d %4d %4d\n", i + 1, ifname, i, //tbl.entry[i].vid,
                mac2str(tbl.entry[i].mac, macstr), false, false, tbl.entry[i].port,
                nfcm_get_lan_ports(tbl.entry[i].port + 10));
 #endif
@@ -278,8 +281,8 @@ int sw_list_parse(struct list_head *list)
         //if (tbl.entry[i].port == 0 || tbl.entry[i].port > 4) continue;
         if (tbl.entry[i].port == 0) continue;
 #endif
-#if 1//defined(_MACDBG_)
-        printf("%2d: %16s %3d %18s %2d %5d %4d %4d\n", i + 1, ifname, tbl.entry[i].vid,
+#if defined(_MACDBG_)
+        printf("%2d: %16s %3d %18s %2d %5d %4d %4d\n", i + 1, ifname, i, //tbl.entry[i].vid,
                mac2str(tbl.entry[i].mac, macstr), false, false, tbl.entry[i].port,
                nfcm_get_lan_ports(tbl.entry[i].port));
 #endif
@@ -301,7 +304,7 @@ int sw_list_parse(struct list_head *list)
     }
 #endif
 
-#if 1//defined(NFCMDBG)
+#if defined(NFCMDBG)
     sw_list_dump(list);
 #endif
 

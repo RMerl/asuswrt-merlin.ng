@@ -11,11 +11,11 @@ sun::iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/16 -p udp -j SNAT --to-s
 sun::iptables -t nat -A POSTROUTING -o eth0 -s 10.2.0.0/16 -p tcp -j SNAT --to-source PH_IP_SUN:2000-2100
 sun::iptables -A FORWARD -i eth1 -o eth0 -s 10.2.0.0/16 -j ACCEPT
 sun::iptables -A FORWARD -i eth0 -o eth1 -d 10.2.0.0/16 -j ACCEPT
-carol::ipsec start
-alice::ipsec start
-bob::ipsec start
+carol::systemctl start strongswan
+alice::systemctl start strongswan
+bob::systemctl start strongswan
 carol::expect-connection hub
 alice::expect-connection hub
 bob::expect-connection hub
-alice::ipsec up hub
-bob::ipsec up hub
+alice::swanctl --initiate --child hub 2> /dev/null
+bob::swanctl --initiate --child hub 2> /dev/null

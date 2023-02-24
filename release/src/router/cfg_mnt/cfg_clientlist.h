@@ -13,6 +13,7 @@ extern int cm_prepareClientListMsg(char *msg, int msgLen);
 extern void cm_processClientList(char *msg);
 extern int cm_checkReWiredConnected(char *reMac, char *modelName);
 extern int cm_needUpdateWiredClientlLst(json_object *wiredClientList);
+extern void cm_removeWireledClientListByMac(char *mac);
 
 #endif /* __CFG_CLIENTLIST_H__ */
 /* End of cfg_clientlist.h */

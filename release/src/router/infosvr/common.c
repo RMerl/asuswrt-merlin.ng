@@ -109,6 +109,9 @@ extern char netmask_g[];
 extern char productid_g[];
 extern char firmver_g[];
 extern char mac[];
+extern char last_client_ip[64];
+extern int last_opcode;
+extern time_t last_timestamp;
 
 int
 get_ftype(char *type)	/* get disk type */
@@ -150,7 +153,7 @@ char *get_lan_netmask()
 	return inet_ntoa(((struct sockaddr_in *)&ifr.ifr_addr)->sin_addr);
 }
 
-char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
+char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port, char *client_ip)
 {
     unsigned int realOPCode;
     IBOX_COMM_PKT_HDR	*phdr;
@@ -182,6 +185,20 @@ char *processPacket(int sockfd, char *pdubuf, unsigned short cli_port)
     phdr_res = (IBOX_COMM_PKT_RES_EX *)pdubuf_res;
     
     realOPCode = __constant_cpu_to_le16(phdr->OpCode); //translate endian
+
+	if(!strcmp(client_ip, nvram_safe_get("lan_ipaddr"))){
+		//do not update
+	}
+	else if(last_opcode == realOPCode && (uptime() - last_timestamp) < 2 && !strcmp(last_client_ip, client_ip)){
+		//printf("same request, wait 2 second(%s: %lu %d)\n", client_ip, last_timestamp, realOPCode);
+		return NULL;
+	}
+	else{
+		/* update last info */
+		last_opcode	= realOPCode;
+		last_timestamp = uptime();
+		strlcpy(last_client_ip, client_ip, sizeof(last_client_ip));
+	}
 
     if (phdr->ServiceID==NET_SERVICE_ID_IBOX_INFO &&
 	phdr->PacketType==NET_PACKET_TYPE_CMD)

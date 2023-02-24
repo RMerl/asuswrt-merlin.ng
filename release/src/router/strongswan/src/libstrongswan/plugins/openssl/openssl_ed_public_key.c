@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -174,7 +175,7 @@ bool openssl_ed_fingerprint(EVP_PKEY *key, cred_encoding_type_t type,
 		return FALSE;
 	}
 	hasher->destroy(hasher);
-	lib->encoding->cache(lib->encoding, type, key, *fp);
+	lib->encoding->cache(lib->encoding, type, key, fp);
 	return TRUE;
 }
 

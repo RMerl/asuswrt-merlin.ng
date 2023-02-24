@@ -318,7 +318,7 @@ void add_usb_host_modules(void)
 #elif defined(RTCONFIG_ALPINE)
 	modprobe(USB30_MOD);
 #else
-#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855)
+#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM4906_504)
 	if (nvram_get_int("usb_usb3") == 1) {
 #endif
 #ifdef RTCONFIG_HND_ROUTER
@@ -330,7 +330,7 @@ void add_usb_host_modules(void)
 #else
 		modprobe(USB30_MOD);
 #endif
-#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855)
+#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM4906_504)
 	}
 #endif
 #endif
@@ -446,6 +446,7 @@ void add_usb_modem_modules(void)
 	if(nvram_get_int("usb_qmi"))
 		modprobe("qmi_wwan");
 	modprobe("cdc_mbim");
+	modprobe("ipheth");
 #endif
 }
 
@@ -459,6 +460,7 @@ void remove_usb_modem_modules(void)
 	modprobe_r("gobi");
 #endif
 #if !defined(RTCONFIG_INTERNAL_GOBI) || defined(RTCONFIG_USB_MULTIMODEM)
+	modprobe_r("ipheth");
 	modprobe_r("cdc_mbim");
 	modprobe_r("qmi_wwan");
 	modprobe_r("cdc_wdm");
@@ -860,7 +862,8 @@ void start_usb(int mode)
 		}
 #endif
 #if defined(RTCONFIG_BT_CONN_USB)
-#if defined(BCM4912)
+#if defined(BCM4912) || defined(BCM4906_504)
+//#if defined(BCM4912)
 		modprobe("btintel");
 		modprobe("btrtl");
 #endif
@@ -1008,7 +1011,8 @@ void remove_usb_host_module(void)
 #if defined(RTCONFIG_BT_CONN_USB)
 	modprobe_r("ath3k");
 	modprobe_r("btusb");
-#if defined(BCM4912)
+#if defined(BCM4912) || defined(BCM4906_504)
+//#if defined(BCM4912)
 	modprobe_r("btintel");
 	modprobe_r("btrtl");
 #endif
@@ -1198,7 +1202,8 @@ void stop_usb(int f_force)
 #if defined(RTCONFIG_BT_CONN_USB)
 		modprobe_r("ath3k");
 		modprobe_r("btusb");
-#if defined(BCM4912)
+#if defined(BCM4912) || defined(BCM4906_504)
+//#if defined(BCM4912)
 		modprobe_r("btintel");
 		modprobe_r("btrtl");
 #endif
@@ -2074,7 +2079,7 @@ int mount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name,
 
 	run_custom_script("pre-mount", 120, dev_name, type);
 
-#if !defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(RTCONFIG_BCM_502L07P2) && !defined(BCM4912)
+#if !defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(RTCONFIG_BCM_502L07P2) && !defined(BCM4912) && !defined(BCM4906_504)
 	char *end;
 	static char *swp_argv[] = { "swapon", "-a", NULL };
 	struct mntent *mnt;
@@ -2615,7 +2620,7 @@ void hotplug_usb(void)
 		subsystem ? : "USB", interface, action, usbport, scsi_host, device);
 
 	if (!nvram_get_int("usb_enable")) return;
-#ifdef LINUX26
+#if defined(LINUX26) && !defined(BCM4906_504)
 	if (!action || ((!interface || !product) && !is_block))
 #else
 	if (!interface || !action || !product)	/* Hubs bail out here. */

@@ -75,6 +75,13 @@ extern void Debug2File(const char *path, const char *fmt, ...);
 })
 #endif
 
+#define HTTPD_FB_DEBUG_FILE             "/jffs/HTTPD_FB_DEBUG.log"
+#define HTTPD_FB_DEBUG(fmt, arg...) do {\
+	int save_errno = errno; \
+		asusdebuglog(LOG_INFO, HTTPD_FB_DEBUG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s(%d)]:"fmt"\n", __FUNCTION__, __LINE__ , ##arg); \
+	errno = save_errno; \
+}while(0)
+
 // 2008.10 magic {
 enum{
 	RESTART_FTPSAMBA = 0x1,

@@ -18,6 +18,10 @@
 
 #include <ev.h>
 #include <libnetfilter_conntrack/libnetfilter_conntrack.h>
+#include <sys/types.h>
+#include <string.h>
+#include <libnetfilter_conntrack/libnetfilter_conntrack_tcp.h>
+#include <internal/internal.h>
 
 #include "log.h"
 #include "nfsw.h"
@@ -25,6 +29,10 @@
 #include "nfct.h"
 #include "nfjs.h"
 #include "nfcfg.h"
+
+#if defined(HND_ROUTER_AX_6756)
+#include "nfbr.h"
+#endif
 
 #if defined(CODB)
 #include "cosql_utils.h"
@@ -48,6 +56,7 @@ struct u32_mask {
     uint32_t mask;
 };
 
+#define DEBUG_DUMP_CONNTRACK 0 
 #define ONE_K (1024)
 #define ONE_M (1048576)  // ONE_K*ONE_K
 
@@ -65,6 +74,7 @@ struct u32_mask {
 #define NF_CONNTRACK_PERIOD (6)
 #define NF_PHY_LAYER_TIMER (5)
 #define NF_CLIENT_LIST_TIMER (10.0)
+#define NF_BRIDGE_TIMER (10.0)   // for ET12
 #define NF_MAIN_LOOP_TIMER (5)
 #else
 #define MAX_DB_SIZE    (8) //(8*ONE_M)
@@ -73,6 +83,8 @@ struct u32_mask {
 #define NF_CONNTRACK_TIMER (10)
 #define NF_CONNTRACK_PERIOD (6)
 #define NF_PHY_LAYER_TIMER (5)
+#define NF_CLIENT_LIST_TIMER (10.0)
+#define NF_BRIDGE_TIMER (10.0)   // for ET12
 #define NF_MAIN_LOOP_TIMER (5)
 #endif
 
@@ -118,6 +130,11 @@ int nf_phy_layer_timer = NF_PHY_LAYER_TIMER;
 #if defined(AIMESH)
 int nf_client_list_flag = 0;
 int nf_client_list_timer = NF_CLIENT_LIST_TIMER;
+#endif
+
+#if defined(HND_ROUTER_AX_6756)
+int nf_bridge_flag = 0;
+int nf_bridge_timer = NF_BRIDGE_TIMER;
 #endif
 
 int nf_conntrack_flag = 0;
@@ -214,8 +231,11 @@ LIST_HEAD(swlist);
 
 LIST_HEAD(clilist); // for AiMesh parsed from /tmp/clientlist.json
 
+
+#if defined(NFCM_COLLECT_INVALID_TCP)
 LIST_HEAD(tcplist); // TCP list 
 LIST_HEAD(tbklist); // broken TCP list
+#endif
 
 #if defined(SQL)
 sqlite3 *appdb = NULL;
@@ -240,7 +260,7 @@ void get_date_time(int utc, char *buff, int len)
         strftime(buff, len, "%Y-%m-%d %H:%M:%S", timeinfo);
     } else {
         time(&rawtime);
-        timeinfo = localtime(&rawtime);    
+        timeinfo = localtime(&rawtime);
         strftime(buff, len, "%Y-%m-%d %H:%M:%S", timeinfo);
     }
 }
@@ -352,6 +372,65 @@ bool is_in_lanv4(struct in_addr *src)
     return false;
 }
 
+bool is_in_lanv6(struct in6_addr *src)
+{
+
+    struct in6_addr prefix;
+    int prefix_len = nvram_get_int("ipv6_prefix_length"); 
+    int tail_bits;
+    //passthrough don't have ipv6_prefix_length, ipv6_prefix, ipv6_rtr_addr, don't care lan
+    if(!strcmp("ipv6pt", nvram_get("ipv6_service"))) {
+       return true;
+    }
+
+    if(prefix_len < 1 || prefix_len > 127) {
+       nf_printf("wrong prefix lenght %d \n ", prefix_len); 
+       return false;
+    } 
+    if(!inet_pton(AF_INET6, nvram_get("ipv6_prefix"), &prefix)) {
+   
+       nf_printf("can't convert ipv6 prefix into v6 addr - %s \n ", nvram_get("ipv6_prefix")); 
+      return false;
+    }
+   // nf_printf("is_in_lavn6 prefix_length %d\n", prefix_len);
+    for(int i = 0; i< prefix_len/8; i++)
+    {    
+        nf_printf("is_in_lanv6 %d %2x<->%2x\n", i, src->s6_addr[i], prefix.s6_addr[i]);
+        if (src->s6_addr[i] != prefix.s6_addr[i]) {
+            return false;
+        }
+    }
+    tail_bits = prefix_len % 8;
+    if ( tail_bits > 0 &&  src->s6_addr[prefix_len] >> (8 - tail_bits) != prefix.s6_addr[prefix_len] >> (8 - tail_bits) ) {
+            return false;
+    }
+
+    nf_printf("is_in_lanv6 return true\n");
+    return true;
+}
+
+bool is_local_link_addr(struct in6_addr *addr)
+{
+
+    if (addr->s6_addr[0] == 0xfe && (addr->s6_addr[1] & 0x80) == 0x80) 
+            return true;
+    return false;
+}
+
+bool is_router_v6addr(struct in6_addr *addr)
+{
+    struct in6_addr router;
+    nf_printf("router addr: %s\n", nvram_get("ipv6_rtr_addr"));
+    if(!strcmp("ipv6pt", nvram_get("ipv6_service")))
+            return false;
+    if(!inet_pton(AF_INET6, nvram_get("ipv6_rtr_addr"), &router)) 
+            return false;
+    if (!memcmp(addr, &router, sizeof(struct in6_addr)))
+            return true;
+
+    return false;
+}
+
 bool is_router_addr(struct in_addr *addr)
 {
     lan_info_t *li;
@@ -395,6 +474,8 @@ bool is_multi_addr(struct in_addr *addr)
 
 bool is_acceptable_addr(nf_node_t *nn)
 {
+
+ if(nn->isv4) {
     if (!is_in_lanv4(&nn->srcv4))
         return false;
 
@@ -413,6 +494,24 @@ bool is_acceptable_addr(nf_node_t *nn)
     }
 
     return true;
+  } else {
+    
+    if (!is_in_lanv6(&nn->srcv6))
+    {   
+     return false;
+    }
+    if (is_local_link_addr(&nn->srcv6))
+        return false;
+
+    if (is_router_v6addr(&nn->srcv6))
+        return false;
+    
+    if (nn->proto == IPPROTO_UDP) {
+        if (nn->dst_port == 53)
+            return false;
+    }
+    return true;
+  }
 }
 
 bool get_wan_addr(char *ifname, struct in_addr *wan_addr, struct in_addr *wan_mask)
@@ -688,52 +787,54 @@ void nf_node_dump(nf_node_t *nn)
     char ethtype[10];
 
     if (nn->isv4) {
-        if (!is_acceptable_addr(nn)) return;
+         if (!is_acceptable_addr(nn)) {
+            return;
+         }
         /*
         if (!is_in_lanv4(&nn->srcv4)) return;
         if (is_broadcast_addr(&nn->dstv4)) return;
         if (is_router_addr(&nn->srcv4)) return; 
         */ 
-        printf("proto:  %d\n", nn->proto);
+        nf_printf("proto:  %d\n", nn->proto);
         inet_ntop(AF_INET, &nn->srcv4, ipstr, INET_ADDRSTRLEN);
-        printf("src:	%s[%u]\n", ipstr, nn->srcv4.s_addr);
-        printf("port:   %d\n", nn->src_port);
-        printf("src_mac:%s\n", nn->src_mac);
+        nf_printf("src:	%s[%u]\n", ipstr, nn->srcv4.s_addr);
+        nf_printf("port:   %d\n", nn->src_port);
+        nf_printf("src_mac:%s\n", nn->src_mac);
         inet_ntop(AF_INET, &nn->dstv4, ipstr, INET_ADDRSTRLEN);
-        printf("dst:	%s[%u]\n", ipstr, nn->dstv4.s_addr);
-        printf("port:   %d\n", nn->dst_port);
+        nf_printf("dst:	%s[%u]\n", ipstr, nn->dstv4.s_addr);
+        nf_printf("port:   %d\n", nn->dst_port);
     } else {
-        printf("proto:  %d\n", nn->proto);
+        nf_printf("proto:  %d\n", nn->proto);
         inet_ntop(AF_INET6, &nn->srcv6, ipstr, INET6_ADDRSTRLEN);
-        printf("src:	%s\n", ipstr);
-        printf("port:   %d\n", nn->src_port);
-        printf("src_mac:%s\n", nn->src_mac);
+        nf_printf("src:	%s\n", ipstr);
+        nf_printf("port:   %d\n", nn->src_port);
+        nf_printf("src_mac:%s\n", nn->src_mac);
         inet_ntop(AF_INET6, &nn->dstv6, ipstr, INET6_ADDRSTRLEN);
-        printf("dst:	%s\n", ipstr);
-        printf("port:   %d\n", nn->dst_port);
+        nf_printf("dst:	%s\n", ipstr);
+        nf_printf("port:   %d\n", nn->dst_port);
     }
 
     if (nn->state) {
-        printf("tcp_state :     %u\n", nn->state);
-        printf("timestamp :     %ld\n", nn->timestamp);
-        printf("time_in   :     %ld\n", nn->time_in);
+        nf_printf("tcp_state :     %u\n", nn->state);
+        nf_printf("timestamp :     %ld\n", nn->timestamp);
+        nf_printf("time_in   :     %ld\n", nn->time_in);
     } else {
-        printf("up_bytes:       %llu\n", nn->up_bytes);
-        printf("up_ttl_bytes:   %llu\n", nn->up_ttl_bytes);
-        printf("up_dif_bytes:   %llu\n", nn->up_dif_bytes);
-        printf("up_speed:       %llu\n", nn->up_speed);
+        nf_printf("up_bytes:       %llu\n", nn->up_bytes);
+        nf_printf("up_ttl_bytes:   %llu\n", nn->up_ttl_bytes);
+        nf_printf("up_dif_bytes:   %llu\n", nn->up_dif_bytes);
+        nf_printf("up_speed:       %llu\n", nn->up_speed);
 
-        printf("dn_bytes:       %llu\n", nn->dn_bytes);
-        printf("dn_ttl_bytes:   %llu\n", nn->dn_ttl_bytes);
-        printf("dn_dif_bytes:   %llu\n", nn->dn_dif_bytes);
-        printf("dn_speed:       %llu\n", nn->dn_speed);
+        nf_printf("dn_bytes:       %llu\n", nn->dn_bytes);
+        nf_printf("dn_ttl_bytes:   %llu\n", nn->dn_ttl_bytes);
+        nf_printf("dn_dif_bytes:   %llu\n", nn->dn_dif_bytes);
+        nf_printf("dn_speed:       %llu\n", nn->dn_speed);
 
-        printf("ifname  :       %s\n", nn->layer1_info.ifname);
-        printf("phy_type:       %d\n", get_eth_type(ethtype, nn->layer1_info.eth_type));
-        printf("is_guest:       %d\n", nn->layer1_info.is_guest);
-        printf("phy_port:       %d\n", nn->layer1_info.eth_port);
+        nf_printf("ifname  :       %s\n", nn->layer1_info.ifname);
+        nf_printf("phy_type:       %d\n", get_eth_type(ethtype, nn->layer1_info.eth_type));
+        nf_printf("is_guest:       %d\n", nn->layer1_info.is_guest);
+        nf_printf("phy_port:       %d\n", nn->layer1_info.eth_port);
     }
-    printf("-----------------------\n");
+    nf_printf("-----------------------\n");
 
     return;
 }
@@ -812,8 +913,11 @@ void nf_list_speed_calc(struct list_head *iplist, struct list_head *bklist)
             if (nnt->isv4 != nn->isv4) continue;
             if (nn->isv4) {
                 if (!is_in_lanv4(&nn->srcv4)) continue;
+            } else {
+            // TODO: add filter for not target ipv6 target (src is in lan)
+                if(!is_in_lanv6(&nn->srcv6)) continue; 
             }
-
+            
             if (nf_node_compare(nn->isv4, nn, nnt)) {
                 // five tuples are the same
                 diff = nn->up_bytes - nnt->up_bytes;
@@ -860,8 +964,12 @@ nf_node_t* nf_node_statistics_search(arp_node_t *ar, struct list_head *smlist)
                 return nn;
             }
         } else {
-            if (!memcmp(&nn->srcv6, &ar->srcv6, sizeof(struct in6_addr)))
-                return nn;
+            
+            if (!memcmp(&nn->srcv6, &ar->srcv6, sizeof(struct in6_addr))) {
+                if (!is_in_lanv6(&nn->srcv6))
+                     continue;
+                return nn; 
+            }
         }
     }
 
@@ -880,13 +988,20 @@ int nf_list_statistics_calc(struct list_head *arlist, struct list_head *iplist,
 
     // get the summary from iplist based on arlist
     list_for_each_entry(ar, arlist, list) {
-        if (!is_in_lanv4(&ar->srcv4)) continue;
+        if (ar->is_v4 && !is_in_lanv4(&ar->srcv4)) continue;
+        if (!ar->is_v4 && !is_in_lanv6(&ar->srcv6)) continue;
         nn = nf_node_statistics_search(ar, smlist);
         if (nn == NULL) {
             nn = nf_node_new();
             nn->isv4 = ar->is_v4;
             nn->srcv4.s_addr = ar->srcv4.s_addr;
             memcpy(&nn->srcv6, &ar->srcv6, sizeof(struct in6_addr));
+            // ip v6
+            if(nn->isv4)
+               strcpy(nn->src6_ip, DEFAULT_IPV6_ADDR);
+            else
+               inet_ntop(AF_INET6, &nn->srcv6, nn->src6_ip, INET6_ADDRSTRLEN);
+           
             memcpy(nn->src_mac, ar->mac, ETHER_ADDR_LENGTH);
             list_add_tail(&nn->list, smlist);
 
@@ -942,18 +1057,73 @@ int nf_list_statistics_calc(struct list_head *arlist, struct list_head *iplist,
     return 0;
 }
 
+uint16_t get_port_from_ct(struct nf_conntrack *ct, int src_or_dst)
+{
+  struct __nfct_tuple *tuple = &ct->head.orig;
+  uint16_t port;
+  switch (tuple->protonum) {
+    case IPPROTO_TCP:
+        port  = src_or_dst == 0 ? tuple->l4src.tcp.port:tuple->l4dst.tcp.port;
+        break;
+    case IPPROTO_UDP:
+        port = src_or_dst == 0 ? tuple->l4src.udp.port:tuple->l4dst.udp.port;
+        break;
+    case IPPROTO_SCTP:
+        port = src_or_dst == 0 ? tuple->l4src.sctp.port:tuple->l4dst.sctp.port;
+        break;
+    case IPPROTO_DCCP:
+        port = src_or_dst == 0 ? tuple->l4src.dccp.port:tuple->l4dst.dccp.port;
+        break;
+    //case IPPROTO_ICMP:
+    //    nn->dst_port = (tuple->l4dst.icmp.type<<8) | tuple->l4dst.icmp.code;
+    //    break;
+    default:
+        port = src_or_dst == 0 ? tuple->l4src.all:tuple->l4dst.all;
+        break;
+    }
+
+    port = ntohs(port);
+
+    return port;
+}
+
 static int nf_conntrack_handle_cb(enum nf_conntrack_msg_type type,
                         struct nf_conntrack *ct,
                         void *data)
 {
+#if DEBUG_DUMP_CONNTRACK
+    char ipstr[INET_ADDRSTRLEN];
+    char ipdst[INET_ADDRSTRLEN];
+    if (ct->head.orig.l3protonum == AF_INET)
+    {
+      inet_ntop(AF_INET,&ct->head.orig.src.v4, ipstr, INET_ADDRSTRLEN);
+      inet_ntop(AF_INET,&ct->head.orig.dst.v4, ipdst, INET_ADDRSTRLEN);
+    
+      // rtsp.stream and wowzaec2demo.streamlock.net
+      if(!strcmp(ipdst, "34.227.104.115")||!strcmp(ipdst, "23.88.67.97")) 
+      {
+        printf("id[%lu] to[%lu] status[%lu] src[%s][%u] dst[%s][%u] --[%llu][%llu] --[%llu][%llu]\n", 
+	    ct->id, ct->timeout, ct->status,
+	    ipstr, get_port_from_ct(ct, 0), 
+            ipdst, get_port_from_ct(ct, 1), 
+	    ct->counters[__DIR_ORIG].packets,
+            ct->counters[__DIR_REPL].packets,
+	    ct->counters[__DIR_ORIG].bytes,
+            ct->counters[__DIR_REPL].bytes);
+      }
+    }
+#endif 
+   
     nf_conntrack_process(ct, &iplist, &clilist, &arlist);
 
+#if defined(NFCM_COLLECT_INVALID_TCP)
     // collect invalid tcp conntrack
     nf_conntrack_tcp_process(ct, &tcplist);
-
+#endif
     return NFCT_CB_CONTINUE;
 }
 
+#if defined(NFCM_COLLECT_INVALID_TCP)
 // all tcp node have the same protonum, and we also discard the src_port comparation
 bool nf_node_tcp_compare(nf_node_t *nn, nf_node_t *nnt)
 {
@@ -1016,11 +1186,25 @@ int nf_list_tcp_collect(struct list_head *tbklist,
             bk->isv4 = nn->isv4;
             bk->proto = IPPROTO_TCP;
             bk->srcv4.s_addr = nn->srcv4.s_addr;
+            memcpy(&bk->srcv6, &nn->srcv6, sizeof(struct in6_addr));
+            // ip v6
+            if(bk->isv4)
+               strcpy(bk->src6_ip, DEFAULT_IPV6_ADDR);
+            else
+	       inet_ntop(AF_INET6, &bk->srcv6, bk->src6_ip, INET6_ADDRSTRLEN);
 
             bk->dstv4.s_addr = nn->dstv4.s_addr;
-            bk->dst_port = nn->dst_port;
+            memcpy(&bk->dstv6, &nn->dstv6, sizeof(struct in6_addr));
+            // ip v6
+            if(bk->isv4)
+               strcpy(bk->dst6_ip, DEFAULT_IPV6_ADDR);
+            else
+	       inet_ntop(AF_INET6, &bk->dstv6, bk->dst6_ip, INET6_ADDRSTRLEN);
+	    
+	    bk->dst_port = nn->dst_port;
+	    bk->src_port = nn->src_port;
+            
 
-            memcpy(&bk->srcv6, &nn->srcv6, sizeof(struct in6_addr));
             memcpy(bk->src_mac, nn->src_mac, ETHER_ADDR_LENGTH);
 
             bk->state = nn->state;
@@ -1034,6 +1218,7 @@ int nf_list_tcp_collect(struct list_head *tbklist,
 
     return 0;
 }
+#endif
 
 // this is callback to parse conntrack
 void func_conntrack()
@@ -1044,9 +1229,10 @@ void func_conntrack()
     nf_list_free(&bklist);
     nf_list_move(&bklist, &iplist);
 
+#if defined(NFCM_COLLECT_INVALID_TCP)
     nf_list_free(&tcplist);
     //nf_list_move(&tbklist, &tcplist);
-
+#endif
     // every nfct_query's entry will call nf_conntrack_handle_cb
     nfct_query(cth, NFCT_Q_DUMP_FILTER, filter_dump);
 
@@ -1054,12 +1240,18 @@ void func_conntrack()
 
     nf_list_statistics_calc(&arlist, &iplist, &clilist, &smlist);
 
+#if defined(NFCM_COLLECT_INVALID_TCP)
     nf_list_tcp_collect(&tbklist, &tcplist);
+#endif
 
 #if defined(NFCMDBG)
     nf_list_dump("smlist", &smlist);
     nf_list_dump("iplist", &iplist);
+
+#if defined(NFCM_COLLECT_INVALID_TCP)
     nf_list_dump("tbklist", &tbklist);
+#endif
+
 #endif // #if defined(NFCMDBG)
 
 #if defined(SQL)
@@ -1077,16 +1269,21 @@ void func_conntrack()
         nf_list_free(&smlist);
     }
 
+#if defined(NFCM_COLLECT_INVALID_TCP)
     // nfcm_tcp.db is wrote per nf_conntrack_timer
     lock = file_lock("nfcm_tcp");
     sqlite_tcp_insert(tcpdb, &tbklist);
     file_unlock(lock);
 #endif
 
+#endif
+
     nf_list_to_json(&iplist, &arlist);
     nf_list_statistics_to_json(&smlist, &arlist);
-    nf_list_tcp_to_json(&tbklist);
 
+#if defined(NFCM_COLLECT_INVALID_TCP)
+    nf_list_tcp_to_json(&tbklist);
+#endif
     return;
 }
 
@@ -1143,9 +1340,11 @@ int ev_timer_conntrack(struct ev_loop *loop, ev_timer *timer)
 // this is callback to parse fdb(QCA), rob(non-HND), switch-mib(HND), 'arp -n' result
 void func_phy_layer()
 {
+#if defined(SUPPORT_SWITCH_DUMP)
     sw_list_free(&swlist);
     // use ioctl(brcm)/netlink(QCA) to get MAC layer information
     sw_list_parse(&swlist);
+#endif
 
     arp_list_free(&arlist);
     // parse the "cat /proc/net/arp" result
@@ -1184,6 +1383,48 @@ int ev_timer_phy_layer(struct ev_loop *loop, ev_timer *timer)
 
     return 0;
 }
+
+#if defined(HND_ROUTER_AX_6756)
+// use 'brctl showmacs br0' and 'brctl showstp br0' to get MAC table
+void func_bridge()
+{
+    br_cmd_showmacs(1, "br0");
+    br_cmd_showstp(1, "br0");
+
+    return;
+}
+
+void timer_bridge(struct ev_loop *loop, ev_timer *w, int e)
+{
+#if 1
+    nf_bridge_flag = 1;
+#else
+    sw_list_free(&swlist);
+
+    // use ioctl(brcm)/netlink(QCA) to get MAC layer information
+    sw_list_parse(&swlist);
+
+    arp_list_free(&arlist);
+
+    // parse the "cat /proc/net/arp" result
+    arp_list_parse(&arlist, &swlist);
+
+    //w->repeat = TIMER_DURATION;
+    ev_timer_again(loop, w);
+#endif
+}
+
+int ev_timer_bridge(struct ev_loop *loop, ev_timer *timer)
+{
+    // initialize a timer watcher, then start it
+    // simple non-repeating TIMER_DURATION second timeout
+    ev_init(timer, timer_bridge);
+    timer->repeat = nf_bridge_timer;
+    ev_timer_again(loop, timer);
+
+    return 0;
+}
+#endif //HND_ROUTER_AX_6756
 
 #if defined(AIMESH)
 // get AiMesh info from /tmp/clientlist.json
@@ -1247,9 +1488,11 @@ void signal_action(struct ev_loop *loop, ev_signal *w, int e)
 
     switch (w->signum) {
     case SIGUSR1:
+#if defined(SUPPORT_SWITCH_DUMP)
         sw_list_free(&swlist);
         // use ioctl to get switch layer information
         sw_list_parse(&swlist);
+#endif
 
         arp_list_free(&arlist);
         // parse the "cat /proc/net/arp" result
@@ -1552,6 +1795,15 @@ void timer_main_loop(struct ev_loop *loop, ev_timer *w, int e)
         nf_phy_layer_flag = 0;
     }
 
+#if defined(HND_ROUTER_AX_6756)
+    // get the switch layer mac table
+    if (nf_bridge_flag) {
+        func_bridge();
+        nf_bridge_flag = 0;
+    }
+
+#endif
+
     // get the conntrack from kernel
     if (nf_conntrack_flag) {
         func_conntrack();
@@ -1689,7 +1941,9 @@ int main(int argc, char *argv[])
 #if defined(AIMESH)
     ev_timer timer_client_list;
 #endif
-
+#if defined(HND_ROUTER_AX_6756)
+    ev_timer timer_bridge;
+#endif
 
 #if 0
     struct in_addr wan_addr, wan_mask;
@@ -1700,6 +1954,11 @@ int main(int argc, char *argv[])
     // init nfcm configuration variables
     nfcm_config_init();
 
+#if defined(HND_ROUTER_AX_6756)
+    // init bridge configuration variables
+    br_init();
+#endif
+    
     // check nfcm start
     nfcm_check_lan();
 
@@ -1728,7 +1987,9 @@ int main(int argc, char *argv[])
 #endif // defined(CODB)
 #endif
 
+#if defined(SUPPORT_SWITCH_DUMP)
     sw_list_parse(&swlist);
+#endif
     arp_list_parse(&arlist, &swlist);
 
     cth = nfct_open(CONNTRACK, 0);
@@ -1773,6 +2034,10 @@ int main(int argc, char *argv[])
     ev_timer_nfcm_sum_db(loop, &timer_nfcm_sum_db);
 #endif
 
+#if defined(HND_ROUTER_AX_6756)
+    ev_timer_bridge(loop, &timer_bridge);
+#endif
+
     ev_signal_sigint(loop, &signal_sigint);
     ev_signal_sigusr1(loop, &signal_sigusr1); // re-parse
     ev_signal_sigusr2(loop, &signal_sigusr2);
@@ -1792,8 +2057,10 @@ int main(int argc, char *argv[])
     // main loop
     ev_run(loop, 0);
 
+#if defined(NFCM_COLLECT_INVALID_TCP)
     nf_list_free(&tcplist);
     nf_list_free(&tbklist);
+#endif
 
     nf_list_free(&iplist);
     nf_list_free(&bklist);
@@ -1803,6 +2070,10 @@ int main(int argc, char *argv[])
 
     //nfct_filter_dump_destroy(filter_dump);
     nfct_close(cth);
+
+#if defined(HND_ROUTER_AX_6756)
+    br_shutdown();
+#endif
 
 #if defined(SQL)
     sqlite_close(appdb);

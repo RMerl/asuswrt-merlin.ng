@@ -83602,6 +83602,8 @@ if test "x$ac_cv_lib_pthread_pthread_attr_init" = x""yes; then
 			if test "${HND_ROUTER_AX}" = "y"; then
 				if test "${HND_ROUTER_AX_6756}" = "y"; then
 					PTHREAD_LDFLAGS="/opt/toolchains/crosstools-arm-gcc-9.2-linux-4.19-glibc-2.30-binutils-2.32/arm-buildroot-linux-gnueabi/sysroot/usr/lib/libpthread.so"
+				elif test "${HND_ROUTER_BE_4916}" = "y"; then
+					PTHREAD_LDFLAGS="-lpthread"
 				else
 					PTHREAD_LDFLAGS="/opt/toolchains/crosstools-arm-gcc-5.5-linux-4.1-glibc-2.26-binutils-2.28.1/arm-buildroot-linux-gnueabi/sysroot/usr/lib/libpthread.so"
 				fi

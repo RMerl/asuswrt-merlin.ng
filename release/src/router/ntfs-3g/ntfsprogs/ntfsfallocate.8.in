@@ -1,0 +1,137 @@
+.\" Copyright (c) 2014 Jean-Pierre Andre
+.\" This file may be copied under the terms of the GNU Public License.
+.\"
+.TH NTFSFALLOCATE 8 "June 2014" "ntfs-3g @VERSION@"
+.SH NAME
+ntfsfallocate \- preallocate space to a file on an NTFS volume
+.SH SYNOPSIS
+\fBntfsfallocate\fR [\fIoptions\fR] -l \fIlength\fR \fIdevice\fR \fIfile\fR \fI[attr-type\fR [\fIattr-name\fR]]
+.SH DESCRIPTION
+.B ntfsfallocate
+preallocates space for any attribute of a file or directory, thus reserving
+space before actual contents is written. This is similar to fallocate(1).
+.SH OPTIONS
+Below is a summary of all the options that
+.B ntfsfallocate
+accepts.  Nearly all options have two equivalent names.  The short name is
+preceded by
+.B \-
+and the long name is preceded by
+.BR \-\- .
+Any single letter options, that don't take an argument, can be combined into a
+single command, e.g.
+.B \-fv
+is equivalent to
+.BR "\-f \-v" .
+Long named options can be abbreviated to any unique prefix of their name.
+.TP
+\fB\-f\fR, \fB\-\-force\fR
+This will override some sensible defaults, such as not using a mounted volume.
+Use this option with caution.
+.TP
+\fB\-h\fR, \fB\-\-help\fR
+Show a list of options with a brief description of each one.
+.TP
+\fB\-l\fR, \fB\-\-length\fR LENGTH
+This is a mandatory option to specify the number of bytes to preallocate.
+It will be rounded up to a multiple of the cluster size.
+A suffix of K, M, G, T, P or E may be appended to
+mean a multiplicative factor of a power of 1000. Similarly a suffix of
+Ki, Mi, Gi, Ti, Pi or Ei may be appended to mean a multiplicative factor
+of a power of 1024.
+.TP
+\fB\-n\fR, \fB\-\-no-size-change\fR
+Do not change the apparent size of the file. The space allocated beyond
+the apparent size is not zeroed, but subsequent writing beyond the apparent
+end of file will force zeroing the inner allocated space as it cannot be
+considered as a hole any more, and this may take significant time.
+.TP
+\fB\-N\fR, \fB\-\-no-action\fR
+Simulate the allocation without actually write to device.
+.TP
+\fB\-o\fR, \fB\-\-offset\fR OFFSET
+Specify the offset in the file where preallocation starts. By default,
+the preallocation is counted from the beginning of the file. Space already
+allocated in the area defined by offset and length is preserved.
+.TP
+\fB\-q\fR, \fB\-\-quiet\fR
+Suppress some debug/warning/error messages.
+.TP
+\fB\-v\fR, \fB\-\-verbose\fR
+Display more debug/warning/error messages.
+.TP
+\fB\-V\fR, \fB\-\-version\fR
+Show the version number, copyright and license of
+.BR ntfsfallocate .
+.TP
+\fBattr-type\fR
+Define a particular attribute type to be preallocated (advanced use only).
+By default, the unnamed $DATA attribute (the contents of a plain file) will
+be preallocated. The attribute has to be specified by a number in decimal
+or hexadecimal :
+.TS
+box;
+lB lB lB
+l l l.
+Hex	Decimal	Name
+0x10	16	"$STANDARD_INFORMATION"
+0x20	32	"$ATTRIBUTE_LIST"
+0x30	48	"$FILE_NAME"
+0x40	64	"$OBJECT_ID"
+0x50	80	"$SECURITY_DESCRIPTOR"
+0x60	96	"$VOLUME_NAME"
+0x70	112	"$VOLUME_INFORMATION"
+0x80	128	"$DATA"
+0x90	144	"$INDEX_ROOT"
+0xA0	160	"$INDEX_ALLOCATION"
+0xB0	176	"$BITMAP"
+0xC0	192	"$REPARSE_POINT"
+0xD0	208	"$EA_INFORMATION"
+0xE0	224	"$EA"
+0xF0	240	"$PROPERTY_SET"
+0x100	256	"$LOGGED_UTILITY_STREAM"
+.TE
+.sp
+.TP
+\fBattr-name\fR
+Define the name of the particular attribute type to be preallocated
+(advanced use only).
+.SH EXAMPLES
+Preallocate 100MB to the file database.db located in the Data directory
+which is at the root of an NTFS file system.
+.RS
+.sp
+.B ntfsfallocate -l 100M /dev/sda1 Data/database.db
+.sp
+.RE
+.SH BUGS
+There are no known problems with
+.BR ntfsfallocate ,
+however it can lead to configurations not supported by Windows
+and Windows may crash (BSOD) when writing to preallocated clusters
+which were not written to earlier. Files with preallocated space should
+be fully be written to before they are updated by Windows.
+.P
+If you find a bug in \fBntfsfallocate\fR proper, please send an email
+describing the problem to the development team:
+.br
+.nh
+ntfs\-3g\-devel@lists.sf.net
+.hy
+.SH AUTHORS
+.B ntfsfallocate
+was written by Jean-Pierre Andre.
+.SH AVAILABILITY
+.B ntfsfallocate
+is part of the
+.B ntfs-3g
+package and is available from:
+.br
+.nh
+https://github.com/tuxera/ntfs-3g/wiki/
+.hy
+.SH SEE ALSO
+.BR ntfs-3g (8),
+.BR ntfstruncate (8),
+.BR ntfsprogs (8),
+.BR fallocate (1)

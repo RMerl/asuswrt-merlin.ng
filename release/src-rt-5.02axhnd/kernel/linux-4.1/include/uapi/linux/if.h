@@ -91,6 +91,7 @@ enum net_device_flags {
 	IFF_LOWER_UP			= 1<<16, /* volatile */
 	IFF_DORMANT			= 1<<17, /* volatile */
 	IFF_ECHO			= 1<<18, /* volatile */
+	IFF_TX_PAD			= 1<<19,
 };
 
 #define IFF_UP				IFF_UP
@@ -112,6 +113,7 @@ enum net_device_flags {
 #define IFF_LOWER_UP			IFF_LOWER_UP
 #define IFF_DORMANT			IFF_DORMANT
 #define IFF_ECHO			IFF_ECHO
+#define IFF_TX_PAD			IFF_TX_PAD
 
 #if defined(CONFIG_BCM_MPTCP) && defined(CONFIG_BCM_KF_MPTCP)
 #define IFF_NOMULTIPATH	0x80000		/* Disable for MPTCP 		*/

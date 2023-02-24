@@ -1,9 +1,8 @@
 /*
  * Copyright (C) 2012-2017 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2012 Martin Willi
- * Copyright (C) 2012 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -64,7 +63,7 @@ struct private_phase1_t {
 	/**
 	 * DH exchange
 	 */
-	diffie_hellman_t *dh;
+	key_exchange_t *dh;
 
 	/**
 	 * Keymat derivation (from SA)
@@ -211,9 +210,9 @@ METHOD(phase1_t, create_hasher, bool,
 }
 
 METHOD(phase1_t, create_dh, bool,
-	private_phase1_t *this, diffie_hellman_group_t group)
+	private_phase1_t *this, key_exchange_method_t group)
 {
-	this->dh = this->keymat->keymat.create_dh(&this->keymat->keymat, group);
+	this->dh = this->keymat->keymat.create_ke(&this->keymat->keymat, group);
 	return this->dh != NULL;
 }
 
@@ -706,8 +705,8 @@ METHOD(phase1_t, add_nonce_ke, bool,
 	nonce_gen_t *nonceg;
 	chunk_t nonce;
 
-	ke_payload = ke_payload_create_from_diffie_hellman(PLV1_KEY_EXCHANGE,
-													   this->dh);
+	ke_payload = ke_payload_create_from_key_exchange(PLV1_KEY_EXCHANGE,
+													 this->dh);
 	if (!ke_payload)
 	{
 		DBG1(DBG_IKE, "creating KE payload failed");
@@ -757,7 +756,7 @@ METHOD(phase1_t, get_nonce_ke, bool,
 		return FALSE;
 	}
 	this->dh_value = chunk_clone(ke_payload->get_key_exchange_data(ke_payload));
-	if (!this->dh->set_other_public_value(this->dh, this->dh_value))
+	if (!this->dh->set_public_key(this->dh, this->dh_value))
 	{
 		DBG1(DBG_IKE, "unable to apply received KE value");
 		return FALSE;

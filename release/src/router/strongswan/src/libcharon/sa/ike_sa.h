@@ -3,7 +3,8 @@
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -244,6 +245,11 @@ enum ike_condition_t {
 	 * A Postquantum Preshared Key was used when this IKE_SA was created
 	 */
 	COND_PPK = (1<<13),
+
+	/**
+	 * All authentication rounds have been completed successfully
+	 */
+	COND_AUTHENTICATED = (1<<14),
 };
 
 /**

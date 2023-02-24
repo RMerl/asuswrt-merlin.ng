@@ -1,6 +1,5 @@
 /*
  * Copyright (C) 2020 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
  *
  * Copyright (C) 2019 Sean Parkinson, wolfSSL Inc.
  *
@@ -112,7 +111,7 @@ METHOD(public_key_t, verify, bool,
 	return ret == 0 && res == 1;
 }
 
-METHOD(public_key_t, encrypt, bool,
+METHOD(public_key_t, encrypt_, bool,
 	private_public_key_t *this, encryption_scheme_t scheme,
 	void *params, chunk_t crypto, chunk_t *plain)
 {
@@ -255,7 +254,7 @@ bool wolfssl_ed_fingerprint(wolfssl_ed_key *key, key_type_t key_type,
 	}
 	else
 	{
-		lib->encoding->cache(lib->encoding, type, key, *fp);
+		lib->encoding->cache(lib->encoding, type, key, fp);
 		success = TRUE;
 	}
 	DESTROY_IF(hasher);
@@ -369,7 +368,7 @@ static private_public_key_t *create_empty(key_type_t type)
 		.public = {
 			.get_type = _get_type,
 			.verify = _verify,
-			.encrypt = _encrypt,
+			.encrypt = _encrypt_,
 			.get_keysize = _get_keysize,
 			.equals = public_key_equals,
 			.get_fingerprint = _get_fingerprint,

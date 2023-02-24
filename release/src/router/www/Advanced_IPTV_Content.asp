@@ -49,6 +49,7 @@ var original_switch_wan2prio  = '<%nvram_get("switch_wan2prio"); %>';
 
 var wans_lanport = '<% nvram_get("wans_lanport"); %>';
 var wans_dualwan_orig = '<% nvram_get("wans_dualwan"); %>';
+var wans_extwan = '<% nvram_get("wans_extwan"); %>';
 
 var iptv_modified = 0;
 var voip_modified = 0;
@@ -407,7 +408,7 @@ function ISP_Profile_Selection(isp){
 		else
 			document.getElementById("wan_iptv_x").style.display = "none";
 
-		if(isp_settings.iptv_port != ""){
+		if(isp_settings.iptv_config == "0" && isp_settings.iptv_port != ""){
 			document.getElementById("iptv_title").innerHTML = "IPTV STB Port";
 			document.getElementById("iptv_port").innerHTML = isp_settings.iptv_port;
 			document.getElementById("iptv_port").style.display = "";
@@ -433,7 +434,7 @@ function ISP_Profile_Selection(isp){
 		else
 			document.getElementById("wan_voip_x").style.display = "none";
 
-		if(isp_settings.voip_port != ""){
+		if(isp_settings.voip_config == "0" && isp_settings.voip_port != ""){
 			document.getElementById("voip_title").innerHTML = "VoIP Port";
 			document.getElementById("voip_port").innerHTML = isp_settings.voip_port;
 			document.getElementById("voip_port").style.display = "";
@@ -553,51 +554,8 @@ function validForm(){
 		document.form.switch_stb_x.value = document.form.switch_stb_x0.value;
 	}
 
-	if(dualWAN_support){	// dualwan LAN port should not be equal to IPTV port
-		var tmp_pri_if = wans_dualwan_orig.split(" ")[0].toUpperCase();
-		var tmp_sec_if = wans_dualwan_orig.split(" ")[1].toUpperCase();
-		if (tmp_pri_if == 'LAN' || tmp_sec_if == 'LAN'){
-			var port_conflict = false;
-			var iptv_port = document.form.switch_stb_x.value;
-			var iptv_port_settings = document.form.iptv_port_settings.value;
-
-			if(based_modelid == "GT-AC5300"){
-				/* Dual WAN: "LAN Port 1" (wans_lanport: 2), "LAN Port 2" (wans_lanport:1), "LAN Port 5" (wans_lanport:4), "LAN Port 6" (wans_lanport:3) */
-				if(iptv_port_settings == "56"){// LAN Port 5 (switch_stb_x: 3)  LAN Port 6 (switch_stb_x: 4)
-					if((wans_lanport == "4" && iptv_port == "3") || (wans_lanport == "3" && iptv_port == "4"))
-						port_conflict = true;
-					else if((iptv_port == "6" || iptv_port == "8") && (wans_lanport == '4' || wans_lanport == "3"))
-						port_conflict = true;
-				}
-				else{// LAN Port 1 (switch_stb_x: 3)  LAN Port 2 (switch_stb_x: 4)
-					if((wans_lanport == "2" && iptv_port == "3") || (wans_lanport == "1" && iptv_port == "4")) //LAN 1, LAN2
-						port_conflict = true;
-					else if((iptv_port == "6" || iptv_port == "8") && (wans_lanport == "2" || wans_lanport == "1"))
-						port_conflict = true;
-				}
-			}
-			else{
-				if(iptv_port == wans_lanport)
-					port_conflict = true;
-					else{
-						for(var i = 0; i < stbPortMappings.length; i++){
-							if(iptv_port == stbPortMappings[i].value && stbPortMappings[i].comboport_value_list.length != 0){
-								var value_list = stbPortMappings[i].comboport_value_list.split(" ");
-								for(var j = 0; j < value_list.length; j++){
-									if(wans_lanport == value_list[j])
-										port_conflict = true;
-								}
-							}
-						}
-					}
-			}
-
-			if (port_conflict) {
-				alert("<#RouterConfig_IPTV_conflict#>");
-				return false;
-			}
-		}
-	}
+	if(check_port_conflicts())
+		return false;
 
 	if(document.form.udpxy_enable_x.value != 0 && document.form.udpxy_enable_x.value != ""){	//validate UDP Proxy
 		if(!validator.range(document.form.udpxy_enable_x, 1024, 65535)){
@@ -610,29 +568,124 @@ function validForm(){
 	return true;
 }
 
-function turn_off_lacp_if_conflicts(){
+function check_port_conflicts(){
+	var wan_port_conflict = false;
+	var lacp_port_conflict = false;
+	var iptv_port = document.form.switch_stb_x.value;
+	var iptv_port_settings = document.form.iptv_port_settings.value;
+
+	if(dualWAN_support){	// dualwan LAN port should not be equal to IPTV port
+		var tmp_pri_if = wans_dualwan_orig.split(" ")[0].toUpperCase();
+		var tmp_sec_if = wans_dualwan_orig.split(" ")[1].toUpperCase();
+
+		if (tmp_pri_if == 'LAN' || tmp_sec_if == 'LAN'){
+			if(based_modelid == "GT-AC5300"){
+				/* Dual WAN: "LAN Port 1" (wans_lanport: 2), "LAN Port 2" (wans_lanport:1), "LAN Port 5" (wans_lanport:4), "LAN Port 6" (wans_lanport:3) */
+				if(iptv_port_settings == "56"){// LAN Port 5 (switch_stb_x: 3)  LAN Port 6 (switch_stb_x: 4)
+					if((wans_lanport == "4" && iptv_port == "3") || (wans_lanport == "3" && iptv_port == "4"))
+						wan_port_conflict = true;
+					else if((iptv_port == "6" || iptv_port == "8") && (wans_lanport == '4' || wans_lanport == "3"))
+						wan_port_conflict = true;
+				}
+				else{// LAN Port 1 (switch_stb_x: 3)  LAN Port 2 (switch_stb_x: 4)
+					if((wans_lanport == "2" && iptv_port == "3") || (wans_lanport == "1" && iptv_port == "4")) //LAN 1, LAN2
+						wan_port_conflict = true;
+					else if((iptv_port == "6" || iptv_port == "8") && (wans_lanport == "2" || wans_lanport == "1"))
+						wan_port_conflict = true;
+				}
+			}
+			else{
+				if(iptv_port == wans_lanport)
+					wan_port_conflict = true;
+				else{
+					for(var i = 0; i < stbPortMappings.length; i++){
+						if(iptv_port == stbPortMappings[i].value && stbPortMappings[i].comboport_value_list.length != 0){
+							var value_list = stbPortMappings[i].comboport_value_list.split(" ");
+							for(var j = 0; j < value_list.length; j++){
+								if(wans_lanport == value_list[j])
+									wan_port_conflict = true;
+							}
+						}
+					}
+				}
+			}
+		}
+	}
+
+	if(based_modelid == "GT10" && wans_extwan == "1"){//Ethernet LAN1
+		if(iptv_port == "1")
+			wan_port_conflict = true;
+		else{
+			for(var i = 0; i < stbPortMappings.length; i++){
+				if(iptv_port == stbPortMappings[i].value && stbPortMappings[i].comboport_value_list.length != 0){
+					var value_list = stbPortMappings[i].comboport_value_list.split(" ");
+					for(var j = 0; j < value_list.length; j++){
+						if(value_list[j] == "1")
+							wan_port_conflict = true;
+					}
+				}
+			}
+		}
+	}
+
+	if(lacp_enabled && document.form.switch_wantag.value == "none"){
+		var selected_stb_option = $('#switch_stb_x0 :selected').text();;
+
+		bonding_port_settings.forEach(function(bonding_value){
+			var bonding_port = bonding_value.text;
+			if(selected_stb_option.indexOf(bonding_port) != -1 ||selected_stb_option.indexOf(bonding_port) != -1 || selected_stb_option.indexOf(bonding_port) != -1)
+				lacp_port_conflict = true;
+		});
+	}
+
+	if(wan_port_conflict || lacp_port_conflict){
+		var hint_str1 = "<#PortConflict_SamePort_Hint#>";
+		var hint_str2 = "<#ChooseOthers_Hint#>";
+		var alert_msg = "";
+
+		if(wan_port_conflict){
+			alert_msg = hint_str1.replace("%1$@", "WAN").replace("%2$@", "IPTV") + " " + hint_str2;
+		}
+		else{
+			alert_msg = hint_str1.replace("%1$@", "<#NAT_lacp#>").replace("%2$@", "IPTV") + " " + hint_str2;
+		}
+
+		alert(alert_msg);
+		return true;
+	}
+	else
+		return false;
+}
+
+function turn_off_lacp(){
 	var turn_off_lacp = false;
+	var isp_profile = get_isp_settings(document.form.switch_wantag.value);
 
 	if (!lacp_enabled)
 		return;
 
-	if(bonding_port_settings[0].val == "1"  && bonding_port_settings[1].val == "2"){
-		// LAN1 and/or LAN2.
-		if(document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == "1" || document.form.switch_stb_x0.value == "2" || document.form.switch_stb_x0.value == "5")){
-			turn_off_lacp = true;
-		}
-	}
-	else if(bonding_port_settings[0].val == "2"  && bonding_port_settings[1].val == "3"){
-		//LAN 2 and/or LAN3
-		if(document.form.switch_wantag.value == "none" && (document.form.switch_stb_x0.value == "2" || document.form.switch_stb_x0.value == "3" || document.form.switch_stb_x0.value == "5" || document.form.switch_stb_x0.value == "6" || document.form.switch_stb_x0.value == "8")){
-			turn_off_lacp = true;
-		}
-	}
+	bonding_port_settings.forEach(function(bonding_value){
+		var bonding_port = bonding_value.text;
+		if(document.form.switch_wantag.value == "manual"){
+			var port_list = "";
+			if(document.form.switch_stb_x.value == "3")
+				port_list = iptv_profiles.port_definitions.VOIP_PORT;
+			else if(document.form.switch_stb_x.value == "4")
+				port_list = iptv_profiles.port_definitions.IPTV_PORT;
+			else if(document.form.switch_stb_x.value == "6")
+				port_list = iptv_profiles.port_definitions.VOIP_PORT + "," + iptv_profiles.port_definitions.IPTV_PORT;
 
-	if(turn_off_lacp){
-			document.form.lacp_enabled.disabled = false;
-			document.form.lacp_enabled.value = "0";
-	}
+			if(port_list.indexOf(bonding_port) != -1)
+				turn_off_lacp = true;
+		}
+		else if(isp_profile.iptv_port.indexOf(bonding_port) != -1 || isp_profile.voip_port.indexOf(bonding_port) != -1 || isp_profile.bridge_port.indexOf(bonding_port) != -1)
+			turn_off_lacp = true;
+	});
+
+	if(turn_off_lacp)
+		return true;
+	else
+		return false;
 }
 
 var reboot_confirm=0;
@@ -649,7 +702,6 @@ function applyRule(){
 																	|| (original_switch_wan2tagid != document.form.switch_wan2tagid.value)
 																	|| (original_switch_wan2prio != document.form.switch_wan2prio.value)) )
 			){
-				turn_off_lacp_if_conflicts();
 				reboot_confirm=1;
 			}
 		}
@@ -710,10 +762,46 @@ function applyRule(){
 			}
 		}
 
-		turn_off_lacp_if_conflicts();
+		if(turn_off_lacp()){
+			var hint_str = "Configure %1$@ as %2$@ will disable \"%3$@\" function, are you sure to continue?";
+			var msg = "";
+			var port_list = "";
+			var isp_profile = get_isp_settings(document.form.switch_wantag.value);
+
+			if(document.form.switch_wantag.value == "manual"){
+				if(document.form.switch_stb_x.value == "3")
+					port_list = iptv_profiles.port_definitions.VOIP_PORT;
+				else if(document.form.switch_stb_x.value == "4")
+					port_list = iptv_profiles.port_definitions.IPTV_PORT;
+				else if(document.form.switch_stb_x.value == "6")
+					port_list = iptv_profiles.port_definitions.VOIP_PORT + "," + iptv_profiles.port_definitions.IPTV_PORT;
+			}
+			else{
+				var port_array = [];
+
+				if(isp_profile.voip_port != "")
+					port_array.push(isp_profile.voip_port);
+
+				if(isp_profile.iptv_port != "")
+					port_array.push(isp_profile.iptv_port);
+
+				if(isp_profile.bridge_port != "")
+					port_array.push(isp_profile.bridge_port);
+
+				port_list = port_array.join("/");
+			}
+
+			msg = hint_str.replace("%1$@", port_list).replace("%2$@", "IPTV").replace("%3$@", "<#NAT_lacp#>");
+
+			if(confirm(msg)){
+				document.form.lacp_enabled.disabled = false;
+				document.form.lacp_enabled.value = "0";
+			}
+			else
+				return false;
+		}
 
 		if(reboot_confirm==1){
-        	
 			if(confirm("<#AiMesh_Node_Reboot#>")){
 				FormActions("start_apply.htm", "apply", "reboot", "<% get_default_reboot_time(); %>");
 				showLoading();
@@ -1278,7 +1366,7 @@ function change_port_settings(val, changed){
 	}
 	else if(val == "56"){
 		if(changed){
-			var msg="<#NAT_lacp_disable_note#>";	/*Untranslated*/
+			var msg="<#NAT_lacp_disable_note#>";
 			if(lacp_enabled){
 				if(!confirm(msg)){
 					document.form.iptv_port_settings.value = "12";

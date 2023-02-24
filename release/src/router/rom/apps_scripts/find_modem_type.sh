@@ -68,6 +68,10 @@ _find_act_type(){
 			got_other=1
 			echo "gobi"
 			break
+		elif [ "$t" == "ipheth" ]; then
+			got_other=1
+			echo "ipheth"
+			break
 		fi
 	done
 

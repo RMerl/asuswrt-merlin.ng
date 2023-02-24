@@ -60,11 +60,15 @@ ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(B
 ifeq (,$(wildcard ./chip_profile.tmp))
 include ./chip_profile.mak
 export CUR_CHIP_PROFILE_TMP ?= $(shell echo $(MAKECMDGOALS)_CHIP_PROFILE | tr a-z A-Z)
+export CUR_CHIP_PROFILE_RAW ?= $(shell echo $(MAKECMDGOALS)_CHIP_PROFILE_RAW | tr a-z A-Z)
 $(shell echo "CUR_CHIP_PROFILE=$($(CUR_CHIP_PROFILE_TMP))" > ./chip_profile.tmp)
 $(shell echo "CUR_CHIP_PROFILE=$($(CUR_CHIP_PROFILE_TMP))" > router/chip_profile.tmp)
+$(shell echo "CUR_CHIP_PROFILE_RAW=$($(CUR_CHIP_PROFILE_RAW))" >> ./chip_profile.tmp)
+$(shell echo "CUR_CHIP_PROFILE_RAW=$($(CUR_CHIP_PROFILE_RAW))" >> router/chip_profile.tmp)
 endif
 include ./chip_profile.tmp
 export CUR_CHIP_PROFILE
+export CUR_CHIP_PROFILE_RAW
 endif
 
 -include .config
@@ -75,23 +79,33 @@ export BUILD_NAME_SEC ?= $(BUILD_NAME)_sec
 export HND_SRC := $(shell pwd | sed 's/\(.*src-rt-.*hnd.*\).*/\1/')
 export BCM_WLIMPL
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
-export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
+ifeq ($(CUR_CHIP_PROFILE_RAW),62118G)
+  export PROFILE ?= 9$(CUR_CHIP_PROFILE)G
+else
+  export PROFILE ?= 9$(CUR_CHIP_PROFILE)GW
+endif
 $(shell cd $(HND_SRC)/targets/$(PROFILE) && ln -sf $(PROFILE).$(BUILD_NAME) $(PROFILE) && cd $(HND_SRC))
 include $(HND_SRC)/targets/$(PROFILE)/$(PROFILE)
-ifeq ($(BRCM_CHIP),4908)
-export BRCM_CHIP
-export BCM_CHIP := $(BRCM_CHIP)
-else
-export BCM_CHIP := $(CUR_CHIP_PROFILE)
-endif
+  ifeq ($(BRCM_CHIP),4908)
+  export BRCM_CHIP
+  export BCM_CHIP := $(BRCM_CHIP)
+  else
+  export BCM_CHIP := $(CUR_CHIP_PROFILE)
+  endif
 export PREBUILT_TAIL := $(BCM_CHIP)-$(PROFILE_ARCH)
 else # non-675x
 export PROFILE ?= 94908HND
 export BRCM_CHIP := 4908
 export BCM_CHIP := 4908
 endif # HND_ROUTER_AX_675X
+ifeq ($(CUR_CHIP_PROFILE_RAW),62118G)
+$(shell cd $(HND_SRC)/bcmdrivers/broadcom/net/wl && ln -sf impl$(BCM_IMPL) bcm9$(CUR_CHIP_PROFILE) && cd $(HND_SRC))
+$(shell cd $(HND_SRC)/bcmdrivers/broadcom/net/wl && ln -sf impl$(BCM_IMPL) bcm9$(BCM_CHIP) && cd $(HND_SRC))
+export SRCBASE := $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(CUR_CHIP_PROFILE)/main/src
+else
 $(shell cd $(HND_SRC)/bcmdrivers/broadcom/net/wl && ln -sf impl$(BCM_WLIMPL) bcm9$(BCM_CHIP) && cd $(HND_SRC))
 export SRCBASE := $(HND_SRC)/bcmdrivers/broadcom/net/wl/bcm9$(BCM_CHIP)/main/src
+endif
 export SRC_ROOT := $(HND_SRC)/../src
 export BUSYBOX := busybox
 export BUSYBOX_DIR := $(SRCBASE)/router/busybox
@@ -713,6 +727,7 @@ endif
 	@$(MAKE) image
 endif
 #	@-type -P python >/dev/null 2>&1 && python ../../buildtools/checkjffs.py
+#	@-type -P python >/dev/null 2>&1 && python ../../buildtools/checktmpfs.py
 
 rtk_clean_img:
 ifeq ($(RTCONFIG_REALTEK),y)
@@ -2188,6 +2203,10 @@ define RouterOptions
 				sed -i "/RTCONFIG_MODEM_BRIDGE/d" $(1); \
 				echo "RTCONFIG_MODEM_BRIDGE=y" >>$(1); \
 			fi; \
+			if [ "$(USB_WAN_BACKUP)" = "y" ]; then \
+				sed -i "/RTCONFIG_USB_WAN_BACKUP/d" $(1); \
+				echo "RTCONFIG_USB_WAN_BACKUP=y" >>$(1); \
+			fi; \
 		fi; \
 		if [ "$(PRINTER)" = "y" ]; then \
 			sed -i "/RTCONFIG_USB_PRINTER/d" $(1); \
@@ -2320,6 +2339,10 @@ define RouterOptions
 		if [ "$(IPV6S46)" = "y" -o "$(IPV6FULL)" = "y" ]; then \
 			sed -i "/RTCONFIG_SOFTWIRE46/d" $(1); \
 			echo "RTCONFIG_SOFTWIRE46=y" >>$(1); \
+			if [ "$(OCNVC)" = "y" ]; then \
+				sed -i "/RTCONFIG_OCNVC/d" $(1); \
+				echo "RTCONFIG_OCNVC=y" >>$(1); \
+			fi; \
 		fi; \
 	fi;
 	if [ "$(IPSEC)" = "y" ] || \
@@ -2595,6 +2618,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_GDB/d" $(1); \
 		echo "RTCONFIG_GDB=y" >>$(1); \
 	fi;
+	if [ "$(DMALLOC)" = "y" ]; then \
+		sed -i "/RTCONFIG_DMALLOC/d" $(1); \
+		echo "RTCONFIG_DMALLOC=y" >>$(1); \
+	fi;
 	if [ "$(UIDEBUG)" = "y" ]; then \
 		sed -i "/RTCONFIG_UIDEBUG/d" $(1); \
 		echo "RTCONFIG_UIDEBUG=y" >>$(1); \
@@ -2860,6 +2887,28 @@ define RouterOptions
 	if [ "$(ROMCFE)" = "y" ]; then \
 		sed -i "/RTCONFIG_ROMCFE/d" $(1); \
 		echo "RTCONFIG_ROMCFE=y" >>$(1); \
+	fi;
+	if [ "$(NOWL)" = "y" ]; then \
+		sed -i "/RTCONFIG_NOWL/d" $(1); \
+		echo "RTCONFIG_NOWL=y" >>$(1); \
+		sed -i "/RTCONFIG_WPS/d" $(1); \
+		echo "# RTCONFIG_WPS is not set" >>$(1); \
+		sed -i "/RTCONFIG_WPS_ENROLLEE/d" $(1); \
+		echo "# RTCONFIG_WPS_ENROLLEE is not set" >>$(1); \
+		sed -i "/RTCONFIG_WPS_RST_BTN/d" $(1); \
+		echo "# RTCONFIG_WPS_RST_BTN is not set" >>$(1); \
+		sed -i "/RTCONFIG_WPS_ALLLED_BTN/d" $(1); \
+		echo "# RTCONFIG_WPS_ALLLED_BTN is not set" >>$(1); \
+		sed -i "/RTCONFIG_WPSMULTIBAND/d" $(1); \
+		echo "# RTCONFIG_WPSMULTIBAND is not set" >>$(1); \
+		sed -i "/RTCONFIG_WPS_LED/d" $(1); \
+		echo "# RTCONFIG_WPS_LED is not set" >>$(1); \
+		sed -i "/RTCONFIG_EAPOL/d" $(1); \
+		echo "# RTCONFIG_EAPOL is not set" >>$(1); \
+	fi;
+	if [ "$(BCM4906_504)" = "y" ]; then \
+		sed -i "/RTCONFIG_BCM4906_504/d" $(1); \
+		echo "RTCONFIG_BCM4906_504=y" >>$(1); \
 	fi;
 	if [ "$(ROMCCODE)" = "y" ]; then \
 		sed -i "/RTCONFIG_ROMATECCODEFIX/d" $(1); \
@@ -3316,6 +3365,10 @@ define RouterOptions
 	else\
 		echo "# RTCONFIG_WLCSCAN_RSSI is not set" >>$(1); \
 	fi;
+	sed -i "/RTCONFIG_BT_CONN/d" $(1); \
+	echo "# RTCONFIG_BT_CONN is not set" >>$(1); \
+	echo "# RTCONFIG_BT_CONN_USB is not set" >>$(1); \
+	echo "# RTCONFIG_BT_CONN_UART is not set" >>$(1); \
 	if [ "$(BT_CONN)" != "" ]; then \
 		sed -i "/RTCONFIG_BT_CONN/d" $(1); \
 		echo "RTCONFIG_BT_CONN=y" >>$(1); \
@@ -3648,6 +3701,15 @@ define RouterOptions
 		else \
 			echo "# RTCONFIG_AMAS_SYNC_LEDG is not set" >>$(1); \
 		fi; \
+		sed -i "/RTCONFIG_AMAS_CENTRAL_OPTMZ/d" $(1); \
+		if [ "$(AMAS_CENTRAL_OPTMZ)" = "y" ]; then \
+			echo "RTCONFIG_AMAS_CENTRAL_OPTMZ=y" >>$(1); \
+			sed -i "/RTCONFIG_AMAS_CENTRAL_ADS/d" $(1); \
+			echo "RTCONFIG_AMAS_CENTRAL_ADS=y" >>$(1); \
+		else \
+			echo "# RTCONFIG_AMAS_CENTRAL_OPTMZ is not set" >>$(1); \
+			echo "# RTCONFIG_AMAS_CENTRAL_ADS is not set" >>$(1); \
+		fi; \
 	fi;
 	sed -i "/RTCONFIG_BATMAN_ADV/d" $(1); \
 	if [ "$(BATMAN)" = "y" ]; then \
@@ -3765,6 +3827,10 @@ define RouterOptions
 		echo "CONFIG_NF_CONNTRACK_EVENTS=y" >>$(1); \
 		sed -i "/RTCONFIG_LIB_CODB/d" $(1); \
 		echo "RTCONFIG_LIB_CODB=y" >>$(1); \
+	fi;
+	if [ "$(DNSQUERY_INTERCEPT)" = "y" ]; then \
+		sed -i "/RTCONFIG_DNSQUERY_INTERCEPT/d" $(1); \
+		echo "RTCONFIG_DNSQUERY_INTERCEPT=y" >>$(1); \
 	fi;
 	if [ "$(ASUSCTRL)" = "y" ]; then \
 		sed -i "/RTCONFIG_ASUSCTRL/d" $(1); \
@@ -4120,6 +4186,22 @@ define RouterOptions
 	if [ "$(WPA3_ENTERPRISE)" = "y" ]; then \
 		sed -i "/RTCONFIG_WPA3_ENTERPRISE/d" $(1); \
 		echo "RTCONFIG_WPA3_ENTERPRISE=y" >>$(1); \
+	fi;
+	sed -i "/RTCONFIG_DNSMQ_USER/d" $(1); \
+	if [ "$(DNSMQ_USER)" = "y" ]; then \
+		echo "RTCONFIG_DNSMQ_USER=y" >>$(1); \
+	else \
+		echo "# RTCONFIG_DNSMQ_USER is not set" >>$(1); \
+	fi;
+	if [ "$(INTEL_EVO)" = "y" ]; then \
+		sed -i "/RTCONFIG_INTEL_EVO/d" $(1); \
+		echo "RTCONFIG_INTEL_EVO=y" >>$(1); \
+		sed -i "/RTCONFIG_NBR_RPT/d" $(1); \
+		echo "RTCONFIG_NBR_RPT=y" >>$(1); \
+	fi;
+	if [ "$(SW_SPDLED)" = "y" ]; then \
+		sed -i "/RTCONFIG_SW_SPDLED/d" $(1); \
+		echo "RTCONFIG_SW_SPDLED=y" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef
@@ -5740,6 +5822,8 @@ fi;
 	if [ "$(BUILD_NAME)" = "RT-AX55" ] || [ "$(BUILD_NAME)" = "RT-AX1800" ]; then \
 		sed -i "/CONFIG_BCM_PKTFLOW_MAX_FLOWS/d" $(1); \
 		echo "CONFIG_BCM_PKTFLOW_MAX_FLOWS=4096" >>$(1); \
+		sed -i "/CONFIG_BCM_BPM_BUF_MEM_PRCNT/d" $(1); \
+		echo "CONFIG_BCM_BPM_BUF_MEM_PRCNT=10" >>$(1); \
 	fi;
 	if [ "$(BUILD_NAME)" = "RT-AX3000N" ]; then \
 		sed -i "/CONFIG_BCM_MAX_UCAST_FLOWS/d" $(1); \
@@ -5867,7 +5951,11 @@ endif
 	cp $(LINUXDIR)/config_base $(LINUXDIR)/config_$(lowercase_B)
 else ifeq ($(BCMWL6A),y)
 ifeq ($(or $(HND_ROUTER_AX_675X),$(HND_ROUTER_AX_6756),$(HND_ROUTER_AX_6710),$(BCM_502L07P2)),y)
+ifeq ($(CUR_CHIP_PROFILE_RAW),62118G)
+	@cp $(LINUXDIR)/config_base.6a.$(CUR_CHIP_PROFILE_RAW) $(LINUXDIR)/config_$(lowercase_B)
+else
 	@cp $(LINUXDIR)/config_base.6a.$(CUR_CHIP_PROFILE) $(LINUXDIR)/config_$(lowercase_B)
+endif
 ifneq (,$(wildcard $(LINUXDIR)/../dts/$(BCM_CHIP)/9$(BCM_CHIP).dts.$(BUILD_NAME)))
 	-cp -f $(LINUXDIR)/../dts/$(BCM_CHIP)/9$(BCM_CHIP).dts.$(BUILD_NAME) $(LINUXDIR)/../dts/$(BCM_CHIP)/9$(BCM_CHIP).dts
 endif
@@ -5891,7 +5979,10 @@ ifeq ($(SECUREBOOT),y)
 else
 	-cp bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_nand.conf.$(BUILD_NAME) bootloaders/build/configs/options_$(CUR_CHIP_PROFILE)_nand.conf
 endif
+else ifneq (,$(wildcard bootloaders/build/configs/options_$(BRCM_CHIP)_nand.conf.$(BUILD_NAME)))
+	cp bootloaders/build/configs/options_$(BRCM_CHIP)_nand.conf.$(BUILD_NAME) bootloaders/build/configs/options_$(BRCM_CHIP)_nand.conf
 endif
+
 else
 	@cp $(LINUXDIR)/config_base.6a $(LINUXDIR)/config_$(lowercase_B)
 endif
@@ -5975,6 +6066,9 @@ endef
 endif
 
 define save_src_config
+	echo $(shell echo $(1)$(2) | tr a-z A-Z)
+	echo $($(shell echo $(1)$(2) | tr a-z A-Z))
+
 	@if [ -f .config ] ; then \
 		if [ $(shell echo $(1) | grep -i "^RT4G-") ] ; then \
 			NEW_BUILD_NAME=$(shell echo $(1) | tr a-z A-Z | sed 's/^RT//') ; \
@@ -6072,7 +6166,7 @@ ETJ etj:
 	$(call save_src_config,$@,_CFG)
 	$(MAKE) bin
 
-ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro BM68 bm68 XT8_V2 xt8_v2 ET8PRO et8pro ET8_V2 et8_v2 GT10 gt10 XD6_V2 xd6_v2:
+ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro BM68 bm68 XT8_V2 xt8_v2 ET8PRO et8pro ET8_V2 et8_v2 GT10 gt10 XD6_V2 xd6_v2 BR63 br63 BC109 bc109 BC105 bc105 EBG19 ebg19 EBG15 ebg15: 
 	$(call save_src_config, $@,_CFG)
 ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
 	@echo "Copy router-sysdep.$(lowercase_B) content"
@@ -6080,6 +6174,7 @@ ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
 	@cp -ar router-sysdep.$(lowercase_B)/ router-sysdep
 endif
 	$(MAKE) bin
+
 
 ifeq ($(ALPINE)$(LANTIQ),y)
 setprofile: prepare_toolchain kernel_patch

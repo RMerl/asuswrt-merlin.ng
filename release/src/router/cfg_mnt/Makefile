@@ -17,6 +17,11 @@ LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 LDFLAGS += -lm
 LDFLAGS += -L./ -lcfgmnt
 
+ifeq ($(RTCONFIG_DMALLOC),y)
+CFLAGS += -DDMALLOC -DDMALLOC_FUNC_CHECK -I$(STAGEDIR)/usr/include
+LDFLAGS += -L$(STAGEDIR)/usr/lib -ldmalloc
+endif
+
 ifeq ($(RTCONFIG_AMAS),y)
 ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
 LLDPD_DIR = $(TOP)/lldpd-1.0.11
@@ -117,6 +122,12 @@ ifeq ($(RTCONFIG_AMAS_CENTRAL_CONTROL),y)
 COMMON_OBJS += cfg_centralcontrol.o
 endif
 SERVER_OBJS += $(COMMON_OBJS) cfg_mnt.o
+ifeq ($(RTCONFIG_AMAS_CENTRAL_OPTMZ),y)
+SERVER_OBJS += cfg_optimization.o
+endif
+ifeq ($(RTCONFIG_AMAS_CENTRAL_ADS),y)
+SERVER_OBJS += cfg_ads.o
+endif
 CLIENT_OBJS += $(COMMON_OBJS) cfg_client.o
 REPORTSTATUS_OBJS += cfg_common.o cfg_reportstatus.o
 
@@ -248,10 +259,10 @@ install: all
 	@install -D cfg_reportstatus $(INSTALLDIR)/usr/sbin/cfg_reportstatus
 	@install -D libcfgmnt.so $(INSTALLDIR)/usr/lib/libcfgmnt.so
 	@install -D gencfgcert.sh $(INSTALLDIR)/usr/sbin/gencfgcert.sh
-	@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_server
-	@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_client
-	@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_reportstatus
-	@$(STRIP) $(INSTALLDIR)/usr/lib/libcfgmnt.so
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_server)
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_client)
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/usr/sbin/cfg_reportstatus)
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/usr/lib/libcfgmnt.so)
 	@chmod 0755 $(INSTALLDIR)/usr/sbin/cfg_server
 	@chmod 0755 $(INSTALLDIR)/usr/sbin/cfg_client
 	@chmod 0755 $(INSTALLDIR)/usr/sbin/cfg_reportstatus

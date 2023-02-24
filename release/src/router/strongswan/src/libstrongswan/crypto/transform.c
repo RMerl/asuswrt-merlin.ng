@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2006-2009 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -22,7 +23,7 @@ ENUM_BEGIN(transform_type_names, ENCRYPTION_ALGORITHM, EXTENDED_SEQUENCE_NUMBERS
 	"ENCRYPTION_ALGORITHM",
 	"PSEUDO_RANDOM_FUNCTION",
 	"INTEGRITY_ALGORITHM",
-	"DIFFIE_HELLMAN_GROUP",
+	"KEY_EXCHANGE_METHOD",
 	"EXTENDED_SEQUENCE_NUMBERS");
 ENUM_NEXT(transform_type_names, HASH_ALGORITHM, KEY_DERIVATION_FUNCTION,
 		  EXTENDED_SEQUENCE_NUMBERS,
@@ -58,8 +59,8 @@ enum_name_t* transform_get_enum_names(transform_type_t type)
 			return pseudo_random_function_names;
 		case INTEGRITY_ALGORITHM:
 			return integrity_algorithm_names;
-		case DIFFIE_HELLMAN_GROUP:
-			return diffie_hellman_group_names;
+		case KEY_EXCHANGE_METHOD:
+			return key_exchange_method_names;
 		case EXTENDED_SEQUENCE_NUMBERS:
 			return extended_sequence_numbers_names;
 		case EXTENDED_OUTPUT_FUNCTION:

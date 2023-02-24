@@ -1,7 +1,8 @@
 /*
  * Copyright (C) 2008-2020 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -325,7 +326,7 @@ METHOD(plugin_t, get_name, char*,
  * Check if the given DH group is in the list of supported curves.
  */
 static bool ecdh_group_supported(EC_builtin_curve *curves, size_t num_curves,
-								 diffie_hellman_group_t group)
+								 key_exchange_method_t group)
 {
 	int j;
 
@@ -345,22 +346,26 @@ static bool ecdh_group_supported(EC_builtin_curve *curves, size_t num_curves,
 static void add_ecdh_features(plugin_feature_t *features,
 							  plugin_feature_t *to_add, int count, int *pos)
 {
+	EC_builtin_curve *curves;
 	size_t num_curves;
 	int i;
 
 	num_curves = EC_get_builtin_curves(NULL, 0);
 
-	EC_builtin_curve curves[num_curves];
-
-	num_curves = EC_get_builtin_curves(curves, num_curves);
-
-	for (i = 0; i < count; i++)
+	if (num_curves)
 	{
-		if (to_add[i].kind != FEATURE_PROVIDE ||
-			ecdh_group_supported(curves, num_curves, to_add[i].arg.dh_group))
+		curves = calloc(num_curves, sizeof(EC_builtin_curve));
+		num_curves = EC_get_builtin_curves(curves, num_curves);
+
+		for (i = 0; i < count; i++)
 		{
-			features[(*pos)++] = to_add[i];
+			if (to_add[i].kind != FEATURE_PROVIDE ||
+				ecdh_group_supported(curves, num_curves, to_add[i].arg.ke))
+			{
+				features[(*pos)++] = to_add[i];
+			}
 		}
+		free(curves);
 	}
 }
 #endif /* OPENSSL_NO_ECDH */
@@ -377,6 +382,9 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 16),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 24),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CBC, 32),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CTR, 16),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CTR, 24),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_CTR, 32),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 16),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 24),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_AES_ECB, 32),
@@ -388,6 +396,9 @@ METHOD(plugin_t, get_features, int,
 			PLUGIN_PROVIDE(CRYPTER, ENCR_CAMELLIA_CBC, 16),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_CAMELLIA_CBC, 24),
 			PLUGIN_PROVIDE(CRYPTER, ENCR_CAMELLIA_CBC, 32),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_CAMELLIA_CTR, 16),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_CAMELLIA_CTR, 24),
+			PLUGIN_PROVIDE(CRYPTER, ENCR_CAMELLIA_CTR, 32),
 #endif
 #ifndef OPENSSL_NO_RC5
 			PLUGIN_PROVIDE(CRYPTER, ENCR_RC5, 0),
@@ -523,19 +534,19 @@ METHOD(plugin_t, get_features, int,
 #endif /* OPENSSL_VERSION_NUMBER */
 #ifndef OPENSSL_NO_DH
 		/* MODP DH groups */
-		PLUGIN_REGISTER(DH, openssl_diffie_hellman_create),
-			PLUGIN_PROVIDE(DH, MODP_3072_BIT),
-			PLUGIN_PROVIDE(DH, MODP_4096_BIT),
-			PLUGIN_PROVIDE(DH, MODP_6144_BIT),
-			PLUGIN_PROVIDE(DH, MODP_8192_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_BIT),
-			PLUGIN_PROVIDE(DH, MODP_2048_224),
-			PLUGIN_PROVIDE(DH, MODP_2048_256),
-			PLUGIN_PROVIDE(DH, MODP_1536_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_BIT),
-			PLUGIN_PROVIDE(DH, MODP_1024_160),
-			PLUGIN_PROVIDE(DH, MODP_768_BIT),
-			PLUGIN_PROVIDE(DH, MODP_CUSTOM),
+		PLUGIN_REGISTER(KE, openssl_diffie_hellman_create),
+			PLUGIN_PROVIDE(KE, MODP_3072_BIT),
+			PLUGIN_PROVIDE(KE, MODP_4096_BIT),
+			PLUGIN_PROVIDE(KE, MODP_6144_BIT),
+			PLUGIN_PROVIDE(KE, MODP_8192_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_BIT),
+			PLUGIN_PROVIDE(KE, MODP_2048_224),
+			PLUGIN_PROVIDE(KE, MODP_2048_256),
+			PLUGIN_PROVIDE(KE, MODP_1536_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_BIT),
+			PLUGIN_PROVIDE(KE, MODP_1024_160),
+			PLUGIN_PROVIDE(KE, MODP_768_BIT),
+			PLUGIN_PROVIDE(KE, MODP_CUSTOM),
 #endif
 #ifndef OPENSSL_NO_RSA
 		/* RSA private/public key loading */
@@ -644,11 +655,11 @@ METHOD(plugin_t, get_features, int,
 #endif
 #endif /* OPENSSL_NO_ECDSA */
 #if OPENSSL_VERSION_NUMBER >= 0x1010100fL && !defined(OPENSSL_NO_ECDH)
-		PLUGIN_REGISTER(DH, openssl_x_diffie_hellman_create),
+		PLUGIN_REGISTER(KE, openssl_x_diffie_hellman_create),
 			/* available since 1.1.0a, but we require 1.1.1 features */
-			PLUGIN_PROVIDE(DH, CURVE_25519),
+			PLUGIN_PROVIDE(KE, CURVE_25519),
 			/* available since 1.1.1 */
-			PLUGIN_PROVIDE(DH, CURVE_448),
+			PLUGIN_PROVIDE(KE, CURVE_448),
 #endif /* OPENSSL_VERSION_NUMBER && !OPENSSL_NO_ECDH */
 #if OPENSSL_VERSION_NUMBER >= 0x1010100fL && !defined(OPENSSL_NO_EC)
 		/* EdDSA private/public key loading */
@@ -681,17 +692,17 @@ METHOD(plugin_t, get_features, int,
 	static plugin_feature_t f_ecdh[] = {
 #ifndef OPENSSL_NO_ECDH
 		/* EC DH groups */
-		PLUGIN_REGISTER(DH, openssl_ec_diffie_hellman_create),
-			PLUGIN_PROVIDE(DH, ECP_256_BIT),
-			PLUGIN_PROVIDE(DH, ECP_384_BIT),
-			PLUGIN_PROVIDE(DH, ECP_521_BIT),
-			PLUGIN_PROVIDE(DH, ECP_224_BIT),
-			PLUGIN_PROVIDE(DH, ECP_192_BIT),
+		PLUGIN_REGISTER(KE, openssl_ec_diffie_hellman_create),
+			PLUGIN_PROVIDE(KE, ECP_256_BIT),
+			PLUGIN_PROVIDE(KE, ECP_384_BIT),
+			PLUGIN_PROVIDE(KE, ECP_521_BIT),
+			PLUGIN_PROVIDE(KE, ECP_224_BIT),
+			PLUGIN_PROVIDE(KE, ECP_192_BIT),
 #if OPENSSL_VERSION_NUMBER >= 0x10002000L
-			PLUGIN_PROVIDE(DH, ECP_256_BP),
-			PLUGIN_PROVIDE(DH, ECP_384_BP),
-			PLUGIN_PROVIDE(DH, ECP_512_BP),
-			PLUGIN_PROVIDE(DH, ECP_224_BP),
+			PLUGIN_PROVIDE(KE, ECP_256_BP),
+			PLUGIN_PROVIDE(KE, ECP_384_BP),
+			PLUGIN_PROVIDE(KE, ECP_512_BP),
+			PLUGIN_PROVIDE(KE, ECP_224_BP),
 #endif /* OPENSSL_VERSION_NUMBER */
 #endif /* OPENSSL_NO_ECDH */
 	};

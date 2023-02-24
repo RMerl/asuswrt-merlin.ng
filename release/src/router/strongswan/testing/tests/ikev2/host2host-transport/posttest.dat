@@ -1,4 +1,5 @@
-moon::ipsec stop
-sun::ipsec stop
+moon::swanctl --terminate --ike host-host 2> /dev/null
+moon::systemctl stop strongswan
+sun::systemctl stop strongswan
 moon::iptables-restore < /etc/iptables.flush
 sun::iptables-restore < /etc/iptables.flush

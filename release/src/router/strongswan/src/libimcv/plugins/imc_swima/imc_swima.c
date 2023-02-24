@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2017-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,7 +24,7 @@
 #include "swima/swima_inventory.h"
 #include "swima/swima_collector.h"
 #include "swima/swima_error.h"
-#include "tcg/seg/tcg_seg_attr_max_size.h"
+#include "tcg/seg/tcg_seg_attr_seg_contract.h"
 #include "tcg/seg/tcg_seg_attr_seg_env.h"
 
 #include <tncif_pa_subtypes.h>
@@ -310,7 +311,7 @@ TNC_Result TNC_IMC_BeginHandshake(TNC_IMCID imc_id,
 	seg_contract_t *contract;
 	seg_contract_manager_t *contracts;
 	imc_swima_subscription_t *subscription;
-	size_t max_attr_size = SWIMA_MAX_ATTR_SIZE;
+	size_t max_msg_size = SEG_CONTRACT_NO_MSG_SIZE_LIMIT;
 	size_t max_seg_size;
 	char buf[BUF_LEN];
 	TNC_Result result = TNC_RESULT_SUCCESS;
@@ -346,13 +347,13 @@ TNC_Result TNC_IMC_BeginHandshake(TNC_IMCID imc_id,
 												 - TCG_SEG_ATTR_SEG_ENV_HEADER;
 
 		/* Announce support of PA-TNC segmentation to IMV */
-		contract = seg_contract_create(msg_types[0], max_attr_size, max_seg_size,
+		contract = seg_contract_create(msg_types[0], max_msg_size, max_seg_size,
 									   TRUE, imc_id, TRUE);
 		contract->get_info_string(contract, buf, BUF_LEN, TRUE);
 		DBG2(DBG_IMC, "%s", buf);
 		contracts = state->get_contracts(state);
 		contracts->add_contract(contracts, contract);
-		attr = tcg_seg_attr_max_size_create(max_attr_size, max_seg_size, TRUE);
+		attr = tcg_seg_attr_seg_contract_create(max_msg_size, max_seg_size, TRUE);
 
 		/* send PA-TNC message with the excl flag not set */
 		out_msg = imc_msg_create(imc_swima, state, connection_id, imc_id,

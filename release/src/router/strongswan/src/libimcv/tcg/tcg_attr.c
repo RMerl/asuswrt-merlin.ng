@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2011-2014 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2011-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -31,7 +32,7 @@
 #include "tcg/pts/tcg_pts_attr_file_meas.h"
 #include "tcg/pts/tcg_pts_attr_req_file_meta.h"
 #include "tcg/pts/tcg_pts_attr_unix_file_meta.h"
-#include "tcg/seg/tcg_seg_attr_max_size.h"
+#include "tcg/seg/tcg_seg_attr_seg_contract.h"
 #include "tcg/seg/tcg_seg_attr_seg_env.h"
 #include "tcg/seg/tcg_seg_attr_next_seg.h"
 
@@ -53,17 +54,19 @@ ENUM_NEXT(tcg_attr_names,	TCG_SWID_REQUEST,
 	"SWID Tag Events",
 	"SWID Subscription Status Request",
 	"SWID Subscription Status Response");
-ENUM_NEXT(tcg_attr_names,	TCG_SEG_MAX_ATTR_SIZE_REQ,
-							TCG_SEG_CANCEL_SEG_EXCH,
+ENUM_NEXT(tcg_attr_names,	TCG_SEG_CONTRACT_REQ,
+							TCG_SEG_CONTRACT_EXEMPTION,
 							TCG_SWID_SUBSCRIPTION_STATUS_RESP,
-	"Max Attribute Size Request",
-	"Max Attribute Size Response",
-	"Attribute Segment Envelope",
-	"Next Segment Request",
-	"Cancel Segment Exchange");
+	"Segmentation Contract Request",
+	"Segmentation Contract Response",
+	"Segment Envelope",
+	"Next Segment",
+	"Cancel",
+	"Oversized Message",
+	"Contract Exemption");
 ENUM_NEXT(tcg_attr_names,	TCG_PTS_REQ_FUNC_COMP_EVID,
 							TCG_PTS_REQ_FUNC_COMP_EVID,
-							TCG_SEG_CANCEL_SEG_EXCH,
+							TCG_SEG_CONTRACT_EXEMPTION,
 	"Request Functional Component Evidence");
 ENUM_NEXT(tcg_attr_names,	TCG_PTS_GEN_ATTEST_EVID,
 							TCG_PTS_GEN_ATTEST_EVID,
@@ -186,13 +189,13 @@ pa_tnc_attr_t* tcg_attr_create_from_data(uint32_t type, size_t length, chunk_t v
 {
 	switch (type)
 	{
-		case TCG_SEG_MAX_ATTR_SIZE_REQ:
-			return tcg_seg_attr_max_size_create_from_data(length, value, TRUE);
-		case TCG_SEG_MAX_ATTR_SIZE_RESP:
-			return tcg_seg_attr_max_size_create_from_data(length, value, FALSE);
-		case TCG_SEG_ATTR_SEG_ENV:
+		case TCG_SEG_CONTRACT_REQ:
+			return tcg_seg_attr_seg_contract_create_from_data(length, value, TRUE);
+		case TCG_SEG_CONTRACT_RESP:
+			return tcg_seg_attr_seg_contract_create_from_data(length, value, FALSE);
+		case TCG_SEG_ENVELOPE:
 			return tcg_seg_attr_seg_env_create_from_data(length, value);
-		case TCG_SEG_NEXT_SEG_REQ:
+		case TCG_SEG_NEXT_SEGMENT:
 			return tcg_seg_attr_next_seg_create_from_data(length, value);
 		case TCG_PTS_REQ_PROTO_CAPS:
 			return tcg_pts_attr_proto_caps_create_from_data(length, value,

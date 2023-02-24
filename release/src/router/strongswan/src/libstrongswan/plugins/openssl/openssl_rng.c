@@ -1,7 +1,5 @@
 /*
  * Copyright (C) 2012-2018 Tobias Brunner
- * HSR Hochschule fuer Technik Rapperswil
- *
  * Copyright (C) 2012 Aleksandr Grinberg
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy

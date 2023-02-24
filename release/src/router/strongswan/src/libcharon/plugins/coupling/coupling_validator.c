@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2011 Martin Willi
- * Copyright (C) 2011 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -135,9 +136,8 @@ static bool add_entry(private_coupling_validator_t *this, char *hash,
 }
 
 METHOD(cert_validator_t, validate, bool,
-	private_coupling_validator_t *this,
-	certificate_t *subject, certificate_t *issuer,
-	bool online, u_int pathlen, bool anchor, auth_cfg_t *auth)
+	private_coupling_validator_t *this, certificate_t *subject,
+	certificate_t *issuer, u_int pathlen, bool anchor, auth_cfg_t *auth)
 {
 	bool valid = FALSE;
 	char hash[MAX_HASH_SIZE];

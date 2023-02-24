@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2017 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2017-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -23,7 +24,7 @@
 #include <imv/imv_agent.h>
 #include <imv/imv_msg.h>
 #include "rest/rest.h"
-#include "tcg/seg/tcg_seg_attr_max_size.h"
+#include "tcg/seg/tcg_seg_attr_seg_contract.h"
 #include "tcg/seg/tcg_seg_attr_seg_env.h"
 #include "ietf/swima/ietf_swima_attr_req.h"
 #include "ietf/swima/ietf_swima_attr_sw_inv.h"
@@ -153,7 +154,7 @@ static TNC_Result receive_msg(private_imv_swima_agent_t *this,
 				pen_type_t error_code;
 				chunk_t msg_info, description;
 				bio_reader_t *reader;
-				uint32_t max_attr_size;
+				uint32_t max_msg_size;
 				bool success;
 
 				error_attr = (ietf_attr_pa_tnc_error_t*)attr;
@@ -177,13 +178,13 @@ static TNC_Result receive_msg(private_imv_swima_agent_t *this,
 				}
 				if (error_code.type == PA_ERROR_SWIMA_RESPONSE_TOO_LARGE)
 				{
-					if (!reader->read_uint32(reader, &max_attr_size))
+					if (!reader->read_uint32(reader, &max_msg_size))
 					{
 						reader->destroy(reader);
 						continue;
 					}
 					DBG1(DBG_IMV, "  maximum PA-TNC attribute size is %u bytes",
-						max_attr_size);
+						max_msg_size);
 				}
 				description = reader->peek(reader);
 				if (description.len)
@@ -474,7 +475,7 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 	if (handshake_state == IMV_SWIMA_STATE_INIT &&
 		session->get_policy_started(session))
 	{
-		size_t max_attr_size = SWIMA_MAX_ATTR_SIZE;
+		size_t max_msg_size = SEG_CONTRACT_NO_MSG_SIZE_LIMIT;
 		size_t max_seg_size;
 		ietf_swima_attr_req_t *cast_attr;
 		seg_contract_t *contract;
@@ -530,14 +531,14 @@ METHOD(imv_agent_if_t, batch_ending, TNC_Result,
 									- TCG_SEG_ATTR_SEG_ENV_HEADER;
 
 					/* Announce support of PA-TNC segmentation to IMC */
-					contract = seg_contract_create(msg_types[0], max_attr_size,
+					contract = seg_contract_create(msg_types[0], max_msg_size,
 										max_seg_size, TRUE, imv_id, FALSE);
 					contract->get_info_string(contract, buf, BUF_LEN, TRUE);
 					DBG2(DBG_IMV, "%s", buf);
 					contracts = state->get_contracts(state);
 					contracts->add_contract(contracts, contract);
-					attr = tcg_seg_attr_max_size_create(max_attr_size,
-														max_seg_size, TRUE);
+					attr = tcg_seg_attr_seg_contract_create(max_msg_size,
+															max_seg_size, TRUE);
 					out_msg->add_attribute(out_msg, attr);
 				}
 
@@ -805,7 +806,7 @@ imv_agent_if_t *imv_swima_agent_create(const char *name, TNC_IMVID id,
 		return NULL;
 	}
 	agent->add_non_fatal_attr_type(agent,
-				pen_type_create(PEN_TCG, TCG_SEG_MAX_ATTR_SIZE_REQ));
+				pen_type_create(PEN_TCG, TCG_SEG_CONTRACT_REQ));
 
 	INIT(this,
 		.public = {

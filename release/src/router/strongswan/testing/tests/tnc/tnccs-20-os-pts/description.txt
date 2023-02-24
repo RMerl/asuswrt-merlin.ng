@@ -11,8 +11,8 @@ protocol defined by <b>RFC 5792 PA-TNC</b>.
 <em>Product Information</em>, <em>String Version</em>, and <em>Device ID</em> up-front
 to the Attestation IMV, whereas <b>dave</b> must be prompted by the IMV to do so via an
 <em>Attribute Request</em> PA-TNC attribute. <b>dave</b> is instructed to do a reference
-measurement on all files in the <b>/bin</b> directory. <b>carol</b> is then prompted to
-measure a couple of individual files and the files in the <b>/bin</b> directory as
+measurement on all files in the <b>/usr/sbin</b> directory. <b>carol</b> is then prompted to
+measure a couple of individual files and the files in the <b>/usr/sbin</b> directory as
 well as to get metadata on the <b>/etc/tnc_confg</b> configuration file.
 <p>
 <b>carol</b> passes the health test and <b>dave</b> fails because IP forwarding is

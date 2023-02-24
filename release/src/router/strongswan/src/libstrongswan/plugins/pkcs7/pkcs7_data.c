@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2012 Martin Willi
- * Copyright (C) 2012 revosec AG
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -59,6 +60,13 @@ METHOD(container_t, get_data, bool,
 	chunk_t chunk;
 
 	chunk = this->content;
+
+	/* The content field is optional */
+	if (chunk.len == 0)
+	{
+		*data = chunk_empty;
+		return TRUE;
+	}
 	if (asn1_unwrap(&chunk, &chunk) == ASN1_OCTET_STRING)
 	{
 		*data = chunk_clone(chunk);

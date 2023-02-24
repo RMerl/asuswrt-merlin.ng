@@ -3,7 +3,8 @@
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005-2010 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -697,9 +698,11 @@ static int open_socket(private_socket_default_socket_t *this,
 		DBG1(DBG_NET, "could not open socket: %s", strerror(errno));
 		return -1;
 	}
-	if (setsockopt(skt, SOL_SOCKET, SO_REUSEADDR, (void*)&on, sizeof(on)) < 0)
+
+	if (family == AF_INET6 &&
+		setsockopt(skt, SOL_IPV6, IPV6_V6ONLY, &on, sizeof(on)) < 0)
 	{
-		DBG1(DBG_NET, "unable to set SO_REUSEADDR on socket: %s", strerror(errno));
+		DBG1(DBG_NET, "unable to set IPV6_V6ONLY on socket: %s", strerror(errno));
 		close(skt);
 		return -1;
 	}

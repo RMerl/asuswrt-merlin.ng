@@ -75,7 +75,7 @@ void stop_aae_sip_conn(int sdk_deinit)
 	int time_count = 0;
 	if (pids("aaews")) {
 #if defined(RTCONFIG_ACCOUNT_BINDING) && defined(RTCONFIG_AWSIOT)
-		if (nvram_get_int("oauth_auth_status") == 2) {
+		if (is_account_bound()) {
 			killall("aaews", SIGKILL);
 		} else
 #endif

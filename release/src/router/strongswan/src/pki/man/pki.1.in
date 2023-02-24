@@ -1,4 +1,4 @@
-.TH PKI 1 "2015-08-06" "@PACKAGE_VERSION@" "strongSwan"
+.TH PKI 1 "2022-08-22" "@PACKAGE_VERSION@" "strongSwan"
 .
 .SH "NAME"
 .
@@ -30,6 +30,16 @@ private key of a CA and containing subjectAltNames, CRL distribution points
 and URIs of OCSP servers. You can also extract raw public keys from private
 keys, certificate requests and certificates and compute two kinds of SHA-1-based
 key IDs.
+.P
+The
+.B pki
+command now supports certificate enrollment via the
+.B Simple Certificate Enrollment Protocol
+(SCEP) as defined by RFC 8894, replacing the obsoleted
+.B ipsec scepclient
+tool. Additionally the
+.B Enrollment over Secure Transport
+(EST) protocol (RFC 7030) is supported, too.
 .
 .SH "COMMANDS"
 .
@@ -72,6 +82,18 @@ Extract a public key from a private key or certificate.
 .TP
 .B "\-v, \-\-verify"
 Verify a certificate using a CA certificate.
+.TP
+.B "\-S, \-\-scep"
+Enroll an X.509 certificate with a SCEP server.
+.TP
+.B "\-C, \-\-scepca"
+Get CA [and RA] certificate[s] from a SCEP server.
+.TP
+.B "\-E, \-\-est"
+Enroll an X.509 certificate with an EST server.
+.TP
+.B "\-e, \-\-estca"
+Get CA certificate[s] from an EST server.
 .
 .SH "EXAMPLES"
 .
@@ -161,4 +183,8 @@ certificates with the \-\-crl option.
 .BR pki\ \-\-print (1),
 .BR pki\ \-\-dn (1),
 .BR pki\ \-\-pub (1),
-.BR pki\ \-\-verify (1)
+.BR pki\ \-\-verify (1),
+.BR pki\ \-\-scep (1)
+.BR pki\ \-\-scepca (1)
+.BR pki\ \-\-est (1)
+.BR pki\ \-\-estca (1)

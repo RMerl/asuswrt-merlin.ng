@@ -11,6 +11,8 @@
 #define CFG_STR_VENDOR		"vendor"
 #define CFG_STR_BWCAP		"bwcap"		/* 0 - old, 1 - new */
 #define CFG_STR_MAC			"mac"
+#define CFG_STR_PARENT_MAC			"parent_mac"
+#define CFG_STR_CHILD_MAC			"child_mac"
 #define CFG_STR_ALIAS		"alias"
 #define CFG_STR_PAP2G		"pap2g"
 #define CFG_STR_PAP5G		"pap5g"
@@ -45,6 +47,8 @@
 #define CFG_STR_RE_MAC		"re_mac"
 #define CFG_STR_NEW_RE_MAC	"new_re_mac"
 #define CFG_STR_MODEL_NAME	"model_name"
+#define CFG_STR_PARENT_MODEL_NAME		"parent_model_name"
+#define CFG_STR_CHILD_MODEL_NAME		"child_model_name"
 #define CFG_STR_PRODUCT_ID	"product_id"
 #define CFG_STR_FRS_MODEL_NAME	"frs_model_name"
 #define CFG_STR_TIMESTAMP	"ts"
@@ -124,8 +128,6 @@
 #define CFG_STR_SYNC_NODE_5G1_G2	"cfg_wl2.2_sync_node"
 #define CFG_STR_SYNC_NODE_5G1_G3	"cfg_wl2.3_sync_node"
 
-#ifdef RTCONFIG_BANDINDEX_NEW
-
 #define CFG_STR_SYNC_NODE_2G        "cfg_sync_node_2g"
 #define CFG_STR_SYNC_NODE_5G        "cfg_sync_node_5g"
 #define CFG_STR_SYNC_NODE_5GH       "cfg_sync_node_5gh"
@@ -135,8 +137,6 @@
 #define CFG_STR_BSS_ENABLED_5G       "cfg_bss_enabled_5g"
 #define CFG_STR_BSS_ENABLED_5GH      "cfg_bss_enabled_5gh"
 #define CFG_STR_BSS_ENABLED_6G       "cfg_bss_enabled_6g"
-
-#endif	// RTCONFIG_BANDINDEX_NEW
 
 #define CFG_STR_BSS_ONOFF_X_Y		"cfg_wl%d.%d_bss_enabled"
 #define CFG_STR_BSS_ONOFF_2G_G1		"cfg_wl0.1_bss_enabled"
@@ -152,16 +152,12 @@
 #define CFG_STR_GUEST_IFNAMES_2G	"cfg_guest_ifnames_2g"
 #define CFG_STR_GUEST_IFNAMES_5G	"cfg_guest_ifnames_5g"
 #define CFG_STR_GUEST_IFNAMES_5GH	"cfg_guest_ifnames_5gh"
-#ifdef RTCONFIG_BANDINDEX_NEW
 #define CFG_STR_GUEST_IFNAMES_6G	"cfg_guest_ifnames_6g"
-#endif	// RTCONFIG_BANDINDEX_NEW
 
 #define CFG_STR_GUEST_VLANS_2G		"cfg_guest_vlans_2g"
 #define CFG_STR_GUEST_VLANS_5G		"cfg_guest_vlans_5g"
 #define CFG_STR_GUEST_VLANS_5GH		"cfg_guest_vlans_5gh"
-#ifdef RTCONFIG_BANDINDEX_NEW
 #define CFG_STR_GUEST_VLANS_6G		"cfg_guest_vlans_6g"
-#endif // RTCONFIG_BANDINDEX_NEW
 #endif	/* RTCONFIG_AMAS_WGN */
 #define CFG_STR_HASH_BUNDLE_KEY		"hash_bundle_key"
 #define CFG_STR_CHANGED_CONFIG		"changed_config"
@@ -211,4 +207,33 @@
 #define CFG_BAND_TYPE		"BAND_TYPE"
 #define CFG_STR_UNIT 	"unit"
 #define CFG_DWB_RULE "dwb_rule" 
+#define CFG_STR_BAND		"band"
+#define CFG_STR_USE		"use"
+#define CFG_STR_INDEX		"index"
+#define CFG_STR_WLC_INFO		"wlc_info"
+#ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
+#define CFG_STR_OPT_SITE_SURVEY_TIMES 	"opt_ss_times"
+#define CFG_STR_OPT_TARGET_BSSID 	"target_bssid"
+#define CFG_STR_OPT_SEQUENCE 	"seq"
+#define CFG_STR_SITE_SURVEY_DATA		"ss_data"
+#define CFG_STR_CONNECT_DATA		"connect_data"
+#define CFG_STR_OPT_FOLLOW		"opt_follow"
+#define CFG_STR_PARENT_RE		"pre"
+#endif
+#define CFG_STR_ACTION	"action"
+#define CFG_STR_ROLE	"role"
+#define CFG_STR_DATA_RATE	"data_rate"
+#define CFG_STR_STA_MAC "sta_mac"
+#define CFG_STR_SEQUENCE	"seq"
+#define CFG_STR_TEST_TIME	"test_time"
+#define CFG_STR_DELAY_TIME	"delay_time"
+#ifdef RTCONFIG_AMAS_CENTRAL_ADS
+#define CFG_STR_IPERF_DATA		"iperf_data"
+#define CFG_STR_DS_MEASURE_DATA		"ds_measure_data"
+#define CFG_STR_DS_SWITCH_DATA		"ds_switch_data"
+#define CFG_STR_PARENT_DS		"pds"
+#define CFG_STR_CHILD_DS		"cds"
+#define CFG_STR_DS		"ds"
+#define CFG_STR_DS_NUM		"ds_num"
+#endif
 #endif /* __CFG_STRING_H__ */

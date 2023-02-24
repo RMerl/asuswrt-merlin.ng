@@ -2,7 +2,8 @@
  * Copyright (C) 2012-2019 Tobias Brunner
  * Copyright (C) 2005-2007 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -34,7 +35,6 @@ typedef struct ike_cfg_create_t ike_cfg_create_t;
 #include <collections/linked_list.h>
 #include <utils/identification.h>
 #include <crypto/proposal/proposal.h>
-#include <crypto/diffie_hellman.h>
 
 /**
  * IKE version.
@@ -230,11 +230,16 @@ struct ike_cfg_t {
 	childless_t (*childless)(ike_cfg_t *this);
 
 	/**
-	 * Get the DH group to use for IKE_SA setup.
+	 * Get the first algorithm of a certain transform type that's contained in
+	 * any of the configured proposals.
 	 *
-	 * @return				dh group to use for initialization
+	 * For instance, use with KEY_EXCHANGE_METHOD to get the KE method to use
+	 * for the IKE_SA initiation.
+	 *
+	 * @param type			transform type to look for
+	 * @return				algorithm identifier (0 for none)
 	 */
-	diffie_hellman_group_t (*get_dh_group)(ike_cfg_t *this);
+	uint16_t (*get_algorithm)(ike_cfg_t *this, transform_type_t type);
 
 	/**
 	 * Check if two IKE configs are equal.

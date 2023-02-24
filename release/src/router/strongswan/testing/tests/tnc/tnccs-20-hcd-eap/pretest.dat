@@ -9,10 +9,10 @@ carol::echo 0 > /proc/sys/net/ipv4/ip_forward
 dave::echo aabbccddeeff11223344556677889900 > /var/lib/dbus/machine-id
 alice::rm /etc/swanctl/rsa/aliceKey.pem
 alice::rm /etc/swanctl/x509/aliceCert.pem
-alice::systemctl start strongswan-swanctl
-moon::systemctl start strongswan-swanctl
-carol::systemctl start strongswan-swanctl
-dave::systemctl start strongswan-swanctl
+alice::systemctl start strongswan
+moon::systemctl start strongswan
+carol::systemctl start strongswan
+dave::systemctl start strongswan
 moon::expect-connection rw-allow
 moon::expect-connection rw-isolate
 carol::expect-connection home

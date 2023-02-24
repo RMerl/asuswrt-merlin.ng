@@ -701,8 +701,7 @@ function applyRule(){
 
 		if(document.form.fb_pdesc.value == "tech_ASUS"){
 
-			var re_asus = new RegExp(/^[A-Za-z][A-Za-z0-9\-]+$/i);
-			var re_crs = new RegExp("^[0-9]{5}","gi");
+			var re_asus = new RegExp(/^[A-Za-z0-9\-]{8,}$/i);
 			var re_valid = 0;
 			document.form.fb_tech_account.disabled = "";
 			document.form.fb_tech_account.value = "";
@@ -715,11 +714,8 @@ function applyRule(){
 				if(!re_asus.test(document.form.fb_serviceno.value)){
 					re_valid++;				
 				}
-				if(document.form.fb_serviceno.value.length != 5 || !re_crs.test(document.form.fb_serviceno.value)){
-					re_valid++;				
-				}
 
-				if(re_valid == 2){
+				if(re_valid > 0){
 					alert("<#JS_validchar#>");
 					document.form.fb_serviceno.focus();
 					return false;
@@ -1504,7 +1500,7 @@ function detect_fb_state(){
 <tr style="display:none;">
 <th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(34,2);"><#ASUS_Service_No#></a></th>
 <td>
-	<input type="text" name="fb_serviceno" maxlength="32" class="input_20_table" value="" autocorrect="off" autocapitalize="off">
+	<input type="text" name="fb_serviceno" maxlength="32" class="input_20_table" placeholder="E1234567890-1234" value="" autocorrect="off" autocapitalize="off">
 </td>
 </tr>
 

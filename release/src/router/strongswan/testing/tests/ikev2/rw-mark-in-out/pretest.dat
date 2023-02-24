@@ -1,17 +1,20 @@
 alice::iptables-restore < /etc/iptables.rules
 venus::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
-moon::iptables -t nat -A POSTROUTING -o eth0 -s 10.1.0.0/16 -p tcp -j SNAT --to PH_IP_MOON
+winnetou::ip route add 10.1.0.0/16 via PH_IP_MOON
 sun::ip route add 10.1.0.0/16 via PH_IP_MOON
-sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 10 -j SNAT --to PH_IP_CAROL10
-sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 20 -j SNAT --to PH_IP_DAVE10
-sun::iptables -t mangle -A PREROUTING -d PH_IP_CAROL10 -j MARK --set-mark 11
-sun::iptables -t mangle -A PREROUTING -d PH_IP_DAVE10 -j MARK --set-mark 21
-sun::ipsec start
-alice::ipsec start
-venus::ipsec start
+# NAT client traffic to distinct virtual IPs
+sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 10 -j SNAT --to 10.3.0.10
+sun::iptables -t nat -A POSTROUTING -o eth1 -m mark --mark 20 -j SNAT --to 10.3.0.20
+# mark the return traffic accordingly
+sun::iptables -t mangle -A PREROUTING -d 10.3.0.10 -j MARK --set-mark 11
+sun::iptables -t mangle -A PREROUTING -d 10.3.0.20 -j MARK --set-mark 21
+sun::systemctl start strongswan
+alice::systemctl start strongswan
+venus::systemctl start strongswan
 sun::expect-connection alice
 alice::expect-connection home
-alice::ipsec up home
+alice::swanctl --initiate --child home
+sun::expect-connection venus
 venus::expect-connection home
-venus::ipsec up home
+venus::swanctl --initiate --child home

@@ -1,4 +1,0 @@
-moon:: cat /var/log/daemon.log::maximum path length of 7 exceeded::YES
-carol::cat /var/log/daemon.log::received AUTHENTICATION_FAILED notify error::YES
-carol::ipsec status 2> /dev/null::alice.*INSTALLED::NO
-moon:: ipsec status 2> /dev/null::alice.*ESTABLISHED.*moon.strongswan.org.*carol@strongswan.org::NO

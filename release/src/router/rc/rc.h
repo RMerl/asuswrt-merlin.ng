@@ -424,7 +424,7 @@ extern int isValidChannel(int is_2G, char *channel);
 extern int setPSK(const char *psk);
 extern int getPSK(void);
 #if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
-extern void start_envrams(void);
+extern int start_envrams(void);
 extern int chk_envrams_proc(void);
 #endif
 extern int ate_run_arpstrom(void);
@@ -498,6 +498,7 @@ extern void set_fs_coexist();
 extern int _dump_powertable();
 extern void ate_commit_bootlog(char *err_code);
 extern int setAllLedOn(void);
+extern int setNetLed(void);
 #if defined(RPAC53) || defined(RT4GAC68U)
 extern int setAllOrangeLedOn(void);
 #endif
@@ -511,6 +512,11 @@ extern void setAllLedBrightness(void);
 extern int setATEModeLedOn(void);
 extern int start_wps_method(void);
 extern int stop_wps_method(void);
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+extern void runtime_onoff_wps(int onoff);
+extern int start_wps_method_ob(void);
+extern int stop_wps_method_ob(void);
+#endif
 extern int is_wps_stopped(void);
 extern int is_wps_success(void);
 #if defined(RTCONFIG_AMAS) && defined(CONFIG_BCMWL5)
@@ -535,6 +541,8 @@ extern int setCountryCode_2G(const char *cc);
 extern int setCountryCode_5G(const char *cc);
 extern int setSN(const char *SN);
 extern int getSN(void);
+extern int setEISN(const char *EISN);
+extern int getEISN(void);
 extern int setPIN(const char *pin);
 extern int getPIN(void);
 extern int set40M_Channel_2G(char *channel);
@@ -882,7 +890,7 @@ extern void check_4366_fabid(void);
 extern void dummy_alert_led_wifi(void);
 extern int dummy_alert_led_pwr(void);
 #endif
-#if defined(RTAX88U) || defined(RTAX86U)
+#if defined(RTAX88U) || defined(RTAX86U) || defined(BC109) || defined(BC105)
 extern void pcie_probe_check(void);
 #endif
 #if defined(RTCONFIG_BCM7) || defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX)
@@ -937,14 +945,17 @@ extern void update_cfe_675x();
 #if defined(RTAX58U) || defined(TUFAX3000)
 extern void update_cfe_ax58u();
 #endif
-#if defined(GTAX11000) || defined(RTAX88U)
+#if defined(GTAX11000) || defined(RTAX88U) || defined(BC109) || defined(BC105)
 extern void update_cfe_basemac();
 #endif
 #if defined(DSL_AX82U)
 extern void update_misc1();
 extern void update_cfe_ax82u();
 #endif
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
+#ifdef GTAX6000
+extern void update_cfe_ax6000();
+#endif
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
 extern void wan_phy_led_pinmux(int force);
 #endif
 #if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
@@ -1022,6 +1033,9 @@ extern void dump_WlGetDriverCfg();
 #ifdef RTCONFIG_HND_ROUTER_AX
 extern void dfs_cac_check(void);
 #endif
+#ifdef GT10
+extern void gt10_nvram_convert();
+#endif
 #ifdef RTCONFIG_RGBLED
 extern int setRogRGBLedTest(int RGB);
 #endif
@@ -1038,15 +1052,26 @@ extern void config_obw_off();
 extern void set_owe_transition_bss_enabled(int unit, int subunit);
 #endif
 
-#if defined(CONFIG_BCMWL5) && defined(HND_ROUTER)
+#ifdef RTCONFIG_HND_ROUTER_AX
 /* GPY211 WAR */
 extern void GPY211_INIT_SPEED();
-extern void GPY211_WAN_SPEED();
+extern void GPY211_SPEED_WAR_1G();
+extern void GPY211_SPEED_WAR_AUTO();
+extern void GPY211_WAR_ANEG();
 extern void reset_ext_phy();
+extern int GPY211_ext_phy_model(void);
+extern int gpy211_monitor_main(int argc, char **argv);
+extern void stop_gpy211_monitor();
+extern void start_gpy211_monitor();
+
+/* ifname for war */
+#if defined(XT12) || defined(ET12)
+#define GPY211_IFNAME "eth3"
+#else
+#define GPY211_IFNAME "eth0"
 #endif
 
-#if defined(HND_ROUTER)
-int GPY211_ext_phy_model(void);
+extern int hnd_boardid_cmp();
 #endif
 
 #if defined(RTCONFIG_MULTISERVICE_WAN)
@@ -1545,6 +1570,7 @@ extern int pc_block_main(int argc, char *argv[]);
 extern void config_blocking_redirect(FILE *fp);
 #ifdef RTCONFIG_PC_REWARD
 extern void config_pc_reward_redirect(FILE *fp);
+extern int is_in_pc_reward_period(char *mac);
 #endif
 #ifdef RTCONFIG_ISP_OPTUS
 // For optus customization
@@ -1604,6 +1630,7 @@ extern int vpnc_ovpn_route_pre_down_main(int argc, char **argv);
 extern int change_default_wan_as_vpnc_updown(const int unit, const int up);
 extern int vpnc_up(const int unit, const char *vpnc_ifname);
 extern void vpnc_down(const int vpnc_idx, char *vpnc_ifname);
+extern int update_default_routing_rule();
 extern int clean_routing_rule_by_vpnc_idx(const int vpnc_idx);
 extern int clean_vpnc_setting_value(const int vpnc_idx);
 #else
@@ -2235,33 +2262,9 @@ extern void add_ip6_lanaddr(void);
 extern void start_ipv6_tunnel(void);
 extern void stop_ipv6_tunnel(void);
 #ifdef RTCONFIG_SOFTWIRE46
+#define S46_MAP_PATH	"/tmp/v6maps.%d"
 #define S46_LOG_PATH	"/jffs/s46.log"
-extern void set_s46_ra_addr(int wan_type, char *wan_ifname);
-extern int s46_mapcalc(int wan_proto, char *rules, char *peerbuf, size_t peerbufsz,
-	char *addr6buf, size_t addr6bufsz, char *addr4buf, size_t addr4bufsz,
-	int *poffset, int *ppsidlen, int *ppsid, char **fmrs, int draft);
-extern void start_s46_tunnel(int unit);
-extern void stop_s46_tunnel(int unit, int unload);
-extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
-//s46comm.c
-extern void s46print(const char *logpath, const char *format, ...);
-#define S46_DBG(fmt, args...) \
-	do { \
-		s46print(S46_LOG_PATH, "[%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
-	} while(0)
-extern void fmrs2file(char *path);
-extern int ce_dad_check(void);
-extern char *calc_s46_port_range(int usable, int psid, int psidlen, int offset, char *ret, int retsz);
-// v6plusd.c
-extern int s46_jpne_hgw(void);
-extern char *s46_jpne_maprules(char *id, char *idbuf, size_t idlen, long *rsp_code);
-extern void s46_jpne_report(char *id, int act, int reason);
-extern int s46_mapcalc_chcek(char *id, char *rules, int draft);
-extern int v6plusd_main(int argc, char **argv);
-extern int check_v6plusd();
-extern void start_v6plusd(void);
-extern void stop_v6plusd(void);
-extern void restart_v6plusd(void);
+#define S46_RETRY_TIME	3
 enum S46_MAPSVR_STATE {
 	S46_MAPSVR_INIT			= 0,
 	S46_MAPSVR_OK			= 1,
@@ -2270,6 +2273,43 @@ enum S46_MAPSVR_STATE {
 	S46_MAPSVR_NO_RESPONSE		= 4,
 	S46_MAPSVR_MAX
 };
+extern void set_s46_ra_addr(int wan_unit, int wan_type, char *wan_ifname);
+extern int s46_mapcalc(int wan_unit, int wan_proto, char *rules, char *peerbuf, size_t peerbufsz,
+		       char *addr6buf, size_t addr6bufsz, char *addr4buf, size_t addr4bufsz,
+		       int *poffset, int *ppsidlen, int *ppsid, char **fmrs, int draft);
+extern void start_s46_tunnel(int unit);
+extern void stop_s46_tunnel(int unit, int unload);
+extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
+
+extern void s46reset(int unit);
+extern void start_v6plusd(int unit);
+extern void stop_v6plusd(int unit);
+extern void restart_v6plusd(int unit);
+extern void start_ocnvcd(int unit);
+extern void stop_ocnvcd(int unit);
+extern void restart_ocnvcd(int unit);
+//s46comm.c
+extern void s46print(const char *logpath, const char *format, ...);
+#define S46_DBG(fmt, args...) \
+	do { \
+		s46print(S46_LOG_PATH, "[%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
+	} while(0)
+extern int _nvram_check(const char *name, const char *value);
+extern int _nvram_set_check(const char *name, const char *value);
+extern void fmrs2file(int unit);
+extern int ce_dad_check(int unit);
+extern int s46_ntt_hgw(int unit);
+extern char *calc_s46_port_range(int usable, int psid, int psidlen, int offset, char *ret, int retsz);
+// v6plusd.c
+#define V6PLUSD_PIDFILE "/var/run/v6plusd.%d.pid"
+extern char *s46_jpne_maprules(char *id, char *idbuf, size_t idlen, long *rsp_code);
+extern int check_v6plusd(int unit);
+extern int v6plusd_main(int argc, char **argv);
+// ocnvcd.c
+#define OCNVCD_PIDFILE "/var/run/ocnvcd.%d.pid"
+extern char *s46_ocn_maprules(char *v6perfix, int prefixlen, long *rsp_code);
+extern int check_ocnvcd(int unit);
+extern int ocnvcd_main(int argc, char **argv);
 #endif
 extern void start_rdisc6(void);
 extern void stop_rdisc6(void);
@@ -2668,6 +2708,16 @@ void stop_plc_master(void);
 #endif	/* RTCONFIG_QCA_PLC2 */
 void stop_amas_service(void);
 void start_amas_service(void);
+#if defined(RTCONFIG_AMAS_CENTRAL_ADS)
+void get_datarate_rssi(char *wlif_name, char *mac, struct ads_info *ads_info_out);
+int check_sta_status_by_mac(char *ifname, char *mac);
+int switch_diversity_state();
+void start_ds_measure();
+void handle_ds_switch(int role);
+void handle_ds_measure(void);
+void monitor_ds_sta_status();
+void monitor_ds_ap_status();
+#endif
 #endif /* RTCONFIG_AMAS */
 #endif	/* RTCONFIG_WIRELESSREPEATER */
 #if defined(RTCONFIG_QCA_LBD)
@@ -2949,6 +2999,7 @@ extern char* wgn_guest_lan_netmask(const char *guest_wlif, char *result, size_t 
 
 #ifdef RTCONFIG_AMAS
 extern void init_amas_subunit(void);
+extern int get_wifi_country_code_tmp(char *ori_countrycode, char *output, int len);
 #endif
 
 // traffic_limiter.c
@@ -3094,6 +3145,11 @@ extern void stop_hapdevent(void);
 #ifdef RTCONFIG_AWSIOT
 extern int start_awsiot(void);
 extern void stop_awsiot(void);
+#endif
+
+#ifdef RTCONFIG_DNSQUERY_INTERCEPT
+extern int start_dnsqd(void);
+extern void stop_dnsqd(void);
 #endif
 
 
@@ -3278,6 +3334,7 @@ extern int oauth_google_send_message(const char* receiver, const char* subject, 
 extern void oauth_google_check_token_status(void);
 extern void oauth_google_drive_check_token_status(void);
 #endif
+extern void dump_mactable();
 
 #if defined(RTCONFIG_QCA_LBD)
 #define LBD_PATH "/tmp/lbd.conf"
@@ -3311,7 +3368,7 @@ typedef struct probe_4366_param_s {
 void envram_dump_factory_data();
 #endif /* RTCONFIG_BCM_7114 || HND_ROUTER */
 
-#if defined(RTAX88U)
+#if defined(RTAX88U) || defined(BC109) || defined(BC105)
 typedef struct probe_PCIE_param_s {
 	int bPCIE_down;
 } probe_PCIE_param_t;
@@ -3418,6 +3475,8 @@ extern int write_wgc_resolv_dnsmasq(FILE* fp_servers);
 extern void write_wgs_dnsmasq_config(FILE* fp);
 extern void run_wgs_fw_scripts();
 extern void run_wgc_fw_scripts();
+extern void run_wgs_fw_nat_scripts();
+extern void run_wgc_fw_nat_scripts();
 extern int is_wg_enabled();
 extern void check_wgc_endpoint();
 #if 0	// Moved to vpn_utils.h

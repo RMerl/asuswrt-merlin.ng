@@ -789,7 +789,8 @@ int board_ioctl( struct inode *inode, struct file *flip,
     case BOARD_IOCTL_GET_GPIO:
        if (copy_from_user((void*)&ctrlParms, (void*)arg, sizeof(ctrlParms)) == 0) {
            ctrlParms.offset = kerSysGetGpioValue(ctrlParms.strLen);
-            __copy_to_user((BOARD_IOCTL_PARMS*)arg, &ctrlParms, sizeof(BOARD_IOCTL_PARMS));
+	   //printk(KERN_INFO "io:GET_GPIO: get val(%d) from pa(%d), gpio_num_max=%d\n", ctrlParms.offset, ctrlParms.strLen, GPIO_NUM_MAX);
+           __copy_to_user((BOARD_IOCTL_PARMS*)arg, &ctrlParms, sizeof(BOARD_IOCTL_PARMS));
             ret = 0;
         }
         else {

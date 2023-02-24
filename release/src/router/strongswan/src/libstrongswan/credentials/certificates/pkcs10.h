@@ -1,6 +1,7 @@
 /*
- * Copyright (C) 2009 Andreas Steffen
- * HSR Hochschule fuer Technik Rapperswil
+ * Copyright (C) 2009-2022 Andreas Steffen
+ *
+ * Copyright (C) secunet Security Networks AG
  *
  * This program is free software; you can redistribute it and/or modify it
  * under the terms of the GNU General Public License as published by the
@@ -20,6 +21,8 @@
 
 #ifndef PKCS10_H_
 #define PKCS10_H_
+
+#include "x509.h"
 
 #include <collections/enumerator.h>
 #include <credentials/certificates/certificate.h>
@@ -46,12 +49,29 @@ struct pkcs10_t {
 	 */
 	chunk_t (*get_challengePassword)(pkcs10_t *this);
 
+    /**
+     * Get Extended Key Usage (EKU) flags
+     *
+     * @return          EKU flags
+     */
+    x509_flag_t (*get_flags)(pkcs10_t *this);
+
 	/**
-	 * Get.
+	 * Get subjectAltNames
 	 *
 	 * @return			enumerator over subjectAltNames as identification_t*
 	 */
 	enumerator_t* (*create_subjectAltName_enumerator)(pkcs10_t *this);
+
+    /**
+     * Replace the public key and private key signature
+     *
+     * @param private   new private key to be used
+     * @param scheme    signature scheme
+     * @param password  optionally set new password
+     */
+    certificate_t* (*replace_key)(pkcs10_t *this, private_key_t *private,
+                    signature_params_t *scheme, chunk_t password);
 };
 
 #endif /** PKCS10_H_ @}*/

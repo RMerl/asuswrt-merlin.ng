@@ -1857,7 +1857,7 @@ getWscStatusStr_qtn(int unit)
 	ret = rpc_qcsapi_wps_get_state(WIFINAME, wps_state, sizeof(wps_state));
 	if (ret < 0)
 		dbG("rpc_qcsapi_wps_get_state %s error, return: %d\n", WIFINAME, ret);
-	else if (sscanf(wps_state, "%d %s", &state, state_str) != 2)
+	else if (sscanf(wps_state, "%d %31s", &state, state_str) != 2)
 		dbG("prase wps state error!\n");
 
 	switch (state) {

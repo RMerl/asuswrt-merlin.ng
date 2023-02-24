@@ -139,8 +139,8 @@ int json_support = 0;
 char wl_band_list[8][8] = {{0}};
 char HTTPD_LOGIN_FAIL_LAN[32] = {0};
 char HTTPD_LOGIN_FAIL_WAN[32] = {0};
-char HTTPD_LAST_LOGIN_TS[32] = {0};
-char HTTPD_LAST_LOGIN_TS_W[32] = {0};
+char HTTPD_LAST_LOGIN_FAIL_TS[32] = {0};
+char HTTPD_LAST_LOGIN_FAIL_TS_W[32] = {0};
 char CAPTCHA_FAIL_NUM[32] = {0};
 char HTTPD_LOCK_NUM[32] = {0};
 char pidfile[32];
@@ -304,7 +304,6 @@ time_t request_timestamp = 0;
 time_t turn_off_auth_timestamp = 0;
 int temp_turn_off_auth = 0;	// for QISxxx.htm pages
 
-int amas_support = 0;
 int HTS = 0;	//HTTP Transport Security
 
 struct timeval alarm_tv;
@@ -528,14 +527,14 @@ send_login_page(int fromapp_flag, int error_status, char* url, char* file, int l
 			int httpd_login_fail_lan_t = nvram_get_int(HTTPD_LOGIN_FAIL_LAN);
 			nvram_set_int(HTTPD_LOGIN_FAIL_LAN, ++httpd_login_fail_lan_t);
 			if(error_status != LOGINLOCK)
-				nvram_set_int(HTTPD_LAST_LOGIN_TS, login_timestamp_tmp);
+				nvram_set_int(HTTPD_LAST_LOGIN_FAIL_TS, login_timestamp_tmp);
 		}
 		else
 		{
 			int httpd_login_fail_wan_t = nvram_get_int(HTTPD_LOGIN_FAIL_WAN);
 			nvram_set_int(HTTPD_LOGIN_FAIL_WAN, ++httpd_login_fail_wan_t);
 			if(error_status != LOGINLOCK)
-				nvram_set_int(HTTPD_LAST_LOGIN_TS_W, login_timestamp_tmp_wan);
+				nvram_set_int(HTTPD_LAST_LOGIN_FAIL_TS_W, login_timestamp_tmp_wan);
 		}
 	}
 
@@ -638,30 +637,35 @@ send_headers( int status, char* title, char* extra_header, char* mime_type, int 
     (void) fprintf( conn_fp, "x-frame-options: SAMEORIGIN\r\n");
     (void) fprintf( conn_fp, "x-xss-protection: 1; mode=block\r\n");
 
-    if (fromapp != 0){
-	(void) fprintf( conn_fp, "Cache-Control: no-store\r\n");	
-	(void) fprintf( conn_fp, "Pragma: no-cache\r\n");
-	if(fromapp == FROM_DUTUtil){
-		(void) fprintf( conn_fp, "AiHOMEAPILevel: %d\r\n", EXTEND_AIHOME_API_LEVEL );
-		(void) fprintf( conn_fp, "Httpd_AiHome_Ver: %d\r\n", EXTEND_HTTPD_AIHOME_VER );
-		(void) fprintf( conn_fp, "Model_Name: %s\r\n", get_productid() );
-	}else if(fromapp == FROM_ASSIA){
-		(void) fprintf( conn_fp, "ASSIA_API_Level: %d\r\n", EXTEND_ASSIA_API_LEVEL );
-	}
+     if (fromapp != 0){
+		if(fromapp == FROM_DUTUtil || fromapp == FROM_MyASUS){
+			(void) fprintf( conn_fp, "AiHOMEAPILevel: %d\r\n", EXTEND_AIHOME_API_LEVEL );
+			(void) fprintf( conn_fp, "Httpd_AiHome_Ver: %d\r\n", EXTEND_HTTPD_AIHOME_VER );
+			(void) fprintf( conn_fp, "Model_Name: %s\r\n", get_productid() );
+		}else if(fromapp == FROM_ASSIA){
+			(void) fprintf( conn_fp, "ASSIA_API_Level: %d\r\n", EXTEND_ASSIA_API_LEVEL );
+		}
     }
+
     now = time( (time_t*) 0 );
     (void) strftime( timebuf, sizeof(timebuf), RFC1123FMT, gmtime( &now ) );
     (void) fprintf( conn_fp, "Date: %s\r\n", timebuf );
-    if ( extra_header != (char*) 0 )
-	(void) fprintf( conn_fp, "%s\r\n", extra_header );
-    if ( mime_type != (char*) 0 ){
-	if(fromapp != FROM_BROWSER && fromapp != FROM_WebView)
-		(void) fprintf( conn_fp, "Content-Type: %s\r\n", "application/json;charset=UTF-8" );		
-	else
-		(void) fprintf( conn_fp, "Content-Type: %s\r\n", mime_type );
-    }
 
-    (void) fprintf( conn_fp, "Connection: close\r\n" );
+	if ( extra_header != (char*) 0 ){
+		if(!strcmp(extra_header, cache_object) && fromapp != 0){
+			extra_header = cache_long_object;
+		}
+		(void) fprintf( conn_fp, "%s\r\n", extra_header );
+	}
+
+	if ( mime_type != (char*) 0 ){
+		if(fromapp != FROM_BROWSER && fromapp != FROM_WebView)
+			(void) fprintf( conn_fp, "Content-Type: %s\r\n", "application/json;charset=UTF-8" );
+		else
+			(void) fprintf( conn_fp, "Content-Type: %s\r\n", mime_type );
+	}
+
+	(void) fprintf( conn_fp, "Connection: close\r\n" );
 	
 	if ( request_content_range!=NULL && strncasecmp( request_content_range, "bytes=", 6 ) == 0 ) {
 		//- ex. bytes=0-123
@@ -703,7 +707,7 @@ send_token_headers( int status, char* title, char* extra_header, char* mime_type
 
     (void) fprintf( conn_fp, "%s %d %s\r\n", PROTOCOL, status, title );
     (void) fprintf( conn_fp, "Server: %s\r\n", SERVER_NAME );
-    if(fromapp == FROM_DUTUtil){
+    if(fromapp == FROM_DUTUtil || fromapp == FROM_MyASUS){
 	(void) fprintf( conn_fp, "AiHOMEAPILevel: %d\r\n", EXTEND_AIHOME_API_LEVEL );
 	(void) fprintf( conn_fp, "Httpd_AiHome_Ver: %d\r\n", EXTEND_HTTPD_AIHOME_VER );
 	(void) fprintf( conn_fp, "Model_Name: %s\r\n", get_productid() );
@@ -2327,7 +2331,15 @@ void check_alive()
 		check_alive_count = 0;
 	}
 	else if(check_alive_count > 20){
+		struct in_addr ip_addr, temp_ip_addr, app_temp_ip_addr;
+		ip_addr.s_addr = login_ip;
+		app_temp_ip_addr.s_addr = app_login_ip;
+		temp_ip_addr.s_addr = login_ip_tmp;
+		//dbg("slow_post_read_count(%d) > 3\n", slow_post_read_count);
+		HTTPD_FB_DEBUG("login_ip = %s(%lu), app_login_ip = %s(%lu)\n", inet_ntoa(ip_addr), login_ip, inet_ntoa(app_temp_ip_addr), app_login_ip);
+		HTTPD_FB_DEBUG("login_ip_tmp = %s(%lu), url = %s\n", inet_ntoa(temp_ip_addr), login_ip_tmp, url);
 		logmessage("HTTPD", "waitting 10 minitues and restart\n");
+		check_lock_state();
 		notify_rc("restart_httpd");
 	}
 	else{
@@ -2428,6 +2440,7 @@ int main(int argc, char **argv)
 	//websSetVer();
 	//2008.08 magic
 	nvram_unset("login_timestamp");
+	nvram_unset("app_login_timestamp");
 	nvram_unset("login_ip"); /* IPv6 compat */
 	nvram_unset("login_ip_str");
 
@@ -2493,10 +2506,8 @@ int main(int argc, char **argv)
 
 	/* handler global variable */
 	get_index_page(indexpage, sizeof(indexpage));
-	get_wl_nband_list();
-#if defined(RTCONFIG_SW_HW_AUTH) && defined(RTCONFIG_AMAS)
-	amas_support = getAmasSupportMode();
-#endif
+	gen_wl_nband_array();
+
 	if(nvram_get_int("x_Setting") == 0){
 		save_ui_support_to_file();
 		save_iptvSettings_to_file();
@@ -2511,8 +2522,8 @@ int main(int argc, char **argv)
 	if(do_ssl){
 		strlcpy(HTTPD_LOGIN_FAIL_LAN, "httpds_login_fail_lan", sizeof(HTTPD_LOGIN_FAIL_LAN));
 		strlcpy(HTTPD_LOGIN_FAIL_WAN, "httpds_login_fail_wan", sizeof(HTTPD_LOGIN_FAIL_WAN));
-		strlcpy(HTTPD_LAST_LOGIN_TS, "httpds_last_login_ts", sizeof(HTTPD_LAST_LOGIN_TS));
-		strlcpy(HTTPD_LAST_LOGIN_TS_W, "httpds_last_login_ts_w", sizeof(HTTPD_LAST_LOGIN_TS_W));
+		strlcpy(HTTPD_LAST_LOGIN_FAIL_TS, "httpds_last_login_fail_ts", sizeof(HTTPD_LAST_LOGIN_FAIL_TS));
+		strlcpy(HTTPD_LAST_LOGIN_FAIL_TS_W, "httpds_last_login_fail_ts_w", sizeof(HTTPD_LAST_LOGIN_FAIL_TS_W));
 		strlcpy(CAPTCHA_FAIL_NUM, "httpds_captcha_fail_num", sizeof(CAPTCHA_FAIL_NUM));
 		strlcpy(HTTPD_LOCK_NUM, "httpds_lock_num", sizeof(HTTPD_LOCK_NUM));
 	}
@@ -2521,8 +2532,8 @@ int main(int argc, char **argv)
 	{
 		strlcpy(HTTPD_LOGIN_FAIL_LAN, "httpd_login_fail_lan", sizeof(HTTPD_LOGIN_FAIL_LAN));
 		strlcpy(HTTPD_LOGIN_FAIL_WAN, "httpd_login_fail_wan", sizeof(HTTPD_LOGIN_FAIL_WAN));
-		strlcpy(HTTPD_LAST_LOGIN_TS, "httpd_last_login_ts", sizeof(HTTPD_LAST_LOGIN_TS));
-		strlcpy(HTTPD_LAST_LOGIN_TS_W, "httpd_last_login_ts_w", sizeof(HTTPD_LAST_LOGIN_TS_W));
+		strlcpy(HTTPD_LAST_LOGIN_FAIL_TS, "httpd_last_login_fail_ts", sizeof(HTTPD_LAST_LOGIN_FAIL_TS));
+		strlcpy(HTTPD_LAST_LOGIN_FAIL_TS_W, "httpd_last_login_fail_ts_w", sizeof(HTTPD_LAST_LOGIN_FAIL_TS_W));
 		strlcpy(CAPTCHA_FAIL_NUM, "httpd_captcha_fail_num", sizeof(CAPTCHA_FAIL_NUM));
 		strlcpy(HTTPD_LOCK_NUM, "httpd_lock_num", sizeof(HTTPD_LOCK_NUM));
 	}

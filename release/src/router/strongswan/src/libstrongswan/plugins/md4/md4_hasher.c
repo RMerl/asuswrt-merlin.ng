@@ -1,7 +1,6 @@
 /*
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
- * HSR Hochschule fuer Technik Rapperswil
  * Copyright (C) 1990-1992, RSA Data Security, Inc. Created 1990.
  * All rights reserved.
  *

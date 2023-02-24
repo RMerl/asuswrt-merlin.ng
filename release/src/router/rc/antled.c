@@ -286,7 +286,7 @@ static int wl_rssi(int *rssi_export)
 							ANTLED_PRINT("UNIT: %d, MAC: %s, RSSI: %d\n", unit, ether_etoa((void *)&auth->ea[i], ea), rssi_sta);
 							if (sta->flags & WL_STA_SCBSTATS) {
 								for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
-									if (!unit)
+									if (unit == WL_2G_BAND)
 										rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 									else
 										rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);
@@ -324,7 +324,7 @@ static int wl_rssi(int *rssi_export)
 					ANTLED_PRINT("UNIT: %d, MAC: %s, RSSI: %d\n", unit, ether_etoa((void *)&auth->ea[i], ea), rssi_sta);
 					if (sta->flags & WL_STA_SCBSTATS) {
 						for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
-							if (!unit)
+							if (unit == WL_2G_BAND)
 								rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 							else
 								rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);
@@ -471,7 +471,7 @@ static int wl_rssi(int *rssi_export)
 								ANTLED_PRINT("UNIT: %d, MAC: %s, RSSI: %d\n", unit, ether_etoa((void *)&auth->ea[i], ea), rssi_sta);
 								if (sta->flags & WL_STA_SCBSTATS) {
 									for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
-										if (!unit)
+										if (unit == WL_2G_BAND)
 											rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 										else
 											rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);
@@ -509,7 +509,7 @@ static int wl_rssi(int *rssi_export)
 						ANTLED_PRINT("UNIT: d, MAC: %s, RSSI: %d\n", unit, ether_etoa((void *)&auth->ea[ii], ea), rssi_sta);
 						if (sta->flags & WL_STA_SCBSTATS) {
 							for (ii = WL_ANT_IDX_1; ii < WL_RSSI_ANT_MAX; ii++) {
-								if (!unit)
+								if (unit == WL_2G_BAND)
 									rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[ii]);
 								else
 									rssi_export[ii] = dtoh32(sta->rx_lastpkt_rssi[3 - ii]);

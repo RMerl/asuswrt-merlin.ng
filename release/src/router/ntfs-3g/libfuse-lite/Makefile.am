@@ -7,6 +7,10 @@ endif
 
 libfuse_lite_la_CFLAGS=			  \
 	$(AM_CFLAGS) 			  \
+	$(LIBFUSE_LITE_CFLAGS)
+
+libfuse_lite_la_CPPFLAGS=		  \
+	$(AM_CPPFLAGS) 			  \
 	-I$(top_srcdir)/include/fuse-lite
 
 libfuse_lite_la_LIBADD  = $(LIBFUSE_LITE_LIBS)
@@ -26,3 +30,5 @@ libfuse_lite_la_SOURCES =	\
 	mount.c 		\
 	mount_util.c 		\
 	mount_util.h
+
+libs:	libfuse-lite.la

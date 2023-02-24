@@ -1316,13 +1316,10 @@ void stop_wgc(int unit)
 #endif
 	_wg_client_ep_route_del(prefix, table);
 
-	// VPNDirector - flushing table and removing bypass
+	// VPNDirector - flushing table
 	amvpn_clear_routing_rules(unit, VPNDIR_PROTO_WIREGUARD);
 	snprintf(buffer, sizeof (buffer),"/usr/sbin/ip route flush table wgc%d", unit);
 	system(buffer);
-
-	// VPNDirector - refresh blog bypass
-	amvpn_refresh_wg_bypass_rules();
 
 	/// dns
 	snprintf(path, sizeof(path), "%s/resolv_%s.dnsmasq", WG_DIR_CONF, ifname);

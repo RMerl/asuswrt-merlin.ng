@@ -16,6 +16,14 @@ touch /var/run/gencert.pid
 
 OPENSSL_CONF="/etc/openssl.config"
 
+
+add_san() {
+echo $1
+echo $OPENSSL_CONF
+	sed -i "/\[alt_names\]/a$1" $OPENSSL_CONF
+}
+
+
 cp -L /etc/ssl/openssl.cnf $OPENSSL_CONF
 
 LANCN=$(nvram get https_crt_cn)
@@ -34,23 +42,18 @@ sed -i "/\[ v3_ca \]/aextendedKeyUsage = serverAuth" $OPENSSL_CONF
 # Start of SAN extensions
 sed -i "/\[ CA_default \]/acopy_extensions = copy" $OPENSSL_CONF
 sed -i "/\[ v3_req \]/asubjectAltName = @alt_names" $OPENSSL_CONF
-echo "[alt_names]" >> $OPENSSL_CONF
 
-I=1
+I=18
 # IP
-echo "IP.1 = $LANIP" >> $OPENSSL_CONF
-echo "DNS.1 = $LANIP" >> $OPENSSL_CONF # For broken clients like IE
-I=$(($I + 1))
-
-# DUT
-echo "DNS.$I = router.asus.com" >> $OPENSSL_CONF
+add_san "IP.1 = $LANIP"
+add_san "DNS.$I = $LANIP"
 I=$(($I + 1))
 
 # User-defined SANs (if we have any)
 if [ "$LANCN" != "" ]
 then
 	for CN in $LANCN; do
-		echo "DNS.$I = $CN" >> $OPENSSL_CONF
+		add_san "DNS.$I = $CN"
 		I=$(($I + 1))
 	done
 fi
@@ -62,24 +65,24 @@ LANHOSTNAME=$(nvram get lan_hostname)
 
 if [ "$COMPUTERNAME" != "" ]
 then
-	echo "DNS.$I = $COMPUTERNAME" >> $OPENSSL_CONF
+	add_san "DNS.$I = $COMPUTERNAME"
 	I=$(($I + 1))
 
 	if [ "$LANDOMAIN" != "" ]
 	then
-		echo "DNS.$I = $COMPUTERNAME.$LANDOMAIN" >> $OPENSSL_CONF
+		add_san "DNS.$I = $COMPUTERNAME.$LANDOMAIN"
 		I=$(($I + 1))
 	fi
 fi
 
 if [ "$LANHOSTNAME" != "" -a "$COMPUTERNAME" != "$LANHOSTNAME" ]
 then
-	echo "DNS.$I = $LANHOSTNAME" >> $OPENSSL_CONF
+	add_san "DNS.$I = $LANHOSTNAME"
 	I=$(($I + 1))
 
 	if [ "$LANDOMAIN" != "" ]
 	then
-		echo "DNS.$I = $LANHOSTNAME.$LANDOMAIN" >> $OPENSSL_CONF
+		add_san "DNS.$I = $LANHOSTNAME.$LANDOMAIN"
 		I=$(($I + 1))
 	fi
 fi
@@ -94,10 +97,10 @@ if [ "$(nvram get ddns_enable_x)" == "1" -a "$DDNSSERVER" != "WWW.DNSOMATIC.COM"
 then
 	if [ "$DDNSSERVER" == "WWW.NAMECHEAP.COM" -a "$DDNSUSER" != "" ]
 	then
-		echo "DNS.$I = $DDNSHOSTNAME.$DDNSUSER" >> $OPENSSL_CONF
+		add_san "DNS.$I = $DDNSHOSTNAME.$DDNSUSER"
 		I=$(($I + 1))
 	else
-		echo "DNS.$I = $DDNSHOSTNAME" >> $OPENSSL_CONF
+		add_san "DNS.$I = $DDNSHOSTNAME"
 		I=$(($I + 1))
 	fi
 fi

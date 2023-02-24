@@ -26,7 +26,8 @@ export GREP="grep"
 # This variable should point to
 # the openssl.cnf file included
 # with easy-rsa.
-export KEY_CONFIG=`$EASY_RSA/whichopensslcnf $EASY_RSA`
+#export KEY_CONFIG=`$EASY_RSA/whichopensslcnf $EASY_RSA`
+export KEY_CONFIG="$EASY_RSA/openssl-1.0.0.cnf"
 
 # Edit this variable to point to
 # your soon-to-be-created key

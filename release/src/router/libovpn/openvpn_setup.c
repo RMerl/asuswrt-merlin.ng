@@ -966,12 +966,9 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 	FILE *fp;
 
 	sprintf(filename, "/etc/openvpn/client%d/fw.sh", unit);
-
 	fp = fopen(filename, "w");
 	if (!fp)
 		return;
-
-	chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
 
 	fprintf(fp, "#!/bin/sh\n");
 	fprintf(fp, "iptables -I OVPNCF -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
@@ -992,9 +989,6 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 		ipt_account(fp, cconf->if_name);
 	}
 #endif
-	if (cconf->nat) {
-		fprintf(fp, "iptables -t nat -I POSTROUTING -o %s -j MASQUERADE\n", cconf->if_name);
-	}
 	// Disable rp_filter when in policy mode - firewall restart would re-enable it
 	if (cconf->redirect_gateway >= OVPN_RGW_POLICY) {
 		fprintf(fp, "for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do\n"); /* */
@@ -1005,13 +999,33 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 	fclose(fp);
 	chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
 	eval(filename);
+
+	if (cconf->nat) {
+		sprintf(filename, "/etc/openvpn/client%d/fw_nat.sh", unit);
+
+		fp = fopen(filename, "w");
+		if (!fp)
+			return;
+
+		fprintf(fp, "#!/bin/sh\n");
+		fprintf(fp, "iptables -t nat -I POSTROUTING -o %s -j MASQUERADE\n", cconf->if_name);
+
+		fclose(fp);
+		chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
+		eval(filename);
+	}
 }
+
 
 void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 	char buffer[64], buffer2[64], filename[32];
-	char wan6_ifname[32] = {0};
+	char wan6_ifname[32] = {0}, proto[4];
 	int i;
 	FILE *fp;
+
+	strlcpy(proto, sconf->proto, 3);
+	if (strcmp(proto, "udp") && strcmp(proto,"tcp"))
+		return;
 
 	// Create firewall rules
 	sprintf(filename, "/etc/openvpn/server%d/fw.sh", unit);
@@ -1019,14 +1033,10 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 	if (!fp)
 		return;
 
-	fprintf(fp, "#!/bin/sh\n");
-	strlcpy(buffer, sconf->proto, sizeof (buffer));
-	fprintf(fp, "iptables -t nat -I PREROUTING -p %s --dport %d -j ACCEPT\n", strtok(buffer, "-"), sconf->port);
-	strlcpy(buffer, sconf->proto, sizeof (buffer));
-	fprintf(fp, "iptables -I OVPNSI -p %s --dport %d -j ACCEPT\n", strtok(buffer, "-"), sconf->port);
+	fprintf(fp, "iptables -I OVPNSI -p %s --dport %d -j ACCEPT\n", proto, sconf->port);
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled())
-		fprintf(fp, "ip6tables -I OVPNSI -p %s --dport %d -j ACCEPT\n", strtok(buffer, "-"), sconf->port);
+		fprintf(fp, "ip6tables -I OVPNSI -p %s --dport %d -j ACCEPT\n", proto, sconf->port);
 #endif
 
 	if (sconf->push_lan == OVPN_CLT_ACCESS_WAN) {
@@ -1107,16 +1117,6 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 #endif
 	}
 
-#ifdef RTCONFIG_IPV6
-#ifdef HND_ROUTER
-	strlcpy(wan6_ifname, get_wan6_ifname(wan_primary_ifunit()), sizeof(wan6_ifname));
-
-	if (ipv6_enabled() && sconf->ipv6_enable && sconf->nat6)
-		fprintf(fp, "ip6tables -t nat -I POSTROUTING -s %s -o %s -j MASQUERADE\n",
-			sconf->network6, wan6_ifname);
-#endif
-#endif
-
 #if !defined(HND_ROUTER)
 	if (nvram_match("cstats_enable", "1")) {
 		ipt_account(fp, sconf->if_name);
@@ -1125,7 +1125,28 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 	fclose(fp);
 	chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
 	eval(filename);
+
+	sprintf(filename, "/etc/openvpn/server%d/fw_nat.sh", unit);
+	fp = fopen(filename, "w");
+	if (!fp)
+		return;
+
+	fprintf(fp, "#!/bin/sh\n");
+	fprintf(fp, "iptables -t nat -I PREROUTING -p %s --dport %d -j ACCEPT\n", proto, sconf->port);
+
+#if defined(RTCONFIG_IPV6) && defined(HND_ROUTER)
+        if (ipv6_enabled() && sconf->ipv6_enable && sconf->nat6) {
+		strlcpy(wan6_ifname, get_wan6_ifname(wan_primary_ifunit()), sizeof(wan6_ifname));
+		fprintf(fp, "ip6tables -t nat -I POSTROUTING -s %s -o %s -j MASQUERADE\n",
+		        sconf->network6, wan6_ifname);
+	}
+#endif
+
+	fclose(fp);
+	chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
+	eval(filename);
 }
+
 
 void ovpn_setup_server_watchdog(ovpn_sconf_t *sconf, int unit) {
 	char buffer[64], buffer2[64];

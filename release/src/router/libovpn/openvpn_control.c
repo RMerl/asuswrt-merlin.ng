@@ -156,6 +156,24 @@ void ovpn_run_fw_scripts(){
 		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/fw.sh", unit);
 		if (f_exists(buffer))
 			eval(buffer);
+	}
+}
+
+void ovpn_run_fw_nat_scripts(){
+	char buffer[64];
+	int unit;
+
+	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
+		snprintf(buffer, sizeof(buffer), "/etc/openvpn/server%d/fw_nat.sh", unit);
+		if (f_exists(buffer))
+			eval(buffer);
+	}
+
+	// Reverse order because of DNSVPN rules
+	for (unit = OVPN_CLIENT_MAX; unit > 0; unit--) {
+		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/fw_nat.sh", unit);
+		if (f_exists(buffer))
+			eval(buffer);
 
 		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/dns.sh", unit);
 		if (f_exists(buffer))

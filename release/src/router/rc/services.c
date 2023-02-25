@@ -19176,9 +19176,9 @@ _dprintf("nat_rule: the nat rule file was not ready. wait %d seconds...\n", retr
 	_dprintf("%s: apply the nat_rules (%s) state %d ret %d\n", __FUNCTION__, fn, nat_state, ret);
 	rule_apply_checking("services", __LINE__, NAT_RULES, ret);
 
-//#ifdef RTCONFIG_OPENVPN
-//	run_ovpn_fw_nat_scripts();
-//#endif
+#ifdef RTCONFIG_OPENVPN
+	ovpn_run_fw_nat_scripts();
+#endif
 #ifdef RTCONFIG_WIREGUARD
 	run_wgs_fw_nat_scripts();
 	run_wgc_fw_nat_scripts();

@@ -1,7 +1,8 @@
 Asuswrt-Merlin Changelog
 ========================
 
-388.2 (x-xxx-2023)
+388.2 (xx-xxx-2023)
+  - NEW: Merged with GPL 388_22525.
   - NEW: Added Site Survey page under Network Tools tab.
          This is the same network scan that is available
          for pre-HND models, with Wifi 6E support added.
@@ -10,14 +11,8 @@ Asuswrt-Merlin Changelog
   - UPDATED: nettle to 3.8.1.
   - UPDATED: inadyn to 2.10.0.
   - UPDATED: dropbear to 2022.83.
-  - UPDATED: miniupnpd to 2.3.2.
-  - CHANGED: Implemented Flow Cache bypass for WireGuard
-             (backport from upstream).  WireGuard can
-             now be used with Flow Cache enabled,
-             however note that clients sent through
-             a WG tunnel in VPN Director will still not
-             be able to use Flow Cache, however other
-             non-redirected clients will.
+  - UPDATED: miniupnpd to 2.3.3.
+  - UPDATED: openssl to 1.1.1t.
   - CHANGED: moved WiFi Radar to the Network Tools tab.
   - CHANGED: Disabled auto logout on System Log and
              Wireless Log pages.

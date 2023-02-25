@@ -1,3 +1,4 @@
+buildtools/checkjffs.py
 release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/char/license/impl1
 release/src/router/bcm_flashutil/bcm_flashutil.h
 release/src/router/nt_center/lib/*.h

@@ -1697,6 +1697,24 @@ cd_end:
 
         return ret;
     }
+    case ETHTXPADGET:
+    case ETHTXPADSET:
+    {
+        if (ethctl->op == ETHTXPADSET) {
+            if (ethctl->val)
+                dev->flags |= IFF_TX_PAD;
+            else
+                dev->flags &= ~(IFF_TX_PAD);
+
+            return 0;
+        }
+        else {
+            ethctl->ret_val = dev->flags & IFF_TX_PAD;
+
+            return copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)) ? -EFAULT : 0;
+        }
+    }
+
     default:
         return -EOPNOTSUPP;
     }

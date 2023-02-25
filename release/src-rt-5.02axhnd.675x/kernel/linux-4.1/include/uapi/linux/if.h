@@ -91,6 +91,7 @@ enum net_device_flags {
 	IFF_LOWER_UP			= 1<<16, /* volatile */
 	IFF_DORMANT			= 1<<17, /* volatile */
 	IFF_ECHO			= 1<<18, /* volatile */
+	IFF_TX_PAD			= 1<<19,
 };
 
 #define IFF_UP				IFF_UP

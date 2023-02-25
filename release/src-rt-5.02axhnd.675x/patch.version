@@ -18,3 +18,13 @@ patches:
 - {csp: CS00012229410, ref: SWBCACPE-49210, chg: CL382061} # ipv6 MASQUERADE
 - {csp: CS00012241158, ref: SWBCACPE-40737, chg: CL390032} # L2TP UDP checksum
 - {csp: CS00012241158, ref: SWBCACPE-46651, chg: CL390035} # L2TP UDP checksum
+- {csp: CS00012232564, ref: SWBCACPE-48040, chg: CL395986} # Fix potential NULL pointer dereference in __skb_recv_datagram
+- {csp: CS00012242219, ref: SWBCACPE-52028, chg: CL396173} # Reduce the cpu tx delayed recycle time to improve openvpn throughput
+- {csp: CS00012246758, ref: SWBCACPE-50677, chg: CL397298} # BPM SKB recycle hook is not reset to correct BPM's recycle hook leads to random crash
+- {csp: CS00011966633, ref: SWBCACPE-50898, chg: CL400350} # BPM buffers skb shared info region is not clean when it is expected to be clean
+- {csp: CS00012246758, ref: SWBCACPE-51741, chg: CL401394} # [4908][Runner] runner congestion causing packet stuck 
+- {csp: CS00012246758, ref: SWBCACPE-53633, chg: CL421103} # workaround for the connectivity issue between 2.5Gphy and Starlink GEN2
+- {csp: CS00012262296, ref: SWBCACPE-54103, chg: CL422810} # Bypass fcache for Wireguard traffic
+- {csp: CS00012262296, ref: SWBCACPE-54103, chg: CL422924} # Bypass fcache for Wireguard traffic - part 2
+- {csp: CS00012262296, ref: SWBCACPE-54103, chg: CL423326} # Bypass fcache for Wireguard traffic - part 3
+- {csp: CS00012280058, ref: SWBCACPE-54868, chg: CL430664} # fix crash due to out of bound access caused by Bypass fcache patch for Wireguard traffic

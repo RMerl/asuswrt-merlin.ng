@@ -904,8 +904,8 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
 #if defined(CC_DROP_PRECEDENCE) || defined(DSL_DEVICES)
     bool isDpConfigured = false;
 #endif
-	uint32_t ori_mark = 0, new_mark = 0;
-
+    uint32_t ori_mark = 0, new_mark = 0;
+    uint32_t pad;
 
 	/* If Broadstream iqos enable, for WAN egress packets, need to call dev_queue_xmit */
     if (BROADSTREAM_IQOS_ENABLE() && pNBuff && DEV_ISWAN(dev)) {
@@ -1113,9 +1113,16 @@ normal_path:
 #endif
         /* TODO: data demux should happen here */
 
-        if (unlikely(len < ETH_ZLEN))
+        pad = ETH_ZLEN;
+        if ((dev->flags & IFF_TX_PAD) && (len > pad) && (len & 1)) {
+            enet_dbg_tx("port: %s tx pad enabled. len %u %u",
+                port->name, len, IS_SKBUFF_PTR(pNBuff) ? PNBUFF_2_SKBUFF(pNBuff)->len : PNBUFF_2_FKBUFF(pNBuff)->len);
+            pad = len + 1;
+        }
+
+        if (unlikely(len < pad))
         {                
-            ret = nbuff_pad(pNBuff, ETH_ZLEN - len);
+            ret = nbuff_pad(pNBuff, pad - len);
             if (unlikely(ret))
             {
                /* if skb can't pad, skb is freed on error */

@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Tue Nov 30 18:59:44 2021
+ * Date: Thu Dec 15 10:31:54 2022
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 0 // n
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX58U_GPL_386_41034/release/src-rt-5.02axhnd.675x/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_RT-AX58U_3.0.0.4.388.21224/release/src-rt-5.02axhnd.675x/kernel/linux-4.1"
 #define TMCFG_KERN_ARCH "arm"
 
 /*
@@ -160,7 +160,13 @@
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
-#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 1 // y
+
+/*
+ * DNS Based WRS Configs
+ */
+#define TMCFG_E_UDB_CORE_DEF_REDIR_DOMAIN "blocking.asus.hns.tm"
+#define TMCFG_E_UDB_CORE_MAX_DNS_ENTRY 1000
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -211,8 +217,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 2
-#define TMCFG_E_REL_PKG_LOCAL_VER "d2ff630"
+#define TMCFG_E_REL_PKG_REV_VER 1
+#define TMCFG_E_REL_PKG_LOCAL_VER "d2ff630-21224-1"
 
 /*
  * Accompany applications or modules
@@ -221,7 +227,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX58U_GPL_386_41034/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_GPL_386_41034/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX58U_GPL_386_41034/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_RT-AX58U_3.0.0.4.388.21224/release/src-rt-5.02axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_RT-AX58U_3.0.0.4.388.21224/release/src-rt-5.02axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_RT-AX58U_3.0.0.4.388.21224/release/src-rt-5.02axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""
@@ -290,6 +296,7 @@
 #define TMCFG_APP_U_WRED_TMUFE_RS_HOST "rgom10-asus-en.url.trendmicro.com"
 #define TMCFG_APP_U_WRED_TMUFE_CUSTOM 1 // y
 #define TMCFG_APP_U_TDTS_WRED_TMUFE21 0 // n
+#define TMCFG_APP_U_TDTS_WRED_TMUFE50 0 // n
 #define TMCFG_APP_U_WBL 1 // y
 
 /*

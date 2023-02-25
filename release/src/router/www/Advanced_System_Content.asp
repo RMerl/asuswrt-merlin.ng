@@ -2729,7 +2729,7 @@ function build_boostkey_options() {
 					</td>
 				</tr>
 				<tr>
-					<th>Redirect webui access to router.asus.com</th>
+					<th>Redirect webui access to www.asusrouter.com</th>
 					<td>
 						<input type="radio" name="http_dut_redir" value="1" <% nvram_match_x("","http_dut_redir","1", "checked"); %> ><#checkbox_Yes#>
 						<input type="radio" name="http_dut_redir" value="0" <% nvram_match_x("","http_dut_redir","0", "checked"); %> ><#checkbox_No#>

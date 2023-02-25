@@ -264,7 +264,7 @@ void ovpn_client_up_handler(int unit)
 	char buffer[128], buffer2[128], buffer3[128];
 	char dirname[64];
 	char prefix[32];
-	FILE *fp_resolv = NULL, *fp_conf = NULL, *fp_qos = NULL, *fp_route = NULL;;
+	FILE *fp_resolv = NULL, *fp_conf = NULL, *fp_route = NULL;;
 	int i, j, verb, rgw, lock;
 	char *option, *option2;
 	char *network_env, *netmask_env, *gateway_env, *metric_env, *remotegw_env, *dev_env;

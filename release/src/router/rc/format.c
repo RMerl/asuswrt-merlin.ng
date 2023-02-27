@@ -624,3 +624,12 @@ void force_off_push_msg(void)
 	if(nv) free(nv);
 }
 #endif
+
+void adjust_jffs_content(void)
+{
+/* migrate httpd/ssh key/cert to same location as Asus */
+	if (d_exists("/jffs/ssl")) {
+		system("/bin/mv -f /jffs/ssl/* /jffs/.cert/");     /* */
+		rmdir("/jffs/ssl");
+	}
+}

@@ -5597,7 +5597,9 @@ void generate_wl_para(char *ifname, int unit, int subunit)
 	memset(tmp, 0, sizeof(tmp));
 	memset(tmp2, 0, sizeof(tmp2));
 
+#if defined(RTAC5300) || defined(GTAC5300) || defined(GTAXE16000) || defined(GTAX11000_PRO) || defined(RTAX88U)
 	wl_apply_akm_by_auth_mode(unit, subunit, NULL);
+#endif
 
 	if (nvram_match(strcat_r(prefix, "auth_mode_x", tmp), "radius"))
 	{

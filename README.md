@@ -1,4 +1,4 @@
-﻿## asuswrt-merlin New Gen for K3(version 382.xx and higher)
+﻿## k3-asuswrt-merlin New Gen(**version 386.8 and higher**)
 
 This project forks form Asuswrt-Merlin, the goal is to fit for PHICOMM-K3.
 
@@ -15,11 +15,17 @@ This project forks form Asuswrt-Merlin, the goal is to fit for PHICOMM-K3.
 
 5.Some extra CN & TW translation.
 
+# how to build
+
+**FOLLOW THE WIKI - https://github.com/RMerl/asuswrt-merlin.ng/wiki/Compile-Firmware-from-source**
+
 ## Toolchains to be prepared in advance
 
 Asuswrt-Merlin toolchains - https://github.com/RMerl/am-toolchains
 
-## how to build
+***!!! important to export /opt/brcm-arm/lib to LD_LIBRARY_PATH***
+
+## MAC Adderss of CFE
 
 You can modify cfe MAC address to your own in rt-k3_nvram.txt
 
@@ -77,7 +83,4 @@ Lostlonger for research transplant from merlin to K3
 
 [Updateing](https://github.com/Updateing/) for making screen usable
 
-## 打赏我(buy me a beer)
-
-![alipay](https://wx1.sbimg.cn/2020/05/28/alipay.jpg)
-![wechat](https://wx1.sbimg.cn/2020/05/28/wechat.jpg)
+[ghostnup](https://github.com/ghostnup/asuswrt-merlin.ng) for K3 Patches

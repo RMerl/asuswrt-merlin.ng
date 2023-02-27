@@ -662,8 +662,8 @@ ifeq ($(RTK3),y)
 	@echo '#define RT_BUILD_NAME "RT-AC3100"' >> router/shared/version.h
 else
 	@echo '#define RT_BUILD_NAME "$(BUILD_NAME)"' >> router/shared/version.h
-	@echo '#define RT_BUILD_NAME_SEC "$(BUILD_NAME_SEC)"' >> router/shared/version.h
 endif
+	@echo '#define RT_BUILD_NAME_SEC "$(BUILD_NAME_SEC)"' >> router/shared/version.h
 	@echo '#define RT_BUILD_INFO "$(BUILD_TIME) $(BUILD_USER)@$(BUILD_INFO)"' >> router/shared/version.h
 	@echo '#define RT_CUSTOM_MODEL "$(CUSTOM_MODEL)"' >> router/shared/version.h
 	@echo '#endif' >> router/shared/version.h
@@ -3867,7 +3867,7 @@ define RouterOptions
 	sed -i "/RTCONFIG_SOFTCENTER/d" $(1); \
 	echo "RTCONFIG_SOFTCENTER=y" >>$(1); \
 	fi; \
-	fi;
+
 	if [ "$(OWE_TRANS)" = "y" ]; then \
 		sed -i "/RTCONFIG_OWE_TRANS/d" $(1); \
 		echo "RTCONFIG_OWE_TRANS=y" >>$(1); \
@@ -5888,7 +5888,6 @@ ifeq ($(REALTEK),y)
 	fi;
 endif
 	$(call save_src_config, $@)
-
 ifeq ($(HND_ROUTER),y)
 ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
 	@echo "Copy router-sysdep.$(lowercase_B) content"

@@ -1023,7 +1023,7 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 	int i;
 	FILE *fp;
 
-	strlcpy(proto, sconf->proto, 3);
+	strlcpy(proto, sconf->proto, 4);
 	if (strcmp(proto, "udp") && strcmp(proto,"tcp"))
 		return;
 

@@ -15,9 +15,6 @@
  * MA 02111-1307 USA
  */
 
-#ifndef __k3_H__
-#define __K3_H__
-
 void envram_set(char *key, char *val);
 void envram_commit(void);
 
@@ -28,7 +25,3 @@ extern void start_k3screen(void);
 #ifdef RTCONFIG_UUPLUGIN
 void exec_uu_k3(void);
 #endif
-
-// extern int GetPhyStatus(int verbose, phy_info_list *list)
-
-#endif	/* __k3_H__ */

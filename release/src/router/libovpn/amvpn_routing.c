@@ -223,10 +223,11 @@ void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 void _write_routing_rules(int unit, char *rules, int verb, vpndir_proto_t proto) {
 	char *buffer_tmp, *buffer_tmp2, *rule;
 	char buffer[128], table[16];
-	int ruleprio, vpnprio, wanprio, ret;
+	int ruleprio, vpnprio, wanprio;
 	char *enable, *desc, *target, *src, *dst;
 	char srcstr[64], dststr[64];
 #if defined(RTCONFIG_WIREGUARD) && (defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X))
+	int ret;
 	char bypass_filename[64];
 #endif
 

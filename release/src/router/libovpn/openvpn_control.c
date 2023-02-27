@@ -643,7 +643,13 @@ void ovpn_stop_client(int unit) {
 	// Remove firewall rules after VPN exit
 	sprintf(buffer, "/etc/openvpn/client%d/fw.sh", unit);
 	if (f_exists(buffer)) {
-		if (!eval("sed", "-i", "s/-A/-D/g;s/-I/-D/g", buffer))
+		if (!eval("sed", "-i", "s/-[AI]/-D/g", buffer))
+			eval(buffer);
+	}
+
+	sprintf(buffer, "/etc/openvpn/client%d/fw_nat.sh", unit);
+	if (f_exists(buffer)) {
+		if (!eval("sed", "-i", "s/-[AI]/-D/g", buffer))
 			eval(buffer);
 	}
 
@@ -687,7 +693,10 @@ void ovpn_stop_server(int unit) {
 
 	// Remove firewall rules
 	sprintf(buffer, "/etc/openvpn/server%d/fw.sh", unit);
-	if (!eval("sed", "-i", "s/-A/-D/g;s/-I/-D/g", buffer))
+	if (!eval("sed", "-i", "s/-[AI]/-D/g", buffer))
+		eval(buffer);
+	sprintf(buffer, "/etc/openvpn/server%d/fw_nat.sh", unit);
+	if (!eval("sed", "-i", "s/-[AI]/-D/g", buffer))
 		eval(buffer);
 
 	// Delete all files for this server

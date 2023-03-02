@@ -112,7 +112,6 @@
 */
 	/* GPY211 */
 	phy_cascade2:c2 {
-		compatible = "brcm,intelphy";
 		phy-type = "GPY211";
 		reg = <25>;
 		phy-external;

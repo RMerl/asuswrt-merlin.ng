@@ -10,6 +10,8 @@ obj-y += main.o
 obj-y += exports.o
 obj-$(CONFIG_HASH) += hash.o
 obj-$(CONFIG_HUSH_PARSER) += cli_hush.o
+BRCM_CHIP = $(patsubst "bcm%",%,$(CONFIG_SYS_SOC))
+EXTRA_CFLAGS += -DCONFIG_BCM9$(BRCM_CHIP)
 obj-$(CONFIG_AUTOBOOT) += autoboot.o
 
 # This option is not just y/n - it can have a numeric value

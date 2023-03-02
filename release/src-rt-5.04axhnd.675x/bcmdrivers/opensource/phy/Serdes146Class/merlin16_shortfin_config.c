@@ -1720,25 +1720,17 @@ void merlin_chk_lane_link_status(phy_dev_t *phy_dev)
     if (!old_link && (phy_dev->speed == PHY_SPEED_10000 || phy_dev->speed == PHY_SPEED_5000 ||
         (phy_dev->speed == PHY_SPEED_2500 && phy_dev->current_inter_phy_type == INTER_PHY_TYPE_2P5GBASE_R)))
     {
-        int error_cnt = 0;
-        int i;
+        /* Read to clear latch bit; then wait 500ms */
+        rd_data = merlin_pmi_read16(phy_serdes->core_num, 0x0, 3, 0xc466);
+        msleep(500);
+        rd_data = merlin_pmi_read16(phy_serdes->core_num, 0x0, 3, 0xc466);
 
-        for (i=0; i < TotalCheckCycles; i++)
+        if (rd_data & ((1<<12)|(1<<7)|(1<<2))) // Checking RX_TYPE_E, Latched_RX_E nad RX_E
         {
-            rd_data = merlin_pmi_read16(phy_serdes->core_num, 0x0, 3, 0xc466);
-
-            if (rd_data & ((1<<12)|(1<<7)|(1<<2))) // Checking RX_TYPE_E, Latched_RX_E nad RX_E
-            {
-                error_cnt++;
-                if (error_cnt >= ErrorCountLinkDown)
-                {
-                    phy_dev->link = 0;
-                    printk("Serdes %d False Link Up with Error Symbol 0x%x at 3.c466h %d times at speed %dMbps\n",
-                        phy_dev->addr, rd_data, error_cnt, phy_dev->speed);
-                    goto end;
-                }
-            }
-            msleep(1);
+            phy_dev->link = 0;
+            printk("Serdes %d False Link Up with Error Symbol 0x%x at 3.c466h at speed %dMbps\n",
+                    phy_dev->addr, rd_data, phy_dev->speed);
+            goto end;
         }
     }
 
@@ -2154,6 +2146,11 @@ int merlin_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex)
         old_serdes_speed_mode == MLN_SPD_AN_USXGMII_SLAVE &&
         phy_serdes->serdes_speed_mode != old_serdes_speed_mode)
         usxgmii_workaround(phy_dev);
+
+    /* Keep USXGMII(_MP) mode stable for shared MSBUS clock */
+    if (phy_serdes->serdes_speed_mode == old_serdes_speed_mode &&
+        phy_serdes->inited == 3)
+        return 0;
 
     rc = merline_speed_set_core(phy_dev);
     return rc;

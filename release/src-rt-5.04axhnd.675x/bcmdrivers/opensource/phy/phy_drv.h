@@ -52,7 +52,7 @@
 #define PHY_CAP_PAUSE_ASYM      (1 << 11)
 #define PHY_CAP_REPEATER        (1 << 12)
 #define PHY_CAP_LAST            (1 << 13)
-#define PHY_CAP_ALL             (PHY_CAP_LAST -1)
+#define PHY_CAP_ALL             (PHY_CAP_LAST - 1)
 
 typedef enum
 {
@@ -118,11 +118,12 @@ typedef enum
     PHY_TYPE_UNKNOWN,
     PHY_TYPE_6858_EGPHY,
     PHY_TYPE_6846_EGPHY,
-    PHY_TYPE_SGMII,
+    PHY_TYPE_6856_SGMII,
     PHY_TYPE_EXT1,
     PHY_TYPE_EXT2,
     PHY_TYPE_EXT3,
     PHY_TYPE_LPORT_SERDES,
+    PHY_TYPE_53125,
     PHY_TYPE_PON,
     PHY_TYPE_DSL_GPHY,
     PHY_TYPE_138CLASS_SERDES,
@@ -183,7 +184,7 @@ extern char * usxgmii_m_type_strs[];
 
 static inline int usxgmii_m_total_ports(usxgmii_m_type_t usxgmii_m_type)
 {
-    static int port_num[] = 
+    static int port_num[] =
     {
         [USXGMII_S]         = 1,
         [USXGMII_M_10G_S]   = 1,
@@ -197,6 +198,8 @@ static inline int usxgmii_m_total_ports(usxgmii_m_type_t usxgmii_m_type)
 
     return port_num[usxgmii_m_type];
 }
+
+#define IS_USXGMII_MULTI_PORTS(phy_dev) (usxgmii_m_total_ports(phy_dev->usxgmii_m_type) > 1)
 
 /* Phy device */
 typedef struct phy_dev_s
@@ -323,6 +326,23 @@ static uint32_t inter_phy_supported_speed_caps[] = {
      INTER_PHY_TYPE_USXGMII_MP_M | INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN_M )
 
 #define INTER_PHY_TYPE_IS_MULTI_SPEED_AN(inter_type) (((1<<inter_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M)>0)
+
+#define INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type) \
+    (((1<<inter_type)&(INTER_PHY_TYPE_1000BASE_X_M | INTER_PHY_TYPE_1GBASE_R_M | INTER_PHY_TYPE_2P5GBASE_X_M | \
+        INTER_PHY_TYPE_2P5GBASE_R_M | INTER_PHY_TYPE_5GBASE_R_M | INTER_PHY_TYPE_5000BASE_X_M | INTER_PHY_TYPE_10GBASE_R_M)) > 0)
+
+#define INTER_PHY_TYPE_AN_ONLY(inter_type) \
+    (((1<<inter_type) & (INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M ))>0)
+
+#define INTER_PHY_TYPE_FORCED_SPEED_ONLY(inter_type) \
+    (!INTER_PHY_TYPE_AN_ONLY(inter_type) && !INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type))
+
+#define INTER_PHY_TYPE_AN_SUPPORT(inter_type) \
+    (INTER_PHY_TYPE_AN_ONLY(inter_type) || INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type))
+
+#define INTER_PHY_TYPE_FORCED_SPEED_SUPPORT(inter_type) \
+    (INTER_PHY_TYPE_FORCED_SPEED_ONLY(inter_type) || INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type))
+
 /*
     Set all types bit plus UNKNOWN bit to cover all types for backward
     compatible and dishtiguish from real all types case
@@ -369,7 +389,7 @@ static inline int phy_speed_to_inter_phy_speed_mask(phy_speed_t speed)
 }
 /*
     INTER_PHY_TYPES Naming rule:
-    o Top Letters before digits: S: SGMII; U: USXGMII-S; M: USXGMII-M; A: MultiSpeedAN 
+    o Top Letters before digits: S: SGMII; U: USXGMII-S; M: USXGMII-M; A: MultiSpeedAN
     o Letters after first one is [SPEED] : 0, 1, 2, 5, 10 means 100M, 1G, 2.5G, 5G and 10G
     o Letters after [SPEED]: F: 100Base-FX; X: Base-X; I: Idle Stuffing; R: Base-R(Replicated) K: N000Base-X,
                            :
@@ -1040,15 +1060,6 @@ static inline int phy_dev_inter_phy_types_get(phy_dev_t *phy_dev, inter_phy_type
     int rc;
     *types = INTER_PHY_TYPE_UNKNOWN_M;
 
-    /* return inter_phy_type to let "ethctl media-type" support 100M/1G/2.5G */
-    if (!strcmp(phy_dev->phy_drv->name, "GPY211")
-        || !strcmp(phy_dev->phy_drv->name, "SGMII")) {
-        rc = phy_dev->phy_drv->inter_phy_types_get(phy_dev, if_dir, types);
-        phy_dev->inter_phy_types = *types;
-        //printk("[%s(%d)][GPY211/SGMII] types = 0x%x\n", __FUNCTION__, __LINE__, *types); // VANIC
-        return 0;
-    }
-
     if (phy_dev->inter_phy_types)
     {
         *types = phy_dev->inter_phy_types;
@@ -1101,8 +1112,8 @@ static inline int phy_dev_is_xgmii_mode(phy_dev_t *phy_dev)
     inter_phy_type_t mode;
 
     phy_dev_inter_phy_types_get(phy_dev, INTER_PHY_TYPE_DOWN, &types);
-    /* If the PHY's mode flags is not defined, we simply guess it is using legacy 2500Base-X, 
-        thus return XGMII flag based on if the speed is above 2.5G */
+    /* If the PHY's mode flags is not defined, we simply guess it is using legacy 2500Base-X,
+       thus return XGMII flag based on if the speed is above 2.5G */
     if (types == INTER_PHY_TYPE_UNKNOWN_M)
     {
         if (phy_dev->speed > PHY_SPEED_2500)
@@ -1110,11 +1121,16 @@ static inline int phy_dev_is_xgmii_mode(phy_dev_t *phy_dev)
         return 0;
     }
 
-    mode = phy_dev_current_inter_phy_types_get(phy_dev);
-    if ((1<<mode) &
-        (INTER_PHY_TYPE_100BASE_FX_M | INTER_PHY_TYPE_1000BASE_X_M | INTER_PHY_TYPE_SGMII_M |
-        INTER_PHY_TYPE_2500BASE_X_M | INTER_PHY_TYPE_5000BASE_X_M))
+    mode = (1<<phy_dev_current_inter_phy_types_get(phy_dev));
+    if (mode &
+            (INTER_PHY_TYPE_100BASE_FX_M | INTER_PHY_TYPE_1000BASE_X_M | INTER_PHY_TYPE_SGMII_M |
+             INTER_PHY_TYPE_2500BASE_X_M | INTER_PHY_TYPE_5000BASE_X_M))
         return 0;
+
+    if ((mode & (INTER_PHY_TYPE_USXGMII_M | INTER_PHY_TYPE_USXGMII_MP_M)) &&
+        phy_dev->speed <= PHY_SPEED_1000)
+        return 0;
+
     return 1;
 }
 
@@ -1182,6 +1198,14 @@ static inline int phy_dev_phyid_get(phy_dev_t *phy_dev, uint32_t *phyid)
         return 0;
 
     return phy_dev->phy_drv->phyid_get(phy_dev, phyid);
+}
+
+static inline int phy_dev_is_broadcom_phy(phy_dev_t *phy_dev)
+{
+    uint32_t phy_id;
+
+    phy_dev_phyid_get(phy_dev, &phy_id);
+    return ((phy_id & 0xffff0000) == 0xae020000 || (phy_id & 0xffff0000) == 0x35900000);
 }
 
 static inline int phy_dev_init(phy_dev_t *first_phy)
@@ -1430,22 +1454,24 @@ static inline int cascade_phy_dev_caps_get(phy_dev_t *phy_dev, int caps_type, ui
     int rc = 0;
     phy_dev_t *cascade;
     uint32_t cascade_caps;
-    uint32_t inter_phy_types, inter_phy_types_last;
+#if defined(DSL_DEVICES)
+    uint32_t inter_phy_types = 0, inter_phy_types_last = 0;
     uint32_t inter_phy_supported_speed_caps;
+#endif
 
     *caps = 0;
-    inter_phy_types = inter_phy_types_last = 0;
     if (is_cascade_phy(phy_dev))
     {
         for (cascade = cascade_phy_get_first(phy_dev), *caps = 0; cascade; cascade = cascade_phy_get_next(cascade))
         {
             if (cascade->phy_drv->caps_get)
             {
-                rc |= cascade->phy_drv->caps_get(cascade, caps_type, &cascade_caps);
+                rc |= phy_dev_caps_get(cascade, caps_type, &cascade_caps);
                 if (cascade_caps)
                 {
                     *caps = (*caps) ? ((*caps & cascade_caps) | (cascade_caps & (PHY_CAP_PAUSE|PHY_CAP_PAUSE_ASYM))) : cascade_caps;
 
+#if defined(DSL_DEVICES)
                     if (!inter_phy_types_last)
                     {
                         rc |= phy_dev_inter_phy_types_get(cascade, INTER_PHY_TYPE_DOWN, &inter_phy_types);
@@ -1459,6 +1485,7 @@ static inline int cascade_phy_dev_caps_get(phy_dev_t *phy_dev, int caps_type, ui
 
                     rc |= get_inter_phy_supported_speed_caps(inter_phy_types, &inter_phy_supported_speed_caps);
                     *caps = (*caps & inter_phy_supported_speed_caps) | (*caps & PHY_CAP_AUTONEG);
+#endif
                 }
             }
         }

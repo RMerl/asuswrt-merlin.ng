@@ -259,6 +259,67 @@ static void dsl_merlin16_serdes_link_stats(phy_dev_t *phy_dev)
     merlin_chk_lane_link_status(phy_dev);
 }
 
+static void merlin_set_msbus_clk_source(phy_dev_t *phy_dev, int power_level)
+{
+#if defined(ETH_PHY_TOP_XPORT0_CLK_CNTRL)
+    uint32_t v32;
+    phy_serdes_t *phy_serdes = phy_dev->priv;
+    int power_level0, power_level1;
+    int cur_source;
+    phy_serdes_t *phy_serdes0, *phy_serdes1;
+
+    if(phy_dev->core_index > 1)
+        return;
+
+    if (phy_serdes->cur_power_level == power_level)
+        return;
+
+    phy_serdes0 = &serdes_146class[0][0];
+    phy_serdes1 = &serdes_146class[1][0];
+
+    if (phy_dev->core_index)
+    {
+        power_level1 = power_level;
+        if (phy_serdes0->inited)
+            power_level0 = serdes_146class[0][0].cur_power_level;
+        else
+            power_level0 = 0;
+    }
+    else
+    {
+        power_level0 = power_level;
+        if (phy_serdes1->inited)
+            power_level1 = serdes_146class[1][0].cur_power_level;
+        else
+            power_level1 = 0;
+    }
+
+    v32 = *ETH_PHY_TOP_XPORT0_CLK_CNTRL; 
+    cur_source = v32 & ETHSW_XPORT0_CLK_CNTRL_MSBUS_CLK_SEL;
+
+    /* We want to set MSBUS clock source to external XGPHY if both are available because 
+        SFP module needs to scan different speedand will constantly affect peer Serdes */
+    if (power_level0 && power_level1 && 
+        ((phy_serdes0->sfp_module_type == SFP_FIXED_PHY && phy_serdes1->sfp_module_type != SFP_FIXED_PHY) ||
+        (phy_serdes1->sfp_module_type == SFP_FIXED_PHY && phy_serdes0->sfp_module_type != SFP_FIXED_PHY)) &&
+        ((cur_source == 0 && phy_serdes0->sfp_module_type != SFP_FIXED_PHY) ||
+        (cur_source == 1 && phy_serdes1->sfp_module_type != SFP_FIXED_PHY)))
+        goto flip;
+        
+    if ((cur_source && power_level1) || (!cur_source && power_level0) || (!power_level0 && !power_level1))
+        return;
+
+    /* We need to flip source */
+flip:
+    if (cur_source)
+        v32 &= ~ETHSW_XPORT0_CLK_CNTRL_MSBUS_CLK_SEL;
+    else
+        v32 |= ETHSW_XPORT0_CLK_CNTRL_MSBUS_CLK_SEL;
+
+    *ETH_PHY_TOP_XPORT0_CLK_CNTRL = v32; 
+#endif
+}
+
 static int _merlin_core_power_op(phy_dev_t *phy_dev, int power_level)
 {
     /* 
@@ -272,6 +333,8 @@ static int _merlin_core_power_op(phy_dev_t *phy_dev, int power_level)
             return 0;
         phy_dev = phy_dev->mphy_base;
     }
+
+    merlin_set_msbus_clk_source(phy_dev, power_level);
 
     return merlin_core_power_op(phy_dev, power_level);
 }

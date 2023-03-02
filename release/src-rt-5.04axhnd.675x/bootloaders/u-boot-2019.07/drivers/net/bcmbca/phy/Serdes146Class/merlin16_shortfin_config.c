@@ -2024,6 +2024,11 @@ int merlin_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex)
         phy_serdes->serdes_speed_mode != old_serdes_speed_mode)
         usxgmii_workaround(phy_dev);
 
+    /* Keep USXGMII(_MP) mode stable for shared MSBUS clock */
+    if (phy_serdes->serdes_speed_mode == old_serdes_speed_mode &&
+        phy_serdes->inited == 3)
+        return 0;
+
     rc = merline_speed_set_core(phy_dev);
     return rc;
 }

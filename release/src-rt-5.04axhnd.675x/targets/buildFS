@@ -478,6 +478,10 @@ fi
 mkdir -p ${TARGET_FS}/rom/etc/fw
 cp ${HND_SRC}/bcmdrivers/opensource/phy/firmware/*.bin ${TARGET_FS}/rom/etc/fw/
 
+if [ -f $BRCMDRIVERS_DIR/broadcom/char/pktflow/bcm9$BRCM_CHIP/scripts/FcStats.sh ]; then
+cp $BRCMDRIVERS_DIR/broadcom/char/pktflow/bcm9$BRCM_CHIP/scripts/FcStats.sh $TARGETS_DIR/$ROOTFS/bin/
+fi
+
 if [ "$BUILD_NAME" == "RT-AX3000N" ]; then
 	find $TARGETS_DIR/$ROOTFS/lib/modules -name usb | xargs rm -rf
 	find $TARGETS_DIR/$ROOTFS/lib/modules -name cdrom | xargs rm -rf
@@ -512,6 +516,19 @@ if [ "$BUILD_NAME" == "XD6_V2" ]; then
 	rm -rf $TARGETS_DIR/$ROOTFS/usr/lib/libusb*
 	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/mk*
 	rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/*fsck*
+fi
+
+if [ "$BUILD_NAME" == "BR63" ]; then
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name bonding | xargs rm -rf
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_bic.ko | xargs rm -f
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_htcp.ko | xargs rm -f
+        find $TARGETS_DIR/$ROOTFS/lib/modules -name tcp_westwood.ko | xargs rm -f
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/9*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/X*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/E*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/RP*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/rom/etc/wlan/nvram/T*.nvm
+        rm -rf $TARGETS_DIR/$ROOTFS/usr/sbin/dhd
 fi
 
 # strip userspace binaries is sstrip is "enabled"

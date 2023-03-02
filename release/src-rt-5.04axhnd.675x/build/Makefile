@@ -844,6 +844,7 @@ endif
 	fi
 	cd $(TARGETS_DIR); ./buildFSopenwrt;
 else
+	cd $(BUILD_DIR); make -C router strips;
 	cd $(TARGETS_DIR); ./buildFS;
 endif
 

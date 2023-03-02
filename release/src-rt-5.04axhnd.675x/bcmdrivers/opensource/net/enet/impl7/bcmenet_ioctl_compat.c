@@ -2048,6 +2048,24 @@ cd_end:
 
         return ret;
     }
+    case ETHTXPADGET:
+    case ETHTXPADSET:
+    {
+        if (ethctl->op == ETHTXPADSET) {
+            if (ethctl->val)
+                netdev_tx_pad_set(dev);
+            else
+                netdev_tx_pad_unset(dev);
+
+            return 0;
+        }
+        else {
+            ethctl->ret_val = is_netdev_tx_pad(dev);
+
+            return copy_to_user(rq->ifr_data, ethctl, sizeof(struct ethctl_data)) ? -EFAULT : 0;
+        }
+    }
+
     default:
         return -EOPNOTSUPP;
     }
@@ -3456,7 +3474,6 @@ int enet_ioctl_compat_ethswctl(struct net_device *dev, struct ifreq *rq, int cmd
                 }
 
                 cap = phy_speed_to_cap(speed, duplex);
-                //printk("[%s(%d)] speed=%d, full/half=%d, cap=0x%x, supported_caps=0x%x\n", __FUNCTION__, __LINE__, speed, duplex, cap, supported_caps); // VANIC
                 if ((cap & supported_caps) == 0)
                 {
                     printk("Not Supported Speed %dmbps attempted\n", ethswctl->speed);

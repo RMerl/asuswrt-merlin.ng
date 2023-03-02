@@ -9219,12 +9219,16 @@ typedef struct EthPhyTopReg
 #define ETHSW_RXCLK_DLY_MODE_BYPASS          (2<<4)
 #define ETHSW_RXCLK_DLY_MODE_1G              (1<<4)
 #define ETHSW_RXCLK_DLY_MODE_10_100          (0<<4)
+    uint32 reserved_1c0_to_1f4[(0x1f4 - 0x1c0 + 4)/4];
+    uint32 xport0_clk_cntrl;
+#define ETHSW_XPORT0_CLK_CNTRL_MSBUS_CLK_SEL    (1<<0)
 } EthPhyTopReg;
 
 #define ETHPHY_REG ((volatile EthPhyTopReg * const) ETH_PHYS_REG_BASE)
 
 #define QPHY_TEST_CTRL                               ((volatile unsigned int*)(&ETHPHY_REG->qphy_test_ctrl))
 #define QPHY_CNTRL                                   ((volatile unsigned int*)(&ETHPHY_REG->qphy_ctrl))
+#define ETH_PHY_TOP_XPORT0_CLK_CNTRL                 ((volatile unsigned int*)(&ETHPHY_REG->xport0_clk_cntrl))
 
 
 typedef struct xport_reg

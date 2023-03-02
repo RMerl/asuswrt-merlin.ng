@@ -191,7 +191,7 @@ int spl_ddrinit(uint32_t sel_mode, uint32_t sel);
 void spl_ddrinit_prepare(void);
 uint32_t get_ddr_size(void);
 void spl_list_mcb_sel(void);
-#ifdef CONFIG_BCMBCA_DDRC_WBF_WAR
-void bcm_ddrc_wbf_workaround(void);
+#ifdef CONFIG_BCMBCA_DDRC_WBF_EARLY_INIT
+void bcm_ddrc_mc2_wbf_buffers_init(void);
 #endif
 #endif

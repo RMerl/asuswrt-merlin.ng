@@ -1663,33 +1663,26 @@ void merlin28_chk_lane_link_status(phy_dev_t *phy_dev)
     }
     phy_dev->duplex = PHY_DUPLEX_FULL;
 
+#define TotalCheckCycles 200
+#define ErrorCountLinkDown 1
+
     /* If it first time link up and the speed is 5G or 10G, we do intensive check
         to filter out false link up */
     if (!old_link && phy_dev->speed == PHY_SPEED_5000)
     {
-        int error_cnt = 0;
-        int i;
+        /* Read to clear latch bit; then wait 500ms */
+        rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
+        msleep(500);
+        rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
 
-#define TotalCheckCycles 200
-#define ErrorCountLinkDown 1
-        for (i=0; i < TotalCheckCycles; i++)
-        {
-            rd_data = merlin28_pmi_read16(CoreNum, LaneNum, 3, 0xc466);
-
-            // Checking BAD_R_TYPE, R_TYPE_E, Latched_RX_E or current RX_E
-            if ((rd_data & (1<<7)) || (rd_data&0x7) == 4
+        // Checking BAD_R_TYPE, R_TYPE_E, Latched_RX_E or current RX_E
+        if ((rd_data & (1<<7)) || (rd_data&0x7) == 4
                 || ((rd_data>>12) & 0xf) == 0xf || ((rd_data>>12) & 0xf) == 0 )
-            {
-                error_cnt++;
-                if (error_cnt >= ErrorCountLinkDown)
-                {
-                    phy_dev->link = 0;
-                    printk("Serdes %d False Link Up with Error Symbol 0x%04x at 3.c466h %d times at speed %dMbps\n",
-                        phy_dev->addr, rd_data, error_cnt, phy_dev->speed);
-                    goto end;
-                }
-            }
-            msleep(1);
+        {
+            phy_dev->link = 0;
+            printk("Serdes %d False Link Up with Error Symbol 0x%04x at 3.c466h at speed %dMbps\n",
+                    phy_dev->addr, rd_data, phy_dev->speed);
+            goto end;
         }
     }
 

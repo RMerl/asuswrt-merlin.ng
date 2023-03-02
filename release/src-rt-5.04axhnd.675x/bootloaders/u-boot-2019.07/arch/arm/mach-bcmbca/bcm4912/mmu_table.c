@@ -28,6 +28,7 @@ static struct mm_region broadcom_bcm94912_mem_map[] = {
 			 PTE_BLOCK_NON_SHARE |
 			 PTE_BLOCK_PXN | PTE_BLOCK_UXN
 	},
+
 	/* LMEM for bootrom runtime  */
 	{
 		.virt = CONFIG_SYS_INIT_RAM_ADDR,

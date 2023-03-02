@@ -102,8 +102,6 @@ typedef struct phyDesc {
 static phyDesc_t phyDesc[] = {
     {0xae025048, "84860", CL45PHY_BRCM2P5G_CAP},
     {0xae025040, "84861", CL45PHY_BRCM10G_CAP},
-    {0x67c9de10, "GPY211", CL45PHY_BRCM2P5G_CAP},
-    {0x67c9de00, "GPY211", CL45PHY_BRCM2P5G_CAP},
 };
 
 static inline int IsBrcm2P5G10GPhy(phy_dev_t *phy_dev)
@@ -219,16 +217,12 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
                 break;
             udelay(500);
         }
-// #ifdef __UBOOT__
-#if 1
-        if (!timeout){
+#ifdef __UBOOT__
+        if (!timeout)
             printk("Could not reset PHY. Your PHY rev is unsupported in u-boot.\n");
-			return 0;
-		}
 #else
-        // if (!timeout)
-         //   BUG_CHECK("PHY at address %d failed to reset.", phy_dev->addr);
-		return 0;
+        if (!timeout)
+            BUG_CHECK("PHY at address %d failed to reset.", phy_dev->addr);
 #endif
     }
 
@@ -251,185 +245,16 @@ int dsl_runner_ext3_phy_init(phy_dev_t *phy_dev)
     return 0;
 }
 
-static void PHY_BUS_READ(phy_dev_t *phy_dev, uint16_t dev, uint16_t reg)
-{
-    u16 val = 0;
-    phy_bus_c45_read(phy_dev, dev, reg, &val);
-    printk("[%s(%d)] MMD %d.%d val=0x%x\n", __FUNCTION__, __LINE__, dev, reg, val);
-}
-
-int dsl_runner_gpy211_phy_init(phy_dev_t *phy_dev)
-{
-    static phy_cl45_t phys_cl45[MAX_CL45_PHYS];
-    static int init;
-    phy_drv_t *phy_drv = phy_dev->phy_drv;
-    phy_cl45_t *phy_cl45;
-    phy_drv_t _phy_drv = *phy_drv;
-    uint32_t phy_id;
-    int i;
-    u16 val;
-
-    if (init > (MAX_CL45_PHYS - 1))
-    {
-        printk(" Error: More CL45 PHY %d requeted than supported %d\n", init+1, MAX_CL45_PHYS);
-        BUG();
-    }
-
-    if (init == 0)
-    {
-        memset(phy_drv, 0, sizeof(*phy_drv));
-
-        phy_drv->read_status = dsl_cl45phy_read_status;
-        phy_drv->phy_type = _phy_drv.phy_type;
-        phy_drv->name = _phy_drv.name;
-        phy_drv->initialized = _phy_drv.initialized;
-        phy_drv->speed_set = dsl_cl45phy_set_speed;
-        phy_drv->caps_get = _phy_drv.caps_get;
-//        phy_drv->caps_set = _phy_drv.caps_set;
-        phy_drv->caps_set = dsl_cl45phy_caps_set;
-        phy_drv->config_speed_get = dsl_cl45phy_get_config_speed;
-        phy_drv->phyid_get = _phy_drv.phyid_get;
-        phy_drv->init = dsl_runner_gpy211_phy_init;
-//        phy_drv->loopback_set = dsl_cl45phy_loopback_set;
-//        phy_drv->loopback_get = dsl_cl45phy_loopback_get;
-//        phy_drv->pair_swap_set = _phy_drv.pair_swap_set;
-//        phy_drv->isolate_phy = _phy_drv.isolate_phy;
-//        phy_drv->super_isolate_phy = _phy_drv.super_isolate_phy;
-//        phy_drv->apd_get = _phy_drv.apd_get;
-//        phy_drv->apd_set = _phy_drv.apd_set;
-        phy_drv->eee_get = _phy_drv.eee_get;
-        phy_drv->eee_set = _phy_drv.eee_set;
-        phy_drv->eee_resolution_get = _phy_drv.eee_resolution_get;
-//        phy_drv->cable_diag_run = _phy_drv.cable_diag_run;
-        phy_drv->inter_phy_types_get = _phy_drv.inter_phy_types_get;
-        phy_drv->configured_inter_phy_types_set = _phy_drv.configured_inter_phy_types_set;
-        phy_drv->priv_fun = dsl_phy_exp_op;
-        phy_drv->power_set = _phy_drv.power_set;
-        phy_drv->power_get = _phy_drv.power_get;
-        phy_drv->get_phy_name = _phy_drv.get_phy_name;
-        phy_drv->current_inter_phy_type_get = _phy_drv.current_inter_phy_type_get;
-    }
-
-    phy_cl45 = phy_dev->priv = &phys_cl45[init++];
-    phy_cl45->config_speed = -1;
-    for (i=0; i<ARRAY_SIZE(phyDesc); i++)
-    {
-        phy_dev_phyid_get(phy_dev, &phy_id);
-        if (phyDesc[i].devId == phy_id)
-        {
-            phy_cl45->descriptor = &phyDesc[i];
-            break;
-        }
-    }
-
-    printk("[%s(%d)] phy addr=0x%x, phyid=0x%x\n", __FUNCTION__, __LINE__, phy_dev->addr, phy_id);
-
-	/* not to reset */
-#if 0
-    /* reg 0.0 : STD_CTRL */
-    phy_bus_c45_write(phy_dev, 0x0, 0x0, 0xb040);
-    {
-        u16 timeout = 4000;
-        while (--timeout) {
-            phy_bus_c45_read(phy_dev, 0x0, 0x0, &val);
-            if ((val & 0x8000) == 0)
-                break;
-            udelay(500);
-        }
-
-	if (!timeout){
-		printk("Could not reset PHY. Your PHY rev is unsupported in u-boot.\n");
-		return 0;
-	}
-    }
-#endif
-
-    cascade_phy_set_common_inter_types(phy_dev->cascade_prev);
-    phy_dev_configured_inter_phy_types_set(phy_dev, INTER_PHY_TYPE_UP, phy_dev->common_inter_phy_types);
-//    phy_dev_pair_swap_set(phy_dev, phy_dev->swap_pair);
-    phy_dev_speed_set(phy_dev, PHY_SPEED_AUTO, PHY_DUPLEX_FULL);
-//    phy_dev_super_isolate_phy(phy_dev, 0);
-    phy_dev->an_enabled = 1; /* We always use AN even for specific speed */
-
-    return 0;
-}
-
-static void GPY211_SET_SPEED(phy_dev_t *phy_dev, int speed, uint32_t caps)
-{
-	/*
-		check flow as below
-		0.4  : 100M
-		0.9  : 1G
-		7.32 : 2.5G
-		1.0  : PMAPMD
-		30.8 : VSPEC1_SGMII_CTRL
-		0.0  : PHY STD_CTRL and auto-nego (7.0 bit 9 should mirror to 0.0 bit 9)
-	*/
-
-	/*
-		disable SGMII-ANEG mode due to BRCM can't support this, it will make SGMII / serdes can't work
-		phy_bus_c45_write(phy_dev, 0x1e, 0x08, 0x24d9); // disable SGMII-ANEG mode / 2500 BaseX
-		phy_bus_c45_write(phy_dev, 0x1e, 0x08, 0x24da); // disable SGMII-ANEG mode / 2.5G SGMII
-	*/
-
-	/* force to set up this setting to avoid 100M compatible issue */
-	phy_bus_c45_write(phy_dev, 0x1e, 0x08, 0x24d9); // disable SGMII-ANEG mode / 2500 BaseX
-
-	if (speed == PHY_SPEED_AUTO) {
-		phy_bus_c45_write(phy_dev, 0x00, 0x04, 0x0d81); // 100M
-		phy_bus_c45_write(phy_dev, 0x00, 0x09, 0x0200); // 1G
-		phy_bus_c45_write(phy_dev, 0x07, 0x20, 0x40a2); // 2.5G
-		phy_bus_c45_write(phy_dev, 0x01, 0x00, 0x2058); // PMAPMD
-		phy_bus_c45_write(phy_dev, 0x00, 0x00, 0x3240); // PHY STD_CTRL and auto-nego
-		printk("[%s(%d)] auto-nego mode\n", __FUNCTION__, __LINE__);
-	}
-	else if (speed == PHY_SPEED_2500) {
-		if (!(caps & PHY_CAP_2500)) {
-			printk("[%s(%d)] not support, caps=0x%x\n", __FUNCTION__, __LINE__, caps);
-			return;
-		}
-		phy_bus_c45_write(phy_dev, 0x00, 0x04, 0x0c01); // 100M
-		phy_bus_c45_write(phy_dev, 0x00, 0x09, 0x0000); // 1G
-		phy_bus_c45_write(phy_dev, 0x07, 0x20, 0x40a2); // 2.5G
-		phy_bus_c45_write(phy_dev, 0x01, 0x00, 0x2058); // PMAPMD
-		phy_bus_c45_write(phy_dev, 0x00, 0x00, 0x3240); // PHY STD_CTRL and auto-nego
-		printk("[%s(%d)] force 2500M\n", __FUNCTION__, __LINE__);
-	}
-	else if (speed == PHY_SPEED_1000) {
-		phy_bus_c45_write(phy_dev, 0x00, 0x04, 0x0d81); // 100M
-		phy_bus_c45_write(phy_dev, 0x00, 0x09, 0x0200); // 1G
-		phy_bus_c45_write(phy_dev, 0x07, 0x20, 0x4002); // 2.5G
-		phy_bus_c45_write(phy_dev, 0x01, 0x00, 0x0058); // PMAPMD
-		phy_bus_c45_write(phy_dev, 0x00, 0x00, 0x1340); // PHY STD_CTRL and auto-nego
-		printk("[%s(%d)] force 1000M\n", __FUNCTION__, __LINE__);
-	}
-	else if (speed == PHY_SPEED_100) {
-		phy_bus_c45_write(phy_dev, 0x00, 0x04, 0x0d81); // 100M
-		phy_bus_c45_write(phy_dev, 0x00, 0x09, 0x0000); // 1G
-		phy_bus_c45_write(phy_dev, 0x07, 0x20, 0x4002); // 2.5G
-		phy_bus_c45_write(phy_dev, 0x01, 0x00, 0x2018); // PMAPMD
-		phy_bus_c45_write(phy_dev, 0x00, 0x00, 0x3300); // PHY STD_CTRL and auto-nego
-		printk("[%s(%d)] force 100M\n", __FUNCTION__, __LINE__);
-	}
-}
-
 static int dsl_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t duplex)
 {
     u16 v16;
     phy_cl45_t *phy_cl45 = phy_dev->priv;
     u32 caps;
-    uint16_t val;
- 
-    printk("[%s(%d)] name=%s, speed=%d, duplex=%d, config_speed=%d\n", __FUNCTION__, __LINE__, phy_dev->phy_drv->name, speed, duplex, phy_cl45->config_speed);
+
     if (speed == phy_cl45->config_speed) return 0;
 
     cascade_phy_dev_caps_get(phy_dev, CAPS_TYPE_SUPPORTED, &caps);
 
-    if (!strcmp(phy_dev->phy_drv->name, "GPY211")) {
-	GPY211_SET_SPEED(phy_dev, speed, caps);
-	phy_dev->an_enabled = 1;
-    }
-    else { // NON-GPY211
     switch(speed)
     {
         case  PHY_SPEED_AUTO:
@@ -509,7 +334,6 @@ static int dsl_cl45phy_set_speed(phy_dev_t *phy_dev, phy_speed_t speed, phy_dupl
     phy_bus_c45_read32(phy_dev, 0x10000, &v16);
     phy_bus_c45_write32(phy_dev, 0, v16);
     #endif
-    } // NON-GPY211
 
     phy_cl45->config_speed = speed;
 
@@ -704,11 +528,9 @@ static int dsl_cl45phy_loopback_get(phy_dev_t *phy_dev, int *enable, phy_speed_t
 }
 
 void phy_shortfin_short_amble_workaround(phy_dev_t *phy_dev);
-static int is_first = 1;
 static int dsl_cl45phy_read_status(phy_dev_t *phy_dev)
 {
     u16 v16;
-    int mode, duplex;
     phy_cl45_t *phy_cl45 = phy_dev->priv;
     phy_speed_t org_speed = phy_dev->speed;
     int org_link = phy_dev->link;
@@ -720,43 +542,6 @@ static int dsl_cl45phy_read_status(phy_dev_t *phy_dev)
         return 0;
     }
 
-    if (!strcmp(phy_dev->phy_drv->name, "GPY211")) {
-    phy_bus_c45_read(phy_dev, 0x0, 0x1, &v16);
-    phy_dev->link = ((v16 >> 2) & 0x1);
-
-    //printk("[%s(%d)] name=%s, link=%d, link_changed=%d, is_first=%d\n", __FUNCTION__, __LINE__, phy_dev->phy_drv->name, phy_dev->link, phy_cl45->link_changed, is_first);
-
-    /* bugfix : at first time bootup, phy link can't work, need to reset gpy211 again */
-    if (!phy_dev->link && is_first) {
-	/*
-		disable SGMII-ANEG mode due to BRCM can't support this, it will make SGMII / serdes can't work
-		phy_bus_c45_write(phy_dev, 0x1e, 0x08, 0x24d9); // disable SGMII-ANEG mode / 2500 BaseX
-		phy_bus_c45_write(phy_dev, 0x1e, 0x08, 0x24da); // disable SGMII-ANEG mode / 2.5G SGMII
-	*/
-	phy_bus_c45_write(phy_dev, 0x1e, 0x08, 0x24d9); // disable SGMII-ANEG mode / 2500 BaseX
-	phy_bus_c45_write(phy_dev, 0x00, 0x00, 0x3240); // PHY STD_CTRL and auto-nego
-        is_first = 0;
-    }
-
-    phy_bus_c45_read(phy_dev, 0x0, 0x18, &v16);
-    mode = ((v16 & 0x7u) >> 0);
-    if (mode & 0x1) {
-        phy_dev->speed  = PHY_SPEED_100;
-    }
-    else if (mode & 0x2) {
-        phy_dev->speed  = PHY_SPEED_1000;
-    }
-   else if (mode & 0x4) {
-       phy_dev->speed  = PHY_SPEED_2500;
-   }
-
-    phy_dev->duplex = PHY_DUPLEX_FULL;
-
-    phy_dev->pause_rx = 0;
-    phy_dev->pause_tx = 0;
-
-    }
-    else {
     phy_bus_c45_read32(phy_dev, CL45_REG_UDEF_STATUS, &v16);
     phy_dev->link = (v16 & CL45_UDEF_STATUS_COPPER_LINK)> 0;
 
@@ -784,7 +569,6 @@ static int dsl_cl45phy_read_status(phy_dev_t *phy_dev)
     phy_bus_c45_read32(phy_dev, CL45_REG_1G100M_AUX_STATUS , &v16);
     phy_dev->pause_rx = (v16 & CL45_AN_STATUS_RX_PAUSE)>0;
     phy_dev->pause_tx = (v16 & CL45_AN_STATUS_TX_PAUSE)>0;
-    }	/* NON-GPY211 */
 
     if (org_link && phy_dev->link && org_speed != phy_dev->speed)
         phy_dev->link = 0;

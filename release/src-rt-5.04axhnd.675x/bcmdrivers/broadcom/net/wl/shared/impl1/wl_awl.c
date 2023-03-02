@@ -922,6 +922,16 @@ wl_awl_upstream_add_pkt(struct wl_info * wl, struct net_device * net_device,
 	/* pass through mode or flow cache disabled, process within wlan thread */
 	if ((awl->rx.mode == WL_AWL_RX_MODE_PT) || fcacheStatus() == 0)
     {
+
+#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING) && defined(WL_PKTFWD_INTRABSS)
+	   uint8_t * d3_addr = (uint8_t *) PKTDATA(wl->osh, skb);
+	   if (ETHER_ISMULTI(d3_addr) &&
+	           wl_pktfwd_rx_mcast_handler(wl, WL_DEV_IF(net_device)->wlcif, skb) == BCME_OK) {
+	       awl->rx.w2a_flt_packets++;
+	       return;
+	   }
+#endif
+
 #if defined(WL_AWL_INTRABSS)
 	    if (wl_intrabss_forward(wl, net_device, skb) == FALSE)
 #endif /* WL_AWL_INTRABSS */
@@ -977,10 +987,18 @@ wl_awl_upstream_send_chain(struct wl_info * wl, struct sk_buff * skb)
 
 	/* pass through mode or flow cache disabled, process within wlan thread */
 	if ((awl->rx.mode == WL_AWL_RX_MODE_PT) || fcacheStatus() == 0) {
-#if defined(WL_AWL_INTRABSS)
-	    uint8_t * d3_addr = (uint8_t *) PKTDATA(wl->osh, skb);
 
-	    if (!ETHER_ISMULTI(d3_addr) && wl_intrabss_forward(wl, net, skb))
+#if (defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING) && defined(WL_PKTFWD_INTRABSS)) || defined(WL_AWL_INTRABSS)
+	    bool is_mcast = ETHER_ISMULTI((uint8_t *) PKTDATA(wl->osh, skb));
+#endif
+#if defined(BCM_WLAN_PER_CLIENT_FLOW_LEARNING) && defined(WL_PKTFWD_INTRABSS)
+	   if (is_mcast && wl_pktfwd_rx_mcast_handler(wl, WL_DEV_IF(net)->wlcif, skb) == BCME_OK) {
+	       awl->rx.w2a_rx_packets++;
+	       return BCME_OK;
+	   }
+#endif
+#if defined(WL_AWL_INTRABSS)
+	    if (!is_mcast && wl_intrabss_forward(wl, net, skb))
 	    {
 	        return BCME_OK;
 	    }

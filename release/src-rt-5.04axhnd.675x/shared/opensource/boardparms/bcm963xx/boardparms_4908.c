@@ -748,10 +748,23 @@ static bp_elem_t g_bcm94906ref2[] = {
   {bp_last}
 };
 
+static bp_elem_t g_ebg19[] = {
+  {bp_cpBoardId,               .u.cp = "EBG19"},
+
+  {bp_last}
+};
+
+
+static bp_elem_t g_ebg15[] = {
+  {bp_cpBoardId,               .u.cp = "EBG15"},
+
+  {bp_last}
+};
+
 bp_elem_t * g_BoardParms[] = {
   g_bcm94908sv, g_bcm94908dvt, g_bcm94908dvt_sfpwan, g_bcm94908ref, g_bcm94908ref_extphy,
   g_bcm94906ref, g_bcm94906ref_fake, g_bcm94908ref_wan2p5g, g_bcm94908ref_wan2p5g_n_g, g_bcm962118ref, g_bcm962116ref,
   g_bcm949408eap_extphy, g_bcm94908tbrhx, g_bcm94908tbrhx_extphy, g_bcm94908tbrhx_wan2p5g, 
-  g_bcm94906ref2, g_bcm949408eap_extphy_54991, g_bcm94908eap_4dax, 0
+  g_bcm94906ref2, g_bcm949408eap_extphy_54991, g_bcm94908eap_4dax, g_ebg19, g_ebg15, 0
 };
 

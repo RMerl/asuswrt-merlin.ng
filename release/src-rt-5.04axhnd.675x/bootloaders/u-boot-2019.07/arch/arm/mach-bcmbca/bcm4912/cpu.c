@@ -21,7 +21,7 @@
 void disable_memc_sram(void)
 {
 	uint32_t reg = MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi;
-
+	
 	writel(readl(reg)&~0x80000000, reg);
 }
 
@@ -98,7 +98,7 @@ static void setup_ubus_rangechk(void)
 				size_bit++;
 		}
 
-	        UBUS4_RANGE_CHK_SETUP->cfg[i].control = 0x1f0;
+		UBUS4_RANGE_CHK_SETUP->cfg[i].control = 0x1f0;
 		UBUS4_RANGE_CHK_SETUP->cfg[i].srcpid[0] = 0xffffffff;
 		UBUS4_RANGE_CHK_SETUP->cfg[i].seclev = 0xffffffff;
 		UBUS4_RANGE_CHK_SETUP->cfg[i].base = (addr&0xffffffe0) | size_bit;
@@ -157,7 +157,7 @@ static int reset_plls(void)
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD)
-	disable_memc_sram();
+	disable_memc_sram();  
 	enable_ts0_couner();
 #if defined(CONFIG_BCMBCA_DDRC)
 	spl_ddrinit_prepare();

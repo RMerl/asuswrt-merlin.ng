@@ -27,7 +27,7 @@
 :>
 */
 
-char *rdpa_version_fw_2 = "$Change: 347782 $";
+char *rdpa_version_fw_2 = "$Change: 376578 $";
 
 // FP_LLVM_VERSION = 4.0
 // clang version 11.1.0 (cam-dsl-git@git-cam-bca.devops.broadcom.net:firepath/tools/llvm.git d8ef6ae2d5fbdecb21f4a6079e466b6018974115)

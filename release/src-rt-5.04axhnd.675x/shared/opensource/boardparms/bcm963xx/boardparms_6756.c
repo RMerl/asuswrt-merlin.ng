@@ -330,6 +330,12 @@ static bp_elem_t RT_AX3000N[] = {
     {bp_last}
 };
 
+static bp_elem_t br63[] = {
+    {bp_cpBoardId,               .u.cp = "BR63"},
+
+    {bp_last}
+};
+
 static bp_elem_t xd4proipa_ddr3[] = {
     {bp_cpBoardId,               .u.cp = "XD4PROIPA_DDR3"},
 
@@ -337,4 +343,4 @@ static bp_elem_t xd4proipa_ddr3[] = {
 };
 
 bp_elem_t * g_BoardParms[] = {g_bcm96756sv, /*g96756ref1, g96756ref1_sg, g_bcm96756rfdvt, g_bcm947623eap6l, g_bcm947623eap6ll,
-                              g_bcm96757sv, g_bcm96757ref1t, g_bcm96757ref2t, g_bcm96756rfdvt_fake, rt_ax55, */xd4pro, RT_AX58U_V2, xt8pro, et8pro, RP_AX58, xt8pro_gpy211, et8pro_gpy211, xd4proipa, TUF_AX3000_V2, RT_AXE7800, xt8_v2, RT_AX3000N, xd4proipa_ddr3, et8_v2, bm68, 0};
+                              g_bcm96757sv, g_bcm96757ref1t, g_bcm96757ref2t, g_bcm96756rfdvt_fake, rt_ax55, */xd4pro, RT_AX58U_V2, xt8pro, et8pro, RP_AX58, xt8pro_gpy211, et8pro_gpy211, xd4proipa, TUF_AX3000_V2, RT_AXE7800, xt8_v2, RT_AX3000N, xd4proipa_ddr3, et8_v2, bm68, br63, 0};

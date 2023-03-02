@@ -911,6 +911,7 @@ static inline netdev_tx_t __enet_xmit(pNBuff_t pNBuff, struct net_device *dev)
     bool isDpConfigured = false;
 #endif
     uint32_t ori_mark = 0, new_mark = 0;
+    uint32_t pad;
 
     /* If Broadstream iqos enable, for WAN egress packets, need to call dev_queue_xmit */
     if (BROADSTREAM_IQOS_ENABLE() && pNBuff && DEV_ISWAN(dev)) {
@@ -986,10 +987,12 @@ normal_path:
                 {
                     uint32_t hiPrioQ = MAX_PRIORITY_VALUE;
                     /* Give the highest possible priority to ARP/LCP packets */
+#ifndef GT10
 #ifdef RUNNER
                     while ( hiPrioQ && BDMF_ERR_OK != rdpa_egress_tm_queue_exists(port->p.port_id, hiPrioQ) ) hiPrioQ--;
 #endif                    
-                    *pMark = SKBMARK_SET_Q_PRIO(*pMark, hiPrioQ);
+#endif
+		    *pMark = SKBMARK_SET_Q_PRIO(*pMark, hiPrioQ);
                 }
             }
         }
@@ -1134,9 +1137,20 @@ normal_path:
 #endif
         /* TODO: data demux should happen here */
 
-        if (unlikely(len < ETH_ZLEN))
+        pad = ETH_ZLEN;
+        if (is_netdev_tx_pad(dev) && (len > pad) && (len & 1)) {
+            enet_dbg_tx("port: %s tx pad enabled. len %u %u",
+                port->name, len, IS_SKBUFF_PTR(pNBuff) ? PNBUFF_2_SKBUFF(pNBuff)->len : PNBUFF_2_FKBUFF(pNBuff)->len);
+            pad = len + 1;
+        }
+
+        if (unlikely(len < pad))
         {                
-            ret = nbuff_pad(pNBuff, ETH_ZLEN - len);
+            ret = nbuff_pad(pNBuff, pad - len);
+
+            enet_dbg_tx("port: %s after pad len %u %u",
+                port->name, len, IS_SKBUFF_PTR(pNBuff) ? PNBUFF_2_SKBUFF(pNBuff)->len : PNBUFF_2_FKBUFF(pNBuff)->len);
+
             if (unlikely(ret))
             {
                /* if skb can't pad, skb is freed on error */

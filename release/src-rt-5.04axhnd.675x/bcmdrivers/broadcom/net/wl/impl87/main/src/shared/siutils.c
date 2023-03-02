@@ -137,12 +137,22 @@ static bool force_seci_clk = 0;
 	(devid == EMBEDDED_2x2AX_ID && chiprev == 0 && enum_base == DUALSLICE_DEV_B_PHYS_ADDR)
 #endif /* BCAWLAN205004 */
 
+#ifndef DONGLEBUILD
+#define GCI_BLOCK_BASE		0x6000
+#define OFFSET_OTP_CTRL		0x314
+#define OTP_PWR_DIS		(1<<15)
+#endif /* DONGLEBUILD */
+
 /* local prototypes */
 static si_info_t *si_doattach(si_info_t *sii, uint devid, osl_t *osh, volatile void *regs,
                               uint bustype, void *sdh, char **vars, uint *varsz);
 static bool si_buscore_prep(si_info_t *sii, uint bustype, uint devid, void *sdh);
 static bool si_buscore_setup(si_info_t *sii, chipcregs_t *cc, uint bustype, uint32 savewin,
 	uint *origidx, volatile void *regs);
+
+#ifndef DONGLEBUILD
+static void si_reset_otp_ctrl(si_t *sih, osl_t *osh, uint devid, volatile void *regs);
+#endif /* DONGLEBUILD */
 
 #if !defined(BCMDONGLEHOST)
 static void si_nvram_process(si_info_t *sii, char *pvars);
@@ -2577,6 +2587,11 @@ BCMATTACHFN(si_doattach)(si_info_t *sii, uint devid, osl_t *osh, volatile void *
 
 	/* find Chipcommon address */
 	if (bustype == PCI_BUS) {
+#ifndef DONGLEBUILD
+		if (BCM6715_DEVICE(devid) || BCM6715_CHIP(devid)) {
+			si_reset_otp_ctrl(sih, sii->osh, devid, regs);
+		}
+#endif /* DONGLEBUILD */
 		savewin = OSL_PCI_READ_CONFIG(sii->osh, PCI_BAR0_WIN, sizeof(uint32));
 		if (!GOODCOREADDR(savewin, SI_ENUM_BASE(sih)))
 			savewin = SI_ENUM_BASE(sih);
@@ -9071,3 +9086,29 @@ si_lhl_ps_mode(si_t *sih)
 	si_info_t *sii = SI_INFO(sih);
 	return sii->lhl_ps_mode;
 }
+
+#ifndef DONGLEBUILD
+static void
+si_reset_otp_ctrl(si_t *sih, osl_t *osh, uint devid, volatile void *regs)
+{
+	uint32 savewin;
+	uint32 regval;
+	/* save BAR0 */
+	savewin = OSL_PCI_READ_CONFIG(osh, PCI_BAR0_WIN, sizeof(uint32));
+
+	/* toggle OTP power */
+	OSL_PCI_WRITE_CONFIG(osh, PCI_BAR0_WIN, 4,
+			si_enum_base(devid) + GCI_BLOCK_BASE);
+	regval = R_REG(osh, ((volatile uint32*)((volatile uint8*)regs+OFFSET_OTP_CTRL)));
+	W_REG(osh, ((volatile uint32*) ((volatile uint8*)regs+OFFSET_OTP_CTRL)),
+		regval+OTP_PWR_DIS);
+	(void)R_REG(osh, ((volatile uint32*)((volatile uint8*)regs+OFFSET_OTP_CTRL)));
+	W_REG(osh, ((volatile uint32*) ((volatile uint8*)regs+OFFSET_OTP_CTRL)), regval);
+	(void)R_REG(osh, ((volatile uint32*)((volatile uint8*)regs+OFFSET_OTP_CTRL)));
+
+	/* restore BAR0 */
+	OSL_PCI_WRITE_CONFIG(osh, PCI_BAR0_WIN, 4, savewin);
+	OSL_DELAY(1000);
+	return;
+}
+#endif /* DONGLEBUILD */

@@ -472,23 +472,11 @@ static int xport_platform_init(xport_xlmac_port_info_s *init_params)
         rx_lss_ctrl.local_fault_disable = 1;
         rc = rc ? rc : ag_drv_xport_xlmac_core_rx_lss_ctrl_set(init_params->xport_port_id, &rx_lss_ctrl);
     }
-    {   xport_xlmac_core_tx_ctrl ctrl;
-        rc = rc ? rc : ag_drv_xport_xlmac_core_tx_ctrl_get(init_params->xport_port_id, &ctrl);
-        ctrl.average_ipg = 11;
-        rc = rc ? rc : ag_drv_xport_xlmac_core_tx_ctrl_set(init_params->xport_port_id, &ctrl);
-    }
     {   uint32_t prog_tx_crc; uint8_t tx_crc_corruption_mode; uint8_t tx_crc_corrupt_en; uint8_t tx_err_corrupts_crc;
         rc = rc ? rc : ag_drv_xport_xlmac_core_tx_crc_corrupt_ctrl_get(init_params->xport_port_id,&prog_tx_crc,&tx_crc_corruption_mode,&tx_crc_corrupt_en,&tx_err_corrupts_crc);
         tx_crc_corrupt_en = 0; tx_err_corrupts_crc = 0;
         rc = rc ? rc : ag_drv_xport_xlmac_core_tx_crc_corrupt_ctrl_set(init_params->xport_port_id, prog_tx_crc, tx_crc_corruption_mode, tx_crc_corrupt_en, tx_err_corrupts_crc);
     }
-#if 0    
-    {   xport_xlmac_core_rx_ctrl rx_ctrl;
-        rc = rc ? rc : ag_drv_xport_xlmac_core_rx_ctrl_get(init_params->xport_port_id,&rx_ctrl);
-        rx_ctrl.rx_pass_pfc = 1; rx_ctrl.rx_pass_pause = 1; 
-        rc = rc ? rc : ag_drv_xport_xlmac_core_rx_ctrl_set(init_params->xport_port_id,&rx_ctrl);
-    }
-#endif
 
     return rc;
 }

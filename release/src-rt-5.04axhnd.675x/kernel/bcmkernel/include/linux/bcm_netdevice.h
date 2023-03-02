@@ -60,6 +60,8 @@ written consent.
 #define BCM_IFF_WLANDEV_DHD (1 << 8)
 #define BCM_IFF_MCAST_ROUTER (1 << 9)
 
+#define BCM_IFF_TX_PAD       (1 << 20) /* pad tx len to even to workaround Starlink GEN2 connectivity issue */
+
 #define BLOG_DEV_STAT_FLAG_INCLUDE_SW_UC    (1<<0) /* Include SW accelerated Unicast stats */
 #define BLOG_DEV_STAT_FLAG_INCLUDE_HW_UC    (1<<1) /* Include HW accelerated Unicast stats */
 #define BLOG_DEV_STAT_FLAG_INCLUDE_SW_MC    (1<<2) /* Include SW accelerated Multicast stats */
@@ -149,6 +151,10 @@ struct bcm_netdev_ext {
 #define netdev_mcastrouter_set(_dev)        (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_MCAST_ROUTER
 #define netdev_mcastrouter_unset(_dev)      (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_MCAST_ROUTER
 #define is_netdev_mcastrouter(_dev)         ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_MCAST_ROUTER)
+
+#define netdev_tx_pad_set(_dev)         (_dev)->bcm_nd_ext.iff_flags |= BCM_IFF_TX_PAD
+#define netdev_tx_pad_unset(_dev)       (_dev)->bcm_nd_ext.iff_flags &= ~BCM_IFF_TX_PAD
+#define is_netdev_tx_pad(_dev)          ((_dev)->bcm_nd_ext.iff_flags & BCM_IFF_TX_PAD)
 
 // for NETDEV_CHANGEUPPER
 #define is_netdev_br_port_add(_dev, _ptr)   (netif_is_bridge_port(_dev) && ((struct netdev_notifier_changeupper_info *)(ptr))->linking)

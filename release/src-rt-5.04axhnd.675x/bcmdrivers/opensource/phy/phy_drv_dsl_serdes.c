@@ -64,15 +64,69 @@ static void set_common_speed_range(phy_dev_t *phy_dev)
     phy_serdes->common_lowest_speed_cap = phy_speed_to_cap(phy_serdes->common_lowest_speed, PHY_DUPLEX_FULL);
 }
 
-static void get_dt_config_speed(phy_dev_t *phy_dev)
+static int get_dt_config_xfi(phy_dev_t *phy_dev)
+{
+    const char *_config_xfi;
+    int an_enabled = 0;
+    char config_xfi[256];
+
+    phy_serdes_t *phy_serdes = phy_dev->priv;
+    dt_handle_t handle = phy_serdes->handle;  // from dt_priv
+
+    _config_xfi = dt_property_read_string(handle, "config-xfi");
+    if (!_config_xfi)
+        return -1;
+
+    strncpy(config_xfi, _config_xfi, sizeof(config_xfi)-1);
+    config_xfi[sizeof(config_xfi)-1]=0;
+
+    if ((an_enabled = strcasecmp(config_xfi+strlen(config_xfi)-strlen("_A"), "_A") == 0))
+        config_xfi[strlen(config_xfi)-strlen("_A")] = 0;
+
+    if (strcasecmp(config_xfi, "1000Base-X") == 0)
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_1000BASE_X;
+    if (strcasecmp(config_xfi, "2500Base-X") == 0)
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_2500BASE_X;
+    if (strcasecmp(config_xfi, "2.5GBase-X") == 0)
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_2P5GBASE_X;
+    if (strcasecmp(config_xfi, "5GBase-R") == 0)
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_5GBASE_R;
+    if (strcasecmp(config_xfi, "10GBase-R") == 0)
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_10GBASE_R;
+    if (strcasecmp(config_xfi, "USXGMII") == 0)
+        phy_dev->current_inter_phy_type = INTER_PHY_TYPE_USXGMII;
+
+    if (an_enabled && !INTER_PHY_TYPE_AN_SUPPORT(phy_dev->current_inter_phy_type))
+    {
+        printkwarn("Serdes at address %d with Mode %s does not support AN enabled, ignore it.\n", 
+            phy_dev->addr, config_xfi);
+        an_enabled = 0;
+    }
+    if (INTER_PHY_TYPE_AN_ONLY(phy_dev->current_inter_phy_type))
+        an_enabled = 1;
+
+    phy_dev->an_enabled = an_enabled;
+    phy_dev->common_inter_phy_types = phy_dev->configured_inter_phy_types = (1<<phy_dev->current_inter_phy_type);
+    if ((phy_dev->inter_phy_types & phy_dev->configured_inter_phy_types) == 0)
+        BUG_CHECK("Configured XFI Mode in DT File Is Not Supported by the Serdes at address %d\n", phy_dev->addr);
+
+    return 0;
+}
+
+static int get_dt_config_speed(phy_dev_t *phy_dev)
 {
     uint32_t speed;
     phy_serdes_t *phy_serdes = phy_dev->priv;
     dt_handle_t handle = phy_serdes->handle;  // from dt_priv
 
-    speed = dt_property_read_u32(handle, "config_speed");
-    if (speed == -1)
-        return;
+    if ((speed = dt_property_read_u32(handle, "config-speed")) == -1)
+    {
+    	speed = dt_property_read_u32(handle, "config_speed");
+    	if (speed == -1)
+            return -1;
+        else
+            printkwarn("\"config_speed\" in DT file is deprecated, please use \"config-speed\"");
+    }
 
     switch(speed)
     {
@@ -86,10 +140,10 @@ static void get_dt_config_speed(phy_dev_t *phy_dev)
             phy_serdes->config_speed = PHY_SPEED_5000;
             break;
         case 10000:
-            phy_serdes->config_speed = PHY_SPEED_5000;
+            phy_serdes->config_speed = PHY_SPEED_10000;
             break;
     }
-    return;
+    return 0;
 }
 
 int phy_dsl_serdes_init(phy_dev_t *phy_dev)
@@ -115,13 +169,21 @@ int phy_dsl_serdes_init(phy_dev_t *phy_dev)
     {
             /* Inter switch speed will use definition in the following priority
             1. DT, 2. Init config_speed value in phy_serdes_t 3. highest speed */
-        get_dt_config_speed(phy_dev);
+        if (get_dt_config_speed(phy_dev) == 0)
+            phy_serdes->current_speed = phy_serdes->config_speed;
+            
+        if (get_dt_config_xfi(phy_dev) == 0)
+        {
+            uint32_t supported_speed_caps;
+            get_inter_phy_supported_speed_caps(phy_dev->configured_inter_phy_types, &supported_speed_caps);
+            phy_serdes->current_speed = phy_serdes->config_speed = phy_caps_to_max_speed(supported_speed_caps);
+        }
+            
         if (phy_serdes->config_speed == PHY_SPEED_UNKNOWN)
             phy_serdes->config_speed = phy_serdes->highest_speed;
         phy_serdes->power_mode = SERDES_NO_POWER_SAVING;
         dsl_serdes_power_set(phy_dev, 1);
         phy_serdes->signal_detect_gpio = -1;
-        phy_serdes->current_speed = phy_serdes->config_speed;
         goto end;
     }
 
@@ -207,10 +269,10 @@ char *dsl_serdes_get_phy_name(phy_dev_t *phy_dev)
     int sz = sizeof(buf), n = 0;
 
     if(phy_dev_is_mphy(phy_dev))
-        n += snprintf(buf+n, sz-n, "%s#M%d.%d", phy_dev->phy_drv->name, 
+        n += snprintf(buf+n, sz-n, "%s#M%d.%d", phy_dev->phy_drv->name,
             phy_dev->core_index, phy_serdes->usxgmii_m_index);
     else
-        n += snprintf(buf+n, sz-n, "%s#L%d.%d", phy_dev->phy_drv->name, 
+        n += snprintf(buf+n, sz-n, "%s#L%d.%d", phy_dev->phy_drv->name,
             phy_dev->core_index, phy_dev->lane_index);
     return buf;
 }
@@ -271,7 +333,8 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
 
         phy_dev->current_inter_phy_type = phy_get_best_inter_phy_configure_type(phy_dev,
                 phy_dev->configured_inter_phy_types, phy_serdes->config_speed);
-	if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && phy_dev->usxgmii_m_type == USXGMII_M_NONE)
+        if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev) &&
+            !IS_USXGMII_MULTI_PORTS(phy_dev) && !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
         /* Work around for some non Broadcom PHYs not sync link status between Copper side and Serdes side */
         /* Exclude external switch connection from power down operation */
         {
@@ -291,14 +354,14 @@ static int phy_dsl_serdes_power_set(phy_dev_t *phy_dev, int enable)
     int rc = 0;
     phy_serdes_t *phy_serdes = (phy_serdes_t *)phy_dev->priv;
 
-    dsl_serdes_power_set(phy_dev, enable);
     phy_serdes->power_admin_on = enable > 0;
 
     /* Bypass power on when external PHY link is down; - For non BRCM PHY and power saving */
     /* Exclude external switch connection from power down operation */
-    if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && phy_serdes->sfp_module_type == SFP_FIXED_PHY && 
-        phy_dev->usxgmii_m_type == USXGMII_M_NONE &&
-        phy_dev->cascade_next->link == 0 && enable && phy_serdes->power_mode > SERDES_BASIC_POWER_SAVING)
+    if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev) &&
+        phy_serdes->sfp_module_type == SFP_FIXED_PHY && phy_dev->usxgmii_m_type == USXGMII_M_NONE &&
+        phy_dev->cascade_next->link == 0 && enable && phy_serdes->power_mode >= SERDES_BASIC_POWER_SAVING &&
+        !phy_dev_is_broadcom_phy(phy_dev->cascade_next))
         return 0;
 
     dsl_serdes_power_set(phy_dev, enable);
@@ -456,6 +519,8 @@ static void dsl_serdes_speed_detect(phy_dev_t *phy_dev)
     uint32_t inter_phy_types;
     phy_speed_t speed;
 
+    if (PhyIsPortConnectedToExternalSwitch(phy_dev) || PhyIsFixedConnection(phy_dev))
+        return;
     if (phy_serdes->config_speed != PHY_SPEED_AUTO)
         return;
 
@@ -606,7 +671,8 @@ int dsl_serdes_cfg_speed_set_lock(phy_dev_t *phy_dev, phy_speed_t speed, phy_dup
 
     mutex_lock(&serdes_mutex);
 
-    if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && 
+    if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev) &&
+        !phy_dev_is_broadcom_phy(phy_dev->cascade_next) &&
         phy_serdes->sfp_module_type == SFP_FIXED_PHY && phy_dev->usxgmii_m_type == USXGMII_M_NONE)
     {   /* Work around for some non Broadcom PHYs not sync link status between Copper side and Serdes side */
         /* Exclude external switch connection from power down operation */
@@ -664,9 +730,10 @@ int dsl_serdes_cfg_speed_set(phy_dev_t *phy_dev, phy_speed_t speed, phy_duplex_t
                 if (!phy_dev->link)
                     printkwarn("Warning: Serdes at %d link does not go up following external copper PHY at %d.",
                         phy_dev->addr, copper_phy->addr);
-            }
-            else
-            {
+        	}
+
+        	if (!PhyIsPortConnectedToExternalSwitch(phy_dev) && !PhyIsFixedConnection(phy_dev))
+        	{
                 phy_dev->link = 0;
 
                 if( phy_serdes->power_mode == SERDES_ADVANCED_POWER_SAVING)

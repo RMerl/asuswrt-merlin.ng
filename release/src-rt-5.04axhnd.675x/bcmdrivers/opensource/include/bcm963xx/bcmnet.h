@@ -124,6 +124,8 @@ enum {
     ETHPHYMACSEC,
     ETHWIRESPEEDGET,
     ETHWIRESPEEDSET,
+    ETHTXPADGET,
+    ETHTXPADSET,
 };
 
 struct ethctl_data {

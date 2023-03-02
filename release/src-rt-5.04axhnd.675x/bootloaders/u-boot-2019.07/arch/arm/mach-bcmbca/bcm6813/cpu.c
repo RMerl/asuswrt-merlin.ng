@@ -21,7 +21,7 @@
 void disable_memc_sram(void)
 {
 	uint32_t reg = MEMC_BASE + mc2_afx_sram_match_cfg_sram_start_addr_hi;
-
+	
 	writel(readl(reg)&~0x80000000, reg);
 }
 
@@ -69,6 +69,8 @@ static void enable_ns_access(void)
 	BIUCFG->bac.bac_permission |= 0x33; // Linux access to BAC_CPU_THERM_TEMP
 }
 
+static void setup_ubus_rangechk(void)
+{
 	/* Size in MB. First 2GB is set up by default */  
 	int size_left = tplparams->ddr_size - 2048;
 	int size, size_bit, i = 1;
@@ -97,7 +99,7 @@ static void enable_ns_access(void)
 				size_bit++;
 		}
 
-	        UBUS4_RANGE_CHK_SETUP->cfg[i].control = 0x1f0;
+		UBUS4_RANGE_CHK_SETUP->cfg[i].control = 0x1f0;
 		UBUS4_RANGE_CHK_SETUP->cfg[i].srcpid[0] = 0xffffffff;
 		UBUS4_RANGE_CHK_SETUP->cfg[i].seclev = 0xffffffff;
 		UBUS4_RANGE_CHK_SETUP->cfg[i].base = (addr&0xffffffe0) | size_bit;
@@ -156,9 +158,9 @@ static int reset_plls(void)
 int arch_cpu_init(void)
 {
 #if defined(CONFIG_SPL_BUILD) && !defined(CONFIG_TPL_BUILD)
+	disable_memc_sram();  
 	enable_ts0_couner();
 #if defined(CONFIG_BCMBCA_DDRC)
-	disable_memc_sram();
 	spl_ddrinit_prepare();
 #endif
 	enable_upper_memory_access();

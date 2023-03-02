@@ -1736,6 +1736,7 @@ dhd_wet_send_proc(void *wet, int ifidx, void *sdu, void **new)
 		if (IS_SKBUFF_PTR(sdu) && ((struct sk_buff*)sdu)->blog_p) {
 			blog_skb((struct sk_buff *)pkt);
 			blog_copy(((struct sk_buff *)pkt)->blog_p, ((struct sk_buff *)sdu)->blog_p);
+			((struct sk_buff *)pkt)->dev = ((struct sk_buff *)sdu)->dev;
 		}
 #endif
 		PKTFREE(WETOSH(weth), sdu, TRUE);

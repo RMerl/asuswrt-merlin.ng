@@ -1,0 +1,245 @@
+#include "4908.dtsi"
+
+/ {
+    memory_controller {
+        memcfg = <(BP_DDR_SPEED_800_11_11_11 | \
+                   BP_DDR_TOTAL_SIZE_512MB   | \
+                   BP_DDR_DEVICE_WIDTH_16    | \
+                   BP_DDR_TOTAL_WIDTH_16BIT  | \
+                   BP_DDR_SSC_CONFIG_1)>;
+    };
+
+/*
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 23 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};	
+		};
+		ses_button {
+			ext_irq = <&bca_extintr 22 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_LEVEL)>;
+			release {
+				ses_short_period = <0>;
+				ses_long_period = <3>;
+			};
+		};
+	};
+*/
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+    status = "disabled";
+};
+&pcie1 {
+    status = "disabled";
+};
+&pcie2 {
+    status = "disabled";
+};
+#endif //#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+
+
+&mdio_sf2 {
+	/* PHYs directly connected to SF2 */
+	gphy8:8 {
+		status = "okay";
+	};
+	gphy9:9 {
+		status = "okay";
+	};
+	gphya:a {
+		status = "okay";
+	};
+	gphyb:b {
+		status = "okay";
+	};
+
+	/* PHYs connected to crossbar */
+	gphyc:c {
+		status = "okay";
+	};
+
+	phy_m2m:m2m {
+		compatible = "brcm,bcaphy";
+		phy-type = "MAC2MAC";
+		reg = <1>;
+		xbar-ext-ep = <2>;          /* external endpoint2 */
+		status = "okay";
+	};
+
+	/* Crossbar groups */
+	xbar_grp0:0 {
+		phy-handle = <&phy_m2m>;
+		status = "okay";
+	};
+
+	xbar_grp1:1 {
+		phy-handle = <&gphyc>;
+		status = "okay";
+	};
+};
+
+&switch_sf2 {
+    switch-reset = <&gpioc 14 GPIO_ACTIVE_LOW>;
+
+	ports {
+		sf2_port0@0 {
+			phy-handle = <&gphy8>;
+            network-leds = <&led1 &led16>;
+			status = "okay";
+		};
+
+		sf2_port1@1 {
+			phy-handle = <&gphy9>;
+            network-leds = <&led3 &led17>;
+			status = "okay";
+		};
+
+		sf2_port2@2 {
+			phy-handle = <&gphya>;
+            network-leds = <&led5 &led18>;
+			status = "okay";
+		};
+
+		sf2_port3@3 {
+			phy-handle = <&gphyb>;
+            network-leds = <&led7 &led19>;
+			status = "okay";
+		};
+
+		sf2_port7@7 {
+			phy-handle = <&xbar_grp0>;
+			mii-pinctrl-state = "rgmii";
+			phy-mode = "rgmii";
+			rgmii-3p3v;
+			rx-delay;
+			tx-delay;
+            status = "okay";
+		};
+	};
+};
+
+&switch0 {
+	pinctrl-names = "default", "rgmii"; 
+	pinctrl-0 = <&mii_mdc_pin_48 &mii_mdio_pin_49 &rgmii_pins>; 
+	pinctrl-1 = <&rgmii_pins>; 
+
+	ports {
+		port3@3 {
+			phy-handle = <&xbar_grp1>;
+			phy-mode = "gmii";
+            network-leds = <&led11 &led21>;
+			status = "okay";
+		};
+	};
+};
+
+&led_ctrl {
+
+    /* GPHY0 ~ GPHY3 SPD */
+    led1: port_0-led-1-pin_1 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led3: port_1-led-1-pin_3 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led5: port_2-led-1-pin_5 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led7: port_3-led-1-pin_7 {
+        active_high;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+    /* WAN SPD */
+    led11: rnr_port_3-led-1-pin_11 {
+        active_low;
+        link = <(LED_SPEED_1G)>;
+        status = "okay";
+    };
+
+    /* GPHY0 ~ GPHY3 ACT */
+    led16: port_0-led_2-pin_16 {
+        active_low;
+        activity = <(LED_SPEED_100 | LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led17: port_1-led_2-pin_17 {
+        active_low;
+        activity = <(LED_SPEED_100 | LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led18: port_2-led_2-pin_18 {
+        active_low;
+        activity = <(LED_SPEED_100 | LED_SPEED_1G)>;
+        status = "okay";
+    };
+    led19: port_3-led_2-pin_19 {
+        active_low;
+        activity = <(LED_SPEED_100 | LED_SPEED_1G)>;
+        status = "okay";
+    };
+    /* WAN ACT */
+    led21: rnr_port_3-led_2-pin_21 {
+        active_low;
+        activity = <(LED_SPEED_100 | LED_SPEED_1G)>;
+        status = "okay";
+    };
+
+    /* USB LED */
+    led2: sw_led_12-pin_12 {
+        active_low;
+        init_high;
+        status = "okay";
+    };
+    
+    /* ar3012_dsiable */
+    ar3012_dsiable: sw_led_15-pin_15 {
+        active_low;
+        init_high;
+        status = "okay";
+    };
+
+    /* PWR LED */
+    pwr_led: sw_led_22-pin_22 {
+        active_low;
+        init_low;
+        status = "okay";
+    };
+
+    /* ethall on */
+    led_ethall: sw_led_24-pin_24 {
+        active_low;
+        init_high;
+        status = "okay";
+    };
+
+    /* ar3012_reset */
+    ar3012_reset: sw_led_25-pin_25 {
+        active_low;
+        init_high;
+        status = "okay";
+    };
+
+    /* usb pwron */
+    //usb_pwr: sw_led_67-pin_67 {
+    //    active_high;
+    //    init_high;
+    //    status = "okay";
+    //};
+};

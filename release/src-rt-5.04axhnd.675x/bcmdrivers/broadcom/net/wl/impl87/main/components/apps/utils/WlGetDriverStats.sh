@@ -360,10 +360,8 @@ host_side_dump () {
     echo "HOST Statistics"
     echo "================================="
 
-    fcctl status;
+    FcStats.sh
     cat /proc/wfd/stats;
-    cat /proc/fcache/stats/errors;
-    cat /proc/fcache/stats/slow_path;
     if [[ $MODE == "dhd" ]]; then
     bs /d/r/pddc;
     bs /d/rdd pdfrc;

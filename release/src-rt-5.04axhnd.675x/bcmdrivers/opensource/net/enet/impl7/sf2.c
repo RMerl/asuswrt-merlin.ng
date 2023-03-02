@@ -324,7 +324,7 @@ static void _sf2_conf_que_thred(int unit)
     int available_switch_buf = SF2_MAX_BUFFER_IN_PAGE;
     int impPortCnt;
     int acb_xoff = acb_port_xoff_threshold > acb_xoff_threshold? acb_port_xoff_threshold: acb_xoff_threshold;
-#if (defined(CONFIG_BCM96756) && defined(RTAX58U_V2)) || defined(RTAX3000N)
+#if (defined(CONFIG_BCM96756) && defined(RTAX58U_V2)) || defined(RTAX3000N) || defined(BR63)
     uint8_t val8;
 #endif
 
@@ -541,7 +541,7 @@ static void _sf2_conf_que_thred(int unit)
     _sf2_conf_thred_2reg(unit, PAGE_FC_IMP0_TXQ, REG_FC_IMP0_TXQ_THD_RSV_QN0, sf2_imp0_thred);
     _sf2_conf_thred_2reg(unit, PAGE_FC_IMP1_TXQ, REG_FC_IMP0_TXQ_THD_RSV_QN0, sf2_wan_imp1_thred);
 
-#if (defined(CONFIG_BCM96756) && defined(RTAX58U_V2)) || defined(RTAX3000N)
+#if (defined(CONFIG_BCM96756) && defined(RTAX58U_V2)) || defined(RTAX3000N) || defined(BR63)
 #define P8_PORT_ID     8
     SF2SW_RREG(unit, PORT_OVERIDE_PAGE, PORT_OVERIDE_REG(P8_PORT_ID), &val8, sizeof(val8));
     val8 |= REG_PORT_STATE_TX_FLOWCTL | REG_PORT_STATE_RX_FLOWCTL;
@@ -3038,11 +3038,32 @@ static int tr_find_sf2_sw(enetx_port_t *sw, void *_ctx)
     if (sw->s.reset_gpiod)
     {
         struct gpio_desc *gpio = sw->s.reset_gpiod;
+#if defined(CONFIG_BCM94908)
+	uint8_t val8;
+	uint16_t val16;
+#endif
         printk("Lift external switch (%s) out of Reset\n", sw->obj_name);
         gpiod_direction_output(gpio, 1);
         gpiod_set_value(gpio, 1);   /* reset active */
         mdelay(100);
         gpiod_set_value(gpio, 0);   /* reset clear */
+#if defined(CONFIG_BCM94908)
+	// lifting external unmanged out of reset
+	mdelay(100);
+
+	// also configure unmanaged mode (53134)
+	/* Enable RX_UCST_EN, RX_MCST_EN, RX_BCST_EN */
+	val8 = REG_MII_PORT_CONTROL_RX_UCST_EN | REG_MII_PORT_CONTROL_RX_MCST_EN | REG_MII_PORT_CONTROL_RX_BCST_EN;
+	sf2_pseudo_mdio_switch_write(PAGE_CONTROL, REG_MII_PORT_CONTROL, &val8, 1);
+
+	/* Force IMP port link up: Enable LINK_STS */
+	val8 = IMP_LINK_OVERRIDE_1000FDX;
+	sf2_pseudo_mdio_switch_write(PAGE_CONTROL, REG_CONTROL_MII1_PORT_STATE_OVERRIDE, &val8, 1);
+
+	/* unmanged mode, enable forwarding: Enable MII_DUMP_FEDG_EN */
+	val16 = 0x0040;
+	sf2_pseudo_mdio_switch_write(PAGE_CONTROL, REG_SWITCH_CONTROL, &val16, 2);
+#endif
     }
     return 0;
 }

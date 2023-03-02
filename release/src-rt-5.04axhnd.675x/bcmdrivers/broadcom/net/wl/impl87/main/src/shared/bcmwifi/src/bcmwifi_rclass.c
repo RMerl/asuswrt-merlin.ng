@@ -1262,7 +1262,7 @@ bcmwifi_rclass_get_chanspec_from_chan_idx(const bcmwifi_rclass_info_t *entry, ui
 	uint16 sb = WL_CHANSPEC_CTL_SB_NONE;
 	uint8 chan = 0;
 
-	if (chn_idx > entry->chan_set_len) {
+	if (chn_idx >= entry->chan_set_len) {
 		ret = BCME_BADARG;
 		goto done;
 	}

@@ -280,12 +280,12 @@ void spl_list_mcb_sel(void)
 	} while (1);
 }
 
-#ifdef CONFIG_BCMBCA_DDRC_WBF_WAR
+#ifdef CONFIG_BCMBCA_DDRC_WBF_EARLY_INIT
 #define MC2_READ_REG(offset)		*((volatile u32*)(uintptr_t)(MEMC_BASE + (offset)))
 #define MC2_WRITE_REG(offset, val)	*((volatile u32*)(uintptr_t)(MEMC_BASE + (offset))) = (val)
 #define print_log(format, ...)
 
-void bcm_ddrc_wbf_workaround(void)
+void bcm_ddrc_mc2_wbf_buffers_init(void)
 {
 	uint32_t val, id_addr, fifo_id, wbf_id;
 	uint32_t data;
@@ -301,7 +301,8 @@ void bcm_ddrc_wbf_workaround(void)
 	if(data != 0x503)
 		return;
 
-	// id freeze, id_wr
+	printf("bcm_ddrc_mc2_wbf_buffers_init called\n");
+	// id freeze, id_wr 
 	cmd_freeze               = ((1<<mc2_wbf_id_bkdr_id_cmd_id_freeze_SHIFT));
 	cmd_freeze_and_id_wr     = ((1<<mc2_wbf_id_bkdr_id_cmd_id_freeze_SHIFT) | (1<<mc2_wbf_id_bkdr_id_cmd_id_wr_SHIFT));
 	cmd_freeze_and_id_go_all = ((1<<mc2_wbf_id_bkdr_id_cmd_id_freeze_SHIFT) | (0xF<<mc2_wbf_id_bkdr_id_cmd_id_go_SHIFT));
@@ -311,7 +312,7 @@ void bcm_ddrc_wbf_workaround(void)
 	MC2_WRITE_REG( mc2_wbf_bkdr_bkdr_cmd,  0x0000000);    // set pslc_buf to 0
 
 	// Read out all the wbf_id from idfifo2 and store in orig_wbf_ids array
-	for(id_addr=0;id_addr<80;id_addr++) {
+	for(id_addr=0;id_addr<80;id_addr++) { 
 		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, id_addr | cmd_freeze_and_id_go_all); // write id_go+id_addr
 		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, id_addr | cmd_freeze);               // reset id_go+id_addr
 		val = MC2_READ_REG(mc2_wbf_id_bkdr_id_data2);
@@ -340,10 +341,10 @@ void bcm_ddrc_wbf_workaround(void)
 
 	for(int i=0;i<6;i++) {
 		fifo_id = id2_pre_array[i];
-		for(uint32_t id_num=0; id_num<2; id_num++) {
+		for(uint32_t id_num=0; id_num<2; id_num++) { 
 			MC2_WRITE_REG( mc2_wbf_bkdr_bkdr_cmd, (fifo_id << mc2_wbf_bkdr_bkdr_cmd_pslc_wbf_buf_sel_SHIFT) ); //set the fifo to search
 			MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, (cmd_freeze_and_id_go_all | id_num) );//id_addr, go-bit
-			MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd,  cmd_freeze );//id_addr, clear go-bit 
+			MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd,  cmd_freeze );//id_addr, clear go-bit     
 			val = MC2_READ_REG(mc2_wbf_id_bkdr_id_data2);
 			id2_wbfid_array[i*2+id_num]=val;
 			print_log("prefetch_fifo[%02d][%d] = 0x%02x\n",i,id_num,val);
@@ -351,10 +352,12 @@ void bcm_ddrc_wbf_workaround(void)
 	}
 	MC2_WRITE_REG( mc2_wbf_bkdr_bkdr_cmd, 0x0000000 );    // clear id_go+id_addr
 	// end of reading out idfifo2 info
+
 	// start populating id_fifo
 	val = MC2_READ_REG(mc2_wbf_pri_cfg);
 	val &= ~(mc2_wbf_pri_cfg_wbf_shared_fifo0_MASK); // disable shared mode, reverting to A0 wbf logic
 	MC2_WRITE_REG( mc2_wbf_pri_cfg, val );
+
 	//re-consturct fifo with original fifo data
 	for(id_addr=0;id_addr<80;id_addr++) {
 		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_data2, orig_wbf_ids[id_addr]);
@@ -362,16 +365,19 @@ void bcm_ddrc_wbf_workaround(void)
 		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, (cmd_freeze_and_id_wr | id_addr ) );
 		print_log("new_wbf_id[%02d] = 0x%02x\n",id_addr,orig_wbf_ids[id_addr]);
 	}
+
 	//this deals with idfifo2 prefetched buffers, should put the 12 prefetched buffers back in the main pool
-	for(int i=0;i<12;i++) {
+	for(int i=0;i<12;i++) { 
 		wbf_id = id2_wbfid_array[i];
 		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_data2, wbf_id);
 		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, cmd_freeze_and_id_wr	| (1<<mc2_wbf_id_bkdr_id_cmd_id_go_SHIFT) | orig_wptr ); //id_addr, go-bit
-		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, cmd_freeze_and_id_wr ); //id_addr, clear go-bit
+		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, cmd_freeze_and_id_wr ); //id_addr, clear go-bit	 
 		print_log("new_wbf_id[%02d] = 0x%02x\n",orig_wptr,wbf_id);
+
 		orig_wptr   = (orig_wptr+1) % 80;   //80 slots max taking care of wrap around
 		orig_level += 1;                    // built on what we had before
 	}
+
 	// update read pointer, write pointer, level
 	data = (((orig_wptr  << mc2_wbf_id_bkdr_id_data_wbf_id_wr_ptr_SHIFT) & mc2_wbf_id_bkdr_id_data_wbf_id_wr_ptr_MASK)  |
 		((orig_rptr  << mc2_wbf_id_bkdr_id_data_wbf_id_rd_ptr_SHIFT) & mc2_wbf_id_bkdr_id_data_wbf_id_rd_ptr_MASK)  |
@@ -381,6 +387,7 @@ void bcm_ddrc_wbf_workaround(void)
 	MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, cmd_freeze_and_id_wr );	 //id_addr, clear go-bit
 	print_log("new_wbf_ptrs = 0x%x\n",data);
 
+	
 	// clean up the wbf ih prefetched buffer
 	// rd_ptr, wr_ptr, level all zero
 	MC2_WRITE_REG( mc2_wbf_id_bkdr_id_data, 0x0);
@@ -389,13 +396,13 @@ void bcm_ddrc_wbf_workaround(void)
 		MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, cmd_freeze_and_id_wr ); //id_addr, clear go-bit
 		print_log("clear prefetch fifo = %d\n",id_addr);
 	}
-
+  
 	//Unfreeze the fifos
 	MC2_WRITE_REG( mc2_wbf_id_bkdr_id_cmd, 0x0);
+
 	return;
 }
 #endif
-
 /* This function is calle by arch_cpu_init very early during the boot
    to turn on DDR VREF_DQ voltage as soon as possible. Otherwise it may 
    be too late when ddr library to turn it

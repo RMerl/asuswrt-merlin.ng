@@ -118,7 +118,7 @@ __weak void disable_memc_sram(void)
 	/* disable 64KB sram in MEMC controller for MMU table */
 	MEMC->SRAM_REMAP_CTRL = 0;
 	MEMC->SRAM_REMAP_CTRL;
-#endif
+#endif	
 }
 
 #if !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)
@@ -321,8 +321,8 @@ void board_init_f(ulong dummy)
 #endif
 	early_abort();
 
-#ifdef CONFIG_BCMBCA_DDRC_WBF_WAR
-	bcm_ddrc_wbf_workaround();
+#ifdef CONFIG_BCMBCA_DDRC_WBF_EARLY_INIT
+	bcm_ddrc_mc2_wbf_buffers_init();
 #endif
 
 #if !CONFIG_IS_ENABLED(SYS_DCACHE_OFF)

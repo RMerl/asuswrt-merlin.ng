@@ -394,13 +394,13 @@ config BCMBCA_DDRC_EARLY_VREF_DQ
 	help
 	  Enable or disable early VREF_DQ voltage turn on
 
-config BCMBCA_DDRC_WBF_WAR
-	bool "DDR controller WBF workaround"
+config BCMBCA_DDRC_WBF_EARLY_INIT
+	bool "DDR controller WBF early init"
 	default y if BCM4912
 	default y if BCM6813
 	default n
 	help
-	  Enable or disable DDR controller WBF workaround
+	  Enable or disable DDR controller WBF early init
 
 config BCMBCA_DDRC_DBGPRINT
 	bool "DDR Debug Print"

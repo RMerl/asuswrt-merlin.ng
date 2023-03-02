@@ -1120,11 +1120,15 @@ wl_probe_wdev_all(struct bcm_cfg80211 *cfg)
 	GCC_DIAGNOSTIC_PUSH();
 	BCM_LIST_FOR_EACH_ENTRY_SAFE(_net_info, next,
 		&cfg->net_list, list) {
-		WL_ERR(("%s: net_list[%d] bssidx: %d, "
-			"ndev: %p, wdev: %p \n", __FUNCTION__,
-			idx++, _net_info->bssidx,
+		WL_ERR(("%s: net_list[%d] bssidx: %d, ifidx: %d "
+			"ndev(%s): %p, wdev: %p wdev->netdev(%s): %p\n",
+			__FUNCTION__,
+			idx++, _net_info->bssidx, _net_info->ifidx,
+			_net_info->ndev->name,
 			OSL_OBFUSCATE_BUF(_net_info->ndev),
-			OSL_OBFUSCATE_BUF(_net_info->wdev)));
+			OSL_OBFUSCATE_BUF(_net_info->wdev),
+			_net_info->wdev->netdev->name,
+			_net_info->wdev->netdev));
 	}
 	GCC_DIAGNOSTIC_POP();
 	spin_unlock_irqrestore(&cfg->net_list_sync, flags);
@@ -1217,6 +1221,7 @@ wl_alloc_netinfo(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 	if (!_net_info)
 		err = -ENOMEM;
 	else {
+		spin_lock_irqsave(&cfg->net_list_sync, flags);
 		_net_info->mode = mode;
 		_net_info->ndev = ndev;
 		_net_info->wdev = wdev;
@@ -1226,7 +1231,6 @@ wl_alloc_netinfo(struct bcm_cfg80211 *cfg, struct net_device *ndev,
 		_net_info->roam_off = WL_INVALID;
 		_net_info->bssidx = bssidx;
 		_net_info->ifidx = ifidx;
-		spin_lock_irqsave(&cfg->net_list_sync, flags);
 		cfg->iface_cnt++;
 		list_add(&_net_info->list, &cfg->net_list);
 		spin_unlock_irqrestore(&cfg->net_list_sync, flags);
@@ -1415,17 +1419,25 @@ wl_get_mode_by_netdev(struct bcm_cfg80211 *cfg, struct net_device *ndev)
 	struct net_info *_net_info, *next;
 	s32 mode = -1;
 	unsigned long int flags;
+	bool ndev_found = FALSE;
 
 	spin_lock_irqsave(&cfg->net_list_sync, flags);
 	GCC_DIAGNOSTIC_PUSH();
 	BCM_LIST_FOR_EACH_ENTRY_SAFE(_net_info, next, &cfg->net_list, list) {
 		if (ndev && (_net_info->ndev == ndev)) {
 			mode = _net_info->mode;
+			ndev_found = TRUE;
 			break;
 		}
 	}
 	GCC_DIAGNOSTIC_POP();
 	spin_unlock_irqrestore(&cfg->net_list_sync, flags);
+
+	if (ndev_found == FALSE) {
+		WL_ERR(("ndev(%s) %p not found\n", ndev->name, ndev));
+		wl_probe_wdev_all(cfg);
+		ASSERT(0);
+	}
 	return mode;
 }
 

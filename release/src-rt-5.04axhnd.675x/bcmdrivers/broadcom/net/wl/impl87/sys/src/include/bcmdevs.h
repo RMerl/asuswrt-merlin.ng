@@ -651,6 +651,14 @@
 				((devid) == BCM47189_D11AC2G_ID) || \
 				((devid) == BCM47189_D11AC5G_ID))
 
+#define BCM6715_DEVICE(devid)	(((devid) == BCM6715_D11AX_ID) || \
+				((devid) == BCM6715_D11AX2G_ID) || \
+				((devid) == BCM6715_D11AX5G_ID) || \
+				((devid) == BCM6715_D11AX2G6G_ID) || \
+				((devid) == BCM6715_D11AX5G6G_ID) || \
+				((devid) == BCM6715_D11AX6G_ID) || \
+				((devid) == BCM6715_D11AX2G5G6G_ID))
+
 /* BCA embedded AX core found in multiple devices */
 #define BCM63178_CHIP_ID	0xf6ca		/* == 'd63178 */
 #define BCM47622_CHIP_ID	0xba06		/* == 'd47622 */

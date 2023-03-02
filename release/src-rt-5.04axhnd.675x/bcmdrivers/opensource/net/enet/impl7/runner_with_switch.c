@@ -616,7 +616,7 @@ port_ops_t port_sf2_port =
     {
         .switchdev_port_attr_get = sf2_switchdev_port_attr_get,
         .switchdev_port_attr_set = sf2_switchdev_port_attr_set, 
-    }
+    },
 #endif
     .mib_dump_us = port_sf2_mib_dump_us, // add by Andrew
 };

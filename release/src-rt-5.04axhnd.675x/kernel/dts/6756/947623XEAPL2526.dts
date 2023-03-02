@@ -41,7 +41,7 @@
 	};
 	phy_serdes1:serdes1 {
 		phy-extswitch;
-		config_speed = <2500>;
+		config-speed = <2500>;
 		status = "okay";
 	};
 	/* PHYs on external SF2 switch */

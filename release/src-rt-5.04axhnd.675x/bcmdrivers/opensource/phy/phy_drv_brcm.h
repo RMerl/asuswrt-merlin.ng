@@ -116,7 +116,6 @@ int brcm_shadow_rgmii_init(phy_dev_t *phy_dev);
 int brcm_loopback_set(phy_dev_t *phy_dev, int enable, phy_speed_t speed);
 int brcm_loopback_get(phy_dev_t *phy_dev, int *enable, phy_speed_t *speed);
 
-
 #define IsC45Phy(phy) (phy->phy_drv->phy_type == PHY_TYPE_EXT3 || phy->phy_drv->phy_type == PHY_TYPE_GPY211)
 
 static inline int phy_bus_c45_read32(phy_dev_t *phy_dev, uint32_t reg32, uint16_t *val_p)

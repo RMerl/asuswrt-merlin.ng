@@ -157,6 +157,25 @@ typedef enum {
     USXGMII_M_MAX
 } usxgmii_m_type_t;
 
+static inline int usxgmii_m_total_ports(usxgmii_m_type_t usxgmii_m_type)
+{
+    static int port_num[] =
+    {
+        [USXGMII_S]         = 1,
+        [USXGMII_M_10G_S]   = 1,
+        [USXGMII_M_10G_D]   = 2,
+        [USXGMII_M_10G_Q]   = 4,
+
+        [USXGMII_M_5G_S]    = 1,
+        [USXGMII_M_5G_D]    = 2,
+        [USXGMII_M_2G5_S]   = 1,
+    };
+
+    return port_num[usxgmii_m_type];
+}
+
+#define IS_USXGMII_MULTI_PORTS(phy_dev) (usxgmii_m_total_ports(phy_dev->usxgmii_m_type) > 1)
+
 extern char * usxgmii_m_type_strs[];
 
 /* Phy device */
@@ -278,6 +297,23 @@ static uint32_t inter_phy_supported_speed_caps[] = {
      INTER_PHY_TYPE_USXGMII_MP_M | INTER_PHY_TYPE_MLTI_SPEED_BASE_X_AN_M )
 
 #define INTER_PHY_TYPE_IS_MULTI_SPEED_AN(inter_type) (((1<<inter_type) & INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M)>0)
+
+#define INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type) \
+    (((1<<inter_type)&(INTER_PHY_TYPE_1000BASE_X_M | INTER_PHY_TYPE_1GBASE_R_M | INTER_PHY_TYPE_2P5GBASE_X_M | \
+        INTER_PHY_TYPE_2P5GBASE_R_M | INTER_PHY_TYPE_5GBASE_R_M | INTER_PHY_TYPE_5000BASE_X_M | INTER_PHY_TYPE_10GBASE_R_M)) > 0)
+
+#define INTER_PHY_TYPE_AN_ONLY(inter_type) \
+    (((1<<inter_type) & (INTER_PHY_TYPE_MULTI_SPEED_AN_MASK_M ))>0)
+
+#define INTER_PHY_TYPE_FORCED_SPEED_ONLY(inter_type) \
+    (!INTER_PHY_TYPE_AN_ONLY(inter_type) && !INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type))
+
+#define INTER_PHY_TYPE_AN_SUPPORT(inter_type) \
+    (INTER_PHY_TYPE_AN_ONLY(inter_type) || INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type))
+
+#define INTER_PHY_TYPE_FORCED_SPEED_SUPPORT(inter_type) \
+    (INTER_PHY_TYPE_FORCED_SPEED_ONLY(inter_type) || INTER_PHY_TYPE_AN_AND_FORCED_SPEED(inter_type))
+
 /*
     Set all types bit plus UNKNOWN bit to cover all types for backward
     compatible and dishtiguish from real all types case
@@ -1092,6 +1128,14 @@ static inline int phy_dev_phyid_get(phy_dev_t *phy_dev, uint32_t *phyid)
         return 0;
 
     return phy_dev->phy_drv->phyid_get(phy_dev, phyid);
+}
+
+static inline int phy_dev_is_broadcom_phy(phy_dev_t *phy_dev)
+{
+    uint32_t phy_id;
+
+    phy_dev_phyid_get(phy_dev, &phy_id);
+    return ((phy_id & 0xffff0000) == 0xae020000 || (phy_id & 0xffff0000) == 0x35900000);
 }
 
 static inline int phy_dev_init(phy_dev_t *first_phy)

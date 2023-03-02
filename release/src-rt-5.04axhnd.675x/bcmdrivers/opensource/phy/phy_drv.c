@@ -53,11 +53,10 @@
 
 extern phy_drv_t phy_drv_6858_egphy;
 extern phy_drv_t phy_drv_6846_egphy;
-extern phy_drv_t phy_drv_sgmii;
+extern phy_drv_t phy_drv_6856_sgmii;
 extern phy_drv_t phy_drv_ext1;
 extern phy_drv_t phy_drv_ext2;
 extern phy_drv_t phy_drv_ext3;
-extern phy_drv_t phy_drv_GPY211;
 extern phy_drv_t phy_drv_lport_serdes;
 extern phy_drv_t phy_drv_dsl_gphy;      //TODO_DSL? create 4 different phy types for 138,148,4908, don't know if above types can be reused ...
 extern phy_drv_t phy_drv_serdes_138class;
@@ -66,6 +65,9 @@ extern phy_drv_t phy_drv_serdes_146class;
 extern phy_drv_t phy_drv_serdes_6756class;
 extern phy_drv_t phy_drv_crossbar;
 extern phy_drv_t phy_drv_mac2mac;
+#ifdef PHY_GPY211
+extern phy_drv_t phy_drv_GPY211;
+#endif
 
 phy_drv_t *phy_drivers[PHY_TYPE_MAX] = {};
 
@@ -119,8 +121,8 @@ int phy_drivers_set(void)
 #ifdef PHY_6846_EGPHY
     ret |= phy_driver_set(&phy_drv_6846_egphy);
 #endif
-#ifdef PHY_SGMII
-    ret |= phy_driver_set(&phy_drv_sgmii);
+#ifdef PHY_6856_SGMII
+    ret |= phy_driver_set(&phy_drv_6856_sgmii);
 #endif
 #ifdef PHY_EXT1
     ret |= phy_driver_set(&phy_drv_ext1);
@@ -129,7 +131,6 @@ int phy_drivers_set(void)
     ret |= phy_driver_set(&phy_drv_ext2);
 #endif
 #ifdef PHY_EXT3
-    ret |= phy_driver_set(&phy_drv_GPY211);
     ret |= phy_driver_set(&phy_drv_ext3);
 #endif
 #ifdef PHY_LPORT_SERDES
@@ -156,6 +157,9 @@ int phy_drivers_set(void)
 #ifdef PHY_M2M
     ret |= phy_driver_set(&phy_drv_mac2mac);
 #endif
+#ifdef PHY_GPY211
+    ret |= phy_driver_set(&phy_drv_GPY211);
+#endif
     return ret;
 }
 EXPORT_SYMBOL(phy_drivers_set);
@@ -167,15 +171,18 @@ int phy_drivers_init(void)
 #ifndef CONFIG_BRCM_QEMU
     ret |= phy_driver_init(PHY_TYPE_6858_EGPHY);
     ret |= phy_driver_init(PHY_TYPE_6846_EGPHY);
-    ret |= phy_driver_init(PHY_TYPE_SGMII);
+    ret |= phy_driver_init(PHY_TYPE_6856_SGMII);
     ret |= phy_driver_init(PHY_TYPE_EXT1);
     ret |= phy_driver_init(PHY_TYPE_EXT2);
     ret |= phy_driver_init(PHY_TYPE_EXT3);
     ret |= phy_driver_init(PHY_TYPE_LPORT_SERDES);
+    ret |= phy_driver_init(PHY_TYPE_53125);
     ret |= phy_driver_init(PHY_TYPE_CROSSBAR);
     ret |= phy_driver_init(PHY_TYPE_DSL_GPHY);
     ret |= phy_driver_init(PHY_TYPE_MAC2MAC);
+#ifdef PHY_GPY211
     ret |= phy_driver_init(PHY_TYPE_GPY211);
+#endif
 #endif
     return ret;
 }

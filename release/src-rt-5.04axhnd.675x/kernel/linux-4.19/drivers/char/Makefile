@@ -58,6 +58,6 @@ js-rtc-y = rtc.o
 obj-$(CONFIG_XILLYBUS)		+= xillybus/
 obj-$(CONFIG_POWERNV_OP_PANEL)	+= powernv-op-panel.o
 obj-$(CONFIG_ADI)		+= adi.o
-ifeq ($(MODEL),$(filter $(MODEL),RTAX55 RTAX1800 RTAX58U_V2 RTAX3000N)))
+ifeq ($(MODEL),$(filter $(MODEL),RTAX55 RTAX1800 RTAX58U_V2 RTAX3000N BR63)))
 obj-m				+= rtk/
 endif

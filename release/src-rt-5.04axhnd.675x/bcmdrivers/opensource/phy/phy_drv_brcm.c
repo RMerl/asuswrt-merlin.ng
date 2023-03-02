@@ -1239,23 +1239,18 @@ int ethsw_phy_exp_rw(phy_dev_t *phy_dev, uint32_t reg, uint16_t *v16_p, int rd)
     int rc = 0;
     phy_type_t phy_type = PHY_TYPE_UNKNOWN;
 
-    if (reg < 0x20 && !strcmp(phy_dev->phy_drv->name, "GPY211")) {   /* GPY211 CL22 space */
-        if (!IsC45Phy(phy_dev)) {
-            printk("phy_id=%d does not support Clause 45\n", phy_dev->addr);
-            return rc;
-        }
+    if (phy_dev->phy_drv)
+        phy_type = phy_dev->phy_drv->phy_type;
 
+#ifdef PHY_GPY211
+    if (IsC45Phy(phy_dev) && (phy_type == PHY_TYPE_GPY211)) {
         if (rd)
             rc = phy_bus_c45_read32(phy_dev, reg, v16_p);
         else
             rc = phy_bus_c45_write32(phy_dev, reg, *v16_p);
-
-		return rc;
     }
-
-    if (phy_dev->phy_drv)
-        phy_type = phy_dev->phy_drv->phy_type;
-
+    else
+#endif
     if (!IsC45Phy(phy_dev)) {
         if (reg < 0x20) {   /* CL22 space */
             if (rd)

@@ -326,14 +326,17 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	env_set_ulong("dhd0", 0);
 #endif
 
-#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(GT10) || defined(RTAX3000N) || defined(RTAX82U_V2) || defined(RPAX58) || defined(XD4PRO) || defined(TUFAX5400_V2) || defined(XD6_V2) || defined(RTAX5400)
+#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(RPAX58) || defined(XD4PRO) || defined(TUFAX5400_V2) || defined(XD6_V2) || defined(RTAX5400)
 	env_set_ulong("dhd0", 0);
+#endif
+#if defined(GT10)
+	env_set_ulong("dhd0", 11);
 #endif
 #if defined(GTAX6000) || defined(RTAXE7800) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(XD6_V2) || defined(RTAX5400)
 	env_set_ulong("dhd1", 11);
 #endif
 #if defined(GT10)
-	env_set_ulong("dhd2", 11);
+	env_set_ulong("dhd2", 0);
 #endif
 
 	/*compute alocation memory*/

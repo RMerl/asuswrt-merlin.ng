@@ -17861,6 +17861,14 @@ start_write_smb_conf();
 		start_script(count, cmd);
 	}
 #endif
+#ifdef RTCONFIG_REVERTFW
+        else if (strcmp(script, "revertfw_release_note")==0)
+        {
+                snprintf(nvtmp, sizeof(nvtmp), "revert_note.sh");
+                cmd[0] = nvtmp;
+                start_script(count, cmd);
+        }
+#endif
 
 #ifdef RTCONFIG_AMAS
 #ifdef RTCONFIG_BHCOST_OPT
@@ -22358,14 +22366,7 @@ void PS_pod_main(void)
 	return;
 }
 #endif
-#ifdef RTCONFIG_REVERTFW
-	else if (strcmp(script, "revertfw_release_note")==0)
-	{
-		snprintf(nvtmp, sizeof(nvtmp), "revert_note.sh");
-		cmd[0] = nvtmp;
-		start_script(count, cmd);
-	}
-#endif
+
 
 #if defined(RTCONFIG_HND_ROUTER_AX)
 int set_cable_media(const char *eth_inf, const char *media_type){

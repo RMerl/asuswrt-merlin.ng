@@ -20020,7 +20020,7 @@ void setup_leds()
 	} else {
 /*** Enable ***/
 		nvram_set("AllLED", "1");
-#if defined(RTAX86U_PRO)
+#if defined(RTAX86U_PRO) || defined(RTAX88U_PRO)
 		setAllLedNormal();
 		led_control(LED_POWER, LED_ON);	// Must be run after
 #else
@@ -20044,6 +20044,9 @@ void setup_leds()
 #else
 		led_control(LED_WAN_NORMAL, LED_ON);
 #endif
+#endif
+#if defined(RTAX88U_PRO)
+		lan_phy_led_pinmux(0);
 #endif
 		setLANLedOn();
 #else

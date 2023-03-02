@@ -91,6 +91,10 @@ ifeq ($(RTCONFIG_ROG_UI), y)
 endif
 #endif
 
+ifeq ($(HND_ROUTER),y)
+	cp $(TOP)/www/sysdep/FUNCTION/SITE_SURVEY/* $(INSTALLDIR)/www/ -rf
+endif
+
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(QIS_V2)))
 	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
 	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/images $(INSTALLDIR)/www/ -rf

@@ -127,7 +127,7 @@ then
 	cp release/src-rt-5.02L.07p2axhnd/targets/cfe/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/targets/cfe/sysdeps/$BUILD_NAME/
 	rsync -a --del release/src-rt-5.02L.07p2axhnd/router-sysdep/ $REPO/release/src-rt-5.02L.07p2axhnd/router-sysdep.$BUILD_NAME_LC
 
-elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ] || [ "$BUILD_NAME" == "RT-AX86U_PRO" ]
+elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ] || [ "$BUILD_NAME" == "RT-AX86U_PRO" ] || [ "$BUILD_NAME" == "RT-AX88U_PRO" ]
 then
         SDK="_4912hnd"
         ARCH="_arm"

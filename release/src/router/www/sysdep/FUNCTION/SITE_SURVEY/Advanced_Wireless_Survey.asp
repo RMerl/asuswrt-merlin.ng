@@ -154,10 +154,10 @@ function showSiteTable(){
 			htmlCode +='<tr><td style="text-align:center;" colspan="5"><span style="color:#FFCC00;line-height:25px;"><#APSurvey_action_searching_noresult#></span>&nbsp;<img style="margin-top:10px;" src="/images/InternetScan.gif"></td></tr>';
 		}
 		else{
-			htmlCode += '<tr><th onclick="doSorter(1, \'str\', true);" style="cursor:pointer;' + addBorder(1) + '"><#Wireless_name#></th>';
-			htmlCode += '<th onclick="doSorter(2, \'num\', true);" width="15%" style="text-align:center;cursor:pointer;line-height:120%;' + addBorder(2) + '"><#WLANConfig11b_Channel_itemname#></th>';
+			htmlCode += '<tr><th onclick="doSorter(1, \'str\', true);" style="cursor:pointer;text-align:left;' + addBorder(1) + '"><#Wireless_name#></th>';
+			htmlCode += '<th onclick="doSorter(2, \'num\', true);" width="15%" style="text-align:center;cursor:pointer;' + addBorder(2) + '"><#WLANConfig11b_Channel_itemname#></th>';
 			htmlCode += '<th onclick="doSorter(3, \'str\', true);" width="27%" style="cursor:pointer;' + addBorder(3) + '"><#QIS_finish_wireless_item2#></th>';
-	                htmlCode += '<th onclick="doSorter(0, \'str\', true);" width="10%" style="text-align:center;cursor:pointer;line-height:120%;' + addBorder(0) + '">Band</th>';
+	                htmlCode += '<th onclick="doSorter(0, \'str\', true);" width="10%" style="text-align:center;cursor:pointer;' + addBorder(0) + '">Band</th>';
 			htmlCode += '<th onclick="doSorter(5, \'num\', true);" width="10%" id="sigTh" style="text-align:center;cursor:pointer;' + addBorder(5) + '">Signal</tr>';
 
 			for(var i = 0; i < aplist.length; i++){
@@ -173,7 +173,9 @@ function showSiteTable(){
 
 				//ssid
 				ssid_str=decodeURIComponent(handle_show_str(aplist[i][1]));
-				htmlCode += '<td id="ssid" onclick="oui_query_full_vendor(\'' + aplist[i][6].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-decoration:underline;">' + ssid_str + '</td>';
+				if (ssid_str == "")
+					ssid_str = '<span style="font-style:italic;">[hidden]</span>';
+				htmlCode += '<td id="ssid" onclick="oui_query_full_vendor(\'' + aplist[i][6].toUpperCase() +'\');overlib_str_tmp=\''+ overlib_str +'\';return overlib(\''+ overlib_str +'\');" onmouseout="nd();" style="cursor:pointer; text-align:left; padding-left: 14px;">' + ssid_str + '</td>';
 
 				// channel
 				htmlCode += '<td width="15%" style="text-align:center;">';
@@ -191,11 +193,11 @@ function showSiteTable(){
 					htmlCode += '<td width="27%">' + aplist[i][3] +' (' + aplist[i][4] + ')</td>';
 				// band
 				if(aplist[i][0] == "2G")
-					htmlCode += '<td width="10%" style="text-align:center;">2.4GHz</td>';
+					htmlCode += '<td width="10%" style="text-align:center;">2.4 GHz</td>';
 				else if (aplist[i][0] == "6G")
-					htmlCode += '<td width="10%" style="text-align:center;">6GHz</td>';
+					htmlCode += '<td width="10%" style="text-align:center;">6 GHz</td>';
 				else
-					htmlCode += '<td width="10%" style="text-align:center;">5GHz</td>';
+					htmlCode += '<td width="10%" style="text-align:center;">5 GHz</td>';
 
 				// signal
 				htmlCode += '<td width="10%" style="text-align:center;"><span title="' + aplist[i][5] + '%"><div style="margin-left:13px;"' +
@@ -283,7 +285,7 @@ function rescan(){
 				<input disabled type="button" id="rescanButton" value="<#QIS_rescan#>" onclick="rescan();" class="button_gen_dis">
 				<img id="SearchingIcon" style="display:none;" src="/images/InternetScan.gif">
 			</div>
-			<div id="wlscan_table" style="overflow-y:auto;height:650px;margin-left:10px;margin-right:10px;margin-top:20px;vertical-align:top;"></div>
+			<div id="wlscan_table"></div>
 		</td>
 		</tr>
 	        </tbody>

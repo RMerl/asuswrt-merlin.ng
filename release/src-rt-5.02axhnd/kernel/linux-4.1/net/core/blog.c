@@ -415,7 +415,7 @@ skip_wg_port_proc_write(struct file *file, const char __user *buf, size_t cnt,
     else
     {
         /* cannot find input entry */
-        if ( entry < 0 && entry >= WG_PORT_TBL_SZ )
+        if ( entry < 0 || entry >= WG_PORT_TBL_SZ )
         {
             BLOG_UNLOCK_TBL();
             return -EINVAL;
@@ -710,7 +710,7 @@ skip_wg_network_proc_write(struct file *file, const char __user *buf, size_t cnt
     else
     {
         /* cannot find input entry */
-        if ( entry < 0 && entry >= WG_NETWORK_TBL_SZ )
+        if ( entry < 0 || entry >= WG_NETWORK_TBL_SZ )
         {
             BLOG_UNLOCK_TBL();
             return -EINVAL;

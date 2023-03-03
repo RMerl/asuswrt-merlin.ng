@@ -8,7 +8,7 @@ Asuswrt-Merlin Changelog
   - UPDATED: dnsmasq to 2.89.
   - UPDATED: openvpn to 2.6.0.
   - UPDATED: openssl to 1.1.1t.
-  - UPDATED: miniupnpd to 2.3.2.
+  - UPDATED: miniupnpd to 2.3.3.
   - UPDATED: Asus security daemon updated to 2.0 engine (patch
              from Asus)
   - CHANGED: Moved WiFi Radar and Site Survey to the
@@ -22,6 +22,8 @@ Asuswrt-Merlin Changelog
            Guest Network, removed redirection for these.
   - FIXED: Added missing Tools icon on ROG UI (icon
            contributed by Cody).
+  - FIXED: RT-AC68U may crash when using Media Bridge mode
+           with a specific SSID length (patch from Asus)
 
 
 

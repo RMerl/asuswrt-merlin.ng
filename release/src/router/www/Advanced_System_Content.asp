@@ -543,7 +543,7 @@ function initial(){
 	}
 
 	if (based_modelid == "XT12" || based_modelid == "GT-AX6000" || based_modelid == "GT-AXE16000" || based_modelid == "GT-AX11000_PRO" || 
-	    based_modelid = "RT-AX86U_PRO" || based_modelid = "RT-AX88U_PRO") {
+	    based_modelid == "RT-AX86U_PRO" || based_modelid == "RT-AX88U_PRO") {
 		document.getElementById("jffs_format_tr").style.display = "none";
 /*		document.getElementById("ubifs_format_tr").style.display = ""; */
 	}

@@ -58,6 +58,8 @@ typedef enum
 #define MAX_VERSION_TEXT_LENGTH		512
 #define MISC_INFO_FILE_PATH		"/tmp/misc.json"
 
+/* for RC_SUPPORT */
+#define WPA3                    (1 << 0)
 ////////////////////////////////////////////////////////////////////////////////
 //
 //	Define for misc info
@@ -65,6 +67,7 @@ typedef enum
 ////////////////////////////////////////////////////////////////////////////////
 enum MISC_INFO_TYPE {
     MISC_INFO_COBRAND = 1,
+    MISC_INFO_RCSUPPORT = 2,
     MISC_INFO_MAX
 };
 
@@ -158,7 +161,7 @@ AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int ca
 #else	// USE_GET_TLV_SUPPORT_MAC
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int capability5g, int *cost);
 #endif	// USE_GET_TLV_SUPPORT_MAC
-AMAS_FUNC AMAS_RESULT	AMAS_API amas_is_plc_head(char *ifname, int *is_plc_head);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_is_plc_head(char *ifname, int *is_plc_head, int *plc_amas_client);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_find_mac_role(char *ifname, char *mac, int *role);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_find_role_lan(char *ifname, char *mac);
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_set_cost(int cost);
@@ -199,4 +202,5 @@ AMAS_FUNC AMAS_RESULT AMAS_API amas_set_eth_role(char *input_eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_dest_eth_role(char *ifname, int *eth_role);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_set_misc_info(int index, char *value);
 AMAS_FUNC AMAS_RESULT AMAS_API amas_get_misc_info(unsigned char *misc_info, int *misc_info_len);
+extern char *get_rcSupport_count(char *count, int countBufSize);
 #endif /* !__AMASUTILSH__ */

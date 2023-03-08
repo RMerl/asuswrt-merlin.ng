@@ -25,7 +25,7 @@
 
 /*
  * Automatically generated make config: don't edit
- * Date: Mon Jan 24 16:17:53 2022
+ * Date: Tue Dec 20 11:20:11 2022
  */
 #ifndef __TMCFG__UDB_AUTOCONF_OUTPUT_H_
 #define __TMCFG__UDB_AUTOCONF_OUTPUT_H_
@@ -109,7 +109,7 @@
 #define TMCFG_CPU_64BITS 1 // y
 #define TMCFG_CPU_BIG_ENDIAN 0 // n
 #define TMCFG_CPU_LITTLE_ENDIAN 1 // y
-#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_AX86U_GPL_386_47113/release/src-rt-5.02L.07p2axhnd/kernel/linux-4.1"
+#define TMCFG_KERN_DIR "/opt/ASUS/asuswrt_GPL_RT-AX86U_3.0.0.4.388.21224/release/src-rt-5.02L.07p2axhnd/kernel/linux-4.1/"
 #define TMCFG_KERN_ARCH "arm64"
 
 /*
@@ -160,7 +160,13 @@
 #define TMCFG_E_UDB_CORE_RULE_FORMAT_V2 0 // n
 #define TMCFG_E_UDB_CORE_MESH 1 // y
 #define TMCFG_E_UDB_CORE_URL_QUERY 1 // y
-#define TMCFG_E_UDB_CORE_DNS_BASE_URL 0 // n
+#define TMCFG_E_UDB_CORE_DNS_BASE_URL 1 // y
+
+/*
+ * DNS Based WRS Configs
+ */
+#define TMCFG_E_UDB_CORE_DEF_REDIR_DOMAIN "blocking.asus.hns.tm"
+#define TMCFG_E_UDB_CORE_MAX_DNS_ENTRY 1000
 #define TMCFG_E_UDB_CORE_SHN_QUERY 0 // n
 #define TMCFG_E_UDB_CORE_WBL 1 // y
 #define TMCFG_E_UDB_CORE_WBL_MAJ_VER 2
@@ -211,8 +217,8 @@
 #define TMCFG_E_UDB_SHELL_PROCFS 1 // y
 #define TMCFG_E_REL_PKG_MAJ_VER 2
 #define TMCFG_E_REL_PKG_MIN_VER 0
-#define TMCFG_E_REL_PKG_REV_VER 3
-#define TMCFG_E_REL_PKG_LOCAL_VER ""
+#define TMCFG_E_REL_PKG_REV_VER 1
+#define TMCFG_E_REL_PKG_LOCAL_VER "21224-01"
 
 /*
  * Accompany applications or modules
@@ -221,7 +227,7 @@
 /*
  * Kernel
  */
-#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_AX86U_GPL_384_8787/release/src-rt-5.02p1axhnd.675x/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_AX86U_GPL_384_8787/release/src-rt-5.02p1axhnd.675x/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_AX86U_GPL_384_8787/release/src-rt-5.02p1axhnd.675x/bcmdrivers/opensource/include/bcm963xx"
+#define TMCFG_APP_K_EXTRA_CFLAGS "-I/opt/ASUS/asuswrt_GPL_RT-AX86U_3.0.0.4.388.21224/release/src-rt-5.02L.07p2axhnd/shared/opensource/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_RT-AX86U_3.0.0.4.388.21224/release/src-rt-5.02L.07p2axhnd/bcmdrivers/broadcom/include/bcm963xx -I/opt/ASUS/asuswrt_GPL_RT-AX86U_3.0.0.4.388.21224/release/src-rt-5.02L.07p2axhnd/bcmdrivers/opensource/include/bcm963xx"
 #define TMCFG_APP_K_TDTS_NFFW 0 // n
 #define TMCFG_APP_K_TDTS_UDBFW 1 // y
 #define TMCFG_APP_K_TDTS_UDBFW_EXTRA_SYMBOLS ""

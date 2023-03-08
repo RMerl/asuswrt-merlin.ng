@@ -271,13 +271,13 @@ function hideQRCode(){
 						<tr>
 							<th>Allowed IPs (Server)</th>
 							<td>
-								<input type="text" maxlength="1023" name="wgsc_aips" id="wgsc_aips" class="input_32_table" value="<% nvram_get("wgsc_aips"); %>" autocorrect="off" autocapitalize="off"></input>
+								<input type="text" maxlength="4095" name="wgsc_aips" id="wgsc_aips" class="input_32_table" value="<% nvram_get("wgsc_aips"); %>" autocorrect="off" autocapitalize="off"></input>
 							</td>
 						</tr>
 						<tr>
 							<th>Allowed IPs (Client)</th>
 							<td>
-								<input type="text" maxlength="1023" name="wgsc_caips" id="wgsc_aips" class="input_32_table" value="<% nvram_get("wgsc_caips"); %>" autocorrect="off" autocapitalize="off"></input>
+								<input type="text" maxlength="4095" name="wgsc_caips" id="wgsc_aips" class="input_32_table" value="<% nvram_get("wgsc_caips"); %>" autocorrect="off" autocapitalize="off"></input>
 							</td>
 						</tr>
 						<tr id="wg_export_setting" style="display:none">

@@ -621,7 +621,7 @@ function show_director_rules(){
 						<tr>
 							<th>Allowed IPs</th>
 							<td>
-								<input type="text" maxlength="1023" name="wgc_aips" id="wgc_aips" class="input_32_table" value="<% nvram_get("wgc_aips"); %>" autocorrect="off" autocapitalize="off"></input>
+								<input type="text" maxlength="4095" name="wgc_aips" id="wgc_aips" class="input_32_table" value="<% nvram_get("wgc_aips"); %>" autocorrect="off" autocapitalize="off"></input>
 							</td>
 						</tr>
 						<tr>

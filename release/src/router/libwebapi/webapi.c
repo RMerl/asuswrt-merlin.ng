@@ -134,7 +134,7 @@ int gen_server_ovpn_file()
 			"dh",
 			"key",
 			"crl",
-			"extra"
+			"extra",
 			"static",
 			NULL
 		};
@@ -142,10 +142,10 @@ int gen_server_ovpn_file()
 		for (i = 0; i < ARRAY_SIZE(lists) && lists[i] != NULL; ++i) {
 			memset(file_path, 0, sizeof(file_path));
 			snprintf(filename, sizeof(filename), "vpn_crt_server%d_%s", unit, lists[i]);
-			snprintf(file_path, sizeof(file_path), "%s%s", JFFS_OPENVPN, lists[i]);
+			snprintf(file_path, sizeof(file_path), "%s%s", JFFS_OPENVPN, filename);
 			if(check_if_file_exist(file_path)) {
 				strlcat(cmd, " ", sizeof(cmd));
-				strlcat(cmd, lists[i], sizeof(cmd));
+				strlcat(cmd, filename, sizeof(cmd));
 			}
 		}
 		system(cmd);

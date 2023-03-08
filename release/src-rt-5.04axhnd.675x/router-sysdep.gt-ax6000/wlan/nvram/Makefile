@@ -130,6 +130,9 @@ endif
 ifneq ($(findstring CONFIG_DUMP_PREV_OOPS_MSG=, $(shell cat $(LINUXDIR)/.config)),)
 CFLAGS += -DDUMP_PREV_OOPS_MSG
 endif
+ifeq ($(BUILD_NAME),GT10)
+CFLAGS += -DGT10
+endif
 LDFLAGS +=-lc -lgcc_s 
 #
 # Private apps and libs are allowed to link with libraries from the
@@ -144,6 +147,10 @@ DBG_LDFLAGS += $(LDFLAGS) -lwldm  -lnvram -lshared $(LIBS)
 endif
 ifneq ($(strip $(BUILD_BRCM_UNFWLCFG)),)
 DBG_LDFLAGS += $(LDFLAGS) -lnvram -lshared $(LIBS)
+endif
+
+ifneq ($(strip $(BCM4906_504)),)
+CFLAGS += -DWL_DEFAULT_NUM_SSID=16
 endif
 
 ALLOWED_LIB_DIRS := /lib:/lib/public:/lib/private

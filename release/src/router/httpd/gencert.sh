@@ -28,13 +28,14 @@ cp -L /etc/ssl/openssl.cnf $OPENSSL_CONF
 
 LANCN=$(nvram get https_crt_cn)
 LANIP=$(nvram get lan_ipaddr)
+LOCALDOM=$(nvram get local_domain)
 
 echo "0.commonName=CN" >> $OPENSSL_CONF
-echo "0.commonName_value=$LANIP" >> $OPENSSL_CONF
+echo "0.commonName_value=$LOCALDOM" >> $OPENSSL_CONF
 echo "0.organizationName=O" >> $OPENSSL_CONF
 echo "0.organizationName_value=$(uname -o)" >> $OPENSSL_CONF
 echo "0.emailAddress=E" >> $OPENSSL_CONF
-echo "0.emailAddress_value=admin@router.asus.com" >> $OPENSSL_CONF
+echo "0.emailAddress_value=admin@www.asusrouter.com" >> $OPENSSL_CONF
 
 # Required extension
 sed -i "/\[ v3_ca \]/aextendedKeyUsage = serverAuth" $OPENSSL_CONF

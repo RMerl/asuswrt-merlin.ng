@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.10 (x-xxx-2023)
+386.10 (10-Mar-2023)
   - NOTE: 386_xx releases are only for Wifi 5 (AC) models.
   - NEW: Added Site Survey page under Network Tools tab.
          (RT-AC86U/GT-AC2900).

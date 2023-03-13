@@ -4,6 +4,9 @@ OBJS = bcm_timestamp.o bcm_ulog.o bcm_net.o bcm_fsutils.o \
        bcm_boardutils.o bcm_ethswutils.o bcm_strutils.o
 
 CFLAGS += -Werror -Wfatal-errors -Wno-stringop-truncation -I$(HND_SRC)/router-sysdep/sys_util/ -I$(HND_SRC)/userspace/public/include/linux/ -I$(HND_SRC)/userspace/public/include/
+ifneq ($(strip $(BCM4906_504)),)
+CFLAGS += -I$(HND_SRC)/userspace/public/include/ -I$(HND_SRC)/bcmdrivers/opensource/include/bcm963xx/ -I$(HND_SRC)/shared/opensource/include/bcm963xx/
+endif
 
 # These are public API headers needed by other apps which want to call this lib.
 # Private/internal headers should not be listed here.

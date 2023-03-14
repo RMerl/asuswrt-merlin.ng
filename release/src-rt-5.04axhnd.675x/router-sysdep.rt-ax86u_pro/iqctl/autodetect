@@ -1,0 +1,5 @@
+
+dependson: private/libs/iqctl
+condition: ifneq ($(strip $(BUILD_IQCTL)),)
+makeflags: $(BUILD_IQCTL)
+

@@ -7,14 +7,23 @@ test_binaries += argv_testdriver buffer_testdriver
 endif
 
 test_binaries += crypto_testdriver packet_id_testdriver auth_token_testdriver ncp_testdriver misc_testdriver \
-    pkt_testdriver
+	pkt_testdriver
 if HAVE_LD_WRAP_SUPPORT
+if !WIN32
 test_binaries += tls_crypt_testdriver
+endif
 endif
 
 test_binaries += provider_testdriver
 
+if WIN32
+test_binaries += cryptoapi_testdriver
+LDADD = -lws2_32
+endif
+
+if !CROSS_COMPILING
 TESTS = $(test_binaries)
+endif
 check_PROGRAMS = $(test_binaries)
 
 if HAVE_SITNL
@@ -31,12 +40,14 @@ argv_testdriver_SOURCES = test_argv.c mock_msg.c mock_msg.h \
 	mock_get_random.c \
 	$(openvpn_srcdir)/platform.c \
 	$(openvpn_srcdir)/buffer.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/argv.c
 
 buffer_testdriver_CFLAGS  = @TEST_CFLAGS@ -I$(openvpn_srcdir) -I$(compat_srcdir)
 buffer_testdriver_LDFLAGS = @TEST_LDFLAGS@ -L$(openvpn_srcdir) -Wl,--wrap=parse_line
 buffer_testdriver_SOURCES = test_buffer.c mock_msg.c mock_msg.h \
 	mock_get_random.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/platform.c
 
 crypto_testdriver_CFLAGS  = @TEST_CFLAGS@ \
@@ -51,6 +62,7 @@ crypto_testdriver_SOURCES = test_crypto.c mock_msg.c mock_msg.h \
 	$(openvpn_srcdir)/packet_id.c \
 	$(openvpn_srcdir)/platform.c \
 	$(openvpn_srcdir)/mtu.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/mss.c
 
 packet_id_testdriver_CFLAGS  = @TEST_CFLAGS@ \
@@ -63,14 +75,14 @@ packet_id_testdriver_SOURCES = test_packet_id.c mock_msg.c mock_msg.h \
 	$(openvpn_srcdir)/packet_id.c \
 	$(openvpn_srcdir)/platform.c \
 	$(openvpn_srcdir)/reliable.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/session_id.c
-
 
 pkt_testdriver_CFLAGS  = @TEST_CFLAGS@ \
 	-I$(openvpn_includedir) -I$(compat_srcdir) -I$(openvpn_srcdir)
 pkt_testdriver_LDFLAGS = @TEST_LDFLAGS@
 pkt_testdriver_SOURCES = test_pkt.c mock_msg.c mock_msg.h \
-$(openvpn_srcdir)/argv.c \
+	$(openvpn_srcdir)/argv.c \
 	$(openvpn_srcdir)/base64.c \
 	$(openvpn_srcdir)/buffer.c \
 	$(openvpn_srcdir)/crypto.c \
@@ -84,9 +96,10 @@ $(openvpn_srcdir)/argv.c \
 	$(openvpn_srcdir)/run_command.c \
 	$(openvpn_srcdir)/session_id.c \
 	$(openvpn_srcdir)/ssl_pkt.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/tls_crypt.c
 
-
+if !WIN32
 tls_crypt_testdriver_CFLAGS  = @TEST_CFLAGS@ \
 	-I$(openvpn_includedir) -I$(compat_srcdir) -I$(openvpn_srcdir)
 tls_crypt_testdriver_LDFLAGS = @TEST_LDFLAGS@ \
@@ -106,6 +119,7 @@ tls_crypt_testdriver_SOURCES = test_tls_crypt.c mock_msg.c mock_msg.h \
 	$(openvpn_srcdir)/packet_id.c \
 	$(openvpn_srcdir)/platform.c \
 	$(openvpn_srcdir)/run_command.c
+endif
 
 if HAVE_SITNL
 networking_testdriver_CFLAGS = @TEST_CFLAGS@ \
@@ -136,7 +150,23 @@ provider_testdriver_SOURCES = test_provider.c mock_msg.c \
 	$(openvpn_srcdir)/buffer.c \
 	$(openvpn_srcdir)/base64.c \
 	mock_get_random.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/platform.c
+
+if WIN32
+cryptoapi_testdriver_CFLAGS  = @TEST_CFLAGS@ \
+	-I$(openvpn_includedir) -I$(compat_srcdir) -I$(openvpn_srcdir) \
+	$(OPTIONAL_CRYPTO_CFLAGS)
+cryptoapi_testdriver_LDFLAGS = @TEST_LDFLAGS@ \
+	$(OPTIONAL_CRYPTO_LIBS) -lcrypt32 -lncrypt
+cryptoapi_testdriver_SOURCES = test_cryptoapi.c mock_msg.c \
+	$(openvpn_srcdir)/xkey_helper.c \
+	$(openvpn_srcdir)/buffer.c \
+	$(openvpn_srcdir)/base64.c \
+	$(openvpn_srcdir)/platform.c \
+	mock_get_random.c \
+	$(openvpn_srcdir)/win32-util.c
+endif
 
 auth_token_testdriver_CFLAGS  = @TEST_CFLAGS@ \
 	-I$(openvpn_includedir) -I$(compat_srcdir) -I$(openvpn_srcdir) \
@@ -152,6 +182,7 @@ auth_token_testdriver_SOURCES = test_auth_token.c mock_msg.c \
 	$(openvpn_srcdir)/otime.c \
 	$(openvpn_srcdir)/packet_id.c \
 	$(openvpn_srcdir)/platform.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/base64.c
 
 
@@ -169,6 +200,8 @@ ncp_testdriver_SOURCES = test_ncp.c mock_msg.c \
 	$(openvpn_srcdir)/otime.c \
 	$(openvpn_srcdir)/packet_id.c \
 	$(openvpn_srcdir)/platform.c \
+	$(openvpn_srcdir)/win32-util.c \
+	$(compat_srcdir)/compat-strsep.c \
 	$(openvpn_srcdir)/ssl_util.c
 
 misc_testdriver_CFLAGS  = @TEST_CFLAGS@ \
@@ -177,8 +210,9 @@ misc_testdriver_CFLAGS  = @TEST_CFLAGS@ \
 misc_testdriver_LDFLAGS = @TEST_LDFLAGS@
 
 misc_testdriver_SOURCES = test_misc.c mock_msg.c \
-    mock_get_random.c \
+	mock_get_random.c \
 	$(openvpn_srcdir)/buffer.c \
 	$(openvpn_srcdir)/options_util.c \
 	$(openvpn_srcdir)/ssl_util.c \
+	$(openvpn_srcdir)/win32-util.c \
 	$(openvpn_srcdir)/platform.c

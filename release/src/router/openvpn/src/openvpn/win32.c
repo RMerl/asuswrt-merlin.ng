@@ -173,8 +173,7 @@ init_security_attributes_allow_all(struct security_attributes *obj)
 void
 overlapped_io_init(struct overlapped_io *o,
                    const struct frame *frame,
-                   BOOL event_state,
-                   bool tuntap_buffer)  /* if true: tuntap buffer, if false: socket buffer */
+                   BOOL event_state)
 {
     CLEAR(*o);
 
@@ -186,7 +185,7 @@ overlapped_io_init(struct overlapped_io *o,
     }
 
     /* allocate buffer for overlapped I/O */
-    alloc_buf_sock_tun(&o->buf_init, frame, tuntap_buffer);
+    alloc_buf_sock_tun(&o->buf_init, frame);
 }
 
 void
@@ -1352,13 +1351,12 @@ win32_get_arch(arch_t *process_arch, arch_t *host_arch)
     *process_arch = ARCH_UNKNOWN;
     *host_arch = ARCH_NATIVE;
 
-    typedef BOOL (__stdcall *is_wow64_process2_t)(HANDLE, USHORT *, USHORT *);
+    typedef BOOL (WINAPI *is_wow64_process2_t)(HANDLE, USHORT *, USHORT *);
     is_wow64_process2_t is_wow64_process2 = (is_wow64_process2_t)
                                             GetProcAddress(GetModuleHandle("Kernel32.dll"), "IsWow64Process2");
 
     USHORT process_machine = 0;
     USHORT native_machine = 0;
-    BOOL is_wow64 = FALSE;
 
 #ifdef _ARM64_
     *process_arch = ARCH_ARM64;
@@ -1380,8 +1378,8 @@ win32_get_arch(arch_t *process_arch, arch_t *host_arch)
     if (is_wow64_process2)
     {
         /* check if we're running on arm64 or amd64 machine */
-        is_wow64 = is_wow64_process2(GetCurrentProcess(),
-                                     &process_machine, &native_machine);
+        BOOL is_wow64 = is_wow64_process2(GetCurrentProcess(),
+                                          &process_machine, &native_machine);
         if (is_wow64)
         {
             switch (native_machine)
@@ -1403,7 +1401,7 @@ win32_get_arch(arch_t *process_arch, arch_t *host_arch)
     else
     {
         BOOL w64 = FALSE;
-        is_wow64 = IsWow64Process(GetCurrentProcess(), &w64) && w64;
+        BOOL is_wow64 = IsWow64Process(GetCurrentProcess(), &w64) && w64;
         if (is_wow64)
         {
             /* we are unable to differentiate between arm64 and amd64

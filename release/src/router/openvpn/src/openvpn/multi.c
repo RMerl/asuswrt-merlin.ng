@@ -1817,6 +1817,10 @@ multi_client_set_protocol_options(struct context *c)
     {
         o->imported_protocol_flags |= CO_USE_TLS_KEY_MATERIAL_EXPORT;
     }
+    if (proto & IV_PROTO_DYN_TLS_CRYPT)
+    {
+        o->imported_protocol_flags |= CO_USE_DYNAMIC_TLS_CRYPT;
+    }
 #endif
 
     if (proto & IV_PROTO_CC_EXIT_NOTIFY)
@@ -3244,12 +3248,9 @@ process_incoming_del_peer(struct multi_context *m, struct multi_instance *mi,
             reason = "ovpn-dco: transport error";
             break;
 
-#ifdef TARGET_LINUX
-        /* FIXME: this is linux-only today and breaks FreeBSD compilation */
         case OVPN_DEL_PEER_REASON_TRANSPORT_DISCONNECT:
             reason = "ovpn-dco: transport disconnected";
             break;
-#endif
 
         case OVPN_DEL_PEER_REASON_USERSPACE:
             /* We assume that is ourselves. Unfortunately, sometimes these

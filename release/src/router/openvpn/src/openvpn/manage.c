@@ -2192,6 +2192,10 @@ man_recv_with_fd(int fd, void *ptr, size_t nbytes, int flags, int *recvfd)
 bool
 management_android_control(struct management *man, const char *command, const char *msg)
 {
+    if (!man)
+    {
+        msg(M_FATAL, "Required management interface not available.");
+    }
     struct user_pass up;
     CLEAR(up);
     strncpy(up.username, msg, sizeof(up.username)-1);
@@ -2251,7 +2255,7 @@ man_read(struct management *man)
         man->connection.lastfdreceived = fd;
     }
 #else  /* ifdef TARGET_ANDROID */
-    len = recv(man->connection.sd_cli, buf, sizeof(buf), MSG_NOSIGNAL);
+    len = recv(man->connection.sd_cli, (void *)buf, sizeof(buf), MSG_NOSIGNAL);
 #endif
 
     if (len == 0)
@@ -2348,7 +2352,7 @@ man_write(struct management *man)
         }
         else
 #endif
-        sent = send(man->connection.sd_cli, BPTR(buf), len, MSG_NOSIGNAL);
+        sent = send(man->connection.sd_cli, (const void *)BPTR(buf), len, MSG_NOSIGNAL);
         if (sent >= 0)
         {
             buffer_list_advance(man->connection.out, sent);

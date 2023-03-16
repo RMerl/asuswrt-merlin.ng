@@ -4010,8 +4010,9 @@ options to avoid this behaviour.
 .SS OpenVPN 3 clients
 .sp
 Clients based on the OpenVPN 3.x library (\fI\%https://github.com/openvpn/openvpn3/\fP)
-do not have a configurable \fB\-\-ncp\-ciphers\fP or \fB\-\-data\-ciphers\fP option. Instead
-these clients will announce support for all their supported AEAD ciphers
+do not have a configurable \fB\-\-ncp\-ciphers\fP or \fB\-\-data\-ciphers\fP option. Newer
+versions by default disable legacy AES\-CBC, BF\-CBC, and DES\-CBC ciphers.
+These clients will always announce support for all their supported AEAD ciphers
 (\fIAES\-256\-GCM\fP, \fIAES\-128\-GCM\fP and in newer versions also \fIChacha20\-Poly1305\fP).
 .sp
 To support OpenVPN 3.x based clients at least one of these ciphers needs to be
@@ -6757,7 +6758,7 @@ cryptoapicert "SUBJ:Peter Runestig"
 .UNINDENT
 .UNINDENT
 .sp
-To select a certificate, based on certificate\(aqs thumbprint:
+To select a certificate, based on certificate\(aqs thumbprint (SHA1 hash):
 .INDENT 7.0
 .INDENT 3.5
 .sp
@@ -6770,7 +6771,23 @@ cryptoapicert "THUMB:f6 49 24 41 01 b4 ..."
 .UNINDENT
 .sp
 The thumbprint hex string can easily be copy\-and\-pasted from the Windows
-Certificate Store GUI.
+Certificate Store GUI. The embedded spaces in the hex string are optional.
+.sp
+To select a certificate based on a substring in certificate\(aqs
+issuer name:
+.INDENT 7.0
+.INDENT 3.5
+.sp
+.nf
+.ft C
+cryptoapicert "ISSUER:Sample CA"
+.ft P
+.fi
+.UNINDENT
+.UNINDENT
+.sp
+The first non\-expired certificate found in the user\(aqs store or the
+machine store that matches the select\-string is used.
 .TP
 .B \-\-dhcp\-release
 Ask Windows to release the TAP adapter lease on shutdown. This option
@@ -7290,19 +7307,22 @@ Causes OpenVPN to exit gracefully.
 \fI\%https://community.openvpn.net/openvpn/wiki/FAQ\fP
 .SH HOWTO
 .sp
+The manual \fBopenvpn\-examples\fP(5) gives some examples, especially for
+small setups.
+.sp
 For a more comprehensive guide to setting up OpenVPN in a production
 setting, see the OpenVPN HOWTO at
 \fI\%https://openvpn.net/community\-resources/how\-to/\fP
 .SH PROTOCOL
 .sp
-For a description of OpenVPN\(aqs underlying protocol, see
-\fI\%https://openvpn.net/community\-resources/openvpn\-protocol/\fP
+An ongoing effort to document the OpenVPN protocol can be found under
+\fI\%https://github.com/openvpn/openvpn\-rfc\fP
 .SH WEB
 .sp
-OpenVPN\(aqs web site is at \fI\%https://openvpn.net/\fP
+OpenVPN\(aqs web site is at \fI\%https://community.openvpn.net/\fP
 .sp
 Go here to download the latest version of OpenVPN, subscribe to the
-mailing lists, read the mailing list archives, or browse the SVN
+mailing lists, read the mailing list archives, or browse the Git
 repository.
 .SH BUGS
 .sp

@@ -898,8 +898,8 @@ init_tun_post(struct tuntap *tt,
         return;
     }
 
-    overlapped_io_init(&tt->reads, frame, FALSE, true);
-    overlapped_io_init(&tt->writes, frame, TRUE, true);
+    overlapped_io_init(&tt->reads, frame, FALSE);
+    overlapped_io_init(&tt->writes, frame, TRUE);
     tt->adapter_index = TUN_ADAPTER_INDEX_INVALID;
 
     if (tt->windows_driver == WINDOWS_DRIVER_WINTUN)
@@ -1105,11 +1105,11 @@ do_ifconfig_ipv6(struct tuntap *tt, const char *ifname, int tun_mtu,
                          "generic BSD ifconfig inet6 failed");
 
 #if defined(TARGET_FREEBSD) && __FreeBSD_version >= 1200000 \
-    && __FreeBSD_version < 1204000
-    /* On FreeBSD 12.0-12.3, there is ipv6_activate_all_interfaces="YES"
+    && __FreeBSD_version < 1300000
+    /* On FreeBSD 12.0-12.4, there is ipv6_activate_all_interfaces="YES"
      * in rc.conf, which is not set by default.  If it is *not* set,
      * "all new interfaces that are not already up" are configured by
-     * devd + /etc/pccard_ether as "inet6 ifdisabled".
+     * devd -> /etc/pccard_ether -> /etc/network.subr as "inet6 ifdisabled".
      *
      * The "is this interface already up?" test is a non-zero time window
      * which we manage to hit with our ifconfig often enough to cause
@@ -2242,7 +2242,7 @@ tuncfg(const char *dev, const char *dev_type, const char *dev_node,
         {
             msg(M_ERR, "Cannot get user entry for %s", username);
         }
-        else if (ioctl(tt->fd, TUNSETOWNER, platform_state_user.pw->pw_uid) < 0)
+        else if (ioctl(tt->fd, TUNSETOWNER, platform_state_user.uid) < 0)
         {
             msg(M_ERR, "Cannot ioctl TUNSETOWNER(%s) %s", username, dev);
         }
@@ -2255,7 +2255,7 @@ tuncfg(const char *dev, const char *dev_type, const char *dev_node,
         {
             msg(M_ERR, "Cannot get group entry for %s", groupname);
         }
-        else if (ioctl(tt->fd, TUNSETGROUP, platform_state_group.gr->gr_gid) < 0)
+        else if (ioctl(tt->fd, TUNSETGROUP, platform_state_group.gid) < 0)
         {
             msg(M_ERR, "Cannot ioctl TUNSETGROUP(%s) %s", groupname, dev);
         }
@@ -3705,6 +3705,7 @@ get_device_instance_id_interface(struct gc_arena *gc)
         msg(M_FATAL, "Error [%u] opening device information set key: %s", (unsigned int)err, strerror_win32(err, gc));
     }
 
+    msg(D_TAP_WIN_DEBUG, "Enumerate device interface lists:");
     for (DWORD i = 0;; ++i)
     {
         SP_DEVINFO_DATA device_info_data;
@@ -3790,6 +3791,10 @@ get_device_instance_id_interface(struct gc_arena *gc)
             dev_iif->net_cfg_instance_id = (unsigned char *)string_alloc((char *)net_cfg_instance_id, gc);
             dev_iif->device_interface = string_alloc(dev_if, gc);
 
+            msg(D_TAP_WIN_DEBUG, "NetCfgInstanceId: %s, Device Interface: %s",
+                dev_iif->net_cfg_instance_id,
+                dev_iif->device_interface);
+
             /* link into return list */
             if (!first)
             {
@@ -3835,6 +3840,7 @@ get_tap_reg(struct gc_arena *gc)
         msg(M_FATAL, "Error opening registry key: %s", ADAPTER_KEY);
     }
 
+    msg(D_TAP_WIN_DEBUG, "Enumerate drivers in registy: ");
     while (true)
     {
         char enum_name[256];
@@ -3942,6 +3948,9 @@ get_tap_reg(struct gc_arena *gc)
                             last->next = reg;
                         }
                         last = reg;
+
+                        msg(D_TAP_WIN_DEBUG, "NetCfgInstanceId: %s, Driver: %s",
+                            reg->guid, print_windows_driver(reg->windows_driver));
                     }
                 }
             }
@@ -6520,6 +6529,8 @@ tun_try_open_device(struct tuntap *tt, const char *device_guid, const struct dev
         path = tuntap_device_path;
     }
 
+    msg(D_TAP_WIN_DEBUG, "Using device interface: %s", path);
+
     tt->hand = CreateFile(path,
                           GENERIC_READ | GENERIC_WRITE,
                           0,         /* was: FILE_SHARE_READ */
@@ -6529,7 +6540,7 @@ tun_try_open_device(struct tuntap *tt, const char *device_guid, const struct dev
                           0);
     if (tt->hand == INVALID_HANDLE_VALUE)
     {
-        msg(D_TUNTAP_INFO, "CreateFile failed on %s device: %s", print_windows_driver(tt->windows_driver), path);
+        msg(D_TUNTAP_INFO | M_ERRNO, "CreateFile failed on %s device: %s", print_windows_driver(tt->windows_driver), path);
         return false;
     }
 

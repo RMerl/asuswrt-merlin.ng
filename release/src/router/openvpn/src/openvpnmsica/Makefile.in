@@ -165,10 +165,13 @@ am__uninstall_files_from_dir = { \
 am__installdirs = "$(DESTDIR)$(libdir)"
 LTLIBRARIES = $(lib_LTLIBRARIES)
 libopenvpnmsica_la_LIBADD =
+am__dirstamp = $(am__leading_dot)dirstamp
 am_libopenvpnmsica_la_OBJECTS = libopenvpnmsica_la-dllmain.lo \
 	libopenvpnmsica_la-msiex.lo libopenvpnmsica_la-msica_arg.lo \
-	libopenvpnmsica_la-openvpnmsica.lo libopenvpnmsica_la-error.lo \
-	libopenvpnmsica_la-tap.lo openvpnmsica_resources.lo
+	libopenvpnmsica_la-openvpnmsica.lo \
+	$(top_builddir)/src/tapctl/libopenvpnmsica_la-error.lo \
+	$(top_builddir)/src/tapctl/libopenvpnmsica_la-tap.lo \
+	openvpnmsica_resources.lo
 libopenvpnmsica_la_OBJECTS = $(am_libopenvpnmsica_la_OBJECTS)
 AM_V_lt = $(am__v_lt_@AM_V@)
 am__v_lt_ = $(am__v_lt_@AM_DEFAULT_V@)
@@ -194,12 +197,12 @@ am__v_at_1 =
 DEFAULT_INCLUDES = -I.@am__isrc@ -I$(top_builddir) -I$(top_builddir)/include
 depcomp = $(SHELL) $(top_srcdir)/depcomp
 am__maybe_remake_depfiles = depfiles
-am__depfiles_remade = ./$(DEPDIR)/libopenvpnmsica_la-dllmain.Plo \
-	./$(DEPDIR)/libopenvpnmsica_la-error.Plo \
+am__depfiles_remade = $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-error.Plo \
+	$(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-tap.Plo \
+	./$(DEPDIR)/libopenvpnmsica_la-dllmain.Plo \
 	./$(DEPDIR)/libopenvpnmsica_la-msica_arg.Plo \
 	./$(DEPDIR)/libopenvpnmsica_la-msiex.Plo \
-	./$(DEPDIR)/libopenvpnmsica_la-openvpnmsica.Plo \
-	./$(DEPDIR)/libopenvpnmsica_la-tap.Plo
+	./$(DEPDIR)/libopenvpnmsica_la-openvpnmsica.Plo
 am__mv = mv -f
 COMPILE = $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) \
 	$(CPPFLAGS) $(AM_CFLAGS) $(CFLAGS)
@@ -542,22 +545,36 @@ clean-libLTLIBRARIES:
 	  echo rm -f $${locs}; \
 	  rm -f $${locs}; \
 	}
+$(top_builddir)/src/tapctl/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/tapctl
+	@: > $(top_builddir)/src/tapctl/$(am__dirstamp)
+$(top_builddir)/src/tapctl/$(DEPDIR)/$(am__dirstamp):
+	@$(MKDIR_P) $(top_builddir)/src/tapctl/$(DEPDIR)
+	@: > $(top_builddir)/src/tapctl/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/tapctl/libopenvpnmsica_la-error.lo:  \
+	$(top_builddir)/src/tapctl/$(am__dirstamp) \
+	$(top_builddir)/src/tapctl/$(DEPDIR)/$(am__dirstamp)
+$(top_builddir)/src/tapctl/libopenvpnmsica_la-tap.lo:  \
+	$(top_builddir)/src/tapctl/$(am__dirstamp) \
+	$(top_builddir)/src/tapctl/$(DEPDIR)/$(am__dirstamp)
 
 libopenvpnmsica.la: $(libopenvpnmsica_la_OBJECTS) $(libopenvpnmsica_la_DEPENDENCIES) $(EXTRA_libopenvpnmsica_la_DEPENDENCIES) 
 	$(AM_V_CCLD)$(libopenvpnmsica_la_LINK) $(am_libopenvpnmsica_la_rpath) $(libopenvpnmsica_la_OBJECTS) $(libopenvpnmsica_la_LIBADD) $(LIBS)
 
 mostlyclean-compile:
 	-rm -f *.$(OBJEXT)
+	-rm -f $(top_builddir)/src/tapctl/*.$(OBJEXT)
+	-rm -f $(top_builddir)/src/tapctl/*.lo
 
 distclean-compile:
 	-rm -f *.tab.c
 
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-error.Plo@am__quote@ # am--include-marker
+@AMDEP_TRUE@@am__include@ @am__quote@$(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-tap.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libopenvpnmsica_la-dllmain.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libopenvpnmsica_la-error.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libopenvpnmsica_la-msica_arg.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libopenvpnmsica_la-msiex.Plo@am__quote@ # am--include-marker
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libopenvpnmsica_la-openvpnmsica.Plo@am__quote@ # am--include-marker
-@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/libopenvpnmsica_la-tap.Plo@am__quote@ # am--include-marker
 
 $(am__depfiles_remade):
 	@$(MKDIR_P) $(@D)
@@ -566,22 +583,25 @@ $(am__depfiles_remade):
 am--depfiles: $(am__depfiles_remade)
 
 .c.o:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.o$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ $<
 
 .c.obj:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ `$(CYGPATH_W) '$<'`
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Po
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.obj$$||'`;\
+@am__fastdepCC_TRUE@	$(COMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ `$(CYGPATH_W) '$<'` &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Po
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=no @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(COMPILE) -c -o $@ `$(CYGPATH_W) '$<'`
 
 .c.lo:
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LTCOMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/$*.Tpo $(DEPDIR)/$*.Plo
+@am__fastdepCC_TRUE@	$(AM_V_CC)depbase=`echo $@ | sed 's|[^/]*$$|$(DEPDIR)/&|;s|\.lo$$||'`;\
+@am__fastdepCC_TRUE@	$(LTCOMPILE) -MT $@ -MD -MP -MF $$depbase.Tpo -c -o $@ $< &&\
+@am__fastdepCC_TRUE@	$(am__mv) $$depbase.Tpo $$depbase.Plo
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$<' object='$@' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LTCOMPILE) -c -o $@ $<
@@ -614,24 +634,25 @@ libopenvpnmsica_la-openvpnmsica.lo: openvpnmsica.c
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
 @am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -c -o libopenvpnmsica_la-openvpnmsica.lo `test -f 'openvpnmsica.c' || echo '$(srcdir)/'`openvpnmsica.c
 
-libopenvpnmsica_la-error.lo: $(top_srcdir)/src/tapctl/error.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -MT libopenvpnmsica_la-error.lo -MD -MP -MF $(DEPDIR)/libopenvpnmsica_la-error.Tpo -c -o libopenvpnmsica_la-error.lo `test -f '$(top_srcdir)/src/tapctl/error.c' || echo '$(srcdir)/'`$(top_srcdir)/src/tapctl/error.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libopenvpnmsica_la-error.Tpo $(DEPDIR)/libopenvpnmsica_la-error.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/tapctl/error.c' object='libopenvpnmsica_la-error.lo' libtool=yes @AMDEPBACKSLASH@
+$(top_builddir)/src/tapctl/libopenvpnmsica_la-error.lo: $(top_builddir)/src/tapctl/error.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/tapctl/libopenvpnmsica_la-error.lo -MD -MP -MF $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-error.Tpo -c -o $(top_builddir)/src/tapctl/libopenvpnmsica_la-error.lo `test -f '$(top_builddir)/src/tapctl/error.c' || echo '$(srcdir)/'`$(top_builddir)/src/tapctl/error.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-error.Tpo $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-error.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/tapctl/error.c' object='$(top_builddir)/src/tapctl/libopenvpnmsica_la-error.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -c -o libopenvpnmsica_la-error.lo `test -f '$(top_srcdir)/src/tapctl/error.c' || echo '$(srcdir)/'`$(top_srcdir)/src/tapctl/error.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/tapctl/libopenvpnmsica_la-error.lo `test -f '$(top_builddir)/src/tapctl/error.c' || echo '$(srcdir)/'`$(top_builddir)/src/tapctl/error.c
 
-libopenvpnmsica_la-tap.lo: $(top_srcdir)/src/tapctl/tap.c
-@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -MT libopenvpnmsica_la-tap.lo -MD -MP -MF $(DEPDIR)/libopenvpnmsica_la-tap.Tpo -c -o libopenvpnmsica_la-tap.lo `test -f '$(top_srcdir)/src/tapctl/tap.c' || echo '$(srcdir)/'`$(top_srcdir)/src/tapctl/tap.c
-@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(DEPDIR)/libopenvpnmsica_la-tap.Tpo $(DEPDIR)/libopenvpnmsica_la-tap.Plo
-@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_srcdir)/src/tapctl/tap.c' object='libopenvpnmsica_la-tap.lo' libtool=yes @AMDEPBACKSLASH@
+$(top_builddir)/src/tapctl/libopenvpnmsica_la-tap.lo: $(top_builddir)/src/tapctl/tap.c
+@am__fastdepCC_TRUE@	$(AM_V_CC)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -MT $(top_builddir)/src/tapctl/libopenvpnmsica_la-tap.lo -MD -MP -MF $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-tap.Tpo -c -o $(top_builddir)/src/tapctl/libopenvpnmsica_la-tap.lo `test -f '$(top_builddir)/src/tapctl/tap.c' || echo '$(srcdir)/'`$(top_builddir)/src/tapctl/tap.c
+@am__fastdepCC_TRUE@	$(AM_V_at)$(am__mv) $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-tap.Tpo $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-tap.Plo
+@AMDEP_TRUE@@am__fastdepCC_FALSE@	$(AM_V_CC)source='$(top_builddir)/src/tapctl/tap.c' object='$(top_builddir)/src/tapctl/libopenvpnmsica_la-tap.lo' libtool=yes @AMDEPBACKSLASH@
 @AMDEP_TRUE@@am__fastdepCC_FALSE@	DEPDIR=$(DEPDIR) $(CCDEPMODE) $(depcomp) @AMDEPBACKSLASH@
-@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -c -o libopenvpnmsica_la-tap.lo `test -f '$(top_srcdir)/src/tapctl/tap.c' || echo '$(srcdir)/'`$(top_srcdir)/src/tapctl/tap.c
+@am__fastdepCC_FALSE@	$(AM_V_CC@am__nodep@)$(LIBTOOL) $(AM_V_lt) --tag=CC $(AM_LIBTOOLFLAGS) $(LIBTOOLFLAGS) --mode=compile $(CC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) $(AM_CPPFLAGS) $(CPPFLAGS) $(libopenvpnmsica_la_CFLAGS) $(CFLAGS) -c -o $(top_builddir)/src/tapctl/libopenvpnmsica_la-tap.lo `test -f '$(top_builddir)/src/tapctl/tap.c' || echo '$(srcdir)/'`$(top_builddir)/src/tapctl/tap.c
 
 mostlyclean-libtool:
 	-rm -f *.lo
 
 clean-libtool:
+	-rm -rf $(top_builddir)/src/tapctl/.libs $(top_builddir)/src/tapctl/_libs
 	-rm -rf .libs _libs
 
 ID: $(am__tagged_files)
@@ -751,6 +772,8 @@ clean-generic:
 distclean-generic:
 	-test -z "$(CONFIG_CLEAN_FILES)" || rm -f $(CONFIG_CLEAN_FILES)
 	-test . = "$(srcdir)" || test -z "$(CONFIG_CLEAN_VPATH_FILES)" || rm -f $(CONFIG_CLEAN_VPATH_FILES)
+	-test -z "$(top_builddir)/src/tapctl/$(DEPDIR)/$(am__dirstamp)" || rm -f $(top_builddir)/src/tapctl/$(DEPDIR)/$(am__dirstamp)
+	-test -z "$(top_builddir)/src/tapctl/$(am__dirstamp)" || rm -f $(top_builddir)/src/tapctl/$(am__dirstamp)
 
 maintainer-clean-generic:
 	@echo "This command is intended for maintainers to use"
@@ -762,12 +785,12 @@ clean-am: clean-generic clean-libLTLIBRARIES clean-libtool \
 	mostlyclean-am
 
 distclean: distclean-am
-		-rm -f ./$(DEPDIR)/libopenvpnmsica_la-dllmain.Plo
-	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-error.Plo
+		-rm -f $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-error.Plo
+	-rm -f $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-tap.Plo
+	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-dllmain.Plo
 	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-msica_arg.Plo
 	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-msiex.Plo
 	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-openvpnmsica.Plo
-	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-tap.Plo
 	-rm -f Makefile
 distclean-am: clean-am distclean-compile distclean-generic \
 	distclean-tags
@@ -813,12 +836,12 @@ install-ps-am:
 installcheck-am:
 
 maintainer-clean: maintainer-clean-am
-		-rm -f ./$(DEPDIR)/libopenvpnmsica_la-dllmain.Plo
-	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-error.Plo
+		-rm -f $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-error.Plo
+	-rm -f $(top_builddir)/src/tapctl/$(DEPDIR)/libopenvpnmsica_la-tap.Plo
+	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-dllmain.Plo
 	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-msica_arg.Plo
 	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-msiex.Plo
 	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-openvpnmsica.Plo
-	-rm -f ./$(DEPDIR)/libopenvpnmsica_la-tap.Plo
 	-rm -f Makefile
 maintainer-clean-am: distclean-am maintainer-clean-generic
 

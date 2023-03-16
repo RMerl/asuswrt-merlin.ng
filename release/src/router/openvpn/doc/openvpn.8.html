@@ -3563,8 +3563,9 @@ options to avoid this behaviour.</p>
 <div class="section" id="openvpn-3-clients">
 <h2>OpenVPN 3 clients</h2>
 <p>Clients based on the OpenVPN 3.x library (<a class="reference external" href="https://github.com/openvpn/openvpn3/">https://github.com/openvpn/openvpn3/</a>)
-do not have a configurable <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt> or <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option. Instead
-these clients will announce support for all their supported AEAD ciphers
+do not have a configurable <tt class="docutils literal"><span class="pre">--ncp-ciphers</span></tt> or <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option. Newer
+versions by default disable legacy AES-CBC, BF-CBC, and DES-CBC ciphers.
+These clients will always announce support for all their supported AEAD ciphers
 (<cite>AES-256-GCM</cite>, <cite>AES-128-GCM</cite> and in newer versions also <cite>Chacha20-Poly1305</cite>).</p>
 <p>To support OpenVPN 3.x based clients at least one of these ciphers needs to be
 included in the server's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option.</p>
@@ -5811,12 +5812,19 @@ certificate's subject:</p>
 <pre class="literal-block">
 cryptoapicert &quot;SUBJ:Peter Runestig&quot;
 </pre>
-<p>To select a certificate, based on certificate's thumbprint:</p>
+<p>To select a certificate, based on certificate's thumbprint (SHA1 hash):</p>
 <pre class="literal-block">
 cryptoapicert &quot;THUMB:f6 49 24 41 01 b4 ...&quot;
 </pre>
-<p class="last">The thumbprint hex string can easily be copy-and-pasted from the Windows
-Certificate Store GUI.</p>
+<p>The thumbprint hex string can easily be copy-and-pasted from the Windows
+Certificate Store GUI. The embedded spaces in the hex string are optional.</p>
+<p>To select a certificate based on a substring in certificate's
+issuer name:</p>
+<pre class="literal-block">
+cryptoapicert &quot;ISSUER:Sample CA&quot;
+</pre>
+<p class="last">The first non-expired certificate found in the user's store or the
+machine store that matches the select-string is used.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--dhcp-release</span></kbd></td>
@@ -6300,20 +6308,22 @@ See <tt class="docutils literal"><span class="pre">--ipchange</span></tt> for mo
 </div>
 <div class="section" id="howto">
 <h1>HOWTO</h1>
+<p>The manual <tt class="docutils literal"><span class="pre">openvpn-examples</span></tt>(5) gives some examples, especially for
+small setups.</p>
 <p>For a more comprehensive guide to setting up OpenVPN in a production
 setting, see the OpenVPN HOWTO at
 <a class="reference external" href="https://openvpn.net/community-resources/how-to/">https://openvpn.net/community-resources/how-to/</a></p>
 </div>
 <div class="section" id="protocol">
 <h1>PROTOCOL</h1>
-<p>For a description of OpenVPN's underlying protocol, see
-<a class="reference external" href="https://openvpn.net/community-resources/openvpn-protocol/">https://openvpn.net/community-resources/openvpn-protocol/</a></p>
+<p>An ongoing effort to document the OpenVPN protocol can be found under
+<a class="reference external" href="https://github.com/openvpn/openvpn-rfc">https://github.com/openvpn/openvpn-rfc</a></p>
 </div>
 <div class="section" id="web">
 <h1>WEB</h1>
-<p>OpenVPN's web site is at <a class="reference external" href="https://openvpn.net/">https://openvpn.net/</a></p>
+<p>OpenVPN's web site is at <a class="reference external" href="https://community.openvpn.net/">https://community.openvpn.net/</a></p>
 <p>Go here to download the latest version of OpenVPN, subscribe to the
-mailing lists, read the mailing list archives, or browse the SVN
+mailing lists, read the mailing list archives, or browse the Git
 repository.</p>
 </div>
 <div class="section" id="bugs">

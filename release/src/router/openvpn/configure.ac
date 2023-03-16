@@ -54,9 +54,22 @@ m4_define([serial_tests], [
                 awk '{split ($NF,a,"."); if (a[1] == 1 && a[2] >= 12) { print "serial-tests" }}'
     ])
 ])
+
+dnl Automake 1.14+ warns if sources are in sub-directories but subdir-objects
+dnl options is not enabled. However, automake before 1.15a has a bug that causes
+dnl variable expansion to fail in foo_SOURCES when this option is used.
+dnl As most of our build systems are now likely to use automake 1.16+ add a
+dnl work around to conditionally add subdir-objects option.
+m4_define([subdir_objects], [
+    m4_esyscmd([automake --version |
+                head -1 |
+                awk '{split ($NF,a,"."); if (a[1] == 1 && a[2] >= 16) { print "subdir-objects" }}'
+    ])
+])
+
 # This foreign option prevents autoreconf from overriding our COPYING and
 # INSTALL targets:
-AM_INIT_AUTOMAKE(foreign serial_tests 1.9) dnl NB: Do not [quote] this parameter.
+AM_INIT_AUTOMAKE(foreign serial_tests subdir_objects 1.9) dnl NB: Do not [quote] this parameter.
 AC_CANONICAL_HOST
 AC_USE_SYSTEM_EXTENSIONS
 
@@ -67,14 +80,16 @@ AC_ARG_ENABLE(
 	[enable_lzo="yes"]
 )
 
-AC_ARG_ENABLE(lz4,
-	[  --disable-lz4           Disable LZ4 compression support],
+AC_ARG_ENABLE(
+	[lz4],
+	[AS_HELP_STRING([--disable-lz4], [disable LZ4 compression support @<:@default=yes@:>@])],
 	[enable_lz4="$enableval"],
 	[enable_lz4="yes"]
 )
 
-AC_ARG_ENABLE(comp-stub,
-	[  --enable-comp-stub      Don't compile compression support but still allow limited interoperability with compression-enabled peers],
+AC_ARG_ENABLE(
+	[comp-stub],
+	[AS_HELP_STRING([--enable-comp-stub], [disable compression support but still allow limited interoperability with compression-enabled peers @<:@default=no@:>@])],
 	[enable_comp_stub="$enableval"],
 	[enable_comp_stub="no"]
 )
@@ -144,14 +159,27 @@ AC_ARG_ENABLE(
 
 AC_ARG_ENABLE(
 	[dco],
-	[AS_HELP_STRING([--enable-dco], [enable data channel offload support using the ovpn-dco kernel module (always enabled on Windows) @<:@default=no@:>@])],
+	[AS_HELP_STRING([--disable-dco], [disable data channel offload support using the ovpn-dco kernel module @<:@default=yes@:>@ on Linux/FreeBSD, can't disable on Windows])],
 	,
-	[enable_dco="no"]
+	[
+		case "$host" in
+			*-*-linux*)
+				enable_dco="auto"
+			;;
+			*-*-freebsd*)
+				enable_dco="auto"
+			;;
+			*)
+				# note that this does not disable it for Windows
+				enable_dco="no"
+			;;
+		esac
+	]
 )
 
 AC_ARG_ENABLE(
 	[iproute2],
-	[AS_HELP_STRING([--enable-iproute2], [enable support for iproute2 @<:@default=no@:>@])],
+	[AS_HELP_STRING([--enable-iproute2], [enable support for iproute2 (disables DCO) @<:@default=no@:>@])],
 	,
 	[enable_iproute2="no"]
 )
@@ -351,6 +379,8 @@ case "$host" in
 		;;
 esac
 
+AM_CONDITIONAL([CROSS_COMPILING], test "${cross_compiling}" = "yes")
+
 PKG_PROG_PKG_CONFIG
 AC_PROG_CPP
 AC_PROG_INSTALL
@@ -534,7 +564,7 @@ AC_CHECK_DECLS(
 	,
 	[[${SOCKET_INCLUDES}]]
 )
-AC_CHECKING([anonymous union support])
+AC_MSG_CHECKING([anonymous union support])
 AC_COMPILE_IFELSE(
 	[AC_LANG_PROGRAM(
 		[[
@@ -769,28 +799,57 @@ PKG_CHECK_MODULES(
 )
 
 
-if test "$enable_dco" = "yes"; then
-dnl
-dnl Include generic netlink library used to talk to ovpn-dco
-dnl
+if test "$enable_dco" != "no"; then
+	enable_dco_arg="$enable_dco"
+	if test "${enable_iproute2}" = "yes"; then
+		AC_MSG_WARN([DCO cannot be enabled when using iproute2])
+		enable_dco="no"
+	fi
 	case "$host" in
 		*-*-linux*)
-			PKG_CHECK_MODULES([LIBNL_GENL],
+			if test "$enable_dco" = "no"; then
+				if test "$enable_dco_arg" = "auto"; then
+					AC_MSG_WARN([DCO support disabled])
+				else
+					AC_MSG_ERROR([DCO support can't be enabled])
+				fi
+			else
+				dnl
+				dnl Include generic netlink library used to talk to ovpn-dco
+				dnl
+				PKG_CHECK_MODULES([LIBNL_GENL],
 					  [libnl-genl-3.0 >= 3.4.0],
 					  [have_libnl="yes"],
-					  [AC_MSG_ERROR([libnl-genl-3.0 package not found or too old. Is the development package and pkg-config installed? Must be version 3.4.0 or newer])]
-			)
+					  [
+					   AC_MSG_ERROR([libnl-genl-3.0 package not found or too old. Is the development package and pkg-config installed? Must be version 3.4.0 or newer for DCO])
+					  ]
+				)
+				CFLAGS="${CFLAGS} ${LIBNL_GENL_CFLAGS}"
+				LIBS="${LIBS} ${LIBNL_GENL_LIBS}"
 
-			CFLAGS="${CFLAGS} ${LIBNL_GENL_CFLAGS}"
-			LIBS="${LIBS} ${LIBNL_GENL_LIBS}"
-
-			AC_DEFINE(ENABLE_DCO, 1, [Enable shared data channel offload])
-			AC_MSG_NOTICE([Enabled ovpn-dco support for Linux])
+				AC_DEFINE(ENABLE_DCO, 1, [Enable shared data channel offload])
+				AC_MSG_NOTICE([Enabled ovpn-dco support for Linux])
+			fi
 			;;
 		*-*-freebsd*)
-			LIBS="${LIBS} -lnv"
-			AC_DEFINE(ENABLE_DCO, 1, [Enable data channel offload for FreeBSD])
-			AC_MSG_NOTICE([Enabled ovpn-dco support for FreeBSD])
+			AC_CHECK_HEADERS([net/if_ovpn.h],
+				[
+				 LIBS="${LIBS} -lnv"
+				 AC_DEFINE(ENABLE_DCO, 1, [Enable data channel offload for FreeBSD])
+				 AC_MSG_NOTICE([Enabled ovpn-dco support for FreeBSD])
+				],
+				[
+				 enable_dco="no"
+				 AC_MSG_WARN([DCO header not found.])
+				]
+			)
+			if test "$enable_dco" = "no"; then
+				if test "$enable_dco_arg" = "auto"; then
+					AC_MSG_WARN([DCO support disabled])
+				else
+					AC_MSG_ERROR([DCO support can't be enabled])
+				fi
+			fi
 			;;
 		*-mingw*)
 			AC_MSG_NOTICE([NOTE: --enable-dco ignored on Windows because it's always enabled])

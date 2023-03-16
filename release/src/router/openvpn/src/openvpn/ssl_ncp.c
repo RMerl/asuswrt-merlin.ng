@@ -318,7 +318,7 @@ check_pull_client_ncp(struct context *c, const int found)
 {
     if (found & OPT_P_NCP)
     {
-        msg(D_PUSH, "OPTIONS IMPORT: data channel crypto options modified");
+        msg(D_PUSH_DEBUG, "OPTIONS IMPORT: data channel crypto options modified");
         return true;
     }
 
@@ -460,6 +460,10 @@ p2p_ncp_set_options(struct tls_multi *multi, struct tls_session *session)
             }
 
         }
+    }
+    if (iv_proto_peer & IV_PROTO_DYN_TLS_CRYPT)
+    {
+        session->opt->crypto_flags |= CO_USE_DYNAMIC_TLS_CRYPT;
     }
 #endif /* if defined(HAVE_EXPORT_KEYING_MATERIAL) */
 }

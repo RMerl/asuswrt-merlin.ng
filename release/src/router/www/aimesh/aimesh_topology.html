@@ -1,4 +1,11 @@
 ﻿<script>
+function _check_is_merlin_fw(_fw) {
+        var fw_array = _fw.match(/(\d+)\.(\d+)\.(\d+)\.(\d+)\.([^_]+)_(\w+)/);
+        if (fw_array && (fw_array[5].indexOf('.') > 0) )
+                return true;
+        else
+                return false;
+}
 var diagnosticApi = {
 	"db_map": {
 		"backhaul": "STAINFO",
@@ -3231,10 +3238,10 @@ function set_primary_info(_node_info){
 	var mac = _node_info.mac;
 	var node_location_text = "Home";
 	var fwver = _node_info.fwver;
-	if (check_is_merlin_fw(fwver))
+	if (_check_is_merlin_fw(fwver))
 		fwver = fwver.replace("3.0.0.4.", "").replace("_0","");
 	var newfwver = _node_info.newfwver;
-	if (check_is_merlin_fw(newfwver))
+	if (_check_is_merlin_fw(newfwver))
 		newfwver = newfwver.replace("3.0.0.4.", "").replace("_0","");
 	var re_path = _node_info.re_path;
 	var alias = _node_info.alias;

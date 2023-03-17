@@ -54,7 +54,7 @@ Fully supported devices:
  * GT-AXE11000
  * GT-AX6000
  * ZenWifi Pro XT12
- * GT-AX11000_Pro
+ * GT-AX11000 Pro
  * GT-AXE16000
  * RT-AX86U Pro
  * RT-AX88U Pro

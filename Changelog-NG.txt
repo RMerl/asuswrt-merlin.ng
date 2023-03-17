@@ -8,7 +8,12 @@ Asuswrt-Merlin Changelog
          This is the same network scan that is available
          for pre-HND models, with Wifi 6E support added.
   - UPDATED: dnsmasq to 2.89.
-  - UPDATED: openvpn to 2.6.0.
+  - UPDATED: openvpn to 2.6.1.  If your client fails to
+             connect then your custom settings must
+             contain settings no longer supported by
+             OpenVPN 2.6.  Review the System Log,
+             then remove unsupported settings that are
+             reported in your log.
   - UPDATED: nettle to 3.8.1.
   - UPDATED: inadyn to 2.10.0.
   - UPDATED: dropbear to 2022.83.
@@ -24,7 +29,7 @@ Asuswrt-Merlin Changelog
              if the client is disabled.  This allow users
              to manually clear settings when they are
              no longer using a client.
-  - FIXED: NTP redirection wouldn`t work properly with
+  - FIXED: NTP redirection wouldn't work properly with
            Guest Network, removed fredirection for these.
   - FIXED: Added missing Tools icon on ROG UI (icon
            contributed by Cody).

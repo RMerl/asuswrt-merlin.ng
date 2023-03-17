@@ -127,7 +127,7 @@ then
 	cp release/src-rt-5.02L.07p2axhnd/targets/cfe/prebuilt/* $REPO/release/src-rt-5.02L.07p2axhnd/targets/cfe/sysdeps/$BUILD_NAME/
 	rsync -a --del release/src-rt-5.02L.07p2axhnd/router-sysdep/ $REPO/release/src-rt-5.02L.07p2axhnd/router-sysdep.$BUILD_NAME_LC
 
-elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ]
+elif [ "$BUILD_NAME" == "GT-AX6000" ] || [ "$BUILD_NAME" == "XT12" ] || [ "$BUILD_NAME" == "GT-AXE16000" ] || [ "$BUILD_NAME" == "GT-AX11000_PRO" ] || [ "$BUILD_NAME" == "RT-AX86U_PRO" ] || [ "$BUILD_NAME" == "RT-AX88U_PRO" ]
 then
         SDK="_4912hnd"
         ARCH="_arm"
@@ -179,6 +179,10 @@ fi;
 
 # Common to all
 
+# NOTE: these are new in 388, need to determine which platform uses them
+cp release/src/router/dns_ping/prebuild/* $REPO/release/src/router/dns_ping/prebuild/$BUILD_NAME
+cp release/src/router/fsmd/prebuild/* $REPO/release/src/router/fsmd/prebuild/$BUILD_NAME
+
 echo "*** Copying common files..."
 rsync -a --del release/src/router/httpd/prebuild/ $REPO/release/src/router/httpd/prebuild/$BUILD_NAME
 rsync -a --del release/src/router/rc/prebuild/ $REPO/release/src/router/rc/prebuild/$BUILD_NAME
@@ -198,6 +202,8 @@ cp release/src/router/libletsencrypt/prebuild/* $REPO/release/src/router/liblets
 cp release/src/router/libbcm/prebuilt/* $REPO/release/src/router/libbcm/prebuilt/$BUILD_NAME/
 cp release/src/router/infosvr/prebuild/* $REPO/release/src/router/infosvr/prebuild/$BUILD_NAME/
 cp -ar release/src/router/ookla_speedtest/OOKLA-* $REPO/release/src/router/ookla_speedtest/
+cp release/src/router/libwebapi/prebuild/* $REPO/release/src/router/libwebapi/prebuild/$BUILD_NAME/
+cp release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt/$BUILD_NAME/
 
 # Common to most
 echo "*** Copying optional files - ignore errors"
@@ -236,7 +242,6 @@ then
 	cp release/src/router/nas$ARCH$SDK/nas/prebuilt/* $REPO/release/src/router/nas$ARCH$SDK/nas/prebuilt/
 	cp release/src/router/wlconf$ARCH$SDK/prebuilt/* $REPO/release/src/router/wlconf$ARCH$SDK/prebuilt/
 	cp release/src/router/wps$ARCH$SDK/prebuilt/* $REPO/release/src/router/wps$ARCH$SDK/prebuilt/
-	cp release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt/$BUILD_NAME/
 	cp release/src/router/dhd_monitor/prebuilt/* $REPO/release/src/router/dhd_monitor/prebuilt/$BUILD_NAME/
 fi
 
@@ -260,4 +265,4 @@ fi
 
 # Cleanup
 rm $REPO/release/src/router/rc/prebuild/$BUILD_NAME/init-broadcom.o
-rm $REPO/release/src/router/shared/prebuild/$BUILD_NAME/api-broadcom.o
+#rm $REPO/release/src/router/shared/prebuild/$BUILD_NAME/api-broadcom.o

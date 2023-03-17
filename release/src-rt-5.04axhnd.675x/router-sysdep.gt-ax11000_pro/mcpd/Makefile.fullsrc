@@ -28,7 +28,6 @@ endif
 
 LIBS += $(SSP_TYP_LIBS)
 
-
 CFLAGS += -Werror -Wfatal-errors
 ifneq ($(strip $(BRCM_OVS_SUPPORT_MCAST)),)
 CFLAGS += -DCONFIG_BCM_OVS_MCAST

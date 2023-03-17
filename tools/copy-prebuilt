@@ -203,6 +203,7 @@ cp release/src/router/libbcm/prebuilt/* $REPO/release/src/router/libbcm/prebuilt
 cp release/src/router/infosvr/prebuild/* $REPO/release/src/router/infosvr/prebuild/$BUILD_NAME/
 cp -ar release/src/router/ookla_speedtest/OOKLA-* $REPO/release/src/router/ookla_speedtest/
 cp release/src/router/libwebapi/prebuild/* $REPO/release/src/router/libwebapi/prebuild/$BUILD_NAME/
+cp release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt/$BUILD_NAME/
 
 # Common to most
 echo "*** Copying optional files - ignore errors"
@@ -241,7 +242,6 @@ then
 	cp release/src/router/nas$ARCH$SDK/nas/prebuilt/* $REPO/release/src/router/nas$ARCH$SDK/nas/prebuilt/
 	cp release/src/router/wlconf$ARCH$SDK/prebuilt/* $REPO/release/src/router/wlconf$ARCH$SDK/prebuilt/
 	cp release/src/router/wps$ARCH$SDK/prebuilt/* $REPO/release/src/router/wps$ARCH$SDK/prebuilt/
-	cp release/src/router/wlceventd/prebuilt/* $REPO/release/src/router/wlceventd/prebuilt/$BUILD_NAME/
 	cp release/src/router/dhd_monitor/prebuilt/* $REPO/release/src/router/dhd_monitor/prebuilt/$BUILD_NAME/
 fi
 

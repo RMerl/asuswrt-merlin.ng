@@ -2,6 +2,9 @@ Asuswrt-Merlin Changelog
 ========================
 
 388.2 (xx-xxx-2023)
+  - NOTE: This release is currently not available
+          for the XT12 due to issues with that model's GPL.
+
   - NEW: Added support for the RT-AX88U Pro.
   - NEW: Merged with GPL 388_22525.
   - NEW: Added Site Survey page under Network Tools tab.

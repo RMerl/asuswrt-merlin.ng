@@ -1200,7 +1200,7 @@ function applyRule(){
 								detect_qtn_ready();
 							}
 							else{
-								if(!$('.fronthaul_ap').is(':visible') && wl_unit == dwb_info.band){
+								if(document.form.fh_ap_enabled && !$('.fronthaul_ap').is(':visible') && wl_unit == dwb_info.band){
 									document.querySelector('#fh_ap_enabled').value = '0';
 								}
 
@@ -1234,7 +1234,7 @@ function applyRule(){
 				detect_qtn_ready();
 			}
 			else{
-				if(!$('.fronthaul_ap').is(':visible') && wl_unit == dwb_info.band){
+				if(document.form.fh_ap_enabled && !$('.fronthaul_ap').is(':visible') && wl_unit == dwb_info.band){
 					document.querySelector('#fh_ap_enabled').value = '0';
 				}
 

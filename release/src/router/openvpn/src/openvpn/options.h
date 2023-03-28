@@ -87,9 +87,7 @@ struct options_pre_connect
     int ping_rec_timeout_action;
 
     int foreign_option_index;
-#ifdef USE_COMP
     struct compress_options comp;
-#endif
 };
 
 #if !defined(ENABLE_CRYPTO_OPENSSL) && !defined(ENABLE_CRYPTO_MBEDTLS)
@@ -395,9 +393,7 @@ struct options
     /* optimize TUN/TAP/UDP writes */
     bool fast_io;
 
-#ifdef USE_COMP
     struct compress_options comp;
-#endif
 
     /* buffer sizes */
     int rcvbuf;
@@ -795,6 +791,8 @@ void show_library_versions(const unsigned int flags);
 void show_windows_version(const unsigned int flags);
 
 #endif
+
+void show_dco_version(const unsigned int flags);
 
 void init_options(struct options *o, const bool init_gc);
 

@@ -2636,14 +2636,22 @@ do_deferred_options(struct context *c, const unsigned int found)
         }
     }
 
-#ifdef USE_COMP
     if (found & OPT_P_COMP)
     {
+        if (!check_compression_settings_valid(&c->options.comp, D_PUSH_ERRORS))
+        {
+            msg(D_PUSH_ERRORS, "OPTIONS ERROR: server pushed compression "
+                "settings that are not allowed and will result "
+                "in a non-working connection. "
+                "See also allow-compression in the manual.");
+            return false;
+        }
+#ifdef USE_COMP
         msg(D_PUSH_DEBUG, "OPTIONS IMPORT: compression parms modified");
         comp_uninit(c->c2.comp_context);
         c->c2.comp_context = comp_init(&c->options.comp);
-    }
 #endif
+    }
 
     if (found & OPT_P_SHAPER)
     {
@@ -3485,6 +3493,7 @@ do_init_frame_tls(struct context *c)
         frame_print(&c->c2.tls_auth_standalone->frame, D_MTU_INFO,
                     "TLS-Auth MTU parms");
         c->c2.tls_auth_standalone->tls_wrap.work = alloc_buf_gc(BUF_SIZE(&c->c2.frame), &c->c2.gc);
+        c->c2.tls_auth_standalone->workbuf = alloc_buf_gc(BUF_SIZE(&c->c2.frame), &c->c2.gc);
     }
 }
 
@@ -3883,6 +3892,8 @@ do_close_tls(struct context *c)
         md_ctx_cleanup(c->c2.pulled_options_state);
         md_ctx_free(c->c2.pulled_options_state);
     }
+
+    tls_auth_standalone_free(c->c2.tls_auth_standalone);
 }
 
 /*
@@ -3916,8 +3927,7 @@ do_close_link_socket(struct context *c)
     /* in dco-win case, link socket is a tun handle which is
      * closed in do_close_tun(). Set it to UNDEFINED so
      * we won't use WinSock API to close it. */
-    if (tuntap_is_dco_win(c->c1.tuntap) && c->c2.link_socket
-        && c->c2.link_socket->dco_installed)
+    if (tuntap_is_dco_win(c->c1.tuntap) && c->c2.link_socket)
     {
         c->c2.link_socket->sd = SOCKET_UNDEFINED;
     }
@@ -4687,14 +4697,15 @@ init_instance(struct context *c, const struct env_set *env, const unsigned int f
     if (c->mode == CM_P2P || c->mode == CM_TOP || c->mode == CM_CHILD_TCP)
     {
         link_socket_init_phase2(c);
-    }
 
-    /* Update dynamic frame calculation as exact transport socket information
-     * (IP vs IPv6) may be only available after socket phase2 has finished.
-     * This is only needed for --static or no crypto, NCP will recalculate this
-     * in tls_session_update_crypto_params (P2MP) */
-    frame_calculate_dynamic(&c->c2.frame, &c->c1.ks.key_type, &c->options,
-                            get_link_socket_info(c));
+
+        /* Update dynamic frame calculation as exact transport socket information
+         * (IP vs IPv6) may be only available after socket phase2 has finished.
+         * This is only needed for --static or no crypto, NCP will recalculate this
+         * in tls_session_update_crypto_params (P2MP) */
+        frame_calculate_dynamic(&c->c2.frame, &c->c1.ks.key_type, &c->options,
+                                get_link_socket_info(c));
+    }
 
     /*
      * Actually do UID/GID downgrade, and chroot, if requested.

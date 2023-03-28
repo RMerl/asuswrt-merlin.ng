@@ -147,40 +147,6 @@ CAPI_DATA_free(CAPI_DATA *cd)
 }
 
 /**
- * Helper to convert ECDSA signature returned by NCryptSignHash
- * to an ECDSA_SIG structure.
- * On entry 'buf[]' of length len contains r and s concatenated.
- * Returns a newly allocated ECDSA_SIG or NULL (on error).
- */
-static ECDSA_SIG *
-ecdsa_bin2sig(unsigned char *buf, int len)
-{
-    ECDSA_SIG *ecsig = NULL;
-    DWORD rlen = len/2;
-    BIGNUM *r = BN_bin2bn(buf, rlen, NULL);
-    BIGNUM *s = BN_bin2bn(buf+rlen, rlen, NULL);
-    if (!r || !s)
-    {
-        goto err;
-    }
-    ecsig = ECDSA_SIG_new(); /* in openssl 1.1 this does not allocate r, s */
-    if (!ecsig)
-    {
-        goto err;
-    }
-    if (!ECDSA_SIG_set0(ecsig, r, s)) /* ecsig takes ownership of r and s */
-    {
-        ECDSA_SIG_free(ecsig);
-        goto err;
-    }
-    return ecsig;
-err:
-    BN_free(r); /* it is ok to free NULL BN */
-    BN_free(s);
-    return NULL;
-}
-
-/**
  * Parse a hex string with optional embedded spaces into
  * a byte array.
  * @param p         pointer to the input string
@@ -287,12 +253,11 @@ static int
 xkey_cng_ec_sign(CAPI_DATA *cd, unsigned char *sig, size_t *siglen, const unsigned char *tbs,
                  size_t tbslen)
 {
-    BYTE buf[1024]; /* large enough for EC keys upto 1024 bits */
-    DWORD len = _countof(buf);
+    DWORD len = *siglen;
 
     msg(D_LOW, "Signing using NCryptSignHash with EC key");
 
-    DWORD status = NCryptSignHash(cd->crypt_prov, NULL, (BYTE *)tbs, tbslen, buf, len, &len, 0);
+    DWORD status = NCryptSignHash(cd->crypt_prov, NULL, (BYTE *)tbs, tbslen, sig, len, &len, 0);
 
     if (status != ERROR_SUCCESS)
     {
@@ -301,26 +266,14 @@ xkey_cng_ec_sign(CAPI_DATA *cd, unsigned char *sig, size_t *siglen, const unsign
         return 0;
     }
 
-    /* NCryptSignHash returns r|s -- convert to OpenSSL's ECDSA_SIG */
-    ECDSA_SIG *ecsig = ecdsa_bin2sig(buf, len);
-    if (!ecsig)
+    /* NCryptSignHash returns r|s -- convert to DER encoded buffer expected by OpenSSL */
+    int derlen = ecdsa_bin2der(sig, (int) len, *siglen);
+    if (derlen <= 0)
     {
-        msg(M_NONFATAL, "Error in cryptopicert: Failed to convert ECDSA signature");
         return 0;
     }
-
-    /* convert internal signature structure 's' to DER encoded byte array in sig */
-    if (i2d_ECDSA_SIG(ecsig, NULL) > EVP_PKEY_size(cd->pubkey))
-    {
-        ECDSA_SIG_free(ecsig);
-        msg(M_NONFATAL, "Error in cryptoapicert: DER encoded ECDSA signature is too long");
-        return 0;
-    }
-
-    *siglen = i2d_ECDSA_SIG(ecsig, &sig);
-    ECDSA_SIG_free(ecsig);
-
-    return (*siglen > 0);
+    *siglen = derlen;
+    return 1;
 }
 
 /** Sign hash in tbs using RSA key in cd and NCryptSignHash */
@@ -448,11 +401,17 @@ get_cert_name(const CERT_CONTEXT *cc, struct gc_arena *gc)
     return name;
 }
 
-int
-SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
+/**
+ * Load certificate matching 'cert_prop' from Windows cert store
+ * into xkey provider and return pointers to X509 cert and private key.
+ * Returns 1 on success, 0 on error.
+ * Caller must free 'cert' and 'privkey' after use.
+ */
+static int
+Load_CryptoAPI_certificate(const char *cert_prop, X509 **cert, EVP_PKEY **privkey)
 {
+
     HCERTSTORE cs;
-    X509 *cert = NULL;
     CAPI_DATA *cd = calloc(1, sizeof(*cd));
     struct gc_arena gc = gc_new();
 
@@ -497,9 +456,9 @@ SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
     }
 
     /* cert_context->pbCertEncoded is the cert X509 DER encoded. */
-    cert = d2i_X509(NULL, (const unsigned char **) &cd->cert_context->pbCertEncoded,
-                    cd->cert_context->cbCertEncoded);
-    if (cert == NULL)
+    *cert = d2i_X509(NULL, (const unsigned char **) &cd->cert_context->pbCertEncoded,
+                     cd->cert_context->cbCertEncoded);
+    if (*cert == NULL)
     {
         msg(M_NONFATAL, "Error in cryptoapicert: X509 certificate decode failed");
         goto err;
@@ -515,28 +474,16 @@ SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
         /* private key may be in a token not available, or incompatible with CNG */
         msg(M_NONFATAL|M_ERRNO, "Error in cryptoapicert: failed to acquire key. Key not present or "
             "is in a legacy token not supported by Windows CNG API");
-        goto err;
-    }
-
-    /* Public key in cert is NULL until we call SSL_CTX_use_certificate(),
-     * so we do it here then...  */
-    if (!SSL_CTX_use_certificate(ssl_ctx, cert))
-    {
+        X509_free(*cert);
         goto err;
     }
 
     /* the public key */
-    EVP_PKEY *pkey = X509_get_pubkey(cert);
+    EVP_PKEY *pkey = X509_get_pubkey(*cert);
     cd->pubkey = pkey; /* will be freed with cd */
 
-    /* SSL_CTX_use_certificate() increased the reference count in 'cert', so
-     * we decrease it here with X509_free(), or it will never be cleaned up. */
-    X509_free(cert);
-    cert = NULL;
-
-    EVP_PKEY *privkey = xkey_load_generic_key(tls_libctx, cd, pkey,
-                                              xkey_cng_sign, (XKEY_PRIVKEY_FREE_fn *) CAPI_DATA_free);
-    SSL_CTX_use_PrivateKey(ssl_ctx, privkey);
+    *privkey = xkey_load_generic_key(tls_libctx, cd, pkey,
+                                     xkey_cng_sign, (XKEY_PRIVKEY_FREE_fn *) CAPI_DATA_free);
     gc_free(&gc);
     return 1; /* do not free cd -- its kept by xkey provider */
 
@@ -545,5 +492,30 @@ err:
     gc_free(&gc);
     return 0;
 }
+
+int
+SSL_CTX_use_CryptoAPI_certificate(SSL_CTX *ssl_ctx, const char *cert_prop)
+{
+    X509 *cert = NULL;
+    EVP_PKEY *privkey = NULL;
+    int ret = 0;
+
+    if (!Load_CryptoAPI_certificate(cert_prop, &cert, &privkey))
+    {
+        return ret;
+    }
+    if (SSL_CTX_use_certificate(ssl_ctx, cert)
+        && SSL_CTX_use_PrivateKey(ssl_ctx, privkey))
+    {
+        ret = 1;
+    }
+
+    /* Always free cert and privkey even if retained by ssl_ctx as
+     * they are reference counted */
+    X509_free(cert);
+    EVP_PKEY_free(privkey);
+    return ret;
+}
+
 #endif  /* HAVE_XKEY_PROVIDER */
 #endif                          /* _WIN32 */

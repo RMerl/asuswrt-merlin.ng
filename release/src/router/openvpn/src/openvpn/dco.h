@@ -58,6 +58,15 @@ struct tuntap;
  */
 bool dco_available(int msglevel);
 
+
+/**
+ * Return a human readable string representing the DCO version
+ *
+ * @param gc    the garbage collector to use for any dynamic allocation
+ * @return      a pointer to the string (allocated via gc) containing the string
+ */
+const char *dco_version_string(struct gc_arena *gc);
+
 /**
  * Check whether the options struct has any option that is not supported by
  * our current dco implementation. If so print a warning at warning level
@@ -126,15 +135,6 @@ void close_tun_dco(struct tuntap *tt, openvpn_net_ctx_t *ctx);
  * @return          0 on success or a negative error code otherwise
  */
 int dco_do_read(dco_context_t *dco);
-
-/**
- * Write data to the DCO communication channel (control packet expected)
- *
- * @param dco       the DCO context
- * @param peer_id   the ID of the peer to send the data to
- * @param buf       the buffer containing the data to send
- */
-int dco_do_write(dco_context_t *dco, int peer_id, struct buffer *buf);
 
 /**
  * Install a DCO in the main event loop
@@ -259,6 +259,12 @@ dco_available(int msglevel)
     return false;
 }
 
+static inline const char *
+dco_version_string(struct gc_arena *gc)
+{
+    return "not-compiled";
+}
+
 static inline bool
 dco_check_option(int msglevel, const struct options *o)
 {
@@ -296,13 +302,6 @@ close_tun_dco(struct tuntap *tt, openvpn_net_ctx_t *ctx)
 
 static inline int
 dco_do_read(dco_context_t *dco)
-{
-    ASSERT(false);
-    return 0;
-}
-
-static inline int
-dco_do_write(dco_context_t *dco, int peer_id, struct buffer *buf)
 {
     ASSERT(false);
     return 0;

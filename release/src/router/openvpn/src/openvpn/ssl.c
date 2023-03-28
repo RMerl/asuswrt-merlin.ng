@@ -1361,6 +1361,17 @@ tls_auth_standalone_init(struct tls_options *tls_options,
     return tas;
 }
 
+void
+tls_auth_standalone_free(struct tls_auth_standalone *tas)
+{
+    if (!tas)
+    {
+        return;
+    }
+
+    packet_id_free(&tas->tls_wrap.opt.packet_id);
+}
+
 /*
  * Set local and remote option compatibility strings.
  * Used to verify compatibility of local and remote option
@@ -4005,18 +4016,15 @@ tls_post_encrypt(struct tls_multi *multi, struct buffer *buf)
  */
 
 bool
-tls_send_payload(struct tls_multi *multi,
+tls_send_payload(struct key_state *ks,
                  const uint8_t *data,
                  int size)
 {
-    struct key_state *ks;
     bool ret = false;
 
     tls_clear_error();
 
-    ASSERT(multi);
-
-    ks = get_key_scan(multi, 0);
+    ASSERT(ks);
 
     if (ks->state >= S_ACTIVE)
     {

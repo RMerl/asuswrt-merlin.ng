@@ -180,6 +180,12 @@ void tls_multi_init_finalize(struct tls_multi *multi, int tls_mtu);
 struct tls_auth_standalone *tls_auth_standalone_init(struct tls_options *tls_options,
                                                      struct gc_arena *gc);
 
+/**
+ * Frees a standalone tls-auth verification object.
+ * @param tas   the object to free. May be NULL.
+ */
+void tls_auth_standalone_free(struct tls_auth_standalone *tas);
+
 /*
  * Setups the control channel frame size parameters from the data channel
  * parameters
@@ -418,7 +424,7 @@ void ssl_put_auth_challenge(const char *cr_str);
 /*
  * Send a payload over the TLS control channel
  */
-bool tls_send_payload(struct tls_multi *multi,
+bool tls_send_payload(struct key_state *ks,
                       const uint8_t *data,
                       int size);
 

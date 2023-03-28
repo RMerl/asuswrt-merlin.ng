@@ -133,10 +133,17 @@ BSDs implement a getrandom() or getentropy() syscall that removes the
 need for /dev/urandom to be available.
 .TP
 .BI \-\-compat\-mode \ version
-This option provides a way to alter the default of OpenVPN to be more
-compatible with the version \fBversion\fP specified. All of the changes
-this option does can also be achieved using individual configuration
-options.
+This option provides a convenient way to alter the defaults of OpenVPN
+to be more compatible with the version \fBversion\fP specified. All of
+the changes this option applies can also be achieved using individual
+configuration options.
+.sp
+The version specified with this option is the version of OpenVPN peer
+OpenVPN should try to be compatible with. In general OpenVPN should be
+compatible with the last two previous version without this option. E.g.
+OpenVPN 2.6.0 should be compatible with 2.5.x and 2.4.x without this option.
+However, there might be some edge cases that still require this option even
+in these cases.
 .sp
 Note: Using this option reverts defaults to no longer recommended
 values and should be avoided if possible.
@@ -149,14 +156,17 @@ version specified.
 to the configuration if no other compression options are present.
 .IP \(bu 2
 2.4.x or lower: The cipher in \fB\-\-cipher\fP is appended to
-\fB\-\-data\-ciphers\fP
+\fB\-\-data\-ciphers\fP\&.
 .IP \(bu 2
 2.3.x or lower: \fB\-\-data\-cipher\-fallback\fP is automatically added with
-the same cipher as \fB\-\-cipher\fP
+the same cipher as \fB\-\-cipher\fP\&.
 .IP \(bu 2
 2.3.6 or lower: \fB\-\-tls\-version\-min 1.0\fP is added to the configuration
 when \fB\-\-tls\-version\-min\fP is not explicitly set.
 .UNINDENT
+.sp
+If not required, this is option should be avoided. Setting this option can
+lower security or disable features like data\-channel offloading.
 .TP
 .BI \-\-config \ file
 Load additional config options from \fBfile\fP where each line corresponds
@@ -795,7 +805,9 @@ when changing both server and client configurations to remove
 compression at the same time is not a feasible option.
 .TP
 .B \fBno\fP  (default)
-OpenVPN will refuse any non\-stub compression.
+OpenVPN will refuse any compression.  If data\-channel offloading
+is enabled, OpenVPN will additionally also refuse compression
+framing (stub).
 .TP
 .B \fByes\fP
 OpenVPN will send and receive compressed packets.
@@ -1285,7 +1297,7 @@ Valid syntaxes:
 .nf
 .ft C
 dns search\-domains domain [domain ...]
-dns server n address addr[:port] [addr[:port]]
+dns server n address addr[:port] [addr[:port] ...]
 dns server n resolve\-domains|exclude\-domains domain [domain ...]
 dns server n dnssec yes|optional|no
 dns server n transport DoH|DoT|plain
@@ -1307,9 +1319,10 @@ to group options and also for ordering the list of configured DNS servers;
 lower numbers come first. DNS servers being pushed to a client replace
 already configured DNS servers with the same server id.
 .sp
-The \fBaddress\fP option configures the IPv4 and / or IPv6 address of
-the DNS server. Optionally a port can be appended after a colon. IPv6
-addresses need to be enclosed in brackets if a port is appended.
+The \fBaddress\fP option configures the IPv4 and / or IPv6 address(es) of
+the DNS server. Up to eight addresses can be specified per DNS server.
+Optionally a port can be appended after a colon. IPv6 addresses need to
+be enclosed in brackets if a port is appended.
 .sp
 The \fBresolve\-domains\fP and \fBexclude\-domains\fP options take one or
 more DNS domains which are explicitly resolved or explicitly not resolved
@@ -6181,10 +6194,8 @@ of each individual variable, please refer to the documentation for \fB\-\-dns\fP
 .nf
 .ft C
 dns_search_domain_{n}
-dns_server_{n}_address4
-dns_server_{n}_port4
-dns_server_{n}_address6
-dns_server_{n}_port6
+dns_server_{n}_address_{m}
+dns_server_{n}_port_{m}
 dns_server_{n}_resolve_domain_{m}
 dns_server_{n}_exclude_domain_{m}
 dns_server_{n}_dnssec

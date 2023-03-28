@@ -385,16 +385,14 @@ dco_available(int msglevel)
     return false;
 }
 
-int
-dco_do_read(dco_context_t *dco)
+const char *
+dco_version_string(struct gc_arena *gc)
 {
-    /* no-op on windows */
-    ASSERT(0);
-    return 0;
+    return "v0";
 }
 
 int
-dco_do_write(dco_context_t *dco, int peer_id, struct buffer *buf)
+dco_do_read(dco_context_t *dco)
 {
     /* no-op on windows */
     ASSERT(0);
@@ -431,6 +429,8 @@ dco_get_peer_stats(struct context *c)
 
     c->c2.dco_read_bytes = stats.TransportBytesReceived;
     c->c2.dco_write_bytes = stats.TransportBytesSent;
+    c->c2.tun_read_bytes = stats.TunBytesReceived;
+    c->c2.tun_write_bytes = stats.TunBytesSent;
 
     return 0;
 }

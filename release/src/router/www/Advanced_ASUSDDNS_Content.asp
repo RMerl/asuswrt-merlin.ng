@@ -745,7 +745,6 @@ function change_cert_method(cert_method){
 
 		switch(cert_method){
 			case "0":
-				document.getElementById("cert_gen").style.display = "";
 				document.getElementById("cert_san").style.display = "";
 				document.getElementById("cert_desc").style.display = "none";
 				document.getElementById("cert_act").style.display = "none";
@@ -758,7 +757,6 @@ function change_cert_method(cert_method){
 					document.form.le_enable[2].checked = true;
 					return false;
 				}
-				document.getElementById("cert_gen").style.display = "none";
 				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "";
 				document.getElementById("le_desc").innerHTML = "<#LANHostConfig_x_DDNSLetsEncrypt_desc#>";
@@ -781,7 +779,6 @@ function change_cert_method(cert_method){
 				break;
 
 			case "2":
-				document.getElementById("cert_gen").style.display = "none";
 				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "none";
 				html_code += '<div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
@@ -918,6 +915,15 @@ function check_unregister_result(){
 	}
 
 }
+
+function clear_cert_key(){
+	if(confirm("You will be automatically logged out for the renewal, are you sure you want to continue?")){
+		$.ajax({url: "clear_file.cgi?clear_file_name=cert.tgz"})
+		showLoading();
+		setTimeout(refreshpage, 1000);
+        }
+}
+
 </script>
 </head>
 
@@ -1117,13 +1123,6 @@ function check_unregister_result(){
 					<div id="cert_act" style="margin-top: 5px;"></div>
 				</td>
 			</tr>
-			<tr id="cert_gen" style="display:none;">
-				<th>Generate a new certificate</th>
-				<td>
-					<input type="radio" name="https_crt_gen" class="input" value="1" <% nvram_match_x("", "https_crt_gen", "1", "checked"); %>><#checkbox_Yes#>
-					<input type="radio" name="https_crt_gen" class="input" value="0" <% nvram_match_x("", "https_crt_gen", "0", "checked"); %>><#checkbox_No#>
-				</td>
-			</tr>
 			<tr id="cert_san" style="display:none;">
 				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,22)">Additional Certificate SANs</a></th>
 				<td>
@@ -1156,6 +1155,7 @@ function check_unregister_result(){
 					</div>
 					<div>
 						<input class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
+						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
 					</div>
 				</td>
 			</tr>

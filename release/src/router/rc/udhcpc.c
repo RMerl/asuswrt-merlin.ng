@@ -1330,7 +1330,7 @@ deconfig6(char *wan_ifname, const int mode)
 #ifdef RTCONFIG_INADYN
 	if(mode == 1)
 	{
-		if (nvram_get_int("ddns_enable_x"))
+		if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update"))
 			notify_rc("restart_ddns");
 	}
 #endif
@@ -1995,7 +1995,7 @@ skip:
 	}
 
 #ifdef RTCONFIG_INADYN
-	if (nvram_get_int("ddns_enable_x"))
+	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update"))
 		notify_rc("restart_ddns");
 #endif
 	return 0;

@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: cacert
 Arg: <file>
@@ -8,6 +8,7 @@ Category: tls
 See-also: capath insecure
 Example: --cacert CA-file.txt $URL
 Added: 7.5
+Multi: single
 ---
 Tells curl to use the specified certificate file to verify the peer. The file
 may contain multiple CA certificates. The certificate(s) must be in PEM
@@ -35,5 +36,3 @@ preferred method of verifying the peer's certificate chain.
 with libcurl 7.60 or later. This option is supported for backward
 compatibility with other SSL engines; instead it is recommended to use
 Windows' store of root certificates (the default for Schannel).
-
-If this option is used several times, the last one will be used.

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_getenv 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
+.TH curl_getenv 3 "January 02, 2023" "libcurl 8.0.1" "libcurl Manual"
 
 .SH NAME
 curl_getenv - return value for environment name
@@ -46,9 +46,7 @@ You must \fIcurl_free(3)\fP the returned string when you are done with it.
   }
 .fi
 .SH AVAILABILITY
-This function will be removed from the public libcurl API in a near future. It
-will instead be made "available" by source code access only, and then as
-curlx_getenv().
+Always
 .SH RETURN VALUE
 A pointer to a null-terminated string or NULL if it failed to find the
 specified name.

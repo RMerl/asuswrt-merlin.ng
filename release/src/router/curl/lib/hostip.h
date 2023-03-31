@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -32,11 +32,6 @@
 
 #ifdef HAVE_SETJMP_H
 #include <setjmp.h>
-#endif
-
-#ifdef NETWARE
-#undef in_addr_t
-#define in_addr_t unsigned long
 #endif
 
 /* Allocate enough memory to hold the full name information structs and
@@ -132,7 +127,7 @@ void Curl_resolv_unlock(struct Curl_easy *data,
                         struct Curl_dns_entry *dns);
 
 /* init a new dns cache */
-void Curl_init_dnscache(struct Curl_hash *hash);
+void Curl_init_dnscache(struct Curl_hash *hash, int hashsize);
 
 /* prune old entries from the DNS cache */
 void Curl_hostcache_prune(struct Curl_easy *data);
@@ -183,7 +178,7 @@ Curl_fetch_addr(struct Curl_easy *data,
  */
 struct Curl_dns_entry *
 Curl_cache_addr(struct Curl_easy *data, struct Curl_addrinfo *addr,
-                const char *hostname, int port);
+                const char *hostname, size_t hostlen, int port);
 
 #ifndef INADDR_NONE
 #define CURL_INADDR_NONE (in_addr_t) ~0

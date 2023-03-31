@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 2015 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH libcurl-thread 3 "June 15, 2022" "libcurl 7.84.0" "libcurl thread safety"
+.TH libcurl-thread 3 "January 02, 2023" "libcurl 8.0.1" "libcurl thread safety"
 
 .SH NAME
 libcurl-thread \- libcurl thread safety
@@ -96,8 +96,8 @@ days). Some operating systems that are known to have solid and working thread
 support are Linux, Solaris and Windows.
 .IP "curl_global_* functions"
 These functions are thread-safe since libcurl 7.84.0 if
-\fIcurl_version_info(3)\fP has the CURL_VERSION_THREADSAFE feature bit set
-(most platforms).
+\fIcurl_version_info(3)\fP has the \fBCURL_VERSION_THREADSAFE\fP feature bit
+set (most platforms).
 
 If these functions are not thread-safe and you are using libcurl with multiple
 threads it is especially important that before use you call
@@ -112,3 +112,5 @@ replacements, must be thread safe. You can use \fIcurl_global_init_mem(3)\fP
 to set your own replacement memory functions.
 .IP "Non-safe functions"
 \fICURLOPT_DNS_USE_GLOBAL_CACHE(3)\fP is not thread-safe.
+
+\fIcurl_version_info(3)\fP is not thread-safe before libcurl initialization.

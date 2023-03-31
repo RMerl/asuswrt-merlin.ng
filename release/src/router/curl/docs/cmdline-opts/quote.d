@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: quote
 Arg: <command>
@@ -9,6 +9,7 @@ Category: ftp sftp
 Example: --quote "DELE file" ftp://example.com/foo
 Added: 5.3
 See-also: request
+Multi: append
 ---
 Send an arbitrary command to the remote FTP or SFTP server. Quote commands are
 sent BEFORE the transfer takes place (just after the initial PWD command in an

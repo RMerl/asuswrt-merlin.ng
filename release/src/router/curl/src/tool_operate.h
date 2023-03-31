@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -33,10 +33,12 @@ struct per_transfer {
   struct per_transfer *next;
   struct per_transfer *prev;
   struct OperationConfig *config; /* for this transfer */
+  struct curl_certinfo *certinfo;
   CURL *curl;
   long retry_numretries;
   long retry_sleep_default;
   long retry_sleep;
+  struct timeval start; /* start of this transfer */
   struct timeval retrystart;
   char *this_url;
   unsigned int urlnum; /* the index of the given URL */
@@ -52,7 +54,6 @@ struct per_transfer {
   struct HdrCbData hdrcbdata;
   long num_headers;
   bool was_last_header_empty;
-  char errorbuffer[CURL_ERROR_SIZE];
 
   bool added; /* set TRUE when added to the multi handle */
   time_t startat; /* when doing parallel transfers, this is a retry transfer
@@ -72,9 +73,12 @@ struct per_transfer {
 
   /* NULL or malloced */
   char *uploadfile;
+  char *errorbuffer; /* alloced and assigned while this is used for a
+                        transfer */
 };
 
 CURLcode operate(struct GlobalConfig *config, int argc, argv_item_t argv[]);
+void single_transfer_cleanup(struct OperationConfig *config);
 
 extern struct per_transfer *transfers; /* first node */
 

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -31,8 +31,9 @@
 #include "urldata.h"
 #include "sendf.h"
 
-#if (!defined(CURL_DISABLE_HTTP) && !defined(CURL_DISABLE_MIME)) || \
-  !defined(CURL_DISABLE_SMTP) || !defined(CURL_DISABLE_IMAP)
+#if !defined(CURL_DISABLE_MIME) && (!defined(CURL_DISABLE_HTTP) ||      \
+                                    !defined(CURL_DISABLE_SMTP) ||      \
+                                    !defined(CURL_DISABLE_IMAP))
 
 #if defined(HAVE_LIBGEN_H) && defined(HAVE_BASENAME)
 #include <libgen.h>
@@ -1174,7 +1175,7 @@ void Curl_mime_cleanpart(curl_mimepart *part)
   Curl_safefree(part->mimetype);
   Curl_safefree(part->name);
   Curl_safefree(part->filename);
-  Curl_mime_initpart(part, part->easy);
+  Curl_mime_initpart(part);
 }
 
 /* Recursively delete a mime handle and its parts. */
@@ -1194,7 +1195,8 @@ void curl_mime_free(curl_mime *mime)
   }
 }
 
-CURLcode Curl_mime_duppart(curl_mimepart *dst, const curl_mimepart *src)
+CURLcode Curl_mime_duppart(struct Curl_easy *data,
+                           curl_mimepart *dst, const curl_mimepart *src)
 {
   curl_mime *mime;
   curl_mimepart *d;
@@ -1223,13 +1225,13 @@ CURLcode Curl_mime_duppart(curl_mimepart *dst, const curl_mimepart *src)
   case MIMEKIND_MULTIPART:
     /* No one knows about the cloned subparts, thus always attach ownership
        to the part. */
-    mime = curl_mime_init(dst->easy);
+    mime = curl_mime_init(data);
     res = mime? curl_mime_subparts(dst, mime): CURLE_OUT_OF_MEMORY;
 
     /* Duplicate subparts. */
     for(s = ((curl_mime *) src->arg)->firstpart; !res && s; s = s->nextpart) {
       d = curl_mime_addpart(mime);
-      res = d? Curl_mime_duppart(d, s): CURLE_OUT_OF_MEMORY;
+      res = d? Curl_mime_duppart(data, d, s): CURLE_OUT_OF_MEMORY;
     }
     break;
   default:  /* Invalid kind: should not occur. */
@@ -1281,7 +1283,6 @@ curl_mime *curl_mime_init(struct Curl_easy *easy)
   mime = (curl_mime *) malloc(sizeof(*mime));
 
   if(mime) {
-    mime->easy = easy;
     mime->parent = NULL;
     mime->firstpart = NULL;
     mime->lastpart = NULL;
@@ -1301,10 +1302,9 @@ curl_mime *curl_mime_init(struct Curl_easy *easy)
 }
 
 /* Initialize a mime part. */
-void Curl_mime_initpart(curl_mimepart *part, struct Curl_easy *easy)
+void Curl_mime_initpart(curl_mimepart *part)
 {
   memset((char *) part, 0, sizeof(*part));
-  part->easy = easy;
   part->lastreadstatus = 1; /* Successful read status. */
   mimesetstate(&part->state, MIMESTATE_BEGIN, NULL);
 }
@@ -1320,7 +1320,7 @@ curl_mimepart *curl_mime_addpart(curl_mime *mime)
   part = (curl_mimepart *) malloc(sizeof(*part));
 
   if(part) {
-    Curl_mime_initpart(part, mime->easy);
+    Curl_mime_initpart(part);
     part->parent = mime;
 
     if(mime->lastpart)
@@ -1550,10 +1550,6 @@ CURLcode Curl_mime_set_subparts(curl_mimepart *part,
   cleanup_part_content(part);
 
   if(subparts) {
-    /* Must belong to the same data handle. */
-    if(part->easy && subparts->easy && part->easy != subparts->easy)
-      return CURLE_BAD_FUNCTION_ARGUMENT;
-
     /* Should not have been attached already. */
     if(subparts->parent)
       return CURLE_BAD_FUNCTION_ARGUMENT;
@@ -1564,8 +1560,7 @@ CURLcode Curl_mime_set_subparts(curl_mimepart *part,
       while(root->parent && root->parent->parent)
         root = root->parent->parent;
       if(subparts == root) {
-        if(part->easy)
-          failf(part->easy, "Can't add itself as a subpart");
+        /* Can't add as a subpart of itself. */
         return CURLE_BAD_FUNCTION_ARGUMENT;
       }
     }
@@ -1635,7 +1630,7 @@ static size_t slist_size(struct curl_slist *s,
 static curl_off_t multipart_size(curl_mime *mime)
 {
   curl_off_t size;
-  size_t boundarysize;
+  curl_off_t boundarysize;
   curl_mimepart *part;
 
   if(!mime)
@@ -1765,7 +1760,8 @@ static bool content_type_match(const char *contenttype,
   return FALSE;
 }
 
-CURLcode Curl_mime_prepare_headers(curl_mimepart *part,
+CURLcode Curl_mime_prepare_headers(struct Curl_easy *data,
+                                   curl_mimepart *part,
                                    const char *contenttype,
                                    const char *disposition,
                                    enum mimestrategy strategy)
@@ -1834,12 +1830,12 @@ CURLcode Curl_mime_prepare_headers(curl_mimepart *part,
       char *filename = NULL;
 
       if(part->name) {
-        name = escape_string(part->easy, part->name, strategy);
+        name = escape_string(data, part->name, strategy);
         if(!name)
           ret = CURLE_OUT_OF_MEMORY;
       }
       if(!ret && part->filename) {
-        filename = escape_string(part->easy, part->filename, strategy);
+        filename = escape_string(data, part->filename, strategy);
         if(!filename)
           ret = CURLE_OUT_OF_MEMORY;
       }
@@ -1896,7 +1892,8 @@ CURLcode Curl_mime_prepare_headers(curl_mimepart *part,
     if(content_type_match(contenttype, STRCONST("multipart/form-data")))
       disposition = "form-data";
     for(subpart = mime->firstpart; subpart; subpart = subpart->nextpart) {
-      ret = Curl_mime_prepare_headers(subpart, NULL, disposition, strategy);
+      ret = Curl_mime_prepare_headers(data, subpart, NULL,
+                                      disposition, strategy);
       if(ret)
         return ret;
     }
@@ -1924,8 +1921,8 @@ void Curl_mime_unpause(curl_mimepart *part)
 }
 
 
-#else /* !CURL_DISABLE_HTTP && !CURL_DISABLE_MIME ||
-         !CURL_DISABLE_SMTP || !CURL_DISABLE_IMAP */
+#else /* !CURL_DISABLE_MIME && (!CURL_DISABLE_HTTP ||
+                                !CURL_DISABLE_SMTP || !CURL_DISABLE_IMAP) */
 
 /* Mime not compiled in: define stubs for externally-referenced functions. */
 curl_mime *curl_mime_init(CURL *easy)

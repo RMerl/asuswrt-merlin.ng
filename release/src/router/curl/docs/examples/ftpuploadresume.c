@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -86,7 +86,7 @@ static int upload(CURL *curlhandle, const char *remotepath,
   curl_easy_setopt(curlhandle, CURLOPT_URL, remotepath);
 
   if(timeout)
-    curl_easy_setopt(curlhandle, CURLOPT_FTP_RESPONSE_TIMEOUT, timeout);
+    curl_easy_setopt(curlhandle, CURLOPT_SERVER_RESPONSE_TIMEOUT, timeout);
 
   curl_easy_setopt(curlhandle, CURLOPT_HEADERFUNCTION, getcontentlengthfunc);
   curl_easy_setopt(curlhandle, CURLOPT_HEADERDATA, &uploaded_len);

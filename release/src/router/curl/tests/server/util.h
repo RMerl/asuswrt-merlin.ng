@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -82,6 +82,8 @@ void install_signal_handlers(bool keep_sigalrm);
 void restore_signal_handlers(bool keep_sigalrm);
 
 #ifdef USE_UNIX_SOCKETS
+
+#include <curl/curl.h> /* for curl_socket_t */
 
 #ifdef HAVE_SYS_UN_H
 #include <sys/un.h> /* for sockaddr_un */

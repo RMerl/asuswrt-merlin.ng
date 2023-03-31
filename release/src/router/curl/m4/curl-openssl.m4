@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -102,7 +102,6 @@ if test "x$OPT_OPENSSL" != xno; then
       SSL_LDFLAGS="-L$LIB_OPENSSL"
       SSL_CPPFLAGS="-I$PREFIX_OPENSSL/include"
     fi
-    SSL_CPPFLAGS="$SSL_CPPFLAGS -I$PREFIX_OPENSSL/include/openssl"
     ;;
   esac
 
@@ -150,7 +149,7 @@ if test "x$OPT_OPENSSL" != xno; then
      fi
      if test "$PKGCONFIG" = "no" -a -n "$PREFIX_OPENSSL" ; then
        # only set this if pkg-config wasn't used
-       CPPFLAGS="$CLEANCPPFLAGS -I$PREFIX_OPENSSL/include/openssl -I$PREFIX_OPENSSL/include"
+       CPPFLAGS="$CLEANCPPFLAGS -I$PREFIX_OPENSSL/include"
      fi
      # Linking previously failed, try extra paths from --with-openssl or
      # pkg-config.  Use a different function name to avoid reusing the earlier
@@ -311,11 +310,6 @@ if test "x$OPT_OPENSSL" != xno; then
       AC_MSG_RESULT([yes])
       AC_DEFINE_UNQUOTED(HAVE_OPENSSL3, 1,
         [Define to 1 if using OpenSSL 3 or later.])
-      dnl OpenSSLv3 marks the DES functions deprecated but we have no
-      dnl replacements (yet) so tell the compiler to not warn for them
-      dnl
-      dnl Ask OpenSSL to suppress the warnings.
-      CPPFLAGS="$CPPFLAGS -DOPENSSL_SUPPRESS_DEPRECATED"
       ssl_msg="OpenSSL v3+"
     ],[
       AC_MSG_RESULT([no])

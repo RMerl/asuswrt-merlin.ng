@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -108,7 +108,7 @@ sub servername_str {
 
     $proto = uc($proto) if($proto);
     die "unsupported protocol: '$proto'" unless($proto &&
-        ($proto =~ /^(((FTP|HTTP|HTTP\/2|IMAP|POP3|GOPHER|SMTP|HTTP-PIPE)S?)|(TFTP|SFTP|SOCKS|SSH|RTSP|HTTPTLS|DICT|SMB|SMBS|TELNET|MQTT))$/));
+        ($proto =~ /^(((FTP|HTTP|HTTP\/2|HTTP\/3|IMAP|POP3|GOPHER|SMTP|HTTP-PIPE)S?)|(TFTP|SFTP|SOCKS|SSH|RTSP|HTTPTLS|DICT|SMB|SMBS|TELNET|MQTT))$/));
 
     $ipver = (not $ipver) ? 'ipv4' : lc($ipver);
     die "unsupported IP version: '$ipver'" unless($ipver &&

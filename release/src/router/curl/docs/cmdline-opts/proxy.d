@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: proxy
 Short: x
@@ -8,6 +8,7 @@ Category: proxy
 Example: --proxy http://proxy.example $URL
 Added: 4.0
 See-also: socks5 proxy-basic
+Multi: single
 ---
 Use the specified proxy.
 
@@ -30,7 +31,7 @@ If the port number is not specified in the proxy string, it is assumed to be
 
 This option overrides existing environment variables that set the proxy to
 use. If there's an environment variable setting a proxy, you can set proxy to
-\&"" to override it.
+"" to override it.
 
 All operations that are performed over an HTTP proxy will transparently be
 converted to HTTP. It means that certain protocol specific operations might
@@ -45,4 +46,5 @@ The proxy host can be specified the same way as the proxy environment
 variables, including the protocol prefix (http://) and the embedded user +
 password.
 
-If this option is used several times, the last one will be used.
+When a proxy is used, the active FTP mode as set with --ftp-port, cannot be
+used.

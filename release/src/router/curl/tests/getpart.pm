@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -39,6 +39,21 @@ sub decode_hex {
     # encode everything
     $s =~ s/([a-fA-F0-9][a-fA-F0-9])/chr(hex($1))/eg;
     return $s;
+}
+
+sub testcaseattr {
+    my %hash;
+    for(@xml) {
+        if(($_ =~ /^ *\<testcase ([^>]*)/)) {
+            my $attr=$1;
+            while($attr =~ s/ *([^=]*)= *(\"([^\"]*)\"|([^\> ]*))//) {
+                my ($var, $cont)=($1, $2);
+                $cont =~ s/^\"(.*)\"$/$1/;
+                $hash{$var}=$cont;
+            }
+        }
+    }
+    return %hash;
 }
 
 sub getpartattr {

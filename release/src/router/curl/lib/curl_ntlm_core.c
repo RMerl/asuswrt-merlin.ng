@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -29,19 +29,20 @@
 /*
  * NTLM details:
  *
- * https://davenport.sourceforge.io/ntlm.html
+ * https://davenport.sourceforge.net/ntlm.html
  * https://www.innovation.ch/java/ntlm.html
  */
 
 /* Please keep the SSL backend-specific #if branches in this order:
 
    1. USE_OPENSSL
-   2. USE_GNUTLS
-   3. USE_NSS
-   4. USE_MBEDTLS
-   5. USE_SECTRANSP
-   6. USE_OS400CRYPTO
-   7. USE_WIN32_CRYPTO
+   2. USE_WOLFSSL
+   3. USE_GNUTLS
+   4. USE_NSS
+   5. USE_MBEDTLS
+   6. USE_SECTRANSP
+   7. USE_OS400CRYPTO
+   8. USE_WIN32_CRYPTO
 
    This ensures that:
    - the same SSL branch gets activated throughout this source
@@ -60,17 +61,17 @@
 
 #if defined(USE_OPENSSL_DES) || defined(USE_WOLFSSL)
 
-#ifdef USE_WOLFSSL
+#if defined(USE_OPENSSL)
+#  include <openssl/des.h>
+#  include <openssl/md5.h>
+#  include <openssl/ssl.h>
+#  include <openssl/rand.h>
+#else
 #  include <wolfssl/options.h>
 #  include <wolfssl/openssl/des.h>
 #  include <wolfssl/openssl/md5.h>
 #  include <wolfssl/openssl/ssl.h>
 #  include <wolfssl/openssl/rand.h>
-#else
-#  include <openssl/des.h>
-#  include <openssl/md5.h>
-#  include <openssl/ssl.h>
-#  include <openssl/rand.h>
 #endif
 
 #  if (defined(OPENSSL_VERSION_NUMBER) && \
@@ -186,9 +187,9 @@ static void setup_des_key(const unsigned char *key_56,
 #elif defined(USE_NSS)
 
 /*
- * Expands a 56 bit key KEY_56 to 64 bit and encrypts 64 bit of data, using
- * the expanded key.  The caller is responsible for giving 64 bit of valid
- * data is IN and (at least) 64 bit large buffer as OUT.
+ * encrypt_des() expands a 56 bit key KEY_56 to 64 bit and encrypts 64 bit of
+ * data, using the expanded key. IN should point to 64 bits of source data,
+ * OUT to a 64 bit output buffer.
  */
 static bool encrypt_des(const unsigned char *in, unsigned char *out,
                         const unsigned char *key_56)
@@ -658,7 +659,8 @@ CURLcode Curl_ntlm_core_mk_ntlmv2_resp(unsigned char *ntlmv2hash,
             LONGQUARTET(tw.dwLowDateTime), LONGQUARTET(tw.dwHighDateTime));
 
   memcpy(ptr + 32, challenge_client, 8);
-  memcpy(ptr + 44, ntlm->target_info, ntlm->target_info_len);
+  if(ntlm->target_info_len)
+    memcpy(ptr + 44, ntlm->target_info, ntlm->target_info_len);
 
   /* Concatenate the Type 2 challenge with the BLOB and do HMAC MD5 */
   memcpy(ptr + 8, &ntlm->nonce[0], 8);

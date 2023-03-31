@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: http2
 Tags: Versions
@@ -11,6 +11,7 @@ Help: Use HTTP 2
 See-also: http1.1 http3
 Category: http
 Example: --http2 $URL
+Multi: mutex
 ---
 Tells curl to use HTTP version 2.
 

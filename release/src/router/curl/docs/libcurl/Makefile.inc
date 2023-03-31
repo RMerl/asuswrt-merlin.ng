@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 2008 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -102,6 +102,9 @@ man_MANS = \
  curl_url_strerror.3 \
  curl_version.3 \
  curl_version_info.3 \
+ curl_ws_meta.3 \
+ curl_ws_recv.3 \
+ curl_ws_send.3 \
  libcurl-easy.3 \
  libcurl-env.3 \
  libcurl-errors.3 \

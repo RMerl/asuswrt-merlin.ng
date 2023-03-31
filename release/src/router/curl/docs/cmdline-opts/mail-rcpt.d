@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: mail-rcpt
 Arg: <address>
@@ -8,6 +8,7 @@ Added: 7.20.0
 Category: smtp
 Example: --mail-rcpt user@example.net smtp://example.com
 See-also: mail-rcpt-allowfails
+Multi: append
 ---
 Specify a single email address, user name or mailing list name. Repeat this
 option several times to send to multiple recipients.

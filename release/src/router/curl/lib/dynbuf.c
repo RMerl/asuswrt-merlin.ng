@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2020 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -99,8 +99,7 @@ static CURLcode dyn_nappend(struct dynbuf *s,
        include that as well when it uses this code */
     void *p = realloc(s->bufr, a);
     if(!p) {
-      Curl_safefree(s->bufr);
-      s->leng = s->allc = 0;
+      Curl_dyn_free(s);
       return CURLE_OUT_OF_MEMORY;
     }
     s->bufr = p;
@@ -128,7 +127,6 @@ void Curl_dyn_reset(struct dynbuf *s)
   s->leng = 0;
 }
 
-#ifdef USE_NGTCP2
 /*
  * Specify the size of the tail to keep (number of bytes from the end of the
  * buffer). The rest will be dropped.
@@ -153,7 +151,6 @@ CURLcode Curl_dyn_tail(struct dynbuf *s, size_t trail)
   return CURLE_OK;
 
 }
-#endif
 
 /*
  * Appends a buffer with length.
@@ -254,4 +251,19 @@ size_t Curl_dyn_len(const struct dynbuf *s)
   DEBUGASSERT(s->init == DYNINIT);
   DEBUGASSERT(!s->leng || s->bufr);
   return s->leng;
+}
+
+/*
+ * Set a new (smaller) length.
+ */
+CURLcode Curl_dyn_setlen(struct dynbuf *s, size_t set)
+{
+  DEBUGASSERT(s);
+  DEBUGASSERT(s->init == DYNINIT);
+  DEBUGASSERT(!s->leng || s->bufr);
+  if(set > s->leng)
+    return CURLE_BAD_FUNCTION_ARGUMENT;
+  s->leng = set;
+  s->bufr[s->leng] = 0;
+  return CURLE_OK;
 }

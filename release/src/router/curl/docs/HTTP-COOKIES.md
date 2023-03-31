@@ -25,9 +25,14 @@
   [drafted](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-cookie-alone-01)
   to deprecate modification of 'secure' cookies from non-secure origins. Both
   of these drafts have been incorporated into a proposal to
-  [replace](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-02)
+  [replace](https://datatracker.ietf.org/doc/html/draft-ietf-httpbis-rfc6265bis-11)
   RFC6265. Cookie prefixes and secure cookie modification protection has been
   implemented by curl.
+
+  curl considers `http://localhost` to be a *secure context*, meaning that it
+  will allow and use cookies marked with the `secure` keyword even when done
+  over plain HTTP for this host. curl does this to match how popular browsers
+  work with secure cookies.
 
 ## Cookies saved to disk
 
@@ -38,10 +43,11 @@
 
   The Netscape cookie file format stores one cookie per physical line in the
   file with a bunch of associated meta data, each field separated with
-  TAB. That file is called the cookiejar in curl terminology.
+  TAB. That file is called the cookie jar in curl terminology.
 
-  When libcurl saves a cookiejar, it creates a file header of its own in which
-  there is a URL mention that will link to the web version of this document.
+  When libcurl saves a cookie jar, it creates a file header of its own in
+  which there is a URL mention that will link to the web version of this
+  document.
 
 ## Cookie file format
 
@@ -74,8 +80,8 @@
   `-b, --cookie`
 
   tell curl a file to read cookies from and start the cookie engine, or if it
-  is not a file it will pass on the given string. -b name=var works and so does
-  -b cookiefile.
+  is not a file it will pass on the given string. `-b name=var` works and so
+  does `-b cookiefile`.
 
   `-j, --junk-session-cookies`
 
@@ -106,7 +112,7 @@
   `CURLOPT_COOKIEJAR`
 
   Tell libcurl to activate the cookie engine, and when the easy handle is
-  closed save all known cookies to the given cookiejar file. Write-only.
+  closed save all known cookies to the given cookie jar file. Write-only.
 
   `CURLOPT_COOKIELIST`
 
@@ -127,7 +133,7 @@
 
 ## Cookies with JavaScript
 
-  These days a lot of the web is built up by JavaScript. The webbrowser loads
+  These days a lot of the web is built up by JavaScript. The web browser loads
   complete programs that render the page you see. These JavaScript programs
   can also set and access cookies.
 

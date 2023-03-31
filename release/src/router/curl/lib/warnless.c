@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -38,6 +38,8 @@
 #define BUILDING_WARNLESS_C 1
 
 #include "warnless.h"
+
+#include <limits.h>
 
 #define CURL_MASK_UCHAR   ((unsigned char)~0)
 #define CURL_MASK_SCHAR   (CURL_MASK_UCHAR >> 1)

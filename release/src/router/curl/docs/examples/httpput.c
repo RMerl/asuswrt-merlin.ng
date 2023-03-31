@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -31,7 +31,7 @@
 #include <curl/curl.h>
 
 /*
- * This example shows a HTTP PUT operation. PUTs a file given as a command
+ * This example shows an HTTP PUT operation. PUTs a file given as a command
  * line argument to the URL also given on the command line.
  *
  * This example also uses its own read callback.

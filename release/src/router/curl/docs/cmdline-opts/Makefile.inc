@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -107,6 +107,7 @@ DPAGES = \
   http2-prior-knowledge.d \
   http2.d \
   http3.d \
+  http3-only.d \
   ignore-content-length.d \
   include.d \
   insecure.d \
@@ -265,6 +266,7 @@ DPAGES = \
   unix-socket.d \
   upload-file.d \
   url.d \
+  url-query.d \
   use-ascii.d \
   user-agent.d \
   user.d \

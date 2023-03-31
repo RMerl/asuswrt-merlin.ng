@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -408,7 +408,18 @@ sub find_sshkeygen {
 # Find httptlssrv (gnutls-serv) and return canonical filename
 #
 sub find_httptlssrv {
-    return find_exe_file_hpath($httptlssrvexe);
+    my $p = find_exe_file_hpath($httptlssrvexe);
+    if($p) {
+        my @o = `"$p" -l`;
+        my $found;
+        for(@o) {
+            if(/Key exchange: SRP/) {
+                $found = 1;
+                last;
+            }
+        }
+        return $p if($found);
+    }
 }
 
 

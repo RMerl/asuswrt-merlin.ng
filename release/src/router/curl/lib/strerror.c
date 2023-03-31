@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 2004 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -265,9 +265,6 @@ curl_easy_strerror(CURLcode error)
   case CURLE_TFTP_NOSUCHUSER:
     return "TFTP: No such user";
 
-  case CURLE_CONV_FAILED:
-    return "Conversion failed";
-
   case CURLE_REMOTE_FILE_NOT_FOUND:
     return "Remote file not found";
 
@@ -334,6 +331,7 @@ curl_easy_strerror(CURLcode error)
   case CURLE_OBSOLETE51:
   case CURLE_OBSOLETE57:
   case CURLE_OBSOLETE62:
+  case CURLE_OBSOLETE75:
   case CURLE_OBSOLETE76:
   case CURL_LAST:
     break;
@@ -478,7 +476,7 @@ curl_url_strerror(CURLUcode error)
     return "Port number was not a decimal number between 0 and 65535";
 
   case CURLUE_UNSUPPORTED_SCHEME:
-    return "This libcurl build doesn't support the given URL scheme";
+    return "Unsupported URL scheme";
 
   case CURLUE_URLDECODE:
     return "URL decode error, most likely because of rubbish in the input";
@@ -532,7 +530,7 @@ curl_url_strerror(CURLUcode error)
     return "Bad file:// URL";
 
   case CURLUE_BAD_SLASHES:
-    return "Unsupported number of slashes";
+    return "Unsupported number of slashes following scheme";
 
   case CURLUE_BAD_SCHEME:
     return "Bad scheme";
@@ -551,6 +549,9 @@ curl_url_strerror(CURLUcode error)
 
   case CURLUE_BAD_USER:
     return "Bad user";
+
+  case CURLUE_LACKS_IDN:
+    return "libcurl lacks IDN support";
 
   case CURLUE_LAST:
     break;

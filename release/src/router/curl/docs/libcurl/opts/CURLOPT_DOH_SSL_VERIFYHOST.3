@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DOH_SSL_VERIFYHOST 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
+.TH CURLOPT_DOH_SSL_VERIFYHOST 3 "January 02, 2023" "libcurl 8.0.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_DOH_SSL_VERIFYHOST \- verify the host name in the DoH SSL certificate
@@ -49,7 +49,8 @@ Subject Alternate Name field in the certificate matches the host name in the
 DoH URL to which you told Curl to connect.
 
 When the \fIverify\fP value is set to 1L it is treated the same as 2L. However
-for consistency with the other VERIFYHOST options we suggest use 2 and not 1.
+for consistency with the other \fIVERIFYHOST\fP options we suggest use 2 and
+not 1.
 
 When the \fIverify\fP value is set to 0L, the connection succeeds regardless of
 the names used in the certificate. Use that ability with caution!

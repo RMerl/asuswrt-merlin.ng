@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_multi_wait 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
+.TH curl_multi_wait 3 "January 02, 2023" "libcurl 8.0.1" "libcurl Manual"
 
 .SH NAME
 curl_multi_wait - polls on all easy handles in a multi handle
@@ -43,8 +43,9 @@ Alternatively, if the multi handle has a pending internal timeout that has a
 shorter expiry time than \fItimeout_ms\fP, that shorter time will be used
 instead to make sure timeout accuracy is reasonably kept.
 
-The calling application may pass additional curl_waitfd structures which are
-similar to \fIpoll(2)\fP's pollfd structure to be waited on in the same call.
+The calling application may pass additional \fIcurl_waitfd\fP structures which
+are similar to \fIpoll(2)\fP's \fIpollfd\fP structure to be waited on in the
+same call.
 
 On completion, if \fInumfds\fP is non-NULL, it will be populated with the
 total number of file descriptors on which interesting events occurred. This
@@ -67,14 +68,14 @@ struct curl_waitfd {
 };
 .fi
 .IP CURL_WAIT_POLLIN
-Bit flag to curl_waitfd.events indicating the socket should poll on read
+Bit flag to \fIcurl_waitfd.events\fP indicating the socket should poll on read
 events such as new data received.
 .IP CURL_WAIT_POLLPRI
-Bit flag to curl_waitfd.events indicating the socket should poll on high
+Bit flag to \fIcurl_waitfd.events\fP indicating the socket should poll on high
 priority read events such as out of band data.
 .IP CURL_WAIT_POLLOUT
-Bit flag to curl_waitfd.events indicating the socket should poll on write
-events such as the socket being clear to write without blocking.
+Bit flag to \fIcurl_waitfd.events\fP indicating the socket should poll on
+write events such as the socket being clear to write without blocking.
 .SH EXAMPLE
 .nf
 CURL *easy_handle;

@@ -136,7 +136,8 @@ FAQ
 
     A client-side URL transfer library, supporting DICT, FILE, FTP, FTPS,
     GOPHER, GOPHERS, HTTP, HTTPS, IMAP, IMAPS, LDAP, LDAPS, MQTT, POP3, POP3S,
-    RTMP, RTMPS, RTSP, SCP, SFTP, SMB, SMBS, SMTP, SMTPS, TELNET and TFTP.
+    RTMP, RTMPS, RTSP, SCP, SFTP, SMB, SMBS, SMTP, SMTPS, TELNET, TFTP, WS
+    and WSS.
 
     libcurl supports HTTPS certificates, HTTP POST, HTTP PUT, FTP uploading,
     Kerberos, SPNEGO, HTTP form based upload, proxies, cookies, user+password
@@ -989,11 +990,10 @@ FAQ
 
   4.16 My HTTP POST or PUT requests are slow
 
-  libcurl makes all POST and PUT requests (except for POST requests with a
-  tiny request body) use the "Expect: 100-continue" header. This header
-  allows the server to deny the operation early so that libcurl can bail out
-  before having to send any data. This is useful in authentication
-  cases and others.
+  libcurl makes all POST and PUT requests (except for requests with a small
+  request body) use the "Expect: 100-continue" header. This header allows the
+  server to deny the operation early so that libcurl can bail out before having
+  to send any data. This is useful in authentication cases and others.
 
   However, many servers do not implement the Expect: stuff properly and if the
   server does not respond (positively) within 1 second libcurl will continue
@@ -1208,7 +1208,7 @@ FAQ
 
        Target:          static lib.   import lib for libcurl*.dll.
        -----------------------------------------------------------
-       MingW:           libcurl.a     libcurldll.a
+       MinGW:           libcurl.a     libcurldll.a
        MSVC (release):  libcurl.lib   libcurl_imp.lib
        MSVC (debug):    libcurld.lib  libcurld_imp.lib
        Borland:         libcurl.lib   libcurl_imp.lib

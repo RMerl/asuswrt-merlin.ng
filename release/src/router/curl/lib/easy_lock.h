@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -47,7 +47,7 @@ typedef PVOID SRWLOCK, *PSRWLOCK;
 #define curl_simple_lock_lock(m) AcquireSRWLockExclusive(m)
 #define curl_simple_lock_unlock(m) ReleaseSRWLockExclusive(m)
 
-#elif defined (HAVE_ATOMIC)
+#elif defined(HAVE_ATOMIC) && defined(HAVE_STDATOMIC_H)
 #include <stdatomic.h>
 #if defined(HAVE_SCHED_YIELD)
 #include <sched.h>

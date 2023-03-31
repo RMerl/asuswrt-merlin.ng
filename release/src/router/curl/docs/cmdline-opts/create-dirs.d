@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: create-dirs
 Help: Create necessary local directory hierarchy
@@ -6,6 +6,7 @@ Category: curl
 Example: --create-dirs --output local/dir/file $URL
 Added: 7.10.3
 See-also: ftp-create-dirs output-dir
+Multi: boolean
 ---
 When used in conjunction with the --output option, curl will create the
 necessary local directory hierarchy as needed. This option creates the

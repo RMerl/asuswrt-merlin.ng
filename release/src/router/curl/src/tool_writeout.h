@@ -7,7 +7,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -29,6 +29,7 @@
 typedef enum {
   VAR_NONE,       /* must be the first */
   VAR_APPCONNECT_TIME,
+  VAR_CERT,
   VAR_CONNECT_TIME,
   VAR_CONTENT_TYPE,
   VAR_EFFECTIVE_FILENAME,
@@ -47,6 +48,7 @@ typedef enum {
   VAR_LOCAL_IP,
   VAR_LOCAL_PORT,
   VAR_NAMELOOKUP_TIME,
+  VAR_NUM_CERTS,
   VAR_NUM_CONNECTS,
   VAR_NUM_HEADERS,
   VAR_ONERROR,
@@ -82,7 +84,7 @@ struct writeoutvar {
                    bool use_json);
 };
 
-void ourWriteOut(const char *writeinfo, struct per_transfer *per,
+void ourWriteOut(struct OperationConfig *config, struct per_transfer *per,
                  CURLcode per_result);
 
 #endif /* HEADER_CURL_TOOL_WRITEOUT_H */

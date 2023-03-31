@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -36,12 +36,6 @@
 #include "tool_dirhie.h"
 
 #include "memdebug.h" /* keep this as LAST include */
-
-#ifdef NETWARE
-#  ifndef __NOVELL_LIBC__
-#    define mkdir mkdir_510
-#  endif
-#endif
 
 #if defined(WIN32) || (defined(MSDOS) && !defined(__DJGPP__))
 #  define mkdir(x,y) (mkdir)((x))

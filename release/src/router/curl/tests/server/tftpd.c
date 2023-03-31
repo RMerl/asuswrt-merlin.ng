@@ -15,7 +15,7 @@
  */
 
 /*
- * Copyright (C) 2005 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  * Copyright (c) 1983, Regents of the University of California.
  * All rights reserved.
  *
@@ -87,6 +87,8 @@
 #ifdef HAVE_PWD_H
 #include <pwd.h>
 #endif
+
+#include <ctype.h>
 
 #define ENABLE_CURLX_PRINTF
 /* make the curlx header define all printf() functions to use the curlx_*

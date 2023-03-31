@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_getinfo 3 "May 17, 2022" "libcurl 7.84.0" "libcurl Manual"
+.TH curl_easy_getinfo 3 "January 02, 2023" "libcurl 8.0.1" "libcurl Manual"
 
 .SH NAME
 curl_easy_getinfo - extract information from a curl handle
@@ -204,7 +204,7 @@ See \fICURLINFO_LOCAL_PORT(3)\fP
 List of all known cookies.
 See \fICURLINFO_COOKIELIST(3)\fP
 .IP CURLINFO_LASTSOCKET
-Last socket used.
+(Deprecated) Last socket used.
 See \fICURLINFO_LASTSOCKET(3)\fP
 .IP CURLINFO_ACTIVESOCKET
 The session's active socket.
@@ -244,7 +244,7 @@ See \fICURLINFO_RTSP_SERVER_CSEQ(3)\fP
 RTSP CSeq last received.
 See \fICURLINFO_RTSP_CSEQ_RECV(3)\fP
 .IP CURLINFO_PROTOCOL
-The protocol used for the connection. (Added in 7.52.0)
+(Deprecated) The protocol used for the connection. (Added in 7.52.0)
 See \fICURLINFO_PROTOCOL(3)\fP
 .IP CURLINFO_SCHEME
 The scheme used for the connection. (Added in 7.52.0)

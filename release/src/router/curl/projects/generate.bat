@@ -6,7 +6,7 @@ rem *                             / __| | | | |_) | |
 rem *                            | (__| |_| |  _ <| |___
 rem *                             \___|\___/|_| \_\_____|
 rem *
-rem * Copyright (C) 2014 - 2022, Steve Holme, <steve_holme@hotmail.com>.
+rem * Copyright (C) Steve Holme, <steve_holme@hotmail.com>.
 rem *
 rem * This software is licensed as described in the file COPYING, which
 rem * you should have received as part of this distribution. The terms
@@ -18,7 +18,7 @@ rem * furnished to do so, under the terms of the COPYING file.
 rem *
 rem * This software is distributed on an "AS IS" basis, WITHOUT WARRANTY OF ANY
 rem * KIND, either express or implied.
-rem * 
+rem *
 rem * SPDX-License-Identifier: curl
 rem *
 rem ***************************************************************************
@@ -214,7 +214,6 @@ rem
       call :element %1 lib "timediff.c" %3
       call :element %1 lib "nonblock.c" %3
       call :element %1 lib "warnless.c" %3
-      call :element %1 lib "curl_ctype.c" %3
       call :element %1 lib "curl_multibyte.c" %3
       call :element %1 lib "version_win32.c" %3
       call :element %1 lib "dynbuf.c" %3

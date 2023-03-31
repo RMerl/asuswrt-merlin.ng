@@ -5,7 +5,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -47,9 +47,7 @@ if(USE_MANUAL)
 else()
   add_custom_command(
     OUTPUT tool_hugehelp.c
-    COMMAND ${CMAKE_COMMAND} -E echo "/* built-in manual is disabled, blank function */" > tool_hugehelp.c
-    COMMAND ${CMAKE_COMMAND} -E echo "#include \"tool_hugehelp.h\"" >> tool_hugehelp.c
-    COMMAND ${CMAKE_COMMAND} -E echo "void hugehelp(void) {}" >> tool_hugehelp.c
+    COMMAND ${CMAKE_COMMAND} -E echo "#include \"tool_hugehelp.h\"" > tool_hugehelp.c
     DEPENDS
       "${CMAKE_CURRENT_SOURCE_DIR}/tool_hugehelp.h"
     VERBATIM)
@@ -82,8 +80,6 @@ endif()
 
 if(ENABLE_UNICODE AND MINGW)
   target_link_libraries(${EXE_NAME} -municode)
-  # GCC doesn't know about wmain
-  set_source_files_properties(tool_main.c PROPERTIES COMPILE_FLAGS "-Wno-missing-prototypes -Wno-missing-declarations")
 endif()
 
 source_group("curlX source files" FILES ${CURLX_CFILES})
@@ -111,6 +107,6 @@ target_link_libraries(${EXE_NAME} libcurl ${CURL_LIBS})
 
 install(TARGETS ${EXE_NAME} EXPORT ${TARGETS_EXPORT_NAME} DESTINATION ${CMAKE_INSTALL_BINDIR})
 export(TARGETS ${EXE_NAME}
-       APPEND FILE ${PROJECT_BINARY_DIR}/curl-target.cmake
+       FILE ${PROJECT_BINARY_DIR}/curl-target.cmake
        NAMESPACE ${PROJECT_NAME}::
 )

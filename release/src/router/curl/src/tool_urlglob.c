@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -350,7 +350,7 @@ static bool peek_ipv6(const char *str, size_t *skip)
   memcpy(hostname, str, hlen);
   hostname[hlen] = 0;
 
-  /* ask to "guess scheme" as then it works without a https:// prefix */
+  /* ask to "guess scheme" as then it works without an https:// prefix */
   rc = curl_url_set(u, CURLUPART_URL, hostname, CURLU_GUESS_SCHEME);
 
   curl_url_cleanup(u);

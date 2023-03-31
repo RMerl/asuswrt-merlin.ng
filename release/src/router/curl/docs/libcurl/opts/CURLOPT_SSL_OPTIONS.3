@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSL_OPTIONS 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
+.TH CURLOPT_SSL_OPTIONS 3 "January 05, 2023" "libcurl 8.0.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_SSL_OPTIONS \- SSL behavior options
@@ -62,8 +62,9 @@ library). If combined with \fICURLSSLOPT_NO_REVOKE\fP, the latter takes
 precedence. (Added in 7.70.0)
 .IP CURLSSLOPT_NATIVE_CA
 Tell libcurl to use the operating system's native CA store for certificate
-verification. Works only on Windows when built to use OpenSSL. This option is
-experimental and behavior is subject to change.
+verification. Works only on Windows when built to use OpenSSL. If you set this
+option and also set a CA certificate file or directory then during verification
+those certificates are searched in addition to the native CA store.
 (Added in 7.71.0)
 .IP CURLSSLOPT_AUTO_CLIENT_CERT
 Tell libcurl to automatically locate and use a client certificate for
@@ -83,7 +84,7 @@ CURL *curl = curl_easy_init();
 if(curl) {
   curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/");
   /* weaken TLS only for use with silly servers */
-  curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, CURLSSLOPT_ALLOW_BEAST |
+  curl_easy_setopt(curl, CURLOPT_SSL_OPTIONS, (long)CURLSSLOPT_ALLOW_BEAST |
                    CURLSSLOPT_NO_REVOKE);
   ret = curl_easy_perform(curl);
   curl_easy_cleanup(curl);

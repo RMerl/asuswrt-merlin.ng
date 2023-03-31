@@ -1,3 +1,4 @@
+<testcase>
 # perl:
 #
 # for(1 .. 151) {
@@ -6,11 +7,11 @@
 #               "name$_", "could-be-large-$_")."\n";
 # }
 #
-<testcase>
 <info>
 <keywords>
 HTTP
 cookies
+--resolve
 </keywords>
 </info>
 
@@ -192,6 +193,9 @@ attack.invalid	TRUE	/	FALSE	0	name149	could-be-large-149
 attack.invalid	TRUE	/	FALSE	0	name150	could-be-large-150
 attack.invalid	TRUE	/	FALSE	0	name151	could-be-large-151
 </file>
+<features>
+cookies
+</features>
 </client>
 
 #

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -45,8 +45,10 @@
 #include <curl/curl.h>
 #include "urldata.h"
 #include "strcase.h"
+#include "curl_ctype.h"
 #include "hostcheck.h"
 #include "vtls/vtls.h"
+#include "vtls/vtls_int.h"
 #include "sendf.h"
 #include "inet_pton.h"
 #include "curl_base64.h"
@@ -181,7 +183,7 @@ static const char *getASN1Element(struct Curl_asn1Element *elem,
                                   const char *beg, const char *end)
 {
   unsigned char b;
-  unsigned long len;
+  size_t len;
   struct Curl_asn1Element lelem;
 
   /* Get a single ASN.1 element into `elem', parse ASN.1 string at `beg'
@@ -306,7 +308,7 @@ static const char *bit2str(const char *beg, const char *end)
  */
 static const char *int2str(const char *beg, const char *end)
 {
-  unsigned long val = 0;
+  unsigned int val = 0;
   size_t n = end - beg;
 
   if(!n)
@@ -322,7 +324,7 @@ static const char *int2str(const char *beg, const char *end)
   do
     val = (val << 8) | *(const unsigned char *) beg++;
   while(beg < end);
-  return curl_maprintf("%s%lx", val >= 10? "0x": "", val);
+  return curl_maprintf("%s%x", val >= 10? "0x": "", val);
 }
 
 /*
@@ -716,7 +718,7 @@ static ssize_t encodeDN(char *buf, size_t buflen, struct Curl_asn1Element *dn)
       /* Encode delimiter.
          If attribute has a short uppercase name, delimiter is ", ". */
       if(l) {
-        for(p3 = str; isupper(*p3); p3++)
+        for(p3 = str; ISUPPER(*p3); p3++)
           ;
         for(p3 = (*p3 || p3 - str > 2)? "/": ", "; *p3; p3++) {
           if(l < buflen)
@@ -952,8 +954,7 @@ static int do_pubkey(struct Curl_easy *data, int certnum,
      * ECC public key is all the data, a value of type BIT STRING mapped to
      * OCTET STRING and should not be parsed as an ASN.1 value.
      */
-    const unsigned long len =
-      (unsigned long)((pubkey->end - pubkey->beg - 2) * 4);
+    const size_t len = ((pubkey->end - pubkey->beg - 2) * 4);
     if(!certnum)
       infof(data, "   ECC Public Key (%lu bits)", len);
     if(data->set.ssl.certinfo) {
@@ -971,7 +972,7 @@ static int do_pubkey(struct Curl_easy *data, int certnum,
 
   if(strcasecompare(algo, "rsaEncryption")) {
     const char *q;
-    unsigned long len;
+    size_t len;
 
     p = getASN1Element(&elem, pk.beg, pk.end);
     if(!p)
@@ -980,7 +981,7 @@ static int do_pubkey(struct Curl_easy *data, int certnum,
     /* Compute key length. */
     for(q = elem.beg; !*q && q < elem.end; q++)
       ;
-    len = (unsigned long)((elem.end - q) * 8);
+    len = ((elem.end - q) * 8);
     if(len) {
       unsigned int i;
       for(i = *(unsigned char *) q; !(i & 0x80); i <<= 1)
@@ -1072,7 +1073,7 @@ CURLcode Curl_extract_certinfo(struct Curl_easy *data,
   size_t cl1;
   char *cp2;
   CURLcode result = CURLE_OK;
-  unsigned long version;
+  unsigned int version;
   size_t i;
   size_t j;
 
@@ -1117,7 +1118,7 @@ CURLcode Curl_extract_certinfo(struct Curl_easy *data,
   for(ccp = cert.version.beg; ccp < cert.version.end; ccp++)
     version = (version << 8) | *(const unsigned char *) ccp;
   if(data->set.ssl.certinfo) {
-    ccp = curl_maprintf("%lx", version);
+    ccp = curl_maprintf("%x", version);
     if(!ccp)
       return CURLE_OUT_OF_MEMORY;
     result = Curl_ssl_push_certinfo(data, certnum, "Version", ccp);
@@ -1126,7 +1127,7 @@ CURLcode Curl_extract_certinfo(struct Curl_easy *data,
       return result;
   }
   if(!certnum)
-    infof(data, "   Version: %lu (0x%lx)", version + 1, version);
+    infof(data, "   Version: %u (0x%x)", version + 1, version);
 
   /* Serial number. */
   ccp = ASN1tostr(&cert.serialNumber, 0);
@@ -1275,9 +1276,12 @@ static const char *checkOID(const char *beg, const char *end,
   return matched? ccp: NULL;
 }
 
-CURLcode Curl_verifyhost(struct Curl_easy *data, struct connectdata *conn,
+CURLcode Curl_verifyhost(struct Curl_cfilter *cf,
+                         struct Curl_easy *data,
                          const char *beg, const char *end)
 {
+  struct ssl_connect_data *connssl = cf->ctx;
+  struct ssl_primary_config *conn_config = Curl_ssl_cf_get_primary_config(cf);
   struct Curl_X509certificate cert;
   struct Curl_asn1Element dn;
   struct Curl_asn1Element elem;
@@ -1289,9 +1293,8 @@ CURLcode Curl_verifyhost(struct Curl_easy *data, struct connectdata *conn,
   int matched = -1;
   size_t addrlen = (size_t) -1;
   ssize_t len;
-  const char * const hostname = SSL_HOST_NAME();
-  const char * const dispname = SSL_HOST_DISPNAME();
-  size_t hostlen = strlen(hostname);
+  size_t hostlen;
+
 #ifdef ENABLE_IPV6
   struct in6_addr addr;
 #else
@@ -1301,19 +1304,22 @@ CURLcode Curl_verifyhost(struct Curl_easy *data, struct connectdata *conn,
   /* Verify that connection server matches info in X509 certificate at
      `beg'..`end'. */
 
-  if(!SSL_CONN_CONFIG(verifyhost))
+  if(!conn_config->verifyhost)
     return CURLE_OK;
 
   if(Curl_parseX509(&cert, beg, end))
     return CURLE_PEER_FAILED_VERIFICATION;
 
+  hostlen = strlen(connssl->hostname);
+
   /* Get the server IP address. */
 #ifdef ENABLE_IPV6
-  if(conn->bits.ipv6_ip && Curl_inet_pton(AF_INET6, hostname, &addr))
+  if(cf->conn->bits.ipv6_ip &&
+     Curl_inet_pton(AF_INET6, connssl->hostname, &addr))
     addrlen = sizeof(struct in6_addr);
   else
 #endif
-  if(Curl_inet_pton(AF_INET, hostname, &addr))
+  if(Curl_inet_pton(AF_INET, connssl->hostname, &addr))
     addrlen = sizeof(struct in_addr);
 
   /* Process extensions. */
@@ -1347,16 +1353,16 @@ CURLcode Curl_verifyhost(struct Curl_easy *data, struct connectdata *conn,
           len = utf8asn1str(&dnsname, CURL_ASN1_IA5_STRING,
                             name.beg, name.end);
           if(len > 0 && (size_t)len == strlen(dnsname))
-            matched = Curl_cert_hostcheck(dnsname,
-                                          (size_t)len, hostname, hostlen);
+            matched = Curl_cert_hostcheck(dnsname, (size_t)len,
+                                          connssl->hostname, hostlen);
           else
             matched = 0;
           free(dnsname);
           break;
 
         case 7: /* IP address. */
-          matched = (size_t) (name.end - name.beg) == addrlen &&
-                    !memcmp(&addr, name.beg, addrlen);
+          matched = (size_t)(name.end - name.beg) == addrlen &&
+            !memcmp(&addr, name.beg, addrlen);
           break;
         }
       }
@@ -1366,12 +1372,12 @@ CURLcode Curl_verifyhost(struct Curl_easy *data, struct connectdata *conn,
   switch(matched) {
   case 1:
     /* an alternative name matched the server hostname */
-    infof(data, "  subjectAltName: %s matched", dispname);
+    infof(data, "  subjectAltName: %s matched", connssl->dispname);
     return CURLE_OK;
   case 0:
     /* an alternative name field existed, but didn't match and then
        we MUST fail */
-    infof(data, "  subjectAltName does not match %s", dispname);
+    infof(data, "  subjectAltName does not match %s", connssl->dispname);
     return CURLE_PEER_FAILED_VERIFICATION;
   }
 
@@ -1408,14 +1414,14 @@ CURLcode Curl_verifyhost(struct Curl_easy *data, struct connectdata *conn,
     if(strlen(dnsname) != (size_t) len)         /* Nul byte in string ? */
       failf(data, "SSL: illegal cert name field");
     else if(Curl_cert_hostcheck((const char *) dnsname,
-                                len, hostname, hostlen)) {
+                                len, connssl->hostname, hostlen)) {
       infof(data, "  common name: %s (matched)", dnsname);
       free(dnsname);
       return CURLE_OK;
     }
     else
       failf(data, "SSL: certificate subject name '%s' does not match "
-            "target host name '%s'", dnsname, dispname);
+            "target host name '%s'", dnsname, connssl->dispname);
     free(dnsname);
   }
 

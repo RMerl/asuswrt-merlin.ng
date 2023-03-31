@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -46,10 +46,6 @@
 #endif
 #ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
-
-#ifdef HAVE_PROCESS_H
-#include <process.h>
 #endif
 
 #include "urldata.h"
@@ -171,18 +167,25 @@ void Curl_printable_address(const struct Curl_addrinfo *ai, char *buf,
 
 /*
  * Create a hostcache id string for the provided host + port, to be used by
- * the DNS caching. Without alloc.
+ * the DNS caching. Without alloc. Return length of the id string.
  */
-static void
-create_hostcache_id(const char *name, int port, char *ptr, size_t buflen)
+static size_t
+create_hostcache_id(const char *name,
+                    size_t nlen, /* 0 or actual name length */
+                    int port, char *ptr, size_t buflen)
 {
-  size_t len = strlen(name);
+  size_t len = nlen ? nlen : strlen(name);
+  size_t olen = 0;
+  DEBUGASSERT(buflen >= MAX_HOSTCACHE_LEN);
   if(len > (buflen - 7))
     len = buflen - 7;
   /* store and lower case the name */
-  while(len--)
-    *ptr++ = (char)TOLOWER(*name++);
-  msnprintf(ptr, 7, ":%u", port);
+  while(len--) {
+    *ptr++ = Curl_raw_tolower(*name++);
+    olen++;
+  }
+  olen += msnprintf(ptr, 7, ":%u", port);
+  return olen;
 }
 
 struct hostcache_prune_data {
@@ -264,20 +267,18 @@ static struct Curl_dns_entry *fetch_addr(struct Curl_easy *data,
                                          int port)
 {
   struct Curl_dns_entry *dns = NULL;
-  size_t entry_len;
   char entry_id[MAX_HOSTCACHE_LEN];
 
   /* Create an entry id, based upon the hostname and port */
-  create_hostcache_id(hostname, port, entry_id, sizeof(entry_id));
-  entry_len = strlen(entry_id);
+  size_t entry_len = create_hostcache_id(hostname, 0, port,
+                                         entry_id, sizeof(entry_id));
 
   /* See if its already in our dns cache */
   dns = Curl_hash_pick(data->dns.hostcache, entry_id, entry_len + 1);
 
   /* No entry found in cache, check if we might have a wildcard entry */
   if(!dns && data->state.wildcard_resolve) {
-    create_hostcache_id("*", port, entry_id, sizeof(entry_id));
-    entry_len = strlen(entry_id);
+    entry_len = create_hostcache_id("*", 1, port, entry_id, sizeof(entry_id));
 
     /* See if it's already in our dns cache */
     dns = Curl_hash_pick(data->dns.hostcache, entry_id, entry_len + 1);
@@ -297,6 +298,31 @@ static struct Curl_dns_entry *fetch_addr(struct Curl_easy *data,
     }
   }
 
+  /* See if the returned entry matches the required resolve mode */
+  if(dns && data->conn->ip_version != CURL_IPRESOLVE_WHATEVER) {
+    int pf = PF_INET;
+    bool found = false;
+    struct Curl_addrinfo *addr = dns->addr;
+
+#ifdef PF_INET6
+    if(data->conn->ip_version == CURL_IPRESOLVE_V6)
+      pf = PF_INET6;
+#endif
+
+    while(addr) {
+      if(addr->ai_family == pf) {
+        found = true;
+        break;
+      }
+      addr = addr->ai_next;
+    }
+
+    if(!found) {
+      infof(data, "Hostname in DNS cache doesn't have needed family, zapped");
+      dns = NULL; /* the memory deallocation is being handled by the hash */
+      Curl_hash_delete(data->dns.hostcache, entry_id, entry_len + 1);
+    }
+  }
   return dns;
 }
 
@@ -417,6 +443,7 @@ struct Curl_dns_entry *
 Curl_cache_addr(struct Curl_easy *data,
                 struct Curl_addrinfo *addr,
                 const char *hostname,
+                size_t hostlen, /* length or zero */
                 int port)
 {
   char entry_id[MAX_HOSTCACHE_LEN];
@@ -440,8 +467,8 @@ Curl_cache_addr(struct Curl_easy *data,
   }
 
   /* Create an entry id, based upon the hostname and port */
-  create_hostcache_id(hostname, port, entry_id, sizeof(entry_id));
-  entry_len = strlen(entry_id);
+  entry_len = create_hostcache_id(hostname, hostlen, port,
+                                  entry_id, sizeof(entry_id));
 
   dns->inuse = 1;   /* the cache has the first reference */
   dns->addr = addr; /* this is the address(es) */
@@ -463,12 +490,12 @@ Curl_cache_addr(struct Curl_easy *data,
 }
 
 #ifdef ENABLE_IPV6
-/* return a static IPv6 resolve for 'localhost' */
-static struct Curl_addrinfo *get_localhost6(int port)
+/* return a static IPv6 ::1 for the name */
+static struct Curl_addrinfo *get_localhost6(int port, const char *name)
 {
   struct Curl_addrinfo *ca;
   const size_t ss_size = sizeof(struct sockaddr_in6);
-  const size_t hostlen = strlen("localhost");
+  const size_t hostlen = strlen(name);
   struct sockaddr_in6 sa6;
   unsigned char ipv6[16];
   unsigned short port16 = (unsigned short)(port & 0xffff);
@@ -493,19 +520,19 @@ static struct Curl_addrinfo *get_localhost6(int port)
   ca->ai_addr = (void *)((char *)ca + sizeof(struct Curl_addrinfo));
   memcpy(ca->ai_addr, &sa6, ss_size);
   ca->ai_canonname = (char *)ca->ai_addr + ss_size;
-  strcpy(ca->ai_canonname, "localhost");
+  strcpy(ca->ai_canonname, name);
   return ca;
 }
 #else
-#define get_localhost6(x) NULL
+#define get_localhost6(x,y) NULL
 #endif
 
-/* return a static IPv4 resolve for 'localhost' */
-static struct Curl_addrinfo *get_localhost(int port)
+/* return a static IPv4 127.0.0.1 for the given name */
+static struct Curl_addrinfo *get_localhost(int port, const char *name)
 {
   struct Curl_addrinfo *ca;
   const size_t ss_size = sizeof(struct sockaddr_in);
-  const size_t hostlen = strlen("localhost");
+  const size_t hostlen = strlen(name);
   struct sockaddr_in sa;
   unsigned int ipv4;
   unsigned short port16 = (unsigned short)(port & 0xffff);
@@ -529,8 +556,8 @@ static struct Curl_addrinfo *get_localhost(int port)
   ca->ai_addr = (void *)((char *)ca + sizeof(struct Curl_addrinfo));
   memcpy(ca->ai_addr, &sa, ss_size);
   ca->ai_canonname = (char *)ca->ai_addr + ss_size;
-  strcpy(ca->ai_canonname, "localhost");
-  ca->ai_next = get_localhost6(port);
+  strcpy(ca->ai_canonname, name);
+  ca->ai_next = get_localhost6(port, name);
   return ca;
 }
 
@@ -546,7 +573,11 @@ bool Curl_ipv6works(struct Curl_easy *data)
        have the info kept for fast re-use */
     DEBUGASSERT(data);
     DEBUGASSERT(data->multi);
-    return data->multi->ipv6_works;
+    if(data->multi->ipv6_up == IPV6_UNKNOWN) {
+      bool works = Curl_ipv6works(NULL);
+      data->multi->ipv6_up = works ? IPV6_WORKS : IPV6_DEAD;
+    }
+    return data->multi->ipv6_up == IPV6_WORKS;
   }
   else {
     int ipv6_works = -1;
@@ -581,6 +612,17 @@ bool Curl_host_is_ipnum(const char *hostname)
     )
     return TRUE;
   return FALSE;
+}
+
+
+/* return TRUE if 'part' is a case insensitive tail of 'full' */
+static bool tailmatch(const char *full, const char *part)
+{
+  size_t plen = strlen(part);
+  size_t flen = strlen(full);
+  if(plen > flen)
+    return FALSE;
+  return strncasecompare(part, &full[flen - plen], plen);
 }
 
 /*
@@ -718,8 +760,9 @@ enum resolve_t Curl_resolv(struct Curl_easy *data,
       if(conn->ip_version == CURL_IPRESOLVE_V6 && !Curl_ipv6works(data))
         return CURLRESOLV_ERROR;
 
-      if(strcasecompare(hostname, "localhost"))
-        addr = get_localhost(port);
+      if(strcasecompare(hostname, "localhost") ||
+         tailmatch(hostname, ".localhost"))
+        addr = get_localhost(port, hostname);
 #ifndef CURL_DISABLE_DOH
       else if(allowDOH && data->set.doh && !ipnum)
         addr = Curl_doh(data, hostname, port, &respwait);
@@ -754,7 +797,7 @@ enum resolve_t Curl_resolv(struct Curl_easy *data,
         Curl_share_lock(data, CURL_LOCK_DATA_DNS, CURL_LOCK_ACCESS_SINGLE);
 
       /* we got a response, store it in the cache */
-      dns = Curl_cache_addr(data, addr, hostname, port);
+      dns = Curl_cache_addr(data, addr, hostname, 0, port);
 
       if(data->share)
         Curl_share_unlock(data, CURL_LOCK_DATA_DNS);
@@ -993,9 +1036,9 @@ static void freednsentry(void *freethis)
 /*
  * Curl_init_dnscache() inits a new DNS cache.
  */
-void Curl_init_dnscache(struct Curl_hash *hash)
+void Curl_init_dnscache(struct Curl_hash *hash, int size)
 {
-  Curl_hash_init(hash, 7, Curl_hash_str, Curl_str_key_compare,
+  Curl_hash_init(hash, size, Curl_hash_str, Curl_str_key_compare,
                  freednsentry);
 }
 
@@ -1022,8 +1065,7 @@ void Curl_hostcache_clean(struct Curl_easy *data,
 CURLcode Curl_loadhostpairs(struct Curl_easy *data)
 {
   struct curl_slist *hostp;
-  char hostname[256];
-  int port = 0;
+  char *host_end;
 
   /* Default is no wildcard found */
   data->state.wildcard_resolve = false;
@@ -1033,18 +1075,25 @@ CURLcode Curl_loadhostpairs(struct Curl_easy *data)
     if(!hostp->data)
       continue;
     if(hostp->data[0] == '-') {
+      unsigned long num = 0;
       size_t entry_len;
+      size_t hlen = 0;
+      host_end = strchr(&hostp->data[1], ':');
 
-      if(2 != sscanf(hostp->data + 1, "%255[^:]:%d", hostname, &port)) {
-        infof(data, "Couldn't parse CURLOPT_RESOLVE removal entry '%s'",
+      if(host_end) {
+        hlen = host_end - &hostp->data[1];
+        num = strtoul(++host_end, NULL, 10);
+        if(!hlen || (num > 0xffff))
+          host_end = NULL;
+      }
+      if(!host_end) {
+        infof(data, "Bad syntax CURLOPT_RESOLVE removal entry '%s'",
               hostp->data);
         continue;
       }
-
       /* Create an entry id, based upon the hostname and port */
-      create_hostcache_id(hostname, port, entry_id, sizeof(entry_id));
-      entry_len = strlen(entry_id);
-
+      entry_len = create_hostcache_id(&hostp->data[1], hlen, (int)num,
+                                      entry_id, sizeof(entry_id));
       if(data->share)
         Curl_share_lock(data, CURL_LOCK_DATA_DNS, CURL_LOCK_ACCESS_SINGLE);
 
@@ -1065,25 +1114,22 @@ CURLcode Curl_loadhostpairs(struct Curl_easy *data)
       char *addr_begin;
       char *addr_end;
       char *port_ptr;
+      int port = 0;
       char *end_ptr;
       bool permanent = TRUE;
-      char *host_begin;
-      char *host_end;
       unsigned long tmp_port;
       bool error = true;
+      char *host_begin = hostp->data;
+      size_t hlen = 0;
 
-      host_begin = hostp->data;
       if(host_begin[0] == '+') {
         host_begin++;
         permanent = FALSE;
       }
       host_end = strchr(host_begin, ':');
-      if(!host_end ||
-         ((host_end - host_begin) >= (ptrdiff_t)sizeof(hostname)))
+      if(!host_end)
         goto err;
-
-      memcpy(hostname, host_begin, host_end - host_begin);
-      hostname[host_end - host_begin] = '\0';
+      hlen = host_end - host_begin;
 
       port_ptr = host_end + 1;
       tmp_port = strtoul(port_ptr, &end_ptr, 10);
@@ -1159,8 +1205,8 @@ CURLcode Curl_loadhostpairs(struct Curl_easy *data)
       }
 
       /* Create an entry id, based upon the hostname and port */
-      create_hostcache_id(hostname, port, entry_id, sizeof(entry_id));
-      entry_len = strlen(entry_id);
+      entry_len = create_hostcache_id(host_begin, hlen, port,
+                                      entry_id, sizeof(entry_id));
 
       if(data->share)
         Curl_share_lock(data, CURL_LOCK_DATA_DNS, CURL_LOCK_ACCESS_SINGLE);
@@ -1169,8 +1215,8 @@ CURLcode Curl_loadhostpairs(struct Curl_easy *data)
       dns = Curl_hash_pick(data->dns.hostcache, entry_id, entry_len + 1);
 
       if(dns) {
-        infof(data, "RESOLVE %s:%d is - old addresses discarded",
-              hostname, port);
+        infof(data, "RESOLVE %.*s:%d is - old addresses discarded",
+              (int)hlen, host_begin, port);
         /* delete old entry, there are two reasons for this
          1. old entry may have different addresses.
          2. even if entry with correct addresses is already in the cache,
@@ -1186,7 +1232,7 @@ CURLcode Curl_loadhostpairs(struct Curl_easy *data)
       }
 
       /* put this new host in the cache */
-      dns = Curl_cache_addr(data, head, hostname, port);
+      dns = Curl_cache_addr(data, head, host_begin, hlen, port);
       if(dns) {
         if(permanent)
           dns->timestamp = 0; /* mark as permanent */
@@ -1202,13 +1248,13 @@ CURLcode Curl_loadhostpairs(struct Curl_easy *data)
         Curl_freeaddrinfo(head);
         return CURLE_OUT_OF_MEMORY;
       }
-      infof(data, "Added %s:%d:%s to DNS cache%s",
-            hostname, port, addresses, permanent ? "" : " (non-permanent)");
+      infof(data, "Added %.*s:%d:%s to DNS cache%s",
+            (int)hlen, host_begin, port, addresses,
+            permanent ? "" : " (non-permanent)");
 
       /* Wildcard hostname */
-      if(hostname[0] == '*' && hostname[1] == '\0') {
-        infof(data, "RESOLVE %s:%d is wildcard, enabling wildcard checks",
-              hostname, port);
+      if((hlen == 1) && (host_begin[0] == '*')) {
+        infof(data, "RESOLVE *:%d using wildcard", port);
         data->state.wildcard_resolve = true;
       }
     }

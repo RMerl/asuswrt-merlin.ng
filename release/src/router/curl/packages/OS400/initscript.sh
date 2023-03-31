@@ -6,7 +6,7 @@
 #                            | (__| |_| |  _ <| |___
 #                             \___|\___/|_| \_\_____|
 #
-# Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+# Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 #
 # This software is licensed as described in the file COPYING, which
 # you should have received as part of this distribution. The terms
@@ -234,14 +234,14 @@ make_module()
         CMD="${CMD} OPTIMIZE(${OPTIMIZE})"
         CMD="${CMD} DBGVIEW(${DEBUG})"
 
-        DEFINES="${3} BUILDING_LIBCURL"
+        DEFINES="${3} BUILDING_LIBCURL 'qadrt_use_inline'"
 
         if [ "${WITH_ZLIB}" != "0" ]
-        then    DEFINES="${DEFINES} HAVE_LIBZ HAVE_ZLIB_H"
+        then    DEFINES="${DEFINES} HAVE_LIBZ"
         fi
 
         if [ "${WITH_LIBSSH2}" != "0" ]
-        then    DEFINES="${DEFINES} USE_LIBSSH2 HAVE_LIBSSH2_H"
+        then    DEFINES="${DEFINES} USE_LIBSSH2"
         fi
 
         if [ "${DEFINES}" ]

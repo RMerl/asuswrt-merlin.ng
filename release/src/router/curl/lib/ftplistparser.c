@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -181,6 +181,43 @@ struct ftp_parselist_data {
   } offsets;
 };
 
+static void fileinfo_dtor(void *user, void *element)
+{
+  (void)user;
+  Curl_fileinfo_cleanup(element);
+}
+
+CURLcode Curl_wildcard_init(struct WildcardData *wc)
+{
+  Curl_llist_init(&wc->filelist, fileinfo_dtor);
+  wc->state = CURLWC_INIT;
+
+  return CURLE_OK;
+}
+
+void Curl_wildcard_dtor(struct WildcardData **wcp)
+{
+  struct WildcardData *wc = *wcp;
+  if(!wc)
+    return;
+
+  if(wc->dtor) {
+    wc->dtor(wc->ftpwc);
+    wc->dtor = ZERO_NULL;
+    wc->ftpwc = NULL;
+  }
+  DEBUGASSERT(wc->ftpwc == NULL);
+
+  Curl_llist_destroy(&wc->filelist, NULL);
+  free(wc->path);
+  wc->path = NULL;
+  free(wc->pattern);
+  wc->pattern = NULL;
+  wc->state = CURLWC_INIT;
+  free(wc);
+  *wcp = NULL;
+}
+
 struct ftp_parselist_data *Curl_ftp_parselist_data_alloc(void)
 {
   return calloc(1, sizeof(struct ftp_parselist_data));
@@ -205,9 +242,9 @@ CURLcode Curl_ftp_parselist_geterror(struct ftp_parselist_data *pl_data)
 
 #define FTP_LP_MALFORMATED_PERM 0x01000000
 
-static int ftp_pl_get_permission(const char *str)
+static unsigned int ftp_pl_get_permission(const char *str)
 {
-  int permissions = 0;
+  unsigned int permissions = 0;
   /* USER */
   if(str[0] == 'r')
     permissions |= 1 << 8;
@@ -274,8 +311,8 @@ static CURLcode ftp_pl_insert_finfo(struct Curl_easy *data,
                                     struct fileinfo *infop)
 {
   curl_fnmatch_callback compare;
-  struct WildcardData *wc = &data->wildcard;
-  struct ftp_wc *ftpwc = wc->protdata;
+  struct WildcardData *wc = data->wildcard;
+  struct ftp_wc *ftpwc = wc->ftpwc;
   struct Curl_llist *llist = &wc->filelist;
   struct ftp_parselist_data *parser = ftpwc->parser;
   bool add = TRUE;
@@ -330,11 +367,11 @@ size_t Curl_ftp_parselist(char *buffer, size_t size, size_t nmemb,
 {
   size_t bufflen = size*nmemb;
   struct Curl_easy *data = (struct Curl_easy *)connptr;
-  struct ftp_wc *ftpwc = data->wildcard.protdata;
+  struct ftp_wc *ftpwc = data->wildcard->ftpwc;
   struct ftp_parselist_data *parser = ftpwc->parser;
   struct fileinfo *infop;
   struct curl_fileinfo *finfo;
-  unsigned long i = 0;
+  size_t i = 0;
   CURLcode result;
   size_t retsize = bufflen;
 
@@ -422,7 +459,7 @@ size_t Curl_ftp_parselist(char *buffer, size_t size, size_t nmemb,
               char *endptr = finfo->b_data + 6;
               /* here we can deal with directory size, pass the leading
                  whitespace and then the digits */
-              while(ISSPACE(*endptr))
+              while(ISBLANK(*endptr))
                 endptr++;
               while(ISDIGIT(*endptr))
                 endptr++;
@@ -894,7 +931,7 @@ size_t Curl_ftp_parselist(char *buffer, size_t size, size_t nmemb,
         parser->item_length++;
         switch(parser->state.NT.sub.time) {
         case PL_WINNT_TIME_PRESPACE:
-          if(!ISSPACE(c)) {
+          if(!ISBLANK(c)) {
             parser->state.NT.sub.time = PL_WINNT_TIME_TIME;
           }
           break;

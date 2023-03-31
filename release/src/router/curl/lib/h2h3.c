@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -36,7 +36,7 @@
 
 /*
  * Curl_pseudo_headers() creates the array with pseudo headers to be
- * used in a HTTP/2 or HTTP/3 request.
+ * used in an HTTP/2 or HTTP/3 request.
  */
 
 #if defined(USE_NGHTTP2) || defined(ENABLE_QUIC)
@@ -118,6 +118,7 @@ static header_instruction inspect_header(const char *name, size_t namelen,
 CURLcode Curl_pseudo_headers(struct Curl_easy *data,
                              const char *mem, /* the request */
                              const size_t len /* size of request */,
+                             size_t* hdrlen /* opt size of headers read */,
                              struct h2h3req **hp)
 {
   struct connectdata *conn = data->conn;
@@ -191,7 +192,7 @@ CURLcode Curl_pseudo_headers(struct Curl_easy *data,
   vptr = Curl_checkheaders(data, STRCONST(H2H3_PSEUDO_SCHEME));
   if(vptr) {
     vptr += sizeof(H2H3_PSEUDO_SCHEME);
-    while(*vptr && ISSPACE(*vptr))
+    while(*vptr && ISBLANK(*vptr))
       vptr++;
     nva[2].value = vptr;
     infof(data, "set pseudo header %s to %s", H2H3_PSEUDO_SCHEME, vptr);
@@ -258,9 +259,6 @@ CURLcode Curl_pseudo_headers(struct Curl_easy *data,
       nva[i].valuelen = (end - hdbuf);
     }
 
-    nva[i].value = hdbuf;
-    nva[i].valuelen = (end - hdbuf);
-
     ++i;
   }
 
@@ -292,6 +290,12 @@ CURLcode Curl_pseudo_headers(struct Curl_easy *data,
             "headers exceeds %d bytes and that could cause the "
             "stream to be rejected.", MAX_ACC);
     }
+  }
+
+  if(hdrlen) {
+    /* Skip trailing CRLF */
+    end += 4;
+    *hdrlen = end - mem;
   }
 
   hreq->entries = nheader;

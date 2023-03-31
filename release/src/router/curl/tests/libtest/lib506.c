@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -349,7 +349,7 @@ int test(char *URL)
   printf("-----------------\n");
   curl_slist_free_all(cookies);
 
-  /* try to free share, expect to fail because share is in use*/
+  /* try to free share, expect to fail because share is in use */
   printf("try SHARE_CLEANUP...\n");
   scode = curl_share_cleanup(share);
   if(scode == CURLSHE_OK) {

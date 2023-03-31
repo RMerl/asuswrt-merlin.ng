@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: retry-all-errors
 Help: Retry all errors (use with --retry)
@@ -6,6 +6,7 @@ Added: 7.71.0
 Category: curl
 Example: --retry 5 --retry-all-errors $URL
 See-also: retry
+Multi: boolean
 ---
 Retry on any error. This option is used together with --retry.
 

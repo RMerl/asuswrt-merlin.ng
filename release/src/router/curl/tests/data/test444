@@ -1,14 +1,15 @@
+<testcase>
 # perl:
 #
 #for(1 .. 200) {
 #
 #}
 #
-<testcase>
 <info>
 <keywords>
 HTTP
 cookies
+--resolve
 </keywords>
 </info>
 
@@ -117,6 +118,9 @@ Many Set-Cookie response headers
 <command>
 http://attack.invalid:%HTTPPORT/a/b/%TESTNUMBER -c log/cookie%TESTNUMBER --resolve attack.invalid:%HTTPPORT:%HOSTIP
 </command>
+<features>
+cookies
+</features>
 </client>
 
 #

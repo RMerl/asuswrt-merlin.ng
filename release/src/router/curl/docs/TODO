@@ -45,6 +45,7 @@
  1.30 config file parsing
  1.31 erase secrets from heap/stack after use
  1.32 add asynch getaddrinfo support
+ 1.33 make DoH inherit more transfer properties
 
  2. libcurl - multi interface
  2.1 More non-blocking
@@ -68,8 +69,10 @@
  4.5 ASCII support
  4.6 GSSAPI via Windows SSPI
  4.7 STAT for LIST without data connection
+ 4.8 Passive transfer could try other IP addresses
 
  5. HTTP
+ 5.1 Provide the error body from a CONNECT response
  5.2 Set custom client ip when using haproxy protocol
  5.3 Rearrange request header order
  5.4 Allow SAN names in HTTP/2 server push
@@ -120,6 +123,7 @@
  13.9 TLS record padding
  13.10 Support Authority Information Access certificate extension (AIA)
  13.11 Support intermediate & root pinning for PINNEDPUBLICKEY
+ 13.12 Reduce CA certificate bundle reparsing
  13.13 Make sure we forbid TLS 1.3 post-handshake authentication
  13.14 Support the clienthello extension
 
@@ -425,6 +429,21 @@
 
  https://github.com/curl/curl/pull/6746
 
+1.33 make DoH inherit more transfer properties
+
+ Some options are not inherited because they are not relevant for the DoH SSL
+ connections, or inheriting the option may result in unexpected behavior. For
+ example the user's debug function callback is not inherited because it would
+ be unexpected for internal handles (ie DoH handles) to be passed to that
+ callback.
+
+ If an option is not inherited then it is not possible to set it separately
+ for DoH without a DoH-specific option. For example:
+ CURLOPT_DOH_SSL_VERIFYHOST, CURLOPT_DOH_SSL_VERIFYPEER and
+ CURLOPT_DOH_SSL_VERIFYSTATUS.
+
+ See https://github.com/curl/curl/issues/6605
+
 2. libcurl - multi interface
 
 2.1 More non-blocking
@@ -562,7 +581,27 @@
 
  This is not detailed in any FTP specification.
 
+4.8 Passive transfer could try other IP addresses
+
+ When doing FTP operations through a proxy at localhost, the reported spotted
+ that curl only tried to connect once to the proxy, while it had multiple
+ addresses and a failed connect on one address should make it try the next.
+
+ After switching to passive mode (EPSV), curl could try all IP addresses for
+ "localhost". Currently it tries ::1, but it should also try 127.0.0.1.
+
+ See https://github.com/curl/curl/issues/1508
+
 5. HTTP
+
+5.1 Provide the error body from a CONNECT response
+
+ When curl receives a body response from a CONNECT request to a proxy, it will
+ always just read and ignore it. It would make some users happy if curl
+ instead optionally would be able to make that responsible available. Via a new
+ callback? Through some other means?
+
+ See https://github.com/curl/curl/issues/9513
 
 5.2 Set custom client ip when using haproxy protocol
 
@@ -843,6 +882,15 @@
 
  Adding this feature would make curls pinning 100% compatible to HPKP and
  allow more flexible pinning.
+
+13.12 Reduce CA certificate bundle reparsing
+
+ When using the OpenSSL backend, curl will load and reparse the CA bundle at
+ the creation of the "SSL context" when it sets up a connection to do a TLS
+ handshake. A more effective way would be to somehow cache the CA bundle to
+ avoid it having to be repeatedly reloaded and reparsed.
+
+ See https://github.com/curl/curl/issues/9379
 
 13.13 Make sure we forbid TLS 1.3 post-handshake authentication
 

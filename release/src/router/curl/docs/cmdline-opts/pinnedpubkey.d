@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: pinnedpubkey
 Arg: <hashes>
@@ -9,6 +9,7 @@ Example: --pinnedpubkey keyfile $URL
 Example: --pinnedpubkey 'sha256//ce118b51897f4452dc' $URL
 Added: 7.39.0
 See-also: hostpubsha256
+Multi: single
 ---
 Tells curl to use the specified public key file (or hashes) to verify the
 peer. This can be a path to a file which contains a single public key in PEM
@@ -35,5 +36,3 @@ sha256 support:
 7.47.0: mbedtls
 
 Other SSL backends not supported.
-
-If this option is used several times, the last one will be used.

@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_ALTSVC 3 "June 21, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
+.TH CURLOPT_ALTSVC 3 "January 02, 2023" "libcurl 8.0.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_ALTSVC \- alt-svc cache file name
@@ -58,7 +58,7 @@ nine space-separated fields.
 
 An example line could look like
 
- h2 www.example 8443 h3 quic.example 443 "20190808 06:18:37" 1 0
+ h2 www.example 8443 h3 second.example 443 "20190808 06:18:37" 1 0
 
 The fields of that line are:
 
@@ -70,7 +70,7 @@ Host name for the source origin
 Port number for the source origin
 .IP h3
 ALPN id for the destination host
-.IP quic.example
+.IP second.example
 Host name for the destination host
 .IP 443
 Port number for the destination host

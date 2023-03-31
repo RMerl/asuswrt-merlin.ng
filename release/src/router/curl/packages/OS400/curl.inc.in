@@ -5,7 +5,7 @@
       *                            | (__| |_| |  _ <| |___
       *                             \___|\___/|_| \_\_____|
       *
-      * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+      * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
       *
       * This software is licensed as described in the file COPYING, which
       * you should have received as part of this distribution. The terms
@@ -1206,7 +1206,7 @@
      d                 c                   00110
      d  CURLOPT_PROXYAUTH...
      d                 c                   00111
-     d  CURLOPT_FTP_RESPONSE_TIMEOUT...
+     d  CURLOPT_SERVER_RESPONSE_TIMEOUT...
      d                 c                   00112
      d  CURLOPT_SERVER_RESPONSE_TIMEOUT...                                      Alias
      d                 c                   00112

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -472,7 +472,7 @@ curl_version_info_ccsid(CURLversion stamp, unsigned int ccsid)
   memcpy((char *) id, (char *) p, sizeof(*p));
 
   if(id->protocols) {
-    int i = nproto * sizeof(id->protocols[0]);
+    i = nproto * sizeof(id->protocols[0]);
 
     id->protocols = (const char * const *) cp;
     memcpy(cp, (char *) p->protocols, i);
@@ -487,7 +487,7 @@ curl_version_info_ccsid(CURLversion stamp, unsigned int ccsid)
 
   for(i = 0; i < sizeof(charfields) / sizeof(charfields[0]); i++) {
     cpp = (const char **) ((char *) p + charfields[i]);
-    if (*cpp && convert_version_info_string(cpp, &cp, &n, ccsid))
+    if(*cpp && convert_version_info_string(cpp, &cp, &n, ccsid))
       return (curl_version_info_data *) NULL;
   }
 

@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -29,7 +29,7 @@
 /*
  * NTLM details:
  *
- * https://davenport.sourceforge.io/ntlm.html
+ * https://davenport.sourceforge.net/ntlm.html
  * https://www.innovation.ch/java/ntlm.html
  */
 
@@ -88,8 +88,6 @@ static void ntlm_print_flags(FILE *handle, unsigned long flags)
     fprintf(handle, "NTLMFLAG_NEGOTIATE_DATAGRAM_STYLE ");
   if(flags & NTLMFLAG_NEGOTIATE_LM_KEY)
     fprintf(handle, "NTLMFLAG_NEGOTIATE_LM_KEY ");
-  if(flags & NTLMFLAG_NEGOTIATE_NETWARE)
-    fprintf(handle, "NTLMFLAG_NEGOTIATE_NETWARE ");
   if(flags & NTLMFLAG_NEGOTIATE_NTLM_KEY)
     fprintf(handle, "NTLMFLAG_NEGOTIATE_NTLM_KEY ");
   if(flags & (1<<10))
@@ -600,7 +598,7 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
 
     /* A safer but less compatible alternative is:
      *   Curl_ntlm_core_lm_resp(ntbuffer, &ntlm->nonce[0], lmresp);
-     * See https://davenport.sourceforge.io/ntlm.html#ntlmVersion2 */
+     * See https://davenport.sourceforge.net/ntlm.html#ntlmVersion2 */
   }
 
   if(unicode) {
@@ -658,7 +656,7 @@ CURLcode Curl_auth_create_ntlm_type3_message(struct Curl_easy *data,
                    /* LanManager response */
                    /* NT response */
 
-                   0,                /* zero termination */
+                   0,                /* null-termination */
                    0, 0, 0,          /* type-3 long, the 24 upper bits */
 
                    SHORTPAIR(0x18),  /* LanManager response length, twice */

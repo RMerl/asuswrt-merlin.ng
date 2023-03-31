@@ -148,7 +148,7 @@ changes.
 
 ### About pull requests
 
-With github it is easy to send a [pull
+With GitHub it is easy to send a [pull
 request](https://github.com/curl/curl/pulls) to the curl project to have
 changes merged.
 
@@ -157,12 +157,12 @@ git commit that is easy to merge and they are easy to track and not that easy
 to lose in the flood of many emails, like they sometimes do on the mailing
 lists.
 
-Every pull request submitted will automatically be
-tested in several different ways. [See CI.md for more
+Every pull request submitted will automatically be tested in several different
+ways. [See the CI document for more
 information](https://github.com/curl/curl/blob/master/tests/CI.md).
 
 Sometimes the tests fail due to a dependency service temporarily being offline
-or otherwise unavailable, eg. package downloads. In this case you can just
+or otherwise unavailable, e.g. package downloads. In this case you can just
 try to update your pull requests to rerun the tests later as described below.
 
 You can update your pull requests by pushing new commits or force-pushing
@@ -188,34 +188,62 @@ to the list or better yet: change it to a pull request.
 
 ### Commit messages
 
-A short guide to how to write commit messages in the curl project.
+A short guide to how to write git commit messages in the curl project.
 
     ---- start ----
     [area]: [short line describing the main effect]
            -- empty line --
-    [full description, no wider than 72 columns that describe as much as
+    [full description, no wider than 72 columns that describes as much as
     possible as to why this change is made, and possibly what things
-    it fixes and everything else that is related]
+    it fixes and everything else that is related, with unwieldy URLs replaced
+    with references like [0], [1], etc.]
            -- empty line --
-    [Closes/Fixes #1234 - if this closes or fixes a github issue]
-    [Bug: URL to source of the report or more related discussion]
-    [Reported-by: John Doe - credit the reporter]
-    [whatever-else-by: credit all helpers, finders, doers]
+    [[0] URL - Reference to a URL in the description, almost like Markdown;
+        the last numbered reference is followed by an -- empty line -- ]
+    [Follow-up to {shorthash} - if this fixes or continues a previous commit;
+        add a Ref: that commit's PR or issue if it's not a small, obvious fix;
+        followed by an -- empty line -- ]
+    [Bug: URL to the source of the report or more related discussion; use Fixes
+        for GitHub issues instead when that is appropriate]
+    [Approved-by: John Doe - credit someone who approved the PR; if you're
+        committing this for someone else using --author=... you don't need this
+        as you're implicitly approving it by committing]
+    [Authored-by: John Doe - credit the original author of the code; only use
+        this if you can't use "git commit --author=..."]
+    {Signed-off-by: John Doe - we don't use this, but don't bother removing it]
+    [whatever-else-by: credit all helpers, finders, doers; try to use one of
+        the following keywords if at all possible, for consistency:
+        Acked-by:, Assisted-by:, Co-authored-by:, Found-by:, Reported-by:,
+        Reviewed-by:, Suggested-by:, Tested-by:]
+    [Ref: #1234 - if this is related to a GitHub issue or PR, possibly one that
+                  has already been closed]
+    [Ref: URL to more information about the commit; use Bug: instead for
+        a reference to a bug on another bug tracker]
+    [Fixes #1234 - if this closes a GitHub issue; GitHub will actually
+        close the issue once this commit is merged]
+    [Closes #1234 - if this closes a GitHub PR; GitHub will actually
+        close the PR once this commit is merged]
     ---- stop ----
 
 The first line is a succinct description of the change:
 
  - use the imperative, present tense: "change" not "changed" nor "changes"
- - do not capitalize first letter
- - no dot (.) at the end
+ - do not capitalize the first letter
+ - no period (.) at the end
 
 The `[area]` in the first line can be `http2`, `cookies`, `openssl` or
 similar. There's no fixed list to select from but using the same "area" as
 other related changes could make sense.
 
-Do not forget to use commit --author="" if you commit someone else's work, and
+Do not forget to use commit --author=... if you commit someone else's work, and
 make sure that you have your own user and email setup correctly in git before
-you commit
+you commit.
+
+Add whichever header lines as appropriate, with one line per person if more
+than one person was involved. There's no need to credit yourself unless you are
+using --author=... which hides your identity. Don't include people's e-mail
+addresses in headers to avoid spam, unless they're already public from a
+previous commit; saying `{userid} on github` is OK.
 
 ### Write Access to git Repository
 
@@ -245,7 +273,7 @@ can make patches out of your changes that are suitable for mailing:
 
     git format-patch remotes/origin/master
 
-This creates files in your local directory named NNNN-[name].patch for each
+This creates files in your local directory named `NNNN-[name].patch` for each
 commit.
 
 Now send those patches off to the curl-library list. You can of course opt to
@@ -267,17 +295,7 @@ can use diff recursively:
     diff -ur curl-original-dir curl-modified-sources-dir > my-fixes.diff
 
 The GNU diff and GNU patch tools exist for virtually all platforms, including
-all kinds of Unixes and Windows:
-
-For unix-like operating systems:
-
- - [https://savannah.gnu.org/projects/patch/](https://savannah.gnu.org/projects/patch/)
- - [https://www.gnu.org/software/diffutils/](https://www.gnu.org/software/diffutils/)
-
-For Windows:
-
- - [https://gnuwin32.sourceforge.io/packages/patch.htm](https://gnuwin32.sourceforge.io/packages/patch.htm)
- - [https://gnuwin32.sourceforge.io/packages/diffutils.htm](https://gnuwin32.sourceforge.io/packages/diffutils.htm)
+all kinds of Unixes and Windows.
 
 ### Useful resources
  - [Webinar on getting code into cURL](https://www.youtube.com/watch?v=QmZ3W1d6LQI)
@@ -291,8 +309,8 @@ still fine.
 This means that all files need to have their license and copyright information
 clearly stated. Ideally by having the standard curl source code header, with
 an accurate copyright year range and the SPDX-License-Identifier included. If
-the header does not work, you can use a smaller header or as a last resort add
-the information for a specific file to the `.reuse/dep5` file.
+the header does not work, you can use a smaller header or add the information
+for a specific file to the `.reuse/dep5` file.
 
 We update copyright year ranges to end on the year of the most recent change
 of the individual file.

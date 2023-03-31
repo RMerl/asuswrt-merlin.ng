@@ -5,7 +5,7 @@
 .\" *                            | (__| |_| |  _ <| |___
 .\" *                             \___|\___/|_| \_\_____|
 .\" *
-.\" * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+.\" * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 .\" *
 .\" * This software is licensed as described in the file COPYING, which
 .\" * you should have received as part of this distribution. The terms
@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TIMECONDITION 3 "May 17, 2022" "libcurl 7.84.0" "curl_easy_setopt options"
+.TH CURLOPT_TIMECONDITION 3 "January 02, 2023" "libcurl 8.0.1" "curl_easy_setopt options"
 
 .SH NAME
 CURLOPT_TIMECONDITION \- select condition for a time request
@@ -56,7 +56,8 @@ if(curl) {
   curl_easy_setopt(curl, CURLOPT_TIMEVALUE, 1577833200L);
 
   /* If-Modified-Since the above time stamp */
-  curl_easy_setopt(curl, CURLOPT_TIMECONDITION, CURL_TIMECOND_IFMODSINCE);
+  curl_easy_setopt(curl, CURLOPT_TIMECONDITION,
+                   (long)CURL_TIMECOND_IFMODSINCE);
 
   /* Perform the request */
   curl_easy_perform(curl);

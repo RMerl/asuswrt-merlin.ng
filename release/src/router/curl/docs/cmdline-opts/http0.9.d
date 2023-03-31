@@ -1,4 +1,4 @@
-c: Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+c: Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
 SPDX-License-Identifier: curl
 Long: http0.9
 Tags: Versions
@@ -8,6 +8,7 @@ Category: http
 Example: --http0.9 $URL
 Added: 7.64.0
 See-also: http1.1 http2 http3
+Multi: boolean
 ---
 Tells curl to be fine with HTTP version 0.9 response.
 

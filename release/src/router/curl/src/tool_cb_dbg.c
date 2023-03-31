@@ -5,7 +5,7 @@
  *                            | (__| |_| |  _ <| |___
  *                             \___|\___/|_| \_\_____|
  *
- * Copyright (C) 1998 - 2022, Daniel Stenberg, <daniel@haxx.se>, et al.
+ * Copyright (C) Daniel Stenberg, <daniel@haxx.se>, et al.
  *
  * This software is licensed as described in the file COPYING, which
  * you should have received as part of this distribution. The terms
@@ -48,7 +48,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
 {
   struct OperationConfig *operation = userdata;
   struct GlobalConfig *config = operation->global;
-  FILE *output = config->errors;
+  FILE *output = stderr;
   const char *text;
   struct timeval tv;
   char timebuf[20];
@@ -80,7 +80,7 @@ int tool_debug_cb(CURL *handle, curl_infotype type,
       config->trace_stream = stdout;
     else if(!strcmp("%", config->trace_dump))
       /* Ok, this is somewhat hackish but we do it undocumented for now */
-      config->trace_stream = config->errors;  /* aka stderr */
+      config->trace_stream = stderr;
     else {
       config->trace_stream = fopen(config->trace_dump, FOPEN_WRITETEXT);
       config->trace_fopened = TRUE;
@@ -232,7 +232,7 @@ static void dump(const char *timebuf, const char *text,
         break;
       }
       (void)infotype;
-      fprintf(stream, "%c", ((ptr[i + c] >= 0x20) && (ptr[i + c] < 0x80)) ?
+      fprintf(stream, "%c", ((ptr[i + c] >= 0x20) && (ptr[i + c] < 0x7F)) ?
               ptr[i + c] : UNPRINTABLE_CHAR);
       /* check again for 0D0A, to avoid an extra \n if it's at width */
       if((tracetype == TRACE_ASCII) &&

@@ -7,15 +7,14 @@ Asuswrt-Merlin Changelog
 
   - NEW: Added support for the RT-AX88U Pro.
   - NEW: Merged with GPL 388_22525.
-  - NEW: Added Site Survey page under Network Tools tab.
-         This is the same network scan that is available
-         for pre-HND models, with Wifi 6E support added.
+  - NEW: Added Site Survey page under Network Tools tab.  This is
+         the same network scan that is available for pre-HND
+         models, with Wifi 6E support added.
   - UPDATED: dnsmasq to 2.89.
-  - UPDATED: openvpn to 2.6.2.  If your client fails to
-             connect then your custom settings must
-             contain settings no longer supported by
-             OpenVPN 2.6.  Review the System Log,
-             then remove unsupported settings that are
+  - UPDATED: openvpn to 2.6.2.  If your client fails to connect
+             then your custom settings must contain settings no
+             longer supported by OpenVPN 2.6.  Review the System
+             Log, then remove unsupported settings that are
              reported in your log.
   - UPDATED: nettle to 3.8.1.
   - UPDATED: inadyn to 2.10.0.
@@ -24,22 +23,20 @@ Asuswrt-Merlin Changelog
   - UPDATED: openssl to 1.1.1t.
   - UPDATED: curl to 8.0.1.
   - CHANGED: moved WiFi Radar to the Network Tools tab.
-  - CHANGED: Disabled auto logout on System Log and
-             Wireless Log pages.
-  - CHANGED: Reduced EDNS packet size from 1280 to 1232
-             bytes in dnsmasq, to better work with some
-             upstream servers not fully supporting EDNS0.
-  - CHANGED: Allow empty fields on WireGuard Client page
-             if the client is disabled.  This allow users
-             to manually clear settings when they are
-             no longer using a client.
-  - FIXED: NTP redirection wouldn't work properly with
-           Guest Network, removed redirection for these.
-  - FIXED: Added missing Tools icon on ROG UI (icon
-           contributed by Cody).
-  - FIXED: DDNS was being refreshed every time IPv6
-           bound6() event occured even if IPv6 DDNS update
-           was disabled.
+  - CHANGED: Disabled auto logout on System Log and Wireless Log
+             pages.
+  - CHANGED: Reduced EDNS packet size from 1280 to 1232 bytes in
+             dnsmasq, to better work with some upstream servers
+             not fully supporting EDNS0.
+  - CHANGED: Allow empty fields on WireGuard Client page if the
+             client is disabled.  This allow users to manually
+             clear settings when they are no longer using a client.
+  - FIXED: NTP redirection wouldn't work properly with Guest
+           Network, removed redirection for these.
+  - FIXED: Added missing Tools icon on ROG UI (icon contributed
+           by Cody).
+  - FIXED: DDNS was being refreshed every time IPv6 bound6() event
+           occured even if IPv6 DDNS update was disabled.
 
 
 386.10 (10-Mar-2023)

@@ -2,7 +2,12 @@
 #define _OPENVPN_CONFIG_H
 
 #define OVPN_SERVER_MAX	2
+
+#if defined(RTAC68U) || defined(DSL_AC68U)
+#define OVPN_CLIENT_MAX 2
+#else
 #define OVPN_CLIENT_MAX	5
+#endif
 
 #define PUSH_LAN_METRIC 500
 

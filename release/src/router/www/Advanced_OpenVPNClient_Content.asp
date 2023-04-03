@@ -106,6 +106,9 @@ wan_proto = '<% nvram_get("wan_proto"); %>';
 
 openvpn_unit = '<% nvram_get("vpn_client_unit"); %>';
 
+if ((based_modelid == "RT-AC68U" || based_modelid == "DSL-AC68U") && openvpn_unit > 2)
+	openvpn_unit = 2;
+
 switch (openvpn_unit) {
 	case "1":
 		client_state = (<% sysinfo("pid.vpnclient1"); %> > 0 ? 2 : 0);
@@ -203,9 +206,11 @@ function initial()
 	free_options(document.form.vpn_client_unit);
 	add_option(document.form.vpn_client_unit, "1: <% nvram_get("vpn_client1_desc"); %>", "1", (openvpn_unit == 1));
 	add_option(document.form.vpn_client_unit, "2: <% nvram_get("vpn_client2_desc"); %>", "2", (openvpn_unit == 2));
-	add_option(document.form.vpn_client_unit, "3: <% nvram_get("vpn_client3_desc"); %>", "3", (openvpn_unit == 3));
-	add_option(document.form.vpn_client_unit, "4: <% nvram_get("vpn_client4_desc"); %>", "4", (openvpn_unit == 4));
-	add_option(document.form.vpn_client_unit, "5: <% nvram_get("vpn_client5_desc"); %>", "5", (openvpn_unit == 5));
+	if (based_modelid != "RT-AC68U" && based_modelid != "DSL-AC68U")  {
+		add_option(document.form.vpn_client_unit, "3: <% nvram_get("vpn_client3_desc"); %>", "3", (openvpn_unit == 3));
+		add_option(document.form.vpn_client_unit, "4: <% nvram_get("vpn_client4_desc"); %>", "4", (openvpn_unit == 4));
+		add_option(document.form.vpn_client_unit, "5: <% nvram_get("vpn_client5_desc"); %>", "5", (openvpn_unit == 5));
+	}
 
 	// Cipher list
 	free_options(document.form.vpn_client_cipher);

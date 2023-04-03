@@ -45,6 +45,12 @@ function initial(){
 		showhide("client5", 0);
 	}
 
+	if (based_modelid == "RT-AC68U" || based_modelid == "DSL-AC68U") {
+		showhide("client3", 0);
+		showhide("client4", 0);
+		showhide("client5", 0);
+	}
+
 	if (!pptpd_support)
 		showhide("pptpserver", 0);
 
@@ -76,6 +82,12 @@ function displayData(){
 	var state_clnt_err = " - Error connecting";
 	var state_clnt_disc = " - <span style=\"background-color: transparent; color: white;\">Stopped</span>";
 	var state_desc, tmp;
+	var max_unit;
+
+	if (based_modelid == "RT-AC68U" || based_modelid == "DSL-AC68U")
+		max_unit = 2;
+	else
+		max_unit = 5;
 
 	if (server1pid > 0)
 		document.getElementById("server1_Block_Running").innerHTML = state_srv_run;
@@ -87,7 +99,7 @@ function displayData(){
 	else
 		document.getElementById("server2_Block_Running").innerHTML = state_srv_stop;
 
-	for (var unit = 1; unit < 6; unit++) {
+	for (var unit = 1; unit < max_unit + 1; unit++) {
 		switch (unit) {
 			case 1:
 				client_state = vpnc_state_t1;
@@ -161,9 +173,12 @@ function displayData(){
 	parseStatus(vpn_server2_status, "server2_Block", "", "");
 	parseStatus(vpn_client1_status, "client1_Block", vpn_client1_ip, vpn_client1_rip);
 	parseStatus(vpn_client2_status, "client2_Block", vpn_client2_ip, vpn_client2_rip);
-	parseStatus(vpn_client3_status, "client3_Block", vpn_client3_ip, vpn_client3_rip);
-	parseStatus(vpn_client4_status, "client4_Block", vpn_client4_ip, vpn_client4_rip);
-	parseStatus(vpn_client5_status, "client5_Block", vpn_client5_ip, vpn_client5_rip);
+
+	if (based_modelid != "RT-AC68U" && based_modelid != "DSL-AC68U") {
+		parseStatus(vpn_client3_status, "client3_Block", vpn_client3_ip, vpn_client3_rip);
+		parseStatus(vpn_client4_status, "client4_Block", vpn_client4_ip, vpn_client4_rip);
+		parseStatus(vpn_client5_status, "client5_Block", vpn_client5_ip, vpn_client5_rip);
+	}
 
 	if (pptpd_support) {
 		if (pptpdpid > 0)

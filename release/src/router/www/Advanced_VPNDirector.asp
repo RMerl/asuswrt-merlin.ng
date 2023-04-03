@@ -105,13 +105,21 @@ function initial(){
 function build_interface_list() {
 	free_options(document.form.vpn_client_unit);
 
-	$('#iface_x').append("<option value='WAN'>WAN</option>")
-	             .append("<option value='OVPN1'>OpenVPN 1: " + get_ovpn_infos(1, 0).desc + "</option>")
-	             .append("<option value='OVPN2'>OpenVPN 2: " + get_ovpn_infos(2, 0).desc + "</option>")
-	             .append("<option value='OVPN3'>OpenVPN 3: " + get_ovpn_infos(3, 0).desc + "</option>")
-	             .append("<option value='OVPN4'>OpenVPN 4: " + get_ovpn_infos(4, 0).desc + "</option>")
-	             .append("<option value='OVPN5'>OpenVPN 5: " + get_ovpn_infos(5, 0).desc + "</option>")
-	             .val('WAN');
+	if (based_modelid == "RT-AC68U" || based_modelid == "DSL-AC68U") {
+		$('#iface_x').append("<option value='WAN'>WAN</option>")
+		             .append("<option value='OVPN1'>OpenVPN 1: " + get_ovpn_infos(1, 0).desc + "</option>")
+		             .append("<option value='OVPN2'>OpenVPN 2: " + get_ovpn_infos(2, 0).desc + "</option>")
+		             .val('WAN');
+
+	} else {
+		$('#iface_x').append("<option value='WAN'>WAN</option>")
+		             .append("<option value='OVPN1'>OpenVPN 1: " + get_ovpn_infos(1, 0).desc + "</option>")
+		             .append("<option value='OVPN2'>OpenVPN 2: " + get_ovpn_infos(2, 0).desc + "</option>")
+		             .append("<option value='OVPN3'>OpenVPN 3: " + get_ovpn_infos(3, 0).desc + "</option>")
+		             .append("<option value='OVPN4'>OpenVPN 4: " + get_ovpn_infos(4, 0).desc + "</option>")
+		             .append("<option value='OVPN5'>OpenVPN 5: " + get_ovpn_infos(5, 0).desc + "</option>")
+		             .val('WAN');
+	}
 }
 
 
@@ -122,9 +130,11 @@ function get_ovpn_infos(unit, refresh) {
 		var vpnstate = Array();
 		vpnstate["vpn_client1_state"] = "<% nvram_get("vpn_client1_state"); %>";
 		vpnstate["vpn_client2_state"] = "<% nvram_get("vpn_client2_state"); %>";
-		vpnstate["vpn_client3_state"] = "<% nvram_get("vpn_client3_state"); %>";
-		vpnstate["vpn_client4_state"] = "<% nvram_get("vpn_client4_state"); %>";
-		vpnstate["vpn_client5_state"] = "<% nvram_get("vpn_client5_state"); %>";
+		if (based_modelid != "RT-AC68U" && based_modelid != "DSL-AC68U") {
+			vpnstate["vpn_client3_state"] = "<% nvram_get("vpn_client3_state"); %>";
+			vpnstate["vpn_client4_state"] = "<% nvram_get("vpn_client4_state"); %>";
+			vpnstate["vpn_client5_state"] = "<% nvram_get("vpn_client5_state"); %>";
+		}
 	}
 
 	switch (unit) {
@@ -210,9 +220,16 @@ function del_Row(_this){
 
 function show_vpn_summary(refresh) {
 	var code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable_table">';
+	var max_unit;
+
+	if (based_modelid == "RT-AC68U" || based_modelid == "DSL-AC68U")
+		max_unit = 2;
+	else
+		max_unit = 5;
+
 	code += '<thead><tr><td colspan="4">OpenVPN clients status</td></tr></thead>';
 
-	for (i = 1; i<= 5; i++) {
+	for (i = 1; i<= max_unit; i++) {
 		get_ovpn_infos(i, refresh);
 		switch (ovpn_info.routing) {
 			case "0":

@@ -337,6 +337,14 @@ void adjust_merlin_config(void)
 	}
 #endif
 
+#if defined(RTAC68U) || defined(DSL_AC68U)
+/* Reduced max OVPN client to 2 */
+	if (nvram_get_int("vpn_client_unit") > 2) {
+		nvram_set("vpn_client_unit", "2");
+		need_commit = 1;
+	}
+#endif
+
 	if (need_commit)
 		nvram_commit();
 }

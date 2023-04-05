@@ -276,12 +276,12 @@ function display_clients(clientsarray, obj, unit) {
 					ipaddr = clientList[mac].ip;
 			}
 			code += '<td style="vertical-align: top;">' + htmlEnDeCode.htmlEncode(ipaddr);	// IPv4
-			if(client[3].length >34){
-				overlib_str = client[3];
-				client[3] = "..."+client[3].substring(client[3].length-32);
-				code += '<br><span style="margin-top:-15px; color: cyan;" title="'+overlib_str+'">'+ client[3] +'</span></td>';
-			}else
-				code += '<br><span style="margin-top:-15px; color: cyan;">'+ client[3] +'</span></td>';	// IPv6
+
+			if (client[3].length) {
+				overlib_str = client[3].replace(/,/g, "<br>");
+				code += '<br><span style="margin-top:-15px; color:cyan; text-decoration:underline; cursor:pointer;" onclick="return overlib(\''+ overlib_str +'\');" onmouseout="nd();">IPv6 addresses</span></td>';
+			} else
+				code += '<br></td>'; // IPv6
 
 			code += '<td style="text-align: right;">' + client[5] + ' / ' + client[6] +' Mbps';	// Rate
 			code += '<br><span style="margin-top:-15px; color: cyan;">' + client[4] + ' dBm</td>';	// RSSI

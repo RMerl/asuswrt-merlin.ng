@@ -329,7 +329,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	char *ipv6list = NULL, *ipv6listptr;
 	char *line;
 	char hostnameentry[65];
-	char ipentry[42], macentry[18];
+	char ipentry[1024], macentry[18];
 	unsigned int flagentry;
 	int found, foundipv6 = 0, noclients = 0;
 	char rxrate[12], txrate[12];
@@ -587,7 +587,7 @@ sta_list:
 		if (ipv6list) {
 			ipv6listptr = ipv6list;
 			foundipv6 = 0;
-			while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %40s", macentry, ipentry) == 2)) {
+			while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %1023s", macentry, ipentry) == 2)) {
 				if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[i], ea)) == 0) {
 					ret += websWrite(wp, "\"%s\",", ipentry);
 					foundipv6 = 1;
@@ -763,7 +763,7 @@ sta_list:
 				if (ipv6list) {
 					ipv6listptr = ipv6list;
 					foundipv6 = 0;
-					while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %40s", macentry, ipentry) == 2)) {
+					while ((ipv6listptr < ipv6list+strlen(ipv6list)-2) && (sscanf(ipv6listptr,"%*s %17s %1023s", macentry, ipentry) == 2)) {
 						if (strcasecmp(macentry, ether_etoa((void *)&auth->ea[ii], ea)) == 0) {
 							ret += websWrite(wp, "\"%s\",", ipentry);
 							foundipv6 = 1;

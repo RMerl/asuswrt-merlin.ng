@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-388.2 (xx-xxx-2023)
+388.2 (12-Apr-2023)
   - NOTE: This release is currently not available
           for the XT12 due to issues with that model's GPL.
 
@@ -37,6 +37,10 @@ Asuswrt-Merlin Changelog
            by Cody).
   - FIXED: DDNS was being refreshed every time IPv6 bound6() event
            occured even if IPv6 DDNS update was disabled.
+  - FIXED: Wireless Log wouldn't properly show IPv6 address
+           for clients with multiple addresses.
+  - FIXED: ICMPv6 pings would be dropped when DoS protection
+           was enabled (regression in 388.1).
 
 
 386.10 (10-Mar-2023)

@@ -7,7 +7,14 @@ Asuswrt-Merlin Changelog
   - CHANGED: Reduce max OpenVPN clients to 2 for RT-AC68U and
              DSL-AC68U due to lack of NVRAM on these two
              models.  Note that existing settings are not
-             automatically removed.
+             automatically removed, you must run the following
+             command over SSH to remove them from nvram and
+             the /jffs/openvpn/ directory:
+
+                clear_vpnclients.sh
+
+             A backup will be saved in /jffs/openvpn_backup.tgz.
+
   - FIXED: DDNS was being refreshed every time IPv6 bound6() event
            occured even if IPv6 DDNS update was disabled.
   - FIXED: Wireless Log wouldn't properly show IPv6 address

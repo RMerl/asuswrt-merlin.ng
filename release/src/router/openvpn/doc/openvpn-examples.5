@@ -88,10 +88,9 @@ SHA256 Fingerprint=00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:4
 .fi
 .UNINDENT
 .UNINDENT
-.UNINDENT
-.sp
-3. Write a server configuration (\fIserver.conf\fP):
-.INDENT 0.0
+.IP 4. 3
+Write a server configuration (\fIserver.conf\fP):
+.INDENT 3.0
 .INDENT 3.5
 .sp
 .nf
@@ -127,10 +126,9 @@ keepalive 60 300
 .fi
 .UNINDENT
 .UNINDENT
-.INDENT 0.0
-.IP 4. 3
-Add at least one client as described in the client section.
 .IP 5. 3
+Add at least one client as described in the client section.
+.IP 6. 3
 .INDENT 3.0
 .TP
 .B Start the server.
@@ -480,7 +478,7 @@ On alice:
 .ft C
 openvpn \-\-remote bob.example.com \-\-tls\-client \-\-dev tun1   \e
         \-\-ifconfig 10.4.0.2 10.4.0.1 \-\-cipher AES\-256\-GCM  \e
-        \-\-cert alice.pem \-\-key alice.pem
+        \-\-cert alice.pem \-\-key alice.pem                   \e
         \-\-peer\-fingerprint "$fingerprint_of_bobs_cert"
 .ft P
 .fi

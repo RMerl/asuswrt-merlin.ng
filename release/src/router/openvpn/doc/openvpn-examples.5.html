@@ -408,8 +408,7 @@ openssl x509 -fingerprint -sha256 -in server.crt -noout
 SHA256 Fingerprint=00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff:00:11:22:33:44:55:66:77:88:99:aa:bb:cc:dd:ee:ff
 </pre>
 </li>
-</ol>
-<p>3. Write a server configuration (<cite>server.conf</cite>):</p>
+<li><p class="first">Write a server configuration (<cite>server.conf</cite>):</p>
 <pre class="literal-block">
 # The server certificate we created in step 1
 cert server.crt
@@ -439,7 +438,7 @@ explicit-exit-notify 1
 # Ping every 60s, restart if no data received for 5 minutes
 keepalive 60 300
 </pre>
-<ol class="arabic" start="4">
+</li>
 <li><p class="first">Add at least one client as described in the client section.</p>
 </li>
 <li><dl class="first docutils">
@@ -672,7 +671,7 @@ openvpn --ifconfig 10.4.0.1 10.4.0.2 --tls-server --dev tun --dh none \
 <pre class="literal-block">
 openvpn --remote bob.example.com --tls-client --dev tun1   \
         --ifconfig 10.4.0.2 10.4.0.1 --cipher AES-256-GCM  \
-        --cert alice.pem --key alice.pem
+        --cert alice.pem --key alice.pem                   \
         --peer-fingerprint &quot;$fingerprint_of_bobs_cert&quot;
 </pre>
 <p>Now verify the tunnel is working by pinging across the tunnel.</p>

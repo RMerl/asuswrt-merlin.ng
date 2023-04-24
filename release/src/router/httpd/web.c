@@ -23467,9 +23467,9 @@ int ej_set_share_mode(int eid, webs_t wp, int argc, char **argv){
 #ifdef RTCONFIG_WEBDAV_PENDING
 	int webdav_mode = nvram_get_int("st_webdav_mode");
 #endif
-	char *dummyShareway = get_cgi_json("dummyShareway", root);
-	char *protocol = get_cgi_json("protocol", root);
-	char *mode = get_cgi_json("mode", root);
+	char *dummyShareway = safe_get_cgi_json("dummyShareway", root);
+	char *protocol = safe_get_cgi_json("protocol", root);
+	char *mode = safe_get_cgi_json("mode", root);
 	int result;
 	char *fn = "set_share_mode_error";
 

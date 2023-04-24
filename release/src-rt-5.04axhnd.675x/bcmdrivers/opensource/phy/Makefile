@@ -341,7 +341,7 @@ ifeq ($(strip ${BRCM_CHIP}),4912)
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -I$(CUR_DIR)/Serdes146Class -DEXCLUDE_STD_HEADERS
     EXTRA_CFLAGS += -DMAC_XPORT -DPHY_EXT3 -DMACSEC_SUPPORT
     DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find xport/ag/4912A0  -type f -name '*.c')) 
-    EXTRA_CFLAGS += -I$(CUR_DIR)/xport -I$(CUR_DIR)/xport/ag/4912A0
+    EXTRA_CFLAGS += -I$(CUR_DIR)/xport -I$(CUR_DIR)/xport/ag/4912A0 -DPHY_GPY211
 endif
 
 ifeq ($(strip ${BRCM_CHIP}),6813)
@@ -401,7 +401,7 @@ ifeq ($(strip ${BRCM_CHIP}),6756)
     EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_DSL_GPHY 
     EXTRA_CFLAGS += -DPHY_6756CLASS_SERDES -I$(CUR_DIR)/Serdes6756Class -DEXCLUDE_STD_HEADERS
     EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES -DMACSEC_SUPPORT
-    EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
+    EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx -DPHY_GPY211
 endif
 
 endif

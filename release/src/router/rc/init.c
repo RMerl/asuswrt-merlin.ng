@@ -2730,8 +2730,14 @@ static void shutdn(int rb)
 	config_jumbo_frame();
 #endif
 #ifdef RTCONFIG_HND_ROUTER_AX_6756
-	if (f_exists("/jffs/remove_hidden_flag"))
+#ifndef MNT_DETACH
+#define MNT_DETACH	0x00000002
+#endif
+	if (f_exists("/jffs/remove_hidden_flag")){
+		if (umount("/jffs"))
+			umount2("/jffs", MNT_DETACH);
 		mtd_erase_misc2();
+	}
 #endif
 	printf("\nStopping bcm_boot_launcher ...\n");
 	system("bcm_boot_launcher stop");

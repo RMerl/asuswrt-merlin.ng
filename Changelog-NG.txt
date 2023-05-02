@@ -1,6 +1,14 @@
 Asuswrt-Merlin Changelog
 ========================
 
+388.2_2 (xx-xxx-2023)
+  - FIXED: QoS Status page wouldn't display Upload stats
+           if the WAN interface was set to a secondary
+           2.5G/10G port instead of the default WAN port.
+  - FIXED: dnsmasq may crash if no DNS server is configured
+           (fix backported from dnsmasq upstream)
+
+
 388.2 (12-Apr-2023)
   - NOTE: This release is currently not available
           for the XT12 due to issues with that model's GPL.

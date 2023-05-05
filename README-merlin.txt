@@ -42,13 +42,13 @@ Fully supported devices:
  * RT-AC5300
  * RT-AC86U
  * RT-AC2900 (use the RT-AC86U firmware)
+ * GT-AC2900
 
 388.x:
  * RT-AX88U
  * RT-AX56U
  * RT-AX58U & RT-AX3000 (V1 only)
  * RT-AX86U & RT-AX86S
- * GT-AC2900
  * GT-AX11000
  * RT-AX68U
  * GT-AXE11000

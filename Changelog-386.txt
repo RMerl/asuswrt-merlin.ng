@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.11 (xx-xxx-2023)
+386.11 (14-May-2023)
   - UPDATED: curl to 8.0.1.
   - UPDATED: openvpn to 2.6.3.
   - CHANGED: Reduce max OpenVPN clients to 2 for RT-AC68U and

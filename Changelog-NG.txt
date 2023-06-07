@@ -1,6 +1,13 @@
 Asuswrt-Merlin Changelog
 ========================
 
+388.3 (xx-xxx-2023)
+  - NOTE: This release is only available for the RT-AX88U PRO.
+
+  - NEW: Merged with GPL 388_23110, adding support for a new
+         RT-AX88U PRO hardware revision.
+
+
 388.2_2 (7-May-2023)
   - UPDATED: Merged GPL 388_22668 for the XT12 (only)
   - UPDATED: OpenVPN to 2.6.3.

@@ -494,11 +494,11 @@ function initial(){
 
 	if(hdspindown_support) {
 		$("#hdd_spindown_table").css("display", "");
-		if($("#usb_idle_enable_tr").css("display") != "none"){
-			change_hddSpinDown($('select[name="usb_idle_enable"]').val());
-			$('select[name="usb_idle_enable"]').prop("disabled", false);
-			$('input[name="usb_idle_timeout"]').prop("disabled", false);
-		}
+
+		$("#usb_idle_enable_tr").css("display", "");
+		change_hddSpinDown($('select[name="usb_idle_enable"]').val());
+		$('select[name="usb_idle_enable"]').prop("disabled", false);
+		$('input[name="usb_idle_timeout"]').prop("disabled", false);
 
 		if (document.form.usb_idle_exclude.value.indexOf("a") != -1)
 			document.form.usb_idle_exclude_a.checked = true;
@@ -2562,7 +2562,7 @@ function build_boostkey_options() {
 						<span>(<#Setting_factorydefault_value#> : 300) </span>
 					</td>
 				</tr>
-				<tr id="usb_idle_exclude_tr">
+				<tr id="usb_idle_exclude_tr" style="display: none;">
 					<th>Exclude the following drives from spinning down</th>
 					<td>
 						<input type="checkbox" name="usb_idle_exclude_a">sda</input>

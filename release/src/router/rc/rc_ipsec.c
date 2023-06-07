@@ -593,7 +593,9 @@ void rc_strongswan_conf_set()
 
 	user = nvram_safe_get("http_username");
 	if (*user == '\0')
-		user = "admin";
+		if(*(user = nvram_default_get("http_username")) == '\0')
+			user = "admin";
+
 
 	fprintf(fp,
 		"charon {\n"

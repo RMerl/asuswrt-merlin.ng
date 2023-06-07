@@ -1,5 +1,5 @@
 /*
- * backoffAlgorithm v1.0.1
+ * backoffAlgorithm v1.1.0
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -36,11 +36,17 @@
 /* Standard include. */
 #include <stdint.h>
 
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON* */
+
 /**
  * @ingroup backoff_algorithm_constants
  * @brief Constant to represent unlimited number of retry attempts.
  */
-#define BACKOFF_ALGORITHM_RETRY_FOREVER    ( 0U )
+#define BACKOFF_ALGORITHM_RETRY_FOREVER    ( UINT32_MAX )
 
 /**
  * @ingroup backoff_algorithm_enum_types
@@ -129,5 +135,11 @@ BackoffAlgorithmStatus_t BackoffAlgorithm_GetNextBackoff( BackoffAlgorithmContex
                                                           uint32_t randomValue,
                                                           uint16_t * pNextBackOff );
 /* @[define_backoffalgorithm_getnextbackoff] */
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    }
+#endif
+/* *INDENT-ON* */
 
 #endif /* ifndef BACKOFF_ALGORITHM_H_ */

@@ -1,5 +1,5 @@
 /*
- * Logging Stack V1.0.0
+ * corePKCS11 v3.2.0
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -34,8 +34,6 @@
 /* Standard Include. */
 #include <stdint.h>
 #include <stdio.h>
-
-
 
 /* Metadata information to prepend to every log message. */
 #define LOG_METADATA_FORMAT    "[%s:%d] "

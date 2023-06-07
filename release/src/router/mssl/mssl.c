@@ -29,7 +29,6 @@
 #include <openssl/err.h>
 
 #include <openssl/rsa.h>
-#include <openssl/ec.h>
 #include <openssl/crypto.h>
 #include <openssl/x509.h>
 #include <openssl/pem.h>
@@ -601,10 +600,6 @@ int mssl_cert_key_match(const char *cert_path, const char *key_path)
 	DSA *dsa_pri = NULL;
 	EC_KEY *ec_pub = NULL;
 	EC_KEY *ec_pri = NULL;
-	const EC_GROUP *ec_group = NULL;
-	const EC_POINT *ec_pub_pub = NULL;
-	const EC_POINT *ec_pri_pub = NULL;
-
 	int pem = 1;
 	int ret = 0;
 
@@ -705,10 +700,9 @@ int mssl_cert_key_match(const char *cert_path, const char *key_path)
 	}
 	else if(EVP_PKEY_id(pkey) == EVP_PKEY_EC)
 	{
-		//_dprintf("EC public key\n");
+		//_dprintf("EC private key\n");
 		ec_pri  = EVP_PKEY_get1_EC_KEY(pkey);
 	}
-
 	EVP_PKEY_free(pkey);
 	pkey = NULL;
 
@@ -741,27 +735,20 @@ int mssl_cert_key_match(const char *cert_path, const char *key_path)
 	}
 	else if(ec_pub && ec_pri)
 	{
-		ec_group = EC_KEY_get0_group(ec_pub);
-		ec_pub_pub = EC_KEY_get0_public_key(ec_pub);
-		ec_pri_pub = EC_KEY_get0_public_key(ec_pri);
-
-		if (ec_group != NULL &&
-			ec_pub_pub != NULL &&
-			ec_pri_pub != NULL &&
-			EC_POINT_cmp(ec_group, ec_pub_pub, ec_pri_pub, NULL) == 0)
+		if(EC_POINT_cmp(EC_KEY_get0_group(ec_pub), EC_KEY_get0_public_key(ec_pub), EC_KEY_get0_public_key(ec_pri), NULL))
 		{
-			_dprintf("[mssl] ec modulus match\n");
-			ret = 1;
+			_dprintf("[mssl] ec not match\n");
+			ret = 0;
 		}
 		else
 		{
-			_dprintf("[mssl] ec modulus not match\n");
-			ret = 0;
+			_dprintf("[mssl] ec match\n");
+			ret = 1;
 		}
 	}
 	else
 	{
-		_dprintf("[mssl] compare failed");
+		_dprintf("[mssl] compare failed\n");
 	}
 
 end:

@@ -523,6 +523,50 @@ error:
 	return 1;
 }
 
+#if defined(USE_IPV6) && defined(ASUSWRT)
+#define IPV6_ADDR_GLOBAL        0x0000U
+static int _get_ipv6_addr(const char *ifname, char *ipv6addr, const size_t len)
+{
+	FILE *f;
+	int ret = -1, scope, prefix;
+	unsigned char ipv6[16];
+	char dname[IFNAMSIZ], address[INET6_ADDRSTRLEN];
+
+	if(!ifname || !ipv6addr)
+		return ret;
+
+	f = fopen("/proc/net/if_inet6", "r");
+	if(!f)
+		return ret;
+
+	while (19 == fscanf(f,
+                        " %2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx %*x %x %x %*x %s",
+                        &ipv6[0], &ipv6[1], &ipv6[2], &ipv6[3], &ipv6[4], &ipv6[5], &ipv6[6], &ipv6[7], &ipv6[8], &ipv6[9], &ipv6[10], 
+                        &ipv6[11], &ipv6[12], &ipv6[13], &ipv6[14], &ipv6[15], &prefix, &scope, dname))
+	{
+		if(strcmp(ifname, dname))
+		{
+			continue;
+		}
+
+		if(inet_ntop(AF_INET6, ipv6, address, sizeof(address)) == NULL)
+		{
+			continue;
+	       }
+
+		if(scope == IPV6_ADDR_GLOBAL)
+		{
+			strlcpy(ipv6addr, address, len);
+			ret =0;
+			break;
+		}
+	}
+
+	fclose(f);
+	return ret;
+}
+#endif
+
 /*
  * Fetch IP, using any of the backends for each DDNS provider,
  * then check for address change.
@@ -530,6 +574,9 @@ error:
 static int get_address(ddns_t *ctx)
 {
 	char address[MAX_ADDRESS_LEN];
+#if defined(USE_IPV6) && defined(ASUSWRT)
+	char ip6_addr[INET6_ADDRSTRLEN] = {0};
+#endif
 	ddns_info_t *info;
 
 	info = conf_info_iterator(1);
@@ -548,6 +595,17 @@ static int get_address(ddns_t *ctx)
 				anychange++;
 				strlcpy(alias->address, address, sizeof(alias->address));
 			}
+#if defined(USE_IPV6) && defined(ASUSWRT)
+			memset(ip6_addr, 0, sizeof(ip6_addr));
+			if(nvram_get_int("ddns_ipv6_update") && !_get_ipv6_addr(iface, ip6_addr, sizeof(ip6_addr))) {
+				alias->ipv6_has_changed = strncmp(alias->ipv6_address, ip6_addr, sizeof(alias->ipv6_address)) != 0;
+				/* allow_ipv6 cannot for NO-IP and ASUS.COM */
+				if(alias->ipv6_has_changed && !allow_ipv6) {
+					memset(alias->ipv6_address, 0, sizeof(alias->ipv6_address));
+					strlcpy(alias->ipv6_address, ip6_addr, sizeof(alias->ipv6_address));
+				}
+			}
+#endif
 
 #ifdef ENABLE_SIMULATION
 			logit(LOG_WARNING, "In simulation, forcing IP# change ...");
@@ -557,8 +615,14 @@ static int get_address(ddns_t *ctx)
 
 		if (!anychange)
 			logit(LOG_INFO, "No IP# change detected for %s, still at %s", info->system->name, address);
-		else
-			logit(LOG_INFO, "Current IP# %s at %s", address, info->system->name);
+		else {
+#if defined(USE_IPV6) && defined(ASUSWRT)
+			if(ip6_addr[0] != '\0')
+				logit(LOG_INFO, "Current IP# %s<%s> at %s", address, ip6_addr, info->system->name);
+			else
+#endif
+				logit(LOG_INFO, "Current IP# %s at %s", address, info->system->name);
+		}
 
 	next:
 		info = conf_info_iterator(0);
@@ -602,8 +666,14 @@ static int check_alias_update_table(ddns_t *ctx)
 			}
 
 			alias->update_required = 1;
-			logit(LOG_NOTICE, "Update %s for alias %s, new IP# %s",
-			      override ? "forced" : "needed", alias->name, alias->address);
+#if defined(USE_IPV6) && defined(ASUSWRT)
+			if(alias->ipv6_address[0] != '\0')
+				logit(LOG_NOTICE, "Update %s for alias %s, new IP# %s<%s>",
+			      override ? "forced" : "needed", alias->name, alias->address, alias->ipv6_address);
+			else
+#endif
+				logit(LOG_NOTICE, "Update %s for alias %s, new IP# %s",
+				      override ? "forced" : "needed", alias->name, alias->address);
 		}
 
 		info = conf_info_iterator(0);
@@ -749,7 +819,7 @@ static int update_alias_table(ddns_t *ctx)
 			/* Run command or script on successful update. */
 			if (script_exec)
 				os_shell_execute(script_exec, alias->address,
-#ifdef USE_IPV6
+#if defined(USE_IPV6) && defined(ASUSWRT)
 				alias->ipv6_address,
 #endif
 				alias->name, event, rc);
@@ -775,7 +845,7 @@ static int update_alias_table(ddns_t *ctx)
 		if (RC_DDNS_RSP_RETRY_LATER == rc && !remember)
 			remember = rc;
 #ifdef ASUSWRT
-		if(nvram_match("ddns_return_code", "ddns_query") && rc != RC_OK)
+		if((nvram_match("ddns_return_code", "ddns_query") || nvram_match("ddns_return_code", ",0")) && rc != RC_OK)
 		{
 			switch (rc) {
 				/* Return these cases (define in check_error()) will retry again in Inadyn,
@@ -788,6 +858,7 @@ static int update_alias_table(ddns_t *ctx)
 				case RC_OS_INVALID_IP_ADDRESS:
 				case RC_DDNS_RSP_RETRY_LATER:
 				case RC_DDNS_INVALID_CHECKIP_RSP:
+				case RC_DDNS_RSP_NOTOK:
 					logit(LOG_WARNING, "Will retry again ...");
 					nvram_set("ddns_return_code", "ddns_query"); /* for Retry mechanism */
 					nvram_set("ddns_return_code_chk", "Time-out");
@@ -799,7 +870,6 @@ static int update_alias_table(ddns_t *ctx)
 					nvram_set("ddns_return_code_chk", "connect_fail");
 					break;
 				case RC_DDNS_RSP_NOHOST:
-				case RC_DDNS_RSP_NOTOK:
 					nvram_set("ddns_return_code", "Update failed");
 					nvram_set("ddns_return_code_chk", "Update failed");
 					break;

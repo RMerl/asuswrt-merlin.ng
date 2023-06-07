@@ -68,7 +68,7 @@ function initial_system_settings() {
 			popupHint.show_hint();
 			var hint = "<#AiMesh_Powerline_Master_Desc#>";
 			hint += "<br><br>";
-			hint += "<a  href='" + plc_master_faq_href + "' target='_blank' style='text-decoration:underline;color:#FC0;'>How to choose the best PLC master</a>";/* untranslated */
+			hint += "<a href='" + plc_master_faq_href + "' target='_blank' class='text_link'>How to choose the best PLC master</a>";/* untranslated */
 			popupHint.set_text(hint);
 			popupHint.set_btn_ok();
 			popupHint.hide_btn("cancel");
@@ -113,10 +113,10 @@ function initial_system_settings() {
 					hint += "<#AiMesh_EAP_WiFi_Node01#>"
 					hint += "<br><br>";
 					var model_list_hint = "* <#AiMesh_EAP_WiFi_Node02#><br>#MODELLIST".replace("#MODELLIST", wifi_backhaul_node_list);
-					hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
+					hint += $("<span>").addClass("text_emphasize").html(model_list_hint)[0].outerHTML;
 					hint += "<br><br>";
 					var $eap_faq = $("<span>").attr("id", "eap_faq").html("* <#AiMesh_confirm_msg12#>");
-					$eap_faq.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#1EA2FF", "text-decoration": "underline"});
+					$eap_faq.find("#wpa3FaqLink").attr("target", "_blank").addClass("text_link");
 					hint += $eap_faq[0].outerHTML;
 					popupHint.show_hint();
 					popupHint.set_text(hint);
@@ -258,7 +258,7 @@ function initial_system_settings() {
 						$hint_bg.append("<br>");
 					}
 					var $eap_faq = $("<span>").attr("id", "eap_faq").html("* <#AiMesh_confirm_msg12#>");
-					$eap_faq.find("#wpa3FaqLink").attr("target", "_blank").css({"color": "#1EA2FF", "text-decoration": "underline"});
+					$eap_faq.find("#wpa3FaqLink").attr("target", "_blank").addClass("text_link");
 					$hint_bg.append($eap_faq);
 					$hint_bg.append($("<div>").addClass("divide_line"));
 					$hint_bg.append($("<div>").html("<#AiMesh_EAP_WiFi_Settings_Confirm#>"));
@@ -502,13 +502,13 @@ function initial_system_settings() {
 			hint += "<#Setting_factorydefault_hint2#>";
 			hint += "<br><br>";
 			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#> <#AiMesh_System_Manually_Reset_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
-			hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
+			hint += $("<span>").addClass("text_emphasize").html(model_list_hint)[0].outerHTML;
 		}
 		var lan_ipaddr = httpApi.nvramGet(["lan_ipaddr"]).lan_ipaddr;
 		var lan_ipaddr_ori = '<% nvram_default_get("lan_ipaddr"); %>';
 		if(lan_ipaddr != lan_ipaddr_ori){
 			hint += "<br><br>";
-			hint += $("<span>").css("color", "#FC0").html("* <#Setting_factorydefault_iphint#>".replace("192.168.1.1", lan_ipaddr_ori).replace("\n", '<br>'))[0].outerHTML;
+			hint += $("<span>").addClass("text_emphasize").html("* <#Setting_factorydefault_iphint#>".replace("192.168.1.1", lan_ipaddr_ori).replace("\n", '<br>'))[0].outerHTML;
 		}
 		popupHint.set_text(hint);
 		popupHint.set_btn_ok(function(){
@@ -541,7 +541,7 @@ function initial_system_settings() {
 			hint += "<#Setting_factorydefault_hint2#>";
 			hint += "<br><br>";
 			var model_list_hint = "* <#AiMesh_System_Not_Support_Feature_Nodes#> <#AiMesh_System_Manually_Reboot_Node#> #MODELLIST".replace("#MODELLIST", not_support_list);
-			hint += $("<span>").css("color", "#FC0").html(model_list_hint)[0].outerHTML;
+			hint += $("<span>").addClass("text_emphasize").html(model_list_hint)[0].outerHTML;
 		}
 		popupHint.set_text(hint);
 		popupHint.set_btn_ok(function(){
@@ -707,7 +707,7 @@ $(document).ready(initial_system_settings);
 		<div class="hover_pop_hint_bg eap">
 			<#AiMesh_Ethernet_Backhaul_Mode_Hint#>
 			<br>
-			<span style="color:#FC0"><#AiMesh_Ethernet_Backhaul_Mode_Confirm#></span>
+			<span class="text_emphasize"><#AiMesh_Ethernet_Backhaul_Mode_Confirm#></span>
 			<#AiMesh_Ethernet_Backhaul_Mode_Confirm01#>
 		</div>
 	</div>

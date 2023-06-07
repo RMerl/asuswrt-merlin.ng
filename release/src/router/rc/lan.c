@@ -424,13 +424,7 @@ void start_wl(void)
 					eval("wlconf", ifname, "down");
 					eval("wl", "-i", ifname, "radio", "off");
 				} else{
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
-					fprintf(stderr, "[%s][%d]: using eval(wlconf(%s)) in background\n", __func__, __LINE__, ifname);
-					eval("wlconf", ifname, "start", "&"); /* start wl iface */
-					sleep(5);
-#else
 					eval("wlconf", ifname, "start"); /* start wl iface */
-#endif
 				}
 				wlconf_post(ifname);
 #endif	// CONFIG_BCMWL5
@@ -440,13 +434,7 @@ void start_wl(void)
 	}
 	else if (strcmp(lan_ifname, "")) {
 		/* specific non-bridged lan iface */
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
-		fprintf(stderr, "[%s][%d]: using eval(wlconf(%s)) in background\n", __func__, __LINE__, ifname);
-		eval("wlconf", ifname, "start", "&"); /* start wl iface */
-		sleep(5);
-#else
 		eval("wlconf", lan_ifname, "start");
-#endif
 	}
 
 #if 0
@@ -1303,6 +1291,12 @@ void start_lan(void)
 #ifdef HND_ROUTER
 	char bonding_ifnames[80];
 
+#ifdef RTCONFIG_AUTO_WANPORT
+	char autowan_detected_ifname[8];
+
+	strlcpy(autowan_detected_ifname, nvram_safe_get("autowan_detected_ifname"), sizeof(autowan_detected_ifname));
+#endif
+
 	if (!is_routing_enabled())
 		fc_init();
 #endif /* HND_ROUTER */
@@ -1807,7 +1801,7 @@ void start_lan(void)
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
 #endif
 #endif
-#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
+#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(EBA63)
 				if (!strcmp(ifname, "wl0"))
 					set_hwaddr(ifname, (const char *) nvram_safe_get("0:macaddr"));
 				if (!strcmp(ifname, "wl1"))
@@ -1861,6 +1855,10 @@ void start_lan(void)
 					// Bring UP interface
 					if (ifconfig(ifname, IFUP | IFF_ALLMULTI, NULL, NULL) != 0)
 						continue;
+#if defined(RTAX55) || defined(RTAX1800)
+					if (!strcmp(ifname, "eth1"))
+						system("ethswctl -c pause -p 1 -v 2");
+#endif
 				}
 #if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
 				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
@@ -2105,7 +2103,18 @@ void start_lan(void)
 #ifdef RTCONFIG_DPSR
 							if(!dpsr_mode() || dpsr_main(ifname))
 #endif
-							eval("brctl", "addif", lan_ifname, ifname);
+							{
+#ifdef RTCONFIG_AUTO_WANPORT
+								if(nvram_get_int("autowan_enable") &&
+												(!strcmp(autowan_detected_ifname, ifname)
+														|| (!strcmp(autowan_detected_ifname, "") && strstr(nvram_safe_get("autowan_ifnames"), ifname))
+												)
+										)
+									_dprintf("%s: skip to addif %s for auto WANPORT...\n", __func__, ifname);
+								else
+#endif
+									eval("brctl", "addif", lan_ifname, ifname);
+							}
 #ifdef RTCONFIG_DPSR
 							_dprintf("%s, chk add brif: %s (%d/%d)\n", __func__, ifname, !dpsr_mode(), dpsr_main(ifname));
 #endif
@@ -2145,6 +2154,17 @@ gmac3_no_swbr:
 			nvram_set("br0_ifnames", list);
 #endif
 		}
+
+#ifdef RTCONFIG_AUTO_WANPORT
+		if(is_auto_wanport_enabled() == 2){
+			foreach(word, nvram_safe_get("autowan_ifnames"), next) {
+				if(strcmp(autowan_detected_ifname, word)){
+					_dprintf("%s: addif %s to %s for auto WANPORT...\n", __func__, word, lan_ifname);
+					eval("brctl", "addif", lan_ifname, word);
+				}
+			}
+		}
+#endif
 
 		if (memcmp(hwaddr, "\0\0\0\0\0\0", ETHER_ADDR_LEN)) {
 			strncpy(ifr.ifr_name, lan_ifname, IFNAMSIZ);
@@ -2420,6 +2440,11 @@ _dprintf("nat_rule: stop_nat_rules 1.\n");
 	start_wanduck();
 #endif
 
+#ifdef RTCONFIG_AUTO_WANPORT
+	if(is_auto_wanport_enabled() > 0)
+		restore_auto_wanport();
+#endif
+
 #ifdef RTCONFIG_BCMWL6
 	set_acs_ifnames();
 #endif
@@ -2552,7 +2577,7 @@ void stop_lan(void)
 		|| strcmp(nvram_safe_get("amas_bdlkey"), "")
 #endif
 	) {
-		start_amas_lldpd();
+		stop_amas_lldpd();
 	}
 #endif
 
@@ -4529,7 +4554,7 @@ void stop_lan_wl(void)
 		|| strcmp(nvram_safe_get("amas_bdlkey"), "")
 #endif
 	) {
-		start_amas_lldpd();
+		stop_amas_lldpd();
 	}
 #endif	
 
@@ -5470,13 +5495,7 @@ void restart_wl(void)
 				eval("wlconf", ifname, "down");
 				eval("wl", "-i", ifname, "radio", "off");
 			} else{
-#if defined(RTCONFIG_HND_ROUTER_BE_4916)
-				fprintf(stderr, "[%s][%d]: using eval(wlconf(%s)) in background\n", __func__, __LINE__, ifname);
-				eval("wlconf", ifname, "start", "&"); /* start wl iface */
-				sleep(5);
-#else
 				eval("wlconf", ifname, "start"); /* start wl iface */
-#endif
 			}
 			wlconf_post(ifname);
 #endif	// CONFIG_BCMWL5

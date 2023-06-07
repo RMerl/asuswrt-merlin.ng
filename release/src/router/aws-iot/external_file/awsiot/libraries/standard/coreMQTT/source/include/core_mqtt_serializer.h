@@ -1,5 +1,5 @@
 /*
- * coreMQTT v1.1.1
+ * coreMQTT v1.1.2
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -33,6 +33,12 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <stdbool.h>
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON */
 
 /* MQTT_DO_NOT_USE_CUSTOM_CONFIG allows building the MQTT library
  * without a custom config. If a custom config is provided, the
@@ -1170,5 +1176,11 @@ MQTTStatus_t MQTT_GetIncomingPacketTypeAndLength( TransportRecv_t readFunc,
                                                   NetworkContext_t * pNetworkContext,
                                                   MQTTPacketInfo_t * pIncomingPacket );
 /* @[declare_mqtt_getincomingpackettypeandlength] */
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    }
+#endif
+/* *INDENT-ON* */
 
 #endif /* ifndef CORE_MQTT_SERIALIZER_H */

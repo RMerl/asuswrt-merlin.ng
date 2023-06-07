@@ -45,6 +45,22 @@ enum {
 	DB_TH_TYPE_END
 };
 
+#define DIAG_MAX_USB_HUB_PORT 6
+#define DIAG_MAX_MOCA_DEVICES 1
+
+#define DIAG_MAX_MOCA_NODES 16
+#define DIAG_MAX_MOCA_NUM_CHANNELS	5
+
+typedef struct _DIAG_MOCA_NODE_INFO
+{
+	int active;
+	int node_id;
+	char macaddr[18];
+	char moca_ver[8];
+	int phyrate[DIAG_MAX_MOCA_NODES];
+	unsigned char rx_snr[DIAG_MAX_MOCA_NODES][DIAG_MAX_MOCA_NUM_CHANNELS];
+}DIAG_MOCA_NODE_INFO;
+
 struct amas_eth_port {
 	char label_name[8];
 	unsigned int cap;
@@ -59,9 +75,8 @@ struct amas_eth_port {
 	int green_len;
 	int orange;
 	int orange_len;
-#ifdef RTCONFIG_USB
-	usb_device_info_t usb_devices[MAX_USB_HUB_PORT];
-#endif
+	usb_device_info_t usb_devices[DIAG_MAX_USB_HUB_PORT];
+	DIAG_MOCA_NODE_INFO moca_devices[DIAG_MAX_MOCA_DEVICES];
 	struct amas_eth_port *next;
 	int cable_diag_triger_link_st;
 	time_t cmd_time;
@@ -126,6 +141,8 @@ enum {
 	DB_IPERF_SERVER,
 	DB_IPERF_CLIENT,
 	DB_WLC_EVENT,
+	DB_WIFI_CBP,
+        DB_PORT_STATUS_MOCA_CHANGE,
 	DB_MAX
 };
 

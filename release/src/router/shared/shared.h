@@ -119,7 +119,7 @@ extern int PS_pclose(FILE *);
 #endif
 
 #ifdef CONFIG_BCMWL5
-#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
+#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(EBA63)
 #define WL_IF_PREFIX "wl%d"
 #define WL_IF_PREFIX_2 "wl"
 #else
@@ -361,6 +361,9 @@ static inline char *wan_if_eth(void)
 #elif defined(RTCONFIG_CONCURRENTREPEATER)
 #define DUT_DOMAIN_NAME "www.asusrouter.com"
 #define OLD_DUT_DOMAIN_NAME "repeater.asus.com"
+#elif defined(RTCONFIG_BUSINESS)
+#define DUT_DOMAIN_NAME "expertwifi.net"
+#define OLD_DUT_DOMAIN_NAME "www.asusrouter.com"
 #else
 #define DUT_DOMAIN_NAME "www.asusrouter.com"
 #define OLD_DUT_DOMAIN_NAME "router.asus.com"
@@ -523,6 +526,12 @@ enum {
 #define CFG_PREFIX      "CFG"
 #define AMAS_PORTSTATUS_PREFIX	"PORTSTATUS"
 #define CFG_ALLCHANRADAR		"ALLCHANRADAR"
+
+#define CFG_CONNDIAG_MIX_MODE 0xF000  // same with DIAGMODE_MIX in rc/conn_diag.h
+#define CFG_CONNDIAG_PREFIX_PORTSTATUS "<PORTSTATUS"
+#define CFG_CONNDIAG_PORTSTATUS "cd_portstatus_resend"
+#define CFG_CONNDIAG_PORTSTATUS_PATH "/tmp/cd_portstatus_resend.json"
+
 /* string for wl band */
 #define CFG_WL_STR_2G	"2G"
 #define CFG_WL_STR_5G	"5G"
@@ -551,6 +560,7 @@ enum conndiagEvent {
 	EID_CD_CFG_RADAR_ALL,
 	EID_CD_PS_CD_RET,
 	EID_CD_PS_USB_CHANGE,
+	EID_CD_PS_MOCA_CHANGE,
 	EID_CD_MAX
 };
 #define RAST_IPC_MAX_CONNECTION		5
@@ -611,6 +621,7 @@ enum conndiagEvent {
 #define CD_PS_CHANGE "PORTSTATUS_CHANGE"
 #define CD_PS_CD_RET "CABLEDIAG_RET"
 #define CD_PS_USB_CHANGE "PORTSTATUS_USB_CHANGE"
+#define CD_PS_MOCA_CHANGE "PORTSTATUS_MOCA_CHANGE"
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 #define RMD_IPC_SOCKET_PATH    "/etc/rmd_ipc_socket"
@@ -903,6 +914,10 @@ extern int nvram_valid_get_int(const char *key, int min, int max, int def);
 #ifdef HND_ROUTER
 extern char *nvram_split_get(const char *key, char *buffer, int maxlen, int maxinst);
 extern int nvram_split_set(const char *key, char *value, int size, int maxinst);
+
+/* sysdeps/api-broadcom.c */
+extern int wl_get_band(char* wlif);
+extern int wl_get_chlist_band(char* wlif);
 #endif
 
 //	extern long nvram_xget_long(const char *name, long min, long max, long def);
@@ -1287,9 +1302,14 @@ enum led_id {
  && (defined(RTAX89U) || defined(GTAXY16000) || defined(BR63))
 	PWR_USB2,
 #endif
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12) || defined(XD6_V2)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12) || defined(XD6_V2) || defined(XC5)
 	BT_RESET,
 	BT_DISABLE,
+	LED_RGB1_RED,
+	LED_RGB1_GREEN,
+	LED_RGB1_BLUE,
+#endif
+#if defined(EBA63)
 	LED_RGB1_RED,
 	LED_RGB1_GREEN,
 	LED_RGB1_BLUE,
@@ -1318,7 +1338,7 @@ enum led_id {
 	LED_RGB1_GREEN,
 	LED_RGB1_BLUE,
 #endif
-#if defined(RTAX56_XD4) || defined(XD4PRO)
+#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(XC5)
 	IND_BT,
 	IND_PA,
 #endif
@@ -1619,6 +1639,22 @@ static inline int lacp_enabled(void)
 }
 #else
 static inline int lacp_enabled(void) { return 0; }
+#endif
+
+#if defined(RTCONFIG_PAGECACHE_RATIO)
+static inline int get_pagecache_ratio(void)
+{
+	int v = nvram_get_int("pagecache_ratio");
+
+	if (v < 5)
+		v = 5;
+	if (v > 90)
+		v = 90;
+
+	return v;
+}
+#else
+static inline int get_pagecache_ratio(void) { return 90; }
 #endif
 
 /* Check Wireless band existance based on compile option only.
@@ -2173,6 +2209,7 @@ extern int get_switch_model(void);
 
 /* phy port related start */
 #define MAX_PHY_PORT 16
+#define MAX_MOCA_DEVICES 1
 // Hardware capability
 #define PHY_PORT_CAP_WAN					(1U << 0)
 #define PHY_PORT_CAP_LAN					(1U << 1)
@@ -2184,6 +2221,7 @@ extern int get_switch_model(void);
 #define PHY_PORT_CAP_USB					(1U << 7)
 #define PHY_PORT_CAP_MOBILE					(1U << 8)
 #define PHY_PORT_CAP_WANLAN					(1U << 9)
+#define PHY_PORT_CAP_MOCA					(1U << 10)
 
 // Software capability
 #define PHY_PORT_CAP_IPTV_BRIDGE			(1U << 26)
@@ -2237,6 +2275,9 @@ typedef struct _phy_info {
 	uint32_t crc_errors;
 #ifdef RTCONFIG_USB
 	usb_device_info_t usb_devices[MAX_USB_HUB_PORT];
+#endif
+#ifdef RTCONFIG_MOCA
+	MOCA_NODE_INFO moca_devices[MAX_MOCA_DEVICES];
 #endif
 } phy_info;
 
@@ -2635,7 +2676,7 @@ static inline void set_power_save_mode(void) { }
 extern int get_fa_rev(void);
 extern int get_fa_dump(void);
 #endif
-#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTCONFIG_EXT_RTL8365MB) || defined(RTCONFIG_EXT_RTL8370MB) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19)
 /* port statistic counter structure */
 typedef struct rtk_stat_port_cntr_s
 {
@@ -2704,6 +2745,12 @@ typedef struct rtk_stat_port_cntr_s
 } rtk_stat_port_cntr_t;
 #endif
 #ifdef HND_ROUTER
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO) || defined(EBG19)
+extern uint32_t rtk_get_phy_status(int port);
+extern uint32_t rtk_get_phy_speed(int port);
+extern uint32_t rtk_get_phy_duplex(int port);
+extern uint64_t rtk_get_phy_mib(int port, char *type);
+#endif
 #if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 extern uint32_t hnd_get_phy_status(int port);
 extern uint32_t hnd_get_phy_speed(int port);
@@ -2993,7 +3040,7 @@ extern int exec_and_return_string(const char *cmd, const char *keyword, char *bu
 extern int exec_and_parse(const char *cmd, const char *keyword, const char *fmt, int cnt, ...);
 extern char *iwpriv_get(const char *iface, char *cmd);
 extern int iwpriv_get_int(const char *iface, char *cmd, int *result);
-extern int readdir_wrapper(const char *path, const char *keyword, int (*handler)(const char *path, const struct dirent *de, void *arg), void *arg);
+extern int readdir_wrapper(const char *path, const char *keyword, int (*handler)(const char *path, const struct dirent *de, size_t de_size, void *arg), void *arg);
 extern char *get_qos_prefix(int unit, char *buf);
 extern int internet_ready(void);
 extern void set_no_internet_ready(void);
@@ -3114,7 +3161,8 @@ extern int get_ispctrl();
 extern unsigned short get_extend_cap();
 extern void wl_vif_to_subnet(const char *ifname, char *net, int len);
 extern int get_string_in_62(char *in_list, int idx, char *out, int out_len);
-extern int vpnc_use_tunnel(void);
+extern int vpns_use_tunnel(void);
+extern int vpnc_use_tunnel(int vpnc_unit, const char *proto);
 
 #ifdef RTCONFIG_TOR
 /* scripts.c */
@@ -3217,6 +3265,8 @@ static inline char *get_phy_port_cap_name(uint32_t cap, char *buf, int buf_len)
 		len += snprintf(buf+len, buf_len-len, len ? ",%s" : "%s", "mobile");
 	if (cap & PHY_PORT_CAP_WANLAN)
 		len += snprintf(buf+len, buf_len-len, len ? ",%s" : "%s", "wanlan");
+	if (cap & PHY_PORT_CAP_MOCA)
+		len += snprintf(buf+len, buf_len-len, len ? ",%s" : "%s", "moca");
 
 	// Software configure capability
 	if (cap & PHY_PORT_CAP_DUALWAN_PRIMARY_WAN)
@@ -3347,13 +3397,12 @@ static inline void add_sw_cap(phy_port_mapping *port_mapping)
 {
 	clear_all_sw_cap(port_mapping);
 
+	// Add software capability
+#if defined(RTCONFIG_DUALWAN)
 	if (!is_router_mode()) {
 		add_default_primary_wan(port_mapping);
 		return;
 	}
-
-	// Add software capability
-#if defined(RTCONFIG_DUALWAN)
 	char *wans_dualwan = nvram_safe_get("wans_dualwan");
 	if (strlen(wans_dualwan)) {
 		int unit;
@@ -3374,6 +3423,9 @@ static inline void add_sw_cap(phy_port_mapping *port_mapping)
 			}
 		}
 	}
+#else
+	if (!strcmp(nvram_safe_get("wans_cap"), "wan"))
+		add_sw_wan_cap(port_mapping, WANS_DUALWAN_IF_WAN, PHY_PORT_CAP_DUALWAN_PRIMARY_WAN);
 #endif
 #if defined(RTCONFIG_MULTICAST_IPTV)
 	add_sw_iptv_cap(port_mapping, nvram_safe_get("iptv_stb_port"), PHY_PORT_CAP_IPTV_STB);
@@ -3945,20 +3997,27 @@ extern void erase_symbol(char *old, char *sym);
 
 /* pwenc.c */
 #if defined(RTCONFIG_NVRAM_ENCRYPT) || defined(RTCONFIG_ASD)
-extern int pw_enc(const char *input, char *output);
-extern int pw_dec(const char *input, char *output, int len);
+extern int pw_enc(const char *input, char *output, int with_salt);
+extern int pw_dec(const char *input, char *output, int len, int with_salt);
 extern int pw_enc_blen(const char *input);
 extern int pw_dec_len(const char *input);
 #endif
 #ifdef RTCONFIG_NVRAM_ENCRYPT
+struct INVALID_NVRAM_GET_TABLE {
+        char *name;
+        char *exclude_process;
+};
 #define NVRAM_ENC_LEN	1024
 #define NVRAM_ENC_MAXLEN	4096
 extern int set_enc_nvram(char *name, char *input, char *output);
 extern int enc_nvram(char *name, char *input, char *output);
 extern int dec_nvram(char *name, char *input, char *output);
 extern int start_enc_nvram(void);
-extern int start_dec_nvram(void);
 extern int init_enc_nvram(void);
+extern int invalid_nvram_get_name(char *name);
+extern int invalid_nvram_get_program(char *name);
+extern int invalid_program_check(void);
+extern char *str_to_md5(const char *string, int length, char *out);
 #endif
 
 /* amas_utils.c */
@@ -4447,5 +4506,12 @@ struct devif_spdled {
 extern struct devif_spdled devif_spdled_list[];
 
 #endif
+
+#if defined(XT8_V2)
+int check_pkgtb_boardid(char *ptr_pkgtb);
+#endif
+
+extern char *make_salt(char *scheme_id, char *buf, size_t size);
+extern int asus_openssl_crypt(char *key, char *salt, char *out, int out_len);
 
 #endif	/* !__SHARED_H__ */

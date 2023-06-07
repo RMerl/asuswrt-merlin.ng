@@ -460,11 +460,11 @@ function wl_chanspec_list_change(){
 				for(var i=wl_channel_list_6g.length-1; i>=0; i--){
 					var _channel = parseInt(wl_channel_list_6g[i]);
 					if(is_EU_sku){
-						if(_channel > 221){		// remove 225, 229, 233
+						if(_channel > 221 && based_modelid == 'GT-AXE11000'){		// remove 225, 229, 233
 							wl_channel_list_6g.splice(i, 1);
 						}
 					}
-					else if(_channel < 30 || _channel > 221){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
+					else if(based_modelid == 'GT-AXE11000' && (_channel < 30 || _channel > 221)){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
 						wl_channel_list_6g.splice(i, 1);
 					}
 				}

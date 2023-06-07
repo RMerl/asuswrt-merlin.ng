@@ -1,5 +1,5 @@
 /*
- * coreMQTT v1.1.1
+ * coreMQTT v1.1.2
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -1164,8 +1164,15 @@ static MQTTStatus_t deserializeSuback( const MQTTPacketInfo_t * pSuback,
         LogDebug( ( "Packet identifier %hu.",
                     ( unsigned short ) *pPacketIdentifier ) );
 
-        status = readSubackStatus( remainingLength - sizeof( uint16_t ),
-                                   pVariableHeader + sizeof( uint16_t ) );
+        if( *pPacketIdentifier == 0U )
+        {
+            status = MQTTBadResponse;
+        }
+        else
+        {
+            status = readSubackStatus( remainingLength - sizeof( uint16_t ),
+                                       pVariableHeader + sizeof( uint16_t ) );
+        }
     }
 
     return status;
@@ -2383,7 +2390,6 @@ MQTTStatus_t MQTT_GetIncomingPacketTypeAndLength( TransportRecv_t readFunc,
     }
     else if( ( status != MQTTBadParameter ) && ( bytesReceived == 0 ) )
     {
-        LogDebug( ( "No data was received from the transport." ) );
         status = MQTTNoDataAvailable;
     }
 

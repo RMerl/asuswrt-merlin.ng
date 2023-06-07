@@ -235,6 +235,11 @@ li{
 	background: url('images/Model_product_COD.png') no-repeat;
 	background-size: 100%;
 }
+
+.phone_as_mode{
+	text-decoration: underline;
+	cursor: pointer;
+}
 </style>
 <script type="text/javascript">
 // get the wan state at the first time.
@@ -290,6 +295,8 @@ function initial(){
 		html_code += "<ul>";
 		html_code += "<li><#web_redirect_case1_suggestion1#></li>";
 		html_code += "<li><#web_redirect_case1_suggestion2#></li>";
+		if(isSupport("usb_bk"))
+			html_code += "<li><span onClick='show_phone_as_modem_hints();' class='phone_as_mode'>Use the phone as modem</span></li>";	//untranslated
 		html_code += "</ul>";
 		$("#wanLink").click(function(){
 			detect_general();
@@ -582,6 +589,12 @@ function detect_ppp_connect(){
 							
 		}
 	});									
+}
+
+function show_phone_as_modem_hints(){
+	document.cookie = "show_phone_as_modem_hints = 1;" + '; expires=' +
+	(new Date(new Date().getTime() + 86400000)).toUTCString() + '; path=/';
+	top.location.href = '/index.asp';
 }
 </script>
 

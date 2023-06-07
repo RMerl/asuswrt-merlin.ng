@@ -2284,6 +2284,8 @@ static void ice_on_ice_complete(pj_ice_strans *ice_st,
 
 	tp_ice->base.ice_retry_count = 1;//pj_ice_strans_get_transmit_count(ice_st);
 
+	pj_sockaddr_cp(&tp_ice->base.nominated_rem_addr, pj_ice_strans_get_nominated_rem_addr(ice_st));
+
     /* Notify application */
     if (tp_ice->cb.on_ice_complete)
 		(*tp_ice->cb.on_ice_complete)(&tp_ice->base, op, result, turn_mapped_addr);

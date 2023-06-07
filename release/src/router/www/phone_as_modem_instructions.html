@@ -1,0 +1,96 @@
+<style type="text/css">
+.phone_main_content{
+	width: 100%;
+	display: flex;
+	justify-content:
+	space-around;
+	margin-top: 33px;
+}
+
+.phone_title{
+	color: #FFFFFF;
+	font-weight: bold;
+	font-size: 1.6em;
+	line-height: normal;
+	letter-spacing: 0px;
+	text-align: left;
+}
+
+.instruction_text{
+	color: #FFFFFF;
+	font-size: 1em;
+	margin-top: 20px;
+}
+
+.instruction_text li{
+	margin-top: 20px;
+}
+
+.person_hotspot{
+	width: 300px;
+	height: 128px;
+	background-image: url(images/phone_as_modem/personal_hotspot_EN.jpg);
+	background-size: contain;
+	margin-top: 20px
+}
+
+.trust_computer{
+	width: 300px;
+	height: 200px;
+	background: url(images/phone_as_modem/trust_computer_EN.jpg) no-repeat center/contain;
+	margin-top: 10px;
+}
+
+.android_tethering{
+	width: 300px;
+	height: 300px;
+	background: url(images/phone_as_modem/android_tethering_EN.jpg) no-repeat center/contain;
+	margin-top: 10px;
+}
+</style>
+<div style="width: 100%;">
+	<div class="phone_main_content">
+		<div style="width: 45%;">
+			<div class="phone_title">iPhone</div>
+			<div class="instruction_text">
+			<ol>
+				<li>Go to Settings > Cellular, tap Set Up Personal Hotspot, and make sure that it's on.</li>
+				<div class="person_hotspot"></div>
+				<li>Plug your mobile phone to your router's USB port.</li>
+				<li>Tap Trust button if you receive an alert that says 'Trust This Computer?' Tap Trust</li>
+				<div class="trust_computer"></div>
+			</ol>
+			</div>
+		</div>
+		<div style="width: 45%;">
+			<div class="phone_title">Android</div>
+			<div class="instruction_text">
+				<ol>
+					<li>Plug your mobile phone to your router's USB port.</li>
+					<li>Go to your network setting of your Android phone.</li>
+					<li>Turn on USB tethering.</li>
+					<div class="android_tethering"></div>
+				</ol>
+			</div>
+		</div>
+	</div>
+</div>
+<script>
+	var lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+	var image_url = "";
+
+	if(lang == "TW" || lang == "JP" || lang == "CN"){
+		image_url = "images/phone_as_modem/personal_hotspot_" + lang + ".jpg";
+		$(".person_hotspot").css("background-image","url(" + image_url + ")");
+	}
+
+	if(lang == "TW" || lang == "JP" || lang == "CN"){
+		image_url = "images/phone_as_modem/trust_computer_" + lang + ".jpg";
+		$(".trust_computer").css("background-image","url(" + image_url + ")");
+	}
+
+	if(lang == "TW" || lang == "JP" || lang == "CN"){
+		image_url = "images/phone_as_modem/android_tethering_" + lang + ".jpg";
+		$(".android_tethering").css("background-image","url(" + image_url + ")");
+	}
+</script>

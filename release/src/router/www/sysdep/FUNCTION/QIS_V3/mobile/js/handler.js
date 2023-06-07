@@ -94,6 +94,7 @@ apply.changeOpMode = function(){
 }
 
 apply.login = function(){
+	var use_defpass = $("#defpass_checkbox").prop("checked");
 	var isValidInputs = function(){
 		String.prototype.getTrimString = function(){
 			var tmpString = this + '';
@@ -106,7 +107,11 @@ apply.login = function(){
 		var httpPassInput = $("#http_passwd");
 		var httpPassConfirmInput = $("#http_passwd_confirm");
 
-		if(hasBlank([httpUserInput, httpPassInput, httpPassConfirmInput])) return false;
+		if(hasBlank([httpUserInput])) return false;
+
+		if(!use_defpass){
+			if(hasBlank([httpPassInput, httpPassConfirmInput])) return false;
+		}
 
 		/* check user name */
 		var isValidHostName = validator.hostNameString(httpUserInput.val())
@@ -121,48 +126,49 @@ apply.login = function(){
 		}
 
 		/* check password */
-		if(isSku("KR") || isSku("SG") || isSku("AA")){
-			var isValidKRSkuPwd = validator.KRSkuPwd(httpPassInput.val())
-			if(isValidKRSkuPwd.isError){
-				httpPassInput.showTextHint(isValidKRSkuPwd.errReason);
+		if(!use_defpass){
+			if(isSku("KR") || isSku("SG") || isSku("AA")){
+				var isValidKRSkuPwd = validator.KRSkuPwd(httpPassInput.val())
+				if(isValidKRSkuPwd.isError){
+					httpPassInput.showTextHint(isValidKRSkuPwd.errReason);
+					return false;
+				}
+
+				if(httpPassInput.val() == httpUserInput.val()){
+					httpPassInput.showTextHint("<#JS_validLoginPWD#>");
+					return false;
+				}
+			}
+
+			if(httpPassInput.val() != httpPassConfirmInput.val()){
+				httpPassInput.showTextHint("<#File_Pop_content_alert_desc7#>");
 				return false;
 			}
-		
 
-			if(httpPassInput.val() == httpUserInput.val()){
-				httpPassInput.showTextHint("<#JS_validLoginPWD#>");
+			if(httpPassInput.val() == systemVariable.default_http_passwd){
+				httpPassInput.showTextHint("<#QIS_adminpass_confirm0#>");
 				return false;
 			}
-		}	
-
-		if(httpPassInput.val() != httpPassConfirmInput.val()){
-			httpPassInput.showTextHint("<#File_Pop_content_alert_desc7#>");
-			return false;
-		}
-
-		if(httpPassInput.val() == systemVariable.default_http_passwd){
-			httpPassInput.showTextHint("<#QIS_adminpass_confirm0#>");
-			return false;
-		}	
-		else if(httpPassInput.val().length < 5){
-			httpPassInput.showTextHint("<#JS_short_password#> <#JS_password_length#>");
-			return false;
-		}
-		else if(httpPassInput.val().length > 32){
-			httpPassInput.showTextHint("<#JS_max_password#>");
-			return false;
-		}
-
-		var isValidChar = validator.invalidChar(httpPassInput.val())
-		if(isValidChar.isError){
-			httpPassInput.showTextHint(isValidChar.errReason);
-			return false;
-		}	
-
-		if(isWeakString(httpPassInput.val(), "httpd_password")){
-			if(!confirm("<#JS_common_passwd#>")){
-				httpPassInput.showTextHint("<#AiProtection_scan_note11#>");
+			else if(httpPassInput.val().length < 5){
+				httpPassInput.showTextHint("<#JS_short_password#> <#JS_password_length#>");
 				return false;
+			}
+			else if(httpPassInput.val().length > 32){
+				httpPassInput.showTextHint("<#JS_max_password#>");
+				return false;
+			}
+
+			var isValidChar = validator.invalidChar(httpPassInput.val())
+			if(isValidChar.isError){
+				httpPassInput.showTextHint(isValidChar.errReason);
+				return false;
+			}
+
+			if(isWeakString(httpPassInput.val(), "httpd_password")){
+				if(!confirm("<#JS_common_passwd#>")){
+					httpPassInput.showTextHint("<#AiProtection_scan_note11#>");
+					return false;
+				}
 			}
 		}
 
@@ -171,7 +177,14 @@ apply.login = function(){
 
 	if(isValidInputs()){
 		qisPostData.http_username = $("#http_username").val();
-		qisPostData.http_passwd = $("#http_passwd").val();
+		if(!use_defpass){
+			qisPostData.http_passwd = $("#http_passwd").val();
+			qisPostData.defpass_enable = "0";
+		}
+		else{
+			qisPostData.http_passwd = "";
+			qisPostData.defpass_enable = "1";
+		}
 
 		if(systemVariable.forceChangePwInTheEnd){
 			if(isSwMode("RP"))
@@ -224,7 +237,7 @@ apply.manual = function(){
 			}
 		}
 
-		if(isSupport("2p5G_LWAN") || isSupport("10G_LWAN") || isSupport("10GS_LWAN") || Object.keys(systemVariable.eth_wan_list).length > 1){
+		if(isSupport("2p5G_LWAN") || isSupport("10G_LWAN") || isSupport("10GS_LWAN") || Object.keys(systemVariable.eth_wan_list).length > 1 || isSupport("usb_bk")){
 			goTo.WANOption();
 		}
 		else if(isSupport("nowan"))
@@ -397,6 +410,12 @@ apply.v6plus = function(){
 	}
 
 	if(isWANChanged()){
+		$.ajax({
+			url: "/s46reset.cgi",
+
+			success: function( response ) {
+			}
+		});
 		httpApi.nvramSet((function(){
 			qisPostData.action_mode = "apply";
 			qisPostData.rc_service = "restart_wan_if " + systemVariable.ethWanIf;
@@ -416,6 +435,12 @@ apply.ocnvc = function(){
 	}
 	
 	if(isWANChanged()){
+		$.ajax({
+			url: "/s46reset.cgi",
+
+			success: function( response ) {
+			}
+		});
 		httpApi.nvramSet((function(){
 			qisPostData.action_mode = "apply";
 			qisPostData.rc_service = "restart_wan_if " + systemVariable.ethWanIf;
@@ -1129,11 +1154,14 @@ apply.wireless = function(){
 	}
 
 	if(systemVariable.productid == 'GT10' && qisPostData.smart_connect_x == '1'){
-		qisPostData.wl1_ssid = qisPostData.wl0_ssid;
-		qisPostData.wl1_wpa_psk = qisPostData.wl0_wpa_psk;
-		qisPostData.wl1_auth_mode_x = qisPostData.wl0_auth_mode_x;
-		qisPostData.wl1_crypto = qisPostData.wl0_crypto;
-		qisPostData.wl1_mfp = qisPostData.wl0_mfp;
+		if(dwb_mode != "1"){
+			qisPostData.wl1_ssid = qisPostData.wl0_ssid;
+			qisPostData.wl1_wpa_psk = qisPostData.wl0_wpa_psk;
+			qisPostData.wl1_auth_mode_x = qisPostData.wl0_auth_mode_x;
+			qisPostData.wl1_crypto = qisPostData.wl0_crypto;
+			qisPostData.wl1_mfp = qisPostData.wl0_mfp;
+		}
+
 		qisPostData.wl2_ssid = qisPostData.wl0_ssid;
 		qisPostData.wl2_wpa_psk = qisPostData.wl0_wpa_psk;
 		qisPostData.wl2_auth_mode_x = qisPostData.wl0_auth_mode_x;
@@ -1181,7 +1209,13 @@ apply.submitQIS = function(){
 		}
 
 		if(qisPostData.hasOwnProperty("http_username") || qisPostData.hasOwnProperty("http_passwd")){
-			var postData = {"restart_httpd": "0", "new_username":qisPostData.http_username, "new_passwd":qisPostData.http_passwd};
+			var postData = {
+				"restart_httpd": "0", 
+				"new_username":qisPostData.http_username, 
+				"new_passwd":qisPostData.http_passwd, 
+				"defpass_enable":qisPostData.defpass_enable
+			};
+
 			httpApi.log("apply.submitQIS", "qisPostData.http_username = "+qisPostData.http_username, systemVariable.qisSession);
 			httpApi.log("apply.submitQIS", "qisPostData.http_passwd = "+qisPostData.http_passwd, systemVariable.qisSession);
 			httpApi.log("apply.submitQIS", "chpass", systemVariable.qisSession);
@@ -1359,6 +1393,14 @@ apply.WANModem = function(){
 	}
 	goTo.Modem();
 };
+
+apply.USBBackup = function(){
+	console.log("apply.USBBackup");
+	systemVariable.wanOption = true;
+
+	goTo.PhoneAsWAN();
+};
+
 apply.amasonboarding = function(){
 	var onboardingSearch = function(){
 		httpApi.nvramSet({"action_mode": "onboarding"})
@@ -1961,7 +2003,6 @@ abort.wireless = function(){
 	postDataModel.remove(fronthaulNetworkObj);
 
 	if(isSupport("dsl")){
-
 		postDataModel.remove(dsltmpQISObj);
 		postDataModel.remove(dslIPTVObj);
 		apply.welcome();
@@ -2018,6 +2059,9 @@ abort.wireless = function(){
 		}
 		else if(systemVariable.detwanResult.wanType == "DHCPSPECIALISP"){
 			goTo.loadPage(systemVariable.historyPage[systemVariable.historyPage.length-2], true);
+		}
+		else if(systemVariable.historyPage[systemVariable.historyPage.length-2] == "phone_as_modem"){
+			goTo.loadPage("phone_as_modem", true);
 		}
 		else{
 			goTo.loadPage("wan_setting", true);
@@ -2345,6 +2389,49 @@ goTo.advSetting = function(){
 }
 
 goTo.Login = function(){
+	$("#defpass_checkbox").change(function(e){
+		var curStatus = $(this).prop("checked");
+
+		if(curStatus){
+			$("#http_username")
+				.val(httpApi.nvramDefaultGet(["http_username"]).http_username)
+				.showTextHint("")
+
+			$("#http_passwd")
+				.val("**************")
+				.prop('disabled', true)
+				.css({opacity: "0.3"})
+				.next("#scorebarBorder").hide()
+				.showTextHint("")
+
+			$("#http_passwd_confirm")
+				.val("")
+				.prop('disabled', true)
+				.css({opacity: "0.3"})
+				.showTextHint("")
+
+			$("#http_passwd_confirm_container").hide();
+			var $secureInputObj = $("#login_name .secureInput");
+			$secureInputObj.hide();
+			if($secureInputObj.hasClass("icon_eye_open")){
+				$secureInputObj.click()
+			}
+		}
+		else{
+			$("#http_passwd")
+				.val("")
+				.prop('disabled', false)
+				.css({opacity: "1"})
+
+			$("#http_passwd_confirm")
+				.prop('disabled', false)
+				.css({opacity: "1"})
+
+			$("#http_passwd_confirm_container").show();
+			$("#login_name .secureInput").show();
+		}
+	})
+
 	postDataModel.insert(userObj);
 
 	$("#http_username")
@@ -2367,6 +2454,34 @@ goTo.Login = function(){
 				apply.login();
 			}
 		});
+
+	if(isSku("KR") || isSku("SG") || isSku("AA")){
+		$("#login_passwd_KR").show();
+	}
+
+	if(isSupport("defpass")){
+		$("#defpass_checkbox").enableCheckBox(true);
+		$("#defpass_checkbox").change();
+		$("#login_name .titleMain").html("Local Login");/* untranslated */
+		$("#login_name #login_desc").html("Set up Local Login username and password to prevent unauthorized access to your ASUS networking device.");/* untranslated */
+		$("#login_name #http_username_title").html("<#HSDPAConfig_Username_itemname#>");
+		$("#local_login_title_container").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var $page_cntr = $(this).closest("[data-role=page]");
+			$page_cntr.find(".qis_container").addClass("filter_effect");
+			$page_cntr.find(".popup_element").css("display", "flex");
+			adjust_popup_container_top($(".popup_container.popup_element"), 100);
+		}).find("[data-component=title_text]").html("How to find #DEFPASSTYPE".replace("#DEFPASSTYPE", "Local Login Password"));/* untranslated */
+		$("#local_login_guideline_close").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var $page_cntr = $(this).closest("[data-role=page]");
+			$page_cntr.find(".popup_element").hide();
+			$page_cntr.find(".qis_container").removeClass("filter_effect");
+		});
+		$("#local_login_guideline_desc").html("#DEFPASSTYPE can be found on the label at the back/bottom of your ASUS device.".replace("#DEFPASSTYPE", "Local Login Password"));/* untranslated */
+	}
 
 	goTo.loadPage("login_name", false);
 };
@@ -3608,6 +3723,25 @@ goTo.Wireless = function(){
 	}
 */
 
+	if(isSupport("defpsk")){
+		$("#wifi_conn_title_container").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var $page_cntr = $(this).closest("[data-role=page]");
+			$page_cntr.find(".qis_container").addClass("filter_effect");
+			$page_cntr.find(".popup_element").css("display", "flex");
+			adjust_popup_container_top($(".popup_container.popup_element"), 100);
+		}).find("[data-component=title_text]").html("How to find #DEFPASSTYPE".replace("#DEFPASSTYPE", "WiFi Password"));/* untranslated */
+		$("#wifi_conn_guideline_close").unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+			var $page_cntr = $(this).closest("[data-role=page]");
+			$page_cntr.find(".popup_element").hide();
+			$page_cntr.find(".qis_container").removeClass("filter_effect");
+		});
+		$("#wifi_conn_guideline_desc").html("#DEFPASSTYPE can be found on the label at the back/bottom of your ASUS device.".replace("#DEFPASSTYPE", "WiFi Password"));/* untranslated */
+	}
+
 	goTo.loadPage("wireless_setting", false);
 };
 
@@ -3705,6 +3839,11 @@ goTo.PUK = function(){
 	$("#puk_remaing_num").html(remaing_num);
 	goTo.loadPage("simpuk_setting", false);
 };
+
+goTo.PhoneAsWAN = function(){
+	$("#phone_as_modem_instructions").load("/phone_as_modem_instructions.html");
+	goTo.loadPage("phone_as_modem", false);
+}
 
 goTo.Update = function(){
 	var applyBtn = (systemVariable.isNewFw == 2) ? "<#CTL_UpgradeNow#>" : "<#CTL_upgrade#>";
@@ -4344,7 +4483,7 @@ goTo.Yadns = function(){
 };
 
 goTo.WANOption = function(){
-	if(!hadPlugged("modem"))
+	if(!hadPlugged("modem") || isSupport("usb_bk"))
 		$("#wanOption_setting").find(".modem").hide();
 	if(!isSupport("2p5G_LWAN"))
 		$("#wanOption_setting").find(".LWAN_2p5G").hide();
@@ -4381,6 +4520,22 @@ goTo.WANOption = function(){
 		});
 	}
 
+	if(isSupport("usb_bk") && $('#wanOptions').find('#usb_bk').length == 0){
+		var first_container = $("<div>").addClass("selectorContainer").appendTo($("#wanOptions"));
+		var second_container = $("<div>").addClass("selectorContainerDiv");
+		var title_div = $("<div>")
+						.attr("id", "usb_bk")
+						.addClass("selectBar")
+						.html("USB")
+						.click(function(){
+							apply.USBBackup();
+						});
+		second_container.append(title_div);
+		var narrowContainer_div = $("<div>").addClass("narrowContainer");
+		narrowContainer_div.append('<div class="icon_arrow_right" style="width:20px;height:32px;"></div>');
+		second_container.append(narrowContainer_div);
+		first_container.append(second_container);
+	}
 	goTo.loadPage("wanOption_setting", false);
 };
 goTo.amasbundle = function(){
@@ -4435,6 +4590,8 @@ goTo.amasearch = function(){
 					if(nodeInfo.source == "2"){
 						if(nodeInfo.type != undefined && nodeInfo.type == "65536")
 							$('#onboardinglist').find('#' + nodeInfo.id + '').find(".aimesh_band_icon").removeClass().addClass('icon_plc aimesh_band_icon');
+						else if(nodeInfo.type != undefined && nodeInfo.type == "131072")
+							$('#onboardinglist').find('#' + nodeInfo.id + '').find(".aimesh_band_icon").removeClass().addClass('icon_moca aimesh_band_icon');
 						else
 							$('#onboardinglist').find('#' + nodeInfo.id + '').find(".aimesh_band_icon").removeClass().addClass('icon_wired aimesh_band_icon');
 					}

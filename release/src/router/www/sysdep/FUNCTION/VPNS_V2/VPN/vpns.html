@@ -135,7 +135,7 @@ function show_vpn_serverlist(){
 	}
 /*
 	if(isSupport("openvpnd")){
-		var openvpn_settings = httpApi.nvramGet(["VPNServer_enable", "enable_samba"], true);
+		var VPNServer_enable = httpApi.nvramGet(["VPNServer_enable"], true).VPNServer_enable;
 		var $svr_item_container = $("<div>").addClass("svr_item_container").attr({"type":"openvpn"});
 		$("#srv_profile_list").append($svr_item_container);
 
@@ -165,7 +165,7 @@ function show_vpn_serverlist(){
 		var $svr_item_switch_container = $("<div>").addClass("svr_item_switch_container");
 		$svr_item_switch_container.appendTo($svr_item_container);
 		var $switch_icon = $("<div>").addClass("switch");
-		if(openvpn_settings.VPNServer_enable == "1")
+		if(VPNServer_enable == "1")
 			$switch_icon.addClass("on");
 		else
 			$switch_icon.addClass("off");
@@ -187,6 +187,7 @@ function show_vpn_serverlist(){
 			}
 			var $this_switch_icon = $(this).find(".switch");
 			$this_switch_icon.toggleClass("off on").promise().done(function(){
+				var openvpn_settings = httpApi.nvramGet(["enable_samba", "vpn_serverx_dns"], true);
 				var nvramSet_obj = {"action_mode": "apply"};
 				if($this_switch_icon.hasClass("on")){
 					nvramSet_obj.rc_service = "restart_openvpnd;restart_chpass;";
@@ -198,6 +199,9 @@ function show_vpn_serverlist(){
 				}
 				if(openvpn_settings.enable_samba == "1"){
 					nvramSet_obj.rc_service += "restart_samba;";
+				}
+				if(openvpn_settings.vpn_serverx_dns != ""){
+					nvramSet_obj.rc_service += "restart_dnsmasq;";
 				}
 
 				httpApi.nvramSet(nvramSet_obj, function(){

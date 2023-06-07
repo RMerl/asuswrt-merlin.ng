@@ -657,12 +657,34 @@
 	justify-content: flex-start;
 	align-items: center;
 }
+.btn_item .btn_container .text.create_ssk_account{
+	color: rgb(255, 255, 255);
+	font-size: 12px;
+	letter-spacing: 1.25px;
+	position: relative;
+	width: 155px;
+	height: 100%;
+	word-break: break-word;
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+}
 .btn_item .btn_container .text.import_file:before, .btn_item .btn_container .text.create_account:before{
 	position: absolute;
 	content: "";
 	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
 	background-repeat: no-repeat;
 	background-position: 0px -163px;
+	width: 24px;
+	height: 24px;
+	left: -40px;
+}
+.text.create_ssk_account:before{
+	position: absolute;
+	content: "";
+	background-image: url(/images/New_ui/vpn_icon_all_collect.svg);
+	background-repeat: no-repeat;
+	background-position: -50px -163px;
 	width: 24px;
 	height: 24px;
 	left: -40px;
@@ -1540,6 +1562,11 @@
 		background-color: rgb(89, 110, 116);
 		border: 2px solid #1E2A41;
 	}
+}
+
+.ssk_promote{
+	max-width: 360px;
+	max-height: 155px;
 }
 @media (min-width: 992px) {
 	.profile_setting_item, .popup_container .popup_content_container .profile_setting_item{

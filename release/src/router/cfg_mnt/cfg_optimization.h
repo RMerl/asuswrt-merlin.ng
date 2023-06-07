@@ -56,6 +56,12 @@ enum optTrigger {
 	OPT_TRIGER_MAX
 };
 
+enum bandType {
+	BAND_TYPE_2G = 2,
+	BAND_TYPE_5G = 5,
+	BAND_TYPE_6G = 6
+};
+
 struct optArgStruct {
 	int newUpdate;
 	int optTrigger;

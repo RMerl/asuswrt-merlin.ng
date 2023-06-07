@@ -83,10 +83,8 @@ void *cm_ipcPacketHandler(void *args)
 
     if (root) {
       json_object_object_get_ex(root, "function_name", &o_func_name);
-
       if (o_func_name) {
         const char *func_name = json_object_get_string(o_func_name);
-        
         if (!strcmp(func_name, "send_message")) {
           json_object *o_topic = NULL;
           json_object *o_msg = NULL;
@@ -96,13 +94,11 @@ void *cm_ipcPacketHandler(void *args)
           if (o_topic && o_msg) {
             const char *topic = json_object_get_string(o_topic);
             const char *msg = json_object_get_string(o_msg);
-            
-            Cdbg(APC_DBG, "topic = %s", topic);
-            Cdbg(APC_DBG, "msg = %s", msg);
-
+            LogInfo( ( "%s topic = %s", __FUNCTION__, topic) );
+            LogInfo( ( "%s msg = %s", __FUNCTION__, msg) );
             publish_router_service_topic(topic, msg);
           } else {
-            Cdbg(APC_DBG, "topic or msg is invalid");
+            LogInfo( ( "%s topic or msg is invalid", __FUNCTION__) );
           }
         } else if (!strcmp(func_name, "tunnel_status")) {
           char result[64];
@@ -115,6 +111,17 @@ void *cm_ipcPacketHandler(void *args)
           } else {
             LogInfo( ( "%s status is invalid", __FUNCTION__) );
           }
+        } else if (!strcmp(func_name, "tunnel_test")) {
+          /*
+          {
+              "function_name": "tunnel_test",
+              "source": "device id",
+              "target": "device id",
+              "type": "relay/p2p/unknown",
+              "error": "0/404/..."
+          }
+          */
+          // TODO : publish it
         }
       }
 

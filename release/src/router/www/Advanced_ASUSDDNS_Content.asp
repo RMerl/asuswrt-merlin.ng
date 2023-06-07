@@ -95,6 +95,7 @@ var oauth_auth_status = httpApi.nvramGet(["oauth_auth_status"], true).oauth_auth
 var aae_ddnsinfo = httpApi.nvramGet(["aae_ddnsinfo"], true).aae_ddnsinfo;
 var ipv6_service = httpApi.nvramGet(["ipv6_service"], true).ipv6_service;
 var asusddns_token_state = httpApi.nvramGet(["asusddns_token_state"], true).asusddns_token_state;
+var ddns_accournt_remove_note = stringSafeGet("<#asusddns_rm_account_hint#>");
 
 function init(){
 	show_menu();
@@ -237,11 +238,18 @@ function show_deregister_btn(){
 	$("#deregister_btn").css("display", "inline");
 	if(asusddns_token_state == "1"){
 		$("#deregister_btn").click(function(){
-			alert("The host name has been bound to the login account of the router app, please delete/deregister it from the router app.");//untranslated
+			alert(ddns_accournt_remove_note);
 		});
 	}
 	else{
 		$("#deregister_btn").click(function(){
+			if(orig_le_enable != "0"){
+				var confirm_msg = "Your certification will be removed! You will be automatically logged out for the renewal. Please log in again for further configuration.";//untranslated
+				if(!confirm(confirm_msg)){
+					return false;
+				}
+			}
+
 			showLoading();
 			asuscomm_deregister();
 		});
@@ -879,6 +887,19 @@ function asuscomm_deregister(){
 	});
 }
 
+function clean_ddns(){
+	$.ajax({
+		url: "/clean_ddns.cgi",
+
+		success: function( response ) {
+			setTimeout(function(){
+			alert("<#LANHostConfig_x_DDNS_alarm_16#>");
+			refreshpage();
+			}, 2000);
+		}
+	});
+}
+
 var max_retry_count = 6;
 var retry_count = 0;
 function check_unregister_result(){
@@ -900,8 +921,7 @@ function check_unregister_result(){
 
 	if(timeout || return_status != ""){
 		if(return_status == "200"){
-			alert("<#LANHostConfig_x_DDNS_alarm_16#>");
-			refreshpage();
+			clean_ddns();
 		}
 		else{
 			hideLoading();

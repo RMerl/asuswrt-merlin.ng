@@ -19,7 +19,7 @@
 // traffic_analyzer.c
 extern int traffic_analyzer_main(int argc, char **argv);
 extern int sql_integrity_check(sqlite3 *db, char *db_path);
-extern void sql_remove_journal(char *db_file);
+extern int sql_remove_journal(char *db_file);
 
 // sqlite_stat.c
 extern int sql_get_table(sqlite3 *db, const char *sql, char ***pazResult, int *pnRow, int *pnColumn);

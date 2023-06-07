@@ -2005,7 +2005,7 @@ int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id)
 
 				for(i = 0; i < policy_cnt; ++i)
 				{
-					if(dev_policy[i].active && !strcmp(dev_policy[i].iif[0], word))
+					if(dev_policy[i].active && !strcmp(dev_policy[i].iif, word))
 					{
 						flag = 1;
 						break;

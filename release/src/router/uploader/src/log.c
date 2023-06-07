@@ -18,7 +18,7 @@ int facility = LOG_USER;
 int g_stream_type =0;
 int priority = LOG_ERR | LOG_USER;
 int g_is_log_opened =0;
-long FILE_MAX_SIZE = 1048576;
+long FILE_MAX_SIZE = 2048576;
 
 #define API_DBG 1
 
@@ -111,11 +111,11 @@ void close_log()
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...)
 {
 
-    long filesize = file_size(FEEDBACK_LOG_PATH);
+    long filesize = file_size(APP_LOG_PATH);
 
     // if File > 512K , downsizing -> 1200 line
     if(filesize > FILE_MAX_SIZE) {
-        feedback_log_downsizing();
+        upload_log_downsizing();
     }
 
     va_list ap;
@@ -196,9 +196,9 @@ long file_size(const char* filename)
 
 
 
-void feedback_log_downsizing() {
+void upload_log_downsizing() {
 
-// int file_number = get_file_number(FEEDBACK_LOG_PATH);
+// int file_number = get_file_number(APP_LOG_PATH);
 
 // if(file_number >= 1200) {
 
@@ -206,18 +206,18 @@ void feedback_log_downsizing() {
 
   char file_info[1023];
 
-  if ((fp = fopen(FEEDBACK_LOG_PATH, "r")) == NULL) {
+  if ((fp = fopen(APP_LOG_PATH, "r")) == NULL) {
 
-      Cdbg(API_DBG, "%s open_file_error", FEEDBACK_LOG_PATH);
+      Cdbg(API_DBG, "%s open_file_error", APP_LOG_PATH);
 
       return;
   }
   
 
-  FILE *fpTmp = fopen(FEEDBACK_LOG_TMP_PATH, "a+");
+  FILE *fpTmp = fopen(APP_LOG_TMP_PATH, "a+");
 
   if( NULL == fpTmp ){
-    Cdbg(API_DBG, "write [%s] file error -> open failure", FEEDBACK_LOG_TMP_PATH);
+    Cdbg(API_DBG, "write [%s] file error -> open failure", APP_LOG_TMP_PATH);
     return;
   }
 
@@ -246,20 +246,20 @@ void feedback_log_downsizing() {
 
   fclose(fp);
 
-    // remove FEEDBACK_LOG_TMP_PATH to FEEDBACK_LOG_PATH
-  if(remove(FEEDBACK_LOG_PATH) == 0 ) {
+    // remove APP_LOG_TMP_PATH to APP_LOG_PATH
+  if(remove(APP_LOG_PATH) == 0 ) {
 
     char cmd[128];
 
-    snprintf(cmd, 128, "mv %s %s", FEEDBACK_LOG_TMP_PATH, FEEDBACK_LOG_PATH);
+    snprintf(cmd, 128, "mv %s %s", APP_LOG_TMP_PATH, APP_LOG_PATH);
     int ret = system(cmd);
     if(ret == 0) {
-      Cdbg(API_DBG, "feedback log [%s] rename to [%s] successfully ", FEEDBACK_LOG_TMP_PATH, FEEDBACK_LOG_PATH);
+      Cdbg(API_DBG, "feedback log [%s] rename to [%s] successfully ", APP_LOG_TMP_PATH, APP_LOG_PATH);
     } else {
-      Cdbg(API_DBG, "Error: [%s] unable rename to [%s]", FEEDBACK_LOG_TMP_PATH, FEEDBACK_LOG_PATH);
+      Cdbg(API_DBG, "Error: [%s] unable rename to [%s]", APP_LOG_TMP_PATH, APP_LOG_PATH);
     }
   } else {
-    Cdbg(API_DBG, "error : remove [%s] file fail", FEEDBACK_LOG_PATH);
+    Cdbg(API_DBG, "error : remove [%s] file fail", APP_LOG_PATH);
   }
 
 
@@ -324,17 +324,17 @@ void get_fp(const char* log_path)
 {
     FILE* fp = NULL;
     if (!log_path) {
-        //	fp = stderr;
+        //  fp = stderr;
         gfp = stderr;
     } else {
-//		char path [LOG_PATH_LEN]={0};
+//      char path [LOG_PATH_LEN]={0};
         char* ts;
         alloc_time_string(LOG_PATH_EXT, 0, &ts);
         int len = strlen(log_path)+strlen(ts)+2;
         char* path = malloc(len); memset(path, 0, len);
         strcpy(path,log_path );
         strcat(path, ts);
-//		sprintf(path,"%s%s", log_path,ts);
+//      sprintf(path,"%s%s", log_path,ts);
         dealloc_time_string(ts);
         fp = fopen(path, "w+");
         if (!fp) {

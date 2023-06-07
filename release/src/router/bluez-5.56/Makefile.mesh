@@ -1,0 +1,53 @@
+# SPDX-License-Identifier: GPL-2.0
+if MESH
+
+if DATAFILES
+dbus_DATA += mesh/bluetooth-mesh.conf
+endif
+
+if SYSTEMD
+systemdsystemunit_DATA += mesh/bluetooth-mesh.service
+dbussystembus_DATA += mesh/org.bluez.mesh.service
+endif
+
+mesh_sources = mesh/mesh.h mesh/mesh.c \
+				mesh/net-keys.h mesh/net-keys.c \
+				mesh/mesh-io.h mesh/mesh-io.c \
+				mesh/mesh-mgmt.c mesh/mesh-mgmt.h \
+				mesh/error.h mesh/mesh-io-api.h \
+				mesh/mesh-io-generic.h \
+				mesh/mesh-io-generic.c \
+				mesh/net.h mesh/net.c \
+				mesh/crypto.h mesh/crypto.c \
+				mesh/friend.h mesh/friend.c \
+				mesh/appkey.h mesh/appkey.c \
+				mesh/node.h mesh/node.c \
+				mesh/provision.h mesh/prov.h \
+				mesh/model.h mesh/model.c \
+				mesh/cfgmod.h mesh/cfgmod-server.c \
+				mesh/mesh-config.h mesh/mesh-config-json.c \
+				mesh/util.h mesh/util.c \
+				mesh/dbus.h mesh/dbus.c \
+				mesh/agent.h mesh/agent.c \
+				mesh/prov-acceptor.c mesh/prov-initiator.c \
+				mesh/manager.h mesh/manager.c \
+				mesh/pb-adv.h mesh/pb-adv.c \
+				mesh/keyring.h mesh/keyring.c \
+				mesh/rpl.h mesh/rpl.c \
+				mesh/mesh-defs.h
+pkglibexec_PROGRAMS += mesh/bluetooth-meshd
+
+mesh/mesh.$(OBJEXT): ell/internal
+mesh/main.$(OBJEXT): src/builtin.h lib/bluetooth/bluetooth.h
+
+mesh_bluetooth_meshd_SOURCES = $(mesh_sources) mesh/main.c
+mesh_bluetooth_meshd_LDADD = src/libshared-ell.la $(ell_ldadd) -ljson-c
+mesh_bluetooth_meshd_DEPENDENCIES = $(ell_dependencies) src/libshared-ell.la \
+				mesh/bluetooth-mesh.service
+
+CLEANFILES += mesh/bluetooth-mesh.service
+
+endif
+
+EXTRA_DIST += mesh/bluetooth-mesh.conf mesh/bluetooth-mesh.service.in \
+		mesh/org.bluez.mesh.service mesh/mesh-main.conf

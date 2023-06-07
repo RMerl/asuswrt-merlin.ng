@@ -63,6 +63,7 @@
 #define AWS_CERTS_KEY_FILE "/jffs/awscerts/private.pem.key"
 
 #define AAE_TUNNEL_STATUS_RES "{\"function_name\": \"tunnel_status\", \"status\": \"%d\"}"
+#define AAE_TUNNEL_TEST_RES "{\"function_name\": \"tunnel_test\", \"source\": \"%s\", \"target\": \"%s\", \"type\" : \"%s\", \"error\": \"%d\"}"
 
 #define my_memcpy(dst, src, dst_len, src_len) {memcpy(dst, src, dst_len < src_len ? dst_len : src_len);}
 

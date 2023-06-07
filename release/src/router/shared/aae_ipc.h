@@ -21,13 +21,17 @@ struct aaeIpcArgStruct {
 #define AAE_IPC_STATUS "status"
 
 //#ifdef RTCONFIG_AWSIOT
-#define AWSIOT_PREFIX "awsiot"
+#define AAE_AWSIOT_PREFIX "awsiot"
+#define AAE_AWSIOT_CALLEE_ID_PREFIX "callee_id"
 enum awsiotEventType {
 	EID_AWSIOT_NONE = 0,
 	EID_AWSIOT_TUNNEL_ENABLE = 1,
+	EID_AWSIOT_TUNNEL_TEST = 2,
 	EID_AWSIOT_MAX
 };
-#define AWSIOT_GENERIC_MSG	 "{\""AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
+#define AAE_AWSIOT_GENERIC_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d}}"
+#define AAE_AWSIOT_GENERIC_RESP_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\"}}"
+#define AAE_AWSIOT_TNL_TEST_MSG	 "{\""AAE_AWSIOT_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_AWSIOT_CALLEE_ID_PREFIX"\":\"%s\"}}"
 //#endif
 
 //#ifdef RTCONFIG_ACCOUNT_BINDING
@@ -60,6 +64,7 @@ enum aaeHttpdEventType {
 #define AAE_HTTPD_PAYLOAD2_RESP_MSG	 "{\""AAE_HTTPD_PREFIX"\":{\""AAE_IPC_EVENT_ID"\":%d, \""AAE_IPC_STATUS"\":\"%s\"}}"
 //#endif
 
+int aae_sendIpcMsg(char *ipcPath, char *data, int dataLen);
 int aae_sendIpcMsgAndWaitResp(char *ipcPath, char *data, int dataLen, char *out, int outLen, int timeout_sec);
 
 #endif  // #ifndef __AAE_IPC_SHARED_H__

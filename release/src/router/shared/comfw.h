@@ -10,6 +10,7 @@
 #define COMFW_MAGIC     0x20210816
 #define CFID_BASE       6000
 #define CFID_BASE_2     12000
+#define CFID_BASE_3     18000
 
 /*
 CF_RTAC68U       // trx            
@@ -84,6 +85,7 @@ enum {
 	FW_386,
 	FW_384,
 	FW_38X,
+	FW_102,
 	MAX_FWID
 };
 

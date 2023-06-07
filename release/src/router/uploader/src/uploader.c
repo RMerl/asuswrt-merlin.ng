@@ -34,6 +34,8 @@ extern "C" {
 #include "uploader_ipc.h"
 #include "uploader_mnt.h"
 
+#include "webapi.h"
+
 
 #define APP_DBG 1
 
@@ -46,13 +48,25 @@ char router_mac[32];
 char mac_no_symbol[32];
 
 char devicemd5mac[33] = {0};
-
-
 char aae_webstorageinfo[128] = {0};
 
 
+char process_api[32];
+char file_name[64];
+char file_path[256];
+char server_api[32];
+
+
+int sleep_stop = 0;
  
 extern struct api_response_data api_response_data;
+extern struct cloud_files_l_list_bak cloud_files_l_list_bak[TYPE_NUMBER];
+
+
+extern char backup_file_type[TYPE_NUMBER][TYPE_LEN];
+extern int backup_file_limit[TYPE_NUMBER]; 
+
+cloud_files_list *files_list_frist, *files_list_current, *files_list_previous;
 
 
 void init_basic_data() 
@@ -83,10 +97,19 @@ void init_basic_data()
             break;
         } else {
             if(ready_count < 3) {
-                // Cdbg(APP_DBG, "waiting svc_ready -> %d, link_internet -> %d, tencent_download_enable -> %d", svc_ready, link_internet, tencent_download_enable);
+                // Cdbg(APP_DBG, "waiting svc_ready -> %d, link_internet -> %d", svc_ready, link_internet);
             }
         }
-        sleep(30);
+
+        ex_db_backup();
+
+        // if( (ready_count % 10) == 3) {
+        //     ex_db_backup();
+        //     if(ready_count > 10000)
+        //         ready_count = 3;
+        // }
+
+        sleep(60);
     }
 
     ready_count = 0;
@@ -100,7 +123,6 @@ void init_basic_data()
         snprintf(device_model, sizeof(device_model), "%s", nvram_safe_get("odmpid"));
         snprintf(oauth_dm_cusid, sizeof(oauth_dm_cusid), "%s", nvram_safe_get("oauth_dm_cusid"));
         snprintf(oauth_dm_user_ticket, sizeof(oauth_dm_user_ticket), "%s", nvram_safe_get("oauth_dm_user_ticket"));
-
 
         mac_toupper(router_mac, mac_no_symbol);
 
@@ -133,143 +155,6 @@ void init_basic_data()
     if(strlen(aae_webstorageinfo) < 15) {
         snprintf(aae_webstorageinfo, sizeof(aae_webstorageinfo), "%s", AICAMCLOUD_URL);
     }
-}
-
-
-
-char process_api[32];
-char file_name[64];
-char file_path[256];
-char server_api[32];
-
-
-int db_file_process(const char * api, const char * file_path, const char * file_name) 
-{
-
-    int status;
-    int retry_count = 0;
-
-    do {
-
-        status = get_aicamcloud_api_info(API_ROUTER_CHECK_TOKEN , oauth_dm_cusid, 
-                                         oauth_dm_user_ticket, devicemd5mac, NULL, NULL);
-
-        if(status != 0) {
-            Cdbg(APP_DBG, "Post [router_check_token] API message error, status = %d", status);
-            return -1;
-        } else if(api_response_data.status != 0) {
-            Cdbg(APP_DBG, "[check_token] get data error, status = %d", api_response_data.status);
-            update_userticket();            
-            sleep(10);
-            retry_count++;
-            if(retry_count > 5) {
-                Cdbg(APP_DBG, "[check_token] error, update_userticket error, retry_count = %d", retry_count);
-                return -1;
-            }
-            continue;
-        }
-        break;
-
-    } while (1);
-
-    Cdbg(APP_DBG, "API_ROUTER_CHECK_TOKEN status = %d, access_token = %s", status, api_response_data.access_token);
-
-
-    if( strcmp(api, UPLOAD_FILE_TO_S3) == 0) {
-
-        snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_GET_UPLOAD_FILE_URL);
-
-
-        status = get_aicamcloud_api_info(API_ROUTER_GET_UPLOAD_FILE_URL , NULL, NULL, 
-                                         devicemd5mac, file_path, file_name);
-
-
-        if(status != 0) {
-            Cdbg(APP_DBG, "Post [%s] API message error, status = %d", server_api, status);
-            return -1;
-        } else if(api_response_data.status != 0) {
-            Cdbg(APP_DBG, "[%s] get data error, status = %d", server_api, api_response_data.status);
-            return -1;
-        }
-
-        Cdbg(APP_DBG, "status = %d, policy = %s", status, api_response_data.policy);
-        Cdbg(APP_DBG, "url = %s", api_response_data.url);
-        Cdbg(APP_DBG, "key = %s", api_response_data.key);
-        Cdbg(APP_DBG, "x_amz_algorithm = %s", api_response_data.x_amz_algorithm);
-        Cdbg(APP_DBG, "x_amz_credential = %s", api_response_data.x_amz_credential);
-        Cdbg(APP_DBG, "x_amz_date = %s", api_response_data.x_amz_date);
-        Cdbg(APP_DBG, "policy = %s", api_response_data.policy);
-        Cdbg(APP_DBG, "x_amz_signature = %s", api_response_data.x_amz_signature);
-
-        char upload_file[256];
-        snprintf(upload_file, sizeof(upload_file) ,"%s/%s", file_path, file_name);
-
-
-        status = upload_file_to_s3(S3_RESPONSE_FILE, upload_file, NULL);
-
-        Cdbg(APP_DBG, "S3_RESPONSE_FILE = %s, status = %d", S3_RESPONSE_FILE, status);
-
-
-        if(status != 204) {
-            Cdbg(APP_DBG, "Post [upload_file_to_s3] API message error, status = %d", status);
-            return -1;
-        } 
-
-
-        snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_UPLOAD_FILE);
-
-
-        status = get_aicamcloud_api_info(API_ROUTER_UPLOAD_FILE , NULL, NULL, 
-                                     devicemd5mac, file_path, file_name);
-
-        // char del_file[64];
-        // snprintf(del_file, sizeof(del_file), "%s%s", file_path, filename);
-
-        // remove(del_file);
-
-        // Cdbg(APP_DBG, "remove file = %s", del_file);
-
-
-    } else if( strcmp(api, DEL_S3_FILE) == 0) {
-
-
-        snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_DEL_FILE);
-
-        status = get_aicamcloud_api_info(API_ROUTER_DEL_FILE , NULL, NULL, 
-                                         devicemd5mac, file_path, file_name);
-
-
-    } else if( strcmp(api, GET_LIST_FILE) == 0) {
-
-
-
-        snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_LIST_FILE);
-
-        status = get_aicamcloud_api_info(API_ROUTER_LIST_FILE , NULL, NULL, 
-                                         devicemd5mac, file_path, file_name);
-
-
-    } else if( strcmp(api, GET_FILE_INFO) == 0) {
-
-
-        snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_GET_FILE);
-
-        status = get_aicamcloud_api_info(API_ROUTER_GET_FILE , NULL, NULL, 
-                                         devicemd5mac, file_path, file_name);
-    }
-
-
-    if(status != 0) {
-        Cdbg(APP_DBG, "Post [%s] API message error, status = %d", server_api, status);
-        return -1;
-    } else if(api_response_data.status != 0) {
-        Cdbg(APP_DBG, "[%s] get data error, status = %d", server_api, api_response_data.status);
-        return -1;
-    }
-
-
-
-    return 0;
 }
 
 
@@ -312,7 +197,7 @@ int process_input(int argc, char ** argv)
 
 
 
-    status = get_aicamcloud_api_info(API_ROUTER_CHECK_TOKEN , oauth_dm_cusid, 
+    status = call_cloud_api(API_ROUTER_CHECK_TOKEN , oauth_dm_cusid, 
                                      oauth_dm_user_ticket, devicemd5mac, NULL, NULL);
 
     if(status != 0) {
@@ -333,7 +218,7 @@ int process_input(int argc, char ** argv)
         snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_GET_UPLOAD_FILE_URL);
 
 
-        status = get_aicamcloud_api_info(API_ROUTER_GET_UPLOAD_FILE_URL , NULL, NULL, 
+        status = call_cloud_api(API_ROUTER_GET_UPLOAD_FILE_URL , NULL, NULL, 
                                          devicemd5mac, file_path, file_name);
 
 
@@ -372,7 +257,7 @@ int process_input(int argc, char ** argv)
         snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_UPLOAD_FILE);
 
 
-        status = get_aicamcloud_api_info(API_ROUTER_UPLOAD_FILE , NULL, NULL, 
+        status = call_cloud_api(API_ROUTER_UPLOAD_FILE , NULL, NULL, 
                                      devicemd5mac, file_path, file_name);
 
 
@@ -383,7 +268,7 @@ int process_input(int argc, char ** argv)
 
         snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_DEL_FILE);
 
-        status = get_aicamcloud_api_info(API_ROUTER_DEL_FILE , NULL, NULL, 
+        status = call_cloud_api(API_ROUTER_DEL_FILE , NULL, NULL, 
                                          devicemd5mac, file_path, file_name);
 
 
@@ -393,7 +278,7 @@ int process_input(int argc, char ** argv)
 
         snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_LIST_FILE);
 
-        status = get_aicamcloud_api_info(API_ROUTER_LIST_FILE , NULL, NULL, 
+        status = call_cloud_api(API_ROUTER_LIST_FILE , NULL, NULL, 
                                          devicemd5mac, file_path, file_name);
 
 
@@ -402,7 +287,7 @@ int process_input(int argc, char ** argv)
 
         snprintf(server_api, sizeof(server_api) ,"%s", API_ROUTER_GET_FILE);
 
-        status = get_aicamcloud_api_info(API_ROUTER_GET_FILE , NULL, NULL, 
+        status = call_cloud_api(API_ROUTER_GET_FILE , NULL, NULL, 
                                          devicemd5mac, file_path, file_name);
     }
 
@@ -420,6 +305,20 @@ int process_input(int argc, char ** argv)
     return 0;
 }
 
+ 
+void sleep_time(int sleep_time) {
+
+    sleep_stop = 0;
+    int i;
+    for(i = 0; i < sleep_time; i++) {
+        sleep(1);
+        // Cdbg(APP_DBG, "sleep count = %d", i);
+        if(sleep_stop) {
+            break;
+        }
+    }
+
+}
 
 int update_userticket()
 {
@@ -482,113 +381,133 @@ int update_userticket()
     return update_status;    
 }
 
+void data_test() {
+
+    char *arrrr[] = { "usericon_0C9D924F2BC5_01.cfg", "usericon_4CEDFB4C28A0_02.cfg", "usericon_4CEDFB4C28A0_03.cfg", "usericon_4CEDFB4C28A0_04.cfg", "usericon_4CEDFB4C28A0_05.tar.gz", "ipsec_4CEDFB4C28A0_06.tar.gz", "openvpn_4CEDFB4C28A0_07.tar.gz", "setting_4CEDFB4C28A0_08.cfg", "setting_4CEDFB4C28A0_09.cfg", "usericon_4CEDFB4C28A0_10.tar.gz", "usericon_4CEDFB4C28A0_11.tar.gz", "setting_4CEDFB4C28A0_12.cfg" };
+    int i;
+
+    for (i = 0; i < 12; i++) {
+        cloud_files_init(arrrr[i]);
+    }
+
+    print_cloud_files_list(files_list_frist);
+}
+
+
+
+#define UPLOADER_SIG_ACTION SIGUSR1
+
+enum {
+    UPLOADER_ACTION_SIGUSR1,
+};
+
+
+static void uploader_sig_handler(int sig) {
+
+    Cdbg(APP_DBG, "Get uploader sig = %d", sig);
+
+    switch (sig) {
+
+        case UPLOADER_SIG_ACTION: {
+            sleep_stop = 1;
+
+            Cdbg(APP_DBG, "reset sleep time");
+        }
+
+        break;
+    }
+}
+
+
+
 int main( int argc, char ** argv )
 {
-
-    system("touch /tmp/UPLOADER_DEBUG_SYSLOG");
 
    // Open Debug Log
     CF_OPEN(APP_LOG_PATH,  FILE_TYPE | CONSOLE_TYPE | SYSLOG_TYPE);
     // CF_OPEN(UL_DEBUG_TO_FILE, FILE_TYPE );
-    CF_OPEN(UL_DEBUG_TO_CONSOLE,  CONSOLE_TYPE | SYSLOG_TYPE | FILE_TYPE);
-
-    if(APP_DBG) {
-        write_file(UL_DEBUG_TO_FILE, " ");
-    }
-
+    // CF_OPEN(UL_DEBUG_TO_CONSOLE,  CONSOLE_TYPE | SYSLOG_TYPE | FILE_TYPE);
 
     init_basic_data();
 
-        // ipc : waiting call 
+    // receive uploader sig = SIGUSR1 = 10
+    signal(UPLOADER_SIG_ACTION, uploader_sig_handler);
+
+    // ipc : waiting call 
     uploader_ipc_start();
 
+    int i = 0, while_count = 0;
+    int status;
 
-    char setting_update_time_tmp[16] = {0};
-    getTimeInMillis(setting_update_time_tmp);
-    nvram_set("setting_update_time", setting_update_time_tmp);
+    // uploader start:  backup [ui_support] config
+    nvram_set_int("ui_support_update_time", (unsigned )time(NULL));
 
 
-    int status = 0;
+    files_list_frist = backup_file_init();
+
+    // data_test();
+
+    // mac info : get cloud file list
+    get_cloud_file_list();
+
+    // print_cloud_files_list(files_list_frist);
+
 
     do {
+        while_count++;
+        // Handling redundant data
+        reorganization_cloud_files();
 
-        status = search_local_db_file();
+#ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
+        backup_cfg_mnt();
+#endif
 
-        if(status == 0) {
+        for(i = 0; i < TYPE_NUMBER; i++) {
 
-            status = check_file_list(oauth_dm_cusid, oauth_dm_user_ticket, 
-                             devicemd5mac, NULL, NULL);
+            char type_update_name[FILENAME_LEN], type_upload_name[FILENAME_LEN];
+            snprintf(type_update_name, sizeof(type_update_name), "%s_update_time", backup_file_type[i]);
+            snprintf(type_upload_name, sizeof(type_upload_name), "%s_upload_time", backup_file_type[i]);
+            int backup_file_update_time = nvram_get_int(type_update_name);
+            int backup_file_upload_time = nvram_get_int(type_upload_name);
+
+            Cdbg(APP_DBG, "type_update_name = %s, type_upload_name = %s, backup_file_update_time = %d, backup_file_upload_time = %d", 
+                type_update_name, type_upload_name, backup_file_update_time, backup_file_upload_time);
+
+            char filename[FILENAME_LEN] = {0};
+
+            // upload [db type] update time (nvram update time > last upload time )
+            if( backup_file_update_time > backup_file_upload_time ) {
+                // type if// 
+                if( local_backup_file_output(backup_file_type[i], filename, FILENAME_LEN, backup_file_update_time) == PROCESS_SUCCESS) {
+
+                    // backup file upload
+                    if(upload_backup_file_to_cloud(filename) == 0) {
+                        backup_file_plus(backup_file_type[i], filename);
+                    }
+
+                    char filepath[128] = {0};
+                    snprintf(filepath, sizeof(filepath), "%s%s", UPLOADER_FOLDER, filename);
+
+                    if(!remove(filepath)) {
+                      Cdbg(APP_DBG, "remove file = %s", filepath);
+                    }
+                }
+
+                nvram_set_int(type_upload_name, backup_file_update_time);
+            }
         }
 
+        // External Backup File Upload (Scan db file every 30 seconds)
+        ex_db_backup();
 
-        if(strcmp(nvram_safe_get("setting_update_time"), setting_update_time_tmp) != 0) {
-
-            Cdbg(APP_DBG, "setting_update_time value change %s > %s", setting_update_time_tmp, nvram_safe_get("setting_update_time"));
-
-            snprintf(setting_update_time_tmp, sizeof(setting_update_time_tmp), "%s", nvram_safe_get("setting_update_time"));
-            setting_file_output();
-        }
-
-
-        sleep(15);
-
+        sleep_time(UPLOAD_WAITING_TIME);
 
     } while (1);
 
 
-
-    // do {
-
-    //     char file_path[16] = "/tmp/";
-    //     char filename[32] = {0};
-
-
-    //     char timestamp_str[16] = {0};
-    //     getTimeInMillis(timestamp_str);
-
-    //     snprintf(filename, sizeof(filename), "settings_%s", timestamp_str);
-
-    //     Cdbg(APP_DBG, "filename = %s", filename);
-
-
-    //     char settings_cmd[128] = {0};
-    //     snprintf(settings_cmd, sizeof(settings_cmd), "nvram save %s%s", file_path, filename);
-
-
-    //     Cdbg(APP_DBG, "settings_cmd = %s", settings_cmd);
-    //     // remove(settings_date);
-
-    //     system(settings_cmd);
-
-    //     status = upload_file(oauth_dm_cusid, oauth_dm_user_ticket, 
-    //                          devicemd5mac, file_path, filename);
-
-
-    //     if(status == 0) {
-
-    //         status = check_file_list(oauth_dm_cusid, oauth_dm_user_ticket, 
-    //                          devicemd5mac, file_path, filename);
-
-
-    //         }
-
-
-    //     char del_file[64];
-    //     snprintf(del_file, sizeof(del_file), "%s%s", file_path, filename);
-
-    //     remove(del_file);
-
-    //     Cdbg(APP_DBG, "remove file = %s", del_file);
-
-    //     sleep(60);
-
-    // } while (1);
-
-
-
+    free_files_list(files_list_frist);
 
     Cdbg(APP_DBG, "exit uploader, waiting restart");
-    Cdbg2(APP_DBG, 1, "exit uploader, waiting restart");
 
     return 0;
 }

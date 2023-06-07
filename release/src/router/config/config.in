@@ -225,6 +225,14 @@ config RTCONFIG_JFFS2
 	bool "JFFS Support"
 	default n
 
+config RTCONFIG_MXL371X
+	bool "Support MxL371x"
+	default n
+
+config RTCONFIG_MOCA
+        bool "Support MOCA"
+        default n
+
 config RTCONFIG_DISKTEST
 	bool "Disk test tools"
 	default n
@@ -1093,6 +1101,10 @@ config RTCONFIG_POWER_SAVE
 	bool "Power Save"
 	default n
 
+config RTCONFIG_PAGECACHE_RATIO
+	bool "Control maximum page cache ratio"
+	default n
+
 config RTCONFIG_QCA8033
 	bool "Qualcomm Atheros QCA8033 Powerline Chip Support"
 	default n
@@ -1338,6 +1350,10 @@ config RTCONFIG_DUAL_TRX
 config RTCONFIG_DUAL_TRX2
 	bool "Firmware is incharge of recover damaged FW, not bootcode."
 	depends on RTCONFIG_DUAL_TRX
+	default n
+
+config RTCONFIG_TEST_FLIPBITS
+	bool "Test NAND Flash bit-flip"
 	default n
 
 config RTCONFIG_UBI
@@ -1628,6 +1644,10 @@ config RTCONFIG_EXT_BCM53134
 	bool "BCM53134 external switch"
 	default n
 
+config RTCONFIG_EXT_RTL8367S
+	bool "rtl8367s external switch"
+	default n
+
 config RTCONFIG_RTL8221VB
 	bool "RTL8221VB support"
 	default n
@@ -1653,6 +1673,10 @@ config RTCONFIG_TR181
 
 config RTCONFIG_ISP_OPTUS
 	bool "Support ISP OPTUS Customize"
+	default n
+
+config RTCONFIG_ACS_SUBNET
+	bool "Support ACS SUBNET Customize"
 	default n
 
 config RTCONFIG_ISP_XLNPROVU
@@ -2803,3 +2827,12 @@ config RTCONFIG_SW_SPDLED
 config RTCONFIG_BCM4906_504
 	bool "962118G in 504"
 	default n
+
+config RTCONFIG_AUTO_WANPORT
+	bool "Automatically detect where the WAN port is"
+	default n
+
+config RTCONFIG_RTL_UMGMT
+	bool "un-management-mode rtl switch's ops "
+	default n
+

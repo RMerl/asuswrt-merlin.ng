@@ -1,5 +1,6 @@
 include ../common.mak
 
+CFLAGS += $(if $(KPATH_37_OR_ABOVE),$(if $(and $(RTCONFIG_QCA),$(RTCONFIG_MUSL_LIBC)),,-I$(KDIR)/include),-I$(LINUX_INC_DIR)/include)
 CFLAGS += -Wall -Os $(EXTRACFLAGS) -ffunction-sections -fdata-sections
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE) -I$(SRCBASE)/include -I./include -I$(TOP)/networkmap
 CFLAGS += -I./sysdeps

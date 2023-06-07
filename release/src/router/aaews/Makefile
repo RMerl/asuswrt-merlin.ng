@@ -1,6 +1,7 @@
 TARGET=aaews
 WSLIB=libws.so
 DOG=mastiff
+UAC=aaeuac
 
 include ../common.mak
 
@@ -29,19 +30,20 @@ OUTPUT := $(WB_DIR)/output
 
 SRC=$(wildcard *.c)
 OBJS=$(patsubst %.c, %.o, $(SRC))
-OBJS_MAIN=$(filter-out $(DOG).o aae_ipc_handler.o, $(OBJS))
+OBJS_MAIN=$(filter-out $(DOG).o aae_ipc_handler.o aaeuac.o, $(OBJS))
 WSLIB_OBJS := $(WS_SOURCES:%.c=$(OUTPUT)/%.o)
 
 ifeq ($(wildcard $(TOP)/aaews/*.c),)
 all:
 	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aaews aaews
 	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/mastiff mastiff
+	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)aaeuac aaeuac
 else
 all: $(WSLIB) $(TARGET)
 endif
 
 
-ifeq ("$(MAKECMDGOALS)", $(filter "$(MAKECMDGOALS)", "router" "mastiff"))
+ifeq ("$(MAKECMDGOALS)", $(filter "$(MAKECMDGOALS)", "router" "mastiff" "aaeuac"))
 ROUTER_CFLAGS=-DNVRAM=1 -DEMBEDDED -I$(SHARED_DIR)
 ROUTER_CFLAGS+=-DTNL_CALLBACK_ENABLE -DTNL_2_X -DUSE_IM_IPC
 ifeq ($(RTCONFIG_QTN),y)
@@ -118,8 +120,18 @@ $(DOG):
 	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/mastiff mastiff
 else
 $(DOG): $(DOG).o nat_nvram.o aae_ipc_handler.o ws_caller.o nw_util.o natapi.o $(WSLIB_OBJS) info_report.o
-	$(CC) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) $(ROUTER_LDFLAGS) $(ROUTER_LIBS) -o $@ $^ 
+	$(CC) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) $(ROUTER_LDFLAGS) $(ROUTER_LIBS) -o $@ $^
 #	mipsel-uclibc-gcc -c $(CFLAGS) $(LDFLAGS) $(LIBS) -o $@ $^ 
+endif
+
+ifeq ($(and $(RTCONFIG_IG_SITE2SITE),$(RTCONFIG_WIREGUARD)),y)
+ifeq ($(wildcard $(TOP)/aaews/*.c),)
+$(UAC):
+	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aaeuac aaeuac
+else
+$(UAC): $(UAC).o nat_nvram.o natapi.o $(WSLIB_OBJS) queue_list.o queue_manager.o sync.o ws_caller.o nw_util.o info_report.o
+	$(CC) -fPIC $(CFLAGS) $(LDFLAGS) $(LIBS) $(ROUTER_LDFLAGS) $(ROUTER_LIBS) -o $@ $^
+endif
 endif
 aicam:$(TARGET)
 
@@ -127,7 +139,7 @@ ifeq ($(wildcard $(TOP)/aaews/*.c),)
 router:
 	-cp -f $(TOP)/aaews/prebuild/$(BUILD_NAME)/aaews aaews
 else
-router: $(WSLIB) $(TARGET) $(DOG)
+router: $(WSLIB) $(TARGET) $(DOG) $(if $(and $(RTCONFIG_IG_SITE2SITE),$(RTCONFIG_WIREGUARD)),  $(UAC))
 endif
 $(WSLIB):
 	cd $(WB_DIR) && \
@@ -148,5 +160,5 @@ $(TARGET):  main.o  $(WSLIB_OBJS) $(OBJS_MAIN)
 clean:
 	echo $(WB_DIR)
 	echo $(TOP)
-	rm -f *.o  *.so *.dylib *.a aaews mastiff -r output
+	rm -f *.o  *.so *.dylib *.a aaews mastiff aaeuac -r output
 

@@ -1,0 +1,18 @@
+[Unit]
+Description=Bluetooth mesh service
+ConditionPathIsDirectory=/sys/class/bluetooth
+
+[Service]
+Type=dbus
+BusName=org.bluez.mesh
+ExecStart=@pkglibexecdir@/bluetooth-meshd
+NotifyAccess=main
+LimitNPROC=1
+ProtectHome=true
+ProtectSystem=full
+Restart=on-failure
+RestartSec=5s
+
+[Install]
+WantedBy=bluetooth.target
+Alias=dbus-org.bluez.mesh.service

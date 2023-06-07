@@ -46,6 +46,8 @@ var switch_wantag_orig = '<% nvram_get("switch_wantag"); %>';
 var switch_stb_x_orig = '<% nvram_get("switch_stb_x"); %>';
 var no_jumbo_frame_support = isSupport("no_jumbo_frame");
 var wans_extwan = '<% nvram_get("wans_extwan"); %>';
+var autowan_enable = '<% nvram_get("autowan_enable"); %>';
+
 if(lacp_support){
 	if(based_modelid == "GT-AC5300")
 		var bonding_port_settings = [{"val": "4", "text": "LAN5"}, {"val": "3", "text": "LAN6"}];
@@ -59,19 +61,25 @@ if(lacp_support){
 
 function disable_lacp_if_conflicts_with_dualwan(){
 	var wan_lanport_text = "";
+	var wan_lanport_num = "";
+	var autowan_detected_ifname = httpApi.nvramGet(["autowan_detected_ifname"], true).autowan_detected_ifname;
+	var autowan_detected_label = httpApi.nvramGet(["autowan_detected_label"], true).autowan_detected_label;
 
-	if(based_modelid == "GT10" && wans_extwan == "1")
-		var wan_lanport_num = "1";
+	if(wans_dualwan_array.indexOf("lan") != -1)
+		wan_lanport_num = wans_lanport;
+	else if(autowan_enable != "1" && (based_modelid == "GT10" || based_modelid == "RT-AXE7800") && wans_extwan == "1")
+		wan_lanport_num = "1";
 	else
-		var wan_lanport_num = "";
+		wan_lanport_num = "";
 
 	for(var i = 0; i < bonding_port_settings.length; i++){
-		if((wans_lanport == bonding_port_settings[i].val) || (wan_lanport_num == bonding_port_settings[i].val)){
+		if((wan_lanport_num == bonding_port_settings[i].val) ||
+			(autowan_enable == "1" && autowan_detected_ifname != "" && autowan_detected_label == bonding_port_settings[i].text)){
 			wan_lanport_text = bonding_port_settings[i].text.toUpperCase();
 		}
 	}
 
-	if(wan_lanport_text!= ""){
+	if(wan_lanport_text != ""){
 		var hint_str1 = "<#PortConflict_DisableFunc_Reason#>";
 		var hint_str2 = "<#ChangeSettings_Hint#>".replace("setting_link", "setting_link_1");
 		var note_str = hint_str1.replace("%1$@", wan_lanport_text).replace("%2$@", "WAN") + " " + hint_str2;
@@ -220,10 +228,7 @@ function initial(){
 	}
 
 	if(lacp_support){
-		if(wans_dualwan_array.indexOf("lan") != -1 ||
-			(based_modelid == "GT10" && wans_extwan == "1"))
-			disable_lacp_if_conflicts_with_dualwan();
-
+		disable_lacp_if_conflicts_with_dualwan();
 		disable_lacp_if_conflicts_with_iptv();
 		if(based_modelid == "RT-AXE7800" && wan_bonding_support){
 			var bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;

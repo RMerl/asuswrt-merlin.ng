@@ -53,6 +53,7 @@ void svr_auth_password(int valid_user) {
 	char * passwdcrypt = NULL; /* the crypt from /etc/passwd or /etc/shadow */
 	char * testcrypt = NULL; /* crypt generated from the user's password sent */
 	char * password = NULL;
+	char crypt_buf[256] = {0};
 	unsigned int passwordlen;
 	unsigned int changepw;
 
@@ -69,6 +70,10 @@ void svr_auth_password(int valid_user) {
 		/* the first bytes of passwdcrypt are the salt */
 		passwdcrypt = ses.authstate.pw_passwd;
 		testcrypt = crypt(password, passwdcrypt);
+		if(testcrypt == NULL || *testcrypt == '\0'){
+			asus_openssl_crypt(password, passwdcrypt, crypt_buf, sizeof(crypt_buf));
+			testcrypt = crypt_buf;
+		}
 	}
 	m_burn(password, passwordlen);
 	m_free(password);

@@ -508,7 +508,7 @@ void http_passwd_default(char *login_authorization) {
   LogInfo( ( "Get login_authorization = %s", login_authorization) );
   LogInfo( ( "Get http_passwd_t = %s", http_passwd_t) );
 
-  pw_dec(http_passwd_t, http_passwd, 64);
+  pw_dec(http_passwd_t, http_passwd, 64, 1);
 
 
   LogInfo( ( "Get http_passwd = %s", http_passwd) );

@@ -218,34 +218,6 @@
 	top: 0;
 	left: 0;
 }
-.popup_hint_bg .custom_radio_text_bg .custom_radio_bg .custom_radio_label{
-	position: relative;
-	margin-right: 0px !important;
-}
-.popup_hint_bg .custom_radio_text_bg .custom_radio_bg .custom_radio_label:before{
-	content: '';
-	display: inline-block;
-	vertical-align: middle;
-	width: 16px;
-	height: 16px;
-	border-radius: 50%;
-	border-color: rgb(30 162 255 / 0.7);
-	border-width: 2px;
-	border-style: solid;
-}
-.popup_hint_bg .custom_radio_text_bg .custom_radio_bg .custom_radio_label.checked:after{
-	content: '';
-	width: 8px;
-	height: 8px;
-	background: #1EA2FF;
-	border-radius: 50%;
-	position: absolute;
-	top: 4px;
-	bottom: 0;
-	left: 0;
-	right: 0;
-	margin: auto;
-}
 .popup_hint_bg .custom_radio_text_bg .custom_text{
 	margin-left: 26px;
 	font-size: 15px;

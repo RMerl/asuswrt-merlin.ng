@@ -112,7 +112,7 @@ function set_scheme_mode(_type, _LED_Set_Obj){
 var lightl_effect_animate = {
 	"interval" : false,
 	"breathing" : function(_obj, _rgbArr) {
-		if(model_info.productid == "GT-AXE16000"){
+		if((model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO")){
 			var breathing_color = function(_obj) {
 				var led1 = "rgba(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ", " + alpha + ") 40%";
 				var led2 = "rgba(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ", " + alpha + ") 60%";
@@ -161,7 +161,7 @@ var lightl_effect_animate = {
 			min = Math.max(0, (percent_init - 30));
 			middle = percent_init;
 			max = Math.min(100, (percent_init + 30));
-			if(model_info.productid == "GT-AXE16000"){
+			if((model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO")){
 				var led1 = "rgb(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ") " + Math.max(0, (middle - 10)) + "%";
 				var led2 = "rgb(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ") " + middle + "%";
 				var led3 = "rgb(" + scheme_item_post['LED_Set'][3]['R'] + ", " + scheme_item_post['LED_Set'][3]['G'] + ", " + scheme_item_post['LED_Set'][3]['B'] + ") " +  Math.min(100, (middle + 10)) + "%";
@@ -183,7 +183,7 @@ var lightl_effect_animate = {
 		var percent_init = 0;
 		var percent_end = 100;
 		var wave_color = function(_obj, _rgbArr) {
-			if(model_info.productid == "GT-AXE16000"){
+			if((model_info.productid == "GT-AXE16000" || model_info.productid == "GT-AX11000_PRO")){
 				var led1 = "rgb(" + scheme_item_post['LED_Set'][1]['R'] + ", " + scheme_item_post['LED_Set'][1]['G'] + ", " + scheme_item_post['LED_Set'][1]['B'] + ") " + Math.max(0, (percent_init - 10)) + "%";
 				var led2 = "rgb(" + scheme_item_post['LED_Set'][2]['R'] + ", " + scheme_item_post['LED_Set'][2]['G'] + ", " + scheme_item_post['LED_Set'][2]['B'] + ") " + percent_init + "%";
 				var led3 = "rgb(" + scheme_item_post['LED_Set'][3]['R'] + ", " + scheme_item_post['LED_Set'][3]['G'] + ", " + scheme_item_post['LED_Set'][3]['B'] + ") " +  Math.min(100, (percent_init + 10)) + "%";

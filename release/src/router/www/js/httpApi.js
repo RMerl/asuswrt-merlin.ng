@@ -697,6 +697,9 @@ var httpApi ={
 			var wanInfo = httpApi.nvramGet(["wan" + wan_index + "_ipaddr", "wan" + wan_index + "_proto"], true);
 			result.ipaddr = wanInfo["wan" + wan_index + "_ipaddr"];
 			result.proto = wanInfo["wan" + wan_index + "_proto"];
+			if(isSupport("usbX") && wans_info.wans_dualwan.split(" ")[wan_index] == "usb"){
+				result.proto = "USB Modem";
+			}
 			if(isSupport("dsl")){
 				if(wans_info.wans_dualwan.split(" ")[wan_index] == "dsl"){
 					var dslInfo = httpApi.nvramGet(["dsl0_proto", "dslx_transmode"], true);
@@ -1354,6 +1357,8 @@ var httpApi ={
 				{type:"SFPP", bit:6},
 				{type:"USB", bit:7},
 				{type:"MOBILE", bit:8},
+				{type:"WANLAN", bit:9},
+				{type:"MOCA", bit:10},
 				{type:"IPTV_BRIDGE", bit:26},
 				{type:"IPTV_VOIP", bit:27},
 				{type:"IPTV_STB", bit:28},
@@ -1425,6 +1430,9 @@ var httpApi ={
 							else if(data.cap_support.USB){
 								return "USB";
 							}
+							else if(data.cap_support.MOCA){
+								return "MoCa";
+							}
 						})();
 						var link_rate_data = rate_map.filter(function(item, index, array){
 							return (item.value == data.link_rate);
@@ -1477,10 +1485,7 @@ var httpApi ={
 						var link_rate = isNaN(parseInt(data.link_rate)) ? 0 : parseInt(data.link_rate);
 						var max_rate = isNaN(parseInt(data.max_rate)) ? 0 : parseInt(data.max_rate);
 						data["link_rate_status"] = 1;//normal
-						if(max_rate == 2500)
-							max_rate = 1000;
-
-						if(data.is_on == "1" && link_rate < max_rate)
+						if(data.is_on == "1" && link_rate < 1000)
 							data["link_rate_status"] = 0;//abnormal
 
 						var sort_key = "";

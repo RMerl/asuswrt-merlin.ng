@@ -128,6 +128,10 @@ export PLATFORM := $(PLATFORM_ARCH)
 endif
 endif
 
+ifeq ($(MXL371X),y)
+export BCMKERNEL := $(SRCBASE)/kernel/bcmkernel
+endif
+
 EXTRA_CFLAGS := -DLINUX26 -DCONFIG_BCMWL5 -DDEBUG_NOISY -DDEBUG_RCTEST -pipe -DTTEST 
 
 export CONFIG_LINUX26=y

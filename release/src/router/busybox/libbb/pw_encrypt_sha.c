@@ -18,9 +18,10 @@ static char *
 NOINLINE
 sha_crypt(/*const*/ char *key_data, /*const*/ char *salt_data)
 {
+#undef sha_end
 	void (*sha_begin)(void *ctx) FAST_FUNC;
 	void (*sha_hash)(void *ctx, const void *buffer, size_t len) FAST_FUNC;
-	void (*sha_end)(void *ctx, void *resbuf) FAST_FUNC;
+	unsigned (*sha_end)(void *ctx, void *resbuf) FAST_FUNC;
 	int _32or64;
 
 	char *result, *resptr;
@@ -47,16 +48,17 @@ sha_crypt(/*const*/ char *key_data, /*const*/ char *salt_data)
 	unsigned cnt;
 	unsigned rounds;
 	char *cp;
-	char is_sha512;
 
 	/* Analyze salt, construct already known part of result */
 	cnt = strlen(salt_data) + 1 + 43 + 1;
-	is_sha512 = salt_data[1];
-	if (is_sha512 == '6')
+	_32or64 = 32;
+	if (salt_data[1] == '6') { /* sha512 */
+		_32or64 *= 2; /*64*/
 		cnt += 43;
+	}
 	result = resptr = xzalloc(cnt); /* will provide NUL terminator */
 	*resptr++ = '$';
-	*resptr++ = is_sha512;
+	*resptr++ = salt_data[1];
 	*resptr++ = '$';
 	rounds = ROUNDS_DEFAULT;
 	salt_data += 3;
@@ -93,12 +95,10 @@ sha_crypt(/*const*/ char *key_data, /*const*/ char *salt_data)
 	sha_begin = (void*)sha256_begin;
 	sha_hash = (void*)sha256_hash;
 	sha_end = (void*)sha256_end;
-	_32or64 = 32;
-	if (is_sha512 == '6') {
+	if (_32or64 != 32) {
 		sha_begin = (void*)sha512_begin;
 		sha_hash = (void*)sha512_hash;
 		sha_end = (void*)sha512_end;
-		_32or64 = 64;
 	}
 
 	/* Add KEY, SALT.  */
@@ -200,7 +200,7 @@ do { \
 	unsigned w = ((B2) << 16) | ((B1) << 8) | (B0); \
 	resptr = to64(resptr, w, N); \
 } while (0)
-	if (is_sha512 == '5') {
+	if (_32or64 == 32) { /* sha256 */
 		unsigned i = 0;
 		while (1) {
 			unsigned j = i + 10;

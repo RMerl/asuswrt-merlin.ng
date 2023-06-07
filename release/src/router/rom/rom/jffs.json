@@ -93,6 +93,37 @@
 				}
 			]
 		},
+                {
+                        "productid": "XC5",
+                        "features": [
+                                {
+                                        "name": "TrendMicro",
+                                        "rtconfig": "RTCONFIG_BWDPI",
+                                        "__data": "Lite Version",
+                                        "data": [
+                                                {
+                                                        "name": "TrendMicro Signature",
+                                                        "priority": 1,
+                                                        "__priority": "Hard Limit",
+                                                        "max_size": 786432,
+                                                        "min_size": 786432,
+                                                        "type": "file",
+                                                        "path": "/jffs/signature/rule.trf"
+                                                },
+                                                {
+                                                        "name": "AiProtectionMonitor & Mails Log",
+                                                        "__name": "AiProtectionMonitor & MALS & C&C",
+                                                        "priority": 1,
+                                                        "__priority": "Hard Limit",
+                                                        "max_size": 3670016,
+                                                        "min_size": 3670016,
+                                                        "type": "dir",
+                                                        "path": "/jffs/.sys/AiProtectionMonitor"
+                                                }
+                                        ]
+                                }
+                        ]
+                },
 		{
 			"productid": "RT-AX55",
 			"features": [

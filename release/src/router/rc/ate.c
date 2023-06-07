@@ -661,7 +661,7 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 		}
 		return;
 #endif
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(EBA63)
 	case MODEL_RTAX95Q:
 	case MODEL_XT8PRO:
 	case MODEL_BM68:
@@ -671,7 +671,9 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 	case MODEL_ET8_V2:
 	case MODEL_RTAX56_XD4:
 	case MODEL_XD4PRO:
+	case MODEL_XC5:
 	case MODEL_CTAX56_XD4:
+	case MODEL_EBA63:
 		{
 			if(color == LED_COLOR_RED) {
 				setAllRedLedOn();
@@ -1889,6 +1891,16 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #endif
 	/*** ATE Set function ***/
 	if (!strcmp(command, "Set_StartATEMode")) {
+		if (!nvram_match("noconsole", "0")) {
+			pid_t pid, pid1;
+			char *nv_commit[] = { "nvram", "commit", NULL };
+			char *console[] = { "console", NULL };
+
+			nvram_set("noconsole", "0");
+			_eval(nv_commit, NULL, 0, &pid);
+			killall_tk("console");
+			_eval(console, NULL, 0, &pid1);
+		}
 		asus_ate_StartATEMode();
 		stop_wanduck();
 #ifdef RTCONFIG_FIXED_BRIGHTNESS_RGBLED
@@ -3482,6 +3494,21 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 	}
 #endif
 #endif
+#if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_RALINK)
+	else if (!strcmp(command, "Set_PASS")) {
+		if (setPASS(value) < 0)
+		{
+			puts("ATE_ERROR_INCORRECT_PARAMETER");
+			return EINVAL;
+		}
+		puts(value);
+		return 0;
+	}
+	else if (!strcmp(command, "Get_PASS")) {
+		getPASS();
+		return 0;
+	}
+#endif
 #ifdef RTCONFIG_QCA_PLC_UTILS
 	else if (!strcmp(command, "Set_MacAddr_Plc")) {
 		if (!setPLC_para(value, OFFSET_PLC_MAC))
@@ -4174,8 +4201,22 @@ int ate_dev_status(void)
 #ifdef RTCONFIG_BT_CONN
 	int have_bt_device = 1;
 #endif
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_HAS_5G_2)
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
 	int count_5g = 0;
+	int count_6g = 0;
+#ifdef RTCONFIG_QUADBAND
+#ifdef defined(RTCONFIG_HAS_6G_2)
+	char wlif_name[4][4] = {"2G", "5G", "6G", "6G2"};
+#else
+	char wlif_name[4][4] = {"2G", "5G", "5G2", "6G"};
+#endif
+#else // !RTCONFIG_QUADBAND
+#if defined(RTCONFIG_WIFI6E) || defined(RTCONFIG_WIFI7)
+	char wlif_name[3][4] = {"2G", "5G", "6G"};
+#else
+	char wlif_name[3][4] = {"2G", "5G", "5G2"};
+#endif
+#endif //RTCONFIG_QUADBAND
 #endif
 
 	memset(dev_chk_buf, 0, sizeof(dev_chk_buf));
@@ -4213,8 +4254,7 @@ int ate_dev_status(void)
 			result = 'X';
 			ret = 0;
 		}
-
-#if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_HAS_5G_2)
+#if defined(RTCONFIG_BCMWL6) && (defined(RTCONFIG_HAS_5G_2) || defined(RTCONFIG_HAS_6G_2))
 		switch(wl_get_band(word)) {
 			case WLC_BAND_2G:
 			    	len = snprintf(p, remain, ",2G=%c", result);
@@ -4229,9 +4269,17 @@ int ate_dev_status(void)
 				break;
 #if defined(RTCONFIG_WIFI6E)
 		    	case WLC_BAND_6G:
-				len = snprintf(p, remain, ",6G=%c", result);
+				if(!count_6g) {
+					len = snprintf(p, remain, ",6G=%c", result);
+					count_6g++;
+				}
+				else
+					len = snprintf(p, remain, ",6G2=%c", result);
 				break;
 #endif
+			default:
+				len = snprintf(p, remain, ",%s=%c", wlif_name[ate_wl_band-1], result);
+				break;
 		}
 #else
 		if(ate_wl_band == 1)
@@ -4271,7 +4319,7 @@ int ate_dev_status(void)
 				have_bt_device = 0;
 		}
 #endif
-#if defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12) || defined(XD6_V2)
+#if defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(ET12) || defined(XT12) || defined(XD6_V2) || defined(XC5)
 		if(have_bt_device == 1){
 			system("killall bluetoothd");
 			system("hciconfig hci0 down");
@@ -4360,7 +4408,7 @@ int start_envrams(void) {
 	if (!pids("envrams")){
 		dbg("[%s][%d] start envrams\n", __func__, __LINE__);
 #if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2) || defined(XD4PRO) || defined(GTAXE16000) || defined(GTAX11000_PRO) || \
-	defined(ET12) || defined(XT12) || defined(RTAX88U_PRO) || defined(EBG19) || defined(EBG15)
+	defined(ET12) || defined(XT12) || defined(RTAX88U_PRO) || defined(EBG19) || defined(EBG15) || defined(XC5) || defined(EBA63)
 		dbg("[%s][%d] start envrams\n", __func__, __LINE__);
 		system("mkdir -p /tmp/mnt/defaults");
 		system("umount /tmp/mnt/defaults");
@@ -4386,7 +4434,11 @@ int start_envrams(void) {
 void stop_envrams(void) {
 	killall_tk("envrams");
 #ifdef RTCONFIG_HND_ROUTER_AX_6756
+#ifdef RTCONFIG_USB
 	system("umount /tmp/mnt/defaults &> /dev/null");
+#else
+	system("umount /mnt/defaults &> /dev/null");
+#endif
 #endif
 }
 #endif

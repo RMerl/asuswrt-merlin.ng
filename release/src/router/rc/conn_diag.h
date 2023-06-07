@@ -28,6 +28,10 @@
 
 #include <shared.h>
 
+#define MAX_DATA 8192
+#define JSON_DATA_BUF 512
+#define MAX_DATA_RAW MAX_DATA - JSON_DATA_BUF
+
 #define MAX_RE 2
 #define MACF_UP	"%02X:%02X:%02X:%02X:%02X:%02X"
 #define ACS_CHANIM_BUF_LEN (2*1024)
@@ -98,6 +102,8 @@ enum {
 	DIAGMODE_EVENT_CHLIST_CHANGE 			= DIAGMODE_EVENT+4,
 	DIAGMODE_EVENT_PORT_STATUS_USB_CHANGE 	= DIAGMODE_EVENT+5,
 	DIAGMODE_EVENT_WLC 	                    = DIAGMODE_EVENT+6,
+	DIAGMODE_WIFI_CBP 	                    = DIAGMODE_EVENT+7,
+	DIAGMODE_EVENT_PORT_STATUS_MOCA_CHANGE  = DIAGMODE_EVENT+8,
 	//DIAGMODE_EVENT
 	//DIAGMODE_SITE_SURVEY_2G = 0x800, //need modify
 	//DIAGMODE_SITE_SURVEY_5G1 = 0x1000, //need modify
@@ -106,7 +112,7 @@ enum {
 	//DIAGMODE_PORT_STATUS_CHANGE = 0x8000,
 	//DIAGMODE_ALL_CHAN_RADAR = 0x10000,
 	//DIAGMODE_CHLIST_CHANGE = 0x20000,
-	DIAGMODE_MIX = 0xF000, //for indicating received pkt are mixed(multi-mode)
+	DIAGMODE_MIX = CFG_CONNDIAG_MIX_MODE, // 0xF000, for indicating received pkt are mixed(multi-mode)
 	DIAGMODE_MAX
 };
 
@@ -174,11 +180,13 @@ enum {
 #define DIAG_EVENT_SYS2 "SYS2" // DIAG_EVENT_SYS2>node type>IP>MAC>CPU freq>MemFree>CPU temperature>2G's temperature>5G's temperature
 #define DIAG_EVENT_WIFISYS "WIFISYS" // DIAG_EVENT_WIFISYS>node type>IP>MAC>2G's ifname,2G's chip,2G's country/rev>5G's ifname,5G's chip,5G's country/rev
 #define DIAG_EVENT_WIFIDFS "WIFIDFS"
+#define DIAG_EVENT_CBP "WIFICBP"
 #define DIAG_EVENT_SITESURVEY "SITESURVEY"
 #define DIAG_CHANNEL_CHANGE "CHANNELCHANGE"
 #define DIAG_PS_CHANGE "PORTSTATUSCHANGE"
 #define DIAG_CABLE_DIAG "CABLEDIAG"
 #define DIAG_PS_USB_CHANGE "PORTSTATUSUSBCHANGE"
+#define DIAG_PS_MOCA_CHANGE "PORTSTATUSMOCACHANGE"
 #define DIAG_EVENT_IPERF_SERVER "IPERFSERVER"
 #define DIAG_EVENT_IPERF_CLIENT "IPERFCLIENT"
 #ifdef RTCONFIG_BCMARM
@@ -285,3 +293,6 @@ extern int check_iperf_server_resp(char *in);
 #define CD_SQNUM_RANGE 9999
 #define CD_SQNUM_MIN CD_SQNUM_BASE+1
 #define CD_SQNUM_MAX CD_SQNUM_BASE+CD_SQNUM_RANGE
+
+#define CD_CBP_EVENT_PATH "/jffs/cbp_event_file"
+#define CD_CBP_EVENT_LOCK	"cd_cbp_event_lock"

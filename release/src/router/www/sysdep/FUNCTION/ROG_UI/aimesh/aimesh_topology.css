@@ -887,6 +887,18 @@
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.disconnected, .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.X{
 	background-position: -102px -510px;
 }
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca{
+	background: url(/images/New_ui/amesh/signal_quality_moca.svg) no-repeat;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca.great{
+	background-position: 6px 2px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca.weak{
+	background-position: 6px -96px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca.disconnected{
+	background-position: 6px -198px;
+}
 .card_block_bg span.connect_title{
 	top: 24px;
 	line-height: initial;
@@ -1970,6 +1982,9 @@
 	z-index: 200;
 	background-repeat: no-repeat;
 }
+.jstree-anchor.moca:before {
+	background-image: url(/images/New_ui/amesh/topology_connect_quality_moca.svg);
+}
 .jstree-anchor.great.wired:before {
 	background-position: 10px -38px;
 }
@@ -1987,6 +2002,12 @@
 }
 .jstree-anchor.weak.plc:before {
 	background-position: -806px -38px;
+}
+.jstree-anchor.great.moca:before {
+	background-position: 3px -38px;
+}
+.jstree-anchor.weak.moca:before {
+	background-position: -79px -38px;
 }
 .jstree-anchor.disconnected:before {
 	background-position: -287px -38px;
@@ -2151,6 +2172,16 @@
 }
 .jstree-default .jstree-node.disconnected:before{
 	background-position: -655px 0px;
+}
+.jstree-default .jstree-node.moca:before{
+	background: url(/images/New_ui/amesh/topology_connect_quality_moca.svg);
+	background-repeat: repeat-y;
+}
+.jstree-default .jstree-node.great.moca:before{
+	background-position: -159px 0px;
+}
+.jstree-default .jstree-node.weak.moca:before{
+	background-position: -235px 0px;
 }
 .jstree-default .jstree-node.level_2:before{
 	left: 30px;
@@ -2500,7 +2531,7 @@
 	border-width: 1px;
 	border-style: solid;
 	position: relative;
-} 
+}
 .connect_line_info_bg .connect_line:before{
 	content: "";
 	position: absolute;
@@ -2510,6 +2541,9 @@
 	left: 2px;
 	top: 2px;
 	background-repeat: no-repeat;
+}
+.connect_line_info_bg .connect_line.moca:before{
+	background-image: url(/images/New_ui/amesh/topology_connect_quality_moca.svg);
 }
 .connect_line_info_bg .connect_line.wired.great:before{
 	background-position: 5px 0px;
@@ -2528,6 +2562,12 @@
 }
 .connect_line_info_bg .connect_line.plc.weak:before{
 	background-position: -811px -59px;
+}
+.connect_line_info_bg .connect_line.moca.great:before{
+	background-position: -2px -59px;
+}
+.connect_line_info_bg .connect_line.moca.weak:before{
+	background-position: -83px -59px;
 }
 .connect_line_info_bg .connect_line.disconnected:before{
 	background-position: -292px -55px;
@@ -2803,7 +2843,19 @@
 	background-position: 1px -330px;
 }
 .port_status_bg .port_icon.USB.unplug{
-    background-position: 1px -290px;
+	background-position: 1px -290px;
+}
+.port_status_bg .port_icon.MoCa{
+	background-size: 92px;
+}
+.port_status_bg .port_icon.MoCa.conn{
+	background-position: 0px -378px;
+}
+.port_status_bg .port_icon.MoCa.warn{
+	background-position: 0px -416px;
+}
+.port_status_bg .port_icon.MoCa.unplug{
+	background-position: 0px -340px;
 }
 .port_status_bg .port_icon .wan_icon{
 	width: 20px;
@@ -2877,4 +2929,42 @@
     right: -5px;
     bottom: -5px;
     background-position: 0px -179px;
+}
+.opt_ADS_status_container{
+	display: flex;
+	margin-bottom: 12px;
+}
+.opt_ADS_status_container .icon_container{
+	width: 14%;
+	height: 50px;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.opt_ADS_status_container .opt_ADS_icon_loading{
+	background-color: #1ea2ff;
+	background-image: url(/images/New_ui/amesh/client_control.svg);
+	background-repeat: no-repeat;
+	background-size: 1400%;
+	border-radius: 50%;
+	width: 40px;
+	height: 40px;
+	background-position: -476px 4px;
+	animation: cssload-spin 2s infinite linear;
+}
+.opt_ADS_status_container .text_container{
+	width: 86%;
+	padding-left: 6px;
+}
+.opt_ADS_status_container .text_container > div{
+	height: 50%;
+	display: flex;
+	align-items: center;
+}
+.opt_ADS_status_container .status_stage{
+    color: #33ACFF;
+    font-size: 14px;
+}
+.opt_ADS_status_container .status_text{
+	font-size: 13px;
 }

@@ -45,7 +45,7 @@ extern "C" {
 
 #define DUMP_HEX 0
 
-#define MAX_PACKET_LEN  3000
+#define MAX_PACKET_LEN  PJMEDIA_MAX_MTU
 
 	//#ifdef PJ_M_MIPS // DEAN
 #define SND_THREAD_DELAY_CNT 100

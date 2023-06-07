@@ -62,6 +62,10 @@ static void _wg_tunnel_create(char* prefix, char* ifname, char* conf_path)
 		eval("ip", "address", "add", buf, "dev", ifname);
 
 	eval("wg", "setconf", ifname, conf_path);
+//#if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_TUNNEL)
+	//if (nvram_pf_get_int(prefix, "ep_tnl_enable") == 1)
+	//	eval("ip", "link", "set", "mtu", "1500", "dev", ifname);
+//#endif
 	eval("ip", "link", "set", "up", "dev", ifname);
 }
 
@@ -129,12 +133,24 @@ static void _wg_client_ep_route_add(char* prefix, int table)
 
 	snprintf(table_str, sizeof(table_str), "%d", table);
 
-	snprintf(buf, sizeof(buf), "wan%d_gateway", wan_primary_ifunit());
-	snprintf(wan_gateway, sizeof(wan_gateway), "%s", nvram_safe_get(buf));
-	snprintf(wan6_gateway, sizeof(wan6_gateway), "%s", ipv6_gateway_address());
 	snprintf(wan_ifname, sizeof(wan_ifname), "%s", get_wanface());
-	snprintf(wan6_ifname, sizeof(wan6_ifname), "%s", get_wan6face());
-	snprintf(buf, sizeof(buf), "%s", nvram_pf_safe_get(prefix, "ep_addr_r"));
+#if 0//defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_TUNNEL)
+	if (nvram_pf_get_int(prefix, "ep_tnl_active") == 1) {
+		if (!nvram_pf_match(prefix, "ep_tnl_addr", "")) {
+			snprintf(buf, sizeof(buf), "wan%d_ipaddr", wan_primary_ifunit());
+			snprintf(wan_gateway, sizeof(wan_gateway), "%s", nvram_safe_get(buf));
+			snprintf(buf, sizeof(buf), "%s", nvram_pf_safe_get(prefix, "ep_tnl_addr"));
+		} else // no need to add route rule
+			return;
+	} else
+#endif
+	{
+		snprintf(wan6_ifname, sizeof(wan6_ifname), "%s", get_wan6face());
+		snprintf(buf, sizeof(buf), "wan%d_gateway", wan_primary_ifunit());
+		snprintf(wan_gateway, sizeof(wan_gateway), "%s", nvram_safe_get(buf));
+		snprintf(wan6_gateway, sizeof(wan6_gateway), "%s", ipv6_gateway_address());
+		snprintf(buf, sizeof(buf), "%s", nvram_pf_safe_get(prefix, "ep_addr_r"));
+	}
 
 	foreach(addr, buf, p)
 	{
@@ -700,6 +716,7 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 	char psk[WG_KEY_SIZE] = {0};
 	char aips[4096] = {0};
 	char ep_addr[128] = {0};
+	int ep_port = 51820;
 	int alive = nvram_pf_get_int(prefix, "alive");
 	char *p;
 	char buffer[32];
@@ -709,7 +726,17 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 	snprintf(ppub, sizeof(ppub), "%s", nvram_pf_safe_get(prefix, "ppub"));
 	snprintf(psk, sizeof(psk), "%s", nvram_pf_safe_get(prefix, "psk"));
 	snprintf(aips, sizeof(aips), "%s", nvram_pf_safe_get(prefix, "aips"));
-	snprintf(ep_addr, sizeof(ep_addr), "%s", nvram_pf_safe_get(prefix, "ep_addr_r"));
+#if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_TUNNEL)
+	if (nvram_pf_get_int(prefix, "ep_tnl_active") == 1) {
+		snprintf(ep_addr, sizeof(ep_addr), 
+			(strlen(nvram_pf_safe_get(prefix, "ep_tnl_addr")) ? nvram_pf_safe_get(prefix, "ep_tnl_addr") : nvram_safe_get("lan_ipaddr")));
+		ep_port = nvram_pf_get_int(prefix, "ep_tnl_port");
+	} else
+#endif
+	{
+		snprintf(ep_addr, sizeof(ep_addr), "%s", nvram_pf_safe_get(prefix, "ep_addr_r"));
+		ep_port = nvram_pf_get_int(prefix, "ep_port");
+	}
 
 	if (priv[0] == '\0' || ppub[0] == '\0' || aips[0] == '\0')
 		return;
@@ -727,7 +754,7 @@ static void _wg_client_gen_conf(char* prefix, char* path)
 			"AllowedIPs = %s\n"
 			"Endpoint = %s:%d\n"
 			, priv, ppub, aips
-			, ep_addr, nvram_pf_get_int(prefix, "ep_port")
+			, ep_addr, ep_port
 			);
 		if (psk[0] != '\0')
 			fprintf(fp, "PresharedKey = %s\n", psk);
@@ -826,6 +853,14 @@ static void _wg_server_gen_keys(char* prefix)
 
 static char* _wg_server_get_endpoint(char* buf, size_t len)
 {
+	/// Currently, Windows, iOS, Android WireGuard APP prefer IPv4
+	/// even DDNS include both IPv4 and IPv6.
+	if (is_private_subnet(get_wanip()) && ipv6_enabled()) {
+		strlcpy(buf, (getifaddr(get_wan6face(), AF_INET6, 0))?:"", len);
+		if (buf[0])
+			return buf;
+	}
+
 	strlcpy(buf, get_ddns_hostname(), len);
 
 	if (!(nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_status") && strlen(buf)))
@@ -904,11 +939,12 @@ static void _wg_server_gen_client_conf(char* s_prefix, char* c_prefix, char* c_p
 		if (psk && cpsk[0] != '\0')
 			fprintf(fp, "PresharedKey = %s\n", cpsk);
 
-		fprintf(fp, "AllowedIPs = %s\n"
-			"Endpoint = %s:%d\n"
-			, caips
-			, _wg_server_get_endpoint(buf, sizeof(buf)), nvram_pf_get_int(s_prefix, "port")
-			);
+		fprintf(fp, "AllowedIPs = %s\n", caips);
+
+		if (is_valid_ip6(_wg_server_get_endpoint(buf, sizeof(buf))))
+			fprintf(fp, "Endpoint = [%s]:%d\n", buf, nvram_pf_get_int(s_prefix, "port"));
+		else
+			fprintf(fp, "Endpoint = %s:%d\n", buf, nvram_pf_get_int(s_prefix, "port"));
 
 		if (alive)
 			fprintf(fp, "PersistentKeepalive = %d\n", alive);
@@ -1263,6 +1299,15 @@ void start_wgc(int unit)
 	snprintf(path, sizeof(path), "%s/client%d.conf", WG_DIR_CONF, unit);
 	snprintf(ifname, sizeof(ifname), "%s%d", WG_CLIENT_IF_PREFIX, unit);
 
+#if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_TUNNEL)
+	if (vpnc_use_tunnel(unit, "WireGuard")) {
+		if (start_aaeuac_by_vpn_prof("WireGuard", unit) < 0){
+			_dprintf("%s %d tunnel not ready. give up.\n", __FUNCTION__, unit);
+			return;
+		}
+	}
+#endif
+
 #ifdef RTCONFIG_VPN_FUSION
 	table = find_vpnc_idx_by_wgc_unit(unit);
 #else
@@ -1337,6 +1382,10 @@ void stop_wgc(int unit)
 
 	snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, unit);
 	snprintf(ifname, sizeof(ifname), "%s%d", WG_CLIENT_IF_PREFIX, unit);
+
+#if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_TUNNEL)
+	stop_aaeuac_by_vpn_prof("WireGuard", unit);
+#endif
 
 #ifdef RTCONFIG_VPN_FUSION
 	table = find_vpnc_idx_by_wgc_unit(unit);
@@ -1588,22 +1637,30 @@ void check_wgc_endpoint()
 		if (is_wgc_connected(unit))
 			continue;
 
-		strlcpy(ep_addr, nvram_pf_safe_get(prefix, "ep_addr"), sizeof(ep_addr));
-		if (is_valid_ip(ep_addr) > 0)
-			continue;
-
-		if (cnt[unit]++)
+#if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_TUNNEL)
+		if (vpnc_use_tunnel(unit, "WireGuard")) {
+			snprintf(buf, sizeof(buf), "restart_wgc %d", unit);
+			notify_rc(buf);
+		} else
+#endif
 		{
-			//cannot connect to server hostname, ip may changed.
-			if (_wg_resolv_ep(ep_addr, buf, sizeof(buf)))
+			strlcpy(ep_addr, nvram_pf_safe_get(prefix, "ep_addr"), sizeof(ep_addr));
+			if (is_valid_ip(ep_addr) > 0)
 				continue;
-			if (strcmp(nvram_pf_safe_get(prefix, "ep_addr_r"), buf))
+
+			if (cnt[unit]++)
 			{
-				_dprintf("%s ip changed to %s\n", ep_addr, buf);
-				snprintf(buf, sizeof(buf), "restart_wgc %d", unit);
-				notify_rc(buf);
+				//cannot connect to server hostname, ip may changed.
+				if (_wg_resolv_ep(ep_addr, buf, sizeof(buf)))
+					continue;
+				if (strcmp(nvram_pf_safe_get(prefix, "ep_addr_r"), buf))
+				{
+					_dprintf("%s ip changed to %s\n", ep_addr, buf);
+					snprintf(buf, sizeof(buf), "restart_wgc %d", unit);
+					notify_rc(buf);
+				}
+				cnt[unit] = 0;
 			}
-			cnt[unit] = 0;
 		}
 	}
 }

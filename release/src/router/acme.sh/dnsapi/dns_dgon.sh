@@ -22,7 +22,7 @@ dns_dgon_add() {
   txtvalue=$2
 
   DO_API_KEY="${DO_API_KEY:-$(_readaccountconf_mutable DO_API_KEY)}"
-  # Check if API Key Exist
+  # Check if API Key Exists
   if [ -z "$DO_API_KEY" ]; then
     DO_API_KEY=""
     _err "You did not specify DigitalOcean API key."
@@ -77,7 +77,7 @@ dns_dgon_rm() {
   txtvalue=$2
 
   DO_API_KEY="${DO_API_KEY:-$(_readaccountconf_mutable DO_API_KEY)}"
-  # Check if API Key Exist
+  # Check if API Key Exists
   if [ -z "$DO_API_KEY" ]; then
     DO_API_KEY=""
     _err "You did not specify DigitalOcean API key."
@@ -122,12 +122,12 @@ dns_dgon_rm() {
     ## check for what we are looking for: "type":"A","name":"$_sub_domain"
     record="$(echo "$domain_list" | _egrep_o "\"id\"\s*\:\s*\"*[0-9]+\"*[^}]*\"name\"\s*\:\s*\"$_sub_domain\"[^}]*\"data\"\s*\:\s*\"$txtvalue\"")"
 
-    if [ ! -z "$record" ]; then
+    if [ -n "$record" ]; then
 
       ## we found records
       rec_ids="$(echo "$record" | _egrep_o "id\"\s*\:\s*\"*[0-9]+" | _egrep_o "[0-9]+")"
       _debug rec_ids "$rec_ids"
-      if [ ! -z "$rec_ids" ]; then
+      if [ -n "$rec_ids" ]; then
         echo "$rec_ids" | while IFS= read -r rec_id; do
           ## delete the record
           ## delete URL for removing the one we dont want
@@ -192,6 +192,7 @@ _get_base_domain() {
   ## get URL for the list of domains
   ## may get: "links":{"pages":{"last":".../v2/domains/DOM/records?page=2","next":".../v2/domains/DOM/records?page=2"}}
   DOMURL="https://api.digitalocean.com/v2/domains"
+  found=""
 
   ## while we dont have a matching domain we keep going
   while [ -z "$found" ]; do
@@ -205,9 +206,7 @@ _get_base_domain() {
     fi
     _debug2 domain_list "$domain_list"
 
-    ## for each shortening of our $fulldomain, check if it exists in the $domain_list
-    ## can never start on 1 (aka whole $fulldomain) as $fulldomain starts with "_acme-challenge"
-    i=2
+    i=1
     while [ $i -gt 0 ]; do
       ## get next longest domain
       _domain=$(printf "%s" "$fulldomain" | cut -d . -f "$i"-"$MAX_DOM")
@@ -218,7 +217,7 @@ _get_base_domain() {
       ## we got part of a domain back - grep it out
       found="$(echo "$domain_list" | _egrep_o "\"name\"\s*\:\s*\"$_domain\"")"
       ## check if it exists
-      if [ ! -z "$found" ]; then
+      if [ -n "$found" ]; then
         ## exists - exit loop returning the parts
         sub_point=$(_math $i - 1)
         _sub_domain=$(printf "%s" "$fulldomain" | cut -d . -f 1-"$sub_point")

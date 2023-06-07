@@ -59,7 +59,7 @@
 #define ASUSDDNS_IP_HTTP_REQUEST_MYIP		\
 	"myip=%s&"
 
-#ifdef USE_IPV6
+#if defined(USE_IPV6) && defined(ASUSWRT)
 #define ASUSDDNS_IP_HTTP_REQUEST_MYIPV6		\
 	"myipv6=%s&"
 #endif
@@ -127,50 +127,6 @@ static ddns_system_t asus_unregister = {
 	.server_name  = ASUSDDNS_IP_SERVER,
 	.server_url   = "/ddns/register.jsp"
 };
-
-#ifdef USE_IPV6
-#define IPV6_ADDR_GLOBAL        0x0000U
-static int _get_ipv6_addr(const char *ifname, char *ipv6addr, const size_t len)
-{
-	FILE *f;
-	int ret = -1, scope, prefix;
-	unsigned char ipv6[16];
-	char dname[IFNAMSIZ], address[INET6_ADDRSTRLEN];
-
-	if(!ifname || !ipv6addr)
-		return ret;
-
-	f = fopen("/proc/net/if_inet6", "r");
-	if(!f)
-		return ret;
-
-	while (19 == fscanf(f,
-                        " %2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx %*x %x %x %*x %s",
-                        &ipv6[0], &ipv6[1], &ipv6[2], &ipv6[3], &ipv6[4], &ipv6[5], &ipv6[6], &ipv6[7], &ipv6[8], &ipv6[9], &ipv6[10], 
-                        &ipv6[11], &ipv6[12], &ipv6[13], &ipv6[14], &ipv6[15], &prefix, &scope, dname))
-	{
-		if(strcmp(ifname, dname))
-		{
-			continue;
-		}
-
-		if(inet_ntop(AF_INET6, ipv6, address, sizeof(address)) == NULL)
-		{
-			continue;
-	       }
-
-		if(scope == IPV6_ADDR_GLOBAL)
-		{
-			strlcpy(ipv6addr, address, len);
-			ret =0;
-			break;
-		}
-	}
-
-	fclose(f);
-	return ret;
-}
-#endif
 
 #define MD5_DIGEST_BYTES 16
 static void
@@ -319,17 +275,12 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 #endif
 #endif
 	char fwver[32];
-#ifdef USE_IPV6
-	char ip6_addr[INET6_ADDRSTRLEN] = {0};
-
-	if(nvram_get_int("ddns_ipv6_update") && !_get_ipv6_addr(iface, ip6_addr, sizeof(ip6_addr))) {
-		logit(LOG_WARNING, "%s ipv6 address=<%s>", iface, ip6_addr);
-		memset(alias->ipv6_address, 0, sizeof(alias->ipv6_address));
-		strlcpy(alias->ipv6_address, ip6_addr, sizeof(alias->ipv6_address));
-	}
-#endif
 
 	logit(LOG_WARNING, "alias address=<%s>", alias->address);
+#if defined(USE_IPV6) && defined(ASUSWRT)
+	if(alias->ipv6_address[0] != '\0')
+		logit(LOG_WARNING, "%s ipv6 address=<%s>", iface, alias->ipv6_address);
+#endif
 
 	make_request(ctx, info, alias);
 
@@ -376,12 +327,12 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 			ASUSDDNS_IP_HTTP_REQUEST_MYIP,
 			alias->address
 		);
-#ifdef USE_IPV6
-	if(ip6_addr[0] != '\0')
+#if defined(USE_IPV6) && defined(ASUSWRT)
+	if(alias->ipv6_address[0] != '\0')
 	{
 		snprintf(ctx->request_buf + strlen(ctx->request_buf), ctx->request_buflen - strlen(ctx->request_buf),
 				ASUSDDNS_IP_HTTP_REQUEST_MYIPV6,
-				ip6_addr
+				alias->ipv6_address
 			);
 	}
 #endif

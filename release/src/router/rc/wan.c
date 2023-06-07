@@ -1624,6 +1624,11 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			update_wan_state(prefix, WAN_STATE_STOPPED, WAN_STOPPED_REASON_SYSTEM_ERR);
 			return;
 		}
+
+#ifdef RTCONFIG_AUTO_WANPORT
+		if(is_auto_wanport_enabled() <= 0)
+#endif
+		{
 #if defined(TUFAX3000_V2) || defined(RTAXE7800)
 		if (!strcmp(wan_ifname, "eth1") || !strcmp(wan_ifname, "eth2") || !strcmp(wan_ifname, "eth3") || !strcmp(wan_ifname, "eth4"))
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
@@ -1633,6 +1638,8 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			doSystem("ethswctl -c wan -i %s -o %s", wan_ifname, "enable");
 		}
 #endif
+		}
+
 #ifdef RTCONFIG_IPV6
 #if (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
 		if ((wan_proto == WAN_STATIC) &&
@@ -2002,9 +2009,6 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				}
 			}
 #endif
-			/* Bring up WAN interface */
-			dbG("ifup:%s\n", wan_ifname);
-			ifconfig(wan_ifname, IFUP, NULL, NULL);
 
 			/* MTU */
 			if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
@@ -2021,13 +2025,38 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				close(s);
 			}
 
-			/* Start pre-authenticator */
-			dbG("start auth:%d\n", unit);
-			start_auth(unit, 0);
+#ifdef RTCONFIG_AUTO_WANPORT
+			if(is_auto_wanport_enabled() == 1){
+				strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan
 
-			/* Start dhcp daemon */
-			dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
-			start_udhcpc(wan_ifname, unit, &pid);
+				/* Bring up WAN interface */
+				dbG("AUTO_WANPORT ifup:%s\n", wan_ifname);
+				ifconfig(wan_ifname, IFUP, NULL, NULL);
+
+				/* Start pre-authenticator */
+				dbG("AUTO_WANPORT start auth:%d\n", unit);
+				start_auth(unit, 0);
+
+				/* Start dhcp daemon */
+				dbG("AUTO_WANPORT start udhcpc:%s, %d\n", wan_ifname, unit);
+				start_udhcpc(wan_ifname, unit, &pid);
+			}
+			else
+#endif
+			{
+				/* Bring up WAN interface */
+				dbG("ifup:%s\n", wan_ifname);
+				ifconfig(wan_ifname, IFUP, NULL, NULL);
+
+				/* Start pre-authenticator */
+				dbG("start auth:%d\n", unit);
+				start_auth(unit, 0);
+
+				/* Start dhcp daemon */
+				dbG("start udhcpc:%s, %d\n", wan_ifname, unit);
+				start_udhcpc(wan_ifname, unit, &pid);
+			}
+
 			break;
 		}
 
@@ -3227,8 +3256,10 @@ int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc)
 				snprintf(prefix_x, sizeof(prefix_x), "wan%d_x", wan_unit);
 				nvram_set(strcat_r(prefix_x, "ipaddr", tmp), nvram_safe_get(strcat_r(prefix, "ipaddr", tmp1)));
 				nvram_set(strcat_r(prefix_x, "gateway", tmp), nvram_safe_get(strcat_r(prefix, "gateway", tmp1)));
-				nvram_set(strcat_r(prefix_x, "dns", tmp), nvram_safe_get(strcat_r(prefix, "dns", tmp1)));
 				nvram_set(strcat_r(prefix_x, "netmask", tmp), nvram_safe_get(strcat_r(prefix, "netmask", tmp1)));
+				if (wan_proto != WAN_OCNVC)
+					nvram_set(strcat_r(prefix_x, "dns", tmp), nvram_safe_get(strcat_r(prefix, "dns", tmp1)));
+
 				nvram_set(strcat_r(prefix, "gateway", tmp), "0.0.0.0");
 				nvram_set(strcat_r(prefix, "dns", tmp), "0.0.0.0");
 				nvram_pf_set_int(prefix, "s46_hgw_case", S46_CASE_MAP_HGW_OFF);
@@ -4897,6 +4928,95 @@ int autodet_plc_main(int argc, char *argv[]){
 	cnt = get_connected_plc(NULL);
 	nvram_set_int("autodet_plc_state" , cnt);
 
+	return 0;
+}
+#endif
+
+#ifdef RTCONFIG_SOFTWIRE46
+void init_wan46(void) {
+
+	int unit;
+	char prefix[]="wan46detXXXXXX_", tmp[100];
+
+	/* JP Sku Only */
+	if (!strncmp(nvram_safe_get("territory_code"), "JP", 2)) {
+		nvram_unset("wan46det_proceeding");
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+			if (unit == WAN_UNIT_FIRST)
+				snprintf(prefix, sizeof(prefix), "wan46det_");
+			else
+				snprintf(prefix, sizeof(prefix), "wan46det%d_", unit);
+			nvram_unset(strcat_r(prefix, "state", tmp));
+		}
+	}
+	return;
+}
+
+int auto46det_main(int argc, char *argv[]) {
+
+	int opt, unit, re = 0;
+	char wired_link_nvram[16];
+	char prefix[]="wan46detXXXXXX_", tmp[100];
+
+	while ((opt = getopt(argc, argv, "r")) != -1) {
+		switch (opt) {
+		case 'r':
+			re = 1;
+			break;
+		default:
+			break;
+		}
+	}
+
+	if (nvram_get_int("wan46det_proceeding"))
+		return 0;
+
+	nvram_set("wan46det_proceeding", "1");
+
+	/* JP Sku Only */
+	if (!strncmp(nvram_safe_get("territory_code"), "JP", 2)) {
+		for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit) {
+
+			if (!eth_wantype(unit))
+				continue;
+
+			link_wan_nvname(unit, wired_link_nvram, sizeof(wired_link_nvram));
+			if (unit == WAN_UNIT_FIRST)
+				snprintf(prefix, sizeof(prefix), "wan46det_");
+			else
+				snprintf(prefix, sizeof(prefix), "wan46det%d_", unit);
+
+			if (nvram_get_int("x_Setting") && !ipv6_enabled()) {
+				nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_UNKNOW);
+				_dprintf("[%s(%d)] ### IPv6 Disabled. ###\n", __FUNCTION__, __LINE__);
+				continue;
+			}
+
+			if (re) {
+				_dprintf("[%s(%d)] ### Aute Detect RESET ###\n", __FUNCTION__, __LINE__);
+				nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_INITIALIZING);
+			}
+
+			if (!nvram_get_int(wired_link_nvram)) {
+				nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_NOLINK);
+				continue;
+			}
+
+			if (!pids("odhcp6c")) {
+				nvram_set("ipv6_service", "ipv6pt");
+				wan6_up(get_wan6face());
+				sleep(5);
+			}
+
+			if (nvram_get_int(strcat_r(prefix, "state", tmp)) >= WAN46DET_STATE_UNKNOW)
+				continue;
+
+			nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_INITIALIZING);
+			nvram_set_int(strcat_r(prefix, "state", tmp), wan46det(unit));
+		}
+	}
+
+	nvram_set("wan46det_proceeding", "0");
 	return 0;
 }
 #endif

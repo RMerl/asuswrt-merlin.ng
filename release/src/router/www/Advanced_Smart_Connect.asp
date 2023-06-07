@@ -1030,7 +1030,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1085,7 +1087,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1140,7 +1144,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1195,7 +1201,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1308,7 +1316,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1363,7 +1373,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1418,7 +1430,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1473,7 +1487,9 @@ function register_event(){
 				based_modelid == "ET8_V2" ||
 				based_modelid == "RT-AX56_XD4" ||
 				based_modelid == "XD4PRO" ||
+                                based_modelid == "XC5" ||
 				based_modelid == "CT-AX56_XD4" ||
+				based_modelid == "EBA63" ||
 				based_modelid == "RT-AX58U" ||
 				based_modelid == "RT-AX58U_V2" ||
 				based_modelid == "BR63" ||
@@ -1640,7 +1656,9 @@ function check_power(power_value,flag){
 			based_modelid == "ET8_V2" ||
 			based_modelid == "RT-AX56_XD4" ||
 			based_modelid == "XD4PRO" ||
+                        based_modelid == "XC5" ||
 			based_modelid == "CT-AX56_XD4" ||
+			based_modelid == "EBA63" ||
 			based_modelid == "RT-AX58U" ||
 			based_modelid == "RT-AX58U_V2" ||
 			based_modelid == "BR63" ||
@@ -1704,7 +1722,9 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "ET8_V2" ||
 			based_modelid == "RT-AX56_XD4" ||
 			based_modelid == "XD4PRO" ||
+                        based_modelid == "XC5" ||
 			based_modelid == "CT-AX56_XD4" ||
+			based_modelid == "EBA63" ||
 			based_modelid == "RT-AX58U" ||
 			based_modelid == "RT-AX58U_V2" ||
 			based_modelid == "BR63" ||
@@ -1751,7 +1771,9 @@ function set_lg_power(power_value,flag,idx){
 			based_modelid == "ET8_V2" ||
 			based_modelid == "RT-AX56_XD4" ||
 			based_modelid == "XD4PRO" ||
+                        based_modelid == "XC5" ||
 			based_modelid == "CT-AX56_XD4" ||
+			based_modelid == "EBA63" ||
 			based_modelid == "RT-AX58U" ||
 			based_modelid == "RT-AX58U_V2" ||
 			based_modelid == "BR63" ||

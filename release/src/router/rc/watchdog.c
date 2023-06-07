@@ -200,6 +200,10 @@ static int top = 0;
 static int chkusb3_period = 0;
 static int u3_chk_life = 6;
 #endif
+#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U))
+static int ledg_count = 0;
+#endif
+static int wanduck_count = 0;
 static int btn_pressed = 0;
 static int btn_count = 0;
 #ifdef BTN_SETUP
@@ -349,6 +353,10 @@ void aura_led_control(char *rgb);
 
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 void RC_SEND_NT_EVENT(int NT_EVENT_FLAG, char *sub_event);
+#endif
+
+#ifdef RTCONFIG_MOCA
+static int  _is_moca_mps_ready_to_trigger();
 #endif
 
 int
@@ -524,6 +532,7 @@ int init_toggle(void)
 		case MODEL_ET8_V2:
 		case MODEL_RTAX56_XD4:
 		case MODEL_XD4PRO:
+		case MODEL_XC5:
 		case MODEL_CTAX56_XD4:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX82U_V2:
@@ -3925,7 +3934,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
 #elif defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2)
 				eval("wl", "-i", "eth4", "ledbh", "10", "7");
-#elif defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
+#elif defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5)
 				eval("wl", "-i", "wl0", "ledbh", "10", "7");
 #elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 				eval("wl", "-i", "eth2", "ledbh", "0", "25");
@@ -3972,7 +3981,7 @@ void btn_check(void)
 				eval("wl", "-i", "eth6", "ledbh", "10", "7");
 #elif defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2)
 				eval("wl", "-i", "eth5", "ledbh", "10", "7");
-#elif defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
+#elif defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5)
 				eval("wl", "-i", "wl1", "ledbh", "10", "7");
 #elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 				eval("wl", "-i", "eth3", "ledbh", "0", "25");
@@ -4143,6 +4152,43 @@ void btn_check(void)
 
 	if (btn_pressed_setup < BTNSETUP_START)
 	{
+#ifdef RTCONFIG_MOCA
+		if(button_pressed(BTN_WPS) &&
+			_is_moca_mps_ready_to_trigger())
+		{
+			//check wps enable first
+			if(nvram_match("wps_enable", "1"))	//no need to handle btn_pressed_setup and btn_count_setup
+			{
+				if (btn_pressed_setup == BTNSETUP_DETECT)
+				{
+					if ((btn_count_setup + 1) > WPS_WAIT_COUNT)
+					{
+						start_moca_mps();
+					}
+				}
+			}
+			else
+			{
+				TRACE_PT("button WPS pressed\n");
+				if (btn_pressed_setup == BTNSETUP_NONE)
+				{
+					btn_pressed_setup = BTNSETUP_DETECT;
+					btn_count_setup = 0;
+					alarmtimer(0, RUSHURGENT_PERIOD);
+				}
+				else
+				{	/* Whenever it is pushed steady */
+					if (++btn_count_setup > WPS_WAIT_COUNT)
+					{
+						btn_pressed_setup = BTNSETUP_START;
+						btn_count_setup = 0;
+						btn_count_setup_second = 0;
+						start_moca_mps();
+					}
+				}
+			}
+		}
+#endif
 #ifdef RTCONFIG_WPS_RST_BTN
 		if (btn_pressed_setup == BTNSETUP_DETECT)
 #else
@@ -5340,11 +5386,11 @@ unsigned long get_etlan_count()
 	char buf[256];
 	char *ifname, *p;
 	unsigned long counter=0;
-#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO)
+#if defined(GTAC5300) || defined(RTAX88U) || defined(GTAX11000) || defined(RTAX92U) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56U) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(RTAX86U) || defined(RTAX68U) || defined(RTAX55) || defined(RTAX1800) || defined(GTAXE11000) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(RTAX3000N) || defined(RTAX88U_PRO) || defined(XC5)
 	unsigned long tmpcnt=0;
 #endif
 
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(EBA63)
 	return -1;
 #endif
 #if defined(RTAX86U)
@@ -6284,7 +6330,9 @@ void led_check(int sig)
 		case MODEL_ET8_V2:
 		case MODEL_RTAX56_XD4:
 		case MODEL_XD4PRO:
+		case MODEL_XC5:
 		case MODEL_CTAX56_XD4:
+		case MODEL_EBA63:
 		case MODEL_RTAX58U:
 		case MODEL_RTAX82U_V2:
 		case MODEL_TUFAX5400_V2:
@@ -6788,11 +6836,14 @@ void regular_ddns_check(void)
 			int u = get_first_connected_public_wan_unit();
 			if (u < WAN_UNIT_FIRST || u >= WAN_UNIT_MAX)
 			{
+#ifndef RTCONFIG_INADYN
 				logmessage("DDNS", "[%s] dual WAN load balance DDNS cannot succeed to work, because none of wan is public IP.", __FUNCTION__);
 				return;
+#endif
 			}
-
-			wan_unit = u;
+			else {
+				wan_unit = u;
+			}
 		}
 	}
 #endif
@@ -6854,11 +6905,14 @@ void ddns_check(void)
 			int u = get_first_connected_public_wan_unit();
 			if (u < WAN_UNIT_FIRST || u >= WAN_UNIT_MAX)
 			{
+#ifndef RTCONFIG_INADYN
 				logmessage("DDNS", "[%s] dual WAN load balance DDNS cannot succeed to work, because none of wan is public IP.", __FUNCTION__);
 				return;
+#endif
 			}
-
-			wan_unit = u;
+			else {
+				wan_unit = u;
+			}
 		}
 	}
 #endif
@@ -6908,8 +6962,10 @@ void ddns_check(void)
 		}
 	}
 
-	if (nvram_get_int("ntp_ready") != 1)
+	if (nvram_get_int("ntp_ready") != 1) {
+		logmessage("watchdog", "NTP time not sync, exit DDNS Retry.\n");
 		return;
+	}
 
 	/* MAX Retry Count mechanism */
 	int ddns_check_retry = nvram_get_int("ddns_check_retry");
@@ -9685,7 +9741,7 @@ void watchdog(int sig)
 	single_led_status();
 #endif
 #if defined(RTCONFIG_BT_CONN)
-#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)
+#if defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(XC5)
 	bluetooth_check();
 #endif
 	bt_turn_off_service();
@@ -9787,11 +9843,30 @@ void watchdog(int sig)
 			f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
 	}
 #endif
+#ifdef RTAX3000N
+	parse_ptf();
+#endif
 	top_period = nvram_get_int("top_period");
 	if (top_period) {
 		top = (top + 1) % top_period ;
 		if (!top)
 			system("top -b -n 1 | head | logger -t top");
+	}
+#if !defined(RTCONFIG_BCM_MFG) && (defined(RTAX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(DSL_AX82U))
+	if (!pids("ledg")) {
+		ledg_count = (ledg_count + 1) % 4 ;
+		if (!ledg_count) {
+			notify_rc("restart_ledg");
+		}
+	}
+#endif
+
+	if (!no_need_to_start_wanduck() && !pids("wanduck")) {
+		wanduck_count = (wanduck_count + 1) % 4 ;
+		if (!wanduck_count) {
+			stop_wanduck();
+			start_wanduck();
+		}
 	}
 
 	if(nvram_match("ntp_ready", "1")) {
@@ -10381,5 +10456,20 @@ void RC_SEND_NT_EVENT(int NT_EVENT_FLAG, char *sub_event)
 
 	if(payload) json_object_put(payload);
 	if(nt_root) json_object_put(nt_root);
+}
+#endif
+
+#ifdef RTCONFIG_MOCA
+static int  _is_moca_mps_ready_to_trigger()
+{
+	if(nvram_get_int("moca_dev_state") == MOCA_STATE_DEV_READY
+		&& nvram_get_int("moca_mps_trigger") == 0)
+	{
+		return 1;
+	}
+	else
+	{
+		return 0;
+	}
 }
 #endif

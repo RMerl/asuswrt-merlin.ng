@@ -476,6 +476,11 @@ extern int check_AiMesh_whitelist(char *page);
 extern int ej_get_dnsprivacy_presets(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 extern int check_cmd_injection_blacklist(char *para);
+extern void __validate_apply_set_wl_var(char *nv, char *val) __attribute__((weak));
+#ifdef RTCONFIG_BWDPI
+extern int check_bwdpi_status_app_name(char *name);
+#endif
+extern int validate_apply_input_value(char *name, char *value);
 
 /* web-*.c */
 extern int ej_wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit);
@@ -626,4 +631,5 @@ extern int get_active_wan_unit(void);
 extern int last_time_lock_warning(void);
 extern int check_lock_status(time_t *dt);
 extern void check_lock_state();
+extern int gen_asus_token_cookie(char *asus_token, int asus_token_len, char *token_cookie, int cookie_len);
 #endif /* _httpd_h_ */

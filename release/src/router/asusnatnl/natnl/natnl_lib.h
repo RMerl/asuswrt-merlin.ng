@@ -331,6 +331,9 @@ struct natnl_tnl_event {
 			
 			// The version of remote user agent.
 			char                 version[MAX_TEXT_LEN];
+
+			// The address of remote user agent.
+			char                 address[MAX_TEXT_LEN];
 		} remote_info;
 
 		struct {
@@ -443,6 +446,9 @@ struct natnl_tnl_info {
 
 			// The version of remote user agent.
 			char                 version[MAX_TEXT_LEN];
+
+			// The address of remote user agent.
+			char                 address[MAX_TEXT_LEN];
 		} remote_info;
 
 		struct {
@@ -451,6 +457,9 @@ struct natnl_tnl_info {
 
 			// The version of local user agent.
 			char                 version[MAX_TEXT_LEN]; 
+
+			// The device_pwd of remote user agent.
+			char                 device_pwd[MAX_TEXT_LEN];
 		} local_info;
 	} para;
 

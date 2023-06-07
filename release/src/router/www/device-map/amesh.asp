@@ -402,6 +402,8 @@ function gen_ready_onboardinglist(_onboardingList) {
 							if(source == 2){
 								if(type != undefined && type == "65536")
 									code += "<div class='radioIcon radio_plc'></div>";
+								else if(type != undefined && type == "131072")
+									code += "<div class='radioIcon radio_moca'></div>";
 								else
 									code += "<div class='radioIcon radio_wired'></div>";
 							}
@@ -439,6 +441,8 @@ function gen_ready_onboardinglist(_onboardingList) {
 					if(source == 2){
 						if(type != undefined && type == "65536")
 							$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_plc');
+						else if(type != undefined && type == "131072")
+							$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_moca');
 						else
 							$('#ready_onBoarding_block').find('#' + onboarding_device_id + '').children().find('.radioIcon').removeClass().addClass('radioIcon radio_wired');
 					}
@@ -528,6 +532,8 @@ function gen_current_onboardinglist(_onboardingList, _wclientlist, _wiredclientl
 						wireless_rssi = "wired";
 					else if(real_port_type.type == "plc")
 						wireless_rssi = "plc";
+					else if(real_port_type.type == "moca")
+						wireless_rssi = "moca";
 				}
 				else if(connect_type == "2") {
 					wireless_band = 0;
@@ -2505,6 +2511,10 @@ function get_connect_type(_node_info) {
 				component.text = "<#Powerline#>";
 				component.icon = "<div class='radioIcon radio_plc'></div>";
 			}
+			else if(real_port_type.type == "moca"){
+				component.text = "MoCa";
+				component.icon = "<div class='radioIcon radio_moca'></div>";
+			}
 		}
 		else {
 			component.text = "<#tm_wireless#>";
@@ -2536,7 +2546,7 @@ function get_connect_type(_node_info) {
 }
 function gen_real_port_type(_node_info){
 	var result = {type:"eth", speed:"G"};
-	var interface_mapping = [{value:"1", type:"eth"}, {value:"2", type:"wifi"}, {value:"3", type:"plc"}];//Type
+	var interface_mapping = [{value:"1", type:"eth"}, {value:"2", type:"wifi"}, {value:"3", type:"plc"}, {value:"4", type:"moca"}];//Type
 	var eth_rate_mapping = [{value:"1", type:"M"}, {value:"2", type:"M"}, {value:"3", type:"G"}, {value:"4", type:"F"}, {value:"5", type:"Q"},
 		{value:"6", type:"T"}, {value:"7", type:"T"}];//SubType
 	var eth_re_path_sequence = {"1":1, "16":2, "32":3, "64":4};
@@ -2571,6 +2581,13 @@ function gen_real_port_type(_node_info){
 								case "3":
 									if(eth_current_idx == eth_mapping_idx){
 										result.type = "plc";
+										return false;
+									}
+									eth_current_idx++;
+									break;
+								case "4":
+									if(eth_current_idx == eth_mapping_idx){
+										result.type = "moca";
 										return false;
 									}
 									eth_current_idx++;
@@ -2610,7 +2627,7 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 	option_array.push(gen_option_attr("3", ((_eap_flag) ? "<#Auto#> (<#AiMesh_Node_ConnPrio_Eth_Based_Title#>)" : "<#Auto#>"), "auto"));
 
 	var port_mapping = [{value:"1", text:"WAN"}, {value:"2", text:"LAN"}];//Def
-	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"WiFi"}, {value:"3", text:"Powerline"}];//Type
+	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"WiFi"}, {value:"3", text:"Powerline"}, {value:"4", text:"MoCa"}];//Type
 	var eth_rate_mapping = [{value:"1", text:"10M"}, {value:"2", text:"100M"}, {value:"3", text:"1G"}, {value:"4", text:"2.5G"}, {value:"5", text:"5G"},
 		{value:"6", text:"10G base-T"}, {value:"7", text:"10G SFP+"}];//SubType
 	var wifi_rate_mapping = [{value:"1", text:"2.4GHz"}, {value:"2", text:"5GHz"}, {value:"3", text:"6GHz"}];//SubType
@@ -2653,6 +2670,10 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 								if_text = if_type.text;
 								conn_type = "plc";
 								break;
+							case "4":
+								if_text = if_type.text;
+								conn_type = "moca";
+								break;
 						}
 						if(rate_type != undefined && rate_type != "")
 							rate_text = rate_type.text;
@@ -2684,6 +2705,8 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 					option_text = option_text.replace("#CONNPRIOTYPE", conn_prio_type);
 					var option_conn_type = conn_type;
 					if(_eap_flag && conn_type == "wifi")
+						return true;
+					if(option_value == "" || option_text == "" || option_conn_type == "")
 						return true;
 					option_array.push(gen_option_attr(option_value, option_text, option_conn_type));
 				});

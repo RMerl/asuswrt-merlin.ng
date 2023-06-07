@@ -1,8 +1,8 @@
 var ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
 var wgs_faq_href = {
-	"setup_wgs": "https://nw-dlcdnet.asus.com/support/forward_test.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=163",
-	"site_to_site": "https://nw-dlcdnet.asus.com/support/forward_test.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=164",
-	"setup_wgc": "https://nw-dlcdnet.asus.com/support/forward_test.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=165"
+	"setup_wgs": "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=163",
+	"site_to_site": "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=164",
+	"setup_wgc": "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=165"
 };
 
 httpApi.hookGet("get_wgs_parameter", true);

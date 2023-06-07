@@ -762,7 +762,7 @@ static void qca_ol_tmode_param_hook(char ***pv, char **ps, int *plen)
  *     -1:	invalid parameter
  *  otherwise:	error
  */
-static int __update_hw_mode_id(const char *basedir, const struct dirent *de, void *arg)
+static int __update_hw_mode_id(const char *basedir, const struct dirent *de, size_t de_size, void *arg)
 {
 	int v = -1, *hw_mode_id = arg;
 	char val[16];	/* see hw_modes in wifi_soc_hw_modes_show() */
@@ -780,6 +780,13 @@ static int __update_hw_mode_id(const char *basedir, const struct dirent *de, voi
 		{ NULL, -1 }
 	}, *p;
 
+	if (sizeof(*de) != de_size) {
+		/* If size of struct dirent mismatch, make sure readdir_wrapper() and this function see same struct dirent.h.
+		 * e.g., it's different in uclibc if _FILE_OFFSET_BITS=64 is defined or not.
+		 */
+		dbg("%s: size of struct dirent mismatch (%u v.s. %u)!\n", __func__, sizeof(*de), de_size);
+		return -1;
+	}
 	if (!arg)
 		return -1;
 
@@ -3092,6 +3099,21 @@ static void __load_wifi_driver(int testmode)
 
 	/* update the ini nss info */
 	update_ini_nss_info(hk_ol_num);
+
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_QCA_AXCHIP)
+	/* Target-Wake Time
+	 * Always use wl0_twt and make sure wlX_twt equal to each other due to all bands share same global.ini.
+	 * This controls "TWT Responder Support" of octet 10 of Extended Capabilities.
+	 */
+
+	if (nvram_match("wl0_twt", "1")) {
+		update_ini_file(GLOBAL_INI, "twt_enable=1");
+		update_ini_file(GLOBAL_INI, "bcast_twt_enable=1");
+	} else {
+		update_ini_file(GLOBAL_INI, "twt_enable=0");
+		update_ini_file(GLOBAL_INI, "bcast_twt_enable=0");
+	}
+#endif
 #endif	/* RTCONFIG_GLOBAL_INI */
 
 #if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
@@ -3295,7 +3317,10 @@ static void __load_wifi_driver(int testmode)
 void load_wifi_driver(void)
 {
 #if defined(RTCONFIG_SOC_IPQ8074)
-	f_write_string("/proc/sys/vm/pagecache_ratio", "25", 0, 0);
+	char val[4];
+
+	snprintf(val, sizeof(val), "%d", min(get_pagecache_ratio(), 25));
+	f_write_string("/proc/sys/vm/pagecache_ratio", val, 0, 0);
 	f_write_string("/proc/net/skb_recycler/flush", "1", 0, 0);	/* remove skb and pause skb recycler. */
 #elif defined(RTCONFIG_SOC_IPQ8064)
 	f_write_string("/proc/sys/vm/pagecache_ratio", "25", 0, 0);

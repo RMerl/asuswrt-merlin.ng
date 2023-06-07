@@ -442,4 +442,8 @@ ifeq ($(BUILD_NAME), GT10)
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
 endif
 
+ifeq ($(RTCONFIG_BCMARM),y)
+	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
+endif
+
 .PHONY: dummy

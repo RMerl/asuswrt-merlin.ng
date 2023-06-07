@@ -16,6 +16,22 @@ jQuery.fn.show_item_hint = function(hintStr){
 		.addClass("item_hint")
 		.insertAfter($(this).closest(".profile_setting_item"));
 }
+if ( !Element.prototype.scrollIntoViewIfNeeded ) {
+	Element.prototype.scrollIntoViewIfNeeded = function ( centerIfNeeded = true ) {
+		const el = this;
+		new IntersectionObserver( function( [entry] ) {
+			const ratio = entry.intersectionRatio;
+			if (ratio < 1) {
+				let place = ratio <= 0 && centerIfNeeded ? 'center' : 'nearest';
+				el.scrollIntoView( {
+					block: place,
+					inline: place,
+				} );
+			}
+			this.disconnect();
+		} ).observe(this);
+	};
+}
 var ip_RegExp = {
 	"IPv4" : "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])$",
 	"IPv4_CIDR" : "^(([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])\.){3}([0-9]|[1-9][0-9]|1[0-9]{2}|2[0-4][0-9]|25[0-5])(\/([0-9]|[1-2][0-9]|3[0-2]))$",

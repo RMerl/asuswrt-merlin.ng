@@ -745,9 +745,7 @@ extern void Set_AvgUptime(const char *value);
 extern int country_to_code(char *ctry, int band, char *code_str, size_t len);
 extern void acs_ch_weight_param(void);
 extern void get_stainfo(int bssidx, int vifidx);
-#if defined(RTAX89U)
 extern void pre_syspara(void);
-#endif
 #endif	/* RTCONFIG_QCA */
 
 #if defined(RTCONFIG_SOC_IPQ8074)
@@ -1083,7 +1081,7 @@ typedef struct {
 	int vid;
 	int dot1p;
 	int total_config;
-	char base_ifname[8];
+	char base_ifname[IFNAMSIZ];
 	int base_wan_unit;
 	int mcast;
 	int dscp;
@@ -1418,6 +1416,9 @@ extern int found_default_route(int wan_unit);
 #ifdef RTCONFIG_QCA_PLC_UTILS
 extern int autodet_plc_main(int argc, char *argv[]);
 #endif
+#ifdef RTCONFIG_SOFTWIRE46
+extern int auto46det_main(int argc, char *argv[]);
+#endif
 extern int autodet_main(int argc, char *argv[]);
 extern int detwan_main(int argc, char *argv[]);
 extern int dpdt_ant_main(int argc, char *argv[]);
@@ -1427,6 +1428,17 @@ extern void stop_wan(void);
 extern int add_multi_routes(int check_link, int wan_unit);
 extern int add_routes(char *prefix, char *var, char *ifname);
 extern int del_routes(char *prefix, char *var, char *ifname);
+#ifdef RTCONFIG_AUTO_WANPORT
+extern int is_auto_wanport_enabled();
+extern int get_mac_from_ip(const char *tip, char *tmac, int tmac_size);
+extern int get_br_port_no_from_mac(const char *target_mac);
+extern int get_if_from_br_port_no(const int tno, char *if_name, int if_len);
+extern int autowan_main(int argc, char *argv[]);
+extern void restore_auto_wanport();
+extern void set_auto_wanport(const char *wan_ifname, int restart_wan);
+extern int get_num_of_auto_wanport(const char *ifname);
+extern int get_auto_wanport_phy_status(void);
+#endif // RTCONFIG_AUTO_WANPORT
 extern void start_wan_if(int unit);
 extern void stop_wan_if(int unit);
 #ifdef RTCONFIG_IPV6
@@ -2262,9 +2274,16 @@ extern void add_ip6_lanaddr(void);
 extern void start_ipv6_tunnel(void);
 extern void stop_ipv6_tunnel(void);
 #ifdef RTCONFIG_SOFTWIRE46
+#define S46_DEBUG	"/tmp/S46_DEBUG"
 #define S46_MAP_PATH	"/tmp/v6maps.%d"
 #define S46_LOG_PATH	"/jffs/s46.log"
 #define S46_RETRY_TIME	3
+enum S46_SVRURL_TYPE {
+	GET_NTT_HGW_URL			= 0,
+	GET_V6PLUS_URL,
+	SET_V6PLUS_URL,
+	GET_OCNVC_URL
+};
 enum S46_MAPSVR_STATE {
 	S46_MAPSVR_INIT			= 0,
 	S46_MAPSVR_OK			= 1,
@@ -2273,7 +2292,6 @@ enum S46_MAPSVR_STATE {
 	S46_MAPSVR_NO_RESPONSE		= 4,
 	S46_MAPSVR_MAX
 };
-extern void set_s46_ra_addr(int wan_unit, int wan_type, char *wan_ifname);
 extern int s46_mapcalc(int wan_unit, int wan_proto, char *rules, char *peerbuf, size_t peerbufsz,
 		       char *addr6buf, size_t addr6bufsz, char *addr4buf, size_t addr4bufsz,
 		       int *poffset, int *ppsidlen, int *ppsid, char **fmrs, int draft);
@@ -2288,6 +2306,8 @@ extern void restart_v6plusd(int unit);
 extern void start_ocnvcd(int unit);
 extern void stop_ocnvcd(int unit);
 extern void restart_ocnvcd(int unit);
+extern void start_auto46det(void);
+extern void stop_auto46det(void);
 //s46comm.c
 extern void s46print(const char *logpath, const char *format, ...);
 #define S46_DBG(fmt, args...) \
@@ -2296,10 +2316,14 @@ extern void s46print(const char *logpath, const char *format, ...);
 	} while(0)
 extern int _nvram_check(const char *name, const char *value);
 extern int _nvram_set_check(const char *name, const char *value);
-extern void fmrs2file(int unit);
+extern int wan46det(int unit);
 extern int ce_dad_check(int unit);
 extern int s46_ntt_hgw(int unit);
+extern char *get_s46_ra(int unit);
+extern char *get_s46_url(char *s, int sz, int type, ...);
 extern char *calc_s46_port_range(int usable, int psid, int psidlen, int offset, char *ret, int retsz);
+extern void fmrs2file(int unit);
+extern void init_wan46(void);
 // v6plusd.c
 #define V6PLUSD_PIDFILE "/var/run/v6plusd.%d.pid"
 extern char *s46_jpne_maprules(char *id, char *idbuf, size_t idlen, long *rsp_code);
@@ -3135,6 +3159,13 @@ extern void restart_mastiff();
 extern void start_aae_sip_conn(int sdk_init);
 extern void stop_aae_sip_conn(int sdk_deinit);
 extern void stop_aae_gently();
+#ifdef RTCONFIG_IG_SITE2SITE
+extern void start_aaeuac(int argc, char *argv[]);
+extern void stop_aaeuac();
+extern void restart_aaeuac(int argc, char *argv[]);
+extern int start_aaeuac_by_vpn_prof(char *type, int unit);
+extern void stop_aaeuac_by_vpn_prof(char *type, int unit);
+#endif
 #endif
 #ifdef RTCONFIG_HAPDEVENT
 extern int start_hapdevent(void);
@@ -3358,6 +3389,23 @@ typedef struct hwsw_state_s {
 } hwsw_state_t;
 #endif
 
+//mxl371x.c
+#ifdef RTCONFIG_MOCA
+extern int init_moca();
+extern void start_moca();
+extern void stop_moca();
+extern void start_moca_mps();
+extern void reset_moca_default_privacy();
+extern void moca_node_state();
+extern void moca_local_node_state(MOCA_NODE_INFO *node);
+extern void moca_set_privacy();
+extern void moca_mib(MOCA_MIB_DATA *mib);
+extern int moca_monitor_main(int argc, char *argv[]);
+extern void get_moca_devices(MOCA_NODE_INFO *moca_devices, int max_devices, int port_idx);
+extern void get_moca_status(phy_info_list *list);
+extern int create_moca_log(const char *log_path);
+#endif
+
 #if defined(RTCONFIG_BCM_7114) || defined(HND_ROUTER)
 typedef struct probe_4366_param_s {
 	int bECode_2G;
@@ -3375,6 +3423,7 @@ typedef struct probe_PCIE_param_s {
 #endif /* RTAX88U */
 
 #define MTD_BAD_BLKS_JFFS_FILE "/jffs/mtd_bad_blks.json"
+#define WEBS_POWERTABLE_FILE "/tmp/webs_prtbl.txt"
 
 #if defined(RTCONFIG_ASUSCTRL)
 /* asusctrl */
@@ -3519,7 +3568,8 @@ extern int scan_upnpclist(char *filename, upnpc_list_t target, char *output_dura
 #endif /* RTCONFIG_UPNPC_NEW */
 
 typedef struct wanlan_st_s {
-	int numports;
+	int wan_ports;
+	int lan_ports;
 	char W0[8];
 	char W1[8];
 	char W2[8];
@@ -3532,7 +3582,7 @@ typedef struct wanlan_st_s {
 	char L7[8];
 	char L8[8];
 } wanlan_st_t;
-int get_wanlanstatus(wanlan_st_t *wlst);
+int get_wanlanstatus(wanlan_st_t *wlst, char *output, int len);
 int transform_wanlanstatus(wanlan_st_t *wlst);
 
 //Log path is '/tmp/asusdebuglog/plc.log'

@@ -1,0 +1,2805 @@
+
+mainmenu "Router Configuration"
+
+config RTCONFIG_FW_JUMP
+	bool "build the jumped firmware"
+	default n
+
+config RTCONFIG_REALTEK
+	bool "Realtek SoC support"
+	default n
+
+config RTCONFIG_RTL819X
+	bool "Realtek RTL819X support"
+	default n
+
+config RTCONFIG_RTL8197F
+	bool "Realtek RTL8197F support"
+	default n
+
+config RTCONFIG_RTK_NAND
+	bool "Realtek NAND Flash support"
+	default n
+
+config RTCONFIG_OPTIMIZE_SHARED_LIBS
+	bool "Optimize shared libraries (remove unused symbols)"
+	default y
+
+config RTCONFIG_MUSL_LIBC
+	bool "MUSL libc"
+	default n
+
+config RTCONFIG_L2TP
+	bool "L2TP"
+	default y
+
+config RTCONFIG_PPTP
+	bool "PPTP"
+	default y
+
+config RTCONFIG_EAPOL
+	bool "EAPOL"
+	default y
+
+config RTCONFIG_PPTPD
+	bool "PPTPD"
+	default n
+
+config RTCONFIG_ACCEL_PPTPD
+	bool "ACCEL_PPTPD"
+	default n
+
+config RTCONFIG_SNMPD
+	bool "SNMPD"
+	default n
+
+config RTCONFIG_HTTPS
+	bool "HTTPS"
+	default y
+
+config RTCONFIG_BCMARM
+	bool "Bcm Arm"
+	default n
+
+config RTCONFIG_BCM7
+	bool "Bcm sdk 7"
+	default n
+
+config RTCONFIG_BCM_794
+	bool "Bcm sdk 7_14_94_x"
+	default n
+
+config RTCONFIG_BCM_7114
+	bool "Bcm sdk 7_14_114_x"
+	default n
+
+config RTCONFIG_HND_ROUTER
+	bool "Bcm hnd bsp"
+	default n
+
+config RTCONFIG_BCM_MFG
+	bool "BCM MFG mode"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
+	default n
+
+config RTCONFIG_WLTEST
+	bool "wltest mode"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
+	default n
+
+config RTCONFIG_HND_ROUTER_AX
+	bool "Bcm hnd 11ax bsp"
+	default n
+
+config RTCONFIG_HND_ROUTER_AX_675X
+	bool "Bcm hnd 11ax (675x) bsp"
+	default n
+
+config RTCONFIG_HND_ROUTER_AX_6756
+	bool "Bcm hnd 11ax (6756) bsp"
+	default n
+
+config RTCONFIG_HND_ROUTER_AX_6710
+	bool "BCM6710"
+	default n
+
+config RTCONFIG_SDK502L07P1_121_37
+	bool "SDK 5.02L.07p1_17.10.121.37"
+	depends on RTCONFIG_HND_ROUTER_AX_675X || RTCONFIG_HND_ROUTER_AX_6710
+	default n
+
+config RTCONFIG_SDK504L02_188_1303
+	bool "SDK 5.04L.02_17.10.188.1303"
+	default n
+
+config RTCONFIG_BCM_502L07P2
+	bool "Broadcom SDK 5.02L.07p2"
+	default n
+
+config RTCONFIG_BCM_WIFI_NIC_DEBUG
+	bool "Broadcom: dump the debug messages of the WiFi NIC mode"
+	default n
+
+config RTCONFIG_HND_WL
+	bool "BCM wl NIC mode support"
+	depends on RTCONFIG_HND_ROUTER_AX
+	default n
+
+config RTCONFIG_DFS_US
+	bool "DFS US support"
+	depends on RTCONFIG_HND_ROUTER
+	default n
+
+config RTCONFIG_BCM9
+	bool "Bcm sdk 9_10_162_x"
+	default n
+
+config RTCONFIG_BUILDBCM7
+	bool "build Bcm sdk 7 on 6 platforms"
+	default n
+
+config RTCONFIG_ROMCFE
+	bool "fw include cfe"
+	default n
+
+config RTCONFIG_ROMATECCODEFIX
+	bool "fix ccode error"
+	default n
+
+config RTCONFIG_NV128
+	bool "nvram size 128k"
+	default n
+
+config RTCONFIG_NVRAM_SIZE
+	hex "nvram size"
+	default 0x8000
+
+config RTCONFIG_DHDAP
+	bool "Bcm7 dhdap"
+	default n
+
+config RTCONFIG_BW160M
+	bool "Bandwidth 160MHz support"
+	depends on RTCONFIG_DHDAP || RTCONFIG_QCA
+	default n
+
+config RTCONFIG_WLEXE
+	bool "dhd wl exe"
+	default n
+
+config RTCONFIG_DPSTA
+	bool "Bcm7 dpsta"
+	default n
+
+config RTCONFIG_DPSR
+	bool "Bcm7 dpsr"
+	default n
+
+config RTCONFIG_GMAC3
+	bool "Bcm7 gmac3"
+	default n
+
+config RTCONFIG_BCMSMP
+	bool "BCM SMP"
+	default n
+
+config RTCONFIG_BCMFA
+	bool "BCM FA"
+	default n
+
+config RTCONFIG_RGMII_BCM_FA
+	bool "BCM FA on RGMII hardware"
+	default n
+
+config RTCONFIG_5301X
+	bool "Bcm 5301x"
+	default n
+
+config RTCONFIG_4352_5G
+	bool "4352 needs"
+	default n
+
+config RTCONFIG_SSH
+	bool "SSH"
+	default y
+
+config RTCONFIG_CIFS
+	bool "CIFS Client"
+	default y
+
+config RTCONFIG_BRCM_NAND_JFFS2
+	bool "JFFS Support on BRCM Nand Flash Partition"
+	default n
+
+config RTCONFIG_JFFS_NVRAM
+	bool "NVRAM on JFFS support"
+	depends on RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS
+	default y
+
+config RTCONFIG_JFFS_NVRAM_HND_OLD
+	bool "old patch for Broadcom HND SDK"
+	depends on RTCONFIG_JFFS_NVRAM
+	default n
+
+config RTCONFIG_JFFS2
+	bool "JFFS Support"
+	default n
+
+config RTCONFIG_DISKTEST
+	bool "Disk test tools"
+	default n
+
+config RTCONFIG_JFFSV1
+	bool "Use JFFSv1 (if not selected, JFFS2 is used)"
+	depends on RTCONFIG_JFFS2
+	default y
+
+config RTCONFIG_ZEBRA
+	bool "Zebra"
+	default n
+
+config RTCONFIG_QUAGGA
+	bool "Quagga"
+	default n
+
+config RTCONFIG_DDNS
+	bool "Dynamic DNS"
+	default y
+
+config RTCONFIG_INADYN
+	bool "Dynamic DNS"
+	depends on RTCONFIG_DDNS
+	default y
+
+config RTCONFIG_L7
+	bool "Layer 7 Netfilter"
+	default y
+
+config RTCONFIG_L7PAT
+	bool "Standard Layer 7 Patterns"
+	depends on RTCONFIG_L7
+	default y
+
+config RTCONFIG_LZO
+	bool "LZO Compression"
+	default n
+
+config RTCONFIG_OPENVPN
+	bool "OpenVPN"
+	depends on RTCONFIG_LZO
+	default n
+
+config RTCONFIG_IPSEC
+	bool "IPsec Support"
+	default n
+
+config RTCONFIG_QUICKSEC
+	bool "InsideSecure QuickSec Support"
+	depends on RTCONFIG_IPSEC
+	default n
+
+config RTCONFIG_STRONGSWAN
+	bool "StrongSwan IPSec Support"
+	depends on RTCONFIG_IPSEC
+	default n
+
+config RTCONFIG_IPSEC_SERVER
+	bool "IPsec Support"
+	depends on RTCONFIG_IPSEC
+	default n
+
+config RTCONFIG_IPSEC_CLIENT
+	bool "IPsec Support"
+	depends on RTCONFIG_IPSEC
+	default n
+
+# !!TB
+config RTCONFIG_IPV6
+	bool "IPv6 Support"
+	default n
+
+config RTCONFIG_IMPROXY
+	bool "IGMP 1,2,3 & MLD 1,2 Proxy Support"
+
+config RTCONFIG_EBTABLES
+	bool "Ebtables"
+	default n
+
+config RTCONFIG_EMF
+	bool "Broadcom EMF (Efficient Multicast Forwarding & IGMP Snooping)"
+	default n
+
+config RTCONFIG_BCMBSD
+	bool "Brcm Band Steer Selection"
+	default n
+
+config RTCONFIG_BCMBSD_V2
+	bool "Brcm Band Steer Selection V2"
+	default n
+
+config RTCONFIG_BCMSSD
+	bool "SSID Steer Daemon"
+	default n
+
+config RTCONFIG_BCMDCS
+	bool "Broadcom Dynamic Channel Selection"
+	default n
+
+config RTCONFIG_TOAD
+	bool "Traffic Ordering Agent Daemon"
+	default n
+
+config RTCONFIG_BCM_MEVENT
+	bool "Support user space to receive BRCM event"
+	default n
+
+config RTCONFIG_BCMEVENTD
+	bool "Brcm Eventd Selection (for 802.11K)"
+	default n
+
+config RTCONFIG_BCM_APPEVENTD
+	bool "Wireless Application Event Service"
+	default n
+
+config RTCONFIG_HSPOT
+	bool "HOTSPOT 2.0 support"
+	default n
+
+config RTCONFIG_FANCTRL
+	bool "Fan Control Function"
+	default n
+
+config RTCONFIG_BCMWL6
+	bool "BCM WL 6"
+	default n
+
+config RTCONFIG_BCMWL6A
+	bool "BCM WL 6.30.143"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
+	default n
+
+config RTCONFIG_BCM4708
+	bool "BCM WL 6.37.14"
+	depends on RTCONFIG_BCMARM && RTCONFIG_BCMWL6
+	default n
+
+config RTCONFIG_WIRELESSWAN
+	bool "Wireless WAN Function"
+	default n
+
+config RTCONFIG_WIRELESSREPEATER
+	bool "Repeater Mode"
+	default n
+
+config RTCONFIG_REPEATER
+	bool "Pure Repeater Mode"
+	default n
+
+config RTCONFIG_DISABLE_REPEATER_UI
+	bool "Hiden UI Repeater Mode"
+	depends on RTCONFIG_WIRELESSREPEATER || RTCONFIG_REPEATER
+	default n
+
+config RTCONFIG_PROXYSTA
+	bool "Proxy STA"
+	default n
+
+config RTCONFIG_DISABLE_PROXYSTA_UI
+	bool "Hide Proxy Station Repeater Mode on UI"
+	depends on RTCONFIG_PROXYSTA
+	default n
+
+config RTCONFIG_PSR_GUEST
+	bool "Guest network support under PSR mode"
+	depends on RTCONFIG_BCMARM && RTCONFIG_PROXYSTA
+	default n
+
+config RTCONFIG_CONCURRENTREPEATER
+	bool "Concurrent Repeater"
+	default n
+
+config RTCONFIG_VHT80_80
+	bool "80+80MHz bandwidth support"
+	default n
+
+config RTCONFIG_VHT160
+	bool "160MHz bandwidth support"
+	default n
+
+config RTCONFIG_IXIAEP
+	bool "IXIA Performance Endpoint"
+	default n
+
+config RTCONFIG_IPERF
+	bool "Iperf"
+	default n
+
+config RTCONFIG_TCPDUMP
+	bool "tcpdump"
+	default n
+
+config RTCONFIG_DUMP4000
+	bool "dump WAN 4000pkts"
+	default n
+
+config RTCONFIG_TRACEROUTE
+	bool "traceroute"
+	default n
+
+config RTCONFIG_NETOOL
+	bool "Network Tool Daemon"
+	default n
+
+config RTCONFIG_PARENTALCTRL
+	bool "Parental Control Function"
+	default n
+
+config RTCONFIG_INTERNETCTRL
+	bool "Internet Control Function"
+	default n
+
+config RTCONFIG_YANDEXDNS
+	bool "Yandex.DNS Support"
+	depends on !RTCONFIG_DNSFILTER
+	default n
+
+config RTCONFIG_DNSPRIVACY
+	bool "DNS-over-TLS Support"
+	default n
+
+config RTCONFIG_DSL
+	bool "DSL Support"
+	default n
+
+config RTCONFIG_DSL_ANNEX_B
+	bool "DSL Annex B Support"
+	default n
+
+config RTCONFIG_DSL_TCLINUX
+	bool "DSL Support with TCLINUX"
+	default n
+
+config RTCONFIG_VDSL
+	bool "VDSL Support"
+	default n
+
+config RTCONFIG_DSL_BCM
+	bool "DSL Support with BCM platform"
+	default n
+
+config RTCONFIG_DSL_HOST
+	bool "HOST DSL chip"
+	default n
+
+config RTCONFIG_DSL_REMOTE
+	bool "REMOTE DSL chip"
+	default n
+
+config RTCONFIG_SFPP
+	bool "10G SFP+ support"
+	default n
+
+config RTCONFIG_SYSSTATE
+	bool "Support additional debug logs"
+	default n
+
+config RTCONFIG_AHS
+	bool "Auto Healing System"
+	default n
+
+config RTCONFIG_LIBASC
+	bool "ASUS server command library"
+	default n
+
+config RTCONFIG_DUALWAN
+	bool "Dual WAN Support"
+	default n
+
+config RTCONFIG_HW_DUALWAN
+	bool "Dual WAN with Support"
+	default n
+
+config RTCONFIG_MFGFW
+	bool "mfgfw built in"
+	default n
+
+config RTCONFIG_USER_LOW_RSSI
+	bool "User specified accepted min rssi"
+	default n
+
+config RTCONFIG_WATCH_WLREINIT
+	bool "reboot when wlreinit cannot save wl"
+	default n
+
+config RTCONFIG_NEW_USER_LOW_RSSI
+	bool "User specified accepted min rssi"
+	default n
+
+config RTCONFIG_FRS_FEEDBACK
+	bool "Feedback features Support"
+	default n
+
+config RTCONFIG_PUSH_EMAIL
+	bool "Push Mail Service Support"
+	default n
+
+config RTCONFIG_RSYSLOGD
+	bool "rsyslogd Support"
+	default n
+
+config RTCONFIG_DBLOG
+	bool "System Diagnostic Support"
+	default n
+
+config RTCONFIG_NO_USBPORT
+	bool "No USB port"
+	default n
+
+config RTCONFIG_USB
+	bool "USB Support"
+	default y
+
+config RTCONFIG_USB_WAN_BACKUP
+	bool "USB WAN Backkup Support"
+	default n
+
+config RTCONFIG_USBRESET
+	bool "USB Power Reset Support"
+	default n
+
+config RTCONFIG_WIFIPWR
+	bool "WIFI Power option"
+	default n
+
+config RTCONFIG_XHCIMODE
+	bool "XHCI mode Support"
+	default n
+
+config RTCONFIG_MEDIA_SERVER
+	bool "Media Server (MiniDLNA)"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_MEDIASERVER_LIMIT
+	bool "Small memory optimization on Media Server"
+	depends on RTCONFIG_MEDIA_SERVER
+	default n
+
+config RTCONFIG_NO_DAAPD
+	bool "disalbe Digital Audio Access Protocol (DAAP) server"
+	depends on RTCONFIG_MEDIA_SERVER
+	default n
+
+config RTCONFIG_CLOUDSYNC
+	bool "Cloudsync (Cloud Client)"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_SWEBDAVCLIENT
+	bool "webdavsync (webdav Client)"
+	depends on RTCONFIG_CLOUDSYNC
+	default n
+
+config RTCONFIG_DROPBOXCLIENT
+	bool "Dropboxsync (dropbox Client)"
+	depends on RTCONFIG_CLOUDSYNC
+	default n
+
+config RTCONFIG_GOOGLECLIENT
+	bool "Googlesync (google Client)"
+	depends on RTCONFIG_CLOUDSYNC
+	default n
+
+config RTCONFIG_FTPCLIENT
+	bool "FTPSync (ftp Client)"
+	depends on RTCONFIG_CLOUDSYNC
+	default n
+
+config RTCONFIG_SAMBACLIENT
+	bool "SambaSync (samba Client)"
+	depends on RTCONFIG_CLOUDSYNC
+	default n
+
+config RTCONFIG_USBCLIENT
+	bool "UsbSync (usb Client)"
+	depends on RTCONFIG_CLOUDSYNC
+	default n
+
+config RTCONFIG_FLICKRCLIENT
+	bool "FlickrSync (flickr Client)"
+	depends on RTCONFIG_CLOUDSYNC
+	default n
+
+config RTCONFIG_FTP
+	bool "FTP Server"
+	depends on RTCONFIG_USB
+	default y
+
+config RTCONFIG_FTP_SSL
+	bool "FTP SSL Support"
+	depends on RTCONFIG_USB && RTCONFIG_FTP
+	default y
+
+config RTCONFIG_WEBDAV
+	bool "WebDav Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_SAMBASRV
+	bool "Samba File Sharing"
+	depends on RTCONFIG_USB
+	default y
+
+config RTCONFIG_SAMBA3
+	bool "Compile with Samba 3"
+	depends on RTCONFIG_SAMBASRV
+	default n
+
+
+config RTCONFIG_AWSIOT
+	bool "Compile with aws-iot"
+	default n
+
+config RTCONFIG_SAMBA36X
+	bool "Compile with Samba 3.6.x"
+	depends on RTCONFIG_SAMBASRV
+	default n
+
+config RTCONFIG_USB_EXTRAS
+	bool "Additional modules and utilities"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_E2FSPROGS
+	bool "EXT2/EXT3/EXT4 standalone utilities"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_EXT4FS
+	bool "EXT4 filesystem"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_TFAT
+	bool "Tuxera FAT module Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_OPENPLUS_TFAT
+	bool "Open + Tuxera FAT Support"
+	depends on RTCONFIG_TFAT
+	default n
+
+config RTCONFIG_NTFS
+	bool "NTFS Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_PARAGON_NTFS
+	bool "NTFS Support by Paragon"
+	depends on RTCONFIG_NTFS
+	default n
+
+config RTCONFIG_TUXERA_NTFS
+	bool "NTFS Support by Tuxera"
+	depends on RTCONFIG_NTFS
+	default n
+
+config RTCONFIG_OPEN_NTFS3G
+	bool "NTFS-3G Support"
+	depends on RTCONFIG_NTFS
+	default n
+
+config RTCONFIG_OPENPLUSPARAGON_NTFS
+	bool "NTFS-3G + Paragon Support"
+	depends on RTCONFIG_OPEN_NTFS3G
+	default n
+
+config RTCONFIG_OPENPLUSTUXERA_NTFS
+	bool "NTFS-3G + Tuxera Support"
+	depends on RTCONFIG_OPEN_NTFS3G
+	default n
+
+config RTCONFIG_HFS
+	bool "HFS Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_PARAGON_HFS
+	bool "HFS Support by Paragon"
+	depends on RTCONFIG_HFS
+	default n
+
+config RTCONFIG_TUXERA_HFS
+	bool "HFS Support by Tuxera"
+	depends on RTCONFIG_HFS
+	default n
+
+config RTCONFIG_KERNEL_HFSPLUS
+	bool "Kernel HFSPLUS support"
+	depends on RTCONFIG_HFS
+	default n
+
+config RTCONFIG_OPENPLUSPARAGON_HFS
+	bool "Kernel HFSPLUS + Paragon support"
+	depends on RTCONFIG_KERNEL_HFSPLUS
+	default n
+
+config RTCONFIG_OPENPLUSTUXERA_HFS
+	bool "Kernel HFSPLUS + Tuxera support"
+	depends on RTCONFIG_KERNEL_HFSPLUS
+	default n
+
+config RTCONFIG_APFS
+	bool "APFS Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_TUXERA_APFS
+	bool "APFS Support by Tuxera"
+	depends on RTCONFIG_APFS
+	default n
+
+config RTCONFIG_UFSD_DEBUG
+	bool "ufsd debug Support"
+	depends on RTCONFIG_PARAGON_NTFS || RTCONFIG_PARAGON_HFS
+	default n
+
+config RTCONFIG_DISK_MONITOR
+	bool "Disk monitor Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_USB_PRINTER
+	bool "USB Printer Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_USB_CDROM
+	bool "USB CDROM Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_USB_MODEM
+	bool "USB Modem Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_USB_LESSMODEM
+	bool "Less USB Modem Support"
+	depends on RTCONFIG_USB_MODEM
+	default n
+
+config RTCONFIG_USB_MODEM_PIN
+	bool "USB Modem pin code Support"
+	depends on RTCONFIG_USB_MODEM
+	default y
+
+config RTCONFIG_USB_SMS_MODEM
+	bool "USB Modem SMS Support"
+	depends on RTCONFIG_USB_MODEM
+	default n
+
+config RTCONFIG_USB_MULTIMODEM
+	bool "Multi USB Modem Support"
+	depends on RTCONFIG_USB_MODEM && RTCONFIG_DUALWAN && !RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_INTERNAL_GOBI
+	bool "built-in Gobi"
+	depends on RTCONFIG_USB_MODEM
+	default n
+
+config RTCONFIG_DYN_MODEM
+	bool "Dynamic enable the USB Modem"
+	depends on RTCONFIG_USB_MODEM
+	default n
+
+config RTCONFIG_MODEM_BRIDGE
+	bool "the USB Modem's bridge mode"
+	depends on RTCONFIG_USB_MODEM && RTCONFIG_INTERNAL_GOBI
+	default n
+
+config RTCONFIG_BRCM_USBAP
+	bool "USB AP Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_APP_PREINSTALLED
+	bool "Preinstalled APP Packages Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_APP_NETINSTALLED
+	bool "Install APP Packages through Network Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_APP_FILEFLEX
+	bool "FileFlex support"
+	depends on RTCONFIG_APP_PREINSTALLED || RTCONFIG_APP_NETINSTALLED
+	default n
+
+config RTCONFIG_RALINK
+	bool "Ralink Chip Support"
+	default n
+
+config RTCONFIG_RALINK_RT3883
+	bool "Ralink Chip - RT3883 Support"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_RALINK_RT3052
+	bool "Ralink Chip - RT3052 Support"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_RALINK_MT7620
+	bool "Ralink Chip - MT7620 Support"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_RALINK_MT7621
+	bool "Ralink Chip - MT7621 Support"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_RALINK_MT7628
+	bool "Ralink Chip - MT7628 Support"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_SPI_FAST_CLOCK
+	bool "Ralink Chip - Double SPI clock"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_EDCCA
+	bool "Ralink Chip - EDCCA Monitor"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_N56U_SR2
+	bool "RT-N56U SR2 hardware support"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_AP_CARRIER_DETECTION
+	bool "Carrier Detection support"
+	depends on RTCONFIG_RALINK
+	default n
+
+config RTCONFIG_LOCALE2012
+	bool "Wireless Locale 2012"
+	depends on RTCONFIG_RALINK_RT3883
+	default n
+
+config RTCONFIG_NEWSSID_REV2
+	bool "New ASUS_2GMAC_xG rule"
+	default n
+
+config RTCONFIG_NEWSSID_REV4
+	bool "RT-V4 SSID rule"
+	default n
+
+config RTCONFIG_NEWSSID_REV5
+	bool "RT-V5 SSID rule"
+	default n
+
+config RTCONFIG_RP_NEWSSID_REV3
+	bool "RP-V3 SSID rule"
+	default n
+
+config RTCONFIG_QCA
+	bool "Qualcomm Atheros Chip Support"
+	default n
+
+config RTCONFIG_SPF8_QSDK
+	bool "SPF8 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF10_QSDK
+	bool "SPF10 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF11_QSDK
+	bool "SPF11.0 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF11_1_QSDK
+	bool "SPF11.1 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF11_3_QSDK
+	bool "SPF11.3 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF11_4_QSDK
+	bool "SPF11.4 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_QCA_BIGRATE_WIFI
+	bool "New QSDK wifi driver - need to adjust iwconfig bitrate"
+	default n
+
+config RTCONFIG_NEW_APP_ARM
+	bool "NEW APP ARM"
+	default n
+
+config RTCONFIG_QCA_ARM
+	bool "Qualcomm Atheros Chip Support(ARM)"
+	default n
+
+config RTCONFIG_SOC_QCA9557
+	bool "Qualcomm Atheros QCA9557 SoC"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SOC_IPQ8064
+	bool "Qualcomm Atheros IPQ8064 SoC"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SOC_IPQ8074
+	bool "Qualcomm Atheros IPQ8074 SoC"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_NSS_IPSEC
+	bool "Qualcomm NSS IPSec tunnel support"
+	depends on RTCONFIG_SOC_IPQ8064 || RTCONFIG_SOC_IPQ8074
+	default n
+
+config RTCONFIG_PCIE_AR9888
+	bool "Qualcomm Atheros QCA9880/QCA9882 WiFi chip"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_PCIE_QCA9888
+	bool "Qualcomm Atheros QCA9886/QCA9888 WiFi chip"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_PCIE_QCA9984
+	bool "Qualcomm Atheros QCA9994 WiFi chip (Cascade)"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_WIFI_QCN5024_QCN5054
+	bool "Qualcomm Atheros QCN5024 and QCN5054 WiFi chip"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_WIFI_QCA9557_QCA9882
+	bool "Qualcomm Atheros QCA9557 and QCA9882 WiFi chip"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_WIFI_QCA9990_QCA9990
+	bool "Qualcomm Atheros QCA9990 and QCA9990 WiFi chip (Beeliner)"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_WIFI_QCA9994_QCA9994
+	bool "Qualcomm Atheros QCA9994 and QCA9994 WiFi chip (Cascade)"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_CFG80211
+	bool "Qualcomm Atheros cfg80211 support"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_GLOBAL_INI
+	bool "Qualcomm globa.ini support. (SPF9 or above)"
+	depends on RTCONFIG_QCA && (RTCONFIG_SPF10_QSDK || RTCONFIG_SPF11_QSDK || RTCONFIG_SPF11_1_QSDK || RTCONFIG_SPF11_3_QSDK || RTCONFIG_SPF11_4_QSDK || RTCONFIG_QSDK10CS || RTCONFIG_SOC_IPQ60XX)
+	default n
+
+config RTCONFIG_SINGLE_HOSTAPD
+	bool "Single QCA hostapd instance. (need newer QSDK, e.g., IPQ8064 ILQ3.1, SPF5.2, or SPF8.0)"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_TEST_BOARDDATA_FILE
+	bool "Copy /lib/firmware/* to /jffs and bind mount /jffs to /lib/firmware for testing."
+	depends on RTCONFIG_SOC_IPQ8064 || RTCONFIG_SOC_IPQ8074
+	default n
+
+config RTCONFIG_SWITCH_QCA8075_PHY_AQR107
+	bool "Qualcomm Atheros QCA8075 + AQR107"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033
+	bool "Qualcomm Atheros QCA8075 + QCA8337 + AQR107 + AR8035 + QCA8033"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SWITCH_QCA8337N
+	bool "Qualcomm Atheros QCA8337N switch"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SWITCH_RTL8370M_PHY_QCA8033_X2
+	bool "Realtek RTL8370M-GR switch + QCA8033 PHY x 2"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SWITCH_RTL8370MB_PHY_QCA8033_X2
+	bool "Realtek RTL8370MB switch + QCA8033 PHY x 2"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SWITCH_IPQ50XX_QCA8337
+	bool "Qualcomm Atheros IPQ50XX + QCA8337"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_QCA953X
+	bool "Qualcomm Atheros QCA953X Chip Support"
+	default n
+
+config RTCONFIG_QCA956X
+	bool "Qualcomm Atheros QCA956X Chip Support"
+	default n
+
+config RTCONFIG_QCN550X
+	bool "Qualcomm Atheros QCN550X Chip Support"
+	default n
+
+config RTCONFIG_SOC_IPQ40XX
+	bool "Qualcomm Atheros IPQ40XX Chip Support"
+	default n
+
+config RTCONFIG_SOC_IPQ60XX
+	bool "Qualcomm Atheros IPQ60XX Chip Support"
+	default n
+
+config RTCONFIG_SOC_IPQ50XX
+	bool "Qualcomm Atheros IPQ50XX Chip Support"
+	default n
+
+config RTCONFIG_FITFDT
+	bool "new FITFDT format"
+	default n
+
+config RTCONFIG_QCA_VAP_LOCALMAC
+	bool "QCA original VAP local admin MAC address extension"
+	default n
+
+config RTCONFIG_QCA_PLC_UTILS
+	bool "Qualcomm Atheros Powerline Toolkit Support"
+	default n
+
+config RTCONFIG_AR7420
+	bool "Qualcomm Atheros AR7420 Powerline Chip Support"
+	default n
+
+config RTCONFIG_QCA7500
+	bool "Qualcomm Atheros QCA7500 Powerline Chip Support"
+	default n
+
+config RTCONFIG_AIR_TIME_FAIRNESS
+	bool "Air Time Fairness"
+	default n
+
+config RTCONFIG_POWER_SAVE
+	bool "Power Save"
+	default n
+
+config RTCONFIG_QCA8033
+	bool "Qualcomm Atheros QCA8033 Powerline Chip Support"
+	default n
+
+config RTCONFIG_ART2_BUILDIN
+	bool "Buildin Qualcomm Atheros ART2 package"
+	default n
+
+config RTCONFIG_DEFAULT_AP_MODE
+	bool "Default is AP mode"
+	default n
+
+config RTCONFIG_DEFAULT_REPEATER_MODE
+	bool "Default is Repeater mode"
+	default n
+
+config RTCONFIG_ODMPID
+	bool "ODM Product ID"
+	default n
+
+config RTCONFIG_32BYTES_ODMPID
+	bool "ODM Product ID increase to 32 bytes"
+	default n
+
+config RTCONFIG_TIMEMACHINE
+	bool "Timemachine Support"
+	default n
+
+config RTCONFIG_MDNS
+	bool "MDNS Support"
+	default n
+
+config RTCONFIG_FINDASUS
+	bool "FINDASUS Support"
+	default n
+
+config RTCONFIG_REDIRECT_DNAME
+	bool "Redirect domain name Support"
+	default n
+
+config RTCONFIG_DHCP_OVERRIDE
+	bool "DHCP override for AP/Repeater mode"
+	depends on RTCONFIG_REDIRECT_DNAME
+	default n
+
+config RTCONFIG_MTK_TW_AUTO_BAND4
+	bool "Choose BAND4 for auto channel"
+	default n
+
+config RTCONFIG_QCA_TW_AUTO_BAND4
+	bool "Choose BAND4 for auto channel"
+	default n
+
+config RTCONFIG_LED_ALL
+	bool "LED All GPIO"
+	default n
+
+config RTCONFIG_COMA
+	bool "COMA"
+	default n
+
+config CONFIG_LIBBCM
+	bool "Broadcom shared library functions"
+	default n
+
+config CONFIG_LIBUPNP
+	bool "BCM UPnP library"
+	default n
+
+config RTCONFIG_MFP
+	bool "Protected Management Frame Support"
+	default n
+
+config RTCONFIG_WPS
+	bool "WPS Support"
+	default y
+
+config RTCONFIG_NFC
+	bool "WPS NFC Support"
+	depends on RTCONFIG_WPS
+	default n
+
+config RTCONFIG_WPS_ENROLLEE
+	bool "WPS Enrolle Support"
+	default n
+
+config RTCONFIG_WIFI_CLONE
+	bool "WiFi Clone Support"
+	depends on RTCONFIG_WPS_ENROLLEE
+	default n
+
+config RTCONFIG_SHP
+	bool "Special Handler Process"
+	default n
+
+config RTCONFIG_SFP
+	bool "Small Footprint"
+
+config RTCONFIG_STRACE
+	bool "strace"
+	default n
+
+config RTCONFIG_4M_SFP
+	bool "Small Footprint: 4MB Flash"
+	default n
+
+config RTCONFIG_8M_SFP
+	bool "Small Footprint: 8MB Flash"
+	default n
+
+config RTCONFIG_16M_RAM_SFP
+	bool "Small Footprint: 16MB RAM"
+	default n
+
+config RTCONFIG_GROCTRL
+	bool "GRO Control"
+	default n
+
+config RTCONFIG_LANWAN_LED
+	bool "SW Control LAN/WAN LED"
+	default n
+
+config RTCONFIG_WLAN_LED
+	bool "SW Control WLAN LED"
+	default n
+
+config RTCONFIG_FAKE_ETLAN_LED
+	bool "SW Control LAN LED"
+	default n
+
+config RTCONFIG_EXT_LED_WPS
+	bool "used to standalone WPS LED(not POWER LED)"
+	default n
+
+config RTCONFIG_SWMODE_SWITCH
+	bool "HW Switch for SWMODE"
+	default n
+
+config RTCONFIG_WL_AUTO_CHANNEL
+	bool "New auto_channel selection"
+	default n
+
+config RTCONFIG_SMALL_FW_UPDATE
+	bool "used for memory limited model"
+	default n
+
+config RTCONFIG_WIRELESS_SWITCH
+	bool "HW Switch for WiFi"
+	default n
+
+config RTCONFIG_WIFI_TOG_BTN
+	bool "HW Button for WiFi toggle"
+	default n
+
+config RTCONFIG_WPS_RST_BTN
+	bool "HW Button for WPS and Restore dual function"
+	default n
+
+config RTCONFIG_WPS_ALLLED_BTN
+	bool "HW Button for WPS and LED dual function"
+	default n
+
+config RTCONFIG_SW_CTRL_ALLLED
+	bool "GUI or App control All LED on/off/brightness function"
+	default n
+
+config RTCONFIG_TURBO_BTN
+	bool "HW Button for Turbo (Boost) key function"
+	default n
+
+config RTCONFIG_LOGO_LED
+	bool "Logo LED"
+	default n
+
+config RTCONFIG_LED_BTN
+	bool "HW LED Button"
+	default n
+
+config RTCONFIG_USBEJECT
+	bool "HW LED Button usage"
+	default n
+
+config RTCONFIG_AUTODICT
+	bool "AUTO DICTIONARY TOOLS"
+	default n
+
+config RTCONFIG_AUTOLIVEUPDATE_ZIP
+	bool "AUTO Live update with ZIP method"
+	default n
+
+config RTCONFIG_ISP_METER
+	bool "ISP_METER"
+	default n
+
+config RTCONFIG_NVRAM_64K
+	bool "NVRAM_64K"
+	default n
+
+config RTCONFIG_USB_XHCI
+	bool "XHCI"
+	default n
+
+config RTCONFIG_WLMODULE_RT3090_AP
+	bool "Wireless module RT3090 ap"
+	default n
+
+config RTCONFIG_WLMODULE_RT3352_INIC_MII
+	bool "Wireless module RT3352 iNIC MII"
+	default n
+
+config RTCONFIG_WLMODULE_MT7610_AP
+	bool "Wireless module MT7610 ap"
+	default n
+
+config RTCONFIG_WLMODULE_RLT_WIFI
+	bool "Wireless module RLT WIFI"
+	default n
+
+config RTCONFIG_WLMODULE_MT7603E_AP
+	bool "Wireless module MT7603E ap"
+	default n
+
+config RTCONFIG_WLMODULE_MT7628_AP
+	bool "Wireless module MT7628 ap"
+	default n
+
+config RTCONFIG_WLMODULE_MT7615E_AP
+	bool "Wireless module MT7615E ap"
+	default n
+
+config RTCONFIG_WLMODULE_MT7663E_AP
+	bool "Wireless module MT7663E ap"
+	default n
+
+config RTCONFIG_PSISTLOG
+	bool "Persistent syslog"
+	default n
+
+config RTCONFIG_DUAL_TRX
+	bool "DUAL_TRX"
+	default n
+
+config RTCONFIG_DUAL_TRX2
+	bool "Firmware is incharge of recover damaged FW, not bootcode."
+	depends on RTCONFIG_DUAL_TRX
+	default n
+
+config RTCONFIG_UBI
+	bool "Unsorted Block Images"
+	default n
+
+config RTCONFIG_UBIFS
+	bool "UBI File-System"
+	default n
+
+config RTCONFIG_YAFFS
+	bool "Yet Another Flash File-System"
+	default n
+
+config RTCONFIG_SAVEJFFS
+	bool "Save/Restore /jffs to/from configuration file."
+	default n
+
+config RTCONFIG_OPTIMIZE_XBOX
+	bool "OPTIMIZE_XBOX"
+	default n
+
+config RTCONFIG_NEW_REGULATION_DOMAIN
+	bool "New Regulation Domain"
+	default n
+
+config RTCONFIG_DYN_DICT_NAME
+	bool "DYN_DICT_NAME"
+	default n
+
+config RTCONFIG_LAN4WAN_LED
+	bool "SW Control 4LAN/WAN LED"
+	default n
+
+config RTCONFIG_DMALLOC
+	bool "dmalloc"
+	default n
+
+config RTCONFIG_JFFS2ND_BACKUP
+	bool "backup some data to Read-only 2ND JFFS Partition"
+	default n
+
+config RTCONFIG_TEMPROOTFS
+	bool "temp rootfilesystem"
+	default n
+
+config RTCONFIG_SINGLEIMG_B
+	bool "504 force use singleImg at idx-1"
+	default n
+
+config RTCONFIG_ATEUSB3_FORCE
+	bool "ATE USB3 control"
+	default n
+
+config RTCONFIG_JFFS2LOG
+	bool "Backup syslog to jffs2"
+	depends on RTCONFIG_JFFS2 || RTCONFIG_BRCM_NAND_JFFS2
+	default n
+
+config RTCONFIG_WPSMULTIBAND
+	bool "Multi-band WPS"
+	default n
+
+config RTCONFIG_RALINK_DFS
+	bool "Rlink DFS support"
+	default n
+
+config RTCONFIG_ENGINEERING_MODE
+	bool "Engineering Mode"
+	default n
+
+config RTCONFIG_VPNC
+	bool "VPNC"
+	default n
+
+config RTCONFIG_KYIVSTAR
+	bool "KYIVSTAR specified"
+	default n
+
+config RTCONFIG_NO_WANPORT
+	bool "No WAN port"
+	default n
+
+config RTCONFIG_WANPORT2
+	bool "2-nd WAN port"
+	default n
+
+config RTCONFIG_MULTIWAN_CFG
+	bool "Seperate WAN related configurations to different sets of nvram variables"
+	default n
+
+config RTCONFIG_TFTP_SERVER
+	bool "TFTP daemon"
+	default n
+
+config RTCONFIG_ETRON_XHCI
+	bool "Etron XHCI chip support"
+	default n
+
+config RTCONFIG_ETRON_XHCI_USB3_LED
+	bool "USB3 LED wired to ETRON XHCI chip"
+	default n
+
+config RTCONFIG_WPS_LED
+	bool "Individual WPS LED"
+	default n
+
+config RTCONFIG_MMC_LED
+	bool "Individual MMC LED"
+	default n
+
+config RTCONFIG_RESET_SWITCH
+	bool "reset switch"
+	default n
+
+config RTCONFIG_WANRED_LED
+	bool "WAN RED LED"
+	default n
+
+config RTCONFIG_WANLEDX2
+	bool "Two WAN LEDs"
+	default n
+
+config RTCONFIG_SFPP_LED
+	bool "10G SFP+ LED"
+	depends on RTCONFIG_SFPP
+	default n
+
+config RTCONFIG_R10G_LED
+	bool "10G RJ-45 LED"
+	default n
+
+config RTCONFIG_PWRRED_LED
+	bool "Power RED LED"
+	default n
+
+config RTCONFIG_FAILOVER_LED
+	bool "Fail-over LED"
+	depends on RTCONFIG_LANWAN_LED
+	default n
+
+config RTCONFIG_SATA_LED
+	bool "SATA LED"
+	default n
+
+config RTCONFIG_BLINK_LED
+	bool "Blink LED(s)"
+	default n
+
+config RTCONFIG_LEDS_CLASS
+	bool "Need to enable this configuration if enable CONFIG_NEW_LEDS of kernel"
+	default n
+
+config RTCONFIG_EJUSB_BTN
+	bool "Eject USB mass-storage(s)"
+	default n
+
+config RTCONFIG_M2_SSD
+	bool "M.2 SSD support"
+	default n
+
+config RTCONFIG_WIGIG
+	bool "Wigig (11ad/11ay) support"
+	default n
+
+config RTCONFIG_CFE_NVRAM_CHK
+	bool "CFE_NVRAM_CHK"
+	default n
+
+config RTCONFIG_DEBUG
+	bool "debug mode"
+	default n
+
+config RTCONFIG_DMALLOC
+	bool "Link with dmalloc that is used to detect memory leak."
+	default n
+
+config RTCONFIG_HAS_5G
+	bool "has 5G band"
+	default y
+
+config RTCONFIG_HAS_5G_2
+	bool "has 2-nd 5G band"
+	default n
+
+config RTCONFIG_TFTP
+	bool "TFTP server or client"
+	default n
+
+config RTCONFIG_QTN
+	bool "Quantenna boot-code and firmware"
+	default n
+
+config RTCONFIG_ALPINE
+	bool "Annapurna ALPINE"
+	default n
+
+config RTCONFIG_QSR10G
+	bool "Quantenna 10G"
+	default n
+
+config RTCONFIG_LANTIQ
+	bool "Intel Lantiq"
+	default n
+
+config RTCONFIG_RGMII_BRCM5301X
+	bool "Config 5301x to RGMII mode"
+	depends on RTCONFIG_5301X
+	default n
+
+config RTCONFIG_WPS_DUALBAND
+	bool "Config WPS DUALBAND"
+	depends on RTCONFIG_QTN
+	default n
+
+config RTCONFIG_N18UTXBF
+	bool "enable TXBF for RT-N18U"
+	default n
+
+config RTCONFIG_BWDPI
+	bool "TrendMicro DPI engine and iQoS and Partenl Control"
+	default n
+
+config RTCONFIG_TRAFFIC_LIMITER
+	bool "Traffic Limiter (data limit) for Internet traffic"
+	default n
+
+config RTCONFIG_BCM5301X_TRAFFIC_MONITOR
+	bool "read BCM5301x register for traffic monitor"
+	depends on RTCONFIG_5301X
+	default n
+
+config RTCONFIG_SPEEDTEST
+	bool "BRCM Speedtest for detect upload / downlad bandwidth "
+	default n
+
+config RTCONFIG_BONDING
+	bool "Linux Net Bonding"
+	default n
+
+config RTCONFIG_BONDING_WAN
+	bool "WAN Bonding"
+	default n
+
+config RTCONFIG_UIDEBUG
+	bool "Enable UI debug mode"
+	default n
+
+config RTCONFIG_ROG
+	bool "Get APP Traffic from ROG client"
+	default n
+
+config RTCONFIG_ROG_UI
+	bool "ROG theme support"
+	default n
+
+config RTCONFIG_GEOIP
+	bool "determine country by IP address"
+	default n
+
+config RTCONFIG_GEOIP_EG
+	bool "Egypt IP Address Ranges matching"
+	default n
+
+config RTCONFIG_TRANSMISSION
+	bool "Transmission A Fast, Easy and Free BitTorrent client"
+	default n
+
+config RTCONFIG_TCODE
+	bool "Territory code"
+	default y
+
+config RTCONFIG_WIFILOGO
+	bool "building for Wi-Fi certification"
+	default n
+
+config RTCONFIG_JFFS2USERICON
+	bool "Client list user upload icon"
+	default n
+
+config RTCONFIG_EXT_RTL8365MB
+	bool "rtl8365mb driver flag"
+
+config RTCONFIG_EXT_RTL8370MB
+	bool "rtl8370mb driver flag"
+
+config RTCONFIG_EXT_BCM53134
+	bool "BCM53134 external switch"
+	default n
+
+config RTCONFIG_RTL8221VB
+	bool "RTL8221VB support"
+	default n
+
+config RTCONFIG_EXTPHY_BCM84880
+	bool "BCM84880 external 2.5Gbps PHY"
+
+config RTCONFIG_BCM_HND_CRASHLOG
+	bool "BRCM HND crashlog"
+	default n
+
+config RTCONFIG_TOR
+	bool "The orion router function"
+	default n
+
+config RTCONFIG_TR069
+	bool "TR-069 agent"
+	default n
+
+config RTCONFIG_TR181
+	bool "Support TR-181 data model"
+	default n
+
+config RTCONFIG_ISP_OPTUS
+	bool "Support ISP OPTUS Customize"
+	default n
+
+config RTCONFIG_ISP_XLNPROVU
+	bool "Support ISP XLN/PROVU Customize"
+	default n
+
+config RTCONFIG_STAINFO
+	bool "STA informtion support"
+	default n
+
+config RTCONFIG_CLOUDCHECK
+	bool "Cloudcheck support"
+	default n
+
+config RTCONFIG_GETREALIP
+	bool "Get external IP support"
+	default n
+
+config CONFIG_ASUS_APCLI_WPS
+	bool "APCLI_WPS for Ralink AP"
+	default n
+
+config RTCONFIG_TUNNEL
+	bool "TUNNEL config"
+	default n
+
+config RTCONFIG_UPLOADER
+	bool "upload router file to drive config"
+	default n
+
+config RTCONFIG_AICLOUD_TUNNEL
+	bool "AiCloud tunnel support"
+	default n
+
+config RTCONFIG_AIHOME_TUNNEL
+	bool "AiHome tunnel support"
+	default n
+
+config RTCONFIG_CFEZ
+	bool "compressed cfe"
+	default n
+
+config RTCONFIG_RESTRICT_GUI
+	bool "Restrict GUI"
+	default n
+
+config RTCONFIG_LACP
+	bool "LACP support"
+	default n
+
+config RTCONFIG_KEY_GUARD
+	bool "Key Guard support"
+	default n
+
+config RTCONFIG_RECVFILE
+	bool "Bcm recvfile support"
+	default n
+
+config RTCONFIG_WTFAST
+	bool "WTFast support"
+	default n
+
+config RTCONFIG_ALEXA
+	bool "ALEXA support"
+	default n
+
+config RTCONFIG_IFTTT
+	bool "IFTTT support"
+	default n
+
+config RTCONFIG_UTF8_SSID
+	bool "UTF8_SSID support"
+	default n
+
+config RTCONFIG_ERP_TEST
+	bool "erp test"
+	default n
+
+config RTCONFIG_REBOOT_SCHEDULE
+	bool "Reboot_schedule"
+	default n
+
+config RTCONFIG_IPSEC
+	bool "IPSEC support"
+	default n
+
+config RTCONFIG_CAPTIVE_PORTAL
+	bool "Captive Portal support"
+	default n
+
+config RTCONFIG_CP_FREEWIFI
+	bool "Free Wi-Fi support"
+	default n
+
+config RTCONFIG_CP_ADVANCED
+	bool "Captive Portal Advanced support"
+	default n
+
+config RTCONFIG_UPNPC
+	bool "UPNP client support for networkmap"
+	default n
+
+config RTCONFIG_UPNPC_NEW
+	bool "New UPNP client support"
+	default n
+
+config RTCONFIG_AUPNPC
+	bool "AUPNPC support"
+	default n
+
+config RTCONFIG_MULTICAST_IPTV
+	bool "Multicsat IPTV"
+	default n
+
+config RTCONFIG_BONJOUR
+	bool "Apple device query support"
+	default y
+
+config RTCONFIG_FORCE_AUTO_UPGRADE
+	bool "Force auto update"
+	default n
+
+config RTCONFIG_CHILLISPOT
+	bool "chillispot Support"
+	default n
+
+config RTCONFIG_COOVACHILLI
+	bool "coovachilli Support"
+	default n
+
+config RTCONFIG_FREERADIUS
+	bool "freeradius Support"
+	default n
+
+config RTCONFIG_TUXERA_SMBD
+	bool "tuxera smbd"
+	default n
+
+config RTCONFIG_BCMASPMD
+	bool "ASPM (Active State Power Management) daemon"
+	default n
+
+config RTCONFIG_FBT
+	bool "FAST BSS Transition (802.11r FBT) support"
+	default n
+
+config RTCONFIG_WLCLMLOAD
+	bool "WL CLMLOAD"
+	default n
+
+config RTCONFIG_MUMIMO
+	bool "bcm mu-mimo support"
+	default n
+
+config RTCONFIG_NOTIFICATION_CENTER
+	bool "Notification Center"
+	default y
+
+config RTCONFIG_PROTECTION_SERVER
+	bool "Security Protection Mechanism"
+	default y
+
+config RTCONFIG_WLCEVENTD
+	bool "Get event from Wi-Fi driver"
+	default n
+
+config RTCONFIG_HAPDEVENT
+	bool "Handle event from Wi-Fi driver on bluecave"
+	default n
+
+config RTCONFIG_6RELAYD
+	bool "IPv6 Relay support"
+	depends on RTCONFIG_IPV6
+	default n
+
+config RTCONFIG_SOFTWIRE46
+	bool "IPv6 Softwire46 tunnel support"
+	depends on RTCONFIG_IPV6
+	default n
+
+config RTCONFIG_OCNVC
+	bool "IPoE - OCN Virtual Connect support"
+	depends on RTCONFIG_SOFTWIRE46
+	default n
+
+config RTCONFIG_PORT_BASED_VLAN
+	bool "Port based vlan support"
+	default n
+
+config RTCONFIG_TAGGED_BASED_VLAN
+	bool "Tagged based vlan support"
+	default n
+
+config RTCONFIG_DISABLE_NETWORKMAP
+	bool "Disable networkamp start after reboot"
+	default n
+
+config RTCONFIG_WAN_AT_P4
+	bool "Set WAN Port partiton"
+	default n
+
+config RTCONFIG_MTK_REP
+	bool "For MTK Repeater"
+	default n
+
+config RTCONFIG_ATED122
+	bool "For MTK QA Tool"
+	default n
+
+config RTCONFIG_NOIPTV
+	bool "No IPTV support"
+	default n
+
+config RTCONFIG_MTK_NAND
+	bool "For MTK nand support"
+	default n
+
+config RTCONFIG_RALINK_EDCCA
+	bool "Ralink CE adaptivity support"
+	default n
+
+config RTCONFIG_AUTOCOVER_SIP
+	bool "Auto cover the special IP"
+	default n
+
+config RTCONFIG_REALTEK
+	bool "Realtek SoC support"
+	default n
+
+config RTCONFIG_RTL819X
+	bool "Realtek RTL819X support"
+	default n
+
+config RTCONFIG_RTK_NAND
+	bool "Realtek NAND Flash support"
+	default n
+
+config RTCONFIG_DEFLAN50
+	bool "Let the default LAN subnet be 192.168.50.1"
+	default n
+
+config RTCONFIG_ALL_DEF_LAN50
+	bool "Let the default LAN subnet be 192.168.50.1 in all sku."
+	default n
+
+config RTCONFIG_VPN_FUSION
+	bool "Enable VPN Fusion"
+	default n
+
+config RTCONFIG_VPN_FUSION_SUPPORT_INTERFACE
+	bool "VPN Fusion support interface policy"
+	default n
+	depends on RTCONFIG_VPN_FUSION
+	help
+	VPN Fusion support interface policy(IG share secure connection feature)
+
+config RTCONFIG_LBR_AGGR
+	bool "Low bit rate aggregation support"
+	default n
+
+config RTCONFIG_FLATLAS
+	bool "FilterLess Atlas support"
+	default n
+	help
+	Answer Y to build the firmware for Filter-less atlas configuration
+
+config RTCONFIG_WBD
+	bool "WiFi Blanket"
+	default n
+
+config RTCONFIG_PLCWBD
+	bool "PLC backbone support in WiFi Blanket"
+	default n
+	depends on RTCONFIG_WBD
+	help
+	Enable PLC backbone support in WiFi Blanket
+
+config RTCONFIG_QAM256_2G
+	bool "2.4G 256QAM Support"
+	default n
+
+config RTCONFIG_MUMIMO_2G
+	bool "2.4G MU-MIMO support"
+	default n
+
+config RTCONFIG_MUMIMO_5G
+	bool "5G MU-MIMO support"
+	default n
+
+config RTCONFIG_CONNTRACK
+	bool "conntrack tool support"
+	default n
+
+config RTCONFIG_PERMISSION_MANAGEMENT
+	bool "Permission management support"
+	default n
+
+config RTCONFIG_NANO
+	bool "nano text editor"
+	default n
+
+config RTCONFIG_TELENET
+	bool "TELENET"
+	default y
+
+config RTCONFIG_NFS
+	bool "NFS Support"
+	depends on RTCONFIG_USB
+	default n
+
+config RTCONFIG_IGD2
+	bool "UPNP: IGD2 support"
+	default n
+
+config RTCONFIG_DNSSEC
+	bool "dnsmasq: Enable DNSSEC support"
+	default y
+
+choice
+	prompt "dnsmasq: DNSSEC crypto library"
+	default RTCONFIG_DNSSEC_NETTLE
+
+config RTCONFIG_DNSSEC_OPENSSL
+	bool "OpenSSL"
+	depends on RTCONFIG_DNSSEC
+
+config RTCONFIG_DNSSEC_NETTLE
+	bool "Nettle"
+	depends on RTCONFIG_DNSSEC
+
+endchoice
+
+config RTCONFIG_MERLINUPDATE
+	bool "Check for new firmware version - Merlin-only"
+	default n
+
+config RTCONFIG_OPENSSL11
+	bool "OpenSSL 1.1.x"
+	default n
+
+config RTCONFIG_DNSFILTER
+	bool "DNS-based filtering Support"
+	depends on !RTCONFIG_YANDEXDNS
+	default n
+
+config RTCONFIG_LETSENCRYPT
+	bool "Let's Encrypt"
+	depends on RTCONFIG_HTTPS && (RTCONFIG_JFFS2 || RTCONFIG_BRCM_NAND_JFFS2 || RTCONFIG_UBIFS)
+	default n
+
+config RTCONFIG_DETWAN
+	bool "Detect WAN interface"
+	default n
+
+config RTCONFIG_CFGSYNC
+	bool "Sync config"
+	default n
+
+config RTCONFIG_CFGSYNC_LOCSYNC
+	bool "Sync location code config"
+	depends RTCONFIG_CFGSYNC
+	default n
+
+config RTCONFIG_LP5523
+	bool "Have LP5523 LED controller"
+	default n
+
+config RTCONFIG_FIXED_BRIGHTNESS_RGBLED
+	bool "Have RGB LED with uncontrollable brightness"
+	default n
+
+config RTCONFIG_SINGLE_SSID
+	bool "Single SSID rule as ASUS_2X(MAC)"
+	default n
+
+config RTCONFIG_SSID_AMAPS
+	bool "Single SSID rule as ASUS_2X(MAC)_AMAPS"
+	default n
+
+config RTCONFIG_PTHSAFE_POPEN
+	bool "pthread safe popen workaround"
+	default n
+
+config RTCONFIG_WIFI_SON
+	bool "WiFi SON for Lyra series"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_HIDDEN_BACKHAUL
+	bool "hidden backhaul"
+	default n
+
+config RTCONFIG_ETHBACKHAUL
+	bool "eth backhaul"
+	default n
+
+config RTCONFIG_AUTHSUPP
+	bool "new auth"
+	default n
+
+config RTCONFIG_FBWIFI
+	bool "enable FBWIFI for FaceBook"
+	default n
+
+config RTCONFIG_QCA_EZMESH
+	bool "QCA EZMESH"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_ADV_RAST
+	bool "enable advanced roaming assistant"
+	default n
+
+config RTCONFIG_BCN_RPT
+	bool "enable 802.11k beacon request/report for roaming"
+	default n
+
+config RTCONFIG_MC_BCN_RPT
+	bool "enable 802.11k multi-channel"
+	default n
+
+config RTCONFIG_NBR_RPT
+	bool "enable 802.11k neighbor report"
+	default n
+
+config RTCONFIG_ADTBW_AFTER_RADARDETECTED
+	bool "enable adtbw after radar detected"
+	default n
+
+config RTCONFIG_BTM_11V
+	bool "enable 802.11v BTM request/report for roaming"
+	default n
+
+config RTCONFIG_FORCE_ROAMING
+	bool "enable force roaming"
+	default n
+
+config RTCONFIG_STA_AP_BAND_BIND
+	bool "enable sta ap band bind"
+	default n
+
+config RTCONFIG_11K_RCPI_CHECK
+	bool "enable 11k rcpi check"
+	default n	
+
+config RTCONFIG_RAST_NONMESH_KVONLY
+	bool "enable roamast in a nonmesh device"
+	default n
+
+config RTCONFIG_CONN_EVENT_TO_EX_AP
+	bool "enable AP to info the EX-Ap of the connect event of a connected client"
+	default n
+
+config RTCONFIG_CFGSYNC
+	bool "Sync config"
+
+config RTCONFIG_WLCSCAN_RSSI
+	bool "Sitesurvey for specific SSID rssi"
+	default n
+
+config RTCONFIG_VISUALIZATION
+	bool "Visualization Application"
+	depends on RTCONFIG_HND_ROUTER
+	default n
+
+config RTCONFIG_BT_CONN
+	bool "Have Bluetooth for connection setup via APP"
+	default n
+
+config RTCONFIG_BT_CONN_USB
+	bool "USB of BT"
+	default n
+
+config RTCONFIG_BT_CONN_UART
+	bool "UART of BT"
+	default n
+
+config RTCONFIG_CSR8811
+	bool "Use CSR8811 Bluetooth module"
+	default n
+
+config RTCONFIG_RGBLED
+	bool "RGB LED control"
+	default n
+
+config RTCONFIG_BCM_CLED
+	bool "BCM CLED LED control"
+	default n
+
+config RTCONFIG_SINGLE_LED
+	bool "model which has only one LED"
+	default n
+
+config RTCONFIG_PIPEFW
+	bool "pipe-write fw to flash directly, don't store in mem"
+	default n
+
+config RTCONFIG_URLFW
+	bool "url-download fw to flash directly"
+	default n
+
+config RTCONFIG_AURASYNC
+	bool "AURASYNC support"
+	default n
+
+config RTCONFIG_I2CTOOLS
+	bool "I2CTOOLS"
+	default n
+
+config RTCONFIG_MTK_8021X3000
+	bool "The version 3.0.0.0 of 802.1x daemon for MTK."
+	default n
+
+config RTCONFIG_MTK_8021XD3000
+	bool "The version 3.0.0.0 of 802.1xd daemon for MTK."
+	default n	
+
+config RTCONFIG_INTEL
+	bool "Intel Chip Support"
+	default n
+
+config RTCONFIG_DBG_BLUECAVE_OBD
+	bool "Debug bluecave onboarding"
+	default n
+
+config RTCONFIG_AMAS
+	bool "AMAS architecture."
+	default n
+
+config RTCONFIG_AMAS_WGN
+	bool "AMAS guest network."
+	depends on RTCONFIG_AMAS
+	default n
+
+config RTCONFIG_AMASDB
+	bool "AMAS DB-sta collection."
+	default n
+
+config RTCONFIG_BATMAN_ADV
+	bool "B.A.T.M.A.N. (better approach to mobile ad-hoc networking)"
+	default n
+
+config RTCONFIG_AVBLCHAN
+	bool "(CAP)exclude (RE)unavailble chanspec."
+	default n
+
+config RTCONFIG_LYRA_5G_SWAP
+	bool "5G SWAP for AMAS tri-band"
+	default n
+
+config RTCONFIG_NO_SELECT_CHANNEL
+	bool "Auto Channel Selection (no select) for MTK."
+	default n
+
+config RTCONFIG_USB_SWAP
+	bool "Enable SWAP, if enable USB function."
+	default n
+
+config RTCONFIG_SW_DEVLED
+	bool "software led control."
+	default n
+
+config RTCONFIG_LYRA_HIDE
+	bool "Hide UI item for Lyra"
+	default n
+
+config RTCONFIG_PORT2_DEVICE
+	bool "2 Port device"
+	default n
+
+config RTCONFIG_NVRAM_ENCRYPT
+	bool "nvram encrypt support"
+	default n
+
+config RTCONFIG_WIFI_PROXY
+	bool "Enable WiFi Proxy."
+	default n
+
+config RTCONFIG_HD_SPINDOWN
+	bool "Enable harddisk spindown"
+	default n
+
+config RTCONFIG_MASTER_DET
+	bool "Master detection"
+	default n
+
+config RTCONFIG_ADTBW
+	bool "ADTBW"
+	default n
+
+config RTCONFIG_TXBF_BAND3ONLY
+	bool "Tx beamforming works only in BAND3."
+	default n
+
+config RTCONFIG_SW_HW_AUTH
+	bool "protectt ASUS own binary and tools"
+	default n
+
+config RTCONFIG_LIBASUSLOG
+	bool "asuslog library for debug"
+	default n
+
+config RTCONFIG_BCM_CEVENTD
+	bool "BRCM Connectivity event generation support"
+
+config RTCONFIG_ETHOBD
+	bool "ethernet onboarding for Aimash."
+	default n
+
+config RTCONFIG_DWB
+	bool "Dedicated WiFi Backhaul for Aimash."
+	default n
+
+config RTCONFIG_NO_TRY_DWB_PROFILE
+	bool "Do not try dwb profile for Aimash."
+	default n
+
+config RTCONFIG_FRONTHAUL_DWB
+	bool "Added Fronthaul AP for DWB band"
+	default n
+
+config RTCONFIG_AMAS_ETHDETECT
+	bool "AMAS LAN/WAN Auto detect"
+	default n
+
+config RTCONFIG_BHCOST_OPT
+	bool "Backhaul cost optimization."
+	default n
+
+config RTCONFIG_CONNDIAG
+	bool "enable conn_diag in AiMesh"
+	default n
+
+config RTCONFIG_CABLEDIAG
+	bool "enable cable diag in AiMesh"
+	default n
+
+config RTCONFIG_CD_IPERF
+	bool "enable iperf in AiMesh"
+	default n
+
+config RTCONFIG_REPEATER_STAALLBAND
+	bool "select one of tri band to connect P-AP"
+	default n
+
+config RTCONFIG_NTPD
+	bool "ntp & ntpd support"
+	default n
+
+config RTCONFIG_WTF_REDEEM
+	bool "wtf_redeem support"
+	default n
+
+config RTCONFIG_QCA_LBD
+	bool "qca lbd support"
+	default n
+
+config RTCONFIG_AMAS_QCA_WDS
+	bool "qca amas wds support"
+	default n
+
+config RTCONFIG_GEFORCENOW
+	bool "GeForceNow QoS feature (includes UPnP QoS)"
+	default n
+
+config RTCONFIG_FPROBE
+	bool "nfcapd netflow packet sender"
+	default n
+
+config RTCONFIG_ISP_CUSTOMIZE
+	bool "ISP customization"
+	default n
+
+config RTCONFIG_IPERF3
+	bool "Iperf3"
+	default n
+
+config RTCONFIG_NFCM
+	bool "Network Filter Conntrack Monitor"
+	default n
+
+config RTCONFIG_DNSQUERY_INTERCEPT
+	bool "Intercept DNS Query Result"
+	default n
+
+config RTCONFIG_ASUSCTRL
+	bool "asusctrl support"
+	default n
+
+config RTCONFIG_PRELINK
+	bool "AMAS prelink"
+	default n
+
+config RTCONFIG_MSSID_PRELINK
+	bool "AMAS prelink on mssid"
+	default n
+
+choice
+	prompt "SSL library"
+	default RTCONFIG_OPENSSL10
+
+config RTCONFIG_OPENSSL10
+	bool "OpenSSL 1.0.x"
+
+config RTCONFIG_OPENSSL11
+	bool "OpenSSL 1.1.x"
+
+endchoice
+
+config RTCONFIG_NO_PTHREAD_TIMEDWAIT
+	bool "not use pthread_cond_timedwait"
+	default n
+
+config RTCONFIG_OPEN_NAT
+	bool "OPEN NAT support"
+
+config RTCONFIG_BRCM_HOSTAPD
+	bool "BRCM HOSTAPD support"
+	default n
+
+config RTCONFIG_RTL8198D
+	bool "Realtek RTL8198D support"
+	depends on RTCONFIG_REALTEK
+	default n
+
+config RTCONFIG_FRS_LIVE_UPDATE
+	bool "RTCONFIG_FRS_LIVE_UPDATE support"
+	default n
+
+config RTCONFIG_AUTO_FW_UPGRADE
+	bool "RTCONFIG_AUTO_FW_UPGRADE support"
+	default n
+
+config RTCONFIG_BETA_UPGRADE
+	bool "RTCONFIG_BETA_UPGRADE support"
+	default n
+
+config RTCONFIG_ROLLBACKFW
+	bool "RTCONFIG_ROLLBACK_FW support"
+	default n
+
+config RTCONFIG_REVERTFW
+	bool "RTCONFIG_REVERTFW support"
+	default n
+
+config RTCONFIG_ASD
+	bool "RTCONFIG_ASD support"
+	default n
+
+config RTCONFIG_LIVE_UPDATE_RSA
+	bool "RTCONFIG_LIVE_UPDATE_RSA support"
+	default n
+
+config RTCONFIG_UUPLUGIN
+	bool "UU plugin support"
+	default n
+
+config RTCONFIG_TCPLUGIN
+	bool "Tencent plugin support"
+	default n
+
+config RTCONFIG_TC_GAME_ACC
+	bool "Tencent game download acceleration"
+	default n
+
+config RTCONFIG_TC_DOWNLOAD
+	bool "TC download mechanism"
+	default n
+
+config RTCONFIG_ATEFROMWAN
+	bool "Set IP in default for device only one WAN port"
+	default n
+
+config RTCONFIG_WIFI_DRV_DISABLE
+	bool "QCA WIFI Driver disable"
+	default n
+
+config RTCONFIG_ATEFROMWAN
+	bool "Set IP in default for device only one WAN port"
+	default n
+
+config RTCONFIG_IPERF3
+	bool "Iperf3"
+	default n
+
+config RTCONFIG_BROOP
+	bool "broop"
+	default n
+
+config RTCONFIG_BROOP_LED
+	bool "broop_led"
+	default n
+
+config RTCONFIG_GN_WBL
+	bool "Guest Network white and black list support"
+	default n
+
+config RTCONFIG_AMAZON_WSS
+	bool "AMAZON WSS (WiFi Simple Setup) certificate (depends on GN_WBL feature)"
+	default n
+
+config RTCONFIG_OOKLA
+	bool "speedtest function powered by Ookla"
+	default n
+
+config RTCONFIG_OOKLA_LITE
+	bool "speedtest function powered by Ookla - lite version to store in memory"
+	default n
+
+config RTCONFIG_QCA_MCSD
+	bool "Use qca-mcs for multicast packets"
+	default n
+
+config RTCONFIG_QSDK6PLUS
+	bool "QSDK SPF6 and later"
+	default n
+
+config RTCONFIG_QSDK10CS
+	bool "QSDK SPF10CS"
+	default n
+
+config RTCONFIG_AMAS_ADTBW
+	bool "AMAS BH ADTBW"
+	default n
+
+config RTCONFIG_AMAS_UNIQUE_MAC
+	bool "Use unique mac for identification"
+	default n
+
+config RTCONFIG_ACCOUNT_BINDING
+	bool "Account binding"
+	default n
+
+config RTCONFIG_AMAS_SYNC_2G_BW
+	bool "AMAS RE sync 2.4G bandwidth"
+	default n
+
+config RTCONFIG_NoETH
+	bool "No ETH port"
+	default n
+
+config RTCONFIG_TAIL_INFO
+	bool "A tail info appended to FW"
+	default n
+
+config RTCONFIG_WL_SCHED_V2
+	bool "WiFi Scheduler format version 2"
+	default n
+
+config RTCONFIG_PC_SCHED_V2
+	bool "Parental Control Scheduler format version 2"
+	default n
+
+config RTCONFIG_SCHED_V2
+	bool "Scheduler format version 2"
+	default n
+
+config RTCONFIG_WL_SCHED_V3
+	bool "WiFi Scheduler format version 3"
+	default n
+
+config RTCONFIG_PC_SCHED_V3
+	bool "Parental Control Scheduler format version 3"
+	default n
+
+config RTCONFIG_SCHED_V3
+	bool "Scheduler format version 3"
+	default n
+
+config RTCONFIG_MULTIFW
+	bool "Multiple Firmware"
+	default n
+
+config RTCONFIG_RE_RECONNECT
+	bool "enable re reconnect"
+	default n
+
+config RTCONFIG_BH_SWITCH_ETH_FIRST
+	bool "enable wifi backhaul switch on ethernet first"
+	default n
+
+config RTCONFIG_MULTISERVICE_WAN
+	bool "setup multiple subunit wan"
+	default n
+
+config RTCONFIG_VIF_ONBOARDING
+	bool "onboarding via virtual interface"
+	default n
+
+config RTCONFIG_OUTFOX
+	bool "Outfox game acceleration support"
+	default n
+
+config RTCONFIG_CAPTCHA
+	bool "Web UI supports captcha"
+	default n
+
+config RTCONFIG_DISAPPCAPT
+	bool "Disable APP captcha"
+	default n
+
+config RTCONFIG_WIFI6E
+	bool "WiFi 6E"
+	default n
+
+config RTCONFIG_VAR_NVRAM
+	bool "save some nvram under /var"
+	default n
+
+config RTCONFIG_BCM_OAM
+	bool "Broadcom OAM"
+	default n
+
+config RTCONFIG_QCA_PLC2
+	bool "QCA PLC2"
+	default n
+
+config RTCONFIG_NEW_PHYMAP
+	bool "New phy port mapping system dependent function"
+	default n
+
+config RTCONFIG_LIB_CODB
+	bool "codb library"
+	default n
+
+config RTCONFIG_INSTANT_GUARD
+	bool "IPSEC VPN INSTANT GUARD support"
+	default n
+
+config RTCONFIG_GAME_MODE
+	bool "GAME mode support"
+	default n
+
+config RTCONFIG_BHSWITCH_RE_SELFOPT
+	bool "Notify RE do self optimization when backhaul switch"
+	default n
+
+config RTCONFIG_PREFERAP_RE_SELFOPT
+	bool "Notify RE do self optimization based on prefer ap condition"
+	default n
+
+config RTCONFIG_SCHED_DAEMON
+	bool "Enable scheduler daemon"
+	default n
+
+config RTCONFIG_PC_REWARD
+	bool "Parental Control Reward"
+	default n
+
+config RTCONFIG_FRONTHAUL_DBG
+	bool "enable AiMesh RE fronthaul for debug purpose"
+
+config RTCONFIG_MAX_RE
+	int "Support the maximum number of RE"
+	default 9
+
+config RTCONFIG_TIME_QUOTA
+	bool "Parental Control Time Quota"
+	default n
+
+config RTCONFIG_SPF11_3_QSDK
+	bool "SPF11.3 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_SPF11_4_QSDK
+	bool "SPF11.4 QSDK"
+	depends on RTCONFIG_QCA
+	default n
+
+config RTCONFIG_QSDK_LM256
+	bool "LM256 for RAM 256MB hardware design"
+	default n
+
+config RTCONFIG_QCA_WLAN_SCRIPTS
+	depends on RTCONFIG_QCA
+	bool "use script to load/unload wifi instead of complex & mass code"
+	default n
+
+config RTCONFIG_QCA_AXCHIP
+	depends on RTCONFIG_QCA
+	bool "enable some 11AX features"
+	default n
+
+config RTCONFIG_WIREGUARD
+	bool "enable Wireguard features"
+	default n
+
+config RTCONFIG_OWE_TRANS
+	bool "OWE Transition authentication mode support"
+	default n
+
+config RTCONFIG_TPVPN
+	bool "3rd party VPN support"
+	default n
+
+config RTCONFIG_SPECIFIC_PPPOE
+	bool "Support specific PPPoE features"
+	default n
+
+config RTCONFIG_ACL96
+	bool "Support maximum 96 MAC address in ACL list control"
+	default n
+
+config RTCONFIG_ISP_CUSTOMIZE_TOOL
+	bool "ISP customiztion tool"
+	default n
+
+config RTCONFIG_ISPCTRL
+	bool "Append ISP model description to the file name of firmware"
+	default n
+
+config RTCONFIG_GOOGLE_ASST
+	bool "GOOGLE_ASST support"
+	default n
+
+config RTCONFIG_EXTEND_LIMIT
+	bool "Extend rule limitation"
+	default n
+
+config RTCONFIG_COMFW
+	bool "Combined image support"
+	default n
+
+config RTCONFIG_QUADBAND
+	bool "WiFi quad band support"
+	default n
+
+choice
+	prompt "lldpd program & library"
+	default RTCONFIG_LLDPD_0_9_8
+
+config RTCONFIG_LLDPD_0_9_8
+	bool "lldpd-0.9.8"
+
+config RTCONFIG_LLDPD_1_0_11
+	bool "lldpd-1.0.11"
+endchoice
+
+config RTCONFIG_FSMD
+	bool "Filesystem monitor support"
+	default n
+
+config RTCONFIG_DNS_PING
+	bool "Ping DNS servers and store the result into database"
+	default n
+
+config RTCONFIG_CALC_NVRAM
+	bool "calculate nvram size"
+	default n
+
+config RTCONFIG_HW_DOG
+	bool "CPU hardward watchdog daemon"
+	default n
+
+config RTCONFIG_MSSID_REALMAC
+	bool "MSSID with real MAC address"
+	default n
+
+config RTCONFIG_NCURSES_6_1
+	bool "ncurses 6.1"
+	default n
+
+config RTCONFIG_AMAS_CENTRAL_CONTROL
+        bool "AiMesh central control"
+        default n
+
+config RTCONFIG_AVOID_TZ_ENV
+	bool "Not use setenv(TZ) but use timezone in /etc/TZ"
+	default n
+
+config RTCONFIG_BANDINDEX_NEW
+        bool " Bandindex version greater than 1"
+        default n
+
+config RTCONFIG_DEF_AUTO_FRONTHAUL
+	bool "The default value of fronthaul ap is auto"
+	default n
+
+config RTCONFIG_DEF_ON_FRONTHAUL
+	bool "The default value of fronthaul ap is on"
+	default n
+
+config RTCONFIG_DEF_OFF_FRONTHAUL
+	bool "The default value of fronthaul ap is off"
+	default n
+
+config RTCONFIG_IG_SITE2SITE
+	bool "INSTANT GUARD site to site support"
+	default n
+
+config RTCONFIG_FRONTHAUL_AP_AUTO_OPT
+	bool "Support auto option for fronthaul ap"
+	default n
+
+config RTCONFIG_SECUREBOOT
+        bool "SecureBoot fw"
+        default n
+
+config RTCONFIG_FSCRYPTCTL
+        bool "fscryptctl tool"
+        default n
+
+config RTCONFIG_BSC_SR
+        bool " sync bsscolor and enable spatial-reuse"
+        default n
+
+config RTCONFIG_AMAS_DWB_RULE
+	bool "AiMesh new dwb rule"
+	default n
+
+config RTCONFIG_AMAS_SYNC_LEDG
+	bool "AMAS RE sync ledg"
+	default n
+
+config RTCONFIG_AMAS_SS2
+	bool "AiMesh Site Survey strategy-2"
+	default n
+
+config RTCONFIG_WPA3_ENTERPRISE
+	bool "WPA3 enterprise mode/transition mode/suite-b 192 bit mode"
+	default n
+
+config RTCONFIG_AMAS_CENTRAL_OPTMZ
+	bool "AiMesh central optimization"
+	default n
+
+config RTCONFIG_DNSMQ_USER
+	bool "dnsmasq user local serv"
+	default n
+
+config RTCONFIG_AMAS_CENTRAL_ADS
+	bool "AiMesh central antenna diversity selection"
+	default n
+
+config RTCONFIG_NOWL
+	bool "no wl"
+	default n
+
+config RTCONFIG_INTEL_EVO
+	bool "configuration for Intel EVO program certificate"
+	default n
+
+config RTCONFIG_SW_SPDLED
+	bool "sw speed led"
+	default n
+
+config RTCONFIG_BCM4906_504
+	bool "962118G in 504"
+	default n

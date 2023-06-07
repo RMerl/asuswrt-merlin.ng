@@ -1,0 +1,259 @@
+BlueZ D-Bus LE Advertising API Description
+******************************************
+
+Advertising packets are structured data which is broadcast on the LE Advertising
+channels and available for all devices in range.  Because of the limited space
+available in LE Advertising packets (31 bytes), each packet's contents must be
+carefully controlled.
+
+BlueZ acts as a store for the Advertisement Data which is meant to be sent.
+It constructs the correct Advertisement Data from the structured
+data and configured the kernel to send the correct advertisement.
+
+Advertisement Data objects are registered freely and then referenced by BlueZ
+when constructing the data sent to the kernel.
+
+LE Advertisement Data hierarchy
+===============================
+
+Specifies the Advertisement Data to be broadcast and some advertising
+parameters.  Properties which are not present will not be included in the
+data.  Required advertisement data types will always be included.
+All UUIDs are 128-bit versions in the API, and 16 or 32-bit
+versions of the same UUID will be used in the advertising data as appropriate.
+
+Service		org.bluez
+Interface	org.bluez.LEAdvertisement1
+Object path	freely definable
+
+Methods		void Release() [noreply]
+
+			This method gets called when the service daemon
+			removes the Advertisement. A client can use it to do
+			cleanup tasks. There is no need to call
+			UnregisterAdvertisement because when this method gets
+			called it has already been unregistered.
+
+Properties	string Type
+
+			Determines the type of advertising packet requested.
+
+			Possible values: "broadcast" or "peripheral"
+
+		array{string} ServiceUUIDs
+
+			List of UUIDs to include in the "Service UUID" field of
+			the Advertising Data.
+
+		dict ManufacturerData
+
+			Manufactuer Data fields to include in
+			the Advertising Data.  Keys are the Manufacturer ID
+			to associate with the data.
+
+		array{string} SolicitUUIDs
+
+			Array of UUIDs to include in "Service Solicitation"
+			Advertisement Data.
+
+		dict ServiceData
+
+			Service Data elements to include. The keys are the
+			UUID to associate with the data.
+
+		dict Data [Experimental]
+
+			Advertising Type to include in the Advertising
+			Data. Key is the advertising type and value is the
+			data as byte array.
+
+			Note: Types already handled by other properties shall
+			not be used.
+
+			Possible values:
+				<type> <byte array>
+				...
+
+			Example:
+				<Transport Discovery> <Organization Flags...>
+				0x26                   0x01         0x01...
+
+		bool Discoverable [Experimental]
+
+			Advertise as general discoverable. When present this
+			will override adapter Discoverable property.
+
+			Note: This property shall not be set when Type is set
+			to broadcast.
+
+		uint16 DiscoverableTimeout [Experimental]
+
+			The discoverable timeout in seconds. A value of zero
+			means that the timeout is disabled and it will stay in
+			discoverable/limited mode forever.
+
+			Note: This property shall not be set when Type is set
+			to broadcast.
+
+		array{string} Includes
+
+			List of features to be included in the advertising
+			packet.
+
+			Possible values: as found on
+					LEAdvertisingManager.SupportedIncludes
+
+		string LocalName
+
+			Local name to be used in the advertising report. If the
+			string is too big to fit into the packet it will be
+			truncated.
+
+			If this property is available 'local-name' cannot be
+			present in the Includes.
+
+		uint16 Appearance
+
+			Appearance to be used in the advertising report.
+
+			Possible values: as found on GAP Service.
+
+		uint16_t Duration
+
+			Duration of the advertisement in seconds. If there are
+			other applications advertising no duration is set the
+			default is 2 seconds.
+
+		uint16_t Timeout
+
+			Timeout of the advertisement in seconds. This defines
+			the lifetime of the advertisement.
+
+		string SecondaryChannel [Experimental]
+
+			Secondary channel to be used. Primary channel is
+			always set to "1M" except when "Coded" is set.
+
+			Possible value: "1M" (default)
+					"2M"
+					"Coded"
+
+		uint32 MinInterval [Experimental]
+
+			Minimum advertising interval to be used by the
+			advertising set, in milliseconds. Acceptable values
+			are in the range [20ms, 10,485s]. If the provided
+			MinInterval is larger than the provided MaxInterval,
+			the registration will return failure.
+
+		uint32 MaxInterval [Experimental]
+
+			Maximum advertising interval to be used by the
+			advertising set, in milliseconds. Acceptable values
+			are in the range [20ms, 10,485s]. If the provided
+			MinInterval is larger than the provided MaxInterval,
+			the registration will return failure.
+
+		int16 TxPower [Experimental]
+
+			Requested transmission power of this advertising set.
+			The provided value is used only if the "CanSetTxPower"
+			feature is enabled on the Advertising Manager. The
+			provided value must be in range [-127 to +20], where
+			units are in dBm.
+
+
+LE Advertising Manager hierarchy
+================================
+
+The Advertising Manager allows external applications to register Advertisement
+Data which should be broadcast to devices.  Advertisement Data elements must
+follow the API for LE Advertisement Data described above.
+
+Service		org.bluez
+Interface	org.bluez.LEAdvertisingManager1
+Object path	/org/bluez/{hci0,hci1,...}
+
+Methods		RegisterAdvertisement(object advertisement, dict options)
+
+			Registers an advertisement object to be sent over the LE
+			Advertising channel.  The service must be exported
+			under interface LEAdvertisement1.
+
+			InvalidArguments error indicates that the object has
+			invalid or conflicting properties.
+
+			InvalidLength error indicates that the data
+			provided generates a data packet which is too long.
+
+			The properties of this object are parsed when it is
+			registered, and any changes are ignored.
+
+			If the same object is registered twice it will result in
+			an AlreadyExists error.
+
+			If the maximum number of advertisement instances is
+			reached it will result in NotPermitted error.
+
+			Possible errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.AlreadyExists
+					 org.bluez.Error.InvalidLength
+					 org.bluez.Error.NotPermitted
+
+		UnregisterAdvertisement(object advertisement)
+
+			This unregisters an advertisement that has been
+			previously registered.  The object path parameter must
+			match the same value that has been used on registration.
+
+			Possible errors: org.bluez.Error.InvalidArguments
+					 org.bluez.Error.DoesNotExist
+
+Properties	byte ActiveInstances
+
+			Number of active advertising instances.
+
+		byte SupportedInstances
+
+			Number of available advertising instances.
+
+		array{string} SupportedIncludes
+
+			List of supported system includes.
+
+			Possible values: "tx-power"
+					 "appearance"
+					 "local-name"
+
+		array{string} SupportedSecondaryChannels [Experimental]
+
+			List of supported Secondary channels. Secondary
+			channels can be used to advertise with the
+			corresponding PHY.
+
+			Possible values: "1M"
+					 "2M"
+					 "Coded"
+
+		dict SupportedCapabilities [Experimental]
+
+			Enumerates Advertising-related controller capabilities
+			useful to the client.
+
+			Possible Values:
+
+				byte MaxAdvLen
+
+					Max advertising data length
+
+				byte MaxScnRspLen
+
+					Max advertising scan response length
+
+				int16 MinTxPower
+
+					Min advertising tx power (dBm)
+
+				int16 MaxTxPower
+
+					Max advertising tx power (dBm)

@@ -528,6 +528,9 @@ struct pjmedia_transport
 	// the stun and turn error status.
 	int stun_last_status;
 	int turn_last_status;
+
+	// nominated candidate remote address
+	pj_sockaddr nominated_rem_addr;
 };
 
 /**

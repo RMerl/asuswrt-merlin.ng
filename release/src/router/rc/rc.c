@@ -501,6 +501,63 @@ static int rctest_main(int argc, char *argv[])
 		const char *dws[]={"dw", argv[2]};
 		_memaccess(2, dws);
 	}
+#ifdef RTCONFIG_RTL_UMGMT
+	else if (strcmp(argv[1], "rtl_vadd")==0) {
+        	char ethif[5], ifname[12];
+        	int vid, prio, p_mode, i;
+		char nvbuf[12];
+		int ext_ports = 4;
+
+        	zero_extrtl_vlan();
+
+		_dprintf("rtl vlan test add:\n");
+		for(i = 0; i < ext_ports; ++i) {
+			sprintf(nvbuf, "p%d_vid", i);
+			vid = nvram_get_int(nvbuf);
+
+			sprintf(nvbuf, "p%d_prio", i);
+			prio = nvram_get_int(nvbuf);
+
+			sprintf(ifname, "ethsw_%d", i);
+
+			sprintf(nvbuf, "p%d_mode", i);
+        		p_mode = nvram_get_int(nvbuf);
+
+			if(vid) {
+        			add_extrtl_vlan(vid, prio, ifname, p_mode, ethif);
+        			_dprintf("setup vid[%d], prio[%d], ifname[%s], p_mode[%d], ethif[%s]\n", vid, prio, ifname, p_mode, ethif);
+			}
+		}
+
+        	dump_extVlan();
+        	start_extrtl_vlan();	
+		_dprintf("done\n");
+	}
+	else if (strcmp(argv[1], "rtl_vrem")==0) {
+        	char ethif[5], ifname[12];
+        	int vid, prio, p_mode, i;
+		char nvbuf[12];
+		int ext_ports = 4;
+		int ret = 0;
+
+		_dprintf("rtl vlan test rem:\n");
+		for(i = 0; i < ext_ports; ++i) {
+			sprintf(nvbuf, "p%d_vid_rm", i);
+			vid = nvram_get_int(nvbuf);
+
+			sprintf(ifname, "ethsw_%d", i);
+
+			if(vid) {
+        			ret = rem_extrtl_vlan(vid, ifname, ethif);
+        			_dprintf("remv(%d): from vid[%d], ifname[%s], ethif[%s]\n", ret, vid, ifname, ethif);
+			}
+		}
+
+        	dump_extVlan();
+        	start_extrtl_vlan();	
+		_dprintf("done\n");
+	}
+#endif
 #endif
 	else if (strcmp(argv[1], "get_phy_status")==0) {
 		int mask;
@@ -562,6 +619,42 @@ static int rctest_main(int argc, char *argv[])
 #endif
 #endif
 #ifdef HND_ROUTER
+	else if (strcmp(argv[1], "dump_defaults")==0) {
+		struct nvram_tuple *t;
+		char *substr = NULL;
+		int total = 0;
+		FILE *fp;
+		char buf[256];
+
+		if(argv[2] && *argv[2])
+			substr = argv[2];
+
+		fp = fopen("/tmp/defaults.txt", "w");
+		if(!fp)
+			return 0;
+
+		_dprintf("dump router_defaults w/ substr[%s]\n", substr?:"[none]");
+
+		for (t = router_defaults; t->name; t++) {
+			if(substr) {
+				if(strncmp(t->name, substr, strlen(substr)) == 0) {
+					sprintf(buf, "%s\n", t->name);
+					fwrite(buf, 1, strlen(buf), fp);
+					total++;
+				}
+			} else {
+				sprintf(buf, "%s\n", t->name);
+				fwrite(buf, 1, strlen(buf), fp);
+				total++;
+			}
+		}
+		sprintf(buf, "totally printed %d defaults\n", total);
+		fwrite(buf, 1, strlen(buf), fp);
+		if(fp)
+			fclose(fp);
+
+		_dprintf("totally printed %d defaults\n", total);
+	}
 	else if (strcmp(argv[1], "regr")==0) {
 		unsigned int reg;
 		sscanf(argv[2], "%x", &reg);
@@ -957,6 +1050,11 @@ static int rctest_main(int argc, char *argv[])
 		}
 		json_object_put(root);
 	}
+	else if (strcmp(argv[1], "aae_tunnel_test")==0) {
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AWSIOT_TNL_TEST_MSG, EID_AWSIOT_TUNNEL_TEST, (argv[2] ? : "204f0a0bde0b06a1f6fa261f729b2862"));
+		aae_sendIpcMsg(MASTIFF_IPC_SOCKET_PATH, event, strlen(event));
+	}
 #endif
 	else if (strcmp(argv[1], "diag_stainfo")==0) {
 		char *stainfo_buf = NULL;
@@ -1204,7 +1302,32 @@ static int rctest_main(int argc, char *argv[])
 				set_gpio_rc(gpio, on?(act_low?0:1):(act_low?1:0));	
 			}
 		}
-#if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(EBG19)
+		else if (strcmp(argv[1], "nvsize") == 0) {
+			printf("NVRAM_SIZE=%d, MAX=%d\n", NVRAM_SPACE, MAX_NVRAM_SPACE);
+		}
+		else if (strcmp(argv[1], "band") == 0) {
+			printf("band: %d\n", wl_get_band(argv[2]));
+		}
+		else if (strcmp(argv[1], "ch_band") == 0) {
+			printf("ch_band of %s: %d\n", argv[2], wl_get_chlist_band(argv[2]));
+		}
+#if 0
+#if defined(EBG19)
+		else if (strcmp(argv[1], "readv") == 0) {
+			read_ext_53134_vlan(atoi(argv[2]));
+		}
+		else if (strcmp(argv[1], "setv") == 0) {	/* rc setv 500 "ethsw_0 ethsw_1" "ethsw_0 ethsw_1" */
+			int vlanid = atoi(argv[2]);
+			char *untag_ifnames = argv[3];
+			char *fwd_ifnames = argv[4];
+
+			printf("add 53134 vlan:[%d][%s][%s]\n", vlanid, untag_ifnames, fwd_ifnames);
+			enable_ext_53134_8021qvlan();
+			add_ext_53134_vlan(vlanid, untag_ifnames, fwd_ifnames);
+		}
+#endif
+#endif
+#if defined(TUFAX3000_V2) || defined(RTAXE7800)
 		else if (strcmp(argv[1], "led_53134") == 0) {
 			bcm53134_led_control(atoi(argv[2]));
 		}
@@ -1323,6 +1446,23 @@ static int rctest_main(int argc, char *argv[])
 			_dprintf("chk txpwr_target_max of unit-%d is %f ...\n", unit, max_txpwr);
 		}
 #endif
+#ifdef RTCONFIG_AUTO_WANPORT
+		else if (strcmp(argv[1], "discover_pppoe") == 0) {
+			if(argc != 3){
+				_dprintf("Usage: %s %s <net interface>\n", argv[0], argv[1]);
+				return 0;
+			}
+
+			int ret = discover_pppoe(argv[2]);
+			_dprintf("result: %s\n", (ret == 1)?"PPPoE":(ret == 0)?"No":"Failed");
+		}
+#endif
+#if defined(RTCONFIG_BCM_MFG)
+		else if (strcmp(argv[1], "ate_dev_status") == 0) {
+			ate_dev_status();
+			puts(nvram_safe_get("Ate_dev_status"));
+		}
+#endif
 		else {
 			printf("what?\n");
 		}
@@ -1367,10 +1507,10 @@ char *fix_fw_name(char *orig_fw_name)
 static inline char *fix_fw_name(char *orig_fw_name) { return orig_fw_name; }
 #endif
 
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
 /* download firmware */
 #ifndef FIRMWARE_DIR
-#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15)
+#if defined(RTCONFIG_QCA) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
 #define FIRMWARE_DIR	"/lib/firmware"
 #else
 #define FIRMWARE_DIR	"/tmp"
@@ -1478,12 +1618,19 @@ err_exit1:
 #endif
 
 #if defined(RTCONFIG_SOC_IPQ8074)
-static int count_q6mem_size(const char *basedir, const struct dirent *de, void *arg)
+static int count_q6mem_size(const char *basedir, const struct dirent *de, size_t de_size, void *arg)
 {
 	uint64_t *space = arg;
 	struct stat s = { 0 };
 	char path[sizeof("/jffs/dmesg_YYYYMMDD_HHMMSS.txtXXX")];
 
+	if (sizeof(*de) != de_size) {
+		/* If size of struct dirent mismatch, make sure readdir_wrapper() and this function see same struct dirent.h.
+		 * e.g., it's different in uclibc if _FILE_OFFSET_BITS=64 is defined or not.
+		 */
+		dbg("%s: size of struct dirent mismatch (%u v.s. %u)!\n", __func__, sizeof(*de), de_size);
+		return -1;
+	}
 	if (!basedir || !de || !arg)
 		return -1;
 
@@ -1498,10 +1645,17 @@ static int count_q6mem_size(const char *basedir, const struct dirent *de, void *
 	return 0;
 }
 
-static int del_q6mem(const char *basedir, const struct dirent *de, void *arg)
+static int del_q6mem(const char *basedir, const struct dirent *de, size_t de_size, void *arg)
 {
 	char path[sizeof("/jffs/dmesg_YYYYMMDD_HHMMSS.txtXXX")];
 
+	if (sizeof(*de) != de_size) {
+		/* If size of struct dirent mismatch, make sure readdir_wrapper() and this function see same struct dirent.h.
+		 * e.g., it's different in uclibc if _FILE_OFFSET_BITS=64 is defined or not.
+		 */
+		dbg("%s: size of struct dirent mismatch (%u v.s. %u)!\n", __func__, sizeof(*de), de_size);
+		return -1;
+	}
 	if (!basedir || !de)
 		return -1;
 
@@ -1786,7 +1940,7 @@ static int hotplug_main(int argc, char *argv[])
 			return coma_uevent();
 #endif /* LINUX_2_6_36 */
 #endif
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_LANTIQ) || defined(RTAX95Q) || defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(RTAXE95Q) || defined(ET8PRO) || defined(ET8_V2) || defined(RTAX56_XD4) || defined(XD4PRO) || defined(RTAX55) || defined(RTAX1800) || defined(BC109) || defined(EBG19) || defined(BC105) || defined(EBG15) || defined(XC5) || defined(EBA63)
 		else if(!strcmp(argv[1], "firmware")) {
 			hotplug_firmware();
 		}
@@ -2070,6 +2224,7 @@ static const applets_t applets[] = {
 	{ "netool", 			netool_main			},
 #endif
 #ifdef RTCONFIG_SOFTWIRE46
+	{ "auto46det", 			auto46det_main			},
 	{ "v6plusd", 			v6plusd_main			},
 	{ "ocnvcd", 			ocnvcd_main			},
 #endif
@@ -2098,6 +2253,9 @@ static const applets_t applets[] = {
 #endif
 #ifdef RTCONFIG_QCA_PLC_UTILS
 	{ "autodet_plc", 		autodet_plc_main		},
+#endif
+#ifdef RTCONFIG_AUTO_WANPORT
+	{ "autowan",			autowan_main			},
 #endif
 #ifdef RTCONFIG_CIFS
 	{ "mount-cifs",			mount_cifs_main			},
@@ -2230,6 +2388,9 @@ static const applets_t applets[] = {
 #ifdef RTCONFIG_HND_ROUTER_AX
 	{ "gpy211_monitor",		gpy211_monitor_main      },
 #endif
+#ifdef RTCONFIG_MOCA
+	{ "moca_monitor",		moca_monitor_main      },
+#endif 
 	{NULL, NULL}
 };
 
@@ -3516,6 +3677,10 @@ int main(int argc, char **argv)
 	}
 #endif
 #if RTCONFIG_SOFTWIRE46
+	else if (!strcmp(base, "init_wan46")) {
+		init_wan46();
+		return 0;
+	}
 	else if (!strcmp(base, "s46reset")) {
 		if (argc != 2) {
 			printf("Usage: %s <wan unit>.\n", argv[0]);

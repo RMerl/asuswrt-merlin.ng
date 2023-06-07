@@ -236,4 +236,9 @@
 #define CFG_STR_DS		"ds"
 #define CFG_STR_DS_NUM		"ds_num"
 #endif
+#define CFG_STR_MOCA_PRIVACY	"moca_privacy"
+#define CFG_STR_PASSWD	"passwd"
+#define CFG_STR_EHANCED_PASSWD	"epasswd"
+#define CFG_STR_PRIVACY_ENABLE	"privacy_enable"
+#define CFG_STR_SECURITY_MODE	"security_mode"
 #endif /* __CFG_STRING_H__ */

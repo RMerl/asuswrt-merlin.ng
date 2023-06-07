@@ -329,10 +329,19 @@ int read_wgc_config_file(const char* file_path, int wgc_unit)
 			{
 				char *ep, *p;
 				ep = _get_wgconf_val(buf);
-				p = strchr(ep, ':');
-				*p = '\0';
-				nvram_pf_set(wgc_prefix, "ep_addr", ep);
-				nvram_pf_set(wgc_prefix, "ep_port", p+1);
+				p = strrchr(ep, ':');
+				if (p) {
+					*p = '\0';
+					if (ep[0] == '[' && *(p-1) == ']') {
+						ep += 1;
+						*(p-1) = '\0';
+					}
+					nvram_pf_set(wgc_prefix, "ep_addr", ep);
+					nvram_pf_set(wgc_prefix, "ep_port", p+1);
+				}
+				else {
+					logmessage_normal("WG", "Unrecognized: [%s]", buf);
+				}
 			}
 			else if (!strncmp(buf, "PersistentKeepalive", 19))
 				nvram_pf_set(wgc_prefix, "alive", _get_wgconf_val(buf));
@@ -350,6 +359,7 @@ int read_wgc_config_file(const char* file_path, int wgc_unit)
 	return 0;
 }
 
+#define WG_DIR_CONF    "/etc/wg"
 int is_wgc_connected(int unit)
 {
 	char ifname[8] = {0};
@@ -357,12 +367,12 @@ int is_wgc_connected(int unit)
 	char filename[32] = {0};
 
 	snprintf(ifname, sizeof(ifname), "%s%d", WG_CLIENT_IF_PREFIX, unit);
-	snprintf(filename, sizeof(filename), "/etc/wg/%s_status", ifname);
-	snprintf(buf, sizeof(buf), "wg show %s |grep handshake > %s 2>&1", ifname, filename);
+	snprintf(filename, sizeof(filename), "%s/%s_status", WG_DIR_CONF, ifname);
+	snprintf(buf, sizeof(buf), "mkdir -m 0700 -p %s && wg show %s |grep handshake > %s 2>&1", WG_DIR_CONF, ifname, filename);
 	system(buf);
 
 	memset(buf, 0 , sizeof(buf));
-	if (f_read_string(filename, buf, sizeof(buf))) {
+	if (f_read_string(filename, buf, sizeof(buf)) > 0) {
 		char *p = strstr(buf, "sec:");
 		unsigned long long t = (p) ? strtoull (p + 4, NULL, 0) : 999;
 		if (strstr(buf, "Now"))

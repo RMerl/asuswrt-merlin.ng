@@ -120,6 +120,15 @@ enum S46_HGW_CASE {
 	S46_CASE_MAP_HGW_OFF	= 3,
 	S46_CASE_MAP_CE_ON	= 6
 };
+
+enum {
+	WAN46DET_STATE_INITIALIZING=0,
+	WAN46DET_STATE_NOLINK,
+	WAN46DET_STATE_UNKNOW,
+	WAN46DET_STATE_V6PLUS,
+	WAN46DET_STATE_HGW_V6PLUS,
+	WAN46DET_STATE_OCNVC
+};
 #endif
 #endif
 
@@ -337,6 +346,58 @@ enum {
 	ASUSCTRL_ACS_IGNORE_BAND3 = 8,
 	ASUSCTRL_MAX
 };
+#endif
+
+#ifdef RTCONFIG_MOCA
+#define MAX_MOCA_NODES 16
+#define MAX_MOCA_NUM_CHANNELS	5
+enum	//moca_dev_state
+{
+	MOCA_STATE_UNKNOW,
+	MOCA_STATE_INIT_ENV,
+	MOCA_STATE_INIT_DEV,
+	MOCA_STATE_DEV_READY,
+	MOCA_STATE_ERR_DEV_FAIL,
+	MOCA_STATE_ERR,
+};
+
+enum	//moca_conn_state
+{
+	MOCA_CONN_STATE_UNKNOWN,
+	MOCA_CONN_STATE_PAIRED,
+	MOCA_CONN_STATE_UNPAIRED,
+};
+
+enum //moca_mps_report
+{
+	MOCA_MPS_REPORT_INVALID,
+	MOCA_MPS_REPORT_SCANNING,
+	MOCA_MPS_REPORT_IN_PROGRESS,
+	MOCA_MPS_REPORT_MPS_TRIGGER_FWD_NC,
+	MOCA_MPS_REPORT_MPS_PRIVACY_CHANGE,
+	MOCA_MPS_REPORT_SUCCESS,
+	MOCA_MPS_REPORT_TIMEOUT,
+	MOCA_MPS_REPORT_FAIL,
+};
+
+typedef struct _MOCA_NODE_INFO
+{
+	int active;
+	int node_id;
+	char macaddr[18];
+	char moca_ver[8];
+	int phyrate[MAX_MOCA_NODES];
+	unsigned char rx_snr[MAX_MOCA_NODES][MAX_MOCA_NUM_CHANNELS];
+}MOCA_NODE_INFO;
+
+typedef struct _MOCA_MIB_DATA
+{
+	unsigned int tx_bytes;
+	unsigned int rx_bytes;
+	unsigned int tx_packets;
+	unsigned int rx_packets;
+	unsigned int rx_crc;
+}MOCA_MIB_DATA;
 #endif
 
 // the following definition is for wans_cap

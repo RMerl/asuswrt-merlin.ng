@@ -58,12 +58,12 @@ typedef struct {
 	int enable;
 	le_acme_auth_t authtype;
 	u_int16_t port;
+	int ecc;
 	int force; // issue/revoke
 	int renew_force;
 	int staging;
 	int debug;
 	char acme_logpath[128];
-	char revoke_hostname[128];
 
 	//router config
 	int ddns_enabled;
@@ -71,6 +71,10 @@ typedef struct {
 	int https_enabled;
 	int webdav_enabled;
 	char lan_ipaddr[16];
+
+	//revoke
+	int re_ecc;
+	char re_hostname[128];
 
 } le_conf_t;
 

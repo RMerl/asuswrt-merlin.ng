@@ -1,5 +1,5 @@
 /*
- * coreMQTT v1.1.1
+ * coreMQTT v1.1.2
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -27,6 +27,12 @@
 #ifndef CORE_MQTT_H
 #define CORE_MQTT_H
 
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON* */
+
 /* MQTT_DO_NOT_USE_CUSTOM_CONFIG allows building the MQTT library
  * without a custom config. If a custom config is provided, the
  * MQTT_DO_NOT_USE_CUSTOM_CONFIG macro should not be defined. */
@@ -49,7 +55,7 @@
  * @cond DOXYGEN_IGNORE
  * The current version of this library.
  */
-#define MQTT_LIBRARY_VERSION    "v1.1.1"
+#define MQTT_LIBRARY_VERSION    "v1.1.2"
 /** @endcond */
 
 /**
@@ -886,5 +892,11 @@ MQTTStatus_t MQTT_GetSubAckStatusCodes( const MQTTPacketInfo_t * pSubackPacket,
 /* @[declare_mqtt_status_strerror] */
 const char * MQTT_Status_strerror( MQTTStatus_t status );
 /* @[declare_mqtt_status_strerror] */
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    }
+#endif
+/* *INDENT-ON* */
 
 #endif /* ifndef CORE_MQTT_H */

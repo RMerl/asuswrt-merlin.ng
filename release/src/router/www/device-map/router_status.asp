@@ -642,6 +642,11 @@ function get_ethernet_ports() {
 							if(port_item.special_port_name != "")
 								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
 						}
+						else if(port_item.cap_support.MOCA){
+							$port_icon.addClass("MoCa");
+							if(port_item.special_port_name != "")
+								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+						}
 
 						if(port_item.link_rate_status != "1"){
 							show_notice = true;
@@ -652,7 +657,7 @@ function get_ethernet_ports() {
 
 				var $port_status_icon_desc = $("<div>").addClass("port_status_icon_desc").appendTo($("#phy_ports"));
 				$("<div>").addClass("conn").html("<#Connected#>").appendTo($port_status_icon_desc);
-				$("<div>").addClass("warn").html("Warnings").appendTo($port_status_icon_desc);/* untranslated */
+				$("<div>").addClass("warn").html("<#Notice#>").appendTo($port_status_icon_desc);/* untranslated */
 				$("<div>").addClass("unplug").html("<#Status_Unplugged#>").appendTo($port_status_icon_desc);
 
 				if(show_notice){

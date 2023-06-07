@@ -1,11 +1,13 @@
 #!/usr/bin/env sh
 
-# Script to create certificate to qiniu.com 
+# Script to create certificate to qiniu.com
 #
 # This deployment required following variables
 # export QINIU_AK="QINIUACCESSKEY"
 # export QINIU_SK="QINIUSECRETKEY"
 # export QINIU_CDN_DOMAIN="cdn.example.com"
+# If you have more than one domain, just
+# export QINIU_CDN_DOMAIN="cdn1.example.com cdn2.example.com"
 
 QINIU_API_BASE="https://api.qiniu.com"
 
@@ -51,7 +53,7 @@ qiniu_deploy() {
   sslcert_access_token="$(_make_access_token "$sslcert_path")"
   _debug sslcert_access_token "$sslcert_access_token"
   export _H1="Authorization: QBox $sslcert_access_token"
-  sslcert_response=$(_post "$sslcerl_body" "$QINIU_API_BASE$sslcert_path" 0 "POST" "application/json" | _dbase64 "multiline")
+  sslcert_response=$(_post "$sslcerl_body" "$QINIU_API_BASE$sslcert_path" 0 "POST" "application/json" | _dbase64)
 
   if ! _contains "$sslcert_response" "certID"; then
     _err "Error in creating certificate:"
@@ -67,21 +69,23 @@ qiniu_deploy() {
   _debug certId "$_certId"
 
   ## update domain ssl config
-  update_path="/domain/$QINIU_CDN_DOMAIN/httpsconf"
   update_body="{\"certid\":$_certId,\"forceHttps\":false}"
-  update_access_token="$(_make_access_token "$update_path")"
-  _debug update_access_token "$update_access_token"
-  export _H1="Authorization: QBox $update_access_token"
-  update_response=$(_post "$update_body" "$QINIU_API_BASE$update_path" 0 "PUT" "application/json" | _dbase64 "multiline")
+  for domain in $QINIU_CDN_DOMAIN; do
+    update_path="/domain/$domain/httpsconf"
+    update_access_token="$(_make_access_token "$update_path")"
+    _debug update_access_token "$update_access_token"
+    export _H1="Authorization: QBox $update_access_token"
+    update_response=$(_post "$update_body" "$QINIU_API_BASE$update_path" 0 "PUT" "application/json" | _dbase64)
 
-  if _contains "$update_response" "error"; then
-    _err "Error in updating domain httpsconf:"
-    _err "$update_response"
-    return 1
-  fi
+    if _contains "$update_response" "error"; then
+      _err "Error in updating domain $domain httpsconf:"
+      _err "$update_response"
+      return 1
+    fi
 
-  _debug update_response "$update_response"
-  _info "Certificate successfully deployed"
+    _debug update_response "$update_response"
+    _info "Domain $domain certificate has been deployed successfully"
+  done
 
   return 0
 }

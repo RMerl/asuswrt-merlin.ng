@@ -22,11 +22,31 @@
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/client_function.js"></script>
 <script>
+var getUrlParameter = function getUrlParameter(param){
+	var url_parm = window.location.search.substring(1);
+	var parm_array = url_parm.split("&");
+	var key_value;
+
+	for(var i = 0; i < parm_array.length; i += 1){
+		key_value = parm_array[i].split("=");
+		if (key_value[0] == param) {
+			return typeof key_value[1] == "undefined" ? "" : decodeURIComponent(key_value[1]);
+		}
+	}
+	return "";
+};
+var theme = getUrlParameter("current_theme").toLocaleUpperCase();
+if(theme == "WHITE"){
+	$('link').filter("[href='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_topology_' + theme + '.css">');
+}
 function initial(){
 	show_menu();
 	$("#AiMesh_Topology").load("/aimesh/aimesh_topology.html", function(){
 		setTimeout(function(){
 			$('link').filter("[href='/aimesh/aimesh_topology.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings.css">');
+			if(theme == "WHITE"){
+				$('link').filter("[href='/aimesh/aimesh_system_settings.css']").after('<link rel="stylesheet" type="text/css" href="/aimesh/aimesh_system_settings_' + theme + '.css">');
+			}
 			$("#AiMesh_System_Settings").load("/aimesh/aimesh_system_settings.html");
 			addNewScript("/general.js");
 			addNewScript("/popup.js");

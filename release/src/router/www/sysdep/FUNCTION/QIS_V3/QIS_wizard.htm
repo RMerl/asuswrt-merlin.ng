@@ -150,7 +150,7 @@
 					systemVariable.forceChangePw = (httpApi.hookGet("check_pw") == '1') ? true : false;
 					systemVariable.linkLnternet = httpApi.isConnected();
 					systemVariable.maxPasswordLen = getSupportNum("MaxLen_http_passwd");
-					systemVariable.keepDefpsk = (systemVariable.productid == "RT-AX53U" && isSupport("defpsk") && isSku("JP")) ? true : false;
+					systemVariable.keepDefpsk = isSupport("defpsk");
 
 					httpApi.log("tcode", systemVariable.territoryCode, systemVariable.qisSession)
 
@@ -229,6 +229,9 @@
 						break;
 						case "site2site":
 							goTo.site2site();
+						break;
+						case "changePass":
+							goTo.login();
 						break;
 						default:
 							goTo.Welcome();
@@ -501,59 +504,96 @@
 
 		<!-- Login Page -->	
 		<div id="login_name" data-role="page" class="qisBackground">
-			<div class="headerBar"></div>
-			<div class="tableContainer">
-				<div class="desktop_left_field">
-					<div>
-						<div class="titleMain"><#CTL_login#></div>
-						<div class="titleSub"><#Username#> / <#PPPConnection_Password_itemname#></div>
-						<div class="titleSub"><#Settings#></div>
+			<div class="qis_container">
+				<div class="headerBar"></div>
+				<div class="tableContainer">
+					<div class="desktop_left_field">
+						<div>
+							<div class="titleMain"><#CTL_login#></div>
+							<div class="titleSub"><#Username#> / <#PPPConnection_Password_itemname#></div>
+							<div class="titleSub"><#Settings#></div>
+						</div>
+					</div>
+					<div class="table_td">
+						<div id="login_desc" class="pageDesc"><#QIS_pass_desc1#></div>
+						<div id="login_passwd_KR" class="pageDesc_passwd_KR" style="display:none;"><#JS_validLoginPWD#></div>
+						<div id="login_field">
+							<div>
+								<div class="inputTitleContainer">
+									<div id="http_username_title" class="inputTitle"><#Router_Login_Name#></div>
+								</div>
+								<div class="inputContainer">
+									<input id="http_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="32" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								</div>
+							</div>
+							<div>
+								<div class="inputTitleContainer">
+									<div class="inputTitle"><#PASS_new#></div>
+									<div class="secureInput icon_eye_close" for="http_passwd http_passwd_confirm"></div>
+								</div>
+								<div class="inputContainer">
+									<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" onkeyup="chkPass(this.value, 'http_passwd'); check_password_length(this);"/>
+								</div>
+							</div>
+							<div id="http_passwd_confirm_container">
+								<div class="inputTitleContainer">
+									<div class="inputTitle"><#PASS_retype#></div>
+								</div>
+								<div class="inputContainer">
+									<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" />
+								</div>
+							</div>
+
+							<div class="labelContainer defpassSupport">
+								<label for="defpass_checkbox" class="labelInput">Use default Local Login Password</label><!-- untranslated -->
+								<input type="checkbox" id="defpass_checkbox" data-mini="true"/>
+								<div class="inputTitle" style="margin-left:70px;margin-top:-16px;font-size:1.2em;display:flex;">The default encrypted Local Login Password provides a secure login process when you connect to this ASUS networking device locally.</div><!-- untranslated -->
+								<div id="local_login_title_container" class="defpass_guideline_title_container">
+									<div>
+										<div class="icon_excl_mark"><div>i</div></div>
+									</div>
+									<div>
+										<div data-component="title_text"></div>
+									</div>
+								</div>
+							</div>
+
+							<!-- Action Button -->
+							<div class="footer_desktop">
+								<div class="desktop_abortBtn btn_login_abort" onclick='abort.login()'><#CTL_prev#></div>
+								<div class="desktop_applyBtn btn_login_apply" onclick="apply.login();"><#CTL_next#></div>
+							</div>
+							<div class="footer_mobile">
+								<table style="width:100%;" cellpadding="0" cellspacing="0">
+									<tr>
+										<td class="mobileAbort btn_login_abort" style="width:50%" onclick='abort.login()'>
+											<div class="mobile_abortBtn"><#CTL_prev#></div>
+										</td>
+										<td class="mobileApply btn_login_apply" onclick="apply.login();">
+											<div class="mobile_applyBtn btn_login_apply"><#CTL_next#></div>
+										</td>
+									</tr>
+								</table>
+							</div>
+						</div>
 					</div>
 				</div>
-				<div class="table_td">
-					<div id="login_desc" class="pageDesc"><#QIS_pass_desc1#></div>
-					<div id="login_field">
-						<div>
-							<div class="inputTitleContainer">
-								<div class="inputTitle"><#Router_Login_Name#></div>
+			</div>
+			<div class="hidden_mask popup_element"></div>
+			<div class="popup_container popup_element defpass qisView">
+				<div>
+					<div class="title_container">
+						<div class="title">Local Login Password</div><!-- untranslated -->
+						<div id="local_login_guideline_close" class="icon_close_btn"></div>
+					</div>
+					<div class="content_container">
+						<div class="defpass_guideline_container">
+							<div class="image_container">
+								<div class="image_local_login"></div>
 							</div>
-							<div class="inputContainer">
-								<input id="http_username" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="32" class="textInput" data-role="none" value="" data-clear-btn="true" />
+							<div class="desc_container">
+								<div id="local_login_guideline_desc"></div>
 							</div>
-						</div>
-						<div>
-							<div class="inputTitleContainer">
-								<div class="inputTitle"><#PASS_new#></div>
-								<div class="secureInput icon_eye_close" for="http_passwd http_passwd_confirm"></div>
-							</div>
-							<div class="inputContainer">
-								<input id="http_passwd" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" onkeyup="chkPass('httpd', this.value); check_password_length(this);"/>
-							</div>
-						</div>
-						<div>
-							<div class="inputTitleContainer">
-								<div class="inputTitle"><#PASS_retype#></div>
-							</div>
-							<div class="inputContainer">
-								<input id="http_passwd_confirm" type="password" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="33" class="textInput" data-role="none" value="" data-clear-btn="true" />
-							</div>
-						</div>
-						<!-- Action Button -->
-						<div class="footer_desktop">
-							<div class="desktop_abortBtn btn_login_abort" onclick='abort.login()'><#CTL_prev#></div>
-							<div class="desktop_applyBtn btn_login_apply" onclick="apply.login();"><#CTL_next#></div>
-						</div>
-						<div class="footer_mobile">
-							<table style="width:100%;" cellpadding="0" cellspacing="0">
-								<tr>
-									<td class="mobileAbort btn_login_abort" style="width:50%" onclick='abort.login()'>
-										<div class="mobile_abortBtn"><#CTL_prev#></div>
-									</td>
-									<td class="mobileApply btn_login_apply" onclick="apply.login();">
-										<div class="mobile_applyBtn btn_login_apply"><#CTL_next#></div>
-									</td>
-								</tr>
-							</table>
 						</div>
 					</div>
 				</div>
@@ -1755,8 +1795,8 @@
 							</div>
 							<div class="inputContainer">
 								<select id="modem_android" class="optionInput">
-									<option value="0"><#menu5_4_4#></option>
-									<option value="1"><#Android_phone#></option>
+									<option value="0"><#Auto#></option>
+									<option value="1">Legacy</option>
 								</select>
 							</div>
 						</div>
@@ -1851,7 +1891,7 @@
 						</div>
 						<div class="dongle">
 							<div class="inputTitleContainer">
-								<div class="inputTitle"><#PIN_code#></div>
+								<div class="inputTitle"><#PIN_code#> <span style="font-size: 0.8em;">(Optional)</span></div>
 								<div class="secureInput icon_eye_close" for="modem_pincode"></div>
 							</div>
 							<div class="inputContainer">
@@ -1868,7 +1908,7 @@
 						</div>
 						<div>
 							<div class="inputTitleContainer">
-								<div class="inputTitle">USB MTU</div>
+								<div class="inputTitle">USB MTU <span style="font-size: 0.8em;">(Optional)</span></div><!--untranslated-->
 							</div>
 							<div class="inputContainer">
 								<input id="modem_mtu" class="textInput" data-role="none" data-clear-btn="true" type="text" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false" maxlength="5" />
@@ -2292,43 +2332,75 @@
 
 		<!-- Wireless SSID/Password Setting -->
 		<div id="wireless_setting" data-role="page" class="qisBackground">
-			<div class="headerBar"></div>
-			<div class="tableContainer">
-				<div class="desktop_left_field">
-					<div class="titleMain"><#menu5_1#></div>
-					<div class="titleSub"><#Settings#></div>
+			<div class="qis_container">
+				<div class="headerBar"></div>
+				<div class="tableContainer">
+					<div class="desktop_left_field">
+						<div class="titleMain"><#menu5_1#></div>
+						<div class="titleSub"><#Settings#></div>
+					</div>
+					<div class="table_td">
+						<div class="pageDesc"><#qis_wireless_setting#></div>
+
+						<div id="wlInputField"></div>
+						<div class="labelContainer dualbandSupport bandStreeringSupport">
+							<label for="wireless_checkbox" class="labelInput"><#qis_wireless_setting_separate#></label>
+							<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
+						</div>
+
+						<div id="wifi6e_legacy_hint" class="hint_yellow" style="padding:30px;margin-top:6px;display:none"><#Wireless_SSID_hint2#> <#Wireless_SSID_hint3#></div>
+						<div class="labelContainer" id="syncSSID" style="display:none;">
+							<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
+							<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
+						</div>
+
+						<div class="labelContainer defpskSupport">
+							<div id="wifi_conn_title_container" class="defpass_guideline_title_container">
+								<div>
+									<div class="icon_excl_mark"><div>i</div></div>
+								</div>
+								<div>
+									<div data-component="title_text"></div>
+								</div>
+							</div>
+						</div>
+
+						<!-- Action Button -->
+						<div class="footer_desktop">
+							<div class="desktop_abortBtn" id="wireless_abortBtn" onclick='abort.wireless();'><#CTL_prev#></div>
+							<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.wireless();"><#CTL_apply#></div>
+						</div>
+						<div class="footer_mobile">
+							<table style="width:100%;" cellpadding="0" cellspacing="0">
+								<tr>
+									<td class="mobileAbort" id="wireless_mobile_abortBtn" style="width:50%" onclick='abort.wireless();'>
+										<div class="mobile_abortBtn"><#CTL_prev#></div>
+									</td>
+									<td class="mobileApply" onclick="apply.wireless();">
+										<div class="mobile_applyBtn btn_wireless_apply"><#CTL_apply#></div>
+									</td>
+								</tr>
+							</table>
+						</div>
+					</div>
 				</div>
-				<div class="table_td">
-					<div class="pageDesc"><#qis_wireless_setting#></div>
-
-					<div id="wlInputField"></div>
-					<div class="labelContainer dualbandSupport bandStreeringSupport">
-						<label for="wireless_checkbox" class="labelInput"><#qis_wireless_setting_separate#></label>
-		  				<input type="checkbox" id="wireless_checkbox" data-mini="true"/>
+			</div>
+			<div class="hidden_mask popup_element"></div>
+			<div class="popup_container popup_element defpass qisView">
+				<div>
+					<div class="title_container">
+						<div class="title">WiFi Connection</div><!-- untranslated -->
+						<div id="wifi_conn_guideline_close" class="icon_close_btn"></div>
 					</div>
-
-					<div id="wifi6e_legacy_hint" class="hint_yellow" style="padding:30px;margin-top:6px;display:none"><#Wireless_SSID_hint2#> <#Wireless_SSID_hint3#></div>
-					<div class="labelContainer" id="syncSSID" style="display:none;">
-						<label for="wireless_sync_checkbox" class="labelInput"><#qis_ssid_desc#></label>
-		  				<input type="checkbox" id="wireless_sync_checkbox" data-mini="true"/>
-					</div>
-
-					<!-- Action Button -->
-					<div class="footer_desktop">
-						<div class="desktop_abortBtn" id="wireless_abortBtn" onclick='abort.wireless();'><#CTL_prev#></div>
-						<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.wireless();"><#CTL_apply#></div>
-					</div>
-					<div class="footer_mobile">
-						<table style="width:100%;" cellpadding="0" cellspacing="0">
-							<tr>
-								<td class="mobileAbort" id="wireless_mobile_abortBtn" style="width:50%" onclick='abort.wireless();'>
-									<div class="mobile_abortBtn"><#CTL_prev#></div>
-								</td>
-								<td class="mobileApply" onclick="apply.wireless();">
-									<div class="mobile_applyBtn btn_wireless_apply"><#CTL_apply#></div>
-								</td>
-							</tr>
-						</table>
+					<div class="content_container">
+						<div class="defpass_guideline_container">
+							<div class="image_container">
+								<div class="image_wifi_conn"></div>
+							</div>
+							<div class="desc_container">
+								<div id="wifi_conn_guideline_desc"></div>
+							</div>
+						</div>
 					</div>
 				</div>
 			</div>
@@ -2959,6 +3031,37 @@
 								</table>
 							</div>
 						</div>
+					</div>
+				</div>
+			</div>
+		</div>
+		<div id="phone_as_modem" data-role="page" class="qisBackground">
+			<div class="headerBar"></div>
+			<div class="tableContainer">
+				<div class="desktop_left_field">
+					<div>
+						<div class="titleMain"><#Internet#></div>
+						<div class="titleSub">Use the phone as modem</div><!--untranslated-->
+					</div>
+				</div>
+				<div class="table_td">
+					<div id="phone_as_modem_instructions" style="margin-left: 70px;"></div>
+					<!-- Action Button -->
+					<div class="footer_desktop">
+						<div class="desktop_abortBtn" onclick="abort.wan();"><#CTL_prev#></div>
+						<div id="desktop_manual_applyBtn" class="desktop_applyBtn" onclick="goTo.Wireless();"><#CTL_next#></div>
+					</div>
+					<div class="footer_mobile">
+						<table style="width:100%;" cellpadding="0" cellspacing="0">
+							<tr>
+								<td class="mobileAbort" style="width:50%" onclick='abort.wan();'>
+									<div class="mobile_abortBtn"><#CTL_prev#></div>
+								</td>
+								<td class="mobileApply" onclick="goTo.Wireless();">
+									<div id="mobile_manual_applyBtn" class="mobile_applyBtn"><#CTL_next#></div>
+								</td>
+							</tr>
+						</table>
 					</div>
 				</div>
 			</div>

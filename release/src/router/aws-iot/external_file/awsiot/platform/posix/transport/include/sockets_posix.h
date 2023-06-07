@@ -1,5 +1,5 @@
 /*
- * AWS IoT Device SDK for Embedded C 202103.00
+ * AWS IoT Device SDK for Embedded C 202108.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -47,6 +47,12 @@
 #include "logging_stack.h"
 
 /************ End of logging configuration ****************/
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON* */
 
 /* Transport interface include. */
 #include "transport_interface.h"
@@ -100,5 +106,11 @@ SocketStatus_t Sockets_Connect( int32_t * pTcpSocket,
  * @return #SOCKETS_SUCCESS if successful; #SOCKETS_INVALID_PARAMETER on error.
  */
 SocketStatus_t Sockets_Disconnect( int32_t tcpSocket );
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    }
+#endif
+/* *INDENT-ON* */
 
 #endif /* ifndef SOCKETS_POSIX_H_ */

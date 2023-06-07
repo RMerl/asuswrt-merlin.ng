@@ -205,7 +205,14 @@ int is_phy_connect(int unit){
 		if(link_wan)
 			return 1;
 		else
+		{
+#ifdef RTCONFIG_DSL
+			int wan_type = get_dualwan_by_unit(unit);
+			if (wan_type == WANS_DUALWAN_IF_WAN || wan_type == WANS_DUALWAN_IF_LAN)
+				return get_wanports_status(unit);
+#endif
 			return 0;
+		}
 	}
 	else
 #ifdef RTCONFIG_USB_MODEM
@@ -1237,7 +1244,7 @@ char *get_default_ssid(int unit, int subunit)
 #endif
 
 #if defined(RTCONFIG_NEWSSID_REV5)
-#if defined(RTAX56_XD4) || defined(XD4PRO)
+#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(XC5)
 	if (nvram_match("SSIDRULE", "RT-V5")){
 		post_5g = "";
 	}
@@ -1339,6 +1346,10 @@ char *get_default_ssid(int unit, int subunit)
 				strlcat(ssid, "_XD5", sizeof(ssid));
 			}
 		}
+#elif defined(XC5)
+		if (nvram_match("SSIDRULE", "RT-V5")){
+			strlcat(ssid, "_XC5", sizeof(ssid));
+		}
 #elif defined(ET12) || defined(XT12)
 		strlcat(ssid, "_", sizeof(ssid));
 		strlcat(ssid, nvram_safe_get("model"), sizeof(ssid));
@@ -1350,7 +1361,12 @@ char *get_default_ssid(int unit, int subunit)
 		strlcat(ssid, "_XT8", sizeof(ssid));
 #else
 		strlcat(ssid, "_", sizeof(ssid));
-		strlcat(ssid, get_productid(), sizeof(ssid));
+		char *pid = get_productid();
+		if (strstr(pid, "ExpertWiFi_"))
+			pid += strlen("ExpertWiFi_");
+		else if (strstr(pid, "ZenWiFi_"))
+			pid += strlen("ZenWiFi_");
+		strlcat(ssid, pid, sizeof(ssid));
 #endif
 
 #endif

@@ -11,19 +11,39 @@ include $(TOP)/.config
 
 UPLOADER_DIR = $(TOP)/uploader
 
-CURL_DIR=$(TOP)/curl-7.21.7
-JSON_C_DIR=$(TOP)/json-c
-OPENSSL_DIR=$(TOP)/openssl
-
 
 NVRAM_DIR=$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7)
 SHARED_DIR=$(TOP)/shared
+SQLITE_DIR=$(TOP)/sqlite
+BWDPI_DIR=$(TOP)/bwdpi_source
+CURL_DIR=$(TOP)/curl-7.21.7
+JSON_C_DIR=$(TOP)/json-c
+OPENSSL_DIR=$(TOP)/openssl
+LIBWEBAPI_DIR=$(TOP)/libwebapi
+CFGMNT_DIR=$(TOP)/cfg_mnt
 
-ROUTER_LIBS=-lnvram -lshared  
-ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR)
 
-LDFLAGS = $(ROUTER_LDFLAGS) $(ROUTER_LIBS) 
+ROUTER_LIBS=-lnvram -lshared -lwebapi 
+ROUTER_LDFLAGS=-L$(NVRAM_DIR) -L$(SHARED_DIR) -L$(LIBWEBAPI_DIR)
 
+
+ifeq ($(RTCONFIG_BWDPI),y)
+ROUTER_LIBS += -lsqlite3
+ROUTER_LIBS += -lbwdpi
+ROUTER_LIBS += -lbwdpi_sql
+
+ROUTER_LDFLAGS += -L$(SQLITE_DIR)/.libs
+ROUTER_LDFLAGS += -L$(BWDPI_DIR)/asus
+ROUTER_LDFLAGS += -L$(BWDPI_DIR)/asus_sql
+endif
+
+
+ifeq ($(RTCONFIG_CFGSYNC),y)
+ROUTER_LIBS += -lcfgmnt
+ROUTER_LDFLAGS += -L$(CFGMNT_DIR)
+endif
+
+LDFLAGS = $(ROUTER_LDFLAGS) $(ROUTER_LIBS)  
 
 ifeq ($(HND_ROUTER),y)
 LDFLAGS += -L$(TOP_PLATFORM)/wlcsm$(EXHND) -lwlcsm
@@ -44,12 +64,9 @@ APP_SRC_FILES += $(APP_NAME).c
 
 
 
-
 ifeq ($(RTCONFIG_QCA),y)
 LIBS += -lm
 endif
-
-
 
 
 #Aggregate LDFLAGS
@@ -80,16 +97,28 @@ CFLAGS += -I$(OPENSSL_DIR)/include
 CFLAGS += -I$(NVRAM_DIR)
 CFLAGS += -I$(SRCBASE)/include
 CFLAGS += -I$(SHARED_DIR) 
+CFLAGS += -I$(LIBWEBAPI_DIR)
+
+
+ifeq ($(RTCONFIG_BWDPI),y)
+CFLAGS += -I$(SQLITE_DIR)	
+CFLAGS += -I$(BWDPI_DIR)/include
+CFLAGS += -I$(BWDPI_DIR)/asus_include
+endif
+
+
+ifeq ($(RTCONFIG_CFGSYNC),y)
+CFLAGS += -I$(SHARED_DIR)/sysdeps/amas
+CFLAGS += -I$(CFGMNT_DIR)
+endif
+
 
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 
 
-
-
 SRC_FILES += $(APP_SRC_FILES)
-
 
 UPLOAD_SO_CMD = $(CC) -fPIC -c $(UPLOAD_SO_FILE) $(CFLAGS) -o upload_api.o $(LDFLAGS) 
 

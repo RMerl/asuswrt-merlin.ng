@@ -938,7 +938,7 @@ function validate_format_IPSec(_obj, _validField){
 	return true;
 }
 function Update_Profile_Data_IPSec(_obj){
-	var ipsec_profile_1 = (httpApi.nvramGet(["ipsec_profile_1"]).ipsec_profile_1).replace(/&#62/g, ">").replace(/&#60/g, "<");
+	var ipsec_profile_1 = decodeURIComponent(httpApi.nvramCharToAscii(["ipsec_profile_1"]).ipsec_profile_1);
 	ipsec_profile_data = (JSON.parse(JSON.stringify(init_ipsec_profile(ipsec_profile_1))));
 
 	if(!privateIP_flag){

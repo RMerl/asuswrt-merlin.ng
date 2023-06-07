@@ -66,6 +66,13 @@ typedef struct natnl_wl_ioctl {
 #define NVRAM_WEB_HTTPS_PORT "https_lanport"
 #define NVRAM_SSHD_ENABLE "sshd_enable"
 #define NVRAM_SSHD_PORT "sshd_port"
+#define NVRAM_S2S_WGS1_ENABLE "wgs1_enable"
+#define NVRAM_S2S_WGS1_PORT "wgs1_port"
+#define NVRAM_S2S_WGS2_ENABLE "wgs2_enable"
+#define NVRAM_S2S_WGS2_PORT "wgs2_port"
+#if defined(RTCONFIG_IG_SITE2SITE) && defined(RTCONFIG_WIREGUARD)
+extern int is_wgs_use_tunnel(const char *wgs_idx, const char *caller, const char *port);
+#endif
 #ifdef __cplusplus
 }
 #endif

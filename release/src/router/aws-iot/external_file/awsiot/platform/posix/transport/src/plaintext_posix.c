@@ -1,5 +1,5 @@
 /*
- * AWS IoT Device SDK for Embedded C 202103.00
+ * AWS IoT Device SDK for Embedded C 202108.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -27,7 +27,7 @@
 /* POSIX socket includes. */
 #include <errno.h>
 #include <sys/socket.h>
-#include <sys/select.h>
+#include <poll.h>
 
 #include "plaintext_posix.h"
 
@@ -115,10 +115,8 @@ int32_t Plaintext_Recv( NetworkContext_t * pNetworkContext,
                         size_t bytesToRecv )
 {
     PlaintextParams_t * pPlaintextParams = NULL;
-    int32_t bytesReceived = -1, selectStatus = -1, getTimeoutStatus = -1;
-    struct timeval recvTimeout;
-    socklen_t recvTimeoutLen;
-    fd_set readfds;
+    int32_t bytesReceived = -1, pollStatus = 1;
+    struct pollfd pollFds;
 
     assert( pNetworkContext != NULL && pNetworkContext->pParams != NULL );
     assert( pBuffer != NULL );
@@ -126,60 +124,25 @@ int32_t Plaintext_Recv( NetworkContext_t * pNetworkContext,
 
     /* Get receive timeout from the socket to use as the timeout for #select. */
     pPlaintextParams = pNetworkContext->pParams;
-    recvTimeoutLen = ( socklen_t ) sizeof( recvTimeout );
-    getTimeoutStatus = getsockopt( pPlaintextParams->socketDescriptor,
-                                   SOL_SOCKET,
-                                   SO_RCVTIMEO,
-                                   &recvTimeout,
-                                   &recvTimeoutLen );
 
-    /* Make #select return immediately if getting the timeout failed. */
-    if( getTimeoutStatus < 0 )
+    /* Initialize the file descriptor.
+     * #POLLPRI corresponds to high-priority data while #POLLIN corresponds
+     * to any other data that may be read. */
+    pollFds.events = POLLIN | POLLPRI;
+    pollFds.revents = 0;
+    /* Set the file descriptor for poll. */
+    pollFds.fd = pPlaintextParams->socketDescriptor;
+
+    /* Speculative read for the start of a payload.
+     * Note: This is done to avoid blocking when
+     * no data is available to be read from the socket. */
+    if( bytesToRecv == 1U )
     {
-        recvTimeout.tv_sec = 0;
-        recvTimeout.tv_usec = 0;
+        /* Check if there is data to read (without blocking) from the socket. */
+        pollStatus = poll( &pollFds, 1, 0 );
     }
 
-    /* MISRA Directive 4.6 flags the following line for a violation of using a
-     * basic type "int" rather than a type that includes size and signedness information.
-     * We suppress the violation as the flagged type, "fd_set", is a POSIX
-     * system-specific type, and is used for the call to "select()". */
-
-    /* MISRA Rule 14.4 flags the following line for using condition expression "0"
-     * as a boolean type. We suppress the violation as the "FD_ZERO" is a POSIX
-     * specific macro utility whose implementation is supplied by the system.
-     * The "FD_ZERO" macro is called as specified by the POSIX manual here:
-     * https://pubs.opengroup.org/onlinepubs/009695399/basedefs/sys/select.h.html */
-    /* coverity[misra_c_2012_directive_4_6_violation] */
-    /* coverity[misra_c_2012_rule_14_4_violation] */
-    FD_ZERO( &readfds );
-
-    /* MISRA Directive 4.6 flags the following line for a violation of using a
-     * basic type "int" rather than a type that includes size and signedness information.
-     * We suppress the violation as the flagged type, "fd_set", is a POSIX
-     * system-specific type, and is used for the call to "select()". */
-    /* coverity[misra_c_2012_directive_4_6_violation] */
-
-    /* MISRA Rule 10.1, Rule 10.8 and Rule 13.4 flag the following line for
-     * implementation of the "FD_SET()" POSIX macro. We suppress these violations
-     * "FD_SET" is a POSIX specific macro utility whose implementation
-     * is supplied by the system.
-     * The "FD_SET" macro is used as specified by the POSIX manual here:
-     * https://pubs.opengroup.org/onlinepubs/009695399/basedefs/sys/select.h.html */
-    /* coverity[misra_c_2012_directive_4_6_violation] */
-    /* coverity[misra_c_2012_rule_10_1_violation] */
-    /* coverity[misra_c_2012_rule_13_4_violation] */
-    /* coverity[misra_c_2012_rule_10_8_violation] */
-    FD_SET( pPlaintextParams->socketDescriptor, &readfds );
-
-    /* Check if there is data to read from the socket. */
-    selectStatus = select( pPlaintextParams->socketDescriptor + 1,
-                           &readfds,
-                           NULL,
-                           NULL,
-                           &recvTimeout );
-
-    if( selectStatus > 0 )
+    if( pollStatus > 0 )
     {
         /* The socket is available for receiving data. */
         bytesReceived = ( int32_t ) recv( pPlaintextParams->socketDescriptor,
@@ -187,18 +150,20 @@ int32_t Plaintext_Recv( NetworkContext_t * pNetworkContext,
                                           bytesToRecv,
                                           0 );
     }
-    else if( selectStatus < 0 )
+    else if( pollStatus < 0 )
     {
         /* An error occurred while polling. */
         bytesReceived = -1;
     }
     else
     {
-        /* Timed out waiting for data to be received. */
+        /* No data available to receive. */
         bytesReceived = 0;
     }
 
-    if( ( selectStatus > 0 ) && ( bytesReceived == 0 ) )
+    /* Note: A zero value return from recv() represents
+     * closure of TCP connection by the peer. */
+    if( ( pollStatus > 0 ) && ( bytesReceived == 0 ) )
     {
         /* Peer has closed the connection. Treat as an error. */
         bytesReceived = -1;
@@ -224,10 +189,8 @@ int32_t Plaintext_Send( NetworkContext_t * pNetworkContext,
                         size_t bytesToSend )
 {
     PlaintextParams_t * pPlaintextParams = NULL;
-    int32_t bytesSent = -1, selectStatus = -1, getTimeoutStatus = -1;
-    struct timeval sendTimeout;
-    socklen_t sendTimeoutLen;
-    fd_set writefds;
+    int32_t bytesSent = -1, pollStatus = -1;
+    struct pollfd pollFds;
 
     assert( pNetworkContext != NULL && pNetworkContext->pParams != NULL );
     assert( pBuffer != NULL );
@@ -235,58 +198,20 @@ int32_t Plaintext_Send( NetworkContext_t * pNetworkContext,
 
     /* Get send timeout from the socket to use as the timeout for #select. */
     pPlaintextParams = pNetworkContext->pParams;
-    sendTimeoutLen = ( socklen_t ) sizeof( sendTimeout );
-    getTimeoutStatus = getsockopt( pPlaintextParams->socketDescriptor,
-                                   SOL_SOCKET,
-                                   SO_SNDTIMEO,
-                                   &sendTimeout,
-                                   &sendTimeoutLen );
 
-    /* Make #select return immediately if getting the timeout failed. */
-    if( getTimeoutStatus < 0 )
-    {
-        sendTimeout.tv_sec = 0;
-        sendTimeout.tv_usec = 0;
-    }
+    /* Initialize the file descriptor. */
+    pollFds.events = POLLOUT;
+    pollFds.revents = 0;
+    /* Set the file descriptor for poll. */
+    pollFds.fd = pPlaintextParams->socketDescriptor;
 
-    /* MISRA Directive 4.6 flags the following line for a violation of using a
-     * basic type "int" rather than a type that includes size and signedness information.
-     * We suppress the violation as the flagged type, "fd_set", is a POSIX
-     * system-specific type, and is used for the call to "select()". */
+    /* Check if data can be written to the socket.
+     * Note: This is done to avoid blocking on send() when
+     * the socket is not ready to accept more data for network
+     * transmission (possibly due to a full TX buffer). */
+    pollStatus = poll( &pollFds, 1, 0 );
 
-    /* MISRA Rule 14.4 flags the following line for using condition expression "0"
-     * as a boolean type. We suppress the violation as the "FD_ZERO" is a POSIX
-     * specific macro utility whose implementation is supplied by the system.
-     * The "FD_ZERO" macro is called as specified by the POSIX manual here:
-     * https://pubs.opengroup.org/onlinepubs/009695399/basedefs/sys/select.h.html */
-    /* coverity[misra_c_2012_directive_4_6_violation] */
-    /* coverity[misra_c_2012_rule_14_4_violation] */
-    FD_ZERO( &writefds );
-
-    /* MISRA Directive 4.6 flags the following line for a violation of using a
-     * basic type "int" rather than a type that includes size and signedness information.
-     * We suppress the violation as the flagged type, "fd_set", is a POSIX
-     * system-specific type, and is used for the call to "select()". */
-
-    /* MISRA Rule 10.1, Rule 10.8 and Rule 13.4 flag the following line for
-     * implementation of the "FD_SET()" POSIX macro. We suppress these violations
-     * as "FD_SET" is a POSIX specific macro utility whose implementation
-     * is supplied by the system.
-     * The "FD_ZERO" macro is used as specified by the POSIX manual here:
-     * https://pubs.opengroup.org/onlinepubs/009695399/basedefs/sys/select.h.html */
-    /* coverity[misra_c_2012_directive_4_6_violation] */
-    /* coverity[misra_c_2012_rule_10_1_violation] */
-    /* coverity[misra_c_2012_rule_13_4_violation] */
-    /* coverity[misra_c_2012_rule_10_8_violation] */
-    FD_SET( pPlaintextParams->socketDescriptor, &writefds );
-    /* Check if data can be written to the socket. */
-    selectStatus = select( pPlaintextParams->socketDescriptor + 1,
-                           NULL,
-                           &writefds,
-                           NULL,
-                           &sendTimeout );
-
-    if( selectStatus > 0 )
+    if( pollStatus > 0 )
     {
         /* The socket is available for sending data. */
         bytesSent = ( int32_t ) send( pPlaintextParams->socketDescriptor,
@@ -294,18 +219,18 @@ int32_t Plaintext_Send( NetworkContext_t * pNetworkContext,
                                       bytesToSend,
                                       0 );
     }
-    else if( selectStatus < 0 )
+    else if( pollStatus < 0 )
     {
         /* An error occurred while polling. */
         bytesSent = -1;
     }
     else
     {
-        /* Timed out waiting for data to be sent. */
+        /* Socket is not available for sending data. */
         bytesSent = 0;
     }
 
-    if( ( selectStatus > 0 ) && ( bytesSent == 0 ) )
+    if( ( pollStatus > 0 ) && ( bytesSent == 0 ) )
     {
         /* Peer has closed the connection. Treat as an error. */
         bytesSent = -1;

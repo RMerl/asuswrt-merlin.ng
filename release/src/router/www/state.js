@@ -18,6 +18,11 @@ function replaceAll(txt, replace, with_this) {
    return txt.replace(new RegExp(replace, 'g'),with_this);
 }
 
+/* String replace &#39; with ' for dict */
+function stringSafeGet(str){
+    return str.replaceAll("&#39;", "'");
+}
+
 /* Internet Explorer lacks this array method */
 if (!('indexOf' in Array.prototype)) {
 	Array.prototype.indexOf = function(find, i) {
@@ -560,6 +565,7 @@ var swisscom_support = isSupport("swisscom");
 var tmo_support = isSupport("tmo");
 var atf_support = isSupport("atf");
 var pwrsave_support = isSupport("pwrsave");
+var pagecache_ratio_support = isSupport("pcache_ratio");
 var wl_mfp_support = isSupport("wl_mfp");	// For Protected Management Frames, ARM platform
 var bwdpi_support = isSupport("bwdpi");
 var bwdpi_mals_support = isSupport("dpi_mals");
@@ -4621,3 +4627,4 @@ function Get_Component_PWD_Strength_Meter(id){
 function plainPasswordSwitch(obj, event){
 	(event === 'focus') ? (obj.type = 'text') : (obj.type = 'password');						
 }
+

@@ -1,0 +1,68 @@
+.TH BDADDR 1 "Sep 27 2005" BlueZ "Linux System Administration"
+.SH NAME
+bdaddr \- Utility for changing the Bluetooth device address
+.SH SYNOPSIS
+.B bdaddr
+.br
+.B bdaddr -h
+.br
+.B bdaddr [-i <dev>] [-r] [-t] [new bdaddr]
+
+.SH DESCRIPTION
+.LP
+.B
+bdaddr
+is used to query or set the local Bluetooth device address (BD_ADDR). If run
+with no arguments,
+.B
+bdaddr
+prints the chip manufacturer's name, and the current BD_ADDR. If the IEEE OUI
+index file "oui.txt" is installed on the system, the BD_ADDR owner will be
+displayed. If the optional [new bdaddr] argument is given, the device will be
+reprogrammed with that address. This can either be permanent or temporary, as
+specified by the -t flag. In both cases, the device must be reset before the
+new address will become active. This can be done with a 'soft' reset by
+specifying the -r flag, or a 'hard' reset by removing and replugging the
+device. A 'hard' reset will cause the address to revert to the current
+non-volatile value.
+.PP
+.B
+bdaddr
+uses manufacturer specific commands to set the address, and is therefore
+device specific. For this reason, not all devices are supported, and not all
+options are supported on all devices.
+Current supported manufacturers are:
+.B Ericsson, Cambridge Silicon Radio (CSR), Texas Instruments (TI), Zeevo
+and
+.B ST Microelectronics (ST)
+
+.SH OPTIONS
+.TP
+.BI -h
+Gives a list of possible commands.
+.TP
+.BI -i\ <dev>
+Specify a particular device to operate on. If not specified, default is the
+first available device.
+.TP
+.BI -r
+Reset device and make new BD_ADDR active.
+.B
+CSR
+devices only.
+.TP
+.BI -t
+Temporary change. Do not write to non-volatile memory.
+.B
+CSR
+devices only.
+.SH FILES
+.TP
+.I
+/usr/share/misc/oui.txt
+IEEE Organizationally Unique Identifier master file.
+Manually update from: http://standards.ieee.org/regauth/oui/oui.txt
+.SH AUTHORS
+Written by Marcel Holtmann <marcel@holtmann.org>,
+man page by Adam Laurie <adam@algroup.co.uk>
+.PP

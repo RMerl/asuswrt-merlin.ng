@@ -56,6 +56,8 @@ enum {
     CONN_PRI_WIFI_6G = 400,
     /* PLC 10000X, X: index, 10000: Connection Priority */
     CONN_PRI_PLC = 10000,
+    /* MOCA 20000X, X: index, 20000: Connection Priority */
+    CONN_PRI_MOCA = 20000,
     CONN_PRI_CUSTOM = 0xFFFFFFFF
 };
 
@@ -72,7 +74,8 @@ enum {
     ETH_TYPE_5G      = 16,
     ETH_TYPE_10G     = 32,
     ETH_TYPE_10GPLUS = 64,	/* 10G SFP+ */
-    ETH_TYPE_PLC     = 65536
+    ETH_TYPE_PLC     = 65536,
+    ETH_TYPE_MOCA    = 131072
 };
 
 /**

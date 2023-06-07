@@ -164,10 +164,10 @@ if(pipefw_support || urlfw_support){
 var webs_update_enable_orig = httpApi.nvramGet(["webs_update_enable"],1).webs_update_enable;
 var webs_update_time_orig = httpApi.nvramGet(["webs_update_time"],1).webs_update_time;
 
-var update_time_hour_orig = webs_update_time_orig.split(":")[0].replace(/^0+/, '');
+var update_time_hour_orig = webs_update_time_orig.split(":")[0].replace(/^0/, '');
 update_time_hour_orig = (update_time_hour_orig=="")? "2":update_time_hour_orig;
 
-var update_time_min_orig = (webs_update_time_orig.split(":").length==2)? webs_update_time_orig.split(":")[1].replace(/^0+/, ''):"";
+var update_time_min_orig = (webs_update_time_orig.split(":").length==2)? webs_update_time_orig.split(":")[1].replace(/^0/, ''):"";
 update_time_min_orig = (update_time_min_orig=="")? "0":update_time_min_orig;
 
 var amesh_offline_flag = false;

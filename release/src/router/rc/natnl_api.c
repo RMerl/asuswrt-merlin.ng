@@ -1,4 +1,4 @@
-
+#include <shared.h>
 #include "rc.h"
 #include "mastiff.h"
 #ifdef RTCONFIG_TUNNEL
@@ -173,4 +173,93 @@ void restart_mastiff()
 	stop_mastiff();
 	start_mastiff();
 }
+
+#ifdef RTCONFIG_IG_SITE2SITE
+void start_aaeuac(int argc, char *argv[])
+{
+	char *cmd[16];
+	int cmd_cnt = 0;
+	int pid;
+
+	if(nvram_get_int("aae_disable_force"))
+		return;
+
+	cmd[cmd_cnt] = "aaeuac";
+	_dprintf("cmd[%d]=%s\n", cmd_cnt, cmd[cmd_cnt]);
+	for (cmd_cnt = 1; cmd_cnt < argc && argc < (sizeof(cmd) / sizeof(char *)); cmd_cnt++) {
+		cmd[cmd_cnt] = argv[cmd_cnt];
+		_dprintf("cmd[%d]=%s\n", cmd_cnt, cmd[cmd_cnt]);
+	}
+	cmd[cmd_cnt] = NULL;
+	_dprintf("cmd[%d]=%s\n", cmd_cnt, cmd[cmd_cnt]);
+
+	if ( !pids("aaeuac" )){
+		_eval(cmd, NULL, 0, &pid);
+	}
+}
+
+void stop_aaeuac()
+{
+	killall_tk("aaeuac");
+}
+
+void restart_aaeuac(int argc, char *argv[])
+{
+	stop_aaeuac();
+	start_aaeuac(argc, argv);
+}
+
+#define WG_S2S_AAEUAC_PORT_PATH "/tmp/wg_s2s_aaeuac_port"
+int start_aaeuac_by_vpn_prof(char *type, int unit)
+{
+	int count = 0;
+	char *cmd[16];
+	char idx_buf[8];
+	int check_count = 5;
+	char aaeuac_port[10] = {0};
+	char *port_path = NULL;
+	if (!type || !unit)
+		return -1;
+
+	if (!strcmp(type, "WireGuard"))
+		port_path = WG_S2S_AAEUAC_PORT_PATH;
+	else
+		return -2;
+
+	snprintf(idx_buf, sizeof(idx_buf), "%d", unit);
+
+	cmd[count++] = "aaeuac";
+	cmd[count++] = type;
+	cmd[count++] = &idx_buf[0];
+	cmd[count++] = port_path;
+	cmd[count++] = NULL;
+	unlink(port_path);
+
+	start_aaeuac(count, cmd);
+
+	while(check_count>0){
+		if(f_read_string(port_path, aaeuac_port, sizeof(aaeuac_port)) > 0){
+			if(!isValid_digit_string(aaeuac_port) && atoi(aaeuac_port)<0 && atoi(aaeuac_port)>65535){
+				return -3;
+			}
+			break;
+		}
+		sleep(2);
+		if (!pids("aaeuac"))
+			return -4;
+		check_count--;
+	}
+	if(aaeuac_port[0] == '\0'){
+		return -5;
+	}
+
+	return 0;
+}
+
+void stop_aaeuac_by_vpn_prof(char *type, int unit)
+{
+	// TODO, stop by each vpn profile
+	stop_aaeuac();
+}
+#endif
 #endif

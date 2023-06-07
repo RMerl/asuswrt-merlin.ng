@@ -50,6 +50,7 @@
 #ifdef RTCONFIG_AMAS_SYNC_LEDG
 #define FT_LEDG	BIT(23)
 #endif
+#define FT_MOCA	BIT(25)
 
 /* service */
 #define RESTART_WIRELESS		"restart_wireless"
@@ -82,6 +83,7 @@
 #ifdef RTCONFIG_AMAS_SYNC_LEDG
 #define RESTART_LEDG	"restart_ledg"
 #endif
+#define MOCA_SET_PRIVACY	"moca_set_privacy"
 
 struct feature_mapping_s {
 	char *name;
@@ -133,6 +135,7 @@ static struct feature_mapping_s feature_mapping_list[] __attribute__ ((unused)) 
 #ifdef RTCONFIG_AMAS_SYNC_LEDG
 	{ "ledg", 	FT_LEDG,	RESTART_LEDG },
 #endif
+	{ "moca", 	FT_MOCA,	MOCA_SET_PRIVACY },
 	{ NULL, 0, NULL }
 };
 
@@ -389,6 +392,8 @@ enum {
 	SUBFT_LEDG,
 #endif
 
+	SUBFT_MOCA,
+
 	SUBFT_MAX
 };
 
@@ -637,6 +642,9 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	/* ledg */
 	{ "ledg", SUBFT_LEDG, FT_LEDG },
 #endif
+
+	/* moca */
+	{ "moca", SUBFT_MOCA, FT_MOCA },
 
 	/* END */
 	{ NULL, 0, 0}
@@ -939,7 +947,10 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "wl2_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_BAND3,		"-70"},
 	{ "wl3_user_rssi", 		FT_WIRELESS, 		SUBFT_ADVANCED_BAND4,		"-70"},
 #if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+	/* Extended NSS */
 	{ "wl1_ext_nss", 		FT_WIRELESS, 		SUBFT_ADVANCED_BAND2,		"1"},
+	/* Agile DFS (preCACen) */
+	{ "wl1_precacen",		FT_WIRELESS,		SUBFT_ADVANCED_BAND2,		"1"},
 #endif
 	/* http login */
 	{ "http_username", 	FT_LOGIN,		SUBFT_ROUTER_LOGIN,		"admin"},
@@ -1225,6 +1236,11 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "ledg_rgb3", FT_LEDG, SUBFT_LEDG,		"128,0,0,128,0,0,128,0,0"},
 	{ "ledg_rgb7", FT_LEDG, SUBFT_LEDG,		"128,0,0,128,0,0,128,0,0"},
 #endif
+
+	{ "moca_privacy_enable", FT_MOCA, SUBFT_MOCA,		"1"},
+	{ "moca_password", FT_MOCA, SUBFT_MOCA,		"12345678901234567"},
+	{ "moca_epassword", FT_MOCA, SUBFT_MOCA,		"12345678901234567"},
+	{ "moca_sceu_mode", FT_MOCA, SUBFT_MOCA,		"7"},
 
 	/* END */
 	{ NULL, 0, 0,		NULL}

@@ -1,5 +1,5 @@
 /*
- * coreMQTT v1.1.1
+ * coreMQTT v1.1.2
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -26,6 +26,12 @@
  */
 #ifndef CORE_MQTT_STATE_H
 #define CORE_MQTT_STATE_H
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    extern "C" {
+#endif
+/* *INDENT-ON* */
 
 #include "core_mqtt.h"
 
@@ -274,5 +280,11 @@ uint16_t MQTT_PublishToResend( const MQTTContext_t * pMqttContext,
  */
 const char * MQTT_State_strerror( MQTTPublishState_t state );
 /** @endcond */
+
+/* *INDENT-OFF* */
+#ifdef __cplusplus
+    }
+#endif
+/* *INDENT-ON* */
 
 #endif /* ifndef CORE_MQTT_STATE_H */

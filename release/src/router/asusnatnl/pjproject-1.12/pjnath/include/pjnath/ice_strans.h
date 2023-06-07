@@ -906,6 +906,8 @@ PJ_DECL(int) pj_ice_strans_get_stun_last_status(struct pj_ice_strans *ice_st);
 
 PJ_DECL(int) pj_ice_strans_get_turn_last_status(struct pj_ice_strans *ice_st);
 
+PJ_DECL(pj_sockaddr *) pj_ice_strans_get_nominated_rem_addr(struct pj_ice_strans *ice_st);
+
 PJ_DECL(void) pj_ice_strans_set_use_upnp_flag(void *user_data, int use_upnp_flag);
 
 PJ_DECL(void) pj_ice_strans_set_use_stun_cand(void *user_data, pj_bool_t use_stun_cand);

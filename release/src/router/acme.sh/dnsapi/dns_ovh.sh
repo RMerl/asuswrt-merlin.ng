@@ -32,49 +32,49 @@ SYS_CA='https://ca.api.soyoustart.com/1.0'
 #'runabove-ca'
 RAV_CA='https://api.runabove.com/1.0'
 
-wiki="https://github.com/Neilpang/acme.sh/wiki/How-to-use-OVH-domain-api"
+wiki="https://github.com/acmesh-official/acme.sh/wiki/How-to-use-OVH-domain-api"
 
-ovh_success="https://github.com/Neilpang/acme.sh/wiki/OVH-Success"
+ovh_success="https://github.com/acmesh-official/acme.sh/wiki/OVH-Success"
 
 _ovh_get_api() {
   _ogaep="$1"
 
   case "${_ogaep}" in
 
-    ovh-eu | ovheu)
-      printf "%s" $OVH_EU
-      return
-      ;;
-    ovh-ca | ovhca)
-      printf "%s" $OVH_CA
-      return
-      ;;
-    kimsufi-eu | kimsufieu)
-      printf "%s" $KSF_EU
-      return
-      ;;
-    kimsufi-ca | kimsufica)
-      printf "%s" $KSF_CA
-      return
-      ;;
-    soyoustart-eu | soyoustarteu)
-      printf "%s" $SYS_EU
-      return
-      ;;
-    soyoustart-ca | soyoustartca)
-      printf "%s" $SYS_CA
-      return
-      ;;
-    runabove-ca | runaboveca)
-      printf "%s" $RAV_CA
-      return
-      ;;
+  ovh-eu | ovheu)
+    printf "%s" $OVH_EU
+    return
+    ;;
+  ovh-ca | ovhca)
+    printf "%s" $OVH_CA
+    return
+    ;;
+  kimsufi-eu | kimsufieu)
+    printf "%s" $KSF_EU
+    return
+    ;;
+  kimsufi-ca | kimsufica)
+    printf "%s" $KSF_CA
+    return
+    ;;
+  soyoustart-eu | soyoustarteu)
+    printf "%s" $SYS_EU
+    return
+    ;;
+  soyoustart-ca | soyoustartca)
+    printf "%s" $SYS_CA
+    return
+    ;;
+  runabove-ca | runaboveca)
+    printf "%s" $RAV_CA
+    return
+    ;;
 
-    *)
+  *)
 
-      _err "Unknown parameter : $1"
-      return 1
-      ;;
+    _err "Unknown parameter : $1"
+    return 1
+    ;;
   esac
 }
 
@@ -92,7 +92,7 @@ _initAuth() {
 
   if [ "$OVH_AK" != "$(_readaccountconf OVH_AK)" ]; then
     _info "It seems that your ovh key is changed, let's clear consumer key first."
-    _clearaccountconf OVH_CK
+    _clearaccountconf_mutable OVH_CK
   fi
   _saveaccountconf_mutable OVH_AK "$OVH_AK"
   _saveaccountconf_mutable OVH_AS "$OVH_AS"
@@ -118,13 +118,14 @@ _initAuth() {
     #return and wait for retry.
     return 1
   fi
+  _saveaccountconf_mutable OVH_CK "$OVH_CK"
 
   _info "Checking authentication"
 
   if ! _ovh_rest GET "domain" || _contains "$response" "INVALID_CREDENTIAL" || _contains "$response" "NOT_CREDENTIAL"; then
     _err "The consumer key is invalid: $OVH_CK"
     _err "Please retry to create a new one."
-    _clearaccountconf OVH_CK
+    _clearaccountconf_mutable OVH_CK
     return 1
   fi
   _info "Consumer key is ok."
@@ -198,6 +199,8 @@ dns_ovh_rm() {
       if ! _ovh_rest DELETE "domain/zone/$_domain/record/$rid"; then
         return 1
       fi
+      _ovh_rest POST "domain/zone/$_domain/refresh"
+      _debug "Refresh:$response"
       return 0
     fi
   done
@@ -233,8 +236,7 @@ _ovh_authentication() {
   _secure_debug consumerKey "$consumerKey"
 
   OVH_CK="$consumerKey"
-  _saveaccountconf OVH_CK "$OVH_CK"
-
+  _saveaccountconf_mutable OVH_CK "$OVH_CK"
   _info "Please open this link to do authentication: $(__green "$validationUrl")"
 
   _info "Here is a guide for you: $(__green "$wiki")"
@@ -248,7 +250,7 @@ _ovh_authentication() {
 # _domain=domain.com
 _get_root() {
   domain=$1
-  i=2
+  i=1
   p=1
   while true; do
     h=$(printf "%s" "$domain" | cut -d . -f $i-100)
@@ -261,7 +263,9 @@ _get_root() {
       return 1
     fi
 
-    if ! _contains "$response" "This service does not exist" >/dev/null && ! _contains "$response" "NOT_GRANTED_CALL" >/dev/null; then
+    if ! _contains "$response" "This service does not exist" >/dev/null &&
+      ! _contains "$response" "This call has not been granted" >/dev/null &&
+      ! _contains "$response" "NOT_GRANTED_CALL" >/dev/null; then
       _sub_domain=$(printf "%s" "$domain" | cut -d . -f 1-$p)
       _domain="$h"
       return 0

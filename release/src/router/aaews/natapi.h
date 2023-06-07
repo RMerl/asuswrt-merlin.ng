@@ -18,8 +18,8 @@ typedef int (*NAT_INIT3)	(struct natnl_config *cfg, struct natnl_callback *natnl
 typedef int (*NAT_INIT)		(struct natnl_config *cfg);
 #endif
 typedef int (*NAT_DEINIT)	(void);
-typedef int (*NAT_MAKECALL)	(char *device_id, int srv_port_count,
-								struct natnl_srv_port srv_port[], int *call_id,
+typedef int (*NAT_MAKECALL)	(char *device_id, int tnl_port_cnt,
+								natnl_tnl_port tnl_ports[],
 							    char *user_id, int timeout_sec);
 typedef int (*NAT_HANG_UP)	(int call_id);
 
@@ -35,6 +35,14 @@ typedef int (*NAT_REG_DEVICE) (void);
 
 typedef int (*NAT_UNREG_DEVICE) (void);
 
+typedef int (*NAT_MAKECALL3)	(char *device_id, int tnl_port_cnt,
+								natnl_tnl_port tnl_ports[],
+							    char *user_id, int timeout_sec, 
+                                int use_sctp, int inst_id,
+                                char *caller_device_pwd, struct natnl_tnl_info *tnl_info);
+
+typedef int (*NAT_READ_TNL_INFO)	(int call_id, struct natnl_tnl_info *tnl_info);
+
 int init_natnl_api(NAT_INIT3* nat_init3, 
     NAT_DEINIT* nat_deinit, 
     NAT_MAKECALL* nat_makecall, 
@@ -45,5 +53,7 @@ int init_natnl_api(NAT_INIT3* nat_init3,
     NAT_READ_IM_MSG* nat_read_im_msg, 
     NAT_WRITE_IM_RESP* nat_write_im_resp, 
     NAT_REG_DEVICE* nat_reg_device, 
-    NAT_UNREG_DEVICE* nat_unreg_device );
+    NAT_UNREG_DEVICE* nat_unreg_device, 
+    NAT_MAKECALL3* nat_makecall3,
+    NAT_READ_TNL_INFO *nat_read_ntl_info);
 #endif

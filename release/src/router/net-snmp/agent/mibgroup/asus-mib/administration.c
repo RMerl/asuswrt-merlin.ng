@@ -30,12 +30,12 @@ static unsigned char tftpfile[128];
 static unsigned char cfgfile[128];
 static int sw_mode = 0;
 
-char *timezonelist[] = {"UTC12", "UTC11", "UTC10", "NAST9DST", "PST8DST","MST7DST_1", "MST7_2", "MST7DST_3", "CST6DST_1", "CST6DST_2",
+char *timezonelist[] = {"UTC12", "UTC11", "UTC10", "NAST9DST", "PST8DST","MST7DST_1", "MST7_2", "MST7_3", "CST6DST_1", "CST6DST_2",
 			"CST6_3", "CST6_3_1", "UTC6", "EST5DST", "UTC5_1", "UTC5_2", "AST4DST", "UTC4_1", "UTC4DST_2", "NST3.30DST",
-			"EBST3DST_1", "UTC3", "EBST3DST_2", "NORO2DST", "EUT1DST", "UTC1", "GMT0", "GMT0DST_1", "GMT0DST_2", "UTC-1DST_1",
+			"EBST3DST_1", "UTC3", "UTC2_1", "NORO2DST", "EUT1DST", "UTC1", "GMT0", "GMT0DST_1", "GMT0DST_2", "UTC-1DST_1",
 			"UTC-1_1_1", "UTC-1_2", "UTC-1_2_1", "MET-1DST", "MET-1DST_1", "MEZ-1DST", "MEZ-1DST_1", "UTC-1_3", "UTC-2DST",
 			"EST-2DST", "UTC-2_1", "UTC-2DST_2", "IST-2DST", "SAST-2", "EET-2DST", "UTC-3_1", "UTC-3_2", "IST-3DST",
-			"UTC-3.30DST", "UTC-4_2", "UTC-4_3", "UTC-4_1", "UTC-4DST_2", "UTC-4.30", "UTC-5", "UTC-5.30_2",
+			"UTC-3.30", "UTC-4_2", "UTC-4_3", "UTC-4_1", "UTC-4DST_2", "UTC-4.30", "UTC-5", "UTC-5.30_2",
 			"UTC-5.30_1", "UTC-5.30", "UTC-5.45", "RFT-6DST", "UTC-6_1", "UTC-6", "UTC-6.30", "UTC-7", "CST-8_2",
 			"CST-8", "CST-8_1", "SST-8", "CCT-8", "WAS-8DST", "UTC-8DST", "UTC-9_1", "JST", "CST-9.30DST", "UTC-9.30",
 			"UTC-10_3", "UTC-10_1", "UTC-10_2", "TST-10TDT", "UTC-10_5", "UTC-11_2", "UTC-11", "UTC-11_1", "UTC-12",

@@ -644,4 +644,5 @@ extern long get_sys_uptime();
 extern void wait_ntp_repeat(unsigned long usec, unsigned int count);
 extern int ping_target_with_size(char *target, unsigned int size, unsigned int count, unsigned int wait_time, double loss_rate);
 extern int parse_ping_content(char *fname, ping_result_t *out);
+extern int replace_literal_newline(char *inputstr, char *output, int buflen);
 #endif /* _shutils_h_ */

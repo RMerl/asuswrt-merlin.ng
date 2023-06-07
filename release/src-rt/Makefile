@@ -486,14 +486,7 @@ default:
 
 ifeq ($(HND_ROUTER),y)
 cfe_sysdep:
-	if [ "$(BCM_502L07P2)" = "y" ] && [ -d "$(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2" ]; then \
-		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/cfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-		if [ -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/precfe${BRCM_CHIP}rom.bin ]; then \
-			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME).502l07p2/precfe${BRCM_CHIP}rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-		fi; \
-	elif [ -d $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME) ]; then \
+	if [ -d $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME) ]; then \
 		if [ "$(BCM_MFG)" = "y" ] && [ "$(BUILD_NAME)" = "RT-AX82U" ]; then \
 			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)_mfg/cfe${BRCM_CHIP}.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 			cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/$(BUILD_NAME)_mfg/cfe${BRCM_CHIP}ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
@@ -536,7 +529,13 @@ cfe_sysdep:
 		fi; \
 	elif [ -d $(SRCBASE)/../../../../../../../targets/cfe/prebuilt ]; then \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/prebuilt/cfe* $(SRCBASE)/../../../../../../../targets/cfe/. ; \
-		cp -f $(SRCBASE)/../../../../../../../targets/cfe/prebuilt/precfe* $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		if [ "${BRCM_CHIP}" = "4908" ]; then \
+			if [ -f $(SRCBASE)/../../../../../../../targets/cfe/prebuilt/precfe4908rom.bin ]; then \
+				cp -f $(SRCBASE)/../../../../../../../targets/cfe/prebuilt/precfe4908rom.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+			fi; \
+		else \
+			cp -f $(SRCBASE)/../../../../../../../targets/cfe/prebuilt/precfe* $(SRCBASE)/../../../../../../../targets/cfe/. ; \
+		fi; \
 	else \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
 		cp -f $(SRCBASE)/../../../../../../../targets/cfe/sysdeps/default/cfe4908ram.bin $(SRCBASE)/../../../../../../../targets/cfe/. ; \
@@ -1936,6 +1935,12 @@ define RouterOptions
 		sed -i "/RTCONFIG_LIBASC/d" $(1); \
 		echo "RTCONFIG_LIBASC=y" >>$(1); \
 	fi;
+	if [ "$(MXL371X)" = "y" ]; then \
+		sed -i "/RTCONFIG_MXL371X/d" $(1); \
+		echo "RTCONFIG_MXL371X=y" >>$(1); \
+                sed -i "/RTCONFIG_MOCA/d" $(1); \
+                echo "RTCONFIG_MOCA=y" >>$(1); \
+	fi;
 	if [ "$(RSYSLOGD)" = "y" ]; then \
 		sed -i "/RTCONFIG_RSYSLOGD/d" $(1); \
 		echo "RTCONFIG_RSYSLOGD=y" >>$(1); \
@@ -2421,6 +2426,10 @@ define RouterOptions
 	if [ "$(PSISTLOG)" = "y" ]; then \
 		sed -i "/RTCONFIG_PSISTLOG/d" $(1); \
 		echo "RTCONFIG_PSISTLOG=y" >>$(1); \
+	fi;
+	if [ "$(FLIPBITS)" = "y" ]; then \
+		sed -i "/RTCONFIG_TEST_FLIPBITS/d" $(1); \
+		echo "RTCONFIG_TEST_FLIPBITS=y" >>$(1); \
 	fi;
 	if [ "$(UBI)" = "y" ]; then \
 		sed -i "/RTCONFIG_UBI/d" $(1); \
@@ -2969,6 +2978,15 @@ define RouterOptions
 		echo "# RTCONFIG_EXT_RTL8370MB is not set" >>$(1); \
 		sed -i "/RTCONFIG_EXT_BCM53134/d" $(1); \
 		echo "RTCONFIG_EXT_BCM53134=y" >>$(1); \
+	elif [ "$(SWITCH2)" = "RTL8367S" ]; then \
+		sed -i "/RTCONFIG_EXT_RTL8365MB/d" $(1); \
+		echo "# RTCONFIG_EXT_RTL8365MB is not set" >>$(1); \
+		sed -i "/RTCONFIG_EXT_RTL8370MB/d" $(1); \
+		echo "# RTCONFIG_EXT_RTL8370MB is not set" >>$(1); \
+		sed -i "/RTCONFIG_EXT_BCM53134/d" $(1); \
+		echo "# RTCONFIG_EXT_BCM53134 is not set" >>$(1); \
+		sed -i "/RTCONFIG_EXT_RTL8367S/d" $(1); \
+		echo "RTCONFIG_EXT_RTL8367S=y" >>$(1); \
 	elif [ "$(SWITCH2)" = "" ]; then \
 		sed -i "/RTCONFIG_EXT_RTL8365MB/d" $(1); \
 		echo "# RTCONFIG_EXT_RTL8365MB is not set" >>$(1); \
@@ -2976,6 +2994,10 @@ define RouterOptions
 		echo "# RTCONFIG_EXT_RTL8370MB is not set" >>$(1); \
 		sed -i "/RTCONFIG_EXT_BCM53134/d" $(1); \
 		echo "# RTCONFIG_EXT_BCM53134 is not set" >>$(1); \
+	fi;
+	if [ "$(RTL_UMGMT)" = "y" ]; then \
+		sed -i "/RTCONFIG_RTL_UMGMT/d" $(1); \
+		echo "RTCONFIG_RTL_UMGMT=y" >>$(1); \
 	fi;
 	if [ "$(EXT_PHY)" = "BCM84880" ]; then \
 		sed -i "/RTCONFIG_EXTPHY_BCM84880/d" $(1); \
@@ -3512,8 +3534,6 @@ define RouterOptions
 			else \
 				echo "RTCONFIG_DPSTA=y" >>$(1); \
 			fi; \
-			sed -i "/RTCONFIG_PTHSAFE_POPEN/d" $(1); \
-			echo "RTCONFIG_PTHSAFE_POPEN=y" >>$(1); \
 		fi; \
 		sed -i "/RTCONFIG_LIBASUSLOG/d" $(1); \
 		echo "RTCONFIG_LIBASUSLOG=y" >>$(1); \
@@ -4202,6 +4222,10 @@ define RouterOptions
 	if [ "$(SW_SPDLED)" = "y" ]; then \
 		sed -i "/RTCONFIG_SW_SPDLED/d" $(1); \
 		echo "RTCONFIG_SW_SPDLED=y" >>$(1); \
+	fi;
+	if [ "$(AUTO_WANPORT)" = "y" ]; then \
+		sed -i "/RTCONFIG_AUTO_WANPORT/d" $(1); \
+		echo "RTCONFIG_AUTO_WANPORT=y" >>$(1); \
 	fi;
 	$(call platformRouterOptions, $(1))
 endef
@@ -6166,7 +6190,7 @@ ETJ etj:
 	$(call save_src_config,$@,_CFG)
 	$(MAKE) bin
 
-ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro BM68 bm68 XT8_V2 xt8_v2 ET8PRO et8pro ET8_V2 et8_v2 GT10 gt10 XD6_V2 xd6_v2 BR63 br63 BC109 bc109 BC105 bc105 EBG19 ebg19 EBG15 ebg15: 
+ET12 et12 XT12 xt12 XD4PRO xd4pro XT8PRO xt8pro BM68 bm68 XT8_V2 xt8_v2 ET8PRO et8pro ET8_V2 et8_v2 GT10 gt10 XD6_V2 xd6_v2 BR63 br63 BC109 bc109 BC105 bc105 EBG19 ebg19 EBG15 ebg15 XC5 xc5 eba63:
 	$(call save_src_config, $@,_CFG)
 ifeq ($(or $(HND_ROUTER_AX_675x),$(HND_ROUTER_AX)),y)
 	@echo "Copy router-sysdep.$(lowercase_B) content"

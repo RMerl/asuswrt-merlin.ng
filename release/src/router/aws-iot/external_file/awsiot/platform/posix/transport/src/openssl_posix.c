@@ -1,31 +1,33 @@
 /*
- * AWS IoT Device SDK for Embedded C 202103.00
+ * AWS IoT Device SDK for Embedded C 202108.00
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
- * Permission is hereby granted, free of charge, to any person obtaining a copy of
- * this software and associated documentation files (the "Software"), to deal in
- * the Software without restriction, including without limitation the rights to
- * use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of
- * the Software, and to permit persons to whom the Software is furnished to do so,
- * subject to the following conditions:
+ * Permission is hereby granted, free of charge, to any person obtaining a copy
+ * of this software and associated documentation files (the "Software"), to deal
+ * in the Software without restriction, including without limitation the rights
+ * to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+ * copies of the Software, and to permit persons to whom the Software is
+ * furnished to do so, subject to the following conditions:
  *
- * The above copyright notice and this permission notice shall be included in all
- * copies or substantial portions of the Software.
+ * The above copyright notice and this permission notice shall be included in
+ * all copies or substantial portions of the Software.
  *
  * THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
- * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY, FITNESS
- * FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
- * COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER
- * IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM, OUT OF OR IN
- * CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+ * IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+ * FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+ * AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+ * LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+ * OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
+ * SOFTWARE.
  */
 
 /* Standard includes. */
 #include <assert.h>
 #include <string.h>
 
-/* POSIX socket include. */
+/* POSIX socket includes. */
 #include <unistd.h>
+#include <poll.h>
 
 /* Transport interface include. */
 #include "transport_interface.h"
@@ -74,11 +76,12 @@ struct NetworkContext
 /**
  * @brief Add X509 certificate to the trusted list of root certificates.
  *
- * OpenSSL does not provide a single function for reading and loading certificates
- * from files into stores, so the file API must be called. Start with the
- * root certificate.
+ * OpenSSL does not provide a single function for reading and loading
+ * certificates from files into stores, so the file API must be called. Start
+ * with the root certificate.
  *
- * @param[out] pSslContext SSL context to which the trusted server root CA is to be added.
+ * @param[out] pSslContext SSL context to which the trusted server root CA is to
+ * be added.
  * @param[in] pRootCaPath Filepath string to the trusted server root CA.
  *
  * @return 1 on success; -1, 0 on failure;
@@ -87,9 +90,11 @@ static int32_t setRootCa( const SSL_CTX * pSslContext,
                           const char * pRootCaPath );
 
 /**
- * @brief Set X509 certificate as client certificate for the server to authenticate.
+ * @brief Set X509 certificate as client certificate for the server to
+ * authenticate.
  *
- * @param[out] pSslContext SSL context to which the client certificate is to be set.
+ * @param[out] pSslContext SSL context to which the client certificate is to be
+ * set.
  * @param[in] pClientCertPath Filepath string to the client certificate.
  *
  * @return 1 on success; 0 failure;
@@ -115,7 +120,8 @@ static int32_t setPrivateKey( SSL_CTX * pSslContext,
  * OpenSSL library. If the client certificate or private key is not NULL, mutual
  * authentication is used when performing the TLS handshake.
  *
- * @param[out] pSslContext SSL context to which the credentials are to be imported.
+ * @param[out] pSslContext SSL context to which the credentials are to be
+ * imported.
  * @param[in] pOpensslCredentials TLS credentials to be imported.
  *
  * @return 1 on success; -1, 0 on failure;
@@ -128,7 +134,8 @@ static int32_t setCredentials( SSL_CTX * pSslContext,
  *
  * This function is used to set SNI, MFLN, and ALPN protocols.
  *
- * @param[in] pSsl SSL context to which the optional configurations are to be set.
+ * @param[in] pSsl SSL context to which the optional configurations are to be
+ * set.
  * @param[in] pOpensslCredentials TLS credentials containing configurations.
  */
 static void setOptionalConfigurations( SSL * pSsl,
@@ -174,17 +181,12 @@ static OpensslStatus_t tlsHandshake( const ServerInfo_t * pServerInfo,
         /* Log the absolute directory based on first character of path. */
         if( ( path[ 0 ] == '/' ) || ( path[ 0 ] == '\\' ) )
         {
-            LogDebug( ( "Attempting to open %s: Path=%s.",
-                        fileType,
-                        path ) );
+            LogDebug( ( "Attempting to open %s: Path=%s.", fileType, path ) );
         }
         else
         {
             cwd = getcwd( NULL, 0 );
-            LogDebug( ( "Attempting to open %s: Path=%s/%s.",
-                        fileType,
-                        cwd,
-                        path ) );
+            LogDebug( ( "Attempting to open %s: Path=%s/%s.", fileType, cwd, path ) );
         }
 
         /* Free cwd because getcwd calls malloc. */
@@ -216,8 +218,9 @@ static OpensslStatus_t convertToOpensslStatus( SocketStatus_t socketStatus )
             break;
 
         default:
-            LogError( ( "Unexpected status received from socket wrapper: Socket status = %u",
-                        socketStatus ) );
+            LogError(
+                ( "Unexpected status received from socket wrapper: Socket status = %u",
+                  socketStatus ) );
             break;
     }
 
@@ -233,8 +236,7 @@ static OpensslStatus_t tlsHandshake( const ServerInfo_t * pServerInfo,
     int32_t sslStatus = -1, verifyPeerCertStatus = X509_V_OK;
 
     /* Validate the hostname against the server's certificate. */
-    sslStatus = SSL_set1_host( pOpensslParams->pSsl,
-                               pServerInfo->pHostName );
+    sslStatus = SSL_set1_host( pOpensslParams->pSsl, pServerInfo->pHostName );
 
     if( sslStatus != 1 )
     {
@@ -248,7 +250,8 @@ static OpensslStatus_t tlsHandshake( const ServerInfo_t * pServerInfo,
         SSL_set_verify( pOpensslParams->pSsl, SSL_VERIFY_PEER, NULL );
 
         /* Setup the socket to use for communication. */
-        sslStatus = SSL_set_fd( pOpensslParams->pSsl, pOpensslParams->socketDescriptor );
+        sslStatus =
+            SSL_set_fd( pOpensslParams->pSsl, pOpensslParams->socketDescriptor );
 
         if( sslStatus != 1 )
         {
@@ -332,12 +335,13 @@ static int32_t setRootCa( const SSL_CTX * pSslContext,
     if( sslStatus == 1 )
     {
         /* Add the certificate to the context. */
-        sslStatus = X509_STORE_add_cert( SSL_CTX_get_cert_store( pSslContext ),
-                                         pRootCa );
+        sslStatus =
+            X509_STORE_add_cert( SSL_CTX_get_cert_store( pSslContext ), pRootCa );
 
         if( sslStatus != 1 )
         {
-            LogError( ( "X509_STORE_add_cert failed to add root CA to certificate store." ) );
+            LogError(
+                ( "X509_STORE_add_cert failed to add root CA to certificate store." ) );
             sslStatus = -1;
         }
     }
@@ -346,6 +350,7 @@ static int32_t setRootCa( const SSL_CTX * pSslContext,
     if( pRootCa != NULL )
     {
         X509_free( pRootCa );
+        pRootCa = NULL;
     }
 
     /* Close the file if it was successfully opened. */
@@ -360,8 +365,7 @@ static int32_t setRootCa( const SSL_CTX * pSslContext,
         /* coverity[misra_c_2012_rule_21_6_violation] */
         if( fclose( pRootCaFile ) != 0 )
         {
-            LogWarn( ( "fclose failed to close file %s",
-                       pRootCaPath ) );
+            LogWarn( ( "fclose failed to close file %s", pRootCaPath ) );
         }
     }
 
@@ -388,8 +392,7 @@ static int32_t setClientCertificate( SSL_CTX * pSslContext,
     #endif
 
     /* Import the client certificate. */
-    sslStatus = SSL_CTX_use_certificate_chain_file( pSslContext,
-                                                    pClientCertPath );
+    sslStatus = SSL_CTX_use_certificate_chain_file( pSslContext, pClientCertPath );
 
     if( sslStatus != 1 )
     {
@@ -419,8 +422,7 @@ static int32_t setPrivateKey( SSL_CTX * pSslContext,
     #endif
 
     /* Import the client certificate private key. */
-    sslStatus = SSL_CTX_use_PrivateKey_file( pSslContext,
-                                             pPrivateKeyPath,
+    sslStatus = SSL_CTX_use_PrivateKey_file( pSslContext, pPrivateKeyPath,
                                              SSL_FILETYPE_PEM );
 
     if( sslStatus != 1 )
@@ -448,22 +450,19 @@ static int32_t setCredentials( SSL_CTX * pSslContext,
 
     if( pOpensslCredentials->pRootCaPath != NULL )
     {
-        sslStatus = setRootCa( pSslContext,
-                               pOpensslCredentials->pRootCaPath );
+        sslStatus = setRootCa( pSslContext, pOpensslCredentials->pRootCaPath );
     }
 
-    if( ( sslStatus == 1 ) &&
-        ( pOpensslCredentials->pClientCertPath != NULL ) )
+    if( ( sslStatus == 1 ) && ( pOpensslCredentials->pClientCertPath != NULL ) )
     {
-        sslStatus = setClientCertificate( pSslContext,
-                                          pOpensslCredentials->pClientCertPath );
+        sslStatus =
+            setClientCertificate( pSslContext, pOpensslCredentials->pClientCertPath );
     }
 
-    if( ( sslStatus == 1 ) &&
-        ( pOpensslCredentials->pPrivateKeyPath != NULL ) )
+    if( ( sslStatus == 1 ) && ( pOpensslCredentials->pPrivateKeyPath != NULL ) )
     {
-        sslStatus = setPrivateKey( pSslContext,
-                                   pOpensslCredentials->pPrivateKeyPath );
+        sslStatus =
+            setPrivateKey( pSslContext, pOpensslCredentials->pPrivateKeyPath );
     }
 
     return sslStatus;
@@ -484,9 +483,9 @@ static void setOptionalConfigurations( SSL * pSsl,
         ( pOpensslCredentials->alpnProtosLen > 0U ) )
     {
         LogDebug( ( "Setting ALPN protos." ) );
-        sslStatus = SSL_set_alpn_protos( pSsl,
-                                         ( const uint8_t * ) pOpensslCredentials->pAlpnProtos,
-                                         ( uint32_t ) pOpensslCredentials->alpnProtosLen );
+        sslStatus = SSL_set_alpn_protos(
+            pSsl, ( const uint8_t * ) pOpensslCredentials->pAlpnProtos,
+            ( uint32_t ) pOpensslCredentials->alpnProtosLen );
 
         if( sslStatus != 0 )
         {
@@ -508,8 +507,8 @@ static void setOptionalConfigurations( SSL * pSsl,
          * function #SSL_set_max_send_fragment expects a length argument
          * type of long. */
         /* coverity[misra_c_2012_directive_4_6_violation] */
-        sslStatus = ( int32_t ) SSL_set_max_send_fragment( pSsl,
-                                                           ( long ) pOpensslCredentials->maxFragmentLength );
+        sslStatus = ( int32_t ) SSL_set_max_send_fragment(
+            pSsl, ( long ) pOpensslCredentials->maxFragmentLength );
 
         if( sslStatus != 1 )
         {
@@ -523,24 +522,23 @@ static void setOptionalConfigurations( SSL * pSsl,
 
             /* Change the size of the read buffer to match the
              * maximum fragment length + some extra bytes for overhead. */
-            SSL_set_default_read_buffer_len( pSsl,
-                                             ( size_t ) readBufferLength );
+            SSL_set_default_read_buffer_len( pSsl, ( size_t ) readBufferLength );
         }
     }
 
     /* Enable SNI if requested. */
     if( pOpensslCredentials->sniHostName != NULL )
     {
-        LogDebug( ( "Setting server name %s for SNI.",
-                    pOpensslCredentials->sniHostName ) );
+        LogDebug(
+            ( "Setting server name %s for SNI.", pOpensslCredentials->sniHostName ) );
 
         /* MISRA Rule 11.8 flags the following line for removing the const
          * qualifier from the pointed to type. This rule is suppressed because
          * openssl implementation of #SSL_set_tlsext_host_name internally casts
          * the pointer to a string literal to a `void *` pointer. */
         /* coverity[misra_c_2012_rule_11_8_violation] */
-        sslStatus = ( int32_t ) SSL_set_tlsext_host_name( pSsl,
-                                                          pOpensslCredentials->sniHostName );
+        sslStatus = ( int32_t ) SSL_set_tlsext_host_name(
+            pSsl, pOpensslCredentials->sniHostName );
 
         if( sslStatus != 1 )
         {
@@ -585,9 +583,7 @@ OpensslStatus_t Openssl_Connect( NetworkContext_t * pNetworkContext,
     {
         pOpensslParams = pNetworkContext->pParams;
         socketStatus = Sockets_Connect( &pOpensslParams->socketDescriptor,
-                                        pServerInfo,
-                                        sendTimeoutMs,
-                                        recvTimeoutMs );
+                                        pServerInfo, sendTimeoutMs, recvTimeoutMs );
 
         /* Convert socket wrapper status to openssl status. */
         returnStatus = convertToOpensslStatus( socketStatus );
@@ -616,11 +612,9 @@ OpensslStatus_t Openssl_Connect( NetworkContext_t * pNetworkContext,
         * numerical type long. This directive is suppressed because openssl
         * function #SSL_CTX_set_mode takes an argument of type long. */
         /* coverity[misra_c_2012_directive_4_6_violation] */
-        ( void ) SSL_CTX_set_mode( pSslContext,
-                                   ( long ) SSL_MODE_ENABLE_PARTIAL_WRITE );
+        ( void ) SSL_CTX_set_mode( pSslContext, ( long ) SSL_MODE_ENABLE_PARTIAL_WRITE );
 
-        sslStatus = setCredentials( pSslContext,
-                                    pOpensslCredentials );
+        sslStatus = setCredentials( pSslContext, pOpensslCredentials );
 
         if( sslStatus != 1 )
         {
@@ -648,15 +642,15 @@ OpensslStatus_t Openssl_Connect( NetworkContext_t * pNetworkContext,
     /* Setup the socket to use for communication. */
     if( returnStatus == OPENSSL_SUCCESS )
     {
-        returnStatus = tlsHandshake( pServerInfo,
-                                     pOpensslParams,
-                                     pOpensslCredentials );
+        returnStatus =
+            tlsHandshake( pServerInfo, pOpensslParams, pOpensslCredentials );
     }
 
     /* Free the SSL context. */
     if( pSslContext != NULL )
     {
         SSL_CTX_free( pSslContext );
+        pSslContext = NULL;
     }
 
     /* Clean up on error. */
@@ -707,6 +701,7 @@ OpensslStatus_t Openssl_Disconnect( const NetworkContext_t * pNetworkContext )
             }
 
             SSL_free( pOpensslParams->pSsl );
+            pOpensslParams->pSsl = NULL;
         }
 
         /* Tear down the socket connection, pNetworkContext != NULL here. */
@@ -726,54 +721,108 @@ int32_t Openssl_Recv( NetworkContext_t * pNetworkContext,
 {
     OpensslParams_t * pOpensslParams = NULL;
     int32_t bytesReceived = 0;
-    int32_t sslError = 0;
 
     if( ( pNetworkContext == NULL ) || ( pNetworkContext->pParams == NULL ) )
     {
         LogError( ( "Parameter check failed: pNetworkContext is NULL." ) );
     }
-    else if( pNetworkContext->pParams->pSsl != NULL )
+    else if( pNetworkContext->pParams->pSsl == NULL )
     {
+        LogError( ( "Failed to receive data over network: "
+                    "SSL object in network context is NULL." ) );
+    }
+    else
+    {
+        int32_t pollStatus = 1, readStatus = 1, sslError = 0;
+        uint8_t shouldRead = 0U;
+        struct pollfd pollFds;
         pOpensslParams = pNetworkContext->pParams;
-        /* SSL read of data. */
-        bytesReceived = ( int32_t ) SSL_read( pOpensslParams->pSsl,
-                                              pBuffer,
-                                              ( int32_t ) bytesToRecv );
+
+        /* Initialize the file descriptor.
+         * #POLLPRI corresponds to high-priority data while #POLLIN corresponds
+         * to any other data that may be read. */
+        pollFds.events = POLLIN | POLLPRI;
+        pollFds.revents = 0;
+        /* Set the file descriptor for poll. */
+        pollFds.fd = pOpensslParams->socketDescriptor;
+
+        /* #SSL_pending returns a value > 0 if application data
+         * from the last processed TLS record remains to be read.
+         * This implementation will ALWAYS block when the number of bytes
+         * requested is greater than 1. Otherwise, poll the socket first
+         * as blocking may negatively impact performance by waiting for the
+         * entire duration of the socket timeout even when no data is available. */
+        if( ( bytesToRecv > 1 ) || ( SSL_pending( pOpensslParams->pSsl ) > 0 ) )
+        {
+            shouldRead = 1U;
+        }
+        else
+        {
+            /* Speculative read for the start of a payload.
+             * Note: This is done to avoid blocking when no
+             * data is available to be read from the socket. */
+            pollStatus = poll( &pollFds, 1, 0 );
+        }
+
+        if( pollStatus < 0 )
+        {
+            bytesReceived = -1;
+        }
+        else if( pollStatus == 0 )
+        {
+            /* No data available to be read from the socket. */
+            bytesReceived = 0;
+        }
+        else
+        {
+            shouldRead = 1U;
+        }
+
+        if( shouldRead == 1U )
+        {
+            /* Blocking SSL read of data.
+             * Note: The TLS record may only be partially received or unprocessed,
+             * so it is possible that no processed application data is returned
+             * even though the socket has data available to be read. */
+            readStatus = ( int32_t ) SSL_read( pOpensslParams->pSsl, pBuffer,
+                                               ( int32_t ) bytesToRecv );
+
+            /* Successfully read of application data. */
+            if( readStatus > 0 )
+            {
+                bytesReceived = readStatus;
+            }
+        }
 
         /* Handle error return status if transport read did not succeed. */
-        if( bytesReceived <= 0 )
+        if( readStatus <= 0 )
         {
-            sslError = SSL_get_error( pOpensslParams->pSsl, bytesReceived );
+            sslError = SSL_get_error( pOpensslParams->pSsl, readStatus );
 
             if( sslError == SSL_ERROR_WANT_READ )
             {
-                /* The OpenSSL documentation mentions that SSL_Read can provide a return code of
-                 * SSL_ERROR_WANT_READ in blocking mode, if the SSL context is not configured with
-                 * with the SSL_MODE_AUTO_RETRY. This error code means that the SSL_read()
-                 * operation needs to be retried to complete the read operation.
-                 * Thus, setting the return value of this function as zero to represent that no
-                 * data was received from the network. */
+                /* The OpenSSL documentation mentions that SSL_Read can provide a
+                 * return code of SSL_ERROR_WANT_READ in blocking mode, if the SSL
+                 * context is not configured with with the SSL_MODE_AUTO_RETRY. This
+                 * error code means that the SSL_read() operation needs to be retried
+                 * to complete the read operation. Thus, setting the return value of
+                 * this function as zero to represent that no data was received from
+                 * the network. */
                 bytesReceived = 0;
             }
             else
             {
                 LogError( ( "Failed to receive data over network: SSL_read failed: "
-                            "ErrorStatus=%s.", ERR_reason_error_string( sslError ) ) );
+                            "ErrorStatus=%s.",
+                            ERR_reason_error_string( sslError ) ) );
 
-                /* The transport interface requires zero return code only when the receive operation can
-                 * be retried to achieve success. Thus, convert a zero error code to a negative return
-                 * value as this cannot be retried. */
-                if( bytesReceived == 0 )
-                {
-                    bytesReceived = -1;
-                }
+                /* The transport interface requires zero return code only when the
+                 * receive operation can be retried to achieve success. Thus, convert
+                 * a zero error code to a negative return value as this cannot be
+                 * retried. */
+                bytesReceived = -1;
             }
         }
-    }
-    else
-    {
-        LogError( ( "Failed to receive data over network: "
-                    "SSL object in network context is NULL." ) );
     }
 
     return bytesReceived;
@@ -789,10 +838,6 @@ int32_t Openssl_Send( NetworkContext_t * pNetworkContext,
 {
     OpensslParams_t * pOpensslParams = NULL;
     int32_t bytesSent = 0;
-    int32_t sslError = 0;
-
-    /* Unused parameter when logs are disabled. */
-    ( void ) sslError;
 
     if( ( pNetworkContext == NULL ) || ( pNetworkContext->pParams == NULL ) )
     {
@@ -800,35 +845,67 @@ int32_t Openssl_Send( NetworkContext_t * pNetworkContext,
     }
     else if( pNetworkContext->pParams->pSsl != NULL )
     {
+        struct pollfd pollFds;
+        int32_t pollStatus;
+
         pOpensslParams = pNetworkContext->pParams;
-        /* SSL write of data. */
-        bytesSent = ( int32_t ) SSL_write( pOpensslParams->pSsl,
-                                           pBuffer,
-                                           ( int32_t ) bytesToSend );
 
-        if( bytesSent <= 0 )
+        /* Initialize the file descriptor. */
+        pollFds.events = POLLOUT;
+        pollFds.revents = 0;
+        /* Set the file descriptor for poll. */
+        pollFds.fd = pOpensslParams->socketDescriptor;
+
+        /* `poll` checks if the socket is ready to send data.
+         * Note: This is done to avoid blocking on SSL_write()
+         * when TCP socket is not ready to accept more data for
+         * network transmission (possibly due to a full TX buffer). */
+        pollStatus = poll( &pollFds, 1, 0 );
+
+        if( pollStatus > 0 )
         {
-            sslError = SSL_get_error( pOpensslParams->pSsl, bytesSent );
+            /* SSL write of data. */
+            bytesSent = ( int32_t ) SSL_write( pOpensslParams->pSsl, pBuffer,
+                                               ( int32_t ) bytesToSend );
 
-            LogError( ( "Failed to send data over network: SSL_write of OpenSSL failed: "
-                        "ErrorStatus=%s.", ERR_reason_error_string( sslError ) ) );
-
-            /* As the SSL context is configured for blocking mode, the SSL_write() function
-             * does not return an SSL_ERROR_WANT_READ or SSL_ERROR_WANT_WRITE error code.
-             * The SSL_ERROR_WANT_READ and SSL_ERROR_WANT_WRITE error codes signify that
-             * the write operation can be retried.
-             * However, in the blocking mode, as the SSL_write() function does not return
-             * either of the error codes, we cannot retry the operation on failure, and thus,
-             * this function will never return a zero error code.
-             */
-
-            /* The transport interface requires zero return code only when the send operation can
-             * be retried to achieve success. Thus, convert a zero error code to a negative return
-             * value as this cannot be retried. */
-            if( bytesSent == 0 )
+            if( bytesSent <= 0 )
             {
-                bytesSent = -1;
+                LogError(
+                    ( "Failed to send data over network: SSL_write of OpenSSL failed: "
+                      "ErrorStatus=%s.",
+                      ERR_reason_error_string( SSL_get_error( pOpensslParams->pSsl, bytesSent ) ) ) );
+
+                /* As the SSL context is configured for blocking mode, the SSL_write()
+                 * function does not return an SSL_ERROR_WANT_READ or
+                 * SSL_ERROR_WANT_WRITE error code. The SSL_ERROR_WANT_READ and
+                 * SSL_ERROR_WANT_WRITE error codes signify that the write operation can
+                 * be retried. However, in the blocking mode, as the SSL_write()
+                 * function does not return either of the error codes, we cannot retry
+                 * the operation on failure, and thus, this function will never return a
+                 * zero error code.
+                 */
+
+                /* The transport interface requires zero return code only when the send
+                 * operation can be retried to achieve success. Thus, convert a zero
+                 * error code to a negative return value as this cannot be retried. */
+                if( bytesSent == 0 )
+                {
+                    bytesSent = -1;
+                }
             }
+        }
+        else if( pollStatus < 0 )
+        {
+            /* An error occurred while polling. */
+            LogError( ( "Unable to send TLS data on network: "
+                        "An error occurred while checking availability of TCP socket %d.",
+                        pOpensslParams->socketDescriptor ) );
+            bytesSent = -1;
+        }
+        else
+        {
+            /* Socket is not available for sending data. Set return code for retrying send. */
+            bytesSent = 0;
         }
     }
     else

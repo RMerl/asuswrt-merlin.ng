@@ -1694,7 +1694,7 @@ function set_apply_btn_status_OpenVPN(_obj){
 					nvramSet_obj.rc_service = "restart_openvpnd;restart_chpass;";
 				else
 					nvramSet_obj.rc_service = "stop_openvpnd;";
-				if(enable_samba == "1")
+				if(settings.enable_samba == "1")
 					nvramSet_obj.rc_service += "restart_samba;";
 
 				nvramSet_obj.vpn_server_unit = settings.vpn_server_unit;

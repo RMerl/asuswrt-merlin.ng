@@ -1,7 +1,7 @@
 include ../.config
 
 EXEC = networkmap
-OBJS = function.o connections.o sm.o download.o shared_func.o protect_name.o networkmap.o
+OBJS = JSON_checker.o function.o connections.o sm.o download.o shared_func.o protect_name.o networkmap.o
 
 ifeq ($(HND_ROUTER),y)
 CFLAGS += -Werror=return-type -Werror=uninitialized -Wno-date-time 

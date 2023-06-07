@@ -24,7 +24,9 @@
 #define NATNL_DTLS_HEADER_SIZE 13  // Discarded, for tunnel type TCP use.
 
 
+#define PJMEDIA_MAX_MTU	12000 // for no flow control session
 #define NATNL_PKT_MAX_LEN 1300
+#define NATNL_NO_CTL_PKT_MAX_LEN PJMEDIA_MAX_MTU
 #define NATNL_DTLS_MAX_RECV_LEN 4096 // For DTLS recv buffer.
 #define NATNL_DTLS_MAX_SEND_LEN 4096 // For DTLS send buffer.
 
@@ -106,9 +108,9 @@
 #define UDT_MAX_PKT_LEN			3000
 #define PJ_KEEP_BUFFER_SIZE		((1460*576) + (1460*2048) + (1460*576))
 #else
-#define PJ_TCP_MAX_PKT_LEN		1460*64   //1460*64
-#define PJ_SOCKET_SND_BUFFER_SIZE		1460*64   //1460*64
-#define PJ_STUN_SOCK_PKT_LEN	1460*64   //1460*64
+#define PJ_TCP_MAX_PKT_LEN		1500*256   //1460*64
+#define PJ_SOCKET_SND_BUFFER_SIZE		1500*256   //1460*64
+#define PJ_STUN_SOCK_PKT_LEN	1500*256   //1460*64
 #define PJ_STUN_MAX_PKT_LEN		1500
 #define UDT_MAX_PKT_LEN			3000
 #define PJ_KEEP_BUFFER_SIZE		((1460*1088) + (1460*2048) + (1460*1088))

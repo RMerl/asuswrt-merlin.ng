@@ -655,6 +655,11 @@ body {
 	width: 28px;
 	background-image:url('/images/New_ui/networkmap/power.png') !important;
 }
+.radio_moca{
+	height: 28px;
+	width: 28px;
+	background-image:url('/images/New_ui/networkmap/moca.png') !important;
+}
 .clientlist_content{
 	position: absolute;
 	-webkit-border-radius: 5px;
@@ -1057,3 +1062,26 @@ body {
 	text-decoration: none;
 	cursor:pointer;
 } 
+
+.phone_as_modem{
+	position: absolute;
+	width: 792px;
+	height: auto;
+	z-index: 210;
+	border-radius: 15px;
+	font-size: 12px;
+	left: 25%;
+	top: 15%;
+	justify-content: center;
+	background-color: #444444;
+}
+
+.phone_as_modem_top{
+	color: #FFFFFF;
+	font-weight: bold;
+	font-size: 1.83em;
+	display: flex;
+	justify-content: space-between;
+	margin-top: 32px;
+	margin-left: 15px;
+}

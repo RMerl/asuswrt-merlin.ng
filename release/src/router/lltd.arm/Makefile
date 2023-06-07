@@ -92,6 +92,9 @@ else ifeq ($(BUILD_NAME), RT-AX56_XD4)
 else ifeq ($(BUILD_NAME), XD4PRO)
 	install icon.xd4pro.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.xd4pro.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), XC5)
+	install icon.xc5.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.xc5.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else ifeq ($(BUILD_NAME), CT-AX56_XD4)
 	install icon.ctax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.ctax56_xd4.ico $(INSTALLDIR)/usr/sbin/icon.large.ico

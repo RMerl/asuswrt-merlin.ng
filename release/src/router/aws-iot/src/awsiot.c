@@ -18,6 +18,7 @@ extern "C" {
 #endif
 
 #include <shared.h>
+#include <aae_ipc.h>
 
 
 #include <assert.h>
@@ -837,67 +838,11 @@ static void handleIncomingPublish( MQTTPublishInfo_t * pPublishInfo,
     }
 
 
-    // JSONStatus_t result = JSONSuccess;
-
-
-    // /* Make sure the payload is a valid json document. */
-    // result = JSON_Validate( pPublishInfo->pPayload,
-    //                         pPublishInfo->payloadLength );
-
-    // if( result != JSONSuccess )
-    // {
-    //     LogError( ( "Incoming data: The json document is invalid!!" ) );
-    //     Cdbg(APP_DBG, "Received JSON is not valid");
-    //     return;
-    // }
-
-
-    // uint32_t version = 0U;
-    // uint32_t newState = 0U;
-    // char * sessionValue = NULL;
-    // uint32_t sessionValueLength = 0U;
-
-    // if( result == JSONSuccess )
-    // {
-    //     /* Then we start to get the version value by JSON keyword "version". */
-    //     result = JSON_Search( ( char * ) pPublishInfo->pPayload,
-    //                           pPublishInfo->payloadLength,
-    //                           "session",
-    //                           sizeof( "session" ) - 1,
-    //                           &sessionValue,
-    //                           ( size_t * ) &sessionValueLength );
-    // }
-    // else
-    // {
-    //     LogError( ( "The json document is invalid!!" ) );
-    // }
-
-
-
-
-    // if( result == JSONSuccess )
-    // {
-    //     LogInfo( ( "session: %.*s", sessionValueLength, sessionValue ) );
-
-    // }
-    // else
-    // {
-    //     LogError( ( "No session in json document!!" ) );
-    // }
-
-
-    // LogInfo( ( "session: %d, %s", sessionValueLength, sessionValue ) );
-
-
     time_t session_receive_time = time(NULL);
-
-    LogInfo( ( "session_receive_time : %ld", session_receive_time) );
-    LogInfo( ( "session_receive_time_tmp : %ld", session_receive_time_tmp) );
 
 
     if(strstr(subscribe_topic, SHADOW_NAME_REMOTE_CONNECTION)) {
         Cdbg(APP_DBG, "Get remote connection [topic], run remote function(waiting), len = %d, msg = %s", strlen(shadowRxBuf), shadowRxBuf);
-        LogInfo( ( "Get remote connection [topic],  run remote function(waitin), len = %d, msg = %s", strlen(shadowRxBuf), shadowRxBuf) );
         return;
     }
 
@@ -917,8 +862,7 @@ static void handleIncomingPublish( MQTTPublishInfo_t * pPublishInfo,
     } else if( strstr(subscribe_topic, "asus") && strstr(subscribe_topic, "httpd") 
                && strstr(subscribe_topic, "update")  ) {
 
-        Cdbg(APP_DBG, "Get test session 123456789 msg, len = %d, msg = %s", strlen(shadowRxBuf), shadowRxBuf);
-        LogInfo( ( "Get remote connectioGet test session 123456789 msg, len = %d, msg = %s", strlen(shadowRxBuf), shadowRxBuf) );
+        Cdbg(APP_DBG, "Get test session msg, len = %d, msg = %s", strlen(shadowRxBuf), shadowRxBuf);
 
         return;
 
@@ -933,7 +877,6 @@ static void handleIncomingPublish( MQTTPublishInfo_t * pPublishInfo,
         }
 
         get_mqtt_dif_session_number++;
-        LogInfo( ( "get_mqtt_dif_session_number -> %d\n" , get_mqtt_dif_session_number) );
 
         tencentgame_data_process(shadowRxBuf, subscribe_topic);
 
@@ -1303,8 +1246,10 @@ void asus_remote_connection(const char * shadowRxBuf, const char * subscribe_top
     Cdbg(APP_DBG, "parse_receive_remote_connection, enable_status = %d", enable_status);
 
     if(enable_status == 1) {
-        Cdbg(APP_DBG, "cm_sendIpcHandler -> ipc > %s -> msg = %s", MASTIFF_IPC_SOCKET_PATH, shadowRxBuf);
-        cm_sendIpcHandler(MASTIFF_IPC_SOCKET_PATH, shadowRxBuf, strlen(shadowRxBuf));
+		char event[AAE_MAX_IPC_PACKET_SIZE];
+		snprintf(event, sizeof(event), AAE_AWSIOT_GENERIC_MSG, EID_AWSIOT_TUNNEL_ENABLE);
+         Cdbg(APP_DBG, "cm_sendIpcHandler -> ipc > %s -> msg = %s", MASTIFF_IPC_SOCKET_PATH, event);
+         cm_sendIpcHandler(MASTIFF_IPC_SOCKET_PATH, event, strlen(event));
     }
 
 
@@ -2082,11 +2027,9 @@ static int tencentgame_download_enable(MQTTContext_t * pMqttContext)
                                     total_space,
                                     available_space);
 
-
     LogInfo( ( "publish topic len = %d -> %s\ndata len=%d -> %s", strlen(shadow_update_topic), shadow_update_topic, strlen(publish_data), publish_data ) );
 
     Cdbg(APP_DBG, "publish topic len = %d -> %s\ndata len=%d -> %s", strlen(shadow_update_topic), shadow_update_topic, strlen(publish_data), publish_data);
-
 
     int returnStatus = EXIT_SUCCESS;
 
@@ -2095,7 +2038,6 @@ static int tencentgame_download_enable(MQTTContext_t * pMqttContext)
     if (returnStatus == SUCCESS) {
         LogInfo( ( "tencent_download_enable topic[%s] publish success", shadow_update_topic) );
         Cdbg(APP_DBG, "topic[%s] publish success", shadow_update_topic);
-        Cdbg2(APP_DBG, 1, "awsiot init : basic data publish success");
     } else {
         LogError( ( "tencent_download_enable publish error, topic = %s", shadow_update_topic) );
         Cdbg(APP_DBG, "topic publish error , topic = %s", shadow_update_topic);
@@ -2453,10 +2395,6 @@ int main( int argc, char ** argv )
     // CF_OPEN(AWS_DEBUG_TO_FILE, FILE_TYPE );
     // CF_OPEN(AWS_DEBUG_TO_CONSOLE,  CONSOLE_TYPE | SYSLOG_TYPE | FILE_TYPE);
 
-	if(APP_DBG) {
-		write_file(AWS_DEBUG_TO_FILE, " ");
-	}
-
     init_basic_data();
 
 
@@ -2468,8 +2406,6 @@ int main( int argc, char ** argv )
 
     // ipc : call [mastiff && aaews]
     awsiot_ipc_start();
-
-    Cdbg2(APP_DBG, 1, "awsiot start");
 
     int returnStatus = EXIT_SUCCESS;
     MQTTContext_t mqttContext = { 0 };
@@ -2551,7 +2487,6 @@ int main( int argc, char ** argv )
 
     LogInfo( ( "exit awsiot, waiting restart") );
     Cdbg(APP_DBG, "exit awsiot, waiting restart");
-    Cdbg2(APP_DBG, 1, "exit awsiot, waiting restart");
     exit(0);
 
     return returnStatus;

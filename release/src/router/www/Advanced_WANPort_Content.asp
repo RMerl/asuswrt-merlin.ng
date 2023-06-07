@@ -113,8 +113,7 @@ var lacp_support = isSupport("lacp");
 var lacp_enabled = '<% nvram_get("lacp_enabled"); %>';
 var wans_lanport_orig = '<% nvram_get("wans_lanport"); %>';
 var wanports_bond = '<% nvram_get("wanports_bond"); %>';
-if(wan_bonding_support)
-	var orig_bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
+var orig_bond_wan = httpApi.nvramGet(["bond_wan"], true).bond_wan;
 
 var stbPortMappings = [<% get_stbPortMappings();%>][0];
 var iptv_port_settings = '<%nvram_get("iptv_port_settings"); %>';
@@ -125,12 +124,15 @@ var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Fa
 var eth_wan_list = httpApi.hookGet("get_ethernet_wan_list", true);
 
 var usb_bk_support = isSupport("usb_bk");
+var orig_autowan_enable = '<% nvram_get("autowan_enable"); %>';
+var orig_switch_wantag = '<% nvram_get("switch_wantag"); %>';
+var orig_switch_stb_x = '<% nvram_get("switch_stb_x"); %>';
 
 function initial(){
 	show_menu();
 	wans_flag = (wans_dualwan_orig.search("none") != -1 || !parent.dualWAN_support) ? 0 : 1;
 	if(wan_bonding_support){
-		if(orig_bond_wan == 1 && (based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
+		if(orig_bond_wan == "1" && (based_modelid == "RT-AX89U" || based_modelid == "GT-AXY16000")){
 			// Remove 10G base-T if it's aggregated w/ WAN port
 			var i = wans_caps.split(" ").indexOf("wan2");
 			if(i != -1 && wanports_bond.split(" ").indexOf("30") != -1){
@@ -234,6 +236,14 @@ function initial(){
 
 		add_options_x2(document.form.wans_lanport1, name, value, <% nvram_get("wans_lanport"); %>);
 		add_options_x2(document.form.wans_lanport2, name, value, <% nvram_get("wans_lanport"); %>);
+	}
+
+	if(isSupport("autowan") && $("input[name='autowan_enable']").length == 0){
+		$('<input>').attr({
+			type: 'hidden',
+			name: "autowan_enable",
+			value: orig_autowan_enable
+		}).appendTo('form');
 	}
 
 	if(wan_bonding_support)
@@ -391,6 +401,16 @@ function form_show(v, change_primary_wan){
 			else{
 				$("#usb_tethering_setting").show();
 				$("#usb_tethering_hint").hide();
+			}
+		}
+
+		if(isSupport("autowan") && orig_bond_wan != "1" && lacp_enabled !="1" && orig_switch_wantag == "none" && orig_switch_stb_x == "0"){
+			if($("#wans_primary option[value='auto']").length == 0){
+				($('<option>', {
+					"value": "auto",
+					"text": "Auto",
+					"selected": (orig_autowan_enable == "1")? true:false
+				})).prependTo("#wans_primary");
 			}
 		}
 	}
@@ -740,7 +760,15 @@ function applyRule(){
 		}
 		document.form.wan_unit.value = 0;
 		document.form.wandog_enable.value = "0";
+
+		if(isSupport("autowan") && $('#wans_primary').find(":selected").val() != "auto")
+			$("input[name='autowan_enable']").attr("value", "0");
+		else
+			$("input[name='autowan_enable']").attr("value", "1");
 	}
+
+	if(isSupport("autowan"))
+		document.form.wans_dualwan.value = document.form.wans_dualwan.value.replace("auto", "wan");
 
 	if(document.form.wandog_enable_chk.checked){
 		if(document.form.wandog_target.value == "" || document.form.wandog_target.value.trim().length==0){
@@ -751,7 +779,7 @@ function applyRule(){
 		if(!validator.isValidHost(document.form.wandog_target.value)){
 			document.form.wandog_target.focus();
 			return false;
-        }
+		}
 		document.form.wandog_enable.value = "1";
 	}
 	else
@@ -1798,6 +1826,10 @@ function remain_origins(){
 															else
 																document.form.wans_mode.value = "fo";
 
+															if(isSupport("autowan")){
+																$("input[name='autowan_enable']").attr("value", "0");
+															}
+
 															addWANOption(document.form.wans_primary, wans_caps_primary.split(" "));
 															form_show(wans_flag);
 														},
@@ -1851,7 +1883,7 @@ function remain_origins(){
 										<tr>
 											<th><#dualwan_primary#></th>
 											<td>
-												<select name="wans_primary" class="input_option" onchange="changeWANProto(this);"></select>
+												<select id="wans_primary" name="wans_primary" class="input_option" onchange="changeWANProto(this);"></select>
 												<select id="wans_lanport1" name="wans_lanport1" class="input_option" style="margin-left:7px;">
 													<option value="1" <% nvram_match("wans_lanport", "1", "selected"); %>>LAN Port 1</option>
 													<option value="2" <% nvram_match("wans_lanport", "2", "selected"); %>>LAN Port 2</option>

@@ -278,6 +278,9 @@ struct pj_ice_strans
 
 	// turn_sock last error
 	int turn_last_status;
+
+	// nominated candidate remote address
+	pj_sockaddr nominated_rem_addr;
 };
 
 
@@ -2350,8 +2353,14 @@ static void on_ice_complete(pj_ice_sess *ice, pj_status_t status)
 
 		    if (check->lcand->transport_id == TP_TURN) {
 				//DEAN, set tunnel type, if will be used in natnl_adapter.
-				if (i == 0)
+				if (i == 0) {
 					ice_st->tunnel_type = NATNL_TUNNEL_TYPE_TURN;
+					// dean : save nominated remote address
+					pj_sockaddr_cp(&ice_st->nominated_rem_addr, &check->lcand->addr);
+
+					// dean : save turn mapped address.
+					turn_mapped_addr = &check->lcand->rel_addr;
+				}
 				
 				/* Activate channel binding for the remote address
 				 * for more efficient data transfer using TURN.
@@ -2367,9 +2376,6 @@ static void on_ice_complete(pj_ice_sess *ice, pj_status_t status)
 					  "component %d", i+1));
 				pj_turn_sock_set_log(ice_st->comp[i]->turn_sock,
 							 msg_disable_ind);
-
-				// dean : save turn mapped address.
-				turn_mapped_addr = &check->lcand->rel_addr;
 
 				// Close useless resouces
 				//if (ice_st->comp[i]->tcp_sock) {
@@ -2396,8 +2402,14 @@ static void on_ice_complete(pj_ice_sess *ice, pj_status_t status)
 				}
 			} else if (check->lcand->transport_id == TP_TURN_TCP) {
 				//DEAN, set tunnel type, if will be used in natnl_adapter.
-				if (i == 0)
+				if (i == 0) {
 					ice_st->tunnel_type = NATNL_TUNNEL_TYPE_TURN;
+					// dean : save nominated remote address
+					pj_sockaddr_cp(&ice_st->nominated_rem_addr, &check->lcand->addr);
+
+					// dean : save turn mapped address.
+					turn_mapped_addr = &check->lcand->rel_addr;
+				}
 				
 				/* Activate channel binding for the remote address
 				 * for more efficient data transfer using TURN.
@@ -2413,9 +2425,6 @@ static void on_ice_complete(pj_ice_sess *ice, pj_status_t status)
 					  "component %d", i+1));
 				pj_turn_sock_set_log(ice_st->comp[i]->turn_tcp_sock,
 							 msg_disable_ind);
-
-				// dean : save turn mapped address.
-				turn_mapped_addr = &check->lcand->rel_addr;
 
 				// Close useless resouces
 				//if (ice_st->comp[i]->tcp_sock) {
@@ -2442,8 +2451,11 @@ static void on_ice_complete(pj_ice_sess *ice, pj_status_t status)
 				}
 			} else if (check->lcand->transport_id == TP_UPNP_TCP) { //DEAN
 				//DEAN, set tunnel type, if will be used in natnl_adapter.
-				if (i == 0)
+				if (i == 0) {
 					ice_st->tunnel_type = NATNL_TUNNEL_TYPE_UPNP_TCP;
+					// dean : save nominated remote address
+					pj_sockaddr_cp(&ice_st->nominated_rem_addr, &check->rcand->addr);
+				}
 				
 				// Close useless resources
 				if (ice_st->comp[i]->stun_sock) {
@@ -2463,8 +2475,11 @@ static void on_ice_complete(pj_ice_sess *ice, pj_status_t status)
 				}
 			} else if (check->lcand->transport_id == TP_STUN) { //DEAN
 				//DEAN, set tunnel type, if will be used in natnl_adapter.
-				if (i == 0)
+				if (i == 0) {
 					ice_st->tunnel_type = NATNL_TUNNEL_TYPE_UDP;
+					// dean : save nominated remote address
+					pj_sockaddr_cp(&ice_st->nominated_rem_addr, &check->rcand->addr);
+				}
 
 				// Close useless resources
 				if (ice_st->comp[i]->tcp_sock) {
@@ -3496,6 +3511,11 @@ PJ_DEF(int) pj_ice_strans_get_stun_last_status(struct pj_ice_strans *ice_st)
 PJ_DEF(int) pj_ice_strans_get_turn_last_status(struct pj_ice_strans *ice_st)
 {
 	return ice_st->turn_last_status;
+}
+
+PJ_DEF(pj_sockaddr *) pj_ice_strans_get_nominated_rem_addr(struct pj_ice_strans *ice_st)
+{
+	return &ice_st->nominated_rem_addr;
 }
 
 PJ_DEF(void) pj_ice_strans_set_use_upnp_flag(void *user_data, int use_upnp_flag)

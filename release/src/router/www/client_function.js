@@ -303,7 +303,9 @@ function genClientList(){
 				if(thisClient.amesh_isReClient != undefined && thisClient.amesh_papMac != undefined) {
 					clientList[thisClientMacAddr].amesh_isReClient = (thisClient.amesh_isReClient == "1") ? true : false;
 					clientList[thisClientMacAddr].amesh_papMac = thisClient.amesh_papMac;
-
+					if(clientList[thisClientMacAddr].amesh_papMac == ""){
+						clientList[thisClientMacAddr].amesh_papMac = '<% get_lan_hwaddr(); %>';
+					}
 					if(clientList[thisClientMacAddr].isOnline) {
 						if(AiMeshTotalClientNum[thisClient.amesh_papMac] == undefined)
 							AiMeshTotalClientNum[thisClient.amesh_papMac] = 1;

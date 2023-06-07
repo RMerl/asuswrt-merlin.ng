@@ -1,5 +1,5 @@
 /*
- * coreMQTT v1.1.1
+ * coreMQTT v1.1.2
  * Copyright (C) 2020 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining a copy of
@@ -1003,8 +1003,7 @@ static MQTTStatus_t handleKeepAlive( MQTTContext_t * pContext )
     keepAliveMs = 1000U * ( uint32_t ) pContext->keepAliveIntervalSec;
 
     /* If keep alive interval is 0, it is disabled. */
-    if( ( keepAliveMs != 0U ) &&
-        ( calculateElapsedTime( now, pContext->lastPacketTime ) > keepAliveMs ) )
+    if( keepAliveMs != 0U )
     {
         if( pContext->waitingForPingResp == true )
         {
@@ -1017,7 +1016,10 @@ static MQTTStatus_t handleKeepAlive( MQTTContext_t * pContext )
         }
         else
         {
-            status = MQTT_Ping( pContext );
+            if( calculateElapsedTime( now, pContext->lastPacketTime ) > keepAliveMs )
+            {
+                status = MQTT_Ping( pContext );
+            }
         }
     }
 

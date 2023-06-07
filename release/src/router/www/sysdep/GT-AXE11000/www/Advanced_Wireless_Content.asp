@@ -364,7 +364,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
 				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "RT-AXE7800" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2" || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT10" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" ||
-				based_modelid == "RT-AC53U") && document.form.wl_nmode_x.value == 1){		//N only
+				based_modelid == "RT-AC53U" || based_modelid == "XC5") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
 				
@@ -2006,12 +2006,12 @@ function separateGenChannel(unit, channel, bandwidth){
 
 			for(var i=channel_5g_2.length-1; i>=0; i--){
 				var _channel = parseInt(channel_5g_2[i]);
-				if(is_EU_sku){
+				if(is_EU_sku && based_modelid == 'GT-AXE11000'){
 					if(_channel > 221){
 						channel_5g_2.splice(i, 1);
 					}					
 				}
-				else if(_channel < 30 || _channel > 221){
+				else if(based_modelid == 'GT-AXE11000' && (_channel < 30 || _channel > 221)){
 					channel_5g_2.splice(i, 1);
 				}
 			}
@@ -3285,12 +3285,12 @@ function channel_6g(bw){
 
 	for(var i=wl_channel_list_5g_2.length-1; i>=0; i--){
 		var _channel = parseInt(wl_channel_list_5g_2[i]);
-		if(is_EU_sku){	// remove 225, 229, 233
+		if(is_EU_sku && based_modelid == 'GT-AXE11000'){	// remove 225, 229, 233
 			if(_channel > 221){
 				wl_channel_list_5g_2.splice(i, 1);
 			}			
 		}
-		else if(_channel < 30 || _channel > 221){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
+		else if(based_modelid == 'GT-AXE11000' && (_channel < 30 || _channel > 221)){	// remove 1, 5, 9, 13, 17, 21, 25, 29, 225, 229, 233
 			wl_channel_list_5g_2.splice(i, 1);
 		}
 	}
@@ -3634,13 +3634,19 @@ function handleAiMeshBackhaul(value){
 
 function handleFhConnectionHint(value){
 	if(value){
-		document.querySelector('#fh_ap_enabled').value = '0';
+		if(document.querySelector('#fh_ap_enabled')){
+			document.querySelector('#fh_ap_enabled').value = '0';
+		}
+		
 		if(unii4Support){
 			document.querySelector('#acs_unii4_checkbox').checked =  false;
 		}
 	}
 	else{
-		document.querySelector('#fh_ap_enabled').value = '0';
+		if(document.querySelector('#fh_ap_enabled')){
+			document.querySelector('#fh_ap_enabled').value = '0';
+		}
+		
 		if(unii4Support){
 			document.querySelector('#acs_unii4_checkbox').checked =  true;
 		}

@@ -16,21 +16,19 @@
 //	1.	for stderr
 //	2	for file
 #define SYSLOG_TYPE 	1
-#define STD_ERR		2
-#define FILE_TYPE	4
+#define STD_ERR			2
+#define FILE_TYPE		4
 #define CONSOLE_TYPE	8
 
 
-#define APP_LOG_PATH			"/tmp/uploader_log"
-#define UL_DEBUG_TO_FILE 		"/tmp/UPLOADER_DEBUG_FILE"
-#define UL_DEBUG_TO_CONSOLE 	"/tmp/UPLOADER_DEBUG_CONSOLE"
-#define UL_DEBUG_TO_SYSLOG 		"/tmp/UPLOADER_DEBUG_SYSLOG"
+#define APP_LOG_PATH				"/tmp/uploader_log"
+#define APP_LOG_TMP_PATH			"/tmp/uploader_log_tmp"
+#define UL_DEBUG_TO_FILE 			"/tmp/UPLOADER_DEBUG_FILE"
+#define UL_DEBUG_TO_CONSOLE 		"/tmp/UPLOADER_DEBUG_CONSOLE"
+#define UL_DEBUG_TO_SYSLOG 			"/tmp/UPLOADER_DEBUG_SYSLOG"
 
 // #endif
 
-
-#define FEEDBACK_LOG_PATH                       "/tmp/uploader_log"
-#define FEEDBACK_LOG_TMP_PATH                   "/tmp/uploader_log_tmp"
 
 
 void dprintf_impl(const char* file,const char* func, size_t line, int enable, const char* fmt, ...);
@@ -43,11 +41,11 @@ void close_log();
 extern FILE* gfp;
 //FILE* gfp =NULL;
 // #define WHERESTR "%23s >> [%*s] >> func > %*s, line %i, Msg : "
-#define WHERESTR "[%28s][%25s] <<%38s>>, line %i: "
+#define WHERESTR "[%24s][%20s] <<%33s >> line %i: "
 #define WHEREARG  __FILE__,__func__,__LINE__
 
 long file_size(const char* filename);
-void feedback_log_downsizing();
+void upload_log_downsizing();
 
 #ifndef NDEBUG
 //#define WHERESTR "[%s][%s][%s] <<%s>>, line %i: "

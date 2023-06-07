@@ -31,7 +31,7 @@ void udt_cleanup()
 int udt_socket()
 {
 	struct addrinfo hints, *local;
-	int buf_size = 1460*64;
+	int buf_size = 1500*256;
 	int mss = 1456;
 	bool udt_syn = true;
 	bool rendezvous_mode = true;

@@ -19,6 +19,8 @@
 #include <dirent.h>
 
 
+#include <shared.h>
+
 #include "api.h"
 #include "log.h"
 
@@ -28,6 +30,8 @@
 
 #include "upload_api.h"
 #include "uploader.h"
+
+#include "webapi.h"
 
 extern char mac_no_symbol[32];
 
@@ -71,85 +75,29 @@ int str2md5(const char *input, char *output)
 
 }
 
-void getTimeInMillis(char* timestamp_str)
-{
 
+
+uint64_t get_timestamp()
+{
 
   struct timeval t_val;
   gettimeofday(&t_val, NULL);
-  
-  // printf("start, now, sec=%ld m_sec=%d \n", t_val.tv_sec, t_val.tv_usec);
-  
+    
+  return t_val.tv_sec;
+
+}
+
+void getTimeInMillis(char* timestamp_str)
+{
+
+  struct timeval t_val;
+  gettimeofday(&t_val, NULL);
+    
   sprintf(timestamp_str,"%ld", t_val.tv_sec);
-  
-  // Cdbg(API_DBG, "timestamp_str = %s", timestamp_str);
-
-  
-  // long sec = t_val.tv_sec;
-  // time_t t_sec = (time_t)sec;
-  // printf("date:%s", ctime(&t_sec));
-
-  //ToDo: bypass to use const value
-  
-  // char *ptr;
-  // unsigned long long lval = 0;
-  // struct timeval tp;  
-  // gettimeofday(&tp, NULL);
-  // //lval = (unsigned long long)((tp.tv_sec * 1000 * 1000) + (tp.tv_usec)) / 1000; 
-
-  // lval = (unsigned long long)(tp.tv_sec * 1000 * 1000 ) + (tp.tv_usec); 
-  // sprintf(timestamp_str,"%llu",lval);
- 
-  // Cdbg(API_DBG, "timestamp_str = %s", timestamp_str);
-
 }
 
 
 
-int search_local_db_file() {
-
-  int count = 0;
-  int status = -1;
-
-  DIR *dp; 
-  struct dirent *dirp;
-
-
-  if (dp = opendir(UPLOADER_FOLDER)) {
-
-    while (dirp = readdir(dp)) {
-
-      // Cdbg(API_DBG, "upload file count = %d, filename = %s", count, dirp->d_name);
-
-      if (strstr (dirp->d_name, ".cfg") ) {
-
-        count++;
-
-        // if(upload_conn_diag_db(dirp->d_name) == 0) {
-        if(upload_setting_backup(dirp->d_name) == 0) {
-          
-          status = 0;
-
-          char del_file[128];
-          snprintf(del_file, sizeof(del_file), "%s%s", UPLOADER_FOLDER, dirp->d_name);
-
-          if(!remove(del_file)) {
-            Cdbg(API_DBG, "remove file = %s", del_file);
-          }
-
-        }
-
-      }
-
-    }
-
-    closedir(dp);
-  } 
-
-
-  return status;
-
-}
 
 
 // parse json data
@@ -180,7 +128,7 @@ int upload_conn_diag_db(char* filename) {
     Cdbg(API_DBG, "upload_conn_diag_db file_path = %s", file_path);
     Cdbg(API_DBG, "upload_conn_diag_db file_name = %s", file_name);
 
-    status = db_file_process(api, file_path, file_name);
+    status = cloud_file_process(api, file_path, file_name);
 
 
     json_object_put(root);
@@ -194,44 +142,122 @@ int upload_conn_diag_db(char* filename) {
   return status;
 }
 
-// setting file
-int upload_setting_backup(char* filename) {
+int local_backup_file_output(char *type, char *filename, int filesize, const int backup_file_timestamp) {
 
-  int status = -1;
-  char upload_file[64] = {0};
+  int ret = -1;
+  char cmd[128] = {0};
 
+  if( strcmp(type, SETTING_BACKUP_TYPE) == 0 ) {
 
-  status = db_file_process(UPLOAD_FILE_TO_S3, UPLOADER_FOLDER, filename);
+    snprintf(filename, filesize, "setting_%s_%d.cfg", mac_no_symbol, backup_file_timestamp);
+    snprintf(cmd, sizeof(cmd), "nvram save %s%s", UPLOADER_FOLDER, filename);
 
+  } else if( strcmp(type, OPENVPN_BACKUP_TYPE) == 0 ) {
 
-  return status;
+    snprintf(filename, filesize, "openvpn_%s_%d.tar.gz", mac_no_symbol, backup_file_timestamp);
+
+    if((ret = gen_server_ovpn_file()) == HTTP_OK){
+      snprintf(cmd, sizeof(cmd), "mv %s %s%s ", OPENVPN_EXPORT_FILE, UPLOADER_FOLDER, filename);
+    }
+
+  } else if( strcmp(type, IPSEC_BACKUP_TYPE) == 0 ) {
+
+    snprintf(filename, filesize, "ipsec_%s_%d.tar.gz", mac_no_symbol, backup_file_timestamp);
+
+    if((ret = gen_server_ipsec_file()) == HTTP_OK){
+      snprintf(cmd, sizeof(cmd), "mv %s %s%s ", IPSEC_EXPORT_FILE, UPLOADER_FOLDER, filename);
+    }
+
+  } else if( strcmp(type, USERICON_BACKUP_TYPE) == 0 ) {
+
+    char usericon_export_file[128] = {0};
+
+    snprintf(filename, filesize, "usericon_%s_%d.tar.gz", mac_no_symbol, backup_file_timestamp);
+    snprintf(usericon_export_file, sizeof(usericon_export_file), "%s%s", UPLOADER_FOLDER, filename);
+
+    if((ret = gen_jffs_backup_profile("usericon", usericon_export_file)) == HTTP_OK) {
+      return PROCESS_SUCCESS;
+    }
+
+#ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
+  } else if( strcmp(type, AMASCNTRL_BACKUP_TYPE) == 0 ) {
+
+    char amascntrl_export_file[128] = {0};
+
+    snprintf(filename, filesize, "amascntrl_%s_%d.tar.gz", mac_no_symbol, backup_file_timestamp);
+    snprintf(amascntrl_export_file, sizeof(amascntrl_export_file), "%s%s", UPLOADER_FOLDER, filename);
+
+    if((ret = gen_jffs_backup_profile("amascntrl", amascntrl_export_file)) == HTTP_OK) {
+      return PROCESS_SUCCESS;
+    }
+#endif  // RTCONFIG_AMAS_CENTRAL_CONTROL
+
+  } else if( strcmp(type, UI_SUPORT_BACKUP_TYPE) == 0 ) {
+
+    snprintf(filename, filesize, "ui_support_%s_%d.json", mac_no_symbol, backup_file_timestamp);
+    if(update_ui_support_db(filename) == 0) {
+      return PROCESS_SUCCESS;
+    }
+
+  } else {
+    return -1;
+  }
+
+  ret = system(cmd);
+
+  Cdbg(API_DBG, "cmd = %s, ret = %d, type = %s, file_output -> %s%s", cmd, ret, type, UPLOADER_FOLDER, filename);
+
+  return PROCESS_SUCCESS;
 }
 
-int setting_file_output() {
+#ifdef RTCONFIG_AMAS_CENTRAL_CONTROL
+void backup_cfg_mnt() {
 
-  int status = -1;
+  FILE *fp = NULL;
 
-  char filename[64] = {0};
+  char cmd[128] = {0}, stat_file[128] = {0};
+  char line_buf_s[300], filename[64], file_path[128];
+  char *line_buf = NULL;
 
-  char timestamp_str[16] = {0};
-  getTimeInMillis(timestamp_str);
+  struct stat st = {0};
+  int file_update_time = 0;
+  char amascntrl_update_name[FILENAME_LEN];
 
-  snprintf(filename, sizeof(filename), "router_%s_%s.cfg", mac_no_symbol, timestamp_str);
+  snprintf(cmd, sizeof(cmd), "ls -RAlet %s |  head -n 2 > %s", AMASCNTRL_BACKUP_PATH, LS_LAST_TIME);
+  system(cmd);
 
-  Cdbg(API_DBG, "setting_file_output -> %s%s", UPLOADER_FOLDER, filename);
+  Cdbg(API_DBG, "cmd = %s", cmd);
 
+  int i = 0;
+  if ((fp = fopen(LS_LAST_TIME, "r"))) {
 
-  char settings_cmd[128] = {0};
-  snprintf(settings_cmd, sizeof(settings_cmd), "nvram save %s%s", UPLOADER_FOLDER, filename);
+    while ( line_buf = fgets(line_buf_s, sizeof(line_buf_s), fp) ) {
+      i++;
+      // Cdbg(API_DBG, "i = %d, line_buf = %s", i, line_buf);
+      if(i == 1) {
 
-  // remove(settings_date);
+        sscanf(line_buf, "%[^:]", file_path);
 
-  status = system(settings_cmd);
+      } else if(i == 2) {
 
-  Cdbg(API_DBG, "system  settings_cmd status = %d", status);
+        sscanf(line_buf, "%*s%*s%*s%*s%*s%*s%*s%*s%*s%*s%s", filename);
+        snprintf(stat_file, sizeof(stat_file), "%s/%s",  file_path,  filename);
 
-  return 0;
+        if (lstat(stat_file, &st) == 0) {
+
+          file_update_time = st.st_mtim.tv_sec;
+
+          if(file_update_time > nvram_get_int("amascntrl_update_time")) {
+            Cdbg(API_DBG, "stat_file = %s: file_update_time = %d  > amascntrl_update_time = %d\n", stat_file, file_update_time, nvram_get_int("amascntrl_update_time"));
+            nvram_set_int("amascntrl_update_time", file_update_time);
+          }
+        }
+      }
+    }
+    fclose(fp);
+  }
 }
+#endif  // RTCONFIG_AMAS_CENTRAL_CONTROL
 
 
 int mac_toupper(char * mac, char * output) {
@@ -300,6 +326,8 @@ int delete_sub_str(const char *str, const char *sub_str, char *result_str)
   
     return count;  
 } 
+
+
 
 // int main( int argc, char ** argv )
 // {

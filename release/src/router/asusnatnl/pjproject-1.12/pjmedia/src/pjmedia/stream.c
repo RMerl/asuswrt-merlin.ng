@@ -1577,8 +1577,8 @@ static void on_rx_rtp(void *data,
 #endif
     }
     pj_memset(rb->buff, 0, sizeof(rb->buff));
-    pj_memcpy(rb->buff, buf, data_len);
-    rb->len = data_len; 
+    pj_memcpy(rb->buff, buf, (data_len > sizeof(rb->buff)) ? sizeof(rb->buff) : data_len);
+	rb->len = (data_len > sizeof(rb->buff)) ? sizeof(rb->buff) : data_len;
 
 	//dump_bin(pkt, data_len);
 	//if (data_len != 40)

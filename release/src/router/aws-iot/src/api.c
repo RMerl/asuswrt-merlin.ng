@@ -34,6 +34,11 @@
 
 extern char receivedSessionData[AWS_IOT_SESSION_BUF_LEN];
 
+// func from libshared.so
+extern int file_lock(const char *tag);
+extern void file_unlock(int lockfd);
+extern int check_if_file_exist(const char *file);
+
 
 int get_session_data(const char* json_data, char * out_data) {
 

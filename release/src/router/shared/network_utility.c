@@ -240,6 +240,7 @@ int is_ip4_in_use(const char* addr)
 	ifconf.ifc_buf = buf;
 	if (ioctl(fd, SIOCGIFCONF, &ifconf) != 0) {
 		perror("ioctl(SIOCGIFCONF)");
+		close(fd);
 		return 0;
 	}
 
@@ -248,11 +249,40 @@ int is_ip4_in_use(const char* addr)
 		if( ((struct sockaddr_in*)&ifreq->ifr_addr)->sin_addr.s_addr == ipaddr.s_addr ) {
 			//char text[16];
 			//cprintf("ifr %s: %s\n", ifreq->ifr_name, inet_ntop(AF_INET, &(((struct sockaddr_in*)&ifreq->ifr_addr)->sin_addr), text, sizeof(text)));
+			close(fd);
 			return 1;
 		}
 
 		ifreq = (struct ifreq*)((char*)ifreq + sizeof(*ifreq));
 	}
 
+	close(fd);
 	return 0;
+}
+
+in_addr_t get_network_addr(const char *ip, const char *netmask)
+{
+	struct in_addr in_addr;
+	in_addr_t addrt;
+	int prefix;
+
+	if(!ip || !netmask)
+		return -1;
+
+	inet_aton(ip, &in_addr);
+	addrt = ntohl(in_addr.s_addr);
+
+	prefix = convert_subnet_mask_to_cidr(netmask);
+
+	addrt = _network(addrt, prefix);
+
+	return addrt;
+}
+
+int is_same_subnet(const char *ip1, const char *ip2, const char *netmask)
+{
+	if(!ip1 || !ip2 || !netmask)
+		return 0;
+
+	return (get_network_addr(ip1, netmask) == get_network_addr(ip2, netmask)) ? 1 : 0;
 }

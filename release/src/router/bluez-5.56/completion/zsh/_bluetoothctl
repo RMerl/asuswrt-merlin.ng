@@ -1,0 +1,98 @@
+#compdef bluetoothctl
+
+__bluetoothctl() {
+	bluetoothctl "$@" 2>/dev/null
+}
+
+_bluezcomp_controller() {
+	local -a controllers
+	bluetoothctl list |
+	while read _ MAC NAME; do
+		controllers+="${MAC//:/\\:}:${NAME//:/\\:}"
+	done
+	_describe -t controllers 'controller' controllers
+}
+
+_bluezcomp_device() {
+	local -a devices
+	bluetoothctl devices |
+	while read _ MAC NAME; do
+		devices+="${MAC//:/\\:}:${NAME//:/\\:}"
+	done
+	_describe -t devices 'device' devices
+}
+
+_bluezcomp_agentcap() {
+	local -a agent_options=(${(f)"$(__bluetoothctl agent help)"})
+	agent_options=( "${(@)agent_options:#(on|off)}" )
+	compadd -a agent_options
+}
+
+_bluetoothctl_agent() {
+	local -a agent_options=(${(f)"$(__bluetoothctl agent help)"})
+	agent_options+=help
+	compadd -a agent_options
+}
+
+_bluetoothctl_advertise() {
+	local -a ad_options=(${(f)"$(__bluetoothctl advertise help)"})
+	ad_options+=help
+	compadd -a ad_options
+}
+
+_bluetoothctl() {
+	local -a toggle_commands=(
+		"discoverable" "pairable" "power" "scan"
+	)
+
+	local -a controller_commands=(
+		"select" "show"
+	)
+
+	local -a device_commands=(
+		"block" "connect" "disconnect" "info"
+		"pair" "remove" "trust" "unblock" "untrust"
+	)
+
+	# Other commands may be handled by _bluetoothctl_$command
+	local -a all_commands=( "${(@f)$(__bluetoothctl --zsh-complete help)}" )
+
+	local curcontext=$curcontext state line ret=1
+	_arguments -C \
+		+ '(info)' \
+		{-h,--help}'[Show help message and exit]' \
+		{-v,--version}'--version[Show version info and exit]' \
+		+ 'mod' \
+		'(info)'{-a+,--agent=}'[Register agent handler]:agent:_bluezcomp_agentcap' \
+		'(info)'{-t,--timeout}'[Timeout in seconds for non-interactive mode]' \
+		'(info)'{-m,--monitor}'[Enable monitor output]' \
+		+ 'command' \
+		'(info):command:->command' \
+		'(info):: :->argument' \
+		': :_message "no more arguments"'
+
+	if [[ $state == "command" ]]; then
+		_describe -t commands 'command' all_commands
+	elif [[ $state == "argument" ]]; then
+		if (( ! ${"${(@)all_commands%%:*}"[(I)${line[1]}]} )); then
+			_message "Unknown bluetoothctl command: $line[1]"
+			return 1;
+		fi
+
+		curcontext="${curcontext%:*:*}:bluetoothctl-$line[1]:"
+		if ! _call_function ret _bluetoothctl_$line[1]; then
+			case $line[1] in
+				(${(~j.|.)toggle_commands})
+					compadd on off
+					;;
+				(${(~j.|.)device_commands})
+					_bluezcomp_device
+					;;
+				(${(~j.|.)controller_commands})
+					_bluezcomp_controller
+					;;
+			esac
+		fi
+		return ret
+	fi
+} && _bluetoothctl

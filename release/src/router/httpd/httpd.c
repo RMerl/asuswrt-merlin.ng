@@ -695,15 +695,9 @@ send_token_headers( int status, char* title, char* extra_header, char* mime_type
 {
 	time_t now;
 	char timebuf[100];
-	char asus_token[32]={0};
-	memset(asus_token,0,sizeof(asus_token));
+	char asus_token[32]={0}, token_cookie[128] = {0};
 
-	if(nvram_match("x_Setting", "0") && strcmp( gen_token, "") != 0){
-		strncpy(asus_token, gen_token, sizeof(asus_token));
-	}else{
-		generate_token(asus_token, sizeof(asus_token));
-	}
-	add_asus_token(asus_token);
+	gen_asus_token_cookie(asus_token, sizeof(asus_token), token_cookie, sizeof(token_cookie));
 
     (void) fprintf( conn_fp, "%s %d %s\r\n", PROTOCOL, status, title );
     (void) fprintf( conn_fp, "Server: %s\r\n", SERVER_NAME );
@@ -722,7 +716,7 @@ send_token_headers( int status, char* title, char* extra_header, char* mime_type
     if ( mime_type != (char*) 0 )
 	(void) fprintf( conn_fp, "Content-Type: %s\r\n", mime_type );
 
-	(void) fprintf( conn_fp, "Set-Cookie: asus_token=%s; HttpOnly;\r\n",asus_token );
+    (void) fprintf( conn_fp, "Set-Cookie: %s\r\n", token_cookie);
 
     (void) fprintf( conn_fp, "Connection: close\r\n" );
     (void) fprintf( conn_fp, "\r\n" );
@@ -1564,9 +1558,6 @@ handle_request(void)
 #ifdef RTCONFIG_DSL_TCLINUX
 					&& !strstr(file, "TCC.log")
 #endif
-#ifdef RTCONFIG_IPSEC
-					&& !strstr(file, "ipsec.log")
-#endif
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)
 					&& !strstr(file, "asustitle.png")
 #endif
@@ -1581,6 +1572,8 @@ handle_request(void)
 #ifdef RTCONFIG_IPSEC
 					&& !strstr(file, "renew_ikev2_cert_mobile.pem") && !strstr(file, "ikev2_cert_mobile.pem")
 					&& !strstr(file, "renew_ikev2_cert_windows.der") && !strstr(file, "ikev2_cert_windows.der")
+					&& !strstr(file, "server_ipsec.cert")
+					&& !strstr(file, "ipsec.log")
 #endif
 					&& !strstr(file, "get_download_info")
 					&& !strstr(file, "INO")

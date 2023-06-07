@@ -525,16 +525,23 @@ remove_client_in_list_by_idx(char *out, int idx, int out_len)
 	char *buf, *g, *p;
 	g = buf = strdup(out);
 
-    len = strlen(out);
+	len = strlen(out);
 
 	while ((p = strchr(g, '<')) != NULL) {
 		if(find_idx == idx)
 		{
 			if((int)(p-buf)-(int)(p-g) < out_len){
-				out[(int)(p-buf)-(int)(p-g)-1] = '\0';
-				strlcat(out+1, p, out_len);
-				out[len - (p-g)-1] = '\0';
+
+				if((int)(p-buf)-(int)(p-g)-1 > 0){
+					out[(int)(p-buf)-(int)(p-g)-1] = '\0';
+					strlcat(out+1, p, out_len);
+				}else
+					strlcpy(out, p, out_len);
+
+				if((p-g)!=0)
+					out[len - (p-g)-1] = '\0';
 			}
+
 			ret = find_idx;
 			find_idx++;
 			break;
@@ -546,10 +553,11 @@ remove_client_in_list_by_idx(char *out, int idx, int out_len)
 	}
 
 	if(find_idx == idx){ // Consider the field is at the end of in_list (no '>' occur anymore).
-        if((int)(g-buf) < out_len){
-            out[(int)(g-buf)-1] = '\0';
-        }
-        ret = find_idx;
+
+		if((int)(g-buf) < out_len)
+			out[(int)(g-buf)-1] = '\0';
+
+		ret = find_idx;
 	}
 	free(buf);
 
@@ -569,8 +577,8 @@ int delete_wireguard_client(int wgc_index)
 		sleep(3);
 
 	del_vpnc_clientlist_idx = remove_client_in_group_list(2, wgc_index_str, vpnc_clientlist, sizeof(vpnc_clientlist));
-	if(del_vpnc_clientlist_idx){
-		remove_client_in_list_by_idx(vpnc_pptp_options_x_list, del_vpnc_clientlist_idx, sizeof(vpnc_pptp_options_x_list));
+	if(del_vpnc_clientlist_idx != -1){
+		remove_client_in_list_by_idx(vpnc_pptp_options_x_list, del_vpnc_clientlist_idx+1, sizeof(vpnc_pptp_options_x_list));
 		nvram_set("vpnc_clientlist", vpnc_clientlist);
 		nvram_set("vpnc_pptp_options_x_list", vpnc_pptp_options_x_list);
 

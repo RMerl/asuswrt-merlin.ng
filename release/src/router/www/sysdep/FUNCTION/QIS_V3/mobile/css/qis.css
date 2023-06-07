@@ -335,6 +335,16 @@ a{
 	width: 90%;
 	max-width: 1000px;
 }
+.pageDesc_passwd_KR{
+	font-family: Helvetica, Arial;
+	font-size: 1.4em;
+	color: #FC0;
+	margin: 20px 0 30px 25px;
+	text-align: left;
+	font-weight: bolder;
+	width: 90%;
+	max-width: 1000px;	
+}
 .descSteps{
 	color: #007AFF;
 	font-size: 1.4em;
@@ -1140,6 +1150,26 @@ a{
 		top: 0%;
 		bottom: initial;
 	}
+	.popup_container.qisView{
+		width: 60% !important;
+		max-width: 640px !important;
+		top: 12%;
+	}
+	.defpass.popup_container .title_container .title{
+		font-size: 1.8em !important;
+	}
+	.defpass.popup_container .title_container .icon_close_btn{
+		right: 0.6em !important;
+		top: 0.4em !important;
+	}
+	.defpass_guideline_container .image_container{
+		min-width: 310px !important;
+		max-width: 310px !important;
+		height: 280px !important;
+	}
+	.defpass_guideline_container .desc_container{
+		font-size: 1.6em !important;
+	}
 	@media screen and (max-height: 1000px){
 		.tableContainerIndex{ 
 			transform: scale(0.8, 0.8);
@@ -1171,8 +1201,13 @@ a{
 			transform-origin: top;
 		}
 		.footerPadding{
-			margin-top: -450px;
+			/* margin-top: -450px; */
 			display: block;
+		}
+		.defpass_guideline_container .image_container{
+			min-width: 310px !important;
+			max-width: 310px !important;
+			height: 280px !important;
 		}
 		@media screen and (max-width: 800px){
 			.table_td{
@@ -1388,6 +1423,9 @@ a{
 		.aimesh_illustration_second_bg {
 			height: 160px;
 		}
+		.defpass_guideline_container .image_container{
+			height: initial !important;
+		}
 	}
 	@media screen and (max-width: 640px) {
 		.aimesh_illustration_bg {
@@ -1416,6 +1454,9 @@ a{
 		}
 		.aimesh_illustration_second_bg {
 			height: 175px;
+		}
+		.defpass_guideline_container .image_container{
+			height: initial !important;
 		}
 	}
 	@media screen and (max-width: 640px) {
@@ -1588,4 +1629,164 @@ a{
 	height: 2px;
 	width: 95%;
 	margin-top: -38px;
+}
+.textInputDisabled{
+    background-color: #333;
+    border: 1px solid #333;
+}
+.hidden_mask{
+	display: none;
+	position: fixed;
+	width: 100%;
+	height: 100%;
+	left: 0px;
+	top: 0px;
+	z-index: 200;
+	opacity: 0.6;
+}
+.popup_container{
+	font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
+	display: none;
+	height: auto;
+	top: 4%;
+	width: 60%;
+	max-width: 600px;
+	min-width: 345px;
+	position: absolute;
+	margin: auto;
+	z-index: 300;
+	left: 0px;
+	right: 0px;
+	align-items: center;
+	line-height: 180%;
+	-webkit-tap-highlight-color: transparent;
+	user-select: none;
+	font-size: 14px;
+}
+.popup_container.qisView{
+	width: 94%;
+	max-width: initial;
+}
+.popup_container.defpass > div{
+	position: relative;
+	background: #FFFFFF;
+	border: 1px solid rgba(255, 255, 255, 0.02);
+	box-shadow: rgb(0 0 0 / 20%) 0px 2px 4px 0px, rgb(60 60 60 / 30%) 0px 1px 4px 0px;
+	border-radius: 8px;
+	padding: 24px 12px 16px 24px;
+}
+.defpass_guideline_title_container{
+	display: flex;
+	align-items: center;
+	cursor: pointer;
+	margin: 30px 0 30px 6px;
+}
+.defpass_guideline_title_container > div:first-child{
+	width: 24px;
+	min-width: 24px;
+	height: 24px;
+	margin-top: -4px;
+}
+.defpass_guideline_title_container > div:not(:first-child){
+	margin-left: 18px;
+	font-size: 1.6em;
+	font-weight: bolder;
+	color: #007AFF;
+}
+.icon_excl_mark{
+	width: 100%;
+	height: 100%;
+	border-radius: 50%;
+	border: 2px solid #007AFF;
+	color: #007AFF;
+	font-weight: bolder;
+	font-size: 1.4em;
+	font-family: emoji;
+}
+.icon_excl_mark > div{
+	width: 100%;
+	height: 100%;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+.icon_close_btn{
+	width: 2em;
+	height: 2em;
+	cursor: pointer;
+}
+.icon_close_btn:before,
+.icon_close_btn:after{
+	position: absolute;
+	content: "";
+	top: 0;
+	height: 1.6em;
+	width: 2px;
+	background-color: #6e6e6e;
+	bottom: 0;
+	left: 0;
+	right: 0;
+	margin: auto;
+}
+.icon_close_btn:hover:before,
+.icon_close_btn:hover:after{
+	background-color: #000;
+}
+.icon_close_btn:before{
+	transform: rotate(45deg);
+}
+.icon_close_btn:after{
+	transform: rotate(-45deg);
+}
+.defpass.popup_container .content_container{
+	margin-top: 30px;
+}
+.defpass.popup_container .title_container .title{
+	color: #007AFF;
+	font-size: 2em;
+	font-weight: bolder;
+}
+.defpass.popup_container .title_container .icon_close_btn{
+	position: absolute;
+	right: 1em;
+	top: 1em;
+}
+.defpass_guideline_container{
+	display: flex;
+	flex-wrap: wrap-reverse;
+	justify-content: center;
+}
+.defpass_guideline_container > div{
+	flex-grow: 1;
+	margin-bottom: 12px;
+	position: relative;
+	line-height: 130%;
+}
+.defpass_guideline_container .image_container{
+	margin-right: 12px;
+	display: flex;
+	justify-content: center;
+	min-width: 310px;
+	max-width: 80vw;
+	min-height: 280px;
+	height: 71vw;
+	flex-basis: 65%;
+}
+.image_container .image_local_login,
+.image_container .image_wifi_conn{
+	background-repeat: no-repeat;
+	background-size: contain;
+	width: 100%;
+	height: 100%;
+	background-position: center;
+}
+.image_container .image_local_login{
+	background-image: url(/mobile/css/local_login.jpg);
+}
+.image_container .image_wifi_conn{
+	background-image: url(/mobile/css/wifi_conn.jpg);
+}
+.defpass_guideline_container .desc_container{
+	flex-basis: 35%;
+	font-size: 2em;
 }

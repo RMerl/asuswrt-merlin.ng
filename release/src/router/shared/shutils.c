@@ -3030,3 +3030,55 @@ int ping_target_with_size(char *target, unsigned int pkt_size, unsigned int ping
 		}
 	}
 }
+
+/*******************************************************************
+* NAME: replace_literal_newline
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2023/03/21
+* DESCRIPTION: Replace literal newline(s) ("\n")  with newline character(s) ('\n').
+*                        That is to say, from "\n" to '\n'.
+* INPUT:  inputstr, the string to be replaced.
+*         output, the replaced string will be stored in 'output'.
+*         buflen, the size of 'output' buffer.
+* OUTPUT: None
+* RETURN: -1 or -2, if something went wrong; 1, function works correctly.
+* NOTE:
+*******************************************************************/
+int replace_literal_newline(char *inputstr, char *output, int buflen)
+{
+	int in = 0;
+	int out = 0;
+	int len = 0;
+
+	if((!inputstr) || (strlen(inputstr) <= 0))
+	{
+		logmessage("replace_literal_newline", "Wrong inputstr.\n");
+		return -1;
+	}
+
+	if((!output) || (buflen == 0))
+	{
+		logmessage("replace_literal_newline", "Wrong output buffer\n");
+		return -2;
+	}
+
+	len = strlen(inputstr);
+	for(in = 0; (in < len) && (out < buflen); in++, out++)
+	{
+		if(in == len -1)
+		{
+			//boundary condition
+			output[out] = inputstr[in];
+		}
+		else if((inputstr[in] == '\\') && (inputstr[in+1] == 'n'))
+		{
+			output[out] = '\n';
+			in++;
+		}
+		else
+		{
+			output[out] = inputstr[in];
+		}
+	}
+	return 1;
+}

@@ -329,10 +329,78 @@ bound(int renew)
 	int modem_unit;
 	char tmp2[100], prefix2[32];
 #endif
+#ifdef RTCONFIG_AUTO_WANPORT
+	char lan_ifname[16], lan_ip[16], lan_net[16];
+	char autowan_detected_ifname[8];
+	char gateway[16], gateway_mac[32];
+	int br_no;
+	char if_name[16];
 
+	if(is_auto_wanport_enabled() > 0){
+		strlcpy(autowan_detected_ifname, nvram_safe_get("autowan_detected_ifname"), sizeof(autowan_detected_ifname));
+
+		if(strcmp(autowan_detected_ifname, "") && strcmp(autowan_detected_ifname, wan_ifname)){
+			_dprintf("%s(%lu): auto_wanport: Had detected the WAN interface. skip bounding of %s.\n", __func__, getpid(), wan_ifname);
+			return -1;
+		}
+
+		// start_wan() will run faster than wanduck, so getting DHCP IP is in front of the PPPoE detect possiably
+		// Need to do the PPPoE detect once if the WAN port is not set
+		if(!strcmp(autowan_detected_ifname, "")){
+			//_dprintf("%s(%lu): Run autowan...\n", __func__, getpid());
+			//eval("autowan");
+
+			snprintf(prefix, sizeof(prefix), "autowan_ppp_%d", get_num_of_auto_wanport(wan_ifname));
+			if(nvram_get_int(prefix) == 1)
+				_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of PPPoE.\n", __func__, getpid(), wan_ifname);
+			else{
+				_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
+
+				strlcpy(gateway, getenv("router"), sizeof(gateway));
+				strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
+				strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
+				strlcpy(lan_net, nvram_safe_get("lan_netmask"), sizeof(lan_net));
+
+				_dprintf("%s(%lu): auto_wanport: Get gateway %s & apply to %s first.\n", __func__, getpid(), gateway, lan_ifname);
+				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
+				ifconfig(lan_ifname, IFUP, getenv("ip"), getenv("subnet"));
+
+				_dprintf("%s(%lu): auto_wanport: send a ping to gateway for ARP.\n", __func__, getpid());
+				eval("ping", "-W1", "-c1", gateway);
+
+				memset(gateway_mac, 0, sizeof(gateway_mac));
+				get_mac_from_ip(gateway, gateway_mac, sizeof(gateway_mac));
+				if(!gateway_mac[0]){
+					_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac & restore the LAN IP of router.\n", __func__, getpid());
+					ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
+					ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+					return -1;
+				}
+				_dprintf("%s(%lu): auto_wanport: Got gateway's MAC %s.\n", __func__, getpid(), gateway_mac);
+
+				br_no = get_br_port_no_from_mac(gateway_mac);
+				_dprintf("%s(%lu): auto_wanport: Got gateway's br_no %d.\n", __func__, getpid(), br_no);
+				get_if_from_br_port_no(br_no, if_name, sizeof(if_name));
+				_dprintf("%s(%lu): auto_wanport: Got gateway's if %s.\n", __func__, getpid(), if_name);
+				wan_ifname = if_name;
+
+				_dprintf("%s(%lu): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
+				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
+				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+
+				set_auto_wanport(wan_ifname, 0);
+			}
+		}
+
+		ifunit = nvram_get_int("autowan_live_wanunit");
+		snprintf(wanprefix, sizeof(wanprefix), "wan%d_", ifunit);
+	}
+	else
+#endif
 	/* Figure out nvram variable name prefix for this i/f */
 	if ((ifunit = wan_prefix(wan_ifname, wanprefix)) < 0)
 		return -1;
+
 	if ((unit = wan_ifunit(wan_ifname)) < 0
 #ifdef RTCONFIG_SOFTWIRE46
 	    || nvram_pf_get_int(wanprefix, "s46_hgw_case") == S46_CASE_MAP_HGW_OFF
@@ -1326,6 +1394,11 @@ deconfig6(char *wan_ifname, const int mode)
 		}
 		break;
 	}
+
+	if (nvram_match("x_Setting", "0") && !strncmp(nvram_safe_get("territory_code"), "JP", 2)) {
+		nvram_set(ipv6_nvname_by_unit("ipv6_ra_addr", unit), "");
+		nvram_set(ipv6_nvname_by_unit("ipv6_ra_length", unit), "");
+	}
 #endif
 #ifdef RTCONFIG_INADYN
 	if(mode == 1)
@@ -1648,43 +1721,6 @@ static char *get_s46_ra_routes(char *rules, char *addr, size_t addrsz)
 	}
 	return NULL;
 }
-
-void set_s46_ra_addr(int wan_unit, int wan_type, char *wan_ifname)
-{
-	char addr[INET6_ADDRSTRLEN];
-	char buf[256];
-	int  len;
-	FILE *fp;
-
-	switch (wan_type) {
-	case WAN_V6PLUS:
-	case WAN_OCNVC:
-		if (sscanf(getifaddr(wan_ifname, AF_INET6, GIF_PREFIXLEN) ? : "", "%[^/]/%d", addr, &len) == 2) {
-			nvram_set(ipv6_nvname_by_unit("ipv6_ra_addr", wan_unit), addr);
-			nvram_set_int(ipv6_nvname_by_unit("ipv6_ra_length", wan_unit), len);
-			S46_DBG("ipv6_ra_addr:[%s/%d]\n", addr, len);
-			break;
-		} else {
-			snprintf(buf, sizeof(buf), "ip a s %s | grep \"scope global\" | grep  \"dynamic\" | grep \"mngtmpaddr\" | awk -F \" \" '{printf $2}' 2>/dev/null", wan_ifname);
-			if ((fp = popen(buf, "r")) != NULL) {
-				if (fscanf(fp, "%[^/]/%d", addr, &len) == 2) {
-					nvram_set(ipv6_nvname_by_unit("ipv6_ra_addr", wan_unit), addr);
-					nvram_set_int(ipv6_nvname_by_unit("ipv6_ra_length", wan_unit), len);
-					S46_DBG("ipv6_ra_addr:[%s/%d]\n", addr, len);
-				}
-				pclose(fp);
-				break;
-			}
-		}
-		nvram_unset(ipv6_nvname_by_unit("ipv6_ra_addr", wan_unit));
-		nvram_unset(ipv6_nvname_by_unit("ipv6_ra_length", wan_unit));
-		S46_DBG("ipv6_ra_addr:[NULL]\n");
-		break;
-	default:
-		break;
-	}
-	return;
-}
 #endif
 
 static int
@@ -1711,12 +1747,12 @@ bound6(char *wan_ifname, int bound)
 #ifdef RTCONFIG_SOFTWIRE46
 	int wan_proto = -1;
 
-	S46_DBG("[wan_if]:[%s], [bound]:[%d]\n", wan_ifname, bound);
 	switch (wan_proto = get_wan_proto(prefix)) {
 		int i;
 		char rbuf[32];
 	case WAN_MAPE:
 		i = 0;
+		S46_DBG("[wan_if]:[%s], [bound]:[%d]\n", wan_ifname, bound);
 		while(environ[i] != NULL) {
 			S46_DBG("ENV:[%s]\n", environ[i]);
 			i++;
@@ -1725,6 +1761,7 @@ bound6(char *wan_ifname, int bound)
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
 		i = 0;
+		S46_DBG("[wan_if]:[%s], [bound]:[%d]\n", wan_ifname, bound);
 		while(environ[i] != NULL) {
 			S46_DBG("ENV:[%s]\n", environ[i]);
 			i++;
@@ -1845,6 +1882,10 @@ skip:
 #ifdef RTCONFIG_IGD2
 		notify_rc("restart_upnp");
 #endif
+
+#ifdef RTCONFIG_WIREGUARD
+		update_wgs_client_ep();
+#endif
 	}
 
 #ifdef RTCONFIG_SOFTWIRE46
@@ -1898,7 +1939,7 @@ skip:
 			nvram_set_int(ipv6_nvname_by_unit("ipv6_ra_length", wan_unit), size);
 			S46_DBG("[RA_ADDR=%s/%d]\n", addr, size);
 		} else { //Workaround for system boot case.
-			set_s46_ra_addr(wan_unit, wan_proto, wan_ifname);
+			get_s46_ra(wan_unit);
 		}
 
 		//Get RA Prefix
@@ -1985,6 +2026,10 @@ skip:
 		}
 
 		break;
+	default:
+		if (nvram_match("x_Setting", "0") && !strncmp(nvram_safe_get("territory_code"), "JP", 2)) {
+			get_s46_ra(wan_unit);
+		}
 	}
 #endif
 
@@ -1998,6 +2043,9 @@ skip:
 	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update"))
 		notify_rc("restart_ddns");
 #endif
+        if (nvram_get_int("telnetd_enable"))
+                notify_rc("restart_telnetd");
+
 	return 0;
 }
 
@@ -2070,11 +2118,12 @@ int
 start_dhcp6c(void)
 {
 	char *wan_ifname = (char *) get_wan6face();
+	char mode[8] = "try";
 	char *dhcp6c_argv[] = { "odhcp6c",
 		"-df",
 		"-R",
 		"-s", "/tmp/dhcp6c",
-		"-N", "try",
+		"-N", mode,
 		NULL, NULL,	/* -c duid */
 		NULL, NULL,	/* -P len:iaidhex */
 		NULL, NULL,	/* -rdns -rdomain */
@@ -2155,7 +2204,11 @@ start_dhcp6c(void)
 		break;
 	case WAN_MAPE:
 	case WAN_V6PLUS:
+		dhcp6c_argv[index++] = "-r94";	/* S46_CONT_MAPE */
+		break;
 	case WAN_OCNVC:
+		/* Send Information-Request message */
+		snprintf(mode, sizeof(mode), "%s", "none");
 		dhcp6c_argv[index++] = "-r94";	/* S46_CONT_MAPE */
 		break;
 	}

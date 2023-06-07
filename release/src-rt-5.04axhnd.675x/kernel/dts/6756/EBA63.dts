@@ -1,0 +1,114 @@
+#include "6756.dtsi"
+
+/ {
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			/* CUSTOM speed 1026MHz */
+			BP_DDR_SPEED_CUSTOM_1         | \
+			BP_DDR_TOTAL_SIZE_512MB       | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_16BIT      | \
+			BP_DDR_TEMP_EXTENDED_ASR      | \
+			BP_DDR_6756_DEFAULT)>;
+	};
+
+	buttons {
+		compatible = "brcm,buttons";
+		reset_button {
+			ext_irq = <&bca_extintr 9 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+			press {
+				print = "Button Press -- Hold for 5s to do restore to default";
+			};
+			hold {
+				rst_to_dflt = <5>;
+			};
+			release {
+				reset = <0>;
+			};
+		};
+	};
+
+    switch_sf2_ext:0 {
+    };
+};
+
+&mdio_sf2 {
+	phy_ge:8 {
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+            phy-handle = <&phy_ge>;
+			status = "okay";
+		};
+    };
+};
+
+&led_ctrl {
+    status="okay";
+
+	/* LED_R */
+    led0:sw_led_14-pin_14 {
+		active_low;
+        status = "okay";
+        brightness = <127>;
+	};
+	/* LED_G */
+	led1:sw_led_15-pin_15 {
+		active_low;
+        status = "okay";
+        brightness = <127>;
+	};
+	/* LED_B */
+	led2:sw_led_16-pin_16 {
+		active_low;
+        status = "okay";
+        brightness = <127>;
+	};
+
+	/* LED_W */
+    led3:led_gpio_17 {
+        compatible = "brcm,gpio-led";
+        label = "LED_W";
+        software_led;
+        pin = <17>;
+        active_low;
+        init_high;
+    };
+
+	/* Fake 5V_4V5_REG_Set as LED */
+    V_REG_Set:led_gpio_22 {
+        compatible = "brcm,gpio-led";
+        label = "V_REG_Set";
+        software_led;
+        pin = <22>;
+        active_low;
+        init_high;
+    };
+};
+
+&usb_ctrl {
+    pinctrl-names="default";
+    pinctrl-0 = <&usb0_pwr_pins>;
+    status = "okay";
+    xhci-enable;
+};
+
+&usb0_xhci {
+    status = "okay";
+};
+
+&usb0_ehci {
+    status = "okay";
+};
+
+&usb0_ohci {
+    status = "okay";
+};
+
+&pcie0 {
+    status = "disabled";
+};

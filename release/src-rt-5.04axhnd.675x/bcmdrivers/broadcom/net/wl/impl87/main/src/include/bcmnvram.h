@@ -278,10 +278,10 @@ extern int nvram_space;
 #define NVRAM_VERSION		1
 #define NVRAM_HEADER_SIZE	20
 
-#ifdef BCA_HNDROUTER
+//#ifdef BCA_HNDROUTER
 #define NVRAM_SPACE	    0x30000
 #define MAX_NVRAM_SPACE     0x30000
-#endif /* BCA_HNDROUTER */
+//#endif /* BCA_HNDROUTER */
 
 #ifndef NVRAM_SPACE
 #define NVRAM_SPACE		0x8000

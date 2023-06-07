@@ -548,5 +548,29 @@ static bp_elem_t g_rtax88u_pro_gpy211[] = {
   {bp_last}
 };
 
+static bp_elem_t g_rtax88u_pro_hwb[] = {
+  {bp_cpBoardId,               .u.cp = "RTAX88U_PRO_HWB"},
+
+  {bp_usGphyBaseAddress,       .u.us = BCM94912_PHY_BASE},
+  {bp_ucPhyType0,              .u.uc = BP_ENET_NO_PHY}, // Runner
+  {bp_usConfigType,            .u.us = BP_ENET_CONFIG_MMAP},
+  {bp_ucPhyAddress,            .u.uc = 0x1e},
+  {bp_ulPortMap,               .u.ul = 0x6f},   // QGPHYs + Serdes + SGMII1
+  {bp_ulPhyId0,                .u.ul = (BCM94912_PHY_BASE + 0x00) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId1,                .u.ul = (BCM94912_PHY_BASE + 0x01) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId2,                .u.ul = (BCM94912_PHY_BASE + 0x02) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  {bp_ulPhyId3,                .u.ul = (BCM94912_PHY_BASE + 0x03) | (ADVERTISE_ALL_GMII | PHY_ADV_CFG_VALID)},
+  
+  {bp_ulPhyId5,                .u.ul = 6 |  PHY_INTEGRATED_VALID | MAC_IF_SERDES},
+  {bp_ulPhyId5,                .u.ul = 17 | PHY_EXTERNAL | PHY_TYPE_CL45GPHY},
+  {bp_ulPhyId6,                .u.ul = 7 |  PHY_INTEGRATED_VALID | MAC_IF_SERDES | PHY_EXTERNAL},
+  {bp_ulPhyId6,                .u.ul = 19 | PHY_EXTERNAL | PHY_TYPE_CL45GPHY},
+
+  {bp_usMiiMdc,                .u.us = BP_GPIO_54_AH},
+  {bp_usMiiMdio,               .u.us = BP_GPIO_55_AH},
+
+  {bp_last}
+};
+
 bp_elem_t * g_BoardParms[] = {/*g_bcm94915sv, g_bcm94915sv_gphy, g_bcm94915ref1d, g_bcm94915ref1d_rgmii, g_bcm94915ref1d_p1b, g_bcm949418eap,*/
-    g_bcm94912ref1d, g_bcm94912ref1d_rgmii, gt_ax11000pro, gt_axe16000, gt_et12, gt_et12_gpy211, gt_xt12, gt_xt12_gpy211, gt_ax6000, gt_ax6000_50991, gt_axe16000_2gb, g_rtax86u_pro, g_rtax88u_pro, g_rtax88u_pro_gpy211, 0};
+    g_bcm94912ref1d, g_bcm94912ref1d_rgmii, gt_ax11000pro, gt_axe16000, gt_et12, gt_et12_gpy211, gt_xt12, gt_xt12_gpy211, gt_ax6000, gt_ax6000_50991, gt_axe16000_2gb, g_rtax86u_pro, g_rtax88u_pro, g_rtax88u_pro_gpy211, g_rtax88u_pro_hwb, 0};

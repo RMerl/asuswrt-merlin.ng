@@ -33,7 +33,7 @@ mark_tg(struct sk_buff *skb, const struct xt_action_param *par)
 	skb->mark = (skb->mark & ~info->mask) ^ info->mark;
 
 #if defined(CONFIG_BCM_KF_BLOG) && defined(CONFIG_BLOG)
-	if (skb->mark & 0x1)
+	if ((skb->mark & 0x7) == 0x1)
 		blog_skip(skb, blog_skip_reason_nf_xt_skiplog);
 #endif
 

@@ -1265,12 +1265,14 @@ int hostapd_handle_dfs_offload(struct hostapd_iface *iface)
 		return 1;
 	}
 
+#ifndef CONFIG_DRIVER_BRCM
 	if (ieee80211_is_dfs(iface->freq, iface->hw_features,
 			     iface->num_hw_features)) {
 		wpa_printf(MSG_DEBUG, "%s: freq %d MHz requires DFS",
 			   __func__, iface->freq);
 		return 0;
 	}
+#endif /* !CONFIG_DRIVER_BRCM */
 
 	wpa_printf(MSG_DEBUG,
 		   "%s: freq %d MHz does not require DFS. Continue channel/AP setup",

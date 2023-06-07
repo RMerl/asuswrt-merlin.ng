@@ -216,7 +216,10 @@
     };
 
     /* PWR LED */
-    pwr_led: sw_led_22-pin_22 {
+    pwr_led:led_gpio_22 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <22>;
         active_low;
         init_low;
         status = "okay";

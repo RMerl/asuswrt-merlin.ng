@@ -1,0 +1,238 @@
+#include "4912.dtsi"
+
+/ {
+	model="RTAX88U_PRO_HWB";
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4       | \
+			BP_DDR_SPEED_1333_19_19_19    | \
+			BP_DDR_TOTAL_SIZE_1024MB      | \
+			BP_DDR_DEVICE_WIDTH_16        | \
+			BP_DDR_TOTAL_WIDTH_32BIT      | \
+			BP_DDR_TEMP_EXTENDED_ASR      | \
+			BP_DDR_SSC_CONFIG_1)>;
+	};
+/*
+    buttons: buttons {
+        compatible = "brcm,buttons";
+        // disable reset button for now. GPIO_51 seems trigger by itself
+        // suggest to use another GPIO pin 
+	reset_button {
+            ext_irq = <&bca_extintr 13 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                    print = "Button Press -- Hold for 5s to do restore to default";
+            };
+            hold {
+                    rst_to_dflt = <5>;
+            };
+            release {
+                    reset = <0>;
+            };
+        };
+        ses_button {
+            ext_irq = <&bca_extintr 12 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            release {
+                    ses_short_period = <0>;
+                    ses_long_period = <3>;
+            };
+        };
+    };
+*/
+};
+
+&nand {
+	write-protect = <1>;
+};
+
+&pcie0 {
+	status = "okay";
+};
+&pcie1 {
+	status = "okay";
+};
+&pcie2 {
+	status = "okay";
+};
+&pcie3 {
+	status = "okay";
+};
+
+&usb_ctrl {
+	pinctrl-names = "default";
+	pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+	status = "okay";
+	pwron-bias-pull-up;
+	xhci-enable;
+};
+
+&usb0_xhci {
+	status = "okay";
+};
+
+&mdio {
+	phy1:1 {
+		status = "okay";
+	};
+
+	phy2:2 {
+		status = "okay";
+	};
+
+	phy3:3 {
+		status = "okay";
+	};
+
+	phy4:4 {
+		status = "okay";
+	};
+
+	phy_rgmii: rgmii {
+		status = "disabled";
+	};
+
+	phy_cascade0:9 {
+		reg = <17>;
+		status = "okay";
+	};
+
+	phy_serdes0:6 {
+		phy-handle = <&phy_cascade0>;
+		status = "okay";
+	};
+
+	phy_cascade1:10 {
+		reg = <19>;
+		status = "okay";
+	};
+
+	phy_serdes1:7 {
+		phy-handle = <&phy_cascade1>;
+		status = "okay";
+	};
+};
+
+&switch0 {
+	ports {
+		port0@0 {
+			status = "okay";
+			label = "eth1";
+		};
+
+		port1@1 {
+			status = "okay";
+			label = "eth2";
+		};
+
+		port2@2 {
+			status = "okay";
+			label = "eth3";
+		};
+
+		port3@3 {
+			status = "okay";
+			label = "eth4";
+		};
+
+		port5@5 {
+			network-leds = <&led17>;
+			status = "okay";
+			label = "eth5";
+		};
+
+		port6@6 {
+			network-leds = <&led19>;
+			status = "okay";
+			label = "eth0";
+		};
+	};
+};
+
+&led_ctrl {
+    status="okay";
+
+	/* GPIO LED */
+	/* LAN_LED */
+	led1:led_gpio_1 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <1>;
+		active_low;
+		init_high;
+	};
+
+	/* USB LED */
+	led2:led_gpio_2 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <2>;
+		active_low;
+		init_high;
+	};
+
+	/* WAN LED, Hardware driven (SGMII0) */
+	led17:parallel-port_5-led_2 {
+		active_low;
+		pinctrl-0 = <&a_per_led_17_pin_17>;
+		link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+		status = "okay";
+		init_high;
+	};
+
+	/* WAN LED GPIO mode */
+	led171:led_gpio_17 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <17>;
+		active_low;
+		init_high;
+	};
+
+	/* external 2.5G LED, Hardware driven (BCM50991, SGMII1) */
+	led19:parallel-port_6-led_1 {
+		active_low;
+		pinctrl-0 = <&a_per_led_19_pin_19>;
+		link = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+		activity = <(LED_SPEED_100|LED_SPEED_1G|LED_SPEED_2500)>;
+		status = "okay";
+		init_high;
+	};
+
+	/* external 2.5G LED GPIO mode */
+	led191:led_gpio_19 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <19>;
+		active_low;
+		init_high;
+	};
+
+	/* external 2.5G LED, Hardware driven (GPY211, SGMII2) */
+	
+	/* WPS_LED */
+	led48:led_gpio_48 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <48>;
+		active_low;
+		init_high;
+	};
+
+	/* WAN RED LED */
+	led49:led_gpio_49 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <49>;
+		active_low;
+		init_high;
+	};
+
+	/* PWR LED */
+	led50:led_gpio_50 {
+		compatible = "brcm,gpio-led";
+		software_led;
+		pin = <50>;
+		active_low;
+		init_low;
+	};
+};

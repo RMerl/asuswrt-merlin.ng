@@ -205,7 +205,7 @@
     };
 
     /* USB LED */
-    led2: sw_led_2-pin_2 {
+    led2: sw_led_12-pin_12 {
         active_low;
         init_high;
         status = "okay";
@@ -219,9 +219,19 @@
     };
 
     /* PWR LED */
-    pwr_led: sw_led_22-pin_22 {
+    pwr_led:led_gpio_22 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <22>;
         active_low;
         init_low;
+        status = "okay";
+    };
+
+    /* ethall on */
+    led_ethall: sw_led_24-pin_24 {
+        active_low;
+        init_high;
         status = "okay";
     };
 

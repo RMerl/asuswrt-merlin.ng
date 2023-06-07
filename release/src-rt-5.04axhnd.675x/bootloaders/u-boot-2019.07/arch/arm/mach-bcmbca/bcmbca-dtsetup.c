@@ -326,7 +326,7 @@ static void set_reserved_memory(void *dtb_ptr, bd_t *bd)
 	env_set_ulong("dhd0", 0);
 #endif
 
-#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(RPAX58) || defined(XD4PRO) || defined(TUFAX5400_V2) || defined(XD6_V2) || defined(RTAX5400)
+#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(RPAX58) || defined(XD4PRO) || defined(TUFAX5400_V2) || defined(XD6_V2) || defined(RTAX5400) || defined(XC5) || defined(EBA63)
 	env_set_ulong("dhd0", 0);
 #endif
 #if defined(GT10)

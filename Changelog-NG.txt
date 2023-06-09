@@ -1,8 +1,8 @@
 Asuswrt-Merlin Changelog
 ========================
 
-388.3 (xx-xxx-2023)
-  - NOTE: This release is only available for the RT-AX88U PRO.
+388.3 (9-June-2023)
+  - NOTE: This release is only available for the RT-AX88U_Pro.
 
   - NEW: Merged with GPL 388_23110, adding support for a new
          RT-AX88U PRO hardware revision.

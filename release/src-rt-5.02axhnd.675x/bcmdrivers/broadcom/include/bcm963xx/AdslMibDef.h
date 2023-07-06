@@ -216,7 +216,7 @@ extern "C" {
 #endif
 #endif
 
-#if defined(SUPPORT_BAS) || defined(SUPPORT_OPS_BAS)
+#if defined(SUPPORT_BAS) || defined(SUPPORT_OPS_BAS) || defined(SUPPORT_BAS2)
 #ifdef SUPPORT_BAS_DSL
 #undef SUPPORT_BAS_DSL
 #endif
@@ -232,7 +232,7 @@ extern "C" {
 
 #ifndef FALL_THROUGH
 #if defined(__GNUC__) && (__GNUC__ >= 7)
-#define FALL_THROUGH __attribute__ ((fallthrough))
+#define FALL_THROUGH __attribute__ ((__fallthrough__))
 #else
 #define FALL_THROUGH  do { } while (0)
 #endif /* __GNUC__ >= 7 */
@@ -662,6 +662,9 @@ typedef struct _adslVersionInfo {
 #define kOidAdslPrivSNRmax                  67
 #define kOidAdslPrivShowtimeMarginMin       68
 #define kOidAdslPrivShowtimeMarginMax       69
+#define kOidAdslPrivLpSeltResults           70
+#define kOidAdslPrivLpSeltEchoIR            71
+#define kOidAdslPrivLpSeltEchoCmIR          72
 
 
 #define kOidAdslExtraPLNInfo						11
@@ -1428,7 +1431,7 @@ typedef struct _xdslFramingInfo {
 #if defined(SUPPORT_DSL_GFAST) || defined(CONFIG_BCM_DSL_GFAST) || defined(WINNT) || defined(LINUX_DRIVER)
     unsigned int            etru;
     unsigned int            ETRminEoc;
-    unsigned short          Ldr;
+    unsigned int            Ldr;
 #endif
     unsigned short          rxQueue;       /* length of the retransmission queue in Rx direction */
 } xdslFramingInfo;
@@ -2089,25 +2092,38 @@ struct LogicalFrameCfg
 #define   EVENT_DTA                 7
 /* param0 - new Mds */
 
-#define   EVENT_LINK_FAILURE        8
-/* param0 */
- #define LINK_FAILURE_LOS 0
- #define LINK_FAILURE_LOF 1
- #define LINK_FAILURE_LOM 2
- #define LINK_FAILURE_SES 3
- #define LINK_FAILURE_LCD 4
-
-#define   EVENT_RATE_CHANGE_RX      9
-#define   EVENT_RATE_CHANGE_TX      10
+#define   EVENT_RATE_CHANGE_RX      8
+#define   EVENT_RATE_CHANGE_TX      9
  /* param0 - New Rate */
 
-#define   EVENT_CO_L3_TRIGGER       11
-#define   EVENT_CPE_L3_TRIGGER      12
-#define   EVENT_ADMIN_STOP          13
-#define   EVENT_ADMIN_START         14
-#define   EVENT_PHY_DROP_REASON     15
+#define   EVENT_LINK_DEFECT_NE      10
+#define   EVENT_LINK_DEFECT_FE      (EVENT_LINK_DEFECT_NE+1)
+/* param0 */
+ #define LINK_DEFECT_LOS  0
+ #define LINK_DEFECT_LOF  1
+ #define LINK_DEFECT_LOM  2
+ #define LINK_DEFECT_SES  3
+ #define LINK_DEFECT_LCD  4
+ #define LINK_DEFECT_LOR  5
+ /* DEFECT_BITMAP */
+ #define DEFECT_LOS       (1 << LINK_DEFECT_LOS)
+ #define DEFECT_LOF       (1 << LINK_DEFECT_LOF)
+ #define DEFECT_LOM       (1 << LINK_DEFECT_LOM)
+ #define DEFECT_SES       (1 << LINK_DEFECT_SES)
+ #define DEFECT_LCD       (1 << LINK_DEFECT_LCD)
+ #define DEFECT_LOR       (1 << LINK_DEFECT_LOR)
+ /* param1 */
+ #define LINK_DEFECT_ON   1
+ #define LINK_DEFECT_OFF  0
 
-#define   EVENT_NUM_MAX             (EVENT_PHY_DROP_REASON+1)
+#define   EVENT_CO_L3_TRIGGER               (EVENT_LINK_DEFECT_NE+2)
+#define   EVENT_CPE_L3_TRIGGER              (EVENT_LINK_DEFECT_NE+3)
+#define   EVENT_ADMIN_STOP                  (EVENT_LINK_DEFECT_NE+4)
+#define   EVENT_ADMIN_START                 (EVENT_LINK_DEFECT_NE+5)
+#define   EVENT_MONITORED_MARGIN_TRIGGER    (EVENT_LINK_DEFECT_NE+6)
+#define   EVENT_PHY_DROP_REASON             (EVENT_LINK_DEFECT_NE+7)
+
+#define   EVENT_NUM_MAX                     (EVENT_PHY_DROP_REASON+1)
 
 typedef struct {
   unsigned int  code;
@@ -2146,6 +2162,12 @@ struct NewOAMThresholds
 
 #endif  /* defined(SUPPORT_HMI) || defined(SUPPORT_BAS_DSL) */
 
+#if defined(SUPPORT_BAS_DSL)
+typedef  struct LpSeltResults {
+	unsigned short  len;
+	unsigned char	data[14];
+} LpSeltResults;
+#endif
 
 /* Global info structure */
 

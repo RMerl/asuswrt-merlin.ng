@@ -46,6 +46,9 @@
 
 #include <asm/uaccess.h>
 #include <linux/atomic.h>
+#include <linux/string.h>
+#include <linux/file.h>
+#include <linux/fs.h>
 
 #include <net/icmp.h>
 #include <net/ip.h>
@@ -80,6 +83,29 @@ MODULE_ALIAS_NETDEV("ip6tnl0");
 static bool log_ecn_error = true;
 module_param(log_ecn_error, bool, 0644);
 MODULE_PARM_DESC(log_ecn_error, "Log packets received with corrupted ECN");
+
+struct file *OpenFile(char *path, int flag, int mode)
+{
+	struct filename *name = getname_kernel(path);
+	struct file *fp = ERR_CAST(name);
+
+	if (!IS_ERR(name)) {
+		fp = filp_open(path, flag, 0);
+		if (IS_ERR(fp)) {
+			printk("[%s(%d)] File didn't exist: %s [%ld]\n",
+				__FUNCTION__, __LINE__, path, PTR_ERR(fp));
+			return NULL;
+		}
+		return fp;
+	}
+	return NULL;
+}
+
+int CloseFile(struct file *fp)
+{
+	filp_close(fp,NULL);
+	return 0;
+}
 
 static u32 HASH(const struct in6_addr *addr1, const struct in6_addr *addr2)
 {
@@ -1920,8 +1946,207 @@ static const struct nla_policy ip6_tnl_fmr_policy[IFLA_IPTUN_FMR_MAX + 1] = {
 	[IFLA_IPTUN_FMR_OFFSET] = { .type = NLA_U8 }
 };
 
+static int fmr_install(struct net_device *dev,
+		       struct __ip6_tnl_parm *parms)
+{
+	struct file *fp;
+	char fpath[20];
+	char *buf = NULL, *line_buf = NULL;
+	int BUF_SIZE = 1024;
+	int line_buf_pos = 0;
+	int ret, cnt = 0, unit = -1;
+
+	struct __ip6_tnl_fmr *nfmr;
+	struct in6_addr ddr6;
+	struct in_addr ddr;
+	char ip6_prefix[INET6_ADDRSTRLEN], ip4_prefix[INET_ADDRSTRLEN];
+	int ip6_prefix_len, ip4_prefix_len, offset, ea_len;
+
+	loff_t pos = 0;
+	mm_segment_t oldfs;
+
+	if (sscanf(dev->name, "v4tun%d", &unit) != 1) {
+		printk(KERN_ERR "[%s(%d)][%s]tunnel dev mismatch.\n",
+			__FUNCTION__, __LINE__, dev->name);
+		return 0;
+	}
+
+	if (unit < 0)
+		return 0;
+
+	snprintf(fpath, sizeof(fpath), "/tmp/v6maps.%d", unit);
+	if (!(fp = OpenFile(fpath, O_RDONLY, 0664)))
+		return 0;
+
+	line_buf = kcalloc(BUF_SIZE + 1, sizeof(char), GFP_KERNEL);
+	if (!line_buf) {
+		printk(KERN_ERR "[%s(%d)][%s]kcalloc failed.\n",
+			__FUNCTION__, __LINE__, dev->name);
+		CloseFile(fp);
+		return 0;
+	}
+
+	buf = kcalloc(BUF_SIZE + 1, sizeof(char), GFP_KERNEL);
+	if (!buf) {
+		printk(KERN_ERR "[%s(%d)][%s]kcalloc failed.\n",
+			__FUNCTION__, __LINE__, dev->name);
+		CloseFile(fp);
+		return 0;
+	}
+
+	oldfs = get_fs();
+	set_fs(KERNEL_DS);
+
+	while (1) {
+		ret = vfs_read(fp, buf, BUF_SIZE, &pos);
+		if (ret < 0) {
+			printk(KERN_ERR "[%s(%d)][%s]vfs_read failed to read.\n",
+				__FUNCTION__, __LINE__, dev->name);
+			kfree(buf);
+			CloseFile(fp);
+			return 0;
+		} else if (ret == 0) {
+			break;  // End of file
+		}
+
+		if (line_buf_pos + ret >= BUF_SIZE) {
+			BUF_SIZE *= 2;
+			line_buf = krealloc(line_buf, BUF_SIZE, GFP_KERNEL);
+			if (!line_buf) {
+				printk(KERN_ERR "[%s(%d)][%s]krealloc failed.\n",
+					__FUNCTION__, __LINE__, dev->name);
+				kfree(buf);
+				CloseFile(fp);
+				return 0;
+			}
+		}
+
+		memcpy(&line_buf[line_buf_pos], buf, ret);
+		line_buf_pos += ret;
+		line_buf[line_buf_pos] = '\0';
+
+		char *line_start = line_buf;
+		char *line_end = strchr(line_start, '\n');
+		while (line_end != NULL) {
+
+			*line_end = '\0';
+
+			if (sscanf(line_start, "%s %d %s %d %d %d",
+				ip4_prefix, &ip4_prefix_len, ip6_prefix,
+				&ip6_prefix_len, &ea_len, &offset) != 6)
+				goto next;
+			if (!(nfmr = kzalloc(sizeof(*nfmr), GFP_KERNEL)))
+				goto next;
+
+			nfmr->offset = 6;
+
+			in6_pton(ip6_prefix, sizeof(ip6_prefix), (void *)&ddr6, -1, NULL);
+			memcpy(&nfmr->ip6_prefix, &ddr6, sizeof(nfmr->ip6_prefix));
+
+			in4_pton(ip4_prefix, sizeof(ip4_prefix), (void*)&ddr, -1, NULL);
+			memcpy(&nfmr->ip4_prefix, &ddr, sizeof(nfmr->ip4_prefix));
+
+			nfmr->ip6_prefix_len = ip6_prefix_len;
+			nfmr->ip4_prefix_len = ip4_prefix_len;
+			nfmr->ea_len = ea_len;
+			nfmr->offset = offset;
+
+			nfmr->next = parms->fmrs;
+			parms->fmrs = nfmr;
+			cnt++;
+			printk(KERN_INFO "[%s(%d)]FMR:[%s]\n",
+				__FUNCTION__, __LINE__, line_start);
+		next:
+			line_start = line_end + 1;
+			line_end = strchr(line_start, '\n');
+		}
+
+		// Move the remaining partial line to the beginning of the buffer
+		int remaining_len = line_buf_pos - (line_start - line_buf);
+		memmove(line_buf, line_start, remaining_len);
+		line_buf_pos = remaining_len;
+	}
+
+	// Process the remaining partial line if there is any
+	if (line_buf_pos > 0) {
+		printk(KERN_INFO "[%s(%d)]LAST:[%s]\n",
+			__FUNCTION__, __LINE__, line_buf);
+	}
+
+	set_fs(oldfs);
+	kfree(buf);
+	kfree(line_buf);
+	CloseFile(fp);
+
+	if (cnt)
+		printk("[%s][%s]FMR is installed.(%d)\n",
+			__FUNCTION__, dev->name, cnt);
+	else
+		printk(KERN_ERR "[%s][%s]Install FMR err.\n",
+			__FUNCTION__, dev->name);
+	return cnt;
+}
+
+static void fmr_nla_install(struct nlattr *data[],
+			   struct net_device *dev,
+			   struct __ip6_tnl_parm *parms)
+{
+	unsigned rem;
+	struct nlattr *fmr;
+	int cnt = 0;
+
+	nla_for_each_nested(fmr, data[IFLA_IPTUN_FMRS], rem) {
+		struct nlattr *fmrd[IFLA_IPTUN_FMR_MAX + 1], *c;
+		struct __ip6_tnl_fmr *nfmr;
+
+		nla_parse_nested(fmrd, IFLA_IPTUN_FMR_MAX,
+			fmr, ip6_tnl_fmr_policy);
+
+		if (!(nfmr = kzalloc(sizeof(*nfmr), GFP_KERNEL)))
+			continue;
+
+		nfmr->offset = 6;
+
+		if ((c = fmrd[IFLA_IPTUN_FMR_IP6_PREFIX])) {
+			nla_memcpy(&nfmr->ip6_prefix, fmrd[IFLA_IPTUN_FMR_IP6_PREFIX],
+				sizeof(nfmr->ip6_prefix));
+			//printk("[%s(%d)]%lu<%pI6>\n", __FUNCTION__, __LINE__, sizeof(nfmr->ip6_prefix), &nfmr->ip6_prefix);
+		}
+
+		if ((c = fmrd[IFLA_IPTUN_FMR_IP4_PREFIX])) {
+			nla_memcpy(&nfmr->ip4_prefix, fmrd[IFLA_IPTUN_FMR_IP4_PREFIX],
+				sizeof(nfmr->ip4_prefix));
+			//printk("[%s(%d)]%lu<%pI4>\n", __FUNCTION__, __LINE__, sizeof(nfmr->ip4_prefix), &nfmr->ip4_prefix);
+		}
+
+		if ((c = fmrd[IFLA_IPTUN_FMR_IP6_PREFIX_LEN]))
+			nfmr->ip6_prefix_len = nla_get_u8(c);
+
+		if ((c = fmrd[IFLA_IPTUN_FMR_IP4_PREFIX_LEN]))
+			nfmr->ip4_prefix_len = nla_get_u8(c);
+
+		if ((c = fmrd[IFLA_IPTUN_FMR_EA_LEN]))
+			nfmr->ea_len = nla_get_u8(c);
+
+		if ((c = fmrd[IFLA_IPTUN_FMR_OFFSET]))
+			nfmr->offset = nla_get_u8(c);
+
+		cnt++;
+		nfmr->next = parms->fmrs;
+		parms->fmrs = nfmr;
+	}
+
+	if (cnt)
+		printk("[%s][%s]FMR is installed.(%d)\n",
+			__FUNCTION__, dev->name, cnt);
+	else
+		printk(KERN_ERR "[%s][%s]Install FMR err.\n",
+			__FUNCTION__, dev->name);
+}
+
 static void ip6_tnl_netlink_parms(struct nlattr *data[],
-				  struct __ip6_tnl_parm *parms)
+				  struct __ip6_tnl_parm *parms,
+				  struct net_device *dev)
 {
 	memset(parms, 0, sizeof(*parms));
 
@@ -1953,62 +2178,11 @@ static void ip6_tnl_netlink_parms(struct nlattr *data[],
 		parms->proto = nla_get_u8(data[IFLA_IPTUN_PROTO]);
 
 	if (data[IFLA_IPTUN_FMRS]) {
-		unsigned rem;
-		struct nlattr *fmr;
-		nla_for_each_nested(fmr, data[IFLA_IPTUN_FMRS], rem) {
-			struct nlattr *fmrd[IFLA_IPTUN_FMR_MAX + 1], *c;
-			struct __ip6_tnl_fmr *nfmr;
-
-			nla_parse_nested(fmrd, IFLA_IPTUN_FMR_MAX,
-				fmr, ip6_tnl_fmr_policy);
-
-			if (!(nfmr = kzalloc(sizeof(*nfmr), GFP_KERNEL)))
-				continue;
-
-			nfmr->offset = 6;
-			
-			if ((c = fmrd[IFLA_IPTUN_FMR_IP6_PREFIX]))
-			{
-				nla_memcpy(&nfmr->ip6_prefix, fmrd[IFLA_IPTUN_FMR_IP6_PREFIX],
-					sizeof(nfmr->ip6_prefix));
-				//printk("[%s(%d)]%lu<%pI6>\n", __FUNCTION__, __LINE__, sizeof(nfmr->ip6_prefix), &nfmr->ip6_prefix);
-			}
-
-			if ((c = fmrd[IFLA_IPTUN_FMR_IP4_PREFIX]))
-			{
-				nla_memcpy(&nfmr->ip4_prefix, fmrd[IFLA_IPTUN_FMR_IP4_PREFIX],
-					sizeof(nfmr->ip4_prefix));
-				//printk("[%s(%d)]%lu<%pI4>\n", __FUNCTION__, __LINE__, sizeof(nfmr->ip4_prefix), &nfmr->ip4_prefix);
-			}
-
-			if ((c = fmrd[IFLA_IPTUN_FMR_IP6_PREFIX_LEN]))
-			{
-				nfmr->ip6_prefix_len = nla_get_u8(c);
-				//printk("[%s(%d)]%d\n", __FUNCTION__, __LINE__, nfmr->ip6_prefix_len);
-			}
-
-			if ((c = fmrd[IFLA_IPTUN_FMR_IP4_PREFIX_LEN]))
-			{
-				nfmr->ip4_prefix_len = nla_get_u8(c);
-				//printk("[%s(%d)]%d\n", __FUNCTION__, __LINE__, nfmr->ip4_prefix_len);
-			}
-
-			if ((c = fmrd[IFLA_IPTUN_FMR_EA_LEN]))
-			{
-				nfmr->ea_len = nla_get_u8(c);
-				//printk("[%s(%d)]%d\n", __FUNCTION__, __LINE__, nfmr->ea_len);
-			}
-
-			if ((c = fmrd[IFLA_IPTUN_FMR_OFFSET]))
-			{
-				nfmr->offset = nla_get_u8(c);
-				//printk("[%s(%d)]%d\n", __FUNCTION__, __LINE__, nfmr->offset);
-			}
-
-			nfmr->next = parms->fmrs;
-			parms->fmrs = nfmr;
+		if (!fmr_install(dev, parms)) {
+			/* secondary solution for install FMR, but there are
+			   only some rules because the data exceeds 1024 bytes. */
+			fmr_nla_install(data, dev, parms);
 		}
-		printk("[%s(%d)]FMRs is installed.\n", __FUNCTION__, __LINE__);
 	}
 }
 
@@ -2019,7 +2193,7 @@ static int ip6_tnl_newlink(struct net *src_net, struct net_device *dev,
 	struct ip6_tnl *nt, *t;
 
 	nt = netdev_priv(dev);
-	ip6_tnl_netlink_parms(data, &nt->parms);
+	ip6_tnl_netlink_parms(data, &nt->parms, dev);
 
 	t = ip6_tnl_locate(net, &nt->parms, 0);
 	if (!IS_ERR(t))
@@ -2039,7 +2213,7 @@ static int ip6_tnl_changelink(struct net_device *dev, struct nlattr *tb[],
 	if (dev == ip6n->fb_tnl_dev)
 		return -EINVAL;
 
-	ip6_tnl_netlink_parms(data, &p);
+	ip6_tnl_netlink_parms(data, &p, dev);
 
 	t = ip6_tnl_locate(net, &p, 0);
 	if (!IS_ERR(t)) {

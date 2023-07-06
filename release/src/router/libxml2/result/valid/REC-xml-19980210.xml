@@ -10,7 +10,7 @@ publication.  --><!ENTITY XML.version "1.0">
 <!ENTITY draft.month "February">
 <!ENTITY draft.year "1998">
 <!ENTITY WebSGML "WebSGML Adaptations Annex to ISO 8879">
-<!ENTITY lt "<">
+<!ENTITY lt "&#38;#60;">
 <!ENTITY gt ">">
 <!ENTITY xmlpio "'&lt;?xml'">
 <!ENTITY pic "'?>'">
@@ -1306,7 +1306,7 @@ default white-space processing modes are acceptable for this element; the
 value "<code>preserve</code>" indicates the intent that applications preserve
 all the white space.
 This declared intent is considered to apply to all elements within the content
-of the element where it is specified, unless overriden with another instance
+of the element where it is specified, unless overridden with another instance
 of the <kw>xml:space</kw> attribute.
 </p>
 <p>The <termref def="dt-root">root element</termref> of any document

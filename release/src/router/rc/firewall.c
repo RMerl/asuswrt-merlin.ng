@@ -2786,6 +2786,11 @@ start_default_filter(int lanunit)
 	char *enable, *srcip, *accessType;
 	char *lan_if = nvram_safe_get("lan_ifname");
 	int evalRet, n;
+#ifdef CONFIG_BCMWL5
+	int debug = factory_debug();
+#else
+	int debug = IS_ATE_FACTORY_MODE();
+#endif
 
 	if (!is_routing_enabled())
 		return;
@@ -2793,13 +2798,16 @@ start_default_filter(int lanunit)
 	if ((fp = fopen("/tmp/filter.default", "w")) == NULL)
 		return;
 	fprintf(fp, "*filter\n"
-		":INPUT DROP [0:0]\n"
-		":FORWARD DROP [0:0]\n"
+		":INPUT %s [0:0]\n"
+		":FORWARD %s [0:0]\n"
 		":OUTPUT ACCEPT [0:0]\n"
 		":FUPNP - [0:0]\n"
 		":ACCESS_RESTRICTION - [0:0]\n"
 		":logaccept - [0:0]\n"
-		":logdrop - [0:0]\n");
+		":logdrop - [0:0]\n",
+		debug ? "ACCEPT" : "DROP",
+		debug ? "ACCEPT" : "DROP");
+
 #ifdef RTCONFIG_PROTECTION_SERVER
 	fprintf(fp, ":%sWAN - [0:0]\n", PROTECT_SRV_RULE_CHAIN);
 	fprintf(fp, ":%sLAN - [0:0]\n", PROTECT_SRV_RULE_CHAIN);
@@ -2916,7 +2924,7 @@ start_default_filter(int lanunit)
 	}
 
 	fprintf(fp, "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n");
-	fprintf(fp, "-A INPUT -m state --state INVALID -j DROP\n");
+	fprintf(fp, "-A INPUT -m state --state INVALID -j %s\n", debug ? "ACCEPT" : "DROP");
 
 	/* Specific IP access restriction */
 	write_access_restriction(fp);
@@ -2985,16 +2993,18 @@ start_default_filter(int lanunit)
 	if ((fp = fopen("/tmp/filter_ipv6.default", "w")) == NULL)
 		return;
 	fprintf(fp, "*filter\n"
-		":INPUT DROP [0:0]\n"
-		":FORWARD DROP [0:0]\n"
+		":INPUT %s [0:0]\n"
+		":FORWARD %s [0:0]\n"
 		":OUTPUT %s [0:0]\n"
 		":logaccept - [0:0]\n"
 		":logdrop - [0:0]\n",
+		debug ? "ACCEPT" : "DROP",
+		debug ? "ACCEPT" : "DROP",
 		ipv6_enabled() ? "ACCEPT" : "DROP");
 
 	if (ipv6_enabled()) {
 		fprintf(fp, "-A INPUT -m state --state RELATED,ESTABLISHED -j ACCEPT\n");
-		fprintf(fp, "-A INPUT -m state --state INVALID -j DROP\n");
+		fprintf(fp, "-A INPUT -m state --state INVALID -j %s\n", debug ? "ACCEPT" : "DROP");
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j ACCEPT\n", lan_if);
 		fprintf(fp, "-A INPUT -i %s -m state --state NEW -j ACCEPT\n", "lo");
 

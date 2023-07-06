@@ -58,6 +58,8 @@ int rtkswitch_ioctl(int val, int val2)
 #endif
 	case 1:		/* Dump all counters of the specified LAN port */
 			return rtkswitch_port_stat(val2 + 1);
+	case 100:       /* set reset pin to 0 */
+	case 101:       /* set reset pin to 1 */
 	case 7:		/* Dump L2 lookup table of specified LAN port */
 			return rtkswitch_port_mactable(val2 + 1);
 	case 3:		/* Get link status of the specified LAN port */
@@ -80,11 +82,17 @@ int rtkswitch_ioctl(int val, int val2)
 	case 380:	/* Set port VlanFilter */
 	case 381:	/* Get port VlanFilter */
 	case 39:	/* Create VLAN. Cherry Cho added in 2011/7/15. */
-	case 390:	/* Create VLAN w/o p_cpu mbr. Cherry Cho added in 2011/7/15. */
+	case 390:	/* Create VLAN w/o default cpu pvid. */
+	case 3900:      /* Create VLAN w/o cpu port in mbr/untag members */
+	case 3901:	/* reset VLAN. */
 	case 391:	/* Set specified port PVID,PRIV */
+	case 3911:	/* Set specified ports PVID */
 	case 392:	/* Get specified port PVID */
 	case 393:	/* Get all ports' PVID */
 	case 395:	/* Reset all ports accept type as all */
+	case 3951:	/* Reset ports accept type as all */
+	case 3952:	/* Reset ports accept type as tag-only */
+	case 3953:	/* Reset ports accept type as untag-only */
 	case 396:	/* Dump all ports accept type */
 	case 397:	/* Set port frame type */
 	//case 398:	/* Get fwd/efid */
@@ -95,6 +103,8 @@ int rtkswitch_ioctl(int val, int val2)
 	case 4031:      /* Set LED blinking rate */
 	case 4041:      /* Set per group Led to congiuration mode */
 	case 4051:      /* Set Led group to congiuration force mode */
+	case 4350:      /* set specified led port group */
+	case 4352:      /* set port_group-x's enabled mask */
 	case 46:	/* power up specified LAN port */
 	case 47:	/* power down specified LAN port */
 	case 51:	/* set FlowControlJumboMode */
@@ -102,7 +112,11 @@ int rtkswitch_ioctl(int val, int val2)
 	case 55:	/* set Jumbo size for Jumbo mode flow control */
 	case 61:	/* Set target iso_port */
 	case 62:	/* Set permitted port(iso port) isolation portmask */
+	case 621:	/* Set each port isolation in portmask */
+	case 622:	/* Unset each port isolation in portmask */
 	//case 64:	/* Set port(iso port) isolation EFID */
+	case 701:       /* Set specified TxDelay */
+	case 702:       /* Set specified RxDelay */
 
 		p = &value;
 		value = (unsigned int)val2;
@@ -125,6 +139,7 @@ int rtkswitch_ioctl(int val, int val2)
 	case 4219:	/* turn on led by force, ebg19 case */
 	case 43:	/* turn on led normally */
 	case 4319:	/* turn on led normally, ebg19 case */
+	case 4351:      /* get port_group-x's enabled mask */
 	case 44:	/* hardware reset */
 	case 45:	/* software reset */
 	case 50:	/* get FlowControlJumboMode */
@@ -132,6 +147,7 @@ int rtkswitch_ioctl(int val, int val2)
 	case 54:	/* Get Jumbo size for Jumbo mode flow control*/
 	case 60:	/* Get permitted port isolation portmask */
 	//case 63:	/* Get all ports isolation EFID */
+	case 70:        /* Get TxDelay, RxDelay */
 		p = NULL;
 		break;
 	default:
@@ -242,9 +258,15 @@ int rtkswitch_port_speed(int port)
 		close(fd);
 	}
 
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO)
 	if ((port > 0) && (port < 5) && pS.link[port - 1])
 	{
 		switch (pS.speed[port - 1]) {
+#else
+	if (pS.link[port])
+	{
+		switch (pS.speed[port]) {
+#endif
 			case 0:
 				return 10;
 			case 1:
@@ -277,8 +299,13 @@ int rtkswitch_port_duplex(int port)
 		close(fd);
 	}
 
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO)
 	if ((port > 0) && (port < 5) && pS.link[port - 1])
 		return pS.duplex[port - 1];
+#else
+	if (pS.link[port])
+		return pS.duplex[port];
+#endif
 	else
 		return -1;
 }
@@ -429,7 +456,11 @@ int rtkswitch_port_stat(int port)
 	} else {
 		memset(&Port_cntrs, 0, sizeof(Port_cntrs));
 		p = (int *) &Port_cntrs;
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO)
 		*p = port - 1;
+#else
+		*p = port;
+#endif
 		if (ioctl(fd, 1, &Port_cntrs) < 0) {
 			perror("rtkswitch ioctl");
 			close(fd);
@@ -467,7 +498,11 @@ int rtkswitch_port_mactable(int port)
 	} else {
 		memset(&Port_mactable, 0, sizeof(Port_mactable));
 		p = (int *) &Port_mactable;
+#if defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(GTBE98) || defined(GTBE98_PRO)
 		*p = port - 1;
+#else
+		*p = port;
+#endif
 		if (ioctl(fd, 7, &Port_mactable) < 0) {
 			perror("rtkswitch ioctl");
 			close(fd);

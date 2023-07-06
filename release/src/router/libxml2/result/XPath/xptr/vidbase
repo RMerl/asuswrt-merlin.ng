@@ -17,3 +17,16 @@ Object is a Location Set:
   To node
     ELEMENT p
 
+
+========================
+Expression: xpointer(range-to(id('chapter2')))
+Object is a Location Set:
+1 :   Object is a range :
+  From node
+     /
+  To node
+    ELEMENT chapter
+      ATTRIBUTE id
+        TEXT
+          content=chapter2
+

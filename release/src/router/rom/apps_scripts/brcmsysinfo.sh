@@ -126,6 +126,10 @@ echo "###### iptables -w -t filter -L ######"
 iptables -t filter -L -v -n
 
 echo
+echo "###### ip6tables -w -t filter -L ######"
+ip6tables -t filter -L -v -n
+
+echo
 echo "###### iptables -w -t mangle -L ######"
 iptables -t mangle -L -v -n
 
@@ -152,7 +156,6 @@ net_info_list="/proc/net/arp
                /proc/net/netfilter/nf_queue
                /proc/net/netfilter/nfnetlink_queue
                /proc/net/stat/nf_conntrack
-               /proc/net/nf_conntrack
                /proc/net/nf_conntrack_expect"
 
 # busybox msh does not support passing lists to functions
@@ -208,6 +211,12 @@ do
     fi
 done
 
+# compress /proc/net/nf_conntrack
+cp /proc/net/nf_conntrack /tmp
+cd /tmp && tar zcf nf_conntrack.tgz nf_conntrack
+rm -f /tmp/nf_conntrack
+mkdir -p /tmp/asusfbsvcs/duplicate_log
+mv /tmp/nf_conntrack.tgz /tmp/asusfbsvcs/duplicate_log
 
 echo
 echo
@@ -271,10 +280,8 @@ redirect_dmesg () {
 
 # Archer
 if [ -e /bin/archerctl ]; then
-    echo
-    echo "###### dmesg ######"
-    redirect_dmesg
-    echo
+    mkdir -p /tmp/asusfbsvcs/duplicate_log
+    dmesg -c >> /tmp/asusfbsvcs/duplicate_log/dmesg.txt
     echo "###### archerctl status ######"
     archerctl status
     redirect_dmesg
@@ -301,6 +308,8 @@ if [ -e /proc/driver/phy/cmd ]; then
     redirect_dmesg
 fi
 
+mipdump=`nvram get eth_mibdump`
+if [ "$mibdump" == "1" ]; then
 if [ -e /bin/ethswctl ]; then
     echo
     echo "###### ethswctl -c mibdump -a ######"
@@ -315,6 +324,7 @@ if [ -e /bin/ethswctl ]; then
         sleep 5
         fi
     done
+fi
 fi
 
 if [ -e /bin/spuctl ]; then

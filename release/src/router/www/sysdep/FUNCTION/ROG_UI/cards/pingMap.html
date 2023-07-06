@@ -129,12 +129,24 @@
 </style>
 <script>
 	var gameList = {}
+	setTimeout(function(){
+		if(gameList == {}){
 	$.getJSON("/ajax/gameList.json", function(data){
+				$("#mapContainer").html("")
+				$("#gameList").html("")
+				$(".pLevelCount").html("0")
+
 		gameList = data;
 		setTimeout(genGameListOption, 100);
 	})
+		}
+	}, 3000)
 
 	$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/gameList.json", function(data){
+		$("#mapContainer").html("")
+		$("#gameList").html("")
+		$(".pLevelCount").html("0")
+
 		gameList = data;
 		setTimeout(genGameListOption, 100);
 	})
@@ -155,9 +167,15 @@
 					$("<img>")
 						.attr({
 							"src": "/cards/pingMap-images/" + i + ".jpg",
-							"height": "120px"
+							"height": "120px",
+							"title": i,
+							"alt": "Image"
 						})
 						.css({"border-radius": "5px"})
+						.on("error", function(){
+							if($(this).attr("src").indexOf("nw-dlcdnet.asus.com") != -1) return false;
+							$(this).attr("src", "https:///nw-dlcdnet.asus.com/plugin/gameImages/" + $(this).attr("title").split(" ").join("-") + ".jpg");
+						})
 				)
 
 			$('<div>')
@@ -172,7 +190,7 @@
 				})
 		}
 
-		$(".gameImage")[0].click();
+		if($(".server").length == 0) $(".gameImage")[0].click();
 		// changeGame(document.form.gameSelector.value);
 	}
 

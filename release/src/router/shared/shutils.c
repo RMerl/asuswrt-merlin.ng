@@ -271,6 +271,9 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 		chld = signal(SIGCHLD, SIG_DFL);
 	}
 
+#if defined(RTCONFIG_VALGRIND)
+	setenv("USER", nvram_get("http_username")? : "admin", 1);
+#endif
 #ifdef HND_ROUTER
 	p = nvram_safe_get("env_path");
 	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
@@ -2415,14 +2418,14 @@ int num_of_5g_if()
 	}
 #else
 	char word[256], *next;
-	int count = 0;
 	char wl_ifnames[32] = { 0 };
-	int band;
+	char prefix[] = "wlXXXXXXXXXXXX_", tmp[128];
+	int idx = 0, count = 0;
 
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
 	foreach (word, wl_ifnames, next) {
-		wl_ioctl(word, WLC_GET_BAND, &band, sizeof(band));
-		if(band == WLC_BAND_5G)
+		snprintf(prefix, sizeof(prefix), "wl%d_", idx++);
+		if (nvram_match(strcat_r(prefix, "nband", tmp), "1"))
 			count++;
 	}
 #endif

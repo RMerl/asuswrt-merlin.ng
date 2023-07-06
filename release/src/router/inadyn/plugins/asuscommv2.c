@@ -474,10 +474,12 @@ static int response_register(http_trans_t *trans, ddns_info_t *info, ddns_alias_
 	return RC_DDNS_RSP_NOTOK;
 }
 
+#ifdef RTCONFIG_ACCOUNT_BINDING
+static char ddns_server[64] = {0};
+#endif
 PLUGIN_INIT(plugin_init)
 {
 #ifdef RTCONFIG_ACCOUNT_BINDING
-	char ddns_server[64] = {0};
 	if (is_account_bound() && nvram_match("ddns_replace_status", "1") &&
 		((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 		|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
@@ -508,7 +510,6 @@ PLUGIN_INIT(plugin_init)
 PLUGIN_EXIT(plugin_exit)
 {
 #ifdef RTCONFIG_ACCOUNT_BINDING
-	char ddns_server[64] = {0};
 	if (is_account_bound() && nvram_match("ddns_replace_status", "1") &&
 		((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
 		|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {

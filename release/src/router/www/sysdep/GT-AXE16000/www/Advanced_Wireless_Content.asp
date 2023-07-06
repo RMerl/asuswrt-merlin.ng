@@ -399,7 +399,7 @@ function genBWTable(_unit){
 				based_modelid == "RT-AC66U" || 
 				based_modelid == "RT-AC3200" || 
 				based_modelid == "RT-AC3100" || based_modelid == "RT-AC88U" || based_modelid == "RT-AX88U" || based_modelid == "RT-AC86U" || based_modelid == "GT-AC2900" ||
-				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2"  || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AC53U" || based_modelid == "XC5") && document.form.wl_nmode_x.value == 1){		//N only
+				based_modelid == "RT-AC5300" || based_modelid == "GT-AC5300" || based_modelid == "GT-AX11000" || based_modelid == "RT-AX92U" || based_modelid == "RT-AX95Q" || based_modelid == "XT8PRO" || based_modelid == "BM68" || based_modelid == "XT8_V2" || based_modelid == "RT-AX56_XD4" || based_modelid == "XD4PRO" || based_modelid == "CT-AX56_XD4" || based_modelid == "RT-AX58U" || based_modelid == "RT-AX58U_V2" || based_modelid == "BR63" || based_modelid == "RT-AX3000N" || based_modelid == "TUF-AX3000" || based_modelid == "TUF-AX3000_V2" || based_modelid == "TUF-AX5400" || based_modelid == "TUF-AX5400_V2" || based_modelid == "DSL-AX82U" || based_modelid == "RT-AX82U" || based_modelid == "RT-AX82U_V2"  || based_modelid == "RT-AX56U" || based_modelid == "GT-AXE11000" || based_modelid == "GS-AX3000" || based_modelid == "GS-AX5400" || based_modelid == "GT-AX6000" || based_modelid == "GT-AX11000_PRO" || based_modelid == "ET12" || based_modelid == "XT12" || based_modelid == "GT-AXE16000" || based_modelid == "RT-AXE7800" || based_modelid == "GT10" || based_modelid == "RT-AX9000" || based_modelid == "RT-AC53U" || based_modelid == "XC5") && document.form.wl_nmode_x.value == 1){		//N only
 				bws = [0, 1, 2];
 				bwsDesc = ["20/40 MHz", "20 MHz", "40 MHz"];
 				
@@ -2119,7 +2119,7 @@ function separateEnable_160MHz(obj){
 	}
 }
 
-function separateGenChannel(unit, channel, bandwidth){	
+function separateGenChannel(unit, channel, bandwidth){
 	var channel_2g = JSON.parse('<% channel_list_2g(); %>');
 	var channel_5g_1 = JSON.parse('<% channel_list_5g(); %>');
 	var channel_5g_2 = JSON.parse('<% channel_list_5g_2(); %>');
@@ -2528,7 +2528,7 @@ function separateGenChannel(unit, channel, bandwidth){
 	else if(unit == '3'){		// 6 GHz
 		if(band6g_support){		// due to GT-AXE11000/GT-AXE16000 does not support
 			if(document.getElementById('band3_psc6g_checkbox').checked){
-				channel_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+				channel_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
 				if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
 					channel_6g = ['5', '21', '37', '53', '69', '85'];
 				}
@@ -2536,10 +2536,12 @@ function separateGenChannel(unit, channel, bandwidth){
 			
 			for(var i=channel_6g.length-1; i>=0; i--){
 				var _channel = parseInt(channel_6g[i]);
-				if(_channel > 221){ // remove 225, 229, 233
-					channel_6g.splice(i, 1);
-				}	
-
+				if(is_EU_sku){	// remove 225, 229, 233
+					if(_channel > 221){ // remove 225, 229, 233
+						channel_6g.splice(i, 1);
+					}			
+				}
+					
 				if(!is_EU_sku && _channel < 30){ // remove 1, 5, 9, 13, 17, 21, 25, 29,
 					if(productid != 'GT-AXE16000') channel_6g.splice(i, 1); 
 				}
@@ -2711,9 +2713,12 @@ function separateGenChannel(unit, channel, bandwidth){
 			else{
 				$('#band3_acsDFS').hide();
 			}
+
+			$('#band3_auto_suggest').hide();
 		}
 		else {
 			$('#band3_acsDFS').hide();
+			$('#band3_auto_suggest').show();
 		}
 	}
 }
@@ -2885,7 +2890,6 @@ function handleMFP(){
 function auth_method_change(unit, value, flag){
 	var _temp = '';
 	var _temp_value = '';
-
 	if(unit == '0'){
 		if(value == 'open'){
 			$('#band0_encrypt_field').hide();
@@ -2894,7 +2898,8 @@ function auth_method_change(unit, value, flag){
 			$('#band0_gtk_field').hide();
 			$('#band0_radius_ip_field').hide();
 			$('#band0_radius_port_field').hide();
-			$('#band0_radius_key_field').hide();		
+			$('#band0_radius_key_field').hide();
+			$('#band0_open_suggest').show();
 		}
 		else if(value == 'openowe'){
 			$('#band0_encrypt_field').show();
@@ -2904,6 +2909,8 @@ function auth_method_change(unit, value, flag){
 			$('#band0_radius_ip_field').hide();
 			$('#band0_radius_port_field').hide();
 			$('#band0_radius_key_field').hide();
+			$('#band0_open_suggest').hide();
+
 			_temp = ['AES'];
 			_temp_value = ['aes'];
 			add_options_x2(document.form.band0_crypto, _temp, _temp_value, 'aes');
@@ -2916,6 +2923,8 @@ function auth_method_change(unit, value, flag){
 			$('#band0_radius_ip_field').hide();
 			$('#band0_radius_port_field').hide();
 			$('#band0_radius_key_field').hide();
+			$('#band0_open_suggest').hide();
+
 			if(value == 'pskpsk2'){
 				var _crypto = '<% nvram_get("wl3_crypto"); %>';
 				_temp = ['AES', 'TKIP+AES'];
@@ -2965,6 +2974,7 @@ function auth_method_change(unit, value, flag){
 			$('#band0_radius_ip_field').show();
 			$('#band0_radius_port_field').show();
 			$('#band0_radius_key_field').show();
+			$('#band0_open_suggest').hide();
 			
 			if(value == 'wpa2'){
 				var _crypto = '<% nvram_get("wl3_crypto"); %>';
@@ -3032,6 +3042,7 @@ function auth_method_change(unit, value, flag){
 			$('#band1_radius_ip_field').hide();
 			$('#band1_radius_port_field').hide();
 			$('#band1_radius_key_field').hide();
+			$('#band1_open_suggest').show();
 		}
 		else if(value == 'openowe'){
 			$('#band1_encrypt_field').show();
@@ -3041,6 +3052,7 @@ function auth_method_change(unit, value, flag){
 			$('#band1_radius_ip_field').hide();
 			$('#band1_radius_port_field').hide();
 			$('#band1_radius_key_field').hide();
+			$('#band1_open_suggest').hide();
 			_temp = ['AES'];
 			_temp_value = ['aes'];
 			add_options_x2(document.form.band1_crypto, _temp, _temp_value, 'aes');
@@ -3053,6 +3065,7 @@ function auth_method_change(unit, value, flag){
 			$('#band1_radius_ip_field').hide();
 			$('#band1_radius_port_field').hide();
 			$('#band1_radius_key_field').hide();
+			$('#band1_open_suggest').hide();
 			if(value == 'pskpsk2'){
 				var _crypto = '<% nvram_get("wl0_crypto"); %>';
 				_temp = ['AES', 'TKIP+AES'];
@@ -3102,6 +3115,7 @@ function auth_method_change(unit, value, flag){
 			$('#band1_radius_ip_field').show();
 			$('#band1_radius_port_field').show();
 			$('#band1_radius_key_field').show();
+			$('#band1_open_suggest').hide();
 			if(value == 'wpa2'){
 				var _crypto = '<% nvram_get("wl0_crypto"); %>';
 				_temp = ['AES'];
@@ -3168,6 +3182,7 @@ function auth_method_change(unit, value, flag){
 			$('#band2_radius_ip_field').hide();
 			$('#band2_radius_port_field').hide();
 			$('#band2_radius_key_field').hide();
+			$('#band2_open_suggest').show();
 		}
 		else if(value == 'openowe'){
 			$('#band2_encrypt_field').show();
@@ -3177,6 +3192,7 @@ function auth_method_change(unit, value, flag){
 			$('#band2_radius_ip_field').hide();
 			$('#band2_radius_port_field').hide();
 			$('#band2_radius_key_field').hide();
+			$('#band2_open_suggest').hide();
 			_temp = ['AES'];
 			_temp_value = ['aes'];
 			add_options_x2(document.form.band2_crypto, _temp, _temp_value, 'aes');
@@ -3189,6 +3205,7 @@ function auth_method_change(unit, value, flag){
 			$('#band2_radius_ip_field').hide();
 			$('#band2_radius_port_field').hide();
 			$('#band2_radius_key_field').hide();
+			$('#band2_open_suggest').hide();
 			if(value == 'pskpsk2'){
 				var _crypto = '<% nvram_get("wl1_crypto"); %>';
 				_temp = ['AES', 'TKIP+AES'];
@@ -3238,6 +3255,7 @@ function auth_method_change(unit, value, flag){
 			$('#band2_radius_ip_field').show();
 			$('#band2_radius_port_field').show();
 			$('#band2_radius_key_field').show();
+			$('#band2_open_suggest').hide();
 			if(value == 'wpa2'){
 				var _crypto = '<% nvram_get("wl1_crypto"); %>';
 				_temp = ['AES'];
@@ -3393,6 +3411,7 @@ function auth_method_change(unit, value, flag){
 			$('#band01_radius_ip_field').hide();
 			$('#band01_radius_port_field').hide();
 			$('#band01_radius_key_field').hide();
+			$('#band01_open_suggest').show();
 			/*if(document.form.smart_connect_t.value == '1'){
 				if(document.form.band2_auth_mode_x.value != 'owe'){
 					document.form.band2_auth_mode_x.value = 'owe';
@@ -3413,6 +3432,7 @@ function auth_method_change(unit, value, flag){
 			$('#band01_radius_ip_field').hide();
 			$('#band01_radius_port_field').hide();
 			$('#band01_radius_key_field').hide();
+			$('#band01_open_suggest').hide();
 			_temp = ['AES'];
 			_temp_value = ['aes'];
 			add_options_x2(document.form.band01_crypto, _temp, _temp_value, 'aes');
@@ -3429,7 +3449,7 @@ function auth_method_change(unit, value, flag){
 			$('#band01_radius_ip_field').hide();
 			$('#band01_radius_port_field').hide();
 			$('#band01_radius_key_field').hide();
-
+			$('#band01_open_suggest').hide();
 			if(value == 'pskpsk2'){
 				var _crypto = '<% nvram_get("wl0_crypto"); %>';
 				_temp = ['AES', 'TKIP+AES'];
@@ -3492,7 +3512,8 @@ function auth_method_change(unit, value, flag){
 			$('#band01_gtk_field').show();
 			$('#band01_radius_ip_field').show();
 			$('#band01_radius_port_field').show();
-			$('#band01_radius_key_field').show();			
+			$('#band01_radius_key_field').show();
+			$('#band01_open_suggest').hide();		
 			if(value == 'wpa2'){
 				var _crypto = '<% nvram_get("wl0_crypto"); %>';
 				_temp = ['AES'];
@@ -3703,7 +3724,7 @@ function handle_channel(unit, channel){
 			$('#band2_autoChannel').hide();
 		}
 	}
-	else{
+	else if(unit == '3'){
 		_ch = '<% nvram_get("wl2_chanspec"); %>';
 		if(_ch == '0' && cur_control_channel == '0'){
 			$('#band3_autoChannel').show();
@@ -3711,6 +3732,13 @@ function handle_channel(unit, channel){
 		}
 		else{
 			$('#band3_autoChannel').hide();
+		}
+
+		if(channel != '0'){
+			$('#band3_auto_suggest').show();
+		}
+		else{
+			$('#band3_auto_suggest').hide();
 		}
 	}
 }
@@ -4074,7 +4102,7 @@ function channel_6g(bw){
 	var chanspec = '<% nvram_get("wl2_chanspec"); %>';
 	var nmode_x = '<% nvram_get("wl2_nmode_x"); %>';
 	if(document.getElementById('band3_psc6g_checkbox').checked){
-		wl_channel_list_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+		wl_channel_list_6g = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
 		if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
 			wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
 		}
@@ -4086,8 +4114,10 @@ function channel_6g(bw){
 	for(var i=wl_channel_list_6g.length-1; i>=0; i--){
 		var _channel = parseInt(wl_channel_list_6g[i]);
 
-		if(_channel > 221){ // remove 225, 229, 233
-			wl_channel_list_6g.splice(i, 1);
+		if(is_EU_sku){	// remove 225, 229, 233
+			if(_channel > 221){
+				wl_channel_list_6g.splice(i, 1);
+			}			
 		}
 
 		if(!is_EU_sku && _channel < 30){ // remove 1, 5, 9, 13, 17, 21, 25, 29,
@@ -5047,6 +5077,7 @@ function updateSmartConnect(unit, checked){
 							<option value="suite-b" <% nvram_match("wl0_auth_mode_x", "suite-b","selected"); %>>WPA3 Enterprise 192-bit</option>
 						</select>
 						<div class="setup_help_icon" style="display:none;"></div>
+						<span id="band01_open_suggest" style="display:none">Suggest to use "Enhanced Open transition" for better device compatibility</span>
 					</td>
 				</tr>
 				<tr id="band01_encrypt_field">
@@ -5179,6 +5210,7 @@ function updateSmartConnect(unit, checked){
 							<option value="suite-b" <% nvram_match("wl3_auth_mode_x", "suite-b","selected"); %>>WPA3 Enterprise 192-bit</option>
 						</select>
 						<div class="setup_help_icon" style="display:none;"></div>
+						<span id="band0_open_suggest" style="display:none">Suggest to use "Enhanced Open transition" for better device compatibility</span>
 					</td>
 				</tr>
 
@@ -5314,6 +5346,7 @@ function updateSmartConnect(unit, checked){
 							<option value="suite-b" <% nvram_match("wl0_auth_mode_x", "suite-b","selected"); %>>WPA3 Enterprise 192-bit</option>
 						</select>
 						<div class="setup_help_icon" style="display:none;"></div>
+						<span id="band1_open_suggest">Suggest to use "Enhanced Open transition" for better device compatibility</span>
 					</td>
 				</tr>
 
@@ -5451,6 +5484,7 @@ function updateSmartConnect(unit, checked){
 							<option value="suite-b" <% nvram_match("wl1_auth_mode_x", "suite-b","selected"); %>>WPA3 Enterprise 192-bit</option>
 						</select>
 						<div class="setup_help_icon" style="display:none;"></div>
+						<span id="band2_open_suggest" style="display:none">Suggest to use "Enhanced Open transition" for better device compatibility</span>
 					</td>
 				</tr>
 
@@ -5549,8 +5583,10 @@ function updateSmartConnect(unit, checked){
 						<select name="band3_channel" class="input_option" onChange="handle_channel('3', this.value);"></select>
 						<span id="band3_autoChannel" style="display:none;margin-left:10px;">Current Control Channel</span><br>
 						<span id="band3_psc6g" style="">
-							<input id="band3_psc6g_checkbox" type="checkbox" onclick="separateGenChannel('3', document.form.band3_channel.value, document.form.band3_bw.value);" <% nvram_match("psc6g", "1" , "checked" ); %>><#Enable_PSC_Hint#> <#PSC_Faq#>
-						</span>						
+							<input id="band3_psc6g_checkbox" type="checkbox" onclick="separateGenChannel('3', document.form.band3_channel.value, document.form.band3_bw.value);" <% nvram_match("psc6g", "1" , "checked" ); %>><#Enable_PSC_Hint#><br>
+						</span>
+						<span id="band3_auto_suggest">Suggest to use "Auto" for better device compatibility<br></span>
+						<span><#PSC_Faq#></span>
 					</td>
 				</tr>
 				<tr id="band3_extChannel_field" style="">

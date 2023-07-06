@@ -1,4 +1,6 @@
 var ui_lang = httpApi.nvramGet(["preferred_lang"]).preferred_lang;
+var str_vpnc_ip_allowed = stringSafeGet("<#vpnc_ip_allowed#>");
+var str_vpnc_keepalive = stringSafeGet("<#vpnc_keepalive#>");
 var wgs_faq_href = {
 	"setup_wgs": "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=163",
 	"site_to_site": "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=164",
@@ -55,7 +57,7 @@ function show_popup_help_WGS(){
 		});
 		var $popup_content_container = $("<div>").addClass("popup_content_container").appendTo($container);
 		var $feature_desc = $("<div>").addClass("feature_desc").appendTo($popup_content_container);
-		$("<div>").addClass("title").html("HOW TO SETUP").appendTo($feature_desc);/* untranslated */
+		$("<div>").addClass("title").html("<#HOWTOSETUP#>").appendTo($feature_desc);
 		var $step_text_container = $("<div>").addClass("step_text_container").appendTo($feature_desc);
 		var $faq_setup_wgs = $("<a/>").attr({"target":"_blank", "href":wgs_faq_href.setup_wgs}).html("<#vpn_wireguard_server_faq#>");
 		$("<div>").addClass("step_text faq hyperlink").append($faq_setup_wgs).appendTo($step_text_container);
@@ -170,7 +172,7 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 	var $container = $("<div>");
 
 	var $popup_title_container = $("<div>").addClass("popup_title_container").appendTo($container);
-	$("<div>").addClass("title").html("Peer").appendTo($popup_title_container);/* untranslated */
+	$("<div>").addClass("title").html("<#vpnc_peer#>").appendTo($popup_title_container);
 	var $close_btn = $("<div>").addClass("vpn_icon_all_collect close_btn");
 	$close_btn.appendTo($popup_title_container);
 	$close_btn.unbind("click").click(function(e){
@@ -256,10 +258,10 @@ function Get_Component_Setup_Client_WGS(_wgsc_unit){
 	var wgsc_addr_parm = {"title":"Address", "type":"text", "id":"wgsc_addr", "need_check":true,  "maxlength":63};/* untranslated */
 	var $wgsc_addr = Get_Component_Input(wgsc_addr_parm).appendTo($more_settings_cntr).find("#" + wgsc_addr_parm.id + "");
 
-	var wgsc_aips_parm = {"title":"Allowed IPs (<#LANHostConfig_x_DDNSServer_itemname#>)", "type":"text", "id":"wgsc_aips", "need_check":true,  "maxlength":4095};/* untranslated */
+	var wgsc_aips_parm = {"title":str_vpnc_ip_allowed+" (<#LANHostConfig_x_DDNSServer_itemname#>)", "type":"text", "id":"wgsc_aips", "need_check":true,  "maxlength":4095};
 	var $wgsc_aips = Get_Component_Input(wgsc_aips_parm).appendTo($more_settings_cntr).find("#" + wgsc_aips_parm.id + "");
 
-	var wgsc_caips_parm = {"title":"Allowed IPs (Client)", "type":"text", "id":"wgsc_caips", "need_check":true,  "maxlength":4095};/* untranslated */
+	var wgsc_caips_parm = {"title":str_vpnc_ip_allowed+" (Client)", "type":"text", "id":"wgsc_caips", "need_check":true,  "maxlength":4095};/* untranslated */
 	var $wgsc_caips = Get_Component_Input(wgsc_caips_parm).appendTo($more_settings_cntr).find("#" + wgsc_caips_parm.id + "");
 
 	if(show_config){
@@ -892,7 +894,7 @@ function Get_Component_Setting_Profile_WGS(_type){
 		});
 
 	var $detail_general = $("<div>").attr("detail_mode","1").appendTo($content_container);
-	var help_parm = {"title":"How to setup"};/* untranslated */
+	var help_parm = {"title":"<#HOWTOSETUP#>"};
 	Get_Component_Help(help_parm)
 		.appendTo($detail_general)
 		.find(".vpnc_help_icon").unbind("click").click(function(e){
@@ -940,7 +942,7 @@ function Get_Component_Setting_Profile_WGS(_type){
 	var wgs_psk_parm = {"title":"<#vpn_preshared_key#>", "type":"switch", "id":"wgs_psk"};
 	Get_Component_Switch(wgs_psk_parm).appendTo($detail_adv);
 
-	var wgs_alive_parm = {"title":"Persistent Keepalive", "type":"text", "id":"wgs_alive", "need_check":true, "maxlength":5};/* untranslated */
+	var wgs_alive_parm = {"title":str_vpnc_keepalive, "type":"text", "id":"wgs_alive", "need_check":true, "maxlength":5};
 	Get_Component_Input(wgs_alive_parm).appendTo($detail_adv)
 		.find("#" + wgs_alive_parm.id + "")
 		.unbind("keypress").keypress(function(){
@@ -950,7 +952,7 @@ function Get_Component_Setting_Profile_WGS(_type){
 	var wgs_priv_parm = {"title":"<#DDNS_https_cert_PrivateKey#>", "id":"wgs_priv", "text":"-"};
 	Get_Component_Pure_Text(wgs_priv_parm).appendTo($detail_adv);
 
-	var wgs_pub_parm = {"title":"Public Key", "id":"wgs_pub", "text":"-"};/* untranslated */
+	var wgs_pub_parm = {"title":"<#Public_Key#>", "id":"wgs_pub", "text":"-"};
 	Get_Component_Pure_Text(wgs_pub_parm).appendTo($detail_adv);
 
 	var wgs_update_key_parm = {"title":"Renew Key", "id":"wgs_update_key", "btn_text":"<#CTL_renew#>"};/* untranslated */

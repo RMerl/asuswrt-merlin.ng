@@ -1,5 +1,5 @@
 /*
- * testRegexp.c: simple module for testing regular expressions
+ * testAutomata.c: simple module for testing regexp automata
  *
  * See Copyright for the status of this software.
  *
@@ -41,7 +41,7 @@ testRegexpFile(const char *filename) {
     for (i = 0;i<1000;i++)
 	states[i] = NULL;
 
-    input = fopen(filename, "r");
+    input = fopen(filename, "rb");
     if (input == NULL) {
         xmlGenericError(xmlGenericErrorContext,
 		"Cannot open %s for reading\n", filename);
@@ -70,10 +70,10 @@ testRegexpFile(const char *filename) {
 	    continue;
 	len = strlen(expr);
 	len--;
-	while ((len >= 0) && 
+	while ((len >= 0) &&
 	       ((expr[len] == '\n') || (expr[len] == '\t') ||
 		(expr[len] == '\r') || (expr[len] == ' '))) len--;
-	expr[len + 1] = 0;      
+	expr[len + 1] = 0;
 	if (len >= 0) {
 	    if ((am != NULL) && (expr[0] == 't') && (expr[1] == ' ')) {
 		char *ptr = &expr[2];
@@ -216,7 +216,7 @@ testRegexpFile(const char *filename) {
 
 int main(int argc, char **argv) {
 
-    xmlInitMemory();
+    xmlInitParser();
 
     if (argc == 1) {
 	int ret;

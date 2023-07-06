@@ -17,7 +17,6 @@
 #include <libxml/xmlversion.h>
 #include <libxml/parser.h>
 #include <libxml/xmlerror.h>
-#include <libxml/SAX.h>
 #include <libxml/SAX2.h>
 #include <libxml/xmlmemory.h>
 
@@ -25,7 +24,9 @@
 extern "C" {
 #endif
 
+XML_DEPRECATED
 XMLPUBFUN void XMLCALL xmlInitGlobals(void);
+XML_DEPRECATED
 XMLPUBFUN void XMLCALL xmlCleanupGlobals(void);
 
 /**
@@ -39,7 +40,9 @@ XMLPUBFUN void XMLCALL xmlCleanupGlobals(void);
  * Returns the new xmlParserInputBufferPtr in case of success or NULL if no
  *         method was found.
  */
-typedef xmlParserInputBufferPtr (*xmlParserInputBufferCreateFilenameFunc) (const char *URI, xmlCharEncoding enc);
+typedef xmlParserInputBufferPtr (*xmlParserInputBufferCreateFilenameFunc) (const char *URI,
+									   xmlCharEncoding enc);
+
 
 /**
  * xmlOutputBufferCreateFilenameFunc:
@@ -52,7 +55,9 @@ typedef xmlParserInputBufferPtr (*xmlParserInputBufferCreateFilenameFunc) (const
  * Returns the new xmlOutputBufferPtr in case of success or NULL if no
  *         method was found.
  */
-typedef xmlOutputBufferPtr (*xmlOutputBufferCreateFilenameFunc) (const char *URI, xmlCharEncodingHandlerPtr encoder, int compression);
+typedef xmlOutputBufferPtr (*xmlOutputBufferCreateFilenameFunc) (const char *URI,
+								 xmlCharEncodingHandlerPtr encoder,
+								 int compression);
 
 XMLPUBFUN xmlParserInputBufferCreateFilenameFunc
 XMLCALL xmlParserInputBufferCreateFilenameDefault (xmlParserInputBufferCreateFilenameFunc func);
@@ -64,7 +69,6 @@ XMLCALL xmlOutputBufferCreateFilenameDefault (xmlOutputBufferCreateFilenameFunc 
  * compatibility support.
  */
 
-#undef	docbDefaultSAXHandler
 #undef	htmlDefaultSAXHandler
 #undef	oldXMLWDcompatibility
 #undef	xmlBufferAllocScheme
@@ -121,7 +125,7 @@ struct _xmlGlobalState
 
 	xmlSAXLocator xmlDefaultSAXLocator;
 	xmlSAXHandlerV1 xmlDefaultSAXHandler;
-	xmlSAXHandlerV1 docbDefaultSAXHandler;
+	xmlSAXHandlerV1 docbDefaultSAXHandler; /* unused */
 	xmlSAXHandlerV1 htmlDefaultSAXHandler;
 
 	xmlFreeFunc xmlFree;
@@ -185,7 +189,8 @@ XMLPUBFUN xmlDeregisterNodeFunc XMLCALL xmlThrDefDeregisterNodeDefault(xmlDeregi
 XMLPUBFUN xmlOutputBufferCreateFilenameFunc XMLCALL
 	xmlThrDefOutputBufferCreateFilenameDefault(xmlOutputBufferCreateFilenameFunc func);
 XMLPUBFUN xmlParserInputBufferCreateFilenameFunc XMLCALL
-	xmlThrDefParserInputBufferCreateFilenameDefault(xmlParserInputBufferCreateFilenameFunc func);
+	xmlThrDefParserInputBufferCreateFilenameDefault(
+				xmlParserInputBufferCreateFilenameFunc func);
 
 /** DOC_DISABLE */
 /*
@@ -247,16 +252,6 @@ XMLPUBVAR xmlFreeFunc xmlFree;
 XMLPUBVAR xmlStrdupFunc xmlMemStrdup;
 #endif /* LIBXML_THREAD_ALLOC_ENABLED */
 
-#ifdef LIBXML_DOCB_ENABLED
-XMLPUBFUN  xmlSAXHandlerV1 * XMLCALL __docbDefaultSAXHandler(void);
-#ifdef LIBXML_THREAD_ENABLED
-#define docbDefaultSAXHandler \
-(*(__docbDefaultSAXHandler()))
-#else
-XMLPUBVAR xmlSAXHandlerV1 docbDefaultSAXHandler;
-#endif
-#endif
-
 #ifdef LIBXML_HTML_ENABLED
 XMLPUBFUN xmlSAXHandlerV1 * XMLCALL __htmlDefaultSAXHandler(void);
 #ifdef LIBXML_THREAD_ENABLED
@@ -297,7 +292,8 @@ XMLPUBFUN xmlBufferAllocationScheme * XMLCALL __xmlBufferAllocScheme(void);
 #else
 XMLPUBVAR xmlBufferAllocationScheme xmlBufferAllocScheme;
 #endif
-XMLPUBFUN xmlBufferAllocationScheme XMLCALL xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v);
+XMLPUBFUN xmlBufferAllocationScheme XMLCALL
+	xmlThrDefBufferAllocScheme(xmlBufferAllocationScheme v);
 
 XMLPUBFUN int * XMLCALL __xmlDefaultBufferSize(void);
 #ifdef LIBXML_THREAD_ENABLED
@@ -479,7 +475,8 @@ XMLPUBFUN xmlDeregisterNodeFunc * XMLCALL __xmlDeregisterNodeDefaultValue(void);
 XMLPUBVAR xmlDeregisterNodeFunc xmlDeregisterNodeDefaultValue;
 #endif
 
-XMLPUBFUN xmlParserInputBufferCreateFilenameFunc * XMLCALL __xmlParserInputBufferCreateFilenameValue(void);
+XMLPUBFUN xmlParserInputBufferCreateFilenameFunc * XMLCALL \
+				__xmlParserInputBufferCreateFilenameValue(void);
 #ifdef LIBXML_THREAD_ENABLED
 #define xmlParserInputBufferCreateFilenameValue \
 (*(__xmlParserInputBufferCreateFilenameValue()))

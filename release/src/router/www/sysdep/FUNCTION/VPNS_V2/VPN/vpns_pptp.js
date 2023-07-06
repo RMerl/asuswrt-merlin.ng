@@ -70,7 +70,7 @@ function Get_Component_Feature_Desc_PPTP(){
 		$("<div>").addClass("desc").html($privateIP_notes.html()).appendTo($feature_desc);
 	}
 
-	$("<div>").addClass("title").html("HOW TO SETUP").appendTo($feature_desc);/* untranslated */
+	$("<div>").addClass("title").html("<#HOWTOSETUP#>").appendTo($feature_desc);
 
 	var $step_text_container = $("<div>").addClass("step_text_container");
 	$step_text_container.appendTo($feature_desc);
@@ -201,7 +201,7 @@ function Get_Component_Add_Client_PPTP(){
 
 	$("<div>").attr({"id":"client_pwd_strength"}).append(Get_Component_PWD_Strength_Meter()).appendTo($content_container).hide();
 
-	$("<div>").addClass("profile_title_item").append($("<span>").html("Static Route (Optional)")).appendTo($content_container);
+	$("<div>").addClass("profile_title_item").append($("<span>").html("Static Route (<#feedback_optional#>)")).appendTo($content_container);
 	var pptpd_sr_ipaddr = {"title":"<#RouterConfig_GWStaticIP_itemname#>", "type":"text", "id":"pptpd_sr_ipaddr", "maxlength":15, "openHint":"6_1"};
 	Get_Component_Input(pptpd_sr_ipaddr).appendTo($content_container)
 		.find("#" + pptpd_sr_ipaddr.id + "")
@@ -247,7 +247,7 @@ function Get_Component_PPTP_Edit_Client(username){
 
 	var $content_container = $("<div>").addClass("popup_content_container profile_setting").appendTo($container);
 
-	$("<div>").addClass("profile_title_item").append($("<span>").html("Static Route (Optional)")).appendTo($content_container);
+	$("<div>").addClass("profile_title_item").append($("<span>").html("Static Route (<#feedback_optional#>)")).appendTo($content_container);
 	var pptpd_sr_ipaddr = {"title":"<#RouterConfig_GWStaticIP_itemname#>", "type":"text", "id":"pptpd_sr_ipaddr", "maxlength":15, "openHint":"6_1"};
 	Get_Component_Input(pptpd_sr_ipaddr).appendTo($content_container)
 		.find("#" + pptpd_sr_ipaddr.id + "")
@@ -1159,7 +1159,7 @@ function Get_Component_Setting_Profile_PPTP(_type){
 			}
 		});
 
-	var help_parm = {"title":"How to setup"};/* untranslated */
+	var help_parm = {"title":"<#HOWTOSETUP#>"};
 	Get_Component_Help(help_parm)
 		.appendTo($detail_general)
 		.find(".vpnc_help_icon").unbind("click").click(function(e){

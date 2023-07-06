@@ -132,11 +132,11 @@ static void print_tunnel(const void *t)
 	if (p->flags & IP6_TNL_F_RCV_DSCP_COPY)
 		print_null(PRINT_ANY, "ip6_tnl_f_rcv_dscp_copy",
 			   " dscp inherit", NULL);
-
+#if !defined(__KERNEL_4_X__)
 	if (p->flags & IP6_TNL_F_ALLOW_LOCAL_REMOTE)
 		print_null(PRINT_ANY, "ip6_tnl_f_allow_local_remote",
 			   " allow-localremote", NULL);
-
+#endif
 	tnl_print_gre_flags(p->proto, p->i_flags, p->o_flags,
 			    p->i_key, p->o_key);
 
@@ -245,10 +245,12 @@ static int parse_args(int argc, char **argv, int cmd, struct ip6_tnl_parm2 *p)
 			if (strcmp(*argv, "inherit") != 0)
 				invarg("not inherit", *argv);
 			p->flags |= IP6_TNL_F_RCV_DSCP_COPY;
+#if !defined(__KERNEL_4_X__)
 		} else if (strcmp(*argv, "allow-localremote") == 0) {
 			p->flags |= IP6_TNL_F_ALLOW_LOCAL_REMOTE;
 		} else if (strcmp(*argv, "noallow-localremote") == 0) {
 			p->flags &= ~IP6_TNL_F_ALLOW_LOCAL_REMOTE;
+#endif
 		} else if (strcmp(*argv, "key") == 0) {
 			NEXT_ARG();
 			p->i_flags |= GRE_KEY;

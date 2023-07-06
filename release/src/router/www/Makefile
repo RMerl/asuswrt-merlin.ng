@@ -15,7 +15,7 @@ MODELS_HAVE_USB3 = GT-AC2900 \
 	RT-N65U \
 	RT-N18U \
 	RP-AC68U \
-	RT-AXE7800 GT10 \
+	RT-AXE7800 GT10 RT-AX9000 \
 	GT-AXE11000 \
 	GT-AX6000 GT-AX11000_PRO GT-AXE16000 RT-AX88U_PRO XC5
 
@@ -24,7 +24,7 @@ MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U GT-
 	RT-AX86U RT-AX68U RT-AC68U_V4 DSL-AX82U \
 	RT-AX86U_PRO \
 	MAP-AC2200 MAP-AC2200V RT-AC95U \
-	RT-AXE7800 GT10 \
+	RT-AXE7800 GT10 RT-AX9000 \
 	GT-AXE11000 GT-AX6000 GT-AX11000_PRO GT-AXE16000 ET12 XT12 RT-AX88U_PRO XC5
 
 QIS_V2 = DSL-AC68U RT-AC88Q
@@ -70,6 +70,16 @@ ifeq ($(and $(RTCONFIG_AMAS),$(RTCONFIG_WIFI_SON)),y)
 	rm -rf $(INSTALLDIR)/www/www-sys/images
 	cp ../www/sysdep/$(BUILD_NAME)/www/images $(INSTALLDIR)/www/. -rfL || true
 endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(QIS_V2)))
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/images $(INSTALLDIR)/www/ -rf
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/qis $(INSTALLDIR)/www/ -rf
+else
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/mobile $(INSTALLDIR)/www/ -rf
+endif
+
 	cp ../www/sysdep/$(BUILD_NAME)/www $(INSTALLDIR)/. -rfL || true
 	rm -rf $(INSTALLDIR)/www/Makefile
 	rm -rf $(INSTALLDIR)/www/sysdep
@@ -93,15 +103,6 @@ endif
 
 ifeq ($(HND_ROUTER),y)
 	cp $(TOP)/www/sysdep/FUNCTION/SITE_SURVEY/* $(INSTALLDIR)/www/ -rf
-endif
-
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(QIS_V2)))
-	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
-	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/images $(INSTALLDIR)/www/ -rf
-	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/qis $(INSTALLDIR)/www/ -rf
-else
-	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
-	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/mobile $(INSTALLDIR)/www/ -rf
 endif
 
 ifneq ($(BUILD_NAME),DSL-AX82U)
@@ -583,10 +584,6 @@ ifneq ($(RTCONFIG_FINDASUS), y)
 	rm -rf $(INSTALLDIR)/www/images/New_ui/wifi-logo.png
 endif
 
-ifneq ($(RTCONFIG_JFFS2USERICON), y)
-	rm -rf $(INSTALLDIR)/www/ajax_uploadicon.asp
-endif
-
 ifneq ($(RTCONFIG_TR069), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_TR069_Content.asp
 endif
@@ -1007,6 +1004,9 @@ ifneq ($(RTCONFIG_DNSPRIVACY), y)
 	rm -rf $(INSTALLDIR)/www/dot-servers.json
 endif
 
+ifneq ($(RTCONFIG_USB_WAN_BACKUP), y)
+	rm -rf $(INSTALLDIR)/www/images/phone_as_modem
+endif
 
 ifneq ($(RTCONFIG_DNSQUERY_INTERCEPT),y)
 	rm -rf $(INSTALLDIR)/www/app_client_stats_page.html

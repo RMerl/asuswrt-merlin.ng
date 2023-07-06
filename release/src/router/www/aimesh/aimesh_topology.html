@@ -181,6 +181,17 @@ var diagnosticApi = {
 var faq_href1 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=137";
 var faq_href2 = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=138";
 
+/* String replace &#39; with ' for dict */
+function stringSafeGet(str){
+    return str.replace(new RegExp("&#39;", 'g'), "'");
+}
+var str_AiMesh_Topology_EnvirDet = stringSafeGet("<#AiMesh_Topology_EnvirDet#>");
+var AiMesh_Topology_EnvirDet_Desc = stringSafeGet("<#AiMesh_Topology_EnvirDet_Desc#>");
+var str_AiMesh_Topology_OptimNode = stringSafeGet("<#AiMesh_Topology_OptimNode#>");
+var str_AiMesh_Topology_OptimAnt = stringSafeGet("<#AiMesh_Topology_OptimAnt#>");
+var str_AiMesh_Topology_AntDet = stringSafeGet("<#AiMesh_Topology_AntDet#>");
+var AiMesh_Topology_AntDet_Desc = stringSafeGet("<#AiMesh_Topology_AntDet_Desc#>");
+
 var aimesh_data = {
 	cfg_clientlist : "", sta_binding_list_json : {}
 }
@@ -1351,7 +1362,7 @@ function display_network_block(){
 										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
 								}
 								else if(port_item.cap_support.MOCA){
-									$port_icon.addClass("MoCa");
+									$port_icon.addClass("MoCA");
 									if(port_item.special_port_name != "")
 										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
 								}
@@ -1412,6 +1423,95 @@ function display_network_block(){
 							$port_status_notice_icon.hide();
 					}
 				});
+			}
+
+			var MoCA_nodes_info = [];
+			if(specific_node_data.online == "1"){
+				httpApi.get_port_status("all", function(response){
+					if(response["port_info"] != undefined){
+						$.each(response["port_info"], function(mac, port_info){
+							var AiMesh_node = {"support":false, "mac":"", "name":"", "MoCA_info":[]};
+							AiMesh_node.mac = mac;
+							AiMesh_node.name = mac;
+							var specific_node_data = aimesh_data.cfg_clientlist.filter(function(item, index, array){
+								return (item.mac == mac);
+							})[0];
+							if(specific_node_data != undefined){
+								var node_location_info = transform_location(specific_node_data.mac, specific_node_data);
+								AiMesh_node.name = handle_ui_model_name(specific_node_data.model_name, specific_node_data.ui_model_name) + " (" + node_location_info.location_text + ")";
+							}
+							$.each(port_info, function(index, data){
+								var label = index.substr(0,1);
+								if(label == "C"){
+									if(data.cap_support.MOCA){
+										AiMesh_node.support = true;
+										$.each(data.devices, function(devices_idx, devices_info){
+											var MoCA_node = {"node_id":"", "ver":"", "mac":"", "nodes":[]};
+											MoCA_node.node_id = devices_info.node_id;
+											MoCA_node.ver = (devices_info.moca_ver).trim();
+											MoCA_node.mac = (devices_info.macaddr).toUpperCase();
+											MoCA_node.nodes = JSON.parse(JSON.stringify(devices_info.nodes));
+											AiMesh_node.MoCA_info.push(MoCA_node);
+										});
+									}
+								}
+							});
+							MoCA_nodes_info.push(AiMesh_node);
+						});
+					}
+					var specific_AiMesh_node = MoCA_nodes_info.filter(function(item, index, array){
+						return (item.mac == specific_node_data.mac)
+					})[0];
+					if(specific_AiMesh_node != undefined && specific_AiMesh_node.support){
+						$("#network_block .MoCA_port_status").show();
+						var $MoCA_port_status_content = $("#network_block .MoCA_port_status #MoCA_port_status_content").empty();
+						$.each(specific_AiMesh_node.MoCA_info, function(index, node_info){
+							var nodes = node_info.nodes;
+							$.each(node_info.nodes, function(index, each_node){
+								var each_node_mac = each_node.mac.toUpperCase();
+								if(each_node_mac != "" && each_node_mac != node_info.mac){
+									var $MoCA_node_cntr = $("<div>").addClass("MoCA_node_container").appendTo($MoCA_port_status_content);
+									var current_AiMesh_node = MoCA_nodes_info.filter(function(item, index, array){
+										return (item.mac == each_node_mac)
+									})[0];
+									var model_name = each_node_mac;
+									if(current_AiMesh_node != undefined){
+										model_name = current_AiMesh_node.name;
+									}
+									$("<div>").html(htmlEnDeCode.htmlEncode(model_name)).appendTo($MoCA_node_cntr);
+									var $sub_info_cntr = $("<div>").addClass("MoCA_node_sub_info").appendTo($MoCA_node_cntr);
+									var node_phy_rate = MoCA_transform_unit(each_node.phyrate);
+									$("<div>").addClass("MoCA_PHY_rate " + node_phy_rate.css).attr({"title":"<#AiMesh_PHY_Rate#>"}).html(htmlEnDeCode.htmlEncode(node_phy_rate.rate)).appendTo($sub_info_cntr);
+									$("<div>").attr({"title":"<#MAC_Address#>"}).html(htmlEnDeCode.htmlEncode(each_node_mac)).appendTo($sub_info_cntr);
+									$("<div>").attr({"title":"<#Hardware_version#>"}).html(htmlEnDeCode.htmlEncode("ver. " + each_node.moca_ver)).appendTo($sub_info_cntr);
+								}
+							});
+						});
+
+						if($MoCA_port_status_content.children().length == 0)
+							$MoCA_port_status_content.html("<div class='manage_disconnected'><#IPConnection_VSList_Norule#></div>");
+					}
+					else{
+						$("#network_block .MoCA_port_status").hide();
+					}
+
+					function MoCA_transform_unit(_rate){
+						var result = {"rate":0, "css":"weak"};
+						_rate = parseInt(_rate);
+						if(isNaN(_rate))
+							_rate = 0;
+						else if(_rate < 0)
+							_rate = 0;
+						result.rate = Math.round(_rate*10)/10 + " Mbps";
+						if(_rate > 1000){
+							result.css = "great";
+						}
+						return result;
+					}
+				});
+			}
+			else{
+				$("#network_block .MoCA_port_status").hide();
 			}
 		}
 	}
@@ -1551,7 +1651,7 @@ function get_connect_quality(_node_info){
 					if("plc_status" in _node_info) {
 						var _mode = _node_info.plc_status.mode;
 						var _link_rate = parseInt(_node_info.plc_status.link_rate);
-						if(_mode != undefined && _mode != "" && _link_rate != undefined && _link_rate != NaN){
+						if(_mode != undefined && _mode != "" && _link_rate != undefined && !isNaN(_link_rate)){
 							result.type_mode = _mode;
 							if(_link_rate < 100){
 								result.quality = 1;
@@ -1579,6 +1679,20 @@ function get_connect_quality(_node_info){
 					result.quality = 3;
 					result.css = "moca great";
 					result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+					if("moca_status" in _node_info) {
+						var _link_rate = parseInt(_node_info.moca_status.link_rate);
+						if(_link_rate != undefined && !isNaN(_link_rate)){
+							if(_link_rate > 2000)
+								result.quality_text = "<#AiMesh_Conn_Quality_Great#>";
+							else if(_link_rate >= 1000)
+								result.quality_text = "<#AiMesh_Conn_Quality_OK#>";
+							else{
+								result.quality = 1;
+								result.css = "moca weak";
+								result.quality_text = "<#AiMesh_Conn_Quality_Weak#>";
+							}
+						}
+					}
 				}
 			}
 			else{
@@ -2670,8 +2784,8 @@ function display_manage_block(){
 						$("#manage_block").find(".manage_switch_led .switch").toggleClass('off  on');
 						var switch_status = ($(this).hasClass("on")) ? "1" : "0";
 						httpApi.nvramSet({
-							"led_val" : switch_status,
-							"rc_service":　"ctrl_led",
+							"led_val": switch_status,
+							"rc_service": "ctrl_led",
 							"action_mode": "apply"
 						}, function(){
 							httpApi.nvramGet(["led_val"], true);
@@ -3858,7 +3972,7 @@ function initial_AiMesh(){
 					var node_capability = httpApi.aimesh_get_node_capability(specific_node_data);
 					if(!node_capability.sched_v2) {
 						var show_notice = false;
-						for(var i = 0; i < parent.wl_info.wl_if_total; i += 1) {
+						for(var i = 0; i < wl_info.wl_if_total; i += 1) {
 							var wl_timesched = httpApi.nvramGet(["wl" + i + "_timesched"])["wl" + i + "_timesched"];
 							if(wl_timesched == "1") {
 								show_notice = true;
@@ -4161,7 +4275,7 @@ function gen_conn_priority_select_option(_node_info, _eap_flag){
 	option_array.push(gen_option_attr("3", ((_eap_flag) ? "<#Auto#> (<#AiMesh_Node_ConnPrio_Eth_Based_Title#>)" : "<#Auto#>"), "auto"));
 
 	var port_mapping = [{value:"1", text:"WAN"}, {value:"2", text:"LAN"}];//Def
-	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"WiFi"}, {value:"3", text:"Powerline"}, {value:"4", text:"MoCa"}];//Type
+	var interface_mapping = [{value:"1", text:"Ethernet"}, {value:"2", text:"WiFi"}, {value:"3", text:"Powerline"}, {value:"4", text:"MoCA"}];//Type
 	var eth_rate_mapping = [{value:"1", text:"10M"}, {value:"2", text:"100M"}, {value:"3", text:"1G"}, {value:"4", text:"2.5G"}, {value:"5", text:"5G"},
 		{value:"6", text:"10G base-T"}, {value:"7", text:"10G SFP+"}];//SubType
 	var wifi_rate_mapping = [{value:"1", text:"2.4GHz"}, {value:"2", text:"5GHz"}, {value:"3", text:"6GHz"}];//SubType
@@ -4292,16 +4406,16 @@ function get_opt_status(){
 				case "1":
 				case "2":
 				case "3":
-					result.stage = "Environment Detection";
-					result.text = "Estimating the route connection..."
+					result.stage = str_AiMesh_Topology_EnvirDet;
+					result.text = AiMesh_Topology_EnvirDet_Desc;
 					break;
 				case "4":
-					result.stage = "Optimizing Node(s)";
+					result.stage = str_AiMesh_Topology_OptimNode;
 					result.text = get_opt_status.opt_model_name + "(" + get_opt_status.opt_mac + ")...";
 					break;
 				case "5":
-					result.stage = "Antenna Detection";
-					result.text = "Estimating antenna diversity...";
+					result.stage = str_AiMesh_Topology_AntDet;
+					result.text = AiMesh_Topology_AntDet_Desc;
 					break;
 				case "6":
 				case "7":
@@ -4317,7 +4431,7 @@ function get_opt_status(){
 						progress = specific_data.progress;
 						result.ads_pair.push(specific_data);
 					}
-					result.stage = "Antenna Diversity Optimizing";
+					result.stage = str_AiMesh_Topology_OptimAnt;
 					result.text = model_name + "..." + progress + "%";
 					break;
 			}
@@ -4528,10 +4642,16 @@ $(document).ready(initial_AiMesh);
 			</div>
 			<div class="card_block_bg connect_type_status_bg port_status">
 				<div>
-					<span class="connect_title horizontal_line">Ports Status</span><!-- untranslated -->
+					<span class="connect_title horizontal_line"><#Port_Status#></span>
 					<div class="port_status_notice_icon"></div>
 				</div>
 				<div id="port_status_content"></div>
+			</div>
+			<div class="card_block_bg connect_type_status_bg port_status MoCA_port_status" style="margin-top: 6px;">
+				<div>
+					<span class="connect_title horizontal_line">MoCA <#AiMesh_PHY_Rate#></span>
+				</div>
+				<div id="MoCA_port_status_content"></div>
 			</div>
 		</div>
 

@@ -58,7 +58,7 @@ int stop_vpnc_by_unit(const int unit);
 int set_routing_table(const int cmd, const int vpnc_id);
 static void vpnc_dump_vpnc_profile(const VPNC_PROFILE *profile);
 static VPNC_PROFILE *vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int list_size, const int vpnc_id);
-static VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id);
+VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id);
 int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id);
 int set_routing_rule(const VPNC_ROUTE_CMD cmd, const VPNC_DEV_POLICY *policy);
 int clean_routing_rule_by_vpnc_idx(const int vpnc_idx);
@@ -1000,7 +1000,7 @@ static VPNC_PROFILE *vpnc_get_profile_by_vpnc_id(VPNC_PROFILE *list, const int l
  * RETURN:  a value in VPNC_PROTO
  * NOTE:
  *******************************************************************/
-static VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id)
+VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id)
 {
 	VPNC_PROFILE *prof = NULL;
 	prof = vpnc_get_profile_by_vpnc_id(vpnc_profile, MAX_VPNC_PROFILE, vpnc_id);
@@ -1394,7 +1394,7 @@ int start_vpnc_by_unit(const int unit)
 	{
 		char cmd[256] = {0};
 		_dprintf("[%s]Start to connect NordVPN(%d).\n", __FUNCTION__, prof->config.tpvpn.tpvpn_idx);
-		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d &", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx);
+		snprintf(cmd, sizeof(cmd), "nordvpn setconf '%s' %d %d &", prof->config.tpvpn.region, prof->config.tpvpn.tpvpn_idx, unit);
 		system(cmd);
 		return 0;
 	}
@@ -1697,6 +1697,16 @@ int stop_vpnc_by_unit(const int unit)
 		stop_wgc(prof->config.wg.wg_idx);
 		snprintf(vpnc_ifname, sizeof(vpnc_ifname), "%s%d", WG_CLIENT_IF_PREFIX, prof->config.wg.wg_idx);
 		vpnc_down(prof->vpnc_idx, vpnc_ifname);
+#ifdef RTCONFIG_NORDVPN
+		char wgc_prefix[16] = {0};
+		snprintf(wgc_prefix, sizeof(wgc_prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, prof->config.wg.wg_idx);
+		if (!prof->active && !strcmp(nvram_pf_safe_get(wgc_prefix, "tp"), TPVPN_PSZ_NORDVPN))
+		{
+			_dprintf("[%s]Clear NordVPN region setting.\n", __FUNCTION__);
+			nvram_pf_set(wgc_prefix, "tp", "");
+			nvram_pf_set(wgc_prefix, "tp_region", "");
+		}
+#endif
 	}
 	else if (VPNC_PROTO_NORDVPN == prof->protocol)
 	{
@@ -1994,6 +2004,16 @@ int set_default_routing_table(const VPNC_ROUTE_CMD cmd, const int table_id)
 		//set routeing rule for lan ifname
 		ifname = nvram_safe_get("lan_ifname");
 		eval("ip", "rule", "add", "iif", ifname, "table", id_str, "priority", VPNC_RULE_PRIORITY_DEFAULT);
+#ifdef RTCONFIG_IPV6
+		if(ipv6_enabled())
+		{
+			VPNC_PROTO proto;
+			vpnc_init();
+			proto = vpnc_get_proto_in_profile_by_vpnc_id(table_id);
+			if (proto == VPNC_PROTO_OVPN || proto == VPNC_PROTO_WG)
+				eval("ip", "-6", "rule", "add", "iif", ifname, "table", id_str, "priority", VPNC_RULE_PRIORITY_DEFAULT);
+		}
+#endif
 
 		//set routing rule for guest network interface
 		if(nvram_match("wgn_enabled", "1"))
@@ -2383,7 +2403,7 @@ static int _set_network_routing_rule(const VPNC_ROUTE_CMD cmd, const int vpnc_id
 		{
 			snprintf(priority, sizeof(priority), "%d", VPNC_RULE_PRIORITY_NETWORK + vpnc_idx * 3 + i);
 			//_dprintf("[%s, %d]<%s><%s>\n", __FUNCTION__, __LINE__, priority, tmp);
-			eval("ip", "rule", cmd_str, "to", tmp, "table", id_str, "priority", priority);
+			eval("ip", is_valid_ip6(tmp)?"-6":"-4", "rule", cmd_str, "iif", "lo", "to", tmp, "table", id_str, "priority", priority);
 			++i;
 		}
 	}

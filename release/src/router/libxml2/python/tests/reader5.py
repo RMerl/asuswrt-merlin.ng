@@ -1,10 +1,10 @@
-#!/usr/bin/python -u
+#!/usr/bin/env python
 #
 # this tests the Expand() API of the xmlTextReader interface
 # this extract the Dragon bibliography entries from the XML specification
 #
 import libxml2
-import StringIO
+import os
 import sys
 
 # Memory debug specific
@@ -15,11 +15,12 @@ Ravi Sethi, and Jeffrey D. Ullman.
 <emph>Compilers:  Principles, Techniques, and Tools</emph>.
 Reading:  Addison-Wesley, 1986, rpt. corr. 1988.</bibl>"""
 
-f = open('../../test/valid/REC-xml-19980210.xml')
+basedir = os.path.dirname(os.path.realpath(__file__))
+f = open(os.path.join(basedir, '../../test/valid/REC-xml-19980210.xml'), 'rb')
 input = libxml2.inputBuffer(f)
 reader = input.newTextReader("REC")
 res=""
-while reader.Read():
+while reader.Read() > 0:
     while reader.Name() == 'bibl':
         node = reader.Expand()            # expand the subtree
         if node.xpathEval("@id = 'Aho'"): # use XPath on it
@@ -28,9 +29,9 @@ while reader.Read():
             break;
 
 if res != expect:
-    print "Error: didn't get the expected output"
-    print "got '%s'" % (res)
-    print "expected '%s'" % (expect)
+    print("Error: didn't get the expected output")
+    print("got '%s'" % (res))
+    print("expected '%s'" % (expect))
     
 
 #
@@ -42,7 +43,7 @@ del reader
 # Memory debug specific
 libxml2.cleanupParser()
 if libxml2.debugMemory(1) == 0:
-    print "OK"
+    print("OK")
 else:
-    print "Memory leak %d bytes" % (libxml2.debugMemory(1))
+    print("Memory leak %d bytes" % (libxml2.debugMemory(1)))
     libxml2.dumpMemory()

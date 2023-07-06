@@ -999,6 +999,11 @@ config RTCONFIG_WIFI_QCA9994_QCA9994
 	depends on RTCONFIG_QCA
 	default n
 
+config RTCONFIG_NO_RELOAD_WIFI_DRV_IF_POSSIBLE
+	bool "Don't reload WiFi driver if possible"
+	depends on RTCONFIG_QCA
+	default n
+
 config RTCONFIG_CFG80211
 	bool "Qualcomm Atheros cfg80211 support"
 	depends on RTCONFIG_QCA
@@ -1529,6 +1534,10 @@ config RTCONFIG_DEBUG
 
 config RTCONFIG_DMALLOC
 	bool "Link with dmalloc that is used to detect memory leak."
+	default n
+
+config RTCONFIG_VALGRIND
+	bool "Compiled valgrind"
 	default n
 
 config RTCONFIG_HAS_5G
@@ -2362,6 +2371,10 @@ config RTCONFIG_DNSQUERY_INTERCEPT
 	bool "Intercept DNS Query Result"
 	default n
 
+config RTCONFIG_ROUTERBOOST
+	bool "OPPO Router Boost"
+	default n
+
 config RTCONFIG_ASUSCTRL
 	bool "asusctrl support"
 	default n
@@ -2671,6 +2684,14 @@ config RTCONFIG_OWE_TRANS
 
 config RTCONFIG_TPVPN
 	bool "3rd party VPN support"
+	default n
+
+config RTCONFIG_HMA
+	bool "3rd party VPN HMA support"
+	default n
+
+config RTCONFIG_NORDVPN
+	bool "3rd party VPN NordVPN support"
 	default n
 
 config RTCONFIG_SPECIFIC_PPPOE

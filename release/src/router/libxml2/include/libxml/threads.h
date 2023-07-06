@@ -57,6 +57,7 @@ XMLPUBFUN void XMLCALL
 /*
  * Library wide APIs.
  */
+XML_DEPRECATED
 XMLPUBFUN void XMLCALL
 			xmlInitThreads	(void);
 XMLPUBFUN void XMLCALL
@@ -67,13 +68,19 @@ XMLPUBFUN int XMLCALL
 			xmlGetThreadId	(void);
 XMLPUBFUN int XMLCALL
 			xmlIsMainThread	(void);
+XML_DEPRECATED
 XMLPUBFUN void XMLCALL
 			xmlCleanupThreads(void);
 XMLPUBFUN xmlGlobalStatePtr XMLCALL
 			xmlGetGlobalState(void);
 
-#if defined(HAVE_WIN32_THREADS) && !defined(HAVE_COMPILER_TLS) && defined(LIBXML_STATIC_FOR_DLL)
-int XMLCALL xmlDllMain(void *hinstDLL, unsigned long fdwReason, void *lpvReserved);
+#ifdef HAVE_PTHREAD_H
+#elif defined(HAVE_WIN32_THREADS) && !defined(HAVE_COMPILER_TLS) && (!defined(LIBXML_STATIC) || defined(LIBXML_STATIC_FOR_DLL))
+#if defined(LIBXML_STATIC_FOR_DLL)
+int XMLCALL
+xmlDllMain(void *hinstDLL, unsigned long fdwReason,
+           void *lpvReserved);
+#endif
 #endif
 
 #ifdef __cplusplus

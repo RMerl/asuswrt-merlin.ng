@@ -1153,7 +1153,7 @@ apply.wireless = function(){
 		}
 	}
 
-	if(systemVariable.productid == 'GT10' && qisPostData.smart_connect_x == '1'){
+	if((systemVariable.productid == 'GT10' || systemVariable.productid == 'RT-AX9000') && qisPostData.smart_connect_x == '1'){
 		if(dwb_mode != "1"){
 			qisPostData.wl1_ssid = qisPostData.wl0_ssid;
 			qisPostData.wl1_wpa_psk = qisPostData.wl0_wpa_psk;
@@ -1395,7 +1395,6 @@ apply.WANModem = function(){
 };
 
 apply.USBBackup = function(){
-	console.log("apply.USBBackup");
 	systemVariable.wanOption = true;
 
 	goTo.PhoneAsWAN();
@@ -2232,6 +2231,17 @@ abort.prelink = function(){
 	goTo.loadPage("welcome", true);
 };
 
+abort.wan46 = function(wantype){
+	if(wantype=="V6PLUS" || wantype=="HGW_V6PLUS")
+		postDataModel.remove(wanObj.v6plus);
+
+	if(wantype=="OCNVC")
+		postDataModel.remove(wanObj.ocnvc);
+
+	goTo.advSetting();
+	$("#wan46_page").empty();
+};
+
 abort.ppp_cfg = function(wantype){
 	if(wantype=="PTM"){
 		postDataModel.remove(dsl_wanObj.ptm_all);
@@ -2344,6 +2354,13 @@ goTo.Welcome = function(){
 			}, 500);
 		}
 		else if(!systemVariable.isDefault){
+			if(!systemVariable.isDefault && isSku("JP") && systemVariable.ipv6Service != "disabled"){
+				httpApi.startWan46AutoDet();
+
+				setTimeout(function(){
+					systemVariable.detwan46Result = httpApi.detwan46GetRet();
+				}, 500);
+			}
 			httpApi.startAutoDet();
 		}
 	}
@@ -2462,9 +2479,10 @@ goTo.Login = function(){
 	if(isSupport("defpass")){
 		$("#defpass_checkbox").enableCheckBox(true);
 		$("#defpass_checkbox").change();
-		$("#login_name .titleMain").html("Local Login");/* untranslated */
-		$("#login_name #login_desc").html("Set up Local Login username and password to prevent unauthorized access to your ASUS networking device.");/* untranslated */
+		$("#login_name .titleMain").html("<#Local_login#>");
+		$("#login_name #login_desc").html(str_local_login_desc);
 		$("#login_name #http_username_title").html("<#HSDPAConfig_Username_itemname#>");
+		var find_local_login_pw = str_find_st.replace("%@", "<#passwd_local#>");
 		$("#local_login_title_container").unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
@@ -2472,7 +2490,7 @@ goTo.Login = function(){
 			$page_cntr.find(".qis_container").addClass("filter_effect");
 			$page_cntr.find(".popup_element").css("display", "flex");
 			adjust_popup_container_top($(".popup_container.popup_element"), 100);
-		}).find("[data-component=title_text]").html("How to find #DEFPASSTYPE".replace("#DEFPASSTYPE", "Local Login Password"));/* untranslated */
+		}).find("[data-component=title_text]").html(find_local_login_pw);
 		$("#local_login_guideline_close").unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
@@ -2480,7 +2498,8 @@ goTo.Login = function(){
 			$page_cntr.find(".popup_element").hide();
 			$page_cntr.find(".qis_container").removeClass("filter_effect");
 		});
-		$("#local_login_guideline_desc").html("#DEFPASSTYPE can be found on the label at the back/bottom of your ASUS device.".replace("#DEFPASSTYPE", "Local Login Password"));/* untranslated */
+		var str_HowFindPassword_Local = str_HowFindPassword.replace("%@", "<#passwd_local#>");
+		$("#local_login_guideline_desc").html(str_HowFindPassword_Local);
 	}
 
 	goTo.loadPage("login_name", false);
@@ -2499,7 +2518,7 @@ goTo.axMode = function(){
 	goTo.loadPage("axMode_page", false);
 }
 
-goTo.autoWan = function(){
+goTo.autoWan = function(skip_auto46det_flag){
 	systemVariable.opMode = "RT";
 	postDataModel.remove(wanObj.all);
 
@@ -2507,60 +2526,97 @@ goTo.autoWan = function(){
 		postDataModel.insert(aimeshObj);
 		qisPostData.cfg_master = "1";
 	}
+	var skip_auto46det = 0;
+	if(skip_auto46det_flag != 1 && isSku("JP") && systemVariable.ipv6Service != "disabled"){
+		systemVariable.detwan46Result = httpApi.detwan46GetRet();
+		httpApi.log("goTo.autoWan", "systemVariable.detwan46Result.wan46State = "+systemVariable.detwan46Result.wan46State, systemVariable.qisSession);
+		switch(systemVariable.detwan46Result.wan46State){
+			case "INITIALIZING":
+				goTo.Waiting46();
+				break;
+			case "NOLINK":
+				skip_auto46det++;
+				break;
+			case "UNKNOW":
+				skip_auto46det++;
+				break;
+			case "V6PLUS":
+				goTo.wan46();
+				break;
+			case "HGW_V6PLUS":
+				goTo.wan46();
+				break;
+			case "OCNVC":
+				goTo.wan46();
+				break;
+			case "":
+				goTo.Waiting46();
+				break;
+			default:
+				skip_auto46det++;
+				goTo.WAN();
+				break;
+		}
+	}
+	else{
+		skip_auto46det++;
+	}
 
-	systemVariable.detwanResult = httpApi.detwanGetRet();
-	httpApi.log("goTo.autoWan", "systemVariable.detwanResult.wanType = "+systemVariable.detwanResult.wanType, systemVariable.qisSession);
-	switch(systemVariable.detwanResult.wanType){
-		case "DHCP":
-			goTo.Waiting();
-			break;
-		case "DHCPSPECIALISP":
-			goTo.specialISP();
-			break;
-		case "PPPoE":
-			goTo.PPPoE();
-			break;
-		case "STATIC":
-			goTo.Static();
-			break;
-		case "NOWAN":
-			if(isSupport("gobi")){
-				switch(systemVariable.detwanResult.simState){
-					case "READY":
-						goTo.Wireless();
-						break;
-					case "PIN":
-						goTo.PIN();
-						break;
-					case "PUK":
-						goTo.Unlock();
-						break;
-					default:
-						goTo.NoWan();
-						break;
+	if(skip_auto46det>0){
+		systemVariable.detwanResult = httpApi.detwanGetRet();
+		httpApi.log("goTo.autoWan", "systemVariable.detwanResult.wanType = "+systemVariable.detwanResult.wanType, systemVariable.qisSession);
+		switch(systemVariable.detwanResult.wanType){
+			case "DHCP":
+				goTo.Waiting();
+				break;
+			case "DHCPSPECIALISP":
+				goTo.specialISP();
+				break;
+			case "PPPoE":
+				goTo.PPPoE();
+				break;
+			case "STATIC":
+				goTo.Static();
+				break;
+			case "NOWAN":
+				if(isSupport("gobi")){
+					switch(systemVariable.detwanResult.simState){
+						case "READY":
+							goTo.Wireless();
+							break;
+						case "PIN":
+							goTo.PIN();
+							break;
+						case "PUK":
+							goTo.Unlock();
+							break;
+						default:
+							goTo.NoWan();
+							break;
+					}
 				}
-			}
-			else
-				goTo.NoWan();
-			break;
-		case "MODEM":
-			goTo.Modem();
-			break;
-		case "CHECKING":
-			goTo.Waiting();
-			break;
-		case "RESETMODEM":
-			goTo.ResetModem();
-			break;
-		case "CONNECTED":
-			goTo.Wireless();
-			break;
-		case "":
-			goTo.Waiting();
-			break;
-		default:
-			goTo.WAN();
-			break;
+				else
+					goTo.NoWan();
+				break;
+			case "MODEM":
+				goTo.Modem();
+				break;
+			case "CHECKING":
+				goTo.Waiting();
+				break;
+			case "RESETMODEM":
+				goTo.ResetModem();
+				break;
+			case "CONNECTED":
+				goTo.Wireless();
+				break;
+			case "":
+				goTo.Waiting();
+				break;
+			default:
+				goTo.WAN();
+				break;
+		}
 	}
 };
 
@@ -2624,6 +2680,11 @@ goTo.autoDSLWan = function(){
 	}
 };
 
+goTo.wan46 = function(){
+	postDataModel.insert(wanObj.general);
+	postDataModel.insert(wanObj.wan46);
+	goTo.loadPage("wan46_page", false);
+}
 goTo.PPP = function(){
 	goTo.loadPage("ppp_cfg_page", false);
 }
@@ -3724,6 +3785,7 @@ goTo.Wireless = function(){
 */
 
 	if(isSupport("defpsk")){
+		var find_WiFi_pw = str_find_st.replace("%@", "<#passwd_WiFi#>");
 		$("#wifi_conn_title_container").unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
@@ -3731,7 +3793,7 @@ goTo.Wireless = function(){
 			$page_cntr.find(".qis_container").addClass("filter_effect");
 			$page_cntr.find(".popup_element").css("display", "flex");
 			adjust_popup_container_top($(".popup_container.popup_element"), 100);
-		}).find("[data-component=title_text]").html("How to find #DEFPASSTYPE".replace("#DEFPASSTYPE", "WiFi Password"));/* untranslated */
+		}).find("[data-component=title_text]").html(find_WiFi_pw);
 		$("#wifi_conn_guideline_close").unbind("click").click(function(e){
 			e = e || event;
 			e.stopPropagation();
@@ -3739,7 +3801,8 @@ goTo.Wireless = function(){
 			$page_cntr.find(".popup_element").hide();
 			$page_cntr.find(".qis_container").removeClass("filter_effect");
 		});
-		$("#wifi_conn_guideline_desc").html("#DEFPASSTYPE can be found on the label at the back/bottom of your ASUS device.".replace("#DEFPASSTYPE", "WiFi Password"));/* untranslated */
+		var str_HowFindPassword_WiFi = str_HowFindPassword.replace("%@", "<#passwd_WiFi#>");
+		$("#wifi_conn_guideline_desc").html(str_HowFindPassword_WiFi);
 	}
 
 	goTo.loadPage("wireless_setting", false);
@@ -4216,27 +4279,6 @@ goTo.NoWan = function(){
 			case "CONNECTED":
 				goTo.Wireless();
 				break;
-			/* do not redirect noWan again
-			case "NOWAN":
-				if(isSupport("gobi")){
-					switch(systemVariable.detwanResult.simState){
-						case "READY":
-							goTo.Wireless();
-							break;
-						case "PIN":
-							goTo.PIN();
-							break;
-						case "PUK":
-							goTo.Unlock();
-							break;
-						default:
-							goTo.NoWan();
-							break;
-					}
-				}
-				else
-					goTo.NoWan();
-				break;*/
 			case "":
 				goTo.WaitingDSL();
 				break;
@@ -4253,34 +4295,75 @@ goTo.NoWan = function(){
 		$('#desktop_manual_applyBtn').on("click", function() { apply.manual(); });
 		$('#mobile_manual_applyBtn').on("click", function() { apply.manual(); });
 
-		setTimeout(function(){
-			systemVariable.detwanResult = httpApi.detwanGetRet();		
-			if(systemVariable.manualWanSetup) return false;
+		var skip_auto46det_noWAN = 0;
+		if(isSku("JP") && systemVariable.ipv6Service != "disabled"){
 
-			switch(systemVariable.detwanResult.wanType){
-				case "CONNECTED":
-					goTo.Wireless();
-					break;
-				case "DHCP":
-					goTo.Waiting();
-					break;
-				case "PPPoE":
-					goTo.PPPoE();
-					break;
-				case "STATIC":
-					goTo.Static();
-					break;
-				case "MODEM":
-					goTo.Modem();
-					break;
-				case "RESETMODEM":
-					goTo.ResetModem();
-					break;
-				default:
-					if(isPage("noWan_page")) setTimeout(arguments.callee, 1000);
-					break;
-			}
-		}, 1000);
+			setTimeout(function(){
+				systemVariable.detwan46Result = httpApi.detwan46GetRet();
+			
+				switch(systemVariable.detwan46Result.wan46State){
+					case "INITIALIZING":
+						goTo.Waiting46();
+						break;
+					case "UNKNOW":
+						goTo.autoWAN(1);
+						if(!isPage("waiting_page")){
+							goTo.loadPage("waiting_page", false);
+						}
+						break;
+					case "V6PLUS":
+						goTo.wan46();
+						break;
+					case "HGW_V6PLUS":
+						goTo.wan46();
+						break;
+					case "OCNVC":
+						goTo.wan46();
+						break;
+					default:
+						if(isPage("noWan_page")){
+							setTimeout(arguments.callee, 1000);
+						}
+						break;
+				}
+			}, 1000);
+
+		}
+		else{
+			skip_auto46det_noWAN++;
+		}
+
+		if(skip_auto46det_noWAN>0){
+			setTimeout(function(){
+				systemVariable.detwanResult = httpApi.detwanGetRet();
+				if(systemVariable.manualWanSetup) return false;
+
+				switch(systemVariable.detwanResult.wanType){
+					case "CONNECTED":
+						goTo.Wireless();
+						break;
+					case "DHCP":
+						goTo.Waiting();
+						break;
+					case "PPPoE":
+						goTo.PPPoE();
+						break;
+					case "STATIC":
+						goTo.Static();
+						break;
+					case "MODEM":
+						goTo.Modem();
+						break;
+					case "RESETMODEM":
+						goTo.ResetModem();
+						break;
+					default:
+						if(isPage("noWan_page")) setTimeout(arguments.callee, 1000);
+						break;
+				}
+			}, 1000);
+
+		}
 	}
 
 	goTo.loadPage("noWan_page", false);	
@@ -4379,10 +4462,19 @@ goTo.Waiting = function(){
 			return false;
 		}
 
-		if(isPage("waiting_page")) goTo.autoWan();
+		if(isPage("waiting_page")){
+			if(isSku("JP") && systemVariable.ipv6Service != "disabled"){
+				goTo.autoWan(1);
+			}
+			else{
+				goTo.autoWan();
+			}
+		}
 	}, 1000);
 
-	goTo.loadPage("waiting_page", false);
+	if(!isPage("waiting_page")){
+		goTo.loadPage("waiting_page", false);
+	}
 };
 
 goTo.WaitingDSL = function(){
@@ -4401,6 +4493,39 @@ goTo.WaitingDSL = function(){
 	}, 1000);
 
 	goTo.loadPage("waiting_dsl_page", false);
+};
+
+goTo.Waiting46 = function(){
+	systemVariable.manualWanSetup = false;
+	var errCount = 0;
+
+	setTimeout(function(){
+		if(systemVariable.manualWanSetup) return false;
+
+		if(errCount > 80){
+			httpApi.log("goTo.Waiting46", "errCount > 80");
+			httpApi.log("goTo.Waiting46", "goTo.Waiting()", systemVariable.qisSession);
+			goTo.Waiting();
+
+			return false;
+		}
+
+		systemVariable.detwan46Result = httpApi.detwan46GetRet();
+		httpApi.log("goTo.Waiting46", "systemVariable.detwan46Result.wan46State = "+systemVariable.detwan46Result.wan46State, systemVariable.qisSession);
+		if(systemVariable.detwan46Result.wan46State == "" || systemVariable.detwan46Result.wan46State == "INITIALIZING"){
+			errCount++;
+			if(isPage("waiting_page")) setTimeout(arguments.callee, 1000);
+			return false;
+		}
+
+		if(isPage("waiting_page")) {
+			goTo.autoWan();
+		}
+	}, 1000);
+
+	if(!isPage("waiting_page")){
+		goTo.loadPage("waiting_page", false);
+	}
 };
 
 goTo.leaveQIS = function(){

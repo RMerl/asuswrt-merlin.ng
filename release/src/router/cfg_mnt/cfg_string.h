@@ -241,4 +241,5 @@
 #define CFG_STR_EHANCED_PASSWD	"epasswd"
 #define CFG_STR_PRIVACY_ENABLE	"privacy_enable"
 #define CFG_STR_SECURITY_MODE	"security_mode"
+#define CFG_STR_MOCA_STATUS "moca_status"
 #endif /* __CFG_STRING_H__ */

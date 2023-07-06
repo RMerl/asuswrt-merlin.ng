@@ -28,14 +28,17 @@ struct list
 #define list_isempty(X)	((X)->head == NULL && (X)->tail == NULL)
 #define getdata(X)	((X)->data)
 
+typedef void (*safe_free_func)(void* data);
+
 /* Prototypes. */
 struct list	*list_new(void);
 void		list_free(struct list *);
 void		listnode_add(struct list *, void *);
-void		listnode_delete(struct list *, void *);
-void		list_delete (struct list *);
-void		list_delete_all_node (struct list *);
-void		list_delete_node (struct list *, struct listnode *);
+void		__listnode_delete(struct list *list, struct list *node);
+void		listnode_delete(struct list *, void *, safe_free_func func);
+void		list_delete(struct list *, safe_free_func func);
+void		list_delete_all_node(struct list *, safe_free_func func);
+void		list_delete_node(struct list *, struct listnode *, safe_free_func func);
 /* Move the node to the front - for int_find() - jeroen */
 void		list_movefront_node(struct list *, struct listnode *);
 

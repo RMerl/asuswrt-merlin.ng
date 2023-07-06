@@ -2,7 +2,7 @@ include ../common.mak
 include $(SRCBASE)/.config
 include ../.config
 
-CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS) -fPIC
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
 
@@ -414,8 +414,10 @@ else
 vpath %.c sysdeps/broadcom  $(SRCBASE)/shared/bcmwifi/src
 ifeq ($(RTCONFIG_HND_ROUTER_AX),y)
 OBJS += bcmxtlv.o bcmutils.o
-ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63),$(EBG19)),y)
+ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63),$(RTCONFIG_EXT_RTL8367S)),y)
 OBJS += rtkswitch.o
+#else ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),EBG19))
+#OBJS += rtkswitch.o
 endif
 ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
 CFLAGS += -DNEW_SWITCH_ORDER

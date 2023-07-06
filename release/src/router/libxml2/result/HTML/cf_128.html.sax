@@ -2,18 +2,18 @@ SAX.setDocumentLocator()
 SAX.startDocument()
 SAX.internalSubset(HTML, -//W3C//DTD HTML 4.0 Transitional//EN, http://www.w3.org/TR/REC-html40/strict.dtd)
 SAX.startElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(title)
 SAX.characters(gnome-xml push mode bug, 23)
 SAX.endElement(title)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(body)
 SAX.characters(
@@ -61,9 +61,9 @@ SAX.endElement(table)
 SAX.characters(
   , 3)
 SAX.endElement(body)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(html)
-SAX.ignorableWhitespace(  
+SAX.characters(  
 , 3)
 SAX.endDocument()

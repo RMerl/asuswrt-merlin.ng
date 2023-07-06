@@ -163,19 +163,19 @@ function cal_panel_block(){
                 		<td valign="top">
 							<table width="100%" id="page_cert" border="1" align="center" cellpadding="4" cellspacing="0" class="FormTable">
 								<tr>
-									<th>Certificate Authority</th>
+									<th><#vpn_openvpn_KC_CA#></th>
 									<td>
 										<textarea rows="8" class="textarea_ssh_table" id="edit_tr_ca_cert" name="edit_tr_ca_cert" cols="65" maxlength="2999"><% nvram_clean_get("tr_ca_cert"); %></textarea>
 									</td>
 								</tr>
 								<tr>
-									<th>Client Certificate</th>
+									<th><#vpnc_Client_Cert#></th>
 									<td>
 										<textarea rows="8" class="textarea_ssh_table" id="edit_tr_client_cert" name="edit_tr_client_cert" cols="65" maxlength="2999"><% nvram_clean_get("tr_client_cert"); %></textarea>
 									</td>
 								</tr>
 								<tr>
-									<th>Client Key</th>
+									<th><#vpnc_Client_Key#></th>
 									<td>
 										<textarea rows="8" class="textarea_ssh_table" id="edit_tr_client_key" name="edit_tr_client_key" cols="65" maxlength="2999"><% nvram_clean_get("tr_client_key"); %></textarea>
 									</td>

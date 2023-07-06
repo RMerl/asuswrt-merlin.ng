@@ -4,8 +4,6 @@
 		xmlns:str="http://exslt.org/strings"
 		extension-element-prefixes="exsl str"
 		exclude-result-prefixes="exsl str">
-  <xsl:output method="xml" encoding="UTF-8" indent="yes"/>
-
   <!-- This is convoluted but needed to force the current document to
        be the API one and not the result tree from the tokenize() result,
        because the keys are only defined on the main document -->
@@ -497,7 +495,7 @@
 -->
   <xsl:template name="generate_general">
     <xsl:variable name="next" select="string(/api/files/file[position()=1]/@name)"/>
-    <xsl:document xmlns="" href="general.html" method="xml" indent="yes" encoding="UTF-8">
+    <xsl:document xmlns="" href="general.html" method="html" indent="yes" encoding="UTF-8">
       <html>
         <head>
 	  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -537,7 +535,7 @@
 
 -->
   <xsl:template name="generate_index">
-    <xsl:document xmlns="" href="index.html" method="xml" indent="yes" encoding="UTF-8">
+    <xsl:document xmlns="" href="index.html" method="html" indent="yes" encoding="UTF-8">
       <html>
         <head>
 	  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
@@ -561,8 +559,8 @@ under the <a href="http://www.opensource.org/licenses/mit-license.html">MIT
 License</a>. XML itself is a metalanguage to design markup languages, i.e.
 text language where semantic and structure are added to the content using
 extra "markup" information enclosed between angle brackets. HTML is the most
-well-known markup language. Though the library is written in C <a href="http://xmlsoft.org/python.html">a variety of language bindings</a> make it available in
-other environments.</p>
+well-known markup language. Though the library is written in C, a variety of
+language bindings make it available in other environments.</p>
 <p>Libxml2 implements a number of existing standards related to markup
 languages:</p>
 <ul><li>the XML standard: <a href="http://www.w3.org/TR/REC-xml">http://www.w3.org/TR/REC-xml</a></li>
@@ -587,11 +585,6 @@ and the Exclusive XML Canonicalization CR draft <a href="http://www.w3.org/TR/xm
 <li>W3C <a href="http://www.w3.org/TR/xml-id/">xml:id</a> Working Draft 7
 April 2004</li>
 </ul>
-	  <p> As a result the <a href="general.html">libxml2 API</a> is very
-	      large. If you get lost searching for some specific API use
-	      <a href="http://xmlsoft.org/search.php">the online search
-	      engine</a> hosted on <a href="http://xmlsoft.org/">xmlsoft.org</a>
-	      the libxml2 and libxslt project page. </p>
 	</body>
       </html>
     </xsl:document>

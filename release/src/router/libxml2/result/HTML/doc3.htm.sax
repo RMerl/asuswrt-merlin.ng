@@ -8,46 +8,46 @@ SAX.startElement(head)
 SAX.startElement(title)
 SAX.characters(BP6.com #1 online resource for, 47)
 SAX.endElement(title)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(script, language='javascript')
 SAX.cdata(
           NS_ActualOpen=wind, 199)
 SAX.endElement(script)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.comment( END Naviscope Javascript )
 SAX.error: Misplaced DOCTYPE declaration
 SAX.internalSubset(HTML, -//W3C//DTD HTML 3.2//EN, )
 SAX.comment(last modified on Tuesday, February 22, 2000 11:47 PM )
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(meta, content='text/html;CHARSET=iso-8859-1', http-equiv='Content-Type')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(meta, content='Tim', name='Author')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(style, type='text/css')
 SAX.cdata(A.nav {
 	COLOR: #003399; TEXT, 115)
 SAX.endElement(style)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 4)
 SAX.startElement(script, language='JavaScript')
 SAX.cdata(
 &lt;!-- Idea by:  Nic Wolfe (, 476)
 SAX.endElement(script)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 4)
 SAX.startElement(meta, content='MSHTML 5.00.3103.1000', name='GENERATOR')
 SAX.endElement(meta)
 SAX.endElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(body, alink='red', bgcolor='black', link='red', text='white', vlink='red')
 SAX.characters(
@@ -2700,7 +2700,8 @@ SAX.cdata(");
 SAX.error: End tag : expected '>'
 SAX.error: Unexpected end tag : sc
 SAX.cdata(");
-							document.write("RI, 361)
+							} else {
+							d, 328)
 SAX.error: Unexpected end tag : a
 SAX.cdata(");
 							}
@@ -2873,6 +2874,6 @@ SAX.characters(
 , 2)
 SAX.endElement(body)
 SAX.endElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.endDocument()

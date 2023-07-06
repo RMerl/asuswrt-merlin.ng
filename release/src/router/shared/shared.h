@@ -293,6 +293,7 @@ static inline char *wan_if_eth(void)
 #define IS_NON_AQOS()           (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1)   // non A.QoS = others QoS (T.QoS / bandwidth monitor ... etc.)
 #define IS_NON_FC_QOS()         (nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") != 1 && nvram_get_int("qos_type") != 2) // non FC QoS= others QoS except A.QOS / BW QOS
 #define IS_ROG_QOS()            (nvram_get_int("qos_enable") == 0 && nvram_get_int("rog_enable") == 1) // QoS Disable, Gear Accelerator enable
+#define IS_RB_QOS()             (IS_AQOS() && nvram_get_int("rb_enable") == 1)   // Router Boost QoS (OPPO)
 #define IS_CAKE_QOS()		(nvram_get_int("qos_enable") == 1 && nvram_get_int("qos_type") == 9)   // Cake QoS
 
 /* Guest network mark */
@@ -570,6 +571,7 @@ enum conndiagEvent {
 #define RAST_INTERNAL_IPC_SOCKET_PATH	"/var/run/rast_internal_ipc_socket"
 #define CONNDIAG_IPC_SOCKET_PATH	"/var/run/conndiag_ipc_socket"
 #define CABLEDIAG_IPC_SOCKET_PATH	"/var/run/cablediag_ipc_socket"
+#define RBD_IPC_SOCKET_PATH	"/var/run/rbd_ipc_socket"
 #define RAST_PREFIX     "RAST"
 #define CHKSTA_PREFIX   "CHKSTA"
 #define EXT_DATA   "EXT_DATA"
@@ -655,6 +657,12 @@ enum conndiagEvent {
 
 #ifdef RTCONFIG_AMAS
 #define OUI_ASUS      "\xF8\x32\xE4"
+#endif
+
+/* OPPO */
+#ifdef RTCONFIG_ROUTERBOOST 
+#define OUI_OPPO      "\xFC\xA5\xD0"
+#define ROUTERBOOST_OUI_STR  "149BF3"
 #endif
 
 #ifdef RTCONFIG_STA_AP_BAND_BIND
@@ -1522,7 +1530,7 @@ enum wl_band_id {
 	WL_5G_2_BAND = 1,
 	WL_6G_BAND = 2,
 	WL_2G_BAND = 3,
-#elif defined(GT10)
+#elif defined(GT10) || defined(RTAX9000)
 	WL_5G_BAND = 0,
 	WL_5G_2_BAND = 1,
 	WL_2G_BAND = 2,
@@ -1797,7 +1805,7 @@ static inline int mediabridge_mode(void) { return 0; }
 static inline int __access_point_mode(int sw_mode)
 {
 	return (sw_mode == SW_MODE_AP
-#if defined(RTCONFIG_PROXYSTA)
+#if defined(RTCONFIG_PROXYSTA) || defined(EBG15) || defined(EBG19)
 		&& !nvram_get_int("wlc_psta")
 #endif
 		);
@@ -2187,6 +2195,23 @@ static inline int guest_wlif(char *ifname)
 }
 #endif
 
+#if defined(RTCONFIG_TCODE)
+static inline int __is_tcode_country(char *tcode, char *cc)
+{
+	if (!tcode || !cc)
+		return 0;
+	return !strncmp(tcode, cc, 2);
+}
+
+static inline int is_tcode_country(char *cc)
+{
+	return __is_tcode_country(nvram_safe_get("territory_code"), cc);
+}
+#else
+static inline int __is_tcode_country(char __attribute__((unused)) *tcode, char __attribute__((unused) *cc) { return 0; }
+static inline int is_tcode_country(char __attribute__((unused) *cc) { return 0; }
+#endif
+
 extern int init_gpio(void);
 extern int set_pwr_usb(int boolOn);
 #ifdef RT4GAC68U
@@ -2229,6 +2254,9 @@ extern int get_switch_model(void);
 #define PHY_PORT_CAP_IPTV_STB				(1U << 28)
 #define PHY_PORT_CAP_DUALWAN_SECONDARY_WAN	(1U << 29)
 #define PHY_PORT_CAP_DUALWAN_PRIMARY_WAN	(1U << 30)
+
+// PHY_PROT FLAG
+#define PHY_PORT_FLAG_BYPASS_CABLE_DIAG		(1U << 0)
 typedef struct _usb_device_info usb_device_info_t;
 
 #if 1
@@ -2273,6 +2301,7 @@ typedef struct _phy_info {
 	uint64_t tx_bytes;
 	uint64_t rx_bytes;
 	uint32_t crc_errors;
+	uint32_t flag;
 #ifdef RTCONFIG_USB
 	usb_device_info_t usb_devices[MAX_USB_HUB_PORT];
 #endif
@@ -2398,6 +2427,17 @@ extern int get_mt7620_wan_unit_bytecount(int unit, unsigned long *tx, unsigned l
 #elif defined(RTCONFIG_RALINK_MT7621)
 extern int get_mt7621_wan_unit_bytecount(int unit, unsigned long *tx, unsigned long *rx);
 #endif
+#if defined(RTCONFIG_QCA)
+extern int find_vap_by_sta(char *sta_addr, char *vap);
+#if defined(RTCONFIG_NO_RELOAD_WIFI_DRV_IF_POSSIBLE)
+extern int __need_to_reload_wifi_drv(void);
+extern int save_wl_params_for_testing_reload_wifi_drv(void);
+#else
+static inline int __need_to_reload_wifi_drv(void) { return 1; }
+static inline int need_to_reload_wifi_drv(void) { return 1; }
+static inline int save_wl_params_for_testing_reload_wifi_drv(void) { return 0; }
+#endif	/* RTCONFIG_NO_RELOAD_WIFI_DRV_IF_POSSIBLE */
+#endif	/* RTCONFIG_QCA */
 #ifdef RTCONFIG_AMAS
 static inline int rtconfig_amas(void) { return 1; }
 extern int aimesh_re_mode(void);
@@ -2417,7 +2457,11 @@ extern void Pty_stop_wlc_connect(int band);
 extern void Pty_start_wlc_connect(int band, char* bssid);
 extern int amas_dfs_status(int band);
 extern void trans_to_bhmode(int *amas_eth_bhmode, int *amas_wifi_bhmode, int *amas_costmode, int *amas_rssiscoremode);
+#ifdef RTCONFIG_MOCA
+extern unsigned int get_uplinkports_linkrate(char *ifname, MOCA_NODE_INFO *node);
+#else
 extern unsigned int get_uplinkports_linkrate(char *ifname);
+#endif
 extern void trigger_opt();
 extern int gen_uplinkport_describe(char *port_def, char *type, char *subtype, int index);
 extern float cal_plc_cost(float pap_cost, int rate);
@@ -2946,6 +2990,7 @@ extern void convert_mac_string(char *mac);
 extern int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_cidr, uint32_t excl);
 extern int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl);
 extern enum wan_unit_e get_first_connected_public_wan_unit(void);
+extern enum wan_unit_e get_first_connected_dual_wan_unit(void);
 #ifdef RTCONFIG_IPV6
 extern const char *get_wan6face(void);
 extern const char *ipv6_address(const char *ipaddr6);
@@ -3221,10 +3266,12 @@ extern int get_nr_wan_unit(void);
 #ifdef RTCONFIG_NEW_PHYMAP
 typedef struct _phy_port {
 	int phy_port_id;     // port id for driver
+	int ext_port_id;     // port id for external switch driver
 	char *label_name;    // could be W0, L1, ..., L8
 	uint32_t cap;        // hardware or software capability. because multiple capabilities are supported, mutliple bits will be set.
 	int max_rate;        // max support link rate (ex. 10, 100, 1000, 2500, 10000)
 	char *ifname;        // the mapping interface name
+	uint32_t flag;       // flag for special marks.
 } phy_port;
 typedef struct _phy_port_mapping {
 	int count;           // the amount of phy port
@@ -4414,7 +4461,7 @@ enum {
 	WLIF_5G1 = 0,
 	WLIF_5G2 = 1,
 	WLIF_6G	 = 2,
-#elif defined(GT10)
+#elif defined(GT10) || defined(RTAX9000)
 	WLIF_2G  = 2,
 	WLIF_5G1 = 0,
 	WLIF_5G2 = 1,

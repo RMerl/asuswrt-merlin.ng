@@ -114,6 +114,8 @@ extern char vpnc_resolv_path[] ;
 extern int vpnc_set_iif_routing_rule(const int vpnc_idx, const char* br_ifname);
 #endif
 
+VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id);
+
 int update_default_routing_rule();
 
 #define VPNC_RULE_PRIORITY_DEFAULT		"10000"

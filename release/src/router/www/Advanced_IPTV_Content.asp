@@ -92,7 +92,9 @@ for(var i = 1; i < MSWAN_List_Pri.length; i++){
 
 function initial(){
 	show_menu();
-	get_cloud_profiles();
+	if(!dsl_support) {
+		get_cloud_profiles();
+	}
 	create_stb_select(original_switch_stb_x);
 	if(mswan_support){
 		update_mr_mswan_idx();

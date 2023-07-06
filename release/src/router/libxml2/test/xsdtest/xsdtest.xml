@@ -657,6 +657,7 @@ B EEF </value>
 </datatype>
 <datatype name="byte">
 <valid>1</valid>
+<valid> 1 </valid>
 <valid>127</valid>
 <valid>-128</valid>
 <invalid>128</invalid>
@@ -665,6 +666,7 @@ B EEF </value>
 <datatype name="unsignedLong">
 <valid>1</valid>
 <valid>+1</valid>
+<valid> 1 </valid>
 <invalid>-1</invalid>
 <valid>0</valid>
 <valid>18446744073709551615</valid>
@@ -674,6 +676,7 @@ B EEF </value>
 <datatype name="unsignedInt">
 <valid>1</valid>
 <valid>+1</valid>
+<valid> 1 </valid>
 <valid>0</valid>
 <valid>4294967295</valid>
 <invalid>4294967296</invalid>
@@ -682,6 +685,7 @@ B EEF </value>
 <datatype name="unsignedShort">
 <valid>1</valid>
 <valid>+1</valid>
+<valid> 1 </valid>
 <valid>0</valid>
 <valid>65535</valid>
 <invalid>65536</invalid>
@@ -689,6 +693,7 @@ B EEF </value>
 </datatype>
 <datatype name="unsignedByte">
 <valid>1</valid>
+<valid> 1 </valid>
 <valid>+1</valid>
 <valid>0</valid>
 <valid>255</valid>

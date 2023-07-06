@@ -277,7 +277,7 @@ static int run_test2(xmlDictPtr parent) {
 	cur++;
 	*pref = 0;
 	tmp = xmlDictQLookup(dict, &prefix[0], cur);
-	if (xmlDictQLookup(dict, &prefix[0], cur) != test2[i]) {
+	if (tmp != test2[i]) {
 	    fprintf(stderr, "Failed lookup check for '%s':'%s'\n",
 	            &prefix[0], cur);
             ret = 1;
@@ -408,7 +408,7 @@ static int run_test1(void) {
 	cur++;
 	*pref = 0;
 	tmp = xmlDictQLookup(dict, &prefix[0], cur);
-	if (xmlDictQLookup(dict, &prefix[0], cur) != test1[i]) {
+	if (tmp != test1[i]) {
 	    fprintf(stderr, "Failed lookup check for '%s':'%s'\n",
 	            &prefix[0], cur);
             ret = 1;

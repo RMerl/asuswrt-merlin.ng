@@ -13,6 +13,12 @@
 	border: 1px solid rgb(0 0 0 / 5%);
 	box-shadow: 0 2px 4px 0 rgb(0 0 0 / 10%), 0 1px 4px 0 rgb(60 60 60 / 10%);
 }
+.icon_bg{
+	height: 200px;
+}
+.translucent_bg{
+	height: 200px;
+}
 .custom_select input{
 	color: #4D4D4D;
 }
@@ -129,7 +135,7 @@
 	color: #006CE1;
 }
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca{
-	background: url(/images/New_ui/amesh/white_theme/signal_quality_moca.svg) no-repeat;
+	background: url(/images/New_ui/amesh/signal_quality_moca.svg) no-repeat;
 }
 .wan_status_bg div.connect_icon_bg > div{
 	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
@@ -484,6 +490,15 @@
 .port_status_bg .label_W_bg .port_icon:before{
 	background-image: url(/images/New_ui/amesh/white_theme/port_status.svg);
 }
+.port_status_icon_desc > div.conn:before{
+	background-color: #10B981;
+}
+.port_status_icon_desc > div.warn:before, .port_status_notice_item.warn:before{
+	background-color: #F05E16;
+}
+.port_status_icon_desc > div.unplug:before{
+	background-color: #999999;
+}
 .iperf_title{
     color: #262626;
 }
@@ -506,4 +521,20 @@
 }
 .text_emphasize{
 	color: #EF4444 !important;
+}
+.MoCA_node_container:not(:last-child):before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.MoCA_node_sub_info > div:not(:first-child):before{
+	border-left: 1px solid #DCDCDC;
+}
+.MoCA_node_sub_info > div{
+	color: #4D4D4D;
+	text-shadow: initial;
+}
+.MoCA_node_container .MoCA_PHY_rate.great{
+	color: #10B981;
+}
+.MoCA_node_container .MoCA_PHY_rate.weak{
+	color: #F05E16;
 }

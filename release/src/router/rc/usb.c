@@ -1793,8 +1793,8 @@ int umount_mountpoint(struct mntent *mnt, uint flags)
 	/* Run user pre-unmount scripts if any. It might be too late if
 	 * the drive has been disconnected, but we'll try it anyway.
  	 */
-	if (nvram_get_int("usb_automount"))
-		run_nvscript("script_usbumount", mnt->mnt_dir, 3);
+	// if (nvram_get_int("usb_automount"))
+		// run_nvscript("script_usbumount", mnt->mnt_dir, 3);
 	/* Run *.autostop scripts located in the root of the partition being unmounted if any. */
 	//run_userfile(mnt->mnt_dir, ".autostop", mnt->mnt_dir, 5);
 	//run_nvscript("script_autostop", mnt->mnt_dir, 5);
@@ -2273,8 +2273,8 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 		if(ret == MOUNT_VAL_RW)
 			test_of_var_files(mountpoint);
 
-		if (nvram_get_int("usb_automount"))
-			run_nvscript("script_usbmount", mountpoint, 3);
+		// if (nvram_get_int("usb_automount"))
+			// run_nvscript("script_usbmount", mountpoint, 3);
 
 		run_custom_script("post-mount", 120, mountpoint, NULL);
 
@@ -2745,7 +2745,7 @@ _dprintf("restart_nas_services(%d): test 6.\n", getpid());
 	}
 #endif
 	else if (strncmp(interface ? : "", "8/", 2) == 0) {	/* usb storage */
-		run_nvscript("script_usbhotplug", NULL, 2);
+		// run_nvscript("script_usbhotplug", NULL, 2);
 #ifndef LINUX26
 		hotplug_usb_storage_device(host, add, (add ? EFH_HP_ADD : EFH_HP_REMOVE) | (host < 0 ? EFH_HUNKNOWN : 0));
 #endif
@@ -2755,7 +2755,7 @@ _dprintf("restart_nas_services(%d): test 6.\n", getpid());
 		if (is_block) return;
 #endif
 		/* Do nothing.  The user's hotplug script must do it all. */
-		run_nvscript("script_usbhotplug", NULL, 2);
+		// run_nvscript("script_usbhotplug", NULL, 2);
 	}
 }
 

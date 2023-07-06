@@ -167,7 +167,7 @@ function Get_Component_Feature_Desc_IPSec(){
 		$("<div>").addClass("desc").html($privateIP_notes.html()).appendTo($feature_desc);
 	}
 
-	$("<div>").addClass("title").html("HOW TO SETUP").appendTo($feature_desc);/* untranslated */
+	$("<div>").addClass("title").html("<#HOWTOSETUP#>").appendTo($feature_desc);
 
 	var $step_text_container = $("<div>").addClass("step_text_container");
 		$step_text_container.appendTo($feature_desc);
@@ -1117,7 +1117,7 @@ function Get_Component_Setting_Profile_IPSec(_type){
 
 	var $detail_general = $("<div>").attr("detail_mode","1").appendTo($content_container);
 
-	var help_parm = {"title":"How to setup"};/* untranslated */
+	var help_parm = {"title":"<#HOWTOSETUP#>"};
 	Get_Component_Help(help_parm)
 		.appendTo($detail_general)
 		.find(".vpnc_help_icon").unbind("click").click(function(e){

@@ -62,7 +62,9 @@ typedef enum {
     XML_FROM_WRITER,	/* The xmlwriter module */
     XML_FROM_MODULE,	/* The dynamically loaded module module*/
     XML_FROM_I18N,	/* The module handling character conversion */
-    XML_FROM_SCHEMATRONV	/* The Schematron validator module */
+    XML_FROM_SCHEMATRONV,/* The Schematron validator module */
+    XML_FROM_BUFFER,    /* The buffers module */
+    XML_FROM_URI        /* The URI module */
 } xmlErrorDomain;
 
 /**
@@ -84,7 +86,7 @@ struct _xmlError {
     char       *str2;	/* extra string information */
     char       *str3;	/* extra string information */
     int		int1;	/* extra number information */
-    int		int2;	/* column number of the error or 0 if N/A (todo: rename this field when we would break ABI) */
+    int		int2;	/* error column # or 0 if N/A (todo: rename field when we would brk ABI) */
     void       *ctxt;   /* the parser context if available */
     void       *node;   /* the node in the tree */
 };
@@ -205,6 +207,9 @@ typedef enum {
     XML_WAR_ENTITY_REDEFINED, /* 107 */
     XML_ERR_UNKNOWN_VERSION, /* 108 */
     XML_ERR_VERSION_MISMATCH, /* 109 */
+    XML_ERR_NAME_TOO_LONG, /* 110 */
+    XML_ERR_USER_STOP, /* 111 */
+    XML_ERR_COMMENT_ABRUPTLY_ENDED, /* 112 */
     XML_NS_ERR_XML_NAMESPACE = 200,
     XML_NS_ERR_UNDEFINED_NAMESPACE, /* 201 */
     XML_NS_ERR_QNAME, /* 202 */
@@ -255,6 +260,7 @@ typedef enum {
     XML_DTD_DUP_TOKEN, /* 541 */
     XML_HTML_STRUCURE_ERROR = 800,
     XML_HTML_UNKNOWN_TAG, /* 801 */
+    XML_HTML_INCORRECTLY_OPENED_COMMENT, /* 802 */
     XML_RNGP_ANYNAME_ATTR_ANCESTOR = 1000,
     XML_RNGP_ATTR_CONFLICT, /* 1001 */
     XML_RNGP_ATTRIBUTE_CHILDREN, /* 1002 */
@@ -825,18 +831,15 @@ typedef enum {
     XML_I18N_NO_HANDLER, /* 6001 */
     XML_I18N_EXCESS_HANDLER, /* 6002 */
     XML_I18N_CONV_FAILED, /* 6003 */
-    XML_I18N_NO_OUTPUT /* 6004 */
-#if 0
-    XML_CHECK_, /* 5033 */
-    XML_CHECK_X /* 503 */
-#endif
+    XML_I18N_NO_OUTPUT, /* 6004 */
+    XML_BUF_OVERFLOW = 7000
 } xmlParserErrors;
 
 /**
  * xmlGenericErrorFunc:
  * @ctx:  a parsing context
  * @msg:  the message
- * @...:  the extra arguments of the varags to format the message
+ * @...:  the extra arguments of the varargs to format the message
  *
  * Signature of the function to use when there is an error and
  * no parsing or validity context available .
@@ -936,7 +939,7 @@ XMLPUBFUN void XMLCALL
 				 int code,
 				 xmlNodePtr node,
 				 const char *msg,
-				 const char *extra);
+				 const char *extra) LIBXML_ATTR_FORMAT(4,0);
 #endif
 #ifdef __cplusplus
 }

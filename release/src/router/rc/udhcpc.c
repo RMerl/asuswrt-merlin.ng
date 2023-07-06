@@ -347,49 +347,49 @@ bound(int renew)
 		// start_wan() will run faster than wanduck, so getting DHCP IP is in front of the PPPoE detect possiably
 		// Need to do the PPPoE detect once if the WAN port is not set
 		if(!strcmp(autowan_detected_ifname, "")){
-			//_dprintf("%s(%lu): Run autowan...\n", __func__, getpid());
-			//eval("autowan");
+			strlcpy(gateway, getenv("router"), sizeof(gateway));
+			strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
+			strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
+			strlcpy(lan_net, nvram_safe_get("lan_netmask"), sizeof(lan_net));
 
-			snprintf(prefix, sizeof(prefix), "autowan_ppp_%d", get_num_of_auto_wanport(wan_ifname));
-			if(nvram_get_int(prefix) == 1)
-				_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of PPPoE.\n", __func__, getpid(), wan_ifname);
-			else{
-				_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
+			_dprintf("%s(%lu): auto_wanport: Get gateway %s & apply to %s first.\n", __func__, getpid(), gateway, lan_ifname);
+			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
+			ifconfig(lan_ifname, IFUP, getenv("ip"), getenv("subnet"));
 
-				strlcpy(gateway, getenv("router"), sizeof(gateway));
-				strlcpy(lan_ifname, nvram_safe_get("lan_ifname"), sizeof(lan_ifname));
-				strlcpy(lan_ip, nvram_safe_get("lan_ipaddr"), sizeof(lan_ip));
-				strlcpy(lan_net, nvram_safe_get("lan_netmask"), sizeof(lan_net));
+			_dprintf("%s(%lu): auto_wanport: send a ping to gateway for ARP.\n", __func__, getpid());
+			eval("ping", "-W1", "-c1", gateway);
 
-				_dprintf("%s(%lu): auto_wanport: Get gateway %s & apply to %s first.\n", __func__, getpid(), gateway, lan_ifname);
-				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-				ifconfig(lan_ifname, IFUP, getenv("ip"), getenv("subnet"));
-
-				_dprintf("%s(%lu): auto_wanport: send a ping to gateway for ARP.\n", __func__, getpid());
-				eval("ping", "-W1", "-c1", gateway);
-
-				memset(gateway_mac, 0, sizeof(gateway_mac));
-				get_mac_from_ip(gateway, gateway_mac, sizeof(gateway_mac));
-				if(!gateway_mac[0]){
-					_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac & restore the LAN IP of router.\n", __func__, getpid());
-					ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
-					ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
-					return -1;
-				}
-				_dprintf("%s(%lu): auto_wanport: Got gateway's MAC %s.\n", __func__, getpid(), gateway_mac);
-
-				br_no = get_br_port_no_from_mac(gateway_mac);
-				_dprintf("%s(%lu): auto_wanport: Got gateway's br_no %d.\n", __func__, getpid(), br_no);
-				get_if_from_br_port_no(br_no, if_name, sizeof(if_name));
-				_dprintf("%s(%lu): auto_wanport: Got gateway's if %s.\n", __func__, getpid(), if_name);
-				wan_ifname = if_name;
-
-				_dprintf("%s(%lu): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
+			memset(gateway_mac, 0, sizeof(gateway_mac));
+			get_mac_from_ip(gateway, gateway_mac, sizeof(gateway_mac));
+			if(!gateway_mac[0]){
+				_dprintf("%s(%lu): auto_wanport: Fail to get gateway_mac & restore the LAN IP of router.\n", __func__, getpid());
 				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
 				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
-
-				set_auto_wanport(wan_ifname, 0);
+				return -1;
 			}
+			_dprintf("%s(%lu): auto_wanport: Got gateway's MAC %s.\n", __func__, getpid(), gateway_mac);
+
+			br_no = get_br_port_no_from_mac(gateway_mac);
+			if(br_no < 0){
+				_dprintf("%s(%lu): auto_wanport: Canot get gateway's br_no.\n", __func__, getpid());
+				ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
+				ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+				return -1;
+			}
+
+			_dprintf("%s(%lu): auto_wanport: Got gateway's br_no %d.\n", __func__, getpid(), br_no);
+			get_if_from_br_port_no(br_no, if_name, sizeof(if_name));
+			_dprintf("%s(%lu): auto_wanport: Got gateway's if %s.\n", __func__, getpid(), if_name);
+			wan_ifname = if_name;
+
+			_dprintf("%s(%lu): auto_wanport: restore the LAN IP of router.\n", __func__, getpid());
+			ifconfig(lan_ifname, IFUP, "0.0.0.0", NULL);
+			ifconfig(lan_ifname, IFUP, lan_ip, lan_net);
+
+			_dprintf("%s(%lu): auto_wanport: Choose the WAN interface %s because of DHCP.\n", __func__, getpid(), wan_ifname);
+			set_auto_wanport(wan_ifname, 1);
+
+			return -1;
 		}
 
 		ifunit = nvram_get_int("autowan_live_wanunit");
@@ -1120,6 +1120,14 @@ expires_lan(char *lan_ifname, unsigned int in)
 	return 0;
 }
 
+#ifdef RTCONFIG_AMAS_WGN
+static void restart_re_qos()
+{
+	// AMAS RE mode
+	if (nvram_get_int("re_mode") == 1) start_iQos();
+}
+#endif
+
 /* 
  * deconfig: This argument is used when udhcpc starts, and when a
  * leases is lost. The script should put the interface in an up, but
@@ -1238,6 +1246,11 @@ bound_lan(void)
 
 _dprintf("%s: IFUP.\n", __FUNCTION__);
 
+#ifdef RTCONFIG_AMAS_WGN
+	/* move qos restart here to trigger early */
+	restart_re_qos();
+#endif
+
 	ipaddr = getifaddr(lan_ifname, AF_INET, 0);
 	if (ipaddr != NULL && (sw_mode() == SW_MODE_AP) && nvram_match("lan_ipaddr", (char*) ipaddr) && lanchange == 0 && nvram_get_int("lan_state_t") == LAN_STATE_CONNECTED) {
 		return 0;
@@ -1255,7 +1268,7 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 #endif
 	     ) && nvram_get_int("wlc_mode") == 0) {
 		update_lan_state(LAN_STATE_CONNECTED, 0);
-		_dprintf("done\n");
+		_dprintf("%s: done\n", __FUNCTION__);
 		return 0;
 	}
 
@@ -1277,7 +1290,7 @@ _dprintf("%s: IFUP.\n", __FUNCTION__);
 
 	lan_up(lan_ifname);
 
-	_dprintf("done\n");
+	_dprintf("%s: done\n", __FUNCTION__);
 	return 0;
 }
 
@@ -1293,12 +1306,7 @@ renew_lan(void)
 {
 	bound_lan();
 
-#ifdef RTCONFIG_AMAS_WGN
-	// AMAS RE mode
-	if (nvram_get_int("re_mode") == 1) start_iQos();
-#endif
-
-	_dprintf("done\n");
+	_dprintf("%s: done\n", __FUNCTION__);
 	return 0;
 }
 
@@ -1403,8 +1411,10 @@ deconfig6(char *wan_ifname, const int mode)
 #ifdef RTCONFIG_INADYN
 	if(mode == 1)
 	{
-		if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update"))
-			notify_rc("restart_ddns");
+		if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update")) {
+			stop_ddns();
+			start_ddns(NULL);
+		}
 	}
 #endif
 	return 0;
@@ -2040,8 +2050,10 @@ skip:
 	}
 
 #ifdef RTCONFIG_INADYN
-	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update"))
-		notify_rc("restart_ddns");
+	if (nvram_get_int("ddns_enable_x") && nvram_get_int("ddns_ipv6_update")) {
+		stop_ddns();
+		start_ddns(NULL);
+	}
 #endif
         if (nvram_get_int("telnetd_enable"))
                 notify_rc("restart_telnetd");

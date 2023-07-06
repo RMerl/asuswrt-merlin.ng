@@ -488,9 +488,23 @@ static int rctest_main(int argc, char *argv[])
 	}
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BHCOST_OPT)
 	else if (strcmp(argv[1], "linkrate")==0) {
+#ifdef RTCONFIG_MOCA
+		MOCA_NODE_INFO node;
+		int is_moca;
+#endif
 		if(argv[2]) {
 			int rate = 0;
+#ifdef RTCONFIG_MOCA
+			is_moca = (strcmp(argv[2], nvram_safe_get("moca_ifname")) == 0);
+			rate = get_uplinkports_linkrate(argv[2], &node);
+			if(is_moca)
+			{
+				for(int i = 0; i < MAX_MOCA_NODES; ++i)
+					printf("node.node_mac[%d]=%s, node.phyrate[%d]=%04d\n", i, node.node_mac[i], i, node.phyrate[i]);
+			}
+#else
 			rate = get_uplinkports_linkrate(argv[2]);
+#endif
 			printf("portif[%s] link rate is %d\n", argv[2], rate);
 		}
 	}
@@ -1446,7 +1460,6 @@ static int rctest_main(int argc, char *argv[])
 			_dprintf("chk txpwr_target_max of unit-%d is %f ...\n", unit, max_txpwr);
 		}
 #endif
-#ifdef RTCONFIG_AUTO_WANPORT
 		else if (strcmp(argv[1], "discover_pppoe") == 0) {
 			if(argc != 3){
 				_dprintf("Usage: %s %s <net interface>\n", argv[0], argv[1]);
@@ -1456,7 +1469,6 @@ static int rctest_main(int argc, char *argv[])
 			int ret = discover_pppoe(argv[2]);
 			_dprintf("result: %s\n", (ret == 1)?"PPPoE":(ret == 0)?"No":"Failed");
 		}
-#endif
 #if defined(RTCONFIG_BCM_MFG)
 		else if (strcmp(argv[1], "ate_dev_status") == 0) {
 			ate_dev_status();
@@ -2108,10 +2120,10 @@ static const applets_t applets[] = {
 	{ "ovpn-route-pre-down",ovpn_route_pre_down_main	},
 #endif
 #ifdef RTCONFIG_TPVPN
-#ifdef RTCONFIG_OPENVPN
+#ifdef RTCONFIG_HMA
 	{ "hmavpn",				hmavpn_main					},
 #endif
-#ifdef RTCONFIG_WIREGUARD
+#ifdef RTCONFIG_NORDVPN
 	{ "nordvpn",			nordvpn_main				},
 #endif
 #endif

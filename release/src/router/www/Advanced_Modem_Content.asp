@@ -59,6 +59,7 @@
 <script type="text/javaScript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
+<script type="text/javascript" src="/js/httpApi.js"></script>
 <script>
 
 var modem = '<% nvram_get("Dev3G"); %>';
@@ -142,7 +143,6 @@ function initial(){
 		}
 		else{
 			hide_usb_settings(1);
-			document.getElementById("android_desc").style.display="";
 		}
 	}
 	else{
@@ -170,7 +170,6 @@ function initial(){
 				change_apn_mode();
 			}
 			else{
-				document.getElementById("android_desc").style.display="";
 				hide_usb_settings(1);
 			}
 		},
@@ -207,6 +206,8 @@ function initial(){
 	if(based_modelid == "BRT-AC828") {
 		document.getElementById("back_app_installation").style.display = "none";
 	}
+
+	httpApi.faqURL("1050074", function(url){document.getElementById("usb_tethering_faq").href = url;});
 }
 
 function reloadProfile(){
@@ -655,10 +656,8 @@ function select_usb_device(obj){
 		gen_country_list();
 		reloadProfile();
 		change_apn_mode();
-		document.getElementById("android_desc").style.display="none";
 	}
 	else{
-		document.getElementById("android_desc").style.display="";
 		hide_usb_settings(1);
 	}
 
@@ -816,17 +815,12 @@ function change_apn_mode(){
 					<tr id="modem_android_tr" style="display:none;">
 						<th><#select_usb_device#></th>
 						<td align="left">
-							<select id="modem_android" name="modem_android" class="input_option" onChange="select_usb_device(this);">
-								<option value="0" <% nvram_match("modem_android", "0", "selected"); %>><#Auto#></option>
-								<option value="1" <% nvram_match("modem_android", "1", "selected"); %>>Legacy</option><!--untranslated-->
-							</select>
-							<div  class="formfontdesc" id="android_desc" style="display:none; color:#FFCC00;margin-top:5px;">
-								<#usb_tethering_hint0#>
-								<ol style="margin-top: 0px;">
-								<li><#usb_tethering_hint1#></li>
-								<li><#usb_tethering_hint2#></li>
-								<li><#usb_tethering_hint3#></li>
-								</ol>
+							<div style="display: flex; align-items: center;">
+								<select id="modem_android" name="modem_android" class="input_option" onChange="select_usb_device(this);">
+									<option value="0" <% nvram_match("modem_android", "0", "selected"); %>><#Auto#></option>
+									<option value="1" <% nvram_match("modem_android", "1", "selected"); %>>Legacy</option><!--untranslated-->
+								</select>
+								<div style="margin-left: 5px; cursor: pointer;"><a id = "usb_tethering_faq" href="" target="_blank"><img src="/images/New_ui/bottom_help.png"></a></div>
 							</div>
 						</td>
 					</tr>

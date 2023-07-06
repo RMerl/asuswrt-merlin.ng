@@ -316,6 +316,7 @@ int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 			list->phy_info[list->count].cap = port_mapping.port[1+i+port_mapping.extsw_count].cap;
 			snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[list->count].cap_name), "%s",
 				get_phy_port_cap_name(port_mapping.port[1+i+port_mapping.extsw_count].cap, cap_buf, sizeof(cap_buf)));
+			list->phy_info[list->count].flag = port_mapping.port[1+i+port_mapping.extsw_count].flag;
 #else
 		for(i = 0; i < MAX_RTL_PORTS; i++) {
 			list->phy_info[list->count].phy_port_id = o[i];
@@ -323,6 +324,7 @@ int  ext_rtk_phyState(int verbose, char* BCMPorts, phy_info_list *list)
 				list->count);
 			list->phy_info[list->count].cap = PHY_PORT_CAP_LAN;
 			snprintf(list->phy_info[list->count].cap_name, sizeof(list->phy_info[list->count].cap_name), "lan");
+			list->phy_info[list->count].flag = 0;
 #endif
 
 			snprintf(list->phy_info[list->count].state, sizeof(list->phy_info[list->count].state), "%s", 

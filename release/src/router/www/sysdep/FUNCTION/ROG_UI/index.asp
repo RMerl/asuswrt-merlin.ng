@@ -661,6 +661,12 @@ function show_middle_status(auth_mode, wl_wep_x){
 		case "open":
 				security_mode = "Open System";
 				break;
+		case "openowe":
+				security_mode = "Enhanced Open Transition";
+				break;
+		case "owe":
+				security_mode = "Enhanced Open";
+				break;				
 		case "shared":
 				security_mode = "Shared Key";
 				break;
@@ -2304,7 +2310,7 @@ function close_phone_as_modem_hint(){
 <div id="phone_as_modem_div" class="phone_as_modem" style="display: none;">
 	<div style="width: 95%; margin-bottom: 20px;">
 		<div class="phone_as_modem_top">
-			<div>Use the phone as modem</div>
+			<div><#Mobile_modem_desc#></div>
 			<div><img src='/images/button-close.gif' style='width:30px; cursor:pointer' onclick='close_phone_as_modem_hint();'></div>
 		</div>
 		<div id="phone_as_modem_instructions"></div>

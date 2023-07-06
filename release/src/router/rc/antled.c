@@ -674,9 +674,6 @@ antled_main(int argc, char *argv[])
 	sigset_t sigs_to_catch;
 
 
-	if (!nvram_get_int("AllLED")){
-		return 0;
-	}
 
 	/* write pid */
 	if ((fp = fopen("/var/run/antled.pid", "w")) != NULL)

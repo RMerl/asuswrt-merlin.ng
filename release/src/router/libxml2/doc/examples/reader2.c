@@ -7,7 +7,7 @@
  *          (Note that the XMLReader functions require libxml2 version later
  *          than 2.6.)
  * usage: reader2 <valid_xml_filename>
- * test: reader2 test2.xml > reader1.tmp ; diff reader1.tmp reader1.res ; rm reader1.tmp
+ * test: reader2 test2.xml > reader1.tmp && diff reader1.tmp $(srcdir)/reader1.res
  * author: Daniel Veillard
  * copy: see Copyright for the status of this software.
  */
@@ -117,6 +117,6 @@ int main(int argc, char **argv) {
 #else
 int main(void) {
     fprintf(stderr, "XInclude support not compiled in\n");
-    exit(1);
+    return(0);
 }
 #endif

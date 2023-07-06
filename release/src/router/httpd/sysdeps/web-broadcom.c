@@ -1768,6 +1768,10 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic, int
 	}
 	retval += bcm_print_vs_ie(wp, (uint8 *)(((uint8 *)bi) + dtoh16(bi->ie_offset)),
 		dtoh32(bi->ie_length));
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+	retval += websWrite(wp, "QBSS Channel Utilization: 0x%x (%d %s)\n", bi->qbss_chan_util,
+		bi->qbss_chan_util * 100 / (uint8)WLC_QBSS_LOAD_CHAN_FREE_MAX, "%25");
+#endif
 #endif
 #endif
 #endif

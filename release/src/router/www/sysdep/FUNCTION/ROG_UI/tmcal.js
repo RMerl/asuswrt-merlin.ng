@@ -338,7 +338,7 @@ function loadData()
 			if (h.tx_max > xx_max) xx_max = h.tx_max;
 
 			if (i == "WIRELESS1"){
-				if(productid == "GT-AXE16000" && wl_info.band5g_2_support)
+				if((based_modelid == "GT-AXE16000" || based_modelid == "GT10") && wl_info.band5g_2_support)
 					t = "<#tm_wireless#> (5GHz-2)";
 				else if(wl_info.band5g_2_support)
 					t = "<#tm_wireless#> (5GHz-1)";
@@ -346,7 +346,7 @@ function loadData()
 					t = "<#tm_wireless#> (5GHz)";
 			}
 			else if (i == "WIRELESS0"){
-				if(productid == "GT-AXE16000" && wl_info.band5g_2_support)
+				if((based_modelid == "GT-AXE16000" || based_modelid == "GT10") && wl_info.band5g_2_support)
 					t = "<#tm_wireless#> (5GHz-1)";
 				else
 					t = "<#tm_wireless#> (2.4GHz)";
@@ -355,12 +355,15 @@ function loadData()
 				if(wl_info.band6g_support){
 					t = "<#tm_wireless#> (6GHz)";
 				}
+				else if(based_modelid == "GT10"){
+					t = "<#tm_wireless#> (2.4GHz)";
+				}
 				else{
 					t = "<#tm_wireless#> (5GHz-2)";
 				}
 			}
 			else if (i == "WIRELESS3"){
-				if(productid == "GT-AXE16000")
+				if(based_modelid == "GT-AXE16000")
 					t = "<#tm_wireless#> (2.4GHz)";
 				else
 					t = "<#tm_wireless#> (60GHz)";

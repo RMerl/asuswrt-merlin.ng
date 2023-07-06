@@ -512,6 +512,7 @@ void get_related_nvram(){
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit)
 			max_disconn_count[unit] = nvram_get_int("wandog_maxfail");
 		wandog_delay = nvram_get_int("wandog_delay");
+		wandog_delay_rpt = nvram_get_int("wandog_delay_rpt");
 
 		if(!strcmp(dualwan_mode, "fb")){
 			max_fb_count = nvram_get_int("wandog_fb_count");
@@ -525,6 +526,7 @@ void get_related_nvram(){
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit)
 			max_disconn_count[unit] = DEFAULT_MAX_DISCONN_COUNT;
 		wandog_delay = -1;
+		wandog_delay_rpt = -1;
 	}
 #else
 	wandog_enable = 0;
@@ -1984,7 +1986,7 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 
 		// check wan port.
 #ifdef RTCONFIG_AUTO_WANPORT
-		if(is_auto_wanport_enabled() > 0)
+		if(is_auto_wanport_enabled() == 1)
 			link_wan[wan_unit] = get_auto_wanport_phy_status();
 		else
 #endif
@@ -3459,7 +3461,7 @@ int wanduck_main(int argc, char *argv[]){
 			&& (!strcmp(dualwan_mode, "fo") || !strcmp(dualwan_mode, "fb"))
 			){
 		if(wandog_delay > 0){
-			_dprintf("wanduck: delay %d seconds...\n", wandog_delay);
+			_dprintf("wanduck: 1st delay %d seconds...\n", wandog_delay);
 			sleep(wandog_delay);
 			delay_detect = 0;
 		}
@@ -3926,9 +3928,9 @@ _dprintf("wanduck(%d)(lb change): state %d, state_old %d, changed %d, cross_stat
 		, current_wan_unit, conn_state[current_wan_unit], conn_state_old[current_wan_unit], conn_changed_state[current_wan_unit], cross_state, current_state[current_wan_unit]);
 		}
 		else if(is_router_mode() && !strcmp(dualwan_mode, "fo")){
-			if(delay_detect == 1 && wandog_delay > 0){
-				_dprintf("wanduck: delay %d seconds...\n", wandog_delay);
-				sleep(wandog_delay);
+			if(delay_detect == 1 && wandog_delay_rpt > 0){
+				_dprintf("wanduck: FO: delay %d seconds...\n", wandog_delay_rpt);
+				sleep(wandog_delay_rpt);
 				delay_detect = 0;
 			}
 
@@ -4094,9 +4096,9 @@ _dprintf("wanduck(%d)(fo change): state %d, state_old %d, changed %d, wan_state 
 		, current_wan_unit, conn_state[current_wan_unit], conn_state_old[current_wan_unit], conn_changed_state[current_wan_unit], current_state[current_wan_unit]);
 		}
 		else if(is_router_mode() && !strcmp(dualwan_mode, "fb")){
-			if(delay_detect == 1 && wandog_delay > 0){
-				_dprintf("wanduck: delay %d seconds...\n", wandog_delay);
-				sleep(wandog_delay);
+			if(delay_detect == 1 && wandog_delay_rpt > 0){
+				_dprintf("wanduck: FB: delay %d seconds...\n", wandog_delay_rpt);
+				sleep(wandog_delay_rpt);
 				delay_detect = 0;
 			}
 

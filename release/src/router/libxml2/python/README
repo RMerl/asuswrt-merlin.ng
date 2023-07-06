@@ -4,14 +4,14 @@
 This is the libxml2 python module, providing access to the
 libxml2 and libxslt (if available) libraries. For general
 informationss on those XML and XSLT libraries check their 
-web pages at :
-    http://xmlsoft.org/
+web pages at:
+    https://gitlab.gnome.org/GNOME/libxml2/-/wikis/home
     and
-    http://xmlsoft.org/XSLT/
+    https://gitlab.gnome.org/GNOME/libxslt/-/wikis/home
 
 The latest version of the sources for this module and the
 associated libraries can be found at:
-    ftp://xmlsoft.org/
+    https://gitlab.gnome.org/GNOME/libxml2/-/releases
 
 Binaries packages of the libxml2 and libxslt libraries can
 be found either on the FTP site for Linux, from external

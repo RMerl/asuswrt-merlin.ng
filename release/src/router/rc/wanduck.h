@@ -174,7 +174,7 @@ int boot_end;
 char dualwan_mode[8];
 char dualwan_wans[16];
 char wandog_target[256];
-int wandog_delay, delay_detect;
+int wandog_delay, wandog_delay_rpt, delay_detect;
 int WAN_FB_UNIT;
 #endif
 #ifdef RTCONFIG_USB_MODEM

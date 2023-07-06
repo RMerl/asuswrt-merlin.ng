@@ -1,0 +1,133 @@
+<style>
+span{
+	border:0px solid #FFFFFF;
+	color:#FFFFFF;
+	font-size:24px;
+	font-family:Arial, Helvetica, sans-serif;
+	text-align:right;
+	margin:0px auto;
+	ime-mode:disabled;
+}
+</style>
+<script>
+var AutoDetInfo = httpApi.nvramGet(["wan46det_state","link_internet","x_Setting"], true);
+
+var wanTypeList = {
+	"init":"INITIALIZING",
+	"nolink":"NOLINK", 
+	"unknow":"UNKNOW",
+	"v6plus":"<#IPv6_plus#>",
+	"hgw_v6plus":"<#IPv6_plus#>",
+	"ocnvc":"<#IPv6_ocnvc#>"
+}
+var model_name = httpApi.nvramGet(["productid"]).productid;
+
+var wan46_result = "";
+if(AutoDetInfo.wan46det_state == "1"){
+	wan46_result = wanTypeList.nolink;
+}
+else if(AutoDetInfo.wan46det_state == "2"){
+	wan46_result = wanTypeList.unknow;
+}
+else if(AutoDetInfo.wan46det_state == "3"){
+	wan46_result = wanTypeList.v6plus;
+	qisPostData.wan_proto = "v6plus";
+}
+else if(AutoDetInfo.wan46det_state == "4"){
+	wan46_result = wanTypeList.hgw_v6plus;
+	qisPostData.wan_proto = "v6plus";
+}
+else if(AutoDetInfo.wan46det_state == "5"){
+	wan46_result = wanTypeList.ocnvc;
+	qisPostData.wan_proto = "ocnvc";
+}
+else{	//0 and else
+	wan46_result = wanTypeList.init;
+}
+
+</script>
+
+<div class="headerBar">
+	<table style="width:100%">
+		<tr>
+			<td style="padding:0;width:17px;">
+				<div style="margin-right:20px;">
+					<a href="#navigation">
+						<div class="icon_menu" style="width:17px;height:17px;display:none"></div>
+					</a>
+				</div>
+			</td>
+			<td style="padding:0;width:130px;">
+				<div>
+					<div class="icon_logo"></div>
+				</div>
+			</td>
+			<td style="padding:0;">
+				<div class="model_welcome"></div>
+			</td>
+		</tr>
+	</table>
+</div>
+<div class="tableContainer">
+	<div class="desktop_left_field">
+		<div>
+			<div class="titleMain"><#PPPConnection_x_InternetDetection_itemname#></div>
+			<div class="titleSub"><#Settings#></div>
+		</div>
+	</div>
+	<div class="table_td">
+		<div class="pageDesc">WAN type Detected : <span id="auto46det_result"></span></div>
+		<div id="hint_msg"></div>
+		
+		<div style="margin-top:160px;">
+			<div class="footer_desktop">
+				<div class="desktop_abortBtn" id="desktop_abortBtn" onclick="abort.wan46(wan46_result)"><#Manual_Setting_btn#></div>
+				<div class="desktop_applyBtn btn_wireless_apply" onclick="apply.wan46()"><#CTL_next#></div>
+			</div>
+			<div class="footer_mobile">
+				<table style="width:100%;" cellpadding="0" cellspacing="0">
+					<tr>
+						<td class="mobileAbort" id="mobile_abortBtn" style="width:50%" onclick="abort.wan46(wan46_result)">
+							<div class="mobile_abortBtn"><#Manual_Setting_btn#></div>
+						</td>
+						<td class="mobileApply" onclick="apply.wan46()">
+							<div class="mobile_applyBtn btn_wireless_apply"><#CTL_next#></div>
+						</td>
+					</tr>
+				</table>
+			</div>
+		</div>
+	</div>
+</div>
+<div class='footerPadding'></div>
+
+<script>
+
+
+	//--------initial-------------------------------------------
+	$("#auto46det_result").html(wan46_result);
+
+	
+	//--------initial-------------------------------------------
+
+	apply.wan46 = function(){
+
+		if(isWANChanged()){
+			httpApi.nvramSet((function(){
+				qisPostData.wan_unit = "0";
+				qisPostData.ipv6_service = "ipv6pt";
+				qisPostData.action_mode = "apply";
+				qisPostData.rc_service = "restart_wan_if 0";
+				return qisPostData;
+			})());
+			
+			updateOriginWan();
+		}
+		$("#wan46_page").empty();
+		qisPostData.rc_service = "";
+		postDataModel.remove(wanObj.all);
+		goTo.Wireless();
+	};
+
+
+</script>

@@ -61,8 +61,10 @@ define(function(){
 				"-540":"JST",
 				"-570":"CST-9.30",
 				"-600":"UTC-10_2",
+				"-630":"UTC-10DST_1",
 				"-660":"UTC-11",
 				"-720":"UTC-12",
+				"-765":"NZST-12DST",
 				"-780":"UTC-13"
 			};
 
@@ -77,7 +79,7 @@ define(function(){
 				"300":"EST5DST",
 				"240":"AST4DST",
 				"210":"NST3.30",
-				"180":"EBST3",	//EBST3DST_2
+				"180":"EBST3",
 				"120":"UTC2DST",
 				"60":"EUT1DST",
 				"0":"GMT0DST_1",
@@ -97,8 +99,10 @@ define(function(){
 				"-540":"JST",
 				"-570":"UTC-9.30DST",
 				"-600":"UTC-10DST_1",
+				"-630":"UTC-10DST_1",
 				"-660":"UTC-11",
 				"-720":"NZST-12DST",
+				"-765":"NZST-12DST",
 				"-780":"UTC-13"
 			};
 

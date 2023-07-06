@@ -10,16 +10,7 @@
       <t href="#T4"/>
     </textflow>
   </defs>
-  <text x="100" y="100" id="T1">
-    <tf href="#TF1">123</tf>
-  </text>
-  <text x="100" y="200" id="T2">
-    <tf href="#TF2">ABC</tf>
-  </text>
-  <text x="150" y="100" id="T3">
-    <tf href="#TF1">456</tf>
-  </text>
-  <text x="150" y="200" id="T4">
-    <tf href="#TF2">DEF</tf>
-  </text>
-</svg>
+  <text x="100" y="100" id="T1"><tf href="#TF1">123</tf></text>
+  <text x="100" y="200" id="T2"><tf href="#TF2">ABC</tf></text>
+  <text x="150" y="100" id="T3"><tf href="#TF1">456</tf></text>
+  <text x="150" y="200" id="T4"><tf href="#TF2">DEF</tf></text></svg>

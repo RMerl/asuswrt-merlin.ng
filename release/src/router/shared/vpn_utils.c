@@ -163,12 +163,23 @@ int vpnc_load_profile(VPNC_PROFILE *list, const int list_size, const int prof_ve
 			}
 			else if (!strcmp(proto, PROTO_NORDVPN))
 			{
-				list[cnt].protocol = VPNC_PROTO_NORDVPN;
-				list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
-				if (region)
-					strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
+				if (is_tpvpn_configured(TPVPN_NORDVPN, region, conntype, atoi(server)))
+				{
+					char prefix[16] = {0};
+					list[cnt].protocol = VPNC_PROTO_WG;
+					list[cnt].config.wg.wg_idx = atoi(server);
+					snprintf(prefix, sizeof(prefix), "%s%d_", WG_CLIENT_NVRAM_PREFIX, list[cnt].config.wg.wg_idx);
+					nvram_pf_set_int(prefix, "enable", list[cnt].active);
+				}
 				else
-					logmessage_normal("VPN", "no data for NordVPN\n");
+				{
+					list[cnt].protocol = VPNC_PROTO_NORDVPN;
+					list[cnt].config.tpvpn.tpvpn_idx = atoi(server);
+					if (region)
+						strlcpy(list[cnt].config.tpvpn.region, region, sizeof(list[cnt].config.tpvpn.region));
+					else
+						logmessage_normal("VPN", "no data for NordVPN\n");
+				}
 			}
 #endif
 			else if (!strcmp(proto, PROTO_IPSec))

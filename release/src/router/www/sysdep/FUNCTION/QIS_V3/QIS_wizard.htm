@@ -64,6 +64,7 @@
 						"x_Setting", 
 						"preferred_lang", 
 						"territory_code", 
+						"ipv6_service",
 						"reboot_time", 
 						"lan_ipaddr", 
 						"wlc_dpsta", 
@@ -143,6 +144,7 @@
 					systemVariable.isDefault = (function(){return (initNvram.x_Setting == '0' || initNvram.x_Setting == '') ? true : false;})();
 					systemVariable.uiLanguage = initNvram.preferred_lang;
 					systemVariable.territoryCode = initNvram.territory_code;
+					systemVariable.ipv6Service = initNvram.ipv6_service;
 					systemVariable.rebootTime = initNvram.reboot_time;
 					systemVariable.lanIpaddr = initNvram.lan_ipaddr;
 					systemVariable.CoBrand = initNvram.CoBrand;
@@ -232,6 +234,10 @@
 						break;
 						case "changePass":
 							goTo.login();
+						break;
+						case "rtMode":
+							systemVariable.advSetting = true;
+							goTo.rtMode();
 						break;
 						default:
 							goTo.Welcome();
@@ -545,9 +551,9 @@
 							</div>
 
 							<div class="labelContainer defpassSupport">
-								<label for="defpass_checkbox" class="labelInput">Use default Local Login Password</label><!-- untranslated -->
+								<label for="defpass_checkbox" class="labelInput"><#default_passwd_checkbox#></label>
 								<input type="checkbox" id="defpass_checkbox" data-mini="true"/>
-								<div class="inputTitle" style="margin-left:70px;margin-top:-16px;font-size:1.2em;display:flex;">The default encrypted Local Login Password provides a secure login process when you connect to this ASUS networking device locally.</div><!-- untranslated -->
+								<div class="inputTitle" style="margin-left:70px;margin-top:-16px;font-size:1.2em;display:flex;"><#default_passwd_desc#></div>
 								<div id="local_login_title_container" class="defpass_guideline_title_container">
 									<div>
 										<div class="icon_excl_mark"><div>i</div></div>
@@ -2576,6 +2582,9 @@
 			</div>
 		</div>
 
+		<!-- wan46 detected -->
+		<div id="wan46_page" data-role="page" class="qisBackground"></div>
+
 		<!-- DSL detected PPP -->
 		<div id="ppp_cfg_page" data-role="page" class="qisBackground"></div>
 
@@ -3041,7 +3050,7 @@
 				<div class="desktop_left_field">
 					<div>
 						<div class="titleMain"><#Internet#></div>
-						<div class="titleSub">Use the phone as modem</div><!--untranslated-->
+						<div class="titleSub"><#Mobile_modem_desc#></div>
 					</div>
 				</div>
 				<div class="table_td">

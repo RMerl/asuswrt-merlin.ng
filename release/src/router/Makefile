@@ -723,6 +723,7 @@ obj-$(RTCONFIG_QTN) += libqcsapi_client
 obj-$(RTCONFIG_QTN) += qtnimage
 obj-$(RTCONFIG_QSR10G) += libqcsapi_client_10g
 obj-$(RTCONFIG_DMALLOC) += dmalloc
+obj-$(RTCONFIG_VALGRIND) += valgrind
 
 obj-$(RTCONFIG_BCMARM) += ctf_arm
 obj-$(RTAC53U) += ctf_5358
@@ -894,7 +895,7 @@ IPTC_LIBS := -lip4tc $(if $(RTCONFIG_IPV6),-lip6tc,) -liptc
 obj-y += iptables-1.4.x
 ifeq ($(HND_ROUTER),y)
 ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
-ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),63178 6756))
+ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),6813 4912))
 obj-y += iproute2-5.11.0
 else
 obj-y += iproute2-5.11.0
@@ -1505,6 +1506,9 @@ ifeq ($(RTCONFIG_HAPDEVENT),y)
 obj-$(RTCONFIG_HAPDEVENT) += hapdevent
 endif
 obj-y += networkmap
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19))
+obj-y += rtkswitch
+endif
 ifneq ($(BUILD_NAME), $(filter $(BUILD_NAME), AC2900))
 obj-y += infosvr
 endif
@@ -1584,6 +1588,9 @@ obj-$(RTCONFIG_NFCM) += libnetfilter_cttimeout-1.0.0
 
 obj-$(RTCONFIG_DNSQUERY_INTERCEPT) += dnsqd
 obj-$(RTCONFIG_DNSQUERY_INTERCEPT) += libnetfilter_queue
+#OPPO
+obj-$(RTCONFIG_ROUTERBOOST) += asus_rbd
+
 
 # add the utility 'pstree' to show the processes relationship
 obj-y += pstree
@@ -3173,6 +3180,7 @@ openssl-1.1/Makefile:
 	cd openssl-1.1 && \
 	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
 	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
+	$(if $(RTCONFIG_DEBUG),-g) \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \
 	shared $(OPENSSL_CIPHERS) no-err no-async --api=1.0.0 \
 	no-aria no-sm2 no-sm3 no-sm4 \
@@ -3192,17 +3200,17 @@ openssl-1.1-clean:
 openssl-1.1-install:
 ifneq ($(wildcard openssl-1.1/Makefile),)
 	install -D openssl-1.1/libcrypto.so.1.1 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.1
-	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.1
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libcrypto.so.1.1)
 ifeq ($(or $(RTCONFIG_WEBDAV),$(RTCONFIG_FTP_SSL),$(RTCONFIG_OPENVPN),$(RTCONFIG_HTTPS)),y)
 	install -D openssl-1.1/libssl.so.1.1 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1
-	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1)
 endif
 ifeq ($(RTCONFIG_OPENSSL11),y)
 	cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libcrypto.so && ln -sf libcrypto.so.1.1 libcrypto.so
 	[ ! -f $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib/libssl.so.1.1 ] || \
 		cd $(INSTALLDIR)$(INSTALLSUBDIR)/usr/lib && rm -f libssl.so && ln -sf libssl.so.1.1 libssl.so
 	install -D openssl-1.1/apps/openssl $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
-	$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl)
 	chmod 0500 $(INSTALLDIR)$(INSTALLSUBDIR)/usr/sbin/openssl
 endif
 endif
@@ -3331,6 +3339,17 @@ networkmap: shared json-c libasc libletsencrypt $(if $(BCM_502L07P2),ethctl_lib)
 
 networkmap-install:
 	$(MAKE) -C networkmap INSTALLDIR=$(INSTALLDIR)/networkmap install
+
+ifeq ($(BUILD_NAME), $(filter $(BUILD_NAME), EBG19))
+rtkswitch:
+	$(MAKE) -C rtkswitch CC=$(CROSS_COMPILE_64)gcc LD=$(CROSS_COMPILE_64)ld
+
+rtkswitch-install:
+	$(MAKE) -C rtkswitch CC=$(CROSS_COMPILE_64)gcc LD=$(CROSS_COMPILE_64)ld INSTALLDIR=$(INSTALLDIR)/rtkswitch install
+
+.PHONY:
+	rtkswitch
+endif
 
 aura_rgb_nt:
 	@$(SEP)
@@ -5316,30 +5335,39 @@ endif
 endif
 
 mxl371x_sdk:
-	cd mxl371x_sdk && ./build_host_sdk XCOMPILE=$(CROSS_COMPILE) KDIR=$(LINUXDIR) BDIR=$(BCMKERNEL)  BODIR=$(HND_SRC)/bcmdrivers/ ARCH=$(ARCH)
+	if [ ! -d mxl371x_sdk/prebuild ] ; then \
+		cd mxl371x_sdk && ./build_host_sdk XCOMPILE=$(CROSS_COMPILE) KDIR=$(LINUXDIR) BDIR=$(BCMKERNEL)  BODIR=$(HND_SRC)/bcmdrivers/ ARCH=$(ARCH); \
+	else \
+		cp -af mxl371x_sdk/prebuild/libclnkapi.so mxl371x_sdk/MxLWare/lib ; \
+	fi
 	touch $@
 
 mxl371x_sdk-clean:
-	cd mxl371x_sdk && ./build_host_sdk c XCOMPILE=$(CROSS_COMPILE) KDIR=$(LINUXDIR) BDIR=$(BCMKERNEL)  ARCH=$(ARCH)
+	if [ ! -d mxl371x_sdk/prebuild ] ; then \
+		cd mxl371x_sdk && ./build_host_sdk c XCOMPILE=$(CROSS_COMPILE) KDIR=$(LINUXDIR) BDIR=$(BCMKERNEL)  ARCH=$(ARCH); \
+	fi ;
 
 mxl371x_sdk-install:
-	mkdir -p $(INSTALLDIR)/lib/firmware
-	mkdir -p $(INSTALLDIR)/etc/clink
-	install -D  mxl371x_sdk/output_bins/bin/mxl_moca_ctrl.ko $(INSTALLDIR)/lib/modules/mxl_moca_ctrl.ko
-	install -D  mxl371x_sdk/output_bins/bin/DCAP $(INSTALLDIR)/bin/DCAP
-	install -D  mxl371x_sdk/output_bins/bin/clnkrst $(INSTALLDIR)/bin/clnkrst
-#	install -D  mxl371x_sdk/mxl_scripts/updatelof.sh $(INSTALLDIR)/bin/updatelof.sh
-	install -D  mxl371x_sdk/run_host_sdk $(INSTALLDIR)/bin/run_host_sdk
-	install -D  mxl371x_sdk/MxLWare/lib/libclnkapi.so $(INSTALLDIR)/lib/libclnkapi.so
-	install -D  mxl371x_sdk/firmware_objs/ccpu.elf.leucadia $(INSTALLDIR)/lib/firmware/ccpu.elf.leucadia
-	install -D  mxl371x_sdk/mxl_configs/clink.backup $(INSTALLDIR)/etc/clink/clink.backup
-	install -D  mxl371x_sdk/mxl_configs/endet.backup $(INSTALLDIR)/etc/clink/endet.backup
-	install -D  mxl371x_sdk/mxl_configs/mcast.backup $(INSTALLDIR)/etc/clink/mcast.backup
-	install -D  mxl371x_sdk/mxl_configs/rlapm.backup $(INSTALLDIR)/etc/clink/rlapm.backup
-	install -D  mxl371x_sdk/mxl_configs/rssi.backup $(INSTALLDIR)/etc/clink/rssi.backup
-	install -D  mxl371x_sdk/mxl_configs/sapm.backup $(INSTALLDIR)/etc/clink/sapm.backup
-	install -D  mxl371x_sdk/mxl_configs/platform.conf $(INSTALLDIR)/etc/clink/platform.conf
-	cd $(INSTALLDIR)/bin \
+	mkdir -p $(INSTALLDIR)/mxl371x_sdk/lib/firmware
+	mkdir -p $(INSTALLDIR)/mxl371x_sdk/etc/clink
+	if [ ! -d mxl371x_sdk/prebuild ] ; then \
+		install -D mxl371x_sdk/output_bins/bin/mxl_moca_ctrl.ko $(INSTALLDIR)/mxl371x_sdk/lib/modules/mxl_moca_ctrl.ko ; \
+		install -D mxl371x_sdk/output_bins/bin/DCAP $(INSTALLDIR)/mxl371x_sdk/bin/DCAP ; \
+		install -D mxl371x_sdk/MxLWare/lib/libclnkapi.so $(INSTALLDIR)/mxl371x_sdk/lib/libclnkapi.so ; \
+	else \
+		install -D  mxl371x_sdk/prebuild/mxl_moca_ctrl.ko $(INSTALLDIR)/mxl371x_sdk/lib/modules/mxl_moca_ctrl.ko ; \
+		install -D  mxl371x_sdk/prebuild/DCAP $(INSTALLDIR)/mxl371x_sdk/bin/DCAP ; \
+		install -D  mxl371x_sdk/prebuild/libclnkapi.so $(INSTALLDIR)/mxl371x_sdk/lib/libclnkapi.so ; \
+	fi
+	install -D  mxl371x_sdk/firmware_objs/ccpu.elf.leucadia $(INSTALLDIR)/mxl371x_sdk/lib/firmware/ccpu.elf.leucadia
+	install -D  mxl371x_sdk/mxl_configs/clink.backup $(INSTALLDIR)/mxl371x_sdk/etc/clink/clink.backup
+	install -D  mxl371x_sdk/mxl_configs/endet.backup $(INSTALLDIR)/mxl371x_sdk/etc/clink/endet.backup
+	install -D  mxl371x_sdk/mxl_configs/mcast.backup $(INSTALLDIR)/mxl371x_sdk/etc/clink/mcast.backup
+	install -D  mxl371x_sdk/mxl_configs/rlapm.backup $(INSTALLDIR)/mxl371x_sdk/etc/clink/rlapm.backup
+	install -D  mxl371x_sdk/mxl_configs/rssi.backup $(INSTALLDIR)/mxl371x_sdk/etc/clink/rssi.backup
+	install -D  mxl371x_sdk/mxl_configs/sapm.backup $(INSTALLDIR)/mxl371x_sdk/etc/clink/sapm.backup
+	install -D  mxl371x_sdk/mxl_configs/platform.conf $(INSTALLDIR)/mxl371x_sdk/etc/clink/platform.conf
+	cd $(INSTALLDIR)/mxl371x_sdk/bin \
 		&& ln -sf DCAP clnkstat\
 		&& ln -sf DCAP clnkcfg\
 		&& ln -sf DCAP clnkmem\
@@ -6667,7 +6695,7 @@ pcre-8.31-clean:
 libxml2/stamp-h1:
 	cd libxml2 && mkdir -p m4 && autoreconf -i -f && \
 	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) \
-	CFLAGS="-Os -Wall $(EXTRACFLAGS)" LDFLAGS="-ldl $(EXTRALDFLAGS)" \
+	CFLAGS="$(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS)" LDFLAGS="-ldl $(EXTRALDFLAGS)" \
 	./$(CONFIGURE) --prefix=/usr --without-python --disable-dependency-tracking \
 	--without-zlib
 	touch $@
@@ -6678,7 +6706,7 @@ libxml2: libxml2/stamp-h1
 libxml2-install:
 	@$(SEP)
 	install -D libxml2/.libs/libxml2.so.2 $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
-	$(STRIP) $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/libxml2/usr/lib/libxml2.so.2)
 	cd $(INSTALLDIR)/libxml2/usr/lib && ln -sf libxml2.so.2 libxml2.so
 
 libxml2-clean:
@@ -6970,7 +6998,7 @@ curl/Makefile: curl/configure
 		$(if $(RTCONFIG_MBEDTLS),--with-mbedtls=$(STAGEDIR)/usr,--without-mbedtls) \
 		$(if $(RTCONFIG_WOLFSSL),--with-wolfssl=$(STAGEDIR)/usr,--without-wolfssl) \
 		--with-ca-bundle=/etc/ssl/certs/ca-certificates.crt \
-		CFLAGS="-Os -Wall -ffunction-sections -fdata-sections" \
+		CFLAGS="$(if $(RTCONFIG_DEBUG),-g,-Os) -Wall -ffunction-sections -fdata-sections" \
 		CPPFLAGS="-I$(STAGEDIR)/usr/include" \
 		LDFLAGS="-Wl$(if $(RTCONFIG_TR069),$(comma)-rpath=$(STAGEDIR)/usr/lib,),--gc-sections $(LDFLAGS) -L$(STAGEDIR)/usr/lib" \
 		LIBS="-ldl $(if $(RTCONFIG_OPENSSL11),-lpthread,) \
@@ -6987,14 +7015,14 @@ curl: $(if $(RTCONFIG_OPENSSL11)$(RTCONFIG_OPENSSL10),openssl,) $(if $(RTCONFIG_
 curl-install:
 	@$(SEP)
 	install -D curl/lib/.libs/libcurl.so.4.8.0 $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.8.0
-	$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.8.0
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/curl/usr/lib/libcurl.so.4.8.0)
 	cd $(INSTALLDIR)/curl/usr/lib && \
 		ln -sf libcurl.so.4.8.0 libcurl.so && \
 		ln -sf libcurl.so.4.8.0 libcurl.so.4
 #ifeq ($(or $(RTCONFIG_SPEEDTEST),$(RTCONFIG_LETSENCRYPT)),y)
 	# for speedtest
 	install -D curl/src/.libs/curl $(INSTALLDIR)/curl/usr/sbin/curl
-	$(STRIP) $(INSTALLDIR)/curl/usr/sbin/curl
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/curl/usr/sbin/curl)
 #endif
 
 curl-clean:
@@ -8464,8 +8492,8 @@ asd: shared $(if $(BCM_502L07P2),ethctl_lib) nvram$(BCMEX)$(EX7) curl openssl li
 asd-install:
 	install -D asd/asd $(INSTALLDIR)/asd/usr/bin/asd
 	install -D asd/libasd.so $(INSTALLDIR)/asd/usr/lib/libasd.so
-	$(STRIP) $(INSTALLDIR)/asd/usr/bin/asd
-	$(STRIP) $(INSTALLDIR)/asd/usr/lib/libasd.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/asd/usr/bin/asd)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/asd/usr/lib/libasd.so)
 
 asd-clean:
 	$(MAKE) -C asd clean
@@ -8490,7 +8518,7 @@ asusnatnl-install:
 	if [ -f asusnatnl/natnl/libasusnatnl.so ] ; then \
 		install -d $(INSTALLDIR)/asusnatnl/usr/lib/ ; \
 		install -D asusnatnl/natnl/libasusnatnl.so $(INSTALLDIR)/asusnatnl/usr/lib/libasusnatnl.so ; \
-		$(STRIP) -s $(INSTALLDIR)/asusnatnl/usr/lib/libasusnatnl.so ; \
+		$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/asusnatnl/usr/lib/libasusnatnl.so ; ) \
 	fi
 
 mastiff: shared $(if $(BCM_502L07P2),ethctl_lib) nvram${BCMEX}$(EX7) wb
@@ -8549,11 +8577,11 @@ aaews: wb
 aaews-install:
 	install -d $(INSTALLDIR)/wb/usr/lib/
 	install -D wb/libws.so $(INSTALLDIR)/wb/usr/lib/libws.so
-	$(STRIP) -s $(INSTALLDIR)/wb/usr/lib/libws.so
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/wb/usr/lib/libws.so)
 	install -D aaews/aaews $(INSTALLDIR)/wb/usr/sbin/aaews
-	$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/aaews
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/aaews)
 	install -D aaews/mastiff $(INSTALLDIR)/wb/usr/sbin/mastiff
-	$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/mastiff
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) -s $(INSTALLDIR)/wb/usr/sbin/mastiff)
 ifeq ($(RTCONFIG_BCMARM),y)
 ifeq ($(HND_ROUTER),y)
 	install -D $(TOOLCHAIN)/arm-buildroot-linux-gnueabi/lib/libstdc++.so.6 $(INSTALLDIR)/ftpclient/usr/lib/libstdc++.so.6
@@ -8653,7 +8681,7 @@ uploader-clean:
 
 
 amas-utils: json-c openssl nvram${BCMEX}$(EX7)
-	CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
+	CC=$(CC) CXX=$(CXX) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="$(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS)" \
 	$(MAKE) -C $@
 
 amas-utils-clean:
@@ -8678,7 +8706,7 @@ else
 	cd $(TOP)/json-c && \
 	$(CONFIGURE) --prefix=/usr --enable-shared --disable-static \
 	ac_cv_func_realloc_0_nonnull=yes ac_cv_func_malloc_0_nonnull=yes \
-	CFLAGS="-Os -Wno-error $(EXTRACFLAGS) $(if $(RTCONFIG_DEBUG),-g)" \
+	CFLAGS="$(if $(RTCONFIG_DEBUG),-g,-Os) -Wno-error $(EXTRACFLAGS)" \
 	LDFLAGS="$(EXTRALDFLAGS) -Wl,--as-needed -lm"
 	touch $@
 endif

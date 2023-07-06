@@ -102,8 +102,13 @@ function Get_Component_Feature_Desc_OpenVPN(_type){
 		$feature_desc.appendTo($popup_content_container);
 		$("<div>").addClass("title").html("Feature Description").appendTo($feature_desc);/* untranslated */
 		var $openvpn_desc = $("#openvpn_desc");
-		if(isMobile())
+		if(isMobile()){
 			$openvpn_desc.find("#desc3").empty();
+		}
+		var header_info = httpApi.hookGet("get_header_info");
+		if(header_info.protocol == "https"){
+			$openvpn_desc.html($openvpn_desc.html().replaceAll("http", "https"));
+		}
 		$("<div>").addClass("desc").html($openvpn_desc.html()).appendTo($feature_desc);
 
 		if(privateIP_flag){
@@ -112,7 +117,7 @@ function Get_Component_Feature_Desc_OpenVPN(_type){
 			$("<div>").addClass("desc").html($privateIP_notes.html()).appendTo($feature_desc);
 		}
 
-		$("<div>").addClass("title").html("HOW TO SETUP").appendTo($feature_desc);/* untranslated */
+		$("<div>").addClass("title").html("<#HOWTOSETUP#>").appendTo($feature_desc);
 
 		var $step_text_container = $("<div>").addClass("step_text_container");
 		$step_text_container.appendTo($feature_desc);
@@ -665,7 +670,7 @@ function Get_Component_Keys_Cert(_obj){
 		var vpn_crt_server1_dh_parm = {"title":"<#vpn_openvpn_KC_DH#>", "id":"edit_vpn_crt_server1_dh", "rows":"8", "cols":"65", "maxlength":"3999"};
 		Get_Component_Textarea(vpn_crt_server1_dh_parm).appendTo($content_container);
 
-		var vpn_crt_server1_crl_parm = {"title":"Certificate Revocation List (Optional)", "id":"edit_vpn_crt_server1_crl", "rows":"8", "cols":"65", "maxlength":"3999"};
+		var vpn_crt_server1_crl_parm = {"title":"<#vpnc_Cert_revocList#> (<#feedback_optional#>)", "id":"edit_vpn_crt_server1_crl", "rows":"8", "cols":"65", "maxlength":"3999"};
 		Get_Component_Textarea(vpn_crt_server1_crl_parm).appendTo($content_container);
 	}
 	else if(auth == "secret"){
@@ -1824,7 +1829,7 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 
 	var $detail_general = $("<div>").attr("detail_mode","1").appendTo($content_container);
 
-	var help_parm = {"title":"How to setup"};/* untranslated */
+	var help_parm = {"title":"<#HOWTOSETUP#>"};
 	Get_Component_Help(help_parm)
 		.appendTo($detail_general)
 		.find(".vpnc_help_icon").unbind("click").click(function(e){
@@ -1918,7 +1923,7 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 	show_openvpn_clientlist($openvpn_clientlist_bg);
 
 	var $detail_adv = $("<div>").attr("detail_mode","2").appendTo($content_container);
-	var help_parm = {"title":"How to setup"};/* untranslated */
+	var help_parm = {"title":"<#HOWTOSETUP#>"};
 	Get_Component_Help(help_parm)
 		.appendTo($detail_adv)
 		.find(".vpnc_help_icon").unbind("click").click(function(e){

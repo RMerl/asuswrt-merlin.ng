@@ -1962,7 +1962,6 @@ SAX.endElement(a)
 SAX.endElement(i)
 SAX.error: End tag : expected '>'
 SAX.endElement(font)
-SAX.endElement(font)
 SAX.startElement(br)
 SAX.endElement(br)
 SAX.startElement(br)
@@ -2007,6 +2006,8 @@ SAX.endElement(br)
 SAX.characters(
 
 , 2)
+SAX.error: Opening and ending tag mismatch: td and font
+SAX.endElement(font)
 SAX.error: Opening and ending tag mismatch: td and font
 SAX.endElement(font)
 SAX.error: Opening and ending tag mismatch: td and font
@@ -2839,10 +2840,10 @@ SAX.endElement(br)
 SAX.characters(
 , 1)
 SAX.endElement(body)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 2)
 SAX.endDocument()

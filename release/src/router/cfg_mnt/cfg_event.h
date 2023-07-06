@@ -25,6 +25,9 @@
 #define STA		"sta"
 #define BLOCK_TIME	"block_time"
 #define TARGET_AP	"target_ap"
+#define ROUTERBOOST_PREFIX "routerboost"
+#define PRI_MAC_ADDR "pri_mac"
+#define SLV_MAC_ADDR "slv_mac"
 #ifdef RTCONFIG_AMAS_CENTRAL_OPTMZ
 #define BAND_INDEX	"band_index"
 #endif
@@ -50,6 +53,7 @@
 #endif
 #define ETHEVENT_PROBE_MSG	 "{\""ETHEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""E_ETHER_LIST"\":%s}}"
 #define ETHEVENT_STATUS_MSG	 "{\""ETHEVENT_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""OB_STATUS"\":%d,\""OB_KEY"\":\"%s\"}}"
+#define ROUTERBOOST_STATUS_MSG	 "{\""ROUTERBOOST_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""PRI_MAC_ADDR"\":\"%s\",\""SLV_MAC_ADDR"\":\"%s\"}}"
 #ifdef RTCONFIG_AMAS_CENTRAL_ADS
 #define RC_ADS_DS_MSG	"{\""RC_PREFIX"\":{\""EVENT_ID"\":\"%d\",\""SEQUENCE"\":%d}}"
 #endif
@@ -103,6 +107,11 @@ enum rcEventType {
 	EID_RC_REPORT_DS_SWITCH_STA_DISCONN,
 #endif
 	EID_RC_MAX
+};
+
+enum rbEventType {
+	EID_RB_STA_CONN = 1,
+	EID_RB_STA_DISCONN
 };
 
 #endif /* __CFG_EVENT_H__ */

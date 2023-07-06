@@ -505,16 +505,56 @@ static int _mxl371x_get_node_info(ClnkLib_Handle_t *clnkIf, int nodeID, MOCA_ONE
 		(myNetworkNodeInfo.guidHi >> 0) & 0xff,
 		(myNetworkNodeInfo.guidLo >> 24),
 		(myNetworkNodeInfo.guidLo >> 16) & 0xff);
-	snprintf(node_info->moca_ver, sizeof(node_info->moca_ver), "%d.%d  ", 
+	snprintf(node_info->moca_ver, sizeof(node_info->moca_ver), "%d.%d", 
 		(myNetworkNodeInfo.mocaVer>>4)&0x0f, (myNetworkNodeInfo.mocaVer&0x0f));
 
 	return CLNK_OK;
 }
 
+static int _mxl371x_get_fmrInfo(ClnkLib_Handle_t *clnkIf, ClnkLib_FmrInfo_t *myFmrInfo, int *collectedNodeMask, const int activeNodeBitmask, const int version)
+{
+	int nodeBitMask, nodesPerSession = 0, currPosition = 0, currFmrSessionMask = 0;
+	int numOfCollectedNodes = 0, addedNodes = 0;
+	int i;
+
+	if(!clnkIf || !myFmrInfo || !collectedNodeMask)
+	{
+		_dprintf("[%s]Error! No clnkIf\n", __FUNCTION__);
+		return 0;
+	}
+
+	nodeBitMask = activeNodeBitmask;
+	nodesPerSession = (1 == version)? 10 : 2;
+	do
+	{
+		currFmrSessionMask = 0;
+		addedNodes = 0;
+		for (i=currPosition; ((addedNodes < nodesPerSession) && (currPosition < MAX_MOCA_NODES)) ; i++, currPosition++)
+		{
+			if (nodeBitMask & (1 << currPosition))
+			{
+				currFmrSessionMask |= (1 << currPosition);
+				addedNodes++;
+			}
+		}
+
+		if (currFmrSessionMask & activeNodeBitmask)
+		{
+			ClnkLib_GetFmrInfo(clnkIf, currFmrSessionMask, version, myFmrInfo);
+		}
+
+		numOfCollectedNodes += myFmrInfo->numOfNodes;
+		*collectedNodeMask |= myFmrInfo->nodeMask;
+	} while (currPosition < MAX_MOCA_NODES);
+	return numOfCollectedNodes;
+}
+
 static int _mxl371x_get_node_phyrate(ClnkLib_Handle_t *clnkIf, const int activeNodeBitmask, MOCA_ONE_NODE_INFO *node_info_array, const size_t array_sz)
 {
-	ClnkLib_FmrInfo_t myFmrInfo = {0};
+	ClnkLib_FmrInfo_t myFmrInfo = {0,};
+	int collectedNodeMask = 0;
 	int i, j;
+
 	if(!clnkIf)
 	{
 		_dprintf("[%s]Error! No clnkIf\n", __FUNCTION__);
@@ -526,19 +566,22 @@ static int _mxl371x_get_node_phyrate(ClnkLib_Handle_t *clnkIf, const int activeN
 		return CLNK_ERR;
 	}
 
-	if(ClnkLib_GetFmrInfo(clnkIf, activeNodeBitmask, 2, &myFmrInfo) != CLNK_OK)
+	if(_mxl371x_get_fmrInfo(clnkIf, &myFmrInfo, &collectedNodeMask, activeNodeBitmask, 2) > 0)
 	{
-		//_dprintf("\n[%s] Error! Can't get GetFmrInfo\n", __FUNCTION__);
-		return CLNK_ERR;
-	}
-
-	for(i = 0; i < array_sz; ++i)
-	{
-		if(activeNodeBitmask & (1 << i))
+		for(i = 0; i < array_sz; ++i)
 		{
-			for(j = 0; j < MAX_MOCA_NODES; ++j)
+			if(collectedNodeMask & (1 << i))
 			{
-				node_info_array[i].phyrate[j] = myFmrInfo.nodeFmr[i].p2p[j].rateNper;
+				if (0 == myFmrInfo.nodeFmr[i].validInfo)
+				{
+					_dprintf("[%s]Failed to retrieve node %d FMR information\n", __FUNCTION__, i);
+					continue;
+				}
+
+				for(j = 0; j < MAX_MOCA_NODES; ++j)
+				{
+					node_info_array[i].phyrate[j] = myFmrInfo.nodeFmr[i].p2p[j].rateNper;
+				}
 			}
 		}
 	}
@@ -547,32 +590,36 @@ static int _mxl371x_get_node_phyrate(ClnkLib_Handle_t *clnkIf, const int activeN
 
 static int _mxl371x_get_node_phyrate_by_id(ClnkLib_Handle_t *clnkIf, const int activeNodeBitmask, const int node_id, MOCA_ONE_NODE_INFO *node_info)
 {
-	ClnkLib_FmrInfo_t myFmrInfo = {0};
+	ClnkLib_FmrInfo_t myFmrInfo = {0,};
+	int collectedNodeMask = 0;
 	int i;
-
 	if(!clnkIf)
 	{
 		_dprintf("[%s]Error! No clnkIf\n", __FUNCTION__);
 		return CLNK_ERR;
 	}
+
 	if(!node_info)
 	{
 		_dprintf("[%s]Error! No node_info\n", __FUNCTION__);
 		return CLNK_ERR;
 	}
 
-	if(ClnkLib_GetFmrInfo(clnkIf, activeNodeBitmask, 2, &myFmrInfo) != CLNK_OK)
+	if(_mxl371x_get_fmrInfo(clnkIf, &myFmrInfo, &collectedNodeMask, activeNodeBitmask, 2) > 0)
 	{
-		_dprintf("\n[%s] Error! Can't get GetFmrInfo\n", __FUNCTION__);
-		return CLNK_ERR;
-	}
+			if(collectedNodeMask & (1 << node_id))
+			{
+				if (0 == myFmrInfo.nodeFmr[node_id].validInfo)
+				{
+					_dprintf("[%s]Failed to retrieve node %d FMR information\n", __FUNCTION__, i);
+					return CLNK_ERR;
+				}
 
-	if(activeNodeBitmask & (1 << node_id))
-	{
-		for(i = 0; i < MAX_MOCA_NODES; ++i)
-		{
-			node_info->phyrate[i] = myFmrInfo.nodeFmr[node_id].p2p[i].rateNper;
-		}
+				for(i = 0; i < MAX_MOCA_NODES; ++i)
+				{
+					node_info->phyrate[i] = myFmrInfo.nodeFmr[node_id].p2p[i].rateNper;
+				}
+			}
 	}
 	return CLNK_OK;
 }
@@ -1013,7 +1060,21 @@ static void _dump_node_info(const MOCA_NODE_INFO *node_info)
 		_dprintf("[%s] dump node(%d)\n", __FUNCTION__, node_info->node_id);
 		_dprintf("\tMAC address: %s\n", node_info->macaddr);
 		_dprintf("\tMoCA version: %s\n", node_info->moca_ver);
-		_dprintf("\tPhy rate:");
+		_dprintf("\tNode MAC address:");
+		for(i = 0; i < MAX_MOCA_NODES; ++i)
+		{
+			_dprintf(" %s", node_info->node_mac[i]);
+			if(i && !((i + 1) % (MAX_MOCA_NODES/4)))
+				_dprintf("\n\t\t");
+		}
+		_dprintf("\n\tNode MoCA ver:");
+		for(i = 0; i < MAX_MOCA_NODES; ++i)
+		{
+			_dprintf(" %s", node_info->node_moca_ver[i]);
+			if(i && !((i + 1) % (MAX_MOCA_NODES/4)))
+				_dprintf("\n\t\t");
+		}
+		_dprintf("\n\tPhy rate:");
 		for(i = 0; i < MAX_MOCA_NODES; ++i)
 		{
 			_dprintf(" %04d", node_info->phyrate[i]);
@@ -1259,13 +1320,24 @@ void moca_set_privacy()
 void moca_local_node_state(MOCA_NODE_INFO *node)
 {
 	MOCA_NODE_INFO local_node;
+	FILE *fp;
 
 	memset(&local_node, 0, sizeof(MOCA_NODE_INFO));
 	get_moca_devices(&local_node, 0, 0);
-	_dump_node_info(&local_node);
+	//_dump_node_info(&local_node);
 	if(node)
 	{
 		memcpy(node, &local_node, sizeof(MOCA_NODE_INFO));
+	}
+	else
+	{
+		//dump the structure in a file
+		fp = fopen("/tmp/moca_node_state", "wb+");
+		if(fp)
+		{
+			fwrite(&local_node, sizeof(MOCA_NODE_INFO), 1, fp);
+			fclose(fp);
+		}
 	}
 }
 
@@ -1371,6 +1443,7 @@ int moca_monitor_main(int argc, char *argv[])
 			else
 			{
 				_moca_cmd(MOCA_CMD_GET_CONN_STATE, NULL);
+				moca_local_node_state(NULL);
 			}
 		}
 		_handle_moca_if_status(nvram_get_int("moca_conn_state"));
@@ -1405,6 +1478,8 @@ void get_moca_devices(MOCA_NODE_INFO *moca_devices, int max_devices, int port_id
 				memcpy(moca_devices->moca_ver, node[i].moca_ver, sizeof(char) * 8);
 				memcpy(moca_devices->phyrate, node[i].phyrate, sizeof(int) * MAX_MOCA_NODES);
 			}
+			memcpy(moca_devices->node_mac[i], node[i].macaddr, sizeof(char) * 18);
+			memcpy(moca_devices->node_moca_ver[i], node[i].moca_ver, sizeof(char) * 8);
 			memcpy(&(moca_devices->rx_snr[i]), &(node[i].rx_snr), sizeof(char) * MAX_MOCA_NUM_CHANNELS);
 		}
 		//_dump_node_info(moca_devices);

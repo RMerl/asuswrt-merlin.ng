@@ -47,6 +47,7 @@
 #include "shared.h"
 #include "wlif_utils.h"
 #include "iboxcom.h"
+#include <regex.h>
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
@@ -1452,6 +1453,39 @@ enum wan_unit_e get_first_connected_public_wan_unit(void)
 			continue;
 		wan_unit = i;
 		break;
+	}
+	if(WAN_UNIT_MAX == i)
+		return WAN_UNIT_NONE;
+	else
+		return wan_unit;
+}
+
+enum wan_unit_e get_first_connected_dual_wan_unit(void)
+{
+	int i, wan_unit = WAN_UNIT_MAX;
+	char prefix[sizeof("wanXXXXXX_")], link[sizeof("link_wanXXXXXX")], tmp[100];
+
+	for (i = WAN_UNIT_FIRST; i < WAN_UNIT_MAX; ++i) {
+		if (get_dualwan_by_unit(i) == WANS_DUALWAN_IF_NONE || !is_wan_connect(i))
+			continue;
+
+		/* For LB mode, check link status. */
+		snprintf(prefix, sizeof(prefix), "wan%d_", i);
+		if (!i)
+			strlcpy(link, "link_wan", sizeof(link));
+		else
+			snprintf(link, sizeof(link), "link_wan%d", i);
+
+		if (!nvram_get_int(link))
+			continue;
+
+		if (( nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)))==2
+				&& nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)))==0
+				&& nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)))==0 ))
+		{
+				wan_unit = i;
+				break;
+		}
 	}
 	if(WAN_UNIT_MAX == i)
 		return WAN_UNIT_NONE;
@@ -5756,6 +5790,47 @@ int is_valid_domainname(const char *name)
 	return p - name;
 }
 
+int is_valid_oauth_code(char *code)
+{
+	int len;
+
+	len = strlen(code);
+	if (len > 2048) return 0;
+
+	while(*code) {
+		if (isalnum(*code) != 0 || *code == '-' || *code == '.' || *code == '_' || *code == '~' || *code == '+' || *code == '/' || isspace(*code) != 0)
+			code++;
+		else
+			return 0;
+	}
+	return 1;
+}
+int is_valid_email_address(char *address)
+{
+	int status=1, ret=0, rc=0;
+	regex_t preg;
+	const char *reg_exp = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*.\\w+([-.]\\w+)*$";
+
+	rc = regcomp(&preg, reg_exp, REG_EXTENDED);
+
+	if (rc != 0)
+	{
+		dbg("%s: Failed to compile the regular expression:%d\n", __func__, rc);
+		return 4000;
+	}
+
+	status=regexec(&preg,address,0, NULL, 0);
+	if (status == REG_NOMATCH) {
+		dbg("No Match\n");
+	}
+	else if (status == 0) {
+		dbg("Match\n");
+		ret = 1;
+	}
+	regfree(&preg);
+	return ret;
+}
+
 int get_discovery_ssid(char *ssid_g, int size)
 {
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
@@ -6743,7 +6818,7 @@ void wl_vif_to_subnet(const char *ifname, char *net, int len)
 	if (found) {
 		memset(nv, 0, sizeof(nv));
 		if (i==0)
-			snprintf(nv, sizeof(nv), "lan_ifname", i);
+			snprintf(nv, sizeof(nv), "lan_ifname");
 		else
 			snprintf(nv, sizeof(nv), "lan%d_ifname", i);
 		memset(br_name, 0, sizeof(br_name));

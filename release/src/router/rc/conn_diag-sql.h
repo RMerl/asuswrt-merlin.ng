@@ -58,6 +58,8 @@ typedef struct _DIAG_MOCA_NODE_INFO
 	char macaddr[18];
 	char moca_ver[8];
 	int phyrate[DIAG_MAX_MOCA_NODES];
+	char node_mac[DIAG_MAX_MOCA_NODES][18];
+	char node_moca_ver[DIAG_MAX_MOCA_NODES][8];
 	unsigned char rx_snr[DIAG_MAX_MOCA_NODES][DIAG_MAX_MOCA_NUM_CHANNELS];
 }DIAG_MOCA_NODE_INFO;
 

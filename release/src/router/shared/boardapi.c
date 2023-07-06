@@ -707,6 +707,30 @@ dump_ledtable()
 	for(i=0; i<BTN_ID_MAX; i++)
 		printf("tb_btn[%d]=%04x\n", i, btn_gpio_table[i]);
 }
+
+#ifdef EBG19
+int rtkswitch_LanPort_linkUp(void)
+{
+	eval("rtkswitch", "5");
+
+	return 0;
+}
+
+int rtkswitch_LanPort_linkDown(void)
+{
+	eval("rtkswitch", "6");
+
+	return 0;
+}
+
+int rtkswitch_Reset_Storm_Control(void)
+{
+	eval("rtkswitch", "21");
+
+	return 0;
+}
+#endif
+
 #endif
 
 #ifdef RTCONFIG_BCMARM
@@ -751,7 +775,7 @@ int set_pwr_usb(int boolOn) {
 
 	if ((gpio_pin = (use_gpio = nvram_get_int("pwr_usb_gpio"))&0xff) != 0xff) {
 #ifdef RTCONFIG_HND_ROUTER_AX_6756
-#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(GT10) || defined(BR63)
+#if defined(RTAX58U_V2) || defined(TUFAX3000_V2) || defined(GT10) || defined(BR63) || defined(RTAX9000)
 		/* set pinmux of GPIO 80 as 4 to enable GPIO mode */
 		system("sw 0xff800554 0");
 		system("sw 0xff800558 0x4050");
@@ -1293,7 +1317,7 @@ int lanport_ctrl(int ctrl)
 		system("/usr/bin/switch_cli GSW_MDIO_DATA_WRITE nAddressDev=5 nAddressReg=0 nData=0x1c00");
 	}
 	return 1;
-#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
+#elif defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63) || defined(EBG19)
 	if (ctrl)
 		rtkswitch_LanPort_linkUp();
 	else
@@ -1357,7 +1381,15 @@ int lanport_ctrl(int ctrl)
 		mask |= (0x0001<<atoi(word));
 #endif
 	}
-#if defined(BCM6750) || defined(BCM4912) || defined(BCM6756) || defined(BCM6855)
+
+#if defined(EBG19)
+	if (ctrl)
+		rtkswitch_LanPort_linkUp();
+	else
+		rtkswitch_LanPort_linkDown();
+#endif
+
+#if defined(BCM6750) || defined(BCM4912) || defined(BCM6756) || defined(BCM6855) || defined(BCM6813)
 	return 1;
 #else
 	return set_phy_ctrl(mask, ctrl);

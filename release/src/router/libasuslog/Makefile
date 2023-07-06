@@ -3,7 +3,7 @@ include ../common.mak
 OBJS = libasuslog.o
 PROGS = libasuslog.so
 
-CFLAGS += -fPIC $(EXTRACFLAGS)
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g) -fPIC $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR) -Wall
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
 LDFLAGS_SO = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
@@ -46,7 +46,7 @@ endif
 
 
 install: all
-	$(STRIP) $(PROGS)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(PROGS))
 
 	install -D libasuslog.so $(INSTALLDIR)/lib/libasuslog.so
 

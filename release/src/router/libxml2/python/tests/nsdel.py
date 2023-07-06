@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/env python
 #
 # this test exercise the XPath basic engine, parser, etc, and
 # allows to detect memory leaks
@@ -19,7 +19,7 @@ def checkNamespaceDefs(node, count):
     nsList = list(namespaceDefs(node))
     #print nsList
     if len(nsList) != count :
-        raise Exception, "Error: saw %d namespace declarations.  Expected %d" % (len(nsList), count)
+        raise Exception("Error: saw %d namespace declarations.  Expected %d" % (len(nsList), count))
     
 # Memory debug specific
 libxml2.debugMemory(1)
@@ -42,7 +42,7 @@ checkNamespaceDefs(node, 0)
 ns.freeNsList()
 doc.freeDoc()
 
-# Remove a namespace refered to by a child
+# Remove a namespace referred to by a child
 doc = libxml2.newDoc("1.0")
 root = doc.newChild(None, "root", None)
 namespace = root.newNs("http://example.com/sample", "s")
@@ -56,7 +56,7 @@ doc.freeDoc()
 # Memory debug specific
 libxml2.cleanupParser()
 if libxml2.debugMemory(1) == 0:
-    print "OK"
+    print("OK")
 else:
-    print "Memory leak %d bytes" % (libxml2.debugMemory(1))
+    print("Memory leak %d bytes" % (libxml2.debugMemory(1)))
     libxml2.dumpMemory()

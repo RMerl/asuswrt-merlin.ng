@@ -6,7 +6,7 @@ ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 CFLAGS += -DBCM49XX
 endif
 endif
-CFLAGS += -Wall -Os $(EXTRACFLAGS)
+CFLAGS += -Wall $(if $(RTCONFIG_DEBUG),-g,-Os) $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/networkmap
 ifneq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
@@ -306,6 +306,10 @@ endif
 
 ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
 CFLAGS += -DNEW_SWITCH_ORDER
+endif
+
+ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
+CFLAGS += -DJFFS2_UBI_VOLUME_SIZE=$(JFFS2_UBI_VOLUME_SIZE)
 endif
 
 OBJS := rc.o init.o interface.o lan.o wireless.o $(if $(RTCONFIG_SOFTWIRE46), s46comm.o) wan.o pppd.o auth.o services.o
@@ -1212,6 +1216,9 @@ endif
 ifeq ($(RTCONFIG_EXT_RTL8370MB),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
+#ifeq ($(RTCONFIG_EXT_RTL8367S),y)
+#	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
+#endif
 ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
@@ -1545,10 +1552,10 @@ endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc collect_debuglog
 
 ifeq ($(RTCONFIG_TPVPN),y)
-ifeq ($(RTCONFIG_OPENVPN),y)
+ifeq ($(RTCONFIG_HMA),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc hmavpn
 endif
-ifeq ($(RTCONFIG_WIREGUARD),y)
+ifeq ($(RTCONFIG_NORDVPN),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc nordvpn
 endif
 endif

@@ -22,6 +22,7 @@ AUTOCONF = .\config.msvc
 XML_NAME = xml2
 XML_BASENAME = lib$(XML_NAME)
 XML_SO = $(XML_BASENAME).dll
+XML_RES = $(XML_BASENAME).res
 XML_IMP = $(XML_BASENAME).lib
 XML_DEF = $(XML_BASENAME).def
 XML_A = $(XML_BASENAME)_a.lib
@@ -36,14 +37,14 @@ UTILS_INTDIR = int.utils.msvc
 
 # The preprocessor and its options.
 CPP = cl.exe /EP
-CPPFLAGS = /nologo /I$(XML_SRCDIR)\include
+CPPFLAGS = /nologo /I$(XML_SRCDIR)\include /D "NOLIBTOOL" 
 !if "$(WITH_THREADS)" != "no"
 CPPFLAGS = $(CPPFLAGS) /D "_REENTRANT"
 !endif
 
 # The compiler and its options.
 CC = cl.exe
-CFLAGS = /nologo /D "WIN32" /D "_WINDOWS" /D "_MBCS" /W1 $(CRUNTIME)
+CFLAGS = /nologo /D "_WINDOWS" /D "_MBCS" /D "NOLIBTOOL" /W3 /wd4244 /wd4267 $(CRUNTIME)
 CFLAGS = $(CFLAGS) /I$(XML_SRCDIR) /I$(XML_SRCDIR)\include /I$(INCPREFIX)
 !if "$(WITH_THREADS)" != "no"
 CFLAGS = $(CFLAGS) /D "_REENTRANT"
@@ -54,9 +55,6 @@ CFLAGS = $(CFLAGS) /D "HAVE_WIN32_THREADS" /D "HAVE_COMPILER_TLS"
 CFLAGS = $(CFLAGS) /D "HAVE_WIN32_THREADS"
 !else if "$(WITH_THREADS)" == "posix"
 CFLAGS = $(CFLAGS) /D "HAVE_PTHREAD_H"
-!endif
-!if "$(WITH_ZLIB)" == "1"
-CFLAGS = $(CFLAGS) /D "HAVE_ZLIB_H"
 !endif
 CFLAGS = $(CFLAGS) /D_CRT_SECURE_NO_DEPRECATE /D_CRT_NONSTDC_NO_DEPRECATE
 
@@ -71,8 +69,20 @@ LIBS = $(LIBS) wsock32.lib ws2_32.lib
 !if "$(WITH_ICONV)" == "1"
 LIBS = $(LIBS) iconv.lib
 !endif 
+!if "$(WITH_ICU)" == "1"
+!if "$(STATIC)" == "1"
+LIBS = $(LIBS) advapi32.lib sicuuc.lib sicuin.lib sicudt.lib
+!else
+LIBS = $(LIBS) icuuc.lib icuin.lib icudt.lib
+!endif
+!endif
 !if "$(WITH_ZLIB)" == "1"
-LIBS = $(LIBS) zdll.lib
+# could be named differently zdll or zlib
+# LIBS = $(LIBS) zdll.lib
+LIBS = $(LIBS) zlib.lib
+!endif
+!if "$(WITH_LZMA)" == "1"
+LIBS = $(LIBS) liblzma.lib
 !endif
 !if "$(WITH_THREADS)" == "posix"
 LIBS = $(LIBS) pthreadVC.lib
@@ -91,16 +101,23 @@ CFLAGS = $(CFLAGS) /D "_DEBUG" /Od /Z7
 LDFLAGS = $(LDFLAGS) /DEBUG
 !else
 CFLAGS = $(CFLAGS) /D "NDEBUG" /O2 
-LDFLAGS = $(LDFLAGS) /OPT:NOWIN98
+# commented out as this break VC10 c.f. 634846
+# LDFLAGS = $(LDFLAGS) /OPT:NOWIN98
+LDFLAGS = $(LDFLAGS)
 !endif
 
+# append CFLAGS etc. passed on command line
+CPPFLAGS = $(CPPFLAGS) $(EXTRA_CPPFLAGS)
+CFLAGS = $(CFLAGS) $(EXTRA_CFLAGS)
+LDFLAGS = $(LDFLAGS) $(EXTRA_LDFLAGS)
+
 # Libxml object files.
-XML_OBJS = $(XML_INTDIR)\c14n.obj\
+XML_OBJS = $(XML_INTDIR)\buf.obj\
+	$(XML_INTDIR)\c14n.obj\
 	$(XML_INTDIR)\catalog.obj\
 	$(XML_INTDIR)\chvalid.obj\
 	$(XML_INTDIR)\debugXML.obj\
 	$(XML_INTDIR)\dict.obj\
-	$(XML_INTDIR)\DOCBparser.obj\
 	$(XML_INTDIR)\encoding.obj\
 	$(XML_INTDIR)\entities.obj\
 	$(XML_INTDIR)\error.obj\
@@ -140,12 +157,12 @@ XML_OBJS = $(XML_INTDIR)\c14n.obj\
 	$(XML_INTDIR)\xmlstring.obj
 
 # Static libxml object files.
-XML_OBJS_A = $(XML_INTDIR_A)\c14n.obj\
+XML_OBJS_A = $(XML_INTDIR_A)\buf.obj\
+	$(XML_INTDIR_A)\c14n.obj\
 	$(XML_INTDIR_A)\catalog.obj\
 	$(XML_INTDIR_A)\chvalid.obj\
 	$(XML_INTDIR_A)\debugXML.obj\
 	$(XML_INTDIR_A)\dict.obj\
-	$(XML_INTDIR_A)\DOCBparser.obj\
 	$(XML_INTDIR_A)\encoding.obj\
 	$(XML_INTDIR_A)\entities.obj\
 	$(XML_INTDIR_A)\error.obj\
@@ -185,12 +202,12 @@ XML_OBJS_A = $(XML_INTDIR_A)\c14n.obj\
 	$(XML_INTDIR_A)\xmlstring.obj
 
 # Static libxml object files.
-XML_OBJS_A_DLL = $(XML_INTDIR_A_DLL)\c14n.obj\
+XML_OBJS_A_DLL = $(XML_INTDIR_A_DLL)\buf.obj\
+	$(XML_INTDIR_A_DLL)\c14n.obj\
 	$(XML_INTDIR_A_DLL)\catalog.obj\
 	$(XML_INTDIR_A_DLL)\chvalid.obj\
 	$(XML_INTDIR_A_DLL)\debugXML.obj\
 	$(XML_INTDIR_A_DLL)\dict.obj\
-	$(XML_INTDIR_A_DLL)\DOCBparser.obj\
 	$(XML_INTDIR_A_DLL)\encoding.obj\
 	$(XML_INTDIR_A_DLL)\entities.obj\
 	$(XML_INTDIR_A_DLL)\error.obj\
@@ -229,28 +246,27 @@ XML_OBJS_A_DLL = $(XML_INTDIR_A_DLL)\c14n.obj\
 	$(XML_INTDIR_A_DLL)\xpointer.obj\
 	$(XML_INTDIR_A_DLL)\xmlstring.obj
 
+!if "$(WITH_LZMA)" == "1"
+XML_OBJS = $(XML_OBJS) $(XML_INTDIR)\xzlib.obj
+XML_OBJS_A = $(XML_OBJS_A) $(XML_INTDIR_A)\xzlib.obj
+XML_OBJS_A_DLL = $(XML_OBJS_A_DLL) $(XML_INTDIR_A_DLL)\xzlib.obj
+!endif
+
 # Xmllint and friends executables.
 UTILS = $(BINDIR)\xmllint.exe\
 	$(BINDIR)\xmlcatalog.exe\
 	$(BINDIR)\testAutomata.exe\
-	$(BINDIR)\testC14N.exe\
-	$(BINDIR)\testDocbook.exe\
-	$(BINDIR)\testHTML.exe\
-	$(BINDIR)\testReader.exe\
-	$(BINDIR)\testRelax.exe\
-	$(BINDIR)\testRegexp.exe\
 	$(BINDIR)\testModule.exe\
-	$(BINDIR)\testSAX.exe\
-	$(BINDIR)\testSchemas.exe\
-	$(BINDIR)\testURI.exe\
-	$(BINDIR)\testXPath.exe\
 	$(BINDIR)\runtest.exe\
 	$(BINDIR)\runsuite.exe\
-	$(BINDIR)\testapi.exe
+	$(BINDIR)\runxmlconf.exe\
+	$(BINDIR)\testapi.exe\
+	$(BINDIR)\testchar.exe\
+	$(BINDIR)\testdict.exe\
+	$(BINDIR)\testlimits.exe\
+	$(BINDIR)\testrecurse.exe
 	
-!if "$(WITH_THREADS)" == "yes" || "$(WITH_THREADS)" == "ctls" || "$(WITH_THREADS)" == "native"
-UTILS = $(UTILS) $(BINDIR)\testThreadsWin32.exe
-!else if "$(WITH_THREADS)" == "posix"
+!if "$(WITH_THREADS)" != "no"
 UTILS = $(UTILS) $(BINDIR)\testThreads.exe
 !endif
 
@@ -286,11 +302,12 @@ distclean : clean
 rebuild : clean all
 
 install-libs : all
-	if not exist $(INCPREFIX)\libxml mkdir $(INCPREFIX)\libxml
+	if not exist $(INCPREFIX)\libxml2 mkdir $(INCPREFIX)\libxml2
+	if not exist $(INCPREFIX)\libxml2\libxml mkdir $(INCPREFIX)\libxml2\libxml
 	if not exist $(BINPREFIX) mkdir $(BINPREFIX)
 	if not exist $(LIBPREFIX) mkdir $(LIBPREFIX)
 	if not exist $(SOPREFIX) mkdir $(SOPREFIX)
-	copy $(XML_SRCDIR)\include\libxml\*.h $(INCPREFIX)\libxml
+	copy $(XML_SRCDIR)\include\libxml\*.h $(INCPREFIX)\libxml2\libxml
 	copy $(BINDIR)\$(XML_SO) $(SOPREFIX)
 	copy $(BINDIR)\$(XML_A) $(LIBPREFIX)
 	copy $(BINDIR)\$(XML_A_DLL) $(LIBPREFIX)
@@ -354,11 +371,13 @@ $(XML_OBJS_A_DLL) : $(XML_INTDIR_A_DLL)
 # Creates the export definition file (DEF) for libxml.
 $(XML_INTDIR)\$(XML_DEF) : $(XML_INTDIR) $(XML_DEF).src
 	$(CPP) $(CPPFLAGS) $(XML_DEF).src > $(XML_INTDIR)\$(XML_DEF)
+$(XML_INTDIR)\$(XML_RES) : $(XML_INTDIR) libxml2.rc
+	rc -Fo $(XML_INTDIR)\$(XML_RES) libxml2.rc
 
 # Creates the libxml shared object.
-$(BINDIR)\$(XML_SO) : $(BINDIR) $(XML_OBJS) $(XML_INTDIR)\$(XML_DEF)
+$(BINDIR)\$(XML_SO) : $(BINDIR) $(XML_OBJS) $(XML_INTDIR)\$(XML_DEF) $(XML_INTDIR)\$(XML_RES)
 	$(LD) $(LDFLAGS) /DLL \
-		/IMPLIB:$(BINDIR)\$(XML_IMP) /OUT:$(BINDIR)\$(XML_SO) $(XML_OBJS) $(LIBS)
+		/IMPLIB:$(BINDIR)\$(XML_IMP) /OUT:$(BINDIR)\$(XML_SO) $(XML_OBJS) $(XML_INTDIR)\$(XML_RES) $(LIBS)
 	@$(_VC_MANIFEST_EMBED_DLL)
 
 #$(BINDIR)\$(XML_SO) : $(BINDIR) $(XML_OBJS) $(XML_INTDIR)\$(XML_DEF)
@@ -398,65 +417,13 @@ $(UTILS) : $(UTILS_INTDIR) $(BINDIR) libxml libxmla libxmladll
 
 # TESTS
 
-tests :  XPathtests
+tests : checktests XPathtests
 
-XPathtests : $(BINDIR)\testXPath.exe
-	@echo. 2> .memdump
-	@echo ## XPath regression tests
-	@-$(BINDIR)\testXPath.exe | find /C "support not compiled in" 1>nul
-	@if %ERRORLEVEL% NEQ 0 @( \
-		echo Skipping debug not compiled in\
-		@exit 0 \
-	)
-	@for %%I in ($(XML_SRCDIR)\test\XPath\expr\*.*) do @( \
-		@IF NOT EXIST $(XML_SRCDIR)\result\XPath\expr\%%~nxI ( \
-			@echo New test %%~nxI &&\
-			@echo %%~nxI &&\
-			$(BINDIR)\testXPath.exe -f --expr %%I > $(XML_SRCDIR)/result/XPath/expr/%%~nxI &&\
-			findstr /C:"MEMORY ALLOCATED : 0" \
-		) ELSE ( \
-			$(BINDIR)\testXPath.exe -f --expr %%I 2>&1 > result.%%~nxI &&\
-			fc $(XML_SRCDIR)\result\XPath\expr\%%~nxI result.%%~nxI >nul &\
-			iF ERRORLEVEL 1 exit 1 & \
-			findstr "MEMORY ALLOCATED" .memdump | findstr /C:"MEMORY ALLOCATED : 0" >nul &&\
-			del result.%%~nxI \
-		) \
-	)
-	@for %%I in ($(XML_SRCDIR)\test\XPath\docs\*.*) do @( \
-		for %%J in ($(XML_SRCDIR)\test\XPath\tests\%%~nxI*.*) do @( \
-			if not exist $(XML_SRCDIR)\result\XPath\tests\%%~nxJ ( \
-				$(BINDIR)\testXPath.exe -f -i %%I %%J > $(XML_SRCDIR)\result\XPath\tests\%%~nxJ &&\
-				findstr /C:"MEMORY ALLOCATED" .memdump | findstr /C:"MEMORY ALLOCATED : 0" > nul \
-			) ELSE ( \
-				$(BINDIR)\testXPAth.exe -f -i %%I %%J 2>&1 > result.%%~nxJ &&\
-				findstr /C:"MEMORY ALLOCATED" .memdump | findstr /C:"MEMORY ALLOCATED : 0">null &&\
-				fc $(XML_SRCDIR)\result\XPath\tests\%%~nxJ result.%%~nxJ >null & \
-				IF ERRORLEVEL 1 (echo Error: %%I %%J & exit 1) & \
-				del result.%%~nxJ \
-			)\
-		)\
-	)
+checktests : $(UTILS)
+	cd .. && win32\$(BINDIR)\runtest.exe
+	cd .. && win32\$(BINDIR)\testrecurse.exe
+	cd .. && win32\$(BINDIR)\testapi.exe
+	cd .. && win32\$(BINDIR)\testchar.exe
+	cd .. && win32\$(BINDIR)\testdict.exe
+	cd .. && win32\$(BINDIR)\runxmlconf.exe
 
-XMLtests : $(BINDIR)\xmllint.exe
-	@echo. 2> .memdump
-	@echo ## XML regression tests
-	-@for %%I in ($(XML_SRCDIR)\test\*) do @( \
-		if not exist $(XML_SRCDIR)\result\%%~nxI ( \
-			echo New test file %%~nxI &\
-			$(BINDIR)\xmllint.exe  %%I > $(XML_SRCDIR)\result\%%~nxI && \
-			findstr /C:"MEMORY ALLOCATED" .memdump | findstr /C:"MEMORY ALLOCATED : 0" > null \
-		) ELSE ( \
-			$(BINDIR)\xmllint.exe %%I 2>&1 > result.%%~nxI && \
-			findstr /C:"MEMORY ALLOC" .memdump | findstr /C:"MEMORY ALLOCATED : 0" > null && \
-			fc $(XML_SRCDIR)\result\%%~nxI result.%%~nxI > null && \
-			$(BINDIR)\xmllint.exe result.%%~nxI 2>&1 > result2.%%~nxI | findstr /V /C:"failed to load external entity" && \
-			fc result.%%~nxI result2.%%~nxI & \
-			del result.%%~nxI result2.%%~nxI\
-		) \
-	)	
-
-				
-
-
-
-	

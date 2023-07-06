@@ -1972,7 +1972,7 @@ function s46reset(){
 }
 
 function update_map(){
-	var msg = "It will take 1-2 minutes to reassign MAP rule. All your connected devices will lose internet connection during the update. Do you want to proceed?";//untranslated
+	var msg = stringSafeGet("<#MAP_update_desc#>")+" <#AiMesh_confirm_msg0#>";
 	if(confirm(msg)){
 		$.ajax({
 			url: "/s46reset.cgi",
@@ -2105,7 +2105,7 @@ function update_map(){
 									</select>
 										<div id="s46reset_div" style="display: flex; align-items: center;">
 											<div id="s46btn_div" style="display: flex; align-items: center;">
-												<div id="s46reset_btn" style="margin-left: 5px;"><input type="button" class="button_gen" onclick="update_map();" value="Update MAP"></div><!--untranslated-->
+												<div id="s46reset_btn" style="margin-left: 5px;"><input type="button" class="button_gen" onclick="update_map();" value="<#MAP_update#>"></div>
 												<div id="s46reset_help" style="margin-left: 5px; cursor: pointer;"><a id = "s46reset_faq" href="" target="_blank"><img src="/images/New_ui/bottom_help.png"></a></div>
 											</div>
 										</div>

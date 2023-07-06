@@ -1247,6 +1247,17 @@ start_wan_if(int unit)
 
 	update_wan_state(prefix, WAN_STATE_INITIALIZING, 0);
 
+	// WAR: fix the Tx disconnection of the external PHY
+#if defined(GTAXE16000)
+	snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
+	if(*wan_ifname != '\0' && !strcmp(wan_ifname, "eth0") || !strcmp(wan_ifname, "eth5") || !strcmp(wan_ifname, "eth6")){
+		_dprintf("%s(%d): phy-reseting %s...\n", __func__, __LINE__, wan_ifname);
+		nvram_set("freeze_duck", "10");
+		eval("ethctl", wan_ifname, "phy-reset");
+		_dprintf("%s: %s was phy-reseted...\n", __func__, wan_ifname);
+	}
+#endif
+
 #if defined(BCM4912)
 #if 0
 	snprintf(wan_ifname, sizeof(wan_ifname), "%s", nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
@@ -3829,12 +3840,6 @@ NOIP:
 	}
 #endif
 
-	/* ntp is set, but it didn't just get set, so ntp_synced didn't already did these */
-	if (nvram_get_int("ntp_ready") && !first_ntp_sync) {
-		stop_ddns();
-		start_ddns(NULL);
-	}
-
 #ifdef RTCONFIG_VPNC
 #ifdef RTCONFIG_VPN_FUSION
 	start_vpnc();
@@ -5002,14 +5007,14 @@ int auto46det_main(int argc, char *argv[]) {
 				continue;
 			}
 
+			if (nvram_get_int(strcat_r(prefix, "state", tmp)) >= WAN46DET_STATE_UNKNOW)
+				continue;
+
 			if (!pids("odhcp6c")) {
 				nvram_set("ipv6_service", "ipv6pt");
 				wan6_up(get_wan6face());
 				sleep(5);
 			}
-
-			if (nvram_get_int(strcat_r(prefix, "state", tmp)) >= WAN46DET_STATE_UNKNOW)
-				continue;
 
 			nvram_set_int(strcat_r(prefix, "state", tmp), WAN46DET_STATE_INITIALIZING);
 			nvram_set_int(strcat_r(prefix, "state", tmp), wan46det(unit));

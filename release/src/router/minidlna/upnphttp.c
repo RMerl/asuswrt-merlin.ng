@@ -532,14 +532,14 @@ next_header:
 			return;
 		line += 2;
 	}
-	if( h->reqflags & FLAG_CHUNKED )
+	if (h->reqflags & FLAG_CHUNKED)
 	{
 		char *endptr;
 		h->req_chunklen = -1;
-		if( h->req_buflen <= h->req_contentoff )
+		if (h->req_buflen <= h->req_contentoff)
 			return;
 		while( (line < (h->req_buf + h->req_buflen)) &&
-		       (h->req_chunklen = strtol(line, &endptr, 16)) &&
+		       (h->req_chunklen = strtol(line, &endptr, 16) > 0) &&
 		       (endptr != line) )
 		{
 			endptr = strstr(endptr, "\r\n");
@@ -809,30 +809,9 @@ ProcessHTTPPOST_upnphttp(struct upnphttp * h)
 }
 
 static int
-is_vaild_ip(struct upnphttp *h) {
-	int i = 0, ret = 0;
-	const char *p;
-	char addrstr[16];
-	unsigned char ip[4];
-
-	memset(addrstr, 0, sizeof(addrstr));
-	p = h->req_Callback;
-	p += 7;	/* http:// */
-	while(*p != '/' && *p != ':' && i < (sizeof(addrstr)-1) && i < h->req_CallbackLen-7)
-		addrstr[i++] = *(p++);
-	addrstr[i] = '\0';
-
-	ret = inet_aton(addrstr, (struct in_addr *)ip);
-
-	if(ret && ((ip[0] == 10) || (ip[0] == 172 && ip[1] >= 16 && ip[1] <= 31) || (ip[0] == 192 && ip[1] == 168)))
-		return 1;// intranet ip
-
-	return 0;
-}
-static int
 check_event(struct upnphttp *h)
 {
-	enum event_type type;
+	enum event_type type = E_INVALID;
 
 	if (h->req_Callback)
 	{
@@ -840,7 +819,6 @@ check_event(struct upnphttp *h)
 		{
 			BuildResp2_upnphttp(h, 400, "Bad Request",
 				            "<html><body>Bad request</body></html>", 37);
-			type = E_INVALID;
 		}
 		else if (strncmp(h->req_Callback, "http://", 7) != 0 ||
 		         strncmp(h->req_NT, "upnp:event", h->req_NTLen) != 0 || h->req_CallbackLen > 256)
@@ -849,16 +827,30 @@ check_event(struct upnphttp *h)
 			 * If CALLBACK header is missing or does not contain a valid HTTP URL,
 			 * the publisher must respond with HTTP error 412 Precondition Failed*/
 			BuildResp2_upnphttp(h, 412, "Precondition Failed", 0, 0);
-			type = E_INVALID;
-		}
-		else if(!is_vaild_ip(h))
-		{
-			BuildResp2_upnphttp(h, 400, "Bad Request",
-							"<html><body>Bad request</body></html>", 37);
-			type = E_INVALID;
 		}
 		else
-			type = E_SUBSCRIBE;
+		{
+			/* Make sure callback URL points to the originating IP */
+			struct in_addr addr;
+			char addrstr[16];
+			int i = 0;
+			const char *p = h->req_Callback + 7;
+			while (!strchr("/:>", *p) && i < sizeof(addrstr) - 1 &&
+			       p < (h->req_Callback + h->req_CallbackLen))
+			{
+				addrstr[i++] = *(p++);
+			}
+			addrstr[i] = '\0';
+
+			if (inet_pton(AF_INET, addrstr, &addr) <= 0 ||
+			    memcmp(&addr, &h->clientaddr, sizeof(struct in_addr)))
+			{
+				DPRINTF(E_ERROR, L_HTTP, "Bad callback IP (%s)\n", addrstr);
+				BuildResp2_upnphttp(h, 412, "Precondition Failed", 0, 0);
+			}
+			else
+				type = E_SUBSCRIBE;
+		}
 	}
 	else if (h->req_SID)
 	{
@@ -867,7 +859,6 @@ check_event(struct upnphttp *h)
 		{
 			BuildResp2_upnphttp(h, 400, "Bad Request",
 				            "<html><body>Bad request</body></html>", 37);
-			type = E_INVALID;
 		}
 		else
 			type = E_RENEW;
@@ -875,7 +866,6 @@ check_event(struct upnphttp *h)
 	else
 	{
 		BuildResp2_upnphttp(h, 412, "Precondition Failed", 0, 0);
-		type = E_INVALID;
 	}
 
 	return type;
@@ -1010,7 +1000,7 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 		char *chunkstart, *chunk, *endptr, *endbuf;
 		chunk = endbuf = chunkstart = h->req_buf + h->req_contentoff;
 
-		while( (h->req_chunklen = strtol(chunk, &endptr, 16)) && (endptr != chunk) )
+		while ((h->req_chunklen = strtol(chunk, &endptr, 16)) > 0 && (endptr != chunk) )
 		{
 			endptr = strstr(endptr, "\r\n");
 			if (!endptr)

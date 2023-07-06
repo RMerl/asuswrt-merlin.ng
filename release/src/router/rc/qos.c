@@ -1208,6 +1208,10 @@ static int start_tqos(void)
 		fprintf(f, "\t$TQAUL parent 1:%d handle %d: $SCH\n", x, x);
 		fprintf(f, "\t$TFAUL parent 1: prio %d u32 match mark %d 0x%x flowid 1:%d\n", x, i + 1, QOS_MASK, x);
 	}
+// add for test
+#if 1
+		fprintf(f, "\t$TFA parent 1: prio 10 u32 match ip protocol 17 0xff match ip tos 0xC8 0xff flowid 1:10\n");
+#endif
 	free(buf);
 
 	/*
@@ -1309,6 +1313,12 @@ static int start_tqos(void)
 					x, x,
 					x, i + 1, x);
 		}
+
+// add for test
+#if 1
+		fprintf(f, "\t$TFADL parent 2: prio 10 u32 match ip protocol 17 0xff match ip tos 0xC8 0xff flowid 2:10\n");
+#endif
+
 		free(buf);
 
 		if (nvram_match("qos_ack", "on")) {
@@ -1397,6 +1407,20 @@ void stop_iQos(void)
 #ifdef HND_ROUTER
 	config_obw_off();
 #endif
+/* OPPO */
+#if 0
+#ifdef RTCONFIG_ROUTERBOOST 	
+	if (!IS_RB_QOS()
+#ifdef RTCONFIG_AMAS
+			|| (aimesh_re_node() == 1 && nvram_get_int("qos_type") == 4)
+#endif			
+	) {
+	    system("rmmod deDupTx");
+	    stop_asus_rbd();
+	}
+#endif
+#endif
+
 }
 
 static int add_bandwidth_limiter_rules(char *pcWANIF)
@@ -2201,6 +2225,160 @@ static int start_GeForce_QoS(void)
 #endif
 
 
+/* OPPO */
+#ifdef RTCONFIG_ROUTERBOOST
+static int start_RouterBoost_QoS(void)
+{
+	FILE *f = NULL;
+	unsigned int ibw = 0, obw = 0;
+	
+	_dprintf("[RB] start RouterBoost QoS ...\n");
+	ibw = strtoul(nvram_safe_get("qos_ibw"), NULL, 10);
+	obw = strtoul(nvram_safe_get("qos_obw"), NULL, 10);
+	
+	/* If this value doesn't exist or 0 or empty, will give 1Gbps as default value */
+	if (ibw == 0) ibw = 10240000;
+	if (obw == 0) obw = 10240000;
+	
+	/* If this value exist and it is less then 1Mbps, will force into 1Mbps */
+	if (ibw < 1024 && ibw != 0) ibw = 1024;
+	if (obw < 1024 && obw != 0) obw = 1024;
+	
+	if ((f = fopen(qosfn, "w")) == NULL) return -2;
+	fprintf(f,
+		"#!/bin/sh\n"
+		"WAN=%s\n"
+		"LAN=%s\n"
+		"\n"
+		"TQAU=\"tc qdisc add dev $WAN\"\n"
+		"TCAU=\"tc class add dev $WAN\"\n"
+		"TFAU=\"tc filter add dev $WAN\"\n"
+		"SFQ=\"sfq perturb 10\"\n"
+		"TQA=\"tc qdisc add dev $LAN\"\n"
+		"TCA=\"tc class add dev $LAN\"\n"
+		"TFA=\"tc filter add dev $LAN\"\n"
+		"\n"
+		, get_wan_ifname(wan_primary_ifunit())
+		, nvram_safe_get("lan_ifname")
+	);
+
+	fprintf(f,
+		"start()\n"
+		"{\n"
+		"echo \"root ...\"\n"
+		"$TQA root handle 1: htb default 20\n"
+		"$TCA parent 1: classid 1:1 htb rate %ukbit\n"
+		"\n"
+		"$TQAU root handle 2: htb default 20\n"
+		"$TCAU parent 2: classid 2:1 htb rate %ukbit\n"
+		"\n"
+		"echo \"download ...\"\n"
+		"# 1:10\n"
+		"$TCA parent 1:1 classid 1:10 htb rate %fkbit ceil %ukbit prio 1\n"
+		"$TQA parent 1:10 handle 10: $SFQ\n"
+		//"$TFA parent 1: prio 1 protocol ip handle 10 fw flowid 1:10\n"
+		"\n"
+		"# 1:20\n"
+		"$TCA parent 1:1 classid 1:20 htb rate %fkbit ceil %ukbit prio 2\n"
+		"$TQA parent 1:20 handle 20: $SFQ\n"
+		//"$TFA parent 1: prio 2 protocol ip handle 20 fw flowid 1:20\n"
+		"\n"
+		, ibw             // 1:
+		, obw             // 2:
+		, 0.20*ibw,  ibw   // 1:10
+		, 0.20*ibw, ibw   // 1:20
+	);
+
+	/* mark */
+	fprintf(f, "$TFA parent 1: prio 10 protocol ip u32 match mark %d 0x%x flowid 1:%d\n", 6, QOS_MASK, 10);
+
+	/* DSCP / TOS  */
+	fprintf(f, "$TFA parent 1: prio 1 protocol ip u32 match ip protocol 17 0xff match ip tos 0xb8 0xff flowid 1:10\n");
+	fprintf(f, "$TFA parent 1: prio 1 protocol ip u32 match ip protocol 17 0xff match ip tos 0xa0 0xff flowid 1:10\n");
+	fprintf(f, "$TFA parent 1: prio 2 protocol ip u32 match ip protocol 17 0xff match ip tos 0x00 0xff flowid 1:20\n");
+	
+	fprintf(f,
+		"\n"
+		"echo \"upload ...\"\n"
+		"# 2:10\n"
+		"$TCAU parent 2:1 classid 2:10 htb rate %fkbit ceil %ukbit prio 1\n"
+		"$TQAU parent 2:10 handle 10: $SFQ\n"
+		//"$TFAU parent 2: prio 1 protocol ip handle 10 fw flowid 2:10\n"
+		"\n"
+		"# 2:20\n"
+		"$TCAU parent 2:1 classid 2:20 htb rate %fkbit ceil %ukbit prio 2\n"
+		"$TQAU parent 2:20 handle 20: $SFQ\n"
+		//"$TFAU parent 2: prio 2 protocol ip handle 20 fw flowid 2:20\n"
+		"\n"
+		, 0.20*obw, obw   // 2:10
+		, 0.20*obw, obw   // 2:20
+	);
+
+	/* mark */
+	fprintf(f, "$TFAU parent 2: prio 1 protocol ip u32 match mark %d 0x%x flowid 2:%d\n", 10, QOS_MASK, 10);
+
+	/* DSCP / TOS */
+	fprintf(f, "$TFAU parent 2: prio 1 protocol ip u32 match ip protocol 17 0xff match ip tos 0xc8 0xff flowid 2:10\n");
+	fprintf(f, "$TFAU parent 2: prio 2 protocol ip u32 match ip protocol 17 0xff match ip tos 0x00 0xff flowid 2:20\n");
+	
+	fprintf(f, "}\n"); // start() end
+
+	fprintf(f,
+		"\n"
+		"stop()\n"
+		"{\n"
+		"echo \"stop ...\"\n"
+		"tc qdisc del dev $WAN root 2>/dev/null\n"
+		"tc qdisc del dev $WAN ingress 2>/dev/null\n"
+		"tc qdisc del dev $LAN root 2>/dev/null\n"
+		"tc qdisc del dev $LAN ingress 2>/dev/null\n"
+		"}\n"
+		"\n"
+		"up()\n"
+		"{\n"
+		"echo \"upload ...\"\n"
+		"tc qdisc ls dev $WAN\n"
+		"tc class ls dev $WAN\n"
+		"tc filter ls dev $WAN\n"
+		"}\n"
+		"\n"
+		"down()\n"
+		"{\n"
+		"echo \"down ...\"\n"
+		"tc qdisc ls dev $LAN\n"
+		"tc class ls dev $LAN\n"
+		"tc filter ls dev $LAN\n"
+		"}\n"
+		"\n"
+		"if [ $# != 1 ]; then\n"
+		"echo \"Usage: $0 start/stop/restart/up/down\"\n"
+		"else\n"
+		"if [ $1 = \"start\" ]; then\n"
+		"start\n"
+		"elif [ $1 = \"stop\" ]; then\n"
+		"stop\n"
+		"elif [ $1 = \"restart\" ]; then\n"
+		"stop\n"
+		"start\n"
+		"elif [ $1 = \"up\" ]; then\n"
+		"up\n"
+		"elif [ $1 = \"down\" ]; then\n"
+		"down\n"
+		"fi\n"
+		"fi\n"
+	);
+
+	fclose(f);
+	chmod(qosfn, 0700);
+	eval((char *)qosfn, "restart");
+	QOSDBG("[RB] Execute RouterBoost QoS Done.\n");
+
+	
+	return 0;
+}
+
+#endif
+
 static int add_rog_qos_rules(char *pcWANIF)
 {
 	FILE *fn;
@@ -2509,7 +2687,18 @@ int add_iQosRules(char *pcWANIF)
 	else if (IS_BW_QOS()) {
 		status = add_bandwidth_limiter_rules(pcWANIF);
 	}
-
+/* OPPO */
+#if 0
+#ifdef RTCONFIG_ROUTERBOOST
+	else if (IS_RB_QOS()
+#ifdef RTCONFIG_AMAS
+			&&(aimesh_re_node() == 0)
+#endif	
+	) {
+		status = system("insmod deDupTx");
+	}
+#endif
+#endif
 	if (status < 0) _dprintf("[%s] status = %d\n", __FUNCTION__, status);
 
 	return status;
@@ -2556,6 +2745,19 @@ int start_iQos(void)
 	}
 #endif
 
+/* OPPO */
+#if 0
+#ifdef RTCONFIG_ROUTERBOOST
+	else if (IS_RB_QOS()
+#ifdef RTCONFIG_AMAS
+             &&(aimesh_re_node() == 0)
+#endif				
+	) {
+		start_asus_rbd();
+		status = start_RouterBoost_QoS();
+	}
+#endif
+#endif
 	if (status < 0) _dprintf("[%s] status = %d\n", __FUNCTION__, status);
 
 	return status;

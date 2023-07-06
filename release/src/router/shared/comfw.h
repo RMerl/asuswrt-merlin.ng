@@ -86,6 +86,7 @@ enum {
 	FW_384,
 	FW_38X,
 	FW_102,
+	FW_388,
 	MAX_FWID
 };
 

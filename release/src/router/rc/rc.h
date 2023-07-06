@@ -423,6 +423,7 @@ extern int pincheck(const char *a);
 extern int isValidChannel(int is_2G, char *channel);
 extern int setPSK(const char *psk);
 extern int getPSK(void);
+extern int init_pass_nvram(void);
 #if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
 extern int start_envrams(void);
 extern int chk_envrams_proc(void);
@@ -503,7 +504,7 @@ extern int setNetLed(void);
 extern int setAllOrangeLedOn(void);
 #endif
 extern int setAllLedOff(void);
-#if defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_SW_CTRL_ALLLED) || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
+#if defined(RTCONFIG_WPS_ALLLED_BTN) || defined(RTCONFIG_SW_CTRL_ALLLED) || defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX9000)
 extern void setAllLedNormal(void);
 #endif
 #ifdef RTCONFIG_SW_CTRL_ALLLED
@@ -557,7 +558,11 @@ extern int getMAC_5G(void);
 extern int GetPhyStatus(int verbose, phy_info_list *list);
 #ifdef CONFIG_BCMWL5
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_BHCOST_OPT)
+#ifdef RTCONFIG_MOCA
+extern unsigned int get_uplinkports_linkrate(char *ifname, MOCA_NODE_INFO *node);
+#else
 extern unsigned int get_uplinkports_linkrate(char *ifname);
+#endif
 #endif
 #endif
 extern int Get_ChannelList_2G(void);
@@ -627,7 +632,7 @@ extern int FREAD(unsigned int addr_sa, int len);
 extern void ate_run_in(void);
 #endif
 extern int gen_ralink_config(int band, int is_iNIC);
-extern int get_channel(int band);
+extern int ra_get_channel(int band);
 extern int __need_to_start_wps_band(char *prefix);
 extern int need_to_start_wps_band(int wps_band);
 extern void start_wsc_pin_enrollee(void);
@@ -953,7 +958,7 @@ extern void update_cfe_ax82u();
 #ifdef GTAX6000
 extern void update_cfe_ax6000();
 #endif
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTAX9000)
 extern void wan_phy_led_pinmux(int force);
 #endif
 #if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
@@ -2143,12 +2148,12 @@ extern void stop_ovpn_server(int unit);
 extern void start_ovpn_server(int unit);
 #endif
 
-#ifdef RTCONFIG_TPVPN
-#ifdef RTCONFIG_OPENVPN
+#ifdef RTCONFIG_HMA
 extern void tpvpn_gen_hma_list();
 extern int hmavpn_main(int argc, char **argv);
-extern int nordvpn_main(int argc, char **argv);
 #endif
+#ifdef RTCONFIG_NORDVPN
+extern int nordvpn_main(int argc, char **argv);
 #endif
 
 // wanduck.c
@@ -3183,6 +3188,11 @@ extern int start_dnsqd(void);
 extern void stop_dnsqd(void);
 #endif
 
+//OPPO
+#ifdef RTCONFIG_ROUTERBOOST
+extern int start_asus_rbd(void);
+extern void stop_asus_rbd(void);
+#endif
 
 extern char *cfe_nvram_get(const char *name);
 static INLINE int

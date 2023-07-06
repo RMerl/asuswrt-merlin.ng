@@ -363,10 +363,12 @@ get_failed:
 					invarg("invalid fwmark\n", *argv);
 				flags &= ~IP6_TNL_F_USE_ORIG_FWMARK;
 			}
+#if !defined(__KERNEL_4_X__)
 		} else if (strcmp(*argv, "allow-localremote") == 0) {
 			flags |= IP6_TNL_F_ALLOW_LOCAL_REMOTE;
 		} else if (strcmp(*argv, "noallow-localremote") == 0) {
 			flags &= ~IP6_TNL_F_ALLOW_LOCAL_REMOTE;
+#endif
 		} else if (strcmp(*argv, "encaplimit") == 0) {
 			NEXT_ARG();
 			if (strcmp(*argv, "none") == 0) {
@@ -554,13 +556,13 @@ static void gre_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[])
 		print_bool(PRINT_ANY, "icsum", "icsum ", true);
 	if (oflags & GRE_CSUM)
 		print_bool(PRINT_ANY, "ocsum", "ocsum ", true);
-
+#if !defined(__KERNEL_4_X__)
 	if (flags & IP6_TNL_F_ALLOW_LOCAL_REMOTE)
 		print_bool(PRINT_ANY,
 			   "ip6_tnl_f_allow_local_remote",
 			   "allow-localremote ",
 			   true);
-
+#endif
 	if (flags & IP6_TNL_F_USE_ORIG_FWMARK) {
 		print_bool(PRINT_ANY,
 			   "ip6_tnl_f_use_orig_fwmark",

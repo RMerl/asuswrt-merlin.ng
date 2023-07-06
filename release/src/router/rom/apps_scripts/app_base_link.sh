@@ -21,6 +21,8 @@ case $f in
 		exit 1
 		;;
 esac
+# libcrypt support SHA256
+UCLIBC_NEW_VERSION=0.9.33.2
 APP_UCLIBC_VERSION=0.9.28
 APPS_DEV=`nvram get apps_dev`
 APPS_MOUNTED_PATH=`nvram get apps_mounted_path`
@@ -145,6 +147,9 @@ done
 ln -sf $APP_LIB/libipkg.so.0.0.0 $APP_LINK_LIB/libipkg.so.0
 ln -sf $APP_LIB/libipkg.so.0.0.0 $APP_LINK_LIB/libipkg.so
 
+# libcrypt suport SHA256
+lib_so=/opt/lib/libcrypt.so.0
+
 #sherry add 2016.7.4{
 if [ $apps_new_arm -eq 1 ]; then
 	#uclibc-opt
@@ -184,8 +189,17 @@ else
 	ln -sf $APP_LIB/ld-uClibc-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/ld-uClibc.so
 	ln -sf $APP_LIB/libuClibc-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libc.so.0
 	ln -sf $APP_LIB/libuClibc-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libc.so
-	ln -sf $APP_LIB/libcrypt-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libcrypt.so.0
-	ln -sf $APP_LIB/libcrypt-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libcrypt.so
+	if [ "$pkg_type" == "mipsel" ]; then
+		ln -sf $APP_LIB/libcrypt-${UCLIBC_NEW_VERSION}.so $APP_LINK_LIB/libcrypt.so
+		ln -sf $APP_LIB/libcrypt-${UCLIBC_NEW_VERSION}.so $APP_LINK_LIB/libcrypt.so.0
+		if [ ! -e $lib_so ]; then
+			ln -sf $APP_LIB/libcrypt-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libcrypt.so.0
+			ln -sf $APP_LIB/libcrypt-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libcrypt.so
+		fi
+	else
+		ln -sf $APP_LIB/libcrypt-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libcrypt.so.0
+		ln -sf $APP_LIB/libcrypt-${APP_UCLIBC_VERSION}.so $APP_LINK_LIB/libcrypt.so
+	fi
 	ln -sf $APP_LIB/libgcc_s.so.1 $APP_LINK_LIB/libgcc_s.so
 	if [ "$pkg_type" == "arm" ]; then
 		ln -sf $APP_LIB/libstdc++.so.6.0.2 $APP_LINK_LIB/libstdc++.so.6

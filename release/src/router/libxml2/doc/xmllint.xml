@@ -45,8 +45,6 @@
 			</affiliation>
 		</author>
 	</authorgroup>
-	<!-- date should be the date of the latest change or the release version -->
-	<date>$Date$</date>
 	<!-- still a bit buggy output, will talk to docbook-xsl upstream to fix this -->
 	<!-- <releaseinfo>This is release 0.5 of the xmllint Manual.</releaseinfo> -->
 	<!-- <edition>0.5</edition> -->
@@ -69,6 +67,7 @@
 			<arg choice="plain"><option>--version</option></arg>
 			<arg choice="plain"><option>--debug</option></arg>
 			<arg choice="plain"><option>--shell</option></arg>
+			<arg choice="plain"><option>--xpath "<replaceable class="option">XPath_expression</replaceable>"</option></arg>
 			<arg choice="plain"><option>--debugent</option></arg>
 			<arg choice="plain"><option>--copy</option></arg>
 			<arg choice="plain"><option>--recover</option></arg>
@@ -270,7 +269,7 @@
 		<varlistentry>
 	<term><option>--encode <replaceable class="option">ENCODING</replaceable></option></term>
 	<listitem>
-		<para>Output in the given encoding.</para>
+		<para>Output in the given encoding. Note that this works for full document not fragments or result from XPath queries.</para>
 	</listitem>
 		</varlistentry>
 
@@ -528,6 +527,19 @@
 		</varlistentry>
 
 		<varlistentry>
+	<term><option>--xpath "<replaceable class="option">XPath_expression</replaceable>"</option></term>
+	<listitem>
+		<para>
+			Run an XPath expression given as argument and print the
+			result. In case of a nodeset result, each node in the
+			node set is serialized in full in the output. In case
+			of an empty node set the "XPath set is empty" result
+			will be shown and an error exit code will be returned.
+		</para>
+	</listitem>
+		</varlistentry>
+
+		<varlistentry>
 	<term><option>--stream</option></term>
 	<listitem>
 		<para>
@@ -771,9 +783,9 @@
 	<listitem>
 		<para><acronym>XML</acronym> catalog behavior can be changed by redirecting
 			queries to the user's own set of catalogs. This can be done by setting
-			the <envar>XML_CATALOG_FILES</envar> environment variable to a list
-			of catalogs. An empty one should deactivate loading the
-			default <filename>/etc/xml/catalog</filename> catalog.
+			the <envar>XML_CATALOG_FILES</envar> environment variable to a space-separated
+			list of catalogs. Use percent-encoding to escape spaces or other characters.
+			An empty variable should deactivate loading the default <filename>/etc/xml/catalog</filename> catalog.
 		</para>
 	</listitem>
 		</varlistentry>
@@ -885,6 +897,13 @@
 	</listitem>
 		</varlistentry>
 
+		<varlistentry>
+	<term><errorcode>10</errorcode></term>
+	<listitem>
+		<para>XPath evaluation error</para>
+	</listitem>
+		</varlistentry>
+
 	</variablelist>
 </refsect1>
 
@@ -902,11 +921,7 @@
 				<para><citerefentry>
 						<refentrytitle>libxml</refentrytitle>
 						<manvolnum>3</manvolnum>
-					</citerefentry> web page <ulink url="http://www.xmlsoft.org/"/>
-				</para>
-			</listitem>
-			<listitem>
-				<para>W3C <acronym>XSLT</acronym> page <ulink url="http://www.w3.org/TR/xslt"/>
+					</citerefentry> web page <ulink url="https://gitlab.gnome.org/GNOME/libxml2"/>
 				</para>
 			</listitem>
 		</itemizedlist>

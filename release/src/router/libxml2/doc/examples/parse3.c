@@ -2,7 +2,7 @@
  * section: Parsing
  * synopsis: Parse an XML document in memory to a tree and free it
  * purpose: Demonstrate the use of xmlReadMemory() to read an XML file
- *          into a tree and and xmlFreeDoc() to free the resulting tree
+ *          into a tree and xmlFreeDoc() to free the resulting tree
  * usage: parse3
  * test: parse3
  * author: Daniel Veillard

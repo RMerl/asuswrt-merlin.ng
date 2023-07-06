@@ -60,7 +60,7 @@
     <symbol file="SAX">characters</symbol>
     <symbol file="SAX">checkNamespace</symbol>
     <symbol file="SAX">comment</symbol>
-    <symbol file="SAX2">docbDefaultSAXHandlerInit</symbol>
+    <symbol file="SAX2" removed="2.10.0">docbDefaultSAXHandlerInit</symbol>
     <symbol file="SAX">elementDecl</symbol>
     <symbol file="SAX">endDocument</symbol>
     <symbol file="SAX">endElement</symbol>
@@ -78,7 +78,7 @@
     <symbol file="SAX">hasInternalSubset</symbol>
     <symbol file="SAX2">htmlDefaultSAXHandlerInit</symbol>
     <symbol file="SAX">ignorableWhitespace</symbol>
-    <symbol file="SAX">initdocbDefaultSAXHandler</symbol>
+    <symbol file="SAX" removed="2.10.0">initdocbDefaultSAXHandler</symbol>
     <symbol file="SAX">inithtmlDefaultSAXHandler</symbol>
     <symbol file="SAX">initxmlDefaultSAXHandler</symbol>
     <symbol file="SAX">internalSubset</symbol>
@@ -401,16 +401,16 @@
     <symbol file="nanoftp">xmlNanoFTPRead</symbol>
     <symbol file="nanoftp">xmlNanoFTPScanProxy</symbol>
     <symbol file="nanoftp">xmlNanoFTPUpdateURL</symbol>
-    <symbol file="DOCBparser">docbCreateFileParserCtxt</symbol>
-    <symbol file="DOCBparser">docbCreatePushParserCtxt</symbol>
-    <symbol file="DOCBparser">docbEncodeEntities</symbol>
-    <symbol file="DOCBparser">docbFreeParserCtxt</symbol>
-    <symbol file="DOCBparser">docbParseChunk</symbol>
-    <symbol file="DOCBparser">docbParseDoc</symbol>
-    <symbol file="DOCBparser">docbParseDocument</symbol>
-    <symbol file="DOCBparser">docbParseFile</symbol>
-    <symbol file="DOCBparser">docbSAXParseDoc</symbol>
-    <symbol file="DOCBparser">docbSAXParseFile</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbCreateFileParserCtxt</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbCreatePushParserCtxt</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbEncodeEntities</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbFreeParserCtxt</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbParseChunk</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbParseDoc</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbParseDocument</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbParseFile</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbSAXParseDoc</symbol>
+    <symbol file="DOCBparser" removed="2.10.0">docbSAXParseFile</symbol>
     <symbol file="xpath">xmlXPathCastBooleanToNumber</symbol>
     <symbol file="xpath">xmlXPathCastBooleanToString</symbol>
     <symbol file="xpath">xmlXPathCastNodeSetToBoolean</symbol>
@@ -726,7 +726,7 @@
     <symbol file="xmlreader">xmlTextReaderRead</symbol>
     <symbol file="xmlreader">xmlTextReaderValue</symbol>
     <symbol file="xmlreader">xmlTextReaderXmlLang</symbol>
-    <symbol file="globals">docbDefaultSAXHandler</symbol>
+    <symbol file="globals" removed="2.10.0">docbDefaultSAXHandler</symbol>
     <symbol file="globals">htmlDefaultSAXHandler</symbol>
     <symbol file="globals">xmlDefaultSAXHandler</symbol>
     <symbol file="globals">xmlDefaultSAXLocator</symbol>
@@ -1285,7 +1285,7 @@
     <symbol file="SAX2">xmlSAX2HasInternalSubset</symbol>
     <symbol file="SAX2">xmlSAX2IgnorableWhitespace</symbol>
     <symbol file="SAX2">xmlSAX2InitDefaultSAXHandler</symbol>
-    <symbol file="SAX2">xmlSAX2InitDocbDefaultSAXHandler</symbol>
+    <symbol file="SAX2" removed="2.10.0">xmlSAX2InitDocbDefaultSAXHandler</symbol>
     <symbol file="SAX2">xmlSAX2InitHtmlDefaultSAXHandler</symbol>
     <symbol file="SAX2">xmlSAX2InternalSubset</symbol>
     <symbol file="SAX2">xmlSAX2IsStandalone</symbol>
@@ -1658,27 +1658,27 @@
   </release>
   <release version="2.6.21">
     <symbol file="xmlautomata">xmlAutomataNewNegTrans</symbol>
-    <symbol file="xmlregexp">emptyExp</symbol>
-    <symbol file="xmlregexp">forbiddenExp</symbol>
-    <symbol file="xmlregexp">xmlExpCtxtNbCons</symbol>
-    <symbol file="xmlregexp">xmlExpCtxtNbNodes</symbol>
-    <symbol file="xmlregexp">xmlExpDump</symbol>
-    <symbol file="xmlregexp">xmlExpExpDerive</symbol>
-    <symbol file="xmlregexp">xmlExpFreeCtxt</symbol>
-    <symbol file="xmlregexp">xmlExpFree</symbol>
-    <symbol file="xmlregexp">xmlExpGetLanguage</symbol>
-    <symbol file="xmlregexp">xmlExpGetStart</symbol>
-    <symbol file="xmlregexp">xmlExpIsNillable</symbol>
-    <symbol file="xmlregexp">xmlExpMaxToken</symbol>
-    <symbol file="xmlregexp">xmlExpNewAtom</symbol>
-    <symbol file="xmlregexp">xmlExpNewCtxt</symbol>
-    <symbol file="xmlregexp">xmlExpNewOr</symbol>
-    <symbol file="xmlregexp">xmlExpNewRange</symbol>
-    <symbol file="xmlregexp">xmlExpNewSeq</symbol>
-    <symbol file="xmlregexp">xmlExpParse</symbol>
-    <symbol file="xmlregexp">xmlExpRef</symbol>
-    <symbol file="xmlregexp">xmlExpStringDerive</symbol>
-    <symbol file="xmlregexp">xmlExpSubsume</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">emptyExp</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">forbiddenExp</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpCtxtNbCons</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpCtxtNbNodes</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpDump</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpExpDerive</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpFreeCtxt</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpFree</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpGetLanguage</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpGetStart</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpIsNillable</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpMaxToken</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpNewAtom</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpNewCtxt</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpNewOr</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpNewRange</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpNewSeq</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpParse</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpRef</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpStringDerive</symbol>
+    <symbol removed="2.9.10" file="xmlregexp">xmlExpSubsume</symbol>
     <symbol file="parser">xmlHasFeature</symbol>
     <symbol file="uri">xmlParseURIRaw</symbol>
     <symbol file="pattern">xmlPatternMinDepth</symbol>
@@ -1740,5 +1740,35 @@
   <release version="2.7.4">
     <symbol file="globals">xmlStructuredErrorContext</symbol>
     <symbol file="xinclude">xmlXIncludeProcessTreeFlagsData</symbol>
+  </release>
+  <release version="2.8.0">
+    <symbol file="xmlreader">xmlTextReaderRelaxNGValidateCtxt</symbol>
+    <symbol file="tree">xmlBufferDetach</symbol>
+    <symbol file="dict">xmlInitializeDict</symbol>
+  </release>
+  <release version="2.9.0">
+    <symbol file="tree">xmlBufContent</symbol>
+    <symbol file="tree">xmlBufEnd</symbol>
+    <symbol file="tree">xmlBufGetNodeContent</symbol>
+    <symbol file="tree">xmlBufNodeDump</symbol>
+    <symbol file="tree">xmlBufShrink</symbol>
+    <symbol file="tree">xmlBufUse</symbol>
+    <symbol file="dict">xmlDictGetUsage</symbol>
+    <symbol file="dict">xmlDictSetLimit</symbol>
+    <symbol file="xmlschemas">xmlSchemaValidateSetFilename</symbol>
+    <symbol file="xmlschemas">xmlSchemaValidateSetLocator</symbol>
+    <symbol file="xmlIO">xmlOutputBufferGetContent</symbol>
+    <symbol file="xmlIO">xmlOutputBufferGetSize</symbol>
+    <symbol file="xmlwriter">xmlTextWriterSetQuoteChar</symbol>
+  </release>
+  <release version="2.9.1">
+    <symbol file="xpath">xmlXPathNodeEval</symbol>
+    <symbol file="xpath">xmlXPathSetContextNode</symbol>
+  </release>
+  <release version="2.9.8">
+    <symbol file="hash">xmlHashDefaultDeallocator</symbol>
+  </release>
+  <release version="2.9.11">
+    <symbol file="xmlIO">xmlPopOutputCallbacks</symbol>
   </release>
 </symbols>

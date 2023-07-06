@@ -7,12 +7,12 @@
         <myapp:piece label="Eastern Region" value="2.53"/>
         <myapp:piece label="Southern Region" value="3.89"/>
         <myapp:piece label="Western Region" value="2.04"/>
-<!-- Other private data goes here -->
+        <!-- Other private data goes here -->
       </myapp:piechart>
     </private>
   </defs>
-  <desc>This chart includes private data in another namespace
+    <desc>This chart includes private data in another namespace
   </desc>
-<!-- In here would be the actual graphics elements which
+  <!-- In here would be the actual graphics elements which
        draw the pie chart -->
 </svg>

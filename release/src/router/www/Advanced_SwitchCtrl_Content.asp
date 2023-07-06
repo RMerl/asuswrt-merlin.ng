@@ -248,7 +248,7 @@ function initial(){
 function applyRule(){
 	var setting_changed = false;
 	if((jumbo_frame_enable_ori != document.form.jumbo_frame_enable.value)
-	|| (ctf_disable_force_ori != document.form.ctf_disable_force.value)
+	|| (!document.form.ctf_disable_force.disabled && ctf_disable_force_ori != document.form.ctf_disable_force.value)
 	|| (lacp_enabled_ori != document.form.lacp_enabled.value) ){
 		setting_changed = true
 	}

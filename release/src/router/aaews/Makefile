@@ -18,6 +18,7 @@ ifeq ($(RTCONFIG_SW_HW_AUTH),y)
 SW_HW_AUTH_DIR=$(TOP)/sw-hw-auth
 endif
 SQLITE_DIR=$(TOP)/sqlite
+IPADDR_DIR=$(TOP)/ipaddr
 
 NATNL_DIR=$(TOP)/asusnatnl/natnl
 ASUSNATNL_CFLAGS=-I$(NATNL_DIR)
@@ -44,7 +45,7 @@ endif
 
 
 ifeq ("$(MAKECMDGOALS)", $(filter "$(MAKECMDGOALS)", "router" "mastiff" "aaeuac"))
-ROUTER_CFLAGS=-DNVRAM=1 -DEMBEDDED -I$(SHARED_DIR)
+ROUTER_CFLAGS=-DNVRAM=1 -DEMBEDDED -I$(SHARED_DIR) -I$(IPADDR_DIR)
 ROUTER_CFLAGS+=-DTNL_CALLBACK_ENABLE -DTNL_2_X -DUSE_IM_IPC
 ifeq ($(RTCONFIG_QTN),y)
 ROUTER_LIBS=-lnvram -lshared -lqcsapi_client
@@ -143,7 +144,7 @@ router: $(WSLIB) $(TARGET) $(DOG) $(if $(and $(RTCONFIG_IG_SITE2SITE),$(RTCONFIG
 endif
 $(WSLIB):
 	cd $(WB_DIR) && \
-	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="-Os -Wall $(EXTRACFLAGS)" \
+	CC=$(CC) AR=$(AR) RANLIB=$(RANLIB) LD=$(LD) CFLAGS="$(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS)" \
 	make libws.so
 
 

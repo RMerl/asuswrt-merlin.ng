@@ -25,5 +25,10 @@ extern int send_cfgmnt_event(char *msg);
 extern int get_chanspec_info(AVBL_CHANSPEC_T *avblChannel);
 extern int send_event_to_roamast(char *data);
 
+#ifdef RTCONFIG_ROUTERBOOST
+//extern int cm_sendEventToAsusRbd(unsigned char *data, int len);
+extern int send_event_to_asusrbd(unsigned char *data, int len);
+#endif //RTCONFIG_ROUTERBOOST
+
 #endif /* __CFG_LIB_H__ */
 /* End of cfg_lib.h */

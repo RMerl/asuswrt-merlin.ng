@@ -39,7 +39,16 @@ static int system_file(char *path)
 	if (!path)
 		return 0;
 
-	if (strstr(path, "mnt/defaults/wl/nvram.nvm"))
+	if (!strcmp(path, "/tmp/mnt/defaults/wl/nvram.nvm") ||
+	    !strcmp(path, "/mnt/defaults/wl/nvram.nvm") ||
+	    ((f_exists("/tmp/mnt/defaults/wl/nvram.nvm") ||
+	      f_exists("/mnt/defaults/wl/nvram.nvm")) &&
+	       (!strcmp(path, "/tmp/mnt") ||
+		!strcmp(path, "/tmp/mnt/defaults") ||
+		!strcmp(path, "/tmp/mnt/defaults/wl") ||
+		!strcmp(path, "/mnt") ||
+		!strcmp(path, "/mnt/defaults") ||
+		!strcmp(path, "/mnt/defaults/wl"))))
 		return 1;
 	else
 		return 0;

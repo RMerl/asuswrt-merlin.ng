@@ -325,6 +325,15 @@ function initial(){
 			document.getElementById('dfs_checkbox').style.display = "";
 			check_DFS_support(document.form.acs_dfs_checkbox);
 		}
+
+		if(amesh_support && httpApi.hasAiMeshNode() && !wl_info.band5g_2_support){
+			var _wl_channel_list_5g = '<% channel_list_5g(); %>';
+			if((wl_unit == '1' && has_dfs_channel(_wl_channel_list_5g))){
+				document.getElementById('dfs_checkbox').style.display = "";
+				check_DFS_support(document.form.acs_dfs_checkbox);
+			}
+
+		}
 	}
 
 	if(smart_connect_support && (isSwMode("rt") || isSwMode("ap"))){
@@ -492,10 +501,14 @@ function genBWTable(_unit){
 				bws.push(4);
 				bwsDesc.push("80+80 MHz");
 			}
+		
 			if(vht160_support && array_160m.length/4 >= 1 && enable_bw_160){
 				bwsDesc[0] = "20/40/80/160 MHz";
 				bws.push(5);
 				bwsDesc.push("160 MHz");
+			}
+			else if(array_160m.length/4 < 1){
+				document.getElementById('enable_160_field').style.display = 'none';
 			}
 		}
 

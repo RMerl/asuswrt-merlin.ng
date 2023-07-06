@@ -127,97 +127,87 @@
 	bottom: 0;
 	width: 100%;
 	height: 148px;
-	background-size: 100% 100%;
-}
-.translucent_bg:before{
-	content: "";
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	margin: auto;
-	background-image: linear-gradient(190deg, rgba(255,255,255,0) 60%, rgba(0,0,0,0.8) 100%);
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: left bottom;
 }
 .translucent_bg.Home, .translucent_bg.Custom{ 
-	background-image: url("/images/New_ui/amesh/location/Home.png");
+	background-image: url("/images/New_ui/amesh/location/Home.jpg");
 }
 .translucent_bg.Living_Room{
-	background-image: url("/images/New_ui/amesh/location/Living_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Living_Room.jpg");
 }
 .translucent_bg.Dining_Room{
-	background-image: url("/images/New_ui/amesh/location/Dining_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Dining_Room.jpg");
 }
 .translucent_bg.Kitchen{
-	background-image: url("/images/New_ui/amesh/location/Kitchen.png");
+	background-image: url("/images/New_ui/amesh/location/Kitchen.jpg");
 }
 .translucent_bg.Bedroom{
-	background-image: url("/images/New_ui/amesh/location/Bedroom.png");
+	background-image: url("/images/New_ui/amesh/location/Bedroom.jpg");
 }
 .translucent_bg.Master_Bedroom{
-	background-image: url("/images/New_ui/amesh/location/Master_Bedroom.png");
+	background-image: url("/images/New_ui/amesh/location/Master_Bedroom.jpg");
 }
 .translucent_bg.Kids_Room{
-	background-image: url("/images/New_ui/amesh/location/Kids_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Kids_Room.jpg");
 }
 .translucent_bg.Guest_Room{
-	background-image: url("/images/New_ui/amesh/location/Guest_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Guest_Room.jpg");
 }
 .translucent_bg.Study_Room{
-	background-image: url("/images/New_ui/amesh/location/Study_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Study_Room.jpg");
 }
 .translucent_bg.Walk-in_Closet{
-	background-image: url("/images/New_ui/amesh/location/Walk-in_Closet.png");
+	background-image: url("/images/New_ui/amesh/location/Walk-in_Closet.jpg");
 }
 .translucent_bg.Bathroom{
-	background-image: url("/images/New_ui/amesh/location/Bathroom.png");
+	background-image: url("/images/New_ui/amesh/location/Bathroom.jpg");
 }
 .translucent_bg.Office{
-	background-image: url("/images/New_ui/amesh/location/Office.png");
+	background-image: url("/images/New_ui/amesh/location/Office.jpg");
 }
 .translucent_bg.Meeting_Room{
-	background-image: url("/images/New_ui/amesh/location/Meeting_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Meeting_Room.jpg");
 }
 .translucent_bg.Gaming_Room{
 	background-image: url("/images/New_ui/amesh/location/Gaming_Room.jpg");
 }
 .translucent_bg.Hallway{
-	background-image: url("/images/New_ui/amesh/location/Hallway.png");
+	background-image: url("/images/New_ui/amesh/location/Hallway.jpg");
 }
 .translucent_bg.Hall{
-	background-image: url("/images/New_ui/amesh/location/Hall.png");
+	background-image: url("/images/New_ui/amesh/location/Hall.jpg");
 }
 .translucent_bg.Stairwell{
-	background-image: url("/images/New_ui/amesh/location/Stairwell.png");
+	background-image: url("/images/New_ui/amesh/location/Stairwell.jpg");
 }
 .translucent_bg.Third_Floor{
 	background-image: url("/images/New_ui/amesh/location/Third_Floor.jpg");
 }
 .translucent_bg.Second_Floor{
-	background-image: url("/images/New_ui/amesh/location/Second_Floor.png");
+	background-image: url("/images/New_ui/amesh/location/Second_Floor.jpg");
 }
 .translucent_bg.First_Floor{
 	background-image: url("/images/New_ui/amesh/location/First_Floor.jpg");
 }
 .translucent_bg.Attic{
-	background-image: url("/images/New_ui/amesh/location/Attic.png");
+	background-image: url("/images/New_ui/amesh/location/Attic.jpg");
 }
 .translucent_bg.Basement{
-	background-image: url("/images/New_ui/amesh/location/Basement.png");
+	background-image: url("/images/New_ui/amesh/location/Basement.jpg");
 }
 .translucent_bg.Storage{
-	background-image: url("/images/New_ui/amesh/location/Storage.png");
+	background-image: url("/images/New_ui/amesh/location/Storage.jpg");
 }
 .translucent_bg.Balcony{
-	background-image: url("/images/New_ui/amesh/location/Balcony.png");
+	background-image: url("/images/New_ui/amesh/location/Balcony.jpg");
 }
 .translucent_bg.Yard{
-	background-image: url("/images/New_ui/amesh/location/Yard.png");
+	background-image: url("/images/New_ui/amesh/location/Yard.jpg");
 }
 .translucent_bg.Garage{
-	background-image: url("/images/New_ui/amesh/location/Garage.png");
+	background-image: url("/images/New_ui/amesh/location/Garage.jpg");
 }
 .translucent_bg.Gym{
 	background-image: url("/images/New_ui/amesh/location/Gym.jpg");
@@ -2845,16 +2835,16 @@
 .port_status_bg .port_icon.USB.unplug{
 	background-position: 1px -290px;
 }
-.port_status_bg .port_icon.MoCa{
+.port_status_bg .port_icon.MoCA{
 	background-size: 92px;
 }
-.port_status_bg .port_icon.MoCa.conn{
+.port_status_bg .port_icon.MoCA.conn{
 	background-position: 0px -378px;
 }
-.port_status_bg .port_icon.MoCa.warn{
+.port_status_bg .port_icon.MoCA.warn{
 	background-position: 0px -416px;
 }
-.port_status_bg .port_icon.MoCa.unplug{
+.port_status_bg .port_icon.MoCA.unplug{
 	background-position: 0px -340px;
 }
 .port_status_bg .port_icon .wan_icon{
@@ -2920,15 +2910,15 @@
 	margin-bottom: 3px;
 }
 .port_status_bg .label_W_bg .port_icon:before{
-    position: absolute;
-    content: "";
-    width: 16px;
-    height: 16px;
-    background-image: url(/images/New_ui/amesh/port_status.svg);
-    background-size: 70px;
-    right: -5px;
-    bottom: -5px;
-    background-position: 0px -179px;
+	position: absolute;
+	content: "";
+	width: 16px;
+	height: 16px;
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 70px;
+	right: -5px;
+	bottom: -5px;
+	background-position: 0px -179px;
 }
 .opt_ADS_status_container{
 	display: flex;
@@ -2967,4 +2957,55 @@
 }
 .opt_ADS_status_container .status_text{
 	font-size: 13px;
+}
+.MoCA_node_container{
+	position: relative;
+	margin-left: 22px;
+	margin-bottom: 12px;
+	font-size: 14px;
+}
+.MoCA_node_container:not(:last-child):before{
+	content: "";
+	position: absolute;
+	left: 0%;
+	bottom: -6px;
+	height: 1px;
+	width: 95%;
+	border-bottom: 1px solid #3E4E59;
+}
+.MoCA_node_sub_info{
+	display: flex;
+	position: relative;
+}
+.MoCA_node_sub_info > div{
+	position: relative;
+	margin-right: 8px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	line-height: 100%;
+	font-size: 12px;
+	color: #B9CFDE;
+	text-shadow: 0 1px 3px rgba(0,0,0,0.66);
+}
+.MoCA_node_sub_info > div:not(:first-child):before{
+	position: absolute;
+	content: "";
+	left: -4px;
+	height: 60%;
+	border-left: 1px solid #7F8FA4;
+}
+.MoCA_node_container .MoCA_PHY_rate{
+	font-size: 14px;
+}
+.MoCA_node_container .MoCA_PHY_rate.great{
+	color: #4EF81C;
+}
+.MoCA_node_container .MoCA_PHY_rate.weak{
+	color: #ECC000;
+}
+@media (min-width: 1900px){
+	.translucent_bg{
+		background-position: left center;
+	}
 }

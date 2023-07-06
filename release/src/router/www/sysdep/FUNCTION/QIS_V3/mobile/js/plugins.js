@@ -1397,14 +1397,29 @@ function handle_ui_model_name(_model_name, _ui_model_name){
 	return result;
 }
 
+var tz_table = new Object;
 function setUpTimeZone(){
 	postDataModel.insert(timeObj);
-
+	getDST_db();
 	require(['/require/modules/timeZone.js'], function(timeZone) {
 		var timeZoneObj = new timeZone.get(systemVariable.uiLanguage);
 		qisPostData.time_zone = timeZoneObj.time_zone;
 		qisPostData.time_zone_dst = (timeZoneObj.hasDst) ? 1 : 0;
 	});
+	setTimeout(function(){
+		if(qisPostData.time_zone_dst){
+			qisPostData.time_zone_dstoff = getTimeZoneOffset(qisPostData.time_zone);
+		}
+	}, 500);
+
+}
+function getDST_db(){
+	$.getJSON("/ajax/tz_db.json", function(data){tz_table = data;
+		$.getJSON("https://nw-dlcdnet.asus.com/plugin/js/tz_db.json", function(data){tz_table = data;});
+	});
+}
+var getTimeZoneOffset = function(tz){
+	return tz_table[tz] ? tz_table[tz] : "M3.2.0/2,M11.1.0/2";
 }
 
 function setupWLCNvram(apProfileID) {
@@ -1581,49 +1596,6 @@ var getRestartService = function(){
 	var current_webs_chg_sku = (httpApi.nvramGet(["webs_chg_sku"], true).webs_chg_sku=="1")? true:false;
 	var current_webs_SG_mode = (httpApi.nvramGet(["webs_SG_mode"], true).webs_SG_mode=="1")? true:false;
 
-	if(isWANChanged()){
-		actionScript.push("restart_wan_if " + systemVariable.ethWanIf);
-	}
-
-	if(systemVariable.detwanResult.isIPConflict){
-		actionScript.push("restart_subnet");
-	}
-
-	if(qisPostData.hasOwnProperty("time_zone")){
-		actionScript.push("restart_time")
-	}
-
-	if(qisPostData.hasOwnProperty("yadns_enable_x")){
-		actionScript.push("restart_yadns");
-	}
-
-	if(qisPostData.hasOwnProperty("ipv6_service")){
-		actionScript.push("restart_net");	
-	}
-
-	if(
-		qisPostData.hasOwnProperty("wl0_ssid") || 
-		qisPostData.hasOwnProperty("wl0.1_ssid") || 
-		qisPostData.hasOwnProperty("wl0_11ax") || 
-		systemVariable.isDefault || 
-		isSmartConnectChanged()
-	){
-		actionScript.push("restart_wireless");
-	}
-
-	if(systemVariable.isDefault && isSupport("lantiq")){
-		actionScript.push("stop_bluetooth_service");
-	}
-
-	if(qisPostData.hasOwnProperty("wrs_protect_enable")){
-		actionScript.push("restart_firewall");
-		actionScript.push("restart_wrs");
-	}
-
-	if(qisPostData.hasOwnProperty("cfg_master")){
-		actionScript.push("restart_cfgsync");
-	}
-
 	if(isSwModeChanged() && isSwMode("RT")){
 		return "restart_all";
 	}
@@ -1644,6 +1616,56 @@ var getRestartService = function(){
 
 	if(current_webs_chg_sku){
 		return "reboot";
+	}
+
+	var restart_net = 0;
+	var restart_wan_if = 0;
+	var restart_firewall = 0;
+
+	if(qisPostData.hasOwnProperty("ipv6_service")){
+		restart_net = 1;
+		actionScript.push("restart_net");
+	}
+
+	if(systemVariable.detwanResult.isIPConflict){
+		actionScript.push("restart_subnet");
+	}
+
+	if(qisPostData.hasOwnProperty("time_zone")){
+		actionScript.push("restart_time")
+	}
+
+	if(qisPostData.hasOwnProperty("yadns_enable_x")){
+		actionScript.push("restart_yadns");
+	}
+
+	if(
+		qisPostData.hasOwnProperty("wl0_ssid") || 
+		qisPostData.hasOwnProperty("wl0.1_ssid") || 
+		qisPostData.hasOwnProperty("wl0_11ax") || 
+		systemVariable.isDefault || 
+		isSmartConnectChanged()
+	){
+		actionScript.push("restart_wireless");
+	}
+
+	if(systemVariable.isDefault && isSupport("lantiq")){
+		actionScript.push("stop_bluetooth_service");
+	}
+
+	if(!restart_net && qisPostData.hasOwnProperty("cfg_master")){
+		actionScript.push("restart_cfgsync");
+	}
+
+	if(!restart_net && isWANChanged()){
+		restart_wan_if = 1;
+		actionScript.push("restart_wan_if " + systemVariable.ethWanIf);
+	}
+
+	if(!restart_net && !restart_wan_if && qisPostData.hasOwnProperty("wrs_protect_enable")){
+		// do not push these if restart_wan_if has been pushed. these are included in restart_wan_if.
+		actionScript.push("restart_firewall");
+		actionScript.push("restart_wrs");
 	}
 
 	return actionScript.join(";")
@@ -2324,3 +2346,10 @@ function adjust_popup_container_top(_obj, _offsetHeight){
 		$(_obj).css({top: (final_scrollTop + _offsetHeight)});
 	}
 }
+/* String replace &#39; with ' for dict */
+function stringSafeGet(str){
+	return str.replace(new RegExp("&#39;", 'g'), "'");
+}
+var str_local_login_desc = stringSafeGet("<#Local_login_desc#>");
+var str_find_st = stringSafeGet("<#HowFindST#>");
+var str_HowFindPassword = stringSafeGet("<#HowFindPassword#>");

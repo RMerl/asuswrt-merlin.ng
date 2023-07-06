@@ -2,27 +2,27 @@ SAX.setDocumentLocator()
 SAX.startDocument()
 SAX.internalSubset(html, -//IETF//DTD HTML//EN, )
 SAX.startElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 2)
 SAX.startElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, name='GENERATOR', content='Microsoft FrontPage 4.0')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(title)
 SAX.characters(README - Microsoft FrontPage 2, 51)
 SAX.endElement(title)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, name='Microsoft Theme', content='none')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 2)
 SAX.startElement(body)
@@ -455,9 +455,9 @@ SAX.endElement(font)
 SAX.characters(
 , 1)
 SAX.endElement(body)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endDocument()

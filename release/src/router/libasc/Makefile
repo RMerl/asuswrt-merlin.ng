@@ -2,7 +2,7 @@ include ../common.mak
 
 OBJ = libasc.o
 
-CFLAGS += -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g) -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include
 CFLAGS += -I$(TOP)/curl/include
 CFLAGS += -I$(TOP)/openssl/include
 CFLAGS +=  -shared
@@ -52,7 +52,7 @@ $(TARGET): $(OBJ)
 	$(CC) -o $@ $(OBJ) $(CFLAGS) $(LIBS) $(LDFLAGS)
 
 install:
-	$(STRIP) $(TARGET)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(TARGET))
 	install -D $(TARGET) $(INSTALLDIR)/libasc/usr/lib/$(TARGET)
 
 clean:

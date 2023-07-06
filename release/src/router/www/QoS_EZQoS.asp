@@ -432,7 +432,7 @@ function initial(){
 	}
 
 	var qos_type = document.form.qos_type.value;
-	if(document.form.qos_enable_orig.value == "1"){
+  if(document.form.qos_enable_orig.value == "1"){
 		change_qos_type(qos_type);
 
 		document.getElementById('qos_type_tr').style.display = "";
@@ -456,6 +456,9 @@ function initial(){
 			document.getElementById('int_type_link').style.display = "";
 			show_settings("NonAdaptive");
 		}
+    if(router_boost_support){
+      document.getElementById('router_boost_tr').style.display = "none";
+    }
 	}
 
 	if(adaptiveqos_support){
@@ -503,7 +506,10 @@ function initial(){
 		document.getElementById('function_int_desc').style.display = "none";
 		document.getElementById('int_type').style.display = "none";
 		document.getElementById('int_type_link').style.display = "none";
-		show_settings("NonAdaptive");
+		if(router_boost_support){
+      document.getElementById('router_boost_tr').style.display = "none";
+    }
+    show_settings("NonAdaptive");
 	}
 	
 
@@ -518,7 +524,7 @@ function initial(){
 		document.getElementById("GeForceNow_item").style.display = "";
 	}
 
-	if((isFirefox || isOpera) && document.getElementById("FormTitle"))
+  if((isFirefox || isOpera) && document.getElementById("FormTitle"))
 		document.getElementById("FormTitle").className = "FormTitle";
 
 	if(!adaptiveqos_support){
@@ -883,7 +889,7 @@ function validForm(){
 }
 
 function determineActionScript(){
-	if(geforceNow_support && document.form.qos_enable.value == "0" && document.form.qos_enable_orig.value == "0" &&
+  if(geforceNow_support && document.form.qos_enable.value == "0" && document.form.qos_enable_orig.value == "0" &&
 		(document.form.nvgfn_enable.value != orig_nvgfn_enable)){
 		document.form.action_script.value = "restart_upnp;";
 	}
@@ -891,25 +897,45 @@ function determineActionScript(){
 			 (document.form.qos_enable_orig.value == "1" && document.form.qos_enable.value == "0") ||   //qos enable => disable
 			 ((document.form.qos_enable_orig.value == document.form.qos_enable.value) && 				//qos_enable and qos_type no change
 		 	  (document.form.qos_type_orig.value == document.form.qos_type.value)) ){
-		document.form.action_script.value = "restart_qos;restart_firewall;";
-		document.form.action_wait.value = "15";
+        if(router_boost_support) {
+          document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
+        }
+        else {
+          document.form.action_script.value = "restart_qos;restart_firewall;";
+        }
+    document.form.action_wait.value = "15";
 	}
 	else if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (ctf_fa_mode != "2" || qca_support)){
 		//BCM: Support FA but disable FA ,or not support FA. QCA Models
-		document.form.action_script.value = "restart_qos;restart_firewall;";
-		document.form.action_wait.value = "15";
+		if(router_boost_support) {
+      document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
+    }
+    else {
+      document.form.action_script.value = "restart_qos;restart_firewall;";
+    }
+    document.form.action_wait.value = "15";
 	}
 	else if(document.form.qos_enable.value == "1" && document.form.qos_type.value == "1" && (fc_disable_orig != "" && runner_disable_orig != "")){ //HND Router
-		document.form.action_script.value = "restart_qos;restart_firewall;";
+		if(router_boost_support) {
+      document.form.action_script.value = "restart_routerboost;restart_wireless;restart_qos;restart_firewall;";
+    }
+    else {
+      document.form.action_script.value = "restart_qos;restart_firewall;";
+    }
 		document.form.action_wait.value = "15";
 	}
-	else{
+ 	else{
 		document.form.action_script.value = "reboot";
 		document.form.action_wait.value = "<% get_default_reboot_time(); %>";
 	}
 
 	if((document.form.qos_type_orig.value != document.form.qos_type.value) && document.form.qos_type.value == "0")
 		document.form.next_page.value = "Advanced_QOSUserRules_Content.asp";
+  
+  if(router_boost_support)
+  {
+    routerboost_enable_setting();
+  }
 }
 
 function submitQoS(){
@@ -984,9 +1010,12 @@ function change_qos_type(value){
 		document.getElementById('trad_type').checked = true;
 		document.getElementById('bw_limit_type').checked = false;
 		document.getElementById('cake_type').checked = false;
-		if(geforceNow_support)
+	if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
-		document.getElementById('bandwidth_setting_tr').style.display = "none";
+    if(router_boost_support) {
+      document.getElementById('router_boost_tr').style.display = "none";  
+    }
+    document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
 		if (codel_support) {
@@ -1009,12 +1038,14 @@ function change_qos_type(value){
 	else if(value == 1){		//Adaptive QoS
 		document.getElementById('int_type').checked = true;
 		document.getElementById('trad_type').checked = false;
-		document.getElementById('bw_limit_type').checked = false;
-		document.getElementById('bandwidth_setting_tr').style.display = "";
 		document.getElementById('cake_type').checked = false;
+		document.getElementById('bw_limit_type').checked = false;		
+    document.getElementById('bandwidth_setting_tr').style.display = "";
 		if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
-		document.getElementById('list_table').style.display = "none";
+    if(router_boost_support)
+      document.getElementById('router_boost_tr').style.display = "";
+    document.getElementById('list_table').style.display = "none";
 		if (codel_support || cake_support) {
 			document.getElementById('qos_overhead_tr').style.display = "none";
 		}
@@ -1038,14 +1069,16 @@ function change_qos_type(value){
 
 		show_settings("Adaptive_quick");
 	}
-	else if(value == 2){		// Bandwidth Limiter
+	else if(value == 2 ){		// Bandwidth Limiter
 		document.getElementById('int_type').checked = false;
 		document.getElementById('trad_type').checked = false;
 		document.getElementById('bw_limit_type').checked = true;
 		document.getElementById('cake_type').checked = false;
-		if(geforceNow_support)
+    if(geforceNow_support)
 			document.getElementById('GeForce_type').checked = false;
-		document.getElementById('bandwidth_setting_tr').style.display = "none";
+    if(router_boost_support)
+      document.getElementById('router_boost_tr').style.display = "none";
+    document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(0);
 		document.getElementById('list_table').style.display = "block";
 		if (codel_support || cake_support) {
@@ -1066,13 +1099,15 @@ function change_qos_type(value){
 		if(!pm_support)
 			showDropdownClientList('setClientIP', 'name>mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 	}
-	else if(value == 3) {		// GeforceNow QoS
+ 	else if(value == 3) {		// GeforceNow QoS
 		document.getElementById('int_type').checked = false;
 		document.getElementById('trad_type').checked = false;
 		document.getElementById('bw_limit_type').checked = false;
-		document.getElementById('GeForce_type').checked = true;
+    document.getElementById('GeForce_type').checked = true;
+	  if(router_boost_support)
+      document.getElementById('router_boost_tr').style.display = "none";
+    document.getElementById('bandwidth_setting_tr').style.display = "none";
 		document.getElementById('cake_type').checked = false;
-		document.getElementById('bandwidth_setting_tr').style.display = "none";
 		show_up_down(1);
 		document.getElementById('list_table').style.display = "none";
 		if (codel_support) {
@@ -1347,6 +1382,17 @@ function register_overHint(){
 		document.getElementById('7').onmouseover = function(){overHint(97);}
 		document.getElementById('7').onmouseout = function(){nd();}
 	}
+}
+
+function routerboost_enable_setting(){
+  if(document.getElementById("rb_on").checked && document.form.qos_enable.value == 1 && document.form.qos_type.value == 1){
+    document.form.rb_enable.value = 1;
+    document.form.re_rb_enable.value = 1;
+  }
+  else{
+    document.form.rb_enable.value = 0;
+    document.form.re_rb_enable.value = 0;
+  }
 }
 
 function bandwidth_setting(){
@@ -1896,7 +1942,9 @@ function set_overhead(entry) {
 			<input type="hidden" name="qos_enable_orig" value="<% nvram_get("qos_enable"); %>">
 			<input type="hidden" name="qos_type_orig" value="<% nvram_get("qos_type"); %>">
 			<input type="hidden" name="qos_type" value="<% nvram_get("qos_type"); %>">
-			<input type="hidden" name="qos_obw" value="<% nvram_get("qos_obw"); %>" disabled>
+      <input type="hidden" name="rb_enable" value="<% nvram_get("rb_enable"); %>">
+      <input type="hidden" name="re_rb_enable" value="<% nvram_get("re_rb_enable"); %>">
+      <input type="hidden" name="qos_obw" value="<% nvram_get("qos_obw"); %>" disabled>
 			<input type="hidden" name="qos_ibw" value="<% nvram_get("qos_ibw"); %>" disabled>
 			<input type="hidden" name="qos_obw1" value="<% nvram_get("qos_obw1"); %>" disabled>
 			<input type="hidden" name="qos_ibw1" value="<% nvram_get("qos_ibw1"); %>" disabled>
@@ -1947,7 +1995,7 @@ function set_overhead(entry) {
 															<li id="qos_desc"><#EzQoS_desc_Traditional#></li>
 															<li><#EzQoS_desc_Bandwidth_Limiter#></li>
 															<li id="cake_desc"><span style="font-weight:bolder;font-size:14px;">Cake</span> is an automatic queue management algorithm that takes care of ensuring fairness in traffic queueing without requiring manual configuration.</li>
-														</ul>
+                            </ul>
 														<#EzQoS_desc_note#>
 													</div>
 													<div class="formfontdesc">
@@ -2003,7 +2051,9 @@ function set_overhead(entry) {
 																document.getElementById('qos_type_tr').style.display = "none";
 																document.getElementById('bandwidth_setting_tr').style.display = "none";
 																document.getElementById('list_table').style.display = "none";
-
+                                if(router_boost_support)
+                                  document.getElementById('router_boost_tr').style.display = "none";
+																
 																var alert_hint = "";
 																if(GN_with_BandwidthLimeter)
 																	alert_hint += "<#Guest_Network_disable_BWL#>";
@@ -2037,9 +2087,18 @@ function set_overhead(entry) {
 												<input id="int_type" name="qos_type_radio" value="1" onClick="change_qos_type(this.value);" style="display:none;" type="radio" <% nvram_match("qos_type", "1","checked"); %>><a id="int_type_link" class="hintstyle" style="display:none;" href="javascript:void(0);" onClick="openHint(20, 5);"><label for="int_type"><#Adaptive_QoS#></label></a>
 												<input id="trad_type" name="qos_type_radio" value="0" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "0","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 6);"><label for="trad_type"><#EzQoS_type_traditional#></label></a>
 												<input id="bw_limit_type" name="qos_type_radio" value="2" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "2","checked"); %>><a class="hintstyle" href="javascript:void(0);" onClick="openHint(20, 7)"><label for="bw_limit_type"><#Bandwidth_Limiter#></label></a>
-												<span id="GeForceNow_item" style="white-space: nowrap;display: none;"><input id="GeForce_type" name="qos_type_radio" value="3" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "3","checked"); %>><a class="hintstyle" href="javascript:void(0);"><label for="GeForce_type">GeForce NOW QoS</label></a></span>
+											  <span id="GeForceNow_item" style="display: none;"><input id="GeForce_type" name="qos_type_radio" value="3" onClick="change_qos_type(this.value);" type="radio" <% nvram_match("qos_type", "3","checked"); %>><a class="hintstyle" href="javascript:void(0);"><label for="GeForce_type">GeForce NOW QoS</label></a></span>
 												<input id="cake_type" name="qos_type_radio" value="9" onClick="change_qos_type(this.value);" style="display:none;" type="radio" <% nvram_match("qos_type", "9","checked"); %>><a id="cake_type_link" style="display:none;" class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 32);"><label for="cake_type">Cake</label></a>
-											</td>
+										  </td>
+										</tr>
+										<tr id="router_boost_tr" style="display:none">
+											<th>RouterBoost</th>
+											<td colspan="2">
+                        <input id="rb_on" name="rb_toggle" onClick="routerboost_enable_setting();" type="radio" <% nvram_match("rb_enable", "1","checked"); %>><label for="rb_on"><#CTL_Activate#></label>
+												<input id="rb_off" name="rb_toggle" onClick="routerboost_enable_setting();" type="radio" <% nvram_match("rb_enable", "0","checked"); %>><label for="rb_off"><#CTL_Deactivate#></label>
+
+												
+                      </td>
 										</tr>
 										<tr id="qos_overhead_tr" style="display:none">
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 28);">WAN packet overhead</a></th>
@@ -2059,7 +2118,7 @@ function set_overhead(entry) {
 
 											</td>
 										</tr>
-										<tr id="bandwidth_setting_tr" style="display:none">
+                    <tr id="bandwidth_setting_tr" style="display:none">
 											<th><#Bandwidth_Setting#></th>
 											<td colspan="2">
 												<input id="auto" name="bw_setting_name" onClick="bandwidth_setting();" type="radio"><label for="auto"><#Auto_Setting_btn#></label>

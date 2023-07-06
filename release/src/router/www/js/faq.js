@@ -1112,6 +1112,6 @@ var faq_data = {
 		"link": "Advanced_Smart_Connect.asp",
 		"menu": "<#Network_Tools#>",
 		"mode": ["RT", "AP"],
-		"support": (() => isSupport("smart_connect") || isSupport("bandstr"))(),
+		"support": (() => isSupport("bcmwifi") && (isSupport("smart_connect") || isSupport("bandstr")))(),
 	},
 }

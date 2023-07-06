@@ -418,6 +418,10 @@ var httpApi ={
 		$.get("/appGet.cgi?hook=start_dsl_autodet()");
 	},
 
+	"startWan46AutoDet": function(){
+		$.get("/appGet.cgi?hook=restart_auto46det()");
+	},
+
 	"detwanGetRet": function(){
 		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "autodet_state", "autodet_auxstate", "wan0_proto",
 										 "link_internet", "x_Setting", "usb_modem_act_sim", "link_wan"], true);
@@ -648,6 +652,52 @@ var httpApi ={
 			retData.wanType = wanTypeList.check;
 		}
 
+
+		return retData;
+	},
+
+	"detwan46GetRet": function(){
+		var wanInfo = httpApi.nvramGet(["wan46det_state","link_internet","x_Setting","link_wan"], true);
+
+		var wanTypeList = {
+			"init":"INITIALIZING",
+			"nolink":"NOLINK", 
+			"unknow":"UNKNOW",
+			"v6plus":"V6PLUS",
+			"hgw_v6plus":"HGW_V6PLUS",
+			"ocnvc":"OCNVC"
+		}
+
+		var retData = {
+			"wan46State": "",
+			"isError": false
+		};
+
+		if(wanInfo.isError){
+			retData.wan46State = wanTypeList.init;
+			retData.isError = true;
+		}
+		else if(wanInfo.link_wan == "0"){
+			retData.wan46State = wanTypeList.nolink;
+		}
+		else if(wanInfo.wan46det_state == "0"){
+			retData.wan46State = wanTypeList.init;
+		}
+		else if(wanInfo.wan46det_state == "1"){
+			retData.wan46State = wanTypeList.nolink;
+		}
+		else if(wanInfo.wan46det_state == "2"){
+			retData.wan46State = wanTypeList.unknow;
+		}
+		else if(wanInfo.wan46det_state == "3"){
+			retData.wan46State = wanTypeList.v6plus;
+		}
+		else if(wanInfo.wan46det_state == "4"){
+			retData.wan46State = wanTypeList.hgw_v6plus;
+		}
+		else if(wanInfo.wan46det_state == "5"){
+			retData.wan46State = wanTypeList.ocnvc;
+		}
 
 		return retData;
 	},
@@ -1347,6 +1397,16 @@ var httpApi ={
 		});
 	},
 	"get_port_status": function(mac, callBack){
+		var set_cap_support = function(_port_info){
+			$.each(_port_info, function(index, data){
+				var cap = data.cap;
+				if(data["cap_support"] == undefined)
+					data["cap_support"] = {};
+				$.each(capability_map, function(index, capability_item){
+					data["cap_support"][capability_item.type] = ((parseInt(cap) & (1 << parseInt(capability_item.bit))) > 0) ? true : false;
+				});
+			});
+		};
 		var capability_map = [
 				{type:"WAN", bit:0},
 				{type:"LAN", bit:1},
@@ -1373,20 +1433,20 @@ var httpApi ={
 			error: function(){},
 			success: function(response){
 				if(response["port_info"] != undefined){
-					if(response["port_info"][mac] != undefined){
-						var port_info = response["port_info"][mac];
-						$.each(port_info, function(index, data){
-							var cap = data.cap;
-							if(data["cap_support"] == undefined)
-								data["cap_support"] = {};
-							$.each(capability_map, function(index, capability_item){
-								data["cap_support"][capability_item.type] = ((parseInt(cap) & (1 << parseInt(capability_item.bit))) > 0) ? true : false;
-							});
+					if(mac == "all"){
+						$.each(response["port_info"], function(node_mac, node_port_info){
+							set_cap_support(response["port_info"][node_mac]);
 						});
 					}
+					else{
+						if(response["port_info"][mac] != undefined){
+							set_cap_support(response["port_info"][mac]);
+						}
+					}
 				}
-				if(callBack)
+				if(callBack){
 					callBack(response);
+				}
 			}
 		});
 	},
@@ -1434,13 +1494,28 @@ var httpApi ={
 								return "MoCa";
 							}
 						})();
+
+						data["link_rate_text"] = (data.is_on == "1") ? "0 Mbps" : "";
 						var link_rate_data = rate_map.filter(function(item, index, array){
 							return (item.value == data.link_rate);
 						})[0];
-
-						data["link_rate_text"] = "";
 						if(link_rate_data != undefined){
 							data["link_rate_text"] = link_rate_data.text;
+						}
+						if(data["label"] == "C"){
+							var _rate = parseInt(data.link_rate);
+							if(isNaN(_rate)) _rate = 0;
+							else if(_rate < 0) _rate = 0;
+
+							if(_rate >= 1000){
+								_rate = Math.round((_rate/1000)*10)/10;
+								_rate += " Gbps";
+							}
+							else{
+								_rate = Math.round(_rate*10)/10;
+								_rate += " Mbps";
+							}
+							data["link_rate_text"] = _rate;
 						}
 
 						if(data.cap_support.USB){
@@ -1454,7 +1529,7 @@ var httpApi ={
 							})[0];
 						}
 
-						data["max_rate_text"] = "";
+						data["max_rate_text"] = "0 Mbps";
 						if(max_rate_data != undefined){
 							data["max_rate_text"] = max_rate_data.text;
 							data["special_port_name"] = "";

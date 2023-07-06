@@ -180,13 +180,13 @@ get_failed:
 			encapsport = rta_getattr_u16(iptuninfo[IFLA_IPTUN_ENCAP_SPORT]);
 		if (iptuninfo[IFLA_IPTUN_ENCAP_DPORT])
 			encapdport = rta_getattr_u16(iptuninfo[IFLA_IPTUN_ENCAP_DPORT]);
-
+#if !defined(__KERNEL_4_X__)
 		if (iptuninfo[IFLA_IPTUN_COLLECT_METADATA])
 			metadata = 1;
 
 		if (iptuninfo[IFLA_IPTUN_FWMARK])
 			fwmark = rta_getattr_u32(iptuninfo[IFLA_IPTUN_FWMARK]);
-
+#endif
 		free(answer);
 	}
 
@@ -313,11 +313,12 @@ get_failed:
 	}
 
 	addattr8(n, 1024, IFLA_IPTUN_PROTO, proto);
+#if !defined(__KERNEL_4_X__)
 	if (metadata) {
 		addattr_l(n, 1024, IFLA_IPTUN_COLLECT_METADATA, NULL, 0);
 		return 0;
 	}
-
+#endif
 	if (is_addrtype_inet_not_unspec(&saddr)) {
 		addattr_l(n, 1024, IFLA_IPTUN_LOCAL,
 			  saddr.data, saddr.bytelen);
@@ -330,8 +331,9 @@ get_failed:
 	addattr8(n, 1024, IFLA_IPTUN_TOS, tos);
 	addattr8(n, 1024, IFLA_IPTUN_TTL, ttl);
 	addattr32(n, 1024, IFLA_IPTUN_LINK, link);
+#if !defined(__KERNEL_4_X__)
 	addattr32(n, 1024, IFLA_IPTUN_FWMARK, fwmark);
-
+#endif
 	addattr16(n, 1024, IFLA_IPTUN_ENCAP_TYPE, encaptype);
 	addattr16(n, 1024, IFLA_IPTUN_ENCAP_FLAGS, encapflags);
 	addattr16(n, 1024, IFLA_IPTUN_ENCAP_SPORT, htons(encapsport));
@@ -365,12 +367,12 @@ static void iptunnel_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[
 
 	if (!tb)
 		return;
-
+#if !defined(__KERNEL_4_X__)
 	if (tb[IFLA_IPTUN_COLLECT_METADATA]) {
 		print_bool(PRINT_ANY, "external", "external ", true);
 		return;
 	}
-
+#endif
 	if (tb[IFLA_IPTUN_PROTO]) {
 		switch (rta_getattr_u8(tb[IFLA_IPTUN_PROTO])) {
 		case IPPROTO_IPIP:
@@ -463,7 +465,7 @@ static void iptunnel_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[
 			}
 		}
 	}
-
+#if !defined(__KERNEL_4_X__)
 	if (tb[IFLA_IPTUN_FWMARK]) {
 		__u32 fwmark = rta_getattr_u32(tb[IFLA_IPTUN_FWMARK]);
 
@@ -472,7 +474,7 @@ static void iptunnel_print_opt(struct link_util *lu, FILE *f, struct rtattr *tb[
 				    "fwmark", "fwmark %#llx ", fwmark);
 		}
 	}
-
+#endif
 	tnl_print_encap(tb,
 			IFLA_IPTUN_ENCAP_TYPE,
 			IFLA_IPTUN_ENCAP_FLAGS,

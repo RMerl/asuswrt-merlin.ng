@@ -296,6 +296,8 @@ void check_clientlist_offline(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab
 
 int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
+void check_brctl_mac_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
 void network_ip_scan();
 
 int json_checker(const char *json_str);

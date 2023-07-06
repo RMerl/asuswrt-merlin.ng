@@ -178,7 +178,7 @@ ifeq ($(HND_ROUTER),y)
 LIBS += -L$(TOP_PLATFORM)/wlcsm -lwlcsm
 endif
 
-ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BCM_502L07P2)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_AX_6756)),y)
 LIBS += -L$(TOP_PLATFORM)/bcm_flashutil -lbcm_flashutil -L$(TOP_PLATFORM)/gen_util -lgen_util -L$(TOP_PLATFORM)/sys_util -lsys_util -L$(TOP_PLATFORM)/bcm_util -lbcm_util -L$(TOP_PLATFORM)/bcm_boardctl -lbcm_boardctl
 endif
 
@@ -205,7 +205,7 @@ CFLAGS += -I$(SRCBASE)/wl/sys
 CFLAGS += -I$(SRCBASE)/../../43684/src/wl/sys
 endif
 LIBS += -lgcc_s
-ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_6756),$(RTCONFIG_BCM_502L07P2)),y)
+ifeq ($(or $(RTCONFIG_HND_ROUTER_AX_675X),$(RTCONFIG_BCM_502L07P2),$(RTCONFIG_HND_ROUTER_AX_6756)),y)
 CFLAGS += -I$(TOP_PLATFORM)/bcm_flashutil -I$(HND_SRC)/userspace/public/include -I$(HND_SRC)/userspace/public/include/linux 
 endif
 ifeq ($(RTCONFIG_QTN),y)

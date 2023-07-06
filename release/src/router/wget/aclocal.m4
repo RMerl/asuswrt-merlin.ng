@@ -1,6 +1,6 @@
-# generated automatically by aclocal 1.16.1 -*- Autoconf -*-
+# generated automatically by aclocal 1.16.5 -*- Autoconf -*-
 
-# Copyright (C) 1996-2018 Free Software Foundation, Inc.
+# Copyright (C) 1996-2021 Free Software Foundation, Inc.
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -14,15 +14,871 @@
 m4_ifndef([AC_CONFIG_MACRO_DIRS], [m4_defun([_AM_CONFIG_MACRO_DIRS], [])m4_defun([AC_CONFIG_MACRO_DIRS], [_AM_CONFIG_MACRO_DIRS($@)])])
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
-m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.69],,
-[m4_warning([this file was generated for autoconf 2.69.
+m4_if(m4_defn([AC_AUTOCONF_VERSION]), [2.71],,
+[m4_warning([this file was generated for autoconf 2.71.
 You have another version of autoconf.  It may work, but is not guaranteed to.
 If you have problems, you may need to regenerate the build system entirely.
 To do so, use the procedure documented by the package, typically 'autoreconf'.])])
 
-dnl pkg.m4 - Macros to locate and utilise pkg-config.   -*- Autoconf -*-
-dnl serial 11 (pkg-config-0.29.1)
+# ===========================================================================
+#   https://www.gnu.org/software/autoconf-archive/ax_ac_append_to_file.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_AC_APPEND_TO_FILE([FILE],[DATA])
+#
+# DESCRIPTION
+#
+#   Appends the specified data to the specified Autoconf is run. If you want
+#   to append to a file when configure is run use AX_APPEND_TO_FILE instead.
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Allan Caffee <allan.caffee@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 10
+
+AC_DEFUN([AX_AC_APPEND_TO_FILE],[
+AC_REQUIRE([AX_FILE_ESCAPES])
+m4_esyscmd(
+AX_FILE_ESCAPES
+[
+printf "%s" "$2" >> "$1"
+])
+])
+
+# ===========================================================================
+#   https://www.gnu.org/software/autoconf-archive/ax_ac_print_to_file.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_AC_PRINT_TO_FILE([FILE],[DATA])
+#
+# DESCRIPTION
+#
+#   Writes the specified data to the specified file when Autoconf is run. If
+#   you want to print to a file when configure is run use AX_PRINT_TO_FILE
+#   instead.
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Allan Caffee <allan.caffee@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 10
+
+AC_DEFUN([AX_AC_PRINT_TO_FILE],[
+m4_esyscmd(
+AC_REQUIRE([AX_FILE_ESCAPES])
+[
+printf "%s" "$2" > "$1"
+])
+])
+
+# ===========================================================================
+#  https://www.gnu.org/software/autoconf-archive/ax_add_am_macro_static.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_ADD_AM_MACRO_STATIC([RULE])
+#
+# DESCRIPTION
+#
+#   Adds the specified rule to $AMINCLUDE.
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Tom Howard <tomhoward@users.sf.net>
+#   Copyright (c) 2009 Allan Caffee <allan.caffee@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 8
+
+AC_DEFUN([AX_ADD_AM_MACRO_STATIC],[
+  AC_REQUIRE([AX_AM_MACROS_STATIC])
+  AX_AC_APPEND_TO_FILE(AMINCLUDE_STATIC,[$1])
+])
+
+# ===========================================================================
+#   https://www.gnu.org/software/autoconf-archive/ax_am_macros_static.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_AM_MACROS_STATIC
+#
+# DESCRIPTION
+#
+#   Adds support for macros that create Automake rules. You must manually
+#   add the following line
+#
+#     include $(top_srcdir)/aminclude_static.am
+#
+#   to your Makefile.am files.
+#
+# LICENSE
+#
+#   Copyright (c) 2009 Tom Howard <tomhoward@users.sf.net>
+#   Copyright (c) 2009 Allan Caffee <allan.caffee@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 11
+
+AC_DEFUN([AMINCLUDE_STATIC],[aminclude_static.am])
+
+AC_DEFUN([AX_AM_MACROS_STATIC],
+[
+AX_AC_PRINT_TO_FILE(AMINCLUDE_STATIC,[
+# ]AMINCLUDE_STATIC[ generated automatically by Autoconf
+# from AX_AM_MACROS_STATIC on ]m4_esyscmd([LC_ALL=C date])[
+])
+])
+
+# ===========================================================================
+#    https://www.gnu.org/software/autoconf-archive/ax_check_gnu_make.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_CHECK_GNU_MAKE([run-if-true],[run-if-false])
+#
+# DESCRIPTION
+#
+#   This macro searches for a GNU version of make. If a match is found:
+#
+#     * The makefile variable `ifGNUmake' is set to the empty string, otherwise
+#       it is set to "#". This is useful for including a special features in a
+#       Makefile, which cannot be handled by other versions of make.
+#     * The makefile variable `ifnGNUmake' is set to #, otherwise
+#       it is set to the empty string. This is useful for including a special
+#       features in a Makefile, which can be handled
+#       by other versions of make or to specify else like clause.
+#     * The variable `_cv_gnu_make_command` is set to the command to invoke
+#       GNU make if it exists, the empty string otherwise.
+#     * The variable `ax_cv_gnu_make_command` is set to the command to invoke
+#       GNU make by copying `_cv_gnu_make_command`, otherwise it is unset.
+#     * If GNU Make is found, its version is extracted from the output of
+#       `make --version` as the last field of a record of space-separated
+#       columns and saved into the variable `ax_check_gnu_make_version`.
+#     * Additionally if GNU Make is found, run shell code run-if-true
+#       else run shell code run-if-false.
+#
+#   Here is an example of its use:
+#
+#   Makefile.in might contain:
+#
+#     # A failsafe way of putting a dependency rule into a makefile
+#     $(DEPEND):
+#             $(CC) -MM $(srcdir)/*.c > $(DEPEND)
+#
+#     @ifGNUmake@ ifeq ($(DEPEND),$(wildcard $(DEPEND)))
+#     @ifGNUmake@ include $(DEPEND)
+#     @ifGNUmake@ else
+#     fallback code
+#     @ifGNUmake@ endif
+#
+#   Then configure.in would normally contain:
+#
+#     AX_CHECK_GNU_MAKE()
+#     AC_OUTPUT(Makefile)
+#
+#   Then perhaps to cause gnu make to override any other make, we could do
+#   something like this (note that GNU make always looks for GNUmakefile
+#   first):
+#
+#     if  ! test x$_cv_gnu_make_command = x ; then
+#             mv Makefile GNUmakefile
+#             echo .DEFAULT: > Makefile ;
+#             echo \  $_cv_gnu_make_command \$@ >> Makefile;
+#     fi
+#
+#   Then, if any (well almost any) other make is called, and GNU make also
+#   exists, then the other make wraps the GNU make.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 John Darrington <j.darrington@elvis.murdoch.edu.au>
+#   Copyright (c) 2015 Enrico M. Crisostomo <enrico.m.crisostomo@gmail.com>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 12
+
+AC_DEFUN([AX_CHECK_GNU_MAKE],dnl
+  [AC_PROG_AWK
+  AC_CACHE_CHECK([for GNU make],[_cv_gnu_make_command],[dnl
+    _cv_gnu_make_command="" ;
+dnl Search all the common names for GNU make
+    for a in "$MAKE" make gmake gnumake ; do
+      if test -z "$a" ; then continue ; fi ;
+      if "$a" --version 2> /dev/null | grep GNU 2>&1 > /dev/null ; then
+        _cv_gnu_make_command=$a ;
+        AX_CHECK_GNU_MAKE_HEADLINE=$("$a" --version 2> /dev/null | grep "GNU Make")
+        ax_check_gnu_make_version=$(echo ${AX_CHECK_GNU_MAKE_HEADLINE} | ${AWK} -F " " '{ print $(NF); }')
+        break ;
+      fi
+    done ;])
+dnl If there was a GNU version, then set @ifGNUmake@ to the empty string, '#' otherwise
+  AS_VAR_IF([_cv_gnu_make_command], [""], [AS_VAR_SET([ifGNUmake], ["#"])],   [AS_VAR_SET([ifGNUmake], [""])])
+  AS_VAR_IF([_cv_gnu_make_command], [""], [AS_VAR_SET([ifnGNUmake], [""])],   [AS_VAR_SET([ifnGNUmake], ["#"])])
+  AS_VAR_IF([_cv_gnu_make_command], [""], [AS_UNSET(ax_cv_gnu_make_command)], [AS_VAR_SET([ax_cv_gnu_make_command], [${_cv_gnu_make_command}])])
+  AS_VAR_IF([_cv_gnu_make_command], [""],[$2],[$1])
+  AC_SUBST([ifGNUmake])
+  AC_SUBST([ifnGNUmake])
+])
+
+# ===========================================================================
+#     https://www.gnu.org/software/autoconf-archive/ax_code_coverage.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_CODE_COVERAGE()
+#
+# DESCRIPTION
+#
+#   Defines CODE_COVERAGE_CPPFLAGS, CODE_COVERAGE_CFLAGS,
+#   CODE_COVERAGE_CXXFLAGS and CODE_COVERAGE_LIBS which should be included
+#   in the CPPFLAGS, CFLAGS CXXFLAGS and LIBS/LIBADD variables of every
+#   build target (program or library) which should be built with code
+#   coverage support. Also add rules using AX_ADD_AM_MACRO_STATIC; and
+#   $enable_code_coverage which can be used in subsequent configure output.
+#   CODE_COVERAGE_ENABLED is defined and substituted, and corresponds to the
+#   value of the --enable-code-coverage option, which defaults to being
+#   disabled.
+#
+#   Test also for gcov program and create GCOV variable that could be
+#   substituted.
+#
+#   Note that all optimization flags in CFLAGS must be disabled when code
+#   coverage is enabled.
+#
+#   Usage example:
+#
+#   configure.ac:
+#
+#     AX_CODE_COVERAGE
+#
+#   Makefile.am:
+#
+#     include $(top_srcdir)/aminclude_static.am
+#
+#     my_program_LIBS = ... $(CODE_COVERAGE_LIBS) ...
+#     my_program_CPPFLAGS = ... $(CODE_COVERAGE_CPPFLAGS) ...
+#     my_program_CFLAGS = ... $(CODE_COVERAGE_CFLAGS) ...
+#     my_program_CXXFLAGS = ... $(CODE_COVERAGE_CXXFLAGS) ...
+#
+#     clean-local: code-coverage-clean
+#     distclean-local: code-coverage-dist-clean
+#
+#   This results in a "check-code-coverage" rule being added to any
+#   Makefile.am which do "include $(top_srcdir)/aminclude_static.am"
+#   (assuming the module has been configured with --enable-code-coverage).
+#   Running `make check-code-coverage` in that directory will run the
+#   module's test suite (`make check`) and build a code coverage report
+#   detailing the code which was touched, then print the URI for the report.
+#
+#   This code was derived from Makefile.decl in GLib, originally licensed
+#   under LGPLv2.1+.
+#
+# LICENSE
+#
+#   Copyright (c) 2012, 2016 Philip Withnall
+#   Copyright (c) 2012 Xan Lopez
+#   Copyright (c) 2012 Christian Persch
+#   Copyright (c) 2012 Paolo Borelli
+#   Copyright (c) 2012 Dan Winship
+#   Copyright (c) 2015,2018 Bastien ROUCARIES
+#
+#   This library is free software; you can redistribute it and/or modify it
+#   under the terms of the GNU Lesser General Public License as published by
+#   the Free Software Foundation; either version 2.1 of the License, or (at
+#   your option) any later version.
+#
+#   This library is distributed in the hope that it will be useful, but
+#   WITHOUT ANY WARRANTY; without even the implied warranty of
+#   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE. See the GNU Lesser
+#   General Public License for more details.
+#
+#   You should have received a copy of the GNU Lesser General Public License
+#   along with this program. If not, see <https://www.gnu.org/licenses/>.
+
+#serial 34
+
+m4_define(_AX_CODE_COVERAGE_RULES,[
+AX_ADD_AM_MACRO_STATIC([
+# Code coverage
+#
+# Optional:
+#  - CODE_COVERAGE_DIRECTORY: Top-level directory for code coverage reporting.
+#    Multiple directories may be specified, separated by whitespace.
+#    (Default: \$(top_builddir))
+#  - CODE_COVERAGE_OUTPUT_FILE: Filename and path for the .info file generated
+#    by lcov for code coverage. (Default:
+#    \$(PACKAGE_NAME)-\$(PACKAGE_VERSION)-coverage.info)
+#  - CODE_COVERAGE_OUTPUT_DIRECTORY: Directory for generated code coverage
+#    reports to be created. (Default:
+#    \$(PACKAGE_NAME)-\$(PACKAGE_VERSION)-coverage)
+#  - CODE_COVERAGE_BRANCH_COVERAGE: Set to 1 to enforce branch coverage,
+#    set to 0 to disable it and leave empty to stay with the default.
+#    (Default: empty)
+#  - CODE_COVERAGE_LCOV_SHOPTS_DEFAULT: Extra options shared between both lcov
+#    instances. (Default: based on $CODE_COVERAGE_BRANCH_COVERAGE)
+#  - CODE_COVERAGE_LCOV_SHOPTS: Extra options to shared between both lcov
+#    instances. (Default: $CODE_COVERAGE_LCOV_SHOPTS_DEFAULT)
+#  - CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH: --gcov-tool pathtogcov
+#  - CODE_COVERAGE_LCOV_OPTIONS_DEFAULT: Extra options to pass to the
+#    collecting lcov instance. (Default: $CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH)
+#  - CODE_COVERAGE_LCOV_OPTIONS: Extra options to pass to the collecting lcov
+#    instance. (Default: $CODE_COVERAGE_LCOV_OPTIONS_DEFAULT)
+#  - CODE_COVERAGE_LCOV_RMOPTS_DEFAULT: Extra options to pass to the filtering
+#    lcov instance. (Default: empty)
+#  - CODE_COVERAGE_LCOV_RMOPTS: Extra options to pass to the filtering lcov
+#    instance. (Default: $CODE_COVERAGE_LCOV_RMOPTS_DEFAULT)
+#  - CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT: Extra options to pass to the
+#    genhtml instance. (Default: based on $CODE_COVERAGE_BRANCH_COVERAGE)
+#  - CODE_COVERAGE_GENHTML_OPTIONS: Extra options to pass to the genhtml
+#    instance. (Default: $CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT)
+#  - CODE_COVERAGE_IGNORE_PATTERN: Extra glob pattern of files to ignore
+#
+# The generated report will be titled using the \$(PACKAGE_NAME) and
+# \$(PACKAGE_VERSION). In order to add the current git hash to the title,
+# use the git-version-gen script, available online.
+# Optional variables
+# run only on top dir
+if CODE_COVERAGE_ENABLED
+ ifeq (\$(abs_builddir), \$(abs_top_builddir))
+CODE_COVERAGE_DIRECTORY ?= \$(top_builddir)
+CODE_COVERAGE_OUTPUT_FILE ?= \$(PACKAGE_NAME)-\$(PACKAGE_VERSION)-coverage.info
+CODE_COVERAGE_OUTPUT_DIRECTORY ?= \$(PACKAGE_NAME)-\$(PACKAGE_VERSION)-coverage
+
+CODE_COVERAGE_BRANCH_COVERAGE ?=
+CODE_COVERAGE_LCOV_SHOPTS_DEFAULT ?= \$(if \$(CODE_COVERAGE_BRANCH_COVERAGE),\
+--rc lcov_branch_coverage=\$(CODE_COVERAGE_BRANCH_COVERAGE))
+CODE_COVERAGE_LCOV_SHOPTS ?= \$(CODE_COVERAGE_LCOV_SHOPTS_DEFAULT)
+CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH ?= --gcov-tool \"\$(GCOV)\"
+CODE_COVERAGE_LCOV_OPTIONS_DEFAULT ?= \$(CODE_COVERAGE_LCOV_OPTIONS_GCOVPATH)
+CODE_COVERAGE_LCOV_OPTIONS ?= \$(CODE_COVERAGE_LCOV_OPTIONS_DEFAULT)
+CODE_COVERAGE_LCOV_RMOPTS_DEFAULT ?=
+CODE_COVERAGE_LCOV_RMOPTS ?= \$(CODE_COVERAGE_LCOV_RMOPTS_DEFAULT)
+CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT ?=\
+\$(if \$(CODE_COVERAGE_BRANCH_COVERAGE),\
+--rc genhtml_branch_coverage=\$(CODE_COVERAGE_BRANCH_COVERAGE))
+CODE_COVERAGE_GENHTML_OPTIONS ?= \$(CODE_COVERAGE_GENHTML_OPTIONS_DEFAULT)
+CODE_COVERAGE_IGNORE_PATTERN ?=
+
+GITIGNOREFILES := \$(GITIGNOREFILES) \$(CODE_COVERAGE_OUTPUT_FILE) \$(CODE_COVERAGE_OUTPUT_DIRECTORY)
+code_coverage_v_lcov_cap = \$(code_coverage_v_lcov_cap_\$(V))
+code_coverage_v_lcov_cap_ = \$(code_coverage_v_lcov_cap_\$(AM_DEFAULT_VERBOSITY))
+code_coverage_v_lcov_cap_0 = @echo \"  LCOV   --capture\" \$(CODE_COVERAGE_OUTPUT_FILE);
+code_coverage_v_lcov_ign = \$(code_coverage_v_lcov_ign_\$(V))
+code_coverage_v_lcov_ign_ = \$(code_coverage_v_lcov_ign_\$(AM_DEFAULT_VERBOSITY))
+code_coverage_v_lcov_ign_0 = @echo \"  LCOV   --remove /tmp/*\" \$(CODE_COVERAGE_IGNORE_PATTERN);
+code_coverage_v_genhtml = \$(code_coverage_v_genhtml_\$(V))
+code_coverage_v_genhtml_ = \$(code_coverage_v_genhtml_\$(AM_DEFAULT_VERBOSITY))
+code_coverage_v_genhtml_0 = @echo \"  GEN   \" \"\$(CODE_COVERAGE_OUTPUT_DIRECTORY)\";
+code_coverage_quiet = \$(code_coverage_quiet_\$(V))
+code_coverage_quiet_ = \$(code_coverage_quiet_\$(AM_DEFAULT_VERBOSITY))
+code_coverage_quiet_0 = --quiet
+
+# sanitizes the test-name: replaces with underscores: dashes and dots
+code_coverage_sanitize = \$(subst -,_,\$(subst .,_,\$(1)))
+
+# Use recursive makes in order to ignore errors during check
+check-code-coverage:
+	-\$(AM_V_at)\$(MAKE) \$(AM_MAKEFLAGS) -k check
+	\$(AM_V_at)\$(MAKE) \$(AM_MAKEFLAGS) code-coverage-capture
+
+# Capture code coverage data
+code-coverage-capture: code-coverage-capture-hook
+	\$(code_coverage_v_lcov_cap)\$(LCOV) \$(code_coverage_quiet) \$(addprefix --directory ,\$(CODE_COVERAGE_DIRECTORY)) --capture --output-file \"\$(CODE_COVERAGE_OUTPUT_FILE).tmp\" --test-name \"\$(call code_coverage_sanitize,\$(PACKAGE_NAME)-\$(PACKAGE_VERSION))\" --no-checksum --compat-libtool \$(CODE_COVERAGE_LCOV_SHOPTS) \$(CODE_COVERAGE_LCOV_OPTIONS)
+	\$(code_coverage_v_lcov_ign)\$(LCOV) \$(code_coverage_quiet) \$(addprefix --directory ,\$(CODE_COVERAGE_DIRECTORY)) --remove \"\$(CODE_COVERAGE_OUTPUT_FILE).tmp\" \"/tmp/*\" \$(CODE_COVERAGE_IGNORE_PATTERN) --output-file \"\$(CODE_COVERAGE_OUTPUT_FILE)\" \$(CODE_COVERAGE_LCOV_SHOPTS) \$(CODE_COVERAGE_LCOV_RMOPTS)
+	-@rm -f \"\$(CODE_COVERAGE_OUTPUT_FILE).tmp\"
+	\$(code_coverage_v_genhtml)LANG=C \$(GENHTML) \$(code_coverage_quiet) \$(addprefix --prefix ,\$(CODE_COVERAGE_DIRECTORY)) --output-directory \"\$(CODE_COVERAGE_OUTPUT_DIRECTORY)\" --title \"\$(PACKAGE_NAME)-\$(PACKAGE_VERSION) Code Coverage\" --legend --show-details \"\$(CODE_COVERAGE_OUTPUT_FILE)\" \$(CODE_COVERAGE_GENHTML_OPTIONS)
+	@echo \"file://\$(abs_builddir)/\$(CODE_COVERAGE_OUTPUT_DIRECTORY)/index.html\"
+
+code-coverage-clean:
+	-\$(LCOV) --directory \$(top_builddir) -z
+	-rm -rf \"\$(CODE_COVERAGE_OUTPUT_FILE)\" \"\$(CODE_COVERAGE_OUTPUT_FILE).tmp\" \"\$(CODE_COVERAGE_OUTPUT_DIRECTORY)\"
+	-find . \\( -name \"*.gcda\" -o -name \"*.gcno\" -o -name \"*.gcov\" \\) -delete
+
+code-coverage-dist-clean:
+
+A][M_DISTCHECK_CONFIGURE_FLAGS := \$(A][M_DISTCHECK_CONFIGURE_FLAGS) --disable-code-coverage
+ else # ifneq (\$(abs_builddir), \$(abs_top_builddir))
+check-code-coverage:
+
+code-coverage-capture: code-coverage-capture-hook
+
+code-coverage-clean:
+
+code-coverage-dist-clean:
+ endif # ifeq (\$(abs_builddir), \$(abs_top_builddir))
+else #! CODE_COVERAGE_ENABLED
+# Use recursive makes in order to ignore errors during check
+check-code-coverage:
+	@echo \"Need to reconfigure with --enable-code-coverage\"
+# Capture code coverage data
+code-coverage-capture: code-coverage-capture-hook
+	@echo \"Need to reconfigure with --enable-code-coverage\"
+
+code-coverage-clean:
+
+code-coverage-dist-clean:
+
+endif #CODE_COVERAGE_ENABLED
+# Hook rule executed before code-coverage-capture, overridable by the user
+code-coverage-capture-hook:
+
+.PHONY: check-code-coverage code-coverage-capture code-coverage-dist-clean code-coverage-clean code-coverage-capture-hook
+])
+])
+
+AC_DEFUN([_AX_CODE_COVERAGE_ENABLED],[
+	AX_CHECK_GNU_MAKE([],[AC_MSG_ERROR([not using GNU make that is needed for coverage])])
+	AC_REQUIRE([AX_ADD_AM_MACRO_STATIC])
+	# check for gcov
+	AC_CHECK_TOOL([GCOV],
+		  [$_AX_CODE_COVERAGE_GCOV_PROG_WITH],
+		  [:])
+	AS_IF([test "X$GCOV" = "X:"],
+	      [AC_MSG_ERROR([gcov is needed to do coverage])])
+	AC_SUBST([GCOV])
+
+	dnl Check if gcc is being used
+	AS_IF([ test "$GCC" = "no" ], [
+		AC_MSG_ERROR([not compiling with gcc, which is required for gcov code coverage])
+	      ])
+
+	AC_CHECK_PROG([LCOV], [lcov], [lcov])
+	AC_CHECK_PROG([GENHTML], [genhtml], [genhtml])
+
+	AS_IF([ test x"$LCOV" = x ], [
+		AC_MSG_ERROR([To enable code coverage reporting you must have lcov installed])
+	      ])
+
+	AS_IF([ test x"$GENHTML" = x ], [
+		AC_MSG_ERROR([Could not find genhtml from the lcov package])
+	])
+
+	dnl Build the code coverage flags
+	dnl Define CODE_COVERAGE_LDFLAGS for backwards compatibility
+	CODE_COVERAGE_CPPFLAGS="-DNDEBUG"
+	CODE_COVERAGE_CFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+	CODE_COVERAGE_CXXFLAGS="-O0 -g -fprofile-arcs -ftest-coverage"
+	CODE_COVERAGE_LIBS="-lgcov"
+
+	AC_SUBST([CODE_COVERAGE_CPPFLAGS])
+	AC_SUBST([CODE_COVERAGE_CFLAGS])
+	AC_SUBST([CODE_COVERAGE_CXXFLAGS])
+	AC_SUBST([CODE_COVERAGE_LIBS])
+])
+
+AC_DEFUN([AX_CODE_COVERAGE],[
+	dnl Check for --enable-code-coverage
+
+	# allow to override gcov location
+	AC_ARG_WITH([gcov],
+	  [AS_HELP_STRING([--with-gcov[=GCOV]], [use given GCOV for coverage (GCOV=gcov).])],
+	  [_AX_CODE_COVERAGE_GCOV_PROG_WITH=$with_gcov],
+	  [_AX_CODE_COVERAGE_GCOV_PROG_WITH=gcov])
+
+	AC_MSG_CHECKING([whether to build with code coverage support])
+	AC_ARG_ENABLE([code-coverage],
+	  AS_HELP_STRING([--enable-code-coverage],
+	  [Whether to enable code coverage support]),,
+	  enable_code_coverage=no)
+
+	AM_CONDITIONAL([CODE_COVERAGE_ENABLED], [test "x$enable_code_coverage" = xyes])
+	AC_SUBST([CODE_COVERAGE_ENABLED], [$enable_code_coverage])
+	AC_MSG_RESULT($enable_code_coverage)
+
+	AS_IF([ test "x$enable_code_coverage" = xyes ], [
+		_AX_CODE_COVERAGE_ENABLED
+	      ])
+
+	_AX_CODE_COVERAGE_RULES
+])
+
+# ===========================================================================
+#     https://www.gnu.org/software/autoconf-archive/ax_file_escapes.html
+# ===========================================================================
+#
+# SYNOPSIS
+#
+#   AX_FILE_ESCAPES
+#
+# DESCRIPTION
+#
+#   Writes the specified data to the specified file.
+#
+# LICENSE
+#
+#   Copyright (c) 2008 Tom Howard <tomhoward@users.sf.net>
+#
+#   Copying and distribution of this file, with or without modification, are
+#   permitted in any medium without royalty provided the copyright notice
+#   and this notice are preserved. This file is offered as-is, without any
+#   warranty.
+
+#serial 8
+
+AC_DEFUN([AX_FILE_ESCAPES],[
+AX_DOLLAR="\$"
+AX_SRB="\\135"
+AX_SLB="\\133"
+AX_BS="\\\\"
+AX_DQ="\""
+])
+
+# gpgme.m4 - autoconf macro to detect GPGME.
+# Copyright (C) 2002, 2003, 2004, 2014, 2018 g10 Code GmbH
+#
+# This file is free software; as a special exception the author gives
+# unlimited permission to copy and/or distribute it, with or without
+# modifications, as long as this notice is preserved.
+#
+# This file is distributed in the hope that it will be useful, but
+# WITHOUT ANY WARRANTY, to the extent permitted by law; without even the
+# implied warranty of MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.
+#
+# Last-changed: 2020-11-20
+
+
+AC_DEFUN([_AM_PATH_GPGME_CONFIG],
+[ AC_ARG_WITH(gpgme-prefix,
+            AS_HELP_STRING([--with-gpgme-prefix=PFX],
+                           [prefix where GPGME is installed (optional)]),
+     gpgme_config_prefix="$withval", gpgme_config_prefix="")
+  if test x"${GPGME_CONFIG}" = x ; then
+     if test x"${gpgme_config_prefix}" != x ; then
+        GPGME_CONFIG="${gpgme_config_prefix}/bin/gpgme-config"
+     else
+       case "${SYSROOT}" in
+         /*)
+           if test -x "${SYSROOT}/bin/gpgme-config" ; then
+             GPGME_CONFIG="${SYSROOT}/bin/gpgme-config"
+           fi
+           ;;
+         '')
+           ;;
+          *)
+           AC_MSG_WARN([Ignoring \$SYSROOT as it is not an absolute path.])
+           ;;
+       esac
+     fi
+  fi
+
+  use_gpgrt_config=""
+  if test x"${GPGME_CONFIG}" = x -a x"$GPGRT_CONFIG" != x -a "$GPGRT_CONFIG" != "no"; then
+    if $GPGRT_CONFIG gpgme --exists; then
+      GPGME_CONFIG="$GPGRT_CONFIG gpgme"
+      AC_MSG_NOTICE([Use gpgrt-config as gpgme-config])
+      use_gpgrt_config=yes
+    fi
+  fi
+  if test -z "$use_gpgrt_config"; then
+    AC_PATH_PROG(GPGME_CONFIG, gpgme-config, no)
+  fi
+
+  if test "$GPGME_CONFIG" != "no" ; then
+    if test -z "$use_gpgrt_config"; then
+      gpgme_version=`$GPGME_CONFIG --version`
+    else
+      gpgme_version=`$GPGME_CONFIG --modversion`
+    fi
+  fi
+  gpgme_version_major=`echo $gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\1/'`
+  gpgme_version_minor=`echo $gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\2/'`
+  gpgme_version_micro=`echo $gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\).*/\3/'`
+])
+
+
+AC_DEFUN([_AM_PATH_GPGME_CONFIG_HOST_CHECK],
+[
+    if test -z "$use_gpgrt_config"; then
+      gpgme_config_host=`$GPGME_CONFIG --host 2>/dev/null || echo none`
+    else
+      gpgme_config_host=`$GPGME_CONFIG --variable=host 2>/dev/null || echo none`
+    fi
+    if test x"$gpgme_config_host" != xnone ; then
+      if test x"$gpgme_config_host" != x"$host" ; then
+  AC_MSG_WARN([[
+***
+*** The config script "$GPGME_CONFIG" was
+*** built for $gpgme_config_host and thus may not match the
+*** used host $host.
+*** You may want to use the configure option --with-gpgme-prefix
+*** to specify a matching config script or use \$SYSROOT.
+***]])
+        gpg_config_script_warn="$gpg_config_script_warn gpgme"
+      fi
+    fi
+])
+
+
+dnl AM_PATH_GPGME([MINIMUM-VERSION,
+dnl               [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
+dnl Test for libgpgme and define GPGME_CFLAGS and GPGME_LIBS.
 dnl
+dnl If a prefix option is not used, the config script is first
+dnl searched in $SYSROOT/bin and then along $PATH.  If the used
+dnl config script does not match the host specification the script
+dnl is added to the gpg_config_script_warn variable.
+dnl
+AC_DEFUN([AM_PATH_GPGME],
+[ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
+  tmp=ifelse([$1], ,1:0.4.2,$1)
+  if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
+     req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
+     min_gpgme_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
+  else
+     req_gpgme_api=0
+     min_gpgme_version="$tmp"
+  fi
+
+  AC_MSG_CHECKING(for GPGME - version >= $min_gpgme_version)
+  ok=no
+  if test "$GPGME_CONFIG" != "no" ; then
+    req_major=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+    req_minor=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+    req_micro=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+    if test "$gpgme_version_major" -gt "$req_major"; then
+        ok=yes
+    else
+        if test "$gpgme_version_major" -eq "$req_major"; then
+            if test "$gpgme_version_minor" -gt "$req_minor"; then
+               ok=yes
+            else
+               if test "$gpgme_version_minor" -eq "$req_minor"; then
+                   if test "$gpgme_version_micro" -ge "$req_micro"; then
+                     ok=yes
+                   fi
+               fi
+            fi
+        fi
+    fi
+  fi
+  if test $ok = yes; then
+     # If we have a recent GPGME, we should also check that the
+     # API is compatible.
+     if test "$req_gpgme_api" -gt 0 ; then
+        if test -z "$use_gpgrt_config"; then
+          tmp=`$GPGME_CONFIG --api-version 2>/dev/null || echo 0`
+        else
+          tmp=`$GPGME_CONFIG --variable=api_version 2>/dev/null || echo 0`
+        fi
+        if test "$tmp" -gt 0 ; then
+           if test "$req_gpgme_api" -ne "$tmp" ; then
+             ok=no
+           fi
+        fi
+     fi
+  fi
+  if test $ok = yes; then
+    GPGME_CFLAGS=`$GPGME_CONFIG --cflags`
+    GPGME_LIBS=`$GPGME_CONFIG --libs`
+    AC_MSG_RESULT(yes)
+    ifelse([$2], , :, [$2])
+    _AM_PATH_GPGME_CONFIG_HOST_CHECK
+  else
+    GPGME_CFLAGS=""
+    GPGME_LIBS=""
+    AC_MSG_RESULT(no)
+    ifelse([$3], , :, [$3])
+  fi
+  AC_SUBST(GPGME_CFLAGS)
+  AC_SUBST(GPGME_LIBS)
+])
+
+dnl AM_PATH_GPGME_PTHREAD([MINIMUM-VERSION,
+dnl                       [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
+dnl Test for libgpgme and define GPGME_PTHREAD_CFLAGS
+dnl  and GPGME_PTHREAD_LIBS.
+dnl
+AC_DEFUN([AM_PATH_GPGME_PTHREAD],
+[ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
+  tmp=ifelse([$1], ,1:0.4.2,$1)
+  if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
+     req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
+     min_gpgme_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
+  else
+     req_gpgme_api=0
+     min_gpgme_version="$tmp"
+  fi
+
+  AC_MSG_CHECKING(for GPGME pthread - version >= $min_gpgme_version)
+  ok=no
+  if test "$GPGME_CONFIG" != "no" ; then
+    if `$GPGME_CONFIG --thread=pthread 2> /dev/null` ; then
+      req_major=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+      req_minor=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+      req_micro=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+      if test "$gpgme_version_major" -gt "$req_major"; then
+        ok=yes
+      else
+        if test "$gpgme_version_major" -eq "$req_major"; then
+          if test "$gpgme_version_minor" -gt "$req_minor"; then
+            ok=yes
+          else
+            if test "$gpgme_version_minor" -eq "$req_minor"; then
+              if test "$gpgme_version_micro" -ge "$req_micro"; then
+                ok=yes
+              fi
+            fi
+          fi
+        fi
+      fi
+    fi
+  fi
+  if test $ok = yes; then
+     # If we have a recent GPGME, we should also check that the
+     # API is compatible.
+     if test "$req_gpgme_api" -gt 0 ; then
+        tmp=`$GPGME_CONFIG --api-version 2>/dev/null || echo 0`
+        if test "$tmp" -gt 0 ; then
+           if test "$req_gpgme_api" -ne "$tmp" ; then
+             ok=no
+           fi
+        fi
+     fi
+  fi
+  if test $ok = yes; then
+    GPGME_PTHREAD_CFLAGS=`$GPGME_CONFIG --thread=pthread --cflags`
+    GPGME_PTHREAD_LIBS=`$GPGME_CONFIG --thread=pthread --libs`
+    AC_MSG_RESULT(yes)
+    ifelse([$2], , :, [$2])
+    _AM_PATH_GPGME_CONFIG_HOST_CHECK
+  else
+    GPGME_PTHREAD_CFLAGS=""
+    GPGME_PTHREAD_LIBS=""
+    AC_MSG_RESULT(no)
+    ifelse([$3], , :, [$3])
+  fi
+  AC_SUBST(GPGME_PTHREAD_CFLAGS)
+  AC_SUBST(GPGME_PTHREAD_LIBS)
+])
+
+
+dnl AM_PATH_GPGME_GLIB([MINIMUM-VERSION,
+dnl               [ACTION-IF-FOUND [, ACTION-IF-NOT-FOUND ]]])
+dnl Test for libgpgme-glib and define GPGME_GLIB_CFLAGS and GPGME_GLIB_LIBS.
+dnl
+AC_DEFUN([AM_PATH_GPGME_GLIB],
+[ AC_REQUIRE([_AM_PATH_GPGME_CONFIG])dnl
+  tmp=ifelse([$1], ,1:0.4.2,$1)
+  if echo "$tmp" | grep ':' >/dev/null 2>/dev/null ; then
+     req_gpgme_api=`echo "$tmp"     | sed 's/\(.*\):\(.*\)/\1/'`
+     min_gpgme_version=`echo "$tmp" | sed 's/\(.*\):\(.*\)/\2/'`
+  else
+     req_gpgme_api=0
+     min_gpgme_version="$tmp"
+  fi
+
+  AC_MSG_CHECKING(for GPGME - version >= $min_gpgme_version)
+  ok=no
+  if test "$GPGME_CONFIG" != "no" ; then
+    req_major=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\1/'`
+    req_minor=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\2/'`
+    req_micro=`echo $min_gpgme_version | \
+               sed 's/\([[0-9]]*\)\.\([[0-9]]*\)\.\([[0-9]]*\)/\3/'`
+    if test "$gpgme_version_major" -gt "$req_major"; then
+        ok=yes
+    else
+        if test "$gpgme_version_major" -eq "$req_major"; then
+            if test "$gpgme_version_minor" -gt "$req_minor"; then
+               ok=yes
+            else
+               if test "$gpgme_version_minor" -eq "$req_minor"; then
+                   if test "$gpgme_version_micro" -ge "$req_micro"; then
+                     ok=yes
+                   fi
+               fi
+            fi
+        fi
+    fi
+  fi
+  if test $ok = yes; then
+     # If we have a recent GPGME, we should also check that the
+     # API is compatible.
+     if test "$req_gpgme_api" -gt 0 ; then
+        if test -z "$use_gpgrt_config"; then
+          tmp=`$GPGME_CONFIG --api-version 2>/dev/null || echo 0`
+        else
+          tmp=`$GPGME_CONFIG --variable=api_version 2>/dev/null || echo 0`
+        fi
+        if test "$tmp" -gt 0 ; then
+           if test "$req_gpgme_api" -ne "$tmp" ; then
+             ok=no
+           fi
+        fi
+     fi
+  fi
+  if test $ok = yes; then
+    if test -z "$use_gpgrt_config"; then
+      GPGME_GLIB_CFLAGS=`$GPGME_CONFIG --glib --cflags`
+      GPGME_GLIB_LIBS=`$GPGME_CONFIG --glib --libs`
+    else
+      if $GPGRT_CONFIG gpgme-glib --exists; then
+        GPGME_CONFIG="$GPGRT_CONFIG gpgme-glib"
+        GPGME_GLIB_CFLAGS=`$GPGME_CONFIG --cflags`
+        GPGME_GLIB_LIBS=`$GPGME_CONFIG --libs`
+      else
+        ok = no
+      fi
+    fi
+  fi
+  if test $ok = yes; then
+    AC_MSG_RESULT(yes)
+    ifelse([$2], , :, [$2])
+    _AM_PATH_GPGME_CONFIG_HOST_CHECK
+  else
+    GPGME_GLIB_CFLAGS=""
+    GPGME_GLIB_LIBS=""
+    AC_MSG_RESULT(no)
+    ifelse([$3], , :, [$3])
+  fi
+  AC_SUBST(GPGME_GLIB_CFLAGS)
+  AC_SUBST(GPGME_GLIB_LIBS)
+])
+
+# pkg.m4 - Macros to locate and utilise pkg-config.   -*- Autoconf -*-
+# serial 11 (pkg-config-0.29.1)
+
 dnl Copyright © 2004 Scott James Remnant <scott@netsplit.com>.
 dnl Copyright © 2012-2015 Dan Nicholson <dbn.lists@gmail.com>
 dnl
@@ -296,7 +1152,75 @@ AS_VAR_COPY([$1], [pkg_cv_][$1])
 AS_VAR_IF([$1], [""], [$5], [$4])dnl
 ])dnl PKG_CHECK_VAR
 
-# Copyright (C) 2002-2018 Free Software Foundation, Inc.
+dnl PKG_WITH_MODULES(VARIABLE-PREFIX, MODULES,
+dnl   [ACTION-IF-FOUND],[ACTION-IF-NOT-FOUND],
+dnl   [DESCRIPTION], [DEFAULT])
+dnl ------------------------------------------
+dnl
+dnl Prepare a "--with-" configure option using the lowercase
+dnl [VARIABLE-PREFIX] name, merging the behaviour of AC_ARG_WITH and
+dnl PKG_CHECK_MODULES in a single macro.
+AC_DEFUN([PKG_WITH_MODULES],
+[
+m4_pushdef([with_arg], m4_tolower([$1]))
+
+m4_pushdef([description],
+           [m4_default([$5], [build with ]with_arg[ support])])
+
+m4_pushdef([def_arg], [m4_default([$6], [auto])])
+m4_pushdef([def_action_if_found], [AS_TR_SH([with_]with_arg)=yes])
+m4_pushdef([def_action_if_not_found], [AS_TR_SH([with_]with_arg)=no])
+
+m4_case(def_arg,
+            [yes],[m4_pushdef([with_without], [--without-]with_arg)],
+            [m4_pushdef([with_without],[--with-]with_arg)])
+
+AC_ARG_WITH(with_arg,
+     AS_HELP_STRING(with_without, description[ @<:@default=]def_arg[@:>@]),,
+    [AS_TR_SH([with_]with_arg)=def_arg])
+
+AS_CASE([$AS_TR_SH([with_]with_arg)],
+            [yes],[PKG_CHECK_MODULES([$1],[$2],$3,$4)],
+            [auto],[PKG_CHECK_MODULES([$1],[$2],
+                                        [m4_n([def_action_if_found]) $3],
+                                        [m4_n([def_action_if_not_found]) $4])])
+
+m4_popdef([with_arg])
+m4_popdef([description])
+m4_popdef([def_arg])
+
+])dnl PKG_WITH_MODULES
+
+dnl PKG_HAVE_WITH_MODULES(VARIABLE-PREFIX, MODULES,
+dnl   [DESCRIPTION], [DEFAULT])
+dnl -----------------------------------------------
+dnl
+dnl Convenience macro to trigger AM_CONDITIONAL after PKG_WITH_MODULES
+dnl check._[VARIABLE-PREFIX] is exported as make variable.
+AC_DEFUN([PKG_HAVE_WITH_MODULES],
+[
+PKG_WITH_MODULES([$1],[$2],,,[$3],[$4])
+
+AM_CONDITIONAL([HAVE_][$1],
+               [test "$AS_TR_SH([with_]m4_tolower([$1]))" = "yes"])
+])dnl PKG_HAVE_WITH_MODULES
+
+dnl PKG_HAVE_DEFINE_WITH_MODULES(VARIABLE-PREFIX, MODULES,
+dnl   [DESCRIPTION], [DEFAULT])
+dnl ------------------------------------------------------
+dnl
+dnl Convenience macro to run AM_CONDITIONAL and AC_DEFINE after
+dnl PKG_WITH_MODULES check. HAVE_[VARIABLE-PREFIX] is exported as make
+dnl and preprocessor variable.
+AC_DEFUN([PKG_HAVE_DEFINE_WITH_MODULES],
+[
+PKG_HAVE_WITH_MODULES([$1],[$2],[$3],[$4])
+
+AS_IF([test "$AS_TR_SH([with_]m4_tolower([$1]))" = "yes"],
+        [AC_DEFINE([HAVE_][$1], 1, [Enable ]m4_tolower([$1])[ support])])
+])dnl PKG_HAVE_DEFINE_WITH_MODULES
+
+# Copyright (C) 2002-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -311,7 +1235,7 @@ AC_DEFUN([AM_AUTOMAKE_VERSION],
 [am__api_version='1.16'
 dnl Some users find AM_AUTOMAKE_VERSION and mistake it for a way to
 dnl require some minimum version.  Point them to the right macro.
-m4_if([$1], [1.16.1], [],
+m4_if([$1], [1.16.5], [],
       [AC_FATAL([Do not call $0, use AM_INIT_AUTOMAKE([$1]).])])dnl
 ])
 
@@ -327,14 +1251,14 @@ m4_define([_AM_AUTOCONF_VERSION], [])
 # Call AM_AUTOMAKE_VERSION and AM_AUTOMAKE_VERSION so they can be traced.
 # This function is AC_REQUIREd by AM_INIT_AUTOMAKE.
 AC_DEFUN([AM_SET_CURRENT_AUTOMAKE_VERSION],
-[AM_AUTOMAKE_VERSION([1.16.1])dnl
+[AM_AUTOMAKE_VERSION([1.16.5])dnl
 m4_ifndef([AC_AUTOCONF_VERSION],
   [m4_copy([m4_PACKAGE_VERSION], [AC_AUTOCONF_VERSION])])dnl
 _AM_AUTOCONF_VERSION(m4_defn([AC_AUTOCONF_VERSION]))])
 
 # AM_AUX_DIR_EXPAND                                         -*- Autoconf -*-
 
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -386,7 +1310,7 @@ am_aux_dir=`cd "$ac_aux_dir" && pwd`
 
 # AM_COND_IF                                            -*- Autoconf -*-
 
-# Copyright (C) 2008-2018 Free Software Foundation, Inc.
+# Copyright (C) 2008-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -423,7 +1347,7 @@ fi[]dnl
 
 # AM_CONDITIONAL                                            -*- Autoconf -*-
 
-# Copyright (C) 1997-2018 Free Software Foundation, Inc.
+# Copyright (C) 1997-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -454,7 +1378,7 @@ AC_CONFIG_COMMANDS_PRE(
 Usually this means the macro was only invoked conditionally.]])
 fi])])
 
-# Copyright (C) 1999-2018 Free Software Foundation, Inc.
+# Copyright (C) 1999-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -645,7 +1569,7 @@ _AM_SUBST_NOTMAKE([am__nodep])dnl
 
 # Generate code to set up dependency tracking.              -*- Autoconf -*-
 
-# Copyright (C) 1999-2018 Free Software Foundation, Inc.
+# Copyright (C) 1999-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -684,7 +1608,9 @@ AC_DEFUN([_AM_OUTPUT_DEPENDENCY_COMMANDS],
   done
   if test $am_rc -ne 0; then
     AC_MSG_FAILURE([Something went wrong bootstrapping makefile fragments
-    for automatic dependency tracking.  Try re-running configure with the
+    for automatic dependency tracking.  If GNU make was not used, consider
+    re-running the configure script with MAKE="gmake" (or whatever is
+    necessary).  You can also try re-running configure with the
     '--disable-dependency-tracking' option to at least be able to build
     the package (albeit without support for automatic dependency tracking).])
   fi
@@ -711,7 +1637,7 @@ AC_DEFUN([AM_OUTPUT_DEPENDENCY_COMMANDS],
 
 # Do all the work for Automake.                             -*- Autoconf -*-
 
-# Copyright (C) 1996-2018 Free Software Foundation, Inc.
+# Copyright (C) 1996-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -739,6 +1665,10 @@ m4_defn([AC_PROG_CC])
 # release and drop the old call support.
 AC_DEFUN([AM_INIT_AUTOMAKE],
 [AC_PREREQ([2.65])dnl
+m4_ifdef([_$0_ALREADY_INIT],
+  [m4_fatal([$0 expanded multiple times
+]m4_defn([_$0_ALREADY_INIT]))],
+  [m4_define([_$0_ALREADY_INIT], m4_expansion_stack)])dnl
 dnl Autoconf wants to disallow AM_ names.  We explicitly allow
 dnl the ones we care about.
 m4_pattern_allow([^AM_[A-Z]+FLAGS$])dnl
@@ -775,7 +1705,7 @@ m4_ifval([$3], [_AM_SET_OPTION([no-define])])dnl
 [_AM_SET_OPTIONS([$1])dnl
 dnl Diagnose old-style AC_INIT with new-style AM_AUTOMAKE_INIT.
 m4_if(
-  m4_ifdef([AC_PACKAGE_NAME], [ok]):m4_ifdef([AC_PACKAGE_VERSION], [ok]),
+  m4_ifset([AC_PACKAGE_NAME], [ok]):m4_ifset([AC_PACKAGE_VERSION], [ok]),
   [ok:ok],,
   [m4_fatal([AC_INIT should be called with package and version arguments])])dnl
  AC_SUBST([PACKAGE], ['AC_PACKAGE_TARNAME'])dnl
@@ -827,6 +1757,20 @@ AC_PROVIDE_IFELSE([AC_PROG_OBJCXX],
 		  [m4_define([AC_PROG_OBJCXX],
 			     m4_defn([AC_PROG_OBJCXX])[_AM_DEPENDENCIES([OBJCXX])])])dnl
 ])
+# Variables for tags utilities; see am/tags.am
+if test -z "$CTAGS"; then
+  CTAGS=ctags
+fi
+AC_SUBST([CTAGS])
+if test -z "$ETAGS"; then
+  ETAGS=etags
+fi
+AC_SUBST([ETAGS])
+if test -z "$CSCOPE"; then
+  CSCOPE=cscope
+fi
+AC_SUBST([CSCOPE])
+
 AC_REQUIRE([AM_SILENT_RULES])dnl
 dnl The testsuite driver may need to know about EXEEXT, so add the
 dnl 'am__EXEEXT' conditional if _AM_COMPILER_EXEEXT was seen.  This
@@ -908,7 +1852,7 @@ for _am_header in $config_headers :; do
 done
 echo "timestamp for $_am_arg" >`AS_DIRNAME(["$_am_arg"])`/stamp-h[]$_am_stamp_count])
 
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -929,7 +1873,7 @@ if test x"${install_sh+set}" != xset; then
 fi
 AC_SUBST([install_sh])])
 
-# Copyright (C) 2003-2018 Free Software Foundation, Inc.
+# Copyright (C) 2003-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -950,7 +1894,7 @@ AC_SUBST([am__leading_dot])])
 
 # Check to see how 'make' treats includes.	            -*- Autoconf -*-
 
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -993,7 +1937,7 @@ AC_SUBST([am__quote])])
 
 # Fake the existence of programs that GNU maintainers use.  -*- Autoconf -*-
 
-# Copyright (C) 1997-2018 Free Software Foundation, Inc.
+# Copyright (C) 1997-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1014,12 +1958,7 @@ AC_DEFUN([AM_MISSING_HAS_RUN],
 [AC_REQUIRE([AM_AUX_DIR_EXPAND])dnl
 AC_REQUIRE_AUX_FILE([missing])dnl
 if test x"${MISSING+set}" != xset; then
-  case $am_aux_dir in
-  *\ * | *\	*)
-    MISSING="\${SHELL} \"$am_aux_dir/missing\"" ;;
-  *)
-    MISSING="\${SHELL} $am_aux_dir/missing" ;;
-  esac
+  MISSING="\${SHELL} '$am_aux_dir/missing'"
 fi
 # Use eval to expand $SHELL
 if eval "$MISSING --is-lightweight"; then
@@ -1032,7 +1971,7 @@ fi
 
 # Helper functions for option handling.                     -*- Autoconf -*-
 
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1061,7 +2000,7 @@ AC_DEFUN([_AM_SET_OPTIONS],
 AC_DEFUN([_AM_IF_OPTION],
 [m4_ifset(_AM_MANGLE_OPTION([$1]), [$2], [$3])])
 
-# Copyright (C) 1999-2018 Free Software Foundation, Inc.
+# Copyright (C) 1999-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1108,7 +2047,7 @@ AC_LANG_POP([C])])
 # For backward compatibility.
 AC_DEFUN_ONCE([AM_PROG_CC_C_O], [AC_REQUIRE([AC_PROG_CC])])
 
-# Copyright (C) 1999-2018 Free Software Foundation, Inc.
+# Copyright (C) 1999-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1187,34 +2126,141 @@ AC_DEFUN([AM_PATH_PYTHON],
   ])
 
   if test "$PYTHON" = :; then
-  dnl Run any user-specified action, or abort.
+    dnl Run any user-specified action, or abort.
     m4_default([$3], [AC_MSG_ERROR([no suitable Python interpreter found])])
   else
 
-  dnl Query Python for its version number.  Getting [:3] seems to be
-  dnl the best way to do this; it's what "site.py" does in the standard
-  dnl library.
-
+  dnl Query Python for its version number.  Although site.py simply uses
+  dnl sys.version[:3], printing that failed with Python 3.10, since the
+  dnl trailing zero was eliminated. So now we output just the major
+  dnl and minor version numbers, as numbers. Apparently the tertiary
+  dnl version is not of interest.
+  dnl
   AC_CACHE_CHECK([for $am_display_PYTHON version], [am_cv_python_version],
-    [am_cv_python_version=`$PYTHON -c "import sys; sys.stdout.write(sys.version[[:3]])"`])
+    [am_cv_python_version=`$PYTHON -c "import sys; print ('%u.%u' % sys.version_info[[:2]])"`])
   AC_SUBST([PYTHON_VERSION], [$am_cv_python_version])
 
-  dnl Use the values of $prefix and $exec_prefix for the corresponding
-  dnl values of PYTHON_PREFIX and PYTHON_EXEC_PREFIX.  These are made
-  dnl distinct variables so they can be overridden if need be.  However,
-  dnl general consensus is that you shouldn't need this ability.
-
-  AC_SUBST([PYTHON_PREFIX], ['${prefix}'])
-  AC_SUBST([PYTHON_EXEC_PREFIX], ['${exec_prefix}'])
-
-  dnl At times (like when building shared libraries) you may want
+  dnl At times, e.g., when building shared libraries, you may want
   dnl to know which OS platform Python thinks this is.
-
+  dnl
   AC_CACHE_CHECK([for $am_display_PYTHON platform], [am_cv_python_platform],
     [am_cv_python_platform=`$PYTHON -c "import sys; sys.stdout.write(sys.platform)"`])
   AC_SUBST([PYTHON_PLATFORM], [$am_cv_python_platform])
 
-  # Just factor out some code duplication.
+  dnl emacs-page
+  dnl If --with-python-sys-prefix is given, use the values of sys.prefix
+  dnl and sys.exec_prefix for the corresponding values of PYTHON_PREFIX
+  dnl and PYTHON_EXEC_PREFIX. Otherwise, use the GNU ${prefix} and
+  dnl ${exec_prefix} variables.
+  dnl
+  dnl The two are made distinct variables so they can be overridden if
+  dnl need be, although general consensus is that you shouldn't need
+  dnl this separation.
+  dnl
+  dnl Also allow directly setting the prefixes via configure options,
+  dnl overriding any default.
+  dnl
+  if test "x$prefix" = xNONE; then
+    am__usable_prefix=$ac_default_prefix
+  else
+    am__usable_prefix=$prefix
+  fi
+
+  # Allow user to request using sys.* values from Python,
+  # instead of the GNU $prefix values.
+  AC_ARG_WITH([python-sys-prefix],
+  [AS_HELP_STRING([--with-python-sys-prefix],
+                  [use Python's sys.prefix and sys.exec_prefix values])],
+  [am_use_python_sys=:],
+  [am_use_python_sys=false])
+
+  # Allow user to override whatever the default Python prefix is.
+  AC_ARG_WITH([python_prefix],
+  [AS_HELP_STRING([--with-python_prefix],
+                  [override the default PYTHON_PREFIX])],
+  [am_python_prefix_subst=$withval
+   am_cv_python_prefix=$withval
+   AC_MSG_CHECKING([for explicit $am_display_PYTHON prefix])
+   AC_MSG_RESULT([$am_cv_python_prefix])],
+  [
+   if $am_use_python_sys; then
+     # using python sys.prefix value, not GNU
+     AC_CACHE_CHECK([for python default $am_display_PYTHON prefix],
+     [am_cv_python_prefix],
+     [am_cv_python_prefix=`$PYTHON -c "import sys; sys.stdout.write(sys.prefix)"`])
+
+     dnl If sys.prefix is a subdir of $prefix, replace the literal value of
+     dnl $prefix with a variable reference so it can be overridden.
+     case $am_cv_python_prefix in
+     $am__usable_prefix*)
+       am__strip_prefix=`echo "$am__usable_prefix" | sed 's|.|.|g'`
+       am_python_prefix_subst=`echo "$am_cv_python_prefix" | sed "s,^$am__strip_prefix,\\${prefix},"`
+       ;;
+     *)
+       am_python_prefix_subst=$am_cv_python_prefix
+       ;;
+     esac
+   else # using GNU prefix value, not python sys.prefix
+     am_python_prefix_subst='${prefix}'
+     am_python_prefix=$am_python_prefix_subst
+     AC_MSG_CHECKING([for GNU default $am_display_PYTHON prefix])
+     AC_MSG_RESULT([$am_python_prefix])
+   fi])
+  # Substituting python_prefix_subst value.
+  AC_SUBST([PYTHON_PREFIX], [$am_python_prefix_subst])
+
+  # emacs-page Now do it all over again for Python exec_prefix, but with yet
+  # another conditional: fall back to regular prefix if that was specified.
+  AC_ARG_WITH([python_exec_prefix],
+  [AS_HELP_STRING([--with-python_exec_prefix],
+                  [override the default PYTHON_EXEC_PREFIX])],
+  [am_python_exec_prefix_subst=$withval
+   am_cv_python_exec_prefix=$withval
+   AC_MSG_CHECKING([for explicit $am_display_PYTHON exec_prefix])
+   AC_MSG_RESULT([$am_cv_python_exec_prefix])],
+  [
+   # no explicit --with-python_exec_prefix, but if
+   # --with-python_prefix was given, use its value for python_exec_prefix too.
+   AS_IF([test -n "$with_python_prefix"],
+   [am_python_exec_prefix_subst=$with_python_prefix
+    am_cv_python_exec_prefix=$with_python_prefix
+    AC_MSG_CHECKING([for python_prefix-given $am_display_PYTHON exec_prefix])
+    AC_MSG_RESULT([$am_cv_python_exec_prefix])],
+   [
+    # Set am__usable_exec_prefix whether using GNU or Python values,
+    # since we use that variable for pyexecdir.
+    if test "x$exec_prefix" = xNONE; then
+      am__usable_exec_prefix=$am__usable_prefix
+    else
+      am__usable_exec_prefix=$exec_prefix
+    fi
+    #
+    if $am_use_python_sys; then # using python sys.exec_prefix, not GNU
+      AC_CACHE_CHECK([for python default $am_display_PYTHON exec_prefix],
+      [am_cv_python_exec_prefix],
+      [am_cv_python_exec_prefix=`$PYTHON -c "import sys; sys.stdout.write(sys.exec_prefix)"`])
+      dnl If sys.exec_prefix is a subdir of $exec_prefix, replace the
+      dnl literal value of $exec_prefix with a variable reference so it can
+      dnl be overridden.
+      case $am_cv_python_exec_prefix in
+      $am__usable_exec_prefix*)
+        am__strip_prefix=`echo "$am__usable_exec_prefix" | sed 's|.|.|g'`
+        am_python_exec_prefix_subst=`echo "$am_cv_python_exec_prefix" | sed "s,^$am__strip_prefix,\\${exec_prefix},"`
+        ;;
+      *)
+        am_python_exec_prefix_subst=$am_cv_python_exec_prefix
+        ;;
+     esac
+   else # using GNU $exec_prefix, not python sys.exec_prefix
+     am_python_exec_prefix_subst='${exec_prefix}'
+     am_python_exec_prefix=$am_python_exec_prefix_subst
+     AC_MSG_CHECKING([for GNU default $am_display_PYTHON exec_prefix])
+     AC_MSG_RESULT([$am_python_exec_prefix])
+   fi])])
+  # Substituting python_exec_prefix_subst.
+  AC_SUBST([PYTHON_EXEC_PREFIX], [$am_python_exec_prefix_subst])
+
+  # Factor out some code duplication into this shell variable.
   am_python_setup_sysconfig="\
 import sys
 # Prefer sysconfig over distutils.sysconfig, for better compatibility
@@ -1234,96 +2280,95 @@ try:
 except ImportError:
     pass"
 
-  dnl Set up 4 directories:
+  dnl emacs-page Set up 4 directories:
 
-  dnl pythondir -- where to install python scripts.  This is the
-  dnl   site-packages directory, not the python standard library
-  dnl   directory like in previous automake betas.  This behavior
-  dnl   is more consistent with lispdir.m4 for example.
+  dnl 1. pythondir: where to install python scripts.  This is the
+  dnl    site-packages directory, not the python standard library
+  dnl    directory like in previous automake betas.  This behavior
+  dnl    is more consistent with lispdir.m4 for example.
   dnl Query distutils for this directory.
-  AC_CACHE_CHECK([for $am_display_PYTHON script directory],
-    [am_cv_python_pythondir],
-    [if test "x$prefix" = xNONE
-     then
-       am_py_prefix=$ac_default_prefix
-     else
-       am_py_prefix=$prefix
-     fi
-     am_cv_python_pythondir=`$PYTHON -c "
+  dnl
+  AC_CACHE_CHECK([for $am_display_PYTHON script directory (pythondir)],
+  [am_cv_python_pythondir],
+  [if test "x$am_cv_python_prefix" = x; then
+     am_py_prefix=$am__usable_prefix
+   else
+     am_py_prefix=$am_cv_python_prefix
+   fi
+   am_cv_python_pythondir=`$PYTHON -c "
 $am_python_setup_sysconfig
 if can_use_sysconfig:
-    sitedir = sysconfig.get_path('purelib', vars={'base':'$am_py_prefix'})
+  sitedir = sysconfig.get_path('purelib', vars={'base':'$am_py_prefix'})
 else:
-    from distutils import sysconfig
-    sitedir = sysconfig.get_python_lib(0, 0, prefix='$am_py_prefix')
+  from distutils import sysconfig
+  sitedir = sysconfig.get_python_lib(0, 0, prefix='$am_py_prefix')
 sys.stdout.write(sitedir)"`
-     case $am_cv_python_pythondir in
-     $am_py_prefix*)
-       am__strip_prefix=`echo "$am_py_prefix" | sed 's|.|.|g'`
-       am_cv_python_pythondir=`echo "$am_cv_python_pythondir" | sed "s,^$am__strip_prefix,$PYTHON_PREFIX,"`
-       ;;
-     *)
-       case $am_py_prefix in
-         /usr|/System*) ;;
-         *)
-	  am_cv_python_pythondir=$PYTHON_PREFIX/lib/python$PYTHON_VERSION/site-packages
-	  ;;
-       esac
-       ;;
+   #
+   case $am_cv_python_pythondir in
+   $am_py_prefix*)
+     am__strip_prefix=`echo "$am_py_prefix" | sed 's|.|.|g'`
+     am_cv_python_pythondir=`echo "$am_cv_python_pythondir" | sed "s,^$am__strip_prefix,\\${PYTHON_PREFIX},"`
+     ;;
+   *)
+     case $am_py_prefix in
+       /usr|/System*) ;;
+       *) am_cv_python_pythondir="\${PYTHON_PREFIX}/lib/python$PYTHON_VERSION/site-packages"
+          ;;
      esac
-    ])
+     ;;
+   esac
+  ])
   AC_SUBST([pythondir], [$am_cv_python_pythondir])
 
-  dnl pkgpythondir -- $PACKAGE directory under pythondir.  Was
-  dnl   PYTHON_SITE_PACKAGE in previous betas, but this naming is
-  dnl   more consistent with the rest of automake.
-
+  dnl 2. pkgpythondir: $PACKAGE directory under pythondir.  Was
+  dnl    PYTHON_SITE_PACKAGE in previous betas, but this naming is
+  dnl    more consistent with the rest of automake.
+  dnl
   AC_SUBST([pkgpythondir], [\${pythondir}/$PACKAGE])
 
-  dnl pyexecdir -- directory for installing python extension modules
-  dnl   (shared libraries)
+  dnl 3. pyexecdir: directory for installing python extension modules
+  dnl    (shared libraries).
   dnl Query distutils for this directory.
-  AC_CACHE_CHECK([for $am_display_PYTHON extension module directory],
-    [am_cv_python_pyexecdir],
-    [if test "x$exec_prefix" = xNONE
-     then
-       am_py_exec_prefix=$am_py_prefix
-     else
-       am_py_exec_prefix=$exec_prefix
-     fi
-     am_cv_python_pyexecdir=`$PYTHON -c "
+  dnl
+  AC_CACHE_CHECK([for $am_display_PYTHON extension module directory (pyexecdir)],
+  [am_cv_python_pyexecdir],
+  [if test "x$am_cv_python_exec_prefix" = x; then
+     am_py_exec_prefix=$am__usable_exec_prefix
+   else
+     am_py_exec_prefix=$am_cv_python_exec_prefix
+   fi
+   am_cv_python_pyexecdir=`$PYTHON -c "
 $am_python_setup_sysconfig
 if can_use_sysconfig:
-    sitedir = sysconfig.get_path('platlib', vars={'platbase':'$am_py_prefix'})
+  sitedir = sysconfig.get_path('platlib', vars={'platbase':'$am_py_exec_prefix'})
 else:
-    from distutils import sysconfig
-    sitedir = sysconfig.get_python_lib(1, 0, prefix='$am_py_prefix')
+  from distutils import sysconfig
+  sitedir = sysconfig.get_python_lib(1, 0, prefix='$am_py_exec_prefix')
 sys.stdout.write(sitedir)"`
-     case $am_cv_python_pyexecdir in
-     $am_py_exec_prefix*)
-       am__strip_prefix=`echo "$am_py_exec_prefix" | sed 's|.|.|g'`
-       am_cv_python_pyexecdir=`echo "$am_cv_python_pyexecdir" | sed "s,^$am__strip_prefix,$PYTHON_EXEC_PREFIX,"`
-       ;;
-     *)
-       case $am_py_exec_prefix in
-         /usr|/System*) ;;
-         *)
-	   am_cv_python_pyexecdir=$PYTHON_EXEC_PREFIX/lib/python$PYTHON_VERSION/site-packages
-	   ;;
-       esac
-       ;;
+   #
+   case $am_cv_python_pyexecdir in
+   $am_py_exec_prefix*)
+     am__strip_prefix=`echo "$am_py_exec_prefix" | sed 's|.|.|g'`
+     am_cv_python_pyexecdir=`echo "$am_cv_python_pyexecdir" | sed "s,^$am__strip_prefix,\\${PYTHON_EXEC_PREFIX},"`
+     ;;
+   *)
+     case $am_py_exec_prefix in
+       /usr|/System*) ;;
+       *) am_cv_python_pyexecdir="\${PYTHON_EXEC_PREFIX}/lib/python$PYTHON_VERSION/site-packages"
+          ;;
      esac
-    ])
+     ;;
+   esac
+  ])
   AC_SUBST([pyexecdir], [$am_cv_python_pyexecdir])
 
-  dnl pkgpyexecdir -- $(pyexecdir)/$(PACKAGE)
-
+  dnl 4. pkgpyexecdir: $(pyexecdir)/$(PACKAGE)
+  dnl
   AC_SUBST([pkgpyexecdir], [\${pyexecdir}/$PACKAGE])
 
   dnl Run any user-specified action.
   $2
   fi
-
 ])
 
 
@@ -1346,7 +2391,7 @@ for i in list(range(0, 4)): minverhex = (minverhex << 8) + minver[[i]]
 sys.exit(sys.hexversion < minverhex)"
   AS_IF([AM_RUN_LOG([$1 -c "$prog"])], [$3], [$4])])
 
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1365,7 +2410,7 @@ AC_DEFUN([AM_RUN_LOG],
 
 # Check to make sure that the build environment is sane.    -*- Autoconf -*-
 
-# Copyright (C) 1996-2018 Free Software Foundation, Inc.
+# Copyright (C) 1996-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1446,7 +2491,7 @@ AC_CONFIG_COMMANDS_PRE(
 rm -f conftest.file
 ])
 
-# Copyright (C) 2009-2018 Free Software Foundation, Inc.
+# Copyright (C) 2009-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1506,7 +2551,7 @@ AC_SUBST([AM_BACKSLASH])dnl
 _AM_SUBST_NOTMAKE([AM_BACKSLASH])dnl
 ])
 
-# Copyright (C) 2001-2018 Free Software Foundation, Inc.
+# Copyright (C) 2001-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1534,7 +2579,7 @@ fi
 INSTALL_STRIP_PROGRAM="\$(install_sh) -c -s"
 AC_SUBST([INSTALL_STRIP_PROGRAM])])
 
-# Copyright (C) 2006-2018 Free Software Foundation, Inc.
+# Copyright (C) 2006-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -1553,7 +2598,7 @@ AC_DEFUN([AM_SUBST_NOTMAKE], [_AM_SUBST_NOTMAKE($@)])
 
 # Check how to create a tarball.                            -*- Autoconf -*-
 
-# Copyright (C) 2004-2018 Free Software Foundation, Inc.
+# Copyright (C) 2004-2021 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,

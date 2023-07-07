@@ -248,7 +248,7 @@ static const char usage_message[] =
     "--setenv name value : Set a custom environmental variable to pass to script.\n"
     "--setenv FORWARD_COMPATIBLE 1 : Relax config file syntax checking to allow\n"
     "                  directives for future OpenVPN versions to be ignored.\n"
-    "--ignore-unkown-option opt1 opt2 ...: Relax config file syntax. Allow\n"
+    "--ignore-unknown-option opt1 opt2 ...: Relax config file syntax. Allow\n"
     "                  these options to be ignored when unknown\n"
     "--script-security level: Where level can be:\n"
     "                  0 -- strictly no calling of external programs\n"
@@ -569,8 +569,6 @@ static const char usage_message[] =
     "(These options are meaningful only for TLS-mode)\n"
     "--tls-server    : Enable TLS and assume server role during TLS handshake.\n"
     "--tls-client    : Enable TLS and assume client role during TLS handshake.\n"
-    "--key-method m  : (DEPRECATED) Data channel key exchange method.  m should be a method\n"
-    "                  number, such as 1 (default), 2, etc.\n"
     "--ca file       : Certificate authority file in .pem format containing\n"
     "                  root certificate.\n"
 #ifndef ENABLE_CRYPTO_MBEDTLS
@@ -3771,14 +3769,14 @@ options_postprocess_mutate(struct options *o, struct env_set *es)
             o->windows_driver = WINDOWS_DRIVER_TAP_WINDOWS6;
         }
     }
-#endif
-
+#else  /* _WIN32 */
     if (dco_enabled(o) && o->dev_node)
     {
         msg(M_WARN, "Note: ignoring --dev-node as it has no effect when using "
             "data channel offload");
         o->dev_node = NULL;
     }
+#endif /* _WIN32 */
 
     /* this depends on o->windows_driver, which is set above */
     options_postprocess_mutate_invariant(o);

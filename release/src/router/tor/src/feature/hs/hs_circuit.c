@@ -126,11 +126,6 @@ finalize_rend_circuit(origin_circuit_t *circ, crypt_path_t *hop,
   hop->package_window = circuit_initial_package_window();
   hop->deliver_window = CIRCWINDOW_START;
 
-  /* Now that this circuit has finished connecting to its destination,
-   * make sure circuit_get_open_circ_or_launch is willing to return it
-   * so we can actually use it. */
-  circ->hs_circ_has_timed_out = 0;
-
   /* If congestion control, transfer ccontrol onto the cpath. */
   if (TO_CIRCUIT(circ)->ccontrol) {
     hop->ccontrol = TO_CIRCUIT(circ)->ccontrol;
@@ -438,16 +433,6 @@ can_relaunch_service_rendezvous_point(const origin_circuit_t *circ)
 
   /* XXX: Retrying under certain condition. This is related to #22455. */
 
-  /* Avoid to relaunch twice a circuit to the same rendezvous point at the
-   * same time. */
-  if (circ->hs_service_side_rend_circ_has_been_relaunched) {
-    log_info(LD_REND, "Rendezvous circuit to %s has already been retried. "
-                      "Skipping retry.",
-             safe_str_client(
-                  extend_info_describe(circ->build_state->chosen_exit)));
-    goto disallow;
-  }
-
   /* We check failure_count >= hs_get_service_max_rend_failures()-1 below, and
    * the -1 is because we increment the failure count for our current failure
    * *after* this clause. */
@@ -689,7 +674,7 @@ hs_circ_service_get_established_intro_circ(const hs_service_intro_point_t *ip)
  * - We've already retried this specific rendezvous circuit.
  */
 void
-hs_circ_retry_service_rendezvous_point(origin_circuit_t *circ)
+hs_circ_retry_service_rendezvous_point(const origin_circuit_t *circ)
 {
   tor_assert(circ);
   tor_assert(TO_CIRCUIT(circ)->purpose == CIRCUIT_PURPOSE_S_CONNECT_REND);
@@ -698,10 +683,6 @@ hs_circ_retry_service_rendezvous_point(origin_circuit_t *circ)
   if (!can_relaunch_service_rendezvous_point(circ)) {
     goto done;
   }
-
-  /* Flag the circuit that we are relaunching, to avoid to relaunch twice a
-   * circuit to the same rendezvous point at the same time. */
-  circ->hs_service_side_rend_circ_has_been_relaunched = 1;
 
   /* Legacy services don't have a hidden service ident. */
   if (circ->hs_ident) {
@@ -1318,6 +1299,17 @@ hs_circ_cleanup_on_repurpose(circuit_t *circ)
 
   if (circ->hs_token) {
     hs_circuitmap_remove_circuit(circ);
+  }
+
+  switch (circ->purpose) {
+  case CIRCUIT_PURPOSE_S_CONNECT_REND:
+    /* This circuit was connecting to a rendezvous point but it is being
+     * repurposed so we need to relaunch an attempt else the client will be
+     * left hanging waiting for the rendezvous. */
+    hs_circ_retry_service_rendezvous_point(TO_ORIGIN_CIRCUIT(circ));
+    break;
+  default:
+    break;
   }
 }
 

@@ -90,6 +90,36 @@ test_dns_clip_ttl(void *arg)
   return;
 }
 
+static void
+test_dns_clip_fuzzy_ttl(void *arg)
+{
+  (void)arg;
+
+  /* Case 0: check that the fuzzy TTL constant is valid
+   */
+  tt_int_op(FUZZY_DNS_TTL, OP_LE, MIN_DNS_TTL);
+  tt_int_op(FUZZY_DNS_TTL, OP_LE, MAX_DNS_TTL);
+
+  /* Case 1: low clips
+   */
+  for (int i = 0; i < 1024; i++) {
+    int fuzzy_ttl = clip_dns_fuzzy_ttl(MIN_DNS_TTL - 1);
+    tt_int_op(fuzzy_ttl, OP_GE, MIN_DNS_TTL-FUZZY_DNS_TTL);
+    tt_int_op(fuzzy_ttl, OP_LE, MIN_DNS_TTL+FUZZY_DNS_TTL);
+  }
+
+  /* Case 2: high clips
+   */
+  for (int i = 0; i < 1024; i++) {
+    int fuzzy_ttl = clip_dns_fuzzy_ttl(MIN_DNS_TTL);
+    tt_int_op(fuzzy_ttl, OP_GE, MAX_DNS_TTL-FUZZY_DNS_TTL);
+    tt_int_op(fuzzy_ttl, OP_LE, MAX_DNS_TTL+FUZZY_DNS_TTL);
+  }
+
+  done:
+  return;
+}
+
 static int resolve_retval = 0;
 static int resolve_made_conn_pending = 0;
 static char *resolved_name = NULL;
@@ -779,6 +809,7 @@ struct testcase_t dns_tests[] = {
      TT_FORK, NULL, NULL },
 #endif
    { "clip_ttl", test_dns_clip_ttl, TT_FORK, NULL, NULL },
+   { "clip_fuzzy_ttl", test_dns_clip_fuzzy_ttl, TT_FORK, NULL, NULL },
    { "resolve", test_dns_resolve, TT_FORK, NULL, NULL },
    { "impl_addr_is_ip", test_dns_impl_addr_is_ip, TT_FORK, NULL, NULL },
    { "impl_non_exit", test_dns_impl_non_exit, TT_FORK, NULL, NULL },

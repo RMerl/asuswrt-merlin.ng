@@ -233,7 +233,7 @@ static socks_result_t
 process_socks4_request(const socks_request_t *req, int is_socks4a,
                        int log_sockstype, int safe_socks)
 {
-  if (is_socks4a && !addressmap_have_mapping(req->address, 0)) {
+  if (!is_socks4a && !addressmap_have_mapping(req->address, 0)) {
     log_unsafe_socks_warning(4, req->address, req->port, safe_socks);
 
     if (safe_socks)

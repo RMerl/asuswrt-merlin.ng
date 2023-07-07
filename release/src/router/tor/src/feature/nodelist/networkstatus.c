@@ -40,6 +40,7 @@
 #include "core/or/or.h"
 #include "app/config/config.h"
 #include "core/mainloop/connection.h"
+#include "core/mainloop/cpuworker.h"
 #include "core/mainloop/mainloop.h"
 #include "core/mainloop/netstatus.h"
 #include "core/or/channel.h"
@@ -83,6 +84,7 @@
 #include "feature/nodelist/routerlist.h"
 #include "feature/nodelist/torcert.h"
 #include "feature/relay/dns.h"
+#include "feature/relay/onion_queue.h"
 #include "feature/relay/routermode.h"
 #include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
@@ -1668,6 +1670,8 @@ notify_before_networkstatus_changes(const networkstatus_t *old_c,
   relay_consensus_has_changed(new_c);
   hs_dos_consensus_has_changed(new_c);
   rep_hist_consensus_has_changed(new_c);
+  cpuworker_consensus_has_changed(new_c);
+  onion_consensus_has_changed(new_c);
 }
 
 /* Called after a new consensus has been put in the global state. It is safe

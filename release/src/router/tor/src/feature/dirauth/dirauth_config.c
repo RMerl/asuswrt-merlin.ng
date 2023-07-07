@@ -434,6 +434,11 @@ dirauth_options_validate(const void *arg, char **msg)
            "Recommended*Versions.");
   }
 
+  if (options->AuthDirVoteGuardBwThresholdFraction > 1.0 ||
+      options->AuthDirVoteGuardBwThresholdFraction < 0.0) {
+    REJECT("Guard bandwdith threshold fraction is invalid.");
+  }
+
   char *t;
   /* Call these functions to produce warnings only. */
   t = format_recommended_version_list(options->RecommendedClientVersions, 1);

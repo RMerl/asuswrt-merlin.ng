@@ -35,7 +35,6 @@
 
 int connection_ext_or_start_auth(or_connection_t *or_conn);
 
-void connection_or_set_ext_or_identifier(or_connection_t *conn);
 int connection_ext_or_finished_flushing(or_connection_t *conn);
 int connection_ext_or_process_inbuf(or_connection_t *or_conn);
 char *get_ext_or_auth_cookie_file_name(void);
@@ -67,9 +66,6 @@ connection_ext_or_process_inbuf(or_connection_t *conn)
   tor_assert_nonfatal_unreached();
   return -1;
 }
-#define connection_or_set_ext_or_identifier(conn) \
-  ((void)(conn))
-
 #define get_ext_or_auth_cookie_file_name() \
   (NULL)
 

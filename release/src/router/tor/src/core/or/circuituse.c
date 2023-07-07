@@ -133,11 +133,6 @@ circuit_is_acceptable(const origin_circuit_t *origin_circ,
       return 0;
   }
 
-  /* If this is a timed-out hidden service circuit, skip it. */
-  if (origin_circ->hs_circ_has_timed_out) {
-    return 0;
-  }
-
   if (purpose == CIRCUIT_PURPOSE_C_GENERAL ||
       purpose == CIRCUIT_PURPOSE_C_HSDIR_GET ||
       purpose == CIRCUIT_PURPOSE_S_HSDIR_POST ||
@@ -334,7 +329,6 @@ circuit_get_best(const entry_connection_t *conn,
 {
   origin_circuit_t *best=NULL;
   struct timeval now;
-  int intro_going_on_but_too_old = 0;
 
   tor_assert(conn);
 
@@ -353,15 +347,6 @@ circuit_get_best(const entry_connection_t *conn,
       continue;
     origin_circ = TO_ORIGIN_CIRCUIT(circ);
 
-    /* Log an info message if we're going to launch a new intro circ in
-     * parallel */
-    if (purpose == CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT &&
-        !must_be_open && origin_circ->hs_circ_has_timed_out &&
-        !circ->marked_for_close) {
-        intro_going_on_but_too_old = 1;
-        continue;
-    }
-
     if (!circuit_is_acceptable(origin_circ,conn,must_be_open,purpose,
                                need_uptime,need_internal, (time_t)now.tv_sec))
       continue;
@@ -373,11 +358,6 @@ circuit_get_best(const entry_connection_t *conn,
       best = origin_circ;
   }
   SMARTLIST_FOREACH_END(circ);
-
-  if (!best && intro_going_on_but_too_old)
-    log_info(LD_REND|LD_CIRC, "There is an intro circuit being created "
-             "right now, but it has already taken quite a while. Starting "
-             "one in parallel.");
 
   return best;
 }
@@ -450,8 +430,9 @@ circuit_expire_building(void)
    * circuit_build_times_get_initial_timeout() if we haven't computed
    * custom timeouts yet */
   struct timeval general_cutoff, begindir_cutoff, fourhop_cutoff,
-    close_cutoff, extremely_old_cutoff, hs_extremely_old_cutoff,
-    cannibalized_cutoff, c_intro_cutoff, s_intro_cutoff, stream_cutoff;
+    close_cutoff, extremely_old_cutoff,
+    cannibalized_cutoff, c_intro_cutoff, s_intro_cutoff, stream_cutoff,
+    c_rend_ready_cutoff;
   const or_options_t *options = get_options();
   struct timeval now;
   cpath_build_state_t *build_state;
@@ -531,12 +512,18 @@ circuit_expire_building(void)
   /* Server intro circs have an extra round trip */
   SET_CUTOFF(s_intro_cutoff, get_circuit_build_timeout_ms() * (9/6.0) + 1000);
 
+  /* For circuit purpose set to: CIRCUIT_PURPOSE_C_REND_READY_INTRO_ACKED.
+   *
+   * The cutoff of such circuit is very high because we end up in this state if
+   * once the INTRODUCE_ACK is received which could be before the service
+   * receives the INTRODUCE2 cell. The worst case is a full 3-hop latency
+   * (intro -> service), 4-hop circuit creation latency (service -> RP), and
+   * finally a 7-hop latency for the RENDEZVOUS2 cell to arrive (service ->
+   * client). */
+  SET_CUTOFF(c_rend_ready_cutoff, get_circuit_build_timeout_ms() * 3 + 1000);
+
   SET_CUTOFF(close_cutoff, get_circuit_build_close_time_ms());
   SET_CUTOFF(extremely_old_cutoff, get_circuit_build_close_time_ms()*2 + 1000);
-
-  SET_CUTOFF(hs_extremely_old_cutoff,
-             MAX(get_circuit_build_close_time_ms()*2 + 1000,
-                 options->SocksTimeout * 1000));
 
   bool fixed_time = circuit_build_times_disabled(get_options());
 
@@ -568,8 +555,12 @@ circuit_expire_building(void)
       cutoff = c_intro_cutoff;
     else if (victim->purpose == CIRCUIT_PURPOSE_S_ESTABLISH_INTRO)
       cutoff = s_intro_cutoff;
-    else if (victim->purpose == CIRCUIT_PURPOSE_C_ESTABLISH_REND)
-      cutoff = stream_cutoff;
+    else if (victim->purpose == CIRCUIT_PURPOSE_S_CONNECT_REND) {
+      /* Service connecting to a rendezvous point is a four hop circuit. We set
+       * it explicitly here because this function is a clusterf***. */
+      cutoff = fourhop_cutoff;
+    } else if (victim->purpose == CIRCUIT_PURPOSE_C_REND_READY_INTRO_ACKED)
+      cutoff = c_rend_ready_cutoff;
     else if (victim->purpose == CIRCUIT_PURPOSE_PATH_BIAS_TESTING)
       cutoff = close_cutoff;
     else if (TO_ORIGIN_CIRCUIT(victim)->has_opened &&
@@ -579,9 +570,6 @@ circuit_expire_building(void)
       cutoff = fourhop_cutoff;
     else
       cutoff = general_cutoff;
-
-    if (TO_ORIGIN_CIRCUIT(victim)->hs_circ_has_timed_out)
-      cutoff = hs_extremely_old_cutoff;
 
     if (timercmp(&victim->timestamp_began, &cutoff, OP_GT))
       continue; /* it's still young, leave it alone */
@@ -754,51 +742,29 @@ circuit_expire_building(void)
       }
     }
 
-    /* If this is a hidden service client circuit which is far enough along in
-     * connecting to its destination, and we haven't already flagged it as
-     * 'timed out', flag it so we'll launch another intro or rend circ, but
-     * don't mark it for close yet.
-     *
-     * (Circs flagged as 'timed out' are given a much longer timeout
-     * period above, so we won't close them in the next call to
-     * circuit_expire_building.) */
-    if (!(TO_ORIGIN_CIRCUIT(victim)->hs_circ_has_timed_out)) {
-      switch (victim->purpose) {
-      case CIRCUIT_PURPOSE_C_REND_READY:
-        /* We only want to spare a rend circ iff it has been specified in an
-         * INTRODUCE1 cell sent to a hidden service. */
-        if (!hs_circ_is_rend_sent_in_intro1(CONST_TO_ORIGIN_CIRCUIT(victim))) {
-          break;
-        }
-        FALLTHROUGH;
-      case CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT:
-      case CIRCUIT_PURPOSE_C_REND_READY_INTRO_ACKED:
-        /* If we have reached this line, we want to spare the circ for now. */
-        log_info(LD_CIRC,"Marking circ %u (state %d:%s, purpose %d) "
-                 "as timed-out HS circ",
-                 (unsigned)victim->n_circ_id,
-                 victim->state, circuit_state_to_string(victim->state),
-                 victim->purpose);
-        TO_ORIGIN_CIRCUIT(victim)->hs_circ_has_timed_out = 1;
+    /* Special checks for onion service circuits. */
+    switch (victim->purpose) {
+    case CIRCUIT_PURPOSE_C_REND_READY:
+      /* We only want to spare a rend circ iff it has been specified in an
+       * INTRODUCE1 cell sent to a hidden service. */
+      if (hs_circ_is_rend_sent_in_intro1(CONST_TO_ORIGIN_CIRCUIT(victim))) {
         continue;
-      default:
-        break;
       }
-    }
-
-    /* If this is a service-side rendezvous circuit which is far
-     * enough along in connecting to its destination, consider sparing
-     * it. */
-    if (!(TO_ORIGIN_CIRCUIT(victim)->hs_circ_has_timed_out) &&
-        victim->purpose == CIRCUIT_PURPOSE_S_CONNECT_REND) {
-      log_info(LD_CIRC,"Marking circ %u (state %d:%s, purpose %d) "
-               "as timed-out HS circ; relaunching rendezvous attempt.",
+      break;
+    case CIRCUIT_PURPOSE_S_CONNECT_REND:
+      /* The connection to the rendezvous point has timed out, close it and
+       * retry if possible. */
+      log_info(LD_CIRC,"Rendezvous circ %u (state %d:%s, purpose %d) "
+               "as timed-out, closing it. Relaunching rendezvous attempt.",
                (unsigned)victim->n_circ_id,
                victim->state, circuit_state_to_string(victim->state),
                victim->purpose);
-      TO_ORIGIN_CIRCUIT(victim)->hs_circ_has_timed_out = 1;
-      hs_circ_retry_service_rendezvous_point(TO_ORIGIN_CIRCUIT(victim));
-      continue;
+      /* We'll close as a timeout the victim circuit. The rendezvous point
+       * won't keep both circuits, it only keeps the newest (for the same
+       * cookie). */
+      break;
+    default:
+      break;
     }
 
     if (victim->n_chan)

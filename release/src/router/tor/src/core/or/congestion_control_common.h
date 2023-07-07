@@ -82,6 +82,11 @@ int congestion_control_parse_ext_response(const uint8_t *msg,
 bool congestion_control_validate_sendme_increment(uint8_t sendme_inc);
 char *congestion_control_get_control_port_fields(const origin_circuit_t *);
 
+uint64_t congestion_control_get_num_rtt_reset(void);
+uint64_t congestion_control_get_num_clock_stalls(void);
+
+extern uint64_t cc_stats_circs_created;
+
 /* Ugh, C.. these are private. Use the getter instead, when
  * external to the congestion control code. */
 extern uint32_t or_conn_highwater;
@@ -143,6 +148,29 @@ n_count_ewma(uint64_t curr, uint64_t prev, uint64_t N)
     return curr;
   else
     return (2*curr + (N-1)*prev)/(N+1);
+}
+
+/**
+ * Helper function that gives us a percentile weighted-average between
+ * two values. The pct_max argument specifies the percentage weight of the
+ * maximum of a and b, when computing this weighted-average.
+ *
+ * This also allows this function to be used as either MIN() or a MAX()
+ * by this parameterization. It is MIN() when pct_max==0;
+ * it is MAX() when pct_max==100; it is avg() when pct_max==50; it is a
+ * weighted-average for values in between.
+ */
+static inline uint64_t
+percent_max_mix(uint64_t a, uint64_t b, uint8_t pct_max)
+{
+  uint64_t max = MAX(a, b);
+  uint64_t min = MIN(a, b);
+
+  if (BUG(pct_max > 100)) {
+    return max;
+  }
+
+  return pct_max*max/100 + (100-pct_max)*min/100;
 }
 
 /* Private section starts. */

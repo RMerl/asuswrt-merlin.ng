@@ -23,6 +23,7 @@
 #include "feature/nodelist/networkstatus.h"
 #include "trunnel/flow_control_cells.h"
 #include "feature/control/control_events.h"
+#include "lib/math/stats.h"
 
 #include "core/or/connection_st.h"
 #include "core/or/cell_st.h"
@@ -35,6 +36,12 @@ static uint32_t xoff_exit;
 static uint32_t xon_change_pct;
 static uint32_t xon_ewma_cnt;
 static uint32_t xon_rate_bytes;
+
+/** Metricsport stats */
+uint64_t cc_stats_flow_num_xoff_sent;
+uint64_t cc_stats_flow_num_xon_sent;
+double cc_stats_flow_xoff_outbuf_ma = 0;
+double cc_stats_flow_xon_outbuf_ma = 0;
 
 /* In normal operation, we can get a burst of up to 32 cells before returning
  * to libevent to flush the outbuf. This is a heuristic from hardcoded values
@@ -148,6 +155,7 @@ circuit_send_stream_xoff(edge_connection_t *stream)
   if (connection_edge_send_command(stream, RELAY_COMMAND_XOFF,
                                (char*)payload, (size_t)xoff_size) == 0) {
     stream->xoff_sent = true;
+    cc_stats_flow_num_xoff_sent++;
 
     /* If this is an entry conn, notify control port */
     if (TO_CONN(stream)->type == CONN_TYPE_AP) {
@@ -221,6 +229,8 @@ circuit_send_stream_xon(edge_connection_t *stream)
                                    (size_t)xon_size) == 0) {
     /* Revert the xoff sent status, so we can send another one if need be */
     stream->xoff_sent = false;
+
+    cc_stats_flow_num_xon_sent++;
 
     /* If it's an entry conn, notify control port */
     if (TO_CONN(stream)->type == CONN_TYPE_AP) {
@@ -473,6 +483,10 @@ flow_control_decide_xoff(edge_connection_t *stream)
                  total_buffered, buffer_limit_xoff);
       tor_trace(TR_SUBSYS(cc), TR_EV(flow_decide_xoff_sending), stream);
 
+      cc_stats_flow_xoff_outbuf_ma =
+        stats_update_running_avg(cc_stats_flow_xoff_outbuf_ma,
+                                 total_buffered);
+
       circuit_send_stream_xoff(stream);
 
       /* Clear the drain rate. It is considered wrong if we
@@ -627,6 +641,11 @@ flow_control_decide_xon(edge_connection_t *stream, size_t n_written)
                  stream->ewma_drain_rate,
                  total_buffered);
       tor_trace(TR_SUBSYS(cc), TR_EV(flow_decide_xon_rate_change), stream);
+
+      cc_stats_flow_xon_outbuf_ma =
+        stats_update_running_avg(cc_stats_flow_xon_outbuf_ma,
+                                 total_buffered);
+
       circuit_send_stream_xon(stream);
     }
   } else if (total_buffered == 0) {

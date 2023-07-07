@@ -32,6 +32,7 @@
 #include "feature/relay/onion_queue.h"
 #include "feature/stats/rephist.h"
 #include "feature/relay/router.h"
+#include "feature/nodelist/networkstatus.h"
 #include "lib/evloop/workqueue.h"
 #include "core/crypto/onion_crypto.h"
 
@@ -75,8 +76,42 @@ worker_state_free_void(void *arg)
 static replyqueue_t *replyqueue = NULL;
 static threadpool_t *threadpool = NULL;
 
-static int total_pending_tasks = 0;
-static int max_pending_tasks = 128;
+static uint32_t total_pending_tasks = 0;
+static uint32_t max_pending_tasks = 128;
+
+/** Return the consensus parameter max pending tasks per CPU. */
+static uint32_t
+get_max_pending_tasks_per_cpu(const networkstatus_t *ns)
+{
+/* Total voodoo. Can we make this more sensible? Maybe, that is why we made it
+ * a consensus parameter so our future self can figure out this magic. */
+#define MAX_PENDING_TASKS_PER_CPU_DEFAULT 64
+#define MAX_PENDING_TASKS_PER_CPU_MIN 1
+#define MAX_PENDING_TASKS_PER_CPU_MAX INT32_MAX
+
+  return networkstatus_get_param(ns, "max_pending_tasks_per_cpu",
+                                 MAX_PENDING_TASKS_PER_CPU_DEFAULT,
+                                 MAX_PENDING_TASKS_PER_CPU_MIN,
+                                 MAX_PENDING_TASKS_PER_CPU_MAX);
+}
+
+/** Set the max pending tasks per CPU worker. This uses the consensus to check
+ * for the allowed number per CPU. The ns parameter can be NULL as in that no
+ * consensus is available at the time of setting this value. */
+static void
+set_max_pending_tasks(const networkstatus_t *ns)
+{
+  max_pending_tasks =
+    get_num_cpus(get_options()) * get_max_pending_tasks_per_cpu(ns);
+}
+
+/** Called when the consensus has changed. */
+void
+cpuworker_consensus_has_changed(const networkstatus_t *ns)
+{
+  tor_assert(ns);
+  set_max_pending_tasks(ns);
+}
 
 /** Initialize the cpuworker subsystem. It is OK to call this more than once
  * during Tor's lifetime.
@@ -106,8 +141,17 @@ cpu_init(void)
     tor_assert(r == 0);
   }
 
-  /* Total voodoo. Can we make this more sensible? */
-  max_pending_tasks = get_num_cpus(get_options()) * 64;
+  set_max_pending_tasks(NULL);
+}
+
+/** Return the number of threads configured for our CPU worker. */
+unsigned int
+cpuworker_get_n_threads(void)
+{
+  if (!threadpool) {
+    return 0;
+  }
+  return threadpool_get_n_threads(threadpool);
 }
 
 /** Magic numbers to make sure our cpuworker_requests don't grow any

@@ -30,6 +30,7 @@
 #include "app/config/statefile.h"
 #include "feature/hs/hs_stats.h"
 #include "feature/hs/hs_service.h"
+#include "core/or/connection_st.h"
 #include "core/or/dos.h"
 #include "feature/stats/geoip_stats.h"
 
@@ -130,21 +131,23 @@ static unsigned n_outgoing_ipv6;
  * heartbeat message.
  **/
 void
-note_connection(bool inbound, int family)
+note_connection(bool inbound, const connection_t *conn)
 {
-  if (family == AF_INET) {
+  if (conn->socket_family == AF_INET) {
     if (inbound) {
       ++n_incoming_ipv4;
     } else {
       ++n_outgoing_ipv4;
     }
-  } else if (family == AF_INET6) {
+  } else if (conn->socket_family == AF_INET6) {
     if (inbound) {
       ++n_incoming_ipv6;
     } else {
       ++n_outgoing_ipv6;
     }
   }
+
+  rep_hist_note_conn_opened(inbound, conn->type, conn->socket_family);
 }
 
 /**

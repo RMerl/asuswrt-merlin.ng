@@ -20,4 +20,5 @@ src_lib_libtor_math_testing_a_CFLAGS = $(AM_CFLAGS) $(TEST_CFLAGS)
 noinst_HEADERS +=				\
 		src/lib/math/fp.h		\
 		src/lib/math/laplace.h  \
-		src/lib/math/prob_distr.h
+		src/lib/math/prob_distr.h \
+		src/lib/math/stats.h

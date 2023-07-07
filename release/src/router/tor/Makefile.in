@@ -4461,8 +4461,9 @@ am__noinst_HEADERS_DIST = src/ext/ht.h src/ext/byteorder.h \
 	src/lib/log/util_bug.h src/lib/log/win32err.h \
 	src/lib/malloc/malloc.h src/lib/malloc/map_anon.h \
 	src/lib/math/fp.h src/lib/math/laplace.h \
-	src/lib/math/prob_distr.h src/lib/memarea/memarea.h \
-	src/lib/meminfo/meminfo.h src/lib/metrics/metrics_store.h \
+	src/lib/math/prob_distr.h src/lib/math/stats.h \
+	src/lib/memarea/memarea.h src/lib/meminfo/meminfo.h \
+	src/lib/metrics/metrics_store.h \
 	src/lib/metrics/metrics_store_entry.h \
 	src/lib/metrics/metrics_common.h src/lib/metrics/prometheus.h \
 	src/lib/net/address.h src/lib/net/alertsock.h \
@@ -5491,8 +5492,9 @@ noinst_HEADERS = $(EXTHEADERS) $(ED25519_REF10_HDRS) \
 	src/lib/log/util_bug.h src/lib/log/win32err.h \
 	src/lib/malloc/malloc.h src/lib/malloc/map_anon.h \
 	src/lib/math/fp.h src/lib/math/laplace.h \
-	src/lib/math/prob_distr.h src/lib/memarea/memarea.h \
-	src/lib/meminfo/meminfo.h src/lib/metrics/metrics_store.h \
+	src/lib/math/prob_distr.h src/lib/math/stats.h \
+	src/lib/memarea/memarea.h src/lib/meminfo/meminfo.h \
+	src/lib/metrics/metrics_store.h \
 	src/lib/metrics/metrics_store_entry.h \
 	src/lib/metrics/metrics_common.h src/lib/metrics/prometheus.h \
 	src/lib/net/address.h src/lib/net/alertsock.h \

@@ -412,6 +412,15 @@ dirserv_rejects_tor_version(const char *platform,
     return true;
   }
 
+  /* Reject 0.4.6.x series. */
+  if (tor_version_as_new_as(platform, "0.4.6.0") &&
+      !tor_version_as_new_as(platform, "0.4.7.0-alpha-dev")) {
+    if (msg) {
+      *msg = please_upgrade_string;
+    }
+    return true;
+  }
+
   return false;
 }
 

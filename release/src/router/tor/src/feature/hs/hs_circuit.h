@@ -33,7 +33,7 @@ int hs_circ_launch_intro_point(hs_service_t *service,
 int hs_circ_launch_rendezvous_point(const hs_service_t *service,
                                     const curve25519_public_key_t *onion_key,
                                     const uint8_t *rendezvous_cookie);
-void hs_circ_retry_service_rendezvous_point(origin_circuit_t *circ);
+void hs_circ_retry_service_rendezvous_point(const origin_circuit_t *circ);
 
 origin_circuit_t *hs_circ_service_get_intro_circ(
                                       const hs_service_intro_point_t *ip);

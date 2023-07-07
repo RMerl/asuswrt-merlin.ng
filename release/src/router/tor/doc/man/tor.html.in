@@ -5525,7 +5525,7 @@ on the public Tor network.</p></div>
 </p>
 </dd>
 <dt class="hdlist1">
-<a id="AuthDirMiddleOnly"></a> <strong>AuthMiddleOnly</strong> <em>AddressPattern&#8230;</em>
+<a id="AuthDirMiddleOnly"></a> <strong>AuthDirMiddleOnly</strong> <em>AddressPattern&#8230;</em>
 </dt>
 <dd>
 <p>
@@ -5718,6 +5718,62 @@ AuthDirHasIPv6Connectivity 1.)</code></pre>
     check every relay we know about to see whether it is running.
     If set to 0, we vote Running for every relay, and don&#8217;t perform
     these tests. (Default: 1)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirVoteGuard"></a> <strong>AuthDirVoteGuard</strong> <em>node</em>,<em>node</em>,<em>&#8230;</em>
+</dt>
+<dd>
+<p>
+    A list of identity fingerprints or country codes or address patterns of
+    nodes to vote Guard for regardless of their uptime and bandwidth. See
+    <a href="#ExcludeNodes">ExcludeNodes</a> for more information on how to specify nodes.
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirVoteGuardBwThresholdFraction"></a> <strong>AuthDirVoteGuardBwThresholdFraction</strong> <em>FRACTION</em>
+</dt>
+<dd>
+<p>
+    The Guard flag bandwidth performance threshold fraction that is the
+    fraction representing who gets the Guard flag out of all measured
+    bandwidth. (Default: 0.75)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirVoteGuardGuaranteeTimeKnown"></a> <strong>AuthDirVoteGuardGuaranteeTimeKnown</strong> <em>N</em> <strong>seconds</strong>|<strong>minutes</strong>|<strong>hours</strong>|<strong>days</strong>|<strong>weeks</strong>
+</dt>
+<dd>
+<p>
+    A relay with at least this much weighted time known can be considered
+    familiar enough to be a guard. (Default: 8 days)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirVoteGuardGuaranteeWFU"></a> <strong>AuthDirVoteGuardGuaranteeWFU</strong> <em>FRACTION</em>
+</dt>
+<dd>
+<p>
+    A level of weighted fractional uptime (WFU) is that is sufficient to be a
+    Guard. (Default: 0.98)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirVoteStableGuaranteeMinUptime"></a> <strong>AuthDirVoteStableGuaranteeMinUptime</strong> <em>N</em> <strong>seconds</strong>|<strong>minutes</strong>|<strong>hours</strong>|<strong>days</strong>|<strong>weeks</strong>
+</dt>
+<dd>
+<p>
+    If a relay&#8217;s uptime is at least this value, then it is always considered
+    stable, regardless of the rest of the network. (Default: 30 days)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="AuthDirVoteStableGuaranteeMTBF"></a> <strong>AuthDirVoteStableGuaranteeMTBF</strong> <em>N</em> <strong>seconds</strong>|<strong>minutes</strong>|<strong>hours</strong>|<strong>days</strong>|<strong>weeks</strong>
+</dt>
+<dd>
+<p>
+    If a relay&#8217;s mean time between failures (MTBF) is least this value, then
+    it will always be considered stable. (Default: 5 days)
 </p>
 </dd>
 <dt class="hdlist1">

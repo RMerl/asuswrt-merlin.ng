@@ -36,24 +36,6 @@
 
 #include "lib/container/order.h"
 
-/** If a router's uptime is at least this value, then it is always
- * considered stable, regardless of the rest of the network. This
- * way we resist attacks where an attacker doubles the size of the
- * network using allegedly high-uptime nodes, displacing all the
- * current guards. */
-#define UPTIME_TO_GUARANTEE_STABLE (3600*24*30)
-/** If a router's MTBF is at least this value, then it is always stable.
- * See above.  (Corresponds to about 7 days for current decay rates.) */
-#define MTBF_TO_GUARANTEE_STABLE (60*60*24*5)
-/** Similarly, every node with at least this much weighted time known can be
- * considered familiar enough to be a guard.  Corresponds to about 20 days for
- * current decay rates.
- */
-#define TIME_KNOWN_TO_GUARANTEE_FAMILIAR (8*24*60*60)
-/** Similarly, every node with sufficient WFU is around enough to be a guard.
- */
-#define WFU_TO_GUARANTEE_GUARD (0.98)
-
 /* Thresholds for server performance: set by
  * dirserv_compute_performance_thresholds, and used by
  * generate_v2_networkstatus */
@@ -111,13 +93,13 @@ dirserv_thinks_router_is_unreliable(time_t now,
        */
       long uptime = real_uptime(router, now);
       if ((unsigned)uptime < stable_uptime &&
-          (unsigned)uptime < UPTIME_TO_GUARANTEE_STABLE)
+          uptime < dirauth_get_options()->AuthDirVoteStableGuaranteeMinUptime)
         return 1;
     } else {
       double mtbf =
         rep_hist_get_stability(router->cache_info.identity_digest, now);
       if (mtbf < stable_mtbf &&
-          mtbf < MTBF_TO_GUARANTEE_STABLE)
+          mtbf < dirauth_get_options()->AuthDirVoteStableGuaranteeMTBF)
         return 1;
     }
   }
@@ -325,13 +307,15 @@ dirserv_compute_performance_thresholds(digestmap_t *omit_as_sybil)
     /* (Now bandwidths is sorted.) */
     if (fast_bandwidth_kb < RELAY_REQUIRED_MIN_BANDWIDTH/(2 * 1000))
       fast_bandwidth_kb = bandwidths_kb[n_active/4];
+    int nth = (int)(n_active *
+                    dirauth_options->AuthDirVoteGuardBwThresholdFraction);
     guard_bandwidth_including_exits_kb =
-      third_quartile_uint32(bandwidths_kb, n_active);
+      find_nth_uint32(bandwidths_kb, n_active, nth);
     guard_tk = find_nth_long(tks, n_active, n_active/8);
   }
 
-  if (guard_tk > TIME_KNOWN_TO_GUARANTEE_FAMILIAR)
-    guard_tk = TIME_KNOWN_TO_GUARANTEE_FAMILIAR;
+  if (guard_tk > dirauth_options->AuthDirVoteGuardGuaranteeTimeKnown)
+    guard_tk = dirauth_options->AuthDirVoteGuardGuaranteeTimeKnown;
 
   {
     /* We can vote on a parameter for the minimum and maximum. */
@@ -379,15 +363,16 @@ dirserv_compute_performance_thresholds(digestmap_t *omit_as_sybil)
   } SMARTLIST_FOREACH_END(node);
   if (n_familiar)
     guard_wfu = median_double(wfus, n_familiar);
-  if (guard_wfu > WFU_TO_GUARANTEE_GUARD)
-    guard_wfu = WFU_TO_GUARANTEE_GUARD;
+  if (guard_wfu > dirauth_options->AuthDirVoteGuardGuaranteeWFU)
+    guard_wfu = dirauth_options->AuthDirVoteGuardGuaranteeWFU;
 
   enough_mtbf_info = rep_hist_have_measured_enough_stability();
 
   if (n_active_nonexit) {
+    int nth = (int)(n_active_nonexit *
+                    dirauth_options->AuthDirVoteGuardBwThresholdFraction);
     guard_bandwidth_excluding_exits_kb =
-      find_nth_uint32(bandwidths_excluding_exits_kb,
-                      n_active_nonexit, n_active_nonexit*3/4);
+      find_nth_uint32(bandwidths_excluding_exits_kb, n_active_nonexit, nth);
   }
 
   log_info(LD_DIRSERV,
@@ -573,6 +558,21 @@ should_publish_node_ipv6(const node_t *node, const routerinfo_t *ri,
      router_is_me(ri));
 }
 
+/** Set routerstatus flags based on the authority options. Same as the testing
+ * function but for the main network. */
+static void
+dirserv_set_routerstatus_flags(routerstatus_t *rs)
+{
+  const dirauth_options_t *options = dirauth_get_options();
+
+  tor_assert(rs);
+
+  /* Assign Guard flag to relays that can get it unconditionnaly. */
+  if (routerset_contains_routerstatus(options->AuthDirVoteGuard, rs, 0)) {
+    rs->is_possible_guard = 1;
+  }
+}
+
 /**
  * Extract status information from <b>ri</b> and from other authority
  * functions and store it in <b>rs</b>, as per
@@ -638,6 +638,8 @@ dirauth_set_routerstatus_from_routerinfo(routerstatus_t *rs,
 
   if (options->TestingTorNetwork) {
     dirserv_set_routerstatus_testing(rs);
+  } else {
+    dirserv_set_routerstatus_flags(rs);
   }
 }
 

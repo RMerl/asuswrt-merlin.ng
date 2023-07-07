@@ -656,19 +656,6 @@ connection_ext_or_start_auth(or_connection_t *or_conn)
   return 0;
 }
 
-/** Creates an Extended ORPort identifier for <b>conn</b> and deposits
- *  it into the global list of identifiers. */
-void
-connection_or_set_ext_or_identifier(or_connection_t *conn)
-{
-  char random_id[EXT_OR_CONN_ID_LEN];
-
-  if (!conn->ext_or_conn_id)
-    conn->ext_or_conn_id = tor_malloc_zero(EXT_OR_CONN_ID_LEN);
-
-  memcpy(conn->ext_or_conn_id, random_id, EXT_OR_CONN_ID_LEN);
-}
-
 /** Free any leftover allocated memory of the ext_orport.c subsystem. */
 void
 ext_orport_free_all(void)

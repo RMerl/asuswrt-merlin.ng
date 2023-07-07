@@ -46,6 +46,9 @@ if "${TOR_BINARY}" --list-modules | grep -q "relay: no"; then
 fi
 
 tmpdir=
+# For some reasons, shellcheck is not seeing that we can call this
+# function from the trap below.
+# shellcheck disable=SC2317
 clean () {
   if [ -n "$tmpdir" ] && [ -d "$tmpdir" ]; then
     rm -rf "$tmpdir"

@@ -3675,6 +3675,9 @@ hs_service_circuit_cleanup_on_close(const circuit_t *circ)
     hs_metrics_close_established_rdv(
       &CONST_TO_ORIGIN_CIRCUIT(circ)->hs_ident->identity_pk);
     break;
+  case CIRCUIT_PURPOSE_S_CONNECT_REND:
+    hs_circ_retry_service_rendezvous_point(CONST_TO_ORIGIN_CIRCUIT(circ));
+    break;
   default:
     break;
   }

@@ -4,7 +4,7 @@ dnl Copyright (c) 2007-2019, The Tor Project, Inc.
 dnl See LICENSE for licensing information
 
 AC_PREREQ([2.63])
-AC_INIT([tor],[0.4.7.8])
+AC_INIT([tor],[0.4.7.13])
 AC_CONFIG_SRCDIR([src/app/main/tor_main.c])
 AC_CONFIG_MACRO_DIR([m4])
 
@@ -18,7 +18,7 @@ AC_DEFINE_UNQUOTED([CONFIG_FLAGS], ["$configure_flags"], [Flags passed to config
 # version number changes.  Tor uses it to make sure that it
 # only shuts down for missing "required protocols" when those protocols
 # are listed as required by a consensus after this date.
-AC_DEFINE(APPROX_RELEASE_DATE, ["2022-06-17"], # for 0.4.7.8
+AC_DEFINE(APPROX_RELEASE_DATE, ["2023-01-12"], # for 0.4.7.13
           [Approximate date when this software was released. (Updated when the version changes.)])
 
 # "foreign" means we don't follow GNU package layout standards
@@ -1863,7 +1863,7 @@ AC_CACHE_CHECK([whether memset(0) sets pointers to NULL], tor_cv_null_is_zero,
 #ifdef HAVE_STDDEF_H
 #include <stddef.h>
 #endif
-int main () { char *p1,*p2; p1=NULL; memset(&p2,0,sizeof(p2));
+int main (void) { char *p1,*p2; p1=NULL; memset(&p2,0,sizeof(p2));
 return memcmp(&p1,&p2,sizeof(char*))?1:0; }]])],
        [tor_cv_null_is_zero=yes],
        [tor_cv_null_is_zero=no],
@@ -1887,7 +1887,7 @@ AC_CACHE_CHECK([whether memset(0) sets doubles to 0.0], tor_cv_dbl0_is_zero,
 #ifdef HAVE_STDDEF_H
 #include <stddef.h>
 #endif
-int main () { double d1,d2; d1=0; memset(&d2,0,sizeof(d2));
+int main (void) { double d1,d2; d1=0; memset(&d2,0,sizeof(d2));
 return memcmp(&d1,&d2,sizeof(d1))?1:0; }]])],
        [tor_cv_dbl0_is_zero=yes],
        [tor_cv_dbl0_is_zero=no],
@@ -1912,7 +1912,7 @@ AC_CACHE_CHECK([whether we can malloc(0) safely.], tor_cv_malloc_zero_works,
 #ifdef HAVE_STDDEF_H
 #include <stddef.h>
 #endif
-int main () { return malloc(0)?0:1; }]])],
+int main (void) { return malloc(0)?0:1; }]])],
        [tor_cv_malloc_zero_works=yes],
        [tor_cv_malloc_zero_works=no],
        [tor_cv_malloc_zero_works=cross])])
@@ -1930,7 +1930,7 @@ fi
 # whether we seem to be in a 2s-complement world.
 AC_CACHE_CHECK([whether we are using 2s-complement arithmetic], tor_cv_twos_complement,
 [AC_RUN_IFELSE([AC_LANG_SOURCE(
-[[int main () { int problem = ((-99) != (~99)+1);
+[[int main (void) { int problem = ((-99) != (~99)+1);
 return problem ? 1 : 0; }]])],
        [tor_cv_twos_complement=yes],
        [tor_cv_twos_complement=no],
@@ -1950,7 +1950,7 @@ fi
 # What does shifting a negative value do?
 AC_CACHE_CHECK([whether right-shift on negative values does sign-extension], tor_cv_sign_extend,
 [AC_RUN_IFELSE([AC_LANG_SOURCE(
-[[int main () { int okay = (-60 >> 8) == -1; return okay ? 0 : 1; }]])],
+[[int main (void) { int okay = (-60 >> 8) == -1; return okay ? 0 : 1; }]])],
        [tor_cv_sign_extend=yes],
        [tor_cv_sign_extend=no],
        [tor_cv_sign_extend=cross])])

@@ -2,12 +2,12 @@
 .\"     Title: tor
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 06/17/2022
+.\"      Date: 01/12/2023
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR" "1" "06/17/2022" "Tor" "Tor Manual"
+.TH "TOR" "1" "01/12/2023" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -2970,7 +2970,7 @@ is set\&.
 (The address pattern syntax here and in the options below is the same as for exit policies, except that you don\(cqt need to say "accept" or "reject", and ports are not needed\&.)
 .RE
 .PP
-\fBAuthMiddleOnly\fR \fIAddressPattern\&...\fR
+\fBAuthDirMiddleOnly\fR \fIAddressPattern\&...\fR
 .RS 4
 Authoritative directories only\&. A set of address patterns for servers that will be listed as middle\-only in any network status document this authority publishes, if
 \fBAuthDirListMiddleOnly\fR
@@ -3104,6 +3104,38 @@ Authoritative directories only\&. If this option is set to 0, then we treat rela
 \fBAuthDirTestReachability\fR \fB0\fR|\fB1\fR
 .RS 4
 Authoritative directories only\&. If set to 1, then we periodically check every relay we know about to see whether it is running\&. If set to 0, we vote Running for every relay, and don\(cqt perform these tests\&. (Default: 1)
+.RE
+.PP
+\fBAuthDirVoteGuard\fR \fInode\fR,\fInode\fR,\fI\&...\fR
+.RS 4
+A list of identity fingerprints or country codes or address patterns of nodes to vote Guard for regardless of their uptime and bandwidth\&. See
+ExcludeNodes
+for more information on how to specify nodes\&.
+.RE
+.PP
+\fBAuthDirVoteGuardBwThresholdFraction\fR \fIFRACTION\fR
+.RS 4
+The Guard flag bandwidth performance threshold fraction that is the fraction representing who gets the Guard flag out of all measured bandwidth\&. (Default: 0\&.75)
+.RE
+.PP
+\fBAuthDirVoteGuardGuaranteeTimeKnown\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR|\fBdays\fR|\fBweeks\fR
+.RS 4
+A relay with at least this much weighted time known can be considered familiar enough to be a guard\&. (Default: 8 days)
+.RE
+.PP
+\fBAuthDirVoteGuardGuaranteeWFU\fR \fIFRACTION\fR
+.RS 4
+A level of weighted fractional uptime (WFU) is that is sufficient to be a Guard\&. (Default: 0\&.98)
+.RE
+.PP
+\fBAuthDirVoteStableGuaranteeMinUptime\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR|\fBdays\fR|\fBweeks\fR
+.RS 4
+If a relay\(cqs uptime is at least this value, then it is always considered stable, regardless of the rest of the network\&. (Default: 30 days)
+.RE
+.PP
+\fBAuthDirVoteStableGuaranteeMTBF\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR|\fBdays\fR|\fBweeks\fR
+.RS 4
+If a relay\(cqs mean time between failures (MTBF) is least this value, then it will always be considered stable\&. (Default: 5 days)
 .RE
 .PP
 \fBBridgePassword\fR \fIPassword\fR

@@ -186,7 +186,7 @@ channelpadding_get_netflow_inactive_timeout_ms(const channel_t *chan)
     high_timeout = MAX(high_timeout, chan->padding_timeout_high_ms);
   }
 
-  if (low_timeout == high_timeout)
+  if (low_timeout >= high_timeout)
     return low_timeout; // No randomization
 
   /*

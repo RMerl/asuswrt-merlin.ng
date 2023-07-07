@@ -4987,7 +4987,7 @@ test_util_num_cpus(void *arg)
     tt_skip();
 
   tt_int_op(num, OP_GE, 1);
-  tt_int_op(num, OP_LE, 16);
+  tt_int_op(num, OP_LE, 128);
 
  done:
   ;

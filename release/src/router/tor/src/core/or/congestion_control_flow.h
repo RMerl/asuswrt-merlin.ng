@@ -33,6 +33,12 @@ bool conn_uses_flow_control(connection_t *stream);
 
 uint64_t edge_get_max_rtt(const edge_connection_t *);
 
+/** Metricsport externs */
+extern uint64_t cc_stats_flow_num_xoff_sent;
+extern uint64_t cc_stats_flow_num_xon_sent;
+extern double cc_stats_flow_xoff_outbuf_ma;
+extern double cc_stats_flow_xon_outbuf_ma;
+
 /* Private section starts. */
 #ifdef TOR_CONGESTION_CONTROL_FLOW_PRIVATE
 

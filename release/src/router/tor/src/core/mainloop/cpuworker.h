@@ -12,8 +12,13 @@
 #ifndef TOR_CPUWORKER_H
 #define TOR_CPUWORKER_H
 
+#include "feature/nodelist/networkstatus_st.h"
+
 void cpu_init(void);
 void cpuworkers_rotate_keyinfo(void);
+
+void cpuworker_consensus_has_changed(const networkstatus_t *ns);
+
 struct workqueue_entry_t;
 enum workqueue_reply_t;
 enum workqueue_priority_t;
@@ -32,6 +37,8 @@ uint64_t estimated_usec_for_onionskins(uint32_t n_requests,
 void cpuworker_log_onionskin_overhead(int severity, int onionskin_type,
                                       const char *onionskin_type_name);
 void cpuworker_cancel_circ_handshake(or_circuit_t *circ);
+
+unsigned int cpuworker_get_n_threads(void);
 
 #endif /* !defined(TOR_CPUWORKER_H) */
 

@@ -42,16 +42,19 @@
 #define CC_ALG_DFLT_ALWAYS (CC_ALG_VEGAS)
 
 #define CWND_INC_DFLT (TLS_RECORD_MAX_CELLS)
-#define CWND_INC_PCT_SS_DFLT (50)
+#define CWND_INC_PCT_SS_DFLT (100)
 #define CWND_INC_RATE_DFLT (1)
 
-#define CWND_MIN_DFLT (SENDME_INC_DFLT)
+#define CWND_MIN_DFLT (2*SENDME_INC_DFLT)
 #define CWND_MAX_DFLT (INT32_MAX)
 
 #define BWE_SENDME_MIN_DFLT (5)
 
 #define N_EWMA_CWND_PCT_DFLT (50)
 #define N_EWMA_MAX_DFLT (10)
+#define N_EWMA_SS_DFLT (2)
+
+#define RTT_RESET_PCT_DFLT (100)
 
 /* BDP algorithms for each congestion control algorithms use the piecewise
  * estimattor. See section 3.1.4 of proposal 324. */
@@ -88,6 +91,12 @@ static bool congestion_control_update_circuit_bdp(congestion_control_t *,
 /* For unit tests */
 void congestion_control_set_cc_enabled(void);
 
+/* Number of times the RTT value was reset. For MetricsPort. */
+static uint64_t num_rtt_reset;
+
+/* Number of times the clock was stalled. For MetricsPort. */
+static uint64_t num_clock_stalls;
+
 /* Consensus parameters cached. The non static ones are extern. */
 static uint32_t cwnd_max = CWND_MAX_DFLT;
 int32_t cell_queue_high = CELL_QUEUE_HIGH_DFLT;
@@ -108,9 +117,37 @@ static uint8_t n_ewma_cwnd_pct;
 static uint8_t n_ewma_max;
 
 /**
+ * Maximum number N for the N-count EWMA averaging of RTT in Slow Start.
+ */
+static uint8_t n_ewma_ss;
+
+/**
  * Minimum number of sendmes before we begin BDP estimates
  */
 static uint8_t bwe_sendme_min;
+
+/**
+ * Percentage of the current RTT to use when reseting the minimum RTT
+ * for a circuit. (RTT is reset when the cwnd hits cwnd_min).
+ */
+static uint8_t rtt_reset_pct;
+
+/** Metric to count the number of congestion control circuits **/
+uint64_t cc_stats_circs_created = 0;
+
+/** Return the number of RTT reset that have been done. */
+uint64_t
+congestion_control_get_num_rtt_reset(void)
+{
+  return num_rtt_reset;
+}
+
+/** Return the number of clock stalls that have been done. */
+uint64_t
+congestion_control_get_num_clock_stalls(void)
+{
+  return num_clock_stalls;
+}
 
 /**
  * Update global congestion control related consensus parameter values,
@@ -157,6 +194,14 @@ congestion_control_new_consensus_params(const networkstatus_t *ns)
         CWND_MAX_MIN,
         CWND_MAX_MAX);
 
+#define RTT_RESET_PCT_MIN (0)
+#define RTT_RESET_PCT_MAX (100)
+  rtt_reset_pct =
+    networkstatus_get_param(NULL, "cc_rtt_reset_pct",
+        RTT_RESET_PCT_DFLT,
+        RTT_RESET_PCT_MIN,
+        RTT_RESET_PCT_MAX);
+
 #define SENDME_INC_MIN 1
 #define SENDME_INC_MAX (255)
   cc_sendme_inc =
@@ -196,6 +241,14 @@ congestion_control_new_consensus_params(const networkstatus_t *ns)
         N_EWMA_MAX_DFLT,
         N_EWMA_MAX_MIN,
         N_EWMA_MAX_MAX);
+
+#define N_EWMA_SS_MIN 2
+#define N_EWMA_SS_MAX (INT32_MAX)
+  n_ewma_ss =
+    networkstatus_get_param(NULL, "cc_ewma_ss",
+        N_EWMA_SS_DFLT,
+        N_EWMA_SS_MIN,
+        N_EWMA_SS_MAX);
 }
 
 /**
@@ -372,6 +425,8 @@ congestion_control_new(const circuit_params_t *params, cc_path_t path)
 
   congestion_control_init(cc, params, path);
 
+  cc_stats_circs_created++;
+
   return cc;
 }
 
@@ -452,8 +507,18 @@ dequeue_timestamp(smartlist_t *timestamps_u64_usecs)
 static inline uint64_t
 n_ewma_count(const congestion_control_t *cc)
 {
-  uint64_t ewma_cnt = MIN(CWND_UPDATE_RATE(cc)*n_ewma_cwnd_pct/100,
+  uint64_t ewma_cnt = 0;
+
+  if (cc->in_slow_start) {
+    /* In slow-start, we check the Vegas condition every sendme,
+     * so much lower ewma counts are needed. */
+    ewma_cnt = n_ewma_ss;
+  } else {
+    /* After slow-start, we check the Vegas condition only once per
+     * CWND, so it is better to average over longer periods. */
+    ewma_cnt = MIN(CWND_UPDATE_RATE(cc)*n_ewma_cwnd_pct/100,
                           n_ewma_max);
+  }
   ewma_cnt = MAX(ewma_cnt, 2);
   return ewma_cnt;
 }
@@ -822,6 +887,7 @@ congestion_control_update_circuit_rtt(congestion_control_t *cc,
 
   /* Do not update RTT at all if it looks fishy */
   if (time_delta_stalled_or_jumped(cc, cc->ewma_rtt_usec, rtt)) {
+    num_clock_stalls++; /* Accounting */
     return 0;
   }
 
@@ -833,8 +899,26 @@ congestion_control_update_circuit_rtt(congestion_control_t *cc,
     cc->max_rtt_usec = rtt;
   }
 
-  if (cc->min_rtt_usec == 0 || rtt < cc->min_rtt_usec) {
-    cc->min_rtt_usec = rtt;
+  if (cc->min_rtt_usec == 0) {
+    // If we do not have a min_rtt yet, use current ewma
+    cc->min_rtt_usec = cc->ewma_rtt_usec;
+  } else if (cc->cwnd == cc->cwnd_min && !cc->in_slow_start) {
+    // Raise min rtt if cwnd hit cwnd_min. This gets us out of a wedge state
+    // if we hit cwnd_min due to an abnormally low rtt.
+    uint64_t new_rtt = percent_max_mix(cc->ewma_rtt_usec, cc->min_rtt_usec,
+                                       rtt_reset_pct);
+
+    static ratelim_t rtt_notice_limit = RATELIM_INIT(300);
+    log_fn_ratelim(&rtt_notice_limit, LOG_NOTICE, LD_CIRC,
+            "Resetting circ RTT from %"PRIu64" to %"PRIu64" due to low cwnd",
+            cc->min_rtt_usec/1000, new_rtt/1000);
+
+    cc->min_rtt_usec = new_rtt;
+    num_rtt_reset++; /* Accounting */
+  } else if (cc->ewma_rtt_usec < cc->min_rtt_usec) {
+    // Using the EWMA for min instead of current RTT helps average out
+    // effects from other conns
+    cc->min_rtt_usec = cc->ewma_rtt_usec;
   }
 
   return rtt;
@@ -882,10 +966,19 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
   if (!cc->ewma_rtt_usec) {
      uint64_t cwnd = cc->cwnd;
 
+     tor_assert_nonfatal(cc->cwnd <= cwnd_max);
+
      /* If the channel is blocked, keep subtracting off the chan_q
       * until we hit the min cwnd. */
      if (blocked_on_chan) {
-       cwnd = MAX(cwnd - chan_q, cc->cwnd_min);
+       /* Cast is fine because we're less than int32 */
+       if (chan_q >= (int64_t)cwnd) {
+         log_notice(LD_CIRC,
+                    "Clock stall with large chanq: %d %"PRIu64, chan_q, cwnd);
+         cwnd = cc->cwnd_min;
+       } else {
+         cwnd = MAX(cwnd - chan_q, cc->cwnd_min);
+       }
        cc->blocked_chan = 1;
      } else {
        cc->blocked_chan = 0;

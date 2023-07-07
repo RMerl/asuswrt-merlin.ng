@@ -4200,7 +4200,7 @@ show_tap_win_adapters(int msglev, int warnlev)
     const struct tap_reg *tap_reg = get_tap_reg(&gc);
     const struct panel_reg *panel_reg = get_panel_reg(&gc);
 
-    msg(msglev, "Available TAP-WIN32 / Wintun adapters [name, GUID, driver]:");
+    msg(msglev, "Available adapters [name, GUID, driver]:");
 
     /* loop through each TAP-Windows adapter registry entry */
     for (tr = tap_reg; tr != NULL; tr = tr->next)
@@ -4337,7 +4337,6 @@ get_unspecified_device_guid(const int device_number,
                             struct gc_arena *gc)
 {
     const struct tap_reg *tap_reg = tap_reg_src;
-    struct buffer ret = clear_buf();
     struct buffer actual = clear_buf();
     int i;
 
@@ -4381,7 +4380,7 @@ get_unspecified_device_guid(const int device_number,
     }
 
     /* Save GUID for return value */
-    ret = alloc_buf_gc(256, gc);
+    struct buffer ret = alloc_buf_gc(256, gc);
     buf_printf(&ret, "%s", tap_reg->guid);
     if (windows_driver != NULL)
     {

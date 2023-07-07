@@ -65,7 +65,7 @@ size_t tool_read_cb(char *buffer, size_t sz, size_t nmemb, void *userdata)
 
       /* wait this long at the most */
       timeout.tv_sec = wait/1000;
-      timeout.tv_usec = (wait%1000)*1000;
+      timeout.tv_usec = (int)((wait%1000)*1000);
 
       FD_ZERO(&bits);
       FD_SET(in->fd, &bits);
@@ -87,7 +87,7 @@ size_t tool_read_cb(char *buffer, size_t sz, size_t nmemb, void *userdata)
   }
   in->config->readbusy = FALSE;
 
-  /* when select() rerturned zero here, it timed out */
+  /* when select() returned zero here, it timed out */
   return (size_t)rc;
 }
 

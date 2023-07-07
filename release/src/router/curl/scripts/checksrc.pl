@@ -75,6 +75,7 @@ my %warnings = (
     'INCLUDEDUP',      => 'same file is included again',
     'INDENTATION'      => 'wrong start column for code',
     'LONGLINE'         => "Line longer than $max_column",
+    'SPACEBEFORELABEL' => 'labels not at the start of the line',
     'MULTISPACE'       => 'multiple spaces used when not suitable',
     'NOSPACEEQUALS'    => 'equals sign without preceding space',
     'NOTEQUALSZERO',   => 'if/while comparison with != 0',
@@ -90,6 +91,7 @@ my %warnings = (
     'SPACEBEFORECOMMA' => 'space before a comma',
     'SPACEBEFOREPAREN' => 'space before an open parenthesis',
     'SPACESEMICOLON'   => 'space before semicolon',
+    'SPACESWITCHCOLON' => 'space before colon of switch label',
     'TABS'             => 'TAB characters not allowed',
     'TRAILINGSPACE'    => 'Trailing whitespace on the line',
     'TYPEDEFSTRUCT'    => 'typedefed struct',
@@ -517,7 +519,8 @@ sub scanfile {
 
         my $nostr = nostrings($l);
         # check spaces after for/if/while/function call
-        if($nostr =~ /^(.*)(for|if|while| ([a-zA-Z0-9_]+)) \((.)/) {
+        if($nostr =~ /^(.*)(for|if|while|switch| ([a-zA-Z0-9_]+)) \((.)/) {
+            my ($leading, $word, $extra, $first)=($1,$2,$3,$4);
             if($1 =~ / *\#/) {
                 # this is a #if, treat it differently
             }
@@ -527,15 +530,16 @@ sub scanfile {
             elsif(defined $3 && $3 eq "case") {
                 # case must have a space
             }
-            elsif($4 eq "*") {
-                # (* beginning makes the space OK!
+            elsif(($first eq "*") && ($word !~ /(for|if|while|switch)/)) {
+                # A "(*" beginning makes the space OK because it wants to
+                # allow funcion pointer declared
             }
             elsif($1 =~ / *typedef/) {
                 # typedefs can use space-paren
             }
             else {
-                checkwarn("SPACEBEFOREPAREN", $line, length($1)+length($2), $file, $l,
-                          "$2 with space");
+                checkwarn("SPACEBEFOREPAREN", $line, length($leading)+length($word), $file, $l,
+                          "$word with space");
             }
         }
         # check for '== NULL' in if/while conditions but not if the thing on
@@ -688,6 +692,17 @@ sub scanfile {
                       $line, length($1), $file, $ol, "no space before semicolon");
         }
 
+        # check for space before the colon in a switch label
+        if($l =~ /^( *(case .+|default)) :/) {
+            checkwarn("SPACESWITCHCOLON",
+                      $line, length($1), $file, $ol, "no space before colon of switch label");
+        }
+
+        if($prevl !~ /\?\z/ && $l =~ /^ +([A-Za-z_][A-Za-z0-9_]*):$/ && $1 ne 'default') {
+            checkwarn("SPACEBEFORELABEL",
+                      $line, length($1), $file, $ol, "no space before label");
+        }
+
         # scan for use of banned functions
         if($l =~ /^(.*\W)
                    (gmtime|localtime|
@@ -752,6 +767,32 @@ sub scanfile {
                     checkwarn("INDENTATION", $line, length($1), $file, $ol,
                               "not indented $indent steps (uses $diff)");
 
+                }
+            }
+        }
+
+        # if the previous line starts with if/while/for AND ends with a closed
+        # parenthesis and there's an equal number of open and closed
+        # parentheses, check that this line is indented $indent more steps, if
+        # not a cpp line
+        elsif(!$prevp && ($prevl =~ /^( *)(if|while|for)(\(.*\))\z/)) {
+            my $first = length($1);
+            my $op = $3;
+            my $cl = $3;
+
+            $op =~ s/[^(]//g;
+            $cl =~ s/[^)]//g;
+
+            if(length($op) == length($cl)) {
+                # this line has some character besides spaces
+                if($l =~ /^( *)[^ ]/) {
+                    my $second = length($1);
+                    my $expect = $first+$indent;
+                    if($expect != $second) {
+                        my $diff = $second - $first;
+                        checkwarn("INDENTATION", $line, length($1), $file, $ol,
+                                  "not indented $indent steps (uses $diff)");
+                    }
                 }
             }
         }

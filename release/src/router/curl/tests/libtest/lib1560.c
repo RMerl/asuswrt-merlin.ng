@@ -141,6 +141,9 @@ struct clearurlcase {
 };
 
 static const struct testcase get_parts_list[] ={
+  {"https://user@example.net?hello# space ",
+   "https | user | [12] | [13] | example.net | [15] | / | hello | %20space%20",
+   CURLU_ALLOW_SPACE|CURLU_URLENCODE, 0, CURLUE_OK},
   {"https://test%test", "", 0, 0, CURLUE_BAD_HOSTNAME},
   {"https://example.com%252f%40@example.net",
    "https | example.com%2f@ | [12] | [13] | example.net | [15] | / "
@@ -228,17 +231,17 @@ static const struct testcase get_parts_list[] ={
 #endif
 
   {"https://user:password@example.net/get?this=and#but frag then", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_FRAGMENT},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"https://user:password@example.net/get?this=and what", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_QUERY},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"https://user:password@example.net/ge t?this=and-what", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_PATH},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"https://user:pass word@example.net/get?this=and-what", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_PASSWORD},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"https://u ser:password@example.net/get?this=and-what", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_USER},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"imap://user:pass;opt ion@server/path", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_LOGIN},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   /* no space allowed in scheme */
   {"htt ps://user:password@example.net/get?this=and-what", "",
    CURLU_NON_SUPPORT_SCHEME|CURLU_ALLOW_SPACE, 0, CURLUE_BAD_SCHEME},
@@ -400,9 +403,9 @@ static const struct testcase get_parts_list[] ={
    "https | [11] | [12] | [13] | 127abc.com | [15] | / | [16] | [17]",
    CURLU_DEFAULT_SCHEME, 0, CURLUE_OK},
   {"https:// example.com?check", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_HOSTNAME},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"https://e x a m p l e.com?check", "",
-   CURLU_DEFAULT_SCHEME, 0, CURLUE_BAD_HOSTNAME},
+   CURLU_DEFAULT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
   {"https://example.com?check",
    "https | [11] | [12] | [13] | example.com | [15] | / | check | [17]",
    CURLU_DEFAULT_SCHEME, 0, CURLUE_OK},
@@ -471,6 +474,13 @@ static const struct testcase get_parts_list[] ={
 };
 
 static const struct urltestcase get_url_list[] = {
+  {"https://1.0x1000000", "https://1.0x1000000/", 0, 0, CURLUE_OK},
+  {"https://0x7f.1", "https://127.0.0.1/", 0, 0, CURLUE_OK},
+  {"https://1.2.3.256.com", "https://1.2.3.256.com/", 0, 0, CURLUE_OK},
+  {"https://10.com", "https://10.com/", 0, 0, CURLUE_OK},
+  {"https://1.2.com", "https://1.2.com/", 0, 0, CURLUE_OK},
+  {"https://1.2.3.com", "https://1.2.3.com/", 0, 0, CURLUE_OK},
+  {"https://1.2.com.99", "https://1.2.com.99/", 0, 0, CURLUE_OK},
   {"https://[fe80::0000:20c:29ff:fe9c:409b]:80/moo",
    "https://[fe80::20c:29ff:fe9c:409b]:80/moo",
    0, 0, CURLUE_OK},
@@ -519,9 +529,11 @@ static const struct urltestcase get_url_list[] = {
 
   /* IPv4 trickeries */
   {"https://16843009", "https://1.1.1.1/", 0, 0, CURLUE_OK},
-  {"https://0x7f.1", "https://127.0.0.1/", 0, 0, CURLUE_OK},
   {"https://0177.1", "https://127.0.0.1/", 0, 0, CURLUE_OK},
   {"https://0111.02.0x3", "https://73.2.0.3/", 0, 0, CURLUE_OK},
+  {"https://0111.02.0x3.", "https://0111.02.0x3./", 0, 0, CURLUE_OK},
+  {"https://0111.02.030", "https://73.2.0.24/", 0, 0, CURLUE_OK},
+  {"https://0111.02.030.", "https://0111.02.030./", 0, 0, CURLUE_OK},
   {"https://0xff.0xff.0377.255", "https://255.255.255.255/", 0, 0, CURLUE_OK},
   {"https://1.0xffffff", "https://1.255.255.255/", 0, 0, CURLUE_OK},
   /* IPv4 numerical overflows or syntax errors will not normalize */
@@ -529,12 +541,13 @@ static const struct urltestcase get_url_list[] = {
   {"https://\xff.127.0.0.1", "https://%FF.127.0.0.1/", 0, CURLU_URLENCODE,
    CURLUE_OK},
   {"https://127.-0.0.1", "https://127.-0.0.1/", 0, 0, CURLUE_OK},
-  {"https://127.0. 1", "https://127.0.0.1/", 0, 0, CURLUE_BAD_HOSTNAME},
-  {"https://1.0x1000000", "https://1.0x1000000/", 0, 0, CURLUE_OK},
+  {"https://127.0. 1", "https://127.0.0.1/", 0, 0, CURLUE_MALFORMED_INPUT},
   {"https://1.2.3.256", "https://1.2.3.256/", 0, 0, CURLUE_OK},
+  {"https://1.2.3.256.", "https://1.2.3.256./", 0, 0, CURLUE_OK},
   {"https://1.2.3.4.5", "https://1.2.3.4.5/", 0, 0, CURLUE_OK},
   {"https://1.2.0x100.3", "https://1.2.0x100.3/", 0, 0, CURLUE_OK},
   {"https://4294967296", "https://4294967296/", 0, 0, CURLUE_OK},
+  {"https://123host", "https://123host/", 0, 0, CURLUE_OK},
   /* 40 bytes scheme is the max allowed */
   {"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA://hostname/path",
    "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa://hostname/path",
@@ -579,36 +592,63 @@ static const struct urltestcase get_url_list[] = {
   {"example.com/path/html",
    "http://example.com/path/html",
    CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"smtp.com/path/html",
+   "smtp://smtp.com/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"dict.com/path/html",
+   "dict://dict.com/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"pop3.com/path/html",
+   "pop3://pop3.com/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"ldap.com/path/html",
+   "ldap://ldap.com/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"imap.com/path/html",
+   "imap://imap.com/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"ftp.com/path/html",
+   "ftp://ftp.com/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"smtp/path/html",
+   "http://smtp/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"dict/path/html",
+   "http://dict/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"pop3/path/html",
+   "http://pop3/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"ldap/path/html",
+   "http://ldap/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"imap/path/html",
+   "http://imap/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
+  {"ftp/path/html",
+   "http://ftp/path/html",
+   CURLU_GUESS_SCHEME, 0, CURLUE_OK},
   {"HTTP://test/", "http://test/", 0, 0, CURLUE_OK},
   {"http://HO0_-st..~./", "http://HO0_-st..~./", 0, 0, CURLUE_OK},
-  {"http:/@example.com: 123/", "", 0, 0, CURLUE_BAD_PORT_NUMBER},
-  {"http:/@example.com:123 /", "", 0, 0, CURLUE_BAD_PORT_NUMBER},
+  {"http:/@example.com: 123/", "", 0, 0, CURLUE_MALFORMED_INPUT},
+  {"http:/@example.com:123 /", "", 0, 0, CURLUE_MALFORMED_INPUT},
   {"http:/@example.com:123a/", "", 0, 0, CURLUE_BAD_PORT_NUMBER},
-  {"http://host/file\r", "", 0, 0, CURLUE_BAD_PATH},
-  {"http://host/file\n\x03", "", 0, 0, CURLUE_BAD_PATH},
+  {"http://host/file\r", "", 0, 0, CURLUE_MALFORMED_INPUT},
+  {"http://host/file\n\x03", "", 0, 0, CURLUE_MALFORMED_INPUT},
   {"htt\x02://host/file", "",
-   CURLU_NON_SUPPORT_SCHEME, 0, CURLUE_BAD_SCHEME},
-  {" http://host/file", "", 0, 0, CURLUE_BAD_SCHEME},
+   CURLU_NON_SUPPORT_SCHEME, 0, CURLUE_MALFORMED_INPUT},
+  {" http://host/file", "", 0, 0, CURLUE_MALFORMED_INPUT},
   /* here the password ends at the semicolon and options is 'word' */
   {"imap://user:pass;word@host/file",
    "imap://user:pass;word@host/file",
    0, 0, CURLUE_OK},
   /* here the password has the semicolon */
   {"http://user:pass;word@host/file",
-   "http://user:pass;word@host/file",
-   0, 0, CURLUE_OK},
-  {"file:///file.txt#moo",
-   "file:///file.txt#moo",
-   0, 0, CURLUE_OK},
-  {"file:////file.txt",
-   "file:////file.txt",
-   0, 0, CURLUE_OK},
-  {"file:///file.txt",
-   "file:///file.txt",
-   0, 0, CURLUE_OK},
-  {"file:./",
-   "file://",
-   0, 0, CURLUE_BAD_SCHEME},
+   "http://user:pass;word@host/file", 0, 0, CURLUE_OK},
+  {"file:///file.txt#moo", "file:///file.txt#moo", 0, 0, CURLUE_OK},
+  {"file:////file.txt", "file:////file.txt", 0, 0, CURLUE_OK},
+  {"file:///file.txt", "file:///file.txt", 0, 0, CURLUE_OK},
+  {"file:./", "file://", 0, 0, CURLUE_OK},
   {"http://example.com/hello/../here",
    "http://example.com/hello/../here",
    CURLU_PATH_AS_IS, 0, CURLUE_OK},
@@ -694,6 +734,30 @@ static int checkurl(const char *org, const char *url, const char *out)
 /* !checksrc! disable SPACEBEFORECOMMA 1 */
 static const struct setcase set_parts_list[] = {
   {"https://example.com/",
+   "host=example.com%2fmoo,",
+   "",
+   0, /* get */
+   0, /* set */
+   CURLUE_OK, CURLUE_BAD_HOSTNAME},
+  {"https://example.com/",
+   "host=http://fake,",
+   "",
+   0, /* get */
+   0, /* set */
+   CURLUE_OK, CURLUE_BAD_HOSTNAME},
+  {"https://example.com/",
+   "host=test%,",
+   "",
+   0, /* get */
+   0, /* set */
+   CURLUE_OK, CURLUE_BAD_HOSTNAME},
+  {"https://example.com/",
+   "host=te st,",
+   "",
+   0, /* get */
+   0, /* set */
+   CURLUE_OK, CURLUE_BAD_HOSTNAME},
+  {"https://example.com/",
    "host=0xff,", /* '++' there's no automatic URL decode when settin this
                   part */
    "https://0xff/",
@@ -708,6 +772,11 @@ static const struct setcase set_parts_list[] = {
    CURLU_URLENCODE, /* encode on set */
    CURLUE_OK, CURLUE_OK},
 
+  {"https://example.com/",
+   /* Set a bad scheme *including* :// */
+   "scheme=https://,",
+   "https://example.com/",
+   0, CURLU_NON_SUPPORT_SCHEME, CURLUE_OK, CURLUE_BAD_SCHEME},
   {"https://example.com/",
    /* Set a 41 bytes scheme. That's too long so the old scheme remains set. */
    "scheme=bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbc,",
@@ -957,6 +1026,10 @@ static const struct redircase set_url_list[] = {
    "../newpage",
    "http://user:foo@example.com/newpage",
    0, 0, CURLUE_OK},
+  {"http://user:foo@example.com/path?query#frag",
+   "http://?hi",
+   "http:///?hi",
+   0, CURLU_NO_AUTHORITY, CURLUE_OK},
   {NULL, NULL, NULL, 0, 0, CURLUE_OK}
 };
 
@@ -1089,7 +1162,7 @@ static int get_url(void)
       }
       curl_free(url);
     }
-    else if(rc != get_url_list[i].ucode) {
+    if(rc != get_url_list[i].ucode) {
       fprintf(stderr, "Get URL\nin: %s\nreturned %d (expected %d)\n",
               get_url_list[i].in, (int)rc, get_url_list[i].ucode);
       error++;
@@ -1458,7 +1531,7 @@ static int huge(void)
     rc = curl_url_set(urlp, CURLUPART_URL, total, CURLU_NON_SUPPORT_SCHEME);
     if((!i && (rc != CURLUE_BAD_SCHEME)) ||
        (i && rc)) {
-      printf("URL %u: failed to parse\n", i);
+      printf("URL %u: failed to parse [%s]\n", i, total);
       error++;
     }
 
@@ -1480,6 +1553,9 @@ int test(char *URL)
 {
   (void)URL; /* not used */
 
+  if(get_url())
+    return 3;
+
   if(huge())
     return 9;
 
@@ -1497,9 +1573,6 @@ int test(char *URL)
 
   if(set_parts())
     return 2;
-
-  if(get_url())
-    return 3;
 
   if(get_parts())
     return 4;

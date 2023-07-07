@@ -35,6 +35,13 @@ To fix before we remove the experimental label:
 
 # ngtcp2 version
 
+Building curl with ngtcp2 involves 3 components: `ngtcp2` itself, `nghttp3` and a QUIC supporting TLS library. The supported TLS libraries are covered below.
+
+For now, `ngtcp2` and `nghttp3` are still *experimental* which means their evolution bring breaking changes. Therefore, the proper version of both libraries need to be used when building curl. These are
+
+ * `ngtcp2`: v0.15.0
+ * `nghttp3`: v0.11.0
+
 ## Build with OpenSSL
 
 Build (patched) OpenSSL
@@ -48,7 +55,7 @@ Build (patched) OpenSSL
 Build nghttp3
 
      % cd ..
-     % git clone https://github.com/ngtcp2/nghttp3
+     % git clone -b v0.11.0 https://github.com/ngtcp2/nghttp3
      % cd nghttp3
      % autoreconf -fi
      % ./configure --prefix=<somewhere2> --enable-lib-only
@@ -58,7 +65,7 @@ Build nghttp3
 Build ngtcp2
 
      % cd ..
-     % git clone https://github.com/ngtcp2/ngtcp2
+     % git clone -b v0.15.0 https://github.com/ngtcp2/ngtcp2
      % cd ngtcp2
      % autoreconf -fi
      % ./configure PKG_CONFIG_PATH=<somewhere1>/lib/pkgconfig:<somewhere2>/lib/pkgconfig LDFLAGS="-Wl,-rpath,<somewhere1>/lib" --prefix=<somewhere3> --enable-lib-only
@@ -91,7 +98,7 @@ Build GnuTLS
 Build nghttp3
 
      % cd ..
-     % git clone https://github.com/ngtcp2/nghttp3
+     % git clone -b v0.11.0 https://github.com/ngtcp2/nghttp3
      % cd nghttp3
      % autoreconf -fi
      % ./configure --prefix=<somewhere2> --enable-lib-only
@@ -101,7 +108,7 @@ Build nghttp3
 Build ngtcp2
 
      % cd ..
-     % git clone https://github.com/ngtcp2/ngtcp2
+     % git clone -b v0.15.0 https://github.com/ngtcp2/ngtcp2
      % cd ngtcp2
      % autoreconf -fi
      % ./configure PKG_CONFIG_PATH=<somewhere1>/lib/pkgconfig:<somewhere2>/lib/pkgconfig LDFLAGS="-Wl,-rpath,<somewhere1>/lib" --prefix=<somewhere3> --enable-lib-only --with-gnutls
@@ -132,7 +139,7 @@ Build wolfSSL
 Build nghttp3
 
      % cd ..
-     % git clone https://github.com/ngtcp2/nghttp3
+     % git clone -b v0.11.0 https://github.com/ngtcp2/nghttp3
      % cd nghttp3
      % autoreconf -fi
      % ./configure --prefix=<somewhere2> --enable-lib-only
@@ -142,7 +149,7 @@ Build nghttp3
 Build ngtcp2
 
      % cd ..
-     % git clone https://github.com/ngtcp2/ngtcp2
+     % git clone -b v0.15.0 https://github.com/ngtcp2/ngtcp2
      % cd ngtcp2
      % autoreconf -fi
      % ./configure PKG_CONFIG_PATH=<somewhere1>/lib/pkgconfig:<somewhere2>/lib/pkgconfig LDFLAGS="-Wl,-rpath,<somewhere1>/lib" --prefix=<somewhere3> --enable-lib-only --with-wolfssl
@@ -160,6 +167,8 @@ Build curl
      % make install
 
 # quiche version
+
+Since the quiche build manages its dependencies, curl can be built against the latest version. You are *probably* able to build against their main branch, but in case of problems, we recommend their latest release tag.
 
 ## build
 
@@ -266,7 +275,7 @@ The `happy-eyeballs-timeout-ms` value is the **hard** timeout, meaning after tha
 
 So, without you specifying anything, the hard timeout is 200ms and the soft is 100ms:
 
- * Ideally, the whole QUIC handshake happens and curl has a HTTP/3 connection in less than 100ms. 
+ * Ideally, the whole QUIC handshake happens and curl has an HTTP/3 connection in less than 100ms.
  * When QUIC is not supported (or UDP does not work for this network path), no reply is seen and the HTTP/2 TLS+TCP connection starts 100ms later.
  * In the worst case, UDP replies start before 100ms, but drag on. This will start the TLS+TCP connection after 200ms.
  * When the QUIC handshake fails, the TLS+TCP connection is attempted right away. For example, when the QUIC server presents the wrong certificate.
@@ -291,8 +300,8 @@ ones. You can easily create huge local files like `truncate -s=8G 8GB` - they
 are huge but do not occupy that much space on disk since they are just big
 holes.
 
-In my Debian setup I just installed **apache2**. It runs on port 80 and has a
-document root in `/var/www/html`. I can get the 8GB file from it with `curl
+In a Debian setup you can install **apache2**. It runs on port 80 and has a
+document root in `/var/www/html`. Download the 8GB file from apache with `curl
 localhost/8GB -o dev/null`
 
 In this description we setup and run an HTTP/3 reverse-proxy in front of the

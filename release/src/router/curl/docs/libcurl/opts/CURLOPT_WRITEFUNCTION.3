@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_WRITEFUNCTION 3 "February 07, 2023" "libcurl 8.0.1" "curl_easy_setopt options"
+.TH CURLOPT_WRITEFUNCTION 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
 
 .SH NAME
 CURLOPT_WRITEFUNCTION \- callback for writing received data
@@ -119,7 +119,7 @@ if (curl_handle)
   res = curl_easy_perform(curl_handle);
 
   /* remember to free the buffer */
-  free(chunk.response)
+  free(chunk.response);
 
   curl_easy_cleanup(curl_handle);
 }

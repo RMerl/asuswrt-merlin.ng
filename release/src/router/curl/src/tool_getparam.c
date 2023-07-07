@@ -211,6 +211,7 @@ static const struct LongShort aliases[]= {
   {"04",  "http3",                   ARG_NONE},
   {"05",  "http3-only",              ARG_NONE},
   {"09",  "http0.9",                 ARG_BOOL},
+  {"0a",  "proxy-http2",             ARG_BOOL},
   {"1",  "tlsv1",                    ARG_NONE},
   {"10",  "tlsv1.0",                 ARG_NONE},
   {"11",  "tlsv1.1",                 ARG_NONE},
@@ -883,7 +884,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
         ParameterError pe = GetSizeParameter(global, nextarg, "rate", &value);
 
         if(pe != PARAM_OK)
-           return pe;
+          return pe;
         config->recvpersecond = value;
         config->sendpersecond = value;
       }
@@ -1059,7 +1060,7 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
             GetSizeParameter(global, nextarg, "max-filesize", &value);
 
           if(pe != PARAM_OK)
-             return pe;
+            return pe;
           config->max_filesize = value;
         }
         break;
@@ -1448,6 +1449,10 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       case '9':
         /* Allow HTTP/0.9 responses! */
         config->http09_allowed = toggle;
+        break;
+      case 'a':
+        /* --proxy-http2 */
+        config->proxyver = CURLPROXY_HTTPS2;
         break;
       }
       break;
@@ -2373,7 +2378,8 @@ ParameterError getparameter(const char *flag, /* f or -long-flag */
       default:
         /* --proxy */
         GetStr(&config->proxy, nextarg);
-        config->proxyver = CURLPROXY_HTTP;
+        if(config->proxyver != CURLPROXY_HTTPS2)
+          config->proxyver = CURLPROXY_HTTP;
         break;
       }
       break;

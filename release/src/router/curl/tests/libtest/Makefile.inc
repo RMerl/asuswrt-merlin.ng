@@ -37,8 +37,7 @@ MULTIBYTE = ../../lib/curl_multibyte.c ../../lib/curl_multibyte.h
 SUPPORTFILES = ../../lib/timediff.c ../../lib/timediff.h first.c test.h
 
 # These are all libcurl test programs
-noinst_PROGRAMS = chkhostname libauthretry libntlmconnect                \
- chkdecimalpoint libprereq                                               \
+noinst_PROGRAMS = chkhostname libauthretry libntlmconnect libprereq      \
  lib500 lib501 lib502 lib503 lib504 lib505 lib506 lib507 lib508 lib509   \
  lib510 lib511 lib512 lib513 lib514 lib515 lib516 lib517 lib518 lib519   \
  lib520 lib521 lib523 lib524 lib525 lib526 lib527 lib529 lib530 lib532   \
@@ -71,17 +70,11 @@ noinst_PROGRAMS = chkhostname libauthretry libntlmconnect                \
  lib1945 lib1946 lib1947 lib1948 lib1955 lib1956 lib1957 lib1958 lib1959 \
  lib1960 \
  lib1970 lib1971 lib1972 lib1973 lib1974 lib1975 \
- lib2301 lib2302 lib2304 lib2305 \
+ lib2301 lib2302 lib2304 lib2305 lib2306 \
  lib2402 \
  lib2502 \
  lib3010 lib3025 lib3026 lib3027 \
  lib3100 lib3101
-
-chkdecimalpoint_SOURCES = chkdecimalpoint.c ../../lib/mprintf.c \
- ../../lib/dynbuf.c ../../lib/strdup.c
-chkdecimalpoint_LDADD =
-chkdecimalpoint_CPPFLAGS = $(AM_CPPFLAGS) -DCURL_STATICLIB \
- -DCURLX_NO_MEMORY_CALLBACKS -DBUILDING_LIBCURL
 
 chkhostname_SOURCES = chkhostname.c ../../lib/curl_gethostname.c
 chkhostname_LDADD = @CURL_NETWORK_LIBS@
@@ -659,6 +652,9 @@ lib2304_LDADD = $(TESTUTIL_LIBS)
 
 lib2305_SOURCES = lib2305.c $(SUPPORTFILES) $(TESTUTIL) $(TSTTRACE) $(MULTIBYTE)
 lib2305_LDADD = $(TESTUTIL_LIBS)
+
+lib2306_SOURCES = lib2306.c $(SUPPORTFILES)
+lib2306_LDADD = $(TESTUTIL_LIBS)
 
 lib2402_SOURCES = lib2402.c $(SUPPORTFILES) $(TESTUTIL) $(WARNLESS)
 lib2402_LDADD = $(TESTUTIL_LIBS)

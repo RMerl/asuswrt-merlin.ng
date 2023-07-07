@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_getinfo 3 "January 02, 2023" "libcurl 8.0.1" "libcurl Manual"
+.TH curl_easy_getinfo 3 "May 17, 2023" "libcurl 8.1.2" "libcurl"
 
 .SH NAME
 curl_easy_getinfo - extract information from a curl handle
@@ -34,12 +34,11 @@ CURLcode curl_easy_getinfo(CURL *curl, CURLINFO info, ... );
 .fi
 .SH DESCRIPTION
 Request internal information from the curl session with this function. The
-third argument \fBMUST\fP be a pointer to a long, a pointer to a char *, a
-pointer to a struct curl_slist * or a pointer to a double (as this
-documentation describes further down). The data pointed-to will be filled in
-accordingly and can be relied upon only if the function returns CURLE_OK. Use
-this function AFTER a performed transfer if you want to get transfer related
-data.
+third argument \fBMUST\fP be pointing to the specific type of the used option
+which is documented in each man page of the option. The data pointed-to will
+be filled in accordingly and can be relied upon only if the function returns
+CURLE_OK. Use this function AFTER a performed transfer if you want to get
+transfer related data.
 
 You should not free the memory returned by this function unless it is
 explicitly mentioned below.
@@ -171,7 +170,7 @@ Upload size. See \fICURLINFO_CONTENT_LENGTH_UPLOAD_T(3)\fP
 Content type from the Content-Type header.
 See \fICURLINFO_CONTENT_TYPE(3)\fP
 .IP CURLINFO_RETRY_AFTER
-The value from the from the Retry-After header.
+The value from the Retry-After header.
 See \fICURLINFO_RETRY_AFTER(3)\fP
 .IP CURLINFO_PRIVATE
 User's private data pointer.

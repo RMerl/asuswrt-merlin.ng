@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_AWS_SIGV4 3 "February 15, 2023" "libcurl 8.0.1" "curl_easy_setopt options"
+.TH CURLOPT_AWS_SIGV4 3 "April 27, 2023" "ibcurl 8.1.2" libcurl
 
 .SH NAME
 CURLOPT_AWS_SIGV4 \- V4 signature
@@ -100,7 +100,7 @@ method special.  This method cannot be combined with other auth types.
 A sha256 checksum of the request payload is used as input to the signature
 calculation.  For POST requests, this is a checksum of the provided
 \fICURLOPT_POSTFIELDS(3)\fP.  Otherwise, it's the checksum of an empty buffer.
-For requests like PUT, you can provide your own checksum in a HTTP header named
+For requests like PUT, you can provide your own checksum in an HTTP header named
 \fBx-provider2-content-sha256\fP.
 .PP
 For \fBaws:s3\fP, a \fBx-amz-content-sha256\fP header is added to every request

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_unescape 3 "January 02, 2023" "libcurl 8.0.1" "libcurl Manual"
+.TH curl_easy_unescape 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
 
 .SH NAME
 curl_easy_unescape - URL decodes the given string
@@ -30,17 +30,17 @@ curl_easy_unescape - URL decodes the given string
 .nf
 #include <curl/curl.h>
 
-char *curl_easy_unescape(CURL *curl, const char *url,
+char *curl_easy_unescape(CURL *curl, const char *input,
                          int inlength, int *outlength);
 .fi
 .SH DESCRIPTION
-This function converts the given URL encoded input string to a "plain string"
-and returns that in an allocated memory area. All input characters that are
-URL encoded (%XX where XX is a two-digit hexadecimal number) are converted to
-their binary versions.
+This function converts the URL encoded string \fBinput\fP to a "plain string"
+and returns that in an allocated memory area. All input characters that are URL
+encoded (%XX where XX is a two-digit hexadecimal number) are converted to their
+binary versions.
 
 If the \fBlength\fP argument is set to 0 (zero), \fIcurl_easy_unescape(3)\fP
-will use strlen() on the input \fIurl\fP string to find out the size.
+will use strlen() on \fBinput\fP to find out the size.
 
 If \fBoutlength\fP is non-NULL, the function will write the length of the
 returned string in the integer it points to. This allows proper handling even

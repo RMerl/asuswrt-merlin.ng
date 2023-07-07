@@ -38,16 +38,16 @@ int test(char *URL)
     goto cleanup;
 
   curl_easy_setopt(ch, CURLOPT_URL, URL);
-  curl_easy_setopt(ch, CURLOPT_COOKIEFILE, "log/cookies1903");
+  curl_easy_setopt(ch, CURLOPT_COOKIEFILE, libtest_arg2);
   curl_easy_perform(ch);
 
   curl_easy_reset(ch);
 
   curl_easy_setopt(ch, CURLOPT_URL, URL);
-  curl_easy_setopt(ch, CURLOPT_COOKIEFILE, "log/cookies1903");
+  curl_easy_setopt(ch, CURLOPT_COOKIEFILE, libtest_arg2);
   curl_easy_perform(ch);
 
-  cleanup:
+cleanup:
   curl_easy_cleanup(ch);
   curl_global_cleanup();
 

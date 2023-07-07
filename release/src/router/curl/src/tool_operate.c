@@ -624,7 +624,7 @@ static CURLcode post_per_transfer(struct GlobalConfig *global,
       return CURLE_OK;
     }
   } /* if retry_numretries */
-  noretry:
+noretry:
 
   if((global->progressmode == CURL_PROGRESS_BAR) &&
      per->progressbar.calls)
@@ -1398,19 +1398,30 @@ static CURLcode single_transfer(struct GlobalConfig *global,
 
         switch(config->httpreq) {
         case HTTPREQ_SIMPLEPOST:
-          my_setopt_str(curl, CURLOPT_POSTFIELDS,
-                        config->postfields);
-          my_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE,
-                    config->postfieldsize);
+          if(config->resume_from) {
+            errorf(global, "cannot mix --continue-at with --data\n");
+            result = CURLE_FAILED_INIT;
+          }
+          else {
+            my_setopt_str(curl, CURLOPT_POSTFIELDS,
+                          config->postfields);
+            my_setopt(curl, CURLOPT_POSTFIELDSIZE_LARGE,
+                      config->postfieldsize);
+          }
           break;
         case HTTPREQ_MIMEPOST:
           /* free previous remainders */
           curl_mime_free(config->mimepost);
           config->mimepost = NULL;
-          result = tool2curlmime(curl, config->mimeroot, &config->mimepost);
-          if(result)
-            break;
-          my_setopt_mimepost(curl, CURLOPT_MIMEPOST, config->mimepost);
+          if(config->resume_from) {
+            errorf(global, "cannot mix --continue-at with --form\n");
+            result = CURLE_FAILED_INIT;
+          }
+          else {
+            result = tool2curlmime(curl, config->mimeroot, &config->mimepost);
+            if(!result)
+              my_setopt_mimepost(curl, CURLOPT_MIMEPOST, config->mimepost);
+          }
           break;
         default:
           break;
@@ -1446,7 +1457,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
           /* new in libcurl 7.36.0 */
           if(config->proxyheaders) {
             my_setopt_slist(curl, CURLOPT_PROXYHEADER, config->proxyheaders);
-            my_setopt(curl, CURLOPT_HEADEROPT, CURLHEADER_SEPARATE);
+            my_setopt(curl, CURLOPT_HEADEROPT, (long)CURLHEADER_SEPARATE);
           }
 
           /* new in libcurl 7.5 */
@@ -1878,7 +1889,7 @@ static CURLcode single_transfer(struct GlobalConfig *global,
         if(config->dns_ipv4_addr)
           my_setopt_str(curl, CURLOPT_DNS_LOCAL_IP4, config->dns_ipv4_addr);
         if(config->dns_ipv6_addr)
-        my_setopt_str(curl, CURLOPT_DNS_LOCAL_IP6, config->dns_ipv6_addr);
+          my_setopt_str(curl, CURLOPT_DNS_LOCAL_IP6, config->dns_ipv6_addr);
 
         /* new in libcurl 7.6.2: */
         my_setopt_slist(curl, CURLOPT_TELNETOPTIONS, config->telnet_options);

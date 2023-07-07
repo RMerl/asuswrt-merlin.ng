@@ -21,23 +21,32 @@
  * SPDX-License-Identifier: curl
  *
  ***************************************************************************/
+/* <DESC>
+ * Outputs all protocols and features supported
+ * </DESC>
+ */
+#include <stdio.h>
+#include <curl/curl.h>
 
-#include "curl_printf.h"
-
-#include <string.h>
-#include <locale.h>
-
-#define TOTAL_STR_LEN 4
+#if !CURL_AT_LEAST_VERSION(7,87,0)
+#error "too old libcurl"
+#endif
 
 int main(void)
 {
-  char zero[TOTAL_STR_LEN] = {'\0'};
-  int chars;
+  curl_version_info_data *ver;
+  const char *const *ptr;
 
-  setlocale(LC_NUMERIC, "");
-  chars = msnprintf(zero, TOTAL_STR_LEN, "%.1f", 0.0);
-  if((chars == (TOTAL_STR_LEN - 1)) && (strcmp(zero, "0.0") == 0))
-    return 0;
-  else
-    return 1;
+  curl_global_init(CURL_GLOBAL_ALL);
+
+  ver = curl_version_info(CURLVERSION_NOW);
+  printf("Protocols:\n");
+  for(ptr = ver->protocols; *ptr; ++ptr)
+    printf("  %s\n", *ptr);
+  printf("Features:\n");
+  for(ptr = ver->feature_names; *ptr; ++ptr)
+    printf("  %s\n", *ptr);
+
+  curl_global_cleanup();
+  return 0;
 }

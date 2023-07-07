@@ -2,6 +2,307 @@ This document summarizes new features and bugfixes in each stable
 release of Tor. If you want to see more detailed descriptions of the
 changes in each development snapshot, see the ChangeLog file.
 
+Changes in version 0.4.7.13 - 2023-01-12
+  This version contains three major bugfixes, two for relays and one for
+  client being a security fix, TROVE-2022-002. We have added, for Linux, the
+  support for IP_BIND_ADDRESS_NO_PORT for relays using OutboundBindAddress.
+  We strongly recommend to upgrade to this version considering the important
+  congestion control fix detailed below.
+
+  o Major bugfixes (congestion control):
+    - Avoid incrementing the congestion window when the window is not
+      fully in use. Thia prevents overshoot in cases where long periods
+      of low activity would allow our congestion window to grow, and
+      then get followed by a burst, which would cause queue overload.
+      Also improve the increment checks for RFC3742. Fixes bug 40732;
+      bugfix on 0.4.7.5-alpha.
+
+  o Major bugfixes (relay):
+    - When opening a channel because of a circuit request that did not
+      include an Ed25519 identity, record the Ed25519 identity that we
+      actually received, so that we can use the channel for other
+      circuit requests that _do_ list an Ed25519 identity. (Previously
+      we had code to record this identity, but a logic bug caused it to
+      be disabled.) Fixes bug 40563; bugfix on 0.3.0.1-alpha. Patch
+      from "cypherpunks".
+
+  o Major bugfixes (TROVE-2022-002, client):
+    - The SafeSocks option had its logic inverted for SOCKS4 and
+      SOCKS4a. It would let the unsafe SOCKS4 pass but not the safe
+      SOCKS4a one. This is TROVE-2022-002 which was reported on
+      Hackerone by "cojabo". Fixes bug 40730; bugfix on 0.3.5.1-alpha.
+
+  o Minor feature (authority):
+    - Reject 0.4.6.x series at the authority level. Closes ticket 40664.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on January 12, 2023.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2023/01/12.
+
+  o Minor features (relays):
+    - Set the Linux-specific IP_BIND_ADDRESS_NO_PORT option on outgoing
+      sockets, allowing relays using OutboundBindAddress to make more
+      outgoing connections than ephemeral ports, as long as they are to
+      separate destinations. Related to issue 40597; patch by Alex
+      Xu (Hello71).
+
+  o Minor bugfixes (relay, metrics):
+    - Fix typo in a congestion control label on the MetricsPort. Fixes
+      bug 40727; bugfix on 0.4.7.12.
+
+  o Minor bugfixes (sandbox, authority):
+    - With the sandbox enabled, allow to write "my-consensus-
+      {ns|microdesc}" and to rename them as well. Fixes bug 40729;
+      bugfix on 0.3.5.1-alpha.
+
+  o Code simplifications and refactoring:
+    - Rely on actual error returned by the kernel when choosing what
+      resource exhaustion to log. Fixes issue 40613; Fix
+      on tor-0.4.6.1-alpha.
+
+
+Changes in version 0.4.7.12 - 2022-12-06
+  This version contains a major change that is a new key for moria1. Also, new
+  metrics are exported on the MetricsPort for the congestion control
+  subsystem.
+
+  o Directory authority changes (moria1):
+    - Rotate the relay identity key and v3 identity key for moria1. They
+      have been online for more than a decade and refreshing keys
+      periodically is good practice. Advertise new ports too, to avoid
+      confusion. Closes ticket 40722.
+
+  o Minor feature (Congestion control metrics):
+    - Add additional metricsport relay metrics for congestion control.
+      Closes ticket 40724.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on December 06, 2022.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2022/12/06.
+
+  o Minor bugfixes (cpuworker, relay):
+    - Fix an off by one overload calculation on the number of CPUs being
+      used by our thread pool. Fixes bug 40719; bugfix on 0.3.5.1-alpha.
+
+
+Changes in version 0.4.7.11 - 2022-11-10
+  This version contains several major fixes aimed at helping defend against
+  network denial of service. It is also extending drastically the MetricsPort
+  for relays to help us gather more internal data to investigate performance
+  and attacks.
+
+  We strongly recommend to upgrade to this version especially for Exit relays
+  in order to help the network defend against this ongoing DDoS.
+
+  o Directory authority changes (dizum, Faravahar):
+    - Change dizum IP address. Closes ticket 40687.
+    - Remove Faravahar until its operator, Sina, set it back up online
+      outside of Team Cymru network. Closes ticket 40688.
+
+  o Major bugfixes (geoip data):
+    - IPFire informed us on August 12th that databases generated after
+      (including) August 10th did not have proper ARIN network
+      allocations. We are updating the database to use the one generated
+      on August 9th, 2022. Fixes bug 40658; bugfix on 0.4.5.13.
+
+  o Major bugfixes (onion service):
+    - Set a much higher circuit build timeout for opened client rendezvous
+      circuit. Before this, tor would time them out very quickly leading to
+      unnecessary retries meaning more load on the network. Fixes bug 40694;
+      bugfix on 0.3.5.1-alpha.
+
+  o Major bugfixes (OSX):
+    - Fix coarse-time computation on Apple platforms (like Mac M1) where
+      the Mach absolute time ticks do not correspond directly to
+      nanoseconds. Previously, we computed our shift value wrong, which
+      led us to give incorrect timing results. Fixes bug 40684; bugfix
+      on 0.3.3.1-alpha.
+
+  o Major bugfixes (relay):
+    - Improve security of our DNS cache by randomly clipping the TTL
+      value. TROVE-2021-009. Fixes bug 40674; bugfix on 0.3.5.1-alpha.
+
+  o Minor feature (Mac and iOS build):
+    - Change how combine_libs works on Darwin like platforms to make
+      sure we don't include any `__.SYMDEF` and `__.SYMDEF SORTED`
+      symbols on the archive before we repack and run ${RANLIB} on the
+      archive. This fixes a build issue with recent Xcode versions on
+      Mac Silicon and iOS. Closes ticket 40683.
+
+  o Minor feature (metrics):
+    - Add various congestion control counters to the MetricsPort. Closes
+      ticket 40708.
+
+  o Minor feature (performance):
+    - Bump the maximum amount of CPU that can be used from 16 to 128. Note
+      that NumCPUs torrc option overrides this hardcoded maximum. Fixes bug
+      40703; bugfix on 0.3.5.1-alpha.
+
+  o Minor feature (relay):
+    - Make an hardcoded value for the maximum of per CPU tasks into a
+      consensus parameter.
+    - Two new consensus parameters are added to control the wait time in
+      queue of the onionskins. One of them is the torrc
+      MaxOnionQueueDelay options which supersedes the consensus
+      parameter. Closes ticket 40704.
+
+  o Minor feature (relay, DoS):
+    - Apply circuit creation anti-DoS defenses if the outbound circuit
+      max cell queue size is reached too many times. This introduces two
+      new consensus parameters to control the queue size limit and
+      number of times allowed to go over that limit. Closes ticket 40680.
+
+  o Minor feature (relay, metrics):
+    - Add DoS defenses counter to MetricsPort.
+    - Add congestion control RTT reset counter to MetricsPort.
+    - Add counters to the MetricsPort how many connections, per type,
+      are currently opened and how many were created.
+    - Add relay flags from the consensus to the MetricsPort.
+    - Add total number of opened circuits to MetricsPort.
+    - Add total number of streams seen by an Exit to the MetricsPort.
+    - Add traffic stats as in number of read/written bytes in total.
+    - Related to ticket 40194.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on November 10, 2022.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2022/11/10.
+
+  o Minor bugfixes (authorities, sandbox):
+    - Allow to write file my-consensus-<flavor-name> to disk when
+      sandbox is activated. Fixes bug 40663; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (dirauth):
+    - Directory authorities stop voting a consensus "Measured" weight
+      for relays with the Authority flag. Now these relays will be
+      considered unmeasured, which should reserve their bandwidth for
+      their dir auth role and minimize distractions from other roles. In
+      place of the "Measured" weight, they now include a
+      "MeasuredButAuthority" weight (not used by anything) so the
+      bandwidth authority's opinion on this relay can be recorded for
+      posterity. Lastly, remove the AuthDirDontVoteOnDirAuthBandwidth
+      torrc option which never worked right. Fixes bugs 40698 and 40700;
+      bugfix on 0.4.7.2-alpha.
+
+  o Minor bugfixes (onion service client):
+    - A collapsing onion service circuit should be seen as an
+      "unreachable" error so it can be retried. Fixes bug 40692; bugfix
+      on 0.3.5.1-alpha.
+
+  o Minor bugfixes (onion service):
+    - Make the service retry a rendezvous if the circuit is being
+      repurposed for measurements. Fixes bug 40696; bugfix
+      on 0.3.5.1-alpha.
+
+  o Minor bugfixes (relay overload statistics):
+    - Count total create cells vs dropped create cells properly, when
+      assessing if our fraction of dropped cells is too high. We only
+      count non-client circuits in the denominator, but we would include
+      client circuits in the numerator, leading to surprising log lines
+      claiming that we had dropped more than 100% of incoming create
+      cells. Fixes bug 40673; bugfix on 0.4.7.1-alpha.
+
+  o Code simplification and refactoring (bridges):
+    - Remove unused code related to ExtPort connection ID. Fixes bug
+      40648; bugfix on 0.3.5.1-alpha.
+
+
+Changes in version 0.4.7.10 - 2022-08-12
+  This version updates the geoip cache that we generate from IPFire location
+  database to use the August 9th, 2022 one. Everyone MUST update to this
+  latest release else circuit path selection and relay metrics are badly
+  affected.
+
+  o Major bugfixes (geoip data):
+    - IPFire informed us on August 12th that databases generated after
+      (including) August 10th did not have proper ARIN network allocations. We
+      are updating the database to use the one generated on August 9th, 2022.
+      Fixes bug 40658; bugfix on 0.4.7.9.
+
+
+Changes in version 0.4.7.9 - 2022-08-11
+  This version contains several major fixes aimed at reducing memory pressure on
+  relays and possible side-channel. It also contains a major bugfix related to
+  congestion control also aimed at reducing memory pressure on relays.
+  Finally, there is last one major bugfix related to Vanguard L2 layer node
+  selection.
+
+  We strongly recommend to upgrade to this version especially for Exit relays
+  in order to help the network defend against this ongoing DDoS.
+
+  o Major bugfixes (congestion control):
+    - Implement RFC3742 Limited Slow Start. Congestion control was
+      overshooting the congestion window during slow start, particularly
+      for onion service activity. With this fix, we now update the
+      congestion window more often during slow start, as well as dampen
+      the exponential growth when the congestion window grows above a
+      capping parameter. This should reduce the memory increases guard
+      relays were seeing, as well as allow us to set lower queue limits
+      to defend against ongoing DoS attacks. Fixes bug 40642; bugfix
+      on 0.4.7.5-alpha.
+
+  o Major bugfixes (relay):
+    - Remove OR connections btrack subsystem entries when the connections
+      close normally. Before this, we would only remove the entry on error and
+      thus leaking memory for each normal OR connections. Fixes bug 40604;
+      bugfix on 0.4.0.1-alpha.
+    - Stop sending TRUNCATED cell and instead close the circuit from which we
+      received a DESTROY cell. This makes every relay in the circuit path to
+      stop queuing cells. Fixes bug 40623; bugfix on 0.1.0.2-rc.
+
+  o Major bugfixes (vanguards):
+    - We had omitted some checks for whether our vanguards (second layer
+      guards from proposal 333) overlapped. Now make sure to pick each
+      of them to be independent. Also, change the design to allow them
+      to come from the same family. Fixes bug 40639; bugfix
+      on 0.4.7.1-alpha.
+
+  o Minor features (dirauth):
+    - Add a torrc option to control the Guard flag bandwidth threshold
+      percentile. Closes ticket 40652.
+    - Add an AuthDirVoteGuard torrc option that can allow authorities to
+      assign the Guard flag to the given fingerprints/country code/IPs.
+      This is a needed feature mostly for defense purposes in case a DoS
+      hits the network and relay start losing the Guard flags too fast.
+    - Make UPTIME_TO_GUARANTEE_STABLE, MTBF_TO_GUARANTEE_STABLE,
+      TIME_KNOWN_TO_GUARANTEE_FAMILIAR WFU_TO_GUARANTEE_GUARD tunable
+      from torrc.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on August 11, 2022.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2022/08/11.
+
+  o Minor bugfixes (congestion control):
+    - Add a check for an integer underflow condition that might happen
+      in cases where the system clock is stopped, the ORconn is blocked,
+      and the endpoint sends more than a congestion window worth of non-
+      data control cells at once. This would cause a large congestion
+      window to be calculated instead of a small one. No security
+      impact. Fixes bug 40644; bugfix on 0.4.7.5-alpha.
+
+  o Minor bugfixes (defense in depth):
+    - Change a test in the netflow padding code to make it more
+      _obviously_ safe against remotely triggered crashes. (It was safe
+      against these before, but not obviously so.) Fixes bug 40645;
+      bugfix on 0.3.1.1-alpha.
+
+  o Minor bugfixes (relay):
+    - Do not propagate either forward or backward a DESTROY remote reason when
+      closing a circuit in order to avoid a possible side channel. Fixes bug
+      40649; bugfix on 0.1.2.4-alpha.
+
+
 Changes in version 0.4.7.8 - 2022-06-17
   This version fixes several bugfixes including a High severity security issue
   categorized as a Denial of Service. Everyone running an earlier version

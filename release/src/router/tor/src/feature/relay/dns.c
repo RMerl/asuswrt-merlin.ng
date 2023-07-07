@@ -512,7 +512,7 @@ send_resolved_cell,(edge_connection_t *conn, uint8_t answer_type,
   uint32_t ttl;
 
   buf[0] = answer_type;
-  ttl = clip_dns_ttl(conn->address_ttl);
+  ttl = conn->address_ttl;
 
   switch (answer_type)
     {
@@ -584,7 +584,7 @@ send_resolved_hostname_cell,(edge_connection_t *conn,
   size_t namelen = strlen(hostname);
 
   tor_assert(namelen < 256);
-  ttl = clip_dns_ttl(conn->address_ttl);
+  ttl = conn->address_ttl;
 
   buf[0] = RESOLVED_TYPE_HOSTNAME;
   buf[1] = (uint8_t)namelen;
@@ -1310,7 +1310,7 @@ make_pending_resolve_cached(cached_resolve_t *resolve)
         resolve->ttl_hostname < ttl)
       ttl = resolve->ttl_hostname;
 
-    set_expiry(new_resolve, time(NULL) + clip_dns_ttl(ttl));
+    set_expiry(new_resolve, time(NULL) + ttl);
   }
 
   assert_cache_ok();
@@ -1725,7 +1725,7 @@ evdns_callback(int result, char type, int count, int ttl, void *addresses,
   }
   if (result != DNS_ERR_SHUTDOWN)
     dns_found_answer(string_address, orig_query_type,
-                     result, &addr, hostname, ttl);
+                     result, &addr, hostname, clip_dns_fuzzy_ttl(ttl));
 
   /* The result can be changed within this function thus why we note the result
    * at the end. */

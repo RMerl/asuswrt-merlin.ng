@@ -354,7 +354,7 @@ test_cfmt_connected_cells(void *arg)
   rh.length = connected_cell_format_payload(cell.payload+RELAY_HEADER_SIZE,
                                             &addr, 1024);
   tt_int_op(rh.length, OP_EQ, 8);
-  test_memeq_hex(cell.payload+RELAY_HEADER_SIZE, "1e28323c" "00000e10");
+  test_memeq_hex(cell.payload+RELAY_HEADER_SIZE, "1e28323c" "00000400");
 
   /* Try parsing it. */
   tor_addr_make_unspec(&addr);
@@ -362,7 +362,7 @@ test_cfmt_connected_cells(void *arg)
   tt_int_op(r, OP_EQ, 0);
   tt_int_op(tor_addr_family(&addr), OP_EQ, AF_INET);
   tt_str_op(fmt_addr(&addr), OP_EQ, "30.40.50.60");
-  tt_int_op(ttl, OP_EQ, 3600); /* not 1024, since we clipped to 3600 */
+  tt_int_op(ttl, OP_EQ, 1024);
 
   /* Try an IPv6 address */
   memset(&rh, 0, sizeof(rh));

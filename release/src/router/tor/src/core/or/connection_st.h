@@ -87,6 +87,10 @@ struct connection_t {
   /** True iff we've called connection_close_immediate() on this linked
    * connection. */
   unsigned int linked_conn_is_closed:1;
+  /** True iff this connection was opened from a listener and thus we've
+   * recevied this connection. Else, it means we've initiated an outbound
+   * connection. */
+  unsigned int from_listener:1;
 
   /** CONNECT/SOCKS proxy client handshake state (for outgoing connections). */
   unsigned int proxy_state:4;

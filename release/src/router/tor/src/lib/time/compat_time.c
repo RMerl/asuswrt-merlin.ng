@@ -253,11 +253,14 @@ monotime_init_internal(void)
   tor_assert(mach_time_info.denom != 0);
 
   {
-    // approximate only.
-    uint64_t ns_per_tick = mach_time_info.numer / mach_time_info.denom;
-    uint64_t ms_per_tick = ns_per_tick * ONE_MILLION;
+    // We want to compute this, approximately:
+    //   uint64_t ns_per_tick = mach_time_info.numer / mach_time_info.denom;
+    //   uint64_t ticks_per_ms = ONE_MILLION / ns_per_tick;
+    // This calculation multiplies first, though, to improve accuracy.
+    uint64_t ticks_per_ms = (ONE_MILLION * mach_time_info.denom)
+      / mach_time_info.numer;
     // requires that tor_log2(0) == 0.
-    monotime_shift = tor_log2(ms_per_tick);
+    monotime_shift = tor_log2(ticks_per_ms);
   }
   {
     // For converting ticks to milliseconds in a 32-bit-friendly way, we

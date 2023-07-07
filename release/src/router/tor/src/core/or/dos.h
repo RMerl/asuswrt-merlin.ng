@@ -58,6 +58,9 @@ typedef struct dos_client_stats_t {
   /* Circuit creation statistics. This is only used if the circuit creation
    * subsystem has been enabled (dos_cc_enabled). */
   cc_client_stats_t cc_stats;
+
+  /** Number of times the circ_max_cell_queue_size limit has been reached. */
+  uint32_t num_circ_max_cell_queue_size;
 } dos_client_stats_t;
 
 /* General API. */
@@ -79,6 +82,14 @@ void dos_close_client_conn(const or_connection_t *or_conn);
 
 int dos_should_refuse_single_hop_client(void);
 void dos_note_refuse_single_hop_client(void);
+void dos_note_circ_max_outq(const channel_t *chan);
+
+uint32_t dos_get_num_cc_marked_addr(void);
+uint32_t dos_get_num_cc_marked_addr_maxq(void);
+uint64_t dos_get_num_cc_rejected(void);
+uint64_t dos_get_num_conn_addr_rejected(void);
+uint64_t dos_get_num_conn_addr_connect_rejected(void);
+uint64_t dos_get_num_single_hop_refused(void);
 
 /*
  * Circuit creation DoS mitigation subsystemn interface.

@@ -922,8 +922,11 @@ sandbox_init_filter(void)
   if (options->BridgeAuthoritativeDir)
     OPEN_DATADIR_SUFFIX("networkstatus-bridges", ".tmp");
 
-  if (authdir_mode(options))
+  if (authdir_mode(options)) {
     OPEN_DATADIR("approved-routers");
+    OPEN_DATADIR_SUFFIX("my-consensus-microdesc", ".tmp");
+    OPEN_DATADIR_SUFFIX("my-consensus-ns", ".tmp");
+  }
 
   if (options->ServerDNSResolvConfFile)
     sandbox_cfg_allow_open_filename(&cfg,
@@ -1000,6 +1003,11 @@ sandbox_init_filter(void)
 
   if (options->BridgeAuthoritativeDir)
     RENAME_SUFFIX("networkstatus-bridges", ".tmp");
+
+  if (authdir_mode(options)) {
+    RENAME_SUFFIX("my-consensus-microdesc", ".tmp");
+    RENAME_SUFFIX("my-consensus-ns", ".tmp");
+  }
 
 #define STAT_DATADIR(name)                      \
   sandbox_cfg_allow_stat_filename(&cfg, get_datadir_fname(name))

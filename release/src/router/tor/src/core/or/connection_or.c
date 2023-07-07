@@ -179,13 +179,18 @@ connection_or_set_identity_digest(or_connection_t *conn,
   const int rsa_id_was_set = ! tor_digest_is_zero(conn->identity_digest);
   const int ed_id_was_set =
     chan && !ed25519_public_key_is_zero(&chan->ed25519_identity);
+  const int new_ed_id_is_set =
+    (ed_id && !ed25519_public_key_is_zero(ed_id));
   const int rsa_changed =
     tor_memneq(conn->identity_digest, rsa_digest, DIGEST_LEN);
-  const int ed_changed = ed_id_was_set &&
-    (!ed_id || !ed25519_pubkey_eq(ed_id, &chan->ed25519_identity));
+  const int ed_changed = bool_neq(ed_id_was_set, new_ed_id_is_set) ||
+    (ed_id_was_set && new_ed_id_is_set && chan &&
+     !ed25519_pubkey_eq(ed_id, &chan->ed25519_identity));
 
-  tor_assert(!rsa_changed || !rsa_id_was_set);
-  tor_assert(!ed_changed || !ed_id_was_set);
+  if (BUG(rsa_changed && rsa_id_was_set))
+    return;
+  if (BUG(ed_changed && ed_id_was_set))
+    return;
 
   if (!rsa_changed && !ed_changed)
     return;
@@ -200,8 +205,7 @@ connection_or_set_identity_digest(or_connection_t *conn,
   memcpy(conn->identity_digest, rsa_digest, DIGEST_LEN);
 
   /* If we're initializing the IDs to zero, don't add a mapping yet. */
-  if (tor_digest_is_zero(rsa_digest) &&
-      (!ed_id || ed25519_public_key_is_zero(ed_id)))
+  if (tor_digest_is_zero(rsa_digest) && !new_ed_id_is_set)
     return;
 
   /* Deal with channels */
@@ -806,6 +810,10 @@ connection_or_about_to_close(or_connection_t *or_conn)
   } else if (!tor_digest_is_zero(or_conn->identity_digest)) {
     connection_or_event_status(or_conn, OR_CONN_EVENT_CLOSED,
                 tls_error_to_orconn_end_reason(or_conn->tls_error));
+  } else {
+    /* Normal close, we notify of a done connection. */
+    connection_or_event_status(or_conn, OR_CONN_EVENT_CLOSED,
+                               END_OR_CONN_REASON_DONE);
   }
 }
 

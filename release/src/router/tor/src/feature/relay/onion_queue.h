@@ -14,6 +14,8 @@
 
 struct create_cell_t;
 
+void onion_consensus_has_changed(const networkstatus_t *ns);
+
 int onion_pending_add(or_circuit_t *circ, struct create_cell_t *onionskin);
 or_circuit_t *onion_next_task(struct create_cell_t **onionskin_out);
 int onion_num_pending(uint16_t handshake_type);

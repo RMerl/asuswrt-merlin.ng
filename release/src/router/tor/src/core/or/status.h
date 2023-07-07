@@ -11,7 +11,7 @@
 
 #include "lib/testsupport/testsupport.h"
 
-void note_connection(bool inbound, int family);
+void note_connection(bool inbound, const connection_t *conn);
 void note_circ_closed_for_unrecognized_cells(time_t n_seconds,
                                              uint32_t n_cells);
 

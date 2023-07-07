@@ -201,7 +201,7 @@ congestion_control_westwood_process_sendme(congestion_control_t *cc,
                  "CC: TOR_WESTWOOD Circuit %d "
                  "CWND: %"PRIu64", "
                  "INFL: %"PRIu64", "
-                 "NCCE: %"PRIu64", "
+                 "NCCE: %"PRIu16", "
                  "WRTT: %"PRIu64", "
                  "WSIG: %"PRIu64", "
                  "SS: %d",
@@ -218,7 +218,7 @@ congestion_control_westwood_process_sendme(congestion_control_t *cc,
                  "CC: TOR_WESTWOOD Circuit %"PRIu64":%d "
                  "CWND: %"PRIu64", "
                  "INFL: %"PRIu64", "
-                 "NCCE: %"PRIu64", "
+                 "NCCE: %"PRIu16", "
                  "WRTT: %"PRIu64", "
                  "WSIG: %"PRIu64", "
                  "SS: %d",

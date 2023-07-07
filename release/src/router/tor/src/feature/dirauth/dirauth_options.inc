@@ -76,6 +76,31 @@ CONF_VAR(RecommendedClientVersions, LINELIST, 0, NULL)
 /** Which versions of tor should we tell users to run on relays? */
 CONF_VAR(RecommendedServerVersions, LINELIST, 0, NULL)
 
+/** Relays which should be voted Guard regardless of uptime and bandwidth. */
+CONF_VAR(AuthDirVoteGuard, ROUTERSET, 0, NULL)
+
+/** If a relay's uptime is at least this value, then it is always considered
+ * stable, regardless of the rest of the network. This way we resist attacks
+ * where an attacker doubles the size of the network using allegedly
+ * high-uptime nodes, displacing all the current guards. */
+CONF_VAR(AuthDirVoteStableGuaranteeMinUptime, INTERVAL, 0, "30 days")
+
+/** If a relay's MTBF is at least this value, then it is always stable. See
+ * above. */
+CONF_VAR(AuthDirVoteStableGuaranteeMTBF, INTERVAL, 0, "5 days")
+
+/** A relay with at least this much weighted time known can be considered
+ * familiar enough to be a guard. */
+CONF_VAR(AuthDirVoteGuardGuaranteeTimeKnown, INTERVAL, 0, "8 days")
+
+/** A relay with sufficient WFU is around enough to be a guard. */
+CONF_VAR(AuthDirVoteGuardGuaranteeWFU, DOUBLE, 0, "0.98")
+
+/** The Guard flag bandwidth performance threshold fraction that is the
+ * fraction representing who gets the Guard flag out of all measured
+ * bandwidth. */
+CONF_VAR(AuthDirVoteGuardBwThresholdFraction, DOUBLE, 0, "0.75")
+
 /** If an authority has been around for less than this amount of time, it
  * does not believe its reachability information is accurate.  Only
  * altered on testing networks. */
@@ -112,8 +137,5 @@ CONF_VAR(VersioningAuthoritativeDirectory, BOOL, 0, "0")
  * same and the authority will try to answer them all regardless of bandwidth
  * pressure or not. */
 CONF_VAR(AuthDirRejectRequestsUnderLoad, BOOL, 0, "1")
-
-/** Boolean: Should we not give bandwidth weight measurements to dirauths? */
-CONF_VAR(AuthDirDontVoteOnDirAuthBandwidth, BOOL, 0, "1")
 
 END_CONF_STRUCT(dirauth_options_t)

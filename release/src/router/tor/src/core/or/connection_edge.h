@@ -187,11 +187,9 @@ void connection_ap_warn_and_unmark_if_pending_circ(
                                              entry_connection_t *entry_conn,
                                              const char *where);
 
-/** Lowest value for DNS ttl that a server should give or a client should
- * believe. */
+/** Lowest value for DNS ttl clipping excluding the random addition. */
 #define MIN_DNS_TTL (5*60)
-/** Highest value for DNS ttl that a server should give or a client should
- * believe. */
+/** Highest value for DNS ttl clipping excluding the random addition. */
 #define MAX_DNS_TTL (60*60)
 /** How long do we keep DNS cache entries before purging them (regardless of
  * their TTL)? */
@@ -199,8 +197,16 @@ void connection_ap_warn_and_unmark_if_pending_circ(
 /** How long do we cache/tell clients to cache DNS records when no TTL is
  * known? */
 #define DEFAULT_DNS_TTL (30*60)
+/** How much should we +- each TTL to make it fuzzy with uniform sampling at
+ * exits?  The value 4 minutes was chosen so that the lowest possible clip is
+ * 60s.  Such low clips were used in the past for all TTLs due to a bug in Tor,
+ * see "The effect of DNS on Tor's Anonymity" by Greschbach et al.  In other
+ * words, sampling such low clips is unlikely to cause any breakage at exits.
+ */
+#define FUZZY_DNS_TTL (4*60)
 
 uint32_t clip_dns_ttl(uint32_t ttl);
+uint32_t clip_dns_fuzzy_ttl(uint32_t ttl);
 
 int connection_half_edge_is_valid_data(const smartlist_t *half_conns,
                                        streamid_t stream_id);

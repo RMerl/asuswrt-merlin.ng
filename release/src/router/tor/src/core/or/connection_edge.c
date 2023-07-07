@@ -102,6 +102,7 @@
 #include "feature/stats/predict_ports.h"
 #include "feature/stats/rephist.h"
 #include "lib/buf/buffers.h"
+#include "lib/crypt_ops/crypto_rand.h"
 #include "lib/crypt_ops/crypto_util.h"
 
 #include "core/or/cell_st.h"
@@ -484,6 +485,21 @@ clip_dns_ttl(uint32_t ttl)
     return MAX_DNS_TTL;
 }
 
+/** Given a TTL (in seconds), determine what TTL an exit relay should use by
+ * first clipping as usual and then adding some randomness which is sampled
+ * uniformly at random from [-FUZZY_DNS_TTL, FUZZY_DNS_TTL].  This facilitates
+ * fuzzy TTLs, which makes it harder to infer when a website was visited via
+ * side-channels like DNS (see "Website Fingerprinting with Website Oracles").
+ *
+ * Note that this can't underflow because FUZZY_DNS_TTL < MIN_DNS_TTL.
+ */
+uint32_t
+clip_dns_fuzzy_ttl(uint32_t ttl)
+{
+  return clip_dns_ttl(ttl) +
+    crypto_rand_uint(1 + 2*FUZZY_DNS_TTL) - FUZZY_DNS_TTL;
+}
+
 /** Send a relay end cell from stream <b>conn</b> down conn's circuit, and
  * remember that we've done so.  If this is not a client connection, set the
  * relay end cell's reason for closing as <b>reason</b>.
@@ -532,7 +548,7 @@ connection_edge_end(edge_connection_t *conn, uint8_t reason)
       memcpy(payload+1, tor_addr_to_in6_addr8(&conn->base_.addr), 16);
       addrlen = 16;
     }
-    set_uint32(payload+1+addrlen, htonl(clip_dns_ttl(conn->address_ttl)));
+    set_uint32(payload+1+addrlen, htonl(conn->address_ttl));
     payload_len += 4+addrlen;
   }
 
@@ -926,7 +942,7 @@ connected_cell_format_payload(uint8_t *payload_out,
     return -1;
   }
 
-  set_uint32(payload_out + connected_payload_len, htonl(clip_dns_ttl(ttl)));
+  set_uint32(payload_out + connected_payload_len, htonl(ttl));
   connected_payload_len += 4;
 
   tor_assert(connected_payload_len <= MAX_CONNECTED_CELL_PAYLOAD_LEN);
@@ -4119,6 +4135,9 @@ connection_exit_begin_resolve(cell_t *cell, or_circuit_t *circ)
   if (rh.length > RELAY_PAYLOAD_SIZE)
     return -1;
 
+  /* Note the RESOLVE stream as seen. */
+  rep_hist_note_exit_stream(RELAY_COMMAND_RESOLVE);
+
   /* This 'dummy_conn' only exists to remember the stream ID
    * associated with the resolve request; and to make the
    * implementation of dns.c more uniform.  (We really only need to
@@ -4206,6 +4225,7 @@ connection_exit_connect(edge_connection_t *edge_conn)
     log_info(LD_EXIT,"%s failed exit policy%s. Closing.",
              connection_describe(conn),
              why_failed_exit_policy);
+    rep_hist_note_conn_rejected(conn->type, conn->socket_family);
     connection_edge_end(edge_conn, END_STREAM_REASON_EXITPOLICY);
     circuit_detach_stream(circuit_get_by_edge_conn(edge_conn), edge_conn);
     connection_free(conn);
@@ -4233,11 +4253,16 @@ connection_exit_connect(edge_connection_t *edge_conn)
       nodelist_reentry_contains(&conn->addr, conn->port)) {
     log_info(LD_EXIT, "%s tried to connect back to a known relay address. "
                       "Closing.", connection_describe(conn));
+    rep_hist_note_conn_rejected(conn->type, conn->socket_family);
     connection_edge_end(edge_conn, END_STREAM_REASON_CONNECTREFUSED);
     circuit_detach_stream(circuit_get_by_edge_conn(edge_conn), edge_conn);
     connection_free(conn);
     return;
   }
+
+  /* Note the BEGIN stream as seen. We do this after the Exit policy check in
+   * order to only account for valid streams. */
+  rep_hist_note_exit_stream(RELAY_COMMAND_BEGIN);
 
 #ifdef HAVE_SYS_UN_H
   if (conn->socket_family != AF_UNIX) {
@@ -4333,6 +4358,9 @@ connection_exit_connect_dir(edge_connection_t *exitconn)
   or_circuit_t *circ = TO_OR_CIRCUIT(exitconn->on_circuit);
 
   log_info(LD_EXIT, "Opening local connection for anonymized directory exit");
+
+  /* Note the BEGIN_DIR stream as seen. */
+  rep_hist_note_exit_stream(RELAY_COMMAND_BEGIN_DIR);
 
   exitconn->base_.state = EXIT_CONN_STATE_OPEN;
 

@@ -49,6 +49,7 @@ static int32_t dos_cc_defense_time_period;
 /* Keep some stats for the heartbeat so we can report out. */
 static uint64_t cc_num_rejected_cells;
 static uint32_t cc_num_marked_addrs;
+static uint32_t cc_num_marked_addrs_max_queue;
 
 /*
  * Concurrent connection denial of service mitigation.
@@ -72,12 +73,32 @@ static int32_t dos_conn_connect_defense_time_period =
 static uint64_t conn_num_addr_rejected;
 static uint64_t conn_num_addr_connect_rejected;
 
+/** Consensus parameter: How many times a client IP is allowed to hit the
+ * circ_max_cell_queue_size_out limit before being marked. */
+static uint32_t dos_num_circ_max_outq;
+
 /*
  * General interface of the denial of service mitigation subsystem.
  */
 
 /* Keep stats for the heartbeat. */
 static uint64_t num_single_hop_client_refused;
+
+/** Return the consensus parameter for the outbound circ_max_cell_queue_size
+ * limit. */
+static uint32_t
+get_param_dos_num_circ_max_outq(const networkstatus_t *ns)
+{
+#define DOS_NUM_CIRC_MAX_OUTQ_DEFAULT 3
+#define DOS_NUM_CIRC_MAX_OUTQ_MIN 0
+#define DOS_NUM_CIRC_MAX_OUTQ_MAX INT32_MAX
+
+  /* Update the circuit max cell queue size from the consensus. */
+  return networkstatus_get_param(ns, "dos_num_circ_max_outq",
+                                 DOS_NUM_CIRC_MAX_OUTQ_DEFAULT,
+                                 DOS_NUM_CIRC_MAX_OUTQ_MIN,
+                                 DOS_NUM_CIRC_MAX_OUTQ_MAX);
+}
 
 /* Return true iff the circuit creation mitigation is enabled. We look at the
  * consensus for this else a default value is returned. */
@@ -258,6 +279,9 @@ set_dos_parameters(const networkstatus_t *ns)
   dos_conn_connect_burst = get_param_conn_connect_burst(ns);
   dos_conn_connect_defense_time_period =
     get_param_conn_connect_defense_time_period(ns);
+
+  /* Circuit. */
+  dos_num_circ_max_outq = get_param_dos_num_circ_max_outq(ns);
 }
 
 /* Free everything for the circuit creation DoS mitigation subsystem. */
@@ -557,6 +581,48 @@ dos_is_enabled(void)
 
 /* Circuit creation public API. */
 
+/** Return the number of rejected circuits. */
+uint64_t
+dos_get_num_cc_rejected(void)
+{
+  return cc_num_rejected_cells;
+}
+
+/** Return the number of marked addresses. */
+uint32_t
+dos_get_num_cc_marked_addr(void)
+{
+  return cc_num_marked_addrs;
+}
+
+/** Return the number of marked addresses due to max queue limit reached. */
+uint32_t
+dos_get_num_cc_marked_addr_maxq(void)
+{
+  return cc_num_marked_addrs_max_queue;
+}
+
+/** Return number of concurrent connections rejected. */
+uint64_t
+dos_get_num_conn_addr_rejected(void)
+{
+  return conn_num_addr_rejected;
+}
+
+/** Return the number of connection rejected. */
+uint64_t
+dos_get_num_conn_addr_connect_rejected(void)
+{
+  return conn_num_addr_connect_rejected;
+}
+
+/** Return the number of single hop refused. */
+uint64_t
+dos_get_num_single_hop_refused(void)
+{
+  return num_single_hop_client_refused;
+}
+
 /* Called when a CREATE cell is received from the given channel. */
 void
 dos_cc_new_create_cell(channel_t *chan)
@@ -745,6 +811,69 @@ dos_geoip_entry_init(clientmap_entry_t *geoip_ent)
                         (uint32_t) approx_time());
 }
 
+/** Note that the given channel has sent outbound the maximum amount of cell
+ * allowed on the next channel. */
+void
+dos_note_circ_max_outq(const channel_t *chan)
+{
+  tor_addr_t addr;
+  clientmap_entry_t *entry;
+
+  tor_assert(chan);
+
+  /* Skip everything if circuit creation defense is disabled. */
+  if (!dos_cc_enabled) {
+    goto end;
+  }
+
+  /* Must be a client connection else we ignore. */
+  if (!channel_is_client(chan)) {
+    goto end;
+  }
+  /* Without an IP address, nothing can work. */
+  if (!channel_get_addr_if_possible(chan, &addr)) {
+    goto end;
+  }
+
+  /* We are only interested in client connection from the geoip cache. */
+  entry = geoip_lookup_client(&addr, NULL, GEOIP_CLIENT_CONNECT);
+  if (entry == NULL) {
+    goto end;
+  }
+
+  /* Is the client marked? If yes, just ignore. */
+  if (entry->dos_stats.cc_stats.marked_until_ts >= approx_time()) {
+    goto end;
+  }
+
+  /* If max outq parameter is 0, it means disabled, just ignore. */
+  if (dos_num_circ_max_outq == 0) {
+    goto end;
+  }
+
+  entry->dos_stats.num_circ_max_cell_queue_size++;
+
+  /* This is the detection. If we have reached the maximum amount of times a
+   * client IP is allowed to reach this limit, mark client. */
+  if (entry->dos_stats.num_circ_max_cell_queue_size >=
+      dos_num_circ_max_outq) {
+    /* Only account for this marked address if this is the first time we block
+     * it else our counter is inflated with non unique entries. */
+    if (entry->dos_stats.cc_stats.marked_until_ts == 0) {
+      cc_num_marked_addrs_max_queue++;
+    }
+    log_info(LD_DOS, "Detected outbound max circuit queue from addr: %s",
+             fmt_addr(&addr));
+    cc_mark_client(&entry->dos_stats.cc_stats);
+
+    /* Reset after being marked so once unmarked, we start back clean. */
+    entry->dos_stats.num_circ_max_cell_queue_size = 0;
+  }
+
+ end:
+  return;
+}
+
 /* Note down that we've just refused a single hop client. This increments a
  * counter later used for the heartbeat. */
 void
@@ -786,8 +915,10 @@ dos_log_heartbeat(void)
   if (dos_cc_enabled) {
     smartlist_add_asprintf(elems,
                            "%" PRIu64 " circuits rejected, "
-                           "%" PRIu32 " marked addresses",
-                           cc_num_rejected_cells, cc_num_marked_addrs);
+                           "%" PRIu32 " marked addresses, "
+                           "%" PRIu32 " marked addresses for max queue",
+                           cc_num_rejected_cells, cc_num_marked_addrs,
+                           cc_num_marked_addrs_max_queue);
   } else {
     smartlist_add_asprintf(elems, "[DoSCircuitCreationEnabled disabled]");
   }

@@ -1964,7 +1964,7 @@ void
 hs_client_circuit_cleanup_on_free(const circuit_t *circ)
 {
   bool has_timed_out;
-  rend_intro_point_failure_t failure = INTRO_POINT_FAILURE_GENERIC;
+  rend_intro_point_failure_t failure = INTRO_POINT_FAILURE_UNREACHABLE;
   const origin_circuit_t *orig_circ = NULL;
 
   tor_assert(circ);

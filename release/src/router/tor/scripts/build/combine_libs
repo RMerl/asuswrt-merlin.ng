@@ -11,6 +11,15 @@ abspath() {
     echo "$(cd "$(dirname "$1")" >/dev/null && pwd)/$(basename "$1")"
 }
 
+apple_symdef_fix() {
+    # On modern macOS and iOS we need to remove the "__.SYMDEF" and "__.SYMDEF
+    # SORTED" before we repack the archive.
+    # See: tor#40683.
+    if [ "$(uname -s)" = "Darwin" ] ; then
+        find . -name "__.SYMDEF*" -delete
+    fi
+}
+
 TARGET=$(abspath "$1")
 
 shift
@@ -25,6 +34,7 @@ for input in "$@"; do
 done
 
 cd "$TMPDIR" >/dev/null
+apple_symdef_fix
 "${AR:-ar}" "${ARFLAGS:-cru}" library.tmp.a ./*/**
 "${RANLIB:-ranlib}" library.tmp.a
 mv -f library.tmp.a "$TARGET"

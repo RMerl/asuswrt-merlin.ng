@@ -53,10 +53,10 @@ compute_num_cpus_impl(void)
     cpus = cpus_onln;
   } else if (cpus_onln > 0 && cpus_conf > 0) {
     if (cpus_onln < cpus_conf) {
-      log_notice(LD_GENERAL, "I think we have %ld CPUS, but only %ld of them "
-                 "are available. Telling Tor to only use %ld. You can over"
-                 "ride this with the NumCPUs option",
-                 cpus_conf, cpus_onln, cpus_onln);
+      log_info(LD_GENERAL, "I think we have %ld CPUS, but only %ld of them "
+               "are available. Telling Tor to only use %ld. You can over"
+               "ride this with the NumCPUs option",
+               cpus_conf, cpus_onln, cpus_onln);
     }
     cpus = cpus_onln;
   }
@@ -70,7 +70,11 @@ compute_num_cpus_impl(void)
 #endif /* defined(_WIN32) || ... */
 }
 
-#define MAX_DETECTABLE_CPUS 16
+/** This is an arbitrary number but at this point in time, it is not that
+ * uncommon to see servers up to that amount of CPUs. Most servers will likely
+ * be around 16 to 32 cores now. Lets take advantage of large machines! The
+ * "NumCPUs" torrc option overrides this maximum. */
+#define MAX_DETECTABLE_CPUS 128
 
 /** Return how many CPUs we are running with.  We assume that nobody is
  * using hot-swappable CPUs, so we don't recompute this after the first

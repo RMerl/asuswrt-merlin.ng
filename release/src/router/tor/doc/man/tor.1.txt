@@ -3112,7 +3112,7 @@ on the public Tor network.
     is the same as for exit policies, except that you don't need to say
     "accept" or "reject", and ports are not needed.)
 
-[[AuthDirMiddleOnly]] **AuthMiddleOnly** __AddressPattern...__::
+[[AuthDirMiddleOnly]] **AuthDirMiddleOnly** __AddressPattern...__::
     Authoritative directories only. A set of address patterns for servers that
     will be listed as middle-only in any network status document this authority
     publishes, if **AuthDirListMiddleOnly** is set. +
@@ -3228,6 +3228,32 @@ on the public Tor network.
     check every relay we know about to see whether it is running.
     If set to 0, we vote Running for every relay, and don't perform
     these tests. (Default: 1)
+
+[[AuthDirVoteGuard]] **AuthDirVoteGuard** __node__,__node__,__...__::
+    A list of identity fingerprints or country codes or address patterns of
+    nodes to vote Guard for regardless of their uptime and bandwidth. See
+    <<ExcludeNodes,ExcludeNodes>> for more information on how to specify nodes.
+
+[[AuthDirVoteGuardBwThresholdFraction]] **AuthDirVoteGuardBwThresholdFraction** __FRACTION__::
+    The Guard flag bandwidth performance threshold fraction that is the
+    fraction representing who gets the Guard flag out of all measured
+    bandwidth. (Default: 0.75)
+
+[[AuthDirVoteGuardGuaranteeTimeKnown]] **AuthDirVoteGuardGuaranteeTimeKnown** __N__ **seconds**|**minutes**|**hours**|**days**|**weeks**::
+    A relay with at least this much weighted time known can be considered
+    familiar enough to be a guard. (Default: 8 days)
+
+[[AuthDirVoteGuardGuaranteeWFU]] **AuthDirVoteGuardGuaranteeWFU** __FRACTION__::
+    A level of weighted fractional uptime (WFU) is that is sufficient to be a
+    Guard. (Default: 0.98)
+
+[[AuthDirVoteStableGuaranteeMinUptime]] **AuthDirVoteStableGuaranteeMinUptime** __N__ **seconds**|**minutes**|**hours**|**days**|**weeks**::
+    If a relay's uptime is at least this value, then it is always considered
+    stable, regardless of the rest of the network. (Default: 30 days)
+
+[[AuthDirVoteStableGuaranteeMTBF]] **AuthDirVoteStableGuaranteeMTBF** __N__ **seconds**|**minutes**|**hours**|**days**|**weeks**::
+    If a relay's mean time between failures (MTBF) is least this value, then
+    it will always be considered stable. (Default: 5 days)
 
 [[BridgePassword]] **BridgePassword** __Password__::
     If set, contains an HTTP authenticator that tells a bridge authority to

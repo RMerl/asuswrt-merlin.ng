@@ -108,7 +108,7 @@ congestion_control_nola_process_sendme(congestion_control_t *cc,
                "CC TOR_NOLA: Circuit %d "
                "CWND: %"PRIu64", "
                "INFL: %"PRIu64", "
-               "NCCE: %"PRIu64", "
+               "NCCE: %"PRIu16", "
                "SS: %d",
              CONST_TO_ORIGIN_CIRCUIT(circ)->global_identifier,
              cc->cwnd,
@@ -121,7 +121,7 @@ congestion_control_nola_process_sendme(congestion_control_t *cc,
                "CC TOR_NOLA: Circuit %"PRIu64":%d "
                "CWND: %"PRIu64", "
                "INFL: %"PRIu64", "
-               "NCCE: %"PRIu64", "
+               "NCCE: %"PRIu16", "
                "SS: %d",
              CONST_TO_OR_CIRCUIT(circ)->p_chan->global_identifier,
              CONST_TO_OR_CIRCUIT(circ)->p_circ_id,

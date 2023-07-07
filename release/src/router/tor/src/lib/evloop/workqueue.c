@@ -672,3 +672,11 @@ replyqueue_process(replyqueue_t *queue)
 
   tor_mutex_release(&queue->lock);
 }
+
+/** Return the number of threads configured for the given pool. */
+unsigned int
+threadpool_get_n_threads(threadpool_t *tp)
+{
+  tor_assert(tp);
+  return tp->n_threads;
+}

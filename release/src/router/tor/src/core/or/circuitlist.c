@@ -102,6 +102,8 @@
 #include "lib/compress/compress_zstd.h"
 #include "lib/buf/buffers.h"
 #include "core/or/congestion_control_common.h"
+#include "core/or/congestion_control_st.h"
+#include "lib/math/stats.h"
 
 #include "core/or/ocirc_event.h"
 
@@ -146,6 +148,13 @@ static void circuit_about_to_free(circuit_t *circ);
  * circuit_expire_building). 0 otherwise.
  */
 static int any_opened_circs_cached_val = 0;
+
+/** Moving average of the cc->cwnd from each closed circuit. */
+double cc_stats_circ_close_cwnd_ma = 0;
+/** Moving average of the cc->cwnd from each closed slow-start circuit. */
+double cc_stats_circ_close_ss_cwnd_ma = 0;
+
+uint64_t cc_stats_circs_closed = 0;
 
 /********* END VARIABLES ************/
 
@@ -2224,6 +2233,26 @@ circuit_mark_for_close_, (circuit_t *circ, int reason, int line,
 
   /* Notify the HS subsystem that this circuit is closing. */
   hs_circ_cleanup_on_close(circ);
+
+  /* Update stats. */
+  if (circ->ccontrol) {
+    if (circ->ccontrol->in_slow_start) {
+      /* If we are in slow start, only count the ss cwnd if we've sent
+       * enough data to get RTT measurements such that we have a min
+       * and a max RTT, and they are not the same. This prevents us from
+       * averaging and reporting unused and low-use circuits here */
+      if (circ->ccontrol->max_rtt_usec != circ->ccontrol->min_rtt_usec) {
+        cc_stats_circ_close_ss_cwnd_ma =
+          stats_update_running_avg(cc_stats_circ_close_ss_cwnd_ma,
+                                   circ->ccontrol->cwnd);
+      }
+    } else {
+      cc_stats_circ_close_cwnd_ma =
+        stats_update_running_avg(cc_stats_circ_close_cwnd_ma,
+                                 circ->ccontrol->cwnd);
+    }
+    cc_stats_circs_closed++;
+  }
 
   if (circuits_pending_close == NULL)
     circuits_pending_close = smartlist_new();

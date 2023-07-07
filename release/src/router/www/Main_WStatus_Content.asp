@@ -318,17 +318,24 @@ function display_header(dataarray, title, obj, dfs_statusarray) {
 
 	code = '<table width="100%" style="border: none;">';
 	code += '<thead><tr><span class="hint-color" style="font-size: 125%;">' + title +'</span></tr></thead>';
-	code += '<tr><td colspan="3"><span class="hint-color">SSID: </span>' + dataarray[0] + '</td><td colspan="2"><span class="hint-color">Mode: </span>' + dataarray[6] + '</td></tr>';
+	code += '<tr><td colspan="2"><span class="hint-color">SSID: </span>' + dataarray[0] + '</td>';
+	code += '<td><span class="hint-color">BSSID: </span>' + dataarray[5] +'</td>';
+	code += '<td><span class="hint-color">Mode: </span>' + dataarray[7] + '</td>';
+	code += '</tr>';
 
 	code += '<tr>';
+	code += '<td><span class="hint-color">Channel: </span>'+ dataarray[4] + '</td>';
 	if (dataarray[1] != 0)
 		code += '<td><span class="hint-color">RSSI: </span>' + dataarray[1] + ' dBm</td>';
+	else
+		code += '<td>&nbsp;</td>';
 	if (dataarray[2] != 0)
 		code += '<td><span class="hint-color">SNR: </span>' + dataarray[2] +' dB</td>';
 	if (dataarray[3] != 0)
 		code += '<td><span class="hint-color">Noise: </span>' + dataarray[3] + ' dBm</td>';
-
-	code += '<td><span class="hint-color">Channel: </span>'+ dataarray[4] + '</td> <td><span class="hint-color">BSSID: </span>' + dataarray[5] +'</td></tr>';
+        if (dataarray[6] != -1)
+                code += '<td><span class="hint-color">Utilization: </span>'+ dataarray[6] + '%</td>';
+	code += '</tr>';
 
 	if (dfs_statusarray.length > 1) {
 		code += '<tr><td colspan="2"><span class="hint-color">DFS State: </span>' + dfs_statusarray[0] + '</td>';

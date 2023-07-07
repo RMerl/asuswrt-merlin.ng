@@ -256,6 +256,12 @@ dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *
 	retval += websWrite(wp, "\"%s\",", wf_chspec_ntoa(dtohchanspec(bi->chanspec), chspec_str));
 	retval += websWrite(wp, "\"%s\",", wl_ether_etoa(&bi->BSSID));
 
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+       retval += websWrite(wp, "\"%d\",", bi->qbss_chan_util * 100 / (uint8)WLC_QBSS_LOAD_CHAN_FREE_MAX);
+#else
+	retval += websWrite(wp, "\"-1\",");
+#endif
+
 	return retval;
 }
 

@@ -2866,6 +2866,7 @@ void write_ftpd_conf()
 #if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_FTP_SSL)
 	if(nvram_get_int("ftp_tls")){
 		fprintf(fp, "ssl_enable=YES\n");
+		fprintf(fp, "ssl_ciphers=HIGH\n");
 		fprintf(fp, "rsa_cert_file=%s\n", HTTPD_CERT);
 		fprintf(fp, "rsa_private_key_file=%s\n", HTTPD_KEY);
 

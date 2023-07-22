@@ -65,10 +65,10 @@ static int mdio_probe(dt_device_t *pdev)
         goto Exit;
     }
 
-    dev_dbg(&pdev->dev, "mdio_base=0x%lx\n", mdio_base);
-    dev_dbg(&pdev->dev, "pMdioMasterSelect=0x%lx\n", pMdioMasterSelect);
+    dev_info(&pdev->dev, "mdio_base=0x%lx\n", mdio_base);
+    dev_info(&pdev->dev, "pMdioMasterSelect=0x%lx\n", pMdioMasterSelect);
 
-    dev_info(&pdev->dev, "registered\n");
+    dev_info(&pdev->dev, "Registered\n");
 
     return 0;
 

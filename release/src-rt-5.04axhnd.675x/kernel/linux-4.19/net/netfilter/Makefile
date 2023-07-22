@@ -215,3 +215,6 @@ obj-$(CONFIG_IP_VS) += ipvs/
 
 # ASUS Net Filter
 obj-$(CONFIG_NETFILTER_ASUS_FILTER) += fltr/
+
+# ASUS ROUTER BOOST
+obj-$(CONFIG_NETFILTER_ROUTER_BOOST) += deDupTx/

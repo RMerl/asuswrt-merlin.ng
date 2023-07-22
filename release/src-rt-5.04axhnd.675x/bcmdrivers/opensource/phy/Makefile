@@ -39,9 +39,9 @@ endif
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_6855_),)
     DRV_OBJS += mac_drv.o
     DRV_OBJS += bus_drv.o
-    DRV_OBJS += phy_drv.o
+    DRV_OBJS += $(if $(wildcard $(CUR_DIR)/phy_drv.c),phy_drv.o,prebuilt/phy_drv.o)
     DRV_OBJS += phy_drv_mii.o
-    DRV_OBJS += phy_drv_brcm.o
+    DRV_OBJS += $(if $(wildcard $(CUR_DIR)/phy_drv_brcm.c),phy_drv_brcm.o,prebuilt/phy_drv_brcm.o)
     DRV_OBJS += dt_access.o
     DRV_OBJS += dt_parsing.o
     DRV_OBJS += phy_drv_crossbar.o
@@ -105,11 +105,14 @@ ifeq ($(strip ${BRCM_CHIP}),6855)
     DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o   
     DRV_OBJS += brcm_rgmii.o
+    DRV_OBJS += $(if $(wildcard $(CUR_DIR)/gpy211.c),gpy211.o,prebuilt/gpy211.o)
+
     EXTRA_CFLAGS += -DBRCM_RGMII
     EXTRA_CFLAGS += -DMAC_UNIMAC
     EXTRA_CFLAGS += -DPHY_6846_EGPHY -DPHY_6856_SGMII -DPHY_EXT1 -DPHY_EXT3 -DMACSEC_SUPPORT
     EXTRA_CFLAGS += -DBRCM_64B_UMAC_MIB
     EXTRA_CFLAGS += -DXRDP_LED
+    EXTRA_CFLAGS += -DPHY_GPY211
 endif
 
 
@@ -148,9 +151,9 @@ endif
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63138_63148_4908_63158_63178_47622_63146_4912_6813_6756_),)
     DRV_OBJS += mac_drv.o
     DRV_OBJS += bus_drv.o
-    DRV_OBJS += phy_drv.o
+    DRV_OBJS += $(if $(wildcard $(CUR_DIR)/phy_drv.c),phy_drv.o,prebuilt/phy_drv.o)
     DRV_OBJS += phy_drv_mii.o
-    DRV_OBJS += phy_drv_brcm.o
+    DRV_OBJS += $(if $(wildcard $(CUR_DIR)/phy_drv_brcm.c),phy_drv_brcm.o,prebuilt/phy_drv_brcm.o)
     DRV_OBJS += dt_access.o
     DRV_OBJS += dt_parsing.o
     DRV_OBJS += phy_drv_crossbar.o
@@ -331,17 +334,18 @@ ifeq ($(strip ${BRCM_CHIP}),4912)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_146class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += $(if $(wildcard gpy211.c),gpy211.o,prebuilt/gpy211.o)
     DRV_OBJS += phy_mac_sec.o
     DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
+    DRV_OBJS += $(if $(wildcard $(CUR_DIR)/gpy211.c),gpy211.o,prebuilt/gpy211.o)
 
     EXTRA_CFLAGS += -DMAC_UNIMAC -DPHY_DSL_GPHY -DPHY_M2M -DDSL_DEVICES
     EXTRA_CFLAGS += -DPHY_146CLASS_SERDES -I$(CUR_DIR)/Serdes146Class -DEXCLUDE_STD_HEADERS
     EXTRA_CFLAGS += -DMAC_XPORT -DPHY_EXT3 -DMACSEC_SUPPORT
+    EXTRA_CFLAGS += -DPHY_GPY211
     DRV_OBJS += $(patsubst %.c, %.o, $(shell cd $(src) && find xport/ag/4912A0  -type f -name '*.c')) 
-    EXTRA_CFLAGS += -I$(CUR_DIR)/xport -I$(CUR_DIR)/xport/ag/4912A0 -DPHY_GPY211
+    EXTRA_CFLAGS += -I$(CUR_DIR)/xport -I$(CUR_DIR)/xport/ag/4912A0
 endif
 
 ifeq ($(strip ${BRCM_CHIP}),6813)
@@ -392,16 +396,17 @@ ifeq ($(strip ${BRCM_CHIP}),6756)
     DRV_OBJS += phy_drv_dsl_848xx.o
     DRV_OBJS += phy_drv_6756class_serdes.o
     DRV_OBJS += phy_drv_ext3.o
-    DRV_OBJS += $(if $(wildcard gpy211.c),gpy211.o,prebuilt/gpy211.o)
     DRV_OBJS += phy_mac_sec.o
     DRV_OBJS += phy_mac_sec_list.o
     DRV_OBJS += sha256.o
     DRV_OBJS += ephy_led_init.o
+    DRV_OBJS += $(if $(wildcard $(CUR_DIR)/gpy211.c),gpy211.o,prebuilt/gpy211.o)
 
     EXTRA_CFLAGS += -DMAC_SF2_DUAL -DPHY_DSL_GPHY 
     EXTRA_CFLAGS += -DPHY_6756CLASS_SERDES -I$(CUR_DIR)/Serdes6756Class -DEXCLUDE_STD_HEADERS
     EXTRA_CFLAGS += -DPHY_EXT3 -DPHY_M2M -DARCHER_DEVICE -DDSL_DEVICES -DMACSEC_SUPPORT
-    EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx -DPHY_GPY211
+    EXTRA_CFLAGS += -DPHY_GPY211
+    EXTRA_CFLAGS += -I$(BRCMDRIVERS_DIR)/broadcom/include/bcm963xx
 endif
 
 endif

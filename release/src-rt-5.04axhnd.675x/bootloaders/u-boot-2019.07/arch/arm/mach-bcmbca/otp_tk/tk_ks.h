@@ -68,7 +68,9 @@ typedef enum _ks_data_type {
         KS_DATA_TYPE_OID=0x8,
         KS_DATA_TYPE_BROM_MODE=0x9,
         KS_DATA_TYPE_CUST_BROM_MODE=0xa,
-        KS_DATA_TYPE_MAX=0xb
+        KS_DATA_TYPE_DEV_KEY_128=0xb,
+        KS_DATA_TYPE_DEV_KEY_256=0xc,
+        KS_DATA_TYPE_MAX=0xd
 } ks_data_type_t;
 
 typedef enum _ks_data_state {
@@ -77,7 +79,8 @@ typedef enum _ks_data_state {
         KS_DATA_STATE_MFG_OEM_ENCR=0x2,
         KS_DATA_STATE_FLD_ENCR=0x3,
         KS_DATA_STATE_FLD_OEM_ENCR=0x4,
-        KS_DATA_STATE_MAX=0x5
+        KS_DATA_STATE_GEN_RAND=0x5,
+        KS_DATA_STATE_MAX=0x6
 } ks_data_state_t;
 
 #define KS_STAT_MSK 0xff

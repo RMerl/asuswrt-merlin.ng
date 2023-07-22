@@ -1,0 +1,143 @@
+# Format of file
+# <reg-name> <CRn> <opc1> <CRm> <opc2> <Type> <Description>
+# lines beginning with '@' will be printed as additional comments
+
+@ Based on register description in
+@ ARM Architecture Reference Manual
+@ ARMv7-A and ARMv7-R edition
+@ Issue C.c
+@
+
+@ B3.18.1 Identification registers, functional group
+AIDR     c0 1 c0 7 RO IMPLEMENTATION DEFINED      Auxiliary ID Register
+CCSIDR   c0 1 c0 0 RO Cache Size ID Registers
+CLIDR    c0 1 c0 1 RO Cache Level ID Register
+CSSELR   c0 2 c0 0 RW Cache Size Selection Register
+CTR      c0 0 c0 1 RO Cache Type Register
+ID_AFR0  c0 0 c1 3 RO Auxiliary Feature Register 0
+ID_DFR0  c0 0 c1 2 RO Debug Feature Register 0
+ID_ISAR0 c0 0 c2 0 RO Instruction Set Attribute Register 0
+ID_ISAR1 c0 0 c2 1 RO Instruction Set Attribute Register 1
+ID_ISAR2 c0 0 c2 2 RO Instruction Set Attribute Register 2
+ID_ISAR3 c0 0 c2 3 RO Instruction Set Attribute Register 3
+ID_ISAR4 c0 0 c2 4 RO Instruction Set Attribute Register 4
+ID_ISAR5 c0 0 c2 5 RO Instruction Set Attribute Register 5
+ID_MMFR0 c0 0 c1 4 RO Memory Model Feature Register 0
+ID_MMFR1 c0 0 c1 5 RO Memory Model Feature Register 1
+ID_MMFR2 c0 0 c1 6 RO Memory Model Feature Register 2
+ID_MMFR3 c0 0 c1 7 RO Memory Model Feature Register 3
+ID_PFR0  c0 0 c1 0 RO Processor Feature Register 0
+ID_PFR1  c0 0 c1 1 RO Processor Feature Register 1
+MIDR     c0 0 c0 0 RO Main ID Register
+MPIDR    c0 0 c0 5 RO Multiprocessor Affinity Register
+REVIDR   c0 0 c0 6 RO Revision ID Register
+TCMTR    c0 0 c0 2 RO TCM Type Register
+TLBTR    c0 0 c0 3 RO TLB Type Register
+
+@ B3.18.2 Virtual memory control registers, functional group
+AMAIR0      c10 0 c3 0 RW Auxiliary Memory Attribute Indirection Register 0
+AMAIR1      c10 0 c3 1 RW Auxiliary Memory Attribute Indirection Register 1
+CONTEXTIDR  c13 0 c0 1 RW Context ID Register
+DACR        c3  0 c0 0 RW Domain Access Control Register
+MAIR0       c10 0 c2 0 RW Memory Attribute Indirection Register 0
+MAIR1       c10 0 c2 1 RW Memory Attribute Indirection Register 1
+NMRR        c10 0 c2 1 RW Normal Memory Remap Register
+PRRR        c10 0 c2 0 RW Primary Region Remap Register
+SCTLR       c1  0 c0 0 RW System Control Register
+TTBCR       c2  0 c0 2 RW Translation Table Base Control Register
+TTBR0       c2  0 c0 0 RW Translation Table Base Register 0
+TTBR0_64bit -   0 c2 - RW Translation Table Base Register 0
+TTBR1       c2  0 c0 1 RW Translation Table Base Register 1
+TTBR1_64bit -   1 c2 - RW Translation Table Base Register 1
+
+@ B3.18.3 PL1 Fault handling registers, functional group
+ADFSR c5 0 c1 0 RW Auxiliary Data Fault Status Register
+AIFSR c5 0 c1 1 RW Auxiliary Instruction Fault Status Register
+DFAR  c6 0 c0 0 RW Data Fault Address Register
+DFSR  c5 0 c0 0 RW Data Fault Status Register
+IFAR  c6 0 c0 2 RW Instruction Fault Address Register
+IFSR  c5 0 c0 1 RW Instruction Fault Status Register
+
+@ B3.18.4 Other system control registers, functional group
+ACTLR   c1  0 c0 1 RW IMPLEMENTATION DEFINED   Auxiliary Control Register
+CPACR   c1  0 c0 2 RW Coprocessor Access Control Register
+FCSEIDR c13 0 c0 0 RW  FCSE Process ID Register
+
+@ B3.18.6 Cache maintenance operations, functional group, VMSA
+BPIALL    c7 0 c5  6 WOD Branch predictor invalidate all
+BPIALLIS  c7 0 c1  6 WOD Branch predictor invalidate all            IS
+BPIMVA    c7 0 c5  7 WO  Branch predictor invalidate by MVA
+DCCIMVAC  c7 0 c14 1 WO  Data cache clean and invalidate by MVA     PoC
+DCCISW    c7 0 c14 2 WO  Data cache clean and invalidate by set/way
+DCCMVAC   c7 0 c10 1 WO  Data cache clean by MVA                    PoC
+DCCMVAU   c7 0 c11 1 WO  Data cache clean by MVA                    PoU
+DCCSW     c7 0 c10 2 WO  Data cache clean by set/way
+DCIMVAC   c7 0 c6  1 WO  Data cache invalidate by MVA               PoC
+DCISW     c7 0 c6  2 WO  Data cache invalidate by set/way
+ICIALLU   c7 0 c5  0 WOD Instruction cache invalidate all           PoU
+ICIALLUIS c7 0 c1  0 WOD Instruction cache invalidate all           PoU, IS
+ICIMVAU   c7 0 c5  1 WO  Instruction cache invalidate by MVA        PoU
+
+@ B3.18.7 TLB maintenance operations, functional group
+TLBIALL     c8 0 c7 0 WOD Invalidate entire unified TLB
+TLBIALLIS   c8 0 c3 0 WOD Invalidate entire unified TLB           IS
+TLBIASID    c8 0 c7 2 WO  Invalidate unified TLB by ASID
+TLBIASIDIS  c8 0 c3 2 WO  Invalidate unified TLB by ASID          IS
+TLBIMVAA    c8 0 c7 3 WO  Invalidate unified TLB by MVA, all ASID
+TLBIMVAAIS  c8 0 c3 3 WO  Invalidate unified TLB by MVA, all ASID IS
+TLBIMVA     c8 0 c7 1 WO  Invalidate unified TLB by MVA
+TLBIMVAIS   c8 0 c3 1 WO  Invalidate unified TLB by MVA           IS
+
+@ B3.18.8 Address translation operations, functional group
+ATS12NSOPR c7 0 c8 4 WO Stages 1 and 2 Non-secure only PL1 read
+ATS12NSOPW c7 0 c8 5 WO Stages 1 and 2 Non-secure only PL1 write
+ATS12NSOUR c7 0 c8 6 WO Stages 1 and 2 Non-secure only unprivileged read
+ATS12NSOUW c7 0 c8 7 WO Stages 1 and 2 Non-secure only unprivileged write
+ATS1CPR    c7 0 c8 0 WO Stage 1 Current state PL1 read
+ATS1CPW    c7 0 c8 1 WO Stage 1 Current state PL1 write
+ATS1CUR    c7 0 c8 2 WO Stage 1 Current state unprivileged read
+ATS1CUW    c7 0 c8 3 WO Stage 1 Current state unprivileged write
+ATS1HR     c7 4 c8 0 WO Stage 1 Hyp mode read
+ATS1HW     c7 4 c8 1 WO Stage 1 Hyp mode write
+PAR32      c7 0 c4 0 RW Physical Address Register
+PAR64      -  0 c7 - RW Physical Address Register
+
+@ B3.18.9 Miscellaneous operations, functional group
+TPIDRPRW c13 0 c0  4 RW PL1 only Thread ID Register
+TPIDRURO c13 0 c0  3 RW PL0 User Read-Only Thread ID Register
+TPIDRURW c13 0 c0  2 RW PL0 User Read/Write Thread ID Register
+
+@ B3.18.11 Security Extensions registers, functional group
+ISR   c12 0 c1 0 RO Interrupt Status Register
+MVBAR c12 0 c0 1 RW Monitor Vector Base Address Register
+NSACR c1  0 c1 2 RW Non-Secure Access Control Register
+SCR   c1  0 c1 0 RW Secure Configuration Register
+SDER  c1  0 c1 1 RW Secure Debug Enable Register
+VBAR  c12 0 c0 0 RW Vector Base Address Register
+
+@ B8.2 Generic Timer registers summary
+CNTP_TVAL c14 0 c2  0 RW PL1 Physical TimerValue register
+CNTP_CTL  c14 0 c2  1 RW PL1 Physical Timer Control register
+CNTV_TVAL c14 0 c3  0 RW Virtual TimerValue register
+CNTV_CTL  c14 0 c3  1 RW Virtual Timer Control register
+CNTVCT    -   1 c14 - RO Virtual Count register
+CNTP_CVAL -   2 c14 - RW PL1 Physical Timer CompareValue register
+CNTV_CVAL -   3 c14 - RW Virtual Timer CompareValue register
+CNTVOFF   -   4 c14 - RW Virtual Offset register
+
+@ Table C12-7 Performance Monitors register summary
+PMCR       c9 0 c12 0 RW Performance Monitors Control Register
+PMCNTENSET c9 0 c12 1 RW Performance Monitors Count Enable Set register
+PMCNTENCLR c9 0 c12 2 RW Performance Monitors Count Enable Clear register
+PMOVSR     c9 0 c12 3 RW Performance Monitors Overflow Flag Status Register
+PMSWINC    c9 0 c12 4 WO Performance Monitors Software Increment register
+PMSELR     c9 0 c12 5 RW Performance Monitors Event Counter Selection Register
+PMCEID0    c9 0 c12 6 RO Performance Monitors Common Event Identification reg 0
+PMCEID1    c9 0 c12 7 RO Performance Monitors Common Event Identification reg 1
+PMCCNTR    c9 0 c13 0 RW Performance Monitors Cycle Count Register
+PMXEVTYPER c9 0 c13 1 RW Performance Monitors Event Type Select Register
+PMXEVCNTR  c9 0 c13 2 RW Performance Monitors Event Count Register
+PMUSERENR  c9 0 c14 0 RW Performance Monitors User Enable Register
+PMINTENSET c9 0 c14 1 RW Performance Monitors Interrupt Enable Set register
+PMINTENCLR c9 0 c14 2 RW Performance Monitors Interrupt Enable Clear register
+PMOVSSET   c9 0 c14 3 RW Performance Monitors Overflow Flag Status Set register

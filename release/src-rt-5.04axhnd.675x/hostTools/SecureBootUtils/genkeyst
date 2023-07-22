@@ -18,9 +18,11 @@ my $usage = qq(Repeat args  to form input for keystore
     req=<val> Secure boot request (MFG or FLD, MFG or OP)
     abort_time=<val> abort delay in seconds
     mid=<val> hex char 
-    oid=<val> hex cahr 
+    oid=<val> hex char 
     ek=<val> file of ROE  encrypted fld key 
-    iv=<val> file of ROE encrypte fld vector 
+    iv=<val> file of ROE encrypted fld vector 
+    devkey=<val> if equal val=rand  will request to generate random key from TK library otherwise
+			hexchar  
     hash=<val> file of fld rot hash
     byteorder=<val> big/little  
     out=<val> dump to file ; 

@@ -1,0 +1,167 @@
+#include "inc/6753.dtsi"
+
+/ {
+        model = "RTAX9000";
+
+	memory_controller {
+		memcfg = <(BP_DDR_TYPE_DDR4            | \
+            BP_DDR_SPEED_1200_17_17_17         | \
+            BP_DDR_TOTAL_SIZE_512MB            | \
+            BP_DDR_DEVICE_WIDTH_16             | \
+            BP_DDR_TOTAL_WIDTH_16BIT           | \
+            BP_DDR_SSC_CONFIG_1)>;
+	};
+
+    xfp_sfp: xfp_sfp {
+        compatible = "brcm,sfp";
+        i2c-bus = <&i2c0>;
+        status = "disabled";
+    };
+
+    wan_serdes {
+        compatible = "brcm,pon-drv";
+        trx = <&xfp_sfp>;
+        status = "okay";
+    };
+};
+
+&nand {
+	status = "okay";
+};
+&wdt {
+	status = "okay";
+};
+&uart0 {
+	status = "okay";
+};
+
+&usb_ctrl {
+    pinctrl-names = "default";
+    pinctrl-0 = <&usb0_pwr_pins &usb1_pwr_pins>;
+    xhci-enable;
+    status = "okay";
+};
+&usb0_ehci {
+    status = "okay";
+};
+&usb0_xhci {
+    status = "okay";
+};
+&usb0_ohci {
+    status = "okay";
+};
+&usb1_ehci {
+    status = "okay";
+};
+&usb1_ohci {
+    status = "okay";
+};
+
+&pincontroller {
+    pinctrl-names = "default";
+    pinctrl-0 = <&c0_femctrl_3_pin_87 &c0_femctrl_4_pin_88 &c0_femctrl_5_pin_89 \
+                 &c1_femctrl_3_pin_93 &c1_femctrl_4_pin_94 &c1_femctrl_5_pin_95 >;
+};
+
+&rgmii {
+        rgmii-disabled;
+        status = "okay";
+};
+
+&egphy {
+    base-addr = <2>;
+};
+
+&mdio {
+    phy2:2 {
+        status = "okay";
+    };
+    phy3:3 {
+        status = "okay";
+    };
+    phy4:4 {
+        status = "okay";
+    };
+    phy5:5 {
+        status = "okay";
+    };
+
+    phy_detect:detect {
+        compatible = "brcm,bcaphy";
+        phy-type = "EXT3";
+        reg = <0x15>;
+        2500-Base-R;
+        caps-no-hdx;
+        caps-no-100;
+        caps-no-10;
+        status = "okay";
+    };
+
+    phy_ext_serdes: ext_serdes {
+        compatible = "brcm,bcaphy";
+        phy-type = "EXT3";
+        reg = <0x13>;
+        caps-no-10000;
+        caps-no-5000;
+        status = "okay";
+    };
+
+    phy_serdes: serdes {
+        phy-handle = <&phy_ext_serdes>;
+        status = "okay";
+    };
+};
+
+&switch0 {
+    pinctrl-names = "default";
+    pinctrl-0 = <&per_mdc_pin_68 &per_mdio_pin_69>;
+
+        ports {
+                port0@0 {
+                        phy-handle = <&phy2>;
+                        status = "okay";
+                };
+
+                port1@1 {
+                        phy-handle = <&phy3>;
+                        status = "okay";
+                };
+
+                port2@2 {
+                        phy-handle = <&phy4>;
+                        status = "okay";
+                };
+
+                port3@3 {
+                        phy-handle = <&phy5>;
+                        status = "okay";
+                };
+
+                port5@5 {
+                        phy-handle = <&phy_serdes>;
+                        phy-mode = "hsgmii";
+                        status = "okay";
+                };
+
+                port_detect@6 {
+                        phy-handle = <&phy_detect>;
+                        phy-mode = "xfi";
+			status = "okay";
+                };
+        };
+};
+
+&legacy_leds {
+};
+
+&led_ctrl {
+};
+
+#if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)
+&pcie0 {
+    status = "okay";
+};
+&pcie1 {
+    status = "okay";
+};
+#endif

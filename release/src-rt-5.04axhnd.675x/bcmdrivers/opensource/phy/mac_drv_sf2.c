@@ -176,7 +176,7 @@ void sf2_pseudo_mdio_switch_write(int page, int reg, void *data_in, int len)    
     spin_unlock_bh(&sf2_reg_access);
 
     if (i >= 20)
-        printk("sf2_wreg: mdio timeout!\n");
+        printk("sf2_wreg: mdio Timeout!\n");
 }
 EXPORT_SYMBOL(sf2_pseudo_mdio_switch_write);
 

@@ -47,7 +47,7 @@ BRCM_GLIBC=y
 #
 # File system selection
 #
-BCM_FLASH_LAYOUT_OPTIONS="options_4908_nand,options_4908_emmc"
+BCM_FLASH_LAYOUT_OPTIONS="options_4908_nand"
 # BRCM_ROOTFS_SQUASHFS is not set
 BRCM_ROOTFS_ALL=y
 # BRCM_ROOTFS_CONFIG is not set

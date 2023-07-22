@@ -1,0 +1,5 @@
+config NETFILTER_ROUTER_BOOST
+        tristate  'support Router Boost'
+		depends on NET && INET && NETFILTER
+        help
+          support ASUS OPPO Router Boost.

@@ -16,11 +16,11 @@ ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_63146_4912_6813_6855_),)
     DRV_OBJS += unimac_drv_impl2.o
 endif
 
-ifeq ($(strip ${BRCM_CHIP}),4908)
-    DRV_OBJS += mdio_drv_sf2.o
-    DRV_OBJS += dt_access.o
-    DRV_OBJS += mdio_drv_common.o
-endif
+#ifeq ($(strip ${BRCM_CHIP}),4908)
+#    DRV_OBJS += mdio_drv_sf2.o
+#    DRV_OBJS += dt_access.o
+#    DRV_OBJS += mdio_drv_common.o
+#endif
 ifneq ($(findstring _$(strip $(BRCM_CHIP))_,_6858_6846_6856_6878_63178_47622_63146_4912_6813_6855_6756_),)
     DRV_OBJS += mac_drv.o
     DRV_OBJS += bus_drv.o

@@ -315,6 +315,19 @@ void board_init_f(ulong dummy)
 		hang();
 	}
 
+	{
+		u32 pdata[32] = {0};
+		int rc = 0;
+		//rng_get_rand(pdata, 32);
+		//printf("rand data res %d data: %x %x %x %x %x %x %x %x\n",rc, pdata[0],pdata[1],pdata[2],pdata[3],pdata[4],pdata[5],pdata[6],pdata[7] );
+
+		rc = bcm_sec_get_dev_spec_key( pdata, 32);
+		//printf("devspec: res %d data: %x %x %x %x \n",rc, pdata[0],pdata[1],pdata[2],pdata[3] );
+		printf("devspec res %d data: %x %x %x %x %x %x %x %x\n",rc, pdata[0],pdata[1],pdata[2],pdata[3],pdata[4],pdata[5],pdata[6],pdata[7] );
+		*((volatile u32*)0xff800600)|=0x6;
+		//asm("1: b 1b"); 
+	}
+
 	bcm_sec_init();
 #if defined(BUILD_TAG)
 	printf("$SPL: "BUILD_TAG" $\n");

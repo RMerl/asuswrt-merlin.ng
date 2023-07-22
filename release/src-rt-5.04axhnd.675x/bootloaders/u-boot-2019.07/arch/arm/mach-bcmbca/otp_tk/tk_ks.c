@@ -19,6 +19,9 @@
 #include <fdtdec.h>
 #include "bcm_secure.h"
 #include "tk_ks.h"
+#include "bcm_rng.h"
+#include "asm/arch/rng.h"
+
 
 enum ks_obj_state {
         KS_OBJ_INACTIVE = 0,
@@ -85,10 +88,12 @@ static inline ks_err_t ks_type2size(ks_data_type_t data_type, u32 *size)
         switch(data_type) {
                 case KS_DATA_TYPE_KEY_AES_CBC_128_IV:
                 case KS_DATA_TYPE_KEY_AES_CBC_128_EK:
+                case KS_DATA_TYPE_DEV_KEY_128:
                         sz = KS_AES_128_CBC_SZ;
                         break;  
                 case KS_DATA_TYPE_KEY_AES_CBC_256_EK:
                 case KS_DATA_TYPE_KEY_AES_CBC_256_IV:
+                case KS_DATA_TYPE_DEV_KEY_256:
                         sz = KS_AES_256_CBC_SZ;
                         break;  
                 case KS_DATA_TYPE_RSA_PUB:
@@ -256,6 +261,10 @@ static ks_err_t ks_get_data(ks_key_info_t* key_info,
                         break;
                 case KS_DATA_STATE_RAW:
                         memcpy(data, &key_info->data[0], data_sz);
+                        break;
+                case KS_DATA_STATE_GEN_RAND:
+			//printk("Requested RAND\n");
+			rng_get_rand(data, data_sz);		
                         break;
                 default:
                         goto err;

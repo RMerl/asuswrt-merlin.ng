@@ -4,7 +4,7 @@
 	model="RP-AX58";
 
 	memory_controller {
-		memcfg = <(BP_DDR_SPEED_1067_14_14_14 | \
+		memcfg = <(BP_DDR_SPEED_933_13_13_13 | \
 			BP_DDR_TOTAL_SIZE_256MB    | \
 			BP_DDR_DEVICE_WIDTH_16     | \
 			BP_DDR_TOTAL_WIDTH_16BIT   | \

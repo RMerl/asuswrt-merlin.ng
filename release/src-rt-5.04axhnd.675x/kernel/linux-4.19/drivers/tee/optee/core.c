@@ -517,37 +517,7 @@ static void optee_smccc_smc(unsigned long a0, unsigned long a1,
 			    unsigned long a6, unsigned long a7,
 			    struct arm_smccc_res *res)
 {
-#if defined(CONFIG_BCM_KF_OPTEE)
-	extern char _stext[], _etext[];
-#if defined(CONFIG_ARM64)
-	register long ret_addr asm ("x30");
-
-	/* Make SMC call and save x0-x3 into res */
-	__asm__ volatile(
-					"smc #0                    \n"
-					"mov x8, %0                \n"
-					"stp x0, x1, [x8]          \n"
-					"stp x2, x3, [x8, #0x10]   \n"
-					: : "r" (res) : "x8");
-#else
-	register long ret_addr asm ("r14");
-
-	/* Make SMC call (opcode: 0xE1600070) and save r0-r3 into res */
-	__asm__ volatile(
-					".long 0xE1600070          \n"
-					"mov r8, %0                \n"
-					"stm r8, {r0-r3}           \n"
-					: : "r" (res) : "r8");
-#endif
-	/* Make sure, this function was called from signed address range */
-	if ( (char*)ret_addr < _stext || (char*)ret_addr > _etext){
-		pr_info("ALERT!! System intrution detected by OP-TEE\n");
-		res->a0 = OPTEE_SMC_RETURN_UNKNOWN_FUNCTION;
-		return;
-	}
-#else
 	arm_smccc_smc(a0, a1, a2, a3, a4, a5, a6, a7, res);
-#endif
 }
 
 static void optee_smccc_hvc(unsigned long a0, unsigned long a1,

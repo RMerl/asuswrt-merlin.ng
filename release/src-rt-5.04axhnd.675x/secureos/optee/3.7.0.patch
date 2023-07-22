@@ -1,0 +1,274 @@
+diff --git a/core/arch/arm/cpu/cortex-a9.mk b/core/arch/arm/cpu/cortex-a9.mk
+index d794c6f..2a84e32 100644
+--- a/core/arch/arm/cpu/cortex-a9.mk
++++ b/core/arch/arm/cpu/cortex-a9.mk
+@@ -3,7 +3,7 @@ $(call force,CFG_ARM64_core,n)
+ $(call force,CFG_WITH_LPAE,n)
+ $(call force,CFG_HWSUPP_MEM_PERM_WXN,n)
+ $(call force,CFG_HWSUPP_MEM_PERM_PXN,n)
+-$(call force,CFG_SECURE_TIME_SOURCE_CNTPCT,n)
++$(call force,CFG_SECURE_TIME_SOURCE_CNTPCT,y)
+ arm32-platform-cpuarch 	:= cortex-a9
+ arm32-platform-cflags 	+= -mcpu=$(arm32-platform-cpuarch)
+ arm32-platform-aflags 	+= -mcpu=$(arm32-platform-cpuarch)
+diff --git a/core/arch/arm/include/arm32.h b/core/arch/arm/include/arm32.h
+index 5124085..339b135 100644
+--- a/core/arch/arm/include/arm32.h
++++ b/core/arch/arm/include/arm32.h
+@@ -274,6 +274,36 @@ static __always_inline uint32_t read_r7(void)
+ 	return val;
+ }
+ 
++#ifdef CORTEX_A9
++extern uint64_t get_counter_value(void);
++extern uint32_t get_counter_freq(void);
++
++static __always_inline  uint64_t read_cntpct(void)
++{
++	return get_counter_value();
++}
++
++static __always_inline  uint32_t read_cntfrq(void)
++{
++	return get_counter_freq();
++}
++
++static __always_inline  void write_cntfrq(uint32_t frq)
++{
++	frq = frq;
++}
++
++static __always_inline  uint32_t read_cntkctl(void)
++{
++	return 0;
++}
++
++static __always_inline  void write_cntkctl(uint32_t cntkctl)
++{
++	cntkctl = cntkctl;
++}
++#endif
++
+ #endif /*__ASSEMBLER__*/
+ 
+ #endif /*ARM32_H*/
+diff --git a/core/arch/arm/kernel/vfp_a32.S b/core/arch/arm/kernel/vfp_a32.S
+index a38e2b3..9ba0015 100644
+--- a/core/arch/arm/kernel/vfp_a32.S
++++ b/core/arch/arm/kernel/vfp_a32.S
+@@ -11,49 +11,73 @@
+ /* void vfp_save_extension_regs(uint64_t regs[VFP_NUM_REGS]); */
+ FUNC vfp_save_extension_regs , :
+ UNWIND(	.fnstart)
++#ifdef A9
++	nop
++#else
+ 	vstm	r0!, {d0-d15}
+ 	vstm	r0, {d16-d31}
+ 	bx	lr
++#endif
+ UNWIND(	.fnend)
+ END_FUNC vfp_save_extension_regs
+ 
+ /* void vfp_restore_extension_regs(uint64_t regs[VFP_NUM_REGS]); */
+ FUNC vfp_restore_extension_regs , :
+ UNWIND(	.fnstart)
++#ifdef A9
++	nop
++#else
+ 	vldm	r0!, {d0-d15}
+ 	vldm	r0, {d16-d31}
+ 	bx	lr
++#endif
+ UNWIND(	.fnend)
+ END_FUNC vfp_restore_extension_regs
+ 
+ /* void vfp_write_fpexc(uint32_t fpexc) */
+ FUNC vfp_write_fpexc , :
+ UNWIND(	.fnstart)
++#ifdef A9
++	nop
++#else
+ 	vmsr	fpexc, r0
+ 	bx	lr
++#endif
+ UNWIND(	.fnend)
+ END_FUNC vfp_write_fpexc
+ 
+ /* uint32_t vfp_read_fpexc(void) */
+ FUNC vfp_read_fpexc , :
+ UNWIND(	.fnstart)
++#ifdef A9
++	nop
++#else
+ 	vmrs	r0, fpexc
+ 	bx	lr
++#endif
+ UNWIND(	.fnend)
+ END_FUNC vfp_read_fpexc
+ 
+ /* void vfp_write_fpscr(uint32_t fpscr) */
+ FUNC vfp_write_fpscr , :
+ UNWIND(	.fnstart)
++#ifdef A9
++	nop
++#else
+ 	vmsr	fpscr, r0
+ 	bx	lr
++#endif
+ UNWIND(	.fnend)
+ END_FUNC vfp_write_fpscr
+ 
+ /* uint32_t vfp_read_fpscr(void) */
+ FUNC vfp_read_fpscr , :
+ UNWIND(	.fnstart)
++#ifdef A9
++	nop
++#else
+ 	vmrs	r0, fpscr
+ 	bx	lr
++#endif
+ UNWIND(	.fnend)
+ END_FUNC vfp_read_fpscr
+diff --git a/core/arch/arm/mm/core_mmu.c b/core/arch/arm/mm/core_mmu.c
+index 2de1fe2..890830e 100644
+--- a/core/arch/arm/mm/core_mmu.c
++++ b/core/arch/arm/mm/core_mmu.c
+@@ -1789,7 +1789,7 @@ static vaddr_t get_linear_map_end(void)
+ }
+ #endif
+ 
+-#if defined(CFG_TEE_CORE_DEBUG)
++#if 0 // defined(CFG_TEE_CORE_DEBUG)
+ static void check_pa_matches_va(void *va, paddr_t pa)
+ {
+ 	TEE_Result res;
+diff --git a/core/arch/arm/mm/core_mmu_v7.c b/core/arch/arm/mm/core_mmu_v7.c
+index f906d41..dd02209 100644
+--- a/core/arch/arm/mm/core_mmu_v7.c
++++ b/core/arch/arm/mm/core_mmu_v7.c
+@@ -634,8 +634,7 @@ void core_mmu_get_entry_primitive(const void *table, size_t level,
+ void core_mmu_get_user_va_range(vaddr_t *base, size_t *size)
+ {
+ 	if (base) {
+-		/* Leaving the first entry unmapped to make NULL unmapped */
+-		*base = 1 << SECTION_SHIFT;
++		*base = (8 << SECTION_SHIFT); /* BRCM_PATCH: Do not map user code below 8MB */
+ 	}
+ 
+ 	if (size)
+@@ -661,6 +660,19 @@ void core_mmu_set_user_map(struct core_mmu_user_map *map)
+ 	isb();
+ 
+ 	if (map) {
++		/*	ttbr0: Maps 0 - 32MB
++			ttbr1: Maps 32 - 4GB
++
++			OPTEE core is located below 8MB. Map that region to next ttbr0 (map->ttbr0)
++			before current ttbr0 get replaced by  map->ttbr0.
++		*/
++		uint32_t *curr_ttbr0 = (uint32_t *)(read_ttbr0() & 0xFFFFF000);
++		uint32_t *next_ttbr0 = (uint32_t *)(map->ttbr0 & 0xFFFFF000);
++
++		for(int i = 0; i < 8; i++)
++			next_ttbr0[i] = curr_ttbr0[i];
++
++		dsb();
+ 		write_ttbr0(map->ttbr0);
+ 		isb();
+ 		write_contextidr(map->ctxid);
+diff --git a/core/arch/arm/sm/sm_a32.S b/core/arch/arm/sm/sm_a32.S
+index 24dd8ce..af8fe7a 100644
+--- a/core/arch/arm/sm/sm_a32.S
++++ b/core/arch/arm/sm/sm_a32.S
+@@ -98,7 +98,7 @@ END_FUNC sm_restore_unbanked_regs
+  * of CPU mode isn't done until one mode is done. This means FIQ, IRQ and
+  * Async abort has to be masked while using stack_tmp.
+  */
+-LOCAL_FUNC sm_smc_entry , :
++FUNC sm_smc_entry , :
+ UNWIND(	.fnstart)
+ UNWIND(	.cantunwind)
+ 	srsdb	sp!, #CPSR_MODE_MON
+@@ -170,7 +170,7 @@ UNWIND(	.cantunwind)
+ 	 */
+ 
+ 	add	sp, sp, #(SM_CTX_NSEC + SM_NSEC_CTX_R0)
+-	b	.sm_exit
++	bl	optee_exit
+ 
+ .smc_from_nsec:
+ 	/*
+diff --git a/core/drivers/pl011.c b/core/drivers/pl011.c
+index e8c5528..9d12291 100644
+--- a/core/drivers/pl011.c
++++ b/core/drivers/pl011.c
+@@ -168,6 +168,13 @@ void pl011_init(struct pl011_data *pd, paddr_t pbase, uint32_t uart_clk,
+ 	pl011_flush(&pd->chip);
+ }
+ 
++
++void bcm_pl011_init(struct pl011_data *pd, paddr_t pbase)
++{
++	pd->base.pa = pbase;
++	pd->chip.ops = &pl011_ops;
++}
++
+ #ifdef CFG_DT
+ 
+ static struct serial_chip *pl011_dev_alloc(void)
+diff --git a/core/include/drivers/pl011.h b/core/include/drivers/pl011.h
+index b46880e..4ff9f17 100644
+--- a/core/include/drivers/pl011.h
++++ b/core/include/drivers/pl011.h
+@@ -18,4 +18,5 @@ struct pl011_data {
+ void pl011_init(struct pl011_data *pd, paddr_t pbase, uint32_t uart_clk,
+ 		uint32_t baud_rate);
+ 
++void bcm_pl011_init(struct pl011_data *pd, paddr_t pbase);
+ #endif /* PL011_H */
+diff --git a/core/include/optee_msg.h b/core/include/optee_msg.h
+index 72eaeae..6ae6b2e 100644
+--- a/core/include/optee_msg.h
++++ b/core/include/optee_msg.h
+@@ -185,7 +185,7 @@ struct optee_msg_arg {
+ 	uint32_t ret;
+ 	uint32_t ret_origin;
+ 	uint32_t num_params;
+-
++	uint32_t pid; /* BRCM_PATCH */
+ 	/* num_params tells the actual number of element in params */
+ 	struct optee_msg_param params[];
+ };
+diff --git a/scripts/gen_hashed_bin.py b/scripts/gen_hashed_bin.py
+index a76a62c..c9f59d4 100755
+--- a/scripts/gen_hashed_bin.py
++++ b/scripts/gen_hashed_bin.py
+@@ -161,23 +161,23 @@ def main():
+ 
+     if args.out is not None:
+         outf = args.out
+-        write_header_v1(outf, init_size, args, paged_size)
++        #write_header_v1(outf, init_size, args, paged_size)
+         append_to(outf, 0, tee_pager_fname)
+         append_to(outf, 0, tee_pageable_fname, init_bin_size)
+-        append_hashes(outf, tee_pageable_fname)
++        #append_hashes(outf, tee_pageable_fname)
+         append_to(outf, init_bin_size, tee_pageable_fname)
+         outf.close()
+ 
+     if args.out_header_v2 is not None:
+         outf = args.out_header_v2
+-        write_header_v2(outf, init_size, args, paged_size)
++        #write_header_v2(outf, init_size, args, paged_size)
+         outf.close()
+ 
+     if args.out_pager_v2 is not None:
+         outf = args.out_pager_v2
+         append_to(outf, 0, tee_pager_fname)
+         append_to(outf, 0, tee_pageable_fname, init_bin_size)
+-        append_hashes(outf, tee_pageable_fname)
++        #append_hashes(outf, tee_pageable_fname)
+         outf.close()
+ 
+     if args.out_pageable_v2 is not None:

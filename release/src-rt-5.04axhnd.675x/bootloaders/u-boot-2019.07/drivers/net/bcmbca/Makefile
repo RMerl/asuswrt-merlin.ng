@@ -82,7 +82,10 @@ obj-y += rtk/
 endif
 
 ifdef EBG19
+ifndef EBG15
+obj-y += rtk/
 obj-y += phy/
+endif
 endif
 
 ifdef CONFIG_BCMBCA_PHY

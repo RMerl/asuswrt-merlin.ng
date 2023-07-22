@@ -72,6 +72,11 @@ sub keyinfo {
                                  length $args->{ek}, 0x0300, $args->{ek}, # aes ek 
                                  length $args->{hash}, 0x0006, $args->{hash});
 	}
+	if (exists $args->{devkey}) {
+             	$key_info .= pack("($S$S)${e}a*", length($args->{devkey}), 
+               	               ($args->{devkey} eq "rand"? 0x050c:0x030c),
+                               $args->{devkey});
+	}
         return $key_info;
 }
 
@@ -128,8 +133,8 @@ my $help = qq[usage: $0
           hash = <file to encrypted fld iv content>
           mid =< hex> 
       2.Pass Two:  
-          keystore= <val> input file with keyinfo generated with first pass, signed with 
-                          prepended signature
+          keystore= <val> an input file with the keyinfo generated with the first pass signed with 
+                          a prepended signature
           out=<output file > 
     end
 ];

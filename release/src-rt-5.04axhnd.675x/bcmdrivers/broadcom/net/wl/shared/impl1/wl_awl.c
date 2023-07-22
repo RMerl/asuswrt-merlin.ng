@@ -430,7 +430,7 @@ wl_awl_pktlist_free(struct wl_info *wl, pktlist_t *pktlist)
  * -----------------------------------------------------------------------------
  */
 void
-wl_awl_pktlist_flush(pktlist_t *pktlist, struct net_device *dev)
+wl_awl_pktlist_flush(struct wl_info *wl, pktlist_t *pktlist, struct net_device *dev)
 {
 	struct sk_buff *skb;
 	int pkts;
@@ -445,7 +445,7 @@ wl_awl_pktlist_flush(pktlist_t *pktlist, struct net_device *dev)
 			skb->next = skb->prev = NULL;
 
 			if (skb->dev == dev) {
-				PKTFREE(PKT_OSH_NA, skb, FALSE);
+				PKTFREE(wl->pub->osh, skb, FALSE);
 			} else {
 				wl_awl_pktlist_add(pktlist, skb);
 			}
@@ -1240,12 +1240,12 @@ wl_awl_unregister_dev(struct net_device *dev)
 
 			/* Flush A2W packet SLL under lock */
 			WL_AWL_PKTLIST_LOCK(awl->rx.a2w_pktl_lock);
-			wl_awl_pktlist_flush(WL_AWL_RX_A2W_PKTL(awl), dev);
+			wl_awl_pktlist_flush(wlif->wl, WL_AWL_RX_A2W_PKTL(awl), dev);
 			WL_AWL_PKTLIST_UNLK(awl->rx.a2w_pktl_lock);
 
 			/* Flush W2A packet SLL */
 			WL_LOCK(wlif->wl);
-			wl_awl_pktlist_flush(WL_AWL_RX_W2A_PKTL(awl), dev);
+			wl_awl_pktlist_flush(wlif->wl, WL_AWL_RX_W2A_PKTL(awl), dev);
 			WL_UNLOCK(wlif->wl);
 		}
 	}

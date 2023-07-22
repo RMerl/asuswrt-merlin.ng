@@ -986,6 +986,7 @@ CONFIG_NETFILTER_XT_MATCH_U32=m
 # CONFIG_IP_SET is not set
 # CONFIG_IP_VS is not set
 # CONFIG_NETFILTER_ASUS_FILTER is not set
+# CONFIG_NETFILTER_ROUTER_BOOST is not set
 
 #
 # IP: Netfilter Configuration

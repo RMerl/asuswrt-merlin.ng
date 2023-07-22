@@ -12,6 +12,7 @@
 #include <u-boot/sha256.h>
 #include <uboot_aes.h>
 #include "bcm_secure.h"
+#include "bcm_rng.h"
 #include "tk_ks.h"
 
 //#define DRY_RUN
@@ -156,6 +157,16 @@ static inline int sec_tk_commit_req(ks_req_state_t req_state,
 				if (rc) {
                                         goto err;
 				}
+                                if (ks_get_data_info(KS_DATA_TYPE_DEV_KEY_256, 
+                                        KS_DATA_STATE_GEN_RAND, ek_iv) == KS_ERR_SUCC) {
+                                	ntohl_array((u32*)ek_iv,(KS_AES_128_CBC_SZ*2)/sizeof(u32)); 
+					/* KRNG gen random key */
+					rc = sec_tk_fuse_verify(SOTP_MAP_KEY_DEV_SPECIFIC, 
+						ek_iv, KS_AES_128_CBC_SZ*2);
+					if (rc) {
+                                        	goto err;
+					}
+                                }
                         }
                         break;
                 default:
@@ -242,6 +253,7 @@ int sec_tk()
                         msg = "NSEC\n";
                         break;
                 case SEC_STATE_GEN3_MFG:
+			rng_init();
                         msg = "MFG\n";
                         break;
                 default:

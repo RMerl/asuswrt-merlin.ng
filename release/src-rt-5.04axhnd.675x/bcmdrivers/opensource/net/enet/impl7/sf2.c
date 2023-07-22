@@ -3022,6 +3022,8 @@ int enetxapi_post_sf2_config(void)
     return 0;
 }
 
+//#define EBG19_RTL8367S
+
 static int tr_find_sf2_sw(enetx_port_t *sw, void *_ctx)
 {
     int unit = IS_ROOT_SW(sw)?0:1;
@@ -3038,7 +3040,7 @@ static int tr_find_sf2_sw(enetx_port_t *sw, void *_ctx)
     if (sw->s.reset_gpiod)
     {
         struct gpio_desc *gpio = sw->s.reset_gpiod;
-#if defined(CONFIG_BCM94908)
+#if defined(CONFIG_BCM94908) && !defined(EBG19_RTL8367S)
 	uint8_t val8;
 	uint16_t val16;
 #endif
@@ -3047,7 +3049,8 @@ static int tr_find_sf2_sw(enetx_port_t *sw, void *_ctx)
         gpiod_set_value(gpio, 1);   /* reset active */
         mdelay(100);
         gpiod_set_value(gpio, 0);   /* reset clear */
-#if defined(CONFIG_BCM94908)
+	printk("%s : reset gpio done\n", __func__);
+#if defined(CONFIG_BCM94908) && !defined(EBG19_RTL8367S)
 	// lifting external unmanged out of reset
 	mdelay(100);
 

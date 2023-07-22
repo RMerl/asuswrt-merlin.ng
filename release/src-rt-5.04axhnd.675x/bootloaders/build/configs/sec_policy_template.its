@@ -43,7 +43,7 @@ security_policy {
 			// nonsec - Blocks access for nonsecure masters only.
 			// prov   - unlock access for nonsecure provisioning by 
 			//          locking populated data only (sotp)
-			sotp-lock = "prov";
+			sotp-lock = "none";
 			rng-lock = "none";
 		};
 	};

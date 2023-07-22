@@ -151,31 +151,42 @@ func save_atf_sysreg
 
     read_scr r4
     ldr r5, =atf_scr
+    add r5, r5, r1
     str r4, [r5]
     read_vbar r4
     ldr r5, =atf_vbar
+    add r5, r5, r1
     str r4, [r5]
     read_mair0 r4
     ldr r5, =atf_mair0
+    add r5, r5, r1
     str r4, [r5]
     read_mair1 r4
     ldr r5, =atf_mair1
+    add r5, r5, r1
     str r4, [r5]
     read_dacr r4
     ldr r5, =atf_dacr
+    add r5, r5, r1
     str r4, [r5]
     read_ttbcr r4
     ldr r5, =atf_ttbcr
+    add r5, r5, r1
     str r4, [r5]
     read_mvbar r4
     ldr r5, =atf_mvbar
+    add r5, r5, r1
     str r4, [r5]
     read_ttbr0 r4
     ldr r5, =atf_ttbr0
+    add r5, r5, r1
     str r4, [r5]
     read_ttbr1 r4
     ldr r5, =atf_ttbr1
+    add r5, r5, r1
     str r4, [r5]
+    isb
+    dsb
     pop {r1, r4,r5}
     bx lr
 endfunc save_atf_sysreg
@@ -185,57 +196,62 @@ endfunc save_atf_sysreg
  *
  */
 func restore_atf_sysreg
-    push {r1,r9,r10}
-
-    mrc p15, 0, r1, c0, c0, 5
-    and r1, r1, #0xff
-    lsl r1, r1, #2
+    mrc p15, 0, r8, c0, c0, 5
+    and r8, r8, #0xff
+    lsl r8, r8, #2
 
     ldr r9, =atf_sctlr
-    add r9, r9, r1
-    ldr r10, [r9]
-    write_sctlr r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_sctlr r11
     ldr r9, =atf_cpsr
-    add r9, r9, r1
-    ldr r10, [r9]
-    write_cpsr r10
-
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_cpsr r11
     ldr r9, =atf_scr
-    ldr r10, [r9]
-    write_scr r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_scr r11
     ldr r9, =atf_vbar
-    ldr r10, [r9]
-    write_vbar r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_vbar r11
     ldr r9, =atf_mair0
-    ldr r10, [r9]
-    write_mair0 r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_mair0 r11
     ldr r9, =atf_mair1
-    ldr r10, [r9]
-    write_mair1 r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_mair1 r11
     ldr r9, =atf_dacr
-    ldr r10, [r9]
-    write_dacr r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_dacr r11
     ldr r9, =atf_ttbcr
-    ldr r10, [r9]
-    write_ttbcr r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_ttbcr r11
     ldr r9, =atf_mvbar
-    ldr r10, [r9]
-    write_mvbar r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_mvbar r11
     ldr r9, =atf_ttbr0
-    ldr r10, [r9]
-    write_ttbr0 r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_ttbr0 r11
     ldr r9, =atf_ttbr1
-    ldr r10, [r9]
-    write_ttbr1 r10
+    add r9, r9, r8
+    ldr r11, [r9]
+    write_ttbr1 r11
 
-    invalidate_tlb r10
-
-    pop {r1,r9,r10}
+    invalidate_tlb r11
     bx lr
 endfunc restore_atf_sysreg
 
 
 .section .data
+.align 8
 atf_cpsr:
 .word 0x1234
 .word 0x1234
@@ -246,24 +262,50 @@ atf_sctlr:
 .word 0x1234
 .word 0x1234
 .word 0x1234
-
 atf_scr:
+.word 0x1234
+.word 0x1234
+.word 0x1234
 .word 0x1234
 atf_vbar:
 .word 0x1234
+.word 0x1234
+.word 0x1234
+.word 0x1234
 atf_mair0:
+.word 0x1234
+.word 0x1234
+.word 0x1234
 .word 0x1234
 atf_mair1:
 .word 0x1234
+.word 0x1234
+.word 0x1234
+.word 0x1234
 atf_dacr:
+.word 0x1234
+.word 0x1234
+.word 0x1234
 .word 0x1234
 atf_ttbcr:
 .word 0x1234
+.word 0x1234
+.word 0x1234
+.word 0x1234
 atf_mvbar:
+.word 0x1234
+.word 0x1234
+.word 0x1234
 .word 0x1234
 atf_ttbr0:
 .word 0x1234
+.word 0x1234
+.word 0x1234
+.word 0x1234
 atf_ttbr1:
+.word 0x1234
+.word 0x1234
+.word 0x1234
 .word 0x1234
 
 #endif

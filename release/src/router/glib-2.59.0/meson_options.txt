@@ -1,0 +1,91 @@
+option('runtime_libdir',
+       type : 'string',
+       value : '',
+       description : 'install runtime libraries relative to libdir')
+
+option('iconv',
+       type : 'combo',
+       choices : ['libc', 'gnu', 'native'],
+       value : 'libc',
+       description : 'iconv implementation to use (\'libc\' = \'Part of the C stdlib\'; \'gnu\' = \'GNU\'s iconv\'; \'native\' = \'A separate iconv\')')
+
+option('charsetalias_dir',
+       type : 'string',
+       value : '',
+       description : 'directory for charset.alias dir (default to \'libdir\' if unset)')
+
+option('gio_module_dir',
+       type : 'string',
+       value : '',
+       description : 'load gio modules from this directory (default to \'libdir/gio/modules\' if unset)')
+
+option('selinux',
+       type : 'feature',
+       value : 'auto',
+       description : 'build with selinux support')
+
+option('xattr',
+       type : 'boolean',
+       value : true,
+       description : 'build with xattr support')
+
+option('libmount',
+       type : 'boolean',
+       value : true,
+       description : 'build with libmount support')
+
+option('internal_pcre',
+       type : 'boolean',
+       value : false,
+       description : 'whether to use internal PCRE')
+
+option('man',
+       type : 'boolean',
+       value : false,
+       description : 'generate man pages (requires xsltproc)')
+
+option('dtrace',
+       type : 'boolean',
+       value : false,
+       description : 'include tracing support for dtrace')
+
+option('systemtap',
+       type : 'boolean',
+       value : false,
+       description : 'include tracing support for systemtap')
+
+option('tapset_install_dir',
+       type : 'string',
+       value : '',
+       description : 'path where systemtap tapsets are installed')
+
+option('gtk_doc',
+       type : 'boolean',
+       value : false,
+       description : 'use gtk-doc to build documentation')
+
+option('bsymbolic_functions',
+       type : 'boolean',
+       value : true,
+       description : 'link with -Bsymbolic-functions if supported')
+
+option('force_posix_threads',
+       type : 'boolean',
+       value : false,
+       description : 'Also use posix threads in case the platform defaults to another implementation (on Windows for example)')
+
+option('fam',
+       type : 'boolean',
+       value : false,
+       description : 'Use fam for file system monitoring')
+
+option('installed_tests',
+       type : 'boolean',
+       value : false,
+       description : 'enable installed tests')
+
+option('nls',
+       type : 'feature',
+       value : 'auto',
+       yield: true,
+       description : 'Enable native language support (translations)')

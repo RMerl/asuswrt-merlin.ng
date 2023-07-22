@@ -1,0 +1,76 @@
+<schemalist>
+  <schema id="test">
+
+    <key name="y-min" type="y">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="y-max" type="y">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+
+    <key name="n-min" type="n">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="n-max" type="n">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+
+    <key name="q-min" type="q">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="q-max" type="q">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+
+    <key name="i-min" type="i">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="i-max" type="i">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+
+    <key name="u-min" type="u">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="u-max" type="u">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+
+    <key name="x-min" type="x">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="x-max" type="x">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+
+    <key name="t-min" type="t">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="t-max" type="t">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+
+    <key name="d-min" type="d">
+      <range min="0"/>
+      <default>0</default>
+    </key>
+    <key name="d-max" type="d">
+      <range max="0"/>
+      <default>0</default>
+    </key>
+  </schema>
+</schemalist>

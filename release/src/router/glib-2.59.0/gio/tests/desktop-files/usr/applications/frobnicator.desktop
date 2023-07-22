@@ -1,0 +1,9 @@
+[Desktop Entry]
+Name=Frobnicator
+Comment=Frobnicate your life!
+Exec=/does-not-exist
+Icon=frobnicator
+StartupNotify=true
+Terminal=false
+Type=Application
+Categories=GNOME;GTK;Utilities

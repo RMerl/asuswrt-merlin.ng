@@ -1,0 +1,7 @@
+<schemalist>
+  <schema id="no-default" path="/tests/">
+    <key name="bla" type="as">
+      <default><![CDATA[['<bla>','<bla>']]]></default>
+    </key>
+  </schema>
+</schemalist>

@@ -1,0 +1,57 @@
+<?xml version='1.0' encoding='utf-8'?>
+
+<Project xmlns='http://usefulinc.com/ns/doap#'
+         xmlns:foaf='http://xmlns.com/foaf/0.1/'
+         xmlns:rdf='http://www.w3.org/1999/02/22-rdf-syntax-ns#'
+         xmlns:gnome='http://api.gnome.org/doap-extensions#'>
+
+  <name xml:lang='en'>gvdb</name>
+  <shortdesc xml:lang='en'>GVariant Database file</shortdesc>
+  <description xml:lang='en'>
+    A simple database file format that stores a mapping from strings to
+    GVariant values in a way that is extremely efficient for lookups.
+
+    The database is written once and can not be modified.
+
+    Included here is reader code and a first-pass implementation of a
+    writer (that does not currently produce particularly optimised
+    output).
+
+    It is intended that this code be used by copy-pasting into your
+    project or by making use of git-merge(1).
+  </description>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Matthias Clasen</foaf:name>
+      <foaf:mbox rdf:resource="mailto:mclasen@redhat.com"/>
+      <gnome:userid>matthiasc</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Allison Ryan Lortie</foaf:name>
+      <foaf:mbox rdf:resource="mailto:desrt@desrt.ca"/>
+      <gnome:userid>desrt</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Philip Withnall</foaf:name>
+      <foaf:mbox rdf:resource="mailto:philip@tecnocode.co.uk"/>
+      <foaf:mbox rdf:resource="mailto:withnall@endlessm.com"/>
+      <gnome:userid>pwithnall</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Emmanuele Bassi</foaf:name>
+      <foaf:mbox rdf:resource="mailto:ebassi@gnome.org"/>
+      <gnome:userid>ebassi</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+</Project>

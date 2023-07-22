@@ -1,0 +1,27 @@
+Before you start testing it would be good to explain how it works.
+
+The script works in three modes:
+ 1. read-only (no special arguments) - suitable for read-only backends. Just 
+        create the sample structure using the second mode, pack it (tar -p is 
+        preffered to preserve unix modes) and put it on a reachable place.
+ 2. create-structure - only creates reference structure for later testing 
+        in read-only mode
+ 3. write mode - full test suite, creates testing structure and performs all 
+        read and write tests. Please note the delete/move tests are included 
+        in this mode and target directory structure is unusable after the script
+        is finished.
+
+
+To see the list of available parameters just run 'live-g-file --help'
+
+
+Notes:
+ - it's advised to clean target directory first, otherwise some tests might fail
+   (i.e. the tests creating testing structure)
+
+
+Tested:
+ - local filesystem (/tmp/...)
+ - file:// uri (file:///tmp/...)
+ - locatest:// gvfs backend (localtest:///tmp/...)
+ - FAT16 filesystem (no POSIX extensions)

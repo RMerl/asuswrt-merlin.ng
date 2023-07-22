@@ -1,0 +1,2 @@
+glib/tests/utils.c
+tests/gio-ls.c

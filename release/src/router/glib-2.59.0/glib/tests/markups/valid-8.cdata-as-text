@@ -1,0 +1,5 @@
+ELEMENT 'foo'
+  TEXT ''
+  TEXT ' some <<<<>>>> CDATA '
+  TEXT ''
+END 'foo'

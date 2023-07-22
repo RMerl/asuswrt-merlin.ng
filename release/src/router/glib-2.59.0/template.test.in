@@ -1,0 +1,3 @@
+[Test]
+Type=session
+Exec=@installed_tests_dir@/@program@

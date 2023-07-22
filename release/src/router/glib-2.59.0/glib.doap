@@ -1,0 +1,64 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Project xmlns:rdf="http://www.w3.org/1999/02/22-rdf-syntax-ns#"
+         xmlns:rdfs="http://www.w3.org/2000/01/rdf-schema#"
+         xmlns:foaf="http://xmlns.com/foaf/0.1/"
+         xmlns:gnome="http://api.gnome.org/doap-extensions#"
+         xmlns="http://usefulinc.com/ns/doap#">
+
+  <name>GLib</name>
+  <shortname>glib</shortname>
+
+  <shortdesc xml:lang="en">Low level core library</shortdesc>
+
+  <description xml:lang="en">GLib is the low-level core library that forms the basis for projects such as GTK+ and GNOME. It provides data structure handling for C, portability wrappers, and interfaces for such runtime functionality as an event loop, threads, dynamic loading, and an object system.</description>
+
+  <homepage rdf:resource="http://www.gtk.org" />
+  <license rdf:resource="http://usefulinc.com/doap/licenses/lgpl" />
+  <bug-database rdf:resource="https://gitlab.gnome.org/GNOME/glib/issues/new"/>
+  <download-page rdf:resource="http://download.gnome.org/sources/glib/" />
+  <mailing-list rdf:resource="mailto:gtk-devel-list@gnome.org" />
+  <category rdf:resource="http://api.gnome.org/doap-extensions#core" />
+
+  <programming-language>C</programming-language>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Matthias Clasen</foaf:name>
+      <foaf:mbox rdf:resource="mailto:mclasen@redhat.com"/>
+      <gnome:userid>matthiasc</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Allison Ryan Lortie</foaf:name>
+      <foaf:mbox rdf:resource="mailto:desrt@desrt.ca"/>
+      <gnome:userid>desrt</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Philip Withnall</foaf:name>
+      <foaf:mbox rdf:resource="mailto:philip@tecnocode.co.uk"/>
+      <foaf:mbox rdf:resource="mailto:withnall@endlessm.com"/>
+      <gnome:userid>pwithnall</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <maintainer>
+    <foaf:Person>
+      <foaf:name>Emmanuele Bassi</foaf:name>
+      <foaf:mbox rdf:resource="mailto:ebassi@gnome.org"/>
+      <gnome:userid>ebassi</gnome:userid>
+    </foaf:Person>
+  </maintainer>
+
+  <repository>
+    <GitRepository>
+      <browse rdf:resource="https://gitlab.gnome.org/GNOME/glib/tree/master"/>
+      <location rdf:resource="https://gitlab.gnome.org/GNOME/glib.git"/>
+    </GitRepository>
+  </repository>
+
+</Project>

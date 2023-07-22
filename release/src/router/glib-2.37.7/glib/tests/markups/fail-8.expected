@@ -1,3 +1,0 @@
-ELEMENT 'foo'
-END 'foo'
-ERROR Error on line 1 char 6: Odd character '}', expected a '>' character to end the empty-element tag 'foo'

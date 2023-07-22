@@ -1,0 +1,4 @@
+[Test]
+Type=session
+Exec=@installed_tests_dir@/@program@ --tap
+Output=TAP

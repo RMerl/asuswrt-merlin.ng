@@ -1,0 +1,2 @@
+ELEMENT 'r'
+ERROR Error on line 1 char 4: Odd character “\xfc”, expected a “>” character to end the empty-element tag “r”

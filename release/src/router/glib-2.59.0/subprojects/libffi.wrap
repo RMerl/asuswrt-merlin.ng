@@ -1,0 +1,4 @@
+[wrap-git]
+directory=libffi
+url=https://github.com/centricular/libffi.git
+revision=meson

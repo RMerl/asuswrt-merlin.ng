@@ -1,0 +1,2 @@
+glib/tests/**.ini
+gio/tests/**.desktop

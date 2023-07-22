@@ -1,0 +1,145 @@
+<?xml version="1.0"?>
+<!DOCTYPE refentry PUBLIC "-//OASIS//DTD DocBook XML V4.5//EN"
+               "http://www.oasis-open.org/docbook/xml/4.5/docbookx.dtd" [
+]>
+<refentry id="glib-cross-compiling" revision="7 Aug 2018">
+<refmeta>
+<refentrytitle>Cross-compiling the GLib package</refentrytitle>
+<manvolnum>3</manvolnum>
+<refmiscinfo>GLib Library</refmiscinfo>
+</refmeta>
+
+<refnamediv>
+<refname>Cross-compiling the GLib Package</refname>
+<refpurpose>
+How to cross-compile GLib
+</refpurpose>
+</refnamediv>
+
+    <refsect1 id="cross">
+      <title>Building the Library for a different architecture</title>
+      <para>
+        Cross-compilation is the process of compiling a program or
+        library on a different architecture or operating system then
+        it will be run upon. GLib is slightly more difficult to 
+        cross-compile than many packages because much of GLib is
+        about hiding differences between different systems. 
+      </para>
+      <para>
+        These notes cover things specific to cross-compiling GLib;
+        for general information about cross-compilation, see the
+        <ulink url="http://mesonbuild.com/Cross-compilation.html">meson</ulink>
+        info pages.
+      </para>
+      <para>
+        GLib tries to detect as much information as possible about
+        the target system by compiling and linking programs without
+        actually running anything; however, some information GLib
+        needs is not available this way. This information needs
+        to be provided to meson via a ‘cross file’.
+      </para>
+      <para>
+        As an example of using a cross file, to cross compile for
+        the ‘MingW32’ Win64 runtime environment on a Linux system,
+        create a file <filename>cross_file.txt</filename> with the following
+        contents:
+      </para>
+      <programlisting> 
+[host_machine]
+system = 'windows'
+cpu_family = 'x86_64'
+cpu = 'x86_64'
+endian = 'little'
+
+[properties]
+c_args = []
+c_link_args = []
+
+[binaries]
+c = 'x86_64-w64-mingw32-gcc'
+cpp = 'x86_64-w64-mingw32-g++'
+ar = 'x86_64-w64-mingw32-ar'
+strip = 'x86_64-w64-mingw32-strip'
+pkgconfig = 'x86_64-w64-mingw32-pkg-config'
+windres = 'x86_64-w64-mingw32-windres'
+      </programlisting>
+      <para>
+        Then execute the following commands:
+      </para>
+      <programlisting>
+meson --cross_file cross_file.txt builddir
+      </programlisting>
+      <para>
+        The complete list of cross properties follows. Most
+         of these won't need to be set in most cases.
+      </para>
+    </refsect1>
+    <refsect1 id="cross-properties">
+      <title>Cross properties</title>
+      <formalpara>
+        <title>have_[function]</title>
+
+        <para>
+           When meson checks if a function is supported, the test can be
+           overridden by setting the
+           <literal>have_<replaceable>function</replaceable></literal> property
+           to <constant>true</constant> or <constant>false</constant>.
+           For example <programlisting>Checking for function "fsync" : YES</programlisting>
+           can be overridden by setting <programlisting>have_fsync = false</programlisting>
+        </para>
+      </formalpara>
+      <formalpara>
+        <title>growing_stack=[true/false]</title>
+
+        <para>
+           Whether the stack grows up or down. Most places will want
+           <constant>false</constant>.
+           A few architectures, such as PA-RISC need <constant>true</constant>.
+        </para>
+      </formalpara>
+      <formalpara>
+         <title>have_strlcpy=[true/false]</title>
+
+         <para>
+            Whether you have <function>strlcpy()</function> that matches 
+            OpenBSD. Defaults to <constant>false</constant>, which is safe,
+            since GLib uses a built-in version in that case.
+	</para>
+      </formalpara>
+      <formalpara>
+         <title>va_val_copy=[true/false]</title>
+
+         <para>
+            Whether <type>va_list</type> can be copied as a pointer. If set 
+            to <constant>false</constant>, then <function>memcopy()</function>
+            will be used. Only matters if you don't have
+            <function>va_copy()</function> or <function>__va_copy()</function>.
+            (So, doesn't matter for GCC.)
+            Defaults to <constant>true</constant> which is slightly more common
+            than <constant>false</constant>.
+        </para>
+      </formalpara>
+      <formalpara>
+         <title>have_c99_vsnprintf=[true/false]</title>
+
+         <para>
+            Whether you have a <function>vsnprintf()</function> with C99 
+            semantics. (C99 semantics means returning the number of bytes 
+            that would have been written had the output buffer had enough 
+            space.) Defaults to <constant>false</constant>.
+         </para>
+      </formalpara>
+      <formalpara>
+         <title>have_c99_snprintf=[true/false]</title>
+
+         <para>
+            Whether you have a <function>snprintf()</function> with C99 
+            semantics. (C99 semantics means returning the number of bytes 
+            that would have been written had the output buffer had enough 
+            space.) Defaults to <constant>false</constant>.
+         </para>
+      </formalpara>
+
+    </refsect1>
+
+</refentry>

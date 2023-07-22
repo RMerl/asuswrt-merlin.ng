@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gresources>
+  <gresource prefix="/auto_loaded">
+    <file>test1.txt</file>
+  </gresource>
+  <!-- Test compiling the generated GResource C-code
+       that has a resouce entry size over 65536 bytes -->
+  <gresource prefix="/big_prefix">
+    <file>gresource-big-test.txt</file>
+  </gresource>
+</gresources>

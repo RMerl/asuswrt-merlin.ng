@@ -1,0 +1,1 @@
+ERROR Error on line 1 char 5: Odd character “\xfc”, expected an open quote mark after the equals sign when giving value for attribute “r” of element “”

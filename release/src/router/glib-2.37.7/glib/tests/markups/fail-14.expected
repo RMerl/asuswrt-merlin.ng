@@ -1,4 +1,0 @@
-ELEMENT 'foo'
-  TEXT '
-'
-ERROR Error on line 2 char 3: Document ended unexpectedly just after an open angle bracket '<'

@@ -133,7 +133,10 @@ then
         ARCH="_arm"
         HND="_axhnd"
 
+	# Must be done first, since we will add hnd_extra files later on
+	rsync -a --del release/src-rt-5.04axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC --exclude "stress/Makefile" --exclude "wlc_types.h"
 	rsync -a --del release/src-rt-5.04axhnd.675x/bootloaders/obj/ $REPO/release/src-rt-5.04axhnd.675x/bootloaders/obj.$BUILD_NAME_LC
+	cp release/src-rt-5.04axhnd.675x/wl/exe/prebuilt/* $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/lzop $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/$BUILD_NAME/
 	cp release/src-rt-5.04axhnd.675x/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.04axhnd.675x/hostTools/prebuilt/
@@ -150,9 +153,6 @@ then
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/otp/impl1/otp.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/wlcsm_ext/impl1/wlcsm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
-
-	echo "Manually sync router-sysdep (since hnd_extra cannot be rsync'ed)"
-#	rsync -a --del release/src-rt-5.04axhnd.675x/router-sysdep/ $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC
 
 else
 	echo "Unrecognized BUILD_NAME!"

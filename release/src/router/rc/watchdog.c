@@ -10405,19 +10405,20 @@ void auto_firmware_check_merlin()
 
 		if (nvram_get_int("webs_state_update") &&
 		    !nvram_get_int("webs_state_error") &&
-		    strlen(nvram_safe_get("webs_state_info_am")))
+		    strlen(nvram_safe_get("webs_state_info")))
 		{
 			period_retry = 0;	// We got a response from server, no need to retry
 			if ((initial_state == 0) && (nvram_get_int("webs_state_flag") == 1))		// New update
 			{
-				char version[4], revision[3], build[16];
+				char base[5], version[4], revision[3], build[16];
 
+				memset(base, 0, sizeof(base));
 				memset(version, 0, sizeof(version));
 				memset(revision, 0, sizeof(revision));
 				memset(build, 0, sizeof(build));
 
-				sscanf(nvram_safe_get("webs_state_info_am"), "%3[^_]_%2[^_]_%15s", version, revision, build);
-				logmessage("watchdog", "New firmware version %s.%s_%s is available.", version, revision, build);
+				sscanf(nvram_safe_get("webs_state_info"), "%4]^_]_%3[^_]_%2[^_]_%15s", base, version, revision, build);
+				logmessage("watchdog", "New firmware version %s.%s.%s_%s is available.", base, version, revision, build);
 				run_custom_script("update-notification", 0, NULL, NULL);
 			}
 

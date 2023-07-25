@@ -353,11 +353,11 @@ KERN_SIZE_OPT ?= y
 endif
 
 ifeq ($(FAKEID),y)
-export IMGNAME := $(BUILD_NAME)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)$(BUILDREV)$(ISPCTRL_POSTFIX)
+export IMGNAME := $(BUILD_NAME)_$(KERNEL_VER_AM)$(FS_VER_AM)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)$(BUILDREV)$(ISPCTRL_POSTFIX)
 else ifneq ($(CUSTOM_MODEL),)
-export IMGNAME := $(CUSTOM_MODEL)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)$(BUILDREV)$(ISPCTRL_POSTFIX)
+export IMGNAME := $(CUSTOM_MODEL)_$(KERNEL_VER_AM)$(FS_VER_AM)_$(FORCE_SN)_$(SWPJVER)$(FORCE_EN)$(BUILDREV)$(ISPCTRL_POSTFIX)
 else
-export IMGNAME := $(BUILD_NAME)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV)$(ISPCTRL_POSTFIX)
+export IMGNAME := $(BUILD_NAME)_$(KERNEL_VER_AM)$(FS_VER_AM)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV)$(ISPCTRL_POSTFIX)
 endif
 ifeq ($(OPDBG),y)
 export IMGNAME := $(IMGNAME)_OPDBG
@@ -676,13 +676,13 @@ endif
 ifeq ($(LIVE_UPDATE_RSA),)
 	@echo '#define LIVE_UPDATE_RSA_VERSION ""' >> router/shared/version.h
 else
-ifneq (,$(wildcard $(KEY_PATH)/public*.pem))
+ifneq (,$(wildcard $(KEY_PATH)/private*.pem))
 	@echo '#define LIVE_UPDATE_RSA_VERSION "$(LIVE_UPDATE_RSA_VER)"' >> router/shared/version.h
 else
 	@echo '#define LIVE_UPDATE_RSA_VERSION ""' >> router/shared/version.h
 endif
 endif
-	@echo '$(BUILD_NAME) $(SERIALNO)_$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
+	@echo '$(BUILD_NAME) $(KERNEL_VER_AM)$(FS_VER_AM).$(SERIALNO)_$(EXTENDNO)$(BUILDREV) $(BUILD_TIME)' > router/shared/version
 	@echo 'EXTENDNO=$(EXTENDNO)$(BUILDREV)' > router/extendno.conf
 	@-$(MAKE) -f model-desc.mak
 
@@ -780,7 +780,7 @@ endif
 		echo "Unknown model! Need define COMBINE_MODEL..."; \
 		exit 1; \
 	fi
-	$(eval IMAGEVER := $(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV))
+	$(eval IMAGEVER := $(KERNEL_VER).$(FS_VER)_$(SERIALNO)_$(SWPJVER)$(EXTENDNO)$(BUILDREV))
 ifeq ($(QCA),y)
 	@rm -f $(IMAGEDIR)/mix.trx
 	@for var in $(COMBINE_MODEL); do \

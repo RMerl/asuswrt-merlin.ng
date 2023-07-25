@@ -123,7 +123,7 @@ $(function () {
 var webs_state_update = '<% nvram_get("webs_state_update"); %>';
 var webs_state_upgrade = '<% nvram_get("webs_state_upgrade"); %>';
 var webs_state_error = '<% nvram_get("webs_state_error"); %>';
-var webs_state_info = '<% nvram_get("webs_state_info_am"); %>';
+var webs_state_info = '<% nvram_get("webs_state_info"); %>';
 var webs_state_REQinfo = '<% nvram_get("webs_state_REQinfo"); %>';
 var webs_state_flag = '<% nvram_get("webs_state_flag"); %>';
 
@@ -177,7 +177,7 @@ var firmver = '<% nvram_get("firmver"); %>';
 var buildno = '<% nvram_get("buildno"); %>';
 var extendno = '<% nvram_get("extendno"); %>';
 var FWString = '';
-FWString = buildno;
+FWString = firmver.replace(/\./g,"") + "." + buildno;
 if ((extendno != "") && (extendno != "0"))
 	FWString += "_"+extendno;
 
@@ -472,7 +472,7 @@ function initial(){
 				html += "</th>";
 				html += "<td id='amas_" + mac_id + "' current_online='" + online + "'>";
 				if (check_is_merlin_fw(fwver))
-					html += "<div id='current_version'><#ADSL_FW_item1#> : <span class='checkFWCurrent'>" + fwver.replace("3.0.0.4.", "").replace("_0","") + "</span></div>";
+					html += "<div id='current_version'><#ADSL_FW_item1#> : <span class='checkFWCurrent'>" + fwver.replace(/^(\d+)\.(\d+)\.(\d+).(\d+)\./, "$1$2$3$4.").replace("_0","") + "</span></div>";
 				else
 					html += "<div id='current_version'><#ADSL_FW_item1#> : <span class='checkFWCurrent'>" + fwver + "</span></div>";
 				html += "<span class='aimesh_fw_revert_node'></span>";
@@ -1325,7 +1325,7 @@ function show_amas_fw_result() {
 					$("#amas_" + mac_id + "").children().find(".checkFWResult").html(ck_fw_result);
 					if(newfwver != "") {
 						if (check_is_merlin_fw(fwver)) {
-							ck_fw_result = newfwver.replace("3.0.0.4.","").replace("_",".").replace("_0","");
+							ck_fw_result = newfwver.replace(/^(\d+)\.(\d+)\.(\d+).(\d+)\./, "$1$2$3$4.").replace("_",".").replace("_0","");
 						} else {
 							ck_fw_result = newfwver;
 							$("#amas_update").css("display", "");
@@ -1437,7 +1437,7 @@ function show_fw_release_note(event) {
 
 	document.amas_release_note.model.value = event.data.model_name;
 	if (event.data.isMerlin) {
-		document.amas_release_note.version.value = event.data.newfwver.replace("3.0.0.4.","");
+		document.amas_release_note.version.value = event.data.newfwver.replace(/^(\d+)\.(\d+)\.(\d+).(\d+)\./, "$1$2$3$4.");
 		if (event.data.product_id)
 			siteurl = "https://fwupdate.asuswrt-merlin.net/" + event.data.product_id;
 		else
@@ -1748,7 +1748,7 @@ function update_AiMesh_fw() {
 					var capability_value = (get_cfg_clientlist[idx].capability["4"]=="")?0:get_cfg_clientlist[idx].capability["4"];
 
 					if (check_is_merlin_fw(fwver))
-						$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : <span class='checkFWCurrent'>" + fwver.replace("3.0.0.4.","").replace("_0","") + "</span>");
+						$("#amas_" + mac_id + "").children("#current_version").html("<#ADSL_FW_item1#> : <span class='checkFWCurrent'>" + fwver.replace(/^(\d+)\.(\d+)\.(\d+).(\d+)\./, "$1$2$3$4.").replace("_0","") + "</span>");
 					else {
 						var current_fwver = $("#amas_" + mac_id + "").find("#current_version .checkFWCurrent").html();
 						if(fwver != current_fwver){

@@ -77,13 +77,13 @@ function initial(){
 	else
 		document.getElementById("model_id").innerHTML = productid;
 
+	var firmver = '<% nvram_get("firmver"); %>';
 	var buildno = '<% nvram_get("buildno"); %>';
 	var extendno = '<% nvram_get("extendno"); %>';
 	if ((extendno == "") || (extendno == "0"))
-		document.getElementById("fwver").innerHTML = buildno;
+		document.getElementById("fwver").innerHTML = firmver.replace(/\./g,"") + '.' + buildno;
 	else
-		document.getElementById("fwver").innerHTML = buildno + '_' + extendno;
-
+		document.getElementById("fwver").innerHTML = firmver.replace(/\./g,"") + '.' + buildno + '_' + extendno;
 
 	var rc_caps = "<% nvram_get("rc_support"); %>";
 	var rc_caps_arr = rc_caps.split(' ').sort();

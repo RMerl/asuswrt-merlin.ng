@@ -19011,7 +19011,6 @@ int init_nvram2(void)
 
 /* Remove potentially outdated data */
 	nvram_unset("webs_state_info");
-	nvram_unset("webs_state_info_am");
 	nvram_set("webs_state_flag","0");
 
 #if defined(RTCONFIG_CONCURRENTREPEATER)

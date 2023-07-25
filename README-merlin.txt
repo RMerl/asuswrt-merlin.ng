@@ -46,7 +46,6 @@ Fully supported devices:
 
 388.x:
  * RT-AX88U
- * RT-AX56U
  * RT-AX58U & RT-AX3000 (V1 only)
  * RT-AX86U & RT-AX86S
  * GT-AX11000
@@ -66,6 +65,7 @@ No longer supported:
  * RT-AC56U
  * RT-AC87U
  * RT-AC3200
+ * RT-AX56U
 
 NOTE: all the "R" versions (for example RT-N66R) are the same as their 
 "U" counterparts, they are just different packages aimed at large 

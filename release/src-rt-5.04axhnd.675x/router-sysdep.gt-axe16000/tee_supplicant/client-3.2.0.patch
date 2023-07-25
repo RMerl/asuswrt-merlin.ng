@@ -1,0 +1,13 @@
+diff --git a/flags.mk b/flags.mk
+index 71f3d18..a243bb6 100644
+--- a/flags.mk
++++ b/flags.mk
+@@ -14,7 +14,7 @@ CFLAGS          := -Wall -Wbad-function-cast -Wcast-align \
+ 		   -Wmissing-noreturn -Wmissing-prototypes -Wnested-externs \
+ 		   -Wpointer-arith -Wshadow -Wstrict-prototypes \
+ 		   -Wswitch-default -Wunsafe-loop-optimizations \
+-		   -Wwrite-strings -Werror
++		   -Wwrite-strings -Werror -Wno-format-truncation -Wno-implicit-fallthrough
+ CFLAGS          += -c -fPIC
+ 
+ DEBUG       ?= 0

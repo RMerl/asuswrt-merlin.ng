@@ -1,15 +1,18 @@
 Asuswrt-Merlin Changelog
 ========================
 
-388.4 (x-xxx-xxxx)
-  - NOTE: The RT-AX56U is now longer supported, as Asus has put it
-          on End-of-Life status, and the previous Asuswrt-Merlin 388
-          releases for that model were all based on untested code.
+3004.388.4 (xx-xxx-xxxx)
+  - NOTE: In preparation for the new 3.0.0.6 codebase, the version
+          string will now start with 3004 or 3006 to match with
+          upstream.
 
-  - NEW: Display channel utilization for supported platforms on the
-         Wireless Log page.  Note that some wireless drivers are
-         buggy and always return 100% - this would have to be fixed
-         by Broadcom.
+  - NOTE: The RT-AX56U is no longer supported, as Asus has put it
+          on End-of-Life status, and the previous Asuswrt-Merlin
+          388 releases for that model were all based on untested
+          code.
+
+  - NEW: Display channel utilisation for supported platforms on the
+         Wireless Log page.
   - UPDATED: Merged GPL 388_23588.
   - UPDATED: curl to 8.1.2.
   - UPDATED: OpenVPN to 2.6.5.
@@ -19,6 +22,7 @@ Asuswrt-Merlin Changelog
              in TLS mode.
   - FIXED: QOS Classification showing no Upload data on some
            WAN configurations.
+  - FIXED: Radio temperature graphs weren't updating
   - REMOVED: Ethernet port status from the Tools Sysinfo page
              (as this is redundant with Asus' own display
              now available on the networkmap page).

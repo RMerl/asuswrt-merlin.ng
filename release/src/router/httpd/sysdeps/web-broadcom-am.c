@@ -207,9 +207,9 @@ ej_wl_status_array(int eid, webs_t wp, int argc, char_t **argv)
 
 static int
 #ifdef RTCONFIG_HND_ROUTER_AX
-dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_v109_1_t *bi)
+dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_v109_1_t *bi, char *name)
 #else
-dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi)
+dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *bi, char *name)
 #endif
 {
 	char ssidbuf[SSID_FMT_BUF_LEN*2], ssidbuftmp[SSID_FMT_BUF_LEN];
@@ -257,7 +257,10 @@ dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *
 	retval += websWrite(wp, "\"%s\",", wl_ether_etoa(&bi->BSSID));
 
 #if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
-       retval += websWrite(wp, "\"%d\",", bi->qbss_chan_util * 100 / (uint8)WLC_QBSS_LOAD_CHAN_FREE_MAX);
+	if (!dhd_probe(name))
+		retval += websWrite(wp, "\"%d\",", bi->qbss_chan_util * 100 / (uint8)WLC_QBSS_LOAD_CHAN_FREE_MAX);
+	else
+		retval += websWrite(wp, "\"-1\",");
 #else
 	retval += websWrite(wp, "\"-1\",");
 #endif
@@ -299,7 +302,7 @@ wl_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		if (dtoh32(bi->version) == WL_BSS_INFO_VERSION ||
 		    dtoh32(bi->version) == LEGACY2_WL_BSS_INFO_VERSION ||
 		    dtoh32(bi->version) == LEGACY_WL_BSS_INFO_VERSION)
-			retval += dump_bss_info_array(eid, wp, argc, argv, bi);
+			retval += dump_bss_info_array(eid, wp, argc, argv, bi, name);
 		else
 			retval += websWrite(wp, "\"<error>\",\"\",\"\",\"\",\"\",\"\",");
 	} else {

@@ -80,7 +80,8 @@ function update_coretmp(e){
 
 
 function updateNum(_coreTmp_2, _coreTmp_5, _cpuTemp){
-
+	curr_coreTmp_2 = _coreTmp_2;
+	curr_coreTmp_5 = _coreTmp_5;
 	if(document.form.fanctrl_fullspeed_temp_unit.value == 1){
 		document.getElementById("coreTemp_2").innerHTML = (_coreTmp_2 == 0 ? "disabled" : Math.round(_coreTmp_2*9/5+32) + " °F");
 		document.getElementById("coreTemp_5").innerHTML = (_coreTmp_5 == 0 ? "disabled" : Math.round(_coreTmp_5*9/5+32) + " °F");

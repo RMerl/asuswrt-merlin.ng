@@ -20611,6 +20611,7 @@ ddns_custom_updated_main(int argc, char *argv[])
 		nvram_set("ddns_hostname_old", nvram_safe_get("ddns_hostname_x"));
 		logmessage("ddns", "Completed custom ddns update");
 		nvram_set_int("ddns_last_wan_unit", wan_primary_ifunit());
+		nvram_set("ddns_check_retry", "10"); //Reset DDNS Retry
 	} else {
 		nvram_set("ddns_return_code", "unknown_error");
 		nvram_set("ddns_return_code_chk", "unknown_error");

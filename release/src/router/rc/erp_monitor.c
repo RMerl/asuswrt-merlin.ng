@@ -635,6 +635,10 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTN66U
 		|| model == MODEL_GTAC5300
 		|| model == MODEL_RTAX88U
+		|| model == MODEL_BC109
+		|| model == MODEL_EBG19
+		|| model == MODEL_EBG15
+		|| model == MODEL_EBP15
 		|| model == MODEL_GTAX11000
 		|| model == MODEL_RTAX92U
 		|| model == MODEL_RTAX95Q
@@ -654,6 +658,7 @@ static int ERP_CHECK_MODEL_LIST()
 		|| model == MODEL_RTAX82_XD6S
 		|| model == MODEL_XD6_V2
 		|| model == MODEL_GT10
+		|| model == MODEL_RTAX9000
 		|| model == MODEL_RTAX58U_V2
 		|| model == MODEL_RTAX3000N
 		|| model == MODEL_BR63
@@ -749,6 +754,11 @@ static void erp_standby_mode(int model)
 			eval("wl", "-i", "eth4", "down");
 			eval("wl", "-i", "eth5", "down");
 			eval("wl", "-i", "eth6", "down");
+			break;
+		case MODEL_RTAX9000:
+			eval("wl", "-i", "eth6", "down");
+			eval("wl", "-i", "eth7", "down");
+			eval("wl", "-i", "eth8", "down");
 			break;
 		case MODEL_RTAX58U:
 		case MODEL_TUFAX3000_V2:

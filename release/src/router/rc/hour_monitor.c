@@ -29,6 +29,7 @@ void hm_traffic_analyzer_save()
 	}
 
 	eval("TrafficAnalyzer", "-e");
+	//logmessage("hour monitor", "store traffic analyzer data"); // DEBUG
 }
 
 void hm_traffic_limiter_save()

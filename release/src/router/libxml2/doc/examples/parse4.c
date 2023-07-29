@@ -3,7 +3,7 @@
  * synopsis: Parse an XML document chunk by chunk to a tree and free it
  * purpose: Demonstrate the use of xmlCreatePushParserCtxt() and
  *          xmlParseChunk() to read an XML file progressively
- *          into a tree and and xmlFreeDoc() to free the resulting tree
+ *          into a tree and xmlFreeDoc() to free the resulting tree
  * usage: parse4 test3.xml
  * test: parse4 test3.xml
  * author: Daniel Veillard
@@ -138,6 +138,6 @@ int main(int argc, char **argv) {
 #else /* ! LIBXML_PUSH_ENABLED */
 int main(int argc, char **argv) {
     fprintf(stderr, "Library not compiled with push parser support\n");
-    return(1);
+    return(0);
 }
 #endif

@@ -44,6 +44,26 @@ Expression: floor(-5.2)
 Object is a number : -6
 
 ========================
+Expression: floor(100000000000000000000)
+Object is a number : 1e+20
+
+========================
+Expression: floor(-100000000000000000000)
+Object is a number : -1e+20
+
+========================
+Expression: floor(0 div 0)
+Object is a number : NaN
+
+========================
+Expression: floor(1 div 0)
+Object is a number : Infinity
+
+========================
+Expression: floor(-1 div 0)
+Object is a number : -Infinity
+
+========================
 Expression: ceiling(0.1)
 Object is a number : 1
 
@@ -66,6 +86,26 @@ Object is a number : 6
 ========================
 Expression: ceiling(-5.2)
 Object is a number : -5
+
+========================
+Expression: ceiling(100000000000000000000)
+Object is a number : 1e+20
+
+========================
+Expression: ceiling(-100000000000000000000)
+Object is a number : -1e+20
+
+========================
+Expression: ceiling(0 div 0)
+Object is a number : NaN
+
+========================
+Expression: ceiling(1 div 0)
+Object is a number : Infinity
+
+========================
+Expression: ceiling(-1 div 0)
+Object is a number : -Infinity
 
 ========================
 Expression: round(0.1)
@@ -98,3 +138,31 @@ Object is a number : -5
 ========================
 Expression: round(-5.6)
 Object is a number : -6
+
+========================
+Expression: round(0.5)
+Object is a number : 1
+
+========================
+Expression: round(-0.5)
+Object is a number : 0
+
+========================
+Expression: round(100000000000000000000)
+Object is a number : 1e+20
+
+========================
+Expression: round(-100000000000000000000)
+Object is a number : -1e+20
+
+========================
+Expression: round(0 div 0)
+Object is a number : NaN
+
+========================
+Expression: round(1 div 0)
+Object is a number : Infinity
+
+========================
+Expression: round(-1 div 0)
+Object is a number : -Infinity

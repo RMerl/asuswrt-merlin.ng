@@ -77,8 +77,32 @@ int rtkswitch_ioctl(int val, int val2)
 	case 36:	/* Set Vlan VID. */
 	case 37:	/* Set Vlan PRIO. */
 	case 38:	/* Initialize VLAN. Cherry Cho added in 2011/7/15. */
+	case 380:	/* Set port VlanFilter */
+	case 381:	/* Get port VlanFilter */
 	case 39:	/* Create VLAN. Cherry Cho added in 2011/7/15. */
-	case 40:
+	case 390:	/* Create VLAN w/o p_cpu mbr. Cherry Cho added in 2011/7/15. */
+	case 391:	/* Set specified port PVID,PRIV */
+	case 392:	/* Get specified port PVID */
+	case 393:	/* Get all ports' PVID */
+	case 395:	/* Reset all ports accept type as all */
+	case 396:	/* Dump all ports accept type */
+	case 397:	/* Set port frame type */
+	//case 398:	/* Get fwd/efid */
+	case 399:	/* Dump vlan untag,fwd */
+	case 40:        /* set static is_singtel_mio */
+	case 401:       /* set static rtk_led_group */
+	case 4021:      /* Set Led operation mode */
+	case 4031:      /* Set LED blinking rate */
+	case 4041:      /* Set per group Led to congiuration mode */
+	case 4051:      /* Set Led group to congiuration force mode */
+	case 46:	/* power up specified LAN port */
+	case 47:	/* power down specified LAN port */
+	case 51:	/* set FlowControlJumboMode */
+	case 53:	/* set Jumbo threhsold(enable/disable) */
+	case 55:	/* set Jumbo size for Jumbo mode flow control */
+	case 61:	/* Set target iso_port */
+	case 62:	/* Set permitted port(iso port) isolation portmask */
+	//case 64:	/* Set port(iso port) isolation EFID */
 
 		p = &value;
 		value = (unsigned int)val2;
@@ -91,11 +115,23 @@ int rtkswitch_ioctl(int val, int val2)
 	case 5:		/* power up LAN ports */
 	case 6:		/* power down LAN ports */
 	case 8:		/* reset per port MIB counter */
+	case 4020:      /* Get Led operation mode */
+	case 4030:      /* Get LED blinking rate */
+	case 4040:      /* Get Led group congiuration mode */
+	case 4050:      /* Get Led group to congiuration force mode */
 	case 41:	/* turn off led */
+	case 4119:	/* turn off led, ebg19 case */
 	case 42:	/* turn on led by force */
+	case 4219:	/* turn on led by force, ebg19 case */
 	case 43:	/* turn on led normally */
+	case 4319:	/* turn on led normally, ebg19 case */
 	case 44:	/* hardware reset */
 	case 45:	/* software reset */
+	case 50:	/* get FlowControlJumboMode */
+	case 52:	/* Get Jumbo threhsold(enable/disable) */
+	case 54:	/* Get Jumbo size for Jumbo mode flow control*/
+	case 60:	/* Get permitted port isolation portmask */
+	//case 63:	/* Get all ports isolation EFID */
 		p = NULL;
 		break;
 	default:

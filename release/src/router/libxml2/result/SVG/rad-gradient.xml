@@ -6,9 +6,9 @@
   <g>
     <defs>
       <radialgradient id="MyGradient">
-        <gradientstop offset="0%" color="white"/>
-        <gradientstop offset="50%" color="red"/>
-        <gradientstop offset="100%" color="black"/>
+         <gradientstop offset="0%" color="white"/>
+         <gradientstop offset="50%" color="red"/>
+         <gradientstop offset="100%" color="black"/>
       </radialgradient>
     </defs>
     <circle style="fill: url(#MyGradient)" r="42"/>

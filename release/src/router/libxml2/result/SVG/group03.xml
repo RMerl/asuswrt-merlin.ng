@@ -4,8 +4,9 @@
   <desc>Groups can nest
   </desc>
   <g>
-    <g>
-      <g/>
-    </g>
-  </g>
+     <g>
+       <g>
+       </g>
+     </g>
+   </g>
 </svg>

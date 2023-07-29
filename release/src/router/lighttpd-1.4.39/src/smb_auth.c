@@ -2019,6 +2019,31 @@ int is_string_encode_as_integer( const char *s ){
     return *s == 0;
 }
 
+int is_valid_string( const char* data ){
+
+    if (strstr((char*)data, "\"") != NULL) {
+        return -1;
+    }
+
+    if (strstr((char*)data, "$") != NULL) {
+        return -1;
+    }
+    
+    if (strstr((char*)data, "`") != NULL) {
+        return -1;
+    }
+
+    if (strstr((char*)data, ";") != NULL) {
+        return -1;
+    } 
+
+    if (strstr((char*)data, "'") != NULL) {
+        return -1;
+    }
+
+    return 0;
+}
+
 int string_starts_with( const char *a, const char *b ){
     if(strncmp(a, b, strlen(b)) == 0) return 1;
    	return 0;

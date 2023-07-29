@@ -1,4 +1,5 @@
 include ../common.mak
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g)
 
 ifeq ($(or $(RTCONFIG_BCMARM),$(RTCONFIG_QCA_ARM),$(RTCONFIG_ALPINE)),y)
 CONFIGURE=configure-router-arm

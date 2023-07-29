@@ -793,6 +793,10 @@ main(int argc, char **argv)
 	for (; *argv; ++argv) {
 		if (!strcmp(*argv, "get")) {
 			if (*++argv) {
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+				if(invalid_nvram_get_name(*argv))
+					return 0;
+#endif
 				if ((value = nvram_get(*argv)))
 					puts(value);
 			}
@@ -879,9 +883,23 @@ main(int argc, char **argv)
 			system("nvram_erase");
 		} else if (!strcmp(*argv, "show") ||
 		           !strcmp(*argv, "dump")) {
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+			char name_tmp[128] = {0};
+			char *name_t = NULL, *value;
+#endif
 			dev_nvram_getall(buf, sizeof(buf));
-			for (name = buf; *name; name += strlen(name) + 1)
+
+			for (name = buf; *name; name += strlen(name) + 1){
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+				strlcpy(name_tmp, name, sizeof(name_tmp));
+				name_t = value = name_tmp;
+				name_t = strsep(&value, "=");
+
+				if(invalid_nvram_get_name(name_t))
+					continue;
+#endif
 				puts(name);
+			}
 			size = sizeof(struct nvram_header) + (int) name - (int) buf;
 			if (**argv != 'd')
 				fprintf(stderr, "size: %d bytes (%d left)\n",

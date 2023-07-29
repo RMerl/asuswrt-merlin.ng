@@ -147,11 +147,11 @@ function change_wizard(o, id){
 
 function addRow(obj, head){
 	if(head == 1)
-		ipv6_fw_rulelist_array += "<"
+		ipv6_fw_rulelist_array += "%3C";
 	else
-		ipv6_fw_rulelist_array += ">"
+		ipv6_fw_rulelist_array += "%3E";
 
-	ipv6_fw_rulelist_array += obj.value;
+	ipv6_fw_rulelist_array += encodeURIComponent(obj.value);
 	obj.value = "";
 }
 
@@ -482,13 +482,13 @@ function ipv6_valid(obj, cidr){
 										<tr id="webdav_http_port_tr" style="display:none;">
 											<th width="40%">Cloud Disk Port (HTTP):</th>
 											<td>
-												<input type="text" name="webdav_http_port" class="input_6_table" maxlength="5" value="<% nvram_get("webdav_http_port"); %>" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
+												<input type="text" name="webdav_http_port" class="input_6_table" maxlength="5" value="<% nvram_get("webdav_http_port"); %>" onkeypress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
 											</td>
 										</tr>
 										<tr id="webdav_https_port_tr" style="display:none;">
 											<th width="40%">Cloud Disk Port (HTTPS):</th>
 											<td>
-												<input type="text" name="webdav_https_port" class="input_6_table" maxlength="5" value="<% nvram_get("webdav_https_port"); %>" onKeyPress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
+												<input type="text" name="webdav_https_port" class="input_6_table" maxlength="5" value="<% nvram_get("webdav_https_port"); %>" onkeypress="return validator.isNumber(this, event);" autocorrect="off" autocapitalize="off">
 											</td>
 										</tr>		  
 									</table>
@@ -540,7 +540,7 @@ function ipv6_valid(obj, cidr){
 							          		        
 							          	<tr>
 							  				<td width="15%">
-							  					<input type="text" maxlength="30" class="input_12_table" name="ipv6_fw_desc_x_0" onKeyPress="return is_alphanum(this, event)" autocorrect="off" autocapitalize="off"/>
+							  					<input type="text" maxlength="30" class="input_12_table" name="ipv6_fw_desc_x_0" onkeypress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off"/>
 							  				</td>
 											<td width="24%">
 												<input type="text" maxlength="45" class="input_18_table" name="ipv6_fw_ripaddr_x_0" align="left" style="float:left;" autocomplete="off" autocorrect="off" autocapitalize="off">

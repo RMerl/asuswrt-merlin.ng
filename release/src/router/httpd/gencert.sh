@@ -102,6 +102,9 @@ then
 	fi
 fi
 
+# add startdate option for certificate
+echo "default_startdate=`date +%Y%m%d%H%M%S%Z`" >> openssl.config
+
 # create the key and certificate request
 #OPENSSL_CONF="/etc/openssl.config" $OPENSSL req -new -out /tmp/cert.csr -keyout /tmp/privkey.pem -newkey rsa:2048 -passout pass:password
 #OPENSSL_CONF="/etc/openssl.config" $OPENSSL rsa -in /tmp/privkey.pem -out key.pem -passin pass:password

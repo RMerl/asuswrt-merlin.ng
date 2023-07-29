@@ -222,6 +222,11 @@ var ROUTERHOSTNAME = '<#Web_DOMAIN_NAME#>';
 var domainNameUrl = header_info.protocol+"://"+ROUTERHOSTNAME+":"+header_info.port;
 var chdom = function(){window.location.href=domainNameUrl+"/blocking.asp"+window.location.search};
 
+/* String replace &#39; with ' for dict */
+function stringSafeGet(str){
+	return str.replace(new RegExp("&#39;", 'g'), "'");
+}
+
 (function(){
 	if(ROUTERHOSTNAME !== header_info.host && ROUTERHOSTNAME != "" && isRouterMode){
 		setTimeout(function(){

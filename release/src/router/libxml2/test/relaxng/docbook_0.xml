@@ -625,7 +625,7 @@ V1.1//EN"[]>]]>
           the directory.
         </para>
         <para>
-          If you want to create PostScript ouput, you will need to create an
+          If you want to create PostScript output, you will need to create an
           EPS version of your image file to be displayed in the
           PostScript file. There is a simple script available which
           allows you to change a PNG image into an EPS file
@@ -2866,9 +2866,9 @@ GDP Team ####### -->
 
 
  <!-- For this app, one could put "proving" or "edit" (probably even
-      both of them) as sect2's seperate from the main window
+      both of them) as sect2's separate from the main window
       section. Since they were both so closely involved with the main
-      window, I decided to have them as sect3's isntead. Judgement
+      window, I decided to have them as sect3's instead. Judgement
       call. -->
 
       <sect3 id="proving">
@@ -2883,7 +2883,7 @@ GDP Team ####### -->
 	    bring up the <interface>New Proof</interface> dialog box.
 	    Enter the statement of the theorem in the
 	    <guilabel>Theorem statement</guilabel> field, select your
-	    desired proof type from the drop-down menu, and and press
+	    desired proof type from the drop-down menu, and press
 	    <guibutton>Prove!</guibutton>.
         </para>
 	<para>

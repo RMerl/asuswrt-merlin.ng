@@ -4,7 +4,7 @@ SAX.startElement(html)
 SAX.startElement(body)
 SAX.startElement(hr)
 SAX.endElement(hr)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(body)
 SAX.endElement(html)

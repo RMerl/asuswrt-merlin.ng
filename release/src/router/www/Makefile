@@ -15,7 +15,7 @@ MODELS_HAVE_USB3 = GT-AC2900 \
 	RT-N65U \
 	RT-N18U \
 	RP-AC68U \
-	RT-AXE7800 GT10 \
+	RT-AXE7800 GT10 RT-AX9000 \
 	GT-AXE11000 \
 	GT-AX6000 GT-AX11000_PRO GT-AXE16000 RT-AX88U_PRO
 
@@ -24,10 +24,10 @@ MODELS_HAVE_TRAFFIC_ANALYZER = RT-AC3200 RT-AC87U RT-AC88U RT-AX88U RT-AC86U GT-
 	RT-AX86U RT-AX68U RT-AC68U_V4 DSL-AX82U \
 	RT-AX86U_PRO \
 	MAP-AC2200 MAP-AC2200V RT-AC95U \
-	RT-AXE7800 GT10 \
-	GT-AXE11000 GT-AX6000 GT-AX11000_PRO GT-AXE16000 ET12 XT12 RT-AX88U_PRO
+	RT-AXE7800 GT10 RT-AX9000 \
+	GT-AXE11000 GT-AX6000 GT-AX11000_PRO GT-AXE16000 ET12 XT12 RT-AX88U_PRO XC5
 
-MODELS_QIS_SLIDER = GT-AX11000 GT-AXY16000 RT-AX89U GT-AXE11000 GT-AX11000_PRO
+QIS_V2 = DSL-AC68U RT-AC88Q
 
 all:
 ifeq ($(and $(HND_ROUTER),$(RTCONFIG_VISUALIZATION)),y)
@@ -70,6 +70,16 @@ ifeq ($(and $(RTCONFIG_AMAS),$(RTCONFIG_WIFI_SON)),y)
 	rm -rf $(INSTALLDIR)/www/www-sys/images
 	cp ../www/sysdep/$(BUILD_NAME)/www/images $(INSTALLDIR)/www/. -rfL || true
 endif
+
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(QIS_V2)))
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/images $(INSTALLDIR)/www/ -rf
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V2/qis $(INSTALLDIR)/www/ -rf
+else
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
+	cp $(TOP)/www/sysdep/FUNCTION/QIS_V3/mobile $(INSTALLDIR)/www/ -rf
+endif
+
 	cp ../www/sysdep/$(BUILD_NAME)/www $(INSTALLDIR)/. -rfL || true
 	rm -rf $(INSTALLDIR)/www/Makefile
 	rm -rf $(INSTALLDIR)/www/sysdep
@@ -91,23 +101,6 @@ ifeq ($(RTCONFIG_ROG_UI), y)
 endif
 #endif
 
-ifeq ($(RTCONFIG_AMAS),y)
-ifneq ($(BUILD_NAME),DSL-AC68U)
-	cp $(TOP)/www/sysdep/BLUECAVE/www/Advanced_Wireless_Survey.asp $(INSTALLDIR)/www/Advanced_Wireless_Survey.asp
-	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
-	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/ -rf
-	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
-	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect_concept.gif
-ifneq ($(RTCONFIG_WIFI_SON),y)
-	rm -rf $(INSTALLDIR)/www/images/qis
-endif
-	rm -rf $(INSTALLDIR)/www/images/rog_feature*
-	rm -rf $(INSTALLDIR)/www/qis
-	rm -rf $(INSTALLDIR)/www/qis_m
-	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
-endif
-endif
-
 ifneq ($(BUILD_NAME),DSL-AX82U)
 	rm -rf $(INSTALLDIR)/www/mobile/js/jstz.min.js
 	rm -rf $(INSTALLDIR)/www/mobile/pages/bridge_cfg_tmp_page.html
@@ -119,17 +112,6 @@ ifneq ($(BUILD_NAME),DSL-AX82U)
 	rm -rf $(INSTALLDIR)/www/mobile/pages/ppp_cfg_page.html
 	rm -rf $(INSTALLDIR)/www/mobile/pages/ppp_cfg_tmp_page.html
 	rm -rf $(INSTALLDIR)/www/mobile/pages/PTM_manual_setting_page.html
-endif
-
-ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), $(MODELS_QIS_SLIDER)))
-	cp $(TOP)/www/sysdep/BLUECAVE/www/QIS_wizard.htm $(INSTALLDIR)/www/QIS_wizard.htm
-	cp $(TOP)/www/sysdep/BLUECAVE/www/mobile $(INSTALLDIR)/www/ -rf
-	cp $(TOP)/www/sysdep/BLUECAVE/www/require/modules/modem.js $(INSTALLDIR)/www/require/modules/ -rf
-	rm -rf $(INSTALLDIR)/www/images/qis
-	rm -rf $(INSTALLDIR)/www/images/rog_feature*
-	rm -rf $(INSTALLDIR)/www/qis
-	rm -rf $(INSTALLDIR)/www/qis_m
-	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 endif
 
 ifeq ($(RTCONFIG_WL_SCHED_V2), y)
@@ -547,19 +529,9 @@ ifneq ($(RTCONFIG_SNMPD), y)
 	rm -rf $(INSTALLDIR)/www/Advanced_SNMP_Content.asp
 endif
 
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC68U RT-AC3200 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC88U RT-AX88U RT-AC3100 GT-AX11000 RT-AX92U RT-AX95Q XT8PRO BM68 XT8_V2 RT-AXE95Q ET8PRO ET8_V2 RT-AX56_XD4 XD4PRO CT-AX56_XD4 RT-AX58U RT-AX58U_V2 BR63 TUF-AX3000 TUF-AX3000_V2 TUF-AX5400 TUF-AX5400_V2 RT-AX5400 DSL-AX82U RT-AX82U RT-AX82U_V2 RT-AX82_XD6 RT-AX82_XD6S XD6_V2 RT-AX56U RP-AX56 RP-AX58 RT-AX86U RT-AX68U RT-AC68U_V4 RT-AXE7800 GT10 GT-AXE11000 RT-AX55 RT-AX3000N GS-AX3000 GS-AX5400 GT-AX6000 GT-AX11000_PRO ET12 XT12 GT-AXE16000 PL-AX56_XP4 RT-AX86U_PRO RT-AX88U_PRO))
-	rm -rf $(INSTALLDIR)/www/Advanced_Smart_Connect.asp
-	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect.png
-	rm -rf $(INSTALLDIR)/www/images/New_ui/smart_connect_concept.gif
-endif
-
 ifneq ($(RTCONFIG_FINDASUS), y)
 	rm -rf $(INSTALLDIR)/www/find_device.asp
 	rm -rf $(INSTALLDIR)/www/images/New_ui/wifi-logo.png
-endif
-
-ifneq ($(RTCONFIG_JFFS2USERICON), y)
-	rm -rf $(INSTALLDIR)/www/ajax_uploadicon.asp
 endif
 
 ifneq ($(RTCONFIG_TR069), y)
@@ -584,21 +556,6 @@ endif
 
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), 4G-AC53U 4G-AC55U 4G-AC68U))
 	rm -rf $(INSTALLDIR)/www/Advanced_Modem_Content.asp
-endif
-
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RT-AC88U RT-AX88U RT-AC3100 RT-AC5300 GT-AC5300 GT-AC9600 RT-AC86U GT-AC2900 RT-AC3200 GT-AX11000 RT-AX92U RT-AX95Q XT8PRO BM68 XT8_V2 RT-AXE95Q ET8PRO ET8_V2 RT-AX56_XD4 XD4PRO CT-AX56_XD4 RT-AX58U RT-AX58U_V2 BR63 RT-AX3000N TUF-AX3000 TUF-AX3000_V2 TUF-AX5400 TUF-AX5400_V2 RT-AX5400 DSL-AX82U RT-AX82U RT-AX82U_V2 RT-AX82_XD6 RT-AX82_XD6S XD6_V2 RT-AX56U RT-AX86U RT-AX68U RT-AC68U_V4 RT-AXE7800 GT10 GT-AXE11000 GS-AX3000 GS-AX5400 GT-AX6000 GT-AX11000_PRO ET12 XT12 GT-AXE16000 RT-AX86U_PRO RT-AX88U_PRO))
-	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
-	rm -rf $(INSTALLDIR)/www/css/effect.css
-	rm -rf $(INSTALLDIR)/www/qis_m
-	rm -rf $(INSTALLDIR)/www/images/qis/icon_MAC_clone.svg
-	rm -rf $(INSTALLDIR)/www/images/qis/logo.png
-ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), RP-AC66 RP-AC68U RP-AC51 MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750))
-	rm -rf $(INSTALLDIR)/www/css/icon-qis.css
-	rm -rf $(INSTALLDIR)/www/images/qis/loading.gif
-	rm -rf $(INSTALLDIR)/www/images/qis/mainimage_img4.png
-	rm -rf $(INSTALLDIR)/www/images/qis/pattern3-3_10_A15.png
-	rm -rf $(INSTALLDIR)/www/images/qis/pattern3_05_4.png
-endif
 endif
 
 ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), MAP-AC1300 MAP-AC2200 VZW-AC1300 MAP-AC1750))
@@ -766,13 +723,6 @@ ifneq ($(BUILD_NAME),$(filter $(BUILD_NAME), BRT-AC828))
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/M2.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/M2_default.png
 	rm -rf $(INSTALLDIR)/www/images/New_ui/networkmap/icon_Guset_bg.png
-endif
-
-ifeq ($(BUILD_NAME),BLUECAVE)
-	rm -rf $(INSTALLDIR)/www/images/qis
-	rm -rf $(INSTALLDIR)/www/qis
-	rm -rf $(INSTALLDIR)/www/qis_m
-	rm -rf $(INSTALLDIR)/www/QIS_wizard_m.htm
 endif
 
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME), GT-AC2900 GT-AC5300 GT-AC9600 GT-AXY16000 GT-AX11000 TUF-AX3000 TUF-AX3000_V2 TUF-AX5400 TUF-AX5400_V2 GT-AXE11000 GT-AX6000 GT10 GT-AX11000_PRO GT-AXE16000))

@@ -127,97 +127,87 @@
 	bottom: 0;
 	width: 100%;
 	height: 148px;
-	background-size: 100% 100%;
-}
-.translucent_bg:before{
-	content: "";
-	position: absolute;
-	width: 100%;
-	height: 100%;
-	top: 0;
-	left: 0;
-	bottom: 0;
-	right: 0;
-	margin: auto;
-	background-image: linear-gradient(190deg, rgba(255,255,255,0) 60%, rgba(0,0,0,0.8) 100%);
+	background-size: cover;
+	background-repeat: no-repeat;
+	background-position: left bottom;
 }
 .translucent_bg.Home, .translucent_bg.Custom{ 
-	background-image: url("/images/New_ui/amesh/location/Home.png");
+	background-image: url("/images/New_ui/amesh/location/Home.jpg");
 }
 .translucent_bg.Living_Room{
-	background-image: url("/images/New_ui/amesh/location/Living_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Living_Room.jpg");
 }
 .translucent_bg.Dining_Room{
-	background-image: url("/images/New_ui/amesh/location/Dining_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Dining_Room.jpg");
 }
 .translucent_bg.Kitchen{
-	background-image: url("/images/New_ui/amesh/location/Kitchen.png");
+	background-image: url("/images/New_ui/amesh/location/Kitchen.jpg");
 }
 .translucent_bg.Bedroom{
-	background-image: url("/images/New_ui/amesh/location/Bedroom.png");
+	background-image: url("/images/New_ui/amesh/location/Bedroom.jpg");
 }
 .translucent_bg.Master_Bedroom{
-	background-image: url("/images/New_ui/amesh/location/Master_Bedroom.png");
+	background-image: url("/images/New_ui/amesh/location/Master_Bedroom.jpg");
 }
 .translucent_bg.Kids_Room{
-	background-image: url("/images/New_ui/amesh/location/Kids_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Kids_Room.jpg");
 }
 .translucent_bg.Guest_Room{
-	background-image: url("/images/New_ui/amesh/location/Guest_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Guest_Room.jpg");
 }
 .translucent_bg.Study_Room{
-	background-image: url("/images/New_ui/amesh/location/Study_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Study_Room.jpg");
 }
 .translucent_bg.Walk-in_Closet{
-	background-image: url("/images/New_ui/amesh/location/Walk-in_Closet.png");
+	background-image: url("/images/New_ui/amesh/location/Walk-in_Closet.jpg");
 }
 .translucent_bg.Bathroom{
-	background-image: url("/images/New_ui/amesh/location/Bathroom.png");
+	background-image: url("/images/New_ui/amesh/location/Bathroom.jpg");
 }
 .translucent_bg.Office{
-	background-image: url("/images/New_ui/amesh/location/Office.png");
+	background-image: url("/images/New_ui/amesh/location/Office.jpg");
 }
 .translucent_bg.Meeting_Room{
-	background-image: url("/images/New_ui/amesh/location/Meeting_Room.png");
+	background-image: url("/images/New_ui/amesh/location/Meeting_Room.jpg");
 }
 .translucent_bg.Gaming_Room{
 	background-image: url("/images/New_ui/amesh/location/Gaming_Room.jpg");
 }
 .translucent_bg.Hallway{
-	background-image: url("/images/New_ui/amesh/location/Hallway.png");
+	background-image: url("/images/New_ui/amesh/location/Hallway.jpg");
 }
 .translucent_bg.Hall{
-	background-image: url("/images/New_ui/amesh/location/Hall.png");
+	background-image: url("/images/New_ui/amesh/location/Hall.jpg");
 }
 .translucent_bg.Stairwell{
-	background-image: url("/images/New_ui/amesh/location/Stairwell.png");
+	background-image: url("/images/New_ui/amesh/location/Stairwell.jpg");
 }
 .translucent_bg.Third_Floor{
 	background-image: url("/images/New_ui/amesh/location/Third_Floor.jpg");
 }
 .translucent_bg.Second_Floor{
-	background-image: url("/images/New_ui/amesh/location/Second_Floor.png");
+	background-image: url("/images/New_ui/amesh/location/Second_Floor.jpg");
 }
 .translucent_bg.First_Floor{
 	background-image: url("/images/New_ui/amesh/location/First_Floor.jpg");
 }
 .translucent_bg.Attic{
-	background-image: url("/images/New_ui/amesh/location/Attic.png");
+	background-image: url("/images/New_ui/amesh/location/Attic.jpg");
 }
 .translucent_bg.Basement{
-	background-image: url("/images/New_ui/amesh/location/Basement.png");
+	background-image: url("/images/New_ui/amesh/location/Basement.jpg");
 }
 .translucent_bg.Storage{
-	background-image: url("/images/New_ui/amesh/location/Storage.png");
+	background-image: url("/images/New_ui/amesh/location/Storage.jpg");
 }
 .translucent_bg.Balcony{
-	background-image: url("/images/New_ui/amesh/location/Balcony.png");
+	background-image: url("/images/New_ui/amesh/location/Balcony.jpg");
 }
 .translucent_bg.Yard{
-	background-image: url("/images/New_ui/amesh/location/Yard.png");
+	background-image: url("/images/New_ui/amesh/location/Yard.jpg");
 }
 .translucent_bg.Garage{
-	background-image: url("/images/New_ui/amesh/location/Garage.png");
+	background-image: url("/images/New_ui/amesh/location/Garage.jpg");
 }
 .translucent_bg.Gym{
 	background-image: url("/images/New_ui/amesh/location/Gym.jpg");
@@ -234,19 +224,16 @@
 	font-size: 24px;
 	color: #FFFFFF;
 	text-shadow: 0 1px 7px rgba(0,0,0,0.66);
+	display: flex;
+	align-items: center;
 }
 .model_name > span.node_feature_notice{
 	position: relative;
-}
-.model_name > span.node_feature_notice:after{
-	position: absolute;
-	content: "";
 	background-image: url(/images/New_ui/amesh/feature_notice.svg);
 	width: 20px;
 	height: 20px;
 	background-size: cover;
-	right: -24px;
-	top: 4px;
+	margin-left: 2px;
 }
 .mac_info{
 	font-size: 12px;
@@ -269,7 +256,7 @@
 	bottom: 6px;
 	right: 6px;
 	z-index: 9;
-	background-position: 0% 0%;
+	background-position: 40% 0%;
 }
 .model_icon.web{
 	background-size: contain;
@@ -582,6 +569,7 @@
 }
 .item_bg.category{
 	background-color: #303D43;
+	display: flex;
 }
 .signal_text_bg.signal{
 	font-size: 30px;
@@ -692,7 +680,8 @@
 	margin: auto;
 	width: 30px;
 	height: 30px;
-	background: url(/images/New_ui/amesh/cards_usage.svg) no-repeat;
+	background-image: url(/images/New_ui/amesh/cards_usage.svg);
+	background-repeat: no-repeat;
 	background-size: 1100%;
 }
 .category_bg > div.client:before{
@@ -714,7 +703,8 @@
 	background-position: -99px -136.8px;
 }
 .connect_type_status_bg.uplink > div, .manage_settings_bg > div,
-.connect_type_status_bg .fronthaul_title, .connect_type_status_bg .fronthaul_info > div{
+.connect_type_status_bg .fronthaul_title, .connect_type_status_bg .fronthaul_info > div,
+.connect_type_status_bg.port_status > div:first-child{
 	height: 60px;
 	position: relative;
 }
@@ -885,6 +875,18 @@
 }
 .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.disconnected, .connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.wired.X{
 	background-position: -102px -510px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca{
+	background: url(/images/New_ui/amesh/signal_quality_moca.svg) no-repeat;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca.great{
+	background-position: 6px 2px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca.weak{
+	background-position: 6px -96px;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca.disconnected{
+	background-position: 6px -198px;
 }
 .card_block_bg span.connect_title{
 	top: 24px;
@@ -1147,7 +1149,7 @@
 }
 .common_separate_bg span.transmit_unit{
 	bottom: 3px;
-	left: 120px;
+	right: 18px;
 	font-family: Roboto-Light, "Microsoft JhengHei";
 }
 .common_separate_bg.horizontal_line:before,
@@ -1293,7 +1295,6 @@
 	background: #2B353C;
 	border: 1px solid #4C5B65;
 	border-radius: 4px;
-	color: #FFFFFF;
 	font-family: Roboto-Regular, "Microsoft JhengHei";
 	font-size: 14px;
 	color: #FFFFFF;
@@ -1392,38 +1393,37 @@
 .custom_radio_label{
 	margin-right: 12px !important;
 	cursor: pointer;
-	position: relative;
-}
-.custom_radio_label:before{
-	content: '';
-	display: inline-block;
-	vertical-align: middle;
 	width: 18px;
 	height: 18px;
 	border-radius: 50%;
-	border-color: rgb(30 162 255 / 0.7);
-	border-width: 2px;
-	border-style: solid;
+	border: 1px solid #869caa;
+	position: relative;
+	display: flex;
 }
-.custom_radio_label.checked:after{
-	content: '';
-	width: 8px;
-	height: 8px;
-	background: #1EA2FF;
-	border-radius: 50%;
+.custom_radio_label.checked{
+	width: 16px;
+	height: 16px;
+	border: 2px solid #0091ff;
+}
+.custom_radio_label.checked:before{
 	position: absolute;
-	top: 2px;
-	bottom: 0;
-	left: 0;
-	right: 0;
+	content: "";
+	width: 10px;
+	height: 10px;
 	margin: auto;
+	top: 0;
+	left: 0;
+	bottom: 0;
+	right: 0;
+	background-color: rgb(0 145 255);
+	border-radius: 50%;
 }
 .custom_radio_label > .custom_radio{
 	display: none;
 }
 .managment_icon{
 	background: url(/images/New_ui/amesh/managment_icon.svg) no-repeat;
-	background-size: 500%;
+	background-size: 500% !important;
 	width: 24px;
 	height: 24px;
 	cursor: pointer;
@@ -1726,13 +1726,18 @@
 .popup_hint_bg .notice_text_blue{
 	color: #33ACFF;
 }
-.popup_hint_bg .notice_text > span.gray{
+.popup_hint_bg .notice_text > span.gray, .popup_hint_bg .notice_text_gray{
 	color: #64737c;
 }
 .popup_hint_bg .notice_text .not_support_hint{
 	position: absolute;
 	top: 8px;
 	right: 0;
+}
+.popup_hint_bg .ol_item{
+	margin: 0;
+	padding: 0;
+	margin-left: 16px;
 }
 .popup_hint_bg .horizontal_line:before{
 	content: "";
@@ -1875,6 +1880,7 @@
 .hover_pop_hint_bg.node_feature_notice{
 	top: 32px;
 	left: 0px;
+	text-shadow: initial;
 }
 .hover_pop_hint_bg.node_feature_notice .list_item, .hover_pop_hint_bg.prefer_ap_icon .list_item{
 	margin: 0;
@@ -1899,8 +1905,9 @@
 	left: 0px;
 }
 .hover_pop_hint.node_feature_notice:hover::before{
-	right: -27px;
+	right: -4px;
 	left: initial;
+	top: 20px;
 }
 .hover_pop_hint.conn_priority_icon:hover::before, .hover_pop_hint.prefer_ap_icon:hover::before{
 	top: 5px;
@@ -1956,6 +1963,9 @@
 	z-index: 200;
 	background-repeat: no-repeat;
 }
+.jstree-anchor.moca:before {
+	background-image: url(/images/New_ui/amesh/topology_connect_quality_moca.svg);
+}
 .jstree-anchor.great.wired:before {
 	background-position: 10px -38px;
 }
@@ -1973,6 +1983,12 @@
 }
 .jstree-anchor.weak.plc:before {
 	background-position: -806px -38px;
+}
+.jstree-anchor.great.moca:before {
+	background-position: 3px -38px;
+}
+.jstree-anchor.weak.moca:before {
+	background-position: -79px -38px;
 }
 .jstree-anchor.disconnected:before {
 	background-position: -287px -38px;
@@ -2137,6 +2153,16 @@
 }
 .jstree-default .jstree-node.disconnected:before{
 	background-position: -655px 0px;
+}
+.jstree-default .jstree-node.moca:before{
+	background: url(/images/New_ui/amesh/topology_connect_quality_moca.svg);
+	background-repeat: repeat-y;
+}
+.jstree-default .jstree-node.great.moca:before{
+	background-position: -159px 0px;
+}
+.jstree-default .jstree-node.weak.moca:before{
+	background-position: -235px 0px;
 }
 .jstree-default .jstree-node.level_2:before{
 	left: 30px;
@@ -2454,9 +2480,9 @@
 	background: #374A57;
 	border-radius: 50%;
 	background-image: url(/images/New_ui/amesh/cards_usage.svg);
-	background-position: -108px -82.5px;
-	background-size: 500%;
-	background-repeat: no-repeat;
+	background-position: -108px -82.5px !important;
+	background-size: 500% !important;
+	background-repeat: no-repeat !important;
 	right: 15px;
 	top: -8px;
 	cursor: pointer;
@@ -2486,7 +2512,7 @@
 	border-width: 1px;
 	border-style: solid;
 	position: relative;
-} 
+}
 .connect_line_info_bg .connect_line:before{
 	content: "";
 	position: absolute;
@@ -2496,6 +2522,9 @@
 	left: 2px;
 	top: 2px;
 	background-repeat: no-repeat;
+}
+.connect_line_info_bg .connect_line.moca:before{
+	background-image: url(/images/New_ui/amesh/topology_connect_quality_moca.svg);
 }
 .connect_line_info_bg .connect_line.wired.great:before{
 	background-position: 5px 0px;
@@ -2514,6 +2543,12 @@
 }
 .connect_line_info_bg .connect_line.plc.weak:before{
 	background-position: -811px -59px;
+}
+.connect_line_info_bg .connect_line.moca.great:before{
+	background-position: -2px -59px;
+}
+.connect_line_info_bg .connect_line.moca.weak:before{
+	background-position: -83px -59px;
 }
 .connect_line_info_bg .connect_line.disconnected:before{
 	background-position: -292px -55px;
@@ -2556,6 +2591,7 @@
 .aimesh_tab_content{
 	width: 100%;
 	display: none;
+	margin-top: 12px;
 }
 .client_reconnect_loading_icon{
 	background-image: url(/images/InternetScan.gif);
@@ -2705,4 +2741,231 @@
 }
 .splitLine{
 	margin: 5px;
+}
+.port_status_bg{
+	display: flex;
+	align-items: flex-start;
+	height: auto;
+	margin-left: 16px;
+	position: relative;
+	margin-bottom: 6px;
+}
+.port_status_bg:before{
+	content: "";
+	position: absolute;
+	left: 0%;
+	bottom: -6px;
+	height: 1px;
+	width: 95%;
+	border-bottom: 1px solid #3E4E59;
+}
+.port_status_bg > div{
+	display: flex;
+	flex-wrap: wrap;
+	height: auto;
+	position: relative;
+}
+.port_status_bg .label_W_bg{
+	width: auto;
+	max-width: 92px;
+	margin-right: 6px;
+}
+.port_status_bg .label_W_bg:before{
+	position: absolute;
+	content: "";
+	right: -5px;
+	top: -4%;
+	height: 100%;
+	border-left: 1px solid #3E4E59;
+}
+.port_status_bg .label_L_bg:before{
+	position: absolute;
+	content: "";
+	top: -4%;
+	height: 100%;
+	border-right: 1px solid #3E4E59;
+	left: -5px;
+}
+.port_status_bg .label_W_bg > div, .port_status_bg .label_L_bg > div{
+	display: flex;
+	width: 46px;
+	height: auto;
+	flex-direction: column;
+	align-items: center;
+	margin-bottom: 8px;
+}
+.port_status_bg .label_L_bg{
+	margin-left: 3px;
+	flex-grow: 1;
+	flex-shrink: 0;
+	flex-basis: 65%;
+}
+.port_status_bg .port_icon{
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 100px;
+	width: 30px;
+	height: 26px;
+	display: flex;
+	justify-content: center;
+	align-items: center;
+	border-radius: 2px;
+	position: relative;
+}
+.port_status_bg .port_icon.conn{
+	background-position: 0px 0px;
+}
+.port_status_bg .port_icon.warn{
+	background-position: 0px -43px;
+}
+.port_status_bg .port_icon.unplug{
+	background-position: 0px -86px;
+}
+.port_status_bg .port_icon.USB.conn{
+	background-position: 1px -330px;
+}
+.port_status_bg .port_icon.USB.unplug{
+	background-position: 1px -290px;
+}
+.port_status_bg .port_icon.MoCA{
+	background-size: 92px;
+}
+.port_status_bg .port_icon.MoCA.conn{
+	background-position: 0px -378px;
+}
+.port_status_bg .port_icon.MoCA.warn{
+	background-position: 0px -416px;
+}
+.port_status_bg .port_icon.MoCA.unplug{
+	background-position: 0px -340px;
+}
+.port_status_bg .port_icon .wan_icon{
+	width: 20px;
+	height: 20px;
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 110px;
+	background-position: 4px -136px;
+}
+.port_status_bg .port_icon .lan_idx{
+	font-size: 13px;
+	margin-top: 0px;
+}
+.port_status_bg .port_text{
+	text-align: center;
+	line-height: 100%;
+	font-size: 11px;
+	margin-top: 4px;
+}
+.port_status_icon_desc{
+	display: flex;
+	justify-content: flex-start;
+	align-items: center;
+	height: 36px;
+	margin-left: 32px;
+}
+.port_status_icon_desc > div{
+	width: 33%;
+	position: relative;
+}
+.port_status_icon_desc > div:before, .port_status_notice_item:before{
+	position: absolute;
+	content: "";
+	width: 12px;
+	height: 12px;
+	left: -15px;
+	top: 4px;
+}
+.port_status_icon_desc > div.conn:before{
+	background-color: #25C100;
+}
+.port_status_icon_desc > div.warn:before, .port_status_notice_item.warn:before{
+	background-color: #ECC000;
+}
+.port_status_icon_desc > div.unplug:before{
+	background-color: #D7D7D7;
+}
+.port_status_notice_icon{
+	background-image: url(/images/New_ui/amesh/bind_notice.png);
+	cursor: pointer;
+	background-repeat: no-repeat;
+	width: 22px;
+	height: 22px;
+	position: absolute;
+	background-size: contain;
+	top: 22px;
+	margin-left: 8px;
+	display: none;
+}
+.port_status_notice_item{
+	position: relative;
+	margin-left: 24px;
+	margin-bottom: 3px;
+}
+.port_status_bg .label_W_bg .port_icon:before{
+	position: absolute;
+	content: "";
+	width: 16px;
+	height: 16px;
+	background-image: url(/images/New_ui/amesh/port_status.svg);
+	background-size: 70px;
+	right: -5px;
+	bottom: -5px;
+	background-position: 0px -179px;
+}
+.text_link{
+	text-decoration: underline !important;
+	color: #FC0 !important;
+}
+.text_emphasize{
+	color: #FC0 !important;
+}
+.MoCA_node_container{
+	position: relative;
+	margin-left: 22px;
+	margin-bottom: 12px;
+	font-size: 14px;
+}
+.MoCA_node_container:not(:last-child):before{
+	content: "";
+	position: absolute;
+	left: 0%;
+	bottom: -6px;
+	height: 1px;
+	width: 95%;
+	border-bottom: 1px solid #3E4E59;
+}
+.MoCA_node_sub_info{
+	display: flex;
+	position: relative;
+}
+.MoCA_node_sub_info > div{
+	position: relative;
+	margin-right: 8px;
+	height: 24px;
+	display: flex;
+	align-items: center;
+	line-height: 100%;
+	font-size: 12px;
+	color: #B9CFDE;
+	text-shadow: 0 1px 3px rgba(0,0,0,0.66);
+}
+.MoCA_node_sub_info > div:not(:first-child):before{
+	position: absolute;
+	content: "";
+	left: -4px;
+	height: 60%;
+	border-left: 1px solid #7F8FA4;
+}
+.MoCA_node_container .MoCA_PHY_rate{
+	font-size: 14px;
+}
+.MoCA_node_container .MoCA_PHY_rate.great{
+	color: #4EF81C;
+}
+.MoCA_node_container .MoCA_PHY_rate.weak{
+	color: #ECC000;
+}
+@media (min-width: 1900px){
+	.translucent_bg{
+		background-position: left center;
+	}
 }

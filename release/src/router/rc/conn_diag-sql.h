@@ -1,3 +1,4 @@
+#include <limits.h>
 #include <sqlite3.h>
 #include <pthread.h>
 

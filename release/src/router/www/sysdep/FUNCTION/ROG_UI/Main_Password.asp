@@ -301,6 +301,8 @@ function check_common_string(pwd, flag){
 // ---------- Viz add common string check for password 2015.09 end--------
 
 function validForm(){
+	if($("#defpassCheckbox").prop('checked')) return true;
+
 	if(!validator.chkLoginId(document.form.http_username_x)){
 		return false;
 	}
@@ -549,6 +551,48 @@ function showError(str){
 			<div class="input-container">
 				<input type="password" id="http_passwd_2_x" name="http_passwd_2_x" tabindex="3" class="form-input" maxlength="33" autocapitalize="off" autocomplete="off" placeholder="<#Confirmpassword#>">
 			</div>
+			<div style="font-size: 16pt; display:none">
+				<input id="defpassCheckbox" type="checkbox" style="height:30px;width:30px;vertical-align: middle;">Use the default settings
+			</div>
+			<script>
+				$("#defpassCheckbox").change(function(){
+					var status = $(this).is(':checked');
+					if(status){
+						$("[name='http_username_x']")
+							.val("")
+							.prop('disabled', true)
+							.css({opacity: "0.3"})
+
+						$("[name='http_passwd_x']")
+							.val("")
+							.prop('disabled', true)
+							.css({opacity: "0.3"})
+
+						$("[name='http_passwd_2_x']")
+							.val("")
+							.prop('disabled', true)
+							.css({opacity: "0.3"})
+					}
+					else{
+						$("[name='http_username_x']")
+							.prop('disabled', false)
+							.css({opacity: "1"})
+
+						$("[name='http_passwd_x']")
+							.prop('disabled', false)
+							.css({opacity: "1"})
+
+						$("[name='http_passwd_2_x']")
+							.prop('disabled', false)
+							.css({opacity: "1"})						
+					}
+				})
+
+				if(isSupport("defpass")){
+					$("#defpassCheckbox").parent().show();
+					$("#defpassCheckbox").prop('checked', true).change()
+				}
+			</script>
 			<div id="error_status_field" class="error-hint-bg" style="display: none;" ></div>
 			<div id="btn_modify" class="login-btn-bg" onclick="submitForm();"><#CTL_modify#></div>
 			<div id="loadingIcon" class="loading-icon" style="display:none;">

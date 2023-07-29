@@ -177,10 +177,27 @@ function initial(){
 		document.form.wl_gmode_check.checked = true;
 		document.getElementById("wl_gmode_check").disabled = false;
 	}
-	if(document.form.wl_gmode_protection.value == "auto")
-		document.form.wl_gmode_check.checked = true;
-	else
-		document.form.wl_gmode_check.checked = false;
+	if(is_unit_24g(wl_unit_value)){
+		if(document.form.wl_gmode_protection.value == "auto"){
+			document.form.wl_gmode_check.checked = true;
+		}
+		else{
+			document.form.wl_gmode_check.checked = false;
+		}
+
+		document.getElementById("wl_gmode_checkbox").style.display = "";
+
+		if(disable11b_support){
+			if(document.form.wl_rateset.value == "ofdm"){
+				document.form.wl_rateset_check.checked = true;
+			}
+			else{
+				document.form.wl_rateset_check.checked = false;
+			}
+
+			wl_mode_change(document.form.wl_nmode_x.value);
+		}
+	}
 
 	if(!band5g_support)	
 		document.getElementById("wl_unit_field").style.display = "none";
@@ -1133,6 +1150,28 @@ function regen_5G_mode(obj,flag){	//please sync to initial() : //Change wireless
 	obj.value = '<% nvram_get("wl_nmode_x"); %>';
 }
 
+function wl_mode_change(mode){
+	if(is_unit_24g(wl_unit_value)){
+		if(mode == '0'){
+			document.form.wl_rateset.disabled = false;
+			document.getElementById("wl_rateset_checkbox").style.display = "";
+		}
+		else{
+			document.form.wl_rateset.disabled = true;
+			document.getElementById("wl_rateset_checkbox").style.display = "none";
+		}
+	}
+}
+
+function wl_disable11b(obj){
+	if(obj.checked){
+		document.form.wl_rateset.value = 'ofdm';
+	}
+	else{
+		document.form.wl_rateset.value = 'default';
+	}
+}
+
 function change_wl_nmode(o){
 	if(Bcmwifi_support) {
 		if(o.value == '2')
@@ -1287,6 +1326,7 @@ function ajax_wl_edmg_channel(){
 <input type="hidden" name="wps_band" value="<% nvram_get("wps_band_x"); %>" disabled>
 <input type="hidden" name="wps_multiband" value="<% nvram_get("wps_multiband"); %>" disabled>
 <input type="hidden" name="w_Setting" value="1">
+<input type="hidden" name="wl_rateset" value="<% nvram_get("wl_rateset"); %>" >
 <input type="hidden" name="w_apply" value="1">
 <input type="hidden" name="smart_connect_x" value="<% nvram_get("smart_connect_x"); %>">
 
@@ -1418,6 +1458,7 @@ function ajax_wl_edmg_channel(){
 						</select>
 						<span id="wl_optimizexbox_span" style="display:none"><input type="checkbox" name="wl_optimizexbox_ckb" id="wl_optimizexbox_ckb" value="<% nvram_get("wl_optimizexbox"); %>" onclick="document.form.wl_optimizexbox.value=(this.checked==true)?1:0;"> <#WLANConfig11b_x_Mode_xbox#></input></span>
 						<span id="wl_gmode_checkbox" style="display:none;"><input type="checkbox" name="wl_gmode_check" id="wl_gmode_check" value="" onClick="wl_gmode_protection_check();"> <#WLANConfig11b_x_Mode_protectbg#></input></span>
+						<span id="wl_rateset_checkbox" style="display:none;"><input type="checkbox" name="wl_rateset_check" id="wl_rateset_check" value="<% nvram_get("wl_rateset"); %>" onClick="wl_disable11b(this);">Disable 11b</span>
 						<span id="wl_nmode_x_hint" style="display:none;"><br><#WLANConfig11n_automode_limition_hint#><br></span>
 						<span id="wl_NOnly_note" style="display:none;"></span>
 						<!-- [N only] is not compatible with current guest network authentication method(TKIP or WEP),  Please go to <a id="gn_link" href="/Guest_network.asp?af=wl_NOnly_note" target="_blank" style="color:#FFCC00;font-family:Lucida Console;text-decoration:underline;">guest network</a> and change the authentication method. -->

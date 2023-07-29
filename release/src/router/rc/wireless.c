@@ -71,6 +71,7 @@ start_nas(void)
 #ifdef RTCONFIG_BRCM_HOSTAPD
 		if (!nvram_match("hapd_enable", "0")) {
 			start_hapd_wpasupp(0);
+			start_wps_pbcd();
 			return 0;
 		} else
 #endif
@@ -86,6 +87,7 @@ stop_nas(void)
 #ifdef RTCONFIG_BRCM_HOSTAPD
         if (!nvram_match("hapd_enable", "0")) {
 		stop_hapd_wpasupp();
+		stop_wps_pbcd();
         } else
 #endif
 	killall_tk("nas");

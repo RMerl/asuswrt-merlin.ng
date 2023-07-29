@@ -242,3 +242,11 @@ Object is a number : -1
 ========================
 Expression: 8 mod 3 = 2
 Object is a Boolean : true
+
+========================
+Expression: 12345678901234567890
+Object is a number : 1.23457e+19
+
+========================
+Expression: -12345678901234567890
+Object is a number : -1.23457e+19

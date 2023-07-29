@@ -367,6 +367,23 @@ static void _wg_x_nf_del(const char* ifname)
 	}
 }
 
+#ifdef RTCONFIG_HND_ROUTER
+static void _pre_run_wg_fw_scripts(const char *path)
+{
+	char *tmp_path = "/tmp/tmp_wg_fw.sh";
+
+	if (!path)
+		return;
+
+	eval("cp", (char*)path, tmp_path);
+	chmod(path, S_IRUSR|S_IWUSR|S_IXUSR);
+	eval("sed", "-i", "s/-I/-D/", tmp_path);
+	eval("sed", "-i", "s/-A/-D/", tmp_path);
+	eval(tmp_path);
+	unlink(tmp_path);
+}
+#endif
+
 #ifdef RTCONFIG_VPN_FUSION
 static void _wg_client_dns_setup_vpnc(char* prefix, char* ifname, int vpnc_idx)
 {
@@ -1031,11 +1048,16 @@ void run_wgs_fw_scripts()
 	int unit;
 	char buf[128] = {0};
 
-	for(unit = 1; unit <= WG_CLIENT_MAX; unit++)
+	for(unit = 1; unit <= WG_SERVER_MAX; unit++)
 	{
 		snprintf(buf, sizeof(buf), "%s/fw_%s%d.sh", WG_DIR_CONF, WG_SERVER_IF_PREFIX, unit);
 		if(f_exists(buf))
+		{
+#ifdef RTCONFIG_HND_ROUTER
+			_pre_run_wg_fw_scripts(buf);
+#endif
 			eval(buf);
+		}
 	}
 }
 
@@ -1048,7 +1070,12 @@ void run_wgc_fw_scripts()
 	{
 		snprintf(buf, sizeof(buf), "%s/fw_%s%d.sh", WG_DIR_CONF, WG_CLIENT_IF_PREFIX, unit);
 		if(f_exists(buf))
+		{
+#ifdef RTCONFIG_HND_ROUTER
+			_pre_run_wg_fw_scripts(buf);
+#endif
 			eval(buf);
+		}
 	}
 }
 

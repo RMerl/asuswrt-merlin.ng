@@ -1,12 +1,21 @@
-DEVHELP_DIR=$(datadir)/gtk-doc/html/libxml2
-HTML_FILES=index.html general.html $(HTML_MODULES)
+devhelpdir = $(datadir)/gtk-doc/html/libxml2
+
+dist_devhelp_DATA =			\
+	libxml2.devhelp2		\
+	$(HTML_FILES)			\
+	$(EXTRA_FORMAT)
+
+HTML_FILES =				\
+	general.html			\
+	index.html			\
+	$(HTML_MODULES)
+
 HTML_MODULES=				\
 	libxml2-c14n.html		\
 	libxml2-catalog.html		\
 	libxml2-chvalid.html		\
 	libxml2-debugXML.html		\
 	libxml2-dict.html		\
-	libxml2-DOCBparser.html		\
 	libxml2-encoding.html		\
 	libxml2-entities.html		\
 	libxml2-globals.html		\
@@ -56,18 +65,7 @@ EXTRA_FORMAT=				\
 	up.png				\
 	style.css
 
-EXTRA_DIST=devhelp.xsl html.xsl libxml2.devhelp $(HTML_FILES) $(EXTRA_FORMAT)
+EXTRA_DIST = devhelp2.xsl html.xsl
 
-all: libxml2.devhelp $(HTML_FILES)
-
-libxml2.devhelp $(HTML_FILES): devhelp.xsl html.xsl $(top_srcdir)/doc/libxml2-api.xml
-	-@(echo Rebuilding devhelp files)
-	-@(if [ -x $(XSLTPROC) ] ; then \
-	  $(XSLTPROC) --nonet -o $(srcdir)/libxml2.devhelp devhelp.xsl $(top_srcdir)/doc/libxml2-api.xml ; fi );
-
-install-data-local: 
-	$(mkinstalldirs) $(DESTDIR)$(DEVHELP_DIR)
-	-@INSTALL@ -m 0644 libxml2.devhelp $(DESTDIR)$(DEVHELP_DIR)
-	-@INSTALL@ -m 0644 $(EXTRA_FORMAT) $(DESTDIR)$(DEVHELP_DIR)
-	-@INSTALL@ -m 0644 $(HTML_FILES) $(DESTDIR)$(DEVHELP_DIR)
-
+rebuild:
+	(cd $(srcdir) && $(XSLTPROC) -o libxml2.devhelp2 devhelp2.xsl ../libxml2-api.xml)

@@ -6,7 +6,7 @@
   <g>
     <defs>
       <lineargradient id="MyGradient">
-<!-- Define linear gradient here -->
+        <!-- Define linear gradient here -->
         <gradientstop offset="0%" color="#F60"/>
         <gradientstop offset="70%" color="#FF6"/>
       </lineargradient>

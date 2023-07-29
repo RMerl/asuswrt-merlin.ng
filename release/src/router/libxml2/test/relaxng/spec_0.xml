@@ -530,7 +530,7 @@ value of each <literal>name</literal>, <literal>type</literal> and
 <section>
 <title><literal>datatypeLibrary</literal> attribute</title>
 
-<para>The value of each <literal>datatypeLibary</literal> attribute is
+<para>The value of each <literal>datatypeLibrary</literal> attribute is
 transformed by escaping disallowed characters as specified in Section
 5.4 of <xref linkend="xlink"/>.</para>
 

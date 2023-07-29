@@ -592,14 +592,16 @@ void rc_strongswan_conf_set()
 
 	user = nvram_safe_get("http_username");
 	if (*user == '\0')
-		user = "admin";
+		if(*(user = nvram_default_get("http_username")) == '\0')
+			user = "admin";
+
 
 	fprintf(fp,
 		"charon {\n"
 		"	user = %s\n"
 		"	threads = %d\n"
 		"	send_vendor_id = yes\n"
-		"	max_packet = 32000\n"
+		"	max_packet = 64000\n"
 		"	interfaces_ignore = %s\n"
 		"	starter { load_warning = no }\n"
 		"	load_modular = yes\n"
@@ -1072,7 +1074,7 @@ void rc_ipsec_gen_cert(int skip_checking)
         fprintf(fp, "pki --gen --size 2048 --outform pem > %s%s\n"
                     "pki --self --in %s%s --dn \"C=TW,O=ASUS,CN=ASUS %s Root CA\" --ca --lifetime %d --outform pem > %s%s\n"
                     "pki --gen --size 2048 --outform pem > %s%s\n"
-                    "pki --pub --in %s%s | pki --issue --cacert %s%s --cakey %s%s --dn \"C=TW,O=ASUS,CN=%s\" --san=\"%s\" --lifetime %d --outform pem > %s%s\n\n"
+                    "pki --pub --in %s%s | pki --issue --flag serverAuth --cacert %s%s --cakey %s%s --dn \"C=TW,O=ASUS,CN=%s\" --san=\"%s\" --lifetime %d --outform pem > %s%s\n\n"
                     "openssl x509 -in %s%s -outform der -out %s%s\n\n",
                     FILE_PATH_CA_ETC, FILE_NAME_CA_PRIVATE_KEY,
                     FILE_PATH_CA_ETC, FILE_NAME_CA_PRIVATE_KEY, trimNL(device_cn), ca_lifetime, FILE_PATH_CA_ETC, FILE_NAME_CERT_PEM,

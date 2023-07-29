@@ -352,7 +352,8 @@ void vpnc_add_firewall_rule(const int unit, const char *vpnc_ifname)
 				"-m", "state", "--state", "NEW","-j", "MARK", "--set-mark", "0x01/0x7");
 #endif
 
-		eval("iptables", "-A", "FORWARD", "-o", (char*)vpnc_ifname, "!", "-i", lan_if, "-j", "DROP");
+		eval("iptables", "-A", "VPNCF", "-o", (char*)vpnc_ifname, "!", "-i", lan_if, "-j", "DROP");
+		eval("iptables", "-A", "VPNCF", "-i", (char*)vpnc_ifname, "-j", "ACCEPT");
 		eval("iptables", "-t", "nat", "-I", "PREROUTING", "-d",
 			nvram_safe_get(strlcat_r(vpnc_prefix, "ipaddr", tmp, sizeof(tmp))), "-j", "VSERVER");
 		eval("iptables", "-t", "nat", "-I", "POSTROUTING", "-o",
@@ -498,7 +499,8 @@ void vpnc_del_firewall_rule(const int vpnc_idx, const char *vpnc_ifname)
 			"-m", "state", "--state", "NEW","-j", "MARK", "--set-mark", "0x01/0x7");
 #endif
 
-	eval("iptables", "-D", "FORWARD", "-o", (char*)vpnc_ifname, "!", "-i", lan_if, "-j", "DROP");
+	eval("iptables", "-D", "VPNCF", "-o", (char*)vpnc_ifname, "!", "-i", lan_if, "-j", "DROP");
+	eval("iptables", "-D", "VPNCF", "-i", (char*)vpnc_ifname, "-j", "ACCEPT");
 	eval("iptables", "-t", "nat", "-D", "PREROUTING", "-d",
 		nvram_safe_get(strlcat_r(prefix, "ipaddr", tmp, sizeof(tmp))), "-j", "VSERVER");
 	eval("iptables", "-t", "nat", "-D", "POSTROUTING", "-o",

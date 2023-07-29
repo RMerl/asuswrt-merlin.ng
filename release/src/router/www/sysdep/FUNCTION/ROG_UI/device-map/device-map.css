@@ -655,6 +655,11 @@ body {
 	width: 28px;
 	background-image:url('/images/New_ui/networkmap/power.png') !important;
 }
+.radio_moca{
+	height: 28px;
+	width: 28px;
+	background-image:url('/images/New_ui/networkmap/moca.png') !important;
+}
 .clientlist_content{
 	position: absolute;
 	-webkit-border-radius: 5px;

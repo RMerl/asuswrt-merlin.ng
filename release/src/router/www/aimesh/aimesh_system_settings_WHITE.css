@@ -1,0 +1,59 @@
+﻿.system_settings_bg{
+	border: 1px solid #CCCCCC;
+	border-radius: 8px;
+}
+.system_settings_bg:hover{
+	background-color: #FFFFFF;
+}
+.system_settings_bg:before{
+	content: none;
+}
+.system_icon{
+	background-image: url("/images/New_ui/amesh/white_theme/system_icon.svg");
+}
+.select_option_bg > select{
+	background-color: transparent;
+	color: #4D4D4D;
+}
+.system_text{
+	color: #262626;
+}
+.system_settings_bg .switch.off, .popup_hint_bg .switch_ctl_bg .switch.off{
+	background: #818181;
+}
+.system_settings_bg .switch.on, .popup_hint_bg .switch_ctl_bg .switch.on{
+	background: #006CE1;
+}
+.system_settings_bg .switch:before, .popup_hint_bg .switch_ctl_bg .switch:before{
+	background: #FFFFFF;
+}
+.system_settings_bg .bubble_icon{
+	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
+}
+.system_settings_bg .hover_pop_hint:hover::before,
+.system_settings_bg .hover_pop_hint:hover::after{
+	border-bottom-color: #CCCCCC;
+}
+.system_settings_bg .hover_pop_hint:hover::after{
+	border-bottom-color: #FFFFFF;
+	top: 25px;
+}
+.system_settings_bg .hover_pop_hint_bg{
+	background: #FFFFFF;
+	border: 1px solid #CCCCCC;
+	color: #262626;
+}
+.popup_hint_bg .hint_text .yellow_text{
+	color: #EF4444;
+}
+.popup_hint_bg .switch_ctl_bg .title_text{
+	color: #006CE1;
+}
+.popup_hint_bg .inputTitleContainer .inputTitle{
+	color: #006CE1;
+}
+.popup_hint_bg .textInput{
+	background: #FFFFFF;
+	border: 1px solid #DCDCDC;
+	color: #4D4D4D;
+}

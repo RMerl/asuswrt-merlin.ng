@@ -26,8 +26,6 @@ xmlinc_HEADERS = \
 		uri.h \
 		valid.h \
 		xlink.h \
-		xmlversion.h \
-		DOCBparser.h \
 		catalog.h \
 		threads.h \
 		globals.h \
@@ -51,7 +49,6 @@ xmlinc_HEADERS = \
 		xmlsave.h \
 		schematron.h
 
-install-exec-hook:
-	$(mkinstalldirs) $(DESTDIR)$(xmlincdir)
+nodist_xmlinc_HEADERS = xmlversion.h
 
 EXTRA_DIST = xmlversion.h.in

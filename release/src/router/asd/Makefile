@@ -3,7 +3,7 @@ include ../common.mak
 OBJ = main.o download.o shared_func.o protect_name.o
 LIB_OBJ = feature_def.o signature.o utility.o protect_name.o libasd.o misc.o monitorproc.o shared_func.o chknvram.o blockfile.o event_queue.o blockdnsip.o
 
-CFLAGS += -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g) -idirafter$(LINUXDIR)/include -I$(TOP)/shared  -I$(SRCBASE)/include
 CFLAGS += -I$(TOP)/curl/include
 CFLAGS += -I$(TOP)/openssl/include
 CFLAGS += -I$(TOP)/libasc
@@ -42,8 +42,8 @@ LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
 LDFLAGS += -L$(TOP)/libasc -lasc
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 ifeq ($(RTCONFIG_TR069),y)
-+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2
-+LDFLAGS += -L$(TOP)/zlib -lz
+LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2
+LDFLAGS += -L$(TOP)/zlib -lz
 endif
 
 TARGET = asd libasd.so

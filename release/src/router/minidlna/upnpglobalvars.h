@@ -208,7 +208,7 @@ extern char uuidvalue[];
 #define MODELNAME_MAX_LEN 64
 extern char modelname[];
 
-#define MODELNUMBER_MAX_LEN 16
+#define MODELNUMBER_MAX_LEN 18
 extern char modelnumber[];
 
 #define SERIALNUMBER_MAX_LEN 18

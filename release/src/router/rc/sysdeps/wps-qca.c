@@ -116,6 +116,7 @@ start_wps_method_ob(void)
 	if (nvram_get_int("wps_enable") == 0)
 		runtime_onoff_wps(1);
 	start_wps_method();
+	return 0;
 }
 
 int
@@ -124,6 +125,7 @@ stop_wps_method_ob(void)
 	stop_wps_method();
 	if (nvram_get_int("wps_enable") == 0)
 		runtime_onoff_wps(0);
+	return 0;
 }
 
 extern int g_isEnrollee[MAX_NR_WL_IF];

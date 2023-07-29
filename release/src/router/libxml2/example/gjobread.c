@@ -177,7 +177,7 @@ typedef struct gjob {
 
 
 static gJobPtr
-parseGjobFile(char *filename) {
+parseGjobFile(char *filename ATTRIBUTE_UNUSED) {
     xmlDocPtr doc;
     gJobPtr ret;
     jobPtr curjob;
@@ -289,7 +289,7 @@ int main(int argc, char **argv) {
     int i;
     gJobPtr cur;
 
-    /* COMPAT: Do not genrate nodes for formatting spaces */
+    /* COMPAT: Do not generate nodes for formatting spaces */
     LIBXML_TEST_VERSION
     xmlKeepBlanksDefault(0);
 

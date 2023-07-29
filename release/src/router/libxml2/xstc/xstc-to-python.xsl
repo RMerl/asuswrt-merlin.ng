@@ -7,7 +7,7 @@
     <xsl:output method="text"/>   
 
     <xsl:template match="/">
-        <xsl:text>#!/usr/bin/python -u
+        <xsl:text>#!/usr/bin/env python
 # -*- coding: UTF-8 -*-
 #
 # This file is generated from the W3C test suite description file.

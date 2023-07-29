@@ -3,7 +3,7 @@
  * synopsis: Creates a tree
  * purpose:  Shows how to create document, nodes and dump it to stdout or file.
  * usage:    tree2 <filename>  -Default output: stdout
- * test:     tree2 > tree2.tmp ; diff tree2.tmp tree2.res ; rm tree2.tmp
+ * test:     tree2 > tree2.tmp && diff tree2.tmp $(srcdir)/tree2.res
  * author:   Lucas Brasilino <brasilino@recife.pe.gov.br>
  * copy:     see Copyright for the status of this software
  */
@@ -27,7 +27,6 @@ main(int argc, char **argv)
 {
     xmlDocPtr doc = NULL;       /* document pointer */
     xmlNodePtr root_node = NULL, node = NULL, node1 = NULL;/* node pointers */
-    xmlDtdPtr dtd = NULL;       /* DTD pointer */
     char buff[256];
     int i, j;
 
@@ -37,13 +36,13 @@ main(int argc, char **argv)
      * Creates a new document, a node and set it as a root node
      */
     doc = xmlNewDoc(BAD_CAST "1.0");
-    root_node = xmlNewNode(NULL, BAD_CAST "root");
+    root_node = xmlNewDocNode(doc, NULL, BAD_CAST "root", NULL);
     xmlDocSetRootElement(doc, root_node);
 
     /*
      * Creates a DTD declaration. Isn't mandatory. 
      */
-    dtd = xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "tree2.dtd");
+    xmlCreateIntSubset(doc, BAD_CAST "root", NULL, BAD_CAST "tree2.dtd");
 
     /* 
      * xmlNewChild() creates a new node, which is "attached" as child node
@@ -71,8 +70,8 @@ main(int argc, char **argv)
      * creates a node and a text node separately. They are "attached"
      * by xmlAddChild() 
      */
-    node = xmlNewNode(NULL, BAD_CAST "node4");
-    node1 = xmlNewText(BAD_CAST
+    node = xmlNewDocNode(doc, NULL, BAD_CAST "node4", NULL);
+    node1 = xmlNewDocText(doc, BAD_CAST
                    "other way to create content (which is also a node)");
     xmlAddChild(node, node1);
     xmlAddChild(root_node, node);
@@ -113,6 +112,6 @@ main(int argc, char **argv)
 #else
 int main(void) {
     fprintf(stderr, "tree support not compiled in\n");
-    exit(1);
+    return(0);
 }
 #endif

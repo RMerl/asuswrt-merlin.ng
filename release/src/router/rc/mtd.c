@@ -705,11 +705,12 @@ int mtd_write_main(int argc, char *argv[])
 				n &= ~(mi.writesize - 1);
 				wlen = n;
 			} else {
+				wlen = ROUNDUP(n, mi.writesize);
+				memset(bounce_buf, 0xff, wlen);	//fill 0xff as empty data in flash
 				if (!alloc)
 					memcpy(bounce_buf, p, n);
 				bounce = 1;
 				p = bounce_buf;
-				wlen = ROUNDUP(n, mi.writesize);
 			}
 		}
 

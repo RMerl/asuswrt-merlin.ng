@@ -920,6 +920,21 @@ int get_channel_list(int unit, int ch_list[], int size)
 	return ch_cnt;
 }
 
+uint64_t get_channel_list_mask(enum wl_band_id band)
+{
+	uint64_t m = 0;
+	int i, ch_list[64] = { 0 };
+
+	if (band < 0 || band >= WL_NR_BANDS)
+		return 0;
+
+	get_channel_list(band, ch_list, ARRAY_SIZE(ch_list));
+	for (i = 0; i < ARRAY_SIZE(ch_list) && ch_list[i] != 0; ++i)
+		m |= ch2bitmask(band, ch_list[i]);
+
+	return m;
+}
+
 int get_radar_channel_list(int unit, int radar_list[], int size)
 {
 	struct iwreq wrq;

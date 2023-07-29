@@ -1,0 +1,540 @@
+﻿.ui-state-default,
+.ui-widget-content .ui-state-default,
+.ui-widget-header .ui-state-default {
+	background: #006CE1;
+	color: #006CE1;
+}
+.info_right{
+	background-color: #FFFFFF;
+	color: #262626;
+}
+.card_block_bg{
+	background: #FFFFFF;
+	border: 1px solid rgb(0 0 0 / 5%);
+	box-shadow: 0 2px 4px 0 rgb(0 0 0 / 10%), 0 1px 4px 0 rgb(60 60 60 / 10%);
+}
+.icon_bg{
+	height: 200px;
+}
+.translucent_bg{
+	height: 200px;
+}
+.custom_select input{
+	color: #4D4D4D;
+}
+.location_info_bg span.location_hint{
+	color: #ED4444;
+}
+.custom_pure_text{
+	border: 1px solid #DCDCDC !important;
+	border-radius: 4px !important;
+}
+.custom_select_selected, .custom_pure_text{
+	background-color: #FFFFFF;
+}
+.custom_select_selected:after{
+	border-top: 2px solid #4D4D4D;
+	border-right: 2px solid #4D4D4D;
+}
+.custom_select_items div, .custom_select_selected, .custom_pure_text{
+	color: #4D4D4D;
+	border: 1px solid #DCDCDC;
+	border-color: transparent transparent #DCDCDC transparent;
+}
+.custom_select_selected{
+	border: 1px solid #B3B3B3;
+}
+.custom_select_same_as_selected{
+	background-color: rgba(0, 133, 255, 0.1);
+	color: #006CE1 !important;
+}
+.custom_select_items {
+	background-color: #FFFFFF;
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.custom_select_items div:hover{
+	background-color: rgba(0, 133, 255, 0.1);
+}
+.custom_select_items::-webkit-scrollbar-track{
+	border: 4px solid #FFFFFF;
+	background-color: #DCDCDC;
+}
+.custom_select_items::-webkit-scrollbar-thumb{
+	background-color: #CCCCCC;
+	border: 2px solid #FFFFFF;
+}
+.item_bg{
+	background-color: initial;
+}
+.item_space{
+	background-color: initial;
+}
+.item_bg.category{
+	background-color: #B3B3B3;
+}
+.bubble_icon{
+	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
+}
+.signal_hint_text{
+	color: #181818;
+}
+.fw_version_title_bg{
+	color: #006CE1;
+}
+.fw_version_text{
+	color: #262626;
+}
+.category_bg{
+	color: #4D4D4D;
+	background-image: initial;
+	background-color: #FFFFFF;
+	border: 1px solid rgba(127, 143, 164, 0.4);
+	border-right-style: none;
+}
+.category_bg.clicked{
+	color: #006CE1;
+	background-image: initial;
+	outline: initial;
+}
+.category_bg.clicked:before{
+	content: "";
+	position: absolute;
+	left: 0;
+	bottom: -2px;
+	width: 100%;
+	border-bottom: 4px solid #248DFF;
+}
+.category_bg > div:first-child:before{
+	background-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg);
+}
+.category_bg > div.iperf:before{
+	background: url(/images/New_ui/amesh/white_theme/iperf_speed.svg) no-repeat;
+}
+.category_bg.clicked > div.iperf:before{
+	background: url(/images/New_ui/amesh/white_theme/iperf_speed_active.svg) no-repeat;
+}
+.connect_type_status_bg .as_backhaul_info > div{
+	color: #ED4444;
+}
+.connect_type_status_bg .as_backhaul_info .faq-link{
+	color: #006CE1;
+}
+.connect_type_status_bg .uplink_type_title.great, .signal_text_bg.signal.great{
+	color: #059669;
+}
+.connect_type_status_bg .uplink_type_title.ok, .signal_text_bg.signal.ok{
+	color: #059669;
+}
+.connect_type_status_bg .uplink_type_title.disconnected, .signal_text_bg.signal.disconnected{
+	color: #262626;
+}
+.connect_type_status_bg .uplink_type_ip, .connect_type_status_bg .uplink_type_mode_title{
+	color: #181818;
+}
+.connect_type_status_bg .uplink_type_mode_title{
+	color: #006CE1;
+}
+.connect_type_status_bg .uplink_icon_bg > .uplink_type_icon.moca{
+	background: url(/images/New_ui/amesh/signal_quality_moca.svg) no-repeat;
+}
+.wan_status_bg div.connect_icon_bg > div{
+	background: url(/images/New_ui/amesh/white_theme/cards_usage.svg) no-repeat;
+}
+.card_block_bg span.connect_title, span.connect_status{
+	color: #262626;
+}
+.card_block_bg span.connect_title.horizontal_line:before{
+	border-top: 3px solid #7E54FF;
+}
+.card_block_bg span.connect_title.vertical.traffic:before{
+	border-left: 3px solid #7E54FF;
+}
+.wan_status_bg span.connect_status.connected{
+	color: #059669;
+}
+.wan_connect_info > div:first-child:before, .common_separate_bg > div:nth-child(2):before{/*vertical_line*/
+	border-left: 1px solid #DCDCDC;
+}
+.wan_connect_info .connect_info_title{
+	color: #006CE1;
+}
+.wan_connect_info .connect_info_text{
+	color: #262626;
+}
+.separation_line p{
+	color: #262626;
+	background: #FFFFFF;
+}
+.fronthaul_info .separation_line p:before{
+	background: initial;
+	width: 12px;
+	height: 12px;
+	top: 24px;
+	-moz-transform:rotate(-45deg);
+	-webkit-transform:rotate(-45deg);
+	-o-transform:rotate(-45deg);
+	transform:rotate(-45deg);
+	border-top: 2px solid #262626;
+	border-right: 2px solid #262626;
+}
+.fronthaul_info .separation_line p.hide:before{
+	-moz-transform: rotate(135deg);
+	-webkit-transform: rotate(135deg);
+	-o-transform: rotate(135deg);
+	transform: rotate(135deg);
+}
+.common_title{
+	color: #006CE1;
+}
+.common_title.white{
+	color: #262626;
+}
+.common_content_bg{
+	background: #F5F5F5;
+}
+.common_content_text{
+	color: #262626;
+}
+.common_title_content_bg{
+	color: #006CE1;
+}
+.common_title_content_bg > div.content_bg{
+	background: #F5F5F5;
+	color: #262626;
+}
+.common_separate_bg span{
+	color: #006CE1;
+}
+.common_separate_bg span.transmit_value{
+	color: #059669;
+}
+.common_separate_bg span.transmit_value.green{
+	color: #059669;
+}
+.common_separate_bg.horizontal_line:before,
+.item_bg.signal:before,.item_bg.location:before,
+.manage_settings_bg > div.horizontal_line:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.backhaul_info .backhaul_bg{
+	background: #FFFFFF;
+}
+.backhaul_info .common_content_bg, .backhaul_info .common_title_content_bg .content_bg{
+	background: #F5F5F5;
+}
+.manage_switch_led .switch.off, .manage_switch_wifi .switch.off{
+	background: #818181;
+}
+.manage_switch_led .switch.on, .manage_switch_wifi .switch.on{
+	background: #006CE1;
+}
+.manage_common_title{
+	color: #262626;
+}
+.manage_settings_bg .dropdown_item_bg .dropdown_select{
+	background: #FFFFFF;
+	color: #4D4D4D;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div .manage_common_title{
+	color: #006CE1;
+}
+.manage_settings_bg .sub_item_bg .manage_sub_item_bg > div:before{
+	border-top: 1px solid #DCDCDC;
+}
+.manage_disconnected{
+	color: #ED4444;
+}
+.manage_disconnected:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.managment_icon{
+	background: url(/images/New_ui/amesh/white_theme/managment_icon.svg) no-repeat;
+}
+.preferable_backhaul_text{
+	color: #006CE1;
+}
+.arrow_icon{
+	border-top: 3px solid #262626;
+	border-right: 3px solid #262626;
+}
+.client_num_bg{
+	color: #262626;
+}
+.client_num_bg div.left span:before{
+	border-top: 3px solid #7E54FF;
+}
+.client_tab_bg{
+	background: #FFFFFF;
+	border: initial;
+}
+.client_tab_bg div{
+	color: #4D4D4D;
+	border: 1px solid rgba(127, 143, 164, 0.4);
+	border-right-style: none;
+}
+.client_tab_bg div:last-child{
+	border-radius: 0 2px 2px 0;
+	border-right: 1px solid rgba(127, 143, 164, 0.4);
+}
+.client_tab_bg div.clicked{
+	background-image: initial;
+	background-color: rgb(36 141 255);
+	outline: 1px solid rgb(36 141 255 / 20%);
+}
+.client_list_bg .each_client_bg:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.client_list_bg .client_icon_bg.default_icon, .client_list_bg .client_icon_bg.user_icon{
+	background-color: #B3B3B3;
+	box-shadow: initial;
+}
+.client_list_bg .client_action_bg > span{
+	background-color: #F5F5F5;
+	border: 1px solid rgba(127, 143, 164, 0.4);
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.client_list_bg .client_action_bg > span:hover{
+	background-color: #FFFFFF;
+	border: 1px solid rgba(127, 143, 164, 1);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.client_list_bg .client_action_bg > span.unbind{
+	border: 1px solid rgba(127, 143, 164, 1);
+	box-shadow: 0px 3px 4px 0px rgb(0 0 0 / 14%), 0px 3px 3px -2px rgb(0 0 0 / 12%), 0px 1px 8px 0px rgb(0 0 0 / 20%);
+}
+.client_list_bg .client_content_bg > .client_content_name{
+	color: #262626;
+}
+.client_list_bg .client_content_bg > .client_content_name.offline, .client_list_bg .client_content_bg > .client_content_mac_ip.offline{
+	color: #262626;
+}
+.client_list_bg .client_content_bg .client_content_mac_ip .client_connect_icon{
+	background-image: url(/images/New_ui/amesh/white_theme/client_control.svg);
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip{
+	color: #4D4D4D;
+}
+.client_list_bg .client_content_bg > .client_content_mac_ip > div:not(:first-child):before{
+	border-left: 1px solid #DCDCDC;
+}
+.client_list_bg .no_client_hint{
+	color: #818181;
+}
+.popup_hint_bg{
+	background: #FFFFFF;
+	border: 1px solid #CCCCCC;
+	color: #262626;
+}
+.popup_hint_bg .notice_text.hint{
+	color: #ED4444;
+}
+.popup_hint_bg .notice_text_blue{
+	color: #006CE1;
+}
+.popup_hint_bg .horizontal_line:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.popup_hint_bg .notice_text_location{
+	color: #006CE1;
+}
+.popup_hint_bg .action_more_bg:before{
+	border-top: 1px solid #DCDCDC;
+}
+.popup_hint_bg .action_more_bg > span{
+	color: #006CE1;
+}
+.hover_pop_hint_bg{
+	background: #FFFFFF;
+	border: 1px solid #CCCCCC;
+	color: #262626;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_title:before{
+	background-color: #262626;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content, .hover_pop_hint_bg.prefer_ap_icon > span.prefer_ap_content{
+	color: #181818;
+}
+.hover_pop_hint_bg.conn_priority_icon > span.conn_priority_content.text_yellow{
+	color: #EF4444;
+}
+.hover_pop_hint_bg.node_feature_notice .list_item, .hover_pop_hint_bg.prefer_ap_icon .list_item{
+	color: #006CE1;
+}
+.hover_pop_hint_bg.prefer_ap_icon .list_item{
+	color: #006CE1;
+}
+.hover_pop_hint:hover::before,
+.hover_pop_hint:hover::after{
+	content: '';
+	position: absolute;
+	width: 0;
+	height: 0;
+	border: 13px solid transparent;
+	border-bottom-color: #CCCCCC;
+	z-index: 510;
+	border-top: 0;
+	top: 23px;
+	left: 0px;
+}
+.hover_pop_hint:hover::after{
+	border-bottom-color: #FFFFFF;
+	top: 25px;
+}
+.hover_pop_hint.node_feature_notice:hover::before,
+.hover_pop_hint.node_feature_notice:hover::after{
+	right: -3px;
+	left: 0px;
+	top: 19px;
+}
+.hover_pop_hint.node_feature_notice:hover::after{
+	top: 20px;
+}
+.hover_pop_hint.conn_priority_icon:hover::before, .hover_pop_hint.prefer_ap_icon:hover::before,
+.hover_pop_hint.conn_priority_icon:hover::after, .hover_pop_hint.prefer_ap_icon:hover::after{
+	top: 5px;
+	left: -15px;
+	-o-transform: rotate(90deg);
+	-ms-transform: rotate(90deg);
+	-moz-transform: rotate(90deg);
+	-webkit-transform: rotate(90deg);
+	transform: rotate(90deg);
+}
+.hover_pop_hint.conn_priority_icon:hover::after, .hover_pop_hint.prefer_ap_icon:hover::after{
+	left: -18px;
+}
+.jstree-anchor:before {
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
+}
+.jstree-anchor.moca:before {
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.jstree-default .jstree-hovered {
+	background: #ECF5FF;
+}
+.jstree-default .jstree-clicked {
+	background: #ECF5FF;
+}
+.jstree-default .jstree-wholerow-hovered {
+	background: #ECF5FF;
+}
+.jstree-default .jstree-wholerow-clicked {
+	background: #ECF5FF;
+	box-shadow: -3px 0 0 0 #248DFF, 0 2px 0 0 rgba(0,0,0,0);
+}
+.jstree-default .jstree-node:before{
+	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
+}
+.jstree-default .jstree-node.moca:before{
+	background: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.topology_node_info > div{
+	color: #262626;
+}
+.topology_node_info > div:nth-child(2){
+	color: #006CE1;
+}
+.topology_node_info > div:nth-child(3){
+	color: #006CE1;
+}
+.topology_node_info > div:nth-child(3) > span:nth-child(2){
+	color: #006CE1;
+}
+.node_btn_control:before{
+	border-top: 1px solid #DCDCDC;
+}
+.node_btn_control > div{
+	background-image: initial;
+	border: 1px solid #B3B3B3;
+	box-shadow: initial;
+	color: #262626;
+}
+.node_btn_control > div > span.refresh_icon:before{
+	background: url(/images/New_ui/amesh/white_theme/client_control.svg) no-repeat;
+}
+.connect_info_bg:before{
+	border-top: 1px solid #DCDCDC;
+}
+.connect_line_info_icon{
+	background: #FFFFFF;
+	background-image: url(/images/New_ui/amesh/white_theme/cards_usage.svg);
+}
+.connect_line_info_bg .connect_line{
+	background: #f5f5f5;
+}
+.connect_line_info_bg .connect_line:before{
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality.svg);
+}
+.connect_line_info_bg .connect_line.moca:before{
+	background-image: url(/images/New_ui/amesh/white_theme/topology_connect_quality_moca.svg);
+}
+.aimesh_tab{
+	color: #111827;
+}
+.aimesh_tab > span.clicked:before{
+	border-bottom: 2px solid rgba(0, 108, 225, 1);
+}
+.splitLine{
+	background: #DCDCDC;
+}
+.port_status_bg:before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.port_status_bg .label_W_bg:before{
+	border-left: 1px solid #DCDCDC;
+}
+.port_status_bg .label_L_bg:before{
+	border-right: 1px solid #DCDCDC;
+}
+.port_status_bg .port_icon,
+.port_status_bg .port_icon .wan_icon,
+.port_status_bg .label_W_bg .port_icon:before{
+	background-image: url(/images/New_ui/amesh/white_theme/port_status.svg);
+}
+.port_status_icon_desc > div.conn:before{
+	background-color: #10B981;
+}
+.port_status_icon_desc > div.warn:before, .port_status_notice_item.warn:before{
+	background-color: #F05E16;
+}
+.port_status_icon_desc > div.unplug:before{
+	background-color: #999999;
+}
+.iperf_title{
+    color: #262626;
+}
+.iperf_GO{
+	border: 1px solid #006CE1;
+	color: #006CE1;
+}
+.iperf_GO:hover{
+	background-color: #006CE1;
+}
+.iperf_content_field{
+	border-bottom: 1px solid #DCDCDC;
+}
+.iperf_testing{
+	border: 1px solid #006CE1;
+	background-color: #006CE1;
+}
+.text_link{
+	color: #006CE1 !important;
+}
+.text_emphasize{
+	color: #EF4444 !important;
+}
+.MoCA_node_container:not(:last-child):before{
+	border-bottom: 1px solid #DCDCDC;
+}
+.MoCA_node_sub_info > div:not(:first-child):before{
+	border-left: 1px solid #DCDCDC;
+}
+.MoCA_node_sub_info > div{
+	color: #4D4D4D;
+	text-shadow: initial;
+}
+.MoCA_node_container .MoCA_PHY_rate.great{
+	color: #10B981;
+}
+.MoCA_node_container .MoCA_PHY_rate.weak{
+	color: #F05E16;
+}

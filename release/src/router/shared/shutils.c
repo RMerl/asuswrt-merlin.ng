@@ -271,6 +271,9 @@ int _eval(char *const argv[], const char *path, int timeout, int *ppid)
 		chld = signal(SIGCHLD, SIG_DFL);
 	}
 
+#if defined(RTCONFIG_VALGRIND)
+	setenv("USER", nvram_get("http_username")? : "admin", 1);
+#endif
 #ifdef HND_ROUTER
 	p = nvram_safe_get("env_path");
 	snprintf(s, sizeof(s), "%s%s/sbin:/bin:/usr/sbin:/usr/bin:/opt/sbin:/opt/bin", *p ? p : "", *p ? ":" : "");
@@ -2415,14 +2418,14 @@ int num_of_5g_if()
 	}
 #else
 	char word[256], *next;
-	int count = 0;
 	char wl_ifnames[32] = { 0 };
-	int band;
+	char prefix[] = "wlXXXXXXXXXXXX_", tmp[128];
+	int idx = 0, count = 0;
 
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
 	foreach (word, wl_ifnames, next) {
-		wl_ioctl(word, WLC_GET_BAND, &band, sizeof(band));
-		if(band == WLC_BAND_5G)
+		snprintf(prefix, sizeof(prefix), "wl%d_", idx++);
+		if (nvram_match(strcat_r(prefix, "nband", tmp), "1"))
 			count++;
 	}
 #endif
@@ -2968,6 +2971,8 @@ int ping_target_with_size(char *target, unsigned int pkt_size, unsigned int ping
 	char ping_done[160] = {0};
 	char cmdbuf[1024] = {0};
 	ping_result_t data;
+	int sig;
+	sigset_t set;
 
 	if(!target || (pkt_size <= 0) || (ping_cnt <= 0) || (wait_time <= 0) || (loss_rate < 0))
 	{
@@ -2975,32 +2980,108 @@ int ping_target_with_size(char *target, unsigned int pkt_size, unsigned int ping
 	}
 	else
 	{
-		snprintf(ping_result, sizeof(ping_result), "/tmp/ping_%s", target);
+		snprintf(ping_result, sizeof(ping_result), "/tmp/ping_%s_%d", target, pkt_size);
 		unlink(ping_result);
-		snprintf(ping_done, sizeof(ping_done), "/tmp/ping_%s.done", target);
+		snprintf(ping_done, sizeof(ping_done), "/tmp/ping_%s_%d.done", target, pkt_size);
 		unlink(ping_done);
 
-		snprintf(cmdbuf, sizeof(cmdbuf), "ping -c %d -W %d -s %d %s > %s 2>&1 || true && echo \"\" >> %s", ping_cnt, wait_time, pkt_size, target, ping_result, ping_done);
-		system(cmdbuf);
-		sleep(2);
-
-		if(f_exists(ping_result))
+		if(fork() == 0)
 		{
-			memset(&data, 0, sizeof(ping_result_t));
-			if(parse_ping_content(ping_result, &data) == 0)
+			//child
+
+			setsid();
+
+			// reset signal handlers
+			for (sig = 1; sig < _NSIG; sig++)
 			{
-				//_dprintf("pkt_loss_rate=[%lf]\n", data.pkt_loss_rate);
-				if(data.pkt_loss_rate <= loss_rate)
+				signal(sig, SIG_DFL);
+			}
+
+			// unblock signals if called from signal handler
+			sigemptyset(&set);
+			sigprocmask(SIG_SETMASK, &set, NULL);
+
+			snprintf(cmdbuf, sizeof(cmdbuf), "ping -c %d -W %d -s %d %s > %s 2>&1 || true && echo \"\" >> %s", ping_cnt, wait_time, pkt_size, target, ping_result, ping_done);
+			system(cmdbuf);
+			logmessage("ping_target_with_size", "Ping test is complete.\n");
+		}
+		else
+		{
+			//parent
+			sleep(3);
+
+			if(f_exists(ping_result))
+			{
+				memset(&data, 0, sizeof(ping_result_t));
+				if(parse_ping_content(ping_result, &data) == 0)
 				{
-					return 1;
-				}
-				else
-				{
-					return 0;
+					//_dprintf("pkt_loss_rate=[%lf]\n", data.pkt_loss_rate);
+					if(data.pkt_loss_rate <= loss_rate)
+					{
+						logmessage("ping_target_with_size", "Successful to ping target(%s) with size(%d)\n", target, pkt_size);
+						return 1;
+					}
+					else
+					{
+						logmessage("ping_target_with_size", "Failed to ping target(%s) with size(%d)\n", target, pkt_size);
+						return 0;
+					}
 				}
 			}
+			logmessage("ping_target_with_size", "Cannot find ping result(%s)\n", ping_result);
+			return 0;
 		}
-
-		return 0;
 	}
+}
+
+/*******************************************************************
+* NAME: replace_literal_newline
+* AUTHOR: Renjie Lee
+* CREATE DATE: 2023/03/21
+* DESCRIPTION: Replace literal newline(s) ("\n")  with newline character(s) ('\n').
+*                        That is to say, from "\n" to '\n'.
+* INPUT:  inputstr, the string to be replaced.
+*         output, the replaced string will be stored in 'output'.
+*         buflen, the size of 'output' buffer.
+* OUTPUT: None
+* RETURN: -1 or -2, if something went wrong; 1, function works correctly.
+* NOTE:
+*******************************************************************/
+int replace_literal_newline(char *inputstr, char *output, int buflen)
+{
+	int in = 0;
+	int out = 0;
+	int len = 0;
+
+	if((!inputstr) || (strlen(inputstr) <= 0))
+	{
+		logmessage("replace_literal_newline", "Wrong inputstr.\n");
+		return -1;
+	}
+
+	if((!output) || (buflen == 0))
+	{
+		logmessage("replace_literal_newline", "Wrong output buffer\n");
+		return -2;
+	}
+
+	len = strlen(inputstr);
+	for(in = 0; (in < len) && (out < buflen); in++, out++)
+	{
+		if(in == len -1)
+		{
+			//boundary condition
+			output[out] = inputstr[in];
+		}
+		else if((inputstr[in] == '\\') && (inputstr[in+1] == 'n'))
+		{
+			output[out] = '\n';
+			in++;
+		}
+		else
+		{
+			output[out] = inputstr[in];
+		}
+	}
+	return 1;
 }

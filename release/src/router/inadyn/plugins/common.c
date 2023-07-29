@@ -29,6 +29,18 @@
  * Also applies to other dyndns2 api compatible services, like:
  * DNS-O-Matic, no-ip, 3322, HE and nsupdate.info.
  */
+#if defined(USE_IPV6) && defined(ASUSWRT)
+#define DYNDNS_UPDATE_IP_HTTP_REQUEST					\
+	"GET %s?"							\
+	"hostname=%s&"							\
+	"myip=%s"							\
+	"%s"							\
+	"%s "      							\
+	"HTTP/1.0\r\n"							\
+	"Host: %s\r\n"							\
+	"Authorization: Basic %s\r\n"					\
+	"User-Agent: %s\r\n\r\n"
+#else
 #define DYNDNS_UPDATE_IP_HTTP_REQUEST					\
 	"GET %s?"							\
 	"hostname=%s&"							\
@@ -38,6 +50,7 @@
 	"Host: %s\r\n"							\
 	"Authorization: Basic %s\r\n"					\
 	"User-Agent: %s\r\n\r\n"
+#endif
 
 /*
  * DynDNS request composer -- common to many other DDNS providers as well
@@ -45,6 +58,11 @@
 int common_request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
 	char wildcard[20] = "";
+#if defined(USE_IPV6) && defined(ASUSWRT)
+	char ipv6ptr[128] = "";
+	if (alias->ipv6_address[0] != '\0')
+		snprintf(ipv6ptr, sizeof(ipv6ptr), "&myipv6=%s", alias->ipv6_address);
+#endif
 
 	if (info->wildcard)
 		strlcpy(wildcard, "&wildcard=ON", sizeof(wildcard));
@@ -54,6 +72,9 @@ int common_request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 			info->server_url,
 			alias->name,
 			alias->address,
+#if defined(USE_IPV6) && defined(ASUSWRT)
+			ipv6ptr,
+#endif
 			wildcard,
 			info->server_name.name,
 			info->creds.encoded_password,

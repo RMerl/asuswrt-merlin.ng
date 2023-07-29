@@ -55,7 +55,7 @@ void write_chap_secret(char *file)
 				continue;
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(passwd, dec_passwd, sizeof(dec_passwd));
+			pw_dec(passwd, dec_passwd, sizeof(dec_passwd), 1);
 			passwd = dec_passwd;
 #endif
 			fprintf(fp, "'%s' * '%s' *\n",

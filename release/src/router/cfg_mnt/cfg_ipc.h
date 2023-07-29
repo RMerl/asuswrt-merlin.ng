@@ -3,6 +3,7 @@
 
 #define CFGMNT_IPC_SOCKET_PATH	"/var/run/cfgmnt_ipc_socket"
 #define CFGMNT_IPC_MAX_CONNECTION       10
+#define MAX_IPC_PACKET_SIZE		2048
 
 extern void cm_rcvIpcHandler(int sock);
 extern int cm_sendIpcHandler(char *ipcPath, char *data, int dataLen);

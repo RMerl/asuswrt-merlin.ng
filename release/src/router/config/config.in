@@ -251,10 +251,6 @@ config RTCONFIG_INADYN
 	depends on RTCONFIG_DDNS
 	default y
 
-config RTCONFIG_ASUSDDNS_ACCOUNT_BASE
-	bool "ASUS DDNS for Account base"
-	default n
-
 config RTCONFIG_L7
 	bool "Layer 7 Netfilter"
 	default y
@@ -635,6 +631,10 @@ config RTCONFIG_SAMBA3
 	depends on RTCONFIG_SAMBASRV
 	default n
 
+config RTCONFIG_AWSIOT
+	bool "Compile with aws-iot"
+	default n
+
 config RTCONFIG_SAMBA36X
 	bool "Compile with Samba 3.6.x"
 	depends on RTCONFIG_SAMBASRV
@@ -986,6 +986,11 @@ config RTCONFIG_WIFI_QCA9994_QCA9994
 	depends on RTCONFIG_QCA
 	default n
 
+config RTCONFIG_NO_RELOAD_WIFI_DRV_IF_POSSIBLE
+	bool "Don't reload WiFi driver if possible"
+	depends on RTCONFIG_QCA
+	default n
+
 config RTCONFIG_CFG80211
 	bool "Qualcomm Atheros cfg80211 support"
 	depends on RTCONFIG_QCA
@@ -1086,6 +1091,10 @@ config RTCONFIG_AIR_TIME_FAIRNESS
 
 config RTCONFIG_POWER_SAVE
 	bool "Power Save"
+	default n
+
+config RTCONFIG_PAGECACHE_RATIO
+	bool "Control maximum page cache ratio"
 	default n
 
 config RTCONFIG_QCA8033
@@ -1335,6 +1344,10 @@ config RTCONFIG_DUAL_TRX2
 	depends on RTCONFIG_DUAL_TRX
 	default n
 
+config RTCONFIG_TEST_FLIPBITS
+	bool "Test NAND Flash bit-flip"
+	default n
+
 config RTCONFIG_UBI
 	bool "Unsorted Block Images"
 	default n
@@ -1504,6 +1517,14 @@ config RTCONFIG_CFE_NVRAM_CHK
 
 config RTCONFIG_DEBUG
 	bool "debug mode"
+	default n
+
+config RTCONFIG_DMALLOC
+	bool "Link with dmalloc that is used to detect memory leak."
+	default n
+
+config RTCONFIG_VALGRIND
+	bool "Compiled valgrind"
 	default n
 
 config RTCONFIG_HAS_5G
@@ -1818,6 +1839,11 @@ config RTCONFIG_6RELAYD
 config RTCONFIG_SOFTWIRE46
 	bool "IPv6 Softwire46 tunnel support"
 	depends on RTCONFIG_IPV6
+	default n
+
+config RTCONFIG_OCNVC
+	bool "IPoE - OCN Virtual Connect support"
+	depends on RTCONFIG_SOFTWIRE46
 	default n
 
 config RTCONFIG_PORT_BASED_VLAN
@@ -2649,4 +2675,24 @@ config RTCONFIG_BSC_SR
 
 config RTCONFIG_AMAS_SS2
 	bool "AiMesh Site Survey strategy-2"
+	default n
+
+config RTCONFIG_NOWL
+	bool "no wl"
+	default n
+
+config RTCONFIG_INTEL_EVO
+	bool "configuration for Intel EVO program certificate"
+	default n
+
+config RTCONFIG_SW_SPDLED
+	bool "sw speed led"
+	default n
+
+config RTCONFIG_BCM4906_504
+	bool "962118G in 504"
+	default n
+
+config RTCONFIG_RTL_UMGMT
+	bool "un-management-mode rtl switch's ops "
 	default n

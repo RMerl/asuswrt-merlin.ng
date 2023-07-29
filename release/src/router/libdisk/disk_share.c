@@ -2349,8 +2349,8 @@ extern int add_account(const char *const account, const char *const password){
 	char enc_passwd[enclen];
 	char passwdbuf[NVRAM_ENC_MAXLEN];
 
-	if(!pw_dec(password, passwdbuf, sizeof(passwdbuf))){
-		pw_enc(ascii_passwd, enc_passwd);
+	if(!pw_dec(password, passwdbuf, sizeof(passwdbuf), 1)){
+		pw_enc(ascii_passwd, enc_passwd, 1);
 		strlcpy(ascii_passwd, enc_passwd, sizeof(ascii_passwd));
 	}else{
 		strlcpy(ascii_passwd, password, sizeof(ascii_passwd));
@@ -2862,7 +2862,7 @@ extern int mod_account(const char *const account, const char *const new_account,
 				char enc_passwd[256] = {0};
 
 				memset(enc_passwd, 0, sizeof(enc_passwd));
-				pw_enc(ascii_passwd, enc_passwd);
+				pw_enc(ascii_passwd, enc_passwd, 1);
 				set_passwd = enc_passwd;
 #else
 				set_passwd = ascii_passwd;

@@ -5,7 +5,7 @@ ifeq ($(BRCM_CHIP),$(filter $(BRCM_CHIP),4908 4912))
 CFLAGS += -DBCM49XX
 endif
 endif
-CFLAGS += -Wall -Os $(EXTRACFLAGS)
+CFLAGS += -Wall $(if $(RTCONFIG_DEBUG),-g,-Os) $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(TOP)/networkmap
 ifneq ($(HND_ROUTER),y)
 CFLAGS += -idirafter$(LINUXDIR)/include
@@ -229,6 +229,10 @@ ifeq ($(RTCONFIG_ASD),y)
 CFLAGS  += -I$(TOP)/asd
 endif
 
+ifeq ($(RTCONFIG_ASD),y)
+CFLAGS  += -I$(TOP)/asd
+endif
+
 ifeq ($(RTCONFIG_PROTECTION_SERVER),y)
 CFLAGS  += -I$(TOP)/protect_srv/include
 endif
@@ -303,7 +307,15 @@ CFLAGS         += -DBCM_KF_NETFILTER
 endif
 endif
 
-OBJS := rc.o init.o interface.o lan.o wireless.o wan.o pppd.o auth.o services.o
+ifeq ($(and $(BR63),$(NEW_SWITCH_ORDER)),y)
+CFLAGS += -DNEW_SWITCH_ORDER
+endif
+
+ifeq ($(or $(HND_ROUTER_AX_6756),$(HND_ROUTER_BE_4916)),y)
+CFLAGS += -DJFFS2_UBI_VOLUME_SIZE=$(JFFS2_UBI_VOLUME_SIZE)
+endif
+
+OBJS := rc.o init.o interface.o lan.o wireless.o $(if $(RTCONFIG_SOFTWIRE46), s46comm.o) wan.o pppd.o auth.o services.o
 OBJS += firewall.o ppp.o services.o common.o
 OBJS += watchdog.o check_watchdog.o fwupg_flashing.o $(if $(RTCONFIG_MULTIWAN_CFG),qos_multiwan.o,qos.o) udhcpc.o ate.o
 OBJS += format.o
@@ -520,7 +532,7 @@ endif
 OBJS += frs_service.o
 #endif
 
-ifeq ($(RTCONFIG_ASUSDDNS_ACCOUNT_BASE),y)
+ifeq ($(and $(RTCONFIG_TUNNEL),$(RTCONFIG_ACCOUNT_BINDING)),y)
 OBJS += asus_ddns.o
 endif
 
@@ -673,9 +685,9 @@ ifeq ($(RTCONFIG_IPERF),y)
 OBJS += monitor.o
 endif
 
+CFLAGS += -I$(TOP)/curl/include
+LDFLAGS += -L$(TOP)/curl/lib/.libs -lcurl
 ifeq ($(or $(RTCONFIG_FRS_LIVE_UPDATE),$(RTCONFIG_FRS_FEEDBACK),$(RTCONFIG_URLFW),$(RTCONFIG_SOFTWIRE46)),y)
-CFLAGS += -I$(TOP)/curl-7.21.7/include
-LDFLAGS += -L$(TOP)/curl-7.21.7/lib/.libs -lcurl
 ifeq ($(RTCONFIG_TR069),y)
 CFLAGS += -I$(TOP)/libssh2-1.10.0/include -I$(TOP)/zlib/include
 LDFLAGS += -L$(TOP)/libssh2-1.10.0/src/.libs -lssh2 -L$(TOP)/zlib -lz
@@ -691,7 +703,7 @@ endif
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
 CFLAGS += -I$(TOP)/json-c
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-OBJS += s46comm.o v6plusd.o ocnvcd.o
+OBJS += v6plusd.o ocnvcd.o
 endif
 
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
@@ -972,7 +984,7 @@ rc: $(OBJS) $(if $(RTCONFIG_CONNDIAG),libconn_diag.so,)
 install: all
 	@echo "[rc] Installing..."
 	@install -D rc $(INSTALLDIR)/sbin/rc
-	@$(STRIP) $(INSTALLDIR)/sbin/rc
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/sbin/rc)
 	@chmod 0500 $(INSTALLDIR)/sbin/rc
 ifeq ($(RTCONFIG_BRCM_HOSTAPD),y)
 	@install $(WPS_PBCD) $(INSTALLDIR)/sbin
@@ -981,7 +993,7 @@ endif
 
 ifeq ($(RTCONFIG_CONNDIAG),y)
 	@install -D libconn_diag.so $(INSTALLDIR)/usr/lib/libconn_diag.so
-	@$(STRIP) $(INSTALLDIR)/usr/lib/libconn_diag.so
+	$(if $(RTCONFIG_DEBUG),,@$(STRIP) $(INSTALLDIR)/usr/lib/libconn_diag.so)
 endif
 
 ifeq ($(RTCONFIG_BCMARM),y)
@@ -1149,7 +1161,10 @@ endif
 ifeq ($(RTCONFIG_EXT_RTL8370MB),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
-ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N),$(BR63)),y)
+ifeq ($(or $(RTAX55),$(RTAX1800),$(RTAX58U_V2),$(RTAX3000N)),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
+endif
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),BR63))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc rtkswitch
 endif
 ifeq ($(RTCONFIG_QCA),y)
@@ -1405,6 +1420,9 @@ ifeq ($(RTCONFIG_LETSENCRYPT),y)
 endif
 
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
+	@cd $(INSTALLDIR)/sbin && ln -sf rc init_wan46
+	@cd $(INSTALLDIR)/sbin && ln -sf rc auto46det
+	@cd $(INSTALLDIR)/sbin && ln -sf rc s46reset
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mapcalc
 	@cd $(INSTALLDIR)/sbin && ln -sf rc v6plusd
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ocnvcd
@@ -1449,7 +1467,7 @@ ifeq ($(RTCONFIG_QCA_PLC2),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc detect_plc
 endif
 
-ifeq ($(RTCONFIG_ASUSDDNS_ACCOUNT_BASE),y)
+ifeq ($(and $(RTCONFIG_TUNNEL),$(RTCONFIG_ACCOUNT_BINDING)),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc update_asus_ddns_token
 endif
 	@cd $(INSTALLDIR)/sbin && ln -sf rc collect_debuglog

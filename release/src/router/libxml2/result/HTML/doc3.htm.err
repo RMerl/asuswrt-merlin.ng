@@ -46,9 +46,9 @@ om/ad_static.asp?pid=2097&sid=1881&asid=7708"></a></IFRAME></CENTER></LI></FONT>
 ./test/HTML/doc3.htm:803: HTML parser error : End tag : expected '>'
 							document.write("DF8478957377></SC");
 							                                 ^
-./test/HTML/doc3.htm:803: HTML parser error : Unexpected end tag : sc
-							document.write("DF8478957377></SC");
-							                                 ^
+./test/HTML/doc3.htm:804: HTML parser error : Unexpected end tag : sc
+							document.write("RIPT>");
+							                     ^
 ./test/HTML/doc3.htm:811: HTML parser error : Unexpected end tag : a
 							document.write("ype=gif&size=100x90></A>");
 							                                        ^

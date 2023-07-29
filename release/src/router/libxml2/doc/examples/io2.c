@@ -4,7 +4,7 @@
  * purpose: Demonstrate the use of xmlDocDumpMemory
  *          to output document to a character buffer
  * usage: io2
- * test: io2 > io2.tmp ; diff io2.tmp io2.res ; rm -f io2.tmp
+ * test: io2 > io2.tmp && diff io2.tmp $(srcdir)/io2.res
  * author: John Fleck
  * copy: see Copyright for the status of this software.
  */
@@ -25,7 +25,7 @@ main(void)
      * Create the document.
      */
     doc = xmlNewDoc(BAD_CAST "1.0");
-    n = xmlNewNode(NULL, BAD_CAST "root");
+    n = xmlNewDocNode(doc, NULL, BAD_CAST "root", NULL);
     xmlNodeSetContent(n, BAD_CAST "content");
     xmlDocSetRootElement(doc, n);
 
@@ -53,6 +53,6 @@ main(void)
 {
     fprintf(stderr,
             "library not configured with tree and output support\n");
-    return (1);
+    return (0);
 }
 #endif

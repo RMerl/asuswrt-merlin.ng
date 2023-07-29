@@ -39,7 +39,7 @@
 #endif
 
 typedef int (*hello_world_t)(void);
- 
+
 int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
     xmlChar filename[PATH_MAX];
     xmlModulePtr module = NULL;
@@ -47,7 +47,7 @@ int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 
     /* build the module filename, and confirm the module exists */
     xmlStrPrintf(filename, sizeof(filename),
-                 (const xmlChar*) "%s/testdso%s",
+                 "%s/testdso%s",
                  (const xmlChar*)MODULE_PATH,
 		 (const xmlChar*)LIBXML_MODULE_EXTENSION);
 
@@ -62,7 +62,7 @@ int main(int argc ATTRIBUTE_UNUSED, char **argv ATTRIBUTE_UNUSED) {
 	    fprintf(stderr, "Lookup returned NULL\n");
 	    return(1);
 	}
-	
+
         (*hello_world)();
 
         xmlModuleClose(module);

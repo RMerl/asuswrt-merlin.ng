@@ -771,6 +771,10 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		}
 	}
 
+	if(is_KR_sku){ //remove Open System
+		auth_array = auth_array.filter(subArr => subArr[1] !== 'open');
+	}
+
 	if(isSupport("amas") && isSupport("amasRouter") && (isSwMode("rt") || isSwMode("ap"))){
 		var re_count = httpApi.hookGet("get_cfg_clientlist", true).length;
 		if(re_count > 1){

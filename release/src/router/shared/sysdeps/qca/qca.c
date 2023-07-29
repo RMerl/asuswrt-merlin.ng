@@ -743,6 +743,166 @@ int get_qca_sta_info_by_ifname(const char *ifname, char subunit_id, WIFI_STA_TAB
 		return __get_QCA_sta_info_by_ifname(ifname, subunit_id, handler_qca_sta_info, sta_info);
 }
 
+struct find_vap_by_sta_priv_s {
+	char *addr;
+
+	int found;
+};
+
+/* Helper of rssi_check_unit()
+ * @src:	pointer to WLANCONFIG_LIST
+ * @arg:
+ * @return:
+ * 	0:	success
+ *  otherwise:	error
+ */
+static int handle_find_vap_by_sta(const WLANCONFIG_LIST *src, void *arg)
+{
+	unsigned char ea1[6] = { 0 }, ea2[6] = { 0 };
+	struct find_vap_by_sta_priv_s *priv = arg;
+
+	if (!src || !arg || !priv->addr)
+		return -1;
+	if (priv->found)
+		return 0;
+
+	if (!ether_atoe(priv->addr, ea1) || !ether_atoe(src->addr, ea2) || memcmp(ea1, ea2, sizeof(ea1)))
+		return 0;
+
+	priv->found = 1;
+	return 0;
+}
+
+/* Check whether @sta_addr exist on @vap, if not, find correct VAP and return it by @vap.
+ * @sta_addr:
+ * @vap:	pointer to char pointer, length IFNAMSIZ.
+ * @return:
+ *    < 0:	error
+ * 	0:	@sta_addr is not found in all VAP at same band
+ * 	1:	@sta_addr is found, @vap maybe update
+ */
+int find_vap_by_sta(char *sta_addr, char *vap)
+{
+	int band, y, max_subnet;
+	char prefix[sizeof("wlX.XXX_")], ifname[IFNAMSIZ];
+	struct find_vap_by_sta_priv_s priv;
+
+	if (!sta_addr || *sta_addr == '\0' || !vap || *vap == '\0')
+		return -1;
+
+	memset(&priv, 0, sizeof(priv));
+	priv.addr = sta_addr;
+	__get_qca_sta_info_by_ifname(ifname, 0, handle_find_vap_by_sta, &priv);
+	if (priv.found)
+		return 1;
+
+	band = -1;
+	get_wlif_unit(vap, &band, NULL);
+	if (band < 0 || band >= MAX_NR_WL_IF)
+		return -1;
+
+	/* Find correct VAP for @sta_addr. */
+	max_subnet = num_of_mssid_support(band);
+	for (y = 0; y < max_subnet; ++y) {
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", band, y);
+		if (!nvram_pf_match(prefix, "bss_enabled", "1"))
+			continue;
+
+		get_wlxy_ifname(band, y, ifname);
+		if (!strcmp(ifname, vap))
+			continue;
+
+		memset(&priv, 0, sizeof(priv));
+		priv.addr = sta_addr;
+		if (!__get_qca_sta_info_by_ifname(ifname, 0, handle_find_vap_by_sta, &priv) && priv.found) {
+			strlcpy(vap, ifname, IFNAMSIZ);
+			break;
+		}
+	}
+
+	return priv.found? 1 : 0;
+}
+
+/* wlX_XXX on CAP/RE both. */
+static const char *reload_qcawifi_params[] = {
+	/* Effect module parameters, reload if changed. */
+	"twt", "atf",
+#if defined(RTCONFIG_WIFI_QCA9990_QCA9990) \
+ || defined(RTCONFIG_WIFI_QCA9994_QCA9994) \
+ || defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+	"hwol",
+#endif
+	/* Effect VPHY settings and won't be set if it equal to default value we assumed.
+	 * qcawifi modules must be reloaded due to VPHY interface always exist and hold
+	 * last settings.
+	 */
+	"frameburst",
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054)
+	"precacen",
+#endif
+	NULL
+};
+
+#if defined(RTCONFIG_NO_RELOAD_WIFI_DRV_IF_POSSIBLE)
+/* Return true if qca-wifi modules must be reloaded.
+ * In general, if WiFi settings that effect module parameters of qca-wifi modules hasn't been changed,
+ * all VAP are destroied successful, VPHY parameters that will be set if different from default value,
+ * and hostapd configurations are removed from hostapd instance,it should be okay not to reload qca-wifi modules.
+ * If you want to always reload qca-wifi modules in ATE mode, check it in rc.
+ * @return:
+ * 	0:	no need to reload qca-wifi drivers
+ *  otherwise:	must reload qca-wifi drivers
+ */
+int __need_to_reload_wifi_drv(void)
+{
+	const char **p;
+	int i, reload = 0;;
+	char main_prefix[sizeof("wlX_XXX")], cache_prefix[sizeof("wlX_cache_XXX")];
+
+	if (nvram_match("reload_wifidrv", "1"))
+		return 1;
+
+	for (i = WL_2G_BAND; !reload && i < MAX_NR_WL_IF; ++i) {
+		SKIP_ABSENT_BAND(i);
+
+		snprintf(main_prefix, sizeof(main_prefix), "wl%d_", i);
+		snprintf(cache_prefix, sizeof(cache_prefix), "wl%d_cache_", i);
+		for (p = &reload_qcawifi_params[0]; !reload && p && *p; ++p) {
+			if (*nvram_pf_safe_get(cache_prefix, *p) == '\0'
+			 || *nvram_pf_safe_get(main_prefix, *p) == '\0')
+				continue;
+			if (!strcmp(nvram_pf_safe_get(main_prefix, *p), nvram_pf_safe_get(cache_prefix, *p)))
+				continue;
+			reload++;
+		}
+	}
+
+	return reload;
+}
+
+/* Copy wlX_XXX to wlX_cache_XXX. It will be used to test whether qca-wifi modules
+ * must be reloaded during restart wireless or not.
+ */
+int save_wl_params_for_testing_reload_wifi_drv(void)
+{
+	const char **p;
+	int i;
+	char main_prefix[sizeof("wlX_XXX")], cache_prefix[sizeof("wlX_cache_XXX")];
+
+	for (i = WL_2G_BAND; i < MAX_NR_WL_IF; ++i) {
+		SKIP_ABSENT_BAND(i);
+
+		snprintf(main_prefix, sizeof(main_prefix), "wl%d_", i);
+		snprintf(cache_prefix, sizeof(cache_prefix), "wl%d_cache_", i);
+		for (p = &reload_qcawifi_params[0]; p && *p; ++p) {
+			nvram_pf_set(cache_prefix, *p, nvram_pf_get(main_prefix, *p));
+		}
+	}
+
+	return 0;
+}
+#endif
+
 #ifdef RTCONFIG_AMAS
 /**
  * @brief add beacon vise by unit and subunit

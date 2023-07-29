@@ -2547,7 +2547,7 @@ vsf_sysutil_getpwnam(const char* p_user)
 				char dec_passwd[64];
 
 				memset(dec_passwd, 0, sizeof(dec_passwd));
-				pw_dec(tmp_passwd, dec_passwd, sizeof(dec_passwd));
+				pw_dec(tmp_passwd, dec_passwd, sizeof(dec_passwd), 1);
 				tmp_passwd = dec_passwd;
 #endif
 

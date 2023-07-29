@@ -56,11 +56,9 @@ enum capabilityType {
 	CONN_EAP_MODE = 23,
 #endif
 
-#ifdef RTCONFIG_BANDINDEX_NEW
 #ifdef RTCONFIG_AMAS_WGN
 	GUEST_NETWORK_NO_6G = 24, 	
 #endif
-#endif	
 	CAPABILITY_MAX
 };
 

@@ -180,9 +180,9 @@ static int isSubnet(char *sub)
 
 /*
 	ip_range_checker:
-	1. 192.168.1.*    = 192.168.1.1-254 (subnet)
-	2. 192.168.1.0/24 = 192.168.1.1-254 (subnet)
-	3. 192.168.1.10-20                  (short)
+	1. 192.168.1.*    = 192.168.1.1-254           (subnet)
+	2. 192.168.1.0/24 = 192.168.1.1-192.168.1.254 (subnet)
+	3. 192.168.1.10-20                            (short)
 */
 static int ip_range_checker(char *old, char *new, int len)
 {
@@ -214,7 +214,7 @@ static int ip_range_checker(char *old, char *new, int len)
 		// validate value is valid IP num
 		if (isIPnum(a) == -1) {
 			QOSLOG("fail case : a=%s, len_total=%d", a, len_total);
-			goto end;
+			goto END;
 		}
 		g += len_to_dot + 1;
 	}
@@ -222,14 +222,14 @@ static int ip_range_checker(char *old, char *new, int len)
 	/* copy head */
 	strncpy(head, old, len_total);
 
-	/* case1 : x.x.x.0/24 subnet */
+	/* case1 : x.x.x.* subnet */
 	if (*g == '*') {
 		snprintf(new, len, "%s1-%s254", head, head);
 		ret = 1;
-		goto end;
+		goto END;
 	}
 
-	/* case2 : IP subnetting */
+	/* case2 : IP subnetting, x.x.x.0/24 */
 	p = NULL;
 	p = strchr(g, '/');
 	if (p != NULL) {
@@ -240,13 +240,13 @@ static int ip_range_checker(char *old, char *new, int len)
 		// validate value is valid IP num
 		if (isIPnum(a) == -1) {
 			QOSLOG("case 2: p+=%s, g=%s, a=%s", p+1, g, a);
-			goto end;
+			goto END;
 		}
 
 		// get mask and mask_addr
 		g += len_to_dot + 1;
 		mask = isSubnet(p+1);
-		if (mask == 0) goto end;
+		if (mask == 0) goto END;
 		snprintf(host, sizeof(host), "%s%s", head, a);
 		mask_t = ntohl(inet_addr(host));
 		mask_addr = mask_t & (0xffffffff & (0xffffffff << (32 - mask)));
@@ -258,12 +258,13 @@ static int ip_range_checker(char *old, char *new, int len)
 		QOSLOG("case 2: mask=%d, mask_addr=%x, host_start=%x, host_end=%x", mask, mask_addr, host_start, host_end);
 
 		start = inet_ntoa(inet_src);
-		strncpy(new, start, strlen(start));
-		strncpy(new + strlen(start), "-", 1);
+		strncat(new, start, strlen(start));
+		strncat(new, "-", 1);
 		end = inet_ntoa(inet_dst);
-		strncpy(new + strlen(start) + 1, end, strlen(end));
+		strncat(new, end, strlen(end));
+		QOSLOG("case 2: new=%s, end=%s", new, end);
 		ret = 1;
-		goto end;
+		goto END;
 	}
 
 	/* case3 : find minus in tail */
@@ -277,15 +278,15 @@ static int ip_range_checker(char *old, char *new, int len)
 		// validate value is valid IP num
 		if (isIPnum(a) == -1) {
 			QOSLOG("case 3: p+=%s, g=%s, a=%s", p+1, g, a);
-			goto end;
+			goto END;
 		}
 
 		snprintf(new, len, "%s%s-%s%s", head, a, head, (p+1));
 		ret = 1;
-		goto end;
+		goto END;
 	}
 
-end:
+END:
 	if (buf) free(buf);
 
 	QOSLOG("new=%s", new);

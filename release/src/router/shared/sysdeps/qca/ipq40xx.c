@@ -1832,3 +1832,16 @@ rtkswitch_Port_phyLinkRate(unsigned int port_mask)
 
 	return speed;
 }
+
+void __post_config_switch(void)
+{
+#if 1 /* disable ieee802.3az @ all support ports */
+	int i;
+	char port_id[6];
+	char *ssdk_8023az[] = { "ssdk_sh", "port", "ieee8023az", "set", port_id, "disable", NULL };
+	for (i = 1; i <= 5; i++) {
+		snprintf(port_id, sizeof(port_id), "%d", i);
+		_eval(ssdk_8023az, NULL, 0, NULL);
+	}
+#endif
+}

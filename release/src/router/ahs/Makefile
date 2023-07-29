@@ -1,6 +1,6 @@
 include ${TOP}/common.mak
 
-CFLAGS += -Wall -O
+CFLAGS += -Wall -O $(if $(RTCONFIG_DEBUG),-g)
 
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += $(EXTRA_FLAG)
@@ -44,7 +44,7 @@ ahs: $(OBJS)
 	$(CC) $(CFLAGS) $(LDFLAGS) -o $@ $^
 
 install: all
-	$(STRIP) ahs
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) ahs)
 	$(INSTALL) -d $(INSTALLDIR)/ahs/usr/sbin
 	$(INSTALL) ahs $(INSTALLDIR)/ahs/usr/sbin
 

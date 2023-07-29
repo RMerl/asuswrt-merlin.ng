@@ -33,15 +33,15 @@ UTILS_INTDIR = int.utils.mingw
 
 # The preprocessor and its options.
 CPP = gcc.exe -E
-CPPFLAGS += -I$(XML_SRCDIR)/include
+CPPFLAGS += -I$(XML_SRCDIR)/include -DNOLIBTOOL 
 ifeq ($(WITH_THREADS),1)
 CPPFLAGS += -D_REENTRANT
 endif
 
 # The compiler and its options.
 CC = gcc.exe
-CFLAGS += -DWIN32 -D_WINDOWS -D_MBCS
-CFLAGS += -I$(XML_SRCDIR) -I$(XML_SRCDIR)/include -I$(INCPREFIX)
+CFLAGS += -DWIN32 -D_WINDOWS -D_MBCS -DNOLIBTOOL 
+CFLAGS += -I$(XML_SRCDIR) -I$(XML_SRCDIR)/include -I$(INCPREFIX) $(INCLUDE)
 ifneq ($(WITH_THREADS),no)
 CFLAGS += -D_REENTRANT
 endif
@@ -57,29 +57,29 @@ endif
 ifeq ($(WITH_THREADS),posix)
 CFLAGS += -DHAVE_PTHREAD_H
 endif
-ifeq ($(WITH_ZLIB),1)
-CFLAGS += -DHAVE_ZLIB_H
-endif
 
 # The linker and its options.
 LD = gcc.exe
 LDFLAGS += -Wl,--major-image-version,$(LIBXML_MAJOR_VERSION)
 LDFLAGS += -Wl,--minor-image-version,$(LIBXML_MINOR_VERSION)
 LDFLAGS += -Wl,-L,$(BINDIR) -Wl,-L,$(LIBPREFIX)
-LIBS = 
+LIBS =
 ifeq ($(WITH_FTP),1)
-CFLAGS += -D_WINSOCKAPI_
-LIBS += -lwsock32
+LIBS += -lwsock32 -lws2_32
 endif 
 ifeq ($(WITH_HTTP),1)
-CFLAGS += -D_WINSOCKAPI_
-LIBS += -lwsock32
+LIBS += -lwsock32 -lws2_32
 endif 
 ifeq ($(WITH_ICONV),1)
 LIBS += -liconv
 endif 
 ifeq ($(WITH_ZLIB),1)
-LIBS += -lzdll
+# Could be named differently
+# LIBS += -lzdll
+LIBS += -lz
+endif
+ifeq ($(WITH_LZMA),1)
+LIBS += -llzma
 endif
 ifeq ($(WITH_THREADS),posix)
 LIBS += -lpthreadGC
@@ -87,6 +87,8 @@ endif
 ifeq ($(WITH_MODULES),1)
 LIBS += -lkernel32
 endif
+
+LIBS += $(LIB)
 
 # The archiver and its options.
 AR = ar.exe
@@ -103,12 +105,12 @@ endif
 
 
 # Libxml object files.
-XML_OBJS = $(XML_INTDIR)/c14n.o\
+XML_OBJS = $(XML_INTDIR)/buf.o\
+	$(XML_INTDIR)/c14n.o\
 	$(XML_INTDIR)/catalog.o\
 	$(XML_INTDIR)/chvalid.o\
 	$(XML_INTDIR)/debugXML.o\
 	$(XML_INTDIR)/dict.o\
-	$(XML_INTDIR)/DOCBparser.o\
 	$(XML_INTDIR)/encoding.o\
 	$(XML_INTDIR)/entities.o\
 	$(XML_INTDIR)/error.o\
@@ -150,12 +152,12 @@ XML_OBJS = $(XML_INTDIR)/c14n.o\
 XML_SRCS = $(subst .o,.c,$(subst $(XML_INTDIR)/,$(XML_SRCDIR)/,$(XML_OBJS)))
 
 # Static libxml object files.
-XML_OBJS_A = $(XML_INTDIR_A)/c14n.o\
+XML_OBJS_A = $(XML_INTDIR_A)/buf.o\
+	$(XML_INTDIR_A)/c14n.o\
 	$(XML_INTDIR_A)/catalog.o\
 	$(XML_INTDIR_A)/chvalid.o\
 	$(XML_INTDIR_A)/debugXML.o\
 	$(XML_INTDIR_A)/dict.o\
-	$(XML_INTDIR_A)/DOCBparser.o\
 	$(XML_INTDIR_A)/encoding.o\
 	$(XML_INTDIR_A)/entities.o\
 	$(XML_INTDIR_A)/error.o\
@@ -200,31 +202,13 @@ XML_SRCS_A = $(subst .o,.c,$(subst $(XML_INTDIR_A)/,$(XML_SRCDIR)/,$(XML_OBJS_A)
 UTILS = $(BINDIR)/xmllint.exe\
 	$(BINDIR)/xmlcatalog.exe\
 	$(BINDIR)/testAutomata.exe\
-	$(BINDIR)/testC14N.exe\
-	$(BINDIR)/testDocbook.exe\
-	$(BINDIR)/testHTML.exe\
-	$(BINDIR)/testReader.exe\
-	$(BINDIR)/testRegexp.exe\
 	$(BINDIR)/testModule.exe\
-	$(BINDIR)/testRelax.exe\
-	$(BINDIR)/testSAX.exe\
-	$(BINDIR)/testSchemas.exe\
-	$(BINDIR)/testURI.exe\
-	$(BINDIR)/testXPath.exe\
 	$(BINDIR)/runtest.exe\
 	$(BINDIR)/runsuite.exe\
-	$(BINDIR)/testapi.exe
+	$(BINDIR)/testapi.exe\
+	$(BINDIR)/testlimits.exe
 
-ifeq ($(WITH_THREADS),yes)
-UTILS += $(BINDIR)/testThreadsWin32.exe
-endif
-ifeq ($(WITH_THREADS),ctls) 
-UTILS += $(BINDIR)/testThreadsWin32.exe
-endif
-ifeq ($(WITH_THREADS),native)
-UTILS += $(BINDIR)/testThreadsWin32.exe
-endif
-ifeq ($(WITH_THREADS),posix)
+ifneq ($(WITH_THREADS),no)
 UTILS += $(BINDIR)/testThreads.exe
 endif
 
@@ -250,10 +234,11 @@ distclean : clean
 rebuild : clean all
 
 install-libs : all
-	cmd.exe /C "if not exist $(INCPREFIX)\libxml mkdir $(INCPREFIX)\libxml"
+	cmd.exe /C "if not exist $(INCPREFIX)\libxml2 mkdir $(INCPREFIX)\libxml2"
+	cmd.exe /C "if not exist $(INCPREFIX)\libxml2\libxml mkdir $(INCPREFIX)\libxml2\libxml"
 	cmd.exe /C "if not exist $(BINPREFIX) mkdir $(BINPREFIX)"
 	cmd.exe /C "if not exist $(LIBPREFIX) mkdir $(LIBPREFIX)"
-	cmd.exe /C "copy $(XML_SRCDIR)\include\libxml\*.h $(INCPREFIX)\libxml"
+	cmd.exe /C "copy $(XML_SRCDIR)\include\libxml\*.h $(INCPREFIX)\libxml2\libxml"
 	cmd.exe /C "copy $(BINDIR)\$(XML_SO) $(SOPREFIX)"
 	cmd.exe /C "copy $(BINDIR)\$(XML_A) $(LIBPREFIX)"
 	cmd.exe /C "copy $(BINDIR)\$(XML_IMP) $(LIBPREFIX)"

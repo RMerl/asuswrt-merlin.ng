@@ -118,6 +118,7 @@ typedef struct {
 	time_t         last_update;
 #ifdef ASUSWRT
 #ifdef USE_IPV6
+	int            ipv6_has_changed;
 	char           ipv6_address[INET6_ADDRSTRLEN];
 #endif
 #endif

@@ -1,18 +1,21 @@
-Entity: line 1: parser error : internal error
- %defroot; 
-          ^
+./test/valid/t8a.xml:6: parser error : internal error: xmlParseInternalSubset: error detected in Markup declaration
+
+%defroot;%defmiddle;%deftest;
+         ^
 Entity: line 1: 
 &lt;!ELEMENT root (middle) >
 ^
-Entity: line 1: parser error : DOCTYPE improperly terminated
- %defroot; 
-          ^
+./test/valid/t8a.xml:6: parser error : internal error: xmlParseInternalSubset: error detected in Markup declaration
+
+%defroot;%defmiddle;%deftest;
+                    ^
 Entity: line 1: 
-&lt;!ELEMENT root (middle) >
+&lt;!ELEMENT middle (test) >
 ^
-Entity: line 1: parser error : Start tag expected, '<' not found
- %defroot; 
-          ^
+./test/valid/t8a.xml:6: parser error : internal error: xmlParseInternalSubset: error detected in Markup declaration
+
+%defroot;%defmiddle;%deftest;
+                             ^
 Entity: line 1: 
-&lt;!ELEMENT root (middle) >
- ^
+&lt;!ELEMENT test (#PCDATA) >
+^

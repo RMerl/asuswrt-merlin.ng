@@ -244,6 +244,9 @@ com&BANNER=Sprint" style="text-decoration:none"><font color="#000000">Sprint</a>
 ./test/HTML/wired.html:414: HTML parser error : Opening and ending tag mismatch: td and font
 </td>
      ^
+./test/HTML/wired.html:414: HTML parser error : Opening and ending tag mismatch: td and font
+</td>
+     ^
 ./test/HTML/wired.html:432: HTML parser error : htmlParseEntityRef: expecting ';'
 href="http://www.lycos.com/news/flash/hitlerbunker.html?v=wn1015&lpv=1">Lycos</a
                                                                     ^

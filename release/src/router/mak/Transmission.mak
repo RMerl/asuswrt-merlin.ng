@@ -1,7 +1,7 @@
 Transmission/build/Makefile:
 	@[ -e Transmission/build ] || mkdir -p Transmission/build
 	@cd Transmission/build && cmake \
-		-DCMAKE_EXE_LINKER_FLAGS="$(CMAKE_EXE_LINKER_FLAGS) $(EXTRALDFLAGS)" \
+		-DCMAKE_EXE_LINKER_FLAGS="$(if $(MUSL64),-L$(STAGEDIR)/usr/lib -liconv) $(CMAKE_EXE_LINKER_FLAGS) $(EXTRALDFLAGS)" \
 		-DENABLE_TESTS=OFF \
 		-DZLIB_LIBRARY=$(STAGEDIR)/usr/lib/libz.so \
 		..

@@ -1207,13 +1207,11 @@ int detect_internet(int wan_unit)
 	ppp_echo_dns = (wan_ppp && nvram_get_int(strcat_r(prefix, "ppp_echo", tmp)) == 2);
 #endif
 
-#if defined(RTCONFIG_DUALWAN)
 	if(isFirstUse)
 		dns_ret = delay_dns_response(wan_unit);
 	else if(dnsprobe_enable || ppp_echo_dns)
 		dns_ret = is_ppp_demand ? -1 : delay_dns_response(wan_unit);
 	else
-#endif
 		dns_ret = -1;
 
 #if defined(RTCONFIG_IPV6) && defined(RTCONFIG_INTERNAL_GOBI)
@@ -1244,7 +1242,6 @@ int detect_internet(int wan_unit)
 	else if(dualwan_unit__usbif(wan_unit) && modem_pdp == 2 && !ping_ret)
 		link_internet = DISCONN;
 #endif
-#ifdef RTCONFIG_DUALWAN
 #if 0
 	else if((!strcmp(dualwan_mode, "fo") || !strcmp(dualwan_mode, "fb"))
 			&& wandog_enable == 1 && !isFirstUse && !wanduck_ping_detect(wan_unit)){
@@ -1265,7 +1262,6 @@ int detect_internet(int wan_unit)
 		if(nvram_get_int("nat_state") == NAT_STATE_NORMAL)
 			nat_state = stop_nat_rules();
 	}
-#endif
 #endif
 	else if(ppp_echo_dns /* PPP connections with DNS detection */
 			&& !dns_ret)
@@ -1541,6 +1537,11 @@ int chk_proto(int wan_unit){
 		char *autodet_argv[] = {"autodet", NULL};
 
 		_eval(autodet_argv, NULL, 0, &pid);
+#ifdef RTCONFIG_SOFTWIRE46
+		char *auto46det_argv[] = {"auto46det", NULL};
+
+		_eval(auto46det_argv, NULL, 0, &pid);
+#endif
 	}
 
 	if(!if_wan_ppp(wan_unit, 1)){
@@ -2018,7 +2019,6 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 
 			foreach(word, nvram_safe_get("bond_wan_ifnames"), next) {
 				link_wan_nvname(bond_unit, wired_link_nvram, sizeof(wired_link_nvram));
-
 				link = hnd_get_phy_status(word);
 				if(nvram_get_int(wired_link_nvram) != link)
 					nvram_set_int(wired_link_nvram, link);
@@ -2899,6 +2899,10 @@ void record_conn_status(int wan_unit){
 
 			logmessage(log_title, "WAN(%d) link down.", wan_unit);
 
+#ifdef RTCONFIG_SOFTWIRE46
+			if (!strncmp(nvram_safe_get("territory_code"), "JP", 2))
+				stop_auto46det();
+#endif
 #if defined(RTCONFIG_NOTIFICATION_CENTER)
 			_dprintf("wanduck(%d): NC send SYS_WAN_CABLE_UNPLUGGED_EVENT.\n", wan_unit);
 			snprintf(buff, sizeof(buff), "0x%x", SYS_WAN_CABLE_UNPLUGGED_EVENT);

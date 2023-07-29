@@ -31,6 +31,8 @@
 #include <netinet/if_ether.h>	//have in front of <linux/mii.h> to avoid redefinition of 'struct ethhdr'
 #include <linux/mii.h>
 #include <dirent.h>
+#include <netinet/in.h>
+#include <arpa/inet.h>
 
 #include <shutils.h>
 #include <shared.h>
@@ -123,12 +125,12 @@ static const int bsport_to_vport[32] = {
  * 			0x20? means ethX, ethtool ioctl
  */
 #if defined(RTAX89U)
-/* HwId: A ~ B, AQR107, AQR113 A1/B0 */
+/* HwId: A ~ B, AQR107, AQR113 A1/B0 @ PHY7, SP6 */
 static const int vport_to_phy_addr_hwid_a[MAX_WANLAN_PORT] = {
 	10, 9, 4, 3, 2, 1, 0, 6, 11, 0x107, 0x204
 };
 
-/* HwId: C, AQR113C */
+/* HwId: C, AQR113C @ PHY8, SP6 */
 static const int vport_to_phy_addr_hwid_c[MAX_WANLAN_PORT] = {
 	10, 9, 4, 3, 2, 1, 0, 6, 11, 0x108, 0x204
 };
@@ -702,6 +704,10 @@ static int get_phy_info(unsigned int phy, unsigned int *link, unsigned int *spee
 	}
 	else if (phy >= 9 && phy <= 11) {
 		r = ipq8074_port_speed(phy - 7);
+	}
+	else if (phy == 0x107 || phy == 0x108) {
+		/* AQR107/113 and AQR113C are attached to port 6 of IPQ807X. */
+		r = ipq8074_port_speed(6);
 	}
 #endif
 	else if (phy < 0x20) {
@@ -1862,6 +1868,46 @@ void __post_ecm(void)
 		_eval(flush_cmd, DBGOUT, 0, NULL);
 }
 
+static void set_ip_alias_for_gpon_module(void)
+{
+	char lan_ipaddr[18], lan_netmask[18], lan_iface[IFNAMSIZ];
+	char sfpp_module_ipaddr[18], sfpp_iface_ipaddr[18], sfpp_mask[18];
+	char *sfpp_clean_argv[] = { "ifconfig", "eth4:1", "0.0.0.0", NULL };
+	char *sfpp_set_argv[] = { "ifconfig", "eth4:1", sfpp_iface_ipaddr, "netmask", sfpp_mask, NULL };
+
+	if (!is_routing_enabled() || !sfpp_iface_in_wan())
+		return;
+
+	snprintf(lan_iface, sizeof(lan_iface), "%s:1", nvram_get("lan_ifname")? : "br0");
+	_eval(sfpp_clean_argv, DBGOUT, 0, NULL);
+
+	strlcpy(sfpp_module_ipaddr, nvram_safe_get("sfpp_module_ipaddr"), sizeof(sfpp_module_ipaddr));
+	if (illegal_ipv4_address(sfpp_module_ipaddr))
+		return;
+
+	min_netmask(sfpp_module_ipaddr, sfpp_mask, sizeof(sfpp_mask));
+	calc_sfpp_iface_ipaddr(sfpp_iface_ipaddr, sizeof(sfpp_iface_ipaddr));
+	if (illegal_ipv4_address(sfpp_iface_ipaddr))
+		return;
+
+	strlcpy(lan_ipaddr, nvram_safe_get("lan_ipaddr"), sizeof(lan_ipaddr));
+	strlcpy(lan_netmask, nvram_safe_get("lan_netmask"), sizeof(lan_netmask));
+	if (illegal_ipv4_address(lan_ipaddr) || illegal_ipv4_netmask(lan_netmask))
+		return;
+	if (inet_overlap(lan_ipaddr, lan_netmask, sfpp_iface_ipaddr, sfpp_mask)) {
+		dbg("%s: GPON SFP module %s/%s overlap with LAN %s/%s, skip\n", __func__,
+			sfpp_iface_ipaddr, sfpp_mask, lan_ipaddr, lan_netmask);
+		logmessage("SFP+", "GPON SFP module %s/%s overlap with LAN %s/%s, skip\n",
+			sfpp_iface_ipaddr, sfpp_mask, lan_ipaddr, lan_netmask);
+		return;
+	}
+
+	_eval(sfpp_set_argv, DBGOUT, 0, NULL);
+	dbg("%s:%d GPON IP %s/%s SFP+ iface IP %s\n",__func__, __LINE__,
+		sfpp_module_ipaddr, sfpp_mask, sfpp_iface_ipaddr);
+	logmessage("SFP+", "GPON IP %s/%s SFP+ iface IP %s\n", sfpp_module_ipaddr, sfpp_mask, sfpp_iface_ipaddr);
+}
+
 void __post_start_lan(void)
 {
 	char br_if[IFNAMSIZ];
@@ -1870,6 +1916,7 @@ void __post_start_lan(void)
 	set_netdev_sysfs_param(br_if, "bridge/multicast_querier", "1");
 	set_netdev_sysfs_param(br_if, "bridge/multicast_snooping",
 		nvram_match("switch_br0_no_snooping", "1")? "0" : "1");
+	set_ip_alias_for_gpon_module();
 }
 
 void __post_start_lan_wl(void)
@@ -1988,6 +2035,156 @@ int __get_upstream_wan_unit(void)
 	}
 
 	return unit;
+}
+
+/* Return IP address for interface of SFP+ port, it will be used to connect to SFP+ GPON's telnet/web server.
+ * @ipaddr:	char array that big enough to save a IPv4 address string.
+ * 		If it's NULL, internal buffer is used instead.
+ * @return:	Pointer to a buffer that keep IP address for interface of SFP+ port or empty string.
+ */
+char *calc_sfpp_iface_ipaddr(char *ipaddr, size_t ipaddr_len)
+{
+	static char ipaddr_str[18];
+	char *buf = ipaddr_str, sfpp_module_ipaddr[18];
+	size_t buf_len = sizeof(ipaddr_str);
+	int cidr, i, nr_hid;
+	in_addr_t ip = 0, n_ip, next_host_id, mod_ip, n_mask, h_mask;
+
+	if (ipaddr_len < 16)
+		ipaddr = NULL;
+	if (ipaddr) {
+		buf = ipaddr;
+		buf_len = ipaddr_len;
+	}
+
+	*buf = '\0';
+	strlcpy(sfpp_module_ipaddr, nvram_safe_get("sfpp_module_ipaddr"), sizeof(sfpp_module_ipaddr));
+	if (illegal_ipv4_address(sfpp_module_ipaddr))
+		return buf;
+	/* Don't return valid IP address if SFP+ module's IP address equal to LAN IP. */
+	if (inet_network(sfpp_module_ipaddr) == inet_network(nvram_safe_get("lan_ipaddr")))
+		return buf;
+	cidr = min_cidr(sfpp_module_ipaddr);
+	if (cidr <= 0 || cidr > 30)
+		return buf;
+
+	n_mask = (0xFFFFFFFF >> (32 - cidr)) << (32 - cidr);
+	h_mask = ~n_mask;
+	mod_ip = inet_network(sfpp_module_ipaddr);
+	nr_hid = 1 << (32 - cidr);
+	for (i = 1; !ip && i <= nr_hid; ++i) {
+		next_host_id = ((mod_ip & h_mask) + i);
+		if (next_host_id != mod_ip
+		 && (next_host_id & h_mask) != 0
+		 && ((next_host_id + 1) & h_mask) != 0) {
+			ip = (mod_ip & n_mask) | (next_host_id & h_mask);
+		}
+	}
+	n_ip = htonl(ip);	/* to network byte order */
+
+	if (!inet_ntop(AF_INET, &n_ip, buf, buf_len))
+		*buf = '\0';
+
+	return buf;
+}
+
+/* Return true if interface of SFP+ port is primary WAN or secondary WAN
+ * @return:
+ * 	0:	Interface of SFP+ port is not in any WAN.
+ *  otherwise:	Interface of SFP+ port is in WAN.
+ */
+int sfpp_iface_in_wan(void)
+{
+	int i, ret = 0;
+
+	for (i = WAN_UNIT_FIRST; !ret && i < WAN_UNIT_MAX; ++i) {
+		if (get_dualwan_by_unit(i) == WANS_DUALWAN_IF_SFPP)
+			ret = 1;
+	}
+
+	return ret;
+}
+
+/* Add NAT rules that are used to allow LAN/WLAN devices to access telnet/web server of GPON SFP module.
+ * @fp:		FILE pointer to REDIRECT_RULES or NAT_RULES
+ * @return:
+ * 	0:	success
+ * 	-1:	error
+ */
+int add_nat_rule_for_gpon_sfp_module(FILE *fp)
+{
+	char lan_if[IFNAMSIZ], lan_ipaddr[18], lan_netmask[18];
+	char sfpp_nwaddr[18], sfpp_mask[18], sfpp_module_ipaddr[18];
+
+	if (!fp)
+		return -1;
+	if (!is_routing_enabled() || !sfpp_iface_in_wan())
+		return 0;
+
+	strlcpy(sfpp_module_ipaddr, nvram_safe_get("sfpp_module_ipaddr"), sizeof(sfpp_module_ipaddr));
+	if (illegal_ipv4_address(sfpp_module_ipaddr))
+		return -2;
+
+	min_netmask(sfpp_module_ipaddr, sfpp_mask, sizeof(sfpp_mask));
+	if (illegal_ipv4_netmask(sfpp_mask))
+		return -3;
+
+	strlcpy(lan_ipaddr, nvram_safe_get("lan_ipaddr"), sizeof(lan_ipaddr));
+	strlcpy(lan_netmask, nvram_safe_get("lan_netmask"), sizeof(lan_netmask));
+	if (illegal_ipv4_address(lan_ipaddr) || illegal_ipv4_netmask(lan_netmask))
+		return -4;
+	/* Don't add rule if GPON module's IP address conflicts with LAN. */
+	if (inet_overlap(lan_ipaddr, lan_netmask, sfpp_module_ipaddr, sfpp_mask))
+		return -5;
+
+	strlcpy(lan_if, nvram_get("lan_ifname")? : "br0", sizeof(lan_if));
+	network_addr(sfpp_module_ipaddr, sfpp_mask, sfpp_nwaddr, sizeof(sfpp_nwaddr));
+	eval("iptables", "-t", "nat", "-D", "PREROUTING", "-i", lan_if,
+		"-d", nvram_safe_get("sfpp_module_ipaddr"), sfpp_mask, "-j", "ACCEPT");
+	eval("iptables", "-t", "nat", "-D", "POSTROUTING", "-o", "eth4",
+		"-d", sfpp_nwaddr, sfpp_mask, "-j", "MASQUERADE");
+	fprintf(fp, "-A PREROUTING -i %s -d %s/%s -j ACCEPT\n",
+		lan_if, nvram_safe_get("sfpp_module_ipaddr"), sfpp_mask);
+	fprintf(fp, "-A POSTROUTING -o eth4 -d %s/%s -j MASQUERADE\n",
+		sfpp_nwaddr, sfpp_mask);
+	dbg("%s: accept/NAT GPON IP %s/%s in nat table.\n", __func__, sfpp_module_ipaddr, sfpp_mask);
+
+	return 0;
+}
+
+/* Add filter rules that are used to allow LAN/WLAN devices to access telnet/web server of GPON SFP module.
+ * @fp:		FILE pointer to /tmp/filter.default or /tmp/filter_rules
+ * @return:
+ * 	0:	success
+ * 	-1:	error
+ */
+int add_filter_rule_for_gpon_sfp_module(FILE *fp)
+{
+	char lan_if[IFNAMSIZ];
+	char sfpp_module_ipaddr[18], sfpp_mask[18], sfpp_nw_addr[18];
+
+	dbg("SSSSSS %s: start\n", __func__);
+	if (!fp)
+		return -1;
+	if (!is_routing_enabled() || !sfpp_iface_in_wan())
+		return 0;
+
+	strlcpy(sfpp_module_ipaddr, nvram_safe_get("sfpp_module_ipaddr"), sizeof(sfpp_module_ipaddr));
+	if (illegal_ipv4_address(nvram_get("sfpp_module_ipaddr")))
+		return -2;
+
+	strlcpy(lan_if, nvram_get("lan_ifname")? : "br0", sizeof(lan_if));
+	min_netmask(sfpp_module_ipaddr, sfpp_mask, sizeof(sfpp_mask));
+	network_addr(sfpp_module_ipaddr, sfpp_mask, sfpp_nw_addr, sizeof(sfpp_nw_addr));
+	if (illegal_ipv4_netmask(sfpp_mask) || illegal_ipv4_address(sfpp_nw_addr))
+		return -3;
+	if (inet_overlap(nvram_safe_get("lan_ipaddr"), nvram_safe_get("lan_netmask"), sfpp_nw_addr, sfpp_mask))
+		return -4;
+
+	eval("iptables", "-D", "FORWARD", "-i", lan_if, "-o", "eth4", "-d", sfpp_nw_addr, sfpp_mask, "-j", "ACCEPT");
+	fprintf(fp, "-A FORWARD -i %s -o eth4 -d %s/%s -j ACCEPT\n", lan_if, sfpp_nw_addr, sfpp_mask);
+
+	return 0;
 }
 
 #if defined(RTCONFIG_BONDING_WAN)
@@ -3213,6 +3410,15 @@ void __gen_switch_log(char *fn)
 	if (!(fp = fopen(fn, "a")))
 		return;
 
+	if (is_aqr_phy_exist()) {
+		int aqr_addr = aqr_phy_addr();
+		char read_tx_dis_cmd[sizeof("ssdk_sh debug phy get X 0x40010009XXX")];
+
+		snprintf(read_tx_dis_cmd, sizeof(read_tx_dis_cmd), "ssdk_sh debug phy get %d 0x40010009", aqr_addr);
+		fprintf(fp, "\n\n#### TX disabled of 10G base-T port ####\n");
+		exec_and_dump(fp, read_tx_dis_cmd);
+	}
+
 	fprintf(fp, "\n\n######## IPG of 10G base-T port ########\n");
 	if (!(r = parse_ssdk_sh(read_ipg_cmd, "%*[^:]:%x", 1, &ipg))) {
 		if ((ipg & 0xF00) == 0x900)
@@ -3272,6 +3478,14 @@ void __gen_switch_log(char *fn)
 	/* Check ebtables* kernel modules is loaded or not. */
 	fprintf(fp, "\n\n######## ebtables status ########\n");
 	exec_and_dump(fp, "lsmod|grep ebtable");
+
+	fprintf(fp, "\n\n######## SFP+ ########\n");
+	fprintf(fp, "GPON module IP [%s]/[%s] SFP+ iface IP [%s] wans_dualwan [%s] sw_mode [%s]\n",
+		nvram_get("sfpp_module_ipaddr")? : "NULL",
+		min_netmask(nvram_safe_get("sfpp_module_ipaddr"), NULL, 0),
+		calc_sfpp_iface_ipaddr(NULL, 0),
+		nvram_get("wans_dualwan")? : "NULL",
+		nvram_get("sw_mode")? : "NULL");
 
 	/* EEPROM in SFP+ module */
 	dump_sfpp_eeprom(fp);

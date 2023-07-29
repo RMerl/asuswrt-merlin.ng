@@ -3248,7 +3248,7 @@ extern int add_account(const char *const account, const char *const password){
     int enclen = pw_enc_blen(ascii_passwd) + 1;
     char enc_passwd[enclen];
     memset(enc_passwd, 0, sizeof(enc_passwd));
-    pw_enc(ascii_passwd, enc_passwd);
+    pw_enc(ascii_passwd, enc_passwd, 1);
     memset(ascii_passwd, 0, 64);
     strlcpy(ascii_passwd, enc_passwd, sizeof(ascii_passwd));
 #endif

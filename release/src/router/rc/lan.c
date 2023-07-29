@@ -419,8 +419,9 @@ void start_wl(void)
 #endif
 					eval("wlconf", ifname, "down");
 					eval("wl", "-i", ifname, "radio", "off");
-				} else
+				} else{
 					eval("wlconf", ifname, "start"); /* start wl iface */
+				}
 				wlconf_post(ifname);
 #endif	// CONFIG_BCMWL5
 			}
@@ -1363,6 +1364,14 @@ void start_lan(void)
 	eval("wl", "-i", "eth5", "gpioout", "0x2002", "0x2002");
 #endif
 
+#ifdef RTAX9000
+	// configure 6715 GPIO direction
+	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth6", "ledbh", "13", "7");
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
+#endif
+
 #if defined(GTAX6000) || defined(RTAX88U_PRO)
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
@@ -1844,6 +1853,10 @@ void start_lan(void)
 					// Bring UP interface
 					if (ifconfig(ifname, IFUP | IFF_ALLMULTI, NULL, NULL) != 0)
 						continue;
+#if defined(RTAX55) || defined(RTAX1800)
+					if (!strcmp(ifname, "eth1"))
+						system("ethswctl -c pause -p 1 -v 2");
+#endif
 				}
 #if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
 				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
@@ -2535,7 +2548,7 @@ void stop_lan(void)
 		|| strcmp(nvram_safe_get("amas_bdlkey"), "")
 #endif
 	) {
-		start_amas_lldpd();
+		stop_amas_lldpd();
 	}
 #endif
 
@@ -2839,9 +2852,12 @@ void hotplug_net(void)
 	char buf[32];
 	int i = 0;
 #endif
-#if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA)
+#if defined(RTCONFIG_HND_ROUTER) && (defined(RTCONFIG_DPSTA) || defined(RTCONFIG_SW_SPDLED))
 	char *link;
 	bool link_down;
+#ifdef RTCONFIG_SW_SPDLED
+	int act_low=1, gpio=-1, speed=0;
+#endif
 #endif
 #if 0
 #ifdef RTCONFIG_AMAS
@@ -2860,20 +2876,24 @@ void hotplug_net(void)
 	else if (nvram_match("HwId", "B") && !strcmp(interface, "eth4")) // Node have no eth4
 		return;
 #endif
-#if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA)
+#if defined(RTCONFIG_HND_ROUTER) && (defined(RTCONFIG_DPSTA) || defined(RTCONFIG_SW_SPDLED))
 	link = getenv("LINK");
-	_dprintf("hotplug net INTERFACE=%s ACTION=%s LINK=%s\n", interface, action, link);
+	_dprintf("hotplug net INTERFACE=%s ACTION=%s LINK=%s.\n", interface, action, link);
 #else
 	_dprintf("hotplug net INTERFACE=%s ACTION=%s SEQNUM=%s\n", interface, action, getenv("SEQNUM")? : "NULL");
 #endif
 
-#ifdef LINUX26
+#if defined(RTCONFIG_SW_SPDLED)
+	add_event = !strcmp(action, "change") && !strcmp(link, "up");
+#elif defined(LINUX26)
 	add_event = !strcmp(action, "add");
 #else
 	add_event = !strcmp(action, "register");
 #endif
-
-#ifdef LINUX26
+	
+#if defined(RTCONFIG_SW_SPDLED)
+	remove_event = !strcmp(action, "change") && !strcmp(link, "down");
+#elif defined(LINUX26)
 	remove_event = !strcmp(action, "remove");
 #else
 	remove_event = !strcmp(action, "unregister");
@@ -2884,6 +2904,15 @@ void hotplug_net(void)
 #else
 	psta_if = 0;
 #endif
+#ifdef RTCONFIG_SW_SPDLED
+	gpio = get_spdled_gpio(interface);
+	act_low = _gpio_active_low(gpio & 0xff);
+
+	_dprintf("add_event=%d, remove_event=%d, if:%s, gpio:%d\n", add_event, remove_event, interface, gpio);
+
+	if(nvram_match("force_spd", "1"))
+		add_event = 1;
+#endif
 
 #if defined(RTCONFIG_HND_ROUTER) && defined(RTCONFIG_DPSTA)
 	if (dpsta_mode()) {
@@ -2893,13 +2922,24 @@ void hotplug_net(void)
 	}
 #endif
 
+#ifndef RTCONFIG_SW_SPDLED
 	dyn_if = !strncmp(interface, "wds", 3) || psta_if;
 
 	if (!dyn_if && !remove_event) {
 		goto NEITHER_WDS_OR_PSTA;
 	}
+#endif
 
 	if (add_event) {
+#ifdef BC109
+#if defined(RTCONFIG_SW_SPDLED)
+		speed = hnd_get_phy_speed_rc(interface);
+
+		_dprintf("%sturn on its spd led.(%d)\n", speed<1000?"Don't ":"", speed);
+		if(speed >= 1000)
+			set_gpio_rc(gpio, act_low ? 0:1);
+#endif
+#endif
 #ifdef RTCONFIG_RALINK
 		if (sw_mode() == SW_MODE_REPEATER)
 			return;
@@ -2938,6 +2978,7 @@ void hotplug_net(void)
 		}
 #endif
 
+#ifndef BC109
 #if defined(RTCONFIG_AMAS_WGN)	
 		if (!wgn_is_wds_guest_vlan(interface))
 			if (!strncmp(lan_ifname, "br", 2)) {
@@ -2961,6 +3002,7 @@ void hotplug_net(void)
 			}
 #endif
 		}
+#endif
 
 #if 0
 #ifdef RTCONFIG_AMAS
@@ -2983,7 +3025,6 @@ void hotplug_net(void)
 #if defined(RTCONFIG_AMAS_WGN)
 		(void)wgn_hotplug_net(interface, 1);
 #endif	/* RTCONFIG_AMAS_WGN */
-
 		return;
 	}
 
@@ -3004,6 +3045,10 @@ void hotplug_net(void)
 #if defined(RTCONFIG_AMAS_WGN)
 		(void)wgn_hotplug_net(interface, 0);
 #endif	/* RTCONFIG_AMAS_WGN */
+#if defined(RTCONFIG_SW_SPDLED)
+		_dprintf("turn off its spd led\n");
+		set_gpio_rc(gpio, act_low ? 1:0);
+#endif
 	}
 #endif
 
@@ -4164,7 +4209,7 @@ lan_up(char *lan_ifname)
 #if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
 #else
-	if (nvram_get_int("re_mode") == 1) {
+	if (nvram_get_int("re_mode") == 1 && nvram_get_int("gpy211_war")) {
 		_dprintf("[%s(%d)] GPY211 ANEG ...\n", __func__, __LINE__);
 		GPY211_WAR_ANEG();
 	}
@@ -4337,7 +4382,7 @@ void stop_lan_wl(void)
 		|| strcmp(nvram_safe_get("amas_bdlkey"), "")
 #endif
 	) {
-		start_amas_lldpd();
+		stop_amas_lldpd();
 	}
 #endif	
 
@@ -5277,8 +5322,9 @@ void restart_wl(void)
 #endif
 				eval("wlconf", ifname, "down");
 				eval("wl", "-i", ifname, "radio", "off");
-			} else
+			} else{
 				eval("wlconf", ifname, "start"); /* start wl iface */
+			}
 			wlconf_post(ifname);
 #endif	// CONFIG_BCMWL5
 		}
@@ -6085,8 +6131,14 @@ void restart_wireless(void)
 		}
 	}
 #endif
-#if defined(RTCONFIG_AMAS) && defined(RTCONFIG_VIF_ONBOARDING)
+#if defined(RTCONFIG_AMAS)
+#if defined(RTCONFIG_VIF_ONBOARDING)
 	set_onboarding_vif_status();
+#endif	//RTCONFIG_VIF_ONBOARDING
+	if (nvram_get_int("re_mode") == 1) {
+		if (killall("amas_lanctrl", SIGUSR1) != 0)
+			nvram_set_int("amas_recheck_bss", 1);
+	}
 #endif
 #ifdef RTCONFIG_CFGSYNC
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
@@ -6218,7 +6270,7 @@ void start_lan_port(int dt)
 	}
 
 	/* add war for 2500BaseX speed issue */
-	if (gpy211_war) {
+	if (gpy211_war && nvram_get_int("gpy211_war")) {
 		_dprintf("[%s(%d)] GPY211 ANEG ...\n", __func__, __LINE__);
 		GPY211_WAR_ANEG();
 	}

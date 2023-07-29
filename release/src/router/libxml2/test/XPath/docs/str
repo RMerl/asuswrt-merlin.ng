@@ -6,4 +6,6 @@
   <p><p>a span</p>n<p>ing one</p></p>
   <p><p>and an unbal</p><empty/>anced test</p>
   <p>for empty string <seq>123</seq></p>
+  <p id="1">a<b>b</b>c</p>
+  <p id="2"><!--X-->abc</p>
 </chapter>

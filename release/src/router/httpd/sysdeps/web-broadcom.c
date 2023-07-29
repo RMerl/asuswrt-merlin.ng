@@ -57,6 +57,9 @@
 #ifdef __CONFIG_DHDAP__
 #include <security_ipc.h>
 #endif
+#if defined(RTCONFIG_DWB) && defined(RTCONFIG_FRONTHAUL_DWB)
+#include <amas_dwb.h>
+#endif
 
 #ifdef RTCONFIG_QTN
 #include "web-qtn.h"
@@ -1421,7 +1424,7 @@ static int bcm_print_vs_ie(webs_t wp, uint8 *parse, int len)
 #endif
 
 static int
-dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
+dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic, int unit)
 {
 	char ssidbuf[SSID_FMT_BUF_LEN];
 	char chspec_str[CHANSPEC_STR_LEN];
@@ -1437,6 +1440,13 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
 	uint32 length;
 	int retval = 0;
 	char tmp[128];
+#if defined(RTCONFIG_DWB) && defined(RTCONFIG_FRONTHAUL_DWB)
+	int dwb_mode = nvram_get_int("dwb_mode");
+	int dwb_band = nvram_get_int("dwb_band");
+	int fh_ap_enabled = nvram_get_int("fh_ap_enabled");
+	int fh_ap_subunit = nvram_get_int("fh_cap_mssid_subunit");
+	char prefix[] = "wlXXXXXXXXXX_";
+#endif
 
 #ifdef RTCONFIG_HND_ROUTER_AX
 	bi = (wl_bss_info_v109_1_t*)bi_generic;
@@ -1469,6 +1479,15 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
 	memset(tmp, 0, sizeof(tmp));
 	char_to_ascii(tmp, ssidbuf);
 	retval += websWrite(wp, "SSID: \"%s\"\n", tmp);
+#if defined(RTCONFIG_DWB) && defined(RTCONFIG_FRONTHAUL_DWB)
+	if ((nvram_get_int("smart_connect_x") == SMRTCONN_FULL_BANDS) &&
+		(dwb_mode == DWB_ENABLED_FROM_CFG || dwb_mode == DWB_ENABLED_FROM_GUI) &&
+		fh_ap_enabled > 0 && unit == dwb_band) {
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, fh_ap_subunit);
+		if (nvram_match(strlcat_r(prefix, "bss_enabled", tmp, sizeof(tmp)), "1"))
+			retval += websWrite(wp, "SSID: \"%s\"\n", nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))));
+	}
+#endif
 
 //	retval += websWrite(wp, "Mode: %s\t", capmode2str(dtoh16(bi->capability)));
 	if (!is_router_mode() && !access_point_mode())
@@ -1749,6 +1768,10 @@ dump_bss_info(int eid, webs_t wp, int argc, char_t **argv, void *bi_generic)
 	}
 	retval += bcm_print_vs_ie(wp, (uint8 *)(((uint8 *)bi) + dtoh16(bi->ie_offset)),
 		dtoh32(bi->ie_length));
+#if defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
+	retval += websWrite(wp, "QBSS Channel Utilization: 0x%x (%d %s)\n", bi->qbss_chan_util,
+		bi->qbss_chan_util * 100 / (uint8)WLC_QBSS_LOAD_CHAN_FREE_MAX, "%25");
+#endif
 #endif
 #endif
 #endif
@@ -2208,7 +2231,7 @@ wl_status(int eid, webs_t wp, int argc, char_t **argv, int unit)
 		    dtoh32(bi->version) == LEGACY2_WL_BSS_INFO_VERSION ||
 		    dtoh32(bi->version) == LEGACY_WL_BSS_INFO_VERSION)
 		{
-			retval += dump_bss_info(eid, wp, argc, argv, bi);
+			retval += dump_bss_info(eid, wp, argc, argv, bi, unit);
 
 			if (wl_iovar_getint(ifname, "chanim_enab", (int*)(void*)&chanim_enab))
 				chanim_enab = 0;
@@ -6649,7 +6672,7 @@ dfs_time_remaining(int *dfs_rts, int size)
 
 	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
 	foreach (word, wl_ifnames, next) {
-		if (unit == 0)
+		if (unit == WL_2G_BAND)
 			goto loop_end;
 
 		snprintf(prefix, sizeof(prefix), "wl%d_", unit);

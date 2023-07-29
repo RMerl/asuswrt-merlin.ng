@@ -1,18 +1,18 @@
 SAX.setDocumentLocator()
 SAX.startDocument()
 SAX.startElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
   , 3)
 SAX.startElement(title)
 SAX.characters(This service is temporary down, 30)
 SAX.endElement(title)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 2)
 SAX.startElement(body, bgcolor='#FFFFFF')
@@ -29,9 +29,9 @@ SAX.endElement(p)
 SAX.characters(
 , 1)
 SAX.endElement(body)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endDocument()

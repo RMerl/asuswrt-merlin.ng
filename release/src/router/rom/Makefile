@@ -86,6 +86,10 @@ certs-install: certs/ca-bundle.crt
 install:
 	mkdir -p $(INSTALLDIR)
 	( tar --exclude=.svn --exclude=*.bak -cpf - rom bin ) | ( cd $(INSTALLDIR) && tar -xpf - )
+ifeq ($(RTCONFIG_DEBUG),y)
+	$(if $(or $(RTCONFIG_SOC_IPQ8064),$(RTCONFIG_SOC_IPQ8074)),install -m 0755 $(if $(filter y,$(MUSL64)),gdb.ipq807x.musl64,gdb.ipq806x) $(INSTALLDIR)/bin/gdb)
+	$(if $(RTCONFIG_MT798X),install -m 0755 gdb-10.1-arm64-musl $(INSTALLDIR)/bin/gdb)
+endif
 
 	$(MAKE) certs-install
 ifeq ($(RTCONFIG_LETSENCRYPT),y)
@@ -415,13 +419,17 @@ ifeq ($(BRCM_CHIP),63178)
 	cp -rf rom/etc/adsl1 $(INSTALLDIR)/rom/etc
 endif
 
-ifeq ($(BUILD_NAME), GT10)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT10 RT-AX9000))
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
 endif
 
 ifeq ($(or $(RTAC68U),$(DSL_AC68)),y)
 	install -m 0755 apps_scripts/clear_vpnclients.sh $(INSTALLDIR)/usr/sbin
+endif
+
+ifeq ($(RTCONFIG_BCMARM),y)
+	install -m 0755 apps_scripts/brcmsysinfo.sh $(INSTALLDIR)/usr/sbin
 endif
 
 .PHONY: dummy

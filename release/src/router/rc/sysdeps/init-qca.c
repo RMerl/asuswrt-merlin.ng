@@ -420,7 +420,7 @@ static int write_cont_null_strings(FILE *fp, const char *s)
 int __update_ini_file(const char *filename, char **params)
 {
 	const unsigned char end_mark[2] = { 0, 0 };
-	long flen = 0, params_tlen = 0;
+	long flen = 0, params_tlen = 0, alen;
 	int ret = 0, i, found, copy;
 	FILE *fp;
 	size_t l, key_len;
@@ -445,14 +445,15 @@ int __update_ini_file(const char *filename, char **params)
 	fseek(fp, 0, SEEK_END);
 	flen = ftell(fp);
 
+	alen = flen + params_tlen + 1;
 	for (i = 0, src = &bc[0]; i < ARRAY_SIZE(bc); ++i, ++src) {
-		src->buf = malloc(flen + params_tlen);
+		src->buf = malloc(alen);
 		if (!src->buf) {
 			ret = -3;
 			break;
 		}
 
-		src->remain = src->tlen = flen + params_tlen + 1;
+		src->remain = src->tlen = alen;
 		*src->buf = '\0';
 	}
 
@@ -496,6 +497,8 @@ int __update_ini_file(const char *filename, char **params)
 			break;
 		}
 
+		if (!(p = strchr(*v, '=')))
+			continue;
 		key_len = p - *v + 1;
 		found = 0;
 		src = &bc[0 ^ (i & 1)];
@@ -762,7 +765,7 @@ static void qca_ol_tmode_param_hook(char ***pv, char **ps, int *plen)
  *     -1:	invalid parameter
  *  otherwise:	error
  */
-static int __update_hw_mode_id(const char *basedir, const struct dirent *de, void *arg)
+static int __update_hw_mode_id(const char *basedir, const struct dirent *de, size_t de_size, void *arg)
 {
 	int v = -1, *hw_mode_id = arg;
 	char val[16];	/* see hw_modes in wifi_soc_hw_modes_show() */
@@ -780,6 +783,13 @@ static int __update_hw_mode_id(const char *basedir, const struct dirent *de, voi
 		{ NULL, -1 }
 	}, *p;
 
+	if (sizeof(*de) != de_size) {
+		/* If size of struct dirent mismatch, make sure readdir_wrapper() and this function see same struct dirent.h.
+		 * e.g., it's different in uclibc if _FILE_OFFSET_BITS=64 is defined or not.
+		 */
+		dbg("%s: size of struct dirent mismatch (%u v.s. %u)!\n", __func__, sizeof(*de), de_size);
+		return -1;
+	}
 	if (!arg)
 		return -1;
 
@@ -2364,7 +2374,7 @@ static int do_cold_boot_calibration(char *mod, int is_ftm)
 #endif
 #if defined(RTCONFIG_SPF11_QSDK) || defined(RTCONFIG_SPF11_1_QSDK) \
  || defined(RTCONFIG_SPF11_3_QSDK)
-	char testmode[] = "7", ftm_testmode[] = "10";
+	char testmode[] __attribute__((unused))= "7", ftm_testmode[] __attribute__((unused)) = "10";
 	char testmode_param[] = "testmode=7", ftm_testmode_param[] = "testmode=10";
 #endif
 	int cold_boot = 0, daemon = 0;
@@ -3092,6 +3102,21 @@ static void __load_wifi_driver(int testmode)
 
 	/* update the ini nss info */
 	update_ini_nss_info(hk_ol_num);
+
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_QCA_AXCHIP)
+	/* Target-Wake Time
+	 * Always use wl0_twt and make sure wlX_twt equal to each other due to all bands share same global.ini.
+	 * This controls "TWT Responder Support" of octet 10 of Extended Capabilities.
+	 */
+
+	if (nvram_match("wl0_twt", "1")) {
+		update_ini_file(GLOBAL_INI, "twt_enable=1");
+		update_ini_file(GLOBAL_INI, "bcast_twt_enable=1");
+	} else {
+		update_ini_file(GLOBAL_INI, "twt_enable=0");
+		update_ini_file(GLOBAL_INI, "bcast_twt_enable=0");
+	}
+#endif
 #endif	/* RTCONFIG_GLOBAL_INI */
 
 #if defined(RTCONFIG_WIFI_QCA9990_QCA9990) || \
@@ -3290,12 +3315,17 @@ static void __load_wifi_driver(int testmode)
 	f_write_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_governor", "performance", 0, 0); // for throughput
 	f_write_string("/sys/devices/system/cpu/cpu0/cpufreq/scaling_min_freq", "716000", 0, 0); // for throughput
 #endif
+
+	save_wl_params_for_testing_reload_wifi_drv();
 }
 
 void load_wifi_driver(void)
 {
 #if defined(RTCONFIG_SOC_IPQ8074)
-	f_write_string("/proc/sys/vm/pagecache_ratio", "25", 0, 0);
+	char val[4];
+
+	snprintf(val, sizeof(val), "%d", min(get_pagecache_ratio(), 25));
+	f_write_string("/proc/sys/vm/pagecache_ratio", val, 0, 0);
 	f_write_string("/proc/net/skb_recycler/flush", "1", 0, 0);	/* remove skb and pause skb recycler. */
 #elif defined(RTCONFIG_SOC_IPQ8064)
 	f_write_string("/proc/sys/vm/pagecache_ratio", "25", 0, 0);
@@ -3724,6 +3754,15 @@ skip_wifison:
 	return ;
 }
 
+#if defined(RTCONFIG_NO_RELOAD_WIFI_DRV_IF_POSSIBLE)
+static inline int need_to_reload_wifi_drv(void)
+{
+	if (__need_to_reload_wifi_drv() || IS_ATE_FACTORY_MODE())
+		return 1;
+	return 0;
+}
+#endif
+
 void fini_wl(void)
 {
 	int i;
@@ -3828,20 +3867,22 @@ void fini_wl(void)
 	ifconfig(WIF_60G, 0, NULL, NULL);
 #endif
 
+	if (need_to_reload_wifi_drv()) {
 #if !defined(RTCONFIG_QCA_WLAN_SCRIPTS)
-	for (i = ARRAY_SIZE(load_wifi_kmod_seq)-1, wp = &load_wifi_kmod_seq[i]; i >= 0; --i, --wp) {
-		if (!module_loaded(wp->kmod_name))
-			continue;
+		for (i = ARRAY_SIZE(load_wifi_kmod_seq)-1, wp = &load_wifi_kmod_seq[i]; i >= 0; --i, --wp) {
+			if (!module_loaded(wp->kmod_name))
+				continue;
 
-		if (!(wp->flags & QWIFI_STICK)) {
-			eval("rmmod", wp->kmod_name);
-			if (wp->remove_sleep)
-				sleep(wp->remove_sleep);
+			if (!(wp->flags & QWIFI_STICK)) {
+				eval("rmmod", wp->kmod_name);
+				if (wp->remove_sleep)
+					sleep(wp->remove_sleep);
+			}
 		}
-	}
 #else
-	eval("unloadwifi.sh");
+		eval("unloadwifi.sh");
 #endif
+	}
 }
 
 static void chk_valid_country_code(char *country_code)

@@ -577,7 +577,7 @@ leave:
 		logit(LOG_ERR, "Error code %d: %s", rc, error_str(rc));
 
 #ifdef ASUSWRT
-		if(nvram_match("ddns_return_code", "ddns_query"))
+		if(nvram_match("ddns_return_code", "ddns_query") || nvram_match("ddns_return_code", ",0"))
 		{
 			switch (rc) {
 				case RC_OK:
@@ -591,6 +591,7 @@ leave:
 				case RC_OS_INVALID_IP_ADDRESS:
 				case RC_DDNS_RSP_RETRY_LATER:
 				case RC_DDNS_INVALID_CHECKIP_RSP:
+				case RC_DDNS_RSP_NOTOK:
 					nvram_set("ddns_return_code", "ddns_query"); /* for Retry mechanism */
 					nvram_set("ddns_return_code_chk", "Time-out");
 					break;
@@ -600,7 +601,6 @@ leave:
 					nvram_set("ddns_return_code_chk", "connect_fail");
 					break;
 				case RC_DDNS_RSP_NOHOST:
-				case RC_DDNS_RSP_NOTOK:
 					nvram_set("ddns_return_code", "Update failed");
 					nvram_set("ddns_return_code_chk", "Update failed");
 					break;

@@ -309,7 +309,7 @@ var tableValidator = {
 				}
 			}
 
-			if(wan_proto=="v6plus" && s46_ports_check_flag && array_ipv6_s46_ports.length > 1 && hintMsg == HINTPASS){
+			if((wan_proto == "v6plus" || wan_proto == "ocnvc") && s46_ports_check_flag && array_ipv6_s46_ports.length > 1 && hintMsg == HINTPASS){
 				var PortSplit = PortRange.split(/,|:/);
 				var res=false;
 				var res_result=0;
@@ -324,7 +324,7 @@ var tableValidator = {
 				}
 
 				if(res_result != PortSplit.length){
-					confirmMsg ="The following port related settings may not work properly since the port is not available in current v6plus usable port range. Do you want to continue?";
+					confirmMsg = port_confirm;
 				}
 				else{
 					confirmMsg =  CONFIRMPASS;

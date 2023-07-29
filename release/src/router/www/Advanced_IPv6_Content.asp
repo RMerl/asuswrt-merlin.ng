@@ -49,6 +49,17 @@ if(IPv6_Only_support){
 var enable_ftp_orig = httpApi.nvramGet(["enable_ftp"]).enable_ftp;
 var faq_href = "https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang="+ui_lang+"&kw=&num=108";
 
+var passthrough_hint_content="<br>It is recommended to select type of IPv6 Passthrough while WAN connection type is %1$@.";	/* Untranslated */
+var dns_auto_hint_content="<br>It is recommended to enable this setting while WAN connection type is %2$@.";	/* Untranslated */
+if(wan_proto_orig == "v6plus"){
+	passthrough_hint_content = passthrough_hint_content.replace('%1$@', "<#IPv6_plus#>");
+	dns_auto_hint_content = dns_auto_hint_content.replace('%2$@', "<#IPv6_plus#>");
+}
+if(wan_proto_orig == "ocnvc"){
+	passthrough_hint_content = passthrough_hint_content.replace('%1$@', "<#IPv6_ocnvc#>");
+	dns_auto_hint_content = dns_auto_hint_content.replace('%2$@', "<#IPv6_ocnvc#>");
+}
+
 var ipv6_unit = '0';
 function initial(){	
 	show_menu();	
@@ -175,9 +186,11 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_dnsenable[1], 1);
 		var enable_dns = (document.form.ipv6_dnsenable[1].checked) ? '0' : '1';
 		showInputfield2('ipv6_dnsenable', enable_dns);
-		document.getElementById("ipv6plus_hint").style.display="none";
-		if(wan_proto_orig == "v6plus")
-			document.getElementById("ipv6plus_passthrough_hint").style.display="";
+		document.getElementById("dns_auto_hint").style.display="none";
+		if(wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc"){
+			document.getElementById("passthrough_hint").style.display="";
+			$("#passthrough_hint").html(passthrough_hint_content);
+		}
 		
 		document.getElementById("auto_config").style.display="";
 
@@ -241,12 +254,16 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_dnsenable[1], 1);
 		var enable_dns = (document.form.ipv6_dnsenable[1].checked) ? '0' : '1';
 		showInputfield2('ipv6_dnsenable', enable_dns);
-		if(wan_proto_orig == "v6plus" && v == "ipv6pt" && enable_dns == "0")
-			document.getElementById("ipv6plus_hint").style.display="";
-		if(wan_proto_orig == "v6plus" && v != "ipv6pt")
-			document.getElementById("ipv6plus_passthrough_hint").style.display="";
+		if((wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc") && v == "ipv6pt" && enable_dns == "0"){
+			document.getElementById("dns_auto_hint").style.display="";
+			$("#dns_auto_hint").html(dns_auto_hint_content);
+		}
+		if((wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc") && v != "ipv6pt"){
+			document.getElementById("passthrough_hint").style.display="";
+			$("#passthrough_hint").html(passthrough_hint_content);
+		}
 		else
-			document.getElementById("ipv6plus_passthrough_hint").style.display="none";
+			document.getElementById("passthrough_hint").style.display="none";
 
 		document.getElementById("auto_config").style.display="none";
 	}
@@ -305,9 +322,11 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_dnsenable[0], 0);
 		inputCtrl(document.form.ipv6_dnsenable[1], 0);
 		showInputfield2('ipv6_dnsenable', '0');
-		document.getElementById("ipv6plus_hint").style.display="none";
-		if(wan_proto_orig == "v6plus")
-			document.getElementById("ipv6plus_passthrough_hint").style.display="";
+		document.getElementById("dns_auto_hint").style.display="none";
+		if(wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc"){
+			document.getElementById("passthrough_hint").style.display="";
+			$("#passthrough_hint").html(passthrough_hint_content);
+		}
 		
 		document.getElementById("auto_config").style.display="";
 
@@ -366,10 +385,12 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_dnsenable[0], 0);
 		inputCtrl(document.form.ipv6_dnsenable[1], 0);
 		showInputfield2('ipv6_dnsenable', '0');
-		document.getElementById("ipv6plus_hint").style.display="none";
-		if(wan_proto_orig == "v6plus")
-			document.getElementById("ipv6plus_passthrough_hint").style.display="";
-		
+		document.getElementById("dns_auto_hint").style.display="none";
+		if(wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc"){
+			document.getElementById("passthrough_hint").style.display="";
+			$("#passthrough_hint").html(passthrough_hint_content);
+		}
+
 		document.getElementById("auto_config").style.display="";
 
 	}
@@ -423,10 +444,12 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_dnsenable[0], 0);
 		inputCtrl(document.form.ipv6_dnsenable[1], 0);
 		showInputfield2('ipv6_dnsenable', '0');
-		document.getElementById("ipv6plus_hint").style.display="none";
-		if(wan_proto_orig == "v6plus")
-			document.getElementById("ipv6plus_passthrough_hint").style.display="";
-		
+		document.getElementById("dns_auto_hint").style.display="none";
+		if(wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc"){
+			document.getElementById("passthrough_hint").style.display="";
+			$("#passthrough_hint").html(passthrough_hint_content);
+		}
+
 		document.getElementById("auto_config").style.display="";
 
 	}
@@ -499,10 +522,12 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_dnsenable[0], 0);
 		inputCtrl(document.form.ipv6_dnsenable[1], 0);
 		showInputfield2('ipv6_dnsenable', '0');
-		document.getElementById("ipv6plus_hint").style.display="none";
-		if(wan_proto_orig == "v6plus")
-			document.getElementById("ipv6plus_passthrough_hint").style.display="";
-		
+		document.getElementById("dns_auto_hint").style.display="none";
+		if(wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc"){
+			document.getElementById("passthrough_hint").style.display="";
+			$("#passthrough_hint").html(passthrough_hint_content);
+		}
+
 		document.getElementById("auto_config").style.display="";
 		
 	}	
@@ -553,9 +578,9 @@ function showInputfield(v){
 		inputCtrl(document.form.ipv6_dnsenable[0], 0);
 		inputCtrl(document.form.ipv6_dnsenable[1], 0);
 		showInputfield2('ipv6_dnsenable', '1');
-		document.getElementById("ipv6plus_hint").style.display="none";
-		document.getElementById("ipv6plus_passthrough_hint").style.display="none";
-		
+		document.getElementById("dns_auto_hint").style.display="none";
+		document.getElementById("passthrough_hint").style.display="none";
+
 		document.getElementById("auto_config").style.display="none";
 		
 	}		
@@ -588,8 +613,10 @@ function showInputfield2(s, v){
 		}
 	
 	}else if(s=='ipv6_dnsenable'){
-		if(wan_proto_orig == "v6plus" && document.form.ipv6_service.value == "ipv6pt"){
-			document.getElementById("ipv6plus_hint").style.display=(v=='0')?"":"none";
+		if((wan_proto_orig == "v6plus" || wan_proto_orig == "ocnvc") && document.form.ipv6_service.value == "ipv6pt"){
+			document.getElementById("dns_auto_hint").style.display=(v=='0')?"":"none";
+			if(v=='0')
+				$("#dns_auto_hint").html(dns_auto_hint_content);
 		}
 		inputCtrl(document.form.ipv6_dns1, enable);
 		inputCtrl(document.form.ipv6_dns2, enable);
@@ -1157,8 +1184,8 @@ function genWANSoption(){
 								<!--option value="slaac" <% nvram_match("ipv6_service", "slaac", "selected"); %>>SLAAC</option-->
 								<!--option value="icmp6" <% nvram_match("ipv6_service", "icmp6", "selected"); %>>ICMPv6</option-->
 							</select>
-							<span id="ipv6plus_passthrough_hint" style="display:none;"><br>It is recommended to select type of IPv6 Passthrough while WAN connection type is <#IPv6_plus#>.</span>
-		     		</td>
+							<span id="passthrough_hint" style="display:none;"></span>
+				</td>
 		     		</tr>
 
 					<tr id="ipv6_only_tr" style="display: none;">
@@ -1399,10 +1426,10 @@ function genWANSoption(){
 					<tr style="display:none;">
 						<th><#IPConnection_x_DNSServerEnable_itemname#></th>
 		     		<td>
-								<input type="radio" name="ipv6_dnsenable" class="input" value="1" onclick="showInputfield2('ipv6_dnsenable', this.value);" <% nvram_match("ipv6_dnsenable", "1","checked"); %>><#WLANConfig11b_WirelessCtrl_button1name#>
-								<input type="radio" name="ipv6_dnsenable" class="input" value="0" onclick="showInputfield2('ipv6_dnsenable', this.value);" <% nvram_match("ipv6_dnsenable", "0","checked"); %>><#btn_disable#>
-								<span id="ipv6plus_hint" style="display:none;"><br>It is recommended to enable this setting while WAN connection type is <#IPv6_plus#>.</span><!-- Untranslated -->
-								<div id="yadns_hint" style="display:none;"></div>								
+					<input type="radio" name="ipv6_dnsenable" class="input" value="1" onclick="showInputfield2('ipv6_dnsenable', this.value);" <% nvram_match("ipv6_dnsenable", "1","checked"); %>><#WLANConfig11b_WirelessCtrl_button1name#>
+					<input type="radio" name="ipv6_dnsenable" class="input" value="0" onclick="showInputfield2('ipv6_dnsenable', this.value);" <% nvram_match("ipv6_dnsenable", "0","checked"); %>><#btn_disable#>
+					<span id="dns_auto_hint" style="display:none;"></span>
+					<div id="yadns_hint" style="display:none;"></div>								
 		     		</td>
 		     	</tr>
 					<tr style="display:none;">

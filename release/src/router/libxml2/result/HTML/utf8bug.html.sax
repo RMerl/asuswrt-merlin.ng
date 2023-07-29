@@ -1,35 +1,35 @@
 SAX.setDocumentLocator()
 SAX.startDocument()
 SAX.startElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 2)
 SAX.startElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, http-equiv='Content-Language', content='en-us')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, http-equiv='Content-Type', content='text/html; charset=utf-8')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(link, href='CSS.css', type='text/css', rel='stylesheet')
 SAX.endElement(link)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(link, rel='SHORTCUT ICON', href='favicon.ico')
 SAX.endElement(link)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(title)
 SAX.characters(&#1588;&#1607;&#1610;&#1585; , 17)
 SAX.endElement(title)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 
 , 2)
 SAX.startElement(body)

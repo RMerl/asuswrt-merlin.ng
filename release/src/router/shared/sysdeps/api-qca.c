@@ -462,45 +462,17 @@ void set_radio(int on, int unit, int subunit)
 	int sub = (subunit >= 0) ? subunit : 0;
 	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX", athfix[]="athXXXXXX";
 	char path[sizeof(NAWDS_SH_FMT) + 6], wds_iface[IFNAMSIZ] = "";
+#if !defined(RTCONFIG_SINGLE_HOSTAPD) || !defined(RTCONFIG_CFG80211)
+	char conf_path[sizeof("/etc/Wireless/conf/hostapd_athXXX.confYYYYYY")];
+	char pid_path[sizeof("/var/run/hostapd_athXXX.pidYYYYYY")];
+	char entropy_path[sizeof("/var/run/entropy_athXXX.binYYYYYY")];
+#endif
 
 	if (unit < WL_2G_BAND || unit >= WL_NR_BANDS) {
 		dbg("%s: wl%d is not supported!\n", __func__, unit);
 		return;
 	}
 
-#if defined(RTCONFIG_SOC_IPQ8074)
-	if(sub)
-	{
-		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, sub);
-		strcpy(wds_iface, nvram_safe_get(strcat_r(prefix, "ifname", tmp)));
-	}	
-	else	
-		strlcpy(wds_iface, get_wififname(unit), sizeof(wds_iface));
-
-#if defined(RTCONFIG_SINGLE_HOSTAPD)
-		if (on) {
-			char bss_cfg[sizeof("bss_config=") + IFNAMSIZ + sizeof(":/etc/Wireless/conf/hostapd_XXX.conf") + IFNAMSIZ];
-
-			snprintf(bss_cfg, sizeof(bss_cfg), "bss_config=%s:/etc/Wireless/conf/hostapd_%s.conf", wds_iface, wds_iface);
-			eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "ADD", bss_cfg);
-		} else {
-			eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "REMOVE", wds_iface);
-		}
-#else
-		char conf_path[sizeof("/etc/Wireless/conf/hostapd_athXXX.confYYYYYY")];
-		char pid_path[sizeof("/var/run/hostapd_athXXX.pidYYYYYY")];
-		char entropy_path[sizeof("/var/run/entropy_athXXX.binYYYYYY")];
-
-		snprintf(pid_path, sizeof(pid_path), "/var/run/hostapd_%s.pid", wds_iface);
-		if (on) {
-			snprintf(conf_path, sizeof(conf_path), "/etc/Wireless/conf/hostapd_%s.conf", wds_iface);
-			snprintf(entropy_path, sizeof(entropy_path), "/var/run/entropy_%s.bin", wds_iface);
-			eval("hostapd", "-d", "-B", "-P", pid_path, "-e", entropy_path, conf_path);
-		} else {
-			kill_pidfile(pid_path);
-		}
-#endif
-#endif
 	do {
 		if (sub > 0)
 			snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, sub);
@@ -521,7 +493,16 @@ void set_radio(int on, int unit, int subunit)
 				} else {
 					eval(QWPA_CLI, "-g", QHOSTAPD_CTRL_IFACE, "raw", "REMOVE", athfix);
 				}
-#endif
+#else
+				snprintf(pid_path, sizeof(pid_path), "/var/run/hostapd_%s.pid", wds_iface);
+				if (on) {
+					snprintf(conf_path, sizeof(conf_path), "/etc/Wireless/conf/hostapd_%s.conf", wds_iface);
+					snprintf(entropy_path, sizeof(entropy_path), "/var/run/entropy_%s.bin", wds_iface);
+					eval("hostapd", "-d", "-B", "-P", pid_path, "-e", entropy_path, conf_path);
+				} else {
+					kill_pidfile(pid_path);
+				}
+#endif	/* RTCONFIG_SINGLE_HOSTAPD && RTCONFIG_CFG80211 */
 			}
 
 			/* Reconnect to peer WDS AP */
@@ -2034,6 +2015,52 @@ cprintf("## %s(): ret(%d) ap_addr(%02x:%02x:%02x:%02x:%02x:%02x)\n", __func__, r
 	return 1;
 }
 
+int get_ch_cch_bw(const char *vap, int *ch, int *cch, int *bw)
+{
+	char cmd[sizeof("wifitool ") + IFNAMSIZ + sizeof(" get_ch_cch_bwXXX")];
+	char *p, data[256], line[256];
+	int data_len, cnt = 0;
+	FILE *fp;
+
+	if (vap == NULL || vap[0] == '\0')
+		return -1;
+
+	*data = '\0';
+	snprintf(cmd, sizeof(cmd), "wifitool %s get_ch_cch_bw", vap);
+	if (!(fp = popen(cmd, "r"))) {
+		dbg("%s: can't execute [%s], errno %d (%s)\n", __func__, cmd, errno, strerror(errno));
+		return -2;
+	}
+
+	data_len = 0;
+	while (data_len < sizeof(data) && fgets(line, sizeof(line), fp)) {
+		strlcat(data + data_len, line, sizeof(data) - data_len);
+		data_len += strlen(line);
+	}
+	pclose(fp);
+
+	if (strlen(data) <= 0) {
+		return 0;
+	}
+
+	if (ch != NULL && (p = strstr(data, "\nchannel: ")) != NULL ) {
+		p += 10;
+		*ch = atoi(p);
+		cnt++;
+	}
+	if (cch != NULL && (p = strstr(data, "\ncen_ch1: ")) != NULL ) {
+		p += 10;
+		*cch = atoi(p);
+		cnt++;
+	}
+	if (bw != NULL && (p = strstr(data, "\nbw: ")) != NULL ) {
+		p += 5;
+		*bw = atoi(p);
+		cnt++;
+	}
+	//dbg("%s: vap(%s) ch(%d) cch(%d) bw(%d)\n", __func__, vap, *ch, *cch, *bw);
+	return cnt;
+}
 
 #if defined(RTCONFIG_BCN_RPT)
 void save_wlxy_mac(char *mode, char* ifname)
@@ -2294,6 +2321,23 @@ int get_channel_list(const char *ifname, int ch_list[], int size)
 		ch_list[i] = range->freq[i].i;
 	}
 	return size;
+}
+
+uint64_t get_channel_list_mask(enum wl_band_id band)
+{
+	uint64_t m = 0;
+	int i, ch_list[64] = { 0 };
+	char vap[IFNAMSIZ];
+
+	if (band < 0 || band >= WL_NR_BANDS)
+		return 0;
+
+	strlcpy(vap, get_wififname(band), sizeof(vap));
+	get_channel_list(vap, ch_list, ARRAY_SIZE(ch_list));
+	for (i = 0; i < ARRAY_SIZE(ch_list) && ch_list[i] != 0; ++i)
+		m |= ch2bitmask(band, ch_list[i]);
+
+	return m;
 }
 
 int has_dfs_channel(void)
@@ -2579,14 +2623,22 @@ void set_wpa_cli_cmd(int band, const char *cmd, int chk_reply)
 
 void disassoc_sta(char *ifname, char *sta_addr)
 {
+	int found;
+	char vap[IFNAMSIZ];
+
 	if(ifname == NULL || *ifname == '\0' || sta_addr == NULL || *sta_addr == '\0')
 		return;
 
+	strlcpy(vap, ifname, sizeof(vap));
+	found = find_vap_by_sta(sta_addr, vap);
+
+	if (found) {
 #if defined(RTCONFIG_CFG80211)
-	eval("hostapd_cli", "-i", ifname, "disassociate", sta_addr);
+		eval("hostapd_cli", "-i", vap, "disassociate", sta_addr);
 #else
-	eval(IWPRIV, ifname, "kickmac", sta_addr);
+		eval(IWPRIV, vap, "kickmac", sta_addr);
 #endif
+	}
 }
 
 
@@ -2679,23 +2731,30 @@ void set_macfilter_unit(int unit, int subnet, FILE *fp)
 	char *p;
 
 #ifdef RTCONFIG_AMAS
-	if (subnet <=0 && nvram_get_int("re_mode") == 1)
-		snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
-	else
-#endif
-	if (subnet > 0) {
-		max_subnet = num_of_mssid_support(unit);
-		for (j = 0, i = 1; i <= max_subnet; i++) {
-			snprintf(tmp_prefix, sizeof(tmp_prefix), "wl%d.%d_", unit, i);
-			if (!nvram_pf_match(tmp_prefix, "bss_enabled", "1"))
-				continue;
-
-			j++;
-			if (j == subnet)
-				strlcpy(prefix, tmp_prefix, sizeof(prefix));
-		}
+	if (nvram_get_int("re_mode") == 1) {
+		/* Reference to wlsuffix_guess_mapping_list[] of cfg_mnt.
+		 * CAP: main WiFi (wlX_{macmode,maclist_x}),   AiMesh Guest (wlX.1_{macmode,maclist_x})
+		 * RE:  main WiFi (wlX.1_{macmode,maclist_x}), AiMesh Guest (wlX.2_{macmode,maclist_x})
+		 */
+		snprintf(prefix, sizeof(prefix), "wl%d.%d_", unit, (subnet <= 0)? 1 : 2);
 	} else
-		snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+#endif
+	{
+		if (subnet > 0) {
+			max_subnet = num_of_mssid_support(unit);
+			for (j = 0, i = 1; i <= max_subnet; i++) {
+				snprintf(tmp_prefix, sizeof(tmp_prefix), "wl%d.%d_", unit, i);
+				if (!nvram_pf_match(tmp_prefix, "bss_enabled", "1"))
+					continue;
+
+				j++;
+				if (j == subnet)
+					strlcpy(prefix, tmp_prefix, sizeof(prefix));
+			}
+		} else {
+			snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+		}
+	}
 
 	__get_wlifname(swap_5g_band(unit), subnet, athfix);
 
@@ -2755,6 +2814,67 @@ void set_macfilter_all(FILE *fp)
 		unit++;
 	}
 	free(wl_ifnames);
+}
+
+/* Check necessary kernel module only. */
+static struct nat_accel_kmod_s {
+	char *kmod_name;
+} nat_accel_kmod[] = {
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074) || defined (RTCONFIG_SOC_IPQ60XX) || defined (RTCONFIG_SOC_IPQ50XX)
+	{ "ecm" },
+#elif defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X) || defined(RTCONFIG_SOC_IPQ40XX)
+	{ "shortcut_fe" },
+#else
+#error Implement nat_accel_kmod[]
+#endif
+};
+
+/* Return NAT acceleration status.
+ * @return:
+ * 	1:	NAT acceleration enabled and running.
+ * 	0:	NAT acceleration is disabled in setting or is disabled at run-time or something error.
+ */
+int nat_acceleration_status(void)
+{
+	int i, hwnat = !!nvram_get_int("qca_sfe");
+	struct nat_accel_kmod_s *p = &nat_accel_kmod[0];
+
+	for (i = 0, p = &nat_accel_kmod[i]; hwnat && i < ARRAY_SIZE(nat_accel_kmod); ++i, ++p) {
+		if (module_loaded(p->kmod_name))
+			continue;
+
+		hwnat = 0;
+	}
+
+#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074) || defined(RTCONFIG_SOC_IPQ60XX) || defined(RTCONFIG_SOC_IPQ50XX)
+	/* Hardware NAT can be stopped via set non-zero value to below files.
+	 * Don't claim hardware NAT is enabled if one of them is non-zero value.
+	 */
+	if (hwnat) {
+#if defined(RTCONFIG_SOC_IPQ8064)
+		const char *v4_stop_fn = "/sys/kernel/debug/ecm/ecm_nss_ipv4/stop", *v6_stop_fn = "/sys/kernel/debug/ecm/ecm_nss_ipv6/stop";
+#elif defined(RTCONFIG_SOC_IPQ8074) || defined(RTCONFIG_SOC_IPQ60XX) || defined(RTCONFIG_SOC_IPQ50XX)
+		const char *v4_stop_fn = "/sys/kernel/debug/ecm/front_end_ipv4_stop", *v6_stop_fn = "/sys/kernel/debug/ecm/front_end_ipv6_stop";
+#endif
+		int s1, s2;
+		char *str;
+
+		s1 = s2 = 0;
+		if ((str = file2str(v4_stop_fn)) != NULL) {
+			s1 = safe_atoi(str);
+			free(str);
+		}
+		if ((str = file2str(v6_stop_fn)) != NULL) {
+			s2 = safe_atoi(str);
+			free(str);
+		}
+
+		if (s1 != 0 || s2 != 0)
+			hwnat = 0;
+	}
+#endif
+
+	return !!hwnat;
 }
 
 /** Return temperature of specific Wireless band via thermaltool.

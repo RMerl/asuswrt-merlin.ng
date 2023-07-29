@@ -1,0 +1,123 @@
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+test/errors/rec_ext.ent:1: parser error : Detected an entity reference loop
+<ent>&e; &e; &e; &e;</ent>
+        ^
+./test/errors/rec_ext_ent.xml:4: parser error : Detected an entity reference loop
+<doc>&e; &e; &e; &e;</doc>
+        ^

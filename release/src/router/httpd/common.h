@@ -14,14 +14,6 @@
  * Foundation, Inc., 59 Temple Place, Suite 330, Boston,
  * MA 02111-1307 USA
  */
-/*  Copyright 2001, ASUSTeK Inc.
-    All Rights Reserved.
-    
-    This is UNPUBLISHED PROPRIETARY SOURCE CODE of ASUSTeK Inc.;
-    the contents of this file may not be disclosed to third parties, copied or
-    duplicated in any form, in whole or in part, without the prior written
-    permission of ASUSTeK Inc..
-*/
 /*
  * NVRAM variable manipulation
  *
@@ -74,6 +66,13 @@ extern void Debug2File(const char *path, const char *fmt, ...);
 	errno = save_errno; \
 })
 #endif
+
+#define HTTPD_FB_DEBUG_FILE             "/jffs/HTTPD_FB_DEBUG.log"
+#define HTTPD_FB_DEBUG(fmt, arg...) do {\
+	int save_errno = errno; \
+		asusdebuglog(LOG_INFO, HTTPD_FB_DEBUG_FILE, LOG_CUSTOM, LOG_SHOWTIME, 0, "[%s(%d)]:"fmt"\n", __FUNCTION__, __LINE__ , ##arg); \
+	errno = save_errno; \
+}while(0)
 
 // 2008.10 magic {
 enum{

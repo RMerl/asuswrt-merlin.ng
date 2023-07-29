@@ -411,6 +411,9 @@ unsigned int getAPChannel(int unit)
 {
 	int r = 0;
 
+	if (__absent_band(unit))
+		return 0;
+
 	switch (unit) {
 	case WL_2G_BAND:	/* fall-through */
 	case WL_5G_BAND:	/* fall-through */
@@ -1249,14 +1252,18 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 #endif
 	int i, ret = 0, cac = 0, radar_cnt = 0, radar_list[32];
 	uint64_t m = 0;
+#if defined(RTCONFIG_AMAS)
+	uint64_t all_ch_m = 0, unavbl_ch_m = 0;
+#endif
 	FILE *fp;
 	unsigned char mac_addr[ETHER_ADDR_LEN];
-	char tmpstr[1024], cmd[] = "iwconfig staXYYYYYY";
-	char *p, ap_bssid[] = "00:00:00:00:00:00XXX", vphy[IFNAMSIZ];
+	char tmpstr[1024], cmd[sizeof("iwconfig staXYYYYYY")], prefix[sizeof("wlX_XXX")];
+	char *p, ap_bssid[sizeof("00:00:00:00:00:00XXX")], vphy[IFNAMSIZ];
 
 	if (unit < 0 || !ifname || !op_mode)
 		return 0;
 
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
 	memset(&mac_addr, 0, sizeof(mac_addr));
 	get_iface_hwaddr(ifname, mac_addr);
 	ret += websWrite(wp, "=======================================================================================\n"); // separator
@@ -1302,6 +1309,13 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 		for (i = 0; i < radar_cnt; ++i) {
 			m |= ch5g2bitmask(radar_list[i]);
 		}
+#if defined(RTCONFIG_AMAS)
+		all_ch_m = get_channel_list_mask(unit);
+		unavbl_ch_m = chlist5g2bitmask(nvram_pf_get(prefix, "unavbl_ch"), ",");
+		if (unavbl_ch_m && unavbl_ch_m == all_ch_m)
+			unavbl_ch_m = 0;
+		m |= unavbl_ch_m & DFS_CH_M;
+#endif
 	}
 	ret += websWrite(wp, "Bit Rate	: %s%s", tmpstr, cac? " (CAC scan)" : "");
 	getVAPBandwidth(unit, ifname, tmpstr, sizeof(tmpstr));
@@ -1309,7 +1323,7 @@ show_wliface_info(webs_t wp, int unit, char *ifname, char *op_mode)
 		ret += websWrite(wp, ", %sMHz", tmpstr);
 	ret += websWrite(wp, "\n");
 	ret += websWrite(wp, "Channel		: %u", getAPChannel(unit));
-	if (radar_cnt > 0) {
+	if (m) {
 		ret += websWrite(wp, " (Radar: %s)", bitmask2chlist5g(m, ","));
 	}
 	ret += websWrite(wp, "\n");
@@ -2346,64 +2360,41 @@ ej_wl_rate_6g(int eid, webs_t wp, int argc, char_t **argv)
 		return 0;
 }
 
-/* Check necessary kernel module only. */
-static struct nat_accel_kmod_s {
-	char *kmod_name;
-} nat_accel_kmod[] = {
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074) || defined (RTCONFIG_SOC_IPQ60XX) || defined (RTCONFIG_SOC_IPQ50XX)
-	{ "ecm" },
-#elif defined(RTCONFIG_SOC_QCA9557) || defined(RTCONFIG_QCA953X) || defined(RTCONFIG_QCA956X) || defined(RTCONFIG_QCN550X) || defined(RTCONFIG_SOC_IPQ40XX)
-	{ "shortcut_fe" },
-#else
-#error Implement nat_accel_kmod[]
-#endif
-};
-
 int
 ej_nat_accel_status(int eid, webs_t wp, int argc, char_t **argv)
 {
-	int i, status = 1, retval = 0;
-	struct nat_accel_kmod_s *p = &nat_accel_kmod[0];
+	return websWrite(wp, "%d", nat_acceleration_status());
+}
 
-	for (i = 0, p = &nat_accel_kmod[i]; status && i < ARRAY_SIZE(nat_accel_kmod); ++i, ++p) {
-		if (module_loaded(p->kmod_name))
+#if defined(RTCONFIG_WIFI_QCN5024_QCN5054) || defined(RTCONFIG_QCA_AXCHIP)
+/* Hook validate_apply().
+ * Sync wl[0~2]_yyy with wlx_yyy if yyy in global_params[].
+ */
+static const char *global_params[] = { "twt", NULL };
+void __validate_apply_set_wl_var(char *nv, char *val)
+{
+	const char **p;
+	int band;
+	char prefix[sizeof("wlxxx_")];
+
+	if (!nv || (strncmp(nv, "wl0_", 4) && strncmp(nv, "wl1_", 4) && strncmp(nv, "wl2_", 4)))
+		return;
+
+	for (p = &global_params[0]; *p != NULL; ++p) {
+		if (strcmp(nv + 4, *p))
 			continue;
 
-		status = 0;
-	}
-
-#if defined(RTCONFIG_SOC_IPQ8064) || defined(RTCONFIG_SOC_IPQ8074)
-	/* Hardware NAT can be stopped via set non-zero value to below files.
-	 * Don't claim hardware NAT is enabled if one of them is non-zero value.
-	 */
-	if (status) {
-#if defined(RTCONFIG_SOC_IPQ8064)
-		const char *v4_stop_fn = "/sys/kernel/debug/ecm/ecm_nss_ipv4/stop", *v6_stop_fn = "/sys/kernel/debug/ecm/ecm_nss_ipv6/stop";
-#elif defined(RTCONFIG_SOC_IPQ8074)
-		const char *v4_stop_fn = "/sys/kernel/debug/ecm/front_end_ipv4_stop", *v6_stop_fn = "/sys/kernel/debug/ecm/front_end_ipv6_stop";
-#endif
-		int s1, s2;
-		char *str;
-
-		s1 = s2 = 0;
-		if((str = file2str(v4_stop_fn)) != NULL) {
-			s1 = safe_atoi(str);
-			free(str);
+		for (band = WL_2G_BAND; band < min(MAX_NR_WL_IF, WL_5G_2_BAND + 1); ++band) {
+			snprintf(prefix, sizeof(prefix), "wl%d_", band);
+			if (!strncmp(nv, prefix, strlen(prefix)))
+				continue;
+			nvram_pf_set(prefix, *p, val);
+			_dprintf("%s: set %s%s=%s\n", __func__, prefix, *p, val? : "NULL");
 		}
-		if((str = file2str(v6_stop_fn)) != NULL) {
-			s2 = safe_atoi(str);
-			free(str);
-		}
-
-		if (s1 != 0 || s2 != 0)
-			status = 0;
+		break;
 	}
-#endif
-
-	retval += websWrite(wp, "%d", status);
-
-	return retval;
 }
+#endif
 
 #ifdef RTCONFIG_PROXYSTA
 int

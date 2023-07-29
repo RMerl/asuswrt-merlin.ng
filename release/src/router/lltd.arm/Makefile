@@ -148,6 +148,12 @@ else ifeq ($(BUILD_NAME), GT-AX6000)
 	install icon.large.gtax6000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 	install icon.gtax6000_eva.ico $(INSTALLDIR)/usr/sbin/icon_eva.ico
 	install icon.large.gtax6000_eva.ico $(INSTALLDIR)/usr/sbin/icon_eva.large.ico
+else ifeq ($(BUILD_NAME), GT10)
+	install icon.gt10.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.gt10.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
+else ifeq ($(BUILD_NAME), RTAX9000)
+	install icon.rtax9000.ico $(INSTALLDIR)/usr/sbin/icon.ico
+	install icon.large.rtax9000.ico $(INSTALLDIR)/usr/sbin/icon.large.ico
 else
 	install icon.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.ico
 	install icon.large.$(modelstr).ico $(INSTALLDIR)/usr/sbin/icon.large.ico

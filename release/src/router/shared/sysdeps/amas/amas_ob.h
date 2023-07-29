@@ -99,6 +99,7 @@ static struct time_mapping_s time_mapping_list[] = {
 	{ "BM68",   50,     120,     60},
 	{ "ET8_V2",   50,     120,     60},
 	{ "RT-AX5400",   50,     120,     60},
+	{ "RT-AX9000",   50,     120,     60},
 	/* END */
 	{ NULL, 0, 0, 0 }
 };

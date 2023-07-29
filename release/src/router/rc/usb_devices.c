@@ -117,6 +117,14 @@ int is_android_phone(const int mode, const unsigned int vid, const unsigned int 
 	return 0;
 }
 
+int is_apple_device(const int mode, const unsigned int vid, const unsigned int pid)
+{
+	if(vid == 0x05ac)
+		return 1;
+
+	return 0;
+}
+
 int is_storage_cd(const unsigned int vid, const unsigned int pid)
 {
 	static const struct {
@@ -4564,9 +4572,19 @@ int asus_usb_interface(const char *device_name, const char *action)
 #endif
 				modprobe_r("usbserial");
 
-#ifdef RTCONFIG_USB_BECEEM
 				vid = atoi(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)));
 				pid = atoi(nvram_safe_get(strcat_r(prefix2, "act_pid", tmp2)));
+
+				usb_dbg("(%s): Remove 0x%04x:0x0%4x...\n", device_name, vid, pid);
+
+				if(is_apple_device(0, vid, pid) && strstr(device_name, ":1.0")){
+					usb_dbg("(%s): Skip to unset device information.\n", device_name);
+
+					file_unlock(isLock);
+					return 0;
+				}
+
+#ifdef RTCONFIG_USB_BECEEM
 				if(is_samsung_dongle(1, vid, pid) || is_gct_dongle(1, vid, pid)){
 					modprobe_r("drxvi314");
 
@@ -4669,7 +4687,7 @@ int asus_usb_interface(const char *device_name, const char *action)
 		// Wait if there is the printer/modem interface.
 #if defined(RTCONFIG_USB) || defined(RTCONFIG_USB_PRINTER) || defined(RTCONFIG_USB_MODEM)
 		retry = 0;
-		while(retry < MAX_WAIT_MODULE){
+		while(!nvram_get_int("stop_wait_usb_modules") && retry < MAX_WAIT_MODULE){
 			if(isStorageInterface(device_name)){
 				usb_dbg("(%s): Is Storage interface on Port %s.\n", device_name, usb_node);
 				file_unlock(isLock);

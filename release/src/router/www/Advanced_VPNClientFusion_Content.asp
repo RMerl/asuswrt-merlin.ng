@@ -927,6 +927,7 @@ function show_vpnc_rulelist(){
 									code += "<img title='<#usb_initializing#>' src='/images/InternetScan.gif'>";
 									break;
 								case "1" :
+								case "7" :
 									code += "<div title='<#vpn_openvpn_conflict#>' class='vpnc_ipconflict_icon'></div>";
 									$("#ip_conflict_hint").show();
 									break;
@@ -2814,6 +2815,7 @@ function update_vpnc_profile_status(_vpnc_status_array) {
 							status_hint = "<img title='<#usb_initializing#>' src='/images/InternetScan.gif'>";
 							break;
 						case "1" :
+						case "7" :
 							status_hint = "<div title='<#vpn_openvpn_conflict#>' class='vpnc_ipconflict_icon'></div>";
 							$("#ip_conflict_hint").show();
 							break;

@@ -32,6 +32,7 @@ struct list
 struct list	*list_new(void);
 void		list_free(struct list *);
 void		listnode_add(struct list *, void *);
+void		__listnode_delete(struct list *list, struct list *node);
 void		listnode_delete(struct list *, void *);
 void		list_delete (struct list *);
 void		list_delete_all_node (struct list *);

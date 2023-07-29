@@ -137,8 +137,18 @@ const char* pns_sendmsg_template =
 const char* getuserticketbyrefresh_template = 
 "<getuserticketbyrefresh>\r\n"
 "<cusid>%s</cusid>\r\n"
+"<devicemd5mac>%s</devicemd5mac>\r\n"
 "<userrefreshticket>%s</userrefreshticket>\r\n"
 "</getuserticketbyrefresh>\r\n\r\n"
+;
+
+const char* getawscertificate_template = 
+"<getawscertificate>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<userticket>%s</userticket>\r\n"
+"<deviceid>%s</deviceid>\r\n"
+"<deviceticket>%s</deviceticket>\r\n"
+"</getawscertificate>\r\n\r\n"
 ;
 
 const char* psr_sendmsg_template = 
@@ -150,15 +160,32 @@ const char* psr_sendmsg_template =
 "</psr_sendmsg>\r\n\r\n"
 ;
 
+const char* pns_sendmsg_fcm_template = 
+"<pns_sendmsg_fcm>\r\n"
+"<cusid>%s</cusid>\r\n"
+"<deviceid>%s</deviceid>\r\n"
+"<deviceticket>%s</deviceticket>\r\n"
+"<message>%s</message>\r\n"
+"</pns_sendmsg_fcm>\r\n\r\n"
+;
+
+const char* remotelogin_template = 
+"<remotelogin>\r\n"
+"<oauth_dm_cusid>%s</oauth_dm_cusid>\r\n"
+"<mobile_deviceid>%s</mobile_deviceid>\r\n"
+"<dm_ticket>%s</dm_ticket>\r\n"
+"</remotelogin>\r\n\r\n"
+;
+
 const char* ifttt_notification_template = 
 "%s"
 ;
 
 const char* wb_custom_header_templ = 
-"Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; apilevel=%d; modelname=%s";
+"Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; dmapilevel=%d; apilevel=%d; modelname=%s";
 
 const char* wb_custom_header_templ2 = 
-"Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; apilevel=%s; modelname=%s";
+"Set-Cookie:ONE_VER=1_0; path=/; sid=%s; devicetype=%s; fwver=%s; dmapilevel=%d; apilevel=%s; modelname=%s";
 
 const char* ifttt_notification_header_templ = 
 "Content-Type: application/json";

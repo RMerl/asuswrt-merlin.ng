@@ -141,10 +141,10 @@ var siteInfo = [faq_fref,
 
 function redirectSite(url){
 	if(url == "wtfast"){
-		if(wtfast_support)
-			url = siteInfo[1];
-		else if(wtfast_v2_support)
+		if(wtfast_v2_support)
 			url = siteInfo[4];
+		else if(wtfast_support)
+			url = siteInfo[1];
 	}
 
 	window.open(url, '_blank');

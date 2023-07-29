@@ -8,31 +8,31 @@ SAX.startElement(head)
 SAX.startElement(title)
 SAX.characters(Welcome to Copernic.com, 23)
 SAX.endElement(title)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(script, language='javascript')
 SAX.cdata(
           NS_ActualOpen=windo, 194)
 SAX.endElement(script)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.comment( END Naviscope Javascript )
 SAX.error: Misplaced DOCTYPE declaration
 SAX.internalSubset(HTML, -//W3C//DTD HTML 4.0 Transitional//EN, )
 SAX.comment( saved from url=(0027)http://www.agents-tech.com/ )
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, content='text/html; charset=iso-8859-1', http-equiv='Content-Type')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, content='Copernic.com Inc. develops innovative agent technology solutions to efficiently access and manage the overwhelming quantity of information available on the Internet and intranets.', name='DESCRIPTION')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, content='agent,technology,intranet,extranet,management,filtering,ranking,solution,service,intelligent,intelligence,client,server,architecture,developer,development,information,telecommunication,announcement,press,product,profile,contact,multi-agent,meta-search,metasearch,multi-thread,mobile,wireless,shopping,robot,PCS,Copernic,engine,toolkit,CDK,EDK', name='KEYWORDS')
 SAX.endElement(meta)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.startElement(meta, content='MSHTML 5.00.3103.1000', name='GENERATOR')
 SAX.endElement(meta)
@@ -64,6 +64,6 @@ SAX.characters(
 SAX.endElement(noframes)
 SAX.endElement(frameset)
 SAX.endElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endDocument()

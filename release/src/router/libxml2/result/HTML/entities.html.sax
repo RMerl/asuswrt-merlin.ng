@@ -20,7 +20,7 @@ SAX.characters(&amp;, 1)
 SAX.characters( b
 , 3)
 SAX.endElement(p)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 1)
 SAX.endElement(body)
 SAX.endElement(html)

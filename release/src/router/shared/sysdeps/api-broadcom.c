@@ -921,7 +921,7 @@ uint32_t get_gpio(uint32_t gpio)
 		return -1;
 	}
 	if (active_low < 0) {
-		printf("invalid gpionr!get(%d)\n", gpio);
+		printf("invalid gpionr ! get(%d): not defined\n", gpio);
 		dump_ledtable();
 		close(board_fp);
 		return -1;
@@ -946,7 +946,7 @@ uint32_t get_gpio(uint32_t gpio)
 #endif
 }
 
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM6750) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX88U_PRO)
+#if defined(HND_ROUTER) || defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM6750) || defined(BCM6756) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(BCM6855) || defined(RTAX88U_PRO)
 uint32_t get_gpio2(uint32_t gpio)
 {
 	int board_fp = open("/dev/brcmboard", O_RDWR);
@@ -965,6 +965,127 @@ uint32_t get_gpio2(uint32_t gpio)
 
 	close(board_fp);
 	return ioctl_parms.offset;
+}
+#endif
+
+#ifdef HND_ROUTER
+int get_gpio_rc(uint32_t gpio)
+{
+
+        char ledpath[128] = {0};
+        char buf[32] = {0};
+        int brightness;
+	int act_low = _gpio_active_low(gpio & 0xff);
+	int ledfd;
+
+	if((gpio & 0xff) < 0x1f)
+		return get_gpio2(gpio);
+
+	//_dprintf("# btn gpio mask 0x1f\n");
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+        sprintf(ledpath, "/sys/class/leds/sw_parallel_led_%d/brightness", gpio);
+        if (!f_exists(ledpath))
+                sprintf(ledpath, "/sys/class/leds/led_gpio_%d/brightness", gpio);
+        else if (!f_exists(ledpath))
+                sprintf(ledpath, "/sys/class/leds/sw_led_%d/brightness", gpio);
+#else
+        sprintf(ledpath, "/sys/class/leds/%d/brightness", gpio);
+#endif
+        ledfd = open(ledpath, O_RDWR);
+        if (ledfd <=0 ) {
+                printf("\nopen ledpath %s failed !\n", ledpath);
+                return -1;
+        }
+
+        f_read_string(ledpath, buf, sizeof(buf));
+        brightness = safe_atoi(buf);
+
+	close(ledfd);
+        return act_low ? brightness?0:1 : brightness?1:0;
+}
+
+uint32_t set_gpio_rc(uint32_t gpio, uint32_t value)
+{
+	//_dprintf("%s, gpio:%d, value:%d\n", __func__, gpio, value);
+	if(gpio < 0 || value < 0)
+		return -1;
+
+#ifdef HND_ROUTER
+#ifndef LEGACY_LED
+	char ledpath[48];
+	int active_low = _gpio_active_low(gpio & 0xff);
+	int ledfd;
+
+	if (active_low < 0) {
+		printf("!gpio(%d) not defined, assume act_low, set(%d)\n", gpio, value);
+		active_low = 1;
+/*
+		dump_ledtable();
+		return -1;
+*/
+	}
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+	sprintf(ledpath, "/sys/class/leds/sw_parallel_led_%d/brightness", gpio);
+	if (!f_exists(ledpath))
+		sprintf(ledpath, "/sys/class/leds/led_gpio_%d/brightness", gpio);
+	if (!f_exists(ledpath))
+		sprintf(ledpath, "/sys/class/leds/sw_led_%d/brightness", gpio);
+	if (!f_exists(ledpath))
+		sprintf(ledpath, "/sys/class/leds/sw_led_%d-pin_%d/brightness", gpio, gpio);
+#else
+	sprintf(ledpath, "/sys/class/leds/%d/brightness", gpio);
+#endif
+	ledfd = open(ledpath, O_RDWR);
+	if (ledfd <=0 ) {
+		printf("\nopen ledpath %s failed !\n", ledpath);
+		return -1;
+	}
+#if defined(RTAX95Q) || defined(RTAXE95Q)
+	write(ledfd, active_low?(!value?"0":"255"):(!value?"255":"0"), active_low?(!value?1:3):(!value?3:1));
+#elif defined(RTCONFIG_HND_ROUTER_AX_6756) && !defined(BCM4912)
+	write(ledfd, active_low?(!value?"255":"0"):(!value?"255":"0"), active_low?(!value?3:1):(!value?3:1));
+#else
+#ifdef BC109
+	if(gpio==3)
+		write(ledfd, active_low?(!value?"0":"255"):(!value?"255":"0"), active_low?(!value?1:3):(!value?3:1));
+	else
+#endif
+		write(ledfd, active_low?(!value?"255":"0"):(!value?"0":"255"), active_low?(!value?3:1):(!value?1:3));
+#endif
+	close(ledfd);
+	return 0;
+#else
+	int board_fp = open("/dev/brcmboard", O_RDWR);
+	int active_low = _gpio_active_low(gpio & 0xff);
+	BOARD_IOCTL_PARMS ioctl_parms = {0};
+
+	if (board_fp <= 0) {
+		printf("Open /dev/brcmboard failed!\n");
+		return -1;
+	}
+	if (active_low < 0) {
+		printf("!gpio(%d) not defined, assume act_low, set(%d)\n", gpio, value);
+		active_low = 1;
+/*
+		dump_ledtable();
+		close(board_fp);
+		return -1;
+*/
+	}
+
+	ioctl_parms.strLen = gpio & 0xff | (active_low ? BP_ACTIVE_LOW : 0);
+	ioctl_parms.offset = (active_low?!value:value) & 0x3;
+
+	if (ioctl(board_fp, BOARD_IOCTL_SET_GPIO, &ioctl_parms) < 0)
+		printf("\nhnd iotcl fail!\n");
+
+	close(board_fp);
+	return 0;
+#endif
+#else // HND_ROUTER
+	gpio_write(gpio, value);
+#endif
+	return 0;
 }
 #endif
 
@@ -1034,6 +1155,33 @@ uint32_t set_gpio(uint32_t gpio, uint32_t value)
 #endif
 	return 0;
 }
+
+#ifdef RTCONFIG_SW_SPDLED
+#ifdef BC109
+struct devif_spdled devif_spdled_list[] = {
+        {"eth0", 11},   // wan
+        {"eth1", 1},    // phyid 0
+        {"eth2", 3},    //       1
+        {"eth3", 5},    //       2
+        {"eth4", 7},    //       3
+        {NULL, -1}
+};
+#endif
+
+int get_spdled_gpio(char *evnt_if)
+{
+	int i, gpio = -1;
+	
+	for(i=0; devif_spdled_list[i].ifname; ++i) {
+		if(!strcmp(evnt_if, devif_spdled_list[i].ifname)) {
+			gpio = devif_spdled_list[i].gpio;
+			break;
+		}
+	}
+
+	return gpio;
+}
+#endif
 
 #ifdef RTCONFIG_BCMFA
 int get_fa_rev(void)
@@ -1953,10 +2101,22 @@ int get_bonding_port_status(int port)
 	int extra_p0=0;
 	unsigned int regv=0, pmdv=0, regv2=0, pmdv2=0;
 #endif
-#if defined(RTCONFIG_EXT_BCM53134) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) /* RT-AX88U */
+#if !defined(EBG19) && defined(RTCONFIG_EXT_BCM53134) && !defined(TUFAX3000_V2) && !defined(RTAXE7800) /* RT-AX88U */
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#elif defined(BC105)
+	int lan_ports=4;
+	int ports[lan_ports+1];
+	ports[0]=7; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
+#elif defined(EBG15)
+	int lan_ports=4;
+	char *ports[lan_ports+1];
+	ports[0]="eth0"; ports[1]="eth4"; ports[2]="eth3"; ports[3]="eth2"; ports[4]="eth1";
+#elif defined(EBG19)
+	int lan_ports=8;
+	char *ports[lan_ports+1];
+	ports[0]="eth0"; ports[1]="eth4"; ports[2]="eth3"; ports[3]="eth2"; ports[4]="eth1", ports[5]="ethsw_3", ports[6]="ethsw_2", ports[7]="ethsw_1", ports[8]="ethsw_0";
 #elif defined(RTAX92U)
 	int lan_ports=4;
 	int ports[lan_ports+1];
@@ -2005,17 +2165,7 @@ int get_bonding_port_status(int port)
 	int ports[lan_ports+1];
 	/* 4 3 2 1 0	W0 L1 L2 L3 L4 */
 	ports[0]=4; ports[1]=3; ports[2]=2; ports[3]=1; ports[4]=0;
-#elif defined(TUFAX3000_V2)
-	int lan_ports=4;
-	int ports[lan_ports+1];
-	/* 0 1 2 3    W0 L1 L2 L3 */
-	ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3;
-#elif defined(TUFAX3000_V2)
-	int lan_ports=4;
-	int ports[lan_ports+1];
-	/* 0 1 2 3 4    W0 L1 L2 L3 L4 */
-	ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4;
-#elif defined(RTAXE7800)
+#elif defined(TUFAX3000_V2) || defined(RTAXE7800)
 	int lan_ports=4;
 	int ports[lan_ports+1];
 	if (!nvram_get_int("wans_extwan"))
@@ -2041,6 +2191,11 @@ int get_bonding_port_status(int port)
 	/* 1 0 2 3    W0 L1 L2 L3 */
 	ports[0]=1; ports[1]=0; ports[2]=2; ports[3]=3;
 	}
+#elif defined(RTAX9000)
+        int lan_ports=5;
+        int ports[lan_ports+1];
+        /* 0 5 1 2 3 4 W0 L1 L2 L3 L4 L5 */
+        ports[0]=0; ports[1]=1; ports[2]=2; ports[3]=3; ports[4]=4; ports[5]=5;
 #elif defined(RTAX82_XD6) || defined(XD6_V2)
 	int lan_ports=3;
 	int ports[lan_ports+1];
@@ -2102,7 +2257,7 @@ int get_bonding_port_status(int port)
 #endif
 
 	/* WAN port */
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756) || defined(BCM4906_504)
 	if (hnd_get_phy_status(ports[port]))				/*Disconnect*/
 #elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6855) || defined(BCM6750)
 	if (hnd_get_phy_status(ports[port]))				/*Disconnect*/
@@ -2110,7 +2265,7 @@ int get_bonding_port_status(int port)
 	if (hnd_get_phy_status(ports[port], extra_p0, regv, pmdv))	/*Disconnect*/
 #endif
 	{
-#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6710) || defined(BCM4912) || defined(BCM6756) || defined(BCM4906_504)
 		port_status = hnd_get_phy_speed(ports[port]);
 #elif defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(BCM6855) || defined(BCM6750)
 		port_status = hnd_get_phy_speed(ports[port]);
@@ -2156,11 +2311,7 @@ int wl_max_no_vifs(int unit)
 	base_no_vifs++;
 #endif
 #ifdef RTCONFIG_FRONTHAUL_DBG
-#ifdef GT10
-	if(unit == 2)
-#else
-	if(!unit)
-#endif
+	if (unit == WLC_BAND_2G)
 		base_no_vifs++;
 #endif
 #endif
@@ -2225,6 +2376,50 @@ int wl_get_band(char* wlif)
     wl_ioctl(wlif, WLC_GET_BAND, &bandtype, sizeof(bandtype));
 
     return bandtype;
+}
+
+/* get unit by nv definition in case ioctl fail */
+int wl_get_ifname_unit(char *wlif)
+{
+        int unit = 0;
+        char nv_wlif[16], *wlx_ifname[16], word[64], *next;
+        char wl_ifnames[32] = { 0 };
+
+        strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+        foreach (word, wl_ifnames, next) {
+                snprintf(nv_wlif, sizeof(nv_wlif), "wl%d_ifname", unit);
+		strlcpy(wlx_ifname, nvram_safe_get(nv_wlif), sizeof(wlx_ifname));
+		if(strcmp(wlx_ifname, wlif) == 0)
+			return unit;
+
+		unit++;
+        }
+	return -1;
+}
+
+int wl_check_unii4_band(char *wlif)
+{
+	int unit, ret = 0;
+	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX";
+
+	unit = wl_get_ifname_unit(wlif);
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	ret = nvram_get_hex(strcat_r(prefix, "band5grp", tmp)) & WL_5G_BAND_4;
+
+	return ret;
+}
+
+/* get band by nv definition in case ioctl fail */
+int wl_get_chlist_band(char* wlif)
+{
+	int unit, band = -1;
+	char tmp[100], prefix[] = "wlXXXXXXXXXXXXXX";
+
+	unit = wl_get_ifname_unit(wlif);
+	snprintf(prefix, sizeof(prefix), "wl%d_", unit);
+	band = nvram_get_int(strcat_r(prefix, "nband", tmp));
+
+	return band;
 }
 
 /* Check if interface is primary or not */
@@ -2587,5 +2782,6 @@ void gen_bcmbsd_def_policy(int sel)
 		_dprintf("%s, set defnv [%s]=[%s]\n", __func__, namebuf, bcmbsd_def_policy[tbi].if_qualify[ruleid]);
 	}	
 }
+
 
 #endif

@@ -157,6 +157,12 @@ dev_nvram_get(const char *name)
 char *
 nvram_get(const char *name)
 {
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	if(invalid_nvram_get_program(name)){
+		printf("nvram_get:name = %s fail\n",name);
+		return NULL;
+	}
+#endif
 #ifdef RTCONFIG_JFFS_NVRAM
 	if (large_nvram(name)) {
 		char *ret = NULL;
@@ -172,6 +178,33 @@ nvram_get(const char *name)
 
 		return ret;
 	}
+#endif
+#ifdef RTCONFIG_VAR_NVRAM
+	if (is_var_nvram(name)) {
+		char *ret = NULL;
+		int fd;
+
+		if (!_nvram_lock(&fd))
+			return NULL;
+
+		fdatasync(fd);
+		ret = var_nvram_get(name);
+
+		_nvram_unlock(&fd);
+
+		return ret;
+	}
+#endif
+	return dev_nvram_get(name);
+}
+
+char *
+nvram_get_salt(void)
+{
+	char name[][16] = {{'n', 'v', 'r', 'a', 'm', '_', 's', 'a', 'l', 't', '\0'}};
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	if(invalid_program_check())
+		return NULL;
 #endif
 #ifdef RTCONFIG_VAR_NVRAM
 	if (is_var_nvram(name)) {
@@ -218,6 +251,12 @@ dev_nvram_getall(char *buf, int count)
 int
 nvram_getall(char *buf, int count)
 {
+#ifdef RTCONFIG_NVRAM_ENCRYPT
+	if(invalid_program_check()){
+		printf("nvram_getall: fail\n");
+		return -1;
+	}
+#endif
 #ifdef RTCONFIG_JFFS_NVRAM
 	int len;
 	char *name;

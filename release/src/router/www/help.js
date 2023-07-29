@@ -2659,25 +2659,29 @@ function check_common_string(pwd, flag){
 // ---------- Viz add for pwd strength check [Start] 2012.12 -----
 
 function chkPass(pwd, flag, obj, id) {
+	var ttc = '<% nvram_get("territory_code"); %>';
+	var isSku = function(_ptn){
+		return (ttc.search(_ptn) == -1) ? false : true;
+	}
 	var orig_pwd = "";
 	var postfix = (id == undefined)? "": ("_" + id);
 	var oScorebarBorder = document.getElementById("scorebarBorder"+postfix);
 	var oScorebar = document.getElementById("scorebar"+postfix);
 	var oScore = document.getElementById("score"+postfix);
 
-	if(obj != undefined){
+	if(obj != undefined && (typeof obj == "object")){
 		oScorebarBorder = $(obj)[0];
 		oScorebar = $(obj).find(".strength_color")[0];
 		oScore =$(obj).find(".strength_text")[0];
 	}
 
-	if(flag == 'http_passwd' && (is_KR_sku || is_SG_sku || is_AA_sku)){
+	if(flag == "http_passwd" && (isSku("KR") || isSku("SG") || isSku("AA"))){
 		oScorebar.style.display = "none";
 		return;
 	}
 
 	// Simultaneous variable declaration and value assignment aren't supported in IE apparently
-	// so I'm forced to assign the same value individually per var to support a crappy browser *sigh* 
+	// so I'm forced to assign the same value individually per var to support a crappy browser *sigh*
 	var nScore=0, nLength=0, nAlphaUC=0, nAlphaLC=0, nNumber=0, nSymbol=0, nMidChar=0, nRequirements=0, nAlphasOnly=0, nNumbersOnly=0, nUnqChar=0, nRepChar=0, nRepInc=0, nConsecAlphaUC=0, nConsecAlphaLC=0, nConsecNumber=0, nConsecSymbol=0, nConsecCharType=0, nSeqAlpha=0, nSeqNumber=0, nSeqSymbol=0, nSeqChar=0, nReqChar=0, nMultConsecCharType=0;
 	var nMultRepChar=1, nMultConsecSymbol=1;
 	var nMultMidChar=2, nMultRequirements=2, nMultConsecAlphaUC=2, nMultConsecAlphaLC=2, nMultConsecNumber=2;
@@ -2697,8 +2701,8 @@ function chkPass(pwd, flag, obj, id) {
 		nLength = pwd.length;
 		var arrPwd = pwd.replace(/\s+/g,"").split(/\s*/);
 		var arrPwdLen = arrPwd.length;
-		
-		/* Main calculation for strength: 
+
+		/* Main calculation for strength:
 				Loop through password to check for Symbol, Numeric, Lowercase and Uppercase pattern matches */
 		for (var a=0; a < arrPwdLen; a++) {
 			if (arrPwd[a].match(/[A-Z]/g)) {
@@ -2706,18 +2710,18 @@ function chkPass(pwd, flag, obj, id) {
 				nTmpAlphaUC = a;
 				nAlphaUC++;
 			}
-			else if (arrPwd[a].match(/[a-z]/g)) { 
+			else if (arrPwd[a].match(/[a-z]/g)) {
 				if (nTmpAlphaLC !== "") { if ((nTmpAlphaLC + 1) == a) { nConsecAlphaLC++; nConsecCharType++; } }
 				nTmpAlphaLC = a;
 				nAlphaLC++;
 			}
-			else if (arrPwd[a].match(/[0-9]/g)) { 
+			else if (arrPwd[a].match(/[0-9]/g)) {
 				if (a > 0 && a < (arrPwdLen - 1)) { nMidChar++; }
 				if (nTmpNumber !== "") { if ((nTmpNumber + 1) == a) { nConsecNumber++; nConsecCharType++; } }
 				nTmpNumber = a;
 				nNumber++;
 			}
-			else if (arrPwd[a].match(/[^a-zA-Z0-9_]/g)) { 
+			else if (arrPwd[a].match(/[^a-zA-Z0-9_]/g)) {
 				if (a > 0 && a < (arrPwdLen - 1)) { nMidChar++; }
 				if (nTmpSymbol !== "") { if ((nTmpSymbol + 1) == a) { nConsecSymbol++; nConsecCharType++; } }
 				nTmpSymbol = a;
@@ -2728,7 +2732,7 @@ function chkPass(pwd, flag, obj, id) {
 			for (var b=0; b < arrPwdLen; b++) {
 				if (arrPwd[a] == arrPwd[b] && a != b) { /* repeat character exists */
 					bCharExists = true;
-					/* 
+					/*
 					Calculate icrement deduction based on proximity to identical characters
 					Deduction is incremented each time a new match is discovered
 					Deduction amount is based on total password length divided by the
@@ -2737,64 +2741,58 @@ function chkPass(pwd, flag, obj, id) {
 					nRepInc += Math.abs(arrPwdLen/(b-a));
 				}
 			}
-			if (bCharExists) { 
-				nRepChar++; 
+			if (bCharExists) {
+				nRepChar++;
 				nUnqChar = arrPwdLen-nRepChar;
-				nRepInc = (nUnqChar) ? Math.ceil(nRepInc/nUnqChar) : Math.ceil(nRepInc); 
+				nRepInc = (nUnqChar) ? Math.ceil(nRepInc/nUnqChar) : Math.ceil(nRepInc);
 			}
 		}
-		
+
 		/* Check for sequential alpha string patterns (forward and reverse) */
 		for (var s=0; s < 23; s++) {
 			var sFwd = sAlphas.substring(s,parseInt(s+3));
 			var sRev = sFwd.strReverse();
 			if (pwd.toLowerCase().indexOf(sFwd) != -1 || pwd.toLowerCase().indexOf(sRev) != -1) { nSeqAlpha++; nSeqChar++;}
 		}
-		
+
 		/* Check for sequential numeric string patterns (forward and reverse) */
 		for (var s=0; s < 8; s++) {
 			var sFwd = sNumerics.substring(s,parseInt(s+3));
 			var sRev = sFwd.strReverse();
 			if (pwd.toLowerCase().indexOf(sFwd) != -1 || pwd.toLowerCase().indexOf(sRev) != -1) { nSeqNumber++; nSeqChar++;}
 		}
-		
+
 		/* Check for sequential symbol string patterns (forward and reverse) */
 		for (var s=0; s < 8; s++) {
 			var sFwd = sSymbols.substring(s,parseInt(s+3));
 			var sRev = sFwd.strReverse();
 			if (pwd.toLowerCase().indexOf(sFwd) != -1 || pwd.toLowerCase().indexOf(sRev) != -1) { nSeqSymbol++; nSeqChar++;}
 		}
-		
-	/* Modify overall score value based on usage vs requirements */
+
+		/* Modify overall score value based on usage vs requirements */
 
 		/* General point assignment */
-		//document.getElementById("nLengthBonus").innerHTML = "+ " + nScore; 
-		if (nAlphaUC > 0 && nAlphaUC < nLength) {	
+		if (nAlphaUC > 0 && nAlphaUC < nLength) {
 			nScore = parseInt(nScore + ((nLength - nAlphaUC) * 2));
-			sAlphaUC = "+ " + parseInt((nLength - nAlphaUC) * 2); 
+			sAlphaUC = "+ " + parseInt((nLength - nAlphaUC) * 2);
 		}
-		if (nAlphaLC > 0 && nAlphaLC < nLength) {	
-			nScore = parseInt(nScore + ((nLength - nAlphaLC) * 2)); 
+		if (nAlphaLC > 0 && nAlphaLC < nLength) {
+			nScore = parseInt(nScore + ((nLength - nAlphaLC) * 2));
 			sAlphaLC = "+ " + parseInt((nLength - nAlphaLC) * 2);
 		}
-		if (nNumber > 0 && nNumber < nLength) {	
+		if (nNumber > 0 && nNumber < nLength) {
 			nScore = parseInt(nScore + (nNumber * nMultNumber));
 			sNumber = "+ " + parseInt(nNumber * nMultNumber);
 		}
-		if (nSymbol > 0) {	
+		if (nSymbol > 0) {
 			nScore = parseInt(nScore + (nSymbol * nMultSymbol));
 			sSymbol = "+ " + parseInt(nSymbol * nMultSymbol);
 		}
-		if (nMidChar > 0) {	
+		if (nMidChar > 0) {
 			nScore = parseInt(nScore + (nMidChar * nMultMidChar));
 			sMidChar = "+ " + parseInt(nMidChar * nMultMidChar);
 		}
-		//document.getElementById("nAlphaUCBonus").innerHTML = sAlphaUC; 
-		//document.getElementById("nAlphaLCBonus").innerHTML = sAlphaLC;
-		//document.getElementById("nNumberBonus").innerHTML = sNumber;
-		//document.getElementById("nSymbolBonus").innerHTML = sSymbol;
-		//document.getElementById("nMidCharBonus").innerHTML = sMidChar;
-		
+
 		/* Point deductions for poor practices */
 		if ((nAlphaLC > 0 || nAlphaUC > 0) && nSymbol === 0 && nNumber === 0) {  // Only Letters
 			nScore = parseInt(nScore - nLength);
@@ -2802,7 +2800,7 @@ function chkPass(pwd, flag, obj, id) {
 			sAlphasOnly = "- " + nLength;
 		}
 		if (nAlphaLC === 0 && nAlphaUC === 0 && nSymbol === 0 && nNumber > 0) {  // Only Numbers
-			nScore = parseInt(nScore - nLength); 
+			nScore = parseInt(nScore - nLength);
 			nNumbersOnly = nLength;
 			sNumbersOnly = "- " + nLength;
 		}
@@ -2811,30 +2809,30 @@ function chkPass(pwd, flag, obj, id) {
 			sRepChar = "- " + nRepInc;
 		}
 		if (nConsecAlphaUC > 0) {  // Consecutive Uppercase Letters exist
-			nScore = parseInt(nScore - (nConsecAlphaUC * nMultConsecAlphaUC)); 
+			nScore = parseInt(nScore - (nConsecAlphaUC * nMultConsecAlphaUC));
 			sConsecAlphaUC = "- " + parseInt(nConsecAlphaUC * nMultConsecAlphaUC);
 		}
 		if (nConsecAlphaLC > 0) {  // Consecutive Lowercase Letters exist
-			nScore = parseInt(nScore - (nConsecAlphaLC * nMultConsecAlphaLC)); 
+			nScore = parseInt(nScore - (nConsecAlphaLC * nMultConsecAlphaLC));
 			sConsecAlphaLC = "- " + parseInt(nConsecAlphaLC * nMultConsecAlphaLC);
 		}
 		if (nConsecNumber > 0) {  // Consecutive Numbers exist
-			nScore = parseInt(nScore - (nConsecNumber * nMultConsecNumber));  
+			nScore = parseInt(nScore - (nConsecNumber * nMultConsecNumber));
 			sConsecNumber = "- " + parseInt(nConsecNumber * nMultConsecNumber);
 		}
 		if (nSeqAlpha > 0) {  // Sequential alpha strings exist (3 characters or more)
-			nScore = parseInt(nScore - (nSeqAlpha * nMultSeqAlpha)); 
+			nScore = parseInt(nScore - (nSeqAlpha * nMultSeqAlpha));
 			sSeqAlpha = "- " + parseInt(nSeqAlpha * nMultSeqAlpha);
 		}
 		if (nSeqNumber > 0) {  // Sequential numeric strings exist (3 characters or more)
-			nScore = parseInt(nScore - (nSeqNumber * nMultSeqNumber)); 
+			nScore = parseInt(nScore - (nSeqNumber * nMultSeqNumber));
 			sSeqNumber = "- " + parseInt(nSeqNumber * nMultSeqNumber);
 		}
 		if (nSeqSymbol > 0) {  // Sequential symbol strings exist (3 characters or more)
-			nScore = parseInt(nScore - (nSeqSymbol * nMultSeqSymbol)); 
+			nScore = parseInt(nScore - (nSeqSymbol * nMultSeqSymbol));
 			sSeqSymbol = "- " + parseInt(nSeqSymbol * nMultSeqSymbol);
 		}
-		
+
 		/* Determine complexity based on overall score */
 		if (nScore > 100) { nScore = 100; } else if (nScore < 0) { nScore = 0; }
 		if(typeof document.forms[0] == "undefined" || (typeof document.forms[0] != "undefined" && document.form.current_page.value != "AiProtection_HomeProtection.asp")){
@@ -2851,11 +2849,11 @@ function chkPass(pwd, flag, obj, id) {
 			else if (nScore >= 60 && nScore < 80) { sComplexity = "<a href='Advanced_Wireless_Content.asp' target='_blank'><#PASS_score3#></a>"; }
 			else if (nScore >= 80 && nScore <= 100) { sComplexity = "<a href='Advanced_Wireless_Content.asp' target='_blank'><#PASS_score4#></a>"; }
 		}
-		
+
 		/* Display updated score criteria to client */
 		if(typeof document.forms[0] == "undefined" || (typeof document.forms[0] != "undefined" && document.form.current_page.value != "AiProtection_HomeProtection.asp")){		//for Router weakness status, Jimeing added at 2014/06/07
 			oScorebarBorder.style.display = "flex";
-			oScorebar.style.backgroundPosition = "-" + parseInt(nScore * 4) + "px";
+			oScorebar.style.backgroundPosition = parseInt(nScore) + "%";
 		}
 		else{
 			if(nScore >= 0 && nScore < 40){
@@ -2865,13 +2863,17 @@ function chkPass(pwd, flag, obj, id) {
 				oScore.className = "status_yes";
 			}
 		}
-		
-		oScore.innerHTML = sComplexity;
+		if(oScore == null){
+			oScorebar.innerHTML = sComplexity;
+		}
+		else{
+			oScore.innerHTML = sComplexity;
+		}
 	}
 	else {
 		/* Display default score criteria to client */
 		if(flag == 'http_passwd'){
-			chkPass(" ", 'http_passwd');
+			chkPass(" ", 'http_passwd', obj, id);
 		}
 		else
 			chkPass(" ", "", obj, id);

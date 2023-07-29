@@ -57,8 +57,9 @@ struct _xmlEntity {
     const xmlChar           *URI;	/* the full URI as computed */
     int                    owner;	/* does the entity own the childrens */
     int			 checked;	/* was the entity content checked */
-					/* this is also used to count entites
-					 * references done from that entity */
+					/* this is also used to count entities
+					 * references done from that entity
+					 * and if it contains '<' */
 };
 
 /*
@@ -74,6 +75,7 @@ typedef xmlEntitiesTable *xmlEntitiesTablePtr;
  */
 
 #ifdef LIBXML_LEGACY_ENABLED
+XML_DEPRECATED
 XMLPUBFUN void XMLCALL
 		xmlInitializePredefinedEntities	(void);
 #endif /* LIBXML_LEGACY_ENABLED */
@@ -102,7 +104,7 @@ XMLPUBFUN xmlEntityPtr XMLCALL
 XMLPUBFUN xmlEntityPtr XMLCALL
 			xmlGetPredefinedEntity	(const xmlChar *name);
 XMLPUBFUN xmlEntityPtr XMLCALL
-			xmlGetDocEntity		(xmlDocPtr doc,
+			xmlGetDocEntity		(const xmlDoc *doc,
 						 const xmlChar *name);
 XMLPUBFUN xmlEntityPtr XMLCALL
 			xmlGetDtdEntity		(xmlDocPtr doc,
@@ -111,6 +113,7 @@ XMLPUBFUN xmlEntityPtr XMLCALL
 			xmlGetParameterEntity	(xmlDocPtr doc,
 						 const xmlChar *name);
 #ifdef LIBXML_LEGACY_ENABLED
+XML_DEPRECATED
 XMLPUBFUN const xmlChar * XMLCALL
 			xmlEncodeEntities	(xmlDocPtr doc,
 						 const xmlChar *input);
@@ -119,7 +122,7 @@ XMLPUBFUN xmlChar * XMLCALL
 			xmlEncodeEntitiesReentrant(xmlDocPtr doc,
 						 const xmlChar *input);
 XMLPUBFUN xmlChar * XMLCALL
-			xmlEncodeSpecialChars	(xmlDocPtr doc,
+			xmlEncodeSpecialChars	(const xmlDoc *doc,
 						 const xmlChar *input);
 XMLPUBFUN xmlEntitiesTablePtr XMLCALL
 			xmlCreateEntitiesTable	(void);

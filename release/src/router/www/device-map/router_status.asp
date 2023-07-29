@@ -541,80 +541,211 @@ function genNETelement() {
 }
 
 function get_ethernet_ports() {
-	$.ajax({
-		url: '/ajax_ethernet_ports.asp',
-		async: false,
-		dataType: 'script',
-		error: function(xhr) {
-			setTimeout("get_ethernet_ports();", 1000);
-		},
-		success: function(response) {
-			var wanLanStatus = get_wan_lan_status["portSpeed"];
-			var wanCount = get_wan_lan_status["portCount"]["wanCount"];
-			//parse nvram to array
-			var parseStrToArray = function(_array) {
-				var speedMapping = {
-					't': '10 Mbps',
-					'M': '100 Mbps',
-					'G': '1 Gbps',
-					'Q': '2.5 Gbps',
-					'F': '5 Gbps',
-					'T': '10 Gbps',
-					'X': '<#Status_Unplugged#>'
-				};	
+	if(isSupport("NEW_PHYMAP")){
+		var popup_notice = function(_error_port_list){
+			var popup_id = "port_status_popup_hint";
+			var Get_Port_Status_Popup_Notice = function(_objID){
+				var $popup_hint_bg = $("<div>").attr({"id": _objID, "onselectstart":"return false"});
+				$popup_hint_bg.css({"height":"auto", "width":"65%", "max-width":"500px", "border-radius":"4px", "position":"absolute", "padding":"18px",
+					"font-size":"16px", "left":"12%", "z-index":"10000", "margin":"auto", "left":"0", "right":"0", "line-height":"150%",
+					"background":"#1c272c", "border":"1px solid #364752", "box-shadow":"0 2px 4px 0 rgb(0 0 0 / 20%), 0 1px 4px 0 rgb(60 60 60 / 30%)"
+				});
+				var $hint_text_bg = $("<div>").appendTo($popup_hint_bg);
+				$("<div>").css({"margin-bottom":"6px"}).html("The connection speed on these port(s) can be improved. Please refer to the following results/tips to troubleshoot.").appendTo($hint_text_bg)/* untranslated */
 
-				var parseArray = [];
-				for (var prop in _array) {
-					if (_array.hasOwnProperty(prop)) {
-						var newRuleArray = new Array();
-						var port_name = prop;
-						if(wanCount != undefined) {
-							if(port_name.substr(0, 3) == "WAN") {
-								if(parseInt(wanCount) > 1) {
-									var port_idx = port_name.split(" ");
-									if (port_idx.length >= 2)
-										port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
-									else
-										port_name = "WAN";
+				var $error_port_list_bg = $("<div>").appendTo($hint_text_bg);
+				$.each(_error_port_list, function(index, port_item){
+					var display_name = ((port_item.special_port_name == "") ? port_item.label_port_name : port_item.special_port_name);
+					var $port_item = $("<div>").css({"display":"flex", "flex-wrap":"nowrap", "align-items":"baseline"}).appendTo($error_port_list_bg);
+					$("<div>").css({"width":"12px", "height":"12px", "background":"#ECC000", "margin":"0 6px 0 10px"}).appendTo($port_item);
+					$("<div>").html(htmlEnDeCode.htmlEncode(display_name)).appendTo($port_item);
+				});
+				$("<div>").css({"background":"rgb(255 255 255 / 20%)", "height":"1px", "margin":"10px 0"}).appendTo($hint_text_bg);
+				$("<div>").css({"margin-bottom":"6px"}).html("<#AiMesh_Retry#> :").appendTo($hint_text_bg);
+
+				var $help_item = $("<ol>").css({"margin":"0", "padding":"0", "margin-left":"24px"}).appendTo($hint_text_bg);
+				$("<li>").css({"color":"#64737c"}).html("Replace your Ethernet cable with Cat 5e or newer.").appendTo($help_item);/* untranslated */
+				$("<li>").css({"color":"#64737c"}).html("A loose connection on a network cable or cable with moisture damage may hold back your internet speed.").appendTo($help_item);/* untranslated */
+				$("<li>").css({"color":"#64737c"}).html("An obsolete modem may throttle your internet speed down.").appendTo($help_item);/* untranslated */
+				$("<li>").css({"color":"#64737c"}).html("An older device may  slow down your connection speed.").appendTo($help_item);/* untranslated */
+				$("<li>").css({"color":"#64737c"}).html("Double check your internet service plan with the ISP.").appendTo($help_item);/* untranslated */
+
+				var $action_bg = $("<div>").css({"margin-top":"18px", "text-align":"right"}).appendTo($popup_hint_bg);
+				var $action_ok = $("<input/>").attr({"id":"action_ok", "type":"button", "value":"<#CTL_ok#>"}).addClass("button_gen");
+				$action_ok.click(function(e){
+					e = e || event;
+					e.stopPropagation();
+					top.$("body").find("#" + _objID + "").hide().remove();
+				});
+				$action_bg.append($action_ok);
+
+				return $popup_hint_bg;
+			};
+			top.$("body").find("#" + popup_id + "").remove();
+			top.$("body").append(Get_Port_Status_Popup_Notice("port_status_popup_hint"));
+			top.adjust_panel_block_top(popup_id, 200);
+		};
+		var cap_mac = (httpApi.hookGet('get_lan_hwaddr')) ? httpApi.hookGet('get_lan_hwaddr') : '';
+		httpApi.get_port_status_array(cap_mac, function(port_info){
+			if(Object.keys(port_info).length == 0){
+				$('#phy_ports').hide();
+			}
+			else{
+				var show_notice = false;
+				$('#phy_ports').empty().show();
+				$("#phy_ports").append('<div class="division-block" style="position:relative;"><span><#Status_Ethernet_Ports#></span><div class="port_status_notice_icon"></div></div>');
+				var $port_status_bg = $("<div>").addClass("port_status_bg").appendTo($("#phy_ports"));
+				var $label_W_bg = $("<div>").addClass("label_W_bg").appendTo($port_status_bg);
+				var $label_L_bg = $("<div>").addClass("label_L_bg").appendTo($port_status_bg);
+				var error_port_list = [];
+				$.each(port_info, function(label, label_array){
+					$.each(port_info[label], function(index, port_item){
+						var $port_bg = $("<div>").attr({"title":port_item.link_rate_text});
+						if(label == "WAN")
+							$port_bg.appendTo($label_W_bg);
+						else if(label == "LAN")
+							$port_bg.appendTo($label_L_bg);
+						else
+							return true;
+						var $port_icon = $("<div>").addClass("port_icon").appendTo($port_bg);
+						if(port_item.is_on == "1"){
+							if(port_item.link_rate_status == "1")
+								$port_icon.addClass("conn");
+							else
+								$port_icon.addClass("warn");
+						}
+						else if(port_item.is_on == "0"){
+							if(port_item.cap_support.USB){
+								if(port_item.hasOwnProperty("devices")){
+									$port_icon.addClass("conn");
 								}
-								else {
-									port_name = "WAN";
-								}
+								else
+									$port_icon.addClass("unplug");
 							}
+							else
+								$port_icon.addClass("unplug");
 						}
 
-						newRuleArray.push(port_name);
-						newRuleArray.push(speedMapping[_array[prop]]);
-						parseArray.push(newRuleArray);
-					}
+						if(port_item.cap_support.WAN){
+							$("<div>").addClass("wan_icon").appendTo($port_icon);
+							if(port_item.special_port_name != "")
+								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+						}
+						else if(port_item.cap_support.LAN){
+							if(port_item.special_port_name != "")
+								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+							else
+								$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_item.label_idx)).appendTo($port_icon);
+						}
+						else if(port_item.cap_support.USB){
+							$port_icon.addClass("USB");
+							if(port_item.special_port_name != "")
+								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+						}
+						else if(port_item.cap_support.MOCA){
+							$port_icon.addClass("MoCa");
+							if(port_item.special_port_name != "")
+								$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+						}
+
+						if(port_item.link_rate_status != "1"){
+							show_notice = true;
+							error_port_list.push(port_item);
+						}
+					});
+				});
+
+				var $port_status_icon_desc = $("<div>").addClass("port_status_icon_desc").appendTo($("#phy_ports"));
+				$("<div>").addClass("conn").html("<#Connected#>").appendTo($port_status_icon_desc);
+				$("<div>").addClass("warn").html("Warnings").appendTo($port_status_icon_desc);/* untranslated */
+				$("<div>").addClass("unplug").html("<#Status_Unplugged#>").appendTo($port_status_icon_desc);
+
+				if(show_notice){
+					$("#phy_ports .port_status_notice_icon").css("display", "inline-block");
+					$("#phy_ports .port_status_notice_icon").unbind("click").click(function(e){
+						e = e || event;
+						e.stopPropagation();
+						popup_notice(error_port_list);
+					});
 				}
-				return parseArray;
-			};
-
-			if(!Object.keys(wanLanStatus).length){
-				$('#phy_ports').hide();
-				return;
 			}
+		});
+	}
+	else{
+		$.ajax({
+			url: '/ajax_ethernet_ports.asp',
+			async: false,
+			dataType: 'script',
+			error: function(xhr) {
+				setTimeout("get_ethernet_ports();", 1000);
+			},
+			success: function(response) {
+				var wanLanStatus = get_wan_lan_status["portSpeed"];
+				var wanCount = get_wan_lan_status["portCount"]["wanCount"];
+				//parse nvram to array
+				var parseStrToArray = function(_array) {
+					var speedMapping = {
+						't': '10 Mbps',
+						'M': '100 Mbps',
+						'G': '1 Gbps',
+						'Q': '2.5 Gbps',
+						'F': '5 Gbps',
+						'T': '10 Gbps',
+						'X': '<#Status_Unplugged#>'
+					};
 
-			wanLanStatus = parseStrToArray(wanLanStatus);
-			var code = '<div class="division-block"><#Status_Ethernet_Ports#></div>';
-			code += '<div>';
-			code += '<div class="display-flex flex-a-center table-header">';
-			code += '<div class="port-block-width table-content"><#Status_Ports#></div>';
-			code += '<div class="port-block-width table-content"><#Status_Str#></div>';
-			code += '</div>';
-			for(var i=0; i<wanLanStatus.length; i++){
-				code += '<div class="display-flex flex-a-center table-body">';
-				code += '<div class="port-block-width table-content table-content-first">'+ wanLanStatus[i][0] +'</div>';
-				code += '<div class="port-block-width table-content">'+ wanLanStatus[i][1] +'</div>';
-				code += '</div>';	
+					var parseArray = [];
+					for (var prop in _array) {
+						if (_array.hasOwnProperty(prop)) {
+							var newRuleArray = new Array();
+							var port_name = prop;
+							if(wanCount != undefined) {
+								if(port_name.substr(0, 3) == "WAN") {
+									if(parseInt(wanCount) > 1) {
+										var port_idx = port_name.split(" ");
+										if (port_idx.length >= 2)
+											port_name = port_idx[0] + " " + (parseInt(port_idx[1]) + 1);
+										else
+											port_name = "WAN";
+									}
+									else {
+										port_name = "WAN";
+									}
+								}
+							}
+
+							newRuleArray.push(port_name);
+							newRuleArray.push(speedMapping[_array[prop]]);
+							parseArray.push(newRuleArray);
+						}
+					}
+					return parseArray;
+				};
+
+				if(!Object.keys(wanLanStatus).length){
+					$('#phy_ports').hide();
+					return;
+				}
+
+				wanLanStatus = parseStrToArray(wanLanStatus);
+				var code = '<div class="division-block"><#Status_Ethernet_Ports#></div>';
+				code += '<div>';
+				code += '<div class="display-flex flex-a-center table-header">';
+				code += '<div class="port-block-width table-content"><#Status_Ports#></div>';
+				code += '<div class="port-block-width table-content"><#Status_Str#></div>';
+				code += '</div>';
+				for(var i=0; i<wanLanStatus.length; i++){
+					code += '<div class="display-flex flex-a-center table-body">';
+					code += '<div class="port-block-width table-content table-content-first">'+ wanLanStatus[i][0] +'</div>';
+					code += '<div class="port-block-width table-content">'+ wanLanStatus[i][1] +'</div>';
+					code += '</div>';
+				}
+				code += '</div>';
+				$('#phy_ports').html(code).show();
 			}
-			
-			code += '</div>';
-			$('#phy_ports').html(code);
-			setTimeout("get_ethernet_ports();", 3000);
-		}
-	});
+		});
+	}
+	setTimeout("get_ethernet_ports();", 3000);
 }
 
 function get_plc_ports() {

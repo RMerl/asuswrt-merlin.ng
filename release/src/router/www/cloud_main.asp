@@ -344,7 +344,7 @@ function divdisplayctrl(flag1, flag2, flag3, flag4){
 	else if(flag4 != "none"){ // Have AiCloud 2.0 installed
 		document.getElementById("return_btn").style.display = "none";
 		//calHeight(1);
-		getStyleSheet('index_style', '.tab').style.display = "";
+		getStyleSheet('index_style', '.tab').style.display = "flex";
 	}
 	else{
 		document.getElementById("return_btn").style.display = "none";		

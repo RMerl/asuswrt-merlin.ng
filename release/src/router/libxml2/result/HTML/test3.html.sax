@@ -1,17 +1,17 @@
 SAX.setDocumentLocator()
 SAX.startDocument()
 SAX.startElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(base, target='contents')
 SAX.endElement(base)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.endElement(head)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(body)
 SAX.startElement(a, name='ProblemDomain.Package')
@@ -225,6 +225,6 @@ SAX.characters(
 , 2)
 SAX.endElement(body)
 SAX.endElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.endDocument()

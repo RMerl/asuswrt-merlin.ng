@@ -1068,6 +1068,15 @@ void ATE_port_status(phy_info_list *list)
 	puts(buf);
 }
 
+void __post_config_switch(void)
+{
+	int i;
+
+	/* Always turn off IEEE 802.3az support on QCA8337 port 1~5. */
+	for (i = 1; i <= 5; i++)
+		doSystem("ssdk_sh port ieee8023az set %d disable", i);
+}
+
 #ifdef RTCONFIG_LAN4WAN_LED
 int led_ctrl(void)
 {

@@ -1,7 +1,7 @@
 SAX.setDocumentLocator()
 SAX.startDocument()
 SAX.startElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.startElement(body, bgcolor='#FFFFFF')
 SAX.characters(
@@ -13,9 +13,9 @@ SAX.endElement(br)
 SAX.characters(
 , 2)
 SAX.endElement(body)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.endElement(html)
-SAX.ignorableWhitespace(
+SAX.characters(
 , 2)
 SAX.endDocument()

@@ -120,6 +120,15 @@ enum S46_HGW_CASE {
 	S46_CASE_MAP_HGW_OFF	= 3,
 	S46_CASE_MAP_CE_ON	= 6
 };
+
+enum {
+	WAN46DET_STATE_INITIALIZING=0,
+	WAN46DET_STATE_NOLINK,
+	WAN46DET_STATE_UNKNOW,
+	WAN46DET_STATE_V6PLUS,
+	WAN46DET_STATE_HGW_V6PLUS,
+	WAN46DET_STATE_OCNVC
+};
 #endif
 #endif
 
@@ -407,6 +416,7 @@ extern int get_wan_unit(char *ifname);
 extern char *get_wan_ifname(int unit);
 #ifdef RTCONFIG_IPV6
 extern char *get_wan6_ifname(int unit);
+extern int get_wan6_unit(char* ifname);
 #endif
 extern int get_ports_status(unsigned int port_status);
 extern int get_wanports_status(int wan_unit);

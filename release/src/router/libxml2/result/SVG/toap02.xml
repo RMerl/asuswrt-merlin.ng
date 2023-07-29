@@ -9,8 +9,10 @@
       <path d="M 50 0 L 250 200 L 250 0 z"/>
     </symbol>
   </defs>
+  
   <desc>General graphics on a path
   </desc>
+  
   <text>
     <textpath href="#MyPath"/>
     <use href="#Triangle1"/>
@@ -24,4 +26,5 @@
     <use href="#Triangle1"/>
     <use href="#Triangle2"/>
   </text>
+
 </svg>

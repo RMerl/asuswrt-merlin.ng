@@ -318,7 +318,7 @@ void add_usb_host_modules(void)
 #elif defined(RTCONFIG_ALPINE)
 	modprobe(USB30_MOD);
 #else
-#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855)
+#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM4906_504)
 	if (nvram_get_int("usb_usb3") == 1) {
 #endif
 #ifdef RTCONFIG_HND_ROUTER
@@ -330,7 +330,7 @@ void add_usb_host_modules(void)
 #else
 		modprobe(USB30_MOD);
 #endif
-#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855)
+#if !defined(BCM4912) && !defined(BCM6756) && !defined(BCM6855) && !defined(BCM4906_504)
 	}
 #endif
 #endif
@@ -862,7 +862,8 @@ void start_usb(int mode)
 		}
 #endif
 #if defined(RTCONFIG_BT_CONN_USB)
-#if defined(BCM4912)
+#if defined(BCM4912) || defined(BCM4906_504)
+//#if defined(BCM4912)
 		modprobe("btintel");
 		modprobe("btrtl");
 #endif
@@ -1010,7 +1011,8 @@ void remove_usb_host_module(void)
 #if defined(RTCONFIG_BT_CONN_USB)
 	modprobe_r("ath3k");
 	modprobe_r("btusb");
-#if defined(BCM4912)
+#if defined(BCM4912) || defined(BCM4906_504)
+//#if defined(BCM4912)
 	modprobe_r("btintel");
 	modprobe_r("btrtl");
 #endif
@@ -1200,7 +1202,8 @@ void stop_usb(int f_force)
 #if defined(RTCONFIG_BT_CONN_USB)
 		modprobe_r("ath3k");
 		modprobe_r("btusb");
-#if defined(BCM4912)
+#if defined(BCM4912) || defined(BCM4906_504)
+//#if defined(BCM4912)
 		modprobe_r("btintel");
 		modprobe_r("btrtl");
 #endif
@@ -1790,8 +1793,8 @@ int umount_mountpoint(struct mntent *mnt, uint flags)
 	/* Run user pre-unmount scripts if any. It might be too late if
 	 * the drive has been disconnected, but we'll try it anyway.
  	 */
-	if (nvram_get_int("usb_automount"))
-		run_nvscript("script_usbumount", mnt->mnt_dir, 3);
+	// if (nvram_get_int("usb_automount"))
+		// run_nvscript("script_usbumount", mnt->mnt_dir, 3);
 	/* Run *.autostop scripts located in the root of the partition being unmounted if any. */
 	//run_userfile(mnt->mnt_dir, ".autostop", mnt->mnt_dir, 5);
 	//run_nvscript("script_autostop", mnt->mnt_dir, 5);
@@ -2076,7 +2079,7 @@ int mount_partition(char *dev_name, int host_num, char *dsc_name, char *pt_name,
 
 	run_custom_script("pre-mount", 120, dev_name, type);
 
-#if !defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(RTCONFIG_BCM_502L07P2) && !defined(BCM4912)
+#if !defined(RTCONFIG_HND_ROUTER_AX_6710) && !defined(RTCONFIG_BCM_502L07P2) && !defined(BCM4912) && !defined(BCM4906_504)
 	char *end;
 	static char *swp_argv[] = { "swapon", "-a", NULL };
 	struct mntent *mnt;
@@ -2270,8 +2273,8 @@ _dprintf("usb_path: 4. don't set %s.\n", tmp);
 		if(ret == MOUNT_VAL_RW)
 			test_of_var_files(mountpoint);
 
-		if (nvram_get_int("usb_automount"))
-			run_nvscript("script_usbmount", mountpoint, 3);
+		// if (nvram_get_int("usb_automount"))
+			// run_nvscript("script_usbmount", mountpoint, 3);
 
 		run_custom_script("post-mount", 120, mountpoint, NULL);
 
@@ -2617,7 +2620,7 @@ void hotplug_usb(void)
 		subsystem ? : "USB", interface, action, usbport, scsi_host, device);
 
 	if (!nvram_get_int("usb_enable")) return;
-#ifdef LINUX26
+#if defined(LINUX26) && !defined(BCM4906_504)
 	if (!action || ((!interface || !product) && !is_block))
 #else
 	if (!interface || !action || !product)	/* Hubs bail out here. */
@@ -2742,7 +2745,7 @@ _dprintf("restart_nas_services(%d): test 6.\n", getpid());
 	}
 #endif
 	else if (strncmp(interface ? : "", "8/", 2) == 0) {	/* usb storage */
-		run_nvscript("script_usbhotplug", NULL, 2);
+		// run_nvscript("script_usbhotplug", NULL, 2);
 #ifndef LINUX26
 		hotplug_usb_storage_device(host, add, (add ? EFH_HP_ADD : EFH_HP_REMOVE) | (host < 0 ? EFH_HUNKNOWN : 0));
 #endif
@@ -2752,7 +2755,7 @@ _dprintf("restart_nas_services(%d): test 6.\n", getpid());
 		if (is_block) return;
 #endif
 		/* Do nothing.  The user's hotplug script must do it all. */
-		run_nvscript("script_usbhotplug", NULL, 2);
+		// run_nvscript("script_usbhotplug", NULL, 2);
 	}
 }
 
@@ -3477,7 +3480,7 @@ start_samba(void)
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 			char dec_passwd[64];
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd));
+			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd), 1);
 			tmp_ascii_passwd = dec_passwd;
 #endif
 			memset(char_passwd, 0, 64);
@@ -3847,8 +3850,7 @@ void start_dms(void)
 				"serial=%s\n"
 				"uuid=%s\n"
 				"model_number=%s\n",
-				serial, uuid,
-				rt_serialno);
+				serial, uuid, get_productid());
 
 			nv = nvram_safe_get("dms_sort");
 			if (!*nv || isdigit(*nv))
@@ -3937,7 +3939,7 @@ write_mt_daapd_conf(char *servername)
 	dec_passwd = malloc(declen);
 	if(dec_passwd){
 		memset(dec_passwd, 0, declen);
-		pw_dec(http_passwd, dec_passwd, declen);
+		pw_dec(http_passwd, dec_passwd, declen, 1);
 		strlcpy(http_passwd, dec_passwd, sizeof(http_passwd));
 	}
 #endif
@@ -4119,7 +4121,7 @@ void write_webdav_permissions()
 			int declen = strlen(tmp_ascii_passwd);
 			char dec_passwd[declen];
 			memset(dec_passwd, 0, sizeof(dec_passwd));
-			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd));
+			pw_dec(tmp_ascii_passwd, dec_passwd, sizeof(dec_passwd), 1);
 			tmp_ascii_passwd = dec_passwd;
 #endif
 			ascii_to_char_safe(char_passwd, tmp_ascii_passwd, 64);

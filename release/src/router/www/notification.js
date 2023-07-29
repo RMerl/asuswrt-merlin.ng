@@ -90,14 +90,14 @@ if(amesh_support && ameshRouter_support) {
 
 var get_s46_hgw_case = '<% nvram_get("s46_hgw_case"); %>';	//topology 2,3,6
 var s46_ports_check_flag = (get_s46_hgw_case=='3' || get_s46_hgw_case=='6')? true:false;	//true for topology 3||6
-var check_ipv6_s46_ports_hook = (Softwire46_support && wan_proto=="v6plus")? '<%chk_s46_port_range();%>':'0';
+var check_ipv6_s46_ports_hook = (Softwire46_support && (wan_proto=="v6plus" || wan_proto=="ocnvc"))? '<%chk_s46_port_range();%>':'0';
 // '{"pf":"1","open_nat":"0","pt":"1","https":"0","ssh":"0","openvpn":"0","ftp":"1","ipsec":"1"}';
 var check_ipv6_s46_ports = "0";
 if(check_ipv6_s46_ports_hook != "" && check_ipv6_s46_ports_hook != "0"){
 	check_ipv6_s46_ports = JSON.parse(check_ipv6_s46_ports_hook);
 }
 
-var get_ipv6_s46_ports = (Softwire46_support && wan_proto=="v6plus")? '<%nvram_get("ipv6_s46_ports");%>':'0';
+var get_ipv6_s46_ports = (Softwire46_support && (wan_proto=="v6plus" || wan_proto=="ocnvc"))? '<%nvram_get("ipv6_s46_ports");%>':'0';
 var array_ipv6_s46_ports = new Array("");
 if(get_ipv6_s46_ports!="0" && get_ipv6_s46_ports!=""){
 	array_ipv6_s46_ports = get_ipv6_s46_ports.split(" ");
@@ -105,6 +105,23 @@ if(get_ipv6_s46_ports!="0" && get_ipv6_s46_ports!=""){
 
 var ipsec_server_enable = '<% nvram_get("ipsec_server_enable"); %>'; //higher priority
 var ipsec_ig_enable = '<% nvram_get("ipsec_ig_enable"); %>';
+
+var port_confirm = "<#IPv6_plus_port_confirm#>";
+var port_range_hint = "Since you are currently using %1$@ connection, please make sure your external port settings are within the following port range: ";	/* Untranslated */
+var port_mismatch_notice = "<#IPv6_plus_notify0#>";
+var port_mismatch_list = "<#IPv6_plus_notify1#>";
+if(wan_proto=="v6plus"){
+	port_confirm = port_confirm.replace("%0$@", "<#IPv6_plus#>");
+	port_range_hint = port_range_hint.replace("%1$@", "<#IPv6_plus#>");
+	port_mismatch_notice = port_mismatch_notice.replace("%2$@", "<#IPv6_plus#>");
+	port_mismatch_list = port_mismatch_list.replace("%3$@", "<#IPv6_plus#>");
+}
+if(wan_proto=="ocnvc"){
+	port_confirm = port_confirm.replace("%0$@", "<#IPv6_ocnvc#>");
+	port_range_hint = port_range_hint.replace("%1$@", "<#IPv6_ocnvc#>");
+	port_mismatch_notice = port_mismatch_notice.replace("%2$@", "<#IPv6_ocnvc#>");
+	port_mismatch_list = port_mismatch_list.replace("%3$@", "<#IPv6_ocnvc#>");
+}
 
 function pop_s46_ports(p, flag){
 	var isMobile = function() {
@@ -164,7 +181,12 @@ function pop_s46_ports(p, flag){
 	divObj.className = "s46_ports";
 	divObj.style.zIndex = "300";
 	divObj.style.margin = margin_set;
-	divObj.innerHTML = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer' onclick='close_s46_ports();'></div>Since you are currently using v6plus connection, please make sure your external port settings are within the following port range:<br><br>"+get_ipv6_s46_ports+"<br>";
+	divObj.innerHTML = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer' onclick='close_s46_ports();'></div>";
+	divObj.innerHTML += port_range_hint;
+	divObj.innerHTML += "<br><br>"+get_ipv6_s46_ports+"<br>";
+	divObj.innerHTML += port_range_hint;
+	divObj.innerHTML += "<br><br>"+get_ipv6_s46_ports+"<br>";
+
 	document.body.prepend(divObj);
 	if(flag=="pf")
 		adjust_panel_block_top("s46_ports_content", -70);
@@ -181,7 +203,9 @@ function close_s46_ports(){
 function pop_s46_ports_conflict(){
 
 	var conflict_links = gen_conflict_links();
-	var confilct_content = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer;margin:-28px -28px 0 0;' onclick='close_s46_ports_conflict();'></div>Port mismatch issue may occur under the special port range of v6plus. It will not affect your internet but the following port related settings. If you would like to use them, please refer to usable port range in <a target='_self' style='text-decoration:underline;' href='Main_IPV6Status_Content.asp'>IPv6 Log</a>, and alter the port number of these features to matching range.<br><br>"+conflict_links;
+	var confilct_content = "<div style='float:right;'><img src='/images/button-close.gif' style='width:30px;cursor:pointer;margin:-28px -28px 0 0;' onclick='close_s46_ports_conflict();'></div>";
+	confilct_content += port_mismatch_list;
+	confilct_content += "<br><br>"+conflict_links;
 	/* Untranslated */
 	var left_tuned=0;
 	var top_tuned=130;
@@ -628,13 +652,13 @@ var notification = {
 			}
 		}
 
-		if(Softwire46_support && wan_proto=="v6plus"){
+		if(Softwire46_support && (wan_proto == "v6plus" || wan_proto == "ocnvc")){
 			var exist_conflict = exist_v6plus_conflict();
 			if(check_ipv6_s46_ports != "0" && exist_conflict>0){
 				notification.s46_ports = 1;
 				notification.array[20] = 'noti_s46_ports';
-				notification.desc[20] = 'Port related settings may encounter mismatch issue in current v6plus port range.';  /* Untranslated */
-				notification.action_desc[20] = "Detail";
+				notification.desc[20] = port_mismatch_notice;
+				notification.action_desc[20] = "Detail";	/* Untranslated */
 				notification.clickCallBack[20] = "setTimeout('pop_s46_ports_conflict()', 100);"
 			}
 		}

@@ -1,4 +1,4 @@
-#!/usr/bin/python -u
+#!/usr/bin/env python
 import sys, unittest
 
 import libxml2
@@ -17,35 +17,38 @@ class TestCase(unittest.TestCase):
         if libxml2.debugMemory(1) != 0:
             libxml2.dumpMemory() 
             self.fail("Memory leak %d bytes" % (libxml2.debugMemory(1),))
-	else:
-	    print "OK"
+        else:
+            print("OK")
 
     def failUnlessXmlError(self,f,args,exc,domain,code,message,level,file,line):
         """Run function f, with arguments args and expect an exception exc;
         when the exception is raised, check the libxml2.lastError for
         expected values."""
         # disable the default error handler
-        libxml2.registerErrorHandler(None,None)
+        def noerr(ctx, str):
+            pass
+        # None is not acceptable as function.
+        libxml2.registerErrorHandler(noerr,None)
         try:
-	    apply(f,args)
+            f(*args)
         except exc:
             e = libxml2.lastError()
             if e is None:
                 self.fail("lastError not set")
             if 0:
-                print "domain = ",e.domain()
-                print "code = ",e.code()
-                print "message =",repr(e.message())
-                print "level =",e.level()
-                print "file =",e.file()
-                print "line =",e.line()
-                print
-            self.failUnlessEqual(domain,e.domain())
-            self.failUnlessEqual(code,e.code())
-            self.failUnlessEqual(message,e.message())
-            self.failUnlessEqual(level,e.level())
-            self.failUnlessEqual(file,e.file())
-            self.failUnlessEqual(line,e.line())
+                print("domain = ",e.domain())
+                print("code = ",e.code())
+                print("message =",repr(e.message()))
+                print("level =",e.level())
+                print("file =",e.file())
+                print("line =",e.line())
+                print()
+            self.assertEqual(domain,e.domain())
+            self.assertEqual(code,e.code())
+            self.assertEqual(message,e.message())
+            self.assertEqual(level,e.level())
+            self.assertEqual(file,e.file())
+            self.assertEqual(line,e.line())
         else:
             self.fail("exception %s should have been raised" % exc)
 

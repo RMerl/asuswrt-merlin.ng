@@ -689,15 +689,9 @@ send_token_headers( int status, char* title, char* extra_header, char* mime_type
 {
 	time_t now;
 	char timebuf[100];
-	char asus_token[32]={0};
-	memset(asus_token,0,sizeof(asus_token));
+	char asus_token[32]={0}, token_cookie[128] = {0};
 
-	if(nvram_match("x_Setting", "0") && strcmp( gen_token, "") != 0){
-		strncpy(asus_token, gen_token, sizeof(asus_token));
-	}else{
-		generate_token(asus_token, sizeof(asus_token));
-	}
-	add_asus_token(asus_token);
+	gen_asus_token_cookie(asus_token, sizeof(asus_token), token_cookie, sizeof(token_cookie));
 
     (void) fprintf( conn_fp, "%s %d %s\r\n", PROTOCOL, status, title );
     (void) fprintf( conn_fp, "Server: %s\r\n", SERVER_NAME );
@@ -716,7 +710,7 @@ send_token_headers( int status, char* title, char* extra_header, char* mime_type
     if ( mime_type != (char*) 0 )
 	(void) fprintf( conn_fp, "Content-Type: %s\r\n", mime_type );
 
-	(void) fprintf( conn_fp, "Set-Cookie: asus_token=%s; HttpOnly;\r\n",asus_token );
+    (void) fprintf( conn_fp, "Set-Cookie: %s\r\n", token_cookie);
 
     (void) fprintf( conn_fp, "Connection: close\r\n" );
     (void) fprintf( conn_fp, "\r\n" );
@@ -2239,7 +2233,15 @@ void check_alive()
 		check_alive_count = 0;
 	}
 	else if(check_alive_count > 20){
+		struct in_addr ip_addr, temp_ip_addr, app_temp_ip_addr;
+		ip_addr.s_addr = login_ip;
+		app_temp_ip_addr.s_addr = app_login_ip;
+		temp_ip_addr.s_addr = login_ip_tmp;
+		//dbg("slow_post_read_count(%d) > 3\n", slow_post_read_count);
+		HTTPD_FB_DEBUG("login_ip = %s(%lu), app_login_ip = %s(%lu)\n", inet_ntoa(ip_addr), login_ip, inet_ntoa(app_temp_ip_addr), app_login_ip);
+		HTTPD_FB_DEBUG("login_ip_tmp = %s(%lu), url = %s\n", inet_ntoa(temp_ip_addr), login_ip_tmp, url);
 		logmessage("HTTPD", "waitting 10 minitues and restart\n");
+		check_lock_state();
 		notify_rc("restart_httpd");
 	}
 	else{
@@ -2704,7 +2706,7 @@ int check_current_ip_is_lan_or_wan()
 		if (inet_aton(nvram_safe_get("lan_ipaddr"), &lan) == 0 ||
 		    inet_aton(nvram_safe_get("lan_netmask"), &mask) == 0)
 			return -1;
-		return (lan.s_addr & mask.s_addr) == (login_uip_tmp.in.s_addr & mask.s_addr);
+		return ((lan.s_addr & mask.s_addr) == (login_uip_tmp.in.s_addr & mask.s_addr))?0:1;
 #ifdef RTCONFIG_IPV6
 	case AF_INET6:
 		/* IPv6 addresses are dynamic, must be bind to bind to interface */

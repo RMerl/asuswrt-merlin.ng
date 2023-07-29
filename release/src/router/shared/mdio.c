@@ -409,7 +409,7 @@ static int __ssdk_sh_port_speed(const char *swid, unsigned int port)
 	 */
 	if ((r = parse_ssdk_sh(speed_cmd, "%*[^:]:%d(Mbps)", 1, &speed)) != 0)
 		return 0;
-	if (speed != 10 && speed != 100 && speed != 1000)
+	if (speed != 10 && speed != 100 && speed != 1000 && speed != 2500 && speed != 5000 && speed != 10000)
 		return 0;
 
 	return speed;
@@ -428,9 +428,9 @@ static int __ssdk_sh_port_speed(const char *swid, unsigned int port)
 int ipq8074_port_speed(unsigned int port)
 {
 #if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
-	const int min_port_nr = 2, max_port_nr = 4;
+	const int min_port_nr = 2, max_port_nr = 6;
 #else
-	const int min_port_nr = 1, max_port_nr = 5;
+	const int min_port_nr = 1, max_port_nr = 6;
 #endif
 
 	if (port < min_port_nr ||  port > max_port_nr) {

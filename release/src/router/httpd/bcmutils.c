@@ -15,15 +15,6 @@
  * MA 02111-1307 USA
  */
 /*
-    Copyright 2001, ASUSTeK Inc.
-    All Rights Reserved.
-    
-    This is UNPUBLISHED PROPRIETARY SOURCE CODE of ASUSTeK Inc.;
-    the contents of this file may not be disclosed to third parties, copied or
-    duplicated in any form, in whole or in part, without the prior written
-    permission of ASUSTeK Inc.
-*/
-/*
  * Misc useful OS-independent routines.
  *
  * Copyright(c) 2001 ASUSTeK Inc.

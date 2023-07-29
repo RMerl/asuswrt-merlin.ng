@@ -44,6 +44,7 @@
 #include "shared.h"
 #include "wlif_utils.h"
 #include "iboxcom.h"
+#include <regex.h>
 
 #ifndef ETHER_ADDR_LEN
 #define	ETHER_ADDR_LEN		6
@@ -291,6 +292,13 @@ int inet_equal(const char *addr1, const char *mask1, const char *addr2, const ch
 int inet_intersect(const char *addr1, const char *mask1, const char *addr2, const char *mask2)
 {
 	in_addr_t max_netmask = inet_network(mask1) | inet_network(mask2);
+	return ((inet_network(addr1) & max_netmask) ==
+		(inet_network(addr2) & max_netmask));
+}
+
+int inet_overlap(const char *addr1, const char *mask1, const char *addr2, const char *mask2)
+{
+	in_addr_t max_netmask = inet_network(mask1) & inet_network(mask2);
 	return ((inet_network(addr1) & max_netmask) ==
 		(inet_network(addr2) & max_netmask));
 }
@@ -1410,6 +1418,102 @@ int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl
 
 #endif /* RTCONFIG_COOVACHILLI || RTCONFIG_PORT_BASED_VLAN || RTCONFIG_TAGGED_BASED_VLAN */
 
+#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
+/* Return minimal network, maximum CIDR value, for @ipaddr
+ * Start from 30 to 1 until we got non-zero host ID.
+ * @ipaddr:	IP address
+ * @return:
+ *  1 ~ 30:	CIDR for @ipaddr
+ * 	0:	Good CIDR is not available
+ */
+int min_cidr(char *ipaddr)
+{
+	in_addr_t ip, h_mask;
+	int i, d, cidr = 0;
+
+	if (!ipaddr || illegal_ipv4_address(ipaddr))
+		return 0;
+
+	/* Find maximum CIDR value that has non-zero host ID and
+	 * have network/broadcast address.
+	 */
+	ip = inet_network(ipaddr);
+	for (i = 30; !cidr && i > 0; --i) {
+		d = 32 - i;
+		h_mask = ((0xFFFFFFFF >> d) << d) ^ 0xFFFFFFFF;
+		if ((ip & h_mask) != 0 && ((ip + 1) & h_mask) != 0)
+			cidr = i;
+	}
+
+	return cidr;
+}
+
+/* Return minimal size of network mask for @ipaddr
+ * @ipaddr:	IP address
+ * @mask:	char array that big enough to save a network mask string.
+ * 		If it's NULL, internal buffer is used instead.
+ * @mask_len:	length of @mask
+ * @return:	Pointer to char pointer that contain network mask string or empty string.
+ */
+char *min_netmask(char *ipaddr, char *mask, size_t mask_len)
+{
+	static char mask_str[18];
+	char *buf = mask_str;
+	size_t buf_len = sizeof(mask_str);
+	int cidr, d;
+	in_addr_t m = 0xFFFFFFFF;
+
+	if (mask_len < 16)
+		mask = NULL;
+	if (mask) {
+		buf = mask;
+		buf_len = mask_len;
+	}
+	*buf = '\0';
+	cidr = min_cidr(ipaddr);
+	if (cidr <= 0 || cidr > 30)
+		return buf;
+
+	d = 32 - cidr;
+	m = htonl((0xFFFFFFFF >> d) << d);	/* to network byte order */
+	if (!inet_ntop(AF_INET, &m, buf, buf_len))
+		*buf = '\0';
+
+	return buf;
+}
+
+/* Return IP address that removed host IDs part.
+ * @ipaddr:	IP address
+ * @mask:	netmask
+ * @nwaddr:	char array that big enough to save IP address string.
+ * @nwaddr_len:	length of @nwaddr
+ * @return:	IP address that doesn't have host ID or empty string if invalid parameter.
+ */
+char *network_addr(char *ipaddr, char *mask, char *nwaddr, size_t nwaddr_len)
+{
+	static char nwaddr_str[18];
+	char *buf = nwaddr_str;
+	size_t buf_len = sizeof(nwaddr_str);
+	in_addr_t n_addr;
+
+	if (nwaddr_len < 16)
+		nwaddr = NULL;
+	if (nwaddr) {
+		buf = nwaddr;
+		buf_len = nwaddr_len;
+	}
+	*buf = '\0';
+	if (!ipaddr | !mask || illegal_ipv4_address(ipaddr) || illegal_ipv4_netmask(mask))
+		return buf;
+
+	n_addr = htonl(inet_network(ipaddr) & inet_network(mask));
+	if (!inet_ntop(AF_INET, &n_addr, buf, buf_len))
+		*buf = '\0';
+
+	return buf;
+}
+#endif
+
 /**
  * Return first/lowest configured and connected WAN unit.
  * @return:	WAN_UNIT_FIRST ~ WAN_UNIT_MAX
@@ -1443,6 +1547,39 @@ enum wan_unit_e get_first_connected_public_wan_unit(void)
 			continue;
 		wan_unit = i;
 		break;
+	}
+	if(WAN_UNIT_MAX == i)
+		return WAN_UNIT_NONE;
+	else
+		return wan_unit;
+}
+
+enum wan_unit_e get_first_connected_dual_wan_unit(void)
+{
+	int i, wan_unit = WAN_UNIT_MAX;
+	char prefix[sizeof("wanXXXXXX_")], link[sizeof("link_wanXXXXXX")], tmp[100];
+
+	for (i = WAN_UNIT_FIRST; i < WAN_UNIT_MAX; ++i) {
+		if (get_dualwan_by_unit(i) == WANS_DUALWAN_IF_NONE || !is_wan_connect(i))
+			continue;
+
+		/* For LB mode, check link status. */
+		snprintf(prefix, sizeof(prefix), "wan%d_", i);
+		if (!i)
+			strlcpy(link, "link_wan", sizeof(link));
+		else
+			snprintf(link, sizeof(link), "link_wan%d", i);
+
+		if (!nvram_get_int(link))
+			continue;
+
+		if (( nvram_get_int(strlcat_r(prefix, "state_t", tmp, sizeof(tmp)))==2
+				&& nvram_get_int(strlcat_r(prefix, "sbstate_t", tmp, sizeof(tmp)))==0
+				&& nvram_get_int(strlcat_r(prefix, "auxstate_t", tmp, sizeof(tmp)))==0 ))
+		{
+				wan_unit = i;
+				break;
+		}
 	}
 	if(WAN_UNIT_MAX == i)
 		return WAN_UNIT_NONE;
@@ -1552,7 +1689,7 @@ int get_ipv6_service(void)
 	return get_ipv6_service_by_unit(wan_primary_ifunit_ipv6());
 }
 
-const char *ipv6_router_address(struct in6_addr *in6addr)
+const char *ipv6_router_address_by_unit(struct in6_addr *in6addr, int wan_unit)
 {
 	char *p;
 	struct in6_addr addr;
@@ -1561,9 +1698,9 @@ const char *ipv6_router_address(struct in6_addr *in6addr)
 	addr6[0] = '\0';
 	memset(&addr, 0, sizeof(addr));
 
-	if ((p = nvram_get(ipv6_nvname("ipv6_rtr_addr"))) && *p) {
+	if ((p = nvram_get(ipv6_nvname_by_unit("ipv6_rtr_addr", wan_unit))) && *p) {
 		inet_pton(AF_INET6, p, &addr);
-	} else if ((p = nvram_get(ipv6_nvname("ipv6_prefix"))) && *p) {
+	} else if ((p = nvram_get(ipv6_nvname_by_unit("ipv6_prefix", wan_unit))) && *p) {
 		inet_pton(AF_INET6, p, &addr);
 		addr.s6_addr16[7] = htons(0x0001);
 	} else
@@ -1574,6 +1711,11 @@ const char *ipv6_router_address(struct in6_addr *in6addr)
 		memcpy(in6addr, &addr, sizeof(addr));
 
 	return addr6;
+}
+
+const char *ipv6_router_address(struct in6_addr *in6addr)
+{
+	return ipv6_router_address_by_unit(in6addr, wan_primary_ifunit_ipv6());
 }
 
 // trim useless 0 from IPv6 address
@@ -1894,6 +2036,10 @@ int wait_action_idle(int n)
 	while (n > 0) {
 		act.pid = 0;
 		if (__check_action(&act) == ACT_IDLE) return n;
+		if (act.pid == 1 && act.action == ACT_REBOOT) {
+			/* Rebooting, don't waste time to wait action idle due to init won't release it. */
+			break;
+		}
 		if (act.pid > 0 && !process_exists(act.pid)) {
 			if (!(r = unlink(ACTION_LOCK)) || errno == ENOENT) {
 				_dprintf("Terminated process, pid %d %s, hold action lock %d !!!\n",
@@ -1938,30 +2084,35 @@ const char *get_wan6face(void)
 	return get_wan6_ifname(wan_primary_ifunit_ipv6());
 }
 
-int update_6rd_info(void)
+int update_6rd_info_by_unit(int unit)
 {
 	char tmp[100], prefix[]="wanXXXXX_";
-	char addr6[INET6_ADDRSTRLEN + 1], *value;
+	char addr6[INET6_ADDRSTRLEN], *value;
 	struct in6_addr addr;
 
-	if (get_ipv6_service() != IPV6_6RD || !nvram_get_int(ipv6_nvname("ipv6_6rd_dhcp")))
+	if (get_ipv6_service_by_unit(unit) != IPV6_6RD || !nvram_get_int(ipv6_nvname_by_unit("ipv6_6rd_dhcp", unit)))
 		return -1;
 
-	snprintf(prefix, sizeof(prefix), "wan%d_", wan_primary_ifunit_ipv6());
+	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
 	value = nvram_safe_get(strlcat_r(prefix, "6rd_prefix", tmp, sizeof(tmp)));
 	if (*value ) {
 		/* try to compact IPv6 prefix */
 		if (inet_pton(AF_INET6, value, &addr) > 0)
 			value = (char *) inet_ntop(AF_INET6, &addr, addr6, sizeof(addr6));
-		nvram_set(ipv6_nvname("ipv6_6rd_prefix"), value);
-		nvram_set(ipv6_nvname("ipv6_6rd_router"), nvram_safe_get(strlcat_r(prefix, "6rd_router", tmp, sizeof(tmp))));
-		nvram_set(ipv6_nvname("ipv6_6rd_prefixlen"), nvram_safe_get(strlcat_r(prefix, "6rd_prefixlen", tmp, sizeof(tmp))));
-		nvram_set(ipv6_nvname("ipv6_6rd_ip4size"), nvram_safe_get(strlcat_r(prefix, "6rd_ip4size", tmp, sizeof(tmp))));
+		nvram_set(ipv6_nvname_by_unit("ipv6_6rd_prefix", unit), value);
+		nvram_set(ipv6_nvname_by_unit("ipv6_6rd_router", unit), nvram_safe_get(strlcat_r(prefix, "6rd_router", tmp, sizeof(tmp))));
+		nvram_set(ipv6_nvname_by_unit("ipv6_6rd_prefixlen", unit), nvram_safe_get(strlcat_r(prefix, "6rd_prefixlen", tmp, sizeof(tmp))));
+		nvram_set(ipv6_nvname_by_unit("ipv6_6rd_ip4size", unit), nvram_safe_get(strlcat_r(prefix, "6rd_ip4size", tmp, sizeof(tmp))));
 		return 1;
 	}
 
 	return 0;
+}
+
+int update_6rd_info(void)
+{
+	return update_6rd_info_by_unit(wan_primary_ifunit_ipv6());
 }
 #endif
 
@@ -3227,11 +3378,7 @@ int is_dpsr(int unit)
 	char ifname[32];
 
 	if (dpsr_mode()) {
-#ifdef GT10
-		if ((num_of_wl_if() == 2) || (unit == 2) || unit == nvram_get_int("dpsta_band"))
-#else
-		if ((num_of_wl_if() == 2) || !unit || unit == nvram_get_int("dpsta_band"))
-#endif
+		if ((num_of_wl_if() == 2) || (unit == WL_2G_BAND) || unit == nvram_get_int("dpsta_band"))
 			return 1;
 
 		if (strlen(nvram_safe_get("dpsr_ifnames"))) {
@@ -4110,6 +4257,55 @@ int get_active_fw_num(void)
 #endif
 }
 
+/* Execute @cmd and return string behind @keyword of first line.
+ * If @keyword is NULL, copy first line of output of @cmd to @buf.
+ * If @keyword is specified, copy string behind @keyword of first line that match.
+ * First '\n' of string is reset as '\0'.
+ * @cmd:
+ * @keyword:	If specified, copy string behind it to @buf.
+ * 		If NULL, copy first line to @buf.
+ * @buf:	buffer to store string
+ * @buf_len:	length of @buf
+ * @return:
+ * 	0:	success
+ *  otherwise:	fail
+ */
+int exec_and_return_string(const char *cmd, const char *keyword, char *buf, size_t buf_len)
+{
+	int ret = 1;
+	char *p, line[256];
+	FILE *fp;
+
+	if (!cmd || !buf || !buf_len)
+		return -1;
+
+	*buf = '\0';
+	if (!(fp = popen(cmd, "r"))) {
+		dbg("%s: can't execute [%s], errno %d (%s)\n", __func__, cmd, errno, strerror(errno));
+		return -2;
+	}
+
+	while (ret && fgets(line, sizeof(line), fp)) {
+		if (keyword && !strstr(line, keyword))
+			continue;
+		if ((p = strchr(line, '\n')))
+			*p = '\0';
+		p = line;
+		if (keyword) {
+			p = strstr(line, keyword);
+			if (p)
+				p += strlen(keyword);
+			else
+				p = line;
+		}
+		strlcpy(buf, p, buf_len);
+		ret = 0;
+	}
+	pclose(fp);
+
+	return ret;
+}
+
 /**
  * Execute @cmd, find @keyword in output and parse it.
  * @cmd:
@@ -4131,7 +4327,7 @@ int exec_and_parse(const char *cmd, const char *keyword, const char *fmt, int cn
 		return -1;
 
 	if (!(fp = popen(cmd, "r"))) {
-		dbg("%s: can't execute [%s]\n", __func__, cmd);
+		dbg("%s: can't execute [%s], errno %d (%s)\n", __func__, cmd, errno, strerror(errno));
 		return -2;
 	}
 
@@ -4212,6 +4408,7 @@ int iwpriv_get_int(const char *iface, char *cmd, int *result)
  * @path:	path to a directory.
  * @keyword:	used to filter specific items to @handler.
  * @handler:	function pointer.
+ *              NOTE: To make sure both readdir_wrapper() and @handler see same struct dirent, @handler must check @de_size and stop if mismatch.
  * @arg:	parameter for @handler.
  * @return:
  * 	0:	success
@@ -4219,7 +4416,7 @@ int iwpriv_get_int(const char *iface, char *cmd, int *result)
  *     -2:	can't open @path
  *     -3:	error reported by @handler
  */
-int readdir_wrapper(const char *path, const char *keyword, int (*handler)(const char *path, const struct dirent *de, void *arg), void *arg)
+int readdir_wrapper(const char *path, const char *keyword, int (*handler)(const char *path, const struct dirent *de, size_t de_size, void *arg), void *arg)
 {
 	int ret = 0;
 	DIR *dir;
@@ -4235,7 +4432,7 @@ int readdir_wrapper(const char *path, const char *keyword, int (*handler)(const 
 		if (!strcmp(de->d_name, ".") || !strcmp(de->d_name, ".."))
 			continue;
 		if (!keyword || *keyword == '\0' || strstr(de->d_name, keyword) != NULL) {
-			if (handler(path, de, arg))
+			if (handler(path, de, sizeof(*de), arg))
 				ret = -3;
 		}
 	}
@@ -5625,6 +5822,47 @@ int is_valid_domainname(const char *name)
 	return p - name;
 }
 
+int is_valid_oauth_code(char *code)
+{
+	int len;
+
+	len = strlen(code);
+	if (len > 2048) return 0;
+
+	while(*code) {
+		if (isalnum(*code) != 0 || *code == '-' || *code == '.' || *code == '_' || *code == '~' || *code == '+' || *code == '/' || isspace(*code) != 0)
+			code++;
+		else
+			return 0;
+	}
+	return 1;
+}
+int is_valid_email_address(char *address)
+{
+	int status=1, ret=0, rc=0;
+	regex_t preg;
+	const char *reg_exp = "^\\w+([-+.]\\w+)*@\\w+([-.]\\w+)*.\\w+([-.]\\w+)*$";
+
+	rc = regcomp(&preg, reg_exp, REG_EXTENDED);
+
+	if (rc != 0)
+	{
+		dbg("%s: Failed to compile the regular expression:%d\n", __func__, rc);
+		return 4000;
+	}
+
+	status=regexec(&preg,address,0, NULL, 0);
+	if (status == REG_NOMATCH) {
+		dbg("No Match\n");
+	}
+	else if (status == 0) {
+		dbg("Match\n");
+		ret = 1;
+	}
+	regfree(&preg);
+	return ret;
+}
+
 int get_discovery_ssid(char *ssid_g, int size)
 {
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
@@ -5632,7 +5870,7 @@ int get_discovery_ssid(char *ssid_g, int size)
 #endif
 #ifdef RTCONFIG_DPSTA
 	char word[80], *next;
-	int unit, connected;
+	int unit;
 #endif
 #ifdef RTCONFIG_WIRELESSREPEATER
 	if (sw_mode() == SW_MODE_REPEATER)
@@ -5668,21 +5906,20 @@ int get_discovery_ssid(char *ssid_g, int size)
 #ifdef RTCONFIG_DPSTA
 		if (dpsta_mode() && nvram_get_int("re_mode") == 0)
 		{
-			connected = 0;
+			snprintf(prefix, sizeof(prefix), "wl%d.1_", WL_2G_BAND);
+			strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
+
 			char dpsta_ifnames[32] = { 0 };
 			strlcpy(dpsta_ifnames, nvram_safe_get("dpsta_ifnames"), sizeof(dpsta_ifnames));
 			foreach(word, dpsta_ifnames, next) {
 				wl_ioctl(word, WLC_GET_INSTANCE, &unit, sizeof(unit));
 				snprintf(prefix, sizeof(prefix), "wlc%d_", unit == 0 ? 0 : 1);
 				if (nvram_get_int(strlcat_r(prefix, "state", tmp, sizeof(tmp))) == 2) {
-					connected = 1;
 					snprintf(prefix, sizeof(prefix), "wl%d.1_", unit);
 					strncpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
 					break;
 				}
 			}
-		if (!connected)
-			strlcpy(ssid_g, nvram_safe_get("wl0.1_ssid"), size);
 		}
 		else
 #endif
@@ -5699,7 +5936,11 @@ int get_discovery_ssid(char *ssid_g, int size)
 		else
 #endif
 #endif
-	strlcpy(ssid_g, nvram_safe_get("wl0_ssid"), size);
+	{
+		snprintf(prefix, sizeof(prefix), "wl%d_", WL_2G_BAND);
+		strlcpy(ssid_g, nvram_safe_get(strlcat_r(prefix, "ssid", tmp, sizeof(tmp))), size);
+	}
+
 	return 0;
 }
 
@@ -5958,7 +6199,7 @@ int is_passwd_default(){
 	char *http_passwd = nvram_safe_get("http_passwd");
 #ifdef RTCONFIG_NVRAM_ENCRYPT
 	char dec_passwd[NVRAM_ENC_LEN];
-	pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd));
+	pw_dec(http_passwd, dec_passwd, sizeof(dec_passwd), 1);
 	http_passwd = dec_passwd;
 #endif
 	if(strcmp(nvram_default_get("http_passwd"), http_passwd) == 0)
@@ -6224,16 +6465,19 @@ void wl_vif_to_subnet(const char *ifname, char *net, int len)
  	int fd;
 	struct ifreq ifr;
 	
-
 	if (!ifname || strlen(ifname) <= 0)
 		return;
 
 	if (!net || len <= 0)
 		return;
 
+	memset(net, 0, len);
 	for (found=0, i=0; i<256; i++) {
 		memset(nv, 0, sizeof(nv));
-		snprintf(nv, sizeof(nv), "br%d_ifnames", i);
+		if (i==0)
+			snprintf(nv, sizeof(nv), "lan_ifnames");
+		else 
+			snprintf(nv, sizeof(nv), "lan%d_ifnames", i);
 		if ((br_ifnames = strdup(nvram_safe_get(nv)))) {
 			foreach (word, br_ifnames, next) {
 				if ((found = !strcmp(word, ifname)))
@@ -6249,7 +6493,10 @@ void wl_vif_to_subnet(const char *ifname, char *net, int len)
 
 	if (found) {
 		memset(nv, 0, sizeof(nv));
-		snprintf(nv, sizeof(nv), "br%d_ifname", i);
+		if (i==0)
+			snprintf(nv, sizeof(nv), "lan_ifname");
+		else
+			snprintf(nv, sizeof(nv), "lan%d_ifname", i);
 		memset(br_name, 0, sizeof(br_name));
 		strlcpy(br_name, nvram_safe_get(nv), sizeof(br_name));
 
@@ -6274,4 +6521,381 @@ void wl_vif_to_subnet(const char *ifname, char *net, int len)
 
 	return;
 
+}
+
+static unsigned int _parseDecimal ( const char** pchCursor )
+{
+	unsigned int nVal = 0;
+	char chNow;
+	while ( (chNow = **pchCursor) != '\0' && chNow >= '0' && chNow <= '9' )
+	{
+		//shift digit in
+		nVal *= 10;
+		nVal += chNow - '0';
+
+		++*pchCursor;
+	}
+	return nVal;
+}
+
+static unsigned int _parseHex ( const char** pchCursor )
+{
+	unsigned int nVal = 0;
+	char chNow;
+	while ( (chNow = **pchCursor & 0x5f) != '\0' && //(collapses case, but mutilates digits)
+	((chNow >= ('0'&0x5f) && chNow <= ('9'&0x5f)) ||
+	(chNow >= 'A' && chNow <= 'F') )
+	)
+	{
+		unsigned char nybbleValue;
+		chNow -= 0x10;  //scootch digital values down; hex now offset by x31
+		nybbleValue = ( chNow > 9 ? chNow - (0x31-0x0a) : chNow );
+		//shift nybble in
+		nVal <<= 4;
+		nVal += nybbleValue;
+
+		++*pchCursor;
+	}
+	return nVal;
+}
+
+//Parse a textual IPv4 or IPv6 address, optionally with port, into a binary
+//array (for the address, in network order), and an optionally provided port.
+//Also, indicate which of those forms (4 or 6) was parsed.  Return true on
+//success.  ppszText must be a nul-terminated ASCII string.  It will be
+//updated to point to the character which terminated parsing (so you can carry
+//on with other things.  abyAddr must be 16 bytes.  You can provide NULL for
+//abyAddr, nPort, bIsIPv6, if you are not interested in any of those
+//informations.  If we request port, but there is no port part, then nPort will
+//be set to 0.  There may be no whitespace leading or internal (though this may
+//be used to terminate a successful parse.
+//Note:  the binary address and integer port are in network order.
+int ParseIPv4OrIPv6 ( const char** ppszText,
+        unsigned char* abyAddr, int* pnPort, int* pbIsIPv6 )
+{
+	unsigned char* abyAddrLocal = NULL;
+	unsigned char abyDummyAddr[16] = {0};
+
+	//find first colon, dot, and open bracket
+	const char* pchColon = strchr( *ppszText, ':' );
+	const char* pchDot = strchr( *ppszText, '.' );
+	const char* pchOpenBracket = strchr( *ppszText, '[' );
+	const char* pchCloseBracket = NULL;
+
+	//we'll consider this to (probably) be IPv6 if we find an open
+	//bracket, or an absence of dots, or if there is a colon, and it
+	//precedes any dots that may or may not be there
+	int bIsIPv6local = (pchOpenBracket != NULL || pchDot == NULL || (pchColon != NULL && (pchDot == NULL || pchDot > pchColon)));
+
+	//OK, now do a little further sanity check our initial guess...
+	if ( bIsIPv6local )
+	{
+		//if open bracket, then must have close bracket that follows somewhere
+		pchCloseBracket = strchr( *ppszText, ']' );
+		if ( pchOpenBracket != NULL && ( pchCloseBracket == NULL ||
+			pchCloseBracket < pchOpenBracket ) )
+			return 0;
+	}
+	else    //probably ipv4
+	{
+		//dots must exist, and precede any colons
+		if ( pchDot == NULL || ( pchColon != NULL && pchColon < pchDot ) )
+			return 0;
+	}
+
+	//we figured out this much so far....
+	if ( NULL != pbIsIPv6 )
+		*pbIsIPv6 = bIsIPv6local;
+
+	//especially for IPv6 (where we will be decompressing and validating)
+	//we really need to have a working buffer even if the caller didn't
+	//care about the results.
+	abyAddrLocal = abyAddr; //prefer to use the caller's
+	if ( NULL == abyAddrLocal ) //but use a dummy if we must
+		abyAddrLocal = abyDummyAddr;
+
+	//OK, there should be no correctly formed strings which are miscategorized,
+	//and now any format errors will be found out as we continue parsing
+	//according to plan.
+	if ( ! bIsIPv6local )   //try to parse as IPv4
+	{
+		//4 dotted quad decimal; optional port if there is a colon
+		//since there are just 4, and because the last one can be terminated
+		//differently, I'm just going to unroll any potential loop.
+		unsigned char* pbyAddrCursor = abyAddrLocal;
+		unsigned int nVal;
+		const char* pszTextBefore = *ppszText;
+		nVal =_parseDecimal( ppszText );           //get first val
+		if ( **ppszText != '.' || nVal > 255 || pszTextBefore == *ppszText )    //must be in range and followed by dot and nonempty
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;  //stick it in addr
+		++(*ppszText);  //past the dot
+		pszTextBefore = *ppszText;
+		nVal =_parseDecimal ( ppszText );           //get second val
+		if ( '.' != **ppszText || nVal > 255 || pszTextBefore == *ppszText )
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;
+		++(*ppszText);  //past the dot
+		pszTextBefore = *ppszText;
+		nVal =_parseDecimal ( ppszText );           //get third val
+		if ( '.' != **ppszText || nVal > 255 || pszTextBefore == *ppszText )
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;
+		++(*ppszText);  //past the dot
+		pszTextBefore = *ppszText;
+		nVal =_parseDecimal ( ppszText );           //get fourth val
+		if ( nVal > 255 || pszTextBefore == *ppszText ) //(we can terminate this one in several ways)
+			return 0;
+		*(pbyAddrCursor++) = (unsigned char) nVal;
+
+		if ( ':' == **ppszText && pnPort != NULL )  //have port part, and we want it
+		{
+			unsigned short usPortNetwork;   //save value in network order
+			++(*ppszText);  //past the colon
+			pszTextBefore = *ppszText;
+			nVal =_parseDecimal ( ppszText );
+			if ( nVal > 65535 || pszTextBefore == *ppszText )
+				return 0;
+			((unsigned char*)&usPortNetwork)[0] = ( nVal & 0xff00 ) >> 8;
+			((unsigned char*)&usPortNetwork)[1] = ( nVal & 0xff );
+			*pnPort = usPortNetwork;
+			return 1;
+		}
+		else    //finished just with ip address
+		{
+			if ( NULL != pnPort )
+				*pnPort = 0;    //indicate we have no port part
+			return 1;
+		}
+	}
+	else    //try to parse as IPv6
+	{
+		unsigned char* pbyAddrCursor;
+		unsigned char* pbyZerosLoc;
+		int bIPv4Detected;
+		int nIdx;
+		//up to 8 16-bit hex quantities, separated by colons, with at most one
+		//empty quantity, acting as a stretchy run of zeroes.  optional port
+		//if there are brackets followed by colon and decimal port number.
+		//A further form allows an ipv4 dotted quad instead of the last two
+		//16-bit quantities, but only if in the ipv4 space ::ffff:x:x .
+		if ( pchOpenBracket != NULL )   //start past the open bracket, if it exists
+			*ppszText = pchOpenBracket + 1;
+		pbyAddrCursor = abyAddrLocal;
+		pbyZerosLoc = NULL; //if we find a 'zero compression' location
+		bIPv4Detected = 0;
+		for ( nIdx = 0; nIdx < 8; ++nIdx )  //we've got up to 8 of these, so we will use a loop
+		{
+			const char* pszTextBefore = *ppszText;
+			unsigned nVal =_parseHex ( ppszText );      //get value; these are hex
+			if ( pszTextBefore == *ppszText )   //if empty, we are zero compressing; note the loc
+			{
+				if ( pbyZerosLoc != NULL )  //there can be only one!
+				{
+					//unless it's a terminal empty field, then this is OK, it just means we're done with the host part
+					if ( pbyZerosLoc == pbyAddrCursor )
+					{
+						--nIdx;
+						break;
+					}
+					return 0;   //otherwise, it's a format error
+				}
+				if ( ':' != **ppszText )    //empty field can only be via :
+					return 0;
+				if ( nIdx == 0 )    //leading zero compression requires an extra peek, and adjustment
+				{
+					++(*ppszText);
+					if ( ':' != **ppszText )
+						return 0;
+				}
+
+				pbyZerosLoc = pbyAddrCursor;
+				++(*ppszText);
+			}
+			else
+			{
+				if ( '.' == **ppszText )    //special case of ipv4 convenience notation
+				{
+					//who knows how to parse ipv4?  we do!
+					const char* pszTextlocal = pszTextBefore;   //back it up
+					unsigned char abyAddrlocal[16];
+					int bIsIPv6local;
+					int bParseResultlocal = ParseIPv4OrIPv6 ( &pszTextlocal, abyAddrlocal, NULL, &bIsIPv6local );
+					*ppszText = pszTextlocal;   //success or fail, remember the terminating char
+					if ( ! bParseResultlocal || bIsIPv6local )  //must parse and must be ipv4
+						return 0;
+					//transfer addrlocal into the present location
+					*(pbyAddrCursor++) = abyAddrlocal[0];
+					*(pbyAddrCursor++) = abyAddrlocal[1];
+					*(pbyAddrCursor++) = abyAddrlocal[2];
+					*(pbyAddrCursor++) = abyAddrlocal[3];
+					++nIdx; //pretend like we took another short, since the ipv4 effectively is two shorts
+					bIPv4Detected = 1;  //remember how we got here for further validation later
+					break;  //totally done with address
+				}
+
+				if ( nVal > 65535 ) //must be 16 bit quantity
+					return 0;
+				*(pbyAddrCursor++) = nVal >> 8;     //transfer in network order
+				*(pbyAddrCursor++) = nVal & 0xff;
+				if ( ':' == **ppszText )    //typical case inside; carry on
+				{
+					++(*ppszText);
+				}
+				else    //some other terminating character; done with this parsing parts
+				{
+					break;
+				}
+			}
+		}
+
+		//handle any zero compression we found
+		if ( NULL != pbyZerosLoc )
+		{
+			int nHead = (int)( pbyZerosLoc - abyAddrLocal );    //how much before zero compression
+			int nTail = nIdx * 2 - (int)( pbyZerosLoc - abyAddrLocal ); //how much after zero compression
+			int nZeros = 16 - nTail - nHead;        //how much zeros
+			memmove ( &abyAddrLocal[16-nTail], pbyZerosLoc, nTail );    //scootch stuff down
+			memset ( pbyZerosLoc, 0, nZeros );      //clear the compressed zeros
+		}
+
+		//validation of ipv4 subspace ::ffff:x.x
+		if ( bIPv4Detected )
+		{
+			static const unsigned char abyPfx[] = { 0,0, 0,0, 0,0, 0,0, 0,0, 0xff,0xff };
+			if ( memcmp ( abyAddrLocal, abyPfx, sizeof(abyPfx) ) != 0 )
+				return 0;
+		}
+
+		//close bracket
+		if ( NULL != pchOpenBracket )
+		{
+			if ( ']' != **ppszText )
+				return 0;
+			++(*ppszText);
+		}
+
+		if ( ':' == **ppszText && NULL != pnPort )  //have port part, and we want it
+		{
+			const char* pszTextBefore;
+			unsigned int nVal;
+			unsigned short usPortNetwork;   //save value in network order
+			++(*ppszText);  //past the colon
+			pszTextBefore = *ppszText;
+			pszTextBefore = *ppszText;
+			nVal =_parseDecimal ( ppszText );
+			if ( nVal > 65535 || pszTextBefore == *ppszText )
+				return 0;
+			((unsigned char*)&usPortNetwork)[0] = ( nVal & 0xff00 ) >> 8;
+			((unsigned char*)&usPortNetwork)[1] = ( nVal & 0xff );
+			*pnPort = usPortNetwork;
+			return 1;
+		}
+		else    //finished just with ip address
+		{
+			if ( NULL != pnPort )
+				*pnPort = 0;    //indicate we have no port part
+			return 1;
+		}
+    }
+}
+
+//simple version if we want don't care about knowing how much we ate
+int ParseIPv4OrIPv6_2 ( const char* pszText,
+        unsigned char* abyAddr, int* pnPort, int* pbIsIPv6 )
+{
+    const char* pszTextLocal = pszText;
+    return ParseIPv4OrIPv6 ( &pszTextLocal, abyAddr, pnPort, pbIsIPv6);
+}
+
+#if 0 //ParseIPv4OrIPv6 test
+void dumpbin ( unsigned char* pbyBin, int nLen )
+{
+	int i;
+	for ( i = 0; i < nLen; ++i )
+	{
+		printf ( "%02x", pbyBin[i] );
+	}
+}
+
+void testcase ( const char* pszTest )
+{
+	unsigned char abyAddr[16];
+	int bIsIPv6;
+	int nPort;
+	int bSuccess;
+
+	printf ( "Test case '%s'\n", pszTest );
+	const char* pszTextCursor = pszTest;
+	bSuccess = ParseIPv4OrIPv6 ( &pszTextCursor, abyAddr, &nPort, &bIsIPv6 );
+	if ( ! bSuccess )
+	{
+		printf ( "parse failed, at about index %d; rest: '%s'\n", pszTextCursor - pszTest, pszTextCursor );
+		return;
+	}
+
+	printf ( "addr:  " );
+	dumpbin ( abyAddr, bIsIPv6 ? 16 : 4 );
+	printf ( "\n" );
+	if ( 0 == nPort )
+		printf ( "port absent" );
+	else
+		printf ( "port:  %d", htons ( nPort ) );
+	printf ( "\n\n" );
+}
+#endif
+
+/**
+ * @return:
+ * 	0:		invalid parameter
+ * 	1:		safe
+ **/
+int validate_rc_service(char *value)
+{
+	while(*value) {
+		if (isalnum(*value) != 0 || *value == ';' || *value == '_' || isspace(*value) != 0)
+			value++;
+		else{
+			dbg("validate_rc_service: invalid(%c)\n", *value);
+			return 0;
+		}
+	}
+	return 1;
+}
+
+#if defined(RTCONFIG_ACCOUNT_BINDING)
+int is_account_bound()
+{
+    if (nvram_match("oauth_auth_status", "2") &&
+        nvram_invmatch("oauth_dm_cusid", "") &&
+        nvram_invmatch("oauth_dm_refresh_ticket", "")) {
+        return 1;
+    }
+
+    return 0;
+}
+#endif
+
+int adjust_62_nv_list(char *name)
+{
+	char nv[2048] = {0}, nv_tmp[2048] = {0};
+	char word[32]={0}, *next=NULL;
+
+	strlcpy(nv, nvram_safe_get(name), sizeof(nv));
+
+	foreach_60(word, nv, next){
+		if(isValidMacAddress(word)){
+			strlcat(nv_tmp, "<", sizeof(nv_tmp));
+			strlcat(nv_tmp, word, sizeof(nv_tmp));
+		}else
+			dbg("%s is invaild\n", word);
+	}
+
+	if(strcmp(nv, nv_tmp) != 0){
+		dbg("update %s to %s\n", nv, nv_tmp);
+		nvram_set(name, nv_tmp);
+		nvram_commit();
+		return 1;
+	}
+	return 0;
 }

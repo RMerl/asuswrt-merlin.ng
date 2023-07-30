@@ -142,6 +142,7 @@ typedef struct _id_info{
 typedef struct _bundle_key{
 	unsigned char bundlekey[MAX_VERSION_TEXT_LENGTH+1];
 	unsigned int  bundlekeylen;
+	int cost;
 }bundle_key,*ptr_bundle_key;
 
 

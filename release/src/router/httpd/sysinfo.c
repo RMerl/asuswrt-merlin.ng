@@ -266,7 +266,11 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 				buf = malloc(NVRAM_SPACE);
 				if (buf) {
-					nvram_getall(buf, NVRAM_SPACE);
+#ifdef HND_ROUTER
+					wlcsm_nvram_getall(buf, NVRAM_SPACE);
+#else
+					dev_nvram_getall(buf, NVRAM_SPACE);
+#endif
 					tmp = buf;
 					while (*tmp) tmp += strlen(tmp) +1;
 

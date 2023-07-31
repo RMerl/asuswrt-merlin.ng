@@ -16,3 +16,9 @@
  */
 
 extern int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t **argv);
+#ifdef HND_ROUTER
+extern int  wlcsm_nvram_getall(char *buf, int count);
+#else
+extern int dev_nvram_getall(char *buf, int count);
+#endif
+

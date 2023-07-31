@@ -1,6 +1,21 @@
 Asuswrt-Merlin Changelog
 ========================
 
+386.12 (xx-xxx-2023)
+  - UPDATED: Merged with GPL 386_51997.
+  - UPDATED: curl to 8.1.2.
+  - UPDATED: OpenVPN to 2.6.5.
+  - UPDATED: openssl to 1.1.1u.
+  - UPDATED: tor to 0.4.7.13.
+  - CHANGED: FTP server will now only support strong ciphers
+             in TLS mode.
+  - FIXED: QOS Classification showing no Upload data on some
+           WAN configurations.
+  - FIXED: Radio temperature graphs weren't updating
+  - FIXED: nvram usage reported on Sysinfo page was inaccurate
+           as it included JFFS stored values.
+
+
 386.11 (14-May-2023)
   - UPDATED: curl to 8.0.1.
   - UPDATED: openvpn to 2.6.3.

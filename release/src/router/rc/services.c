@@ -2093,7 +2093,10 @@ void start_dnsmasq(void)
 #if defined(RTCONFIG_AMAS)
 	fprintf(fp, "script-arp\n");
 #endif
-
+#if defined(RTCONFIG_DNSMQ_USER)
+	if(*nvram_safe_get("dnsmq_user_domain") && *nvram_safe_get("dnsmq_user_ip"))
+		fprintf(fp, "address=/%s/%s\n", nvram_safe_get("dnsmq_user_domain"), nvram_safe_get("dnsmq_user_ip"));
+#endif
 	fprintf(fp, "edns-packet-max=1232\n");
 
 	/* close fp move to the last */
@@ -4793,16 +4796,14 @@ start_ddns(char *caller)
 			fprintf(fp, "password = '%s'\n", ppp_safe_escape(passwd, tmp, sizeof(tmp)));
 			if (wild)
 				fprintf(fp, "wildcard = true\n");
-
 #ifdef RTCONFIG_GETREALIP
-			if (realip == 1 && asus_ddns == 1)	// Private IP and Asus DDNS - override iface
+			if (realip)
 				fprintf(fp, "checkip-command = '%s'\n", "getrealip.sh");
 #endif
 			fprintf(fp, "}\n");
 
 			fprintf(fp, "iterations = 1\n");
-			if (!realip || asus_ddns == 1)
-				fprintf(fp, "iface = %s\n", wan_ifname); /* External WAN IP also need: Private IPv4 + Public IPv6 */
+			fprintf(fp, "iface = %s\n", wan_ifname); /* External WAN IP also need: Private IPv4 + Public IPv6 */
 			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
 			if (!nvram_get_int("ntp_ready"))
 				fprintf(fp, "broken-rtc = true\n");
@@ -4822,8 +4823,10 @@ start_ddns(char *caller)
 			use_custom_config("inadyn.conf", "/etc/inadyn.conf");
 			run_postconf("inadyn", "/etc/inadyn.conf");
 
-#ifdef RTCONFIG_ASUSDDNS_ACCOUNT_BASE
-			if(strlen(nvram_safe_get("oauth_dm_refresh_ticket")) > 0)
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
+			if(is_account_bound() && nvram_match("ddns_replace_status", "1") &&
+				((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
+			|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn")))))
 			{
 				nvram_set("asusddns_token_state", "0");
 				if(update_asus_ddns_token() != 1 || nvram_get_int("asusddns_token_state") != 1)
@@ -4917,13 +4920,12 @@ asusddns_reg_domain(int reg)
 			int u = get_first_connected_public_wan_unit();
 			if (u < WAN_UNIT_FIRST || u >= WAN_UNIT_MAX)
 			{
-#ifndef RTCONFIG_INADYN
-				logmessage("asusddns", "[%s] dual WAN load balance DDNS cannot succeed to work, because none of wan is public IP.", __FUNCTION__);
-				return -2;
-#endif
-			}
-			else {
-				unit = u;
+				u = get_first_connected_dual_wan_unit(); /* can use private WAN IP */
+				if (u < WAN_UNIT_FIRST || u >= WAN_UNIT_MAX)
+				{
+					logmessage("ddns", "[%s] None of wan can connect to internet in load balance Dual WAN.", __FUNCTION__);
+					return -2;
+				}
 			}
 
 			unit = u;
@@ -11653,6 +11655,9 @@ stop_services(void)
 #if defined(RTCONFIG_CFEZ) && defined(RTCONFIG_BCMARM)
 	stop_envrams();
 #endif
+#ifdef RTCONFIG_SCHED_DAEMON
+	stop_sched_daemon();
+#endif
 #if 0
 #ifdef HND_ROUTER
 	stop_jitterentropy();
@@ -11838,6 +11843,7 @@ stop_services_mfg(void)
 	stop_hapdevent();
 #endif
 #ifdef RTCONFIG_NOTIFICATION_CENTER
+	stop_wlc_monitor();
 	stop_wlc_nt();
 #endif
 #ifdef RTCONFIG_WPS
@@ -11915,6 +11921,12 @@ stop_services_mfg(void)
 #ifdef RTCONFIG_TUNNEL
 	stop_mastiff();
 #endif
+#ifdef RTCONFIG_DNSQUERY_INTERCEPT
+	stop_dnsqd();
+#endif
+#ifdef RTCONFIG_NFCM
+	stop_nfcm();
+#endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 	stop_roamast();
 #endif
@@ -11924,9 +11936,6 @@ stop_services_mfg(void)
 #endif
 #ifdef RTCONFIG_NETOOL
 	stop_netool();
-#endif
-#ifdef RTCONFIG_SCHED_DAEMON
-	stop_sched_daemon();
 #endif
 #ifdef HND_ROUTER
 	//stop_jitterentropy();
@@ -12106,6 +12115,14 @@ stop_watchdog(void)
 	killall_tk("watchdog");
 }
 
+// add by Andrew
+void
+stop_alt_watchdog(void)
+{
+	killall_tk("alt_watchdog");
+}
+// end of add
+
 void
 stop_check_watchdog(void)
 {
@@ -12175,6 +12192,18 @@ start_check_watchdog(void)
 
 	return _eval(check_watchdog_argv, NULL, 0, &pid);
 }
+
+// added by Andrew
+int start_alt_watchdog(void)
+{
+	char *alt_watchdog_argv[] = {"alt_watchdog", NULL};
+	pid_t whpid;
+
+	if(nvram_match("stop_watchdog", "1"))  return 0;
+
+	return _eval(alt_watchdog_argv, NULL, 0, &whpid);
+}
+// end of add
 
 int
 start_fwupg_flashing(void)
@@ -17203,12 +17232,6 @@ retry_wps_enr:
 #ifdef RTCONFIG_SSH
 			stop_sshd();
 #endif
-#ifdef RTCONFIG_DNSQUERY_INTERCEPT
-	stop_dnsqd();
-#endif
-#ifdef RTCONFIG_NFCM
-	stop_nfcm();
-#endif
 #ifdef RTCONFIG_NEW_USER_LOW_RSSI
 			stop_roamast();
 #endif
@@ -17489,6 +17512,10 @@ retry_wps_enr:
 			_dprintf("[%s, %d]start vpnc %d\n", __FUNCTION__, __LINE__, vpnc_unit);
 			start_vpnc_by_unit(vpnc_unit);
 		}
+#if defined(RTCONFIG_BWDPI) && (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
+		/* It's a workaround for QCA / MTK platform due to accelerator / module / vpn can't work together */
+		start_dpi_engine_service();
+#endif
 	}
 	else if (strcmp(script, "default_wan") == 0)	//change default WAN
 	{
@@ -18086,12 +18113,12 @@ start_write_smb_conf();
 	}
 #endif
 #ifdef RTCONFIG_REVERTFW
-        else if (strcmp(script, "revertfw_release_note")==0)
-        {
-                snprintf(nvtmp, sizeof(nvtmp), "revert_note.sh");
-                cmd[0] = nvtmp;
-                start_script(count, cmd);
-        }
+	else if (strcmp(script, "revertfw_release_note")==0)
+	{
+		snprintf(nvtmp, sizeof(nvtmp), "revert_note.sh");
+		cmd[0] = nvtmp;
+		start_script(count, cmd);
+	}
 #endif
 
 #ifdef RTCONFIG_AMAS
@@ -18210,11 +18237,11 @@ start_write_smb_conf();
 		if(action&RC_SERVICE_STOP) stop_conn_diag();
 		if(action&RC_SERVICE_START) start_conn_diag();
 	}
-#endif
 	else if (strcmp(script,"amas_portstatus") == 0){
 		if(action&RC_SERVICE_STOP) stop_amas_portstatus();
 		if(action&RC_SERVICE_START) start_amas_portstatus();
 	}
+#endif
 	else if (strcmp(script, "apply_amaslib") == 0)
 	{
 		AMAS_EVENT_TRIGGER(NULL, NULL, 0);
@@ -18226,12 +18253,12 @@ start_write_smb_conf();
 		update_sta_binding_list();
 	}
 #endif
-#endif
 #ifdef RTCONFIG_NBR_RPT
 	else if (strcmp(script, "update_nbr")==0)
 	{
 		update_nbr_list();
 	}
+#endif
 #endif
 #ifdef RTCONFIG_UPLOADER
 	else if (strcmp(script,"uploader") == 0)
@@ -18589,14 +18616,6 @@ start_wlcscan(void)
 	system("wlcscan");
 #endif
 }
-
-// add by Andrew
-void
-stop_alt_watchdog(void)
-{
-	killall_tk("alt_watchdog");
-}
-// end of add
 
 void
 stop_wlcscan(void)
@@ -19767,18 +19786,6 @@ void stop_lteled(void)
 	}
 }
 #endif	/* RTCONFIG_INTERNAL_GOBI */
-
-// added by Andrew
-int start_alt_watchdog(void)
-{
-	char *alt_watchdog_argv[] = {"alt_watchdog", NULL};
-	pid_t whpid;
-
-	if(nvram_match("stop_watchdog", "1"))  return 0;
-
-	return _eval(alt_watchdog_argv, NULL, 0, &whpid);
-}
-// end of add
 
 int
 firmware_check_main(int argc, char *argv[])
@@ -22605,10 +22612,6 @@ static void server_handler(int sock)
 				write(sock, cmd, 1);
 			}
 		}
-#if defined(RTCONFIG_BWDPI) && (defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK))
-		/* It's a workaround for QCA / MTK platform due to accelerator / module / vpn can't work together */
-		start_dpi_engine_service();
-#endif
 	}
 	close(sock);
 }

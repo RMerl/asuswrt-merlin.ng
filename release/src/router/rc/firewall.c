@@ -6538,13 +6538,23 @@ mangle_setting(char *wan_if, char *wan_ip, char *lan_if, char *lan_ip, char *log
 			eval("ip6tables", "-t", "mangle", "-N", chain);
 		}
 	}
+
+#ifdef RTCONFIG_DNSQUERY_INTERCEPT
+	if(nvram_get_int("nfcm_enable") == 1)
+	{
+#ifdef RTCONFIG_AMAS
+	if(aimesh_re_node() == 0)
 #endif
+		eval("ip6tables", "-t", "mangle", "-A", "POSTROUTING", "-p", "udp", "--sport", "53", "-j", "QUEUE");
+	}
+#endif //RTCONFIG_DNSQUERY_INTERCEPT
+#endif //RTCONFIG_IPV6
 
 /* Workaround for neighbour solicitation flood from Comcast */
 #ifdef RTCONFIG_IPV6
 	if (nvram_get_int("ipv6_ns_drop")) {
 		eval("ip6tables", "-t", "mangle", "-A", "PREROUTING", "-p", "icmpv6", "--icmpv6-type", "neighbor-solicitation",
-		     "-i", wan_if, "-d", "ff02::1:ff00:0/104", "-j", "DROP");
+			"-i", wan_if, "-d", "ff02::1:ff00:0/104", "-j", "DROP");
 	}
 #endif
 

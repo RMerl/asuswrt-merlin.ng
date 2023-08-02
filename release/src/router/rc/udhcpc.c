@@ -1851,7 +1851,7 @@ bound6(char *wan_ifname, int bound)
 			/* TODO: rework WEB UI to specify ranges without prefix
 			 * TODO: add size checking, now range takes all of 16 bit */
 			start = (inet_pton(AF_INET6, nvram_safe_get(ipv6_nvname_by_unit("ipv6_dhcp_start", wan_unit)), &range) > 0) ?
- 			    ntohs(range.s6_addr16[7]) : 0x1000;
+			    ntohs(range.s6_addr16[7]) : 0x1000;
 			end = (inet_pton(AF_INET6, nvram_safe_get(ipv6_nvname_by_unit("ipv6_dhcp_end", wan_unit)), &range) > 0) ?
 			    ntohs(range.s6_addr16[7]) : 0x2000;
 
@@ -1868,7 +1868,7 @@ bound6(char *wan_ifname, int bound)
 	}
 skip:
 	if (*safe_getenv("RDNSS")) {
-	dns_changed = nvram_set_env(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit), "RDNSS");
+		dns_changed = nvram_set_env(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit), "RDNSS");
 		dns_changed += nvram_set_env(ipv6_nvname_by_unit("ipv6_get_domain", wan_unit), "DOMAINS");
 	} else {
 		dns_changed = nvram_set_env(ipv6_nvname_by_unit("ipv6_get_dns", wan_unit), "RA_DNS");

@@ -849,7 +849,6 @@ int do_dns_detect(int wan_unit)
 #endif
 
 	snprintf(host, sizeof(host), "%s", nvram_safe_get("dns_probe_host"));
-
 	snprintf(content, sizeof(content), "%s", nvram_safe_get("dns_probe_content"));
 	if (*host == '\0'){
 		snprintf(host, sizeof(host), "%s", nvram_default_get("dns_probe_host"));

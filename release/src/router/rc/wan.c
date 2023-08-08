@@ -2021,21 +2021,6 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 			}
 #endif
 
-			/* MTU */
-			if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
-				mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
-				if ((mtu < 576) || (mtu > 9000))
-					mtu = 1500;	// Set a sane default value
-
-				ifr.ifr_mtu = mtu;
-				strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
-				if (ioctl(s, SIOCSIFMTU, &ifr)) {
-					perror(wan_ifname);
-					logmessage("start_wan_if()","Error setting MTU on %s to %d", wan_ifname, mtu);
-				}
-				close(s);
-			}
-
 #ifdef RTCONFIG_AUTO_WANPORT
 			if(is_auto_wanport_enabled() == 1){
 				strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan
@@ -2043,6 +2028,21 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				/* Bring up WAN interface */
 				dbG("AUTO_WANPORT ifup:%s\n", wan_ifname);
 				ifconfig(wan_ifname, IFUP, NULL, NULL);
+
+				/* MTU */
+				if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
+					mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
+					if ((mtu < 576) || (mtu > 9000))
+						mtu = 1500;     // Set a sane default value
+
+					ifr.ifr_mtu = mtu;
+					strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
+					if (ioctl(s, SIOCSIFMTU, &ifr)) {
+						perror(wan_ifname);
+						logmessage("start_wan_if()","Error setting MTU on %s to %d", wan_ifname, mtu);
+					}
+					close(s);
+				}
 
 				/* Start pre-authenticator */
 				dbG("AUTO_WANPORT start auth:%d\n", unit);
@@ -2058,6 +2058,21 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 				/* Bring up WAN interface */
 				dbG("ifup:%s\n", wan_ifname);
 				ifconfig(wan_ifname, IFUP, NULL, NULL);
+
+				/* MTU */
+				if ((s = socket(AF_INET, SOCK_RAW, IPPROTO_RAW)) >= 0) {
+					mtu = nvram_get_int(strcat_r(prefix, "mtu", tmp));
+					if ((mtu < 576) || (mtu > 9000))
+						mtu = 1500;     // Set a sane default value
+
+					ifr.ifr_mtu = mtu;
+					strncpy(ifr.ifr_name, wan_ifname, IFNAMSIZ);
+					if (ioctl(s, SIOCSIFMTU, &ifr)) {
+						perror(wan_ifname);
+						logmessage("start_wan_if()","Error setting MTU on %s to %d", wan_ifname, mtu);
+					}
+					close(s);
+				}
 
 				/* Start pre-authenticator */
 				dbG("start auth:%d\n", unit);

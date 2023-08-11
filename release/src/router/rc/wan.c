@@ -2023,7 +2023,7 @@ TRACE_PT("3g begin with %s.\n", wan_ifname);
 
 #ifdef RTCONFIG_AUTO_WANPORT
 			if(is_auto_wanport_enabled() == 1){
-				strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan
+				strlcpy(wan_ifname, nvram_safe_get("lan_ifname"), sizeof(wan_ifname));
 
 				/* Bring up WAN interface */
 				dbG("AUTO_WANPORT ifup:%s\n", wan_ifname);

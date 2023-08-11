@@ -3004,6 +3004,7 @@ int ping_target_with_size(char *target, unsigned int pkt_size, unsigned int ping
 			snprintf(cmdbuf, sizeof(cmdbuf), "ping -c %d -W %d -s %d %s > %s 2>&1 || true && echo \"\" >> %s", ping_cnt, wait_time, pkt_size, target, ping_result, ping_done);
 			system(cmdbuf);
 			logmessage("ping_target_with_size", "Ping test is complete.\n");
+			exit(0);
 		}
 		else
 		{

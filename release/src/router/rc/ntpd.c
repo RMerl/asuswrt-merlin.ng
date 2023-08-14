@@ -102,10 +102,14 @@ int ntpd_synced_main(int argc, char *argv[])
 #endif
 
 /* Code from ntp */
+		setup_timezone();
+
 		nvram_set("reload_svc_radio", "1");
 		nvram_set("svc_ready", "1");
 
-		setup_timezone();
+#ifndef RTCONFIG_QCA
+		timecheck();
+#endif
 
 #ifdef RTCONFIG_DNSPRIVACY
 		if (nvram_get_int("dnspriv_enable"))
@@ -117,6 +121,9 @@ int ntpd_synced_main(int argc, char *argv[])
 #endif
 #ifdef RTCONFIG_DISK_MONITOR
 		notify_rc("restart_diskmon");
+#endif
+#ifdef RTCONFIG_UUPLUGIN
+		exec_uu();
 #endif
 
 		stop_ddns();

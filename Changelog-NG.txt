@@ -23,6 +23,8 @@ Asuswrt-Merlin Changelog
   - FIXED: QOS Classification showing no Upload data on some
            WAN configurations.
   - FIXED: Radio temperature graphs weren't updating
+  - FIXED: XT12 proximity pairing wasn't working (missing
+           bluetooth firmware)
   - REMOVED: Ethernet port status from the Tools Sysinfo page
              (as this is redundant with Asus' own display
              now available on the networkmap page).

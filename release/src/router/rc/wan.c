@@ -4049,14 +4049,6 @@ NOIP:
 	}
 #endif
 
-#if defined(RTCONFIG_SAMBASRV)
-	if (nvram_match("enable_samba", "1"))
-	{
-		stop_samba(0);
-		start_samba();
-	}
-#endif
-
 #ifdef RTCONFIG_HND_ROUTER_AX
 	//A workaround for Starlink.
 	if(has2_5Gport(wan_ifname))

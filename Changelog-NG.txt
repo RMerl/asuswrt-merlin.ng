@@ -1,6 +1,12 @@
 Asuswrt-Merlin Changelog
 ========================
 
+388.2_4 (17-Aug-2023)
+  - NOTE: This release is only for the GT-AXE11000.
+
+  - UPDATED: Updated Wireless driver.
+
+
 388.2_2 (7-May-2023)
   - UPDATED: Merged GPL 388_22668 for the XT12 (only)
   - UPDATED: OpenVPN to 2.6.3.

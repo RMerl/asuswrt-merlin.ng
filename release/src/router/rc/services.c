@@ -4547,7 +4547,6 @@ start_ddns(char *caller)
 
 	if (!wan_ip || (inet_addr_(wan_ip) == INADDR_ANY) || (nvram_get_int("link_internet") != 2)) {
 		logmessage("ddns", "WAN(%d) IP is empty.(%d)", unit, ddns_check_retry);
-		nvram_unset("ddns_updated");
 		return -1;
 	}
 
@@ -4582,6 +4581,7 @@ start_ddns(char *caller)
 		&& f_exists(cache_path) /* Not forced to restart DDNS */
 	) {
 		logmessage("ddns", "IP address, server and hostname have not changed since the last update.");
+		nvram_set("ddns_updated", "1");
 		return -1;
 	}
 

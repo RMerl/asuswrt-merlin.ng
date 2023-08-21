@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.4 (xx-xxx-xxxx)
+3004.388.4 (21-Aug-2023)
   - NOTE: In preparation for the new 3.0.0.6 codebase, the version
           string will now start with 3004 or 3006 to match with
           upstream.
@@ -28,6 +28,13 @@ Asuswrt-Merlin Changelog
   - REMOVED: Ethernet port status from the Tools Sysinfo page
              (as this is redundant with Asus' own display
              now available on the networkmap page).
+
+
+388.2_4 (17-Aug-2023)
+  - NOTE: This release is only for the GT-AXE11000.
+
+  - UPDATED: Critical Wireless driver update, Asus strongly
+             recommends updating.
 
 
 388.3 (9-June-2023)

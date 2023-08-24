@@ -28,6 +28,9 @@ echo "0.organizationName_value=$(uname -o)" >> $OPENSSL_CONF
 echo "0.emailAddress=E" >> $OPENSSL_CONF
 echo "0.emailAddress_value=admin@www.asusrouter.com" >> $OPENSSL_CONF
 
+# add startdate option for certificate
+echo "default_startdate=`date +%Y%m%d%H%M%S%Z`" >> $OPENSSL_CONF
+
 # Required extension
 sed -i "/\[ v3_ca \]/aextendedKeyUsage = serverAuth" $OPENSSL_CONF
 
@@ -101,9 +104,6 @@ then
 		I=$(($I + 1))
 	fi
 fi
-
-# add startdate option for certificate
-echo "default_startdate=`date +%Y%m%d%H%M%S%Z`" >> openssl.config
 
 # create the key and certificate request
 #OPENSSL_CONF="/etc/openssl.config" $OPENSSL req -new -out /tmp/cert.csr -keyout /tmp/privkey.pem -newkey rsa:2048 -passout pass:password

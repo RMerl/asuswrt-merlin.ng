@@ -196,7 +196,7 @@ server_pushed_signal(struct context *c, const struct buffer *buffer, const bool 
 void
 receive_exit_message(struct context *c)
 {
-    dmsg(D_STREAM_ERRORS, "Exit message received by peer");
+    dmsg(D_STREAM_ERRORS, "CC-EEN exit message received by peer");
     /* With control channel exit notification, we want to give the session
      * enough time to handle retransmits and acknowledgment, so that eventual
      * retries from the client to resend the exit or ACKs will not trigger
@@ -271,9 +271,9 @@ receive_cr_response(struct context *c, const struct buffer *buffer)
     struct tls_session *session = &c->c2.tls_multi->session[TM_ACTIVE];
     struct man_def_auth_context *mda = session->opt->mda_context;
     struct env_set *es = session->opt->es;
-    int key_id = get_primary_key(c->c2.tls_multi)->key_id;
+    unsigned int mda_key_id = get_primary_key(c->c2.tls_multi)->mda_key_id;
 
-    management_notify_client_cr_response(key_id, mda, es, m);
+    management_notify_client_cr_response(mda_key_id, mda, es, m);
 #endif
 #if ENABLE_PLUGIN
     verify_crresponse_plugin(c->c2.tls_multi, m);

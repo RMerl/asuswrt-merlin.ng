@@ -2095,7 +2095,6 @@ void start_dnsmasq(void)
 #if defined(RTCONFIG_AMAS)
 	fprintf(fp, "script-arp\n");
 #endif
-
 	fprintf(fp, "edns-packet-max=1232\n");
 
 	/* close fp move to the last */
@@ -4721,16 +4720,14 @@ start_ddns(char *caller)
 			fprintf(fp, "password = '%s'\n", ppp_safe_escape(passwd, tmp, sizeof(tmp)));
 			if (wild)
 				fprintf(fp, "wildcard = true\n");
-
 #ifdef RTCONFIG_GETREALIP
-			if (realip == 1 && asus_ddns == 1)	// Private IP and Asus DDNS - override iface
+			if (realip)
 				fprintf(fp, "checkip-command = '%s'\n", "getrealip.sh");
 #endif
 			fprintf(fp, "}\n");
 
 			fprintf(fp, "iterations = 1\n");
-			if (!realip || asus_ddns == 1)
-				fprintf(fp, "iface = %s\n", wan_ifname); /* External WAN IP also need: Private IPv4 + Public IPv6 */
+			fprintf(fp, "iface = %s\n", wan_ifname); /* External WAN IP also need: Private IPv4 + Public IPv6 */
 			fprintf(fp, "ca-trust-file = /etc/ssl/certs/ca-certificates.crt\n");
 			if (!nvram_get_int("ntp_ready"))
 				fprintf(fp, "broken-rtc = true\n");
@@ -4745,8 +4742,10 @@ start_ddns(char *caller)
 			use_custom_config("inadyn.conf", "/etc/inadyn.conf");
 			run_postconf("inadyn", "/etc/inadyn.conf");
 
-#ifdef RTCONFIG_ASUSDDNS_ACCOUNT_BASE
-			if(strlen(nvram_safe_get("oauth_dm_refresh_ticket")) > 0)
+#if defined(RTCONFIG_TUNNEL) && defined(RTCONFIG_ACCOUNT_BINDING)
+			if(nvram_match("oauth_auth_status", "2") && nvram_match("ddns_replace_status", "1") &&
+				((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
+			|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn")))))
 			{
 				nvram_set("asusddns_token_state", "0");
 				if(update_asus_ddns_token() != 1 || nvram_get_int("asusddns_token_state") != 1)

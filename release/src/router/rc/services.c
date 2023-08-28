@@ -51,6 +51,7 @@
 #if defined(RTCONFIG_CAPTIVE_PORTAL)
 #include "sqlite3.h"
 #endif
+
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
 #include <PMS_DBAPIs.h>
 #endif
@@ -170,8 +171,6 @@ static const struct itimerval zombie_tv = { {0,0}, {307, 0} };
 static const char dmhosts[] = "/etc/hosts.dnsmasq";
 static const char dmresolv[] = "/tmp/resolv.conf";
 static const char dmservers[] = "/tmp/resolv.dnsmasq";
-
-#define INADYNCONF "/etc/inadyn.conf"
 
 #ifdef RTCONFIG_TOAD
 static void start_toads(void);
@@ -4734,7 +4733,11 @@ start_ddns(char *caller)
 			/* temporary for asus server */
 			if (asus_ddns == 1)
 				fprintf(fp, "secure-ssl = false\n");
-
+#ifdef RTCONFIG_IPV6
+			/* For DYNDNS ok, but not for NO-IP and ASUS.COM */
+			if(nvram_get_int("ddns_ipv6_update") && (strncmp(server, "WWW.DYNDNS.ORG", 14) == 0))
+				fprintf(fp, "allow-ipv6 = true\n");
+#endif
 			append_custom_config("inadyn.conf", fp);
 
 			fclose(fp);
@@ -5926,7 +5929,6 @@ mcast_conf(void)
 
 	if (fp)
 		fclose(fp);
-
 }
 
 void
@@ -6778,7 +6780,6 @@ void start_upnp(void)
 						nvram_get_int("upnp_clean_threshold"));
 				} else
 					fprintf(f,"clean_ruleset_interval=%d\n", 0);
-
 
 				// Empty parameters are not included into XML service description
 				fprintf(f, "presentation_url=");
@@ -19353,7 +19354,6 @@ firmware_check_main(int argc, char *argv[])
 #endif
 
 	return 0;
-
 }
 
 #ifdef RTCONFIG_HTTPS

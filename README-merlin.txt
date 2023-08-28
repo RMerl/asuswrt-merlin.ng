@@ -205,8 +205,8 @@ MAstodon: https://fosstodon.org/@RMerlin
 IRC: RMerlin in channel #asuswrt on Libera
 Download: https://www.asuswrt-merlin.net/download
 
-Development news will be posted on Twitter, Mastodon, and the support
-forums.  You can also keep a closer eye on development as it happens,
+Development news will be posted on Mastodon, and the support forums.
+You can also keep a closer eye on development as it happens,
 through the Github code repository.
 
 For support questions, please use the SmallNetBuilder forums whenever 

@@ -4,7 +4,7 @@ Asuswrt-Merlin Changelog
 386.12 (xx-xxx-2023)
   - UPDATED: Merged with GPL 386_51997.
   - UPDATED: curl to 8.1.2.
-  - UPDATED: OpenVPN to 2.6.5.
+  - UPDATED: OpenVPN to 2.6.6.
   - UPDATED: openssl to 1.1.1u.
   - UPDATED: tor to 0.4.7.13.
   - CHANGED: FTP server will now only support strong ciphers

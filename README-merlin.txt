@@ -44,9 +44,8 @@ Fully supported devices:
  * RT-AC2900 (use the RT-AC86U firmware)
  * GT-AC2900
 
-388.x:
+3004.388.x:
  * RT-AX88U
- * RT-AX56U
  * RT-AX58U & RT-AX3000 (V1 only)
  * RT-AX86U & RT-AX86S
  * GT-AX11000
@@ -66,6 +65,7 @@ No longer supported:
  * RT-AC56U
  * RT-AC87U
  * RT-AC3200
+ * RT-AX56U
 
 NOTE: all the "R" versions (for example RT-N66R) are the same as their 
 "U" counterparts, they are just different packages aimed at large 
@@ -201,13 +201,13 @@ SmallNetBuilder forums (preferred method: http://www.snbforums.com/forums/asuswr
 Website: https://www.asuswrt-merlin.net/
 Github: https://github.com/RMerl
 Email: merlin@asuswrt-merlin.net
-Twitter: https://twitter.com/RMerlinDev
-IRC: #asuswrt on Libera
+MAstodon: https://fosstodon.org/@RMerlin
+IRC: RMerlin in channel #asuswrt on Libera
 Download: https://www.asuswrt-merlin.net/download
 
-Development news will be posted on Twitter and the support forums.  
-You can also keep a closer eye on development as it happens, through 
-the Github code repository.
+Development news will be posted on Mastodon, and the support forums.
+You can also keep a closer eye on development as it happens,
+through the Github code repository.
 
 For support questions, please use the SmallNetBuilder forums whenever 
 possible.  There's a dedicated Asuswrt-Merlin sub-forum there, under 

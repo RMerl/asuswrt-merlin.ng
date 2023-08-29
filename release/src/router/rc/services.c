@@ -4547,6 +4547,7 @@ start_ddns(char *caller)
 
 	if (!wan_ip || (inet_addr_(wan_ip) == INADDR_ANY) || (nvram_get_int("link_internet") != 2)) {
 		logmessage("ddns", "WAN(%d) IP is empty.(%d)", unit, ddns_check_retry);
+		nvram_unset("ddns_updated");
 		return -1;
 	}
 

@@ -27234,25 +27234,26 @@ ej_get_upload_icon(int eid, webs_t wp, int argc, char **argv) {
 				snprintf(file_name, sizeof(file_name), "/jffs/usericon/%s.log", deice_type);
 				break;
 			}
+
 		}
 	}
 
 	if(check_if_file_exist(file_name)) {
 		ret = 1; //find file
-		if(from_app != 0)
+		if(from_app != 0 || hook_get_json == 1)
 			websWrite(wp, "\"");
 		dump_file(wp, file_name);
-		if(from_app != 0)
+		if(from_app != 0 || hook_get_json == 1)
 			websWrite(wp, "\"");
 	}else
 		goto FINISH;
 
 FINISH:
 	if(ret == 0){ //no file
-		if(from_app != 0)
+		if(from_app != 0 || hook_get_json == 1)
 			websWrite(wp, "\"");
 		websWrite(wp, "NoIcon");
-		if(from_app != 0)
+		if(from_app != 0 || hook_get_json == 1)
 			websWrite(wp, "\"");
 	}
 
@@ -27324,7 +27325,6 @@ renew_upload_icon(void) {
 		md5_obj = json_object_new_object();
 	}
 
-
 	while ((entry = readdir(dirp)) != NULL) {
 		if (entry->d_type == DT_REG) { /* If the entry is a regular file */
 			if(strlen(entry->d_name) == 16){
@@ -27382,12 +27382,15 @@ ej_get_upload_icon_count_list(int eid, webs_t wp, int argc, char **argv) {
 	}
 	closedir(dirp);
 
-	if(from_app == 0){
-		websWrite(wp, "upload_icon_count=\"%d\";\n", file_count);
-		websWrite(wp, "upload_icon_list=\"%s\";\n", allMacList);
-	}else{
+	if(from_app != 0 || hook_get_json == 1){
+		websWrite(wp, "{");
 		websWrite(wp, "\"upload_icon_count\":\"%d\",\n", file_count);
 		websWrite(wp, "\"upload_icon_list\":\"%s\"\n", allMacList);
+		websWrite(wp, "}");
+	}else
+	{
+		websWrite(wp, "upload_icon_count=\"%d\";\n", file_count);
+		websWrite(wp, "upload_icon_list=\"%s\";\n", allMacList);
 	}
 
 	return 0;

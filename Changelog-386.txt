@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.12 (xx-xxx-2023)
+386.12 (4-Sept-2023)
   - UPDATED: Merged with GPL 386_51997.
   - UPDATED: curl to 8.1.2.
   - UPDATED: OpenVPN to 2.6.6.

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_PROXY_ERROR 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLINFO_PROXY_ERROR 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLINFO_PROXY_ERROR \- get the detailed (SOCKS) proxy error
@@ -72,11 +72,10 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_PROXY_ERROR, long *detail);
 .fi
 .SH DESCRIPTION
 Pass a pointer to a long to receive a detailed error code when the most recent
-transfer returned a \fBCURLE_PROXY\fP error. That error code will match the
+transfer returned a \fBCURLE_PROXY\fP error. That error code matches the
 \fBCURLproxycode\fP set.
 
-The error code will be zero (\fBCURLPX_OK\fP) if no response code was
-available.
+The error code is zero (\fBCURLPX_OK\fP) if no response code was available.
 .SH PROTOCOLS
 All that can be done over SOCKS
 .SH EXAMPLE
@@ -102,5 +101,7 @@ Added in 7.73.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLINFO_RESPONSE_CODE "(3), " libcurl-errors "(3), "
-.BR curl_easy_getinfo "(3), " curl_easy_setopt "(3), "
+.BR curl_easy_getinfo (3),
+.BR curl_easy_setopt (3),
+.BR CURLINFO_RESPONSE_CODE (3),
+.BR libcurl-errors (3)

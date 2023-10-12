@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_FTP_CREATE_MISSING_DIRS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_FTP_CREATE_MISSING_DIRS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_FTP_CREATE_MISSING_DIRS \- create missing directories for FTP and SFTP
@@ -40,16 +40,16 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_FTP_CREATE_MISSING_DIRS,
                           long create);
 .SH DESCRIPTION
 Pass a long telling libcurl to \fIcreate\fP the dir. If the value is
-\fICURLFTP_CREATE_DIR\fP (1), libcurl will attempt to create any remote
-directory that it fails to "move" into.
+\fICURLFTP_CREATE_DIR\fP (1), libcurl may create any remote directory that it
+fails to "move" into.
 
 For FTP requests, that means a CWD command fails. CWD being the command that
 changes working directory.
 
-For SFTP requests, libcurl will attempt to create the remote directory if it
-cannot obtain a handle to the target-location. The creation will fail if a file
-of the same name as the directory to create already exists or lack of
-permissions prevents creation.
+For SFTP requests, libcurl may create the remote directory if it cannot obtain
+a handle to the target-location. The creation fails if a file of the same name
+as the directory to create already exists or lack of permissions prevents
+creation.
 
 Setting \fIcreate\fP to \fICURLFTP_CREATE_DIR_RETRY\fP (2), tells libcurl to
 retry the CWD command again if the subsequent \fBMKD\fP command fails. This is
@@ -81,4 +81,5 @@ Added in 7.10.7. SFTP support added in 7.16.3. The retry option was added in
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if the
 create value is not.
 .SH "SEE ALSO"
-.BR CURLOPT_FTP_FILEMETHOD "(3), " CURLOPT_FTP_USE_EPSV "(3), "
+.BR CURLOPT_FTP_FILEMETHOD (3),
+.BR CURLOPT_FTP_USE_EPSV (3)

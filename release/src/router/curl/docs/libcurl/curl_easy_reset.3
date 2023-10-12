@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_easy_reset 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_easy_reset 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_easy_reset - reset all options of a libcurl session handle
@@ -52,5 +52,7 @@ This function was added in libcurl 7.12.1
 .SH RETURN VALUE
 Nothing
 .SH "SEE ALSO"
-.BR curl_easy_init "(3)," curl_easy_cleanup "(3)," curl_easy_setopt "(3),"
-.BR curl_easy_duphandle "(3)"
+.BR curl_easy_cleanup (3),
+.BR curl_easy_duphandle (3),
+.BR curl_easy_init (3),
+.BR curl_easy_setopt (3)

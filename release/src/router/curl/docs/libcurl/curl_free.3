@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_free 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_free 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_free - reclaim memory that has been obtained through a libcurl call
@@ -36,8 +36,8 @@ curl_free reclaims memory that has been obtained through a libcurl call. Use
 \fIcurl_free(3)\fP instead of free() to avoid anomalies that can result from
 differences in memory management between your application and libcurl.
 
-Passing in a NULL pointer in \fIptr\fP will make this function return
-immediately with no action.
+Passing in a NULL pointer in \fIptr\fP makes this function return immediately
+with no action.
 .SH EXAMPLE
 .nf
   char *width = curl_getenv("COLUMNS");
@@ -51,4 +51,5 @@ Always
 .SH RETURN VALUE
 None
 .SH "SEE ALSO"
-.BR curl_easy_unescape "(3), " curl_easy_escape "(3) "
+.BR curl_easy_escape (3),
+.BR curl_easy_unescape (3)

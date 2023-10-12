@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_MAXLIFETIME_CONN 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_MAXLIFETIME_CONN 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_MAXLIFETIME_CONN \- max lifetime (since creation) allowed for reusing a connection
@@ -39,12 +39,11 @@ seconds, since the creation of the connection, that you allow an existing
 connection to have to be considered for reuse for this request.
 
 libcurl features a connection cache that holds previously used connections.
-When a new request is to be done, it will consider any connection that matches
-for reuse. The \fICURLOPT_MAXLIFETIME_CONN(3)\fP limit prevents libcurl from
-trying too old connections for reuse. This can be used for client-side load
-balancing. If a connection is found in the cache that is older than this set
-\fImaxlifetime\fP, it will instead be closed once any in-progress transfers
-complete.
+When a new request is to be done, libcurl considers any connection that
+matches for reuse. The \fICURLOPT_MAXLIFETIME_CONN(3)\fP limit prevents
+libcurl from trying too old connections for reuse. This can be used for
+client-side load balancing. If a connection is found in the cache that is
+older than this set \fImaxlifetime\fP, it is instead marked for closure.
 
 If set to 0, this behavior is disabled: all connections are eligible for reuse.
 .SH DEFAULT
@@ -68,5 +67,7 @@ Added in 7.80.0
 .SH RETURN VALUE
 Returns CURLE_OK.
 .SH "SEE ALSO"
-.BR CURLOPT_TIMEOUT "(3), " CURLOPT_FORBID_REUSE "(3), "
-.BR CURLOPT_FRESH_CONNECT "(3), " CURLOPT_MAXAGE_CONN "(3), "
+.BR CURLOPT_FORBID_REUSE (3),
+.BR CURLOPT_FRESH_CONNECT (3),
+.BR CURLOPT_MAXAGE_CONN (3),
+.BR CURLOPT_TIMEOUT (3)

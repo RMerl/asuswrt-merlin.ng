@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_MAX_RECV_SPEED_LARGE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_MAX_RECV_SPEED_LARGE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_MAX_RECV_SPEED_LARGE \- rate limit data download speed
@@ -33,9 +33,9 @@ CURLOPT_MAX_RECV_SPEED_LARGE \- rate limit data download speed
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_MAX_RECV_SPEED_LARGE,
                           curl_off_t maxspeed);
 .SH DESCRIPTION
-Pass a curl_off_t as parameter.  If a download exceeds this \fImaxspeed\fP
-(counted in bytes per second) the transfer will pause to keep the speed less
-than or equal to the parameter value. Defaults to unlimited speed.
+Pass a curl_off_t as parameter. If a download exceeds this \fImaxspeed\fP
+(counted in bytes per second) the transfer pauses to keep the average speed
+less than or equal to the parameter value. Defaults to unlimited speed.
 
 This is not an exact science. libcurl attempts to keep the average speed below
 the given threshold over a period time.
@@ -64,4 +64,6 @@ Added in 7.15.5
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_MAX_SEND_SPEED_LARGE "(3), " CURLOPT_LOW_SPEED_LIMIT "(3), "
+.BR CURLOPT_LOW_SPEED_LIMIT (3),
+.BR CURLOPT_MAX_SEND_SPEED_LARGE (3),
+.BR CURLOPT_TIMEOUT (3)

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_ws_meta 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_ws_meta 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_ws_meta - meta data WebSocket information
@@ -37,7 +37,7 @@ struct curl_ws_frame {
   curl_off_t bytesleft; /* number of pending bytes left of the payload */
 };
 
-struct curl_ws_frame *curl_ws_meta(CURL *curl);
+const struct curl_ws_frame *curl_ws_meta(CURL *curl);
 .fi
 .SH DESCRIPTION
 This function call is EXPERIMENTAL.
@@ -70,12 +70,12 @@ complete.
 .SH FLAGS
 .IP CURLWS_TEXT
 The buffer contains text data. Note that this makes a difference to WebSocket
-but libcurl itself will not make any verification of the content or
+but libcurl itself does not make any verification of the content or
 precautions that you actually receive valid UTF-8 content.
 .IP CURLWS_BINARY
 This is binary data.
 .IP CURLWS_CONT
-This is not the final fragment of the message, it implies that there will be
+This is not the final fragment of the message, it implies that there is
 another fragment coming as part of the same message.
 .IP CURLWS_CLOSE
 This transfer is now closed.
@@ -94,7 +94,7 @@ static size_t writecb(unsigned char *buffer,
                       size_t size, size_t nitems, void *p)
 {
   struct customdata *c = (struct customdata *)p;
-  struct curl_ws_frame *m = curl_ws_meta(c->easy);
+  const struct curl_ws_frame *m = curl_ws_meta(c->easy);
 
   /* m->flags tells us about the traffic */
 }
@@ -110,11 +110,13 @@ static size_t writecb(unsigned char *buffer,
 .SH AVAILABILITY
 Added in 7.86.0.
 .SH RETURN VALUE
-This function returns a pointer to a \fIcurl_ws_frame\fP struct with
+This function returns a pointer to a \fIcurl_ws_frame\fP struct with read-only
 information that is valid for this specific callback invocation. If it cannot
 return this information, or if the function is called in the wrong context, it
 returns NULL.
 .SH "SEE ALSO"
-.BR curl_easy_setopt "(3), "
-.BR curl_easy_getinfo "(3), "
-.BR curl_ws_send "(3), " curl_ws_recv "(3), "
+.BR curl_easy_setopt (3),
+.BR curl_easy_getinfo (3),
+.BR curl_ws_send (3),
+.BR curl_ws_recv (3),
+.BR libcurl-ws (3)

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_BUFFERSIZE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_BUFFERSIZE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_BUFFERSIZE \- receive buffer size
@@ -36,7 +36,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_BUFFERSIZE, long size);
 Pass a long specifying your preferred \fIsize\fP (in bytes) for the receive
 buffer in libcurl.  The main point of this would be that the write callback
 gets called more often and with smaller chunks. Secondly, for some protocols,
-there's a benefit of having a larger buffer for performance.
+there is a benefit of having a larger buffer for performance.
 
 This is just treated as a request, not an order. You cannot be guaranteed to
 actually get the given size.
@@ -72,5 +72,8 @@ Added in 7.10.  Growing the buffer was added in 7.53.0.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_MAX_RECV_SPEED_LARGE "(3), " CURLOPT_WRITEFUNCTION "(3), "
-.BR CURLOPT_UPLOAD_BUFFERSIZE "(3), "
+.BR CURLOPT_MAX_RECV_SPEED_LARGE (3),
+.BR CURLOPT_MAXFILESIZE (3),
+.BR CURLOPT_UPLOAD_BUFFERSIZE (3),
+.BR CURLOPT_WRITEFUNCTION (3)
+

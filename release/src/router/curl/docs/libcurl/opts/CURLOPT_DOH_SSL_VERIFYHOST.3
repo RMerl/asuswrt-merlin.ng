@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DOH_SSL_VERIFYHOST 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_DOH_SSL_VERIFYHOST 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_DOH_SSL_VERIFYHOST \- verify the host name in the DoH SSL certificate
@@ -56,10 +56,7 @@ When the \fIverify\fP value is set to 0L, the connection succeeds regardless of
 the names used in the certificate. Use that ability with caution!
 
 See also \fICURLOPT_DOH_SSL_VERIFYPEER(3)\fP to verify the digital signature
-of the DoH server certificate.  If libcurl is built against NSS and
-\fICURLOPT_DOH_SSL_VERIFYPEER(3)\fP is zero,
-\fICURLOPT_DOH_SSL_VERIFYHOST(3)\fP is also set to zero and cannot be
-overridden.
+of the DoH server certificate.
 .SH DEFAULT
 2
 .SH PROTOCOLS
@@ -85,8 +82,8 @@ If built TLS enabled.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_DOH_SSL_VERIFYPEER "(3), "
-.BR CURLOPT_SSL_VERIFYHOST "(3), "
-.BR CURLOPT_SSL_VERIFYPEER "(3), "
-.BR CURLOPT_PROXY_SSL_VERIFYPEER "(3), "
-.BR CURLOPT_PROXY_SSL_VERIFYHOST "(3), "
+.BR CURLOPT_DOH_SSL_VERIFYPEER (3),
+.BR CURLOPT_PROXY_SSL_VERIFYHOST (3),
+.BR CURLOPT_PROXY_SSL_VERIFYPEER (3),
+.BR CURLOPT_SSL_VERIFYHOST (3),
+.BR CURLOPT_SSL_VERIFYPEER (3)

@@ -22,24 +22,21 @@
  *
  ***************************************************************************/
 
-/* In this file, stdio.h's stderr macro is not overridden. */
-#define CURL_DO_NOT_OVERRIDE_STDERR
-
 #include "tool_setup.h"
-
 #include "tool_stderr.h"
+#include "tool_msgs.h"
 
 #include "memdebug.h" /* keep this as LAST include */
 
-/* In other tool files stderr is defined as tool_stderr by tool_setup.h */
 FILE *tool_stderr;
 
 void tool_init_stderr(void)
 {
+  /* !checksrc! disable STDERR 1 */
   tool_stderr = stderr;
 }
 
-void tool_set_stderr_file(char *filename)
+void tool_set_stderr_file(struct GlobalConfig *global, char *filename)
 {
   FILE *fp;
 
@@ -55,18 +52,20 @@ void tool_set_stderr_file(char *filename)
      subsequent freopen will fail. */
   fp = fopen(filename, FOPEN_WRITETEXT);
   if(!fp) {
-    fprintf(tool_stderr, "Warning: Failed to open %s!\n", filename);
+    warnf(global, "Warning: Failed to open %s", filename);
     return;
   }
   fclose(fp);
 
   /* freopen the actual stderr (stdio.h stderr) instead of tool_stderr since
      the latter may be set to stdout. */
+  /* !checksrc! disable STDERR 1 */
   fp = freopen(filename, FOPEN_WRITETEXT, stderr);
   if(!fp) {
     /* stderr may have been closed by freopen. there is nothing to be done. */
     DEBUGASSERT(0);
     return;
   }
+  /* !checksrc! disable STDERR 1 */
   tool_stderr = stderr;
 }

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_USERAGENT 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_USERAGENT 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_USERAGENT \- HTTP user-agent header
@@ -33,10 +33,9 @@ CURLOPT_USERAGENT \- HTTP user-agent header
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_USERAGENT, char *ua);
 .fi
 .SH DESCRIPTION
-Pass a pointer to a null-terminated string as parameter. It will be used to
-set the User-Agent: header in the HTTP request sent to the remote server. This
-can be used to fool servers or scripts. You can also set any custom header
-with \fICURLOPT_HTTPHEADER(3)\fP.
+Pass a pointer to a null-terminated string as parameter. It is used to set the
+User-Agent: header field in the HTTP request sent to the remote server. You
+can also set any custom header with \fICURLOPT_HTTPHEADER(3)\fP.
 
 The application does not have to keep the string around after setting this
 option.
@@ -61,4 +60,8 @@ As long as HTTP is supported
 Returns CURLE_OK if HTTP is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_REFERER "(3), " CURLOPT_HTTPHEADER "(3), "
+.BR CURLOPT_CUSTOMREQUEST (3),
+.BR CURLOPT_HTTPHEADER (3),
+.BR CURLOPT_REFERER (3),
+.BR CURLOPT_REQUEST_TARGET (3)
+

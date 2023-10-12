@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_NOPROXY 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_NOPROXY 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_NOPROXY \- disable proxy use for specific hosts
@@ -41,9 +41,9 @@ list is matched as either a domain which contains the hostname, or the
 hostname itself. For example, "ample.com" would match ample.com, ample.com:80,
 and www.ample.com, but not www.example.com or ample.com.org.
 
-Setting the \fInoproxy\fP string to "" (an empty string) will explicitly
-enable the proxy for all host names, even if there is an environment variable
-set for it.
+Setting the \fInoproxy\fP string to "" (an empty string) explicitly enables
+the proxy for all host names, even if there is an environment variable set for
+it.
 
 Enter IPv6 numerical addresses in the list of host names without enclosing
 brackets:
@@ -58,9 +58,9 @@ would match all addresses starting with "192.168".
 The application does not have to keep the string around after setting this
 option.
 .SH "Environment variables"
-If there's an environment variable called \fBno_proxy\fP (or \fBNO_PROXY\fP),
-it will be used if the \fICURLOPT_NOPROXY(3)\fP option is not set. It works
-exactly the same way.
+If there is an environment variable called \fBno_proxy\fP (or \fBNO_PROXY\fP),
+it is used if the \fICURLOPT_NOPROXY(3)\fP option is not set. It works exactly
+the same way.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -84,4 +84,6 @@ Added in 7.19.4
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY "(3), " CURLOPT_PROXYAUTH "(3), "
+.BR CURLOPT_PROXY (3),
+.BR CURLOPT_PROXYAUTH (3),
+.BR CURLOPT_PROXYTYPE (3)

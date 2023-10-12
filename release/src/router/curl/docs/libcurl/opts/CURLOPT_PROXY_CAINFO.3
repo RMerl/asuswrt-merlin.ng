@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_CAINFO 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXY_CAINFO 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXY_CAINFO \- path to proxy Certificate Authority (CA) bundle
@@ -45,14 +45,11 @@ accessible file.
 This option is by default set to the system path where libcurl's CA
 certificate bundle is assumed to be stored, as established at build time.
 
-If curl is built against the NSS SSL library, the NSS PEM PKCS#11 module
-(libnsspem.so) needs to be available for this option to work properly.
-
 (iOS and macOS only) If curl is built against Secure Transport, then this
 option is supported for backward compatibility with other SSL engines, but it
-should not be set. If the option is not set, then curl will use the
-certificates in the system and user Keychain to verify the peer, which is the
-preferred method of verifying the peer's certificate chain.
+should not be set. If the option is not set, then curl uses the certificates
+in the system and user Keychain to verify the peer, which is the preferred
+method of verifying the peer's certificate chain.
 
 The application does not have to keep the string around after setting this
 option.
@@ -84,8 +81,12 @@ https://curl.se/docs/ssl-compared.html
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY_CAINFO_BLOB "(3), " CURLOPT_PROXY_CAPATH "(3), "
-.BR CURLOPT_PROXY_SSL_VERIFYPEER "(3), " CURLOPT_PROXY_SSL_VERIFYHOST "(3), "
-.BR CURLOPT_CAINFO "(3), " CURLOPT_CAINFO_BLOB "(3), "
-.BR CURLOPT_CAPATH "(3), "
-.BR CURLOPT_SSL_VERIFYPEER "(3), " CURLOPT_SSL_VERIFYHOST "(3), "
+.BR CURLOPT_CAINFO (3),
+.BR CURLOPT_CAINFO_BLOB (3),
+.BR CURLOPT_CAPATH (3),
+.BR CURLOPT_PROXY_CAINFO_BLOB (3),
+.BR CURLOPT_PROXY_CAPATH (3),
+.BR CURLOPT_PROXY_SSL_VERIFYHOST (3),
+.BR CURLOPT_PROXY_SSL_VERIFYPEER (3),
+.BR CURLOPT_SSL_VERIFYHOST (3),
+.BR CURLOPT_SSL_VERIFYPEER (3)

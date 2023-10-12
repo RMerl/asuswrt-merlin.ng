@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_FTP_SSL_CCC 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_FTP_SSL_CCC 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_FTP_SSL_CCC \- switch off SSL again with FTP after auth
@@ -36,7 +36,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_FTP_SSL_CCC,
 .SH DESCRIPTION
 If enabled, this option makes libcurl use CCC (Clear Command Channel). It
 shuts down the SSL/TLS layer after authenticating. The rest of the control
-channel communication will be unencrypted. This allows NAT routers to follow
+channel communication remains unencrypted. This allows NAT routers to follow
 the FTP transaction. Pass a long using one of the values below
 .IP CURLFTPSSL_CCC_NONE
 do not attempt to use CCC.
@@ -66,4 +66,6 @@ Added in 7.16.1
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_USE_SSL "(3), " CURLOPT_FTPSSLAUTH "(3), "
+.BR CURLOPT_FTPSSLAUTH (3),
+.BR CURLOPT_PROTOCOLS_STR (3),
+.BR CURLOPT_USE_SSL (3)

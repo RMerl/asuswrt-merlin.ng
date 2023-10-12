@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_url 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_url 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_url - returns a new URL handle
@@ -32,8 +32,13 @@ curl_url - returns a new URL handle
 CURLU *curl_url();
 .fi
 .SH DESCRIPTION
-This function will allocates and returns a pointer to a fresh \fICURLU\fP
-handle, to be used for further use of the URL API.
+This function allocates a URL object and returns a \fICURLU\fP handle for it,
+to be used as input to all other URL API functions.
+
+This is a handle to a URL object that holds or can hold URL components for a
+single URL. When the object is first created, there is of course no components
+stored. They are then set in the object with the \fIcurl_url_set(3)\fP
+function.
 .SH EXAMPLE
 .nf
   CURLUcode rc;
@@ -54,5 +59,9 @@ Added in 7.62.0
 .SH RETURN VALUE
 Returns a \fBCURLU *\fP if successful, or NULL if out of memory.
 .SH "SEE ALSO"
-.BR curl_url_cleanup "(3), " curl_url_get "(3), " curl_url_set "(3), "
-.BR curl_url_dup "(3), " curl_url_strerror "(3), " CURLOPT_CURLU "(3)"
+.BR curl_url_cleanup (3),
+.BR curl_url_dup (3),
+.BR curl_url_get (3),
+.BR curl_url_set (3),
+.BR curl_url_strerror (3),
+.BR CURLOPT_CURLU (3)

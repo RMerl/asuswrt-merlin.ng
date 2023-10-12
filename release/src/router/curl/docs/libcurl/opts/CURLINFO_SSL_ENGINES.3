@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_SSL_ENGINES 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLINFO_SSL_ENGINES 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLINFO_SSL_ENGINES \- get an slist of OpenSSL crypto-engines
@@ -38,7 +38,7 @@ Pass the address of a 'struct curl_slist *' to receive a linked-list of
 OpenSSL crypto-engines supported. Note that engines are normally implemented
 in separate dynamic libraries. Hence not all the returned engines may be
 available at runtime. \fBNOTE:\fP you must call \fIcurl_slist_free_all(3)\fP
-on the list pointer once you are done with it, as libcurl will not free the
+on the list pointer once you are done with it, as libcurl does not free this
 data for you.
 .SH PROTOCOLS
 All TLS based ones.
@@ -62,4 +62,6 @@ Added in 7.12.3. Available in OpenSSL builds with "engine" support.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR curl_easy_getinfo "(3), " curl_easy_setopt "(3), "
+.BR curl_easy_getinfo (3),
+.BR curl_easy_setopt (3),
+.BR CURLOPT_SSLENGINE (3)

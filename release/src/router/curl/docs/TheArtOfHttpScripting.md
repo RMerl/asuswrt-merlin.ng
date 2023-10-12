@@ -64,6 +64,17 @@
 
     curl --trace-ascii d.txt --trace-time http://example.com/
 
+## See which Transfer
+
+ When doing parallel transfers, it is relevant to see which transfer is
+ doing what. When response headers are received (and logged) you need to
+ know which transfer these are for.
+ [`--trace-ids`](https://curl.se/docs/manpage.html#--trace-ids) option
+ is what you need. It will prepend the transfer and connection identifier
+ to each trace output line:
+
+    curl --trace-ascii d.txt --trace-ids http://example.com/
+
 ## See the Response
 
  By default curl sends the response to stdout. You need to redirect it
@@ -293,7 +304,7 @@
 
  Back in late 1995 they defined an additional way to post data over HTTP. It
  is documented in the RFC 1867, why this method sometimes is referred to as
- RFC1867-posting.
+ RFC 1867-posting.
 
  This method is mainly designed to better support file uploads. A form that
  allows a user to upload a file could be written like this in HTML:
@@ -544,7 +555,7 @@
  cookie file at the end of an operation:
 
     curl --cookie cookies.txt --cookie-jar newcookies.txt \
-    http://www.example.com
+      http://www.example.com
 
 # HTTPS
 

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_FNMATCH_DATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_FNMATCH_DATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_FNMATCH_DATA \- pointer passed to the fnmatch callback
@@ -33,8 +33,8 @@ CURLOPT_FNMATCH_DATA \- pointer passed to the fnmatch callback
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_FNMATCH_DATA,
                           void *pointer);
 .SH DESCRIPTION
-Pass a pointer that will be untouched by libcurl and passed as the ptr
-argument to the \fICURLOPT_FNMATCH_FUNCTION(3)\fP.
+Pass a pointer that is untouched by libcurl and passed as the ptr argument to
+the \fICURLOPT_FNMATCH_FUNCTION(3)\fP.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -64,4 +64,5 @@ Added in 7.21.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_FNMATCH_FUNCTION "(3), " CURLOPT_WILDCARDMATCH "(3), "
+.BR CURLOPT_FNMATCH_FUNCTION (3),
+.BR CURLOPT_WILDCARDMATCH (3)

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_CAPATH 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH CURLINFO_CAPATH 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 CURLINFO_CAPATH \- get the default built-in CA path string
@@ -43,7 +43,7 @@ currently set to be used does not support \fICURLOPT_CAPATH(3)\fP.
 
 This is a path identifying a directory.
 
-The \fBpath\fP pointer will be NULL if there is no default path.
+The \fBpath\fP pointer is set to NULL if there is no default path.
 .SH PROTOCOLS
 All
 .SH EXAMPLE
@@ -64,5 +64,6 @@ Added in 7.84.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLINFO_CAINFO "(3), "
-.BR curl_easy_getinfo "(3), " curl_easy_setopt "(3), "
+.BR curl_easy_getinfo (3),
+.BR curl_easy_setopt (3),
+.BR CURLINFO_CAINFO (3)

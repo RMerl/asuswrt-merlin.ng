@@ -101,8 +101,7 @@ like:
     Accept-Encoding: nothing
     %endif
 
-**Note** that there can be no nested conditions. You can only do one
-conditional at a time and you can only check for a single feature in it.
+Nested conditions are supported.
 
 # Variables
 
@@ -191,7 +190,9 @@ tests. Try to use already used keywords. These keywords will be used for
 statistical/informational purposes and for choosing or skipping classes of
 tests. Keywords must begin with an alphabetic character, `-`, `[` or `{` and
 may actually consist of multiple words separated by spaces which are treated
-together as a single identifier.
+together as a single identifier. Most keywords are only there to provide a way
+for users to skip certain classes of tests, if desired, but a few are treated
+specially by the test harness or build system.
 
 When using curl built with Hyper, the keywords must include `HTTP` or `HTTPS`
 for 'hyper mode' to kick in and make line ending checks work for tests.
@@ -199,6 +200,12 @@ for 'hyper mode' to kick in and make line ending checks work for tests.
 When running a unit test and the keywords include `unittest`, the `<tool>`
 section can be left empty to use the standard unit test tool name `unitN` where
 `N` is the test number.
+
+The `text-ci` make target automatically skips test with the `flaky` keyword.
+
+Tests that have strict timing dependencies have the `timing-dependent` keyword.
+These are intended to eventually be treated specially on CI builds which are
+often run on overloaded machines with unpredictable timing.
 
 ## `<reply>`
 
@@ -242,7 +249,7 @@ which test file to load the list content.
 
 ### `<dataNUM [crlf="yes"]>`
 
-Send back this contents instead of the <data> one. The `NUM` is set by:
+Send back this contents instead of the `<data>` one. The `NUM` is set by:
 
  - The test number in the request line is >10000 and this is the remainder
    of [test case number]%10000.
@@ -332,6 +339,7 @@ about to issue.
 
 - `auth_required` if this is set and a POST/PUT is made without auth, the
   server will NOT wait for the full request body to get sent
+- `delay: [msecs]` - delay this amount after connection
 - `idle` - do nothing after receiving the request, just "sit idle"
 - `stream` - continuously send data to the client, never-ending
 - `writedelay: [msecs]` delay this amount between reply packets
@@ -428,6 +436,7 @@ Features testable here are:
 - `ipv6`
 - `Kerberos`
 - `large_file`
+- `large-time` (time_t is larger than 32 bit)
 - `ld_preload`
 - `libssh2`
 - `libssh`
@@ -439,7 +448,6 @@ Features testable here are:
 - `netrc`
 - `nghttpx`
 - `nghttpx-h3`
-- `NSS`
 - `NTLM`
 - `NTLM_WB`
 - `OpenSSL`
@@ -609,7 +617,7 @@ have a text/binary difference.
 If `nonewline` is set, we will cut off the trailing newline of this given data
 before comparing with the one actually received by the client
 
-### `<stdout [mode="text"] [nonewline="yes"] [crlf="yes"]>`
+### `<stdout [mode="text"] [nonewline="yes"] [crlf="yes"] [loadfile="filename"]>`
 This verifies that this data was passed to stdout.
 
 Use the mode="text" attribute if the output is in text mode on platforms that
@@ -620,6 +628,8 @@ before comparing with the one actually received by the client
 
 `crlf=yes` forces the newlines to become CRLF even if not written so in the
 test.
+
+`loadfile="filename"` makes loading the data from an external file.
 
 ### `<file name="%LOGDIR/filename" [mode="text"]>`
 The file's contents must be identical to this after the test is complete. Use
@@ -641,7 +651,7 @@ compared with what is stored in the test file. This is pretty
 advanced. Example: "s/^EPRT .*/EPRT stripped/"
 
 ### `<stripfile1>`
-1 to 4 can be appended to `stripfile` to strip the corresponding <fileN>
+1 to 4 can be appended to `stripfile` to strip the corresponding `<fileN>`
 content
 
 ### `<stripfile2>`

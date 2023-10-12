@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH curl_easy_setopt 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_easy_setopt 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_easy_setopt \- set options for a curl easy handle
@@ -209,6 +209,8 @@ Socks5 GSSAPI NEC mode. See \fICURLOPT_SOCKS5_GSSAPI_NEC(3)\fP
 Proxy authentication service name. \fICURLOPT_PROXY_SERVICE_NAME(3)\fP
 .IP CURLOPT_HAPROXYPROTOCOL
 Send an HAProxy PROXY protocol v1 header. See \fICURLOPT_HAPROXYPROTOCOL(3)\fP
+.IP CURLOPT_HAPROXY_CLIENT_IP
+Spoof the client IP in an HAProxy PROXY protocol v1 header. See \fICURLOPT_HAPROXY_CLIENT_IP(3)\fP
 .IP CURLOPT_SERVICE_NAME
 Authentication service name. \fICURLOPT_SERVICE_NAME(3)\fP
 .IP CURLOPT_INTERFACE
@@ -393,8 +395,9 @@ Address of the sender. See \fICURLOPT_MAIL_FROM(3)\fP
 Address of the recipients. See \fICURLOPT_MAIL_RCPT(3)\fP
 .IP CURLOPT_MAIL_AUTH
 Authentication address. See \fICURLOPT_MAIL_AUTH(3)\fP
-.IP CURLOPT_MAIL_RCPT_ALLLOWFAILS
-Allow RCPT TO command to fail for some recipients. See \fICURLOPT_MAIL_RCPT_ALLLOWFAILS(3)\fP
+.IP CURLOPT_MAIL_RCPT_ALLOWFAILS
+Allow RCPT TO command to fail for some recipients. See
+\fICURLOPT_MAIL_RCPT_ALLOWFAILS(3)\fP
 .SH TFTP OPTIONS
 .IP CURLOPT_TFTP_BLKSIZE
 TFTP block size. See \fICURLOPT_TFTP_BLKSIZE(3)\fP
@@ -511,7 +514,7 @@ Maximum number of connections in the connection pool. See \fICURLOPT_MAXCONNECTS
 .IP CURLOPT_FRESH_CONNECT
 Use a new connection. \fICURLOPT_FRESH_CONNECT(3)\fP
 .IP CURLOPT_FORBID_REUSE
-Prevent subsequent connections from re-using this. See \fICURLOPT_FORBID_REUSE(3)\fP
+Prevent subsequent connections from reusing this. See \fICURLOPT_FORBID_REUSE(3)\fP
 .IP CURLOPT_MAXAGE_CONN
 Limit the age (idle time) of connections for reuse. See \fICURLOPT_MAXAGE_CONN(3)\fP
 .IP CURLOPT_MAXLIFETIME_CONN
@@ -731,11 +734,14 @@ is invalid, like perhaps out of range.
 
 If you try to set an option that libcurl does not know about, perhaps because
 the library is too old to support it or the option was removed in a recent
-version, this function will return \fICURLE_UNKNOWN_OPTION\fP. If support for
-the option was disabled at compile-time, it will return
-\fICURLE_NOT_BUILT_IN\fP.
+version, this function returns \fICURLE_UNKNOWN_OPTION\fP. If support for the
+option was disabled at compile-time, it returns \fICURLE_NOT_BUILT_IN\fP.
 .SH "SEE ALSO"
-.BR curl_easy_init "(3), " curl_easy_cleanup "(3), " curl_easy_reset "(3), "
-.BR curl_easy_getinfo "(3), " curl_multi_setopt "(3), "
-.BR curl_easy_option_next "(3), " curl_easy_option_by_name "(3), "
-.BR curl_easy_option_by_id "(3), "
+.BR curl_easy_cleanup (3),
+.BR curl_easy_getinfo (3),
+.BR curl_easy_init (3),
+.BR curl_easy_option_by_id (3),
+.BR curl_easy_option_by_name (3),
+.BR curl_easy_option_next (3),
+.BR curl_easy_reset (3),
+.BR curl_multi_setopt (3)

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_COPYPOSTFIELDS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_COPYPOSTFIELDS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_COPYPOSTFIELDS \- have libcurl copy data to POST
@@ -72,4 +72,7 @@ Added in 7.17.1
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_POSTFIELDS "(3), " CURLOPT_POSTFIELDSIZE "(3), "
+.BR CURLOPT_MIMEPOST (3),
+.BR CURLOPT_POSTFIELDS (3),
+.BR CURLOPT_POSTFIELDSIZE (3),
+.BR CURLOPT_UPLOAD (3)

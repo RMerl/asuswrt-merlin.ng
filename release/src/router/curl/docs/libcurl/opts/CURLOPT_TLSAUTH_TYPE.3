@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TLSAUTH_TYPE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_TLSAUTH_TYPE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_TLSAUTH_TYPE \- TLS authentication methods
@@ -38,7 +38,7 @@ the method of the TLS authentication. Supported method is "SRP".
 
 .IP SRP
 TLS-SRP authentication. Secure Remote Password authentication for TLS is
-defined in RFC5054 and provides mutual authentication if both sides have a
+defined in RFC 5054 and provides mutual authentication if both sides have a
 shared secret. To use TLS-SRP, you must also set the
 \fICURLOPT_TLSAUTH_USERNAME(3)\fP and \fICURLOPT_TLSAUTH_PASSWORD(3)\fP
 options.
@@ -69,4 +69,5 @@ to work. Added in 7.21.4
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_TLSAUTH_USERNAME "(3), " CURLOPT_TLSAUTH_PASSWORD "(3), "
+.BR CURLOPT_TLSAUTH_USERNAME (3),
+.BR CURLOPT_TLSAUTH_PASSWORD (3)

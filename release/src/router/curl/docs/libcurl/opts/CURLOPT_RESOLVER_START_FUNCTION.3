@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_RESOLVER_START_FUNCTION 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_RESOLVER_START_FUNCTION 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_RESOLVER_START_FUNCTION \- callback called before a new name resolve is started
@@ -52,8 +52,8 @@ socket callback options.
 \fIuserdata\fP is the user pointer set with the
 \fICURLOPT_RESOLVER_START_DATA(3)\fP option.
 
-The callback must return 0 on success. Returning a non-zero value will cause
-the resolve to fail.
+The callback must return 0 on success. Returning a non-zero value causes the
+resolve to fail.
 .SH DEFAULT
 NULL (No callback)
 .SH PROTOCOLS
@@ -83,4 +83,5 @@ Added in 7.59.0
 .SH RETURN VALUE
 Returns CURLE_OK
 .SH "SEE ALSO"
-.BR CURLOPT_RESOLVER_START_DATA "(3) "
+.BR CURLOPT_PREREQFUNCTION (3),
+.BR CURLOPT_RESOLVER_START_DATA (3)

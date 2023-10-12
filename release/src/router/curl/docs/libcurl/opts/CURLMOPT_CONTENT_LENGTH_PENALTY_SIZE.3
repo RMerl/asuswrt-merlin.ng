@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLMOPT_CONTENT_LENGTH_PENALTY_SIZE \- size threshold for pipelining penalty
@@ -38,8 +38,8 @@ No function since pipelining was removed in 7.62.0.
 
 Pass a long with a \fBsize\fP in bytes. If a transfer in a pipeline is
 currently processing a request with a Content-Length larger than this
-\fICURLMOPT_CONTENT_LENGTH_PENALTY_SIZE(3)\fP, that pipeline will then not be
-considered for additional requests, even if it is shorter than
+\fICURLMOPT_CONTENT_LENGTH_PENALTY_SIZE(3)\fP, that pipeline is not considered
+for additional requests, even if it is shorter than
 \fICURLMOPT_MAX_PIPELINE_LENGTH(3)\fP.
 .SH DEFAULT
 The default value is 0, which means that the size penalization is inactive.
@@ -56,4 +56,5 @@ Added in 7.30.0
 .SH RETURN VALUE
 Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLMOPT_PIPELINING "(3), " CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE "(3), "
+.BR CURLMOPT_PIPELINING (3),
+.BR CURLMOPT_CHUNK_LENGTH_PENALTY_SIZE (3)

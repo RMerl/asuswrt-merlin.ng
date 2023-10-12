@@ -28,18 +28,19 @@ Connection: close
 <server>
 http
 </server>
- <name>
+<name>
 --libcurl for GET with various options
- </name>
+</name>
 <features>
 http
 ftp
 file
+cookies
 </features>
 <setenv>
 SSL_CERT_FILE=
 </setenv>
- <command>
+<command>
 http://%HOSTIP:%HTTPPORT/we/want/%TESTNUMBER --libcurl %LOGDIR/test%TESTNUMBER.c --basic -u fake:user -H "X-Files: Mulder" -H "X-Men: cyclops, iceman" -A MyUA -b chocolate=chip --proto "=http,ftp,file"
 </command>
 </client>

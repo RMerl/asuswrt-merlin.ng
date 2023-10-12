@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_SSLCERT 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXY_SSLCERT 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXY_SSLCERT \- HTTPS proxy client certificate
@@ -40,10 +40,10 @@ the file name of your client certificate used to connect to the HTTPS proxy.
 The default format is "P12" on Secure Transport and "PEM" on other engines,
 and can be changed with \fICURLOPT_PROXY_SSLCERTTYPE(3)\fP.
 
-With NSS or Secure Transport, this can also be the nickname of the certificate
-you wish to authenticate with as it is named in the security database. If you
-want to use a file from the current directory, please precede it with "./"
-prefix, in order to avoid confusion with a nickname.
+With Secure Transport, this can also be the nickname of the certificate you
+wish to authenticate with as it is named in the security database. If you want
+to use a file from the current directory, please precede it with "./" prefix,
+in order to avoid confusion with a nickname.
 
 When using a client certificate, you most likely also need to provide a
 private key with \fICURLOPT_PROXY_SSLKEY(3)\fP.
@@ -73,5 +73,6 @@ Added in 7.52.0
 Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY_SSLCERTTYPE "(3), " CURLOPT_PROXY_SSLKEY "(3), "
-.BR CURLOPT_SSLCERT "(3), "
+.BR CURLOPT_PROXY_SSLCERTTYPE (3),
+.BR CURLOPT_PROXY_SSLKEY (3),
+.BR CURLOPT_SSLCERT (3)

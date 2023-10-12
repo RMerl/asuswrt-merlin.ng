@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TFTP_BLKSIZE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_TFTP_BLKSIZE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_TFTP_BLKSIZE \- TFTP block size
@@ -34,11 +34,11 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TFTP_BLKSIZE, long blocksize);
 .fi
 .SH DESCRIPTION
 Specify \fIblocksize\fP to use for TFTP data transmission. Valid range as per
-RFC2348 is 8-65464 bytes. The default of 512 bytes will be used if this option
-is not specified. The specified block size will only be used pending support
-by the remote server. If the server does not return an option acknowledgment
-or returns an option acknowledgment with no block size, the default of 512
-bytes will be used.
+RFC 2348 is 8-65464 bytes. The default of 512 bytes is used if this option is
+not specified. The specified block size is only used if supported by the
+remote server. If the server does not return an option acknowledgment or
+returns an option acknowledgment with no block size, the default of 512 bytes
+is used.
 .SH DEFAULT
 512
 .SH PROTOCOLS
@@ -59,4 +59,5 @@ Added in 7.19.4
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_MAXFILESIZE "(3), "
+.BR CURLOPT_MAXFILESIZE (3)
+

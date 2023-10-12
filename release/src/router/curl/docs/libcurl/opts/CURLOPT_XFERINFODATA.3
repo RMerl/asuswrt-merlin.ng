@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_XFERINFODATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_XFERINFODATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_XFERINFODATA \- pointer passed to the progress callback
@@ -33,7 +33,7 @@ CURLOPT_XFERINFODATA \- pointer passed to the progress callback
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_XFERINFODATA, void *pointer);
 .fi
 .SH DESCRIPTION
-Pass a \fIpointer\fP that will be untouched by libcurl and passed as the first
+Pass a \fIpointer\fP that is untouched by libcurl and passed as the first
 argument in the progress callback set with \fICURLOPT_XFERINFOFUNCTION(3)\fP.
 
 This is an alias for \fICURLOPT_PROGRESSDATA(3)\fP.
@@ -73,4 +73,6 @@ Added in 7.32.0
 .SH RETURN VALUE
 Returns CURLE_OK
 .SH "SEE ALSO"
-.BR CURLOPT_XFERINFOFUNCTION "(3), " CURLOPT_VERBOSE "(3), "
+.BR CURLOPT_NOPROGRESS (3),
+.BR CURLOPT_VERBOSE (3),
+.BR CURLOPT_XFERINFOFUNCTION (3)

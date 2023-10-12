@@ -26,10 +26,10 @@ Mime
 <server>
 http
 </server>
- <name>
+<name>
 HTTP RFC1867-type formposting without Expect: header
- </name>
- <command>
+</name>
+<command>
 http://%HOSTIP:%HTTPPORT/we/want/%TESTNUMBER -F name=daniel -F tool=curl -F file=@%LOGDIR/test%TESTNUMBER.txt -H "Expect:"
 </command>
 # We create this file before the command is invoked!
@@ -50,7 +50,7 @@ POST /we/want/%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
-Content-Length: 408
+Content-Length: 432
 Content-Type: multipart/form-data; boundary=----------------------------7c633d5c27ce
 
 ------------------------------7c633d5c27ce

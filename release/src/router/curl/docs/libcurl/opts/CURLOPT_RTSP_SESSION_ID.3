@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_RTSP_SESSION_ID 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_RTSP_SESSION_ID 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_RTSP_SESSION_ID \- RTSP session ID
@@ -35,10 +35,9 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_RTSP_SESSION_ID, char *id);
 .SH DESCRIPTION
 Pass a char * as a parameter to set the value of the current RTSP Session ID
 for the handle. Useful for resuming an in-progress session. Once this value is
-set to any non-NULL value, libcurl will return \fICURLE_RTSP_SESSION_ERROR\fP
-if ID received from the server does not match. If unset (or set to NULL),
-libcurl will automatically set the ID the first time the server sets it in a
-response.
+set to any non-NULL value, libcurl returns \fICURLE_RTSP_SESSION_ERROR\fP if
+ID received from the server does not match. If unset (or set to NULL), libcurl
+automatically sets the ID the first time the server sets it in a response.
 
 The application does not have to keep the string around after setting this
 option.
@@ -63,4 +62,5 @@ Added in 7.20.0
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_RTSP_REQUEST "(3), " CURLOPT_RTSP_STREAM_URI "(3), "
+.BR CURLOPT_RTSP_REQUEST (3),
+.BR CURLOPT_RTSP_STREAM_URI (3)

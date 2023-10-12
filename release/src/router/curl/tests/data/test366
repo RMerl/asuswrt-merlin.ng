@@ -10,7 +10,7 @@ retry
 # Server-side
 <reply>
 <data>
-HTTP/1.1 503 OK
+HTTP/1.1 503 BAD
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Content-Length: 21
 Retry-After: 200
@@ -26,10 +26,10 @@ server not available
 <server>
 http
 </server>
- <name>
+<name>
 HTTP --retry-max-time with too long Retry-After
- </name>
- <command>
+</name>
+<command>
 http://%HOSTIP:%HTTPPORT/%TESTNUMBER --retry 2 --retry-max-time 10
 </command>
 </client>

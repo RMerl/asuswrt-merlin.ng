@@ -8,5 +8,5 @@ Example: --metalink file $URL
 See-also: parallel
 Multi: single
 ---
-This option was previously used to specify a metalink resource. Metalink
-support has been disabled in curl since 7.78.0 for security reasons.
+This option was previously used to specify a Metalink resource. Metalink
+support is disabled in curl for security reasons (added in 7.78.0).

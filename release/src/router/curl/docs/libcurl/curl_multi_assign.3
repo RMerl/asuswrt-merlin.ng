@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_multi_assign 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_multi_assign 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_multi_assign \- set data to associate with an internal socket
@@ -37,20 +37,20 @@ This function creates an association in the multi handle between the given
 socket and a private pointer of the application. This is designed for
 \fIcurl_multi_socket_action(3)\fP uses.
 
-When set, the \fIsockptr\fP pointer will be passed to all future socket
-callbacks for the specific \fIsockfd\fP socket.
+When set, the \fIsockptr\fP pointer is passed to all future socket callbacks
+for the specific \fIsockfd\fP socket.
 
-If the given \fIsockfd\fP is not already in use by libcurl, this function will
-return an error.
+If the given \fIsockfd\fP is not already in use by libcurl, this function
+returns an error.
 
 libcurl only keeps one single pointer associated with a socket, so calling
-this function several times for the same socket will make the last set pointer
-get used.
+this function several times for the same socket makes the last set pointer get
+used.
 
 The idea here being that this association (socket to private pointer) is
-something that just about every application that uses this API will need and
-then libcurl can just as well do it since it already has an internal hash
-table lookup for this.
+something that just about every application that uses this API needs and then
+libcurl can just as well do it since it already has the necessary
+functionality.
 
 It is acceptable to call this function from your multi callback functions.
 .SH EXAMPLE
@@ -72,4 +72,5 @@ another socket to wait for, we can use \fIcurl_multi_assign(3)\fP to point out
 the particular data so that when we get updates about this same socket again,
 we do not have to find the struct associated with this socket by ourselves.
 .SH "SEE ALSO"
-.BR curl_multi_setopt "(3), " curl_multi_socket_action "(3) "
+.BR curl_multi_setopt (3),
+.BR curl_multi_socket_action (3)

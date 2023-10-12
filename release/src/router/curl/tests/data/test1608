@@ -14,9 +14,10 @@ none
 </server>
 <features>
 unittest
+shuffle-dns
 </features>
- <name>
+<name>
 verify DNS shuffling
- </name>
+</name>
 </client>
 </testcase>

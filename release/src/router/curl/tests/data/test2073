@@ -33,10 +33,10 @@ Mime
 <server>
 http
 </server>
- <name>
+<name>
 HTTP form posts with handle reset
- </name>
- <command>
+</name>
+<command>
 http://%HOSTIP:%HTTPPORT/%TESTNUMBER -F 'name=a;filename=a.pdf' --next http://%HOSTIP:%HTTPPORT/%TESTNUMBER -F 'name=b;filename=b.jpg'
 </command>
 </client>
@@ -52,7 +52,7 @@ POST /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
-Content-Length: 189
+Content-Length: 201
 
 Content-Disposition: form-data; name="name"; filename="a.pdf"
 Content-Type: application/pdf
@@ -62,7 +62,7 @@ POST /%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
-Content-Length: 184
+Content-Length: 196
 
 Content-Disposition: form-data; name="name"; filename="b.jpg"
 Content-Type: image/jpeg

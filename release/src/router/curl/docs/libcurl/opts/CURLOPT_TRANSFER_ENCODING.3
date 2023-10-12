@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TRANSFER_ENCODING 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_TRANSFER_ENCODING 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_TRANSFER_ENCODING \- ask for HTTP Transfer Encoding
@@ -38,8 +38,8 @@ Pass a long set to 1L to \fIenable\fP or 0 to disable.
 
 Adds a request for compressed Transfer Encoding in the outgoing HTTP
 request. If the server supports this and so desires, it can respond with the
-HTTP response sent using a compressed Transfer-Encoding that will be
-automatically uncompressed by libcurl on reception.
+HTTP response sent using a compressed Transfer-Encoding that is automatically
+uncompressed by libcurl on reception.
 
 Transfer-Encoding differs slightly from the Content-Encoding you ask for with
 \fICURLOPT_ACCEPT_ENCODING(3)\fP in that a Transfer-Encoding is strictly meant
@@ -64,4 +64,5 @@ Added in 7.21.6
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_ACCEPT_ENCODING "(3), " CURLOPT_HTTP_TRANSFER_DECODING "(3), "
+.BR CURLOPT_ACCEPT_ENCODING (3),
+.BR CURLOPT_HTTP_TRANSFER_DECODING (3)

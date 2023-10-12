@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXYUSERPWD 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXYUSERPWD 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXYUSERPWD \- user name and password to use for proxy authentication
@@ -34,8 +34,8 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXYUSERPWD, char *userpwd);
 .fi
 .SH DESCRIPTION
 Pass a char * as parameter, which should be [user name]:[password] to use for
-the connection to the HTTP proxy. Both the name and the password will be URL
-decoded before use, so to include for example a colon in the user name you
+the connection to the HTTP proxy. Both the name and the password are URL
+decoded before used, so to include for example a colon in the user name you
 should encode it as %3A. (This is different to how \fICURLOPT_USERPWD(3)\fP is
 used - beware.)
 
@@ -64,4 +64,7 @@ Always
 Returns CURLE_OK if proxies are supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY "(3), " CURLOPT_PROXYTYPE "(3), "
+.BR CURLOPT_PROXY (3),
+.BR CURLOPT_PROXYPASSWORD (3),
+.BR CURLOPT_PROXYTYPE (3),
+.BR CURLOPT_PROXYUSERNAME (3)

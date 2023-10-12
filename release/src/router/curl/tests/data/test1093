@@ -24,10 +24,10 @@ returned
 <server>
 tftp
 </server>
- <name>
+<name>
 TFTP retrieve with mode=i
- </name>
- <command>
+</name>
+<command>
 "tftp://%HOSTIP:%TFTPPORT//%TESTNUMBER;mode=i" --use-ascii
 </command>
 </client>
@@ -35,12 +35,14 @@ TFTP retrieve with mode=i
 #
 # Verify pseudo protocol after the test has been "shot"
 <verify>
+<strip>
+^timeout = [5-6]$
+</strip>
 <protocol>
 opcode = 1
 mode = octet
 tsize = 0
 blksize = 512
-timeout = 6
 filename = /%TESTNUMBER
 </protocol>
 </verify>

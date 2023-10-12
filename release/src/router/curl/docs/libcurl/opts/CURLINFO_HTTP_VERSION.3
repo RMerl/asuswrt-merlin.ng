@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_HTTP_VERSION 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLINFO_HTTP_VERSION 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLINFO_HTTP_VERSION \- get the http version used in the connection
@@ -34,9 +34,9 @@ CURLcode curl_easy_getinfo(CURL *handle, CURLINFO_HTTP_VERSION, long *p);
 .fi
 .SH DESCRIPTION
 Pass a pointer to a long to receive the version used in the last http
-connection.  The returned value will be CURL_HTTP_VERSION_1_0,
-CURL_HTTP_VERSION_1_1, CURL_HTTP_VERSION_2_0, CURL_HTTP_VERSION_3 or 0 if the
-version cannot be determined.
+connection done using this handle. The returned value is
+CURL_HTTP_VERSION_1_0, CURL_HTTP_VERSION_1_1, CURL_HTTP_VERSION_2_0,
+CURL_HTTP_VERSION_3 or 0 if the version cannot be determined.
 .SH PROTOCOLS
 HTTP
 .SH EXAMPLE
@@ -58,5 +58,6 @@ Added in 7.50.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLINFO_RESPONSE_CODE "(3), "
-.BR curl_easy_getinfo "(3), " curl_easy_setopt "(3), "
+.BR curl_easy_getinfo (3),
+.BR curl_easy_setopt (3),
+.BR CURLINFO_RESPONSE_CODE (3)

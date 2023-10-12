@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH libcurl-share 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH libcurl-share 3 "September 27, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 libcurl-share \- how to use the share interface
@@ -38,7 +38,7 @@ The share interface was added to enable sharing of data between curl
 .SH "ONE SET OF DATA - MANY TRANSFERS"
 You can have multiple easy handles share data between them. Have them update
 and use the \fBsame\fP cookie database, DNS cache, TLS session cache and/or
-connection cache! This way, each single transfer will take advantage from data
+connection cache! This way, each single transfer takes advantage from data
 updates made by the other transfer(s).
 .SH "SHARE OBJECT"
 You create a shared object with \fIcurl_share_init(3)\fP. It returns a handle
@@ -59,10 +59,14 @@ handle.
 
 To make an easy handle stop using that particular share, you set
 \fICURLOPT_SHARE(3)\fP to NULL for that easy handle. To make a handle stop
-sharing a particular data, you can \fICURLSHOPT_UNSHARE\fP it.
+sharing a particular data, you can \fICURLSHOPT_UNSHARE(3)\fP it.
 
 When you are done using the share, make sure that no easy handle is still using
 it, and call \fIcurl_share_cleanup(3)\fP on the handle.
 .SH "SEE ALSO"
-.BR curl_share_init "(3), " curl_share_setopt "(3), " curl_share_cleanup "(3)"
-.BR libcurl-errors "(3), " libcurl-easy "(3), " libcurl-multi "(3) "
+.BR curl_share_init (3),
+.BR curl_share_setopt (3),
+.BR curl_share_cleanup (3),
+.BR libcurl-errors (3),
+.BR libcurl-easy (3),
+.BR libcurl-multi (3)

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PUT 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PUT 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PUT \- make an HTTP PUT request
@@ -71,4 +71,7 @@ Deprecated since 7.12.1. Do not use.
 .SH RETURN VALUE
 Returns CURLE_OK if HTTP is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_UPLOAD "(3), " CURLOPT_HTTPGET "(3), "
+.BR CURLOPT_HTTPGET (3),
+.BR CURLOPT_MIMEPOST (3),
+.BR CURLOPT_POSTFIELDS (3),
+.BR CURLOPT_UPLOAD (3)

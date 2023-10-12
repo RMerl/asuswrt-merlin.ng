@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DNS_INTERFACE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_DNS_INTERFACE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_DNS_INTERFACE \- interface to speak DNS over
@@ -62,4 +62,7 @@ such one.
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not,
 or CURLE_NOT_BUILT_IN if support was disabled at compile-time.
 .SH "SEE ALSO"
-.BR CURLOPT_DNS_SERVERS "(3), " CURLOPT_DNS_LOCAL_IP4 "(3), "
+.BR CURLOPT_DNS_LOCAL_IP4 (3),
+.BR CURLOPT_DNS_LOCAL_IP6 (3),
+.BR CURLOPT_DNS_SERVERS (3),
+.BR CURLOPT_INTERFACE (3)

@@ -10,7 +10,7 @@ retry
 # Server-side
 <reply>
 <data nocheck="yes">
-HTTP/1.1 503 OK swsbounce
+HTTP/1.1 503 BAD swsbounce
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Content-Length: 21
 
@@ -33,10 +33,10 @@ ok
 <server>
 http
 </server>
- <name>
+<name>
 HTTP GET --retry on 503 error with output to stdout
- </name>
- <command>
+</name>
+<command>
 http://%HOSTIP:%HTTPPORT/%TESTNUMBER --retry 1000
 </command>
 </client>
@@ -58,7 +58,7 @@ Accept: */*
 </protocol>
 
 <stdout>
-HTTP/1.1 503 OK swsbounce
+HTTP/1.1 503 BAD swsbounce
 Date: Tue, 09 Nov 2010 14:49:00 GMT
 Content-Length: 21
 

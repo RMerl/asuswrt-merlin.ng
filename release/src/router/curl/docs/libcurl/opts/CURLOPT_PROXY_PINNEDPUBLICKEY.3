@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_PINNEDPUBLICKEY 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXY_PINNEDPUBLICKEY 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXY_PINNEDPUBLICKEY \- pinned public key for https proxy
@@ -40,8 +40,8 @@ The string can also be any number of base64 encoded sha256 hashes preceded by
 
 When negotiating a TLS or SSL connection, the https proxy sends a certificate
 indicating its identity. A public key is extracted from this certificate and
-if it does not exactly match the public key provided to this option, curl will
-abort the connection before sending or receiving any data.
+if it does not exactly match the public key provided to this option, libcurl
+aborts the connection before sending or receiving any data.
 
 On mismatch, \fICURLE_SSL_PINNEDPUBKEYNOTMATCH\fP is returned.
 
@@ -99,18 +99,20 @@ footer:
 .SH AVAILABILITY
 PEM/DER support:
 
-  7.52.0: GSKit, GnuTLS, NSS, OpenSSL, mbedTLS, wolfSSL
+  7.52.0: GnuTLS, OpenSSL, mbedTLS, wolfSSL
 
 sha256 support:
 
-  7.52.0: GnuTLS, NSS, OpenSSL, mbedTLS, wolfSSL
+  7.52.0: GnuTLS, OpenSSL, mbedTLS, wolfSSL
 
 Other SSL backends not supported.
 .SH RETURN VALUE
 Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY_SSL_VERIFYPEER "(3), "
-.BR CURLOPT_PROXY_SSL_VERIFYHOST "(3), "
-.BR CURLOPT_PROXY_CAINFO "(3), "
-.BR CURLOPT_PROXY_CAPATH "(3), "
+.BR CURLOPT_PINNEDPUBLICKEY (3),
+.BR CURLOPT_PROXY_CAINFO (3),
+.BR CURLOPT_PROXY_CAPATH (3),
+.BR CURLOPT_PROXY_SSL_VERIFYHOST (3),
+.BR CURLOPT_PROXY_SSL_VERIFYPEER (3)
+

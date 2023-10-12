@@ -483,8 +483,12 @@ validator.targetDomainName = function($o){
 										<script>
 											$("#cmdBtn")
 												.click(function(){
-													if(!validator.targetDomainName($("#destIP"))){
-														return false;
+													if(document.form.protover.value == "v6"){
+														if(!validator.isLegal_ipv6($("#destIP")[0],1) && !validator.targetDomainName($("#destIP"))){
+															return false;
+														}
+													} else if(!validator.targetDomainName($("#destIP"))){
+														 return false;
 													}
 
 													var targetObj = {

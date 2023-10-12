@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH CURLSHOPT_UNLOCKFUNC 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLSHOPT_UNLOCKFUNC 3 "September 27, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLSHOPT_UNLOCKFUNC - mutex unlock callback
@@ -34,7 +34,7 @@ void unlockcb(CURL *handle, curl_lock_data data, void *clientp);
 CURLSHcode curl_share_setopt(CURLSH *share, CURLSHOPT_UNLOCKFUNC, unlockcb);
 .fi
 .SH DESCRIPTION
-Set a mutex unlock callback for the share object. There's a corresponding
+Set a mutex unlock callback for the share object. There is a corresponding
 \fICURLSHOPT_LOCKFUNC(3)\fP callback called when the mutex is first locked.
 
 The \fIunlockcb\fP argument must be a pointer to a function matching the
@@ -46,7 +46,7 @@ is released.
 The \fIdata\fP argument tells what kind of data libcurl wants to unlock. Make
 sure that the callback uses a different lock for each kind of data.
 
-\fIclientp\fP is the private pointer you set with \fICURLSHOPT_USERDATA\fP.
+\fIclientp\fP is the private pointer you set with \fICURLSHOPT_USERDATA(3)\fP.
 This pointer is not used by libcurl itself.
 .SH PROTOCOLS
 All
@@ -65,5 +65,7 @@ CURLSHE_OK (zero) means that the option was set properly, non-zero means an
 error occurred. See \fIlibcurl-errors(3)\fP for the full list with
 descriptions.
 .SH "SEE ALSO"
-.BR CURLSHOPT_LOCKFUNC "(3), "
-.BR curl_share_setopt "(3), " curl_share_cleanup "(3), " curl_share_init "(3)"
+.BR curl_share_cleanup (3),
+.BR curl_share_init (3),
+.BR curl_share_setopt (3),
+.BR CURLSHOPT_LOCKFUNC (3)

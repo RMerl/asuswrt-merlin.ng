@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_ACCEPT_ENCODING 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_ACCEPT_ENCODING 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_ACCEPT_ENCODING \- automatic decompression of HTTP downloads
@@ -59,8 +59,8 @@ makes libcurl not send an Accept-Encoding: header and not decompress received
 contents automatically.
 
 You can also opt to just include the Accept-Encoding: header in your request
-with \fICURLOPT_HTTPHEADER(3)\fP but then there will be no automatic
-decompressing when receiving data.
+with \fICURLOPT_HTTPHEADER(3)\fP but then there is no automatic decompressing
+when receiving data.
 
 This is a request, not an order; the server may or may not do it.  This option
 must be set (to any non-NULL value) or else any unsolicited encoding done by
@@ -105,5 +105,6 @@ responses.
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_TRANSFER_ENCODING "(3), " CURLOPT_HTTPHEADER "(3), "
-.BR CURLOPT_HTTP_CONTENT_DECODING "(3), "
+.BR CURLOPT_HTTP_CONTENT_DECODING (3),
+.BR CURLOPT_HTTPHEADER (3),
+.BR CURLOPT_TRANSFER_ENCODING (3)

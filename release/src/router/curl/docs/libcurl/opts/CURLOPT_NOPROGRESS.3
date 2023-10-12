@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_NOPROGRESS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_NOPROGRESS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_NOPROGRESS \- switch off the progress meter
@@ -34,7 +34,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_NOPROGRESS, long onoff);
 .fi
 .SH DESCRIPTION
 If \fIonoff\fP is to 1, it tells the library to shut off the progress meter
-completely for requests done with this \fIhandle\fP. It will also prevent the
+completely for requests done with this \fIhandle\fP. It also prevents the
 \fICURLOPT_XFERINFOFUNCTION(3)\fP or \fICURLOPT_PROGRESSFUNCTION(3)\fP from
 getting called.
 .SH DEFAULT
@@ -59,6 +59,7 @@ Always
 .SH RETURN VALUE
 Returns CURLE_OK.
 .SH "SEE ALSO"
-.BR CURLOPT_XFERINFOFUNCTION "(3), "
-.BR CURLOPT_PROGRESSFUNCTION "(3), "
-.BR CURLOPT_VERBOSE "(3), "
+.BR CURLOPT_DEBUGFUNCTION (3),
+.BR CURLOPT_PROGRESSFUNCTION (3),
+.BR CURLOPT_VERBOSE (3),
+.BR CURLOPT_XFERINFOFUNCTION (3)

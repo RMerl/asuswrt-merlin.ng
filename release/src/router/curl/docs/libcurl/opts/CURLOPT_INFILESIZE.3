@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_INFILESIZE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_INFILESIZE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_INFILESIZE \- size of the input file to send off
@@ -43,12 +43,15 @@ mandatory.
 
 To unset this value again, set it to -1.
 
+Using \fICURLOPT_UPLOAD(3)\fP to a HTTP/1.1 server and this value set to -1,
+makes libcurl do a chunked transfer-encoded upload.
+
 When sending emails using SMTP, this command can be used to specify the
 optional SIZE parameter for the MAIL FROM command.
 
-This option does not limit how much data libcurl will actually send, as that
-is controlled entirely by what the read callback returns, but telling one
-value and sending a different amount may lead to errors.
+This option does not limit how much data libcurl actually sends, as that is
+controlled entirely by what the read callback returns, but telling one value
+and sending a different amount may lead to errors.
 .SH DEFAULT
 Unset
 .SH PROTOCOLS
@@ -73,4 +76,6 @@ SMTP support added in 7.23.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_INFILESIZE_LARGE "(3), " CURLOPT_UPLOAD "(3), "
+.BR CURLINFO_CONTENT_LENGTH_UPLOAD_T (3),
+.BR CURLOPT_INFILESIZE_LARGE (3),
+.BR CURLOPT_UPLOAD (3)

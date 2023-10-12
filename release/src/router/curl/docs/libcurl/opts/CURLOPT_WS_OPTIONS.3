@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_WS_OPTIONS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_WS_OPTIONS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_WS_OPTIONS \- WebSocket behavior options
@@ -67,4 +67,6 @@ Added in 7.86.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR curl_ws_recv "(3), " curl_ws_send "(3), "
+.BR curl_ws_recv (3),
+.BR curl_ws_send (3),
+.BR CURLOPT_CONNECT_ONLY (3)

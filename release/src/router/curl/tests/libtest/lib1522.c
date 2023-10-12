@@ -40,7 +40,7 @@ static int sockopt_callback(void *clientp, curl_socket_t curlfd,
   (void) clientp;
   (void) purpose;
   setsockopt(curlfd, SOL_SOCKET, SO_SNDBUF,
-             (const char *)&sndbufsize, sizeof(sndbufsize));
+             (char *)&sndbufsize, sizeof(sndbufsize));
 #else
   (void)clientp;
   (void)curlfd;
@@ -51,7 +51,7 @@ static int sockopt_callback(void *clientp, curl_socket_t curlfd,
 
 int test(char *URL)
 {
-  CURLcode code;
+  CURLcode code = TEST_ERR_MAJOR_BAD;
   CURLcode res;
   struct curl_slist *pHeaderList = NULL;
   CURL *curl = curl_easy_init();
@@ -97,5 +97,5 @@ test_cleanup:
   curl_easy_cleanup(curl);
   curl_global_cleanup();
 
-  return 0;
+  return (int)code;
 }

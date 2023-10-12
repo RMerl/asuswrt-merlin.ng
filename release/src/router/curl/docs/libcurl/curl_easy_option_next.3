@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_easy_option_next 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_easy_option_next 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_easy_option_next - iterate over easy setopt options
@@ -83,5 +83,6 @@ This function was added in libcurl 7.73.0
 A pointer to the \fIcurl_easyoption\fP struct for the next option or NULL if
 no more options.
 .SH "SEE ALSO"
-.BR curl_easy_option_by_name "(3)," curl_easy_option_by_id "(3),"
-.BR curl_easy_setopt "(3),"
+.BR curl_easy_option_by_id (3),
+.BR curl_easy_option_by_name (3),
+.BR curl_easy_setopt (3)

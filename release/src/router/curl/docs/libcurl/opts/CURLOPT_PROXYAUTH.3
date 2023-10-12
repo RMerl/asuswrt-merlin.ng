@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXYAUTH 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXYAUTH 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXYAUTH \- HTTP proxy authentication methods
@@ -35,11 +35,11 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXYAUTH, long bitmask);
 .SH DESCRIPTION
 Pass a long as parameter, which is set to a bitmask, to tell libcurl which
 HTTP authentication method(s) you want it to use for your proxy
-authentication.  If more than one bit is set, libcurl will first query the
-site to see what authentication methods it supports and then pick the best one
-you allow it to use. For some methods, this will induce an extra network
-round-trip. Set the actual name and password with the
-\fICURLOPT_PROXYUSERPWD(3)\fP option.
+authentication. If more than one bit is set, libcurl first queries the site to
+see what authentication methods it supports and then it picks the best one you
+allow it to use. For some methods, this induces an extra network round-trip.
+Set the actual name and password with the \fICURLOPT_PROXYUSERPWD(3)\fP
+option.
 
 The bitmask can be constructed by the bits listed and described in the
 \fICURLOPT_HTTPAUTH(3)\fP man page.
@@ -70,5 +70,8 @@ Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_NOT_BUILT_IN if the bitmask specified no supported authentication
 methods.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY "(3), " CURLOPT_PROXYTYPE "(3), "
-.BR CURLOPT_PROXYUSERPWD "(3), " CURLOPT_PROXYPORT "(3), "
+.BR CURLOPT_HTTPAUTH (3),
+.BR CURLOPT_PROXY (3),
+.BR CURLOPT_PROXYPORT (3),
+.BR CURLOPT_PROXYTYPE (3),
+.BR CURLOPT_PROXYUSERPWD (3)

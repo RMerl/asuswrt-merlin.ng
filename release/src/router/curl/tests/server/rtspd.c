@@ -29,9 +29,7 @@
  * This source file was started based on curl's HTTP test suite server.
  */
 
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -133,8 +131,8 @@ static void storerequest(char *reqbuf, size_t totalsize);
 #endif
 
 const char *serverlogfile = DEFAULT_LOGFILE;
-const char *logdir = "log";
-char loglockfile[256];
+static const char *logdir = "log";
+static char loglockfile[256];
 
 #define RTSPDVERSION "curl test suite RTSP server/0.1"
 
@@ -717,7 +715,7 @@ static int get_request(curl_socket_t sock, struct httprequest *req)
     }
     else if(got < 0) {
       error = SOCKERRNO;
-      logmsg("recv() returned error: (%d) %s", error, strerror(error));
+      logmsg("recv() returned error: (%d) %s", error, sstrerror(error));
       fail = 1;
     }
     if(fail) {
@@ -1149,8 +1147,8 @@ int main(int argc, char *argv[])
     }
   }
 
-  msnprintf(loglockfile, sizeof(loglockfile), "%s/%s",
-            logdir, SERVERLOGS_LOCK);
+  msnprintf(loglockfile, sizeof(loglockfile), "%s/%s/rtsp-%s.lock",
+            logdir, SERVERLOGS_LOCKDIR, ipv_inuse);
 
 #ifdef WIN32
   win32_init();
@@ -1170,8 +1168,7 @@ int main(int argc, char *argv[])
 
   if(CURL_SOCKET_BAD == sock) {
     error = SOCKERRNO;
-    logmsg("Error creating socket: (%d) %s",
-           error, strerror(error));
+    logmsg("Error creating socket: (%d) %s", error, sstrerror(error));
     goto server_cleanup;
   }
 
@@ -1180,7 +1177,7 @@ int main(int argc, char *argv[])
             (void *)&flag, sizeof(flag))) {
     error = SOCKERRNO;
     logmsg("setsockopt(SO_REUSEADDR) failed with error: (%d) %s",
-           error, strerror(error));
+           error, sstrerror(error));
     goto server_cleanup;
   }
 
@@ -1205,7 +1202,7 @@ int main(int argc, char *argv[])
   if(0 != rc) {
     error = SOCKERRNO;
     logmsg("Error binding socket on port %hu: (%d) %s",
-           port, error, strerror(error));
+           port, error, sstrerror(error));
     goto server_cleanup;
   }
 
@@ -1226,7 +1223,7 @@ int main(int argc, char *argv[])
     if(getsockname(sock, &localaddr.sa, &la_size) < 0) {
       error = SOCKERRNO;
       logmsg("getsockname() failed with error: (%d) %s",
-             error, strerror(error));
+             error, sstrerror(error));
       sclose(sock);
       goto server_cleanup;
     }
@@ -1259,7 +1256,7 @@ int main(int argc, char *argv[])
   if(0 != rc) {
     error = SOCKERRNO;
     logmsg("listen() failed with error: (%d) %s",
-           error, strerror(error));
+           error, sstrerror(error));
     goto server_cleanup;
   }
 
@@ -1286,12 +1283,12 @@ int main(int argc, char *argv[])
     if(CURL_SOCKET_BAD == msgsock) {
       error = SOCKERRNO;
       logmsg("MAJOR ERROR: accept() failed with error: (%d) %s",
-             error, strerror(error));
+             error, sstrerror(error));
       break;
     }
 
     /*
-    ** As soon as this server acepts a connection from the test harness it
+    ** As soon as this server accepts a connection from the test harness it
     ** must set the server logs advisor read lock to indicate that server
     ** logs should not be read until this lock is removed by this server.
     */

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_TLSAUTH_TYPE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXY_TLSAUTH_TYPE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXY_TLSAUTH_TYPE \- HTTPS proxy TLS authentication methods
@@ -40,7 +40,7 @@ method is "SRP".
 
 .IP SRP
 TLS-SRP authentication. Secure Remote Password authentication for TLS is
-defined in RFC5054 and provides mutual authentication if both sides have a
+defined in RFC 5054 and provides mutual authentication if both sides have a
 shared secret. To use TLS-SRP, you must also set the
 \fICURLOPT_PROXY_TLSAUTH_USERNAME(3)\fP and
 \fICURLOPT_PROXY_TLSAUTH_PASSWORD(3)\fP options.
@@ -72,5 +72,7 @@ to work.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY_TLSAUTH_USERNAME "(3), " CURLOPT_PROXY_TLSAUTH_PASSWORD "(3), "
-.BR CURLOPT_TLSAUTH_USERNAME "(3), " CURLOPT_TLSAUTH_PASSWORD "(3), "
+.BR CURLOPT_PROXY_TLSAUTH_PASSWORD (3),
+.BR CURLOPT_PROXY_TLSAUTH_USERNAME (3),
+.BR CURLOPT_TLSAUTH_PASSWORD (3),
+.BR CURLOPT_TLSAUTH_USERNAME (3)

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SASL_AUTHZID 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SASL_AUTHZID 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SASL_AUTHZID \- authorization identity (identity to act as)
@@ -38,9 +38,9 @@ authorization identity (\fIauthzid\fP) for the transfer. Only applicable to
 the PLAIN SASL authentication mechanism where it is optional.
 
 When not specified only the authentication identity (\fIauthcid\fP) as
-specified by the username will be sent to the server, along with the
-password. The server will derive a \fIauthzid\fP from the \fIauthcid\fP when
-not provided, which it will then uses internally.
+specified by the username is sent to the server, along with the password. The
+server derives a \fIauthzid\fP from the \fIauthcid\fP when not provided, which
+it then uses internally.
 
 When the \fIauthzid\fP is specified, the use of which is server dependent, it
 can be used to access another user's inbox, that the user has been granted
@@ -66,4 +66,6 @@ Added in 7.66.0. Support for OpenLDAP added in 7.82.0.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_USERNAME "(3), " CURLOPT_PASSWORD "(3), ".BR CURLOPT_USERPWD "(3)"
+.BR CURLOPT_PASSWORD (3),
+.BR CURLOPT_USERNAME (3),
+.BR CURLOPT_USERPWD (3)

@@ -52,7 +52,7 @@ security concerns:
 
 3. Such a URL might use other schemes than you thought of or planned for.
 
-## "RFC3986 plus"
+## "RFC 3986 plus"
 
 curl recognizes a URL syntax that we call "RFC 3986 plus". It is grounded on
 the well established RFC 3986 to make sure previously written command lines and
@@ -125,7 +125,7 @@ character or string.
 
 For example, this could look like:
 
-    http://user:password@www.example.com:80/index.hmtl?foo=bar#top
+    http://user:password@www.example.com:80/index.html?foo=bar#top
 
 ## Scheme
 
@@ -197,7 +197,7 @@ of Windows.
 
 ## Port number
 
-If there's a colon after the hostname, that should be followed by the port
+If there is a colon after the hostname, that should be followed by the port
 number to use. 1 - 65535. curl also supports a blank port number field - but
 only if the URL starts with a scheme.
 
@@ -379,7 +379,7 @@ The default smtp port is 25. Some servers use port 587 as an alternative.
 
 ## RTMP
 
-There's no official URL spec for RTMP so libcurl uses the URL syntax supported
+There is no official URL spec for RTMP so libcurl uses the URL syntax supported
 by the underlying librtmp library. It has a syntax where it wants a
 traditional URL, followed by a space and a series of space-separated
 `name=value` pairs.

@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_easy_strerror 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_easy_strerror 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_easy_strerror - return string describing error code
@@ -39,7 +39,7 @@ Typically applications also appreciate \fICURLOPT_ERRORBUFFER(3)\fP for more
 specific error descriptions generated at runtime.
 .SH EXAMPLE
 .nf
-  /* Perform the request, res will get the return code */
+  /* Perform the entire transfer */
   res = curl_easy_perform(curl);
   /* Check for errors */
   if(res != CURLE_OK)
@@ -51,5 +51,7 @@ This function was added in libcurl 7.12.0
 .SH RETURN VALUE
 A pointer to a null-terminated string.
 .SH "SEE ALSO"
-.BR libcurl-errors "(3), " curl_multi_strerror "(3), "
-.BR curl_share_strerror "(3), " curl_url_strerror "(3)"
+.BR libcurl-errors (3),
+.BR curl_multi_strerror (3),
+.BR curl_share_strerror (3),
+.BR curl_url_strerror (3)

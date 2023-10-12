@@ -27,10 +27,10 @@ Mime
 <server>
 http
 </server>
- <name>
+<name>
 HTTP RFC1867-type formposting with types on text fields
- </name>
- <command>
+</name>
+<command>
 http://%HOSTIP:%HTTPPORT/we/want/%TESTNUMBER -F "name=daniel;type=moo/foo" -F "html= <body>hello</body>;type=text/html;charset=verymoo"
 </command>
 # We create this file before the command is invoked!
@@ -46,7 +46,7 @@ POST /we/want/%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
-Content-Length: 320
+Content-Length: 338
 Content-Type: multipart/form-data; boundary=----------------------------212d9006ceb5
 
 ------------------------------212d9006ceb5

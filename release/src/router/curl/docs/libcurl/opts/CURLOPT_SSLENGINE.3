@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSLENGINE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SSLENGINE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SSLENGINE \- SSL engine identifier
@@ -33,8 +33,8 @@ CURLOPT_SSLENGINE \- SSL engine identifier
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSLENGINE, char *id);
 .fi
 .SH DESCRIPTION
-Pass a pointer to a null-terminated string as parameter. It will be used as
-the identifier for the crypto engine you want to use for your private key.
+Pass a pointer to a null-terminated string as parameter. It is used as the
+identifier for the crypto engine you want to use for your private key.
 
 The application does not have to keep the string around after setting this
 option.
@@ -68,4 +68,6 @@ CURLE_UNKNOWN_OPTION - Option not recognized.
 
 CURLE_OUT_OF_MEMORY - Insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_SSLENGINE_DEFAULT "(3), " CURLOPT_SSLKEY "(3), "
+.BR CURLINFO_SSL_ENGINES (3),
+.BR CURLOPT_SSLENGINE_DEFAULT (3),
+.BR CURLOPT_SSLKEY (3)

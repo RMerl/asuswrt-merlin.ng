@@ -2,7 +2,8 @@
 <info>
 <keywords>
 unittest
-llist
+cfilter
+timing-dependent
 </keywords>
 </info>
 
@@ -17,8 +18,8 @@ unittest
 debug
 http
 </features>
- <name>
-llist unit tests
- </name>
+<name>
+connection filter connect/destroy unit tests
+</name>
 </client>
 </testcase>

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_SSLCERT_BLOB 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXY_SSLCERT_BLOB 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXY_SSLCERT_BLOB \- SSL proxy client certificate from memory blob
@@ -74,5 +74,7 @@ Schannel backends.
 Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY_SSLCERTTYPE "(3), " CURLOPT_PROXY_SSLKEY "(3), "
-.BR CURLOPT_PROXY_SSLCERT "(3), "
+.BR CURLOPT_PROXY_SSLCERT (3),
+.BR CURLOPT_PROXY_SSLCERTTYPE (3),
+.BR CURLOPT_PROXY_SSLKEY (3),
+.BR CURLOPT_SSLCERT_BLOB (3)

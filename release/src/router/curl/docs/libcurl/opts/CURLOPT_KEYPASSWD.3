@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_KEYPASSWD 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_KEYPASSWD 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_KEYPASSWD \- passphrase to private key
@@ -33,8 +33,8 @@ CURLOPT_KEYPASSWD \- passphrase to private key
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_KEYPASSWD, char *pwd);
 .fi
 .SH DESCRIPTION
-Pass a pointer to a null-terminated string as parameter. It will be used as
-the password required to use the \fICURLOPT_SSLKEY(3)\fP or
+Pass a pointer to a null-terminated string as parameter. It is used as the
+password required to use the \fICURLOPT_SSLKEY(3)\fP or
 \fICURLOPT_SSH_PRIVATE_KEYFILE(3)\fP private key.  You never need a pass
 phrase to load a certificate but you need one to load your private key.
 
@@ -63,4 +63,5 @@ CURLOPT_SSLCERTPASSWD up to 7.9.2.
 Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_SSLKEY "(3), " CURLOPT_SSH_PRIVATE_KEYFILE "(3), "
+.BR CURLOPT_SSH_PRIVATE_KEYFILE (3),
+.BR CURLOPT_SSLKEY (3)

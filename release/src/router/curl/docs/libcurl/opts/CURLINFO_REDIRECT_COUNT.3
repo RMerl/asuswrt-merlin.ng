@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_REDIRECT_COUNT 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLINFO_REDIRECT_COUNT 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLINFO_REDIRECT_COUNT \- get the number of redirects
@@ -58,4 +58,7 @@ Added in 7.9.7
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR curl_easy_getinfo "(3), " curl_easy_setopt "(3), "
+.BR curl_easy_getinfo (3),
+.BR curl_easy_setopt (3),
+.BR CURLINFO_REDIRECT_URL (3),
+.BR CURLOPT_FOLLOWLOCATION (3)

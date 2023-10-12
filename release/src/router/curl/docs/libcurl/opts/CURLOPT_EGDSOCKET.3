@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_EGDSOCKET 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_EGDSOCKET 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_EGDSOCKET \- EGD socket path
@@ -36,7 +36,7 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_EGDSOCKET, char *path);
 Deprecated option. It serves no purpose anymore.
 
 Pass a char * to the null-terminated path name to the Entropy Gathering Daemon
-socket. It will be used to seed the random engine for TLS.
+socket. It is used to seed the random engine for TLS.
 
 The application does not have to keep the string around after setting this
 option.
@@ -55,12 +55,12 @@ if(curl) {
 }
 .fi
 .SH AVAILABILITY
-If built with TLS enabled. Only the OpenSSL backend will use this, and only
-with OpenSSL versions before 1.1.0.
+If built with TLS enabled. Only the OpenSSL backend uses this, and only with
+OpenSSL versions before 1.1.0.
 
 This option was deprecated in 7.84.0.
 .SH RETURN VALUE
 Returns CURLE_OK if TLS is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_RANDOM_FILE "(3), "
+.BR CURLOPT_RANDOM_FILE (3)

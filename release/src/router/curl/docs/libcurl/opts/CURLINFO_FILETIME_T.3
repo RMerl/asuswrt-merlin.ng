@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_FILETIME 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLINFO_FILETIME 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLINFO_FILETIME_T \- get the remote time of the retrieved document
@@ -42,7 +42,7 @@ document time etc) and the time of the document is unknown.
 
 You must ask libcurl to collect this information before the transfer is made,
 by using the \fICURLOPT_FILETIME(3)\fP option to \fIcurl_easy_setopt(3)\fP or
-you will unconditionally get a -1 back.
+you unconditionally get a -1 back.
 
 This option is an alternative to \fICURLINFO_FILETIME(3)\fP to allow systems
 with 32 bit long variables to extract dates outside of the 32bit timestamp
@@ -74,4 +74,6 @@ Added in 7.59.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR curl_easy_getinfo "(3), " curl_easy_setopt "(3), "
+.BR curl_easy_getinfo (3),
+.BR curl_easy_setopt (3),
+.BR CURLOPT_FILETIME (3)

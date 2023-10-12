@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_url_cleanup 3 "May 19, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_url_cleanup 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_url_cleanup - free the URL handle
@@ -34,7 +34,7 @@ void curl_url_cleanup(CURLU *handle);
 .SH DESCRIPTION
 Frees all the resources associated with the given \fICURLU\fP handle!
 
-Passing in a NULL pointer in \fIhandle\fP will make this function return
+Passing in a NULL pointer in \fIhandle\fP makes this function return
 immediately with no action.
 .SH EXAMPLE
 .nf
@@ -47,5 +47,8 @@ Added in 7.62.0
 .SH RETURN VALUE
 none
 .SH "SEE ALSO"
-.BR curl_url_dup "(3), " curl_url "(3), " curl_url_set "(3), "
-.BR curl_url_get "(3), " CURLOPT_CURLU "(3), "
+.BR curl_url_dup (3),
+.BR curl_url (3),
+.BR curl_url_set (3),
+.BR curl_url_get (3),
+.BR CURLOPT_CURLU (3)

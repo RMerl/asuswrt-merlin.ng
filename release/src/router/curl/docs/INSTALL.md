@@ -134,7 +134,6 @@ These options are provided to select the TLS backend to use.
  - BearSSL: `--with-bearssl`
  - GnuTLS: `--with-gnutls`.
  - mbedTLS: `--with-mbedtls`
- - NSS: `--with-nss`
  - OpenSSL: `--with-openssl` (also for BoringSSL, AWS-LC, libressl, and quictls)
  - rustls: `--with-rustls`
  - Schannel: `--with-schannel`
@@ -184,12 +183,12 @@ multi-threaded dynamic C runtime.
 
  If you get linkage errors read section 5.7 of the FAQ document.
 
-## MinGW32
+## mingw-w64
 
-Make sure that MinGW32's bin directory is in the search path, for example:
+Make sure that mingw-w64's bin directory is in the search path, for example:
 
 ```cmd
-set PATH=c:\mingw32\bin;%PATH%
+set PATH=c:\mingw-w64\bin;%PATH%
 ```
 
 then run `mingw32-make mingw32` in the root dir. There are other
@@ -247,7 +246,7 @@ Requires DJGPP in the search path and pointing to the Watt-32 stack via
 
 Run `make -f Makefile.dist djgpp` in the root curl dir.
 
-For build configuration options, please see the MinGW32 section.
+For build configuration options, please see the mingw-w64 section.
 
 Notes:
 
@@ -262,7 +261,7 @@ Notes:
 
 Run `make -f Makefile.dist amiga` in the root curl dir.
 
-For build configuration options, please see the MinGW32 section.
+For build configuration options, please see the mingw-w64 section.
 
 ## Disabling Specific Protocols in Windows builds
 

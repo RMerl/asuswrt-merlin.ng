@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLMOPT_TIMERDATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLMOPT_TIMERDATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLMOPT_TIMERDATA \- custom pointer to pass to timer callback
@@ -35,8 +35,8 @@ CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_TIMERDATA, void *pointer);
 A data \fBpointer\fP to pass to the timer callback set with the
 \fICURLMOPT_TIMERFUNCTION(3)\fP option.
 
-This pointer will not be touched by libcurl but will only be passed in to the
-timer callbacks's \fBclientp\fP argument.
+This pointer is not touched by libcurl but is only be passed in to the timer
+callbacks's \fBclientp\fP argument.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -82,4 +82,5 @@ Added in 7.16.0
 .SH RETURN VALUE
 Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLMOPT_TIMERFUNCTION "(3), " CURLMOPT_SOCKETFUNCTION "(3), "
+.BR CURLMOPT_TIMERFUNCTION (3),
+.BR CURLMOPT_SOCKETFUNCTION (3)

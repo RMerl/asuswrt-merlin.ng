@@ -28,11 +28,11 @@ skip: 2300
 <server>
 http
 </server>
- <name>
+<name>
 HTTP POST with server closing connection before (all) data is received
- </name>
- <command>
- -d @%LOGDIR/input%TESTNUMBER http://%HOSTIP:%HTTPPORT/%TESTNUMBER -H "Expect: 100-continue"
+</name>
+<command>
+-d @%LOGDIR/input%TESTNUMBER http://%HOSTIP:%HTTPPORT/%TESTNUMBER -H "Expect: 100-continue"
 </command>
 <file name="%LOGDIR/input%TESTNUMBER">
 This creates the named file with this content before the test case is run,

@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CHUNK_DATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_CHUNK_DATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_CHUNK_DATA \- pointer passed to the FTP chunk callbacks
@@ -33,7 +33,7 @@ CURLOPT_CHUNK_DATA \- pointer passed to the FTP chunk callbacks
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_CHUNK_DATA, void *pointer);
 .fi
 .SH DESCRIPTION
-Pass a \fIpointer\fP that will be untouched by libcurl and passed as the ptr
+Pass a \fIpointer\fP that is untouched by libcurl and passed as the ptr
 argument to the \fICURLOPT_CHUNK_BGN_FUNCTION(3)\fP and
 \fICURLOPT_CHUNK_END_FUNCTION(3)\fP.
 .SH DEFAULT
@@ -92,4 +92,5 @@ Added in 7.21.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_CHUNK_BGN_FUNCTION "(3), " CURLOPT_WILDCARDMATCH "(3), "
+.BR CURLOPT_CHUNK_BGN_FUNCTION (3),
+.BR CURLOPT_WILDCARDMATCH (3)

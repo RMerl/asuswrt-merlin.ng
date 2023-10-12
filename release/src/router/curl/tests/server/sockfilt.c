@@ -85,9 +85,7 @@
  * it!
  */
 
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -131,6 +129,10 @@
 #ifndef DEFAULT_LOGFILE
 #define DEFAULT_LOGFILE "log/sockfilt.log"
 #endif
+
+/* buffer is this excessively large only to be able to support things like
+  test 1003 which tests exceedingly large server response lines */
+#define BUFFER_SIZE 17010
 
 const char *serverlogfile = DEFAULT_LOGFILE;
 
@@ -388,6 +390,36 @@ static void lograw(unsigned char *buffer, ssize_t len)
     logmsg("'%s'", data);
 }
 
+/*
+ * handle the DATA command
+ * maxlen is the available space in buffer (input)
+ * *buffer_len is the amount of data in the buffer (output)
+ */
+static bool read_data_block(unsigned char *buffer, ssize_t maxlen,
+    ssize_t *buffer_len)
+{
+  if(!read_stdin(buffer, 5))
+    return FALSE;
+
+  buffer[5] = '\0';
+
+  *buffer_len = (ssize_t)strtol((char *)buffer, NULL, 16);
+  if(*buffer_len > maxlen) {
+    logmsg("ERROR: Buffer size (%zd bytes) too small for data size "
+           "(%zd bytes)", maxlen, *buffer_len);
+    return FALSE;
+  }
+  logmsg("> %zd bytes data, server => client", *buffer_len);
+
+  if(!read_stdin(buffer, *buffer_len))
+    return FALSE;
+
+  lograw(buffer, *buffer_len);
+
+  return TRUE;
+}
+
+
 #ifdef USE_WINSOCK
 /*
  * WinSock select() does not support standard file descriptors,
@@ -556,8 +588,6 @@ static HANDLE select_ws_wait(HANDLE handle, HANDLE signal, HANDLE abort)
 {
 #ifdef _WIN32_WCE
   typedef HANDLE curl_win_thread_handle_t;
-#elif defined(__MINGW32__) && !defined(__MINGW64_VERSION_MAJOR)
-  typedef unsigned long curl_win_thread_handle_t;
 #else
   typedef uintptr_t curl_win_thread_handle_t;
 #endif
@@ -861,6 +891,63 @@ static int select_ws(int nfds, fd_set *readfds, fd_set *writefds,
 #define select(a,b,c,d,e) select_ws(a,b,c,d,e)
 #endif  /* USE_WINSOCK */
 
+
+/* Perform the disconnect handshake with sockfilt
+ * This involves waiting for the disconnect acknowledgmeent after the DISC
+ * command, while throwing away anything else that might come in before
+ * that.
+ */
+static bool disc_handshake(void)
+{
+  if(!write_stdout("DISC\n", 5))
+    return FALSE;
+
+  do {
+      unsigned char buffer[BUFFER_SIZE];
+      ssize_t buffer_len;
+      if(!read_stdin(buffer, 5))
+        return FALSE;
+      logmsg("Received %c%c%c%c (on stdin)",
+             buffer[0], buffer[1], buffer[2], buffer[3]);
+
+      if(!memcmp("ACKD", buffer, 4)) {
+        /* got the ack we were waiting for */
+        break;
+      }
+      else if(!memcmp("DISC", buffer, 4)) {
+        logmsg("Crikey! Client also wants to disconnect");
+        if(!write_stdout("ACKD\n", 5))
+          return FALSE;
+      }
+      else if(!memcmp("DATA", buffer, 4)) {
+        /* We must read more data to stay in sync */
+        if(!read_data_block(buffer, sizeof(buffer), &buffer_len))
+          return FALSE;
+
+        logmsg("Throwing again %zd data bytes", buffer_len);
+
+      }
+      else if(!memcmp("QUIT", buffer, 4)) {
+        /* just die */
+        logmsg("quits");
+        return FALSE;
+      }
+      else {
+        logmsg("Error: unexpected message; aborting");
+        /*
+         * The only other messages that could occur here are PING and PORT,
+         * and both of them occur at the start of a test when nothing should be
+         * trying to DISC. Therefore, we should not ever get here, but if we
+         * do, it's probably due to some kind of unclean shutdown situation so
+         * us shutting down is what we probably ought to be doing, anyway.
+         */
+        return FALSE;
+      }
+
+  } while(TRUE);
+  return TRUE;
+}
+
 /*
   sockfdp is a pointer to an established stream or CURL_SOCKET_BAD
 
@@ -880,9 +967,7 @@ static bool juggle(curl_socket_t *sockfdp,
   ssize_t rc;
   int error = 0;
 
- /* 'buffer' is this excessively large only to be able to support things like
-    test 1003 which tests exceedingly large server response lines */
-  unsigned char buffer[17010];
+  unsigned char buffer[BUFFER_SIZE];
   char data[16];
 
   if(got_exit_signal) {
@@ -1029,28 +1114,12 @@ static bool juggle(curl_socket_t *sockfdp,
     }
     else if(!memcmp("DATA", buffer, 4)) {
       /* data IN => data OUT */
-
-      if(!read_stdin(buffer, 5))
+      if(!read_data_block(buffer, sizeof(buffer), &buffer_len))
         return FALSE;
-
-      buffer[5] = '\0';
-
-      buffer_len = (ssize_t)strtol((char *)buffer, NULL, 16);
-      if(buffer_len > (ssize_t)sizeof(buffer)) {
-        logmsg("ERROR: Buffer size (%zu bytes) too small for data size "
-               "(%zd bytes)", sizeof(buffer), buffer_len);
-        return FALSE;
-      }
-      logmsg("> %zd bytes data, server => client", buffer_len);
-
-      if(!read_stdin(buffer, buffer_len))
-        return FALSE;
-
-      lograw(buffer, buffer_len);
 
       if(*mode == PASSIVE_LISTEN) {
         logmsg("*** We are disconnected!");
-        if(!write_stdout("DISC\n", 5))
+        if(!disc_handshake())
           return FALSE;
       }
       else {
@@ -1064,7 +1133,7 @@ static bool juggle(curl_socket_t *sockfdp,
     }
     else if(!memcmp("DISC", buffer, 4)) {
       /* disconnect! */
-      if(!write_stdout("DISC\n", 5))
+      if(!write_stdout("ACKD\n", 5))
         return FALSE;
       if(sockfd != CURL_SOCKET_BAD) {
         logmsg("====> Client forcibly disconnected");
@@ -1091,7 +1160,7 @@ static bool juggle(curl_socket_t *sockfdp,
       if(CURL_SOCKET_BAD == newfd) {
         error = SOCKERRNO;
         logmsg("accept(%d, NULL, NULL) failed with error: (%d) %s",
-               sockfd, error, strerror(error));
+               sockfd, error, sstrerror(error));
       }
       else {
         logmsg("====> Client connect");
@@ -1119,7 +1188,7 @@ static bool juggle(curl_socket_t *sockfdp,
 
     if(nread_socket <= 0) {
       logmsg("====> Client disconnect");
-      if(!write_stdout("DISC\n", 5))
+      if(!disc_handshake())
         return FALSE;
       sclose(sockfd);
       *sockfdp = CURL_SOCKET_BAD;
@@ -1155,7 +1224,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
     if(rc) {
       error = SOCKERRNO;
       logmsg("setsockopt(SO_REUSEADDR) failed with error: (%d) %s",
-             error, strerror(error));
+             error, sstrerror(error));
       if(maxretr) {
         rc = wait_ms(delay);
         if(rc) {
@@ -1207,7 +1276,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
   if(rc) {
     error = SOCKERRNO;
     logmsg("Error binding socket on port %hu: (%d) %s",
-           *listenport, error, strerror(error));
+           *listenport, error, sstrerror(error));
     sclose(sock);
     return CURL_SOCKET_BAD;
   }
@@ -1229,7 +1298,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
     if(getsockname(sock, &localaddr.sa, &la_size) < 0) {
       error = SOCKERRNO;
       logmsg("getsockname() failed with error: (%d) %s",
-             error, strerror(error));
+             error, sstrerror(error));
       sclose(sock);
       return CURL_SOCKET_BAD;
     }
@@ -1267,7 +1336,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
   if(0 != rc) {
     error = SOCKERRNO;
     logmsg("listen(%d, 5) failed with error: (%d) %s",
-           sock, error, strerror(error));
+           sock, error, sstrerror(error));
     sclose(sock);
     return CURL_SOCKET_BAD;
   }
@@ -1414,8 +1483,7 @@ int main(int argc, char *argv[])
 
   if(CURL_SOCKET_BAD == sock) {
     error = SOCKERRNO;
-    logmsg("Error creating socket: (%d) %s",
-           error, strerror(error));
+    logmsg("Error creating socket: (%d) %s", error, sstrerror(error));
     write_stdout("FAIL\n", 5);
     goto sockfilt_cleanup;
   }
@@ -1451,7 +1519,7 @@ int main(int argc, char *argv[])
     if(rc) {
       error = SOCKERRNO;
       logmsg("Error connecting to port %hu: (%d) %s",
-             connectport, error, strerror(error));
+             connectport, error, sstrerror(error));
       write_stdout("FAIL\n", 5);
       goto sockfilt_cleanup;
     }

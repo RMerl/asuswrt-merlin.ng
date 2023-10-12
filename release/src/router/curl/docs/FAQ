@@ -26,6 +26,7 @@ FAQ
  2. Install Related Problems
   2.1 configure fails when using static libraries
   2.2 Does curl work/build with other SSL libraries?
+  2.3 How do I upgrade curl.exe in Windows?
   2.4 Does curl support SOCKS (RFC 1928) ?
 
  3. Usage Problems
@@ -422,10 +423,26 @@ FAQ
   backends.
 
   curl can be built to use one of the following SSL alternatives: OpenSSL,
-  libressl, BoringSSL, AWS-LC, GnuTLS, wolfSSL, NSS, mbedTLS, Secure
-  Transport (native iOS/OS X), Schannel (native Windows), GSKit (native IBM
-  i), BearSSL, or Rustls. They all have their pros and cons, and we try to
-  maintain a comparison of them here: https://curl.se/docs/ssl-compared.html
+  libressl, BoringSSL, AWS-LC, GnuTLS, wolfSSL, mbedTLS, Secure Transport
+  (native iOS/OS X), Schannel (native Windows), BearSSL or Rustls. They all
+  have their pros and cons, and we try to maintain a comparison of them here:
+  https://curl.se/docs/ssl-compared.html
+
+  2.3 How do I upgrade curl.exe in Windows?
+
+  The curl tool that is shipped as an integrated component of Windows 10 and
+  Windows 11 is managed by Microsoft. If you were to delete the file or
+  replace it with a newer version downloaded from https://curl.se/windows,
+  then Windows Update will cease to work on your system.
+
+  There is no way to independently force an upgrade of the curl.exe that is
+  part of Windows other than through the regular Windows update process. There
+  is also nothing the curl project itself can do about this, since this is
+  managed and controlled entirely by Microsoft as owners of the operating
+  system.
+
+  You can always download and install the latest version of curl for Windows
+  from https://curl.se/windows into a separate location.
 
   2.4 Does curl support SOCKS (RFC 1928) ?
 
@@ -435,19 +452,19 @@ FAQ
 
   3.1 curl: (1) SSL is disabled, https: not supported
 
-  If you get this output when trying to get anything from an https:// server,
-  it means that the instance of curl/libcurl that you are using was built
-  without support for this protocol.
+  If you get this output when trying to get anything from an HTTPS server, it
+  means that the instance of curl/libcurl that you are using was built without
+  support for this protocol.
 
   This could have happened if the configure script that was run at build time
   could not find all libs and include files curl requires for SSL to work. If
   the configure script fails to find them, curl is simply built without SSL
   support.
 
-  To get the https:// support into a curl that was previously built but that
-  reports that https:// is not supported, you should dig through the document
-  and logs and check out why the configure script does not find the SSL libs
-  and/or include files.
+  To get HTTPS support into a curl that was previously built but that reports
+  that HTTPS is not supported, you should dig through the document and logs
+  and check out why the configure script does not find the SSL libs and/or
+  include files.
 
   Also, check out the other paragraph in this FAQ labeled "configure does not
   find OpenSSL even when it is installed".
@@ -505,11 +522,11 @@ FAQ
 
   One example would be to delete a file after you have downloaded it:
 
-     curl -O ftp://download.com/coolfile -Q '-DELE coolfile'
+     curl -O ftp://example.com/coolfile -Q '-DELE coolfile'
 
   or rename a file after upload:
 
-     curl -T infile ftp://upload.com/dir/ -Q "-RNFR infile" -Q "-RNTO newname"
+     curl -T infile ftp://example.com/dir/ -Q "-RNFR infile" -Q "-RNTO newname"
 
   3.8 How do I tell curl to follow HTTP redirects?
 
@@ -517,7 +534,7 @@ FAQ
   that informs the client about this is only interpreted if you are using the
   -L/--location option. As in:
 
-     curl -L http://redirector.com
+     curl -L http://example.com
 
   Not all redirects are HTTP ones, see 4.14
 
@@ -580,11 +597,11 @@ FAQ
   To specify a command line option that includes spaces, you might need to
   put the entire option within quotes. Like in:
 
-   curl -d " with spaces " url.com
+   curl -d " with spaces " example.com
 
   or perhaps
 
-   curl -d ' with spaces ' url.com
+   curl -d ' with spaces ' example.com
 
   Exactly what kind of quotes and how to do this is entirely up to the shell
   or command line interpreter that you are using. For most unix shells, you
@@ -681,12 +698,12 @@ FAQ
   There are two ways. The way defined in the RFC is to use an encoded slash
   in the first path part. List the "/tmp" directory like this:
 
-     curl ftp://ftp.sunet.se/%2ftmp/
+     curl ftp://ftp.example.com/%2ftmp/
 
   or the not-quite-kosher-but-more-readable way, by simply starting the path
   section of the URL with a slash:
 
-     curl ftp://ftp.sunet.se//tmp/
+     curl ftp://ftp.example.com//tmp/
 
   3.18 Can I use curl to send a POST/PUT and not wait for a response?
 
@@ -781,7 +798,7 @@ FAQ
 
   An example that would invoke a remote CGI that uses &-symbols could be:
 
-     curl 'http://www.altavista.com/cgi-bin/query?text=yes&q=curl'
+     curl 'http://www.example.com/cgi-bin/query?text=yes&q=curl'
 
   In Windows, the standard DOS shell treats the percent sign specially and you
   need to use TWO percent signs for each single one you want to use in the
@@ -803,7 +820,7 @@ FAQ
   To be able to use those characters as actual parts of the URL (without using
   them for the curl URL "globbing" system), use the -g/--globoff option:
 
-    curl -g 'www.site.com/weirdname[].html'
+    curl -g 'www.example.com/weirdname[].html'
 
   4.4 Why do I get downloaded data even though the web page does not exist?
 
@@ -817,7 +834,7 @@ FAQ
 
   4.5 Why do I get return code XXX from an HTTP server?
 
-  RFC2616 clearly explains the return codes. This is a short transcript. Go
+  RFC 2616 clearly explains the return codes. This is a short transcript. Go
   read the RFC for exact details:
 
     4.5.1 "400 Bad Request"
@@ -902,7 +919,7 @@ FAQ
 
   4.9 curl cannot authenticate to a server that requires NTLM?
 
-  NTLM support requires OpenSSL, GnuTLS, mbedTLS, NSS, Secure Transport, or
+  NTLM support requires OpenSSL, GnuTLS, mbedTLS, Secure Transport, or
   Microsoft Windows libraries at build-time to provide this functionality.
 
   4.10 My HTTP request using HEAD, PUT or DELETE does not work
@@ -985,7 +1002,7 @@ FAQ
 
   To use explicit FTPS, you use an FTP:// URL and the --ftp-ssl option (or one
   of its related flavors). This is the most common method, and the one
-  mandated by RFC4217. This kind of connection will then of course use the
+  mandated by RFC 4217. This kind of connection will then of course use the
   standard FTP port 21 by default.
 
   4.16 My HTTP POST or PUT requests are slow
@@ -1332,7 +1349,7 @@ FAQ
   directory listing. How does it know what's a file and what's a directory and
   what's a symlink etc. If the FTP server supports the MLSD command then it
   will return data in a machine-readable format that can be parsed for type.
-  The types are specified by RFC3659 section 7.5.1. If MLSD is not supported
+  The types are specified by RFC 3659 section 7.5.1. If MLSD is not supported
   then you have to work with what you are given. The LIST output format is
   entirely at the server's own liking and the NLST output does not reveal any
   types and in many cases does not even include all the directory entries.
@@ -1498,7 +1515,7 @@ FAQ
   unknown to me).
 
   After a transfer, you just set new options in the handle and make another
-  transfer. This will make libcurl re-use the same connection if it can.
+  transfer. This will make libcurl reuse the same connection if it can.
 
   7.4 Does PHP/CURL have dependencies?
 

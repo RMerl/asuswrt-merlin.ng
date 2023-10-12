@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DEBUGFUNCTION 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_DEBUGFUNCTION 3 "October 05, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_DEBUGFUNCTION \- debug callback
@@ -56,13 +56,14 @@ shown above.
 \fICURLOPT_DEBUGFUNCTION(3)\fP replaces the standard debug function used when
 \fICURLOPT_VERBOSE(3)\fP is in effect. This callback receives debug
 information, as specified in the \fItype\fP argument. This function must
-return 0. The \fIdata\fP pointed to by the char * passed to this function WILL
-NOT be null-terminated, but will be exactly of the \fIsize\fP as told by the
+return 0. The \fIdata\fP pointed to by the char * passed to this function is
+not null-terminated, but is exactly of the \fIsize\fP as told by the
 \fIsize\fP argument.
 
 The \fIclientp\fP argument is the pointer set with \fICURLOPT_DEBUGDATA(3)\fP.
 
 Available \fBcurl_infotype\fP values:
+.RS
 .IP CURLINFO_TEXT
 The data is informational text.
 .IP CURLINFO_HEADER_IN
@@ -71,15 +72,22 @@ The data is header (or header-like) data received from the peer.
 The data is header (or header-like) data sent to the peer.
 .IP CURLINFO_DATA_IN
 The data is the unprocessed protocol data received from the peer. Even if the
-data is encoded or compressed, it will not be provided decoded nor
-decompressed to this callback. If you need the data in decoded and
-decompressed form, use \fICURLOPT_WRITEFUNCTION(3)\fP.
+data is encoded or compressed, it is not not provided decoded nor decompressed
+to this callback. If you need the data in decoded and decompressed form, use
+\fICURLOPT_WRITEFUNCTION(3)\fP.
 .IP CURLINFO_DATA_OUT
 The data is protocol data sent to the peer.
 .IP CURLINFO_SSL_DATA_OUT
 The data is SSL/TLS (binary) data sent to the peer.
 .IP CURLINFO_SSL_DATA_IN
 The data is SSL/TLS (binary) data received from the peer.
+.RE
+
+WARNING: This callback may be called with the curl \fIhandle\fP set to an
+internal handle. (Added in 8.4.0)
+
+If you need to distinguish your curl \fIhandle\fP from internal handles then
+set \fICURLOPT_PRIVATE(3)\fP on your handle.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -191,4 +199,8 @@ Always
 .SH RETURN VALUE
 Returns CURLE_OK
 .SH "SEE ALSO"
-.BR CURLOPT_VERBOSE "(3), " CURLOPT_DEBUGDATA "(3), "
+.BR curl_global_trace (3),
+.BR CURLINFO_CONN_ID (3),
+.BR CURLINFO_XFER_ID (3),
+.BR CURLOPT_DEBUGDATA (3),
+.BR CURLOPT_VERBOSE (3)

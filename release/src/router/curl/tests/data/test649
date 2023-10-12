@@ -20,16 +20,16 @@ Mime
 <server>
 smtp
 </server>
- <name>
+<name>
 SMTP multipart with 7bit encoder error
- </name>
+</name>
 <stdin>
 From: different
 To: another
 
 body
 </stdin>
- <command>
+<command>
 smtp://%HOSTIP:%SMTPPORT/%TESTNUMBER --mail-rcpt recipient@example.com --mail-from sender@example.com -F '=This is valid;encoder=7bit' -F "=@%LOGDIR/test%TESTNUMBER.txt;encoder=7bit" -H "From: different" -H "To: another"
 </command>
 <file name="%LOGDIR/test%TESTNUMBER.txt">
@@ -43,8 +43,8 @@ It contains at least an 8-bit byte value.
 # Verify data after the test has been "shot"
 <verify>
 <strippart>
-s/^--------------------------[a-z0-9]*/------------------------------/
-s/boundary=------------------------[a-z0-9]*/boundary=----------------------------/
+s/^--------------------------[A-Za-z0-9]*/------------------------------/
+s/boundary=------------------------[A-Za-z0-9]*/boundary=----------------------------/
 </strippart>
 <protocol>
 EHLO %TESTNUMBER

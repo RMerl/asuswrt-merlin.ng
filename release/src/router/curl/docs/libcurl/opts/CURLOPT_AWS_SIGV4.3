@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_AWS_SIGV4 3 "April 27, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_AWS_SIGV4 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_AWS_SIGV4 \- V4 signature
@@ -53,13 +53,13 @@ NOTE: This call set \fICURLOPT_HTTPAUTH(3)\fP to CURLAUTH_AWS_SIGV4.
 Calling \fICURLOPT_HTTPAUTH(3)\fP with CURLAUTH_AWS_SIGV4 is the same
 as calling this with \fB"aws:amz"\fP in parameter.
 .PP
-Example with "Test:Try", when curl will do the algorithm, it will generate
+Example with "Test:Try", when curl uses the algorithm, it generates
 \fB"TEST-HMAC-SHA256"\fP for "Algorithm", \fB"x-try-date"\fP and
 \fB"X-Try-Date"\fP for "date", \fB"test4_request"\fP for "request type",
 \fB"SignedHeaders=content-type;host;x-try-date"\fP for "signed headers"
 .PP
-If you use just "test", instead of "test:try",
-test will be use for every strings generated
+If you use just "test", instead of "test:try", test is used for every
+generated string.
 .SH DEFAULT
 By default, the value of this parameter is NULL.
 Calling \fICURLOPT_HTTPAUTH(3)\fP with CURLAUTH_AWS_SIGV4 is the same
@@ -70,19 +70,15 @@ HTTP
 .nf
 CURL *curl = curl_easy_init();
 
-struct curl_slist *list = NULL;
-
 if(curl) {
   curl_easy_setopt(curl, CURLOPT_URL,
                   "https://service.region.example.com/uri");
   curl_easy_setopt(c, CURLOPT_AWS_SIGV4, "provider1:provider2");
 
-  /* service and region also could be set in CURLOPT_AWS_SIGV4 */
-  /*
+  /* service and region can also be set in CURLOPT_AWS_SIGV4 */
   curl_easy_setopt(curl, CURLOPT_URL, "https://example.com/uri");
   curl_easy_setopt(c, CURLOPT_AWS_SIGV4,
                    "provider1:provider2:region:service");
-  */
 
   curl_easy_setopt(c, CURLOPT_USERPWD, "MY_ACCESS_KEY:MY_SECRET_KEY");
   curl_easy_perform(curl);
@@ -107,4 +103,7 @@ For \fBaws:s3\fP, a \fBx-amz-content-sha256\fP header is added to every request
 if not already present. For s3 requests with unknown payload, this header takes
 the special value "UNSIGNED-PAYLOAD".
 .SH "SEE ALSO"
-.BR CURLOPT_HEADEROPT "(3), " CURLOPT_HTTPHEADER "(3), "
+.BR CURLOPT_HEADEROPT (3),
+.BR CURLOPT_HTTPAUTH (3),
+.BR CURLOPT_HTTPHEADER (3),
+.BR CURLOPT_PROXYAUTH (3)

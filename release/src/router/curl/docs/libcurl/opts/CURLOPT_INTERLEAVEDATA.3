@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_INTERLEAVEDATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_INTERLEAVEDATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_INTERLEAVEDATA \- pointer passed to RTSP interleave callback
@@ -33,7 +33,7 @@ CURLOPT_INTERLEAVEDATA \- pointer passed to RTSP interleave callback
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_INTERLEAVEDATA, void *pointer);
 .fi
 .SH DESCRIPTION
-This is the userdata \fIpointer\fP that will be passed to
+This is the userdata \fIpointer\fP that is passed to
 \fICURLOPT_INTERLEAVEFUNCTION(3)\fP when interleaved RTP data is received. If
 the interleave function callback is not set, this pointer is not used
 anywhere.
@@ -60,4 +60,5 @@ Added in 7.20.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_INTERLEAVEFUNCTION "(3), " CURLOPT_RTSP_REQUEST "(3), "
+.BR CURLOPT_INTERLEAVEFUNCTION (3),
+.BR CURLOPT_RTSP_REQUEST (3)

@@ -2655,6 +2655,7 @@
     </Link>
   </ItemDefinitionGroup>
   <ItemGroup>
+    <ClCompile Include="..\..\..\..\lib\base64.c" />
     <ClCompile Include="..\..\..\..\lib\curl_multibyte.c" />
     <ClCompile Include="..\..\..\..\lib\dynbuf.c" />
     <ClCompile Include="..\..\..\..\lib\nonblock.c" />
@@ -2702,6 +2703,7 @@
     <ClCompile Include="..\..\..\..\src\tool_writeout.c" />
     <ClCompile Include="..\..\..\..\src\tool_writeout_json.c" />
     <ClCompile Include="..\..\..\..\src\tool_xattr.c" />
+    <ClCompile Include="..\..\..\..\src\var.c" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\lib\config-win32.h" />
@@ -2756,6 +2758,7 @@
     <ClInclude Include="..\..\..\..\src\tool_writeout.h" />
     <ClInclude Include="..\..\..\..\src\tool_writeout_json.h" />
     <ClInclude Include="..\..\..\..\src\tool_xattr.h" />
+    <ClInclude Include="..\..\..\..\src\var.h" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="..\..\..\..\src\curl.rc" />

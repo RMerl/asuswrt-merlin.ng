@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_TLS_SESSION 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLINFO_TLS_SESSION 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLINFO_TLS_SESSION \- get TLS session info
@@ -64,10 +64,11 @@ if(curl) {
 }
 .fi
 .SH AVAILABILITY
-Added in 7.34.0. Deprecated since 7.48.0 and supported OpenSSL, GnuTLS,
-NSS and gskit only up until this version was released.
+Added in 7.34.0. Deprecated since 7.48.0 and supported OpenSSL, GnuTLS, and
+NSS only up until this version was released.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR curl_easy_getinfo "(3), " curl_easy_setopt "(3), "
-.BR CURLINFO_TLS_SSL_PTR "(3), "
+.BR curl_easy_getinfo (3),
+.BR curl_easy_setopt (3),
+.BR CURLINFO_TLS_SSL_PTR (3)

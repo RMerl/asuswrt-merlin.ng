@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_formfree 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_formfree 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_formfree - free a previously build multipart form post chain
@@ -45,8 +45,8 @@ the \fIcurl_formadd(3)\fP invoke(s).
 \fBform\fP is the pointer as returned from a previous call to
 \fIcurl_formadd(3)\fP and may be NULL.
 
-Passing in a NULL pointer in \fIform\fP will make this function return
-immediately with no action.
+Passing in a NULL pointer in \fIform\fP makes this function return immediately
+with no action.
 .SH EXAMPLE
 .nf
   /* Fill in a file upload field */
@@ -68,4 +68,6 @@ Deprecated in 7.56.0.
 .SH RETURN VALUE
 None
 .SH "SEE ALSO"
-.BR curl_formadd "(3), " curl_mime_init "(3), " curl_mime_free "(3)"
+.BR curl_formadd (3),
+.BR curl_mime_init (3),
+.BR curl_mime_free (3)

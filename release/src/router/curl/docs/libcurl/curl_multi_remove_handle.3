@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_multi_remove_handle 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_multi_remove_handle 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_multi_remove_handle - remove an easy handle from a multi session
@@ -32,18 +32,25 @@ curl_multi_remove_handle - remove an easy handle from a multi session
 CURLMcode curl_multi_remove_handle(CURLM *multi_handle, CURL *easy_handle);
 .fi
 .SH DESCRIPTION
-Removes a given \fIeasy_handle\fP from the \fImulti_handle\fP. This will make
-the specified easy handle be removed from this multi handle's control.
+Removes a given \fIeasy_handle\fP from the \fImulti_handle\fP. This makes the
+specified easy handle be removed from this multi handle's control.
 
 When the easy handle has been removed from a multi stack, it is again
 perfectly legal to invoke \fIcurl_easy_perform(3)\fP on this easy handle.
 
-Removing an easy handle while being used is perfectly legal and will
-effectively halt the transfer in progress involving that easy handle. All
-other easy handles and transfers will remain unaffected.
+Removing an easy handle while being in use is perfectly legal and effectively
+halts the transfer in progress involving that easy handle. All other easy
+handles and transfers remain unaffected.
 
 It is fine to remove a handle at any time during a transfer, just not from
 within any libcurl callback function.
+
+Removing an easy handle from the multi handle before the corresponding
+transfer is complete might cause libcurl to close the connection - if the
+state of it and the internal protocol handler deem it necessary. Otherwise
+libcurl keeps the connection alive in the connection pool associated with the
+multi handle, ready to get reused for a future transfer using this multi
+handle.
 .SH EXAMPLE
 .nf
 /* when an easy handle has completed, remove it */
@@ -61,5 +68,6 @@ Added in 7.9.6
 .SH RETURN VALUE
 CURLMcode type, general libcurl multi interface error code.
 .SH "SEE ALSO"
-.BR curl_multi_cleanup "(3)," curl_multi_init "(3), "
-.BR curl_multi_add_handle "(3) "
+.BR curl_multi_add_handle (3),
+.BR curl_multi_cleanup (3),
+.BR curl_multi_init (3)

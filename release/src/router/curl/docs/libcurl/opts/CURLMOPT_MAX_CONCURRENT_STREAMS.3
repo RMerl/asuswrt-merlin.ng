@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLMOPT_MAX_CONCURRENT_STREAMS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLMOPT_MAX_CONCURRENT_STREAMS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLMOPT_MAX_CONCURRENT_STREAMS \- max concurrent streams for http2
@@ -34,9 +34,9 @@ CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_MAX_CONCURRENT_STREAMS,
                             long max);
 .fi
 .SH DESCRIPTION
-Pass a long indicating the \fBmax\fP. The set number will be used as the
-maximum number of concurrent streams for a connections that libcurl should
-support on connections done using HTTP/2.
+Pass a long indicating the \fBmax\fP. The set number is used as the maximum
+number of concurrent streams for a connections that libcurl should support on
+connections done using HTTP/2.
 
 Valid values range from 1 to 2147483647 (2^31 - 1) and defaults to 100.  The
 value passed here would be honored based on other system resources properties.
@@ -55,4 +55,5 @@ Added in 7.67.0
 .SH RETURN VALUE
 Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_MAXCONNECTS "(3), " CURLMOPT_MAXCONNECTS "(3), "
+.BR CURLMOPT_MAXCONNECTS (3),
+.BR CURLOPT_MAXCONNECTS (3)

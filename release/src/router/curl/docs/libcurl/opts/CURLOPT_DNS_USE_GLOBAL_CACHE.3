@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DNS_USE_GLOBAL_CACHE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_DNS_USE_GLOBAL_CACHE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_DNS_USE_GLOBAL_CACHE \- global DNS cache
@@ -37,12 +37,11 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_DNS_USE_GLOBAL_CACHE,
 Has no function since 7.62.0. Do not use!
 
 Pass a long. If the \fIenable\fP value is 1, it tells curl to use a global DNS
-cache that will survive between easy handle creations and deletions. This is
-not thread-safe and this will use a global variable.
+cache that survives between easy handle creations and deletions. This is not
+thread-safe and this uses a global variable.
 
-\fBWARNING:\fP this option is considered obsolete. Stop using it. Switch over
-to using the share interface instead! See \fICURLOPT_SHARE(3)\fP and
-\fIcurl_share_init(3)\fP.
+See \fICURLOPT_SHARE(3)\fP and \fIcurl_share_init(3)\fP for the correct way to
+share DNS cache between transfers.
 .SH DEFAULT
 0
 .SH PROTOCOLS
@@ -64,4 +63,5 @@ Deprecated since 7.11.1. Function removed in 7.62.0.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_SHARE "(3), " CURLOPT_DNS_CACHE_TIMEOUT "(3), "
+.BR CURLOPT_DNS_CACHE_TIMEOUT (3),
+.BR CURLOPT_SHARE (3)

@@ -57,9 +57,7 @@
 
 /* based on sockfilt.c */
 
-#ifdef HAVE_SIGNAL_H
 #include <signal.h>
-#endif
 #ifdef HAVE_NETINET_IN_H
 #include <netinet/in.h>
 #endif
@@ -304,7 +302,7 @@ static curl_socket_t socksconnect(unsigned short connectport,
   if(rc) {
     int error = SOCKERRNO;
     logmsg("Error connecting to %s:%hu: (%d) %s",
-           connectaddr, connectport, error, strerror(error));
+           connectaddr, connectport, error, sstrerror(error));
     return CURL_SOCKET_BAD;
   }
   logmsg("Connected fine to %s:%d", connectaddr, connectport);
@@ -740,7 +738,7 @@ static bool incoming(curl_socket_t listenfd)
       if(CURL_SOCKET_BAD == newfd) {
         error = SOCKERRNO;
         logmsg("accept(%d, NULL, NULL) failed with error: (%d) %s",
-               sockfd, error, strerror(error));
+               sockfd, error, sstrerror(error));
       }
       else {
         curl_socket_t remotefd;
@@ -810,7 +808,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
     if(rc) {
       error = SOCKERRNO;
       logmsg("setsockopt(SO_REUSEADDR) failed with error: (%d) %s",
-             error, strerror(error));
+             error, sstrerror(error));
       if(maxretr) {
         rc = wait_ms(delay);
         if(rc) {
@@ -866,8 +864,14 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
 
   if(rc) {
     error = SOCKERRNO;
-    logmsg("Error binding socket on port %hu: (%d) %s",
-           *listenport, error, strerror(error));
+#ifdef USE_UNIX_SOCKETS
+    if(socket_domain == AF_UNIX)
+      logmsg("Error binding socket on path %s: (%d) %s",
+             unix_socket, error, sstrerror(error));
+    else
+#endif
+      logmsg("Error binding socket on port %hu: (%d) %s",
+             *listenport, error, sstrerror(error));
     sclose(sock);
     return CURL_SOCKET_BAD;
   }
@@ -891,7 +895,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
     if(getsockname(sock, &localaddr.sa, &la_size) < 0) {
       error = SOCKERRNO;
       logmsg("getsockname() failed with error: (%d) %s",
-             error, strerror(error));
+             error, sstrerror(error));
       sclose(sock);
       return CURL_SOCKET_BAD;
     }
@@ -923,7 +927,7 @@ static curl_socket_t sockdaemon(curl_socket_t sock,
   if(0 != rc) {
     error = SOCKERRNO;
     logmsg("listen(%d, 5) failed with error: (%d) %s",
-           sock, error, strerror(error));
+           sock, error, sstrerror(error));
     sclose(sock);
     return CURL_SOCKET_BAD;
   }
@@ -1071,7 +1075,7 @@ int main(int argc, char *argv[])
   if(CURL_SOCKET_BAD == sock) {
     error = SOCKERRNO;
     logmsg("Error creating socket: (%d) %s",
-           error, strerror(error));
+           error, sstrerror(error));
     goto socks5_cleanup;
   }
 

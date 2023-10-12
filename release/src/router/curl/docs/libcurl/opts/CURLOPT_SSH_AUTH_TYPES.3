@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSH_AUTH_TYPES 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SSH_AUTH_TYPES 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SSH_AUTH_TYPES \- auth types for SFTP and SCP
@@ -61,4 +61,6 @@ CURLSSH_AUTH_HOST was added in 7.16.1, CURLSSH_AUTH_AGENT was added in 7.28.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_SSH_HOST_PUBLIC_KEY_MD5 "(3), " CURLOPT_SSH_PUBLIC_KEYFILE "(3), "
+.BR CURLOPT_SSH_HOST_PUBLIC_KEY_MD5 (3),
+.BR CURLOPT_SSH_HOST_PUBLIC_KEY_SHA256 (3),
+.BR CURLOPT_SSH_PUBLIC_KEYFILE (3)

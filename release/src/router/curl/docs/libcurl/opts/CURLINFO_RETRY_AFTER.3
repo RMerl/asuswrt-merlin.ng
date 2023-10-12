@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLINFO_RETRY_AFTER 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLINFO_RETRY_AFTER 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLINFO_RETRY_AFTER \- returns the Retry-After retry delay
@@ -39,7 +39,7 @@ HTTP server suggests the client should wait until the next request is
 issued. The information from the "Retry-After:" header.
 
 While the HTTP header might contain a fixed date string, the
-\fICURLINFO_RETRY_AFTER(3)\fP will always return number of seconds to wait -
+\fICURLINFO_RETRY_AFTER(3)\fP always returns the number of seconds to wait -
 or zero if there was no header or the header could not be parsed.
 .SH DEFAULT
 Returns zero delay if there was no header.
@@ -66,4 +66,6 @@ Added in 7.66.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_STDERR "(3), " CURLOPT_HEADERFUNCTION "(3), "
+.BR curl_easy_header (3),
+.BR CURLOPT_HEADERFUNCTION (3),
+.BR CURLOPT_STDERR (3)

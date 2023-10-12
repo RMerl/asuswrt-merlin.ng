@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLMOPT_PUSHDATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLMOPT_PUSHDATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLMOPT_PUSHDATA \- pointer to pass to push callback
@@ -33,9 +33,9 @@ CURLMOPT_PUSHDATA \- pointer to pass to push callback
 CURLMcode curl_multi_setopt(CURLM *handle, CURLMOPT_PUSHDATA, void *pointer);
 .fi
 .SH DESCRIPTION
-Set \fIpointer\fP to pass as the last argument to the
-\fICURLMOPT_PUSHFUNCTION(3)\fP callback. The pointer will not be touched or
-used by libcurl itself, only passed on to the callback function.
+Set a \fIpointer\fP to pass as the last argument to the
+\fICURLMOPT_PUSHFUNCTION(3)\fP callback. The pointer is not touched or used by
+libcurl itself, only passed on to the callback function.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -77,6 +77,7 @@ Added in 7.44.0
 .SH RETURN VALUE
 Returns CURLM_OK if the option is supported, and CURLM_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLMOPT_PUSHFUNCTION "(3), " CURLMOPT_PIPELINING "(3), "
-.BR CURLOPT_PIPEWAIT "(3), "
+.BR CURLMOPT_PIPELINING (3),
+.BR CURLMOPT_PUSHFUNCTION (3),
+.BR CURLOPT_PIPEWAIT (3),
 .BR RFC 7540

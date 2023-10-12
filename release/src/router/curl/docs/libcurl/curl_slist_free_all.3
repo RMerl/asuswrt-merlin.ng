@@ -21,7 +21,7 @@
 .\" * SPDX-License-Identifier: curl
 .\" *
 .\" **************************************************************************
-.TH curl_slist_free_all 3 "April 26, 2023" "libcurl 8.1.2" "libcurl"
+.TH curl_slist_free_all 3 "September 26, 2023" "libcurl 8.4.0" "libcurl"
 
 .SH NAME
 curl_slist_free_all - free an entire curl_slist list
@@ -35,8 +35,8 @@ void curl_slist_free_all(struct curl_slist *list);
 curl_slist_free_all() removes all traces of a previously built curl_slist
 linked list.
 
-Passing in a NULL pointer in \fIlist\fP will make this function return
-immediately with no action.
+Passing in a NULL pointer in \fIlist\fP makes this function return immediately
+with no action.
 .SH EXAMPLE
 .nf
 CURL *handle;
@@ -58,4 +58,4 @@ Always
 .SH RETURN VALUE
 Nothing.
 .SH "SEE ALSO"
-.BR curl_slist_append "(3), "
+.BR curl_slist_append (3)

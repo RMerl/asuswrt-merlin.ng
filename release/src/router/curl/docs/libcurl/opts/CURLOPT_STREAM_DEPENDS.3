@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_STREAM_DEPENDS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_STREAM_DEPENDS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_STREAM_DEPENDS \- stream this transfer depends on
@@ -44,9 +44,9 @@ resources to the identified stream rather than to the dependent stream."
 
 This option can be set during transfer.
 
-\fIdephandle\fP must not be the same as \fIhandle\fP, that will cause this
-function to return an error. It must be another easy handle, and it also needs
-to be a handle of a transfer that will be sent over the same HTTP/2 connection
+\fIdephandle\fP must not be the same as \fIhandle\fP, that makes this function
+return an error. It must be another easy handle, and it also needs to be a
+handle of a transfer that is about to be sent over the same HTTP/2 connection
 for this option to have an actual effect.
 .SH DEFAULT
 NULL
@@ -71,4 +71,7 @@ Added in 7.46.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_STREAM_WEIGHT "(3), " CURLOPT_STREAM_DEPENDS_E "(3), "
+.BR CURLMOPT_PIPELINING (3),
+.BR CURLOPT_HTTP_VERSION (3),
+.BR CURLOPT_STREAM_DEPENDS_E (3),
+.BR CURLOPT_STREAM_WEIGHT (3)

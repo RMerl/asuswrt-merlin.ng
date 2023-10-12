@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_PROXY_KEYPASSWD 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_PROXY_KEYPASSWD 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_PROXY_KEYPASSWD \- passphrase for the proxy private key
@@ -35,10 +35,10 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_PROXY_KEYPASSWD, char *pwd);
 .SH DESCRIPTION
 This option is for connecting to an HTTPS proxy, not an HTTPS server.
 
-Pass a pointer to a null-terminated string as parameter. It will be used as
-the password required to use the \fICURLOPT_PROXY_SSLKEY(3)\fP private key.
-You never need a pass phrase to load a certificate but you need one to load
-your private key.
+Pass a pointer to a null-terminated string as parameter. It is used as the
+password required to use the \fICURLOPT_PROXY_SSLKEY(3)\fP private key.  You
+never need a pass phrase to load a certificate but you need one to load your
+private key.
 
 The application does not have to keep the string around after setting this
 option.
@@ -63,5 +63,7 @@ Added in 7.52.0
 Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_PROXY_SSLKEY "(3), " CURLOPT_SSH_PRIVATE_KEYFILE "(3), "
-.BR CURLOPT_SSLKEY "(3), "
+.BR CURLOPT_KEYPASSWD (3),
+.BR CURLOPT_PROXY_SSLKEY (3),
+.BR CURLOPT_SSH_PRIVATE_KEYFILE (3),
+.BR CURLOPT_SSLKEY (3)

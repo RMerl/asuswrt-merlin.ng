@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSH_KEYDATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SSH_KEYDATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SSH_HOSTKEYDATA \- pointer to pass to the SSH host key callback
@@ -33,8 +33,8 @@ CURLOPT_SSH_HOSTKEYDATA \- pointer to pass to the SSH host key callback
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSH_HOSTKEYDATA, void *pointer);
 .fi
 .SH DESCRIPTION
-Pass a void * as parameter. This \fIpointer\fP will be passed along verbatim
-to the callback set with \fICURLOPT_SSH_HOSTKEYFUNCTION(3)\fP.
+Pass a void * as parameter. This \fIpointer\fP is passed along untouched to
+the callback set with \fICURLOPT_SSH_HOSTKEYFUNCTION(3)\fP.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -63,4 +63,4 @@ Added in 7.84.0, works only with libssh2 backend.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_SSH_HOSTKEYFUNCTION "(3), "
+.BR CURLOPT_SSH_HOSTKEYFUNCTION (3)

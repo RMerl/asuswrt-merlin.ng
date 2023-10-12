@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSH_KEYDATA 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SSH_KEYDATA 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SSH_KEYDATA \- pointer passed to the SSH key callback
@@ -33,8 +33,8 @@ CURLOPT_SSH_KEYDATA \- pointer passed to the SSH key callback
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSH_KEYDATA, void *pointer);
 .fi
 .SH DESCRIPTION
-Pass a void * as parameter. This \fIpointer\fP will be passed along verbatim
-to the callback set with \fICURLOPT_SSH_KEYFUNCTION(3)\fP.
+Pass a void * as parameter. This \fIpointer\fP is passed along verbatim to the
+callback set with \fICURLOPT_SSH_KEYFUNCTION(3)\fP.
 .SH DEFAULT
 NULL
 .SH PROTOCOLS
@@ -44,7 +44,7 @@ SFTP and SCP
 static int keycb(CURL *easy,
                  const struct curl_khkey *knownkey,
                  const struct curl_khkey *foundkey,
-                 enum curl_khmatch,
+                 enum curl_khmatch match,
                  void *clientp)
 {
   /* 'clientp' points to the callback_data struct */
@@ -65,4 +65,5 @@ Added in 7.19.6
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_SSH_KEYDATA "(3), " CURLOPT_SSH_KNOWNHOSTS "(3), "
+.BR CURLOPT_SSH_KEYDATA (3),
+.BR CURLOPT_SSH_KNOWNHOSTS (3)

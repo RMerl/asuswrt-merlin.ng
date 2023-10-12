@@ -51,6 +51,8 @@ const char *proto_rtsp = NULL;
 const char *proto_scp = NULL;
 const char *proto_sftp = NULL;
 const char *proto_tftp = NULL;
+const char *proto_ipfs = "ipfs";
+const char *proto_ipns = "ipns";
 
 static struct proto_name_tokenp {
   const char   *proto_name;
@@ -73,6 +75,7 @@ bool feature_brotli = FALSE;
 bool feature_hsts = FALSE;
 bool feature_http2 = FALSE;
 bool feature_http3 = FALSE;
+bool feature_httpsproxy = FALSE;
 bool feature_libz = FALSE;
 bool feature_ntlm = FALSE;
 bool feature_ntlm_wb = FALSE;
@@ -97,7 +100,7 @@ static struct feature_name_presentp {
   {"HSTS",           &feature_hsts,       CURL_VERSION_HSTS},
   {"HTTP2",          &feature_http2,      CURL_VERSION_HTTP2},
   {"HTTP3",          &feature_http3,      CURL_VERSION_HTTP3},
-  {"HTTPS-proxy",    NULL,                CURL_VERSION_HTTPS_PROXY},
+  {"HTTPS-proxy",    &feature_httpsproxy, CURL_VERSION_HTTPS_PROXY},
   {"IDN",            NULL,                CURL_VERSION_IDN},
   {"IPv6",           NULL,                CURL_VERSION_IPV6},
   {"Kerberos",       NULL,                CURL_VERSION_KERBEROS5},

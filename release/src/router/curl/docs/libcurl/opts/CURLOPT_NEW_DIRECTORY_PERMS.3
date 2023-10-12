@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_NEW_DIRECTORY_PERMS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_NEW_DIRECTORY_PERMS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_NEW_DIRECTORY_PERMS \- permissions for remotely created directories
@@ -33,8 +33,8 @@ CURLOPT_NEW_DIRECTORY_PERMS \- permissions for remotely created directories
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_NEW_DIRECTORY_PERMS,
                           long mode);
 .SH DESCRIPTION
-Pass a long as a parameter, containing the value of the permissions that will
-be assigned to newly created directories on the remote server.  The default value is
+Pass a long as a parameter, containing the value of the permissions that is
+set on newly created directories on the remote server. The default value is
 \fI0755\fP, but any valid value can be used.  The only protocols that can use
 this are \fIsftp://\fP, \fIscp://\fP, and \fIfile://\fP.
 .SH DEFAULT
@@ -57,4 +57,6 @@ Added in 7.16.4
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_NEW_FILE_PERMS "(3), " CURLOPT_UPLOAD "(3), "
+.BR CURLOPT_FTP_CREATE_MISSING_DIRS (3),
+.BR CURLOPT_NEW_FILE_PERMS (3),
+.BR CURLOPT_UPLOAD (3)

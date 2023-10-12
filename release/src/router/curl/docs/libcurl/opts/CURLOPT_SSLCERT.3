@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSLCERT 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SSLCERT 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SSLCERT \- SSL client certificate
@@ -38,10 +38,10 @@ the file name of your client certificate. The default format is "P12" on
 Secure Transport and "PEM" on other engines, and can be changed with
 \fICURLOPT_SSLCERTTYPE(3)\fP.
 
-With NSS or Secure Transport, this can also be the nickname of the certificate
-you wish to authenticate with as it is named in the security database. If you
-want to use a file from the current directory, please precede it with "./"
-prefix, in order to avoid confusion with a nickname.
+With Secure Transport, this can also be the nickname of the certificate you
+wish to authenticate with as it is named in the security database. If you want
+to use a file from the current directory, please precede it with "./" prefix,
+in order to avoid confusion with a nickname.
 
 (Schannel only) Client certificates can be specified by a path expression to a
 certificate store. (You can import \fIPFX\fP to a store first). You can use
@@ -82,4 +82,6 @@ If built TLS enabled.
 Returns CURLE_OK if TLS enabled, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_SSLCERTTYPE "(3), " CURLOPT_SSLKEY "(3), "
+.BR CURLOPT_SSLCERTTYPE (3),
+.BR CURLOPT_SSLKEY (3),
+.BR CURLOPT_KEYPASSWD (3)

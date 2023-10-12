@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_IOCTLFUNCTION 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_IOCTLFUNCTION 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_IOCTLFUNCTION \- callback for I/O operations
@@ -64,7 +64,7 @@ The \fIclientp\fP argument to the callback is set with the
 
 This option is deprecated! Do not use it. Use \fICURLOPT_SEEKFUNCTION(3)\fP
 instead to provide seeking! If \fICURLOPT_SEEKFUNCTION(3)\fP is set, this
-parameter will be ignored when seeking.
+parameter is ignored when seeking.
 .SH DEFAULT
 By default, this parameter is set to NULL. Not used.
 .SH PROTOCOLS
@@ -92,4 +92,5 @@ Added in 7.12.3. Deprecated since 7.18.0.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_IOCTLDATA "(3), " CURLOPT_SEEKFUNCTION "(3), "
+.BR CURLOPT_IOCTLDATA (3),
+.BR CURLOPT_SEEKFUNCTION (3)

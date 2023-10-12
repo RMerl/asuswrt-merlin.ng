@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSH_PRIVATE_KEYFILE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SSH_PRIVATE_KEYFILE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SSH_PRIVATE_KEYFILE \- private key file for SSH auth
@@ -34,8 +34,9 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_SSH_PRIVATE_KEYFILE,
                           char *filename);
 .SH DESCRIPTION
 Pass a char * pointing to a \fIfilename\fP for your private key. If not used,
-libcurl defaults to \fB$HOME/.ssh/id_dsa\fP if the HOME environment variable
-is set, and just "id_dsa" in the current directory if HOME is not set.
+libcurl defaults to \fB$HOME/.ssh/id_rsa\fP or \fB$HOME/.ssh/id_dsa\fP if the
+HOME environment variable is set, and just \fB"id_rsa"\fP or \fB"id_dsa"\fP in
+the current directory if HOME is not set.
 
 If the file is password-protected, set the password with
 \fICURLOPT_KEYPASSWD(3)\fP.
@@ -64,4 +65,5 @@ Added in 7.16.1
 Returns CURLE_OK if the option is supported, CURLE_UNKNOWN_OPTION if not, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_SSH_PUBLIC_KEYFILE "(3), " CURLOPT_SSH_AUTH_TYPES "(3), "
+.BR CURLOPT_SSH_PUBLIC_KEYFILE (3),
+.BR CURLOPT_SSH_AUTH_TYPES (3)

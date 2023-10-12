@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DISALLOW_USERNAME_IN_URL 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_DISALLOW_USERNAME_IN_URL 3 "September 27, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_DISALLOW_USERNAME_IN_URL \- disallow specifying username in the URL
@@ -36,6 +36,9 @@ CURLcode curl_easy_setopt(CURL *handle, CURLOPT_DISALLOW_USERNAME_IN_URL,
 .SH DESCRIPTION
 A long parameter set to 1 tells the library to not allow URLs that include a
 username.
+
+This is the equivalent to the \fICURLU_DISALLOW_USER\fP flag for the
+\fIcurl_url_set(3)\fP function.
 .SH DEFAULT
 0 (disabled) - user names are allowed by default.
 .SH PROTOCOLS
@@ -56,7 +59,10 @@ Added in 7.61.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 
-curl_easy_perform() will return CURLE_LOGIN_DENIED if this option is enabled
-and a URL containing a username is specified.
+\fIcurl_easy_perform(3)\fP returns CURLE_LOGIN_DENIED if this option is
+enabled and a URL containing a username is specified.
 .SH "SEE ALSO"
-.BR libcurl-security "(3), ", CURLOPT_PROTOCOLS "(3)"
+.BR curl_url_set (3),
+.BR CURLOPT_PROTOCOLS (3),
+.BR CURLOPT_URL (3),
+.BR libcurl-security (3)

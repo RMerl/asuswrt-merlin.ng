@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_SSL_VERIFYHOST 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_SSL_VERIFYHOST 3 "September 27, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_SSL_VERIFYHOST \- verify the certificate's name against host
@@ -55,8 +55,8 @@ If \fIverify\fP value is set to 1:
 In 7.28.0 and earlier: treated as a debug option of some sorts, not supported
 anymore due to frequently leading to programmer mistakes.
 
-From 7.28.1 to 7.65.3: setting it to 1 made curl_easy_setopt() return an error
-and leaving the flag untouched.
+From 7.28.1 to 7.65.3: setting it to 1 made \fIcurl_easy_setopt(3)\fP return
+an error and leaving the flag untouched.
 
 From 7.66.0: treats 1 and 2 the same.
 
@@ -85,9 +85,6 @@ a TLS extension that sends the hostname to the server. The server may use that
 information to do such things as sending back a specific certificate for the
 hostname, or forwarding the request to a specific origin server. Some hostnames
 may be inaccessible if SNI is not sent.
-
-NSS: If \fICURLOPT_SSL_VERIFYPEER(3)\fP is zero,
-\fICURLOPT_SSL_VERIFYHOST(3)\fP is also set to zero and cannot be overridden.
 .SH DEFAULT
 2
 .SH PROTOCOLS
@@ -111,4 +108,6 @@ Returns CURLE_OK if TLS is supported, and CURLE_UNKNOWN_OPTION if not.
 
 If 1 is set as argument, \fICURLE_BAD_FUNCTION_ARGUMENT\fP is returned.
 .SH "SEE ALSO"
-.BR CURLOPT_SSL_VERIFYPEER "(3), " CURLOPT_CAINFO "(3), "
+.BR CURLOPT_CAINFO (3),
+.BR CURLOPT_PINNEDPUBLICKEY (3),
+.BR CURLOPT_SSL_VERIFYPEER (3)

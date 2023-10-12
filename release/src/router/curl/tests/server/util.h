@@ -31,8 +31,7 @@ long timediff(struct timeval newer, struct timeval older);
 
 #define TEST_DATA_PATH "%s/data/test%ld"
 #define ALTTEST_DATA_PATH "%s/test%ld"
-
-#define SERVERLOGS_LOCK "serverlogs.lock"
+#define SERVERLOGS_LOCKDIR "lock"  /* within logdir */
 
 /* global variable, where to find the 'data' dir */
 extern const char *path;
@@ -54,6 +53,10 @@ void win32_perror(const char *msg);
 
 void win32_init(void);
 void win32_cleanup(void);
+const char *sstrerror(int err);
+#else   /* WIN32 */
+
+#define sstrerror(e) strerror(e)
 #endif  /* WIN32 */
 
 /* fopens the test case file */

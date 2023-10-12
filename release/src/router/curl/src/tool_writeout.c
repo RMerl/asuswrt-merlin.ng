@@ -75,6 +75,7 @@ static const struct httpmap http_version[] = {
 static const struct writeoutvar variables[] = {
   {"certs", VAR_CERT, CURLINFO_NONE, writeString},
   {"content_type", VAR_CONTENT_TYPE, CURLINFO_CONTENT_TYPE, writeString},
+  {"conn_id", VAR_CONN_ID, CURLINFO_CONN_ID, writeOffset},
   {"errormsg", VAR_ERRORMSG, CURLINFO_NONE, writeString},
   {"exitcode", VAR_EXITCODE, CURLINFO_NONE, writeLong},
   {"filename_effective", VAR_EFFECTIVE_FILENAME, CURLINFO_NONE, writeString},
@@ -145,6 +146,7 @@ static const struct writeoutvar variables[] = {
   {"urle.zoneid", VAR_INPUT_URLEZONEID, CURLINFO_NONE, writeString},
   {"url_effective", VAR_EFFECTIVE_URL, CURLINFO_EFFECTIVE_URL, writeString},
   {"urlnum", VAR_URLNUM, CURLINFO_NONE, writeLong},
+  {"xfer_id", VAR_EASY_ID, CURLINFO_XFER_ID, writeOffset},
   {NULL, VAR_NONE, CURLINFO_NONE, NULL}
 };
 
@@ -515,6 +517,7 @@ void ourWriteOut(struct OperationConfig *config, struct per_transfer *per,
   bool done = FALSE;
   struct curl_certinfo *certinfo;
   CURLcode res = curl_easy_getinfo(per->curl, CURLINFO_CERTINFO, &certinfo);
+  bool fclose_stream = FALSE;
 
   if(!writeinfo)
     return;
@@ -554,10 +557,16 @@ void ourWriteOut(struct OperationConfig *config, struct per_transfer *per,
                   done = TRUE;
                 break;
               case VAR_STDOUT:
+                if(fclose_stream)
+                  fclose(stream);
+                fclose_stream = FALSE;
                 stream = stdout;
                 break;
               case VAR_STDERR:
-                stream = stderr;
+                if(fclose_stream)
+                  fclose(stream);
+                fclose_stream = FALSE;
+                stream = tool_stderr;
                 break;
               case VAR_JSON:
                 ourWriteOutJSON(stream, variables, per, per_result);
@@ -574,7 +583,8 @@ void ourWriteOut(struct OperationConfig *config, struct per_transfer *per,
             }
           }
           if(!match) {
-            fprintf(stderr, "curl: unknown --write-out variable: '%.*s'\n",
+            fprintf(tool_stderr,
+                    "curl: unknown --write-out variable: '%.*s'\n",
                     (int)vlen, ptr);
           }
           ptr = end + 1; /* pass the end */
@@ -597,6 +607,36 @@ void ourWriteOut(struct OperationConfig *config, struct per_transfer *per,
           }
           else
             fputs("%header{", stream);
+        }
+        else if(!strncmp("output{", &ptr[1], 7)) {
+          bool append = FALSE;
+          ptr += 8;
+          if((ptr[0] == '>') && (ptr[1] == '>')) {
+            append = TRUE;
+            ptr += 2;
+          }
+          end = strchr(ptr, '}');
+          if(end) {
+            char fname[512]; /* holds the longest file name */
+            size_t flen = end - ptr;
+            if(flen < sizeof(fname)) {
+              FILE *stream2;
+              memcpy(fname, ptr, flen);
+              fname[flen] = 0;
+              stream2 = fopen(fname, append? FOPEN_APPENDTEXT :
+                              FOPEN_WRITETEXT);
+              if(stream2) {
+                /* only change if the open worked */
+                if(fclose_stream)
+                  fclose(stream);
+                stream = stream2;
+                fclose_stream = TRUE;
+              }
+            }
+            ptr = end + 1;
+          }
+          else
+            fputs("%output{", stream);
         }
         else {
           /* illegal syntax, then just output the characters that are used */
@@ -630,4 +670,6 @@ void ourWriteOut(struct OperationConfig *config, struct per_transfer *per,
       ptr++;
     }
   }
+  if(fclose_stream)
+    fclose(stream);
 }

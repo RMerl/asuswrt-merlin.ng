@@ -26,10 +26,10 @@ Mime
 <server>
 http
 </server>
- <name>
+<name>
 HTTP formpost a file with spaces in name
- </name>
- <command>
+</name>
+<command>
 http://%HOSTIP:%HTTPPORT/we/want/%TESTNUMBER -F "name=@%LOGDIR/fie ld %TESTNUMBER"
 </command>
 # We create this file before the command is invoked!
@@ -48,7 +48,7 @@ POST /we/want/%TESTNUMBER HTTP/1.1
 Host: %HOSTIP:%HTTPPORT
 User-Agent: curl/%VERSION
 Accept: */*
-Content-Length: 223
+Content-Length: 235
 Content-Type: multipart/form-data; boundary=----------------------------b0b3d6d23991
 
 ------------------------------b0b3d6d23991

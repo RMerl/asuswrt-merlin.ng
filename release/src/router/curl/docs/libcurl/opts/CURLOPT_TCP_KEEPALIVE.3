@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_TCP_KEEPALIVE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_TCP_KEEPALIVE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_TCP_KEEPALIVE \- TCP keep-alive probing
@@ -33,7 +33,7 @@ CURLOPT_TCP_KEEPALIVE \- TCP keep-alive probing
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_TCP_KEEPALIVE, long probe);
 .fi
 .SH DESCRIPTION
-Pass a long. If set to 1, TCP keepalive probes will be sent. The delay and
+Pass a long. If set to 1, TCP keepalive probes are used. The delay and
 frequency of these probes can be controlled by the
 \fICURLOPT_TCP_KEEPIDLE(3)\fP and \fICURLOPT_TCP_KEEPINTVL(3)\fP options,
 provided the operating system supports them. Set to 0 (default behavior) to
@@ -65,4 +65,7 @@ Added in 7.25.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_TCP_KEEPIDLE "(3), " CURLOPT_TCP_KEEPINTVL "(3), "
+.BR CURLOPT_TCP_KEEPIDLE (3),
+.BR CURLOPT_TCP_KEEPINTVL (3),
+.BR CURLOPT_LOW_SPEED_LIMIT (3),
+.BR CURLOPT_MAX_RECV_SPEED_LARGE (3)

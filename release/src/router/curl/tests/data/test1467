@@ -38,11 +38,11 @@ unix-sockets
 http
 socks5unix
 </server>
- <name>
+<name>
 HTTP GET via SOCKS5 proxy via unix sockets
- </name>
- <command>
---socks5 localhost%PWD/%SOCKSUNIXPATH http://%HOSTIP:%HTTPPORT/%TESTNUMBER
+</name>
+<command>
+--socks5 localhost%SOCKSUNIXPATH http://%HOSTIP:%HTTPPORT/%TESTNUMBER
 </command>
 </client>
 

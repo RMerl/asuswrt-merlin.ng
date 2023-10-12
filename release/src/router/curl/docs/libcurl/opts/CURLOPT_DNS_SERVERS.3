@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_DNS_SERVERS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_DNS_SERVERS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_DNS_SERVERS \- DNS servers to use
@@ -69,4 +69,6 @@ CURLE_NOT_BUILT_IN if support was disabled at compile-time,
 CURLE_BAD_FUNCTION_ARGUMENT when given an invalid server list, or
 CURLE_OUT_OF_MEMORY if there was insufficient heap space.
 .SH "SEE ALSO"
-.BR CURLOPT_DNS_LOCAL_IP4 "(3), " CURLOPT_DNS_CACHE_TIMEOUT "(3), "
+.BR CURLOPT_DNS_CACHE_TIMEOUT (3),
+.BR CURLOPT_DNS_LOCAL_IP4 (3),
+.BR CURLOPT_DNS_LOCAL_IP6 (3)

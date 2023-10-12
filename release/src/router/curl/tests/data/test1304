@@ -14,10 +14,11 @@ none
 </server>
 <features>
 unittest
+netrc
 </features>
- <name>
+<name>
 netrc parsing unit tests
- </name>
+</name>
 <command>
 %LOGDIR/netrc%TESTNUMBER
 </command>

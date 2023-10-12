@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_KEEP_SENDING_ON_ERROR 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_KEEP_SENDING_ON_ERROR 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_KEEP_SENDING_ON_ERROR \- keep sending on early HTTP response >= 300
@@ -63,4 +63,6 @@ Along with HTTP. Added in 7.51.0.
 .SH RETURN VALUE
 Returns CURLE_OK if HTTP is enabled, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_FAILONERROR "(3), " CURLOPT_HTTPHEADER "(3), "
+.BR CURLINFO_RESPONSE_CODE (3),
+.BR CURLOPT_FAILONERROR (3),
+.BR CURLOPT_HTTPHEADER (3)

@@ -52,10 +52,10 @@ static CURLcode ping(CURL *curl, const char *send_payload)
   return result;
 }
 
-static CURLcode recv_pong(CURL *curl, const char *exected_payload)
+static CURLcode recv_pong(CURL *curl, const char *expected_payload)
 {
   size_t rlen;
-  struct curl_ws_frame *meta;
+  const struct curl_ws_frame *meta;
   char buffer[256];
   CURLcode result = curl_ws_recv(curl, buffer, sizeof(buffer), &rlen, &meta);
   if(result) {
@@ -71,8 +71,8 @@ static CURLcode recv_pong(CURL *curl, const char *exected_payload)
   }
 
   fprintf(stderr, "ws: got PONG back\n");
-  if(rlen == strlen(exected_payload) &&
-     !memcmp(exected_payload, buffer, rlen)) {
+  if(rlen == strlen(expected_payload) &&
+     !memcmp(expected_payload, buffer, rlen)) {
     fprintf(stderr, "ws: got the same payload back\n");
     return CURLE_OK;
   }

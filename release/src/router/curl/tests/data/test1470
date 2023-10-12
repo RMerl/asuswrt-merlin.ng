@@ -35,17 +35,16 @@ Funny-head: yesyes
 <features>
 proxy
 unix-sockets
-!NSS
 </features>
 <server>
 https
 socks5unix
 </server>
- <name>
+<name>
 HTTPS GET with host name using SOCKS5h via unix sockets
- </name>
- <command>
-https://this.is.a.host.name:%HTTPSPORT/%TESTNUMBER -k --proxy socks5h://localhost%PWD/%SOCKSUNIXPATH
+</name>
+<command>
+https://this.is.a.host.name:%HTTPSPORT/%TESTNUMBER -k --proxy socks5h://localhost%SOCKSUNIXPATH
 </command>
 </client>
 

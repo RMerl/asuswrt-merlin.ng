@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_MAXFILESIZE_LARGE 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_MAXFILESIZE_LARGE 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_MAXFILESIZE_LARGE \- maximum file size allowed to download
@@ -33,14 +33,17 @@ CURLOPT_MAXFILESIZE_LARGE \- maximum file size allowed to download
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_MAXFILESIZE_LARGE,
                           curl_off_t size);
 .SH DESCRIPTION
-Pass a curl_off_t as parameter. This allows you to specify the maximum
-\fIsize\fP (in bytes) of a file to download. If the file requested is found
-larger than this value, the transfer will not start and
-\fICURLE_FILESIZE_EXCEEDED\fP will be returned.
+Pass a curl_off_t as parameter. This specifies the maximum accepted \fIsize\fP
+(in bytes) of a file to download. If the file requested is found larger than
+this value, the transfer is aborted and \fICURLE_FILESIZE_EXCEEDED\fP is
+returned.
 
-The file size is not always known prior to download, and for such files this
-option has no effect even if the file transfer ends up being larger than this
-given limit.
+The file size is not always known prior to the download start, and for such
+transfers this option has no effect - even if the file transfer eventually
+ends up being larger than this given limit.
+
+Since 8.4.0, this option also stops ongoing transfers if they reach this
+threshold.
 .SH DEFAULT
 None
 .SH PROTOCOLS
@@ -62,4 +65,5 @@ Added in 7.11.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_MAXFILESIZE "(3), " CURLOPT_MAX_RECV_SPEED_LARGE "(3), "
+.BR CURLOPT_MAX_RECV_SPEED_LARGE (3),
+.BR CURLOPT_MAXFILESIZE (3)

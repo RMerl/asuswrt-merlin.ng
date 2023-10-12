@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_CAPATH 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_CAPATH 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_CAPATH \- directory holding CA certificates
@@ -62,7 +62,7 @@ if(curl) {
 .fi
 .SH AVAILABILITY
 This option is supported by the OpenSSL, GnuTLS and mbedTLS (since 7.56.0)
-backends. The NSS backend provides the option only for backward compatibility.
+backends.
 .SH RETURN VALUE
 CURLE_OK if supported; or an error such as:
 
@@ -72,6 +72,7 @@ CURLE_UNKNOWN_OPTION
 
 CURLE_OUT_OF_MEMORY
 .SH "SEE ALSO"
-.BR CURLOPT_CAINFO "(3), "
-.BR CURLOPT_STDERR "(3), " CURLOPT_DEBUGFUNCTION "(3), "
-.BR CURLINFO_CAPATH "(3), "
+.BR CURLINFO_CAPATH (3),
+.BR CURLOPT_CAINFO (3),
+.BR CURLOPT_DEBUGFUNCTION (3),
+.BR CURLOPT_STDERR (3)

@@ -312,79 +312,6 @@ AC_DEFUN([CURL_CHECK_HEADER_WS2TCPIP], [
 ])
 
 
-dnl CURL_CHECK_HEADER_WINCRYPT
-dnl -------------------------------------------------
-dnl Check for compilable and valid wincrypt.h header
-
-AC_DEFUN([CURL_CHECK_HEADER_WINCRYPT], [
-  AC_REQUIRE([CURL_CHECK_HEADER_WINDOWS])dnl
-  AC_CACHE_CHECK([for wincrypt.h], [curl_cv_header_wincrypt_h], [
-    AC_COMPILE_IFELSE([
-      AC_LANG_PROGRAM([[
-#undef inline
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#include <wincrypt.h>
-      ]],[[
-        int dummy=2*PROV_RSA_FULL;
-      ]])
-    ],[
-      curl_cv_header_wincrypt_h="yes"
-    ],[
-      curl_cv_header_wincrypt_h="no"
-    ])
-  ])
-  case "$curl_cv_header_wincrypt_h" in
-    yes)
-      AC_DEFINE_UNQUOTED(HAVE_WINCRYPT_H, 1,
-        [Define to 1 if you have the wincrypt.h header file.])
-      ;;
-  esac
-])
-
-
-dnl CURL_CHECK_HEADER_WINLDAP
-dnl -------------------------------------------------
-dnl Check for compilable and valid winldap.h header
-
-AC_DEFUN([CURL_CHECK_HEADER_WINLDAP], [
-  AC_REQUIRE([CURL_CHECK_HEADER_WINDOWS])dnl
-  AC_CACHE_CHECK([for winldap.h], [curl_cv_header_winldap_h], [
-    AC_COMPILE_IFELSE([
-      AC_LANG_PROGRAM([[
-#undef inline
-#ifdef HAVE_WINDOWS_H
-#ifndef WIN32_LEAN_AND_MEAN
-#define WIN32_LEAN_AND_MEAN
-#endif
-#include <windows.h>
-#endif
-#include <winldap.h>
-      ]],[[
-#if defined(__CYGWIN__) || defined(__CEGCC__)
-        HAVE_WINLDAP_H shall not be defined.
-#else
-        LDAP *ldp = ldap_init("dummy", LDAP_PORT);
-        ULONG res = ldap_unbind(ldp);
-#endif
-      ]])
-    ],[
-      curl_cv_header_winldap_h="yes"
-    ],[
-      curl_cv_header_winldap_h="no"
-    ])
-  ])
-  case "$curl_cv_header_winldap_h" in
-    yes)
-      AC_DEFINE_UNQUOTED(HAVE_WINLDAP_H, 1,
-        [Define to 1 if you have the winldap.h header file.])
-      ;;
-  esac
-])
-
-
 dnl CURL_CHECK_HEADER_LBER
 dnl -------------------------------------------------
 dnl Check for compilable and valid lber.h header,
@@ -494,7 +421,7 @@ AC_DEFUN([CURL_CHECK_HEADER_LDAP], [
 #endif
 #include <ldap.h>
       ]],[[
-        LDAP *ldp = ldap_init("dummy", LDAP_PORT);
+        LDAP *ldp = ldap_init("0.0.0.0", LDAP_PORT);
         int res = ldap_unbind(ldp);
       ]])
     ],[
@@ -543,7 +470,7 @@ AC_DEFUN([CURL_CHECK_HEADER_LDAP_SSL], [
 #endif
 #include <ldap_ssl.h>
       ]],[[
-        LDAP *ldp = ldapssl_init("dummy", LDAPS_PORT, 1);
+        LDAP *ldp = ldapssl_init("0.0.0.0", LDAPS_PORT, 1);
       ]])
     ],[
       curl_cv_header_ldap_ssl_h="yes"
@@ -612,9 +539,7 @@ AC_DEFUN([CURL_CHECK_LIBS_WINLDAP], [
 #define WIN32_LEAN_AND_MEAN
 #endif
 #include <windows.h>
-#ifdef HAVE_WINLDAP_H
 #include <winldap.h>
-#endif
 #ifdef HAVE_WINBER_H
 #include <winber.h>
 #endif
@@ -622,7 +547,7 @@ AC_DEFUN([CURL_CHECK_LIBS_WINLDAP], [
         ]],[[
           BERVAL *bvp = NULL;
           BerElement *bep = ber_init(bvp);
-          LDAP *ldp = ldap_init("dummy", LDAP_PORT);
+          LDAP *ldp = ldap_init("0.0.0.0", LDAP_PORT);
           ULONG res = ldap_unbind(ldp);
           ber_free(bep, 1);
         ]])
@@ -732,7 +657,7 @@ AC_DEFUN([CURL_CHECK_LIBS_LDAP], [
         ]],[[
           BerValue *bvp = NULL;
           BerElement *bep = ber_init(bvp);
-          LDAP *ldp = ldap_init("dummy", LDAP_PORT);
+          LDAP *ldp = ldap_init("0.0.0.0", LDAP_PORT);
           int res = ldap_unbind(ldp);
           ber_free(bep, 1);
         ]])
@@ -1114,6 +1039,38 @@ AC_DEFUN([CURL_CHECK_FUNC_CLOCK_GETTIME_MONOTONIC], [
   dnl until library linking and run-time checks for clock_gettime succeed.
 ])
 
+dnl CURL_CHECK_FUNC_CLOCK_GETTIME_MONOTONIC_RAW
+dnl -------------------------------------------------
+dnl Check if monotonic clock_gettime is available.
+
+AC_DEFUN([CURL_CHECK_FUNC_CLOCK_GETTIME_MONOTONIC_RAW], [
+  AC_CHECK_HEADERS(sys/types.h sys/time.h)
+  AC_MSG_CHECKING([for raw monotonic clock_gettime])
+  #
+  if test "x$dontwant_rt" = "xno" ; then
+    AC_COMPILE_IFELSE([
+      AC_LANG_PROGRAM([[
+#ifdef HAVE_SYS_TYPES_H
+#include <sys/types.h>
+#endif
+#ifdef HAVE_SYS_TIME_H
+#include <sys/time.h>
+#endif
+#include <time.h>
+      ]],[[
+        struct timespec ts;
+        (void)clock_gettime(CLOCK_MONOTONIC_RAW, &ts);
+      ]])
+    ],[
+      AC_MSG_RESULT([yes])
+      AC_DEFINE_UNQUOTED(HAVE_CLOCK_GETTIME_MONOTONIC_RAW, 1,
+        [Define to 1 if you have the clock_gettime function and raw monotonic timer.])
+    ],[
+      AC_MSG_RESULT([no])
+    ])
+  fi
+])
+
 
 dnl CURL_CHECK_LIBS_CLOCK_GETTIME_MONOTONIC
 dnl -------------------------------------------------
@@ -1185,9 +1142,7 @@ AC_DEFUN([CURL_CHECK_LIBS_CLOCK_GETTIME_MONOTONIC], [
       AC_MSG_CHECKING([if monotonic clock_gettime works])
       CURL_RUN_IFELSE([
         AC_LANG_PROGRAM([[
-#ifdef HAVE_STDLIB_H
 #include <stdlib.h>
-#endif
 #ifdef HAVE_SYS_TYPES_H
 #include <sys/types.h>
 #endif
@@ -1491,9 +1446,9 @@ dnl regarding the paths this will scan:
 dnl /etc/ssl/certs/ca-certificates.crt Debian systems
 dnl /etc/pki/tls/certs/ca-bundle.crt Redhat and Mandriva
 dnl /usr/share/ssl/certs/ca-bundle.crt old(er) Redhat
-dnl /usr/local/share/certs/ca-root-nss.crt FreeBSD, MidnightBSD
-dnl /etc/ssl/cert.pem OpenBSD, FreeBSD, MidnightBSD (symlink)
-dnl /etc/ssl/certs/ (ca path) SUSE
+dnl /usr/local/share/certs/ca-root-nss.crt MidnightBSD
+dnl /etc/ssl/cert.pem OpenBSD, MidnightBSD (symlink)
+dnl /etc/ssl/certs (CA path) SUSE, FreeBSD
 
 AC_DEFUN([CURL_CHECK_CA_BUNDLE], [
 
@@ -1514,7 +1469,7 @@ AS_HELP_STRING([--without-ca-bundle], [Don't use a default CA bundle]),
 AS_HELP_STRING([--with-ca-path=DIRECTORY],
 [Path to a directory containing CA certificates stored individually, with \
 their filenames in a hash format. This option can be used with the OpenSSL, \
-GnuTLS and mbedTLS backends. Refer to OpenSSL c_rehash for details. \
+GnuTLS, mbedTLS and wolfSSL backends. Refer to OpenSSL c_rehash for details. \
 (example: /etc/certificates)])
 AS_HELP_STRING([--without-ca-path], [Don't use a default CA path]),
   [
@@ -1540,8 +1495,11 @@ AS_HELP_STRING([--without-ca-path], [Don't use a default CA path]),
     capath="no"
   elif test "x$want_capath" != "xno" -a "x$want_capath" != "xunset"; then
     dnl --with-ca-path given
-    if test "x$OPENSSL_ENABLED" != "x1" -a "x$GNUTLS_ENABLED" != "x1" -a "x$MBEDTLS_ENABLED" != "x1"; then
-      AC_MSG_ERROR([--with-ca-path only works with OpenSSL, GnuTLS or mbedTLS])
+    if test "x$OPENSSL_ENABLED" != "x1" -a \
+            "x$GNUTLS_ENABLED" != "x1" -a \
+            "x$MBEDTLS_ENABLED" != "x1" -a \
+            "x$WOLFSSL_ENABLED" != "x1"; then
+      AC_MSG_ERROR([--with-ca-path only works with OpenSSL, GnuTLS, mbedTLS or wolfSSL])
     fi
     capath="$want_capath"
     ca="no"
@@ -1575,9 +1533,14 @@ AS_HELP_STRING([--without-ca-path], [Don't use a default CA path]),
           fi
         done
       fi
-      if test "x$want_capath" = "xunset" -a "x$ca" = "xno" -a \
-              "x$OPENSSL_ENABLED" = "x1"; then
-        check_capath="/etc/ssl/certs/"
+      AC_MSG_NOTICE([want $want_capath ca $ca])
+      if test "x$want_capath" = "xunset"; then
+        if test "x$OPENSSL_ENABLED" = "x1" -o \
+                "x$GNUTLS_ENABLED" = "x1" -o \
+                "x$MBEDTLS_ENABLED" = "x1" -o \
+                "x$WOLFSSL_ENABLED" = "x1"; then
+          check_capath="/etc/ssl/certs"
+        fi
       fi
     else
       dnl no option given and cross-compiling
@@ -1707,10 +1670,10 @@ dnl -------------------------------------------------
 dnl Check if curl's WIN32 crypto lib can be used
 
 AC_DEFUN([CURL_CHECK_WIN32_CRYPTO], [
-  AC_REQUIRE([CURL_CHECK_HEADER_WINCRYPT])dnl
+  AC_REQUIRE([CURL_CHECK_HEADER_WINDOWS])dnl
   AC_MSG_CHECKING([whether build target supports WIN32 crypto API])
   curl_win32_crypto_api="no"
-  if test "$curl_cv_header_wincrypt_h" = "yes"; then
+  if test "$curl_cv_header_windows_h" = "yes"; then
     AC_COMPILE_IFELSE([
       AC_LANG_PROGRAM([[
 #undef inline

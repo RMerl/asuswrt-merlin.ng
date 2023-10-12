@@ -4,13 +4,37 @@
 
 Disable support for Alt-Svc: HTTP headers.
 
+## `CURL_DISABLE_BINDLOCAL`
+
+Disable support for binding the local end of connections.
+
 ## `CURL_DISABLE_COOKIES`
 
 Disable support for HTTP cookies.
 
-## `CURL_DISABLE_CRYPTO_AUTH`
+## `CURL_DISABLE_BASIC_AUTH`
 
-Disable support for authentication methods using crypto.
+Disable support for the Basic authentication methods.
+
+## `CURL_DISABLE_BEARER_AUTH`
+
+Disable support for the Bearer authentication methods.
+
+## `CURL_DISABLE_DIGEST_AUTH`
+
+Disable support for the Digest authentication methods.
+
+## `CURL_DISABLE_KERBEROS_AUTH`
+
+Disable support for the Kerberos authentication methods.
+
+## `CURL_DISABLE_NEGOTIATE_AUTH`
+
+Disable support for the negotiate authentication methods.
+
+## `CURL_DISABLE_AWS`
+
+Disable **AWS-SIG4** support.
 
 ## `CURL_DISABLE_DICT`
 
@@ -23,6 +47,10 @@ Disable DNS-over-HTTPS
 ## `CURL_DISABLE_FILE`
 
 Disable the FILE protocol
+
+## `CURL_DISABLE_FORM_API`
+
+Disable the form API
 
 ## `CURL_DISABLE_FTP`
 

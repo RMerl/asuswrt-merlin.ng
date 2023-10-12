@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_REDIR_PROTOCOLS 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_REDIR_PROTOCOLS 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_REDIR_PROTOCOLS \- protocols allowed to redirect to
@@ -46,11 +46,9 @@ redirections.
 Protocols denied by \fICURLOPT_PROTOCOLS(3)\fP are not overridden by this
 option.
 
-By default libcurl will allow HTTP, HTTPS, FTP and FTPS on redirect (7.65.2).
-Older versions of libcurl allowed all protocols on redirect except several
-disabled for security reasons: Since 7.19.4 FILE and SCP are disabled, and
-since 7.40.0 SMB and SMBS are also disabled. \fICURLPROTO_ALL\fP enables all
-protocols on redirect, including those disabled for security.
+By default libcurl allows HTTP, HTTPS, FTP and FTPS on redirect (7.65.2).
+\fICURLPROTO_ALL\fP enables all protocols on redirect, including those
+otherwise disabled for security.
 
 These are the available protocol defines:
 .nf
@@ -111,4 +109,7 @@ since 7.85.0.
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_PROTOCOLS "(3), "
+.BR CURLINFO_SCHEME (3),
+.BR CURLOPT_DEFAULT_PROTOCOL (3),
+.BR CURLOPT_PROTOCOLS (3),
+.BR CURLOPT_REDIR_PROTOCOLS_STR (3)

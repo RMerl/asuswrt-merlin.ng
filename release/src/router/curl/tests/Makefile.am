@@ -34,7 +34,7 @@ EXTRA_DIST = appveyor.pm azure.pm badsymbols.pl check-deprecated.pl CMakeLists.t
  pathhelp.pm README.md rtspserver.pl runner.pm runtests.1 runtests.pl secureserver.pl \
  serverhelp.pm servers.pm smbserver.py sshhelp.pm sshserver.pl stunnel.pem symbol-scan.pl \
  testcurl.1 testcurl.pl testutil.pm tftpserver.pl util.py valgrind.pm \
- valgrind.supp version-scan.pl
+ valgrind.supp version-scan.pl check-translatable-options.pl
 
 DISTCLEANFILES = configurehelp.pm
 
@@ -71,8 +71,9 @@ TEST_F = -a -p -r
 TEST_T = -a -t
 TEST_E = -a -e
 
-# !flaky means that it'll skip all tests using the flaky keyword
-TEST_NF = -a -p !flaky
+# ~<keyword> means that it will run all tests matching the keyword, but will
+# ignore their results (since these ones are likely to fail for no good reason)
+TEST_NF = -a -p ~flaky ~timing-dependent
 
 # special CI target derived from nonflaky with CI-specific flags
 TEST_CI = $(TEST_NF) -rm
@@ -117,10 +118,10 @@ event-test: perlcheck all
 	echo "converted $< to $@")
 
 checksrc:
-	cd libtest && $(MAKE) checksrc
-	cd unit && $(MAKE) checksrc
-	cd server && $(MAKE) checksrc
-	cd http && $(MAKE) checksrc
+	(cd libtest && $(MAKE) checksrc)
+	(cd unit && $(MAKE) checksrc)
+	(cd server && $(MAKE) checksrc)
+	(cd http && $(MAKE) checksrc)
 
 if CURLDEBUG
 # for debug builds, we scan the sources on all regular make invokes

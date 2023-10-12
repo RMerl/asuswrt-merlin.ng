@@ -22,7 +22,7 @@
 .\" *
 .\" **************************************************************************
 .\"
-.TH CURLOPT_RTSP_CLIENT_CSEQ 3 "April 26, 2023" "ibcurl 8.1.2" libcurl
+.TH CURLOPT_RTSP_CLIENT_CSEQ 3 "September 26, 2023" "ibcurl 8.4.0" libcurl
 
 .SH NAME
 CURLOPT_RTSP_CLIENT_CSEQ \- RTSP client CSEQ number
@@ -33,9 +33,9 @@ CURLOPT_RTSP_CLIENT_CSEQ \- RTSP client CSEQ number
 CURLcode curl_easy_setopt(CURL *handle, CURLOPT_RTSP_CLIENT_CSEQ, long cseq);
 .fi
 .SH DESCRIPTION
-Pass a long to set the CSEQ number to issue for the next RTSP
-request. Useful if the application is resuming a previously broken
-connection. The CSEQ will increment from this new number henceforth.
+Pass a long to set the CSEQ number to issue for the next RTSP request. Useful
+if the application is resuming a previously broken connection. The CSEQ
+increments from this new number henceforth.
 .SH DEFAULT
 0
 .SH PROTOCOLS
@@ -55,4 +55,7 @@ Added in 7.20.0
 .SH RETURN VALUE
 Returns CURLE_OK if the option is supported, and CURLE_UNKNOWN_OPTION if not.
 .SH "SEE ALSO"
-.BR CURLOPT_RTSP_SERVER_CSEQ "(3), " CURLOPT_RTSP_REQUEST "(3), "
+.BR CURLINFO_RTSP_CLIENT_CSEQ (3),
+.BR CURLINFO_RTSP_SERVER_CSEQ (3),
+.BR CURLOPT_RTSP_REQUEST (3),
+.BR CURLOPT_RTSP_SERVER_CSEQ (3)

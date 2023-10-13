@@ -67,7 +67,7 @@ if ("<% nvram_get("qos_enable"); %>" == 0) {	// QoS disabled
 	qos_default = 4;
 }
 
-if (qos_type == 1) {
+if (qos_type == 1 || (bwdpi_support && qos_type == -1)) {
 	var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
 	var bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
 	if (bwdpi_app_rulelist == "" || bwdpi_app_rulelist_row.length != 9){
@@ -279,11 +279,12 @@ function draw_conntrack_table(){
 		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);
 
 		// Get priority label
-		if (bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0)
+		if (bwdpi_support && qos_type == -1)
+			label = (qosclass ? category_title[qosclass] : "");
+		else if (bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0)
 			label = "Default (" + labels_array[qosclass] + ")";
 		else
 			label = labels_array[qosclass];
-
 
 		// Output row
 		code += "<tr><td>" + bwdpi_conntrack[i][0] + "</td>";
@@ -294,8 +295,8 @@ function draw_conntrack_table(){
 		          dsthost + "</td>";
 		code += "<td>" + bwdpi_conntrack[i][4] + "</td>";
 		code += "<td><span title=\"" + label + "\" class=\"catrow cat" +
-	                  qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
-	                  bwdpi_conntrack[i][5] + "</span></td></tr>";
+		         qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
+		         bwdpi_conntrack[i][5] + "</span></td></tr>";
 	}
 
 	if (shownlen == maxshown)
@@ -392,7 +393,7 @@ function redraw(){
 		default:	// Unknown mode
 			document.getElementById('dl_tr').style.display = "none";
 			document.getElementById('ul_tr').style.display = "none";
-			document.getElementById('no_qos_notice').style.display = "";
+			document.getElementById('qos_table').style.display = "none";
 			return;
 	}
 
@@ -420,7 +421,7 @@ function get_data() {
 		},
 		success: function(response){
 			redraw();
-			if (qos_type == 1) draw_conntrack_table();
+			if (bwdpi_support) draw_conntrack_table();
 			if (refreshRate > 0)
 				timedEvent = setTimeout("get_data();", refreshRate * 1000);
 		}
@@ -565,9 +566,8 @@ function draw_chart(data_array, ctx, pie) {
 			<br>
 
 			<div id="limiter_notice" class="hint-color" style="display:none;font-size:125%;;">Note: Statistics not available in Bandwidth Limiter mode.</div>
-			<div id="no_qos_notice" class="hint-color" style="display:none;font-size:125%;">Note: QoS is not enabled.</div>
 			<div id="cake_notice" class="hint-color" style="display:none;font-size:125%;">Note: Statistics not available in Cake mode.</div>
-			<table>
+			<table id="qos_table" style="padding-bottom:20px;">
 				<tr id="dl_tr">
 					<td class="hint-color" style="padding-right:50px;font-size:125%;"><div>Download</div><canvas id="pie_chart_dl" width="200" height="200"></canvas></td>
 					<td><span id="legend_dl"></span></td>
@@ -578,7 +578,6 @@ function draw_chart(data_array, ctx, pie) {
                                         <td><span id="legend_ul"></span></td>
                                 </tr>
 			</table>
-			<br>
 			<table cellpadding="4" class="FormTable_table" id="tracked_filters" style="display:none;"><thead><tr><td colspan="6">Filter connections</td></tr></thead>
 				<tr>
 					<th width="5%">Proto</th>

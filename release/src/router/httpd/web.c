@@ -4316,9 +4316,13 @@ int validate_apply(webs_t wp, json_object *root)
 				/* Validating input value
 				 * return 1:pass 0:fail
 				 */
-				if(!validate_apply_input_value(name, value)){
-					dbg("validate %s=%s is illegal\n", name, value);
-					continue;
+
+// KLUDGE - temporary woarkaround for port validation
+				if(strcmp(name, "filter_lwlist")) {
+					if(!validate_apply_input_value(name, value)){
+						dbg("validate %s=%s is illegal\n", name, value);
+						continue;
+					}
 				}
 
 #ifdef RTCONFIG_CFGSYNC

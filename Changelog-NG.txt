@@ -1,6 +1,22 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.5 (xx-xxx-xxxx)
+  - UPDATED: OpenSSL to 1.1.1w.
+  - UPDATED: Curl to 8.4.0.
+  - UPDATED: OpenVPN to 2.6.6.
+  - CHANGED: Enable fast-io for OpenVPN servers using UDP, which
+             will speed up performance on some models.
+  - CHANGED: You can now directly enter an IPv6 address on the
+             Network Tools page as a target.
+  - CHANGED: Display tracked connections on the QoS/Classification
+             page even if QoS isn't set to Adaptive QoS.
+  - CHANGED: QOS/Classification page can now resolve local IPv6
+             addresses.
+  - FIXED: CIDR-formatted addresses were rejected on the Network Filter
+           page.  Implemented temporary workaround.
+
+
 3004.388.4 (21-Aug-2023)
   - NOTE: In preparation for the new 3.0.0.6 codebase, the version
           string will now start with 3004 or 3006 to match with

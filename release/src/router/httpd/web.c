@@ -32855,6 +32855,7 @@ struct ej_handler ej_handlers[] = {
 	{ "ipv6_pinholes",  ej_ipv6_pinhole_array},
 #endif
 	{ "get_ipv6net_array", ej_lan_ipv6_network_array},
+	{ "get_ipv6clients_array" , ej_lan_ipv6_clients_array},
 #endif
 	{ "get_leases_array", ej_get_leases_array},
 	{ "get_vserver_array", ej_get_vserver_array},

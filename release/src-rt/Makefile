@@ -1414,6 +1414,8 @@ define RouterOptions
 	if [ "$(CONFIG_BCMWL5)" = "y" ]; then \
 		sed -i "/CONFIG_LIBBCM/d" $(1); \
 		echo "CONFIG_LIBBCM=y" >>$(1); \
+		sed -i "/CONFIG_LIBUPNP/d" $(1); \
+		echo "CONFIG_LIBUPNP=y" >>$(1); \
 	fi;
 	sed -i "/RTCONFIG_EMF/d" $(1); \
 	if [ "$(CONFIG_LINUX26)" = "y" ]; then \

@@ -54,6 +54,8 @@ span.catrow{
 </style>
 
 <script>
+<% get_ipv6clients_array(); %>
+
 var qos_type = parseInt("<% nvram_get("qos_type"); %>");
 var qos_default = 0;
 
@@ -212,7 +214,6 @@ function draw_conntrack_table(){
 	}
 
 	bwdpi_conntrack.sort(table_sort);
-
 	// Generate table
 	for (i = 0; (i < tracklen && shownlen < maxshown); i++){
 
@@ -227,22 +228,31 @@ function draw_conntrack_table(){
 		else
 			bwdpi_conntrack[i][3] = bwdpi_conntrack[i][3];
 
-		// Retrieve hostname from networkmap
-		clientObj = clientFromIP(bwdpi_conntrack[i][1]);
-		if (clientObj) {
-			clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+		// Retrieve IPv6 hostname from objects pushed by httpd
+		if (bwdpi_conntrack[i][1].indexOf(":") >= 0 && ipv6clientarray[bwdpi_conntrack[i][1]] != undefined) {
+			clientName = ipv6clientarray[bwdpi_conntrack[i][1]];
 		} else {
-			srchost = bwdpi_conntrack[i][1];
-			clientName = "";
+			// Retrieve hostname from networkmap
+			clientObj = clientFromIP(bwdpi_conntrack[i][1]);
+			if (clientObj) {
+				clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+			} else {
+				srchost = bwdpi_conntrack[i][1];
+				clientName = "";
+			}
 		}
 		srchost = (clientName == "") ? bwdpi_conntrack[i][1] : clientName;
 		srctitle = bwdpi_conntrack[i][1];
 
-		clientObj = clientFromIP(bwdpi_conntrack[i][3]);
-		if (clientObj) {
-			clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+                if (bwdpi_conntrack[i][3].indexOf(":") >= 0 && ipv6clientarray[bwdpi_conntrack[i][3]] != undefined) {
+                        clientName = ipv6clientarray[bwdpi_conntrack[i][3]];
 		} else {
-			clientName = "";
+			clientObj = clientFromIP(bwdpi_conntrack[i][3]);
+			if (clientObj) {
+				clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
+			} else {
+				clientName = "";
+			}
 		}
 		dsthost = (clientName == "") ? bwdpi_conntrack[i][3] : clientName;
 		dsttitle = bwdpi_conntrack[i][3];
@@ -279,6 +289,7 @@ function draw_conntrack_table(){
 		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);
 
 		// Get priority label
+
 		if (bwdpi_support && qos_type == -1)
 			label = (qosclass ? category_title[qosclass] : "");
 		else if (bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0)

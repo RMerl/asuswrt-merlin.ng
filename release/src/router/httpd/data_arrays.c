@@ -672,6 +672,66 @@ ej_lan_ipv6_network_array(int eid, webs_t wp, int argc, char_t **argv)
 	ret += websWrite(wp, "[]];\n");
 	return ret;
 }
+
+int
+ej_lan_ipv6_clients_array(int eid, webs_t wp, int argc, char_t **argv)
+{
+	FILE *fp;
+	char buf[64+32+8192+1];
+	char addrbuf[64];
+	char *hostname, *macaddr;
+	int ret = 0, len;
+
+	ret += websWrite(wp, "var ipv6clientarray = {};\n");
+
+	if (!(ipv6_enabled() && is_routing_enabled()))
+		return ret;
+
+	/* Refresh lease file to get actual expire time */
+	killall("dnsmasq", SIGUSR2);
+	usleep(100 * 1000);
+
+	get_ipv6_client_info();
+	get_ipv6_client_list();
+
+	if ((fp = fopen(IPV6_CLIENT_LIST, "r")) == NULL) {
+		_dprintf("can't open %s: %s", IPV6_CLIENT_LIST, strerror(errno));
+		return ret;
+	}
+
+	while (fgets(buf, sizeof(buf), fp) != NULL) {
+		char *ptr = buf;
+
+		ptr = strsep(&ptr, "\n");
+		hostname = strsep(&ptr, " ");
+		macaddr = strsep(&ptr, " ");
+		if (!macaddr || *macaddr == '\0' ||
+		    !ptr || *ptr == '\0' ||
+		    !strcmp(hostname, "*") ||
+		    !strcmp(hostname, "<unknown>"))
+			continue;
+
+		if (strlen(hostname) > 32)
+			sprintf(hostname + 29, "...");
+
+		while (ptr && *ptr) {
+			char *next = strsep(&ptr, ",\n");
+			if (next && *next) {
+				/* Workaround - TrendMicro truncates last two bytes, and we pad them with "00" to generate a valid IP  */
+				strlcpy(addrbuf, next, sizeof(addrbuf));
+				len = strlen(addrbuf);
+				if (len > 2) {
+					addrbuf[len-1] = '0';
+					addrbuf[len-2] = '0';
+				}
+				ret += websWrite(wp, "ipv6clientarray[\"%s\"] = \"%s\";\n", addrbuf, hostname);
+			}
+		}
+	}
+	fclose(fp);
+
+	return ret;
+}
 #endif
 
 

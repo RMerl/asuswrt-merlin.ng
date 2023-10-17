@@ -21,12 +21,13 @@ extern int ej_get_leases_array(int eid, webs_t wp, int argc, char_t **argv);
 #ifdef RTCONFIG_IGD2
 extern int ej_ipv6_pinhole_array(int eid, webs_t wp, int argc, char_t **argv);
 #endif
+extern int ej_lan_ipv6_network_array(int eid, webs_t wp, int argc, char_t **argv);
+extern int ej_lan_ipv6_clients_array(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 
 extern int ej_get_vserver_array(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_get_upnp_array(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_get_route_array(int eid, webs_t wp, int argc, char_t **argv);
-extern int ej_lan_ipv6_network_array(int eid, webs_t wp, int argc, char_t **argv);
 extern int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv);
 int tcclass_dump(FILE *fp, webs_t wp);
 

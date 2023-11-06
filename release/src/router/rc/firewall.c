@@ -947,9 +947,10 @@ no_match:
 
 char *iprange_ex_conv(char *ip, char *buf)
 {
-	char startip[16]; //, endip[16];
+	char startip[20]; //, endip[20];
 	int i, j, k;
 	int mask;
+	int cidr;
 
 	strcpy(buf, "");
 
@@ -966,6 +967,15 @@ char *iprange_ex_conv(char *ip, char *buf)
 //			endip[k++] = '0';
 			// 255 is for broadcast
 			mask-=8;
+		}
+		else if (*(ip+i)=='/')
+		{
+			if (sscanf(ip + i + 1, "%d", &cidr) == 1) {
+				if (cidr >= 0 && cidr <= 32) {
+					mask = cidr;
+				}
+			}
+			i = strlen(ip+1);
 		}
 		else
 		{

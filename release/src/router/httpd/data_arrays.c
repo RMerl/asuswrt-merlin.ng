@@ -735,6 +735,65 @@ ej_lan_ipv6_clients_array(int eid, webs_t wp, int argc, char_t **argv)
 #endif
 
 
+#ifdef RTCONFIG_BWDPI
+int parseTcFilter(webs_t wp, const char *interface) {
+	char command[256];
+	char buffer[1024];
+	int foundmark=-1, foundflowid=-1, lastmark=-1;
+	FILE *fp;
+	int ret;
+	char *mark = NULL;
+	char *flowid = NULL;
+	int value;
+
+	ret = websWrite(wp, "var tcdata_filter_array = [];\n");
+
+	if (nvram_get_int("qos_type") != 1 || nvram_get_int("qos_enable") == 0)
+		return ret;
+
+	snprintf(command, sizeof(command), "tc filter show dev %s", interface);
+
+	if ((fp = popen(command, "r")) == NULL)
+		return ret;
+
+	while (fgets(buffer, sizeof(buffer), fp) != NULL) {
+		flowid = strstr(buffer, "flowid ");
+		if (flowid) {
+			sscanf(flowid, "flowid 1:%d", &foundflowid);
+			if (foundflowid < 10 || foundflowid > 20)
+				foundflowid = -1;
+				continue;
+		}
+
+		mark = strstr(buffer, "mark ");
+		if (mark) {
+			if (sscanf(mark, "mark %x", &value) == 1) {
+				foundmark = (value & 0x3F0000)/0xFFFF;
+				if (foundmark == lastmark) {
+					foundmark += 50;
+				}
+			}
+		}
+
+		if (foundflowid != -1 && foundmark != -1) {
+			ret += websWrite(wp, "tcdata_filter_array[%d] = %d;\n", foundmark,foundflowid);
+			lastmark = foundmark;
+			foundflowid = -1;
+			foundmark = -1;
+		}
+	}
+
+	pclose(fp);
+	return ret;
+}
+
+
+int ej_tcfilter_array(int eid, webs_t wp, int argc, char_t **argv) {
+
+	return parseTcFilter(wp, "br0");
+}
+#endif
+
 int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 	FILE *fp;
 	int ret = 0;
@@ -785,6 +844,7 @@ int ej_tcclass_dump_array(int eid, webs_t wp, int argc, char_t **argv) {
 	        }
 		unlink("/tmp/tcclass.txt");
 	}
+
 	return ret;
 }
 

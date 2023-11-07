@@ -69,17 +69,35 @@ if ("<% nvram_get("qos_enable"); %>" == 0) {	// QoS disabled
 	qos_default = 4;
 }
 
-if (qos_type == 1 || (bwdpi_support && qos_type == -1)) {
-	var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
-	var bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
-	if (bwdpi_app_rulelist == "" || bwdpi_app_rulelist_row.length != 9){
-		bwdpi_app_rulelist = "9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<";
-		bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
-	}
-	var category_title = ["Net Control Packets", "<#Adaptive_Game#>", "<#Adaptive_Stream#>","<#Adaptive_Message#>", "<#Adaptive_eLearning#>","<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>"];
-	var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [4,13], [13,24], [1,3,14], [7,10,11,21,23]];
+
+var bwdpi_app_rulelist = "<% nvram_get("bwdpi_app_rulelist"); %>".replace(/&#60/g, "<");
+var bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
+
+if(bwdpi_app_rulelist == "" || bwdpi_app_rulelist_row.length != 9){
+	bwdpi_app_rulelist = "9,20<8<4<0,5,6,15,17<4,13<13,24<1,3,14<7,10,11,21,23<";
+	bwdpi_app_rulelist_row = bwdpi_app_rulelist.split("<");
+}
+var bwdpi_category_title = ["<#Network#>", "<#Adaptive_Game#>", "<#Adaptive_Stream#>", "<#Adaptive_Message#>", "<#Adaptive_WebSurf#>","<#Adaptive_FileTransfer#>", "<#Adaptive_Others#>", "<#Adaptive_eLearning#>"];
+var bwdpi_labels_ordered = [];
+
+var cat_id_array = [[9,20], [8], [4], [0,5,6,15,17], [13,24], [1,3,14], [7,10,11,21,23], [4,13]];
+
+if (qos_type == 0 || qos_type == 3) {
+        var category_title = ["", "Highest", "High", "Medium", "Low", "Lowest"];
 } else {
-	var category_title = ["", "Highest", "High", "Medium", "Low", "Lowest"];
+        category_title = bwdpi_category_title;
+}
+
+<% get_tcfilter_array(); %>
+
+var class_array=[tcdata_filter_array[9], tcdata_filter_array[8], tcdata_filter_array[4], tcdata_filter_array[5], tcdata_filter_array[24],
+                 tcdata_filter_array[3], tcdata_filter_array[7], tcdata_filter_array[13]];
+
+if (tcdata_filter_array[4] == tcdata_filter_array[13]) {	// If identical then it's e-Learning - apply to last entry
+	class_array[7] = tcdata_filter_array[13];
+	class_array[2] = tcdata_filter_array[54];
+} else {
+	class_array[7] = tcdata_filter_array[63];		// The second (duplicate) is e-learning - apply to last entry
 }
 
 var pie_obj_ul, pie_obj_dl;
@@ -92,7 +110,6 @@ const maxshown = 500;
 const maxrendered = 750;
 
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
-var labels_array = [];
 
 var pieOptions = {
         segmentShowStroke : false,
@@ -137,10 +154,45 @@ function comma(n){
 }
 
 function initial(){
+	var i, index;
+
 	show_menu();
+
+	if (qos_type != 0 && qos_type != 1 && qos_type != 3) {	// No QoS classification
+		// Hide charts
+		document.getElementById('dl_tr').style.display = "none";
+		document.getElementById('ul_tr').style.display = "none";
+		document.getElementById('qos_table').style.display = "none";
+
+		// Do we get tracked connections?
+		if (!check_bwdpi_engine_status()) {
+			document.getElementById('no_stats_notice').style.display = "";
+			document.getElementById('frequency_tr').style.display = "none";
+			return;
+		}
+        }
+
 	refreshRate = document.getElementById('refreshrate').value;
+
+	// Build labels, ordered to match bwdpi_app_rulelist order (for conntrack list)
+	if (qos_type == 1) {
+		// To be built during chart generation
+	} else {
+		for (i=0; i < bwdpi_app_rulelist_row.length; i++){
+			for (index=0; index<cat_id_array.length; index++){
+				if (cat_id_array[index] == bwdpi_app_rulelist_row[i])
+					break;
+			}
+
+			if (index == cat_id_array.length)
+				bwdpi_labels_ordered.push("Unknown");
+			else
+				bwdpi_labels_ordered.push(bwdpi_category_title[index]);
+		}
+	}
 	get_data();
 }
+
 
 function get_qos_class(category, appid){
 	var i, j, catlist, rules;
@@ -148,7 +200,12 @@ function get_qos_class(category, appid){
 	if (category == 0 && appid == 0)
 		return qos_default;
 
-	for (i=0; i < bwdpi_app_rulelist_row.length-2; i++){
+// Can use tc data
+	if (qos_type == 1)
+		return tcdata_filter_array[category] - 10;
+
+// No tc data, query cat_id_array;
+	for (i=0; i < bwdpi_app_rulelist_row.length-1; i++){
 		rules = bwdpi_app_rulelist_row[i];
 
 		// Add categories missing from nvram but always found in qosd.conf
@@ -169,6 +226,7 @@ function get_qos_class(category, appid){
 	return qos_default;
 }
 
+
 function compIPV6(input) {
 	input = input.replace(/\b(?:0+:){2,}/, ':');
 	return input.replace(/(^|:)0{1,4}/g, ':');
@@ -185,9 +243,9 @@ function draw_conntrack_table(){
 	var code;
 	var clientObj, clientName;
 	var srchost, srctitle, dsthost, dsttitle;
+	var index, colindex, i;
 
 	tracklen = bwdpi_conntrack.length;
-
 	if (tracklen == 0 ) {
 		showhide("tracked_filters", 0);
 		document.getElementById('tracked_connections').innerHTML = "";
@@ -195,7 +253,6 @@ function draw_conntrack_table(){
 	}
 
 	showhide("tracked_filters", 1);
-
 	genClientList();
 
 	code = '<table cellpadding="4" class="FormTable_table"><thead><tr><td colspan="6">Tracked connections (total: ' + tracklen + ')</td></tr></thead>' +
@@ -289,13 +346,14 @@ function draw_conntrack_table(){
 		qosclass = get_qos_class(bwdpi_conntrack[i][7], bwdpi_conntrack[i][6]);
 
 		// Get priority label
-
-		if (bwdpi_support && qos_type == -1)
-			label = (qosclass ? category_title[qosclass] : "");
-		else if (bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0)
-			label = "Default (" + labels_array[qosclass] + ")";
-		else
-			label = labels_array[qosclass];
+		if (bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0) {
+			if (qos_type == 1)
+				label = "Default (" + bwdpi_labels_ordered[qosclass] + ")";
+			else
+				label = "";
+		} else {
+			label = bwdpi_labels_ordered[qosclass];
+		}
 
 		// Output row
 		code += "<tr><td>" + bwdpi_conntrack[i][0] + "</td>";
@@ -305,8 +363,17 @@ function draw_conntrack_table(){
 		code += "<td title=\"" + dsttitle + "\"" + (dsthost.length > 36 ? "style=\"font-size: 80%;\"" : "") + ">" +
 		          dsthost + "</td>";
 		code += "<td>" + bwdpi_conntrack[i][4] + "</td>";
-		code += "<td><span title=\"" + label + "\" class=\"catrow cat" +
-		         qosclass + "\"" + (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
+
+		if (bwdpi_conntrack[i][7] == 0 && bwdpi_conntrack[i][6] == 0) {
+			colindex = 4;   // Default
+		} else {
+			if (qos_type == 1)      // With TC data
+				colindex = tcdata_filter_array[bwdpi_conntrack[i][7]]-10;
+			else			// Without TC data
+				colindex = qosclass;
+		}
+		code += "<td><span title=\"" + label + "\" class=\"catrow cat" + qosclass + "\"" +
+		         (bwdpi_conntrack[i][5].length > 27 ? "style=\"font-size: 75%;\"" : "") + ">" +
 		         bwdpi_conntrack[i][5] + "</span></td></tr>";
 	}
 
@@ -377,42 +444,16 @@ function table_sort(a, b){
 }
 
 
-function redraw(){
-	var code;
-
-	switch (qos_type) {
-		case 2:		// Bandwith Limiter
-			document.getElementById('dl_tr').style.display = "none";
-			document.getElementById('ul_tr').style.display = "none";
-			document.getElementById('limiter_notice').style.display = "";
-			return;
-		case 0:         // Traditional
-		case 1:		// Adaptive
-		case 3:		// GeForce Now
-			if (pie_obj_dl != undefined) pie_obj_dl.destroy();
-			var ctx_dl = document.getElementById("pie_chart_dl").getContext("2d");
-			tcdata_lan_array.sort(function(a,b) {return a[0]-b[0]} );
-			code = draw_chart(tcdata_lan_array, ctx_dl, "dl");
-			document.getElementById('legend_dl').innerHTML = code;
-			break;
-		case 9:		// Cake
-			document.getElementById('dl_tr').style.display = "none";
-			document.getElementById('ul_tr').style.display = "none";
-			document.getElementById('cake_notice').style.display = "";
-			return;
-		case -1:	// Disabled - fallthrough
-		default:	// Unknown mode
-			document.getElementById('dl_tr').style.display = "none";
-			document.getElementById('ul_tr').style.display = "none";
-			document.getElementById('qos_table').style.display = "none";
-			return;
-	}
+function redraw() {
+	if (pie_obj_dl != undefined) pie_obj_dl.destroy();
+	var ctx_dl = document.getElementById("pie_chart_dl").getContext("2d");
+	tcdata_lan_array.sort(function(a,b) {return a[0]-b[0]} );
+	document.getElementById('legend_dl').innerHTML = draw_chart(tcdata_lan_array, ctx_dl, "dl");
 
 	if (pie_obj_ul != undefined) pie_obj_ul.destroy();
 	var ctx_ul = document.getElementById("pie_chart_ul").getContext("2d");
 	tcdata_wan_array.sort(function(a,b) {return a[0]-b[0]} );
-	code = draw_chart(tcdata_wan_array, ctx_ul, "ul");
-	document.getElementById('legend_ul').innerHTML = code;
+	document.getElementById('legend_ul').innerHTML = draw_chart(tcdata_wan_array, ctx_ul, "ul");
 
 	pieOptions.animation = false;	// Only animate first time
 }
@@ -431,8 +472,8 @@ function get_data() {
 			get_data();
 		},
 		success: function(response){
-			redraw();
-			if (bwdpi_support) draw_conntrack_table();
+			if (qos_type == 0 || qos_type == 1 || qos_type == 3) redraw();
+			if (check_bwdpi_engine_status()) draw_conntrack_table();
 			if (refreshRate > 0)
 				timedEvent = setTimeout("get_data();", refreshRate * 1000);
 		}
@@ -444,25 +485,19 @@ function draw_chart(data_array, ctx, pie) {
 	var code = '<table><thead style="text-align:left;"><tr><th style="padding-left:5px;">Class</th><th style="padding-left:5px;">Total</th><th style="padding-left:20px;">Rate</th><th style="padding-left:20px;">Packet rate</th></tr></thead>';
 	var values_array = [];
 	var i, index, label;
+	var tcclass, value;
+	var rate, label;
 
 	labels_array = [];
 
 	for (i=0; i < data_array.length-1; i++){
-		var value = parseInt(data_array[i][1]);
-		var tcclass = parseInt(data_array[i][0]);
-		var rate, label;
+                tcclass =  parseInt(data_array[i][0]);
+		value = parseInt(data_array[i][1]);
 
 		if (qos_type == 1) {
-			for(index=0;index<cat_id_array.length;index++){
-				if(cat_id_array[index] == bwdpi_app_rulelist_row[i]){
-					break;
-				}
-			}
-
-			if (index == cat_id_array.length)
-				label = "Unknown";
-			else
-				label = category_title[index];
+			category = class_array.indexOf(tcclass);
+			label = bwdpi_category_title[category];
+			bwdpi_labels_ordered.push(label);
 		} else {
 			tcclass = tcclass / 10;
 			label = category_title[tcclass];
@@ -561,7 +596,7 @@ function draw_chart(data_array, ctx, pie) {
 			<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 			<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">
-				<tr>
+				<tr id="frequency_tr">
 					<th>Automatically refresh data every</th>
 					<td>
 						<select name="refreshrate" class="input_option" onchange="refreshRate = this.value; get_data();" id="refreshrate">
@@ -576,8 +611,7 @@ function draw_chart(data_array, ctx, pie) {
 			</table>
 			<br>
 
-			<div id="limiter_notice" class="hint-color" style="display:none;font-size:125%;;">Note: Statistics not available in Bandwidth Limiter mode.</div>
-			<div id="cake_notice" class="hint-color" style="display:none;font-size:125%;">Note: Statistics not available in Cake mode.</div>
+			<div id="no_stats_notice" class="hint-color" style="display:none;font-size:125%;">Note: Statistics require Traditional QoS mode or the TrendMicro bwdpi engine to be enabled.</div>
 			<table id="qos_table" style="padding-bottom:20px;">
 				<tr id="dl_tr">
 					<td class="hint-color" style="padding-right:50px;font-size:125%;"><div>Download</div><canvas id="pie_chart_dl" width="200" height="200"></canvas></td>
@@ -611,7 +645,7 @@ function draw_chart(data_array, ctx, pie) {
 					<td><input type="text" class="input_18_table" maxlength="48" oninput="set_filter(5, this);"></input></td>
 				</tr>
 			</table>
-			<div id="tracked_connections">
+			<div id="tracked_connections"></div>
 			<br>
 			<div class="apply_gen" style="padding-top: 25px;"><input type="button" onClick="location.href=location.href" value="<#CTL_refresh#>" class="button_gen"></div>
 		</td>

@@ -42,6 +42,7 @@ extern void ctvbuf(FILE *f);
 #ifdef RTCONFIG_BWDPI
 extern int ej_bwdpi_conntrack(int eid, webs_t wp, int argc, char **argv_);
 void _fix_TM_ipv6(char* str);
+extern int ej_tcfilter_array(int eid, webs_t wp, int argc, char_t **argv);
 #endif
 
 int ej_connlist_array(int eid, webs_t wp, int argc, char **argv);

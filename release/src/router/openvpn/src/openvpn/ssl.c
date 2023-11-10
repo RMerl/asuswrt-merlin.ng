@@ -36,8 +36,6 @@
  */
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
@@ -2908,7 +2906,13 @@ tls_process_state(struct tls_multi *multi,
                            CONTROL_SEND_ACK_MAX, true);
         *to_link = b;
         dmsg(D_TLS_DEBUG, "Reliable -> TCP/UDP");
-        return true;
+
+        /* This changed the state of the outgoing buffer. In order to avoid
+         * running this function again/further and invalidating the key_state
+         * buffer and accessing the buffer that is now in to_link after it being
+         * freed for a potential error, we shortcircuit exiting of the outer
+         * process here. */
+        return false;
     }
 
     /* Write incoming ciphertext to TLS object */
@@ -3169,6 +3173,53 @@ tls_process(struct tls_multi *multi,
     return false;
 }
 
+
+/**
+ * This is a safe guard function to double check that a buffer from a session is
+ * not used in a session to avoid a use after free.
+ *
+ * @param to_link
+ * @param session
+ */
+static void
+check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
+{
+    uint8_t *dataptr = to_link->data;
+    if (!dataptr)
+    {
+        return;
+    }
+
+    /* Checks buffers in tls_wrap */
+    if (session->tls_wrap.work.data == dataptr)
+    {
+        msg(M_INFO, "Warning buffer of freed TLS session is "
+            "still in use (tls_wrap.work.data)");
+        goto used;
+    }
+
+    for (int i = 0; i < KS_SIZE; i++)
+    {
+        struct key_state *ks = &session->key[i];
+        for (int j = 0; j < ks->send_reliable->size; j++)
+        {
+            if (ks->send_reliable->array[i].buf.data == dataptr)
+            {
+                msg(M_INFO, "Warning buffer of freed TLS session is still in"
+                    " use (session->key[%d].send_reliable->array[%d])",
+                    i, j);
+
+                goto used;
+            }
+        }
+    }
+    return;
+
+used:
+    to_link->len = 0;
+    to_link->data = 0;
+    /* for debugging, you can add an ASSERT(0); here to trigger an abort */
+}
 /*
  * Called by the top-level event loop.
  *
@@ -3267,6 +3318,7 @@ tls_multi_process(struct tls_multi *multi,
                 }
                 else
                 {
+                    check_session_buf_not_used(to_link, session);
                     reset_session(multi, session);
                 }
             }

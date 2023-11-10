@@ -282,6 +282,7 @@ ENABLE_UNITTESTS = @ENABLE_UNITTESTS@
 ETAGS = @ETAGS@
 EXEEXT = @EXEEXT@
 FGREP = @FGREP@
+FILECMD = @FILECMD@
 GIT = @GIT@
 GREP = @GREP@
 IFCONFIG = @IFCONFIG@
@@ -446,17 +447,14 @@ RCCOMPILE = $(RC) $(DEFS) $(DEFAULT_INCLUDES) $(INCLUDES) \
 
 LTRCCOMPILE = $(LIBTOOL) --mode=compile --tag=RC $(RCCOMPILE)
 MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
-EXTRA_DIST = \
-	openvpnmsica.vcxproj \
-	openvpnmsica.props \
-	openvpnmsica-Debug.props \
-	openvpnmsica-Release.props
-
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include -I$(top_srcdir)/src/compat
 
 AM_CFLAGS = \
 	$(TAP_CFLAGS)
+
+EXTRA_DIST = \
+	CMakeLists.txt
 
 @WIN32_TRUE@lib_LTLIBRARIES = libopenvpnmsica.la
 @WIN32_TRUE@libopenvpnmsica_la_CFLAGS = \

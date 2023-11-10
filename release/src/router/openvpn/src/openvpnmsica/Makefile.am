@@ -22,17 +22,14 @@ include $(top_srcdir)/build/ltrc.inc
 
 MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
 
-EXTRA_DIST = \
-	openvpnmsica.vcxproj \
-	openvpnmsica.props \
-	openvpnmsica-Debug.props \
-	openvpnmsica-Release.props
-
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include -I$(top_srcdir)/src/compat
 
 AM_CFLAGS = \
 	$(TAP_CFLAGS)
+
+EXTRA_DIST = \
+	CMakeLists.txt
 
 if WIN32
 lib_LTLIBRARIES = libopenvpnmsica.la

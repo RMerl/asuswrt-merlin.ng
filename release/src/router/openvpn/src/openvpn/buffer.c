@@ -23,8 +23,6 @@
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
-#elif defined(_MSC_VER)
-#include "config-msvc.h"
 #endif
 
 #include "syshead.h"
@@ -316,10 +314,10 @@ buf_catrunc(struct buffer *buf, const char *str)
 {
     if (buf_forward_capacity(buf) <= 1)
     {
-        int len = (int) strlen(str) + 1;
+        size_t len = strlen(str) + 1;
         if (len < buf_forward_capacity_total(buf))
         {
-            strncpynt((char *)(buf->data + buf->capacity - len), str, len);
+            memcpy(buf->data + buf->capacity - len, str, len);
         }
     }
 }

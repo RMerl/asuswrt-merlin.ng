@@ -13,11 +13,11 @@ include $(top_srcdir)/build/ltrc.inc
 
 MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
 
-EXTRA_DIST = \
-	openvpnserv.vcxproj
-
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include -I$(top_srcdir)/src/openvpn -I$(top_srcdir)/src/compat
+
+EXTRA_DIST = \
+	CMakeLists.txt
 
 if WIN32
 sbin_PROGRAMS = openvpnserv

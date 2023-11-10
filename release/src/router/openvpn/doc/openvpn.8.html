@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
 <title>openvpn</title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 7952 2016-07-26 18:15:59Z milde $
+:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
 
-See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
 customize this style sheet.
 */
 
@@ -1437,7 +1437,7 @@ each entry exactly once. A successful connection resets the counter.
 <pre class="literal-block">
 dns search-domains domain [domain ...]
 dns server n address addr[:port] [addr[:port] ...]
-dns server n resolve-domains|exclude-domains domain [domain ...]
+dns server n resolve-domains domain [domain ...]
 dns server n dnssec yes|optional|no
 dns server n transport DoH|DoT|plain
 dns server n sni server-name
@@ -1456,14 +1456,10 @@ already configured DNS servers with the same server id.</p>
 the DNS server. Up to eight addresses can be specified per DNS server.
 Optionally a port can be appended after a colon. IPv6 addresses need to
 be enclosed in brackets if a port is appended.</p>
-<p>The <tt class="docutils literal"><span class="pre">resolve-domains</span></tt> and <tt class="docutils literal"><span class="pre">exclude-domains</span></tt> options take one or
-more DNS domains which are explicitly resolved or explicitly not resolved
-by a server. Only one of the options can be configured for a server.
-<tt class="docutils literal"><span class="pre">resolve-domains</span></tt> is used to define a split-dns setup, where only
-given domains are resolved by a server. <tt class="docutils literal"><span class="pre">exclude-domains</span></tt> is used to
-define domains which will never be resolved by a server (e.g. domains
-which can only be resolved locally). Systems which do not support fine
-grained DNS domain configuration, will ignore these settings.</p>
+<p>The <tt class="docutils literal"><span class="pre">resolve-domains</span></tt> option takes one or more DNS domains used to define
+a split-dns or dns-routing setup, where only the given domains are resolved
+by the server. Systems which do not support fine grained DNS domain
+configuration will ignore this setting.</p>
 <p>The <tt class="docutils literal">dnssec</tt> option is used to configure validation of DNSSEC records.
 While the exact semantics may differ for resolvers on different systems,
 <tt class="docutils literal">yes</tt> likely makes validation mandatory, <tt class="docutils literal">no</tt> disables it, and <tt class="docutils literal">optional</tt>
@@ -4489,7 +4485,7 @@ client mode, and is undefined in server mode.</dd>
 <pre class="literal-block">
 route-delay
 route-delay n
-route-delay n m
+route-delay n w
 </pre>
 <p>Delay <tt class="docutils literal">n</tt> seconds (default <code>0</code>) after connection establishment,
 before adding routes. If <tt class="docutils literal">n</tt> is <code>0</code>, routes will be added
@@ -4501,7 +4497,7 @@ downgrade (or <tt class="docutils literal"><span class="pre">--chroot</span></tt
 set tap adapter addresses. The delay will give the DHCP handshake time
 to complete before routes are added.</p>
 <p class="last">On Windows, <tt class="docutils literal"><span class="pre">--route-delay</span></tt> tries to be more intelligent by waiting
-<tt class="docutils literal">w</tt> seconds (default <code>30</code> by default) for the TAP-Win32 adapter
+<tt class="docutils literal">w</tt> seconds (default <code>30</code>) for the TAP-Win32 adapter
 to come up before adding routes.</p>
 </td></tr>
 <tr><td class="option-group" colspan="2">
@@ -5324,7 +5320,6 @@ dns_search_domain_{n}
 dns_server_{n}_address_{m}
 dns_server_{n}_port_{m}
 dns_server_{n}_resolve_domain_{m}
-dns_server_{n}_exclude_domain_{m}
 dns_server_{n}_dnssec
 dns_server_{n}_transport
 dns_server_{n}_sni

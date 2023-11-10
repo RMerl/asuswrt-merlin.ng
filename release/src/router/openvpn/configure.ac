@@ -930,11 +930,17 @@ if test "${with_crypto_library}" = "openssl"; then
 				    [AC_LANG_PROGRAM(
 					    [[
 	    #include <openssl/opensslv.h>
+	    #include <openssl/opensslconf.h>
 					    ]],
 					    [[
 	    /*	     Version encoding: MNNFFPPS - see opensslv.h for details */
 	    #if OPENSSL_VERSION_NUMBER >= 0x30000000L
-	    #error Engine supported disabled by default in OpenSSL 3.0+
+	    #error Engine support disabled by default in OpenSSL 3.0+
+	    #endif
+
+	    /*	     BoringSSL and LibreSSL >= 3.8.1 removed engine support */
+	    #ifdef OPENSSL_NO_ENGINE
+	    #error Engine support disabled in openssl/opensslconf.h
 	    #endif
 					    ]]
 				    )],
@@ -1492,8 +1498,6 @@ AC_CONFIG_FILES([
 	version.sh
 	Makefile
 	build/Makefile
-	build/msvc/Makefile
-	build/msvc/msvc-generate/Makefile
 	distro/Makefile
 	distro/systemd/Makefile
 	doc/Makefile
@@ -1516,7 +1520,6 @@ AC_CONFIG_FILES([
         tests/unit_tests/openvpn/Makefile
         tests/unit_tests/plugins/Makefile
         tests/unit_tests/plugins/auth-pam/Makefile
-	tests/unit_tests/engine-key/Makefile
 	sample/Makefile
 ])
 AC_CONFIG_FILES([tests/t_client.sh], [chmod +x tests/t_client.sh])

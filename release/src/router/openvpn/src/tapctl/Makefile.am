@@ -22,16 +22,15 @@ include $(top_srcdir)/build/ltrc.inc
 
 MAINTAINERCLEANFILES = $(srcdir)/Makefile.in
 
-EXTRA_DIST = \
-	tapctl.vcxproj \
-	tapctl.props \
-	tapctl.exe.manifest
-
 AM_CPPFLAGS = \
 	-I$(top_srcdir)/include -I$(top_srcdir)/src/compat
 
 AM_CFLAGS = \
 	$(TAP_CFLAGS)
+
+EXTRA_DIST = \
+	CMakeLists.txt \
+	tapctl.exe.manifest
 
 if WIN32
 sbin_PROGRAMS = tapctl

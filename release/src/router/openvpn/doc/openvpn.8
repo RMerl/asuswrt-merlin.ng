@@ -76,7 +76,7 @@ with a relatively lightweight footprint.
 .sp
 OpenVPN allows any option to be placed either on the command line or in
 a configuration file. Though all command line options are preceded by a
-double\-leading\-dash ("\-\-"), this prefix can be removed when an option is
+double\-leading\-dash (\(dq\-\-\(dq), this prefix can be removed when an option is
 placed in a configuration file.
 .SS Generic Options
 .sp
@@ -105,7 +105,7 @@ It is always cached.
 .BI \-\-cd \ dir
 Change directory to \fBdir\fP prior to reading any files such as
 configuration files, key files, scripts, etc. \fBdir\fP should be an
-absolute path, with a leading "/", and without any references to the
+absolute path, with a leading \(dq/\(dq, and without any references to the
 current directory such as \fB\&.\fP or \fB\&..\fP\&.
 .sp
 This option is useful when you are running OpenVPN in \fB\-\-daemon\fP mode,
@@ -178,8 +178,8 @@ file\fP
 .sp
 Note that configuration files can be nested to a reasonable depth.
 .sp
-Double quotation or single quotation characters ("", \(aq\(aq) can be used to
-enclose single parameters containing whitespace, and "#" or ";"
+Double quotation or single quotation characters (\(dq\(dq, \(aq\(aq) can be used to
+enclose single parameters containing whitespace, and \(dq#\(dq or \(dq;\(dq
 characters in the first column can be used to denote comments.
 .sp
 Note that OpenVPN 2.0 and higher performs backslash\-based shell escaping
@@ -191,7 +191,7 @@ should be observed:
 .nf
 .ft C
 \e\e       Maps to a single backslash character (\e).
-\e"       Pass a literal doublequote character ("), don\(aqt
+\e\(dq       Pass a literal doublequote character (\(dq), don\(aqt
          interpret it as enclosing a parameter.
 \e[SPACE] Pass a literal space or tab character, don\(aqt
          interpret it as a parameter delimiter.
@@ -206,7 +206,7 @@ For example on Windows, use double backslashes to represent pathnames:
 .sp
 .nf
 .ft C
-secret "c:\e\eOpenVPN\e\esecret.key"
+secret \(dqc:\e\eOpenVPN\e\esecret.key\(dq
 .ft P
 .fi
 .UNINDENT
@@ -295,7 +295,7 @@ on console) and \fB\-\-auth\-nocache\fP will fail as soon as key
 renegotiation (and reauthentication) occurs.
 .TP
 .B  \-\-disable\-dco
-Disable "data channel offload" (DCO).
+Disable \(dqdata channel offload\(dq (DCO).
 .sp
 On Linux don\(aqt use the ovpn\-dco device driver, but rather rely on the
 legacy tun module.
@@ -304,7 +304,7 @@ You may want to use this option if your server needs to allow clients
 older than version 2.4 to connect.
 .TP
 .B  \-\-disable\-occ
-\fBDEPRECATED\fP Disable "options consistency check" (OCC) in configurations
+\fBDEPRECATED\fP Disable \(dqoptions consistency check\(dq (OCC) in configurations
 that do not use TLS.
 .sp
 Don\(aqt output a warning message if option inconsistencies are detected
@@ -946,7 +946,7 @@ for the client, for example:
 .nf
 .ft C
 comp\-lzo yes
-push "comp\-lzo yes"
+push \(dqcomp\-lzo yes\(dq
 .ft P
 .fi
 .UNINDENT
@@ -1132,7 +1132,7 @@ To make use of this feature, the \fB\-\-client\-connect\fP script or
 .sp
 .nf
 .ft C
-push "auth\-token UNIQUE_TOKEN_VALUE"
+push \(dqauth\-token UNIQUE_TOKEN_VALUE\(dq
 .ft P
 .fi
 .UNINDENT
@@ -1298,7 +1298,7 @@ Valid syntaxes:
 .ft C
 dns search\-domains domain [domain ...]
 dns server n address addr[:port] [addr[:port] ...]
-dns server n resolve\-domains|exclude\-domains domain [domain ...]
+dns server n resolve\-domains domain [domain ...]
 dns server n dnssec yes|optional|no
 dns server n transport DoH|DoT|plain
 dns server n sni server\-name
@@ -1324,14 +1324,10 @@ the DNS server. Up to eight addresses can be specified per DNS server.
 Optionally a port can be appended after a colon. IPv6 addresses need to
 be enclosed in brackets if a port is appended.
 .sp
-The \fBresolve\-domains\fP and \fBexclude\-domains\fP options take one or
-more DNS domains which are explicitly resolved or explicitly not resolved
-by a server. Only one of the options can be configured for a server.
-\fBresolve\-domains\fP is used to define a split\-dns setup, where only
-given domains are resolved by a server. \fBexclude\-domains\fP is used to
-define domains which will never be resolved by a server (e.g. domains
-which can only be resolved locally). Systems which do not support fine
-grained DNS domain configuration, will ignore these settings.
+The \fBresolve\-domains\fP option takes one or more DNS domains used to define
+a split\-dns or dns\-routing setup, where only the given domains are resolved
+by the server. Systems which do not support fine grained DNS domain
+configuration will ignore this setting.
 .sp
 The \fBdnssec\fP option is used to configure validation of DNSSEC records.
 While the exact semantics may differ for resolvers on different systems,
@@ -1403,7 +1399,7 @@ If the optional \fBbytes\fP parameter is included, exit if less than
 in \fBn\fP seconds.
 .sp
 In any case, OpenVPN\(aqs internal ping packets (which are just keepalives)
-and TLS control packets are not considered "activity", nor are they
+and TLS control packets are not considered \(dqactivity\(dq, nor are they
 counted as traffic, as they are used internally by OpenVPN and are not
 an indication of actual user activity.
 .TP
@@ -1465,7 +1461,7 @@ that
 .sp
 .nf
 .ft C
-pull\-filter ignore "route"
+pull\-filter ignore \(dqroute\(dq
 .ft P
 .fi
 .UNINDENT
@@ -1479,8 +1475,8 @@ embed spaces.
 .sp
 .nf
 .ft C
-pull\-filter accept "route 192.168.1."
-pull\-filter ignore "route "
+pull\-filter accept \(dqroute 192.168.1.\(dq
+pull\-filter ignore \(dqroute \(dq
 .ft P
 .fi
 .UNINDENT
@@ -1662,8 +1658,8 @@ kind of basic load\-balancing measure.
 .TP
 .B  \-\-remote\-random\-hostname
 Prepend a random string (6 bytes, 12 hex characters) to hostname to
-prevent DNS caching. For example, "foo.bar.gov" would be modified to
-"<random\-chars>.foo.bar.gov".
+prevent DNS caching. For example, \(dqfoo.bar.gov\(dq would be modified to
+\(dq<random\-chars>.foo.bar.gov\(dq.
 .TP
 .BI \-\-resolv\-retry \ n
 If hostname resolve fails for \fB\-\-remote\fP, retry resolve for \fBn\fP
@@ -1769,7 +1765,7 @@ options.
 Set HTTP version number to \fBversion\fP (default \fB1.0\fP).
 .TP
 .B \fBAGENT\fP \fBuser\-agent\fP
-Set HTTP "User\-Agent" string to \fBuser\-agent\fP\&.
+Set HTTP \(dqUser\-Agent\(dq string to \fBuser\-agent\fP\&.
 .TP
 .B \fBCUSTOM\-HEADER\fP \fBname\fP \fBcontent\fP
 Adds the custom Header with \fBname\fP as name and \fBcontent\fP as
@@ -1915,7 +1911,7 @@ user\-defined authentication module/script to accept or deny the client
 based on other factors (such as the setting of X509 certificate fields).
 When this option is used, and a connecting client does not submit a
 username/password, the user\-defined authentication module/script will
-see the username and password as being set to empty strings (""). The
+see the username and password as being set to empty strings (\(dq\(dq). The
 authentication module/script MUST have logic to detect this condition
 and respond accordingly.
 .TP
@@ -1930,7 +1926,7 @@ directory for a file having the same name as the client\(aqs X509 common
 name. If a matching file exists, it will be opened and parsed for
 client\-specific configuration options. If no matching file is found,
 OpenVPN will instead try to open and parse a default file called
-"DEFAULT", which may be provided but is not required. Note that the
+\(dqDEFAULT\(dq, which may be provided but is not required. Note that the
 configuration files must be readable by the OpenVPN process after it has
 dropped it\(aqs root privileges.
 .sp
@@ -1953,7 +1949,7 @@ single tun or tap interface, it is effectively a router. The
 client\-to\-client traffic rather than pushing all client\-originating
 traffic to the TUN/TAP interface.
 .sp
-When this option is used, each client will "see" the other clients which
+When this option is used, each client will \(dqsee\(dq the other clients which
 are currently connected. Otherwise, each client will only see the
 server. Don\(aqt use this option if you want to firewall tunnel traffic
 using custom, per\-client rules.
@@ -2236,10 +2232,10 @@ using \fB\-\-client\-config\-dir\fP or dynamically generated using a
 \fB\-\-client\-connect\fP script.
 .sp
 The \fB\-\-iroute\fP directive also has an important interaction with
-\fB\-\-push "route ..."\fP\&. \fB\-\-iroute\fP essentially defines a subnet which
+\fB\-\-push \(dqroute ...\(dq\fP\&. \fB\-\-iroute\fP essentially defines a subnet which
 is owned by a particular client (we will call this client \fIA\fP). If you
 would like other clients to be able to reach \fIA\fP\(aqs subnet, you can use
-\fB\-\-push "route ..."\fP together with \fB\-\-client\-to\-client\fP to effect
+\fB\-\-push \(dqroute ...\(dq\fP together with \fB\-\-client\-to\-client\fP to effect
 this. In order for all clients to see \fIA\fP\(aqs subnet, OpenVPN must push
 this route to all clients EXCEPT for \fIA\fP, since the subnet is already
 owned by \fIA\fP\&. OpenVPN accomplishes this by not not pushing a route to
@@ -2325,7 +2321,7 @@ Not implemented on Windows.
 .TP
 .BI \-\-push \ option
 Push a config file option back to the client for remote execution. Note
-that \fBoption\fP must be enclosed in double quotes (\fB""\fP). The
+that \fBoption\fP must be enclosed in double quotes (\fB\(dq\(dq\fP). The
 client must specify \fB\-\-pull\fP in its config file. The set of options
 which can be pushed is limited by both feasibility and security. Some
 options such as those which would execute scripts are banned, since they
@@ -2343,11 +2339,11 @@ This is a partial list of options which can currently be pushed:
 \fB\-\-rcvbuf\fP, \fB\-\-session\-timeout\fP
 .TP
 .BI \-\-push\-remove \ opt
-Selectively remove all \fB\-\-push\fP options matching "opt" from the option
+Selectively remove all \fB\-\-push\fP options matching \(dqopt\(dq from the option
 list for a client. \fBopt\fP is matched as a substring against the whole
 option string to\-be\-pushed to the client, so \fB\-\-push\-remove route\fP
 would remove all \fB\-\-push route ...\fP and \fB\-\-push route\-ipv6 ...\fP
-statements, while \fB\-\-push\-remove "route\-ipv6 2001:"\fP would only remove
+statements, while \fB\-\-push\-remove \(dqroute\-ipv6 2001:\(dq\fP would only remove
 IPv6 routes for \fB2001:...\fP networks.
 .sp
 \fB\-\-push\-remove\fP can only be used in a client\-specific context, like in
@@ -2406,7 +2402,7 @@ For example, \fB\-\-server 10.8.0.0 255.255.255.0\fP expands as follows:
 .ft C
 mode server
 tls\-server
-push "topology [topology]"
+push \(dqtopology [topology]\(dq
 
 if dev tun AND (topology == net30 OR topology == p2p):
   ifconfig 10.8.0.1 10.8.0.2
@@ -2414,15 +2410,15 @@ if dev tun AND (topology == net30 OR topology == p2p):
     ifconfig\-pool 10.8.0.4 10.8.0.251
   route 10.8.0.0 255.255.255.0
   if client\-to\-client:
-    push "route 10.8.0.0 255.255.255.0"
+    push \(dqroute 10.8.0.0 255.255.255.0\(dq
   else if topology == net30:
-    push "route 10.8.0.1"
+    push \(dqroute 10.8.0.1\(dq
 
 if dev tap OR (dev tun AND topology == subnet):
   ifconfig 10.8.0.1 255.255.255.0
   if !nopool:
     ifconfig\-pool 10.8.0.2 10.8.0.253 255.255.255.0
-  push "route\-gateway 10.8.0.1"
+  push \(dqroute\-gateway 10.8.0.1\(dq
   if route\-gateway unset:
     route\-gateway 10.8.0.2
 .ft P
@@ -2463,7 +2459,7 @@ To configure ethernet bridging, you must first use your OS\(aqs bridging
 capability to bridge the TAP interface with the ethernet NIC interface.
 For example, on Linux this is done with the \fBbrctl\fP tool, and with
 Windows XP it is done in the Network Connections Panel by selecting the
-ethernet and TAP adapters and right\-clicking on "Bridge Connections".
+ethernet and TAP adapters and right\-clicking on \(dqBridge Connections\(dq.
 .sp
 Next you you must manually set the IP/netmask on the bridge interface.
 The \fBgateway\fP and \fBnetmask\fP parameters to \fB\-\-server\-bridge\fP can be
@@ -2485,7 +2481,7 @@ mode server
 tls\-server
 
 ifconfig\-pool 10.8.0.128 10.8.0.254 255.255.255.0
-push "route\-gateway 10.8.0.4"
+push \(dqroute\-gateway 10.8.0.4\(dq
 .ft P
 .fi
 .UNINDENT
@@ -2501,7 +2497,7 @@ follows:
 mode server
 tls\-server
 
-push "route\-gateway dhcp"
+push \(dqroute\-gateway dhcp\(dq
 .ft P
 .fi
 .UNINDENT
@@ -2623,11 +2619,11 @@ port of the switch. All client ports are in untagged mode and the server
 TAP device is VLAN\-tagged, untagged or accepts both, depending on the
 \fB\-\-vlan\-accept\fP setting.
 .sp
-Ethernet frames with a prepended 802.1Q tag are called "tagged". If the
+Ethernet frames with a prepended 802.1Q tag are called \(dqtagged\(dq. If the
 VLAN Identifier (VID) field in such a tag is non\-zero, the frame is
-called "VLAN\-tagged". If the VID is zero, but the Priority Control Point
-(PCP) field is non\-zero, the frame is called "prio\-tagged". If there is
-no 802.1Q tag, the frame is "untagged".
+called \(dqVLAN\-tagged\(dq. If the VID is zero, but the Priority Control Point
+(PCP) field is non\-zero, the frame is called \(dqprio\-tagged\(dq. If there is
+no 802.1Q tag, the frame is \(dquntagged\(dq.
 .sp
 Using the \fB\-\-vlan\-pvid v\fP option once per client (see
 \-\-client\-config\-dir), each port can be associated with a certain VID.
@@ -2679,8 +2675,8 @@ untagged or tagged mode respectively.
 .TP
 .B \fINote\fP:
 Some vendors refer to switch ports running in \fBtagged\fP mode
-as "trunk ports" and switch ports running in \fBuntagged\fP mode
-as "access ports".
+as \(dqtrunk ports\(dq and switch ports running in \fBuntagged\fP mode
+as \(dqaccess ports\(dq.
 .UNINDENT
 .sp
 Packets forwarded from clients to the server are VLAN\-tagged with the
@@ -2691,7 +2687,7 @@ If no \fIPVID\fP is configured for a given client (see \-\-vlan\-pvid) packets
 are tagged with 1 by default.
 .TP
 .BI \-\-vlan\-pvid \ v
-Specifies which VLAN identifier a "port" is associated with. Only valid
+Specifies which VLAN identifier a \(dqport\(dq is associated with. Only valid
 when \fB\-\-vlan\-tagging\fP is speficied.
 .sp
 In the client context, the setting specifies which VLAN ID a client is
@@ -2703,8 +2699,8 @@ Valid values for \fBv\fP go from \fB1\fP through to \fB4094\fP\&. The
 global value defaults to \fB1\fP\&. If no \fB\-\-vlan\-pvid\fP is specified in
 the client context, the global value is inherited.
 .sp
-In some switch implementations, the \fIPVID\fP is also referred to as "Native
-VLAN".
+In some switch implementations, the \fIPVID\fP is also referred to as \(dqNative
+VLAN\(dq.
 .UNINDENT
 .SH ENCRYPTION OPTIONS
 .SS SSL Library information
@@ -3180,7 +3176,7 @@ This option is not supported in mbed TLS builds of OpenVPN.
 Specify a \fBfile\fP containing one or more PEM certs (concatenated
 together) that complete the local certificate chain.
 .sp
-This option is useful for "split" CAs, where the CA for server certs is
+This option is useful for \(dqsplit\(dq CAs, where the CA for server certs is
 different than the CA for client certs. Putting certs in this file
 allows them to be used to complete the local certificate chain without
 trusting them to verify the peer\-submitted certificate, as would be the
@@ -3270,7 +3266,7 @@ The \fB\-\-remote\-cert\-tls client\fP option is equivalent to
 .nf
 .ft C
 remote\-cert\-ku
-remote\-cert\-eku "TLS Web Client Authentication"
+remote\-cert\-eku \(dqTLS Web Client Authentication\(dq
 .ft P
 .fi
 .UNINDENT
@@ -3283,7 +3279,7 @@ The \fB\-\-remote\-cert\-tls server\fP option is equivalent to
 .nf
 .ft C
 remote\-cert\-ku
-remote\-cert\-eku "TLS Web Server Authentication"
+remote\-cert\-eku \(dqTLS Web Server Authentication\(dq
 .ft P
 .fi
 .UNINDENT
@@ -3314,7 +3310,7 @@ tls\-auth file 1
 .UNINDENT
 .UNINDENT
 .sp
-In a nutshell, \fB\-\-tls\-auth\fP enables a kind of "HMAC firewall" on
+In a nutshell, \fB\-\-tls\-auth\fP enables a kind of \(dqHMAC firewall\(dq on
 OpenVPN\(aqs TCP/UDP port, where TLS control channel packets bearing an
 incorrect HMAC signature can be dropped immediately without response.
 .sp
@@ -3385,7 +3381,7 @@ OpenSSL 1.1+ restricts the list per default to
 .sp
 .nf
 .ft C
-"X25519:secp256r1:X448:secp521r1:secp384r1".
+\(dqX25519:secp256r1:X448:secp521r1:secp384r1\(dq.
 .ft P
 .fi
 .UNINDENT
@@ -3428,16 +3424,16 @@ use the following approximation:
 .INDENT 7.0
 .TP
 .B \fBinsecure\fP
-sets "security level 0"
+sets \(dqsecurity level 0\(dq
 .TP
 .B \fBlegacy\fP (default)
-sets "security level 1"
+sets \(dqsecurity level 1\(dq
 .TP
 .B \fBpreferred\fP
-sets "security level 2"
+sets \(dqsecurity level 2\(dq
 .TP
 .B \fBsuiteb\fP
-sets "security level 3" and \fB\-\-tls\-cipher "SUITEB128"\fP\&.
+sets \(dqsecurity level 3\(dq and \fB\-\-tls\-cipher \(dqSUITEB128\(dq\fP\&.
 .UNINDENT
 .sp
 OpenVPN will migrate to \(aqpreferred\(aq as default in the future. Please
@@ -3454,7 +3450,7 @@ break your connection. Use with care!
 .INDENT 0.0
 .TP
 .BI \-\-tls\-cipher \ l
-A list \fBl\fP of allowable TLS ciphers delimited by a colon ("\fB:\fP").
+A list \fBl\fP of allowable TLS ciphers delimited by a colon (\(dq\fB:\fP\(dq).
 .sp
 These setting can be used to ensure that certain cipher suites are used
 (or not used) for the TLS connection. OpenVPN uses TLS to secure the
@@ -3498,7 +3494,7 @@ connection,
 .IP \(bu 2
 makes it harder to identify OpenVPN traffic as such,
 .IP \(bu 2
-provides "poor\-man\(aqs" post\-quantum security, against attackers who will
+provides \(dqpoor\-man\(aqs\(dq post\-quantum security, against attackers who will
 never know the pre\-shared key (i.e. no forward secrecy).
 .UNINDENT
 .sp
@@ -3621,7 +3617,7 @@ them.
 .TP
 .BI \-\-tls\-version\-min \ args
 Sets the minimum TLS version we will accept from the peer (default in
-2.6.0 and later is "1.2").
+2.6.0 and later is \(dq1.2\(dq).
 .sp
 Valid syntax:
 .INDENT 7.0
@@ -4009,7 +4005,7 @@ For backwards compatibility OpenVPN 2.6 and later with \fB\-\-compat\-mode 2.4.x
 .SS OpenVPN 2.4 clients
 .sp
 The negotiation support in OpenVPN 2.4 was the first iteration of the implementation
-and still had some quirks. Its main goal was "upgrade to AES\-256\-GCM when possible".
+and still had some quirks. Its main goal was \(dqupgrade to AES\-256\-GCM when possible\(dq.
 An OpenVPN 2.4 client that is built against a crypto library that supports AES in GCM
 mode and does not have \fB\-\-ncp\-disable\fP will always announce support for
 \fIAES\-256\-GCM\fP and \fIAES\-128\-GCM\fP to a server by sending \fBIV_NCP=2\fP\&.
@@ -4189,8 +4185,8 @@ For example, \fB\-\-keepalive 10 60\fP expands as follows:
 if mode server:
     ping 10                    # Argument: interval
     ping\-restart 120           # Argument: timeout*2
-    push "ping 10"             # Argument: interval
-    push "ping\-restart 60"     # Argument: timeout
+    push \(dqping 10\(dq             # Argument: interval
+    push \(dqping\-restart 60\(dq     # Argument: timeout
 else
     ping 10                    # Argument: interval
     ping\-restart 60            # Argument: timeout
@@ -4517,7 +4513,7 @@ product of bandwidth and latency is high), you may want to use a larger
 value for \fBn\fP\&. Satellite links in particular often require this.
 .sp
 If you run OpenVPN at \fB\-\-verb 4\fP, you will see the message
-"PID_ERR replay\-window backtrack occurred [x]" every time the maximum sequence
+\(dqPID_ERR replay\-window backtrack occurred [x]\(dq every time the maximum sequence
 number backtrack seen thus far increases. This can be used to calibrate
 \fBn\fP\&.
 .sp
@@ -4606,7 +4602,7 @@ The macro expands as follows:
 .ft C
 if mode server:
     socket\-flags TCP_NODELAY
-    push "socket\-flags TCP_NODELAY"
+    push \(dqsocket\-flags TCP_NODELAY\(dq
 .ft P
 .fi
 .UNINDENT
@@ -4685,14 +4681,14 @@ clients leaking around IPv4\-only VPN services).
 .UNINDENT
 .TP
 .B \fBServer config\fP
-Push a "valid" ipv6 config to the client and block on the server
+Push a \(dqvalid\(dq ipv6 config to the client and block on the server
 .INDENT 7.0
 .INDENT 3.5
 .sp
 .nf
 .ft C
-\-\-push "ifconfig\-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1"
-\-\-push "redirect\-gateway ipv6"
+\-\-push \(dqifconfig\-ipv6 fd15:53b6:dead::2/64 fd15:53b6:dead::1\(dq
+\-\-push \(dqredirect\-gateway ipv6\(dq
 \-\-block\-ipv6
 .ft P
 .fi
@@ -4746,7 +4742,7 @@ On most platforms, \fBtunN\fP (e.g. tun2, tun30) and \fBtapN\fP
 (e.g. tap3) will create a numbered tun/tap interface with the number
 specified \- this is useful if multiple OpenVPN instances are active,
 and the instance\-to\-device mapping needs to be known.  Some platforms
-do not support "numbered tap", so trying \fB\-\-dev tap3\fP will fail.
+do not support \(dqnumbered tap\(dq, so trying \fB\-\-dev tap3\fP will fail.
 .sp
 Arbitrary device names (e.g. \fB\-\-dev tun\-home\fP) will only work on
 FreeBSD (with the DCO kernel driver for \fBtun\fP devices) and Linux
@@ -4915,7 +4911,7 @@ across the VPN.
 .sp
 For TAP devices, which provide the ability to create virtual ethernet
 segments, or TUN devices in \fB\-\-topology subnet\fP mode (which create
-virtual "multipoint networks"), \fB\-\-ifconfig\fP is used to set an IP
+virtual \(dqmultipoint networks\(dq), \fB\-\-ifconfig\fP is used to set an IP
 address and subnet mask just as a physical ethernet adapter would be
 similarly configured. If you are attempting to connect to a remote
 ethernet bridge, the IP address and subnet should be set to values which
@@ -4986,8 +4982,8 @@ For example, if you have a configuration where the local host uses
 on the local host.
 .sp
 This option will also silence warnings about potential address conflicts
-which occasionally annoy more experienced users by triggering "false
-positive" warnings.
+which occasionally annoy more experienced users by triggering \(dqfalse
+positive\(dq warnings.
 .TP
 .BI \-\-lladdr \ address
 Specify the link layer address, more commonly known as the MAC address.
@@ -5136,7 +5132,7 @@ Valid syntaxes:
 .ft C
 route\-delay
 route\-delay n
-route\-delay n m
+route\-delay n w
 .ft P
 .fi
 .UNINDENT
@@ -5154,7 +5150,7 @@ set tap adapter addresses. The delay will give the DHCP handshake time
 to complete before routes are added.
 .sp
 On Windows, \fB\-\-route\-delay\fP tries to be more intelligent by waiting
-\fBw\fP seconds (default \fB30\fP by default) for the TAP\-Win32 adapter
+\fBw\fP seconds (default \fB30\fP) for the TAP\-Win32 adapter
 to come up before adding routes.
 .TP
 .BI \-\-route\-ipv6 \ args
@@ -5252,8 +5248,8 @@ works on Windows as well.
 .UNINDENT
 .sp
 \fINote:\fP Using \fB\-\-topology subnet\fP changes the interpretation of the
-arguments of \fB\-\-ifconfig\fP to mean "address netmask", no longer "local
-remote".
+arguments of \fB\-\-ifconfig\fP to mean \(dqaddress netmask\(dq, no longer \(dqlocal
+remote\(dq.
 .TP
 .BI \-\-tun\-mtu \ args
 Valid syntaxes:
@@ -5562,8 +5558,8 @@ non\-empty content, the content of this file will be used as AUTH_FAILED
 message. To avoid race conditions, this file should be written before
 \fBauth_control_file\fP\&.
 .sp
-This auth fail reason can be something simple like "User has been permanently
-disabled" but there are also some special auth failed messages.
+This auth fail reason can be something simple like \(dqUser has been permanently
+disabled\(dq but there are also some special auth failed messages.
 .sp
 The \fBTEMP\fP message indicates that the authentication
 temporarily failed and that the client should continue to retry to connect.
@@ -5771,23 +5767,23 @@ Three arguments will be appended to any arguments in \fBcmd\fP as follows:
 .INDENT 7.0
 .TP
 .B \fB$1\fP \- [operation]
-\fB"add"\fP, \fB"update"\fP, or \fB"delete"\fP based on whether
+\fB\(dqadd\(dq\fP, \fB\(dqupdate\(dq\fP, or \fB\(dqdelete\(dq\fP based on whether
 or not the address is being added to, modified, or deleted from
 OpenVPN\(aqs internal routing table.
 .TP
 .B \fB$2\fP \- [address]
 The address being learned or unlearned. This can be an IPv4 address
-such as \fB"198.162.10.14"\fP, an IPv4 subnet such as
-\fB"198.162.10.0/24"\fP, or an ethernet MAC address (when
-\fB\-\-dev tap\fP is being used) such as \fB"00:FF:01:02:03:04"\fP\&.
+such as \fB\(dq198.162.10.14\(dq\fP, an IPv4 subnet such as
+\fB\(dq198.162.10.0/24\(dq\fP, or an ethernet MAC address (when
+\fB\-\-dev tap\fP is being used) such as \fB\(dq00:FF:01:02:03:04\(dq\fP\&.
 .TP
 .B \fB$3\fP \- [common name]
 The common name on the certificate associated with the client linked
-to this address. Only present for \fB"add"\fP or \fB"update"\fP
-operations, not \fB"delete"\fP\&.
+to this address. Only present for \fB\(dqadd\(dq\fP or \fB\(dqupdate\(dq\fP
+operations, not \fB\(dqdelete\(dq\fP\&.
 .UNINDENT
 .sp
-On \fB"add"\fP or \fB"update"\fP methods, if the script returns
+On \fB\(dqadd\(dq\fP or \fB\(dqupdate\(dq\fP methods, if the script returns
 a failure code (non\-zero), OpenVPN will reject the address and will not
 modify its internal routing table.
 .sp
@@ -6033,10 +6029,10 @@ TCP/UDP connection establishment with peer.
 .sp
 In \fB\-\-proto udp\fP mode, this option normally requires the use of
 \fB\-\-ping\fP to allow connection initiation to be sensed in the absence of
-tunnel data, since UDP is a "connectionless" protocol.
+tunnel data, since UDP is a \(dqconnectionless\(dq protocol.
 .sp
 On Windows, this option will delay the TAP\-Win32 media state
-transitioning to "connected" until connection establishment, i.e. the
+transitioning to \(dqconnected\(dq until connection establishment, i.e. the
 receipt of the first authenticated packet from the peer.
 .TP
 .B  \-\-up\-restart
@@ -6082,13 +6078,13 @@ starting with OpenVPN 2.0.1, the username is passed to the
 without string remapping.
 .TP
 .B \fI\-\-auth\-user\-pass password\fP
-Any "printable" character except CR or LF. Printable is defined to be
+Any \(dqprintable\(dq character except CR or LF. Printable is defined to be
 a character which will cause the C library isprint() function to
 return true.
 .TP
 .B \fI\-\-client\-config\-dir filename as derived from common name or\(gausername\fP
-Alphanumeric, underbar (\(aq_\(aq), dash (\(aq\-\(aq), and dot (\(aq.\(aq) except for "."
-or ".." as standalone strings. As of v2.0.1\-rc6, the at (\(aq@\(aq) character
+Alphanumeric, underbar (\(aq_\(aq), dash (\(aq\-\(aq), and dot (\(aq.\(aq) except for \(dq.\(dq
+or \(dq..\(dq as standalone strings. As of v2.0.1\-rc6, the at (\(aq@\(aq) character
 has been added as well for compatibility with the common name character
 class.
 .TP
@@ -6161,12 +6157,12 @@ Name of first \fB\-\-config\fP file. Set on program initiation and reset on
 SIGHUP.
 .TP
 .B \fBdaemon\fP
-Set to "1" if the \fB\-\-daemon\fP directive is specified, or "0" otherwise.
+Set to \(dq1\(dq if the \fB\-\-daemon\fP directive is specified, or \(dq0\(dq otherwise.
 Set on program initiation and reset on SIGHUP.
 .TP
 .B \fBdaemon_log_redirect\fP
-Set to "1" if the \fB\-\-log\fP or \fB\-\-log\-append\fP directives are
-specified, or "0" otherwise. Set on program initiation and reset on
+Set to \(dq1\(dq if the \fB\-\-log\fP or \fB\-\-log\-append\fP directives are
+specified, or \(dq0\(dq otherwise. Set on program initiation and reset on
 SIGHUP.
 .TP
 .B \fBdev\fP
@@ -6192,7 +6188,6 @@ dns_search_domain_{n}
 dns_server_{n}_address_{m}
 dns_server_{n}_port_{m}
 dns_server_{n}_resolve_domain_{m}
-dns_server_{n}_exclude_domain_{m}
 dns_server_{n}_dnssec
 dns_server_{n}_transport
 dns_server_{n}_sni
@@ -6323,7 +6318,7 @@ script execution.
 A set of variables which define each route to be added, and are set
 prior to \fB\-\-up\fP script execution.
 .sp
-\fBparm\fP will be one of \fBnetwork\fP, \fBnetmask"\fP,
+\fBparm\fP will be one of \fBnetwork\fP, \fBnetmask\(dq\fP,
 \fBgateway\fP, or \fBmetric\fP\&.
 .sp
 \fBn\fP is the OpenVPN route number, starting from 1.
@@ -6352,7 +6347,7 @@ Temporary file name containing the client certificate upon connection.
 Useful in conjunction with \fB\-\-tls\-verify\fP\&.
 .TP
 .B \fBscript_context\fP
-Set to "init" or "restart" prior to up/down script execution. For more
+Set to \(dqinit\(dq or \(dqrestart\(dq prior to up/down script execution. For more
 information, see documentation for \fB\-\-up\fP\&.
 .TP
 .B \fBscript_type\fP
@@ -6399,8 +6394,8 @@ of \fB\-\-tls\-verify\fP script.
 The serial number of the certificate from the remote peer, where \fBn\fP
 is the verification level. Only set for TLS connections. Set prior to
 execution of \fB\-\-tls\-verify\fP script. This is in the form of a decimal
-string like "933971680", which is suitable for doing serial\-based OCSP
-queries (with OpenSSL, do not prepend "0x" to the string) If something
+string like \(dq933971680\(dq, which is suitable for doing serial\-based OCSP
+queries (with OpenSSL, do not prepend \(dq0x\(dq to the string) If something
 goes wrong while reading the value from the certificate it will be an
 empty string, so your code should check that. See the
 \fBcontrib/OCSP_check/OCSP_check.sh\fP script for an example.
@@ -6448,7 +6443,7 @@ the verification level. Only set for TLS connections. Set prior to
 execution of \fB\-\-tls\-verify\fP script. This variable is similar to
 \fBtls_id_{n}\fP except the component X509 subject fields are broken
 out, and no string remapping occurs on these field values (except for
-remapping of control characters to "\fB_\fP"). For example, the
+remapping of control characters to \(dq\fB_\fP\(dq). For example, the
 following variables would be set on the OpenVPN server using the sample
 client certificate in sample\-keys (client.crt). Note that the
 verification level is 0 for the client certificate and 1 for the CA
@@ -6524,7 +6519,7 @@ clients.
 .sp
 While the management port is designed for programmatic control of
 OpenVPN by other applications, it is possible to telnet to the port,
-using a telnet client in "raw" mode. Once connected, type \fBhelp\fP
+using a telnet client in \(dqraw\(dq mode. Once connected, type \fBhelp\fP
 for a list of commands.
 .sp
 For detailed documentation on the management interface, see the
@@ -6648,7 +6643,7 @@ Valid syntax:
 .nf
 .ft C
 plugin module\-name
-plugin module\-name "arguments"
+plugin module\-name \(dqarguments\(dq
 .ft P
 .fi
 .UNINDENT
@@ -6658,7 +6653,7 @@ The \fBmodule\-name\fP needs to be the first
 argument, indicating the plug\-in to load.  The second argument is an
 optional init string which will be passed directly to the plug\-in.
 If the init consists of multiple arguments it must be enclosed in
-double\-quotes (").  Multiple plugin modules may be loaded into one
+double\-quotes (\(dq).  Multiple plugin modules may be loaded into one
 OpenVPN process.
 .sp
 The \fBmodule\-name\fP argument can be just a filename or a filename
@@ -6758,7 +6753,7 @@ certificate\(aqs subject:
 .sp
 .nf
 .ft C
-cryptoapicert "SUBJ:Peter Runestig"
+cryptoapicert \(dqSUBJ:Peter Runestig\(dq
 .ft P
 .fi
 .UNINDENT
@@ -6770,7 +6765,7 @@ To select a certificate, based on certificate\(aqs thumbprint (SHA1 hash):
 .sp
 .nf
 .ft C
-cryptoapicert "THUMB:f6 49 24 41 01 b4 ..."
+cryptoapicert \(dqTHUMB:f6 49 24 41 01 b4 ...\(dq
 .ft P
 .fi
 .UNINDENT
@@ -6786,7 +6781,7 @@ issuer name:
 .sp
 .nf
 .ft C
-cryptoapicert "ISSUER:Sample CA"
+cryptoapicert \(dqISSUER:Sample CA\(dq
 .ft P
 .fi
 .UNINDENT
@@ -6804,7 +6799,7 @@ OpenVPN 2.4.1.
 Ask Windows to renew the TAP adapter lease on startup. This option is
 normally unnecessary, as Windows automatically triggers a DHCP
 renegotiation on the TAP adapter when it comes up, however if you set
-the TAP\-Win32 adapter Media Status property to "Always Connected", you
+the TAP\-Win32 adapter Media Status property to \(dqAlways Connected\(dq, you
 may need this flag.
 .TP
 .BI \-\-ip\-win32 \ method
@@ -6822,13 +6817,13 @@ expects the adapter to be set to.
 .B \fBdynamic [offset] [lease\-time]\fP
 Automatically set the IP address and netmask by replying to DHCP
 query messages generated by the kernel.  This mode is probably the
-"cleanest" solution for setting the TCP/IP properties since it
+\(dqcleanest\(dq solution for setting the TCP/IP properties since it
 uses the well\-known DHCP protocol. There are, however, two
 prerequisites for using this mode:
 .INDENT 7.0
 .IP 1. 3
 The TCP/IP properties for the TAP\-Win32 adapter must be set
-to "Obtain an IP address automatically", and
+to \(dqObtain an IP address automatically\(dq, and
 .IP 2. 3
 OpenVPN needs to claim an IP address in the subnet for use
 as the virtual DHCP server address.
@@ -6848,7 +6843,7 @@ address + offset. If offset is negative, the DHCP server will
 masquerade as the IP address at broadcast address + offset.
 .sp
 The Windows \fBipconfig /all\fP command can be used to show what
-Windows thinks the DHCP server address is. OpenVPN will "claim"
+Windows thinks the DHCP server address is. OpenVPN will \(dqclaim\(dq
 this address, so make sure to use a free address. Having said that,
 different OpenVPN instantiations, including different ends of
 the same connection, can share the same virtual DHCP server
@@ -6862,7 +6857,7 @@ when the system goes to sleep. The default lease time is one year.
 .TP
 .B \fBnetsh\fP
 Automatically set the IP address and netmask using the Windows
-command\-line "netsh" command. This method appears to work correctly
+command\-line \(dqnetsh\(dq command. This method appears to work correctly
 on Windows XP but not Windows 2000.
 .TP
 .B \fBipapi\fP
@@ -6870,8 +6865,8 @@ Automatically set the IP address and netmask using the Windows IP
 Helper API. This approach does not have ideal semantics, though
 testing has indicated that it works okay in practice. If you use
 this option, it is best to leave the TCP/IP properties for the
-TAP\-Win32 adapter in their default state, i.e. "Obtain an IP
-address automatically."
+TAP\-Win32 adapter in their default state, i.e. \(dqObtain an IP
+address automatically.\(dq
 .TP
 .B \fBadaptive\fP (Default)
 Try \fBdynamic\fP method initially and fail over to \fBnetsh\fP
@@ -6884,13 +6879,13 @@ properties will be reset from DHCP to static, and this will cause
 future OpenVPN startups using the \fBadaptive\fP mode to use
 \fBnetsh\fP immediately, rather than trying \fBdynamic\fP first.
 .sp
-To "unstick" the \fBadaptive\fP mode from using \fBnetsh\fP,
+To \(dqunstick\(dq the \fBadaptive\fP mode from using \fBnetsh\fP,
 run OpenVPN at least once using the \fBdynamic\fP mode to restore
 the TAP\-Win32 adapter TCP/IP properties to a DHCP configuration.
 .UNINDENT
 .TP
 .B  \-\-pause\-exit
-Put up a "press any key to continue" message on the console prior to
+Put up a \(dqpress any key to continue\(dq message on the console prior to
 OpenVPN program exit. This option is automatically used by the Windows
 explorer when OpenVPN is run on a configuration file using the
 right\-click explorer menu.
@@ -6977,7 +6972,7 @@ be the middle two addresses of a /30 subnet (netmask 255.255.255.252).
 .TP
 .BI \-\-tap\-sleep \ n
 Cause OpenVPN to sleep for \fBn\fP seconds immediately after the TAP\-Win32
-adapter state is set to "connected".
+adapter state is set to \(dqconnected\(dq.
 .sp
 This option is intended to be used to troubleshoot problems with the
 \fB\-\-ifconfig\fP and \fB\-\-ip\-win32\fP options, and is used to give the
@@ -7180,7 +7175,7 @@ group.
 An OpenVPN client will try each connection profile sequentially until it
 achieves a successful connection.
 .sp
-\fB\-\-remote\-random\fP can be used to initially "scramble" the connection
+\fB\-\-remote\-random\fP can be used to initially \(dqscramble\(dq the connection
 list.
 .sp
 Here is an example of connection profile usage:

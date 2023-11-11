@@ -4,6 +4,7 @@ Asuswrt-Merlin Changelog
 386.12_2 (xx-xxx-2023)
   - UPDATED: openssl to 1.1.1w.
   - UPDATED: curl to 8.4.0.
+  - UPDATED: openvpn to 2.6.7.
   - FIXED: WPS not working on SDK6/SDK7 devices (affecting
            RT-AC68U and RT-AC88U/3100/5300)
   - FIXED: dcd constantly crashing (updated Trend Micro

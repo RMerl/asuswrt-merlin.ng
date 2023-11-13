@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.12_2 (xx-xxx-2023)
+386.12_2 (12-Nov-2023)
   - UPDATED: openssl to 1.1.1w.
   - UPDATED: curl to 8.4.0.
   - UPDATED: openvpn to 2.6.7.

@@ -871,7 +871,7 @@ plug-in hook to dynamically generate client-specific configuration
 method</li>
 <li><code>OPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY</code> plug-in hooks returns
 success/failure via <code>auth_control_file</code> when using deferred auth
-method and pending authentification via <code>pending_auth_file</code>.</li>
+method and pending authentication via <code>pending_auth_file</code>.</li>
 </ul>
 </td></tr>
 <tr><td class="option-group" colspan="2">
@@ -1325,9 +1325,9 @@ react according to <tt class="docutils literal"><span class="pre">--auth-retry</
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--auth-token-user <var>base64username</var></span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td><p class="first">Companion option to <tt class="docutils literal"><span class="pre">--auth-token</span></tt>. This options allows to override
+<tr><td>&nbsp;</td><td><p class="first">Companion option to <tt class="docutils literal"><span class="pre">--auth-token</span></tt>. This options allows one to override
 the username used by the client when reauthenticating with the <tt class="docutils literal"><span class="pre">auth-token</span></tt>.
-It also allows to use <tt class="docutils literal"><span class="pre">--auth-token</span></tt> in setups that normally do not use
+It also allows one to use <tt class="docutils literal"><span class="pre">--auth-token</span></tt> in setups that normally do not use
 username and password.</p>
 <p class="last">The username has to be base64 encoded.</p>
 </td></tr>
@@ -2536,7 +2536,7 @@ are tagged with 1 by default.</p>
 <tr><td class="option-group">
 <kbd><span class="option">--vlan-pvid <var>v</var></span></kbd></td>
 <td><p class="first">Specifies which VLAN identifier a &quot;port&quot; is associated with. Only valid
-when <tt class="docutils literal"><span class="pre">--vlan-tagging</span></tt> is speficied.</p>
+when <tt class="docutils literal"><span class="pre">--vlan-tagging</span></tt> is specified.</p>
 <p>In the client context, the setting specifies which VLAN ID a client is
 associated with. In the global context, the VLAN ID of the server TAP
 device is set. The latter only makes sense for <tt class="docutils literal"><span class="pre">--vlan-accept</span>
@@ -4604,7 +4604,7 @@ unfragmented.</p>
 periods of active usage.</p>
 <p>It's best to use the <tt class="docutils literal"><span class="pre">--fragment</span></tt> and/or <tt class="docutils literal"><span class="pre">--mssfix</span></tt> options to deal
 with MTU sizing issues.</p>
-<p class="last">Note: Depending on the platform, the operating system allows to receive
+<p class="last">Note: Depending on the platform, the operating system allows one to receive
 packets larger than <tt class="docutils literal"><span class="pre">tun-mtu</span></tt> (e.g. Linux and FreeBSD) but other platforms
 (like macOS) limit received packets to the same size as the MTU.</p>
 </td></tr>

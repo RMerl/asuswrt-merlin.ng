@@ -655,7 +655,7 @@ method
 .IP \(bu 2
 \fBOPENVPN_PLUGIN_AUTH_USER_PASS_VERIFY\fP plug\-in hooks returns
 success/failure via \fBauth_control_file\fP when using deferred auth
-method and pending authentification via \fBpending_auth_file\fP\&.
+method and pending authentication via \fBpending_auth_file\fP\&.
 .UNINDENT
 .TP
 .B  \-\-use\-prediction\-resistance
@@ -1147,9 +1147,9 @@ after a failed auth. Older clients will keep using the token value and
 react according to \fB\-\-auth\-retry\fP
 .TP
 .BI \-\-auth\-token\-user \ base64username
-Companion option to \fB\-\-auth\-token\fP\&. This options allows to override
+Companion option to \fB\-\-auth\-token\fP\&. This options allows one to override
 the username used by the client when reauthenticating with the \fBauth\-token\fP\&.
-It also allows to use \fB\-\-auth\-token\fP in setups that normally do not use
+It also allows one to use \fB\-\-auth\-token\fP in setups that normally do not use
 username and password.
 .sp
 The username has to be base64 encoded.
@@ -2688,7 +2688,7 @@ are tagged with 1 by default.
 .TP
 .BI \-\-vlan\-pvid \ v
 Specifies which VLAN identifier a \(dqport\(dq is associated with. Only valid
-when \fB\-\-vlan\-tagging\fP is speficied.
+when \fB\-\-vlan\-tagging\fP is specified.
 .sp
 In the client context, the setting specifies which VLAN ID a client is
 associated with. In the global context, the VLAN ID of the server TAP
@@ -5286,7 +5286,7 @@ periods of active usage.
 It\(aqs best to use the \fB\-\-fragment\fP and/or \fB\-\-mssfix\fP options to deal
 with MTU sizing issues.
 .sp
-Note: Depending on the platform, the operating system allows to receive
+Note: Depending on the platform, the operating system allows one to receive
 packets larger than \fBtun\-mtu\fP (e.g. Linux and FreeBSD) but other platforms
 (like macOS) limit received packets to the same size as the MTU.
 .TP

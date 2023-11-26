@@ -645,6 +645,9 @@ int ovpn_write_client_config(ovpn_cconf_t *cconf, int unit) {
 	fprintf(fp, "txqueuelen 1000\n");
 	fprintf(fp, "proto %s\n", cconf->proto);
 
+	if (!strcmp(cconf->proto, "udp"))
+		fprintf(fp, "fast-io\n");
+
 	fprintf(fp, "remote %s %d\n", cconf->addr, cconf->port);
 	if (cconf->auth_mode == OVPN_AUTH_STATIC) {
 		fprintf(fp, "ifconfig %s ", cconf->local);

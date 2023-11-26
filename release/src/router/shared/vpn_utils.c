@@ -356,6 +356,8 @@ int read_wgc_config_file(const char* file_path, int wgc_unit)
 			}
 			else if (!strncmp(buf, "PersistentKeepalive", 19))
 				nvram_pf_set(wgc_prefix, "alive", _get_wgconf_val(buf));
+			else if (!strncmp(buf, "MTU", 3))
+				nvram_pf_set(wgc_prefix, "mtu", _get_wgconf_val(buf));
 			else
 			{
 				cprintf("[WG] Unsupport: [%s]\n", buf);

@@ -4,18 +4,21 @@ Asuswrt-Merlin Changelog
 3004.388.5 (xx-xxx-xxxx)
   - UPDATED: OpenSSL to 1.1.1w.
   - UPDATED: Curl to 8.4.0.
-  - UPDATED: OpenVPN to 2.6.7.
-  - CHANGED: Enable fast-io for OpenVPN servers using UDP, which
-             will speed up performance on some models.
+  - UPDATED: OpenVPN to 2.6.8.
+  - CHANGED: Enable fast-io for OpenVPN clients and servers that
+             use UDP, which will speed up performance on some models.
   - CHANGED: You can now directly enter an IPv6 address on the
              Network Tools page as a target.
   - CHANGED: Display tracked connections on the QoS/Classification
              page even if QoS isn't set to Adaptive QoS.
   - CHANGED: QOS/Classification page can now resolve local IPv6
              addresses.
-  - FIXED: CIDR-formatted addresses were rejected on the Network Filter
-           page.  Implemented temporary workaround.
-  - FIXED: Various issues with the QOS Classification page
+  - CHANGED: Allow custom MTU for Wireguard clients (patch from
+             Asus).
+  - FIXED: CIDR-formatted addresses were rejected on the Network
+           Filter page.  Implemented temporary workaround.
+  - FIXED: Various issues with the QOS Classification page.
+  - FIXED: Netfilter TEE kernel module is missing.
 
 
 3004.388.4 (21-Aug-2023)

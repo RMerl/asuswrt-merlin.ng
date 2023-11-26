@@ -13,17 +13,18 @@ if [ $# != 2 ]; then
 	exit 0
 fi
 
-new_firm=`echo $2 | sed s/'\.'/_/4 | sed s/'\.'//g;`
 echo "---- $new_firm ----" >> /tmp/webs_note.log
 
 if [ "$(echo $2 | cut -d "_" -f 3)" = "" ]; then
 	echo "Asus FW" >> /tmp/webs_note.log
+	new_firm=`echo $2 | sed s/'\.'/_/4 | sed s/'\.'//g;`
 	releasenote_file=$1_"$new_firm"_"$LANG"_note.zip
 	releasenote_file_US=$1_"$new_firm"_US_note.zip
 	fwsite="https://dlcdnets.asus.com/pub/ASUS/wireless/ASUSWRT"
 	fwsiteSQ=$fwsite
 else
 	echo "Merlin FW" >> /tmp/webs_note.log
+	new_firm=`echo $2 | sed s/'\.'/_/g;`
 	releasenote_file=${new_firm}_note.txt
 	releasenote_file_US=$releasenote_file
 	fwsite="https://fwupdate.asuswrt-merlin.net"

@@ -381,6 +381,11 @@ function validForm(){
 	if(!validator.numberRange(document.getElementById("wgc_alive"), 1, 65535))
 		return false;
 
+// MTU
+	if(document.getElementById("wgc_mtu").value != "" &&
+	   !validator.numberRange(document.getElementById("wgc_mtu"), 576, 1500))
+		return false;
+
 	return true;
 }
 
@@ -584,6 +589,12 @@ function show_director_rules(){
 							<th>Private Key</th>
 							<td>
 								<input type="text" maxlength="63" name="wgc_priv" id="wgc_priv" class="input_32_table" value="<% nvram_get("wgc_priv"); %>" autocorrect="off" autocapitalize="off"></input>
+							</td>
+						</tr>
+						<tr>
+							<th>MTU (Optional)</th>
+							<td>
+								<input type="text" maxlength="4" name="wgc_mtu" id="wgc_mtu" class="input_6_table" onKeyPress="return validator.isNumber(this,event);" value="<% nvram_get("wgc_mtu"); %>" autocorrect="off" autocapitalize="off"></input>
 							</td>
 						</tr>
 						<tr>

@@ -5876,7 +5876,7 @@ fi;
 		echo "CONFIG_NETFILTER_XT_TARGET_TEE=y" >>$(1); \
 	else \
 		echo "# CONFIG_NETFILTER_ROUTER_BOOST is not set" >>$(1); \
-		echo "# CONFIG_NETFILTER_XT_TARGET_TEE is not set" >>$(1); \
+		echo "CONFIG_NETFILTER_XT_TARGET_TEE=m" >>$(1); \
 	fi;
 	if [ "$(BUILD_NAME)" = "RT-AX55" ] || [ "$(BUILD_NAME)" = "RT-AX1800" ]; then \
 		sed -i "/CONFIG_BCM_PKTFLOW_MAX_FLOWS/d" $(1); \

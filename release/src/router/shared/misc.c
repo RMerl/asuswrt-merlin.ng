@@ -6853,7 +6853,7 @@ void testcase ( const char* pszTest )
 int validate_rc_service(char *value)
 {
 	while(*value) {
-		if (isalnum(*value) != 0 || *value == ';' || *value == '_' || isspace(*value) != 0)
+		if (isalnum(*value) != 0 || *value == ';' || *value == '_' || *value == '-' || *value == '.' || *value == '/' || isspace(*value) != 0)
 			value++;
 		else{
 			dbg("validate_rc_service: invalid(%c)\n", *value);

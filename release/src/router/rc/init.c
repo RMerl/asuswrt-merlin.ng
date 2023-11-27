@@ -3806,27 +3806,6 @@ int init_nvram(void)
 #if 0
 	conf_swmode_support(model);
 #endif
-
-#ifdef RTCONFIG_OPENVPN
-/* Initialize OpenVPN state flags */
-	int i;
-	char varname[20];
-
-	for (i = 1; i <= OVPN_CLIENT_MAX; i++) {
-		sprintf(varname, "vpn_client%d_state", i);
-		nvram_set(varname, "0");
-
-		sprintf(varname, "vpn_client%d_errno", i);
-		nvram_set(varname, "0");
-	}
-
-	nvram_set("vpn_server1_state", "0");
-	nvram_set("vpn_server2_state", "0");
-	nvram_set("vpn_server1_errno", "0");
-	nvram_set("vpn_server2_errno", "0");
-	nvram_set("vpn_upload_state", "");
-#endif
-
 #ifdef RTCONFIG_SSH
 	if(nvram_get_int("sshd_port")>0 && nvram_get_int("sshd_port_x")<=0)
 		nvram_set("sshd_port_x", nvram_safe_get("sshd_port"));
@@ -18938,7 +18917,9 @@ int init_nvram2(void)
 	unsigned char ea[ETHER_ADDR_LEN];
 	char hostname[32];
 	char ver[64];
+	int i;
 	int dhcpc_mode = nvram_get_int("dhcpc_mode");
+	char varname[20];
 	char amas_rc_count[16] = {0};
 #if defined(RTCONFIG_CONNDIAG) && defined(RTCONFIG_QCA)
 	char word[256],fetch[30], *next;
@@ -19008,6 +18989,24 @@ int init_nvram2(void)
 		_dprintf("############################ unknown model(init.c:9292) #################################\n");
 		break;
 	}
+#endif
+
+#ifdef RTCONFIG_OPENVPN
+/* Initialize OpenVPN state flags */
+
+	for (i = 1; i <= OVPN_CLIENT_MAX; i++) {
+		sprintf(varname, "vpn_client%d_state", i);
+		nvram_set(varname, "0");
+
+		sprintf(varname, "vpn_client%d_errno", i);
+		nvram_set(varname, "0");
+	}
+
+	nvram_set("vpn_server1_state", "0");
+	nvram_set("vpn_server2_state", "0");
+	nvram_set("vpn_server1_errno", "0");
+	nvram_set("vpn_server2_errno", "0");
+	nvram_set("vpn_upload_state", "");
 #endif
 
 /* Remove potentially outdated data */

@@ -19,6 +19,10 @@ Asuswrt-Merlin Changelog
            Filter page.  Implemented temporary workaround.
   - FIXED: Various issues with the QOS Classification page.
   - FIXED: Netfilter TEE kernel module is missing.
+  - FIXED: OpenVPN client state getting cleared when Wireless
+           was being restarted.
+  - FIXED: Networkmap wasn't recognizing the GT-AX11000_PRO as
+           having USB 3.0 ports
 
 
 3004.388.4 (21-Aug-2023)

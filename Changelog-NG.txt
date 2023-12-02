@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.5 (xx-xxx-xxxx)
+3004.388.5 (2-Dec-2023)
   - UPDATED: OpenSSL to 1.1.1w.
   - UPDATED: Curl to 8.4.0.
   - UPDATED: OpenVPN to 2.6.8.

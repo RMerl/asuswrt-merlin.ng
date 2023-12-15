@@ -47,6 +47,7 @@
 #define DNS_DATA_NO_ANSWER_ERR                    -3
 #define DNS_DATA_NO_QUESTION_ERR                  -4
 #define DNS_DATA_REPLY_ERR                        -5
+#define DNS_DATA_BAD_IQUERY_ERR                   -6
 
 #define DNS_PAYLOADZ                              512
 #define DNS_MAX_NAME_LEN                          253

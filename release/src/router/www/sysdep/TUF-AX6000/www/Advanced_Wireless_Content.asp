@@ -266,6 +266,10 @@ function initial(){
 	document.form.wl_key4.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_key4"); %>');
 	document.form.wl_phrase_x.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl_phrase_x"); %>');
 	document.form.wl_channel.value = document.form.wl_channel_orig.value;
+
+	document.form.band0_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
+	document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
+	document.form.band1_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>');
 	if (band60g_support && document.form.wl_unit.value == '3')
 		document.form.wl_edmg_channel.value = document.form.wl_edmg_channel_orig.value;
 	
@@ -365,7 +369,7 @@ function initial(){
 	var skip_channel_5g = '<% nvram_get("skip_channel_5g"); %>';
 
 	if(acs_ch13_support){
-		document.getElementById("band0_acs_ch13_checkbox").style = "";
+		document.getElementById("band0_acs_ch13_checkbox").style.display = "";
 	}
 
 	if(skip_channel_5g == "band1" && wl_unit_value == "1"){
@@ -475,7 +479,10 @@ function initial(){
 	}
 
 	handle_bandwidth('0', nvram['wl0_bw']);
-	handle_bandwidth('1', nvram['wl1_bw']);
+	handle_bandwidth('1', nvram['wl1_bw']);	
+	if(acs_ch13_support){
+		handleAcsCh13(document.form.band0_channel.value);
+	}
 	
 	handleAcsDfs(document.form.band1_channel.value);
 	if('<% nvram_get("wl0_gmode_protection"); %>' == 'auto'){
@@ -490,6 +497,16 @@ function initial(){
 	}
 	else if(document.form.band0_nmode_x.value == '1'){
 		document.getElementById('band0_gmode_check').disabled = true;
+	}
+
+	if(is_KR_sku){
+		if(document.form.smart_connect_x.value == '1'){
+			$("#band01_auth_mode_x option[value='open']").remove();
+		}
+		else{
+			$("#band0_auth_mode_x option[value='open']").remove();
+			$("#band1_auth_mode_x option[value='open']").remove();
+		}
 	}
 }
 
@@ -567,7 +584,7 @@ function genBWTable(_unit, wl_nmode){
 		}
 		else{
 			bws = [1, 0, 2, 3];
-			bwsDesc = [document.form.wl_bw[0].text, "20 MHz", "40 MHz", "80 MHz"];
+			bwsDesc = ["20/40/80 MHz", "20 MHz", "40 MHz", "80 MHz"];
 		}
 
 		if(wl_nmode == 8 || (_unit != 0 && wl_nmode == 0)){// N/AC mixed or 5G Auto
@@ -739,23 +756,43 @@ function applyRule(){
 
 	if(validForm()){
 		if(amesh_support && (isSwMode("rt") || isSwMode("ap")) && ameshRouter_support) {
-			if(!check_wl_auth_support($("select[name=wl_auth_mode_x] option:selected"), wl_unit))
-				return false;
-			else {
-				var wl_parameter = {
-					"original" : {
-						"ssid" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>'),
-						"psk" :  decodeURIComponent('<% nvram_char_to_ascii("", "wl_wpa_psk"); %>')
-					},
-					"current": {
-						"ssid" : document.form.wl_ssid.value,
-						"psk" : document.form.wl_wpa_psk.value
-					}
-				};
-				if(!AiMesh_confirm_msg("Wireless_SSID_PSK", wl_parameter))
+			if(document.form.smart_connect_x.value == '1'){
+				if(!check_wl_auth_support($("select[name=band01_auth_mode_x] option:selected"), wl_unit))
 					return false;
+				else {
+					var wl_parameter = {
+						"original" : {
+							"ssid" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>'),
+							"psk" :  decodeURIComponent('<% nvram_char_to_ascii("", "wl_wpa_psk"); %>')
+						},
+						"current": {
+							"ssid" : document.form.wl_ssid.value,
+							"psk" : document.form.wl_wpa_psk.value
+						}
+					};
+					if(!AiMesh_confirm_msg("Wireless_SSID_PSK", wl_parameter))
+						return false;
+				}			
 			}
-			var radio_value = (document.form.wl_closed[0].checked) ? 1 : 0;
+			else{
+				if(!check_wl_auth_support($("select[name=band0_auth_mode_x] option:selected"), 0) || !check_wl_auth_support($("select[name=band1_auth_mode_x] option:selected"), 1))
+					return false;
+				else {
+					var wl_parameter = {
+						"original" : {
+							"ssid" : decodeURIComponent('<% nvram_char_to_ascii("", "wl_ssid"); %>'),
+							"psk" :  decodeURIComponent('<% nvram_char_to_ascii("", "wl_wpa_psk"); %>')
+						},
+						"current": {
+							"ssid" : document.form.wl_ssid.value,
+							"psk" : document.form.wl_wpa_psk.value
+						}
+					};
+					if(!AiMesh_confirm_msg("Wireless_SSID_PSK", wl_parameter))
+						return false;
+				}
+			}
+			var radio_value = (document.form.band0_closed[0].checked || document.form.band1_closed[0].checked) ? 1 : 0;
 			if(document.form.wps_enable.value == 1) {
 				if(radio_value) {
 					//if(!AiMesh_confirm_msg("Wireless_Hide_WPS", radio_value))
@@ -774,7 +811,7 @@ function applyRule(){
 			}
 		}
 		else {
-			if(document.form.wl_closed[0].checked && document.form.wps_enable.value == 1 && (isSwMode("rt") || isSwMode("ap"))){
+			if((document.form.band0_closed[0].checked || document.form.band1_closed[0].checked) && document.form.wps_enable.value == 1 && (isSwMode("rt") || isSwMode("ap"))){
 				confirm_flag=1;
 				confirm_content="<#wireless_JS_Hide_SSID#>";
 			}
@@ -900,7 +937,9 @@ function applyRule(){
 		if (document.form.wl_twt.value == "1" && document.form.wl_11ax.value == "0")
 			document.form.wl_twt.value = "0";
 
-		if(confirm_flag==1 || confirm_flag==7 || confirm_flag==6){
+		var reboot_time = eval("<% get_default_reboot_time(); %>");
+		var lan_ipaddr = "<% nvram_get("lan_ipaddr"); %>";
+		if(confirm_flag==1 || confirm_flag==7){
 			if($(".confirm_block").length > 0){
 				$(".confirm_block").remove();
 			}
@@ -919,8 +958,9 @@ function applyRule(){
 				left_button: "<#CTL_ok#>",
 				left_button_callback: function(){
 					if(confirm_flag==1 || confirm_flag==7){
-						document.form.wps_enable.value = "0";
+						document.form.wps_enable.value = "0";						
 					}
+		
 					confirm_cancel();
 					htmlbodyforIE = document.getElementsByTagName("html");
 					htmlbodyforIE[0].style.overflow = "";
@@ -954,6 +994,7 @@ function applyRule(){
 				"action_mode":"apply",
 				'rc_service': 'restart_wireless',
 				'smart_connect_x': document.form.smart_connect_x.value,
+				"action_wait": document.form.action_wait.value,
 			};
 					
 			var variable = {}
@@ -1155,14 +1196,36 @@ function applyRule(){
 					variable['acs_dfs'] = document.form.band1_acs_dfs_checkbox.checked ? '1' : '0';
 				}
 			}
+
+			if(acs_ch13_support && document.form.band0_channel.value == '0'){
+				variable['acs_ch13'] = document.getElementById('band0_acs_ch13').checked ? '1' : '0';
+			}
 			
 			postObj = Object.assign(postObj, variable);
 			rc_time = 60;
-			httpApi.nvramSet(postObj, function(){
-				showLoading(rc_time);
-                setTimeout(function(){
-                        location.reload();
-                }, rc_time*1000);
+
+			httpApi.nvramSet(postObj, function(response){
+				var restart_needed_time = this.restart_needed_time;
+				if (restart_needed_time) {
+					var tmp_rc_time = parseInt(restart_needed_time);
+					if (!isNaN(tmp_rc_time) && tmp_rc_time > 0 && tmp_rc_time < 300) {
+						rc_time = tmp_rc_time;
+					}
+				}
+				showLoading(rc_time, "waiting");
+				setTimeout(function(){
+					setInterval(function(){
+						var http = new XMLHttpRequest
+						http.onreadystatechange=function(){
+							if(http.readyState==4 && http.status==200){
+								top.location.href="/Advanced_Wireless_Content.asp"
+							}						
+						},
+
+						http.open("GET","/httpd_check.xml",!0);
+						http.send(null);
+					}, 3000);
+				}, 10000)
 			});
 
 			// document.form.submit();
@@ -1187,15 +1250,32 @@ function validForm(){
 			return false;	
 
 	if(auth_mode == "psk" || auth_mode == "psk2" || auth_mode == "pskpsk2" || auth_mode == "sae" || auth_mode == "psk2sae"){ //2008.08.04 lock modified
-		if(is_KR_sku){
-			if(!validator.psk_KR(document.form.wl_wpa_psk))
+	
+	if(is_KR_sku){
+		if(document.form.smart_connect_x.value == '1'){
+			if(!validator.psk_KR(document.form.band01_wpa_psk))
 				return false;
 		}
 		else{
-			if(!validator.psk(document.form.wl_wpa_psk))
+			if(!validator.psk_KR(document.form.band0_wpa_psk))
+				return false;
+			if(!validator.psk_KR(document.form.band1_wpa_psk))
 				return false;
 		}
-		
+	}
+	else{
+		if(document.form.smart_connect_x.value == '1'){
+			if(!validator.psk(document.form.band01_wpa_psk))
+				return false;
+		}
+		else{
+			if(!validator.psk(document.form.band0_wpa_psk))
+				return false;
+			if(!validator.psk(document.form.band1_wpa_psk))
+				return false;
+		}
+	}
+	
 		//confirm common string combination	#JS_common_passwd#
 		var is_common_string = check_common_string(document.form.wl_wpa_psk.value, "wpa_key");
 		if(is_common_string){
@@ -1621,6 +1701,16 @@ function enableSmartCon(val){
 	}
 
 	controlHideSSIDHint();
+	
+	if(is_KR_sku){
+		if(document.form.smart_connect_x.value == '1'){
+			$("#band01_auth_mode_x option[value='open']").remove();
+		}
+		else{
+			$("#band0_auth_mode_x option[value='open']").remove();
+			$("#band1_auth_mode_x option[value='open']").remove();
+		}
+	}
 }
 
 function enable_160MHz(obj){
@@ -2994,6 +3084,15 @@ function handleAcsDfs(channel){
 		document.getElementById('band1_dfs_checkbox').style.display = 'none';
 	}
 }
+
+function handleAcsCh13(channel){
+	if(acs_ch13_support && channel == '0'){
+		document.getElementById('band0_acs_ch13_checkbox').style.display = '';
+	}
+	else{
+		document.getElementById('band0_acs_ch13_checkbox').style.display = 'none';
+	}
+}
 </script>
 </head>
 
@@ -3503,7 +3602,7 @@ function handleAcsDfs(channel){
 				<tr>
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a></th>
 					<td>
-						<select name="band01_auth_mode_x" class="input_option" onChange="auth_mehtod_change('01', this.value);">
+						<select id="band01_auth_mode_x" name="band01_auth_mode_x" class="input_option" onChange="auth_mehtod_change('01', this.value);">
 							<option value="open"    <% nvram_match("wl0_auth_mode_x", "open",   "selected"); %>>Open System</option>
 							<option value="shared"  <% nvram_match("wl0_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
 							<option value="psk"     <% nvram_match("wl0_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
@@ -3729,11 +3828,11 @@ function handleAcsDfs(channel){
 				<tr id="band0_channel_field">
 					<th><a id="band0_channel_select" class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 3);"><#WLANConfig11b_Channel_itemname#></a></th>
 					<td>
-				 		<select name="band0_channel" class="input_option" onChange="high_power_auto_channel();insertExtChannelOption();genExtChannel('0', this.value, document.querySelector('[name=\'band0_bw\']').value)"></select>
+				 		<select name="band0_channel" class="input_option" onChange="high_power_auto_channel();insertExtChannelOption();genExtChannel('0', this.value, document.querySelector('[name=\'band0_bw\']').value);handleAcsCh13(this.value);"></select>
 						<span id="band0_auto_channel" style="display:none;margin-left:10px;"></span><br>
 						
 						<div style="margin-top:5px">
-						<div><span id="band0_acs_ch13_checkbox" style="display:none;"><input type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></input></span></div>
+						<div><span id="band0_acs_ch13_checkbox" style="display:none;"><input id="band0_acs_ch13" type="checkbox" onClick="check_acs_ch13_support(this);" <% nvram_match("acs_ch13", "1", "checked"); %>><#WLANConfig11b_EChannel_acs_ch13#></input></span></div>
 						</div>
 					</td>
 			  	</tr>
@@ -3749,7 +3848,7 @@ function handleAcsDfs(channel){
 				<tr id="band0_auth_mode_x_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a></th>
 					<td>
-						<select name="band0_auth_mode_x" class="input_option" onChange="auth_mehtod_change(0, this.value);">
+						<select id="band0_auth_mode_x" name="band0_auth_mode_x" class="input_option" onChange="auth_mehtod_change(0, this.value);">
 							<option value="open"    <% nvram_match("wl0_auth_mode_x", "open",   "selected"); %>>Open System</option>
 							<option value="shared"  <% nvram_match("wl0_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
 							<option value="psk"     <% nvram_match("wl0_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>
@@ -3997,7 +4096,7 @@ function handleAcsDfs(channel){
 				<tr id="band1_auth_mode_x_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a></th>
 					<td>
-						<select name="band1_auth_mode_x" class="input_option" onChange="auth_mehtod_change(1, this.value);">
+						<select id="band1_auth_mode_x" name="band1_auth_mode_x" class="input_option" onChange="auth_mehtod_change(1, this.value);">
 							<option value="open"    <% nvram_match("wl1_auth_mode_x", "open",   "selected"); %>>Open System</option>
 							<option value="shared"  <% nvram_match("wl1_auth_mode_x", "shared", "selected"); %>>Shared Key</option>
 							<option value="psk"     <% nvram_match("wl1_auth_mode_x", "psk",    "selected"); %>>WPA-Personal</option>

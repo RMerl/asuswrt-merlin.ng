@@ -115,6 +115,10 @@ var detect_interval = 2;	// get information per second
 var qos_rulelist = "<% nvram_get("qos_rulelist"); %>".replace(/&#62/g, ">").replace(/&#60/g, "<");
 var curState = '<% nvram_get("apps_analysis"); %>';
 
+if(dns_dpi_support)
+{
+  curState = '<% nvram_get("dns_dpi_apps_analysis"); %>';
+}
 if(cookie.get('maxBandwidth') == "" || cookie.get('maxBandwidth') == undefined){
 	cookie.set("maxBandwidth", "100");
 }
@@ -528,7 +532,11 @@ function show_clients(priority_type){
 	}
 
 	document.getElementById('sortable').innerHTML = code;
-	update_device_tarffic();
+	if(dns_dpi_support) {
+		update_device_tarffic_Dns();
+	} else {
+		update_device_tarffic();
+	}
 	setTimeout("register_event();",500);
 }
 
@@ -541,8 +549,14 @@ function show_apps(obj){
 	var clientObj = clientList[client_mac];
 	var code = "";
 
-	if(document.form.apps_analysis.value == 0)
+	if(dns_dpi_support) {
+		if(document.form.dns_dpi_apps_analysis.value == 0)
 		return false;
+	}
+	else {
+		if(document.form.apps_analysis.value == 0)
+		return false;
+	}
 
 	if(obj.className.indexOf("closed") == -1){			//close device's APPs
 		clearTimeout(apps_time_flag);
@@ -623,8 +637,13 @@ function show_apps(obj){
 				obj.setAttribute("class", "opened " + clientListCSS + " clicked qosLevel" + clientObj.qosLevel + " clientIcon");
 			}
 		}
-		update_device_tarffic();
-		update_apps_tarffic(client_mac, obj, new_element);
+		if(dns_dpi_support) {
+			update_device_tarffic_Dns();
+			update_apps_tarffic_Dns(client_mac, obj, new_element);
+		} else {
+			update_device_tarffic();
+			update_apps_tarffic(client_mac, obj, new_element);
+		}
 	}
 }
 
@@ -687,14 +706,18 @@ function render_apps(apps_array, obj_icon, apps_field){
 		code +='<tr>';
 		code +='<td style="width:70px;">';
 		img = new Image();
-		img.src = 'https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png';	// to check image file exist
+		/* force to use default app icon since app-catalog id need further re-map */
+		//if(!dns_dpi_support) {
+			img.src = 'https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png';	// to check image file exist
+		//}
+		//if(dns_dpi_support || img.height == 0){	//default image, if image file doesn't exist
 		if(img.height == 0){	//default image, if image file doesn't exist
 			code +='<div class="appIcons"></div>';
 		}
 		else{
 			code +='<div class="appIcons" style="background-image:url(\'https://nw-dlcdnet.asus.com/plugin/app_icons/'+ apps_array[i][3] +'-'+ apps_array[i][4] +'-0.png\')"></div>';
 		}
-
+		
 		code +='</td>';
 		code +='<td style="width:230px;border-top:1px dotted #333;">';
 		code +='<div id="'+ apps_array[i][0] +'" style="font-family:monospace, Courier New, Courier">'+apps_array[i][0]+'</div>';
@@ -1112,7 +1135,18 @@ function calculate_apps_traffic(apps_traffic){
 
 			diff_tx = (apps_traffic_old[apps_traffic_new[i]]) ? apps_traffic_new[apps_traffic_new[i]].tx - apps_traffic_old[apps_traffic_new[i]].tx : 0;
 			diff_rx = (apps_traffic_old[apps_traffic_new[i]]) ? apps_traffic_new[apps_traffic_new[i]].rx - apps_traffic_old[apps_traffic_new[i]].rx : 0;
-
+			
+			/* dns dpi report current active conntrack and its accumulated bytes for simplicity
+			   However, a few conntrack might timeout and won't report next query then have a smaller app bytes compared to last query
+			   To fix in fw, need to have a baseline conntrack and add calculated diff , minus tracks which there is no same app_id active
+			   ct. Nice to have since fw already give correct acculmuated info
+			*/
+			if(dns_dpi_support) {
+				if(diff_tx < 0)
+					diff_tx = 0;
+				if(diff_rx < 0)
+					diff_rx = 0;
+			}
 			diff_tx = diff_tx*8/detect_interval;
 			diff_rx = diff_rx*8/detect_interval;
 
@@ -1408,6 +1442,21 @@ function update_device_tarffic() {
   });
 }
 
+function update_device_tarffic_Dns() {
+  $.ajax({
+    url: '/getTraffic_Dns.asp',
+    dataType: 'script',
+    error: function(xhr) {
+		setTimeout("update_device_tarffic_Dns();", detect_interval*1000);
+    },
+    success: function(response){
+		calculate_router_traffic(router_traffic);
+		calculate_traffic(array_traffic);
+		device_time_flag = setTimeout("update_device_tarffic_Dns();", detect_interval*1000);
+    }
+  });
+}
+
 var apps_time_flag = "";
 function update_apps_tarffic(mac, obj, new_element) {
   $.ajax({
@@ -1423,6 +1472,19 @@ function update_apps_tarffic(mac, obj, new_element) {
   });
 }
 
+function update_apps_tarffic_Dns(mac, obj, new_element) {
+  $.ajax({
+    url: '/getTraffic_Dns.asp?client='+mac,
+    dataType: 'script',
+    error: function(xhr) {
+		setTimeout("update_apps_tarffic_Dns('"+mac+"');", detect_interval*1000);
+    },
+    success: function(response){
+		render_apps(array_traffic, obj, new_element);
+		apps_time_flag = setTimeout((function (mac,obj,new_element){ return function (){ update_apps_tarffic_Dns(mac,obj,new_element); } })(mac,obj,new_element), detect_interval*1000);
+    }
+  });
+}
 
 function regen_qos_rule(obj, priority){
 	var qos_rulelist_row =  qos_rulelist.split("<");
@@ -1476,7 +1538,8 @@ function regen_qos_rule(obj, priority){
 function applyRule(){
 	if(reset_wan_to_fo.change_status)
 		reset_wan_to_fo.change_wan_mode(document.form);
-
+	if(dns_dpi_support)
+		document.form.action_script.value = "restart_nfcm;restart_dnsqd;restart_qos;restart_firewall";
 	document.form.qos_rulelist.value = qos_rulelist;
 	showLoading();
 	document.form.submit();
@@ -1485,6 +1548,8 @@ function applyRule(){
 function eula_confirm(){
 	document.form.TM_EULA.value = 1;
 	document.form.apps_analysis.value = 1;
+	if(dns_dpi_support)
+		document.form.dns_dpi_apps_analysis.value = 1;
 	document.form.action_wait.value = "15";
 	applyRule();
 }
@@ -1493,6 +1558,8 @@ function cancel(){
 	curState = 0;
 	$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
 	document.form.action_script.value = "restart_qos;restart_firewall";
+	if(dns_dpi_support)
+		document.form.action_script.value = "restart_nfcm;restart_dnsqd;restart_qos;restart_firewall";
 	document.form.action_wait.value = "5";
 }
 function switch_control(_status){
@@ -1500,6 +1567,8 @@ function switch_control(_status){
 		if(reset_wan_to_fo.check_status()) {
 			if(ASUS_EULA.check("tm")){
 				document.form.apps_analysis.value = 1;
+				if(dns_dpi_support)
+					document.form.dns_dpi_apps_analysis.value = 1;
 				applyRule();
 			}
 		}
@@ -1508,6 +1577,8 @@ function switch_control(_status){
 	}
 	else {
 		document.form.apps_analysis.value = 0;
+		if(dns_dpi_support)
+			document.form.dns_dpi_apps_analysis.value = 0;
 		applyRule();
 	}
 }
@@ -1580,6 +1651,7 @@ function getTrafficUnit(){
 <input type="hidden" name="qos_rulelist" value="">
 <input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
 <input type="hidden" name="apps_analysis" value="<% nvram_get("apps_analysis"); %>">
+<input type="hidden" name="dns_dpi_apps_analysis" value="<% nvram_get("dns_dpi_apps_analysis"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
@@ -1626,6 +1698,17 @@ function getTrafficUnit(){
 														<td >
 															<div align="center" class="left" style="width:94px; float:left; cursor:pointer;" id="apps_analysis_enable"></div>
 															<script type="text/javascript">
+															if(dns_dpi_support)
+															{
+																$('#apps_analysis_enable').iphoneSwitch('<% nvram_get("dns_dpi_apps_analysis"); %>',
+																	function(){
+																		switch_control(1);
+																	},
+																	function(){
+																		switch_control(0);
+																	}
+																);
+															} else {
 																$('#apps_analysis_enable').iphoneSwitch('<% nvram_get("apps_analysis"); %>',
 																	function(){
 																		switch_control(1);
@@ -1634,6 +1717,7 @@ function getTrafficUnit(){
 																		switch_control(0);
 																	}
 																);
+															}
 															</script>
 														</td>
 													</tr>

@@ -1,0 +1,63 @@
+<? # -*- mode: shell-script -*-
+# Copyright (C) 2009-2012 David Bird (Coova Technologies) <support@coova.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. ./config.sh
+http_header
+header
+
+# VERIFY PAYPAL DATA
+
+if [ -e "$POST_FILE" ]; then
+
+    PAYPAL_POST=/tmp/paypal.$$
+    echo -n "cmd=_notify-validate&" > $PAYPAL_POST
+    cat $POST_FILE >> $PAYPAL_POST
+
+    host="www.paypal.com"
+    [ "$FORM_test_ipn" = "1" ] && host="www.sandbox.paypal.com"
+
+    out=$(wget -O - --no-check-certificate \
+	--header "Content-Type: application/x-www-form-urlencoded" \
+	--post-file=$PAYPAL_POST https://$host/cgi-bin/webscr)
+
+    if [ "$out" = "VERIFIED" ]; then
+	#env > /tmp/env
+	username="$FORM_txn_id"
+	password="${FORM_payer_email:-$FORM_last_name}"
+	
+	[ "$username" != "" ] && {
+	    register_with_pkg code "$username" "$password" "$FORM_custom" payment
+
+	    runlogin "$username" "$password"
+
+	    echo "<p>Your payment has been processed and you are now on-line.</p>"
+	    echo "<p>Your access details (keep this to login later!):<br>"
+	    echo "<table>"
+	    echo "<tr><td>Username</td><td>$username</td></tr>"
+	    echo "<tr><td>Password</td><td>$password</td></tr>"
+	    echo "</table>"
+	}
+
+    else
+	echo "<p>Problem verifying with PayPal</p>"
+    fi
+
+    /bin/rm -f $PAYPAL_POST
+fi
+
+footer
+
+?>

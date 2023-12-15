@@ -1,10 +1,3 @@
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <unistd.h>
-#include <stdlib.h>
-#include <time.h>
-#include <arpa/inet.h>
-
 #if !defined(X86_APP)
 #include <shutils.h>
 #endif
@@ -23,8 +16,10 @@ void init_default_app_domain_table (sqlite3 *db) {
   
   for (int i = 0 ; i< app_list_len; i++) 
   { 
-    sprintf(sql, "REPLACE INTO app_name (app_id, name, catalog) VALUES (%u, '%s', '%s')",
-            app_list[i].app_id, app_list[i].name, app_list[i].catalog);
+    sprintf(sql, "REPLACE INTO app_name (app_id, name, catalog, map_cat_id, map_app_id) VALUES (%u, '%s', '%s', %u, %u)",
+            app_list[i].app_id, app_list[i].name, app_list[i].catalog,
+            app_list[i].map_cat_id,
+            app_list[i].map_app_id);
     ret = sqlite3_exec(db, sql, NULL, NULL, &err);
     if (ret != SQLITE_OK) {
       if(err != NULL) {
@@ -348,6 +343,75 @@ int upgrade_dq_to_ver_2(sqlite3 *db)
   return 0;
 }
 
+int upgrade_dq_to_ver_3(sqlite3 *db)
+{
+  int ret;
+  char *err;
+
+  // too many NOT NULL new field, drop table instead alter table
+  drop_table(DNS_QUERY_TABLE, db);
+  drop_table(APP_DOMAIN_TABLE, db);
+  drop_table(APP_NAME_TABLE, db);
+
+  // app_name
+  ret = sqlite3_exec(db,
+          "CREATE TABLE IF NOT EXISTS app_name ("
+          "app_id INTEGER PRIMARY KEY AUTOINCREMENT,"
+          "name VARCHAR(128) NOT NULL,"
+          "catalog VARCHAR(128) NOT NULL,"
+          "map_cat_id INTEGER NOT NULL,"
+          "map_app_id INTEGER NOT NULL )",
+          NULL, NULL, &err);
+  if(ret != SQLITE_OK && err != NULL) {
+            dnsdbg("create db error %s", err);
+            sqlite3_free(err);
+   }
+  
+  // app_domain
+  ret = sqlite3_exec(db,
+          "CREATE TABLE IF NOT EXISTS app_domain ("
+          "id INTEGER PRIMARY KEY AUTOINCREMENT,"
+          "domain VARCHAR(128) NOT NULL,"
+          "app_id INTEGER NOT NULL,"
+          "CONSTRAINT unq UNIQUE (domain),"
+          "FOREIGN KEY (app_id) REFERENCES app_name (app_id))",
+          NULL, NULL, &err);
+  if(ret != SQLITE_OK && err != NULL) {
+            dnsdbg("create db error %s", err);
+            sqlite3_free(err);
+  }
+
+  // dns_query
+  ret = sqlite3_exec(db,
+          "CREATE TABLE IF NOT EXISTS dns_query ("
+          "is_v4 UINT NOT NULL,"
+          "client_ip UINT NOT NULL,"
+          "client_ip6 VARCHAR(50) NOT NULL,"
+          "name VARCHAR(128) NOT NULL,"
+          "resolve_ip UINT NOT NULL,"
+          "resolve_ip6 VARCHAR(50) NOT NULL,"
+          "mac VARCHAR(128) NOT NULL,"
+          "app_id INTEGER,"
+          "timestamp INTEGER,"
+          "CONSTRAINT unq UNIQUE (client_ip, client_ip6, name, resolve_ip, resolve_ip6))",
+          NULL, NULL, &err);
+  if(ret != SQLITE_OK && err != NULL) {
+            dnsdbg("create db error %s", err);
+            sqlite3_free(err);
+  }
+ 
+  // index
+  ret = sqlite3_exec(db, "CREATE INDEX IF NOT EXISTS src_dstx_app ON dns_query (client_ip, resolve_ip, app_id)", NULL, NULL, &err);
+  if (ret != SQLITE_OK && err != NULL) {
+            dnsdbg("dns_query create index error: %s\n", err);
+            sqlite3_free(err);
+  }
+
+  init_default_app_domain_table(db);
+  set_db_ver(db, 3);
+  
+  return 0;
+}
 
 
 int upgrade_ac_to_ver_1(sqlite3 *db)
@@ -712,6 +776,13 @@ int process_db_upgrade(DNS_DB_TYPE db_type, sqlite3 *db, int old_ver, int new_ve
        ret = upgrade_dq_to_ver_2(db);
        old_ver = get_db_ver(db);
     }
+    
+    if(old_ver < 3)
+    {
+      // upgrade to ver 3
+       ret = upgrade_dq_to_ver_3(db);
+       old_ver = get_db_ver(db);
+    }
   }
   else if(db_type == APP_CLIENT)
   {
@@ -833,7 +904,7 @@ int  get_primary_domain(char *full_dns, char *primary_dns)
   char dns[128] ={0};
   strcpy(dns, full_dns);
   sub = strtok(dns, ".");
-  while (sub != NULL) {
+  while (sub != NULL && i<8) {
       strcpy(name[i], sub);
       i++;
       sub = strtok(NULL, ".");
@@ -863,7 +934,7 @@ int  get_primary_domain(char *full_dns, char *primary_dns)
   return count;
 }
 
-int sqlite_dns_lookup(sqlite3 *db, char *domain, int *app_id, char *app_name)
+int sqlite_dns_lookup(sqlite3 *db, char *domain, int *app_id, int *cat_id, char *app_name)
 {
   
   int ret;
@@ -874,19 +945,21 @@ int sqlite_dns_lookup(sqlite3 *db, char *domain, int *app_id, char *app_name)
   int index;
   char sql[512] = {0};
   char match_domain[128] = {0};
+  char db_domain[256] = {0};
+  char catalog[64] = {0};
   int  sub_domains;
   
   sub_domains = get_primary_domain(domain, match_domain);
   
   if(sub_domains > 2)
   {
-   sprintf(sql, "select d.app_id, d.name from app_domain as c \ 
+   sprintf(sql, "select d.app_id, d.name, d.catalog, c.domain from app_domain as c \ 
     inner join app_name as d on c.app_id = d.app_id where c.domain like '%%%s' or c.domain='%s';",
     domain, match_domain);
   }
   else  
   {
-    sprintf(sql, "select d.app_id, d.name from app_domain as c \ 
+    sprintf(sql, "select d.app_id, d.name, d.catalog, c.domain from app_domain as c \ 
     inner join app_name as d on c.app_id = d.app_id where c.domain like '%s';",
     match_domain);
   }
@@ -903,6 +976,7 @@ int sqlite_dns_lookup(sqlite3 *db, char *domain, int *app_id, char *app_name)
     }
     *app_id = DEFAULT_APP_ID;
     strcpy(app_name, DEFAULT_APP_NAME);
+    *cat_id = DEFAULT_CAT_ID;
     //if(row == 0)
     //  sqlite3_free_table(result);
     
@@ -918,11 +992,103 @@ int sqlite_dns_lookup(sqlite3 *db, char *domain, int *app_id, char *app_name)
     *app_id = strtoul(result[index++], &stop, 10);
     // app_name.name
     strcpy(app_name, result[index++]);
+    strcpy(catalog, result[index++]);
+    strcpy(db_domain, result[index++]);
+    
+    //TODO: lookup catalog name to id
+    *cat_id = DEFAULT_CAT_ID;
+    if(!strcmp(domain, db_domain))
+      break;
   }
   // free here 
   sqlite3_free_table(result);
   return DNSSQL_OK;
 }
+
+int sqlite_app_name_lookup(sqlite3 *db, int is_v4, char *mac, u_int32_t ipv4, char *ipv6, u_int16_t dst_port, int *app_id, int *cat_id, char *app_name)
+{
+  
+  int ret;
+  char *err = NULL;
+  char **result;
+  int row;
+  int col;
+  int index;
+  char sql[512] = {0};
+  char match_domain[128] = {0};
+  char catalog[64] = {0};
+  int protocols_len = sizeof(protocol_list)/sizeof(protocol_list[0]);
+ 
+  if(is_v4)
+  {
+   sprintf(sql, "select d.app_id, d.name, d.catalog from dns_query as c \ 
+    inner join app_name as d on c.app_id = d.app_id where c.resolve_ip=%u and c.app_id<>0 and c.mac='%s';",
+    ipv4, mac);
+  }
+  else  
+  {
+    sprintf(sql, "select d.app_id, d.name, d.catalog from dns_query as c \ 
+    inner join app_name as d on c.app_id = d.app_id where c.resolve_ip6='%s' and c.app_id<>0 and c.mac='%s';",
+    ipv6, mac);
+  }
+
+  *app_id = DEFAULT_APP_ID;
+  strcpy(app_name, DEFAULT_APP_NAME);
+  *cat_id = DEFAULT_CAT_ID;
+   
+  ret = sqlite3_get_table(db, sql, &result, &row, &col, &err);
+  if(ret != SQLITE_OK)
+  {
+    if(err) 
+    {
+      dnsdbg("sql err %s", err);
+      sqlite3_free(err);
+    }
+    sqlite3_free_table(result);
+    return DNSSQL_ERROR;
+  }
+
+  if(row > 1) 
+    goto fall_thr_protocol;
+
+  // print only , then add into list
+  index = col;
+  for(int i=0; i<row; i++)
+  {
+    char *stop;
+    // app_name.app_id
+    *app_id = strtoul(result[index++], &stop, 10);
+    // app_name.name
+    strcpy(app_name, result[index++]);
+    strcpy(catalog, result[index++]);
+    //TODO: lookup catalog name to id
+    *cat_id = DEFAULT_CAT_ID;
+    
+  }
+
+fall_thr_protocol:
+    // fallthough to give a chance to map protocol as app name 
+  if(*app_id == DEFAULT_APP_ID)
+  {
+     for(int j=0; j < protocols_len; j++)
+     {
+         if(dst_port == protocol_list[j].port)
+	  {
+	     strcpy(app_name, protocol_list[j].name);
+       /* TODO: app_id remap for all known protocol */
+       if(protocol_list[j].id == 0)
+            *app_id = 50000 + j;
+       else 
+            *app_id = protocol_list[j].id;
+             break;
+          }
+     }
+  }
+  // free here 
+  sqlite3_free_table(result);
+  return DNSSQL_OK;
+}
+
 
 // TODO: remove mac, insert/update timestamp
 int sqlite_dns_insert(sqlite3 *db, dns_msg *msg, char *mac, int app_id)
@@ -1059,6 +1225,8 @@ int sqlite_dns_map_ip(sqlite3 *db, nfapp_node_t *ap)
   strcpy(ap->name, DEFAULT_APP_DOMAIN);
   //strcpy(ap->mac, DEFAULT_MAC);
   strcpy(ap->app_name, DEFAULT_APP_NAME);
+  if(row > 1)
+    goto fall_thr_protocol;
 
   //TODO: use timestamp as clue to decide dns name due to mulitple dns map to one ip 
   /*
@@ -1082,7 +1250,8 @@ int sqlite_dns_map_ip(sqlite3 *db, nfapp_node_t *ap)
     strcpy(ap->app_name, result[index++]);
     //printf("----------------------------------------------\n");
   }
-  
+
+fall_thr_protocol:
   // fallthough to give a chance to map protocol as app name 
   if(!strcmp(ap->app_name, DEFAULT_APP_NAME))
   {

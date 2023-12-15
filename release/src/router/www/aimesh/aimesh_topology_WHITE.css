@@ -480,10 +480,7 @@
 	border-bottom: 1px solid #DCDCDC;
 }
 .port_status_bg .label_W_bg:before{
-	border-left: 1px solid #DCDCDC;
-}
-.port_status_bg .label_L_bg:before{
-	border-right: 1px solid #DCDCDC;
+	border-bottom: 1px solid #DCDCDC;
 }
 .port_status_bg .port_icon,
 .port_status_bg .port_icon .wan_icon,

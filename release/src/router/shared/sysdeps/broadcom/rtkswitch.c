@@ -117,6 +117,8 @@ int rtkswitch_ioctl(int val, int val2)
 	//case 64:	/* Set port(iso port) isolation EFID */
 	case 701:       /* Set specified TxDelay */
 	case 702:       /* Set specified RxDelay */
+	case 900:       /* Set phy x in testmode */
+	case 901:       /* Set phy testmode x(1, 4) */
 
 		p = &value;
 		value = (unsigned int)val2;
@@ -148,6 +150,7 @@ int rtkswitch_ioctl(int val, int val2)
 	case 60:	/* Get permitted port isolation portmask */
 	//case 63:	/* Get all ports isolation EFID */
 	case 70:        /* Get TxDelay, RxDelay */
+	case 902:       /* Get phy testmode x(1, 4) */
 		p = NULL;
 		break;
 	default:

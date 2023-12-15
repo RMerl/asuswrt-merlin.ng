@@ -1,0 +1,18 @@
+Source: coova-chilli
+Section: net
+Priority: optional
+Maintainer: David Bird (Coova Technologies) <support@coova.com>
+Build-Depends: debhelper (>= 7), libc6-dev | libc6-dev-amd64 
+Standards-Version: 3.8.1
+
+Package: coova-chilli 
+Architecture: any
+Replaces: chillispot
+Conflicts: chillispot
+Provides: chillispot
+Description: Wireless LAN Access Point Controller (captive portal).
+ Coova-Chilli is an open source captive portal or wireless LAN access point
+ controller, forked from chillispot. It supports web based login which is 
+ today's standard for public HotSpots and it supports Wireless Protected Access (WPA) which
+ is the standard of the future. Authentication, Authorization and Accounting (AAA) 
+ is handled by your favorite radius server. Read more at http://www.coova.org/

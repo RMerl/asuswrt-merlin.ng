@@ -1,0 +1,646 @@
+/* $Id$ */
+
+/*
+ *   Copyright (c) 2001-2010 Aaron Turner <aturner at synfin dot net>
+ *   Copyright (c) 2013-2022 Fred Klassen <tcpreplay at appneta dot com> - AppNeta
+ *
+ *   The Tcpreplay Suite of tools is free software: you can redistribute it
+ *   and/or modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or with the authors permission any later version.
+ *
+ *   The Tcpreplay Suite is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with the Tcpreplay Suite.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+autogen definitions options;
+
+copyright = {
+    date        = "2000-2022";
+    owner       = "Aaron Turner and Fred Klassen";
+    eaddr       = "tcpreplay-users@lists.sourceforge.net";
+    type        = gpl;
+    author      = <<- EOText
+Copyright 2013-2022 Fred Klassen - AppNeta
+
+Copyright 2000-2012 Aaron Turner
+
+For support please use the tcpreplay-users@lists.sourceforge.net mailing list.
+
+The latest version of this software is always available from:
+http://tcpreplay.appneta.com/
+EOText;
+};
+
+package         = "tcpprep";
+prog-name       = "tcpprep";
+prog-title      = "Create a tcpreplay cache cache file from a pcap file.";
+long-opts;
+gnu-usage;
+help-value      = "H";
+save-opts-value = "";
+load-opts-value = "";
+
+config-header   = "config.h";
+include         = "#include \"defines.h\"\n"
+                "#include \"common.h\"\n"
+                "#include \"config.h\"\n"
+                "#include \"tcpprep.h\"\n"
+                "#include <stdlib.h>\n"
+                "#include <string.h>\n"
+                "#include \"tcpprep_api.h\"\n"
+                "extern tcpprep_t *tcpprep;\n";
+
+homerc          = "$$/";
+
+explain = <<- EOExplain
+tcpprep is a @file{pcap(3)} file pre-processor which creates a cache
+file which provides "rules" for @file{tcprewrite(1)} and @file{tcpreplay(1)}
+on how to process and send packets.
+EOExplain;
+
+detail = <<- EODetail
+The basic operation of tcpreplay is to resend all packets from the
+input file(s) out a single file.  Tcpprep processes a pcap file and
+applies a set of user-specified rules to create a cache file which
+tells tcpreplay whether or not to send each packet and which interface the
+packet should be sent out of.
+
+For more details, please see the Tcpreplay Manual at:
+http://tcpreplay.appneta.com
+EODetail;
+
+man-doc = <<- EOMan
+.SH "SEE ALSO"
+tcpdump(1), tcpbridge(1), tcprewrite(1), tcpreplay(1), tcpcapinfo(1)
+EOMan;
+
+
+flag = {
+    ifdef       = DEBUG;
+    name        = dbug;
+    value       = d;
+    arg-type    = number;
+    max         = 1;
+    immediate;
+    arg-range   = "0->5";
+    arg-default = 0;
+    descrip     = "Enable debugging output";
+    doc         = <<- EOText
+If configured with --enable-debug, then you can specify a verbosity
+level for debugging output.  Higher numbers increase verbosity.
+EOText;
+};
+
+
+/* Modes: -a bridge/router/client/server, -c (cidr) */
+flag = {
+    name        = auto;
+    value       = a;
+    descrip     = "Auto-split mode";
+    arg-type    = string;
+    max         = 1;
+    flags-cant  = cidr;
+    flags-cant  = port;
+    flags-cant  = regex;
+    flags-cant  = mac;
+    flag-code   = <<- EOAuto
+
+    tcpprep->options->mode = AUTO_MODE;
+    if (strcmp(OPT_ARG(AUTO), "bridge") == 0) {
+        tcpprep->options->automode = BRIDGE_MODE;
+    }
+    else if (strcmp(OPT_ARG(AUTO), "router") == 0) {
+        tcpprep->options->automode = ROUTER_MODE;
+    }
+    else if (strcmp(OPT_ARG(AUTO), "client") == 0) {
+        tcpprep->options->automode = CLIENT_MODE;
+    }
+    else if (strcmp(OPT_ARG(AUTO), "server") == 0) {
+        tcpprep->options->automode = SERVER_MODE;
+    }
+    else if (strcmp(OPT_ARG(AUTO), "first") == 0) {
+        tcpprep->options->automode = FIRST_MODE;
+    }
+    else {
+        errx(-1, "Invalid auto mode type: %s", OPT_ARG(AUTO));
+    }
+EOAuto;
+    doc         = <<- EOText
+Tcpprep will try to automatically determine the primary function of hosts
+based on the traffic captured and classify each host as client or server.
+In order to do so, you must provide a hint to tcpprep as to how to search
+for clients and servers.  Valid hints are:
+
+@table @bullet
+@item
+@var{bridge}
+Bridge mode processes each packet to try to determine if the sender is a
+client or server.  Once all the packets are processed, the results are weighed
+according to the server/client ratio (@samp{--ratio}) and systems are assigned an
+interface.  If tcpprep is unable to determine what role a system plays, tcpprep
+will abort.
+@item
+@var{router}
+Router mode works just like bridge mode, except that after weighing is done,
+systems which are undetermined are considered a server if they fall inside a
+network known to contain other servers.  Router has a greater chance of
+successfully splitting clients and servers but is not 100% foolproof.
+@item
+@var{client}
+Client mode works just like bridge mode, except that unclassified systems are
+treated as clients.  Client mode should always complete successfully.
+@item
+@var{server}
+Server mode works just like bridge mode, except that unclassified systems are
+treated as servers.  Server mode should always complete successfully.
+@item
+@var{first}
+First mode works by looking at the first time each IP is seen in the SRC and DST
+fields in the IP header.  If the host is first seen in the SRC field, it is a
+client and if it's first seen in the DST field, it is marked as a server.   This
+effectively replicates the processing of the tomahawk test tool.  First
+mode should always complete successfully.
+@end table
+EOText;
+};
+
+
+flag = {
+    name        = cidr;
+    value       = c;
+    descrip     = "CIDR-split mode";
+    arg-type    = string;
+    max         = 1;
+    flags-cant  = auto;
+    flags-cant  = port;
+    flags-cant  = regex;
+    flags-cant  = mac;
+    flag-code   = <<- EOCidr
+
+    char *cidr = safe_strdup(OPT_ARG(CIDR));
+    tcpprep->options->mode = CIDR_MODE;
+    if (!parse_cidr(&tcpprep->options->cidrdata, cidr, ","))
+        errx(-1, "Unable to parse CIDR map: %s", OPT_ARG(CIDR));
+    free(cidr);
+
+EOCidr;
+    doc         = <<- EOText
+Specify a comma delimited list of CIDR netblocks to match against
+the source IP of each packet.  Packets matching any of the CIDR's
+are classified as servers.
+
+IPv4 Example:
+@example
+--cidr=192.168.0.0/16,172.16.0.0/12,10.0.0.0/8
+@end example
+IPv6 Example:
+@example
+--cidr=[::ffff:0:0/96],[fe80::/16]
+@end example
+EOText;
+};
+
+flag = {
+    name        = regex;
+    value       = r;
+    descrip     = "Regex-split mode";
+    arg-type    = string;
+    max         = 1;
+    flags-cant  = auto;
+    flags-cant  = port;
+    flags-cant  = cidr;
+    flags-cant  = mac;
+    flag-code   = <<- EORegex
+
+    int regex_error;
+    char ebuf[EBUF_SIZE];
+
+    tcpprep->options->mode = REGEX_MODE;
+    if ((regex_error = regcomp(&tcpprep->options->preg, OPT_ARG(REGEX),
+        REG_EXTENDED|REG_NOSUB))) {
+        regerror(regex_error, &tcpprep->options->preg, ebuf, EBUF_SIZE);
+        errx(-1, "Unable to compile regex: %s", ebuf);
+    }
+
+EORegex;
+    doc         = <<- EOText
+Specify a regular expression to match against the source IP of each
+packet.  Packets matching the regex are classified as servers.
+EOText;
+};
+
+flag = {
+    name        = port;
+    value       = p;
+    descrip     = "Port-split mode";
+    max         = 1;
+    flags-cant  = auto;
+    flags-cant  = regex;
+    flags-cant  = cidr;
+    flags-cant  = mac;
+    flag-code   = <<- EOPort
+
+    tcpprep->options->mode = PORT_MODE;
+
+EOPort;
+    doc         = <<- EOText
+Specifies that TCP and UDP traffic over IPv4 and IPv6 should be classified
+as client or server based upon the destination port of the header.
+EOText;
+};
+
+flag = {
+    name        = mac;
+    value       = e;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Source MAC split mode";
+    flags-cant  = auto;
+    flags-cant  = regex;
+    flags-cant  = cidr;
+    flags-cant  = port;
+    flag-code   = <<- EOMac
+
+    tcpprep->options->mode = MAC_MODE;
+    tcpprep->options->maclist = safe_strdup(OPT_ARG(MAC));
+EOMac;
+
+    doc          = <<- EOText
+Specify a list of MAC addresses to match against the source MAC
+of each packet.  Packets matching one of the values are classified
+as servers.
+EOText;
+};
+
+flag = {
+    name        = reverse;
+    max         = 1;
+    descrip     = "Matches to be client instead of server";
+    doc         = <<- EOText
+Normally the @samp{--mac}, @samp{--regex} and @samp{--cidr} flags specify are used to specify
+the servers and non-IP packets are classified as clients.  By using @samp{--reverse}, these
+features are reversed so that the flags specify clients and non-IP packets are classified as
+servers.
+EOText;
+};
+
+flag = {
+    name        = comment;
+    value       = C;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Embedded cache file comment";
+    flag-code   = <<- EOComment
+
+    /* our comment_len is only 16bit - myargs[] */
+    if (strlen(OPT_ARG(COMMENT)) > ((1 << 16) - 1 - MYARGS_LEN))
+                errx(-1, "Comment length %zu is longer then max allowed (%d)",
+                strlen(OPT_ARG(COMMENT)), (1 << 16) - 1 - MYARGS_LEN);
+
+    /* save the comment */
+    tcpprep->options->comment = (char *)safe_malloc(strlen(OPT_ARG(COMMENT)) + 1);
+    strcpy(tcpprep->options->comment, OPT_ARG(COMMENT));
+
+EOComment;
+    doc         = <<- EOText
+Specify a comment to be imbedded within the output cache file and later
+viewed.
+EOText;
+};
+
+flag = {
+    name      = no-arg-comment;
+    max       = 1;
+    descrip   = "Do not embed any cache file comment";
+    flag-code = <<- EOCode
+
+tcpprep->options->nocomment = 1;
+EOCode;
+    doc       = <<- EOText
+By default, tcpprep includes the arguments passed on the command line
+in the cache file comment (in addition to any user specified --comment).
+If for some reason you do not wish to include this, specify this option.
+EOText;
+};
+
+
+/* Include/Exclude */
+flag = {
+    name        = include;
+    value       = x;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Include only packets matching rule";
+    flags-cant  = exclude;
+    flag-code   = <<- EOInclude
+
+    char *include;
+
+    include = safe_strdup(OPT_ARG(INCLUDE));
+    tcpprep->options->xX.mode = xX_MODE_INCLUDE;
+
+    if ((tcpprep->options->xX.mode = parse_xX_str(&tcpprep->options->xX, include, &tcpprep->options->bpf)) == xXError)
+        errx(-1, "Unable to parse include/exclude rule: %s", OPT_ARG(INCLUDE));
+
+    free(include);
+
+EOInclude;
+    doc         = <<- EOText
+Override default of processing all packets stored in the capture file and only
+send/edit packets which match the provided rule.  Rules can be one of:
+
+@table @bullet
+@item S:<CIDR1>,...
+- Source IP must match specified IPv4/v6 CIDR(s)
+@item D:<CIDR1>,...
+- Destination IP must match specified IPv4/v6 CIDR(s)
+@item B:<CIDR1>,...
+- Both source and destination IP must match specified IPv4/v6 CIDR(s)
+@item E:<CIDR1>,...
+- Either IP must match specified IPv4/v6 CIDR(s)
+@item P:<LIST>
+- Must be one of the listed packets where the list
+corresponds to the packet number in the capture file.
+@example
+-x P:1-5,9,15,72-
+@end example
+would process packets 1 through 5, the 9th and 15th packet, and packets 72 until the
+end of the file
+@item F:'<bpf>'
+- BPF filter.  See the @file{tcpdump(8)} man page for syntax.
+@end table
+EOText;
+};
+
+flag = {
+    name        = exclude;
+    value       = X;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Exclude any packet matching this rule";
+    flags-cant  = include;
+    flag-code   = <<- EOExclude
+
+    char *exclude;
+
+    exclude = safe_strdup(OPT_ARG(EXCLUDE));
+    tcpprep->options->xX.mode = xX_MODE_EXCLUDE;
+
+    if ((tcpprep->options->xX.mode = parse_xX_str(&tcpprep->options->xX, exclude, &tcpprep->options->bpf)) == xXError)
+        errx(-1, "Unable to parse include/exclude rule: %s", OPT_ARG(EXCLUDE));
+
+    free(exclude);
+
+EOExclude;
+    doc         = <<- EOText
+Override default of processing all packets stored in the capture file and only
+send/edit packets which do NOT match the provided rule.  Rules can be one of:
+
+@table @bullet
+@item S:<CIDR1>,...
+- Source IP must not match specified IPv4/v6 CIDR(s)
+@item D:<CIDR1>,...
+- Destination IP must not match specified IPv4/v6 CIDR(s)
+@item B:<CIDR1>,...
+- Both source and destination IP must not match specified IPv4/v6 CIDR(s)
+@item E:<CIDR1>,...
+- Either IP must not match specified IPv4/v6 CIDR(s)
+@item P:<LIST>
+- Must not be one of the listed packets where the list
+corresponds to the packet number in the capture file.
+@example
+-x P:1-5,9,15,72-
+@end example
+would skip packets 1 through 5, the 9th and 15th packet, and packets 72 until the
+end of the file
+@end table
+EOText;
+};
+
+flag = {
+    name        = cachefile;
+    value       = o;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Output cache file";
+    doc         = "";
+};
+
+flag = {
+    name        = pcap;
+    value       = i;
+    descrip     = "Input pcap file to process";
+    arg-type    = string;
+    max         = 1;
+    doc         = "";
+};
+
+flag = {
+    name        = print-comment;
+    value       = P;
+    arg-type    = string;
+    descrip     = "Print embedded comment in the specified cache file";
+    max         = 1;
+    doc         = "";
+};
+
+flag = {
+    name        = print-info;
+    value       = I;
+    arg-type    = string;
+    descrip     = "Print basic info from the specified cache file";
+    max         = 1;
+    doc         = "";
+};
+
+flag = {
+    name     = print-stats;
+    value    = S;
+    arg-type = string;
+    descrip  = "Print statistical information about the specified cache file";
+    max      = 1;
+    doc      = "";
+};
+
+flag = {
+    name        = services;
+    value       = s;
+    descrip     = "Load services file for server ports";
+    flags-must  = port;
+    max         = 1;
+    arg-type    = string;
+    doc         = <<- EOText
+Uses a list of ports used by servers in the same format as of /etc/services:
+<service_name>        <port>/<protocol> # comment
+
+Example:
+http            80/tcp
+EOText;
+    flag-code   = <<- EOServices
+    parse_services(OPT_ARG(SERVICES), &tcpprep->options->services);
+
+EOServices;
+};
+
+flag = {
+    name        = nonip;
+    value       = N;
+    descrip     = "Send non-IP traffic out server interface";
+    max         = 1;
+    flag-code   = <<- EONonip
+
+    tcpprep->options->nonip = DIR_SERVER;
+
+EONonip;
+    doc         = <<- EOText
+By default, non-IP traffic which can not be classified as client
+or server is classified as "client".  Specifying @samp{--nonip}
+will reclassify non-IP traffic as "server".  Note that the meaning
+of this flag is reversed if @samp{--reverse} is used.
+EOText;
+};
+
+
+flag = {
+    name        = ratio;
+    value       = R;
+    arg-type    = string;
+    max         = 1;
+    flags-must  = auto;
+    arg_default = "2.0";
+    descrip     = "Ratio of client to server packets";
+    doc         = <<- EOText
+Since a given host may have both client and server traffic being sent
+to/from it, tcpprep uses a ratio to weigh these packets.  If you would
+like to override the default of 2:1 server to client packets required for
+a host to be classified as a server, specify it as a floating point value.
+EOText;
+};
+
+
+flag = {
+    name        = minmask;
+    value       = m;
+    descrip     = "Minimum network mask length in auto mode";
+    flags-must  = auto;
+    max         = 1;
+    arg-type    = number;
+    arg-range   = "0->32";
+    arg_default = 30;
+    doc         = <<- EOText
+By default, auto modes use a minimum network mask length of 30 bits
+to build networks containing clients and servers.  This allows you
+to override this value.  Larger values will increase performance but
+may provide inaccurate results.
+EOText;
+};
+
+flag = {
+    name        = maxmask;
+    value       = M;
+    descrip     = "Maximum network mask length in auto mode";
+    flags-must  = auto;
+    max         = 1;
+    arg-type    = number;
+    arg-range   = "0->32";
+    arg_default = 8;
+    doc         = <<- EOText
+By default, auto modes use a maximum network mask length of 8 bits
+to build networks containing clients and servers.  This allows you
+to override this value.  Larger values will decrease performance
+and accuracy but will provide greater chance of success.
+EOText;
+};
+
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = verbose;
+    value       = v;
+    max         = 1;
+    immediate;
+    descrip     = "Print decoded packets via tcpdump to STDOUT";
+    settable;
+    doc         = "";
+};
+
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = decode;
+    flags-must  = verbose;
+    value       = A;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Arguments passed to tcpdump decoder";
+    doc         = <<- EOText
+When enabling verbose mode (@samp{-v}) you may also specify one or
+more additional arguments to pass to @code{tcpdump} to modify
+the way packets are decoded.  By default, -n and -l are used.
+Be sure to quote the arguments so that they are not interpreted
+by tcprewrite.  The following arguments are valid:
+    [ -aAeNqRStuvxX ]
+    [ -E spi@ipaddr algo:secret,... ]
+    [ -s snaplen ]
+EOText;
+};
+
+
+flag = {
+    name        = version;
+    value       = V;
+    descrip     = "Print version information";
+    flag-code   = <<- EOVersion
+
+    fprintf(stderr, "tcpprep version: %s (build %s)", VERSION, git_version());
+#ifdef DEBUG
+    fprintf(stderr, " (debug)");
+#endif
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Copyright 2013-2022 by Fred Klassen <tcpreplay at appneta dot com> - AppNeta\n");
+    fprintf(stderr, "Copyright 2000-2012 by Aaron Turner <aturner at synfin dot net>\n");
+    fprintf(stderr, "The entire Tcpreplay Suite is licensed under the GPLv3\n");
+    fprintf(stderr, "Cache file supported: %s\n", CACHEVERSION);
+#ifdef HAVE_LIBDNET
+    fprintf(stderr, "Compiled against libdnet: %s\n", LIBDNET_VERSION);
+#else
+    fprintf(stderr, "Not compiled with libdnet.\n");
+#endif
+#ifdef HAVE_WINPCAP
+    fprintf(stderr, "Compiled against winpcap: %s\n", get_pcap_version());
+#elif defined HAVE_PF_RING_PCAP
+    fprintf(stderr, "Compiled against PF_RING libpcap: %s\n", get_pcap_version());
+#else
+    fprintf(stderr, "Compiled against libpcap: %s\n", get_pcap_version());
+#endif
+#ifdef ENABLE_64BITS
+    fprintf(stderr, "64 bit packet counters: enabled\n");
+#else
+    fprintf(stderr, "64 bit packet counters: disabled\n");
+#endif
+#ifdef ENABLE_VERBOSE
+    fprintf(stderr, "Verbose printing via tcpdump: enabled\n");
+#else
+    fprintf(stderr, "Verbose printing via tcpdump: disabled\n");
+#endif
+    exit(0);
+
+EOVersion;
+    doc         = "";
+};
+
+flag = {
+    name        = less-help;
+    value       = "h";
+    immediate;
+    descrip     = "Display less usage information and exit";
+    flag-code   = <<- EOHelp
+
+    USAGE(EXIT_FAILURE);
+
+EOHelp;
+};

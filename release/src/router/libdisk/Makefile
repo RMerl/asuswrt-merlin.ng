@@ -14,7 +14,7 @@ endif
 ifeq ($(BCM_MMC),y)
 CFLAGS += -DBCM_MMC
 endif
-CFLAGS += -fPIC $(EXTRACFLAGS)
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g -Wall) -fPIC $(EXTRACFLAGS)
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include -I$(KERNEL_HEADER_DIR) -Wall
 #CFLAGS += $(PRIVATE_EXTRACFLAGS)
 LDFLAGS_SO = -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -lnvram -L$(TOP)/shared -lshared
@@ -92,7 +92,7 @@ infos:
 	install -D libdisk.so $(INSTALLDIR)/lib/libdisk.so
 
 install: all
-	$(STRIP) $(PROGS)
+	$(if $(RTCONFIG_DEBUG),,$(STRIP) $(PROGS))
 ifneq ($(BUILD_NAME),RT-N10U)
 	install -D test_disk1 $(INSTALLDIR)/sbin/test_disk1
 	install -D test_disk2 $(INSTALLDIR)/sbin/test_disk2

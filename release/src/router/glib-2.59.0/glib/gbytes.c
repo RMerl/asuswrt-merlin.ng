@@ -34,6 +34,8 @@
 
 #include <string.h>
 
+#include "gstrfuncsprivate.h"
+
 /**
  * GBytes:
  *
@@ -95,7 +97,7 @@ g_bytes_new (gconstpointer data,
 {
   g_return_val_if_fail (data != NULL || size == 0, NULL);
 
-  return g_bytes_new_take (g_memdup (data, size), size);
+  return g_bytes_new_take (g_memdup2 (data, size), size);
 }
 
 /**
@@ -499,7 +501,7 @@ g_bytes_unref_to_data (GBytes *bytes,
        * Copy: Non g_malloc (or compatible) allocator, or static memory,
        * so we have to copy, and then unref.
        */
-      result = g_memdup (bytes->data, bytes->size);
+      result = g_memdup2 (bytes->data, bytes->size);
       *size = bytes->size;
       g_bytes_unref (bytes);
     }
@@ -518,6 +520,10 @@ g_bytes_unref_to_data (GBytes *bytes,
  * if this was the last reference to bytes and bytes was created with
  * g_bytes_new(), g_bytes_new_take() or g_byte_array_free_to_bytes(). In all
  * other cases the data is copied.
+ *
+ * Do not use it if @bytes contains more than %G_MAXUINT
+ * bytes. #GByteArray stores the length of its data in #guint, which
+ * may be shorter than #gsize, that @bytes is using.
  *
  * Returns: (transfer full): a new mutable #GByteArray containing the same byte data
  *

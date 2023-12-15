@@ -1,0 +1,93 @@
+/**
+@page libtalloc_pools Chapter 5: Memory pools
+
+@section pools Memory pools
+
+Allocation of a new memory is an expensive operation and large programs can
+contain thousands of calls of malloc() for a single computation, where every
+call allocates only a very small amount of the memory. This can result in an
+undesirable slowdown of the application. We can avoid this slowdown by
+decreasing the number of malloc() calls by using a memory pool.
+
+A memory pool is a preallocated memory space with a fixed size. If we need to
+allocate new data we will take the desired amount of the memory from the pool
+instead of requesting a new memory from the system. This is done by creating a
+pointer that points inside the preallocated memory. Such a pool must not be
+reallocated as it would change its location - pointers that were pointing
+inside the pool would become invalid. Therefore, a memory pool requires a very
+good estimate of the required memory space.
+
+The talloc library contains its own implementation of a memory pool. It is
+highly transparent for the programmer. The only thing that needs to be done is
+an initialization of a new pool context using talloc_pool() -
+which can be used in the same way as any other context.
+
+Refactoring of existing code (that uses talloc) to take the advantage of a
+memory pool is quite simple due to the following properties of the pool context:
+
+- if we are allocating data on a pool context, it takes the desired
+  amount of memory from the pool,
+- if the context is a descendant of the pool context, it takes the space
+  from the pool as well,
+- if the pool does not have sufficient portion of memory left, it will
+  create a new non-pool context, leaving the pool intact
+
+@code
+/* allocate 1KiB in a pool */
+TALLOC_CTX *pool_ctx = talloc_pool(NULL, 1024);
+
+/* Take 512B from the pool, 512B is left there */
+void *ptr = talloc_size(pool_ctx, 512);
+
+/* 1024B > 512B, this will create new talloc chunk outside
+   the pool */
+void *ptr2 = talloc_size(ptr, 1024);
+
+/* The pool still contains 512 free bytes
+ * this will take 200B from them. */
+void *ptr3 = talloc_size(ptr, 200);
+
+/* This will destroy context 'ptr3' but the memory
+ * is not freed, the available space in the pool
+ * will increase to 512B. */
+talloc_free(ptr3);
+
+/* This will free memory taken by 'pool_ctx'
+ * and 'ptr2' as well. */
+talloc_free(pool_ctx);
+@endcode
+
+The above given is very convenient, but there is one big issue to be kept in
+mind. If the parent of a talloc pool child is changed to a parent that is
+outside of this pool, the whole pool memory will not be freed until the child is
+freed. For this reason we must be very careful when stealing a descendant of a
+pool context.
+
+@code
+TALLOC_CTX *mem_ctx = talloc_new(NULL);
+TALLOC_CTX *pool_ctx = talloc_pool(NULL, 1024);
+struct foo *foo = talloc(pool_ctx, struct foo);
+
+/* mem_ctx is not in the pool */
+talloc_steal(mem_ctx, foo);
+
+/* pool_ctx is marked as freed but the memory is not
+   deallocated, accessing the pool_ctx again will cause
+   an error */
+talloc_free(pool_ctx);
+
+/* This deallocates the pool_ctx. */
+talloc_free(mem_ctx);
+@endcode
+
+It may often be better to copy the memory we want instead of stealing it to
+avoid this problem. If we do not need to retain the context name (to keep the
+type information), we can use talloc_memdup() to do this.
+
+Copying the memory out of the pool may, however, discard all the performance
+boost given by the pool, depending on the size of the copied memory. Therefore,
+the code should be well profiled before taking this path. In general, the
+golden rule is: if we need to steal from the pool context, we should not
+use a pool context.
+
+*/

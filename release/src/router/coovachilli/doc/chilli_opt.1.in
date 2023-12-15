@@ -1,0 +1,73 @@
+.\" * chilli_opt
+.\" * Copyright (C) 2007-2012 David Bird (Coova Technologies)
+.\" *
+.\" * All rights reserved.
+.\" *
+.\" Manual page for chilli_query
+.\" SH section heading
+.\" SS subsection heading
+.\" LP paragraph
+.\" IP indented paragraph
+.\" TP hanging label
+
+.TH chilli_opt 1 "June 2009"
+.SH NAME
+chilli_opt \-  Configuration utility for CoovaChilli
+
+.SH SYNOPSIS
+.B chilli_opt
+<chilli-options> 
+
+.SH DESCRIPTION
+.B chilli_opt
+is a utility to configure a 
+.B chilli
+server. The utility take all the arguments of CoovaChilli, parses the
+configuration file, and then write out the configuration into a binary
+form ready for a running chilli server to pick up and use (without
+delay).
+
+This utilitiy is executed by 
+.B chilli
+from a forked process to off-line the processing of the configuration, including
+waiting for any DNS resolution, etc. When 
+.B chilli_opt
+is done processing the configuration, it writes it to a binary format (and system
+architecture depended) file. When executed by 
+.B chilli
+the binary file used is 
+.I config.bin
+found in a process specific directory in the temporary file system, such as
+.I /tmp/chilli-1000/config.bin
+where 1000 is the process id of the running 
+.B chilli
+server. 
+
+
+.SH EXAMPLES
+
+# chilli_opt --version
+
+# chilli_opt -b /tmp/chilli-[pid]/config.bin -r
+.RE
+
+.SH "SEE ALSO"
+.BR chilli(8)
+.BR chilli.conf(5)
+
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+
+.SH AUTHORS
+
+David Bird <david@coova.com>
+
+Copyright (C) 2006-2012 David Bird (Coova Technologies) All rights reserved.
+
+CoovaChilli is licensed under the GNU General Public License.
+

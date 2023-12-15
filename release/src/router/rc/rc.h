@@ -513,7 +513,7 @@ extern void setAllLedBrightness(void);
 extern int setATEModeLedOn(void);
 extern int start_wps_method(void);
 extern int stop_wps_method(void);
-#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK)
+#if defined(RTCONFIG_QCA) || defined(RTCONFIG_RALINK) || defined(RTCONFIG_BRCM_HOSTAPD)
 extern void runtime_onoff_wps(int onoff);
 extern int start_wps_method_ob(void);
 extern int stop_wps_method_ob(void);
@@ -958,7 +958,7 @@ extern void update_cfe_ax82u();
 #ifdef GTAX6000
 extern void update_cfe_ax6000();
 #endif
-#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400) || defined(RTAX9000)
+#if defined(RTAX58U_V2) || defined(GTAX6000) || defined(RTAX86U_PRO) || defined(RTAX3000N) || defined(BR63) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX88U_PRO) || defined(RTAX5400)
 extern void wan_phy_led_pinmux(int force);
 #endif
 #if defined(TUFAX3000_V2) || defined(RTAXE7800) || defined(TUFAX5400_V2) || defined(RTAX5400) || defined(RTAX88U_PRO)
@@ -1462,6 +1462,9 @@ extern int do_dns_detect(int wan_unit);
 #ifdef DSL_AC68U
 extern int check_wan_if(int unit);
 #endif
+extern void start_dhcpfilter(const char *ifname);
+extern void stop_dhcpfilter(const char *ifname);
+extern void restore_wan_ebtables_rules(void);
 
 // lan.c
 extern void update_lan_state(int state, int reason);
@@ -1843,6 +1846,8 @@ extern int psta_monitor_main(int argc, char *argv[]);
 // ledg.c
 #if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 extern int ledg_main(int argc, char *argv[]);
+#endif
+#if defined(RTAX82U) || defined(DSL_AX82U) || defined(GSAX3000) || defined(GSAX5400) || defined(TUFAX5400) || defined(GTAX6000) || defined(GT10) || defined(RTAX82U_V2) || defined(TUFAX5400_V2)
 extern int ledbtn_main(int argc, char *argv[]);
 #endif
 #ifdef GTAX6000
@@ -2297,12 +2302,17 @@ enum S46_MAPSVR_STATE {
 	S46_MAPSVR_NO_RESPONSE		= 4,
 	S46_MAPSVR_MAX
 };
+enum DSLITE_SVC_TYPE {
+	DSLITE_CUSTOMER			= 0,
+	DSLITE_XPASS			= 1,
+	DSLITE_TRANSIX_EAST		= 2,
+	DSLITE_TRANSIX_WEST		= 3
+};
 extern int s46_mapcalc(int wan_unit, int wan_proto, char *rules, char *peerbuf, size_t peerbufsz,
 		       char *addr6buf, size_t addr6bufsz, char *addr4buf, size_t addr4bufsz,
 		       int *poffset, int *ppsidlen, int *ppsid, char **fmrs, int draft);
 extern void start_s46_tunnel(int unit);
 extern void stop_s46_tunnel(int unit, int unload);
-extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
 
 extern void s46reset(int unit);
 extern void start_v6plusd(int unit);
@@ -2311,6 +2321,9 @@ extern void restart_v6plusd(int unit);
 extern void start_ocnvcd(int unit);
 extern void stop_ocnvcd(int unit);
 extern void restart_ocnvcd(int unit);
+extern void start_dslited(int unit);
+extern void stop_dslited(int unit);
+extern void restart_dslited(int unit);
 extern void start_auto46det(void);
 extern void stop_auto46det(void);
 //s46comm.c
@@ -2322,8 +2335,12 @@ extern void s46print(const char *logpath, const char *format, ...);
 extern int _nvram_check(const char *name, const char *value);
 extern int _nvram_set_check(const char *name, const char *value);
 extern int wan46det(int unit);
+extern int dslite_svc_check(const char *addr);
 extern int ce_dad_check(int unit);
 extern int s46_ntt_hgw(int unit);
+extern int wan_hgw_detect(const int wan_unit, const char *wan_ifname, const char *prc);
+extern int is_v6addr(const char *input);
+extern char *get_AFTR_addr(const char *host, char *ip, size_t iplen);
 extern char *get_s46_ra(int unit);
 extern char *get_s46_url(char *s, int sz, int type, ...);
 extern char *calc_s46_port_range(int usable, int psid, int psidlen, int offset, char *ret, int retsz);
@@ -2339,6 +2356,10 @@ extern int v6plusd_main(int argc, char **argv);
 extern char *s46_ocn_maprules(char *v6perfix, int prefixlen, long *rsp_code);
 extern int check_ocnvcd(int unit);
 extern int ocnvcd_main(int argc, char **argv);
+// dslited.c
+#define DSLITED_PIDFILE "/var/run/dslited.%d.pid"
+extern int check_dslited(int unit);
+extern int dslited_main(int argc, char **argv);
 #endif
 extern void start_rdisc6(void);
 extern void stop_rdisc6(void);
@@ -2391,7 +2412,7 @@ extern void stop_eapd(void);
 extern int start_nas(void);
 extern void stop_nas(void);
 #ifdef RTCONFIG_BCMWL6
-extern void stop_acsd(void);
+extern int stop_acsd(void);
 extern int start_acsd();
 extern void set_acs_ifnames();
 #ifdef RTCONFIG_PROXYSTA
@@ -2443,6 +2464,11 @@ extern void stop_klogd(void);
 #endif
 extern int start_logger(void);
 extern void start_dfs(void);
+#if defined(RTCONFIG_HTTPS)
+extern int prepare_cert_in_etc(void);
+#else
+static inline int prepare_cert_in_etc(void) { return 0; }
+#endif
 extern void handle_notifications(void);
 #ifdef RTL_WTDOG
 extern void stop_rtl_watchdog(void);
@@ -3538,6 +3564,7 @@ extern void run_wgs_fw_nat_scripts();
 extern void run_wgc_fw_nat_scripts();
 extern int is_wg_enabled();
 extern void check_wgc_endpoint();
+extern void reload_wgs_ip_rule();
 #if 0	// Moved to vpn_utils.h
 #if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
 typedef enum {

@@ -188,7 +188,9 @@ vc_scan(struct song_metadata *psong, const char *comment, const size_t length)
 
 	if(length > (sizeof(strbuf) - 1))
 	{
-		if( strncasecmp(comment, "LYRICS=", 7) != 0 )
+		if( strncasecmp(comment, "LYRICS=", 7) != 0 &&
+		    strncasecmp(comment, "coverart=", 9) != 0 &&
+		    strncasecmp(comment, "METADATA_BLOCK_PICTURE=", 23) != 0 )
 		{
 			const char *eq = strchr(comment, '=');
 			int len = 8;
@@ -201,12 +203,19 @@ vc_scan(struct song_metadata *psong, const char *comment, const size_t length)
 	}
 	strncpy(strbuf, comment, length);
 	strbuf[length] = '\0';
-
+	
+	// Xiph.org lists recommended field names for interoperability between programs.
+	// Beyond these software may use other tag names, and because the files we are
+	// tasked with reading may come from a variety of sources we include other commonly
+	// used tags where we can.
+	// https://xiph.org/vorbis/doc/v-comment.html
 	// ALBUM, ARTIST, PUBLISHER, COPYRIGHT, DISCNUMBER, ISRC, EAN/UPN, LABEL, LABELNO,
 	// LICENSE, OPUS, SOURCEMEDIA, TITLE, TRACKNUMBER, VERSION, ENCODED-BY, ENCODING,
 	// -- following tags are muliples
 	// COMPOSER, ARRANGER, LYRICIST, AUTHOR, CONDUCTOR, PERFORMER, ENSEMBLE, PART
 	// PARTNUMBER, GENRE, DATE, LOCATION, COMMENT
+	// -- In addition, some software (e.g. Windows Media Player) insists on using YEAR
+	// -- rather than DATE, so support this where DATE is not available for reasons of usefulness.
 	if(!strncasecmp(strbuf, "ALBUM=", 6))
 	{
 		if( *(strbuf+6) )
@@ -230,6 +239,16 @@ vc_scan(struct song_metadata *psong, const char *comment, const size_t length)
 	{
 		psong->contributor_sort[ROLE_BAND] = strdup(strbuf + 16);
 	}
+	else if(!strncasecmp(strbuf, "COMPOSER=", 9))
+	{
+		if( *(strbuf+9) )
+			psong->contributor[ROLE_COMPOSER] = strdup(strbuf + 9);
+	}
+	else if(!strncasecmp(strbuf, "CONDUCTOR=", 10))
+	{
+		if( *(strbuf+10) )
+			psong->contributor[ROLE_CONDUCTOR] = strdup(strbuf + 10);
+	}
 	else if(!strncasecmp(strbuf, "TITLE=", 6))
 	{
 		if( *(strbuf+6) )
@@ -239,16 +258,25 @@ vc_scan(struct song_metadata *psong, const char *comment, const size_t length)
 	{
 		psong->track = atoi(strbuf + 12);
 	}
+	else if(!strncasecmp(strbuf, "TRACKTOTAL=", 11))
+	{
+		psong->total_tracks = atoi(strbuf + 11);
+	}
 	else if(!strncasecmp(strbuf, "DISCNUMBER=", 11))
 	{
 		psong->disc = atoi(strbuf + 11);
+	}
+	else if(!strncasecmp(strbuf, "DISCTOTAL=", 10))
+	{
+		psong->total_discs = atoi(strbuf + 10);
 	}
 	else if(!strncasecmp(strbuf, "GENRE=", 6))
 	{
 		if( *(strbuf+6) )
 			psong->genre = strdup(strbuf + 6);
 	}
-	else if(!strncasecmp(strbuf, "DATE=", 5))
+	else if(!strncasecmp(strbuf, "DATE=", 5) ||
+		   (!strncasecmp(strbuf, "YEAR=", 5) && psong->year == 0))
 	{
 		if(length >= (5 + 10) &&
 		   isdigit(strbuf[5 + 0]) && isdigit(strbuf[5 + 1]) && ispunct(strbuf[5 + 2]) &&

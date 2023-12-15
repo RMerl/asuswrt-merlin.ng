@@ -1,0 +1,116 @@
+/**
+@page libtalloc_debugging Chapter 6: Debugging
+
+Although talloc makes memory management significantly easier than the C standard
+library, developers are still only humans and can make mistakes. Therefore, it
+can be handy to know some tools for the inspection of talloc memory usage.
+
+@section log-abort Talloc log and abort
+
+We have already encountered the abort function in section @ref dts.
+In that case it was used when a type mismatch was detected. However, talloc
+calls this abort function in several more situations:
+
+- when the provided pointer is not a valid talloc context,
+- when the meta data is invalid - probably due to memory corruption,
+- and when an access after free is detected.
+
+The third one is probably the most interesting. It can help us with detecting
+an attempt to double-free a context or any other manipulation with it via
+talloc functions (using it as a parent, stealing it, etc.).
+
+Before the context is freed talloc sets a flag in the meta data. This is then
+used to detect the access after free. It basically works on the assumption that
+the memory stays unchanged (at least for a while) even when it is properly
+deallocated. This will work even if the memory is filled with the value
+specified in <code>TALLOC_FREE_FILL</code> environment variable, because it
+fills only the data part and leaves the meta data intact.
+
+Apart from the abort function, talloc uses a log function to provide additional
+information to the aforementioned violations. To enable logging we shall set the
+log function with one of:
+
+- talloc_set_log_fn()
+- talloc_set_log_stderr()
+
+The following code is a sample output of accessing a context after it has been
+freed:
+
+@code
+talloc_set_log_stderr();
+TALLOC_CTX *ctx = talloc_new(NULL);
+
+talloc_free(ctx);
+talloc_free(ctx);
+
+results in:
+talloc: access after free error - first free may be at ../src/main.c:55
+Bad talloc magic value - access after free
+@endcode
+
+Another example is an invalid context:
+
+@code
+talloc_set_log_stderr();
+TALLOC_CTX *ctx = talloc_new(NULL);
+char *str = strdup("not a talloc context");
+talloc_steal(ctx, str);
+
+results in:
+Bad talloc magic value - unknown value
+@endcode
+
+@section reports Memory usage reports
+
+Talloc can print reports of memory usage of a specified talloc context to a
+file (to <code>stdout</code> or <code>stderr</code>). The report can be
+simple or full. The simple report provides information only about the context
+itself and its direct descendants. The full report goes recursively through the
+entire context tree. See:
+
+- talloc_report()
+- talloc_report_full()
+
+We will use the following code to retrieve the sample report:
+
+@code
+struct foo {
+  char *str;
+};
+
+TALLOC_CTX *ctx = talloc_new(NULL);
+char *str =  talloc_strdup(ctx, "my string");
+struct foo *foo = talloc_zero(ctx, struct foo);
+foo->str = talloc_strdup(foo, "I am Foo");
+char *str2 = talloc_strdup(foo, "Foo is my parent");
+
+/* print full report */
+talloc_report_full(ctx, stdout);
+@endcode
+
+It will print a full report of <code>ctx</code> to the standard output.
+The message should be similar to:
+
+@code
+full talloc report on 'talloc_new: ../src/main.c:82' (total 46 bytes in 5 blocks)
+  struct foo contains 34 bytes in 3 blocks (ref 0) 0x1495130
+    Foo is my parent contains 17 bytes in 1 blocks (ref 0) 0x1495200
+    I am Foo contains 9 bytes in 1 blocks (ref 0) 0x1495190
+  my string contains 10 bytes in 1 blocks (ref 0) 0x14950c0
+@endcode
+
+We can notice in this report that something is wrong with the context containing
+<code>struct foo</code>. We know that the structure has only one string element.
+However, we can see in the report that it has two children. This indicates that
+we have either violated the memory hierarchy or forgotten to free it as
+temporary data. Looking into the code, we can see that <code>"Foo is my parent"
+</code> should be attached to <code>ctx</code>.
+
+See also:
+
+- talloc_enable_null_tracking()
+- talloc_disable_null_tracking()
+- talloc_enable_leak_report()
+- talloc_enable_leak_report_full()
+
+*/

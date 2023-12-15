@@ -195,7 +195,7 @@ int is_valid_ip(const char* addr)
 	hint.ai_flags = AI_NUMERICHOST;
 
 	if (getaddrinfo(addr, NULL, &hint, &res))
-		ret = -1;
+		return -1;
 	else if (res->ai_family == AF_INET)
 		ret = 1;
 	else if (res->ai_family == AF_INET6)
@@ -258,6 +258,72 @@ int is_ip4_in_use(const char* addr)
 
 	close(fd);
 	return 0;
+}
+
+static int _resolv_addr_(int af, const char *dn, char *buf, size_t len, int one)
+{
+	struct addrinfo hints, *servinfo, *p;
+	int ret;
+	const char* addr = NULL;
+	char tmp[INET6_ADDRSTRLEN] = {0};
+
+	if (!dn || !buf)
+		return -1;
+
+	memset(buf, 0 , len);
+
+	memset(&hints, 0, sizeof(hints));
+	hints.ai_family = af;
+	hints.ai_socktype = SOCK_RAW;
+
+	if ((ret = getaddrinfo(dn, NULL , &hints , &servinfo)) != 0) {
+		_dprintf("getaddrinfo: %s\n", gai_strerror(ret));
+		return -1;
+	}
+
+	for (p = servinfo; p != NULL; p = p->ai_next) {
+		if (p->ai_family == AF_INET6)
+			addr = inet_ntop(AF_INET6, &(((struct sockaddr_in6 *)(p->ai_addr))->sin6_addr), tmp, INET6_ADDRSTRLEN);
+		else if (p->ai_family == AF_INET)
+			addr = inet_ntop(AF_INET, &(((struct sockaddr_in *)(p->ai_addr))->sin_addr), tmp, INET_ADDRSTRLEN);
+		else
+			addr = NULL;
+		if (addr) {
+			if (*buf)
+				strlcat(buf, " ", len);
+			strlcat(buf, addr, len);
+			if (one)
+				break;
+		}
+	}
+
+	freeaddrinfo(servinfo);
+
+	return 0;
+}
+int resolv_addr4(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET, dn, buf, len, 1);
+}
+
+int resolv_addr4_all(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET, dn, buf, len, 0);
+}
+
+int resolv_addr6(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET6, dn, buf, len, 1);
+}
+
+int resolv_addr6_all(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_INET6, dn, buf, len, 0);
+}
+
+int resolv_addr_all(const char *dn, char *buf, size_t len)
+{
+	return _resolv_addr_(AF_UNSPEC, dn, buf, len, 0);
 }
 
 in_addr_t get_network_addr(const char *ip, const char *netmask)

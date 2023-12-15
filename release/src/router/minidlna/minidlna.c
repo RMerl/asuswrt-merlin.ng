@@ -64,10 +64,10 @@
 #include <time.h>
 #include <signal.h>
 #include <errno.h>
-#include <pthread.h>
 #include <limits.h>
 #include <libgen.h>
 #include <pwd.h>
+#include <grp.h>
 #include <sys/stat.h>
 
 #if defined(RTAC68U) || defined(RTAX82U) || defined(GTAX6000) || defined(RTAX82U_V2)
@@ -82,6 +82,7 @@
 #include <libintl.h>
 #endif
 
+#include "event.h"
 #include "upnpglobalvars.h"
 #include "sql.h"
 #include "upnphttp.h"
@@ -97,6 +98,7 @@
 #include "upnpevents.h"
 #include "scanner.h"
 #include "monitor.h"
+#include "libav.h"
 #include "log.h"
 #include "tivo_beacon.h"
 #include "tivo_utils.h"
@@ -107,12 +109,8 @@
 # define sqlite3_threadsafe() 0
 #endif
 
-#define FIXED_SSDP_NOTIFY_INTERVAL
+static LIST_HEAD(httplisthead, upnphttp) upnphttphead;
 
-#ifdef FIXED_SSDP_NOTIFY_INTERVAL
-#define NOTIFY_INTERVAL	3
-#endif
- 
 /* OpenAndConfHTTPSocket() :
  * setup the socket used to handle incoming HTTP connections. */
 static int
@@ -157,6 +155,46 @@ OpenAndConfHTTPSocket(unsigned short port)
 	return s;
 }
 
+/* ProcessListen() :
+ * accept incoming HTTP connection. */
+static void
+ProcessListen(struct event *ev)
+{
+	int shttp;
+	socklen_t clientnamelen;
+	struct sockaddr_in clientname;
+	clientnamelen = sizeof(struct sockaddr_in);
+
+	shttp = accept(ev->fd, (struct sockaddr *)&clientname, &clientnamelen);
+	if (shttp<0)
+	{
+		DPRINTF(E_ERROR, L_GENERAL, "accept(http): %s\n", strerror(errno));
+	}
+	else
+	{
+		struct upnphttp * tmp = 0;
+		DPRINTF(E_DEBUG, L_GENERAL, "HTTP connection from %s:%d\n",
+			inet_ntoa(clientname.sin_addr),
+			ntohs(clientname.sin_port) );
+		/*if (fcntl(shttp, F_SETFL, O_NONBLOCK) < 0) {
+			DPRINTF(E_ERROR, L_GENERAL, "fcntl F_SETFL, O_NONBLOCK\n");
+		}*/
+		/* Create a new upnphttp object and add it to
+		 * the active upnphttp object list */
+		tmp = New_upnphttp(shttp);
+		if (tmp)
+		{
+			tmp->clientaddr = clientname.sin_addr;
+			LIST_INSERT_HEAD(&upnphttphead, tmp, entries);
+		}
+		else
+		{
+			DPRINTF(E_ERROR, L_GENERAL, "New_upnphttp() failed\n");
+			close(shttp);
+		}
+	}
+}
+
 /* Handler for the SIGTERM signal (kill) 
  * SIGINT is also handled */
 static void
@@ -182,9 +220,10 @@ static void
 sighup(int sig)
 {
 	signal(sig, sighup);
-	DPRINTF(E_WARN, L_GENERAL, "received signal %d, re-read\n", sig);
+	DPRINTF(E_WARN, L_GENERAL, "received signal %d, reloading\n", sig);
 
 	reload_ifaces(1);
+	log_reopen();
 }
 
 /* record the startup time */
@@ -198,7 +237,7 @@ static void
 getfriendlyname(char *buf, int len)
 {
 	char *p = NULL;
-	char hn[256];
+	char hn[63];
 	int off;
 
 	if (gethostname(hn, sizeof(hn)) == 0)
@@ -253,16 +292,19 @@ getfriendlyname(char *buf, int len)
 	fclose(info);
 #else
 	char * logname;
-	logname = getenv("LOGNAME");
-#ifndef STATIC // Disable for static linking
+	logname = getenv("USER");
 	if (!logname)
-	{
-		struct passwd * pwent;
-		pwent = getpwuid(getuid());
-		if (pwent)
-			logname = pwent->pw_name;
-	}
+        {
+		logname = getenv("LOGNAME");
+#ifndef STATIC // Disable for static linking
+		if (!logname)
+		{
+			struct passwd *pwent = getpwuid(geteuid());
+			if (pwent)
+				logname = pwent->pw_name;
+		}
 #endif
+	}
 	snprintf(buf+off, len-off, "%s", logname?logname:"Unknown");
 #endif
 }
@@ -400,7 +442,6 @@ retry:
 	if (ret || GETFLAG(RESCAN_MASK))
 	{
 #if USE_FORK
-		SETFLAG(SCANNING_MASK);
 		sqlite3_close(db);
 		*scanner_pid = fork();
 		open_db(&db);
@@ -417,6 +458,8 @@ retry:
 		{
 			start_scanner();
 		}
+		else
+			SETFLAG(SCANNING_MASK);
 #else
 		start_scanner();
 #endif
@@ -578,6 +621,8 @@ init(int argc, char **argv)
 	int ifaces = 0;
 	media_types types;
 	uid_t uid = 0;
+	gid_t gid = 0;
+	int error;
 	int retry_times;
 
 	/* first check if "-f" option is used */
@@ -597,8 +642,7 @@ init(int argc, char **argv)
 		DPRINTF(E_OFF, L_GENERAL, "No MAC address found.  Falling back to generic UUID.\n");
 		strcpy(mac_str, "554e4b4e4f57");
 	}
-	strcpy(uuidvalue+5, "4d696e69-444c-164e-9d41-");
-	strncat(uuidvalue, mac_str, 12);
+	snprintf(uuidvalue+5, UUIDVALUE_MAX_LEN-5, "4d696e69-444c-164e-9d41-%s", mac_str);
 
 	getfriendlyname(friendly_name, FRIENDLYNAME_MAX_LEN);
 	
@@ -735,16 +779,15 @@ init(int argc, char **argv)
 			make_dir(path, S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO);
 			if (access(path, F_OK) != 0)
 				DPRINTF(E_FATAL, L_GENERAL, "Database path not accessible! [%s]\n", path);
-			strncpyt(db_path, path, PATH_MAX);
+			strncpyt(db_path, path, sizeof(db_path));
 			break;
 		case UPNPLOGDIR:
 			path = realpath(ary_options[i].value, buf);
 			if (!path)
-				path = (ary_options[i].value);
-			make_dir(path, S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO);
-			if (access(path, F_OK) != 0)
-				DPRINTF(E_FATAL, L_GENERAL, "Log path not accessible! [%s]\n", path);
-			strncpyt(log_path, path, PATH_MAX);
+				path = ary_options[i].value;
+			if (snprintf(log_path, sizeof(log_path), "%s", path) > sizeof(log_path))
+				DPRINTF(E_FATAL, L_GENERAL, "Log path too long! [%s]\n", path);
+			make_dir(log_path, S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO);
 			break;
 		case UPNPLOGLEVEL:
 			log_level = ary_options[i].value;
@@ -805,10 +848,17 @@ init(int argc, char **argv)
 					DPRINTF(E_FATAL, L_GENERAL, "Bad user '%s'.\n",
 						ary_options[i].value);
 				uid = entry->pw_uid;
+				if (!gid)
+					gid = entry->pw_gid;
 			}
 			break;
 		case FORCE_SORT_CRITERIA:
 			force_sort_criteria = ary_options[i].value;
+			if (force_sort_criteria[0] == '!')
+			{
+				SETFLAG(FORCE_ALPHASORT_MASK);
+				force_sort_criteria++;
+			}
 			break;
 		case MAX_CONNECTIONS:
 			runtime_vars.max_connections = atoi(ary_options[i].value);
@@ -825,20 +875,19 @@ init(int argc, char **argv)
 			if (strcasecmp(ary_options[i].value, "beacon") == 0)
 				CLEARFLAG(TIVO_BONJOUR_MASK);
 			break;
+		case ENABLE_SUBTITLES:
+			if (!strtobool(ary_options[i].value))
+				CLEARFLAG(SUBTITLES_MASK);
+			break;
 		default:
 			DPRINTF(E_ERROR, L_GENERAL, "Unknown option in file %s\n",
 				optionsfile);
 		}
 	}
-	if (log_path[0] == '\0')
-	{
-		if (db_path[0] == '\0')
-			strncpyt(log_path, DEFAULT_LOG_PATH, PATH_MAX);
-		else
-			strncpyt(log_path, db_path, PATH_MAX);
-	}
-	if (db_path[0] == '\0')
-		strncpyt(db_path, DEFAULT_DB_PATH, PATH_MAX);
+	if (!log_path[0])
+		strncpyt(log_path, DEFAULT_LOG_PATH, sizeof(log_path));
+	if (!db_path[0])
+		strncpyt(db_path, DEFAULT_DB_PATH, sizeof(db_path));
 
 	/* command line arguments processing */
 	for (i=1; i<argc; i++)
@@ -937,7 +986,7 @@ retry:
 				if (retry_times++ < 2)
 					goto retry;
 
-				DPRINTF(E_FATAL, L_GENERAL, "Failed to clean old file cache. EXITING\n");
+				DPRINTF(E_FATAL, L_GENERAL, "Failed to clean old file cache %s. EXITING\n", db_path);
 			}
 			break;
 		case 'u':
@@ -952,13 +1001,31 @@ retry:
 					if (!entry)
 						DPRINTF(E_FATAL, L_GENERAL, "Bad user '%s'.\n", argv[i]);
 					uid = entry->pw_uid;
+					if (!gid)
+						gid = entry->pw_gid;
 				}
 			}
 			else
 				DPRINTF(E_FATAL, L_GENERAL, "Option -%c takes one argument.\n", argv[i][1]);
 			break;
+		case 'g':
+			if (i+1 != argc)
+			{
+				i++;
+				gid = strtoul(argv[i], &string, 0);
+				if (*string)
+				{
+					/* Symbolic group given, not GID. */
+					struct group *grp = getgrnam(argv[i]);
+					if (!grp)
+						DPRINTF(E_FATAL, L_GENERAL, "Bad group '%s'.\n", argv[i]);
+					gid = grp->gr_gid;
+				}
+			}
+			else
+				DPRINTF(E_FATAL, L_GENERAL, "Option -%c takes one argument.\n", argv[i][1]);
 			break;
-#ifdef __linux__
+#if defined(__linux__) || defined(__APPLE__)
 		case 'S':
 			SETFLAG(SYSTEMD_MASK);
 			break;
@@ -983,7 +1050,7 @@ retry:
 	{
 		printf("Usage:\n\t"
 			"%s [-d] [-v] [-f config_file] [-p port]\n"
-			"\t\t[-i network_interface] [-u uid_to_run_as]\n"
+			"\t\t[-i network_interface] [-u uid_to_run_as] [-g group_to_run_as]\n"
 			"\t\t[-t notify_interval] [-P pid_filename]\n"
 			"\t\t[-s serial] [-m model_number]\n"
 #ifdef __linux__
@@ -1000,8 +1067,8 @@ retry:
 			"\t-r forces a rescan\n"
 			"\t-R forces a rebuild\n"
 			"\t-L do not create playlists\n"
-#ifdef __linux__
-			"\t-S changes behaviour for systemd\n"
+#if defined(__linux__) || defined(__APPLE__)
+			"\t-S changes behaviour for systemd/launchd\n"
 #endif
 			"\t-V print the version number\n",
 			argv[0], pidfilename);
@@ -1016,41 +1083,34 @@ retry:
 	else if (!log_level)
 		log_level = log_str;
 
-	/* Set the default log file path to NULL (stdout) */
-	path = NULL;
+	/* Set the default log to stdout */
 	if (debug_flag)
 	{
 		pid = getpid();
 		strcpy(log_str+65, "maxdebug");
 		log_level = log_str;
+		log_path[0] = '\0';
 	}
 	else if (GETFLAG(SYSTEMD_MASK))
 	{
 		pid = getpid();
+		log_path[0] = '\0';
 	}
 	else
 	{
 		pid = process_daemonize();
-		#ifdef READYNAS
-		unlink("/ramfs/.upnp-av_scan");
-		path = "/var/log/upnp-av.log";
-		#else
 		if (access(db_path, F_OK) != 0)
 			make_dir(db_path, S_ISVTX|S_IRWXU|S_IRWXG|S_IRWXO);
-		snprintf(buf, sizeof(buf), "%s/minidlna.log", log_path);
-		path = buf;
-		#endif
 	}
 #ifdef MS_IPK
 	if (log_file == 1)
 #endif
-	log_init(path, log_level);
+	if (log_init(log_level) < 0)
+		DPRINTF(E_FATAL, L_GENERAL, "Failed to open log file '%s/" LOGFILE_NAME "': %s\n",
+			log_path, strerror(errno));
 
 	if (process_check_if_running(pidfilename) < 0)
-	{
-		DPRINTF(E_ERROR, L_GENERAL, SERVER_NAME " is already running. EXITING.\n");
-		return 1;
-	}	
+		DPRINTF(E_FATAL, L_GENERAL, SERVER_NAME " is already running. EXITING.\n");
 
 	set_startup_time();
 
@@ -1071,6 +1131,8 @@ retry:
 		DPRINTF(E_FATAL, L_GENERAL, "Failed to set %s handler. EXITING.\n", "SIGPIPE");
 	if (signal(SIGHUP, &sighup) == SIG_ERR)
 		DPRINTF(E_FATAL, L_GENERAL, "Failed to set %s handler. EXITING.\n", "SIGHUP");
+	if (signal(SIGUSR2, SIG_IGN) == SIG_ERR)
+		DPRINTF(E_FATAL, L_GENERAL, "Failed to set %s handler. EXITING.\n", "SIGUSR2");
 	signal(SIGUSR1, &sigusr1);
 	sa.sa_handler = process_handle_child_termination;
 	if (sigaction(SIGCHLD, &sa, NULL))
@@ -1087,6 +1149,10 @@ retry:
 				db_path, uid, strerror(errno));
 	}
 
+	if (gid > 0 && setgid(gid) == -1)
+		DPRINTF(E_FATAL, L_GENERAL, "Failed to switch to gid '%d'. [%s] EXITING.\n",
+			gid, strerror(errno));
+
 	if (uid > 0 && setuid(uid) == -1)
 		DPRINTF(E_FATAL, L_GENERAL, "Failed to switch to uid '%d'. [%s] EXITING.\n",
 			uid, strerror(errno));
@@ -1094,12 +1160,12 @@ retry:
 	children = calloc(runtime_vars.max_connections, sizeof(struct child));
 	if (!children)
 	{
-		DPRINTF(E_ERROR, L_GENERAL, "Allocation failed\n");
 		// remove working flag
 		remove_scantag();
 #ifdef MS_IPK
 		unlink("/tmp/count");
 #endif
+		DPRINTF(E_ERROR, L_GENERAL, "Allocation failed\n");
 		return 1;
 	}
 
@@ -1109,8 +1175,25 @@ retry:
 	unlink("/tmp/count");
 #endif
 
+	if ((error = event_module.init()) != 0)
+		DPRINTF(E_FATAL, L_GENERAL, "Failed to init event module. "
+		    "[%s] EXITING.\n", strerror(error));
+
 	return 0;
 }
+
+#ifdef HAVE_WATCH
+void
+start_monitor()
+{
+
+	if (!GETFLAG(INOTIFY_MASK))
+		return;
+
+	lav_register_all();
+	monitor_start();
+}
+#endif
 
 #ifndef MS_IPK
 #if (!defined(RTN66U) && !defined(RTN56U))
@@ -1164,7 +1247,7 @@ init_icon(const char *iconfile)
 #elif defined(RTAX82U) || defined(RTAX82U_V2)
 		|| strcmp(iconfile, PATH_ICON_GD_PNG_SM) == 0
 #elif defined(GTAX6000)
-		|| strcmp(iconfile, PATH_ICON_EVA_PNG_SM) == 0		
+		|| strcmp(iconfile, PATH_ICON_EVA_PNG_SM) == 0
 #endif
 	)
 	{
@@ -1178,7 +1261,7 @@ init_icon(const char *iconfile)
 #elif defined(RTAX82U) || defined(RTAX82U_V2)
 		|| strcmp(iconfile, PATH_ICON_GD_PNG_LRG) == 0
 #elif defined(GTAX6000)
-		|| strcmp(iconfile, PATH_ICON_EVA_PNG_LRG) == 0		
+		|| strcmp(iconfile, PATH_ICON_EVA_PNG_LRG) == 0
 #endif
 	)
 	{
@@ -1192,7 +1275,7 @@ init_icon(const char *iconfile)
 #elif defined(RTAX82U) || defined(RTAX82U_V2)
 		|| strcmp(iconfile, PATH_ICON_GD_JPEG_SM) == 0
 #elif defined(GTAX6000)
-		|| strcmp(iconfile, PATH_ICON_EVA_JPEG_SM) == 0		
+		|| strcmp(iconfile, PATH_ICON_EVA_JPEG_SM) == 0
 #endif
 	)
 	{
@@ -1206,7 +1289,7 @@ init_icon(const char *iconfile)
 #elif defined(RTAX82U) || defined(RTAX82U_V2)
 		|| strcmp(iconfile, PATH_ICON_GD_JPEG_LRG) == 0
 #elif defined(GTAX6000)
-		|| strcmp(iconfile, PATH_ICON_EVA_JPEG_LRG) == 0		
+		|| strcmp(iconfile, PATH_ICON_EVA_JPEG_LRG) == 0
 #endif
 	)
 	{
@@ -1281,22 +1364,19 @@ main(int argc, char **argv)
 	int ret, i;
 	int shttpl = -1;
 	int smonitor = -1;
-	LIST_HEAD(httplisthead, upnphttp) upnphttphead;
 	struct upnphttp * e = 0;
 	struct upnphttp * next;
-	fd_set readset;	/* for select() */
-	fd_set writeset;
-	struct timeval timeout, timeofday, lastnotifytime = {0, 0};
+	struct timeval tv, timeofday, lastnotifytime = {0, 0};
 	time_t lastupdatetime = 0, lastdbtime = 0;
-	int max_fd = -1;
 	int last_changecnt = 0;
 	pid_t scanner_pid = 0;
-	pthread_t inotify_thread = 0;
+	struct event ssdpev, httpev, monev;
 #ifdef TIVO_SUPPORT
 	uint8_t beacon_interval = 5;
 	int sbeacon = -1;
 	struct sockaddr_in tivo_bcast;
 	struct timeval lastbeacontime = {0, 0};
+	struct event beaconev;
 #endif
 
 	for (i = 0; i < L_MAX; i++)
@@ -1338,7 +1418,7 @@ main(int argc, char **argv)
 		init_icon(PATH_ICON_EVA_PNG_LRG);
 		init_icon(PATH_ICON_EVA_JPEG_SM);
 		init_icon(PATH_ICON_EVA_JPEG_LRG);
-	} else	
+	} else
 #endif
 	{
 		init_icon(PATH_ICON_PNG_SM);
@@ -1366,17 +1446,18 @@ main(int argc, char **argv)
 	}
 	check_db(db, ret, &scanner_pid);
 	lastdbtime = _get_dbtime();
-#ifdef HAVE_INOTIFY
-	if( GETFLAG(INOTIFY_MASK) )
-	{
-		if (!sqlite3_threadsafe() || sqlite3_libversion_number() < 3005001)
-			DPRINTF(E_ERROR, L_GENERAL, "SQLite library is not threadsafe!  "
-			                            "Inotify will be disabled.\n");
-		else if (pthread_create(&inotify_thread, NULL, start_inotify, NULL) != 0)
-			DPRINTF(E_FATAL, L_GENERAL, "ERROR: pthread_create() failed for start_inotify. EXITING\n");
-	}
+
+#ifdef HAVE_WATCH
+	if (!GETFLAG(SCANNING_MASK))
+		start_monitor();
 #endif
+
 	smonitor = OpenAndConfMonitorSocket();
+	if (smonitor > 0)
+	{
+		monev = (struct event ){ .fd = smonitor, .rdwr = EVENT_READ, .up.process = ProcessMonitorEvent };
+		event_module.add(&monev);
+	}
 
 	sssdp = OpenAndConfSSDPReceiveSocket();
 	if (sssdp < 0)
@@ -1386,11 +1467,22 @@ main(int argc, char **argv)
 		if (SubmitServicesToMiniSSDPD(lan_addr[0].str, runtime_vars.port) < 0)
 			DPRINTF(E_FATAL, L_GENERAL, "Failed to connect to MiniSSDPd. EXITING");
 	}
+	else
+	{
+		ssdpev = (struct event ){ .fd = sssdp, .rdwr = EVENT_READ, .up.process = ProcessSSDPRequest };
+		event_module.add(&ssdpev);
+	}
+
 	/* open socket for HTTP connections. */
 	shttpl = OpenAndConfHTTPSocket(runtime_vars.port);
 	if (shttpl < 0)
 		DPRINTF(E_FATAL, L_GENERAL, "Failed to open socket for HTTP. EXITING\n");
 	DPRINTF(E_WARN, L_GENERAL, "HTTP listening on port %d\n", runtime_vars.port);
+	httpev = (struct event ){ .fd = shttpl, .rdwr = EVENT_READ, .up.process = ProcessListen };
+	event_module.add(&httpev);
+
+	if (gettimeofday(&timeofday, 0) < 0)
+		DPRINTF(E_FATAL, L_GENERAL, "gettimeofday(): %s\n", strerror(errno));
 
 #ifdef TIVO_SUPPORT
 	if (GETFLAG(TIVO_MASK))
@@ -1411,184 +1503,97 @@ main(int argc, char **argv)
 			if(sbeacon < 0)
 				DPRINTF(E_FATAL, L_GENERAL, "Failed to open sockets for sending Tivo beacon notify "
 					"messages. EXITING\n");
+			beaconev = (struct event ){ .fd = sbeacon, .rdwr = EVENT_READ, .up.process = ProcessTiVoBeacon };
+			event_module.add(&beaconev);
 			tivo_bcast.sin_family = AF_INET;
 			tivo_bcast.sin_addr.s_addr = htonl(getBcastAddress());
 			tivo_bcast.sin_port = htons(2190);
+			lastbeacontime = timeofday;
 		}
 	}
 #endif
 
-	reload_ifaces(0);
-#ifndef FIXED_SSDP_NOTIFY_INTERVAL
-	lastnotifytime.tv_sec = time(NULL) + runtime_vars.notify_interval;
-#else
-	lastnotifytime.tv_sec = uptime();
-#endif
+	reload_ifaces(0);	/* sends SSDP notifies */
+	lastnotifytime = timeofday;
 
 	/* main loop */
 	while (!quitting)
 	{
 		/* Check if we need to send SSDP NOTIFY messages and do it if
 		 * needed */
-#ifndef FIXED_SSDP_NOTIFY_INTERVAL
-		if (gettimeofday(&timeofday, 0) < 0)
+		tv = lastnotifytime;
+		tv.tv_sec += runtime_vars.notify_interval;
+		if (timevalcmp(&timeofday, &tv, >=))
 		{
-			DPRINTF(E_ERROR, L_GENERAL, "gettimeofday(): %s\n", strerror(errno));
-			timeout.tv_sec = runtime_vars.notify_interval;
-			timeout.tv_usec = 0;
+			DPRINTF(E_DEBUG, L_SSDP, "Sending SSDP notifies\n");
+			for (i = 0; i < n_lan_addr; i++)
+			{
+				SendSSDPNotifies(lan_addr[i].snotify, lan_addr[i].str,
+					runtime_vars.port, runtime_vars.notify_interval);
+			}
+			lastnotifytime = timeofday;
+			tv.tv_sec = runtime_vars.notify_interval;
+			tv.tv_usec = 0;
 		}
 		else
-#else
-		timeofday.tv_sec = uptime();
-		timeofday.tv_usec = 0;
-#endif
 		{
-			/* the comparison is not very precise but who cares ? */
-#ifndef FIXED_SSDP_NOTIFY_INTERVAL
-			if (timeofday.tv_sec >= (lastnotifytime.tv_sec + runtime_vars.notify_interval))
-#else
-			if (timeofday.tv_sec >= (lastnotifytime.tv_sec + NOTIFY_INTERVAL))
-#endif
+			timevalsub(&tv, &timeofday);
+		}
+#ifdef TIVO_SUPPORT
+		if (sbeacon >= 0)
+		{
+			struct timeval beacontv;
+
+			beacontv = lastbeacontime;
+			beacontv.tv_sec += beacon_interval;
+			if (timevalcmp(&timeofday, &beacontv, >=))
 			{
-				DPRINTF(E_DEBUG, L_SSDP, "Sending SSDP notifies\n");
-				for (i = 0; i < n_lan_addr; i++)
-				{
-#ifndef FIXED_SSDP_NOTIFY_INTERVAL
-					SendSSDPNotifies(lan_addr[i].snotify, lan_addr[i].str,
-						runtime_vars.port, runtime_vars.notify_interval);
-#else
-					SendSSDPNotifies(lan_addr[i].snotify, lan_addr[i].str,
-						runtime_vars.port, NOTIFY_INTERVAL);
-#endif
-				}
-				memcpy(&lastnotifytime, &timeofday, sizeof(struct timeval));
-#ifndef FIXED_SSDP_NOTIFY_INTERVAL
-				timeout.tv_sec = runtime_vars.notify_interval;
-#else
-				timeout.tv_sec = NOTIFY_INTERVAL;
-#endif
-				timeout.tv_usec = 0;
+				sendBeaconMessage(sbeacon, &tivo_bcast, sizeof(struct sockaddr_in), 1);
+				lastbeacontime = timeofday;
+				/* Beacons should be sent every 5 seconds or
+				 * so for the first minute, then every minute
+				 * or so thereafter. */
+				if (beacon_interval == 5 && (timeofday.tv_sec - startup_time) > 60)
+					beacon_interval = 60;
+				beacontv.tv_sec = beacon_interval;
+				beacontv.tv_usec = 0;
 			}
 			else
 			{
-#ifndef FIXED_SSDP_NOTIFY_INTERVAL
-				timeout.tv_sec = lastnotifytime.tv_sec + runtime_vars.notify_interval
-				                 - timeofday.tv_sec;
-#else
-				timeout.tv_sec = lastnotifytime.tv_sec + NOTIFY_INTERVAL
-						 - timeofday.tv_sec;
-#endif
-				if (timeofday.tv_usec > lastnotifytime.tv_usec)
-				{
-					timeout.tv_usec = 1000000 + lastnotifytime.tv_usec
-					                  - timeofday.tv_usec;
-					timeout.tv_sec--;
-				}
-				else
-					timeout.tv_usec = lastnotifytime.tv_usec - timeofday.tv_usec;
+				timevalsub(&beacontv, &timeofday);
 			}
-#ifdef TIVO_SUPPORT
-			if (sbeacon >= 0)
-			{
-				if (timeofday.tv_sec >= (lastbeacontime.tv_sec + beacon_interval))
-				{
-					sendBeaconMessage(sbeacon, &tivo_bcast, sizeof(struct sockaddr_in), 1);
-					memcpy(&lastbeacontime, &timeofday, sizeof(struct timeval));
-					if (timeout.tv_sec > beacon_interval)
-					{
-						timeout.tv_sec = beacon_interval;
-						timeout.tv_usec = 0;
-					}
-					/* Beacons should be sent every 5 seconds or so for the first minute,
-					 * then every minute or so thereafter. */
-					if (beacon_interval == 5 && (timeofday.tv_sec - startup_time) > 60)
-						beacon_interval = 60;
-				}
-				else if (timeout.tv_sec > (lastbeacontime.tv_sec + beacon_interval + 1 - timeofday.tv_sec))
-					timeout.tv_sec = lastbeacontime.tv_sec + beacon_interval - timeofday.tv_sec;
-			}
-#endif
+			if (timevalcmp(&tv, &beacontv, >))
+				tv = beacontv;
 		}
+#endif
 
-		if (GETFLAG(SCANNING_MASK))
-		{
-			if (!scanner_pid || kill(scanner_pid, 0) != 0)
-			{
+		if (GETFLAG(SCANNING_MASK)) {
+			if (kill(scanner_pid, 0) != 0) {
+				DPRINTF(E_INFO, L_GENERAL, "Scanner exited\n");
 				CLEARFLAG(SCANNING_MASK);
 				if (_get_dbtime() != lastdbtime)
 					updateID++;
-			}
-		}
-
-		/* select open sockets (SSDP, HTTP listen, and all HTTP soap sockets) */
-		FD_ZERO(&readset);
-
-		if (sssdp >= 0) 
-		{
-			FD_SET(sssdp, &readset);
-			max_fd = MAX(max_fd, sssdp);
-		}
-		
-		if (shttpl >= 0) 
-		{
-			FD_SET(shttpl, &readset);
-			max_fd = MAX(max_fd, shttpl);
-		}
-#ifdef TIVO_SUPPORT
-		if (sbeacon >= 0) 
-		{
-			FD_SET(sbeacon, &readset);
-			max_fd = MAX(max_fd, sbeacon);
-		}
+#ifdef HAVE_WATCH
+				start_monitor();
 #endif
-		if (smonitor >= 0) 
-		{
-			FD_SET(smonitor, &readset);
-			max_fd = MAX(max_fd, smonitor);
+			} else
+				/* Keep checking for the scanner every sec. */
+				tv.tv_sec = 1;
 		}
 
-		i = 0;	/* active HTTP connections count */
-		for (e = upnphttphead.lh_first; e != NULL; e = e->entries.le_next)
-		{
-			if ((e->socket >= 0) && (e->state <= 2))
-			{
-				FD_SET(e->socket, &readset);
-				max_fd = MAX(max_fd, e->socket);
-				i++;
-			}
-		}
-		FD_ZERO(&writeset);
-		upnpevents_selectfds(&readset, &writeset, &max_fd);
+		event_module.process(&tv);
+		if (quitting)
+			goto shutdown;
 
-		ret = select(max_fd+1, &readset, &writeset, 0, &timeout);
-		if (ret < 0)
-		{
-			if(quitting) goto shutdown;
-			if(errno == EINTR) continue;
-			DPRINTF(E_ERROR, L_GENERAL, "select(all): %s\n", strerror(errno));
-			DPRINTF(E_FATAL, L_GENERAL, "Failed to select open sockets. EXITING\n");
-		}
-		upnpevents_processfds(&readset, &writeset);
-		/* process SSDP packets */
-		if (sssdp >= 0 && FD_ISSET(sssdp, &readset))
-		{
-			/*DPRINTF(E_DEBUG, L_GENERAL, "Received SSDP Packet\n");*/
-			ProcessSSDPRequest(sssdp, (unsigned short)runtime_vars.port);
-		}
-#ifdef TIVO_SUPPORT
-		if (sbeacon >= 0 && FD_ISSET(sbeacon, &readset))
-		{
-			/*DPRINTF(E_DEBUG, L_GENERAL, "Received UDP Packet\n");*/
-			ProcessTiVoBeacon(sbeacon);
-		}
-#endif
-		if (smonitor >= 0 && FD_ISSET(smonitor, &readset))
-		{
-			ProcessMonitorEvent(smonitor);
-		}
+		if (gettimeofday(&timeofday, 0) < 0)
+			DPRINTF(E_FATAL, L_GENERAL, "gettimeofday(): %s\n", strerror(errno));
+
+		upnpevents_gc();
+
 		/* increment SystemUpdateID if the content database has changed,
 		 * and if there is an active HTTP connection, at most once every 2 seconds */
-		if (i && (timeofday.tv_sec >= (lastupdatetime + 2)))
+		if (!LIST_EMPTY(&upnphttphead) &&
+		    (timeofday.tv_sec >= (lastupdatetime + 2)))
 		{
 			if (GETFLAG(SCANNING_MASK))
 			{
@@ -1605,48 +1610,6 @@ main(int argc, char **argv)
 				last_changecnt = sqlite3_total_changes(db);
 				upnp_event_var_change_notify(EContentDirectory);
 				lastupdatetime = timeofday.tv_sec;
-			}
-		}
-		/* process active HTTP connections */
-		for (e = upnphttphead.lh_first; e != NULL; e = e->entries.le_next)
-		{
-			if ((e->socket >= 0) && (e->state <= 2) && (FD_ISSET(e->socket, &readset)))
-				Process_upnphttp(e);
-		}
-		/* process incoming HTTP connections */
-		if (shttpl >= 0 && FD_ISSET(shttpl, &readset))
-		{
-			int shttp;
-			socklen_t clientnamelen;
-			struct sockaddr_in clientname;
-			clientnamelen = sizeof(struct sockaddr_in);
-			shttp = accept(shttpl, (struct sockaddr *)&clientname, &clientnamelen);
-			if (shttp<0)
-			{
-				DPRINTF(E_ERROR, L_GENERAL, "accept(http): %s\n", strerror(errno));
-			}
-			else
-			{
-				struct upnphttp * tmp = 0;
-				DPRINTF(E_DEBUG, L_GENERAL, "HTTP connection from %s:%d\n",
-					inet_ntoa(clientname.sin_addr),
-					ntohs(clientname.sin_port) );
-				/*if (fcntl(shttp, F_SETFL, O_NONBLOCK) < 0) {
-					DPRINTF(E_ERROR, L_GENERAL, "fcntl F_SETFL, O_NONBLOCK\n");
-				}*/
-				/* Create a new upnphttp object and add it to
-				 * the active upnphttp object list */
-				tmp = New_upnphttp(shttp);
-				if (tmp)
-				{
-					tmp->clientaddr = clientname.sin_addr;
-					LIST_INSERT_HEAD(&upnphttphead, tmp, entries);
-				}
-				else
-				{
-					DPRINTF(E_ERROR, L_GENERAL, "New_upnphttp() failed\n");
-					close(shttp);
-				}
 			}
 		}
 		/* delete finished HTTP connections */
@@ -1690,15 +1653,15 @@ shutdown:
 		close(lan_addr[i].snotify);
 	}
 
-	if (inotify_thread)
-	{
-		pthread_kill(inotify_thread, SIGCHLD);
-		pthread_join(inotify_thread, NULL);
-	}
+#ifdef HAVE_WATCH
+	monitor_stop();
+#endif
 
 	/* kill other child processes */
 	process_reap_children();
 	free(children);
+
+	event_module.fini();
 
 	sql_exec(db, "UPDATE SETTINGS set VALUE = '%u' where KEY = 'UPDATE_ID'", updateID);
 	sqlite3_close(db);

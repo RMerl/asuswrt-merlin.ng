@@ -19,6 +19,7 @@
 
 #include <stdlib.h>
 
+#include "gstrfuncsprivate.h"
 #include "gtypeplugin.h"
 #include "gtypemodule.h"
 
@@ -436,7 +437,7 @@ g_type_module_register_type (GTypeModule     *module,
   module_type_info->loaded = TRUE;
   module_type_info->info = *type_info;
   if (type_info->value_table)
-    module_type_info->info.value_table = g_memdup (type_info->value_table,
+    module_type_info->info.value_table = g_memdup2 (type_info->value_table,
 						   sizeof (GTypeValueTable));
 
   return module_type_info->type;

@@ -31,12 +31,11 @@
 #include <string.h>
 
 #include "config.h"
+#include "event.h"
 #include "getifaddr.h"
 #include "upnpdescgen.h"
 #include "minidlnapath.h"
 #include "upnpglobalvars.h"
-
-#include "upnpdescstrings.h"
 
 #undef DESC_DEBUG
 

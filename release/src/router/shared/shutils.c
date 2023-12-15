@@ -648,6 +648,64 @@ get_pid_by_thrd_name(char *name)
         return pid;
 }
 
+void replace_null_to_space(char *str, int len) {
+
+	int i = 0;
+	char *p = str;
+
+	for(i=0; i<len-1; i++){
+		if(*p == '\0')
+			*p = ' ';
+		p++;
+
+	}
+}
+
+pid_t
+get_pid_by_process_name(char *name)
+{
+	size_t size = 0;
+	char p_name[128] = {0}, filename[256] = {0};
+	pid_t           pid = -1;
+	DIR             *dir;
+	struct dirent   *next;
+
+	if ((dir = opendir("/proc")) == NULL) {
+		perror("Cannot open /proc");
+		return -1;
+	}
+
+	while ((next = readdir(dir)) != NULL) {
+		/* If it isn't a number, we don't want it */
+		if (!isdigit(*next->d_name))
+			continue;
+
+		memset(filename, 0, sizeof(filename));
+		snprintf(filename, sizeof(filename), "/proc/%s/cmdline", next->d_name);
+		FILE* f = fopen(filename,"r");
+		if(f){
+			size = fread(p_name, sizeof(char), sizeof(p_name), f);
+
+			if(size>0){
+				replace_null_to_space(p_name, size);
+				if('\n'==p_name[size-1])
+				p_name[size-1]='\0';
+			}else
+				memset(p_name, 0, sizeof(p_name));
+
+			fclose(f);
+		}
+
+		if (!strcmp(name, p_name)) {
+			pid = strtol(next->d_name, NULL, 0);
+			break;
+		}
+	}
+	closedir(dir);
+
+	return pid;
+}
+
 /*
  * Convert Ethernet address string representation to binary data
  * @param	a	string in xx:xx:xx:xx:xx:xx notation
@@ -1284,6 +1342,42 @@ add_to_list(const char *name, char *list, int listsize)
 	strncpy(&list[listlen], name, namelen + 1 /* terminate */);
 
 	return 0;
+}
+
+int
+_add_to_list(const char *name, char *list, int listsize, char deli)
+{
+        int listlen = 0;
+        int namelen = 0;
+        int newlen = 0;
+
+        if (!list || !name || (listsize <= 0))
+                return EINVAL;
+
+        listlen = strlen(list);
+        namelen = strlen(name);
+
+        /* is the item already in the list? */
+        if (_find_in_list(list, name, deli))
+                return 0;
+
+        newlen = listlen + namelen + 1 /* NULL */;
+        /* only add a space if the list isn't empty */
+        if (list[0] != 0)
+                newlen += 1; /* space */
+
+        if (listsize < newlen)
+                return EMSGSIZE;
+
+        /* add a space if the list isn't empty and it doesn't already have space */
+        if (list[0] != 0 && list[listlen-1] != deli)
+        {
+                list[listlen++] = deli;
+        }
+
+        strncpy(&list[listlen], name, namelen + 1 /* terminate */);
+
+        return 0;
 }
 
 /* Utility function to remove duplicate entries in a space separated list
@@ -2442,6 +2536,48 @@ int num_of_wan_if()
 	foreach (word, wan_ifnames, next)
 		count++;
 
+	return count;
+}
+
+int num_of_6g_if()
+{
+#if defined(RTCONFIG_NOWL)
+	char prefix[sizeof("wlXXXXX_")];
+	int band, count = 0;
+
+	for (band = 0; band < MAX_NR_WL_BAND; band++) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", band);
+		if (nvram_pf_match(prefix, "nband", "4"))
+			count++;
+
+		if (nvram_pf_get_int(prefix, "nband") == 0)
+			break;
+	}
+#else
+#if !defined(CONFIG_BCMWL5)
+	char prefix[] = "wlXXXXXXXXXXXX_";
+	int band, count = 0;
+
+	for (band = WL_2G_BAND; band < MAX_NR_WL_IF; band++) {
+		SKIP_ABSENT_BAND(band);
+		snprintf(prefix, sizeof(prefix), "wl%d_", band);
+		if (nvram_pf_match(prefix, "nband", "4"))
+			count++;
+	}
+#else
+	char word[256], *next;
+	char wl_ifnames[32] = { 0 };
+	char prefix[] = "wlXXXXXXXXXXXX_", tmp[128];
+	int idx = 0, count = 0;
+
+	strlcpy(wl_ifnames, nvram_safe_get("wl_ifnames"), sizeof(wl_ifnames));
+	foreach (word, wl_ifnames, next) {
+		snprintf(prefix, sizeof(prefix), "wl%d_", idx++);
+		if (nvram_match(strcat_r(prefix, "nband", tmp), "4"))
+			count++;
+	}
+#endif
+#endif	/* RTCONFIG_NOWL */
 	return count;
 }
 

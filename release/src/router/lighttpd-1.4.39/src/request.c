@@ -862,6 +862,7 @@ int http_request_parse(server *srv, connection *con) {
 								if (*err == '\0') {
 									con_length_set = 1;
 									con->request.content_length = r;
+									con->request.free_mem = get_free_mem();
 								} else {
 									log_error_write(srv, __FILE__, __LINE__, "sbs",
 											"content-length broken:", ds->value, "-> 400");

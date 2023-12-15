@@ -1207,6 +1207,8 @@ function handleSysDep(){
 	$(".dualbandSupport").toggle(isSupport("dualband") || isSupport("triband") || isSupport("quadband"));
 	$(".v6plus").toggle(isSupport("s46"));
 	$(".ocnvc").toggle(isSupport("s46") && isSupport("ocnvc"));
+	$(".dslite_xpass").toggle(isSupport("s46") && isSupport("dslite"));
+	$(".dslite_transix").toggle(isSupport("s46") && isSupport("dslite"));
 	$(".vpnClient").toggle(isSupport("VPNCLIENT"));
 	$(".iptv").toggle(isSupport("IPTV"));
 	$(".defaultSupport").toggle(systemVariable.isDefault);
@@ -2203,8 +2205,15 @@ var genWLBandOption = function(){
 	$("#wlc_band_manual").find("option").remove();
 	if($("#wlc_band_manual").has("option").length == 0){
 		var wlArray = Get_Value_Available_WL_Band();
+
+		// sort WL interface sequence
+		if(wlArray[0] !== '0'){
+			wlArray.push(wlArray[0]);
+			wlArray.shift();
+		}
+
 		wlArray.forEach(function(band){
-			$("#wlc_band_manual").append($("<option>").val(band).html(getAllWlArray()[band].title));
+			$("#wlc_band_manual").append($("<option>").val(getAllWlArray()[band].ifname).html(getAllWlArray()[band].title));
 		});
 	}
 };

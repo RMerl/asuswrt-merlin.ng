@@ -80,8 +80,6 @@ void init_basic_data()
 
         int ntp_ready = nvram_get_int("ntp_ready");
 
-        int svc_ready = nvram_get_int("svc_ready");
-
         int link_internet = nvram_get_int("link_internet"); // 2 -> connected
 
         int oauth_auth_status = nvram_get_int("oauth_auth_status"); // 2 -> account_binding
@@ -92,12 +90,12 @@ void init_basic_data()
         int account_bound = 0;
 #endif
         
-        if((svc_ready == 1) && (ntp_ready == 1) && (link_internet == 2) && account_bound) {
-            Cdbg(APP_DBG, "svc_ready -> %d, ntp_ready -> %d, link_internet -> %d, oauth_auth_status -> %d", svc_ready, ntp_ready, link_internet, oauth_auth_status);
+        if((ntp_ready == 1) && (link_internet == 2) && account_bound) {
+            Cdbg(APP_DBG, "ntp_ready -> %d, link_internet -> %d, oauth_auth_status -> %d", ntp_ready, link_internet, oauth_auth_status);
             break;
         } else {
             if(ready_count < 3) {
-                // Cdbg(APP_DBG, "waiting svc_ready -> %d, link_internet -> %d", svc_ready, link_internet);
+                // Cdbg(APP_DBG, "waiting link_internet -> %d", link_internet);
             }
         }
 

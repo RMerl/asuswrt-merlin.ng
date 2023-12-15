@@ -1,0 +1,88 @@
+#!/bin/sh
+
+TUNTAP=$(basename $DEV)
+UNDO_FILE=@VARRUN@/chilli.$TUNTAP.sh
+
+. @SYSCONFDIR@/chilli/functions
+
+[ -e "$UNDO_FILE" ] && sh $UNDO_FILE 2>/dev/null
+rm -f $UNDO_FILE 2>/dev/null
+
+ipt() {
+    opt=$1; shift
+    echo "iptables -D $*" >> $UNDO_FILE
+    iptables $opt $*
+}
+
+ipt_in() {
+    ipt -I INPUT -i $TUNTAP $*
+}
+
+if [ -n "$TUNTAP" ]
+then
+    # ifconfig $TUNTAP mtu $MTU
+    if [ "$KNAME" != "" ]
+    then
+	ipt -I FORWARD -i $DHCPIF -m coova --name $KNAME -j ACCEPT 
+	ipt -I FORWARD -o $DHCPIF -m coova --name $KNAME --dest -j ACCEPT
+	ipt -I FORWARD -i $TUNTAP -j ACCEPT
+	ipt -I FORWARD -o $TUNTAP -j ACCEPT
+	[ -n "$DHCPLISTEN" ] && ifconfig $DHCPIF $DHCPLISTEN
+    else
+	if [ "$LAYER3" != "1" ]
+	then
+	    [ -n "$UAMPORT" -a "$UAMPORT" != "0" ] && \
+		ipt_in -p tcp -m tcp --dport $UAMPORT --dst $ADDR -j ACCEPT
+	    
+	    [ -n "$UAMUIPORT" -a "$UAMUIPORT" != "0" ] && \
+		ipt_in -p tcp -m tcp --dport $UAMUIPORT --dst $ADDR -j ACCEPT
+	    
+	    [ -n "$HS_TCP_PORTS" ] && {
+		for port in $HS_TCP_PORTS; do
+		    ipt_in -p tcp -m tcp --dport $port --dst $ADDR -j ACCEPT
+		done
+	    }
+	    
+	    ipt_in -p udp -d 255.255.255.255 --destination-port 67:68 -j ACCEPT
+	    ipt_in -p udp -d $ADDR --destination-port 67:68 -j ACCEPT
+	    ipt_in -p udp --dst $ADDR --dport 53 -j ACCEPT
+	    ipt_in -p icmp --dst $ADDR -j ACCEPT
+	    
+	    ipt -A INPUT -i $TUNTAP --dst $ADDR -j DROP
+	    
+	    if [ "$ONLY8021Q" != "1" ]
+	    then
+		ipt -I INPUT -i $DHCPIF -j DROP
+	    fi
+	fi
+	
+	if [ "$ONLY8021Q" != "1" ]
+	then
+	    ipt -I FORWARD -i $DHCPIF -j DROP
+	    ipt -I FORWARD -o $DHCPIF -j DROP
+	fi
+	
+	ipt -I FORWARD -i $TUNTAP -j ACCEPT
+	ipt -I FORWARD -o $TUNTAP -j ACCEPT
+	
+        # Help out conntrack to not get confused
+        # (stops masquerading from working)
+        #ipt -I PREROUTING -t raw -j NOTRACK -i $DHCPIF
+        #ipt -I OUTPUT -t raw -j NOTRACK -o $DHCPIF
+	
+        # Help out MTU issues with PPPoE or Mesh
+	ipt -I FORWARD -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+	ipt -I FORWARD -t mangle -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu
+	
+	[ "$HS_LAN_ACCESS" != "on" -a "$HS_LAN_ACCESS" != "allow" ] && \
+	    ipt -I FORWARD -i $TUNTAP \! -o $HS_WANIF -j DROP
+
+	ipt -I FORWARD -i $TUNTAP -o $HS_WANIF -j ACCEPT
+	
+	[ "$HS_LOCAL_DNS" = "on" ] && \
+	    ipt -I PREROUTING -t nat -i $TUNTAP -p udp --dport 53 -j DNAT --to-destination $ADDR
+    fi
+fi
+
+# site specific stuff optional
+[ -e @ETCCHILLI@/ipup.sh ] && . @ETCCHILLI@/ipup.sh

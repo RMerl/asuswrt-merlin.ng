@@ -1450,6 +1450,11 @@ found_header_end:
 			/* don't buffer request bodies <= 64k on disk */
 			chunkqueue_steal(dst_cq, cq, con->request.content_length - dst_cq->bytes_in);
 		}
+		else if (con->request.content_length > con->request.free_mem) {
+			con->http_status = 413;
+			con->keep_alive = 0;
+			connection_set_state(srv, con, CON_STATE_HANDLE_REQUEST);
+		}
 		else if (0 != chunkqueue_steal_with_tempfiles(srv, dst_cq, cq, con->request.content_length - dst_cq->bytes_in )) {
 			con->http_status = 413; /* Request-Entity too large */
 			con->keep_alive = 0;

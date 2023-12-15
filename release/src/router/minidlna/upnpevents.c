@@ -59,9 +59,11 @@
 #include <sys/param.h>
 #include <netinet/in.h>
 #include <arpa/inet.h>
+#include <assert.h>
 #include <fcntl.h>
 #include <errno.h>
 
+#include "event.h"
 #include "upnpevents.h"
 #include "minidlnapath.h"
 #include "upnpglobalvars.h"
@@ -82,10 +84,9 @@ struct subscriber {
 };
 
 struct upnp_event_notify {
+	struct event ev;
 	LIST_ENTRY(upnp_event_notify) entries;
-	int s;  /* socket */
-	enum { ECreated=1,
-	       EConnecting,
+	enum { EConnecting,
 	       ESending,
 	       EWaitingForResponse,
 	       EFinished,
@@ -101,8 +102,8 @@ struct upnp_event_notify {
 };
 
 /* prototypes */
-static void
-upnp_event_create_notify(struct subscriber * sub);
+static void upnp_event_create_notify(struct subscriber * sub);
+static void upnp_event_process_notify(struct event *ev);
 
 /* Subscriber list */
 LIST_HEAD(listhead, subscriber) subscriberlist = { NULL };
@@ -224,59 +225,45 @@ upnp_event_var_change_notify(enum subscriber_service_enum service)
 	}
 }
 
-/* create and add the notify object to the list */
+/* create and add the notify object to the list, start connecting */
 static void
-upnp_event_create_notify(struct subscriber * sub)
+upnp_event_create_notify(struct subscriber *sub)
 {
 	struct upnp_event_notify * obj;
-	int flags;
+	int flags, s, i;
+	const char *p;
+	unsigned short port;
+	struct sockaddr_in addr;
+
+	assert(sub);
+
 	obj = calloc(1, sizeof(struct upnp_event_notify));
 	if(!obj) {
-		DPRINTF(E_ERROR, L_HTTP, "%s: calloc(): %s\n", "upnp_event_create_notify", strerror(errno));
+		DPRINTF(E_ERROR, L_HTTP, "calloc(): %s\n", strerror(errno));
 		return;
 	}
 	obj->sub = sub;
-	obj->state = ECreated;
-	obj->s = socket(PF_INET, SOCK_STREAM, 0);
-	if(obj->s<0) {
-		DPRINTF(E_ERROR, L_HTTP, "%s: socket(): %s\n", "upnp_event_create_notify", strerror(errno));
+	s = socket(PF_INET, SOCK_STREAM, 0);
+	if(s < 0) {
+		DPRINTF(E_ERROR, L_HTTP, "socket(): %s\n", strerror(errno));
 		goto error;
 	}
-	if((flags = fcntl(obj->s, F_GETFL, 0)) < 0) {
-		DPRINTF(E_ERROR, L_HTTP, "%s: fcntl(..F_GETFL..): %s\n",
-		       "upnp_event_create_notify", strerror(errno));
+	if((flags = fcntl(s, F_GETFL, 0)) < 0) {
+		DPRINTF(E_ERROR, L_HTTP, "fcntl(..F_GETFL..): %s\n",
+		       strerror(errno));
 		goto error;
 	}
-	if(fcntl(obj->s, F_SETFL, flags | O_NONBLOCK) < 0) {
-		DPRINTF(E_ERROR, L_HTTP, "%s: fcntl(..F_SETFL..): %s\n",
-		       "upnp_event_create_notify", strerror(errno));
+	if(fcntl(s, F_SETFL, flags | O_NONBLOCK) < 0) {
+		DPRINTF(E_ERROR, L_HTTP, "fcntl(..F_SETFL..): %s\n",
+		       strerror(errno));
 		goto error;
 	}
 	if(sub)
 		sub->notify = obj;
 	LIST_INSERT_HEAD(&notifylist, obj, entries);
-	return;
-error:
-	if(obj->s >= 0)
-		close(obj->s);
-	free(obj);
-}
 
-static void
-upnp_event_notify_connect(struct upnp_event_notify * obj)
-{
-	int i;
-	const char * p;
-	unsigned short port;
-	struct sockaddr_in addr;
-	if(!obj)
-		return;
 	memset(&addr, 0, sizeof(addr));
 	i = 0;
-	if(obj->sub == NULL) {
-		obj->state = EError;
-		return;
-	}
 	p = obj->sub->callback;
 	p += 7;	/* http:// */
 	while(*p != '/' && *p != ':' && i < (sizeof(obj->addrstr)-1))
@@ -303,15 +290,26 @@ upnp_event_notify_connect(struct upnp_event_notify * obj)
 	addr.sin_family = AF_INET;
 	inet_aton(obj->addrstr, &addr.sin_addr);
 	addr.sin_port = htons(port);
-	DPRINTF(E_DEBUG, L_HTTP, "%s: '%s' %hu '%s'\n", "upnp_event_notify_connect",
+	DPRINTF(E_DEBUG, L_HTTP, "'%s' %hu '%s'\n",
 	       obj->addrstr, port, obj->path);
 	obj->state = EConnecting;
-	if(connect(obj->s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
+	obj->ev = (struct event ){ .fd = s, .rdwr = EVENT_WRITE,
+		.up.process = upnp_event_process_notify, .data = obj };
+	event_module.add(&obj->ev);
+	if(connect(s, (struct sockaddr *)&addr, sizeof(addr)) < 0) {
 		if(errno != EINPROGRESS && errno != EWOULDBLOCK) {
-			DPRINTF(E_ERROR, L_HTTP, "%s: connect(): %s\n", "upnp_event_notify_connect", strerror(errno));
+			DPRINTF(E_ERROR, L_HTTP, "connect(): %s\n", strerror(errno));
 			obj->state = EError;
+			event_module.del(&obj->ev, 0);
 		}
 	}
+
+	return;
+
+error:
+	if(s >= 0)
+		close(s);
+	free(obj);
 }
 
 static void upnp_event_prepare(struct upnp_event_notify * obj)
@@ -331,10 +329,9 @@ static void upnp_event_prepare(struct upnp_event_notify * obj)
 		"%.*s\r\n";
 	char * xml;
 	int l;
-	if(obj->sub == NULL) {
-		obj->state = EError;
-		return;
-	}
+
+	assert(obj->sub);
+
 	switch(obj->sub->service) {
 	case EContentDirectory:
 		xml = getVarsContentDirectory(&l);
@@ -364,30 +361,37 @@ static void upnp_event_send(struct upnp_event_notify * obj)
 	int i;
 	//DEBUG DPRINTF(E_DEBUG, L_HTTP, "Sending UPnP Event:\n%s", obj->buffer+obj->sent);
 	while( obj->sent < obj->tosend ) {
-		i = send(obj->s, obj->buffer + obj->sent, obj->tosend - obj->sent, 0);
+		i = send(obj->ev.fd, obj->buffer + obj->sent, obj->tosend - obj->sent, 0);
 		if(i<0) {
 			DPRINTF(E_WARN, L_HTTP, "%s: send(): %s\n", "upnp_event_send", strerror(errno));
 			obj->state = EError;
+			event_module.del(&obj->ev, 0);
 			return;
 		}
 		obj->sent += i;
 	}
-	if(obj->sent == obj->tosend)
+	if(obj->sent == obj->tosend) {
 		obj->state = EWaitingForResponse;
+		event_module.del(&obj->ev, 0);
+		obj->ev.rdwr = EVENT_READ;
+		event_module.add(&obj->ev);
+	}
 }
 
 static void upnp_event_recv(struct upnp_event_notify * obj)
 {
 	int n;
-	n = recv(obj->s, obj->buffer, obj->buffersize, 0);
+	n = recv(obj->ev.fd, obj->buffer, obj->buffersize, 0);
 	if(n<0) {
 		DPRINTF(E_ERROR, L_HTTP, "%s: recv(): %s\n", "upnp_event_recv", strerror(errno));
 		obj->state = EError;
+		event_module.del(&obj->ev, 0);
 		return;
 	}
 	DPRINTF(E_DEBUG, L_HTTP, "%s: (%dbytes) %.*s\n", "upnp_event_recv",
 	       n, n, obj->buffer);
 	obj->state = EFinished;
+	event_module.del(&obj->ev, EV_FLAG_CLOSING);
 	if(obj->sub)
 	{
 		obj->sub->seq++;
@@ -397,8 +401,10 @@ static void upnp_event_recv(struct upnp_event_notify * obj)
 }
 
 static void
-upnp_event_process_notify(struct upnp_event_notify * obj)
+upnp_event_process_notify(struct event *ev)
 {
+	struct upnp_event_notify *obj = ev->data;
+
 	switch(obj->state) {
 	case EConnecting:
 		/* now connected or failed to connect */
@@ -412,66 +418,28 @@ upnp_event_process_notify(struct upnp_event_notify * obj)
 		upnp_event_recv(obj);
 		break;
 	case EFinished:
-		close(obj->s);
-		obj->s = -1;
+		close(obj->ev.fd);
+		obj->ev.fd = -1;
 		break;
 	default:
 		DPRINTF(E_ERROR, L_HTTP, "upnp_event_process_notify: unknown state\n");
 	}
 }
 
-void upnpevents_selectfds(fd_set *readset, fd_set *writeset, int * max_fd)
-{
-	struct upnp_event_notify * obj;
-	for(obj = notifylist.lh_first; obj != NULL; obj = obj->entries.le_next) {
-		DPRINTF(E_DEBUG, L_HTTP, "upnpevents_selectfds: %p %d %d\n",
-		       obj, obj->state, obj->s);
-		if(obj->s >= 0) {
-			switch(obj->state) {
-			case ECreated:
-				upnp_event_notify_connect(obj);
-				if(obj->state != EConnecting)
-					break;
-			case EConnecting:
-			case ESending:
-				FD_SET(obj->s, writeset);
-				if(obj->s > *max_fd)
-					*max_fd = obj->s;
-				break;
-			case EWaitingForResponse:
-				FD_SET(obj->s, readset);
-				if(obj->s > *max_fd)
-					*max_fd = obj->s;
-				break;
-			default:
-				break;
-			}
-		}
-	}
-}
-
-void upnpevents_processfds(fd_set *readset, fd_set *writeset)
+void upnpevents_gc(void)
 {
 	struct upnp_event_notify * obj;
 	struct upnp_event_notify * next;
 	struct subscriber * sub;
 	struct subscriber * subnext;
 	time_t curtime;
-	for(obj = notifylist.lh_first; obj != NULL; obj = obj->entries.le_next) {
-		DPRINTF(E_DEBUG, L_HTTP, "%s: %p %d %d %d %d\n",
-		       "upnpevents_processfds", obj, obj->state, obj->s,
-		       FD_ISSET(obj->s, readset), FD_ISSET(obj->s, writeset));
-		if(obj->s >= 0) {
-			if(FD_ISSET(obj->s, readset) || FD_ISSET(obj->s, writeset))
-				upnp_event_process_notify(obj);
-		}
-	}
+
 	obj = notifylist.lh_first;
 	while(obj != NULL) {
 		next = obj->entries.le_next;
 		if(obj->state == EError || obj->state == EFinished) {
-			if(obj->s >= 0) {
-				close(obj->s);
+			if(obj->ev.fd >= 0) {
+				close(obj->ev.fd);
 			}
 			if(obj->sub)
 				obj->sub->notify = NULL;

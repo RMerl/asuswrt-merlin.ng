@@ -1,0 +1,677 @@
+/* $Id$ */
+
+/*
+ *   Copyright (c) 2001-2010 Aaron Turner <aturner at synfin dot net>
+ *   Copyright (c) 2013-2022 Fred Klassen <tcpreplay at appneta dot com> - AppNeta
+ *
+ *   The Tcpreplay Suite of tools is free software: you can redistribute it 
+ *   and/or modify it under the terms of the GNU General Public License as 
+ *   published by the Free Software Foundation, either version 3 of the 
+ *   License, or with the authors permission any later version.
+ *
+ *   The Tcpreplay Suite is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with the Tcpreplay Suite.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+autogen definitions options;
+
+
+copyright = {
+    date        = "2000-2022";
+    owner       = "Aaron Turner and Fred Klassen";
+    eaddr       = "tcpreplay-users@lists.sourceforge.net"; 
+    type        = gpl;
+    author      = <<- EOText
+Copyright 2013-2022 Fred Klassen - AppNeta
+
+Copyright 2000-2012 Aaron Turner
+
+For support please use the tcpreplay-users@lists.sourceforge.net mailing list.
+
+The latest version of this software is always available from:
+http://tcpreplay.appneta.com/
+EOText;
+};
+
+package         = "tcpreplay";
+#ifdef TCPREPLAY_EDIT_MAN
+prog-name       = "tcpreplay-edit";
+#else 
+prog-name       = "tcpreplay";
+#endif
+prog-title      = "Replay network traffic stored in pcap files";
+long-opts;
+gnu-usage;
+help-value      = "H";
+save-opts-value = "";
+load-opts-value = "";
+argument = "<pcap_file(s)> | <pcap_dir(s)>";
+
+
+config-header   = "config.h";
+
+include         = "#include \"defines.h\"\n"
+                "#include \"tcpreplay.h\"\n"
+                "#include \"common.h\"\n"
+                "#include \"config.h\"\n"
+                "#include <stdlib.h>\n"
+                "#include <sys/types.h>\n"
+                "#include <unistd.h>\n";
+
+homerc          = "$$/";
+
+#ifdef TCPREPLAY_EDIT
+#include tcpedit/tcpedit_opts.def
+#endif
+
+explain = <<- EOExplain
+tcpreplay is a tool for replaying network traffic from files saved with
+tcpdump or other tools which write pcap(3) files.
+EOExplain;
+
+detail = <<- EODetail
+The basic operation of tcpreplay is to resend  all  packets  from  the
+input file(s) at the speed at which they were recorded, or a specified 
+data rate, up to as fast as the hardware is capable.
+
+Optionally, the traffic can be split between two interfaces, written to
+files, filtered and edited in various ways, providing the means to test
+firewalls, NIDS and other network devices.
+
+For more details, please see the Tcpreplay Manual at:
+http://tcpreplay.appneta.com
+EODetail;
+
+man-doc = <<- EOMan
+.SH "SIGNALS"
+tcpreplay understands the following signals:
+@enumerate
+@item @var{SIGUSR1}
+Suspend tcpreplay
+@item @var{SIGCONT}
+Restart tcpreplay
+@end enumerate
+
+.SH "SEE ALSO"
+tcpdump(1), tcpbridge(1), tcprewrite(1), tcpprep(1), tcpcapinfo(1)
+
+.SH "BUGS"
+tcpreplay can only send packets as fast as your computer's interface,
+processor, disk and system bus will allow.
+
+Packet timing at high speeds is a black art and very OS/CPU dependent.  
+
+Replaying captured traffic may simulate odd or broken conditions on your
+network and cause all sorts of problems.
+
+In most cases, you can not replay traffic back to/at a server.
+
+Some operating systems by default do not allow for forging source MAC
+addresses.  Please consult your operating system's documentation and the
+tcpreplay FAQ if you experience this issue.
+EOMan;
+
+
+flag = {
+    ifdef       = DEBUG;
+    name        = dbug;
+    value       = d;
+    arg-type    = number;
+    max         = 1;
+    immediate;
+    arg-range   = "0->5";
+    arg-default = 0;
+    descrip     = "Enable debugging output";
+    doc         = <<- EOText
+If configured with --enable-debug, then you can specify a verbosity 
+level for debugging output.  Higher numbers increase verbosity.
+EOText;
+};
+
+flag = {
+    name        = quiet;
+    value       = q;
+    descrip     = "Quiet mode";
+    doc	        = "Print nothing except the statistics at the end of the run";
+};
+
+flag = {
+    name        = timer;
+    value       = T;
+    arg-default = "gtod";
+    max	        = 1;
+    arg-type    = string;
+    descrip     = "Select packet timing mode: select, ioport, gtod, nano";
+    doc	        = <<- EOText
+Allows you to select the packet timing method to use:
+@enumerate
+@item nano
+- Use nanosleep() API
+@item select
+- Use select() API
+@item ioport
+- Write to the i386 IO Port 0x80
+@item gtod [default]
+- Use a gettimeofday() loop
+@end enumerate
+
+EOText;
+};
+
+flag = {
+    name        = maxsleep;
+    arg-type    = number;
+    arg-default = 0;
+    descrip     = "Sleep for no more then X milliseconds between packets";
+    doc         = <<- EOText
+Set a limit for the maximum number of milliseconds that tcpreplay will sleep
+between packets.  Effectively prevents long delays between packets without
+effecting the majority of packets.  Default is disabled.
+EOText;
+};
+
+/* Verbose decoding via tcpdump */
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = verbose;
+    value       = v;
+    max         = 1;
+    immediate;
+    descrip     = "Print decoded packets via tcpdump to STDOUT";
+    settable;
+    doc         = "";
+};
+
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = decode;
+    flags-must  = verbose;
+    value       = A;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Arguments passed to tcpdump decoder";
+    doc         = <<- EOText
+When enabling verbose mode (@var{-v}) you may also specify one or more
+additional  arguments to pass to @code{tcpdump} to modify the way packets
+are decoded.  By default, -n and -l are used.   Be  sure  to
+quote the arguments like: -A "-axxx" so that they are not interpreted
+by tcpreplay.   Please see the tcpdump(1) man page for a complete list of 
+options.
+EOText;
+};
+
+flag = {
+    name        = preload_pcap;
+    value       = K;
+    descrip     = "Preloads packets into RAM before sending";
+    doc         = <<- EOText
+This option loads the specified pcap(s) into RAM before starting to send in order
+to improve replay performance while introducing a startup performance hit.
+Preloading can be used with or without @var{--loop}. This option also suppresses
+flow statistics collection for every iteration, which can significantly reduce
+memory usage. Flow statistics are predicted based on options supplied and
+statistics collected from the first loop iteration.
+EOText;
+};
+
+/*
+ * Output modifiers: -c
+ */
+
+flag = {
+    name        = cachefile;
+    value       = c;
+    arg-type    = string;
+    flags-cant  = dualfile;
+    flags-must  = intf2;
+    max         = 1;
+    descrip     = "Split traffic via a tcpprep cache file";
+    doc         = <<- EOText
+If you have a pcap file you would like to use to send bi-directional
+traffic through a device (firewall, router, IDS, etc) then using tcpprep
+you can create a cachefile which tcpreplay will use to split the traffic
+across two network interfaces.
+EOText;
+};
+
+flag = {
+    name        = dualfile;
+    value       = 2;
+    max         = 1;
+    flags-cant  = cachefile;
+    flags-must  = intf2;
+    descrip     = "Replay two files at a time from a network tap";
+    doc         = <<- EOText
+If you captured network traffic using a network tap, then you can end up with
+two pcap files- one for each direction.  This option will replay these two
+files at the same time, one on each interface and inter-mix them using the 
+timestamps in each.
+EOText;
+};
+
+/*
+ * Outputs: -i, -I
+ */
+
+flag = {
+    name        = intf1;
+    value       = i;
+    arg-type    = string;
+    max         = 1;
+    must-set;
+    descrip     = "Client to server/RX/primary traffic output interface";
+    doc         = <<- EOText
+Required network interface used to send either all traffic or traffic which is 
+marked as 'primary' via tcpprep.  Primary traffic is usually client-to-server 
+or inbound (RX) on khial virtual interfaces.
+EOText;
+};
+
+flag = {
+    name        = intf2;
+    value       = I;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Server to client/TX/secondary traffic output interface";
+    doc         = <<- EOText
+Optional network interface used to send traffic which is marked as 'secondary' 
+via tcpprep.  Secondary traffic is usually server-to-client or outbound 
+(TX) on khial virtual interfaces.  Generally, it only makes sense to use this
+option with --cachefile.
+EOText;
+};
+
+
+flag = {
+    ifdef       = ENABLE_PCAP_FINDALLDEVS;
+    name        = listnics;
+    descrip     = "List available network interfaces and exit";
+    immediate;
+    doc         = "";
+    flag-code   = <<- EOFlag
+
+    interface_list_t *list = get_interface_list();
+    list_interfaces(list);
+    free(list);
+    exit(0);
+
+EOFlag;
+};
+
+/*
+ * Limits and loops: -l
+ */
+
+flag = {
+    name        = loop;
+    value       = l;
+    arg-type    = number;
+    arg-range   = "0->";
+    max         = 1;
+    descrip     = "Loop through the capture file X times";
+    arg-default = 1;
+    doc         = "";
+};
+
+flag = {
+    name        = loopdelay-ms;
+    flags-must  = loop;
+    arg-type    = number;
+    arg-range   = "0->";
+    descrip     = "Delay between loops in milliseconds";
+    arg-default = 0;
+    doc         = "";
+};
+
+flag = {
+    name        = pktlen;
+    max         = 1;
+    descrip     = "Override the snaplen and use the actual packet len";
+    doc         = <<- EOText
+By default, tcpreplay will send packets based on the size of the "snaplen"
+stored in the pcap file which is usually the correct thing to do.  However,
+occasionally, tools will store more bytes then told to.  By specifying this
+option, tcpreplay will ignore the snaplen field and instead try to send
+packets based on the original packet length.  Bad things may happen if
+you specify this option.
+EOText;
+};
+
+flag = {
+    name        = limit;
+    value       = L;
+    arg-type    = number;
+    max         = 1;
+    arg-default = -1;
+    arg-range   = "1->";
+    descrip     = "Limit the number of packets to send";
+    doc         = <<- EOText
+By default, tcpreplay will send all the packets.  Alternatively, you can 
+specify a maximum number of packets to send.  
+EOText;
+};
+
+flag = {
+    name        = duration;
+    arg-type    = number;
+    max         = 1;
+    arg-default = -1;
+    arg-range   = "1->";
+    descrip     = "Limit the number of seconds to send";
+    doc         = <<- EOText
+By default, tcpreplay will send all the packets.  Alternatively, you can
+specify a maximum number of seconds to transmit.
+EOText;
+};
+
+/*
+ * Replay speed modifiers: -m, -p, -r, -R, -o
+ */
+
+/* note that this is really a float, but autoopts does not support float */
+flag = {
+    name        = multiplier;
+    flags-cant  = pps;
+    flags-cant  = mbps;
+    flags-cant  = oneatatime;
+    flags-cant  = topspeed;
+    value       = x;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Modify replay speed to a given multiple";
+    doc         = <<- EOText
+Specify a value to modify the packet replay speed.
+Examples:
+@example
+    2.0 will replay traffic at twice the speed captured
+    0.7 will replay traffic at 70% the speed captured
+@end example
+EOText;
+};
+
+flag = {
+    name        = pps;
+    flags-cant  = multiplier;
+    flags-cant  = mbps;
+    flags-cant  = oneatatime;
+    flags-cant  = topspeed;
+    value       = p;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Replay packets at a given packets/sec";
+    doc         = <<- EOText
+Specify a value to regulate the packet replay to a specific packet-per-second rate.
+Examples:
+@example
+    200 will replay traffic at 200 packets per second
+    0.25 will replay traffic at 15 packets per minute
+@end example
+EOText;
+};
+
+flag = {
+    name        = mbps;
+    flags-cant  = multiplier;
+    flags-cant  = pps;
+    flags-cant  = oneatatime;
+    flags-cant  = topspeed;
+    value       = M;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Replay packets at a given Mbps";
+    doc         = <<- EOText
+Specify a floating point value for the Mbps rate that tcpreplay
+should send packets at.
+EOText;
+};
+
+flag = {
+    name        = topspeed;
+    flags-cant  = mbps;
+    flags-cant  = multiplier;
+    flags-cant  = pps;
+    flags-cant  = oneatatime;
+    value       = t;
+    descrip     = "Replay packets as fast as possible";
+    doc         = "";
+};
+
+flag = {
+    name        = oneatatime;
+    flags-cant  = mbps;
+    flags-cant  = pps;
+    flags-cant  = multiplier;
+    flags-cant  = topspeed;
+    value       = o;
+    descrip     = "Replay one packet at a time for each user input";
+    doc         = <<- EOText
+Allows you to step through one or more packets at a time.
+EOText;
+};
+
+flag = {
+    name        = pps-multi;
+    arg-type    = number;
+    flags-must  = pps;
+    arg-default = 1;
+    arg-range   = "1->";
+    descrip     = "Number of packets to send for each time interval";
+    doc         = <<- EOText
+When trying to send packets at very high rates, the time between each packet
+can be so short that it is impossible to accurately sleep for the required
+period of time.  This option allows you to send multiple packets at a time,
+thus allowing for longer sleep times which can be more accurately implemented.
+EOText;
+};
+
+flag = {
+    name        = unique-ip;
+    flags-must   = loop;
+#ifdef TCPREPLAY_EDIT
+    flags-cant   = seed;
+    flags-cant   = fuzz-seed;
+#endif
+    descrip     = "Modify IP addresses each loop iteration to generate unique flows";
+    doc         = <<- EOText
+Ensure IPv4 and IPv6 packets will be unique for each @var{--loop} iteration. 
+This is done in a way that will not alter packet CRC, and therefore will generally
+not affect performance. This option will significantly increase the flows/sec over
+generated over multiple loop iterations.
+EOText;
+};
+
+flag = {
+    name        = unique-ip-loops;
+    flags-must   = unique-ip;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Number of times to loop before assigning new unique ip";
+    doc         = <<- EOText
+Number of @var{--loop} iterations before a new unique IP is assigned. Default
+is 1. Assumes both @var{--loop} and @var{--unique-ip}.
+EOText;
+};
+
+flag = {
+    ifdef       = HAVE_NETMAP;
+    name        = netmap;
+    descrip     = "Write packets directly to netmap enabled network adapter";
+    doc         = <<- EOText
+This feature will detect netmap capable network drivers on Linux and BSD
+systems. If detected, the network driver is bypassed for the execution
+duration, and network buffers will be written to directly. This will allow
+you to achieve full line rates on commodity network adapters, similar to rates
+achieved by commercial network traffic generators. Note that bypassing the network
+driver will disrupt other applications connected through the test interface. See
+INSTALL for more information.
+
+This feature can also be enabled by specifying an interface as 'netmap:<intf>'
+or 'vale:<intf>. For example 'netmap:eth0' specifies netmap over interface eth0.
+EOText;
+};
+
+
+flag = {
+    ifdef       = HAVE_NETMAP;
+    name        = nm-delay;
+    arg-type    = number;
+    arg-default = 10;
+    descrip     = "Netmap startup delay";
+    doc         = <<- EOText
+Number of seconds to delay after netmap is loaded. Required to ensure interfaces
+are fully up before netmap transmit. Requires netmap option. Default is 10 seconds.
+EOText;
+};
+
+flag = {
+    name        = no-flow-stats;
+    descrip     = "Suppress printing and tracking flow count, rates and expirations";
+    doc         = <<- EOText
+Suppress the collection and printing of flow statistics. This option may
+improve performance when not using @var{--preload-pcap} option, otherwise
+its only function is to suppress printing. 
+
+The flow feature will track and print statistics of the flows being sent. 
+A flow is loosely defined as a unique combination of a 5-tuple, i.e. 
+source IP, destination IP, source port, destination port and protocol.
+
+If @var{--loop} is specified, the flows from one iteration to the next
+will not be unique, unless the packets are altered. Use @var{--unique-ip}
+or @var{tcpreplay-edit} to alter packets between iterations. 
+EOText;
+};
+
+flag = {
+    name        = flow-expiry;
+    arg-type    = number;
+    flags-cant  = no-flow-stats;
+    arg-default = 0;
+    arg-range   = "0->";
+    descrip     = "Number of inactive seconds before a flow is considered expired";
+    doc         = <<- EOText
+This option will track and report flow expirations based on the flow idle
+times. The timestamps within the pcap file are used to determine the expiry,
+not the actual timestamp of the packets are replayed. For example, a value of
+30 suggests that if no traffic is seen on a flow for 30 seconds, any
+subsequent traffic would be considered a new flow, and thereby will increment
+the flows and flows per second (fps) statistics. 
+
+This option can be used to optimize flow timeout settings for flow products.
+Setting the timeout low may lead to flows being dropped when in fact the flow
+is simply slow to respond. Configuring your flow timeouts too high may
+increase resources required by your flow product.
+
+Note that using this option while replaying at higher than original speeds
+can lead to inflated flows and fps counts.
+
+Default is 0 (no expiry) and a typical value is 30-120 seconds.
+EOText;
+};
+
+
+flag = {
+    name        = pid;
+    value       = P;
+    descrip     = "Print the PID of tcpreplay at startup";
+    flag-code   = <<- EOPid
+
+    fprintf(stderr, "PID: %d\n", getpid());
+
+EOPid;
+    doc         = "";
+};
+
+flag = {
+    name        = stats;
+    arg-type    = number;
+    arg-range   = "0->";
+    descrip     = "Print statistics every X seconds, or every loop if '0'";
+    doc         = <<- EOText
+Note that timed delays are a "best effort" and long delays between
+sending packets may cause equally long delays between printing statistics.
+EOText;
+};
+
+flag = {
+    name        = version;
+    value       = V;
+    descrip     = "Print version information";
+    flag-code   = <<- EOVersion
+
+    fprintf(stderr, "tcpreplay version: %s (build %s)", VERSION, git_version());
+#ifdef DEBUG
+    fprintf(stderr, " (debug)");
+#endif
+#ifdef TIMESTAMP_TRACE
+    fprintf(stderr, " (timestamp-trace)");
+#endif
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Copyright 2013-2022 by Fred Klassen <tcpreplay at appneta dot com> - AppNeta\n");
+    fprintf(stderr, "Copyright 2000-2012 by Aaron Turner <aturner at synfin dot net>\n");
+    fprintf(stderr, "The entire Tcpreplay Suite is licensed under the GPLv3\n");  
+    fprintf(stderr, "Cache file supported: %s\n", CACHEVERSION);
+#ifdef HAVE_LIBDNET
+    fprintf(stderr, "Compiled against libdnet: %s\n", LIBDNET_VERSION);
+#else
+    fprintf(stderr, "Not compiled with libdnet.\n");
+#endif
+#ifdef HAVE_WINPCAP
+    fprintf(stderr, "Compiled against winpcap: %s\n", get_pcap_version());
+#elif defined HAVE_PF_RING_PCAP
+    fprintf(stderr, "Compiled against PF_RING libpcap: %s\n", get_pcap_version());
+#else
+    fprintf(stderr, "Compiled against libpcap: %s\n", get_pcap_version());
+#endif
+#ifdef ENABLE_64BITS
+    fprintf(stderr, "64 bit packet counters: enabled\n");
+#else
+    fprintf(stderr, "64 bit packet counters: disabled\n");
+#endif
+#ifdef ENABLE_VERBOSE
+    fprintf(stderr, "Verbose printing via tcpdump: enabled\n");
+#else
+    fprintf(stderr, "Verbose printing via tcpdump: disabled\n");
+#endif
+#ifdef TCPREPLAY_EDIT
+    fprintf(stderr, "Packet editing: enabled\n");
+#else
+    fprintf(stderr, "Packet editing: disabled\n");
+#endif
+#ifdef ENABLE_FRAGROUTE
+    fprintf(stderr, "Fragroute engine: enabled\n");
+#else
+    fprintf(stderr, "Fragroute engine: disabled\n");
+#endif
+#if defined HAVE_NETMAP
+    fprintf(stderr, "Default injection method: %s\n", sendpacket_get_method(NULL));
+#else
+    fprintf(stderr, "Injection method: %s\n", sendpacket_get_method(NULL));
+#endif
+#ifdef HAVE_NETMAP
+    fprintf(stderr, "Optional injection method: netmap\n");
+#else
+    fprintf(stderr, "Not compiled with netmap\n");
+#endif
+    exit(0);
+
+EOVersion;
+    doc         = "";
+};
+
+flag = {
+    name        = less-help;
+    value       = "h";
+    immediate;
+    descrip     = "Display less usage information and exit";
+    flag-code   = <<- EOHelp
+
+    USAGE(EXIT_FAILURE);
+
+EOHelp;
+    doc         = "";
+};

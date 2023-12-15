@@ -1,0 +1,35 @@
+<!--
+  --  Registration form
+  -->
+<table>
+<tr>
+  <td>Username</td>
+  <td><input name="username" value="$FORM_username"></td>
+</tr>
+<tr>
+  <td>Password</td>
+  <td><input name="password" value="$FORM_password" type="password"></td>
+</tr>
+<tr>
+  <td>Retype Password</td>
+  <td><input name="password2" type="password"></td>
+</tr>
+<tr>
+  <td>E-mail</td>
+  <td><input name="email" value="$FORM_email"></td>
+</tr>
+<tr>
+  <td>Real Name</td>
+  <td><input name="realname" value="$FORM_realname"></td>
+</tr>
+<tr>
+  <td colspan=2>Message to owner:<br><textarea style="width:100%" rows="3"
+  NAME="message">$FORM_message</textarea></td>
+</tr>
+<tr>
+  <td colspan=2 align=center>
+    <input type="submit" name="button" value="Register">&nbsp;&nbsp;
+    <input type="button" name="decline" value="Cancel" onClick="window.location='/www/login.chi'">
+  </td>
+</tr>
+</table>

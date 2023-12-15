@@ -1,0 +1,115 @@
+$Id$
+
+tcpreplay and it's associated utilities (tcpprep, tcprewrite and flowreplay)
+were designed and written by Aaron Turner, and maintained and updated by
+Fred Klassen of AppNeta
+
+This product includes software developed by the University of California,
+Berkeley, Lawrence Berkeley Laboratory and its contributors.
+
+The following is a list of people in no particular order who have kindly
+submitted patches or code snippets for me to use in tcpreplay.
+
+Matt Bing <matt@mutedwarf.com>
+    - Matt helped write a lot of the 1.x code
+
+Branden Moore <bmoore-at-cse.nd.edu>
+   - Patch to pad truncated packets
+   - Patch to allow specifying a destination MAC w/ only a single NIC
+
+Scott Mace <smace@intt.org>
+   - Patch for tcpreplay to support CIDR mode
+   - Patch for ignoring martian IP packets
+
+Jeffrey Guttenfelder <guttenfelder@sourceforge.net>
+   - Code for pausing/restarting tcpreplay via signals.
+
+John Carlson
+   - Patch for improved timerdiv() accuracy
+
+Frey Kuo <kero@3sheep.com>
+   - Patch to replace pause option with packets/sec
+
+Seth Robertson (seth at sysd dot com)
+   - Patch to allow replaying of live traffic
+
+Nick Mathewson <nickm@freehaven.net>
+    - Kindly giving me his BSD licensed implimentation of poll()
+      using select() so I don't have to worry about cross platform
+      issues.
+
+Denis McLaughlin <denism@cyberus.ca>
+    - Patch to allow TCP/UDP port translation
+
+Andrew Edgecombe <andrew.edgecombe@nec.com.au>
+	- Patch to support caching pcap files in memory when looping
+	  which provides a significant performance improvement
+    - Patch to fix issue with -M option
+
+Joerg Mayer  <jmayer@loplof.de>
+   - Patch for auto* to fix various warnings & errors
+
+Jim West <jim_west@agilent.com>
+   - Patch to fix Solaris compiling issues
+
+Bojan Smojver <bojan@rexursive.com>
+   - For maintaining the RPM package and helping with portability issues
+
+Stas Grabois <sagig@radware.com>
+    - For his efforts to add IPv6 support to tcpprep and the tcpedit engine
+    - For adding IPv6 support to fragroute
+
+Fred Klassen <tcpreplay@appneta.com> - AppNeta
+    - New maintainer of Tcpreplay
+    - Added netmap support for wire-rate performance on commodity hardware
+    - Improve accuracy and performance of the --mbps option
+    - Implement pseudo-CRC to improve tcpedit performance
+    - Add --fast-flows option to tcpreplay
+
+Luigi Rizzo <rizzo@iet.unipi.it>
+	- Creator of netmap
+	- Assisted with netmap performance tuning
+
+Alexey Indeev <alexey.indeev@gmail.com> - AppNeta
+    - Quick TX module for Linux
+
+Pedro Arthur Duarte [aka JEdi] <GitHub @pedroarthur>
+    - MAC rewrite feature
+
+Gabriel Ganne <GitHub @GabrielGanne>
+    - Data fuzz rewrite feature
+    - Out-of-tree build
+    - General bug fixes
+
+Mario D Santana <GitHUB @@mariodsantana>
+    - TCP seq/ack edit
+
+Guilherme Janczak <GitHub @guijan>
+    - memory safety primarily via strlcpy
+
+Fabrice Fontaine <GitHub @ffontaine>
+    - fix --without-libdnet configure option
+
+Gerald Combs <GitHub @geraldcombs>
+    - Wireshark and Ethereal reference updates
+
+Tim Gates <GitHub @timgates42>
+    - typos
+
+Dave DeAngelis <GitHub @ddeangelis>
+    - typos
+
+Dave Craig <GitHub @davecraig>
+    - Avoid clock drift
+
+Vincent Bernat <GitHub @vincentbernat>
+    - tcprewrite: fix DLT name for DLT_C_JNPR_ETHER in documentation
+
+Halver <GitHub @Halver>
+    - specify directories as files
+
+Florian Weimer <GitHub @fweimer-rh>
+    - Avoid implicit int in configure.ac
+
+David Guti <GitHub @david-guti>
+    - prevent L2 flooding of ipv6 unicast packets for tcpreplay-edit

@@ -478,7 +478,7 @@ define(function(){
 					retArray.push("Advanced_Notification_Content.asp");
 				}
 
-				if(!smart_connect_support){
+				if(!smart_connect_support && !smart_connect_v2_support){
 					retArray.push("Advanced_Smart_Connect.asp");
 				}
 				

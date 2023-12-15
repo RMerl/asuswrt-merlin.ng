@@ -17,6 +17,7 @@
 #include <string.h>
 #include <stdlib.h>
 #include <glib.h>
+#include "gstrfuncsprivate.h"
 
 #define BASIC "bynqiuxthdsog?"
 #define N_BASIC (G_N_ELEMENTS (BASIC) - 1)
@@ -5111,3 +5112,64 @@ main (int argc, char **argv)
 
   return g_test_run ();
 }
+/* This is a regression test that dereferencing the first element in the offset
+ * table doesn’t dereference memory before the start of the GVariant. The first
+ * element in the offset table gives the offset of the final member in the
+ * tuple (the offset table is stored in reverse), and the position of this final
+ * member is needed to check that none of the tuple members overlap with the
+ * offset table
+ *
+ * See https://gitlab.gnome.org/GNOME/glib/-/issues/2840 */
+static void
+test_normal_checking_tuple_offsets5 (void)
+{
+  /* A tuple of type (sss) in normal form would have an offset table with two
+   * entries:
+   *  - The first entry (lowest index in the table) gives the offset of the
+   *    third `s` in the tuple, as the offset table is reversed compared to the
+   *    tuple members.
+   *  - The second entry (highest index in the table) gives the offset of the
+   *    second `s` in the tuple.
+   *  - The offset of the first `s` in the tuple is always 0.
+   *
+   * See §2.5.4 (Structures) of the GVariant specification for details, noting
+   * that the table is only layed out this way because all three members of the
+   * tuple have non-fixed sizes.
+   *
+   * It’s not clear whether the 0xaa data of this variant is part of the strings
+   * in the tuple, or part of the offset table. It doesn’t really matter. This
+   * is a regression test to check that the code to validate the offset table
+   * doesn’t unconditionally try to access the first entry in the offset table
+   * by subtracting the table size from the end of the GVariant data.
+   *
+   * In this non-normal case, that would result in an address off the start of
+   * the GVariant data, and an out-of-bounds read, because the GVariant is one
+   * byte long, but the offset table is calculated as two bytes long (with 1B
+   * sized entries) from the tuple’s type.
+   */
+  const GVariantType *data_type = G_VARIANT_TYPE ("(sss)");
+  const guint8 data[] = { 0xaa };
+  gsize size = sizeof (data);
+  GVariant *variant = NULL;
+  GVariant *normal_variant = NULL;
+  GVariant *expected = NULL;
+
+  g_test_bug ("https://gitlab.gnome.org/GNOME/glib/-/issues/2840");
+
+  variant = g_variant_new_from_data (data_type, data, size, FALSE, NULL, NULL);
+  g_assert_nonnull (variant);
+
+  g_assert_false (g_variant_is_normal_form (variant));
+
+  normal_variant = g_variant_get_normal_form (variant);
+  g_assert_nonnull (normal_variant);
+
+  expected = g_variant_new_parsed ("('', '', '')");
+  g_assert_cmpvariant (expected, variant);
+  g_assert_cmpvariant (expected, normal_variant);
+
+  g_variant_unref (expected);
+  g_variant_unref (normal_variant);
+  g_variant_unref (variant);
+}
+

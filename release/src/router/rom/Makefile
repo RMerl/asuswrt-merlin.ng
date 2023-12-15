@@ -437,7 +437,7 @@ ifeq ($(BRCM_CHIP),63178)
 	cp -rf rom/etc/adsl1 $(INSTALLDIR)/rom/etc
 endif
 
-ifeq ($(BUILD_NAME), GT10)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT10 RT-AX9000))
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
 endif

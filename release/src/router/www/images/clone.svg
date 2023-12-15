@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<svg version="1.1" xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+	 viewBox="0 0 24.1 24.1" style="enable-background:new 0 0 24.1 24.1;" xml:space="preserve">
+<style type="text/css">
+	.st0{fill:none;stroke:#0051A8;stroke-width:1.2;}
+</style>
+<g>
+	<circle class="st0" cx="12" cy="12" r="11.2"/>
+	<path class="st0" d="M11.8,9.4H8.4c-0.7,0-1.2,0.5-1.2,1.2v6.7c0,0.7,0.5,1.2,1.2,1.2h5.1c0.7,0,1.2-0.5,1.2-1.2v-1.8"/>
+	<path class="st0" d="M12.9,5.7c-0.6,0-1.2,0.5-1.2,1.2v7.2c0,0.7,0.5,1.2,1.2,1.2h4.7c0.6,0,1.2-0.5,1.2-1.2V9c0,0,0-0.1,0-0.1
+		l-3-3.1c0,0-0.1,0-0.1,0H12.9z"/>
+</g>
+</svg>

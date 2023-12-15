@@ -1,0 +1,23 @@
+#
+#  Chilli Configuration
+#
+#  To configure chilli, see @ETCCHILLI@/default
+#  and then create your own @ETCCHILLI@/config
+#  start / stop chilli with @INITDIR@/chilli
+#
+#  For help with coova-chilli, 
+#       visit http://coova.org/wiki/index.php/CoovaChilli
+#
+#  This file can either contain all your chilli configurations, or include
+#  other files, as shown per default below. The idea here is that main.conf
+#  contains your main configurations, hs.conf is for your configurations
+#  delivered by RADIUS (using the Administrative-User login), and local.conf 
+#  is for any other settings you might configure by hand for this particular
+#  installation. 
+
+include @ETCCHILLI@/main.conf
+include @ETCCHILLI@/hs.conf
+include @ETCCHILLI@/local.conf
+
+ipup=@ETCCHILLI@/up.sh
+ipdown=@ETCCHILLI@/down.sh

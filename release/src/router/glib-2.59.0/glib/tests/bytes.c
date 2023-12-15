@@ -10,12 +10,12 @@
  */
 
 #undef G_DISABLE_ASSERT
-#undef G_LOG_DOMAIN
 
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
 #include "glib.h"
+#include "glib/gstrfuncsprivate.h"
 
 /* Keep in sync with glib/gbytes.c */
 struct _GBytes
@@ -334,6 +334,38 @@ test_to_array_transferred (void)
 }
 
 static void
+test_to_array_transferred_oversize (void)
+{
+  g_test_message ("g_bytes_unref_to_array() can only take GBytes up to "
+                  "G_MAXUINT in length; test that longer ones are rejected");
+
+  if (sizeof (guint) >= sizeof (gsize))
+    {
+      g_test_skip ("Skipping test as guint is not smaller than gsize");
+    }
+  else if (g_test_undefined ())
+    {
+      GByteArray *array = NULL;
+      GBytes *bytes = NULL;
+      gpointer data = g_memdup2 (NYAN, N_NYAN);
+      gsize len = ((gsize) G_MAXUINT) + 1;
+
+      bytes = g_bytes_new_take (data, len);
+      g_test_expect_message (G_LOG_DOMAIN, G_LOG_LEVEL_CRITICAL,
+                             "g_byte_array_new_take: assertion 'len <= G_MAXUINT' failed");
+      array = g_bytes_unref_to_array (g_steal_pointer (&bytes));
+      g_test_assert_expected_messages ();
+      g_assert_null (array);
+
+      g_free (data);
+    }
+  else
+    {
+      g_test_skip ("Skipping test as testing undefined behaviour is disabled");
+    }
+}
+
+static void
 test_to_array_two_refs (void)
 {
   gconstpointer memory;
@@ -408,6 +440,7 @@ main (int argc, char *argv[])
   g_test_add_func ("/bytes/to-data/two-refs", test_to_data_two_refs);
   g_test_add_func ("/bytes/to-data/non-malloc", test_to_data_non_malloc);
   g_test_add_func ("/bytes/to-array/transfered", test_to_array_transferred);
+  g_test_add_func ("/bytes/to-array/transferred/oversize", test_to_array_transferred_oversize);
   g_test_add_func ("/bytes/to-array/two-refs", test_to_array_two_refs);
   g_test_add_func ("/bytes/to-array/non-malloc", test_to_array_non_malloc);
   g_test_add_func ("/bytes/null", test_null);

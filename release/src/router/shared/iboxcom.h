@@ -172,6 +172,15 @@ typedef struct iboxPKTExRes
 	BYTE		MacAddress[6];
 } IBOX_COMM_PKT_RES_EX;
 
+typedef struct iboxPKTExJson
+{
+	BYTE		ServiceID;
+	BYTE		PacketType;
+	WORD		OpCode;
+	DWORD 		Info; // Or Transaction ID
+	BYTE		JSON[500];
+} IBOX_COMM_PKT_HDR_EX_JSON;
+
 //structure in IBOX_COMM_PKT_HDR.Info
 //--------------------------------------------
 //|Product Info| Not used						|

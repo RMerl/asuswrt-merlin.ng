@@ -1,0 +1,20 @@
+Checking uname sysname type: "Linux"
+Checking uname machine type: "armv7l"
+Checking uname release type: "3.4.103"
+Checking uname version type: "#1 SMP PREEMPT Thu Aug 18 15:18:29 CST 2016"
+Checking simple C program: OK
+rpath library support: OK
+-Wl,--version-script support: OK
+Checking getconf LFS_CFLAGS: FAIL
+Checking for large file support without additional flags: FAIL
+Checking for -D_FILE_OFFSET_BITS=64: OK
+Checking for -D_LARGE_FILES: OK
+Checking correct behavior of strtoll: FAIL
+Checking for working strptime: FAIL
+Checking for C99 vsnprintf: OK
+Checking for HAVE_SHARED_MMAP: OK
+Checking for HAVE_MREMAP: OK
+Checking for HAVE_INCOHERENT_MMAP: FAIL
+Checking for HAVE_SECURE_MKSTEMP: OK
+Checking for HAVE_IFACE_IFCONF: FAIL
+Checking for HAVE_IFACE_GETIFADDRS: FAIL

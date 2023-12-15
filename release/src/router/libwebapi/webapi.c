@@ -11,6 +11,20 @@
 #include <webapi.h>
 #if defined(RTCONFIG_BWDPI)
 #include <bwdpi.h>
+#else
+#include <signal.h>
+#include <time.h>
+#endif
+#ifdef RTCONFIG_CFGSYNC
+#include <cfg_param.h>
+#include <cfg_slavelist.h>
+#endif
+
+char * nvram_get_x(const char *sid, const char *name);
+#define nvram_safe_get_x(sid, name) (nvram_get_x(sid, name) ? : "")
+
+#ifdef RTCONFIG_CFGSYNC
+#define CFG_JSON_FILE           "/tmp/cfg.json"
 #endif
 
 void httpd_nvram_commit(void){
@@ -18,6 +32,110 @@ void httpd_nvram_commit(void){
 	/* 0:nvram 1:openvpn 2:ipsec 3:usericon */
 	sync_profile_update_time(0);
 }
+
+/* Base-64 decoding.  This represents binary data as printable ASCII
+** characters.  Three 8-bit binary bytes are turned into four 6-bit
+** values, like so:
+**
+**   [11111111]  [22222222]  [33333333]
+**
+**   [111111] [112222] [222233] [333333]
+**
+** Then the 6-bit values are represented using the characters "A-Za-z0-9+/".
+*/
+
+static int b64_decode_table[256] = {
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 00-0F */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 10-1F */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,62,-1,-1,-1,63,  /* 20-2F */
+    52,53,54,55,56,57,58,59,60,61,-1,-1,-1,-1,-1,-1,  /* 30-3F */
+    -1, 0, 1, 2, 3, 4, 5, 6, 7, 8, 9,10,11,12,13,14,  /* 40-4F */
+    15,16,17,18,19,20,21,22,23,24,25,-1,-1,-1,-1,-1,  /* 50-5F */
+    -1,26,27,28,29,30,31,32,33,34,35,36,37,38,39,40,  /* 60-6F */
+    41,42,43,44,45,46,47,48,49,50,51,-1,-1,-1,-1,-1,  /* 70-7F */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 80-8F */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* 90-9F */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* A0-AF */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* B0-BF */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* C0-CF */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* D0-DF */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,  /* E0-EF */
+    -1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1   /* F0-FF */
+    };
+
+/* Do base-64 decoding on a string.  Ignore any non-base64 bytes.
+** Return the actual number of bytes generated.  The decoded size will
+** be at most 3/4 the size of the encoded, and may be smaller if there
+** are padding characters (blanks, newlines).
+*/
+int
+b64_decode( const char* str, unsigned char* space, int size )
+{
+    const char* cp;
+    int space_idx, phase;
+    int d, prev_d=0;
+    unsigned char c;
+
+    space_idx = 0;
+    phase = 0;
+    for ( cp = str; *cp != '\0'; ++cp )
+	{
+	d = b64_decode_table[(int)*cp];
+	if ( d != -1 )
+	    {
+	    switch ( phase )
+		{
+		case 0:
+		++phase;
+		break;
+		case 1:
+		c = ( ( prev_d << 2 ) | ( ( d & 0x30 ) >> 4 ) );
+		if ( space_idx < size )
+		    space[space_idx++] = c;
+		++phase;
+		break;
+		case 2:
+		c = ( ( ( prev_d & 0xf ) << 4 ) | ( ( d & 0x3c ) >> 2 ) );
+		if ( space_idx < size )
+		    space[space_idx++] = c;
+		++phase;
+		break;
+		case 3:
+		c = ( ( ( prev_d & 0x03 ) << 6 ) | d );
+		if ( space_idx < size )
+		    space[space_idx++] = c;
+		phase = 0;
+		break;
+		}
+	    prev_d = d;
+	    }
+	}
+    return space_idx;
+}
+
+/*
+ * Get the value of an NVRAM variable
+ * @param	name	name of variable to get
+ * @return	value of variable or NULL if undefined
+ */
+char*
+nvram_get_x(const char *sid, const char *name)
+{
+	return (nvram_safe_get(name));
+}
+
+
+#ifndef RTCONFIG_BWDPI
+int check_tcode_blacklist()
+{
+	return 0;
+}
+
+int dump_dpi_support(int index)
+{
+	return 0;
+}
+#endif
 
 int get_nvram_dlen(char *name)
 {
@@ -70,8 +188,98 @@ int is_port_in_use(int port)
 	return 0;
 }
 
-#ifdef RTCONFIG_OPENVPN
+char *
+rfctime(const time_t *timep)
+{
+	static char s[200];
+	struct tm tm;
 
+#ifndef RTCONFIG_AVOID_TZ_ENV
+	if(setenv("TZ", nvram_safe_get_x("", "time_zone_x"), 1)==0)
+		tzset();
+#endif
+
+	localtime_r(timep, &tm);
+	strftime(s, sizeof(s), "%a, %d %b %Y %H:%M:%S %z", &tm);
+	return s;
+}
+
+#ifdef RTCONFIG_CFGSYNC
+int is_cfg_server_ready()
+{
+	if (nvram_match("x_Setting", "1") &&
+		pids("cfg_server") && check_if_file_exist(CFG_SERVER_PID))
+		return 1;
+
+	return 0;
+}
+
+int check_cfg_changed(json_object *root)
+{
+	json_object *paramObj = NULL;
+	struct param_mapping_s *pParam = &param_mapping_list[0];
+
+	if (!root)
+		return 0;
+
+	for (pParam = &param_mapping_list[0]; pParam->param != NULL; pParam++) {
+		json_object_object_get_ex(root, pParam->param, &paramObj);
+		if (paramObj)
+			return 1;
+	}
+
+	return 0;
+}
+
+void notify_cfg_server(json_object *cfg_root, int check)
+{
+	char cfg_ver[9];
+	int apply_lock = 0;
+
+	if (is_cfg_server_ready()) {
+		if ((check && check_cfg_changed(cfg_root)) || !check) {
+			/* save the changed nvram parameters */
+			apply_lock = file_lock(CFG_APPLY_LOCK);
+			json_object_to_file(CFG_JSON_FILE, cfg_root);
+			file_unlock(apply_lock);
+
+			/* change cfg_ver when setting changed */
+			srand(time(NULL));
+			snprintf(cfg_ver, sizeof(cfg_ver), "%d%d", rand(), rand());
+			nvram_set("cfg_ver", cfg_ver);
+
+			/* trigger cfg_server to send notification */
+			kill_pidfile_s(CFG_SERVER_PID, SIGUSR2);
+		}
+	}
+}
+
+int save_changed_param(json_object *cfg_root, char *param)
+{
+	int ret = 0;
+
+	if (is_cfg_server_ready()){
+		json_object *tmp = NULL;
+		struct param_mapping_s *pParam = &param_mapping_list[0];
+
+		json_object_object_get_ex(cfg_root, param, &tmp);
+		if (tmp == NULL) {
+			for (pParam = &param_mapping_list[0]; pParam->param != NULL; pParam++) {
+				if (!strcmp(param, pParam->param)) {
+					json_object_object_add(cfg_root, param,
+					json_object_new_string(""));
+					ret = 1;
+					break;
+				}
+			}
+		}
+	}
+
+	return ret;
+}
+#endif	/* RTCONFIG_CFGSYNC */
+
+#ifdef RTCONFIG_OPENVPN
 // Using this api need to upload OPENVPN_UPLOAD_FILE first and if upload finish nvram set upload_server_ovpn_cert_temp=1
 int upload_server_ovpn_cert_cgi()
 {
@@ -694,3 +902,35 @@ int get_wgsc_list(int s_unit, struct json_object *wgsc_list_array) {
 	return ASUSAPI_NOT_SUPPORT;
 #endif
 }
+
+int set_app_mnt(char *app_mnt)
+{
+	int ret = HTTP_OK;
+	char *p = NULL;
+
+	time_t now = time(NULL);
+
+	if(app_mnt && *app_mnt != '\0' && strlen(app_mnt) < 9){
+		for (p = app_mnt; *p != '\0'; ++p) {
+			if(!isdigit(*p)){
+				ret = HTTP_INVALID_INPUT;
+				goto FINISH;
+			}
+		}
+		nvram_set("app_mnt", app_mnt);
+		nvram_set_int("app_mnt_ts", now);
+		httpd_nvram_commit();
+	}
+
+FINISH:
+	return ret;
+}
+
+int get_app_mnt(struct json_object *app_mnt_obj)
+{
+	if(json_object_get_type(app_mnt_obj) == json_type_object){
+		json_object_object_add(app_mnt_obj, "app_mnt", json_object_new_string(nvram_safe_get("app_mnt")));
+		json_object_object_add(app_mnt_obj, "app_mnt_ts", json_object_new_string(nvram_safe_get("app_mnt_ts")));
+	}
+}
+

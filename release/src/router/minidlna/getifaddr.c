@@ -43,6 +43,7 @@
 #endif
 
 #include "config.h"
+#include "event.h"
 #if HAVE_GETIFADDRS
 # include <ifaddrs.h>
 # ifdef __linux__
@@ -207,9 +208,13 @@ getsyshwaddr(char *buf, int len)
 				continue;
 			memcpy(mac, ifr.ifr_hwaddr.sa_data, 6);
 #else
+			if (p->ifa_addr->sa_family != AF_LINK)
+				continue;
 			struct sockaddr_dl *sdl;
 			sdl = (struct sockaddr_dl*)p->ifa_addr;
-			memcpy(mac, LLADDR(sdl), sdl->sdl_alen);
+			if (sdl->sdl_alen != 6)
+				continue;
+			memcpy(mac, LLADDR(sdl), 6);
 #endif
 			if (MACADDR_IS_ZERO(mac))
 				continue;
@@ -380,9 +385,10 @@ OpenAndConfMonitorSocket(void)
 }
 
 void
-ProcessMonitorEvent(int s)
+ProcessMonitorEvent(struct event *ev)
 {
 #ifdef HAVE_NETLINK
+	int s = ev->fd;
 	int len;
 	char buf[4096];
 	struct nlmsghdr *nlh;

@@ -41,6 +41,7 @@
 #include "gmain.h"
 #include "gmem.h"               /* gslice.h */
 #include "gstrfuncs.h"
+#include "gstrfuncsprivate.h"
 #include "gutils.h"
 #include "gtrashstack.h"
 #include "gtestutils.h"
@@ -349,7 +350,7 @@ g_slice_get_config_state (GSliceConfig ckey,
       array[i++] = allocator->contention_counters[address];
       array[i++] = allocator_get_magazine_threshold (allocator, address);
       *n_values = i;
-      return g_memdup (array, sizeof (array[0]) * *n_values);
+      return g_memdup2 (array, sizeof (array[0]) * *n_values);
     default:
       return NULL;
     }

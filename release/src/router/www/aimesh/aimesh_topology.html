@@ -665,6 +665,9 @@ function client_gen_client_component(_dataArray, _node_info){
 					case 4:
 						$clientConnect.addClass("wl_6g");
 						break;
+					case 5:
+						$clientConnect.addClass("wl_6g_2");
+						break;
 				}
 				$clientConnect.appendTo($clientMACIPBg);
 			}
@@ -1347,14 +1350,34 @@ function display_network_block(){
 
 								if(port_item.cap_support.WAN){
 									$("<div>").addClass("wan_icon").appendTo($port_icon);
-									if(port_item.special_port_name != "")
-										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
+									let port_text = "";
+									if(port_item.ui_display != undefined && port_item.ui_display != ""){
+										port_text = port_item.ui_display;
+									}
+									else{
+										if(port_item.special_port_name != ""){
+											port_text = port_item.special_port_name;
+										}
+									}
+									if(port_text != "")
+										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
 								}
 								else if(port_item.cap_support.LAN){
-									if(port_item.special_port_name != "")
-										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_item.special_port_name)).appendTo($port_bg);
-									else
-										$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_item.label_idx)).appendTo($port_icon);
+									let port_text = "";
+									let port_idx = "";
+									if(port_item.ui_display != undefined && port_item.ui_display != ""){
+										port_text = port_item.ui_display;
+									}
+									else{
+										if(port_item.special_port_name != ""){
+											port_text = port_item.special_port_name;
+										}
+										port_idx = port_item.label_idx;
+									}
+									if(port_text != "")
+										$("<span>").addClass("port_text").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($port_bg);
+									if(port_idx != "")
+										$("<div>").addClass("lan_idx").html(htmlEnDeCode.htmlEncode(port_idx)).appendTo($port_icon);
 								}
 								else if(port_item.cap_support.USB){
 									$port_icon.addClass("USB");
@@ -1395,8 +1418,14 @@ function display_network_block(){
 								$hint_text_bg.append("<div class='height_space'></div>");
 								var $error_port_list = $("<div>").appendTo($hint_text_bg);
 								$.each(error_port_list, function(index, port_item){
-									var display_name = ((port_item.special_port_name == "") ? port_item.label_port_name : port_item.special_port_name);
-									var $port_item = $("<div>").addClass("port_status_notice_item warn").html(htmlEnDeCode.htmlEncode(display_name)).appendTo($error_port_list);
+									let port_text = "";
+									if(port_item.ui_display != undefined && port_item.ui_display != ""){
+										port_text = port_item.ui_display;
+									}
+									else{
+										port_text = port_item.special_port_name + " (" + port_item.label_port_name + ")";
+									}
+									$("<div>").addClass("port_status_notice_item warn").html(htmlEnDeCode.htmlEncode(port_text)).appendTo($error_port_list);
 								});
 								$("<div>").css({"background":"rgb(255 255 255 / 20%)", "height":"1px", "margin":"10px 0"}).appendTo($hint_text_bg);
 								$hint_text_bg.append($("<div>").css({"margin":"12px 0px 6px 0px"}).html("<#Things_To_Check#> :"));
@@ -1909,7 +1938,7 @@ function network_set_backhaul_info(_node_info, _signal_quality){
 		backhaul_parm.css = "wl_6g";
 		backhaul_parm.band_text = "<#menu5_1#> - 6GHz";
 		var papObj = aimesh_data.cfg_clientlist.filter(function(item, index, array){
-				return (item.ap6g == _node_info.pap6g);
+				return (item.ap6g == _node_info.pap6g || item.ap6g1 == _node_info.pap6g);
 			})[0];
 		if(papObj != undefined)
 			backhaul_parm.mac = papObj.mac;
@@ -2071,7 +2100,7 @@ function network_set_fronthaul_info(_node_info){
 		$("#network_block .fronthaul_content").append($fronthaulBg);
 	}
 
-	var cfg_clientlist_ap_list = ["ap2g", "ap5g", "ap5g1", "ap6g"];
+	var cfg_clientlist_ap_list = ["ap2g", "ap5g", "ap5g1", "ap6g", "ap6g1"];
 	var ap_info_list = [];
 	var ap_list_idx = 0;
 	var isReNode = (_node_info.mac != cap_mac) ? true : false;
@@ -2088,8 +2117,6 @@ function network_set_fronthaul_info(_node_info){
 					item.ap_name = "ap2g";
 					break;
 				case "1":
-					item.ap_name = "ap5g";
-					break;
 				case "2":
 					item.ap_name = "ap5g";
 					break;
@@ -2097,7 +2124,11 @@ function network_set_fronthaul_info(_node_info){
 					item.ap_name = "ap5g1";
 					break;
 				case "4":
+				case "5":
 					item.ap_name = "ap6g";
+					break;
+				case "6":
+					item.ap_name = "ap6g1";
 					break;
 			}
 		});
@@ -2860,13 +2891,9 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 					ap_name = "ap2g";
 					break;
 				case "1":
-					wifi_radio_ctl_idx = "1";
-					wl_band_text = "5 GHz";
-					ap_name = "ap5g";
-					break;
 				case "2":
 					wifi_radio_ctl_idx = "1";
-					wl_band_text = "5 GHz-1";
+					wl_band_text = (index == "1") ? "5 GHz" : "5 GHz-1";
 					ap_name = "ap5g";
 					break;
 				case "3":
@@ -2875,9 +2902,15 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 					ap_name = "ap5g1";
 					break;
 				case "4":
+				case "5":
 					wifi_radio_ctl_idx = "3";
-					wl_band_text = "6 GHz";
+					wl_band_text = (index == "4") ? "6 GHz" : "6 GHz-1";
 					ap_name = "ap6g";
+					break;
+				case "6":
+					wifi_radio_ctl_idx = "4";
+					wl_band_text = "6 GHz-2";
+					ap_name = "ap6g1";
 					break;
 			}
 			if(_node_capability["wifi_radio_" + wifi_radio_ctl_idx + ""]) {
@@ -2898,8 +2931,8 @@ function manage_get_wifi_radio_control(_node_info, _node_capability){
 		});
 	}
 	else{
-		var cfg_clientlist_ap_list = ["ap2g", "ap5g", "ap5g1", "ap6g"];
-		var wl_if = [0, 1, 2, 3];
+		var cfg_clientlist_ap_list = ["ap2g", "ap5g", "ap5g1", "ap6g", "ap6g1"];
+		var wl_if = [0, 1, 2, 3, 4];
 		if(_node_capability.wifi_radio) {
 			var set_wl_if_obj = function(_wl_if){
 				if(_node_capability["wifi_radio_" + _wl_if + ""]) {

@@ -97,7 +97,7 @@ static void set_alarm()
 	int diff_sec;
 	unsigned int sec;
 
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(ET12))
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		ipv6_enabled() &&
                 nvram_match(ipv6_nvname("ipv6_only"), "1") &&
@@ -169,7 +169,7 @@ int ntp_main(int argc, char *argv[])
 	FILE *fp;
 	pid_t pid;
 	char *args[] = {"ntpclient", "-h", server, "-i", "3", "-l", "-s", NULL};
-#if defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)
+#if defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(ET12)
 	pid_t pid__ntpdate;
 	char *args_ntpdate[] = { "ntpdate", "2.pool.ntp.org", NULL };
 #endif
@@ -194,7 +194,7 @@ int ntp_main(int argc, char *argv[])
 //	signal(SIGCHLD, chld_reap);
 	signal(SIGCHLD, catch_sig);
 
-#if defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)
+#if defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(ET12)
 	unlink("/tmp/ntpdated");
 #endif
 	nvram_set("ntp_ready", "0");
@@ -238,14 +238,10 @@ int ntp_main(int argc, char *argv[])
 			if (nvram_match("ntp_ready", "0") || nvram_match("ntp_debug", "1") ||
 				!strstr(nvram_safe_get("time_zone_x"), "DST")) {
 				logmessage("ntp", "start NTP update");
-				if(nvram_get_int("ntp_ready") == 1) {
-					stop_ddns();
-					start_ddns(NULL);
-				}
 			}
 
 		if (is_router_mode()) {	// try simultaneously
-#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2))
+#if defined(RTCONFIG_IPV6) && (defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(ET12))
 			if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 				ipv6_enabled() &&
 				nvram_match(ipv6_nvname("ipv6_only"), "1")) {
@@ -289,6 +285,11 @@ int ntp_main(int argc, char *argv[])
 			args[2] = server;
 		}
 			sleep(SECONDS_TO_WAIT);
+			/* Restart DDNS when reconnected */
+			if(nvram_get_int("ntp_ready") == 1) {
+				stop_ddns();
+				start_ddns(NULL);
+			}
 			set_alarm();
 		}
 

@@ -716,7 +716,7 @@ endif
 ifeq ($(RTCONFIG_SOFTWIRE46),y)
 CFLAGS += -I$(TOP)/json-c
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
-OBJS += v6plusd.o ocnvcd.o
+OBJS += v6plusd.o ocnvcd.o dslited.o
 endif
 
 ifeq ($(RTCONFIG_INTERNAL_GOBI),y)
@@ -971,7 +971,9 @@ endif
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10))
 LDFLAGS += -lm
 OBJS += ledg.o
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX6000 GT10))
 OBJS += ledbtn.o
+endif
 endif
 ifeq ($(DSL_AX82U),y)
 OBJS += ledg.o
@@ -1496,6 +1498,7 @@ ifeq ($(RTCONFIG_SOFTWIRE46),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc mapcalc
 	@cd $(INSTALLDIR)/sbin && ln -sf rc v6plusd
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ocnvcd
+	@cd $(INSTALLDIR)/sbin && ln -sf rc dslited
 endif
 
 ifeq ($(RTCONFIG_WLCSCAN_RSSI),y)
@@ -1518,7 +1521,9 @@ endif
 
 ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX11000_PRO GT-AXE16000 GT-AX6000 GT10))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),RT-AX82U RT-AX82U_V2 GS-AX3000 GS-AX5400 TUF-AX5400 TUF-AX5400_V2 GT-AX6000 GT10))
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledbtn
+endif
 endif
 ifeq ($(DSL_AX82U),y)
 	@cd $(INSTALLDIR)/sbin && ln -sf rc ledg
@@ -2022,6 +2027,10 @@ endif
 ifneq ($(wildcard ./prebuild/ocnvcd.o),)
 ocnvcd.o:
 	@-cp -f ./prebuild/ocnvcd.o .
+endif
+ifneq ($(wildcard ./prebuild/dslited.o),)
+dslited.o:
+	@-cp -f ./prebuild/dslited.o .
 endif
 endif
 ifeq ($(RTCONFIG_TPVPN),y)

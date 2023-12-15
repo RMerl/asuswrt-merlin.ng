@@ -1365,13 +1365,10 @@ padding-top:1px;
 	cursor: pointer;
 }
 .notificationon{
-	position: absolute;
-	display:inline;
+	display:inline-block;
 	background-image:url(images/New_ui/notification.png);
 	background-repeat:no-repeat;
 	background-position:2px 2px;
-	margin-top:-5px;
-	margin-top:3px \9;	/*IE*/
 	height:30px;
 	width:30px;
 	cursor: pointer;
@@ -2257,10 +2254,11 @@ padding-top:1px;
 	padding: 10px;
 }
 
-.hint-color{
+.hint-color {
 	color: #FFCC00;
 }
-#cancelBtn, #applyBtn{
+
+#cancelBtn, #applyBtn {
 	font-weight: bolder;
 	text-shadow: 1px 1px 0px black;
 	background: #121C1E;
@@ -2268,20 +2266,99 @@ padding-top:1px;
 	background: -o-linear-gradient(#233438 0%, #0F1011 100%);
 	background: linear-gradient(#233438 0%, #0F1011 100%);
 	border-radius: 8px;
-  border:0;
-  color: #FFFFFF;
-	height:33px;
-	font-family:Verdana;
-	font-size:12px;
-  padding:0 .70em 0 .70em;
-  	width: auto;
- 	min-width: 122px;
-  overflow:visible;
-	cursor:pointer;
+	border: 0;
+	color: #FFFFFF;
+	height: 33px;
+	font-family: Verdana;
+	font-size: 12px;
+	padding: 0 .70em 0 .70em;
+	width: auto;
+	min-width: 122px;
+	overflow: visible;
+	cursor: pointer;
 	outline: none; /* for Firefox */
- 	hlbr:expression(this.onFocus=this.blur()); /* for IE */
- 	white-space:normal;
-	 word-break: break-all;
-	 line-height: 33px;
-	 text-align: center;
+	hlbr: expression(this.onFocus=this.blur()); /* for IE */
+	white-space: normal;
+	word-break: break-all;
+	line-height: 33px;
+	text-align: center;
+}
+
+div.icon-circle-mask {
+	display: inline-block;
+	border-radius: 50%;
+	padding: 0.5em;
+	background: #43525D;
+}
+
+i.icon-comments {
+	-webkit-mask: url(/images/New_ui/icon_comments.svg) no-repeat;
+	mask: url(/images/New_ui/icon_comments.svg) no-repeat;
+	height: 20px;
+	width: 20px;
+	display: inline-block;
+	background-color: #FFFFFF;
+}
+
+i.icon-copy {
+	-webkit-mask: url(/images/New_ui/icon_copy.svg) no-repeat;
+	mask: url(/images/New_ui/icon_copy.svg) no-repeat;
+	height: 20px;
+	width: 20px;
+	display: inline-block;
+	background-color: #92a0a5;
+}
+
+i.icon-copy:hover{
+	background-color: #FFFFFF;
+}
+
+i.icon-clone {
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100%;
+	mask-size: 100%;
+	-webkit-mask-image: url(/images/clone.svg);
+	mask-image: url(/images/clone.svg);
+	height: 20px;
+	width: 20px;
+	display: inline-block;
+}
+
+i.icon_help {
+	-webkit-mask-repeat: no-repeat;
+	mask-repeat: no-repeat;
+	-webkit-mask-size: 100%;
+	mask-size: 100%;
+	-webkit-mask-image: url(/images/help.svg);
+	mask-image: url(/images/help.svg);
+	height: 24px;
+	width: 24px;
+	display: inline-block;
+}
+
+.text-list {
+	display: flex;
+	align-items: center;
+	margin: 10px 0px;
+	gap: 5px;
+}
+
+.text-list i {
+	height: 15px;
+	width: 15px;
+}
+
+.text-list a {
+	margin-left: 5px;
+	text-decoration: underline;
+}
+
+.formfonttitle_help {
+	text-align: right;
+}
+
+.icon-group-center {
+	display: inline-flex;
+	align-items: center;
 }

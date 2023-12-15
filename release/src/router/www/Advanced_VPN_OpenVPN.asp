@@ -105,20 +105,20 @@ else
 var openvpnd_connected_clients = [];
 var openvpn_clientlist_array = decodeURIComponent('<% nvram_char_to_ascii("", "vpn_server_ccd_val"); %>');
 var ciphersarray = [
-		["AES-128-CBC"],
-		["AES-192-CBC"],
-		["AES-256-CBC"],
-		["BF-CBC"],
-		["CAST5-CBC"],
-		["CAMELLIA-128-CBC"],
-		["CAMELLIA-192-CBC"],
-		["CAMELLIA-256-CBC"],
-		["DES-CBC"],
-		["DES-EDE-CBC"],
-		["DES-EDE3-CBC"],
-		["DESX-CBC"],
-		["IDEA-CBC"],
-		["SEED-CBC"]
+	["AES-128-CBC"],
+	["AES-192-CBC"],
+	["AES-256-CBC"],
+	["BF-CBC"],
+	["CAST5-CBC"],
+	["CAMELLIA-128-CBC"],
+	["CAMELLIA-192-CBC"],
+	["CAMELLIA-256-CBC"],
+	["DES-CBC"],
+	["DES-EDE-CBC"],
+	["DES-EDE3-CBC"],
+	["DESX-CBC"],
+	["IDEA-CBC"],
+	["SEED-CBC"]
 ];
 
 var hmacarray = [
@@ -1765,7 +1765,7 @@ function handle_ipv6_submit_settings(){
 												</td>
 											</tr>
 											<tr>
-												<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(32,6);">Server Port</a>
+												<th>Server Port</a>
 												<div class="setup_info_icon basic" style="display:none;"></div>
 												</th>
 												<td>

@@ -18,9 +18,6 @@ serves multimedia content to compatible clients on the network.
 See http://www.upnp.org/ for more details on UPnP
 and http://www.dlna.org/ for mode details on DLNA.
 
-See the INSTALL file for instructions on compiling, installing,
-and configuring minidlna.
-
 Prerequisites
 ==================
 

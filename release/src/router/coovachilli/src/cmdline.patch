@@ -1,0 +1,19 @@
+--- cmdline.c.orig	2010-11-23 10:30:18.000000000 +0100
++++ cmdline.c	2010-11-23 10:35:49.000000000 +0100
+@@ -1902,14 +1902,13 @@
+   if (!multiple_option && prev_given && (*prev_given || (check_ambiguity && *field_given)))
+     {
+       if (short_opt != '-')
+-        fprintf (stderr, "%s: `--%s' (`-%c') option given more than once%s\n", 
++        fprintf (stderr, "WARNING %s: `--%s' (`-%c') option given more than once%s\n", 
+                package_name, long_opt, short_opt,
+                (additional_error ? additional_error : ""));
+       else
+-        fprintf (stderr, "%s: `--%s' option given more than once%s\n", 
++        fprintf (stderr, "WARNING %s: `--%s' option given more than once%s\n", 
+                package_name, long_opt,
+                (additional_error ? additional_error : ""));
+-      return 1; /* failure */
+     }
+ 
+   FIX_UNUSED (default_value);

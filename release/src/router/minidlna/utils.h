@@ -53,8 +53,8 @@ strcatf(struct string_s *str, const char *fmt, ...)
 }
 static inline void strncpyt(char *dst, const char *src, size_t len)
 {
-	strncpy(dst, src, len);
-	dst[len-1] = '\0';
+	strncpy(dst, src, --len);
+	dst[len] = '\0';
 }
 static inline int is_reg(const struct dirent *d)
 {
@@ -101,5 +101,13 @@ const char *mime_to_ext(const char * mime);
 int make_dir(char * path, mode_t mode);
 unsigned int DJBHash(uint8_t *data, int len);
 long uptime(void);
+
+/* Timeval manipulations */
+void	timevaladd(struct timeval *t1, const struct timeval *t2);
+void	timevalsub(struct timeval *t1, const struct timeval *t2);
+#define	timevalcmp(tvp, uvp, cmp)					\
+	(((tvp)->tv_sec == (uvp)->tv_sec) ?				\
+	    ((tvp)->tv_usec cmp (uvp)->tv_usec) :			\
+	    ((tvp)->tv_sec cmp (uvp)->tv_sec))
 
 #endif

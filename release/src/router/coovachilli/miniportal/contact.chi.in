@@ -1,0 +1,70 @@
+<? # -*- mode: shell-script -*-
+# Copyright (C) 2009-2012 David Bird (Coova Technologies) <support@coova.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. ./config.sh
+
+http_header
+
+form=1
+errmsg=
+
+if [ "$FORM_button" != "" ]; then
+	
+    [ "$FORM_realname" = "" -o "$FORM_email" = "" -o "$FORM_message" = "" ] && \
+	errmsg="You must provide both a name, e-mail address, and message."
+    
+    [ -z "$errmsg" ] && {
+	domail "${HS_OWNER_EMAIL:-$FORM_email}" "$FORM_email" "email_contact" || \
+	    errmsg="Problem with your e-mail address. Change it or try again later."
+    }
+    
+    [ -z "$errmsg" ] && {
+	domail "$FORM_email" "$HS_OWNER_EMAIL" "email_contact" || \
+	    errmsg="Problem sending e-mail to the owner. Try again later."
+    }
+    
+    [ -z "$errmsg" ] && {
+	header
+	uamfile "contact_thanks" 1
+	footer
+	form=0
+    }
+    
+fi
+
+
+[ "$form" = "1" ] && { 
+    
+    header
+    
+    if [ -x /usr/sbin/sendmail ] 
+    then
+
+	if [ -n "$errmsg" ]; then 
+	    error "$errmsg"
+	else 
+	    uamfile "contact" 1
+	fi
+	
+	contactform
+    else
+	error "System not configured with sendmail"
+    fi
+    
+    footer    
+}
+
+?>

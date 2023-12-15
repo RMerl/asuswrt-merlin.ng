@@ -26,7 +26,7 @@ There should be no need to change this.
 .fi
 
 .IP "\fBnetwork_interface\fP"
-Network interfaces to serve, comma delimited. Defaults to all.
+Network interfaces to serve, comma delimited. Maximum is 8 interfaces. Defaults to all.
 
 .IP "\fBstrict_dlna\fP"
 .nf
@@ -106,7 +106,7 @@ EG: presentation_url=http://www.mediaserver.lan/index.php
 .fi
 
 .IP "\fBdb_dir\fP"
-Where minidlna stores the data files, including Album caceh files, by default 
+Where minidlna stores the data files, including Album cache files, by default 
 this is /var/cache/minidlna
 
 .IP "\fBlog_dir\fP"
@@ -161,6 +161,10 @@ The possible values are:
 .IP "\fBforce_sort_criteria\fP"
 Always force SortCriteria to this value, regardless of the SortCriteria passed by the client.
 .nf
+You may prepend the sort criteria with "!" to alter the titles of the objects so that they
+will be alphanumerically sorted in the order you specify here, to work around clients that do
+their own alphanumeric sorting.
+.nf
 
 Example
 force_sort_criteria=+upnp:class,+upnp:originalTrackNumber,+dc:title
@@ -171,10 +175,14 @@ force_sort_criteria=+upnp:class,+upnp:originalTrackNumber,+dc:title
 Set to 'yes' to allow symlinks that point outside user-defined media_dirs.
 By default, wide symlinks are not followed.
 
+.IP "\fBenable_subtitles\fP"
+Set to 'no' to disable subtitle support on unknown clients.
+By default, subtitles are enabled for unknown or generic clients.
+
 
 
 .SH VERSION
-This manpage corresponds to minidlna version 1.0.25 
+This manpage corresponds to minidlna version 1.3.0
 
 .SH AUTHOR
 .nf

@@ -1,0 +1,47 @@
+.TH chilli-radius 5 "August 2007"
+.SH NAME
+chilli-radius \-  Information about RADIUS in chilli
+
+
+.SH DESCRIPTION
+
+.B chilli
+uses RADIUS for access provisioning and statistics. Standards and best
+practices defined in RFCs are followed as best possible. However, 
+.B chilli
+does take some liberties and bends the rules in places to better adapt to
+the more dynamic application of captive portals. 
+
+See
+.I http://www.coova.org/CoovaChilli/RADIUS
+for details.
+
+.SH ATTRIBUTES
+
+The RADIUS Attributes used by
+.B chilli
+and a short description:
+
+@ATTRIBUTES@
+
+.SH "SEE ALSO"
+.BR chilli(8)
+.BR chilli.conf(5)
+.BR chilli_radconfig(1)
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+
+.SH AUTHORS
+
+David Bird <david@coova.com>
+
+Copyright (C) 2006-2011 Coova Techcnologies, LLC <support@coova.com>,
+
+CoovaChilli is licensed under the GNU General Public License.
+
+

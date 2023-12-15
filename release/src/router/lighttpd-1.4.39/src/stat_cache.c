@@ -810,3 +810,27 @@ int stat_cache_trigger_cleanup(server *srv) {
 
 	return 0;
 }
+
+unsigned int get_free_mem(){
+
+	FILE *fp;
+	char memdata[256] = {0};
+	unsigned int memfree = 0;
+
+	if((fp = fopen("/proc/meminfo", "r")) != NULL){
+		while(fgets(memdata, 255, fp) != NULL){
+			if(strstr(memdata, "MemFree") != NULL){
+				sscanf(memdata, "MemFree: %d kB", &memfree);
+				break;
+			}
+		}
+		fclose(fp);
+	}
+	if(memfree > 0) {
+		memfree = memfree * 1024;
+		Cdbg(DBE, "memfree : %d", memfree);
+	}
+
+
+	return memfree;
+}

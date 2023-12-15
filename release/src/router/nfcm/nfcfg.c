@@ -148,8 +148,10 @@ void cli_list_file_parse(struct list_head *cli_list)
 	if (clietListObj) {
 		json_object_object_foreach(clietListObj, key, val) {
 			// skip CAP's device
-			if (!strcasecmp(key, dut))
+#if 0
+      if (!strcasecmp(key, dut))
 				continue;
+#endif
 
 			brMacObj = val;
 			//printf(" 1. clientListObj key=%s\n", key);
@@ -163,7 +165,7 @@ void cli_list_file_parse(struct list_head *cli_list)
 					//printf(" 3. clientObj key=%s\n", key);
 					memset(mac, 0, sizeof(mac));
 					snprintf(mac, sizeof(mac), "%s", key);
-					str2lower(mac);
+					//str2lower(mac);
 					json_object_object_foreach(infoObj, key, val) {
 						if (!strcmp(key, "ip")) {
 							memset(ip, 0, sizeof(ip));

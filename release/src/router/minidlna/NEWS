@@ -1,3 +1,46 @@
+1.3.3 - Released 1-Jun-2023
+--------------------------------
+- Fixed HTTP chunk length parsing.
+- Improved Dutch and Swedish translations.
+- Fixed directory symlink deletion handling.
+
+1.3.2 - Released 30-Aug-2022
+--------------------------------
+- Improved DNS rebinding attack protection.
+- Added Samsung Neo QLED series (2021) support.
+- Added webm/rm/rmvb support.
+
+1.3.1 - Released 11-Feb-2022
+--------------------------------
+- Fixed a potential crash in SSDP request parsing.
+- Fixed a configure script failure on some platforms.
+- Protect against DNS rebinding attacks.
+- Fix an socket leakage issue on some platforms.
+- Minor bug fixes.
+
+1.3.0 - Released 24-Nov-2020
+--------------------------------
+- Fixed some build warnings when building with musl.
+- Use $USER instead of $LOGNAME for the default friendly name.
+- Fixed build with GCC 10
+- Fixed some warnings from newer compilers
+- Disallow negative HTTP chunk lengths. [CVE-2020-28926]
+- Validate SUBSCRIBE callback URL. [CVE-2020-12695]
+- Fixed spurious warnings with ogg coverart
+- Fixed an issue with VLC where browse results would be truncated.
+- Fixed bookmarks on Samsung Q series
+- Added DSD file support.
+- Fixed potential stack smash vulnerability in getsyshwaddr on macOS.
+- Will now reload the log file on SIGHUP.
+- Worked around bad SearchCriteria from the Control4 Android app.
+- Increased max supported network addresses to 8.
+- Added forced alphasort capability.
+- Added episode season and number metadata support.
+- Enabled subtitles by default for unknown DLNA clients, and add enable_subtitles config option.
+- Fixed discovery when connected to certain WiFi routers.
+- Added FreeBSD kqueue support.
+- Added the ability to set the group to run as.
+
 1.2.1 - Released 24-Aug-2017
 --------------------------------
 - Added Movian client detection and subtitle support.

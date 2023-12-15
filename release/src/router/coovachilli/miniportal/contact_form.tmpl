@@ -1,0 +1,23 @@
+<!--
+  --  The Contact Owner Form
+  -->
+<table>
+<tr>
+  <td>Your Name</td>
+  <td><input name="realname" value="$FORM_realname"></td>
+</tr>
+<tr>
+  <td>Your E-mail</td>
+  <td><input name="email" value="$FORM_email"></td>
+</tr>
+<tr>
+  <td colspan=2>Message to owner:<br>
+    <textarea style="width:100%" rows="3"
+    NAME="message">$FORM_message</textarea></td>
+</tr>
+<tr>
+  <td colspan=2 align=center>
+    <input type="submit" name="button" value="Send">&nbsp;&nbsp;
+    <input type="button" name="decline" value="Cancel" onClick="window.location='/www/login.chi'">
+  </td></tr>
+</table>

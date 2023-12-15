@@ -1,0 +1,16 @@
+This package was debianized by Franco Lanza <nextime@nexlab.it> on
+Thu,  10 Aug 2007 16:30:44 +0100.
+
+It was downloaded from http://www.coova.org 
+
+ChilliSpot was originally written by Jens Jakobsen.
+This version is maintained by David Bird <david@coova.com>
+See http://chillispot.org/ for information on the original ChilliSpot
+
+Copyright (C) 2003, 2004 Mondru AB.
+
+This program is free software. you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation; version 2.
+
+See /usr/share/common-licenses/GPL-2 for details.

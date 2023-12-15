@@ -3,7 +3,7 @@
 
 #include <sqlite3.h>
 
-#define WHERESTR "%s, %i: "
+#define WHERESTR "%s, %zu: "
 #define WHEREARG  __func__,__LINE__
 
 // #define PRINT_LOG

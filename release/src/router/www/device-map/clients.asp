@@ -71,7 +71,7 @@ var mapscanning = 0;
 
 var clientMacUploadIcon = new Array();
 
-var wl_nband_isWL_map = {"2.4 GHz":"1", "5 GHz":"2", "5 GHz-1":"2", "5 GHz-2":"3", "6 GHz":"4"};
+var wl_nband_isWL_map = {"2.4 GHz":"1", "5 GHz":"2", "5 GHz-1":"2", "5 GHz-2":"3", "6 GHz":"4", "6 GHz-1":"4", "6 GHz-2":"5"};
 function generate_wireless_band_list(){
 	if(wl_nband_title.length == 1) return false;
 
@@ -127,6 +127,7 @@ function drawClientList(tab){
 		if((tab == 'wireless2' && clientObj.isWL != 2) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
 		if((tab == 'wireless3' && clientObj.isWL != 3) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
 		if((tab == 'wireless4' && clientObj.isWL != 4) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
+		if((tab == 'wireless5' && clientObj.isWL != 5) || !clientObj.isOnline){i++; pagesVar.endIndex++; continue;}
 		if(tab == 'custom' && clientObj.from != "customList"){i++; pagesVar.endIndex++; continue;}
 		var clientName = (clientObj.nickName == "") ? clientObj.name : clientObj.nickName;
 		if(clientName.toLowerCase().indexOf(document.getElementById("searchingBar").value.toLowerCase()) == -1){i++; pagesVar.endIndex++; continue;}

@@ -18,7 +18,9 @@ var wanTypeList = {
 	"unknow":"UNKNOW",
 	"v6plus":"<#IPv6_plus#>",
 	"hgw_v6plus":"<#IPv6_plus#>",
-	"ocnvc":"<#IPv6_ocnvc#>"
+	"ocnvc":"<#IPv6_ocnvc#>",
+	"dslite_xpass":"<#IPv6_xpass#> (DS-Lite)",
+	"dslite_transix":"transix (DS-Lite)"
 }
 var model_name = httpApi.nvramGet(["productid"]).productid;
 
@@ -40,6 +42,16 @@ else if(AutoDetInfo.wan46det_state == "4"){
 else if(AutoDetInfo.wan46det_state == "5"){
 	wan46_result = wanTypeList.ocnvc;
 	qisPostData.wan_proto = "ocnvc";
+}
+else if(AutoDetInfo.wan46det_state == "6"){
+	wan46_result = wanTypeList.dslite_xpass;
+	qisPostData.wan_proto = "dslite";
+	qisPostData.wan_s46_dslite_mode = "0";
+}
+else if(AutoDetInfo.wan46det_state == "7"){
+	wan46_result = wanTypeList.dslite_transix;
+	qisPostData.wan_proto = "dslite";
+	qisPostData.wan_s46_dslite_mode = "0";
 }
 else{	//0 and else
 	wan46_result = wanTypeList.init;
@@ -76,7 +88,7 @@ else{	//0 and else
 		</div>
 	</div>
 	<div class="table_td">
-		<div class="pageDesc">WAN type Detected : <span id="auto46det_result"></span></div>
+		<div class="pageDesc"><#WAN_type_detected#> : <span id="auto46det_result"></span></div>
 		<div id="hint_msg"></div>
 		
 		<div style="margin-top:160px;">

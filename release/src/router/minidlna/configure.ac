@@ -29,6 +29,7 @@ m4_ifdef([AC_USE_SYSTEM_EXTENSIONS], [AC_USE_SYSTEM_EXTENSIONS])
 AM_ICONV
 AM_GNU_GETTEXT([external])
 AM_GNU_GETTEXT_VERSION(0.18)
+AM_GNU_GETTEXT_REQUIRE_VERSION(0.18)
 
 # Checks for programs.
 AC_PROG_AWK
@@ -68,6 +69,8 @@ AC_C_BIGENDIAN
 AC_FUNC_FORK
 AC_FUNC_LSTAT_FOLLOWS_SLASHED_SYMLINK
 AC_CHECK_FUNCS([gethostname getifaddrs gettimeofday inet_ntoa memmove memset mkdir realpath select sendfile setlocale socket strcasecmp strchr strdup strerror strncasecmp strpbrk strrchr strstr strtol strtoul])
+AC_CHECK_DECLS([SEEK_HOLE])
+AC_SEARCH_LIBS([clock_gettime], [rt], [AC_DEFINE([HAVE_CLOCK_GETTIME], [1], [use clock_gettime])],)
 
 #
 # Check for struct ip_mreqn
@@ -143,7 +146,6 @@ AC_COMPILE_IFELSE(
     ],
     [
         AC_MSG_RESULT([no])
-        AC_SEARCH_LIBS([clock_gettime], [rt], [AC_DEFINE([HAVE_CLOCK_GETTIME], [1], [use clock_gettime])],)
     ])
 
 AC_CHECK_HEADER(linux/netlink.h,
@@ -254,28 +256,27 @@ test x"$ac_cv_header_ogg_ogg_h" != x"yes" && AC_MSG_ERROR([libogg headers not fo
 test x"$ac_cv_header_vorbis_codec_h" != x"yes" && AC_MSG_ERROR([libvorbis headers not found or not usable])
 test x"$ac_cv_header_FLAC_metadata_h" != x"yes" && AC_MSG_ERROR([libFLAC headers not found or not usable])
 
-### That function is broken, stop trying to use it -RM
-#CFLAGS_SAVE="$CFLAGS"
-#CFLAGS="$CFLAGS -Wall -Werror"
-#AC_MSG_CHECKING([if we should use the daemon() libc function])
-#AC_COMPILE_IFELSE(
-#     [AC_LANG_PROGRAM(
-#         [
-#             #include <stdlib.h>
-#             #include <unistd.h>
-#         ],
-#         [
-#            return daemon(0, 0);
-#         ]
-#     )],
-#     [
-#         AC_DEFINE([USE_DAEMON], [1], 
-#                   [use the system's builtin daemon()])
-#         AC_MSG_RESULT([yes])
-#     ],
-#     [
-#         AC_MSG_RESULT([no])
-#     ])
+CFLAGS_SAVE="$CFLAGS"
+CFLAGS="$CFLAGS -Wall -Werror"
+AC_MSG_CHECKING([if we should use the daemon() libc function])
+AC_COMPILE_IFELSE(
+     [AC_LANG_PROGRAM(
+         [
+             #include <stdlib.h>
+             #include <unistd.h>
+         ],
+         [
+            return daemon(0, 0);
+         ]
+     )],
+     [
+         AC_DEFINE([USE_DAEMON], [1], 
+                   [use the system's builtin daemon()])
+         AC_MSG_RESULT([yes])
+     ],
+     [
+         AC_MSG_RESULT([no])
+     ])
 
 AC_MSG_CHECKING([if scandir declaration requires const char cast])
 AC_COMPILE_IFELSE(
@@ -403,7 +404,7 @@ for dir in "" /usr/local $SEARCH_DIR; do
     AC_CHECK_LIB([exif], [exif_data_new_from_file], [LIBEXIF_LIBS="-lexif"], [unset ac_cv_lib_exif_exif_data_new_from_file; LDFLAGS="$LDFLAGS_SAVE"; continue])
     break
 done
-test x"$ac_cv_lib_jpeg_jpeg_set_defaults" = x"yes" || AC_MSG_ERROR([Could not find libexif])
+test x"$ac_cv_lib_exif_exif_data_new_from_file" = x"yes" || AC_MSG_ERROR([Could not find libexif])
 AC_SUBST(LIBEXIF_LIBS)
 
 LDFLAGS_SAVE="$LDFLAGS"
@@ -411,10 +412,13 @@ for dir in "" /usr/local $SEARCH_DIR; do
     if test -n "$dir"; then
         LDFLAGS="$LDFLAGS -L$dir/lib"
     fi
-    AC_CHECK_LIB([id3tag], [id3_file_open], [LIBID3TAG_LIBS="-lid3tag"], [unset ac_cv_lib_id3tag_id3_file_open; LDFLAGS="$LDFLAGS_SAVE"; continue])
+    AC_CHECK_LIB([id3tag -lz], [id3_file_open], [LIBID3TAG_LIBS="-lid3tag -lz"], [unset ac_cv_lib_id3tag_id3_file_open; LDFLAGS="$LDFLAGS_SAVE"; continue])
     break
 done
-test x"$ac_cv_lib_id3tag_id3_file_open" = x"yes" || AC_MSG_ERROR([Could not find libid3tag])
+if test x"$ac_cv_lib_id3tag__lz___id3_file_open" != x"yes" &&
+   test x"$ac_cv_lib_id3tag__lz_id3_file_open" != x"yes"; then
+   AC_MSG_ERROR([Could not find libid3tag])
+fi
 AC_SUBST(LIBID3TAG_LIBS)
 
 LDFLAGS_SAVE="$LDFLAGS"
@@ -435,19 +439,17 @@ for dir in "" /usr/local $SEARCH_DIR; do
     if test -n "$dir"; then
         LDFLAGS="$LDFLAGS -L$dir/lib"
     fi
-    AC_CHECK_LIB([avformat], [av_open_input_file], [LIBAVFORMAT_LIBS="-lavformat"],
-		 [AC_CHECK_LIB([avformat], [avformat_open_input], [LIBAVFORMAT_LIBS="-lavformat"],
+    AC_CHECK_LIB([avformat -lavcodec -lavutil -lz], [avformat_open_input], [LIBAVFORMAT_LIBS="-lavformat -lavcodec -lavutil -lz"],
+		 [AC_CHECK_LIB([avformat -lavcodec -lavutil -lz], [av_open_input_file], [LIBAVFORMAT_LIBS="-lavformat -lavcodec -lavutil -lz"],
 		  [unset ac_cv_lib_avformat_av_open_input_file; unset ac_cv_lib_avformat_avformat_open_input; LDFLAGS="$LDFLAGS_SAVE"; continue])])
     break
 done
-if test x"$ac_cv_lib_avformat_av_open_input_file" != x"yes" &&
-   test x"$ac_cv_lib_avformat_avformat_open_input" != x"yes"; then
+if test x"$ac_cv_lib_avformat__lavcodec__lavutil__lz___av_open_input_file" != x"yes" &&
+   test x"$ac_cv_lib_avformat__lavcodec__lavutil__lz___avformat_open_input" != x"yes" &&
+   test x"$ac_cv_lib_avformat__lavcodec__lavutil__lz_avformat_open_input" != x"yes"; then
    AC_MSG_ERROR([Could not find libavformat - part of ffmpeg])
 fi
 AC_SUBST(LIBAVFORMAT_LIBS)
-
-AC_CHECK_LIB(avutil ,[av_rescale_q], [LIBAVUTIL_LIBS="-lavutil"], [AC_MSG_ERROR([Could not find libavutil - part of ffmpeg])])
-AC_SUBST(LIBAVUTIL_LIBS)
 
 AC_CHECK_LIB(pthread, pthread_create)
 
@@ -489,9 +491,16 @@ AC_CHECK_LIB(avahi-client, avahi_threaded_poll_new,
 ################################################################################################################
 ### Header checks
 
-AC_CHECK_HEADERS([arpa/inet.h asm/unistd.h endian.h machine/endian.h fcntl.h libintl.h locale.h netdb.h netinet/in.h stddef.h stdlib.h string.h sys/file.h sys/inotify.h sys/ioctl.h sys/param.h sys/socket.h sys/time.h unistd.h])
+AC_CHECK_HEADERS([arpa/inet.h asm/unistd.h endian.h machine/endian.h fcntl.h libintl.h locale.h netdb.h netinet/in.h poll.h stddef.h stdlib.h string.h sys/file.h sys/inotify.h sys/ioctl.h sys/param.h sys/queue.h sys/socket.h sys/time.h unistd.h])
+test x"$ac_cv_header_poll_h" != x"yes" && AC_MSG_ERROR([poll.h not found or not usable])
+test x"$ac_cv_header_sys_queue_h" != x"yes" && AC_MSG_ERROR([sys/queue.h not found or not usable])
 
-AC_CHECK_FUNCS(inotify_init, AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotify support]), [
+AC_CHECK_FUNCS(inotify_init, 
+[
+    AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotify support])
+    AM_CONDITIONAL(HAVE_INOTIFY, true)
+],
+[
     AC_MSG_CHECKING([for __NR_inotify_init syscall])
     AC_COMPILE_IFELSE(
          [AC_LANG_PROGRAM(
@@ -507,11 +516,15 @@ AC_CHECK_FUNCS(inotify_init, AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotif
          [
              AC_MSG_RESULT([yes])
              AC_DEFINE(HAVE_INOTIFY,1,[Whether kernel has inotify support])
+             AM_CONDITIONAL(HAVE_INOTIFY, true)
          ],
          [
              AC_MSG_RESULT([no])
+             AM_CONDITIONAL(HAVE_INOTIFY, false)
          ])
 ])
+
+AC_CHECK_FUNCS(kqueue, AM_CONDITIONAL(HAVE_KQUEUE, true), AM_CONDITIONAL(HAVE_KQUEUE, false))
 
 ################################################################################################################
 ### Build Options
@@ -605,10 +618,22 @@ AC_MSG_CHECKING([whether to build a static binary executable])
 AC_ARG_ENABLE(static,
 	[  --enable-static         build a static binary executable],[
 	if test "$enableval" = "yes"; then
-		STATIC_CFLAGS="-DSTATIC"
-		AC_SUBST(STATIC_CFLAGS)
-		STATIC_LDFLAGS="-Wl,-Bstatic"
-		AC_SUBST(STATIC_LDFLAGS)
+		CFLAGS="$CFLAGS -DSTATIC"
+		LDFLAGS="$LDFLAGS -static"
+                AC_MSG_RESULT([yes])
+        else
+                AC_MSG_RESULT([no])
+        fi
+        ],[
+                AC_MSG_RESULT([no])
+        ]
+)
+
+AC_MSG_CHECKING([whether to enable LTO])
+AC_ARG_ENABLE(lto,
+	[  --enable-lto            enable link-time optimization],[
+	if test "$enableval" = "yes"; then
+		CFLAGS="$CFLAGS -flto"
                 AC_MSG_RESULT([yes])
         else
                 AC_MSG_RESULT([no])

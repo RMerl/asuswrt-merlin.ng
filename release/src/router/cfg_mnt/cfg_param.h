@@ -397,6 +397,8 @@ enum {
 #ifdef RTCONFIG_ROUTERBOOST
 	SUBFT_RB_ENABLE,
 #endif
+	SUBFT_GENCERT,
+
 	SUBFT_MAX
 };
 
@@ -483,6 +485,7 @@ static struct subfeature_mapping_s subfeature_mapping_list[] __attribute__ ((unu
 	{ "log_server",		SUBFT_LOG_SERVER,	FT_LOGGER },
 	{ "location",		SUBFT_LOCATION,	FT_MISC },
 	{ "misc",		SUBFT_MISCELLANEOUS,	FT_MISC },
+	{ "rootcerts",	 	SUBFT_GENCERT,		FT_MISC },		/* fake nvram variable, use it to ask CAP to send root cert/key */
 	/* feedback and diagnostic */
 	{ "feedback",		SUBFT_FEEDBACK,		FT_FEEDBACK },
 	{ "diagnostic",		SUBFT_DIAGNOSTIC,	FT_DIAGNOSTIC},
@@ -1005,6 +1008,7 @@ static struct param_mapping_s param_mapping_list[] __attribute__ ((unused)) = {
 	{ "cfg_alias", 	FT_MISC,		SUBFT_LOCATION,		""},
 	{ "apps_sq", 	FT_MISC,		SUBFT_MISCELLANEOUS,		""},
 	{ "preferred_lang",	FT_MISC,	SUBFT_MISCELLANEOUS,		"EN"},
+	{ "rootcerts",		FT_MISC,		SUBFT_GENCERT,		"" },
 	/* feedback */
 	{ "fb_transid",		FT_FEEDBACK,		SUBFT_FEEDBACK,		"123456789ABCDEF0"},
 	{ "fb_email_dbg", 	FT_FEEDBACK,		SUBFT_FEEDBACK,		""},

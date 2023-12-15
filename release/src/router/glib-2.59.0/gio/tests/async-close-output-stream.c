@@ -24,6 +24,8 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "gstrfuncsprivate.h"
+
 #define DATA_TO_WRITE "Hello world\n"
 
 typedef struct
@@ -147,9 +149,9 @@ prepare_data (SetupData *data,
 
   data->expected_size = g_memory_output_stream_get_data_size (G_MEMORY_OUTPUT_STREAM (data->data_stream));
 
-  g_assert_cmpint (data->expected_size, >, 0);
+  g_assert_cmpuint (data->expected_size, >, 0);
 
-  data->expected_output = g_memdup (written, (guint)data->expected_size);
+  data->expected_output = g_memdup2 (written, data->expected_size);
 
   /* then recreate the streams and prepare them for the asynchronous close */
   destroy_streams (data);

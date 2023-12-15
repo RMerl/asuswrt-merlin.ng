@@ -1,0 +1,88 @@
+<? # -*- mode: shell-script -*-
+# Copyright (C) 2009-2012 David Bird (Coova Technologies) <support@coova.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. ./config.sh
+
+http_header
+
+if [ "$HS_REG_MODE" = "self" ]; then
+
+    form=1
+    errmsg=
+
+    if [ "$FORM_button" != "" ]; then
+	
+	[ "$FORM_realname" = "" -o "$FORM_username" = "" -o "$FORM_password" = "" -o "$FORM_email" = "" ] && \
+	    errmsg="You must provide both a username, password, real name, and e-mail address."
+
+	[ -z "$errmsg" ] && \
+	    invalid_input "$FORM_realname$FORM_username$FORM_password$FORM_email" && \
+	    errmsg="For security reasons, we only allow you to enter very basic text. \
+                    Remove any punctuation or non-ASCII characters."
+
+	if [ "$HS_UAMAAAURL" = "" ]; then
+	    [ -z "$errmsg" ] && grep "^$FORM_username:" $USERS >/dev/null 2>&1 && \
+		errmsg="Username already taken, select another one."
+	else
+	    regout=$(echo|$CHILLI_PROXY --register status check user "$FORM_username")
+	    [ -z "$errmsg" ] && [ "$regout" != "available" ] && \
+		errmsg="Username already taken, select another one.[$regout]"
+	fi
+
+	
+	[ -z "$errmsg" -a "$FORM_password" != "$FORM_password2" ] && \
+	    errmsg="Passwords do not match, please try again."
+
+	[ -z "$errmsg" ] && {
+	    domail "${HS_OWNER_EMAIL:-$FORM_email}" "$FORM_email" "email_visitor" || \
+		errmsg="Problem with your e-mail address. Change it or try again later."
+	}
+	
+	[ -z "$errmsg" -a -n "$HS_OWNER_EMAIL" ] && {
+	    domail "$FORM_email" "$HS_OWNER_EMAIL" "email_owner" || \
+		errmsg="Problem sending e-mail to the owner. Try again later."
+	}
+
+	[ -z "$errmsg" -a "$register" = "1" ] && {
+
+	    if [ "$HS_UAMAAAURL" = "" ]; then
+		echo "$FORM_username:$FORM_password:$FORM_realname:$FORM_email" >> $USERS
+	    else
+		regout=$(echo|$CHILLI_PROXY --register status new_user user "$FORM_username" pass "$FORM_password")
+	    fi
+
+	    sync
+
+	    dologin
+
+	    form=0
+	}
+	
+    fi
+
+    [ "$form" = "1" ] && { 
+	header
+	if [ -n "$errmsg" ]; then 
+	    error "$errmsg"
+	else 
+	    uamfile "register" 1
+	fi
+	registerform
+	footer
+    }
+fi
+
+?>

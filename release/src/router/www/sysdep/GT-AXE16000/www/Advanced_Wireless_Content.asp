@@ -147,11 +147,31 @@ function initial(){
 	gen_fronthaul_ap(showFronthaulAp);
 
 	document.form.band0_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>');
-	document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>');
+	document.form.band0_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_wpa_psk"); %>');
+	if(smart_connect_mode[3] == '1'){
+		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>');
+		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_wpa_psk"); %>');
+	}
+	else if(smart_connect_mode[2] == '1'){
+		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
+		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>');
+	}
+	else if(smart_connect_mode[1] == '1'){
+		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>');
+		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>');
+	}
+	else if(smart_connect_mode[0] == '1'){
+		document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>');
+		document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>');
+	}
+	
 	// document.form.band012_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl3_ssid"); %>');
 	document.form.band1_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
+	document.form.band1_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>');
 	document.form.band2_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>');
+	document.form.band2_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>');
 	document.form.band3_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>');
+	document.form.band3_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>');
 
 	if(band6g_support){
 		$("#psc_faq_link")  //for string tag: PSC_Faq
@@ -2532,6 +2552,9 @@ function separateGenChannel(unit, channel, bandwidth){
 				if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
 					channel_6g = ['5', '21', '37', '53', '69', '85'];
 				}
+				else if(ttc.indexOf('CH') != -1){
+					channel_6g = ['5', '21', '37', '53', '69', '85'];
+				}
 			}
 			
 			for(var i=channel_6g.length-1; i>=0; i--){
@@ -4106,6 +4129,9 @@ function channel_6g(bw){
 		if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
 			wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
 		}
+		else if(ttc.indexOf('CH') != -1){
+			wl_channel_list_6g = ['5', '21', '37', '53', '69', '85'];
+		}
 	}
 	else{
 		wl_channel_list_6g = JSON.parse('<% channel_list_6g(); %>');
@@ -4254,7 +4280,6 @@ function channel_6g(bw){
 }
 
 function handle_smart_connect(value, flag){
-	
 	if(value == '0'){
 		// document.getElementById("smart_connect_field").style.display = "none";
 		document.getElementById("smartcon_rule_link").style.display = "none";
@@ -4457,7 +4482,7 @@ function handle_smart_connect(value, flag){
 			$('#band0_ssid_field').show();
 			$('#band0_auth_method_field').show();
 
-			auth_method_change('3', document.form.band0_auth_mode_x.value);
+			auth_method_change('0', document.form.band0_auth_mode_x.value);
 		}
 
 		if(value == '1'){
@@ -5092,7 +5117,7 @@ function updateSmartConnect(unit, checked){
 				<tr id="band01_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="password" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value="<% nvram_get("wl0_wpa_psk"); %>"  autocorrect="off" autocapitalize="off" onfocus="plainPasswordSwitch(this, 'focus')" onblur="plainPasswordSwitch(this, 'blur')">
+				  		<input type="password" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value=""  autocorrect="off" autocapitalize="off" onfocus="plainPasswordSwitch(this, 'focus')" onblur="plainPasswordSwitch(this, 'blur')">
 					</td>
 				</tr>
 				  

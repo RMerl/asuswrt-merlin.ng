@@ -929,6 +929,25 @@ void config_ext_wan_led(int onoff) {
 }
 #endif
 
+void dump_led_enum()
+{
+        const struct led_btn_table_s *p;
+        int enum_offset = 0;
+        char buf[16], *bp = NULL;
+
+        for (p = &led_btn_table[0]; p->p_val; ++p) {
+                if(strncmp(p->nv, "led_", 4) == 0) {
+                        enum_offset = p->p_val - led_gpio_table;
+                        strlcpy(buf, p->nv, sizeof(buf));
+                        if(bp = strstr(buf, "_gpio"))
+                                *bp = 0;
+                        //_dprintf("[%s]:[%d] (%p / %p)\n", buf, enum_offset, p->p_val, led_gpio_table);
+                        _dprintf("[%s]:[%d] \n", buf, enum_offset);
+                }
+        }
+}
+
+/* which: enumid in led_gpio_table */
 int led_control(int which, int mode)
 #ifdef RT4GAC55U
 { //save value
@@ -971,6 +990,13 @@ int do_led_control(int which, int mode)
 	if(which == LED_LAN){
 		config_ext_wan_led(mode);
 		return 0;
+	}
+#endif
+
+#if defined(RTAX9000) && !defined(RTCONFIG_BCM_MFG)
+	if ((which == LED_WAN_NORMAL) && (mode == LED_ON)) {
+		if (hnd_get_phy_status(0) == 0)
+			return 0;
 	}
 #endif
 

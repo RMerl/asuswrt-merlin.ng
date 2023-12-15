@@ -32,6 +32,8 @@
 #include <string.h>
 #include "glib.h"
 
+#include "gstrfuncsprivate.h"
+
 #if defined (_MSC_VER) && (_MSC_VER <= 1800)
 #define isnan(x) _isnan(x)
 
@@ -197,6 +199,26 @@ test_is_to_digit (void)
   TEST_DIGIT (xdigit);
 
   #undef TEST_DIGIT
+}
+
+/* Testing g_memdup2() function with various positive and negative cases */
+static void
+test_memdup2 (void)
+{
+  gchar *str_dup = NULL;
+  const gchar *str = "The quick brown fox jumps over the lazy dog";
+
+  /* Testing negative cases */
+  g_assert_null (g_memdup2 (NULL, 1024));
+  g_assert_null (g_memdup2 (str, 0));
+  g_assert_null (g_memdup2 (NULL, 0));
+
+  /* Testing normal usage cases */
+  str_dup = g_memdup2 (str, strlen (str) + 1);
+  g_assert_nonnull (str_dup);
+  g_assert_cmpstr (str, ==, str_dup);
+
+  g_free (str_dup);
 }
 
 static void
@@ -1760,6 +1782,7 @@ main (int   argc,
   g_test_init (&argc, &argv, NULL);
 
   g_test_add_func ("/strfuncs/test-is-to-digit", test_is_to_digit);
+  g_test_add_func ("/strfuncs/memdup2", test_memdup2);
   g_test_add_func ("/strfuncs/strdup", test_strdup);
   g_test_add_func ("/strfuncs/strndup", test_strndup);
   g_test_add_func ("/strfuncs/strdup-printf", test_strdup_printf);

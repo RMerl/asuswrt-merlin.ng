@@ -20,6 +20,7 @@
 
 #include "gsettingsschema-internal.h"
 #include "gsettings.h"
+#include "gstrfuncsprivate.h"
 
 #include "gvdb/gvdb-reader.h"
 #include "strinfo.c"
@@ -1057,9 +1058,9 @@ g_settings_schema_list_children (GSettingsSchema *schema)
 
       if (g_str_has_suffix (key, "/"))
         {
-          gint length = strlen (key);
+          gsize length = strlen (key);
 
-          strv[j] = g_memdup (key, length);
+          strv[j] = g_memdup2 (key, length);
           strv[j][length - 1] = '\0';
           j++;
         }

@@ -1,0 +1,32 @@
+#!/bin/sh
+# (c) 2007 David Bird; Released under GPL.
+# This simple script dispatches the <file>.chi embedded CGI scripts.
+# If <file>.chi exists, and we have haserl, then we run "haserl file.chi"
+# Otherwise, we look for <file>.chi.sh files to run as shell scripts. 
+
+file=$(basename $1)
+dir=$(dirname $1)
+haserl=$(which haserl 2>/dev/null)
+cd $dir
+
+# should be make a bit safer!
+
+if [ -z "$haserl" ]; then
+    if [ -e "$file.sh" ]; then
+	sh $file.sh
+    else
+	echo "<p>You need to install haserl to serve pages with this wwwsh script!</p>"
+	echo "<p>see <a href='http://haserl.sourceforge.net/'>http://haserl.sourceforge.net/</a></p>"
+    fi
+    exit
+fi
+
+if [ ${CONTENT_LENGTH:-0} -gt 0 ]; then
+    POST_FILE=/tmp/post.$$
+    export POST_FILE
+    dd of=$POST_FILE cbs=$CONTENT_LENGTH conv=block count=1 2>/dev/null
+    $haserl $file < $POST_FILE
+    /bin/rm -f $POST_FILE
+else
+    $haserl $file
+fi

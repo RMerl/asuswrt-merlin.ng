@@ -29,6 +29,16 @@
 #include "dnssql.h"
 #include "appjs.h"
 #include "dnsarp.h"
+#include "nfcfg.h"
+
+
+#include "bw_mon_ct.h"
+#include <bcmnvram.h>
+#include <shared.h>
+
+#ifdef RTCONFIG_MULTILAN_CFG
+#include "mtlan_utils.h"
+#endif
 
 #define BUFSIZE 2048
 
@@ -36,13 +46,18 @@ int dq_db_vacuum_flag = 0;
 int dq_app_client_aggregator_flag = 0;
 int dq_app_sum_worker_flag = 0;
 int dq_dev_identify_worker_flag = 0;
+int dq_bw_mon_flag = 0;
+int dq_env_update_flag = 0;
+
 
 
 #define DNSQD_VACUUM_DB_TIMER (5*60)
 #define DNSQD_APP_CLIENT_AGGREGATOR_TIMER (60)
 #define DNSQD_APP_SUM_WORKER_TIMER (2*60)
 #define DNSQD_DEV_IDENTIFY_WORKER_TIMER (3*60) // TODO: set prod env value
-#define DNSQD_MAIN_LOOPER_TIMER (5)
+#define DNSQD_BW_MON_TIMER (1)
+#define DNSQD_ENV_UPDATE_TIMER (10)
+#define DNSQD_MAIN_LOOPER_TIMER (1)
 
 #define DNSQD_APP_SUM_WORKER_HOURLY_TIMER (60*60)
 #define DNSQD_DEV_WORKER_WORKER_HOURLY_TIMER (60*60)
@@ -55,26 +70,29 @@ int dq_dev_identify_worker_flag = 0;
 #define DNS_QUERY_DB_DAY 2 
 #define APP_SUM_DB_DAY 30
 
-#define APP_CLIENT_DB_LOCK_NAME "app_client"
-#define APP_SUM_DB_LOCK_NAME "app_sum"
-#define DNS_QUERY_DB_LOCK_NAME "dns_query"
-#define NFCM_APP_DB_LOCK_NAME "nfcm_app"
-
 typedef enum
 {
-  PKT_ACCEPT,
-  PKT_DROP,
-  PKT_BLOCK_REDIRECT
+  PKT_ERR = -1,
+  PKT_ACCEPT = 0,
+  PKT_DROP = 1,
+  PKT_BLOCK_REDIRECT =2
 }pkt_decision_enum;
 
 sqlite3 *dns_db = NULL;
 sqlite3 *app_client_db = NULL;
 sqlite3 *app_sum_db = NULL;
 
-
+int dns_dpi_trf_db_enable = 0;
 
 LIST_HEAD(arlist);
+LIST_HEAD(clilist);
+LIST_HEAD(clipoollist);
+LIST_HEAD(iplist);
+LIST_HEAD(bklist);
+LIST_HEAD(smlist);
 
+
+long gLastBWReq = 0;
 void dump_packet(unsigned char *buff, int len)
 {
         int i=0, j=0, maxlen;
@@ -200,48 +218,38 @@ static int updateOffset(uint8_t isIPv4, const char *data_p)
 	dnsdbg("offset<%d>", payload_offset);
 #endif
 		return payload_offset;
-	}
-        else
-	{       //printf("ipv6 header ...............\n");	
-		//dump_packet(data_p, 40);
+  } else { 
+      const struct ip6_hdr *ip6h;
+      const struct ip6_ext *ip_ext_p;
+      uint8_t nextHdr;
+      int count = 8;
 
-                const struct ip6_hdr *ip6h;
-                const struct ip6_ext *ip_ext_p;
-                uint8_t nextHdr;
-                int count = 8;
+      ip6h = (const struct ip6_hdr *)data_p;
+      nextHdr = ip6h->ip6_nxt;
+      ip_ext_p = (const struct ip6_ext *)(ip6h + 1);
+      payload_offset = sizeof(struct ip6_hdr);
 
-                ip6h = (const struct ip6_hdr *)data_p;
-                nextHdr = ip6h->ip6_nxt;
-                ip_ext_p = (const struct ip6_ext *)(ip6h + 1);
-                payload_offset = sizeof(struct ip6_hdr);
-
-                do
-                {
-                        if ( nextHdr == IPPROTO_UDP )
-                        {
-                                        udp = (struct udphdr *)ip_ext_p;
-                                        payload_offset += sizeof(struct udphdr);
-
-                                        //dnsdbg("offset<%d>\n", payload_offset);
-                                        return payload_offset;
-                        }
-                       
-                        if (nextHdr == IPPROTO_NONE)
-                        {
-                                         dnsdbg("hit null nexthdr before dup\n");
-                                         return -1;
-	                }
-
-                        payload_offset += (ip_ext_p->ip6e_len + 1) << 3;
-                        nextHdr = ip_ext_p->ip6e_nxt;
-                        ip_ext_p = (struct ip6_ext *)(data_p + payload_offset);
-                        count--; /* at most 8 extension headers */
-                } while(count);
-
-
-
-	}
-	return -1;
+      do
+      {
+        if ( nextHdr == IPPROTO_UDP )
+        {
+          udp = (struct udphdr *)ip_ext_p;
+          payload_offset += sizeof(struct udphdr);
+          return payload_offset;
+        }
+        if (nextHdr == IPPROTO_NONE)
+        {
+          dnsdbg("hit null nexthdr before dup\n");
+          return -1;
+        }
+        payload_offset += (ip_ext_p->ip6e_len + 1) << 3;
+        nextHdr = ip_ext_p->ip6e_nxt;
+        ip_ext_p = (struct ip6_ext *)(data_p + payload_offset);
+        count--; /* at most 8 extension headers */
+      } while(count);
+  }
+	
+  return -1;
 }
 
 static void dump_dns_header(dns_header *dns_hdr)
@@ -302,6 +310,7 @@ void printDnsQuestion(dns_question dns_question)
 {
   dnsdbg("Question: %s type: %d class: %d", dns_question.name,\
   dns_question.q_type, dns_question.q_class);
+  dnsdbg("n_rec:%d", dns_question.ans.n_rec );
   for (int i = 0 ; i < dns_question.ans.n_rec ; i++) {
     if(dns_question.ans.isv4[i])
     	dnsdbg("IP V4: %s", dns_question.ans.recs[i]);
@@ -315,7 +324,6 @@ static int parse_dns_header(unsigned char *data, dns_msg *dns_msg, int max_len)
   int ret = 0, stop = 0;
   unsigned char *pQuestion, *pAnswer, *pAnsName;;
   char *qname = NULL;
-  //char ip[INET6_ADDRSTRLEN] = {0}, tmpSub[10] = {0};
   struct in_addr addr4;
   struct in6_addr addr6;
   
@@ -331,6 +339,12 @@ static int parse_dns_header(unsigned char *data, dns_msg *dns_msg, int max_len)
   dns_msg->header.ns_count = ntohs(pHdr->ns_count);
   dns_msg->header.addrec_count = ntohs(pHdr->addrec_count);
 
+#ifdef DNSQD_DEBUG
+  dnsdbg("dns_header: id=%x fc=%x q_c=%d a_c=%d ns_c=%d ar_c=%d", dns_msg->header.id,
+      dns_msg->header.fc, dns_msg->header.q_count, dns_msg->header.ans_count, dns_msg->header.ns_count,
+      dns_msg->header.addrec_count);
+#endif
+ 
   if (!(dns_msg->header.fc & QR_MASK ) || (dns_msg->header.fc & OPCODE_MASK) != OPCODE_Query)
   {
     ret = DNS_DATA_RESPONSE_TYPE_ERR;
@@ -381,7 +395,7 @@ static int parse_dns_header(unsigned char *data, dns_msg *dns_msg, int max_len)
   // answer
   stop = 0;
   dns_msg->question.ans.n_rec = 0;
-  for (int i = 0; i < dns_msg->header.ans_count; i++)
+  for (int i = 0; i < dns_msg->header.ans_count && i< DNS_MAX_ANS_RR_NUM; i++)
   {
     pAnsName  = ReadName(pQuestion, data, max_len, &stop);
     pQuestion = pQuestion + stop;
@@ -389,42 +403,38 @@ static int parse_dns_header(unsigned char *data, dns_msg *dns_msg, int max_len)
     unsigned short ans_class = get16bits(&pQuestion);
     unsigned int ans_ttl = get32bits(&pQuestion);
     unsigned short ans_len = get16bits(&pQuestion);
-    // printf("type: %d class: %d ttl: %d len: %d\n", ans_type, ans_class, ans_ttl, ans_len);
+    
     if ( ans_type == DNS_RR_TYPE_A ) {
-    /*
-      for ( int j = 0 ; j < ans_len ; j++) {
-        sprintf(tmpSub, "%s%u", j ? ".":"", *(pQuestion + j));
-        strcat(ip, tmpSub);
-      }
-      strcpy(dns_msg->question.ans.recs[dns_msg->question.ans.n_rec], ip);
-      dns_msg->question.ans.n_rec++;
-      memset(ip, 0, 128);
-    }
-   */
+    
       dns_msg->question.ans.isv4[dns_msg->question.ans.n_rec] = true;
       memcpy(&addr4, pQuestion, ans_len);
-      inet_ntop(AF_INET, &addr4, dns_msg->question.ans.recs[dns_msg->question.ans.n_rec], INET_ADDRSTRLEN);
+      if(inet_ntop(AF_INET, &addr4, dns_msg->question.ans.recs[dns_msg->question.ans.n_rec], INET_ADDRSTRLEN) >0)
+      {
+        dns_msg->question.ans.n_rec++;
+      }
     
-  //    dnsdbg("query A answer isv4:%d ip:%s n_rec:%d", dns_msg->question.ans.isv4[dns_msg->question.ans.n_rec], dns_msg->question.ans.recs[dns_msg->question.ans.n_rec], dns_msg->question.ans.n_rec);
-      dns_msg->question.ans.n_rec++;
-   
-    } else if ( ans_type == DNS_RR_TYPE_AAAA ) {
-      
+    } else if ( ans_type == DNS_RR_TYPE_AAAA ) {      
+    
       dns_msg->question.ans.isv4[dns_msg->question.ans.n_rec] = false;
       memcpy(&addr6, pQuestion, ans_len);
-      inet_ntop(AF_INET6, &addr6, dns_msg->question.ans.recs[dns_msg->question.ans.n_rec], INET6_ADDRSTRLEN);
-
-    //  dnsdbg("query AAAA answer isv4:%d ip:%s n_rec:%d", dns_msg->question.ans.isv4[dns_msg->question.ans.n_rec], dns_msg->question.ans.recs[dns_msg->question.ans.n_rec], dns_msg->question.ans.n_rec);
-
-      dns_msg->question.ans.n_rec++;
-    
+      if(inet_ntop(AF_INET6, &addr6, dns_msg->question.ans.recs[dns_msg->question.ans.n_rec], INET6_ADDRSTRLEN)>0)
+      {
+        dns_msg->question.ans.n_rec++;
+      }
     }
  
     pQuestion = pQuestion + ans_len;
     free(pAnsName);
     pAnsName = NULL;
   
-  }    
+  } 
+  
+  if(dns_msg->question.ans.n_rec == 0) {
+   /* ipv6 client , ipv6 dns server, win10 nslookup use inverse query w/o iq opcode 
+      and then get bad answer type/content 
+   */
+      ret = DNS_DATA_BAD_IQUERY_ERR;
+  }
   return ret;
 }
 
@@ -629,17 +639,22 @@ static int block_response(struct nfq_q_handle *qh, u_int32_t id, struct nfq_data
   return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 }
 
-void save_dns_packet(char *name, unsigned char *data, int len)
+void save_dns_packet(char *name, char *name2, unsigned char *data, int len, unsigned char *in, int in_len)
 {
   FILE *f;
   int count = 0;
-  int nfd; 
+  int nfd;
+
  
   sprintf(name, "/tmp/%ld-%d.dat", time(NULL), count);
+  sprintf(name2, "/tmp/%ld-%d_orig.dat", time(NULL), count);
+ 
   while(isFileExist(name))
   {
      count++;
      sprintf(name, "/tmp/%ld-%d.dat", time(NULL), count);
+     sprintf(name2, "/tmp/%ld-%d_orig.dat", time(NULL), count);
+ 
   }
 
   nfd = open(name, O_WRONLY | O_CREAT);  
@@ -652,6 +667,16 @@ void save_dns_packet(char *name, unsigned char *data, int len)
                 }
         }
 
+   nfd = open(name2, O_WRONLY | O_CREAT);  
+  if(nfd >= 0)
+        {
+                if((f = fdopen(nfd, "w")) != NULL)
+                {
+                     fwrite(in, 1, in_len, f);   
+                     fclose(f);
+                }
+        } 
+
 }
 
 static int process_dns_response(struct nfq_data * payload, dns_msg *dns_msg)
@@ -659,24 +684,19 @@ static int process_dns_response(struct nfq_data * payload, dns_msg *dns_msg)
 	char *data;
 	char *dns = NULL;
 
-        int payload_offset, data_len, dns_len, ret = 0;
+  int payload_offset, data_len, dns_len, ret = 0;
 	struct iphdr *iph;
-        struct ip6_hdr *ip6h;
+  struct ip6_hdr *ip6h;
 	uint8_t isIPv4;
-        char dns_cap_file[50];  
+  char dns_cap_file[50];
+  char dns_cap_file2[50];
       
 	data_len = nfq_get_payload(payload, &data);
 	if ( data_len == -1 )
 	{
-	
 	  dnsdbg("error!!!!! got error data_len=%d kill and wait for restart", data_len);
 	  exit(1);
 	}
-        //printf("got packet.....\n");
-        //dump_packet(data, data_len);
-#ifdef DNSQD_DEBUG
-	dnsdbg("data_len=%d", data_len);
-#endif
 
 	iph = (struct iphdr *)data;
 	isIPv4 = (iph->version == 4)?1:0;
@@ -684,52 +704,56 @@ static int process_dns_response(struct nfq_data * payload, dns_msg *dns_msg)
 
 	if (payload_offset < 0)
 	{
-		/* always accept the packet if error happens */
-		return PKT_ACCEPT;
+		/* return PKT_ERR then system take care this pkt as NF_ACCEPT */
+		return PKT_ERR;
 	}
 
-  	if (isIPv4)
-  	{
-                dns_msg->isv4 = 1; 
-    		dns_msg->src_ip = iph->saddr;
-    		dns_msg->dst_ip = iph->daddr;
-    		inet_ntop(AF_INET, &iph->saddr, dns_msg->sip, INET_ADDRSTRLEN);
-    		inet_ntop(AF_INET, &iph->daddr, dns_msg->dip, INET_ADDRSTRLEN);
-  	} else {
-                dns_msg->isv4 = 0;
-                ip6h = (struct ip6_hdr *)data;
-                memcpy(&dns_msg->srcv6, &ip6h->ip6_src, sizeof(struct in6_addr));
-                memcpy(&dns_msg->dstv6, &ip6h->ip6_dst, sizeof(struct in6_addr));
-    		inet_ntop(AF_INET6, &dns_msg->srcv6, dns_msg->sip, INET6_ADDRSTRLEN);
-    		inet_ntop(AF_INET6, &dns_msg->dstv6, dns_msg->dip, INET6_ADDRSTRLEN);
-        }
+  if (isIPv4)
+  {
+      dns_msg->isv4 = 1;
+      dns_msg->src_ip = iph->saddr;
+      dns_msg->dst_ip = iph->daddr;
+      inet_ntop(AF_INET, &iph->saddr, dns_msg->sip, INET_ADDRSTRLEN);
+      inet_ntop(AF_INET, &iph->daddr, dns_msg->dip, INET_ADDRSTRLEN);
+  }
+  else
+  {
+      dns_msg->isv4 = 0;
+      ip6h = (struct ip6_hdr *)data;
+      memcpy(&dns_msg->srcv6, &ip6h->ip6_src, sizeof(struct in6_addr));
+      memcpy(&dns_msg->dstv6, &ip6h->ip6_dst, sizeof(struct in6_addr));
+      inet_ntop(AF_INET6, &dns_msg->srcv6, dns_msg->sip, INET6_ADDRSTRLEN);
+      inet_ntop(AF_INET6, &dns_msg->dstv6, dns_msg->dip, INET6_ADDRSTRLEN);
+  }
 
 	dns = (char *)(data + payload_offset);
-  	dns_len = data_len - payload_offset;
+  dns_len = data_len - payload_offset;
 #ifdef SAVE_DNS_PACKET
-        save_dns_packet(dns_cap_file, (unsigned char*) dns, dns_len);
+  save_dns_packet(dns_cap_file, dns_cap_file2, (unsigned char*) dns, dns_len, data, data_len);
 #endif
-  	ret = parse_dns_header(dns, dns_msg, dns_len);
+
+  ret = parse_dns_header(dns, dns_msg, dns_len);
 #ifdef SAVE_DNS_PACKET
-        unlink(dns_cap_file);
+  //unlink(dns_cap_file);
 #endif 	
-        if (ret < 0)
-  	{ 
-    		return ret;
-  	}
+  if (ret < 0)
+  {
+    return PKT_ERR;
+  }
+
 #ifdef DNSQD_DEBUG   
 	  dump_dns_header(&dns_msg->header);
 #endif
-//  pktb_free(pkt_buf);
+
 #if ENABLE_DNS_BLOCK 
 	if(checkInBlockList(dns_msg->question.name, dns_msg->src_ip, time(NULL)) == DNS_BLOCK_BLACK_LIST_FOUND)
-  	{
-    		dnsdbg("got block server %s", dns_msg->question.name);
-    		return PKT_BLOCK_REDIRECT;
-  	}
-  
+  {
+    dnsdbg("got block server %s", dns_msg->question.name);
+    return PKT_BLOCK_REDIRECT;
+  }
 #endif 
-  	return PKT_ACCEPT;
+
+  return PKT_ACCEPT;
 }
 
 int checkInBlockList(char *host, uint32_t client_ip, int timestamp)
@@ -750,7 +774,7 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
     int lock;
     u_int32_t id = 0;
     struct nfqnl_msg_packet_hdr *ph;
-    int ret = 0, app_id;
+    int ret = 0, app_id, cat_id;
     char app_name[128] = {0};
     char mac[ETHER_ADDR_LENGTH];
     dns_msg msg = {};
@@ -775,32 +799,46 @@ static int cb(struct nfq_q_handle *qh, struct nfgenmsg *nfmsg,
       return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
 #endif      
     } else {
-      if (ret == PKT_ACCEPT) {
+      if (ret == PKT_ACCEPT)
+      {
+//      lock = file_lock(DNS_MAC_LIST_LOCK_NAME);
+        int rc = 0;
+/*        
+        arp_node_t *arp = arp_list_search(msg.isv4, msg.dip, &arlist);
+        if (!arp) {
+          memcpy(mac, DEFAULT_MAC, ETHER_ADDR_LENGTH);
+  #ifdef DNSQD_DEBUG
+            dnsdbg("can't find arp since msg is v4:%d", msg.isv4);
+  #endif
+        } else {
+          memcpy(mac, arp->mac, ETHER_ADDR_LENGTH);
+        }
 
-       
-       arp_node_t *arp = arp_list_search(msg.isv4, msg.dip, &arlist);
-       if (!arp) {
-    	   memcpy(mac, DEFAULT_MAC, ETHER_ADDR_LENGTH);
-#ifdef DNSQD_DEBUG
-           dnsdbg("can't find arp since msg is v4:%d", msg.isv4);
-#endif       
-       }
-       else
-	   memcpy(mac, arp->mac, ETHER_ADDR_LENGTH);
-
+        file_unlock(lock);
+*/  
+        memcpy(mac, DEFAULT_MAC, ETHER_ADDR_LENGTH);
+        if(arp_list_search_and_update_mac(msg.isv4, msg.dip, mac)<0)
+        {
+            if(!cli_list_find_mac_by_ip(&clipoollist, msg.isv4, msg.dip, mac))
+            {
+              cli_list_free(&clipoollist);
+              cli_list_file_parse(&clipoollist);
+              // try again with updated info
+              cli_list_find_mac_by_ip(&clipoollist, msg.isv4, msg.dip, mac);
+            }
+        }
 #ifdef DNSQD_DEBUG   
         // map app_id and app_name
         dnsdbg("msg question name: %s\n", msg.question.name);
         printDnsQuestion(msg.question);
 #endif	
-        sqlite_dns_lookup(dns_db, msg.question.name, &app_id, app_name);
-        
+        sqlite_dns_lookup(dns_db, msg.question.name, &app_id, &cat_id, app_name);
         // insert query log
-	lock = file_lock(DNS_QUERY_DB_LOCK_NAME);
+	      lock = file_lock(DNS_QUERY_DB_LOCK_NAME);
         sqlite_dns_insert(dns_db, &msg, mac, app_id);
-	file_unlock(lock);
-
+	      file_unlock(lock);
       }
+
       return nfq_set_verdict(qh, id, NF_ACCEPT, 0, NULL);
     }
 }
@@ -976,6 +1014,345 @@ void dev_identify_worker()
   update_device_type_file();
 }
 
+int g_bw_mon_inited = 0;
+int g_disable_bw_mon = 1;
+
+
+LIST_HEAD(lanlist);
+lan_info_t* lan_info_new()
+{
+    lan_info_t *li = (lan_info_t *)calloc(1, sizeof(lan_info_t));
+    if (!li) return NULL;
+
+    INIT_LIST_HEAD(&li->list);
+
+    return li;
+
+}
+
+void lan_info_free(lan_info_t *li)
+{
+    if (li) free(li);
+
+    return;
+}
+
+void lan_info_list_dump(struct list_head *list)
+{
+    lan_info_t *li;
+    char ipstr[INET6_ADDRSTRLEN];
+    //inet_ntop(AF_INET, src, ipstr, INET_ADDRSTRLEN);
+
+    printf("%s:\n", __FUNCTION__);
+    list_for_each_entry(li, list, list) {
+        inet_ntop(AF_INET, &li->addr, ipstr, INET_ADDRSTRLEN);
+        printf("addr=\t%s\n", ipstr);
+        inet_ntop(AF_INET, &li->subnet, ipstr, INET_ADDRSTRLEN);
+        printf("subnet=\t%s\n", ipstr);
+    }
+}
+
+#ifdef RTCONFIG_MULTILAN_CFG
+int lan_info_add_sdn(struct list_head *list)
+{
+    lan_info_t *li;
+    MTLAN_T *pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+    size_t mtl_sz = 0;
+    int i;
+    if (pmtl) {
+      get_mtlan(pmtl, &mtl_sz);
+      for (i = 0; i < mtl_sz; i++) {
+        if (pmtl[i].enable) {
+
+          li = lan_info_new();
+          list_add_tail(&li->list, list);
+
+          strcpy(li->ifname, pmtl[i].nw_t.ifname);
+          inet_pton(AF_INET, pmtl[i].nw_t.addr, &li->addr);
+          inet_pton(AF_INET, pmtl[i].nw_t.netmask, &li->subnet);
+          li->enabled = true;
+        }
+      }
+      FREE_MTLAN((void *)pmtl);
+    }
+
+#if defined(NFCMDBG)
+    lan_info_list_dump(list);
+#endif
+
+    return 0;
+}
+#endif
+
+int lan_info_init(struct list_head *list)
+{
+    lan_info_t *li;
+    char word[64], *next;
+    char *b, *nv, *nvp;
+    char *ifname, *laninfo;
+    char *addr, *mask;
+    char *rulelist;
+
+    li = lan_info_new();
+    list_add_tail(&li->list, list);
+
+    strcpy(li->ifname, "br0");
+    li->enabled = true;
+    inet_pton(AF_INET, nvram_get("lan_ipaddr"), &li->addr);
+    inet_pton(AF_INET, nvram_get("lan_netmask"), &li->subnet);
+
+    // get wireless guest network status
+    if (!nvram_get_int("wgn_enabled"))
+        goto out_f;
+
+    rulelist = nvram_get("wgn_brif_rulelist");
+    if (!rulelist)
+        goto out_f;
+
+    nv = nvp = strdup(rulelist);
+    if (!nv)
+        goto out_free;
+
+    while ((b = strsep(&nvp, "<")) != NULL) {
+        if (!b || !strlen(b)) continue;
+        //fields = vstrsep(b, ">", &ifname, &laninfo);
+        vstrsep(b, ">", &ifname, &laninfo);
+
+        addr = strtok(laninfo, "/");
+        mask = strtok(NULL, "/");
+
+        li = lan_info_new();
+        list_add_tail(&li->list, list);
+
+        strcpy(li->ifname, ifname);
+        inet_pton(AF_INET, addr, &li->addr); // lan_ipaddr
+        li->subnet.s_addr = htonl(0xFFFFFFFF << (32 - atoi(mask)));
+    }
+
+    foreach(word, nvram_get("wgn_ifnames"), next) {
+        list_for_each_entry(li, list, list) {
+            if (!strcmp(word, li->ifname)) {
+                li->enabled = true;
+                break;
+            }
+        }
+    }
+
+out_free:
+    free(nv);
+
+out_f:
+
+#if defined(NFCMDBG)
+    lan_info_list_dump(list);
+#endif
+    return 0;
+}
+
+
+void lan_list_free(struct list_head *list)
+{
+	lan_info_t *lan, *tmp;
+
+	list_for_each_entry_safe(lan, tmp, list, list) {
+		list_del(&lan->list);
+		lan_info_free(lan);
+	}
+
+	return;
+}
+
+void lan_list_parse(struct list_head *list)
+{
+  lan_info_init(list);
+#ifdef RTCONFIG_MULTILAN_CFG
+  lan_info_add_sdn(list);
+#endif
+}
+
+
+
+bool is_in_lanv4(struct in_addr *src)
+{
+    lan_info_t *li;
+    list_for_each_entry(li, &lanlist, list) {
+        if ((src->s_addr & li->subnet.s_addr) == (li->addr.s_addr & li->subnet.s_addr)) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool is_in_lanv6(struct in6_addr *src)
+{
+
+    struct in6_addr prefix;
+    int prefix_len = nvram_get_int("ipv6_prefix_length"); 
+    int tail_bits;
+    //passthrough don't have ipv6_prefix_length, ipv6_prefix, ipv6_rtr_addr, don't care lan
+    if(!strcmp("ipv6pt", nvram_get("ipv6_service"))) {
+       return true;
+    }
+
+    if(prefix_len < 1 || prefix_len > 127) {
+       return false;
+    } 
+    if(!inet_pton(AF_INET6, nvram_get("ipv6_prefix"), &prefix)) {
+   
+      return false;
+    }
+    for(int i = 0; i< prefix_len/8; i++)
+    {    
+        if (src->s6_addr[i] != prefix.s6_addr[i]) {
+            return false;
+        }
+    }
+    tail_bits = prefix_len % 8;
+    if ( tail_bits > 0 &&  src->s6_addr[prefix_len] >> (8 - tail_bits) != prefix.s6_addr[prefix_len] >> (8 - tail_bits) ) {
+            return false;
+    }
+    return true;
+}
+
+bool is_local_link_addr(struct in6_addr *addr)
+{
+
+    if (addr->s6_addr[0] == 0xfe && (addr->s6_addr[1] & 0x80) == 0x80) 
+            return true;
+    return false;
+}
+
+bool is_router_v6addr(struct in6_addr *addr)
+{
+    struct in6_addr router;
+    //nf_printf("router addr: %s\n", nvram_get("ipv6_rtr_addr"));
+    if(!strcmp("ipv6pt", nvram_get("ipv6_service")))
+            return false;
+    if(!inet_pton(AF_INET6, nvram_get("ipv6_rtr_addr"), &router)) 
+            return false;
+    if (!memcmp(addr, &router, sizeof(struct in6_addr)))
+            return true;
+
+    return false;
+}
+
+bool is_router_addr(struct in_addr *addr)
+{
+    lan_info_t *li;
+
+    //char ipstr[INET6_ADDRSTRLEN];
+    //inet_ntop(AF_INET, src, ipstr, INET_ADDRSTRLEN);
+
+    list_for_each_entry(li, &lanlist, list) {
+        if (addr->s_addr == li->addr.s_addr) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+
+bool is_broadcast_addr(struct in_addr *addr)
+{
+    lan_info_t *li;
+
+    //char ipstr[INET6_ADDRSTRLEN];
+    //inet_ntop(AF_INET, src, ipstr, INET_ADDRSTRLEN);
+
+    list_for_each_entry(li, &lanlist, list) {
+        if (addr->s_addr == li->subnet.s_addr) {
+            return true;
+        }
+    }
+
+    return false;
+}
+
+bool is_multi_addr(struct in_addr *addr)
+{
+    //in_addr_t stored in network order
+    uint32_t address = ntohl(addr->s_addr);
+
+    return (address & 0xF0000000) == 0xE0000000;
+}
+
+
+int bw_mon_ct_cb(enum nf_conntrack_msg_type type,
+                        struct nf_conntrack *ct,
+                        void *data)
+{
+ // int lock;
+ // lock = file_lock(DNS_MAC_LIST_LOCK_NAME);
+  bw_nf_conntrack_process(ct, &iplist, &clilist, &arlist);
+ // file_unlock(lock);
+  return NFCT_CB_CONTINUE;
+}
+
+void bw_mon_worker()
+{
+ // printf("bw_mon_worker\n");
+  if(time(NULL) - gLastBWReq > 30) {
+    //printf("bw_mon_worker shutdown since now %ld old than %d \n", time(NULL), gLastBWReq);
+    g_disable_bw_mon = 1;
+  }
+
+  if(!g_bw_mon_inited && !g_disable_bw_mon)
+  {
+    //printf("bw_mon_worker active  %d \n");
+    g_bw_mon_inited = init_bw_mon_ct();
+  }
+  if(g_bw_mon_inited) {    
+    nf_list_move(&bklist, &iplist);
+
+    //printf("bw_mon_worker  init=%d disable=%d t=%lu\n", g_bw_mon_inited, g_disable_bw_mon, time(NULL));
+    bw_mon_ct_invoke();
+
+    bw_nf_list_diff_calc(&iplist, &bklist);
+
+    bw_nf_list_statistics_calc(&iplist, &smlist);
+
+#if 0
+    nf_list_dump("bw_mon", &iplist);
+#endif    
+    //bw_ct_list_to_json(&iplist);
+    bw_ct_list_to_json(&smlist);
+    //nf_list_free(&iplist);
+    nf_list_free(&bklist);
+   
+  }
+  
+  if(g_disable_bw_mon)
+  {
+   // printf("bw_mon_worker shutdown  %d \n");
+ 
+    if(g_bw_mon_inited) {
+      deinit_bw_mon_ct();
+      g_bw_mon_inited = 0;
+      nf_list_free(&iplist);
+      nf_list_free(&smlist);
+ 
+    }
+  }
+}
+
+void env_update_worker()
+{
+  lan_list_free(&lanlist);
+  lan_list_parse(&lanlist);
+  arp_list_free(&arlist);
+  arp_list_parse(&arlist);
+  cli_list_free(&clilist);
+  cli_list_file_parse(&clilist);
+
+#if 0
+  lan_info_list_dump(&lanlist);
+  arp_list_dump(&arlist);
+  cli_list_dump("clilist", &clilist);
+#endif
+
+}
 
 void app_client_aggregator()
 {
@@ -1090,12 +1467,41 @@ void func_dev_identify_worker()
   dq_dev_identify_worker_flag = 1;
 }
 
+void func_bw_mon_worker()
+{
+  time_t now;
+  time(&now);
+  dq_bw_mon_flag = 1;
+}
+
+void func_env_update_worker()
+{
+  time_t now;
+  time(&now);
+  dq_env_update_flag = 1;
+}
 
 void func_main_looper()
 {
   time_t now;
   time(&now);
- 
+  int lock;
+  
+#if 1
+
+  if(dq_bw_mon_flag)
+  {
+    bw_mon_worker();
+    dq_bw_mon_flag = 0;
+  }
+
+  if(dq_env_update_flag)
+  {
+    env_update_worker();
+    dq_env_update_flag = 0;
+  }
+
+
   if(dq_app_client_aggregator_flag)
   {
     app_client_aggregator();
@@ -1114,6 +1520,7 @@ void func_main_looper()
     dq_dev_identify_worker_flag = 0;
   }
 
+  
   if(dq_db_vacuum_flag)
   {
     //dns_query
@@ -1126,8 +1533,8 @@ void func_main_looper()
     db_vacuum(app_sum_db, APP_SUM_DB_LOCK_NAME, APP_SUM_DB_FILE, EXCLUSIVE_HISTORY_TABLE, APP_SUM_DB_SIZE, APP_SUM_DB_DAY);
     dq_db_vacuum_flag = 0;
   }
-  arp_list_free(&arlist);
-  arp_list_parse(&arlist);
+  
+#endif
 
 #if 0 
   arp_list_dump(&arlist);
@@ -1180,6 +1587,29 @@ int ev_timer_dev_identify_worker(struct ev_loop *loop, ev_timer *timer)
     return 0;
 }
 
+int ev_timer_bw_mon_worker(struct ev_loop *loop, ev_timer *timer)
+{
+    // initialize a timer watcher, then start it
+    // simple non-repeating TIMER_DURATION second timeout
+    ev_init(timer, func_bw_mon_worker);
+    timer->repeat = DNSQD_BW_MON_TIMER;
+    ev_timer_again(loop, timer);
+
+    return 0;
+}
+
+int ev_timer_env_update_worker(struct ev_loop *loop, ev_timer *timer)
+{
+    // initialize a timer watcher, then start it
+    // simple non-repeating TIMER_DURATION second timeout
+    ev_init(timer, func_env_update_worker);
+    timer->repeat = DNSQD_ENV_UPDATE_TIMER;
+    ev_timer_again(loop, timer);
+
+    return 0;
+}
+
+
 int ev_timer_main_looper(struct ev_loop *loop, ev_timer *timer)
 {
     // initialize a timer watcher, then start it
@@ -1191,6 +1621,126 @@ int ev_timer_main_looper(struct ev_loop *loop, ev_timer *timer)
     return 0;
 }
 
+void sig_str(int signum, char *sigstr, size_t sigstr_sz)
+{
+    char sig_default[16];
+    char *sig;
+
+    switch (signum) {
+    case SIGHUP:
+        sig = "SIGHUP";      break;
+    case SIGINT:
+        sig = "SIGINT";      break;
+    case SIGQUIT:
+        sig = "SIGQUIT";     break;
+    case SIGILL:
+        sig = "SIGILL";      break;
+    case SIGTRAP:
+        sig = "SIGTRAP";     break;
+    case SIGABRT:
+        sig = "SIGABRT";     break;
+    case SIGBUS:
+        sig = "SIGBUS";      break;
+    case SIGFPE:
+        sig = "SIGFPE";      break;
+    case SIGKILL:
+        sig = "SIGKILL";     break;
+    case SIGUSR1:
+        sig = "SIGUSR1";     break;
+    case SIGSEGV:
+        sig = "SIGSEGV";     break;
+    case SIGUSR2:
+        sig = "SIGUSR2";     break;
+    case SIGPIPE:
+        sig = "SIGPIPE";     break;
+    case SIGALRM:
+        sig = "SIGALRM";     break;
+    case SIGTERM:
+        sig = "SIGTERM";     break;
+    case SIGCHLD:
+        sig = "SIGCHLD";     break;
+    case SIGCONT:
+        sig = "SIGCONT";     break;
+    case SIGSTOP:
+        sig = "SIGSTOP";     break;
+    case SIGTSTP:
+        sig = "SIGTSTP";     break;
+    case SIGTTIN:
+        sig = "SIGTTIN";     break;
+    case SIGTTOU:
+        sig = "SIGTTOU";     break;
+    case SIGURG:
+        sig = "SIGURG";      break;
+    case SIGXCPU:
+        sig = "SIGXCPU";     break;
+    case SIGXFSZ:
+        sig = "SIGXFSZ";     break;
+    case SIGVTALRM:
+        sig = "SIGVTALRM";   break;
+    case SIGPROF:
+        sig = "SIGPROF";     break;
+    case SIGWINCH:
+        sig = "SIGWINCH";    break;
+    case SIGIO:
+        sig = "SIGIO";       break;
+    case SIGPWR:
+        sig = "SIGPWR";      break;
+    case SIGSYS:
+        sig = "SIGSYS";      break;
+
+    default:
+        snprintf(sig_default, sizeof(sig_default), "%d", signum);
+        sig = sig_default;
+        break;
+    }
+
+    snprintf(sigstr, sigstr_sz, "%s (%s)", sig, strsignal(signum));
+}
+
+void signal_action(struct ev_loop *loop, ev_signal *w, int e)
+{
+    char sigstr[64];
+    int var;
+
+    sig_str(w->signum, sigstr, sizeof(sigstr));
+    //printf("Signal %s received.\n", sigstr);
+
+    switch (w->signum) {
+    case SIGUSR1:
+      //  printf("++g_disable_bw_mon=%d\n", g_disable_bw_mon);
+        g_disable_bw_mon = 1;
+      //  printf("--g_disable_bw_mon=%d\n", g_disable_bw_mon);
+        break;
+    case SIGUSR2:
+      //  printf("++g_disable_bw_mon=%d\n", g_disable_bw_mon);
+        g_disable_bw_mon = 0;
+        gLastBWReq = time(NULL);
+      //  printf("--g_disable_bw_mon=%d\n", g_disable_bw_mon);
+        break;
+
+    default:
+        /* At this point the handler for this signal was reset
+           (except for SIGUSR2) due to the SA_RESETHAND flag;
+           so re-send the signal to ourselves in order to properly crash */
+        raise(w->signum);
+    }
+
+}
+
+int ev_signal_sigusr1(struct ev_loop *loop, ev_signal *signaler)
+{
+    ev_signal_init(signaler, signal_action, SIGUSR1);
+    ev_signal_start(loop, signaler);
+
+    return 0;
+}
+int ev_signal_sigusr2(struct ev_loop *loop, ev_signal *signaler)
+{
+    ev_signal_init(signaler, signal_action, SIGUSR2);
+    ev_signal_start(loop, signaler);
+
+    return 0;
+}
 
 void ev_main_loop_thread(void * data)
 {
@@ -1200,11 +1750,23 @@ void ev_main_loop_thread(void * data)
   ev_timer timer_app_client_aggregator;
   ev_timer timer_app_sum_worker;
   ev_timer timer_dev_identify_worker;
-  
+  ev_timer timer_bw_mon_worker;
+  ev_timer timer_env_update_worker;
+  ev_signal signal_sigusr1;
+  ev_signal signal_sigusr2;
+    
+  ev_signal_sigusr1(loop, &signal_sigusr1); // re-parse
+  ev_signal_sigusr2(loop, &signal_sigusr2); // re-parse
+   
+
   ev_timer_vacuum_db(loop, &timer_vacuum_db);
-  ev_timer_app_client_aggregator(loop, &timer_app_client_aggregator);
-  ev_timer_app_sum_worker(loop, &timer_app_sum_worker);
+  if(dns_dpi_trf_db_enable) {
+    ev_timer_app_client_aggregator(loop, &timer_app_client_aggregator);
+    ev_timer_app_sum_worker(loop, &timer_app_sum_worker);
+  }
   ev_timer_dev_identify_worker(loop, &timer_dev_identify_worker);
+  ev_timer_bw_mon_worker(loop, &timer_bw_mon_worker);
+  ev_timer_env_update_worker(loop, &timer_env_update_worker);
   ev_timer_main_looper(loop, &timer_main_looper);
   
   ev_run(loop, 0);  
@@ -1213,6 +1775,19 @@ void ev_main_loop_thread(void * data)
   pthread_exit(NULL);
 }
 
+static bool dnsqd_write_pid_file(char *fname)
+{
+    char pidstr[32];
+
+    FILE *fp = fopen(fname, "w+");
+    if (!fp)  return false;
+
+    sprintf(pidstr, "%d", getpid());
+    fputs(pidstr, fp);
+    fclose(fp);
+
+    return true;
+}
 
 int main(int argc, char **argv)
 {
@@ -1224,6 +1799,8 @@ int main(int argc, char **argv)
     char buf[4096];
     pthread_t tid;
     int status;
+    
+    dns_dpi_trf_db_enable = nvram_get_int("dns_dpi_trf_analysis");
     
     dns_db = sqlite_open(DNS_QUERY, dns_db, DNS_QUERY_DB_FILE);
     app_client_db = sqlite_open(APP_CLIENT, app_client_db, APP_CLIENT_DB_FILE);
@@ -1245,11 +1822,15 @@ int main(int argc, char **argv)
     //init ar list
     arp_list_parse(&arlist);
 
+    // init lan info according to br0/wifi intf
+    lan_list_parse(&lanlist);
+
+    dnsqd_write_pid_file(DNSQD_PID_FILE);
+
     status = pthread_create(&tid, NULL, ev_main_loop_thread, NULL);
     if(status !=0)
       dnsdbg("thread creat fail=%d at %d", status);
     pthread_detach(tid);
-
     while ((rv = recv(fd, buf, sizeof(buf), 0)) && rv >= 0) {
 #ifdef DNSQD_DEBUG
     	dnsdbg("handle - received rv=%d", rv);
@@ -1259,7 +1840,7 @@ int main(int argc, char **argv)
 
     nfq_destroy_queue(qh);
     arp_list_free(&arlist);
-
+    lan_list_free(&lanlist);
 
     nfq_close(h);
     sqlite_close(dns_db);

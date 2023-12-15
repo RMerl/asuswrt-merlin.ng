@@ -25,6 +25,11 @@
 #define GET_IPV6_MAC_SYS_COMMAND "ip -6 neigh show"
 #define IP6_LINE_FORMAT "%s %s %s %s %s %s %s"
 
+#define GET_IPV4_MAC_SYS_COMMAND_FILTER_FORMAT "ip -4 neigh show | grep %s"
+#define GET_IPV6_MAC_SYS_COMMAND_FILTER_FORMAT "ip -6 neigh show | grep %s"
+#define IP_LINE_FORMAT "%s %s %s %s %s"
+
+
 #define LOCAL_LINK_ADDR 0xfe80
 arp_node_t *arp_node_new()
 {
@@ -206,6 +211,83 @@ void arp_list_parse(struct list_head *arlist)
   return;
 }
 
+void arp_list_parse_v2(bool isv4, char *filter_ip, struct list_head *arlist)
+{
+  arp_node_t *ar, *ar_tmp;
+  struct in_addr srcv4;
+  struct in6_addr srcv6;
+  char mac[ETHER_ADDR_LENGTH], device[IFNAMESIZE];
+  char dev[20], br[20], lladdr[20], status[20], status_ext[20];
+  char ipstr[INET6_ADDRSTRLEN];   
+  int tokens;
+  char line[ARP_BUFFER_LEN];
+  char sys_cmd[128] = {0};
+  
+  FILE *fp = NULL;
+  //TODO: ipv6 from $ip -6 neigh show
+  /*
+     admin@RT-AX58U_V2-0000:/proc/4848/net# ip -6 neigh show
+     fe80::22cf:30ff:fe00:0 dev br0 lladdr 20:cf:30:00:00:00 router STALE
+     2001:b011:400b:f4fa:8120:3ec2:3e7d:5266 dev br0 lladdr 00:28:f8:e3:cf:38 REACHABLE
+     fe80::9c79:e1fb:7603:ba18 dev br0 lladdr 00:28:f8:e3:cf:38 STALE
+     admin@RT-AX58U_V2-0000:/proc/4848/net#
+  */
+  if(isv4) {
+    sprintf(sys_cmd, GET_IPV4_MAC_SYS_COMMAND_FILTER_FORMAT, filter_ip);
+  }
+  else {
+    sprintf(sys_cmd, GET_IPV6_MAC_SYS_COMMAND_FILTER_FORMAT, filter_ip);
+  }
+  fp = popen(sys_cmd, "r");
+  if (!fp)
+  {
+    dnsdbg("cannot open ip neigh show");
+    return;
+  }
+ 
+
+  while (fgets(line, sizeof(line), fp) != NULL)
+  {
+    tokens = sscanf(line, IP6_LINE_FORMAT, ipstr, dev, br, lladdr, mac, status, status_ext);
+    //dnsdbg("tokens=%d ip6str=%s dev=%s br=%s lladdr=%s mac=%s status:%s status_ext:%s", tokens, ip6str, dev, br, lladdr, mac, status, status_ext);
+    if(tokens < 6) 
+    {
+       //clear
+       memset(ipstr, 0, INET6_ADDRSTRLEN);
+       memset(mac, 0, sizeof(mac));  
+       memset(status, 0, sizeof(status));
+       memset(status_ext, 0, sizeof(status_ext));
+       continue;
+    }
+   // dnsdbg("tokens=%d ip6str=%s dev=%s br=%s lladdr=%s mac=%s status:%s", tokens, ip6str, dev, br, lladdr, mac, status);
+    if(isv4) {
+      inet_pton(AF_INET, ipstr, &srcv4);
+    } else {
+      inet_pton(AF_INET6, ipstr, &srcv6);
+    }
+    if( !isv4 && srcv6.s6_addr[0] == 0xfe && (srcv6.s6_addr[1] & 0x80) == 0x80)
+    {
+      //dnsdbg("got local link address --skip ..."); 
+      continue;
+    }
+    ar = arp_node_new();
+    ar->isv4 = isv4;  
+    if(isv4) {
+      memcpy(&ar->srcv4, &srcv4, sizeof(struct in_addr));
+    }else{
+      memcpy(&ar->srcv6, &srcv6, sizeof(struct in6_addr));
+    }
+    to_upper(mac);
+    memcpy(ar->mac, mac, ETHER_ADDR_LENGTH);
+    
+    list_add_tail(&ar->list, arlist);
+  }
+  
+  pclose(fp);
+
+  return;
+}
+
 void arp_list_free(struct list_head *list)
 {
   arp_node_t *ar, *art;
@@ -249,3 +331,23 @@ arp_node_t*  arp_list_search(bool isv4, char* ipstr, struct list_head *arlist)
   }
   return NULL;
 }
+
+int arp_list_search_and_update_mac(bool isv4, char* ipstr, unsigned char *mac)
+{
+  int ret = -1;
+  LIST_HEAD(arp_list_tmp);
+  arp_list_parse_v2(isv4, ipstr, &arp_list_tmp);
+  arp_node_t *arp = arp_list_search(isv4, ipstr, &arp_list_tmp);
+  if(!arp)
+  {
+    return -1;
+  } else {
+    memcpy(mac, arp->mac, ETHER_ADDR_LENGTH);
+    arp_list_free(&arp_list_tmp);
+    return 0;
+  }
+}
+
+
+
+

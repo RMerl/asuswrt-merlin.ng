@@ -1,0 +1,63 @@
+.\" * chilli_radconfig
+.\" * Copyright (C) 2007-2012 David Bird (Coova Technologies)
+.\" *
+.\" * All rights reserved.
+.\" *
+.\" Manual page for chilli
+.\" SH section heading
+.\" SS subsection heading
+.\" LP paragraph
+.\" IP indented paragraph
+.\" TP hanging label
+
+.TH chilli_radconfig 1 "August 2007"
+.SH NAME
+chilli_radconfig \-  Utility function to fetch configurations over RADIUS
+
+.SH SYNOPSIS
+.B chilli_radconfig 
+[ 
+.I chilli options 
+]
+
+.SH DESCRIPTION
+.B chilli_radconfig
+is a simple utility to fetch 
+.B chilli
+configurations from a central server using RADIUS. It takes the same
+arguments as 
+.B chilli
+(so that it can run off the same configuration file), but only looks for a
+small number of settings to perform an 
+.I Administrative-User
+login. The utility will print out the value of all the 
+.I ChilliSpot-Config 
+attributes in the Access-Accept. 
+
+.SH EXAMPLES
+
+.I # chilli_radconfig --radiusserver1=192.168.1.1 \
+   --radiussecret=MySecret --adminuser=chillispot \
+   --adminpasswd=chillispot > hs.conf
+
+.SH "SEE ALSO"
+.BR chilli(8)
+.BR chilli.conf(5)
+.BR chilli-radius(5)
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+The original ChilliSpot project homepage is/was at www.chillispot.org.
+
+.SH AUTHORS
+
+David Bird <david@coova.com>
+
+Copyright (C) 2006-2012 David Bird (Coova Technologies) All rights reserved.
+
+CoovaChilli is licensed under the GNU General Public License.
+

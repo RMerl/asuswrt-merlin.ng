@@ -49,6 +49,7 @@
 #include "gpattern.h"
 #include "grand.h"
 #include "gstrfuncs.h"
+#include "gstrfuncsprivate.h"
 #include "gtimer.h"
 #include "gslice.h"
 #include "gspawn.h"
@@ -3748,7 +3749,7 @@ g_test_log_extract (GTestLogBuffer *tbuffer)
       if (p <= tbuffer->data->str + mlength)
         {
           g_string_erase (tbuffer->data, 0, mlength);
-          tbuffer->msgs = g_slist_prepend (tbuffer->msgs, g_memdup (&msg, sizeof (msg)));
+          tbuffer->msgs = g_slist_prepend (tbuffer->msgs, g_memdup2 (&msg, sizeof (msg)));
           return TRUE;
         }
 

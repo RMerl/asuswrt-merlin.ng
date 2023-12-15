@@ -32,6 +32,8 @@
 	" xmlns:dlna=\"urn:schemas-dlna-org:metadata-1-0/\""
 #define PV_NAMESPACE \
 	" xmlns:pv=\"http://www.pv.com/pvns/\""
+#define SEC_NAMESPACE \
+	" xmlns:sec=\"http://www.sec.co.kr/dlna\""
 
 struct Response
 {

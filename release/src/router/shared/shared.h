@@ -422,6 +422,7 @@ enum {
 	WAN_MAPE,
 	WAN_V6PLUS,
 	WAN_OCNVC,
+	WAN_DSLITE,
 };
 
 #ifdef RTCONFIG_IPV6
@@ -538,6 +539,7 @@ enum {
 #define CFG_WL_STR_5G	"5G"
 #define CFG_WL_STR_5G1	"5G1"
 #define CFG_WL_STR_6G	"6G"
+#define CFG_WL_STR_6G1	"6G1"
 
 #ifdef RTCONFIG_ADV_RAST
 enum romaingEvent {
@@ -694,6 +696,7 @@ enum {
 	FROM_WebView,
 	FROM_ATE,
 	FROM_MyASUS,
+	FROM_BLE,
 	FROM_UNKNOWN
 };
 
@@ -840,6 +843,7 @@ static inline int legal_vlanid(int vid) { return (vid < 0 || vid >= 4096)? 0 : 1
 extern in_addr_t inet_addr_(const char *addr);
 extern int inet_equal(const char *addr1, const char *mask1, const char *addr2, const char *mask2);
 extern int inet_intersect(const char *addr1, const char *mask1, const char *addr2, const char *mask2);
+extern int inet_overlap(const char *addr1, const char *mask1, const char *addr2, const char *mask2);
 extern int inet_deconflict(const char *addr1, const char *mask1, const char *addr2, const char *mask2, struct in_addr *result);
 
 extern void chld_reap(int sig);
@@ -955,6 +959,7 @@ extern int load_kmods(char *kmods_list);
 extern int remove_kmods(char *kmods_list);
 extern int num_of_wl_if(void);
 extern int num_of_5g_if(void);
+extern int num_of_6g_if(void);
 
 // usb.c
 #ifdef RTCONFIG_USB
@@ -2247,6 +2252,7 @@ extern int get_switch_model(void);
 #define PHY_PORT_CAP_MOBILE					(1U << 8)
 #define PHY_PORT_CAP_WANLAN					(1U << 9)
 #define PHY_PORT_CAP_MOCA					(1U << 10)
+#define PHY_PORT_CAP_POE					(1U << 11)
 
 // Software capability
 #define PHY_PORT_CAP_IPTV_BRIDGE			(1U << 26)
@@ -2986,9 +2992,55 @@ extern int is_intf_up(const char* ifname);
 extern uint32_t crc_calc(uint32_t crc, const char *buf, int len);
 extern int illegal_ipv4_address(char *addr);
 extern int illegal_ipv4_netmask(char *netmask);
+
+#define HTTPS_CA_JFFS  "/jffs/cert.tgz"
+
+/* Same compile option for lan_ipaddr in shared/defaults.c */
+#if defined(RTN300) || defined(RTCONFIG_ALL_DEF_LAN50) || defined(RTN300)
+#define DEFAULT_LAN_IP_PARM	"-L", "192.168.50.1"
+#elif defined(RTCONFIG_WIFI_SON) || defined(RTCONFIG_LYRA_HIDE)
+#define DEFAULT_LAN_IP_PARM	"-L", "192.168.72.1"
+#else
+#define DEFAULT_LAN_IP_PARM	"-L", "192.168.1.1"
+#endif
+
+#define GENCERT_SH(args...)		({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_RELOAD(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-l", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_BACKUP(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_BACKUP_RELOAD(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", "-l", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#define GENCERT_SH_AND_BACKUP_RELOAD_AFTER_LOGOUT(args...)	({ char *argv[] = { "gencert.sh", DEFAULT_LAN_IP_PARM, "-b", "-l", "2", ## args, NULL }; _eval(argv, NULL, 0, NULL); })
+#if defined(RTCONFIG_HTTPS)
+extern void reset_last_cert_nvars(void);
+extern int restore_cert(void);
+extern void save_cert(void);
+extern void erase_cert(void);
+extern void remove_all_uploaded_cert_from_jffs(void);
+extern int illegal_cert_and_key(const char *cert_fn, const char *key_fn);
+extern void update_srv_cert_if_ddns_changed(void);
+extern void update_srv_cert_if_lan_ip_changed(void);
+extern void update_srv_cert_if_wan_ip_changed(int unit);
+#else
+static inline  void reset_last_cert_nvars(void) { }
+static inline int restore_cert(void) { return 0; }
+static inline void save_cert(void) { }
+static inline void erase_cert(void) { }
+static inline void remove_all_uploaded_cert_from_jffs(void) { }
+static inline int illegal_cert_and_key(char *cert_fn, char *key_fn) { return 0; }
+static inline void update_srv_cert_if_ddns_changed(void) { }
+static inline void update_srv_cert_if_lan_ip_changed(void) { }
+static inline void update_srv_cert_if_wan_ip_changed(int unit) { }
+#endif
+#if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_IPV6)
+extern void update_srv_cert_if_wan_ipv6_changed(int unit);
+#else
+static inline void update_srv_cert_if_wan_ipv6_changed(int unit) { }
+#endif
 extern void convert_mac_string(char *mac);
 extern int test_and_get_free_uint_network(int t_class, uint32_t *exp_ip, uint32_t exp_cidr, uint32_t excl);
 extern int test_and_get_free_char_network(int t_class, char *ip_cidr_str, uint32_t excl);
+extern int min_cidr(char *ipaddr);
+extern char *min_netmask(char *ipaddr, char *mask, size_t mask_len);
+extern char *network_addr(char *ipaddr, char *mask, char *nwaddr, size_t nwaddr_len);
 extern enum wan_unit_e get_first_connected_public_wan_unit(void);
 extern enum wan_unit_e get_first_connected_dual_wan_unit(void);
 #ifdef RTCONFIG_IPV6
@@ -3012,6 +3064,12 @@ extern int set_crt_parsed(const char *name, char *file_path);
 #endif
 extern int get_upstream_wan_unit(void);
 extern int __get_upstream_wan_unit(void) __attribute__((weak));
+#if defined(RTCONFIG_SWITCH_QCA8075_QCA8337_PHY_AQR107_AR8035_QCA8033)
+extern char *calc_sfpp_iface_ipaddr(char *ipaddr, size_t ipaddr_len);
+extern int sfpp_iface_in_wan(void);
+extern int add_nat_rule_for_gpon_sfp_module(FILE *fp);
+extern int add_filter_rule_for_gpon_sfp_module(FILE *fp);
+#endif
 extern int get_wifi_unit(char *wif);
 #if defined(RTCONFIG_BCMWL6) && defined(RTCONFIG_PROXYSTA)
 #ifdef RTCONFIG_DPSTA
@@ -3272,6 +3330,8 @@ typedef struct _phy_port {
 	int max_rate;        // max support link rate (ex. 10, 100, 1000, 2500, 10000)
 	char *ifname;        // the mapping interface name
 	uint32_t flag;       // flag for special marks.
+	int seq_no;          // sequence nubmer of port WAN, LAN, ...
+	char *ui_display;    // UI display striing of port.
 } phy_port;
 typedef struct _phy_port_mapping {
 	int count;           // the amount of phy port
@@ -3342,6 +3402,22 @@ static inline void clear_all_sw_cap(phy_port_mapping *port_mapping)
 	}
 }
 
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+static inline int is_mswan_enabled()
+{
+	int unit = 0;
+	char wan_prefix[16] = {0};
+
+	for (unit = WAN_UNIT_FIRST_MULTISRV_BASE; unit < WAN_UNIT_MULTISRV_MAX; unit++)
+	{
+		snprintf(wan_prefix, sizeof(wan_prefix), "wan%d_", unit);
+		if (nvram_pf_get_int(wan_prefix, "enable"))
+			return 1;
+	}
+	return 0;
+}
+#endif
+
 static inline void add_sw_wan_cap(phy_port_mapping *port_mapping, int wan, uint32_t cap)
 {
 	int i;
@@ -3369,6 +3445,13 @@ static inline void add_sw_wan_cap(phy_port_mapping *port_mapping, int wan, uint3
 				//_dprintf("%s 2WANS_DUALWAN_IF_WAN is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
 					break;
 				}
+#if defined(RTCONFIG_MULTISERVICE_WAN)
+				else if (is_mswan_enabled() && (port_mapping->port[i].cap & PHY_PORT_CAP_WAN)) {
+					port_mapping->port[i].cap |= cap;
+				//_dprintf("%s 3WANS_DUALWAN_IF_WAN is wan. cap1=%u, cap2=%u\n", port_mapping->port[i].label_name, cap, port_mapping->port[i].cap);
+					break;
+				}
+#endif
 			}
 		}
 		else if (wan == WANS_DUALWAN_IF_LAN && (port_mapping->port[i].cap & PHY_PORT_CAP_LAN) > 0) {
@@ -3996,12 +4079,77 @@ extern int FindBrifByWlif(const char *wl_ifname, char *brif_name, int size);
 #endif
 
 #ifdef RTCONFIG_HTTPS
-#define HTTPD_CERT	"/etc/cert.pem"
-#define HTTPD_KEY	"/etc/key.pem"
+/* auto-generated root certificate and key. */
+#define HTTPD_ROOTCA_GEN_CERT	"/etc/cacert_gen.pem"
+#define HTTPD_ROOTCA_GEN_KEY	"/etc/cakey_gen.pem"
+
+/* This certificate and key is used to sign end-entity certificate and key.
+ * could be auto-generated root certificate and key, or uploaded root/intermediate
+ * certificate and key.
+ */
+#define HTTPD_ROOTCA_CERT	"/etc/cacert.pem"
+#define HTTPD_ROOTCA_KEY	"/etc/cakey.pem"
+
+/* auto-generated end-entity certificate and key. Signed by auto-generated
+ * root certificate and key.
+ */
+#define HTTPD_GEN_CERT		"/etc/cert_gen.pem"
+#define HTTPD_GEN_KEY		"/etc/key_gen.pem"
+
+/* Currently using end-entity certificate and key. It is used when
+ * router mode: all httpds if le_enable == 0, or le_enable == 2 and uploaded
+ *              certificate is root/intermediate ceritificate.
+ * another mode, including AP/RP/MB/RE: all httpds, le_enable value is ignored.
+ */
+#define HTTPD_CERT		"/etc/cert.pem"
+#define HTTPD_KEY		"/etc/key.pem"
+
+/* Overwrite HTTPD_CERT and HTTPD_KEY with end-entity certificate, which is
+ * signed by Let's encrypt, in ACME_CERTHOME on all httpds when le_enable =1.
+ * Modern browser reject the certificate, error code SSL_ERROR_BAD_CERT_DOMAIN,
+ * when it connects to LAN side by domain name and IP address or when it
+ * connects to WAN side by IP address. Because connection to WAN side https
+ * port is redirected to port of LAN side https, and real URL is defined in HTTP
+ * header, it's impossible to use different certificate based on destination in
+ * URL respectively.
+ * Created by prepare_cert_in_etc() at run-time by copying LE_FULLCHAIN and
+ * LE_KEY to LE_HTTPD_CERT and LE_HTTPD_KEY respectively.
+ */
+#define LE_HTTPD_CERT		HTTPD_CERT
+#define LE_HTTPD_KEY		HTTPD_KEY
+/* Use uploaded certificate on all httpds when le_enable = 2. If it's
+ * root/intermediate certificate, it is used to sign end-entity a certificate at
+ * run-time and saved in UPLOAD_GEN_KEY. If it's a end-entity certificate, use
+ * it directly by overwrite HTTPD_CERT, user is incharge of fill DNS/IP for all
+ * httpds to subjectAltName of the certificates, otherwise, the certificate is
+ * rejected by modern browser, error code SSL_ERROR_BAD_CERT_DOMAIN. It is reject
+ * if the end-entity certificate was signed by public key of itself. keyUsage of
+ * root certificate must has keyCertSign, otherwise, SEC_ERROR_INADEQUATE_KEY_USAGE.
+ * Created by prepare_cert_in_etc() at run-time by copying UPLOAD_GEN_CERT or
+ * UPLOAD_CERT to UL_HTTPD_CERT respectively.
+ */
+#define UL_HTTPD_CERT		HTTPD_CERT
+#define UL_HTTPD_KEY		HTTPD_KEY
+
+/* Used by tar via system()/eval() respectively, leading '/' shouldn't be added,
+ * otherwise, it can't be used to extract specific files from tar-ball. It's is
+ * used to backup cert. and key to /jffs, and will be restore to /etc, all possible
+ * cert. and key should be backup.
+ */
+#define HTTPD_CERTS_KEYS_STR	"etc/cacert.pem etc/cakey.pem etc/cert.pem etc/key.pem etc/cacert_gen.pem etc/cakey_gen.pem etc/cert_gen.pem etc/key_gen.pem"
+#define HTTPD_CERTS_KEYS_ARGS	"etc/cacert.pem", "etc/cakey.pem", "etc/cert.pem", "etc/key.pem", "etc/cacert_gen.pem", "etc/cakey_gen.pem", "etc/cert_gen.pem", "etc/key_gen.pem"
+
 #define LIGHTTPD_CERTKEY	"/etc/server.pem"
 #define UPLOAD_CERT_FOLDER	"/jffs/.cert"
-#define UPLOAD_CERT	"/jffs/.cert/cert.pem"
-#define UPLOAD_KEY	"/jffs/.cert/key.pem"
+/* Uploaded cert is root/intermediate. */
+#define UPLOAD_CACERT		"/jffs/.cert/cacert.pem"
+#define UPLOAD_CAKEY		"/jffs/.cert/cakey.pem"
+/* End-entity certificate that is signed by uploaded root/intermediate certificate. */
+#define UPLOAD_GEN_CERT		"/jffs/.cert/cert_gen.pem"
+#define UPLOAD_GEN_KEY		"/jffs/.cert/key_gen.pem"
+/* Uploaded end-entity cert or signed by uploaded root/intermediate certificate. */
+#define UPLOAD_CERT		"/jffs/.cert/cert.pem"
+#define UPLOAD_KEY		"/jffs/.cert/key.pem"
 #ifdef RTCONFIG_LETSENCRYPT
 #define ACME_CERTHOME	"/jffs/.le"
 #endif
@@ -4560,5 +4708,17 @@ int check_pkgtb_boardid(char *ptr_pkgtb);
 
 extern char *make_salt(char *scheme_id, char *buf, size_t size);
 extern int asus_openssl_crypt(char *key, char *salt, char *out, int out_len);
+extern int validate_rc_service(const char *value);
+extern int adjust_62_nv_list(char *name);
+
+extern char *get_ddns_macaddr(void);
+
+#define IP_RULE_PREF_VPNS							90
+
+#ifdef RTCONFIG_TUNNEL
+#define UAC_TNL_STATUS_NONE 0
+#define UAC_TNL_STATUS_ACTIVE 1
+#define UAC_TNL_STATUS_TRYING 2
+#endif
 
 #endif	/* !__SHARED_H__ */

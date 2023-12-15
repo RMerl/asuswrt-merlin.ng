@@ -240,11 +240,11 @@ function genGameList(){
 	code += '</td>';
 	code += '</tr>';
 		
-	if(list_array.length == '0'){
+	if(list_array == ''){
 		code += '<tr><td colspan="2" style="color:#FFCC00;">No data in table.</td></tr>';
 	}
 	else{
-		for(i=1; i<list_array.length; i++){
+		for(i=0; i<list_array.length; i++){
 			code += '<tr>';
 			code += '<td>';
 			code += '<div style="display:flex;align-items: center;justify-content: center;padding-left:30px;">';
@@ -291,7 +291,13 @@ function addGameList(){
 		}
 	}
 
-	gameList = '<' + mac + gameList;
+	if(gameList === ''){
+		gameList = mac;
+	}
+	else{
+		gameList += '<' + mac ;
+	}
+
 	if(adaptiveqos_support){
 		genGameList();
 	}
@@ -316,14 +322,14 @@ function addGameList(){
 function delGameList(target){
 	var mac = target;
 	var list_array = gameList.split('<');
-	var temp = '';
-	for(i=1; i<list_array.length; i++){
+	var temp = [];
+	for(i=0; i<list_array.length; i++){
 		if(list_array[i] != mac){
-			temp += '<' + list_array[i];
+			temp.push(list_array[i]);
 		}	
 	}
 
-	gameList = temp;
+	gameList = temp.join('<');
 	if(adaptiveqos_support){
 		genGameList();
 	}

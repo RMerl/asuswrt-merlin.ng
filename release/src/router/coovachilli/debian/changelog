@@ -1,0 +1,124 @@
+coova-chilli (1.3.0) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Sun, 21 Oct 2012 00:00:00 +0200
+ 
+coova-chilli (1.2.9) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Wed, 15 Jun 2011 00:00:00 +0200
+ 
+coova-chilli (1.2.8) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Wed, 15 Jun 2011 00:00:00 +0200
+ 
+coova-chilli (1.2.7) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Wed, 15 Jun 2011 00:00:00 +0200
+ 
+coova-chilli (1.2.6) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Fri, 1 Jan 2011 00:00:00 +0200
+ 
+coova-chilli (1.2.5) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Fri, 1 Jan 2010 00:00:00 +0200
+ 
+coova-chilli (1.2.4) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Fri, 1 Jan 2010 00:00:00 +0200
+ 
+coova-chilli (1.2.3) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Fri, 1 Jan 2010 00:00:00 +0200
+ 
+coova-chilli (1.2.2) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Fri, 1 Jan 2010 00:00:00 +0200
+ 
+coova-chilli (1.2.1) unstable; urgency=low
+
+   * See ChangeLog
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Fri, 1 Jan 2010 00:00:00 +0200
+ 
+coova-chilli (1.2.0) unstable; urgency=low
+
+   * See ChangeLog
+   * Use debhelper compat level 7.
+
+ -- David Bird (Coova Technologies) <support@coova.com>  Fri, 1 Jan 2010 00:00:00 +0200
+ 
+coova-chilli (1.0.12-2) unstable; urgency=low
+
+   * Fix debian/changelog on Debian builds (make it buildable by dpkg-buildpackage -rfakeroot) - no changes to code
+
+ -- Per Wilhelmsen <per.wilhelmsen@vcon.no>  Sat, 5 Jul 2008 22:25:00 +0200
+ 
+coova-chilli (1.0.12-1) unstable; urgency=low
+
+   * Bug fix in RADIUS timeout, note that option radiustimeout is in seconds!
+   * Fix for dnsparanoia whereby chilli will reply with a host not found error instead of dropping the packet suggest by nextime
+   * New option macauthdeny which will result in the black-listing of devices given an Access-Reject during MAC address authentication
+   * New internal state called splash in which clients are given Internet access, but enforcing the port 80 http redirect
+   * new option dhcpradius for mapping of some DHCP options into RADIUS attributes and visa versa during MAC authentication
+   * new options dhcpgateway and dhcpgatewayport to specific a DHCP gateway (relay) host IP Address and port
+   * New option (in development) routeif to specify which WAN interface to use for the default - this also enables the use of internal routing instead of everything defaulting to the tun/tap
+   * Anyip fixes by Gunther, thanks.
+   * Code cleanups 
+
+ -- Unixmedia S.r.l. (Medianix Devel) <devel@unixmedia.it>  Sat, 27 Oct 2007 14:07:19 +0200
+
+coova-chilli (1.0.11-1) unstable; urgency=low
+
+  * Bug fix for RADIUS VSAs being sent
+
+ -- Unixmedia S.r.l. (Medianix Devel) <devel@unixmedia.it>  Sat, 27 Oct 2007 14:07:19 +0200
+
+coova-chilli (1.0.10-1) unstable; urgency=low
+
+  * Renamed packed network stack structures and put them in pkt.h
+  * Bug fix for DHCP relay (RFC 1542)
+  * Bug fix in IPC handling
+  * Memory leak fix in logging
+
+ -- Unixmedia S.r.l. (Medianix Devel) <devel@unixmedia.it>  Sat, 27 Oct 2007 14:07:19 +0200
+
+coova-chilli (1.0.9-1) unstable; urgency=low
+
+  * Fix wrong localstatedir declaration
+  * Changing build dependencies version for libc6-dev
+  * upgrading to latest version
+
+ -- Unixmedia S.r.l. (Medianix Devel) <devel@unixmedia.it>  Sat, 27 Oct 2007 14:07:19 +0200
+
+coova-chilli (1.0.8-1) unstable; urgency=low
+
+  * New upstream release
+  * add dh_makeshlibs call to rules to call ldconfig in postinstall script
+  * add updated glibc dependencies to force use of update library ( fix a
+    compilation bug )
+
+ -- Unixmedia S.r.l. (Medianix Devel) <devel@unixmedia.it>  Tue, 25 Sep 2007 17:25:13 +0200
+
+coova-chilli (1.0.7-1) unstable; urgency=low
+
+  * First debian packaging for Coova version of coova-chilli
+
+ -- Unixmedia S.r.l. (Medianix Devel) <devel@unixmedia.it>  Tue, 21 Aug 2007 17:25:58 +0200

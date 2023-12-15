@@ -48,6 +48,12 @@
 #include <bcmutils.h>
 
 #ifdef RTCONFIG_BCMARM
+#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#include "bcm_flashutil.h"
+#include "bcm_imgutil_api.h"
+#define BOOT_SET_NEW_IMAGE          '0'
+#define BOOT_SET_NEW_IMAGE_ONCE     '2'
+#endif
 #include <bcmendian.h>
 #include <bcmnvram.h>
 #include <shutils.h>
@@ -1232,6 +1238,14 @@ int hnd_nvram_erase()
 #endif
 	sync();
 	_dprintf("Erasing nvram done\n");
+#if defined(EBG15) || defined(EBG19)
+	if(nvram_match(ATE_FACTORY_MODE_STR(), "1") || nvram_match(ATE_UPGRADE_MODE_STR(), "1")) {
+		_dprintf("reset bootimg..\n");
+		if (setBootImageState(BOOT_SET_NEW_IMAGE) != 0) {
+			_dprintf("setBootImageState new failed !");
+		}
+	}
+#endif
 	return err;
 }
 

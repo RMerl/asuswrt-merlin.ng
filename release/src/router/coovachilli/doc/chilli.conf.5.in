@@ -1,0 +1,1053 @@
+.\" * chilli.conf
+.\" * Copyright (C) 2002, 2003, 2004, 2005 Mondru AB.
+.\" * Copyright (C) 2007-2012 David Bird (Coova Technologies)
+.\" *
+.\" * All rights reserved.
+.\" *
+.\" Manual page for chilli
+.\" SH section heading
+.\" SS subsection heading
+.\" LP paragraph
+.\" IP indented paragraph
+.\" TP hanging label
+
+.TH chilli.conf 5 "August 2007"
+.SH NAME
+chilli.conf \-  Chilli Configuration
+
+.SH DESCRIPTION
+
+.B chilli 
+has many configuration parameters which can either be used on the command
+line or in a configuration file. When on the command line, options are
+prefixed with two dashes and may or may not have an equal sign, for
+instance, these are equivalent:
+
+.I chilli --uamallowed www.coova.org --uamanydns
+
+.I chilli --uamallowed="www.coova.org" --uamanydns
+
+Options that do not have arguments behave the same way, just without any
+equal sign or second argument. When in the configuration file, options must
+not have any dashes, but can still be used with or without the equal sign,
+as in:
+
+.I uamallowed "www.coova.org"
+
+.I uamallowed=www.coova.org
+
+.I uamanydns
+
+Options given on the command line take precedent over any options defined in
+a configuration file. The default main configuration file is
+.I @SYSCONFDIR@/chilli.conf 
+which can be overridden using the 
+.B \-\-conf
+option (or just 
+.B \-\-c
+for short) on the command line. Configuration files may also include other
+configuration files as in:
+
+.I include /path/to/chilli/configfile.conf
+
+Blank lines and comment lines starting with 
+.B '#'
+are also allowed in the configuration file.
+
+.SH OPTIONS
+
+As mentioned above, all options below are able to be put on the command line
+(prefixed with '--') or in a configuration file. A few options, shown below
+with the leading dashes, are typically only used on the command line. 
+
+.TP
+.BI --help
+Or
+.B -h
+for short; prints help and exits (command line)
+
+.TP
+.BI --version
+Or
+.B -V
+for short; prints version and exits (command line)
+
+.TP
+.BI --fg
+Or
+.B -f
+for short; runs server in foreground (command line)
+
+.TP
+.BI --debug
+Or
+.B -d
+for short; run server in debug mode (command line)
+
+.TP
+.BI --debugfacility " level"
+Increase the debug level (command line) (should be named debuglevel)
+
+.TP
+.BI --conf " file"
+Or
+.BI -c " file"
+for short; use the configuration file
+.I file
+instead of the default show in
+.B FILES
+(command line)
+
+.TP
+.BI logfacility " facility"
+The 
+.BR syslog(8)
+facility to use for logging.
+
+.TP
+.BI interval " seconds"
+Re-read configuration file and do DNS lookups every interval
+seconds. This has the same effect as sending the HUP signal. If 
+.B interval
+is 0 (zero) this feature is disabled.
+
+.TP
+.BI pidfile " file"
+Filename to put the process id, see
+.B FILES
+for default.
+
+.TP
+.BI statedir " path"
+Directory of non-volatile data, see
+.B FILES
+for default.
+
+.TP
+.BI cmdsock " file"
+UNIX socket used for communication with
+.BR chilli_query(1)
+see
+.B FILES
+for default.
+
+.TP
+.BI cmdsocketport " port"
+UNIX port used for communication with
+.BR chilli_query(1)
+Only used when cmdsocket is not defined.
+Default port is 42424
+
+.TP
+.BI net " net"
+Network address of the uplink interface (default = 192.168.182.0/24). The
+network address is set during initialisation when
+.B chilli
+establishes a tun device for the uplink interface. The network address
+is specified as either <address>/<netmask> (192.168.182.0/255.255.255.0)
+or <address>/<prefix> (192.168.182.0/24).
+
+.TP
+.BI dynip " net"
+Dynamic IP address pool. Specifies a pool of dynamic IP addresses. If
+this option is omitted the network address specified by the
+.B net
+option is used for dynamic IP address allocation. See the 
+.B net
+option for a description of the network address format.
+
+.TP
+.BI statip " net"
+Static IP address pool. Specifies a pool of static IP addresses. With
+static address allocation the IP address of the client can be
+specified by the radius server. Static address allocation can be used
+for both MAC authentication and Wireless Protected Access.
+
+.TP
+.BI dhcpgateway " ipaddress "
+IP address of a DHCP server (on the uplink network). If configured DHCP
+requests will be relayed to this server.
+
+.TP
+.BI dhcpgatewayport " port "
+Port number to use when relaying requests to the DHCP server configured via
+\fI dhcpgateway \fR at. Defaults to 67.
+
+.TP
+.BI dhcprelayagent " ipaddress "
+IP address to use when relaying DHCP requests to the DHCP gateway.
+
+.TP
+.BI dns1 " host"
+DNS Server 1. It is used to inform the client about the DNS address to
+use for host name resolution. If this option is not given the system
+primary DNS is used.
+
+.TP
+.BI dns2 " host"
+DNS Server 2. It is used to inform the client about the DNS address to
+use for host name resolution. If this option is not given the system
+secondary DNS is used.
+
+.TP
+.BI domain " domain"
+Domain name. It is used to inform the client about the domain name to
+use for DNS lookups.
+
+.TP
+.BI ipup " script"
+Script executed after the TUN/TAP network interface has been brought up.
+Executed with the following parameters: 
+.I <device-name> <ip-address> <net-mask>
+and with environment variables:
+.RS
+.TP
+.BI DEV= <tun/tap-device-name>
+The TUN/TAP device being brought up.
+
+.TP
+.BI ADDR= <tun/tap-device-ip>
+The TUN/TAP device IP address being brought up.
+
+.TP
+.BI MASK= <tun/tap-device-mask>
+The TUN/TAP device net mask being brought up.
+
+.TP
+.BI NET= <tun/tap-device-net>
+The TUN/TAP device network being brought up.
+
+.TP
+.BI DHCPIF= <interface>
+The 
+.B dhcpif 
+configured in 
+.BR chilli.conf(5)
+
+.TP
+.BI UAMPORT= <port-num>
+The 
+.B uamport 
+configured in 
+.BR chilli.conf(5)
+
+.TP
+.BI UAMUIPORT= <port-num>
+The 
+.B uamuiport 
+configured in 
+.BR chilli.conf(5)
+
+.RE
+
+.TP
+.BI ipdown " script"
+Script executed after the tun network interface has been taken down
+with the same arguments and environment variables as above.
+
+.TP
+.BI conup " script"
+Script executed after a session is authorized.  Executed with the following
+environment variables (see source code for possibly more):
+.RS
+
+.TP
+.BI DEV= <tun/tap-device>
+The TUN/TAP device.
+
+.TP
+.BI ADDR= <chilli-ip>
+IP Address of chilli, see the
+.B uamlisten
+option.
+
+.TP
+.BI NET= <chilli-net>
+Network of chilli, see the
+.B net
+option.
+
+.TP
+.BI MASK= <chilli-net-mask>
+Network mask of chilli, see the
+.B net
+options.
+
+.TP
+.BI NAS_IP_ADDRESS= <radiuslisten>
+Is set to the 
+.B radiuslisten 
+value.
+
+.TP
+.BI NAS_ID= <nas-id>
+The 
+.B radiusnasid
+option.
+
+.TP
+.BI WISPR_LOCATION_ID= <location-id>
+The 
+.B radiuslocationid
+option.
+
+.TP
+.BI WISPR_LOCATION_NAME= <location-name>
+The 
+.B radiuslocationname
+option.
+
+.TP
+.BI USER_NAME= <username>
+User-name used to login.
+
+.TP
+.BI FRAMED_IP_ADDRESS= <client-ip>
+The client's IP Address.
+
+.TP
+.BI CALLING_STATION_ID= <client-mac>
+The client's MAC Address.
+
+.TP
+.BI CALLED_STATION_ID= <chilli-mac>
+The MAC address of the chilli interface.
+
+.TP
+.BI FILTER_ID= <filter>
+A possible filter ID returned in RADIUS Filter-ID.
+
+.TP
+.BI SESSION_TIMEOUT= <seconds>
+The max session time, as set by RADIUS Session-Timeout.
+
+.TP
+.BI IDLE_TIMEOUT= <seconds>
+The max idle time, as set by RADIUS Idle-Timeout.
+
+.TP
+.BI WISPR_BANDWIDTH_MAX_UP= <bandwidth>
+Max up stream bandwidth set by RADIUS WISPr-Bandwidth-Max-Up.
+
+.TP
+.BI WISPR_BANDWIDTH_MAX_DOWN= <bandwidth>
+Max down stream bandwidth set by RADIUS WISPr-Bandwidth-Max-Down.
+
+.TP
+.BI CHILLISPOT_MAX_INPUT_OCTETS= <bytes>
+Max input octets set by RADIUS ChilliSpot-Max-Input-Octets.
+
+.TP
+.BI CHILLISPOT_MAX_OUTPUT_OCTETS= <bytes>
+Max output octets set by RADIUS ChilliSpot-Max-Output-Octets.
+
+.TP
+.BI CHILLISPOT_MAX_TOTAL_OCTETS= <bytes>
+Max total octets set by RADIUS ChilliSpot-Max-Total-Octets.
+
+.RE
+
+.TP
+.BI condown " script"
+Script executed after a session has moved from authorized state to unauthorized
+with the same environment variables as above.
+
+.TP
+.BI ssid " ssid"
+A parameter that is passed on to the UAM server in the initial redirect
+URL. 
+
+.TP
+.BI vlan " vlan"
+A parameter that is passed on to the UAM server in the initial redirect
+URL. 
+
+.TP
+.BI nasip " ipaddress"
+Value to use in RADIUS NAS-IP-Address attribute. If not present, 
+.B radiuslisten
+is used (which defaults to "0.0.0.0").
+
+.TP
+.BI nasmac " mac"
+MAC address value to use in RADIUS Called-Station-ID attribute. If not present, 
+the MAC address of the 
+.B dhcpif
+is used for Called-Station-ID.
+
+.TP
+.BI radiuslisten " host"
+Local interface IP address to use for the radius interface. Defaults to the
+value used in RADIUS NAS-IP-Address when
+.B nasip
+is not set.
+
+.TP
+.BI radiusserver1 " host"
+The IP address of radius server 1 (default=rad01.coova.org).
+
+.TP
+.BI radiusserver2 " host"
+The IP address of radius server 2 (default=rad01.coova.org).
+
+.TP
+.BI radiusauthport " port" 
+The UDP port number to use for radius authentication requests (default 1812).
+
+.TP
+.BI radiusacctport " port" 
+The UDP port number to use for radius accounting requests (default 1813).
+
+.TP
+.BI radiussecret " secret"
+Radius shared secret for both servers (default coova-anonymous). This
+secret should be changed in order not to compromise security.
+
+.TP
+.BI radiusnasid " id"
+Network access server identifier (default nas01).
+
+.TP
+.BI radiuslocationid " id"
+WISPr Location ID. Should be in the format: isocc=<ISO_Country_Code>,
+cc=<E.164_Country_Code>, ac=<E.164_Area_Code>, network=<ssid/ZONE>. This
+parameter is further described in the document: Wi-Fi Alliance -
+Wireless ISP Roaming - Best Current Practices v1, Feb 2003.
+
+.TP
+.BI radiuslocationname " name"
+WISPr Location Name. Should be in the format:
+<HOTSPOT_OPERATOR_NAME>,<LOCATION>. This parameter is further
+described in the document: Wi-Fi Alliance - Wireless ISP Roaming -
+Best Current Practices v1, Feb 2003.
+
+.TP
+.BI radiusnasporttype " type"
+Value of NAS-Port-Type attribute. Defaults to 19
+(Wireless-IEEE-802.11).
+
+.TP
+.BI radiusoriginalurl
+Flag (defaults to off) to send the ChilliSpot-OriginalURL RADIUS VSA in
+Access-Request. 
+
+.TP
+.BI adminuser " username"
+User-name to use for Administrative-User authentication in order to pick up
+chilli configurations and establish a device 'system' session.
+
+.TP
+.BI adminpasswd " password"
+Password to use for Administrative-User authentication in order to pick up
+chilli configurations and establish a device 'system' session.
+
+.TP
+.BI adminupdatefile " filename" 
+The file to use as the Administrative-User update file. When used in
+combination with the above adminuser and adminpasswd options,
+ChilliSpot-Config RADIUS attributes found in the Administrative-User
+Access-Accept are put into the specified file. If the file changes,
+chilli will reload it's configuration (it's assumed that this file is
+included into the chilli configuration file).
+
+.TP
+.B swapoctets
+Swap the meaning of "input octets" and "output octets" as it related to
+RADIUS attribtues.
+
+.TP
+.B openidauth
+Allows OpenID authentication by sending
+.I ChilliSpot-Config=allow-openidauth
+in RADIUS Access-Requests to inform the RADIUS server of the option.
+
+.TP
+.B wpaguests
+Allows WPA Guest authentication by sending
+.I ChilliSpot-Config=allow-wpa-guests
+in RADIUS Access-Requests to inform the RADIUS server of the option. The
+RADIUS may return with an Access-Accept containing
+.I ChilliSpot-Config=require-uam-auth
+to give WPA access, but enforce the captive portal.
+
+.TP
+.BI coaport " port"
+UDP port to listen to for accepting radius disconnect requests.
+
+.TP
+.B coanoipcheck 
+If this option is given no check is performed on the source IP address
+of radius disconnect requests. Otherwise it is checked that radius
+disconnect requests originate from 
+.B radiusserver1
+or
+.B radiusserver2.
+
+.TP
+.BI proxylisten " host"
+Local interface IP address to use for accepting radius requests.
+
+.TP
+.BI proxyport " port"
+UDP Port to listen to for accepting radius requests.
+
+.TP
+.BI proxyclient " host"
+IP address from which radius requests are accepted. If omitted the
+server will not accept radius requests.
+
+.TP
+.BI proxysecret " secret"
+Radius shared secret for clients. If not specified it defaults to
+.B radiussecret.
+
+.TP
+.BI dhcpif " dev"
+Ethernet interface to listen to for the downlink interface. This
+option must be specified.
+
+.TP
+.B usetap
+Use the TAP interface instead of TUN (Linux only).
+
+.TP
+.B noarpentries
+Do not create arp table entries in when using TAP. (Linux only).
+
+.TP
+.BI nexthop " mac-address"
+Specify a MAC address which is the layer 2 next hop to route
+packets to (used with
+.B usetap
+only).
+
+.TP
+.BI rtmonfile " file"
+Option to launch the 
+.I chilli_rtmon
+daemon with the specified file as the update file. The 
+.I chilli_rtmon
+daemon will update the file with a 
+.BI nexthop
+configuration entry before sending 
+.I chilli
+a SIGHUP to reread it's configuration. 
+
+.TP
+.BI tcpwin " number"
+Specify an integer value for the TCP Window and TCP Maximum Segment Size. 
+If set, packets are rewritten with the values for both Window and MSS. 
+
+.TP
+.BI tundev " dev"
+The specific device to use for the TUN/TAP interface.
+
+.TP
+.BI txqlen " bytes"
+The TX queue length to set on the TUN/TAP interface.
+
+.TP
+.BI dhcpmac " address"
+MAC address to listen to. If not specified the MAC address of the
+interface will be used. The MAC address should be chosen so that it
+does not conflict with other addresses on the LAN. An address in the
+range 00:00:5E:00:02:00 - 00:00:5E:FF:FF:FF falls within the IANA
+range of addresses and is not allocated for other purposes.
+.RS
+The
+.B dhcpmac
+option can be used in conjunction with access filters in the access
+points, or with access points which supports packet forwarding to a
+specific MAC address. Thus it is possible at the MAC level to separate
+access point management traffic from user traffic for improved system
+security.
+
+The
+.B dhcpmac
+option will set the interface in promisc mode.
+.RE
+
+.TP
+.BI lease " seconds"
+Use a DHCP lease of seconds (default 600).
+
+.TP
+.BI dhcpstart " number"
+Where to start assigning IP addresses (default 10).
+
+.TP
+.BI dhcpend " number"
+Where to stop assigning IP addresses (default 254).
+
+.TP
+.B dhcpbroadcast
+Always respond to DHCP to the broadcast IP, when no relay.
+
+.TP
+.B eapolenable
+If this option is given IEEE 802.1x authentication is enabled. ChilliSpot
+will listen for EAP authentication requests on the interface specified by
+.B dhcpif. 
+EAP messages received on this interface are forwarded to the radius server.
+
+.TP
+.B ieee8021q
+Option to enable support for 802.1Q/VLAN network on the
+.B dhcpif
+interface. 
+
+.TP
+.BI uamserver " url"
+URL of web server to use for authenticating clients.
+
+.TP
+.BI uamhomepage " url"
+URL of homepage to redirect unauthenticated users to. If not specified this defaults to 
+.B uamserver.
+
+.TP
+.BI uamaaaurl " url"
+When chilli is built with the 
+.I --enable-chilliproxy
+compile-time option, this configuration option can be used to define 
+a URL to use for the HTTP AAA protocol described here:
+http://www.coova.org/CoovaChilli/Proxy
+
+.TP
+.BI wisprlogin " url"
+A specific URL to be given in WISPr XML LoginURL. Otherwise,
+.B uamserver
+is used. 
+
+.TP
+.BI uamsecret " secret"
+Shared secret between uamserver and chilli. This secret should be set
+in order not to compromise security.
+
+.TP
+.BI uamlisten " host"
+IP address to listen to for authentication of clients. If an
+unauthenticated client tries to access the Internet she will be
+redirected to this address.
+
+.TP
+.BI uamport " port"
+TCP port to bind to for authenticating clients (default = 3990).
+If an unauthenticated client tries to access the Internet she will be
+redirected to this port on the
+.B uamlisten
+IP address.
+
+.TP
+.BI uamuiport " port"
+TCP port to bind to for only serving embedded content.
+
+.TP
+.BI uamallowed " domain"
+Comma separated list of resources the client can access without first
+authenticating. Each entry in the list can be a domain names, IP addresses,
+or network segment. Example:
+
+.RS
+.BI uamallowed " www.chillispot.org,10.11.12.0/24"
+
+Where each entry can be made more specific by specifying a protocol and port
+in the format 
+.I host/network:port
+or
+.I protocol:host/network
+or
+.I protocol:host/network:port
+where 
+.I protocol 
+is a protocol name from /etc/protocols,
+.I host/network
+is just as above (a domain, IP, or network), and
+.I port 
+is a port number. Example:
+
+.BI uamallowed " coova.org:80,icmp:coova.org"
+
+Adding to your walled garden is useful for allowing access to a credit card payment gateways, 
+community website, or other publicly available resources.
+
+ChilliSpot resolves the domain names to a set of IP addresses during
+startup. Some big sites change the returned IP addresses for each
+lookup. This behaviour is not compatible with this option. Domain names in
+the list do get updated periodically based on the 
+.B interval
+option.
+
+It is possible to specify the 
+.B uamallowed 
+option several times. This is useful if many domain names have to be
+specified. 
+.RE
+
+.TP
+.BI uamdomain " domain"
+One domain prefix per use of the option; defines a list of domain names to
+automatically add to the walled garden. This is done by the inspecting of
+DNS packets being sent back to the subscriber. 
+
+.TP
+.BI uamregex " host-pattern::path-pattern::qs-pattern"
+When chilli is built with the 
+.B --enable-chilliredir
+option given to the configure script, the 
+.B uamregex
+option is available. The value should be a
+.B ::
+separated list of three values; the regex patterns to match the Host header, the URL path, and the query string of the request. The patterns follow the 
+.BR regex(7)
+syntax with the addition of 
+.BI *
+meaning anything (or to not check that field) and any pattern starting with 
+.BI !
+will be negated in meaning. 
+
+Examples:
+
+.I --uamregex='.google.com$::!^mail/::*'
+
+This will allow all requests to a .google.com host except if the URL starts with mail (links to Gmail). 
+
+.TP
+.BI defsessiontimeout " seconds"
+Default session timeout (max session time) unless otherwise set by RADIUS
+(defaults to 0, meaning unlimited).
+
+.TP
+.BI defidletimeout " seconds"
+Default idle timeout (max idle time) unless otherwise set by RADIUS
+(defaults to 0, meaning unlimited).
+
+.TP
+.BI definteriminterval " seconds"
+Default interim-interval for RADIUS accounting unless otherwise set by RADIUS
+(defaults to 0, meaning unlimited).
+
+.TP
+.BI defbandwidthmaxdown
+Default bandwidth max down set in bps, same as WISPr-Bandwidth-Max-Down.
+
+.TP
+.BI defbandwidthmaxup
+Default bandwidth max up set in bps, same as WISPr-Bandwidth-Max-Up.
+
+.TP
+.B acctupdate
+Allow updating of session parameters with RADIUS attributes sent in
+Accounting-Response. 
+
+.TP
+.BI wwwdir " path"
+Directory where embedded local web content is placed. This content is
+accessible using the URL format http://<uamlisten>:<uamport>/www/<filename>
+
+.TP
+.BI wwwbin " script"
+Executable to run as a CGI type program (like haserl) for URLs with extention 
+.B .chi
+- in the format
+http://<uamlisten>:<uamport>/www/<file>.chi 
+
+.TP
+.BI uamui " script"
+An init.d style program to handle local content on the 
+.B uamuiport
+web server.
+
+.TP
+.B uamanydns 
+Allow any DNS server.
+Normally unauthenticated clients are only allowed to communicate with the
+DNS servers specified by the 
+.B dns1
+and
+.B dns2
+options. If the
+.B uamanydns
+option is given ChilliSpot will allow the client to use all DNS
+servers. This is convenient for clients which are configured to
+use a fixed set of DNS servers. Since the server may not be available,
+requests are forwarded to the 
+.B dns1
+server.
+
+.TP
+.BI uamlogoutip " ipaddress"
+Use this IP address to instantly logout a client accessing it (defaults to 1.0.0.0).
+
+.TP
+.BI uamaliasip " ipaddress"
+A special IP address that will always get hijacked to the UAM server
+(either to the uamuiport, if defined, otherwise uamport; defaults to 1.0.0.1). 
+
+.TP
+.BI uamaliasname " name"
+An (unqualified, so no dots) hostname that is used as a DNS alias for the
+.B uamaliasip
+defined above. Any DNS request for this hostname, or this hostname under the 
+.B domain
+will be returned with the
+.B uamaliasip
+IP address. 
+
+.TP
+.B dnsparanoia
+Inspect DNS packets and drop responses with any non- A, CNAME, SOA, or MX
+records (to prevent dns tunnels; experimental). 
+
+.TP
+.B domaindnslocal
+Option to have chilli return the 
+.B uamaliasip
+for all DNS requests for a hostname under the 
+.B domain
+that is configured.
+
+.TP
+.B uamanyip
+Allow clients to use any IP settings they wish by spoofing ARP
+(experimental). 
+
+.TP
+.B nouamsuccess
+Do not return to UAM server on login success, just redirect to original URL.
+
+.TP
+.B nouamwispr
+Do not do any WISPr XML, assume the back-end is doing this instead.
+
+.TP
+.B usestatusfile
+Write the status of clients in a non-volatile state file (experimental).
+
+.TP
+.B chillixml
+Return the so-called Chilli XML along with WISPr XML.
+
+.TP
+.B macauth
+If this option is given ChilliSpot will try to authenticate all users
+based on their mac address alone. The User-Name sent to the radius
+server will consist of the MAC address and an optional suffix which
+is specified by the
+.B macsuffix
+option. If the 
+.B macauth
+option is specified the 
+.B macallowed
+option is ignored.
+
+.TP
+.BI macallowed " mac"
+List of MAC addresses for which MAC authentication will be performed.
+Example:
+
+.RS
+.BI macallowed " 00-0A-5E-AC-BE-51,00-30-1B-3C-32-E9"
+
+The User-Name sent to the radius server will consist of the MAC address
+and an optional suffix which is specified by the
+.B macsuffix
+option. If the 
+.B macauth
+option is specified the 
+.B macallowed
+option is ignored.
+
+It is possible to specify the 
+.B macallowed 
+option several times. This is useful if many mac addresses has to be
+specified.
+.RE
+
+.TP
+.BI macsuffix " suffix"
+Suffix to add to the MAC address in order to form the User-Name, which
+is sent to the radius server.
+
+.TP
+.BI macpasswd " password"
+Password used when performing MAC authentication. (default = password)
+
+.TP
+.B macallowlocal
+An option to allow MAC authentication based on
+.B macallowed
+without the use of RADIUS authentication.
+
+.TP
+.BI ethers " file"
+A file containing MAC address and IP address mappings for DHCP allocation.
+The file should be formatted as:
+
+.RS
+00-XX-XX-XX-XX-XX  IP.IP.IP.IP
+.RE
+
+.TP
+.BI localusers " file"
+A colon seperated file containing usernames and passwords of locally
+authenticated users. 
+
+.TP
+.BI postauthproxy " ipaddress"
+Used with
+.B postauthproxyport
+to define a post authentication HTTP proxy server.
+
+.TP
+.BI postauthproxyport " port"
+Used with
+.B postauthproxy
+to define a post authentication HTTP proxy server.
+
+.TP
+.BI locationname " name"
+Human readable location name used in JSON interface.
+
+.TP
+.B papalwaysok
+(now depreciated; always on) Was used to allow PAP authentication.
+
+.SH SSL OPTIONS
+
+The following options are available when chilli is built with SSL support. 
+
+.TP
+.BI sslkeyfile " filename"
+Defines the location of the PEM formatted private key file.
+
+.TP
+.BI sslkeypass " password"
+The password (if any) that protects the private key.
+
+.TP
+.BI sslcertfile " filename"
+Defines the location of the PEM formatted certificate file.
+
+.TP
+.BI sslcafile " filename"
+Defines the location of the PEM formatted CA certificate file.
+
+.TP
+.B redirssl
+When set, HTTPS requests by unauthorized clients get hijacked instead of dropped.
+Requires at least
+.B sslkeyfile
+and
+.B sslcertfile
+to be defined.
+
+.TP
+.B uamuissl
+When set, the uamuiport is enabled with SSL. Requires at least
+.B sslkeyfile
+and
+.B sslcertfile
+to be defined.
+
+.TP
+.B radsec
+When set, a RadSec RADIUS tunnel is establised. Requires at least
+.B sslkeyfile
+,
+.B sslcertfile
+, and
+.B sslcafile
+to be defined.
+
+.SH FILES
+.I @SYSCONFDIR@/chilli.conf
+.RS
+The main 
+.B chilli
+configuration file. Per default, this file includes three other files;
+.B main.conf, hs.conf, 
+and 
+.B local.conf. 
+The main.conf and hs.conf are created by
+the shell script routines in
+.B functions
+based on configurations in the files mentioned below and possibility taking
+some configurations from a remote RADIUS server or URL. The local.conf file is
+reserved for location specific configurations. 
+
+.RE
+.I @ETCCHILLI@/defaults
+.RS
+Default configurations used by the 
+.B chilli
+init.d and 
+.B functions
+scripts in creating the actual configuration files. See the comments in this
+file for more information on how to configure 
+.B chilli
+and related scripts and embedded content.
+.RE
+
+.RE
+.I @ETCCHILLI@/config
+.RS
+Location specific configurations used by
+.B chilli
+init.d and 
+.B functions
+scripts. Copy the 
+.B defaults
+file mentioned above and edit. This file is loaded after the 
+.B defaults
+and thus will override settings.
+.RE
+
+.RE
+.I @ETCCHILLI@/functions
+.RS
+Helps configure 
+.B chilli
+by loading the above configurations, sets some defaults, and
+provides functions for writing 
+.B main.conf, hs.conf, 
+and
+.B local.conf 
+based on local and possibily centralized settings. 
+.RE
+
+.RE
+.I @INITDIR@/chilli
+.RS
+The init.d file for 
+.B chilli
+which defaults to using the above configurations to build a set of
+configurations files in the @ETCCHILLI@ directory - taking local
+configurations and optionally centralized configurations from RADIUS or a
+URL. 
+
+.RE
+
+.SH "SEE ALSO"
+.BR chilli(8)
+.BR chilli-radius(5)
+.BR chilli_opt(1)
+.BR chilli_radconfig(1)
+.BR syslogd(8)
+
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+The original ChilliSpot project homepage is/was at www.chillispot.org.
+
+.SH AUTHORS
+
+David Bird <david@coova.com>
+
+Copyright (C) 2002-2005 by Mondru AB., 2006-2012 David Bird (Coova Technologies) All rights reserved.
+
+CoovaChilli is licensed under the GNU General Public License.

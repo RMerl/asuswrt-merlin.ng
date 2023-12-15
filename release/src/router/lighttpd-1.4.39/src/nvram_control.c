@@ -696,9 +696,9 @@ void start_ssl()
             if (save) {
                 fprintf(stderr, "Save SSL certificate...\n"); // tmp test
                 if (nvram_get_file("https_crt_file", "/tmp/cert.tgz", 8192)) {
-                        system("tar -xzf /tmp/cert.tgz -C / etc/cert.pem etc/key.pem");
+                        system("tar -xzf /tmp/cert.tgz -C / " HTTPD_CERTS_KEYS_STR);
                         usleep(1000*100);
-                        system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
+			system("cat " HTTPD_KEY " " HTTPD_CERT " > " LIGHTTPD_CERTKEY);
                         ok = 1;
                     unlink("/tmp/cert.tgz");
                 }
@@ -720,7 +720,7 @@ void start_ssl()
                 }
                 free(cmd_app);
 
-                system("tar -C / -czf /tmp/cert.tgz etc/cert.pem etc/key.pem");
+                system("tar -C / -czf /tmp/cert.tgz " HTTPD_CERTS_KEYS_STR);
                 while(-1==access("/tmp/cert.tgz",F_OK))
                 {
                     usleep(1000*100);

@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <unistd.h>
+#include <time.h>
 #include <rc.h>
 #include <bcmnvram.h>
 #include <shared.h>
@@ -46,47 +47,97 @@ static void hmac_md5( const unsigned char *input, size_t ilen, unsigned char *ou
 	MD5_Final(output, &ctx);
 }
 
+int checkTokenExpiration(const char *expireTime)
+{
+	if (expireTime == NULL || strlen(expireTime) == 0) {
+		return -1;
+	}
+
+	struct tm expire_tm;
+	time_t current_time;
+	time_t expire_time_t;
+
+	time(&current_time);
+	struct tm *current_utc_time = gmtime(&current_time); // Get current UTC time
+	time_t current_utc_time_t = mktime(current_utc_time);
+
+	// Try parsing as "%Y-%m-%d %H:%M:%S" format
+	if (strptime(expireTime, "%Y-%m-%d %H:%M:%S", &expire_tm) != NULL) {
+		expire_time_t = mktime(&expire_tm);
+		if (expire_time_t != -1) {
+			if (current_utc_time_t >= expire_time_t) {
+				return 1; // Already reached or exceeded the expiration time
+			} else {
+				return 0; // Not yet reached the expiration time
+			}
+		}
+	}
+
+	// Try parsing as a timestamp (assuming expireTime is in seconds)
+	char *endptr;
+	long timestamp = strtol(expireTime, &endptr, 10);
+	if (*endptr == '\0') {
+		ASUSDDNS_DBG("Now timestamp(UTC)=%ld\n", (long)current_utc_time_t);
+		if (current_utc_time_t >= timestamp) {
+			return 1; // Already reached or exceeded the expiration time
+		} else {
+			return 0; // Not yet reached the expiration time
+		}
+	}
+
+	// Parsing failed
+	return -1;
+}
+
 static int _update_userticket()
 {
 	char event[AAE_MAX_IPC_PACKET_SIZE];
 	char out[AAE_MAX_IPC_PACKET_SIZE];
-	
-	if(strlen(nvram_safe_get("oauth_dm_refresh_ticket")) == 0)	//APP not registered.
-	{
-		return ASUSDDNS_ERR_NO_DM_REFRESH_TICKET;
-	}
+	char* oauth_dm_user_ticket_expiretime = nvram_safe_get("oauth_dm_user_ticket_expiretime");
+	ASUSDDNS_DBG("Old userticket expiretime(UTC)=%s\n", oauth_dm_user_ticket_expiretime);
 
-	ASUSDDNS_DBG("Update userticket!\n");
-	snprintf(event, sizeof(event), AAE_DDNS_GENERIC_MSG, AAE_EID_DDNS_REFRESH_TOKEN);
-	
-	aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
-	
-	json_object *root = NULL;
-	json_object *ddnsObj = NULL;
-	json_object *eidObj = NULL;
-	json_object *stsObj = NULL;
-	root = json_tokener_parse((char *)out);
-	json_object_object_get_ex(root, AAE_DDNS_PREFIX, &ddnsObj);
-	json_object_object_get_ex(ddnsObj, AAE_IPC_EVENT_ID, &eidObj);
-	json_object_object_get_ex(ddnsObj, AAE_IPC_STATUS, &stsObj);
-	if (!ddnsObj || !eidObj || !stsObj)
+	if ((strlen(oauth_dm_user_ticket_expiretime) == 0) || (checkTokenExpiration(oauth_dm_user_ticket_expiretime) != 0))
 	{
-		ASUSDDNS_DBG("Failed to aae_refresh_ticket\n");
-	}
-	else
-	{
-		int eid = json_object_get_int(eidObj);
-		char *status = json_object_get_string(stsObj);
-		if ((eid == AAE_EID_DDNS_REFRESH_TOKEN) && (!strcmp(status, "0")))
+		if(strlen(nvram_safe_get("oauth_dm_refresh_ticket")) == 0)	//APP not registered.
 		{
-			ASUSDDNS_DBG("Success to aae_refresh_ticket\n");
+			return ASUSDDNS_ERR_NO_DM_REFRESH_TICKET;
 		}
-		else
+
+		ASUSDDNS_DBG("Update userticket!\n");
+		snprintf(event, sizeof(event), AAE_DDNS_GENERIC_MSG, AAE_EID_DDNS_REFRESH_TOKEN);
+		
+		aae_sendIpcMsgAndWaitResp(MASTIFF_IPC_SOCKET_PATH, event, strlen(event), out, sizeof(out), 5);
+		
+		json_object *root = NULL;
+		json_object *ddnsObj = NULL;
+		json_object *eidObj = NULL;
+		json_object *stsObj = NULL;
+		root = json_tokener_parse((char *)out);
+		json_object_object_get_ex(root, AAE_DDNS_PREFIX, &ddnsObj);
+		json_object_object_get_ex(ddnsObj, AAE_IPC_EVENT_ID, &eidObj);
+		json_object_object_get_ex(ddnsObj, AAE_IPC_STATUS, &stsObj);
+		if (!ddnsObj || !eidObj || !stsObj)
 		{
 			ASUSDDNS_DBG("Failed to aae_refresh_ticket\n");
 		}
+		else
+		{
+			int eid = json_object_get_int(eidObj);
+			const char *status = json_object_get_string(stsObj);
+			if ((eid == AAE_EID_DDNS_REFRESH_TOKEN) && (!strcmp(status, "0")))
+			{
+				ASUSDDNS_DBG("Success to aae_refresh_ticket\n");
+			}
+			else
+			{
+				ASUSDDNS_DBG("Failed to aae_refresh_ticket\n");
+			}
+		}
+		json_object_put(root);
 	}
-	json_object_put(root);
+	else {
+		ASUSDDNS_DBG("userticket hasn't expired yet\n");
+	}
 
 /*	stop_mastiff();
 	start_mastiff();
@@ -113,29 +164,19 @@ void delete_char(char str[], char ch)
 
 static int _acquire_token(const char *res_path, const int check_CA)
 {
-	CURL *curl;
-	CURLcode res;
+	CURLcode res = -1;
 	char *cusid = NULL, *userticket = NULL, *auth_status = NULL;
 	char ddns_url[256], devicemac[64];
 	json_object *obj = NULL, *cusid_obj = NULL, *userticket_obj = NULL, *devicemac_obj = NULL, *devicemd5mac_obj = NULL, *sid_obj = NULL;
 	unsigned char digest[MD5_DIGEST_BYTES]={0};
-	char md_label_mac[MD5_DIGEST_BYTES * 2 + 1]={0};
-	char *label_mac_str=NULL;
+	char md_lan_mac[MD5_DIGEST_BYTES * 2 + 1]={0};
+	char *lan_mac_str=NULL;
 	const char *auth_string = NULL;
-	int ret, i;
-	FILE *fp_res = NULL;
+	int ret = ASUSDDNS_ERR_INIT_STATE, i;
 
 	if(!res_path)
 	{
 		ASUSDDNS_DBG("No response file path.\n");
-		return ASUSDDNS_ERR_OPEN_FILE_FAIL;
-	}
-
-	fp_res = fopen(res_path, "wb");	
-		
-	if(!fp_res)
-	{
-		ASUSDDNS_DBG("Cannot open file for response data.\n");
 		return ASUSDDNS_ERR_OPEN_FILE_FAIL;
 	}
 	
@@ -146,13 +187,11 @@ static int _acquire_token(const char *res_path, const int check_CA)
 	if(cusid[0] == '\0' || userticket[0] == '\0')
 	{
 		ASUSDDNS_DBG("No userticket.\n");
-		fclose(fp_res);
 		return ASUSDDNS_ERR_NO_USER_TICKET;
 	}
 	if (auth_status[0] == '\0' || (strncmp(auth_status, "0", 1) != 0 && strncmp(auth_status, "2", 1) != 0))
 	{
 		ASUSDDNS_DBG("No sid (service id).\n");
-		fclose(fp_res);
 		return ASUSDDNS_ERR_NO_SID;
 	}
 
@@ -185,7 +224,7 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		goto Err;
 	}
 
-	snprintf(devicemac, sizeof(devicemac), "%s", nvram_safe_get("label_mac"));
+	snprintf(devicemac, sizeof(devicemac), "%s", get_ddns_macaddr());
 	delete_char(devicemac, ':');
 	devicemac_obj = json_object_new_string(devicemac);
 	if(devicemac_obj)
@@ -197,14 +236,14 @@ static int _acquire_token(const char *res_path, const int check_CA)
 		goto Err;
 	}
 
-	label_mac_str = nvram_safe_get("label_mac");
-	hmac_md5(label_mac_str, strlen(label_mac_str), digest);
+	lan_mac_str = nvram_safe_get("lan_hwaddr");
+	hmac_md5((unsigned char *)lan_mac_str, strlen(lan_mac_str), digest);
 	for (i = 0; i < MD5_DIGEST_BYTES; i++)
 	{
-		sprintf(&md_label_mac[i*2], "%02x", (unsigned int)digest[i]);
+		sprintf(&md_lan_mac[i*2], "%02x", (unsigned int)digest[i]);
 	}
 	
-	devicemd5mac_obj = json_object_new_string(md_label_mac);
+	devicemd5mac_obj = json_object_new_string(md_lan_mac);
 	if(devicemd5mac_obj)
 		json_object_object_add(obj, "devicemd5mac", devicemd5mac_obj);
 	else
@@ -238,60 +277,80 @@ static int _acquire_token(const char *res_path, const int check_CA)
 
 	auth_string = json_object_to_json_string(obj);
 	ASUSDDNS_DBG("auth_string=%s\n", auth_string);
-	curl = curl_easy_init();
 
-	if(curl)
-	{
-#ifdef RTCONFIG_ACCOUNT_BINDING
-		if (account_bound && nvram_match("ddns_replace_status", "1") &&
-			((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
-			|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
-			snprintf(ddns_url, sizeof(ddns_url), "https://%s%s",  nvram_safe_get("aae_ddnsinfo"), ASUSDDNS_REQ_TOKEN_PATH);
-		} else
-#endif
-		if(nvram_match("ddns_server_x", "WWW.ASUS.COM.CN")) {
-			snprintf(ddns_url, sizeof(ddns_url), "%s%s",  ASUSDDNS_IP_SERVER_CN, ASUSDDNS_REQ_TOKEN_PATH);
-		} else {
-			snprintf(ddns_url, sizeof(ddns_url), "%s%s",  ASUSDDNS_IP_SERVER, ASUSDDNS_REQ_TOKEN_PATH);
+	int retry = 5;
+	while(retry > 0 && res != CURLE_OK){
+		FILE *fp_res = NULL;
+		CURL *curl = NULL;
+
+		fp_res = fopen(res_path, "wb");
+		if(!fp_res)
+		{
+			ASUSDDNS_DBG("Cannot open file for response data.\n");
+			return ASUSDDNS_ERR_OPEN_FILE_FAIL;
 		}
 
-		curl_easy_setopt(curl, CURLOPT_URL, ddns_url);
+		curl = curl_easy_init();
 
-		curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
-
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, check_CA); /* do not verify subject/hostname */
-		curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, check_CA); /* since most certs will be self-signed, do not verify against CA */
-
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDS, auth_string);
-		curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(auth_string));
-
-		/* enable verbose for easier tracing */
-		curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
-		curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
-		curl_easy_setopt(curl, CURLOPT_TIMEOUT, 120L);
-		curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _write_data);
-		curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp_res);
-		curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
-
-		res = curl_easy_perform(curl);
-	
-		curl_easy_cleanup(curl);
-		if(res == CURLE_OK)
+		if(curl)
 		{
-			ret = ASUSDDNS_ERR_SUCCESS;
+#ifdef RTCONFIG_ACCOUNT_BINDING
+			if (account_bound && nvram_match("ddns_replace_status", "1") &&
+				((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
+				|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
+				snprintf(ddns_url, sizeof(ddns_url), "https://%s%s",  nvram_safe_get("aae_ddnsinfo"), ASUSDDNS_REQ_TOKEN_PATH);
+			} else
+#endif
+			if(nvram_match("ddns_server_x", "WWW.ASUS.COM.CN")) {
+				snprintf(ddns_url, sizeof(ddns_url), "%s%s",  ASUSDDNS_IP_SERVER_CN, ASUSDDNS_REQ_TOKEN_PATH);
+			} else {
+				snprintf(ddns_url, sizeof(ddns_url), "%s%s",  ASUSDDNS_IP_SERVER, ASUSDDNS_REQ_TOKEN_PATH);
+			}
+
+			curl_easy_setopt(curl, CURLOPT_URL, ddns_url);
+
+			curl_easy_setopt(curl, CURLOPT_PROTOCOLS, CURLPROTO_HTTPS);
+
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYHOST, check_CA); /* do not verify subject/hostname */
+			curl_easy_setopt(curl, CURLOPT_SSL_VERIFYPEER, check_CA); /* since most certs will be self-signed, do not verify against CA */
+
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDS, auth_string);
+			curl_easy_setopt(curl, CURLOPT_POSTFIELDSIZE, strlen(auth_string));
+
+			/* enable verbose for easier tracing */
+			curl_easy_setopt(curl, CURLOPT_VERBOSE, 1L);
+			curl_easy_setopt(curl, CURLOPT_CONNECTTIMEOUT, 10L);
+			curl_easy_setopt(curl, CURLOPT_TIMEOUT, 120L);
+			curl_easy_setopt(curl, CURLOPT_WRITEFUNCTION, _write_data);
+			curl_easy_setopt(curl, CURLOPT_WRITEDATA, fp_res);
+			curl_easy_setopt(curl, CURLOPT_FAILONERROR, 1);
+
+			res = curl_easy_perform(curl);
+			fclose(fp_res);
+
+			curl_easy_cleanup(curl);
+			if(res == CURLE_OK)
+			{
+				ASUSDDNS_DBG("CURL perform success\n");
+				ret = ASUSDDNS_ERR_SUCCESS;
+			}
+			else
+			{
+				ASUSDDNS_DBG("CURL perform fail: %s(%d)\n", curl_easy_strerror(res), res);
+				ret = ASUSDDNS_ERR_CURL_ERR;
+				unlink(res_path);
+				retry--;
+				sleep(1);
+			}
 		}
 		else
 		{
+			ASUSDDNS_DBG("Cannot init CURL\n");
 			ret = ASUSDDNS_ERR_CURL_ERR;
-			ASUSDDNS_DBG("CURL perform fail\n");
+			//goto Err;
 		}
 	}
-	else
-	{
-		ASUSDDNS_DBG("Cannot init CURL\n");
-		ret = ASUSDDNS_ERR_CURL_ERR;
-		goto Err;
-	}
+	curl_global_cleanup();
 
 Err:
 	if(cusid_obj)
@@ -302,7 +361,6 @@ Err:
 		json_object_put(devicemd5mac_obj);
 	if(obj)
 		json_object_put(obj);
-	fclose(fp_res);
 	return ret;
 }
 
@@ -329,6 +387,8 @@ static int _check_response(const char *res_path)
 		{
 			json_object_object_get_ex(res_obj, "ddnstoken", &token_obj);			
 			nvram_set("asusddns_token", json_object_get_string(token_obj));
+			json_object_object_get_ex(res_obj, "expiretime", &token_obj);
+			nvram_set("asusddns_token_expiretime", json_object_get_string(token_obj));
 			ret = ASUSDDNS_ERR_SUCCESS;
 		}
 		else
@@ -350,26 +410,37 @@ static int _check_response(const char *res_path)
 int update_asus_ddns_token()
 {
 	int ret;
+	char* asusddns_token_expiretime = nvram_safe_get("asusddns_token_expiretime");
+	ASUSDDNS_DBG("[START] Old ddnstoken expiretime(UTC)=%s\n", asusddns_token_expiretime);
 	
 	nvram_set_int("asusddns_token_state", ASUSDDNS_ERR_INIT_STATE);
-	
-	if(_update_userticket() == ASUSDDNS_ERR_NO_DM_REFRESH_TICKET)
-	{
-		ASUSDDNS_DBG("User does not login the account yet.\n");
-		nvram_set_int("asusddns_token_state", ASUSDDNS_ERR_NO_DM_REFRESH_TICKET);
-		return ASUSDDNS_ERR_NO_DM_REFRESH_TICKET;
-	}
 
-	ret = _acquire_token(ASUSDDNS_REQ_TOKEN_RES, 0);
+	if ((strlen(asusddns_token_expiretime) == 0) || (checkTokenExpiration(asusddns_token_expiretime) != 0) || !json_object_from_file(ASUSDDNS_REQ_TOKEN_RES))
+	{
+		if(_update_userticket() == ASUSDDNS_ERR_NO_DM_REFRESH_TICKET)
+		{
+			ASUSDDNS_DBG("User does not login the account yet.\n");
+			nvram_set_int("asusddns_token_state", ASUSDDNS_ERR_NO_DM_REFRESH_TICKET);
+			return ASUSDDNS_ERR_NO_DM_REFRESH_TICKET;
+		}
+
+		ret = _acquire_token(ASUSDDNS_REQ_TOKEN_RES, 0);
+	}
+	else {
+		ASUSDDNS_DBG("ddnstoken hasn't expired yet\n");
+		ret = ASUSDDNS_ERR_SUCCESS;
+	}
+	
 	if(ret == ASUSDDNS_ERR_SUCCESS)
 	{
 		nvram_set_int("asusddns_token_state", _check_response(ASUSDDNS_REQ_TOKEN_RES));
+		ASUSDDNS_DBG("Now ddnstoken expiretime(UTC)=%s\n", nvram_safe_get("asusddns_token_expiretime"));
 	}
 	else
 	{
 		nvram_set_int("asusddns_token_state", ret);
 	}
-	ASUSDDNS_DBG("Done. ret=%d\n", ret);
+	ASUSDDNS_DBG("[END] Done. ret=%d\n", ret);
 	return ret;
 }
 

@@ -1,0 +1,157 @@
+
+flag = {
+    name        = enet-dmac;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Override destination ethernet MAC addresses";
+    doc         = <<- EOText
+Takes a pair of comma deliminated ethernet MAC addresses which
+will replace the destination MAC address of outbound packets.
+The first MAC address will be used for the server to client traffic
+and the optional second MAC address will be used for the client
+to server traffic.
+
+Example:
+@example
+--enet-dmac=00:12:13:14:15:16,00:22:33:44:55:66
+@end example
+EOText;
+};
+
+
+flag = {
+    name        = enet-smac;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Override source ethernet MAC addresses";
+    doc         = <<- EOText
+Takes a pair of comma deliminated ethernet MAC addresses which
+will replace the source MAC address of outbound packets.
+The first MAC address will be used for the server to client traffic
+and the optional second MAC address will be used for the client 
+to server traffic.
+
+Example:
+@example
+--enet-smac=00:12:13:14:15:16,00:22:33:44:55:66
+@end example
+EOText;
+};
+
+flag = {
+  name     = enet-subsmac;
+  arg-type = string;
+  max      = 9999;
+  stack-arg;
+  descrip  = "Substitute MAC addresses";
+  doc      = <<- EOText
+Allows you to rewrite ethernet MAC addresses of packets. It takes
+comma delimited pair or MACs address and rewrites all occurrences of
+the first MAC with the value of the second MAC.
+Example:
+@example
+--enet-subsmac=00:12:13:14:15:16,00:22:33:44:55:66
+@end example
+EOText;
+};
+
+flag = {
+  name        = enet-mac-seed;
+  arg-type    = number;
+  max         = 1;
+  flags-cant  = enet-smac;
+  flags-cant  = enet-dmac;
+  flags-cant  = enet-subsmac;
+  descrip     = "Randomize MAC addresses";
+  doc         = <<- EOText
+Allows you to randomize ethernet MAC addresses of packets, mostly
+like what @var{--seed} option does for IPv4/IPv6 addresses.
+EOText;
+};
+
+flag = {
+  name         = enet-mac-seed-keep-bytes;
+  arg-type     = number;
+  arg-range    = "1->6";
+  flags-must   = enet-mac-seed;
+  max       = 1;
+  descrip   = "Randomize MAC addresses";
+  doc       = <<- EOText
+Keep some bytes untouched when usinging @var{--enet-mac-seed} option.
+EOText;
+};
+
+/* rewrite 802.1q vlan tags */
+flag = {
+    name        = enet-vlan;
+    max         = 1;
+    descrip     = "Specify ethernet 802.1q VLAN tag mode";
+    arg-type    = string;
+    doc         = <<- EOText
+Allows you to rewrite ethernet frames to add a 802.1q header to standard 802.3
+ethernet headers or remove the 802.1q VLAN tag information.
+@table @bullet
+@item
+@var{add}
+Adds an 802.1q VLAN header to the existing 802.3 ethernet header. If
+a VLAN header already exists, a new VLAN header is added outside of the
+existing header.
+
+Note that you will be allowed to run this option multiple times to create
+more than 2 VLAN headers, however those packets will be valid. At most
+you should have 2 X 802.1q VLAN tags, or outer an 802.1ad and an inner 802.1q
+VLAN tag.
+@item
+@var{del}
+Rewrites the existing 802.1q VLAN header as an 802.3 ethernet header
+EOText;
+};
+
+flag = {
+    name        = enet-vlan-tag;
+    max         = 1;
+    descrip     = "Specify the new ethernet 802.1q VLAN tag value";
+    arg-type    = number;
+    flags-must  = enet-vlan;
+    arg-range   = "0->4095"; /* VID's are 12bit unsigned int's */
+    doc         = "";
+};
+
+flag = {
+    name        = enet-vlan-cfi;
+    max         = 1;
+    descrip     = "Specify the ethernet 802.1q VLAN CFI value";
+    arg-type    = number;
+    flags-must  = enet-vlan;
+    arg-range   = "0->1"; /* one bit */
+    doc         = "";
+};
+
+flag = {
+    name        = enet-vlan-pri;
+    max         = 1;
+    descrip     = "Specify the ethernet 802.1q VLAN priority";
+    flags-must  = enet-vlan;
+    arg-type    = number;
+    arg-range   = "0->7"; /* one byte */
+    doc         = "";
+};
+
+flag = {
+    name        = enet-vlan-proto;
+    max         = 1;
+    flag-must   = enet-vlan;
+    descrip     = "Specify VLAN tag protocol 802.1q or 802.1ad";
+    arg-type    = string;
+    doc         = <<- EOText
+Allows you to specify the protocol of the added VLAN tags.
+@table @bullet
+@item
+@var{802.1q}
+Specifies that 802.1q VLAN headers are to be added. This is the default.
+@item
+@var{802.1ad}
+Specifies that 802.1ad Q-in-Q VLAN headers are to be added. To make valid packets,
+input packets must already have 802.1q VLAN headers.
+EOText;
+};

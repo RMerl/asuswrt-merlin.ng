@@ -1,0 +1,12 @@
+See http://code.google.com/p/waf/ for more information on waf
+
+You can get a svn copy of the upstream source with:
+
+  svn checkout http://waf.googlecode.com/svn/trunk/ waf-read-only
+
+Samba currently uses waf 1.5, which can be found at:
+
+  http://waf.googlecode.com/svn/branches/waf-1.5
+
+To update the current copy of waf, use the update-waf.sh script in this
+directory.

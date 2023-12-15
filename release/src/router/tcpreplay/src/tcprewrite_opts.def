@@ -1,0 +1,300 @@
+/* $Id$ */
+
+/*
+ *   Copyright (c) 2001-2010 Aaron Turner <aturner at synfin dot net>
+ *   Copyright (c) 2013-2022 Fred Klassen <tcpreplay at appneta dot com> - AppNeta
+ *
+ *   The Tcpreplay Suite of tools is free software: you can redistribute it 
+ *   and/or modify it under the terms of the GNU General Public License as 
+ *   published by the Free Software Foundation, either version 3 of the 
+ *   License, or with the authors permission any later version.
+ *
+ *   The Tcpreplay Suite is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with the Tcpreplay Suite.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+autogen definitions options;
+
+copyright = {
+    date        = "2000-2022";
+    owner       = "Aaron Turner and Fred Klassen";
+    eaddr       = "tcpreplay-users@lists.sourceforge.net"; 
+    type        = gpl;
+    author      = <<- EOText
+Copyright 2013-2022 Fred Klassen - AppNeta
+
+Copyright 2000-2012 Aaron Turner
+
+For support please use the tcpreplay-users@lists.sourceforge.net mailing list.
+
+The latest version of this software is always available from:
+http://tcpreplay.appneta.com/
+EOText;
+};
+
+package         = "tcprewrite";
+prog-name       = "tcprewrite";
+prog-title      = "Rewrite the packets in a pcap file.";
+long-opts;
+gnu-usage;
+help-value      = "H";
+save-opts-value = "";
+load-opts-value = "";
+config-header   = "config.h";
+
+#include tcpedit/tcpedit_opts.def
+
+detail = <<- EOText
+Tcprewrite is a tool to rewrite packets stored in @file{pcap(3)} file format,
+such as created by tools such as @file{tcpdump(1)} and @file{wireshark(1)}.
+Once a pcap file has had it's packets rewritten, they can be replayed back
+out on the network using @file{tcpreplay(1)}.
+
+tcprewrite currently supports reading the following DLT types:
+@item
+@var{DLT_C_HDLC} aka Cisco HDLC
+@item
+@var{DLT_EN10MB} aka Ethernet
+@item
+@var{DLT_LINUX_SLL} aka Linux Cooked Socket
+@item
+@var{DLT_RAW} aka RAW IP
+@item
+@var{DLT_NULL} aka BSD Loopback
+@item
+@var{DLT_LOOP} aka OpenBSD Loopback
+@item
+@var{DLT_IEEE802_11} aka 802.11a/b/g
+@item
+@var{DLT_IEEE802_11_RADIO} aka 802.11a/b/g with Radiotap headers
+@item
+@var{DLT_JUNIPER_ETHER} aka Juniper Encapsulated Ethernet
+@item
+@var{DLT_PPP_SERIAL} aka PPP over Serial
+
+Please see the --dlt option for supported DLT types for writing.
+
+The packet editing features of tcprewrite which distinguish between "client"
+and "server" traffic requires a tcpprep(1) cache file.
+
+For more details, please see the Tcpreplay Manual at:
+http://tcpreplay.appneta.com
+EOText;
+
+man-doc = <<- EOMan
+.SH "SEE ALSO"
+tcpdump(1), tcpbridge(1), tcpreplay(1), tcpprep(1), tcpcapinfo(1)
+EOMan;
+
+
+config-header   = "config.h";
+include         = "#include \"defines.h\"\n"
+                "#include \"common.h\"\n"
+                "#include \"config.h\"\n"
+                "#include \"tcprewrite.h\"\n"
+                "#include <stdlib.h>\n"
+                "#include <string.h>\n"
+                "extern tcprewrite_opt_t options;\n";
+
+homerc          = "$$/";
+
+flag = {
+    ifdef       = DEBUG;
+    name        = dbug;
+    value       = d;
+    arg-type    = number;
+    descrip     = "Enable debugging output";
+    arg-range   = "0->5";
+    arg-default = 0;
+    max         = 1;
+    immediate;
+    doc         = <<- EOText
+If configured with --enable-debug, then you can specify a verbosity 
+level for debugging output.  Higher numbers increase verbosity.
+EOText;
+};
+
+
+flag = {
+    name        = infile;
+    value       = i;
+    arg-type    = string;
+    descrip     = "Input pcap file to be processed";
+    max         = 1;
+    immediate;
+    must-set;
+    doc         = "";
+};
+
+flag = {
+    name      = outfile;
+    value     = o;
+    arg-type  = string;
+    descrip   = "Output pcap file";
+    max       = 1;
+    must-set;
+    doc       = "";
+    /* options.outfile is set in post_args, because we need to make
+     * sure that options.infile is processed first
+     */
+};
+
+flag = {
+    name        = cachefile;
+    value       = c;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Split traffic via tcpprep cache file";
+    settable;
+    flag-code   = <<- EOCachefile
+
+    options.cache_packets =
+        read_cache(&options.cachedata, OPT_ARG(CACHEFILE), &options.comment);
+
+EOCachefile;
+    doc         = <<- EOText
+Use tcpprep cache file to split traffic based upon client/server relationships.
+EOText;
+};
+
+
+/* Verbose decoding via tcpdump */
+
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = verbose;
+    value       = v;
+    max         = 1;
+    immediate;
+    descrip     = "Print decoded packets via tcpdump to STDOUT";
+    settable;
+    doc         = "";
+};
+
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = decode;
+    flags-must  = verbose;
+    value       = A;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Arguments passed to tcpdump decoder";
+    doc         = <<- EOText
+When enabling verbose mode (@var{-v}) you may also specify one or
+more additional arguments to pass to @code{tcpdump} to modify
+the way packets are decoded.  By default, -n and -l are used.
+Be sure to quote the arguments so that they are not interpreted
+by tcprewrite.   Please see the tcpdump(1) man page for a complete list of
+options.
+EOText;
+};
+
+
+/* Fragroute */
+flag = {
+    ifdef       = ENABLE_FRAGROUTE;
+    name        = fragroute;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Parse fragroute configuration file";
+    doc         = <<- EOText
+Enable advanced evasion techniques using the built-in fragroute(8)
+engine.  See the fragroute(8) man page for more details.  Important:
+tcprewrite does not support the delay, echo or print commands.
+EOText;
+};
+
+
+flag = {
+    ifdef       = ENABLE_FRAGROUTE;
+    name        = fragdir;
+    flags-must  = cachefile;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Which flows to apply fragroute to: c2s, s2c, both";
+    doc         = <<- EOText
+Apply the fragroute engine to packets going c2s, s2c or both when
+using a cache file.
+EOText;
+};
+
+flag = {
+    name    = skip-soft-errors;
+    max     = 1;
+    descrip = "Skip writing packets with soft errors";
+    doc     = <<- EOText
+In some cases, packets can not be decoded or the requested editing
+is not possible.  Normally these packets are written to the output
+file unedited so that tcpprep cache files can still be used, but if
+you wish, these packets can be suppressed.
+
+One example of this is 802.11 management frames which contain no data.
+EOText;
+};
+
+
+flag = {
+    name        = version;
+    value       = V;
+    descrip     = "Print version information";
+    flag-code   = <<- EOVersion
+
+    fprintf(stderr, "tcprewrite version: %s (build %s)", VERSION, git_version());
+#ifdef DEBUG
+    fprintf(stderr, " (debug)");
+#endif
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Copyright 2013-2022 by Fred Klassen <tcpreplay at appneta dot com> - AppNeta\n");
+    fprintf(stderr, "Copyright 2000-2012 by Aaron Turner <aturner at synfin dot net>\n");
+    fprintf(stderr, "The entire Tcpreplay Suite is licensed under the GPLv3\n");  
+    fprintf(stderr, "Cache file supported: %s\n", CACHEVERSION);
+#ifdef HAVE_LIBDNET
+    fprintf(stderr, "Compiled against libdnet: %s\n", LIBDNET_VERSION);
+#else
+    fprintf(stderr, "Not compiled with libdnet.\n");
+#endif
+#ifdef HAVE_WINPCAP
+    fprintf(stderr, "Compiled against winpcap: %s\n", get_pcap_version());
+#elif defined HAVE_PF_RING_PCAP
+    fprintf(stderr, "Compiled against PF_RING libpcap: %s\n", get_pcap_version());
+#else
+    fprintf(stderr, "Compiled against libpcap: %s\n", get_pcap_version());
+#endif
+#ifdef ENABLE_64BITS
+    fprintf(stderr, "64 bit packet counters: enabled\n");
+#else
+    fprintf(stderr, "64 bit packet counters: disabled\n");
+#endif
+#ifdef ENABLE_VERBOSE
+    fprintf(stderr, "Verbose printing via tcpdump: enabled\n");
+#else
+    fprintf(stderr, "Verbose printing via tcpdump: disabled\n");
+#endif
+#ifdef ENABLE_FRAGROUTE
+    fprintf(stderr, "Fragroute engine: enabled\n");
+#else
+    fprintf(stderr, "Fragroute engine: disabled\n");
+#endif
+    exit(0);
+
+EOVersion;
+    doc         = "";
+};
+
+flag = {
+    name        = less-help;
+    value       = h;
+    immediate;
+    descrip     = "Display less usage information and exit";
+    flag-code   = <<- EOHelp
+
+    USAGE(EXIT_FAILURE);
+
+EOHelp;
+    doc         = "";
+};

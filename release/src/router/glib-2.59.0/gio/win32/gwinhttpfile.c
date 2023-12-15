@@ -29,6 +29,7 @@
 #include "gio/gfile.h"
 #include "gio/gfileattribute.h"
 #include "gio/gfileinfo.h"
+#include "gstrfuncsprivate.h"
 #include "gwinhttpfile.h"
 #include "gwinhttpfileinputstream.h"
 #include "gwinhttpfileoutputstream.h"
@@ -393,10 +394,10 @@ g_winhttp_file_resolve_relative_path (GFile      *file,
   child = g_object_new (G_TYPE_WINHTTP_FILE, NULL);
   child->vfs = winhttp_file->vfs;
   child->url = winhttp_file->url;
-  child->url.lpszScheme = g_memdup (winhttp_file->url.lpszScheme, (winhttp_file->url.dwSchemeLength+1)*2);
-  child->url.lpszHostName = g_memdup (winhttp_file->url.lpszHostName, (winhttp_file->url.dwHostNameLength+1)*2);
-  child->url.lpszUserName = g_memdup (winhttp_file->url.lpszUserName, (winhttp_file->url.dwUserNameLength+1)*2);
-  child->url.lpszPassword = g_memdup (winhttp_file->url.lpszPassword, (winhttp_file->url.dwPasswordLength+1)*2);
+  child->url.lpszScheme = g_memdup2 (winhttp_file->url.lpszScheme, ((gsize) winhttp_file->url.dwSchemeLength + 1) * 2);
+  child->url.lpszHostName = g_memdup2 (winhttp_file->url.lpszHostName, ((gsize) winhttp_file->url.dwHostNameLength + 1) * 2);
+  child->url.lpszUserName = g_memdup2 (winhttp_file->url.lpszUserName, ((gsize) winhttp_file->url.dwUserNameLength + 1) * 2);
+  child->url.lpszPassword = g_memdup2 (winhttp_file->url.lpszPassword, ((gsize) winhttp_file->url.dwPasswordLength + 1) * 2);
   child->url.lpszUrlPath = wnew_path;
   child->url.dwUrlPathLength = wcslen (wnew_path);
   child->url.lpszExtraInfo = NULL;

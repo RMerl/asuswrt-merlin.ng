@@ -2103,7 +2103,7 @@ padding-top:1px;
 	background: rgb(104,5,22);
 }
 .monitor_qos_bg{
-	background: rgb(62,3,13);
+	background: rgba(100, 100, 100, .1);
 }
 .arrow_up{
 	border-color:rgb(62,3,13) rgb(62,3,13) rgb(8,255,240) rgb(62,3,13);

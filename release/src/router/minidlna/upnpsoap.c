@@ -61,6 +61,7 @@
 #include <netdb.h>
 #include <ctype.h>
 
+#include "event.h"
 #include "upnpglobalvars.h"
 #include "utils.h"
 #include "upnphttp.h"
@@ -77,6 +78,8 @@
 #else
 # define __SORT_LIMIT
 #endif
+#define NON_ZERO(x) (x && atoi(x))
+#define IS_ZERO(x) (!x || !atoi(x))
 
 /* Standard Errors:
  *
@@ -96,8 +99,9 @@
  * 800-899 	TBD 			Action-specific errors for non-standard actions.
  * 							Defined by UPnP vendor.
 */
+#define SoapError(x,y,z) _SoapError(x,y,z,__func__)
 static void
-SoapError(struct upnphttp * h, int errCode, const char * errDesc)
+_SoapError(struct upnphttp * h, int errCode, const char * errDesc, const char *func)
 {
 	static const char resp[] =
 		"<s:Envelope "
@@ -120,7 +124,7 @@ SoapError(struct upnphttp * h, int errCode, const char * errDesc)
 	char body[2048];
 	int bodylen;
 
-	DPRINTF(E_WARN, L_HTTP, "Returning UPnPError %d: %s\n", errCode, errDesc);
+	DPRINTF(E_WARN, L_HTTP, "%s Returning UPnPError %d: %s\n", func, errCode, errDesc);
 	bodylen = snprintf(body, sizeof(body), resp, errCode, errDesc);
 	BuildResp2_upnphttp(h, 500, "Internal Server Error", body, bodylen);
 	SendResp_upnphttp(h);
@@ -261,6 +265,7 @@ GetSortCapabilities(struct upnphttp * h, const char * action)
 		  "dc:date,"
 		  "upnp:class,"
 		  "upnp:album,"
+		  "upnp:episodeNumber,"
 		  "upnp:originalTrackNumber"
 		"</SortCaps>"
 		"</u:%sResponse>";
@@ -388,22 +393,25 @@ GetCurrentConnectionInfo(struct upnphttp * h, const char * action)
 #define FILTER_UPNP_ALBUMARTURI			0x00010000
 #define FILTER_UPNP_ALBUMARTURI_DLNA_PROFILEID	0x00020000
 #define FILTER_UPNP_ARTIST			0x00040000
-#define FILTER_UPNP_GENRE			0x00080000
-#define FILTER_UPNP_ORIGINALTRACKNUMBER		0x00100000
-#define FILTER_UPNP_SEARCHCLASS			0x00200000
-#define FILTER_UPNP_STORAGEUSED			0x00400000
+#define FILTER_UPNP_EPISODENUMBER		0x00080000
+#define FILTER_UPNP_EPISODESEASON		0x00100000
+#define FILTER_UPNP_GENRE			0x00200000
+#define FILTER_UPNP_ORIGINALTRACKNUMBER		0x00400000
+#define FILTER_UPNP_SEARCHCLASS			0x00800000
+#define FILTER_UPNP_STORAGEUSED			0x01000000
 /* Not normally used, so leave out of the default filter */
-#define FILTER_UPNP_PLAYBACKCOUNT		0x01000000
-#define FILTER_UPNP_LASTPLAYBACKPOSITION	0x02000000
+#define FILTER_UPNP_PLAYBACKCOUNT		0x02000000
+#define FILTER_UPNP_LASTPLAYBACKPOSITION	0x04000000
 /* Vendor-specific filter flags */
-#define FILTER_SEC_CAPTION_INFO_EX		0x04000000
-#define FILTER_SEC_DCM_INFO			0x08000000
-#define FILTER_PV_SUBTITLE_FILE_TYPE		0x10000000
-#define FILTER_PV_SUBTITLE_FILE_URI		0x20000000
-#define FILTER_PV_SUBTITLE			0x30000000
-#define FILTER_AV_MEDIA_CLASS			0x40000000
+#define FILTER_SEC_CAPTION_INFO_EX		0x08000000
+#define FILTER_SEC_DCM_INFO			0x10000000
+#define FILTER_SEC				0x18000000
+#define FILTER_PV_SUBTITLE_FILE_TYPE		0x20000000
+#define FILTER_PV_SUBTITLE_FILE_URI		0x40000000
+#define FILTER_PV_SUBTITLE			0x60000000
+#define FILTER_AV_MEDIA_CLASS			0x80000000
 /* Masks */
-#define STANDARD_FILTER_MASK			0x00FFFFFF
+#define STANDARD_FILTER_MASK			0x01FFFFFF
 #define FILTER_BOOKMARK_MASK			(FILTER_UPNP_PLAYBACKCOUNT | \
 						 FILTER_UPNP_LASTPLAYBACKPOSITION | \
 						 FILTER_SEC_DCM_INFO)
@@ -574,6 +582,14 @@ set_filter_flags(char *filter, struct upnphttp *h)
 		{
 			flags |= FILTER_AV_MEDIA_CLASS;
 		}
+		else if( strcmp(item, "upnp:episodeNumber") == 0 )
+		{
+			flags |= FILTER_UPNP_EPISODENUMBER;
+		}
+		else if( strcmp(item, "upnp:episodeSeason") == 0 )
+		{
+			flags |= FILTER_UPNP_EPISODESEASON;
+		}
 		item = strtok_r(NULL, ",", &saveptr);
 	}
 
@@ -634,13 +650,18 @@ parse_sort_criteria(char *sortCriteria, int *error)
 		{
 			strcatf(&str, "d.DATE");
 		}
-		else if( strcasecmp(item, "upnp:originalTrackNumber") == 0 )
+		else if( strcasecmp(item, "upnp:originalTrackNumber") == 0 ||
+			 strcasecmp(item, "upnp:episodeNumber") == 0 )
 		{
-			strcatf(&str, "d.DISC, d.TRACK");
+			strcatf(&str, "d.DISC%s, d.TRACK", reverse ? " DESC" : "");
 		}
 		else if( strcasecmp(item, "upnp:album") == 0 )
 		{
 			strcatf(&str, "d.ALBUM");
+		}
+		else if( strcasecmp(item, "path") == 0 )
+		{
+			strcatf(&str, "d.PATH");
 		}
 		else
 		{
@@ -676,6 +697,35 @@ parse_sort_criteria(char *sortCriteria, int *error)
 		free(sortCriteria);
 
 	return order;
+}
+
+static void
+_alphasort_alt_title(char **title, char **alt_title, int requested, int returned, const char *disc, const char *track)
+{
+	char *old_title = *alt_title ?: NULL;
+	char buf[8];
+	int pad;
+	int ret;
+
+	snprintf(buf, sizeof(buf), "%d", requested);
+	pad = strlen(buf);
+
+	if (NON_ZERO(track) && !strstr(*title, track)) {
+		if (NON_ZERO(disc))
+			ret = asprintf(alt_title, "%0*d %s.%s %s",
+					pad, returned, disc, track, *title);
+		else
+			ret = asprintf(alt_title, "%0*d %s %s",
+					pad, returned, track, *title);
+	}
+	else
+		ret = asprintf(alt_title, "%0*d %s", pad, returned, *title);
+
+	if (ret > 0)
+		*title = *alt_title;
+	else
+		*alt_title = NULL;
+	free(old_title);
 }
 
 inline static void
@@ -763,7 +813,7 @@ get_child_count(const char *object, struct magic_container_s *magic)
 	else if (magic && magic->objectid && *(magic->objectid))
 		ret = sql_get_int_field(db, "SELECT count(*) from OBJECTS where PARENT_ID = '%s';", *(magic->objectid));
 	else
-		ret = sql_get_int_field(db, "SELECT count(*) from OBJECTS where PARENT_ID = '%s';", object);
+		ret = sql_get_int_field(db, "SELECT count(*) from OBJECTS where PARENT_ID = '%q';", object);
 
 	return (ret > 0) ? ret : 0;
 }
@@ -783,17 +833,17 @@ object_exists(const char *object)
                 " d.THUMBNAIL, d.CREATOR, d.DLNA_PN, d.MIME, d.ALBUM_ART, d.ROTATION, d.DISC "
 #define SELECT_COLUMNS "SELECT o.OBJECT_ID, o.PARENT_ID, o.REF_ID, " COLUMNS
 
-#define NON_ZERO(x) (x && atoi(x))
-#define IS_ZERO(x) (!x || !atoi(x))
-
 static int
 callback(void *args, int argc, char **argv, char **azColName)
 {
+	(void)args;
+	(void)argc;
+	(void)azColName;
 	struct Response *passed_args = (struct Response *)args;
 	char *id = argv[0], *parent = argv[1], *refID = argv[2], *detailID = argv[3], *class = argv[4], *size = argv[5], *title = argv[6],
 	     *duration = argv[7], *bitrate = argv[8], *sampleFrequency = argv[9], *artist = argv[10], *album = argv[11],
 	     *genre = argv[12], *comment = argv[13], *nrAudioChannels = argv[14], *track = argv[15], *date = argv[16], *resolution = argv[17],
-	     *tn = argv[18], *creator = argv[19], *dlna_pn = argv[20], *mime = argv[21], *album_art = argv[22], *rotate = argv[23];
+	     *tn = argv[18], *creator = argv[19], *dlna_pn = argv[20], *mime = argv[21], *album_art = argv[22], *rotate = argv[23], *disc = argv[24];
 	char dlna_buf[128];
 	const char *ext;
 	struct string_s *str = passed_args->str;
@@ -815,15 +865,17 @@ callback(void *args, int argc, char **argv, char **azColName)
 			}
 			else
 			{
-				DPRINTF(E_ERROR, L_HTTP, "UPnP SOAP response was too big, and realloc failed!\n");
-				return -1;
+				DPRINTF(E_ERROR, L_HTTP, "UPnP SOAP response truncated, realloc failed\n");
+				passed_args->flags |= RESPONSE_TRUNCATED;
+				return 1;
 			}
 #if MAX_RESPONSE_SIZE > 0
 		}
 		else
 		{
-			DPRINTF(E_ERROR, L_HTTP, "UPnP SOAP response cut short, to not exceed the max response size [%lld]!\n", (long long int)MAX_RESPONSE_SIZE);
-			return -1;
+			DPRINTF(E_ERROR, L_HTTP, "UPnP SOAP response would exceed the max response size [%lld], truncating\n", (long long int)MAX_RESPONSE_SIZE);
+			passed_args->flags |= RESPONSE_TRUNCATED;
+			return 1;
 		}
 #endif
 	}
@@ -838,6 +890,10 @@ callback(void *args, int argc, char **argv, char **azColName)
 		if( *mime == 'v' )
 		{
 			dlna_flags |= DLNA_FLAG_TM_S;
+			if (GETFLAG(SUBTITLES_MASK) &&
+			    (passed_args->client >= EStandardDLNA150 || !passed_args->client))
+				passed_args->flags |= FLAG_CAPTION_RES;
+
 			if( passed_args->flags & FLAG_MIME_AVI_DIVX )
 			{
 				if( strcmp(mime, "video/x-msvideo") == 0 )
@@ -930,6 +986,9 @@ callback(void *args, int argc, char **argv, char **azColName)
 		}
 		else
 			dlna_flags |= DLNA_FLAG_TM_I;
+		/* Force an alphabetical sort, for clients that like to do their own sorting */
+		if( GETFLAG(FORCE_ALPHASORT_MASK) )
+			_alphasort_alt_title(&title, &alt_title, passed_args->requested, passed_args->returned, disc, track);
 
 		if( passed_args->flags & FLAG_SKIP_DLNA_PN )
 			dlna_pn = NULL;
@@ -968,22 +1027,27 @@ callback(void *args, int argc, char **argv, char **azColName)
 		if( (passed_args->filter & FILTER_BOOKMARK_MASK) ) {
 			/* Get bookmark */
 			int sec = sql_get_int_field(db, "SELECT SEC from BOOKMARKS where ID = '%s'", detailID);
-			if( sec > 0 && (passed_args->filter & FILTER_UPNP_LASTPLAYBACKPOSITION) ) {
+			if( sec > 0 ) {
 				/* This format is wrong according to the UPnP/AV spec.  It should be in duration format,
 				** so HH:MM:SS. But Kodi seems to be the only user of this tag, and it only works with a
 				** raw seconds value.
 				** If Kodi gets fixed, we can use duration_str(sec * 1000) here */
-				ret = strcatf(str, "&lt;upnp:lastPlaybackPosition&gt;%d&lt;/upnp:lastPlaybackPosition&gt;",
-				              sec);
+				if( passed_args->flags & FLAG_CONVERT_MS ) {
+					sec *= 1000;
+				}
+				if( passed_args->filter & FILTER_UPNP_LASTPLAYBACKPOSITION )
+					ret = strcatf(str, "&lt;upnp:lastPlaybackPosition&gt;%d&lt;/upnp:lastPlaybackPosition&gt;",
+					              sec);
+				if( passed_args->filter & FILTER_SEC_DCM_INFO )
+					ret = strcatf(str, "&lt;sec:dcmInfo&gt;CREATIONDATE=0,FOLDER=%s,BM=%d&lt;/sec:dcmInfo&gt;",
+					              title, sec);
 			}
-			if( passed_args->filter & FILTER_SEC_DCM_INFO )
-				ret = strcatf(str, "&lt;sec:dcmInfo&gt;CREATIONDATE=0,FOLDER=%s,BM=%d&lt;/sec:dcmInfo&gt;",
-				              title, sec);
 			if( passed_args->filter & FILTER_UPNP_PLAYBACKCOUNT ) {
 				ret = strcatf(str, "&lt;upnp:playbackCount&gt;%d&lt;/upnp:playbackCount&gt;",
 				              sql_get_int_field(db, "SELECT WATCH_COUNT from BOOKMARKS where ID = '%s'", detailID));
 			}
 		}
+		free(alt_title);
 		if( artist ) {
 			if( (*mime == 'v') && (passed_args->filter & FILTER_UPNP_ACTOR) ) {
 				ret = strcatf(str, "&lt;upnp:actor&gt;%s&lt;/upnp:actor&gt;", artist);
@@ -1001,8 +1065,15 @@ callback(void *args, int argc, char **argv, char **azColName)
 		if( strncmp(id, MUSIC_PLIST_ID, strlen(MUSIC_PLIST_ID)) == 0 ) {
 			track = strrchr(id, '$')+1;
 		}
-		if( NON_ZERO(track) && (passed_args->filter & FILTER_UPNP_ORIGINALTRACKNUMBER) ) {
-			ret = strcatf(str, "&lt;upnp:originalTrackNumber&gt;%s&lt;/upnp:originalTrackNumber&gt;", track);
+		if( NON_ZERO(track) ) {
+			if( *mime == 'a' && (passed_args->filter & FILTER_UPNP_ORIGINALTRACKNUMBER) ) {
+				ret = strcatf(str, "&lt;upnp:originalTrackNumber&gt;%s&lt;/upnp:originalTrackNumber&gt;", track);
+			} else if( *mime == 'v' ) {
+				if( NON_ZERO(disc) && (passed_args->filter & FILTER_UPNP_EPISODESEASON) )
+					ret = strcatf(str, "&lt;upnp:episodeSeason&gt;%s&lt;/upnp:episodeSeason&gt;", disc);
+				if( passed_args->filter & FILTER_UPNP_EPISODENUMBER )
+					ret = strcatf(str, "&lt;upnp:episodeNumber&gt;%s&lt;/upnp:episodeNumber&gt;", track);
+			}
 		}
 		if( passed_args->filter & FILTER_RES ) {
 			ext = mime_to_ext(mime);
@@ -1114,7 +1185,6 @@ callback(void *args, int argc, char **argv, char **azColName)
 							                   "&lt;/sec:CaptionInfoEx&gt;",
 							                   lan_addr[passed_args->iface].str, runtime_vars.port, detailID);
 					}
-					free(alt_title);
 					break;
 				}
 			}
@@ -1228,6 +1298,7 @@ callback(void *args, int argc, char **argv, char **azColName)
 static void
 BrowseContentDirectory(struct upnphttp * h, const char * action)
 {
+	(void)action;
 	static const char resp0[] =
 			"<u:BrowseResponse "
 			"xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
@@ -1299,6 +1370,8 @@ BrowseContentDirectory(struct upnphttp * h, const char * action)
 		ret = strcatf(&str, DLNA_NAMESPACE);
 	if( args.filter & FILTER_PV_SUBTITLE )
 		ret = strcatf(&str, PV_NAMESPACE);
+	if( args.filter & FILTER_SEC )
+		ret = strcatf(&str, SEC_NAMESPACE);
 	strcatf(&str, "&gt;\n");
 
 	args.returned = 0;
@@ -1415,12 +1488,19 @@ BrowseContentDirectory(struct upnphttp * h, const char * action)
 		DPRINTF(E_DEBUG, L_HTTP, "Browse SQL: %s\n", sql);
 		ret = sqlite3_exec(db, sql, callback, (void *) &args, &zErrMsg);
 	}
-	if( (ret != SQLITE_OK) && (zErrMsg != NULL) )
+	if( ret != SQLITE_OK )
 	{
-		DPRINTF(E_WARN, L_HTTP, "SQL error: %s\nBAD SQL: %s\n", zErrMsg, sql);
-		sqlite3_free(zErrMsg);
-		SoapError(h, 709, "Unsupported or invalid sort criteria");
-		goto browse_error;
+		if( args.flags & RESPONSE_TRUNCATED )
+		{
+			sqlite3_free(zErrMsg);
+		}
+		else
+		{
+			DPRINTF(E_WARN, L_HTTP, "SQL error: %s\nBAD SQL: %s\n", zErrMsg, sql);
+			sqlite3_free(zErrMsg);
+			SoapError(h, 709, "Unsupported or invalid sort criteria");
+			goto browse_error;
+		}
 	}
 	sqlite3_free(sql);
 	/* Does the object even exist? */
@@ -1462,7 +1542,7 @@ parse_search_criteria(const char *str, char *sep)
 {
 	struct string_s criteria;
 	int len;
-	int literal = 0, like = 0;
+	int literal = 0, like = 0, class = 0;
 	const char *s;
 
 	if (!str)
@@ -1512,13 +1592,17 @@ parse_search_criteria(const char *str, char *sep)
 				}
 				break;
 			case 'o':
-				if (strncmp(s, "object.", 7) == 0)
-					s += 7;
-				else if (strncmp(s, "object\"", 7) == 0 ||
-				         strncmp(s, "object&quot;", 12) == 0)
+				if (class)
 				{
-					s += 6;
-					continue;
+					class = 0;
+					if (strncmp(s, "object.", 7) == 0)
+						s += 7;
+					else if (strncmp(s, "object\"", 7) == 0 ||
+					         strncmp(s, "object&quot;", 12) == 0)
+					{
+						s += 6;
+						continue;
+					}
 				}
 			default:
 				charcat(&criteria, *s);
@@ -1660,11 +1744,29 @@ parse_search_criteria(const char *str, char *sep)
 				else
 					charcat(&criteria, *s);
 				break;
+			case 'o':
+				if (class)
+				{
+					if (strncmp(s, "object.", 7) == 0)
+					{
+						s += 7;
+						charcat(&criteria, '"');
+						while (*s && !isspace(*s))
+						{
+							charcat(&criteria, *s);
+							s++;
+						}
+						charcat(&criteria, '"');
+					}
+					class = 0;
+					continue;
+				}
 			case 'u':
 				if (strncmp(s, "upnp:class", 10) == 0)
 				{
 					strcatf(&criteria, "o.CLASS");
 					s += 10;
+					class = 1;
 					continue;
 				}
 				else if (strncmp(s, "upnp:actor", 10) == 0)
@@ -1719,6 +1821,7 @@ parse_search_criteria(const char *str, char *sep)
 static void
 SearchContentDirectory(struct upnphttp * h, const char * action)
 {
+	(void)action;
 	static const char resp0[] =
 			"<u:SearchResponse "
 			"xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
@@ -1851,9 +1954,10 @@ SearchContentDirectory(struct upnphttp * h, const char * action)
 	                      orderBy, StartingIndex, RequestedCount);
 	DPRINTF(E_DEBUG, L_HTTP, "Search SQL: %s\n", sql);
 	ret = sqlite3_exec(db, sql, callback, (void *) &args, &zErrMsg);
-	if( (ret != SQLITE_OK) && (zErrMsg != NULL) )
+	if( ret != SQLITE_OK )
 	{
-		DPRINTF(E_WARN, L_HTTP, "SQL error: %s\nBAD SQL: %s\n", zErrMsg, sql);
+		if( !(args.flags & RESPONSE_TRUNCATED) )
+			DPRINTF(E_WARN, L_HTTP, "SQL error: %s\nBAD SQL: %s\n", zErrMsg, sql);
 		sqlite3_free(zErrMsg);
 	}
 	sqlite3_free(sql);
@@ -1920,6 +2024,31 @@ QueryStateVariable(struct upnphttp * h, const char * action)
 	ClearNameValueList(&data);
 }
 
+static int _set_watch_count(long long id, const char *old, const char *new)
+{
+	int64_t rowid = sqlite3_last_insert_rowid(db);
+	int ret;
+
+	ret = sql_exec(db, "INSERT or IGNORE into BOOKMARKS (ID, WATCH_COUNT)"
+			   " VALUES (%lld, %Q)", id, new ?: "1");
+	if (sqlite3_last_insert_rowid(db) != rowid)
+		return 0;
+
+	if (!new) /* Increment */
+		ret = sql_exec(db, "UPDATE BOOKMARKS set WATCH_COUNT ="
+				   " ifnull(WATCH_COUNT,'0') + 1"
+				   " where ID = %lld", id);
+	else if (old && old[0])
+		ret = sql_exec(db, "UPDATE BOOKMARKS set WATCH_COUNT = %Q"
+				   " where WATCH_COUNT = %Q and ID = %lld",
+				   new, old, id);
+	else
+		ret = sql_exec(db, "UPDATE BOOKMARKS set WATCH_COUNT = %Q"
+				   " where ID = %lld",
+				   new, id);
+	return ret;
+}
+
 /* For some reason, Kodi does URI encoding and appends a trailing slash */
 static void _kodi_decode(char *str)
 {
@@ -1939,6 +2068,7 @@ static void _kodi_decode(char *str)
 		case '/':
 			if (!str[1])
 				*str = '\0';
+			/* fall through */
 		default:
 			str++;
 			break;
@@ -1958,6 +2088,7 @@ static int duration_sec(const char *str)
 
 static void UpdateObject(struct upnphttp * h, const char * action)
 {
+	(void)action;
 	static const char resp[] =
 	    "<u:UpdateObjectResponse"
 	    " xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
@@ -2008,20 +2139,15 @@ static void UpdateObject(struct upnphttp * h, const char * action)
 		/* Kodi uses incorrect tag "upnp:playCount" instead of "upnp:playbackCount" */
 		if (strcmp(tag, "upnp:playbackCount") == 0 || strcmp(tag, "upnp:playCount") == 0)
 		{
-			//ret = sql_exec(db, "INSERT OR IGNORE into BOOKMARKS (ID, WATCH_COUNT)"
-			ret = sql_exec(db, "INSERT into BOOKMARKS (ID, WATCH_COUNT)"
-					   " VALUES (%lld, %Q)", (long long)detailID, new);
-			if (atoi(new))
-				ret = sql_exec(db, "UPDATE BOOKMARKS set WATCH_COUNT = %Q"
-						   " where WATCH_COUNT = %Q and ID = %lld",
-						   new, current, (long long)detailID);
-			else
-				ret = sql_exec(db, "UPDATE BOOKMARKS set WATCH_COUNT = 0"
-						   " where ID = %lld", (long long)detailID);
+			ret = _set_watch_count(detailID, current, new);
 		}
 		else if (strcmp(tag, "upnp:lastPlaybackPosition") == 0)
 		{
+
 			int sec = duration_sec(new);
+			if( h->req_client && (h->req_client->type->flags & FLAG_CONVERT_MS) ) {
+				sec /= 1000;
+			}
 			if (sec < 30)
 				sec = 0;
 			else
@@ -2047,6 +2173,7 @@ static void UpdateObject(struct upnphttp * h, const char * action)
 static void
 SamsungGetFeatureList(struct upnphttp * h, const char * action)
 {
+	(void)action;
 	static const char resp[] =
 		"<u:X_GetFeatureListResponse xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
 		"<FeatureList>"
@@ -2096,6 +2223,7 @@ SamsungGetFeatureList(struct upnphttp * h, const char * action)
 static void
 SamsungSetBookmark(struct upnphttp * h, const char * action)
 {
+	(void)action;
 	static const char resp[] =
 	    "<u:X_SetBookmarkResponse"
 	    " xmlns:u=\"urn:schemas-upnp-org:service:ContentDirectory:1\">"
@@ -2118,6 +2246,9 @@ SamsungSetBookmark(struct upnphttp * h, const char * action)
 		in_magic_container(ObjectID, 0, &rid);
 		detailID = sql_get_int64_field(db, "SELECT DETAIL_ID from OBJECTS where OBJECT_ID = '%q'", rid);
 
+		if( h->req_client && (h->req_client->type->flags & FLAG_CONVERT_MS) ) {
+			sec /= 1000;
+		}
 		if ( sec < 30 )
 			sec = 0;
 		ret = sql_exec(db, "INSERT OR IGNORE into BOOKMARKS (ID, SEC)"

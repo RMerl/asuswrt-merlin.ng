@@ -1,0 +1,56 @@
+.\" * chilli_rtmon
+.\" * Copyright (C) 2007-2012 David Bird (Coova Technologies)
+.\" *
+.\" * All rights reserved.
+.\" *
+.\" Manual page for chilli_query
+.\" SH section heading
+.\" SS subsection heading
+.\" LP paragraph
+.\" IP indented paragraph
+.\" TP hanging label
+
+.TH chilli_rtmon 1 "June 2009"
+.SH NAME
+chilli_rtmon \-  Default Route Monitor for CoovaChilli
+
+.SH SYNOPSIS
+.B chilli_rtmon
+-file <update file> -pid <chilli pid> [-debug]
+
+.SH DESCRIPTION
+.B chilli_rtmon
+is a utility to detected changes in the default route, discover the
+next hop MAC address, and update a file with the chilli
+.B nexthop
+option. After updating the file, a SIGHUP signal is sent to the
+running 
+.B chilli
+server to instruct it to reread the configuration.
+
+.SH EXAMPLES
+
+# chilli_rtmon -debug
+
+# chilli_rtmon -file /tmp/nexthop.conf -pid <pid>
+.RE
+
+.SH "SEE ALSO"
+.BR chilli(8)
+
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+
+.SH AUTHORS
+
+David Bird <david@coova.com>
+
+Copyright (C) 2006-2012 David Bird (Coova Technologies) All rights reserved.
+
+CoovaChilli is licensed under the GNU General Public License.
+

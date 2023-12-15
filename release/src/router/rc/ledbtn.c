@@ -231,9 +231,6 @@ ledbtn_main(int argc, char *argv[])
 	FILE *fp;
 	sigset_t sigs_to_catch;
 
-	if(nvram_match("ledg_btn", "off"))
-		return 0;
-
 	/* write pid */
 	if ((fp = fopen("/var/run/ledbtn.pid", "w")) != NULL)
 	{

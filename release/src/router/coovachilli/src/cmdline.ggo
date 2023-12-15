@@ -1,0 +1,278 @@
+# chilli - ChilliSpot.org. A Wireless LAN Access Point Controller
+# Copyright (C) 2003, 2004, 2005 Mondru AB.
+# Copyright (c) 2006-2012 David Bird (Coova Technologies)
+#
+# The contents of this file may be used under the terms of the GNU
+# General Public License Version 2, provided that the above copyright
+# notice and this permission notice is included in all copies or
+# substantial portions of the software.
+# 
+# The initial developer of the original code is
+# Jens Jakobsen <jj@chillispot.org>
+# 
+
+args "--no-handle-help --no-handle-version"
+
+option  "fg"            f "Run in foreground"             flag   off
+option  "debug"         d "Run in debug mode"             flag   off
+option  "bin"           b "Binary config file" string no
+option  "reload"        r "Send reload after reconfigure" flag off
+option  "forgiving"     F "Forgiving of many configuration errors" flag off
+option  "debugfacility" - "Which modules to print debug messages for" int default="1" no
+option  "logfacility"   - "Syslog facility to be used for logging" int default="-1" no
+
+option  "conf"        c "Read configuration file"       string no
+option  "interval"    - "Re-read configuration file at this interval"  int default="3600" no
+option  "pidfile"     - "Filename of process id file"   string no
+option  "statedir"    - "Directory of nonvolatile data" string no
+option  "uid"         - "UID to run as, after being started as root" int default="0" no
+option  "gid"         - "GID to run as, after being started as root" int default="0" no
+
+# NET/TUN parameters
+option "net"         n "Network"           string default="192.168.182.0/24" no
+option "dhcpstart"   - "Network DHCP Starting IP"      int default="0" no
+option "dhcpend"     - "Network DHCP Ending IP"        int default="0" no
+option "dhcpbroadcast" - "Always broadcast DHCP responses" flag off
+option "dynip"       - "Dynamic IP address pool"       string no
+option "nodynip"     - "No Dynamic IP assignment"      flag off
+option "statip"      - "Static IP address pool"        string no
+option "uamanyipex"  - "Network to exclude from uamanyip"  string no
+option "uamnatanyipex" - "Network to exclude from uamnatanyip"  string no
+option "dns1"        - "Primary DNS server IP address" string no
+option "dns2"        - "Secondary DNS server IP address" string no
+option "domain"      - "Domain to use for DNS lookups" string default="coova.org" no
+option "ipup"        - "Script to run after link-up"   string no
+option "ipdown"      - "Script to run after link-down" string no
+option "conup"       - "Script to run after user logon"  string no
+option "condown"     - "Script to run after user logoff" string no
+option "macup"       - "Script to run after initial DHCP"  string no
+option "macdown"     - "Script to run after DHCP release" string no
+option "vlanupdate"  - "Script to run after 802.1Q/VLAN id assignment" string no
+option "vlanlocation" - "VLAN is to be used as location" flag off
+option "locationupdate" - "Script to run after change of location" string no
+option "locationstopstart" - "Restart the RADIUS accounting stream with new session-id" flag off
+option "locationcopycalled" - "Copy Called-Station-Id from proxy RADIUS" flag off
+option "locationimmediateupdate" - "Immediately do an accounting interim update on proxy accounting" flag off
+option "locationopt82" - "Use DHCP Option 82 for location" flag off
+
+option "txqlen"      - "TX Queue length for tun interface (linux only)"  int default="100" no
+option "tundev"      - "TUN/TAP Device, as in tun0 or tap1" string no
+option "mtu"         - "MTU given in DHCP" int default="1500" no
+option "autostatip"  - "Auto- static ip assignment" int default="0" no
+
+option "ringsize" - "TX/RX Ring Size (in kbytes; linux only)" int default="0" no
+option "sndbuf" - "SNDBUF size (in kb)" int default="0" no
+option "rcvbuf" - "RCVBUF size (in kb)" int default="0" no
+
+option "childmax" - "Maximum number of child processes" int default="128" no
+
+option "peerid" - "Cluster peer ID" int default="0" no
+option "peerkey" - "Cluster Blowfish key" string no
+
+# Radius parameters
+option "radiuslisten"       - "IP address to send from"       string no
+option "radiusserver1"      - "IP address of radius server 1" string no
+option "radiusserver2"      - "IP address of radius server 2" string no
+
+# option "radiusacctserver1"  - "IP address of radius server 1 for accounting" string no
+# option "radiusacctserver2"  - "IP address of radius server 2 for accounting" string no
+# option "radiusadmserver1"   - "IP address of radius server 1 for Administrative-User" string no
+# option "radiusadmserver2"   - "IP address of radius server 2 for Administrative-User" string no
+
+option "radiusauthport"     - "Authentication UDP port of radius server" int default="1812" no
+option "radiusacctport"     - "Accounting UDP port of radius server" int default="1813" no
+option "radiussecret"       - "Radius shared secret"          string default="testing123" no
+
+# option "radiusacctsecret"   - "Radius shared secret for accounting"  string no
+# option "radiusadmsecret"    - "Radius shared secret for Administrative-User"  string no
+
+option "radiustimeout"      - "Retry timeout in seconds" int default="10" no
+option "radiusretry"        - "Total number of retries"        int default="4" no
+option "radiusretrysec"     - "Number of retries before using secondary" int default="2" no
+option "radiusnasid"        - "Radius NAS-Identifier"         string default="nas01" no
+option "radiuslocationid"   - "WISPr Location ID"             string no
+option "radiuslocationname" - "WISPr Location Name"           string no
+option "locationname"       - "Location Name"                 string no
+option "radiusnasporttype"  - "Radius NAS-Port-Type"          int default="19" no
+option "coaport"            - "Radius disconnect port to listen to" int default="0" no
+option "coanoipcheck"       - "Allow radius disconnect from any IP" flag   off
+option "noradallow"         - "Allow all sessions when RADIUS is not available" flag   off
+
+
+# Radius proxy parameters
+option "proxylisten"   - "Proxy IP address to listen on"       string no
+option "proxyport"     - "Proxy UDP port to listen on (0 is off)" int default="0" no
+option "proxyclient"   - "IP address of proxy client(s)" string no
+option "proxysecret"   - "Radius proxy shared secret"    string no
+option "proxymacaccept" - "Auto-accept non-EAP requests on proxy port" flag off
+option "proxyonacct"   - "Proxy through to chilli RADIUS accounting packets" flag off
+
+option "proxylocattr" - "The attribute in proxy to be used for the loc= query string parameter" string no multiple
+
+
+# DHCP parameters
+option "dhcpif"      - "Local Ethernet interface"    string no
+option "moreif"      - "Multi-LAN more interfaces"   string no multiple
+option "dhcpmac"     - "DHCP Interface MAC Address"       string no
+option "dhcpmacset"  - "Option to have dhcpif configured with dhcpmac" flag off
+option "nexthop"     - "Next Hop MAC address"       string no
+option "dhcpradius"  - "Map certain DHCP options to RADIUS attributes" flag off
+option "dhcpgateway" - "DHCP gateway addresss for relay" string no
+option "dhcpgatewayport" - "DHCP gateway port for relay" int default="67" no
+option "dhcprelayagent" - "DHCP relay agent IP addresss (default uamlisten)" string no
+option "lease"       - "Lease time to allocate to clients" int default="600" no
+option "leaseplus"   - "Lease grace period time before removal" int default="60" no
+option "noc2c" - "Setup clients for /32 network" flag   off
+
+# EAPOL parameters
+option "eapolenable" - "Enable IEEE 802.1x authentication" flag   off
+
+# UAM parameters
+option "uamserver"    - "URL of authentication web server" string no
+option "uamhomepage"  - "URL of homepage to redirect unauthenticated users to" string no
+option "uamsecret"    - "Shared secret between uamserver and chilli" string no
+option "uamlisten"    - "IP address to listen to for authentication requests" string no
+option "dhcplisten"   - "IP address for DHCP default gateway (defaults to uamlisten)" string no
+option "uamport"      - "TCP port to bind to for authentication requests" int default="3990" no
+option "uamuiport"    - "TCP port to bind to for UAM UI requests" int default="3991" no
+option "uamallowed"   - "Domain names exempt from access check " string no multiple
+option "uamdomain"    - "Domain name allowed (active dns filtering; one per line!) " string no multiple
+option "uamdomainttl" - "DNS TTL to use (rewrite) when query matches a uamdomain" int default="60" no
+option "uamregex"     - "Regular expression to match URLs (one per line) " string no multiple
+option "uamanydns"    - "Allow client to use any DNS server" flag   off
+option "uamanyip"     - "Allow client to use any IP Address" flag   off
+option "uamnatanyip"  - "Source NAT clients using anyip to an IP of dynip pool" flag off
+option "wisprlogin"   - "A specific WISPr login url to be used" string no
+option "nouamsuccess" - "Do not return to the UAM server on success, original url instead" flag  off
+option "nowispr1"   - "Do not offer WISPr 1.0 XML" flag  off
+option "nowispr2"   - "Do not offer WISPr 2.0 XML" flag  off
+option "uamlogoutip"  - "HTTP Auto-Logout IP Address" string default="1.0.0.0" no
+option "uamaliasip"   - "Special IP Address aliased (redirect) to uamlisten/uamport" string default="1.0.0.1" no
+option "uamaliasname" - "Special simple hostname (no dots) to be resolved to uamaliasip" string no
+option "uamhostname"  - "Special simple hostname (no dots) to be resolved to uamlisten" string no
+
+option "uamaaaurl"    - "UAM AAA URL specifying the URL to use for the Chilli HTTP AAA" string no
+option "domaindnslocal" - "Option to consider all hostnames in domain as local" flag   off
+option "radsec" - "Use RadSec tunning (requires SSL; not compatible with uamaaaurl)" flag   off
+
+option "defsessiontimeout" - "Default session-timeout if not returned by RADIUS" long default="0" no
+option "defidletimeout" - "Default idle-timeout if not returned by RADIUS" int default="0" no
+option "defbandwidthmaxdown" - "Default WISPr-Bandwidth-Max-Down if not returned by RADIUS" long default="0" no
+option "defbandwidthmaxup" - "Default WISPr-Bandwidth-Max-Up if not returned by RADIUS" long default="0" no
+option "definteriminterval" - "Default interim-interval for accounting if not returned by RADIUS" int default="300" no
+
+option "bwbucketupsize" - "Define the up-bound 'leaky bucket' size" int default="0" no
+option "bwbucketdnsize" - "Define the down-bound 'leaky bucket' size" int default="0" no
+option "bwbucketminsize" - "Define the minimum 'leaky bucket' size" int default="0" no
+
+# MAC authentication
+option "macauth"     - "Authenticate based on MAC address" flag   off
+option "macreauth"   - "Re-Authenticate based on MAC address for every initial URL redirection" flag off
+option "macauthdeny" - "Deny access (even UAM) to MAC addresses given Access-Reject" flag   off
+option "macallowed"  - "List of allowed MAC addresses" string no multiple
+option "macsuffix"   - "Suffix to add to the MAC address" string no
+option "macpasswd"   - "Password used when performing MAC authentication" string no
+option "macallowlocal" - "Do not use RADIUS for authenticating the macallowed" flag off
+option "strictmacauth" - "Be strict about MAC Auth (no DHCP reply until we get RADIUS reply)" flag off
+option "strictdhcp"    - "Be strict about only allocating dyn-pool from DHCP" flag off
+
+# "local" content
+option "wwwdir"      - "Local content served by chilli (for splash page, etc)" string no
+option "wwwbin"      - "Script binary (such as haserl) for simple web programming" string no
+option "uamui"       - "Program in inetd style to handle all uam requests" string no
+
+# Centralized Configuration
+option "adminuser"   - "RADIUS administrative user login username" string no
+option "adminpasswd" - "RADIUS administrative user login password" string no
+option "adminupdatefile" - "File for administrative user ChilliSpot-Config settings" string no
+option "rtmonfile" - "File to update with routing settings" string no
+
+option "ethers" - "File containing a mapping of MAC addresses to static IP addresses" string no
+
+# "Location-Aware"
+option "nasmac"	     - "Unique MAC address of the NAS (called-station-id)" string no
+option "nasip"	     - "Unique IP address of the NAS (nas-ip-address)" string no
+option "ssid"	     - "SSID of the session" string no
+option "vlan"	     - "VLAN of the session" string no
+option "ieee8021q"   - "Support 802.1Q VLAN tagging" flag off
+option "only8021q"   - "Support 802.1Q VLAN tagged traffic only" flag off
+
+# Command Socket Support
+option "cmdsocket"   - "path to the command unix socket" string no
+option "cmdsocketport" - "Port of command socket. Only used if cmdsocket is not defined." int default="42424" no
+
+option "radiusoriginalurl" - "Turn on the sending of ChilliSpot-OriginalURL in Access-Request" flag off
+option "swapoctets"    - "Swap the meaning of input/output octets/packets" flag   off
+option "usestatusfile" - "Use the status file to keep track of sessions" string no
+option "statusfilesave" - "Aggressively save the status of sessions to status file" flag off
+option "localusers"    - "File keep 'Local' usernames and passwords" string no
+option "postauthproxy" - "IP of an upstream transparent proxy" string no
+option "postauthproxyport" - "Port of an upstream transparent proxy" int default="0" no
+option "wpaguests"     - "Allow WPA 'Guest' access" flag off
+option "openidauth"    - "Allow OpenID authentication" flag off
+option "papalwaysok"   - "Always allow 'PAP' authentication (depreciated; always on)" flag off
+option "mschapv2"      - "Use MSCHAPv2 authentication where possible" flag off
+option "chillixml"     - "Use ChilliSpot XML in WISPr blocks" flag   off
+option "acctupdate"    - "Allow updating of session attributes in Accounting-Response" flag off
+option "dnsparanoia"   - "Inspect DNS packets and drop responses with any non- A, CNAME, SOA, or MX records (to prevent dns tunnels)" flag off
+option "seskeepalive"  - "Keep sessions 'alive' after a restart of the server" flag off
+
+option "usetap"        - "Use a TAP instead of TUN (linux only)" flag   off
+option "noarpentries"  - "Do not create arp table entries in when using TAP." flag off
+option "routeif"       - "Turns on 'multi-routing' and defines default route" string no
+option "framedservice" - "Use Service-Type = Framed instead of Login" flag  off
+option "tcpwin"	       - "Change TCP window size to this value to help prevent congestion" int default="0" no
+option "scalewin"      - "Scale the TCP window when bandwidth shaping" flag off
+option "tcpmss"	       - "Change TCP maximum window size (mss) option in TCP traffic" int default="0" no
+option "maxclients"    - "Maximum number of clients/subscribers" int default="512" no
+option "dhcphashsize"  - "Size of DHCP/MAC hash table" int default="56" no
+option "radiusqsize"  - "Size of RADIUS queue table" int default="0" no
+
+option "challengetimeout" - "Timeout in seconds for the generated challenge" int default="600" no
+option "challengetimeout2" - "Timeout in seconds for challenge during login" int default="1200" no
+
+option "redir"  - "Enable redir (redirection) daemon" flag off
+option "inject"  - "Enable redir injection" string no
+option "injectext"  - "Enable redir injection extended script" string no
+option "injectwispr"  - "Enable redir injection of WISPr" flag off
+
+option "redirurl"  - "Send redirection URL in UAM parameters instead of HTTP redirect" flag off
+
+option "routeonetone" - "When using routeif, do one-to-one NAT" flag off
+
+option "nousergardendata" - "Do not consider walled garden for authorized session accounting" flag off
+option "uamgardendata" - "Enable a RADIUS accounting session for walled garden data based on IP lease life-cycle" flag off
+option "uamotherdata" - "Enable accounting for dropped 'Other' of IP session" flag off
+
+option "sslkeyfile"  - "SSL private key file in PEM format" string no
+option "sslkeypass"  - "SSL private key password" string no
+option "sslcertfile" - "SSL certificate file in PEM format" string no
+option "sslcafile"   - "SSL CA certificate file in PEM format" string no
+option "unixipc"     - "The UNIX IPC Filename to use when compiled with --with-unixipc" string no
+option "uamallowpost" - "Enable to allow a HTTP POST to the standard uamport interface" flag off
+option "natip"     - "IP to use when doing nat on WAN (routeidx)" string no
+option "natport"   - "Port to use when oding nat on the WAN (routeidx)" int default="0" no
+option "redirssl"  - "Enable redirection of SSL/HTTP port (requires SSL support)" flag off
+option "uamuissl"  - "Enable SSL/HTTPS support on the uamuiport" flag off
+
+option "dnslog"    - "Log DNS requests to a file." string no
+option "ipwhitelist" - "Binary IP White List file" string no
+option "uamdomainfile" - "Load uamdomains (regex) from file" string no
+
+option "layer3" - "Layer3 only" flag off
+option "patricia" - "Use patricia tries for walled garden lookup" flag off
+option "redirdnsreq" - "Send DNS query on redirect to pick of DNS based walled garden" flag off
+
+option "kname" - "Enable the use of the coova kernel module instance of this namem" string no
+option "moddir"   - "Directory for dynamically loaded modules" string no 
+option "module"   - "Dynamically loaded module" string no multiple
+
+option "dhcpopt" - "Set a DHCP option using a hex string" string no multiple
+
+option "extadmvsa" - "Extended administrative-user VSA script support" string no multiple
+
+option "dhcpnotidle" - "DHCP counted for preventing idle-timeout" flag off
+
+option "ipv6" - "Enable IPv6 support" flag off
+option "ipv6only" - "Enable IPv6-Only" flag off
+

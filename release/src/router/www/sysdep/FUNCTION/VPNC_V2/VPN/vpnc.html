@@ -84,13 +84,17 @@ var str_vpnc_profile_select_suggest = stringSafeGet("<#vpnc_profile_select_sugge
 var str_vpn_WiFi_in_use = stringSafeGet("<#vpn_WiFi_in_use#>");
 var support_WG = (isSupport("vpn_fusion") && isSupport("wireguard"));
 //var support_Surfshark = (isSupport("vpn_fusion") && isSupport("surfshark"));
-var support_Surfshark = support_WG;
+var support_Surfshark = (!is_CN && support_WG);
 if(support_WG || support_Surfshark){
 	var wg_max = 5;
 	var wg_unit_edit = 5;
 	//Surfshark_w625_Default.png
 	//Surfshark_w728_Default.png
-	if(!app_lang){
+	if(is_CN){
+		var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_CN.png";
+		var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_CN.png";
+	}
+	else if(!app_lang){
 		var UrlPromote = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_"+ ui_lang +".png";
 		var UrlBanner = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_"+ ui_lang +".png";
 	}
@@ -101,7 +105,11 @@ if(support_WG || support_Surfshark){
 	var UrlPromoteDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w625_Default.png";
 	var UrlBannerDefault = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_w728_Default.png";
 
-	if(!app_lang){
+	if(is_CN){
+		var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_CN_mobile.png";
+		var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_CN_mobile.png";
+	}
+	else if(!app_lang){
 		var UrlPromoteMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x160_"+ ui_lang +"_mobile.png";
 		var UrlBannerMobile = "https://nw-dlcdnet.asus.com/plugin/vpn/Surfshark_375x72_"+ ui_lang +"_mobile.png";
 	}
@@ -1049,23 +1057,26 @@ function Get_Component_Setting_Profile(_type){
 	//SurfShark promote
 	if(support_Surfshark){
 		
-		$content_container.append($("<div>").append( $("<img>").attr({"id":"ssk_promote_img","height":"185px"})));
+		$content_container.append($("<div>").append( $("<img>").attr({"id":"ssk_promote_img"})));
 
 		if(ww > 500){
+
 			$content_container.find("#ssk_promote_img").on("click", function(event){
 				window.open(surfshark_href);
 				event.preventDefault();
                         }).attr('src', UrlPromote).on('load', function() {
 	 			// image loaded successfully
+				$content_container.find("#ssk_promote_img").css({"height":"185px","margin-left":"15px","cursor":"pointer"});
 			}).on('error', function() {
 	  			// image failed to load
 	  			$(this).attr('src', UrlPromoteDefault).on('load', function() {
 	 				// image loaded successfully
+					$content_container.find("#ssk_promote_img").css({"height":"185px","margin-left":"15px","cursor":"pointer"});
 				}).on('error', function() {
+					// image failed to load
 	  				$(this).unbind('error').hide();
 	  			});
 			});
-			$content_container.find("#ssk_promote_img").css({"margin-left":"15px"});
 
 		}
 		else{
@@ -1074,18 +1085,18 @@ function Get_Component_Setting_Profile(_type){
 				event.preventDefault();
 			}).attr('src', UrlPromoteMobile).on('load', function() {
 	 			// image loaded successfully
+				$content_container.find("#ssk_promote_img").css({"width":"375px","margin-left":"15px","cursor":"pointer"});
 			}).on('error', function() {
 	  			// image failed to load
 	  			$(this).attr('src', UrlPromoteMobileDefault).on('load', function() {
 	 				// image loaded successfully
+					$content_container.find("#ssk_promote_img").css({"width":"375px","margin-left":"15px","cursor":"pointer"});
 				}).on('error', function() {
 	  				// image failed to load
 	  				$(this).unbind('error').hide();
 	  			});
 			});
-			$content_container.find("#ssk_promote_img").css({"width":"375px","margin-left":"15px"});
 		}
-		$content_container.find("#ssk_promote_img").hide();
 
 		if(_type != "popup"){
 			$content_container.find("#ssk_promote_img").addClass("ssk_promote");
@@ -1163,6 +1174,9 @@ function Get_Component_Setting_Profile(_type){
 		var dns_server_parm = {"title":"<#LANHostConfig_x_LDNSServer1_itemname#> (option)", "type":"text", "id":"wgc_dns", "need_check":false, "show_item":["wireguard"], "maxlength":128};/* untranslated */
 		$interface_content_container.append(Get_Component_Input(dns_server_parm));
 
+		var wgc_mtu_parm = {"title":"MTU (option)", "type":"text", "id":"wgc_mtu", "need_check":false, "show_item":["wireguard"], "maxlength":4};
+		$interface_content_container.append(Get_Component_Input(wgc_mtu_parm));
+
 		var peer_title_parm = {"title":"<#vpnc_peer#>", "show_item":["wireguard"], "slide_target":"peer"};
 		$content_container.append(Get_Component_Slide_Title(peer_title_parm));
 
@@ -1187,7 +1201,6 @@ function Get_Component_Setting_Profile(_type){
 		$peer_content_container.append(Get_Component_Input(wgc_alive_parm));
 	}
 
-	//ssk country list need to update //https://api.surfshark.com/v4/server/clusters GUI inside & updating it on-line
 	if(support_Surfshark){
 		var ssk_country_option_parm = {"title": "<#Manual_Setting_contry#>", "id": "ssk_country_options", "options": ssk_country_options, "set_value": ssk_country_options[0].value, "show_item":["surfshark"]};
 		$content_container.append(Get_Component_Custom_Select(ssk_country_option_parm));
@@ -1966,7 +1979,7 @@ function updateRegionListOnline(){
 		Update_ssk_region("fw");
 		if(httpApi.isConnected(0) || httpApi.isConnected(1)){
 			setTimeout(function(){
-				$.getJSON("https://api.surfshark.com/v4/server/clusters",
+				$.getJSON("https://nw-dlcdnet.asus.com/plugin/vpn/clusters.json",
 					function(cloud_data){
 						if(JSON.stringify(local_data) != JSON.stringify(cloud_data)){
 							if(Object.keys(cloud_data).length > 0){
@@ -2148,7 +2161,7 @@ function vpn_type_change_control(_obj, _value){
 		$(_obj).find("#ssk_promote_img").show();
 	}
 	else{
-		$(_obj).find("#ssk_promote_img").hide();	
+		$(_obj).find("#ssk_promote_img").hide();
 	}
 
 	resize_iframe_height();
@@ -2421,6 +2434,7 @@ function set_profile_data(_obj, _data){
 		var $wgc_priv = $(_obj).find("#wgc_priv");
 		var $wgc_addr = $(_obj).find("#wgc_addr");
 		var $wgc_dns = $(_obj).find("#wgc_dns");
+		var $wgc_mtu = $(_obj).find("#wgc_mtu");
 		var $wgc_ppub = $(_obj).find("#wgc_ppub");
 		var $wgc_psk = $(_obj).find("#wgc_psk");
 		var $wgc_aips = $(_obj).find("#wgc_aips");
@@ -2476,6 +2490,7 @@ function set_profile_data(_obj, _data){
 			$wgc_priv.val(htmlEnDeCode.htmlEncode(httpApi.nvramGet(["wgc"+wgc_unit+"_priv"], true)["wgc"+wgc_unit+"_priv"]));
 			$wgc_addr.val(htmlEnDeCode.htmlEncode(httpApi.nvramGet(["wgc"+wgc_unit+"_addr"], true)["wgc"+wgc_unit+"_addr"]));
 			$wgc_dns.val(htmlEnDeCode.htmlEncode(httpApi.nvramGet(["wgc"+wgc_unit+"_dns"], true)["wgc"+wgc_unit+"_dns"]));
+			$wgc_mtu.val(htmlEnDeCode.htmlEncode(httpApi.nvramGet(["wgc"+wgc_unit+"_mtu"], true)["wgc"+wgc_unit+"_mtu"]));
 			$wgc_ppub.val(htmlEnDeCode.htmlEncode(httpApi.nvramGet(["wgc"+wgc_unit+"_ppub"], true)["wgc"+wgc_unit+"_ppub"]));
 			$wgc_psk.val(htmlEnDeCode.htmlEncode(httpApi.nvramGet(["wgc"+wgc_unit+"_psk"], true)["wgc"+wgc_unit+"_psk"]));
 			$wgc_aips.val(htmlEnDeCode.htmlEncode(httpApi.nvramGet(["wgc"+wgc_unit+"_aips"], true)["wgc"+wgc_unit+"_aips"]));
@@ -2502,6 +2517,8 @@ function set_profile_data(_obj, _data){
 
 		if(support_WG){
 			if(wg_unit_edit == 0){
+				vpn_proto = (vpnc_openvpn_unit_edit == 0)?"pptp":"openvpn";
+
 				if(support_Surfshark){
 					$select_vpn_type.children("[value='wireguard']").html("WireGuard & Surfshark (<#List_limit#> " + openvpnc_max + ")").css("color", "rgba(164, 183, 195, 0.6)");
 					$select_vpn_type.children("[value='surfshark']").hide();
@@ -2518,6 +2535,7 @@ function set_profile_data(_obj, _data){
 			$wgc_priv.val(htmlEnDeCode.htmlEncode(httpApi.nvramDefaultGet(["wgc_priv"]).wgc_priv));
 			$wgc_addr.val(htmlEnDeCode.htmlEncode(httpApi.nvramDefaultGet(["wgc_addr"]).wgc_addr));
 			$wgc_dns.val(htmlEnDeCode.htmlEncode(httpApi.nvramDefaultGet(["wgc_dns"]).wgc_dns));
+			$wgc_mtu.val(htmlEnDeCode.htmlEncode(httpApi.nvramDefaultGet(["wgc_mtu"]).wgc_mtu));
 			$wgc_ppub.val(htmlEnDeCode.htmlEncode(httpApi.nvramDefaultGet(["wgc_ppub"]).wgc_ppub));
 			$wgc_psk.val(htmlEnDeCode.htmlEncode(httpApi.nvramDefaultGet(["wgc_psk"]).wgc_psk));
 			$wgc_aips.val(htmlEnDeCode.htmlEncode(httpApi.nvramDefaultGet(["wgc_aips"]).wgc_aips));
@@ -2824,6 +2842,7 @@ function set_apply_btn_status(_obj, _data){
 						var wgc_priv = $(_obj).find("#wgc_priv").val();
 						var wgc_addr = $(_obj).find("#wgc_addr").val();
 						var wgc_dns = $(_obj).find("#wgc_dns").val();
+						var wgc_mtu = $(_obj).find("#wgc_mtu").val();
 						var wgc_ppub = $(_obj).find("#wgc_ppub").val();
 						var wgc_psk = $(_obj).find("#wgc_psk").val();
 						var wgc_aips = $(_obj).find("#wgc_aips").val();
@@ -2837,6 +2856,7 @@ function set_apply_btn_status(_obj, _data){
 						nvramSet_obj["wgc_priv"] = wgc_priv;
 						nvramSet_obj["wgc_addr"] = wgc_addr;
 						nvramSet_obj["wgc_dns"] = wgc_dns;
+						nvramSet_obj["wgc_mtu"] = wgc_mtu;
 						nvramSet_obj["wgc_ppub"] = wgc_ppub;
 						nvramSet_obj["wgc_psk"] = wgc_psk;
 						nvramSet_obj["wgc_aips"] = wgc_aips;
@@ -2857,6 +2877,7 @@ function set_apply_btn_status(_obj, _data){
 						nvramSet_obj["wgc_priv"] = ssk_wgc_priv;
 						nvramSet_obj["wgc_addr"] = "10.14.0.2/16";
 						nvramSet_obj["wgc_dns"] = "162.252.172.57,149.154.159.92";
+						nvramSet_obj["wgc_mtu"] = "";
 						nvramSet_obj["wgc_ppub"] = ssk_wgc_ppub;	
 						nvramSet_obj["wgc_psk"] = "";
 						nvramSet_obj["wgc_aips"] = "0.0.0.0/0";
@@ -3082,6 +3103,7 @@ function set_del_profile(_obj, _data){
 					nvramSet_obj["wgc_priv"] = httpApi.nvramDefaultGet(["wgc_priv"]).wgc_priv;
 					nvramSet_obj["wgc_addr"] = httpApi.nvramDefaultGet(["wgc_addr"]).wgc_addr;
 					nvramSet_obj["wgc_dns"] = httpApi.nvramDefaultGet(["wgc_dns"]).wgc_dns;
+					nvramSet_obj["wgc_mtu"] = httpApi.nvramDefaultGet(["wgc_mtu"]).wgc_mtu;
 					nvramSet_obj["wgc_ppub"] = httpApi.nvramDefaultGet(["wgc_ppub"]).wgc_ppub;
 					nvramSet_obj["wgc_psk"] = httpApi.nvramDefaultGet(["wgc_psk"]).wgc_psk;
 					nvramSet_obj["wgc_aips"] = httpApi.nvramDefaultGet(["wgc_aips"]).wgc_aips;
@@ -3717,6 +3739,17 @@ function validate_format(_obj){
 			if(isValid_wgc_dns.isError){
 				$wgc_dns.show_validate_hint(isValid_wgc_dns.errReason);
 				$wgc_dns.focus();
+				return false;
+			}
+		}
+
+		var $wgc_mtu = $(_obj).find("#wgc_mtu");
+		$wgc_mtu.val($wgc_mtu.val().replace(/\s+/g, ''));//remove space
+		if($wgc_mtu.val() != ""){
+			var isValid_wgc_mtu = valid_num_range($wgc_mtu.val(), 1280, 1440);
+			if(isValid_wgc_mtu.isError){
+				$wgc_mtu.show_validate_hint(isValid_wgc_mtu.errReason);
+				$wgc_mtu.focus();
 				return false;
 			}
 		}

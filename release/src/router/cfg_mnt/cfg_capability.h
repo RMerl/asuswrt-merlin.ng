@@ -93,7 +93,7 @@ enum capabilityType {
 /* for RC_SUPPORT */
 #define USBX			BIT(0)
 #define GUEST_NETWORK		BIT(1)
-#define WPA3			BIT(2)
+#define CFG_MNT_WPA3		BIT(2)	/* amas-utils.h has a WPA3 definition with different value. */
 #define VIF_ONBOARDING			BIT(3)
 #define WL_SCHED_V2		BIT(4)
 #define WIFI_RADIO		BIT(5)

@@ -1,0 +1,3 @@
+START_CHILLI=0
+CONFFILE="/etc/chilli.conf"
+HS_USER="chilli"

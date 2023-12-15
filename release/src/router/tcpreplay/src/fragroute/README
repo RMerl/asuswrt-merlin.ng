@@ -1,0 +1,34 @@
+This code is heavily based on, even stolen from Dug Song's excellent fragroute 
+utility.  I've taken a perfectly good application and converted it into a 
+packet editing library for my own needs.  Any bugs are my fault.  Any praises
+really should go to Dug.
+
+Please consider all files here under the original fragroute LICENSE, with the
+added caveat that any changes are:
+
+Copyright 2008-2010, Aaron Turner
+Copyright 2013, Fred Klassen - AppNeta
+
+Notes:
+Fragroute runs as a daemon which intercepts packets by modifying the host
+operating systems routing table, redirecting packets destined to the target
+IP over the loopback interface.  Packets reaching the loopback interface
+are then read using libpcap/BPF filter processed according to the fragroute
+rule set and then resent out the configured interface.
+
+libfragroute works differently.  First, we do away with any changes to the
+host routing table.  Secondly, packets are not sent out any interface, but 
+are read back by the caller.  The API should look something like this:
+
+ctx = fragroute_init(mtu, <rules>); // init library
+
+// process a packet
+fragroute_process(ctx, char *pktbuff, int pktsize)
+
+// read resulting fragments
+while ((ret = fragroute_read(ctx, char **fragment)) > 0) {
+    // do something with fragment
+} else {
+    // no more fragments
+}
+

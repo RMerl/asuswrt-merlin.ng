@@ -1,0 +1,716 @@
+06/04/2023 Version 4.4.4
+    - overflow check fix for parse_mpls (#795)
+    - tcpreplay-edit: prevent L2 flooding of ipv6 unicast packets (#793)
+    - CVE-2023-27786 bugs caused by strtok_r (#782 #784 #785 #786 #787 #788)
+    - CVE-2023-27783 reachable assert in tcpedit_dlt_cleanup (#780)
+    - add CI and C/C++ Linter and CodeQL (#773)
+    - reachable assert in fast_edit_packet (#772)
+
+01/01/2023 Version 4.4.3
+    - upgrade autogen/libopts to version 5.18.16 (#759)
+    - avoid implicit int in configure.ac (#757)
+    - remove invalid assert in tree (#756)
+    - program exit after send error (#751)
+    - make libpcap version test more robust (#750)
+    - looping inflates some packet counters (#749)
+
+08/28/2022 Version 4.4.2
+    - fix tests when building in a directory outside source tree (#767)
+    - remove autogen.sh from distribution tarballs (#745)
+    - CVE-2022-37048 heap-overflow in get_l2len_protocol (#735)
+    - replaying on a loopback interface is broken (#732)
+    - replay edit with both --loop and --preload_pcap options (#729)
+    - test suite bus error on armhf (#725)
+    - CVE-2022-28487 format string vulnerability in fix_ipv6_checksums (#723)
+    - CVE-2022-27942 heap-overflow in parse_mpls (#719)
+    - CVE-2022-27940 CVE-2022-37047 CVE-2022-37049 heap-overflow in get_ipv6_next (#718)
+    - CVE-2022-27939 reachable assertion in get_layer4_v6 (#717)
+    - CVE-2022-25484 CVE-2022-27941 heap buffer overflow in get_l2len_protocol (#716)
+    - remove bash-only test in configure script (#714)
+
+02/12/2022 Version 4.4.1
+    - fix support for piping PCAP files from STDIN (#708)
+    - build failures Debian/kfreebsd (#706)
+    - bus error when building on armhf (#705)
+    - typo fixes (#704)
+    - heap buffer overflow in tcpreplay (#703)
+    - double free in Juniper DLT (#702)
+
+01/31/2022 Version 4.4.0
+    - remove obsolete FORCE_ALIGN support to fix macOS 11 compile (#695)
+    - add a security policy document (#689)
+    - ability to specify directory of pcap files (#682)
+    - incorrect PPS rate for long-running sessions (#679)
+    - option --skipbroadcast not working (#677)
+    - revert #630 to fix --multiplier issues (#674)
+    - gcc 9.3 compiler warnings (#670)
+    - installed netmap not automatically detected (#669)
+    - latest macOS SDK selected by default (#668)
+    - heap-buffer-overflow with flow_decode() (#665)
+    - add feature VLAN Q-in-Q (#625)
+    - add feature update Ethernet MAC on multicast IP (#563)
+
+04/01/2021 Version 4.3.4
+    - ASAN reports memory leaks while running tests (#662)
+    - local libopts compiler warnings (#658)
+    - DLT name for DLT_C_JNPR_ETHER in documentation (#649)
+    - clean up new_cidr_map() string manipulation on error exit (#648)
+    - fix gcc 8.3.0 build warnings (#634)
+    - invalid --pps value protection (#632)
+    - packets slowly drift further and further behind when they should be sent (#630)
+    - 64 bit rollover can cause pps replay issues after several hours (#629)
+    - typo fixes (#626) (#627)
+    - DLT_NULL/DLT_LOOP support for cross-platform PF_INET6 (#624)
+    - armv5 Freescale compile (#623)
+    - heap buffer overflow in tcpreplay fast_edit_packet (#620)
+    - heap buffer overflow in tcpreplay get_next_packet (#619)
+    - CVE-2020-24266 heap buffer overflow in tcpprep get_l2len (#617)
+    - CVE-2020-24265 heap buffer overflow in tcpprep (#616)
+    - fix UNUSED macro declaration (#614)
+    - handle malformed and unsupported packets as soft errors (#613)
+    - compile failure on aarch64-linux-android (#612)
+    - tcprewrite --fixlen not working on DLT conversion (#582)
+    - fix configure --without-libdnet (#567)
+    - ensure automake version is at least 1.15 (#553)
+    - with multiplier option only first file can be sent and hang (#472)
+    - do not create tap0 if device already exists (#411) (#651)
+
+05/20/2020 Version 4.3.3
+    - Increase cache buffers size to accomodate VLAN edits (#594)
+    - CVE-2018-20553 Correct L2 header length calculations so that IP header offset is correct (#584)
+    - Correct L2 header length to correct IP header offset (#583)
+    - Fix warnings from gcc version 10 (#580)
+    - Heap Buffer Overflow in randomize_iparp (#579)
+    - Use after free in get_ipv6_next (#578)
+    - CVE-2020-12740 Heap Buffer Overflow in git_ipv6_next (#576)
+    - Call pcap_freecode() on pcap_compile() (#572)
+    - Increase max snaplen to 262144 (#571)
+    - Fix divide by zero in fuzzing (#570)
+    - Unique IP repeats at very high iteration counts (#566)
+    - Fails to compile on FreeBSD amd64 13.0 (#558)
+    - Heap Buffer Overflow in do_checksum (#556) (#577)
+    - Attempt to correct corrupt pcap files, if possible (#557)
+    - Fix GCC v10 warnings (#555)
+    - Remove some duplicated SOURCES entries (#551)
+    - Expand /dev/bpfX hard limit to fix macOS Mojave (#550)
+    - Implement --loopdelay-ms when using --loop=0 (#546)
+    - CVE-2018-20552 Heap overflow packet2tree and get_l2len (#530)
+
+03/12/2019 Version 4.3.2
+    - CVE-2019-8381 memory access in do_checksum() (#538)
+    - CVE-2019-8376 NULL pointer dereference get_layer4_v6() (#537)
+    - CVE-2019-8377 NULL pointer dereference get_ipv6_l4proto() (#536)
+    - Rename Ethereal to Wireshark (#545)
+
+12/27/2018 Version 4.3.1
+    - Fix checkspell detected typos (#531)
+
+11/10/2018 Version 4.3.0
+    - Fix maxOS TOS checksum failure (#524)
+    - TCP sequence edits seeding (#514)
+    - Fix issues identifed by Codacy (#493)
+    - CVE-2018-18408 use-after-free in post_args (#489)
+    - CVE-2018-18407 heap-buffer-overflow csum_replace4 (#488)
+    - CVE-2018-17974 heap-buffer-overflow dlt_en10mb_encode (#486)
+    - CVE-2018-17580 heap-buffer-overflow fast_edit_packet (#485)
+    - CVE-2018-17582 heap-buffer-overflow in get_next_packet (#484)
+    - Out-of-tree build (#482)
+    - CVE-2018-13112 heap-buffer-overflow in get_l2len (#477 dup #408)
+    - Closing stdin on pipe (#479)
+    - Second pcap file hangs on multiplier option (#472)
+    - Jumbo frame support for fragroute option (#466)
+    - TCP sequence edit ACK corruption (#451)
+    - TCP sequence number edit initial SYN packet should have zero ACK (#450)
+    - Travis CI build fails due to new build images (#432)
+    - Upgrade libopts to 5.18.12 to address version build issues (#430)
+    - Add ability to change tcp SEQ/ACK numbers (#425)
+    - Hang using loop and netmap options (#424)
+    - tcpprep -S not working for large cache files (#423)
+    - Unable to tcprewrite range of ports with --portmap (#422)
+    - --maxsleep broken for values less than 1000 (#421)
+    - -T flag breaks traffic replay timing (#419)
+    - Respect 2nd packet timing (#418)
+    - Avoid non-blocking behaviour when using STDIN (#416)
+    - pcap containing >1020 packets produces invalid cache file (#415)
+    - manpage typos (#413)
+    - Fails to open tap0 on Zephyr (#411)
+    - Heap-buffer-overflow in get_l2protocol (#410)
+    - Heap-buffer-overflow in packet2tree (#409)
+    - Heap-buffer-overflow in get_l2len (#408)
+    - Heap-buffer-overflow in flow_decode (#407)
+    - Rewrite zero IP total length field to match the actual packet length (#406)
+    - Stack-buffer-overflow in tcpcapinfo (#405)
+    - tcpprep --include option does not exclude (#404)
+    - Negative-size-param memset in dlt_radiotap_get_80211 (#402)
+    - tcpeplay --verbose option not working (#398)
+    - Fix replay when using --with-testnic (#178)
+
+05/10/2017 Version 4.2.6
+    - Test fails on sparc64 (#393)
+
+05/02/2017 Version 4.2.5
+    - Fix issues found by scan-build (#384)
+    - Improve --portmap help message (#381)
+    - AFL detected security crash in fuzz feature (#380)
+    - Coverity static scan detected issues (#374)
+    - Fuzz should not be overwritting Layer 3 (#372)
+    - Add --fuzz-factor option to specify fuzz ratio (#371)
+    - Warnings when building on old distributions (#368)
+    - Fix more Lintian detected spelling errors (#365)
+    - Fuzz test failure on ARM and MIPS (#364)
+
+04/26/2017 Version 4.2.4
+    - Fix Lintian detected spelling errors (#362)
+
+04/12/2017 Version 4.2.3
+    - Archive (remove) QuickTX until maintainer found (#357)
+    - Ubuntu precise 32bit_build (#356)
+
+03/08/2017 Version 4.2.2
+    - Archive (remove) QuickTX (#357)
+    - Missing symbol pcap_version on macOS 10.12.4 (#356)
+
+03/23/2017 Version 4.2.1
+    - Fix reporting of rates < 1Mbps (#348)
+    - Option --unique-ip not working properly (#346)
+
+02/26/2017 Version 4.2.0
+    - MAC rewriting capabilities (#313)
+    - Fix several issues identified by Coverity (#305)
+    - Packet destortion --fuzz-seed option by Gabriel Ganne (#302)
+    - Add --unique-ip-loops option to modify IPs every few loops (#296)
+    - Netmap startup delay increase (#290)
+    - CVE-2017-6429 tcpcapinfo buffer overflow vulnerablily (#278)
+    - Update git-clone instructions by Kyle McDonald (#277)
+    - Allow fractions for --pps option (#270)
+    - Print per-loop stats with --stats=0 (#269)
+    - Add protection against packet drift by Guillaume Scott (#268)
+    - Print flow stats periodically with --stats output (#262)
+    - Include Travis-CI build support by Ilya Shipitsin (#264) (#285)
+    - tcpreplay won't replay all packets in a pcap file with --netmap  (#255)
+    - First and last packet times in --stats output (#239)
+    - Switch to wire speed after 30 minutes at 6 Gbps (#210)
+    - tcprewrite fix checksum properly for fragmented packets (#190)
+
+11/19/2016 Version 4.1.2
+    - Fix compilation with musl C library (#260)
+    - Support parallel builds (#259)
+    - Give user CFLAGS precedence (#256)
+    - Properly detect Brew install when Xcode is not available (#254)
+    - CVE-2016-6160 Increase max packet size to 65549 (#251)
+    - Handle IP headers with zero length (#247)
+
+01/11/2016 Version 4.1.1
+    - Improve --pps accuracy and performance (#236)
+    - Option --unique-ip accepts --duration (#227)
+    - RFC1624 incremental checksums (#225)
+    - Option --duration performance optimizations (#223)
+    - Correct company name in license (#217)
+    - Compile and mult-arch cross-compile on ARM (#211)
+    - Tap device support for Linux and FreeBSD from Murat Demirten (#207)
+    - Handle loopback for linux cooked capture files from corentin-p1(Linux SLL) (#204)
+    - Master doesn't compile on OS X 10.11 (#203)
+    - Recognise tbd stubs from Dominyk Tiller (#202)
+    - Support for tcprewrite multiple IP CIDR (#199)
+    - Fix incorrect checksums after editing fragmented packets (#190)
+    - Option --loop=0 full wire wire speed after 1st pass (#172 #191)
+    - Big-endian tcpliveplay work-around from Brian Micek (#194)
+    - Build OS X using existing XCode SDK (#185)
+    - Update to autogen version 5.18.6 and libopts 46.0.16 (#182)
+    - netmap reports impossibly high capacity (#176)
+    - Duration feature from dexteradeus (#175)
+    - Stop sending and exit when limit is reached (#174)
+    - Extra packets sent with -L option (#173)
+    - Buffer overflow bug in tcpprep (#167)
+    - netmap optimizations (#93)
+
+12/17/2014 Version 4.1.0
+    - Do not build Quick TX modules on OS X (#164)
+    - Add a flag to customize netmap delay (#160)
+    - Fix some compile wwarnings (#159)
+    - Disabled QuickTX build by default (#157)
+    - Less verbose build (#154)
+    - Add a loop delay option (#125)
+    - CentOS 6.5 kernel panic on Quick TX init (#146)
+    - Fix libpcap not found on CentOS 7 (#145)
+    - Segfault in tcpliveplay on x86_64 (#132)
+    - Sometimes unable to interrupt with Ctrl-C (#129)
+
+10/08/2014 Version 4.1.0beta1
+    - Fix cross compiling (#140)
+    - Add Quick TX module for Linux (#136)
+	- Better recovery for missing static libpcap libs (#128)
+
+09/05/2014 Version 4.0.5
+    - Fix build failure with latest netmap 11 (#123)
+    - Fix unable to use Zero Copy interfaces on PF_RING (#118)
+    - Corrected build for latest version of PF_RING (#81)
+    - Proper error message when vale is unconfigured (#113)
+    - Avoid a netmap module debug message (#110)
+    - Add missing header to distribution (#108)
+    - Make --netmap version agnostic (#106)
+    - Fix netmap hang in FreeBSD 11 (#103)
+    - Fix netmap hang if network cables unplugged (#96)
+    - Support for Vale Switch (#91)
+    - Prevent file retransmissions when selecting multiple files (#86)
+    - Fix max replay rate for all loops except first when omitting --mbps (#85)
+    - Add missing sanity check in libopt (#84)
+    - Seg fault on some IPv6 files when using -C option with tcprewrite (#83)
+    - Support for PF_RING DNA version of libpcap (#81)
+    - Fix segfault when using '-F pad' (#80)
+    - Disallow netmap on multiple interfaces (#79)
+    - Fix build for FreeBSD version 8.4 (#78)
+
+03/22/2014 Version 4.0.4
+    - Number of packets inaccurate when using --netmap method (#76)
+    - Unexpected packet counts with --loop and --cachefile enabled (#75)
+    - Improved error messages when interface is a file (#74)
+    - Missing interfaces with --listnics option (#67)
+    - Compile issue with netmap v10 and debugging (#66)
+    - Bad values with --stats and -t options (#65)
+
+02/04/2014 Version 4.0.3
+    - Fix build errors when ENABLE_VERBOSE is not set (#60)
+    - Build error on host without tcpdump (#59)
+
+01/17/2014 Version 4.0.2
+    - Fix hangs with --mbps command (#54)
+
+01/16/2014 Version 4.0.1
+    - Support for netmap version 10 API (#53)
+    - Remove deprecated "absolute time" for OS X (#52)
+    - Make dosleep() rentrant to support API concurrency (#51)
+    - Remove compiler warnings (#50)
+    - Fix slow netmap in Intel GigE "igb" server NICS (#49)
+
+01/05/2014 Version 4.0.0
+    - Implemented wiki page for 4.X - http://tcpreplay.appneta.com
+    - Support for ARM aarch64 (appneta #43)
+    - Add Juniper Encapsulated Ethernet DLT (appneta #42)
+    - Fixed seg fault on -K and --dualfile options (appneta #41)
+
+12/22/2013 Version 4.0.0beta2
+    - Restored -K option which somehow disappeared (appneta #35)
+    - Improve printing with small pcaps at high rates (appneta #34)
+    - Fixed build errors on BSD and Fedora 20 (appneta #32 #33)
+
+12/20/2013 Version 4.0.0beta1
+    - Compile and cross compile on ARM (appneta #26)
+    - Add flow statistics (appneta #23)
+    - Merge code cleanups from old 4.0alpha1 project (appneta #18)
+    - Deprecated file-cache option - use preload-pcap instead (appneta #17)
+    - Removed obsolete sleep-mode and sleep-accel options (appneta #16)
+    - Remove unreliable RDTSC option (appneta #16)
+    - Switch from BSD to GPLv3 license (appneta #5)
+    - Add --unique-ip option to tcpreplay (appneta #4)
+    - Removed sleep-accel option (appneta #2)
+    - Enhance accuracy and performance of --mbps option (appneta #2)
+    - Add netmap injector (appneta #1)
+    - Properly process IPv6 extension headers (#396)
+    - Update URL's to point to new tcpreplay website (#430)
+    - Improve & fix bugs in tcpcapinfo (#437)
+    - Fix statistics to be more industry standard (#443)
+    - Add --nofixcsum (#449)
+    - Fix compile failure under FreeBSD 9.0 (#450)
+    - Don't checksum packets before going through fragroute engine (#452)
+    - Add support for --maxsleep option to tcpreplay (#453)
+    - Fix segfault when rewriting multiple ports (#459)
+    - Fix bug with printing stats after CTRL-C (#482)
+    - Update autotools (#483)
+    - Don't recalculate UDP checksums if it's value is 0 (#490)
+    - Fix documentation of --efcs option to be 4, not 2 bytes (#495)
+    - Fix libdnet header detection under Debian distros (#499)
+    - Update GNU Autogen to 5.11.5 (#501)
+    - Fix --stats option for tcpreplay (#503)
+    - Add support for injecting directly via custom Linux kernel module (#505)
+    - Fix cidr code debugging (#506)
+    - Standardize on primary/secondary meaning of interfaces/tcpprep split (#507)
+
+08/15/2010 Version 3.4.5beta1
+    - First pass at fixing 'make test' on many little-endian systems (#429)
+    - Warn users when processing LINUX_SLL frames w/o an Ethernet source MAC (#434)
+    - Don't try to fragroute non-IPv4/v6 packets so we don't error out (#432)
+    - Initial Linux TX_RING sending support (#435)
+    - Update to GNU Autoconf 2.67 (#436)
+    - Add tcpcapinfo which dumps information about the pcap header/packets (#437)
+    - Add --dualfile support for replaying two files at the same time (#439)
+    - Fix bug where --tos=0 didn't do anything (#440)
+    - Fix crash when processing CIDR data (#441)
+
+04/04/2010 Version 3.4.4
+    - Set default timing method to either gtod or abstime (#404)
+    - Fix IPv6 parsing of CIDR's (#405)
+    - Add support for preloading the memory cache (#410)
+    - Generate more useful error when packets are too small (#411)
+    - Update to libopts/Autogen 5.9.9 (#412)
+    - Ship Win32Readme.txt file (#413)
+    - Update copyright notice to 2010 (#416)
+    - Dramatically enhance --portmap option (#417)
+    - Update autotools (#423)
+    - Add support for printing statistics periodically during the run (#424)
+    - Warn user when pcap snaplen < 65535 (#425)
+    - Add 802.1q processing support tcpprep (#428)
+
+06/25/2009: Version 3.4.3
+    - Link libnl when newer versions of libpcap require it (#397)
+    - Ship m4 directory (#398)
+    - Upgrade to latest autotools scripts (#400)
+    - Fix error message when running autogen.sh (#401)
+
+05/20/2009: Version 3.4.2
+    - Added extensive IPv6 support to tcprewrite & tcpreplay-edit (#11)
+    - Add IPv6 fragroute support (#388)
+    - Add IPv6 decoding support to tcpprep (#11)
+    - Fix compile time error in err.h (#390)
+    - Add --endpoints support in tcpreplay-edit (#393)
+
+02/18/2009: Version 3.4.1
+    - Sendpacket method did not match documentation (#361)
+    - Fix compile issue on systems without err.h (#363)
+    - Fix tcpprep --mac not processing non-IPv4 packets (#369)
+    - Always build tcpreplay w/ editing features as tcpreplay-edit (#372)
+    - Fix potential tcpbridge issues under OS X & *BSD (#373)
+    - Fix crash on 4 byte strictly aligned systems (#377)
+    - Add MTU truncation to tcprewrite/tcpreplay-edit (#379)
+
+01/15/2009: Version 3.4.0
+    - Add libdnet and remove libnet support for sending packets (#302)
+    - Fix numerous 802.11 decoder bugs (#325)
+    - Fix compile issue under Linux (#326)
+    - Fix Mbps/sec nonsense (#327)
+    - Fix tcprewrite crash when packets have no L3+ data (#328)
+    - Clean up err.c/err.h code and improve performance for non-debug builds (#331)
+    - Fix timesdiv() timer code (#332)
+    - Improve high-performance packet sending via multiple packets/interval (#334)
+    - Fix statistics report errors (#335)
+    - Fix BPF filters not being used in tcpbridge (#336)
+    - Improve tcpbridge performance (#337)
+    - Only use two libpcap handles for tcpbridge (#338)
+    - Fix autotools usage errors (#340)
+    - Clean up 'make test' results (#341)
+    - Update to AutoGen/AutoOpts 5.9.7 (#342)
+    - Fix compiler warnings from GCC 4.2 (#344)
+    - Fix numerous memory corruption bugs in libtcpedit DLT plugin code (#345)
+    - Add support for editing IPv4 TOS/DiffServ/ECN (#348)
+    - Update autotools to more recent versions (#349)
+    - Report injection method via -V (#352)
+    - Fix DLT_USER l2len check bug (#353)
+    - Replace man2html w/ groff (#354)
+    - Fix false pcap_inject() detection under Windows/Winpcap (#355)
+    - tcpbridge now builds under Win32/Cygwin
+    - libdnet is no longer an option for Win32/Cygwin (#57)
+    - tcpbridge now supports --listnics (#357)
+
+06/20/2008: Version 3.3.2
+    - Fix (again) tcpbridge --unidir assert error (#308)
+    - Fix tcpbridge bug where all packets that were sent were all zeros
+    - Fix tcpbridge not honoring --include/exclude flags (#311)
+    - Fix ip_in_cidr() debug messages (#312)
+    - Report packets which have timestamps which go backwards in time (#315)
+    - Clean up --sleep-accel code to use options struct (#316)
+    - Remove really old and out of date RPM .spec file (#317)
+    - Warn when sending on non-Ethernet interface (#318)
+    - Re-enable tcpreplay --listnics (#319)
+    - Fix sendpacket always reporting using PF_PACKET, even when it doesn't (#322)
+    - Fix major packet timing issue under old versions of glibc (#324)
+
+05/17/2008: Version 3.3.1
+    - Fix limitation of PF_PACKET only supporting Ethernet (#123)
+    - Fix (again) /dev/bpf detection in FreeBSD 8.0 (#292)
+    - Document building code from Subversion under Cygwin (#304)
+    - Fix --enable-force-* under Linux (#305)
+    - Fix tcpbridge --unidir assert error (#308)
+
+05/04/2008: Version 3.3.0
+    - Improve tcpreplay timing accuracy between packets (#41)
+    - Add tcprewrite fragroute support (#42)
+    - Fix tcprewrite --efcs option (#277)
+    - Updated Win32/Cygwin documentation (#280)
+    - Add dmalloc support (#282)
+    - Fix tcpprep broken handling of VLAN tagged frames (#290)
+    - Fix tcprewrite crash when cache file has NO_SEND packets (#291)
+    - Fix /dev/bpf detection in FreeBSD 8.0 (#292)
+    - Add tcprewrite --ttl editing option (#294)
+    - Fix autoconf AM_PROG_CC_C_O warning (#295)
+    - Add tcpprep --reverse option to split by matching client addresses (#297)
+    - Update version of autoconf to 1.10.1 (#298)
+    - Improved GNU Autogen detection and warnings (#299)
+    - Track EAGAIN errors separately from ENOBUFS (#301)
+    - Automatically detect Winpcap on Cygwin (#303)
+
+01/23/2008: Version 3.2.5
+    - Fix linker error with --enable-tcpreplay-edit and --enable-dynamic-link (#288)
+    - Fix compile errors with Sun Studio compiler (#286)
+
+01/16/2008: Version 3.2.4
+    - Fix crash in tcpreplay when --enable-tcpreplay-edit (#281)
+    - Display if --enable-tcpreplay-edit in -V (#283)
+
+11/01/2007: Version 3.2.3
+    - Fix compile issue under Linux and other OS's (#275)
+
+10/31/2007: Version 3.2.2
+    - Enable source MAC spoofing for OS X (#142, #151)
+        * Tcpreplay now requires OS X 10.5 (Leopard)
+    - Fix crash/memory access error with tcpreplay -N (#273)
+
+10/25/2007: Version 3.2.1
+    - Fix tcprewrite segfault in 'make test' under Linux (#200)
+    - Major performance improvement in tcpprep for large pcaps (#261)
+    - Fix strsignal already defined error under Cygwin/Windows (#199)
+    - Fix compile errors for older versions of GCC (#201)
+    - Remove flowreplay code (#262)
+    - Fix DLT rewrite code causing corrupted ethernet protocol type (#268)
+    - Try to fix inet_aton() issue under Solaris (#260)
+
+08/26/2007: Version 3.2
+    - Return a more useful error message when tcpprep fails (#187)
+    - Add Tomahawk test tool client/server detection algorithm (#186)
+    - Improved AutoGen support (#191)
+    - Improved documentation (#164, #198)
+    - Added Doxygen markup (#176)
+    - configure now honors --with-tcpdump flag (#192)
+    - configure now defaults to --enable-64bits which breaks backwards
+        compatibility in certain situations.  Use --disable-64bits if this
+        concerns you (#195)
+    - Use safe_free() to detect bugs earlier in development (#197)
+
+07/19/2007: Version 3.1.1
+    - Upgrade libopts tearoff to 29:0:4 so that everyone else in the world can
+      compile tcpreplay (#189)
+
+07/18/2007: Version 3.1.0
+    - Add tcprewrite --srcmap & --dstmap for rewriting only source or destination IP's (#185)
+    - ./configure now reports configuration at end (#155)
+    - Fix svn:keywords (#160)
+    - Optimize performance of dlt_en10mb plugin (#161)
+    - Performance improvements on strictly aligned systems (#162)
+    - Improve tcpprep error messages and handling (#163)
+    - Add support for warnings in libtcpedit (#165)
+    - Only use __attribute__((unused)) w/ GCC (#168)
+    - Fix compile issues under Solaris (#178)
+    - Gracefully handle systems w/o static libraries (#179)
+    - Fix segfault when using BPF filters (#182)
+    - Add additional DLT Plugins:
+        - 802.11 (#103)
+        - 802.11 w/ Radiotap (#177)
+
+05/01/2007: Version 3.0.1
+    - Stop tcpreplay causing OS X WiFi from disassociating (#167)
+    - --pnat incorrectly matched all IP addresses (#170)
+    - Fix serious memory leak in core common library (#175)
+    - Fix tcprewrite --enet-vlan on little endian systems (#174)
+    - Bad pcap timestamps were causing excessive delays (#169)
+    - Code cleanup (#173)
+
+04/20/2007: Version 3.0
+    - By default, no longer try to use libnet.  You must now specify --enable-libnet (#148)
+    - Improve documentation (#30)
+    - General code cleanup (#47)
+    - Warn when GNU Autogen version < 5.9 (#153)
+    - Remove support for pcap_snapshot_override which was never added to libpcap (#140)
+    - Fix support for C99/GCC 4.3 "inline".  Rely on -O3 for better performance. (#149)
+    - Prioritize 64 bit libraries over 32 bit counterparts (#150)
+
+04/14/2007: Version 3.0.RC1
+    - Fix tcpbridge and make it compile by default (#15)
+    - Fix tcprewrite crash on little-endian systems (#127)
+    - Gracefully handle broken pcap files where the snaplen < caplen (#130)
+        - Note: Fix was made in libpcap and will be part of 0.9.6
+    - Fix numerous bugs with the sendpacket code (#137)
+    - Add optional support for editing packets with tcpreplay (#61)
+    - Fix 'make test' on little endian systems (#64)
+    - tcprewrite -s is no longer endian dependent (#65)
+    - /docs cleaned up (#66)
+    - Fix detection/compile of libpcap.  Now support versions >= 0.7.2 (#80, #144)
+    - Add official support Cygwin/Win32 support (#110)
+    - Clean up libpcap version code (#111)
+    - Add support for interface alias names for Win32 (#113)
+    - Warn user on DLT miss-match (#125)
+    - Fix tcprewrite segfault with --fixlen=pad (#134)
+    - Add loop/cache support for better performance (#136)
+    - inline debugging code for better performance (#138)
+    - configure now supports selecting injection method (#139)
+    - Fix configure/compile errors under OpenBSD (#146)
+    - Add tcpbridge --verbose mode (#28)
+    - Fix compile issues under HP-UX & strictly aligned systems (#141)
+    - --enable-dynamic-link supports 64bit libraries (#143)
+
+
+03/22/2007: Version 3.0.beta13
+    - Fixed detection of IPv4 packets in libtcpedit on little-endian boxes (#115, #116)
+    - Fixed TCP/UDP checksum calculation on little-endian boxes (#126)
+    - Added --quiet flag to tcpreplay for Lothar (#109)
+    - The --seed flag should now generate the same IPs on both little-endian & big-endian boxes (#65)
+    - The --skipl2broadcast flag now works as documented (#112)
+    - Adding L2 header for DLT_RAW encapsulated packets now works (#16)
+    - Clean up documentation (#66, #75)
+    - Start initial support for Win32 port (#110, #111)
+    - Finish DLT plugin rewrite (#82)
+    - Fix compile on systems without tcpdump installed
+
+02/22/2007: Version 3.0.beta12
+    - Fix compile under RH ES 3.x (gcc 3.2.2) (#79)
+    - Fix compile on MIPS, ARM, HPPA, etc (#81, #88)
+    - Rewrite L2/DLT code in tcpedit/tcprewrite to be plugin based (#82)
+        - Create Ethernet Plugin (#99)
+        - Create User Plugin (#100)
+        - Create Cisco HDLC Plugin (#101)
+        - Create DLT_LINUX_SLL Plugin (#102)
+        - Create DLT_RAW Plugin (#104)
+        - Create DLT_NULL Plugin (#105)
+        - Create DLT_LOOP Plugin (#106)
+    - Properly decode ethernet frames when they are VLAN tagged (#84)
+    - Do not install man2html (#85)
+    - Add configure --disable-libopts-install option (#86)
+    - Enhance tcpreplay --oneatatime (#90)
+    - libtcpedit can now return warnings & errors (#92)
+    - Fix tcpprep --include/exclude (#96)
+    - Upgrade AutoGen tearoff (libopts) to latest version (5.9.0) (#97)
+    - Don't do L4 checksums for non-fragment offset == 0 (#107)
+
+08/07/2006: Version 3.0.beta11
+    - Fix distribution to ship missing src/tcpr.h (#73)
+    - Add support to tcprewrite to alter output file DLT (#74)
+    - Fix errors in 'make test' (little endian still broken) (#77)
+    - Tweak Autogen .def files documentation (#78)
+
+08/05/2006: Version 3.0.beta10
+    - tcpprep & tcprewrite no longer require root access (#3)
+    - Develop wrapper API for libnet, libpcap, BPF and PF_PACKET (#4, #24)
+    - Enhance do_sleep() to support looping for better accuracy (#6)
+    - Prefer inet_pton over older, deprecated routines (#26)
+    - Remove libnet as a requirement (#29)
+    - Optionally don't rewrite broadcast/multicast IP/MAC addresses (#38)
+    - Remove libnids dependancy for flowreplay  (#55)
+    - Fix build issues when libpcapnav is installed (#56)
+    - Fix truncate feature not putting correct packet length in IP header (#59)
+    - Internal error reporting fixes in libtcpedit (#60)
+    - Support --enable-debug when building under gcc 3.x (#62)
+    - tcpedit_stub.h wasn't being generated automatically from SVN (#63)
+    - Fix 'make doxygen' (#67)
+    - Fix some Makefile issues (#68)
+    - tcprewrite --endpoints should require a cache file (#70)
+    - Improve IP randomizer code to be more random (#71)
+
+07/17/2006: Version 3.0.beta9
+    - Fix compile issue for users not having AutoOpts installed (#54)
+    - Fix compile issue for users w/ AutoOpts 5.8.4 (upgrade to 5.8.4)
+
+07/16/2006: Version 3.0.beta8
+    - Fix -M running in MBps rather then Mbps
+    - Fix tcpbridge segfault/bus error reported by Steven Z. (Gerry)
+    - Improve tcpbridge man page
+    - Massive tcprewrite fixes & cleanup (#50)
+    - Much improved README document
+    - Reorganize packet editing code into a standalone module (tcpedit)
+          which has been librarized. (#5)
+    - Strict code cleanup (#27)
+    - Fix tcpprep from generating bad cache files (#48)
+    - Add MAC split mode for tcpprep (#1)
+    - Improve dbg() to list file/line (#32)
+    - Add tcpprep statistical reports (#2)
+    - Reorganize flowreplay code (#46)
+    - Fix conflicting speed_t for Debian (#33)
+    - Too many other things to document
+
+08/07/2005: Version 3.0.beta7
+    - New 'make doxygen' target builds pretty source code docs in
+          docs/web/doxygen/html
+    - Fix tcpprep auto/router mode which was sending all packets out the
+          secondary interface
+    - Fix endian issue on little-endian systems which made tcpprep think all
+          packets were not IP
+    - Improve debugability of tcpprep
+    - Fix UDP header offset bug in flowreplay
+
+06/28/2005: Version 3.0.beta6
+    - Fix rpm .spec file which was still based on tcpreplay 2.x (untested)
+    - Detect and manually include pcap-bpf.h which fixes compile problem
+    - Fix tcprewrite -S crash with only one MAC
+    - Fix tcpreplay using 2nd NIC split mode
+    - Fix tcpreplay packet counter initialization
+    - Fix tcpprep to properly handle missing -i and -c with -I and -P
+
+06/14/2005: Version 3.0.beta5
+    - Fix --decode flag
+    - Fix compile under AMD64/RHEL4 where libraries are in /usr/lib64
+    - tarball now ships with a full test subdir
+    - Fix compile of src/common/get.c under strictly aligned architectures
+    - Fix ./configure --enable-64bits flag
+    - Fix bug on little endian systems which prevented tcprewrite from
+      editing packets
+    - Fix tcprewrite linktype checks
+    - Add --pktlen for when the pcap snaplen lies to us
+    - Add --enable-dynamic-link for those who want to dynamically link their
+      libs
+
+06/05/2005: Version 3.0.beta4
+    - Really fix compile problems with dlt2desc with old versions of libpcap
+    - All libraries are now statically linked and full-path #includes.  This
+      should fix problems with people who have different versions of
+      libraries installed in different locations.
+    - Fix problems compiling on systems with libpcapnav
+    - Add support for libpcap 0.5 such as on OpenBSD
+    - Fix tcpprep --verbose
+    - Close STDIN prior to re-opening it for certain OS's
+
+05/04/2005: Version 3.0.beta3
+    - Fix autoconf problems with --with-libnet
+    - Fix compile problems with dlt2desc with old versions of libpcap
+    - Fix compile problem due to not shipping flowreplay_opts.h and
+      tcpbridge_opts.h
+
+04/19/2005: Version 3.0.beta2
+    - Significant improvements to FAQ and manual
+    - Use autoopts for flowreplay
+    - Be more cautious about memcpy's
+    - Fix numerous warnings during compile
+    - Allow overriding L2 protocol field for DLT_RAW
+    - tcpprep -I & -P now take the cache filename
+    - Lots of cleanup
+    - Added tcpbridge utility
+    - Fix tcpreplay --mbps which was being interpreted as bps
+    - Add --no-arg-comment feature for tcpprep
+    - Improve auto-tests and fix old broken ones
+    - Fix Makefile errors in the docs directory
+    - Upgrade libopts tear off to v5.7pre12 which fixes problems with
+      loading config files
+    - Add support for forcing the use of the local libopts tearoff code
+
+02/27/2005: Version 3.0.beta1
+    - Major code cleanups and rewriting
+      - Rip out all edit functions from tcpreplay and put into tcprewrite
+      - Improve tcpreplay performance by about 5% for raw sending
+      - Move around utility functions for greater code-reuse
+      - Move MAC Address funcs into mac.c
+      - Move global defines into defines.h
+      - Standardize use of structs and typedefs
+      - Start passing const's when we don't need to modify
+    - Start using GNU AutoOpts for arg/config file processing
+    - Start using automake and autoheader
+    - Major rewrite of configure.in
+    - Add support for printing which interface packets go out
+    - 64bit counters are optional via --enable-64bits
+    - Can now rewrite L2 data per outbound interface
+    - Add support for additional DLT types
+
+    - Non-Code changes
+      - I now own the full copyright for tcpreplay
+      - Removed the evil 4th clause from the BSD license
+      - Start updating the FAQ and split some content to make a manual
+      - Automatically generate man pages based via autogen
+
+    - New Applications:
+      - tcprewrite
+
+    - Removed Applications: (Ethereal has better utilities)
+      - capinfo
+      - pcapmerge
+
+    - Merge fixes from 2.x/stable branch:
+      - portmap.c endian bugs
+      - edit_packet.c handle corrupted pcap's where caplen < len
+      - configure now properly uses --with-libnet and --with-libpcap
+
+*** Fork 3.x Branch from v2.3.1 ***

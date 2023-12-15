@@ -51,7 +51,7 @@ int sys_sendfile(int sock, int sendfd, off_t *offset, off_t len)
 	int ret;
 	size_t nbytes = len;
 
-	ret = sendfile(sendfd, sock, *offset, nbytes, NULL, &len, SF_MNOWAIT);
+	ret = sendfile(sendfd, sock, *offset, nbytes, NULL, &len, 0);
 	*offset += len;
 
 	return ret;

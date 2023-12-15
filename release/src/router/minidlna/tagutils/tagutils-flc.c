@@ -65,6 +65,7 @@ _get_flctags(char *filename, struct song_metadata *psong)
 			psong->song_length = (sec * 1000) + ms;
 			psong->bitrate = (((uint64_t)(psong->file_size) * 1000) / (psong->song_length / 8));
 			psong->samplerate = block->data.stream_info.sample_rate;
+			psong->samplesize = block->data.stream_info.bits_per_sample;
 			psong->channels = block->data.stream_info.channels;
 			break;
 

@@ -424,7 +424,7 @@ var httpApi ={
 
 	"detwanGetRet": function(){
 		var wanInfo = httpApi.nvramGet(["wan0_state_t", "wan0_sbstate_t", "wan0_auxstate_t", "autodet_state", "autodet_auxstate", "wan0_proto",
-										 "link_internet", "x_Setting", "usb_modem_act_sim", "link_wan"], true);
+										 "link_internet", "x_Setting", "usb_modem_act_sim", "link_wan", "wans_dualwan", "wan1_state_t", "wan1_sbstate_t", "wan1_auxstate_t"], true);
 		var tcode = httpApi.nvramGet(["territory_code"], true).territory_code;
 
 		var sessionId = (typeof systemVariable != "undefined") ? systemVariable.qisSession : ""; 
@@ -531,6 +531,10 @@ var httpApi ={
 			else{
 				retData.wanType = (iCanUsePPPoE) ? wanTypeList.pppoe : wanTypeList.dhcp;
 			}
+		}
+		else if(isSupport("usb_bk") && wanInfo.wans_dualwan == "wan usb" &&
+				wanInfo.link_internet == "2" && wanInfo.wan1_state_t == "2" && wanInfo.wan1_sbstate_t  == "0"){//USB tethering
+			retData.wanType = wanTypeList.connected;
 		}
 		else if(iCanUsePPPoE){
 			retData.wanType = wanTypeList.pppoe;
@@ -665,7 +669,9 @@ var httpApi ={
 			"unknow":"UNKNOW",
 			"v6plus":"V6PLUS",
 			"hgw_v6plus":"HGW_V6PLUS",
-			"ocnvc":"OCNVC"
+			"ocnvc":"OCNVC",
+			"dslite_xpass":"DSLITE_XPASS",
+			"dslite_transix":"DSLITE_TRANSIX"
 		}
 
 		var retData = {
@@ -698,6 +704,13 @@ var httpApi ={
 		else if(wanInfo.wan46det_state == "5"){
 			retData.wan46State = wanTypeList.ocnvc;
 		}
+		else if(wanInfo.wan46det_state == "6"){
+                        retData.wan46State = wanTypeList.dslite_xpass;
+                }
+                else if(wanInfo.wan46det_state == "7"){
+                        retData.wan46State = wanTypeList.dslite_transix;
+                }
+
 
 		return retData;
 	},
@@ -715,6 +728,7 @@ var httpApi ={
 			"map-e": "MAP-E",
 			"v6plus": "<#IPv6_plus#>",
 			"ocnvc": "<#IPv6_ocnvc#>",
+			"dslite": "DS-Lite",
 			"usb modem": "USB Modem"
 		};
 		var result = {
@@ -1495,15 +1509,17 @@ var httpApi ={
 							}
 						})();
 
+						var link_rate = isNaN(parseInt(data.link_rate)) ? 0 : parseInt(data.link_rate);
+						var max_rate = isNaN(parseInt(data.max_rate)) ? 0 : parseInt(data.max_rate);
 						data["link_rate_text"] = (data.is_on == "1") ? "0 Mbps" : "";
 						var link_rate_data = rate_map.filter(function(item, index, array){
-							return (item.value == data.link_rate);
+							return (item.value == link_rate);
 						})[0];
 						if(link_rate_data != undefined){
 							data["link_rate_text"] = link_rate_data.text;
 						}
 						if(data["label"] == "C"){
-							var _rate = parseInt(data.link_rate);
+							var _rate = link_rate;
 							if(isNaN(_rate)) _rate = 0;
 							else if(_rate < 0) _rate = 0;
 
@@ -1519,13 +1535,14 @@ var httpApi ={
 						}
 
 						if(data.cap_support.USB){
+							data["link_rate_text"] = ((data.is_on == "1") ? (link_rate + " Mbps") : "");
 							var max_rate_data = rate_map_USB.filter(function(item, index, array){
-								return (item.value == data.max_rate);
+								return (item.value == max_rate);
 							})[0];
 						}
 						else{
 							var max_rate_data = rate_map.filter(function(item, index, array){
-								return (item.value == data.max_rate);
+								return (item.value == max_rate);
 							})[0];
 						}
 
@@ -1538,30 +1555,28 @@ var httpApi ={
 							}
 							else{
 								if(data.cap_support.USB){
-									data["special_port_name"] = max_rate_data.text;
+									data["special_port_name"] = (data.is_on == "1") ? "USB Modem" : max_rate_data.text;
 								}
 								else{
-									var max_rate = parseInt(max_rate_data.value);
-									if(max_rate > 1000){
-										data["special_port_name"] = max_rate_data.text.replace(" Gbps", "");
-										if(max_rate == 10000){
-											if(data["cap_support"]["SFPP"] == true)
-												data["special_port_name"] = data["special_port_name"] + "G SFP+";
-											else
-												data["special_port_name"] = data["special_port_name"] + "G baseT";
-										}
+									var max_rate_value = parseInt(max_rate_data.value);
+									data["special_port_name"] = max_rate_data.text.replace(" Gbps", "");
+									if(max_rate_value == 10000){
+										if(data["cap_support"]["SFPP"] == true)
+											data["special_port_name"] = data["special_port_name"] + "G SFP+";
 										else
-											data["special_port_name"] = data["special_port_name"] + "G";
+											data["special_port_name"] = data["special_port_name"] + "G baseT";
 									}
+									else
+										data["special_port_name"] = data["special_port_name"] + "G";
 								}
 							}
 						}
 
-						var link_rate = isNaN(parseInt(data.link_rate)) ? 0 : parseInt(data.link_rate);
-						var max_rate = isNaN(parseInt(data.max_rate)) ? 0 : parseInt(data.max_rate);
 						data["link_rate_status"] = 1;//normal
-						if(data.is_on == "1" && link_rate < 1000)
-							data["link_rate_status"] = 0;//abnormal
+						if(!(data.cap_support.USB)){
+							if(data.is_on == "1" && link_rate < 1000)
+								data["link_rate_status"] = 0;//abnormal
+						}
 
 						var sort_key = "";
 						if(data.cap_support.DUALWAN_PRIMARY_WAN || data.cap_support.DUALWAN_SECONDARY_WAN){
@@ -1725,7 +1740,8 @@ var httpApi ={
 					"wifi_radio_0" : {"bit" : 0}, //2G
 					"wifi_radio_1" : {"bit" : 1}, //5G or 5G-1
 					"wifi_radio_2" : {"bit" : 2}, //5G-2
-					"wifi_radio_3" : {"bit" : 3}  //6G
+					"wifi_radio_3" : {"bit" : 3}, //6G or 6G-1
+					"wifi_radio_4" : {"bit" : 4}  //6G-2
 				}
 			},
 			"conn_eap_mode" : {

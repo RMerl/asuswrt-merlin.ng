@@ -77,6 +77,7 @@ extern int generate_sharelink(server* srv, connection *con, const char* filename
 extern void save_sharelink_list();
 extern void stop_arpping_process();
 extern int is_string_encode_as_integer( const char *s );
+extern int is_valid_string( const char* data );
 extern int string_starts_with( const char *a, const char *b );
 extern int file_exist(const char *filepath);
 extern void md5sum(char* output, int counter, ...);
@@ -4427,6 +4428,10 @@ propmatch_cleanup:
 
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "Keyword"))) {
 			keyword = ds->value;
+
+			if(!buffer_is_empty(keyword)){			
+				buffer_urldecode_path(keyword);
+			}
 		}
 
 		if (NULL != (ds = (data_string *)array_get_element(con->request.headers, "Orderby"))) {
@@ -4513,24 +4518,13 @@ propmatch_cleanup:
 
 		//- keyword : Avoid SQL injection!
 		if (!buffer_is_empty(keyword) && 
-		    (strstr(keyword->ptr, "'")!=NULL ||
-			keyword->used > 200)) {
+			(is_valid_string(keyword->ptr)!=0 || keyword->used > 200)) {
 
 			Cdbg(DBE, "The paramter keyword is invalid!");
 			con->http_status = 207;
 			con->file_finished = 1;
 			return HANDLER_FINISHED;
 		}
-
-		//- Check paramter
-		// if( (keyword!=NULL && keyword->used > 200 ) ||
-		// 	(parentid!=NULL && parentid->used > 20 ) ){
-			
-		// 	Cdbg(DBE, "NULL value 'sql_minidlna'!");
-		// 	con->http_status = 207;
-		// 	con->file_finished = 1;
-		// 	return HANDLER_FINISHED;
-		// }
 
 		get_minidlna_db_path(p);
 		
@@ -4581,8 +4575,7 @@ propmatch_cleanup:
 		}
 	
 		if(!buffer_is_empty(keyword)){			
-			buffer_urldecode_path(keyword);
-
+			
 			if(strstr(keyword->ptr, "*")||strstr(keyword->ptr, "?")){
 				char buff[200];
 				replace_str(keyword->ptr, "*", "%", buff);

@@ -209,6 +209,7 @@ endif
 else
 all:
 	-cp -f $(TOP_PLATFORM)/wlan/nvram/$(PRBM_DIR)/libnvram.so nvram/
+	make -C nvram dynamic install
 endif
 install:
 	@echo done

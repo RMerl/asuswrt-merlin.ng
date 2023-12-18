@@ -1617,7 +1617,7 @@ obj-$(RTCONFIG_TRANSMISSION) += Transmission curl libevent-2.0.21
 obj-$(RTCONFIG_SAMBASRV) += wsdd2
 
 # Begin merlin add-ons
-obj-$(RTCONFIG_NANO) += ncurses-6.0
+obj-$(RTCONFIG_NANO) += ncurses-6.3
 obj-$(RTCONFIG_NANO) += nano
 obj-$(RTCONFIG_OPENVPN) += ministun
 obj-$(RTCONFIG_DNSSEC) += $(if $(RTCONFIG_DNSSEC_OPENSSL),openssl,) $(if $(RTCONFIG_DNSSEC_NETTLE),nettle,)
@@ -8270,9 +8270,9 @@ ncurses-6.3-install: ncurses-6.3
 nano/Makefile:
 	cd nano && \
 	autoreconf -i -f && $(CONFIGURE) --prefix=$(INSTALLDIR)/nano/usr --sysconfdir=/jffs/configs \
-		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/ncurses-6.0/include -ffunction-sections -fdata-sections" \
-		LDFLAGS="$(LDFLAGS) -L$(TOP)/ncurses-6.0/lib -ffunction-sections -fdata-sections -Wl,--gc-sections" \
-		PKG_CONFIG_LIBDIR="$(TOP)/ncurses-6.0/misc" PKG_CONFIG_PATH="$(TOP)/ncurses-6.0/misc" \
+		CFLAGS="$(EXTRACFLAGS) -Os -I$(TOP)/ncurses-6.3/include -ffunction-sections -fdata-sections" \
+		LDFLAGS="$(LDFLAGS) -L$(TOP)/ncurses-6.3/lib -ffunction-sections -fdata-sections -Wl,--gc-sections" \
+		PKG_CONFIG_LIBDIR="$(TOP)/ncurses-6.3/misc" PKG_CONFIG_PATH="$(TOP)/ncurses-6.3/misc" \
 		ac_cv_lib_ncursesw_get_wch=no \
 		--disable-speller --disable-extra --disable-tabcomp --enable-wrapping --disable-glibtest \
 		--disable-libmagic --disable-nls
@@ -8285,7 +8285,7 @@ nano-install:
 	@$(MAKE) -C nano install-exec INSTALLDIR=$(INSTALLDIR)/nano/usr/bin/nano
 	$(STRIP) $(INSTALLDIR)/nano/usr/bin/nano
 
-nano: ncurses-6.0 nano/Makefile
+nano: ncurses-6.3 nano/Makefile
 	@$(SEP)
 	$(MAKE) -C $@
 

@@ -1062,6 +1062,37 @@ Exit:
 }
 #endif
 
+static int _phy_xfi_txrx_polarity_set(phy_dev_t *phy_dev, int inverse, int tx_dir)
+{
+    int ret;
+    uint16_t data2, data3;
+    uint16_t type;
+
+    if ((ret = cmd_handler(phy_dev, CMD_GET_XFI_POLARITY, &type, &data2, &data3, NULL, NULL)))
+        goto Exit;
+
+    if (tx_dir)
+        data2 = inverse > 0;
+    else
+        data3 = inverse > 0;
+
+    if ((ret = cmd_handler(phy_dev, CMD_SET_XFI_POLARITY, &type, &data2, &data3, NULL, NULL)))
+        goto Exit;
+
+Exit:
+    return ret;
+}
+
+static int _phy_xfi_tx_polarity_set(phy_dev_t *phy_dev, int inverse)
+{
+    return _phy_xfi_txrx_polarity_set(phy_dev, inverse, 1);
+}
+
+static int _phy_xfi_rx_polarity_set(phy_dev_t *phy_dev, int inverse)
+{
+    return _phy_xfi_txrx_polarity_set(phy_dev, inverse, 0);
+}
+
 static int _phy_apd_get(phy_dev_t *phy_dev, int *enable)
 {
     int ret;
@@ -1686,6 +1717,18 @@ static int _phy_init(phy_dev_t *phy_dev)
     /* Set XFI polarity */
     if ((ret = _phy_xfi_polarity_set(phy_dev, 0)))
         goto Exit;
+
+    if (phy_dev->xfi_tx_polarity_inverse)
+    {
+        printk("Invert XFI Tx Polarity of PHY %s at %d\n", phy_dev_get_phy_name(phy_dev), phy_dev->addr);
+        _phy_xfi_tx_polarity_set(phy_dev, phy_dev->xfi_tx_polarity_inverse);
+    }
+
+    if (phy_dev->xfi_rx_polarity_inverse)
+    {
+        printk("Invert XFI Rx Polarity of PHY %s at %d\n", phy_dev_get_phy_name(phy_dev), phy_dev->addr);
+        _phy_xfi_rx_polarity_set(phy_dev, phy_dev->xfi_rx_polarity_inverse);
+    }
 
     if ((ret = phy_dev_caps_set(phy_dev, PHY_CAP_PAUSE | PHY_CAP_REPEATER)))
         goto Exit;

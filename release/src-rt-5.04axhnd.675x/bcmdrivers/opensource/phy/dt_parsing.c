@@ -241,6 +241,8 @@ static phy_dev_t *phy_dev_dt_probe(const dt_handle_t handle)
 
     phy_dev->bus_drv = bus_drv_get_by_str(dt_property_read_string(dt_parent(handle), "bus-type"));
     phy_dev->swap_pair = dt_property_read_bool(handle, "enet-phy-lane-swap");
+    phy_dev->xfi_tx_polarity_inverse = dt_property_read_bool(handle, "phy-xfi-tx-polarity-inverse");
+    phy_dev->xfi_rx_polarity_inverse = dt_property_read_bool(handle, "phy-xfi-rx-polarity-inverse");
     phy_dev->inter_phy_types = parse_inter_phy_types(handle);
     phy_dev->core_index = dt_property_read_u32(handle, "serdes-core");
     phy_dev->lane_index = dt_property_read_u32(handle, "serdes-lane");

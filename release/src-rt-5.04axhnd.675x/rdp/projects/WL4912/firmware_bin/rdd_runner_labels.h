@@ -239,7 +239,7 @@
 
 #ifndef PC_ADDRESS_INST_IND
 
-#define image_3_c_cpu_rx_copy_wakeup_request        (0x5b1c)
+#define image_3_c_cpu_rx_copy_wakeup_request        (0x5b24)
 #define image_3_c_cpu_rx_wakeup_request        (0x57ac)
 #define image_3_common_reprocessing_wakeup_request        (0x5618)
 #define image_3_cpu_recycle_wakeup_request        (0x3fb0)
@@ -262,7 +262,7 @@
 #define image_3_processing_done        (0xecc)
 #define image_3_processing_wakeup_request        (0x3b0)
 #define image_3_spdsvc_gen_wakeup_request        (0x51d8)
-#define image_3_start_task_c_cpu_rx_copy_wakeup_request        (0x5b1c)
+#define image_3_start_task_c_cpu_rx_copy_wakeup_request        (0x5b24)
 #define image_3_start_task_c_cpu_rx_wakeup_request        (0x57ac)
 #define image_3_start_task_common_reprocessing_wakeup_request        (0x5618)
 #define image_3_start_task_cpu_recycle_wakeup_request        (0x3fb0)
@@ -278,7 +278,7 @@
 
 #else
 
-#define image_3_c_cpu_rx_copy_wakeup_request        (0x16c7)
+#define image_3_c_cpu_rx_copy_wakeup_request        (0x16c9)
 #define image_3_c_cpu_rx_wakeup_request        (0x15eb)
 #define image_3_common_reprocessing_wakeup_request        (0x1586)
 #define image_3_cpu_recycle_wakeup_request        (0xfec)
@@ -301,7 +301,7 @@
 #define image_3_processing_done        (0x3b3)
 #define image_3_processing_wakeup_request        (0xec)
 #define image_3_spdsvc_gen_wakeup_request        (0x1476)
-#define image_3_start_task_c_cpu_rx_copy_wakeup_request        (0x16c7)
+#define image_3_start_task_c_cpu_rx_copy_wakeup_request        (0x16c9)
 #define image_3_start_task_c_cpu_rx_wakeup_request        (0x15eb)
 #define image_3_start_task_common_reprocessing_wakeup_request        (0x1586)
 #define image_3_start_task_cpu_recycle_wakeup_request        (0xfec)

@@ -220,6 +220,8 @@ typedef struct phy_dev_s
     int delay_rx;
     int delay_tx;
     int swap_pair;
+    int xfi_tx_polarity_inverse;
+    int xfi_rx_polarity_inverse;
     int flag;
     int loopback_save;
     void *macsec_dev;

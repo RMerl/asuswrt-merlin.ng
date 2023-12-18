@@ -1,8 +1,6 @@
 #include "inc/6753.dtsi"
 
 / {
-        model = "RTAX9000";
-
 	memory_controller {
 		memcfg = <(BP_DDR_TYPE_DDR4            | \
             BP_DDR_SPEED_1200_17_17_17         | \
@@ -11,16 +9,33 @@
             BP_DDR_TOTAL_WIDTH_16BIT           | \
             BP_DDR_SSC_CONFIG_1)>;
 	};
-
-    xfp_sfp: xfp_sfp {
-        compatible = "brcm,sfp";
-        i2c-bus = <&i2c0>;
-        status = "disabled";
+/*
+    buttons {
+        compatible = "brcm,buttons";
+        reset_button {
+            ext_irq = <&bca_extintr 15 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            press {
+                print = "Button Press -- Hold for 5s to do restore to default";
+            };
+            hold {
+                rst_to_dflt = <5>;
+            };
+            release {
+                reset = <0>;
+            };
+        };
+        ses_button {
+            ext_irq = <&bca_extintr 14 BCA_GPIO_ACTIVE_LOW (BCA_EXTINTR_TYPE_LOW_LEVEL | BCA_EXTINTR_TYPE_SENSE_EDGE)>;
+            release {
+                ses_short_period = <0>;
+                ses_long_period = <3>;
+            };
+        };
     };
-
+*/
     wan_serdes {
         compatible = "brcm,pon-drv";
-        trx = <&xfp_sfp>;
+        tx-polarity-invert;
         status = "okay";
     };
 };
@@ -63,11 +78,6 @@
                  &c1_femctrl_3_pin_93 &c1_femctrl_4_pin_94 &c1_femctrl_5_pin_95 >;
 };
 
-&rgmii {
-        rgmii-disabled;
-        status = "okay";
-};
-
 &egphy {
     base-addr = <2>;
 };
@@ -85,29 +95,25 @@
     phy5:5 {
         status = "okay";
     };
-
-    phy_detect:detect {
-        compatible = "brcm,bcaphy";
-        phy-type = "EXT3";
-        reg = <0x15>;
-        2500-Base-R;
-        caps-no-hdx;
-        caps-no-100;
-        caps-no-10;
+    phy_serdes: serdes {
+        phy-handle = <&phy_ext_serdes>;
         status = "okay";
     };
-
     phy_ext_serdes: ext_serdes {
-        compatible = "brcm,bcaphy";
-        phy-type = "EXT3";
         reg = <0x13>;
+        phy-xfi-tx-polarity-inverse;
         caps-no-10000;
         caps-no-5000;
         status = "okay";
     };
 
-    phy_serdes: serdes {
-        phy-handle = <&phy_ext_serdes>;
+    phy_detect:detect {
+        reg = <0x15>;
+        phy-xfi-rx-polarity-inverse;
+        2500-Base-R;
+        caps-no-hdx;
+        caps-no-100;
+        caps-no-10;
         status = "okay";
     };
 };
@@ -115,46 +121,111 @@
 &switch0 {
     pinctrl-names = "default";
     pinctrl-0 = <&per_mdc_pin_68 &per_mdio_pin_69>;
-
-        ports {
-                port0@0 {
-                        phy-handle = <&phy2>;
-                        status = "okay";
-                };
-
-                port1@1 {
-                        phy-handle = <&phy3>;
-                        status = "okay";
-                };
-
-                port2@2 {
-                        phy-handle = <&phy4>;
-                        status = "okay";
-                };
-
-                port3@3 {
-                        phy-handle = <&phy5>;
-                        status = "okay";
-                };
-
-                port5@5 {
-                        phy-handle = <&phy_serdes>;
-                        phy-mode = "hsgmii";
-                        status = "okay";
-                };
-
-                port_detect@6 {
-                        phy-handle = <&phy_detect>;
-                        phy-mode = "xfi";
-			status = "okay";
-                };
+    ports {
+        port0@0 {
+            phy-handle = <&phy2>;
+            status = "okay";
+            label = "eth1";
         };
+
+        port1@1 {
+            phy-handle = <&phy3>;
+            status = "okay";
+            label = "eth2";
+        };
+
+        port2@2 {
+            phy-handle = <&phy4>;
+            status = "okay";
+            label = "eth3";
+        };
+
+        port3@3 {
+            phy-handle = <&phy5>;
+            status = "okay";
+            label = "eth4";
+        };
+
+        port5@5 {
+            status = "okay";
+            label = "eth5";
+        };
+
+        port_detect@6 {
+            status = "okay";
+            label = "eth0";
+        };
+    };
 };
 
 &legacy_leds {
+    wl0-led = <&led4>;
 };
 
 &led_ctrl {
+    status = "okay";
+
+    /* POWER_LED */
+    led0:led_gpio_0 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <0>;
+        active_low;
+        init_low;
+    };
+
+    /* LAN LED */
+    led1:led_gpio_1 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <1>;
+        active_low;
+        init_high;
+    };
+
+    /* WPS LED */
+    led2:led_gpio_2 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <2>;
+        active_low;
+        init_high;
+    };
+
+    /* WAN Red LED */
+    led3:led_gpio_3 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <3>;
+        active_low;
+        init_high;
+    };
+
+    /* wl0 LED */
+    led4: sw_parallel_led_7{
+        active_low;
+        pinctrl-0 = <&a_per_led_06_pin_7>;
+        label = "WLAN0";
+        status = "okay";
+    };
+
+    /* WAN LED GPIO mode */
+    led5:led_gpio_20 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <20>;
+        active_low;
+        init_high;
+    };
+
+    /* USB Power */
+    led6:led_gpio_80 {
+        compatible = "brcm,gpio-led";
+        software_led;
+        pin = <80>;
+        active_high;
+        init_low;
+    };
 };
 
 #if defined(CONFIG_BCM_PCIE_HCD) || defined(CONFIG_BCM_PCIE_HCD_MODULE)

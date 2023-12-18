@@ -8235,6 +8235,8 @@ ncurses-6.3/Makefile: ncurses-6.3/configure
 		--sysconfdir=/etc --datadir=/usr/share --localstatedir=/var --mandir=/usr/man\
 		--without-normal --with-debug --with-shared\
 		--without-tests --without-progs --without-manpages \
+		--disable-termcap --disable-database --with-fallbacks="xterm,vt100,vt200,linux,ansi,xterm-256color" \
+		--disable-home-terminfo \
 		CFLAGS="-I$(STAGEDIR)/usr/local/include"\
 		LDFLAGS="-L$(STAGEDIR)/usr/local/lib -ldl -lpthread"
 

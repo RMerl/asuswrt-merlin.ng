@@ -5,8 +5,6 @@ all:
 	@cp -f prebuilt/$(EXE) .
 
 install: generic_exe_install
-	mkdir -p $(INSTALL_DIR)/bin
-	(cd $(INSTALL_DIR)/sbin; rm -f ethctl; ln -s ../bin/$(EXE) $(EXE))
 
 clean:
 

@@ -38,6 +38,8 @@
 #endif /* BCA_HNDROUTER */
 #include <bcmnvram.h>
 
+#include <shared.h>
+
 /* defines */
 #ifndef RAMFS_MAGIC
 #define RAMFS_MAGIC		0x858458f6
@@ -94,6 +96,7 @@
 	eval("insmod", buf, (!nic && nvram_match("build_name", "RT-AXE7800")) ? "instance_base=1 dhd_msg_level=0" : "dhd_msg_level=0"); \
 }
 
+
 #else /* ! BCA_HNDROUTER && !BCA_CPEROUTER */
 
 #define rc_stop()		kill(1, SIGINT)
@@ -120,6 +123,27 @@
 #define DM_DEPENDENCY_DEPTH_MAX	6	// recurse up to DM_DEPENDENCY_DEPTH_MAX
 #define DM_INTERVAL 5 /* call debug monitor at every 5th tick only */
 
+int dhd_monitor_msglevel = 0;
+
+/* Debug Print */
+#define DHD_MONITOR_ERROR	0x000001
+#define DHD_MONITOR_SYSLOG	0x000004
+
+#define dprintf(fmt, arg...) \
+	do { \
+		if (dhd_monitor_msglevel & DHD_MONITOR_ERROR) \
+		fprintf(stderr, fmt, ##arg); \
+		if (dhd_monitor_msglevel & DHD_MONITOR_SYSLOG) \
+		logmessage("dhd_monitor", "%s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+	} while (0)
+
+#define printf2(fmt, arg...) \
+	do { \
+		printf(fmt, ##arg); \
+		if (dhd_monitor_msglevel & DHD_MONITOR_SYSLOG) \
+		logmessage("dhd_monitor", "%s(%d): "fmt, __FUNCTION__, __LINE__, ##arg); \
+	} while (0)
+
 static int dm_is_process_active(char * dirname);
 static void dm_trim(char *str, size_t sz);
 static int dm_read_pid_info_file(char *path, char *dep_cmd, size_t dep_cmd_sz,
@@ -140,7 +164,7 @@ static int do_command(const char *cmd)
 	int status = system(cmd);
 #ifdef WIFEXITED
 	if (!WIFEXITED(status)) {
-		fprintf(stderr, "%s: command (\"%s\") terminated\n",
+		dprintf("%s: command (\"%s\") terminated\n",
 			_mod_name, cmd);
 		return -1;
 	}
@@ -148,7 +172,7 @@ static int do_command(const char *cmd)
 	status = WEXITSTATUS(status);
 #endif
 	if (status) {
-		fprintf(stderr, "%s: command (\"%s\") failed: %s\n", _mod_name,
+		dprintf("%s: command (\"%s\") failed: %s\n", _mod_name,
 			cmd, strerror(status));
 		return -1;
 	}
@@ -173,7 +197,7 @@ static void handle_recovery(int nic_wl)
 	if (val && atoi(val)) {
 		/* Fast Restart - rc_restart */
 		/* stop all services */
-		printf("%s: stop services\n", _mod_name);
+		printf2("%s: stop services\n", _mod_name);
 //		rc_stop();
 
 		/* rc_stop is a non-blocking call. So, add sufficient sleep
@@ -182,17 +206,17 @@ static void handle_recovery(int nic_wl)
 		sleep(3);
 
 		/* unload dhd */
-		printf("%s: unload dhd\n", _mod_name);
+		printf2("%s: unload dhd\n", _mod_name);
 		unload_driver(nic_wl);
 		sleep(1);
 
 		/* reload dhd */
-		printf("%s: reload dhd\n", _mod_name);
+		printf2("%s: reload dhd\n", _mod_name);
 		load_driver(nic_wl);
 		sleep(1);
 
 		/* start all services */
-		printf("%s: restart services\n", _mod_name);
+		printf2("%s: restart services\n", _mod_name);
 //		rc_start();
 		sleep(1);
 		system("restart_wireless");
@@ -201,10 +225,10 @@ static void handle_recovery(int nic_wl)
 		val = (char *) nvram_get("watchdog");
 		if (val && atoi(val)) {
 			/* full reboot */
-			printf("%s: rebooting system watchdog=%d \n", _mod_name, val?atoi(val):0);
+			printf2("%s: rebooting system watchdog=%d \n", _mod_name, val?atoi(val):0);
 			rc_reboot();
 		} else {
-			printf("%s: watchdog disabled, ignoring dongle trap/wl kernel panic\n",
+			printf2("%s: watchdog disabled, ignoring dongle trap/wl kernel panic\n",
 				_mod_name);
 		}
 	}
@@ -228,20 +252,20 @@ static int delete_extra_crash_files(const char *log_dir, uint retains)
 	char filepath[256];
 
 	if (!log_dir) {
-		fprintf(stderr, "%s: Error: log_dir is NULL\n", _mod_name);
+		dprintf("%s: Error: log_dir is NULL\n", _mod_name);
 		return -1;
 	}
 
 	n = scandir(log_dir, &fnamelist, dir_filter, alphasort);
 	if (n < 0) {
-		fprintf(stderr, "%s: could not scan log_dir(%s) folder, error: %s\n", _mod_name,
+		dprintf("%s: could not scan log_dir(%s) folder, error: %s\n", _mod_name,
 			log_dir, strerror(errno));
 	} else {
 		int deletes = n - retains;
 		for (i = 0; i < n; i++) {
 			if (deletes > 0) {
 				deletes--;
-				printf("%s: pruning old crash log - %s/%s\n", _mod_name,
+				printf2("%s: pruning old crash log - %s/%s\n", _mod_name,
 					log_dir, fnamelist[i]->d_name);
 				snprintf(filepath, sizeof(filepath), "%s/%s",
 					log_dir, fnamelist[i]->d_name);
@@ -263,7 +287,7 @@ static int get_sys_free_mem(void)
 	int free_mem = -1;
 
 	if ((fp = fopen("/proc/meminfo", "r")) == NULL) {
-		fprintf(stderr, "%s: read meminfo fail, %s\n", _mod_name, strerror(errno));
+		dprintf("%s: read meminfo fail, %s\n", _mod_name, strerror(errno));
 		return -1;
 	}
 
@@ -282,7 +306,7 @@ static int get_dir_free_space(const char *dir)
 	int free_space = 0;
 
 	if (statfs(dir, &dir_statfs)) {
-		fprintf(stderr, "%s: statfs backup dir %s fail, error: %s\n", _mod_name, dir,
+		dprintf("%s: statfs backup dir %s fail, error: %s\n", _mod_name, dir,
 			strerror(errno));
 		return -1;
 	}
@@ -290,7 +314,7 @@ static int get_dir_free_space(const char *dir)
 	if (dir_statfs.f_type == RAMFS_MAGIC ||
 			dir_statfs.f_type == TMPFS_MAGIC) {
 		if ((free_space = get_sys_free_mem()) < 0) {
-			fprintf(stderr, "%s: get sys free mem fail\n", _mod_name);
+			dprintf("%s: get sys free mem fail\n", _mod_name);
 			return -1;
 		}
 		free_space = free_space * 1024;
@@ -307,7 +331,7 @@ static int is_ramfs(const char *dir)
 	int ret = 0;
 
 	if (statfs(dir, &dir_statfs)) {
-		fprintf(stderr, "%s: statfs backup dir %s fail, error: %s\n", _mod_name, dir,
+		dprintf("%s: statfs backup dir %s fail, error: %s\n", _mod_name, dir,
 			strerror(errno));
 		return ret;
 	}
@@ -330,24 +354,24 @@ static int backup_logs(char *timestamp, const char *backup_dir)
 	int ret = -1;
 
 	if (!timestamp) {
-		fprintf(stderr, "%s: Error: timestamp is NULL\n", _mod_name);
+		dprintf("%s: Error: timestamp is NULL\n", _mod_name);
 		goto fail;
 	}
 
 	if (!backup_dir) {
-		fprintf(stderr, "%s: Error: backup_dir is NULL\n", _mod_name);
+		dprintf("%s: Error: backup_dir is NULL\n", _mod_name);
 		goto fail;
 	}
 
 	if (!(dir = opendir(backup_dir))) {
-		fprintf(stderr, "%s: open backup dir %s fail, %s\n", _mod_name, backup_dir,
+		dprintf("%s: open backup dir %s fail, %s\n", _mod_name, backup_dir,
 			strerror(errno));
 		goto fail;
 	}
 	closedir(dir);
 
 	if (access(backup_dir, W_OK)) {
-		fprintf(stderr, "%s: access backup dir %s fail, error: %s\n", _mod_name, backup_dir,
+		dprintf("%s: access backup dir %s fail, error: %s\n", _mod_name, backup_dir,
 			strerror(errno));
 		goto fail;
 	}
@@ -356,7 +380,7 @@ static int backup_logs(char *timestamp, const char *backup_dir)
 		CRASH_LOG_PREFIX, timestamp);
 
 	if (stat(logfile, &log_stat)) {
-		fprintf(stderr, "%s: open log file %s fail, %s\n", _mod_name, logfile,
+		dprintf("%s: open log file %s fail, %s\n", _mod_name, logfile,
 			strerror(errno));
 		goto fail;
 	}
@@ -364,7 +388,7 @@ static int backup_logs(char *timestamp, const char *backup_dir)
 	free_space = get_dir_free_space(backup_dir);
 
 	if (log_stat.st_size > free_space || log_stat.st_size == 0) {
-		fprintf(stderr, "%s: log size (%d) over backup dir (%s%s)"
+		dprintf("%s: log size (%d) over backup dir (%s%s)"
 			" available space (%d)\n", _mod_name, log_stat.st_size,
 			backup_dir, is_ramfs(backup_dir)? " a ram based fs": "", free_space);
 		goto fail;
@@ -373,19 +397,19 @@ static int backup_logs(char *timestamp, const char *backup_dir)
 	snprintf(cp_file, sizeof(cp_file), "cp %s %s", logfile, backup_dir);
 	ret = do_command(cp_file);
 	if (ret < 0) {
-		fprintf(stderr, "%s: failed to backup logfile %s\n", _mod_name,
+		dprintf("%s: failed to backup logfile %s\n", _mod_name,
 			logfile);
 		goto fail;
 	}
 
-	printf("%s: logfile (%s) are backed up to (%s%s)\n",
+	printf2("%s: logfile (%s) are backed up to (%s%s)\n",
 			_mod_name, logfile, backup_dir,
 			is_ramfs(backup_dir)? " a ram based fs": "");
 
 	snprintf(cp_file, sizeof(cp_file), "rm -rf %s", LOG_BASE_PATH);
 	ret = do_command(cp_file);
 	if (ret < 0)
-		fprintf(stderr, "%s: failed to delete temp folder %s\n", _mod_name, LOG_BASE_PATH);
+		dprintf("%s: failed to delete temp folder %s\n", _mod_name, LOG_BASE_PATH);
 
 	sync();
 	fflush(stdout);
@@ -395,7 +419,7 @@ fail:
 	snprintf(cp_file, sizeof(cp_file), "rm -rf %s", LOG_BASE_PATH);
 	ret = do_command(cp_file);
 	if (ret < 0)
-		fprintf(stderr, "%s: failed to delete temp folder %s\n", _mod_name, LOG_BASE_PATH);
+		dprintf("%s: failed to delete temp folder %s\n", _mod_name, LOG_BASE_PATH);
 
 	fflush(stderr);
 	return ret;
@@ -419,12 +443,12 @@ static int capture_logs(int noclk, char *timestamp, int nic_wl)
 		CRASH_LOG_PREFIX, timestamp);
 	if (mkdir(LOG_BASE_PATH, 0777) < 0 && errno != EEXIST) {
 		perror("could not create dhd log folder");
-		printf("%s: could not create %s folder\n", _mod_name, LOG_BASE_PATH);
+		printf2("%s: could not create %s folder\n", _mod_name, LOG_BASE_PATH);
 		return ret;
 	}
 	if (mkdir(basepath, 0777) < 0 && errno != EEXIST) {
 		perror("could not create dhd log folder");
-		printf("%s: could not create %s folder\n", _mod_name, basepath);
+		printf2("%s: could not create %s folder\n", _mod_name, basepath);
 		return ret;
 	}
 
@@ -440,7 +464,7 @@ static int capture_logs(int noclk, char *timestamp, int nic_wl)
 		/* only skip dumps when noclk is set */
 		skip_dumps = noclk;
 	} else {
-		printf("%s: dongle memory dump is not available\n", _mod_name);
+		printf2("%s: dongle memory dump is not available\n", _mod_name);
 	}
 
 	/* copy the macreg dump files if available */
@@ -464,7 +488,7 @@ static int capture_logs(int noclk, char *timestamp, int nic_wl)
 	/* Get the interface name */
 	fp = fopen(IF_IDX_FILE_PATH, "r");
 	if (!fp) {
-		printf("%s: cannot open file %s\n", _mod_name, IF_IDX_FILE_PATH);
+		printf2("%s: cannot open file %s\n", _mod_name, IF_IDX_FILE_PATH);
 		error = -1;
 		goto exit;
 	} else {
@@ -477,7 +501,7 @@ static int capture_logs(int noclk, char *timestamp, int nic_wl)
 		fclose(fp);
 	}
 
-	printf("%s: Trap/Assert on interface %s!! noclk %d\n",
+	printf2("%s: Trap/Assert on interface %s!! noclk %d\n",
 		_mod_name, if_name, noclk);
 
 	if (skip_dumps)
@@ -553,11 +577,11 @@ exit:
 
 	snprintf(filepath, sizeof(filepath), "%s.tgz", basepath);
 	if ((stat(filepath, &file_stat) == 0) && file_stat.st_size) {
-		printf("%s: log (%s) is collected, file size %d\n", _mod_name,
+		printf2("%s: log (%s) is collected, file size %d\n", _mod_name,
 				filepath, file_stat.st_size);
 		ret = file_stat.st_size;
 	} else {
-		printf("%s: log (%s) is not available or an empty file\n", _mod_name, filepath);
+		printf2("%s: log (%s) is not available or an empty file\n", _mod_name, filepath);
 	}
 
 	return ret;
@@ -571,7 +595,7 @@ static void sig_handler(int signo)
 	int retain_logs;
 	int free_space = 0;
 
-	printf("%s: Detected firmware trap/assert !!\n", _mod_name);
+	printf2("%s: Detected firmware trap/assert !!\n", _mod_name);
 
 	/* figure out module type. dhd or nic */
 #if 0
@@ -580,7 +604,7 @@ static void sig_handler(int signo)
 	if (val && !strstr(val, "dhd")) {
 		nic_wl = 1;
 	}
-	printf("%s: kernel_mods: %s nic_wl %d\n",
+	printf2("%s: kernel_mods: %s nic_wl %d\n",
 		_mod_name, (val ? val : "unset"), nic_wl);
 #else
 	char wl_ifnames[64] = { 0 };
@@ -604,7 +628,7 @@ static void sig_handler(int signo)
 		}
 		tmp++;
 	}
-	printf("%s: Logging timestamp: %s\n", _mod_name, timestamp);
+	printf2("%s: Logging timestamp: %s\n", _mod_name, timestamp);
 
 	/* retain latest crash logs under /tmp/crash_logs */
 	delete_extra_crash_files(LOG_BASE_PATH, (MAX_CRASH_LOGS - 1));
@@ -612,12 +636,12 @@ static void sig_handler(int signo)
 	/* capture all relevant logs */
 	log_size = capture_logs((signo == SIGUSR2 ? 1 : 0), timestamp, nic_wl);
 	if (log_size < 0) {
-		printf("%s: capture failed\n", _mod_name);
+		printf2("%s: capture failed\n", _mod_name);
 		return;
 	}
 
 	for (retain_logs = (MAX_CRASH_LOGS - 1); retain_logs >= 0; retain_logs--) {
-		printf("%s: going to retain %d log(s) under backup dir (%s)\n",
+		printf2("%s: going to retain %d log(s) under backup dir (%s)\n",
 				_mod_name, retain_logs, _backup_dir);
 		delete_extra_crash_files(_backup_dir, retain_logs);
 
@@ -629,7 +653,7 @@ static void sig_handler(int signo)
 			}
 
 			if (log_size > free_space) {
-				printf("%s: Disk space (%d) not enough for new log (%d), "
+				printf2("%s: Disk space (%d) not enough for new log (%d), "
 						"retain one less log\n",
 						_mod_name, free_space, log_size);
 			} else {
@@ -664,7 +688,7 @@ static int dm_is_process_active(char * pid)
 	snprintf(proc_path, sizeof(proc_path), "/proc/%s", pid);
 
 	if ((dir = opendir(proc_path)) == NULL) {
-		fprintf(stderr, "%s error opening %s\n", __FUNCTION__, proc_path);
+		dprintf("%s error opening %s\n", __FUNCTION__, proc_path);
 		return FALSE;
 	}
 
@@ -730,7 +754,7 @@ static int dm_handle_process(char *pid, unsigned int depth)
 		return FALSE;
 	}
 
-	fprintf(stderr, "%s process id %s does not exist will restart\n",
+	printf2("%s process id %s does not exist will restart\n",
 		__FUNCTION__, pid);
 
 	snprintf(process_dm_path, sizeof(process_dm_path), "%s/%s", DM_DIR, pid);
@@ -752,11 +776,11 @@ static int dm_handle_process(char *pid, unsigned int depth)
 
 	// remove entry of process in DM_DIR
 	if (remove(process_dm_path) != 0) {
-		fprintf(stderr, "%s: Couldnt remove %s\n", __FUNCTION__, process_dm_path);
+		dprintf("%s: Couldnt remove %s\n", __FUNCTION__, process_dm_path);
 	}
 
 	// restart using process_cmd
-	fprintf(stderr, "%s Restarting process %s\n", __FUNCTION__, process_cmd);
+	dprintf("%s Restarting process %s\n", __FUNCTION__, process_cmd);
 	system(process_cmd);
 
 	return TRUE;
@@ -787,7 +811,7 @@ static unsigned char dm_get_pid_of_cmd(char *dep_cmd, char *dep_pid, size_t dep_
 	struct dirent *de;
 
 	if ((dir = opendir(DM_DIR)) == NULL) {
-		fprintf(stderr, "%s error opening %s\n", __FUNCTION__, DM_DIR);
+		dprintf("%s error opening %s\n", __FUNCTION__, DM_DIR);
 		return FALSE;
 	}
 
@@ -812,7 +836,7 @@ static void dm_watchdog()
 	struct dirent *de;
 
 	if ((dir = opendir(DM_DIR)) == NULL) {
-		fprintf(stderr, "%s error opening %s\n", __FUNCTION__, DM_DIR);
+		dprintf("%s error opening %s\n", __FUNCTION__, DM_DIR);
 		return;
 	}
 
@@ -829,6 +853,9 @@ int main(int argc, char **argv)
 {
 	_mod_name = argv[0];
 	char *nv_str;
+
+	dhd_monitor_msglevel = strtoul(nvram_safe_get("dhd_monitor_msglevel"), NULL, 0);
+
 //#if defined(__CONFIG_DHDAP__)
 #if 1
 	if (argc < 2) {

@@ -10,7 +10,7 @@ if [ "$NVCN" == "" ]; then
 	NVCN=`nvram get lan_ipaddr`
 fi
 
-cp -L /etc/ssl/openssl.cnf openssl.config
+cp -L /etc/openssl.cnf openssl.config
 
 I=0
 for CN in $NVCN; do

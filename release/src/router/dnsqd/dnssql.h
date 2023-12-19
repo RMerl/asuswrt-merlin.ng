@@ -3,6 +3,16 @@
 
 #include <sqlite3.h>
 #include <stdbool.h>
+#include <sys/types.h>
+#include <sys/stat.h>
+#include <unistd.h>
+#include <stdlib.h>
+#include <time.h>
+#include <arpa/inet.h>
+#include <stdarg.h>
+#include <stdio.h>
+#include <stdbool.h>
+#include <string.h>
 #include "dns.h"
 #include "nfapp.h"
 #include "nfdev.h"
@@ -12,8 +22,10 @@
 #include "log.h"
 
 #define DEFAULT_APP_ID 0
+#define DEFAULT_CAT_ID 0
 #define DEFAULT_APP_NAME "others"
 #define DEFAULT_APP_DOMAIN "unknown"
+#define DEFAULT_APP_CATALOG "generic"
 #define DEFAULT_MAC "11:22:33:44:55:66"
 
 #define DEFAULT_IPV6_ADDR "fec0::1"
@@ -21,7 +33,8 @@
 extern sqlite3 *sqlite_open(DNS_DB_TYPE db_type, sqlite3 *db, char *fname);
 extern int sqlite_close(sqlite3 *db);
 extern int sqlite_dns_insert(sqlite3 *db, dns_msg *msg, char *mac, int app_id);
-extern int sqlite_dns_lookup(sqlite3 *db, char *domain, int *app_id, char *app_name);
+extern int sqlite_dns_lookup(sqlite3 *db, char *domain, int *app_id, int *cat_id, char *app_name);
+extern int sqlite_app_name_lookup(sqlite3 *db, int is_v4, char *mac, u_int32_t ipv4, char *ipv6, u_int16_t dst_port, int *app_id, int *cat_id, char *app_name);
 
 
 extern int sqlite_dns_map_ip(sqlite3 *db, nfapp_node_t *ap);
@@ -78,7 +91,7 @@ extern void sqlite_remove_journal(char *db_file);
 #define DB_VER_TABLE "db_ver"
 #define DB_NAME_COLUMN_VALUE "ver"
 
-#define DNS_QUERY_DB_VER 2 
+#define DNS_QUERY_DB_VER 3
 #define APP_CLIENT_DB_VER 2
 #define APP_SUM_DB_VER 2
 
@@ -95,6 +108,18 @@ extern void sqlite_remove_journal(char *db_file);
 #define JSON_OUTPUT_BLOCK_HISTORY_FILE "/tmp/block_history.json"
 #define JSON_OUTPUT_BLOCK_ENTRY_FILE "/tmp/block_entry.json"
 
-#define BULK_INSERT_SIZE 40  
+#define JSON_BW_MON_TRAFFIC_FILE "/tmp/bw_mon_trf.json"
+
+#define APP_CLIENT_DB_LOCK_NAME "app_client"
+#define APP_SUM_DB_LOCK_NAME "app_sum"
+#define DNS_QUERY_DB_LOCK_NAME "dns_query"
+#define NFCM_APP_DB_LOCK_NAME "nfcm_app"
+//#define DNS_MAC_LIST_LOCK_NAME "dns_mac_list"
+#define DNS_BW_MON_TRAF_LOCK_NAME "dns_bw_mon_trf"
+
+
+#define DNSQD_PID_FILE "/var/run/dnsqd.pid"
+
+#define BULK_INSERT_SIZE 40
 
 #endif /* __DNSSQL_H__ */

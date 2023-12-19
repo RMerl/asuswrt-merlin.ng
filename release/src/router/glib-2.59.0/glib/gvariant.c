@@ -33,6 +33,7 @@
 
 #include <string.h>
 
+#include "gstrfuncsprivate.h"
 
 /**
  * SECTION:gvariant
@@ -725,7 +726,7 @@ g_variant_new_variant (GVariant *value)
   g_variant_ref_sink (value);
 
   return g_variant_new_from_children (G_VARIANT_TYPE_VARIANT,
-                                      g_memdup (&value, sizeof value),
+                                      g_memdup2 (&value, sizeof value),
                                       1, g_variant_is_trusted (value));
 }
 
@@ -1229,7 +1230,7 @@ g_variant_new_fixed_array (const GVariantType  *element_type,
       return NULL;
     }
 
-  data = g_memdup (elements, n_elements * element_size);
+  data = g_memdup2 (elements, n_elements * element_size);
   value = g_variant_new_from_data (array_type, data,
                                    n_elements * element_size,
                                    FALSE, g_free, data);
@@ -1906,7 +1907,7 @@ g_variant_dup_bytestring (GVariant *value,
   if (length)
     *length = size;
 
-  return g_memdup (original, size + 1);
+  return g_memdup2 (original, size + 1);
 }
 
 /**

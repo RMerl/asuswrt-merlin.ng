@@ -1,0 +1,327 @@
+/*
+ *   Copyright (c) 2001-2010 Aaron Turner <aturner at synfin dot net>
+ *   Copyright (c) 2013-2022 Fred Klassen <tcpreplay at appneta dot com> - AppNeta
+ *
+ *   The Tcpreplay Suite of tools is free software: you can redistribute it
+ *   and/or modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or with the authors permission any later version.
+ *
+ *   The Tcpreplay Suite is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with the Tcpreplay Suite.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+flag = {
+    name        = tcpedit;
+    documentation;
+    lib-name    = tcpedit;
+};
+
+flag = {
+    name        = portmap;
+    value       = r;
+    arg-type    = string;
+    max         = 9999;
+    stack-arg;
+    descrip     = "Rewrite TCP/UDP ports";
+    doc         = <<- EOText
+Specify a list of comma delimited port mappings consisting of
+colon delimited port number pairs.  Each colon delimited port pair
+consists of the port to match followed by the port number to rewrite.
+
+Examples:
+@example
+--portmap=80:8000 --portmap=8080:80    # 80->8000 and 8080->80
+--portmap=8000,8080,88888:80           # 3 different ports become 80
+--portmap=8000-8999:80                 # ports 8000 to 8999 become 80
+@end example
+EOText;
+};
+
+flag = {
+    name        = seed;
+    flags-cant   = fuzz-seed;
+    value       = s;
+    arg-type    = number;
+    descrip     = "Randomize src/dst IPv4/v6 addresses w/ given seed";
+    max         = 1;
+    doc         = <<- EOText
+Causes the source and destination IPv4/v6 addresses to be pseudo
+randomized but still maintain client/server relationships.
+Since the randomization is deterministic based on the seed,
+you can reuse the same seed value to recreate the traffic.
+EOText;
+};
+
+flag = {
+    name        = pnat;
+    value       = N;
+    arg-type    = string;
+    max         = 2;
+    stack-arg;
+    flags-cant  = srcipmap;
+    flass-cant  = dstipmap;
+    descrip     = "Rewrite IPv4/v6 addresses using pseudo-NAT";
+    doc         = <<- EOText
+Takes a comma delimited series of colon delimited CIDR
+netblock pairs.  Each netblock pair is evaluated in order against
+the IP addresses.  If the IP address in the packet matches the
+first netblock, it is rewritten using the second netblock as a
+mask against the high order bits.
+
+IPv4 Example:
+@example
+--pnat=192.168.0.0/16:10.77.0.0/16,172.16.0.0/12:10.1.0.0/24
+@end example
+IPv6 Example:
+@example
+--pnat=[2001:db8::/32]:[dead::/16],[2001:db8::/32]:[::ffff:0:0/96]
+@end example
+EOText;
+};
+
+flag = {
+    name        = srcipmap;
+    value       = S;
+    arg-type    = string;
+    max         = 1;
+    flags-cant  = pnat;
+    descrip     = "Rewrite source IPv4/v6 addresses using pseudo-NAT";
+    doc         = <<- EOText
+Works just like the --pnat option, but only affects the source IP
+addresses in the IPv4/v6 header.
+EOText;
+};
+
+flag = {
+    name        = dstipmap;
+    value       = D;
+    arg-type    = string;
+    max         = 1;
+    flags-cant  = pnat;
+    descrip     = "Rewrite destination IPv4/v6 addresses using pseudo-NAT";
+    doc         = <<- EOText
+Works just like the --pnat option, but only affects the destination IP
+addresses in the IPv4/v6 header.
+EOText;
+};
+
+
+flag = {
+    ifdef       = HAVE_CACHEFILE_SUPPORT;
+    name        = endpoints;
+    value       = e;
+    arg-type    = string;
+    max         = 1;
+    flags-must  = cachefile;
+    descrip     = "Rewrite IP addresses to be between two endpoints";
+    doc         = <<- EOText
+Takes a pair of colon delimited IPv4/v6 addresses which will be used to rewrite
+all traffic to appear to be between the two IP addresses.
+
+IPv4 Example:
+@example
+--endpoints=172.16.0.1:172.16.0.2
+@end example
+IPv6 Example:
+@example
+--endpoints=[2001:db8::dead:beef]:[::ffff:0:0:ac:f:0:2]
+@end example
+
+EOText;
+};
+
+flag = {
+    name        = tcp-sequence;
+    arg-type    = number;
+    arg-default = 0;
+    arg-range   = "1->";
+    descrip     = "Change TCP Sequence (and ACK) numbers /w given seed";
+    doc         = <<- EOText
+Change all TCP sequence numbers, and related sequence-acknowledgement numbers.
+They will be shifted by a random amount based on the provided seed.
+EOText;
+};
+
+flag = {
+    name        = skipbroadcast;
+    value       = b;
+    descrip     = "Skip rewriting broadcast/multicast IPv4/v6 addresses";
+    doc         = <<- EOText
+By default --seed, --pnat and --endpoints will rewrite
+broadcast and multicast IPv4/v6 and MAC addresses.	Setting this flag
+will keep broadcast/multicast IPv4/v6 and MAC addresses from being rewritten.
+EOText;
+};
+
+flag = {
+    name        = fixcsum;
+    value       = C;
+    descrip     = "Force recalculation of IPv4/TCP/UDP header checksums";
+    doc         = <<- EOText
+Causes each IPv4/v6 packet to have their checksums recalculated and
+fixed.  Automatically enabled for packets modified with @samp{--seed},
+@samp{--pnat}, @samp{--endpoints} or @samp{--fixlen}.
+EOText;
+};
+
+flag = {
+    name        = mtu;
+    value       = m;
+    arg-type    = number;
+    max         = 1;
+    arg-range   = "1->MAX_SNAPLEN";
+    default     = DEFAULT_MTU;
+    descrip     = "Override default MTU length (1500 bytes)";
+    doc         = <<- EOText
+Override the default 1500 byte MTU size for determining the maximum padding length
+(--fixlen=pad) or when truncating (--mtu-trunc).
+EOText;
+};
+
+flag = {
+    name        = mtu-trunc;
+    max         = 1;
+    descrip     = "Truncate packets larger then specified MTU";
+    doc         = <<- EOText
+Similar to --fixlen, this option will truncate data in packets from Layer 3 and above to be
+no larger then the MTU.
+EOText;
+};
+
+flag = {
+    name        = efcs;
+    value       = E;
+    descrip     = "Remove Ethernet checksums (FCS) from end of frames";
+    doc         = <<- EOText
+Note, this option is pretty dangerous!  We do not actually check to see if a FCS
+actually exists in the frame, we just blindly delete the last 4 bytes.  Hence,
+you should only use this if you know know that your OS provides the FCS when
+reading raw packets.
+EOText;
+};
+
+flag = {
+    name        = ttl;
+    descrip     = "Modify the IPv4/v6 TTL/Hop Limit";
+    arg-type    = string;
+    doc         = <<- EOText
+Allows you to modify the TTL/Hop Limit of all the IPv4/v6 packets.  Specify a number to hard-code
+the value or +/-value to increase or decrease by the value provided (limited to 1-255).
+
+Examples:
+@example
+--ttl=10
+--ttl=+7
+--ttl=-64
+@end example
+EOText;
+};
+
+flag = {
+    name        = tos;
+    descrip     = "Set the IPv4 TOS/DiffServ/ECN byte";
+    arg-type    = number;
+    arg-range   = "0->255";
+    max         = 1;
+    doc         = <<- EOText
+Allows you to override the TOS (also known as DiffServ/ECN) value in IPv4.
+EOText;
+};
+
+flag = {
+    name        = tclass;
+    descrip     = "Set the IPv6 Traffic Class byte";
+    arg-type    = number;
+    arg-range   = "0->255";
+    max         = 1;
+    doc         = <<- EOText
+Allows you to override the IPv6 Traffic Class field.
+EOText;
+};
+
+flag = {
+    name        = flowlabel;
+    descrip     = "Set the IPv6 Flow Label";
+    arg-type    = number;
+    arg-range   = "0->1048575";
+    max         = 1;
+    doc         = <<- EOText
+Allows you to override the 20bit IPv6 Flow Label field.  Has no effect on IPv4
+packets.
+EOText;
+};
+
+flag = {
+    name        = fixlen;
+    value       = F;
+    arg-type    = string;
+    descrip     = "Pad or truncate packet data to match header length";
+    max         = 1;
+    doc         = <<- EOText
+Packets may be truncated during capture if the snaplen is smaller then the
+packet.  This option allows you to modify the packet to pad the packet back
+out to the size stored in the IPv4/v6 header or rewrite the IP header total length
+to reflect the stored packet length.
+@table @bullet
+@item
+@var{pad}
+Truncated packets will be padded out so that the packet length matches the
+IPv4 total length
+@item
+@var{trunc}
+Truncated packets will have their IPv4 total length field rewritten to match
+the actual packet length
+@item
+@var{del}
+Delete the packet
+EOText;
+};
+
+flag = {
+    name        = fuzz-seed;
+    arg-type    = number;
+    arg-default = 0;
+    arg-range   = "0->";
+    descrip     = "Fuzz 1 in X packets. Edit bytes, length, or emulate packet drop";
+    doc         = <<- EOText
+This fuzzing was designed as to test layer 7 protocols such as voip protocols.
+It modifies randomly 1 out of X packets (where X = @var{--fuzz-factor}) in order
+for stateful protocols to cover more of their code.  The random fuzzing actions
+focus on data start and end because it often is the part of the data application
+protocols base their decisions on.
+
+Possible fuzzing actions list:
+ * drop packet
+ * reduce packet size
+ * edit packet Bytes:
+   * Not all Bytes have the same probability of appearance in real life.
+     Replace with 0x00, 0xFF, or a random byte with equal likelihood.
+   * Not all Bytes have the same significance in a packet.
+     Replace the start, the end, or the middle of the packet with equal likelihood.
+ * do nothing (7 out of 8 packets)
+
+EOText;
+};
+
+flag = {
+    name        = fuzz-factor;
+    flags-must   = fuzz-seed;
+    arg-type    = number;
+    arg-default = 8;
+    arg-range   = "1->";
+    descrip     = "Set the Fuzz 1 in X packet ratio (default 1 in 8 packets)";
+    doc         = <<- EOText
+Sets the ratio of for @var{--fuzz-seed} option. By default this value is 8,
+which means 1 in 8 packets are modified by fuzzing. Note that this ratio is
+based on the random number generated by the supplied fuzz seed. Therefore by
+default you cannot expect that exactly every eighth packet will be modified.
+EOText;
+};
+
+#include plugins/dlt_stub.def

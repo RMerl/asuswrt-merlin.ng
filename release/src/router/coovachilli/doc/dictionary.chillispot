@@ -1,0 +1,100 @@
+#
+#	ChilliSpot (and CoovaChilli) captive portal
+#	http://www.coova.org/CoovaChilli
+#
+
+VENDOR          ChilliSpot                   14559
+
+BEGIN-VENDOR	ChilliSpot
+
+ATTRIBUTE	ChilliSpot-Max-Input-Octets		1	integer
+ATTRIBUTE	ChilliSpot-Max-Output-Octets		2	integer
+ATTRIBUTE	ChilliSpot-Max-Total-Octets		3	integer
+ATTRIBUTE       ChilliSpot-Bandwidth-Max-Up        	4       integer
+ATTRIBUTE       ChilliSpot-Bandwidth-Max-Down      	5       integer
+ATTRIBUTE       ChilliSpot-Config                  	6       string
+ATTRIBUTE       ChilliSpot-Lang                    	7       string
+ATTRIBUTE       ChilliSpot-Version                 	8       string
+ATTRIBUTE       ChilliSpot-OriginalURL             	9       string
+ATTRIBUTE       ChilliSpot-Acct-View-Point             10	integer
+
+VALUE	ChilliSpot-Acct-View-Point ChilliSpot-NAS-View-Point	1
+VALUE	ChilliSpot-Acct-View-Point ChilliSpot-Client-View-Point 2
+
+ATTRIBUTE       ChilliSpot-Require-UAM		       11	string
+ATTRIBUTE       ChilliSpot-Require-Splash	       12	string
+ATTRIBUTE       ChilliSpot-Route-To-Interface	       13	string
+ATTRIBUTE       ChilliSpot-Config-File                 14       string
+
+ATTRIBUTE       ChilliSpot-Session-State       	       15	integer
+
+VALUE	ChilliSpot-Session-State Authorized       1
+VALUE	ChilliSpot-Session-State NotAuthorized    2
+VALUE	ChilliSpot-Session-State Started          3
+VALUE	ChilliSpot-Session-State Stopped          4
+VALUE	ChilliSpot-Session-State UserLogoutUrl          10
+VALUE	ChilliSpot-Session-State IdleTimeoutReached     11
+VALUE	ChilliSpot-Session-State TimeoutReached         12
+VALUE	ChilliSpot-Session-State LogoutTimeReached      13
+VALUE	ChilliSpot-Session-State InDataLimitReached     14
+VALUE	ChilliSpot-Session-State OutDataLimitReached    15
+VALUE	ChilliSpot-Session-State TotalDataLimitReached  16
+VALUE	ChilliSpot-Session-State LocationChanged	17
+
+ATTRIBUTE       ChilliSpot-Session-Id       	       16	string
+ATTRIBUTE       ChilliSpot-AP-Session-Id       	       17	string
+ATTRIBUTE       ChilliSpot-User-Agent       	       18	string
+ATTRIBUTE       ChilliSpot-Accept-Language     	       19	string
+
+ATTRIBUTE	ChilliSpot-Max-Input-Gigawords	       21	integer
+ATTRIBUTE	ChilliSpot-Max-Output-Gigawords	       22	integer
+ATTRIBUTE	ChilliSpot-Max-Total-Gigawords	       23	integer
+
+ATTRIBUTE	ChilliSpot-VLAN-Id		       24	integer
+ATTRIBUTE	ChilliSpot-Location		       25	string
+ATTRIBUTE	ChilliSpot-Old-Location		       26	string
+ATTRIBUTE	ChilliSpot-Location-Change-Count       27	integer
+
+ATTRIBUTE	ChilliSpot-Sys-Uptime		       40	integer
+ATTRIBUTE	ChilliSpot-Sys-LoadAvg		       41	string
+ATTRIBUTE	ChilliSpot-Sys-Memory		       42	string
+
+ATTRIBUTE       ChilliSpot-DHCP-Vendor-Class-Id	       50	octets
+ATTRIBUTE       ChilliSpot-DHCP-Client-Id	       51	octets
+ATTRIBUTE       ChilliSpot-DHCP-Options		       52	octets
+ATTRIBUTE       ChilliSpot-DHCP-Filename	       53	string
+ATTRIBUTE       ChilliSpot-DHCP-Hostname	       54	string
+ATTRIBUTE       ChilliSpot-DHCP-Server-Name	       55	string
+ATTRIBUTE       ChilliSpot-DHCP-Client-FQDN	       56	string
+ATTRIBUTE       ChilliSpot-DHCP-Parameter-Request-List 57	octets
+
+ATTRIBUTE       ChilliSpot-DHCP-IP-Address	       60	ipaddr
+ATTRIBUTE       ChilliSpot-DHCP-Netmask 	       61	ipaddr
+ATTRIBUTE       ChilliSpot-DHCP-DNS1 		       62	ipaddr
+ATTRIBUTE       ChilliSpot-DHCP-DNS2 		       63	ipaddr
+ATTRIBUTE       ChilliSpot-DHCP-Gateway		       64	ipaddr
+ATTRIBUTE       ChilliSpot-DHCP-Domain		       65	string
+
+ATTRIBUTE       ChilliSpot-Inject-URL		       70	string
+
+ATTRIBUTE       ChilliSpot-Garden-Input-Octets	       80	integer
+ATTRIBUTE       ChilliSpot-Garden-Output-Octets	       81	integer
+ATTRIBUTE       ChilliSpot-Garden-Input-Gigawords      82	integer
+ATTRIBUTE       ChilliSpot-Garden-Output-Gigawords     83	integer
+ATTRIBUTE       ChilliSpot-Other-Input-Octets	       84	integer
+ATTRIBUTE       ChilliSpot-Other-Output-Octets	       85	integer
+ATTRIBUTE       ChilliSpot-Other-Input-Gigawords       86	integer
+ATTRIBUTE       ChilliSpot-Other-Output-Gigawords      87	integer
+
+# Configuration management parameters (ChilliSpot Only)
+ATTRIBUTE	ChilliSpot-UAM-Allowed			100	string
+ATTRIBUTE	ChilliSpot-MAC-Allowed			101	string
+ATTRIBUTE	ChilliSpot-Interval			102	integer
+
+# Inline with RFC 2882 use of VSE-Authorize-Only for remote config
+# Note that 14559 = 0x38df is used as prefix for the VSE.
+# This is recognized as the best (but bad) way of doing VSEs.
+# (ChilliSpot Only - CoovaChilli uses Service-Type = Administrative-User)
+VALUE	Service-Type			ChilliSpot-Authorize-Only 0x38df0001
+
+END-VENDOR	ChilliSpot

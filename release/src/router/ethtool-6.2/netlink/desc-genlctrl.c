@@ -1,0 +1,113 @@
+/*
+ * desc-genlctrl.c - genetlink control format descriptions
+ *
+ * Descriptions of genetlink control messages and attributes for pretty print.
+ */
+
+#include <linux/genetlink.h>
+
+#include "../internal.h"
+#include "prettymsg.h"
+
+static const struct pretty_nla_desc __attrop_desc[] = {
+	NLATTR_DESC_INVALID(CTRL_ATTR_OP_UNSPEC),
+	NLATTR_DESC_U32(CTRL_ATTR_OP_ID),
+	NLATTR_DESC_X32(CTRL_ATTR_OP_FLAGS),
+};
+
+static const struct pretty_nla_desc __attrops_desc[] = {
+	NLATTR_DESC_NESTED(0, attrop),
+};
+
+static const struct pretty_nla_desc __mcgrp_desc[] = {
+	NLATTR_DESC_INVALID(CTRL_ATTR_MCAST_GRP_UNSPEC),
+	NLATTR_DESC_STRING(CTRL_ATTR_MCAST_GRP_NAME),
+	NLATTR_DESC_U32(CTRL_ATTR_MCAST_GRP_ID),
+};
+
+static const struct pretty_nla_desc __mcgrps_desc[] = {
+	NLATTR_DESC_NESTED(0, mcgrp),
+};
+
+static const char *__policy_attr_type_names[] = {
+	[NL_ATTR_TYPE_INVALID]		= "NL_ATTR_TYPE_INVALID",
+	[NL_ATTR_TYPE_FLAG]		= "NL_ATTR_TYPE_FLAG",
+	[NL_ATTR_TYPE_U8]		= "NL_ATTR_TYPE_U8",
+	[NL_ATTR_TYPE_U16]		= "NL_ATTR_TYPE_U16",
+	[NL_ATTR_TYPE_U32]		= "NL_ATTR_TYPE_U32",
+	[NL_ATTR_TYPE_U64]		= "NL_ATTR_TYPE_U64",
+	[NL_ATTR_TYPE_S8]		= "NL_ATTR_TYPE_S8",
+	[NL_ATTR_TYPE_S16]		= "NL_ATTR_TYPE_S16",
+	[NL_ATTR_TYPE_S32]		= "NL_ATTR_TYPE_S32",
+	[NL_ATTR_TYPE_S64]		= "NL_ATTR_TYPE_S64",
+	[NL_ATTR_TYPE_BINARY]		= "NL_ATTR_TYPE_BINARY",
+	[NL_ATTR_TYPE_STRING]		= "NL_ATTR_TYPE_STRING",
+	[NL_ATTR_TYPE_NUL_STRING]	= "NL_ATTR_TYPE_NUL_STRING",
+	[NL_ATTR_TYPE_NESTED]		= "NL_ATTR_TYPE_NESTED",
+	[NL_ATTR_TYPE_NESTED_ARRAY]	= "NL_ATTR_TYPE_NESTED_ARRAY",
+	[NL_ATTR_TYPE_BITFIELD32]	= "NL_ATTR_TYPE_BITFIELD32",
+};
+
+static const struct pretty_nla_desc __policy_attr_desc[] = {
+	NLATTR_DESC_INVALID(NL_POLICY_TYPE_ATTR_UNSPEC),
+	NLATTR_DESC_U32_ENUM(NL_POLICY_TYPE_ATTR_TYPE, policy_attr_type),
+	NLATTR_DESC_S64(NL_POLICY_TYPE_ATTR_MIN_VALUE_S),
+	NLATTR_DESC_S64(NL_POLICY_TYPE_ATTR_MAX_VALUE_S),
+	NLATTR_DESC_U64(NL_POLICY_TYPE_ATTR_MIN_VALUE_U),
+	NLATTR_DESC_U64(NL_POLICY_TYPE_ATTR_MAX_VALUE_U),
+	NLATTR_DESC_U32(NL_POLICY_TYPE_ATTR_MIN_LENGTH),
+	NLATTR_DESC_U32(NL_POLICY_TYPE_ATTR_MAX_LENGTH),
+	NLATTR_DESC_U32(NL_POLICY_TYPE_ATTR_POLICY_IDX),
+	NLATTR_DESC_U32(NL_POLICY_TYPE_ATTR_POLICY_MAXTYPE),
+	NLATTR_DESC_X32(NL_POLICY_TYPE_ATTR_BITFIELD32_MASK),
+	NLATTR_DESC_X64(NL_POLICY_TYPE_ATTR_PAD),
+	NLATTR_DESC_BINARY(NL_POLICY_TYPE_ATTR_MASK),
+};
+
+static const struct pretty_nla_desc __policy_attrs_desc[] = {
+	NLATTR_DESC_NESTED(0, policy_attr),
+};
+
+static const struct pretty_nla_desc __policies_desc[] = {
+	NLATTR_DESC_ARRAY(0, policy_attrs),
+};
+
+static const struct pretty_nla_desc __op_policy_desc[] = {
+	NLATTR_DESC_INVALID(CTRL_ATTR_POLICY_UNSPEC),
+	NLATTR_DESC_U32(CTRL_ATTR_POLICY_DO),
+	NLATTR_DESC_U32(CTRL_ATTR_POLICY_DUMP),
+};
+
+static const struct pretty_nla_desc __op_policies_desc[] = {
+	NLATTR_DESC_NESTED(0, op_policy),
+};
+
+static const struct pretty_nla_desc __attr_desc[] = {
+	NLATTR_DESC_INVALID(CTRL_ATTR_UNSPEC),
+	NLATTR_DESC_U16(CTRL_ATTR_FAMILY_ID),
+	NLATTR_DESC_STRING(CTRL_ATTR_FAMILY_NAME),
+	NLATTR_DESC_U32(CTRL_ATTR_VERSION),
+	NLATTR_DESC_U32(CTRL_ATTR_HDRSIZE),
+	NLATTR_DESC_U32(CTRL_ATTR_MAXATTR),
+	NLATTR_DESC_ARRAY(CTRL_ATTR_OPS, attrops),
+	NLATTR_DESC_ARRAY(CTRL_ATTR_MCAST_GROUPS, mcgrps),
+	NLATTR_DESC_ARRAY(CTRL_ATTR_POLICY, policies),
+	NLATTR_DESC_ARRAY(CTRL_ATTR_OP_POLICY, op_policies),
+	NLATTR_DESC_U32(CTRL_ATTR_OP),
+};
+
+const struct pretty_nlmsg_desc genlctrl_msg_desc[] = {
+	NLMSG_DESC_INVALID(CTRL_CMD_UNSPEC),
+	NLMSG_DESC(CTRL_CMD_NEWFAMILY, attr),
+	NLMSG_DESC(CTRL_CMD_DELFAMILY, attr),
+	NLMSG_DESC(CTRL_CMD_GETFAMILY, attr),
+	NLMSG_DESC(CTRL_CMD_NEWOPS, attr),
+	NLMSG_DESC(CTRL_CMD_DELOPS, attr),
+	NLMSG_DESC(CTRL_CMD_GETOPS, attr),
+	NLMSG_DESC(CTRL_CMD_NEWMCAST_GRP, attr),
+	NLMSG_DESC(CTRL_CMD_DELMCAST_GRP, attr),
+	NLMSG_DESC(CTRL_CMD_GETMCAST_GRP, attr),
+	NLMSG_DESC(CTRL_CMD_GETPOLICY, attr),
+};
+
+const unsigned int genlctrl_msg_n_desc = ARRAY_SIZE(genlctrl_msg_desc);

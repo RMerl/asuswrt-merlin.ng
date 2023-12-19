@@ -160,7 +160,7 @@ check_for_captions(const char *path, int64_t detailID)
 	}
 }
 
-void
+static void
 parse_nfo(const char *path, metadata_t *m)
 {
 	FILE *nfo;
@@ -240,6 +240,14 @@ parse_nfo(const char *path, metadata_t *m)
 		m->mime = escape_tag(esc_tag, 1);
 		free(esc_tag);
 	}
+
+	val = GetValueFromNameValueList(&xml, "season");
+	if (val)
+		m->disc = atoi(val);
+
+	val = GetValueFromNameValueList(&xml, "episode");
+	if (val)
+		m->track = atoi(val);
 
 	ClearNameValueList(&xml);
 	free(buf);
@@ -348,6 +356,16 @@ GetAudioMetadata(const char *path, const char *name)
 	{
 		strcpy(type, "pcm");
 		m.mime = strdup("audio/L16");
+	}
+	else if( ends_with(path, ".dsf") )
+	{
+		strcpy(type, "dsf");
+		m.mime = strdup("audio/x-dsd");
+	}
+	else if( ends_with(path, ".dff") )
+	{
+		strcpy(type, "dff");
+		m.mime = strdup("audio/x-dsd");
 	}
 	else
 	{
@@ -488,7 +506,7 @@ GetAudioMetadata(const char *path, const char *name)
 }
 
 /* For libjpeg error handling */
-jmp_buf setjmp_buffer;
+static jmp_buf setjmp_buffer;
 static void
 libjpeg_error_handler(j_common_ptr cinfo)
 {
@@ -890,9 +908,9 @@ GetVideoMetadata(const char *path, const char *name)
 		else if( strcmp(ctx->iformat->name, "flv") == 0 )
 			xasprintf(&m.mime, "video/x-flv");
 		else if( strcmp(ctx->iformat->name, "rm") == 0 )
-			xasprintf(&m.mime, "video/x-pn-realvideo");
+			xasprintf(&m.mime, "application/vnd.rn-realmedia");
 		else if( strcmp(ctx->iformat->name, "rmvb") == 0 )
-			xasprintf(&m.mime, "video/x-pn-realvideo");
+			xasprintf(&m.mime, "application/vnd.rn-realmedia-vbr");
 		if( m.mime )
 			goto video_no_dlna;
 
@@ -1548,10 +1566,8 @@ video_no_dlna:
 	if( ext )
 	{
 		strcpy(ext+1, "nfo");
-		if( access(nfo, F_OK) == 0 )
-		{
+		if( access(nfo, R_OK) == 0 )
 			parse_nfo(nfo, &m);
-		}
 	}
 
 	if( !m.mime )
@@ -1572,9 +1588,9 @@ video_no_dlna:
 		else if( strcmp(ctx->iformat->name, "flv") == 0 )
 			xasprintf(&m.mime, "video/x-flv");
 		else if( strcmp(ctx->iformat->name, "rm") == 0 )
-			xasprintf(&m.mime, "video/x-pn-realvideo");
+			xasprintf(&m.mime, "application/vnd.rn-realmedia");
 		else if( strcmp(ctx->iformat->name, "rmvb") == 0 )
-			xasprintf(&m.mime, "video/x-pn-realvideo");
+			xasprintf(&m.mime, "application/vnd.rn-realmedia-vbr");
 		else
 			DPRINTF(E_WARN, L_METADATA, "%s: Unhandled format: %s\n", path, ctx->iformat->name);
 	}
@@ -1592,19 +1608,43 @@ video_no_dlna:
 		strip_ext(m.title);
 	}
 
+	if (!m.disc && !m.track)
+	{
+		/* Search for Season and Episode in the filename */
+		char *p = (char*)name, *s;
+		while ((s = strpbrk(p, "Ss")))
+		{
+			unsigned season = strtoul(s+1, &p, 10);
+			unsigned episode = 0;
+			if (season > 0 && p)
+			{
+				while (isblank(*p) || ispunct(*p))
+					p++;
+				if (*p == 'E' || *p == 'e')
+					episode = strtoul(p+1, NULL, 10);
+			}
+			if (season && episode)
+			{
+				m.disc = season;
+				m.track = episode;
+			}
+			p = s + 1;
+		}
+	}
+
 	album_art = find_album_art(path, m.thumb_data, m.thumb_size);
 	freetags(&video);
 	lav_close(ctx);
 
 	ret = sql_exec(db, "INSERT into DETAILS"
 	                   " (PATH, SIZE, TIMESTAMP, DURATION, DATE, CHANNELS, BITRATE, SAMPLERATE, RESOLUTION,"
-	                   "  TITLE, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART) "
+	                   "  TITLE, CREATOR, ARTIST, GENRE, COMMENT, DLNA_PN, MIME, ALBUM_ART, DISC, TRACK) "
 	                   "VALUES"
-	                   " (%Q, %lld, %lld, %Q, %Q, %u, %u, %u, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld);",
+	                   " (%Q, %lld, %lld, %Q, %Q, %u, %u, %u, %Q, '%q', %Q, %Q, %Q, %Q, %Q, '%q', %lld, %u, %u);",
 	                   path, (long long)file.st_size, (long long)file.st_mtime, m.duration,
 	                   m.date, m.channels, m.bitrate, m.frequency, m.resolution,
 	                   m.title, m.creator, m.artist, m.genre, m.comment, m.dlna_pn,
-	                   m.mime, album_art);
+	                   m.mime, album_art, m.disc, m.track);
 	if( ret != SQLITE_OK )
 	{
 		DPRINTF(E_ERROR, L_METADATA, "Error inserting details for '%s'!\n", path);

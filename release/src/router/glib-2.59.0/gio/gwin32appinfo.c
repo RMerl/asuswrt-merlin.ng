@@ -472,7 +472,7 @@ g_wcsdup (const gunichar2 *str, gssize str_size)
       str_size = wcslen (str) + 1;
       str_size *= sizeof (gunichar2);
     }
-  return g_memdup (str, str_size);
+  return g_memdup2 (str, str_size);
 }
 
 #define URL_ASSOCIATIONS L"HKEY_CURRENT_USER\\Software\\Microsoft\\Windows\\Shell\\Associations\\UrlAssociations\\"

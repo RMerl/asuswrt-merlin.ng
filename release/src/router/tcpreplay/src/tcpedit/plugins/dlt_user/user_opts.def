@@ -1,0 +1,32 @@
+/* Add the flag definitions for your plugin here */
+
+flag = {
+	name		= user-dlt;
+	arg-type	= "number";
+	max			= 1;
+	descrip		= "Set output file DLT type";
+	range		= "0->65535";
+	doc			= <<- EOText
+Set the DLT value of the output pcap file.
+EOText;
+};
+
+flag = {
+    name        = user-dlink;
+    arg-type    = string;
+    max         = 2;
+	stack-arg;
+    descrip     = "Rewrite Data-Link layer with user specified data";
+    doc         = <<- EOText
+Provide a series of comma deliminated hex values which will be
+used to rewrite or create the Layer 2 header of the packets.
+The first instance of this argument will rewrite both server
+and client traffic, but if this argument is specified a second
+time, it will be used for the client traffic.
+
+Example:
+@example
+--user-dlink=01,02,03,04,05,06,00,1A,2B,3C,4D,5E,6F,08,00
+@end example
+EOText;
+};

@@ -1641,6 +1641,10 @@ define RouterOptions
 		sed -i "/RTCONFIG_TCPDUMP/d" $(1); \
 		echo "RTCONFIG_TCPDUMP=y" >>$(1); \
 	fi;
+	if [ "$(TCPREPLAY)" = "y" ]; then \
+		sed -i "/RTCONFIG_TCPREPLAY/d" $(1); \
+		echo "RTCONFIG_TCPREPLAY=y" >>$(1); \
+	fi;
 	if [ "$(DUMP4000)" = "y" ]; then \
 		sed -i "/RTCONFIG_DUMP4000/d" $(1); \
 		echo "RTCONFIG_DUMP4000=y" >>$(1); \
@@ -2348,6 +2352,10 @@ define RouterOptions
 			if [ "$(OCNVC)" = "y" ]; then \
 				sed -i "/RTCONFIG_OCNVC/d" $(1); \
 				echo "RTCONFIG_OCNVC=y" >>$(1); \
+			fi; \
+			if [ "$(DSLITE)" = "y" ]; then \
+				sed -i "/RTCONFIG_DSLITE/d" $(1); \
+				echo "RTCONFIG_DSLITE=y" >>$(1); \
 			fi; \
 		fi; \
 	fi;
@@ -3135,6 +3143,10 @@ define RouterOptions
 	if [ "$(WTFAST)" = "y" ]; then \
 		sed -i "/RTCONFIG_WTFAST/d" $(1); \
 		echo "RTCONFIG_WTFAST=y" >>$(1); \
+	fi;
+	if [ "$(WTFAST_V2)" = "y" ]; then \
+		sed -i "/RTCONFIG_WTFAST_V2/d" $(1); \
+		echo "RTCONFIG_WTFAST_V2=y" >>$(1); \
 	fi;
 	if [ "$(IFTTT)" = "y" ]; then \
 		sed -i "/RTCONFIG_IFTTT/d" $(1); \
@@ -5884,6 +5896,10 @@ fi;
 		sed -i "/CONFIG_BCM_BPM_BUF_MEM_PRCNT/d" $(1); \
 		echo "CONFIG_BCM_BPM_BUF_MEM_PRCNT=10" >>$(1); \
 	fi;
+	if [ "$(BUILD_NAME)" = "RT-AX9000" ]; then \
+		sed -i "/CONFIG_BCM_WLCLED/d" $(1); \
+		echo "CONFIG_BCM_WLCLED=y" >>$(1); \
+	fi; \
 	if [ "$(BUILD_NAME)" = "RT-AX3000N" ]; then \
 		sed -i "/CONFIG_BCM_MAX_UCAST_FLOWS/d" $(1); \
 		echo "CONFIG_BCM_MAX_UCAST_FLOWS=4096" >>$(1); \
@@ -6428,7 +6444,7 @@ get_extendno:
 	$(MAKE) $*-clean $*
 
 %-tags: dummy
-	@[ ! -d router/$* ] || ctags -a -R $(CTAGS_EXCLUDE_OPT) $(SRC_ROOT)/router/$*
+	@[ ! -d router/$* ] || $(if $(QCA),TMPDIR=.) ctags -a -R $(CTAGS_EXCLUDE_OPT) $(SRC_ROOT)/router/$*
 
 #
 # check extendno

@@ -4,7 +4,7 @@ ifeq ($(TOP_PLATFORM),)
 TOP_PLATFORM=$(TOP)
 endif
 
-CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS) -fPIC
 CFLAGS += -I. -I$(TOP)/shared -I$(TOP_PLATFORM)/nvram$(BCMEX)$(EX7) -I$(SRCBASE)/include -I$(TOP)/httpd
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample
 CFLAGS += -I$(TOP)/bwdpi_source/src/tdts_udb_sample/linux
@@ -119,16 +119,16 @@ dbg_dpi_support: dbg_dpi_support.o dpi_support.o
 bwdpi_cmd: main.o $(OBJS)
 	@echo " [bwdpi] CC $@"
 	@$(CC) -o $@ $^ $(LD1) -L. -lgcc_s
-	@$(STRIP) bwdpi_cmd
+	@$(if $(RTCONFIG_DEBUG),,$(STRIP) bwdpi_cmd)
 
 install: all
 	@echo "[bwdpi] Installing..."
 	@install -d $(INSTALLDIR)/bwdpi_source/usr/lib
 	@install -m 755 libbwdpi.so $(INSTALLDIR)/bwdpi_source/usr/lib
-	@$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/lib/libbwdpi.so
+	@$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/lib/libbwdpi.so)
 	@install -d $(INSTALLDIR)/bwdpi_source/usr/sbin
 	@install -m 755 hwinfo $(INSTALLDIR)/bwdpi_source/usr/sbin/hwinfo
-	@$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/sbin/hwinfo
+	@$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/bwdpi_source/usr/sbin/hwinfo)
 
 %.o: %.c
 	@echo " [bwdpi] CC $@"

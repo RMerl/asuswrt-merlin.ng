@@ -1,0 +1,49 @@
+<!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.0 Transitional//EN">
+<html><head><title>Coova</title>
+<!-- redirecting... either by meta tag or javascript -->
+<script type="text/javascript" language="Javascript">
+//<!--
+function getURLParam(n) {
+  var s = "";
+  var href = window.location.href;
+  var idx = href.indexOf("?");
+  if (idx > -1) {
+    var qs = href.substr(idx + 1);
+    idx = qs.indexOf(n + "=");
+    if (idx > -1) {
+      s = qs.substr(idx + n.length + 1);
+      if (s.charAt(4) == '%' || s.charAt(5) == '%') {
+        s = s.replace(/%3a/g, ":");
+        s = s.replace(/%2f/g, "/");
+        s = s.replace(/%3f/g, "?");
+        s = s.replace(/%3d/g, "=");
+        s = s.replace(/%26/g, "&");
+        s = s.replace(/%25/g, "%");
+        s = s.replace(/\+/g, " ");
+      }
+      return s;
+    }
+  }
+}
+
+var loginUrl;
+function redirect() { window.location = loginUrl; return false; }
+window.onload = function() {
+  loginUrl = getURLParam("loginurl");
+  setTimeout(redirect, 5000); 
+}
+//-->
+</script>
+<meta http-equiv="refresh" content="7; URL=/prelogin"> 
+</head>
+<body style="margin: 0pt auto; height:100%;">
+<div style="width:100%;height:80%;position:fixed;display:table;">
+<p style="display: table-cell; line-height: 2.5em;
+vertical-align:middle;text-align:center;color:grey;">
+<a href="#" onclick="javascript:return redirect();">
+<img src="coova.jpg" alt="" border="0" height="39" width="123"/></a><br>
+<small><img src="wait.gif"/> redirecting...</small></p>
+<br><br>
+</div>
+</body>
+</html>

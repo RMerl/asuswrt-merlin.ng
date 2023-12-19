@@ -693,6 +693,9 @@ int start_vlan(void)
 
 #if defined(HND_ROUTER)
 	if (!nvram_match("switch_wantag", "")
+#if defined(RTCONFIG_AMAS)
+		&& (nvram_get_int("re_mode") != 1)
+#endif
 		&& (nvram_get_int("switch_stb_x") > 0 || (nvram_get_int("switch_stb_x") == 0 && nvram_get_int("switch_wan0tagid") > 0))) {
 		/*
 			case 1: STB != 0

@@ -1,0 +1,43 @@
+.\" * chilli_response
+.\" * Copyright (C) 2007-2012 David Bird (Coova Technologies)
+.\" *
+.\" * All rights reserved.
+.\" *
+.\" Manual page for chilli
+.\" SH section heading
+.\" SS subsection heading
+.\" LP paragraph
+.\" IP indented paragraph
+.\" TP hanging label
+
+.TH chilli_response 1 "August 2007"
+.SH NAME
+chilli_response \-  Forms a CHAP Response 
+
+.SH SYNOPSIS
+.B chilli_response
+<challenge> <uamsecret> <password> 
+
+.SH DESCRIPTION
+.B chilli_response
+is a simple utility to provide the CHAP response given a challenge, the
+uamsecret, and the user's password.
+
+.SH "SEE ALSO"
+.BR chilli(8)
+.BR chilli.conf(5)
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+The original ChilliSpot project homepage is/was at www.chillispot.org.
+
+.SH AUTHORS
+
+David Bird <david@coova.com>, Coova Technologies
+
+CoovaChilli is licensed under the GNU General Public License.
+

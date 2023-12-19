@@ -1,0 +1,310 @@
+.\" * chilli - ChilliSpot.org. A Wireless LAN Access Point Controller
+.\" * Copyright (C) 2002, 2003, 2004, 2005 Mondru AB.
+.\" * Copyright (C) 2007-2012 David Bird (Coova Technologies)
+.\" *
+.\" * All rights reserved.
+.\" *
+.\" Manual page for chilli
+.\" SH section heading
+.\" SS subsection heading
+.\" LP paragraph
+.\" IP indented paragraph
+.\" TP hanging label
+
+.TH chilli 8 "June 2009"
+.SH NAME
+chilli \-  A Software Access Controller for Captive Portal and WPA
+
+.SH SYNOPSIS
+.B chilli
+\-\-help
+
+.B chilli
+\-\-version
+
+.B chilli
+[
+.I configuration options
+]
+
+
+.B chilli 
+\-fd
+[
+.I configuration options
+]
+# for debugging in foreground
+
+.SH DESCRIPTION
+.B chilli
+is a software access controller typically used in Wireless LAN HotSpot. It
+supports of two different access methods for a Wireless LAN HotSpot:
+Universal Access Method (UAM) as well as Wireless Protected Access
+(WPA). This version of 
+.B chilli
+is called CoovaChilli, a fork of the original ChilliSpot. See
+.I http://www.coova.org/
+for more information.
+
+.B chilli
+has three major interfaces: A downlink interface for accepting
+connections from clients, a radius interface for authenticating
+clients and an uplink network interface for forwarding traffic to
+other networks.
+
+Authentication of clients is performed by an external radius
+server. For UAM the CHAP-Challenge and CHAP-Password as specified by
+RFC 2865 is used. For WPA the radius EAP-Message attribute as defined
+in RFC 2869 is used. The message attributes described in RFC 2548 are
+used for transferring encryption keys from the radius server to
+chilli. Furthermore the radius interface supports accounting.
+
+The downlink interface accepts DHCP and ARP requests from clients. The
+client can be in two states: Unauthenticated and authenticated. In
+unauthenticated state, web requests from the client are redirected to
+an authentication web server - the captive portal.
+
+In a typical application unauthenticated clients will be forwarded to
+a web server and prompted for username and password. The web
+server forwards the user credentials to
+.B chilli
+by means of web browser redirects. On the
+.B chilli
+side, authentication requests are forwarded to a radius server. If
+authentication is successful the state of the client is changed to
+authenticated. This authentication method is known as Universal Access
+Method (UAM).
+
+As an alternative to UAM, the access points can be configured to
+authenticate the clients by using Wireless Protected Access (WPA). In
+this case, authentication credentials are forwarded from the WPA access
+point to
+.B chilli
+by using the radius protocol. The received radius request is proxied by 
+.B chilli
+and forwarded to the radius server.
+
+The uplink interface is implemented by using the 
+.B TUN/TAP driver.
+When 
+.B chilli
+is started, a tun interface is established and an optional external
+configuration script is called.
+
+Runtime errors are reported using the
+.B syslogd (8)
+facility.
+
+.SH OPTIONS
+
+Configuration parameters set on the command line always take precedent over
+anything configured in a file. See
+.BR chilli.conf(5)
+for a complete list of possible configurations. Here are just a few common command
+line options:
+
+.TP
+.BI --help
+Print help and exit.
+
+.TP
+.BI --version
+Print version and exit.
+
+.TP
+.BI --fg
+Run in foreground (default = off)
+
+.TP
+.BI --debug
+Run in debug mode (default = off)
+
+.TP
+.BI --conf " file"
+Configuration file to use instead of the default below. See 
+.BR chilli.conf(5)
+for more inforamtion.
+
+.TP
+.BI --pidfile " file"
+File to put the process ID instead of the default below.
+
+.TP
+.BI --cmdsock " file"
+UNIX socket file for inter-process communication instead of default below.
+
+.TP
+.BI --statedir " path"
+Directory of nonvolatile data instead of default below.
+
+
+.SH FILES
+.I @SYSCONFDIR@/chilli.conf
+.RS
+The main 
+.B chilli
+configuration file.
+
+.RE
+.I @ETCCHILLI@/defaults
+.RS
+Default configurations used by the 
+.B chilli
+init.d and 
+.B functions
+scripts.
+.RE
+
+.RE
+.I @ETCCHILLI@/config
+.RS
+Location specific configurations used by
+.B chilli
+init.d and 
+.B functions
+scripts. Copy the 
+.B defaults
+file mentioned above and edit.
+.RE
+
+.RE
+.I @ETCCHILLI@/functions
+.RS
+Helps configure 
+.B chilli
+by loading the above configurations, sets some defaults, and
+provides functions for writing 
+.B main.conf, hs.conf, 
+and
+.B local.conf 
+based on local and possibily centralized. See
+.BR chilli.conf(5)
+.RE
+
+.RE
+.I @INITDIR@/chilli
+.RS
+The init.d file for 
+.B chilli
+which defaults to using the above configurations to build a set of
+configurations files in the @ETCCHILLI@ directory - taking local
+configurations and optionally centralized configurations from RADIUS or a
+URL. See
+.BR chilli.conf(5)
+
+.RE
+.I @VARRUN@/chilli.sock
+.RS
+UNIX socket used to daemon communication. See
+.BR chilli_query(1)
+.RE
+
+.RE
+.I @VARRUN@/chilli.pid
+.RS
+Process ID file.
+.RE
+
+.RE
+.I @ETCCHILLI@/www/
+.RS
+The typical directory for embedded web content served up by
+.B chilli
+using a minimal web server. A convenient place for the splash page, embedded
+captive portal, and JSON javascript resources.
+.RE
+
+.SH SIGNALS
+Sending HUP to chilli will cause the configuration file to be reread
+and DNS lookups to be performed.
+The configuration options are not affected by sending HUP:
+.B fg
+,
+.B conf 
+,
+.B pidfile 
+,
+.B statedir 
+,
+.B net 
+,
+.B dynip 
+,
+.B statip 
+,
+.B uamlisten 
+,
+.B uamport 
+,
+.B radiuslisten 
+,
+.B coaport 
+,
+.B coanoipcheck 
+,
+.B proxylisten 
+,
+.B proxyport 
+,
+.B proxyclient 
+,
+.B proxysecret 
+,
+.B dhcpif 
+,
+.B dhcpmac 
+,
+.B lease 
+, or
+.B eapolenable
+
+
+The above configuration options can only be changed by restarting the daemon.
+
+.SH "SEE ALSO"
+.BR chilli.conf(5)
+.BR chilli-radius(5)
+.BR chilli_opt(1)
+.BR chilli_query(1)
+.BR chilli_radconfig(1)
+.BR chilli_response(1)
+.BR syslogd (8)
+
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+The original ChilliSpot project homepage is/was at www.chillispot.org.
+
+Besides the long options documented in this man page
+.B chilli
+also accepts a number of short options with the same functionality. Use
+.B chilli --help
+for a full list of all the available options.
+
+The 
+.B TUN/TAP driver is required 
+for proper operation of the
+.B chilli
+server. Linux kernels later than 2.4.7 already include the driver,
+but typically needs to be loaded manually with
+.B modprobe tun
+or automaticly by adding
+.B alias char-major-10-200 tun
+to the
+.B /etc/modules.conf
+configuration file. For other platforms see
+.I http://vtun.sourceforge.net/tun/
+for information on how to install and configure the TUN/TAP driver.
+
+
+.SH AUTHORS
+
+David Bird <david@coova.com>
+
+Copyright (C) 2002-2005 by Mondru AB., 2006-2012 David Bird (Coova Technologies) All rights reserved.
+
+CoovaChilli is licensed under the GNU General Public License.

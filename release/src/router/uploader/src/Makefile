@@ -117,6 +117,14 @@ ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
 endif
 
+ifeq ($(RTCONFIG_USB),y)
+CFLAGS += -I$(TOP)/libdisk
+LIBS += -L$(TOP)/libdisk -ldisk
+ifeq ($(RTCONFIG_USB_SMS_MODEM),y)
+CFLAGS += -I$(TOP)/smspdu
+LIBS += -L$(TOP)/smspdu -lsmspdu
+endif
+endif
 
 SRC_FILES += $(APP_SRC_FILES)
 

@@ -1,0 +1,55 @@
+/**
+@page libtalloc_stealing Chapter 2: Stealing a context
+
+@section stealing Stealing a context
+
+Talloc has the ability to change the parent of a talloc context to another
+one. This operation is commonly referred to as stealing and it is one of
+the most important actions performed with talloc contexts.
+
+Stealing a context is necessary if we want the pointer to outlive the context it
+is created on. This has many possible use cases, for instance stealing a result
+of a database search to an in-memory cache context, changing the parent of a
+field of a generic structure to a more specific one or vice-versa. The most
+common scenario, at least in Samba, is to steal output data from a function-specific
+context to the output context given as an argument of that function.
+
+@code
+struct foo {
+    char *a1;
+    char *a2;
+    char *a3;
+};
+
+struct bar {
+    char *wurst;
+    struct foo *foo;
+};
+
+struct foo *foo = talloc_zero(ctx, struct foo);
+foo->a1 = talloc_strdup(foo, "a1");
+foo->a2 = talloc_strdup(foo, "a2");
+foo->a3 = talloc_strdup(foo, "a3");
+
+struct bar *bar = talloc_zero(NULL, struct bar);
+/* change parent of foo from ctx to bar */
+bar->foo = talloc_steal(bar, foo);
+
+/* or do the same but assign foo = NULL */
+bar->foo = talloc_move(bar, &foo);
+@endcode
+
+The talloc_move() function is similar to the talloc_steal() function but
+additionally sets the source pointer to NULL.
+
+In general, the source pointer itself is not changed (it only replaces the
+parent in the meta data). But the common usage is that the result is
+assigned to another variable, thus further accessing the pointer from the
+original variable should be avoided unless it is necessary. In this case
+talloc_move() is the preferred way of stealing a context. Additionally sets the
+source pointer to NULL, thus.protects the pointer from being accidentally freed
+and accessed using the old variable after its parent has been changed.
+
+@image html stealing.png
+
+*/

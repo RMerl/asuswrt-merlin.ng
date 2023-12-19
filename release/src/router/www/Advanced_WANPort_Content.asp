@@ -1967,13 +1967,13 @@ function remain_origins(){
 											</td>
 									  	</tr>
 										<tr id="usb_tethering_tr" style="display: none;">
-											<th>Auto USB Backup WAN</th><!--untranslated-->
+											<th><#dualwan_usb_backup#></th>
 											<td>
 												<div id="usb_tethering_setting" style="display: none;">
 													<input type="radio" name="wans_usb_bk" class="input" value="1" <% nvram_match("wans_usb_bk", "1", "checked"); %>><#checkbox_Yes#>
 													<input type="radio" name="wans_usb_bk" class="input" value="0" <% nvram_match("wans_usb_bk", "0", "checked"); %>><#checkbox_No#>
 												</div>
-												<span id="usb_tethering_hint" style="display: none;">By switching to USB as primary WAN, Auto USB Backup WAN will not be available.</span>
+												<span id="usb_tethering_hint" style="display: none;"><#dualwan_usb_backup_hint#></span>
 											</td>
 										</tr>
 										<tr id="wans_mode_tr">

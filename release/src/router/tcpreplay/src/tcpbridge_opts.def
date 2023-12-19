@@ -1,0 +1,413 @@
+/* $Id$ */
+
+/*
+ *   Copyright (c) 2001-2010 Aaron Turner <aturner at synfin dot net>
+ *   Copyright (c) 2013-2022 Fred Klassen <tcpreplay at appneta dot com> - AppNeta
+ *
+ *   The Tcpreplay Suite of tools is free software: you can redistribute it
+ *   and/or modify it under the terms of the GNU General Public License as
+ *   published by the Free Software Foundation, either version 3 of the
+ *   License, or with the authors permission any later version.
+ *
+ *   The Tcpreplay Suite is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with the Tcpreplay Suite.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+
+autogen definitions options;
+
+
+copyright = {
+    date        = "2000-2022";
+    owner       = "Aaron Turner and Fred Klassen";
+    eaddr       = "tcpreplay-users@lists.sourceforge.net";
+    type        = gpl;
+    author      = <<- EOText
+Copyright 2013-2022 Fred Klassen - AppNeta
+
+Copyright 2000-2012 Aaron Turner
+
+For support please use the tcpreplay-users@lists.sourceforge.net mailing list.
+
+The latest version of this software is always available from:
+http://tcpreplay.appneta.com/
+EOText;
+};
+
+package         = "tcpbridge";
+prog-name       = "tcpbridge";
+prog-title      = "Bridge network traffic across two interfaces";
+long-opts;
+gnu-usage;
+help-value      = "H";
+save-opts-value = "";
+load-opts-value = "";
+config-header   = "config.h";
+
+include         = "#include \"defines.h\"\n"
+                "#include \"tcpbridge.h\"\n"
+                "#include \"common.h\"\n"
+                "#include \"config.h\"\n"
+                "#include <stdlib.h>\n"
+                "#include <string.h>\n"
+                "#include <sys/types.h>\n"
+                "#include <unistd.h>\n"
+                "extern tcpbridge_opt_t options;\n";
+
+
+#include tcpedit/tcpedit_opts.def
+
+
+homerc          = "$$/";
+
+explain = <<- EOExplain
+tcpbridge is a tool for selectively bridging network traffic across two interfaces
+and optionally modifying the packets in between
+EOExplain;
+
+detail = <<- EODetail
+The basic operation of tcpbridge is to be a network bridge between two
+subnets.  All packets received on one interface are sent via the other.
+
+Optionally, packets can be edited in a variety of ways according to your needs.
+
+For more details, please see the Tcpreplay Manual at:
+http://tcpreplay.appneta.com
+EODetail;
+
+man-doc = <<- EOMan
+.SH "SIGNALS"
+tcpbridge understands the following signals:
+@enumerate
+@item @var{SIGUSR1}
+Suspend tcpbridge
+@item @var{SIGCONT}
+Restart tcpbridge
+@end enumerate
+
+.SH "SEE ALSO"
+tcpdump(1), tcpprep(1), tcprewrite(1), tcpreplay(1)
+
+.SH "BUGS"
+tcpbridge can only send packets as fast as your computer's interface,
+processor and system bus will allow.
+
+Connecting both interfaces to the same subnet may create a broadcast storm and
+take down the network.  Improper use of the packet editing functions may have
+other undefined and possible negative consequences.
+
+Some operating systems by default do not allow for forging source MAC
+addresses.  Please consult your operating system's documentation and the
+tcpreplay FAQ if you experience this issue.
+EOMan;
+
+/*
+ * Debugging
+ */
+
+flag = {
+    ifdef       = DEBUG;
+    name        = dbug;
+    value       = d;
+    arg-type    = number;
+    max         = 1;
+    immediate;
+    arg-range   = "0->5";
+    arg-default = 0;
+    descrip     = "Enable debugging output";
+    doc         = <<- EOText
+If configured with --enable-debug, then you can specify a verbosity
+level for debugging output.  Higher numbers increase verbosity.
+EOText;
+};
+
+
+/*
+ * Outputs: -i, -I
+ */
+
+flag = {
+    name        = intf1;
+    value       = i;
+    arg-type    = string;
+    max         = 1;
+    must-set;
+    descrip     = "Primary interface (listen in uni-directional mode)";
+    doc         = "";
+};
+
+flag = {
+    name        = intf2;
+    value       = I;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Secondary interface (send in uni-directional mode)";
+    doc         = "";
+};
+
+flag = {
+    name    = unidir;
+    value   = u;
+    max     = 1;
+    descrip = "Send and receive in only one direction";
+    doc     = <<- EOText
+Normally, tcpbridge will send and receive traffic in both directions
+(bi-directionally).  However, if you choose this option, traffic will
+be sent uni-directionally.
+EOText;
+};
+
+flag = {
+    ifdef      = ENABLE_PCAP_FINDALLDEVS;
+    name       = listnics;
+    descrip    = "List available network interfaces and exit";
+    immediate;
+    doc        = "";
+    flag-code  = <<- EOFlag
+
+interface_list_t *list = get_interface_list();
+list_interfaces(list);
+free(list);
+exit(0);
+
+EOFlag;
+};
+
+
+/*
+ * Select which packets to process
+ */
+
+flag = {
+    name        = limit;
+    value       = L;
+    arg-type    = number;
+    max         = 1;
+    arg-default = -1;
+    arg-range   = "1->";
+    descrip     = "Limit the number of packets to send";
+    doc         = <<- EOText
+By default, tcpbridge will send packets forever or until Ctrl-C.  Alternatively,
+you can specify a maximum number of packets to send.
+EOText;
+};
+
+/*
+ * Windows users need to provide the MAC addresses of the interfaces
+ * so we can prevent looping (since winpcap doesn't have an API to query)
+ * the MAC address of the NIC's
+ */
+flag = {
+    name        = mac;
+    value       = M;
+    arg-type    = string;
+    max         = 2;
+    stack-arg;
+    descrip     = "MAC addresses of local NIC's";
+    doc         = <<- EOText
+tcpbridge does not support detecting the MAC addresses of the local network
+interfaces under Windows.  Please specify both MAC addresses of the interfaces
+used in the bridge: -M <intf1 mac> -M <intf2 mac>
+EOText;
+};
+
+
+/* Include/Exclude */
+flag = {
+    name        = include;
+    value       = x;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Include only packets matching rule";
+    flags-cant  = exclude;
+    flag-code   = <<- EOInclude
+
+    char *include;
+
+    include = safe_strdup(OPT_ARG(INCLUDE));
+    options.xX.mode = xX_MODE_INCLUDE;
+
+    if ((options.xX.mode = parse_xX_str(&options.xX, include, &options.bpf)) == xXError)
+        errx(-1, "Unable to parse include/exclude rule: %s", OPT_ARG(INCLUDE));
+
+    free(include);
+
+EOInclude;
+    doc         = <<- EOText
+Override default of sending all packets stored in the capture file and only
+send packets which match the provided rule.  Rules can be one of:
+
+@table @bullet
+@item S:<CIDR1>,...
+- Source IP must match specified CIDR(s)
+@item D:<CIDR1>,...
+- Destination IP must match specified CIDR(s)
+@item B:<CIDR1>,...
+- Both source and destination IP must match specified CIDR(s)
+@item E:<CIDR1>,...
+- Either IP must match specified CIDR(s)
+@item P:<LIST>
+- Must be one of the listed packets where the list
+corresponds to the packet number in the capture file.
+@example
+--include=P:1-5,9,15,72-
+@end example
+would send packets 1 through 5, the 9th and 15th packet, and packets 72 until the
+end of the file
+@item F:'<bpf>'
+- BPF filter.  See the @file{tcpdump(8)} man page for syntax.
+@end table
+EOText;
+};
+
+flag = {
+    name        = exclude;
+    value       = X;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Exclude any packet matching this rule";
+    flags-cant  = include;
+    flag-code   = <<- EOExclude
+
+    char *exclude;
+
+    exclude = safe_strdup(OPT_ARG(EXCLUDE));
+    options.xX.mode = xX_MODE_EXCLUDE;
+
+    if ((options.xX.mode = parse_xX_str(&options.xX, exclude, &options.bpf)) == xXError)
+        errx(-1, "Unable to parse include/exclude rule: %s", OPT_ARG(EXCLUDE));
+
+    free(exclude);
+
+EOExclude;
+    doc         = <<- EOText
+Override default of sending all packets stored in the capture file and only
+send packets which do not match the provided rule.  Rules can be one of:
+
+@table @bullet
+@item S:<CIDR1>,...
+- Source IP must not match specified CIDR(s)
+@item D:<CIDR1>,...
+- Destination IP must not match specified CIDR(s)
+@item B:<CIDR1>,...
+- Both source and destination IP must not match specified CIDR(s)
+@item E:<CIDR1>,...
+- Either IP must not match specified CIDR(s)
+@item P:<LIST>
+- Must not be one of the listed packets where the list
+corresponds to the packet number in the capture file.
+@example
+--exclude=P:1-5,9,15,72-
+@end example
+would drop packets 1 through 5, the 9th and 15th packet, and packets 72 until the
+end of the file
+@end table
+EOText;
+};
+
+flag = {
+    name        = pid;
+    value       = P;
+    descrip     = "Print the PID of tcpbridge at startup";
+    flag-code   = <<- EOPid
+
+    fprintf(stderr, "PID: %d\n", getpid());
+
+EOPid;
+    doc         = "";
+};
+
+/* Verbose decoding via tcpdump */
+
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = verbose;
+    value       = v;
+    max         = 1;
+    immediate;
+    descrip     = "Print decoded packets via tcpdump to STDOUT";
+    settable;
+    doc         = "";
+};
+
+flag = {
+    ifdef       = ENABLE_VERBOSE;
+    name        = decode;
+    flags-must  = verbose;
+    value       = A;
+    arg-type    = string;
+    max         = 1;
+    descrip     = "Arguments passed to tcpdump decoder";
+    doc         = <<- EOText
+When enabling verbose mode (@var{-v}) you may also specify one or more
+additional  arguments to pass to @code{tcpdump} to modify the way packets
+are decoded.  By default, -n and -l are used.   Be  sure  to
+quote the arguments like: --verbose="-axxx" so that they are not interpreted
+by tcpbridge.  The following arguments are valid:
+    [ -aAeNqRStuvxX ]
+    [ -E spi@ipaddr algo:secret,... ]
+    [ -s snaplen ]
+EOText;
+};
+
+flag = {
+    name        = version;
+    value       = V;
+    descrip     = "Print version information";
+    flag-code   = <<- EOVersion
+
+    fprintf(stderr, "tcpbridge version: %s (build %s)", VERSION, git_version());
+#ifdef DEBUG
+    fprintf(stderr, " (debug)");
+#endif
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Copyright 2013-2022 by Fred Klassen <tcpreplay at appneta dot com> - AppNeta\n");
+    fprintf(stderr, "Copyright 2000-2012 by Aaron Turner <aturner at synfin dot net>\n");
+    fprintf(stderr, "The entire Tcpreplay Suite is licensed under the GPLv3\n");
+#ifdef HAVE_LIBDNET
+    fprintf(stderr, "Compiled against libdnet: %s\n", LIBDNET_VERSION);
+#else
+    fprintf(stderr, "Not compiled with libdnet.\n");
+#endif
+#ifdef HAVE_WINPCAP
+    fprintf(stderr, "Compiled against winpcap: %s\n", get_pcap_version());
+#elif defined HAVE_PF_RING_PCAP
+    fprintf(stderr, "Compiled against PF_RING libpcap: %s\n", get_pcap_version());
+#else
+    fprintf(stderr, "Compiled against libpcap: %s\n", get_pcap_version());
+#endif
+#ifdef ENABLE_64BITS
+    fprintf(stderr, "64 bit packet counters: enabled\n");
+#else
+    fprintf(stderr, "64 bit packet counters: disabled\n");
+#endif
+#ifdef ENABLE_VERBOSE
+    fprintf(stderr, "Verbose printing via tcpdump: enabled\n");
+#else
+    fprintf(stderr, "Verbose printing via tcpdump: disabled\n");
+#endif
+    fprintf(stderr, "Injection method: %s\n", sendpacket_get_method(NULL));
+
+    exit(0);
+
+EOVersion;
+    doc         = "";
+};
+
+flag = {
+    name        = less-help;
+    value       = "h";
+    immediate;
+    descrip     = "Display less usage information and exit";
+    flag-code   = <<- EOHelp
+
+    USAGE(EXIT_FAILURE);
+
+EOHelp;
+    doc         = "";
+};

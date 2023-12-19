@@ -1,0 +1,113 @@
+/* $Id:$ */
+
+/*
+ *   Copyright (c) 2001-2010 Aaron Turner <aturner at synfin dot net>
+ *   Copyright (c) 2013-2022 Fred Klassen <tcpreplay at appneta dot com> - AppNeta
+ *
+ *   The Tcpreplay Suite of tools is free software: you can redistribute it 
+ *   and/or modify it under the terms of the GNU General Public License as 
+ *   published by the Free Software Foundation, either version 3 of the 
+ *   License, or with the authors permission any later version.
+ *
+ *   The Tcpreplay Suite is distributed in the hope that it will be useful,
+ *   but WITHOUT ANY WARRANTY; without even the implied warranty of
+ *   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ *   GNU General Public License for more details.
+ *
+ *   You should have received a copy of the GNU General Public License
+ *   along with the Tcpreplay Suite.  If not, see <http://www.gnu.org/licenses/>.
+ */
+
+autogen definitions options;
+
+copyright = {
+    date        = "2000-2012";
+    owner       = "Aaron Turner and Fred Klassen";
+    eaddr       = "tcpreplay-users@lists.sourceforge.net"; 
+    type        = gpl;
+    author      = <<- EOText
+Copyright 2000-2012 Aaron Turner
+
+Copyright 2013 Fred Klassen - AppNeta
+
+For support please use the tcpreplay-users@lists.sourceforge.net mailing list.
+
+The latest version of this software is always available from:
+http://tcpreplay.appneta.com/
+EOText;
+};
+
+package                    = "Tcpreplay Suite";
+prog-name                  = "tcpcapinfo";
+prog-title                 = "Pcap file dissector for debugging broken pcap files";
+long-opts;
+gnu-usage;
+help-value                 = "H";
+no-save-opts;
+no-load-opts;
+config-header              = "config.h";
+argument                   = "<pcap_file(s)>";
+
+include                    = "#include \"defines.h\"\n"
+                            "#include \"common.h\"\n"
+                            "#include \"config.h\"\n";
+
+explain = <<- EOText
+tcpcapinfo is a tool for decoding the structure of a pcap(3) file with
+a focus on finding broken pcap files and determining how two related
+pcap files might differ.
+EOText;
+
+detail = <<- EOText
+tcpcapinfo will first print out the pcap_file_header_t in human
+readable form followed by a per-packet summary including the pcap_pkthdr_t
+and simple checksum value of the packet.
+EOText;
+
+man-doc = <<-EOText
+
+.SH "SEE ALSO"
+tcpdump(1), tcpprep(1), tcprewrite(1), tcpreplay(1), tcpbridge(1), pcap(3)
+
+EOText;
+
+/*
+ * Debugging
+ */
+
+flag = {
+    ifdef       = DEBUG;
+    name        = dbug;
+    value       = d;
+    arg-type    = number;
+    max         = 1;
+    immediate;
+    arg-range   = "0->5";
+    arg-default = 0;
+    descrip     = "Enable debugging output";
+    doc         = <<- EOText
+If configured with --enable-debug, then you can specify a verbosity 
+level for debugging output.  Higher numbers increase verbosity.
+EOText;
+};
+
+flag = {
+    name        = version;
+    value       = V;
+    descrip     = "Print version information";
+    flag-code   = <<- EOVersion
+
+    fprintf(stderr, "tcpcapinfo version: %s (build %s)", VERSION, git_version());
+#ifdef DEBUG
+    fprintf(stderr, " (debug)");
+#endif
+    fprintf(stderr, "\n");
+    fprintf(stderr, "Copyright 2013-2022 by Fred Klassen <tcpreplay at appneta dot com> - AppNeta\n");
+    fprintf(stderr, "Copyright 2000-2010 by Aaron Turner <aturner at synfin dot net>\n");
+    fprintf(stderr, "The entire Tcpreplay Suite is licensed under the GPLv3\n");
+    exit(0);
+
+EOVersion;
+    doc         = "";
+};
+

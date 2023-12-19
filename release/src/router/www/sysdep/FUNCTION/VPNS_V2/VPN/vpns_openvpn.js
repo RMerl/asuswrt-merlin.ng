@@ -14,6 +14,9 @@ var ciphersarray = [
 	["AES-128-CBC"],
 	["AES-192-CBC"],
 	["AES-256-CBC"],
+	["AES-128-GCM"],
+	["AES-192-GCM"],
+	["AES-256-GCM"],
 	["BF-CBC"],
 	["CAST5-CBC"],
 	["CAMELLIA-128-CBC"],
@@ -1838,7 +1841,7 @@ function Get_Component_Setting_Profile_OpenVPN(_type){
 			show_popup_help_OpenVPN("Feature_Desc");
 		});
 
-	var vpn_server_port_parm = {"title":"<#WLANAuthentication11a_ExAuthDBPortNumber_itemname#>", "type":"text", "id":"vpn_server_port", "need_check":true, "maxlength":5, "openHint":"32_6"};
+	var vpn_server_port_parm = {"title":"<#WLANAuthentication11a_ExAuthDBPortNumber_itemname#>", "type":"text", "id":"vpn_server_port", "need_check":true, "maxlength":5};
 	Get_Component_Input(vpn_server_port_parm).appendTo($detail_general)
 		.find("#" + vpn_server_port_parm.id + "")
 		.unbind("keypress").keypress(function(){

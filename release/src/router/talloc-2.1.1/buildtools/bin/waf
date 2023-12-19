@@ -1,0 +1,77 @@
+#!/usr/bin/env python2
+# encoding: ISO-8859-1
+# Thomas Nagy, 2005-2010
+
+"""
+Redistribution and use in source and binary forms, with or without
+modification, are permitted provided that the following conditions
+are met:
+
+1. Redistributions of source code must retain the above copyright
+   notice, this list of conditions and the following disclaimer.
+
+2. Redistributions in binary form must reproduce the above copyright
+   notice, this list of conditions and the following disclaimer in the
+   documentation and/or other materials provided with the distribution.
+
+3. The name of the author may not be used to endorse or promote products
+   derived from this software without specific prior written permission.
+
+THIS SOFTWARE IS PROVIDED BY THE AUTHOR "AS IS" AND ANY EXPRESS OR
+IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE IMPLIED
+WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
+DISCLAIMED. IN NO EVENT SHALL THE AUTHOR BE LIABLE FOR ANY DIRECT,
+INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL DAMAGES
+(INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
+SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION)
+HOWEVER CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT,
+STRICT LIABILITY, OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING
+IN ANY WAY OUT OF THE USE OF THIS SOFTWARE, EVEN IF ADVISED OF THE
+POSSIBILITY OF SUCH DAMAGE.
+"""
+
+import os, sys
+if sys.hexversion<0x203000f: raise ImportError("Waf requires Python >= 2.3")
+
+if 'PSYCOWAF' in os.environ:
+	try:import psyco;psyco.full()
+	except:pass
+
+VERSION="1.5.19"
+REVISION="x"
+INSTALL="x"
+C1='x'
+C2='x'
+cwd = os.getcwd()
+join = os.path.join
+
+WAF='waf'
+def b(x):
+	return x
+
+if sys.hexversion>0x300000f:
+	WAF='waf3'
+	def b(x):
+		return x.encode()
+
+def err(m):
+	print(('\033[91mError: %s\033[0m' % m))
+	sys.exit(1)
+
+def test(dir):
+	try: os.stat(join(dir, 'wafadmin')); return os.path.abspath(dir)
+	except OSError: pass
+
+def find_lib():
+	return os.path.abspath(os.path.dirname(os.path.dirname(__file__)))
+
+wafdir = find_lib()
+w = join(wafdir, 'wafadmin')
+t = join(w, 'Tools')
+f = join(w, '3rdparty')
+sys.path = [w, t, f] + sys.path
+
+if __name__ == '__main__':
+	import Scripting
+	Scripting.prepare(t, cwd, VERSION, wafdir)
+

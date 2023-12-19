@@ -1359,10 +1359,16 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #ifdef RTCONFIG_OPENPLUS_TFAT
 			if(nvram_match("usb_fatfs_mod", "tuxera")){
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
-				if(nvram_get_int("stop_iostreaming"))
-					sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
-				else
-					sprintf(options + strlen(options), ",nodev,iostreaming" + (options[0] ? 0 : 1));
+				sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
+//#if defined(BCM6756) || defined(BCM6813) || defined(BCM6855) || defined(BCM4912) \
+//	|| defined(EBG19) || defined(EBG15) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
+#if 0
+				// dalloc=0 cannot be set with iostreaming
+				sprintf(options + strlen(options), ",dalloc=0" + (options[0] ? 0 : 1));
+#else
+				if(!nvram_get_int("stop_iostreaming"))
+					sprintf(options + strlen(options), ",iostreaming" + (options[0] ? 0 : 1));
+#endif
 #if defined(BCM49XX)
 				sprintf(options + strlen(options), ",inode32" + (options[0] ? 0 : 1));
 #endif
@@ -1376,10 +1382,16 @@ int mount_r(char *mnt_dev, char *mnt_dir, char *_type)
 #endif
 #elif defined(RTCONFIG_TFAT)
 #if defined(RTCONFIG_BCMARM) || defined(RTCONFIG_QCA)
-			if(nvram_get_int("stop_iostreaming"))
-				sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
-			else
-				sprintf(options + strlen(options), ",nodev,iostreaming" + (options[0] ? 0 : 1));
+			sprintf(options + strlen(options), ",nodev" + (options[0] ? 0 : 1));
+//#if defined(BCM6756) || defined(BCM6813) || defined(BCM6855) || defined(BCM4912) \
+//	|| defined(EBG19) || defined(EBG15) || defined(RTAX82U_V2) || defined(TUFAX5400_V2) || defined(RTAX5400)
+#if 0
+			// dalloc=0 cannot be set with iostreaming
+			sprintf(options + strlen(options), ",dalloc=0" + (options[0] ? 0 : 1));
+#else
+			if(!nvram_get_int("stop_iostreaming"))
+				sprintf(options + strlen(options), ",iostreaming" + (options[0] ? 0 : 1));
+#endif
 #if defined(BCM49XX)
 			sprintf(options + strlen(options), ",inode32" + (options[0] ? 0 : 1));
 #endif
@@ -2866,50 +2878,20 @@ void write_ftpd_conf()
 #if defined(RTCONFIG_HTTPS) && defined(RTCONFIG_FTP_SSL)
 	if(nvram_get_int("ftp_tls")){
 		fprintf(fp, "ssl_enable=YES\n");
+		if (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY))
+			restore_cert();
+
+		prepare_cert_in_etc();
+
 		fprintf(fp, "ssl_ciphers=HIGH\n");
 		fprintf(fp, "rsa_cert_file=%s\n", HTTPD_CERT);
 		fprintf(fp, "rsa_private_key_file=%s\n", HTTPD_KEY);
 
-		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
-#ifdef RTCONFIG_LETSENCRYPT
-			|| !cert_key_match(HTTPD_CERT, HTTPD_KEY)
-#endif
-			) {
-#ifdef RTCONFIG_LETSENCRYPT
-			if(nvram_match("le_enable", "1")) {
-				cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
-				cp_le_cert(LE_KEY, HTTPD_KEY);
-			}
-			else if(nvram_match("le_enable", "2")) {
-				unlink(HTTPD_CERT);
-				unlink(HTTPD_KEY);
-				if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
-					eval("cp", UPLOAD_CERT, HTTPD_CERT);
-					eval("cp", UPLOAD_KEY, HTTPD_KEY);
-				}
-			}
-#else
-			if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)){
-				eval("cp", UPLOAD_CERT, HTTPD_CERT);
-				eval("cp", UPLOAD_KEY, HTTPD_KEY);
-			}
-#endif
-		}
-
 		// Is it valid now?  Otherwise, restore saved cert, or generate one.
-		if(!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)
-#ifdef RTCONFIG_LETSENCRYPT
-                        || !cert_key_match(HTTPD_CERT, HTTPD_KEY)
-#endif
-		) {
-			if (eval("tar", "-xzf", "/jffs/cert.tgz", "-C", "/", "etc/cert.pem", "etc/key.pem") == 0){
-				system("cat /etc/key.pem /etc/cert.pem > /etc/server.pem");
-				system("cp /etc/cert.pem /etc/cert.crt");
-			} else {
-				f_read("/dev/urandom", &sn, sizeof(sn));
-				sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
-				eval("gencert.sh", t);
-			}
+		if (!f_exists(HTTPD_CERT) || !f_exists(HTTPD_KEY)) {
+			f_read("/dev/urandom", &sn, sizeof(sn));
+			sprintf(t, "%llu", sn & 0x7FFFFFFFFFFFFFFFULL);
+			GENCERT_SH(t);
 		}
 	} else {
 		fprintf(fp, "ssl_enable=NO\n");
@@ -3363,7 +3345,7 @@ start_samba(void)
 	char smbd_cmd[32];
 
 	if (getpid() != 1) {
-		notify_rc_after_wait("start_samba");
+		notify_rc_and_wait_1min("start_samba");
 		return;
 	}
 
@@ -3568,7 +3550,7 @@ start_samba(void)
 void stop_samba(int force)
 {
 	if(!force && getpid() != 1){
-		notify_rc_after_wait("stop_samba");
+		notify_rc_and_wait_1min("stop_samba");
 		return;
 	}
 
@@ -3779,6 +3761,7 @@ void start_dms(void)
 				"port=%d\n"
 				"friendly_name=%s\n"
 				"db_dir=%s\n"
+				"log_dir=%s\n"
 				"enable_tivo=%s\n"
 				"strict_dlna=%s\n"
 				"inotify=yes\n"
@@ -3787,6 +3770,7 @@ void start_dms(void)
 				nvram_safe_get("lan_ifname"),
 				(port < 0) || (port >= 0xffff) ? 0 : port,
 				friendly_name,
+				dbdir,
 				dbdir,
 				nvram_get_int("dms_tivo") ? "yes" : "no",
 				nvram_get_int("dms_stdlna") ? "yes" : "no");
@@ -3851,8 +3835,7 @@ void start_dms(void)
 				"serial=%s\n"
 				"uuid=%s\n"
 				"model_number=%s\n",
-				serial, uuid,
-				rt_serialno);
+				serial, uuid, get_productid());
 
 			nv = nvram_safe_get("dms_sort");
 			if (!*nv || isdigit(*nv))

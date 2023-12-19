@@ -1,0 +1,25 @@
+function getElement(e) {
+  if(document.all) {
+    return document.all[e];
+  } else {
+    return document.getElementById(e);
+  }
+} 
+
+function toggle(obj) {
+  var el = document.getElementById(obj);
+  if (el.style.display != 'none') {
+    el.style.display = 'none';
+  } else {
+    el.style.display = '';
+  }
+}
+
+var last = 'login';
+function toggleAuth(newauth, name) {
+  toggle(newauth+'-form');
+  toggle(newauth+'-label');
+  toggle(last+'-form');
+  toggle(last+'-label');
+  last=newauth;
+}

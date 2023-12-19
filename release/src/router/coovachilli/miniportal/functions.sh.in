@@ -1,0 +1,50 @@
+# -*- mode: shell-script -*-
+# Copyright (C) 2009-2012 David Bird (Coova Technologies) <support@coova.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+# default, before configuration
+HS_ENABLED=true
+
+. @ETCCHILLI@/functions
+
+CHILLI_RESPONSE=@SBINDIR@/chilli_response
+CHILLI_QUERY=@SBINDIR@/chilli_query
+CHILLI_PROXY=@SBINDIR@/chilli_proxy
+
+# default, after configuration
+
+pkg_attr_file() {
+    p=@ETCCHILLI@/pkg.
+    while [ "$1" != "" ]; do
+	[ -e "$p$1" ] && { cat $p$1; return; }
+	shift;
+    done
+    echo
+}
+
+register_with_pkg() {
+    type=$1; shift
+    user=$1; shift
+    pass=$1; shift
+    regout=$(pkg_attr_file $* default|$CHILLI_PROXY --register status new_$type user "$user" pass "$pass")
+    echo $regout
+}
+
+#config miniportal
+#  option  enabled=true
+#  option  reg_mode=[self|tos]
+#  option  openidauth=
+#  option  owner_email=
+#  option  uamsecret=

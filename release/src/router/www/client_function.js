@@ -121,6 +121,11 @@ var isWL_map = {
 		"text": "6G",
 		"type": "6g",
 		"idx": 1
+	},
+	"5" : {
+		"text": "6G",
+		"type": "6g",
+		"idx": 2
 	}
 };
 var _wl_band_count = (function(){

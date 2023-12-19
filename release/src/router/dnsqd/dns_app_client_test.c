@@ -16,7 +16,10 @@ int main(int argc, char **argv)
   up_or_dn = ORDER_BY_UPLOAD;
   json_object *resultObj = NULL;
   int time = 2;
-  
+  int retval;
+
+
+#if 0  
   // test 1 - app stats
   while (time)
   {
@@ -87,7 +90,6 @@ int main(int argc, char **argv)
   }
  
   // test 5 - bwdpi compatible api
-  int retval;
   //dns_sqlite_Stat_hook(0, "all", "hour", "24", "1642568274", &retval, 0);
   //printf("dns_sqlite_Stat_hook retval=%d\n", retval);
   
@@ -100,8 +102,22 @@ int main(int argc, char **argv)
   //printf("dns_sqlite_Stat_hook retval=%d\n", retval);
 
   // test 8 - bwdpi compatible api
-  dns_sqlite_Stat_hook(1, "00:15:5d:60:7e:21", "detail", "7", "1642577274", &retval, 0);
+  dns_sqlite_Stat_hook(1, "00:28:F8:E3:CF:39", "detail", "7", "1642577274", &retval, 0);
   printf("\ndns_sqlite_Stat_hook retval=%d\n", retval);
+#endif
+
+// test 9 - bwdpi compatible api
+ get_dns_traffic_hook("traffic", "",  "realtime", "1642577274", &retval, 0);
+//printf("\nget_traffic_hook retval=%d\n", retval);
+
+
+// test 10 - bwdpi compatible api
+ get_dns_traffic_hook("traffic", "00:0E:C6:F1:1B:95",  "realtime", "1642577274", &retval, 0);
+//printf("\nget_traffic_hook retval=%d\n", retval);
+
+// test 11 - bwdpi compatible api
+ get_dns_traffic_hook("traffic_wan", "", "realtime", "1642577274", &retval, 0);
+ //printf("\nget_traffic_hook retval=%d\n", retval);
 
   return 0;
 }

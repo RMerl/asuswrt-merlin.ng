@@ -39,6 +39,7 @@
 #include <sys/syscall.h>
 #endif
 
+#include "event.h"
 #include "uuid.h"
 #include "getifaddr.h"
 #include "log.h"

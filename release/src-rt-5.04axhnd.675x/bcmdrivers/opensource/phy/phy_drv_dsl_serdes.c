@@ -325,11 +325,7 @@ int phy_dsl_serdes_post_init(phy_dev_t *phy_dev)
 
         if (phy_dev->common_inter_phy_types == 0)
             /* Just unbelive this can happen on board design, should be software bug */
-#ifdef TUFAX3000_V2
             printk("No common INTER PHY Capablities found between Serdes and PHY! Wrong board design.\n");
-#else
-            BUG_CHECK("No common INTER PHY Capablities found between Serdes and PHY! Wrong board design.\n");
-#endif
 
         phy_dev->current_inter_phy_type = phy_get_best_inter_phy_configure_type(phy_dev,
                 phy_dev->configured_inter_phy_types, phy_serdes->config_speed);

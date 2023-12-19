@@ -1,0 +1,63 @@
+<? # -*- mode: shell-script -*-
+# Copyright (C) 2009-2012 David Bird (Coova Technologies) <support@coova.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. ./config.sh
+
+http_header
+
+case "$FORM_res" in
+    success|already)
+	header "<meta http-equiv=\"refresh\" content=\"5;url=${FORM_userurl}\"/>"
+	uamfile "login_success" 1
+	footer
+	exit
+	;;
+esac
+
+
+if [ -n "$FORM_username" -a -n "$FORM_challenge" -a -n "$FORM_password" ]; then
+ 
+    dologin
+    
+else
+    
+    if [ "$HS_REG_MODE" = "tos" ]; then
+	
+	if [ "$FORM_button" != "" ]; then
+	    
+	    FORM_username="tos-accept"
+	    FORM_password="_tos-password_"
+	    
+	    grep "^$FORM_username:" $USERS >/dev/null 2>&1 || \
+		echo "$FORM_username:$FORM_password::" >> $USERS
+	    
+	    dologin
+	    
+	else
+	    header
+            [ "$usemap" = "1" ] && { 
+		echo "<div style=\"float:right;padding-right:20px;\">"
+		uamfile "login_map" 1 
+		echo "</div>"
+            }
+	    uamfile "terms" 1
+	    termsform
+	    footer
+	fi
+    fi
+fi
+
+?>

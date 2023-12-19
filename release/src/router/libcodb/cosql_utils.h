@@ -178,5 +178,7 @@ extern int cosql_backup_and_remove_data_between_column_value(sqlite3* pdb, sqlit
     const char* column_name, int start_value, int end_value);
 
 extern int cosql_backup_and_resize_table_by_reserved_count(sqlite3* pdb, sqlite3* dst_pdb, int reserved_newest_data_count);
+extern int cosql_free_query_columns(sql_column_prototype_t* query_columns, int query_columns_count);
+extern int cosql_free_match_columns(sql_column_match_t* match_columns, int match_columns_count);
 
 #endif

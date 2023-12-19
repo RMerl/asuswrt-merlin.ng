@@ -1377,24 +1377,40 @@ void start_lan(void)
 #ifdef RTAX9000
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
-	eval("wl", "-i", "eth6", "ledbh", "15", "7");
+	eval("wl", "-i", "eth6", "ledbh", "13", "7");
 	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
-	eval("wl", "-i", "eth7", "ledbh", "15", "7");
+	eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 
 #if defined(GTAX6000) || defined(RTAX88U_PRO)
 	// configure 6715 GPIO direction
 	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+#ifdef GTAX6000
+	eval("wl", "-i", "eth7", "gpioout", "0x2002", nvram_get_int("wl1_radio") ? "0x2002" : "0x0");
+#else
 	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+#endif
 	eval("wl", "-i", "eth6", "ledbh", "13", "7");
 	eval("wl", "-i", "eth7", "ledbh", "13", "7");
 #endif
 
 #ifdef GTAX11000_PRO
 	// configure 6715 GPIO direction
-	eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
-	eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
-	eval("wl", "-i", "eth8", "gpioout", "0x2002", "0x2002");
+	if(nvram_match("wl0_radio", "0"))
+		eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x0002");
+	else
+		eval("wl", "-i", "eth6", "gpioout", "0x2002", "0x2002");
+
+	if(nvram_match("wl1_radio", "0"))
+		eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x0002");
+	else
+		eval("wl", "-i", "eth7", "gpioout", "0x2002", "0x2002");
+
+	if(nvram_match("wl2_radio", "0"))
+		eval("wl", "-i", "eth8", "gpioout", "0x2002", "0x0002");
+	else
+		eval("wl", "-i", "eth8", "gpioout", "0x2002", "0x2002");
+
 	eval("wl", "-i", "eth6", "ledbh", "13", "7");
 	eval("wl", "-i", "eth7", "ledbh", "13", "7");
 	eval("wl", "-i", "eth8", "ledbh", "13", "7");
@@ -1585,9 +1601,11 @@ void start_lan(void)
 #ifdef RTAC87U
 		eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 #else
+#if !defined(HND_ROUTER) || defined(RTAX55) || defined(RTAX1800) || defined(RTAX58U_V2) || defined(RTAX3000N) || defined(BR63)
 		if (is_routing_enabled())
 			eval("brctl", "stp", lan_ifname, nvram_safe_get("lan_stp"));
 		else
+#endif
 			eval("brctl", "stp", lan_ifname, "0");
 #endif
 
@@ -1809,11 +1827,17 @@ void start_lan(void)
 					set_hwaddr(ifname, (const char *) get_lan_hwaddr());
 #endif
 #endif
-#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5) || defined(EBA63)
+#if defined(RTAX56_XD4) || defined(XD4PRO) || defined(CTAX56_XD4) || defined(XC5)
 				if (!strcmp(ifname, "wl0"))
 					set_hwaddr(ifname, (const char *) nvram_safe_get("0:macaddr"));
 				if (!strcmp(ifname, "wl1"))
 					set_hwaddr(ifname, (const char *) nvram_safe_get("1:macaddr"));
+#endif
+#if defined(EBA63)
+				if (!strcmp(ifname, "wl0"))
+					set_hwaddr(ifname, (const char *) nvram_safe_get("sb/0/macaddr"));
+				if (!strcmp(ifname, "wl1"))
+					set_hwaddr(ifname, (const char *) nvram_safe_get("sb/1/macaddr"));
 #endif
 #if defined(RTAC56U) || defined(RTAC56S)
 				if (!strcmp(ifname, "eth2")) {
@@ -1868,7 +1892,7 @@ void start_lan(void)
 						system("ethswctl -c pause -p 1 -v 2");
 #endif
 				}
-#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG)
+#if defined(RTAXE7800) && !defined(RTCONFIG_BCM_MFG) && !defined(RTCONFIG_AUTO_WANPORT)
 				if (!nvram_get_int("x_Setting") && !strcmp(ifname, "eth1")) continue;
 #endif
 				/* Set the logical bridge address to that of the first interface */
@@ -4385,6 +4409,7 @@ lan_up(char *lan_ifname)
 		}
 	}
 #endif
+	update_srv_cert_if_lan_ip_changed();
 #if defined(RTCONFIG_AMAS) && defined(RTCONFIG_HND_ROUTER_AX)
 #if defined(XT8PRO) || defined(BM68) || defined(XT8_V2) || defined(ET8PRO) || defined(ET8_V2)
 	_dprintf("[%s][%d] skip (GPY211)\n", __FUNCTION__, __LINE__);
@@ -4422,6 +4447,7 @@ lan_down(char *lan_ifname)
 
 	update_lan_state(LAN_STATE_STOPPED, 0);
 
+	update_srv_cert_if_lan_ip_changed();
 #ifdef CONFIG_BCMWL5
 #if defined(RTCONFIG_WIRELESSREPEATER) || defined(RTCONFIG_PROXYSTA)
 #if defined(RTCONFIG_BCM4708) || defined(RTCONFIG_HND_ROUTER_AX)
@@ -6323,6 +6349,7 @@ void restart_wireless(void)
 #ifdef RTCONFIG_CFGSYNC
 	send_event_to_cfgmnt(EID_RC_RESTART_WIRELESS);
 #endif
+	restore_wan_ebtables_rules();
 }
 
 #ifdef RTCONFIG_BCM_7114

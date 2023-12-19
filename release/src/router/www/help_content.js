@@ -367,7 +367,7 @@ helpcontent[32] = new Array("",
 							"Enable this option allows VPN clients use the Internet from your router instead of the one at their location.",/*untranslated*/
 							"Virtual network device type. TUN devices encapsulate IPv4 or IPv6 (OSI Layer 3) while TAP devices encapsulate Ethernet 802.3 (OSI Layer 2).",/*untranslated*/
 							"Choose the communicating protocol with remote host.",/*untranslated*/
-							"Set the port number to bind. The current default of 1194 represents the official IANA port number assignment for OpenVPN.",/*untranslated*/
+							"",
 							"<b>TLS</b>: OpenVPN runs in server mode and SSL/TLS authentication will be used;<br> <b>Static Key</b>: OpenVPN runs in P2P mode.",/*untranslated*/
 							"The bits size of automatically generated certificate.",/*untranslated*/
 							"Use username/password only allows client connect to server without certification and authentication by username/password. Be aware that using this directive is less secure than requiring certificates.",/*untranslated*/

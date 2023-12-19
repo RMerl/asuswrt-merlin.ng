@@ -65,28 +65,46 @@ log_close(void)
 		fclose(log_fp);
 }
 
-int find_matching_name(const char* str, const char* names[]) {
-	if (str == NULL) return -1;
+void
+log_reopen(void)
+{
+	if (log_path[0] && log_fp)
+	{
+		char logfile[1048];
+		snprintf(logfile, sizeof(logfile), "%s/" LOGFILE_NAME, log_path);
+		fclose(log_fp);
+		log_fp = fopen(logfile, "a");
+		DPRINTF(E_INFO, L_GENERAL, "Reopened log file\n");
+	}
+}
 
-	const char* start = strpbrk(str, ",=");
-	int level, c = (start != NULL) ? start - str : strlen(str);
+int find_matching_name(const char* str, const char* names[])
+{
+	const char *start;
+	int level, c;
+
+	if (!str)
+		return -1;
+
+	start = strpbrk(str, ",=");
+	c = start ? start - str : strlen(str);
 	for (level = 0; names[level] != 0; level++) {
-		if (!(strncasecmp(names[level], str, c)))
+		if (!strncasecmp(names[level], str, c))
 			return level;
 	}
 	return -1;
 }
 
 int
-log_init(const char *fname, const char *debug)
+log_init(const char *debug)
 {
 	int i;
-	FILE *fp;
+	FILE *fp = NULL;
 
 	int level = find_matching_name(debug, level_name);
 	int default_log_level = (level == -1) ? _default_log_level : level;
 
-	for (i=0; i<L_MAX; i++)
+	for (i = 0; i < L_MAX; i++)
 		log_level[i] = default_log_level;
 
 	if (debug)
@@ -119,12 +137,15 @@ log_init(const char *fname, const char *debug)
 		}
 	}
 
-	if (!fname)					// use default i.e. stdout
-		return 0;
-
-	if (!(fp = fopen(fname, "a")))
-		return 1;
+	if (log_path[0])
+	{
+		char logfile[1048];
+		snprintf(logfile, sizeof(logfile), "%s/" LOGFILE_NAME, log_path);
+		if (!(fp = fopen(logfile, "a")))
+			return -1;
+	}
 	log_fp = fp;
+
 	return 0;
 }
 
@@ -144,7 +165,7 @@ log_err(int level, enum _log_facility facility, char *fname, int lineno, char *f
 	{
 		time_t t;
 		struct tm *tm;
-		t = time(NULL);
+		t = uptime();
 		tm = localtime(&t);
 		fprintf(log_fp, "[%04d/%02d/%02d %02d:%02d:%02d] ",
 		        tm->tm_year+1900, tm->tm_mon+1, tm->tm_mday,

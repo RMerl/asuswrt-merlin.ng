@@ -373,5 +373,5 @@ Tuxera's engineers address the issue:
 
 Thank you.
 
-Copyright (c) 2008-2022 Tuxera Inc. All Rights Reserved.
+Copyright (c) 2008-2023 Tuxera Inc. All Rights Reserved.
 

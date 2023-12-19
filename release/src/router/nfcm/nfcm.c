@@ -30,6 +30,10 @@
 #include "nfjs.h"
 #include "nfcfg.h"
 
+#ifdef RTCONFIG_MULTILAN_CFG
+#include "mtlan_utils.h"
+#endif
+
 #if defined(HND_ROUTER_AX_6756)
 #include "nfbr.h"
 #endif
@@ -56,7 +60,7 @@ struct u32_mask {
     uint32_t mask;
 };
 
-#define DEBUG_DUMP_CONNTRACK 0 
+#define DEBUG_DUMP_CONNTRACK 0
 #define ONE_K (1024)
 #define ONE_M (1048576)  // ONE_K*ONE_K
 
@@ -309,6 +313,19 @@ void lan_info_free(lan_info_t *li)
     return;
 }
 
+void lan_list_free(struct list_head *list)
+{
+	lan_info_t *lan, *tmp;
+
+	list_for_each_entry_safe(lan, tmp, list, list) {
+		list_del(&lan->list);
+		lan_info_free(lan);
+	}
+
+	return;
+}
+
+
 void lan_info_list_dump(struct list_head *list)
 {
     lan_info_t *li;
@@ -324,6 +341,112 @@ void lan_info_list_dump(struct list_head *list)
         inet_ntop(AF_INET, &li->subnet, ipstr, INET_ADDRSTRLEN);
         printf("subnet=\t%s\n", ipstr);
     }
+}
+
+#ifdef RTCONFIG_MULTILAN_CFG
+int lan_info_add_sdn(struct list_head *list)
+{
+    lan_info_t *li;
+    MTLAN_T *pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+    size_t mtl_sz = 0;
+    int i;
+    if (pmtl) {
+      get_mtlan(pmtl, &mtl_sz);
+      for (i = 0; i < mtl_sz; i++) {
+        if (pmtl[i].enable) {
+
+          li = lan_info_new();
+          list_add_tail(&li->list, list);
+
+          strcpy(li->ifname, pmtl[i].nw_t.ifname);
+          inet_pton(AF_INET, pmtl[i].nw_t.addr, &li->addr);
+          inet_pton(AF_INET, pmtl[i].nw_t.netmask, &li->subnet);
+          li->enabled = true;
+        }
+      }
+      FREE_MTLAN((void *)pmtl);
+    }
+
+#if defined(NFCMDBG)
+    lan_info_list_dump(list);
+#endif
+
+    return 0;
+}
+#endif
+
+int lan_info_init(struct list_head *list)
+{
+    lan_info_t *li;
+    char word[64], *next;
+    char *b, *nv, *nvp;
+    char *ifname, *laninfo;
+    char *addr, *mask;
+    char *rulelist;
+
+    li = lan_info_new();
+    list_add_tail(&li->list, list);
+
+    strcpy(li->ifname, "br0");
+    li->enabled = true;
+    inet_pton(AF_INET, nvram_get("lan_ipaddr"), &li->addr);
+    inet_pton(AF_INET, nvram_get("lan_netmask"), &li->subnet);
+
+    // get wireless guest network status
+    if (!nvram_get_int("wgn_enabled"))
+        goto out_f;
+
+    rulelist = nvram_get("wgn_brif_rulelist");
+    if (!rulelist)
+        goto out_f;
+
+    nv = nvp = strdup(rulelist);
+    if (!nv)
+        goto out_free;
+
+    while ((b = strsep(&nvp, "<")) != NULL) {
+        if (!b || !strlen(b)) continue;
+        //fields = vstrsep(b, ">", &ifname, &laninfo);
+        vstrsep(b, ">", &ifname, &laninfo);
+
+        addr = strtok(laninfo, "/");
+        mask = strtok(NULL, "/");
+
+        li = lan_info_new();
+        list_add_tail(&li->list, list);
+
+        strcpy(li->ifname, ifname);
+        inet_pton(AF_INET, addr, &li->addr); // lan_ipaddr
+        li->subnet.s_addr = htonl(0xFFFFFFFF << (32 - atoi(mask)));
+    }
+
+    foreach(word, nvram_get("wgn_ifnames"), next) {
+        list_for_each_entry(li, list, list) {
+            if (!strcmp(word, li->ifname)) {
+                li->enabled = true;
+                break;
+            }
+        }
+    }
+
+out_free:
+    free(nv);
+
+out_f:
+
+#if defined(NFCMDBG)
+    lan_info_list_dump(list);
+#endif
+
+    return 0;
+}
+
+void lan_list_parse(struct list_head *list)
+{
+  lan_info_init(list);
+#ifdef RTCONFIG_MULTILAN_CFG
+  lan_info_add_sdn(list);
+#endif
 }
 
 char* mac2str(const unsigned char *e, char *a)
@@ -384,18 +507,13 @@ bool is_in_lanv6(struct in6_addr *src)
     }
 
     if(prefix_len < 1 || prefix_len > 127) {
-       nf_printf("wrong prefix lenght %d \n ", prefix_len); 
        return false;
     } 
     if(!inet_pton(AF_INET6, nvram_get("ipv6_prefix"), &prefix)) {
-   
-       nf_printf("can't convert ipv6 prefix into v6 addr - %s \n ", nvram_get("ipv6_prefix")); 
       return false;
     }
-   // nf_printf("is_in_lavn6 prefix_length %d\n", prefix_len);
     for(int i = 0; i< prefix_len/8; i++)
     {    
-        nf_printf("is_in_lanv6 %d %2x<->%2x\n", i, src->s6_addr[i], prefix.s6_addr[i]);
         if (src->s6_addr[i] != prefix.s6_addr[i]) {
             return false;
         }
@@ -405,7 +523,6 @@ bool is_in_lanv6(struct in6_addr *src)
             return false;
     }
 
-    nf_printf("is_in_lanv6 return true\n");
     return true;
 }
 
@@ -420,7 +537,6 @@ bool is_local_link_addr(struct in6_addr *addr)
 bool is_router_v6addr(struct in6_addr *addr)
 {
     struct in6_addr router;
-    nf_printf("router addr: %s\n", nvram_get("ipv6_rtr_addr"));
     if(!strcmp("ipv6pt", nvram_get("ipv6_service")))
             return false;
     if(!inet_pton(AF_INET6, nvram_get("ipv6_rtr_addr"), &router)) 
@@ -584,72 +700,6 @@ bool get_wan_addr(char *ifname, struct in_addr *wan_addr, struct in_addr *wan_ma
     memcpy(wan_mask, &mask, sizeof(struct in_addr));
     printf("ADDR: [%s], MASK: [%s]\n", inet_ntoa(*wan_addr), inet_ntoa(*wan_mask));
 
-
-    return 0;
-}
-
-int lan_info_init(struct list_head *list)
-{
-    lan_info_t *li;
-    char word[64], *next;
-    char *b, *nv, *nvp;
-    char *ifname, *laninfo;
-    char *addr, *mask;
-    char *rulelist;
-
-    li = lan_info_new();
-    list_add_tail(&li->list, list);
-
-    strcpy(li->ifname, "br0");
-    li->enabled = true;
-    inet_pton(AF_INET, nvram_get("lan_ipaddr"), &li->addr);
-    inet_pton(AF_INET, nvram_get("lan_netmask"), &li->subnet);
-
-    // get wireless guest network status
-    if (!nvram_get_int("wgn_enabled"))
-        goto out_f;
-
-    rulelist = nvram_get("wgn_brif_rulelist");
-    if (!rulelist)
-        goto out_f;
-
-    nv = nvp = strdup(rulelist);
-    if (!nv)
-        goto out_free;
-
-    while ((b = strsep(&nvp, "<")) != NULL) {
-        if (!b || !strlen(b)) continue;
-        //fields = vstrsep(b, ">", &ifname, &laninfo);
-        vstrsep(b, ">", &ifname, &laninfo);
-
-        addr = strtok(laninfo, "/");
-        mask = strtok(NULL, "/");
-
-        li = lan_info_new();
-        list_add_tail(&li->list, list);
-
-        strcpy(li->ifname, ifname);
-        inet_pton(AF_INET, addr, &li->addr); // lan_ipaddr
-        li->subnet.s_addr = htonl(0xFFFFFFFF << (32 - atoi(mask)));
-    }
-
-    foreach(word, nvram_get("wgn_ifnames"), next) {
-        list_for_each_entry(li, list, list) {
-            if (!strcmp(word, li->ifname)) {
-                li->enabled = true;
-                break;
-            }
-        }
-    }
-
-out_free:
-    free(nv);
-
-out_f:
-
-#if defined(NFCMDBG)
-    lan_info_list_dump(list);
-#endif
 
     return 0;
 }
@@ -1434,6 +1484,13 @@ void func_client_list()
 
     cli_list_file_parse(&clilist);
 
+    lan_list_free(&lanlist);
+    
+    lan_list_parse(&lanlist);
+
+#if 0
+    lan_info_list_dump(&lanlist);
+#endif
     return;
 }
 
@@ -1963,7 +2020,7 @@ int main(int argc, char *argv[])
     nfcm_check_lan();
 
     // init lan info according to br0/wifi intf
-    lan_info_init(&lanlist);
+    lan_list_parse(&lanlist);
 
 #if defined(CONFIG_ET)
     bcm5301x_age_timeout(10);

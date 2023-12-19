@@ -4505,6 +4505,33 @@ int asus_usb_interface(const char *device_name, const char *action)
 		strcpy(device_type, nvram_safe_get(prefix));
 
 #ifdef RTCONFIG_USB_MODEM
+		vid = strtoul(nvram_safe_get(strcat_r(prefix, "_vid", tmp)), NULL, 16);
+		pid = strtoul(nvram_safe_get(strcat_r(prefix, "_pid", tmp)), NULL, 16);
+
+		usb_dbg("(%s): Remove the usb interface: 0x%4x/0x%4x.\n", device_name, vid, pid);
+
+		if(vid == 0 || pid == 0){
+			usb_dbg("(%s): Skip to unset the temporary usb interface.\n", device_name);
+
+			file_unlock(isLock);
+			return 0;
+		}
+		else
+		if(is_apple_device(0, vid, pid)){
+			if(strstr(device_name, ":1.0")){
+				usb_dbg("(%s): Skip to unset apple temporary interface information.\n", device_name);
+
+				file_unlock(isLock);
+				return 0;
+			}
+			else if(!strstr(device_name, ".0")){
+				usb_dbg("(%s): Skip to unset apple multi-interface information.\n", device_name);
+
+				file_unlock(isLock);
+				return 0;
+			}
+		}
+
 		snprintf(conf_file, sizeof(conf_file), "%s.%s", USB_MODESWITCH_CONF, port_path);
 		unlink(conf_file);
 
@@ -4516,25 +4543,17 @@ int asus_usb_interface(const char *device_name, const char *action)
 				snprintf(buf, sizeof(buf), "%s", nvram_safe_get(strcat_r(prefix, "_act", tmp)));
 
 				// remove the device between adding interface and adding tty.
+				usb_dbg("(%s): Remove the usb serial modules.\n", device_name);
 				modprobe_r("option");
 #if LINUX_KERNEL_VERSION >= KERNEL_VERSION(2,6,36)
 				modprobe_r("usb_wwan");
 #endif
 				modprobe_r("usbserial");
 
+#ifdef RTCONFIG_USB_BECEEM
 				vid = atoi(nvram_safe_get(strcat_r(prefix2, "act_vid", tmp2)));
 				pid = atoi(nvram_safe_get(strcat_r(prefix2, "act_pid", tmp2)));
 
-				usb_dbg("(%s): Remove 0x%04x:0x0%4x...\n", device_name, vid, pid);
-
-				if(is_apple_device(0, vid, pid) && strstr(device_name, ":1.0")){
-					usb_dbg("(%s): Skip to unset device information.\n", device_name);
-
-					file_unlock(isLock);
-					return 0;
-				}
-
-#ifdef RTCONFIG_USB_BECEEM
 				if(is_samsung_dongle(1, vid, pid) || is_gct_dongle(1, vid, pid)){
 					modprobe_r("drxvi314");
 
@@ -4595,7 +4614,23 @@ int asus_usb_interface(const char *device_name, const char *action)
 		file_unlock(isLock);
 		return 0;
 	}
+	usb_dbg("(%s): add the usb interface: 0x%4x/0x%4x.\n", device_name, vid, pid);
 
+	if(is_apple_device(0, vid, pid)){
+		if(strstr(device_name, ":1.0")){
+			usb_dbg("(%s): Skip to set apple temporary interface information.\n", device_name);
+
+			file_unlock(isLock);
+			return 0;
+		}
+		else if(!strstr(device_name, ".0")){
+			usb_dbg("(%s): Skip to set apple multi-interface information.\n", device_name);
+
+			file_unlock(isLock);
+			return 0;
+		}
+	}
+	else
 	// there is no any bounded drivers with Some Sierra dongles in the default state.
 	if(vid == 0x1199 && isStorageInterface(device_name)){
 		if(init_3g_param(port_path, vid, pid)){
@@ -4614,8 +4649,7 @@ int asus_usb_interface(const char *device_name, const char *action)
 			return 0;
 		}
 	}
-#endif
-
+	else
 #ifdef RTCONFIG_INTERNAL_GOBI
 	if(is_gobi_dongle(vid, pid)){
 		if(get_usb_interface_order(device_name) != 2){
@@ -4626,6 +4660,7 @@ int asus_usb_interface(const char *device_name, const char *action)
 	}
 	else
 #endif
+#endif // RTCONFIG_USB_MODEM
 	{
 #ifdef RTCONFIG_USB_PRINTER
 		if (nvram_get_int("usb_printer") && !module_loaded(USBPRINTER_MOD)) {
@@ -4677,7 +4712,8 @@ int asus_usb_interface(const char *device_name, const char *action)
 	}
 
 #ifdef RTCONFIG_USB_MODEM
-	if(!isSerialInterface(device_name, 1, vid, pid)
+	if(!is_apple_device(0, vid, pid)
+			&& !isSerialInterface(device_name, 1, vid, pid)
 			&& !isACMInterface(device_name, 1, vid, pid)
 			&& !isRNDISInterface(device_name, vid, pid)
 			&& !isQMIInterface(device_name)
@@ -4805,7 +4841,10 @@ int asus_usb_interface(const char *device_name, const char *action)
 	}
 	else
 #endif
-	if(is_android_phone(0, vid, pid)){
+	if(is_apple_device(0, vid, pid)){
+		usb_dbg("(%s): do nothing with the Apple device.\n", device_name);
+	}
+	else if(is_android_phone(0, vid, pid)){
 		usb_dbg("(%s): do nothing with the MTP mode.\n", device_name);
 	}
 	else if(isRNDISInterface(device_name, vid, pid)){

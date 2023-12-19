@@ -228,3 +228,11 @@ lav_is_thumbnail_stream(AVStream *s, uint8_t **data, int *size)
 #endif
 	return 0;
 }
+
+static inline void
+lav_register_all(void)
+{
+#if LIBAVFORMAT_VERSION_INT < ((58<<16)+(9<<8)+100)
+	av_register_all();
+#endif
+}

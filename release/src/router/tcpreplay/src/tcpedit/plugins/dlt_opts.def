@@ -1,0 +1,48 @@
+
+flag = {
+	name		= skipl2broadcast;
+	descrip		= "Skip rewriting broadcast/multicast Layer 2 addresses";
+	doc			= <<- EOText
+By default, editing Layer 2 addresses will rewrite 
+broadcast and multicast MAC addresses.	Setting this flag
+will keep broadcast/multicast MAC addresses from being rewritten.
+EOText;
+};
+
+/* 
+ * Allow user to specify output DLT.  The values for this should
+ * match the argument name prefix of your plugin.  For example:
+ * DLT_EN10MB is ethernet, so I called the prefix "enet":
+ * (--enet-src, --enet-dst, --enet-proto)
+ * so the string I should look for here is "enet" too.  It's important
+ * that the prefix you use here is also used as the "name" in the 
+ * tcpeditdlt_plugin_t structure.
+ */
+
+flag = {
+    name        = dlt;
+    descrip     = "Override output DLT encapsulation";
+    arg-type    = string;
+    max         = 1;
+    doc         = <<- EO_DLT_DOC
+By default, no DLT (data link type) conversion will be made.  
+To change the DLT type of the output pcap, select one of the following values:
+@table @bullet
+@item
+@var{enet}
+Ethernet aka DLT_EN10MB
+@item
+@var{hdlc}
+Cisco HDLC aka DLT_C_HDLC
+@item
+@var{jnpr_eth}
+Juniper Ethernet DLT_C_JNPR_ETHER
+@item
+@var{pppserial}
+PPP Serial aka DLT_PPP_SERIAL
+@item
+@var{user}
+User specified Layer 2 header and DLT type
+@end table
+EO_DLT_DOC;
+};

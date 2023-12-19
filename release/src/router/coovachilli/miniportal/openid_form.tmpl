@@ -1,0 +1,28 @@
+
+<div id="openid-label">
+<img id="openid-img" border="0" src="openid.gif">
+<a href="javascript:toggleAuth('openid')">Login with OpenID</a>
+</div>
+
+<div id="openid-form" style="display:none;">
+<p>
+<label for="openid_url">OpenID: </label>
+<input type="text" name="username" id="openid_url" size="18" value="http://"/>
+</p>
+<input type="submit" name="button" value="Login & Accept Terms">&nbsp;&nbsp;
+<input type="button" name="decline" value="Decline Terms"
+    onClick="alert('Then go home!');window.location='$FORM_userurl';">
+
+<p>
+<a href="javascript:toggle('openid-help')">What is OpenID?</a> 
+<div id="openid-help" style="margin: 10px auto 10px auto; text-align: left; width: 500; display:none;">
+
+OpenID is a distributed authentication protocol where you use your Web URL
+as a means of identification. If you already have an OpenID account, perhaps
+at LiveJournal or at MyOpenID, then you can use a URL similar to:<br/>
+<tt style="font-size:small;">http://&lt;username&gt;.livejournal.com/</tt> or
+<tt style="font-size:small;">http://&lt;username&gt;.myopenid.com/</tt>
+</div>
+</p>
+</div>
+

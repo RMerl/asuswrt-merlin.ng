@@ -174,6 +174,16 @@ int is_internet_connect(int unit){
 
 int is_wan_connect(int unit){
 	int wan_state, wan_sbstate, wan_auxstate;
+#ifdef RTCONFIG_BCMARM
+	char prefix[] = "wanXXXXXXXXXX_";
+	int wan_proto = 0;
+
+	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+	wan_proto = get_wan_proto(prefix);
+
+	if(wan_proto == WAN_STATIC)
+		return is_phy_connect2(unit);
+#endif
 
 	if(!is_phy_connect(unit))
 		return 0;
@@ -195,6 +205,15 @@ int is_wan_connect(int unit){
 int is_phy_connect(int unit){
 	char prefix[sizeof("link_wanXXXXXX")], *ptr;
 	int link_wan;
+#ifdef RTCONFIG_BCMARM
+	int wan_proto = 0;
+
+	snprintf(prefix, sizeof(prefix), "wan%d_", unit);
+	wan_proto = get_wan_proto(prefix);
+
+	if(wan_proto == WAN_STATIC)
+		return is_phy_connect2(unit);
+#endif
 
 	link_wan_nvname(unit, prefix, sizeof(prefix));
 
@@ -299,6 +318,7 @@ int get_wan_unit(char *ifname)
 		case WAN_MAPE:
 		case WAN_V6PLUS:
 		case WAN_OCNVC:
+		case WAN_DSLITE:
 #endif
 			if (nvram_match(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)), ifname))
 				return unit;
@@ -351,7 +371,7 @@ char *get_wan_ifname(int unit)
 			nvram_safe_get(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)));
 	} else
 #endif
-#if defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2)
+#if defined(RTAX82_XD6) || defined(RTAX82_XD6S) || defined(XD6_V2) || defined(ET12)
 	if (!strncmp(nvram_safe_get("territory_code"), "CH", 2) &&
 		nvram_match(ipv6_nvname("ipv6_only"), "1"))
 		return nvram_safe_get(strlcat_r(prefix, "ifname", tmp, sizeof(tmp)));
@@ -370,6 +390,7 @@ char *get_wan_ifname(int unit)
 #ifdef RTCONFIG_SOFTWIRE46
 	case WAN_V6PLUS:
 	case WAN_OCNVC:
+	case WAN_DSLITE:
 		if (nvram_pf_get_int(prefix, "s46_hgw_case") >= S46_CASE_MAP_HGW_OFF) {
 			wan_ifname = nvram_safe_get(strlcat_r(prefix, "pppoe_ifname", tmp, sizeof(tmp)));
 			break;
@@ -1024,10 +1045,11 @@ int get_nr_guest_network(int band)
 
 int get_gate_num(void)
 {
-	char prefix[] = "wanXXXXXXXXXX_", link_wan[sizeof("link_wanXXXXXX")];
+	char prefix[] = "wanXXXXXXXXXX_";
 	char wan_ip[32], wan_gate[32];
 	int unit;
 	int gate_num = 0;
+
 	for (unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){ // Multipath
 		snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 		strncpy(wan_ip, nvram_pf_safe_get(prefix, "ipaddr"), 32);
@@ -1037,16 +1059,17 @@ int get_gate_num(void)
 		if(!is_wan_connect(unit))
 			continue;
 
+#ifndef RTCONFIG_BCMARM
 		/* We need to check link_wanX instead of wanX_state_t if this WAN unit is static IP. */
+		char link_wan[sizeof("link_wanXXXXXX")];
+
 		if (nvram_pf_match(prefix, "proto", "static") && dualwan_unit__nonusbif(unit)) {
-			if (unit == WAN_UNIT_FIRST)
-				strlcpy(link_wan, "link_wan", sizeof(link_wan));
-			else
-				snprintf(link_wan, sizeof(link_wan), "link_wan%d", unit);
+			link_wan_nvname(unit, link_wan, sizeof(link_wan));
 
 			if (!nvram_match(link_wan, "1"))
 				continue;
 		}
+#endif
 
 		if(strlen(wan_gate) <= 0 || !strcmp(wan_gate, "0.0.0.0"))
 			continue;

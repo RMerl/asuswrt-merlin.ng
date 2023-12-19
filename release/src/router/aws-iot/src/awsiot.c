@@ -1904,18 +1904,14 @@ void init_basic_data()
 
         int ntp_ready = nvram_get_int("ntp_ready");
 
-        int svc_ready = nvram_get_int("svc_ready");
-
         int link_internet = nvram_get_int("link_internet"); // 2 -> connected
 
-        if((svc_ready == 1) && (ntp_ready == 1) && (link_internet == 2)) {
-            Cdbg(APP_DBG, "waiting svc_ready -> %d, ntp_ready -> %d, link_internet -> %d", svc_ready, ntp_ready, link_internet);
-            LogInfo( ( "waiting svc_ready -> %d, ntp_ready -> %d, link_internet -> %d", svc_ready, ntp_ready, link_internet) );
+        if((ntp_ready == 1) && (link_internet == 2)) {
+            Cdbg(APP_DBG, "waiting ntp_ready -> %d, link_internet -> %d", ntp_ready, link_internet);
             break;
         } else {
             if(ready_count < 3) {
-                // Cdbg(APP_DBG, "waiting svc_ready -> %d, link_internet -> %d, tencent_download_enable -> %d", svc_ready, link_internet, tencent_download_enable);
-                // LogInfo( ( "waiting svc_ready -> %d, link_internet -> %d, tencent_download_enable -> %d", svc_ready, link_internet, tencent_download_enable) );
+                // Cdbg(APP_DBG, "waiting link_internet -> %d, tencent_download_enable -> %d", link_internet, tencent_download_enable);
             }
         }
         sleep(30);

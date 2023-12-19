@@ -1,0 +1,36 @@
+.\" * chilli_script
+.\" * Copyright (C) 2007-2012 David Bird (Coova Technologies)
+.\" * All rights reserved.
+
+.TH chilli_script 1 "May 2010"
+.SH NAME
+chilli_script \-  CoovaChilli Script Utility
+
+.SH SYNOPSIS
+.B chilli_script
+<path-to-binary-config> <program-path> [program-args]
+
+.SH DESCRIPTION
+.B chilli_script
+is a utility that is setuid root such that up/down scripts can be run after reducing
+permissions.
+
+.SH "SEE ALSO"
+.BR chilli(8)
+.BR chilli.conf(5)
+
+.SH NOTES 
+.LP
+
+See
+.I http://www.coova.org/
+for further documentation and community support.
+
+.SH AUTHORS
+
+David Bird <david@coova.com>
+
+Copyright (C) 2006-2010 David Bird (Coova Technologies) All rights reserved.
+
+CoovaChilli is licensed under the GNU General Public License.
+

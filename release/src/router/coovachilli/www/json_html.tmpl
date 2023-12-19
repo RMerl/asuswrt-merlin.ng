@@ -1,0 +1,106 @@
+<div id="Chilli">
+<div id="locationName"></div>
+
+<div id="chilliPage">
+<div id="logonPage" style="display:none;">
+<form onSubmit="return false;" name="logon">
+
+<!--
+<div id="openIDSelect" style="font-size:70%;padding-top:4px;float:right;display:none;">
+<a href="#" onclick="javascript:return openID();"><img border="0" src="CHILLIWWW/www/openid.gif"/></a>
+</div>
+
+<div id="openIDForm"
+style="display:none;background-color:white;position:absolute;padding:10px;border:solid 1px orange">
+OpenID URL: <input style="font-size:60%;" name="username" type="text" id="username" size="30" value="http://"/>
+</div>
+-->
+
+<table id="logonTable" border="0">
+<tr>
+<td colspan="2" style="font-size:120%;">
+<div id="logonMessage" style="font-size:70%;padding-top:4px;">Login:</div>
+</td>
+</tr>
+
+<tr id="usernameRow">
+<td id="usernameLabel"><b>Username</b></td>
+<td><input name="username" type="text" id="username" size="10"/></td>
+</tr>
+<tr id="passwordRow">
+<td id="passwordLabel"><b>Password</b></td>
+<td><input name="password" type="password" id="password" size="10"/></td>
+</tr>
+<tr>
+
+<td colspan="2"><input type="submit" value="Connect" onClick="connect();"/></td>
+
+</tr>	
+<tr id="signUpRow">
+<td id="signUp" colspan="2" style="font-size: 50%">
+Sign up for an account...
+</td>
+</tr>
+</table>		
+</form>
+</div>
+
+<div id="statusPage" style="display:none;">
+<table border="0" id="statusTable" style="padding-top:4px;font-size:70%">
+<tr id="connectRow">
+<td><span id="statusMessage">Connected</span></td>
+<td><a href="#" onClick="return disconnect();">logout</a></td>
+</tr>
+<tr id="sessionIdRow">
+<td id="sessionIdLabel" class="chilliLabel"><b>Session ID</b></td>
+<td id="sessionId" class="chilliValue">Not available</td>
+</tr>
+<tr id="sessionTimeoutRow">
+<td id="sessionTimeoutLabel" class="chilliLabel"><b>Max Session Time</b></td>
+<td id="sessionTimeout" class="chilliValue">Not available</td>
+</tr>
+<tr id="idleTimeoutRow">
+<td id="idleTimeoutLabel" class="chilliLabel"><b>Max Idle Time</b></td>
+<td id="idleTimeout" class="chilliValue">Not available</td>
+</tr>
+<tr id="startTimeRow">
+<td id="startTimeLabel" class="chilliLabel"><b>Start Time</b></td>
+<td id="startTime" class="chilliValue">Not available</td>
+</tr>
+<tr id="sessionTimeRow">
+<td id="sessionTimeLabel" class="chilliLabel"><b>Session Time</b></td>
+<td id="sessionTime" class="chilliValue">Not available</td>
+</tr>
+<tr id="idleTimeRow">
+<td id="idleTimeLabel" class="chilliLabel"><b>Idle Time</b></td>
+<td id="idleTime" class="chilliValue">Not available</td>
+</tr>
+<tr id="inputOctetsRow">
+<td id="inputOctetsLabel" class="chilliLabel"><b>Downloaded</b></td>
+<td id="inputOctets" class="chilliValue">N/A</td>
+</tr>
+<tr id="outputOctetsRow">
+<td id="outputOctetsLabel" class="chilliValueLabel"><b>Uploaded</b></td>
+<td id="outputOctets" class="chilliValue">N/A</td>
+</tr>
+<tr id="originalURLRow">
+<td id="originalURLLabel" class="chilliValueLabel"><b>Original URL</b></td>
+<td id="originalURL" class="chilliValue">N/A</td>
+</tr>
+</table>
+</div>
+
+<div id="waitPage" style="">
+<img src="CHILLIWWW/www/wait.gif"/> Please wait...
+</div>
+
+<div id="errorPage" style="display:none;">
+<span id="errorMessage">Error</span>
+</div>
+</div>
+<!--div id="debugPage" style="display:inline;">
+<textarea id="debugarea" rows="20" cols="60">
+</textarea>
+</div-->
+</div>
+

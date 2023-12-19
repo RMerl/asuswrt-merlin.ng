@@ -1,0 +1,7 @@
+#!/bin/sh
+if [ -f config-local.sh ]; then
+    . ./config-local.sh 
+else
+    [ -f @ETCCHILLI@/defaults ] && . @ETCCHILLI@/defaults
+    [ -f @ETCCHILLI@/config ]   && . @ETCCHILLI@/config
+fi

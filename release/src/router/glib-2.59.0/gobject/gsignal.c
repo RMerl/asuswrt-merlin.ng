@@ -28,6 +28,7 @@
 #include <signal.h>
 
 #include "gsignal.h"
+#include "gstrfuncsprivate.h"
 #include "gtype-private.h"
 #include "gbsearcharray.h"
 #include "gvaluecollector.h"
@@ -1724,7 +1725,7 @@ g_signal_newv (const gchar       *signal_name,
   node->single_va_closure_is_valid = FALSE;
   node->flags = signal_flags & G_SIGNAL_FLAGS_MASK;
   node->n_params = n_params;
-  node->param_types = g_memdup (param_types, sizeof (GType) * n_params);
+  node->param_types = g_memdup2 (param_types, sizeof (GType) * n_params);
   node->return_type = return_type;
   node->class_closure_bsa = NULL;
   if (accumulator)

@@ -1,6 +1,6 @@
 include ../common.mak
 
-CFLAGS += -Os -Wall $(EXTRACFLAGS) -fPIC
+CFLAGS += $(if $(RTCONFIG_DEBUG),-g,-Os) -Wall $(EXTRACFLAGS) -fPIC
 CFLAGS += -I. -I$(TOP)/shared -I$(SRCBASE)/include
 ifeq ($(RTCONFIG_BCMARM),y)
 CFLAGS += -I$(SRCBASE)/shared/bcmwifi/include -DTYPEDEF_FLOAT_T
@@ -35,7 +35,7 @@ install: all
 	@echo " [libletsencrypt] Installing as $(INSTALLDIR)/usr/lib/libletsencrypt.so"
 	@install -d $(INSTALLDIR)/usr/lib
 	@install -m 755 libletsencrypt.so $(INSTALLDIR)/usr/lib
-	@$(STRIP) $(INSTALLDIR)/usr/lib/libletsencrypt.so
+	@$(if $(RTCONFIG_DEBUG),,$(STRIP) $(INSTALLDIR)/usr/lib/libletsencrypt.so)
 
 clean:
 	rm -f *.o *.so *.a .*.depend *.prep

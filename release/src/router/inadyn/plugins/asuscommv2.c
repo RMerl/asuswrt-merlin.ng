@@ -194,7 +194,7 @@ static void make_request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 	size_t dlen = 0;
 	int i;
 
-	/* prepare username (MAC) */
+	/* prepare username (MAC): get from get_ddns_macaddr() */
 	p_tmp = info->creds.username;
 	for (i = 0; i < ETH_ALEN*2; i++) {
 		while (*p_tmp && !isxdigit(*p_tmp))
@@ -202,11 +202,26 @@ static void make_request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 		*p_auth++ = *p_tmp ? toupper(*p_tmp++) : '0';
 	}
 
-	/* split username and password */
+	/* gen username:md5(username) */
 	*p_auth++ = ':';
+#ifdef RTCONFIG_ACCOUNT_BINDING
+	/* DDNS MAC:md5(Lan MAC) */
+	if (is_account_bound() && nvram_match("ddns_replace_status", "1") &&
+		((strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.com") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.com")))
+		|| (strstr(nvram_safe_get("aae_ddnsinfo"), ".asuscomm.cn") && (strstr(nvram_safe_get("ddns_hostname_x"), ".asuscomm.cn"))))) {
+		hmac_md5((unsigned char *)nvram_safe_get("lan_hwaddr"), strlen(nvram_safe_get("lan_hwaddr")), digest);
+		for (i = 0; i < MD5_DIGEST_BYTES; i++)
+			p_auth += sprintf(p_auth, "%02x", digest[i]);
+	} else
+	{
+#endif
+	/* DDNS MAC:md5(DDNS MAC) */
 	hmac_md5((unsigned char *)info->creds.username, strlen(info->creds.username), digest);
 	for (i = 0; i < MD5_DIGEST_BYTES; i++)
 		p_auth += sprintf(p_auth, "%02x", digest[i]);
+#ifdef RTCONFIG_ACCOUNT_BINDING
+	}
+#endif
 
 	/*encode*/
 	base64_encode(NULL, &dlen, (unsigned char *)auth, strlen(auth));

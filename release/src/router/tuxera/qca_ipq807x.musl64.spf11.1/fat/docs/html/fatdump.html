@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html>
+<!-- This is an automatically generated file.  Do not edit.
+   Copyright (c) 2013-2014 Sougata Santra / Tuxera Inc.
+   Copyright (c) 2011 Erik Larsson / Tuxera Inc.
+   -->
+<head>
+  <meta charset="utf-8"/>
+  <style>
+    table.head, table.foot { width: 100%; }
+    td.head-rtitle, td.foot-os { text-align: right; }
+    td.head-vol { text-align: center; }
+    div.Pp { margin: 1ex 0ex; }
+    div.Nd, div.Bf, div.Op { display: inline; }
+    span.Pa, span.Ad { font-style: italic; }
+    span.Ms { font-weight: bold; }
+    dl.Bl-diag > dt { font-weight: bold; }
+    code.Nm, code.Fl, code.Cm, code.Ic, code.In, code.Fd, code.Fn,
+    code.Cd { font-weight: bold; font-family: inherit; }
+  </style>
+  <title>FATDUMP(8)</title>
+</head>
+<body>
+<table class="head">
+  <tr>
+    <td class="head-ltitle">FATDUMP(8)</td>
+    <td class="head-vol">System Manager's Manual</td>
+    <td class="head-rtitle">FATDUMP(8)</td>
+  </tr>
+</table>
+<div class="manual-text">
+<h1 class="Sh" title="Sh" id="NAME"><a class="permalink" href="#NAME">NAME</a></h1>
+fatdump - Efficiently dump the contents of a FAT volume.
+<h1 class="Sh" title="Sh" id="SYNOPSIS"><a class="permalink" href="#SYNOPSIS">SYNOPSIS</a></h1>
+<b>fatdump</b> [ <i>options</i>] <i>device|image</i>
+<h1 class="Sh" title="Sh" id="DESCRIPTION"><a class="permalink" href="#DESCRIPTION">DESCRIPTION</a></h1>
+<b>fatdump</b> will efficiently extract all relevant metadata and (optionally)
+  data from an FAT volume and dump it to standard output. It works at disk
+  sector level and copies only the used data. Unused disk space becomes zero.
+<div class="Pp"></div>
+<b>fatdump</b> can be useful to make backups, an exact snapshot of a FAT
+  filesystem to restore later on, or for developers to troubleshoot/investigate
+  users' issues using the clone without the risk of destroying the original
+  filesystem.
+<h1 class="Sh" title="Sh" id="OPTIONS"><a class="permalink" href="#OPTIONS">OPTIONS</a></h1>
+Below is a summary of all the options that <b>fatdump</b> accepts. Nearly all
+  options have two equivalent names. The short name is preceded by <b>-</b> and
+  the long name is preceded by <b>-- .</b>
+<dl class="Bl-tag">
+  <dt><b>-d</b>, <b>--dirmetadata</b></dt>
+  <dd>Clone <b>ONLY METADATA</b> (for FAT experts). This command is similar to
+      the <b>-m</b>/<b>--metadata</b> option but uses an exclusive rather than
+      inclusive algorithm, which may reduce image size on corrupted volumes with
+      a lot of unreachable data, but will then omit data that could possibly be
+      useful for debugging.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-m</b>, <b>--metadata</b></dt>
+  <dd>Clone <b>ONLY METADATA</b> (for FAT experts). A metadata dump contains all
+      of the FAT volume structures but none of the user data, i.e. all file
+      content will be omitted but the directory structure will be preserved. The
+      output from this command will be relatively small if compressed.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-n</b>, <b>--ntfsclone-image</b></dt>
+  <dd>Emit an ntfsclone packed image (special image format) as output. This
+      saves space since all the non-allocated regions (and in the case of '-m'
+      /'--metadata' all the non-metadata regions) will not be written out
+      explicitly, but instead marked as a 'hole' in the image.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-q</b>, <b>--quiet</b></dt>
+  <dd>Suppress non-error output on stderr.</dd>
+</dl>
+<dl class="Bl-tag">
+  <dt><b>-f</b>, <b>--force</b></dt>
+  <dd>Force a clone, ignoring errors from cluster accounting.</dd>
+</dl>
+<h1 class="Sh" title="Sh" id="EXIT_CODES"><a class="permalink" href="#EXIT_CODES">EXIT
+  CODES</a></h1>
+The exit code is 0 on success, non-zero otherwise.
+<h1 class="Sh" title="Sh" id="EXAMPLES"><a class="permalink" href="#EXAMPLES">EXAMPLES</a></h1>
+Dump FAT file system on /dev/sda1 to a compressed metadata image:
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>fatdump /dev/sda1 | bzip2 &gt; sda1.img.bz2</b>
+<div class="Pp"></div>
+</div>
+Dump FAT file system metadata on /dev/sda1 to a compressed metadata image:
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>fatdump -m /dev/sda1 | bzip2 &gt; sda1.img.bz2</b>
+<div class="Pp"></div>
+</div>
+Dump a FAT volume to a remote host, using ssh. Please note that ssh may ask for
+  a password!
+<div class="Bd-indent">
+<div class="Pp"></div>
+<b>fatdump /dev/sda1 | bzip2 | ssh host 'cat &gt; sda1.img.bzip2'</b>
+<div class="Pp"></div>
+</div>
+<h1 class="Sh" title="Sh" id="PLEASE_NOTE"><a class="permalink" href="#PLEASE_NOTE">PLEASE
+  NOTE</a></h1>
+<b>fatdump</b> currently does not support FAT12 volumes.
+<h1 class="Sh" title="Sh" id="KNOWN_ISSUES"><a class="permalink" href="#KNOWN_ISSUES">KNOWN
+  ISSUES</a></h1>
+There are no known problems with <b>fatdump</b>. If you think you have found a
+  problem then please send an email describing it to fat-support@tuxera.com.
+<h1 class="Sh" title="Sh" id="AUTHORS"><a class="permalink" href="#AUTHORS">AUTHORS</a></h1>
+<b>fatdump</b> was written by
+<div class="Bd-indent">Erik Larsson, Tuxera Inc.
+<div>&#x00A0;</div>
+Sougata Santra, Tuxera Inc.</div>
+<h1 class="Sh" title="Sh" id="AVAILABILITY"><a class="permalink" href="#AVAILABILITY">AVAILABILITY</a></h1>
+<b>fatdump</b> is part of the <b>Tuxera FAT</b> package.
+<h1 class="Sh" title="Sh" id="SEE_ALSO"><a class="permalink" href="#SEE_ALSO">SEE
+  ALSO</a></h1>
+<b>fatdebug</b>(8)</div>
+<table class="foot">
+  <tr>
+    <td class="foot-date">June 2013</td>
+    <td class="foot-os">Tuxera TFATprogs 3017.7.17.3</td>
+  </tr>
+</table>
+</body>
+</html>

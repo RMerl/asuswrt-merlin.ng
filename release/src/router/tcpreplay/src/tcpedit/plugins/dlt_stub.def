@@ -1,0 +1,14 @@
+#include dlt_opts.def
+
+/* Add your plugin option definitions here. */
+#include dlt_en10mb/en10mb_opts.def
+#include dlt_hdlc/hdlc_opts.def
+#include dlt_user/user_opts.def
+#include dlt_raw/raw_opts.def
+#include dlt_null/null_opts.def
+#include dlt_loop/loop_opts.def
+#include dlt_linuxsll/linuxsll_opts.def
+#include dlt_ieee80211/ieee80211_opts.def
+#include dlt_radiotap/radiotap_opts.def
+#include dlt_jnpr_ether/jnpr_ether_opts.def
+#include dlt_pppserial/pppserial_opts.def

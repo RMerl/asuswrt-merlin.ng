@@ -1,0 +1,348 @@
+<? # -*- mode: shell-script -*-
+# Copyright (C) 2009-2012 David Bird (Coova Technologies) <support@coova.com>
+# 
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU General Public License as published by
+# the Free Software Foundation, either version 3 of the License, or
+# (at your option) any later version.
+#  
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU General Public License for more details.
+#  
+# You should have received a copy of the GNU General Public License
+# along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+. ./config.sh
+
+http_header
+
+HS_LATITUDE=${HS_LATITUDE:-0}
+HS_LONGITUDE=${HS_LONGITUDE:-0}
+HS_ADDRESS=$HS_LOC_NAME
+
+js=$(cat<<EOF
+    <link href="http://www.google.com/uds/css/gsearch.css" rel="stylesheet" type="text/css"/>
+    <style type="text/css">
+
+table.gsc-search-box {
+  width: 250px;
+}
+
+    p {
+      margin-top: 0;
+      margin-bottom: 1em;
+    }
+
+    #search {
+      margin-bottom: 5px;
+    }
+
+    #searchwell {
+      width : 200px;
+    }
+
+    #searchwell .unselected {
+      padding-left: 18px;
+      padding-top: 1px;
+      background-image: url("http://labs.google.com/ridefinder/images/mm_20_yellow.png");
+      background-repeat: no-repeat;
+      background-position: top left;
+    }
+
+    .unselected .gs-watermark {
+      display: none;
+    }
+
+    #searchwell .select {
+      margin-bottom: 1em;
+    }
+
+    .unselected .select {
+      cursor: pointer;
+      text-decoration: underline;
+      color: #7777cc;
+    }
+
+    #selected {
+      margin-top: 1em;
+    }
+
+    #selected .gs-result {
+      margin-bottom: 1em;
+    }
+
+    #selected .gs-result {
+      padding-left: 30px;
+      padding-top: 3px;
+      background-image: url("http://www.google.com/mapfiles/icon.png");
+      background-repeat: no-repeat;
+      background-position: top left;
+    }
+
+    </style>
+    <script type="text/javascript">
+       var key = "ABQIAAAA9AmhJsQPIdZ7_R1W_XSzWxQSX_hJND_XrRzI7xOmOi_61xIDxhS12gOHb6OU-zyrKkSGz2qzb4lGYg";
+       if (window.location.protocol == "https:") 
+         key = "ABQIAAAA9AmhJsQPIdZ7_R1W_XSzWxQfcSPz4wybW8TlNnqv9omxVgPolRRSTIluZne_zQkjaHRnYCUEKrvi6g";
+       document.write("<"+"script src='http://maps.google.com/maps?file=api&amp;v=2&amp;key=" + 
+         key + "' type='text/javascript'>"+"<"+"/"+"script>");
+    </script>
+    <script src="http://www.google.com/uds/api?file=uds.js&amp;v=1.0" type="text/javascript"></script>
+    <script type="text/javascript">
+
+    //<![CDATA[
+    
+    var geocoder = new GClientGeocoder();
+    var lat = $HS_LATITUDE;
+    var lng = $HS_LONGITUDE;
+    var addr = "$HS_ADDRESS";
+    var place = null;
+    var locAddr = null;
+    var locMarker = null;
+    var map = null;
+    var zoom = 14;
+    var localSearch;
+    var searchForm;
+    var selectedResults = [];
+    var currentResults = [];
+
+    var gSmallIcon = new GIcon();
+    gSmallIcon.image = "http://labs.google.com/ridefinder/images/mm_20_yellow.png";
+    gSmallIcon.shadow = "http://labs.google.com/ridefinder/images/mm_20_shadow.png";
+    gSmallIcon.iconSize = new GSize(12, 20);
+    gSmallIcon.shadowSize = new GSize(22, 20);
+    gSmallIcon.iconAnchor = new GPoint(6, 20);
+    gSmallIcon.infoWindowAnchor = new GPoint(5, 1);
+
+    function showAddress(address) {
+       geocoder.getLatLng(address, function(point) {
+           if (!point) {
+  	       alert(address + " not found");
+           } else {
+	       map.setCenter(point, 13);
+	       var marker = new GMarker(point);
+	       map.addOverlay(marker);
+	       marker.openInfoWindowHtml(address);
+	   } } ); 
+    }
+
+   function infoHtml() {
+      return (place != null ? place.address : addr);
+   }
+
+function newMarker() {
+  if (lat == 0) return null;
+
+  point = new GLatLng(lat, lng);
+
+  map.setCenter(point, zoom);
+  
+  marker = new GMarker(point);
+  
+  map.addOverlay(marker);
+  marker.openInfoWindowHtml(infoHtml());
+  return marker;
+}
+
+function newPlaceMarker() {
+  if (place == null) return;
+
+  lat = place.Point.coordinates[1];
+  lng = place.Point.coordinates[0];
+
+  marker = newMarker();
+
+  GEvent.addListener(marker, "click", function() {
+                       map.setCenter(marker.getPoint(), zoom);
+		       marker.openInfoWindowHtml(infoHtml());
+		     });
+
+  return marker;
+}
+
+function addAddressToMap(response) {
+  map.clearOverlays();
+  if (locMarker != null) map.addOverlay(locMarker);
+  if (!response || response.Status.code != 200) {
+  } else {
+    place = response.Placemark[0];
+    newPlaceMarker();
+  }
+}
+
+function newMap() {
+   if (GBrowserIsCompatible()) {
+     map = new GMap2(document.getElementById("themap"));
+     map.addControl(new GSmallMapControl());
+     map.addControl(new GMapTypeControl());
+
+   }
+ }
+
+ function showLatLng() {
+   var m = zoom;
+   var l = lat;
+   if (l == 0) { l = 32; m = 1; }
+   map.setCenter(new GLatLng(l, lng), m);
+ }
+
+ function find() {
+    var v = document.getElementById("address").value;
+    if (v == '') return false;
+    addr = v;
+    geocoder.getLocations(addr, addAddressToMap);
+    return false;
+  }
+
+  function CaptureForm(searchForm) {
+    localSearch.execute(searchForm.input.value);
+    return false;
+  }
+
+  function LocalResult(result) {
+      this.result_ = result;
+      this.resultNode_ = this.unselectedHtml();
+      document.getElementById("searchwell").appendChild(this.resultNode_);
+      map.addOverlay(this.marker(gSmallIcon));
+    }
+
+
+  function onLocalSearch() {
+      if (!localSearch.results) return;
+      var searchWell = document.getElementById("searchwell");
+
+      // Clear the map and the old search well
+      searchWell.innerHTML = "<b>" + searchForm.input.value + "</b>:<br>";
+      for (var i = 0; i < currentResults.length; i++) {
+        if (!currentResults[i].selected()) {
+          map.removeOverlay(currentResults[i].marker());
+        }
+      }
+
+      currentResults = [];
+      for (var i = 0; i < localSearch.results.length; i++) {
+        currentResults.push(new LocalResult(localSearch.results[i]));
+      }
+
+      var attribution = localSearch.getAttribution();
+      if (attribution) {
+        document.getElementById("searchwell").appendChild(attribution);
+      }
+
+      // move the map to the first result
+      var first = localSearch.results[0];
+      map.panTo(new GPoint(parseFloat(first.lng), parseFloat(first.lat)));
+    }
+
+    function load() {
+       if (map == null) newMap();
+       locMarker = newMarker();
+       if (locMarker != null) {   
+         locAddr = addr;
+         GEvent.addListener(locMarker, "click", function() {
+                        map.setCenter(locMarker.getPoint(), zoom);
+		        locMarker.openInfoWindowHtml(locAddr);
+         });
+         locMarker.openInfoWindowHtml(locAddr);
+      }
+      searchForm = new GSearchForm(false, document.getElementById("searchform"));
+      searchForm.setOnSubmitCallback(null, CaptureForm);
+      searchForm.input.focus();
+      localSearch = new GlocalSearch();
+      localSearch.setCenterPoint(new GPoint(parseFloat(lng), parseFloat(lat)));
+      localSearch.setSearchCompleteCallback(null, onLocalSearch);
+      searchForm.execute("places of interest");
+    }
+
+    function resetMap() {
+        map.clearOverlays();
+        addr = locAddr;
+        if (locMarker != null) {
+          map.addOverlay(locMarker);
+          p = locMarker.getPoint();
+          lat = p.lat();
+          lng = p.lng();
+        }
+        showLatLng();
+        if (locMarker != null) 
+          locMarker.openInfoWindowHtml(locAddr);
+    }
+
+    function unload() {
+    	map = null;
+    	GUnload();
+    }
+
+
+    // Returns the GMap marker for this result, creating it with the given
+    // icon if it has not already been created.
+    LocalResult.prototype.marker = function(opt_icon) {
+      if (this.marker_) return this.marker_;
+      var marker = new GMarker(new GLatLng(parseFloat(this.result_.lat),
+                                         parseFloat(this.result_.lng)),
+                               opt_icon);
+      GEvent.bind(marker, "click", this, function() {
+        marker.openInfoWindow(this.selected() ? this.selectedHtml() :
+                                                this.unselectedHtml());
+      });
+      this.marker_ = marker;
+      return marker;
+    }
+
+    // "Saves" this result if it has not already been saved
+    LocalResult.prototype.select = function() {
+      if (!this.selected()) {
+        this.selected_ = true;
+
+        // Remove the old marker and add the new marker
+        map.removeOverlay(this.marker());
+        this.marker_ = null;
+        map.addOverlay(this.marker(G_DEFAULT_ICON));
+
+        // Add our result to the saved set
+//        document.getElementById("selected").appendChild(this.selectedHtml());
+        // Remove the old search result from the search well
+//        this.resultNode_.parentNode.removeChild(this.resultNode_);
+      }
+    }
+
+    // Returns the HTML we display for a result before it has been "saved"
+    LocalResult.prototype.unselectedHtml = function() {
+      var container = document.createElement("div");
+      container.className = "unselected";
+      container.appendChild(this.result_.html.cloneNode(true));
+      var saveDiv = document.createElement("div");
+      saveDiv.className = "select";
+      saveDiv.innerHTML = "Save this location";
+      GEvent.bindDom(saveDiv, "click", this, function() {
+        map.closeInfoWindow();
+        this.select();
+        selectedResults.push(this);
+      });
+      container.appendChild(saveDiv);
+      return container;
+    }
+
+    // Returns the HTML we display for a result after it has been "saved"
+    LocalResult.prototype.selectedHtml = function() {
+      return this.result_.html.cloneNode(true);
+    }
+
+    // Returns true if this result is currently "saved"
+    LocalResult.prototype.selected = function() {
+      return this.selected_;
+    }
+
+    //]]>
+    </script>
+EOF
+);
+
+   header "$js" ' onload="load()" onunload="unload()"'
+
+   uamfile "map" 1 
+
+   footer
+?>

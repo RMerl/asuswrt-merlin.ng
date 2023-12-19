@@ -253,10 +253,9 @@ int lookup_domain(char *domain, int flags, int *lowout, int *highout)
   if (highout)
     *highout = nhigh;
 
-  /* qlen == -1 when we failed to match even an empty query, if there are no default servers. */
-  if (nlow == nhigh || qlen == -1)
+  if (nlow == nhigh)
     return 0;
-  
+
   return 1;
 }
 

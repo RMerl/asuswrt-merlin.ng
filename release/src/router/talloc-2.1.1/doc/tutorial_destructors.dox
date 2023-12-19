@@ -1,0 +1,82 @@
+/**
+@page libtalloc_destructors Chapter 4: Using destructors
+
+@section destructors Using destructors
+
+Destructors are well known methods in the world of object oriented programming.
+A destructor is a method of an object that is automatically run when the object
+is destroyed. It is usually used to return resources taken by the object back to
+the system (e.g. closing file descriptors, terminating connection to a database,
+deallocating memory).
+
+With talloc we can take the advantage of destructors even in C. We can easily
+attach our own destructor to a talloc context. When the context is freed, the
+destructor will run automatically.
+
+To attach/detach a destructor to a talloc context use: talloc_set_destructor().
+
+@section destructors-example Example
+
+Imagine that we have a dynamically created linked list. Before we deallocate an
+element of the list, we need to make sure that we have successfully removed it
+from the list. Normally, this would be done by two commands in the exact order:
+remove it from the list and then free the element. With talloc, we can do this
+at once by setting a destructor on the element which will remove it from the
+list and talloc_free() will do the rest.
+
+The destructor would be:
+
+@code
+int list_remove(void *ctx)
+{
+    struct list_el *el = NULL;
+    el = talloc_get_type_abort(ctx, struct list_el);
+    /* remove element from the list */
+}
+@endcode
+
+GCC version 3 and newer can check for the types during the compilation. So if
+it is our major compiler, we can use a more advanced destructor:
+
+@code
+int list_remove(struct list_el *el)
+{
+    /* remove element from the list */
+}
+@endcode
+
+Now we will assign the destructor to the list element. We can do this directly
+in the function that inserts it.
+
+@code
+struct list_el* list_insert(TALLOC_CTX *mem_ctx,
+                            struct list_el *where,
+                            void *ptr)
+{
+  struct list_el *el = talloc(mem_ctx, struct list_el);
+  el->data = ptr;
+  /* insert into list */
+
+  talloc_set_destructor(el, list_remove);
+  return el;
+}
+@endcode
+
+Because talloc is a hierarchical memory allocator, we can go a step further and
+free the data with the element as well:
+
+@code
+struct list_el* list_insert_free(TALLOC_CTX *mem_ctx,
+                                 struct list_el *where,
+                                 void *ptr)
+{
+  struct list_el *el = NULL;
+  el = list_insert(mem_ctx, where, ptr);
+
+  talloc_steal(el, ptr);
+
+  return el;
+}
+@endcode
+
+*/

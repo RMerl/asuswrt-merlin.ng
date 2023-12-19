@@ -1,0 +1,109 @@
+/**
+@page libtalloc_dts Chapter 3: Dynamic type system
+
+@section dts Dynamic type system
+
+Generic programming in the C language is very difficult. There is no inheritance
+nor templates known from object oriented languages. There is no dynamic type
+system. Therefore, generic programming in this language is usually done by
+type-casting a variable to <code>void*</code> and transferring it through
+a generic function to a specialized callback as illustrated on the next listing.
+
+@code
+void generic_function(callback_fn cb, void *pvt)
+{
+  /* do some stuff and call the callback */
+  cb(pvt);
+}
+
+void specific_callback(void *pvt)
+{
+  struct specific_struct *data;
+  data = (struct specific_struct*)pvt;
+  /* ... */
+}
+
+void specific_function()
+{
+  struct specific_struct data;
+  generic_function(callback, &data);
+}
+@endcode
+
+Unfortunately, the type information is lost as a result of this type cast. The
+compiler cannot check the type during the compilation nor are we able to do it
+at runtime. Providing an invalid data type to the callback will result in
+unexpected behaviour (not necessarily a crash) of the application. This mistake
+is usually hard to detect because it is not the first thing which comes the
+mind.
+
+As we already know, every talloc context contains a name. This name is available
+at any time and it can be used to determine the type of a context even if we
+lose the type of a variable.
+
+Although the name of the context can be set to any arbitrary string, the best
+way of using it to simulate the dynamic type system is to set it directly to the
+type of the variable.
+
+It is recommended to use one of talloc() and talloc_array() (or its
+variants) to create the context as they set its name to the name of the
+given type automatically.
+
+If we have a context with such as a name, we can use two similar functions that
+do both the type check and the type cast for us:
+
+- talloc_get_type()
+- talloc_get_type_abort()
+
+@section dts-examples Examples
+
+The following example will show how generic programming with talloc is handled -
+if we provide invalid data to the callback, the program will be aborted. This
+is a sufficient reaction for such an error in most applications.
+
+@code
+void foo_callback(void *pvt)
+{
+  struct foo *data = talloc_get_type_abort(pvt, struct foo);
+  /* ... */
+}
+
+int do_foo()
+{
+  struct foo *data = talloc_zero(NULL, struct foo);
+  /* ... */
+  return generic_function(foo_callback, data);
+}
+@endcode
+
+But what if we are creating a service application that should be running for the
+uptime of a server, we may want to abort the application during the development
+process (to make sure the error is not overlooked) and try to recover from the
+error in the customer release. This can be achieved by creating a custom abort
+function with a conditional build.
+
+@code
+void my_abort(const char *reason)
+{
+  fprintf(stderr, "talloc abort: %s\n", reason);
+#ifdef ABORT_ON_TYPE_MISMATCH
+  abort();
+#endif
+}
+@endcode
+
+The usage of talloc_get_type_abort() would be then:
+
+@code
+talloc_set_abort_fn(my_abort);
+
+TALLOC_CTX *ctx = talloc_new(NULL);
+char *str = talloc_get_type_abort(ctx, char);
+if (str == NULL) {
+  /* recovery code */
+}
+/* talloc abort: ../src/main.c:25: Type mismatch:
+   name[talloc_new: ../src/main.c:24] expected[char] */
+@endcode
+
+*/

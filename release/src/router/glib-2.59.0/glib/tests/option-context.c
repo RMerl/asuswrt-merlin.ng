@@ -27,6 +27,8 @@
 #include <string.h>
 #include <locale.h>
 
+#include "gstrfuncsprivate.h"
+
 static GOptionEntry main_entries[] = {
   { "main-switch", 0, 0,
     G_OPTION_ARG_NONE, NULL,
@@ -256,7 +258,7 @@ join_stringv (int argc, char **argv)
 static char **
 copy_stringv (char **argv, int argc)
 {
-  return g_memdup (argv, sizeof (char *) * (argc + 1));
+  return g_memdup2 (argv, sizeof (char *) * (argc + 1));
 }
 
 static void
@@ -2318,7 +2320,7 @@ test_group_parse (void)
   g_option_context_add_group (context, group);
 
   argv = split_string ("program --test arg1 -f arg2 --group-test arg3 --frob arg4 -z arg5", &argc);
-  orig_argv = g_memdup (argv, (argc + 1) * sizeof (char *));
+  orig_argv = g_memdup2 (argv, (argc + 1) * sizeof (char *));
 
   retval = g_option_context_parse (context, &argc, &argv, &error);
 

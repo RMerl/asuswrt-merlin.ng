@@ -2023,8 +2023,14 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 			link_wan_nvname(wan_unit, wired_link_nvram, sizeof(wired_link_nvram));
 
 		if((ptr = nvram_get(wired_link_nvram)) == NULL || strlen(ptr) <= 0 || link_wan[wan_unit] != atoi(ptr)){
+			if(link_wan[wan_unit] == 1 && get_wan_state(wan_unit) == 2 && get_wan_auxstate(wan_unit) != 1){
+				link_changed[wan_unit] = 0;
+				link_setup[wan_unit] = 0;
+			}
+			else
+				link_changed[wan_unit] = 1;
+
 			if(link_wan[wan_unit]){
-//_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, CONNED);
 				nvram_set_int(wired_link_nvram, CONNED);
 
 				record_wan_state_nvram(wan_unit, -1, -1, WAN_AUXSTATE_NONE);
@@ -2033,18 +2039,10 @@ _dprintf("# wanduck(%d): if_wan_phyconnected: x_Setting=%d, link_modem=%d, sim_s
 					add_multi_routes(0, -1);
 			}
 			else{
-//_dprintf("# wanduck(%d): set %s=%d.\n", wan_unit, wired_link_nvram, DISCONN);
 				nvram_set_int(wired_link_nvram, DISCONN);
 
 				record_wan_state_nvram(wan_unit, WAN_STATE_DISCONNECTED, -1, WAN_AUXSTATE_NOPHY);
 			}
-
-			if(link_wan[wan_unit] == 1 && get_wan_state(wan_unit) == 2){
-				link_changed[wan_unit] = 0;
-				link_setup[wan_unit] = 0;
-			}
-			else
-				link_changed[wan_unit] = 1;
 		}
 		else
 			link_changed[wan_unit] = 0;
@@ -3173,6 +3171,10 @@ int switch_wan_line(const int wan_unit, const int restart_other){
 		for(unit = WAN_UNIT_FIRST; unit < WAN_UNIT_MAX; ++unit){
 			if(unit == wan_unit)
 				continue;
+#ifdef RTCONFIG_DSL
+			else if (get_dualwan_by_unit(unit) == WANS_DUALWAN_IF_DSL)
+				continue;
+#endif
 
 			snprintf(prefix, sizeof(prefix), "wan%d_", unit);
 
@@ -3423,6 +3425,12 @@ int wanduck_main(int argc, char *argv[]){
 	else
 #endif
 	if(is_router_mode() && !strcmp(dualwan_mode, "lb")){
+		if(wandog_delay > 0){
+			_dprintf("wanduck: 1st delay %d seconds...\n", wandog_delay);
+			sleep(wandog_delay);
+			_dprintf("wanduck: end of delay.\n");
+		}
+
 		cross_state = DISCONN;
 		for(wan_unit = WAN_UNIT_FIRST; wan_unit < WAN_UNIT_MAX; ++wan_unit){
 			if(get_dualwan_by_unit(wan_unit) == WANS_DUALWAN_IF_NONE)
@@ -3463,6 +3471,7 @@ int wanduck_main(int argc, char *argv[]){
 			_dprintf("wanduck: 1st delay %d seconds...\n", wandog_delay);
 			sleep(wandog_delay);
 			delay_detect = 0;
+			_dprintf("wanduck: end of delay.\n");
 		}
 
 		// To check the phy connection of the standby line.
@@ -3542,7 +3551,9 @@ _dprintf("wanduck(%d)(first detect start): state %d, state_old %d, changed %d, w
 #else
 		if(sw_mode == SW_MODE_REPEATER)
 #endif
+		{
 			record_conn_status(current_wan_unit);
+		}
 #endif
 
 		if(sw_mode == SW_MODE_AP){
@@ -3883,6 +3894,10 @@ _dprintf("wanduck(%d): decide start_wan_if or stop_wan_if...\n", wan_unit);
 					if(get_disconn_count(wan_unit) >= max_disconn_count[wan_unit]){
 						set_disconn_count(wan_unit, S_IDLE);
 
+						char nv_link_wan[16];
+						link_wan_nvname(wan_unit, nv_link_wan, sizeof(nv_link_wan));
+_dprintf("\n# wanduck(%d): state=(%d %d %d), %s=%d, var link_wan=%d.\n", wan_unit, get_wan_state(wan_unit), get_wan_sbstate(wan_unit), get_wan_auxstate(wan_unit), nv_link_wan, nvram_get_int(nv_link_wan), link_wan[wan_unit]);
+
 #ifdef RTCONFIG_USB_MODEM
 						if(dualwan_unit__usbif(wan_unit)){
 							if((modem_unit = get_modemunit_by_type(get_dualwan_by_unit(wan_unit))) == MODEM_UNIT_NONE){
@@ -3931,6 +3946,7 @@ _dprintf("wanduck(%d)(lb change): state %d, state_old %d, changed %d, cross_stat
 				_dprintf("wanduck: FO: delay %d seconds...\n", wandog_delay_rpt);
 				sleep(wandog_delay_rpt);
 				delay_detect = 0;
+				_dprintf("wanduck: end of delay.\n");
 			}
 
 			// To check the phy connection of the standby line.
@@ -4099,6 +4115,7 @@ _dprintf("wanduck(%d)(fo change): state %d, state_old %d, changed %d, wan_state 
 				_dprintf("wanduck: FB: delay %d seconds...\n", wandog_delay_rpt);
 				sleep(wandog_delay_rpt);
 				delay_detect = 0;
+				_dprintf("wanduck: end of delay.\n");
 			}
 
 			// To check the phy connection of the standby line.
@@ -4861,6 +4878,9 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 #ifdef RTCONFIG_USB_MULTIMODEM
 					&& (dualwan_unit__nonusbif(other_wan_unit) || link_wan[other_wan_unit])
 #endif
+#ifdef RTCONFIG_DSL
+					&& (link_wan[other_wan_unit])
+#endif
 					&& (get_disconn_count(current_wan_unit) >= max_disconn_count[current_wan_unit]
 #ifdef RTCONFIG_USB_MODEM
 							|| (dualwan_unit__usbif(current_wan_unit) && !link_wan[current_wan_unit])
@@ -4910,6 +4930,11 @@ _dprintf("nat_rule: start_nat_rules 6.\n");
 _dprintf("nat_rule: stop_nat_rules 7.\n");
 				nat_state = stop_nat_rules();
 			}
+#ifdef RTCONFIG_AUTO_WANPORT
+			if(link_wan[current_wan_unit] == 0 && is_auto_wanport_enabled() == 2){
+				restore_auto_wanport();
+			}
+#endif
 
 #if defined(RTCONFIG_HND_ROUTER_AX) || defined(RTCONFIG_LANWAN_LED) || defined(RTCONFIG_WANRED_LED) || defined(RTCONFIG_FAILOVER_LED)
 			update_wan_leds(current_wan_unit, link_wan[current_wan_unit]);
@@ -4956,7 +4981,11 @@ _dprintf("nat_rule: stop_nat_rules 7.\n");
 				handle_wan_line(other_wan_unit, rule_setup);
 				switch_wan_line(other_wan_unit, 0);
 			}
-			else if(conn_state[other_wan_unit] == PHY_RECONN){
+			else if(conn_state[other_wan_unit] == PHY_RECONN
+#ifdef RTCONFIG_DSL
+				&& other_wan_unit != wan_primary_ifunit()	//bypass wan_line just switched in this loop
+#endif
+			){
 				_dprintf("\n# wanduck(fail-back): Try to prepare the backup line.\n");
 				snprintf(cmd, sizeof(cmd), "restart_wan_if %d", other_wan_unit);
 				notify_rc(cmd);

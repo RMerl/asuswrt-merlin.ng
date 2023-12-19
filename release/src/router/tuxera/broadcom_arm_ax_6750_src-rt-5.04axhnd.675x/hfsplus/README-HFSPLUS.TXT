@@ -104,4 +104,4 @@ Tuxera's engineers address the issue:
 
 Thank you.
 
-Copyright (c) 2010-2022 Tuxera Inc. All rights reserved.
+Copyright (c) 2010-2023 Tuxera Inc. All rights reserved.

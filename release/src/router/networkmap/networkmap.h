@@ -89,6 +89,7 @@ enum
 #define CLIENTLIST_FILE_LOCK         "clientlist"
 #define CLIENT_LIST_JSON_PATH        "/tmp/clientlist.json"
 #define BRCTL_TABLE_PATH             "/tmp/nmp_brctl_table"
+#define ASUS_DEVICE_JSON_FILE        "/tmp/asus_device.json"
 
 #define NCL_LIMIT		14336   //database limit to 14KB to avoid UI glitch
 
@@ -297,6 +298,8 @@ void check_clientlist_offline(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab
 int check_wireless_clientlist(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
 
 void check_brctl_mac_online(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab);
+
+int check_asus_device(CLIENT_DETAIL_INFO_TABLE *p_client_detail_info_tab, const int i);
 
 void network_ip_scan();
 

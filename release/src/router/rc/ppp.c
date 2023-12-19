@@ -141,6 +141,9 @@ ipup_main(int argc, char **argv)
 	if ((value = getenv("DNS2")))
 		snprintf(buf + strlen(buf), sizeof(buf) - strlen(buf), "%s%s", *buf ? " " : "", value);
 
+	// always backup received dns
+	nvram_set(strlcat_r(prefix, "dns_r", tmp, sizeof(tmp)), buf);
+
 	/* empty DNS means they either were not requested or peer refused to send them.
 	 * for this case static DNS can be used, if they are configured */
 	if (strlen(buf) == 0 && !nvram_get_int(strcat_r(prefix, "dnsenable_x", tmp)))

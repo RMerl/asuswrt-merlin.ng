@@ -214,6 +214,7 @@ function getInterface(){
 		'2.4G5H6GSmartCommect': [['1', '2.4 GHz/5 GHz-2/6 GHz', '1'], ['0', '5 GHz-1', '0']],
 		'2.4G5L6GSmartCommect': [['0', '2.4 GHz/5 GHz-1/6 GHz', '0'], ['1', '5 GHz-2', '1']],
 		'2.4G5L5HSmartCommect': [['0', '2.4 GHz/5 GHz-1/5 GHz-2', '0'], ['2', '6 GHz', '2']],
+		'5L5HSmartCommect': [['0', '5 GHz-1/5 GHz-2', '0'], ['3', '2.4 GHz', '3'], ['2', '6 GHz', '2']],
 		'5H6GSmartCommect': [['1', '5 GHz-2/6 GHz', '1'], ['3', '2.4 GHz', '3'], ['0', '5 GHz-1', '0']],
 		'5L6GSmartCommect': [['0', '5 GHz-1/6 GHz', '0'], ['3', '2.4 GHz', '3'], ['1', '5 GHz-2', '1']],
 		'2.4G6GSmartCommect': [['3', '2.4 GHz/6 GHz', '3'], ['0', '5 GHz-1', '0'], ['1', '5 GHz-2', '1']],
@@ -306,6 +307,20 @@ function getInterface(){
 		else{		// 5 GHz Smart Connect			
 			if(odmpid === 'GT6'){								
 				_temp = typeObj['GT6-5GHzSmartConnect'];
+			}
+			else if(system.modelName === 'GT-AXE16000'){
+				if(variable.smart_connect_selif_x === '14'){
+					_temp = typeObj['5L5H6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '12'){
+					_temp = typeObj['5H6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '10'){
+					_temp = typeObj['5L6GSmartCommect'];
+				}
+				else if(variable.smart_connect_selif_x === '6'){
+					_temp = typeObj['5L5HSmartCommect'];
+				}
 			}
 			else {
 				_temp = typeObj['triBand5GHzSmartConnect'];
@@ -809,6 +824,10 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		}
 	}
 
+	if(is_KR_sku){ //remove Open System
+		auth_array = auth_array.filter(subArr => subArr[1] !== 'open');
+	}
+
 	if(isSupport("amas") && isSupport("amasRouter") && (isSwMode("rt") || isSwMode("ap"))){
 		var re_count = httpApi.hookGet("get_cfg_clientlist", true).length;
 		if(re_count > 1){
@@ -888,7 +907,7 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 		}
     }
 	else if(auth_mode_x == 'open'){
-		if(document.getElementById('wl'+ unit +'_open_suggest')){
+		if(document.getElementById('wl'+ unit +'_open_suggest') && owe_trans_support){
 			document.getElementById('wl'+ unit +'_open_suggest').style.display = '';
 		}
 		
@@ -899,8 +918,13 @@ function genAuthMethod(unit, id, nmode_x, auth_mode_x){
 				getWEPKey(unit, 'wl'+ unit +'_wep_key', variable['wl'+ unit +'_key']);
 			}
 			else{
-				document.getElementById('wl'+ unit +'_wep_x').style.display = 'none';
-				document.getElementById('wl'+ unit +'k_keyey').style.display = 'none';				
+				if(document.getElementById('wl'+ unit +'_wep_x')){
+					document.getElementById('wl'+ unit +'_wep_x').style.display = 'none';
+				}
+				
+				if(document.getElementById('wl'+ unit +'k_keyey')){
+					document.getElementById('wl'+ unit +'k_keyey').style.display = 'none';
+				}	
 			}
 		}
 	}
@@ -1037,6 +1061,15 @@ function apply(rc_flag){
 		}
 		postObj = Object.assign(postObj, variable);
 		httpApi.nvramSet(postObj, function(){
+			if (Qcawifi_support || Rawifi_support) {
+				var restart_needed_time = this.restart_needed_time;	// restart wireless time
+				if (restart_needed_time) {
+					var tmp_rc_time = parseInt(restart_needed_time);
+					if (!isNaN(tmp_rc_time) && tmp_rc_time > 0 && tmp_rc_time < 300) {
+						rc_time = tmp_rc_time;
+					}
+				}
+			}
 			parent.showLoading(rc_time);
 			setTimeout(function(){
 				location.reload();

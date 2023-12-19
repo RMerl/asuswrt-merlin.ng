@@ -1,6 +1,9 @@
 #include <rc.h>
 #include <shared.h>
 #include <shutils.h>
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA)
+#include <flash_mtd.h>
+#endif
 #ifdef RTCONFIG_RALINK
 #include <ralink.h>
 #if defined(RTN14U) || defined(RTAC52U) || defined(RTAC51U) || defined(RTN54U) || defined(RTAC1200HP) || defined(RTN56UB1) || defined(RTN56UB2) || defined(RTAC54U) || defined(RTAC1200GA1) || defined(RTAC1200GU) || defined(RTAC51UP) || defined(RTAC53)
@@ -395,16 +398,17 @@ static int setAllSpecificColorLedOn(enum ate_led_color color)
 			all_led[LED_COLOR_WHITE] = white_led;
 			all_led[LED_COLOR_RED] = red_led;
 
-			wan_phy_led_pinmux(1);
 			if (color == LED_COLOR_WHITE)
 			{
-				eval("wl", "-i", "eth2", "ledbh", "0", "1");	// wl 2.4G
-				eval("wl", "-i", "eth3", "ledbh", "0", "1");	// wl 5G
+				eval("wl", "-i", "eth8", "ledbh", "0", "1");	// wl 2.4G
+				eval("wl", "-i", "eth6", "ledbh", "13", "1");	// wl 5G low
+				eval("wl", "-i", "eth7", "ledbh", "13", "1");	// wl 5G high
 			}
 			else
 			{
-				eval("wl", "-i", "eth2", "ledbh", "0", "21");	// wl 2.4G
-				eval("wl", "-i", "eth3", "ledbh", "0", "21");	// wl 5G
+				eval("wl", "-i", "eth8", "ledbh", "0", "0");	// wl 2.4G
+				eval("wl", "-i", "eth6", "ledbh", "13", "0");	// wl 5G low
+				eval("wl", "-i", "eth7", "ledbh", "13", "0");	// wl 5G high
 			}
 		}
 
@@ -3157,6 +3161,12 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 
 		return 0;
 	}
+#if defined(HND_ROUTER)
+	else if (!strcmp(command, "Get_SecureBoot")) {
+		getSB();
+		return 0;
+	}
+#endif
 	else if (!strcmp(command, "Get_FwReadyStatus")) {
 		puts(nvram_safe_get("success_start_service"));
 		return 0;
@@ -4125,11 +4135,12 @@ int asus_ate_command(const char *command, const char *value, const char *value2)
 #endif
 #ifdef CONFIG_BCMWL5
 	else if (!strcmp(command, "Set_CoBrand")) {
-		int n = atoi(value);
-		if ((n >= 0) && (n <= 100))
-			set_cb(n);
-		else
-			puts("ATE_ERROR");
+		int n ;
+		if (value && (n=atoi(value)) && ((n >= 0) && (n <= 100))) {
+			if(set_cb(n) < 0)
+				puts("ATE_ERROR_INCORRECT_PARAMETER");
+		} else
+			puts("ATE_ERROR_INCORRECT_PARAMETER");
 		return 0;
 	}
 	else if (!strcmp(command, "Unset_CoBrand")) {
@@ -4565,7 +4576,7 @@ int ate_get_fw_upgrade_state(void) {
 int init_pass_nvram(void)
 {
 #ifdef RTCONFIG_NVRAM_ENCRYPT
-	char dec_passwd[128]={0};
+	char dec_passwd[128] __attribute__((unused)) ={0};
 #endif
 #if defined(RTCONFIG_BCMARM)
 	if (!nvram_get_int("x_Setting")) {
@@ -4585,7 +4596,6 @@ int init_pass_nvram(void)
 			_dprintf("READ ASUS PASS: Out of scope\n");
 			nvram_set("forget_it", "");
 		 } else {
-			int len = strlen(pass);
 			int i;
 			if (pass[0] == 0xff)
 				nvram_set("forget_it", "");

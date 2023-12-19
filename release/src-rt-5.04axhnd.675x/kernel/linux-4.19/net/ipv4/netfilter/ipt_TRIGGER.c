@@ -131,9 +131,9 @@ static int ip_ct_kill_triggered(struct nf_conn *i, void *ifindex)
 		return 0;
 }
 
-static void trigger_timeout(unsigned long ul_trig)
+static void trigger_timeout(struct timer_list *t)
 {
-	struct ipt_trigger *trig = (void *)ul_trig;
+	struct ipt_trigger *trig= from_timer(trig, t, timeout);
 
 	DEBUGP("%s: mport=%u-%u\n", __FUNCTION__, trig->ports.mport[0], trig->ports.mport[1]);
 
@@ -236,7 +236,7 @@ static unsigned int trigger_out(struct sk_buff **pskb, const void *targinfo)
 
 		INIT_LIST_HEAD(&trig->list);
 		timer_setup(&trig->timeout, NULL, 0);
-		trig->timeout.function = (void *)(struct timer_list *)trigger_timeout;
+		trig->timeout.function = trigger_timeout;
 		trig->timeout.expires = jiffies + (TRIGGER_TIMEOUT * HZ);
 
 		trig->srcip = iph->saddr;

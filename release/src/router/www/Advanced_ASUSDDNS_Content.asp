@@ -11,12 +11,13 @@
 <title><#Web_Title#> - <#menu5_3_6#></title>
 <link rel="stylesheet" type="text/css" href="index_style.css"> 
 <link rel="stylesheet" type="text/css" href="form_style.css">
+<script type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" language="JavaScript" src="/help.js"></script>
 <script type="text/javascript" language="JavaScript" src="/validator.js"></script>
-<script type="text/javaScript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <script type="text/javascript" src="/form.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
@@ -33,7 +34,6 @@
 	top: 570px;
 	width:650px;
 }
-
 
 .Upload_item{
 	font-family: Arial, Helvetica, sans-serif;
@@ -60,6 +60,273 @@
 	width: 76%;
 	padding-left: 10px;
 }
+
+.popup_container{
+    width: 70%;
+}
+
+.feature_desc_container .title{
+	font-weight: 600;
+	font-size: 16px;
+	letter-spacing: 0.2px;
+	text-transform: uppercase;
+	color: rgb(97 173 255);
+}
+.feature_desc_container .desc{
+	font-weight: 500;
+	font-size: 15px;
+	color: rgb(255, 255, 255);
+	line-height: 24px;
+	margin-top: 12px;
+}
+.blur_effect{
+	-webkit-filter: blur(4px); /* Chrome, Opera */
+	-moz-filter: blur(4px);
+	-ms-filter: blur(4px);
+	filter: blur(4px);
+}
+.popup_container{
+	font-family: Arial, Helvetica, sans-serif, "Microsoft JhengHei";
+	display: none;
+	height: auto;
+	top: 4%;
+	width: 70%;
+	max-width: 540px;
+	position: absolute;
+	margin: auto;
+	z-index: 300;
+	left: 0;
+	right: 0;
+	align-items: center;
+	line-height: 180%;
+	-webkit-tap-highlight-color: transparent;
+	-webkit-touch-callout: none;
+	-webkit-user-select: none;
+	-khtml-user-select: none;
+	-moz-user-select: none;
+	-ms-user-select: none;
+	user-select: none;
+	font-size: 14px;
+}
+.popup_container.fit_width{
+	max-width: 90%;
+	width: 90%;
+}
+.popup_container.full_width{
+	max-width: 100%;
+	width: 100%;
+}
+.popup_container.popup_element_second{
+	z-index: 500;
+}
+.popup_container.popup_customize_alert{
+	z-index: 700;
+	top: 12%;
+}
+.popup_container .setting_content_container{
+	margin-bottom: 24px;
+}
+.popup_container .popup_title_container > .close_btn,
+.popup_container .popup_title_container > .del_btn{
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	color: #FFFFFF;
+	width: 24px;
+	height: 24px;
+	cursor: pointer;
+	background: grey;
+	border-radius: 50%;
+}
+.popup_container .popup_title_container{
+	display: flex;
+	justify-content: space-between;
+    align-items: center;
+	position: relative;
+	margin-bottom: 12px;
+}
+.popup_container .popup_title_container .title{
+	min-height: 40px;
+	height: auto;
+	color: hsl(0deg 0% 100%);
+	font-size: 24px;
+	font-weight: 600;
+	letter-spacing: -0.2px;
+	line-height: 40px;
+	padding-left: 12px;
+}
+.popup_container .popup_content_container{
+	position: relative;
+	background: linear-gradient(0deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.16)), linear-gradient(0deg, rgba(0, 0, 0, 0.8), rgba(0, 0, 0, 0.8)), #1067A8;
+	border: 1px solid rgba(255, 255, 255, 0.02);
+	box-shadow: 0px 2px 4px 0px rgb(0 0 0 / 20%), 0px 1px 4px 0px rgb(60 60 60 / 30%);
+	border-radius: 8px;
+	padding: 5%;
+}
+.popup_container.mobile_view .popup_content_container{
+	box-shadow: initial;
+	background: rgb(5 41 88 / 30%);
+}
+.popup_container > div{
+	width: 100%;
+}
+.popup_container .popup_content_container.profile_setting{
+	padding: initial;
+}
+.popup_container .popup_content_container .profile_setting_item,
+.popup_container .popup_content_container .profile_setting_two_item{
+	background: rgba(0, 0, 0, 0.1);
+	min-width: initial;
+	height: 88px;
+}
+.popup_container .popup_content_container .profile_setting_two_item{
+	height: auto;
+}
+.popup_container .popup_content_container .category_slide_title{
+	background: rgba(0, 0, 0, 0.1);
+}
+.popup_container .popup_content_container .category_slide_title.expand{
+	background: rgba(0, 133, 255, 0.1);
+}
+.customize_alert .action_btn_container,
+.del_profile .action_btn_container{
+	display: flex;
+	justify-content: flex-end;
+	margin-top: 30px;
+	position: relative;
+}
+.customize_alert .action_btn_container .btn,
+.del_profile .action_btn_container .btn{
+	width: 117px;
+	height: 38px;
+	line-height: 40px;
+	font-size: 14px;
+	font-weight: 500;
+	text-align: center;
+	letter-spacing: 0.1px;
+	border-radius: 8px;
+	margin-left: 16px;
+	cursor: pointer;
+}
+
+.icon_switch{
+	border-radius: 50px;
+	width: 40px;
+	height: 20px;
+	position: relative;
+	-webkit-transition: all 0.6s;
+	transition: all 0.6s;
+	cursor: pointer;
+}
+.icon_switch.off{
+	background: rgba(127, 143, 164, 1);
+}
+.icon_switch.on{
+	background: rgba(16, 185, 129, 1);
+}
+.icon_switch:before{
+	border-radius: 50%;
+	display: block;
+	position: absolute;
+	content: "";
+	height: 12px;
+	width: 12px;
+	left: 4px;
+	top: 4px;
+	-webkit-transition: 0.6s;
+	transition: all 0.6s;
+	-webkit-transition-delay: 0.01s;
+	transition-delay: 0.01s;
+	background: rgb(48 61 67);
+}
+.icon_switch.on:before{
+	-webkit-transform: translateX(20px);
+	-ms-transform: translateX(20px);
+	transform: translateX(20px);
+}
+
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+.tooltip .tooltiptext {
+  display: none;
+  width: 60px;
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  bottom: 150%;
+  left: 50%;
+  margin-left: -40px;
+}
+
+.tooltip .tooltiptext::after {
+  content: "";
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color: black transparent transparent transparent;
+}
+
+.tooltip .tooltiptextdown {
+  display: none;
+  width: 20vw;
+  word-break: break-all;
+  background-color: rgba(22,27,33,0.75);
+  color: #fff;
+  border-radius: 6px;
+  padding: 5px;
+  position: absolute;
+  z-index: 1;
+  top: 150%;
+  left: -19vw;
+}
+
+.tooltip .tooltiptextdown::after {
+  content: "";
+  position: absolute;
+  bottom: 100%;
+  left: 95%;
+  margin-left: -5px;
+  border-width: 5px;
+  border-style: solid;
+  border-color:  transparent transparent #161b21ee transparent;
+}
+
+.tooltip:hover .tooltiptextdown {
+  display: block;
+}
+
+.icon_switch{
+  background: #808080;
+}
+
+.icon_switch.on{
+  background:rgb(30, 162, 255);
+}
+
+.icon_switch:before {
+  background: #f7f7f7;
+}
+
+.icon_help,
+.icon-clone{
+    background: #47A2FF!important;
+}
+.icon_help:hover,
+.icon-clone:hover{
+    background: #0b5ed7!important;
+}
+
+
 </style>
 
 <script>
@@ -125,6 +392,9 @@ function init(){
 		else if(aae_ddnsinfo == "ns1.asuscomm.cn" && ddns_hostname_x_t.indexOf(".asuscomm.cn") != "-1" && ddns_replace_status == "1")
 			$("#ddns_server_x option[value='WWW.ASUS.COM']").remove();
 	}
+
+    $('#ddns_security_info_1').attr({'style':'text-decoration: underline','href':'https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang='+ui_lang+'&kw=&num=171'});
+    $('#ddns_security_info_2').attr({'style':'text-decoration: underline','href':'https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang='+ui_lang+'&kw=&num=107'});
 }
 
 function update_ddns_wan_unit_option(){
@@ -183,32 +453,33 @@ function get_real_ip(){
 
 function submitForm(){
 	if(letsencrypt_support){
-		if($("input[name='ddns_enable_x']:checked").val() == "1" && $("input[name='le_enable']:checked").val() == "1"){
+		if(document.form.ddns_enable_x.value == "1" && $("input[name='le_enable']:checked").val() == "1"){
 			document.form.action_wait.value = "10";
-			document.form.action_script.value = "restart_ddns_le";
+			document.form.action_script.value = "restart_ddns_le;prepare_cert";
 		}
 		else if(http_enable != "0" && ($("input[name='le_enable']:checked").val() != orig_le_enable || httpd_restart == 1 )){
 			document.form.action_wait.value = "10";
 			if(orig_le_enable == "1")
-				document.form.action_script.value = "restart_httpd;restart_webdav;restart_ddns_le";
+				document.form.action_script.value = "prepare_cert;restart_webdav;restart_ddns_le";
 			else
-				document.form.action_script.value += ";restart_httpd;restart_webdav";
+				document.form.action_script.value += ";prepare_cert;restart_webdav";
 
 		}
 		if (('<% nvram_get("enable_ftp"); %>' == "1") && ('<% nvram_get("ftp_tls"); %>' == "1")) {
-			document.form.action_script.value += ";restart_ftpd";
+			document.form.action_script.value += ";prepare_cert;restart_ftpd";
 		}
 	}
 
 	document.form.submit();
 	showLoading();
+	setTimeout('location.reload();', 5000);
 }
 
 function check_update(){
     var ddns_ipaddr_t = '<% nvram_get("ddns_ipaddr"); %>';
 		ddns_ipaddr_t = ddns_ipaddr_t.replace(/&#10/g,"");
 
-    if (document.form.ddns_enable_x[0].checked == true &&
+    if (document.form.ddns_enable_x.value == "1" &&
         (wanlink_ipaddr() == ddns_ipaddr_t) &&
         (ddns_server_x_t == document.form.ddns_server_x.value) &&
         (ddns_hostname_x_t == document.form.ddns_hostname_x.value) &&
@@ -223,7 +494,7 @@ function force_update() {
     var r = confirm("<#LANHostConfig_x_DDNS_update_confirm#>");
 	if(r == false)
 		return false
-		
+
 	submitForm();
 }
 
@@ -244,7 +515,7 @@ function show_deregister_btn(){
 	else{
 		$("#deregister_btn").click(function(){
 			if(orig_le_enable != "0"){
-				var confirm_msg = "Your certification will be removed! You will be automatically logged out for the renewal. Please log in again for further configuration.";//untranslated
+				var confirm_msg = stringSafeGet("<#LANHostConfig_x_DDNS_alarm_deregister#>");
 				if(!confirm(confirm_msg)){
 					return false;
 				}
@@ -306,11 +577,13 @@ function ddns_load_body(){
         showhide("wildcard_field",0);
     }
 
-    if(letsencrypt_support){
+    if (HTTPS_support) {
         show_cert_settings(1);
-        change_cert_method(orig_le_enable);
-        show_cert_details();
-    }
+		change_cert_method(orig_le_enable);
+		show_cert_details();
+	} else {
+        show_cert_settings(0);
+	}
 
     hideLoading();
 
@@ -319,6 +592,9 @@ function ddns_load_body(){
 		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
 		if(ddnsHint != "" && le_re_ddns != "1"){
+            setTimeout(() => {
+              alert(ddnsHint);
+            }, 1000);
 			document.getElementById("ddns_result").innerHTML = ddnsHint;
 			document.getElementById('ddns_result_tr').style.display = "";
 		}
@@ -326,9 +602,6 @@ function ddns_load_body(){
 		if((ddns_return_code.indexOf('200')!=-1 || ddns_return_code.indexOf('220')!=-1 || ddns_return_code == 'register,230') ||
 		   (ddns_return_code_chk.indexOf('200')!=-1 || ddns_return_code_chk.indexOf('220')!=-1 || ddns_return_code_chk == 'register,230')){
 			showhide("wan_ip_hide2", 0);
-			if(ddns_server_x.indexOf("WWW.ASUS.COM") != -1){
-				showhide("wan_ip_hide3", 1);
-			}
 		}
 		else{
 			if((ddns_return_code == "ddns_query" || ddns_return_code_chk == "Time-out" || ddns_return_code_chk == "connect_fail" || ddns_return_code_chk.indexOf('-1') != -1) && le_re_ddns != "1")
@@ -351,17 +624,21 @@ function get_cert_info(){
 }
 
 function apply_eula_check(){
-	if(document.form.ddns_enable_x[0].checked == true && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){
+	if(document.form.ddns_enable_x.value == "1" && document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){
 		if(!ASUS_EULA.check("asus")) return false;
 	}
-	
+
 	applyRule();
 }
 
 function applyRule(){
 	if(validForm()){
-		if(document.form.ddns_enable_x[0].checked == true && (document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1)){
+		if(document.form.ddns_enable_x.value == "1" && (document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1)){
 			document.form.ddns_hostname_x.value = document.form.DDNSName.value+$("#domain_text").text();
+		}
+
+		if (document.form.le_enable.value != orig_le_enable && document.form.le_enable.value == "0") {
+			alert(`<#DDNS_Install_Root_Cert_Desc2#>`);
 		}
 
 		if(document.form.ddns_hostname_x.value != ddns_hostname_x_t){
@@ -378,16 +655,7 @@ function applyRule(){
 }
 
 function validForm(){
-
-	if ($("input[name='le_enable']:checked").val() == "0") {
-		if (!validator.safeName(document.form.https_crt_cn))
-			return false;
-	} else {
-		if (!validator.safeName(document.form.https_crt_cn, "noalert"))
-			document.form.https_crt_cn.value = "";
-	}
-
-	if(document.form.ddns_enable_x[0].checked){		//ddns enable
+	if(document.form.ddns_enable_x.value == "1"){		//ddns enable
 		if(document.form.ddns_server_x.value.indexOf("WWW.ASUS.COM") != -1){		//WWW.ASUS.COM	or WWW.ASUS.COM.CN
 			if(document.form.DDNSName.value == ""){
 				alert("<#LANHostConfig_x_DDNS_alarm_14#>");
@@ -403,7 +671,7 @@ function validForm(){
 
 				if(letsencrypt_support){
 					if( document.form.le_enable[0].checked == true && document.form.letsEncryptTerm_check.checked != true){
-						if(!confirm("Disagree the term of service of Let's Encrypt will change the certificate method to \"None\". Are you sure?")){
+						if(!confirm("<#LANHostConfig_x_DDNSLetsEncrypt_Disagree#>")){
 							document.form.letsEncryptTerm_check.focus();
 							return false;
 						}
@@ -437,6 +705,7 @@ function validForm(){
 				}else if(!validator.string(document.form.ddns_username_x)){
 					return false;
 				}
+
 				if(document.form.ddns_passwd_x.value == ""){
 					alert("<#File_Pop_content_alert_desc6#>");
 					document.form.ddns_passwd_x.focus();
@@ -446,20 +715,16 @@ function validForm(){
 					return false;
 				}
 			}
-			
+
 			if(document.form.ddns_regular_period.value < 30){
 				alert("<#period_time_validation#> : 30");
 				document.form.ddns_regular_period.focus();
 				document.form.ddns_regular_period.select();
 				return false;
 			}
-		
+
 			return true;
 		}
-	}
-	else if (document.form.le_enable[0].checked == true) {
-		alert("Let's Encrypt requires DDNS to be enabled.");
-		return false;
 	}
 	else
 		return true;
@@ -468,7 +733,7 @@ function validForm(){
 function checkDDNSReturnCode(){
     $.ajax({
     	url: '/ajax_ddnscode.asp',
-    	dataType: 'script', 
+    	dataType: 'script',
     	error: function(xhr){
       		checkDDNSReturnCode();
     	},
@@ -476,7 +741,7 @@ function checkDDNSReturnCode(){
             if(ddns_return_code == 'ddns_query')
         	    setTimeout("checkDDNSReturnCode();", 500);
             else
-                refreshpage(); 
+                refreshpage();
        }
    });
 }
@@ -536,11 +801,11 @@ function validate_ddns_hostname(o){
 		show_alert_block("<#LANHostConfig_x_DDNS_alarm_7#>");
 		return false;
 	}
-	
+
 	if (!validator.string(o)){
 		return false;
 	}
-		
+
 	for(i=0;i<s.length;i++){
 		c = s.charCodeAt(i);
 		if (c==46){
@@ -550,7 +815,7 @@ function validate_ddns_hostname(o){
 				return false;
 			}
 		}
-		
+
 		if (!validator.hostNameChar(c)){
 			show_alert_block("<#LANHostConfig_x_DDNS_alarm_13#> '" + s.charAt(i) +"' !");
 			return false;
@@ -578,7 +843,7 @@ function onSubmitApply(s){
 			return false;
 		}
 	}
-	
+
 	document.form.action_mode.value = "Update";
 	document.form.action_script.value = s;
 	return true;
@@ -726,7 +991,7 @@ function change_cert_method(cert_method){
 		if(cert_method === undefined){
 			//Let's encrypt default on
 			if(ddns_server_x_t != document.form.ddns_server_x.value && orig_le_enable == "0")
-				cert_method = "1";
+				cert_method = "0";
 			else
 				cert_method = orig_le_enable;
 
@@ -735,12 +1000,7 @@ function change_cert_method(cert_method){
 					document.form.le_enable[2].checked = true;
 					break;
 				case "1":
-					if(document.form.ddns_enable_x[1].checked) {
-						alert("Let's Encrypt requires DDNS to be enabled.");
-						document.form.le_enable[2].checked = true;
-					} else {
-						document.form.le_enable[0].checked = true;
-					}
+					document.form.le_enable[0].checked = true;
 					break;
 				case "2":
 					document.form.le_enable[1].checked = true;
@@ -750,19 +1010,14 @@ function change_cert_method(cert_method){
 
 		switch(cert_method){
 			case "0":
-				document.getElementById("cert_san").style.display = "";
 				document.getElementById("cert_desc").style.display = "none";
 				document.getElementById("cert_act").style.display = "none";
+				document.getElementById("CAcert_details").style.display = "";
 				document.getElementById("cert_details").style.display = "";
+
 				break;
 
 			case "1":
-				if(document.form.ddns_enable_x[1].checked) {
-					alert("Let's Encrypt requires DDNS to be enabled.");
-					document.form.le_enable[2].checked = true;
-					return false;
-				}
-				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "";
 				document.getElementById("le_desc").innerHTML = "<#LANHostConfig_x_DDNSLetsEncrypt_desc#>";
 				html_code = '<div style="margin-top:5px;"><input type="checkbox" name="letsEncryptTerm_check" checked>';
@@ -776,7 +1031,8 @@ function change_cert_method(cert_method){
 				else
 					document.getElementById("cert_act").style.display = "none";
 
-					document.getElementById("cert_details").style.display = "";
+				document.getElementById("CAcert_details").style.display = "none";
+				document.getElementById("cert_details").style.display = "";
 
 				if(orig_le_enable == "1")
 					document.form.letsEncryptTerm_check.checked = true;
@@ -784,12 +1040,13 @@ function change_cert_method(cert_method){
 				break;
 
 			case "2":
-				document.getElementById("cert_san").style.display = "none";
 				document.getElementById("cert_desc").style.display = "none";
 				html_code += '<div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div>';
 				document.getElementById("cert_act").innerHTML = html_code;
 				document.getElementById("cert_act").style.display = "";
+				document.getElementById("CAcert_details").style.display = "";
 				document.getElementById("cert_details").style.display = "";
+
 				break;
 		}
 	}
@@ -814,7 +1071,9 @@ function show_cert_details(){
 		}
 		else{
 			document.getElementById("cert_status").innerHTML = "<#Status_Active#>";
-			document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
+			document.getElementById("CAissueTo").innerHTML = httpd_cert_info.CAissueTo;
+			document.getElementById("CAissueBy").innerHTML = httpd_cert_info.CAissueBy;
+			document.getElementById("CAexpireOn").innerHTML = httpd_cert_info.CAexpire;
 			document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
 			document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
 			document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
@@ -840,14 +1099,14 @@ function check_filename(){
 	var cert_subname = cert_file.substring(cert_file.lastIndexOf('.') + 1);
 
 	if(key_subname != 'pem' && key_subname != 'key'){
-		alert("Please select correct private key file.");
+		alert("<#DDNS_https_key_alert#>");
 		document.upload_form.file_key.value = "";
 		document.upload_form.file_key.focus();
 		return false;
 	}
 
 	if(cert_subname != 'pem' && cert_subname != 'crt' && cert_subname != 'cer'){
-		alert("Please select correct SSL certificate file.");
+		alert("<#DDNS_https_cert_alert#>");
 		document.upload_form.file_cert.value = "";
 		document.upload_form.file_cert.focus();
 		return false;
@@ -933,6 +1192,91 @@ function check_unregister_result(){
 
 }
 
+function show_feature_desc(){
+	$(".container").addClass("blur_effect");
+	if($(".popup_container.popup_element").css("display") == "flex"){
+		$(".popup_container.popup_element").addClass("blur_effect");
+	}
+	$(".popup_element_second").css("display", "flex");
+	$(".popup_container.popup_element_second").empty();
+	$(".popup_container.popup_element_second").append(Get_Component_Feature_Desc());
+
+    function close_popup(){
+    	$(".popup_element_second").hide();
+    	$(".container, .qis_container").removeClass("blur_effect");
+    	$(".popup_container.popup_element").removeClass().addClass("popup_container popup_element").empty();
+    }
+
+	function Get_Component_Feature_Desc(){
+		var $container = $("<div>");
+		var $popup_title_container = $("<div>").addClass("popup_title_container");
+		$popup_title_container.appendTo($container);
+		$("<div>").addClass("title").html("<#NewFeatureAbout#>").appendTo($popup_title_container);
+		var $close_btn = $("<div>").addClass("close_btn").html('&times;');
+		$close_btn.appendTo($popup_title_container);
+		$close_btn.unbind("click").click(function(e){
+			e = e || event;
+			e.stopPropagation();
+            close_popup();
+		});
+
+		var $popup_content_container = $("<div>").addClass("popup_content_container");
+		$popup_content_container.appendTo($container);
+
+		var $feature_desc_cntr = $("<div>").addClass("feature_desc_container").appendTo($popup_content_container);
+		$("<div>").addClass("title").html("FAQ").appendTo($feature_desc_cntr);
+		$("<div>").addClass("desc").html(
+			'<div class="text-list"><div class="icon-circle-mask"><i class="icon-comments"></i></div><a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang='+ui_lang+'&kw=&num=168"><#LANHostConfig_x_DDNSEnable_faq1#></a></div>'+
+            '<div class="text-list"><div class="icon-circle-mask"><i class="icon-comments"></i></div><a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang='+ui_lang+'&kw=&num=169"><#LANHostConfig_x_DDNSEnable_faq2#></a></div>'+
+            '<div class="text-list"><div class="icon-circle-mask"><i class="icon-comments"></i></div><a target="_blank" href="https://nw-dlcdnet.asus.com/support/forward.html?model=&type=Faq&lang='+ui_lang+'&kw=&num=170"><#LANHostConfig_x_DDNSEnable_faq3#></a></div>'
+		).appendTo($feature_desc_cntr);/* untranslated */
+
+		return $container;
+	}
+}
+
+function copyDdnsInputValue(e) {
+    let text = '';
+    if($('#ddnsname_input').css('display') !== 'none'){
+        text = $('input[name=ddns_hostname_x]').val();
+    }else if($('#asusddnsname_input').css('display') !== 'none'){
+        text = $('input[name=DDNSName]').val()+$('#domain_text').html();
+    }
+
+    if (window.isSecureContext && navigator.clipboard) {
+        navigator.clipboard.writeText(text);
+    } else {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy')
+        } catch (err) {
+            console.error('Unable to copy to clipboard', err)
+        }
+        document.body.removeChild(textArea)
+    }
+    let span = $("<span>").addClass("tooltiptext").html($(e).data('title'));
+    $(e).parent().append(span);
+    span.show().fadeOut(1500, function() { $(this).remove(); });
+}
+
+function showDescTooltip(e){
+    let ddnsname = '';
+    if($('#ddnsname_input').css('display') !== 'none'){
+        ddnsname = $('input[name=ddns_hostname_x]').val();
+    }else if($('#asusddnsname_input').css('display') !== 'none'){
+        ddnsname = $('input[name=DDNSName]').val()+$('#domain_text').html();
+    }
+
+    let span = $("<span>").addClass("tooltiptextdown");
+    if($(e).parent().find('.tooltiptextdown').length == 0){
+        $(e).parent().append(span);
+    }
+    $(e).parent().find('.tooltiptextdown').html('You can use “'+ddnsname+'” to connect to the home network and manage it when you’re out.');
+}
+
 function clear_cert_key(){
 	if(confirm("You will be automatically logged out for the renewal, are you sure you want to continue?")){
 		$.ajax({url: "clear_file.cgi?clear_file_name=cert.tgz"})
@@ -960,55 +1304,70 @@ function clear_cert_key(){
 <input type="hidden" name="action_script" value="restart_ddns">
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
+<input type="hidden" name="ddns_enable_x" value="<% nvram_get("ddns_enable_x"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
-		
+
 		<td valign="top" width="202">
 		<div  id="mainMenu"></div>
 		<div  id="subMenu"></div>
 		</td>
-		
+
     <td valign="top">
 		<div id="tabMenu" class="submenuBlock"></div>
 		<!--===================================Beginning of Main Content===========================================-->
 <table width="98%" border="0" align="left" cellpadding="0" cellspacing="0">
 	<tr>
 		<td align="left" valign="top" >
-          
+
 		<table width="760px" border="0" cellpadding="5" cellspacing="0" class="FormTitle" id="FormTitle">
 		<tbody>
 			<tr>
-		  		<td bgcolor="#4D595D" valign="top"  >
-		  		<div>&nbsp;</div>
-		  		<div class="formfonttitle"><#menu5_3#> - <#menu5_3_6#></div>
+		  		<td bgcolor="#4D595D" valign="top">
+		  		<div class="container">
+		  		<div class="page_title_div">
+                    <div class="formfonttitle"><#menu5_3#> - <#menu5_3_6#> </div>
+                    <div class="formfonttitle_help" style="position: absolute;right: 5px;top: 5px;"><i onclick="show_feature_desc()" class="icon_help"></i></div>
+		  		</div>
 		  		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
-		 		<div class="formfontdesc"><#LANHostConfig_x_DDNSEnable_sectiondesc#></div>
-		 		<div class="formfontdesc" style="margin-top:-8px;"><#NSlookup_help#></div>
-				<div class="formfontdesc" id="wan_ip_hide2" style="color:#FFCC00; display:none;">The wireless router currently uses a private WAN IP address.<p>This router may be in the multiple-NAT environment.  While using an External check might allow DDNS to reflect the correct IP address, this might still interfere with remote access services.</div>
-				<div class="formfontdesc" id="wan_ip_hide3" style="color:#FFCC00; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc3#></div>
-				<div class="formfontdesc" id="lb_note" style="color:#FFCC00; display:none;"><#lb_note_ddns#></div>
+
+		 		<div class="formfontdesc formfontdesc_help_left">
+					<div><#LANHostConfig_x_DDNSEnable_sectiondesc#></div>
+				</div>
+
+				<div class="formfontdesc hint-color" id="wan_ip_hide2" style="color:#FC0; display:none;"><#LANHostConfig_x_DDNSEnable_sectiondesc4#><#LANHostConfig_x_DDNSEnable_sectiondesc2#></div>
+				<div class="formfontdesc hint-color" id="lb_note" style="color:#FC0; display:none;"><#lb_note_ddns#></div>
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
-	                        <thead>
-	                        <tr>
-	                                <td colspan="2">DDNS Service</td>
-	                        </tr>
-	                        </thead>
+				<input type="hidden" name="wl_gmode_protection_x" value="<% nvram_get("wl_gmode_protection_x"); %>">
 			<tr>
 				<th><#LANHostConfig_x_DDNSEnable_itemname#></th>
 				<td>
-				<input type="radio" value="1" name="ddns_enable_x" onClick="change_cert_method();show_cert_details();return change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '1')" <% nvram_match("ddns_enable_x", "1", "checked"); %>><#checkbox_Yes#>
-				<input type="radio" value="0" name="ddns_enable_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0')" <% nvram_match("ddns_enable_x", "0", "checked"); %>><#checkbox_No#>
+				    <div id="radio_ddns_enable"></div>
+                    <script type="text/javascript">
+                    $("#radio_ddns_enable").addClass("icon_switch");
+                    if('<% nvram_get("ddns_enable_x"); %>'=='1')
+                        $("#radio_ddns_enable").addClass("on");
+                    else
+                        $("#radio_ddns_enable").removeClass("on");
+                    $("#radio_ddns_enable").click(function(e){
+                        e = e || event;
+                        e.stopPropagation();
+                        $(this).toggleClass("on");
+                        if($(this).hasClass("on")){
+                            document.form.ddns_enable_x.value = "1";
+                            change_cert_method();
+                            show_cert_details();
+                            change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '1');
+                        }else{
+                            document.form.ddns_enable_x.value = "0";
+                            change_common_radio(this, 'LANHostConfig', 'ddns_enable_x', '0');
+                        }
+                    });
+                    </script>
+                    <div style="color:#FFCC00">*<#LANHostConfig_x_DDNSEnable_security_info#></div>
 				</td>
-			</tr>
-			<tr id="ddns_status_tr" style="display:none;">
-				<th>DDNS Status</th>
-				<td><span id="ddns_status" style="color:#FFCC00"></span><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
-			</tr>
-			<tr id="ddns_result_tr" style="display:none;">
-				<th>DDNS Registration Result</th>
-				<td id="ddns_result"></td>
 			</tr>
 			<tr>
 				<th id="ddns_wan_unit_th"><#wan_interface#></th>
@@ -1048,7 +1407,7 @@ function clear_cert_key(){
 						<option value="FREEDNS.AFRAID.ORG" <% nvram_match("ddns_server_x", "FREEDNS.AFRAID.ORG","selected"); %>>FREEDNS.AFRAID.ORG</option>
 						<option value="CUSTOM" <% nvram_match("ddns_server_x", "CUSTOM","selected");  %>>Custom</option>
 					</select>
-					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="Deregister"/>
+					<input id="deregister_btn" class="button_gen" style="display: none; margin-left: 5px;" type="button" value="<#CTL_Deregister#>"/>
 					<a id="link" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#LANHostConfig_x_DDNSServer_linkname#></a>
 					<a id="linkToHome" href="javascript:openLink('x_DDNSServer')" style=" margin-left:5px; text-decoration: underline;"><#ddns_home_link#></a>
 					<div id="customnote" style="display:none;"><span>For the Custom DDNS you must manually create a ddns-start script that handles your custom notification.</span></div>
@@ -1058,14 +1417,17 @@ function clear_cert_key(){
 			<tr id="ddns_hostname_tr">
 				<th id="ddns_hostname_th"><a class="hintstyle" href="javascript:void(0);" onClick="openHint(5,13);"><#LANHostConfig_x_DDNSHostNames_itemname#></a></th>
 				<td>
+				<div style="display: flex; align-items: center; gap:5px;">
 					<div id="ddnsname_input" style="display:none;">
 						<input type="text" maxlength="63" class="input_25_table" name="ddns_hostname_x" id="ddns_hostname_x" value="<% nvram_get("ddns_hostname_x"); %>" onKeyPress="return validator.isString(this, event)" autocorrect="off" autocapitalize="off">
 					</div>
-					<div id="asusddnsname_input" style="display:none;">
+					<div id="asusddnsname_input" style="width:500px; display:none;">
 						<input type="text" maxlength="50" class="input_32_table" name="DDNSName" id="DDNSName" class="inputtext" onKeyPress="return validator.isString(this, event)" OnClick="cleandef();" autocorrect="off" autocapitalize="off"><span id="domain_text" style="color: #FFFFFF;">.asuscomm.com</span>
 						<div id="alert_block" style="color:#FFCC00; margin-left:5px; font-size:11px;display:none;">
 								<span id="alert_str"></span>
 						</div>
+					</div>
+					<div class="tooltip"><a onClick="copyDdnsInputValue(this)" onmouseover="showDescTooltip(this)" data-toggle="tooltip" data-title="Copied!"><i class="icon-clone"></i></a></div>
 					</div>
 				</td>
 			</tr>
@@ -1079,19 +1441,13 @@ function clear_cert_key(){
 			</tr>
 			<tr>
 				<th id="ddns_password_th"><#LANHostConfig_x_DDNSPassword_itemname#></th>
-				<td><input type="password" maxlength="64" class="input_25_table" name="ddns_passwd_x" value="<% nvram_get("ddns_passwd_x"); %>" autocomplete="new-password" autocorrect="off" autocapitalize="off"></td>
+				<td><input type="password" maxlength="64" class="input_25_table" name="ddns_passwd_x" value="<% nvram_get("ddns_passwd_x"); %>" autocomplete="off" autocorrect="off" autocapitalize="off"></td>
 			</tr>
 			<tr id="wildcard_field">
 				<th><#LANHostConfig_x_DDNSWildcard_itemname#></th>
 				<td>
 					<input type="radio" value="1" name="ddns_wildcard_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_wildcard_x', '1')" <% nvram_match("ddns_wildcard_x", "1", "checked"); %>><#checkbox_Yes#>
 					<input type="radio" value="0" name="ddns_wildcard_x" onClick="return change_common_radio(this, 'LANHostConfig', 'ddns_wildcard_x', '0')" <% nvram_match("ddns_wildcard_x", "0", "checked"); %>><#checkbox_No#>
-				</td>
-			</tr>
-			<tr style="display:none;">
-				<th>Forced update interval (in days)</th>
-				<td>
-					<input type="text" maxlength="3" name="ddns_refresh_x" class="input_3_table" value="<% nvram_get("ddns_refresh_x"); %>" onKeyPress="return validator.isNumber(this,event)">
 				</td>
 			</tr>
 			<tr id="check_ddns_field" style="display:none;">
@@ -1108,19 +1464,25 @@ function clear_cert_key(){
 				</td>
 			</tr>
 			<tr style="display:none;">
+				<th>Forced update interval (in days)</th>
+				<td>
+					<input type="text" maxlength="3" name="ddns_refresh_x" class="input_3_table" value="<% nvram_get("ddns_refresh_x"); %>" onKeyPress="return validator.isNumber(this,event)">
+				</td>
+			</tr>
+			<tr style="display:none;">
 				<th><#LANHostConfig_x_DDNSStatus_itemname#></th>
 				<td>
 					<input type="hidden" maxlength="15" class="button_gen" size="12" name="" value="<% nvram_get("DDNSStatus"); %>">
-					<input type="submit" maxlength="15" class="button_gen" onclick="showLoading();return onSubmitApply('ddnsclient');" size="12" name="LANHostConfig_x_DDNSStatus_button" value="<#LANHostConfig_x_DDNSStatus_buttonname#>" /></td>
+				  	<input type="submit" maxlength="15" class="button_gen" onclick="showLoading();return onSubmitApply('ddnsclient');" size="12" name="LANHostConfig_x_DDNSStatus_button" value="<#LANHostConfig_x_DDNSStatus_buttonname#>" /></td>
 			</tr>
-		</table>
-
-		<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
-		<thead>
-		<tr>
-			<td colspan="2">Webui SSL Certificate</td>
-		</tr>
-		</thead>
+			<tr id="ddns_status_tr" style="display:none;">
+				<th>DDNS Status</th>
+				<td><span id="ddns_status" style="color:#FFCC00"></span><span id="ddns_status_detail" class="notificationon" style="display: none;" onmouseover="show_ddns_status_detail();" onMouseOut="nd();"></span></td>
+			</tr>
+			<tr id="ddns_result_tr" style="display:none;">
+				<th>DDNS Registration Result</th>
+				<td id="ddns_result"></td>
+			</tr>
 			<tr id="https_cert" style="display:none;">
 				<th><#DDNS_https_cert#></th>
 				<td>
@@ -1129,8 +1491,8 @@ function clear_cert_key(){
 					</span>
 					<input type="radio" value="2" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "2", "checked"); %>><#DDNS_https_cert_Import#>
 					<span id="self_signed" style="color:#FFF;">
-					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#wl_securitylevel_0#>
-					</span>	
+					<input type="radio" value="0" name="le_enable" onClick="change_cert_method(this.value);" <% nvram_match("le_enable", "0", "checked"); %>><#Auto#>
+					</span>
 					<div id="cert_desc" style="color:#FFCC00; margin-top: 5px;">
 						<span id="le_desc"></span>
 						<span id="le_faq">
@@ -1140,13 +1502,24 @@ function clear_cert_key(){
 					<div id="cert_act" style="margin-top: 5px;"></div>
 				</td>
 			</tr>
-			<tr id="cert_san" style="display:none;">
-				<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,22)">Additional Certificate SANs</a></th>
+
+			<tr id="CAcert_details" style="display:none;">
+				<th>Root Certificate/Intermediate Certificate</th>
 				<td>
-					<input type="text" name="https_crt_cn" value="<% nvram_get("https_crt_cn"); %>" autocomplete="off" class="input_32_table" maxlength="64" autocorrect="off" autocapitalize="off">
+					<div style="display: flex;">
+						<div class="cert_status_title"><#vpn_openvpn_KC_to#> :</div>
+						<div id="CAissueTo" class="cert_status_val"></div>
+					</div>
+					<div style="display: flex;">
+						<div class="cert_status_title"><#vpn_openvpn_KC_by#> :</div>
+						<div id="CAissueBy" class="cert_status_val"></div>
+					</div>
+					<div style="display: flex;">
+						<div class="cert_status_title"><#vpn_openvpn_KC_expire#> :</div>
+						<div id="CAexpireOn" class="cert_status_val"></div>
+					</div>
 				</td>
 			</tr>
-
 			<tr id="cert_details" style="display:none;">
 				<th><#vpn_openvpn_KC_SA#></th>
 				<td>
@@ -1158,10 +1531,6 @@ function clear_cert_key(){
 						<div class="cert_status_title"><#vpn_openvpn_KC_to#> :</div>
 						<div id="issueTo" class="cert_status_val"></div>
 					</div>
-					<div style="display:flex;">
-						<div class="cert_status_title">SAN :</div>
-						<div id="SAN" class="cert_status_val"></div>
-					</div>
 					<div style="display: flex;">
 						<div class="cert_status_title"><#vpn_openvpn_KC_by#> :</div>
 						<div id="issueBy" class="cert_status_val"></div>
@@ -1172,7 +1541,6 @@ function clear_cert_key(){
 					</div>
 					<div>
 						<input class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
-						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#>" />
 					</div>
 				</td>
 			</tr>
@@ -1180,7 +1548,9 @@ function clear_cert_key(){
 				<div class="apply_gen">
 					<input class="button_gen" onclick="apply_eula_check();" type="button" value="<#CTL_apply#>" />
 				</div>
-		
+				</div>
+
+                <div class="popup_container popup_element_second"></div>
 			  </td>
               </tr>
             </tbody>
@@ -1192,7 +1562,7 @@ function clear_cert_key(){
       </table>
 		<!--===================================Ending of Main Content===========================================-->
 	</td>
-		
+
     <td width="10" align="center" valign="top">&nbsp;</td>
 	</tr>
 </table>
@@ -1205,7 +1575,7 @@ function clear_cert_key(){
 <input type="hidden" name="le_enable" value="2">
 <div id="upload_cert_window"  class="contentM_upload" style="box-shadow: 1px 5px 10px #000;">
 	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;"><#DDNS_https_cert_Import#></div>
-	<div class="formfontdesc" style="margin-left: 15px;"><#DDNS_https_cert_Import_desc#></div>
+	<div class="formfontdesc" style="margin: 15px;"><#DDNS_https_cert_Import_desc#></div>
 	<div class="Upload_item">
 		<div style="display:table-cell; width: 45%;"><#DDNS_https_cert_PrivateKey#> :</div>
 		<div style="display:table-cell;"><input type="file" name="file_key" class="input Upload_file"></div>
@@ -1215,9 +1585,9 @@ function clear_cert_key(){
 		<div style="display:table-cell;"><input type="file" name="file_cert" class="input Upload_file"></div>
 	</div>
 	<div style="color: #FC0; margin-left: 15px; margin-top: 20px">* <#DDNS_https_cert_PrivateKey_note#></div>
-	<div align="center" style="margin-top:30px; padding-bottom:15px;">
-		<div style="display:table-cell;"><input class="button_gen" type="button" onclick="hide_upload_window();" id="cancelBtn" value="<#CTL_Cancel#>"></div>
-		<div style="display:table-cell; padding-left: 5px;"><input class="button_gen" type="button" onclick="upload_cert_key();" value="<#CTL_ok#>"></div>
+	<div align="center" style="margin-top:30px; padding-bottom:15px; display: flex; justify-content: center;">
+		<div style=""><input class="button_gen" type="button" onclick="hide_upload_window();" id="cancelBtn" value="<#CTL_Cancel#>"></div>
+		<div style=""><input class="button_gen" type="button" onclick="upload_cert_key();" id="applyBtn" value="<#CTL_ok#>"></div>
 	</div>
 </div>
 </form>

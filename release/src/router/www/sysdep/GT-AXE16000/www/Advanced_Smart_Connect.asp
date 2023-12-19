@@ -515,6 +515,9 @@ for(let i=0; i<smart_connect_array.length; i++){
 	if(smart_connect_array[i] !== ''){
 		if_name_array[i] = [smart_connect_array[i], temp[i]];
 	}
+	else{
+		if_name_array[i] = [];
+	}
 }
 function genIfSelectBand(){
 	let code = '<th style="width:12%"><#Interface_target#></th>';

@@ -30,6 +30,8 @@
 #include <string.h>
 #include "glib.h"
 
+#include "gstrfuncsprivate.h"
+
 /* Test data to be passed to any function which calls g_array_new(), providing
  * the parameters for that call. Most #GArray tests should be repeated for all
  * possible values of #ArrayTestData. */
@@ -1177,7 +1179,7 @@ byte_array_new_take (void)
   GByteArray *gbarray;
   guint8 *data;
 
-  data = g_memdup ("woooweeewow", 11);
+  data = g_memdup2 ("woooweeewow", 11);
   gbarray = g_byte_array_new_take (data, 11);
   g_assert (gbarray->data == data);
   g_assert_cmpuint (gbarray->len, ==, 11);

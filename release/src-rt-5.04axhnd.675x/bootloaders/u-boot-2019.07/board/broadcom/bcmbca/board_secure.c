@@ -21,6 +21,7 @@
 /* callback can be called early in before relocation and 
  * before bss zero loop */
 static bcm_sec_t s_bcm_sec __attribute__((section(".data"))) = {0};
+int secBoot = 0;
 
 
 static inline void copy_append(bcm_sec_ctrl_arg_t* d, bcm_sec_ctrl_arg_t* s, u32 len)
@@ -429,12 +430,15 @@ __weak void bcm_sec_init(void)
 	bcm_sec_boot_state(&sec->state);
 	switch (sec->state) {
 		case SEC_STATE_GEN3_MFG:
+			secBoot=2;
 			printf("Board is MFG secure\n");
 			break;
 		case SEC_STATE_GEN3_FLD:
+			secBoot=3;
 			printf("Board is FLD secure\n");
 			break;
 		default:
+			secBoot=1;
 			printf("Board is non secure\n");
 	}
 }

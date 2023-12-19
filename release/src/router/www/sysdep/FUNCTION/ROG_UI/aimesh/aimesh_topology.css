@@ -2755,17 +2755,17 @@
 	display: flex;
 	align-items: flex-start;
 	height: auto;
-	margin-left: 16px;
+	margin-left: 3%;
 	position: relative;
 	margin-bottom: 6px;
+	flex-flow: column;
+	width: 94%;
 }
 .port_status_bg:before{
-	content: "";
 	position: absolute;
-	left: 0%;
+	content: "";
 	bottom: -6px;
-	height: 1px;
-	width: 95%;
+	width: 100%;
 	border-bottom: 1px solid #3E4E59;
 }
 .port_status_bg > div{
@@ -2773,41 +2773,26 @@
 	flex-wrap: wrap;
 	height: auto;
 	position: relative;
-}
-.port_status_bg .label_W_bg{
-	width: auto;
-	max-width: 92px;
-	margin-right: 6px;
+	width: 100%;
 }
 .port_status_bg .label_W_bg:before{
 	position: absolute;
 	content: "";
-	right: -5px;
-	top: -4%;
-	height: 100%;
-	border-left: 1px solid #3E4E59;
-}
-.port_status_bg .label_L_bg:before{
-	position: absolute;
-	content: "";
-	top: -4%;
-	height: 100%;
-	border-right: 1px solid #3E4E59;
-	left: -5px;
+	bottom: 0;
+	width: 100%;
+	border-bottom: 1px solid #3E4E59;
 }
 .port_status_bg .label_W_bg > div, .port_status_bg .label_L_bg > div{
 	display: flex;
-	width: 46px;
+	min-width: 46px;
+	flex-basis: 25%;
 	height: auto;
 	flex-direction: column;
 	align-items: center;
 	margin-bottom: 8px;
 }
 .port_status_bg .label_L_bg{
-	margin-left: 3px;
-	flex-grow: 1;
-	flex-shrink: 0;
-	flex-basis: 65%;
+	margin-top: 12px;
 }
 .port_status_bg .port_icon{
 	background-image: url(/images/New_ui/amesh/port_status.svg);
@@ -2862,7 +2847,7 @@
 	text-align: center;
 	line-height: 100%;
 	font-size: 11px;
-	margin-top: 4px;
+	margin-top: 8px;
 }
 .port_status_icon_desc{
 	display: flex;

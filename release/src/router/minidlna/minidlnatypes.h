@@ -34,7 +34,7 @@
 #include <time.h>
 #include <fcntl.h>
 
-#define MAX_LAN_ADDR 4
+#define MAX_LAN_ADDR 8
 /* structure for storing lan addresses
  * with ascii representation and mask */
 struct lan_addr_s {

@@ -1899,7 +1899,7 @@ function set_lg_power(power_value,flag,idx){
 		<tr>
 		  <td bgcolor="#4D595D" valign="top">
 		  <div>&nbsp;</div>
-		  <div class="formfonttitle"><#menu5_1#> - <#smart_connect_rule#></div>
+		  <div class="formfonttitle"><#Network_Tools#> - <#smart_connect_rule#></div>
      	 <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
       	  <div class="formfontdesc"><#smart_connect_hint#></div>
 		  <div style="text-align:right;margin-top:-36px;padding-bottom:3px;"><input type="button" class="button_gen" value="<#View_List#>" onClick="pop_clientlist_listview(true)"></div>

@@ -23,6 +23,7 @@ struct pc_event{
 	char e_name[32];
 #ifdef RTCONFIG_SCHED_V2
 	int day_of_week;
+	sched_v2_type type;
 #endif
 	int start_day;
 	int end_day;

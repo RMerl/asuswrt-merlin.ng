@@ -1,0 +1,35 @@
+/* Add the flag definitions for your plugin here */
+
+/* rewrite HDLC control */
+flag = {
+    name        = hdlc-control;
+    max         = 1;
+    descrip     = "Specify HDLC control value";
+	arg-type	= "number";
+	range		= "0->255";
+    doc         = <<- EOText
+The Cisco HDLC header has a 1 byte "control" field.  Apparently this should 
+always be 0, but if you can use any 1 byte value.
+EOText;
+};
+
+flag = {
+	name		= hdlc-address;
+	max			= 1;
+	descrip		= "Specify HDLC address";
+	arg-type	= "number";
+	range		= "0->255";
+	doc			= <<- EOText
+The Cisco HDLC header has a 1 byte "address" field which has two valid 
+values:
+@table @bullet
+@item
+@var{0x0F}
+Unicast
+@item
+@var{0xBF}
+Broadcast
+@end table
+You can however specify any single byte value.
+EOText;
+};

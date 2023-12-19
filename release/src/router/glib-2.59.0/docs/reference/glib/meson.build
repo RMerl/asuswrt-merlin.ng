@@ -22,6 +22,7 @@ if get_option('gtk_doc')
     'gprintfint.h',
     'gmirroringtable.h',
     'gscripttable.h',
+    'gstrfuncsprivate.h',
     'glib-mirroring-tab',
     'gnulib',
     'pcre',

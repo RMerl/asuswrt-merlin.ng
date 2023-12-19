@@ -27,6 +27,12 @@ extern void load_wifi_driver(void);
 extern void load_testmode_wifi_driver(void);
 #endif
 extern void fini_wl(void);
+#if defined(RTCONFIG_RALINK) || defined(RTCONFIG_QCA)
+extern int get_mac_2g(unsigned char dst[]);
+extern int get_mac_5g(unsigned char dst[]);
+extern int get_mac_5g_2(unsigned char dst[]);
+extern void set_et0macaddr(char *macaddr, char *macaddr5g);
+#endif
 extern void init_syspara(void);
 extern void post_syspara(void);
 #ifndef CONFIG_BCMWL5

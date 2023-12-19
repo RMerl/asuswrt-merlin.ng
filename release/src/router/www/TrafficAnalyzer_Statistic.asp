@@ -77,7 +77,7 @@ window.onresize = function(){
 
 function decide_dns_or_bwdpi(){
     if(dns_dpi_support){
-      switch_nvram_name = 'nfcm_enable';
+      switch_nvram_name = 'dns_dpi_trf_analysis';
       asp_suffix = '_Dns';
       log_name = 'dns_traffic_analyzer';
     }
@@ -100,7 +100,7 @@ function initial(){
  	
  	decide_dns_or_bwdpi();
         
-        if(dns_dpi_support && document.form.nfcm_enable.value == 1){
+        if(dns_dpi_support && document.form.dns_dpi_trf_analysis.value == 1){
             show_refresh = 1;
         } else if (document.form.bwdpi_db_enable.value ==1){
             show_refresh = 1;
@@ -1477,9 +1477,9 @@ function eula_confirm(){
 
         if(!dns_dpi_support) {
 	  document.form.bwdpi_db_enable.value = 1;
-	  document.form.nfcm.value = 1; //align user experince during upgrade/download
+	  document.form.dns_dpi_trf_analysis.value = 1; //align user experince during upgrade/download
         } else {
-          document.form.nfcm_enable.value = 1;
+          document.form.dns_dpi_trf_analysis.value = 1;
 	  document.form.bwdpi_db_enable.value = 1; // align user epxerience
         }
 	document.form.action_wait.value = "15";
@@ -1498,7 +1498,7 @@ function switch_control(_status){
 		if(reset_wan_to_fo.check_status()) {
 			if(ASUS_EULA.check("tm")){
 				document.form.bwdpi_db_enable.value = 1;
-				document.form.nfcm_enable.value = 1; //align user experience
+				document.form.dns_dpi_trf_analysis.value = 1; //align user experience
 				applyRule();
 			}
 		}
@@ -1508,16 +1508,16 @@ function switch_control(_status){
               else {
 
 				document.form.bwdpi_db_enable.value = 1; // align user experience
-				document.form.nfcm_enable.value = 1;
+				document.form.dns_dpi_trf_analysis.value = 1;
 				applyRule();
                }
 	}
 	else {
 		if(!dns_dpi_support) {
                   document.form.bwdpi_db_enable.value = 0;
-                  document.form.nfcm_enable.value = 0; //align user experience
+                  document.form.dns_dpi_trf_analysis.value = 0; //align user experience
                 } else {
-                  document.form.nfcm_enable.value = 0;
+                  document.form.dns_dpi_trf_analysis.value = 0;
                   document.form.bwdpi_db_enable.value = 0; // align user experience
                 }
 		applyRule();
@@ -1594,7 +1594,7 @@ function setUnit(unit){
 <input type="hidden" name="flag" value="">
 <input type="hidden" name="TM_EULA" value="<% nvram_get("TM_EULA"); %>">
 <input type="hidden" name="bwdpi_db_enable" value="<% nvram_get("bwdpi_db_enable"); %>">
-<input type="hidden" name="nfcm_enable" value="<% nvram_get("nfcm_enable"); %>">
+<input type="hidden" name="dns_dpi_trf_analysis" value="<% nvram_get("dns_dpi_trf_analysis"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0">
 	<tr>
 		<td width="17">&nbsp;</td>
@@ -1626,7 +1626,7 @@ function setUnit(unit){
 																	<script type="text/javascript">
 
 if(dns_dpi_support) {
-																		$('#traffic_analysis_enable').iphoneSwitch('<% nvram_get("nfcm_enable"); %>',
+																		$('#traffic_analysis_enable').iphoneSwitch('<% nvram_get("dns_dpi_trf_analysis"); %>',
 																			function(){
 																				switch_control(1);
 																			},

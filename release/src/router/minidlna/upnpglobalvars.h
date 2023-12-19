@@ -57,7 +57,7 @@
 
 #include <sqlite3.h>
 
-#define MINIDLNA_VERSION "1.2.1"
+#define MINIDLNA_VERSION "1.3.3"
 
 #ifdef NETGEAR
 # define SERVER_NAME "ReadyDLNA"
@@ -67,6 +67,12 @@
 
 #define USE_FORK 1
 #define DB_VERSION 11
+
+#ifdef READYNAS
+# define LOGFILE_NAME "upnp-av.log"
+#else
+# define LOGFILE_NAME "minidlna.log"
+#endif
 
 #ifdef ENABLE_NLS
 #define _(string) gettext(string)
@@ -165,8 +171,11 @@
 	"http-get:*:audio/mp4:*," \
 	"http-get:*:audio/x-wav:*," \
 	"http-get:*:audio/x-flac:*," \
+	"http-get:*:audio/x-dsd:*," \
 	"http-get:*:application/ogg:*" \
-	"http-get:*:video/x-pn-realvideo:*"
+	"http-get:*:application/vnd.rn-realmedia:*" \
+	"http-get:*:application/vnd.rn-realmedia-vbr:*" \
+	"http-get:*:video/webm:*"
 
 #define DLNA_FLAG_DLNA_V1_5      0x00100000
 #define DLNA_FLAG_HTTP_STALLING  0x00200000
@@ -196,6 +205,8 @@ extern uint32_t runtime_flags;
 #endif
 #define SCANNING_MASK         0x0100
 #define RESCAN_MASK           0x0200
+#define SUBTITLES_MASK        0x0400
+#define FORCE_ALPHASORT_MASK  0x0800
 
 #define SETFLAG(mask)	runtime_flags |= mask
 #define GETFLAG(mask)	(runtime_flags & mask)
@@ -203,12 +214,13 @@ extern uint32_t runtime_flags;
 
 extern const char *pidfilename;
 
+#define UUIDVALUE_MAX_LEN 42
 extern char uuidvalue[];
 
 #define MODELNAME_MAX_LEN 64
 extern char modelname[];
 
-#define MODELNUMBER_MAX_LEN 16
+#define MODELNUMBER_MAX_LEN 18
 extern char modelnumber[];
 
 #define SERIALNUMBER_MAX_LEN 18
@@ -228,8 +240,8 @@ extern const char *minissdpdsocketpath;
 extern sqlite3 *db;
 #define FRIENDLYNAME_MAX_LEN 64
 extern char friendly_name[];
-extern char db_path[];
-extern char log_path[];
+extern char db_path[1024];
+extern char log_path[1024];
 extern struct media_dir_s *media_dirs;
 extern struct album_art_name_s *album_art_names;
 extern volatile short int quitting;

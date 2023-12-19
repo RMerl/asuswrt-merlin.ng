@@ -1,0 +1,6 @@
+<?
+# if you have haserl, then this file is used. but, for those
+# without haserl, this page is also a pure shell script.
+  sh chillijs.chi.sh
+?>
+

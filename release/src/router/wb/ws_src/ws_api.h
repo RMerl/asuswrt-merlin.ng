@@ -54,6 +54,7 @@
 #define MAX_DEV_TICKET_EXP_LEN 	64
 #define MAX_ID_LEN		64
 #define MAX_STATUS_LEN		32
+#define MAX_DEVICE_DESC_LEN		1024
 #define MAX_DESC_LEN		512
 #define MAX_PIN_LEN		64
 #define MAX_IP_ADDR_LEN		128 	//32
@@ -129,7 +130,7 @@ typedef struct _Profile{
 	char	devicename[MAX_DEVICEID_LEN];
 	char	deviceservice[MAX_DEVICEID_LEN];
 	char	devicenat[MAX_DEVICEID_LEN];
-	char	devicedesc[MAX_DESC_LEN];
+	char	devicedesc[MAX_DEVICE_DESC_LEN];
 } Profile, *pProfile;
 
 typedef struct _ListProfile{
@@ -213,6 +214,7 @@ typedef struct _GetUserTicketByRefresh
 	char 	status[MAX_STATUS_LEN];
 	char	userticket[MAX_DEVTICKET_LEN];
 	char    userrefreshticket[MAX_REFRESH_TICKET_LEN];
+	char    userticketexpiretime[MAX_DEV_TICKET_EXP_LEN];
 	char	time[MAX_TIME_LEN];
 }GetUserTicketByRefresh, *pGetUserTicketByRefresh;
 

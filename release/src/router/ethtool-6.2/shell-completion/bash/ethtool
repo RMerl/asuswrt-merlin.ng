@@ -1,0 +1,1278 @@
+# bash completion for ethtool(8)                          -*- shell-script -*-
+# shellcheck shell=bash disable=SC2207
+
+# Complete a word representing a set of characters.
+# @param $@ chars	Characters which may be present in completed set.
+_ethtool_compgen_letterset()
+{
+	local char
+	for char; do
+		case "$cur" in
+			*"$char"*)
+				# $cur already contains $char
+				;;
+			*)
+				COMPREPLY+=( "$cur$char" )
+				;;
+		esac
+	done
+}
+
+# Generate completions for words matched case-insensitively
+# @param $@ choices	Completion choices.
+_ethtool_compgen_nocase()
+{
+	local reset
+	reset=$( shopt -p nocasematch )
+	shopt -s nocasematch
+
+	local choice
+	for choice; do
+		case "$choice" in
+			"$cur"*) COMPREPLY+=( "$choice" ) ;;
+		esac
+	done
+
+	$reset
+}
+
+# Gets names from a section of ethtool output.
+# @param $1 section_bre	POSIX BRE matching section heading (without : at end).
+# @param $@		ethtool arguments
+_ethtool_get_names_in_section()
+{
+	local section_bre="$1"
+	shift
+
+	PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin" \
+		ethtool "$@" 2>/dev/null |
+		command sed -n "
+# Line is section heading iff it ends with :
+# From requested section heading to next section heading
+/^$section_bre:$/,/:$/ {
+	# If line is section heading, ignore it
+	/:$/d
+	# Remove value and separator, if present
+	s/[[:space:]]*:.*//
+	# Remove leading space, if present
+	s/^[[:space:]]*//
+	# Print the line
+	p
+}"
+}
+
+# Complete an RSS Context ID
+_ethtool_context()
+{
+	COMPREPLY=(
+		$(PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin" \
+			ethtool --show-nfc "${words[2]}" 2>/dev/null |
+			command sed -n 's/^[[:space:]]*RSS Context ID:[[:space:]]*\([0-9]*\)$/\1/p' |
+			sort -u) )
+}
+
+# Complete a network flow traffic type
+# Available OPTIONS:
+#	 --hash  Complete only types suitable for rx hashing
+_ethtool_flow_type()
+{
+	local types='ah4 ah6 esp4 esp6 ether sctp4 sctp6 tcp4 tcp6 udp4 udp6'
+	if [ "${1-}" != --hash ]; then
+		types="$types ip4 ip6"
+	fi
+	COMPREPLY=( $( compgen -W "$types" -- "$cur" ) )
+}
+
+# Completion for ethtool --change
+_ethtool_change()
+{
+	local -A settings=(
+		[advertise]=notseen
+		[autoneg]=notseen
+		[duplex]=notseen
+		[mdix]=notseen
+		[msglvl]=notseen
+		[port]=notseen
+		[phyad]=notseen
+		[speed]=notseen
+		[wol]=notseen
+		[xcvr]=notseen
+		[lanes]=notseen
+	)
+
+	local -A msgtypes=(
+		[drv]=notseen
+		[hw]=notseen
+		[ifdown]=notseen
+		[ifup]=notseen
+		[intr]=notseen
+		[link]=notseen
+		[pktdata]=notseen
+		[probe]=notseen
+		[rx_err]=notseen
+		[rx_status]=notseen
+		[timer]=notseen
+		[tx_done]=notseen
+		[tx_err]=notseen
+		[tx_queued]=notseen
+		[wol]=notseen
+	)
+
+	# Mark seen settings and msgtypes, and whether in msglvl sub-command
+	local in_msglvl=
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		if [ "$in_msglvl" ] && [ "${msgtypes[$word]+set}" ]; then
+			msgtypes[$word]=seen
+		elif [ "${settings[$word]+set}" ]; then
+			settings[$word]=seen
+			if [ "$word" = msglvl ]; then
+				in_msglvl=1
+			else
+				in_msglvl=
+			fi
+		fi
+	done
+
+	if [ "$in_msglvl" ] && [ "${msgtypes[$prev]+set}" ]; then
+		# All msgtypes take an on/off argument
+		COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+		return
+	fi
+
+	case "$prev" in
+		advertise)
+			# Hex number
+			return ;;
+		autoneg)
+			COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+			return ;;
+		duplex)
+			COMPREPLY=( $( compgen -W 'half full' -- "$cur" ) )
+			return ;;
+		mdix)
+			COMPREPLY=( $( compgen -W 'auto on off' -- "$cur" ) )
+			return ;;
+		msglvl)
+			# Unsigned integer or msgtype
+			COMPREPLY=( $( compgen -W "${!msgtypes[*]}" -- "$cur" ) )
+			return ;;
+		port)
+			COMPREPLY=( $( compgen -W 'aui bnc fibre mii tp' -- "$cur" ) )
+			return ;;
+		phyad)
+			# Integer
+			return ;;
+		sopass)
+			_mac_addresses
+			return ;;
+		speed)
+			# Number
+			return ;;
+		wol)
+			# $cur is a set of wol type characters.
+			_ethtool_compgen_letterset p u m b a g s f d
+			return ;;
+		xcvr)
+			COMPREPLY=( $( compgen -W 'internal external' -- "$cur" ) )
+			return ;;
+		lanes)
+			# Number
+			return ;;
+	esac
+
+	local -a comp_words=()
+
+	# Add settings not seen to completions
+	local setting
+	for setting in "${!settings[@]}"; do
+		if [ "${settings[$setting]}" = notseen ]; then
+			comp_words+=( "$setting" )
+		fi
+	done
+
+	# Add settings not seen to completions
+	if [ "$in_msglvl" ]; then
+		local msgtype
+		for msgtype in "${!msgtypes[@]}"; do
+			if [ "${msgtypes[$msgtype]}" = notseen ]; then
+				comp_words+=( "$msgtype" )
+			fi
+		done
+	fi
+
+	COMPREPLY=( $( compgen -W "${comp_words[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --change-eeprom
+_ethtool_change_eeprom()
+{
+	local -A settings=(
+		[length]=1
+		[magic]=1
+		[offset]=1
+		[value]=1
+	)
+
+	if [ "${settings[$prev]+set}" ]; then
+		# All settings take an unsigned integer argument
+		return
+	fi
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --coalesce
+_ethtool_coalesce()
+{
+	local -A settings=(
+		[adaptive-rx]=1
+		[adaptive-tx]=1
+		[pkt-rate-high]=1
+		[pkt-rate-low]=1
+		[rx-frames]=1
+		[rx-frames-high]=1
+		[rx-frames-irq]=1
+		[rx-frames-low]=1
+		[rx-usecs]=1
+		[rx-usecs-high]=1
+		[rx-usecs-irq]=1
+		[rx-usecs-low]=1
+		[sample-interval]=1
+		[stats-block-usecs]=1
+		[tx-frames]=1
+		[tx-frames-high]=1
+		[tx-frames-irq]=1
+		[tx-frames-low]=1
+		[tx-usecs]=1
+		[tx-usecs-high]=1
+		[tx-usecs-irq]=1
+		[tx-usecs-low]=1
+	)
+
+	case "$prev" in
+		adaptive-rx|\
+		adaptive-tx)
+			COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+			return ;;
+	esac
+
+	if [ "${settings[$prev]+set}" ]; then
+		# Unsigned integer
+		return
+	fi
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --config-nfc <devname> flow-type
+_ethtool_config_nfc_flow_type()
+{
+	if [ "$cword" -eq 4 ]; then
+		_ethtool_flow_type --spec
+		return
+	fi
+
+	case "$prev" in
+		context)
+			_ethtool_context
+			return ;;
+		dst|\
+		dst-mac|\
+		src)
+			# TODO: Complete only local for dst and remote for src
+			_mac_addresses
+			return ;;
+		dst-ip)
+			# Note: RX classification, so dst is usually local
+			case "${words[4]}" in
+				*4) _ip_addresses -4 return ;;
+				*6) _ip_addresses -6 return ;;
+			esac
+			return ;;
+		src-ip)
+			# Note: RX classification, so src is usually remote
+			# TODO: Remote IP addresses (ARP cache + /etc/hosts + ?)
+			return ;;
+		m|\
+		*-mask)
+			# MAC, IP, or integer bitmask
+			return ;;
+	esac
+
+	local -A settings=(
+		[action]=1
+		[context]=1
+		[loc]=1
+		[queue]=1
+		[vf]=1
+	)
+
+	if [ "${settings[$prev]+set}" ]; then
+		# Integer
+		return
+	fi
+
+	case "${words[4]}" in
+		ah4|\
+		esp4)
+			local -A fields=(
+				[dst-ip]=1
+				[dst-mac]=1
+				[spi]=1
+				[src-ip]=1
+				[tos]=1
+				[user-def]=1
+				[vlan-etype]=1
+				[vlan]=1
+			)
+			;;
+		ah6|\
+		esp6)
+			local -A fields=(
+				[dst-ip]=1
+				[dst-mac]=1
+				[spi]=1
+				[src-ip]=1
+				[tclass]=1
+				[user-def]=1
+				[vlan-etype]=1
+				[vlan]=1
+			)
+			;;
+		ether)
+			local -A fields=(
+				[dst]=1
+				[proto]=1
+				[src]=1
+				[user-def]=1
+				[vlan-etype]=1
+				[vlan]=1
+			)
+			;;
+		ip4)
+			local -A fields=(
+				[dst-ip]=1
+				[dst-mac]=1
+				[dst-port]=1
+				[l4data]=1
+				[l4proto]=1
+				[spi]=1
+				[src-ip]=1
+				[src-port]=1
+				[tos]=1
+				[user-def]=1
+				[vlan-etype]=1
+				[vlan]=1
+			)
+			;;
+		ip6)
+			local -A fields=(
+				[dst-ip]=1
+				[dst-mac]=1
+				[dst-port]=1
+				[l4data]=1
+				[l4proto]=1
+				[spi]=1
+				[src-ip]=1
+				[src-port]=1
+				[tclass]=1
+				[user-def]=1
+				[vlan-etype]=1
+				[vlan]=1
+			)
+			;;
+		sctp4|\
+		tcp4|\
+		udp4)
+			local -A fields=(
+				[dst-ip]=1
+				[dst-mac]=1
+				[dst-port]=1
+				[src-ip]=1
+				[src-port]=1
+				[tos]=1
+				[user-def]=1
+				[vlan-etype]=1
+				[vlan]=1
+			)
+			;;
+		sctp6|\
+		tcp6|\
+		udp6)
+			local -A fields=(
+				[dst-ip]=1
+				[dst-mac]=1
+				[dst-port]=1
+				[src-ip]=1
+				[src-port]=1
+				[tclass]=1
+				[user-def]=1
+				[vlan-etype]=1
+				[vlan]=1
+			)
+			;;
+		*)
+			return ;;
+	esac
+
+	if [ "${fields[$prev]+set}" ]; then
+		# Integer
+		return
+	fi
+
+	# If the previous 2 words were a field+value, suggest a mask
+	local mask=
+	if [ "${fields[${words[$cword-2]}]+set}" ]; then
+		mask="m ${words[$cword-2]}-mask"
+	fi
+
+	# Remove fields and settings which have been seen
+	local word
+	for word in "${words[@]:5:${#words[@]}-6}"; do
+		unset "fields[$word]" "settings[$word]"
+	done
+
+	# Remove mutually-exclusive options
+	if ! [ "${settings[action]+set}" ]; then
+		unset 'settings[queue]' 'settings[vf]'
+	fi
+	if ! [ "${settings[queue]+set}" ]; then
+		unset 'settings[action]'
+	fi
+	if ! [ "${settings[vf]+set}" ]; then
+		unset 'settings[action]'
+	fi
+
+	COMPREPLY=( $( compgen -W "$mask ${!fields[*]} ${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --config-nfc
+_ethtool_config_nfc()
+{
+	if [ "$cword" -eq 3 ]; then
+		COMPREPLY=( $( compgen -W 'delete flow-type rx-flow-hash' -- "$cur" ) )
+		return
+	fi
+
+	case "${words[3]}" in
+		delete)
+			# Unsigned integer
+			return ;;
+		flow-type)
+			_ethtool_config_nfc_flow_type
+			return ;;
+		rx-flow-hash)
+			case "$cword" in
+				4)
+					_ethtool_flow_type --hash
+					return ;;
+				5)
+					_ethtool_compgen_letterset m v t s d f n r
+					return ;;
+				6)
+					COMPREPLY=( $( compgen -W context -- "$cur" ) )
+					return ;;
+				7)
+					_ethtool_context
+					return ;;
+			esac
+			return ;;
+	esac
+}
+
+# Completion for ethtool --eeprom-dump
+_ethtool_eeprom_dump()
+{
+	local -A settings=(
+		[length]=1
+		[offset]=1
+		[raw]=1
+	)
+
+	if [ "$prev" = raw ]; then
+		COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+		return
+	fi
+
+	if [ "${settings[$prev]+set}" ]; then
+		# Unsigned integer argument
+		return
+	fi
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --features
+_ethtool_features()
+{
+	local -A abbreviations=(
+		[generic-receive-offload]=gro
+		[generic-segmentation-offload]=gso
+		[large-receive-offload]=lro
+		[ntuple-filters]=ntuple
+		[receive-hashing]=rxhash
+		[rx-checksumming]=rx
+		[rx-vlan-offload]=rxvlan
+		[scatter-gather]=sg
+		[tcp-segmentation-offload]=tso
+		[tx-checksumming]=tx
+		[tx-vlan-offload]=txvlan
+		[udp-fragmentation-offload]=ufo
+	)
+
+	local -A features=()
+	local feature status fixed
+	# shellcheck disable=SC2034
+	while read -r feature status fixed; do
+		if [ -z "$feature" ]; then
+			# Ignore blank line from empty expansion in here-document
+			continue
+		fi
+
+		if [ "$feature" = Features ]; then
+			# Ignore heading
+			continue
+		fi
+
+		if [ "$fixed" = '[fixed]' ]; then
+			# Fixed features can't be changed
+			continue
+		fi
+
+		feature=${feature%:}
+		if [ "${abbreviations[$feature]+set}" ]; then
+			features[${abbreviations[$feature]}]=1
+		else
+			features[$feature]=1
+		fi
+	done <<ETHTOOL_FEATURES
+$(PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin" \
+	ethtool --show-features "${words[2]}" 2>/dev/null)
+ETHTOOL_FEATURES
+
+	if [ "${features[$prev]+set}" ]; then
+		COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+		return
+	fi
+
+	# Remove features which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "features[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!features[*]}" -- "$cur" ) )
+}
+
+# Complete the current word as a kernel firmware file (for request_firmware)
+# See https://www.kernel.org/doc/html/latest/driver-api/firmware/core.html
+_ethtool_firmware()
+{
+	local -a firmware_paths=(
+		/lib/firmware/updates/
+		/lib/firmware/
+	)
+
+	local release
+	if release=$( uname -r 2>/dev/null ); then
+		firmware_paths+=(
+			"/lib/firmware/updates/$release/"
+			"/lib/firmware/$release/"
+		)
+	fi
+
+	local fw_path_para
+	if fw_path_para=$( cat /sys/module/firmware_class/parameters/path 2>/dev/null ) \
+			&& [ -n "$fw_path_para" ]; then
+		firmware_paths+=( "$fw_path_para" )
+	fi
+
+	local -A firmware_files=()
+
+	local firmware_path
+	for firmware_path in "${firmware_paths[@]}"; do
+		local firmware_file
+		for firmware_file in "$firmware_path"*; do
+			if [ -f "$firmware_file" ]; then
+				firmware_files[${firmware_file##*/}]=1
+			fi
+		done
+	done
+
+	local IFS='
+'
+	COMPREPLY=( $( compgen -W "${!firmware_files[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --flash
+_ethtool_flash()
+{
+	if [ "$cword" -eq 3 ]; then
+		_ethtool_firmware
+		return
+	fi
+}
+
+# Completion for ethtool --get-dump
+_ethtool_get_dump()
+{
+	case "$cword" in
+		3)
+			COMPREPLY=( $( compgen -W data -- "$cur" ) )
+			return ;;
+		4)
+			# Output filename
+			local IFS='
+'
+			COMPREPLY=( $( compgen -f -- "$cur" ) )
+			return ;;
+	esac
+}
+
+# Completion for ethtool --get-phy-tunable
+_ethtool_get_phy_tunable()
+{
+	if [ "$cword" -eq 3 ]; then
+		COMPREPLY=( $( compgen -W downshift -- "$cur" ) )
+		return
+	fi
+}
+
+# Completion for ethtool --module-info
+_ethtool_module_info()
+{
+	local -A settings=(
+		[hex]=1
+		[length]=1
+		[offset]=1
+		[raw]=1
+	)
+
+	case "$prev" in
+		hex|\
+		raw)
+			COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+			return ;;
+	esac
+
+	if [ "${settings[$prev]+set}" ]; then
+		# Unsigned integer argument
+		return
+	fi
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --pause
+_ethtool_pause()
+{
+	local -A settings=(
+		[autoneg]=1
+		[rx]=1
+		[tx]=1
+	)
+
+	if [ "${settings[$prev]+set}" ]; then
+		COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+		return
+	fi
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --per-queue
+_ethtool_per_queue()
+{
+	local -a subcommands=(
+		--coalesce
+		--show-coalesce
+	)
+
+	if [ "$cword" -eq 3 ]; then
+		COMPREPLY=( $( compgen -W "queue_mask ${subcommands[*]}" -- "$cur" ) )
+		return
+	fi
+
+	local sc_start=3
+	if [ "${words[3]}" = queue_mask ] ; then
+		case "$cword" in
+			4)
+				# Hex number
+				return ;;
+			5)
+				COMPREPLY=( $( compgen -W "${subcommands[*]}" -- "$cur" ) )
+				return ;;
+		esac
+
+		sc_start=5
+	fi
+
+	case "${words[$sc_start]}" in
+		--coalesce)
+			# Remove --per-queue args to match normal --coalesce invocation
+			local words=(
+				"${words[0]}"
+				--coalesce
+				"${words[2]}"
+				"${words[@]:$sc_start+1:${#words[@]}-$sc_start-1}"
+			)
+			_ethtool_coalesce
+			return ;;
+		--show-coalesce)
+			# No args
+			return ;;
+	esac
+}
+
+# Completion for ethtool --register-dump
+_ethtool_register_dump()
+{
+	local -A settings=(
+		[file]=1
+		[hex]=1
+		[raw]=1
+	)
+
+	case "$prev" in
+		hex|\
+		raw)
+			COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+			return ;;
+		file)
+			local IFS='
+'
+			COMPREPLY=( $( compgen -f -- "$cur" ) )
+			return ;;
+	esac
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --reset
+_ethtool_reset()
+{
+	if [ "$prev" = flags ]; then
+		# Unsigned integer
+		return
+	fi
+
+	local -A flag_names=(
+		[ap]=1
+		[dma]=1
+		[filter]=1
+		[irq]=1
+		[mac]=1
+		[mgmt]=1
+		[offload]=1
+		[phy]=1
+		[ram]=1
+	)
+
+	local -A all_flag_names=()
+	local flag_name
+	for flag_name in "${!flag_names[@]}"; do
+		all_flag_names[$flag_name]=1
+		all_flag_names[$flag_name-shared]=1
+	done
+
+	# Remove all_flag_names which have been seen
+	local any_dedicated=
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		case "$word" in
+			all)
+				# Flags are always additive.
+				# Nothing to add after "all".
+				return ;;
+			dedicated)
+				any_dedicated=1
+				# "dedicated" sets all non-shared flags
+				for flag_name in "${!flag_names[@]}"; do
+					unset "all_flag_names[$flag_name]"
+				done
+				continue ;;
+		esac
+
+		if [ "${flag_names[$word]+set}" ]; then
+			any_dedicated=1
+		fi
+
+		unset "all_flag_names[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!all_flag_names[*]}" -- "$cur" ) )
+
+	# Although it is permitted to mix named and un-named flags or duplicate
+	# flags with "all" or "dedicated", it's not likely intentional.
+	# Reconsider if a real use-case (or good consistency argument) is found.
+	if [ "$cword" -eq 3 ]; then
+		COMPREPLY+=( all dedicated flags )
+	elif [ -z "$any_dedicated" ]; then
+		COMPREPLY+=( dedicated )
+	fi
+}
+
+# Completion for ethtool --rxfh
+_ethtool_rxfh()
+{
+	local -A settings=(
+		[context]=1
+		[default]=1
+		[delete]=1
+		[equal]=1
+		[hfunc]=1
+		[hkey]=1
+		[weight]=1
+	)
+
+	case "$prev" in
+		context)
+			_ethtool_context
+			# "new" to create a new context
+			COMPREPLY+=( new )
+			return ;;
+		equal)
+			# Positive integer
+			return ;;
+		hfunc)
+			# Complete available RSS hash functions
+			COMPREPLY=(
+				$(_ethtool_get_names_in_section 'RSS hash function' \
+					--show-rxfh "${words[2]}")
+			)
+			return ;;
+		hkey)
+			# Pairs of hex digits separated by :
+			return ;;
+		weight)
+			# Non-negative integer
+			return ;;
+	esac
+
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		# Remove settings which have been seen
+		unset "settings[$word]"
+
+		# Remove settings which are mutually-exclusive with seen settings
+		case "$word" in
+			context)
+				unset 'settings[default]'
+				;;
+			default)
+				unset \
+					'settings[context]' \
+					'settings[delete]' \
+					'settings[equal]' \
+					'settings[weight]'
+				;;
+			delete)
+				unset \
+					'settings[default]' \
+					'settings[equal]' \
+					'settings[hkey]' \
+					'settings[weight]'
+				;;
+			equal)
+				unset \
+					'settings[default]' \
+					'settings[delete]' \
+					'settings[weight]'
+				;;
+			hkey)
+				unset 'settings[delete]'
+				;;
+			weight)
+				unset \
+					'settings[default]' \
+					'settings[delete]' \
+					'settings[equal]'
+				;;
+		esac
+	done
+
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --set-channels
+_ethtool_set_channels()
+{
+	local -A settings=(
+		[combined]=1
+		[other]=1
+		[rx]=1
+		[tx]=1
+	)
+
+	if [ "${settings[$prev]+set}" ]; then
+		# Unsigned integer argument
+		return
+	fi
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --set-eee
+_ethtool_set_eee()
+{
+	local -A settings=(
+		[advertise]=1
+		[eee]=1
+		[tx-lpi]=1
+		[tx-timer]=1
+	)
+
+	case "$prev" in
+		advertise|\
+		tx-timer)
+			# Unsigned integer
+			return ;;
+		eee|\
+		tx-lpi)
+			COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+			return ;;
+	esac
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --set-fec
+_ethtool_set_fec()
+{
+	if [ "$cword" -eq 3 ]; then
+		COMPREPLY=( $( compgen -W encoding -- "$cur" ) )
+		return
+	fi
+
+	local -A modes=(
+		[auto]=auto
+		[rs]=RS
+		[off]=off
+		[baser]=BaseR
+	)
+
+	# Remove modes which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		# ethtool recognizes modes case-insensitively
+		unset "modes[${word,,}]"
+	done
+
+	_ethtool_compgen_nocase "${modes[@]}"
+}
+
+# Completion for ethtool --set-phy-tunable
+_ethtool_set_phy_tunable()
+{
+	case "$cword" in
+		3)
+			COMPREPLY=( $( compgen -W downshift -- "$cur" ) )
+			return ;;
+		4)
+			COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+			return ;;
+		5)
+			COMPREPLY=( $( compgen -W count -- "$cur" ) )
+			return ;;
+	esac
+}
+
+# Completion for ethtool --set-priv-flags
+_ethtool_set_priv_flags()
+{
+	if [ $(( cword % 2 )) -eq 0 ]; then
+		COMPREPLY=( $( compgen -W 'on off' -- "$cur" ) )
+		return
+	fi
+
+	# Get available private flags
+	local -A flags=()
+	local flag
+	while IFS= read -r flag; do
+		# Ignore blank line from empty here-document
+		if [ -n "$flag" ]; then
+			flags[$flag]=1
+		fi
+	done <<ETHTOOL_PRIV_FLAGS
+$(_ethtool_get_names_in_section \
+	'Private flags for [[:graph:]]*' --show-priv-flags "${words[2]}")
+ETHTOOL_PRIV_FLAGS
+
+	# Remove flags which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "flags[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!flags[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --set-ring
+_ethtool_set_ring()
+{
+	local -A settings=(
+		[rx-jumbo]=1
+		[rx-mini]=1
+		[rx]=1
+		[tx]=1
+	)
+
+	if [ "${settings[$prev]+set}" ]; then
+		# Unsigned integer argument
+		return
+	fi
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Completion for ethtool --show-nfc
+_ethtool_show_nfc()
+{
+	if [ "$cword" -eq 3 ]; then
+		COMPREPLY=( $( compgen -W 'rule rx-flow-hash' -- "$cur" ) )
+		return
+	fi
+
+	case "${words[3]}" in
+		rule)
+			if [ "$cword" -eq 4 ]; then
+				COMPREPLY=(
+					$(PATH="$PATH:/sbin:/usr/sbin:/usr/local/sbin" \
+						ethtool --show-nfc "${words[2]}" 2>/dev/null |
+						command sed -n 's/^Filter:[[:space:]]*\([0-9]*\)$/\1/p')
+				)
+			fi
+			return ;;
+		rx-flow-hash)
+			case "$cword" in
+				4)
+					_ethtool_flow_type --hash
+					return ;;
+				5)
+					COMPREPLY=( $( compgen -W context -- "$cur" ) )
+					return ;;
+				6)
+					_ethtool_context
+					return ;;
+			esac
+			;;
+	esac
+}
+
+# Completion for ethtool --show-rxfh
+_ethtool_show_rxfh()
+{
+	case "$cword" in
+		3)
+			COMPREPLY=( $( compgen -W context -- "$cur" ) )
+			return ;;
+		4)
+			_ethtool_context
+			return ;;
+	esac
+}
+
+# Completion for ethtool --test
+_ethtool_test()
+{
+	if [ "$cword" -eq 3 ]; then
+		COMPREPLY=( $( compgen -W 'external_lb offline online' -- "$cur" ) )
+		return
+	fi
+}
+
+# Completion for ethtool --set-module
+_ethtool_set_module()
+{
+	local -A settings=(
+		[power-mode-policy]=1
+	)
+
+	case "$prev" in
+		power-mode-policy)
+			COMPREPLY=( $( compgen -W 'high auto' -- "$cur" ) )
+			return ;;
+	esac
+
+	# Remove settings which have been seen
+	local word
+	for word in "${words[@]:3:${#words[@]}-4}"; do
+		unset "settings[$word]"
+	done
+
+	COMPREPLY=( $( compgen -W "${!settings[*]}" -- "$cur" ) )
+}
+
+# Complete any ethtool command
+_ethtool()
+{
+	local cur prev words cword
+	_init_completion || return
+
+	# Per "Contributing to bash-completion", complete non-duplicate long opts
+	local -A suggested_funcs=(
+		[--change-eeprom]=change_eeprom
+		[--change]=change
+		[--coalesce]=coalesce
+		[--config-nfc]=config_nfc
+		[--driver]=devname
+		[--dump-module-eeprom]=module_info
+		[--eeprom-dump]=eeprom_dump
+		[--features]=features
+		[--flash]=flash
+		[--get-dump]=get_dump
+		[--get-phy-tunable]=get_phy_tunable
+		[--identify]=devname
+		[--module-info]=module_info
+		[--negotiate]=devname
+		[--offload]=features
+		[--pause]=pause
+		[--per-queue]=per_queue
+		[--phy-statistics]=devname
+		[--register-dump]=register_dump
+		[--reset]=reset
+		[--set-channels]=set_channels
+		[--set-dump]=devname
+		[--set-eee]=set_eee
+		[--set-fec]=set_fec
+		[--set-phy-tunable]=set_phy_tunable
+		[--set-priv-flags]=set_priv_flags
+		[--set-ring]=set_ring
+		[--set-rxfh-indir]=rxfh
+		[--show-channels]=devname
+		[--show-coalesce]=devname
+		[--show-eee]=devname
+		[--show-features]=devname
+		[--show-fec]=devname
+		[--show-nfc]=show_nfc
+		[--show-offload]=devname
+		[--show-pause]=devname
+		[--show-permaddr]=devname
+		[--show-priv-flags]=devname
+		[--show-ring]=devname
+		[--show-rxfh]=show_rxfh
+		[--show-time-stamping]=devname
+		[--statistics]=devname
+		[--test]=test
+		[--set-module]=set_module
+		[--show-module]=devname
+	)
+	local -A other_funcs=(
+		[--config-ntuple]=config_nfc
+		[--rxfh]=rxfh
+		[--show-ntuple]=show_nfc
+		[--show-rxfh-indir]=devname
+		[-A]=pause
+		[-C]=coalesce
+		[-E]=change_eeprom
+		[-G]=set_ring
+		[-K]=features
+		[-L]=set_channels
+		[-N]=config_nfc
+		[-P]=devname
+		[-Q]=per_queue
+		[-S]=devname
+		[-T]=devname
+		[-U]=config_nfc
+		[-W]=devname
+		[-X]=rxfh
+		[-a]=devname
+		[-c]=devname
+		[-d]=register_dump
+		[-e]=eeprom_dump
+		[-f]=flash
+		[-g]=devname
+		[-i]=devname
+		[-k]=devname
+		[-l]=devname
+		[-m]=module_info
+		[-n]=show_nfc
+		[-p]=devname
+		[-r]=devname
+		[-s]=change
+		[-t]=test
+		[-u]=show_nfc
+		[-w]=get_dump
+		[-x]=devname
+	)
+
+	if [ "$cword" -le 1 ]; then
+		_available_interfaces
+		COMPREPLY+=(
+			$( compgen -W "--help --version ${!suggested_funcs[*]}" -- "$cur" )
+		)
+		return
+	fi
+
+	local func=${suggested_funcs[${words[1]}]-${other_funcs[${words[1]}]-}}
+	if [ "$func" ]; then
+		# All sub-commands have devname as their first argument
+		if [ "$cword" -eq 2 ]; then
+			_available_interfaces
+			return
+		fi
+
+		if [ "$func" != devname ]; then
+			"_ethtool_$func"
+		fi
+	fi
+} &&
+complete -F _ethtool ethtool
+
+# ex: filetype=sh sts=8 sw=8 ts=8 noet

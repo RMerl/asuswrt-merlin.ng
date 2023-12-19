@@ -29,4 +29,6 @@ extern int dns_block_list_insert_or_update(char *host, int type);
 extern void dns_sqlite_Stat_hook(int type, char *client, char *mode, char *dura, char *date, int *retval, webs_t wp);
 
 extern void delete_dns_app_sum_records();
+
+extern void get_dns_traffic_hook(char *mode, char *name, char *dura, char *date, int *retval, webs_t wp);
 #endif

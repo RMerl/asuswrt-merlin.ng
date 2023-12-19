@@ -914,7 +914,8 @@ gvs_tuple_get_child (GVariantSerialised value,
         }
     }
 
-  if (member_info->i + 1)
+  if (member_info->i + 1 &&
+      offset_size * (member_info->i + 1) <= value.size)
     start = gvs_read_unaligned_le (value.data + value.size -
                                    offset_size * (member_info->i + 1),
                                    offset_size);
@@ -925,7 +926,8 @@ gvs_tuple_get_child (GVariantSerialised value,
   start &= member_info->b;
   start |= member_info->c;
 
-  if (member_info->ending_type == G_VARIANT_MEMBER_ENDING_LAST)
+  if (member_info->ending_type == G_VARIANT_MEMBER_ENDING_LAST &&
+      offset_size * (member_info->i + 1) <= value.size)
     end = value.size - offset_size * (member_info->i + 1);
 
   else if (member_info->ending_type == G_VARIANT_MEMBER_ENDING_FIXED)

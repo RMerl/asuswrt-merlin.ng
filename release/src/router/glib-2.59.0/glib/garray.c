@@ -1755,6 +1755,10 @@ g_byte_array_new (void)
  * Create byte array containing the data. The data will be owned by the array
  * and will be freed with g_free(), i.e. it could be allocated using g_strdup().
  *
+ * Do not use it if @len is greater than %G_MAXUINT. #GByteArray
+ * stores the length of its data in #guint, which may be shorter than
+ * #gsize.
+ *
  * Since: 2.32
  *
  * Returns: (transfer full): a new #GByteArray
@@ -1765,6 +1769,8 @@ g_byte_array_new_take (guint8 *data,
 {
   GByteArray *array;
   GRealArray *real;
+
+  g_return_val_if_fail (len <= G_MAXUINT, NULL);
 
   array = g_byte_array_new ();
   real = (GRealArray *)array;

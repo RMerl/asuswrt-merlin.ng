@@ -466,7 +466,7 @@ function showWlHint(updateFlag){
 		wlHintCss += "</style>";
 
 		var wlHintJs = '<script>setInterval(function(){var a;if(window.XMLHttpRequest)a=new XMLHttpRequest;else{if(!window.ActiveXObject)return!1;a=new ActiveXObject("Microsoft.XMLHTTP")}a.onreadystatechange=function(){4==a.readyState&&200==a.status&&(top.location.href="/")},a.open("GET","/httpd_check.xml",!0),a.send(null)},';
-		wlHintJs += (action_script == "reboot")?restart_time*1000:"5000";
+		wlHintJs += (action_script == "reboot")?restart_time*1000: (action_script.indexOf("restart_wireless") != -1)? 9000 : 5000;
 		wlHintJs += ');<\x2Fscript>';
 
 		var wlHintHtml = '';

@@ -1,0 +1,63 @@
+$Id$ 
+                          Guide to Hacking Tcpreplay
+
+[Note: Pay attention to the last update date at the top of this file.  If it
+was significantly long ago, this document may be out of date.]
+
+0. Contributing Code
+
+If you contribute code the following will happen:
+    a) You will be given credit in the CREDITS file
+    b) Your code will be licensed under the same license as that of tcpreplay
+    c) You will be assigning your copyright to Aaron Turner 
+       and Fred Klassen - Appneta Inc.
+
+If you have any questions regarding any of the three above stipulations,
+feel free to email the list at: tcpreplay-users@lists.sourceforge.net
+
+
+1. Introduction
+
+If you're reading this to find out how to add a new feature or fix a bug in
+tcpreplay or tcpprep, then you've come to the right place.  This isn't the
+place to find answers regarding how to use tcpreplay, the meaning of life,
+etc.
+
+2. File Layout
+
+The file layout is pretty simple:
+
+/                    - Base directory
+/lib                 - 3rd party libraries stolen verbatim
+/libopts             - GNU AutoOpts tearoff
+/src                 - Main code routines
+/src/common          - Common routines for all binaries
+/src/tcpedit         - libtcpedit
+/src/tcpedit/plugins - plugins for libtcpedit (mostly DLT)
+/docs                - Where to find documentation
+/test                - Test scripts and stuff which is used during 'make test'
+
+3. Coding Standards
+1) Indent 4 spaces using spaces, not tabs
+2) Opening braces for control blocks (if, while, etc) should be on the same line
+3) Opening braces for functions should be on next line
+4) Use provided warnx, dbg, and errx functions provided in err.h
+5) Use provided safe_strdup, safe_malloc and safe_realloc functions provided
+    in common/utils.h
+6) Use provided strl* functions in lib/strlcat.c and lib/strlcpy.c
+
+4. Adding support for additional DLTs (Data Link Types)
+
+libtcpedit supports a plugin based architecture for handling different DLT
+types.  If you wish to add support for another DLT type, you should read:
+
+http://tcpreplay.synfin.net/wiki/tcpeditDeveloper
+
+Which contains information on creating new DLT plugins.
+
+5. Hacking tcprewrite
+
+Tcprewrite is basically a front-end to libtcpedit.  Hence any packet editing
+improvements should be done there.  However, please remember that tcprewrite
+is not the only application which uses libtcpedit (tcpbridge is another
+example) so make sure you test your code there too.

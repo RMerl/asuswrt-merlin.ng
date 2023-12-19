@@ -92,9 +92,6 @@ ifeq ($(RTCONFIG_DEBUG),y)
 endif
 
 	$(MAKE) certs-install
-ifeq ($(RTCONFIG_LETSENCRYPT),y)
-	install -m 0644 certs/DST_Root_CA_X3.pem $(INSTALLDIR)/rom/etc/ssl/certs/letsencrypt.pem
-endif
 ifeq ($(RTCONFIG_APP_FILEFLEX),y)
 	install -m 0644 ipkg.conf $(INSTALLDIR)/rom/ipkg.conf
 endif
@@ -298,7 +295,7 @@ else
 endif
 
 ifeq ($(RTCONFIG_HTTPS),y)
-	sed 's/#.*//g;s/[ \t]\+/ /g;s/^[ \t]*//;s/[ \t]*$$//;/^$$/d' < rom/etc/ssl/openssl.cnf > $(INSTALLDIR)/rom/etc/ssl/openssl.cnf
+	sed 's/#.*//g;s/[ \t]\+/ /g;s/^[ \t]*//;s/[ \t]*$$//;/^$$/d' < rom/etc/openssl.cnf > $(INSTALLDIR)/rom/etc/openssl.cnf
 	ln -s certs/ca-certificates.crt $(INSTALLDIR)/rom/etc/ssl/cert.pem
 else
 	rm -f $(INSTALLDIR)/rom/etc/openssl.cnf
@@ -437,7 +434,7 @@ ifeq ($(BRCM_CHIP),63178)
 	cp -rf rom/etc/adsl1 $(INSTALLDIR)/rom/etc
 endif
 
-ifeq ($(BUILD_NAME), GT10)
+ifeq ($(BUILD_NAME),$(filter $(BUILD_NAME),GT10 RT-AX9000))
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config.sh $(INSTALLDIR)/usr/sbin
 	install -m 0755 apps_scripts/$(BUILD_NAME)/ingress_filter_config_bridging.sh $(INSTALLDIR)/usr/sbin
 endif

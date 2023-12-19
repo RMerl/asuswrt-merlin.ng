@@ -130,10 +130,14 @@ function initial(){
 	gen_fronthaul_ap('<% nvram_get("smart_connect_x"); %>');
 
 	document.form.band0_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
+	document.form.band0_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>');
 	document.form.band01_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
+	document.form.band01_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_wpa_psk"); %>');
 	document.form.band012_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl0_ssid"); %>');
 	document.form.band1_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_ssid"); %>');
+	document.form.band1_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl1_wpa_psk"); %>');
 	document.form.band2_ssid.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_ssid"); %>');
+	document.form.band2_wpa_psk.value = decodeURIComponent('<% nvram_char_to_ascii("", "wl2_wpa_psk"); %>');
 
 	if(band6g_support){
 		$("#psc_faq_link")  //for string tag: PSC_Faq
@@ -243,6 +247,15 @@ function initial(){
 			);
 	}
 	
+	if(is_KR_sku){
+		if(document.form.smart_connect_x.value == '1'){
+			$("#band01_auth_mode_x option[value='open']").remove();
+		}
+		else{
+			$("#band0_auth_mode_x option[value='open']").remove();
+			$("#band1_auth_mode_x option[value='open']").remove();
+		}
+	}
 }
 
 function cal_panel_block(obj){
@@ -2017,14 +2030,20 @@ function separateGenChannel(unit, channel, bandwidth){
 			if(document.getElementById('band2_psc6g_checkbox').checked){
 				if(band6gBW160_limit){
 					channel_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+					if(ttc.indexOf('CH') != -1){
+						channel_5g_2 = ['37', '53', '69', '85'];
+					}
 				}
 				else{
 					channel_5g_2 = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
+					if(ttc.indexOf('CH') != -1){
+						channel_5g_2 = ['5', '21', '37', '53', '69', '85'];
+					}
 				}
 				
 				if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
 					channel_5g_2 = ['5', '21', '37', '53', '69', '85'];
-				}
+				}				
 			}
 
 			for(var i=channel_5g_2.length-1; i>=0; i--){
@@ -3400,13 +3419,22 @@ function channel_6g(bw){
 	if(document.getElementById('band2_psc6g_checkbox').checked){
 		if(band6gBW160_limit){
 			wl_channel_list_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+			if(ttc.indexOf('AU') != -1 || ttc.indexOf('CH') != -1){
+				wl_channel_list_5g_2 = ['37', '53', '69', '85'];
+			}
 		}
 		else{
 			wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
+			if(ttc.indexOf('AU') != -1 || ttc.indexOf('CH') != -1){
+				wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85'];
+			}
 		}		
 		
 		if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){
 			wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+		}
+		else if(ttc.indexOf('CH') != -1){
+			wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85'];
 		}
 	}
 	else{
@@ -3766,6 +3794,16 @@ function handle_smart_connect(value, flag){
 		}
 	}
 	controlHideSSIDHint();
+
+	if(is_KR_sku){
+		if(document.form.smart_connect_x.value == '1'){
+			$("#band01_auth_mode_x option[value='open']").remove();
+		}
+		else{
+			$("#band0_auth_mode_x option[value='open']").remove();
+			$("#band1_auth_mode_x option[value='open']").remove();
+		}
+	}
 }
 
 function handleAiMeshBackhaul(value){
@@ -4138,7 +4176,7 @@ function handle_auth(obj){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a>
 					</th>
 					<td>
-						<select name="band01_auth_mode_x" class="input_option select_auth_mode" onChange="auth_method_change('01', this.value);">
+						<select id="band01_auth_mode_x" name="band01_auth_mode_x" class="input_option select_auth_mode" onChange="auth_method_change('01', this.value);">
 							<option value="open"    <% nvram_match("wl0_auth_mode_x", "open",   "selected"); %>>Open System</option>
 							<option value="openowe" <% nvram_match("wl0_auth_mode_x", "openowe", "selected"); %>>Enhanced Open Transition</option>
 							<option value="psk2"    <% nvram_match("wl0_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
@@ -4167,7 +4205,7 @@ function handle_auth(obj){
 				<tr id="band01_psk_field">
 					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 7);"><#WLANConfig11b_x_PSKKey_itemname#></a></th>
 					<td>
-				  		<input type="password" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value="<% nvram_get("wl0_wpa_psk"); %>"  autocorrect="off" autocapitalize="off" onfocus="plainPasswordSwitch(this, 'focus')" onblur="plainPasswordSwitch(this, 'blur')">
+				  		<input type="password" name="band01_wpa_psk" maxlength="64" class="input_32_table" oninput="handle_auth(this);" value=""  autocorrect="off" autocapitalize="off" onfocus="plainPasswordSwitch(this, 'focus')" onblur="plainPasswordSwitch(this, 'blur')">
 					</td>
 				</tr>
 				  
@@ -4264,7 +4302,7 @@ function handle_auth(obj){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a>
 					</th>
 					<td>
-						<select name="band0_auth_mode_x" class="input_option select_auth_mode" onChange="auth_method_change('0', this.value);">
+						<select id="band0_auth_mode_x" name="band0_auth_mode_x" class="input_option select_auth_mode" onChange="auth_method_change('0', this.value);">
 							<option value="open"    <% nvram_match("wl0_auth_mode_x", "open",   "selected"); %>>Open System</option>
 							<option value="openowe" <% nvram_match("wl0_auth_mode_x", "openowe", "selected"); %>>Enhanced Open Transition</option>
 							<option value="psk2"    <% nvram_match("wl0_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>
@@ -4399,7 +4437,7 @@ function handle_auth(obj){
 						<a class="hintstyle" href="javascript:void(0);" onClick="openHint(0, 5);"><#WLANConfig11b_AuthenticationMethod_itemname#></a>
 					</th>
 					<td>
-						<select name="band1_auth_mode_x" class="input_option select_auth_mode" onChange="auth_method_change('1', this.value);">
+						<select id="band1_auth_mode_x" name="band1_auth_mode_x" class="input_option select_auth_mode" onChange="auth_method_change('1', this.value);">
 							<option value="open"    <% nvram_match("wl1_auth_mode_x", "open",   "selected"); %>>Open System</option>
 							<option value="openowe" <% nvram_match("wl1_auth_mode_x", "openowe", "selected"); %>>Enhanced Open Transition</option>
 							<option value="psk2"    <% nvram_match("wl1_auth_mode_x", "psk2",   "selected"); %>>WPA2-Personal</option>

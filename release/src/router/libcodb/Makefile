@@ -10,7 +10,7 @@ include ../.config
 
 OBJS = cosql_utils.o codb_utils.o log.o
 
-CFLAGS += -g -fPIC
+CFLAGS += -g -Wall -fPIC
 CFLAGS += -I$(TOP)/sqlite
 CFLAGS += -I$(TOP)/json-c
 CFLAGS += -I$(TOP)/shared
@@ -31,6 +31,10 @@ all: libcodb.so
 
 libcodb.so: $(OBJS)
 	$(CC) -shared $(OBJS) $(LDFLAGS) -o libcodb.so
+
+stage: all
+	install -m 644 $(foreach h,$(wildcard *.h),$(h)) $(STAGEDIR)/usr/include
+	install -m 755 libcodb.so $(STAGEDIR)/usr/lib
 
 .PHONY: clean
 clean:

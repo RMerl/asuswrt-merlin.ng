@@ -1,0 +1,192 @@
+/**
+@page libtalloc_bestpractices Chapter 7: Best practises
+
+The following sections contain several best practices and good manners that were
+found by the <a href="http://www.samba.org">Samba</a> and
+<a href="https://fedorahosted.org/sssd">SSSD</a> developers over the years.
+These will help you to write code which is better, easier to debug and with as
+few (hopefully none) memory leaks as possible.
+
+@section bp-hierarchy Keep the context hierarchy steady
+
+The talloc is a hierarchy memory allocator. The hierarchy nature is what makes
+the programming more error proof. It makes the memory easier to manage and to
+free.  Therefore, the first thing we should have on our mind is: always project
+your data structures into the talloc context hierarchy.
+
+That means if we have a structure, we should always use it as a parent context
+for its elements. This way we will not encounter any troubles when freeing the
+structure or when changing its parent. The same rule applies for arrays.
+
+For example, the structure <code>user</code> from section @ref context-hierarchy
+should be created with the context hierarchy illustrated on the next image.
+
+@image html context_tree.png
+
+@section bp-tmpctx Every function should use its own context
+
+It is a good practice to create a temporary talloc context at the function
+beginning and free the context just before the return statement. All the data
+must be allocated on this context or on its children. This ensures that no
+memory leaks are created as long as we do not forget to free the temporary
+context.
+
+This pattern applies to both situations - when a function does not return any
+dynamically allocated value and when it does. However, it needs a little
+extension for the latter case.
+
+@subsection bp-tmpctx-1 Functions that do not return any dynamically allocated
+value
+
+If the function does not return any value created on the heap, we will just obey
+the aforementioned pattern.
+
+@code
+int bar()
+{
+  int ret;
+  TALLOC_CTX *tmp_ctx = talloc_new(NULL);
+  if (tmp_ctx == NULL) {
+    ret = ENOMEM;
+    goto done;
+  }
+  /* allocate data on tmp_ctx or on its descendants */
+  ret = EOK;
+done:
+  talloc_free(tmp_ctx);
+  return ret;
+}
+@endcode
+
+@subsection bp-tmpctx-2 Functions returning dynamically allocated values
+
+If our function returns any dynamically allocated data, its first parameter
+should always be the destination talloc context. This context serves as a parent
+for the output values. But again, we will create the output values as the
+descendants of the temporary context. If everything goes well, we will change
+the parent of the output values from the temporary to the destination talloc
+context.
+
+This pattern ensures that if an error occurs (e.g. I/O error or insufficient
+amount of the memory), all allocated data is freed and no garbage appears on
+the destination context.
+
+@code
+int struct_foo_init(TALLOC_CTX *mem_ctx, struct foo **_foo)
+{
+  int ret;
+  struct foo *foo = NULL;
+  TALLOC_CTX *tmp_ctx = talloc_new(NULL);
+  if (tmp_ctx == NULL) {
+    ret = ENOMEM;
+    goto done;
+  }
+  foo = talloc_zero(tmp_ctx, struct foo);
+  /* ... */
+  *_foo = talloc_steal(mem_ctx, foo);
+  ret = EOK;
+done:
+  talloc_free(tmp_ctx);
+  return ret;
+}
+@endcode
+
+@section bp-null Allocate temporary contexts on NULL
+
+As it can be seen on the previous listing, instead of allocating the temporary
+context directly on <code>mem_ctx</code>, we created a new top level context
+using <code>NULL</code> as the parameter for <code>talloc_new()</code> function.
+Take a look at the following example:
+
+@code
+char *create_user_filter(TALLOC_CTX *mem_ctx,
+                         uid_t uid, const char *username)
+{
+  char *filter = NULL;
+  char *sanitized_username = NULL;
+  /* tmp_ctx is a child of mem_ctx */
+  TALLOC_CTX *tmp_ctx = talloc_new(mem_ctx);
+  if (tmp_ctx == NULL) {
+    return NULL;
+  }
+
+  sanitized_username = sanitize_string(tmp_ctx, username);
+  if (sanitized_username == NULL) {
+    talloc_free(tmp_ctx);
+    return NULL;
+  }
+
+  filter = talloc_aprintf(tmp_ctx,"(|(uid=%llu)(uname=%s))",
+                          uid, sanitized_username);
+  if (filter == NULL) {
+    return NULL; /* tmp_ctx is not freed */ (*@\label{lst:tmp-ctx-3:leak}@*)
+  }
+
+  /* filter becomes a child of mem_ctx */
+  filter = talloc_steal(mem_ctx, filter);
+  talloc_free(tmp_ctx);
+  return filter;
+}
+@endcode
+
+We forgot to free <code>tmp_ctx</code> before the <code>return</code> statement
+in the <code>filter == NULL</code> condition. However, it is created as a child
+of <code>mem_ctx</code> context and as such it will be freed as soon as the
+<code>mem_ctx</code> is freed. Therefore, no detectable memory leak is created.
+
+On the other hand, we do not have any way to access the allocated data
+and for all we know <code>mem_ctx</code> may exist for the lifetime of our
+application. For these reasons this should be considered as a memory leak. How
+can we detect if it is unreferenced but still attached to its parent context?
+The only way is to notice the mistake in the source code.
+
+But if we create the temporary context as a top level context, it will not be
+freed and memory diagnostic tools
+(e.g. <a href="http://valgrind.org">valgrind</a>) are able to do their job.
+
+@section bp-pool Temporary contexts and the talloc pool
+
+If we want to take the advantage of the talloc pool but also keep to the
+pattern introduced in the previous section, we are unable to do it directly. The
+best thing to do is to create a conditional build where we can decide how do we
+want to create the temporary context. For example, we can create the following
+macros:
+
+@code
+#ifdef USE_POOL_CONTEXT
+  #define CREATE_POOL_CTX(ctx, size) talloc_pool(ctx, size)
+  #define CREATE_TMP_CTX(ctx)        talloc_new(ctx)
+#else
+  #define CREATE_POOL_CTX(ctx, size) talloc_new(ctx)
+  #define CREATE_TMP_CTX(ctx)        talloc_new(NULL)
+#endif
+@endcode
+
+Now if our application is under development, we will build it with macro
+<code>USE_POOL_CONTEXT</code> undefined. This way, we  can use memory diagnostic
+utilities to detect memory leaks.
+
+The release version will be compiled with the macro defined. This will  enable
+pool contexts and therefore reduce the <code>malloc()</code> calls, which will
+end up in a little bit faster processing.
+
+@code
+int struct_foo_init(TALLOC_CTX *mem_ctx, struct foo **_foo)
+{
+  int ret;
+  struct foo *foo = NULL;
+  TALLOC_CTX *tmp_ctx = CREATE_TMP_CTX(mem_ctx);
+  /* ... */
+}
+
+errno_t handle_request(TALLOC_CTX mem_ctx)
+{
+  int ret;
+  struct foo *foo = NULL;
+  TALLOC_CTX *pool_ctx = CREATE_POOL_CTX(NULL, 1024);
+  ret = struct_foo_init(mem_ctx, &foo);
+  /* ... */
+}
+@endcode
+
+*/

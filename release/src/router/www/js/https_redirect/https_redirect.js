@@ -51,7 +51,7 @@ function Get_Component_Https_Redirect(){
 	$("<div>").addClass("logo_desc").appendTo($logo_block).html("Welcome to ASUS Router");
 
 	var $desc_block = $("<div>").addClass("desc_block").appendTo($content_container);
-	$desc_block.html("<#HTTPS_Redirect_Desc#>");
+	$desc_block.html(`<#HTTPS_Redirect_Desc#><#HTTPS_Redirect_Desc2#>`);
 
 	var $https_desc_link = $("<div>").addClass("https_desc_link").appendTo($content_container);
 	$("<span>").html("<#Click_to_Continue#>").appendTo($https_desc_link);

@@ -468,9 +468,15 @@ function wl_chanspec_list_change(){
 				if(document.getElementById('psc6g_checkbox').checked){
 					if(band6gBW160_limit){
 						wl_channel_list_5g_2 = ['37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213'];
+						if (ttc.indexOf("CH") != -1) {
+                            wl_channel_list_5g_2 = ["37", "53", "69", "85"];
+                        }
 					}
 					else{
 						wl_channel_list_5g_2 = ['5', '21', '37', '53', '69', '85', '101', '117', '133', '149', '165', '181', '197', '213', '229'];
+						if (ttc.indexOf("CH") != -1) {
+                            wl_channel_list_5g_2 = ["5", "21", "37", "53", "69", "85"];
+                        }
 					}
 
 					if(is_EU_sku || ttc.indexOf('AU') != -1 || ttc.indexOf('AA') != -1){

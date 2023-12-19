@@ -1,0 +1,391 @@
+
+== ChangeLog (CoovaChilli current svn revision) ==
+
+== ChangeLog (CoovaChilli-v1.3.0 svn revision 480) ==
+
+* Removed chilli query command ''listip'', use ''list up'' instead
+* Removed chilli query command ''listmac'', use ''list mac'' instead
+* Added option ''only8021q'' to only handle VLAN traffic on an interface
+* When not using enable-largelimits, the RADIUS queue will allocate packet storage dynamically
+* Added AVL support for indexing locations and maintaining statistics
+* Fixed memory usage issue and added options ''dhcphashsize'' and ''radiusqsize''
+* Added runtime option ''redirurl'' to have a redirection URL put into the UAM query string parameters instead of a HTTP redirect
+* Chomp off Ethernet trailer which would result in DNS parsing to fail
+* Several compile-time bugs fixed
+
+== ChangeLog (CoovaChilli-v1.2.9 svn revision 460) ==
+
+* New compile time option ''--enable-useragent'' to turn on the recording of User-Agent in RADIUS
+* New compile time option ''--enable-sessionstate'' to further extend the use of ChilliSpot-Session-State to indicate reasons for disconnect
+* New compile time option ''--enable-sessionid'' to enable the use of a ChilliSpot-Session-Id that does not change during location awareness stop/start
+* Change to RADIUS proxy to allow RADIUS accounting for determining location awareness
+* New runtime option for proxyvsa called ''--locationupdate=/path/script'' to run a script on location change
+* New runtime flag option for proxyvsa ''--locationstopstart'' to have the RADIUS acct session stopped, session-id updates, and started during location change
+* New runtime flag option for proxyvsa ''--locationcopycalled'' to copy the Called-Station-Id from proxy RADIUS into that sent by chilli
+* New runtime flag option for proxyvsa ''--locationimmediateupdate'' to have chilli do RADIUS acct immediately upon location change
+* Fixed double RADIUS Accounting on macallowed/macallowlocal granted sessions; also adds MAC username
+* Added runtime option ''--childmax=128'' to define the max number of child processes
+* Added compile time option ''--enable-gardenaccounting'' to enable the splitting of garden vs. non-garden traffic
+** Added runtime option ''--uamgardendata'' to enable walled garden accounting using RADIUS accounting only
+** Added runtime option ''--uamotherdata'' to be used with above to also provide accounting for "other" traffic (DHCP, ARP, dropped, etc)
+** Added runtime option ''--nousergardendata'' that will have walled garden traffic counted separately from other user traffic post-authentication
+* Added option ''--vlanlocation'' to use VLAN as the ChilliSpot-Location
+* Added option ''--locationopt82'' whereby DHCP option 82 is used as Location
+* Added option ''--moreif'' to add additional LAN interfaces besides just dhcpif
+* Changed to be less aggressive in saving status file, unless you use ''--statusfilesave''
+* Added option ''--noarpentries'', do not create arp table entries in when using TAP.
+* Added option ''--injectext''  to enable redir injection extended script
+* Added option ''--injectwispr'' to enable redir injection of WISPr
+* Added option ''--patricia'' to use patricia tries for walled garden lookup
+* Added option ''--extadmvsa'' extended administrative-user VSA script support
+* Added option ''--dhcpnotidle'' DHCP counted for preventing idle-timeout
+* Added option ''--ipv6'' to Enable IPv6 support (experimental)
+* Added option ''--ipv6only'' to enable IPv6-Only (experimental)
+
+== ChangeLog (CoovaChilli-v1.2.8 svn revision 450) ==
+
+* New option ''--uamdomainttl'' to define a rewrite value for the DNS TTL on uamdomain matched responses
+* Made the dynamic garden able to overwrite the oldest entries to make way for the new
+* Increased the max packet size for ''--enable-largelimits'' and implemented ICMP fragmentation when packets truncated
+* Added support for a DNS handler in loadable modules which will be able to mangle DNS passing through
+* Added feature to adjust TCP Window based on leaky bucket remaining size
+* Bug fix: in main-proxy use of error_buffer with cURL
+* Bug fix: resetting leaky bucket state during logout
+* Bug fix: DHCP gateway assignment missing value
+
+== ChangeLog (CoovaChilli-v1.2.7 svn revision 443) ==
+
+* Improved RADIUS queue robustness, and will only remove from queue after verifying shared secret
+* Cleanup of printing functions for Layer2/Layer3 modes and chilli_query commands list, dhcp-list, listip, listmac
+* Allow the replying to ARP for the ''uamlisten'' IP address in ''layer3'' mode
+* Increased EAP message size limit
+* Added ''uamanyipex'' that defines a subnet to exclude from ''uamanyip''
+* Changed the name of ''anyipexclude'' to ''uamnatanyipex'' to be more accurate, see http://lists.coova.org/pipermail/chilli/2011-March/001616.html
+* Support for Framed-IP-Netmask in RADIUS macauth replies
+* Added new attributes for DHCP parameter setting in RADIUS macauth replies, see dictionary.chillispot
+* Added compile time option ''--disable-coa'' to optionally remove CoA support
+* Added compile time option ''--disable-tcpreset'' to optionally disable TCP session resetting
+* Fixups for BSD based systems
+
+== ChangeLog (CoovaChilli-v1.2.6 svn revision 433) ==
+
+* Added compile time option ''--enable-layer3'' and run-time option ''--layer3'' to enable a Layer3 (IP-Only) style captive portal - no DHCP
+* Change to ''chilli_query logout'' to identify sessions based on options ''sessionid ...'' or ''ip ...'', not just MAC address
+* Added compile time option ''--enable-uamdomainfile'' and run-time option ''--uamdomainfile filename'' to load regex style uamdomains
+* Added compile time option ''--enable-redirdnsreq'' and run-time option ''--redirdnsreq'' to have chilli send a DNS query for the hostname found in the redirect (useful when relying heavily on DNS based walled garden using ''uamdomain'' or ''uamdomainfile'')
+* Fixed ''uamdomain'' such that it will only match exactly the given name or prefixed with anything dot ('.') name
+* Added Pragma no cache and Expires headers to redirect HTTP responses
+* Fixed ''chilli_proxy'' bug for when DNS is down
+* The default will now be to --disable-chillixml (enable with --enable-chillixml)
+* Support for a module based approach to adding features to chilli, enabled with ''--enable-modules''
+* A new light-weight configuration sub-system without help text enabled with ''--endable-miniconfig''
+* Support for ''chilli_query'' can be removed at build-time with ''--disable-chilliquery''
+* Added runtime option ''--noradallow'' to authorize sessions when RADIUS is not available
+* Disabled session-based walled garden support per default, enable with ''--enable-sessgarden'' 
+* Build time option ''--enable-dhcpopt'' to use the command line option ''--dhcpopt <hex-encoded-binary-dhcp-option>''
+* Session-based content injection url support
+* Fixed bug with json startTime value when system has librt
+
+== ChangeLog (CoovaChilli-v1.2.5 svn revision 394) ==
+
+* Removed CoovaChilli-Version from Access-Accept/Challenge/Reject to EAP NAS
+* Fix to not update chilli session from a IPC request when already autheticated
+* Fix for non-null terminates username when proxying EAP
+* Added options ''--macup'' and ''--macdown'' defining scripts to run during DHCP up (assignment) and down (release)
+* Added option flag ''--redir'' to turn on redir daemon when built with ''--enable-chilliredir''
+* Release DHCP lease on a DHCP-Decline
+* Added length checks in more places to verify proper packets
+* Reviewed use of all string functions, now including snprintf.c in bstring
+* Allow for the parsing of HTTP Proxy requests for clients configured with proxy
+* Compile time option ''--enable-dnslog'' to allow for run-time option ''--dnslog'' to log all DNS requests
+* Added compile time option ''--enable-ipwhitelist'' and runtime option --ipwhitelist to define a binary IP white list file (thanks to FON)
+* Added compile time support for SSDP Multicast with ''--enable-ssdp'' thanks to Colin McFarlane 
+* Consolidated DNS parsing functions into one
+
+== ChangeLog (CoovaChilli-v1.2.4 svn revision 371) ==
+
+* Integrated changes from Comfone AG
+** Implemented support for WISPr 2.0 username/password and EAP
+** Implemented support for Radius CUI
+** Fixed missing WISPr 1.0 reply on Radius timeout
+** Clean-up of some redir.c debugging messages
+** Removed NO_UAMWISPR configuration parameter
+** Added NO_WISPR2 configuration parameter. Added NO_WISPR1 configuration parameter
+** Allow multiple concurrent UAM login methods
+** Added support Radius State attribute
+** Changes made by Laurent Frelechoux (Comfone AG)
+* Segfault bug fix in ''chilli_radconfig''
+* Fix for EAPOL, thanks to Francesco Sinopoli
+* Bug fix for ''--enable-chilliredir'' plus SSL
+* Signal handling clean-ups, using self-pipe technique
+* Better statedir handling - allowing full paths for various files
+* A timeout for ''chilli_query'' hardcoded to 10 seconds
+
+== ChangeLog (CoovaChilli-v1.2.3 svn revision 356) ==
+
+* Allow use of absolute paths for unixipc option
+* Use uamaliashostname for WISPr redirect if possible
+* Bug fix for RADIUS (EAP) proxy
+* Preliminary support for Netfilter NFQUEUE usage ''--with-nfqueue''
+* Preliminary support for Coova Netfilter kernel module ''--with-nfcoova''
+* Support for globbing of cmdsock filename(s) in chilli_query
+* Compile option ''--enable-proxyvsa'' to have proxy port sniff out VSAs
+* Compile option ''--enable-chilliscript'' to build the setuid ''chilli_script'' utility
+* Runtime option ''--proxylocattr'' that defines the "location" attribute in MAC auth proxy requests
+* Runtime option ''--proxymacaccept'' to have chilli always return AccessAccept for MAC auth proxy requests
+* Improved ''chilli_redir'' main loop to optionally support poll/epoll (''--with-poll'') and no waiting for input
+* Change such that MAC authentication happens during DHCP when not authentication, not just when 'unknown'
+* Improved support for ethers file used with binary status file
+* New option ''chilli_query listippool'' to list the IP address pool
+* Bug fix in static ip allocation - particularly noticeable on 64bit
+* Added ''Compiled with ...'' section to ''--help'' output to see compile time options
+* Fix bootstrap: install missing automake files automatically
+* Fixes concerning DHCP relay - rewriting of DHCP Server Identifier option, and more
+* Fixes for RadSec support
+* Fixes for using ''--uid'' and ''--gid''
+* Fixes for anydns
+
+== ChangeLog (CoovaChilli-v1.2.2 svn revision 291) ==
+
+* Added support for RadSec secure (SSL/TLS) RADIUS tunneling
+* Changed the generated cmdline.c (Makefile will apply patch) to be more forgiving of multiple uses of the same configuration entry.
+* Added DHCP RADIUS values to the HTTP AAA protocol proxy
+* Added option ''--uamhostname'' that will resolve (Local DNS) to ''uamlisten'' IP
+* Fix memory leak when using SSL
+* Bug fix for ''--framedservice'' option
+
+== ChangeLog (CoovaChilli-v1.2.1 svn revision 281) ==
+
+* Fix for when using WISPr-Session-Terminate-Time 
+* Fix for honoring WISPr-Redirection-URL in AccessAccept
+* Fix making *.''domain'' optionally "local DNS" instead of default
+* Fix for OpenSSL - cert file should not require full cert chain
+* Fix for SSL when using chilliredir server, add port to mdata
+* Bug fix for option ''--anyipexclude'' which stopped working (due to chilli_opt)
+* Extended redir to support script content (miniportal) under SSL
+* Fix and change to RADIUS handling to make it more robust and avoid major problems during timeouts
+* New option ''--ethers'' that specifies a file with MAC Address and IP Address mappings
+	
+== ChangeLog (CoovaChilli-v1.2.0 svn revision 271) ==
+
+* Bumped version to 1.2.0 (passing 1.1.0 to avoid confusion w/chillispot 1.1.0)
+* Added option ''--uamaliasip'' (which defaults to 1.0.0.1) that defines a special IP - will always redir
+* Added option ''--uamaliasname'' which defines a word hostname (combined with --domain) that is a DNS alias for ''uamaliasip''
+* Added option ''--redirssl'' to turn on redirection of HTTPS (when used with OpenSSL or MatrixSSL)
+* Added option ''--uamuissl'' to turn on SSL on the ''uamuiport'' instead of simple HTTP (requires SSL)
+* Added option ''--sslkeyfile'' to set the SSL private key (in PEM) to use in hijack/uamuissl
+* Added option ''--sslcertfile'' to set the SSL certificate (in PEM) to use in hijack/uamuissl
+* Added support for MatrixSSL as an alternate to OpenSSL when compiled with ''--with-matrixssl''
+* Change to RADIUS subsystem whereby the allocation of the queue is optional, as is the queue size
+* Using the librt functions for clock management; faster than using time() and will never go backwards
+* Support for Linux Packet MMAP RX/TX ring buffer packet interfaces
+* Added option ''--anyipexclude'' (from forum) to define a network that is excluded from ''uamanyip''
+* Support for poll/epoll as alternative to select (use with configure ''-with-poll'')
+* Added new compile time feature ''--enable-chilliredir'' which will build and use a forked server for handling redirects
+* With the above option also enabled, regular expression based walled garden can be set with one or more ''--uamregex spec''	
+* Added the '''miniportal''' project to CoovaChilli, for a light-weight haserl/shell captive portal
+* Added support for SSL redirecting (with SSL cert violation, of course) and SSL on the local UAM sockets
+* Added compile-type option ''--enable-chilliproxy'' to have the new ''chilli_proxy'' server built
+* Added ''chilli_proxy'' to perform a RADIUS to/from HTTP translation for networks not wanting to use RADIUS
+* Added compile-type option ''--with-curl'' to enable cURL library support instead of native chilli client
+* Improved signgal handling and delegation to child processes (proxy/redir)
+* Added Content-Type and Content-Length to chilli HTTP responses (redirect) - needed for some smart-clients (iPASS)
+* Added option to ''chilli_query'' to have a session login with a certain username/password, (e.g. ''chilli_query login sessionid xxx username test password test'')
+* Added example HTTP AAA PHP script, see doc/http-aaa-example.php
+* Added ''sessionid'' (Acct-Session-Id in RADIUS) to initial redirect URL
+* Bug fixed thanks to Wichert Akkerman (idle-timeout, '&' encoding, long passwords)
+* Bug fix for when setting bandwidth limitations using chilli_query
+* Changes default uamlogoutip from 1.1.1.1 to 1.0.0.0 because of reports it disc
+onnects VPN connections. 
+* Added some compile time options to remove certain features (see configure script).
+* Changed ''--usestatusfile'' option from flag to an argument that takes a string (filename)
+* Compile-time option ''--enable-binstatusfile'' to enable the writing/reading of a binary status file
+* New option ''seskeepalive'' to be used with above compile type option to indicate chilli should not stop sessions on shutdown
+* Added VLAN-Id RADIUS attribute to accounting. 
+* Bug fix for VLAN ID in RADIUS and redirect URL
+* Bug fix for HEX conversion error
+
+== ChangeLog (CoovaChilli-v1.0.14 svn revision 208) ==
+
+* Major reduction in initial memory usage as the MAC session pool will grow as needed.	
+* Separation of configuration from running server (experimental!! report problems!)
+* Major changes to for the use of ''usetap'' option, whereby chilli will establish a tap interface
+* New configuration setting for ''nexthop'' (for use with ''usetap'' when part of a bridge) which defines the next hop MAC address
+* New utility ''chilli_opt'' which processes the configuration and writes out an architecture dependent binary configuration file
+* New utility ''chilli_rtmon'', launched by chilli using ''rtmonfile'' option, will monitor the default route and write out the ''nexthop'' option and SIGHUP the running ''chilli''
+* Support for VLAN / 802.1Q tags in Ethernet frames on the ''dhcpif'' network. The VLAN ID is sent to the portal in the ''vlan'' query string parameter and in the ChilliSpot-VLAN-Id RADIUS attribute
+* Fixup for ''uamanydns'' whereby requests to anything other than ''dns1'' or ''dns2'' will be rewritten to access ''dns1'' instead of whatever setting the user has
+* The ''dhcpbroadcast'' option will have the DHCP server respond to broadcast IP always (when no relay)	
+* The ''tcpmss'' option will rewrite the TCP Maximum Segment Size (TCP Option).
+* Added logoutURL to the JSON redir block
+* WISPr LoginURL bug fix      
+	
+== ChangeLog (CoovaChilli-v1.0.13 svn revision 199) ==
+
+* Accepts the parameter ''ntresponse'' in the ''logon'' which is used in MS-CHAPv2 (does not require the mschapv2 option, but simply passes through the ntresponse into the MSCHAPv2-Response
+* Added option ''mschapv2'' (requiring OpenSSL enabled with --with-openssl) to support MS-CHAPv2 authentication during what would otherwise be PAP authentication (doesn't impact CHAP authentication)
+* Added option to ''chilli_response'' to generate NT-Responses from the ''challenge'', ''uamsecret'', ''username'', and ''password'' - suitable to be used to encode the ''ntresponse'' sent to the 'logon'' handler. 
+* Added options ''uid'' and ''gid'' to set the process user and group after being started by root (experimental)
+* Added option ''noc2c'' to have clients configured with /32 networks - http://coova.org/lists/?0::558
+* Expanded the output of ''chilli_query'' to include the input/output octets, the max input/output and total octets, and bandwidth limitation information for each session.
+* Added iptables rules to ''etc/chilli/up.sh'' for improved VPN pass-through and PPPoE/Mesh MTU issues.
+* Added VSA Attributes ''ChilliSpot-Max-Input-Gigawords'', ''ChilliSpot-Max-Output-Gigawords'', and ''ChilliSpot-Max-Total-Gigawords'' which hold the upper 32 bits of 64bit unsigned integer values for the corresponding ''ChilliSpot-Max-*-Octets'' attributes
+* Service-Type for MAC authentication changed to Framed instead of Login
+* Added option ''framedservice'' which changes the Service-Type from Login to Framed during normal (non MAC-auth) authentication
+* Added support for a ChilliSpot-Config = ''admin-reset'' option in RADIUS responses which will have chilli release the DHCP lease for the session
+* Added ''macreauth'' option to have chilli always re-attempt a MAC authentication when it does an initial redirection
+* Added the special ''/macreauth'' URL which will do a MAC re-auth if the ''macauth'' option is true (does not check the ''macreauth'' option which controls the re-auth for initial redirects)
+* Added option ''adminupdatefile'' which optionally defines a file to write ChilliSpot-Config administrative user session attributes to - when the file changes, chilli will reread it's configs
+* Added options ''challengetimeout'' and ''challengetimeout2'' to control previously hard-coded values for challenge timeout
+* Crashing bug fix for when using ''acctupate'' and there is a RADIUS timeout
+* Fix to have Acct-Session-Id reset upon Reject from UAM authentication
+* Added ''mtu'' option which sets the MTU returned by DHCP
+* Added ''tcpwin'' option to adjust all TCP windows coming and going
+* More parameters sent to the WISPr login URL.
+	
+== ChangeLog (CoovaChilli-v1.0.12 svn revision 171) ==
+
+* Bug fix in RADIUS timeout, note that option ''radiustimeout'' is in '''seconds'''!	
+* Fix for dnsparanoia whereby chilli will reply with a host not found error instead of dropping the packet [http://coova.org/lists/?0::166 suggest by nextime]
+* New option ''macauthdeny'' which will result in the black-listing of devices given an Access-Reject during MAC address authentication
+* New internal state called ''splash'' in which clients are given Internet access, but enforcing the port 80 http redirect
+* new option ''dhcpradius'' for mapping of some DHCP options into RADIUS attributes and visa versa during MAC authentication
+* new options ''dhcpgateway'' and ''dhcpgatewayport'' to specific a DHCP gateway (relay) host IP Address and port
+* New option (in development) ''routeif'' to specify which WAN interface to use for the default - this also enables the use of internal routing instead of everything defaulting to the tun/tap
+* Anyip fixes by Gunther, thanks. 
+* Code cleanups
+	
+== ChangeLog (CoovaChilli-v1.0.11 svn revision 147) ==
+
+* Bug fix for RADIUS VSAs being sent
+
+== ChangeLog (CoovaChilli-v1.0.10 svn revision 144) ==
+
+* Renamed packed network stack structures and put them in pkt.h
+* Bug fix for DHCP relay (RFC 1542)
+* Bug fix in IPC handling
+* Memory leak fix in logging
+	
+== ChangeLog (CoovaChilli-v1.0.9 svn revision 133) ==
+
+* Bug fix whereby the mac address of packets from the chilli redirect are overwritten	
+* Bug fix for 'leaky bucket' timediff calculations
+* Bug fix for ''uamserver'' URLs already with a query string
+* Bug fix for initial redirect url ''called'' parameter when ''nasmac'' is not configured
+* New options ''radiustimeout'', ''radiusretry'', and ''radiusretrysec'' - thanks [http://coova.org/lists/?0::75 Oliver]
+* Better Terminate-Cause for administrative reset (logout)
+* Fewer defaults set in 'defaults' script - assume chilli defaults instead
+* Fixes for native EAP over LAN (EAPOL) support
+* Local web content filenames served by chilli now able to have mixed capitalization
+* chilliController support for older IE browsers
+
+== ChangeLog (CoovaChilli-v1.0.8 svn revision 124) ==
+
+* New option ''uamdomain'' whereby entire domains, one per use of option, can be white-listed.
+* New option ''dnsparanoia'' to drop DNS responses (pre-authentication) containing any non- A, CNAME, SOA, or MX records
+* New option ''radiusoriginalurl'' to send ChilliSpot VSA ChilliSpot-OriginalURL(9) in Access-Request containing the original URL 
+* Fix for when uamlisten is not always ''net'' + 1 (first IP in network range)
+* Fix for when ''proxysecret'' and ''radiussecret'' differ in generation of Message-Authenticator
+* Added option ''definteriminterval'' to define a interim-interval (for accounting) when not otherwise set by RADIUS
+* Will install and use libchilli and libbstring shared libraries
+* Fix in 64-bit portability - thx ccesario for helping out
+* Fix for use with DHCP Relay clients
+	
+== ChangeLog (CoovaChilli-v1.0.7 svn revision 95) ==
+
+* First version of JSON interface, see [[CoovaChilli/JSON]]
+* Improved build environment installing complete default configuration (based on build config --prefix)
+* Removed default use of /etc/chilli.conf and made it based on build prefix (e.g. /usr/local/etc/chilli.conf)
+* RADIUS Accounting-On (during server startup) and Accounting-Off (during server shutdown) support
+* RADIUS Administrative-User accounting session giving device wide accounting
+* Added option ''acctupdate'' which will allow for session parameter updates with RADIUS Accounting-Response
+* New option ''tundev'' to explicitly set the TUN/TAP device, as in "tun1" or "tap3" (still be sure to use --usetap, if wanting TAP)
+* Depreciated option ''papalwaysok'' - it is considered always on
+* Better self determination of nasmac (Called-Station-Id) 
+* Sending ChilliSpot-Version attribute in access request
+* Added option ''wisprlogin'' to specifically set the WISPr LoginURL
+
+== ChangeLog (CoovaChilli-v1.0.6 svn revision 66) ==
+
+* Updated hashing algorithm to lookup3 by Bob Jenkins
+* Using [http://bstring.sourceforge.net/ bstring] in certain places instead of large, but static character arrays
+* URL Checksum: md5 of the redirect url + ''uamsecret'' passed to captive portal (''md'' query string parameter)
+* Allows any protocol defined in <tt>/etc/protocols</tt> in the ''uamallowed'' (using format <tt>proto:host:port</tt>)
+* Allow the setting of a client/session specific walled garden (up to 4 entries) in an Access-Reject
+* Allow a WISPr-Redirection-URL in an Access-Reject (the value of which is able to span multiple attributes)
+* Added the ''openidauth'' option to allow inform a RADIUS server that OpenID auth is allowed (requires ''papalwaysok'')
+* Added option ''defsessiontimeout'' to define a session time when not otherwise set by RADIUS
+* Added option ''defidletimeout'' to define a session idle timeout when not otherwise set by RADIUS
+	
+== ChangeLog (CoovaChilli-v1.0.5 svn revision 60) ==
+
+* Allow certain ICMP packets from external interface into chilli LAN for proper MTU negotiation - includes ICMP types 0, 3, 5, 11.
+* Fixups in WPA RADIUS proxy code - allow for change of credentials (logging out previous session) and drop fewer authentication requests.
+* Bug fix for when using local MAC authentication	
+
+== ChangeLog (CoovaChilli-v1.0.4 svn revision 51) ==
+
+* Merged a version of the ''Any IP'' patch as option ''uamanyip''
+* Fixed issue with userurl being truncated (no query string)
+* Improved userurl handling and sending to uamhomepage and/or uamserver
+* Wait for local content script to exit and ensure a clean socket shutdown (by Christian Loitsch; needed for IE7 and embedded portal)
+* Fixed session-id not in access-request for UAM login bug
+* Experimenting with new option ''usetap'' to use a TAP instead of TUN
+
+== ChangeLog (CoovaChilli-v1.0.3 svn revision 39) ==
+
+* The [http://www.gnu.org/software/gengetopt/gengetopt.html gengetopt] project accepted our changes to allow 'include <file>' in config files. The new cmdline.c is generated with gengetopt v2.19 or higher
+* Added the ''wpaguests'' option to allow anonymous WPA access w/captive-portal
+* Added option for ''localusers'' file to authenticate users from a local file (inspired by FON)
+* Commented out the use of clearenv() as it is not on all platforms and not wanted 
+* Look for Acct-Session-ID in addition to User-Name in Disconnect-Request - if given, only that specific session is disconnected (thanks to Jeremy Childs for patch)
+* Added option ''uamlogoutip'' (default 1.1.1.1) whereby any HTTP request to this address will result in the auto-logout of the associated session
+* Support for CoARequest RADIUS requests to reconfigure session parameters (session-timeout, data/bandwidth limits, etc)
+* New optional flag ''macallowlocal'' which when turned on results in the macallowed list being auto-logged in with any RADIUS (local "authentication")
+* Port and protocol allowed in the ''uamallowed'' to allow for a more specific definition of the walled-garden
+* Add option for ''uamuiport'' which is an alternate port for embedded local content (where as uamlisten/uamport is also used to grab the initial redirect)
+* The option ''wwwbin'' which, when configured, is the program used to deliver local content (in the ''wwwdir'') with the extention ".chi" (perfect for haserl)
+* The option ''wwwui'' which when used with ''uamuiport'' is the alternate program to use for local content
+* The ''chilli_response'' binary taking 3 arguments <hex-challenge> <uamsecret> <password> and returning the appropriate response
+* New options ''postauthproxy'' and ''postauthproxyport'' to configure an upstream transparent proxy to use post-authentication for http traffic
+* Option ''papalwaysok'' to allow back-ward compatibility with UAM back-end's using PAP authentication (with ''password'') even when configured with a ''uamsecret''
+
+== ChangeLog (CoovaChilli-v1.0.2 svn revision 17) ==
+
+* Configurable TX queue length (option ''txqlen'') on the tun/tap tunnel (Linux only)
+* Added option ''swapoctets'' to swap the meaning of input/output octets/packets 
+* Added option ''logfacility'' to change the syslog logging facility (default LOG_LOCAL6) [note: should probably change the name of debugfacility as it is really logpriority]
+* Patches from the ChilliSpot CVS 1.1 version
+** Added option ''conup'' defining a script for session/connection-up
+** Added option ''condown'' defining a script for session/connection-down
+* Patches contributed by WeSea (see: [http://chillispot.wesea.com/ their page])
+** Added option "usestatusfile" to turn on the use of the status file
+** Traffic to UAM interface not counted in leaky buckets
+** Some tweaks to allow a Flash browser-based UAM solution
+* Applied patch for OpenBSD and NetBSD found in ChilliSpot mailing-list
+* Renamed and swapped meaning of config param ''uamwispr'' (mentioned below) to ''nouamwispr'' which defaults to ''off'' for compatibility - turn on this option to ''not'' have chilli send WISPr XML, but rather assume the UAM server is taking care of that.
+* Renamed and swapped meaning of config param ''uamsuccess'' (mentioned below) to ''nouamsuccess'' which defaults to ''off'' for compatibility - turn on this feature to ''not'' return the user to the UAM server on login, but their original url instead.
+
+== ChangeLog (CoovaChilli-v1.0.1 svn revision 2) ==
+
+* Added the ability to use ''include <filename>'' in configuration files to include others. Using gengetopt version 2.16 and a patch is applied to the generated source.
+* A ''chilli_radconfig'' utility to perform a NAS Administrative-User RADIUS login in order to collect configurations (using the new ChilliSpot-Config VSA).
+* A ''chilli_query'' utility to interface directly with the chilli server (via a UNIX socket) and retrieve the status of all DHCP leases and sessions. Also, the utility can be used to instruct chilli to release a DHCP lease (and logout the user).
+* Added the configuration parameters ''adminuser'' and ''adminpasswd'' which are used by ''chilli_radconfig'' in combination with the other RADIUS (server, secret, port) parameters.
+* Fixed the handling of the originally requested URL and the forwarding of said in the UAM initial redirect query string (parameter ''userurl'').
+* Passing query string argument ''loginurl'' to ''uamhomepage'' noting the URL to follow to login -- also making the redirect return WISPr directions to use the uamserver URL instead.
+* Added the configuration parameter ''wwwdir'' which defines a directory which will serve local files for URLs of format: ''http://<uamlisten>:<uamport>/www/<filename>'' - only supports ''.html'', ''.gif'', and ''.jpg'' extensions.
+* Added the configuration parameters ''dhcpstart'', and ''dhcpend'' which define the DHCP ippool range.
+* Added the sending of ''hisip'' in the UAM initial redirect query string.
+* Added the configuration parameter ''cmdsocket'' which is the path of the UNIX socket to use for chilli_query.
+* Added the configuration parameter ''ssid'' which gets added to the UAM initial redirect query string.
+* Added the configuration parameter ''vlan'' which gets added to the UAM initial redirect query string.
+* Added the configuration parameter ''nasip'' which gets used in the RADIUS NAS-IP-Address attribute (the listen IP is used if not set).
+* Added the configuration parameter ''nasmac'' which gets sent to the UAM server in the initial redirect query string as called.
+* Added the configuration parameter ''uamwispr'' which turns off and on chilli's internal support for WISPr XML (turned off by default as it is assumed the back-office is driving the XML).
+* Added the configuration parameter ''uamsuccess'' which turns off and on whether or not chilli will send the user back to the UAM server (instead of their original URL) once authenticated.
+* Swapped input/output octets/packets in RADIUS to be more in-line with other WiFi gateways.
+* Allocates "app connections" on demand instead of in bulk to reduce memory usage.
+* Rearranged some code to improve the building process and reduce the memory footprint of the additional utilities.
+* (Re)Configuration memory leak fixed. 
+

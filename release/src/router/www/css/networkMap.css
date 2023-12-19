@@ -283,14 +283,14 @@ input[type="text"], input[type="password"], .input_option{
 	height: auto;
 	position: relative;
 	margin-top: 15px;
+	flex-flow: column;
+	width: 100%;
 }
 .port_status_bg:before{
-	content: "";
 	position: absolute;
-	left: 0%;
-	bottom: -3px;
-	height: 1px;
-	width: 95%;
+	content: "";
+	bottom: -6px;
+	width: 100%;
 	border-bottom: 1px solid #3E4E59;
 }
 .port_status_bg > div{
@@ -298,41 +298,26 @@ input[type="text"], input[type="password"], .input_option{
 	flex-wrap: wrap;
 	height: auto;
 	position: relative;
-}
-.port_status_bg .label_W_bg{
-	width: auto;
-	max-width: 92px;
-	margin-right: 6px;
+	width: 100%;
 }
 .port_status_bg .label_W_bg:before{
 	position: absolute;
 	content: "";
-	right: -4px;
-	top: -4%;
-	height: 100%;
-	border-left: 1px solid #3E4E59;
-}
-.port_status_bg .label_L_bg:before{
-	position: absolute;
-	content: "";
-	top: -4%;
-	height: 100%;
-	border-right: 1px solid #3E4E59;
-	left: -6px;
+	bottom: 0;
+	width: 100%;
+	border-bottom: 1px solid #3E4E59;
 }
 .port_status_bg .label_W_bg > div, .port_status_bg .label_L_bg > div{
 	display: flex;
-	width: 46px;
+	min-width: 46px;
+	flex-basis: 25%;
 	height: auto;
 	flex-direction: column;
 	align-items: center;
 	margin-bottom: 8px;
 }
 .port_status_bg .label_L_bg{
-	margin-left: 3px;
-	flex-grow: 1;
-	flex-shrink: 0;
-	flex-basis: 60%;
+	margin-top: 12px;
 }
 .port_status_bg .port_icon{
 	background-image: url(/images/New_ui/amesh/port_status.svg);

@@ -190,8 +190,7 @@ bool nf_set_layer1_info(nf_node_t *nn, struct list_head *clilist, struct list_he
                 nn->layer1_info.is_guest = ar->is_guest;
                 memcpy(nn->layer1_info.ifname, ar->ifname, IFNAMESIZE);
                 memcpy(nn->src_mac, ar->mac, ETHER_ADDR_LENGTH);            
-                nf_printf("nf_set_layer1_info mac:%s\n", nn->src_mac);    
-            return true;
+            	return true;
             }
         }
     }

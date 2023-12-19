@@ -60,6 +60,7 @@
 #include "gasyncresult.h"
 #include "gioerror.h"
 #include "glibintl.h"
+#include "gstrfuncsprivate.h"
 
 
 /**
@@ -7738,7 +7739,7 @@ measure_disk_usage_progress (gboolean reporting,
   g_main_context_invoke_full (g_task_get_context (task),
                               g_task_get_priority (task),
                               measure_disk_usage_invoke_progress,
-                              g_memdup (&progress, sizeof progress),
+                              g_memdup2 (&progress, sizeof progress),
                               g_free);
 }
 
@@ -7756,7 +7757,7 @@ measure_disk_usage_thread (GTask        *task,
                                  data->progress_callback ? measure_disk_usage_progress : NULL, task,
                                  &result.disk_usage, &result.num_dirs, &result.num_files,
                                  &error))
-    g_task_return_pointer (task, g_memdup (&result, sizeof result), g_free);
+    g_task_return_pointer (task, g_memdup2 (&result, sizeof result), g_free);
   else
     g_task_return_error (task, error);
 }
@@ -7780,7 +7781,7 @@ g_file_real_measure_disk_usage_async (GFile                        *file,
 
   task = g_task_new (file, cancellable, callback, user_data);
   g_task_set_source_tag (task, g_file_real_measure_disk_usage_async);
-  g_task_set_task_data (task, g_memdup (&data, sizeof data), g_free);
+  g_task_set_task_data (task, g_memdup2 (&data, sizeof data), g_free);
   g_task_set_priority (task, io_priority);
 
   g_task_run_in_thread (task, measure_disk_usage_thread);

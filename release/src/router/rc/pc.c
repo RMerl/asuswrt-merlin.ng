@@ -42,6 +42,7 @@ pc_event_s *initial_event(pc_event_s **target_e){
 	memset(tmp_e->e_name, 0, 32);
 #ifdef RTCONFIG_PC_SCHED_V3
 	tmp_e->day_of_week = 0;
+	tmp_e->type = SCHED_V2_TYPE_WEEK;
 #endif
 	tmp_e->start_day = 0;
 	tmp_e->end_day = 0;
@@ -171,6 +172,7 @@ pc_event_s *cp_event(pc_event_s **dest, const pc_event_s *src){
 	strlcpy((*dest)->e_name, src->e_name, sizeof((*dest)->e_name));
 #ifdef RTCONFIG_PC_SCHED_V3
 	(*dest)->day_of_week = src->day_of_week;
+	(*dest)->type = src->type;
 #endif
 	(*dest)->start_day = src->start_day;
 	(*dest)->end_day = src->end_day;
@@ -297,6 +299,7 @@ int is_same_event_list(pc_event_s *pc_event1, pc_event_s *pc_event2) {
 		if(
 #ifdef RTCONFIG_PC_SCHED_V3
 			follow_e1->day_of_week != follow_e2->day_of_week ||
+			follow_e1->type != follow_e2->type ||
 #else
 			follow_e1->start_day != follow_e2->start_day ||
 			follow_e1->end_day != follow_e2->end_day ||
@@ -373,6 +376,53 @@ char *get_pc_date_str(int day_of_week, int over_one_day, char *buf, int buf_size
 	return buf;
 }
 
+#if 1
+pc_event_s *get_event_list_by_sched_v2(pc_event_s **target_list, char *sched_v2_str) {
+	sched_v2_t *sched_v2_list;
+
+	if(target_list == NULL || sched_v2_str == NULL)
+		return NULL;
+
+	if (!parse_str_v2_to_sched_v2_list(sched_v2_str, &sched_v2_list, 1, 0)) { // merge same period / don't skip disabled
+		sched_v2_t *sched_v2;
+		//SCHED_DBG("now=%ld", now);
+		pc_event_s **follow_e_list = target_list;
+		for (sched_v2 = sched_v2_list; sched_v2 != NULL; sched_v2 = sched_v2->next) {
+			if (sched_v2->value_w.enable == 0)
+				continue;
+
+			if(*follow_e_list == NULL && initial_event(follow_e_list) == NULL){
+				_dprintf("No memory!!(follow_e_list)\n");
+				goto END;
+			}
+
+			SCHED_DBG("type=%d, enable=%d, dow=%d, sh=%d, sm=%d, eh=%d, em=%d", 
+				sched_v2->type,
+				sched_v2->value_w.enable,
+				sched_v2->value_w.day_of_week,
+				sched_v2->value_w.start_hour,
+				sched_v2->value_w.start_minute,
+				sched_v2->value_w.end_hour,
+				sched_v2->value_w.end_minute);
+			//get_event_day_limits(sched_v2, &(*follow_e_list)->start_day, &(*follow_e_list)->end_day);
+
+			(*follow_e_list)->day_of_week = sched_v2->value_w.day_of_week;
+			(*follow_e_list)->start_hour = sched_v2->value_w.start_hour;
+			(*follow_e_list)->end_hour = sched_v2->value_w.end_hour;
+			(*follow_e_list)->start_min = sched_v2->value_w.start_minute;
+			(*follow_e_list)->end_min = sched_v2->value_w.end_minute;
+			(*follow_e_list)->type = sched_v2->type;
+
+			while(*follow_e_list != NULL)
+				follow_e_list = &((*follow_e_list)->next);
+		}
+END:
+		free_sched_v2_list(&sched_v2_list);
+		return *target_list;
+	} else
+		return *target_list;
+}
+#else
 static int weekday_rotate(int n, unsigned int d)
 {
 	if (d > 7)
@@ -536,6 +586,7 @@ END:
 	} else
 		return *target_list;
 }
+#endif
 #endif
 
 #ifdef RTCONFIG_PERMISSION_MANAGEMENT
@@ -805,6 +856,7 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 
 	for(follow_pc = pc_list; follow_pc != NULL; follow_pc = follow_pc->next){
 		int in_period = 0;
+		int is_online_event = 0;
 		if(!follow_pc->enabled)
 			continue;
 
@@ -817,6 +869,8 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 				for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
 					s_min = follow_e->start_hour*60+follow_e->start_min;
 					e_min = follow_e->end_hour*60+follow_e->end_min;
+					if (follow_e->type == SCHED_V2_TYPE_WEEK_ONLINE)
+						is_online_event = 1;
 					if (verb) {
 						_dprintf("start day/hr/min:%d/%d/%d\n", follow_e->day_of_week, follow_e->start_hour, follow_e->start_min);
 						_dprintf("end day/hr/min:%d/%d/%d\n", follow_e->day_of_week, follow_e->end_hour, follow_e->end_min);
@@ -854,11 +908,13 @@ int cleantrack_daytime_pc_list(pc_s *pc_list, int target_day, int target_hour, i
 		}
 #endif
 		if (in_period) {
-			follow_pc->state = BLOCKED;
-			follow_pc->dtimes = nvram_get_int("questcf")?:0;
+			follow_pc->state = is_online_event ? NONBLOCK: BLOCKED;
 		} else {
-			follow_pc->state = NONBLOCK;
+			follow_pc->state = is_online_event ? BLOCKED : NONBLOCK;
 		}
+
+		if (follow_pc->state == NONBLOCK)
+			follow_pc->dtimes = nvram_get_int("questcf")?:0;
 
 		if(verb) {
 			_dprintf("\nCHK [%s] pc pre/now state:[%d][%d], dtimes=%d, fcf=%d\n", follow_pc->mac, follow_pc->prev_state, follow_pc->state, follow_pc->dtimes, fcf);
@@ -1103,6 +1159,17 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 		for(follow_e = follow_pc->events; follow_e != NULL; follow_e = follow_e->next){
 			int s_min = (follow_e->start_hour*60) + follow_e->start_min;
 			int e_min = (follow_e->end_hour*60) + follow_e->end_min;
+			SCHED_DBG("----type=%d, dow=%X, sh=%d, sm=%d, eh=%d, em=%d", 
+				follow_e->type,
+				follow_e->day_of_week,
+				follow_e->start_hour,
+				follow_e->start_min,
+				follow_e->end_hour,
+				follow_e->end_min);
+			if (follow_e->type == SCHED_V2_TYPE_WEEK)
+				fftype = logdrop;
+			else if (follow_e->type == SCHED_V2_TYPE_WEEK_ONLINE)
+				fftype = logaccept;
 			if(s_min >= e_min){  // over one day
 #ifdef BLOCKLOCAL
 				if(!(follow_e->start_hour == 24 && follow_e->start_min == 0)) {
@@ -1151,6 +1218,7 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 						fprintf(fp, " --timestop %d:%d", follow_e->end_hour, follow_e->end_min);
 				fprintf(fp, "%s %s %s %s -j %s\n", DAYS_PARAM, get_pc_date_str(follow_e->day_of_week, 0, date_buf, sizeof(date_buf)), chk_type, follow_addr, fftype);
 			}
+
 #if 0
 			if(follow_e->start_day != follow_e->end_day && follow_e->end_day == 0)
 				follow_e->end_day = 7;
@@ -1247,6 +1315,9 @@ void config_daytime_string(pc_s *pc_list, FILE *fp, char *logaccept, char *logdr
 				; // Don't care "start_day > end_day".
 #endif
 		}
+
+		if (!strcmp(fftype , logaccept))
+			fprintf(fp, "-A PControls -i %s %s %s -j %s\n", lan_if, chk_type, follow_addr, logdrop);
 
 		// MAC address in list and not in time period -> DROP.
 		//if(!temp){

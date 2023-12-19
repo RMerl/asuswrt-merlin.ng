@@ -1,0 +1,128 @@
+#!/bin/sh
+#
+# chilli CoovaChilli init
+#
+# chkconfig: 2345 65 35
+# description: CoovaChilli
+### BEGIN INIT INFO
+# Provides:       chilli
+# Required-Start: network 
+# Should-Start: 
+# Required-Stop:  network
+# Should-Stop: 
+# Default-Start:  2 3 5
+# Default-Stop:
+# Description:    CoovaChilli access controller
+### END INIT INFO
+
+[ -f @SBINDIR@/chilli ] || exit 0
+
+. @ETCCHILLI@/functions
+
+MULTI=$(ls @ETCCHILLI@/*/chilli.conf 2>/dev/null)
+[ -z "$DHCPIF" ] && [ -n "$MULTI" ] && {
+    for c in $MULTI; 
+    do
+	echo "Found configuration $c"
+	DHCPIF=$(basename $(echo $c|sed 's#/chilli.conf##'))
+	export DHCPIF
+	echo "Running DHCPIF=$DHCPIF $0 $*"
+	sh $0 $*
+    done
+    exit
+}
+
+if [ -n "$DHCPIF" ]; then
+    CONFIG=@ETCCHILLI@/$DHCPIF/chilli.conf
+    pidfile=@VARRUN@/chilli.$DHCPIF.pid
+else
+    CONFIG=@SYSCONFDIR@/chilli.conf
+    pidfile=@VARRUN@/chilli.pid
+fi
+
+[ -f $CONFIG ] || {
+    echo "$CONFIG Not found"
+    exit 0
+}
+
+check_required
+
+RETVAL=0
+prog="chilli"
+
+case $1 in
+    start)
+        echo -n "Starting $prog: "
+
+        /sbin/modprobe tun >/dev/null 2>&1
+        echo 1 > /proc/sys/net/ipv4/ip_forward
+
+	[ -e /dev/net/tun ] || {
+	    (cd /dev; 
+		mkdir net; 
+		cd net; 
+		mknod tun c 10 200)
+	}
+
+	writeconfig
+        radiusconfig
+
+	test ${HS_ADMINTERVAL:-0} -gt 0 && {	
+            (crontab -l 2>&- | grep -v $0
+		echo "*/$HS_ADMINTERVAL * * * * $0 radconfig"
+		) | crontab - 2>&-
+	}
+	
+	ifconfig $HS_LANIF 0.0.0.0
+	if [ "$(which start-stop-daemon)" = "" ]; then
+	    @SBINDIR@/chilli -c $CONFIG --pidfile=$pidfile &
+	else
+            start-stop-daemon -S --pidfile=$pidfile --user=chilli \
+		--exec @SBINDIR@/chilli -- -c $CONFIG &
+	fi
+        echo
+	;;
+    
+    radconfig)
+	[ -e $MAIN_CONF ] || writeconfig
+	radiusconfig
+	;;
+
+    reload)
+	killall -HUP chilli
+	;;
+
+    restart)
+	$0 stop
+	sleep 1
+	$0 start
+	RETVAL=$?
+	;;
+    
+    stop)
+        echo -n $"Shutting down $prog: "
+
+	crontab -l 2>&- | grep -v $0 | crontab -
+
+	if [ "$(which start-stop-daemon)" != "" ]; then
+            start-stop-daemon -K --pidfile=$pidfile --user=chilli \
+		@SBINDIR@/chilli 
+	fi
+
+        [ -f $pidfile ] && { 
+	    kill $(cat $pidfile)
+	    RETVAL=$?
+	    [ $RETVAL = 0 ] && {
+		rm -f $pidfile 2>/dev/null
+	    }
+	}
+
+        echo
+	;;
+    
+    *)
+        echo "Usage: $0 {start|stop|restart|reload|radconfig}"
+        exit 1
+esac
+
+exit $?

@@ -1,0 +1,200 @@
+# -*- mode: shell-script; -*-
+#
+#   Coova-Chilli Default Configurations. 
+#   To customize, copy this file to @ETCCHILLI@/config
+#   and edit to your liking. This is included in shell scripts
+#   that configure chilli and related programs before file 'config'. 
+
+
+###
+#   Local Network Configurations
+# 
+
+# HS_WANIF=eth0            # WAN Interface toward the Internet
+HS_LANIF=eth1		   # Subscriber Interface for client devices
+HS_NETWORK=10.1.0.0	   # HotSpot Network (must include HS_UAMLISTEN)
+HS_NETMASK=255.255.255.0   # HotSpot Network Netmask
+HS_UAMLISTEN=10.1.0.1	   # HotSpot IP Address (on subscriber network)
+HS_UAMPORT=3990            # HotSpot UAM Port (on subscriber network)
+HS_UAMUIPORT=4990          # HotSpot UAM "UI" Port (on subscriber network, for embedded portal)
+
+# HS_DYNIP=
+# HS_DYNIP_MASK=255.255.255.0
+# HS_STATIP=
+# HS_STATIP_MASK=255.255.255.0
+# HS_DNS_DOMAIN=
+
+# OpenDNS Servers
+HS_DNS1=208.67.222.222
+HS_DNS2=208.67.220.220
+
+###
+#   HotSpot settings for simple Captive Portal
+#
+HS_NASID=nas01
+HS_RADIUS=localhost
+HS_RADIUS2=localhost
+HS_UAMALLOW=www.coova.org
+HS_RADSECRET=testing123    # Set to be your RADIUS shared secret
+HS_UAMSECRET=change-me     # Set to be your UAM secret
+HS_UAMALIASNAME=chilli
+
+#  Configure RADIUS proxy support (for 802.1x + captive portal support)
+# HS_RADPROXY=on
+# HS_RADPROXY_LISTEN=127.0.0.1
+# HS_RADPROXY_CLIENT=127.0.0.1
+# HS_RADPROXY_PORT=1645
+# HS_RADPROXY_SECRET=$HS_RADSECRET
+#  Example OpenWrt /etc/config/wireless entry for hostapd
+#    option encryption wpa2
+#    option server $HS_RADPROXY_LISTEN
+#    option port $HS_RADPROXY_PORT
+#    option key $HS_RADPROXY_SECRET
+
+
+#   To alternatively use a HTTP URL for AAA instead of RADIUS:
+# HS_UAMAAAURL=http://my-site/script.php
+
+#   Put entire domains in the walled-garden with DNS inspection
+# HS_UAMDOMAINS=".paypal.com,.paypalobjects.com"
+
+#   Optional initial redirect and RADIUS settings
+# HS_SSID=<ssid>	   # To send to the captive portal
+# HS_NASMAC=<mac address>  # To explicitly set Called-Station-Id
+# HS_NASIP=<ip address>    # To explicitly set NAS-IP-Address
+
+#   The server to be used in combination with HS_UAMFORMAT to 
+#   create the final chilli 'uamserver' url configuration.
+HS_UAMSERVER=$HS_UAMLISTEN
+
+#   Use HS_UAMFORMAT to define the actual captive portal url.
+#   Shell variable replacement takes place when evaluated, so here
+#   HS_UAMSERVER is escaped and later replaced by the pre-defined 
+#   HS_UAMSERVER to form the actual "--uamserver" option in chilli.
+HS_UAMFORMAT=http://\$HS_UAMLISTEN:\$HS_UAMUIPORT/www/login.chi
+
+#   Same principal goes for HS_UAMHOMEPAGE.
+HS_UAMHOMEPAGE=http://\$HS_UAMLISTEN:\$HS_UAMPORT/www/coova.html
+
+#   This option will be configured to be the WISPr LoginURL as well
+#   as provide "uamService" to the ChilliController. The UAM Service is
+#   described in: http://www.coova.org/CoovaChilli/UAMService
+#
+# HS_UAMSERVICE=
+
+
+###
+#   Features not activated per-default (default to off)
+#
+# HS_RADCONF=off	   # Get some configurations from RADIUS or a URL ('on' and 'url' respectively)
+#
+# HS_ANYIP=on		   # Allow any IP address on subscriber LAN
+#
+# HS_MACAUTH=on		   # To turn on MAC Authentication
+#
+# HS_MACAUTHDENY=on	   # Put client in 'drop' state on MAC Auth Access-Reject
+#
+# HS_MACAUTHMODE=local	   # To allow MAC Authentication based on macallowed, not RADIUS
+#
+# HS_MACALLOW="..."      # List of MAC addresses to authenticate (comma seperated)
+#
+# HS_USELOCALUSERS=on      # To use the @ETCCHILLI@/localusers file
+#
+# HS_OPENIDAUTH=on	   # To inform the RADIUS server to allow OpenID Auth
+#
+# HS_WPAGUESTS=on	   # To inform the RADIUS server to allow WPA Guests
+#
+# HS_DNSPARANOIA=on	   # To drop DNS packets containing something other
+#			   # than A, CNAME, SOA, or MX records
+#
+# HS_OPENIDAUTH=on	   # To inform the RADIUS server to allow OpenID Auth
+#			   # Will also configure the embedded login forms for OpenID
+#
+# HS_USE_MAP=on		   # Short hand for allowing the required google
+#			   # sites to use Google maps (adds many google sites!)
+#
+###
+#   Other feature settings and their defaults
+#
+# HS_DEFSESSIONTIMEOUT=0   # Default session-timeout if not defined by RADIUS (0 for unlimited)
+#
+# HS_DEFIDLETIMEOUT=0	   # Default idle-timeout if not defined by RADIUS (0 for unlimited)
+#
+# HS_DEFBANDWIDTHMAXDOWN=0   # Default WISPr-Bandwidth-Max-Down if not defined by RADIUS (0 for unlimited)
+#
+# HS_DEFBANDWIDTHMAXUP=0	   # Default WISPr-Bandwidth-Max-Up if not defined by RADIUS (0 for unlimited)
+
+###
+# Centralized configuration options examples
+# 
+# HS_RADCONF=url	   # requires curl
+# HS_RADCONF_URL=https://coova.org/app/ap/config
+
+# HS_RADCONF=on		   # gather the ChilliSpot-Config attributes in
+#			   # Administrative-User login
+# HS_RADCONF_SERVER=rad01.coova.org		 # RADIUS Server
+# HS_RADCONF_SECRET=coova-anonymous		 # RADIUS Shared Secret 
+# HS_RADCONF_AUTHPORT=1812			 # Auth port
+# HS_RADCONF_USER=chillispot			 # Username
+# HS_RADCONF_PWD=chillispot			 # Password
+
+
+###
+#   Firewall issues
+#
+# Uncomment the following to add ports to the allowed local ports list
+# The up.sh script will allow these local ports to be used, while the default
+# is to block all unwanted traffic to the tun/tap. 
+#
+# HS_TCP_PORTS="80 443"
+
+###
+#   Standard configurations
+#
+HS_MODE=hotspot
+HS_TYPE=chillispot
+# HS_RADAUTH=1812
+# HS_RADACCT=1813
+# HS_ADMUSR=chillispot
+# HS_ADMPWD=chillispot
+
+
+###
+#   Post-Auth proxy settings
+#
+# HS_POSTAUTH_PROXY=<host or ip>
+# HS_POSTAUTH_PROXYPORT=<port>
+
+#   Directory specifying where internal web pages can be served
+#   by chilli with url /www/<file name>. Only extentions like .html
+#   .jpg, .gif, .png, .js are allowed. See below for using .chi as a
+#   CGI extension.
+HS_WWWDIR=@ETCCHILLI@/www
+
+#   Using this option assumes 'haserl' is installed per-default
+#   but, and CGI type program can ran from wwwsh to process requests
+#   to chilli with url /www/filename.chi
+HS_WWWBIN=@ETCCHILLI@/wwwsh
+
+#   Some configurations used in certain user interfaces
+#
+HS_PROVIDER=Coova
+HS_PROVIDER_LINK=http://www.coova.org/
+
+
+###
+#   WISPr RADIUS Attribute support
+#
+
+HS_LOC_NAME="My HotSpot"	   # WISPr Location Name and used in portal
+
+#   WISPr settings (to form a proper WISPr-Location-Id)
+# HS_LOC_NETWORK="My Network"	   # Network name
+# HS_LOC_AC=408			   # Phone area code
+# HS_LOC_CC=1			   # Phone country code
+# HS_LOC_ISOCC=US		   # ISO Country code
+
+# Embedded miniportal
+# HS_REG_MODE="tos" # or self, other
+# HS_RAD_PROTO="pap" # or mschapv2, chap
+# HS_USE_MAP=on

@@ -18,8 +18,11 @@ typedef struct arp_node_s {
 
 extern void arp_list_free(struct list_head *list);
 extern void arp_list_parse(struct list_head *arlist);
+extern void arp_list_parse_v2(bool isv4, char *ipstr, struct list_head *arlist);
 extern void arp_list_dump(struct list_head *arlist);
 extern arp_node_t*  arp_list_search(bool isv4, char* ipstr, struct list_head *arlist);
+
+extern int arp_list_search_and_update_mac(bool isv4, char* ipstr, unsigned char *mac);
 
 //#define GET_IPV6_MAC_SYS_COMMAND "ip -6 neigh show"
 #endif // __NFARP_H__

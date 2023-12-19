@@ -1,0 +1,18 @@
+#!/bin/sh
+
+adduser --system --group --quiet \
+	--home /tmp --shell /bin/sh \
+	--no-create-home \
+	--disabled-password \
+	chilli
+
+chown -R chilli /etc/chilli/www
+
+[ -e /usr/sbin/chilli_script ] && {
+    for file in /usr/sbin/chilli_script /etc/chilli/up.sh /etc/chilli/down.sh; do
+	chown root:chilli $file
+	chmod 04750 $file
+    done
+}
+
+/etc/init.d/chilli start

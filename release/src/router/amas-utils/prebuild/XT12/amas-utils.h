@@ -59,7 +59,7 @@ typedef enum
 #define MISC_INFO_FILE_PATH		"/tmp/misc.json"
 
 /* for RC_SUPPORT */
-#define WPA3                    (1 << 0)
+#define AMAS_UTILS_WPA3                    (1 << 0)	/* cfg_capability.h has a WPA3 definition with different value. */
 ////////////////////////////////////////////////////////////////////////////////
 //
 //	Define for misc info

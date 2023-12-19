@@ -3190,7 +3190,7 @@ export PRIORITY_CHACHA = -DOPENSSL_PREFER_CHACHA_OVER_GCM
 endif
 openssl-1.1/Makefile:
 	cd openssl-1.1 && \
-	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc/ssl --cross-compile-prefix=' ' \
+	./Configure $(HOSTCONFIG) --prefix=/usr --openssldir=/etc --cross-compile-prefix=' ' \
 	$(if $(filter y,$(RTCONFIG_SFP) $(RTCONFIG_4M_SFP) $(RTCONFIG_8M_SFP)),-Os,-O2) \
 	$(if $(RTCONFIG_DEBUG),-g) \
 	-ffunction-sections -fdata-sections -Wl,--gc-sections \

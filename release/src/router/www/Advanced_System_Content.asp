@@ -22,7 +22,6 @@
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script language="JavaScript" type="text/javascript" src="/md5.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/asus_eula.js"></script>
 <script type="text/javascript" src="/js/httpApi.js"></script>
 <style>
 .cancel{
@@ -54,35 +53,6 @@
 	border: 1px solid #999;
 	color: #999;
 }
-.contentM_upload{
-	position:absolute;
-	-webkit-border-radius: 5px;
-	-moz-border-radius: 5px;
-	border-radius: 5px;
-	z-index:500;
-	background-color:#2B373B;
-	display:none;
-	margin-left: 30%;
-	top: 1400px;
-	width:650px;
-}
-
-
-.Upload_item{
-	font-family: Arial, Helvetica, sans-serif;
-	font-size: 13px;
-	font-weight: bolder;
-	color: #FFFFFF;
-	margin-left: 15px;
-	margin-bottom: 15px;
-	margin-top: 15px;
-}
-
-.Upload_file{
-	background-color:#2B373B;
-	color:#FC0;
-	*color:#000;
-	border:0px;
 }
 .highlight{
 	background: #78535b;
@@ -204,7 +174,6 @@ else
 	var wan_ipaddr = '<% nvram_get("wan1_ipaddr"); %>';
 
 var httpd_cert_info = [<% httpd_cert_info(); %>][0];
-var uploaded_cert = false;
 
 var le_enable = '<% nvram_get("le_enable"); %>';
 var orig_http_enable = '<% nvram_get("http_enable"); %>';
@@ -332,7 +301,7 @@ function initial(){
 	}
 	else{
 		hide_https_lanport(document.form.http_enable.value);
-		hide_https_crt();
+	        showhide("cert_details", 1);
 		show_cert_details();
 	}
 	var lanport = '<% nvram_get("http_lanport"); %>';
@@ -386,9 +355,6 @@ function initial(){
 		document.form.misc_httpsport_x.disabled = true;
 		document.form.misc_httpport_x.disabled = true;
 		document.getElementById("nat_redirect_enable_tr").style.display = "none";
-
-		if ("<% nvram_get("le_enable"); %>" == "1")
-			document.form.le_enable[2].checked = true;
 	}
 	else{
 
@@ -662,14 +628,8 @@ function applyRule(){
 				|| document.form.http_enable.value != '<% nvram_get("http_enable"); %>'
 				|| document.form.misc_httpport_x.value != '<% nvram_get("misc_httpport_x"); %>'
 				|| document.form.misc_httpsport_x.value != '<% nvram_get("misc_httpsport_x"); %>'
-				|| getRadioItemCheck(document.form.https_crt_gen) == "1"
-		                || uploaded_cert
-				|| document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>'
 			){
 			restart_httpd_flag = true;
-			if(document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>'){
-				document.form.https_crt_gen.value = "1";
-			}
 			if(document.form.http_enable.value == "0"){	//HTTP
 				if(isFromWAN)
 					document.form.flag.value = "http://" + location.hostname + ":" + document.form.misc_httpport_x.value;
@@ -777,10 +737,7 @@ function applyRule(){
 		if(restart_httpd_flag) {
 			action_script_tmp += "restart_httpd;";
 
-			if ((getRadioItemCheck(document.form.https_crt_gen) == "1"
-				|| uploaded_cert
-				|| document.form.https_crt_cn.value != '<% nvram_get("https_crt_cn"); %>')
-				&& ('<% nvram_get("enable_ftp"); %>' == "1")
+			if (('<% nvram_get("enable_ftp"); %>' == "1")
 				&& ('<% nvram_get("ftp_tls"); %>' == "1")) {
 					action_script_tmp += "restart_ftpd;";
 			}
@@ -1136,58 +1093,6 @@ function load_timezones(){
 	select_time_zone();	
 }
 
-var timezone_dst_changes = {
-	"NAST9DST":	[ 3,2,0,2,  11,1,0,2 ],
-	"PST8DST":	[ 3,2,0,2,  11,1,0,2 ],
-	"MST7DST_1":	[ 3,2,0,2,  11,1,0,2 ],
-	"MST7DST_3":	[ 4,1,0,2,  10,5,0,2 ],
-	"CST6DST_3":	[ 4,1,0,2,  10,5,0,2 ],
-	"CST6DST_3_1":	[ 4,1,0,2,  10,5,0,2 ],
-	"UTC6DST":	[ 3,2,0,2,  11,1,0,2 ],
-	"EST5DST":	[ 3,2,0,2,  11,1,0,2 ],
-	"AST4DST":	[ 3,2,0,2,  11,1,0,2 ],
-	"UTC4DST_2":	[ 8,2,0,0,   5,2,0,0 ],
-	"NST3.30DST":	[ 3,2,0,2,  11,1,0,2 ],
-	"EBST3DST_1":	[11,1,0,0,   2,3,0,0 ],
-	"EBST3DST_2":	[ 3,5,6,22, 10,5,6,23],
-	"EUT1DST":	[ 3,5,0,0,  10,5,0,1 ],
-	"GMT0DST_1":	[ 3,5,0,1,  10,5,0,2 ],
-	"GMT0DST_2":	[ 3,5,0,2,  10,5,0,3 ],
-	"UTC-1DST_1":	[ 3,5,0,2,  10,5,0,3 ],
-	"UTC-1DST_1_1":	[ 3,5,0,2,  10,5,0,3 ],
-	"UTC-1DST_1_2":	[ 3,5,0,2,  10,5,0,3 ],
-	"UTC-1DST_2":	[ 3,5,0,2,  10,5,0,3 ],
-	"MET-1DST":	[ 3,5,0,2,  10,5,0,3 ],
-	"MET-1DST_1":	[ 3,5,0,2,  10,5,0,3 ],
-	"MEZ-1DST":	[ 3,5,0,2,  10,5,0,3 ],
-	"MEZ-1DST_1":	[ 3,5,0,2,  10,5,0,3 ],
-	"UTC-2DST":	[ 3,5,0,3,  10,5,0,4 ],
-	"UTC-2DST_3":	[ 3,5,0,3,  10,5,0,4 ],
-	"UTC-2DST_4":	[ 3,5,0,3,  10,5,0,4 ],
-	"UTC-2DST_2":	[ 3,5,0,3,  10,5,0,4 ],
-	"IST-2DST":	[ 3,5,5,2,  10,5,0,2 ],
-	"EET-2DST":	[ 3,5,0,3,  10,5,0,4 ],
-	"UTC-9.30DST":	[10,1,0,2,   4,1,0,3 ],
-	"UTC-10DST_1":	[10,1,0,2,   4,1,0,3 ],
-	"TST-10TDT":	[10,1,0,2,   4,1,0,3 ],
-	"NZST-12DST":	[ 9,5,0,2,   4,1,0,3 ]
-};
-
-function autofill_dst(){
-	if (document.form.time_zone_select.value.search("DST") >= 0 || document.form.time_zone_select.value.search("TDT") >= 0) {
-		if (timezone_dst_changes[document.form.time_zone_select.value]) {
-			document.form.dst_start_m.value = timezone_dst_changes[document.form.time_zone_select.value][0];
-			document.form.dst_start_w.value = timezone_dst_changes[document.form.time_zone_select.value][1];
-			document.form.dst_start_d.value = timezone_dst_changes[document.form.time_zone_select.value][2];
-			document.form.dst_start_h.value = timezone_dst_changes[document.form.time_zone_select.value][3];
-			document.form.dst_end_m.value = timezone_dst_changes[document.form.time_zone_select.value][4];
-			document.form.dst_end_w.value = timezone_dst_changes[document.form.time_zone_select.value][5];
-			document.form.dst_end_d.value = timezone_dst_changes[document.form.time_zone_select.value][6];
-			document.form.dst_end_h.value = timezone_dst_changes[document.form.time_zone_select.value][7];
-		}
-	}
-}
-
 var dst_month = new Array("", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12");
 var dst_week = new Array("", "1st", "2nd", "3rd", "4th", "5th");
 var dst_day = new Array("<#date_Sun_itemdesc#>", "<#date_Mon_itemdesc#>", "<#date_Tue_itemdesc#>", "<#date_Wed_itemdesc#>", "<#date_Thu_itemdesc#>", "<#date_Fri_itemdesc#>", "<#date_Sat_itemdesc#>");
@@ -1311,19 +1216,6 @@ function hide_https_lanport(_value){
 	}
 	else{
 		$("#https_download_cert").css("display", "none");
-	}
-}
-
-function hide_https_crt(){
-	var protos = document.form.http_enable.value;
-
-	showhide("cert_details", (protos != "0" ? 1 : 0));
-
-	if ((!letsencrypt_support) || (sw_mode != 1)) {
-		showhide("https_crt_san", (protos != "0" ? 1 : 0));
-		showhide("https_crt_gen", (protos != "0" ? 1 : 0));
-		showhide("https_cert", (protos != "0" ? 1 : 0));
-		showhide("cert_manage_link", 0);
 	}
 }
 
@@ -1771,14 +1663,6 @@ function change_hddSpinDown(obj_value) {
 	}
 }
 
-function open_upload_window(){
-	$("#upload_cert_window").fadeIn(300);
-}
-
-function hide_upload_window(){
-	$("#upload_cert_window").fadeOut(300);
-}
-
 function get_cert_info(){
 	$.ajax({
 		url: '/ajax_certinfo.asp',
@@ -1793,50 +1677,14 @@ function get_cert_info(){
 }
 
 function show_cert_details(){
-	document.getElementById("SAN").innerHTML = httpd_cert_info.SAN;
 	document.getElementById("issueTo").innerHTML = httpd_cert_info.issueTo;
 	document.getElementById("issueBy").innerHTML = httpd_cert_info.issueBy;
 	document.getElementById("expireOn").innerHTML = httpd_cert_info.expire;
 }
 
-function check_filename(){
-	var key_file = document.upload_form.file_key.value;
-	var cert_file = document.upload_form.file_cert.value;
-	var key_subname = key_file.substring(key_file.lastIndexOf('.') + 1);
-	var cert_subname = cert_file.substring(cert_file.lastIndexOf('.') + 1);
-
-	if(key_subname != 'pem' && key_subname != 'key'){
-		alert("Please select correct private key file.");
-		document.upload_form.file_key.value = "";
-		document.upload_form.file_key.focus();
-		return false;
-	}
-
-	if(cert_subname != 'pem' && cert_subname != 'crt' && cert_subname != 'cer'){
-		alert("Please select correct SSL certificate file.");
-		document.upload_form.file_cert.value = "";
-		document.upload_form.file_cert.focus();
-		return false;
-	}
-
-	return true;
-}
-
-function upload_cert_key(){
-	if(check_filename()){
-		document.upload_form.submit();
-		hide_upload_window();
-		setTimeout("get_cert_info();", 3000);
-		uploaded_cert = true;
-	}
-}
-
 function warn_jffs_format(){
-	var msg = "WARNING: Erasing the JFFS partition will also wipe out some configuration elements such as OpenVPN certificates";
-	if (hnd_support)
-		msg += ", and various router settings"
-	msg += ".\n\nMake sure you are certain you wish to proceed with this operation.";
-	alert(msg);
+	alert("WARNING: Erasing the JFFS partition will also wipe out some configuration elements such as OpenVPN certificates, " +
+	      "and various router settings.\n\nMake sure you are certain you wish to proceed with this operation.");
 }
 
 function show_network_monitoring(){
@@ -2996,38 +2844,12 @@ function build_boostkey_options() {
 						<div style="color: #FFCC00; display: none;">* <#HttpsLanport_Hint#></div>
 					</td>
 				</tr>
-                                <tr id="https_crt_gen" style="display:none;">
-                                        <th>Generate a new certificate</th>
-                                        <td>
-						<input type="radio" name="https_crt_gen" class="input" value="1" onClick="hide_https_crt();" <% nvram_match_x("", "https_crt_gen", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="https_crt_gen" class="input" value="0" onClick="hide_https_crt();" <% nvram_match_x("", "https_crt_gen", "0", "checked"); %>><#checkbox_No#>
-                                        </td>
-                                </tr>
-				<tr id="https_crt_san" style="display:none;">
-					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,22)">Additional Certificate SANs</a></th>
-					<td>
-						<input type="text" name="https_crt_cn" value="<% nvram_get("https_crt_cn"); %>" autocomplete="off" class="input_32_table" maxlength="64" autocorrect="off" autocapitalize="off">
-					</td>
-				</tr>
-
-				<tr id="https_cert" style="display:none;">
-					<th>Provide your own certificate</th>
-					<td>
-						<input type="radio" value="2" name="le_enable" <% nvram_match("le_enable", "2", "checked"); %>>Import or Persistent Auto-generated
-						<input type="radio" value="0" name="le_enable" <% nvram_match("le_enable", "0", "checked"); %>>Non-persistent auto-generated
-						<div id="cert_act" style="margin-top: 5px;"><div style="display:table-cell"><input class="button_gen" onclick="open_upload_window();" type="button" value="<#CTL_upload#>"/><img id="loadingicon" style="margin-left:5px;display:none;" src="/images/InternetScan.gif"></div></div>
-					</td>
-				</tr>
 				<tr id="cert_details" style="display:none;">
 					<th>Installed Server Certificate</th>
 					<td>
 						<div style="display:table-row;">
 							<div style="display:table-cell;white-space: nowrap;">Issued to :</div>
 							<div id="issueTo" style="display:table-cell; padding-left:10px;"></div>
-						</div>
-						<div style="display:table-row;">
-							<div style="display:table-cell;white-space: nowrap">SAN :</div>
-							<div id="SAN" style="display:table-cell; padding-left:10px;"></div>
 						</div>
 						<div style="display:table-row;">
 							<div style="display:table-cell;white-space: nowrap">Issued by :</div>
@@ -3043,9 +2865,9 @@ function build_boostkey_options() {
 				<tr id="https_download_cert" style="display: none;">
 					<th><#Local_access_certificate_download#></th>
 					<td>
-						<input id="download_cert_btn" class="button_gen" onclick="save_cert_key();" type="button" value="<#btn_Export#>" />
+						<input id="download_cert_btn" class="button_gen" style="margin-left:10px;margin-bottom:10px;" onclick="save_cert_key();" type="button" value="<#btn_Export#>" /><br>
 						<input id="clear_server_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_server_cert_key();" type="button" value="<#CTL_renew#> <#vpn_openvpn_KC_SA#>" /><!-- untranslated -->
-						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated -->
+						<input id="clear_cert_btn" class="button_gen" style="margin-left:10px" onclick="clear_cert_key();" type="button" value="<#CTL_renew#> Root Certificate" /><!-- untranslated --><br>
 						<span id="download_cert_desc"><#Local_access_certificate_desc#></span><a id="creat_cert_link" href="" style="font-family:Lucida Console;text-decoration:underline;color:#FFCC00; margin-left: 5px;" target="_blank">FAQ</a>
 					</td>
 				</tr>
@@ -3140,26 +2962,5 @@ function build_boostkey_options() {
 </table>
 
 <div id="footer"></div>
-<form method="post" name="upload_form" action="upload_cert_key.cgi" target="hidden_frame" enctype="multipart/form-data">
-<input type="hidden" name="action_mode" value="">
-<input type="hidden" name="action_script" value="">
-<input type="hidden" name="action_wait" value="">
-<div id="upload_cert_window"  class="contentM_upload" style="box-shadow: 1px 5px 10px #000;">
-	<div class="formfonttitle" style="margin-top: 15px; margin-left: 15px;">Import your own certificate</div>
-	<div class="formfontdesc" style="margin-left: 15px;">Upload a certificate issued by a certification authority here. Your private key and SSL certificate is necessary.</div>
-	<div class="Upload_item">
-		<div style="display:table-cell; width: 45%;">Private Key :</div>
-		<div style="display:table-cell;"><input type="file" name="file_key" class="input Upload_file"></div>
-	</div>
-	<div class="Upload_item">
-		<div style="display:table-cell; width: 45%;">SSL Certificate :</div>
-		<div style="display:table-cell;"><input type="file" name="file_cert" class="input Upload_file"></div>
-	</div>
-	<div align="center" style="margin-top:30px; padding-bottom:15px;">
-		<div style="display:table-cell;"><input class="button_gen" type="button" onclick="hide_upload_window();" id="cancelBtn" value="<#CTL_Cancel#>"></div>
-		<div style="display:table-cell; padding-left: 5px;"><input class="button_gen" type="button" onclick="upload_cert_key();" value="<#CTL_ok#>"></div>
-	</div>
-</div>
-</form>
 </body>
 </html>

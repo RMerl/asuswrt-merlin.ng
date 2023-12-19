@@ -4477,13 +4477,9 @@ int validate_apply(webs_t wp, json_object *root)
 				/* Validating input value
 				 * return 1:pass 0:fail
 				 */
-
-// KLUDGE - temporary woarkaround for CIDR support
-				if(strcmp(name, "filter_lwlist")) {
-					if(!validate_apply_input_value(name, value)){
-						dbg("validate %s=%s is illegal\n", name, value);
-						continue;
-					}
+				if(!validate_apply_input_value(name, value)){
+					dbg("validate %s=%s is illegal\n", name, value);
+					continue;
 				}
 #ifdef RTCONFIG_CFGSYNC
 				save_changed_param(cfg_root, name);

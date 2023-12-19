@@ -1,6 +1,12 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.6 (xx-xxx-xxxx)
+  - UPDATED: Merged GPL 388_24353.
+  - UPDATED: nano to 7.2.
+  - UPDATED: ncurses to 6.3.
+
+
 3004.388.5 (2-Dec-2023)
   - UPDATED: OpenSSL to 1.1.1w.
   - UPDATED: Curl to 8.4.0.

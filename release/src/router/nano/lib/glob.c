@@ -1,17 +1,17 @@
-/* Copyright (C) 1991-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2023 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
+   modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public
+   You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
@@ -28,9 +28,9 @@
 #include <glob.h>
 
 #include <errno.h>
+#include <fcntl.h>
 #include <sys/types.h>
 #include <sys/stat.h>
-#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 #include <assert.h>
@@ -56,28 +56,38 @@
 # define sysconf(id) __sysconf (id)
 # define closedir(dir) __closedir (dir)
 # define opendir(name) __opendir (name)
+# undef dirfd
+# define dirfd(str) __dirfd (str)
 # define readdir(str) __readdir64 (str)
 # define getpwnam_r(name, bufp, buf, len, res) \
     __getpwnam_r (name, bufp, buf, len, res)
-# define struct_stat64          struct stat64
 # define FLEXIBLE_ARRAY_MEMBER
+# ifndef struct_stat
+#  define struct_stat           struct stat
+# endif
+# ifndef struct_stat64
+#  define struct_stat64         struct stat64
+# endif
+# ifndef GLOB_LSTAT
+#  define GLOB_LSTAT            gl_lstat
+# endif
+# ifndef GLOB_FSTATAT64
+#  define GLOB_FSTATAT64        __fstatat64
+# endif
 # include <shlib-compat.h>
 #else /* !_LIBC */
 # define __glob                 glob
 # define __getlogin_r(buf, len) getlogin_r (buf, len)
-# define __lstat64(fname, buf)  lstat (fname, buf)
-# if defined _WIN32 && !defined __CYGWIN__
-   /* Avoid GCC or clang warning.  The original __stat64 macro is unused.  */
-#  undef __stat64
-# endif
-# define __stat64(fname, buf)   stat (fname, buf)
 # define __fxstatat64(_, d, f, st, flag) fstatat (d, f, st, flag)
-# define struct_stat64          struct stat
 # ifndef __MVS__
 #  define __alloca              alloca
 # endif
 # define __readdir              readdir
 # define COMPILE_GLOB64
+# define struct_stat            struct stat
+# define struct_stat64          struct stat
+# define GLOB_LSTAT             gl_lstat
+# define GLOB_FSTATAT64         fstatat
 #endif /* _LIBC */
 
 #include <fnmatch.h>
@@ -196,22 +206,15 @@ glob_lstat (glob_t *pglob, int flags, const char *fullname)
 {
 /* Use on glob-lstat-compat.c to provide a compat symbol which does not
    use lstat / gl_lstat.  */
-#ifdef GLOB_NO_LSTAT
-# define GL_LSTAT gl_stat
-# define LSTAT64 __stat64
-#else
-# define GL_LSTAT gl_lstat
-# define LSTAT64 __lstat64
-#endif
-
   union
   {
-    struct stat st;
+    struct_stat st;
     struct_stat64 st64;
   } ust;
   return (__glibc_unlikely (flags & GLOB_ALTDIRFUNC)
-          ? pglob->GL_LSTAT (fullname, &ust.st)
-          : LSTAT64 (fullname, &ust.st64));
+          ? pglob->GLOB_LSTAT (fullname, &ust.st)
+          : GLOB_FSTATAT64 (AT_FDCWD, fullname, &ust.st64,
+                            AT_SYMLINK_NOFOLLOW));
 }
 
 /* Set *R = A + B.  Return true if the answer is mathematically
@@ -249,11 +252,12 @@ static int collated_compare (const void *, const void *) __THROWNL;
 static bool
 is_dir (char const *filename, int flags, glob_t const *pglob)
 {
-  struct stat st;
+  struct_stat st;
   struct_stat64 st64;
   return (__glibc_unlikely (flags & GLOB_ALTDIRFUNC)
           ? pglob->gl_stat (filename, &st) == 0 && S_ISDIR (st.st_mode)
-          : __stat64 (filename, &st64) == 0 && S_ISDIR (st64.st_mode));
+          : (GLOB_FSTATAT64 (AT_FDCWD, filename, &st64, 0) == 0
+             && S_ISDIR (st64.st_mode)));
 }
 
 /* Find the end of the sub-pattern in a brace expression.  */
@@ -1279,6 +1283,8 @@ glob_in_dir (const char *pattern, const char *directory, int flags,
 {
   size_t dirlen = strlen (directory);
   void *stream = NULL;
+  struct scratch_buffer s;
+  scratch_buffer_init (&s);
 # define GLOBNAMES_MEMBERS(nnames) \
     struct globnames *next; size_t count; char *name[nnames];
   struct globnames { GLOBNAMES_MEMBERS (FLEXIBLE_ARRAY_MEMBER) };
@@ -1350,6 +1356,8 @@ glob_in_dir (const char *pattern, const char *directory, int flags,
         }
       else
         {
+          DIR *dirp = stream;
+          int dfd = dirfd (dirp);
           int fnm_flags = ((!(flags & GLOB_PERIOD) ? FNM_PERIOD : 0)
                            | ((flags & GLOB_NOESCAPE) ? FNM_NOESCAPE : 0));
           flags |= GLOB_MAGCHAR;
@@ -1377,8 +1385,32 @@ glob_in_dir (const char *pattern, const char *directory, int flags,
               if (flags & GLOB_ONLYDIR)
                 switch (readdir_result_type (d))
                   {
-                  case DT_DIR: case DT_LNK: case DT_UNKNOWN: break;
                   default: continue;
+                  case DT_DIR: break;
+                  case DT_LNK: case DT_UNKNOWN:
+                    /* The filesystem was too lazy to give us a hint,
+                       so we have to do it the hard way.  */
+                    if (__glibc_unlikely (dfd < 0 || flags & GLOB_ALTDIRFUNC))
+                      {
+                        size_t namelen = strlen (d.name);
+                        size_t need = dirlen + 1 + namelen + 1;
+                        if (s.length < need
+                            && !scratch_buffer_set_array_size (&s, need, 1))
+                          goto memory_error;
+                        char *p = mempcpy (s.data, directory, dirlen);
+                        *p = '/';
+                        p += p[-1] != '/';
+                        memcpy (p, d.name, namelen + 1);
+                        if (! is_dir (s.data, flags, pglob))
+                          continue;
+                      }
+                    else
+                      {
+                        struct_stat64 st64;
+                        if (! (GLOB_FSTATAT64 (dfd, d.name, &st64, 0) == 0
+                               && S_ISDIR (st64.st_mode)))
+                          continue;
+                      }
                   }
 
               if (fnmatch (pattern, d.name, fnm_flags) == 0)
@@ -1510,5 +1542,6 @@ glob_in_dir (const char *pattern, const char *directory, int flags,
       __set_errno (save);
     }
 
+  scratch_buffer_free (&s);
   return result;
 }

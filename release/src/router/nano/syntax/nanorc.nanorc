@@ -1,31 +1,49 @@
 ## Syntax highlighting for nanorc files.
 
-syntax nanorc "\.?nanorc$"
+syntax nanorc "[/.]nanorc(\.in)?$"
 comment "#"
 
 # Everything that does not get recolored is invalid
 color brightred ".*"
 
-# Keywords
-color brightgreen "^[[:blank:]]*(set|unset)[[:blank:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|boldtext|bookstyle|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|historylog|indicator|jumpyscrolling|linenumbers|locking|magic|minibar|mouse|multibuffer|noconvert|nohelp|nonewlines|positionlog|preserve|quickblank|rawsequences|rebinddelete|regexp|saveonexit|showcursor|smarthome|softwrap|stateflags|suspendable|tabstospaces|trimblanks|unix|wordbounds|zap)\>"
-color yellow "^[[:blank:]]*set[[:blank:]]+((error|function|key|number|prompt|scroller|selected|spotlight|status|stripe|title)color)[[:blank:]]+(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
-color brightgreen "^[[:blank:]]*set[[:blank:]]+(backupdir|brackets|errorcolor|functioncolor|keycolor|matchbrackets|numbercolor|operatingdir|promptcolor|punct|quotestr|scrollercolor|selectedcolor|speller|spotlightcolor|statuscolor|stripecolor|titlecolor|whitespace|wordchars)[[:blank:]]+"
+# Color names
+color yellow "^[[:blank:]]*(i?color|set[[:blank:]]+((error|function|key|mini|number|prompt|scroller|selected|spotlight|status|stripe|title)color))[[:blank:]]+(bold,)?(italic,)?(((bright|light)?(white|black|red|blue|green|yellow|magenta|cyan))|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte|rosy|beet|plum|sea|sky|slate|teal|sage|brown|ocher|sand|tawny|brick|crimson|grey|gray|#[[:xdigit:]]{3})?(,(((light)?(white|black|red|blue|green|yellow|magenta|cyan))|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte|rosy|beet|plum|sea|sky|slate|teal|sage|brown|ocher|sand|tawny|brick|crimson|grey|gray|#[[:xdigit:]]{3}))?\>"
+
+# The arguments of two special commands
+color bold,purple "^[[:blank:]]*include[[:blank:]][^"]*([[:blank:]]|$)"
+color lime "^[[:blank:]]*extendsyntax[[:blank:]]+[[:alpha:]]+[[:blank:]]+(i?color|header|magic|comment|formatter|linter|tabgives)[[:blank:]]+.*"
+
+# The arguments of commands
+color brightgreen "^[[:blank:]]*(set|unset)[[:blank:]]+(afterends|allow_insecure_backup|atblanks|autoindent|backup|boldtext|bookstyle|breaklonglines|casesensitive|constantshow|cutfromcursor|emptyline|historylog|indicator|jumpyscrolling|linenumbers|locking|magic|minibar|mouse|multibuffer|noconvert|nohelp|nonewlines|positionlog|preserve|quickblank|rawsequences|rebinddelete|regexp|saveonexit|showcursor|smarthome|softwrap|stateflags|tabstospaces|trimblanks|unix|wordbounds|zap|zero)\>"
+color brightgreen "^[[:blank:]]*set[[:blank:]]+(backupdir|brackets|errorcolor|functioncolor|keycolor|matchbrackets|minicolor|numbercolor|operatingdir|promptcolor|punct|quotestr|scrollercolor|selectedcolor|speller|spotlightcolor|statuscolor|stripecolor|titlecolor|whitespace|wordchars)[[:blank:]]+"
 color brightgreen "^[[:blank:]]*set[[:blank:]]+(fill[[:blank:]]+-?[[:digit:]]+|(guidestripe|tabsize)[[:blank:]]+[1-9][0-9]*)\>"
-color brightgreen "^[[:blank:]]*bind[[:blank:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:blank:]]+([a-z]+|".*")[[:blank:]]+(main|help|search|replace(with)?|yesno|gotoline|writeout|insert|browser|whereisfile|gotodir|execute|spell|linter|all)([[:blank:]]+#|[[:blank:]]*$)"
-color brightgreen "^[[:blank:]]*unbind[[:blank:]]+((\^([A-Za-z]|[]/@\^_`]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:blank:]]+(all|main|search|replace(with)?|yesno|gotoline|writeout|insert|ext(ernal)?cmd|help|spell|linter|browser|whereisfile|gotodir)([[:blank:]]+#|[[:blank:]]*$)"
-color brightgreen "^[[:blank:]]*extendsyntax[[:blank:]]+[[:alpha:]]+[[:blank:]]+(i?color|header|magic|comment|formatter|linter|tabgives)[[:blank:]]+.*"
+color brightgreen "^[[:blank:]]*bind[[:blank:]]+((\^([A-Za-z]|[]/@\^_`-]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:blank:]]+([a-z]+|".*")[[:blank:]]+(main|help|search|replace(with)?|yesno|gotoline|writeout|insert|execute|browser|whereisfile|gotodir|spell|linter|all)\>"
+color brightgreen "^[[:blank:]]*unbind[[:blank:]]+((\^([A-Za-z]|[]/@\^_`-]|Space)|([Ss][Hh]-)?[Mm]-[A-Za-z]|[Mm]-([][!"#$%&'()*+,./0-9:;<=>?@\^_`{|}~-]|Space))|F([1-9]|1[0-9]|2[0-4])|Ins|Del)[[:blank:]]+(main|help|search|replace(with)?|yesno|gotoline|writeout|insert|execute|browser|whereisfile|gotodir|spell|linter|all)\>"
+color brightgreen "^[[:blank:]]*extendsyntax[[:blank:]]+[[:alpha:]]+[[:blank:]]+"
 color brightgreen "^[[:blank:]]*(syntax[[:blank:]]+[^[:space:]]+|(formatter|linter)[[:blank:]]+.+)"
-color green "^[[:blank:]]*((un)?(bind|set)|include|syntax|header|magic|comment|formatter|linter|tabgives|extendsyntax)\>"
 
 # Strings
-color brightmagenta "([[:blank:]]|(start|end)=)".+"([[:blank:]]|$)"
+color brightmagenta "[[:blank:]](start=)?".+""
 
-# Colors
-color yellow "^[[:blank:]]*i?color[[:blank:]]*(bold,)?(italic,)?(bright|light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte)?(,(light)?(white|black|red|blue|green|yellow|magenta|cyan|normal|pink|purple|mauve|lagoon|mint|lime|peach|orange|latte))?\>"
-color magenta "^[[:blank:]]*i?color\>" "\<(start|end)="
+# Function names in string binds
+color crimson "\{(help|cancel|exit|savefile|writeout|discardbuffer|insert|where(is|was)|find(previous|next|bracket)|replace)\}"
+color crimson "\{(cut|copy|paste|zap|chopword(left|right)|cutrestoffile|execute|mark|speller|linter|formatter|(full)?justify)\}"
+color crimson "\{(location|gotoline|(begin|end)para|comment|complete|(un)?indent|wordcount|(record|run)macro|anchor|undo|redo)\}"
+color crimson "\{(left|right|up|down|home|end|(scroll|page)(up|down)|center|(prev|next)(word|block|anchor|buf))\}"
+color crimson "\{(tab|enter|delete|backspace|verbatim|refresh|suspend|casesens|regexp|backwards|older|newer|(dos|mac)format)\}"
+color crimson "\{(append|prepend|backup|flip(goto|replace|execute|pipe|convert|newbuffer)|browser|gotodir|(first|last)(file|line))\}"
+color crimson "\{(nohelp|constantshow|softwrap|linenumbers|whitespacedisplay|nosyntax|zero)\}"
+color crimson "\{(smarthome|autoindent|cutfromcursor|breaklonglines|tabstospaces|mouse|\{)\}"
+
+# Commands
+color green "^[[:blank:]]*((un)?(bind|set)|include|syntax|header|magic|comment|formatter|linter|tabgives|extendsyntax)\>"
+color magenta "^[[:blank:]]*i?color\>|[[:blank:]](start=|end=)"
+
+# Control codes
+color bold,pink "[[:cntrl:]]"
 
 # Comments
-color brightblue "(^|[[:blank:]]+)#.*"
+color brightblue "^[[:blank:]]*#.*|[[:blank:]]#.{0,2}[^[:xdigit:]].*"
 color cyan "^[[:blank:]]*##.*"
 
 # Trailing whitespace

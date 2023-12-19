@@ -1,6 +1,6 @@
-#serial 13
+#serial 14
 
-# Copyright (C) 2005-2007, 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2005-2007, 2009-2023 Free Software Foundation, Inc.
 #
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -25,7 +25,7 @@ AC_DEFUN([gl_FUNC_GETLOGIN_R],
     HAVE_DECL_GETLOGIN_R=0
   fi
 
-  AC_CHECK_FUNCS_ONCE([getlogin_r])
+  gl_CHECK_FUNCS_ANDROID([getlogin_r], [[#include <unistd.h>]])
   if test $ac_cv_func_getlogin_r = no; then
     HAVE_GETLOGIN_R=0
   else

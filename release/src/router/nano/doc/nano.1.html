@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Thu Apr 29 11:50:45 2021 -->
+<!-- CreationDate: Wed Jan 18 08:46:05 2023 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -22,7 +22,6 @@
 
 <a href="#NAME">NAME</a><br>
 <a href="#SYNOPSIS">SYNOPSIS</a><br>
-<a href="#NOTICE">NOTICE</a><br>
 <a href="#DESCRIPTION">DESCRIPTION</a><br>
 <a href="#EDITING">EDITING</a><br>
 <a href="#OPTIONS">OPTIONS</a><br>
@@ -41,7 +40,7 @@
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em">nano &minus;
+<p style="margin-left:11%; margin-top: 1em">nano -
 Nano&rsquo;s ANOther editor, inspired by Pico</p>
 
 <h2>SYNOPSIS
@@ -58,27 +57,6 @@ Nano&rsquo;s ANOther editor, inspired by Pico</p>
 [<i>options</i>]
 [[<b>+</b>[<b>crCR</b>](<b>/</b>|<b>?</b>)<i>string</i>]
 <i>file</i>]...</p>
-
-<h2>NOTICE
-<a name="NOTICE"></a>
-</h2>
-
-
-<p style="margin-left:11%; margin-top: 1em">Since version
-4.0, <b>nano</b> by default:</p>
-
-<p style="margin-left:17%; margin-top: 1em">&bull; does not
-automatically hard-wrap lines that become overlong, <br>
-&bull; includes the line below the title bar in the editing
-area, <br>
-&bull; does linewise (smooth) scrolling.</p>
-
-<p style="margin-left:11%; margin-top: 1em">If you want the
-old, Pico behavior back, you can use
-<b>&minus;&minus;breaklonglines</b>,
-<b>&minus;&minus;emptyline</b>, and
-<b>&minus;&minus;jumpyscrolling</b> (or <b>&minus;bej</b>
-for short).</p>
 
 <h2>DESCRIPTION
 <a name="DESCRIPTION"></a>
@@ -107,15 +85,15 @@ These search modes can be explicitly disabled by using the
 uppercase variant of those letters: <b>C</b> and/or
 <b>R</b>. When the string contains spaces, it needs to be
 enclosed in quotes. To give an example: to open a file at
-the first occurrence of the word &quot;Foo&quot;, one would
+the first occurrence of the word &quot;Foo&quot;, you would
 do:</p>
 
 <p style="margin-left:17%; margin-top: 1em"><b>nano
 +c/Foo</b> <i>file</i></p>
 
 <p style="margin-left:11%; margin-top: 1em">As a special
-case: if instead of a filename a dash (<b>&minus;</b>) is
-given, <b>nano</b> will read data from standard input.</p>
+case: if instead of a filename a dash (<b>-</b>) is given,
+<b>nano</b> will read data from standard input.</p>
 
 <h2>EDITING
 <a name="EDITING"></a>
@@ -126,27 +104,35 @@ given, <b>nano</b> will read data from standard input.</p>
 and moving around in a file is straightforward: typing the
 letters and using the normal cursor movement keys. Commands
 are entered by using the Control (^) and the Alt or Meta
-(M&minus;) keys. Typing <b>^K</b> deletes the current line
-and puts it in the cutbuffer. Consecutive <b>^K</b>s will
-put all deleted lines together in the cutbuffer. Any cursor
+(M-) keys. Typing <b>^K</b> deletes the current line and
+puts it in the cutbuffer. Consecutive <b>^K</b>s will put
+all deleted lines together in the cutbuffer. Any cursor
 movement or executing any other command will cause the next
 <b>^K</b> to overwrite the cutbuffer. A <b>^U</b> will paste
 the current contents of the cutbuffer at the current cursor
 position.</p>
 
 <p style="margin-left:11%; margin-top: 1em">When a more
-precise piece of text needs to be cut or copied, one can
+precise piece of text needs to be cut or copied, you can
 mark its start with <b>^6</b>, move the cursor to its end
 (the marked text will be highlighted), and then use
-<b>^K</b> to cut it, or <b>M&minus;6</b> to copy it to the
-cutbuffer. One can also save the marked text to a file with
-<b>^O</b>, or spell check it with <b>^T</b>.</p>
+<b>^K</b> to cut it, or <b>M-6</b> to copy it to the
+cutbuffer. You can also save the marked text to a file with
+<b>^O</b>, or spell check it with <b>^T^T</b>.</p>
 
 <p style="margin-left:11%; margin-top: 1em">On some
 terminals, text can be selected also by holding down Shift
 while using the arrow keys. Holding down the Ctrl or Alt key
 too will increase the stride. Any cursor movement without
 Shift being held will cancel such a selection.</p>
+
+<p style="margin-left:11%; margin-top: 1em">Any valid
+Unicode code point can be inserted into the buffer by typing
+<b>M-V</b> followed by the hexadecimal digits of the code
+point (concluded with <b>&lt;Space&gt;</b> or
+<b>&lt;Enter&gt;</b> when it are fewer than six digits). A
+literal control code (except <b>^J</b>) can be inserted by
+typing <b>M-V</b> followed by the pertinent keystroke.</p>
 
 <p style="margin-left:11%; margin-top: 1em">The two lines
 at the bottom of the screen show some important commands;
@@ -159,9 +145,8 @@ file -- see <b>nanorc</b>(5).</p>
 </h2>
 
 
-
-<p style="margin-left:11%; margin-top: 1em"><b>&minus;A</b>,
-<b>&minus;&minus;smarthome</b></p>
+<p style="margin-left:11%; margin-top: 1em"><b>-A</b>,
+<b>--smarthome</b></p>
 
 <p style="margin-left:22%;">Make the Home key smarter. When
 Home is pressed anywhere but at the very beginning of
@@ -170,25 +155,24 @@ that beginning (either forwards or backwards). If the cursor
 is already at that position, it will jump to the true
 beginning of the line.</p>
 
-<p style="margin-left:11%;"><b>&minus;B</b>,
-<b>&minus;&minus;backup</b></p>
+<p style="margin-left:11%;"><b>-B</b>, <b>--backup</b></p>
 
 <p style="margin-left:22%;">When saving a file, back up the
 previous version of it, using the current filename suffixed
 with a tilde (<b>~</b>).</p>
 
 
-<p style="margin-left:11%;"><b>&minus;C&nbsp;</b><i>directory</i>,
-<b>&minus;&minus;backupdir=</b><i>directory</i></p>
+<p style="margin-left:11%;"><b>-C&nbsp;</b><i>directory</i>,
+<b>--backupdir=</b><i>directory</i></p>
 
 <p style="margin-left:22%;">Make and keep not just one
 backup file, but make and keep a uniquely numbered one every
 time a file is saved -- when backups are enabled
-(<b>&minus;B</b>). The uniquely numbered files are stored in
-the specified <i>directory</i>.</p>
+(<b>-B</b>). The uniquely numbered files are stored in the
+specified <i>directory</i>.</p>
 
-<p style="margin-left:11%;"><b>&minus;D</b>,
-<b>&minus;&minus;boldtext</b></p>
+<p style="margin-left:11%;"><b>-D</b>,
+<b>--boldtext</b></p>
 
 <p style="margin-left:22%;">For the interface, use bold
 instead of reverse video. This will be overridden by setting
@@ -197,93 +181,95 @@ the options <b>titlecolor</b>, <b>statuscolor</b>,
 and/or <b>selectedcolor</b> in your nanorc file. See
 <b>nanorc</b>(5).</p>
 
-<p style="margin-left:11%;"><b>&minus;E</b>,
-<b>&minus;&minus;tabstospaces</b></p>
+<p style="margin-left:11%;"><b>-E</b>,
+<b>--tabstospaces</b></p>
 
-<p style="margin-left:22%;">Convert typed tabs to
-spaces.</p>
+<p style="margin-left:22%;">Convert each typed tab to
+spaces -- to the number of spaces that a tab at that
+position would take up.</p>
 
-<p style="margin-left:11%;"><b>&minus;F</b>,
-<b>&minus;&minus;multibuffer</b></p>
+<p style="margin-left:11%;"><b>-F</b>,
+<b>--multibuffer</b></p>
 
 <p style="margin-left:22%;">Read a file into a new buffer
 by default.</p>
 
-<p style="margin-left:11%;"><b>&minus;G</b>,
-<b>&minus;&minus;locking</b></p>
+<p style="margin-left:11%;"><b>-G</b>, <b>--locking</b></p>
 
 <p style="margin-left:22%;">Use vim-style file locking when
 editing files.</p>
 
-<p style="margin-left:11%;"><b>&minus;H</b>,
-<b>&minus;&minus;historylog</b></p>
+<p style="margin-left:11%;"><b>-H</b>,
+<b>--historylog</b></p>
 
 <p style="margin-left:22%;">Save the last hundred search
 strings and replacement strings and executed commands, so
 they can be easily reused in later sessions.</p>
 
-<p style="margin-left:11%;"><b>&minus;I</b>,
-<b>&minus;&minus;ignorercfiles</b></p>
+<p style="margin-left:11%;"><b>-I</b>,
+<b>--ignorercfiles</b></p>
 
 <p style="margin-left:22%;">Don&rsquo;t look at the
 system&rsquo;s <i>nanorc</i> nor at the user&rsquo;s
 <i>nanorc</i>.</p>
 
-
-<p style="margin-left:11%;"><b>&minus;J&nbsp;</b><i>number</i>,
-<b>&minus;&minus;guidestripe=</b><i>number</i></p>
+<p style="margin-left:11%;"><b>-J&nbsp;</b><i>number</i>,
+<b>--guidestripe=</b><i>number</i></p>
 
 <p style="margin-left:22%;">Draw a vertical stripe at the
 given column, to help judge the width of the text. (The
 color of the stripe can be changed with <b>set
 stripecolor</b> in your <i>nanorc</i> file.)</p>
 
-<p style="margin-left:11%;"><b>&minus;K</b>,
-<b>&minus;&minus;rawsequences</b></p>
+<p style="margin-left:11%;"><b>-K</b>,
+<b>--rawsequences</b></p>
 
 <p style="margin-left:22%;">Interpret escape sequences
-directly (instead of asking <b>ncurses</b> to translate
-them). If you need this option to get your keyboard to work
-properly, please report a bug. Using this option disables
+directly, instead of asking <b>ncurses</b> to translate
+them. (If you need this option to get some keys to work
+properly, it means that the terminfo terminal description
+that is used does not fully match the actual behavior of
+your terminal. This can happen when you ssh into a BSD
+machine, for example.) Using this option disables
 <b>nano</b>&rsquo;s mouse support.</p>
 
-<p style="margin-left:11%;"><b>&minus;L</b>,
-<b>&minus;&minus;nonewlines</b></p>
+<p style="margin-left:11%;"><b>-L</b>,
+<b>--nonewlines</b></p>
 
 <p style="margin-left:22%;">Don&rsquo;t automatically add a
 newline when a text does not end with one. (This can cause
 you to save non-POSIX text files.)</p>
 
-<p style="margin-left:11%;"><b>&minus;M</b>,
-<b>&minus;&minus;trimblanks</b></p>
+<p style="margin-left:11%;"><b>-M</b>,
+<b>--trimblanks</b></p>
 
 <p style="margin-left:22%;">Snip trailing whitespace from
 the wrapped line when automatic hard-wrapping occurs or when
 text is justified.</p>
 
-<p style="margin-left:11%;"><b>&minus;N</b>,
-<b>&minus;&minus;noconvert</b></p>
+<p style="margin-left:11%;"><b>-N</b>,
+<b>--noconvert</b></p>
 
 <p style="margin-left:22%;">Disable automatic conversion of
 files from DOS/Mac format.</p>
 
-<p style="margin-left:11%;"><b>&minus;O</b>,
-<b>&minus;&minus;bookstyle</b></p>
+<p style="margin-left:11%;"><b>-O</b>,
+<b>--bookstyle</b></p>
 
 <p style="margin-left:22%;">When justifying, treat any line
 that starts with whitespace as the beginning of a paragraph
 (unless auto-indenting is on).</p>
 
-<p style="margin-left:11%;"><b>&minus;P</b>,
-<b>&minus;&minus;positionlog</b></p>
+<p style="margin-left:11%;"><b>-P</b>,
+<b>--positionlog</b></p>
 
 <p style="margin-left:22%;">For the 200 most recent files,
 log the last position of the cursor, and place it at that
 position again upon reopening such a file.</p>
 
-<p style="margin-left:11%;"><b>&minus;Q
+<p style="margin-left:11%;"><b>-Q
 &quot;</b><i>regex</i><b>&quot;</b>,
-<b>&minus;&minus;quotestr=&quot;</b><i>regex</i><b>&quot;</b></p>
+<b>--quotestr=&quot;</b><i>regex</i><b>&quot;</b></p>
 
 <p style="margin-left:22%;">Set the regular expression for
 matching the quoting part of a line. The default value is
@@ -293,8 +279,8 @@ possible to rejustify blocks of quoted text when composing
 email, and to rewrap blocks of line comments when writing
 source code.</p>
 
-<p style="margin-left:11%;"><b>&minus;R</b>,
-<b>&minus;&minus;restricted</b></p>
+<p style="margin-left:11%;"><b>-R</b>,
+<b>--restricted</b></p>
 
 <p style="margin-left:22%;">Restricted mode: don&rsquo;t
 read or write to any file not specified on the command line.
@@ -306,95 +292,91 @@ has one; and don&rsquo;t make backup files. Restricted mode
 can also be activated by invoking <b>nano</b> with any name
 beginning with &rsquo;r&rsquo; (e.g. &quot;rnano&quot;).</p>
 
-<p style="margin-left:11%;"><b>&minus;S</b>,
-<b>&minus;&minus;softwrap</b></p>
+<p style="margin-left:11%;"><b>-S</b>,
+<b>--softwrap</b></p>
 
 <p style="margin-left:22%;">Display over multiple screen
 rows lines that exceed the screen&rsquo;s width. (You can
 make this soft-wrapping occur at whitespace instead of
 rudely at the screen&rsquo;s edge, by using also
-<b>&minus;&minus;atblanks</b>.) (The old short option,
-<b>&minus;$</b>, is deprecated.)</p>
+<b>--atblanks</b>.) (The old short option, <b>-$</b>, is
+deprecated.)</p>
 
-
-<p style="margin-left:11%;"><b>&minus;T&nbsp;</b><i>number</i>,
-<b>&minus;&minus;tabsize=</b><i>number</i></p>
+<p style="margin-left:11%;"><b>-T&nbsp;</b><i>number</i>,
+<b>--tabsize=</b><i>number</i></p>
 
 <p style="margin-left:22%;">Set the size (width) of a tab
 to <i>number</i> columns. The value of <i>number</i> must be
 greater than 0. The default value is <b>8</b>.</p>
 
-<p style="margin-left:11%;"><b>&minus;U</b>,
-<b>&minus;&minus;quickblank</b></p>
+<p style="margin-left:11%;"><b>-U</b>,
+<b>--quickblank</b></p>
 
 <p style="margin-left:22%;">Make status-bar messages
 disappear after 1 keystroke instead of after 20. Note that
-options <b>&minus;c</b> (<b>&minus;&minus;constantshow</b>)
-and <b>&minus;_</b> (<b>&minus;&minus;minibar</b>) override
-this.</p>
+option <b>-c</b> (<b>--constantshow</b>) overrides this.
+When option <b>--minibar</b> or <b>--zero</b> is in effect,
+<b>--quickblank</b> makes a message disappear after 0.8
+seconds instead of after the default 1.5 seconds.</p>
 
-<p style="margin-left:11%;"><b>&minus;V</b>,
-<b>&minus;&minus;version</b></p>
+<p style="margin-left:11%;"><b>-V</b>, <b>--version</b></p>
 
 <p style="margin-left:22%;">Show the current version number
 and exit.</p>
 
-<p style="margin-left:11%;"><b>&minus;W</b>,
-<b>&minus;&minus;wordbounds</b></p>
+<p style="margin-left:11%;"><b>-W</b>,
+<b>--wordbounds</b></p>
 
 <p style="margin-left:22%;">Detect word boundaries
 differently by treating punctuation characters as part of a
 word.</p>
 
-<p style="margin-left:11%;"><b>&minus;X
+<p style="margin-left:11%;"><b>-X
 &quot;</b><i>characters</i><b>&quot;</b>,
-<b>&minus;&minus;wordchars=&quot;</b><i>characters</i><b>&quot;</b></p>
+<b>--wordchars=&quot;</b><i>characters</i><b>&quot;</b></p>
 
 <p style="margin-left:22%;">Specify which other characters
 (besides the normal alphanumeric ones) should be considered
 as part of a word. When using this option, you probably want
-to omit <b>&minus;W</b>
-(<b>&minus;&minus;wordbounds</b>).</p>
+to omit <b>-W</b> (<b>--wordbounds</b>).</p>
 
-
-<p style="margin-left:11%;"><b>&minus;Y&nbsp;</b><i>name</i>,
-<b>&minus;&minus;syntax=</b><i>name</i></p>
+<p style="margin-left:11%;"><b>-Y&nbsp;</b><i>name</i>,
+<b>--syntax=</b><i>name</i></p>
 
 <p style="margin-left:22%;">Specify the name of the syntax
 highlighting to use from among the ones defined in the
 <i>nanorc</i> files.</p>
 
-<p style="margin-left:11%;"><b>&minus;Z</b>,
-<b>&minus;&minus;zap</b></p>
+<p style="margin-left:11%;"><b>-Z</b>, <b>--zap</b></p>
 
 <p style="margin-left:22%;">Let an unmodified Backspace or
 Delete erase the marked region (instead of a single
 character, and without affecting the cutbuffer).</p>
 
-<p style="margin-left:11%;"><b>&minus;a</b>,
-<b>&minus;&minus;atblanks</b></p>
+<p style="margin-left:11%;"><b>-a</b>,
+<b>--atblanks</b></p>
 
 <p style="margin-left:22%;">When doing soft line wrapping,
 wrap lines at whitespace instead of always at the edge of
 the screen.</p>
 
-<p style="margin-left:11%;"><b>&minus;b</b>,
-<b>&minus;&minus;breaklonglines</b></p>
+<p style="margin-left:11%;"><b>-b</b>,
+<b>--breaklonglines</b></p>
 
 <p style="margin-left:22%;">Automatically hard-wrap the
 current line when it becomes overlong. (This option is the
-opposite of <b>&minus;w</b> (<b>&minus;&minus;nowrap</b>) --
-the last one given takes effect.)</p>
+opposite of <b>-w</b> (<b>--nowrap</b>) -- the last one
+given takes effect.)</p>
 
-<p style="margin-left:11%;"><b>&minus;c</b>,
-<b>&minus;&minus;constantshow</b></p>
+<p style="margin-left:11%;"><b>-c</b>,
+<b>--constantshow</b></p>
 
 <p style="margin-left:22%;">Constantly show the cursor
 position on the status bar. Note that this overrides option
-<b>&minus;U</b> (<b>&minus;&minus;quickblank</b>).</p>
+<b>-U</b> (<b>--quickblank</b>).</p>
 
-<p style="margin-left:11%;"><b>&minus;d</b>,
-<b>&minus;&minus;rebinddelete</b></p>
+<p style="margin-left:11%;"><b>-d</b>,
+<b>--rebinddelete</b></p>
 
 <p style="margin-left:22%;">Interpret the Delete and
 Backspace keys differently so that both Backspace and Delete
@@ -402,65 +384,62 @@ work properly. You should only use this option when on your
 system either Backspace acts like Delete or Delete acts like
 Backspace.</p>
 
-<p style="margin-left:11%;"><b>&minus;e</b>,
-<b>&minus;&minus;emptyline</b></p>
+<p style="margin-left:11%;"><b>-e</b>,
+<b>--emptyline</b></p>
 
 <p style="margin-left:22%;">Do not use the line below the
 title bar, leaving it entirely blank.</p>
 
-
-<p style="margin-left:11%;"><b>&minus;f&nbsp;</b><i>file</i>,
-<b>&minus;&minus;rcfile=</b><i>file</i></p>
+<p style="margin-left:11%;"><b>-f&nbsp;</b><i>file</i>,
+<b>--rcfile=</b><i>file</i></p>
 
 <p style="margin-left:22%;">Read only this <i>file</i> for
 setting nano&rsquo;s options, instead of reading both the
 system-wide and the user&rsquo;s nanorc files.</p>
 
-<p style="margin-left:11%;"><b>&minus;g</b>,
-<b>&minus;&minus;showcursor</b></p>
+<p style="margin-left:11%;"><b>-g</b>,
+<b>--showcursor</b></p>
 
 <p style="margin-left:22%;">Make the cursor visible in the
 file browser (putting it on the highlighted item) and in the
 help viewer. Useful for braille users and people with poor
 vision.</p>
 
-<p style="margin-left:11%;"><b>&minus;h</b>,
-<b>&minus;&minus;help</b></p>
+<p style="margin-left:11%;"><b>-h</b>, <b>--help</b></p>
 
 <p style="margin-left:22%;">Show a summary of the available
 command-line options and exit.</p>
 
-<p style="margin-left:11%;"><b>&minus;i</b>,
-<b>&minus;&minus;autoindent</b></p>
+<p style="margin-left:11%;"><b>-i</b>,
+<b>--autoindent</b></p>
 
 <p style="margin-left:22%;">Automatically indent a newly
 created line to the same number of tabs and/or spaces as the
 previous line (or as the next line if the previous line is
 the beginning of a paragraph).</p>
 
-<p style="margin-left:11%;"><b>&minus;j</b>,
-<b>&minus;&minus;jumpyscrolling</b></p>
+<p style="margin-left:11%;"><b>-j</b>,
+<b>--jumpyscrolling</b></p>
 
 <p style="margin-left:22%;">Scroll the buffer contents per
 half-screen instead of per line.</p>
 
-<p style="margin-left:11%;"><b>&minus;k</b>,
-<b>&minus;&minus;cutfromcursor</b></p>
+<p style="margin-left:11%;"><b>-k</b>,
+<b>--cutfromcursor</b></p>
 
 <p style="margin-left:22%;">Make the &rsquo;Cut Text&rsquo;
 command (normally <b>^K</b>) cut from the current cursor
 position to the end of the line, instead of cutting the
 entire line.</p>
 
-<p style="margin-left:11%;"><b>&minus;l</b>,
-<b>&minus;&minus;linenumbers</b></p>
+<p style="margin-left:11%;"><b>-l</b>,
+<b>--linenumbers</b></p>
 
 <p style="margin-left:22%;">Display line numbers to the
 left of the text area. (Any line with an anchor additionally
 gets a mark in the margin.)</p>
 
-<p style="margin-left:11%;"><b>&minus;m</b>,
-<b>&minus;&minus;mouse</b></p>
+<p style="margin-left:11%;"><b>-m</b>, <b>--mouse</b></p>
 
 <p style="margin-left:22%;">Enable mouse support, if
 available for your system. When enabled, mouse clicks can be
@@ -470,8 +449,7 @@ Window System, and on the console when gpm is running. Text
 can still be selected through dragging by holding down the
 Shift key.</p>
 
-<p style="margin-left:11%;"><b>&minus;n</b>,
-<b>&minus;&minus;noread</b></p>
+<p style="margin-left:11%;"><b>-n</b>, <b>--noread</b></p>
 
 <p style="margin-left:22%;">Treat any name given on the
 command line as a new file. This allows <b>nano</b> to write
@@ -482,31 +460,30 @@ with for instance <b>gpg</b> without having to write
 sensitive data to disk first.</p>
 
 
-<p style="margin-left:11%;"><b>&minus;o&nbsp;</b><i>directory</i>,
-<b>&minus;&minus;operatingdir=</b><i>directory</i></p>
+<p style="margin-left:11%;"><b>-o&nbsp;</b><i>directory</i>,
+<b>--operatingdir=</b><i>directory</i></p>
 
 <p style="margin-left:22%;">Set the operating directory.
 This makes <b>nano</b> set up something similar to a
 chroot.</p>
 
-<p style="margin-left:11%;"><b>&minus;p</b>,
-<b>&minus;&minus;preserve</b></p>
+<p style="margin-left:11%;"><b>-p</b>,
+<b>--preserve</b></p>
 
 <p style="margin-left:22%;">Preserve the XON and XOFF
 sequences (<b>^Q</b> and <b>^S</b>) so they will be caught
 by the terminal.</p>
 
-<p style="margin-left:11%;"><b>&minus;q</b>,
-<b>&minus;&minus;indicator</b></p>
+<p style="margin-left:11%;"><b>-q</b>,
+<b>--indicator</b></p>
 
 <p style="margin-left:22%;">Display a &quot;scrollbar&quot;
 on the righthand side of the edit window. It shows the
 position of the viewport in the buffer and how much of the
 buffer is covered by the viewport.</p>
 
-
-<p style="margin-left:11%;"><b>&minus;r&nbsp;</b><i>number</i>,
-<b>&minus;&minus;fill=</b><i>number</i></p>
+<p style="margin-left:11%;"><b>-r&nbsp;</b><i>number</i>,
+<b>--fill=</b><i>number</i></p>
 
 <p style="margin-left:22%;">Set the target width for
 justifying and automatic hard-wrapping at this <i>number</i>
@@ -514,72 +491,65 @@ of columns. If the value is 0 or less, wrapping will occur
 at the width of the screen minus <i>number</i> columns,
 allowing the wrap point to vary along with the width of the
 screen if the screen is resized. The default value is
-<b>&minus;8</b>.</p>
+<b>-8</b>.</p>
 
-<p style="margin-left:11%;"><b>&minus;s
-&quot;</b><i>program</i> [<i>argument</i> ...]<b>&quot;</b>,
-<b>&minus;&minus;speller=&quot;</b><i>program</i>
-[<i>argument</i> ...]<b>&quot;</b></p>
+<p style="margin-left:11%;"><b>-s &quot;</b><i>program</i>
+[<i>argument</i> ...]<b>&quot;</b>,
+<b>--speller=&quot;</b><i>program</i> [<i>argument</i>
+...]<b>&quot;</b></p>
 
 <p style="margin-left:22%;">Use this command to perform
 spell checking and correcting, instead of using the built-in
 corrector that calls <b>hunspell</b>(1) or
 <b>spell</b>(1).</p>
 
-<p style="margin-left:11%;"><b>&minus;t</b>,
-<b>&minus;&minus;saveonexit</b></p>
+<p style="margin-left:11%;"><b>-t</b>,
+<b>--saveonexit</b></p>
 
 <p style="margin-left:22%;">Save a changed buffer without
-prompting (when exiting with <b>^X</b>). (The old form of
-the long option, <b>&minus;&minus;tempfile</b>, is
-deprecated.)</p>
+prompting (when exiting with <b>^X</b>).</p>
 
-<p style="margin-left:11%;"><b>&minus;u</b>,
-<b>&minus;&minus;unix</b></p>
+<p style="margin-left:11%;"><b>-u</b>, <b>--unix</b></p>
 
 <p style="margin-left:22%;">Save a file by default in Unix
 format. This overrides nano&rsquo;s default behavior of
 saving a file in the format that it had. (This option has no
-effect when you also use
-<b>&minus;&minus;noconvert</b>.)</p>
+effect when you also use <b>--noconvert</b>.)</p>
 
-<p style="margin-left:11%;"><b>&minus;v</b>,
-<b>&minus;&minus;view</b></p>
+<p style="margin-left:11%;"><b>-v</b>, <b>--view</b></p>
 
 <p style="margin-left:22%;">Just view the file and disallow
 editing: read-only mode. This mode allows the user to open
-also other files for viewing, unless
-<b>&minus;&minus;restricted</b> is given too.</p>
+also other files for viewing, unless <b>--restricted</b> is
+given too.</p>
 
-<p style="margin-left:11%;"><b>&minus;w</b>,
-<b>&minus;&minus;nowrap</b></p>
+<p style="margin-left:11%;"><b>-w</b>, <b>--nowrap</b></p>
 
 <p style="margin-left:22%;">Do not automatically hard-wrap
 the current line when it becomes overlong. This is the
-default. (This option is the opposite of <b>&minus;b</b>
-(<b>&minus;&minus;breaklonglines</b>) -- the last one given
-takes effect.)</p>
+default. (This option is the opposite of <b>-b</b>
+(<b>--breaklonglines</b>) -- the last one given takes
+effect.)</p>
 
-<p style="margin-left:11%;"><b>&minus;x</b>,
-<b>&minus;&minus;nohelp</b></p>
+<p style="margin-left:11%;"><b>-x</b>, <b>--nohelp</b></p>
 
 <p style="margin-left:22%;">Don&rsquo;t show the two help
 lines at the bottom of the screen.</p>
 
-<p style="margin-left:11%;"><b>&minus;y</b>,
-<b>&minus;&minus;afterends</b></p>
+<p style="margin-left:11%;"><b>-y</b>,
+<b>--afterends</b></p>
 
 <p style="margin-left:22%;">Make Ctrl+Right and Ctrl+Delete
 stop at word ends instead of beginnings.</p>
 
-<p style="margin-left:11%;"><b>&minus;z</b>,
-<b>&minus;&minus;suspendable</b></p>
+<p style="margin-left:11%;"><b>-!</b>, <b>--magic</b></p>
 
-<p style="margin-left:22%;">Allow the user to suspend the
-editor (with <b>^Z</b> by default).</p>
+<p style="margin-left:22%;">When neither the file&rsquo;s
+name nor its first line give a clue, try using libmagic to
+determine the applicable syntax.</p>
 
-<p style="margin-left:11%;"><b>&minus;%</b>,
-<b>&minus;&minus;stateflags</b></p>
+<p style="margin-left:11%;"><b>-%</b>,
+<b>--stateflags</b></p>
 
 <p style="margin-left:22%;">Use the top-right corner of the
 screen for showing some state flags: <b>I</b> when
@@ -589,36 +559,37 @@ a macro, and <b>S</b> when soft-wrapping. When the buffer is
 modified, a star (<b>*</b>) is shown after the filename in
 the center of the title bar.</p>
 
-<p style="margin-left:11%;"><b>&minus;_</b>,
-<b>&minus;&minus;minibar</b></p>
+<p style="margin-left:11%;"><b>-_</b>, <b>--minibar</b></p>
 
 <p style="margin-left:22%;">Suppress the title bar and
 instead show information about the current buffer at the
 bottom of the screen, in the space for the status bar. In
-this &quot;minibar&quot; the file name is shown on the left,
+this &quot;minibar&quot; the filename is shown on the left,
 followed by an asterisk if the buffer has been modified. On
 the right are displayed the current line and column number,
 the code of the character under the cursor (in Unicode
 format: U+xxxx), the same flags as are shown by
-<b>&minus;&minus;stateflags</b>, and a percentage that
-expresses how far the cursor is into the file (linewise).
-When a file is loaded or saved, and also when switching
-between buffers, the number of lines in the buffer is
-displayed after the file name. This number is cleared upon
-the next keystroke, or replaced with an [i/n] counter when
-multiple buffers are open. The line plus column numbers and
-the character code are displayed only when
-<b>&minus;&minus;constantshow</b> is used, and can be
-toggled on and off with <b>M-C</b>. The state flags are
-displayed only when <b>&minus;&minus;stateflags</b> is
-used.</p>
+<b>--stateflags</b>, and a percentage that expresses how far
+the cursor is into the file (linewise). When a file is
+loaded or saved, and also when switching between buffers,
+the number of lines in the buffer is displayed after the
+filename. This number is cleared upon the next keystroke, or
+replaced with an [i/n] counter when multiple buffers are
+open. The line plus column numbers and the character code
+are displayed only when <b>--constantshow</b> is used, and
+can be toggled on and off with <b>M-C</b>. The state flags
+are displayed only when <b>--stateflags</b> is used.</p>
 
-<p style="margin-left:11%;"><b>&minus;!</b>,
-<b>&minus;&minus;magic</b></p>
+<p style="margin-left:11%;"><b>-0</b>, <b>--zero</b></p>
 
-<p style="margin-left:22%;">When neither the file&rsquo;s
-name nor its first line give a clue, try using libmagic to
-determine the applicable syntax.</p>
+<p style="margin-left:22%;">Hide all elements of the
+interface (title bar, status bar, and help lines) and use
+all rows of the terminal for showing the contents of the
+buffer. The status bar appears only when there is a
+significant message, and disappears after 1.5 seconds or
+upon the next keystroke. With <b>M-Z</b> the title bar plus
+status bar can be toggled. With <b>M-X</b> the help
+lines.</p>
 
 <h2>TOGGLES
 <a name="TOGGLES"></a>
@@ -627,18 +598,17 @@ determine the applicable syntax.</p>
 
 <p style="margin-left:11%; margin-top: 1em">Several of the
 above options can be switched on and off also while
-<b>nano</b> is running. For example, <b>M&minus;L</b>
-toggles the hard-wrapping of long lines, <b>M&minus;S</b>
-toggles soft-wrapping, <b>M&minus;N</b> toggles line
-numbers, <b>M&minus;M</b> toggles the mouse,
-<b>M&minus;I</b> auto-indentation, and <b>M&minus;X</b> the
-help lines. See at the end of the <b>^G</b> help text for a
-complete list.</p>
+<b>nano</b> is running. For example, <b>M-L</b> toggles the
+hard-wrapping of long lines, <b>M-S</b> toggles
+soft-wrapping, <b>M-N</b> toggles line numbers, <b>M-M</b>
+toggles the mouse, <b>M-I</b> auto-indentation, and
+<b>M-X</b> the help lines. See at the end of the <b>^G</b>
+help text for a complete list.</p>
 
-<p style="margin-left:11%; margin-top: 1em">The
-<b>M&minus;X</b> toggle is special: it works in all menus
-except the help viewer and the linter. All other toggles
-work in the main menu only.</p>
+<p style="margin-left:11%; margin-top: 1em">The <b>M-X</b>
+toggle is special: it works in all menus except the help
+viewer and the linter. All other toggles work in the main
+menu only.</p>
 
 <h2>FILES
 <a name="FILES"></a>
@@ -646,12 +616,12 @@ work in the main menu only.</p>
 
 
 <p style="margin-left:11%; margin-top: 1em">When
-<b>&minus;&minus;rcfile</b> is given, <b>nano</b> will read
-just the specified file for setting its options and syntaxes
-and key bindings. Without that option, <b>nano</b> will read
-two configuration files: first the system&rsquo;s
-<i>nanorc</i> (if it exists), and then the user&rsquo;s
-<i>nanorc</i> (if it exists), either <i>~/.nanorc</i> or
+<b>--rcfile</b> is given, <b>nano</b> will read just the
+specified file for setting its options and syntaxes and key
+bindings. Without that option, <b>nano</b> will read two
+configuration files: first the system&rsquo;s <i>nanorc</i>
+(if it exists), and then the user&rsquo;s <i>nanorc</i> (if
+it exists), either <i>~/.nanorc</i> or
 <i>$XDG_CONFIG_HOME/nano/nanorc</i> or
 <i>~/.config/nano/nanorc</i>, whichever is encountered
 first. See <b>nanorc</b>(5) for more information on the
@@ -665,6 +635,12 @@ for available syntax-coloring definitions.</p>
 <a name="NOTES"></a>
 </h2>
 
+
+<p style="margin-left:11%; margin-top: 1em">Option
+<b>-z</b> (<b>--suspendable</b>) has been removed.
+Suspension is enabled by default, reachable via <b>^T^Z</b>.
+(If you want a plain <b>^Z</b> to suspend nano, add <b>bind
+^Z suspend main</b> to your nanorc.)</p>
 
 <p style="margin-left:11%; margin-top: 1em">If no
 alternative spell checker command is specified on the
@@ -713,7 +689,7 @@ want to get a backtrace, define the environment variable
 
 
 
-<p style="margin-left:11%; margin-top: 1em"><i>https://nano&minus;editor.org/</i></p>
+<p style="margin-left:11%; margin-top: 1em"><i>https://nano-editor.org/</i></p>
 
 <h2>SEE ALSO
 <a name="SEE ALSO"></a>

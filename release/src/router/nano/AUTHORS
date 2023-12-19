@@ -8,7 +8,9 @@ Chris Allegretta <chrisa@asty.org>
 Benno Schulenberg <bensberg@telfort.nl>
 	* An array of small bug fixes, the cut-word and block-jump
 	  routines, text selection by holding Shift, macro recording
-	  and replay, plus some key bindings.  Current maintainer.
+	  and replay, extra key bindings, the --indicator, --minibar,
+	  and --zero options, and braced functions in string binds.
+	  Current maintainer.
 
 David Lawrence Ramsey <pooka109@gmail.com>
 	* Former stable series maintainer.  Multiple buffer support,

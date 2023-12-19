@@ -1,8 +1,8 @@
 /**************************************************************************
  *   chars.c  --  This file is part of GNU nano.                          *
  *                                                                        *
- *   Copyright (C) 2001-2011, 2013-2021 Free Software Foundation, Inc.    *
- *   Copyright (C) 2016-2020 Benno Schulenberg                            *
+ *   Copyright (C) 2001-2011, 2013-2023 Free Software Foundation, Inc.    *
+ *   Copyright (C) 2016-2021 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
  *   it under the terms of the GNU General Public License as published    *
@@ -498,7 +498,7 @@ char *revstrstr(const char *haystack, const char *needle,
 	size_t tail_len = strlen(pointer);
 
 	if (tail_len < needle_len)
-		pointer += tail_len - needle_len;
+		pointer -= (needle_len - tail_len);
 
 	while (pointer >= haystack) {
 		if (strncmp(pointer, needle, needle_len) == 0)
@@ -518,7 +518,7 @@ char *revstrcasestr(const char *haystack, const char *needle,
 	size_t tail_len = strlen(pointer);
 
 	if (tail_len < needle_len)
-		pointer += tail_len - needle_len;
+		pointer -= (needle_len - tail_len);
 
 	while (pointer >= haystack) {
 		if (strncasecmp(pointer, needle, needle_len) == 0)
@@ -540,7 +540,7 @@ char *mbrevstrcasestr(const char *haystack, const char *needle,
 		size_t tail_len = mbstrlen(pointer);
 
 		if (tail_len < needle_len)
-			pointer += tail_len - needle_len;
+			pointer -= (needle_len - tail_len);
 
 		if (pointer < haystack)
 			return NULL;
@@ -644,7 +644,7 @@ bool has_blank_char(const char *string)
 
 	return *string;
 }
-#endif /* ENABLE_NANORC && (!NANO_TINY || ENABLE_JUSTIFY) */
+#endif
 
 /* Return TRUE when the given string is empty or consists of only blanks. */
 bool white_string(const char *string)

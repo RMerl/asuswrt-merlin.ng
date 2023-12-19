@@ -12,12 +12,12 @@ color brightyellow "\<(await|export|import|throw|try|catch|finally|new|delete)\>
 color magenta "\<(break|continue|return|yield)\>"
 
 # Octal/decimal and hexadecimal numbers.
-color cyan "\<([0-9]+|0x[0-9A-Fa-f]+)\>"
+color cyan "\<([0-9]+|0x[[:xdigit:]]+)\>"
 # Special values.
 color cyan "\<(true|false|null|undefined)\>"
 
 # Strings.
-color brightmagenta ""(\\.|[^"])*"" "'(\\.|[^'])*'" "`(\\.|[^`])*`"
+color brightmagenta ""([^"\]|\\.)*"|'([^'\]|\\.)*'|`([^`\]|\\.)*`"
 # Comments.
 color brightblue "(^|[[:blank:]])//.*"
 color brightblue start="/\*" end="\*/"

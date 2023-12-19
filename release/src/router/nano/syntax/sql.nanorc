@@ -1,72 +1,51 @@
 ## Syntax highlighting for (Postgres) SQL scripts.
 
-syntax sql "\.sql[2345s~]?$"
+syntax sql "\.sql$"
 comment "-- "
 
-# Functions.
-color white "\<[a-z_]*\("
-
 # Types.
-color green "\<(int2|smallint|int4|int|integer|int8|bigint|decimal|numeric|real|double precision|(small|big)?serial)\>"
-color green "\<(bit( varying)?|boolean|bytea|enum|money|tsvector|uuid)\>"
-color green "\<(char|varchar|character( varying)?|text)\>"
-color green "\<(date|interval|time(stamp)?( with time zone| without time zone)?)\>"
-color green "\<(point|line|lseg|path|box|polygon|circle)\>"
-color green "\<(cidr|inet|macaddr)\>"
-color green "\<(daterange|int4range|int8range|numrange|tsrange|tstzrange)\>"
-
-# Structure.
-color brightyellow "\<(CASE|CLASS|DEFAULT|DO|ELSE|ELSEIF|FOR|FOREACH|FUNCTION|IF|IS NULL)\>"
-color brightyellow "\<(NEW|PRIVATE|PUBLIC|RETURN|RETURNS|SETOF|SWITCH|THEN|WHEN|WHILE)>"
-
-# Control flow.
-color magenta "\<(EXCEPTION|NOTICE|RAISE|RETURN)\>"
+icolor #0a4 "\<(integer|int[248]|(big|small)?(int|serial)|decimal|numeric|real|double precision)\>"
+icolor #0a4 "\<(bit( varying)?|boolean|bytea|enum|money|tsquery|tsvector|uuid|xml)\>"
+icolor #0a4 "\<(char|varchar|character( varying)?|text|cidr|inet|macaddr8?)\>"
+icolor #0a4 "\<(date|interval|time(stamp)?( with(out)? time zone)?)\>"
+icolor #0a4 "\<(box|circle|line|lseg|path|point|polygon)\>"
+icolor #0a4 "\<(date|int[48]|num|ts|tstz)range\>"
 
 # SQL keywords.
-color blue "\<(ABORT|AGGREGATE|ALTER|ANALYZE|AND|AS|AUTHORIZATION|BEGIN|CAST|CHECKPOINT|CLASS|CLOSE)\>"
-color blue "\<(CLUSTER|COLLATION|COMMENT|COMMIT|CONFIGURATION|CONSTRAINTS|CONVERSION|COPY|CREATE)\>"
-color blue "\<(DATA|DATABASE|DEALLOCATE|DECLARE|DEFAULT|DELETE|DICTIONARY|DISCARD|DO|DOMAIN|DROP)\>"
-color blue "\<(END|EVENT|EXECUTE|EXPLAIN|EXTENSION|FAMILY|FETCH|FOREIGN|FROM|FUNCTION)\>"
-color blue "\<(GRANT|GROUP|IF NOT EXISTS|IMMUTABLE|INDEX|INSERT|INTO|LABEL|LANGUAGE|LARGE|LOAD|LOCK)\>"
-color blue "\<(MAPPING FOR|MATERIALIZED|MOVE|NOTIFY|OBJECT|OPERATOR|OPTIONS|OWNED|OWNER)\>"
-color blue "\<(PARSER|PREPARED?|PRIVILEGES|REASSIGN|REFRESH|RELEASE|RESET|REVOKE|ROLE|ROLLBACK|RULE)\>"
-color blue "\<(SAVEPOINT|SCHEMA|SEARCH|SECURITY|SELECT|SEQUENCE|SERVER|SESSION|SET|SHOW|SPACE|START|SYSTEM)\>"
-color blue "\<(TABLE|TEXT|TO|TRANSACTION|TYPE|UPDATE|USER|VACUUM|VALUES|VIEW|WHERE|WITH|WRAPPER)\>"
+icolor #48c "\<(ABORT|AGGREGATE|ALL|ALTER|ANALYZE|AND|ANY|AS|BEGIN|BETWEEN|CAST|CHECKPOINT)\>"
+icolor #48c "\<(CLOSE|CLUSTER|COLLATION|COMMENT|COMMIT|CONSTRAINTS?|CONVERSION|COPY|CREATE)\>"
+icolor #48c "\<(DATABASE|DEALLOCATE|DECLARE|DEFAULT|DELETE|DISCARD|DISTINCT|DO|DOMAIN|DROP)\>"
+icolor #48c "\<(END|EXCEPT|EXECUTE|EXISTS|EXPLAIN|EXTENSION|FALSE|FETCH|FOREIGN (DATA WRAPPER|SCHEMA|TABLE))\>"
+icolor #48c "\<(FROM|FUNCTION|GRANT|GROUP( BY)?|HAVING|IN|INDEX|INSERT|INTERSECT|INTO|IS)\>"
+icolor #48c "\<(NATURAL )?(INNER |OUTER |CROSS |(LEFT|RIGHT|FULL)( OUTER)? )?JOIN\>"
+icolor #48c "\<((PRIMARY|FOREIGN) KEY|LANGUAGE|LOAD|LIKE|LOCK|MOVE|NOT|NOTIFY|NULL)\>"
+icolor #48c "\<(ON|ONLY|OPERATOR( CLASS| FAMILY)?|OR|ORDER BY|PREPARED?|PRIVILEGES|PROCEDURE)\>"
+icolor #48c "\<(REFERENCES|RELEASE|REPLACE|RESET|RETURN(S|ING)|REVOKE|ROLE|ROLLBACK|RULE|SAVEPOINT|SCHEMA)\>"
+icolor #48c "\<(SELECT|SEQUENCE|SERVER|SESSION AUTHORIZATION|SET|SHOW|SIMILAR|START|SYSTEM)\>"
+icolor #48c "\<(TABLE(SPACE)?|TEXT SEARCH (CONFIGURATION|DICTIONARY|PARSER|TEMPLATE))\>"
+icolor #48c "\<(TO|TRANSACTION|(EVENT )?TRIGGER|TRUE|TRUNCATE|TYPE|UNION|UNIQUE|UPDATE|USER( MAPPING)?|USING)\>"
+icolor #48c "\<(VACUUM|VALUES|((REFRESH )?MATERIALIZED )?VIEW|WHERE|WITH)\>"
+
+# Flow control.
+icolor #cc0 "\<(CASE|WHEN|IF|THEN|ELSE|ELSE?IF|LOOP|CONTINUE|EXIT)\>"
+icolor #cc0 "\<(FOR|FOREACH|IN|WHILE|END (CASE|IF|LOOP))\>"
+icolor #a4a "\<(RAISE|EXCEPTION|NOTICE|RETURN)\>"
+
+# Quoted identifiers.
+color normal ""[[:alpha:]_][[:alnum:]_$]*""
 
 # Strings.
-color brightyellow "<[^=       ]*>" ""(\.|[^"])*""
+color #4c0 "'([^']|\\')*'"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"
 
-# Regular expressions.
-color brightmagenta "/([^/]|(\\/))*/[iomx]*" "%r\{([^}]|(\\}))*\}[iomx]*"
-
-# Shell command expansion, between `backticks` or like %x{this}.
-color brightblue "`[^`]*`" "%x\{[^}]*\}"
-
-# Strings, double-quoted.
-color green ""([^"]|(\\"))*"" "%[QW]?(![^!]*!|\$[^$]*\$|\^[^^]*\^)"
-color green "%[QW]?(\([^)]*\)|<[^>]*>|\[[^]]*\]|\{[^}]*\})"
-
-# Expression substitution for inside double-quoted strings, "like #{this}".
-color brightgreen "#\{[^}]*\}"
-
-# Strings, single-quoted.
-color green "'([^']|(\\'))*'" "%[qw](![^!]*!|\$[^$]*\$|\^[^^]*\^)"
-color green "%[qw](\([^)]*\)|<[^>]*>|\[[^]]*\]|\{[^}]*\})"
-
 # Comments.
-color red "##?([^{].*|$)"
-color red "--([^{].*|$)"
-color brightblue "//.*"
-color brightblue start="/\*" end="\*/"
-
-# PostgreSQL markings.
-color red "--"
+color italic,#c44 "(--|//).*"
+color italic,#c44 start="/\*" end="\*/"
 
 # PostgreSQL default schemas.
-color brightred "\<(pg_catalog|public)\>"
+color grey "\<(pg_catalog|public)\>"
 
 # PostgreSQL PLs.
-color brightblue "\<pl(java|perlu?|pgsql|py|pythonu?|r|ruby|scheme|sh|tcl)\>"
+color #c08 "\<(SQL|pl(java|perlu?|pgsql|py|pythonu?|r|ruby|scheme|sh|tcl))\>"

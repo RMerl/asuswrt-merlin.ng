@@ -1,5 +1,5 @@
-# stdarg.m4 serial 7
-dnl Copyright (C) 2006, 2008-2021 Free Software Foundation, Inc.
+# stdarg.m4 serial 8
+dnl Copyright (C) 2006, 2008-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -9,7 +9,7 @@ dnl Provide a working va_copy in combination with <stdarg.h>.
 
 AC_DEFUN([gl_STDARG_H],
 [
-  STDARG_H=''
+  GL_GENERATE_STDARG_H=false
   NEXT_STDARG_H='<stdarg.h>'
   AC_CACHE_CHECK([for va_copy],
     [gl_cv_func_va_copy],
@@ -40,7 +40,7 @@ void (*func) (va_list, va_list) = va_copy;
       ], [gl_aixcc=yes], [gl_aixcc=no])
     if test $gl_aixcc = yes; then
       dnl Provide a substitute <stdarg.h> file.
-      STDARG_H=stdarg.h
+      GL_GENERATE_STDARG_H=true
       gl_NEXT_HEADERS([stdarg.h])
       dnl Fallback for the case when <stdarg.h> contains only macro definitions.
       if test "$gl_cv_next_stdarg_h" = '""'; then
@@ -72,7 +72,5 @@ error, bail out
       fi
     fi
   fi
-  AC_SUBST([STDARG_H])
-  AM_CONDITIONAL([GL_GENERATE_STDARG_H], [test -n "$STDARG_H"])
   AC_SUBST([NEXT_STDARG_H])
 ])

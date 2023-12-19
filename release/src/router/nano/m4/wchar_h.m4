@@ -1,13 +1,13 @@
 dnl A placeholder for ISO C99 <wchar.h>, for platforms that have issues.
 
-dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
+dnl Copyright (C) 2007-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
 dnl Written by Eric Blake.
 
-# wchar_h.m4 serial 53
+# wchar_h.m4 serial 55
 
 AC_DEFUN_ONCE([gl_WCHAR_H],
 [
@@ -189,6 +189,8 @@ AC_DEFUN([gl_WCHAR_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_WCSDUP], [1])
   ])
   m4_require(GL_MODULE_INDICATOR_PREFIX[_WCHAR_H_MODULE_INDICATOR_DEFAULTS])
+  dnl Make sure the shell variable for GNULIB_FREE_POSIX is initialized.
+  gl_STDLIB_H_REQUIRE_DEFAULTS
   AC_REQUIRE([gl_WCHAR_H_DEFAULTS])
 ])
 

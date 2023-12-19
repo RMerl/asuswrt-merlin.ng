@@ -17,7 +17,7 @@ color cyan "\<[[:upper:]_[:digit:]]+\>"
 color red "\<[-_.0-9]+\>"
 
 # Strings:
-color red ""[^"]*""  "'[^']*'"
+color red ""[^"]*"|'[^']*'"
 
 # Backticks:
 color green "`[^`]*`"

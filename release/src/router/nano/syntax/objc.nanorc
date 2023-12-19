@@ -4,7 +4,7 @@ syntax m "\.m$"
 magic "Objective-C source"
 comment "//"
 
-# Stuffs,
+# Stuffs.
 color brightwhite "\<[A-Z_][0-9A-Z_]+\>"
 color green "\<(float|double|BOOL|bool|char|int|short|long|id|sizeof|enum|void|static|const|struct|union|typedef|extern|(un)?signed|inline)\>"
 color green "\<[[:alpha:]_][[:alnum:]_]*_t\>"
@@ -15,7 +15,7 @@ color brightgreen "\<(goto|continue|break|return)\>"
 color brightgreen "@(encode|end|implementation|interface)|selector)\>"
 
 # GCC builtins.
-color cyan "__attribute__[[:blank:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
+color cyan "__attribute__[[:blank:]]*\(\([^)]*\)\)|__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
 
 # Selector/method.
 color brightmagenta "(^|[[:blank:]])\[.*[[:blank:]].*\]"
@@ -24,9 +24,9 @@ color magenta "[[:alnum:]]*:"
 color white "\[[^][:blank:]]*\]"
 
 # Strings.
-color brightblack "'([^'\]|(\\["'abfnrtv\\]))'" "'\\(([0-3]?[0-7]{1,2}))'" "'\\x[0-9A-Fa-f]{1,2}'"
-color brightblack "<[^= 	]*>" ""(\\.|[^"])*""
-color brightblue "@"(\\.|[^"])*""
+color brightblack "'([^'\]|\\(["'\abfnrtv]|x[[:xdigit:]]{1,2}|[0-3]?[0-7]{1,2}))'"
+color brightblack "<[^= 	]*>|"([^"\]|\\.)*""
+color brightblue "@"([^"\]|\\.)*""
 
 # Preprocessor commands.
 color brightblue "^[[:blank:]]*#[[:blank:]]*(define|include|import|(un|ifn?)def|endif|el(if|se)|if|warning|error)"

@@ -13,13 +13,13 @@ color red "^(19|20)[0-9-]{8}"
 color yellow "<[^>]*@[^>]*>"
 
 # Command-line options.
-color cyan "[[:blank:]]-[a-zA-Z\$]" "--[8a-z-]+"
+color cyan "[[:blank:]]-[a-zA-Z\$]|--[8a-z-]+"
 # Bug and patch numbers.
-color cyan "(BZ|bug|patch)[ ]#[0-9]+" "PR [[:alnum:]]+/[0-9]+"
+color cyan "(BZ|bug|patch)[ ]#[0-9]+|PR [[:alnum:]]+/[0-9]+"
 # Probable constants, for variety.
 color brightred "\<[A-Z_][0-9A-Z_]+\>"
 # Key sequences.
-color brightblue "\^[A-Z^\]" "\<M-." "\<F1?[0-9]" "(\^|M-)Space"
+color brightblue "\^[A-Z^\]|\<M-.|\<F1?[0-9]|(\^|M-)Space"
 
 # Changed files.
 color magenta start="^(	| {8})\* " end="(:( |$)|^$)"

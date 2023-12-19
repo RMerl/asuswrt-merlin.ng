@@ -1,5 +1,5 @@
-# stdio_h.m4 serial 56
-dnl Copyright (C) 2007-2021 Free Software Foundation, Inc.
+# stdio_h.m4 serial 61
+dnl Copyright (C) 2007-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -40,41 +40,32 @@ AC_DEFUN_ONCE([gl_STDIO_H],
        attribute "__gnu_printf__" instead of "__printf__"])
   fi
 
-  dnl This ifdef is necessary to avoid an error "missing file lib/stdio-read.c"
-  dnl "expected source file, required through AC_LIBSOURCES, not found". It is
-  dnl also an optimization, to avoid performing a configure check whose result
-  dnl is not used. But it does not make the test of GNULIB_STDIO_H_NONBLOCKING
-  dnl or GNULIB_NONBLOCKING redundant.
+  dnl This ifdef is an optimization, to avoid performing a configure check whose
+  dnl result is not used. But it does not make the test of
+  dnl GNULIB_STDIO_H_NONBLOCKING or GNULIB_NONBLOCKING redundant.
   m4_ifdef([gl_NONBLOCKING_IO], [
     gl_NONBLOCKING_IO
     if test $gl_cv_have_nonblocking != yes; then
       REPLACE_STDIO_READ_FUNCS=1
-      AC_LIBOBJ([stdio-read])
     fi
   ])
 
-  dnl This ifdef is necessary to avoid an error "missing file lib/stdio-write.c"
-  dnl "expected source file, required through AC_LIBSOURCES, not found". It is
-  dnl also an optimization, to avoid performing a configure check whose result
-  dnl is not used. But it does not make the test of GNULIB_STDIO_H_SIGPIPE or
-  dnl GNULIB_SIGPIPE redundant.
+  dnl This ifdef is an optimization, to avoid performing a configure check whose
+  dnl result is not used. But it does not make the test of
+  dnl GNULIB_STDIO_H_SIGPIPE or GNULIB_SIGPIPE redundant.
   m4_ifdef([gl_SIGNAL_SIGPIPE], [
     gl_SIGNAL_SIGPIPE
     if test $gl_cv_header_signal_h_SIGPIPE != yes; then
       REPLACE_STDIO_WRITE_FUNCS=1
-      AC_LIBOBJ([stdio-write])
     fi
   ])
-  dnl This ifdef is necessary to avoid an error "missing file lib/stdio-write.c"
-  dnl "expected source file, required through AC_LIBSOURCES, not found". It is
-  dnl also an optimization, to avoid performing a configure check whose result
-  dnl is not used. But it does not make the test of GNULIB_STDIO_H_NONBLOCKING
-  dnl or GNULIB_NONBLOCKING redundant.
+  dnl This ifdef is an optimization, to avoid performing a configure check whose
+  dnl result is not used. But it does not make the test of
+  dnl GNULIB_STDIO_H_NONBLOCKING or GNULIB_NONBLOCKING redundant.
   m4_ifdef([gl_NONBLOCKING_IO], [
     gl_NONBLOCKING_IO
     if test $gl_cv_have_nonblocking != yes; then
       REPLACE_STDIO_WRITE_FUNCS=1
-      AC_LIBOBJ([stdio-write])
     fi
   ])
 
@@ -90,6 +81,16 @@ AC_DEFUN_ONCE([gl_STDIO_H],
   AC_CHECK_DECLS_ONCE([fcloseall])
   if test $ac_cv_have_decl_fcloseall = no; then
     HAVE_DECL_FCLOSEALL=0
+  fi
+
+  AC_CHECK_DECLS_ONCE([getw])
+  if test $ac_cv_have_decl_getw = no; then
+    HAVE_DECL_GETW=0
+  fi
+
+  AC_CHECK_DECLS_ONCE([putw])
+  if test $ac_cv_have_decl_putw = no; then
+    HAVE_DECL_PUTW=0
   fi
 ])
 
@@ -119,6 +120,7 @@ AC_DEFUN([gl_STDIO_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FGETC])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FGETS])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FOPEN])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FOPEN_GNU])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPRINTF])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPRINTF_POSIX])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FPURGE])
@@ -186,7 +188,9 @@ AC_DEFUN([gl_STDIO_H_DEFAULTS],
   HAVE_DECL_FTELLO=1;            AC_SUBST([HAVE_DECL_FTELLO])
   HAVE_DECL_GETDELIM=1;          AC_SUBST([HAVE_DECL_GETDELIM])
   HAVE_DECL_GETLINE=1;           AC_SUBST([HAVE_DECL_GETLINE])
+  HAVE_DECL_GETW=1;              AC_SUBST([HAVE_DECL_GETW])
   HAVE_DECL_OBSTACK_PRINTF=1;    AC_SUBST([HAVE_DECL_OBSTACK_PRINTF])
+  HAVE_DECL_PUTW=1;              AC_SUBST([HAVE_DECL_PUTW])
   HAVE_DECL_SNPRINTF=1;          AC_SUBST([HAVE_DECL_SNPRINTF])
   HAVE_DECL_VSNPRINTF=1;         AC_SUBST([HAVE_DECL_VSNPRINTF])
   HAVE_DPRINTF=1;                AC_SUBST([HAVE_DPRINTF])
@@ -202,6 +206,7 @@ AC_DEFUN([gl_STDIO_H_DEFAULTS],
   REPLACE_FDOPEN=0;              AC_SUBST([REPLACE_FDOPEN])
   REPLACE_FFLUSH=0;              AC_SUBST([REPLACE_FFLUSH])
   REPLACE_FOPEN=0;               AC_SUBST([REPLACE_FOPEN])
+  REPLACE_FOPEN_FOR_FOPEN_GNU=0; AC_SUBST([REPLACE_FOPEN_FOR_FOPEN_GNU])
   REPLACE_FPRINTF=0;             AC_SUBST([REPLACE_FPRINTF])
   REPLACE_FPURGE=0;              AC_SUBST([REPLACE_FPURGE])
   REPLACE_FREOPEN=0;             AC_SUBST([REPLACE_FREOPEN])

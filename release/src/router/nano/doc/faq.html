@@ -5,6 +5,9 @@
   <title>The GNU nano editor FAQ</title>
   <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
   <meta name="description" content="The genesis story of the nano editor, plus the solution to some common problems.">
+  <style>
+    .indented { margin-left: 2em; font-family: courier; font-size: 110%; }
+  </style>
 </head>
 
 <body text="#330000" bgcolor="#ffffff" link="#0000ef" vlink="#51188e" alink="#ff0000">
@@ -24,7 +27,7 @@
   <a href="#2.1">2.1. FTP and WWW sites that carry nano.</a><br>
   <a href="#2.2">2.2. RedHat and derivatives (.rpm) packages.</a><br>
   <a href="#2.3">2.3. Debian (.deb) packages.</a><br>
-  <a href="#2.4">2.4. By GIT (for the brave).</a>
+  <a href="#2.4">2.4. By git (for the brave).</a>
 </p></blockquote>
 <h3><a href="#3">3. Installation and Configuration</a></h3>
 <blockquote><p>
@@ -40,7 +43,7 @@
 </p></blockquote>
 <h3><a href="#4">4. Running</a></h3>
 <blockquote><p>
-  <a href="#4.1">4.1. How do I open a file with a name beginning with '+' from the command line?</a><br>
+  <a href="#4.1">4.1. Alt+Up does nothing on a Linux console. How can I make it scroll?</a><br>
   <a href="#4.2">4.2. How can I make Ctrl+Shift+Left/Right select words on urxvt?</a><br>
   <a href="#4.3">4.3. Ack! My numeric keypad's keys don't work properly when NumLock is off! What can I do?</a><br>
   <a href="#4.4">4.4. With what keystroke can I paste text from the clipboard into nano?</a><br>
@@ -69,7 +72,7 @@
   <a href="#7.2">7.2. How do I submit a bug report or patch?</a><br>
   <a href="#7.3">7.3. I want to send the development team a big load of cash (or just a thank you).</a><br>
   <a href="#7.4">7.4. How do I join the development team?</a><br>
-  <a href="#7.5">7.5. Can I have write access to the GIT tree?</a>
+  <a href="#7.5">7.5. Can I have write access to the git tree?</a>
 </p></blockquote>
 <hr width="100%">
 
@@ -89,7 +92,7 @@
 <h3><a name="1.3"></a>1.3. Why the name change from TIP?</h3>
 <blockquote><p>On January 10, 2000, TIP was officially renamed to nano because of a namespace conflict with another program called 'tip'. The original 'tip' program &quot;establishes a full duplex terminal connection to a remote host&quot;, and was included with many older Unix systems (and newer ones like Solaris). The conflict was not noticed at first because there is no 'tip' utility included with most GNU/Linux distributions (where nano was developed).</p></blockquote>
 <h3><a name="1.4"></a>1.4. What is the current version of nano?</h3>
-<blockquote><p>The current version of nano <i>should</i> be <b>5.7</b>.  Of course, you should always check the <a href="https://nano-editor.org/">nano homepage</a> to see what the latest and greatest version is.</p></blockquote>
+<blockquote><p>The current version of nano <i>should</i> be <b>7.2</b>.  Of course, you should always check the <a href="https://nano-editor.org/">nano homepage</a> to see what the latest and greatest version is.</p></blockquote>
 <h3><a name="1.5"></a>1.5. I want to read the man page without having to download the program!</h3>
 <blockquote><p>Jeez, demanding, aren't we? Okay, look <a href="https://nano-editor.org/dist/latest/nano.1.html">here</a>.</p></blockquote>
 <hr width="100%">
@@ -118,8 +121,8 @@
   </ul>
   <p>You can also have a look at the <a href="http://ftp.debian.org/debian/pool/main/n/nano/">Package Pool</a> to see all the available binary and source packages.</p>
 </blockquote>
-<h3><a name="2.4"></a>2.4. By GIT (for the brave).</h3>
-<blockquote><p>For the 'bleeding edge' current version of nano, you can use GIT to download the current source code. <b>Note:</b> believe it or not, by downloading code that has not yet stabilized into an official release, there could quite possibly be bugs, in fact the code may not even compile! Anyway, see <a href="http://git.savannah.gnu.org/cgit/nano.git/tree/README.GIT">the nano GIT document</a> for info on anonymous GIT access to the nano source.</p></blockquote>
+<h3><a name="2.4"></a>2.4. By git (for the brave).</h3>
+<blockquote><p>For the "bleeding edge" current version of nano, you can use <b>git</b> to download the current source code. <i>Note:</i> believe it or not, by downloading code that has not yet stabilized into an official release, there could quite possibly be bugs, in fact the code may not even compile! Anyway, see <a href="http://git.savannah.gnu.org/cgit/nano.git/tree/README.hacking">the hacking document</a> for info on getting and building nano from git.</p></blockquote>
 <hr width="100%">
 
 <h1><a name="3"></a>3. Installation and Configuration</h1>
@@ -127,39 +130,41 @@
 <blockquote><p>It's simple really! As root, type <b>rpm -Uvh nano-x.y-1*.rpm</b> if you have a RedHat-ish system or <b>dpkg -i nano_x.y-1*.deb</b> if you have a Debian-ish system, where <b>x.y</b> is the version number of nano. There are other programs to install packages, and if you wish to use those, knock yourself out.</p></blockquote>
 <h3><a name="3.2"></a>3.2. Compiling from source: WHAT THE HECK DO I DO NOW?</h3>
 <blockquote><p>Okay, take a deep breath, this really isn't hard. Unpack the nano source with a command like:</p>
-  <p><b>tar -xvf nano-x.y.tar.gz</b></p>
+  <p class="indented"><b>tar -xvf nano-x.y.tar.gz</b></p>
   <p>Then you need to run <b>configure</b> with any options you might want (if any).</p>
   <p>The average case is this:</p>
-  <p><b>cd nano-x.y/</b><br>
+  <p class="indented"><b>cd nano-x.y/</b><br>
   <b>./configure</b><br>
   <b>make</b><br>
-  <b>make install</b> (as root, of course)</p></blockquote>
+  <b>make install</b>&nbsp;&nbsp; #(as root, of course)</p></blockquote>
 <h3><a name="3.3"></a>3.3. Why does everything go into /usr/local?</h3>
 <blockquote><p>Well, that's what the <b>configure</b> script defaults to. If you wish to change this, simply do this:</p>
-  <p><b>./configure --prefix=/usr</b></p>
+  <p class="indented"><b>./configure --prefix=/usr</b></p>
   <p>This will put nano into /usr/bin when you run <b>make install</b>.</p></blockquote>
 <h3><a name="3.4"></a>3.4. nano should automatically run strip on the binary when installing it!</h3>
 <blockquote><p>It does when you use <b>make install-strip</b>. The default <b>make install</b> does not, and will not, run strip automatically.</p></blockquote>
 <h3><a name="3.5"></a>3.5. How can I make the executable smaller? This is too bloated!</h3>
 <blockquote><p>Actually, there are several parts of the editor that can be disabled. You can pass arguments to the <b>configure</b> script that disable certain features. Here's a brief list:</p>
   <pre>
-  <b>--disable-browser</b>       Disable the built-in file browser
-  <b>--disable-color</b>         Disable color and syntax highlighting
-  <b>--disable-comment</b>       Disable the comment/uncomment function
-  <b>--disable-extra</b>         Disable the easter egg
-  <b>--disable-help</b>          Disable the built-in help texts
-  <b>--disable-histories</b>     Disable the saving of search strings and cursor positions
-  <b>--disable-justify</b>       Disable the justify/unjustify functions
-  <b>--disable-libmagic</b>      Disable the use of libmagic for determining a file's syntax
-  <b>--disable-linenumbers</b>   Disable line numbering
-  <b>--disable-mouse</b>         Disable mouse support
-  <b>--disable-multibuffer</b>   Disable the opening of multiple file buffers
-  <b>--disable-nanorc</b>        Disable the use of .nanorc files
-  <b>--disable-operatingdir</b>  Disable the setting of an operating directory
-  <b>--disable-speller</b>       Disable the spell-checker functions
-  <b>--disable-tabcomp</b>       Disable the tab-completion functions
-  <b>--disable-wordcomp</b>      Disable the word-completion function
-  <b>--disable-wrapping</b>      Disable all hard-wrapping of text</pre>
+    <b>--disable-browser</b>       Disable the built-in file browser
+    <b>--disable-color</b>         Disable color and syntax highlighting
+    <b>--disable-comment</b>       Disable the comment/uncomment function
+    <b>--disable-extra</b>         Disable the easter egg
+    <b>--disable-formatter</b>     Disable the formatting tool
+    <b>--disable-help</b>          Disable the built-in help texts
+    <b>--disable-histories</b>     Disable the saving of search strings and cursor positions
+    <b>--disable-justify</b>       Disable the justify/unjustify functions
+    <b>--disable-libmagic</b>      Disable the use of libmagic for determining a file's syntax
+    <b>--disable-linenumbers</b>   Disable line numbering
+    <b>--disable-linter</b>        Disable the linting tool
+    <b>--disable-mouse</b>         Disable mouse support
+    <b>--disable-multibuffer</b>   Disable the opening of multiple file buffers
+    <b>--disable-nanorc</b>        Disable the use of .nanorc files
+    <b>--disable-operatingdir</b>  Disable the setting of an operating directory
+    <b>--disable-speller</b>       Disable the spell-checking tool
+    <b>--disable-tabcomp</b>       Disable the tab-completion functions
+    <b>--disable-wordcomp</b>      Disable the word-completion function
+    <b>--disable-wrapping</b>      Disable all hard-wrapping of text</pre>
   <p>There's also the <b>--enable-tiny</b> option which disables everything above, as well as some larger chunks of the program (like the undo/redo code and the code for selecting text). Also, if you know you don't need other languages, you can use <b>--disable-nls</b> to disable internationalization and save a few kilobytes. And finally, there's always good old <b>strip</b> to remove all unneeded symbols.</p>
 </blockquote>
 <h3><a name="3.6"></a>3.6. Tell me more about this multibuffer stuff!</h3>
@@ -175,13 +180,19 @@
 <hr width="100%">
 
 <h1><a name="4"></a>4. Running</h1>
-<h3><a name="4.1"></a>4.1. How do I open a file with a name beginning with '+' from the command line?</h3>
-<blockquote><p>If a command-line argument that begins with '+' is followed by another argument, the former is always treated as a starting line (plus column number), and the latter always as a filename. If a command-line argument that begins with '+' isn't followed by another argument, it's treated as a filename. Examples:</p>
-  <p>To open '+filename.txt': <b>nano +filename.txt</b><br>
-  To open '+filename.txt' starting on line 10: <b>nano +10 +filename.txt</b><br>
-  To open '+filename.txt' starting on line 1, column 20: <b>nano +,20 +filename.txt</b><br>
-  To open '+filename.txt' starting on line 10, column 20: <b>nano +10,20 +filename.txt</b><br>
-  To open '+filename.txt' starting on line 1 and 'filename.txt' starting on line 40: <b>nano +1 +filename.txt +40 filename.txt</b></p></blockquote>
+<h3><a name="4.1"></a>4.1. Alt+Up does nothing on a Linux console. How can I make it scroll?</h3>
+<blockquote><p>On Debian and its derivatives, the <b>Alt+Up</b> keystroke on a Linux console
+  produces by default a 'KeyboardSignal', which normally does absolutely nothing and is useless
+  for the average user.  To get the keystroke to do what it ought to do (scroll the viewport
+  one row up), run this in a Linux console:</p>
+  <p class="indented"><b>dumpkeys --full | sed s/KeyboardSignal/Up/ | sudo loadkeys -</b></p>
+  <p>You will need to run this command whenever you first switch to a Linux console.</p>
+  <p>Or you can (as root) execute the following little script just once:</p>
+  <p class="indented"><b>for file in /etc/console-setup/cached*.kmap.gz; do<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;gunzip $file;<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;sed -i 's/KeyboardSignal/Up/' ${file%.gz};<br>
+  &nbsp;&nbsp;&nbsp;&nbsp;gzip ${file%.gz};<br>
+  done</b></p></blockquote>
 <h3><a name="4.2"></a>4.2. How can I make Ctrl+Shift+Left/Right select words on urxvt?</h3>
 <blockquote><p>The urxvt terminal emulator produces non-standard escape sequences for the modified cursor keys.  These deviant sequences are not listed in the terminfo database, which means that ncurses does not recognize them.  The easiest way around this is to tell urxvt to produce xterm-compatible escape sequences for the relevant keystrokes.  To achieve this, add the following lines to your ~/.Xresources file:</p>
 <pre>
@@ -219,16 +230,16 @@
 <blockquote><p>If you want nano to actually use color, you have to specify the color configurations you want it to use in your .nanorc. Several example configurations are in the <b>syntax/</b> subdirectory of the nano source, which are normally installed to <b>/usr/local/share/nano/</b>. To enable all of them, uncomment the line <b># include "/usr/local/share/nano/*.nanorc"</b> in your nanorc. See also section <a href="#3.9">3.9</a>.</p></blockquote>
 <h3><a name="4.9"></a>4.9. How do I make nano my default editor (in Pine, mutt, etc.)?</h3>
 <blockquote><p>You need to make nano your $EDITOR. If you want this to be saved, you should put a line like this in your <b>.bashrc</b> if you use bash (or <b>.zshrc</b> if you believe in zsh):</p>
-  <p><b>export EDITOR=/usr/local/bin/nano</b></p>
+  <p class="indented"><b>export EDITOR=/usr/local/bin/nano</b></p>
   <p>or, if you use tcsh, put this in your <b>.cshrc</b> file:</p>
-  <p><b>setenv EDITOR /usr/local/bin/nano</b></p>
+  <p class="indented"><b>setenv EDITOR /usr/local/bin/nano</b></p>
   <p>Change /usr/local/bin/nano to wherever nano is installed on your system. Type &quot;which nano&quot; to find out. This will not take effect until the next time you log in. So log out and back in again.</p>
   <p>Then, on top of that, if you use Pine, you must go into setup (type <b>S</b> at the main menu), and then configure (type <b>C</b>). Hit Enter on the lines that say:</p>
-  <p><b>[ ] enable-alternate-editor-cmd</b><br>
+  <p class="indented"><b>[ ] enable-alternate-editor-cmd</b><br>
   <b>[ ] enable-alternate-editor-implicitly</b></p>
   <p>Then exit (<b>E</b>) and select Yes (<b>Y</b>).</p>
   <p>If you're a mutt user, you should see an effect immediately the next time you log in. No further configuration is needed. However, if you want to let people know you use nano to compose your email messages, you can put a line like this in your <b>.muttrc</b>:</p>
-  <p><b>my_hdr X-Composer: nano-x.y</b></p>
+  <p class="indented"><b>my_hdr X-Composer: nano-x.y</b></p>
   <p>Again, replace x.y with the version of nano you use.</p></blockquote>
 <hr width="100%">
 

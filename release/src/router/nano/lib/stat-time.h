@@ -1,18 +1,18 @@
 /* stat-related time functions.
 
-   Copyright (C) 2005, 2007, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005, 2007, 2009-2023 Free Software Foundation, Inc.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Paul Eggert.  */
@@ -20,9 +20,8 @@
 #ifndef STAT_TIME_H
 #define STAT_TIME_H 1
 
-#include "intprops.h"
-
 #include <errno.h>
+#include <stdckdint.h>
 #include <stddef.h>
 #include <sys/stat.h>
 #include <time.h>
@@ -102,7 +101,7 @@ get_stat_mtime_ns (struct stat const *st)
 
 /* Return the nanosecond component of *ST's birth time.  */
 _GL_STAT_TIME_INLINE long int _GL_ATTRIBUTE_PURE
-get_stat_birthtime_ns (struct stat const *st _GL_UNUSED)
+get_stat_birthtime_ns (_GL_UNUSED struct stat const *st)
 {
 # if defined HAVE_STRUCT_STAT_ST_BIRTHTIMESPEC_TV_NSEC
   return STAT_TIMESPEC (st, st_birthtim).tv_nsec;
@@ -158,7 +157,7 @@ get_stat_mtime (struct stat const *st)
 /* Return *ST's birth time, if available; otherwise return a value
    with tv_sec and tv_nsec both equal to -1.  */
 _GL_STAT_TIME_INLINE struct timespec _GL_ATTRIBUTE_PURE
-get_stat_birthtime (struct stat const *st _GL_UNUSED)
+get_stat_birthtime (_GL_UNUSED struct stat const *st)
 {
   struct timespec t;
 
@@ -208,7 +207,7 @@ get_stat_birthtime (struct stat const *st _GL_UNUSED)
    errno to EOVERFLOW if normalization overflowed.  This function
    is intended to be private to this .h file.  */
 _GL_STAT_TIME_INLINE int
-stat_time_normalize (int result, struct stat *st _GL_UNUSED)
+stat_time_normalize (int result, _GL_UNUSED struct stat *st)
 {
 #if defined __sun && defined STAT_TIMESPEC
   if (result == 0)
@@ -232,7 +231,7 @@ stat_time_normalize (int result, struct stat *st _GL_UNUSED)
           /* Overflow is possible, as Solaris 11 stat can yield
              tv_sec == TYPE_MINIMUM (time_t) && tv_nsec == -1000000000.
              INT_ADD_WRAPV is OK, since time_t is signed on Solaris.  */
-          if (INT_ADD_WRAPV (q, ts->tv_sec, &ts->tv_sec))
+          if (ckd_add (&ts->tv_sec, q, ts->tv_sec))
             {
               errno = EOVERFLOW;
               return -1;

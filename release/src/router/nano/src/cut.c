@@ -1,7 +1,7 @@
 /**************************************************************************
  *   cut.c  --  This file is part of GNU nano.                            *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2023 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014 Mark Majeres                                      *
  *   Copyright (C) 2016, 2018-2020 Benno Schulenberg                      *
  *                                                                        *
@@ -97,6 +97,13 @@ void do_deletion(undo_type action)
 		/* We're at the end-of-file: nothing to do. */
 		return;
 
+#ifdef ENABLE_COLOR
+	if (!refresh_needed)
+		check_the_multis(openfile->current);
+#endif
+	if (!refresh_needed)
+		update_line(openfile->current, openfile->current_x);
+
 	/* Adjust the file size, and remember it for a possible redo. */
 	openfile->totsize--;
 #ifndef NANO_TINY
@@ -185,7 +192,7 @@ void chop_word(bool forward)
 	 * on the edge of the original line, then put the cursor on that
 	 * edge instead, so that lines will not be joined unexpectedly. */
 	if (!forward) {
-		do_prev_word(ISSET(WORD_BOUNDS));
+		do_prev_word();
 		if (openfile->current != is_current) {
 			if (is_current_x > 0) {
 				openfile->current = is_current;
@@ -194,7 +201,7 @@ void chop_word(bool forward)
 				openfile->current_x = strlen(openfile->current->data);
 		}
 	} else {
-		do_next_word(ISSET(AFTER_ENDS), ISSET(WORD_BOUNDS));
+		do_next_word(ISSET(AFTER_ENDS));
 		if (openfile->current != is_current &&
 							is_current->data[is_current_x] != '\0') {
 			openfile->current = is_current;
@@ -249,27 +256,29 @@ void extract_segment(linestruct *top, size_t top_x, linestruct *bot, size_t bot_
 	bool same_line = (openfile->mark == top);
 	bool post_marked = (openfile->mark && (openfile->mark->lineno > top->lineno ||
 						(same_line && openfile->mark_x > top_x)));
-	bool was_anchored = top->has_anchor;
+	static bool inherited_anchor = FALSE;
+	bool had_anchor = top->has_anchor;
 
 	if (top == bot && top_x == bot_x)
 		return;
 
 	if (top != bot)
 		for (linestruct *line = top->next; line != bot->next; line = line->next)
-			was_anchored |= line->has_anchor;
+			had_anchor |= line->has_anchor;
 #endif
 
 	if (top == bot) {
 		taken = make_new_node(NULL);
 		taken->data = measured_copy(top->data + top_x, bot_x - top_x);
-		memmove(top->data + top_x, top->data + bot_x,
-										strlen(top->data + bot_x) + 1);
+		memmove(top->data + top_x, top->data + bot_x, strlen(top->data + bot_x) + 1);
 		last = taken;
 	} else if (top_x == 0 && bot_x == 0) {
 		taken = top;
 		last = make_new_node(NULL);
 		last->data = copy_of("");
-
+#ifndef NANO_TINY
+		last->has_anchor = bot->has_anchor;
+#endif
 		last->prev = bot->prev;
 		bot->prev->next = last;
 		last->next = NULL;
@@ -309,11 +318,17 @@ void extract_segment(linestruct *top, size_t top_x, linestruct *bot, size_t bot_
 	if (cutbuffer == NULL) {
 		cutbuffer = taken;
 		cutbottom = last;
+#ifndef NANO_TINY
+		inherited_anchor = taken->has_anchor;
+#endif
 	} else {
 		cutbottom->data = nrealloc(cutbottom->data,
 							strlen(cutbottom->data) + strlen(taken->data) + 1);
 		strcat(cutbottom->data, taken->data);
-
+#ifndef NANO_TINY
+		cutbottom->has_anchor = taken->has_anchor && !inherited_anchor;
+		inherited_anchor |= taken->has_anchor;
+#endif
 		cutbottom->next = taken->next;
 		delete_node(taken);
 
@@ -326,7 +341,7 @@ void extract_segment(linestruct *top, size_t top_x, linestruct *bot, size_t bot_
 	openfile->current_x = top_x;
 
 #ifndef NANO_TINY
-	openfile->current->has_anchor = was_anchored;
+	openfile->current->has_anchor = had_anchor;
 
 	if (post_marked || same_line)
 		openfile->mark = openfile->current;
@@ -427,9 +442,19 @@ void ingraft_buffer(linestruct *topline)
 /* Meld a copy of the given buffer into the current file buffer. */
 void copy_from_buffer(linestruct *somebuffer)
 {
+#ifdef ENABLE_COLOR
+	size_t threshold = openfile->edittop->lineno + editwinrows - 1;
+#endif
 	linestruct *the_copy = copy_buffer(somebuffer);
 
 	ingraft_buffer(the_copy);
+
+#ifdef ENABLE_COLOR
+	if (openfile->current->lineno > threshold || ISSET(SOFTWRAP))
+		recook = TRUE;
+	else
+		perturbed = TRUE;
+#endif
 }
 
 #ifndef NANO_TINY
@@ -477,7 +502,7 @@ void do_snip(bool marked, bool until_eof, bool append)
 		/* When not at the end of a line, move the rest of this line into
 		 * the cutbuffer.  Otherwise, when not at the end of the buffer,
 		 * move just the "line separator" into the cutbuffer. */
-		if (openfile->current_x < strlen(openfile->current->data))
+		if (line->data[openfile->current_x] != '\0')
 			extract_segment(line, openfile->current_x, line, strlen(line->data));
 		else if (openfile->current != openfile->filebot) {
 			extract_segment(line, openfile->current_x, line->next, 0);
@@ -501,6 +526,9 @@ void do_snip(bool marked, bool until_eof, bool append)
 
 	set_modified();
 	refresh_needed = TRUE;
+#ifdef ENABLE_COLOR
+	perturbed = TRUE;
+#endif
 }
 
 /* Move text from the current buffer into the cutbuffer. */
@@ -686,10 +714,15 @@ void copy_text(void)
 /* Copy text from the cutbuffer into the current buffer. */
 void paste_text(void)
 {
+#if defined(ENABLE_WRAPPING) || !defined(NANO_TINY)
+	/* Remember where the paste started. */
+	linestruct *was_current = openfile->current;
+#endif
+#ifndef NANO_TINY
+	bool had_anchor = was_current->has_anchor;
+#endif
 	ssize_t was_lineno = openfile->current->lineno;
-		/* The line number where we started the paste. */
 	size_t was_leftedge = 0;
-		/* The leftedge where we started the paste. */
 
 	if (cutbuffer == NULL) {
 		statusline(AHEM, _("Cutbuffer is empty"));
@@ -708,7 +741,19 @@ void paste_text(void)
 	copy_from_buffer(cutbuffer);
 
 #ifndef NANO_TINY
+	/* Wipe any anchors in the pasted text, so that they don't proliferate. */
+	for (linestruct *line = was_current; line != openfile->current->next; line = line->next)
+		line->has_anchor = FALSE;
+
+	was_current->has_anchor = had_anchor;
+
 	update_undo(PASTE);
+#endif
+
+#ifdef ENABLE_WRAPPING
+	/* When still on the same line and doing hard-wrapping, limit the width. */
+	if (openfile->current == was_current && ISSET(BREAK_LONG_LINES))
+		do_wrap();
 #endif
 
 	/* If we pasted less than a screenful, don't center the cursor. */

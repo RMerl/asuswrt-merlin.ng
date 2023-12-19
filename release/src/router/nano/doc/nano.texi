@@ -1,50 +1,54 @@
-\input texinfo  @c -*-texinfo-*-
+\input texinfo
+
 @c %**start of header
 @setfilename nano.info
-@settitle nano
+@settitle The GNU nano text editor
 @c %**end of header
 
 @documentencoding UTF-8
 
+@documentdescription
+The complete manual for the GNU nano text editor.
+@end documentdescription
+
 @smallbook
-@set EDITION 0.5
-@set VERSION 5.7
-@set UPDATED April 2021
+@set EDITION 0.7
+@set VERSION 7.2
+@set UPDATED January 2023
 
 @dircategory Editors
 @direntry
 * nano: (nano).                 Small and friendly text editor.
 @end direntry
 
-@c tex
-@c \overfullrule=0pt
-@c end tex
+@comment Prevent the black square at the end of an overlong line.
+@finalout
+
 
 @titlepage
+
 @title GNU @command{nano}
 @subtitle a small and friendly text editor
-@subtitle version 5.7
+@subtitle version 7.2
 
 @author Chris Allegretta
+
 @page
 
 This manual documents the GNU @command{nano} editor.
 @sp 1
-This manual is part of the GNU @command{nano} distribution.@*
+The contents of this manual are part of the GNU @command{nano} distribution.
 
-@sp 4
-Copyright @copyright{} 1999-2009, 2014-2021 Free Software Foundation, Inc.
-
+@sp 5
+Copyright @copyright{} 1999-2009, 2014-2023 Free Software Foundation, Inc.
 @sp 1
 This document is dual-licensed.  You may distribute and/or modify it
 under the terms of either of the following licenses:
-
 @sp 1
 * The GNU General Public License, as published by the Free Software
   Foundation, version 3 or (at your option) any later version.  You
   should have received a copy of the GNU General Public License along
   with this program.  If not, see @url{https://www.gnu.org/licenses/}.
-
 @sp 1
 * The GNU Free Documentation License, as published by the Free Software
   Foundation, version 1.2 or (at your option) any later version, with no
@@ -52,30 +56,42 @@ under the terms of either of the following licenses:
   You should have received a copy of the GNU Free Documentation License
   along with this program.  If not, see @url{https://www.gnu.org/licenses/}.
 
+@sp 5
+You may contact the original author by e-mail: @email{chrisa@@asty.org}
+
+Or contact the current maintainer: @email{bensberg@@coevern.nl}
+
 @sp 1
-You may contact the author by
-e-mail: @email{chrisa@@asty.org}@*
+For suggesting improvements: @email{nano-devel@@gnu.org}
+
 @end titlepage
 
-@ifnottex
 
+@macro blankline
+@iftex
+@sp 1
+@end iftex
+@end macro
+
+
+@ifnottex
 
 @node Top
 @top
 
-This manual documents the GNU @command{nano} editor, version 5.7.
+This manual documents GNU @command{nano}, version 7.2.
 
 @menu
 * Introduction::
 * Invoking::
-* Command-line Options::
 * Editor Basics::
-* Built-in Help::
+* The Help Viewer::
 * The File Browser::
+* Command-line Options::
 * Feature Toggles::
 * Nanorc Files::
 * Pico Compatibility::
-* Building and Configure Options::
+* Building and its Options::
 @end menu
 
 @end ifnottex
@@ -104,27 +120,26 @@ following options: @option{--breaklonglines},
 @option{--jumpyscrolling}, and @option{--emptyline}
 (or @option{-bje}).
 
+@blankline
 Please report bugs via @url{https://savannah.gnu.org/bugs/?group=nano}.
 
+@blankline
 For background information see @url{https://nano-editor.org/}.
+
 
 @node Invoking
 @chapter Invoking
 
 The usual way to invoke @command{nano} is:
 
-@iftex
-@sp 1
-@end iftex
+@blankline
 @example
 @code{nano [FILE]}
 @end example
-@iftex
-@sp 1
-@end iftex
+@blankline
 
-But it is also possible to specify one or more options (see the next
-section), and to edit several files in a row.  Additionally, the cursor
+But it is also possible to specify one or more options (@pxref{Command-line Options}),
+and to edit several files in a row.  Additionally, the cursor
 can be put on a specific line of a file by adding the line number
 with a plus sign before the filename, and even in a specific column by
 adding it with a comma.
@@ -138,15 +153,11 @@ of those letters: @code{C} and/or @code{R}.  When the string contains spaces,
 it needs to be enclosed in quotes.
 A more complete command synopsis thus is:
 
-@iftex
-@sp 1
-@end iftex
+@blankline
 @example
 @code{nano [OPTION]@dots{} [[+LINE[,COLUMN]|+[crCR](/|?)STRING] FILE]@dots{}}
 @end example
-@iftex
-@sp 1
-@end iftex
+@blankline
 
 Normally, however, you set your preferred options in a @file{nanorc}
 file (@pxref{Nanorc Files}).  And when using @code{set positionlog}
@@ -156,6 +167,206 @@ you will rarely need to specify a line number.
 As a special case: when instead of a filename a dash is given, @command{nano}
 will read data from standard input.  This means you can pipe the output of
 a command straight into a buffer, and then edit it.
+
+
+@node Editor Basics
+@chapter Editor Basics
+
+@menu
+* Screen Layout::
+* Entering Text::
+* Commands::
+* The Cutbuffer::
+* The Mark::
+* Search and Replace::
+* Using the Mouse::
+* Anchors::
+* Limitations::
+@end menu
+
+@node Screen Layout
+@section Screen Layout
+
+The default screen of @command{nano} consists of four areas.
+From top to bottom these are: the title bar, the edit window,
+the status bar, and two help lines.
+
+The title bar consists of
+three sections: left, center and right.  The section on the left
+displays the version of @command{nano} being used.  The center section
+displays the current filename, or "New Buffer" if the file has not yet
+been named.  The section on the right displays "Modified" if the
+file has been modified since it was last saved or opened.
+
+The status bar is the third line from the bottom of the screen.  It
+shows important and informational messages.  Any error messages that
+occur from using the editor will appear on the status bar.  Any questions
+that are asked of the user will be asked on the status bar, and any user
+input (search strings, filenames, etc.) will be input on the status bar.
+
+The two help lines at the bottom of the screen show some of the most
+essential functions of the editor.
+
+@node Entering Text
+@section Entering Text
+
+@command{nano} is a "modeless" editor.  This means that all keystrokes,
+with the exception of Control and Meta sequences, enter text into the
+file being edited.
+
+Characters not present on the keyboard can be entered in two ways:
+
+@itemize @bullet
+@item
+For characters with a single-byte code,
+pressing the Esc key twice and then typing a three-digit decimal number
+(from @kbd{000} to @kbd{255}) will make @command{nano} behave as if you
+typed the key with that value.
+
+@item
+For any possible character, pressing @kbd{M-V} (Alt+V) and then typing a
+series of hexadecimal digits (at most six, or concluded with @kbd{Enter} or
+@kbd{Space}) will enter the corresponding Unicode character into the buffer.
+@end itemize
+
+For example, typing @kbd{Esc Esc 2 3 4} will enter the character "ê" ---
+useful when writing about a French party.  Typing @kbd{M-V 0 0 2 2 c 4}
+will enter the symbol "⋄", a little diamond.
+
+Typing @kbd{M-V} followed by anything other than a hexadecimal digit
+will enter this keystroke verbatim into the buffer, allowing the user
+to insert literal control codes (except @code{^J}) or escape sequences.
+
+@node Commands
+@section Commands
+
+Commands are given by using the Control key (Ctrl, shown as @kbd{^})
+or the Meta key (Alt or Cmd, shown as @kbd{M-}).
+
+@itemize @bullet
+@item
+A control-key sequence is entered by holding down the Ctrl key and
+pressing the desired key.
+
+@item
+A meta-key sequence is entered by holding down the Meta key (normally
+the Alt key) and pressing the desired key.
+@end itemize
+
+If for some reason on your system the combinations with Ctrl or Alt do
+not work, you can generate them by using the Esc key.  A control-key
+sequence is generated by pressing the Esc key twice and then pressing
+the desired key, and a meta-key sequence by pressing the Esc key once
+and then pressing the desired key.
+
+@node The Cutbuffer
+@section The Cutbuffer
+
+Text can be cut from a file a whole line at a time with @kbd{^K}.
+The cut line is stored in the cutbuffer.  Consecutive strokes of @kbd{^K}
+will add each cut line to this buffer, but a @kbd{^K}
+after any other keystroke will overwrite the entire cutbuffer.
+
+The contents of the cutbuffer can be pasted at the current cursor position
+with @kbd{^U}.
+
+A line of text can be copied into the cutbuffer (without cutting it)
+with @kbd{M-6}.
+
+@node The Mark
+@section The Mark
+
+Text can be selected by first 'setting the Mark' with @kbd{^6}
+or @kbd{M-A} and then moving the cursor to the other end of the portion
+to be selected.  The selected portion of text will be highlighted.
+This selection can now be cut or copied in its entirety with a single
+@kbd{^K} or @kbd{M-6}.  Or the selection can be used to limit the scope of
+a search-and-replace (@kbd{^\}) or spell-checking session (@kbd{^T^T}).
+
+On some terminals, text can be selected also by holding down @kbd{Shift}
+while using the cursor keys.  Holding down the @kbd{Ctrl} or @kbd{Alt}
+key too will increase the stride.  Such a selection is cancelled
+upon any cursor movement where @kbd{Shift} isn't held.
+
+Cutting or copying selected text toggles off the mark automatically.
+If needed, it can be toggled off manually with another @kbd{^6} or @kbd{M-A}.
+
+@node Search and Replace
+@section Search and Replace
+
+One can search the current buffer for the occurrence of any string
+with the Search command (default key binding: @kbd{^W}).  The default search
+mode is forward, case-insensitive, and for literal strings.  But one
+can search backwards by pressing @kbd{M-B}, search case sensitively with @kbd{M-C},
+and interpret regular expressions in the search string with @kbd{M-R}.
+
+A regular expression in a search string always covers just one line;
+it cannot span multiple lines.  And when replacing (with @kbd{^\} or @kbd{M-R})
+the replacement string cannot contain a newline (LF).
+
+@node Using the Mouse
+@section Using the Mouse
+
+When mouse support has been configured and enabled, a single mouse click
+places the cursor at the indicated position.  Clicking a second time in
+the same position toggles the mark.  Clicking in the two help lines
+executes the selected shortcut.  To be able to select text with the
+left button, or paste text with the middle button, hold down the
+Shift key during those actions.
+
+The mouse will work in the X Window System, and on the console when gpm
+is running.
+
+@node Anchors
+@section Anchors
+
+With @kbd{M-Ins} you can place an anchor (a kind of temporary bookmark)
+at the current line.  With @kbd{M-PgUp} and @kbd{M-PgDn} you can jump
+to an anchor in the backward/forward direction.  This jumping wraps
+around at the top and bottom.
+
+When a line with an anchor is removed, the line where the cursor ends up
+inherits the anchor.  After performing an operation on the entire buffer
+(like formatting it, piping it through a command, or doing an external
+spell check on it), any anchors that were present are gone.  And when
+you close the buffer, all its anchors simply disappear; they are not saved.
+
+Anchors are visualized in the margin when line numbers are activated.
+
+@node Limitations
+@section Limitations
+
+The recording and playback of keyboard macros works correctly only on a
+terminal emulator, not on a Linux console (VT), because the latter does
+not by default distinguish modified from unmodified arrow keys.
+
+
+@node The Help Viewer
+@chapter The Help Viewer
+
+The built-in help in @command{nano} is available by pressing @kbd{^G}.
+It is fairly self-explanatory.  It documents the various parts of the
+editor and the available keystrokes.  Navigation is via the @kbd{^Y} (Page Up)
+and @kbd{^V} (Page Down) keys.  @kbd{^X} exits from the help viewer.
+
+
+@node The File Browser
+@chapter The File Browser
+
+When in the Read-File (@kbd{^R}) or Write-Out menu (@kbd{^O}),
+pressing @kbd{^T} will invoke the file browser.
+Here, one can navigate directories in a graphical manner in order to
+find the desired file.
+
+Basic movement in the file browser is accomplished with the arrow and
+other cursor-movement keys.  More targeted movement is accomplished by
+searching, via @kbd{^W} or @kbd{w}, or by changing directory, via
+@kbd{^_} or @kbd{g}.  The behavior of the @kbd{Enter} key (or @kbd{s})
+varies by what is currently selected.
+If the currently selected object is a directory, the file browser will
+enter and display the contents of the directory.  If the object is a
+file, this filename and path are copied to the status bar, and the file
+browser exits.
 
 
 @node Command-line Options
@@ -189,11 +400,12 @@ The uniquely numbered files are stored in the specified directory.
 For the interface, use bold instead of reverse video.  This will be overridden
 by setting the options @code{titlecolor}, @code{statuscolor}, @code{keycolor},
 @code{functioncolor}, @code{numbercolor}, and/or @code{selectedcolor} in your
-nanorc file.  @xref{@code{set functioncolor}} for details.
+nanorc file.  @xref{@code{set keycolor}} for details.
 
 @item -E
 @itemx --tabstospaces
-Convert typed tabs to spaces.
+Convert each typed tab to spaces --- to the number of spaces
+that a tab at that position would take up.
 
 @item -F
 @itemx --multibuffer
@@ -220,10 +432,12 @@ in your nanorc file.)
 
 @item -K
 @itemx --rawsequences
-Interpret escape sequences directly (instead of asking @code{ncurses} to
-translate them).  If you need this option to get your keyboard to work
-properly, please report a bug.  Using this option disables @command{nano}'s
-mouse support.
+Interpret escape sequences directly, instead of asking @code{ncurses}
+to translate them.  (If you need this option to get some keys to work
+properly, it means that the terminfo terminal description that is used
+does not fully match the actual behavior of your terminal.  This can
+happen when you ssh into a BSD machine, for example.)
+Using this option disables @command{nano}'s mouse support.
 
 @item -L
 @itemx --nonewlines
@@ -282,8 +496,10 @@ Set the displayed tab length to @var{number} columns.  The value of
 @item -U
 @itemx --quickblank
 Make status-bar messages disappear after 1 keystroke instead of after 20.
-Note that options @option{-c} (@option{--constantshow})
-and @option{-_} (@option{--minibar}) override this.
+Note that option @option{-c} (@option{--constantshow}) overrides this.
+When option @option{--minibar} or @option{--zero} is in effect,
+@option{--quickblank} makes a message disappear after
+0.8 seconds instead of after the default 1.5 seconds.
 
 @item -V
 @itemx --version
@@ -307,7 +523,7 @@ Specify the syntax to be used for highlighting.
 
 @item -Z
 @itemx --zap
-Let an unmodified @key{Backspace} or @key{Delete} erase the marked region
+Let an unmodified @kbd{Backspace} or @kbd{Delete} erase the marked region
 (instead of a single character, and without affecting the cutbuffer).
 
 @item -a
@@ -329,9 +545,9 @@ Note that this overrides option @option{-U} (@option{--quickblank}).
 
 @item -d
 @itemx --rebinddelete
-Interpret the Delete and Backspace keys differently so that both Backspace
-and Delete work properly.  You should only use this option when on your
-system either Backspace acts like Delete or Delete acts like Backspace.
+Interpret the @kbd{Delete} and @kbd{Backspace} keys differently so that
+both work properly.  You should only use this option when on your system
+either @kbd{Backspace} acts like Delete or @kbd{Delete} acts like Backspace.
 
 @item -e
 @itemx --emptyline
@@ -427,7 +643,6 @@ to be installed.
 Save a changed buffer without prompting (when exiting with @kbd{^X}).
 This can be handy when @command{nano} is used as the composer of an
 email program.
-(The old form of the long option, @code{--tempfile}, is deprecated.)
 
 @item -u
 @item --unix
@@ -452,21 +667,22 @@ This is the default.  (This option is the opposite of @option{-b}
 
 @item -x
 @itemx --nohelp
-Expert Mode: don't show the Shortcut List at the bottom of the screen.
-This affects the location of the status bar as well, as in Expert Mode it
+Expert mode: don't show the two help lines at the bottom of the screen.
+This affects the location of the status bar as well, as in Expert mode it
 is located at the very bottom of the editor.
 
-Note: When accessing the help system, Expert Mode is temporarily
+Note: When accessing the help system, Expert mode is temporarily
 disabled to display the help-system navigation keys.
 
 @item -y
 @itemx --afterends
-Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
+Make @kbd{Ctrl+Right} and @kbd{Ctrl+Delete} stop at word ends
+instead of beginnings.
 
-@item -z
-@itemx --suspendable
-Enable the ability to suspend @command{nano} using the system's suspend
-keystroke (usually @kbd{^Z}).
+@item -!
+@itemx --magic
+When neither the file's name nor its first line give a clue,
+try using libmagic to determine the applicable syntax.
 
 @item -%
 @itemx --stateflags
@@ -481,274 +697,92 @@ filename in the center of the title bar.
 @itemx --minibar
 Suppress the title bar and instead show information about
 the current buffer at the bottom of the screen, in the space
-for the status bar.  In this "minibar" the file name is shown
+for the status bar.  In this "minibar" the filename is shown
 on the left, followed by an asterisk if the buffer has been modified.
 On the right are displayed the current line and column number, the
 code of the character under the cursor (in Unicode format: U+xxxx),
 the same flags as are shown by @code{--stateflags}, and a percentage
 that expresses how far the cursor is into the file (linewise).
 When a file is loaded or saved, and also when switching between buffers,
-the number of lines in the buffer is displayed after the file name.
+the number of lines in the buffer is displayed after the filename.
 This number is cleared upon the next keystroke, or replaced with an
 [i/n] counter when multiple buffers are open.
 The line plus column numbers and the character code are displayed only when
-@code{--constantshow} is used, and can be toggled on and off with @key{M-C}.
+@code{--constantshow} is used, and can be toggled on and off with @kbd{M-C}.
 The state flags are displayed only when @code{--stateflags} is used.
 
-@item -!
-@itemx --magic
-When neither the file's name nor its first line give a clue,
-try using libmagic to determine the applicable syntax.
+@item -0
+@itemx --zero
+Hide all elements of the interface (title bar, status bar, and help lines)
+and use all rows of the terminal for showing the contents of the buffer.
+The status bar appears only when there is a significant message,
+and disappears after 1.5 seconds or upon the next keystroke.
+With @kbd{M-Z} the title bar plus status bar can be toggled.
+With @kbd{M-X} the help lines.
 
 @end table
 
-
-@node Editor Basics
-@chapter Editor Basics
-
-@menu
-* Entering Text::
-* Commands::
-* The Cutbuffer::
-* The Mark::
-* Screen Layout::
-* Search and Replace::
-* Using the Mouse::
-* Anchors::
-* Limitations::
-@end menu
-
-@node Entering Text
-@section Entering Text
-
-@command{nano} is a "modeless" editor.  This means that all keystrokes,
-with the exception of Control and Meta sequences, enter text into the
-file being edited.
-
-Characters not present on the keyboard can be entered in two ways:
-
-@itemize @bullet
-@item
-For characters with a single-byte code,
-pressing the Esc key twice and then typing a three-digit decimal number
-(from @kbd{000} to @kbd{255}) will make @command{nano} behave as if you
-typed the key with that value.
-
-@item
-For any possible character, pressing @kbd{M-V} (Alt+V) and then typing a
-six-digit hexadecimal number (starting with @kbd{0} or @kbd{1}) will enter the
-corresponding Unicode character into the buffer.
-@end itemize
-
-For example, typing @kbd{Esc Esc 2 3 4} will enter the character "ê" ---
-useful when writing about a French party.  Typing @kbd{M-V 0 0 2 2 c 4}
-will enter the symbol "⋄", a little diamond.
-
-@node Commands
-@section Commands
-
-Commands are given by using the Control key (Ctrl, shown as @kbd{^})
-or the Meta key (Alt or Cmd, shown as @kbd{M-}).
-
-@itemize @bullet
-@item
-A control-key sequence is entered by holding down the Ctrl key and
-pressing the desired key.
-
-@item
-A meta-key sequence is entered by holding down the Meta key (normally
-the Alt key) and pressing the desired key.
-@end itemize
-
-If for some reason on your system the combinations with Ctrl or Alt do
-not work, you can generate them by using the Esc key.  A control-key
-sequence is generated by pressing the Esc key twice and then pressing
-the desired key, and a meta-key sequence by pressing the Esc key once
-and then pressing the desired key.
-
-@node The Cutbuffer
-@section The Cutbuffer
-
-Text can be cut from a file a whole line at a time with @kbd{^K}.
-The cut line is stored in the cutbuffer.  Consecutive strokes of @kbd{^K}
-will add each cut line to this buffer, but a @kbd{^K}
-after any other keystroke will overwrite the entire cutbuffer.
-
-The contents of the cutbuffer can be pasted at the current cursor position
-with @kbd{^U}.
-
-A line of text can be copied into the cutbuffer (without cutting it)
-with @kbd{M-6}.
-
-@node The Mark
-@section The Mark
-
-Text can be selected by first 'setting the Mark' with @kbd{^6}
-or @kbd{M-A} and then moving the cursor to the other end of the portion
-to be selected.  The selected portion of text will be highlighted.
-This selection can now be cut or copied in its entirety with a single
-@kbd{^K} or @kbd{M-6}.  Or the selection can be used to limit the scope of
-a search-and-replace (@kbd{^\}) or spell-checking session (@kbd{^T}).
-
-On some terminals, text can be selected also by holding down @kbd{Shift}
-while using the cursor keys.  Holding down the @kbd{Ctrl} or @kbd{Alt}
-key too will increase the stride.  Such a selection is cancelled
-upon any cursor movement where @kbd{Shift} isn't held.
-
-Cutting or copying selected text toggles off the mark automatically.
-If needed, it can be toggled off manually with another @kbd{^6} or @kbd{M-A}.
-
-@node Screen Layout
-@section Screen Layout
-
-The default screen of nano consists of five areas.  From top to bottom
-these are: the title bar, a blank line, the edit window, the status bar,
-and two help lines.
-
-The title bar consists of
-three sections: left, center and right.  The section on the left
-displays the version of @command{nano} being used.  The center section
-displays the current filename, or "New Buffer" if the file has not yet
-been named.  The section on the right displays "Modified" if the
-file has been modified since it was last saved or opened.
-
-The status bar is the third line from the bottom of the screen.  It
-shows important and informational messages.  Any error messages that
-occur from using the editor will appear on the status bar.  Any questions
-that are asked of the user will be asked on the status bar, and any user
-input (search strings, filenames, etc.) will be input on the status bar.
-
-The two help lines at the bottom of the screen show some of the most
-essential functions of the editor.  These two lines are called the
-Shortcut List.
-
-@node Search and Replace
-@section Search and Replace
-
-One can search the current buffer for the occurrence of any string
-with the Search command (default key binding: @kbd{^W}).  The default search
-mode is forward, case-insensitive, and for literal strings.  But one
-can search backwards by pressing @kbd{M-B}, search case sensitively with @kbd{M-C},
-and interpret regular expressions in the search string with @kbd{M-R}.
-
-A regular expression in a search string always covers just one line;
-it cannot span multiple lines.  And when replacing (with @kbd{^\} or @kbd{M-R})
-the replacement string cannot contain a newline (LF).
-
-@node Using the Mouse
-@section Using the Mouse
-
-When mouse support has been configured and enabled, a single mouse click
-places the cursor at the indicated position.  Clicking a second time in
-the same position toggles the mark.  Clicking in the shortcut list
-executes the selected shortcut.  To be able to select text with the
-left button, or paste text with the middle button, hold down the
-Shift key during those actions.
-
-The mouse will work in the X Window System, and on the console when gpm
-is running.
-
-@node Anchors
-@section Anchors
-
-With @kbd{M-Ins} you can place an anchor (a kind of temporary bookmark)
-at the current line.  With @kbd{M-PgUp} and @kbd{M-PgDn} you can jump
-to an anchor in the backward/forward direction.  This jumping wraps
-around at the top and bottom.
-
-When a line with an anchor is removed, the line where the cursor ends up
-inherits the anchor.  After performing an operation on the entire buffer
-(like formatting it, piping it through a command, or doing an external
-spell check on it), any anchors that were present are gone.  And when
-you close the buffer, all its anchors simply disappear; they are not saved.
-
-Anchors are visualized in the margin when line numbers are activated.
-
-@node Limitations
-@section Limitations
-
-The recording and playback of keyboard macros works correctly only on a
-terminal emulator, not on a Linux console (VT), because the latter does
-not by default distinguish modified from unmodified arrow keys.
-
-
-@node Built-in Help
-@chapter Built-in Help
-
-The built-in help system in @command{nano} is available by pressing @kbd{^G}.
-It is fairly self-explanatory.  It documents the various parts of the
-editor and the available keystrokes.  Navigation is via the @kbd{^Y} (Page Up)
-and @kbd{^V} (Page Down) keys.  @kbd{^X} exits from the help system.
-
-
-@node The File Browser
-@chapter The File Browser
-
-When in the Read-File (@kbd{^R}) or Write-Out menu (@kbd{^O}),
-pressing @kbd{^T} will invoke the file browser.
-Here, one can navigate directories in a graphical manner in order to
-find the desired file.
-
-Basic movement in the file browser is accomplished with the arrow and
-other cursor-movement keys.  More targeted movement is accomplished by
-searching, via @kbd{^W} or @kbd{w}, or by changing directory, via
-@kbd{^_} or @kbd{g}.  The behavior of the @kbd{Enter} key (or @kbd{s})
-varies by what is currently selected.
-If the currently selected object is a directory, the file browser will
-enter and display the contents of the directory.  If the object is a
-file, this filename and path are copied to the status bar, and the file
-browser exits.
+@sp 1
+Option @code{-z} (@code{--suspendable}) has been removed.
+Suspension is enabled by default, reachable via @kbd{^T^Z}.
+(If you want a plain @kbd{^Z} to suspend nano, add
+@code{bind ^Z suspend main} to your nanorc.)
 
 
 @node Feature Toggles
 @chapter Feature Toggles
 
-Toggles allow you to change on-the-fly certain aspects of the editor
-which would normally be specified via command-line options.  They are
-invoked via Meta-key sequences (@pxref{Commands} for more info).
-The following global toggles are available:
+Toggles allow you to change certain aspects of the editor while you are
+editing, aspects that you would normally specify via command-line options
+or nanorc options.  Each toggle can be flicked via a Meta-key combination
+--- the @kbd{Meta} key is normally the @kbd{Alt} key (@pxref{Commands}
+for more details).  The following global toggles are available:
 
+@sp 1
 @table @code
 
 @item Constant Cursor Position Display
-@kbd{Meta-C} toggles the @option{-c} (@option{--constantshow}) command-line option.
+@kbd{M-C} toggles the @option{-c} (@option{--constantshow}) command-line option.
 
 @item Smart Home Key
-@kbd{Meta-H} toggles the @option{-A} (@option{--smarthome}) command-line option.
+@kbd{M-H} toggles the @option{-A} (@option{--smarthome}) command-line option.
 
 @item Auto Indent
-@kbd{Meta-I} toggles the @option{-i} (@option{--autoindent}) command-line option.
+@kbd{M-I} toggles the @option{-i} (@option{--autoindent}) command-line option.
 
 @item Cut From Cursor To End-of-Line
-@kbd{Meta-K} toggles the @option{-k} (@option{--cutfromcursor}) command-line option.
+@kbd{M-K} toggles the @option{-k} (@option{--cutfromcursor}) command-line option.
 
 @item Long-Line Wrapping
-@kbd{Meta-L} toggles the @option{-b} (@option{--breaklonglines}) command-line option.
+@kbd{M-L} toggles the @option{-b} (@option{--breaklonglines}) command-line option.
 
 @item Mouse Support
-@kbd{Meta-M} toggles the @option{-m} (@option{--mouse}) command-line option.
+@kbd{M-M} toggles the @option{-m} (@option{--mouse}) command-line option.
 
 @item Line Numbers
-@kbd{Meta-N} toggles the @option{-l} (@option{--linenumbers}) command-line option.
+@kbd{M-N} toggles the @option{-l} (@option{--linenumbers}) command-line option.
 
 @item Tabs To Spaces
-@kbd{Meta-O} toggles the @option{-E} (@option{--tabstospaces}) command-line option.
+@kbd{M-O} toggles the @option{-E} (@option{--tabstospaces}) command-line option.
 
 @item Whitespace Display
-@kbd{Meta-P} toggles the displaying of whitespace (@pxref{Whitespace}).
+@kbd{M-P} toggles the displaying of whitespace (@pxref{Whitespace}).
 
 @item Soft Wrapping
-@kbd{Meta-S} toggles the @option{-S} (@option{--softwrap}) command-line option.
+@kbd{M-S} toggles the @option{-S} (@option{--softwrap}) command-line option.
 
-@item Expert/No Help
-@kbd{Meta-X} toggles the @option{-x} (@option{--nohelp}) command-line option.
+@item Expert
+@kbd{M-X} toggles the @option{-x} (@option{--nohelp}) command-line option.
 
-@item Color Syntax Highlighting
-@kbd{Meta-Y} toggles color syntax highlighting (if your nanorc defines syntaxes
---- @pxref{Syntax Highlighting}).
+@item Syntax Coloring
+@kbd{M-Y} toggles syntax coloring, when your nanorc defines syntaxes
+(@pxref{Syntax Highlighting}).
 
-@item Suspension
-@kbd{Meta-Z} toggles the @option{-z} (@option{--suspendable}) command-line option.
+@item Hidden Interface
+@kbd{M-Z} toggles the @option{-0} (@option{--zero}) command-line option,
+but without the @option{-x} (@option{--nohelp}) part.  That is: it toggles
+just the title bar plus status bar (or the combined minibar plus status bar),
+not the help lines.  The latter are toggled with @kbd{M-X}.
 
 @end table
 
@@ -756,27 +790,27 @@ The following global toggles are available:
 @node Nanorc Files
 @chapter Nanorc Files
 
-The nanorc files contain the default settings for @command{nano}.  During
-startup, if @option{--rcfile} is not given, @command{nano} will read two files:
-first the system-wide settings, from @file{/etc/nanorc} (the exact path
-might be different on your system), and then the user-specific settings,
-either from @file{~/.nanorc} or from @file{$XDG_CONFIG_HOME/nano/nanorc}
-or from @file{.config/nano/nanorc}, whichever exists first.
-If @option{--rcfile} is given, @command{nano} will read just the
-specified settings file.
+Nanorc files can be used to configure @command{nano} to your liking
+without using command-line options.  During startup @command{nano} will
+normally read two files: first the system-wide file, @file{/etc/nanorc}
+(the exact path may be different on your system), and then the user-specific
+file, either @file{~/.nanorc} or @file{$XDG_CONFIG_HOME/nano/nanorc} or
+@file{.config/nano/nanorc}, whichever exists first.
+However, if @option{--rcfile} is given, @command{nano} will skip the
+above files and will read just the specified settings file.
 
-A nanorc file accepts a series of "set" and "unset" commands, which can
-be used to configure @command{nano} on startup without using command-line
-options.  Additionally, there are some commands to define syntax highlighting
-and to rebind keys --- @pxref{Syntax Highlighting} and @ref{Rebinding Keys}.
-@command{nano} will read one command per line.
-All commands and keywords should be written in lowercase.
+A nanorc file can contain @command{set} and @command{unset} commands for
+various options (@pxref{Settings}).  It can also contain commands that
+define syntax highlighting (@pxref{Syntax Highlighting}) and commands
+that rebind keys (@ref{Rebinding Keys}).  Each command should be on a
+separate line, and all commands should be written in lowercase.
 
-Options in nanorc files take precedence over @command{nano}'s defaults, and
-command-line options override nanorc settings.  Also, options that do not
-take an argument are unset by default.  So using the @code{unset} command
-is only needed when wanting to override a setting of the system's nanorc
-file in your own nanorc.  Options that take an argument cannot be unset.
+Options that do not take an argument are unset by default.  So using
+the @code{unset} command is only needed when wanting to override a
+setting from the system's nanorc file in your own nanorc.  Options that
+take an argument cannot be unset, but can be assigned the empty string.
+
+Any command-line option overrides its nanorc setting, of course.
 
 Quotes inside the @var{characters} parameters below should not be escaped.
 The last double quote on the line will be seen as the closing quote.
@@ -795,7 +829,8 @@ The supported settings in a nanorc file are:
 @table @code
 
 @item set afterends
-Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
+Make @kbd{Ctrl+Right} and @kbd{Ctrl+Delete} stop at word ends
+instead of beginnings.
 
 @item set allow_insecure_backup
 When backing up files, allow the backup to succeed even if its
@@ -856,8 +891,8 @@ Do not use the line below the title bar, leaving it entirely blank.
 
 @item set errorcolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for the status bar when an error message is displayed.
-The default value is @t{brightwhite,red}.
-@xref{@code{set functioncolor}} for valid color names.
+The default value is @t{bold,white,red}.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set fill @var{number}
 Set the target width for justifying and automatic hard-wrapping at this
@@ -866,27 +901,10 @@ at the width of the screen minus @var{number} columns, allowing the wrap
 point to vary along with the width of the screen if the screen is resized.
 The default value is @t{-8}.
 
-@anchor{@code{set functioncolor}}
 @item set functioncolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for the concise function descriptions
 in the two help lines at the bottom of the screen.
-Valid names for the foreground and background colors are:
-@code{red}, @code{green}, @code{blue},
-@code{magenta}, @code{yellow}, @code{cyan},
-@code{white}, and @code{black}.
-Each of these eight names may be prefixed with the word
-@code{light} to get a brighter version of that color.
-
-On terminal emulators that can do at least 256 colors,
-other valid (but unprefixable) color names are:
-@code{pink}, @code{purple}, @code{mauve},
-@code{lagoon}, @code{mint}, @code{lime},
-@code{peach}, @code{orange}, @code{latte}, and @code{normal}
---- where @code{normal} means the default foreground or background color.
-Either @var{fgcolor} or ,@var{bgcolor} may be left out,
-and the pair may be preceded by @code{bold} and/or @code{italic}
-(separated by commas) to get a bold and/or slanting typeface,
-if your terminal can do those.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set guidestripe @var{number}
 Draw a vertical stripe at the given column, to help judge the width of the
@@ -904,10 +922,38 @@ and how much of the buffer is covered by the viewport.
 @item set jumpyscrolling
 Scroll the buffer contents per half-screen instead of per line.
 
+@anchor{@code{set keycolor}}
 @item set keycolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for the shortcut key combos
 in the two help lines at the bottom of the screen.
-@xref{@code{set functioncolor}} for valid color names.
+Valid names for the foreground and background colors are:
+@code{red}, @code{green}, @code{blue},
+@code{magenta}, @code{yellow}, @code{cyan},
+@code{white}, and @code{black}.
+Each of these eight names may be prefixed with the word
+@code{light} to get a brighter version of that color.
+The word @code{grey} or @code{gray} may be used
+as a synonym for @code{lightblack}.
+
+On terminal emulators that can do at least 256 colors,
+other valid (but unprefixable) color names are:
+@code{pink}, @code{purple}, @code{mauve},
+@code{lagoon}, @code{mint}, @code{lime},
+@code{peach}, @code{orange}, @code{latte},
+@code{rosy}, @code{beet}, @code{plum}, @code{sea},
+@code{sky}, @code{slate}, @code{teal}, @code{sage},
+@code{brown}, @code{ocher}, @code{sand}, @code{tawny},
+@code{brick}, @code{crimson}, and @code{normal}
+--- where @code{normal} means the default foreground or background color.
+On such emulators, the color may also be specified as a three-digit hexadecimal
+number prefixed with @code{#}, with the digits representing the amounts of red,
+green, and blue, respectively.  This tells @command{nano} to select from the
+available palette the color that approximates the given values.
+
+Either @var{fgcolor} or ,@var{bgcolor} may be left out,
+and the pair may be preceded by @code{bold} and/or @code{italic}
+(separated by commas) to get a bold and/or slanting typeface,
+if your terminal can do those.
 
 @item set linenumbers
 Display line numbers to the left of the text area.
@@ -932,19 +978,24 @@ The default value is "@t{(<[@{)>]@}}".
 @item set minibar
 Suppress the title bar and instead show information about
 the current buffer at the bottom of the screen, in the space
-for the status bar.  In this "minibar" the file name is shown
+for the status bar.  In this "minibar" the filename is shown
 on the left, followed by an asterisk if the buffer has been modified.
 On the right are displayed the current line and column number, the
 code of the character under the cursor (in Unicode format: U+xxxx),
 the same flags as are shown by @code{set stateflags}, and a percentage
 that expresses how far the cursor is into the file (linewise).
 When a file is loaded or saved, and also when switching between buffers,
-the number of lines in the buffer is displayed after the file name.
+the number of lines in the buffer is displayed after the filename.
 This number is cleared upon the next keystroke, or replaced with an
 [i/n] counter when multiple buffers are open.
 The line plus column numbers and the character code are displayed only when
-@code{set constantshow} is used, and can be toggled on and off with @key{M-C}.
+@code{set constantshow} is used, and can be toggled on and off with @kbd{M-C}.
 The state flags are displayed only when @code{set stateflags} is used.
+
+@item set minicolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
+Use this color combination for the minibar.
+(When this option is not specified, the colors of the title bar are used.)
+@xref{@code{set keycolor}} for valid color names.
 
 @item set mouse
 Enable mouse support, so that mouse clicks can be used to place the
@@ -969,7 +1020,7 @@ When needed, use @code{unset breaklonglines} instead.
 
 @item set numbercolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for line numbers.
-@xref{@code{set functioncolor}} for valid color names.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set operatingdir "@var{directory}"
 @command{nano} will only read and write files inside "directory" and its
@@ -987,7 +1038,7 @@ Preserve the XON and XOFF keys (@kbd{^Q} and @kbd{^S}).
 @item set promptcolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for the prompt bar.
 (When this option is not specified, the colors of the title bar are used.)
-@xref{@code{set functioncolor}} for valid color names.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set punct "@var{characters}"
 Set the characters treated as closing punctuation when justifying
@@ -998,7 +1049,10 @@ The default value is "@t{!.?}".
 
 @item set quickblank
 Make status-bar messages disappear after 1 keystroke instead of after 20.
-Note that options @option{constantshow} and @option{minibar} override this.
+Note that option @option{constantshow} overrides this.
+When option @option{minibar} or @option{zero} is in effect,
+@option{quickblank} makes a message disappear after
+0.8 seconds instead of after the default 1.5 seconds.
 
 @item set quotestr "@var{regex}"
 Set the regular expression for matching the quoting part of a line.
@@ -1008,15 +1062,17 @@ This makes it possible to rejustify blocks of quoted text when composing
 email, and to rewrap blocks of line comments when writing source code.
 
 @item set rawsequences
-Interpret escape sequences directly (instead of asking @code{ncurses} to
-translate them).  If you need this option to get your keyboard to work
-properly, please report a bug.  Using this option disables @command{nano}'s
-mouse support.
+Interpret escape sequences directly, instead of asking @code{ncurses}
+to translate them.  (If you need this option to get some keys to work
+properly, it means that the terminfo terminal description that is used
+does not fully match the actual behavior of your terminal.  This can
+happen when you ssh into a BSD machine, for example.)
+Using this option disables @command{nano}'s mouse support.
 
 @item set rebinddelete
-Interpret the Delete and Backspace keys differently so that both Backspace
-and Delete work properly.  You should only use this option when on your
-system either Backspace acts like Delete or Delete acts like Backspace.
+Interpret the @kbd{Delete} and @kbd{Backspace} keys differently so that
+both work properly.  You should only use this option when on your system
+either @kbd{Backspace} acts like Delete or @kbd{Delete} acts like Backspace.
 
 @item set regexp
 Do regular-expression searches by default.
@@ -1024,17 +1080,16 @@ Regular expressions in @command{nano} are of the extended type (ERE).
 
 @item set saveonexit
 Save a changed buffer automatically on exit (@kbd{^X}); don't prompt.
-(The old form of this option, @code{set tempfile}, is deprecated.)
 
 @item set scrollercolor @var{fgcolor},@var{bgcolor}
 Use this color combination for the indicator alias "scrollbar".
 (On terminal emulators that link to a libvte older than version 0.55,
 using a background color here does not work correctly.)
-@xref{@code{set functioncolor}} for valid color names.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set selectedcolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for selected text.
-@xref{@code{set functioncolor}} for valid color names.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set showcursor
 Put the cursor on the highlighted item in the file browser, and show
@@ -1060,7 +1115,7 @@ Use the given program to do spell checking and correcting.
 @item set spotlightcolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for highlighting a search match.
 The default value is @t{black,lightyellow}.
-@xref{@code{set functioncolor}} for valid color names.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set stateflags
 Use the top-right corner of the screen for showing some state flags:
@@ -1072,25 +1127,23 @@ filename in the center of the title bar.
 
 @item set statuscolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for the status bar.
-@xref{@code{set functioncolor}} for valid color names.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set stripecolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for the vertical guiding stripe.
-@xref{@code{set functioncolor}} for valid color names.
-
-@item set suspendable
-Allow @command{nano} to be suspended (with @kbd{^Z} by default).
+@xref{@code{set keycolor}} for valid color names.
 
 @item set tabsize @var{number}
 Use a tab size of @var{number} columns.  The value of @var{number} must be
 greater than 0.  The default value is @t{8}.
 
 @item set tabstospaces
-Convert typed tabs to spaces.
+Convert each typed tab to spaces --- to the number of spaces
+that a tab at that position would take up.
 
 @item set titlecolor [bold,][italic,]@var{fgcolor},@var{bgcolor}
 Use this color combination for the title bar.
-@xref{@code{set functioncolor}} for valid color names.
+@xref{@code{set keycolor}} for valid color names.
 
 @item set trimblanks
 Remove trailing whitespace from wrapped lines when automatic
@@ -1117,8 +1170,16 @@ should be considered as parts of words.  When using this option, you
 probably want to unset @code{wordbounds}.
 
 @item set zap
-Let an unmodified @key{Backspace} or @key{Delete} erase the marked region
+Let an unmodified @kbd{Backspace} or @kbd{Delete} erase the marked region
 (instead of a single character, and without affecting the cutbuffer).
+
+@item set zero
+Hide all elements of the interface (title bar, status bar, and help lines)
+and use all rows of the terminal for showing the contents of the buffer.
+The status bar appears only when there is a significant message,
+and disappears after 1.5 seconds or upon the next keystroke.
+With @kbd{M-Z} the title bar plus status bar can be toggled.
+With @kbd{M-X} the help lines.
 
 @end table
 
@@ -1148,6 +1209,14 @@ and @code{\s} matches a blank.
 It also means that lookahead and lookbehind are not possible.
 A complete explanation can be found in the manual of GNU grep:
 @code{info grep regular}.
+
+Each regular expression in a @file{nanorc} file should be wrapped in
+double quotes (@code{""}).  Multiple regular expressions can follow
+each other on a line by separating them with blanks.  This means that
+a regular expression cannot contain a double quote followed by a blank.
+When you need this combination inside a regular expression,
+then either the double quote or the blank should be put
+between square brackets (@code{[]}).
 
 A separate syntax can be defined for each kind of file
 via the following commands in a nanorc file:
@@ -1186,9 +1255,6 @@ on the system and will be silently ignored otherwise.)
 
 @item formatter @var{program} [@var{argument} @dots{}]
 Run the given @var{program} on the full contents of the current buffer.
-(The current buffer is written out to a temporary file, the program is
-run on it, and then the temporary file is read back in, replacing the
-contents of the buffer.)
 
 @item linter @var{program} [@var{argument} @dots{}]
 Use the given @var{program} to do a syntax check on the current buffer.
@@ -1218,13 +1284,24 @@ be specified.  Valid color names are:
 @code{white}, and @code{black}.
 Each of these eight names may be prefixed with the word
 @code{light} to get a brighter version of that color.
+The word @code{grey} or @code{gray} may be used
+as a synonym for @code{lightblack}.
 
 On terminal emulators that can do at least 256 colors,
 other valid (but unprefixable) color names are:
 @code{pink}, @code{purple}, @code{mauve},
 @code{lagoon}, @code{mint}, @code{lime},
-@code{peach}, @code{orange}, @code{latte}, and @code{normal}
+@code{peach}, @code{orange}, @code{latte},
+@code{rosy}, @code{beet}, @code{plum}, @code{sea},
+@code{sky}, @code{slate}, @code{teal}, @code{sage},
+@code{brown}, @code{ocher}, @code{sand}, @code{tawny},
+@code{brick}, @code{crimson}, and @code{normal}
 --- where @code{normal} means the default foreground or background color.
+On such emulators, the color may also be specified as a three-digit hexadecimal
+number prefixed with @code{#}, with the digits representing the amounts of red,
+green, and blue, respectively.  This tells @command{nano} to select from the
+available palette the color that approximates the given values.
+
 The color pair may be preceded by @code{bold} and/or @code{italic}
 (separated by commas) to get a bold and/or slanting typeface,
 if your terminal can do those.
@@ -1276,9 +1353,9 @@ Rebinds @code{key} to @code{function} in the context of @code{menu}
 @item bind key "string" menu
 Makes @code{key} produce @code{string} in the context of @code{menu}
 (or in all menus where the key exists when @code{all} is used).
-The @code{string} can consist of text or commands or a mix of them.
-(To enter a command into the @code{string}, precede its keystroke
-with @kbd{M-V}.)
+Besides literal text and/or control codes, the  @code{string} may contain
+function names between braces.  These functions will be invoked when the
+key is typed. To include a literal opening brace, use @code{@{@{@}}.
 
 @item unbind key menu
 Unbinds @code{key} from @code{menu}
@@ -1286,37 +1363,50 @@ Unbinds @code{key} from @code{menu}
 
 @end table
 
+Note that @code{bind key "@{function@}" menu} is equivalent to
+@code{bind key function menu}, except that for the latter form
+@command{nano} will check the availabilty of the @code{function}
+in the given @code{menu} at startup time (and report an error if
+it does not exist there), whereas for the first form @command{nano}
+will check at execution time that the @code{function} exists but not
+whether it makes any sense in the current menu. The user has to take
+care that a function name between braces (or any sequence of them)
+is appropriate.  Strange behavior can result when it is not.
+
 @sp 1
 The format of @code{key} should be one of:
 
-@itemize @w{}
-@item
-@code{^@var{X}} ------ where @var{X} is a Latin letter, or one of several
+@indentedblock
+@table @asis
+
+@item @code{^@var{X}}
+where @var{X} is a Latin letter, or one of several
 ASCII characters (@@, ], \, ^, _), or the word "Space".
 Example: @code{^C}.
 
-@item
-@code{M-@var{X}} ------ where @var{X} is any ASCII character except [,
-or the word "Space".
+@item @code{M-@var{X}}
+where @var{X} is any ASCII character except [, or the word "Space".
 Example: @code{M-8}.
 
-@item
-@code{Sh-M-@var{X}} ------ where @var{X} is a Latin letter.
+@item @code{Sh-M-@var{X}}
+where @var{X} is a Latin letter.
 Example: @code{Sh-M-U}.
 By default, each Meta+letter keystroke does the same as the corresponding
 Shift+Meta+letter.  But when any Shift+Meta bind is made, that will
 no longer be the case, for all letters.
 
-@item
-@code{F@var{n}} ------ where @var{n} is a numeric value from 1 to 24.
+@item @code{F@var{n}}
+where @var{n} is a numeric value from 1 to 24.
 Example: @code{F10}.
 (Often, @code{F13} to @code{F24} can be typed as @code{F1} to @code{F12}
 with Shift.)
 
-@item
-@code{Ins} or @code{Del}.
-@end itemize
+@item @code{Ins} or @code{Del}
 
+@end table
+@end indentedblock
+
+@sp 1
 Rebinding @code{^M} (Enter) or @code{^I} (Tab) is probably not a good idea.
 Rebinding @code{^[} (Esc) is not possible, because its keycode
 is the starter byte of Meta keystrokes and escape sequences.
@@ -1378,17 +1468,17 @@ current cursor position.
 
 @item zap
 Throws away the current line (or the marked region).
-(This function is bound by default to <Meta+Delete>.)
+(This function is bound by default to @kbd{Alt+Delete}.)
 
 @item chopwordleft
 Deletes from the cursor position to the beginning of the preceding word.
-(This function is bound by default to <Shift+Ctrl+Delete>.  If your terminal
-produces @code{^H} for <Ctrl+Backspace>, you can make <Ctrl+Backspace> delete
+(This function is bound by default to @kbd{Shift+Ctrl+Delete}.  If your terminal
+produces @code{^H} for @kbd{Ctrl+Backspace}, you can make @kbd{Ctrl+Backspace} delete
 the word to the left of the cursor by rebinding @kbd{^H} to this function.)
 
 @item chopwordright
 Deletes from the cursor position to the beginning of the next word.
-(This function is bound by default to <Ctrl+Delete>.)
+(This function is bound by default to @kbd{Ctrl+Delete}.)
 
 @item cutrestoffile
 Cuts all text from the cursor position till the end of the buffer.
@@ -1400,10 +1490,10 @@ Or, when it is set, unsets the mark.
 @item location
 Reports the current position of the cursor in the buffer:
 the line, column, and character positions.
-(The old name of this function, 'curpos', is deprecated.)
 
 @item wordcount
-Counts the number of words, lines and characters in the current buffer.
+Counts and reports on the status bar the number of lines, words,
+and characters in the current buffer (or in the marked region).
 
 @item execute
 Prompts for a program to execute.  The program's output will be inserted
@@ -1416,32 +1506,41 @@ or GNU @command{spell}, or the one defined by @option{--speller} or
 
 @item formatter
 Invokes a full-buffer-processing program (if the active syntax defines one).
+(The current buffer is written out to a temporary file, the program
+is run on it, and then the temporary file is read back in, replacing
+the contents of the buffer.)
 
 @item linter
 Invokes a syntax-checking program (if the active syntax defines one).
+If this program produces lines of the form "filename:linenum:charnum:
+some message", then the cursor will be put at the indicated position
+in the mentioned file while showing "some message" on the status bar.
+You can move from message to message with @kbd{PgUp} and @kbd{PgDn},
+and leave linting mode with @kbd{^C} or @kbd{Enter}.
 
 @item justify
-Justifies the current paragraph.  A paragraph is a group of contiguous lines
-that, apart from possibly the first line, all have the same indentation.  The
-beginning of a paragraph is detected by either this lone line with a differing
+Justifies the current paragraph (or the marked region).
+A paragraph is a group of contiguous lines that, apart from possibly
+the first line, all have the same indentation.  The beginning of a
+paragraph is detected by either this lone line with a differing
 indentation or by a preceding blank line.
 
 @item fulljustify
-Justifies the entire current buffer.
+Justifies the entire current buffer (or the marked region).
 
 @item indent
-Indents (shifts to the right) the currently marked text.
+Indents (shifts to the right) the current line or the marked lines.
 
 @item unindent
-Unindents (shifts to the left) the currently marked text.
+Unindents (shifts to the left) the current line or the marked lines.
 
 @item comment
-Comments or uncomments the current line or marked lines, using the comment
-style specified in the active syntax.
+Comments or uncomments the current line or the marked lines,
+using the comment style specified in the active syntax.
 
 @item complete
-Completes the fragment before the cursor to a full word found elsewhere
-in the current buffer.
+Completes (when possible) the fragment before the cursor
+to a full word found elsewhere in the current buffer.
 
 @item left
 Goes left one position (in the editor or browser).
@@ -1458,10 +1557,14 @@ Goes one line down (in the editor or browser).
 @item scrollup
 Scrolls the viewport up one row (meaning that the text slides down)
 while keeping the cursor in the same text position, if possible.
+(This function is bound by default to @kbd{Alt+Up}.
+If @kbd{Alt+Up} does nothing on your Linux console, see the FAQ:
+@url{https://nano-editor.org/dist/latest/faq.html#4.1}.)
 
 @item scrolldown
 Scrolls the viewport down one row (meaning that the text slides up)
 while keeping the cursor in the same text position, if possible.
+(This function is bound by default to @kbd{Alt+Down}.)
 
 @item center
 Scrolls the line with the cursor to the middle of the screen.
@@ -1528,7 +1631,8 @@ Switches to editing/viewing the previous buffer when multiple buffers are open.
 Switches to editing/viewing the next buffer when multiple buffers are open.
 
 @item verbatim
-Inserts the next keystroke verbatim into the file.
+Inserts the next keystroke verbatim into the file, or begins Unicode input
+when a hexadecimal digit is typed (@pxref{Entering Text} for details).
 
 @item tab
 Inserts a tab at the current cursor location.
@@ -1559,8 +1663,8 @@ Redoes the last undone action (i.e., it undoes an undo).
 Refreshes the screen.
 
 @item suspend
-Suspends the editor (if the suspending function is enabled, see the
-@code{suspendable} toggle item below).
+Suspends the editor and returns control to the shell
+(until you tell the process to resume execution with @kbd{fg}).
 
 @item casesens
 Toggles whether searching/replacing ignores or respects the case of
@@ -1638,6 +1742,9 @@ Toggles the presence of the two-line list of key bindings at the bottom of the s
 (This toggle is special: it is available in all menus except the help viewer
 and the linter.  All further toggles are available in the main menu only.)
 
+@item zero
+Toggles the presence of title bar and status bar.
+
 @item constantshow
 Toggles the constant display of the current line, column, and character positions.
 
@@ -1674,11 +1781,6 @@ Toggles whether typed tabs will be converted to spaces.
 
 @item mouse
 Toggles mouse support.
-
-@item suspendable
-Toggles whether the suspend keystroke (@kbd{^Z} by default)
-will actually suspend the editor.
-(The old name of this function, 'suspendenable', is deprecated.)
 
 @end table
 
@@ -1728,7 +1830,6 @@ The 'go to directory' menu in the file browser.
 The menu for inserting the output from an external command,
 or for filtering the buffer (or the marked region) through
 an external command, or for executing one of several tools.
-(The old form of this menu name, 'extcmd', is deprecated.)
 
 @item spell
 The menu of the integrated spell checker where the user can edit a misspelled word.
@@ -1784,8 +1885,9 @@ ask any more), or Cancel (stop with replacing).
 
 @item Search and Replace History
 When the option @option{-H} or @option{--historylog} is given (or set in
-the a nanorc file), text entered as search or replace strings is stored.
-These strings can be accessed with the up/down arrow keys, or you can
+a nanorc file), text entered as search or replace strings is stored.
+These strings can be accessed with the up/down arrow keys at their
+respective prompts, or you can
 type the first few characters and then use @kbd{Tab} to cycle through the
 matching strings.  A retrieved string can subsequently be edited.
 
@@ -1836,32 +1938,28 @@ Or see the list at the end of the main internal help text (@kbd{^G}) instead.
 @end table
 
 
-@node Building and Configure Options
-@chapter Building and Configure Options
+@node Building and its Options
+@chapter Building and its Options
 
-Building @command{nano} from source is fairly straightforward if you are
+Building @command{nano} from source is straightforward if you are
 familiar with compiling programs with autoconf support:
 
-@iftex
-@sp 1
-@end iftex
+@blankline
 @example
-  tar xvzf nano-x.y.z.tar.gz
-  cd nano-x.y.z
+  tar -xf nano-x.y.tar.gz
+  cd nano-x.y
   ./configure
   make
   make install
 @end example
-@iftex
-@sp 1
-@end iftex
+@blankline
 
 The possible options to @code{./configure} are:
 
 @table @code
 
 @item --disable-browser
-Exclude the mini file browser that can be called with @kbd{^T} when
+Exclude the file browser that can be called with @kbd{^T} when
 wanting to read or write a file.
 
 @item --disable-color
@@ -1869,10 +1967,13 @@ Exclude support for syntax coloring.  This also eliminates the @option{-Y}
 command-line option, which allows choosing a specific syntax.
 
 @item --disable-comment
-Exclude the single-keystroke comment/uncomment function (@kbd{M-3}).
+Exclude the single-keystroke comment/uncomment function (@w{@kbd{M-3}}).
 
 @item --disable-extra
 Exclude the Easter egg: a crawl of major contributors.
+
+@item --disable-formatter
+Exclude the code for calling a formatting tool.
 
 @item --disable-help
 Exclude the help texts (@kbd{^G}).  This makes the binary much smaller,
@@ -1881,22 +1982,26 @@ things about using the editor.
 
 @item --disable-histories
 Exclude the code for handling the history files: the search and
-replace strings that were used, and the cursor position at which each
-file was closed.  This also eliminates the @option{-H} and @option{-P}
-command-line options, which switch on the logging of search/replace
-strings and cursor positions.
+replace strings that were used, the commands that were executed,
+and the cursor position at which each file was closed.
+This also eliminates the @option{-H} and @option{-P} command-line
+options, which switch on the storing of search/replace strings,
+executed commands, and cursor positions.
 
 @item --disable-justify
-Exclude the justify functions (@kbd{^J} and @kbd{M-J}).
+Exclude the text-justification functions (@kbd{^J} and @kbd{M-J}).
 
 @item --disable-libmagic
-Exclude the code for using the library of magic-number tests (for determining
-the file type and thus which syntax to use for coloring --- often the regexes
-for filename and header line will be enough).
+Exclude the code for using the library of magic-number tests (for
+determining the file type and thus which syntax to use for coloring ---
+in most cases the regexes for filename and header line will be enough).
 
 @item --disable-linenumbers
-Exclude the line-numbering function (@kbd{M-N}).  This also eliminates the
-@option{-l} command-line option, which turns line numbering on.
+Exclude the ability to show line numbers.  This also eliminates
+the @option{-l} command-line option, which turns line numbering on.
+
+@item --disable-linter
+Exclude the code for calling a linting tool.
 
 @item --disable-mouse
 Exclude all mouse functionality.  This also eliminates the @option{-m}
@@ -1904,8 +2009,8 @@ command-line option, which enables the mouse functionality.
 
 @item --disable-multibuffer
 Exclude support for opening multiple files at a time and switching
-between them on the fly.  This also eliminates the @option{-F} command-line
-option, which causes a file to be read into a separate buffer by default.
+between them.  This also eliminates the @option{-F} command-line option,
+which causes a file to be read into a separate buffer by default.
 
 @item --disable-nanorc
 Exclude support for reading the nanorc files at startup.  With such
@@ -1916,7 +2021,7 @@ Disabling this also eliminates the @option{-I} command-line option,
 which inhibits the reading of nanorc files.
 
 @item --disable-operatingdir
-Exclude the code for setting the operating directory.  This also eliminates
+Exclude the code for setting an operating directory.  This also eliminates
 the @option{-o} command-line option, which sets the operating directory.
 
 @item --disable-speller
@@ -1924,7 +2029,8 @@ Exclude the code for spell checking.  This also eliminates the @option{-s}
 command-line option, which allows specifying an alternate spell checker.
 
 @item --disable-tabcomp
-Exclude tab completion (when nano asks for a filename or a search string).
+Exclude tab completion (when nano asks for a filename or search string
+or replace string or command to execute).
 
 @item --disable-wordcomp
 Exclude word completion (@kbd{^]}).
@@ -1936,13 +2042,14 @@ long-line wrapping on and off, respectively.
 
 @item --enable-tiny
 This option implies all of the above.  It also disables some other
-internals of the editor, like the marking code, the cut-to-end-of-line
-code, and the function toggles.  By using the enabling
-counterpart of the above options together with @option{--enable-tiny},
-specific features can be switched back on --- but a few cannot.
+internals of the editor, like the function toggles, the marking of text,
+the undo/redo code, line anchors, the recording and playback of a macro,
+softwrapping, and the cut-to-end-of-line code.  These things stay disabled
+also when using the enabling counterpart of the above options together with
+@option{--enable-tiny} to switch specific features back on.
 
 @item --enable-debug
-Include some code for runtime debugging output.  This can get pretty messy, so
+Include some code for runtime debugging output.  This can get messy, so
 chances are you only want this feature when you're working on the nano source.
 
 @item --disable-nls
@@ -1950,11 +2057,11 @@ Exclude Native Language support.  This will disable the use of any
 available GNU @command{nano} translations.
 
 @item --enable-utf8
-Include support for reading and writing Unicode files.
-This requires a wide version of the curses library.
+Include support for handling and displaying Unicode files.
+This requires a "wide" version of the curses library.
 
 @item --disable-utf8
-Exclude support for reading and writing Unicode files.  Normally the
+Exclude support for handling and displaying Unicode files.  Normally the
 configure script auto-detects whether to enable UTF-8 support or not.
 You can use this or the previous option to override that detection.
 
@@ -1968,6 +2075,8 @@ as nano's settings file, instead of the default @code{.nanorc}.
 <hr>
 @end html
 
+@iftex
 @contents
+@end iftex
 
 @bye

@@ -1,11 +1,11 @@
 # Configure a GNU-like replacement for <string.h>.
 
-# Copyright (C) 2007-2021 Free Software Foundation, Inc.
+# Copyright (C) 2007-2023 Free Software Foundation, Inc.
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
 # with or without modifications, as long as this notice is preserved.
 
-# serial 32
+# serial 35
 
 # Written by Paul Eggert.
 
@@ -21,7 +21,8 @@ AC_DEFUN_ONCE([gl_STRING_H],
   dnl guaranteed by C89.
   gl_WARN_ON_USE_PREPARE([[#include <string.h>
     ]],
-    [ffsl ffsll memmem mempcpy memrchr rawmemchr stpcpy stpncpy strchrnul
+    [explicit_bzero ffsl ffsll memmem mempcpy memrchr memset_explicit
+     rawmemchr stpcpy stpncpy strchrnul
      strdup strncat strndup strnlen strpbrk strsep strcasestr strtok_r
      strerror_r strerrorname_np sigabbrev_np sigdescr_np strsignal strverscmp])
 
@@ -54,6 +55,7 @@ AC_DEFUN([gl_STRING_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMMEM])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMPCPY])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMRCHR])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MEMSET_EXPLICIT])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_RAWMEMCHR])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STPCPY])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STPNCPY])
@@ -93,6 +95,8 @@ AC_DEFUN([gl_STRING_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_MDA_STRDUP], [1])
   ])
   m4_require(GL_MODULE_INDICATOR_PREFIX[_STRING_H_MODULE_INDICATOR_DEFAULTS])
+  dnl Make sure the shell variable for GNULIB_FREE_POSIX is initialized.
+  gl_STDLIB_H_REQUIRE_DEFAULTS
   AC_REQUIRE([gl_STRING_H_DEFAULTS])
 ])
 
@@ -105,6 +109,7 @@ AC_DEFUN([gl_STRING_H_DEFAULTS],
   HAVE_FFSLL=1;                 AC_SUBST([HAVE_FFSLL])
   HAVE_DECL_MEMMEM=1;           AC_SUBST([HAVE_DECL_MEMMEM])
   HAVE_MEMPCPY=1;               AC_SUBST([HAVE_MEMPCPY])
+  HAVE_MEMSET_EXPLICIT=1;       AC_SUBST([HAVE_MEMSET_EXPLICIT])
   HAVE_DECL_MEMRCHR=1;          AC_SUBST([HAVE_DECL_MEMRCHR])
   HAVE_RAWMEMCHR=1;             AC_SUBST([HAVE_RAWMEMCHR])
   HAVE_STPCPY=1;                AC_SUBST([HAVE_STPCPY])

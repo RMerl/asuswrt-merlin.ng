@@ -30,7 +30,7 @@ color cyan "'[[:alnum:]]+"
 color green "\<[0-9][0-9A-Fa-f_#.+-]*"
 
 # Characters / Strings
-color red "'.'" ""[^"]*""
+color red "'.'|"[^"]*""
 
 # Comments
 color brightblue "--.*"

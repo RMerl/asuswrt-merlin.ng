@@ -8,8 +8,8 @@ formatter tidy -m -q
 
 # Tags:
 color cyan "<[[:alpha:]/!?][^>]*>"
-# Bold, italic, and underlined:
-color brightmagenta "</?[biu]>"
+# Bold, italic, underlined, emphasis, and importance:
+color brightmagenta "</?(b|i|u|em|strong)>"
 
 # Named character references:
 color red "&[^;[:space:]]*;"
@@ -25,7 +25,7 @@ color red "\<(rows(pan)?|rules|scheme|scope|scrolling|selected|shape|size|span|s
 color red "\<(tabindex|target|text|title|type|usemap|valign|value(type)?|vlink|vspace|width|xmlns|xml:space)="
 
 # Strings:
-color green ""(\\.|[^"])*""
+color green ""([^"\]|\\.)*""
 
 # Comments:
 color yellow start="<!--" end="-->"

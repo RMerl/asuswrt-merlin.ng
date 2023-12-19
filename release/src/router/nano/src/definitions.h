@@ -1,7 +1,7 @@
 /**************************************************************************
  *   definitions.h  --  This file is part of GNU nano.                    *
  *                                                                        *
- *   Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.    *
+ *   Copyright (C) 1999-2011, 2013-2023 Free Software Foundation, Inc.    *
  *   Copyright (C) 2014-2017 Benno Schulenberg                            *
  *                                                                        *
  *   GNU nano is free software: you can redistribute it and/or modify     *
@@ -27,6 +27,10 @@
 #ifndef _XOPEN_SOURCE_EXTENDED
 #define _XOPEN_SOURCE_EXTENDED  1
 #endif
+#endif
+
+#if defined(__HAIKU__) && !defined(_DEFAULT_SOURCE)
+#define _DEFAULT_SOURCE  1
 #endif
 
 #ifdef __TANDEM
@@ -104,12 +108,30 @@
 #define BACKWARD  FALSE
 #define FORWARD  TRUE
 
+#define YESORNO  FALSE
+#define YESORALLORNO  TRUE
+
+#define YES      1
+#define ALL      2
+#define NO       0
+#define CANCEL  -1
+
 #define BLIND  FALSE
 #define VISIBLE  TRUE
 
 #define JUSTFIND   0
 #define REPLACING  1
 #define INREGION   2
+
+#define NORMAL  TRUE
+#define SPECIAL  FALSE
+#define TEMPORARY  FALSE
+
+#define ANNOTATE  TRUE
+#define NONOTES  FALSE
+
+#define PRUNE_DUPLICATE  TRUE
+#define IGNORE_DUPLICATES  FALSE
 
 #ifdef ENABLE_UTF8
 /* In UTF-8 a valid character is at most four bytes long. */
@@ -148,8 +170,6 @@
 		/* The start regex matches on an earlier line, the end regex on this one. */
 #define JUSTONTHIS   (1<<5)
 		/* Both the start and end regexes match within this line. */
-#define WOULDBE      (1<<6)
-		/* An unpaired start match is on or before this line. */
 #endif
 
 /* Basic control codes. */
@@ -194,6 +214,14 @@
 #define SHIFT_DELETE    0x45D
 #define SHIFT_TAB       0x45F
 
+/* Special keycodes for when a string bind has been partially implanted
+ * or has an unpaired opening brace, or when a function in a string bind
+ * needs execution or a specified function name is invalid. */
+#define MORE_PLANTS       0x4EA
+#define MISSING_BRACE     0x4EB
+#define PLANTED_COMMAND   0x4EC
+#define NO_SUCH_FUNCTION  0x4EF
+
 /* A special keycode for when <Tab> is pressed while the mark is on. */
 #define INDENT_KEY  0x4F1
 
@@ -204,7 +232,7 @@
 #define FOREIGN_SEQUENCE  0x4FC
 
 /* A special keycode for plugging into the input stream after a suspension. */
-#define KEY_FLUSH  KEY_F0
+#define KEY_FRESH  0x4FE
 
 #ifndef NANO_TINY
 /* A special keycode for when we get a SIGWINCH (a window resize). */
@@ -216,6 +244,7 @@
 #define INCLUDED_LAST_LINE    (1<<3)
 #define MARK_WAS_SET          (1<<4)
 #define CURSOR_WAS_AT_HEAD    (1<<5)
+#define HAD_ANCHOR_AT_START   (1<<6)
 #endif /* !NANO_TINY */
 
 /* Identifiers for the different menus. */
@@ -283,6 +312,7 @@ enum {
 	SCROLL_BAR,
 	SELECTED_TEXT,
 	SPOTLIGHTED,
+	MINI_INFOBAR,
 	PROMPT_BAR,
 	STATUS_BAR,
 	ERROR_MESSAGE,
@@ -297,7 +327,6 @@ enum {
 	CASE_SENSITIVE,
 	CONSTANT_SHOW,
 	NO_HELP,
-	SUSPENDABLE,
 	NO_WRAP,
 	AUTOINDENT,
 	VIEW_MODE,
@@ -341,7 +370,8 @@ enum {
 	BOOKSTYLE,
 	STATEFLAGS,
 	USE_MAGIC,
-	MINIBAR
+	MINIBAR,
+	ZERO
 };
 
 /* Structure types. */
@@ -605,17 +635,14 @@ typedef struct keystruct {
 typedef struct funcstruct {
 	void (*func)(void);
 		/* The actual function to call. */
-	const char *desc;
-		/* The function's short description, for example "Where Is". */
+	const char *tag;
+		/* The function's help-line label, for example "Where Is". */
 #ifdef ENABLE_HELP
-	const char *help;
-		/* The help-screen text for this function. */
+	const char *phrase;
+		/* The function's description for in the help viewer. */
 	bool blank_after;
-		/* Whether there should be a blank line after the help text
-		 * for this function. */
+		/* Whether to distance this function from the next in the help viewer. */
 #endif
-	bool viewok;
-		/* Is this function allowed when in view mode? */
 	int menus;
 		/* In what menus this function applies. */
 	struct funcstruct *next;
@@ -623,8 +650,8 @@ typedef struct funcstruct {
 } funcstruct;
 
 #ifdef ENABLE_WORDCOMPLETION
-typedef struct completion_word {
+typedef struct completionstruct {
 	char *word;
-	struct completion_word *next;
-} completion_word;
+	struct completionstruct *next;
+} completionstruct;
 #endif

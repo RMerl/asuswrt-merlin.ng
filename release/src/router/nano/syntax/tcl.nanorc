@@ -5,19 +5,30 @@ magic "Tcl(/Tk)? script"
 comment "#"
 
 # Standard Tcl [info commands]:
-color green "\<(after|append|array|auto_execok|auto_import|auto_load|auto_load_index|auto_qualify|binary|break|case|catch|cd|clock|close|concat|continue|encoding|eof|error|eval|exec|exit|expr|fblocked|fconfigure|fcopy|file|fileevent|flush|for|foreach|format|gets|glob|global|history|if|incr|info|interp|join|lappend|lindex|linsert|list|llength|load|lrange|lreplace|lsearch|lset|lsort|namespace|open|package|pid|puts|pwd|read|regexp|regsub|rename|return|scan|seek|set|socket|source|split|string|subst|switch|tclLog|tell|time|trace|unknown|unset|update|uplevel|upvar|variable|vwait|while)\>"
+color green "\<(after|append|array|auto_(execok|import|load(_index)?|qualify)|binary|break)\>"
+color green "\<(case|catch|cd|clock|close|concat|continue|encoding|eof|error|eval|exec|exit|expr)\>"
+color green "\<(fblocked|fconfigure|fcopy|file(event)?|flush|for|foreach|format|gets|glob|global|history)\>"
+color green "\<(if|incr|info|interp|join|lappend|lindex|linsert|list|llength|load|lrange|lreplace|lsearch|lset|lsort)\>"
+color green "\<(namespace|open|package|pid|puts|pwd|read|regexp|regsub|rename|return)\>"
+color green "\<(scan|seek|set|socket|source|split|string|subst|switch|tclLog|tell|time|trace)\>"
+color green "\<(unknown|unset|update|uplevel|upvar|variable|vwait|while)\>"
 
 # Basic Tcl subcommands:
 color green "\<array (anymore|donesearch|exists|get|names|nextelement|set|size|startsearch|statistics|unset)\>"
-color green "\<string (bytelength|compare|equal|first|index|is|last|length|map|match|range|repeat|replace|to|tolower|totitle|toupper|trim|trimleft|trimright|will|wordend|wordstart)\>"
+color green "\<string (compare|equal|first|index|is|last|(byte)?length|map|match|range|repeat|replace|to(lower|title|upper)?|trim(left|right)?|will|word(end|start))\>"
 
 # Extended TclX [info commands]:
-color green "\<(alarm|auto_load_pkg|bsearch|catclose|catgets|catopen|ccollate|cconcat|cequal|chgrp|chmod|chown|chroot|cindex|clength|cmdtrace|commandloop|crange|csubstr|ctoken|ctype|dup|echo|execl|fcntl|flock|fork|fstat|ftruncate|funlock|host_info|id|infox|keyldel|keylget|keylkeys|keylset|kill|lassign|lcontain|lempty|lgets|link|lmatch|loadlibindex|loop|lvarcat|lvarpop|lvarpush|max|min|nice|pipe|profile|random|readdir|replicate|scancontext|scanfile|scanmatch|select|server_accept|server_create|signal|sleep|sync|system|tclx_findinit|tclx_fork|tclx_load_tndxs|tclx_sleep|tclx_system|tclx_wait|times|translit|try_eval|umask|wait)\>"
+color green "\<(alarm|auto_load_pkg|bsearch|cat(close|gets|open)|ccollate|cconcat|cequal|chgrp|chmod|chown|chroot)\>"
+color green "\<(cindex|clength|cmdtrace|commandloop|crange|csubstr|ctoken|ctype|dup|echo|execl)\>"
+color green "\<(fcntl|flock|fork|fstat|ftruncate|funlock|host_info|id|infox|keyl(del|get|keys|set)|kill)\>"
+color green "\<(lassign|lcontain|lempty|lgets|link|lmatch|loadlibindex|loop|lvar(cat|pop|push)|max|min|nice)\>"
+color green "\<(pipe|profile|random|readdir|replicate|scan(context|file|match)|select|server_(accept|create)|signal)\>"
+color green "\<(sleep|sync|system|tclx_(findinit|fork|load_tndxs|sleep|system|wait)|times|translit|try_eval|umask|wait)\>"
 
 # Syntax:
+color green "[!$&();<=>\`|]"
 color brightblue "\<proc[[:blank:]]|\{|\}"
-color green "\(|\)|\;|`|\\|\$|<|>|!|=|&|\|"
-color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
+color brightyellow ""([^"\]|\\.)*"|'([^'\]|\\.)*'"
 color brightred "\$\{?[0-9A-Za-z_!@#$*?-]+\}?"
 
 # Trailing whitespace:

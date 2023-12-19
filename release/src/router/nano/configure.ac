@@ -1,6 +1,6 @@
 # Configuration for GNU nano - a small and user-friendly text editor
 #
-# Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.
+# Copyright (C) 1999-2011, 2013-2023 Free Software Foundation, Inc.
 # Copyright (C) 2014, 2017 Mike Frysinger
 #
 # GNU nano is free software: you can redistribute it and/or modify
@@ -16,10 +16,11 @@
 # You should have received a copy of the GNU General Public License
 # along with this program.  If not, see https://www.gnu.org/licenses/.
 
-AC_INIT([GNU nano], [5.7], [nano-devel@gnu.org], [nano])
+AC_INIT([GNU nano], [7.2], [nano-devel@gnu.org], [nano])
 AC_CONFIG_SRCDIR([src/nano.c])
 AC_CANONICAL_HOST
 AM_INIT_AUTOMAKE([1.14])
+AM_MAINTAINER_MODE([enable])
 AC_CONFIG_HEADERS([config.h])
 
 dnl Make sure the ONCE macros are available.
@@ -152,6 +153,30 @@ if test "x$enable_extra" != xno; then
 	AC_DEFINE(ENABLE_EXTRA, 1, [Define this to have an Easter egg.])
 fi
 
+AC_ARG_ENABLE(formatter,
+AS_HELP_STRING([--disable-formatter], [Disable the formatting tool]))
+if test "x$enable_tiny" = xyes; then
+	if test "x$enable_formatter" = xyes; then
+		if test "x$enable_color" != xyes; then
+			AC_MSG_ERROR([
+  ***  --enable-formatter needs both --enable-color and --enable-nanorc to work])
+		fi
+	else
+		enable_formatter=no
+	fi
+fi
+if test "x$enable_color" = xno; then
+	if test "x$enable_formatter" = xyes; then
+		AC_MSG_ERROR([
+  ***  --enable-formatter cannot work with --disable-color nor --disable-nanorc])
+	else
+		enable_formatter=no
+	fi
+fi
+if test "x$enable_formatter" != xno; then
+	AC_DEFINE(ENABLE_FORMATTER, 1, [Define this to have access to a formatter.])
+fi
+
 AC_ARG_ENABLE(help,
 AS_HELP_STRING([--disable-help], [Disable the built-in help texts]))
 if test "x$enable_tiny" = xyes; then
@@ -205,13 +230,37 @@ if test "x$enable_libmagic" = xyes; then
 	if test "x$enable_tiny" = xyes; then
 		if test "x$enable_color" != xyes; then
 			AC_MSG_ERROR([
-  ***  --enable-libmagic needs --enable-color and --enable-nanorc to work])
+  ***  --enable-libmagic needs both --enable-color and --enable-nanorc to work])
 		fi
 	fi
 	if test "x$enable_color" = xno; then
 		AC_MSG_ERROR([
   ***  --enable-libmagic cannot work with --disable-color nor --disable-nanorc])
 	fi
+fi
+
+AC_ARG_ENABLE(linter,
+AS_HELP_STRING([--disable-linter], [Disable the linting tool]))
+if test "x$enable_tiny" = xyes; then
+	if test "x$enable_linter" = xyes; then
+		if test "x$enable_color" != xyes; then
+			AC_MSG_ERROR([
+  ***  --enable-linter needs both --enable-color and --enable-nanorc to work])
+		fi
+	else
+		enable_linter=no
+	fi
+fi
+if test "x$enable_color" = xno; then
+	if test "x$enable_linter" = xyes; then
+		AC_MSG_ERROR([
+  ***  --enable-linter cannot work with --disable-color nor --disable-nanorc])
+	else
+		enable_linter=no
+	fi
+fi
+if test "x$enable_linter" != xno; then
+	AC_DEFINE(ENABLE_LINTER, 1, [Define this to have access to a linter.])
 fi
 
 AC_ARG_ENABLE(linenumbers,
@@ -271,14 +320,14 @@ if test "x$enable_operatingdir" != xno; then
 fi
 
 AC_ARG_ENABLE(speller,
-AS_HELP_STRING([--disable-speller], [Disable the spell-checker functions]))
+AS_HELP_STRING([--disable-speller], [Disable the spell-checking tool]))
 if test "x$enable_tiny" = xyes; then
 	if test "x$enable_speller" != xyes; then
 		enable_speller=no
 	fi
 fi
 if test "x$enable_speller" != xno; then
-	AC_DEFINE(ENABLE_SPELLER, 1, [Define this to have the spell-checker functions.])
+	AC_DEFINE(ENABLE_SPELLER, 1, [Define this to have access to a spell checker.])
 fi
 
 AC_ARG_ENABLE(tabcomp,
@@ -352,6 +401,9 @@ dnl Checks for functions.
 if test "x$enable_utf8" != xno; then
 	AC_CHECK_FUNCS(iswalpha iswalnum iswpunct mbstowcs wctomb)
 fi
+
+AC_CHECK_FUNCS_ONCE(chmod chown fchmod fchown flockfile funlockfile
+                    fork fsync geteuid pipe wait waitpid)
 
 dnl Checks for available flags.
 
@@ -509,21 +561,6 @@ int main(void)
 	AC_MSG_WARN([
   *** Can't check need for _XOPEN_SOURCE_EXTENDED when cross-compiling.]))
 fi
-
-AC_MSG_CHECKING([whether LINES and COLS can be redefined])
-AC_RUN_IFELSE([AC_LANG_SOURCE([[
-#include <curses.h>
-int main(void)
-{
-	LINES = 80;
-	COLS = 25;
-	return 0;
-}]])],
-AC_DEFINE(REDEFINING_MACROS_OK, 1, [Define this if you know your curses library allows LINES and COLS to be redefined to deal with a resizing bug.])
-AC_MSG_RESULT(yes),
-AC_MSG_RESULT(no),
-AC_MSG_WARN([
-  *** Can't check for macro redefinability when cross-compiling.]))
 
 AS_IF([test "x$enable_libmagic" != "xno"], [
 	AC_CHECK_HEADERS([magic.h])

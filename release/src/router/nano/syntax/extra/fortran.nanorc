@@ -34,7 +34,7 @@ icolor yellow "\<(.or.|repeat|select case|then|where|while)\>"
 icolor magenta "\<(continue|cycle|exit|go?to|result|return)\>"
 
 # Strings.
-color yellow "<[^= 	]*>" ""(\\.|[^"])*""
+color yellow ""([^"\]|\\.)*""
 
 # Comments.
 color blue "!.*"

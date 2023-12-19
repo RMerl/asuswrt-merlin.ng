@@ -1,21 +1,21 @@
 /* glob.h -- Find a path matching a pattern.
 
-   Copyright (C) 2005-2007, 2009-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2007, 2009-2023 Free Software Foundation, Inc.
 
    Written by Derek Price <derek@ximbiot.com> & Paul Eggert <eggert@CS.UCLA.EDU>
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #ifndef _@GUARD_PREFIX@_GLOB_H
 
@@ -70,20 +70,12 @@ typedef int (*_gl_glob_errfunc_fn) (const char *, int);
 
 /* Preparations for including the standard GNU C Library header.  */
 
-# ifndef __attribute_maybe_unused__
-#  include <libc-config.h>
-# endif
-
 # include <stddef.h>
 
 /* On some systems, such as AIX 5.1, <sys/stat.h> does a "#define stat stat64".
    Make sure this definition is seen before glob-libc.h defines types that
    rely on 'struct stat'.  */
 # include <sys/stat.h>
-
-# ifndef __USE_GNU
-#  define __USE_GNU    1
-# endif
 
 # if @REPLACE_GLOB@
 #  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
@@ -102,7 +94,7 @@ typedef int (*_gl_glob_errfunc_fn) (const char *, int);
 
 
 /* Now the standard GNU C Library header should work.  */
-# include "glob-libc.h"
+# include "glob-libc.gl.h"
 
 
 #endif

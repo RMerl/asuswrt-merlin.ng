@@ -6,10 +6,10 @@ comment ".\""
 
 # Section headers, title line, and indented paragraphs.
 color green "^\.(SH|SS|TH) .*"
-color brightgreen "^\.(SH|SS|TH) " "^\.([HIT]P)"
+color brightgreen "^\.((SH|SS|TH) |[HIT]P)"
 # Type faces, and normal paragraphs.
 color brightred "^\.(B[IR]?|I[BR]?|R[BI]|S[BM]) .*"
-color brightblue "^\.(B[IR]?|I[BR]?|R[BI]|S[BM]) " "^\.([LP]?P)$"
+color brightblue "^\.((B[IR]?|I[BR]?|R[BI]|S[BM]) |[LP]?P$)"
 # Inline type faces.
 color magenta "\\f[BIPR]"
 # Relative margins, hyperlinks, and various other stuff.

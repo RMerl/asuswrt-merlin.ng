@@ -28,6 +28,6 @@ color brightred "\<(t|nil)\>"
 color blue ":(\w|[?-])+"
 # Strings
 color yellow start="^[[:blank:]]+"" end="[^\]""
-color yellow ""(\\.|[^"])*""
+color yellow ""([^"\]|\\.)*""
 # Comments
 color cyan "(^|[[:blank:]]);.*"

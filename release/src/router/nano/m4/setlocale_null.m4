@@ -1,5 +1,5 @@
-# setlocale_null.m4 serial 5
-dnl Copyright (C) 2019-2021 Free Software Foundation, Inc.
+# setlocale_null.m4 serial 6
+dnl Copyright (C) 2019-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -74,20 +74,23 @@ AC_DEFUN([gl_FUNC_SETLOCALE_NULL],
   dnl Determine link dependencies of lib/setlocale_null.c and lib/setlocale-lock.c.
   if test $SETLOCALE_NULL_ALL_MTSAFE = 0 || test $SETLOCALE_NULL_ONE_MTSAFE = 0; then
     case "$host_os" in
-      mingw*) LIB_SETLOCALE_NULL= ;;
+      mingw*) SETLOCALE_NULL_LIB= ;;
       *)
         gl_WEAK_SYMBOLS
         case "$gl_cv_have_weak" in
-          *yes) LIB_SETLOCALE_NULL= ;;
-          *)    LIB_SETLOCALE_NULL="$LIBPTHREAD" ;;
+          *yes) SETLOCALE_NULL_LIB= ;;
+          *)    SETLOCALE_NULL_LIB="$LIBPTHREAD" ;;
         esac
         ;;
     esac
   else
-    LIB_SETLOCALE_NULL=
+    SETLOCALE_NULL_LIB=
   fi
-  dnl LIB_SETLOCALE_NULL is expected to be '-pthread' or '-lpthread' on AIX
+  dnl SETLOCALE_NULL_LIB is expected to be '-pthread' or '-lpthread' on AIX
   dnl with gcc or xlc, and empty otherwise.
+  AC_SUBST([SETLOCALE_NULL_LIB])
+  dnl For backward compatibility.
+  LIB_SETLOCALE_NULL="$SETLOCALE_NULL_LIB"
   AC_SUBST([LIB_SETLOCALE_NULL])
 ])
 

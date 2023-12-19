@@ -1,10 +1,42 @@
 
           GNU nano -- a simple editor, inspired by Pico
 
-Overview
+Purpose
 
-    The nano project was started because of a few "problems" with the
-    wonderfully easy-to-use and friendly Pico text editor.
+    Nano is a small and simple text editor for use on the terminal.
+    It copied the interface and key bindings of the Pico editor but
+    added several missing features: undo/redo, syntax highlighting,
+    line numbers, softwrapping, multiple buffers, selecting text by
+    holding Shift, search-and-replace with regular expressions, and
+    several other conveniences.
+
+Appearance
+
+    In rough ASCII graphics, this is what nano's screen looks like:
+
+   ____________________________________________________________________
+  |  GNU nano 7.2                  filename                  Modified  |
+   --------------------------------------------------------------------
+  | This is the text window, displaying the contents of a 'buffer',    |
+  | the contents of the file you are editing.                          |
+  |                                                                    |
+  | The top row of the screen is the 'title bar'; it shows nano's      |
+  | version, the name of the file, and whether you modified it.        |
+  | The two bottom rows display the most important shortcuts; in       |
+  | those lines ^ means Ctrl.  The third row from the bottom shows     |
+  | some feedback message, or gets replaced with a prompt bar when     |
+  | you tell nano to do something that requires extra input.           |
+  |                                                                    |
+   --------------------------------------------------------------------
+  |                       [ Some status message ]                      |
+  |^G Help       ^O Write Out  ^W Where Is   ^K Cut        ^T Execute  |
+  |^X Exit       ^R Read File  ^\ Replace    ^U Paste      ^J Justify  |
+   --------------------------------------------------------------------
+
+Origin
+
+    The nano project was started in 1999 because of a few "problems"
+    with the wonderfully easy-to-use and friendly Pico text editor.
 
     First and foremost was its license: the Pine suite does not use
     the GPL, and (before using the Apache License) it had unclear
@@ -22,6 +54,19 @@ Overview
 
     The nano editor is an official GNU package.  For more information on
     GNU and the Free Software Foundation, please see https://www.gnu.org/.
+
+License
+
+    Nano's code and documentation are covered by the GPL version 3 or
+    (at your option) any later version, except for two functions that
+    were copied from busybox which are under a BSD license.  Nano's
+    documentation is additionally covered by the GNU Free Documentation
+    License version 1.2 or (at your option) any later version.  See the
+    files COPYING and COPYING.DOC for the full text of these licenses.
+
+    When in any file of this package a copyright notice mentions a
+    year range (such as 1999-2011), it is a shorthand for a list of
+    all the years in that interval.
 
 How to compile and install nano
 
@@ -50,13 +95,13 @@ Mailing Lists
 
     There are three nano-related mailing-lists.
 
-    + info-nano@gnu.org is a very low traffic list used to announce
+    * <info-nano@gnu.org> is a very low traffic list used to announce
       new nano versions or other important info about the project.
 
-    + help-nano@gnu.org is for those seeking to get help without
+    * <help-nano@gnu.org> is for those seeking to get help without
       wanting to hear about the technical details of its development.
 
-    + nano-devel@gnu.org is the list used by the people that make nano
+    * <nano-devel@gnu.org> is the list used by the people that make nano
       and a general development discussion list, with moderate traffic.
 
     To subscribe, send email to <name>-request@gnu.org with a subject
@@ -70,10 +115,8 @@ Mailing Lists
 Bug Reports
 
     If you find a bug, please file a detailed description of the problem
-    on nano's bug tracker: https://savannah.gnu.org/bugs/?group=nano.
+    on nano's issue tracker: https://savannah.gnu.org/bugs/?group=nano
+    (you will need an account to be able to do so), or send an email
+    to the nano-devel list (no need to subscribe, but mention it if
+    you want to be CC'ed on an answer).
 
-Copyright Years
-
-    When in any file of this package a copyright notice mentions a
-    year range (such as 1999-2011), it is a shorthand for a list of
-    all the years in that interval.

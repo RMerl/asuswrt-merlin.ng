@@ -29,9 +29,9 @@ color magenta "\<(and|compl|lshift|or|rshift|xor)\>"
 color magenta "\<(bindtextdomain|dcgettext|dcngettext)\>"
 
 # Strings.
-color brightyellow "<[^= 	]*>" ""(\\.|[^"])*""
+color brightyellow ""([^"\]|\\.)*""
 # Comments.
-color brightblue "(^|[[:blank:]])#.*$"
+color brightblue "(^|[[:blank:]])#.*"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

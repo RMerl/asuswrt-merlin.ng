@@ -11,14 +11,13 @@ color brightcyan "\<define(-macro|-module|-public|-syntax)?\>"
 # Quoted symbols
 color brightyellow "'\<(\w|-)+\>"
 # Chars
-color brightmagenta "#\\."
-color brightmagenta "#\\\w+\>"
+color brightmagenta "#\\(.|\w+)"
 # Booleans
 color brightred "(#t|#f)\>"
 # Keywords
 color blue "#?:(\w|[?-])+"
 # Strings
 color yellow start="^[[:blank:]]+"" end="[^\]""
-color yellow ""(\\.|[^"])*""
+color yellow ""([^"\]|\\.)*""
 # Comments
 color cyan "(^|[[:blank:]]);.*"

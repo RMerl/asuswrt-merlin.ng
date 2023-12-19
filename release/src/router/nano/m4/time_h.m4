@@ -1,8 +1,8 @@
 # Configure a more-standard replacement for <time.h>.
 
-# Copyright (C) 2000-2001, 2003-2007, 2009-2021 Free Software Foundation, Inc.
+# Copyright (C) 2000-2001, 2003-2007, 2009-2023 Free Software Foundation, Inc.
 
-# serial 18
+# serial 20
 
 # This file is free software; the Free Software Foundation
 # gives unlimited permission to copy and/or distribute it,
@@ -18,6 +18,12 @@ AC_DEFUN_ONCE([gl_TIME_H],
 
   gl_NEXT_HEADERS([time.h])
   AC_REQUIRE([gl_CHECK_TYPE_STRUCT_TIMESPEC])
+
+  dnl Check for declarations of anything we want to poison if the
+  dnl corresponding gnulib module is not in use.
+  gl_WARN_ON_USE_PREPARE([[
+#include <time.h>
+    ]], [asctime_r ctime_r])
 
   AC_REQUIRE([AC_C_RESTRICT])
 
@@ -133,6 +139,7 @@ AC_DEFUN([gl_TIME_H_REQUIRE_DEFAULTS],
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_STRPTIME])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIMEGM])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIMESPEC_GET])
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIMESPEC_GETRES])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIME_R])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TIME_RZ])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_TZSET])
@@ -151,6 +158,7 @@ AC_DEFUN([gl_TIME_H_DEFAULTS],
   HAVE_STRPTIME=1;                       AC_SUBST([HAVE_STRPTIME])
   HAVE_TIMEGM=1;                         AC_SUBST([HAVE_TIMEGM])
   HAVE_TIMESPEC_GET=1;                   AC_SUBST([HAVE_TIMESPEC_GET])
+  HAVE_TIMESPEC_GETRES=1;                AC_SUBST([HAVE_TIMESPEC_GETRES])
   dnl Even GNU libc does not have timezone_t yet.
   HAVE_TIMEZONE_T=0;                     AC_SUBST([HAVE_TIMEZONE_T])
   dnl If another module says to replace or to not replace, do that.

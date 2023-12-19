@@ -1,20 +1,20 @@
 /* Byte-wise substring search, using the Two-Way algorithm.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2023 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
    Written by Eric Blake <ebb9@byu.net>, 2008.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License along
-   with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Before including this file, you need to include <config.h> and
    <string.h>, and define:
@@ -231,7 +231,7 @@ critical_factorization (const unsigned char *needle, size_t needle_len,
    most 2 * HAYSTACK_LEN - NEEDLE_LEN comparisons occur in searching.
    If AVAILABLE modifies HAYSTACK_LEN (as in strstr), then at most 3 *
    HAYSTACK_LEN - NEEDLE_LEN comparisons occur in searching.  */
-static RETURN_TYPE
+static RETURN_TYPE _GL_ATTRIBUTE_PURE
 two_way_short_needle (const unsigned char *haystack, size_t haystack_len,
                       const unsigned char *needle, size_t needle_len)
 {
@@ -325,7 +325,7 @@ two_way_short_needle (const unsigned char *haystack, size_t haystack_len,
    If AVAILABLE modifies HAYSTACK_LEN (as in strstr), then at most 3 *
    HAYSTACK_LEN - NEEDLE_LEN comparisons occur in searching, and
    sublinear performance is not possible.  */
-static RETURN_TYPE
+static RETURN_TYPE _GL_ATTRIBUTE_PURE
 two_way_long_needle (const unsigned char *haystack, size_t haystack_len,
                      const unsigned char *needle, size_t needle_len)
 {

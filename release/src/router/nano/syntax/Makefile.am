@@ -36,13 +36,12 @@ pkgdata_DATA =	asm.nanorc \
 		tcl.nanorc \
 		tex.nanorc \
 		texinfo.nanorc \
-		xml.nanorc
+		xml.nanorc \
+		yaml.nanorc
 
 nobase_pkgdata_DATA = \
 		extra/ada.nanorc \
-		extra/debian.nanorc \
 		extra/fortran.nanorc \
-		extra/gentoo.nanorc \
 		extra/haskell.nanorc \
 		extra/povray.nanorc \
 		extra/spec.nanorc

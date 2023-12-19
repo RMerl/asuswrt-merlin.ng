@@ -16,7 +16,8 @@ winio.o: revision.h
 # only when the revision actually changed.
 revision.h: FORCE
 	@[ -f $@ ] || touch $@
-	@echo "#define $(SOMETHING)" | cmp -s $@ - || \
+	@! git describe >/dev/null 2>&1 || \
+			echo "#define $(SOMETHING)" | cmp -s $@ - || \
 			echo "#define $(SOMETHING)" > $@
 FORCE:
 

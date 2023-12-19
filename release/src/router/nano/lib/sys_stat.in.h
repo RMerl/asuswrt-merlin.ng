@@ -1,18 +1,18 @@
 /* Provide a more complete sys/stat.h header file.
-   Copyright (C) 2005-2021 Free Software Foundation, Inc.
+   Copyright (C) 2005-2023 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 /* Written by Eric Blake, Paul Eggert, and Jim Meyering.  */
 
@@ -391,7 +391,33 @@ struct stat
 #endif
 
 
-#if @GNULIB_MDA_CHMOD@
+#if @GNULIB_CHMOD@
+# if @REPLACE_CHMOD@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef chmod
+#   define chmod rpl_chmod
+#  endif
+_GL_FUNCDECL_RPL (chmod, int, (const char *filename, mode_t mode)
+                               _GL_ARG_NONNULL ((1)));
+_GL_CXXALIAS_RPL (chmod, int, (const char *filename, mode_t mode));
+# elif defined _WIN32 && !defined __CYGWIN__
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef chmod
+#   define chmod _chmod
+#  endif
+/* Need to cast, because in mingw the last argument is 'int mode'.  */
+_GL_CXXALIAS_MDA_CAST (chmod, int, (const char *filename, mode_t mode));
+# else
+_GL_CXXALIAS_SYS (chmod, int, (const char *filename, mode_t mode));
+# endif
+_GL_CXXALIASWARN (chmod);
+#elif defined GNULIB_POSIXCHECK
+# undef chmod
+# if HAVE_RAW_DECL_CHMOD
+_GL_WARN_ON_USE (chmod, "chmod has portability problems - "
+                 "use gnulib module chmod for portability");
+# endif
+#elif @GNULIB_MDA_CHMOD@
 /* On native Windows, map 'chmod' to '_chmod', so that -loldnames is not
    required.  In C++ with GNULIB_NAMESPACE, avoid differences between
    platforms by defining GNULIB_NAMESPACE::chmod always.  */
@@ -566,44 +592,6 @@ _GL_CXXALIASWARN (lchmod);
 # if HAVE_RAW_DECL_LCHMOD
 _GL_WARN_ON_USE (lchmod, "lchmod is unportable - "
                  "use gnulib module lchmod for portability");
-# endif
-#endif
-
-
-#if @GNULIB_LSTAT@
-# if ! @HAVE_LSTAT@
-/* mingw does not support symlinks, therefore it does not have lstat.  But
-   without links, stat does just fine.  */
-#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
-#   define lstat stat
-#  endif
-_GL_CXXALIAS_RPL_1 (lstat, stat, int,
-                    (const char *restrict name, struct stat *restrict buf));
-# elif @REPLACE_LSTAT@
-#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
-#   undef lstat
-#   define lstat rpl_lstat
-#  endif
-_GL_FUNCDECL_RPL (lstat, int,
-                  (const char *restrict name, struct stat *restrict buf)
-                  _GL_ARG_NONNULL ((1, 2)));
-_GL_CXXALIAS_RPL (lstat, int,
-                  (const char *restrict name, struct stat *restrict buf));
-# else
-_GL_CXXALIAS_SYS (lstat, int,
-                  (const char *restrict name, struct stat *restrict buf));
-# endif
-# if @HAVE_LSTAT@
-_GL_CXXALIASWARN (lstat);
-# endif
-#elif @GNULIB_OVERRIDES_STRUCT_STAT@
-# undef lstat
-# define lstat lstat_used_without_requesting_gnulib_module_lstat
-#elif defined GNULIB_POSIXCHECK
-# undef lstat
-# if HAVE_RAW_DECL_LSTAT
-_GL_WARN_ON_USE (lstat, "lstat is unportable - "
-                 "use gnulib module lstat for portability");
 # endif
 #endif
 
@@ -865,6 +853,44 @@ _GL_EXTERN_C int stat (const char *restrict name, struct stat *restrict buf)
 # if HAVE_RAW_DECL_STAT
 _GL_WARN_ON_USE (stat, "stat is unportable - "
                  "use gnulib module stat for portability");
+# endif
+#endif
+
+
+#if @GNULIB_LSTAT@
+# if ! @HAVE_LSTAT@
+/* mingw does not support symlinks, therefore it does not have lstat.  But
+   without links, stat does just fine.  */
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   define lstat stat
+#  endif
+_GL_CXXALIAS_RPL_1 (lstat, stat, int,
+                    (const char *restrict name, struct stat *restrict buf));
+# elif @REPLACE_LSTAT@
+#  if !(defined __cplusplus && defined GNULIB_NAMESPACE)
+#   undef lstat
+#   define lstat rpl_lstat
+#  endif
+_GL_FUNCDECL_RPL (lstat, int,
+                  (const char *restrict name, struct stat *restrict buf)
+                  _GL_ARG_NONNULL ((1, 2)));
+_GL_CXXALIAS_RPL (lstat, int,
+                  (const char *restrict name, struct stat *restrict buf));
+# else
+_GL_CXXALIAS_SYS (lstat, int,
+                  (const char *restrict name, struct stat *restrict buf));
+# endif
+# if @HAVE_LSTAT@
+_GL_CXXALIASWARN (lstat);
+# endif
+#elif @GNULIB_OVERRIDES_STRUCT_STAT@
+# undef lstat
+# define lstat lstat_used_without_requesting_gnulib_module_lstat
+#elif defined GNULIB_POSIXCHECK
+# undef lstat
+# if HAVE_RAW_DECL_LSTAT
+_GL_WARN_ON_USE (lstat, "lstat is unportable - "
+                 "use gnulib module lstat for portability");
 # endif
 #endif
 

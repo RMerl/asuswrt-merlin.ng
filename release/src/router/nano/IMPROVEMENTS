@@ -1,8 +1,19 @@
 Improvements in GNU nano
 ========================
 
+Since 7.0:
+  - String binds may contain bindable function names between braces.
+  - Word completion looks for candidates in all open buffers.
+  - Unicode codes can be entered without leading zeroes.
+
+Since 6.0:
+  - Option --zero hides the interface and uses the whole terminal for editing.
+  - Colors can be given also in #rgb hexadecimal, to select the nearest color
+    from the 6x6x6 color-cube palette available on 256-color terminals.
+  - Fourteen new color names are available, from rosy to crimson.
+
 Since 5.0:
-  - A search highlights the found text, in black on yellow by default.
+  - A search briefly spotlights the found text, in black on yellow by default.
   - Option --minibar reduces the interface to a bottom bar with basic info.
   - The cursor skips over combining characters, <Del> deletes them together
     with the character they combine with, but <Bsp> deletes them separately.

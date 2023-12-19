@@ -1,5 +1,5 @@
-# stdint.m4 serial 60
-dnl Copyright (C) 2001-2021 Free Software Foundation, Inc.
+# stdint.m4 serial 61
+dnl Copyright (C) 2001-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -296,7 +296,7 @@ static const char *macro_values[] =
   HAVE_C99_STDINT_H=0
   HAVE_SYS_BITYPES_H=0
   HAVE_SYS_INTTYPES_H=0
-  STDINT_H=stdint.h
+  GL_GENERATE_STDINT_H=true
   case "$gl_cv_header_working_stdint_h" in
     *yes)
       HAVE_C99_STDINT_H=1
@@ -341,7 +341,7 @@ int32_t i32 = INT32_C (0x7fffffff);
               ]])],
            [gl_cv_header_stdint_width=yes])])
       if test "$gl_cv_header_stdint_width" = yes; then
-        STDINT_H=
+        GL_GENERATE_STDINT_H=false
       fi
       ;;
     *)
@@ -364,8 +364,6 @@ int32_t i32 = INT32_C (0x7fffffff);
   AC_SUBST([HAVE_C99_STDINT_H])
   AC_SUBST([HAVE_SYS_BITYPES_H])
   AC_SUBST([HAVE_SYS_INTTYPES_H])
-  AC_SUBST([STDINT_H])
-  AM_CONDITIONAL([GL_GENERATE_STDINT_H], [test -n "$STDINT_H"])
 ])
 
 dnl gl_STDINT_BITSIZEOF(TYPES, INCLUDES)

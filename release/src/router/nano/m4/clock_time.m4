@@ -1,13 +1,14 @@
-# clock_time.m4 serial 10
-dnl Copyright (C) 2002-2006, 2009-2021 Free Software Foundation, Inc.
+# clock_time.m4 serial 12
+dnl Copyright (C) 2002-2006, 2009-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
-# Check for clock_gettime and clock_settime, and set LIB_CLOCK_GETTIME.
+# Check for clock_getres, clock_gettime and clock_settime,
+# and set CLOCK_TIME_LIB.
 # For a program named, say foo, you should add a line like the following
 # in the corresponding Makefile.am file:
-# foo_LDADD = $(LDADD) $(LIB_CLOCK_GETTIME)
+# foo_LDADD = $(LDADD) $(CLOCK_TIME_LIB)
 
 AC_DEFUN([gl_CLOCK_TIME],
 [
@@ -20,12 +21,15 @@ AC_DEFUN([gl_CLOCK_TIME],
   # Save and restore LIBS so e.g., -lrt, isn't added to it.  Otherwise, *all*
   # programs in the package would end up linked with that potentially-shared
   # library, inducing unnecessary run-time overhead.
-  LIB_CLOCK_GETTIME=
-  AC_SUBST([LIB_CLOCK_GETTIME])
+  CLOCK_TIME_LIB=
+  AC_SUBST([CLOCK_TIME_LIB])
   gl_saved_libs=$LIBS
     AC_SEARCH_LIBS([clock_gettime], [rt posix4],
                    [test "$ac_cv_search_clock_gettime" = "none required" ||
-                    LIB_CLOCK_GETTIME=$ac_cv_search_clock_gettime])
-    AC_CHECK_FUNCS([clock_gettime clock_settime])
+                    CLOCK_TIME_LIB=$ac_cv_search_clock_gettime])
+    AC_CHECK_FUNCS([clock_getres clock_gettime clock_settime])
   LIBS=$gl_saved_libs
+  # For backward compatibility.
+  LIB_CLOCK_GETTIME="$CLOCK_TIME_LIB"
+  AC_SUBST([LIB_CLOCK_GETTIME])
 ])

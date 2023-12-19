@@ -25,9 +25,11 @@ color cyan "(^|[[:blank:]])#.*"
 # Trailing whitespace
 color ,green "[[:space:]]+$"
 
-# Strings and others
-color yellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
-color green "[{}():;|`$<>!=&\\]" "(\]|\[)"
+# Strings
+color yellow ""([^"\]|\\.)*"|'([^'\]|\\.)*'"
+
+# Syntactic symbols
+color green "[][{}():;|`$<>!=&\]"
 
 # Basic variable names
 color brightred "(\$|@)[[:alpha:]_-][[:alnum:]_.-]*"

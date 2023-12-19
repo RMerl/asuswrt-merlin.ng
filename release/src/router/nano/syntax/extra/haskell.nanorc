@@ -28,9 +28,9 @@ color magenta "\<(Bounded|Data|Enum|Eq|Floating|Fractional|Functor|Integral|Mona
 color brightred "undefined"
 
 # Strings
-color yellow ""([^\"]|\\.)*""
+color yellow ""([^"\]|\\.)*""
 # Characters
-color brightyellow "'([^\']|\\.)'"
+color brightyellow "'([^'\]|\\.)'"
 
 # Comments
 color green "--.*"

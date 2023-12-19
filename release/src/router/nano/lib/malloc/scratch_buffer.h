@@ -1,18 +1,18 @@
 /* Variable-sized buffer with on-stack default allocation.
-   Copyright (C) 2015-2021 Free Software Foundation, Inc.
+   Copyright (C) 2015-2023 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
+   modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public
+   You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
@@ -130,22 +130,6 @@ scratch_buffer_set_array_size (struct scratch_buffer *buffer,
 {
   return __glibc_likely (__libc_scratch_buffer_set_array_size
 			 (buffer, nelem, size));
-}
-
-/* Return a copy of *BUFFER's first SIZE bytes as a heap-allocated block,
-   deallocating *BUFFER if it was heap-allocated.  SIZE must be at
-   most *BUFFER's size.  Return NULL (setting errno) on memory
-   exhaustion.  */
-void *__libc_scratch_buffer_dupfree (struct scratch_buffer *buffer,
-                                     size_t size);
-libc_hidden_proto (__libc_scratch_buffer_dupfree)
-
-/* Alias for __libc_scratch_dupfree.  */
-static __always_inline void *
-scratch_buffer_dupfree (struct scratch_buffer *buffer, size_t size)
-{
-  void *r = __libc_scratch_buffer_dupfree (buffer, size);
-  return __glibc_likely (r != NULL) ? r : NULL;
 }
 
 #endif /* _SCRATCH_BUFFER_H */

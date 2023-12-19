@@ -1,19 +1,19 @@
 /* A more-standard <time.h>.
 
-   Copyright (C) 2007-2021 Free Software Foundation, Inc.
+   Copyright (C) 2007-2023 Free Software Foundation, Inc.
 
-   This program is free software; you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3, or (at your option)
-   any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
-   along with this program; if not, see <https://www.gnu.org/licenses/>.  */
+   You should have received a copy of the GNU Lesser General Public License
+   along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #if __GNUC__ >= 3
 @PRAGMA_SYSTEM_HEADER@
@@ -118,6 +118,17 @@ _GL_FUNCDECL_SYS (timespec_get, int, (struct timespec *ts, int base)
 #  endif
 _GL_CXXALIAS_SYS (timespec_get, int, (struct timespec *ts, int base));
 _GL_CXXALIASWARN (timespec_get);
+# endif
+
+/* Set *TS to the current time resolution, and return BASE.
+   Upon failure, return 0.  */
+# if @GNULIB_TIMESPEC_GETRES@
+#  if ! @HAVE_TIMESPEC_GETRES@
+_GL_FUNCDECL_SYS (timespec_getres, int, (struct timespec *ts, int base)
+                                        _GL_ARG_NONNULL ((1)));
+#  endif
+_GL_CXXALIAS_SYS (timespec_getres, int, (struct timespec *ts, int base));
+_GL_CXXALIASWARN (timespec_getres);
 # endif
 
 /* Sleep for at least RQTP seconds unless interrupted,  If interrupted,
@@ -304,6 +315,7 @@ _GL_CXXALIASWARN (strptime);
 #   if !(defined __cplusplus && defined GNULIB_NAMESPACE)
 #    define ctime rpl_ctime
 #   endif
+_GL_ATTRIBUTE_DEPRECATED
 _GL_FUNCDECL_RPL (ctime, char *, (time_t const *__tp)
                                  _GL_ARG_NONNULL ((1)));
 _GL_CXXALIAS_RPL (ctime, char *, (time_t const *__tp));
@@ -424,8 +436,10 @@ _GL_WARN_ON_USE (asctime, "asctime can overrun buffers in some cases - "
 # endif
 # if defined GNULIB_POSIXCHECK
 #  undef asctime_r
+#  if HAVE_RAW_DECL_ASCTIME_R
 _GL_WARN_ON_USE (asctime_r, "asctime_r can overrun buffers in some cases - "
                  "better use strftime (or even sprintf) instead");
+#  endif
 # endif
 # if defined GNULIB_POSIXCHECK
 #  undef ctime
@@ -434,8 +448,10 @@ _GL_WARN_ON_USE (ctime, "ctime can overrun buffers in some cases - "
 # endif
 # if defined GNULIB_POSIXCHECK
 #  undef ctime_r
+#  if HAVE_RAW_DECL_CTIME_R
 _GL_WARN_ON_USE (ctime_r, "ctime_r can overrun buffers in some cases - "
                  "better use strftime (or even sprintf) instead");
+#  endif
 # endif
 
 #endif

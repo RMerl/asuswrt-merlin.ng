@@ -58,6 +58,10 @@
 ## will be the terminal's width minus this number.
 # set fill -8
 
+## Draw a vertical stripe at the given column, to help judge text width.
+## (This option does not have a default value.)
+# set guidestripe 75
+
 ## Remember the used search/replace strings for the next session.
 # set historylog
 
@@ -78,18 +82,19 @@
 ## Fall back to slow libmagic to try and determine an applicable syntax.
 # set magic
 
-## The opening and closing brackets that can be found by bracket
-## searches.  They cannot contain blank characters.  The former set must
-## come before the latter set, and both must be in the same order.
+## The opening and closing brackets that are found by a matching-bracket
+## search.  This may not contain blank characters.  The opening brackets
+## must come before the closing ones, and they must be in the same order.
 # set matchbrackets "(<[{)>]}"
 
-## Suppress title bar and show file name and editor state at the bottom.
+## Suppress the title bar and show the filename plus a cursor-position
+## percentage in the space of the status bar.
 # set minibar
 
 ## Enable mouse support, if available for your system.  When enabled,
 ## mouse clicks can be used to place the cursor, set the mark (with a
-## double click), and execute shortcuts.  The mouse will work in the X
-## Window System, and on the console when gpm is running.
+## double click), and execute shortcuts.  The mouse will work in the
+## X Window System, and on the console when gpm is running.
 # set mouse
 
 ## Switch on multiple file buffers (inserting a file will put it into
@@ -117,10 +122,9 @@
 ## Preserve the XON and XOFF keys (^Q and ^S).
 # set preserve
 
-## The characters treated as closing punctuation when justifying
-## paragraphs.  They cannot contain blank characters.  Only closing
-## punctuation, optionally followed by closing brackets, can end
-## sentences.
+## The characters treated as closing punctuation when justifying paragraphs.
+## This may not contain blank characters.  Only these closing punctuations,
+## optionally followed by closing brackets, can end sentences.
 # set punct "!.?"
 
 ## Make status-bar messages disappear after 1 keystroke instead of after 20.
@@ -142,18 +146,17 @@
 
 ## Save a changed buffer automatically on exit; don't prompt.
 # set saveonexit
-## (The old form of this option, 'set tempfile', is deprecated.)
 
-## Put the cursor on the highlighted item in the file browser, and show
-## the cursor in the help viewer; useful for people who use a braille
-## display and people with poor vision.
+## Put the cursor on the highlighted item in the file browser, and
+## show the cursor in the help viewer; useful for people who use a
+## braille display and people with poor vision.
 # set showcursor
 
-## Make the Home key smarter.  When Home is pressed anywhere but at the
+## Make the Home key smarter: when Home is pressed anywhere but at the
 ## very beginning of non-whitespace characters on a line, the cursor
 ## will jump to that beginning (either forwards or backwards).  If the
-## cursor is already at that position, it will jump to the true
-## beginning of the line.
+## cursor is already at that position, it will jump to the true start
+## of the line (the left edge).
 # set smarthome
 
 ## Spread overlong lines over multiple screen lines.
@@ -167,18 +170,17 @@
 ## M = mark, L = hard-wrapping long lines, R = recording, S = soft-wrapping.
 # set stateflags
 
-## Allow nano to be suspended (with ^Z by default).
-# set suspendable
-## (The old form of this option, 'set suspend', is deprecated.)
-
 ## Use this tab size instead of the default; it must be greater than 0.
 # set tabsize 8
 
-## Convert typed tabs to spaces.
+## Convert each typed tab to the fitting number of spaces.
 # set tabstospaces
 
 ## Snip whitespace at the end of lines when justifying or hard-wrapping.
 # set trimblanks
+
+## Save files by default in Unix format (also when they were DOS or Mac).
+# set unix
 
 ## The two single-column characters used to display the first characters
 ## of tabs and spaces.  187 in ISO 8859-1 (0000BB in Unicode) and 183 in
@@ -201,14 +203,17 @@
 ## of a single character, and without affecting the cutbuffer).
 # set zap
 
+## Hide the bars plus help lines and use the whole terminal as edit area.
+# set zero
+
 
 ## Paint the interface elements of nano.  These are examples; there are
 ## no colors by default, except for errorcolor and spotlightcolor.
-# set titlecolor bold,lightwhite,blue
-# set promptcolor lightwhite,lightblack
-# set statuscolor bold,lightwhite,green
-# set errorcolor bold,lightwhite,red
-# set spotlightcolor black,lime
+# set titlecolor bold,white,blue
+# set promptcolor lightwhite,grey
+# set statuscolor bold,white,green
+# set errorcolor bold,white,red
+# set spotlightcolor black,lightyellow
 # set selectedcolor lightwhite,magenta
 # set stripecolor ,yellow
 # set scrollercolor cyan
@@ -217,10 +222,10 @@
 # set functioncolor green
 
 ## In root's .nanorc you might want to use:
-# set titlecolor bold,lightwhite,magenta
+# set titlecolor bold,white,magenta
 # set promptcolor black,yellow
-# set statuscolor bold,lightwhite,magenta
-# set errorcolor bold,lightwhite,red
+# set statuscolor bold,white,magenta
+# set errorcolor bold,white,red
 # set spotlightcolor black,orange
 # set selectedcolor lightwhite,cyan
 # set stripecolor ,yellow
@@ -256,6 +261,9 @@
 ## === Key bindings ===
 ## For all details, see 'man nanorc', section REBINDING KEYS.
 
+## If you want to suspend nano with one keystroke (instead of with ^T^Z):
+# bind ^Z suspend main
+
 ## The <Ctrl+Delete> keystroke deletes the word to the right of the cursor.
 ## On some terminals the <Ctrl+Backspace> keystroke produces ^H, which is
 ## the ASCII character for backspace, so it is bound by default to the
@@ -265,13 +273,39 @@
 ## <Ctrl+Backspace> delete the word to the left of the cursor with:
 # bind ^H chopwordleft main
 
+## For a more mnemonic Comment keystroke (overriding Cut-from-cursor):
+# bind M-K comment main
+
+## If you want ^L to just refresh the screen and not center the cursor:
+# bind ^L refresh main
+
+## When you sometimes type M-J instead of M-K, or M-T instead of M-R:
+# unbind M-J main
+# unbind M-T main
+## (Those functions are still accessible through ^T^J and ^T^V.)
+
+## For quickly uppercasing or lowercasing the word under or after the cursor.
+## (These effectively select a word and pipe it through a sed command.)
+#bind Sh-M-U "{nextword}{mark}{prevword}{execute}|sed 's/.*/\U&/'{enter}" main
+#bind Sh-M-L "{nextword}{mark}{prevword}{execute}|sed 's/.*/\L&/'{enter}" main
+
+## For copying a marked region to the system clipboard:
+# bind Sh-M-T "{execute}|xsel -ib{enter}{undo}" main
+
+## For snipping trailing blanks when you save a file:
+# bind ^S "{execute}| sed 's/\s\+$//' {enter}{savefile}" main
+
 ## If you would like nano to have keybindings that are more "usual",
 ## such as ^O for Open, ^F for Find, ^H for Help, and ^Q for Quit,
 ## then uncomment these:
+#bind ^X cut main
+#bind ^C copy main
+#bind ^V paste all
 #bind ^Q exit all
 #bind ^S savefile main
 #bind ^W writeout main
 #bind ^O insert main
+#set multibuffer
 #bind ^H help all
 #bind ^H exit help
 #bind ^F whereis all
@@ -279,23 +313,19 @@
 #bind ^B wherewas all
 #bind ^D findprevious all
 #bind ^R replace main
-#bind M-X flipnewbuffer all
-#bind ^X cut all
-#bind ^C copy main
-#bind ^V paste all
-#bind ^P location main
-#bind ^A mark main
-#unbind ^K main
 #unbind ^U all
 #unbind ^N main
 #unbind ^Y all
 #unbind M-J main
 #unbind M-T main
+#bind ^A mark main
+#bind ^P location main
 #bind ^T gotoline main
 #bind ^T gotodir browser
-#bind ^Y speller main
-#bind M-U undo main
-#bind M-R redo main
-#bind ^U undo main
-#bind ^E redo main
-#set multibuffer
+#bind ^T cutrestoffile execute
+#bind ^L linter execute
+#bind ^E execute main
+#bind ^K "{mark}{end}{zap}" main
+#bind ^U "{mark}{home}{zap}" main
+#bind ^Z undo main
+#bind ^Y redo main

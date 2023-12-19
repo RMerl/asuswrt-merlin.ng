@@ -5,7 +5,7 @@ magic "PHP script"
 comment "//"
 
 # PHP markings.
-color brightgreen "(<\?(php)?|\?>)"
+color brightgreen "(<\?(php|=)?|\?>)"
 
 # Function names.
 color white "\<[A-Za-z_][A-Za-z_0-9]*\("
@@ -25,7 +25,7 @@ color brightcyan "\<(and|or|xor)\>"
 color magenta "\<(break|continue|goto|return)\>"
 
 # Strings.
-color brightyellow ""(\.|[^"])*"" "'(\.|[^'])*'"
+color brightyellow ""([^"\]|\\.)*"|'([^'\]|\\.)*'"
 
 # Comments.
 color brightblue "(^|[[:blank:]]+)//.*"

@@ -23,17 +23,16 @@ color brightyellow "\<(try|throw|catch|operator|new|delete)\>"
 color magenta "\<(break|continue|goto|return)\>"
 
 # Single-quoted stuff (characters, backslash escapes, hex and octal byte codes).
-color brightmagenta "'([^'\]|\\(["'\abfnrtv]|x[0-9A-Fa-f]{1,2}|[0-3]?[0-7]{1,2}))'"
+color brightmagenta "'([^'\]|\\(["'\abfnrtv]|x[[:xdigit:]]{1,2}|[0-3]?[0-7]{1,2}))'"
 
 # GCC builtins.
-color cyan "__attribute__[[:blank:]]*\(\([^)]*\)\)" "__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
+color cyan "__attribute__[[:blank:]]*\(\([^)]*\)\)|__(aligned|asm|builtin|hidden|inline|packed|restrict|section|typeof|weak)__"
 
-# Strings.  (In general you will want your strings and comments to come last,
-# because highlighting rules are applied in the order they are read in.)
-color brightyellow ""([^"]|\\")*"" "#[[:blank:]]*include[[:blank:]]*<[^>]+>"
+# Strings and names of included files.
+color brightyellow ""([^"]|\\")*"|#[[:blank:]]*include[[:blank:]]*<[^>]+>"
 
 # Preprocessor directives.
-color brightcyan start="^[[:blank:]]*#[[:blank:]]*(if(n?def)?|elif|warning|error|pragma)\>" end="(\`|[^\\])$"
+color brightcyan start="^[[:blank:]]*#[[:blank:]]*(if(n?def)?|elif|warning|error|pragma)\>" end="(\`|[^\])$"
 color brightcyan "^[[:blank:]]*#[[:blank:]]*((define|else|endif|include(_next)?|line|undef)\>|$)"
 
 # Comments.

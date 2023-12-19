@@ -1,5 +1,5 @@
-# nl_langinfo.m4 serial 8
-dnl Copyright (C) 2009-2021 Free Software Foundation, Inc.
+# nl_langinfo.m4 serial 9
+dnl Copyright (C) 2009-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -62,7 +62,7 @@ AC_DEFUN([gl_FUNC_NL_LANGINFO],
     HAVE_NL_LANGINFO=0
   fi
   if test $HAVE_NL_LANGINFO = 0 || test $HAVE_LANGINFO_CODESET = 0; then
-    LIB_NL_LANGINFO="$LIB_SETLOCALE_NULL"
+    LIB_NL_LANGINFO="$SETLOCALE_NULL_LIB"
   else
     LIB_NL_LANGINFO=
   fi

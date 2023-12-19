@@ -4,8 +4,14 @@
 syntax nanohelp
 
 # Key combos:
-color cyan "\^[]/4-8@A-Z\^_`◀▶▲▼]"  "[◀▶▲▼]"  "\<(M|S[Hh]-[Mm])-."  "\<F([1-9]|1[0-9]|2[0-4])"
+color cyan "\^[]/4-8@A-Z\^_`◂▸▴▾-]"  "[◂▸▴▾]"  "\<(M|S[Hh]-[Mm])-[^")”»“」]"  "\<F([1-9]|1[0-9]|2[0-4])"
 color cyan "\<((Sh-)?Tab|Enter|Ins|(Sh-\^?)?Del|Space|Bsp|Up|Down|Left|Right|Home|End|PgUp|PgDn)\>"
+
+# Colorize M-) and M-" only when between parentheses...
+color cyan "\(M-(\)|")\)"
+color normal " \(|\) "
+# ...or when at start of line.
+color cyan "^M-(\)|")"
 
 # Quoted indicators:
 color brightred "'(\^|M-)'"

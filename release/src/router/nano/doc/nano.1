@@ -1,4 +1,4 @@
-.\" Copyright (C) 1999-2011, 2013-2021 Free Software Foundation, Inc.
+.\" Copyright (C) 1999-2011, 2013-2023 Free Software Foundation, Inc.
 .\"
 .\" This document is dual-licensed.  You may distribute and/or modify it
 .\" under the terms of either of the following licenses:
@@ -16,7 +16,7 @@
 .\"   Documentation License along with this program.  If not, see
 .\"   <https://www.gnu.org/licenses/>.
 .\"
-.TH NANO 1 "version 5.7" "April 2021"
+.TH NANO 1 "version 7.2" "January 2023"
 
 .SH NAME
 nano \- Nano's ANOther editor, inspired by Pico
@@ -26,20 +26,6 @@ nano \- Nano's ANOther editor, inspired by Pico
 .RI [ options "] [[\fB+" line [\fB, column "]] " file ]...
 .sp
 .BR nano " [" \fIoptions "] [[" + [ crCR ]( / | ? ) \fIstring "] " \fIfile ]...
-
-.SH NOTICE
-Since version 4.0, \fBnano\fR by default:
-.sp
-.RS 4
-\(bu does not automatically hard-wrap lines that become overlong,
-.br
-\(bu includes the line below the title bar in the editing area,
-.br
-\(bu does linewise (smooth) scrolling.
-.RE
-.sp
-If you want the old, Pico behavior back, you can use \fB\-\-breaklonglines\fR,
-\fB\-\-emptyline\fR, and \fB\-\-jumpyscrolling\fR (or \fB\-bej\fR for short).
 
 .SH DESCRIPTION
 \fBnano\fP is a small and friendly editor.  It copies the look and feel
@@ -58,7 +44,7 @@ regular expression by inserting \fBc\fR and/or \fBr\fR after the \fB+\fR sign.
 These search modes can be explicitly disabled by using the uppercase variant
 of those letters: \fBC\fR and/or \fBR\fR.  When the string contains spaces,
 it needs to be enclosed in quotes.  To give an example: to open a file at
-the first occurrence of the word "Foo", one would do:
+the first occurrence of the word "Foo", you would do:
 .sp
 .RS 4
 .BI "nano +c/Foo " file
@@ -77,16 +63,22 @@ Any cursor movement or executing any other command will cause the next
 \fB^K\fR to overwrite the cutbuffer.  A \fB^U\fR will paste the current
 contents of the cutbuffer at the current cursor position.
 .sp
-When a more precise piece of text needs to be cut or copied, one can mark
+When a more precise piece of text needs to be cut or copied, you can mark
 its start with \fB^6\fR, move the cursor to its end (the marked text will be
 highlighted), and then use \fB^K\fR to cut it, or \fBM\-6\fR to copy it to the
-cutbuffer.  One can also save the marked text to a file with \fB^O\fR, or
-spell check it with \fB^T\fR.
+cutbuffer.  You can also save the marked text to a file with \fB^O\fR, or
+spell check it with \fB^T^T\fR.
 .sp
 On some terminals, text can be selected also by holding down Shift while
 using the arrow keys.  Holding down the Ctrl or Alt key too will increase
 the stride.
 Any cursor movement without Shift being held will cancel such a selection.
+.sp
+Any valid Unicode code point can be inserted into the buffer by typing
+\fBM\-V\fR followed by the hexadecimal digits of the code point (concluded
+with \fB<Space>\fR or \fB<Enter>\fR when it are fewer than six digits).
+A literal control code (except \fB^J\fR) can be inserted by typing
+\fBM\-V\fR followed by the pertinent keystroke.
 .sp
 The two lines at the bottom of the screen show some important commands;
 the built-in help (\fB^G\fR) lists all the available ones.
@@ -118,7 +110,8 @@ by setting the options \fBtitlecolor\fP, \fBstatuscolor\fP, \fBkeycolor\fP,
 nanorc file.  See \fBnanorc\fR(5).
 .TP
 .BR \-E ", " \-\-tabstospaces
-Convert typed tabs to spaces.
+Convert each typed tab to spaces -- to the number of spaces
+that a tab at that position would take up.
 .TP
 .BR \-F ", " \-\-multibuffer
 Read a file into a new buffer by default.
@@ -139,10 +132,12 @@ text.  (The color of the stripe can be changed with \fBset stripecolor\fR
 in your \fInanorc\fR file.)
 .TP
 .BR \-K ", " \-\-rawsequences
-Interpret escape sequences directly (instead of asking \fBncurses\fR to
-translate them).  If you need this option to get your keyboard to work
-properly, please report a bug.  Using this option disables \fBnano\fR's
-mouse support.
+Interpret escape sequences directly, instead of asking \fBncurses\fR
+to translate them.  (If you need this option to get some keys to work
+properly, it means that the terminfo terminal description that is used
+does not fully match the actual behavior of your terminal.  This can
+happen when you ssh into a BSD machine, for example.)
+Using this option disables \fBnano\fR's mouse support.
 .TP
 .BR \-L ", " \-\-nonewlines
 Don't automatically add a newline when a text does not end with one.
@@ -191,8 +186,11 @@ Set the size (width) of a tab to \fInumber\fP columns.  The value of
 .TP
 .BR \-U ", " \-\-quickblank
 Make status-bar messages disappear after 1 keystroke instead of after 20.
-Note that options \fB\-c\fR (\fB\-\-constantshow\fR)
-and \fB\-_\fR (\fB\-\-minibar\fR) override this.
+Note that option \fB\-c\fR (\fB\-\-constantshow\fR) overrides this.
+When option \fB\-\-minibar\fR or \fB\-\-zero\fR is in effect,
+\fB\-\-quickblank\fR makes a message disappear after
+0.8 seconds instead of after the default 1.5 seconds.
+.
 .TP
 .BR \-V ", " \-\-version
 Show the current version number and exit.
@@ -303,7 +301,6 @@ using the built-in corrector that calls \fBhunspell\fR(1) or \fBspell\fR(1).
 .TP
 .BR \-t ", " \-\-saveonexit
 Save a changed buffer without prompting (when exiting with \fB^X\fR).
-(The old form of the long option, \fB\-\-tempfile\fR, is deprecated.)
 .TP
 .BR \-u ", " \-\-unix
 Save a file by default in Unix format.  This overrides nano's
@@ -326,8 +323,9 @@ Don't show the two help lines at the bottom of the screen.
 .BR \-y ", " \-\-afterends
 Make Ctrl+Right and Ctrl+Delete stop at word ends instead of beginnings.
 .TP
-.BR \-z ", " \-\-suspendable
-Allow the user to suspend the editor (with \fB^Z\fR by default).
+.BR \-! ", " \-\-magic
+When neither the file's name nor its first line give a clue,
+try using libmagic to determine the applicable syntax.
 .TP
 .BR \-% ", " \-\-stateflags
 Use the top-right corner of the screen for showing some state flags:
@@ -340,23 +338,27 @@ filename in the center of the title bar.
 .BR \-_ ", " \-\-minibar
 Suppress the title bar and instead show information about
 the current buffer at the bottom of the screen, in the space
-for the status bar.  In this "minibar" the file name is shown
+for the status bar.  In this "minibar" the filename is shown
 on the left, followed by an asterisk if the buffer has been modified.
 On the right are displayed the current line and column number, the
 code of the character under the cursor (in Unicode format: U+xxxx),
 the same flags as are shown by \fB\-\-stateflags\fR, and a percentage
 that expresses how far the cursor is into the file (linewise).
 When a file is loaded or saved, and also when switching between buffers,
-the number of lines in the buffer is displayed after the file name.
+the number of lines in the buffer is displayed after the filename.
 This number is cleared upon the next keystroke, or replaced with an
 [i/n] counter when multiple buffers are open.
 The line plus column numbers and the character code are displayed only when
-\fB\-\-constantshow\fR is used, and can be toggled on and off with \fBM-C\fR.
+\fB\-\-constantshow\fR is used, and can be toggled on and off with \fBM\-C\fR.
 The state flags are displayed only when \fB\-\-stateflags\fR is used.
 .TP
-.BR \-! ", " \-\-magic
-When neither the file's name nor its first line give a clue,
-try using libmagic to determine the applicable syntax.
+.BR \-0 ", " \-\-zero
+Hide all elements of the interface (title bar, status bar, and help lines)
+and use all rows of the terminal for showing the contents of the buffer.
+The status bar appears only when there is a significant message,
+and disappears after 1.5 seconds or upon the next keystroke.
+With \fBM\-Z\fR the title bar plus status bar can be toggled.
+With \fBM\-X\fR the help lines.
 
 .SH TOGGLES
 Several of the above options can be switched on and off also while
@@ -384,6 +386,11 @@ See \fI/usr/share/nano/\fR and \fI/usr/share/nano/extra/\fR
 for available syntax-coloring definitions.
 
 .SH NOTES
+Option \fB\-z\fR (\fB\-\-suspendable\fR) has been removed.
+Suspension is enabled by default, reachable via \fB^T^Z\fR.
+(If you want a plain \fB^Z\fR to suspend nano, add
+\fBbind ^Z suspend main\fR to your nanorc.)
+.sp
 If no alternative spell checker command is specified on the command
 line nor in one of the \fInanorc\fP files, \fBnano\fP will check the
 \fBSPELL\fP environment variable for one.

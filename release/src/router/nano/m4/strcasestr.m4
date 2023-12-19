@@ -1,5 +1,5 @@
-# strcasestr.m4 serial 27
-dnl Copyright (C) 2005, 2007-2021 Free Software Foundation, Inc.
+# strcasestr.m4 serial 28
+dnl Copyright (C) 2005, 2007-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -26,7 +26,7 @@ AC_DEFUN([gl_FUNC_STRCASESTR_SIMPLE],
         [gl_cv_func_strcasestr_works_always],
         [AC_RUN_IFELSE(
            [AC_LANG_PROGRAM([[
-#include <string.h> /* for strcasestr */
+#include <string.h> /* for __GNU_LIBRARY__, strcasestr */
 #ifdef __GNU_LIBRARY__
  #include <features.h>
  #if __GLIBC__ == 2 && __GLIBC_MINOR__ == 28
@@ -48,6 +48,7 @@ AC_DEFUN([gl_FUNC_STRCASESTR_SIMPLE],
             dnl linear.
             AC_EGREP_CPP([Lucky user],
               [
+#include <string.h> /* for __GNU_LIBRARY__ */
 #ifdef __GNU_LIBRARY__
  #include <features.h>
  #if ((__GLIBC__ == 2 && __GLIBC_MINOR__ > 12) || (__GLIBC__ > 2)) \

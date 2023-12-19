@@ -1,5 +1,5 @@
-# malloc.m4 serial 24
-dnl Copyright (C) 2007, 2009-2021 Free Software Foundation, Inc.
+# malloc.m4 serial 28
+dnl Copyright (C) 2007, 2009-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -43,7 +43,10 @@ AC_DEFUN([gl_FUNC_MALLOC_GNU],
 [
   AC_REQUIRE([gl_STDLIB_H_DEFAULTS])
   AC_REQUIRE([gl_FUNC_MALLOC_POSIX])
-  test $REPLACE_MALLOC = 1 || _AC_FUNC_MALLOC_IF([], [REPLACE_MALLOC=1])
+  REPLACE_MALLOC_FOR_MALLOC_GNU="$REPLACE_MALLOC_FOR_MALLOC_POSIX"
+  if test $REPLACE_MALLOC_FOR_MALLOC_GNU = 0; then
+    _AC_FUNC_MALLOC_IF([], [REPLACE_MALLOC_FOR_MALLOC_GNU=1])
+  fi
 ])
 
 # gl_FUNC_MALLOC_PTRDIFF
@@ -54,7 +57,7 @@ AC_DEFUN([gl_FUNC_MALLOC_PTRDIFF],
 [
   AC_REQUIRE([gl_STDLIB_H_DEFAULTS])
   AC_REQUIRE([gl_CHECK_MALLOC_PTRDIFF])
-  test "$gl_cv_malloc_ptrdiff" = yes || REPLACE_MALLOC=1
+  test "$gl_cv_malloc_ptrdiff" = yes || REPLACE_MALLOC_FOR_MALLOC_POSIX=1
 ])
 
 # Test whether malloc, realloc, calloc refuse to create objects
@@ -107,28 +110,66 @@ AC_DEFUN([gl_FUNC_MALLOC_POSIX],
     AC_DEFINE([HAVE_MALLOC_POSIX], [1],
       [Define if malloc, realloc, and calloc set errno on allocation failure.])
   else
-    REPLACE_MALLOC=1
+    REPLACE_MALLOC_FOR_MALLOC_POSIX=1
   fi
 ])
 
-# Test whether malloc, realloc, calloc set errno on failure.
+# Test whether malloc, realloc, calloc set errno to ENOMEM on failure.
 # Set gl_cv_func_malloc_posix to yes or no accordingly.
 AC_DEFUN([gl_CHECK_MALLOC_POSIX],
 [
+  AC_REQUIRE([AC_CANONICAL_HOST])
   AC_CACHE_CHECK([whether malloc, realloc, calloc set errno on failure],
     [gl_cv_func_malloc_posix],
     [
       dnl It is too dangerous to try to allocate a large amount of memory:
       dnl some systems go to their knees when you do that. So assume that
-      dnl all Unix implementations of the function set errno on failure.
-      AC_COMPILE_IFELSE(
-        [AC_LANG_PROGRAM(
-           [[]],
-           [[#if defined _WIN32 && ! defined __CYGWIN__
-             choke me
-             #endif
-            ]])],
-        [gl_cv_func_malloc_posix=yes],
-        [gl_cv_func_malloc_posix=no])
+      dnl all Unix implementations of the function set errno on failure,
+      dnl except on those platforms where we have seen 'test-malloc-gnu',
+      dnl 'test-realloc-gnu', 'test-calloc-gnu' fail.
+      case "$host_os" in
+        mingw*)
+          gl_cv_func_malloc_posix=no ;;
+        irix* | solaris*)
+          dnl On IRIX 6.5, the three functions return NULL with errno unset
+          dnl when the argument is larger than PTRDIFF_MAX.
+          dnl On Solaris 11.3, the three functions return NULL with errno set
+          dnl to EAGAIN, not ENOMEM, when the argument is larger than
+          dnl PTRDIFF_MAX.
+          dnl Here is a test program:
+m4_divert_push([KILL])
+#include <errno.h>
+#include <stdio.h>
+#include <stdlib.h>
+#define ptrdiff_t long
+#ifndef PTRDIFF_MAX
+# define PTRDIFF_MAX ((ptrdiff_t) ((1UL << (8 * sizeof (ptrdiff_t) - 1)) - 1))
+#endif
+
+int main ()
+{
+  void *p;
+
+  fprintf (stderr, "PTRDIFF_MAX = %lu\n", (unsigned long) PTRDIFF_MAX);
+
+  errno = 0;
+  p = malloc ((unsigned long) PTRDIFF_MAX + 1);
+  fprintf (stderr, "p=%p errno=%d\n", p, errno);
+
+  errno = 0;
+  p = calloc (PTRDIFF_MAX / 2 + 1, 2);
+  fprintf (stderr, "p=%p errno=%d\n", p, errno);
+
+  errno = 0;
+  p = realloc (NULL, (unsigned long) PTRDIFF_MAX + 1);
+  fprintf (stderr, "p=%p errno=%d\n", p, errno);
+
+  return 0;
+}
+m4_divert_pop([KILL])
+          gl_cv_func_malloc_posix=no ;;
+        *)
+          gl_cv_func_malloc_posix=yes ;;
+      esac
     ])
 ])

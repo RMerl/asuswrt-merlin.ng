@@ -5,6 +5,7 @@ header "^#!.*python"
 magic "Python script"
 comment "#"
 
+# Alternative linter: pylint --exit-zero
 linter pyflakes
 
 # Function definitions.
@@ -24,14 +25,17 @@ color brightcyan "\<(exec|print)([[:blank:]]|$)"
 color brightmagenta "\<(False|None|True)\>"
 
 # Mono-quoted strings.
-color brightgreen "'([^'\]|\\.)*'|'''"
-color brightgreen ""([^"\]|\\.)*"|""""
+color brightgreen "'([^'\]|\\.)*'|"([^"\]|\\.)*"|'''|""""
 color normal "'''|""""
 # Comments.
 color brightred "(^|[[:blank:]])#.*"
 # Triple-quoted strings.
-color brightgreen    start="'''([^'),]|$)" end="(^|[^(\])'''"
-color brightgreen    start=""""([^"),]|$)" end="(^|[^(\])""""
+color brightgreen start="'''([^'),]|$)" end="(^|[^(\])'''"
+color brightgreen start=""""([^"),]|$)" end="(^|[^(\])""""
+
+# Backslash escapes.
+color lime "\\($|[\'"abfnrtv]|[0-3]?[0-7]?[0-7]|x[[:xdigit:]]{2})"
+color lime "\\(N\{[[:alpha:]]+\}|u[[:xdigit:]]{4}|U[[:xdigit:]]{8})"
 
 # Reminders.
 color brightwhite,yellow "\<(FIXME|TODO|XXX)\>"

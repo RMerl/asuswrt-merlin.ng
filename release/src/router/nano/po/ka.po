@@ -1,0 +1,2919 @@
+# Georgian translation for nano.
+# Copyright (C) 2022 Free Software Foundation, Inc.
+# This file is distributed under the same license as the nano package.
+# Temuri Doghonadze <temuri.doghonadze@gmail.com>, 2022.
+#
+msgid ""
+msgstr ""
+"Project-Id-Version: GNU nano 7.0-pre1\n"
+"Report-Msgid-Bugs-To: nano-devel@gnu.org\n"
+"POT-Creation-Date: 2023-01-18 09:49+0100\n"
+"PO-Revision-Date: 2022-11-17 17:34+0100\n"
+"Last-Translator: Temuri Doghonadze <temuri.doghonadze@gmail.com>\n"
+"Language-Team: Georgian <(nothing)>\n"
+"Language: ka\n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"X-Bugs: Report translation errors to the Language-Team address.\n"
+"Plural-Forms: nplurals=2; plural=(n != 1);\n"
+"X-Generator: Poedit 3.2\n"
+
+#. TRANSLATORS: Try to keep this at most 7 characters.
+#: src/browser.c:186 src/browser.c:193
+msgid "(dir)"
+msgstr "(საქაღალდე)"
+
+#. TRANSLATORS: Try to keep this at most 12 characters.
+#: src/browser.c:190
+msgid "(parent dir)"
+msgstr "(მშობელი საქაღალდე)"
+
+#. TRANSLATORS: Try to keep this at most 7 characters.
+#. * If necessary, you can leave out the parentheses.
+#: src/browser.c:220
+msgid "(huge)"
+msgstr "(უზარმაზარი)"
+
+#: src/browser.c:269 src/browser.c:274 src/search.c:258
+msgid "Search Wrapped"
+msgstr "გადატანილში ძებნა"
+
+#: src/browser.c:281 src/search.c:434
+msgid "This is the only occurrence"
+msgstr "ეს ერთადერთი დამთხვევაა"
+
+#. TRANSLATORS: This is the main search prompt.
+#: src/browser.c:314 src/search.c:100
+msgid "Search"
+msgstr "ძებნა"
+
+#. TRANSLATORS: A modifier of the Search prompt.
+#: src/browser.c:316 src/search.c:104
+msgid " [Backwards]"
+msgstr " [უკან]"
+
+#: src/browser.c:322 src/browser.c:564 src/files.c:1154 src/files.c:1241
+#: src/files.c:2169 src/nano.c:321 src/search.c:114 src/search.c:293
+#: src/search.c:720 src/search.c:776 src/text.c:2603 src/text.c:2794
+msgid "Cancelled"
+msgstr "შეწყვეტილია"
+
+#: src/browser.c:349 src/search.c:369
+msgid "No current search pattern"
+msgstr "მიმდინარე ძიების ნიმუში ვერ ვიპოვე"
+
+#: src/browser.c:404
+#, c-format
+msgid "Cannot open directory: %s"
+msgstr "საქაღალდის გახსნის შეცდომა: %s"
+
+#. TRANSLATORS: This is a prompt.
+#: src/browser.c:563
+msgid "Go To Directory"
+msgstr "საქაღალდეზე გადასვლა"
+
+#. TRANSLATORS: This refers to the confining effect of
+#. * the option --operatingdir, not of --restricted.
+#: src/browser.c:581 src/browser.c:612
+#, c-format
+msgid "Can't go outside of %s"
+msgstr "%s-ის გარეთ გასვლა შეუძლებელია"
+
+#: src/browser.c:603
+msgid "Can't move up a directory"
+msgstr "ზედა საქაღალდეში გადასვლის შეცდომა"
+
+#: src/browser.c:618 src/files.c:917 src/files.c:923 src/files.c:1813
+#: src/files.c:1828 src/history.c:263 src/history.c:291 src/history.c:359
+#: src/history.c:419 src/rcfile.c:917 src/rcfile.c:1690
+#, c-format
+msgid "Error reading %s: %s"
+msgstr "შეცდომა '%s'-ის კითხვისას: %s"
+
+#: src/browser.c:688 src/files.c:363
+msgid "The working directory has disappeared"
+msgstr "სამუშაო საქაღალდე გაქრა"
+
+#: src/color.c:156
+#, c-format
+msgid "Unknown syntax name: %s"
+msgstr "უცნობი სინტაქსის სახელი: %s"
+
+#: src/color.c:196
+#, c-format
+msgid "magic_load() failed: %s"
+msgstr "magic_load() -ის შეცდომა: %s"
+
+#: src/color.c:200
+#, c-format
+msgid "magic_file(%s) failed: %s"
+msgstr "magic_file(%s) -ის შეცდომა: %s"
+
+#: src/cut.c:169 src/cut.c:234 src/cut.c:568
+msgid "Nothing was cut"
+msgstr "არაფერი ამოჭრილა"
+
+#: src/cut.c:618 src/cut.c:664
+msgid "Copied nothing"
+msgstr "არაფერი დაკოპირებულა"
+
+#: src/cut.c:728
+msgid "Cutbuffer is empty"
+msgstr "ბუფერი ცარიელია"
+
+#: src/files.c:133
+#, c-format
+msgid "Error deleting lock file %s: %s"
+msgstr "დაბლოკვის ფაილის (%s) წაშლის შეცდომა: %s"
+
+#. TRANSLATORS: Keep the next seven messages at most 76 characters.
+#: src/files.c:162
+msgid "Couldn't determine my identity for lock file"
+msgstr ""
+
+#: src/files.c:167
+#, c-format
+msgid "Couldn't determine hostname: %s"
+msgstr "ჰოსტის სახელის დადგენა შეუძლებელია: %s"
+
+#: src/files.c:183 src/files.c:226
+#, c-format
+msgid "Error writing lock file %s: %s"
+msgstr "ბლოკის ფაილის (%s) ჩაწერის შეცდომა: %s"
+
+#: src/files.c:254
+msgid "Someone else is also editing this file"
+msgstr ""
+
+#: src/files.c:263
+#, c-format
+msgid "Error opening lock file %s: %s"
+msgstr ""
+
+#: src/files.c:278
+#, c-format
+msgid "Bad lock file is ignored: %s"
+msgstr ""
+
+#. TRANSLATORS: The second %s is the name of the user, the third that of the editor.
+#: src/files.c:299
+#, c-format
+msgid "File %s is being edited by %s (with %s, PID %s); open anyway?"
+msgstr ""
+
+#. TRANSLATORS: Keep the next ten messages at most 76 characters.
+#: src/files.c:367
+#, c-format
+msgid "Directory '%s' does not exist"
+msgstr ""
+
+#: src/files.c:369
+#, c-format
+msgid "Path '%s': %s"
+msgstr "ბილიკი '%s': %s"
+
+#: src/files.c:371
+#, c-format
+msgid "Path '%s' is not a directory"
+msgstr "ბილიკი %s საქაღალდეს არ წარმოადგენს"
+
+#: src/files.c:373
+#, c-format
+msgid "Path '%s' is not accessible"
+msgstr ""
+
+#: src/files.c:376
+#, c-format
+msgid "Directory '%s' is not writable"
+msgstr "%s საქაღალდე ჩაწერადი არაა"
+
+#: src/files.c:403
+#, c-format
+msgid "Can't read file from outside of %s"
+msgstr ""
+
+#: src/files.c:413 src/rcfile.c:893
+#, c-format
+msgid "\"%s\" is a directory"
+msgstr "\"%s\" საქაღალდეა"
+
+#: src/files.c:418 src/rcfile.c:894
+#, c-format
+msgid "\"%s\" is a device file"
+msgstr "\"%s\" მოწყობილობის ფაილია"
+
+#: src/files.c:424
+#, c-format
+msgid "\"%s\" is a FIFO"
+msgstr "\"%s\" FIFO-ია"
+
+#: src/files.c:431
+#, c-format
+msgid "%s is meant to be read-only"
+msgstr ""
+
+#. TRANSLATORS: First %s is file name, second %s is file format.
+#: src/files.c:542
+#, c-format
+msgid "%s -- %zu line (%s)"
+msgid_plural "%s -- %zu lines (%s)"
+msgstr[0] "%s -- %zu ხაზი (%s)"
+msgstr[1] "%s -- %zu ხაზი (%s)"
+
+#: src/files.c:544 src/files.c:550 src/global.c:1052 src/winio.c:2042
+msgid "New Buffer"
+msgstr "ახალი ბუფერი"
+
+#: src/files.c:545
+msgid "DOS"
+msgstr "DOS"
+
+#: src/files.c:545
+msgid "Mac"
+msgstr "Mac"
+
+#: src/files.c:548
+#, c-format
+msgid "%s -- %zu line"
+msgid_plural "%s -- %zu lines"
+msgstr[0] "%s - %zu ხაზი"
+msgstr[1] "%s - %zu ხაზი"
+
+#: src/files.c:558
+msgid "No more open file buffers"
+msgstr ""
+
+#: src/files.c:785 src/files.c:915 src/files.c:1867
+msgid "Interrupted"
+msgstr "შეწყვეტილია"
+
+#: src/files.c:831
+#, c-format
+msgid "File '%s' is unwritable"
+msgstr ""
+
+#. TRANSLATORS: Keep the next three messages at most 78 characters.
+#: src/files.c:835
+#, c-format
+msgid "Read %zu line (Converted from Mac format)"
+msgid_plural "Read %zu lines (Converted from Mac format)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/files.c:839
+#, c-format
+msgid "Read %zu line (Converted from DOS format)"
+msgid_plural "Read %zu lines (Converted from DOS format)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/files.c:844
+#, c-format
+msgid "Read %zu line"
+msgid_plural "Read %zu lines"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/files.c:889
+msgid "New File"
+msgstr "ახალი ფაილი"
+
+#: src/files.c:892
+#, c-format
+msgid "File \"%s\" not found"
+msgstr "ფაილი \"%s\" ვერ მოიძებნა"
+
+#: src/files.c:899
+msgid "Reading from FIFO..."
+msgstr "FIFO-დან წაკითხვა..."
+
+#: src/files.c:927
+msgid "Reading..."
+msgstr "კითხვა..."
+
+#: src/files.c:1029 src/text.c:2346 src/text.c:2611
+#, c-format
+msgid "Could not create pipe: %s"
+msgstr ""
+
+#: src/files.c:1069 src/files.c:1113 src/text.c:2160 src/text.c:2426
+#: src/text.c:2646
+#, c-format
+msgid "Could not fork: %s"
+msgstr "პროცესის განტოტვის შეცდომა (%s)"
+
+#: src/files.c:1074
+msgid "Executing..."
+msgstr "შესრულება..."
+
+#. TRANSLATORS: This one goes with Undid/Redid messages.
+#: src/files.c:1094 src/files.c:1144
+msgid "filtering"
+msgstr "გაფილტვრა"
+
+#: src/files.c:1137
+#, c-format
+msgid "Failed to open pipe: %s"
+msgstr ""
+
+#: src/files.c:1155
+#, c-format
+msgid "Error: %s"
+msgstr "შეცდომა: %s"
+
+#: src/files.c:1160
+msgid "Piping failed"
+msgstr "ფაიფის შეცდომა"
+
+#. TRANSLATORS: The next six messages are prompts.
+#: src/files.c:1203
+msgid "Command to execute in new buffer"
+msgstr "ახალ ბუფერში შესასრულებელი ბრძანება"
+
+#: src/files.c:1206
+msgid "Command to execute"
+msgstr "შესასრულებელი ბრძანება"
+
+#: src/files.c:1214
+#, c-format
+msgid "File to read unconverted into new buffer [from %s]"
+msgstr ""
+
+#: src/files.c:1217
+#, c-format
+msgid "File to read into new buffer [from %s]"
+msgstr ""
+
+#: src/files.c:1222
+#, c-format
+msgid "File to insert unconverted [from %s]"
+msgstr ""
+
+#: src/files.c:1225
+#, c-format
+msgid "File to insert [from %s]"
+msgstr ""
+
+#: src/files.c:1495
+#, c-format
+msgid "Invalid operating directory: %s\n"
+msgstr "არასწორი სამუშაო საქაღალდე: %s\n"
+
+#: src/files.c:1544
+#, c-format
+msgid "Invalid backup directory: %s\n"
+msgstr "მარქაფის არასწორი საქაღალდე: %s\n"
+
+#: src/files.c:1599
+msgid "Making backup..."
+msgstr "მარქაფი..."
+
+#: src/files.c:1631
+msgid "Too many existing backup files"
+msgstr ""
+
+#: src/files.c:1679
+msgid "Cannot read original file"
+msgstr ""
+
+#: src/files.c:1711
+msgid "Cannot make regular backup"
+msgstr ""
+
+#: src/files.c:1712
+msgid "Trying again in your home directory"
+msgstr ""
+
+#: src/files.c:1724
+msgid "Cannot make backup"
+msgstr ""
+
+#. TRANSLATORS: Try to keep this message at most 76 characters.
+#: src/files.c:1735
+msgid "Cannot make backup; continue and save actual file? "
+msgstr ""
+
+#. TRANSLATORS: The %s is the reason of failure.
+#: src/files.c:1740
+#, c-format
+msgid "Cannot make backup: %s"
+msgstr ""
+
+#: src/files.c:1774
+#, c-format
+msgid "Can't write outside of %s"
+msgstr ""
+
+#: src/files.c:1806 src/files.c:1869 src/files.c:1880 src/files.c:1901
+#: src/files.c:1918 src/files.c:1927 src/files.c:1955 src/files.c:1966
+#: src/files.c:1973 src/history.c:333 src/history.c:344 src/history.c:347
+#: src/history.c:435 src/history.c:459 src/history.c:465
+#, c-format
+msgid "Error writing %s: %s"
+msgstr "%s-ის ჩაწერის შეცდომა: %s"
+
+#: src/files.c:1820 src/files.c:1832 src/text.c:2535 src/text.c:2547
+#: src/text.c:2945
+#, c-format
+msgid "Error writing temp file: %s"
+msgstr "როებითი ფაილის ჩაწერის შეცდომა: %s"
+
+#: src/files.c:1839
+msgid "Writing to FIFO..."
+msgstr "FIFO-ში ჩაწერა..."
+
+#: src/files.c:1887
+msgid "Writing..."
+msgstr "ჩაწერა…"
+
+#: src/files.c:1943 src/files.c:1951
+#, c-format
+msgid "Error reading temp file: %s"
+msgstr ""
+
+#. TRANSLATORS: This warns for data loss when the disk is full.
+#: src/files.c:1980
+msgid "File on disk has been truncated!"
+msgstr ""
+
+#. TRANSLATORS: This is a suggestion to the user,
+#. * where "resume" means resuming from suspension.
+#. * Try to keep this at most 76 characters.
+#: src/files.c:1985
+msgid "Maybe ^T^Z, make room on disk, resume, then ^S^X"
+msgstr ""
+
+#: src/files.c:2047
+#, c-format
+msgid "Wrote %zu line"
+msgid_plural "Wrote %zu lines"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/files.c:2132
+msgid " [DOS Format]"
+msgstr " [DOS ფორმატი]"
+
+#: src/files.c:2133
+msgid " [Mac Format]"
+msgstr " [Mac ფორმატი]"
+
+#: src/files.c:2134
+msgid " [Backup]"
+msgstr " [მარქაფი]"
+
+#. TRANSLATORS: The next six strings are prompts.
+#: src/files.c:2141
+msgid "Prepend Selection to File"
+msgstr "მონიშნულის ფაილის თავში მიწერა"
+
+#: src/files.c:2142
+msgid "Append Selection to File"
+msgstr "მონიშნულის ფაილის ბოლოში მიწერა"
+
+#: src/files.c:2143
+msgid "Write Selection to File"
+msgstr "მონიშნულის ფაილში ჩაერა"
+
+#: src/files.c:2145
+msgid "File Name to Prepend to"
+msgstr "თავში მისაწერი ფაილის სახელი"
+
+#: src/files.c:2146
+msgid "File Name to Append to"
+msgstr "ბოლოში მისაწერი ფაილის სახელი"
+
+#: src/files.c:2149
+msgid "File Name to Write"
+msgstr "ჩასაწერი ფაილის სახელი"
+
+#. TRANSLATORS: Concisely say the screen is too small.
+#: src/files.c:2229 src/nano.c:1081
+msgid "Too tiny"
+msgstr "მეისმეტად პატარაა"
+
+#. TRANSLATORS: Restricted mode forbids overwriting.
+#: src/files.c:2262
+msgid "File exists -- cannot overwrite"
+msgstr "ფაილი არსებობს -- თავზე გადაწერა შეუძლებელია"
+
+#: src/files.c:2271
+msgid "Save file under DIFFERENT NAME? "
+msgstr ""
+
+#: src/files.c:2279
+#, c-format
+msgid "File \"%s\" exists; OVERWRITE? "
+msgstr ""
+
+#: src/files.c:2303
+msgid "File on disk has changed"
+msgstr "დისკზე ფაილი შეიცვალა"
+
+#. TRANSLATORS: Try to keep this at most 76 characters.
+#: src/files.c:2306
+msgid "File was modified since you opened it; continue saving? "
+msgstr "ფაილი შეიცვალა გახსნის შემდეგ. მაინც გნებავთ, ჩავწეროთ? "
+
+#: src/files.c:2685
+msgid "(more)"
+msgstr "(მეტი)"
+
+#. TRANSLATORS: Try to keep the next two strings at most 10 characters.
+#: src/global.c:537
+msgid "Exit"
+msgstr "გასვლა"
+
+#: src/global.c:538
+msgid "Close"
+msgstr "დაკეტვა"
+
+#. TRANSLATORS: The next long series of strings are shortcut descriptions;
+#. * they are best kept shorter than 56 characters, but may be longer.
+#: src/global.c:546
+msgid "Cancel the current function"
+msgstr "მიმდინარე ფუნქციის გაუქმება"
+
+#: src/global.c:547
+msgid "Display this help text"
+msgstr "ამ დახმარების ტექსტის ჩვენება"
+
+#: src/global.c:548
+msgid "Close the current buffer / Exit from nano"
+msgstr "მიმდინარე ბუფერის დახურვა / nano-დან გასვლა"
+
+#: src/global.c:550
+msgid "Write the current buffer (or the marked region) to disk"
+msgstr ""
+
+#: src/global.c:552
+msgid "Insert another file into current buffer (or into new buffer)"
+msgstr ""
+
+#: src/global.c:554
+msgid "Search forward for a string or a regular expression"
+msgstr ""
+
+#: src/global.c:556
+msgid "Search backward for a string or a regular expression"
+msgstr ""
+
+#: src/global.c:558
+msgid "Cut current line (or marked region) and store it in cutbuffer"
+msgstr ""
+
+#: src/global.c:560
+msgid "Paste the contents of cutbuffer at current cursor position"
+msgstr ""
+
+#: src/global.c:561
+msgid "Display the position of the cursor"
+msgstr ""
+
+#: src/global.c:563
+msgid "Invoke the spell checker, if available"
+msgstr ""
+
+#: src/global.c:565
+msgid "Replace a string or a regular expression"
+msgstr ""
+
+#: src/global.c:566
+msgid "Go to line and column number"
+msgstr ""
+
+#: src/global.c:568
+msgid "Mark text starting from the cursor position"
+msgstr ""
+
+#: src/global.c:570
+msgid "Copy current line (or marked region) and store it in cutbuffer"
+msgstr ""
+
+#: src/global.c:571
+msgid "Throw away the current line (or marked region)"
+msgstr ""
+
+#: src/global.c:572
+msgid "Indent the current line (or marked lines)"
+msgstr ""
+
+#: src/global.c:573
+msgid "Unindent the current line (or marked lines)"
+msgstr ""
+
+#: src/global.c:574
+msgid "Undo the last operation"
+msgstr "ბოლო ცვლილების დაბრუნება"
+
+#: src/global.c:575
+msgid "Redo the last undone operation"
+msgstr ""
+
+#: src/global.c:577
+msgid "Go back one character"
+msgstr "ერთი სიმბოლოთი უკან გადასვლა"
+
+#: src/global.c:578
+msgid "Go forward one character"
+msgstr "ერთი სიმბოლოთი წინ გადასვლა"
+
+#: src/global.c:579
+msgid "Go back one word"
+msgstr "ერთი სიტყვით უკან გადასვლა"
+
+#: src/global.c:580
+msgid "Go forward one word"
+msgstr "ერთი სიტყვით წინ გადასვლა"
+
+#: src/global.c:581
+msgid "Go to previous line"
+msgstr "წინა ხაზზე გადასვლა"
+
+#: src/global.c:582
+msgid "Go to next line"
+msgstr "შემდეგ ხაზზე გადასვლა"
+
+#: src/global.c:583
+msgid "Go to beginning of current line"
+msgstr "მიმდინარე ხაზის დასაწყისში გადასვლა"
+
+#: src/global.c:584
+msgid "Go to end of current line"
+msgstr "მიმდინარე ხაზის ბოლოში გადასვლა"
+
+#: src/global.c:585
+msgid "Go to previous block of text"
+msgstr "წინა ტექსტის ბლოკზე გადასვლა"
+
+#: src/global.c:586
+msgid "Go to next block of text"
+msgstr "შემდეგ ტექსტის ბლოკზე გადასვლა"
+
+#: src/global.c:589
+msgid "Go to beginning of paragraph; then of previous paragraph"
+msgstr ""
+
+#: src/global.c:591
+msgid "Go just beyond end of paragraph; then of next paragraph"
+msgstr ""
+
+#: src/global.c:593
+msgid "Go one screenful up"
+msgstr "ერთი ეკრანით მაღლა აწევა"
+
+#: src/global.c:594
+msgid "Go one screenful down"
+msgstr "ერთი ეკრანით დაბლა ჩამოწევა"
+
+#: src/global.c:595
+msgid "Go to the first line of the file"
+msgstr "ფაილის პირველ ხაზზე გადასვლა"
+
+#: src/global.c:596
+msgid "Go to the last line of the file"
+msgstr "ფაილის ბოლო ხაზზე გადასვლა"
+
+#: src/global.c:598
+msgid "Go to the matching bracket"
+msgstr ""
+
+#: src/global.c:602
+msgid "Scroll up one line without moving the cursor textually"
+msgstr ""
+
+#: src/global.c:604
+msgid "Scroll down one line without moving the cursor textually"
+msgstr ""
+
+#: src/global.c:605
+msgid "Center the line where the cursor is"
+msgstr ""
+
+#: src/global.c:608
+msgid "Switch to the previous file buffer"
+msgstr ""
+
+#: src/global.c:609
+msgid "Switch to the next file buffer"
+msgstr ""
+
+#: src/global.c:611
+msgid "Insert the next keystroke verbatim"
+msgstr ""
+
+#: src/global.c:612
+msgid "Insert a tab at the cursor position (or indent marked lines)"
+msgstr ""
+
+#: src/global.c:613
+msgid "Insert a newline at the cursor position"
+msgstr ""
+
+#: src/global.c:614
+msgid "Delete the character under the cursor"
+msgstr ""
+
+#: src/global.c:616
+msgid "Delete the character to the left of the cursor"
+msgstr ""
+
+#: src/global.c:619
+msgid "Delete backward from cursor to word start"
+msgstr ""
+
+#: src/global.c:621
+msgid "Delete forward from cursor to next word start"
+msgstr ""
+
+#: src/global.c:623
+msgid "Cut from the cursor position to the end of the file"
+msgstr ""
+
+#: src/global.c:626
+msgid "Justify the current paragraph"
+msgstr ""
+
+#: src/global.c:627
+msgid "Justify the entire file"
+msgstr ""
+
+#: src/global.c:631
+msgid "Count the number of lines, words, and characters"
+msgstr ""
+
+#: src/global.c:632
+msgid "Suspend the editor (return to the shell)"
+msgstr ""
+
+#: src/global.c:634
+msgid "Refresh (redraw) the current screen"
+msgstr ""
+
+#: src/global.c:636
+msgid "Try and complete the current word"
+msgstr ""
+
+#: src/global.c:640
+msgid "Comment/uncomment the current line (or marked lines)"
+msgstr ""
+
+#: src/global.c:642
+msgid "Save file without prompting"
+msgstr ""
+
+#: src/global.c:643
+msgid "Search next occurrence backward"
+msgstr ""
+
+#: src/global.c:644
+msgid "Search next occurrence forward"
+msgstr ""
+
+#: src/global.c:646
+msgid "Start/stop recording a macro"
+msgstr ""
+
+#: src/global.c:647
+msgid "Run the last recorded macro"
+msgstr ""
+
+#: src/global.c:648
+msgid "Place or remove an anchor at the current line"
+msgstr ""
+
+#: src/global.c:649
+msgid "Jump backward to the nearest anchor"
+msgstr ""
+
+#: src/global.c:650
+msgid "Jump forward to the nearest anchor"
+msgstr ""
+
+#: src/global.c:652
+msgid "Toggle the case sensitivity of the search"
+msgstr ""
+
+#: src/global.c:653
+msgid "Reverse the direction of the search"
+msgstr ""
+
+#: src/global.c:654
+msgid "Toggle the use of regular expressions"
+msgstr ""
+
+#: src/global.c:656
+msgid "Recall the previous search/replace string"
+msgstr ""
+
+#: src/global.c:657
+msgid "Recall the next search/replace string"
+msgstr ""
+
+#: src/global.c:660
+msgid "Toggle the use of DOS format"
+msgstr "DOS ფორმატის გამოყენების გადართვა"
+
+#: src/global.c:661
+msgid "Toggle the use of Mac format"
+msgstr "Mac ფორმატის გამოყენების გადართვა"
+
+#: src/global.c:662
+msgid "Toggle appending"
+msgstr "ბოლოში მიწერის გადართვა"
+
+#: src/global.c:663
+msgid "Toggle prepending"
+msgstr "თავში მიწერის გადართვა"
+
+#: src/global.c:664
+msgid "Toggle backing up of the original file"
+msgstr "საწყისი ფაილის მარქაფის გადართვა"
+
+#: src/global.c:665
+msgid "Execute a function or an external command"
+msgstr ""
+
+#: src/global.c:667
+msgid "Pipe the current buffer (or marked region) to the command"
+msgstr ""
+
+#: src/global.c:668
+msgid "Do not convert from DOS/Mac format"
+msgstr ""
+
+#: src/global.c:671
+msgid "Toggle the use of a new buffer"
+msgstr ""
+
+#: src/global.c:673
+msgid "Close buffer without saving it"
+msgstr ""
+
+#: src/global.c:675
+msgid "Go to file browser"
+msgstr "ფაილების ბრაუზერზე გადასვლა"
+
+#: src/global.c:676
+msgid "Exit from the file browser"
+msgstr "ფაილების ბრაუზერიდან გასვლა"
+
+#: src/global.c:677
+msgid "Go to the first file in the list"
+msgstr "სიაში პირველ ფაილზე გადასვლა"
+
+#: src/global.c:678
+msgid "Go to the last file in the list"
+msgstr "სიაში ბოლო ფაილზე გადასვლა"
+
+#: src/global.c:679
+msgid "Go to the previous file in the list"
+msgstr "სიაში წინა ფაილზე გადასვლა"
+
+#: src/global.c:680
+msgid "Go to the next file in the list"
+msgstr "სიაში შემდეგ ფაილზე გადასვლა"
+
+#: src/global.c:682
+msgid "Go to lefthand column"
+msgstr ""
+
+#: src/global.c:683
+msgid "Go to righthand column"
+msgstr ""
+
+#: src/global.c:684
+msgid "Go to first row in this column"
+msgstr ""
+
+#: src/global.c:685
+msgid "Go to last row in this column"
+msgstr ""
+
+#: src/global.c:687
+msgid "Search forward for a string"
+msgstr ""
+
+#: src/global.c:688
+msgid "Search backward for a string"
+msgstr ""
+
+#: src/global.c:689
+msgid "Refresh the file list"
+msgstr ""
+
+#: src/global.c:690
+msgid "Go to directory"
+msgstr "საქაღალდეზე გადასვლა"
+
+#: src/global.c:693
+msgid "Invoke the linter, if available"
+msgstr ""
+
+#: src/global.c:694
+msgid "Go to previous linter msg"
+msgstr ""
+
+#: src/global.c:695
+msgid "Go to next linter msg"
+msgstr ""
+
+#: src/global.c:699
+msgid "Invoke a program to format/arrange/manipulate the buffer"
+msgstr ""
+
+#. TRANSLATORS: Try to keep the next thirteen strings at most 10 characters.
+#: src/global.c:713
+msgid "Help"
+msgstr "დახმარება"
+
+#: src/global.c:717 src/prompt.c:679
+msgid "Cancel"
+msgstr "გაუქმება"
+
+#: src/global.c:739
+msgid "Write Out"
+msgstr "ჩაწერა"
+
+#: src/global.c:747
+msgid "Read File"
+msgstr "ფაილის წაკითხვა"
+
+#: src/global.c:751 src/global.c:790
+msgid "Justify"
+msgstr "გადამრთეველი"
+
+#: src/global.c:757 src/global.c:843 src/global.c:1038
+msgid "Refresh"
+msgstr "განახლება"
+
+#: src/global.c:762 src/global.c:846
+msgid "Where Is"
+msgstr "სადაა"
+
+#: src/global.c:765 src/global.c:826
+msgid "Replace"
+msgstr "ჩანაცვლება"
+
+#. TRANSLATORS: This starts a backward search.
+#: src/global.c:769 src/global.c:848 src/global.c:867 src/global.c:1031
+msgid "Where Was"
+msgstr "სად იყო"
+
+#. TRANSLATORS: This refers to searching the preceding occurrence.
+#: src/global.c:772 src/global.c:851 src/global.c:871
+msgid "Previous"
+msgstr "წინა"
+
+#: src/global.c:774 src/global.c:853 src/global.c:873
+msgid "Next"
+msgstr "შემდეგი"
+
+#: src/global.c:778
+msgid "Cut"
+msgstr "ამოჭრა"
+
+#: src/global.c:781
+msgid "Paste"
+msgstr "ჩასმა"
+
+#: src/global.c:786
+msgid "Execute"
+msgstr "გაშვება"
+
+#. TRANSLATORS: This refers to the position of the cursor.
+#: src/global.c:796
+msgid "Location"
+msgstr "მდებარეობა"
+
+#: src/global.c:802 src/global.c:944 src/global.c:1077
+msgid "Go To Line"
+msgstr "ხაზზე გადასვლა"
+
+#. TRANSLATORS: Try to keep the next ten strings at most 12 characters.
+#: src/global.c:808
+msgid "Undo"
+msgstr "დაბრუნება"
+
+#: src/global.c:810
+msgid "Redo"
+msgstr "გამეორება"
+
+#: src/global.c:813
+msgid "Set Mark"
+msgstr "ნიშნულის დასმა"
+
+#: src/global.c:815
+msgid "Copy"
+msgstr "დააკოპირე"
+
+#: src/global.c:819
+msgid "Case Sens"
+msgstr "რეგისტრის იგნორი"
+
+#: src/global.c:821
+msgid "Reg.exp."
+msgstr "Reg.exp."
+
+#: src/global.c:823
+msgid "Backwards"
+msgstr "უკან"
+
+#: src/global.c:828
+msgid "No Replace"
+msgstr "ჩანაცვლების გარეშე"
+
+#: src/global.c:832
+msgid "Older"
+msgstr "უფრო ძველია"
+
+#: src/global.c:834
+msgid "Newer"
+msgstr "უფრო ახალია"
+
+#. TRANSLATORS: Try to keep the next four strings at most 10 characters.
+#: src/global.c:840
+msgid "Go To Dir"
+msgstr "საქაღალდეზე გადასვლა"
+
+#: src/global.c:863
+msgid "To Bracket"
+msgstr ""
+
+#. TRANSLATORS: This means move the cursor one character back.
+#: src/global.c:878 src/global.c:883
+msgid "Back"
+msgstr "უკან"
+
+#: src/global.c:880 src/global.c:885
+msgid "Forward"
+msgstr "წინ"
+
+#. TRANSLATORS: Try to keep the next ten strings at most 12 characters.
+#: src/global.c:891
+msgid "Prev Word"
+msgstr "წინა სიტყვა"
+
+#: src/global.c:893
+msgid "Next Word"
+msgstr "შემდეგი სიტყვა"
+
+#: src/global.c:897
+msgid "Home"
+msgstr "საწყისი"
+
+#: src/global.c:899
+msgid "End"
+msgstr "დასასრული"
+
+#: src/global.c:902
+msgid "Prev Line"
+msgstr "წინა ხაზი"
+
+#: src/global.c:904
+msgid "Next Line"
+msgstr "შემდეგი ხაზი"
+
+#: src/global.c:907
+msgid "Scroll Up"
+msgstr "მაღლა აქაჩვა"
+
+#: src/global.c:909
+msgid "Scroll Down"
+msgstr "ქვემოთ ჩამოწევა"
+
+#: src/global.c:913
+msgid "Prev Block"
+msgstr "წინა ბლოკი"
+
+#: src/global.c:915
+msgid "Next Block"
+msgstr "შემდეგი ბლოკი"
+
+#. TRANSLATORS: Try to keep these two strings at most 16 characters.
+#: src/global.c:919
+msgid "Begin of Paragr."
+msgstr "პარაგრაფის დასაწყისი."
+
+#: src/global.c:921
+msgid "End of Paragraph"
+msgstr "პარაგრაფის დასასრული"
+
+#. TRANSLATORS: Try to keep the next six strings at most 12 characters.
+#: src/global.c:926 src/global.c:1126
+msgid "Prev Page"
+msgstr "წინა გვერდი"
+
+#: src/global.c:928 src/global.c:1128
+msgid "Next Page"
+msgstr "შემდეგი გვერდი"
+
+#: src/global.c:931
+msgid "First Line"
+msgstr "პირველი ხაზი"
+
+#: src/global.c:933
+msgid "Last Line"
+msgstr "ბოლო ხაზი"
+
+#: src/global.c:937
+msgid "Prev File"
+msgstr "წინა ფაილი"
+
+#: src/global.c:939
+msgid "Next File"
+msgstr "შემდეგი ფაილი"
+
+#. TRANSLATORS: The next four strings are names of keyboard keys.
+#: src/global.c:949
+msgid "Tab"
+msgstr "Tab"
+
+#: src/global.c:951
+msgid "Enter"
+msgstr "Enter"
+
+#: src/global.c:954
+msgid "Backspace"
+msgstr "Backspace"
+
+#: src/global.c:956
+msgid "Delete"
+msgstr "წაშლა"
+
+#. TRANSLATORS: The next two strings refer to deleting words.
+#: src/global.c:961
+msgid "Chop Left"
+msgstr ""
+
+#: src/global.c:963
+msgid "Chop Right"
+msgstr ""
+
+#: src/global.c:965 src/global.c:1111
+msgid "Cut Till End"
+msgstr ""
+
+#: src/global.c:970 src/global.c:1068
+msgid "Full Justify"
+msgstr ""
+
+#: src/global.c:975
+msgid "Word Count"
+msgstr "სიტყვების რაოდენობა"
+
+#: src/global.c:979
+msgid "Verbatim"
+msgstr ""
+
+#: src/global.c:983
+msgid "Indent"
+msgstr "შეწევა"
+
+#: src/global.c:985
+msgid "Unindent"
+msgstr "შეწევის გაუქმება"
+
+#: src/global.c:989
+msgid "Comment Lines"
+msgstr "კომენტარების ხაზები"
+
+#: src/global.c:993
+msgid "Complete"
+msgstr "დასრულებულია"
+
+#: src/global.c:998
+msgid "Record"
+msgstr "ჩაწერა"
+
+#: src/global.c:1000
+msgid "Run Macro"
+msgstr "მაკროს გაშვება"
+
+#. TRANSLATORS: This refers to deleting a line or marked region.
+#: src/global.c:1004
+msgid "Zap"
+msgstr ""
+
+#: src/global.c:1007
+msgid "Anchor"
+msgstr ""
+
+#: src/global.c:1009
+msgid "Up to anchor"
+msgstr ""
+
+#: src/global.c:1011
+msgid "Down to anchor"
+msgstr ""
+
+#: src/global.c:1016 src/global.c:1060
+msgid "Spell Check"
+msgstr "მართლწერის შემოწმება"
+
+#: src/global.c:1020 src/global.c:1064
+msgid "Linter"
+msgstr ""
+
+#: src/global.c:1024 src/global.c:1072
+msgid "Formatter"
+msgstr ""
+
+#: src/global.c:1034 src/global.c:1114
+msgid "Suspend"
+msgstr "ძილი"
+
+#: src/global.c:1042
+msgid "Center"
+msgstr "ცენტრი"
+
+#: src/global.c:1046
+msgid "Save"
+msgstr "შენახვა"
+
+#: src/global.c:1056
+msgid "Pipe Text"
+msgstr "Pipe ტექსტი"
+
+#: src/global.c:1079
+msgid "Go To Text"
+msgstr "ტექსტზე გადასვლა"
+
+#: src/global.c:1084
+msgid "DOS Format"
+msgstr "DOS ფორმატი"
+
+#: src/global.c:1086
+msgid "Mac Format"
+msgstr "Mac ფორმატი"
+
+#: src/global.c:1094
+msgid "Append"
+msgstr "მიმატება"
+
+#: src/global.c:1096
+msgid "Prepend"
+msgstr "თავში მიწერა"
+
+#: src/global.c:1099
+msgid "Backup File"
+msgstr "ფაილის მარქაფი"
+
+#: src/global.c:1103
+msgid "No Conversion"
+msgstr "გადაყვანის გარეშე"
+
+#: src/global.c:1108
+msgid "Execute Command"
+msgstr "ბრძანების შესრულება"
+
+#. TRANSLATORS: This invokes the file browser.
+#: src/global.c:1123
+msgid "Browse"
+msgstr "დათვალიერება"
+
+#: src/global.c:1131
+msgid "First File"
+msgstr "პირველი ფაილი"
+
+#: src/global.c:1133
+msgid "Last File"
+msgstr "ბოლო ფაილი"
+
+#: src/global.c:1137
+msgid "Left Column"
+msgstr "მარცხენა სვეტი"
+
+#: src/global.c:1139
+msgid "Right Column"
+msgstr "მარჯვენა სვეტი"
+
+#: src/global.c:1141
+msgid "Top Row"
+msgstr "ზედა მწკრივი"
+
+#: src/global.c:1143
+msgid "Bottom Row"
+msgstr "ქვედა მწკრივი"
+
+#: src/global.c:1148
+msgid "Discard buffer"
+msgstr "ბუფერის მოცილება"
+
+#. TRANSLATORS: The next two strings may be up to 37 characters each.
+#: src/global.c:1153
+msgid "Previous Linter message"
+msgstr ""
+
+#: src/global.c:1155
+msgid "Next Linter message"
+msgstr ""
+
+#. TRANSLATORS: The next thirteen strings are toggle descriptions;
+#. * they are best kept shorter than 40 characters, but may be longer.
+#: src/global.c:1519
+msgid "Hidden interface"
+msgstr "დამალული ინტერფეისი"
+
+#: src/global.c:1521
+msgid "Help mode"
+msgstr "დახმარების რეჟიმი"
+
+#: src/global.c:1523
+msgid "Constant cursor position display"
+msgstr ""
+
+#: src/global.c:1525
+msgid "Soft wrapping of overlong lines"
+msgstr ""
+
+#: src/global.c:1527
+msgid "Line numbering"
+msgstr "ხაზების დანომრვა"
+
+#: src/global.c:1529
+msgid "Whitespace display"
+msgstr ""
+
+#: src/global.c:1531
+msgid "Color syntax highlighting"
+msgstr "ფერადი სინტაქსის გამოკვეთა"
+
+#: src/global.c:1533
+msgid "Smart home key"
+msgstr "ჭკვიანი დასაწყისში გადასვლის ღილაკი"
+
+#: src/global.c:1535
+msgid "Auto indent"
+msgstr "ავტომატური სწორება"
+
+#: src/global.c:1537
+msgid "Cut to end"
+msgstr "ბოლომდე ამოჭრა"
+
+#: src/global.c:1539
+msgid "Hard wrapping of overlong lines"
+msgstr ""
+
+#: src/global.c:1541
+msgid "Conversion of typed tabs to spaces"
+msgstr ""
+
+#: src/global.c:1543
+msgid "Mouse support"
+msgstr "თაგუნას მხარდაჭერა"
+
+#: src/help.c:54
+msgid ""
+"Search Command Help Text\n"
+"\n"
+" Enter the words or characters you would like to search for, and then press "
+"Enter.  If there is a match for the text you entered, the screen will be "
+"updated to the location of the nearest match for the search string.\n"
+"\n"
+" The previous search string will be shown in brackets after the search "
+"prompt.  Hitting Enter without entering any text will perform the previous "
+"search.  "
+msgstr ""
+
+#: src/help.c:63
+msgid ""
+"If you have selected text with the mark and then search to replace, only "
+"matches in the selected text will be replaced.\n"
+"\n"
+" The following function keys are available in Search mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:69
+msgid ""
+"Go To Line Help Text\n"
+"\n"
+" Enter the line number that you wish to go to and hit Enter.  If there are "
+"fewer lines of text than the number you entered, you will be brought to the "
+"last line of the file.\n"
+"\n"
+" The following function keys are available in Go To Line mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:78
+msgid ""
+"Insert File Help Text\n"
+"\n"
+" Type in the name of a file to be inserted into the current file buffer at "
+"the current cursor location.\n"
+"\n"
+" If you have compiled nano with multiple file buffer support, and enable "
+"multiple file buffers with the -F or --multibuffer command line flags, the "
+"Meta-F toggle, or a nanorc file, inserting a file will cause it to be loaded "
+"into a separate buffer (use Meta-< and > to switch between file buffers).  "
+msgstr ""
+
+#: src/help.c:87
+msgid ""
+"If you need another blank buffer, do not enter any filename, or type in a "
+"nonexistent filename at the prompt and press Enter.\n"
+"\n"
+" The following function keys are available in Insert File mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:93
+msgid ""
+"Write File Help Text\n"
+"\n"
+" Type the name that you wish to save the current file as and press Enter to "
+"save the file.\n"
+"\n"
+" If you have selected text with the mark, you will be prompted to save only "
+"the selected portion to a separate file.  To reduce the chance of "
+"overwriting the current file with just a portion of it, the current filename "
+"is not the default in this mode.\n"
+"\n"
+" The following function keys are available in Write File mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:107
+msgid ""
+"File Browser Help Text\n"
+"\n"
+" The file browser is used to visually browse the directory structure to "
+"select a file for reading or writing.  You may use the arrow keys or Page Up/"
+"Down to browse through the files, and S or Enter to choose the selected file "
+"or enter the selected directory.  To move up one level, select the directory "
+"called \"..\" at the top of the file list.\n"
+"\n"
+" The following function keys are available in the file browser:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:120
+msgid ""
+"Browser Search Command Help Text\n"
+"\n"
+" Enter the words or characters you would like to search for, and then press "
+"Enter.  If there is a match for the text you entered, the screen will be "
+"updated to the location of the nearest match for the search string.\n"
+"\n"
+" The previous search string will be shown in brackets after the search "
+"prompt.  Hitting Enter without entering any text will perform the previous "
+"search.\n"
+"\n"
+msgstr ""
+
+#: src/help.c:129
+msgid ""
+" The following function keys are available in Browser Search mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:133
+msgid ""
+"Browser Go To Directory Help Text\n"
+"\n"
+" Enter the name of the directory you would like to browse to.\n"
+"\n"
+" If tab completion has not been disabled, you can use the Tab key to "
+"(attempt to) automatically complete the directory name.\n"
+"\n"
+" The following function keys are available in Browser Go To Directory mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:146
+msgid ""
+"Spell Check Help Text\n"
+"\n"
+" The spell checker checks the spelling of all text in the current file.  "
+"When an unknown word is encountered, it is highlighted and a replacement can "
+"be edited.  It will then prompt to replace every instance of the given "
+"misspelled word in the current file, or, if you have selected text with the "
+"mark, in the selected text.\n"
+"\n"
+" The following function keys are available in Spell Check mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:161
+msgid ""
+"Execute Command Help Text\n"
+"\n"
+" This mode allows you to insert the output of a command run by the shell "
+"into the current buffer (or into a new buffer).  If the command is preceded "
+"by '|' (the pipe symbol), the current contents of the buffer (or marked "
+"region) will be piped to the command.  "
+msgstr ""
+
+#: src/help.c:167
+msgid ""
+"If you just need another blank buffer, do not enter any command.\n"
+"\n"
+" You can also pick one of four tools, or cut a large piece of the buffer, or "
+"put the editor to sleep.\n"
+"\n"
+msgstr ""
+
+#: src/help.c:170
+msgid ""
+" The following function keys are available in Execute Command mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:173
+msgid ""
+"=== Linter ===\n"
+"\n"
+" In this mode, the status bar shows an error message or warning, and the "
+"cursor is put at the corresponding position in the file.  With PageUp and "
+"PageDown you can switch to earlier and later messages.\n"
+"\n"
+msgstr ""
+
+#: src/help.c:178
+msgid ""
+" The following function keys are available in Linter mode:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:185
+msgid ""
+"Main nano help text\n"
+"\n"
+" The nano editor is designed to emulate the functionality and ease-of-use of "
+"the UW Pico text editor.  There are four main sections of the editor.  The "
+"top line shows the program version, the current filename being edited, and "
+"whether or not the file has been modified.  Next is the main editor window "
+"showing the file being edited.  The status line is the third line from the "
+"bottom and shows important messages.  "
+msgstr ""
+
+#: src/help.c:195
+msgid ""
+"The bottom two lines show the most commonly used shortcuts in the editor.\n"
+"\n"
+" Shortcuts are written as follows: Control-key sequences are notated with a "
+"'^' and can be entered either by using the Ctrl key or pressing the Esc key "
+"twice.  Meta-key sequences are notated with 'M-' and can be entered using "
+"either the Alt, Cmd, or Esc key, depending on your keyboard setup.  "
+msgstr ""
+
+#: src/help.c:202
+msgid ""
+"Also, pressing Esc twice and then typing a three-digit decimal number from "
+"000 to 255 will enter the character with the corresponding value.  The "
+"following keystrokes are available in the main editor window.  Alternative "
+"keys are shown in parentheses:\n"
+"\n"
+msgstr ""
+
+#: src/help.c:234 src/help.c:306
+msgid "enable/disable"
+msgstr ""
+
+#: src/help.c:579 src/nano.c:1637
+msgid "^W = Ctrl+W    M-W = Alt+W"
+msgstr ""
+
+#: src/history.c:237
+#, c-format
+msgid ""
+"Unable to create directory %s: %s\n"
+"It is required for saving/loading search history or cursor positions.\n"
+msgstr ""
+
+#: src/history.c:244
+#, c-format
+msgid ""
+"Path %s is not a directory and needs to be.\n"
+"Nano will be unable to load or save search history or cursor positions.\n"
+msgstr ""
+
+#: src/history.c:340 src/history.c:441
+#, c-format
+msgid "Cannot limit permissions on %s: %s"
+msgstr ""
+
+#: src/nano.c:201
+msgid "Key is invalid in view mode"
+msgstr ""
+
+#: src/nano.c:208
+msgid "This function is disabled in restricted mode"
+msgstr ""
+
+#: src/nano.c:223
+msgid "To suspend, type ^T^Z"
+msgstr ""
+
+#: src/nano.c:312
+msgid "No file name"
+msgstr ""
+
+#: src/nano.c:314
+msgid "Save modified buffer? "
+msgstr ""
+
+#: src/nano.c:339
+#, c-format
+msgid ""
+"\n"
+"Too many .save files\n"
+msgstr ""
+
+#: src/nano.c:341
+#, c-format
+msgid ""
+"\n"
+"Buffer written to %s\n"
+msgstr ""
+
+#: src/nano.c:501
+#, c-format
+msgid ""
+"Usage: nano [OPTIONS] [[+LINE[,COLUMN]] FILE]...\n"
+"\n"
+msgstr ""
+
+#. TRANSLATORS: The next two strings are part of the --help output.
+#. * It's best to keep its lines within 80 characters.
+#: src/nano.c:505
+#, c-format
+msgid ""
+"To place the cursor on a specific line of a file, put the line number with\n"
+"a '+' before the filename.  The column number can be added after a comma.\n"
+msgstr ""
+
+#: src/nano.c:507
+#, c-format
+msgid ""
+"When a filename is '-', nano reads data from standard input.\n"
+"\n"
+msgstr ""
+
+#. TRANSLATORS: The next three are column headers of the --help output.
+#: src/nano.c:509
+msgid "Option"
+msgstr "მორგება"
+
+#: src/nano.c:509
+msgid "Long option"
+msgstr ""
+
+#: src/nano.c:509
+msgid "Meaning"
+msgstr ""
+
+#. TRANSLATORS: The next forty or so strings are option descriptions
+#. * for the --help output.  Try to keep them at most 40 characters.
+#: src/nano.c:512
+msgid "Enable smart home key"
+msgstr ""
+
+#: src/nano.c:514
+msgid "Save backups of existing files"
+msgstr ""
+
+#: src/nano.c:515
+msgid "-C <dir>"
+msgstr ""
+
+#: src/nano.c:515
+msgid "--backupdir=<dir>"
+msgstr ""
+
+#: src/nano.c:516
+msgid "Directory for saving unique backup files"
+msgstr ""
+
+#: src/nano.c:519
+msgid "Use bold instead of reverse video text"
+msgstr ""
+
+#: src/nano.c:521
+msgid "Convert typed tabs to spaces"
+msgstr ""
+
+#: src/nano.c:526
+msgid "Read a file into a new buffer by default"
+msgstr ""
+
+#: src/nano.c:529
+msgid "Use (vim-style) lock files"
+msgstr ""
+
+#: src/nano.c:534
+msgid "Save & reload old search/replace strings"
+msgstr ""
+
+#: src/nano.c:537
+msgid "Don't look at nanorc files"
+msgstr ""
+
+#: src/nano.c:540
+msgid "-J <number>"
+msgstr ""
+
+#: src/nano.c:540
+msgid "--guidestripe=<number>"
+msgstr ""
+
+#: src/nano.c:541
+msgid "Show a guiding bar at this column"
+msgstr ""
+
+#: src/nano.c:544
+msgid "Fix numeric keypad key confusion problem"
+msgstr ""
+
+#: src/nano.c:547
+msgid "Don't add an automatic newline"
+msgstr ""
+
+#: src/nano.c:551
+msgid "Trim tail spaces when hard-wrapping"
+msgstr ""
+
+#: src/nano.c:555
+msgid "Don't convert files from DOS/Mac format"
+msgstr ""
+
+#: src/nano.c:557
+msgid "Leading whitespace means new paragraph"
+msgstr ""
+
+#: src/nano.c:562
+msgid "Save & restore position of the cursor"
+msgstr ""
+
+#: src/nano.c:565
+msgid "-Q <regex>"
+msgstr ""
+
+#: src/nano.c:565
+msgid "--quotestr=<regex>"
+msgstr ""
+
+#. TRANSLATORS: This refers to email quoting,
+#. * like the > in: > quoted text.
+#: src/nano.c:568
+msgid "Regular expression to match quoting"
+msgstr ""
+
+#: src/nano.c:571
+msgid "Restrict access to the filesystem"
+msgstr ""
+
+#: src/nano.c:573
+msgid "Display overlong lines on multiple rows"
+msgstr ""
+
+#: src/nano.c:574
+msgid "-T <number>"
+msgstr ""
+
+#: src/nano.c:574
+msgid "--tabsize=<number>"
+msgstr ""
+
+#: src/nano.c:575
+msgid "Make a tab this number of columns wide"
+msgstr ""
+
+#: src/nano.c:577
+msgid "Wipe status bar upon next keystroke"
+msgstr ""
+
+#: src/nano.c:578
+msgid "Print version information and exit"
+msgstr "ვერსიის ჩვენება და გასვლა"
+
+#: src/nano.c:581
+msgid "Detect word boundaries more accurately"
+msgstr ""
+
+#: src/nano.c:582
+msgid "-X <string>"
+msgstr ""
+
+#: src/nano.c:582
+msgid "--wordchars=<string>"
+msgstr ""
+
+#: src/nano.c:583
+msgid "Which other characters are word parts"
+msgstr ""
+
+#: src/nano.c:587
+msgid "-Y <name>"
+msgstr ""
+
+#: src/nano.c:587
+msgid "--syntax=<name>"
+msgstr ""
+
+#: src/nano.c:588
+msgid "Syntax definition to use for coloring"
+msgstr ""
+
+#: src/nano.c:591
+msgid "Let Bsp and Del erase a marked region"
+msgstr ""
+
+#: src/nano.c:592
+msgid "When soft-wrapping, do it at whitespace"
+msgstr ""
+
+#: src/nano.c:595
+msgid "Automatically hard-wrap overlong lines"
+msgstr ""
+
+#: src/nano.c:597
+msgid "Constantly show cursor position"
+msgstr ""
+
+#: src/nano.c:599
+msgid "Fix Backspace/Delete confusion problem"
+msgstr ""
+
+#: src/nano.c:601
+msgid "Keep the line below the title bar empty"
+msgstr ""
+
+#: src/nano.c:604
+msgid "-f <file>"
+msgstr ""
+
+#: src/nano.c:604
+msgid "--rcfile=<file>"
+msgstr ""
+
+#: src/nano.c:605
+msgid "Use only this file for configuring nano"
+msgstr ""
+
+#: src/nano.c:608
+msgid "Show cursor in file browser & help text"
+msgstr ""
+
+#: src/nano.c:610
+msgid "Show this help text and exit"
+msgstr ""
+
+#: src/nano.c:612
+msgid "Automatically indent new lines"
+msgstr ""
+
+#: src/nano.c:613
+msgid "Scroll per half-screen, not per line"
+msgstr ""
+
+#: src/nano.c:614
+msgid "Cut from cursor to end of line"
+msgstr ""
+
+#: src/nano.c:617
+msgid "Show line numbers in front of the text"
+msgstr ""
+
+#: src/nano.c:620
+msgid "Enable the use of the mouse"
+msgstr ""
+
+#: src/nano.c:623
+msgid "Do not read the file (only write it)"
+msgstr ""
+
+#: src/nano.c:626
+msgid "-o <dir>"
+msgstr ""
+
+#: src/nano.c:626
+msgid "--operatingdir=<dir>"
+msgstr ""
+
+#: src/nano.c:627
+msgid "Set operating directory"
+msgstr ""
+
+#: src/nano.c:629
+msgid "Preserve XON (^Q) and XOFF (^S) keys"
+msgstr ""
+
+#: src/nano.c:631
+msgid "Show a position+portion indicator"
+msgstr ""
+
+#: src/nano.c:634
+msgid "-r <number>"
+msgstr ""
+
+#: src/nano.c:634
+msgid "--fill=<number>"
+msgstr ""
+
+#: src/nano.c:635
+msgid "Set width for hard-wrap and justify"
+msgstr ""
+
+#: src/nano.c:639
+msgid "-s <program>"
+msgstr ""
+
+#: src/nano.c:639
+msgid "--speller=<program>"
+msgstr ""
+
+#: src/nano.c:640
+msgid "Use this alternative spell checker"
+msgstr ""
+
+#: src/nano.c:642
+msgid "Save changes on exit, don't prompt"
+msgstr ""
+
+#: src/nano.c:644
+msgid "Save a file by default in Unix format"
+msgstr ""
+
+#: src/nano.c:646
+msgid "View mode (read-only)"
+msgstr ""
+
+#: src/nano.c:648
+msgid "Don't hard-wrap long lines [default]"
+msgstr ""
+
+#: src/nano.c:650
+msgid "Don't show the two help lines"
+msgstr ""
+
+#: src/nano.c:652
+msgid "Make Ctrl+Right stop at word ends"
+msgstr ""
+
+#: src/nano.c:655
+msgid "Also try magic to determine syntax"
+msgstr ""
+
+#: src/nano.c:658
+msgid "Show some states on the title bar"
+msgstr ""
+
+#: src/nano.c:659
+msgid "Show a feedback bar at the bottom"
+msgstr ""
+
+#: src/nano.c:660
+msgid "Hide all bars, use whole terminal"
+msgstr ""
+
+#: src/nano.c:671
+#, c-format
+msgid " GNU nano, version %s\n"
+msgstr ""
+
+#. TRANSLATORS: The %s is the year of the latest release.
+#: src/nano.c:675
+#, c-format
+msgid " (C) %s the Free Software Foundation and various contributors\n"
+msgstr ""
+
+#: src/nano.c:677
+#, c-format
+msgid " Compiled options:"
+msgstr ""
+
+#: src/nano.c:838
+msgid "Could not reconnect stdin to keyboard\n"
+msgstr ""
+
+#: src/nano.c:856
+#, c-format
+msgid "Reading data from keyboard; type ^D or ^D^D to finish.\n"
+msgstr ""
+
+#: src/nano.c:866
+#, c-format
+msgid "Failed to open stdin: %s"
+msgstr ""
+
+#: src/nano.c:944
+msgid "Received SIGHUP or SIGTERM\n"
+msgstr ""
+
+#: src/nano.c:951
+#, c-format
+msgid "Sorry! Nano crashed!  Code: %d.  Please report a bug.\n"
+msgstr ""
+
+#: src/nano.c:967
+#, c-format
+msgid "Use \"fg\" to return to nano.\n"
+msgstr ""
+
+#: src/nano.c:1090
+msgid "Not possible"
+msgstr "შეუძლებელია"
+
+#: src/nano.c:1111
+msgid "Current syntax determines Tab"
+msgstr ""
+
+#: src/nano.c:1139
+msgid "enabled"
+msgstr "ჩართული"
+
+#: src/nano.c:1139
+msgid "disabled"
+msgstr "გამორთულია"
+
+#. TRANSLATORS: This refers to a sequence of escape codes
+#. * (from the keyboard) that nano does not recognize.
+#: src/nano.c:1282
+msgid "Unknown sequence"
+msgstr ""
+
+#: src/nano.c:1285 src/rcfile.c:810
+#, c-format
+msgid "Unknown function: %s"
+msgstr ""
+
+#: src/nano.c:1287
+msgid "Missing }"
+msgstr ""
+
+#. TRANSLATORS: This refers to an unbound function key.
+#: src/nano.c:1292
+#, c-format
+msgid "Unbound key: F%i"
+msgstr ""
+
+#: src/nano.c:1295
+msgid "Unbound key"
+msgstr ""
+
+#: src/nano.c:1299
+#, c-format
+msgid "Unbindable key: M-^%c"
+msgstr ""
+
+#: src/nano.c:1304 src/nano.c:1307 src/nano.c:1311 src/nano.c:1314
+#, c-format
+msgid "Unbound key: %s%c"
+msgstr ""
+
+#: src/nano.c:1309
+msgid "Unbindable key: ^["
+msgstr ""
+
+#: src/nano.c:1896 src/rcfile.c:1656
+#, c-format
+msgid "Guide column \"%s\" is invalid"
+msgstr ""
+
+#: src/nano.c:1943 src/rcfile.c:1661
+#, c-format
+msgid "Requested tab size \"%s\" is invalid"
+msgstr ""
+
+#: src/nano.c:2047 src/rcfile.c:1606
+#, c-format
+msgid "Requested fill size \"%s\" is invalid"
+msgstr ""
+
+#: src/nano.c:2102
+#, c-format
+msgid "Type '%s -h' for a list of available options.\n"
+msgstr ""
+
+#: src/nano.c:2298
+#, c-format
+msgid "Bad quoting regex \"%s\": %s\n"
+msgstr ""
+
+#: src/nano.c:2453
+#, c-format
+msgid "Invalid search modifier '%c'"
+msgstr ""
+
+#: src/nano.c:2464
+msgid "Empty search string"
+msgstr ""
+
+#: src/nano.c:2473 src/search.c:793
+msgid "Invalid line or column number"
+msgstr ""
+
+#: src/nano.c:2524
+msgid "Standard input is not a terminal\n"
+msgstr ""
+
+#: src/nano.c:2543
+msgid "Can open just one file\n"
+msgstr ""
+
+#: src/nano.c:2561
+msgid "Welcome to nano.  For basic help, type Ctrl+G."
+msgstr ""
+
+#. TRANSLATORS: For the next three strings, specify the starting letters
+#. * of the translations for "Yes"/"No"/"All".  The first letter of each of
+#. * these strings MUST be a single-byte letter; others may be multi-byte.
+#: src/prompt.c:638
+msgid "Yy"
+msgstr ""
+
+#: src/prompt.c:639
+msgid "Nn"
+msgstr ""
+
+#: src/prompt.c:640
+msgid "Aa"
+msgstr "Aa"
+
+#: src/prompt.c:666
+msgid "Yes"
+msgstr "დიახ"
+
+#: src/prompt.c:670
+msgid "No"
+msgstr ""
+
+#: src/prompt.c:675
+msgid "All"
+msgstr "&ყველა"
+
+#: src/rcfile.c:189
+#, c-format
+msgid "Mistakes in '%s'"
+msgstr ""
+
+#: src/rcfile.c:193
+msgid "Problems with history file"
+msgstr ""
+
+#: src/rcfile.c:197
+#, c-format
+msgid "Error in %s on line %zu: "
+msgstr ""
+
+#: src/rcfile.c:560
+#, c-format
+msgid "Argument '%s' has an unterminated \""
+msgstr ""
+
+#: src/rcfile.c:581 src/rcfile.c:592
+msgid "Regex strings must begin and end with a \" character"
+msgstr ""
+
+#: src/rcfile.c:597
+msgid "Empty regex string"
+msgstr ""
+
+#: src/rcfile.c:622 src/search.c:45
+#, c-format
+msgid "Bad regex \"%s\": %s"
+msgstr ""
+
+#: src/rcfile.c:642
+msgid "Missing syntax name"
+msgstr ""
+
+#: src/rcfile.c:650
+msgid "Unpaired quote in syntax name"
+msgstr ""
+
+#: src/rcfile.c:662
+msgid "The \"none\" syntax is reserved"
+msgstr ""
+
+#: src/rcfile.c:693
+msgid "The \"default\" syntax does not accept extensions"
+msgstr ""
+
+#: src/rcfile.c:711
+#, c-format
+msgid "Syntax \"%s\" has no color commands"
+msgstr ""
+
+#: src/rcfile.c:742
+msgid "Missing key name"
+msgstr ""
+
+#: src/rcfile.c:758 src/rcfile.c:765
+#, c-format
+msgid "Key name %s is invalid"
+msgstr ""
+
+#: src/rcfile.c:774
+msgid "Must specify a function to bind the key to"
+msgstr ""
+
+#. TRANSLATORS: Do not translate the word "all".
+#: src/rcfile.c:785
+msgid "Must specify a menu (or \"all\") in which to bind/unbind the key"
+msgstr ""
+
+#: src/rcfile.c:792
+#, c-format
+msgid "Unknown menu: %s"
+msgstr ""
+
+#: src/rcfile.c:849
+#, c-format
+msgid "Function '%s' does not exist in menu '%s'"
+msgstr ""
+
+#: src/rcfile.c:860
+#, c-format
+msgid "Keystroke %s may not be rebound"
+msgstr ""
+
+#: src/rcfile.c:951 src/rcfile.c:1509
+#, c-format
+msgid "Command \"%s\" not understood"
+msgstr ""
+
+#: src/rcfile.c:987
+#, c-format
+msgid "Error expanding %s: %s"
+msgstr ""
+
+#: src/rcfile.c:1051 src/rcfile.c:1062
+#, c-format
+msgid "Color '%s' takes no prefix"
+msgstr ""
+
+#: src/rcfile.c:1070
+#, c-format
+msgid "Color \"%s\" not understood"
+msgstr ""
+
+#: src/rcfile.c:1086 src/rcfile.c:1097
+msgid "An attribute requires a subsequent comma"
+msgstr ""
+
+#: src/rcfile.c:1141
+msgid "Missing color name"
+msgstr ""
+
+#: src/rcfile.c:1152 src/rcfile.c:1252
+#, c-format
+msgid "Missing regex string after '%s' command"
+msgstr ""
+
+#: src/rcfile.c:1178
+msgid "\"start=\" requires a corresponding \"end=\""
+msgstr ""
+
+#: src/rcfile.c:1241 src/rcfile.c:1489
+#, c-format
+msgid "A '%s' command requires a preceding 'syntax' command"
+msgstr ""
+
+#: src/rcfile.c:1247
+#, c-format
+msgid "The \"default\" syntax does not accept '%s' regexes"
+msgstr ""
+
+#: src/rcfile.c:1294
+#, c-format
+msgid "Missing argument after '%s'"
+msgstr ""
+
+#: src/rcfile.c:1304
+#, c-format
+msgid "Argument of '%s' lacks closing \""
+msgstr ""
+
+#: src/rcfile.c:1352
+#, c-format
+msgid "No key is bound to function '%s' in menu '%s'.  Exiting.\n"
+msgstr ""
+
+#: src/rcfile.c:1354
+msgid ""
+"If needed, use nano with the -I option to adjust your nanorc settings.\n"
+msgstr ""
+
+#: src/rcfile.c:1421
+#, c-format
+msgid "Could not find syntax \"%s\" to extend"
+msgstr ""
+
+#: src/rcfile.c:1478
+#, c-format
+msgid "Command \"%s\" not allowed in included file"
+msgstr ""
+
+#: src/rcfile.c:1521
+msgid "Missing option"
+msgstr ""
+
+#: src/rcfile.c:1535
+#, c-format
+msgid "Unknown option: %s"
+msgstr "უცნობი პარამეტრი %s"
+
+#: src/rcfile.c:1550
+#, c-format
+msgid "Cannot unset option \"%s\""
+msgstr ""
+
+#: src/rcfile.c:1555
+#, c-format
+msgid "Option \"%s\" requires an argument"
+msgstr ""
+
+#: src/rcfile.c:1567
+msgid "Argument is not a valid multibyte string"
+msgstr ""
+
+#: src/rcfile.c:1614 src/rcfile.c:1632 src/rcfile.c:1637
+msgid "Non-blank characters required"
+msgstr ""
+
+#: src/rcfile.c:1616
+msgid "Even number of characters required"
+msgstr ""
+
+#: src/rcfile.c:1621
+msgid "Two single-column characters required"
+msgstr ""
+
+#: src/rcfile.c:1711
+msgid "Specified rcfile does not exist\n"
+msgstr ""
+
+#: src/rcfile.c:1730
+msgid "I can't find my home directory!  Wah!"
+msgstr ""
+
+#. TRANSLATORS: The next four modify the search prompt.
+#: src/search.c:102
+msgid " [Case Sensitive]"
+msgstr ""
+
+#: src/search.c:103
+msgid " [Regexp]"
+msgstr ""
+
+#: src/search.c:107
+msgid " (to replace) in selection"
+msgstr ""
+
+#: src/search.c:109
+msgid " (to replace)"
+msgstr ""
+
+#. TRANSLATORS: This is shown when searching takes
+#. * more than half a second.
+#: src/search.c:234 src/search.c:307
+msgid "Searching..."
+msgstr "ძებნა..."
+
+#: src/search.c:407
+#, c-format
+msgid "\"%.*s%s\" not found"
+msgstr ""
+
+#. TRANSLATORS: This is a prompt.
+#: src/search.c:596
+msgid "Replace this instance?"
+msgstr ""
+
+#. TRANSLATORS: This is a prompt.
+#: src/search.c:710
+msgid "Replace with"
+msgstr ""
+
+#: src/search.c:736
+#, c-format
+msgid "Replaced %zd occurrence"
+msgid_plural "Replaced %zd occurrences"
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: This is a prompt.
+#: src/search.c:772
+msgid "Enter line number, column number"
+msgstr ""
+
+#: src/search.c:947
+msgid "Not a bracket"
+msgstr ""
+
+#: src/search.c:990
+msgid "No matching bracket"
+msgstr ""
+
+#: src/search.c:1005
+msgid "Placed anchor"
+msgstr ""
+
+#: src/search.c:1007
+msgid "Removed anchor"
+msgstr ""
+
+#: src/search.c:1024
+msgid "Jumped to anchor"
+msgstr ""
+
+#: src/search.c:1026
+msgid "This is the only anchor"
+msgstr ""
+
+#: src/search.c:1028
+msgid "There are no anchors"
+msgstr ""
+
+#: src/text.c:54
+msgid "Mark Set"
+msgstr ""
+
+#: src/text.c:57
+msgid "Mark Unset"
+msgstr ""
+
+#: src/text.c:381
+msgid "Commenting is not supported for this file type"
+msgstr ""
+
+#: src/text.c:391
+msgid "Cannot comment past end of file"
+msgstr ""
+
+#: src/text.c:512
+msgid "Nothing to undo"
+msgstr "დასაბრუნებელი მოქმედება არ არსებობს"
+
+#. TRANSLATORS: The next thirteen strings describe actions
+#. * that are undone or redone.  They are all nouns, not verbs.
+#: src/text.c:523 src/text.c:585 src/text.c:710 src/text.c:771
+msgid "addition"
+msgstr ""
+
+#: src/text.c:531 src/text.c:722
+msgid "line break"
+msgstr ""
+
+#: src/text.c:548 src/text.c:732
+msgid "deletion"
+msgstr ""
+
+#: src/text.c:558 src/text.c:738
+msgid "line join"
+msgstr ""
+
+#: src/text.c:575 src/text.c:754
+msgid "replacement"
+msgstr ""
+
+#: src/text.c:595 src/text.c:775
+msgid "erasure"
+msgstr ""
+
+#. TRANSLATORS: Remember: these are nouns, NOT verbs.
+#: src/text.c:601 src/text.c:780
+msgid "cut"
+msgstr ""
+
+#: src/text.c:605 src/text.c:784
+msgid "paste"
+msgstr ""
+
+#: src/text.c:612 src/text.c:788
+msgid "insertion"
+msgstr ""
+
+#: src/text.c:641 src/text.c:811
+msgid "indent"
+msgstr ""
+
+#: src/text.c:645 src/text.c:815
+msgid "unindent"
+msgstr ""
+
+#: src/text.c:650 src/text.c:820
+msgid "comment"
+msgstr "კომენტარი"
+
+#: src/text.c:654 src/text.c:824
+msgid "uncomment"
+msgstr ""
+
+#: src/text.c:662
+#, c-format
+msgid "Undid %s"
+msgstr ""
+
+#: src/text.c:697
+msgid "Nothing to redo"
+msgstr "გასამეორებელი მოქმედება არ არსებობს"
+
+#: src/text.c:832
+#, c-format
+msgid "Redid %s"
+msgstr ""
+
+#. TRANSLATORS: This one goes with Undid/Redid messages.
+#: src/text.c:1773 src/text.c:1990
+msgid "justification"
+msgstr ""
+
+#: src/text.c:1784 src/text.c:2116
+msgid "Selection is empty"
+msgstr ""
+
+#: src/text.c:1994
+msgid "Justified selection"
+msgstr ""
+
+#: src/text.c:1998
+msgid "Justified file"
+msgstr ""
+
+#: src/text.c:2000
+msgid "Justified paragraph"
+msgstr ""
+
+#: src/text.c:2119
+msgid "Buffer is empty"
+msgstr ""
+
+#: src/text.c:2131
+msgid "Invoking formatter..."
+msgstr ""
+
+#: src/text.c:2164 src/text.c:2744
+#, c-format
+msgid "Error invoking '%s'"
+msgstr ""
+
+#: src/text.c:2168
+#, c-format
+msgid "Program '%s' complained"
+msgstr ""
+
+#: src/text.c:2176
+msgid "Nothing changed"
+msgstr ""
+
+#. TRANSLATORS: The next two go with Undid/Redid messages.
+#: src/text.c:2201
+msgid "spelling correction"
+msgstr ""
+
+#: src/text.c:2201
+msgid "formatting"
+msgstr ""
+
+#: src/text.c:2219 src/text.c:2515
+msgid "Finished checking spelling"
+msgstr ""
+
+#: src/text.c:2221
+msgid "Buffer has been processed"
+msgstr ""
+
+#: src/text.c:2265
+#, c-format
+msgid "Unfindable word: %s"
+msgstr ""
+
+#. TRANSLATORS: This is a prompt.
+#: src/text.c:2284
+msgid "Edit a replacement"
+msgstr ""
+
+#. TRANSLATORS: Shown after fixing misspellings in one word.
+#: src/text.c:2297
+msgid "Next word..."
+msgstr ""
+
+#: src/text.c:2350
+msgid "Invoking spell checker..."
+msgstr ""
+
+#: src/text.c:2435 src/text.c:2655
+msgid "Could not get size of pipe buffer"
+msgstr ""
+
+#: src/text.c:2509
+msgid "Error invoking \"uniq\""
+msgstr ""
+
+#: src/text.c:2511
+msgid "Error invoking \"sort\""
+msgstr ""
+
+#: src/text.c:2513
+msgid "Error invoking \"spell\""
+msgstr ""
+
+#: src/text.c:2590
+msgid "No linter is defined for this type of file"
+msgstr ""
+
+#: src/text.c:2600
+msgid "Save modified buffer before linting?"
+msgstr ""
+
+#: src/text.c:2617
+msgid "Invoking linter..."
+msgstr ""
+
+#: src/text.c:2749
+#, c-format
+msgid "Got 0 parsable lines from command: %s"
+msgstr ""
+
+#: src/text.c:2787
+#, c-format
+msgid "This message is for unopened file %s, open it in a new buffer?"
+msgstr ""
+
+#: src/text.c:2826
+msgid "No messages for this file"
+msgstr ""
+
+#: src/text.c:2876
+msgid "At first message"
+msgstr ""
+
+#: src/text.c:2886
+msgid "At last message"
+msgstr ""
+
+#: src/text.c:2931
+msgid "No formatter is defined for this type of file"
+msgstr ""
+
+#: src/text.c:3005
+#, c-format
+msgid "%s%zd %s,  %zu %s,  %zu %s"
+msgstr ""
+
+#: src/text.c:3006
+msgid "In Selection:  "
+msgstr ""
+
+#: src/text.c:3007
+msgid "line"
+msgid_plural "lines"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/text.c:3008
+msgid "word"
+msgid_plural "words"
+msgstr[0] "სიტყვა"
+msgstr[1] "სიტყვა"
+
+#: src/text.c:3009
+msgid "character"
+msgid_plural "characters"
+msgstr[0] ""
+msgstr[1] ""
+
+#. TRANSLATORS: Shown when the next keystroke will be inserted verbatim.
+#: src/text.c:3027
+msgid "Verbatim Input"
+msgstr ""
+
+#. TRANSLATORS: An invalid verbatim Unicode code was typed.
+#: src/text.c:3051
+msgid "Invalid code"
+msgstr "არასწორი კოდი"
+
+#. TRANSLATORS: Shown when no text is directly left of the cursor.
+#: src/text.c:3130
+msgid "No word fragment"
+msgstr ""
+
+#: src/text.c:3231
+msgid "No further matches"
+msgstr ""
+
+#. TRANSLATORS: Shown when there are zero possible completions.
+#: src/text.c:3234
+msgid "No matches"
+msgstr "დათხვევა არ არსებობს"
+
+#: src/utils.c:296 src/utils.c:307
+msgid "Nano is out of memory!\n"
+msgstr ""
+
+#: src/winio.c:106
+msgid "Recording a macro..."
+msgstr ""
+
+#: src/winio.c:109
+msgid "Stopped recording"
+msgstr "ჩაწერა შეჩერებულია"
+
+#: src/winio.c:121
+msgid "Cannot run macro while recording"
+msgstr ""
+
+#: src/winio.c:127
+msgid "Macro is empty"
+msgstr ""
+
+#: src/winio.c:147
+msgid "Too much input at once\n"
+msgstr ""
+
+#: src/winio.c:258
+msgid "Too many errors from stdin\n"
+msgstr ""
+
+#. TRANSLATORS: This is shown while a six-digit hexadecimal
+#. * Unicode character code (%s) is being typed in.
+#: src/winio.c:1398
+#, c-format
+msgid "Unicode Input: %s"
+msgstr ""
+
+#. TRANSLATORS: The next five are "labels" in the title bar.
+#: src/winio.c:2020
+msgid "Linting --"
+msgstr ""
+
+#: src/winio.c:2026
+msgid "DIR:"
+msgstr ""
+
+#: src/winio.c:2047
+msgid "View"
+msgstr ""
+
+#: src/winio.c:2053 src/winio.c:2057
+msgid "Modified"
+msgstr "შეცვლილია"
+
+#: src/winio.c:2055
+msgid "Restricted"
+msgstr "შეზღუდული"
+
+#: src/winio.c:2161
+msgid "(nameless)"
+msgstr ""
+
+#: src/winio.c:2192
+#, c-format
+msgid " (%zu line)"
+msgid_plural " (%zu lines)"
+msgstr[0] ""
+msgstr[1] ""
+
+#: src/winio.c:3489
+#, c-format
+msgid "line %*zd/%zd (%2d%%), col %2zu/%2zu (%3d%%), char %*zu/%zu (%2d%%)"
+msgstr ""
+
+#: src/winio.c:3643
+msgid "The nano text editor"
+msgstr ""
+
+#: src/winio.c:3644
+msgid "version"
+msgstr "version"
+
+#: src/winio.c:3645
+msgid "Brought to you by:"
+msgstr ""
+
+#: src/winio.c:3646
+msgid "Special thanks to:"
+msgstr ""
+
+#: src/winio.c:3647
+msgid "The Free Software Foundation"
+msgstr ""
+
+#: src/winio.c:3648
+msgid "the many translators and the TP"
+msgstr ""
+
+#: src/winio.c:3649
+msgid "For ncurses:"
+msgstr ""
+
+#: src/winio.c:3650
+msgid "and anyone else we forgot..."
+msgstr ""
+
+#: src/winio.c:3651
+msgid "Thank you for using nano!"
+msgstr ""
+
+#: lib/getopt.c:278
+#, c-format
+msgid "%s: option '%s%s' is ambiguous\n"
+msgstr "%s: პარამეტრი '%s%s' გაურკვეველია\n"
+
+#: lib/getopt.c:284
+#, c-format
+msgid "%s: option '%s%s' is ambiguous; possibilities:"
+msgstr "%s: პარამეტრი '%s%s' გაურკვეველია; შესაძლო ვარიანტები:"
+
+#: lib/getopt.c:319
+#, c-format
+msgid "%s: unrecognized option '%s%s'\n"
+msgstr "%s: უცნობი პარამეტრი '%s%s'\n"
+
+#: lib/getopt.c:345
+#, c-format
+msgid "%s: option '%s%s' doesn't allow an argument\n"
+msgstr "%s: პარამეტრს \"%s%s' არგუმენტი არ სჭირდება\n"
+
+#: lib/getopt.c:360
+#, c-format
+msgid "%s: option '%s%s' requires an argument\n"
+msgstr "%s: პარამეტრს \"%s%s\" არგუმენტი ესაჭიროება\n"
+
+#: lib/getopt.c:621
+#, c-format
+msgid "%s: invalid option -- '%c'\n"
+msgstr "%s: არასწორი პარამეტრი -- '%c'\n"
+
+#: lib/getopt.c:636 lib/getopt.c:682
+#, c-format
+msgid "%s: option requires an argument -- '%c'\n"
+msgstr "%s: პარამეტრს ესაჭიროება არგუმენტი -- '%c'\n"
+
+#: lib/regcomp.c:122
+msgid "Success"
+msgstr "წარმატება"
+
+#: lib/regcomp.c:125
+msgid "No match"
+msgstr "არ ემთხვევა"
+
+#: lib/regcomp.c:128
+msgid "Invalid regular expression"
+msgstr "არასწორი რეგულარული გამოსახულება"
+
+#: lib/regcomp.c:131
+msgid "Invalid collation character"
+msgstr "კოლაციის არასწორი სიმბოლო"
+
+#: lib/regcomp.c:134
+msgid "Invalid character class name"
+msgstr "სიმბოლოების არასწორი კლასი"
+
+#: lib/regcomp.c:137
+msgid "Trailing backslash"
+msgstr "ბოლო Backslash"
+
+#: lib/regcomp.c:140
+msgid "Invalid back reference"
+msgstr "არასწორი უკუბმა"
+
+#: lib/regcomp.c:143
+msgid "Unmatched [, [^, [:, [., or [="
+msgstr "არ ემთხვევა [, [^, [:, [., ან [="
+
+#: lib/regcomp.c:146
+msgid "Unmatched ( or \\("
+msgstr "არ ემთხვევა ( ან \\("
+
+#: lib/regcomp.c:149
+msgid "Unmatched \\{"
+msgstr "არ ემთხვევა \\{"
+
+#: lib/regcomp.c:152
+msgid "Invalid content of \\{\\}"
+msgstr "\\{\\}-ის არასწორი შემცელობა"
+
+#: lib/regcomp.c:155
+msgid "Invalid range end"
+msgstr "დიაპაზონის არასწორი დასასრული"
+
+#: lib/regcomp.c:158
+msgid "Memory exhausted"
+msgstr "მეხსიერება გადავსებულია"
+
+#: lib/regcomp.c:161
+msgid "Invalid preceding regular expression"
+msgstr "რეგულარული გამოსახულების არასწორი საწყისი"
+
+#: lib/regcomp.c:164
+msgid "Premature end of regular expression"
+msgstr "რეგულარული გამოსახულების მოულოდნელი დასასრული"
+
+#: lib/regcomp.c:167
+msgid "Regular expression too big"
+msgstr "რეგულარული გამოსახულება ძალიან დიდია"
+
+#: lib/regcomp.c:170
+msgid "Unmatched ) or \\)"
+msgstr "არ ემთხვევა ) ან \\)"
+
+#: lib/regcomp.c:650
+msgid "No previous regular expression"
+msgstr "წინა რეგულარული გამოსახულება არ არსებობს"

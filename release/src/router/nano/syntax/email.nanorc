@@ -11,7 +11,7 @@ color yellow "^> ?> ?>.*"
 color brightmagenta "<[^@]+@[^@]+>"
 
 # URLs.
-color brightblue "(https?|ftp)://\S+\.\S+[^\s.)]"
+color brightblue "(https?|ftp)://\S+\.\S+[^[:space:].)]"
 
 # Signatures, even quoted ones.
 color yellow start="^>* ?-- $" end="^>* ?$"

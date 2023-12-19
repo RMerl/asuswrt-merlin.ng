@@ -1,5 +1,5 @@
 <!-- Creator     : groff version 1.22.4 -->
-<!-- CreationDate: Thu Apr 29 11:50:46 2021 -->
+<!-- CreationDate: Wed Jan 18 08:48:55 2023 -->
 <!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN"
 "http://www.w3.org/TR/html4/loose.dtd">
 <html>
@@ -22,8 +22,8 @@
 
 <a href="#NAME">NAME</a><br>
 <a href="#DESCRIPTION">DESCRIPTION</a><br>
-<a href="#NOTICE">NOTICE</a><br>
 <a href="#OPTIONS">OPTIONS</a><br>
+<a href="#NOTES">NOTES</a><br>
 <a href="#SYNTAX HIGHLIGHTING">SYNTAX HIGHLIGHTING</a><br>
 <a href="#REBINDING KEYS">REBINDING KEYS</a><br>
 <a href="#FILES">FILES</a><br>
@@ -37,8 +37,8 @@
 </h2>
 
 
-<p style="margin-left:11%; margin-top: 1em">nanorc &minus;
-GNU nano&rsquo;s configuration file</p>
+<p style="margin-left:11%; margin-top: 1em">nanorc - GNU
+nano&rsquo;s configuration file</p>
 
 <h2>DESCRIPTION
 <a name="DESCRIPTION"></a>
@@ -48,33 +48,15 @@ GNU nano&rsquo;s configuration file</p>
 <p style="margin-left:11%; margin-top: 1em">The
 <i>nanorc</i> files contain the default settings for
 <b>nano</b>, a small and friendly editor. During startup, if
-<b>&minus;&minus;rcfile</b> is not given, <b>nano</b> will
-read two files: first the system-wide settings, from
+<b>--rcfile</b> is not given, <b>nano</b> will read two
+files: first the system-wide settings, from
 <i>/etc/nanorc</i> (the exact path might be different on
 your system), and then the user-specific settings, either
 from <i>~/.nanorc</i> or from
 <i>$XDG_CONFIG_HOME/nano/nanorc</i> or from
 <i>~/.config/nano/nanorc</i>, whichever is encountered
-first. If <b>&minus;&minus;rcfile</b> is given, <b>nano</b>
-will read just the specified settings file.</p>
-
-<h2>NOTICE
-<a name="NOTICE"></a>
-</h2>
-
-
-<p style="margin-left:11%; margin-top: 1em">Since version
-4.0, <b>nano</b> by default:</p>
-
-<p style="margin-left:17%; margin-top: 1em">&bull; does not
-automatically hard-wrap lines that become overlong, <br>
-&bull; includes the line below the title bar in the editing
-area, <br>
-&bull; does linewise (smooth) scrolling.</p>
-
-<p style="margin-left:11%; margin-top: 1em">To get the old,
-Pico behavior back, you can use <b>set breaklonglines</b>,
-<b>set emptyline</b>, and <b>set jumpyscrolling</b>.</p>
+first. If <b>--rcfile</b> is given, <b>nano</b> will read
+just the specified settings file.</p>
 
 <h2>OPTIONS
 <a name="OPTIONS"></a>
@@ -144,9 +126,9 @@ name.</p>
 <p style="margin-left:15%;">Make and keep not just one
 backup file, but make and keep a uniquely numbered one every
 time a file is saved -- when backups are enabled with <b>set
-backup</b> or <b>&minus;&minus;backup</b> or
-<b>&minus;B</b>. The uniquely numbered files are stored in
-the specified <i>directory</i>.</p>
+backup</b> or <b>--backup</b> or <b>-B</b>. The uniquely
+numbered files are stored in the specified
+<i>directory</i>.</p>
 
 <p style="margin-left:11%;"><b>set boldtext</b></p>
 
@@ -205,7 +187,7 @@ title bar, leaving it entirely blank.</p>
 
 <p style="margin-left:15%;">Use this color combination for
 the status bar when an error message is displayed. The
-default value is <b>brightwhite,red</b>. See <b>set
+default value is <b>bold,white,red</b>. See <b>set
 titlecolor</b> for valid color names.</p>
 
 <p style="margin-left:11%;"><b>set fill</b>
@@ -217,7 +199,7 @@ of columns. If the value is 0 or less, wrapping will occur
 at the width of the screen minus <i>number</i> columns,
 allowing the wrap point to vary along with the width of the
 screen if the screen is resized. The default value is
-<b>&minus;8</b>.</p>
+<b>-8</b>.</p>
 
 <p style="margin-left:11%;"><b>set functioncolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
@@ -294,7 +276,7 @@ The default value is &quot;<b>(&lt;[{)&gt;]}</b>&quot;.</p>
 <p style="margin-left:15%;">Suppress the title bar and
 instead show information about the current buffer at the
 bottom of the screen, in the space for the status bar. In
-this &quot;minibar&quot; the file name is shown on the left,
+this &quot;minibar&quot; the filename is shown on the left,
 followed by an asterisk if the buffer has been modified. On
 the right are displayed the current line and column number,
 the code of the character under the cursor (in Unicode
@@ -302,13 +284,21 @@ format: U+xxxx), the same flags as are shown by <b>set
 stateflags</b>, and a percentage that expresses how far the
 cursor is into the file (linewise). When a file is loaded or
 saved, and also when switching between buffers, the number
-of lines in the buffer is displayed after the file name.
-This number is cleared upon the next keystroke, or replaced
-with an [i/n] counter when multiple buffers are open. The
-line plus column numbers and the character code are
-displayed only when <b>set constantshow</b> is used, and can
-be toggled on and off with <b>M-C</b>. The state flags are
+of lines in the buffer is displayed after the filename. This
+number is cleared upon the next keystroke, or replaced with
+an [i/n] counter when multiple buffers are open. The line
+plus column numbers and the character code are displayed
+only when <b>set constantshow</b> is used, and can be
+toggled on and off with <b>M-C</b>. The state flags are
 displayed only when <b>set stateflags</b> is used.</p>
+
+<p style="margin-left:11%;"><b>set minicolor</b>
+[<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
+
+<p style="margin-left:15%;">Use this color combination for
+the minibar. (When this option is not specified, the colors
+of the title bar are used.) See <b>set titlecolor</b> for
+more details.</p>
 
 <p style="margin-left:11%;"><b>set mouse</b></p>
 
@@ -396,8 +386,10 @@ punctuation, optionally followed by closing brackets (see
 
 <p style="margin-left:15%;">Make status-bar messages
 disappear after 1 keystroke instead of after 20. Note that
-options <b>constantshow</b> and <b>minibar</b> override
-this.</p>
+option <b>constantshow</b> overrides this. When option
+<b>minibar</b> or <b>zero</b> is in effect,
+<b>quickblank</b> makes a message disappear after 0.8
+seconds instead of after the default 1.5 seconds.</p>
 
 <p style="margin-left:11%;"><b>set quotestr
 &quot;</b><i>regex</i><b>&quot;</b></p>
@@ -413,9 +405,12 @@ writing source code.</p>
 <p style="margin-left:11%;"><b>set rawsequences</b></p>
 
 <p style="margin-left:15%;">Interpret escape sequences
-directly (instead of asking <b>ncurses</b> to translate
-them). If you need this option to get your keyboard to work
-properly, please report a bug. Using this option disables
+directly, instead of asking <b>ncurses</b> to translate
+them. (If you need this option to get some keys to work
+properly, it means that the terminfo terminal description
+that is used does not fully match the actual behavior of
+your terminal. This can happen when you ssh into a BSD
+machine, for example.) Using this option disables
 <b>nano</b>&rsquo;s mouse support.</p>
 
 <p style="margin-left:11%;"><b>set rebinddelete</b></p>
@@ -435,9 +430,7 @@ extended type (ERE).</p>
 <p style="margin-left:11%;"><b>set saveonexit</b></p>
 
 <p style="margin-left:15%;">Save a changed buffer
-automatically on exit (<b>^X</b>); don&rsquo;t prompt. (The
-old form of this option, <b>set tempfile</b>, is
-deprecated.)</p>
+automatically on exit (<b>^X</b>); don&rsquo;t prompt.</p>
 
 <p style="margin-left:11%;"><b>set scrollercolor</b>
 <i>fgcolor</i><b>,</b><i>bgcolor</i></p>
@@ -458,8 +451,9 @@ details.</p>
 <p style="margin-left:11%;"><b>set showcursor</b></p>
 
 <p style="margin-left:15%;">Put the cursor on the
-highlighted item in the file browser, to aid braille
-users.</p>
+highlighted item in the file browser, and show the cursor in
+the help viewer, to aid braille users and people with poor
+vision.</p>
 
 <p style="margin-left:11%;"><b>set smarthome</b></p>
 
@@ -519,11 +513,6 @@ details.</p>
 the vertical guiding stripe. See <b>set titlecolor</b> for
 more details.</p>
 
-<p style="margin-left:11%;"><b>set suspendable</b></p>
-
-<p style="margin-left:15%;">Allow <b>nano</b> to be
-suspended (with <b>^Z</b> by default).</p>
-
 <p style="margin-left:11%;"><b>set tabsize</b>
 <i>number</i></p>
 
@@ -533,8 +522,9 @@ The default value is <b>8</b>.</p>
 
 <p style="margin-left:11%;"><b>set tabstospaces</b></p>
 
-<p style="margin-left:15%;">Convert typed tabs to
-spaces.</p>
+<p style="margin-left:15%;">Convert each typed tab to
+spaces -- to the number of spaces that a tab at that
+position would take up.</p>
 
 <p style="margin-left:11%;"><b>set titlecolor</b>
 [<b>bold,</b>][<b>italic,</b>]<i>fgcolor</i><b>,</b><i>bgcolor</i></p>
@@ -545,12 +535,24 @@ colors are: <b>red</b>, <b>green</b>, <b>blue</b>,
 <b>magenta</b>, <b>yellow</b>, <b>cyan</b>, <b>white</b>,
 and <b>black</b>. Each of these eight names may be prefixed
 with the word <b>light</b> to get a brighter version of that
-color. On terminal emulators that can do at least 256
-colors, other valid (but unprefixable) color names are:
-<b>pink</b>, <b>purple</b>, <b>mauve</b>, <b>lagoon</b>,
-<b>mint</b>, <b>lime</b>, <b>peach</b>, <b>orange</b>,
-<b>latte</b>, and <b>normal</b> -- where <b>normal</b> means
-the default foreground or background color. Either
+color. The word <b>grey</b> or <b>gray</b> may be used as a
+synonym for <b>lightblack</b>. On terminal emulators that
+can do at least 256 colors, other valid (but unprefixable)
+color names are: <b>pink</b>, <b>purple</b>, <b>mauve</b>,
+<b>lagoon</b>, <b>mint</b>, <b>lime</b>, <b>peach</b>,
+<b>orange</b>, <b>latte</b>, <b>rosy</b>, <b>beet</b>,
+<b>plum</b>, <b>sea</b>, <b>sky</b>, <b>slate</b>,
+<b>teal</b>, <b>sage</b>, <b>brown</b>, <b>ocher</b>,
+<b>sand</b>, <b>tawny</b>, <b>brick</b>, <b>crimson</b>, and
+<b>normal</b> -- where <b>normal</b> means the default
+foreground or background color. On such emulators, the color
+may also be specified as a three-digit hexadecimal number
+prefixed with <b>#</b>, with the digits representing the
+amounts of red, green, and blue, respectively. This tells
+<b>nano</b> to select from the available palette the color
+that approximates the given values.</p>
+
+<p style="margin-left:15%; margin-top: 1em">Either
 &quot;<i>fgcolor</i>&quot; or
 &quot;<b>,</b><i>bgcolor</i>&quot; may be left out, and the
 pair may be preceded by <b>bold</b> and/or <b>italic</b>
@@ -599,6 +601,28 @@ to unset <b>wordbounds</b>.</p>
 Delete erase the marked region (instead of a single
 character, and without affecting the cutbuffer).</p>
 
+<p style="margin-left:11%;"><b>set zero</b></p>
+
+<p style="margin-left:15%;">Hide all elements of the
+interface (title bar, status bar, and help lines) and use
+all rows of the terminal for showing the contents of the
+buffer. The status bar appears only when there is a
+significant message, and disappears after 1.5 seconds or
+upon the next keystroke. With <b>M-Z</b> the title bar plus
+status bar can be toggled. With <b>M-X</b> the help
+lines.</p>
+
+<h2>NOTES
+<a name="NOTES"></a>
+</h2>
+
+
+<p style="margin-left:11%; margin-top: 1em">Option <b>set
+suspendable</b> has been removed. Suspension is enabled by
+default, reachable via <b>^T^Z</b>. (If you want a plain
+<b>^Z</b> to suspend nano, add <b>bind ^Z suspend main</b>
+to your nanorc.)</p>
+
 <h2>SYNTAX HIGHLIGHTING
 <a name="SYNTAX HIGHLIGHTING"></a>
 </h2>
@@ -627,6 +651,16 @@ blank. It also means that lookahead and lookbehind are not
 possible. A complete explanation can be found in the manual
 page of GNU grep: <b>man grep</b>.</p>
 
+<p style="margin-left:11%; margin-top: 1em">Each regular
+expression in a <b>nanorc</b> file should be wrapped in
+double quotes (<b>&quot;&quot;</b>). Multiple regular
+expressions can follow each other on a line by separating
+them with blanks. This means that a regular expression
+cannot contain a double quote followed by a blank. When you
+need this combination inside a regular expression, then
+either the double quote or the blank should be put between
+square brackets (<b>[]</b>).</p>
+
 <p style="margin-left:11%; margin-top: 1em">For each kind
 of file a separate syntax can be defined via the following
 commands: <b><br>
@@ -642,9 +676,9 @@ a new <b>syntax</b> command is encountered.</p>
 <b>nano</b> is run, this syntax will be automatically
 activated if the current filename matches the extended
 regular expression <i>fileregex</i>. Or the syntax can be
-explicitly activated by using the <b>&minus;Y</b> or
-<b>&minus;&minus;syntax</b> command-line option followed by
-the <i>name</i>.</p>
+explicitly activated by using the <b>-Y</b> or
+<b>--syntax</b> command-line option followed by the
+<i>name</i>.</p>
 
 <p style="margin-left:22%; margin-top: 1em">The syntax
 <b>default</b> is special: it takes no <i>fileregex</i>, and
@@ -676,10 +710,7 @@ on the system and will be silently ignored otherwise.)</p>
 [<i>argument</i> ...]</p>
 
 <p style="margin-left:22%;">Run the given <i>program</i> on
-the full contents of the current buffer. (The current buffer
-is written out to a temporary file, the program is run on
-it, and then the temporary file is read back in, replacing
-the contents of the buffer.)</p>
+the full contents of the current buffer.</p>
 
 <p style="margin-left:11%;"><b>linter</b> <i>program</i>
 [<i>argument</i> ...]</p>
@@ -722,16 +753,28 @@ which must be specified. Valid color names are: <b>red</b>,
 <b>green</b>, <b>blue</b>, <b>magenta</b>, <b>yellow</b>,
 <b>cyan</b>, <b>white</b>, and <b>black</b>. Each of these
 eight names may be prefixed with the word <b>light</b> to
-get a brighter version of that color. On terminal emulators
-that can do at least 256 colors, other valid (but
-unprefixable) color names are: <b>pink</b>, <b>purple</b>,
-<b>mauve</b>, <b>lagoon</b>, <b>mint</b>, <b>lime</b>,
-<b>peach</b>, <b>orange</b>, <b>latte</b>, and <b>normal</b>
--- where <b>normal</b> means the default foreground or
-background color. The color pair may be preceded by
-<b>bold</b> and/or <b>italic</b> (separated by commas) to
-get a bold and/or slanting typeface, if your terminal can do
-those.</p>
+get a brighter version of that color. The word <b>grey</b>
+or <b>gray</b> may be used as a synonym for
+<b>lightblack</b>. On terminal emulators that can do at
+least 256 colors, other valid (but unprefixable) color names
+are: <b>pink</b>, <b>purple</b>, <b>mauve</b>,
+<b>lagoon</b>, <b>mint</b>, <b>lime</b>, <b>peach</b>,
+<b>orange</b>, <b>latte</b>, <b>rosy</b>, <b>beet</b>,
+<b>plum</b>, <b>sea</b>, <b>sky</b>, <b>slate</b>,
+<b>teal</b>, <b>sage</b>, <b>brown</b>, <b>ocher</b>,
+<b>sand</b>, <b>tawny</b>, <b>brick</b>, <b>crimson</b>, and
+<b>normal</b> -- where <b>normal</b> means the default
+foreground or background color. On such emulators, the color
+may also be specified as a three-digit hexadecimal number
+prefixed with <b>#</b>, with the digits representing the
+amounts of red, green, and blue, respectively. This tells
+<b>nano</b> to select from the available palette the color
+that approximates the given values.</p>
+
+<p style="margin-left:22%; margin-top: 1em">The color pair
+may be preceded by <b>bold</b> and/or <b>italic</b>
+(separated by commas) to get a bold and/or slanting
+typeface, if your terminal can do those.</p>
 
 <p style="margin-left:22%; margin-top: 1em">All coloring
 commands are applied in the order in which they are
@@ -810,9 +853,10 @@ used).</p>
 <p style="margin-left:26%;">Makes the given <i>key</i>
 produce the given <i>string</i> in the given <i>menu</i> (or
 in all menus where the key exists when <b>all</b> is used).
-The <i>string</i> can consist of text or commands or a mix
-of them. (To enter a command into the <i>string</i>, precede
-its keystroke with <b>M&minus;V</b>.)</p>
+Besides literal text and/or control codes, the <i>string</i>
+may contain function names between braces. These functions
+will be invoked when the key is typed. To include a literal
+opening brace, use <b>{{}</b>.</p>
 
 <p style="margin-left:15%;"><b>unbind</b> <i>key
 menu</i></p>
@@ -821,8 +865,20 @@ menu</i></p>
 from the given <i>menu</i> (or from all menus where the key
 exists when <b>all</b> is used).</p>
 
-<p style="margin-left:11%;">The format of <i>key</i> should
-be one of:</p>
+<p style="margin-left:11%; margin-top: 1em">Note that
+<b>bind</b> <i>key</i>
+<b>&quot;{</b><i>function</i><b>}&quot;</b> <i>menu</i> is
+equivalent to <b>bind</b> <i>key function menu</i>, except
+that for the latter form <b>nano</b> will check the
+availabilty of the <i>function</i> in the given <i>menu</i>
+at startup time (and report an error if it does not exist
+there), whereas for the first form <b>nano</b> will check at
+execution time that the <i>function</i> exists but not
+whether it makes any sense in the current menu. The user has
+to take care that a function name between braces (or any
+sequence of them) is appropriate. Strange behavior can
+result when it is not. <br>
+The format of <i>key</i> should be one of:</p>
 
 <table width="100%" border="0" rules="none" frame="void"
        cellspacing="0" cellpadding="0">
@@ -844,28 +900,28 @@ ASCII characters (@, ], \, ^, _), or the word
 <td width="10%">
 
 
-<p><b>M&minus;</b><i>X</i></p></td>
+<p><b>M-</b><i>X</i></p></td>
 <td width="1%"></td>
 <td width="74%">
 
 
 <p>where <i>X</i> is any ASCII character except [, or the
-word &quot;Space&quot;. Example: M&minus;8.</p></td></tr>
+word &quot;Space&quot;. Example: M-8.</p></td></tr>
 <tr valign="top" align="left">
 <td width="15%"></td>
 <td width="10%">
 
 
-<p><b>Sh&minus;M&minus;</b><i>X</i></p></td>
+<p><b>Sh-M-</b><i>X</i></p></td>
 <td width="1%"></td>
 <td width="74%">
 
 
-<p>where <i>X</i> is a Latin letter. Example:
-Sh&minus;M&minus;U. By default, each Meta+letter keystroke
-does the same as the corresponding Shift+Meta+letter. But
-when any Shift+Meta bind is made, that will no longer be the
-case, for all letters.</p></td></tr>
+<p>where <i>X</i> is a Latin letter. Example: Sh-M-U. By
+default, each Meta+letter keystroke does the same as the
+corresponding Shift+Meta+letter. But when any Shift+Meta
+bind is made, that will no longer be the case, for all
+letters.</p> </td></tr>
 <tr valign="top" align="left">
 <td width="15%"></td>
 <td width="10%">
@@ -890,9 +946,8 @@ keycode is the starter byte of Meta keystrokes and escape
 sequences. Rebinding any of the dedicated cursor-moving keys
 (the arrows, Home, End, PageUp and PageDown) is not
 possible. On some terminals it&rsquo;s not possible to
-rebind <b>^H</b> (unless <b>&minus;&minus;raw</b> is used)
-because its keycode is identical to that of the Backspace
-key. <br>
+rebind <b>^H</b> (unless <b>--raw</b> is used) because its
+keycode is identical to that of the Backspace key. <br>
 Valid <i>function</i> names to be bound are:</p>
 
 <p style="margin-left:15%;"><b>help</b></p>
@@ -1005,13 +1060,13 @@ unsets the mark.</p>
 
 <p style="margin-left:18%;">Reports the current position of
 the cursor in the buffer: the line, column, and character
-positions. (The old name of this function,
-&rsquo;curpos&rsquo;, is deprecated.)</p>
+positions.</p>
 
 <p style="margin-left:15%;"><b>wordcount</b></p>
 
-<p style="margin-left:18%;">Counts the number of words,
-lines and characters in the current buffer.</p>
+<p style="margin-left:18%;">Counts and reports on the
+status bar the number of lines, words, and characters in the
+current buffer (or in the marked region).</p>
 
 <p style="margin-left:15%;"><b>execute</b></p>
 
@@ -1024,55 +1079,63 @@ toggled).</p>
 
 <p style="margin-left:18%;">Invokes a spell-checking
 program, either the default <b>hunspell</b>(1) or GNU
-<b>spell</b>(1), or the one defined by
-<b>&minus;&minus;speller</b> or <b>set speller</b>.</p>
+<b>spell</b>(1), or the one defined by <b>--speller</b> or
+<b>set speller</b>.</p>
 
 <p style="margin-left:15%;"><b>formatter</b></p>
 
 <p style="margin-left:18%;">Invokes a
 full-buffer-processing program (if the active syntax defines
-one).</p>
+one). (The current buffer is written out to a temporary
+file, the program is run on it, and then the temporary file
+is read back in, replacing the contents of the buffer.)</p>
 
 <p style="margin-left:15%;"><b>linter</b></p>
 
 <p style="margin-left:18%;">Invokes a syntax-checking
-program (if the active syntax defines one).</p>
+program (if the active syntax defines one). If this program
+produces lines of the form &quot;filename:linenum:charnum:
+some message&quot;, then the cursor will be put at the
+indicated position in the mentioned file while showing
+&quot;some message&quot; on the status bar. You can move
+from message to message with &lt;PgUp&gt; and &lt;PgDn&gt;,
+and leave linting mode with <b>^C</b> or &lt;Enter&gt;.</p>
 
 <p style="margin-left:15%;"><b>justify</b></p>
 
-<p style="margin-left:18%;">Justifies the current
-paragraph. A paragraph is a group of contiguous lines that,
-apart from possibly the first line, all have the same
-indentation. The beginning of a paragraph is detected by
-either this lone line with a differing indentation or by a
-preceding blank line.</p>
+<p style="margin-left:18%;">Justifies the current paragraph
+(or the marked region). A paragraph is a group of contiguous
+lines that, apart from possibly the first line, all have the
+same indentation. The beginning of a paragraph is detected
+by either this lone line with a differing indentation or by
+a preceding blank line.</p>
 
 <p style="margin-left:15%;"><b>fulljustify</b></p>
 
 <p style="margin-left:18%;">Justifies the entire current
-buffer.</p>
+buffer (or the marked region).</p>
 
 <p style="margin-left:15%;"><b>indent</b></p>
 
 <p style="margin-left:18%;">Indents (shifts to the right)
-the currently marked text.</p>
+the current line or the marked lines.</p>
 
 <p style="margin-left:15%;"><b>unindent</b></p>
 
 <p style="margin-left:18%;">Unindents (shifts to the left)
-the currently marked text.</p>
+the current line or the marked lines.</p>
 
 <p style="margin-left:15%;"><b>comment</b></p>
 
 <p style="margin-left:18%;">Comments or uncomments the
-current line or marked lines, using the comment style
+current line or the marked lines, using the comment style
 specified in the active syntax.</p>
 
 <p style="margin-left:15%;"><b>complete</b></p>
 
-<p style="margin-left:18%;">Completes the fragment before
-the cursor to a full word found elsewhere in the current
-buffer.</p>
+<p style="margin-left:18%;">Completes (when possible) the
+fragment before the cursor to a full word found elsewhere in
+the current buffer.</p>
 
 <p style="margin-left:15%;"><b>left</b></p>
 
@@ -1098,13 +1161,17 @@ editor or browser).</p>
 
 <p style="margin-left:18%;">Scrolls the viewport up one row
 (meaning that the text slides down) while keeping the cursor
-in the same text position, if possible.</p>
+in the same text position, if possible. (This function is
+bound by default to &lt;Alt+Up&gt;. If &lt;Alt+Up&gt; does
+nothing on your Linux console, see the FAQ:
+<a href="https://nano-editor.org/dist/latest/faq.html#4.1">https://nano-editor.org/dist/latest/faq.html#4.1</a>.)</p>
 
 <p style="margin-left:15%;"><b>scrolldown</b></p>
 
 <p style="margin-left:18%;">Scrolls the viewport down one
 row (meaning that the text slides up) while keeping the
-cursor in the same text position, if possible.</p>
+cursor in the same text position, if possible. (This
+function is bound by default to &lt;Alt+Down&gt;.)</p>
 
 <p style="margin-left:15%;"><b>center</b></p>
 
@@ -1211,7 +1278,8 @@ next buffer when multiple buffers are open.</p>
 <p style="margin-left:15%;"><b>verbatim</b></p>
 
 <p style="margin-left:18%;">Inserts the next keystroke
-verbatim into the file.</p>
+verbatim into the file, or begins Unicode input when a
+hexadecimal digit is typed.</p>
 
 <p style="margin-left:15%;"><b>tab</b></p>
 
@@ -1260,9 +1328,9 @@ action (add text, delete text, etc).</p>
 
 <p style="margin-left:15%;"><b>suspend</b></p>
 
-<p style="margin-left:18%;">Suspends the editor (if the
-suspending function is enabled, see the <b>suspendable</b>
-toggle item below).</p>
+<p style="margin-left:18%;">Suspends the editor and returns
+control to the shell (until you tell the process to resume
+execution with <b>fg</b>).</p>
 
 <p style="margin-left:15%;"><b>casesens</b></p>
 
@@ -1353,8 +1421,8 @@ backup of the current file.</p>
 
 <p style="margin-left:18%;">When about to write a file,
 discard the current buffer without saving. (This function is
-bound by default only when option
-<b>&minus;&minus;saveonexit</b> is in effect.)</p>
+bound by default only when option <b>--saveonexit</b> is in
+effect.)</p>
 
 <p style="margin-left:15%;"><b>browser</b></p>
 
@@ -1385,6 +1453,11 @@ two-line list of key bindings at the bottom of the screen.
 (This toggle is special: it is available in all menus except
 the help viewer and the linter. All further toggles are
 available in the main menu only.)</p>
+
+<p style="margin-left:15%;"><b>zero</b></p>
+
+<p style="margin-left:18%;">Toggles the presence of title
+bar and status bar.</p>
 
 <p style="margin-left:15%;"><b>constantshow</b></p>
 
@@ -1443,13 +1516,6 @@ be converted to spaces.</p>
 <p style="margin-left:15%;"><b>mouse</b></p>
 
 <p style="margin-left:18%;">Toggles mouse support.</p>
-
-<p style="margin-left:15%;"><b>suspendable</b></p>
-
-<p style="margin-left:18%;">Toggles whether the suspend
-keystroke (<b>^Z</b> by default) will actually suspend the
-editor. (The old name of this function,
-&rsquo;suspendenable&rsquo;, is deprecated.)</p>
 
 <p style="margin-left:11%;">Valid <i>menu</i> sections
 are:</p>
@@ -1520,8 +1586,7 @@ directory&rsquo; menu in the file browser.</p>
 <p style="margin-left:18%;">The menu for inserting the
 output from an external command, or for filtering the buffer
 (or the marked region) through an external command, or for
-executing one of several tools. (The old form of this menu
-name, &rsquo;extcmd&rsquo;, is deprecated.)</p>
+executing one of several tools.</p>
 
 <p style="margin-left:15%;"><b>spell</b></p>
 

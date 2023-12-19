@@ -1,5 +1,5 @@
-# mbrtowc.m4 serial 38  -*- coding: utf-8 -*-
-dnl Copyright (C) 2001-2002, 2004-2005, 2008-2021 Free Software Foundation,
+# mbrtowc.m4 serial 39  -*- coding: utf-8 -*-
+dnl Copyright (C) 2001-2002, 2004-2005, 2008-2023 Free Software Foundation,
 dnl Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
@@ -91,20 +91,23 @@ AC_DEFUN([gl_FUNC_MBRTOWC],
   fi
   if test $REPLACE_MBSTATE_T = 1; then
     case "$host_os" in
-      mingw*) LIB_MBRTOWC= ;;
+      mingw*) MBRTOWC_LIB= ;;
       *)
         gl_WEAK_SYMBOLS
         case "$gl_cv_have_weak" in
-          *yes) LIB_MBRTOWC= ;;
-          *)    LIB_MBRTOWC="$LIBPTHREAD" ;;
+          *yes) MBRTOWC_LIB= ;;
+          *)    MBRTOWC_LIB="$LIBPTHREAD" ;;
         esac
         ;;
     esac
   else
-    LIB_MBRTOWC=
+    MBRTOWC_LIB=
   fi
-  dnl LIB_MBRTOWC is expected to be '-pthread' or '-lpthread' on AIX
+  dnl MBRTOWC_LIB is expected to be '-pthread' or '-lpthread' on AIX
   dnl with gcc or xlc, and empty otherwise.
+  AC_SUBST([MBRTOWC_LIB])
+  dnl For backward compatibility.
+  LIB_MBRTOWC="$MBRTOWC_LIB"
   AC_SUBST([LIB_MBRTOWC])
 ])
 

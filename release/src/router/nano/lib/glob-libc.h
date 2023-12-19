@@ -1,17 +1,17 @@
-/* Copyright (C) 1991-2021 Free Software Foundation, Inc.
+/* Copyright (C) 1991-2023 Free Software Foundation, Inc.
    This file is part of the GNU C Library.
 
    The GNU C Library is free software; you can redistribute it and/or
-   modify it under the terms of the GNU General Public
+   modify it under the terms of the GNU Lesser General Public
    License as published by the Free Software Foundation; either
-   version 3 of the License, or (at your option) any later version.
+   version 2.1 of the License, or (at your option) any later version.
 
    The GNU C Library is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-   General Public License for more details.
+   Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public
+   You should have received a copy of the GNU Lesser General Public
    License along with the GNU C Library; if not, see
    <https://www.gnu.org/licenses/>.  */
 
@@ -46,14 +46,14 @@ __BEGIN_DECLS
 # define GLOB_ONLYDIR    (1 << 13)/* Match only directories.  */
 # define GLOB_TILDE_CHECK (1 << 14)/* Like GLOB_TILDE but return an error
                                       if the user name is not available.  */
-# define __GLOB_FLAGS   (GLOB_ERR|GLOB_MARK|GLOB_NOSORT|GLOB_DOOFFS| \
-                         GLOB_NOESCAPE|GLOB_NOCHECK|GLOB_APPEND|     \
-                         GLOB_PERIOD|GLOB_ALTDIRFUNC|GLOB_BRACE|     \
-                         GLOB_NOMAGIC|GLOB_TILDE|GLOB_ONLYDIR|GLOB_TILDE_CHECK)
+# define __GLOB_FLAGS   (GLOB_ERR|GLOB_MARK|GLOB_NOSORT|GLOB_DOOFFS  \
+                         |GLOB_NOESCAPE|GLOB_NOCHECK|GLOB_APPEND     \
+                         |GLOB_PERIOD|GLOB_ALTDIRFUNC|GLOB_BRACE     \
+                         |GLOB_NOMAGIC|GLOB_TILDE|GLOB_ONLYDIR|GLOB_TILDE_CHECK)
 #else
-# define __GLOB_FLAGS   (GLOB_ERR|GLOB_MARK|GLOB_NOSORT|GLOB_DOOFFS| \
-                         GLOB_NOESCAPE|GLOB_NOCHECK|GLOB_APPEND|     \
-                         GLOB_PERIOD)
+# define __GLOB_FLAGS   (GLOB_ERR|GLOB_MARK|GLOB_NOSORT|GLOB_DOOFFS  \
+                         |GLOB_NOESCAPE|GLOB_NOCHECK|GLOB_APPEND     \
+                         |GLOB_PERIOD)
 #endif
 
 /* Error returns from 'glob'.  */
@@ -137,25 +137,47 @@ typedef struct
 #if !defined __USE_FILE_OFFSET64 || defined __GLOB_GNULIB
 extern int glob (const char *__restrict __pattern, int __flags,
                  int (*__errfunc) (const char *, int),
-                 glob_t *__restrict __pglob) __THROW;
+                 glob_t *__restrict __pglob) __THROWNL;
 
 /* Free storage allocated in PGLOB by a previous 'glob' call.  */
 extern void globfree (glob_t *__pglob) __THROW;
 #else
-extern int __REDIRECT_NTH (glob, (const char *__restrict __pattern,
-                                  int __flags,
-                                  int (*__errfunc) (const char *, int),
-                                  glob_t *__restrict __pglob), glob64);
+# ifdef __USE_TIME_BITS64
+extern int __REDIRECT_NTHNL (glob, (const char *__restrict __pattern,
+                                   int __flags,
+                                   int (*__errfunc) (const char *, int),
+                                   glob_t *__restrict __pglob),
+                            __glob64_time64);
+
+extern void __REDIRECT_NTH (globfree, (glob_t *__pglob),
+                           __globfree64_time64);
+# else
+extern int __REDIRECT_NTHNL (glob, (const char *__restrict __pattern,
+                                    int __flags,
+                                    int (*__errfunc) (const char *, int),
+                                    glob_t *__restrict __pglob), glob64);
 
 extern void __REDIRECT_NTH (globfree, (glob_t *__pglob), globfree64);
+# endif
 #endif
 
 #ifdef __USE_LARGEFILE64
+# ifdef __USE_TIME_BITS64
+extern int __REDIRECT_NTHNL (glob64, (const char *__restrict __pattern,
+                                     int __flags,
+                                     int (*__errfunc) (const char *, int),
+                                     glob64_t *__restrict __pglob),
+                            __glob64_time64);
+
+extern void __REDIRECT_NTH (globfree64, (glob64_t *__pglob),
+                           __globfree64_time64);
+# else
 extern int glob64 (const char *__restrict __pattern, int __flags,
                    int (*__errfunc) (const char *, int),
-                   glob64_t *__restrict __pglob) __THROW;
+                   glob64_t *__restrict __pglob) __THROWNL;
 
 extern void globfree64 (glob64_t *__pglob) __THROW;
+# endif
 #endif
 
 

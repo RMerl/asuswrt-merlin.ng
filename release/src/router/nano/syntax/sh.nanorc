@@ -14,18 +14,18 @@ color brightgreen "^[A-Za-z0-9_-]+\(\)"
 # Keywords, symbols, and comparisons.
 color green "\<(break|case|continue|do|done|elif|else|esac|exit|fi|for|function|if|in|read|return|select|shift|then|time|until|while)\>"
 color green "\<(declare|eval|exec|export|let|local)\>"
-color green "[{}():;|`$<>!=&\\]" "(\]|\[)"
+color green "[][{}():;|`$<>!=&\]"
 color green "-(eq|ne|gt|lt|ge|le|ef|ot|nt)\>"
 
 # Short and long options.
-color brightmagenta "[[:blank:]]-[A-Za-z]\>" "[[:blank:]]--[A-Za-z-]+\>"
+color brightmagenta "[[:blank:]](-[A-Za-z]|--\<[A-Za-z-]+)\>"
 
 # Common commands.
 color brightblue "\<(awk|cat|cd|ch(grp|mod|own)|cp|cut|echo|env|grep|head|install|ln|make|mkdir|mv|popd|printf|pushd|rm|rmdir|sed|set|sort|tail|tar|touch|umask|unset)\>"
 color normal "[.-]tar\>"
 
 # Basic variable names (no braces).
-color brightred "\$[-0-9@*#?$!]" "\$[[:alpha:]_][[:alnum:]_]*"
+color brightred "\$([-@*#?$!0-9]|[[:alpha:]_][[:alnum:]_]*)"
 # More complicated variable names; handles braces and replacements and arrays.
 color brightred "\$\{[#!]?([-@*#?$!]|[0-9]+|[[:alpha:]_][[:alnum:]_]*)(\[([[:blank:]]*[[:alnum:]_]+[[:blank:]]*|@)\])?(([#%/]|:?[-=?+])[^}]*\}|\[|\})"
 
@@ -33,7 +33,7 @@ color brightred "\$\{[#!]?([-@*#?$!]|[0-9]+|[[:alpha:]_][[:alnum:]_]*)(\[([[:bla
 color cyan "(^|[[:blank:]])#.*"
 
 # Strings.
-color brightyellow ""(\\.|[^"])*"" "'(\\.|[^'])*'"
+color brightyellow ""([^"\]|\\.)*"|'([^'\]|\\.)*'"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

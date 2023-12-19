@@ -11,8 +11,8 @@ color brightyellow "\.(ascii|asciz|byte|double|float|hword|int|long|short|single
 color brightred "^[[:blank:]]*[.0-9A-Za-z_]*:"
 color brightcyan "^[[:blank:]]*#[[:blank:]]*(define|undef|include|ifn?def|endif|elif|else|if|warning|error)"
 
-# Strings.
-color brightyellow "<[^= 	]*>" ""(\\.|[^"])*""
+# Strings and names of included files.
+color brightyellow ""([^"\]|\\.)*"|<[^= 	]*>"
 
 # Comments.
 color brightblue "//.*"

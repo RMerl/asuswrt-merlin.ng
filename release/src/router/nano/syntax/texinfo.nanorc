@@ -8,17 +8,24 @@ header "^\\input texinfo"
 magic "Texinfo source"
 comment "@c "
 
+# How the manual gets listed in the directory node.
+color purple start="^@direntry" end="^@end direntry"
+
 # Command arguments, trailing and enclosed.
-color cyan "^@[a-z]+[[:space:]]+.*$"
-color brightmagenta "@[a-zA-Z]+\{[^}]*\}"
+color cyan "^@[a-z]+[[:space:]]+.*"
+color lightmagenta "@([a-z]+|,|H|U)\{([^}]|@\}|@[a-z]+\{[^}]*\})*\}"
 # Commands themselves.
-color yellow "@[a-zA-Z]+\{?" "\}"
+color yellow "^@[a-z]+([[:space:]]|$)|@([a-z]+|,|H|U|AA|AE|DH|L|OE?|(La)?TeX|TH)\{|\}"
+color pink "@[!"'&*./:=?@\^`{}~-]"
+
+# Special separator for headings and footings.
+color mint "@\|"
 
 # Menu items.
 color brightred "^\*[[:space:]]+.*::.*"
 
 # Comments.
-color green "@c[[:space:]]+.*"
+color green "@c(omment)?[[:space:]]+.*"
 
 # Trailing whitespace.
 color ,green "[[:space:]]+$"

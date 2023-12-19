@@ -1,5 +1,5 @@
-# sys_stat_h.m4 serial 41   -*- Autoconf -*-
-dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# sys_stat_h.m4 serial 42   -*- Autoconf -*-
+dnl Copyright (C) 2006-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -46,7 +46,7 @@ AC_DEFUN_ONCE([gl_SYS_STAT_H],
   dnl Check for declarations of anything we want to poison if the
   dnl corresponding gnulib module is not in use.
   gl_WARN_ON_USE_PREPARE([[#include <sys/stat.h>
-    ]], [fchmodat fstat fstatat futimens getumask lchmod lstat
+    ]], [chmod fchmodat fstat fstatat futimens getumask lchmod lstat
     mkdirat mkfifo mkfifoat mknod mknodat stat utimensat])
 
   AC_REQUIRE([AC_C_RESTRICT])
@@ -72,6 +72,7 @@ AC_DEFUN([gl_SYS_STAT_H_REQUIRE_DEFAULTS],
 [
   m4_defun(GL_MODULE_INDICATOR_PREFIX[_SYS_STAT_H_MODULE_INDICATOR_DEFAULTS], [
     gl_UNISTD_H_REQUIRE_DEFAULTS dnl for REPLACE_FCHDIR
+    gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_CHMOD])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FCHMODAT])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FSTAT])
     gl_MODULE_INDICATOR_INIT_VARIABLE([GNULIB_FSTATAT])
@@ -112,6 +113,7 @@ AC_DEFUN([gl_SYS_STAT_H_DEFAULTS],
   HAVE_MKNOD=1;         AC_SUBST([HAVE_MKNOD])
   HAVE_MKNODAT=1;       AC_SUBST([HAVE_MKNODAT])
   HAVE_UTIMENSAT=1;     AC_SUBST([HAVE_UTIMENSAT])
+  REPLACE_CHMOD=0;      AC_SUBST([REPLACE_CHMOD])
   REPLACE_FCHMODAT=0;   AC_SUBST([REPLACE_FCHMODAT])
   REPLACE_FSTAT=0;      AC_SUBST([REPLACE_FSTAT])
   REPLACE_FSTATAT=0;    AC_SUBST([REPLACE_FSTATAT])

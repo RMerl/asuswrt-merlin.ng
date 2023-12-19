@@ -12,9 +12,9 @@ color green ":[[:blank:]]*\-?(0|[1-9][0-9]*)(\.[0-9]+)?([Ee]?[-+]?[0-9]+)?"
 # Values (well, any string).
 color brightmagenta "".+""
 # Hex numbers (used as value).
-color green ":[[:blank:]]*"#[0-9abcdefABCDEF]+""
+color green ":[[:blank:]]*"#[[:xdigit:]]+""
 # Escapes.
-color green "\\\\" "\\"" "\\[bfnrt]" "\\u[0-9abcdefABCDEF]{4})"
+color green "\\(["\/bfnrt]|u[[:xdigit:]]{4})"
 # Special words.
 color green "\<(true|false|null)\>"
 
@@ -22,9 +22,8 @@ color green "\<(true|false|null)\>"
 color brightblue ""[^"]+"[[:blank:]]*:"
 
 # Brackets, braces, and separators.
-color brightblue "\[" "\]"
-color brightred "\{" "\}"
-color brightred "," ":"
+color brightblue "[][]"
+color brightred "[{},:]"
 
 # Comments.
 color cyan "(^|[[:blank:]]+)(//|#).*"

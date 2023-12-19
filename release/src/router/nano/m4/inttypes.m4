@@ -1,5 +1,5 @@
-# inttypes.m4 serial 35
-dnl Copyright (C) 2006-2021 Free Software Foundation, Inc.
+# inttypes.m4 serial 36
+dnl Copyright (C) 2006-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
@@ -36,7 +36,7 @@ AC_DEFUN_ONCE([gl_INTTYPES_INCOMPLETE],
 AC_DEFUN([gl_INTTYPES_PRI_SCN],
 [
   PRIPTR_PREFIX=
-  if test -n "$STDINT_H"; then
+  if $GL_GENERATE_STDINT_H; then
     dnl Using the gnulib <stdint.h>. It defines intptr_t to 'long' or
     dnl 'long long', depending on _WIN64.
     AC_COMPILE_IFELSE(

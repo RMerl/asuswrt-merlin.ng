@@ -1,9 +1,9 @@
-dnl Copyright (C) 2003-2021 Free Software Foundation, Inc.
+dnl Copyright (C) 2003-2023 Free Software Foundation, Inc.
 dnl This file is free software; the Free Software Foundation
 dnl gives unlimited permission to copy and/or distribute it,
 dnl with or without modifications, as long as this notice is preserved.
 
-dnl serial 11
+dnl serial 12
 
 AC_DEFUN([gl_UTIMENS],
 [
@@ -11,7 +11,9 @@ AC_DEFUN([gl_UTIMENS],
   AC_REQUIRE([gl_FUNC_UTIMES])
   AC_REQUIRE([gl_CHECK_TYPE_STRUCT_TIMESPEC])
   AC_REQUIRE([AC_CANONICAL_HOST]) dnl for cross-compiles
-  AC_CHECK_FUNCS_ONCE([futimes futimesat futimens utimensat lutimes])
+  AC_CHECK_FUNCS_ONCE([futimens utimensat lutimes])
+  gl_CHECK_FUNCS_ANDROID([futimes], [[#include <sys/time.h>]])
+  gl_CHECK_FUNCS_ANDROID([futimesat], [[#include <sys/time.h>]])
 
   if test $ac_cv_func_futimens = no && test $ac_cv_func_futimesat = yes; then
     dnl FreeBSD 8.0-rc2 mishandles futimesat(fd,NULL,time).  It is not

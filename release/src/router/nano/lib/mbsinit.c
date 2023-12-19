@@ -1,18 +1,18 @@
 /* Test for initial conversion state.
-   Copyright (C) 2008-2021 Free Software Foundation, Inc.
+   Copyright (C) 2008-2023 Free Software Foundation, Inc.
    Written by Bruno Haible <bruno@clisp.org>, 2008.
 
-   This program is free software: you can redistribute it and/or modify
-   it under the terms of the GNU General Public License as published by
-   the Free Software Foundation; either version 3 of the License, or
-   (at your option) any later version.
+   This file is free software: you can redistribute it and/or modify
+   it under the terms of the GNU Lesser General Public License as
+   published by the Free Software Foundation; either version 2.1 of the
+   License, or (at your option) any later version.
 
-   This program is distributed in the hope that it will be useful,
+   This file is distributed in the hope that it will be useful,
    but WITHOUT ANY WARRANTY; without even the implied warranty of
    MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
-   GNU General Public License for more details.
+   GNU Lesser General Public License for more details.
 
-   You should have received a copy of the GNU General Public License
+   You should have received a copy of the GNU Lesser General Public License
    along with this program.  If not, see <https://www.gnu.org/licenses/>.  */
 
 #include <config.h>
@@ -20,7 +20,6 @@
 /* Specification.  */
 #include <wchar.h>
 
-#include "verify.h"
 
 #if GNULIB_defined_mbstate_t
 
@@ -39,7 +38,7 @@
      - In wc -> mb direction, mbstate_t contains no information. In other
        words, it is always in the initial state.  */
 
-verify (sizeof (mbstate_t) >= 4);
+static_assert (sizeof (mbstate_t) >= 4);
 
 int
 mbsinit (const mbstate_t *ps)

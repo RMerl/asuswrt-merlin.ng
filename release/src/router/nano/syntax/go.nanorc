@@ -26,17 +26,16 @@ color magenta "\<(break|continue|fallthrough|goto|return)\>"
 color brightcyan "\<(package|import)\>"
 
 # Literals.
-color red "\<([1-9][0-9]*|0[0-7]*|0[xX][0-9A-Fa-f]+)\>"
+color red "\<(true|false|nil|iota|_)\>"
+color red "\<([1-9][0-9]*|0[0-7]*|0[xX][[:xdigit:]]+)\>"
 color red "\<[0-9]+\.[0-9]*([eE][+-]?[0-9]+)?i?\>"
 color red "\<[0-9]+[eE][+-]?[0-9]+i?\>"
 color red "\B\.[0-9]+([eE][+-]?[0-9]+)?i?\>"
 color red "\<[0-9]+i\>"
 
 # Strings and characters; slightly fuzzy.
-color red "\<(true|false|nil|iota|_)\>"
-color red "'(\\.|[^'])+'"
-color red ""(\\.|[^"])*""
-color red start=""(\\.|[^"])*\\[[:blank:]]*$" end="^(\\.|[^"])*""
+color red ""([^"\]|\\.)*"|'([^'\]|\\.)+'"
+color red start=""([^"\]|\\.)*\\[[:blank:]]*$" end="^([^"\]|\\.)*""
 
 # Comments.
 color brightblue "//.*"

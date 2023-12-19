@@ -5744,14 +5744,14 @@ minidlna/configure:
 		cd minidlna; autoreconf -fi; \
 	fi
 
-minidlna-configure: minidlna/configure
+minidlna-configure: minidlna/configure shared/version.h
 	if [ ! -f minidlna/Makefile ] ; then \
 		cd minidlna; \
 		$(CONFIGURE) \
 		--with-log-path=/tmp/minidlna \
 		--with-db-path=/tmp/minidlna \
 		--with-os-name=asuswrt \
-		--with-os-version=$(LINUX_KERNEL) \
+		--with-os-version=$(shell cat shared/version.h | grep RT_SERIALNO | cut -d'"' -f 2) \
 		--with-os-url=http://www.asus.com/ \
 		--enable-tivo \
 		ac_cv_header_stddef_h=no ac_cv_header_stdlib_h=no \

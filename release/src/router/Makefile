@@ -1617,6 +1617,7 @@ obj-$(RTCONFIG_TRANSMISSION) += Transmission curl libevent-2.0.21
 obj-$(RTCONFIG_SAMBASRV) += wsdd2
 
 # Begin merlin add-ons
+obj-y += ethtool-6.2
 obj-$(RTCONFIG_NANO) += ncurses-6.3
 obj-$(RTCONFIG_NANO) += nano
 obj-$(RTCONFIG_OPENVPN) += ministun

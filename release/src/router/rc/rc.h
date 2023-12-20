@@ -2330,6 +2330,7 @@ extern void stop_auto46det(void);
 extern void s46print(const char *logpath, const char *format, ...);
 #define S46_DBG(fmt, args...) \
 	do { \
+		if (f_exists(S46_DEBUG) > 0) \
 		s46print(S46_LOG_PATH, "[%s:(%d)]"fmt, __FUNCTION__, __LINE__, ##args); \
 	} while(0)
 extern int _nvram_check(const char *name, const char *value);

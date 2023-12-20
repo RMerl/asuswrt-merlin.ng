@@ -52,6 +52,7 @@
             "ServiceIP1": "208.67.222.123",
             "ServiceIP2": "208.67.220.123",
             "Description": "Blocks adult contents.",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "6":{
@@ -69,6 +70,7 @@
             "ServiceIP1": "1.1.1.1",
             "ServiceIP2": "1.0.0.1",
             "Description": "The Internet's Fatest, Privacy-First DNS Recolver.",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "8":{
@@ -88,6 +90,7 @@
             "ServiceIP2": "216.146.36.36",
             "Description": "Provide the safe and fast experience on all devices connected to your network.",
             "url": "https://help.dyn.com/dyn-internet-guide/",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "10":{
@@ -97,6 +100,7 @@
             "ServiceIP2": "37.235.1.177",
             "Description": "Surf freely. No DNS redirects. No Logging.",
             "url": "https://freedns.zone/en/why/",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "11":{
@@ -104,6 +108,7 @@
             "DNSService": "Google",
             "ServiceIP1": "8.8.8.8",
             "ServiceIP2": "8.8.4.4",
+            "Description": "",
             "confirmed": "Yes",
             "ping_target": "Yes"
         },
@@ -112,6 +117,8 @@
             "DNSService": "Level3",
             "ServiceIP1": "209.244.0.3",
             "ServiceIP2": "209.244.0.4",
+            "Description": "",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "13":{
@@ -119,6 +126,8 @@
             "DNSService": "Neustar",
             "ServiceIP1": "156.154.70.1",
             "ServiceIP2": "156.154.71.1",
+            "Description": "",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "14":{
@@ -127,6 +136,7 @@
             "ServiceIP1": "208.67.222.222",
             "ServiceIP2": "208.67.220.220",
             "Description": "Regular OpenDNS server (configurable through their portal)",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "15":{
@@ -134,6 +144,8 @@
             "DNSService": "SAFEDNS",
             "ServiceIP1": "195.46.39.39",
             "ServiceIP2": "195.46.39.40",
+            "Description": "",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "16":{
@@ -161,6 +173,7 @@
             "ServiceIP1": "8.26.56.26",
             "ServiceIP2": "8.20.247.20",
             "Description": "Block malicious content",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "19":{
@@ -193,13 +206,21 @@
             "ping_target": "No"
         },
     "22":{
+            "FilterMode": "",
             "DNSService": "Baidu",
             "ServiceIP1": "180.76.76.76",
+            "ServiceIP2": "",
+            "Description": "",
+            "confirmed": "No",
             "ping_target": "CN"
         },
     "23":{
+            "FilterMode": "",
             "DNSService": "AliDNS",
             "ServiceIP1": "223.5.5.5",
+            "ServiceIP2": "",
+            "Description": "",
+            "confirmed": "No",
             "ping_target": "CN"
         }
 }

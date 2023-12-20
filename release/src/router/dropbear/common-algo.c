@@ -308,6 +308,12 @@ algo_type sshkex[] = {
 	{SSH_EXT_INFO_C, 0, NULL, 1, NULL},
 #endif
 #endif
+#if DROPBEAR_CLIENT
+	{SSH_STRICT_KEX_C, 0, NULL, 1, NULL},
+#endif
+#if DROPBEAR_SERVER
+	{SSH_STRICT_KEX_S, 0, NULL, 1, NULL},
+#endif
 	{NULL, 0, NULL, 0, NULL}
 };
 

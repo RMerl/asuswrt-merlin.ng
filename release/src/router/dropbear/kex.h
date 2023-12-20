@@ -83,6 +83,9 @@ struct KEXState {
 
 	unsigned our_first_follows_matches : 1;
 
+	/* Boolean indicating that strict kex mode is in use */
+	unsigned int strict_kex;
+
 	time_t lastkextime; /* time of the last kex */
 	unsigned int datatrans; /* data transmitted since last kex */
 	unsigned int datarecv; /* data received since last kex */

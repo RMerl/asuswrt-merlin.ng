@@ -16386,6 +16386,7 @@ static int set_uploaded_cert_as_cacert(const char *cert_fn, const char *key_fn)
 		}
 #endif
 
+#if 0
 		for (p = &dns_chk_list[0]; p && *p; ++p) {
 			if (*p == '\0')
 				continue;
@@ -16395,6 +16396,7 @@ static int set_uploaded_cert_as_cacert(const char *cert_fn, const char *key_fn)
 				logmessage("httpd", "[%s] is not defined in subject alternate name of certificate.", *p);
 			}
 		}
+#endif
 		ret = 2;
 	} else {
 		_dprintf("%s: CA is not defined in basic constrain [%s]\n", __func__, b_constr);

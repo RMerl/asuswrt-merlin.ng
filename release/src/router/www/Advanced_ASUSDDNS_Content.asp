@@ -1086,7 +1086,7 @@ function show_cert_details(){
 			$("#cert_status").css("color", "#FFCC00")
 		}
 		else{
-			document.getElementById("cert_status").innerHTML = "<#vpn_openvpn_KC_Authorizing#>";
+			document.getElementById("cert_status").innerHTML = "Unknown or processing...";
 			setTimeout("get_cert_info();", 1000);
 		}
 	}

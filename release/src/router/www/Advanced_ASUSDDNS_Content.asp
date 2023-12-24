@@ -592,9 +592,6 @@ function ddns_load_body(){
 		var ddnsHint = getDDNSState(ddns_return_code, ddns_hostname_x_t, ddns_old_name);
 
 		if(ddnsHint != "" && le_re_ddns != "1"){
-            setTimeout(() => {
-              alert(ddnsHint);
-            }, 1000);
 			document.getElementById("ddns_result").innerHTML = ddnsHint;
 			document.getElementById('ddns_result_tr').style.display = "";
 		}

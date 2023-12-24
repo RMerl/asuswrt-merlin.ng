@@ -2035,10 +2035,6 @@ void start_dnsmasq(void)
 #ifdef RTCONFIG_WIREGUARD
 	write_wgs_dnsmasq_config(fp);
 #endif
-#if defined(RTCONFIG_DNSMQ_USER)
-	if(*nvram_safe_get("dnsmq_user_domain") && *nvram_safe_get("dnsmq_user_ip"))
-		fprintf(fp, "address=/%s/%s\n", nvram_safe_get("dnsmq_user_domain"), nvram_safe_get("dnsmq_user_ip"));
-#endif
 
 	/* Static IP MAC binding */
 	if (nvram_match("dhcp_static_x","1")) {
@@ -6306,25 +6302,7 @@ start_httpd(void)
 	}
 
 #ifdef RTCONFIG_HTTPS
-#ifdef RTCONFIG_LETSENCRYPT
-	if(nvram_match("le_enable", "1")) {
-//		if(!is_le_cert(HTTPD_CERT) || !cert_key_match(HTTPD_CERT, HTTPD_KEY)) {
-			cp_le_cert(LE_FULLCHAIN, HTTPD_CERT);
-			cp_le_cert(LE_KEY, HTTPD_KEY);
-//		}
-	}
-	else if(nvram_match("le_enable", "2")){
-		if(f_exists(UPLOAD_CERT) && f_exists(UPLOAD_KEY)) {
-			eval("cp", UPLOAD_CERT, HTTPD_CERT);
-			eval("cp", UPLOAD_KEY, HTTPD_KEY);
-		}
-	}
-	else
-#endif
-	{ // generate cert/key in httpd
-		unlink(HTTPD_CERT);
-		unlink(HTTPD_KEY);
-	}
+	prepare_cert_in_etc();
 
 	enable = nvram_get_int("http_enable");
 	if (enable != 0) {
@@ -17537,7 +17515,7 @@ retry_wps_enr:
 	}
         else if (strncmp(script, "clearvpnclient", 14) == 0)
 	{
-                reset_ovpn_setting(OVPN_TYPE_CLIENT, nvram_get_int("vpn_client_unit"), 1);
+		reset_ovpn_setting(OVPN_TYPE_CLIENT, nvram_get_int("vpn_client_unit"), 1);
 	}
 #endif
 #ifdef RTCONFIG_YANDEXDNS
@@ -17547,7 +17525,7 @@ retry_wps_enr:
 			stop_dnsmasq();
 		if (action & RC_SERVICE_START) {
 			update_resolvconf();
- 			start_dnsmasq();
+			start_dnsmasq();
  		}
 		start_firewall(wan_primary_ifunit(), 0);
 	}

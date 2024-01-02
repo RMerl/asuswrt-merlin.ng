@@ -2724,7 +2724,6 @@ void write_access_restriction(FILE *fp_ipv4, FILE *fp_ipv6)
 	int  https_port = 0;
 	int  http_port = 0;
 	int  cnt = 0;
-	int  cnt6 = 0;
 	char webports[16];
 	char sshport[8];
 	FILE *fp;
@@ -2753,14 +2752,30 @@ void write_access_restriction(FILE *fp_ipv4, FILE *fp_ipv6)
 #endif
 			strcpy(sshport, "");
 
-		fprintf(fp, "-A INPUT -p tcp -m multiport --dport %s%s%s -j ACCESS_RESTRICTION\n",
-			    webports, sshport, nvram_get_int("telnetd_enable") == 1 ? ",23" : "");
+		if (fp_ipv4)
+			fprintf(fp_ipv4, "-A INPUT -p tcp -m multiport --dport %s%s%s -j ACCESS_RESTRICTION\n",
+				webports, sshport, nvram_get_int("telnetd_enable") == 1 ? ",23" : "");
+		if (fp_ipv6)
+			fprintf(fp_ipv6, "-A INPUT -p tcp -m multiport --dport %s%s%s -j ACCESS_RESTRICTION\n",
+				webports, sshport, nvram_get_int("telnetd_enable") == 1 ? ",23" : "");
 
 		nvp = nv = strdup(nvram_safe_get("restrict_rulelist"));
 		while (nv && (b = strsep(&nvp, "<")) != NULL) {
 			if ((vstrsep(b, ">", &enable, &srcip, &accessType) != 3)) continue;
 			if (!strcmp(enable, "0")) continue;
 
+			if (strchr(srcip, ':')) {
+				if (fp_ipv6)
+					fp = fp_ipv6;
+				else
+					continue;
+			}
+			else {
+				if (fp_ipv4)
+					fp = fp_ipv4;
+				else
+					continue;
+			}
 			cnt++;
 			if (!(atoi(accessType) ^ ACCESS_ALL)) {
 #ifdef RTCONFIG_PROTECTION_SERVER
@@ -2776,7 +2791,8 @@ void write_access_restriction(FILE *fp_ipv4, FILE *fp_ipv6)
 #ifdef RTCONFIG_SSH
 			if ((atoi(accessType) & ACCESS_SSH) && nvram_get_int("sshd_enable") != 0 ) {
 #ifdef RTCONFIG_PROTECTION_SERVER
-				fprintf(fp, "-A ACCESS_RESTRICTION -s %s -p tcp --dport %d -j RETURN\n", srcip, nvram_get_int("sshd_port") ? : 22);
+				// TODO: PROTECTION_SERVER support IPv6
+				fprintf(fp, "-A ACCESS_RESTRICTION -s %s -p tcp --dport %d -j %s\n", srcip, nvram_get_int("sshd_port") ? : 22, (fp==fp_ipv6)?"ACCEPT":"RETURN");
 #else
 				fprintf(fp, "-A ACCESS_RESTRICTION -s %s -p tcp --dport %d -j ACCEPT\n", srcip, nvram_get_int("sshd_port") ? : 22);
 #endif
@@ -2795,7 +2811,7 @@ void write_access_restriction(FILE *fp_ipv4, FILE *fp_ipv6)
 		if(cnt && fp_ipv4) {
 			fprintf(fp_ipv4, "-A ACCESS_RESTRICTION -j DROP\n");
 		}
-		if(cnt6 && fp_ipv6) {
+		if(cnt && fp_ipv6) {
 			fprintf(fp_ipv6, "-A ACCESS_RESTRICTION -j DROP\n");
 		}
 	}

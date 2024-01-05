@@ -4,7 +4,7 @@
 
 MAX_WLAN_ADAPTER=4
 NUM_PROCESSOR=`cat /proc/cpuinfo | grep -c "processor"`
-NUM_WL_INTF=`ls -al /sys/class/net/*/wireless 2>&1 | grep -c "eth"`
+NUM_WL_INTF=`nvram get wl_ifnames | wc -w`
 
 #$(getStrByPos "12 33 44" " " 2) will return 33
 getStrByPos() {

@@ -59,7 +59,7 @@ typedef enum
 #define MISC_INFO_FILE_PATH		"/tmp/misc.json"
 
 /* for RC_SUPPORT */
-#define WPA3                    (1 << 0)
+#define AMAS_UTILS_WPA3                    (1 << 0)	/* cfg_capability.h has a WPA3 definition with different value. */
 ////////////////////////////////////////////////////////////////////////////////
 //
 //	Define for misc info
@@ -145,6 +145,7 @@ typedef struct _id_info{
 typedef struct _bundle_key{
 	unsigned char bundlekey[MAX_VERSION_TEXT_LENGTH+1];
 	unsigned int  bundlekeylen;
+	int cost;
 }bundle_key,*ptr_bundle_key;
 
 
@@ -157,7 +158,7 @@ AMAS_FUNC char* 		AMAS_API amas_utils_version_text(void);
 AMAS_FUNC char* 		AMAS_API amas_utils_str_error(AMAS_RESULT code);
 AMAS_FUNC void 			AMAS_API amas_utils_set_debug(unsigned int enable);
 #if defined(USE_GET_TLV_SUPPORT_MAC)
-AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int capability5g, char *ifmac, int *cost);
+AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int capability5g, char *ifmac, int *cost, unsigned char *mac);
 #else	// USE_GET_TLV_SUPPORT_MAC
 AMAS_FUNC AMAS_RESULT	AMAS_API amas_get_cost(char *ifname, int bandindex, int capability5g, int *cost);
 #endif	// USE_GET_TLV_SUPPORT_MAC

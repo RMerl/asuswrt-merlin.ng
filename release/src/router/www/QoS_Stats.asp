@@ -93,11 +93,14 @@ if (qos_type == 0 || qos_type == 3) {
 var class_array=[tcdata_filter_array[9], tcdata_filter_array[8], tcdata_filter_array[4], tcdata_filter_array[5], tcdata_filter_array[24],
                  tcdata_filter_array[3], tcdata_filter_array[7], tcdata_filter_array[13]];
 
-if (tcdata_filter_array[4] == tcdata_filter_array[13]) {	// If identical then it's e-Learning - apply to last entry
-	class_array[7] = tcdata_filter_array[13];
+// Find which class is duplicated - that one will be eLearning - apply to entry 7, and unique between 14/54 to entry 2.
+if (tcdata_filter_array[4] == tcdata_filter_array[13]) {
 	class_array[2] = tcdata_filter_array[54];
-} else {
-	class_array[7] = tcdata_filter_array[63];		// The second (duplicate) is e-learning - apply to last entry
+} else if (tcdata_filter_array[4] == tcdata_filter_array[63]) {
+	class_array[7] = tcdata_filter_array[63];
+	class_array[2] = tcdata_filter_array[54];
+} else if (tcdata_filter_array[54] == tcdata_filter_array[63]) {
+	class_array[7] = tcdata_filter_array[63];
 }
 
 var pie_obj_ul, pie_obj_dl;

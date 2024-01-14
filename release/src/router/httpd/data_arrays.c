@@ -744,7 +744,7 @@ int parseTcFilter(webs_t wp, const char *interface) {
 	int ret;
 	char *mark = NULL;
 	char *flowid = NULL;
-	int value;
+	int value, value2;
 
 	ret = websWrite(wp, "var tcdata_filter_array = [];\n");
 
@@ -767,11 +767,13 @@ int parseTcFilter(webs_t wp, const char *interface) {
 
 		mark = strstr(buffer, "mark ");
 		if (mark) {
-			if (sscanf(mark, "mark %x", &value) == 1) {
-				foundmark = (value & 0x3F0000)/0xFFFF;
-				if (foundmark == lastmark) {
-					foundmark += 50;
-				}
+			if (sscanf(mark, "mark %x %x", &value, &value2) != 2 || value2 != 0xc03f0000) {
+				foundflowid = -1;
+				continue;
+			}
+			foundmark = (value & 0x3F0000)/0xFFFF;
+			if (foundmark == lastmark) {
+				foundmark += 50;
 			}
 		}
 

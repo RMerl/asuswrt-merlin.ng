@@ -478,7 +478,7 @@ function overHint(itemNum){
 	if(itemNum == 8){
 		if (based_modelid == "GT-AXE16000") {
 			band_unit = [ 3, 0, 1, 2];
-			radio_state = [ wlan2_radio_flag, wlan0_radio_flag, wlan1_radio_flag, "<% nvram_get("wl2_radio"); %>" ];
+			radio_state = ["<% nvram_get("wl3_radio"); %>", wlan0_radio_flag, wlan1_radio_flag, wlan2_radio_flag ];
 		} else {
 			band_unit = [ 0, 1, 2, 2];
 			radio_state = [ wlan0_radio_flag, wlan1_radio_flag, wlan2_radio_flag, wlan2_radio_flag ];

@@ -1018,7 +1018,6 @@ endif
 update:
 	wget http://nw-dlcdnet.asus.com/plugin/js/tz_db.json -O ajax/tz_db.json
 	wget http://nw-dlcdnet.asus.com/plugin/js/dns_db.json -O ajax/dns_db.json
-	wget http://nw-dlcdnet.asus.com/plugin/js/ouiDB.json -O ajax/ouiDB.json
 	wget http://nw-dlcdnet.asus.com/plugin/js/gameList.json -O ajax/gameList.json
 	wget http://nw-dlcdnet.asus.com/plugin/js/logFilter.json -O ajax/logFilter.json
 	wget http://nw-dlcdnet.asus.com/plugin/js/extend_custom_icon.json -O ajax/extend_custom_icon.json

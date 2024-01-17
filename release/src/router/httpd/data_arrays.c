@@ -224,6 +224,8 @@ ej_get_upnp_array(int eid, webs_t wp, int argc, char_t **argv)
 
 	while (fgets(line, sizeof(line), fp) != NULL)
 	{
+		desc[0] = '\0';
+
 		if (sscanf(line,
 			"%3[^:]:"
 			"%5[^:]:"
@@ -231,7 +233,7 @@ ej_get_upnp_array(int eid, webs_t wp, int argc, char_t **argv)
 			"%5[^:]:"
 			"%14[^:]:"
 			"%199[^\n]",
-			proto, eport, iaddr, iport, timestamp, desc) < 6) continue;
+			proto, eport, iaddr, iport, timestamp, desc) < 5) continue;
 
 		if (str_escape_quotes(desc2, desc, sizeof(desc2)) == 0)
 			strlcpy(desc2, desc, sizeof(desc2));

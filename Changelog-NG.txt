@@ -1,16 +1,29 @@
 Asuswrt-Merlin Changelog
 ========================
 
-3004.388.6 (xx-xxx-xxxx)
-  - NOTE: Asus provided GPL code for the RT-AX56U, this model will
-          be included with this release, despite still being
-          considered being end-of-life.
+3004.388.6 (20-Jan-2024)
+  - NOTE: Since Asus provided GPL code for the RT-AX56U, this model
+          will exceptionally be included with this release, despite
+          still being considered being end-of-life.
+
+  - NOTE: Asus reworked the way SSL certificates are handled in
+          24353.  The automatic conversion code does not always
+          work properly, you might need to force your router
+          to re-generate its SSL certificates by toggling the
+          SSL mode on the DDNS page.
 
   - NEW: Added ethtool to the firmware.
   - UPDATED: Merged GPL 388_24353.
   - UPDATED: nano to 7.2.
   - UPDATED: ncurses to 6.3.
+  - UPDATED: OUI database used by networkmap and the webui.
   - FIXED: CVE-2023-48795 in dropbear.
+  - FIXED: e-Learning category not always properly identified
+           on the Classification/Stats page.
+  - FIXED: Incorrectly report 2.4 GHz as being disabled when
+           disabling 6 GHz on the GT-AXE16000.
+  - FIXED: UPNP leases without a description would not appear
+           on the Forwarded Ports page.
 
 
 3004.388.5 (2-Dec-2023)

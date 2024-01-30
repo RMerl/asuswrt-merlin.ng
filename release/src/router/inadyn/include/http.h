@@ -89,7 +89,7 @@ typedef struct {
 int http_construct          (http_t *client);
 int http_destruct           (http_t *client, int num);
 
-int http_init               (http_t *client, char *msg);
+int http_init               (http_t *client, char *msg, int force);
 int http_exit               (http_t *client);
 
 int http_transaction        (http_t *client, http_trans_t *trans);

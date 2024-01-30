@@ -32,7 +32,7 @@
 static char *plugpath = NULL;   /* Set by first load. */
 static TAILQ_HEAD(, ddns_system) plugins = TAILQ_HEAD_INITIALIZER(plugins);
 
-int plugin_register(ddns_system_t *plugin)
+int plugin_register(ddns_system_t *plugin, const char *req)
 {
 	if (!plugin) {
 		errno = EINVAL;
@@ -47,15 +47,51 @@ int plugin_register(ddns_system_t *plugin)
 		return 0;
 	}
 
+	plugin->server_req = req;
 	TAILQ_INSERT_TAIL(&plugins, plugin, link);
 
 	return 0;
 }
 
+/* clones v4 plugin to create from default@foo.org -> ipv6@foo.org */
+int plugin_register_v6(ddns_system_t *plugin, const char *req)
+{
+	ddns_system_t *p;
+
+	p = malloc(sizeof(*p));
+	if (!p)
+		return 1;
+
+	memcpy(p, plugin, sizeof(*p));
+	/* default@foo.org -> ipv6@foo.org */
+	p->name = strdup(plugin->name);
+	p->cloned = 1;
+	sprintf(p->name, "ipv6%s", plugin->name + 7);
+
+	return plugin_register(p, req);
+}
+
 int plugin_unregister(ddns_system_t *plugin)
 {
-	TAILQ_REMOVE(&plugins, plugin, link);
+	ddns_system_t *plugin_v4, *plugin_v6;
+	char *name;
 
+	plugin_v4 = plugin_find(plugin->name, 0);
+	if (!plugin_v4)		/* already unregistered */
+		return 0;
+
+	name = strdup(plugin->name);
+	if (strstr(name, "default@"))
+		sprintf(name, "ipv6%s", plugin->name + 7);
+
+	TAILQ_REMOVE(&plugins, plugin, link);
+	plugin_v6 = plugin_find(name, 0);
+	if (plugin_v6 && plugin_v6->cloned) {
+		TAILQ_REMOVE(&plugins, plugin_v6, link);
+		free(plugin_v6->name);
+		free(plugin_v6);
+	}
+	free(name);
 	/* XXX: Unfinished, add cleanup code here! */
 
 	return 0;
@@ -69,6 +105,8 @@ static ddns_system_t *search_plugin(const char *name, int loose)
 		PLUGIN_ITERATOR(p, tmp) {
 			if (strcasestr(p->name, name))
 				return p;
+			if (p->alias && strcasestr(p->alias, name))
+				return p;
 		}
 
 		return NULL;
@@ -77,11 +115,103 @@ static ddns_system_t *search_plugin(const char *name, int loose)
 	PLUGIN_ITERATOR(p, tmp) {
 		if (!strcasecmp(p->name, name))
 			return p;
+		if (p->alias && !strcasecmp(p->alias, name))
+			return p;
 	}
 
 	return NULL;
 }
 
+/**
+ * plugin_list - List all plugins
+ *
+ * Returns:
+ * Always successful, returning POSIX OK(0).
+ */
+int plugin_list(int json)
+{
+	ddns_system_t *p, *tmp;
+
+	if (json) {
+		int prev = 0;
+
+		printf("[");
+		PLUGIN_ITERATOR(p, tmp) {
+			printf("%s{\"name\":\"%s\",", prev ? "," : "", p->name);
+			if (p->alias)
+				printf("\"alias\":\"%s\",", p->alias);
+			printf("\"checkip-server\":\"%s\","
+			       "\"checkip-url\":\"%s\","
+			       "\"update-server\":\"%s\","
+			       "\"update-url\":\"%s\"}",
+			       p->checkip_name, p->checkip_url,
+			       p->server_name, p->server_url);
+			prev++;
+		}
+		puts("]");
+	} else {
+		printf("\e[7m%-28s %-22s %-26s %-20s %-30s %-15s\e[0m\n", "PROVIDER", "ALIAS", "CHECKIP SERVER", "URL", "UPDATE SERVER", "URL");
+		PLUGIN_ITERATOR(p, tmp) {
+			printf("%-28s %-22s %-26s %-20s %-30s %s\n", p->name, p->alias ?: "",
+			       p->checkip_name, p->checkip_url,
+			       p->server_name, p->server_url);
+		}
+	}
+
+	return 0;
+}
+
+/**
+ * plugin_show - Show a specific plugin
+ * @name: full name of plugin, including default@ or ipv6@
+ *
+ * Returns:
+ * POSIX OK(0) when found, otherise 1.
+ */
+int plugin_show(char *name)
+{
+	ddns_system_t *p;
+	char *req;
+
+	p = plugin_find(name, 0);
+	if (!p)
+		p = plugin_find(name, 1);
+	if (!p) {
+		fprintf(stderr, "No such plugin '%s', even tried substring match\n", name);
+		return 1;
+	}
+
+	if (p->server_req) {
+		size_t i, pos = 0, len = strlen(p->server_req);
+
+		req = malloc(len * 2);
+		for (i = 0; i < len; i++) {
+			char c = p->server_req[i];
+
+			if (c == '\\')
+				req[pos++] = '\\';
+			req[pos++] = c;
+		}
+		req[pos++] = 0;
+	} else
+		req = strdup("");
+
+	printf("Name           : %s\n"
+	       "nousername     : %s\n"
+	       "checkip server : %s\n"
+	       "checkip URL    : %s\n"
+	       "update server  : %s\n"
+	       "update URL     : %s\n"
+	       "update REQ     : ",
+	       p->name,
+	       p->nousername ? "true" : "false",
+	       p->checkip_name, p->checkip_url,
+	       p->server_name, p->server_url);
+	puts(req);
+	free(req);
+
+	return 0;
+}
 
 /**
  * plugin_find - Find a plugin by name

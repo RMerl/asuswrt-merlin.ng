@@ -1,8 +1,9 @@
-/* Plugin for ZoneEdit
+/* Plugin for Zoneedit
  *
  * Copyright (C) 2003-2004  Narcis Ilisei <inarcis2002@hotpop.com>
  * Copyright (C) 2006       Steve Horbachuk
  * Copyright (C) 2010-2021  Joachim Wiberg <troglobit@gmail.com>
+ * Copyright (C) 2023       Sebastian Gottschall <s.gottschall@dd-wrt.com>
  *
  * This program is free software; you can redistribute it and/or
  * modify it under the terms of the GNU General Public License
@@ -25,8 +26,9 @@
 
 #define ZONEEDIT_UPDATE_IP_REQUEST					\
 	"GET %s?"							\
-	"host=%s&"							\
-	"dnsto=%s "							\
+	"hostname=%s&"							\
+	"myip=%s&"							\
+	"wildcard=%s "							\
 	"HTTP/1.0\r\n"							\
 	"Host: %s\r\n"							\
 	"Authorization: Basic %s\r\n"					\
@@ -41,56 +43,55 @@ static ddns_system_t plugin = {
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
-	.checkip_name = "dynamic.zoneedit.com",
-	.checkip_url  = "/checkip.html",
+	.checkip_name = DYNDNS_MY_IP_SERVER,
+	.checkip_url  = DYNDNS_MY_CHECKIP_URL,
+	.checkip_ssl  = DYNDNS_MY_IP_SSL,
 
-	.server_name  = "dynamic.zoneedit.com",
-	.server_url   = "/auth/dynamic.html"
+	.server_name  = "api.cp.zoneedit.com",
+	.server_url   = "/dyn/dynsite.php"
 };
 
 static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			ZONEEDIT_UPDATE_IP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			alias->name,
 			alias->address,
+			info->wildcard ? "ON" : "OFF",
 			info->server_name.name,
 			info->creds.encoded_password,
 			info->user_agent);
 }
 
 /*
- * ZoneEdit OK codes are:
- *  CODE=200, 201
- *  CODE=707, for duplicated updates
+ * NOERROR is the OK code here
  */
 static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 {
-	int code = -1;
+	char *resp = trans->rsp_body;
 
 	(void)info;
 	(void)alias;
 
 	DO(http_status_valid(trans->status));
 
-	sscanf(trans->rsp_body, "%*s CODE=\"%4d\" ", &code);
-	switch (code) {
-	case 200:
-	case 201:
-	case 707:
-		/* XXX: is 707 really OK? */
+	if (strstr(resp, "NOERROR") || strstr(resp, "no update required") || strstr(resp, "OK"))
 		return 0;
-	default:
-		break;
-	}
+	if (strstr(resp, "ACCESS"))
+		return RC_DDNS_RSP_AUTH_FAIL;
+	if (strstr(resp, "TOOSOON"))
+		return RC_DDNS_RSP_RETRY_LATER;
+	if (strstr(resp, "TOO_FREQ"))
+		return RC_DDNS_RSP_TOO_FREQUENT;
 
 	return RC_DDNS_RSP_NOTOK;
 }
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, ZONEEDIT_UPDATE_IP_REQUEST);
+	plugin_register_v6(&plugin, ZONEEDIT_UPDATE_IP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

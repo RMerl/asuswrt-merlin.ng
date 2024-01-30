@@ -1,0 +1,63 @@
+name: Bob the Builder
+
+# Run on push to any branch, except dev which is reserved for our
+# Coverity Scan runs (limited number of tokesn /24h).  Also run on any
+# pull request to check against regressions.
+#
+# Finally, make sure to run at least once a month to not trigger any
+# accound deactivation, e.g. FreeDNS.
+on:
+  push:
+    branches:
+      - '*'
+      - '!dev'
+  pull_request:
+    branches:
+      - '*'
+  schedule:
+    - cron: 0 7 1 * *
+
+jobs:
+  build:
+    # Verify we can build on latest Ubuntu with both gcc and clang
+    name: ${{ matrix.compiler }} build opts ${{ matrix.ssl }}
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        compiler: [gcc, clang]
+        ssl: [--disable-ssl, --enable-openssl]
+      fail-fast: false
+    env:
+      CC: ${{ matrix.compiler }}
+    steps:
+      - name: Installing dependencies
+        run: |
+          sudo apt-get -y update
+          sudo apt-get install -qq -y tree libconfuse-dev libgnutls28-dev
+      - uses: actions/checkout@v3
+      - name: Configure
+        run: |
+          ./autogen.sh
+          ./configure --prefix= ${{ matrix.ssl }} --enable-test
+      - name: Build
+        run: |
+          make -j3 V=1
+      - name: Install to ~/tmp and Inspect
+        run: |
+          make install-strip V=1 DESTDIR=~/tmp
+          tree ~/tmp
+          ldd ~/tmp/sbin/inadyn
+          size ~/tmp/sbin/inadyn
+          ~/tmp/sbin/inadyn -h
+      - name: Set up Unit Tests
+        run: |
+          mkdir -p ~/.config/inadyn
+          echo "username = ${{ secrets.dyndns_user }}"  > ~/.config/inadyn/dyndns.conf
+          echo "password = ${{ secrets.dyndns_pass }}" >> ~/.config/inadyn/dyndns.conf
+          echo "hostname = ${{ secrets.dyndns_host }}" >> ~/.config/inadyn/dyndns.conf
+          echo "username = ${{ secrets.freedns_user }}"  > ~/.config/inadyn/freedns.conf
+          echo "password = ${{ secrets.freedns_pass }}" >> ~/.config/inadyn/freedns.conf
+          echo "hostname = ${{ secrets.freedns_host }}" >> ~/.config/inadyn/freedns.conf
+      - name: Unit Tests
+        run: |
+          make check || cat test/test-suite.log

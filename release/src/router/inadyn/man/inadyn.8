@@ -28,12 +28,15 @@
 .Op Fl h, -help
 .Op Fl i, -iface Ar IFNAME
 .Op Fl I, -ident Ar NAME
+.Op Fl j, -json
 .Op Fl l, -loglevel Ar LEVEL
+.Op Fl L, -list-providers
 .Op Fl n, -foreground
 .Op Fl -no-pidfile
 .Op Fl P, -pidfile Ar FILE
 .Op Fl p, -drop-privs Ar USER Ns Op : Ns Ar GROUP
 .Op Fl s, -syslog
+.Op Fl S, -show-provider NAME
 .Op Fl t, -startup-delay Ar SEC
 .Op Fl v, -version
 .Sh DESCRIPTION
@@ -129,6 +132,8 @@ parent of
 .Aq https://connect.yandex.ru
 .It
 .Aq https://www.cloudflare.com
+.It
+.Aq https://www.goip.de
 .El
 .Pp
 DDNS providers not listed here, e.g.
@@ -263,6 +268,9 @@ not the location, which is system specific.  Usually
 .Pa /var/run/inadyn.pid
 or
 .Pa /run/inadyn.pid .
+.It Fl j, -json
+Output provider listing in JSON format, see also
+.Fl L .
 .It Fl l, -loglevel Ar LEVEL
 Set log level: none, err, info,
 .Ar notice ,
@@ -270,6 +278,8 @@ debug.  The default is
 .Ar notice ,
 but you might want to set this to
 .Fl l Ar warning .
+.It Fl l, -list-providers
+List available DDNS providers.
 .It Fl n, -foreground
 Run in foreground, default is to daemonize and continue in the
 background.  This option is usually required when running under process
@@ -309,6 +319,10 @@ for log messages, warnings and error conditions.  This is the default
 when running in the background.  When running in the foreground, see
 .Fl n ,
 log messages are printed to stdout.
+.It Fl S, -show-provider Ar NAME
+Show information about DDNS provider
+.Ar NAME ,
+substring search supported.
 .It Fl t, -startup-delay Ar SEC
 Initial startup delay.  Default is 0 seconds.  Any signal can be used to
 abort the startup delay early, but SIGUSR2 is the recommended to use.

@@ -66,6 +66,7 @@ static const ERROR_NAME global_error_table[] = {
 	{ RC_DDNS_RSP_NOTOK,              E("DDNS server response not OK"      )},
 	{ RC_DDNS_RSP_RETRY_LATER,        E("DDNS server busy, try later"      )},
 	{ RC_DDNS_RSP_AUTH_FAIL,          E("Authentication failure"           )},
+	{ RC_DDNS_RSP_TOO_FREQUENT,       E("DDNS warning, your update interval is set too low.")},
 
 	{ RC_OS_FORK_FAILURE,             E("Failed forking off child"         )},
 	{ RC_OS_CHANGE_PERSONA_FAILURE,   E("Failed dropping privileges"       )},

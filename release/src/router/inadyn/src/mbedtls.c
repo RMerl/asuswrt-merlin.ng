@@ -9,18 +9,18 @@ int ssl_init(void) { return 0; }
 
 void ssl_exit(void) {}
 
-int ssl_open(http_t *client, char *msg)
+int ssl_open(http_t *client, char *msg, int force)
 {
 	int port = 0;
 	int rc;
 
 	if (!client->ssl_enabled)
-		return tcp_init(&client->tcp, msg);
+		return tcp_init(&client->tcp, msg, force);
 
 	http_get_port(client, &port);
 	if (!port)
 		http_set_port(client, HTTPS_DEFAULT_PORT);
-	rc = tcp_init(&client->tcp, msg);
+	rc = tcp_init(&client->tcp, msg, force);
 	if (rc)
 		return rc;
 

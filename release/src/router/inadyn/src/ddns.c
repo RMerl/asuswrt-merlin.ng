@@ -42,13 +42,6 @@
 #include "md5.h"
 #include "sha1.h"
 
-#ifdef BCMARM
-#include "ifaddrs.c"
-#endif
-#ifdef ASUSWRT
-#include <bcmnvram.h>
-#endif
-
 /* Conversation with the checkip server */
 #define DYNDNS_CHECKIP_HTTP_REQUEST  					\
 	"GET %s HTTP/1.0\r\n"						\
@@ -143,7 +136,7 @@ static int server_transaction(ddns_t *ctx, ddns_info_t *provider)
 
 	client = &provider->checkip;
 	client->ssl_enabled = provider->checkip_ssl;
-	DO(http_init(client, "Checking for IP# change"));
+	DO(http_init(client, "Checking for IP# change", strstr(provider->system->name, "ipv6") ? TCP_FORCE_IPV6 : TCP_FORCE_IPV4));
 
 	/* Prepare request for IP server */
 	memset(ctx->work_buf, 0, ctx->work_buflen);
@@ -469,7 +462,7 @@ static int get_address_backend(ddns_t *ctx, ddns_info_t *info, char *address, si
 {
 	char name[sizeof(info->checkip_name.name)];
 	char url[sizeof(info->checkip_url)];
-	int rc;
+	int ssl, rc;
 
 	logit(LOG_DEBUG, "Get address for %s", info->system->name);
 	memset(address, 0, len);
@@ -496,24 +489,28 @@ static int get_address_backend(ddns_t *ctx, ddns_info_t *info, char *address, si
 	if (strstr(info->checkip_name.name, DDNS_MY_IP_SERVER))
 		goto error;
 
-	logit(LOG_WARNING, "Retrying with built-in 'default', api.ipify.org ...");
+	logit(LOG_WARNING, "Retrying with built-in 'default', http://ifconfig.me/ip ...");
 
 	/* keep backup, for now, future extension: count failures and replace permanently */
 	strlcpy(name, info->checkip_name.name, sizeof(name));
 	strlcpy(url, info->checkip_url, sizeof(url));
+	ssl = info->checkip_ssl;
 
-	/* Retry with http(s)://api.ipify.org/ */
+	/* Retry with http(s)://ifconfig.me/ip */
 	strlcpy(info->checkip_name.name, DDNS_MY_IP_SERVER, sizeof(info->checkip_name.name));
-	strlcpy(info->checkip_url, "/", sizeof(info->checkip_url));
+	strlcpy(info->checkip_url, DDNS_MY_CHECKIP_URL, sizeof(info->checkip_url));
+	info->checkip_ssl = DDNS_MY_IP_SSL;
 	rc = get_address_remote(ctx, info, address, len);
 
 	/* restore backup, for now, the official server may just have temporary problems */
 	strlcpy(info->checkip_name.name, name, sizeof(info->checkip_name.name));
 	strlcpy(info->checkip_url, url, sizeof(info->checkip_url));
+	info->checkip_ssl = ssl;
 
 	if (!rc) {
-		logit(LOG_WARNING, "Please note, %s seems unstable, consider overriding it "
-		      "in your configuration with 'checkip-server = default'", info->checkip_name.name);
+		logit(LOG_WARNING, "Please note, http%s://%s%s seems unstable, consider overriding it in"
+		      "your configuration with 'checkip-server = default'", info->checkip_ssl ? "s" : "",
+		      info->checkip_name.name, info->checkip_url);
 		return 0;
 	}
 
@@ -523,50 +520,6 @@ error:
 	return 1;
 }
 
-#if defined(USE_IPV6) && defined(ASUSWRT)
-#define IPV6_ADDR_GLOBAL        0x0000U
-static int _get_ipv6_addr(const char *ifname, char *ipv6addr, const size_t len)
-{
-	FILE *f;
-	int ret = -1, scope, prefix;
-	unsigned char ipv6[16];
-	char dname[IFNAMSIZ], address[INET6_ADDRSTRLEN];
-
-	if(!ifname || !ipv6addr)
-		return ret;
-
-	f = fopen("/proc/net/if_inet6", "r");
-	if(!f)
-		return ret;
-
-	while (19 == fscanf(f,
-                        " %2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx%2hhx %*x %x %x %*x %s",
-                        &ipv6[0], &ipv6[1], &ipv6[2], &ipv6[3], &ipv6[4], &ipv6[5], &ipv6[6], &ipv6[7], &ipv6[8], &ipv6[9], &ipv6[10], 
-                        &ipv6[11], &ipv6[12], &ipv6[13], &ipv6[14], &ipv6[15], &prefix, &scope, dname))
-	{
-		if(strcmp(ifname, dname))
-		{
-			continue;
-		}
-
-		if(inet_ntop(AF_INET6, ipv6, address, sizeof(address)) == NULL)
-		{
-			continue;
-	       }
-
-		if(scope == IPV6_ADDR_GLOBAL)
-		{
-			strlcpy(ipv6addr, address, len);
-			ret =0;
-			break;
-		}
-	}
-
-	fclose(f);
-	return ret;
-}
-#endif
-
 /*
  * Fetch IP, using any of the backends for each DDNS provider,
  * then check for address change.
@@ -574,9 +527,6 @@ static int _get_ipv6_addr(const char *ifname, char *ipv6addr, const size_t len)
 static int get_address(ddns_t *ctx)
 {
 	char address[MAX_ADDRESS_LEN];
-#if defined(USE_IPV6) && defined(ASUSWRT)
-	char ip6_addr[INET6_ADDRSTRLEN] = {0};
-#endif
 	ddns_info_t *info;
 
 	info = conf_info_iterator(1);
@@ -595,17 +545,6 @@ static int get_address(ddns_t *ctx)
 				anychange++;
 				strlcpy(alias->address, address, sizeof(alias->address));
 			}
-#if defined(USE_IPV6) && defined(ASUSWRT)
-			memset(ip6_addr, 0, sizeof(ip6_addr));
-			if(nvram_get_int("ddns_ipv6_update") && !_get_ipv6_addr(iface, ip6_addr, sizeof(ip6_addr))) {
-				alias->ipv6_has_changed = strncmp(alias->ipv6_address, ip6_addr, sizeof(alias->ipv6_address)) != 0;
-				/* allow_ipv6 cannot for NO-IP and ASUS.COM */
-				if(alias->ipv6_has_changed && !allow_ipv6) {
-					memset(alias->ipv6_address, 0, sizeof(alias->ipv6_address));
-					strlcpy(alias->ipv6_address, ip6_addr, sizeof(alias->ipv6_address));
-				}
-			}
-#endif
 
 #ifdef ENABLE_SIMULATION
 			logit(LOG_WARNING, "In simulation, forcing IP# change ...");
@@ -615,14 +554,8 @@ static int get_address(ddns_t *ctx)
 
 		if (!anychange)
 			logit(LOG_INFO, "No IP# change detected for %s, still at %s", info->system->name, address);
-		else {
-#if defined(USE_IPV6) && defined(ASUSWRT)
-			if(ip6_addr[0] != '\0')
-				logit(LOG_INFO, "Current IP# %s<%s> at %s", address, ip6_addr, info->system->name);
-			else
-#endif
-				logit(LOG_INFO, "Current IP# %s at %s", address, info->system->name);
-		}
+		else
+			logit(LOG_INFO, "Current IP# %s at %s", address, info->system->name);
 
 	next:
 		info = conf_info_iterator(0);
@@ -635,7 +568,7 @@ static int time_to_check(ddns_t *ctx, ddns_alias_t *alias)
 {
 	time_t past_time = time(NULL) - alias->last_update;
 
-	return ctx->force_addr_update ||
+	return alias->force_addr_update ||
 		(past_time > ctx->forced_update_period_sec);
 }
 
@@ -666,14 +599,8 @@ static int check_alias_update_table(ddns_t *ctx)
 			}
 
 			alias->update_required = 1;
-#if defined(USE_IPV6) && defined(ASUSWRT)
-			if(alias->ipv6_address[0] != '\0')
-				logit(LOG_NOTICE, "Update %s for alias %s, new IP# %s<%s>",
-			      override ? "forced" : "needed", alias->name, alias->address, alias->ipv6_address);
-			else
-#endif
-				logit(LOG_NOTICE, "Update %s for alias %s, new IP# %s",
-				      override ? "forced" : "needed", alias->name, alias->address);
+			logit(LOG_NOTICE, "Update %s for alias %s, new IP# %s",
+			      override ? "forced" : "needed", alias->name, alias->address);
 		}
 
 		info = conf_info_iterator(0);
@@ -692,10 +619,10 @@ static int send_update(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias, int 
 		DO(info->system->setup(ctx, info, alias));
 
 	client->ssl_enabled = info->ssl_enabled;
-	rc = http_init(client, "Sending IP# update to DDNS server");
+	rc = http_init(client, "Sending IP# update to DDNS server", strstr(info->system->name, "ipv6") ? TCP_FORCE_IPV6 : TCP_FORCE_IPV4);
 	if (rc) {
 		/* Update failed, force update again in ctx->cmd_check_period seconds */
-		ctx->force_addr_update = 1;
+		alias->force_addr_update = 1;
 		return rc;
 	}
 
@@ -727,25 +654,25 @@ static int send_update(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias, int 
 		/* Update failed, force update again in ctx->cmd_check_period seconds */
 		logit(LOG_WARNING, "HTTP(S) Transaction failed, error %d: %s", rc, error_str(rc));
 		logit(LOG_INFO, "Update failed, forced update/retry in %d sec ...", ctx->cmd_check_period);
-		ctx->force_addr_update = 1;
+		alias->force_addr_update = 1;
 		goto exit;
 	}
 	logit(LOG_DEBUG, "DDNS server response: %s", trans.rsp);
 
 	rc = info->system->response(&trans, info, alias);
 	if (rc) {
-		logit(LOG_WARNING, "%s error in DDNS server response:",
-		      rc == RC_DDNS_RSP_RETRY_LATER ? "Temporary" : "Fatal");
-		logit(LOG_WARNING, "[%d %s] %s", trans.status, trans.status_desc,
-		      trans.rsp_body != trans.rsp ? trans.rsp_body : "");
+		logit(LOG_WARNING, "%s error in DDNS server response: %s",
+		      rc == RC_DDNS_RSP_RETRY_LATER || rc == RC_DDNS_RSP_TOO_FREQUENT ? "Temporary" : "Fatal", error_str(rc));
+//		logit(LOG_WARNING, "[%d %s]", trans.status, trans.status_desc);
+		logit(LOG_DEBUG, "%s", trans.rsp_body != trans.rsp ? trans.rsp_body : "");
 
 		/* Update failed, force update again in ctx->cmd_check_period seconds */
-		ctx->force_addr_update = 1;
+		alias->force_addr_update = 1;
 	} else {
 		logit(LOG_INFO, "Successful alias table update for %s => new IP# %s",
 		      alias->name, alias->address);
 
-		ctx->force_addr_update = 0;
+		alias->force_addr_update = 0;
 		if (changed)
 			(*changed)++;
 	}
@@ -763,7 +690,7 @@ static int update_alias_table(ddns_t *ctx)
 	ddns_info_t *info;
 
 	/* Issue #15: On external trig. force update to random addr. */
-	if (ctx->force_addr_update && ctx->forced_update_fake_addr) {
+	if (ctx->forced_update_fake_addr) {
 		/* If the DDNS server responds with an error, we ignore it here,
 		 * since this is just to fool the DDNS server to register a a
 		 * change, i.e., an active user. */
@@ -773,15 +700,17 @@ static int update_alias_table(ddns_t *ctx)
 
 			for (i = 0; i < info->alias_count; i++) {
 				ddns_alias_t *alias = &info->alias[i];
-				char backup[sizeof(alias->address)];
+				if (alias->force_addr_update) {
+					char backup[sizeof(alias->address)];
 
-				strlcpy(backup, alias->address, sizeof(backup));
+					strlcpy(backup, alias->address, sizeof(backup));
 
-				/* Picking random address in 203.0.113.0/24 ... */
-				snprintf(alias->address, sizeof(alias->address), "203.0.113.%d", (rand() + 1) % 255);
-				TRY(send_update(ctx, info, alias, NULL));
+					/* Picking random address in 203.0.113.0/24 ... */
+					snprintf(alias->address, sizeof(alias->address), "203.0.113.%d", (rand() + 1) % 255);
+					TRY(send_update(ctx, info, alias, NULL));
 
-				strlcpy(alias->address, backup, sizeof(alias->address));
+					strlcpy(alias->address, backup, sizeof(alias->address));
+				}
 			}
 
 			info = conf_info_iterator(0);
@@ -812,78 +741,22 @@ static int update_alias_table(ddns_t *ctx)
 				/* Only reset if send_update() succeeds. */
 				alias->update_required = 0;
 				alias->last_update = time(NULL);
+
 				/* Update cache file for this entry */
-				write_cache_file(alias);
+				write_cache_file(alias, info->system->name);
 			}
 
 			/* Run command or script on successful update. */
 			if (script_exec)
-				os_shell_execute(script_exec, alias->address,
-#if defined(USE_IPV6) && defined(ASUSWRT)
-				alias->ipv6_address,
-#endif
-				alias->name, event, rc);
+				os_shell_execute(script_exec, alias->address, alias->name, event, rc);
 		}
 
-		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc
-#ifdef ASUSWRT
-			/* Time-out case */
-			|| RC_TCP_INVALID_REMOTE_ADDR == rc
-			|| RC_TCP_CONNECT_FAILED == rc
-			|| RC_TCP_SEND_ERROR == rc
-			|| RC_TCP_RECV_ERROR == rc
-			|| RC_OS_INVALID_IP_ADDRESS == rc
-			|| RC_DDNS_RSP_RETRY_LATER == rc
-			|| RC_DDNS_INVALID_CHECKIP_RSP == rc
-			/* connect_fail case */
-			|| RC_HTTPS_FAILED_CONNECT == rc
-			|| RC_HTTPS_FAILED_GETTING_CERT == rc
-#endif
-			)
+		if (RC_DDNS_RSP_NOTOK == rc || RC_DDNS_RSP_AUTH_FAIL == rc)
 			remember = rc;
 
-		if (RC_DDNS_RSP_RETRY_LATER == rc && !remember)
+		if ((RC_DDNS_RSP_RETRY_LATER == rc || rc == RC_DDNS_RSP_TOO_FREQUENT) && !remember)
 			remember = rc;
-#ifdef ASUSWRT
-		if((nvram_match("ddns_return_code", "ddns_query") || nvram_match("ddns_return_code", ",0")) && rc != RC_OK)
-		{
-			switch (rc) {
-				/* Return these cases (define in check_error()) will retry again in Inadyn,
-				 * so set the error code and retry in watchdog */
-				/* defined in check_error() */
-				case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
-				case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
-				case RC_TCP_SEND_ERROR:
-				case RC_TCP_RECV_ERROR:
-				case RC_OS_INVALID_IP_ADDRESS:
-				case RC_DDNS_RSP_RETRY_LATER:
-				case RC_DDNS_INVALID_CHECKIP_RSP:
-				case RC_DDNS_RSP_NOTOK:
-					logit(LOG_WARNING, "Will retry again ...");
-					nvram_set("ddns_return_code", "ddns_query"); /* for Retry mechanism */
-					nvram_set("ddns_return_code_chk", "Time-out");
-					break;
-				case RC_HTTPS_FAILED_CONNECT:
-				case RC_HTTPS_FAILED_GETTING_CERT:
-					logit(LOG_WARNING, "Will retry again ...");
-					nvram_set("ddns_return_code", "ddns_query"); /* for Retry mechanism */
-					nvram_set("ddns_return_code_chk", "connect_fail");
-					break;
-				case RC_DDNS_RSP_NOHOST:
-					nvram_set("ddns_return_code", "Update failed");
-					nvram_set("ddns_return_code_chk", "Update failed");
-					break;
-				case RC_DDNS_RSP_AUTH_FAIL:
-					nvram_set("ddns_return_code", "auth_fail");
-					nvram_set("ddns_return_code_chk", "auth_fail");
-					break;
-				default:
-					nvram_set("ddns_return_code", "unknown_error");
-					nvram_set("ddns_return_code_chk", "unknown_error");
-					break;
-			}
-		}
-#endif
+
 		info = conf_info_iterator(0);
 	}
 
@@ -1027,46 +900,37 @@ static int check_error(ddns_t *ctx, int rc)
 	const char *errstr = "Error response from DDNS server";
 
 	switch (rc) {
-		case RC_OK:
-			ctx->update_period = ctx->normal_update_period_sec;
-			break;
+	case RC_OK:
+		ctx->update_period = ctx->normal_update_period_sec;
+		break;
 
-		/* dyn_dns_update_ip() failed, inform the user the (network) error
-		 * is not fatal and that we will retry again in a short while. */
-		/* Time-out case */
-		case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
-		case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
-		case RC_TCP_SEND_ERROR:
-		case RC_TCP_RECV_ERROR:
-		case RC_OS_INVALID_IP_ADDRESS:
-		case RC_DDNS_RSP_RETRY_LATER:
-		case RC_DDNS_INVALID_CHECKIP_RSP:
-#ifndef ASUSWRT
-			ctx->update_period = ctx->error_update_period_sec;
-			logit(LOG_WARNING, "Will retry again in %d sec ...", ctx->update_period);
-			break;
-#else
-			logit(LOG_WARNING, "Will retry again, rc=%d", rc);
-			return 1;
-		/* connect_fail case */
-		case RC_HTTPS_FAILED_CONNECT:
-		case RC_HTTPS_FAILED_GETTING_CERT:
-			logit(LOG_WARNING, "Will retry again, rc=%d", rc);
-			return 1;
-#endif
-		case RC_DDNS_RSP_NOTOK:
-		case RC_DDNS_RSP_AUTH_FAIL:
-			if (ignore_errors) {
-				logit(LOG_WARNING, "%s, ignoring ...", errstr);
-				break;
-			}
-			logit(LOG_ERR, "%s, exiting!", errstr);
-			return 1;
+	/* dyn_dns_update_ip() failed, inform the user the (network) error
+	 * is not fatal and that we will retry again in a short while. */
+	case RC_TCP_INVALID_REMOTE_ADDR: /* Probably temporary DNS error. */
+	case RC_TCP_CONNECT_FAILED:      /* Cannot connect to DDNS server atm. */
+	case RC_TCP_SEND_ERROR:
+	case RC_TCP_RECV_ERROR:
+	case RC_OS_INVALID_IP_ADDRESS:
+	case RC_DDNS_RSP_RETRY_LATER:
+	case RC_DDNS_INVALID_CHECKIP_RSP:
+	case RC_DDNS_RSP_TOO_FREQUENT:
+		ctx->update_period = ctx->error_update_period_sec;
+		logit(LOG_WARNING, "Will retry again in %d sec ...", ctx->update_period);
+		break;
 
-		/* All other errors, socket creation failures, invalid pointers etc.  */
-		default:
-			logit(LOG_ERR, "Unrecoverable error %d, exiting ...", rc);
-			return 1;
+	case RC_DDNS_RSP_NOTOK:
+	case RC_DDNS_RSP_AUTH_FAIL:
+		if (ignore_errors) {
+			logit(LOG_WARNING, "%s, ignoring ...", errstr);
+			break;
+		}
+		logit(LOG_ERR, "%s, exiting!", errstr);
+		return 1;
+
+	/* All other errors, socket creation failures, invalid pointers etc.  */
+	default:
+		logit(LOG_ERR, "Unrecoverable error %d, exiting ...", rc);
+		return 1;
 	}
 
 	return 0;
@@ -1075,6 +939,7 @@ static int check_error(ddns_t *ctx, int rc)
 int ddns_main_loop(ddns_t *ctx)
 {
 	int rc = 0;
+	ddns_info_t *info;
 	static int first_startup = 1;
 
 	if (!ctx)
@@ -1103,7 +968,15 @@ int ddns_main_loop(ddns_t *ctx)
 		}
 		if (ctx->cmd == CMD_FORCED_UPDATE) {
 			logit(LOG_INFO, "FORCED_UPDATE command received, updating now.");
-			ctx->force_addr_update = 1;
+			info = conf_info_iterator(1);
+			while (info) {
+				size_t i;
+				for (i = 0; i < info->alias_count; i++) {
+					ddns_alias_t *alias = &info->alias[i];
+					alias->force_addr_update = 1;
+				}
+				info = conf_info_iterator(0);
+			}
 			ctx->cmd = NO_CMD;
 		} else if (ctx->cmd == CMD_CHECK_NOW) {
 			logit(LOG_INFO, "CHECK_NOW command received, leaving startup delay.");
@@ -1115,9 +988,17 @@ int ddns_main_loop(ddns_t *ctx)
 	DO(read_cache_file(ctx));
 	DO(get_encoded_user_passwd());
 
-	if (once && force)
-		ctx->force_addr_update = 1;
-
+	if (once && force) {
+			info = conf_info_iterator(1);
+			while (info) {
+				size_t i;
+				for (i = 0; i < info->alias_count; i++) {
+					ddns_alias_t *alias = &info->alias[i];
+					alias->force_addr_update = 1;
+				}
+				info = conf_info_iterator(0);
+			}
+	}
 	/* Initialization done, create pidfile to indicate we are ready to communicate */
 	if (once == 0 && pidfile_name[0] && pidfile(pidfile_name))
 		logit(LOG_WARNING, "Failed creating pidfile: %s", strerror(errno));
@@ -1130,6 +1011,7 @@ int ddns_main_loop(ddns_t *ctx)
 			    ++ctx->num_iterations >= ctx->total_iterations)
 				break;
 		}
+
 		if (ctx->cmd == CMD_RESTART) {
 			logit(LOG_INFO, "RESTART command received. Restarting.");
 			ctx->cmd = NO_CMD;
@@ -1156,7 +1038,16 @@ int ddns_main_loop(ddns_t *ctx)
 		}
 		if (ctx->cmd == CMD_FORCED_UPDATE) {
 			logit(LOG_INFO, "FORCED_UPDATE command received, updating now.");
-			ctx->force_addr_update = 1;
+
+			info = conf_info_iterator(1);
+			while (info) {
+				size_t i;
+				for (i = 0; i < info->alias_count; i++) {
+					ddns_alias_t *alias = &info->alias[i];
+					alias->force_addr_update = 1;
+				}
+				info = conf_info_iterator(0);
+			}
 			ctx->cmd = NO_CMD;
 			continue;
 		}

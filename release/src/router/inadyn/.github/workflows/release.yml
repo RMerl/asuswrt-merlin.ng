@@ -1,0 +1,38 @@
+name: Release General
+
+on:
+  push:
+    tags:
+      - 'v*'
+
+jobs:
+  release:
+    name: Build and upload release tarball
+    if: startsWith(github.ref, 'refs/tags/')
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Installing dependencies ...
+        run: |
+          sudo apt-get -y update
+          sudo apt-get install -y libconfuse-dev libgnutls28-dev
+      - name: Creating Makefiles ...
+        run: |
+          ./autogen.sh
+          ./configure
+      - name: Build release ...
+        run: |
+          make release
+          ls -lF ../
+          mkdir -p artifacts/
+          mv ../*.tar.* artifacts/
+      - name: Extract ChangeLog entry ...
+        run: |
+          awk '/-----*/{if (x == 1) exit; x=1;next}x' ChangeLog.md \
+              |head -n -1 > release.md
+          cat release.md
+      - uses: ncipollo/release-action@v1
+        with:
+          name: In-a-Dyn ${{ github.ref_name }}
+          bodyFile: "release.md"
+          artifacts: "artifacts/*"

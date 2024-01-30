@@ -146,7 +146,7 @@ static int ssl_fail(http_t *client, int rc)
 	return rc;
 }
 
-int ssl_open(http_t *client, char *msg)
+int ssl_open(http_t *client, char *msg, int force)
 {
 	const char *sn;
 	char buf[512];
@@ -155,12 +155,12 @@ int ssl_open(http_t *client, char *msg)
 	int rc;
 
 	if (!client->ssl_enabled)
-		return tcp_init(&client->tcp, msg);
+		return tcp_init(&client->tcp, msg, force);
 
 	http_get_port(client, &port);
 	if (!port)
 		http_set_port(client, HTTPS_DEFAULT_PORT);
-	DO(tcp_init(&client->tcp, msg));
+	DO(tcp_init(&client->tcp, msg, force));
 
 	logit(LOG_INFO, "%s, initiating HTTPS ...", msg);
 	client->ssl_ctx = SSL_CTX_new(SSLv23_client_method());
@@ -173,6 +173,7 @@ int ssl_open(http_t *client, char *msg)
 #else
 	SSL_CTX_set_options(client->ssl_ctx, SSL_OP_SINGLE_DH_USE | SSL_OP_NO_SSLv2 | SSL_OP_NO_SSLv3 | SSL_OP_NO_COMPRESSION);
 #endif
+	/* verify should be optional. routers might not have accurate time setting */
 	SSL_CTX_set_verify(client->ssl_ctx, SSL_VERIFY_PEER, verify_callback);
 	SSL_CTX_set_verify_depth(client->ssl_ctx, 150);
 

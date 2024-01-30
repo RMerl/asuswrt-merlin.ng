@@ -51,13 +51,13 @@ static ddns_system_t plugin = {
 	.checkip_ssl  = DYNDNS_MY_IP_SSL,
 
 	.server_name  = "api.cp.easydns.com",
-	.server_url   = "/dyn/generic.php"
+	.server_url   = "/dyn/dynsite.php"
 };
 
 static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			EASYDNS_UPDATE_IP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			alias->name,
 			alias->address,
@@ -79,18 +79,22 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 	DO(http_status_valid(trans->status));
 
-	if (strstr(resp, "NOERROR") || strstr(resp, "no update required"))
+	if (strstr(resp, "NOERROR") || strstr(resp, "no update required") || strstr(resp, "OK"))
 		return 0;
-
+	if (strstr(resp, "ACCESS"))
+		return RC_DDNS_RSP_AUTH_FAIL;
 	if (strstr(resp, "TOOSOON"))
 		return RC_DDNS_RSP_RETRY_LATER;
+	if (strstr(resp, "TOO_FREQ"))
+		return RC_DDNS_RSP_TOO_FREQUENT;
 
 	return RC_DDNS_RSP_NOTOK;
 }
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, EASYDNS_UPDATE_IP_REQUEST);
+	plugin_register_v6(&plugin, EASYDNS_UPDATE_IP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

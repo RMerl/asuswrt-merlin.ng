@@ -30,6 +30,10 @@
 #define TCP_SOCKET_MAX_PORT		65535
 #define TCP_DEFAULT_READ_CHUNK_SIZE	100
 
+#define TCP_AUTO	0
+#define TCP_FORCE_IPV4	1
+#define TCP_FORCE_IPV6	2
+
 typedef enum {
 	NO_PROXY = 0,
 	PROXY_SOCKS4,
@@ -56,7 +60,7 @@ typedef struct {
 int tcp_construct          (tcp_sock_t *tcp);
 int tcp_destruct           (tcp_sock_t *tcp);
 
-int tcp_init               (tcp_sock_t *tcp, char *msg);
+int tcp_init               (tcp_sock_t *tcp, char *msg, int force);
 int tcp_exit               (tcp_sock_t *tcp);
 
 int tcp_send               (tcp_sock_t *tcp, const char *buf, int len);

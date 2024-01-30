@@ -445,8 +445,8 @@ static int set_provider_opts(cfg_t *cfg, ddns_info_t *info, int custom)
 
 		if (!strcasecmp(info->checkip_name.name, "default")) {
 			strlcpy(info->checkip_name.name, DDNS_MY_IP_SERVER, sizeof(info->checkip_name.name));
-			strlcpy(info->checkip_url, "/", sizeof(info->checkip_url));
-			/* let local checkip-ssl decide HTTP/HTTPS for ipify */
+			strlcpy(info->checkip_url, DDNS_MY_CHECKIP_URL, sizeof(info->checkip_url));
+			info->checkip_ssl = DDNS_MY_IP_SSL;
 		}
 
 		/*

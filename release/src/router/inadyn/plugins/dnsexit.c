@@ -42,7 +42,7 @@ static ddns_system_t plugin = {
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
 
-	.checkip_name = "ip.dnsexit.com",
+	.checkip_name = "ip3.dnsexit.com",
 	.checkip_url  = "/",
 
 	.server_name  = "update.dnsexit.com",
@@ -52,7 +52,7 @@ static ddns_system_t plugin = {
 static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			DNSEXIT_UPDATE_IP_HTTP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			info->creds.username,
 			info->creds.password,
@@ -73,8 +73,13 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 	DO(http_status_valid(trans->status));
 
 	tmp = strstr(trans->rsp_body, "\n");
-	if (tmp)
-		sscanf(++tmp, "%4d=", &code);
+	if (tmp) {
+		int rc;
+
+		rc = sscanf(++tmp, "%4d=", &code);
+		if (rc < 1)
+			goto err;
+	}
 
 	switch (code) {
 	case 0:
@@ -86,13 +91,14 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 	default:
 		break;
 	}
-
+err:
 	return RC_DDNS_RSP_NOTOK;
 }
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, DNSEXIT_UPDATE_IP_HTTP_REQUEST);
+	plugin_register_v6(&plugin, DNSEXIT_UPDATE_IP_HTTP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

@@ -1,6 +1,8 @@
 FROM alpine:latest
+WORKDIR /root
+COPY . ./
 
-RUN apk --no-cache add --virtual .build-dependencies \
+RUN apk --update --no-cache add --virtual .build-dependencies \
   autoconf \
   automake \
   confuse-dev \
@@ -10,19 +12,22 @@ RUN apk --no-cache add --virtual .build-dependencies \
   libtool \
   make
 
-WORKDIR /root
-COPY . ./
-RUN ./autogen.sh && ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var && make install
-
+RUN ./autogen.sh
+RUN ./configure --prefix=/usr --sysconfdir=/etc --localstatedir=/var
+RUN make install
 
 FROM alpine:latest
+ARG revision=$revision
+LABEL org.opencontainers.image.title="In-a-Dyn"
+LABEL org.opencontainers.image.description="A dynamic DNS (DDNS) client with multiple SSL/TLS library support"
+LABEL org.opencontainers.image.url="https://github.com/troglobit/inadyn"
+LABEL org.opencontainers.image.licenses="GPL-2.0"
 
-RUN apk --no-cache add \
+RUN apk --update --no-cache add \
   ca-certificates \
   confuse \
   gnutls
 
 COPY --from=0 /usr/sbin/inadyn /usr/sbin/inadyn
 COPY --from=0 /usr/share/doc/inadyn /usr/share/doc/inadyn
-ENV INADYN_OPTS=""
-ENTRYPOINT inadyn --foreground ${INADYN_OPTS}
+ENTRYPOINT ["/usr/sbin/inadyn", "--foreground"]

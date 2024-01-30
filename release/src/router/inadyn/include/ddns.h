@@ -41,12 +41,8 @@
 #define DYNDNS_MY_CHECKIP_URL	"/"
 #define DYNDNS_MY_IP_SSL        DDNS_CHECKIP_SSL_UNSUPPORTED
 
-/*
- * 2020-02-18: ipify.org support HTTPS and should be default for new
- * providers, unless the provider has its own checkip infrastructure.
- */
-#define DDNS_MY_IP_SERVER       "api.ipify.org"
-#define DDNS_MY_CHECKIP_URL	"/"
+#define DDNS_MY_IP_SERVER       "ifconfig.me"
+#define DDNS_MY_CHECKIP_URL	"/ip"
 #define DDNS_MY_IP_SSL          DDNS_CHECKIP_SSL_UNSUPPORTED
 
 /* Some default settings */
@@ -79,7 +75,7 @@
 # define MAX_ADDRESS_LEN                  46
 #endif
 
-#define MAX_NUM_RESPONSES                 5
+#define MAX_NUM_RESPONSES                 6
 #define MAX_RESPONSE_LEN                  32
 
 typedef enum {
@@ -110,18 +106,13 @@ typedef struct {
 } ddns_name_t;
 
 typedef struct {
+	int            force_addr_update;
 	int            ip_has_changed;
 	char           address[MAX_ADDRESS_LEN];
 
 	char           name[SERVER_NAME_LEN];
 	int            update_required;
 	time_t         last_update;
-#ifdef ASUSWRT
-#ifdef USE_IPV6
-	int            ipv6_has_changed;
-	char           ipv6_address[INET6_ADDRSTRLEN];
-#endif
-#endif
 } ddns_alias_t;
 
 typedef struct di {
@@ -199,7 +190,6 @@ typedef struct {
 	int            num_iterations;
 	int            initialized;
 	int            change_persona;
-	int            force_addr_update;
 	int            use_proxy;
 	int            abort;
 

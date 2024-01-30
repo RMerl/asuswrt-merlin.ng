@@ -4,6 +4,89 @@ Change Log
 All notable changes to the project are documented in this file.
 
 
+[v2.12.0][] - 2023-09-19
+------------------------
+
+### Changes
+- Add support for IPv64.net (IPv4 and IPv6), by Dennis Schröder
+- Clarify warning when provider's checkip server times out
+- Update example config for Dyn.com, by Fredrik Lanker
+- Add OVH example config, by Lana Heyrendt
+- Add support for JSON output in DDNS provider listing, i.e.
+
+        inadyn --list-providers --json
+
+### Fixes
+- Issue #396: multi-arch images for both Docker Hub and GHCR
+- Issue #421: use Docker `:latest` tag only for latest release.  Builds
+  from GIT development are tagged `:edge`
+- Issue #433: dynv6.com not working at all, regression in v2.11.0
+- Issue #434: fix regression in DDNS provider names, introduced in
+  v2.11.0.  This change adds support for a provider name alias that
+  restores support for:
+  - dyndns@3322.org
+  - dyndns@he.net
+  - default@dynv6.com
+  - ipv6tb@he.net
+- Issue #435: dnsHome.de provider updated with new checkip servers
+  and fixes to update URLs (IPv4 and IPv6)
+- Issue #436: speculative fix for IPv6 support for dyndns.inwx.com,
+  introduced in v2.11.0
+
+
+[v2.11.0][] - 2023-05-20
+------------------------
+
+> **Note:** this releases replaces built-in default checkip server
+> http://api.ipify.org with the more reliable http://ifconfig.me/ip
+
+### Changes
+- Add custom provider example for dnsmadeeasy.com
+- Add wildcard support for Cloudflare
+- New DDNS providers from DD-WRT, courtesy of Sebastian Gottschall:
+  - goip.de
+  - myonlineportal.net
+  - desec.io (a.k.a. dedyn.io)
+  - domaindiscount24.com
+  - dy.fi
+  - do.de (Domain-Offensive)
+  - Domopoli.de
+  - inwx
+  - It's DNS
+  - Joker.com
+  - all-inkl.com
+  - core-networks.de
+  - dnsever.com
+  - dnshome.de
+  - dnsmadeeasy.com
+  - dnsmax.com
+  - schokokeks.org
+  - variomedia.de
+  - udmedia.de
+  - moniker.com
+  - dyndns.it
+  - infomaniak.com
+  - oray.com
+  - simply.com
+  - mydns.jp
+  - myonlineportal.net
+  - namecheap.com
+  - regfish.de
+  - twodns.de
+- Initial support for updating both ipv4 and ipv6 address for the same
+  provider, also by Sebastian Gottschall
+- Add new command line options `-L` and `-S NAME` to list supported
+  providers and their respective details
+
+### Fixes
+- Issue #398: add `success` as a valid generic response to DNS update
+- Issue #402: fix use after free in logger at inadyn exit
+- Issue #416: use dynv6 'auto' IP only if we have not detected an address
+- Issue #424: replace unstable api.ipify.org with http://ifconfig.me
+- Fix default checkip server for dnsexit.com
+- Fix easydns response code problem
+
+
 [v2.10.0][] - 2022-11-12
 ------------------------
 
@@ -915,7 +998,8 @@ First stable version.
 - port to pSOS
 
 
-[UNRELEASED]: https://github.com/troglobit/inadyn/compare/v2.10.0...HEAD
+[UNRELEASED]: https://github.com/troglobit/inadyn/compare/v2.11.0...HEAD
+[v2.11.0]: https://github.com/troglobit/inadyn/compare/v2.10.0...v2.11.0
 [v2.10.0]: https://github.com/troglobit/inadyn/compare/v2.9.1...v2.10.0
 [v2.9.1]: https://github.com/troglobit/inadyn/compare/v2.9.0...v2.9.1
 [v2.9.0]: https://github.com/troglobit/inadyn/compare/v2.8.1...v2.9.0

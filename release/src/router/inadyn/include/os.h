@@ -60,11 +60,7 @@
 
 int os_install_signal_handler (void *ctx);
 int os_check_perms            (void);
-int os_shell_execute          (char *cmd, char *ip,
-#if defined(USE_IPV6) && defined(ASUSWRT)
-	char *ipv6,
-#endif
-	char *hostname, char *event, int error);
+int os_shell_execute          (char *cmd, char *ip, char *hostname, char *event, int error);
 
 #endif /* INADYN_OS_H_ */
 

@@ -22,11 +22,20 @@
 #include "md5.h"
 #include "plugin.h"
 
-#define DUIADNS_UPDATE_IP_HTTP_REQUEST                   \
+#define DUIADNS_UPDATE_IP_HTTP_REQUEST					\
 	"GET %s?"							\
 	"host=%s&"							\
 	"password=%s&"							\
 	"ip4=%s "							\
+	"HTTP/1.0\r\n"							\
+	"Host: %s\r\n"							\
+	"User-Agent: %s\r\n\r\n"
+
+#define DUIADNS_UPDATE_IP6_HTTP_REQUEST					\
+	"GET %s?"							\
+	"host=%s&"							\
+	"password=%s&"							\
+	"ip6=%s "							\
 	"HTTP/1.0\r\n"							\
 	"Host: %s\r\n"							\
 	"User-Agent: %s\r\n\r\n"
@@ -49,6 +58,19 @@ static ddns_system_t plugin = {
 	.server_url   = "/dynamic.duia"
 };
 
+static ddns_system_t plugin_v6 = {
+	.name         = "ipv6@duiadns.net",
+
+	.request      = (req_fn_t)request,
+	.response     = (rsp_fn_t)response,
+
+	.checkip_name = "ipv6.duiadns.net",
+	.checkip_url  = "/",
+
+	.server_name  = "ipv6.duiadns.net",
+	.server_url   = "/dynamic.duia"
+};
+
 static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
 	int           i;
@@ -60,7 +82,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 		sprintf(&digeststr[i * 2], "%02x", digestbuf[i]);
 
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			DUIADNS_UPDATE_IP_HTTP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			alias->name,
 			digeststr,
@@ -86,12 +108,14 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, DUIADNS_UPDATE_IP_HTTP_REQUEST);
+	plugin_register(&plugin_v6, DUIADNS_UPDATE_IP6_HTTP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)
 {
 	plugin_unregister(&plugin);
+	plugin_unregister(&plugin_v6);
 }
 
 /**

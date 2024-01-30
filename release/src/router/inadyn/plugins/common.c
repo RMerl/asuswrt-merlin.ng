@@ -24,57 +24,20 @@
 #include "plugin.h"
 
 /*
- * dyndns.org specific update address format
- *
- * Also applies to other dyndns2 api compatible services, like:
- * DNS-O-Matic, no-ip, 3322, HE and nsupdate.info.
- */
-#if defined(USE_IPV6) && defined(ASUSWRT)
-#define DYNDNS_UPDATE_IP_HTTP_REQUEST					\
-	"GET %s?"							\
-	"hostname=%s&"							\
-	"myip=%s"							\
-	"%s"							\
-	"%s "      							\
-	"HTTP/1.0\r\n"							\
-	"Host: %s\r\n"							\
-	"Authorization: Basic %s\r\n"					\
-	"User-Agent: %s\r\n\r\n"
-#else
-#define DYNDNS_UPDATE_IP_HTTP_REQUEST					\
-	"GET %s?"							\
-	"hostname=%s&"							\
-	"myip=%s"							\
-	"%s "      							\
-	"HTTP/1.0\r\n"							\
-	"Host: %s\r\n"							\
-	"Authorization: Basic %s\r\n"					\
-	"User-Agent: %s\r\n\r\n"
-#endif
-
-/*
  * DynDNS request composer -- common to many other DDNS providers as well
  */
 int common_request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 {
 	char wildcard[20] = "";
-#if defined(USE_IPV6) && defined(ASUSWRT)
-	char ipv6ptr[128] = "";
-	if (alias->ipv6_address[0] != '\0')
-		snprintf(ipv6ptr, sizeof(ipv6ptr), "&myipv6=%s", alias->ipv6_address);
-#endif
 
 	if (info->wildcard)
 		strlcpy(wildcard, "&wildcard=ON", sizeof(wildcard));
 
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			DYNDNS_UPDATE_IP_HTTP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			alias->name,
 			alias->address,
-#if defined(USE_IPV6) && defined(ASUSWRT)
-			ipv6ptr,
-#endif
 			wildcard,
 			info->server_name.name,
 			info->creds.encoded_password,
@@ -94,17 +57,20 @@ int common_response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 	DO(http_status_valid(trans->status));
 
-	if (strstr(body, "good") || strstr(body, "nochg"))
+	if (strstr(body, "good") || strstr(body, "nochg")  || strstr(body, "OK"))
 		return 0;
 
-	if (strstr(body, "dnserr") || strstr(body, "911"))
+	if (strstr(body, "dnserr") || strstr(body, "911") || strstr(body, "abuse"))
 		return RC_DDNS_RSP_RETRY_LATER;
 
-	if (strstr(body, "badauth"))
+	if (strstr(body, "badauth") || strstr(body, "!donator"))
 		return RC_DDNS_RSP_AUTH_FAIL;
 
 	/* Loopia responds "[200 OK] nohost" when no DNS record exists */
 	if (strstr(body, "nohost"))
+		return RC_DDNS_RSP_NOHOST;
+
+	if (strstr(body, "nofqdn"))
 		return RC_DDNS_RSP_NOHOST;
 
 	return RC_DDNS_RSP_NOTOK;

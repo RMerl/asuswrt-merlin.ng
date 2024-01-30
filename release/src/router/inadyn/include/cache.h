@@ -26,9 +26,9 @@
 
 extern char *cache_dir;
 
-char *cache_file       (char *name, char *buf, size_t len);
+char *cache_file       (char *name, const char *sysname, char *buf, size_t len);
 int   read_cache_file  (ddns_t *ctx);
-int   write_cache_file (ddns_alias_t *alias);
+int   write_cache_file (ddns_alias_t *alias, const char *name);
 
 #endif /* INADYN_CACHE_H_ */
 

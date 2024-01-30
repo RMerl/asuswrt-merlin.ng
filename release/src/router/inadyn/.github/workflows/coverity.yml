@@ -1,0 +1,56 @@
+name: Coverity Scan
+
+on:
+  push:
+    branches:
+      - 'dev'
+
+env:
+  PROJECT_NAME: inadyn
+  CONTACT_EMAIL: troglobit@gmail.com
+  COVERITY_NAME: troglobit-inadyn
+  COVERITY_PROJ: troglobit%2Finadyn
+
+jobs:
+  coverity:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/cache@v3
+        id: coverity-toolchain-cache
+        with:
+          path: cov-analysis-linux64
+          key: ${{ runner.os }}-coverity
+      - name: Download Coverity Scan
+        if: steps.coverity-toolchain-cache.outputs.cache-hit != 'true'
+        env:
+          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+        run: |
+          wget -q https://scan.coverity.com/download/cxx/linux64 \
+               --post-data "token=$TOKEN&project=${COVERITY_PROJ}" \
+               -O cov-analysis-linux64.tar.gz
+          mkdir cov-analysis-linux64
+          tar xzf cov-analysis-linux64.tar.gz --strip 1 -C cov-analysis-linux64
+      - name: Install dependencies ...
+        run: |
+          sudo apt-get -y update
+          sudo apt-get -y install libconfuse-dev libgnutls28-dev
+      - name: Build
+        run: |
+          ./autogen.sh
+          ./configure --prefix=
+          export PATH=`pwd`/cov-analysis-linux64/bin:$PATH
+          cov-build --dir cov-int make
+      - name: Submit result to Coverity Scan
+        env:
+          TOKEN: ${{ secrets.COVERITY_SCAN_TOKEN }}
+        run: |
+          tar czvf ${PROJECT_NAME}.tgz cov-int
+          curl \
+            --form project=${COVERITY_NAME} \
+            --form token=$TOKEN \
+            --form email=${CONTACT_EMAIL} \
+            --form file=@${PROJECT_NAME}.tgz \
+            --form version=trunk \
+            --form description="${PROJECT_NAME} $(git rev-parse HEAD)" \
+            https://scan.coverity.com/builds?project=${COVERITY_PROJ}

@@ -40,7 +40,7 @@
 	"User-Agent: %s\r\n\r\n"
 
 const char * const generic_responses[] =
-    { "OK", "good", "true", "updated", "nochg", NULL };
+    { "OK", "good", "true", "updated", "success", "nochg", NULL };
 
 static int request  (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias);
 static int response (http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias);
@@ -233,7 +233,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 		return 0;
 
 	ret = snprintf(ctx->request_buf, ctx->request_buflen,
-		       GENERIC_BASIC_AUTH_UPDATE_IP_REQUEST,
+		       info->system->server_req,
 		       url, arg,
 		       info->server_name.name,
 		       info->creds.encoded_password,
@@ -263,7 +263,7 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&generic);
+	plugin_register(&generic, GENERIC_BASIC_AUTH_UPDATE_IP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

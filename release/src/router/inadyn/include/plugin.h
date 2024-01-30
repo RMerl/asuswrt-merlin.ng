@@ -24,6 +24,7 @@
 #ifndef INADYN_PLUGIN_H_
 #define INADYN_PLUGIN_H_
 
+#include "config.h"
 #include "queue.h"		/* BSD sys/queue.h API */
 
 #define GENERIC_HTTP_REQUEST                                      	\
@@ -45,7 +46,10 @@ typedef int (*rsp_fn_t) (void *this, void *info, void *alias);
 typedef struct ddns_system {
 	TAILQ_ENTRY(ddns_system) link; /* BSD sys/queue.h linked list node. */
 
-	const char    *name;
+	char          *name;
+	char          *alias;	      /* Previous name, lost in v2.11.0 regression */
+
+	int            cloned;	      /* marks this plugin as a clone */
 
 	setup_fn_t     setup;
 	req_fn_t       request;
@@ -59,13 +63,17 @@ typedef struct ddns_system {
 
 	const char    *server_name;
 	const char    *server_url;
+	const char    *server_req;
 } ddns_system_t;
 
 /* Public plugin API */
-int plugin_register   (ddns_system_t *system);
-int plugin_unregister (ddns_system_t *system);
+int            plugin_register    (ddns_system_t *system, const char *req);
+int            plugin_register_v6 (ddns_system_t *system, const char *req);
+int            plugin_unregister  (ddns_system_t *system);
 
 /* Helper API */
+int            plugin_list (int json);
+int            plugin_show (char *name);
 ddns_system_t *plugin_find (const char *name, int loose);
 
 /* Looks ugly, placed here due to deps. and to make it easier for plugin devs */

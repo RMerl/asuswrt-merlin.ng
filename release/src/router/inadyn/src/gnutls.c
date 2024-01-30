@@ -191,7 +191,7 @@ int ssl_fail(http_t *client, int rc)
 	return rc;
 }
 
-int ssl_open(http_t *client, char *msg)
+int ssl_open(http_t *client, char *msg, int force)
 {
 	const gnutls_datum_t *cert_list;
 	unsigned int cert_list_size = 0;
@@ -203,7 +203,7 @@ int ssl_open(http_t *client, char *msg)
 	int ret;
 
 	if (!client->ssl_enabled)
-		return tcp_init(&client->tcp, msg);
+		return tcp_init(&client->tcp, msg, force);
 
 	/* Try to figure out location of trusted CA certs on system */
 	if (ssl_set_ca_location())
@@ -239,7 +239,7 @@ int ssl_open(http_t *client, char *msg)
 	http_get_port(client, &port);
 	if (!port)
 		http_set_port(client, HTTPS_DEFAULT_PORT);
-	DO(tcp_init(&client->tcp, msg));
+	DO(tcp_init(&client->tcp, msg, force));
 
 	/* Forward TCP socket to GnuTLS, the set_int() API is perhaps too new still ... since 3.1.9 */
 //	gnutls_transport_set_int(client->ssl, client->tcp.socket);

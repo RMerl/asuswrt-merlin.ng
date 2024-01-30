@@ -1,10 +1,15 @@
 *~
 #*#
 *.o
+.config
+.unpacked
 .deps
+.dirstamp
+.gdb_history
 aclocal.m4
 ar-lib
 autom4te.cache
+aux/
 compile
 config.log
 config.status

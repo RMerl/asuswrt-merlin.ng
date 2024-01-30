@@ -40,7 +40,8 @@ static int request  (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias
 static int response (http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias);
 
 static ddns_system_t plugin = {
-	.name         = "ipv6tb@he.net",
+	.name         = "ipv6@he.net",
+	.alias        = "ipv6tb@he.net",
 
 	.request      = (req_fn_t)request,
 	.response     = (rsp_fn_t)response,
@@ -63,7 +64,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 		sprintf(&digeststr[i * 2], "%02x", digestbuf[i]);
 
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			HE_IPV6TB_UPDATE_IP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			alias->address,
 			info->creds.username,
@@ -95,7 +96,7 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, HE_IPV6TB_UPDATE_IP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

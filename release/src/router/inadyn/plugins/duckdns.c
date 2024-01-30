@@ -35,6 +35,15 @@
 	"Host: %s\r\n"							\
 	"User-Agent: %s\r\n\r\n"
 
+#define DUCKDNS_UPDATE_IP6_HTTP_REQUEST					\
+	"GET %s?"							\
+	"domains=%s&"							\
+	"token=%s&"							\
+	"ipv6=%s "   							\
+	"HTTP/1.0\r\n"							\
+	"Host: %s\r\n"							\
+	"User-Agent: %s\r\n\r\n"
+
 static int request (ddns_t       *ctx,   ddns_info_t *info, ddns_alias_t *alias);
 static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias);
 
@@ -69,7 +78,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 	}
 
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			DUCKDNS_UPDATE_IP_HTTP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			name,
 			info->creds.username,
@@ -95,7 +104,8 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, DUCKDNS_UPDATE_IP_HTTP_REQUEST);
+	plugin_register_v6(&plugin, DUCKDNS_UPDATE_IP6_HTTP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

@@ -160,7 +160,7 @@ static int http_send(struct http *http, char *msg, char *fmt, ...)
 	http_set_remote_name(&client, info->server_name.name);
 	client.ssl_enabled = info->ssl_enabled;
 
-	rc = http_init(&client, msg);
+	rc = http_init(&client, msg, TCP_AUTO);
 	if (rc)
 		goto err;
 
@@ -338,7 +338,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 		return -1;
 
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			CLOUDXNS_UPDATE_IP_REQUEST,
+			info->system->server_req,
 			info->server_url,
 			cx->record_id,
 			info->server_name.name,
@@ -374,7 +374,7 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, CLOUDXNS_UPDATE_IP_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

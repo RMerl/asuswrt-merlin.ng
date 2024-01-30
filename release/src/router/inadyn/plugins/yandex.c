@@ -276,7 +276,7 @@ static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 	http_set_remote_name(&client, info->server_name.name);
 
 	client.ssl_enabled = info->ssl_enabled;
-	rc = http_init(&client, "Sending records list query");
+	rc = http_init(&client, "Sending records list query", TCP_AUTO);
 	if (rc) {
 		http_destruct(&client, 1);
 		return rc;
@@ -336,7 +336,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *alias)
 		return -1;
 
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			YANDEX_POST_REQUEST,
+			info->system->server_req,
 			y->record_id > 0
 			? "/api2/admin/dns/edit"
 			: "/api2/admin/dns/add",
@@ -362,7 +362,7 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *alias)
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, YANDEX_POST_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

@@ -169,16 +169,23 @@ The password, if applicable.
 .It Cm iface = IFNAME
 Same as the global setting, but only for this provider.  For more information, see above.
 .It Cm checkip-server = <default | checkip.example.com[:port]>
-This setting allows you to override the default checkip server with
-either the string
-.Cm default ,
-to use In-a-dyn's built-in default,
-.Cm "api.ipify.org",
-or the complete name of the server to use for periodic IP address
+This setting allows overriding the provider's default checkip server.
+The
+.Cm default
+keyword resolves to the built-in default,
+.Cm "http://ifconfig.me/ip" ,
+which affect not only this setting, but also
+.Cm checkip-path
+and
+.Cm checkip-ssl .
+Any other value is the server name to query periodically for IP address
 changes.  The optional
-.Pa port
+.Pa :port
 argument defaults to
-.Ar 80 .
+.Ar 443 ,
+see
+.Cm checkip-ssl
+for details.
 .Pp
 This is an optional setting.  For
 .Cm provider{}
@@ -186,16 +193,11 @@ sections it defaults to a pre-defined
 .Cm checkip-server
 and
 .Cm checkip-path
-for the given DDNS provider.  For custom DDNS setups it defaults to
-.Cm "api.ipify.org" ,
-which is a really great and free service that even support HTTPS, see
-.Cm checkip-ssl
-setting, below.  When set in a
-.Cm provider{}
-section it overrides the provider's default
-.Cm checkip-server .
-.It Cm checkip-path = "/some/checkip/url"
-Optional server path for check IP server, defaults to "/".  When the
+for the given DDNS provider.  For
+.Cm custom()
+DDNS setups it defaults to the built-in default (abvove).
+.It Cm checkip-path = "/some/checkip/url?param=value"
+Optional server path and query string for check IP server, defaults to "/".  When the
 .Cm checkip-server
 is set to
 .Cm default ,
@@ -262,6 +264,8 @@ matches to the following unique provider names:
 .It Cm default@freedns.afraid.org
 .Aq https://freedns.afraid.org
 .It Cm ipv4@nsupdate.info
+.Aq https://nsupdate.info
+.It Cm ipv6@nsupdate.info
 .Aq https://nsupdate.info
 .It Cm default@duckdns.org
 .Aq https://duckdns.org
@@ -332,6 +336,8 @@ by Hurricane Electric.
 .Aq https://connect.yandex.ru
 .It Cm default@cloudflare.com
 .Aq https://www.cloudflare.com
+.It Cm default@goip.de
+.Aq https://www.goip.de
 .El
 .It Cm custom some@identifier {}
 Specific to the custom provider section are the following settings:
@@ -513,6 +519,13 @@ provider cloudflare.com {
     hostname = hostname.zone.name
     ttl = 1 # optional, value of 1 is 'automatic'.
     proxied = false # optional.
+}
+
+# www.goip.de
+provider goip.de {
+    username = username
+    password = password
+    hostname = hostname.goip.de
 }
 
 # www.namecheap.com

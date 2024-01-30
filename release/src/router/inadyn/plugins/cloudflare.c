@@ -34,7 +34,7 @@ static const char *CLOUDFLARE_ZONE_ID_REQUEST = "GET " API_URL "/zones?name=%s H
 	"Authorization: Bearer %s\r\n"	\
 	"Content-Type: application/json\r\n\r\n";
 	
-static const char *CLOUDFLARE_HOSTNAME_ID_REQUEST	= "GET " API_URL "/zones/%s/dns_records?type=%s&name=%s HTTP/1.0\r\n"	\
+static const char *CLOUDFLARE_HOSTNAME_ID_REQUEST	= "GET " API_URL "/zones/%s/dns_records?type=%s&name=%s%s HTTP/1.0\r\n"	\
 	"Host: " API_HOST "\r\n"		\
 	"User-Agent: %s\r\n"			\
 	"Accept: */*\r\n"				\
@@ -59,7 +59,7 @@ static const char *CLOUDFLARE_HOSTNAME_UPDATE_REQUEST	= "PUT " API_URL "/zones/%
 	"Content-Length: %zd\r\n\r\n" \
 	"%s";
 	
-static const char *CLOUDFLARE_UPDATE_JSON_FORMAT = "{\"type\":\"%s\",\"name\":\"%s\",\"content\":\"%s\",\"ttl\":%li,\"proxied\":%s}";
+static const char *CLOUDFLARE_UPDATE_JSON_FORMAT = "{\"type\":\"%s\",\"name\":\"%s%s\",\"content\":\"%s\",\"ttl\":%li,\"proxied\":%s}";
 
 static const char *IPV4_RECORD_TYPE = "A";
 static const char *IPV6_RECORD_TYPE = "AAAA";
@@ -237,7 +237,7 @@ static int get_id(char *dest, size_t dest_size, const ddns_info_t *info, char *r
 	http_set_remote_name(&client, info->server_name.name);
 
 	client.ssl_enabled = info->ssl_enabled;
-	CHECK(http_init(&client, "Id query"));
+	CHECK(http_init(&client, "Id query",strstr(info->system->name, "ipv6") ? TCP_FORCE_IPV6 : TCP_FORCE_IPV4));
 
 	trans.req = request;
 	trans.req_len = request_len;
@@ -328,6 +328,7 @@ static int setup(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *hostname)
 		       CLOUDFLARE_HOSTNAME_ID_REQUEST,
 		       data->zone_id,
 		       record_type,
+		       info->wildcard ? "*." : "",
 		       hostname->name,
 		       info->user_agent,
 		       info->creds.password);
@@ -361,6 +362,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *hostname)
 	content_len = snprintf(json_data, sizeof(json_data),
 			       CLOUDFLARE_UPDATE_JSON_FORMAT,
 			       record_type,
+		       	       info->wildcard ? "*." : "",
 			       hostname->name,
 			       hostname->address,
 			       info->ttl >= 0 ? info-> ttl : 1, // Time to live for DNS record. Value of 1 is 'automatic'
@@ -376,7 +378,7 @@ static int request(ddns_t *ctx, ddns_info_t *info, ddns_alias_t *hostname)
 			content_len, json_data);
 
 	return snprintf(ctx->request_buf, ctx->request_buflen,
-			CLOUDFLARE_HOSTNAME_UPDATE_REQUEST,
+			info->system->server_req,
 			data->zone_id,
 			data->hostname_id,
 			info->user_agent,
@@ -400,7 +402,8 @@ static int response(http_trans_t *trans, ddns_info_t *info, ddns_alias_t *hostna
 
 PLUGIN_INIT(plugin_init)
 {
-	plugin_register(&plugin);
+	plugin_register(&plugin, CLOUDFLARE_HOSTNAME_UPDATE_REQUEST);
+	plugin_register_v6(&plugin, CLOUDFLARE_HOSTNAME_UPDATE_REQUEST);
 }
 
 PLUGIN_EXIT(plugin_exit)

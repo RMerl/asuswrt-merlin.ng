@@ -361,7 +361,7 @@ function change_common_radio(o, s, v, r){
 			else{
 				if(document.form.ddns_server_x.value == "WWW.ORAY.COM")
 					document.getElementById("ddns_hostname_info_tr").style.display = "none";
-				document.form.ddns_hostname_x.parentNode.parentNode.parentNode.style.display = "none";
+				document.form.ddns_hostname_x.parentNode.parentNode.parentNode.parentNode.style.display = "none";
 				inputCtrl(document.form.ddns_username_x, 0);
 				inputCtrl(document.form.ddns_passwd_x, 0);
 			}

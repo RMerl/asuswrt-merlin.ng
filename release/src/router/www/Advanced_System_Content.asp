@@ -519,11 +519,6 @@ function initial(){
 		show_boostkey_desc(<% nvram_get("turbo_mode"); %>);
 	}
 
-	if (based_modelid == "XT12" || based_modelid == "GT-AX6000" || based_modelid == "GT-AXE16000" || based_modelid == "GT-AX11000_PRO" || 
-	    based_modelid == "RT-AX86U_PRO" || based_modelid == "RT-AX88U_PRO") {
-		document.getElementById("jffs_format_tr").style.display = "none";
-/*		document.getElementById("ubifs_format_tr").style.display = ""; */
-	}
 }
 
 var time_zone_tmp="";
@@ -2405,7 +2400,7 @@ function build_boostkey_options() {
 						<td colspan="2">Persistent JFFS2 partition</td>
 					</tr>
 				</thead>
-				<tr id="jffs_format_tr">
+				<tr id="jffs_format_tr" style="display:none;">
 					<th>Format JFFS partition at next boot</th>
 					<td>
 						<input type="radio" name="jffs2_format" value="1" onclick="warn_jffs_format();" <% nvram_match("jffs2_format", "1", "checked"); %>><#checkbox_Yes#>

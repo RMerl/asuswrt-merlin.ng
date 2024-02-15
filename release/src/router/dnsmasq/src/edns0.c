@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -178,7 +178,7 @@ size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *l
 	    memcpy(buff, datap, rdlen);	      
 	  
 	  /* now, delete OPT RR */
-	  plen = rrfilter(header, plen, RRFILTER_EDNS0);
+	  rrfilter(header, &plen, RRFILTER_EDNS0);
 	  
 	  /* Now, force addition of a new one */
 	  p = NULL;	  
@@ -191,16 +191,13 @@ size_t add_pseudoheader(struct dns_header *header, size_t plen, unsigned char *l
       if (!(p = skip_questions(header, plen)) ||
 	  !(p = skip_section(p, 
 			     ntohs(header->ancount) + ntohs(header->nscount) + ntohs(header->arcount), 
-			     header, plen)))
-      {
-	free(buff);
-	return plen;
-      }
-      if (p + 11 > limit)
-      {
-        free(buff);
-        return plen; /* Too big */
-      }
+			     header, plen)) ||
+	  p + 11 > limit)
+	{
+	  free(buff);
+	  return plen; /* bad packet */
+	}
+      
       *p++ = 0; /* empty name */
       PUTSHORT(T_OPT, p);
       PUTSHORT(udp_sz, p); /* max packet length, 512 if not given in EDNS0 header */

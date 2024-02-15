@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1076,7 +1076,7 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
       
     case DHCP6CONFIRM:
       {
-	int good_addr = 0;
+	int good_addr = 0, bad_addr = 0;
 
 	/* set reply message type */
 	outmsgtype = DHCP6REPLY;
@@ -1098,26 +1098,24 @@ static int dhcp6_no_relay(struct state *state, int msg_type, unsigned char *inbu
 		
 		if (!address6_valid(state->context, &req_addr, tagif, 1))
 		  {
-		    o1 = new_opt6(OPTION6_STATUS_CODE);
-		    put_opt6_short(DHCP6NOTONLINK);
-		    put_opt6_string(_("confirm failed"));
-		    end_opt6(o1);
+		    bad_addr = 1;
 		    log6_quiet(state, "DHCPREPLY", &req_addr, _("confirm failed"));
-		    return 1;
 		  }
-
-		good_addr = 1;
-		log6_quiet(state, "DHCPREPLY", &req_addr, state->hostname);
+		else
+		  {
+		    good_addr = 1;
+		    log6_quiet(state, "DHCPREPLY", &req_addr, state->hostname);
+		  }
 	      }
 	  }	 
 	
 	/* No addresses, no reply: RFC 3315 18.2.2 */
-	if (!good_addr)
+	if (!good_addr && !bad_addr)
 	  return 0;
 
 	o1 = new_opt6(OPTION6_STATUS_CODE);
-	put_opt6_short(DHCP6SUCCESS );
-	put_opt6_string(_("all addresses still on link"));
+	put_opt6_short(bad_addr ? DHCP6NOTONLINK : DHCP6SUCCESS);
+	put_opt6_string(bad_addr ? (_("confirm failed")) : (_("all addresses still on link")));
 	end_opt6(o1);
 	break;
     }

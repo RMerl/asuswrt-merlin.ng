@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -15,7 +15,6 @@
 */
 
 #include "dnsmasq.h"
-
 #ifdef HAVE_DHCP
 
 static struct dhcp_lease *leases = NULL, *old_leases = NULL;
@@ -28,8 +27,7 @@ static int read_leases(time_t now, FILE *leasestream)
   struct dhcp_lease *lease;
   int clid_len, hw_len, hw_type;
   int items;
-  char *domain = NULL;
-
+ 
   *daemon->dhcp_buff3 = *daemon->dhcp_buff2 = '\0';
 
   /* client-id max length is 255 which is 255*2 digits + 254 colons
@@ -69,8 +67,8 @@ static int read_leases(time_t now, FILE *leasestream)
 		
 	if (inet_pton(AF_INET, daemon->namebuff, &addr.addr4))
 	  {
-	    if ((lease = lease4_allocate(addr.addr4)))
-	      domain = get_domain(lease->addr);
+	    lease = lease4_allocate(addr.addr4);
+	    
 	    
 	    hw_len = parse_hex(daemon->dhcp_buff2, (unsigned char *)daemon->dhcp_buff2, DHCP_CHADDR_MAX, NULL, &hw_type);
 	    /* For backwards compatibility, no explicit MAC address type means ether. */
@@ -90,10 +88,7 @@ static int read_leases(time_t now, FILE *leasestream)
 	      }
 	    
 	    if ((lease = lease6_allocate(&addr.addr6, lease_type)))
-	      {
-		lease_set_iaid(lease, strtoul(s, NULL, 10));
-		domain = get_domain6(&lease->addr6);
-	      }
+	      lease_set_iaid(lease, strtoul(s, NULL, 10));
 	  }
 #endif
 	else
@@ -114,7 +109,7 @@ static int read_leases(time_t now, FILE *leasestream)
 			 hw_len, hw_type, clid_len, now, 0);
 	
 	if (strcmp(daemon->dhcp_buff, "*") !=  0)
-	  lease_set_hostname(lease, daemon->dhcp_buff, 0, domain, NULL);
+	  lease_set_hostname(lease, daemon->dhcp_buff, 0, NULL, NULL);
 
 	ei = atol(daemon->dhcp_buff3);
 
@@ -1000,6 +995,36 @@ static void kill_name(struct dhcp_lease *lease)
   lease->hostname = lease->fqdn = NULL;
 }
 
+void lease_calc_fqdns(void)
+{
+  struct dhcp_lease *lease;
+  
+  for (lease = leases; lease; lease = lease->next)
+    {
+      char *domain;
+
+      if (lease->hostname)
+	{
+#ifdef HAVE_DHCP6
+	  if (lease->flags & (LEASE_TA | LEASE_NA))
+	    domain = get_domain6(&lease->addr6);
+	  else
+#endif
+	    domain = get_domain(lease->addr);
+	  
+	  if (domain)
+	    {
+	      /* This is called only during startup, before forking, hence safe_malloc() */
+	      lease->fqdn = safe_malloc(strlen(lease->hostname) + strlen(domain) + 2);
+	      
+	      strcpy(lease->fqdn, lease->hostname);
+	      strcat(lease->fqdn, ".");
+	      strcat(lease->fqdn, domain);
+	    }
+	}
+    }
+}
+	  
 void lease_set_hostname(struct dhcp_lease *lease, const char *name, int auth, char *domain, char *config_domain)
 {
   struct dhcp_lease *lease_tmp;

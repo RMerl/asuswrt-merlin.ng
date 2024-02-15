@@ -44,6 +44,14 @@ SetFilterWin2KOption
 --------------------
 Takes boolean, sets or resets the --filterwin2k option.
 
+SetFilterA
+------------------------
+Takes boolean, sets or resets the --filter-A option.
+
+SetFilterAAAA
+------------------------
+Takes boolean, sets or resets the --filter-AAAA option.
+
 SetBogusPrivOption
 ------------------
 Takes boolean, sets or resets the --bogus-priv option.

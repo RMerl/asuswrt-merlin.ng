@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -52,6 +52,12 @@ const char* introspection_xml_template =
 "    <method name=\"SetFilterWin2KOption\">\n"
 "      <arg name=\"filterwin2k\" direction=\"in\" type=\"b\"/>\n"
 "    </method>\n"
+"    <method name=\"SetFilterA\">\n"
+"      <arg name=\"filter-a\" direction=\"in\" type=\"b\"/>\n"
+"    </method>\n"
+"    <method name=\"SetFilterAAAA\">\n"
+"      <arg name=\"filter-aaaa\" direction=\"in\" type=\"b\"/>\n"
+"    </method>\n"
 "    <method name=\"SetLocaliseQueriesOption\">\n"
 "      <arg name=\"localise-queries\" direction=\"in\" type=\"b\"/>\n"
 "    </method>\n"
@@ -100,6 +106,7 @@ const char* introspection_xml_template =
 "</node>\n";
 
 static char *introspection_xml = NULL;
+static int watches_modified = 0;
 
 struct watch {
   DBusWatch *watch;      
@@ -121,6 +128,7 @@ static dbus_bool_t add_watch(DBusWatch *watch, void *data)
   w->watch = watch;
   w->next = daemon->watches;
   daemon->watches = w;
+  watches_modified++;
 
   (void)data; /* no warning */
   return TRUE;
@@ -128,7 +136,7 @@ static dbus_bool_t add_watch(DBusWatch *watch, void *data)
 
 static void remove_watch(DBusWatch *watch, void *data)
 {
-  struct watch **up, *w, *tmp;  
+  struct watch **up, *w, *tmp;
   
   for (up = &(daemon->watches), w = daemon->watches; w; w = tmp)
     {
@@ -137,6 +145,7 @@ static void remove_watch(DBusWatch *watch, void *data)
 	{
 	  *up = tmp;
 	  free(w);
+	  watches_modified++;
 	}
       else
 	up = &(w->next);
@@ -817,6 +826,28 @@ DBusHandlerResult message_handler(DBusConnection *connection,
     {
       reply = dbus_set_bool(message, OPT_FILTER, "filterwin2k");
     }
+  else if (strcmp(method, "SetFilterA") == 0)
+    {
+      static int done = 0;
+      static struct rrlist list = { T_A, NULL };
+
+      if (!done)
+	{
+	  list.next = daemon->filter_rr;
+	  daemon->filter_rr = &list;
+	}
+    }
+  else if (strcmp(method, "SetFilterAAAA") == 0)
+    {
+      static int done = 0;
+      static struct rrlist list = { T_AAAA, NULL };
+
+      if (!done)
+	{
+	  list.next = daemon->filter_rr;
+	  daemon->filter_rr = &list;
+	}
+    }
   else if (strcmp(method, "SetLocaliseQueriesOption") == 0)
     {
       reply = dbus_set_bool(message, OPT_LOCALISE, "localise-queries");
@@ -927,40 +958,52 @@ void set_dbus_listeners(void)
       {
 	unsigned int flags = dbus_watch_get_flags(w->watch);
 	int fd = dbus_watch_get_unix_fd(w->watch);
+	int poll_flags = POLLERR;
 	
 	if (flags & DBUS_WATCH_READABLE)
-	  poll_listen(fd, POLLIN);
-	
+	  poll_flags |= POLLIN;
 	if (flags & DBUS_WATCH_WRITABLE)
-	  poll_listen(fd, POLLOUT);
+	  poll_flags |= POLLOUT;
 	
-	poll_listen(fd, POLLERR);
+	poll_listen(fd, poll_flags);
       }
 }
 
-void check_dbus_listeners()
+static int check_dbus_watches()
 {
-  DBusConnection *connection = (DBusConnection *)daemon->dbus;
   struct watch *w;
 
+  watches_modified = 0;
   for (w = daemon->watches; w; w = w->next)
     if (dbus_watch_get_enabled(w->watch))
       {
 	unsigned int flags = 0;
 	int fd = dbus_watch_get_unix_fd(w->watch);
-	
-	if (poll_check(fd, POLLIN))
+	int poll_flags = poll_check(fd, POLLIN|POLLOUT|POLLERR);
+
+	if ((poll_flags & POLLIN) != 0)
 	  flags |= DBUS_WATCH_READABLE;
-	
-	if (poll_check(fd, POLLOUT))
+	if ((poll_flags & POLLOUT) != 0)
 	  flags |= DBUS_WATCH_WRITABLE;
-	
-	if (poll_check(fd, POLLERR))
+	if ((poll_flags & POLLERR) != 0)
 	  flags |= DBUS_WATCH_ERROR;
 
 	if (flags != 0)
-	  dbus_watch_handle(w->watch, flags);
+	  {
+	    dbus_watch_handle(w->watch, flags);
+	    if (watches_modified)
+	      return 0;
+	  }
       }
+
+  return 1;
+}
+
+void check_dbus_listeners()
+{
+  DBusConnection *connection = (DBusConnection *)daemon->dbus;
+
+  while (!check_dbus_watches()) ;
 
   if (connection)
     {

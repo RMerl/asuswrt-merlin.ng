@@ -1,0 +1,18 @@
+$TTL    604800
+@       IN      SOA     ns.autopkg.test. hostmaster.autopkg.test. (
+                              2         ; Serial
+                         604800         ; Refresh
+                          86400         ; Retry
+                        2419200         ; Expire
+                            300 )       ; Negative Cache TTL
+;
+@	IN	NS	ns
+ns	IN	A	192.168.141.1
+host	IN	A	192.168.142.1
+dhcp0	IN	A	192.168.142.2
+dhcp1	IN	A	192.168.142.3
+dhcp2	IN	A	192.168.142.4
+dhcp3	IN	A	192.168.142.5
+dhcp4	IN	A	192.168.142.6
+brdcst	IN	A	192.168.142.7
+

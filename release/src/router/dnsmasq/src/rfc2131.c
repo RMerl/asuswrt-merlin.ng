@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -1682,7 +1682,7 @@ static int sanitise(unsigned char *opt, char *buf)
   for (i = option_len(opt); i > 0; i--)
     {
       char c = *p++;
-      if (isprint((int)c))
+      if (isprint((unsigned char)c))
 	*buf++ = c;
     }
   *buf = 0; /* add terminator */

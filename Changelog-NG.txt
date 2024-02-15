@@ -1,6 +1,11 @@
 Asuswrt-Merlin Changelog
 ========================
 
+3004.388.6_1 (xx-xxx-2024)
+  - UPDATED: dnsmasq to 2.90 (resolves CVE 2023-50868 and CVE 2023-50387).
+  - FIXED: LACP support was missing on the XT12.
+
+
 3004.388.6 (20-Jan-2024)
   - NOTE: Since Asus provided GPL code for the RT-AX56U, this model
           will exceptionally be included with this release, despite

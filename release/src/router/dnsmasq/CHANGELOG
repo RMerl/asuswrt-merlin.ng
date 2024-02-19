@@ -1,3 +1,8 @@
+version 2.91
+	Fix spurious "resource limit exceeded messages". Thanks to 
+	Dominik Derigs for the bug report.
+	
+
 version 2.90
 	Fix reversion in --rev-server introduced in 2.88 which
 	caused breakage if the prefix length is not exactly divisible

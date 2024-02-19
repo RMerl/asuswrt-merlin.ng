@@ -939,10 +939,10 @@ static void dnssec_validate(struct frec *forward, struct dns_header *header,
 	status = dnssec_validate_reply(now, header, plen, daemon->namebuff, daemon->keyname, &forward->class, 
 				       !option_bool(OPT_DNSSEC_IGN_NS) && (forward->sentto->flags & SERV_DO_DNSSEC),
 				       NULL, NULL, NULL, &orig->validate_counter);
-    }
 
-  if (STAT_ISEQUAL(status, STAT_ABANDONED))
-    log_resource = 1;
+      if (STAT_ISEQUAL(status, STAT_ABANDONED))
+	log_resource = 1;
+    }
   
   /* Can't validate, as we're missing key data. Put this
      answer aside, whilst we get that. */     

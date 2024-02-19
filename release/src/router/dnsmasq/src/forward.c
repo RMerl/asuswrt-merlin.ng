@@ -1077,7 +1077,7 @@ static void dnssec_validate(struct frec *forward, struct dns_header *header,
       /* Log the actual validation that made us barf. */
       unsigned char *p = (unsigned char *)(header+1);
       if  (extract_name(header, plen, &p, daemon->namebuff, 0, 4) == 1)
-	my_syslog(LOG_DEBUG, _("validation of %s failed: resource limit exceeded."),
+	my_syslog(LOG_WARNING, _("validation of %s failed: resource limit exceeded."),
 		  daemon->namebuff[0] ? daemon->namebuff : ".");
     }
   

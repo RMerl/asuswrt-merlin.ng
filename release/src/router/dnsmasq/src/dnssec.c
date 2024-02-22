@@ -1547,7 +1547,7 @@ static int prove_non_existence_nsec3(struct dns_header *header, size_t plen, uns
       nsecs[i] = NULL; /* Speculative, will be restored if OK. */
       
       if (!(p = skip_name(nsec3p, header, plen, 15)))
-	return 0; /* bad packet */
+	return DNSSEC_FAIL_BADPACKET; /* bad packet */
       
       p += 10; /* type, class, TTL, rdlen */
       
@@ -1640,7 +1640,7 @@ static int prove_non_existence_nsec3(struct dns_header *header, size_t plen, uns
   if (!wildname)
     {
       if (!(wildcard = strchr(next_closest, '.')) || wildcard == next_closest)
-	return 0;
+	return DNSSEC_FAIL_NONSEC;
       
       wildcard--;
       *wildcard = '*';

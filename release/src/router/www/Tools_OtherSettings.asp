@@ -701,7 +701,6 @@ function done_validating(action){
 								<option value="12" <% nvram_match("rstats_stime", "12","selected"); %>>Every 12 hours</option>
 								<option value="24" <% nvram_match("rstats_stime", "24","selected"); %>>Every 1 day</option>
 								<option value="72" <% nvram_match("rstats_stime", "72","selected"); %>>Every 3 days</option>
-								<option value="168" <% nvram_match("rstats_stime", "168","selected"); %>>Every 1 week</option>
 							</select>
 						</td>
 					</tr>

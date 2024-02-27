@@ -1,6 +1,10 @@
 Asuswrt-Merlin Changelog
 ========================
 
+386.12_6 (26-Feb-2023)
+  - UPDATED: dnsmasq to 2.90 (resolves CVE 2023-50868 and CVE 2023-50387).
+
+
 386.12_4 (21-Nov-2023)
   - UPDATED: openvpn to 2.6.8 (fixes a crash introduced in 2.6.7)
 

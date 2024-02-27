@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -297,7 +297,7 @@ void dhcp_packet(time_t now, int pxe_fd)
 	}
       
       for (tmp = daemon->dhcp_except; tmp; tmp = tmp->next)
-	if (tmp->name && wildcard_match(tmp->name, ifr.ifr_name))
+	if (tmp->name && (tmp->flags & INAME_4) && wildcard_match(tmp->name, ifr.ifr_name))
 	  return;
       
       /* unlinked contexts/relays are marked by context->current == context */
@@ -916,14 +916,14 @@ void dhcp_read_ethers(void)
       
       lineno++;
       
-      while (strlen(buff) > 0 && isspace((int)buff[strlen(buff)-1]))
+      while (strlen(buff) > 0 && isspace((unsigned char)buff[strlen(buff)-1]))
 	buff[strlen(buff)-1] = 0;
       
       if ((*buff == '#') || (*buff == '+') || (*buff == 0))
 	continue;
       
-      for (ip = buff; *ip && !isspace((int)*ip); ip++);
-      for(; *ip && isspace((int)*ip); ip++)
+      for (ip = buff; *ip && !isspace((unsigned char)*ip); ip++);
+      for(; *ip && isspace((unsigned char)*ip); ip++)
 	*ip = 0;
       if (!*ip || parse_hex(buff, hwaddr, ETHER_ADDR_LEN, NULL, NULL) != ETHER_ADDR_LEN)
 	{

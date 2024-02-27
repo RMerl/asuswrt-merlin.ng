@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -30,12 +30,14 @@ static volatile pid_t pid = 0;
 static volatile int pipewrite;
 
 static void set_dns_listeners(void);
+static void set_tftp_listeners(void);
 static void check_dns_listeners(time_t now);
 static void sig_handler(int sig);
 static void async_event(int pipe, time_t now);
 static void fatal_event(struct event_desc *ev, char *msg);
 static int read_event(int fd, struct event_desc *evp, char **msg);
 static void poll_resolv(int force, int do_reload, time_t now);
+static void tcp_init(void);
 
 int main (int argc, char **argv)
 {
@@ -125,28 +127,14 @@ int main (int argc, char **argv)
     {
       /* Note that both /000 and '.' are allowed within labels. These get
 	 represented in presentation format using NAME_ESCAPE as an escape
-	 character when in DNSSEC mode. 
-	 In theory, if all the characters in a name were /000 or
+	 character. In theory, if all the characters in a name were /000 or
 	 '.' or NAME_ESCAPE then all would have to be escaped, so the 
-	 presentation format would be twice as long as the spec.
-
-	 daemon->namebuff was previously allocated by the option-reading
-	 code before we knew if we're in DNSSEC mode, so reallocate here. */
-      free(daemon->namebuff);
-      daemon->namebuff = safe_malloc(MAXDNAME * 2);
-      daemon->keyname = safe_malloc(MAXDNAME * 2);
-      daemon->workspacename = safe_malloc(MAXDNAME * 2);
+	 presentation format would be twice as long as the spec. */
+      daemon->keyname = safe_malloc((MAXDNAME * 2) + 1);
       /* one char flag per possible RR in answer section (may get extended). */
       daemon->rr_status_sz = 64;
       daemon->rr_status = safe_malloc(sizeof(*daemon->rr_status) * daemon->rr_status_sz);
     }
-#endif
-
-#if defined(HAVE_CONNTRACK) && defined(HAVE_UBUS)
-  /* CONNTRACK UBUS code uses this buffer, so if not allocated above,
-     we need to allocate it here. */
-  if (option_bool(OPT_CMARK_ALST_EN) && !daemon->workspacename)
-    daemon->workspacename = safe_malloc(MAXDNAME);
 #endif
   
 #ifdef HAVE_DHCP
@@ -378,6 +366,13 @@ int main (int argc, char **argv)
   
   if (!enumerate_interfaces(1) || !enumerate_interfaces(0))
     die(_("failed to find list of interfaces: %s"), NULL, EC_MISC);
+
+#ifdef HAVE_DHCP
+  /* Determine lease FQDNs after enumerate_interfaces() call, since it needs
+     to call get_domain and that's only valid for some domain configs once we
+     have interface addresses. */
+  lease_calc_fqdns();
+#endif
   
   if (option_bool(OPT_NOWILD) || option_bool(OPT_CLEVERBIND)) 
     {
@@ -385,7 +380,7 @@ int main (int argc, char **argv)
       
       if (!option_bool(OPT_CLEVERBIND))
 	for (if_tmp = daemon->if_names; if_tmp; if_tmp = if_tmp->next)
-	  if (if_tmp->name && !if_tmp->used)
+	  if (if_tmp->name && !(if_tmp->flags & INAME_USED))
 	    die(_("unknown interface %s"), if_tmp->name, EC_BADNET);
 
 #if defined(HAVE_LINUX_NETWORK) && defined(HAVE_DHCP)
@@ -421,11 +416,13 @@ int main (int argc, char **argv)
 	daemon->numrrand = max_fd/3;
       /* safe_malloc returns zero'd memory */
       daemon->randomsocks = safe_malloc(daemon->numrrand * sizeof(struct randfd));
+
+      tcp_init();
     }
 
 #ifdef HAVE_INOTIFY
-  if ((daemon->port != 0 || daemon->dhcp || daemon->doing_dhcp6)
-      && (!option_bool(OPT_NO_RESOLV) || daemon->dynamic_dirs))
+  if ((daemon->port != 0 && !option_bool(OPT_NO_RESOLV)) ||
+      daemon->dynamic_dirs)
     inotify_dnsmasq_init();
   else
     daemon->inotifyfd = -1;
@@ -863,6 +860,8 @@ int main (int argc, char **argv)
 
       if (option_bool(OPT_LOCAL_SERVICE))
 	my_syslog(LOG_INFO, _("DNS service limited to local subnets"));
+      else if (option_bool(OPT_LOCALHOST_SERVICE))
+	my_syslog(LOG_INFO, _("DNS service limited to localhost"));
     }
   
   my_syslog(LOG_DEBUG, _("compile time options: %s"), compile_opts);
@@ -941,7 +940,7 @@ int main (int argc, char **argv)
   
   if (!option_bool(OPT_NOWILD)) 
     for (if_tmp = daemon->if_names; if_tmp; if_tmp = if_tmp->next)
-      if (if_tmp->name && !if_tmp->used)
+      if (if_tmp->name && !(if_tmp->flags & INAME_USED))
 	my_syslog(LOG_DEBUG, _("warning: interface %s does not currently exist"), if_tmp->name);
    
   if (daemon->port != 0 && option_bool(OPT_NO_RESOLV))
@@ -1049,8 +1048,10 @@ int main (int argc, char **argv)
   pid = getpid();
 
   daemon->pipe_to_parent = -1;
-  for (i = 0; i < MAX_PROCS; i++)
-    daemon->tcp_pipes[i] = -1;
+
+  if (daemon->port != 0)
+    for (i = 0; i < daemon->max_procs; i++)
+      daemon->tcp_pipes[i] = -1;
   
 #ifdef HAVE_INOTIFY
   /* Using inotify, have to select a resolv file at startup */
@@ -1073,7 +1074,12 @@ int main (int argc, char **argv)
 	       (timeout == -1 || timeout > 1000))
 	timeout = 1000;
       
-      set_dns_listeners();
+      if (daemon->port != 0)
+	set_dns_listeners();
+      
+#ifdef HAVE_TFTP
+      set_tftp_listeners();
+#endif
 
 #ifdef HAVE_DBUS
       if (option_bool(OPT_DBUS))
@@ -1258,8 +1264,9 @@ int main (int argc, char **argv)
 	  check_ubus_listeners();
 	}
 #endif
-
-      check_dns_listeners(now);
+      
+      if (daemon->port != 0)
+	check_dns_listeners(now);
 
 #ifdef HAVE_TFTP
       check_tftp_listeners(now);
@@ -1525,10 +1532,15 @@ static void async_event(int pipe, time_t now)
 	      if (errno != EINTR)
 		break;
 	    }      
-	  else 
-	    for (i = 0 ; i < MAX_PROCS; i++)
+	  else if (daemon->port != 0)
+	    for (i = 0 ; i < daemon->max_procs; i++)
 	      if (daemon->tcp_pids[i] == p)
-		daemon->tcp_pids[i] = 0;
+		{
+		  daemon->tcp_pids[i] = 0;
+		  /* tcp_pipes == -1 && tcp_pids == 0 required to free slot */
+		  if (daemon->tcp_pipes[i] == -1)
+		    daemon->metrics[METRIC_TCP_CONNECTIONS]--;
+		}
 	break;
 	
 #if defined(HAVE_SCRIPT)	
@@ -1594,9 +1606,10 @@ static void async_event(int pipe, time_t now)
 	
       case EVENT_TERM:
 	/* Knock all our children on the head. */
-	for (i = 0; i < MAX_PROCS; i++)
-	  if (daemon->tcp_pids[i] != 0)
-	    kill(daemon->tcp_pids[i], SIGALRM);
+	if (daemon->port != 0)
+	  for (i = 0; i < daemon->max_procs; i++)
+	    if (daemon->tcp_pids[i] != 0)
+	      kill(daemon->tcp_pids[i], SIGALRM);
 	
 #if defined(HAVE_SCRIPT) && defined(HAVE_DHCP)
 	/* handle pending lease transitions */
@@ -1745,23 +1758,33 @@ void clear_cache_and_reload(time_t now)
 #endif
 }
 
-static void set_dns_listeners(void)
-{
-  struct serverfd *serverfdp;
-  struct listener *listener;
-  struct randfd_list *rfl;
-  int i;
-  
 #ifdef HAVE_TFTP
+static void set_tftp_listeners(void)
+{
   int  tftp = 0;
   struct tftp_transfer *transfer;
+  struct listener *listener;
+  
   if (!option_bool(OPT_SINGLE_PORT))
     for (transfer = daemon->tftp_trans; transfer; transfer = transfer->next)
       {
 	tftp++;
 	poll_listen(transfer->sockfd, POLLIN);
       }
+
+  for (listener = daemon->listeners; listener; listener = listener->next)
+    /* tftp == 0 in single-port mode. */
+    if (tftp <= daemon->tftp_max && listener->tftpfd != -1)
+      poll_listen(listener->tftpfd, POLLIN);
+}
 #endif
+
+static void set_dns_listeners(void)
+{
+  struct serverfd *serverfdp;
+  struct listener *listener;
+  struct randfd_list *rfl;
+  int i;
   
   for (serverfdp = daemon->sfds; serverfdp; serverfdp = serverfdp->next)
     poll_listen(serverfdp->fd, POLLIN);
@@ -1775,7 +1798,7 @@ static void set_dns_listeners(void)
     poll_listen(rfl->rfd->fd, POLLIN);
   
   /* check to see if we have free tcp process slots. */
-  for (i = MAX_PROCS - 1; i >= 0; i--)
+  for (i = daemon->max_procs - 1; i >= 0; i--)
     if (daemon->tcp_pids[i] == 0 && daemon->tcp_pipes[i] == -1)
       break;
 
@@ -1790,16 +1813,10 @@ static void set_dns_listeners(void)
 	 we'll be called again when a slot becomes available. */
       if  (listener->tcpfd != -1 && i >= 0)
 	poll_listen(listener->tcpfd, POLLIN);
-      
-#ifdef HAVE_TFTP
-      /* tftp == 0 in single-port mode. */
-      if (tftp <= daemon->tftp_max && listener->tftpfd != -1)
-	poll_listen(listener->tftpfd, POLLIN);
-#endif
     }
   
   if (!option_bool(OPT_DEBUG))
-    for (i = 0; i < MAX_PROCS; i++)
+    for (i = 0; i < daemon->max_procs; i++)
       if (daemon->tcp_pipes[i] != -1)
 	poll_listen(daemon->tcp_pipes[i], POLLIN);
 }
@@ -1834,13 +1851,16 @@ static void check_dns_listeners(time_t now)
      to free the process slot. Once the child process has gone, poll()
      returns POLLHUP, not POLLIN, so have to check for both here. */
   if (!option_bool(OPT_DEBUG))
-    for (i = 0; i < MAX_PROCS; i++)
+    for (i = 0; i < daemon->max_procs; i++)
       if (daemon->tcp_pipes[i] != -1 &&
 	  poll_check(daemon->tcp_pipes[i], POLLIN | POLLHUP) &&
 	  !cache_recv_insert(now, daemon->tcp_pipes[i]))
 	{
 	  close(daemon->tcp_pipes[i]);
 	  daemon->tcp_pipes[i] = -1;	
+	  /* tcp_pipes == -1 && tcp_pids == 0 required to free slot */
+	  if (daemon->tcp_pids[i] == 0)
+	    daemon->metrics[METRIC_TCP_CONNECTIONS]--;
 	}
 	
   for (listener = daemon->listeners; listener; listener = listener->next)
@@ -1848,17 +1868,12 @@ static void check_dns_listeners(time_t now)
       if (listener->fd != -1 && poll_check(listener->fd, POLLIN))
 	receive_query(listener, now); 
       
-#ifdef HAVE_TFTP     
-      if (listener->tftpfd != -1 && poll_check(listener->tftpfd, POLLIN))
-	tftp_request(listener, now);
-#endif
-
       /* check to see if we have a free tcp process slot.
 	 Note that we can't assume that because we had
 	 at least one a poll() time, that we still do.
 	 There may be more waiting connections after
 	 poll() returns then free process slots. */
-      for (i = MAX_PROCS - 1; i >= 0; i--)
+      for (i = daemon->max_procs - 1; i >= 0; i--)
 	if (daemon->tcp_pids[i] == 0 && daemon->tcp_pipes[i] == -1)
 	  break;
 
@@ -1974,6 +1989,9 @@ static void check_dns_listeners(time_t now)
 		  /* i holds index of free slot */
 		  daemon->tcp_pids[i] = p;
 		  daemon->tcp_pipes[i] = pipefd[0];
+		  daemon->metrics[METRIC_TCP_CONNECTIONS]++;
+		  if (daemon->metrics[METRIC_TCP_CONNECTIONS] > daemon->max_procs_used)
+		    daemon->max_procs_used = daemon->metrics[METRIC_TCP_CONNECTIONS];
 		}
 	      close(confd);
 
@@ -2149,7 +2167,11 @@ int delay_dhcp(time_t start, int sec, int fd, uint32_t addr, unsigned short id)
       poll_reset();
       if (fd != -1)
         poll_listen(fd, POLLIN);
-      set_dns_listeners();
+      if (daemon->port != 0)
+	set_dns_listeners();
+#ifdef HAVE_TFTP
+      set_tftp_listeners();
+#endif
       set_log_writer();
       
 #ifdef HAVE_DHCP6
@@ -2167,7 +2189,8 @@ int delay_dhcp(time_t start, int sec, int fd, uint32_t addr, unsigned short id)
       now = dnsmasq_time();
       
       check_log_writer(0);
-      check_dns_listeners(now);
+      if (daemon->port != 0)
+	check_dns_listeners(now);
       
 #ifdef HAVE_DHCP6
       if (daemon->doing_ra && poll_check(daemon->icmp6fd, POLLIN))
@@ -2200,3 +2223,9 @@ int delay_dhcp(time_t start, int sec, int fd, uint32_t addr, unsigned short id)
   return 0;
 }
 #endif /* HAVE_DHCP */
+
+void tcp_init(void)
+{
+  daemon->tcp_pids = safe_malloc(daemon->max_procs*sizeof(pid_t));
+  daemon->tcp_pipes = safe_malloc(daemon->max_procs*sizeof(int));
+}

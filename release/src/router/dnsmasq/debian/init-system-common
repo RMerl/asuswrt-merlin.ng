@@ -1,0 +1,102 @@
+# -*- shell-script -*-
+PATH=/usr/local/sbin:/usr/local/bin:/sbin:/bin:/usr/sbin:/usr/bin
+DAEMON=/usr/sbin/dnsmasq
+NAME=dnsmasq
+DESC="DNS forwarder and DHCP server"
+INSTANCE="${2}"
+
+# Most configuration options in /etc/default/dnsmasq are deprecated
+# but still honoured.
+if [ -r /etc/default/${NAME}${INSTANCE:+.${INSTANCE}} ]; then
+    . /etc/default/${NAME}${INSTANCE:+.${INSTANCE}}
+fi
+
+# Get the system locale, so that messages are in the correct language, and the
+# charset for IDN is correct
+if [ -r /etc/default/locale ]; then
+    . /etc/default/locale
+    export LANG
+fi
+
+# RESOLV_CONF:
+# If the resolvconf package is installed then use the resolv conf file
+# that it provides as the default.  Otherwise use /etc/resolv.conf as
+# the default.
+#
+# If IGNORE_RESOLVCONF is set in /etc/default/dnsmasq or an explicit
+# filename is set there then this inhibits the use of the resolvconf-provided
+# information.
+#
+# Note that if the resolvconf package is installed it is not possible to
+# override it just by configuration in /etc/dnsmasq.conf, it is necessary
+# to set IGNORE_RESOLVCONF=yes in /etc/default/dnsmasq.
+
+if [ ! "${RESOLV_CONF}" ] &&
+   [ "${IGNORE_RESOLVCONF}" != "yes" ] &&
+   [ -x /sbin/resolvconf ]
+then
+    RESOLV_CONF=/run/dnsmasq/resolv.conf
+fi
+
+for INTERFACE in ${DNSMASQ_INTERFACE}; do
+    DNSMASQ_INTERFACES="${DNSMASQ_INTERFACES} -i ${INTERFACE}"
+done
+
+for INTERFACE in ${DNSMASQ_EXCEPT}; do
+    DNSMASQ_INTERFACES="${DNSMASQ_INTERFACES} -I ${INTERFACE}"
+done
+
+if [ ! "${DNSMASQ_USER}" ]; then
+    DNSMASQ_USER="dnsmasq"
+fi
+
+# This tells dnsmasq to ignore DNS requests that don't come from a local network.
+# It's automatically ignored if --interface --except-interface, --listen-address
+# or --auth-server exist in the configuration, so for most installations, it will
+# have no effect, but for otherwise-unconfigured installations, it stops dnsmasq
+# from being vulnerable to DNS-reflection attacks.
+
+DNSMASQ_OPTS="${DNSMASQ_OPTS} --local-service"
+
+# If the dns-root-data package is installed, then the trust anchors will be
+# available in ROOT_DS, in BIND zone-file format. Reformat as dnsmasq
+# --trust-anchor options.
+
+ROOT_DS="/usr/share/dns/root.ds"
+
+if [ -f ${ROOT_DS} ]; then
+    DNSMASQ_OPTS="$DNSMASQ_OPTS `env LC_ALL=C sed -rne "s/^([.a-zA-Z0-9]+)([[:space:]]+[0-9]+)*([[:space:]]+IN)*[[:space:]]+DS[[:space:]]+/--trust-anchor=\1,/;s/[[:space:]]+/,/gp" $ROOT_DS | tr '\n' ' '`"
+fi
+
+checkconfig()
+{
+    ${DAEMON} --test ${CONFIG_DIR:+ -7 ${CONFIG_DIR}} ${DNSMASQ_OPTS:+ ${DNSMASQ_OPTS}} >/dev/null 2>&1
+}
+
+start_resolvconf()
+{
+# If interface "lo" is explicitly disabled in /etc/default/dnsmasq
+# Then dnsmasq won't be providing local DNS, so don't add it to
+# the resolvconf server set.
+    for interface in ${DNSMASQ_EXCEPT}; do
+        [ ${interface} = lo ] && return
+    done
+
+    # Also skip this if DNS functionality is disabled in /etc/dnsmasq.conf
+    if grep -qs '^port=0' /etc/dnsmasq.conf; then
+        return
+    fi
+
+    if [ -x /sbin/resolvconf ] ; then
+        echo "nameserver 127.0.0.1" | /sbin/resolvconf -a lo.${NAME}${INSTANCE:+.${INSTANCE}}
+    fi
+    return 0
+}
+
+stop_resolvconf()
+{
+    if [ -x /sbin/resolvconf ] ; then
+        /sbin/resolvconf -d lo.${NAME}${INSTANCE:+.${INSTANCE}}
+    fi
+    return 0
+}

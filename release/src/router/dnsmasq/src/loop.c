@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ int detect_loop(char *query, int type)
     return 0;
 
   for (i = 0; i < 8; i++)
-    if (!isxdigit(query[i]))
+    if (!isxdigit((unsigned char)query[i]))
       return 0;
 
   uid = strtol(query, NULL, 16);

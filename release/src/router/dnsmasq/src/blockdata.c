@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -19,7 +19,7 @@
 static struct blockdata *keyblock_free;
 static unsigned int blockdata_count, blockdata_hwm, blockdata_alloced;
 
-static void blockdata_expand(int n)
+static void add_blocks(int n)
 {
   struct blockdata *new = whine_malloc(n * sizeof(struct blockdata));
   
@@ -47,7 +47,7 @@ void blockdata_init(void)
 
   /* Note that daemon->cachesize is enforced to have non-zero size if OPT_DNSSEC_VALID is set */  
   if (option_bool(OPT_DNSSEC_VALID))
-    blockdata_expand(daemon->cachesize);
+    add_blocks(daemon->cachesize);
 }
 
 void blockdata_report(void)
@@ -58,50 +58,61 @@ void blockdata_report(void)
 	    blockdata_alloced * sizeof(struct blockdata));
 } 
 
+static struct blockdata *new_block(void)
+{
+  struct blockdata *block;
+
+  if (!keyblock_free)
+    add_blocks(50);
+  
+  if (keyblock_free)
+    {
+      block = keyblock_free;
+      keyblock_free = block->next;
+      blockdata_count++;
+      if (blockdata_hwm < blockdata_count)
+	blockdata_hwm = blockdata_count;
+      block->next = NULL;
+      return block;
+    }
+  
+  return NULL;
+}
+
 static struct blockdata *blockdata_alloc_real(int fd, char *data, size_t len)
 {
   struct blockdata *block, *ret = NULL;
   struct blockdata **prev = &ret;
   size_t blen;
 
-  while (len > 0)
+  do
     {
-      if (!keyblock_free)
-	blockdata_expand(50);
-      
-      if (keyblock_free)
-	{
-	  block = keyblock_free;
-	  keyblock_free = block->next;
-	  blockdata_count++; 
-	}
-      else
+      if (!(block = new_block()))
 	{
 	  /* failed to alloc, free partial chain */
 	  blockdata_free(ret);
 	  return NULL;
 	}
-       
-      if (blockdata_hwm < blockdata_count)
-	blockdata_hwm = blockdata_count; 
+
+      if ((blen = len > KEYBLOCK_LEN ? KEYBLOCK_LEN : len) > 0)
+	{
+	  if (data)
+	    {
+	      memcpy(block->key, data, blen);
+	      data += blen;
+	    }
+	  else if (!read_write(fd, block->key, blen, 1))
+	    {
+	      /* failed read free partial chain */
+	      blockdata_free(ret);
+	      return NULL;
+	    }
+	}
       
-      blen = len > KEYBLOCK_LEN ? KEYBLOCK_LEN : len;
-      if (data)
-	{
-	  memcpy(block->key, data, blen);
-	  data += blen;
-	}
-      else if (!read_write(fd, block->key, blen, 1))
-	{
-	  /* failed read free partial chain */
-	  blockdata_free(ret);
-	  return NULL;
-	}
       len -= blen;
       *prev = block;
       prev = &block->next;
-      block->next = NULL;
-    }
+    } while (len != 0);
   
   return ret;
 }
@@ -109,6 +120,58 @@ static struct blockdata *blockdata_alloc_real(int fd, char *data, size_t len)
 struct blockdata *blockdata_alloc(char *data, size_t len)
 {
   return blockdata_alloc_real(0, data, len);
+}
+
+/* Add data to the end of the block. 
+   newlen is length of new data, NOT total new length. 
+   Use blockdata_alloc(NULL, 0) to make empty block to add to. */
+int blockdata_expand(struct blockdata *block, size_t oldlen, char *data, size_t newlen)
+{
+  struct blockdata *b;
+  
+  /* find size of current final block */
+  for (b = block; oldlen > KEYBLOCK_LEN && b;  b = b->next, oldlen -= KEYBLOCK_LEN);
+
+  /* chain to short for length, something is broken */
+  if (oldlen > KEYBLOCK_LEN)
+    {
+      blockdata_free(block);
+      return 0;
+    }
+
+  while (1)
+    {
+      struct blockdata *new;
+      size_t blocksize = KEYBLOCK_LEN - oldlen;
+      size_t size = (newlen <= blocksize) ? newlen : blocksize;
+      
+      if (size != 0)
+	{
+	  memcpy(&b->key[oldlen], data, size);
+	  data += size;
+	  newlen -= size;
+	}
+      
+      /* full blocks from now on. */
+      oldlen = 0;
+
+      if (newlen == 0)
+	break;
+
+      if ((new = new_block()))
+	{
+	  b->next = new;
+	  b = new;
+	}
+      else
+	{
+	  /* failed to alloc, free partial chain */
+	  blockdata_free(block);
+	  return 0;
+	}
+    }
+
+  return 1;
 }
 
 void blockdata_free(struct blockdata *blocks)

@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -228,7 +228,8 @@ void tftp_request(struct listener *listen, time_t now)
 #ifdef HAVE_DHCP      
 	  /* allowed interfaces are the same as for DHCP */
 	  for (tmp = daemon->dhcp_except; tmp; tmp = tmp->next)
-	    if (tmp->name && wildcard_match(tmp->name, name))
+	    if (tmp->name && (tmp->flags & INAME_4) && (tmp->flags & INAME_6) &&
+		wildcard_match(tmp->name, name))
 	      return;
 #endif
 	}
@@ -405,7 +406,7 @@ void tftp_request(struct listener *listen, time_t now)
 	if (*p == '\\')
 	  *p = '/';
 	else if (option_bool(OPT_TFTP_LC))
-	  *p = tolower(*p);
+	  *p = tolower((unsigned char)*p);
 		
       strcpy(daemon->namebuff, "/");
       if (prefix)
@@ -584,8 +585,13 @@ static struct tftp_file *check_tftp_fileperm(ssize_t *len, char *prefix, char *c
 
 void check_tftp_listeners(time_t now)
 {
+  struct listener *listener;
   struct tftp_transfer *transfer, *tmp, **up;
   
+  for (listener = daemon->listeners; listener; listener = listener->next)
+    if (listener->tftpfd != -1 && poll_check(listener->tftpfd, POLLIN))
+      tftp_request(listener, now);
+    
   /* In single port mode, all packets come via port 69 and tftp_request() */
   if (!option_bool(OPT_SINGLE_PORT))
     for (transfer = daemon->tftp_trans; transfer; transfer = transfer->next)

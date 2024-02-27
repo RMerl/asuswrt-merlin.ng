@@ -1,0 +1,19 @@
+#!/bin/sh
+
+set -e
+
+. debian/tests/functions
+
+stop_dnsmasq_bind_networking
+configure_and_start_networking
+configure_and_start_bind
+configure_and_start_dnsmasq
+
+get_address_on_veth1_and_check_the_result
+
+query_test_zone_records_and_check_the_result
+
+check_utils
+
+#Done
+echo Looks good.

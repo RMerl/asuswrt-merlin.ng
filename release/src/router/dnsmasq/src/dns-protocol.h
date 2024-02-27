@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -112,8 +112,11 @@
 #define EDE_NO_AUTH        22  /* No Reachable Authority */
 #define EDE_NETERR         23  /* Network error */
 #define EDE_INVALID_DATA   24  /* Invalid Data */
-
-
+#define EDE_SIG_E_B_V      25  /* Signature Expired before Valid */
+#define EDE_TOO_EARLY      26  /* To Early */
+#define EDE_UNS_NS3_ITER   27  /* Unsupported NSEC3 Iterations Value */
+#define EDE_UNABLE_POLICY  28  /* Unable to conform to policy */
+#define EDE_SYNTHESIZED    29  /* Synthesized */
 
 
 struct dns_header {

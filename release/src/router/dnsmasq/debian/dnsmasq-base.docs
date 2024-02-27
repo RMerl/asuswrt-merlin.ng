@@ -1,0 +1,8 @@
+doc.html
+setup.html
+dnsmasq.conf.example
+FAQ
+CHANGELOG.archive
+dbus/DBus-interface
+debian/systemd_howto
+debian/readme

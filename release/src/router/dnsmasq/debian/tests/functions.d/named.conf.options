@@ -1,0 +1,6 @@
+options {
+        directory "/var/cache/bind";
+        listen-on { 192.168.141.1; };
+        recursion no;
+};
+

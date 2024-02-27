@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -92,7 +92,7 @@ void dhcp6_packet(time_t now)
   struct iface_param parm;
   struct cmsghdr *cmptr;
   struct msghdr msg;
-  int if_index = 0;
+  uint32_t if_index = 0;
   union {
     struct cmsghdr align; /* this ensures alignment */
     char control6[CMSG_SPACE(sizeof(struct in6_pktinfo))];
@@ -118,11 +118,6 @@ void dhcp6_packet(time_t now)
   if ((sz = recv_dhcp_packet(daemon->dhcp6fd, &msg)) == -1)
     return;
   
-#ifdef HAVE_DUMPFILE
-  dump_packet_udp(DUMP_DHCPV6, (void *)daemon->dhcp_packet.iov_base, sz,
-		  (union mysockaddr *)&from, NULL, daemon->dhcp6fd);
-#endif
-  
   for (cmptr = CMSG_FIRSTHDR(&msg); cmptr; cmptr = CMSG_NXTHDR(&msg, cmptr))
     if (cmptr->cmsg_level == IPPROTO_IPV6 && cmptr->cmsg_type == daemon->v6pktinfo)
       {
@@ -138,6 +133,34 @@ void dhcp6_packet(time_t now)
 
   if (!indextoname(daemon->dhcp6fd, if_index, ifr.ifr_name))
     return;
+  
+#ifdef HAVE_LINUX_NETWORK
+  /* This works around a possible Linux kernel bug when using interfaces
+     enslaved to a VRF. The scope_id in the source address gets set
+     to the index of the VRF interface, not the slave. Fortunately,
+     the interface index returned by packetinfo is correct so we use
+     that instead. Log this once, so if it triggers in other circumstances
+     we've not anticipated and breaks things, we get some clues. */
+  if (from.sin6_scope_id != if_index)
+    {
+      static int logged = 0;
+      
+      if (!logged)
+	{
+	  my_syslog(MS_DHCP | LOG_WARNING,
+		    _("Working around kernel bug: faulty source address scope for VRF slave %s"),
+		    ifr.ifr_name);
+	  logged = 1;
+	}
+      
+      from.sin6_scope_id = if_index;
+    }
+#endif
+
+#ifdef HAVE_DUMPFILE
+  dump_packet_udp(DUMP_DHCPV6, (void *)daemon->dhcp_packet.iov_base, sz,
+		  (union mysockaddr *)&from, NULL, daemon->dhcp6fd);
+#endif
 
   if (relay_reply6(&from, sz, ifr.ifr_name))
     {
@@ -159,7 +182,8 @@ void dhcp6_packet(time_t now)
 	  return;
       
       for (tmp = daemon->dhcp_except; tmp; tmp = tmp->next)
-	if (tmp->name && wildcard_match(tmp->name, ifr.ifr_name))
+	if (tmp->name && (tmp->flags & INAME_6) &&
+	    wildcard_match(tmp->name, ifr.ifr_name))
 	  return;
       
       parm.current = NULL;

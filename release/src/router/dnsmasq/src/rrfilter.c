@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -136,9 +136,9 @@ static int check_rrs(unsigned char *p, struct dns_header *header, size_t plen, i
 	  
 	  if (class == C_IN)
 	    {
-	      u16 *d;
+	      short *d;
  
-	      for (pp = p, d = rrfilter_desc(type); *d != (u16)-1; d++)
+	      for (pp = p, d = rrfilter_desc(type); *d != -1; d++)
 		{
 		  if (*d != 0)
 		    pp += *d;
@@ -156,41 +156,46 @@ static int check_rrs(unsigned char *p, struct dns_header *header, size_t plen, i
 }
 	
 
-/* mode may be remove EDNS0 or DNSSEC RRs or remove A or AAAA from answer section. */
-size_t rrfilter(struct dns_header *header, size_t plen, int mode)
+/* mode may be remove EDNS0 or DNSSEC RRs or remove A or AAAA from answer section.
+ * returns number of modified records. */
+size_t rrfilter(struct dns_header *header, size_t *plen, int mode)
 {
   static unsigned char **rrs = NULL;
   static int rr_sz = 0;
 
   unsigned char *p = (unsigned char *)(header+1);
-  int i, rdlen, qtype, qclass, rr_found, chop_an, chop_ns, chop_ar;
+  size_t rr_found = 0;
+  int i, rdlen, qtype, qclass, chop_an, chop_ns, chop_ar;
 
+  if (mode == RRFILTER_CONF && !daemon->filter_rr)
+    return 0;
+  
   if (ntohs(header->qdcount) != 1 ||
-      !(p = skip_name(p, header, plen, 4)))
-    return plen;
+      !(p = skip_name(p, header, *plen, 4)))
+    return 0;
   
   GETSHORT(qtype, p);
   GETSHORT(qclass, p);
 
   /* First pass, find pointers to start and end of all the records we wish to elide:
      records added for DNSSEC, unless explicitly queried for */
-  for (rr_found = 0, chop_ns = 0, chop_an = 0, chop_ar = 0, i = 0; 
+  for (chop_ns = 0, chop_an = 0, chop_ar = 0, i = 0;
        i < ntohs(header->ancount) + ntohs(header->nscount) + ntohs(header->arcount);
        i++)
     {
       unsigned char *pstart = p;
       int type, class;
 
-      if (!(p = skip_name(p, header, plen, 10)))
-	return plen;
+      if (!(p = skip_name(p, header, *plen, 10)))
+	return rr_found;
       
       GETSHORT(type, p); 
       GETSHORT(class, p);
       p += 4; /* TTL */
       GETSHORT(rdlen, p);
         
-      if (!ADD_RDLEN(header, p, plen, rdlen))
-	return plen;
+      if (!ADD_RDLEN(header, p, *plen, rdlen))
+	return rr_found;
 
       if (mode == RRFILTER_EDNS0) /* EDNS */
 	{
@@ -208,6 +213,14 @@ size_t rrfilter(struct dns_header *header, size_t plen, int mode)
 	  if (i < ntohs(header->ancount) && type == qtype && class == qclass)
 	    continue;
 	}
+      else if (qtype == T_ANY && rr_on_list(daemon->filter_rr, T_ANY))
+	{
+	  /* Filter replies to ANY queries in the spirit of
+	     RFC RFC 8482 para 4.3 */
+	  if (class != C_IN ||
+	      type == T_A || type == T_AAAA || type == T_MX || type == T_CNAME)
+	    continue;
+	}
       else
 	{
 	  /* Only looking at answer section now. */
@@ -217,15 +230,12 @@ size_t rrfilter(struct dns_header *header, size_t plen, int mode)
 	  if (class != C_IN)
 	    continue;
 	  
-	  if (mode == RRFILTER_A && type != T_A)
-	    continue;
-
-	  if (mode == RRFILTER_AAAA && type != T_AAAA)
+	  if (!rr_on_list(daemon->filter_rr, type))
 	    continue;
 	}
       
       if (!expand_workspace(&rrs, &rr_sz, rr_found + 1))
-	return plen; 
+	return rr_found;
       
       rrs[rr_found++] = pstart;
       rrs[rr_found++] = p;
@@ -240,7 +250,7 @@ size_t rrfilter(struct dns_header *header, size_t plen, int mode)
   
   /* Nothing to do. */
   if (rr_found == 0)
-    return plen;
+    return rr_found;
 
   /* Second pass, look for pointers in names in the records we're keeping and make sure they don't
      point to records we're going to elide. This is theoretically possible, but unlikely. If
@@ -248,42 +258,42 @@ size_t rrfilter(struct dns_header *header, size_t plen, int mode)
   p = (unsigned char *)(header+1);
   
   /* question first */
-  if (!check_name(&p, header, plen, 0, rrs, rr_found))
-    return plen;
+  if (!check_name(&p, header, *plen, 0, rrs, rr_found))
+    return rr_found;
   p += 4; /* qclass, qtype */
   
   /* Now answers and NS */
-  if (!check_rrs(p, header, plen, 0, rrs, rr_found))
-    return plen;
+  if (!check_rrs(p, header, *plen, 0, rrs, rr_found))
+    return rr_found;
   
   /* Third pass, actually fix up pointers in the records */
   p = (unsigned char *)(header+1);
   
-  check_name(&p, header, plen, 1, rrs, rr_found);
+  check_name(&p, header, *plen, 1, rrs, rr_found);
   p += 4; /* qclass, qtype */
   
-  check_rrs(p, header, plen, 1, rrs, rr_found);
+  check_rrs(p, header, *plen, 1, rrs, rr_found);
 
   /* Fourth pass, elide records */
-  for (p = rrs[0], i = 1; i < rr_found; i += 2)
+  for (p = rrs[0], i = 1; (unsigned)i < rr_found; i += 2)
     {
       unsigned char *start = rrs[i];
-      unsigned char *end = (i != rr_found - 1) ? rrs[i+1] : ((unsigned char *)header) + plen;
+      unsigned char *end = ((unsigned)i != rr_found - 1) ? rrs[i+1] : ((unsigned char *)header) + *plen;
       
       memmove(p, start, end-start);
       p += end-start;
     }
      
-  plen = p - (unsigned char *)header;
+  *plen = p - (unsigned char *)header;
   header->ancount = htons(ntohs(header->ancount) - chop_an);
   header->nscount = htons(ntohs(header->nscount) - chop_ns);
   header->arcount = htons(ntohs(header->arcount) - chop_ar);
 
-  return plen;
+  return rr_found;
 }
 
 /* This is used in the DNSSEC code too, hence it's exported */
-u16 *rrfilter_desc(int type)
+short *rrfilter_desc(int type)
 {
   /* List of RRtypes which include domains in the data.
      0 -> domain
@@ -294,7 +304,7 @@ u16 *rrfilter_desc(int type)
      anything which needs no mangling.
   */
   
-  static u16 rr_desc[] = 
+  static short rr_desc[] = 
     { 
       T_NS, 0, -1, 
       T_MD, 0, -1,
@@ -319,10 +329,10 @@ u16 *rrfilter_desc(int type)
       0, -1 /* wildcard/catchall */
     }; 
   
-  u16 *p = rr_desc;
+  short *p = rr_desc;
   
   while (*p != type && *p != 0)
-    while (*p++ != (u16)-1);
+    while (*p++ != -1);
 
   return p+1;
 }
@@ -349,4 +359,79 @@ int expand_workspace(unsigned char ***wkspc, int *szp, int new)
   *szp = new;
 
   return 1;
+}
+
+/* Convert from presentation format to wire format, in place.
+   Also map UC -> LC.
+   Note that using extract_name to get presentation format
+   then calling to_wire() removes compression and maps case,
+   thus generating names in canonical form.
+   Calling to_wire followed by from_wire is almost an identity,
+   except that the UC remains mapped to LC. 
+
+   Note that both /000 and '.' are allowed within labels. These get
+   represented in presentation format using NAME_ESCAPE as an escape
+   character. In theory, if all the characters in a name were /000 or
+   '.' or NAME_ESCAPE then all would have to be escaped, so the 
+   presentation format would be twice as long as the spec (1024). 
+   The buffers are all declared as 2049 (allowing for the trailing zero) 
+   for this reason.
+*/
+int to_wire(char *name)
+{
+  unsigned char *l, *p, *q, term;
+  int len;
+
+  for (l = (unsigned char*)name; *l != 0; l = p)
+    {
+      for (p = l; *p != '.' && *p != 0; p++)
+	if (*p >= 'A' && *p <= 'Z')
+	  *p = *p - 'A' + 'a';
+	else if (*p == NAME_ESCAPE)
+	  {
+	    for (q = p; *q; q++)
+	      *q = *(q+1);
+	    (*p)--;
+	  }
+      term = *p;
+      
+      if ((len = p - l) != 0)
+	memmove(l+1, l, len);
+      *l = len;
+      
+      p++;
+      
+      if (term == 0)
+	*p = 0;
+    }
+  
+  return l + 1 - (unsigned char *)name;
+}
+
+/* Note: no compression  allowed in input. */
+void from_wire(char *name)
+{
+  unsigned char *l, *p, *last;
+  int len;
+  
+  for (last = (unsigned char *)name; *last != 0; last += *last+1);
+  
+  for (l = (unsigned char *)name; *l != 0; l += len+1)
+    {
+      len = *l;
+      memmove(l, l+1, len);
+      for (p = l; p < l + len; p++)
+	if (*p == '.' || *p == 0 || *p == NAME_ESCAPE)
+	  {
+	    memmove(p+1, p, 1 + last - p);
+	    len++;
+	    *p++ = NAME_ESCAPE; 
+	    (*p)++;
+	  }
+	
+      l[len] = '.';
+    }
+
+  if ((char *)l != name)
+    *(l-1) = 0;
 }

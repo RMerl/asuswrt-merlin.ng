@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -113,6 +113,19 @@ u64 rand64(void)
   outleft -= 2;
 
   return (u64)out[outleft+1] + (((u64)out[outleft]) << 32);
+}
+
+int rr_on_list(struct rrlist *list, unsigned short rr)
+{
+  while (list)
+    {
+      if (list->rr == rr)
+	return 1;
+
+      list = list->next;
+    }
+
+  return 0;
 }
 
 /* returns 1 if name is OK and ascii printable
@@ -317,11 +330,9 @@ unsigned char *do_rfc1035_name(unsigned char *p, char *sval, char *limit)
           if (limit && p + 1 > (unsigned char*)limit)
             return NULL;
 
-#ifdef HAVE_DNSSEC
-	  if (option_bool(OPT_DNSSEC_VALID) && *sval == NAME_ESCAPE)
+	  if (*sval == NAME_ESCAPE)
 	    *p++ = (*(++sval))-1;
 	  else
-#endif		
 	    *p++ = *sval;
 	}
       

@@ -1,0 +1,6 @@
+?: veth1@if?: <BROADCAST,MULTICAST,UP,LOWER_UP> mtu 1500 qdisc noqueue state UP group default qlen 1000
+    link/ether ??:??:??:??:??:?? brd ff:ff:ff:ff:ff:ff link-netnsid 0
+    inet 192.168.142.?/29 brd 192.168.142.7 scope global dynamic veth1
+       valid_lft 3[56][0-9][0-9]sec preferred_lft 3[56][0-9][0-9]sec
+    inet6 fe80::*:*:*:*/64 scope link*
+       valid_lft forever preferred_lft forever

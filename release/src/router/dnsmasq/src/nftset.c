@@ -1,4 +1,4 @@
-/* dnsmasq is Copyright (c) 2000-2022 Simon Kelley
+/* dnsmasq is Copyright (c) 2000-2024 Simon Kelley
 
    This program is free software; you can redistribute it and/or modify
    it under the terms of the GNU General Public License as published by
@@ -43,7 +43,8 @@ int add_to_nftset(const char *setname, const union all_addr *ipaddr, int flags, 
   const char *cmd = remove ? cmd_del : cmd_add;
   int ret, af = (flags & F_IPV4) ? AF_INET : AF_INET6;
   size_t new_sz;
-  char *new, *err, *nl;
+  char *err_str, *new, *nl;
+  const char *err;
   static char *cmd_buf = NULL;
   static size_t cmd_buf_sz = 0;
 
@@ -78,14 +79,19 @@ int add_to_nftset(const char *setname, const union all_addr *ipaddr, int flags, 
     }
 
   ret = nft_run_cmd_from_buffer(ctx, cmd_buf);
-  err = (char *)nft_ctx_get_error_buffer(ctx);
+  err = nft_ctx_get_error_buffer(ctx);
 
   if (ret != 0)
     {
       /* Log only first line of error return. */
-      if ((nl = strchr(err, '\n')))
-	*nl = 0;
-      my_syslog(LOG_ERR,  "nftset %s %s", setname, err);
+      if ((err_str = whine_malloc(strlen(err) + 1)))
+	{
+	  strcpy(err_str, err);
+	  if ((nl = strchr(err_str, '\n')))
+	    *nl = 0;
+	  my_syslog(LOG_ERR,  "nftset %s %s", setname, err_str);
+	  free(err_str);
+	}
     }
   
   return ret;

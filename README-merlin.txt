@@ -197,7 +197,7 @@ https://github.com/RMerl/asuswrt-merlin
    
 Contact information
 -------------------
-SmallNetBuilder forums (preferred method: http://www.snbforums.com/forums/asuswrt-merlin.42/ as RMerlin)
+SmallNetBuilder forums (preferred method: https://www.snbforums.com/forums/asuswrt-merlin.42/ as RMerlin)
 Website: https://www.asuswrt-merlin.net/
 Github: https://github.com/RMerl
 Email: merlin@asuswrt-merlin.net

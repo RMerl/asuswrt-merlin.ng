@@ -647,14 +647,13 @@ static const char usage_message[] =
     "                  tests of certification.  cmd should return 0 to allow\n"
     "                  TLS handshake to proceed, or 1 to fail.  (cmd is\n"
     "                  executed as 'cmd certificate_depth subject')\n"
-    "--tls-export-cert [directory] : Get peer cert in PEM format and store it \n"
-    "                  in an openvpn temporary file in [directory]. Peer cert is \n"
-    "                  stored before tls-verify script execution and deleted after.\n"
     "--verify-x509-name name: Accept connections only from a host with X509 subject\n"
     "                  DN name. The remote host must also pass all other tests\n"
     "                  of verification.\n"
+#ifndef ENABLE_CRYPTO_MBEDTLS
     "--ns-cert-type t: (DEPRECATED) Require that peer certificate was signed with \n"
     "                  an explicit nsCertType designation t = 'client' | 'server'.\n"
+#endif
     "--x509-track x  : Save peer X509 attribute x in environment for use by\n"
     "                  plugins and management interface.\n"
 #ifdef HAVE_EXPORT_KEYING_MATERIAL
@@ -1572,6 +1571,7 @@ show_p2mp_parms(const struct options *o)
     SHOW_STR(auth_user_pass_verify_script);
     SHOW_BOOL(auth_user_pass_verify_script_via_file);
     SHOW_BOOL(auth_token_generate);
+    SHOW_BOOL(force_key_material_export);
     SHOW_INT(auth_token_lifetime);
     SHOW_STR_INLINE(auth_token_secret_file);
 #if PORT_SHARE
@@ -1651,6 +1651,8 @@ show_http_proxy_options(const struct http_proxy_options *o)
     SHOW_STR(port);
     SHOW_STR(auth_method_string);
     SHOW_STR(auth_file);
+    SHOW_STR(auth_file_up);
+    SHOW_BOOL(inline_creds);
     SHOW_STR(http_version);
     SHOW_STR(user_agent);
     for  (i = 0; i < MAX_CUSTOM_HTTP_HEADER && o->custom_headers[i].name; i++)
@@ -1998,7 +2000,7 @@ show_settings(const struct options *o)
     SHOW_STR(cipher_list_tls13);
     SHOW_STR(tls_cert_profile);
     SHOW_STR(tls_verify);
-    SHOW_STR(tls_export_cert);
+    SHOW_STR(tls_export_peer_cert_dir);
     SHOW_INT(verify_x509_type);
     SHOW_STR(verify_x509_name);
     SHOW_STR_INLINE(crl_file);
@@ -2815,6 +2817,11 @@ options_postprocess_verify_ce(const struct options *options,
         {
             msg(M_USAGE, "--vlan-tagging requires --mode server");
         }
+
+        if (options->force_key_material_export)
+        {
+            msg(M_USAGE, "--force-tls-key-material-export requires --mode server");
+        }
     }
 
     /*
@@ -3061,7 +3068,7 @@ options_postprocess_verify_ce(const struct options *options,
         MUST_BE_UNDEF(cipher_list_tls13);
         MUST_BE_UNDEF(tls_cert_profile);
         MUST_BE_UNDEF(tls_verify);
-        MUST_BE_UNDEF(tls_export_cert);
+        MUST_BE_UNDEF(tls_export_peer_cert_dir);
         MUST_BE_UNDEF(verify_x509_name);
         MUST_BE_UNDEF(tls_timeout);
         MUST_BE_UNDEF(renegotiate_bytes);
@@ -3648,6 +3655,30 @@ options_set_backwards_compatible_options(struct options *o)
 }
 
 static void
+options_process_mutate_prf(struct options *o)
+{
+    if (!check_tls_prf_working())
+    {
+        msg(D_TLS_ERRORS, "Warning: TLS 1.0 PRF with MD5+SHA1 PRF is not "
+            "supported by the TLS library. Your system does not support this "
+            "calculation anymore or your security policy (e.g. FIPS 140-2) "
+            "forbids it. Connections will only work with peers running "
+            "OpenVPN 2.6.0 or higher)");
+#ifndef HAVE_EXPORT_KEYING_MATERIAL
+        msg(M_FATAL, "Keying Material Exporters (RFC 5705) not available either. "
+            "No way to generate data channel keys left.");
+#endif
+        if (o->mode == MODE_SERVER)
+        {
+            msg(M_WARN, "Automatically enabling option "
+                "--force-tls-key-material-export");
+            o->force_key_material_export = true;
+        }
+
+    }
+}
+
+static void
 options_postprocess_mutate(struct options *o, struct env_set *es)
 {
     int i;
@@ -3661,6 +3692,7 @@ options_postprocess_mutate(struct options *o, struct env_set *es)
 
     options_postprocess_setdefault_ncpciphers(o);
     options_set_backwards_compatible_options(o);
+    options_process_mutate_prf(o);
 
     options_postprocess_cipher(o);
     o->ncp_ciphers = mutate_ncp_cipher_list(o->ncp_ciphers, &o->gc);
@@ -4067,6 +4099,13 @@ options_postprocess_filechecks(struct options *options)
                                                 R_OK, "--crl-verify");
     }
 
+    if (options->tls_export_peer_cert_dir)
+    {
+        errs |= check_file_access_chroot(options->chroot_dir, CHKACC_FILE,
+                                         options->tls_export_peer_cert_dir,
+                                         W_OK, "--tls-export-cert");
+    }
+
     ASSERT(options->connection_list);
     for (int i = 0; i < options->connection_list->len; ++i)
     {
@@ -4117,8 +4156,6 @@ options_postprocess_filechecks(struct options *options)
                               R_OK|W_OK, "--status");
 
     /* ** Config related ** */
-    errs |= check_file_access_chroot(options->chroot_dir, CHKACC_FILE, options->tls_export_cert,
-                                     R_OK|W_OK|X_OK, "--tls-export-cert");
     errs |= check_file_access_chroot(options->chroot_dir, CHKACC_FILE, options->client_config_dir,
                                      R_OK|X_OK, "--client-config-dir");
     errs |= check_file_access_chroot(options->chroot_dir, CHKACC_FILE, options->tmp_dir,
@@ -6807,7 +6844,7 @@ add_option(struct options *options,
         struct http_proxy_options *ho;
         VERIFY_PERMISSION(OPT_P_GENERAL|OPT_P_INLINE);
         ho = init_http_proxy_options_once(&options->ce.http_proxy_options, &options->gc);
-        ho->auth_file = p[1];
+        ho->auth_file_up = p[1];
         ho->inline_creds = is_inline;
     }
     else if (streq(p[0], "http-proxy-retry") || streq(p[0], "socks-proxy-retry"))
@@ -8651,6 +8688,11 @@ add_option(struct options *options,
             }
         }
     }
+    else if (streq(p[0], "force-tls-key-material-export"))
+    {
+        VERIFY_PERMISSION(OPT_P_GENERAL);
+        options->force_key_material_export = true;
+    }
     else if (streq(p[0], "prng") && p[1] && !p[3])
     {
         msg(M_WARN, "NOTICE: --prng option ignored (SSL library PRNG is used)");
@@ -9004,13 +9046,11 @@ add_option(struct options *options,
                         string_substitute(p[1], ',', ' ', &options->gc),
                         "tls-verify", true);
     }
-#ifndef ENABLE_CRYPTO_MBEDTLS
     else if (streq(p[0], "tls-export-cert") && p[1] && !p[2])
     {
-        VERIFY_PERMISSION(OPT_P_GENERAL);
-        options->tls_export_cert = p[1];
+        VERIFY_PERMISSION(OPT_P_SCRIPT);
+        options->tls_export_peer_cert_dir = p[1];
     }
-#endif
     else if (streq(p[0], "compat-names"))
     {
         VERIFY_PERMISSION(OPT_P_GENERAL);
@@ -9054,6 +9094,10 @@ add_option(struct options *options,
     }
     else if (streq(p[0], "ns-cert-type") && p[1] && !p[2])
     {
+#ifdef ENABLE_CRYPTO_MBEDTLS
+        msg(msglevel, "--ns-cert-type is not available with mbedtls.");
+        goto err;
+#else
         VERIFY_PERMISSION(OPT_P_GENERAL);
         if (streq(p[1], "server"))
         {
@@ -9068,6 +9112,7 @@ add_option(struct options *options,
             msg(msglevel, "--ns-cert-type must be 'client' or 'server'");
             goto err;
         }
+#endif /* ENABLE_CRYPTO_MBEDTLS */
     }
     else if (streq(p[0], "remote-cert-ku"))
     {

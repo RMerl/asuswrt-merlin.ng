@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" ?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
+<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
 <title>openvpn</title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
+:Id: $Id: html4css1.css 7952 2016-07-26 18:15:59Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
 
-See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
+See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
 customize this style sheet.
 */
 
@@ -1265,6 +1265,15 @@ eavesdropping on the wire would see nothing but random-looking data.</p>
 a key renegotiation begins (default <code>3600</code> seconds). This feature
 allows for a graceful transition from old to new key, and removes the key
 renegotiation sequence from the critical path of tunnel data forwarding.</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--force-tls-key-material-export</span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td>This option is only available in --mode server and forces to use
+Keying Material Exporters (RFC 5705) for clients. This can be used to
+simulate an environment where the cryptographic library does not support
+the older method to generate data channel keys anymore. This option is
+intended to be a test option and might be removed in a future OpenVPN
+version without notice.</td></tr>
 </tbody>
 </table>
 </div>
@@ -1591,29 +1600,31 @@ data is always pushed to the server:</p>
 <dd>The client OpenVPN version</dd>
 <dt><code>IV_PLAT=[linux|solaris|openbsd|mac|netbsd|freebsd|win]</code></dt>
 <dd>The client OS platform</dd>
-<dt><code>IV_LZO_STUB=1</code></dt>
-<dd>If client was built with LZO stub capability</dd>
-<dt><code>IV_LZ4=1</code></dt>
-<dd>If the client supports LZ4 compressions.</dd>
 <dt><code>IV_PROTO</code></dt>
 <dd><p class="first">Details about protocol extensions that the peer supports. The
-variable is a bitfield and the bits are defined as follows
-(starting a bit 0 for the first (unused) bit:</p>
+variable is a bitfield and the bits are defined as follows:</p>
 <ul class="last simple">
+<li>bit 0: Reserved, should always be zero</li>
 <li>bit 1: The peer supports peer-id floating mechanism</li>
 <li>bit 2: The client expects a push-reply and the server may
 send this reply without waiting for a push-request first.</li>
 <li>bit 3: The client is capable of doing key derivation using
 RFC5705 key material exporter.</li>
 <li>bit 4: The client is capable of accepting additional arguments
-to the <cite>AUTH_PENDING</cite> message.</li>
+to the <tt class="docutils literal">AUTH_PENDING</tt> message.</li>
+<li>bit 5: The client supports doing feature negotiation in P2P mode</li>
+<li>bit 6: The client is capable of parsing and receiving the <tt class="docutils literal"><span class="pre">--dns</span></tt> pushed option</li>
+<li>bit 7: The client is capable of sending exit notification via control channel using <tt class="docutils literal">EXIT</tt> message. Also, the client is accepting the protocol-flags pushed option for the EKM capability</li>
+<li>bit 8: The client is capable of accepting <tt class="docutils literal">AUTH_FAILED,TEMP</tt> messages</li>
+<li>bit 9: The client is capable of dynamic tls-crypt</li>
 </ul>
 </dd>
 <dt><code>IV_NCP=2</code></dt>
 <dd>Negotiable ciphers, client supports <tt class="docutils literal"><span class="pre">--cipher</span></tt> pushed by
 the server, a value of 2 or greater indicates client supports
-<em>AES-GCM-128</em> and <em>AES-GCM-256</em>.</dd>
-<dt><code>IV_CIPHERS=&lt;ncp-ciphers&gt;</code></dt>
+<em>AES-GCM-128</em> and <em>AES-GCM-256</em>. IV_NCP is <em>deprecated</em> in
+favor of <tt class="docutils literal">IV_CIPHERS</tt>.</dd>
+<dt><code>IV_CIPHERS=&lt;data-ciphers&gt;</code></dt>
 <dd>The client announces the list of supported ciphers configured with the
 <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> option to the server.</dd>
 <dt><code>IV_MTU=&lt;max_mtu&gt;</code></dt>
@@ -1621,11 +1632,30 @@ the server, a value of 2 or greater indicates client supports
 it is willing to accept.</dd>
 <dt><code>IV_GUI_VER=&lt;gui_id&gt; &lt;version&gt;</code></dt>
 <dd>The UI version of a UI if one is running, for example
-<code>de.blinkt.openvpn 0.5.47</code> for the Android app.</dd>
+<code>de.blinkt.openvpn 0.5.47</code> for the Android app.
+This may be set by the client UI/GUI using <tt class="docutils literal"><span class="pre">--setenv</span></tt>.</dd>
 <dt><code>IV_SSO=[crtext,][openurl,][proxy_url]</code></dt>
 <dd>Additional authentication methods supported by the client.
-This may be set by the client UI/GUI using <tt class="docutils literal"><span class="pre">--setenv</span></tt></dd>
+This may be set by the client UI/GUI using <tt class="docutils literal"><span class="pre">--setenv</span></tt>.</dd>
 </dl>
+<p>The following flags depend on which compression formats are compiled in
+and whether compression is allowed by options. See <a class="reference internal" href="#protocol-options">Protocol options</a>
+for more details.</p>
+<blockquote>
+<dl class="docutils">
+<dt><code>IV_LZO=1</code></dt>
+<dd>If client supports LZO compression.</dd>
+<dt><code>IV_LZO_STUB=1</code></dt>
+<dd>If client was built with LZO stub capability. This is only sent if
+<tt class="docutils literal">IV_LZO=1</tt> is not sent. This means the client can talk to a server
+configured with <tt class="docutils literal"><span class="pre">--comp-lzo</span> no</tt>.</dd>
+<dt><code>IV_LZ4=1</code> and <code>IV_LZ4v2=1</code></dt>
+<dd>If the client supports LZ4 compression.</dd>
+<dt><code>IV_COMP_STUB=1</code> and <code>IV_COMP_STUBv2=1</code></dt>
+<dd>If the client supports stub compression. This means the client can talk
+to a server configured with <tt class="docutils literal"><span class="pre">--compress</span></tt>.</dd>
+</dl>
+</blockquote>
 <p>When <tt class="docutils literal"><span class="pre">--push-peer-info</span></tt> is enabled the additional information consists
 of the following data:</p>
 <dl class="last docutils">
@@ -1635,13 +1665,16 @@ The string value can be any readable ASCII string up to 64 bytes.
 OpenVPN 2.x and some other implementations use the MAC address of
 the client's interface used to reach the default gateway. If this
 string is generated by the client, it should be consistent and
-preserved across independent session and preferably
+preserved across independent sessions and preferably
 re-installations and upgrades.</dd>
 <dt><code>IV_SSL=&lt;version string&gt;</code></dt>
-<dd>The ssl version used by the client, e.g.
+<dd>The ssl library version used by the client, e.g.
 <code>OpenSSL 1.0.2f 28 Jan 2016</code>.</dd>
 <dt><code>IV_PLAT_VER=x.y</code></dt>
-<dd>The version of the operating system, e.g. 6.1 for Windows 7.</dd>
+<dd>The version of the operating system, e.g. 6.1 for Windows 7.
+This may be set by the client UI/GUI using <tt class="docutils literal"><span class="pre">--setenv</span></tt>.
+On Windows systems it is automatically determined by openvpn
+itself.</dd>
 <dt><code>UV_&lt;name&gt;=&lt;value&gt;</code></dt>
 <dd>Client environment variables whose names start with
 <code>UV_</code></dd>
@@ -1765,11 +1798,6 @@ the OpenVPN challenge/response protocol.</p>
 <col class="description" />
 <tbody valign="top">
 <tr><td class="option-group" colspan="2">
-<kbd><span class="option">--show-proxy-settings</span></kbd></td>
-</tr>
-<tr><td>&nbsp;</td><td>Show sensed HTTP or SOCKS proxy settings. Currently, only Windows
-clients support this option.</td></tr>
-<tr><td class="option-group" colspan="2">
 <kbd><span class="option">--http-proxy <var>args</var></span></kbd></td>
 </tr>
 <tr><td>&nbsp;</td><td><p class="first">Connect to remote host through an HTTP proxy.  This requires at least an
@@ -1777,7 +1805,7 @@ address <tt class="docutils literal">server</tt> and <tt class="docutils literal
 is required, a file name to an <tt class="docutils literal">authfile</tt> file containing a username
 and password on 2 lines can be given, or <code>stdin</code> to prompt from
 console. Its content can also be specified in the config file with the
-<tt class="docutils literal"><span class="pre">--http-proxy-user-pass</span></tt> option. (See section on inline files)</p>
+<tt class="docutils literal"><span class="pre">--http-proxy-user-pass</span></tt> option (See <a class="reference internal" href="#inline-file-support">INLINE FILE SUPPORT</a>).</p>
 <p>The last optional argument is an <tt class="docutils literal"><span class="pre">auth-method</span></tt> which should be one
 of <code>none</code>, <code>basic</code>, or <code>ntlm</code>.</p>
 <p>HTTP Digest authentication is supported as well, but only via the
@@ -1792,11 +1820,42 @@ automatically determine the authentication method, but to reject weak
 authentication protocols such as HTTP Basic Authentication.</p>
 <p>Examples:</p>
 <pre class="last literal-block">
+# no authentication
 http-proxy proxy.example.net 3128
+# basic authentication, load credentials from file
 http-proxy proxy.example.net 3128 authfile.txt
+# basic authentication, ask user for credentials
 http-proxy proxy.example.net 3128 stdin
-http-proxy proxy.example.net 3128 auto basic
-http-proxy proxy.example.net 3128 auto-nct ntlm
+# NTLM authentication, load credentials from file
+http-proxy proxy.example.net 3128 authfile.txt ntlm2
+# determine which authentication is required, ask user for credentials
+http-proxy proxy.example.net 3128 auto
+# determine which authentication is required, but reject basic
+http-proxy proxy.example.net 3128 auto-nct
+# determine which authentication is required, but set credentials
+http-proxy proxy.example.net 3128 auto
+http-proxy-user-pass authfile.txt
+# basic authentication, specify credentials inline
+http-proxy proxy.example.net 3128 &quot;&quot; basic
+&lt;http-proxy-user-pass&gt;
+username
+password
+&lt;/http-proxy-user-pass&gt;
+</pre>
+</td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--http-proxy-user-pass <var>userpass</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Overwrite the username/password information for <tt class="docutils literal"><span class="pre">--http-proxy</span></tt>. If specified
+as an inline option (see <a class="reference internal" href="#inline-file-support">INLINE FILE SUPPORT</a>), it will be interpreted as
+username/password separated by a newline. When specified on the command line
+it is interpreted as a filename same as the third argument to <tt class="docutils literal"><span class="pre">--http-proxy</span></tt>.</p>
+<p>Example:</p>
+<pre class="last literal-block">
+&lt;http-proxy-user-pass&gt;
+username
+password
+&lt;/http-proxy-user-pass&gt;
 </pre>
 </td></tr>
 <tr><td class="option-group" colspan="2">
@@ -3226,7 +3285,9 @@ tls-crypt-v2 key of a connecting client. This allows server
 administrators to reject client connections, before exposing the TLS
 stack (including the notoriously dangerous X.509 and ASN.1 stacks) to
 the connecting client.</p>
-<p>OpenVPN supplies the following environment variables to the command:</p>
+<p>OpenVPN supplies the following environment variables to the command (and
+only these variables. The normal environment variables available for
+other scripts are NOT present):</p>
 <ul class="simple">
 <li><code>script_type</code> is set to <code>tls-crypt-v2-verify</code></li>
 <li><code>metadata_type</code> is set to <code>0</code> if the metadata was user
@@ -3240,15 +3301,9 @@ code.</p>
 </td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--tls-exit</span></kbd></td>
-<td>Exit on TLS negotiation failure.</td></tr>
-<tr><td class="option-group" colspan="2">
-<kbd><span class="option">--tls-export-cert <var>directory</var></span></kbd></td>
-</tr>
-<tr><td>&nbsp;</td><td>Store the certificates the clients use upon connection to this
-directory. This will be done before <tt class="docutils literal"><span class="pre">--tls-verify</span></tt> is called. The
-certificates will use a temporary name and will be deleted when the
-tls-verify script returns. The file name used for the certificate is
-available via the <tt class="docutils literal">peer_cert</tt> environment variable.</td></tr>
+<td>Exit on TLS negotiation failure. This option can be useful when you only
+want to make one attempt at connecting, e.g. in a test or monitoring script.
+(OpenVPN's own test suite uses it this way.)</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--tls-server</span></kbd></td>
 <td>Enable TLS and assume server role during TLS handshake. Note that
@@ -3389,11 +3444,29 @@ web CA.</dd>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--x509-track <var>attribute</var></span></kbd></td>
 </tr>
-<tr><td>&nbsp;</td><td>Save peer X509 <strong>attribute</strong> value in environment for use by plugins and
+<tr><td>&nbsp;</td><td><p class="first">Save peer X509 <strong>attribute</strong> value in environment for use by plugins and
 management interface. Prepend a <code>+</code> to <tt class="docutils literal">attribute</tt> to save values
-from full cert chain. Values will be encoded as
-<code>X509_&lt;depth&gt;_&lt;attribute&gt;=&lt;value&gt;</code>. Multiple <tt class="docutils literal"><span class="pre">--x509-track</span></tt>
-options can be defined to track multiple attributes.</td></tr>
+from full cert chain. Otherwise the attribute will only be exported for
+the leaf cert (i.e. depth <code>0</code> of the cert chain). Values will be
+encoded as <code>X509_&lt;depth&gt;_&lt;attribute&gt;=&lt;value&gt;</code>. Multiple <tt class="docutils literal"><span class="pre">--x509-track</span></tt>
+options can be defined to track multiple attributes.</p>
+<p><tt class="docutils literal">attribute</tt> can be any part of the X509 Subject field or any X509v3
+extension (RFC 3280). X509v3 extensions might not be supported when
+not using the default TLS backend library (OpenSSL). You can also
+request the <tt class="docutils literal">SHA1</tt> and <tt class="docutils literal">SHA256</tt> fingerprints of the cert,
+but that is always exported as <code>tls_digest_{n}</code> and
+<code>tls_digest_sha256_{n}</code> anyway.</p>
+<p>Note that by default <strong>all</strong> parts of the X509 Subject field are exported in
+the environment for the whole cert chain. If you use <tt class="docutils literal"><span class="pre">--x509-track</span></tt> at least
+once <strong>only</strong> the attributes specified by these options are exported.</p>
+<p>Examples:</p>
+<pre class="last literal-block">
+x509-track CN               # exports only X509_0_CN
+x509-track +CN              # exports X509_{n}_CN for chain
+x509-track basicConstraints # exports value of &quot;X509v3 Basic Constraints&quot;
+x509-track SHA256           # exports SHA256 fingerprint
+</pre>
+</td></tr>
 <tr><td class="option-group" colspan="2">
 <kbd><span class="option">--x509-username-field <var>args</var></span></kbd></td>
 </tr>
@@ -5114,6 +5187,15 @@ certificate, see the file <tt class="docutils literal"><span class="pre">verify-
 <p class="last">See the <a class="reference internal" href="#environmental-variables">Environmental Variables</a> section below for additional
 parameters passed as environmental variables.</p>
 </td></tr>
+<tr><td class="option-group" colspan="2">
+<kbd><span class="option">--tls-export-cert <var>dir</var></span></kbd></td>
+</tr>
+<tr><td>&nbsp;</td><td><p class="first">Adds an environment variable <tt class="docutils literal">peer_cert</tt> when calling the
+<tt class="docutils literal"><span class="pre">--tls-verify</span></tt> script or executing the OPENVPN_PLUGIN_TLS_VERIFY plugin
+hook to verify the certificate.</p>
+<p class="last">The environment variable contains the path to a PEM encoded certificate
+of the current peer certificate in the directory <tt class="docutils literal">dir</tt>.</p>
+</td></tr>
 <tr><td class="option-group">
 <kbd><span class="option">--up <var>cmd</var></span></kbd></td>
 <td><p class="first">Run command <tt class="docutils literal">cmd</tt> after successful TUN/TAP device open (pre <tt class="docutils literal"><span class="pre">--user</span></tt>
@@ -5406,6 +5488,10 @@ Set on program initiation and reset on SIGHUP.</dd>
 <tt class="docutils literal"><span class="pre">--auth-user-pass-verify</span></tt> script execution only when the <tt class="docutils literal"><span class="pre">via-env</span></tt>
 modifier is specified, and deleted from the environment after the script
 returns.</dd>
+<dt><code>peer_cert</code></dt>
+<dd>If the option <tt class="docutils literal"><span class="pre">--tls-export-cert</span></tt> is enabled, this option contains
+the path to the current peer certificate to be verified in PEM format.
+See also the argument certificate_depth to the <tt class="docutils literal"><span class="pre">--tls-verify</span></tt> command.</dd>
 <dt><code>proto</code></dt>
 <dd>The <tt class="docutils literal"><span class="pre">--proto</span></tt> parameter. Set on program initiation and reset on
 SIGHUP.</dd>
@@ -5445,9 +5531,6 @@ variable.</p>
 translations will be recorded rather than their names as denoted on the
 command line or configuration file.</p>
 </dd>
-<dt><code>peer_cert</code></dt>
-<dd>Temporary file name containing the client certificate upon connection.
-Useful in conjunction with <tt class="docutils literal"><span class="pre">--tls-verify</span></tt>.</dd>
 <dt><code>script_context</code></dt>
 <dd>Set to &quot;init&quot; or &quot;restart&quot; prior to up/down script execution. For more
 information, see documentation for <tt class="docutils literal"><span class="pre">--up</span></tt>.</dd>
@@ -5534,6 +5617,8 @@ following variables would be set on the OpenVPN server using the sample
 client certificate in sample-keys (client.crt). Note that the
 verification level is 0 for the client certificate and 1 for the CA
 certificate.</p>
+<p>You can use the <tt class="docutils literal"><span class="pre">--x509-track</span></tt> option to export more or less information
+from the certificates.</p>
 <pre class="last literal-block">
 X509_0_emailAddress=me&#64;myhost.mydomain
 X509_0_CN=Test-Client

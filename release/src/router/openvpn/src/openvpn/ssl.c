@@ -64,6 +64,7 @@
 #include "dco.h"
 
 #include "memdbg.h"
+#include "openvpn.h"
 
 #ifdef MEASURE_TLS_HANDSHAKE_STATS
 
@@ -1315,6 +1316,7 @@ tls_multi_init(struct tls_options *tls_options)
     /* get command line derived options */
     ret->opt = *tls_options;
     ret->dco_peer_id = -1;
+    ret->peer_id = MAX_PEER_ID;
 
     return ret;
 }
@@ -1644,7 +1646,12 @@ generate_key_expansion(struct tls_multi *multi, struct key_state *ks,
     {
         if (!generate_key_expansion_openvpn_prf(session, &key2))
         {
-            msg(D_TLS_ERRORS, "TLS Error: PRF calcuation failed");
+            msg(D_TLS_ERRORS, "TLS Error: PRF calculation failed. Your system "
+                "might not support the old TLS 1.0 PRF calculation anymore or "
+                "the policy does not allow it (e.g. running in FIPS mode). "
+                "The peer did not announce support for the modern TLS Export "
+                "feature that replaces the TLS 1.0 PRF (requires OpenVPN "
+                "2.6.x or higher)");
             goto exit;
         }
     }
@@ -3219,7 +3226,7 @@ check_session_buf_not_used(struct buffer *to_link, struct tls_session *session)
 
         for (int j = 0; j < ks->send_reliable->size; j++)
         {
-            if (ks->send_reliable->array[i].buf.data == dataptr)
+            if (ks->send_reliable->array[j].buf.data == dataptr)
             {
                 msg(M_INFO, "Warning buffer of freed TLS session is still in"
                     " use (session->key[%d].send_reliable->array[%d])",
@@ -4283,6 +4290,32 @@ protocol_dump(struct buffer *buffer, unsigned int flags, struct gc_arena *gc)
             goto done;
         }
         buf_printf(&out, " pid=%s", packet_id_net_print(&pin, (flags & PD_VERBOSE), gc));
+    }
+    /*
+     * packet_id + tls-crypt hmac
+     */
+    if (flags & PD_TLS_CRYPT)
+    {
+        struct packet_id_net pin;
+        uint8_t tls_crypt_hmac[TLS_CRYPT_TAG_SIZE];
+
+        if (!packet_id_read(&pin, &buf, true))
+        {
+            goto done;
+        }
+        buf_printf(&out, " pid=%s", packet_id_net_print(&pin, (flags & PD_VERBOSE), gc));
+        if (!buf_read(&buf, tls_crypt_hmac, TLS_CRYPT_TAG_SIZE))
+        {
+            goto done;
+        }
+        if (flags & PD_VERBOSE)
+        {
+            buf_printf(&out, " tls_crypt_hmac=%s", format_hex(tls_crypt_hmac, TLS_CRYPT_TAG_SIZE, 0, gc));
+        }
+        /*
+         * Remainder is encrypted and optional wKc
+         */
+        goto done;
     }
 
     /*

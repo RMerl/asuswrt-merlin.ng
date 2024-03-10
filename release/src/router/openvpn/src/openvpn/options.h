@@ -592,9 +592,9 @@ struct options
     const char *tls_cert_profile;
     const char *ecdh_curve;
     const char *tls_verify;
+    const char *tls_export_peer_cert_dir;
     int verify_x509_type;
     const char *verify_x509_name;
-    const char *tls_export_cert;
     const char *crl_file;
     bool crl_file_inline;
 
@@ -688,6 +688,8 @@ struct options
     const char *keying_material_exporter_label;
     int keying_material_exporter_length;
 #endif
+    /* force using TLS key material export for data channel key generation */
+    bool force_key_material_export;
 
     bool vlan_tagging;
     enum vlan_acceptable_frames vlan_accept;

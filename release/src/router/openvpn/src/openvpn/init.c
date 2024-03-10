@@ -890,17 +890,6 @@ init_static(void)
     return false;
 #endif
 
-#ifdef TEST_GET_DEFAULT_GATEWAY
-    {
-        struct route_gateway_info rgi;
-        struct route_ipv6_gateway_info rgi6;
-        get_default_gateway(&rgi);
-        get_default_gateway_ipv6(&rgi6, NULL);
-        print_default_gateway(M_INFO, &rgi, &rgi6);
-        return false;
-    }
-#endif
-
 #ifdef GEN_PATH_TEST
     {
         struct gc_arena gc = gc_new();
@@ -3335,7 +3324,6 @@ do_init_crypto_tls(struct context *c, const unsigned int flags)
     }
 
     to.verify_command = options->tls_verify;
-    to.verify_export_cert = options->tls_export_cert;
     to.verify_x509_type = (options->verify_x509_type & 0xff);
     to.verify_x509_name = options->verify_x509_name;
     to.crl_file = options->crl_file;
@@ -3370,6 +3358,7 @@ do_init_crypto_tls(struct context *c, const unsigned int flags)
     to.auth_user_pass_verify_script_via_file = options->auth_user_pass_verify_script_via_file;
     to.client_crresponse_script = options->client_crresponse_script;
     to.tmp_dir = options->tmp_dir;
+    to.export_peer_cert_dir = options->tls_export_peer_cert_dir;
     if (options->ccd_exclusive)
     {
         to.client_config_dir_exclusive = options->client_config_dir;

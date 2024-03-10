@@ -41,6 +41,7 @@
 #include "buffer.h"
 #include "misc.h"
 #include "manage.h"
+#include "mbedtls_compat.h"
 #include "pkcs11_backend.h"
 #include "ssl_common.h"
 
@@ -57,25 +58,6 @@
 
 #include <mbedtls/oid.h>
 #include <mbedtls/pem.h>
-
-/**
- * Compatibility: mbedtls_ctr_drbg_update was deprecated in mbedtls 2.16 and
- * replaced with mbedtls_ctr_drbg_update_ret, which returns an error code.
- * For older versions, we call mbedtls_ctr_drbg_update and return 0 (success).
- *
- * Note: this change was backported to other mbedTLS branches, therefore we
- * rely on function detection at configure time.
- */
-#ifndef HAVE_CTR_DRBG_UPDATE_RET
-static int
-mbedtls_ctr_drbg_update_ret(mbedtls_ctr_drbg_context *ctx,
-                            const unsigned char *additional,
-                            size_t add_len)
-{
-    mbedtls_ctr_drbg_update(ctx, additional, add_len);
-    return 0;
-}
-#endif
 
 static const mbedtls_x509_crt_profile openvpn_x509_crt_profile_legacy =
 {
@@ -108,6 +90,7 @@ static const mbedtls_x509_crt_profile openvpn_x509_crt_profile_preferred =
 void
 tls_init_lib(void)
 {
+    mbedtls_compat_psa_crypto_init();
 }
 
 void
@@ -190,6 +173,16 @@ tls_ctx_initialised(struct tls_root_ctx *ctx)
 }
 
 #ifdef HAVE_EXPORT_KEYING_MATERIAL
+
+#if HAVE_MBEDTLS_SSL_CONF_EXPORT_KEYS_EXT_CB
+/*
+ * Key export callback for older versions of mbed TLS, to be used with
+ * mbedtls_ssl_conf_export_keys_ext_cb(). It is called with the master
+ * secret, client random and server random, and the type of PRF function
+ * to use.
+ *
+ * Mbed TLS stores this callback in the mbedtls_ssl_config struct and it
+ * is used in the mbedtls_ssl_contexts set up from that config. */
 int
 mbedtls_ssl_export_keys_cb(void *p_expkey, const unsigned char *ms,
                            const unsigned char *kb, size_t maclen,
@@ -210,8 +203,55 @@ mbedtls_ssl_export_keys_cb(void *p_expkey, const unsigned char *ms,
     memcpy(cache->master_secret, ms, sizeof(cache->master_secret));
     cache->tls_prf_type = tls_prf_type;
 
-    return true;
+    return 0;
 }
+#elif HAVE_MBEDTLS_SSL_SET_EXPORT_KEYS_CB
+/*
+ * Key export callback for newer versions of mbed TLS, to be used with
+ * mbedtls_ssl_set_export_keys_cb(). When used with TLS 1.2, the callback
+ * is called with the TLS 1.2 master secret, client random, server random
+ * and the type of PRF to use. With TLS 1.3, it is called with several
+ * different keys (indicated by type), but unfortunately not the exporter
+ * master secret.
+ *
+ * Unlike in older versions, the callback is not stored in the
+ * mbedtls_ssl_config. It is placed in the mbedtls_ssl_context after it
+ * has been set up. */
+void
+mbedtls_ssl_export_keys_cb(void *p_expkey,
+                           mbedtls_ssl_key_export_type type,
+                           const unsigned char *secret,
+                           size_t secret_len,
+                           const unsigned char client_random[32],
+                           const unsigned char server_random[32],
+                           mbedtls_tls_prf_types tls_prf_type)
+{
+    /* Since we can't get the TLS 1.3 exporter master secret, we ignore all key
+     * types except MBEDTLS_SSL_KEY_EXPORT_TLS12_MASTER_SECRET. */
+    if (type != MBEDTLS_SSL_KEY_EXPORT_TLS12_MASTER_SECRET)
+    {
+        return;
+    }
+
+    struct tls_session *session = p_expkey;
+    struct key_state_ssl *ks_ssl = &session->key[KS_PRIMARY].ks_ssl;
+    struct tls_key_cache *cache = &ks_ssl->tls_key_cache;
+
+    /* The TLS 1.2 master secret has a fixed size, so if secret_len has
+     * a different value, something is wrong with mbed TLS. */
+    if (secret_len != sizeof(cache->master_secret))
+    {
+        msg(M_FATAL,
+            "ERROR: Incorrect TLS 1.2 master secret length: Got %zu, expected %zu",
+            secret_len, sizeof(cache->master_secret));
+    }
+
+    memcpy(cache->client_server_random, client_random, 32);
+    memcpy(cache->client_server_random + 32, server_random, 32);
+    memcpy(cache->master_secret, secret, sizeof(cache->master_secret));
+    cache->tls_prf_type = tls_prf_type;
+}
+#endif /* HAVE_MBEDTLS_SSL_CONF_EXPORT_KEYS_EXT_CB */
 
 bool
 key_state_export_keying_material(struct tls_session *session,
@@ -430,7 +470,7 @@ tls_ctx_load_dh_params(struct tls_root_ctx *ctx, const char *dh_file,
     }
 
     msg(D_TLS_DEBUG_LOW, "Diffie-Hellman initialized with " counter_format " bit key",
-        (counter_type) 8 * mbedtls_mpi_size(&ctx->dhm_ctx->P));
+        (counter_type) mbedtls_dhm_get_bitlen(ctx->dhm_ctx));
 }
 
 void
@@ -504,29 +544,40 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file,
 
     if (priv_key_inline)
     {
-        status = mbedtls_pk_parse_key(ctx->priv_key,
-                                      (const unsigned char *) priv_key_file,
-                                      strlen(priv_key_file) + 1, NULL, 0);
+        status = mbedtls_compat_pk_parse_key(ctx->priv_key,
+                                             (const unsigned char *) priv_key_file,
+                                             strlen(priv_key_file) + 1, NULL, 0,
+                                             mbedtls_ctr_drbg_random,
+                                             rand_ctx_get());
 
         if (MBEDTLS_ERR_PK_PASSWORD_REQUIRED == status)
         {
             char passbuf[512] = {0};
             pem_password_callback(passbuf, 512, 0, NULL);
-            status = mbedtls_pk_parse_key(ctx->priv_key,
-                                          (const unsigned char *) priv_key_file,
-                                          strlen(priv_key_file) + 1,
-                                          (unsigned char *) passbuf,
-                                          strlen(passbuf));
+            status = mbedtls_compat_pk_parse_key(ctx->priv_key,
+                                                 (const unsigned char *) priv_key_file,
+                                                 strlen(priv_key_file) + 1,
+                                                 (unsigned char *) passbuf,
+                                                 strlen(passbuf),
+                                                 mbedtls_ctr_drbg_random,
+                                                 rand_ctx_get());
         }
     }
     else
     {
-        status = mbedtls_pk_parse_keyfile(ctx->priv_key, priv_key_file, NULL);
+        status = mbedtls_compat_pk_parse_keyfile(ctx->priv_key,
+                                                 priv_key_file,
+                                                 NULL,
+                                                 mbedtls_ctr_drbg_random,
+                                                 rand_ctx_get());
         if (MBEDTLS_ERR_PK_PASSWORD_REQUIRED == status)
         {
             char passbuf[512] = {0};
             pem_password_callback(passbuf, 512, 0, NULL);
-            status = mbedtls_pk_parse_keyfile(ctx->priv_key, priv_key_file, passbuf);
+            status = mbedtls_compat_pk_parse_keyfile(ctx->priv_key,
+                                                     priv_key_file, passbuf,
+                                                     mbedtls_ctr_drbg_random,
+                                                     rand_ctx_get());
         }
     }
     if (!mbed_ok(status))
@@ -542,7 +593,10 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file,
         return 1;
     }
 
-    if (!mbed_ok(mbedtls_pk_check_pair(&ctx->crt_chain->pk, ctx->priv_key)))
+    if (!mbed_ok(mbedtls_compat_pk_check_pair(&ctx->crt_chain->pk,
+                                              ctx->priv_key,
+                                              mbedtls_ctr_drbg_random,
+                                              rand_ctx_get())))
     {
         msg(M_WARN, "Private key does not match the certificate");
         return 1;
@@ -558,7 +612,6 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file,
  * @param ctx_voidptr   Management external key context.
  * @param f_rng         (Unused)
  * @param p_rng         (Unused)
- * @param mode          RSA mode (should be RSA_PRIVATE).
  * @param md_alg        Message digest ('hash') algorithm type.
  * @param hashlen       Length of hash (overridden by length specified by md_alg
  *                      if md_alg != MBEDTLS_MD_NONE).
@@ -572,7 +625,10 @@ tls_ctx_load_priv_file(struct tls_root_ctx *ctx, const char *priv_key_file,
  */
 static inline int
 external_pkcs1_sign( void *ctx_voidptr,
-                     int (*f_rng)(void *, unsigned char *, size_t), void *p_rng, int mode,
+                     int (*f_rng)(void *, unsigned char *, size_t), void *p_rng,
+#if MBEDTLS_VERSION_NUMBER < 0x03020100
+                     int mode,
+#endif
                      mbedtls_md_type_t md_alg, unsigned int hashlen, const unsigned char *hash,
                      unsigned char *sig )
 {
@@ -587,10 +643,12 @@ external_pkcs1_sign( void *ctx_voidptr,
         return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
     }
 
+#if MBEDTLS_VERSION_NUMBER < 0x03020100
     if (MBEDTLS_RSA_PRIVATE != mode)
     {
         return MBEDTLS_ERR_RSA_BAD_INPUT_DATA;
     }
+#endif
 
     /*
      * Support a wide range of hashes. TLSv1.1 and before only need SIG_RSA_RAW,
@@ -967,7 +1025,7 @@ tls_ctx_personalise_random(struct tls_root_ctx *ctx)
 
         if (0 != memcmp(old_sha256_hash, sha256_hash, sizeof(sha256_hash)))
         {
-            if (!mbed_ok(mbedtls_ctr_drbg_update_ret(cd_ctx, sha256_hash, 32)))
+            if (!mbed_ok(mbedtls_compat_ctr_drbg_update(cd_ctx, sha256_hash, 32)))
             {
                 msg(M_WARN, "WARNING: failed to personalise random, could not update CTR_DRBG");
             }
@@ -979,13 +1037,15 @@ tls_ctx_personalise_random(struct tls_root_ctx *ctx)
 int
 tls_version_max(void)
 {
-#if defined(MBEDTLS_SSL_MAJOR_VERSION_3) && defined(MBEDTLS_SSL_MINOR_VERSION_3)
+#if defined(MBEDTLS_SSL_PROTO_TLS1_2)
     return TLS_VER_1_2;
-#elif defined(MBEDTLS_SSL_MAJOR_VERSION_3) && defined(MBEDTLS_SSL_MINOR_VERSION_2)
+#elif defined(MBEDTLS_SSL_PROTO_TLS1_1)
     return TLS_VER_1_1;
-#else
+#elif defined(MBEDTLS_SSL_PROTO_TLS1)
     return TLS_VER_1_0;
-#endif
+#else /* defined(MBEDTLS_SSL_PROTO_TLS1_2) */
+    #error "mbedtls is compiled without support for TLS 1.0, 1.1 and 1.2."
+#endif /* defined(MBEDTLS_SSL_PROTO_TLS1_2) */
 }
 
 /**
@@ -1006,23 +1066,29 @@ tls_version_to_major_minor(int tls_ver, int *major, int *minor)
 
     switch (tls_ver)
     {
+#if defined(MBEDTLS_SSL_PROTO_TLS1)
         case TLS_VER_1_0:
             *major = MBEDTLS_SSL_MAJOR_VERSION_3;
             *minor = MBEDTLS_SSL_MINOR_VERSION_1;
             break;
+#endif
 
+#if defined(MBEDTLS_SSL_PROTO_TLS1_1)
         case TLS_VER_1_1:
             *major = MBEDTLS_SSL_MAJOR_VERSION_3;
             *minor = MBEDTLS_SSL_MINOR_VERSION_2;
             break;
+#endif
 
+#if defined(MBEDTLS_SSL_PROTO_TLS1_2)
         case TLS_VER_1_2:
             *major = MBEDTLS_SSL_MAJOR_VERSION_3;
             *minor = MBEDTLS_SSL_MINOR_VERSION_3;
             break;
+#endif
 
         default:
-            msg(M_FATAL, "%s: invalid TLS version %d", __func__, tls_ver);
+            msg(M_FATAL, "%s: invalid or unsupported TLS version %d", __func__, tls_ver);
             break;
     }
 }
@@ -1149,17 +1215,17 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl,
 
     /* Initialize minimum TLS version */
     {
-        const int tls_version_min =
+        const int configured_tls_version_min =
             (session->opt->ssl_flags >> SSLF_TLS_VERSION_MIN_SHIFT)
             &SSLF_TLS_VERSION_MIN_MASK;
 
-        /* default to TLS 1.0 */
+        /* default to TLS 1.2 */
         int major = MBEDTLS_SSL_MAJOR_VERSION_3;
-        int minor = MBEDTLS_SSL_MINOR_VERSION_1;
+        int minor = MBEDTLS_SSL_MINOR_VERSION_3;
 
-        if (tls_version_min > TLS_VER_UNSPEC)
+        if (configured_tls_version_min > TLS_VER_UNSPEC)
         {
-            tls_version_to_major_minor(tls_version_min, &major, &minor);
+            tls_version_to_major_minor(configured_tls_version_min, &major, &minor);
         }
 
         mbedtls_ssl_conf_min_version(ks_ssl->ssl_config, major, minor);
@@ -1167,20 +1233,28 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl,
 
     /* Initialize maximum TLS version */
     {
-        const int tls_version_max =
+        const int configured_tls_version_max =
             (session->opt->ssl_flags >> SSLF_TLS_VERSION_MAX_SHIFT)
             &SSLF_TLS_VERSION_MAX_MASK;
 
-        if (tls_version_max > TLS_VER_UNSPEC)
+        int major = 0;
+        int minor = 0;
+
+        if (configured_tls_version_max > TLS_VER_UNSPEC)
         {
-            int major, minor;
-            tls_version_to_major_minor(tls_version_max, &major, &minor);
-            mbedtls_ssl_conf_max_version(ks_ssl->ssl_config, major, minor);
+            tls_version_to_major_minor(configured_tls_version_max, &major, &minor);
         }
+        else
+        {
+            /* Default to tls_version_max(). */
+            tls_version_to_major_minor(tls_version_max(), &major, &minor);
+        }
+
+        mbedtls_ssl_conf_max_version(ks_ssl->ssl_config, major, minor);
     }
 
-#ifdef HAVE_EXPORT_KEYING_MATERIAL
-    /* Initialize keying material exporter */
+#if HAVE_MBEDTLS_SSL_CONF_EXPORT_KEYS_EXT_CB
+    /* Initialize keying material exporter, old style. */
     mbedtls_ssl_conf_export_keys_ext_cb(ks_ssl->ssl_config,
                                         mbedtls_ssl_export_keys_cb, session);
 #endif
@@ -1188,7 +1262,12 @@ key_state_ssl_init(struct key_state_ssl *ks_ssl,
     /* Initialise SSL context */
     ALLOC_OBJ_CLEAR(ks_ssl->ctx, mbedtls_ssl_context);
     mbedtls_ssl_init(ks_ssl->ctx);
-    mbedtls_ssl_setup(ks_ssl->ctx, ks_ssl->ssl_config);
+    mbed_ok(mbedtls_ssl_setup(ks_ssl->ctx, ks_ssl->ssl_config));
+
+#if HAVE_MBEDTLS_SSL_SET_EXPORT_KEYS_CB
+    /* Initialize keying material exporter, new style. */
+    mbedtls_ssl_set_export_keys_cb(ks_ssl->ctx, mbedtls_ssl_export_keys_cb, session);
+#endif
 
     /* Initialise BIOs */
     ALLOC_OBJ_CLEAR(ks_ssl->bio_ctx, bio_ctx);

@@ -24,6 +24,7 @@
 /*
  * Support routines for adding/deleting network routes.
  */
+#include <stddef.h>
 
 #ifdef HAVE_CONFIG_H
 #include "config.h"
@@ -40,6 +41,7 @@
 #include "win32.h"
 #include "options.h"
 #include "networking.h"
+#include "integer.h"
 
 #include "memdbg.h"
 
@@ -1940,12 +1942,12 @@ add_route_ipv6(struct route_ipv6 *r6, const struct tuntap *tt,
 #endif
 
 #ifndef _WIN32
-    msg( M_INFO, "add_route_ipv6(%s/%d -> %s metric %d) dev %s",
-         network, r6->netbits, gateway, r6->metric, device );
+    msg(D_ROUTE, "add_route_ipv6(%s/%d -> %s metric %d) dev %s",
+        network, r6->netbits, gateway, r6->metric, device );
 #else
-    msg( M_INFO, "add_route_ipv6(%s/%d -> %s metric %d) IF %lu",
-         network, r6->netbits, gateway, r6->metric,
-         r6->adapter_index ? r6->adapter_index : tt->adapter_index);
+    msg(D_ROUTE, "add_route_ipv6(%s/%d -> %s metric %d) IF %lu",
+        network, r6->netbits, gateway, r6->metric,
+        r6->adapter_index ? r6->adapter_index : tt->adapter_index);
 #endif
 
     /*
@@ -2394,7 +2396,7 @@ delete_route_ipv6(const struct route_ipv6 *r6, const struct tuntap *tt,
     }
 #endif
 
-    msg( M_INFO, "delete_route_ipv6(%s/%d)", network, r6->netbits );
+    msg(D_ROUTE, "delete_route_ipv6(%s/%d)", network, r6->netbits );
 
 #if defined(TARGET_LINUX)
     metric = -1;
@@ -3445,6 +3447,9 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6,
 #include <netinet/in.h>
 #include <net/route.h>
 #include <net/if_dl.h>
+#if !defined(TARGET_SOLARIS)
+#include <ifaddrs.h>
+#endif
 
 struct rtmsg {
     struct rt_msghdr m_rtm;
@@ -3515,7 +3520,11 @@ get_default_gateway(struct route_gateway_info *rgi, openvpn_net_ctx_t *ctx)
     /* setup data to send to routing socket */
     pid = getpid();
     seq = 0;
+#ifdef TARGET_OPENBSD
+    rtm_addrs = RTA_DST | RTA_NETMASK;          /* Kernel refuses RTA_IFP */
+#else
     rtm_addrs = RTA_DST | RTA_NETMASK | RTA_IFP;
+#endif
 
     bzero(&m_rtmsg, sizeof(m_rtmsg));
     bzero(&so_dst, sizeof(so_dst));
@@ -3553,7 +3562,7 @@ get_default_gateway(struct route_gateway_info *rgi, openvpn_net_ctx_t *ctx)
     }
     if (write(sockfd, (char *)&m_rtmsg, l) < 0)
     {
-        msg(M_WARN, "GDG: problem writing to routing socket");
+        msg(M_WARN|M_ERRNO, "GDG: problem writing to routing socket");
         goto done;
     }
     do
@@ -3644,12 +3653,8 @@ get_default_gateway(struct route_gateway_info *rgi, openvpn_net_ctx_t *ctx)
     /* try to read MAC addr associated with interface that owns default gateway */
     if (rgi->flags & RGI_IFACE_DEFINED)
     {
-        struct ifconf ifc;
-        struct ifreq *ifr;
-        const int bufsize = 4096;
-        char *buffer;
-
-        buffer = (char *) gc_malloc(bufsize, true, &gc);
+#if defined(TARGET_SOLARIS)
+        /* OpenSolaris has getifaddrs(3), but it does not return AF_LINK */
         sockfd = socket(AF_INET, SOCK_DGRAM, 0);
         if (sockfd < 0)
         {
@@ -3657,41 +3662,42 @@ get_default_gateway(struct route_gateway_info *rgi, openvpn_net_ctx_t *ctx)
             goto done;
         }
 
-        ifc.ifc_len = bufsize;
-        ifc.ifc_buf = buffer;
+        struct ifreq ifreq = { 0 };
 
-        if (ioctl(sockfd, SIOCGIFCONF, (char *)&ifc) < 0)
+        /* now get the hardware address. */
+        strncpynt(ifreq.ifr_name, rgi->iface, sizeof(ifreq.ifr_name));
+        if (ioctl(sockfd, SIOCGIFHWADDR, &ifreq) < 0)
         {
-            msg(M_WARN, "GDG: ioctl #2 failed");
+            msg(M_WARN, "GDG: SIOCGIFHWADDR(%s) failed", ifreq.ifr_name);
+        }
+        else
+        {
+            memcpy(rgi->hwaddr, &ifreq.ifr_addr.sa_data, 6);
+            rgi->flags |= RGI_HWADDR_DEFINED;
+        }
+#else  /* if defined(TARGET_SOLARIS) */
+        struct ifaddrs *ifap, *ifa;
+
+        if (getifaddrs(&ifap) != 0)
+        {
+            msg(M_WARN|M_ERRNO, "GDG: getifaddrs() failed");
             goto done;
         }
-        close(sockfd);
-        sockfd = -1;
 
-        for (cp = buffer; cp <= buffer + ifc.ifc_len - sizeof(struct ifreq); )
+        for (ifa = ifap; ifa; ifa = ifa->ifa_next)
         {
-            ifr = (struct ifreq *)cp;
-#if defined(TARGET_SOLARIS)
-            const size_t len = sizeof(ifr->ifr_name) + sizeof(ifr->ifr_addr);
-#else
-            const size_t len = sizeof(ifr->ifr_name) + max(sizeof(ifr->ifr_addr), ifr->ifr_addr.sa_len);
-#endif
-
-            if (!ifr->ifr_addr.sa_family)
+            if (ifa->ifa_addr != NULL
+                && ifa->ifa_addr->sa_family == AF_LINK
+                && !strncmp(ifa->ifa_name, rgi->iface, IFNAMSIZ) )
             {
-                break;
+                struct sockaddr_dl *sdl = (struct sockaddr_dl *)ifa->ifa_addr;
+                memcpy(rgi->hwaddr, LLADDR(sdl), 6);
+                rgi->flags |= RGI_HWADDR_DEFINED;
             }
-            if (!strncmp(ifr->ifr_name, rgi->iface, IFNAMSIZ))
-            {
-                if (ifr->ifr_addr.sa_family == AF_LINK)
-                {
-                    struct sockaddr_dl *sdl = (struct sockaddr_dl *)&ifr->ifr_addr;
-                    memcpy(rgi->hwaddr, LLADDR(sdl), 6);
-                    rgi->flags |= RGI_HWADDR_DEFINED;
-                }
-            }
-            cp += len;
         }
+
+        freeifaddrs(ifap);
+#endif /* if defined(TARGET_SOLARIS) */
     }
 
 done:
@@ -3733,7 +3739,11 @@ get_default_gateway_ipv6(struct route_ipv6_gateway_info *rgi6,
     /* setup data to send to routing socket */
     pid = getpid();
     seq = 0;
+#ifdef TARGET_OPENBSD
+    rtm_addrs = RTA_DST | RTA_NETMASK;          /* Kernel refuses RTA_IFP */
+#else
     rtm_addrs = RTA_DST | RTA_NETMASK | RTA_IFP;
+#endif
 
     bzero(&m_rtmsg, sizeof(m_rtmsg));
     bzero(&so_dst, sizeof(so_dst));

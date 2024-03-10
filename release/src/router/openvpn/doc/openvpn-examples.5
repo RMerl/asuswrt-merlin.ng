@@ -1,5 +1,8 @@
 .\" Man page generated from reStructuredText.
 .
+.TH OPENVPN EXAMPLES 5 "" "" "Configuration files"
+.SH NAME
+openvpn examples \- Secure IP tunnel daemon
 .
 .nr rst2man-indent-level 0
 .
@@ -27,9 +30,6 @@ level margin: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .\" new: \\n[rst2man-indent\\n[rst2man-indent-level]]
 .in \\n[rst2man-indent\\n[rst2man-indent-level]]u
 ..
-.TH "OPENVPN EXAMPLES" 5 "" "" "Configuration files"
-.SH NAME
-openvpn examples \- Secure IP tunnel daemon
 .SH INTRODUCTION
 .sp
 This man page gives a few simple examples to create OpenVPN setups and configuration files.
@@ -464,7 +464,7 @@ On bob:
 .ft C
 openvpn \-\-ifconfig 10.4.0.1 10.4.0.2 \-\-tls\-server \-\-dev tun \-\-dh none \e
         \-\-cert bob.pem \-\-key bob.pem \-\-cipher AES\-256\-GCM \e
-        \-\-peer\-fingerprint \(dq$fingerprint_of_alices_cert\(dq
+        \-\-peer\-fingerprint "$fingerprint_of_alices_cert"
 .ft P
 .fi
 .UNINDENT
@@ -479,7 +479,7 @@ On alice:
 openvpn \-\-remote bob.example.com \-\-tls\-client \-\-dev tun1   \e
         \-\-ifconfig 10.4.0.2 10.4.0.1 \-\-cipher AES\-256\-GCM  \e
         \-\-cert alice.pem \-\-key alice.pem                   \e
-        \-\-peer\-fingerprint \(dq$fingerprint_of_bobs_cert\(dq
+        \-\-peer\-fingerprint "$fingerprint_of_bobs_cert"
 .ft P
 .fi
 .UNINDENT

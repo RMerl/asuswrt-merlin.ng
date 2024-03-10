@@ -423,6 +423,14 @@ SCRIPT HOOKS
   See the `Environmental Variables`_ section below for additional
   parameters passed as environmental variables.
 
+--tls-export-cert dir
+  Adds an environment variable ``peer_cert`` when calling the
+  ``--tls-verify`` script or executing the OPENVPN_PLUGIN_TLS_VERIFY plugin
+  hook to verify the certificate.
+
+  The environment variable contains the path to a PEM encoded certificate
+  of the current peer certificate in the directory ``dir``.
+
 --up cmd
   Run command ``cmd`` after successful TUN/TAP device open (pre ``--user``
   UID change).
@@ -633,6 +641,7 @@ instances.
     Name of first ``--config`` file. Set on program initiation and reset on
     SIGHUP.
 
+
 :code:`daemon`
     Set to "1" if the ``--daemon`` directive is specified, or "0" otherwise.
     Set on program initiation and reset on SIGHUP.
@@ -763,6 +772,11 @@ instances.
     modifier is specified, and deleted from the environment after the script
     returns.
 
+:code:`peer_cert`
+    If the option ``--tls-export-cert`` is enabled, this option contains
+    the path to the current peer certificate to be verified in PEM format.
+    See also the argument certificate_depth to the ``--tls-verify`` command.
+
 :code:`proto`
     The ``--proto`` parameter. Set on program initiation and reset on
     SIGHUP.
@@ -812,10 +826,6 @@ instances.
     If the network or gateway are resolvable DNS names, their IP address
     translations will be recorded rather than their names as denoted on the
     command line or configuration file.
-
-:code:`peer_cert`
-    Temporary file name containing the client certificate upon connection.
-    Useful in conjunction with ``--tls-verify``.
 
 :code:`script_context`
     Set to "init" or "restart" prior to up/down script execution. For more
@@ -919,6 +929,9 @@ instances.
     client certificate in sample-keys (client.crt). Note that the
     verification level is 0 for the client certificate and 1 for the CA
     certificate.
+
+    You can use the ``--x509-track`` option to export more or less information
+    from the certificates.
 
     ::
 

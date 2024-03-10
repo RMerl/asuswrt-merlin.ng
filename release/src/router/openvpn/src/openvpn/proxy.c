@@ -271,6 +271,11 @@ get_user_pass_http(struct http_proxy_info *p, const bool force)
     if (!static_proxy_user_pass.defined)
     {
         unsigned int flags = GET_USER_PASS_MANAGEMENT;
+        const char *auth_file = p->options.auth_file;
+        if (p->options.auth_file_up)
+        {
+            auth_file = p->options.auth_file_up;
+        }
         if (p->queried_creds)
         {
             flags |= GET_USER_PASS_PREVIOUS_CREDS_FAILED;
@@ -280,7 +285,7 @@ get_user_pass_http(struct http_proxy_info *p, const bool force)
             flags |= GET_USER_PASS_INLINE_CREDS;
         }
         get_user_pass(&static_proxy_user_pass,
-                      p->options.auth_file,
+                      auth_file,
                       UP_TYPE_PROXY,
                       flags);
         p->queried_creds = true;
@@ -638,7 +643,6 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
 {
     struct gc_arena gc = gc_new();
     char buf[512];
-    char buf2[129];
     char get[80];
     int status;
     int nparms;
@@ -758,7 +762,7 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
         {
 #if NTLM
             /* look for the phase 2 response */
-
+            char buf2[512];
             while (true)
             {
                 if (!recv_line(sd, buf, sizeof(buf), get_server_poll_remaining_time(server_poll_timeout), true, NULL, signal_received))
@@ -768,9 +772,9 @@ establish_http_proxy_passthru(struct http_proxy_info *p,
                 chomp(buf);
                 msg(D_PROXY, "HTTP proxy returned: '%s'", buf);
 
-                openvpn_snprintf(get, sizeof get, "%%*s NTLM %%%ds", (int) sizeof(buf2) - 1);
+                CLEAR(buf2);
+                openvpn_snprintf(get, sizeof(get), "%%*s NTLM %%%zus", sizeof(buf2) - 1);
                 nparms = sscanf(buf, get, buf2);
-                buf2[128] = 0; /* we only need the beginning - ensure it's null terminated. */
 
                 /* check for "Proxy-Authenticate: NTLM TlRM..." */
                 if (nparms == 1)

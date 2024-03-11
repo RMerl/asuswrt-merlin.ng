@@ -80,7 +80,7 @@
             "ServiceIP2": "84.200.70.40",
             "Description": "Optimized for maximum speed - you will not feel any delays when browsing the web.",
             "url": "https://dns.watch/",
-            "confirmed": "mailing",
+            "confirmed": "No",
             "ping_target": "No"
         },
     "9":{

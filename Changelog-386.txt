@@ -1,6 +1,27 @@
 Asuswrt-Merlin Changelog
 ========================
 
+386.13 (xx-xx-xxxx)
+  - UPDATED: openvpn to 2.6.9.
+  - CHANGED: QOS/Classification page can now resolve local IPv6
+             addresses.
+  - CHANGED: Display tracked connections on the QoS/Classification
+             page even if QoS isn't set to Adaptive QoS.
+  - UPDATED: OUI database used by networkmap and the webui.
+  - FIXED: CVE-2023-48795 in dropbear.
+  - FIXED: Various issues with the QOS Classification page.
+  - FIXED: UPNP leases without a description would not appear
+           on the Forwarded Ports page.
+
+
+386.12_6 (26-Feb-2024)
+  - UPDATED: dnsmasq to 2.90 (resolves CVE 2023-50868 and CVE 2023-50387).
+
+
+386.12_4 (21-Nov-2023)
+  - UPDATED: openvpn to 2.6.8 (fixes a crash introduced in 2.6.7)
+
+
 386.12_2 (12-Nov-2023)
   - UPDATED: openssl to 1.1.1w.
   - UPDATED: curl to 8.4.0.

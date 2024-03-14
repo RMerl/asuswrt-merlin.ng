@@ -3,15 +3,22 @@ Asuswrt-Merlin Changelog
 
 386.13 (xx-xx-xxxx)
   - UPDATED: openvpn to 2.6.9.
+  - UPDATED: OUI database used by networkmap and the webui.
   - CHANGED: QOS/Classification page can now resolve local IPv6
              addresses.
   - CHANGED: Display tracked connections on the QoS/Classification
              page even if QoS isn't set to Adaptive QoS.
-  - UPDATED: OUI database used by networkmap and the webui.
+  - CHANGED: Prevent the use of Apple's iCloud Private Relay
+             when enabling "Prevent client auto DoH".
   - FIXED: CVE-2023-48795 in dropbear.
   - FIXED: Various issues with the QOS Classification page.
   - FIXED: UPNP leases without a description would not appear
            on the Forwarded Ports page.
+  - FIXED: web server crashing when entering certain settings on
+           the Network Filter Page.  Bypassed bug in closed source
+           validation code for now.
+  - FIXED: Concurrent cronjob changes through cru could cause
+           collisions, leading to missing jobs (dave14305)
 
 
 386.12_6 (26-Feb-2024)

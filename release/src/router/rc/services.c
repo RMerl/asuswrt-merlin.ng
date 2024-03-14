@@ -2087,6 +2087,7 @@ void start_dnsmasq(void)
 
 		fprintf(fp, "address=/use-application-dns.net/\n");
 		fprintf(fp, "address=/_dns.resolver.arpa/\n");
+		fprintf(fp, "address=/mask.icloud.com/mask-h2.icloud.com/\n");
 	}
 
 	/* Protect against VU#598349 */

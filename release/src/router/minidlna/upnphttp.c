@@ -1031,6 +1031,7 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 	}
 
 	DPRINTF(E_DEBUG, L_HTTP, "HTTP REQUEST: %.*s\n", h->req_buflen, h->req_buf);
+#if 0	// DNS rebind protection breaks access through hostname
 	if(h->req_Host && h->req_HostLen > 0) {
 		const char *port = memchr(h->req_Host, ':', h->req_HostLen);
 		size_t ip_sz = port ? (port - h->req_Host) : h->req_HostLen;
@@ -1057,6 +1058,7 @@ ProcessHttpQuery_upnphttp(struct upnphttp * h)
 			return;
 		}
 	}
+#endif
 	if(strcmp("POST", HttpCommand) == 0)
 	{
 		h->req_command = EPost;

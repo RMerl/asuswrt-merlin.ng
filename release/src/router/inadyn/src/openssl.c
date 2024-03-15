@@ -101,6 +101,11 @@ static int ssl_set_ca_location(http_t *client)
 		goto done;
 	}
 
+#ifdef ASUSWRT	/* Kludge - Asuswrt's default location points to a server certificate rather than the CA bundle */
+	ret = SSL_CTX_load_verify_locations(client->ssl_ctx, CAFILE1, NULL);
+	goto done;
+#endif
+
 	ret = SSL_CTX_set_default_verify_paths(client->ssl_ctx);
 	if (ret < 1)
 		ret = SSL_CTX_load_verify_locations(client->ssl_ctx, CAFILE1, NULL);

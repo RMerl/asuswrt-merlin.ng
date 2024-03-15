@@ -1,2 +1,11 @@
+# Ignore compilation files
 *.o
 wsdd2
+nl_debug
+
+# Ignore archlinux build files
+archlinux/*.pkg.tar.*
+
+# ignore Code::Blocks IDE artifacts
+wsdd2.cbp
+wsdd2.depend

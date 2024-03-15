@@ -25,11 +25,14 @@
 #ifndef WSD_H
 #define WSD_H
 
+#include <sys/types.h> // size_t
+
 #define WSD_PORT		3702
 #define WSD_HTTP_PORT		WSD_PORT
 #define WSD_MCAST_ADDR		("239.255.255.250")
 #define WSD_MCAST6_ADDR		("FF02::C")
 #define WSD_HTTP_TIMEOUT	120
+#define WSD_RANDOM_DELAY	50000
 
 enum wsd_action {
 	WSD_ACTION_NONE,
@@ -46,6 +49,7 @@ enum wsd_action {
 struct wsd_req_info {
 	char *action;
 	char *msgid;
+	char *address;
 	struct {
 		struct xmlns_qname *types[64];
 		size_t types_length;

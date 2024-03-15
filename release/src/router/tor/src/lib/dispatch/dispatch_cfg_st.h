@@ -24,9 +24,9 @@ struct dispatch_cfg_t {
   struct smartlist_t *type_by_msg;
   /** A list of channel_id_t (cast to void*), indexed by msg_t. */
   struct smartlist_t *chan_by_msg;
-  /** A list of dispatch_rcv_t, indexed by msg_type_id_t. */
+  /** A list of dispatch_typefns_t, indexed by msg_type_id_t. */
   struct smartlist_t *fns_by_type;
-  /** A list of dispatch_typefns_t, indexed by msg_t. */
+  /** A list of dispatch_rcv_t, indexed by msg_t. */
   struct smartlist_t *recv_by_msg;
 };
 

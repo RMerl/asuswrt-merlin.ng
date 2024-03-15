@@ -18,6 +18,7 @@
 struct vote_routerstatus_t {
   routerstatus_t status; /**< Underlying 'status' object for this router.
                           * Flags are redundant. */
+  time_t published_on; /**< When was this router published? */
   /** How many known-flags are allowed in a vote? This is the width of
    * the flags field of vote_routerstatus_t */
 #define MAX_KNOWN_FLAGS_IN_VOTE 64

@@ -28,11 +28,15 @@ struct edge_connection_t {
                        * circuit? */
   int deliver_window; /**< How many more relay cells can end at me? */
 
-  struct circuit_t *on_circuit; /**< The circuit (if any) that this edge
-                                 * connection is using. */
+  /** The circuit (if any) that this edge connection is using.
+   * Note that edges that use conflux should use the helpers
+   * in conflux_util.c instead of accessing this directly. */
+  struct circuit_t *on_circuit;
 
   /** A pointer to which node in the circ this conn exits at.  Set for AP
-   * connections and for hidden service exit connections. */
+   * connections and for hidden service exit connections.
+   * Note that edges that use conflux should use the helpers
+   * in conflux_util.c instead of accessing this directly. */
   struct crypt_path_t *cpath_layer;
 
   /* Hidden service connection identifier for edge connections. Used by the HS
@@ -66,9 +70,6 @@ struct edge_connection_t {
                          * connections.  Set once we've set the stream end,
                          * and check in connection_about_to_close_connection().
                          */
-  /** True iff we've blocked reading until the circuit has fewer queued
-   * cells. */
-  unsigned int edge_blocked_on_circ:1;
 
   /** Unique ID for directory requests; this used to be in connection_t, but
    * that's going away and being used on channels instead.  We still tag

@@ -5,8 +5,8 @@
 ; NOTE: This file might be obsolete. Look at tor-mingw.nsi.in instead.
 ;-----------------------------------------
 ; How to make an installer:
-;   Step 0. If you are a Tor maintainer, make sure that tor.nsi and
-;           src/win32/orconfig.h all have the correct version number.
+;   Step 0. If you are a Tor maintainer, make sure that tor.nsi has
+;           the correct version number.
 ;   Step 1. Download and install OpenSSL.  Make sure that the OpenSSL
 ;           version listed below matches the one you downloaded.
 ;   Step 2. Download and install NSIS (http://nsis.sourceforge.net)

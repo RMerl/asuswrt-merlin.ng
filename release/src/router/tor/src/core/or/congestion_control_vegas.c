@@ -37,30 +37,30 @@
 #define VEGAS_SSCAP_SBWS_DFLT (400)
 
 /* Exits are three hops, so params are based on 3 outbufs of cells */
-#define VEGAS_ALPHA_EXIT_DFLT (2*OUTBUF_CELLS)
+#define VEGAS_ALPHA_EXIT_DFLT (3*OUTBUF_CELLS)
 #define VEGAS_BETA_EXIT_DFLT (4*OUTBUF_CELLS)
 #define VEGAS_GAMMA_EXIT_DFLT (3*OUTBUF_CELLS)
-#define VEGAS_DELTA_EXIT_DFLT (6*OUTBUF_CELLS)
-#define VEGAS_SSCAP_EXIT_DFLT (500)
+#define VEGAS_DELTA_EXIT_DFLT (5*OUTBUF_CELLS)
+#define VEGAS_SSCAP_EXIT_DFLT (600)
 
 /* Onion rends are six hops, so params are based on 6 outbufs of cells */
 #define VEGAS_ALPHA_ONION_DFLT (3*OUTBUF_CELLS)
-#define VEGAS_BETA_ONION_DFLT (7*OUTBUF_CELLS)
-#define VEGAS_GAMMA_ONION_DFLT (5*OUTBUF_CELLS)
-#define VEGAS_DELTA_ONION_DFLT (9*OUTBUF_CELLS)
-#define VEGAS_SSCAP_ONION_DFLT (600)
+#define VEGAS_BETA_ONION_DFLT (6*OUTBUF_CELLS)
+#define VEGAS_GAMMA_ONION_DFLT (4*OUTBUF_CELLS)
+#define VEGAS_DELTA_ONION_DFLT (7*OUTBUF_CELLS)
+#define VEGAS_SSCAP_ONION_DFLT (475)
 
 /**
  * Number of sendme_incs between cwnd and inflight for cwnd to be
  * still considered full */
-#define VEGAS_CWND_FULL_GAP_DFLT (1)
+#define VEGAS_CWND_FULL_GAP_DFLT (4)
 static int cc_vegas_cwnd_full_gap = VEGAS_CWND_FULL_GAP_DFLT;
 
 /**
  * If the cwnd becomes less than this percent full at any point,
  * we declare it not full immediately.
  */
-#define VEGAS_CWND_FULL_MINPCT_DFLT (75)
+#define VEGAS_CWND_FULL_MINPCT_DFLT (25)
 static int cc_vegas_cwnd_full_minpct = VEGAS_CWND_FULL_MINPCT_DFLT;
 
 /**
@@ -98,7 +98,7 @@ uint64_t cc_stats_vegas_circ_exited_ss = 0;
 static inline uint64_t
 vegas_bdp(const congestion_control_t *cc)
 {
-  return cc->bdp[BDP_ALG_CWND_RTT];
+  return cc->bdp;
 }
 
 /**
@@ -405,8 +405,7 @@ cwnd_full_reset(const congestion_control_t *cc)
  */
 int
 congestion_control_vegas_process_sendme(congestion_control_t *cc,
-                                        const circuit_t *circ,
-                                        const crypt_path_t *layer_hint)
+                                        const circuit_t *circ)
 {
   uint64_t queue_use;
 
@@ -422,7 +421,7 @@ congestion_control_vegas_process_sendme(congestion_control_t *cc,
     cc->next_cwnd_event--;
 
   /* Compute BDP and RTT. If we did not update, don't run the alg */
-  if (!congestion_control_update_circuit_estimates(cc, circ, layer_hint)) {
+  if (!congestion_control_update_circuit_estimates(cc, circ)) {
     cc->inflight = cc->inflight - cc->sendme_inc;
     return 0;
   }
@@ -467,7 +466,7 @@ congestion_control_vegas_process_sendme(congestion_control_t *cc,
     } else {
       uint64_t old_cwnd = cc->cwnd;
 
-      /* Congestion signal: Set cwnd to gamma threshhold */
+      /* Congestion signal: Set cwnd to gamma threshold */
       cc->cwnd = vegas_bdp(cc) + cc->vegas_params.gamma;
 
       /* Compute the percentage we experience a blocked csig vs RTT sig */
@@ -506,8 +505,8 @@ congestion_control_vegas_process_sendme(congestion_control_t *cc,
       uint64_t old_cwnd = cc->cwnd;
       uint64_t cwnd_diff;
 
-      /* If we are above the delta threshhold, drop cwnd down to the
-       * delta threshhold. */
+      /* If we are above the delta threshold, drop cwnd down to the
+       * delta threshold. */
       cc->cwnd = vegas_bdp(cc) + cc->vegas_params.delta - CWND_INC(cc);
 
       /* Account the amount we reduced the cwnd by for the gamma cutoff */

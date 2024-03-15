@@ -626,7 +626,7 @@ microdesc_cache_clean(microdesc_cache_t *cache, time_t cutoff, int force)
                           (*mdp)->digest, DIGEST256_LEN)) {
               rs_match = "Microdesc digest in RS matches";
             } else {
-              rs_match = "Microdesc digest in RS does match";
+              rs_match = "Microdesc digest in RS does not match";
             }
             if (ns) {
               /* This should be impossible, but let's see! */

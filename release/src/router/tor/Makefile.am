@@ -114,6 +114,10 @@ TOR_CRYPTO_LIBS = \
 	$(LIBKECCAK_TINY) \
 	$(LIBDONNA)
 
+if BUILD_MODULE_POW
+TOR_CRYPTO_LIBS += $(EQUIX_LIBS)
+endif
+
 # Variants of the above for linking the testing variant of tor (for coverage
 # and tests)
 if UNITTESTS_ENABLED
@@ -121,7 +125,8 @@ TOR_CRYPTO_TESTING_LIBS = \
 	src/lib/libtor-tls-testing.a \
 	src/lib/libtor-crypt-ops-testing.a \
 	$(LIBKECCAK_TINY) \
-	$(LIBDONNA)
+	$(LIBDONNA) \
+	$(EQUIX_LIBS)
 endif
 
 # All static libraries used to link tor.
@@ -185,7 +190,6 @@ EXTRA_DIST+= \
 	CODE_OF_CONDUCT							\
 	INSTALL								\
 	LICENSE								\
-	Makefile.nmake							\
 	README.md								\
 	ReleaseNotes							\
 	scripts/build/combine_libs					\
@@ -292,7 +296,7 @@ check-local:					\
 	shellcheck
 
 # test-network requires a copy of Chutney in $CHUTNEY_PATH.
-# Chutney can be cloned from https://git.torproject.org/chutney.git .
+# Chutney can be cloned from https://gitlab.torproject.org/tpo/core/chutney.git .
 .PHONY: need-chutney-path
 need-chutney-path:
 	@if test ! -d "$$CHUTNEY_PATH"; then \
@@ -305,7 +309,7 @@ need-chutney-path:
 			echo; \
 			echo "To run these tests," \
 			  "git clone" \
-			  "https://git.torproject.org/chutney.git ;" \
+			  "https://gitlab.torproject.org/tpo/core/chutney.git ;" \
 			  "export CHUTNEY_PATH=\`pwd\`/chutney"; \
 			exit 1; \
 		fi \
@@ -475,7 +479,7 @@ test-network-results:
 need-stem-path:
 	@if test ! -d "$$STEM_SOURCE_DIR"; then \
 		echo '$$STEM_SOURCE_DIR was not set.'; echo; \
-		echo "To run these tests, git clone https://git.torproject.org/stem.git/ ; export STEM_SOURCE_DIR=\`pwd\`/stem"; \
+		echo "To run these tests, git clone https://gitlab.torproject.org/tpo/network-health/stem ; export STEM_SOURCE_DIR=\`pwd\`/stem"; \
 		exit 1; \
 	fi
 

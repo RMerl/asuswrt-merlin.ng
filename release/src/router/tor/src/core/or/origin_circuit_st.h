@@ -80,11 +80,18 @@ struct origin_circuit_t {
   circuit_t base_;
 
   /** Linked list of AP streams (or EXIT streams if hidden service)
-   * associated with this circuit. */
+   * associated with this circuit.
+   *
+   * Any updates to this pointer must be followed with
+   * conflux_update_p_streams(). */
   edge_connection_t *p_streams;
 
   /** Smartlist of half-closed streams (half_edge_t*) that still
-   * have pending activity */
+   * have pending activity.
+   *
+   * Any updates to this pointer must be followed with
+   * conflux_update_half_streams().
+   */
   smartlist_t *half_streams;
 
   /** Bytes read on this circuit since last call to
@@ -204,6 +211,20 @@ struct origin_circuit_t {
   /** For path probing. Store the temporary probe address nonce
    * (in host byte order) for response comparison. */
   uint32_t pathbias_probe_nonce;
+
+  /** This is nonzero iff hs_with_pow_circ is set and there was a valid proof
+   * of work solution associated with this circuit. */
+  uint32_t hs_pow_effort;
+
+  /** Set iff this is a hidden-service circuit for a HS with PoW defenses
+   * enabled, so that we know to be more lenient with timing out the
+   * circuit-build to allow the service time to work through the queue of
+   * requests. */
+  unsigned int hs_with_pow_circ : 1;
+
+  /** Set iff this intro circ required a pow, and it has already queued
+   * the pow with the cpuworker and is awaiting a reply. */
+  unsigned int hs_currently_solving_pow : 1;
 
   /** Set iff this circuit has been given a relaxed timeout because
    * no circuits have opened. Used to prevent spamming logs. */

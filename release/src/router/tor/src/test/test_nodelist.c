@@ -1273,7 +1273,6 @@ test_nodelist_routerstatus_has_visibly_changed(void *arg)
   memcpy(rs_orig.descriptor_digest, "abcdefghijklmnopqrst", 20);
   tor_addr_from_ipv4h(&rs_orig.ipv4_addr, 0x7f000001);
   rs_orig.ipv4_orport = 3;
-  rs_orig.published_on = time(NULL);
   rs_orig.has_bandwidth = 1;
   rs_orig.bandwidth_kb = 20;
 
@@ -1284,9 +1283,9 @@ test_nodelist_routerstatus_has_visibly_changed(void *arg)
     tor_free(fmt);                                                        \
     fmt_orig = routerstatus_format_entry(&rs_orig, NULL, NULL,            \
                           NS_CONTROL_PORT,                                \
-                          NULL);                                          \
+                          NULL, -1);                                      \
     fmt = routerstatus_format_entry(&rs, NULL, NULL, NS_CONTROL_PORT,     \
-                          NULL);                                          \
+                          NULL, -1);                                      \
     tt_assert(fmt_orig);                                                  \
     tt_assert(fmt);                                                       \
   STMT_END
@@ -1320,9 +1319,6 @@ test_nodelist_routerstatus_has_visibly_changed(void *arg)
   ASSERT_CHANGED();
 
   strlcpy(rs.nickname, "fr1end1y", sizeof(rs.nickname));
-  ASSERT_CHANGED();
-
-  rs.published_on += 3600;
   ASSERT_CHANGED();
 
   rs.ipv4_orport = 55;

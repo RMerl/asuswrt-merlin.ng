@@ -351,7 +351,7 @@ circuit_sendme_cell_is_next(int deliver_window, int sendme_inc)
    *
    * Because deliver_window starts at CIRCWINDOW_START and counts down,
    * to get the actual number of received cells for this check, we must
-   * first convert to receieved cells, or the modulus operator will fail.
+   * first convert to received cells, or the modulus operator will fail.
    */
   tor_assert(deliver_window <= CIRCWINDOW_START);
   if (((CIRCWINDOW_START - (deliver_window - 1)) % sendme_inc) != 0) {
@@ -491,7 +491,7 @@ sendme_process_circuit_level(crypt_path_t *layer_hint,
     return sendme_process_circuit_level_impl(layer_hint, circ);
   }
 
-  return congestion_control_dispatch_cc_alg(cc, circ, layer_hint);
+  return congestion_control_dispatch_cc_alg(cc, circ);
 }
 
 /**

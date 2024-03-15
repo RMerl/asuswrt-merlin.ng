@@ -78,6 +78,10 @@ typedef struct hs_client_service_authorization_t {
   int flags;
 } hs_client_service_authorization_t;
 
+const hs_desc_intro_point_t *
+find_desc_intro_point_by_ident(const hs_ident_circuit_t *ident,
+                               const hs_descriptor_t *desc);
+
 hs_client_register_auth_status_t
 hs_client_register_auth_credentials(hs_client_service_authorization_t *creds);
 
@@ -100,6 +104,12 @@ void hs_client_launch_v3_desc_fetch(
                                const ed25519_public_key_t *onion_identity_pk,
                                const smartlist_t *hsdirs);
 
+int send_introduce1(origin_circuit_t *intro_circ,
+                    origin_circuit_t *rend_circ,
+                    const hs_descriptor_t *desc,
+                    hs_pow_solution_t *pow_solution,
+                    const hs_desc_intro_point_t *ip);
+
 hs_desc_decode_status_t hs_client_decode_descriptor(
                      const char *desc_str,
                      const ed25519_public_key_t *service_identity_pk,
@@ -108,6 +118,8 @@ int hs_client_any_intro_points_usable(const ed25519_public_key_t *service_pk,
                                       const hs_descriptor_t *desc);
 int hs_client_refetch_hsdesc(const ed25519_public_key_t *identity_pk);
 void hs_client_dir_info_changed(void);
+
+int hs_client_setup_intro_circ_auth_key(origin_circuit_t *circ);
 
 int hs_client_send_introduce1(origin_circuit_t *intro_circ,
                               origin_circuit_t *rend_circ);

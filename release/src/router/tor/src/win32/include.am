@@ -1,3 +1,0 @@
-
-EXTRA_DIST+= src/win32/orconfig.h
-

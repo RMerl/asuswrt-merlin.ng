@@ -244,14 +244,18 @@ void tinytest_postfork(void);
 void
 tinytest_prefork(void)
 {
+#ifdef ENABLE_NSS
   free_pregenerated_keys();
+#endif
   subsystems_prefork();
 }
 void
 tinytest_postfork(void)
 {
   subsystems_postfork();
+#ifdef ENABLE_NSS
   init_pregenerated_keys();
+#endif
 }
 
 static void

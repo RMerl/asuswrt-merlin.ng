@@ -810,7 +810,7 @@ find_my_address(const or_options_t *options, int family, int warn_severity,
  *       want to learn here if the address is considered to come from the
  *       Internet basically.
  *
- * @param addr The address to test if local and also test against our resovled
+ * @param addr The address to test if local and also test against our resolved
  *             address.
  *
  * @return True iff address is considered local or else False.

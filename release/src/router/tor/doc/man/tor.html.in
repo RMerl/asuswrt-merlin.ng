@@ -1236,7 +1236,7 @@ forward slash (/) in the configuration file and on the command line.</p></div>
 <a id="ClientTransportPlugin"></a> <strong>ClientTransportPlugin</strong> <em>transport</em> socks4|socks5 <em>IP</em>:<em>PORT</em>
 </dt>
 <dt class="hdlist1">
-<strong>ClientTransportPlugin</strong> <em>transport</em> exec <em>path-to-binary</em> [options]
+<a id="ClientTransportPlugin-2"></a> <strong>ClientTransportPlugin</strong> <em>transport</em> exec <em>path-to-binary</em> [options]
 </dt>
 <dd>
 <p>
@@ -1251,6 +1251,29 @@ forward slash (/) in the configuration file and on the command line.</p></div>
     <em>path-to-binary</em> using <em>options</em> as its command-line options, and
     forwards its traffic to it. It&#8217;s the duty of that proxy to properly forward
     the traffic to the bridge. (Default: none)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="ConfluxEnabled"></a> <strong>ConfluxEnabled</strong> <strong>0</strong>|<strong>1</strong>|<strong>auto</strong>
+</dt>
+<dd>
+<p>
+    If this option is set to 1, general purpose traffic will use Conflux which
+    is traffic splitting among multiple legs (circuits). Onion services are not
+    supported at the moment. Default value is set to "auto" meaning the
+    consensus is used to decide unless set. (Default: auto)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="ConfluxClientUX"></a> <strong>ConfluxClientUX</strong> <strong>throughput</strong>|<strong>latency</strong>|<strong>throughput_lowmem</strong>|<strong>latency_lowmem</strong>
+</dt>
+<dd>
+<p>
+    This option configures the user experience that the client requests from
+    the exit, for data that the exit sends to the client. The default is
+    "throughput", which maximizes throughput. "Latency" will tell the exit to
+    only use the circuit with lower latency for all data. The lowmem versions
+    minimize queue usage memory at the client. (Default: "throughput")
 </p>
 </dd>
 <dt class="hdlist1">
@@ -2072,6 +2095,7 @@ MetricsPortPolicy accept 5.6.7.8</code></pre>
     _relayed traffic_ to the given number of bytes in each direction.
     They do not include directory fetches by the relay (from authority
     or other relays), because that is considered "client" activity. (Default: 0)
+    RelayBandwidthBurst defaults to the value of RelayBandwidthRate if unset.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -2086,6 +2110,7 @@ MetricsPortPolicy accept 5.6.7.8</code></pre>
     requests, but that may change in future versions. They do not include directory
     fetches by the relay (from authority or other relays), because that is considered
     "client" activity.  (Default: 0)
+    RelayBandwidthRate defaults to the value of RelayBandwidthBurst if unset.
 </p>
 </dd>
 <dt class="hdlist1">
@@ -2569,7 +2594,7 @@ https://www.haproxy.org/download/1.8/doc/proxy-protocol.txt +</code></pre>
     entry nodes over IPv6. For IPv6 only hosts, you need to also set
     <strong>ClientUseIPv4</strong> to 0 to disable IPv4. Note that clients configured with
     an IPv6 address in a <strong>Bridge</strong>, proxy, or pluggable transportline will
-    try connecting over IPv6 even if <strong>ClientUseIPv6</strong> is set to 0. (Default: 0)
+    try connecting over IPv6 even if <strong>ClientUseIPv6</strong> is set to 0. (Default: 1)
 </p>
 </dd>
 <dt class="hdlist1">
@@ -5392,13 +5417,13 @@ Denial of Service mitigation subsystem described above.</p></div>
 </p>
 </dd>
 </dl></div>
-<div class="paragraph"><p>As for onion services, only one possible mitigation exists. It was intended to
-protect the network first and thus do not help the service availability or
-reachability.</p></div>
-<div class="paragraph"><p>The mitigation we put in place is a rate limit of the amount of introduction
-that happens at the introduction point for a service. In other words, it rates
-limit the number of clients that are attempting to reach the service at the
-introduction point instead of at the service itself.</p></div>
+<div class="paragraph"><p>For onion services, mitigations are a work in progress and multiple options
+are currently available.</p></div>
+<div class="paragraph"><p>The introduction point defense is a rate limit on the number of introduction
+requests that will be forwarded to a service by each of its honest
+introduction point routers. This can prevent some types of overwhelming floods
+from reaching the service, but it will also prevent legitimate clients from
+establishing new connections.</p></div>
 <div class="paragraph"><p>The following options are per onion service:</p></div>
 <div class="dlist"><dl>
 <dt class="hdlist1">
@@ -5463,6 +5488,69 @@ services running on the same tor instance.</p></div>
 <div class="paragraph"><p>The bottom line is that this protects the network by preventing an onion
 service to flood the network with new rendezvous circuits that is reducing load
 on the network.</p></div>
+<div class="paragraph"><p>A secondary mitigation is available, based on prioritized dispatch of rendezvous
+circuits for new connections. The queue is ordered based on effort a client
+chooses to spend at computing a proof-of-work function.</p></div>
+<div class="paragraph"><p>The following options are per onion service:</p></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a id="HiddenServicePoWDefensesEnabled"></a> <strong>HiddenServicePoWDefensesEnabled</strong> <strong>0</strong>|<strong>1</strong>
+</dt>
+<dd>
+<p>
+    Enable proof-of-work based service DoS mitigation. If set to 1 (enabled),
+    tor will include parameters for an optional client puzzle in the encrypted
+    portion of this hidden service&#8217;s descriptor. Incoming rendezvous requests
+    will be prioritized based on the amount of effort a client chooses to make
+    when computing a solution to the puzzle. The service will periodically update
+    a suggested amount of effort, based on attack load, and disable the puzzle
+    entirely when the service is not overloaded.
+    (Default: 0)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="HiddenServicePoWQueueRate"></a> <strong>HiddenServicePoWQueueRate</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The sustained rate of rendezvous requests to dispatch per second from
+    the priority queue. Has no effect when proof-of-work is disabled.
+    If this is set to 0 there&#8217;s no explicit limit and we will process
+    requests as quickly as possible.
+    (Default: 250)
+</p>
+</dd>
+<dt class="hdlist1">
+<a id="HiddenServicePoWQueueBurst"></a> <strong>HiddenServicePoWQueueBurst</strong> <em>NUM</em>
+</dt>
+<dd>
+<p>
+    The maximum burst size for rendezvous requests handled from the
+    priority queue at once. (Default: 2500)
+</p>
+</dd>
+</dl></div>
+<div class="paragraph"><p>These options are applicable to both onion services and their clients:</p></div>
+<div class="dlist"><dl>
+<dt class="hdlist1">
+<a id="CompiledProofOfWorkHash"></a> <strong>CompiledProofOfWorkHash</strong> <strong>0</strong>|<strong>1</strong>|<strong>auto</strong>
+</dt>
+<dd>
+<p>
+    When proof-of-work DoS mitigation is active, both the services themselves
+    and the clients which connect will use a dynamically generated hash
+    function as part of the puzzle computation.
+    <br />
+    If this option is set to 1, puzzles will only be solved and verified using
+    the compiled implementation (about 20x faster) and we choose to fail rather
+    than using a slower fallback. If it&#8217;s 0, the compiler will never be used.
+    By default, the compiler is always tried if possible but the interpreter is
+    available as a fallback. (Default: auto)
+</p>
+</dd>
+</dl></div>
+<div class="paragraph"><p>See also <a href="#opt-list-modules"><code>--list-modules</code></a>, these proof of work options
+have no effect unless the "<code>pow</code>" module is enabled at compile time.</p></div>
 </div>
 </div>
 <div class="sect1">
@@ -6213,7 +6301,7 @@ configured, the service will be accessible to anyone with the onion address.</co
 <div class="literalblock">
 <div class="content">
 <pre><code>Revoking a client can be done by removing their ".auth" file, however the
-revocation will be in effect only after the tor process gets restarted even if
+revocation will be in effect only after the tor process gets restarted or if
 a SIGHUP takes place.</code></pre>
 </div></div>
 <div class="paragraph"><p>Client side:</p></div>
@@ -6278,8 +6366,7 @@ TestingBridgeBootstrapDownloadInitialDelay 0
 TestingClientMaxIntervalWithoutRequest 5 seconds
 TestingDirConnectionMaxStall 30 seconds
 TestingEnableConnBwEvent 1
-TestingEnableCellStatsEvent 1
-RendPostPeriod 2 minutes</code></pre>
+TestingEnableCellStatsEvent 1</code></pre>
 </div></div>
 </dd>
 <dt class="hdlist1">

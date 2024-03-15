@@ -19,6 +19,23 @@ struct link_specifier_st;
 #define TRUNNEL_HS_INTRO_AUTH_KEY_TYPE_LEGACY1 1
 #define TRUNNEL_HS_INTRO_AUTH_KEY_TYPE_ED25519 2
 #define TRUNNEL_HS_INTRO_ONION_KEY_TYPE_NTOR 1
+#define TRUNNEL_EXT_TYPE_CC_REQUEST 1
+#define TRUNNEL_EXT_TYPE_POW 2
+#define TRUNNEL_POW_NONCE_LEN 16
+#define TRUNNEL_POW_SOLUTION_LEN 16
+#define TRUNNEL_POW_SEED_HEAD_LEN 4
+#define TRUNNEL_POW_VERSION_EQUIX 1
+#if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_TRN_CELL_EXTENSION_POW)
+struct trn_cell_extension_pow_st {
+  uint8_t pow_version;
+  uint8_t pow_nonce[TRUNNEL_POW_NONCE_LEN];
+  uint32_t pow_effort;
+  uint8_t pow_seed[TRUNNEL_POW_SEED_HEAD_LEN];
+  uint8_t pow_solution[TRUNNEL_POW_SOLUTION_LEN];
+  uint8_t trunnel_error_code_;
+};
+#endif
+typedef struct trn_cell_extension_pow_st trn_cell_extension_pow_t;
 #if !defined(TRUNNEL_OPAQUE) && !defined(TRUNNEL_OPAQUE_TRN_CELL_INTRODUCE1)
 struct trn_cell_introduce1_st {
   uint8_t legacy_key_id[TRUNNEL_SHA1_LEN];
@@ -53,6 +70,135 @@ struct trn_cell_introduce_encrypted_st {
 };
 #endif
 typedef struct trn_cell_introduce_encrypted_st trn_cell_introduce_encrypted_t;
+/** Return a newly allocated trn_cell_extension_pow with all elements
+ * set to zero.
+ */
+trn_cell_extension_pow_t *trn_cell_extension_pow_new(void);
+/** Release all storage held by the trn_cell_extension_pow in
+ * 'victim'. (Do nothing if 'victim' is NULL.)
+ */
+void trn_cell_extension_pow_free(trn_cell_extension_pow_t *victim);
+/** Try to parse a trn_cell_extension_pow from the buffer in 'input',
+ * using up to 'len_in' bytes from the input buffer. On success,
+ * return the number of bytes consumed and set *output to the newly
+ * allocated trn_cell_extension_pow_t. On failure, return -2 if the
+ * input appears truncated, and -1 if the input is otherwise invalid.
+ */
+ssize_t trn_cell_extension_pow_parse(trn_cell_extension_pow_t **output, const uint8_t *input, const size_t len_in);
+/** Return the number of bytes we expect to need to encode the
+ * trn_cell_extension_pow in 'obj'. On failure, return a negative
+ * value. Note that this value may be an overestimate, and can even be
+ * an underestimate for certain unencodeable objects.
+ */
+ssize_t trn_cell_extension_pow_encoded_len(const trn_cell_extension_pow_t *obj);
+/** Try to encode the trn_cell_extension_pow from 'input' into the
+ * buffer at 'output', using up to 'avail' bytes of the output buffer.
+ * On success, return the number of bytes used. On failure, return -2
+ * if the buffer was not long enough, and -1 if the input was invalid.
+ */
+ssize_t trn_cell_extension_pow_encode(uint8_t *output, size_t avail, const trn_cell_extension_pow_t *input);
+/** Check whether the internal state of the trn_cell_extension_pow in
+ * 'obj' is consistent. Return NULL if it is, and a short message if
+ * it is not.
+ */
+const char *trn_cell_extension_pow_check(const trn_cell_extension_pow_t *obj);
+/** Clear any errors that were set on the object 'obj' by its setter
+ * functions. Return true iff errors were cleared.
+ */
+int trn_cell_extension_pow_clear_errors(trn_cell_extension_pow_t *obj);
+/** Return the value of the pow_version field of the
+ * trn_cell_extension_pow_t in 'inp'
+ */
+uint8_t trn_cell_extension_pow_get_pow_version(const trn_cell_extension_pow_t *inp);
+/** Set the value of the pow_version field of the
+ * trn_cell_extension_pow_t in 'inp' to 'val'. Return 0 on success;
+ * return -1 and set the error code on 'inp' on failure.
+ */
+int trn_cell_extension_pow_set_pow_version(trn_cell_extension_pow_t *inp, uint8_t val);
+/** Return the (constant) length of the array holding the pow_nonce
+ * field of the trn_cell_extension_pow_t in 'inp'.
+ */
+size_t trn_cell_extension_pow_getlen_pow_nonce(const trn_cell_extension_pow_t *inp);
+/** Return the element at position 'idx' of the fixed array field
+ * pow_nonce of the trn_cell_extension_pow_t in 'inp'.
+ */
+uint8_t trn_cell_extension_pow_get_pow_nonce(trn_cell_extension_pow_t *inp, size_t idx);
+/** As trn_cell_extension_pow_get_pow_nonce, but take and return a
+ * const pointer
+ */
+uint8_t trn_cell_extension_pow_getconst_pow_nonce(const trn_cell_extension_pow_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field
+ * pow_nonce of the trn_cell_extension_pow_t in 'inp', so that it will
+ * hold the value 'elt'.
+ */
+int trn_cell_extension_pow_set_pow_nonce(trn_cell_extension_pow_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the TRUNNEL_POW_NONCE_LEN-element array field
+ * pow_nonce of 'inp'.
+ */
+uint8_t * trn_cell_extension_pow_getarray_pow_nonce(trn_cell_extension_pow_t *inp);
+/** As trn_cell_extension_pow_get_pow_nonce, but take and return a
+ * const pointer
+ */
+const uint8_t  * trn_cell_extension_pow_getconstarray_pow_nonce(const trn_cell_extension_pow_t *inp);
+/** Return the value of the pow_effort field of the
+ * trn_cell_extension_pow_t in 'inp'
+ */
+uint32_t trn_cell_extension_pow_get_pow_effort(const trn_cell_extension_pow_t *inp);
+/** Set the value of the pow_effort field of the
+ * trn_cell_extension_pow_t in 'inp' to 'val'. Return 0 on success;
+ * return -1 and set the error code on 'inp' on failure.
+ */
+int trn_cell_extension_pow_set_pow_effort(trn_cell_extension_pow_t *inp, uint32_t val);
+/** Return the (constant) length of the array holding the pow_seed
+ * field of the trn_cell_extension_pow_t in 'inp'.
+ */
+size_t trn_cell_extension_pow_getlen_pow_seed(const trn_cell_extension_pow_t *inp);
+/** Return the element at position 'idx' of the fixed array field
+ * pow_seed of the trn_cell_extension_pow_t in 'inp'.
+ */
+uint8_t trn_cell_extension_pow_get_pow_seed(trn_cell_extension_pow_t *inp, size_t idx);
+/** As trn_cell_extension_pow_get_pow_seed, but take and return a
+ * const pointer
+ */
+uint8_t trn_cell_extension_pow_getconst_pow_seed(const trn_cell_extension_pow_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field
+ * pow_seed of the trn_cell_extension_pow_t in 'inp', so that it will
+ * hold the value 'elt'.
+ */
+int trn_cell_extension_pow_set_pow_seed(trn_cell_extension_pow_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the TRUNNEL_POW_SEED_HEAD_LEN-element array
+ * field pow_seed of 'inp'.
+ */
+uint8_t * trn_cell_extension_pow_getarray_pow_seed(trn_cell_extension_pow_t *inp);
+/** As trn_cell_extension_pow_get_pow_seed, but take and return a
+ * const pointer
+ */
+const uint8_t  * trn_cell_extension_pow_getconstarray_pow_seed(const trn_cell_extension_pow_t *inp);
+/** Return the (constant) length of the array holding the pow_solution
+ * field of the trn_cell_extension_pow_t in 'inp'.
+ */
+size_t trn_cell_extension_pow_getlen_pow_solution(const trn_cell_extension_pow_t *inp);
+/** Return the element at position 'idx' of the fixed array field
+ * pow_solution of the trn_cell_extension_pow_t in 'inp'.
+ */
+uint8_t trn_cell_extension_pow_get_pow_solution(trn_cell_extension_pow_t *inp, size_t idx);
+/** As trn_cell_extension_pow_get_pow_solution, but take and return a
+ * const pointer
+ */
+uint8_t trn_cell_extension_pow_getconst_pow_solution(const trn_cell_extension_pow_t *inp, size_t idx);
+/** Change the element at position 'idx' of the fixed array field
+ * pow_solution of the trn_cell_extension_pow_t in 'inp', so that it
+ * will hold the value 'elt'.
+ */
+int trn_cell_extension_pow_set_pow_solution(trn_cell_extension_pow_t *inp, size_t idx, uint8_t elt);
+/** Return a pointer to the TRUNNEL_POW_SOLUTION_LEN-element array
+ * field pow_solution of 'inp'.
+ */
+uint8_t * trn_cell_extension_pow_getarray_pow_solution(trn_cell_extension_pow_t *inp);
+/** As trn_cell_extension_pow_get_pow_solution, but take and return a
+ * const pointer
+ */
+const uint8_t  * trn_cell_extension_pow_getconstarray_pow_solution(const trn_cell_extension_pow_t *inp);
 /** Return a newly allocated trn_cell_introduce1 with all elements set
  * to zero.
  */

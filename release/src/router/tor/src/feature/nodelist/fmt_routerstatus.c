@@ -26,6 +26,9 @@
 /** Helper: write the router-status information in <b>rs</b> into a newly
  * allocated character buffer.  Use the same format as in network-status
  * documents.  If <b>version</b> is non-NULL, add a "v" line for the platform.
+ * If <b>declared_publish_time</b> is nonnegative, we declare it as the
+ * publication time.  Otherwise we look for a publication time in <b>vrs</b>,
+ * and fall back to a default (not useful) publication time.
  *
  * Return 0 on success, -1 on failure.
  *
@@ -38,12 +41,14 @@
  *   NS_V3_VOTE - Output a complete V3 NS vote. If <b>vrs</b> is present,
  *        it contains additional information for the vote.
  *   NS_CONTROL_PORT - Output a NS document for the control port.
+ *
  */
 char *
 routerstatus_format_entry(const routerstatus_t *rs, const char *version,
                           const char *protocols,
                           routerstatus_format_type_t format,
-                          const vote_routerstatus_t *vrs)
+                          const vote_routerstatus_t *vrs,
+                          time_t declared_publish_time)
 {
   char *summary;
   char *result = NULL;
@@ -53,11 +58,18 @@ routerstatus_format_entry(const routerstatus_t *rs, const char *version,
   char digest64[BASE64_DIGEST_LEN+1];
   smartlist_t *chunks = smartlist_new();
 
+  if (declared_publish_time >= 0) {
+    format_iso_time(published, declared_publish_time);
+  } else if (vrs) {
+    format_iso_time(published, vrs->published_on);
+  } else {
+    strlcpy(published, "2038-01-01 00:00:00", sizeof(published));
+  }
+
   const char *ip_str = fmt_addr(&rs->ipv4_addr);
   if (ip_str[0] == '\0')
     goto err;
 
-  format_iso_time(published, rs->published_on);
   digest_to_base64(identity64, rs->identity_digest);
   digest_to_base64(digest64, rs->descriptor_digest);
 

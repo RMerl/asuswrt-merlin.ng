@@ -709,7 +709,7 @@ circuit_build_times_handle_completed_hop(origin_circuit_t *circ)
      * Switch their purpose and wait. */
     if (circ->base_.purpose != CIRCUIT_PURPOSE_C_MEASURE_TIMEOUT) {
       log_info(LD_CIRC,
-               "Deciding to timeout circuit %"PRIu32"\n",
+               "Deciding to timeout circuit %"PRIu32,
                (circ->global_identifier));
       circuit_build_times_mark_circ_as_measurement_only(circ);
     }
@@ -1016,6 +1016,18 @@ circuit_build_times_parse_state(circuit_build_times_t *cbt,
 
   if (circuit_build_times_disabled(get_options())) {
     return 0;
+  }
+
+  /* We had a case where someone removed their TotalBuildTimes from the state
+   * files while having CircuitBuildAbandonedCount above 0 leading to a
+   * segfault (#40437). Simply bug on it and return an error so at least the
+   * user will learn that they broke the state file. */
+  if (BUG(state->TotalBuildTimes <= 0 &&
+          state->CircuitBuildAbandonedCount > 0)) {
+    log_warn(LD_GENERAL, "CircuitBuildAbandonedCount count is above 0 but "
+                         "no TotalBuildTimes have been found. Unable to "
+                         "parse broken state file");
+    return -1;
   }
 
   /* build_time_t 0 means uninitialized */

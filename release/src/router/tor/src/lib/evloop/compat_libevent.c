@@ -137,10 +137,8 @@ tor_libevent_initialize(tor_libevent_cfg_t *torcfg)
   (void)torcfg;
 
   {
-    int attempts = 0;
     struct event_config *cfg;
 
-    ++attempts;
     cfg = event_config_new();
     tor_assert(cfg);
 

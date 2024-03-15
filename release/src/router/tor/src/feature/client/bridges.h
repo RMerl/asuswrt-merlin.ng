@@ -67,6 +67,7 @@ MOCK_DECL(download_status_t *, get_bridge_dl_status_by_id,
           (const char *digest));
 
 void bridges_free_all(void);
+bool conflux_can_exclude_used_bridges(void);
 
 #ifdef TOR_BRIDGES_PRIVATE
 STATIC void clear_bridge_list(void);

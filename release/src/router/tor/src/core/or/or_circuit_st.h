@@ -35,10 +35,18 @@ struct or_circuit_t {
   cell_queue_t p_chan_cells;
   /** The channel that is previous in this circuit. */
   channel_t *p_chan;
-  /** Linked list of Exit streams associated with this circuit. */
+  /** Linked list of Exit streams associated with this circuit.
+   *
+   * Note that any updates to this pointer must be followed with
+   * conflux_update_n_streams() to keep the other legs n_streams
+   * in sync. */
   edge_connection_t *n_streams;
   /** Linked list of Exit streams associated with this circuit that are
-   * still being resolved. */
+   * still being resolved.
+   *
+   * Just like with n_streams, any updates to this pointer must
+   * be followed with conflux_update_resolving_streams().
+   */
   edge_connection_t *resolving_streams;
 
   /** Cryptographic state used for encrypting and authenticating relay

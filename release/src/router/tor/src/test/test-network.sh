@@ -65,7 +65,8 @@ if [ ! -d "$CHUTNEY_PATH" ] || [ ! -x "$CHUTNEY_PATH/chutney" ]; then
         CHUTNEY_PATH="$TOR_DIR/../chutney"
     else
         $ECHO "$myname: missing 'chutney' in \$CHUTNEY_PATH ($CHUTNEY_PATH)"
-        $ECHO "$myname: Get chutney: git clone https://git.torproject.org/\
+        $ECHO "$myname: Get chutney: git clone
+        https://gitlab.torproject.org/tpo/core\
 chutney.git"
         $ECHO "$myname: Set \$CHUTNEY_PATH to a non-standard location: export \
 CHUTNEY_PATH=\`pwd\`/chutney"

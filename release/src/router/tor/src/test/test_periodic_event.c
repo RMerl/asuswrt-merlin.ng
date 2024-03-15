@@ -50,7 +50,7 @@ test_pe_initialize(void *arg)
 
   /* Initialize the events but the callback won't get called since we would
    * need to run the main loop and then wait for a second delaying the unit
-   * tests. Instead, we'll test the callback work indepedently elsewhere. */
+   * tests. Instead, we'll test the callback work independently elsewhere. */
   initialize_periodic_events();
   periodic_events_connect_all();
   set_network_participation(false);

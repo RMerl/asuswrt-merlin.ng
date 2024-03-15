@@ -51,6 +51,7 @@
 #include "core/or/circuitmux.h"
 #include "core/or/circuitmux_ewma.h"
 #include "core/or/circuitstats.h"
+#include "core/or/conflux_params.h"
 #include "core/or/connection_edge.h"
 #include "core/or/connection_or.h"
 #include "core/or/dos.h"
@@ -1616,7 +1617,6 @@ routerstatus_has_visibly_changed(const routerstatus_t *a,
          a->is_hs_dir != b->is_hs_dir ||
          a->is_staledesc != b->is_staledesc ||
          a->has_bandwidth != b->has_bandwidth ||
-         a->published_on != b->published_on ||
          a->ipv6_orport != b->ipv6_orport ||
          a->is_v2_dir != b->is_v2_dir ||
          a->bandwidth_kb != b->bandwidth_kb ||
@@ -1712,6 +1712,7 @@ notify_after_networkstatus_changes(void)
   flow_control_new_consensus_params(c);
   hs_service_new_consensus_params(c);
   dns_new_consensus_params(c);
+  conflux_params_new_consensus(c);
 
   /* Maintenance of our L2 guard list */
   maintain_layer2_guards();
@@ -2372,7 +2373,7 @@ char *
 networkstatus_getinfo_helper_single(const routerstatus_t *rs)
 {
   return routerstatus_format_entry(rs, NULL, NULL, NS_CONTROL_PORT,
-                                   NULL);
+                                   NULL, -1);
 }
 
 /**
@@ -2404,7 +2405,6 @@ set_routerstatus_from_routerinfo(routerstatus_t *rs,
   rs->is_hs_dir = node->is_hs_dir;
   rs->is_named = rs->is_unnamed = 0;
 
-  rs->published_on = ri->cache_info.published_on;
   memcpy(rs->identity_digest, node->identity, DIGEST_LEN);
   memcpy(rs->descriptor_digest, ri->cache_info.signed_descriptor_digest,
          DIGEST_LEN);
@@ -2451,7 +2451,9 @@ networkstatus_getinfo_by_purpose(const char *purpose_string, time_t now)
     if (ri->purpose != purpose)
       continue;
     set_routerstatus_from_routerinfo(&rs, node, ri);
-    smartlist_add(statuses, networkstatus_getinfo_helper_single(&rs));
+    char *text = routerstatus_format_entry(
+      &rs, NULL, NULL, NS_CONTROL_PORT, NULL, ri->cache_info.published_on);
+    smartlist_add(statuses, text);
   } SMARTLIST_FOREACH_END(ri);
 
   answer = smartlist_join_strings(statuses, "", 0, NULL);
@@ -2622,13 +2624,10 @@ networkstatus_parse_flavor_name(const char *flavname)
 int
 client_would_use_router(const routerstatus_t *rs, time_t now)
 {
+  (void) now;
   if (!rs->is_flagged_running) {
     /* If we had this router descriptor, we wouldn't even bother using it.
      * (Fetching and storing depends on by we_want_to_fetch_flavor().) */
-    return 0;
-  }
-  if (rs->published_on + OLD_ROUTER_DESC_MAX_AGE < now) {
-    /* We'd drop it immediately for being too old. */
     return 0;
   }
   if (!routerstatus_version_supports_extend2_cells(rs, 1)) {

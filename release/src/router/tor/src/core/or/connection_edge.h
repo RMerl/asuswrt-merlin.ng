@@ -218,6 +218,7 @@ int connection_half_edge_is_valid_end(smartlist_t *half_conns,
                                       streamid_t stream_id);
 int connection_half_edge_is_valid_resolved(smartlist_t *half_conns,
                                            streamid_t stream_id);
+bool connection_half_edges_waiting(const origin_circuit_t *circ);
 
 size_t half_streams_get_total_allocation(void);
 struct half_edge_t;

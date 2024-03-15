@@ -20,7 +20,10 @@
  * The main thread can also queue an "update" that will be handled by all the
  * workers.  This is useful for updating state that all the workers share.
  *
- * In Tor today, there is currently only one thread pool, used in cpuworker.c.
+ * In Tor today, there is currently only one thread pool, managed
+ * in cpuworker.c and handling a variety of types of work, from the original
+ * "onion skin" circuit handshakes, to consensus diff computation, to
+ * client-side onion service PoW generation.
  */
 
 #include "orconfig.h"

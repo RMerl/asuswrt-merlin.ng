@@ -17,6 +17,9 @@
 #include "core/or/circuitbuild.h"
 #include "core/or/circuitlist.h"
 #include "core/or/circuitpadding.h"
+#include "core/or/congestion_control_common.h"
+#include "core/or/conflux_pool.h"
+#include "core/or/conflux.h"
 #include "core/or/crypt_path.h"
 #include "core/or/relay.h"
 #include "core/or/relay_crypto_st.h"
@@ -41,8 +44,8 @@ new_fake_orcirc(channel_t *nchan, channel_t *pchan)
   cell_queue_init(&(circ->n_chan_cells));
 
   circ->n_hop = NULL;
-  circ->streams_blocked_on_n_chan = 0;
-  circ->streams_blocked_on_p_chan = 0;
+  circ->circuit_blocked_on_n_chan = 0;
+  circ->circuit_blocked_on_p_chan = 0;
   circ->n_delete_pending = 0;
   circ->p_delete_pending = 0;
   circ->received_destroy = 0;
@@ -86,6 +89,9 @@ free_fake_orcirc(or_circuit_t *orcirc)
   if (circ->n_chan && circ->n_chan->cmux) {
     circuitmux_detach_circuit(circ->n_chan->cmux, circ);
   }
+
+  conflux_circuit_about_to_free(circ);
+  congestion_control_free(circ->ccontrol);
 
   tor_free_(circ);
 }

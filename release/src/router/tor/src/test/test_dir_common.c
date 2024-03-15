@@ -93,7 +93,7 @@ dir_common_gen_routerstatus_for_v3ns(int idx, time_t now)
       vrs = tor_malloc_zero(sizeof(vote_routerstatus_t));
       rs = &vrs->status;
       vrs->version = tor_strdup("0.1.2.14");
-      rs->published_on = now-1500;
+      vrs->published_on = now-1500;
       strlcpy(rs->nickname, "router2", sizeof(rs->nickname));
       memset(rs->identity_digest, TEST_DIR_ROUTER_ID_1, DIGEST_LEN);
       memset(rs->descriptor_digest, TEST_DIR_ROUTER_DD_1, DIGEST_LEN);
@@ -111,7 +111,7 @@ dir_common_gen_routerstatus_for_v3ns(int idx, time_t now)
       vrs = tor_malloc_zero(sizeof(vote_routerstatus_t));
       rs = &vrs->status;
       vrs->version = tor_strdup("0.2.0.5");
-      rs->published_on = now-1000;
+      vrs->published_on = now-1000;
       strlcpy(rs->nickname, "router1", sizeof(rs->nickname));
       memset(rs->identity_digest, TEST_DIR_ROUTER_ID_2, DIGEST_LEN);
       memset(rs->descriptor_digest, TEST_DIR_ROUTER_DD_2, DIGEST_LEN);
@@ -130,7 +130,7 @@ dir_common_gen_routerstatus_for_v3ns(int idx, time_t now)
       vrs = tor_malloc_zero(sizeof(vote_routerstatus_t));
       rs = &vrs->status;
       vrs->version = tor_strdup("0.1.0.3");
-      rs->published_on = now-1000;
+      vrs->published_on = now-1000;
       strlcpy(rs->nickname, "router3", sizeof(rs->nickname));
       memset(rs->identity_digest, TEST_DIR_ROUTER_ID_3, DIGEST_LEN);
       memset(rs->descriptor_digest, TEST_DIR_ROUTER_DD_3, DIGEST_LEN);
@@ -147,7 +147,7 @@ dir_common_gen_routerstatus_for_v3ns(int idx, time_t now)
       vrs = tor_malloc_zero(sizeof(vote_routerstatus_t));
       rs = &vrs->status;
       vrs->version = tor_strdup("0.1.6.3");
-      rs->published_on = now-1000;
+      vrs->published_on = now-1000;
       strlcpy(rs->nickname, "router4", sizeof(rs->nickname));
       memset(rs->identity_digest, TEST_DIR_ROUTER_ID_4, DIGEST_LEN);
       memset(rs->descriptor_digest, TEST_DIR_ROUTER_DD_4, DIGEST_LEN);

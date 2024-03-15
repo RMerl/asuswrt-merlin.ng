@@ -30,6 +30,8 @@ struct cpath_build_state_t {
    * These are for encrypted dir conns that exit to this router, not
    * for arbitrary exits from the circuit. */
   unsigned int onehop_tunnel : 1;
+  /** Indicating the exit needs to support Conflux. */
+  unsigned int need_conflux: 1;
   /** How many times has building a circuit for this task failed? */
   int failure_count;
   /** At what time should we give up on this task? */

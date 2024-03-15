@@ -30,5 +30,4 @@
 { "TestingDirConnectionMaxStall", "30 seconds" },
 { "TestingEnableConnBwEvent", "1" },
 { "TestingEnableCellStatsEvent", "1" },
-{ "RendPostPeriod", "2 minutes" },
 { "___UsingTestNetworkDefaults", "1" },

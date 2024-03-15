@@ -340,8 +340,10 @@ tor_tls_init(void)
     SSL_load_error_strings();
 #endif /* defined(OPENSSL_1_1_API) */
 
-#if (SIZEOF_VOID_P >= 8 &&                              \
-     OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,0,1))
+#if (SIZEOF_VOID_P >= 8 &&                                \
+     OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,0,1) && \
+     (!defined(LIBRESSL_VERSION_NUMBER) ||                \
+      LIBRESSL_VERSION_NUMBER < 0x3080000fL))
     long version = tor_OpenSSL_version_num();
 
     /* LCOV_EXCL_START : we can't test these lines on the same machine */
@@ -1649,9 +1651,35 @@ tor_tls_get_tlssecrets,(tor_tls_t *tls, uint8_t *secrets_out))
   const size_t client_random_len = SSL_get_client_random(ssl, NULL, 0);
   const size_t master_key_len = SSL_SESSION_get_master_key(session, NULL, 0);
 
-  tor_assert(server_random_len);
-  tor_assert(client_random_len);
-  tor_assert(master_key_len);
+  if (BUG(! server_random_len)) {
+    log_warn(LD_NET, "Missing server randomness after handshake "
+                     "using %s (cipher: %s, server: %s) from %s",
+                     SSL_get_version(ssl),
+                     SSL_get_cipher_name(ssl),
+                     tls->isServer ? "true" : "false",
+                     ADDR(tls));
+    return -1;
+  }
+
+  if (BUG(! client_random_len)) {
+    log_warn(LD_NET, "Missing client randomness after handshake "
+                     "using %s (cipher: %s, server: %s) from %s",
+                     SSL_get_version(ssl),
+                     SSL_get_cipher_name(ssl),
+                     tls->isServer ? "true" : "false",
+                     ADDR(tls));
+    return -1;
+  }
+
+  if (BUG(! master_key_len)) {
+    log_warn(LD_NET, "Missing master key after handshake "
+                     "using %s (cipher: %s, server: %s) from %s",
+                     SSL_get_version(ssl),
+                     SSL_get_cipher_name(ssl),
+                     tls->isServer ? "true" : "false",
+                     ADDR(tls));
+    return -1;
+  }
 
   len = client_random_len + server_random_len + strlen(TLSSECRET_MAGIC) + 1;
   tor_assert(len <= sizeof(buf));
@@ -1734,8 +1762,7 @@ tor_tls_export_key_material,(tor_tls_t *tls, uint8_t *secrets_out,
          * issue 7712. */
         openssl_bug_7712_is_present = 1;
         log_warn(LD_GENERAL, "Detected OpenSSL bug 7712: disabling TLS 1.3 on "
-                 "future connections. A fix is expected to appear in OpenSSL "
-                 "1.1.1b.");
+                 "future connections.");
       }
     }
     if (openssl_bug_7712_is_present)

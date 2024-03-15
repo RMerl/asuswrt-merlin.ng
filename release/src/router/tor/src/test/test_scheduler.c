@@ -81,8 +81,7 @@ mock_vanilla_networkstatus_get_param(
   (void)default_val;
   (void)min_val;
   (void)max_val;
-  // only support KISTSchedRunInterval right now
-  tor_assert(strcmp(param_name, "KISTSchedRunInterval")==0);
+  (void)param_name;
   return 0;
 }
 
@@ -95,8 +94,7 @@ mock_kist_networkstatus_get_param(
   (void)default_val;
   (void)min_val;
   (void)max_val;
-  // only support KISTSchedRunInterval right now
-  tor_assert(strcmp(param_name, "KISTSchedRunInterval")==0);
+  (void)param_name;
   return 12;
 }
 
@@ -863,7 +861,7 @@ test_scheduler_initfree(void *arg)
   /* We have specified nothing in the torrc and there's no consensus so the
    * KIST scheduler is what should be in use */
   tt_ptr_op(the_scheduler, OP_EQ, get_kist_scheduler());
-  tt_int_op(sched_run_interval, OP_EQ, 10);
+  tt_int_op(sched_run_interval, OP_EQ, KIST_SCHED_RUN_INTERVAL_DEFAULT);
 
   scheduler_free_all();
 
@@ -906,7 +904,7 @@ test_scheduler_can_use_kist(void *arg)
 #else /* HAVE_KIST_SUPPORT */
   tt_int_op(res_should, OP_EQ, 0);
 #endif /* HAVE_KIST_SUPPORT */
-  tt_int_op(res_freq, OP_EQ, 10);
+  tt_int_op(res_freq, OP_EQ, KIST_SCHED_RUN_INTERVAL_DEFAULT);
 
   /* Test defer to consensus, and kist consensus available */
   MOCK(networkstatus_get_param, mock_kist_networkstatus_get_param);

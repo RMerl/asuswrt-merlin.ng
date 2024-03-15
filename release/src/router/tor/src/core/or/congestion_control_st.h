@@ -41,8 +41,8 @@ typedef enum {
    * Prop#324: TOR_NOLA - NOLA looks the BDP right in the eye and uses it
    * immediately as CWND. No slow start, no other congestion signals, no delay,
    * no bullshit. Like TOR_VEGAS, it also uses aggressive BDP estimates, to
-   * avoid out-competition. It seems a bit better throughput than Vegas,
-   * but its agressive BDP and rapid updates may lead to more queue latency. */
+   * avoid out-competition. It seems a bit better throughput than Vegas, but
+   * its aggressive BDP and rapid updates may lead to more queue latency. */
   CC_ALG_NOLA = 3,
 } cc_alg_t;
 
@@ -79,22 +79,6 @@ typedef enum {
 /** Total number of BDP algs in bdp_alg_t enum */
 #define NUM_BDP_ALGS (BDP_ALG_PIECEWISE+1)
 
-/** Westwood algorithm parameters */
-struct westwood_params_t {
-    /** Cwnd backoff multiplier upon congestion (as percent) */
-    uint8_t cwnd_backoff_m;
-    /** Max RTT backoff multiplier upon congestion (as percent) */
-    uint8_t rtt_backoff_m;
-
-    /** Threshold between min and max RTT, to signal congestion (percent) */
-    uint8_t rtt_thresh;
-
-    /**
-     * If true, use minimum of BDP and backoff multiplication in backoff.
-     * If false, use maximum of BDP and backoff multiplication in backoff. */
-    bool min_backoff;
-};
-
 /** Vegas algorithm parameters. */
 struct vegas_params_t {
     /** The slow-start cwnd cap for RFC3742 */
@@ -114,12 +98,6 @@ struct vegas_params_t {
     uint8_t bdp_mix_pct;
 };
 
-/** NOLA consensus params */
-struct nola_params_t {
-    /** How many cells to add to BDP estimate to obtain cwnd */
-    uint16_t bdp_overshoot;
-};
-
 /** Fields common to all congestion control algorithms */
 struct congestion_control_t {
   /**
@@ -128,19 +106,13 @@ struct congestion_control_t {
    * sendme_last_digests. */
   smartlist_t *sendme_pending_timestamps;
 
-  /**
-   * Smartlist of uint64_t monotime timestamp of when sendme's arrived.
-   * FIFO queue that is managed similar to sendme_last_digests.
-   * Used to estimate circuitbandwidth and BDP. */
-  smartlist_t *sendme_arrival_timestamps;
-
   /** RTT time data for congestion control. */
   uint64_t ewma_rtt_usec;
   uint64_t min_rtt_usec;
   uint64_t max_rtt_usec;
 
-  /* BDP estimates by algorithm */
-  uint64_t bdp[NUM_BDP_ALGS];
+  /* Vegas BDP estimate */
+  uint64_t bdp;
 
   /** Congestion window */
   uint64_t cwnd;
@@ -203,15 +175,9 @@ struct congestion_control_t {
    * consensus parameter during circuit setup. */
   bdp_alg_t bdp_alg;
 
-  /** Algorithm-specific parameters. The specific struct that is used
-   * depends upon the algorithm selected by the cc_alg parameter.
-   * These should not be accessed anywhere other than the algorithm-specific
-   * files. */
-  union {
-    struct westwood_params_t westwood_params;
-    struct vegas_params_t vegas_params;
-    struct nola_params_t nola_params;
-  };
+  /** Vegas-specific parameters. These should not be accessed anywhere
+   * other than the congestion_control_vegas.c file. */
+  struct vegas_params_t vegas_params;
 };
 
 /**

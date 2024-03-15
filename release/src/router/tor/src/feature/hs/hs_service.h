@@ -35,6 +35,11 @@
 /** Maximum interval for uploading next descriptor (in seconds). */
 #define HS_SERVICE_NEXT_UPLOAD_TIME_MAX (120 * 60)
 
+/** PoW seed expiration time is set to RAND_TIME(now+7200, 900)
+ * seconds. */
+#define HS_SERVICE_POW_SEED_ROTATE_TIME_MIN (7200 - 900)
+#define HS_SERVICE_POW_SEED_ROTATE_TIME_MAX (7200)
+
 /** Collected metrics for a specific service. */
 typedef struct hs_service_metrics_t {
   /** Store containing the metrics values. */
@@ -56,6 +61,10 @@ typedef struct hs_service_intro_point_t {
 
   /** Encryption keypair for the "ntor" type. */
   curve25519_keypair_t enc_key_kp;
+
+  /** Blinded public ID for this service, from this intro point's
+   * active time period. */
+  ed25519_public_key_t blinded_id;
 
   /** Legacy key if that intro point doesn't support v3. This should be used if
    * the base object legacy flag is set. */
@@ -257,6 +266,11 @@ typedef struct hs_service_config_t {
   uint32_t intro_dos_rate_per_sec;
   uint32_t intro_dos_burst_per_sec;
 
+  /** True iff PoW anti-DoS defenses are enabled. */
+  unsigned int has_pow_defenses_enabled : 1;
+  uint32_t pow_queue_rate;
+  uint32_t pow_queue_burst;
+
   /** If set, contains the Onion Balance master ed25519 public key (taken from
    * an .onion addresses) that this tor instance serves as backend. */
   smartlist_t *ob_master_pubkeys;
@@ -291,6 +305,10 @@ typedef struct hs_service_state_t {
   hs_subcredential_t *ob_subcreds;
   /* Number of OB subcredentials */
   size_t n_ob_subcreds;
+
+  /** State of the PoW defenses, which may be enabled dynamically. NULL if not
+   * defined for this service. */
+  hs_pow_service_state_t *pow_state;
 } hs_service_state_t;
 
 /** Representation of a service running on this tor instance. */

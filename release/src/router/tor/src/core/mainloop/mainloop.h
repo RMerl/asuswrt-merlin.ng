@@ -38,7 +38,7 @@ typedef enum watchable_events {
   WRITE_EVENT=0x04 /**< We want to know when a connection is writable */
 } watchable_events_t;
 void connection_watch_events(connection_t *conn, watchable_events_t events);
-int connection_is_reading(connection_t *conn);
+int connection_is_reading(const connection_t *conn);
 MOCK_DECL(void,connection_stop_reading,(connection_t *conn));
 MOCK_DECL(void,connection_start_reading,(connection_t *conn));
 

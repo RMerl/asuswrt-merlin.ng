@@ -40,7 +40,14 @@ rend_process_relay_cell(circuit_t *circ, const crypt_path_t *layer_hint,
   int r = -2;
   if (CIRCUIT_IS_ORIGIN(circ)) {
     origin_circ = TO_ORIGIN_CIRCUIT(circ);
-    if (!layer_hint || layer_hint != origin_circ->cpath->prev) {
+
+    /* Opened onion service circuit receiving cell MUST have an hs_ident as it
+     * is the underlying assumption else we can't process the cell. If this is
+     * the case, we can't recover so close the circuit. */
+    if (BUG(!origin_circ->hs_ident)) {
+      circuit_mark_for_close(circ, END_CIRC_REASON_INTERNAL);
+      origin_circ = NULL;
+    } else if (!layer_hint || layer_hint != origin_circ->cpath->prev) {
       log_fn(LOG_PROTOCOL_WARN, LD_APP,
              "Relay cell (rend purpose %d) from wrong hop on origin circ",
              command);

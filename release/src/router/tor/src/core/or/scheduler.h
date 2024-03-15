@@ -102,9 +102,9 @@ typedef struct scheduler_t {
  *****************************************************************************/
 
 /* Default interval that KIST runs (in ms). */
-#define KIST_SCHED_RUN_INTERVAL_DEFAULT 10
-/* Minimum interval that KIST runs. This value disables KIST. */
-#define KIST_SCHED_RUN_INTERVAL_MIN 0
+#define KIST_SCHED_RUN_INTERVAL_DEFAULT 2
+/* Minimum interval that KIST runs. */
+#define KIST_SCHED_RUN_INTERVAL_MIN 2
 /* Maximum interval that KIST runs (in ms). */
 #define KIST_SCHED_RUN_INTERVAL_MAX 100
 

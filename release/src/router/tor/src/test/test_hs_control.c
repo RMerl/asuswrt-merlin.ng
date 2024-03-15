@@ -628,7 +628,7 @@ test_hs_control_store_permanent_creds(void *arg)
   tor_free(args);
   tor_free(cp1);
 
-  /* Overwrite the credentials and check that they got overwrited. */
+  /* Overwrite the credentials and check that they got overwritten. */
   args = tor_strdup("2fvhjskjet3n5syd6yfg5lhvwcs62bojmthr35ko5bllr3iqdb4ctdyd "
                     "x25519:UDRvZLvcJo0QRLvDfkpgbtsqbkhIUQZyeo2FNBrgS18= "
                     "Flags=Permanent");

@@ -98,6 +98,9 @@
 #      want to encode that knowledge in this test script, so we supply a
 #      separate result file for every combination of disabled modules that
 #      has a different result.)
+#
+#      This logic ignores modules that are not listed by --list-modules
+#      (dircache) and some that do not currently affect config parsing (pow).
 
 umask 077
 set -e
@@ -197,6 +200,8 @@ echo "This pattern should not match any log messages" \
                                   "$NON_EMPTY"
 
 STANDARD_LIBS="libevent\\|openssl\\|zlib"
+MODULES_WITHOUT_CONFIG_TESTS="dircache\\|pow"
+
 # Lib names are restricted to [a-z0-9]* at the moment
 # We don't actually want to support foreign accents here
 # shellcheck disable=SC2018,SC2019
@@ -229,6 +234,7 @@ TOR_LIBS_ENABLED_SEARCH="$(echo "$TOR_LIBS_ENABLED_SEARCH" | tr ' ' '\n' \
                            | grep -v '^_*$' | tr '\n' ' ')"
 
 TOR_MODULES_DISABLED="$("$TOR_BINARY" --list-modules | grep ': no' \
+                        | grep -v "$MODULES_WITHOUT_CONFIG_TESTS" \
                         | cut -d ':' -f1 | sort | tr '\n' '_')"
 # Remove the last underscore, if there is one
 TOR_MODULES_DISABLED=${TOR_MODULES_DISABLED%_}

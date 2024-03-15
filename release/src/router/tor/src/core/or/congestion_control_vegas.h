@@ -35,8 +35,7 @@ extern uint64_t cc_stats_vegas_circ_exited_ss;
 
 /* Processing SENDME cell. */
 int congestion_control_vegas_process_sendme(struct congestion_control_t *cc,
-                                            const circuit_t *circ,
-                                            const crypt_path_t *layer_hint);
+                                            const circuit_t *circ);
 void congestion_control_vegas_set_params(struct congestion_control_t *cc,
                                          cc_path_t path);
 

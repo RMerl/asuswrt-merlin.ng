@@ -32,8 +32,10 @@
 #include "feature/nodelist/nodelist.h"
 #include "feature/nodelist/node_st.h"
 #include "feature/nodelist/routerstatus_st.h"
+#include "feature/nodelist/torcert.h"
 #include "feature/relay/relay_metrics.h"
 #include "feature/relay/router.h"
+#include "feature/relay/routerkeys.h"
 #include "feature/stats/rephist.h"
 
 #include <event2/dns.h>
@@ -55,6 +57,12 @@ static void fill_streams_values(void);
 static void fill_relay_flags(void);
 static void fill_tcp_exhaustion_values(void);
 static void fill_traffic_values(void);
+static void fill_signing_cert_expiry(void);
+
+static void fill_est_intro_cells(void);
+static void fill_est_rend_cells(void);
+static void fill_intro1_cells(void);
+static void fill_rend1_cells(void);
 
 /** The base metrics that is a static array of metrics added to the metrics
  * store.
@@ -174,6 +182,41 @@ static const relay_metrics_entry_t base_metrics[] =
     .help = "Total number of circuits",
     .fill_fn = fill_circuits_values,
   },
+  {
+    .key = RELAY_METRICS_SIGNING_CERT_EXPIRY,
+    .type = METRICS_TYPE_GAUGE,
+    .name = METRICS_NAME(relay_signing_cert_expiry_timestamp),
+    .help = "Timestamp at which the current online keys will expire",
+    .fill_fn = fill_signing_cert_expiry,
+  },
+  {
+    .key = RELAY_METRICS_NUM_EST_REND,
+    .type = METRICS_TYPE_COUNTER,
+    .name = METRICS_NAME(relay_est_rend_total),
+    .help = "Total number of EST_REND cells we received",
+    .fill_fn = fill_est_rend_cells,
+  },
+  {
+    .key = RELAY_METRICS_NUM_EST_INTRO,
+    .type = METRICS_TYPE_COUNTER,
+    .name = METRICS_NAME(relay_est_intro_total),
+    .help = "Total number of EST_INTRO cells we received",
+    .fill_fn = fill_est_intro_cells,
+  },
+  {
+    .key = RELAY_METRICS_NUM_INTRO1_CELLS,
+    .type = METRICS_TYPE_COUNTER,
+    .name = METRICS_NAME(relay_intro1_total),
+    .help = "Total number of INTRO1 cells we received",
+    .fill_fn = fill_intro1_cells,
+  },
+  {
+    .key = RELAY_METRICS_NUM_REND1_CELLS,
+    .type = METRICS_TYPE_COUNTER,
+    .name = METRICS_NAME(relay_rend1_total),
+    .help = "Total number of REND1 cells we received",
+    .fill_fn = fill_rend1_cells,
+  },
 };
 static const size_t num_base_metrics = ARRAY_LENGTH(base_metrics);
 
@@ -222,8 +265,8 @@ fill_circuits_values(void)
 {
   const relay_metrics_entry_t *rentry =
     &base_metrics[RELAY_METRICS_NUM_CIRCUITS];
-  metrics_store_entry_t *sentry =
-    metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+  metrics_store_entry_t *sentry = metrics_store_add(
+      the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
 
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "opened"));
@@ -255,57 +298,57 @@ fill_relay_flags(void)
 
   const relay_metrics_entry_t *rentry =
     &base_metrics[RELAY_METRICS_RELAY_FLAGS];
-  metrics_store_entry_t *sentry =
-    metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+  metrics_store_entry_t *sentry = metrics_store_add(
+      the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
 
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "Fast"));
   metrics_store_entry_update(sentry, is_fast);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "Exit"));
   metrics_store_entry_update(sentry, is_exit);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "Authority"));
   metrics_store_entry_update(sentry, is_authority);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "Stable"));
   metrics_store_entry_update(sentry, is_stable);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "HSDir"));
   metrics_store_entry_update(sentry, is_hs_dir);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "Running"));
   metrics_store_entry_update(sentry, is_running);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "V2Dir"));
   metrics_store_entry_update(sentry, is_v2_dir);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "Sybil"));
   metrics_store_entry_update(sentry, is_sybil);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "Guard"));
   metrics_store_entry_update(sentry, is_guard);
@@ -317,15 +360,15 @@ fill_traffic_values(void)
 {
   const relay_metrics_entry_t *rentry =
     &base_metrics[RELAY_METRICS_NUM_TRAFFIC];
-  metrics_store_entry_t *sentry =
-    metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+  metrics_store_entry_t *sentry = metrics_store_add(
+      the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
 
   metrics_store_entry_add_label(sentry,
           metrics_format_label("direction", "read"));
   metrics_store_entry_update(sentry, get_bytes_read());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("direction", "written"));
   metrics_store_entry_update(sentry, get_bytes_written());
@@ -336,57 +379,57 @@ static void
 fill_dos_values(void)
 {
   const relay_metrics_entry_t *rentry = &base_metrics[RELAY_METRICS_NUM_DOS];
-  metrics_store_entry_t *sentry =
-    metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+  metrics_store_entry_t *sentry = metrics_store_add(
+      the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
 
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "circuit_rejected"));
   metrics_store_entry_update(sentry, dos_get_num_cc_rejected());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "circuit_killed_max_cell"));
   metrics_store_entry_update(sentry, stats_n_circ_max_cell_reached);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "circuit_killed_max_cell_outq"));
   metrics_store_entry_update(sentry, stats_n_circ_max_cell_outq_reached);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "marked_address"));
   metrics_store_entry_update(sentry, dos_get_num_cc_marked_addr());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "marked_address_maxq"));
   metrics_store_entry_update(sentry, dos_get_num_cc_marked_addr_maxq());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "conn_rejected"));
   metrics_store_entry_update(sentry, dos_get_num_conn_addr_connect_rejected());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "concurrent_conn_rejected"));
   metrics_store_entry_update(sentry, dos_get_num_conn_addr_rejected());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "single_hop_refused"));
   metrics_store_entry_update(sentry, dos_get_num_single_hop_refused());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("type", "introduce2_rejected"));
   metrics_store_entry_update(sentry, hs_dos_get_intro2_rejected_count());
@@ -399,8 +442,8 @@ fill_cc_counters_values(void)
   const relay_metrics_entry_t *rentry =
     &base_metrics[RELAY_METRICS_CC_COUNTERS];
 
-  metrics_store_entry_t *sentry =
-    metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+  metrics_store_entry_t *sentry = metrics_store_add(
+      the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "starvation"));
   metrics_store_entry_add_label(sentry,
@@ -408,7 +451,7 @@ fill_cc_counters_values(void)
   metrics_store_entry_update(sentry, congestion_control_get_num_rtt_reset());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "clock_stalls"));
   metrics_store_entry_add_label(sentry,
@@ -417,7 +460,7 @@ fill_cc_counters_values(void)
                              congestion_control_get_num_clock_stalls());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "flow_control"));
   metrics_store_entry_add_label(sentry,
@@ -426,7 +469,7 @@ fill_cc_counters_values(void)
                              cc_stats_flow_num_xoff_sent);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "flow_control"));
   metrics_store_entry_add_label(sentry,
@@ -435,7 +478,7 @@ fill_cc_counters_values(void)
                              cc_stats_flow_num_xon_sent);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_limits"));
   metrics_store_entry_add_label(sentry,
@@ -443,7 +486,7 @@ fill_cc_counters_values(void)
   metrics_store_entry_update(sentry, cc_stats_vegas_above_delta);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_limits"));
   metrics_store_entry_add_label(sentry,
@@ -451,7 +494,7 @@ fill_cc_counters_values(void)
   metrics_store_entry_update(sentry, cc_stats_vegas_above_ss_cwnd_max);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_limits"));
   metrics_store_entry_add_label(sentry,
@@ -459,7 +502,7 @@ fill_cc_counters_values(void)
   metrics_store_entry_update(sentry, cc_stats_vegas_below_ss_inc_floor);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_circuits"));
   metrics_store_entry_add_label(sentry,
@@ -467,7 +510,7 @@ fill_cc_counters_values(void)
   metrics_store_entry_update(sentry, cc_stats_circs_created);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_circuits"));
   metrics_store_entry_add_label(sentry,
@@ -475,7 +518,7 @@ fill_cc_counters_values(void)
   metrics_store_entry_update(sentry, cc_stats_circs_closed);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_circuits"));
   metrics_store_entry_add_label(sentry,
@@ -490,8 +533,8 @@ fill_cc_gauges_values(void)
   const relay_metrics_entry_t *rentry =
     &base_metrics[RELAY_METRICS_CC_GAUGES];
 
-  metrics_store_entry_t *sentry =
-    metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+  metrics_store_entry_t *sentry = metrics_store_add(
+      the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "slow_start_exit"));
   metrics_store_entry_add_label(sentry,
@@ -500,7 +543,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_exit_ss_cwnd_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "slow_start_exit"));
   metrics_store_entry_add_label(sentry,
@@ -509,7 +552,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_exit_ss_bdp_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "slow_start_exit"));
   metrics_store_entry_add_label(sentry,
@@ -518,7 +561,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_exit_ss_inc_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "on_circ_close"));
   metrics_store_entry_add_label(sentry,
@@ -527,7 +570,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_circ_close_cwnd_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "on_circ_close"));
   metrics_store_entry_add_label(sentry,
@@ -536,7 +579,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_circ_close_ss_cwnd_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "buffers"));
   metrics_store_entry_add_label(sentry,
@@ -545,7 +588,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_flow_xon_outbuf_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "buffers"));
   metrics_store_entry_add_label(sentry,
@@ -554,7 +597,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_flow_xoff_outbuf_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_backoff"));
   metrics_store_entry_add_label(sentry,
@@ -563,7 +606,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_csig_blocked_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_backoff"));
   metrics_store_entry_add_label(sentry,
@@ -572,7 +615,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_gamma_drop_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_backoff"));
   metrics_store_entry_add_label(sentry,
@@ -581,7 +624,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_delta_drop_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_backoff"));
   metrics_store_entry_add_label(sentry,
@@ -590,7 +633,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_ss_csig_blocked_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_cwnd_update"));
   metrics_store_entry_add_label(sentry,
@@ -599,7 +642,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_csig_alpha_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_cwnd_update"));
   metrics_store_entry_add_label(sentry,
@@ -608,7 +651,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_csig_beta_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_cwnd_update"));
   metrics_store_entry_add_label(sentry,
@@ -617,7 +660,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_csig_delta_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_estimates"));
   metrics_store_entry_add_label(sentry,
@@ -626,7 +669,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_ss_queue_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_estimates"));
   metrics_store_entry_add_label(sentry,
@@ -635,7 +678,7 @@ fill_cc_gauges_values(void)
                              tor_llround(cc_stats_vegas_queue_ma));
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
           metrics_format_label("state", "cc_estimates"));
   metrics_store_entry_add_label(sentry,
@@ -659,16 +702,16 @@ fill_streams_values(void)
 {
   const relay_metrics_entry_t *rentry =
     &base_metrics[RELAY_METRICS_NUM_STREAMS];
-  metrics_store_entry_t *sentry =
-    metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+  metrics_store_entry_t *sentry = metrics_store_add(
+      the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
   fill_single_stream_value(sentry, RELAY_COMMAND_BEGIN);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   fill_single_stream_value(sentry, RELAY_COMMAND_BEGIN_DIR);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   fill_single_stream_value(sentry, RELAY_COMMAND_RESOLVE);
 }
 
@@ -704,31 +747,31 @@ fill_conn_counter_values(void)
     if (i == 10) {
       continue;
     }
-    metrics_store_entry_t *sentry =
-      metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+    metrics_store_entry_t *sentry = metrics_store_add(
+        the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "initiated", "created", AF_INET,
                                  rep_hist_get_conn_created(false, i, AF_INET));
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "initiated", "created", AF_INET6,
                                  rep_hist_get_conn_created(false, i,
                                                            AF_INET6));
 
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "received", "created", AF_INET,
                                  rep_hist_get_conn_created(true, i, AF_INET));
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "received", "created", AF_INET6,
                                  rep_hist_get_conn_created(true, i, AF_INET6));
 
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "received", "rejected", AF_INET,
                                  rep_hist_get_conn_rejected(i, AF_INET));
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "received", "rejected", AF_INET6,
                                  rep_hist_get_conn_rejected(i, AF_INET6));
 
@@ -748,21 +791,21 @@ fill_conn_gauge_values(void)
     if (i == 10) {
       continue;
     }
-    metrics_store_entry_t *sentry =
-      metrics_store_add(the_store, rentry->type, rentry->name, rentry->help);
+    metrics_store_entry_t *sentry = metrics_store_add(
+        the_store, rentry->type, rentry->name, rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "initiated", "opened", AF_INET,
                                  rep_hist_get_conn_opened(false, i, AF_INET));
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "initiated", "opened", AF_INET6,
                                  rep_hist_get_conn_opened(false, i, AF_INET6));
 
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "received", "opened", AF_INET,
                                  rep_hist_get_conn_opened(true, i, AF_INET));
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     fill_single_connection_value(sentry, i, "received", "opened", AF_INET6,
                                  rep_hist_get_conn_opened(true, i, AF_INET6));
   }
@@ -777,7 +820,7 @@ fill_tcp_exhaustion_values(void)
     &base_metrics[RELAY_METRICS_NUM_TCP_EXHAUSTION];
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_update(sentry, rep_hist_get_n_tcp_exhaustion());
 }
 
@@ -835,7 +878,7 @@ fill_dns_error_values(void)
 
     for (size_t j = 0; j < num_errors; j++) {
       sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                                 rentry->help);
+                                 rentry->help, 0, NULL);
       metrics_store_entry_add_label(sentry, record_label);
       metrics_store_entry_add_label(sentry,
               metrics_format_label("reason", errors[j].name));
@@ -849,7 +892,7 @@ fill_dns_error_values(void)
   /* Put in the DNS errors, unfortunately not per-type for now. */
   for (size_t j = 0; j < num_errors; j++) {
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     metrics_store_entry_add_label(sentry,
             metrics_format_label("reason", errors[j].name));
     metrics_store_entry_update(sentry,
@@ -873,7 +916,7 @@ fill_dns_query_values(void)
     char *record_label =
       tor_strdup(metrics_format_label("record", dns_types[i].name));
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     metrics_store_entry_add_label(sentry, record_label);
     metrics_store_entry_update(sentry,
                                rep_hist_get_n_dns_request(dns_types[i].type));
@@ -882,7 +925,7 @@ fill_dns_query_values(void)
 #endif
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_update(sentry, rep_hist_get_n_dns_request(0));
 }
 
@@ -895,13 +938,13 @@ fill_global_bw_limit_values(void)
     &base_metrics[RELAY_METRICS_NUM_GLOBAL_RW_LIMIT];
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
                                 metrics_format_label("side", "read"));
   metrics_store_entry_update(sentry, rep_hist_get_n_read_limit_reached());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
                                 metrics_format_label("side", "write"));
   metrics_store_entry_update(sentry, rep_hist_get_n_write_limit_reached());
@@ -916,13 +959,13 @@ fill_socket_values(void)
     &base_metrics[RELAY_METRICS_NUM_SOCKETS];
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
                                 metrics_format_label("state", "opened"));
   metrics_store_entry_update(sentry, get_n_open_sockets());
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_update(sentry, get_max_sockets());
 }
 
@@ -940,7 +983,7 @@ fill_onionskins_values(void)
     char *type_label =
       tor_strdup(metrics_format_label("type", handshake_type_to_str(t)));
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     metrics_store_entry_add_label(sentry, type_label);
     metrics_store_entry_add_label(sentry,
                         metrics_format_label("action", "processed"));
@@ -948,7 +991,7 @@ fill_onionskins_values(void)
                                rep_hist_get_circuit_n_handshake_assigned(t));
 
     sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                               rentry->help);
+                               rentry->help, 0, NULL);
     metrics_store_entry_add_label(sentry, type_label);
     metrics_store_entry_add_label(sentry,
                         metrics_format_label("action", "dropped"));
@@ -967,28 +1010,194 @@ fill_oom_values(void)
     &base_metrics[RELAY_METRICS_NUM_OOM_BYTES];
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
                                 metrics_format_label("subsys", "cell"));
   metrics_store_entry_update(sentry, oom_stats_n_bytes_removed_cell);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
                                 metrics_format_label("subsys", "dns"));
   metrics_store_entry_update(sentry, oom_stats_n_bytes_removed_dns);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
                                 metrics_format_label("subsys", "geoip"));
   metrics_store_entry_update(sentry, oom_stats_n_bytes_removed_geoip);
 
   sentry = metrics_store_add(the_store, rentry->type, rentry->name,
-                             rentry->help);
+                             rentry->help, 0, NULL);
   metrics_store_entry_add_label(sentry,
                                 metrics_format_label("subsys", "hsdir"));
   metrics_store_entry_update(sentry, oom_stats_n_bytes_removed_hsdir);
+}
+
+/** Fill function for the RELAY_METRICS_SIGNING_CERT_EXPIRY metrics. */
+static void
+fill_signing_cert_expiry(void)
+{
+  metrics_store_entry_t *sentry;
+  const tor_cert_t *signing_key;
+  const relay_metrics_entry_t *rentry =
+    &base_metrics[RELAY_METRICS_SIGNING_CERT_EXPIRY];
+
+  if (get_options()->OfflineMasterKey) {
+    signing_key = get_master_signing_key_cert();
+    if (signing_key) {
+      sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                                 rentry->help, 0, NULL);
+      metrics_store_entry_update(sentry, signing_key->valid_until);
+    }
+  }
+}
+
+static uint64_t est_intro_actions[EST_INTRO_ACTION_COUNT] = {0};
+
+void
+relay_increment_est_intro_action(est_intro_action_t action)
+{
+  est_intro_actions[action]++;
+}
+
+static void
+fill_est_intro_cells(void)
+{
+  metrics_store_entry_t *sentry;
+  const relay_metrics_entry_t *rentry =
+      &base_metrics[RELAY_METRICS_NUM_EST_INTRO];
+
+  static struct {
+    const char *name;
+    est_intro_action_t key;
+  } actions[] = {
+      {.name = "success", .key = EST_INTRO_SUCCESS},
+      {.name = "malformed", .key = EST_INTRO_MALFORMED},
+      {.name = "unsuitable_circuit", .key = EST_INTRO_UNSUITABLE_CIRCUIT},
+      {.name = "circuit_dead", .key = EST_INTRO_CIRCUIT_DEAD},
+  };
+  static const size_t num_actions = ARRAY_LENGTH(actions);
+
+  for (size_t i = 0; i < num_actions; ++i) {
+    sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                               rentry->help, 0, NULL);
+    metrics_store_entry_add_label(
+        sentry, metrics_format_label("action", actions[i].name));
+    metrics_store_entry_update(sentry,
+                               (long)est_intro_actions[actions[i].key]);
+  }
+}
+
+static uint64_t est_rend_actions[EST_REND_ACTION_COUNT] = {0};
+
+void
+relay_increment_est_rend_action(est_rend_action_t action)
+{
+  est_rend_actions[action]++;
+}
+
+static void
+fill_est_rend_cells(void)
+{
+  metrics_store_entry_t *sentry;
+  const relay_metrics_entry_t *rentry =
+      &base_metrics[RELAY_METRICS_NUM_EST_REND];
+
+  static struct {
+    const char *name;
+    est_rend_action_t key;
+  } actions[] = {
+      {.name = "success", .key = EST_REND_SUCCESS},
+      {.name = "unsuitable_circuit", .key = EST_REND_UNSUITABLE_CIRCUIT},
+      {.name = "single_hop", .key = EST_REND_SINGLE_HOP},
+      {.name = "malformed", .key = EST_REND_MALFORMED},
+      {.name = "duplicate_cookie", .key = EST_REND_DUPLICATE_COOKIE},
+      {.name = "circuit_dead", .key = EST_REND_CIRCUIT_DEAD},
+  };
+  static const size_t num_actions = ARRAY_LENGTH(actions);
+
+  for (size_t i = 0; i < num_actions; ++i) {
+    sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                               rentry->help, 0, NULL);
+    metrics_store_entry_add_label(
+        sentry, metrics_format_label("action", actions[i].name));
+    metrics_store_entry_update(sentry, (long)est_rend_actions[actions[i].key]);
+  }
+}
+
+static uint64_t intro1_actions[INTRO1_ACTION_COUNT] = {0};
+
+void
+relay_increment_intro1_action(intro1_action_t action)
+{
+  intro1_actions[action]++;
+}
+
+static void
+fill_intro1_cells(void)
+{
+  metrics_store_entry_t *sentry;
+  const relay_metrics_entry_t *rentry =
+      &base_metrics[RELAY_METRICS_NUM_INTRO1_CELLS];
+
+  static struct {
+    const char *name;
+    intro1_action_t key;
+  } actions[] = {
+      {.name = "success", .key = INTRO1_SUCCESS},
+      {.name = "circuit_dead", .key = INTRO1_CIRCUIT_DEAD},
+      {.name = "malformed", .key = INTRO1_MALFORMED},
+      {.name = "unknown_service", .key = INTRO1_UNKNOWN_SERVICE},
+      {.name = "rate_limited", .key = INTRO1_RATE_LIMITED},
+      {.name = "circuit_reused", .key = INTRO1_CIRCUIT_REUSED},
+      {.name = "single_hop", .key = INTRO1_SINGLE_HOP},
+  };
+  static const size_t num_actions = ARRAY_LENGTH(actions);
+
+  for (size_t i = 0; i < num_actions; ++i) {
+    sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                               rentry->help, 0, NULL);
+    metrics_store_entry_add_label(
+        sentry, metrics_format_label("action", actions[i].name));
+    metrics_store_entry_update(sentry, (long)intro1_actions[actions[i].key]);
+  }
+}
+
+static uint64_t rend1_actions[REND1_ACTION_COUNT] = {0};
+
+void
+relay_increment_rend1_action(rend1_action_t action)
+{
+  rend1_actions[action]++;
+}
+
+static void
+fill_rend1_cells(void)
+{
+  metrics_store_entry_t *sentry;
+  const relay_metrics_entry_t *rentry =
+      &base_metrics[RELAY_METRICS_NUM_REND1_CELLS];
+
+  static struct {
+    const char *name;
+    rend1_action_t key;
+  } actions[] = {
+      {.name = "success", .key = REND1_SUCCESS},
+      {.name = "unsuitable_circuit", .key = REND1_UNSUITABLE_CIRCUIT},
+      {.name = "malformed", .key = REND1_MALFORMED},
+      {.name = "unknown_cookie", .key = REND1_UNKNOWN_COOKIE},
+      {.name = "circuit_dead", .key = REND1_CIRCUIT_DEAD},
+  };
+  static const size_t num_actions = ARRAY_LENGTH(actions);
+
+  for (size_t i = 0; i < num_actions; ++i) {
+    sentry = metrics_store_add(the_store, rentry->type, rentry->name,
+                               rentry->help, 0, NULL);
+    metrics_store_entry_add_label(
+        sentry, metrics_format_label("action", actions[i].name));
+    metrics_store_entry_update(sentry, (long)rend1_actions[actions[i].key]);
+  }
 }
 
 /** Reset the global store and fill it with all the metrics from base_metrics

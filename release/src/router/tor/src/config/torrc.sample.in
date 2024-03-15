@@ -10,7 +10,7 @@
 ## for more options you can use in this file.
 ##
 ## Tor will look for this file in various places based on your platform:
-## https://www.torproject.org/docs/faq#torrc
+## https://support.torproject.org/tbb/tbb-editing-torrc/
 
 ## Tor opens a SOCKS proxy on port 9050 by default -- even if you don't
 ## configure one below. Set "SOCKSPort 0" if you plan to run Tor only
@@ -78,7 +78,7 @@
 
 ################ This section is just for relays #####################
 #
-## See https://www.torproject.org/docs/tor-doc-relay for details.
+## See https://community.torproject.org/relay for details.
 
 ## Required: what port to advertise for incoming Tor connections.
 #ORPort 9001
@@ -166,7 +166,7 @@
 ## key fingerprint of each Tor relay you control, even if they're on
 ## different networks. You declare it here so Tor clients can avoid
 ## using more than one of your relays in a single circuit. See
-## https://www.torproject.org/docs/faq#MultipleRelays
+## https://support.torproject.org/relay-operators/multiple-relays/
 ## However, you should never include a bridge's fingerprint here, as it would
 ## break its concealability and potentially reveal its IP/TCP address.
 ##
@@ -204,9 +204,9 @@
 ## reject *:* or an accept *:*. Otherwise, you're _augmenting_ (prepending to)
 ## the default exit policy. Leave commented to just use the default, which is
 ## described in the man page or at
-## https://www.torproject.org/documentation.html
+## https://support.torproject.org/relay-operators
 ##
-## Look at https://www.torproject.org/faq-abuse.html#TypicalAbuses
+## Look at https://support.torproject.org/abuse/exit-relay-expectations/
 ## for issues you might encounter if you use the default exit policy.
 ##
 ## If certain IPs and ports are blocked externally, e.g. by your firewall,
@@ -242,11 +242,11 @@
 #BridgeDistribution none
 
 ## Configuration options can be imported from files or folders using the %include
-## option with the value being a path. This path can have wildcards. Wildcards are 
-## expanded first, using lexical order. Then, for each matching file or folder, the following 
-## rules are followed: if the path is a file, the options from the file will be parsed as if 
-## they were written where the %include option is. If the path is a folder, all files on that 
-## folder will be parsed following lexical order. Files starting with a dot are ignored. Files 
+## option with the value being a path. This path can have wildcards. Wildcards are
+## expanded first, using lexical order. Then, for each matching file or folder, the following
+## rules are followed: if the path is a file, the options from the file will be parsed as if
+## they were written where the %include option is. If the path is a folder, all files on that
+## folder will be parsed following lexical order. Files starting with a dot are ignored. Files
 ## on subfolders are ignored.
 ## The %include option can be used recursively.
 #%include /etc/torrc.d/*.conf

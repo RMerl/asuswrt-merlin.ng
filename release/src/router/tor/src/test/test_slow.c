@@ -21,6 +21,7 @@
 struct testgroup_t testgroups[] = {
   { "slow/crypto/", slow_crypto_tests },
   { "slow/process/", slow_process_tests },
+  { "slow/hs_pow/", slow_hs_pow_tests },
   { "slow/prob_distr/", slow_stochastic_prob_distr_tests },
   { "slow/ptr/", slow_ptr_tests },
   END_OF_GROUPS

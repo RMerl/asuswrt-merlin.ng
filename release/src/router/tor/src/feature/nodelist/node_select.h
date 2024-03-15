@@ -34,6 +34,8 @@ typedef enum router_crn_flags_t {
   CRN_RENDEZVOUS_V3 = 1<<6,
   /* On clients, only provide nodes that can initiate IPv6 extends. */
   CRN_INITIATE_IPV6_EXTEND = 1<<7,
+  /* On clients, only provide nodes that support Conflux (Relay=5). */
+  CRN_CONFLUX = 1<<8,
 } router_crn_flags_t;
 
 /** Possible ways to weight routers when choosing one randomly.  See

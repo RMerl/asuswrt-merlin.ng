@@ -51,6 +51,7 @@ tmpdir=
 # shellcheck disable=SC2317
 clean () {
   if [ -n "$tmpdir" ] && [ -d "$tmpdir" ]; then
+    ls -l "$tmpdir"
     rm -rf "$tmpdir"
   fi
 }

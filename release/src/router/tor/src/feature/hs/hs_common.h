@@ -256,7 +256,14 @@ link_specifier_t *link_specifier_dup(const link_specifier_t *src);
 
 #ifdef HS_COMMON_PRIVATE
 
+struct ed25519_public_key_t;
+
 STATIC void get_disaster_srv(uint64_t time_period_num, uint8_t *srv_out);
+STATIC void build_blinded_key_param(
+                        const struct ed25519_public_key_t *pubkey,
+                        const uint8_t *secret, size_t secret_len,
+                        uint64_t period_num, uint64_t period_length,
+                        uint8_t *param_out);
 
 /** The period for which a hidden service directory cannot be queried for
  * the same descriptor ID again. */

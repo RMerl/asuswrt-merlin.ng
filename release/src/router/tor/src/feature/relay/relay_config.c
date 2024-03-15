@@ -30,9 +30,11 @@
 #include "core/mainloop/cpuworker.h"
 #include "core/mainloop/mainloop.h"
 #include "core/or/connection_or.h"
+#include "core/or/policies.h"
 #include "core/or/port_cfg_st.h"
 
 #include "feature/hibernate/hibernate.h"
+#include "feature/hs/hs_service.h"
 #include "feature/nodelist/nickname.h"
 #include "feature/stats/geoip_stats.h"
 #include "feature/stats/predict_ports.h"
@@ -942,7 +944,8 @@ options_validate_relay_accounting(const or_options_t *old_options,
   if (accounting_parse_options(options, 1)<0)
     REJECT("Failed to parse accounting options. See logs for details.");
 
-  if (options->AccountingMax) {
+  if (options->AccountingMax &&
+      !hs_service_non_anonymous_mode_enabled(options)) {
     if (options->RendConfigLines && server_mode(options)) {
       log_warn(LD_CONFIG, "Using accounting with a hidden service and an "
                "ORPort is risky: your hidden service(s) and your public "
@@ -1118,7 +1121,8 @@ options_validate_relay_mode(const or_options_t *old_options,
   if (BUG(!msg))
     return -1;
 
-  if (server_mode(options) && options->RendConfigLines)
+  if (server_mode(options) && options->RendConfigLines &&
+      !hs_service_non_anonymous_mode_enabled(options))
     log_warn(LD_CONFIG,
         "Tor is currently configured as a relay and a hidden service. "
         "That's not very secure: you should probably run your hidden service "
@@ -1146,6 +1150,13 @@ options_validate_relay_mode(const or_options_t *old_options,
   if (options->BridgeRelay == 1 && ! options->ORPort_set)
     REJECT("BridgeRelay is 1, ORPort is not set. This is an invalid "
            "combination.");
+
+  if (options->BridgeRelay == 1 && (options->ExitRelay == 1 ||
+      !policy_using_default_exit_options(options))) {
+    log_warn(LD_CONFIG, "BridgeRelay is 1, but ExitRelay is 1 or an "
+           "ExitPolicy is configured. Tor will start, but it will not "
+           "function as an exit relay.");
+  }
 
   if (server_mode(options)) {
     char *dircache_msg = NULL;
@@ -1324,12 +1335,6 @@ options_act_relay(const or_options_t *old_options)
                "Worker-related options changed. Rotating workers.");
       const int server_mode_turned_on =
         server_mode(options) && !server_mode(old_options);
-      const int dir_server_mode_turned_on =
-        dir_server_mode(options) && !dir_server_mode(old_options);
-
-      if (server_mode_turned_on || dir_server_mode_turned_on) {
-        cpu_init();
-      }
 
       if (server_mode_turned_on) {
         ip_address_changed(0);

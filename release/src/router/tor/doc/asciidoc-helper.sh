@@ -12,7 +12,7 @@ if [ $# != 3 ]; then
     exit 1
 fi
 
-SOURCE_DATE_EPOCH="$(git show --no-patch --format='%ct')"
+SOURCE_DATE_EPOCH="$(git -C "$(dirname "$0")" show --no-patch --format='%ct')"
 export SOURCE_DATE_EPOCH
 
 output=$3

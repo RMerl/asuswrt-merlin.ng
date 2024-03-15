@@ -16,6 +16,7 @@
 #include "test/log_test_helpers.h"
 
 #include "app/config/config.h"
+#include "lib/time/compat_time.h"
 
 #include "core/or/circuitlist.h"
 #include "core/or/circuituse.h"
@@ -45,7 +46,8 @@ free_mock_consensus(void)
 static void
 test_can_send_intro2(void *arg)
 {
-  uint32_t now = (uint32_t) approx_time();
+  static const uint64_t BILLION = 1000000000;
+  uint64_t now = 12345;
   or_circuit_t *or_circ = NULL;
 
   (void) arg;
@@ -55,6 +57,8 @@ test_can_send_intro2(void *arg)
 
   get_options_mutable()->ORPort_set = 1;
   setup_mock_consensus();
+  monotime_enable_test_mocking();
+  monotime_coarse_set_mock_time_nsec(now);
 
   or_circ =  or_circuit_new(1, NULL);
 
@@ -68,7 +72,7 @@ test_can_send_intro2(void *arg)
 
   /* Simulate that 10 cells have arrived in 1 second. There should be no
    * refill since the bucket is already at maximum on the first cell. */
-  update_approx_time(++now);
+  monotime_coarse_set_mock_time_nsec(now += BILLION);
   for (int i = 0; i < 10; i++) {
     tt_int_op(true, OP_EQ, hs_dos_can_send_intro2(or_circ));
   }
@@ -76,7 +80,7 @@ test_can_send_intro2(void *arg)
              get_intro2_burst_consensus_param(NULL) - 10);
 
   /* Fully refill the bucket minus 1 cell. */
-  update_approx_time(++now);
+  monotime_coarse_set_mock_time_nsec(now += BILLION);
   tt_int_op(true, OP_EQ, hs_dos_can_send_intro2(or_circ));
   tt_uint_op(token_bucket_ctr_get(&or_circ->introduce2_bucket), OP_EQ,
              get_intro2_burst_consensus_param(NULL) - 1);
@@ -84,7 +88,7 @@ test_can_send_intro2(void *arg)
   /* Receive an INTRODUCE2 at each second. We should have the bucket full
    * since at every second it gets refilled. */
   for (int i = 0; i < 10; i++) {
-    update_approx_time(++now);
+    monotime_coarse_set_mock_time_nsec(now += BILLION);
     tt_int_op(true, OP_EQ, hs_dos_can_send_intro2(or_circ));
   }
   /* Last check if we can send the cell decrements the bucket so minus 1. */
@@ -92,7 +96,8 @@ test_can_send_intro2(void *arg)
              get_intro2_burst_consensus_param(NULL) - 1);
 
   /* Manually reset bucket for next test. */
-  token_bucket_ctr_reset(&or_circ->introduce2_bucket, now);
+  token_bucket_ctr_reset(&or_circ->introduce2_bucket,
+                         (uint32_t) monotime_coarse_absolute_sec());
   tt_uint_op(token_bucket_ctr_get(&or_circ->introduce2_bucket), OP_EQ,
              get_intro2_burst_consensus_param(NULL));
 
@@ -115,7 +120,7 @@ test_can_send_intro2(void *arg)
   }
 
   /* One second has passed, we should have the rate minus 1 cell added. */
-  update_approx_time(++now);
+  monotime_coarse_set_mock_time_nsec(now += BILLION);
   tt_int_op(true, OP_EQ, hs_dos_can_send_intro2(or_circ));
   tt_uint_op(token_bucket_ctr_get(&or_circ->introduce2_bucket), OP_EQ,
              get_intro2_rate_consensus_param(NULL) - 1);
@@ -125,6 +130,7 @@ test_can_send_intro2(void *arg)
 
   hs_free_all();
   free_mock_consensus();
+  monotime_disable_test_mocking();
 }
 
 static void

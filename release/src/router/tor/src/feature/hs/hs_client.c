@@ -541,7 +541,7 @@ intro_circ_is_ok(const origin_circuit_t *circ)
 
 /** Find a descriptor intro point object that matches the given ident in the
  * given descriptor desc. Return NULL if not found. */
-static const hs_desc_intro_point_t *
+const hs_desc_intro_point_t *
 find_desc_intro_point_by_ident(const hs_ident_circuit_t *ident,
                                const hs_descriptor_t *desc)
 {
@@ -549,6 +549,7 @@ find_desc_intro_point_by_ident(const hs_ident_circuit_t *ident,
 
   tor_assert(ident);
   tor_assert(desc);
+  tor_assert_nonfatal(!ed25519_public_key_is_zero(&ident->intro_auth_pk));
 
   SMARTLIST_FOREACH_BEGIN(desc->encrypted_data.intro_points,
                           const hs_desc_intro_point_t *, ip) {
@@ -600,14 +601,75 @@ find_desc_intro_point_by_legacy_id(const char *legacy_id,
   return ret_ip;
 }
 
+/** Phase two for client-side introducing:
+ * Send an INTRODUCE1 cell along the intro circuit and populate the rend
+ * circuit identifier with the needed key material for the e2e encryption.
+ */
+int
+send_introduce1(origin_circuit_t *intro_circ,
+                origin_circuit_t *rend_circ,
+                const hs_descriptor_t *desc,
+                hs_pow_solution_t *pow_solution,
+                const hs_desc_intro_point_t *ip)
+{
+  const ed25519_public_key_t *service_identity_pk =
+    &intro_circ->hs_ident->identity_pk;
+
+  /* Send the INTRODUCE1 cell. */
+  if (hs_circ_send_introduce1(intro_circ, rend_circ, ip,
+                              &desc->subcredential, pow_solution) < 0) {
+    if (TO_CIRCUIT(intro_circ)->marked_for_close) {
+      /* If the introduction circuit was closed, we were unable to send the
+       * cell for some reasons. In any case, the intro circuit has to be
+       * closed by the above function. We'll return a transient error so tor
+       * can recover and pick a new intro point. To avoid picking that same
+       * intro point, we'll note down the intro point failure so it doesn't
+       * get reused. */
+      hs_cache_client_intro_state_note(service_identity_pk,
+                                       &intro_circ->hs_ident->intro_auth_pk,
+                                       INTRO_POINT_FAILURE_GENERIC);
+    }
+    /* It is also possible that the rendezvous circuit was closed due to being
+     * unable to use the rendezvous point node_t so in that case, we also want
+     * to recover and let tor pick a new one. */
+    return -1; /* transient failure */
+  }
+
+  /* Cell has been sent successfully.
+   * Now, we wait for an ACK or NAK on this circuit. */
+  circuit_change_purpose(TO_CIRCUIT(intro_circ),
+                         CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT);
+  /* Set timestamp_dirty, because circuit_expire_building expects it to
+   * specify when a circuit entered the _C_INTRODUCE_ACK_WAIT state. */
+  TO_CIRCUIT(intro_circ)->timestamp_dirty = time(NULL);
+  pathbias_count_use_attempt(intro_circ);
+
+  return 0; /* Success. */
+}
+
+/** Set a client-side cap on the highest effort of PoW we will try to
+ * tackle. If asked for higher, we solve it at this cap. */
+#define CLIENT_MAX_POW_EFFORT 10000
+
+/** Set a client-side minimum effort. If the client is choosing to increase
+ * effort on retry, it will always pick a value >= this lower limit. */
+#define CLIENT_MIN_RETRY_POW_EFFORT 8
+
+/** Client effort will double on every retry until this level is hit */
+#define CLIENT_POW_EFFORT_DOUBLE_UNTIL 1000
+
+/** After we reach DOUBLE_UNTIL, client effort is multiplied by this amount
+ * on every retry until we reach MAX_POW_EFFORT. */
+#define CLIENT_POW_RETRY_MULTIPLIER (1.5f)
+
 /** Send an INTRODUCE1 cell along the intro circuit and populate the rend
  * circuit identifier with the needed key material for the e2e encryption.
  * Return 0 on success, -1 if there is a transient error such that an action
  * has been taken to recover and -2 if there is a permanent error indicating
  * that both circuits were closed. */
 static int
-send_introduce1(origin_circuit_t *intro_circ,
-                origin_circuit_t *rend_circ)
+consider_sending_introduce1(origin_circuit_t *intro_circ,
+                            origin_circuit_t *rend_circ)
 {
   int status;
   char onion_address[HS_SERVICE_ADDR_LEN_BASE32 + 1];
@@ -624,8 +686,14 @@ send_introduce1(origin_circuit_t *intro_circ,
    * version number but for now there is none because it's all v3. */
   hs_build_address(service_identity_pk, HS_VERSION_THREE, onion_address);
 
-  log_info(LD_REND, "Sending INTRODUCE1 cell to service %s on circuit %u",
+  log_info(LD_REND, "Considering sending INTRODUCE1 cell to service %s "
+           "on circuit %u",
            safe_str_client(onion_address), TO_CIRCUIT(intro_circ)->n_circ_id);
+
+  /* if it's already waiting on the cpuworker farm, don't queue it again */
+  if (intro_circ->hs_currently_solving_pow) {
+    goto tran_err;
+  }
 
   /* 1) Get descriptor from our cache. */
   const hs_descriptor_t *desc =
@@ -644,8 +712,8 @@ send_introduce1(origin_circuit_t *intro_circ,
     goto tran_err;
   }
 
-  /* Check if the rendevous circuit was setup WITHOUT congestion control but if
-   * it is enabled and the service supports it. This can happen, see
+  /* Check if the rendezvous circuit was setup WITHOUT congestion control,
+   * but if it is enabled and the service supports it. This can happen, see
    * setup_rendezvous_circ_congestion_control() and so close rendezvous circuit
    * so another one can be created. */
   if (TO_CIRCUIT(rend_circ)->ccontrol == NULL && congestion_control_enabled()
@@ -668,41 +736,84 @@ send_introduce1(origin_circuit_t *intro_circ,
     goto perm_err;
   }
 
-  /* Send the INTRODUCE1 cell. */
-  if (hs_circ_send_introduce1(intro_circ, rend_circ, ip,
-                              &desc->subcredential) < 0) {
-    if (TO_CIRCUIT(intro_circ)->marked_for_close) {
-      /* If the introduction circuit was closed, we were unable to send the
-       * cell for some reasons. In any case, the intro circuit has to be
-       * closed by the above function. We'll return a transient error so tor
-       * can recover and pick a new intro point. To avoid picking that same
-       * intro point, we'll note down the intro point failure so it doesn't
-       * get reused. */
-      hs_cache_client_intro_state_note(service_identity_pk,
-                                       &intro_circ->hs_ident->intro_auth_pk,
-                                       INTRO_POINT_FAILURE_GENERIC);
-    }
-    /* It is also possible that the rendezvous circuit was closed due to being
-     * unable to use the rendezvous point node_t so in that case, we also want
-     * to recover and let tor pick a new one. */
-    goto tran_err;
-  }
-
-  /* Cell has been sent successfully. Copy the introduction point
-   * authentication and encryption key in the rendezvous circuit identifier so
-   * we can compute the ntor keys when we receive the RENDEZVOUS2 cell. */
+  /* Copy the introduction point authentication and encryption key
+   * in the rendezvous circuit identifier so we can compute the ntor keys
+   * when we receive the RENDEZVOUS2 cell. */
   memcpy(&rend_circ->hs_ident->intro_enc_pk, &ip->enc_key,
          sizeof(rend_circ->hs_ident->intro_enc_pk));
-  ed25519_pubkey_copy(&rend_circ->hs_ident->intro_auth_pk,
-                      &intro_circ->hs_ident->intro_auth_pk);
 
-  /* Now, we wait for an ACK or NAK on this circuit. */
-  circuit_change_purpose(TO_CIRCUIT(intro_circ),
-                         CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT);
-  /* Set timestamp_dirty, because circuit_expire_building expects it to
-   * specify when a circuit entered the _C_INTRODUCE_ACK_WAIT state. */
-  TO_CIRCUIT(intro_circ)->timestamp_dirty = time(NULL);
-  pathbias_count_use_attempt(intro_circ);
+  /* Optionally choose to solve a client puzzle for this connection. This
+   * is only available if we have PoW support at compile time, and if the
+   * service has provided a PoW seed in its descriptor. The puzzle is enabled
+   * any time effort is nonzero, which can be recommended by the service or
+   * self-imposed as a result of previous timeouts.
+   */
+  if (have_module_pow() && desc->encrypted_data.pow_params) {
+    hs_pow_solver_inputs_t pow_inputs = {
+      .effort = desc->encrypted_data.pow_params->suggested_effort,
+      .CompiledProofOfWorkHash = get_options()->CompiledProofOfWorkHash
+    };
+    ed25519_pubkey_copy(&pow_inputs.service_blinded_id,
+                        &desc->plaintext_data.blinded_pubkey);
+    memcpy(pow_inputs.seed, desc->encrypted_data.pow_params->seed,
+           sizeof pow_inputs.seed);
+    log_debug(LD_REND, "PoW params present in descriptor, suggested_effort=%u",
+              pow_inputs.effort);
+
+    if (pow_inputs.effort > CLIENT_MAX_POW_EFFORT) {
+      log_notice(LD_REND, "Onion service suggested effort %d which is "
+                 "higher than we want to solve. Solving at %d instead.",
+                 pow_inputs.effort, CLIENT_MAX_POW_EFFORT);
+      pow_inputs.effort = CLIENT_MAX_POW_EFFORT;
+    }
+
+    const hs_cache_intro_state_t *state =
+      hs_cache_client_intro_state_find(&intro_circ->hs_ident->identity_pk,
+                                       &intro_circ->hs_ident->intro_auth_pk);
+    uint32_t unreachable_count = state ? state->unreachable_count : 0;
+    if (state) {
+      log_debug(LD_REND, "hs_cache state during PoW consideration, "
+                "error=%d timed_out=%d unreachable_count=%u",
+                state->error, state->timed_out, state->unreachable_count);
+    }
+    uint64_t new_effort = pow_inputs.effort;
+    for (unsigned n_retry = 0; n_retry < unreachable_count; n_retry++) {
+      if (new_effort >= CLIENT_MAX_POW_EFFORT) {
+        break;
+      }
+      if (new_effort < CLIENT_POW_EFFORT_DOUBLE_UNTIL) {
+        new_effort <<= 1;
+      } else {
+        new_effort = (uint64_t) (CLIENT_POW_RETRY_MULTIPLIER * new_effort);
+      }
+      new_effort = MAX((uint64_t)CLIENT_MIN_RETRY_POW_EFFORT, new_effort);
+      new_effort = MIN((uint64_t)CLIENT_MAX_POW_EFFORT, new_effort);
+    }
+    if (pow_inputs.effort != (uint32_t)new_effort) {
+      log_info(LD_REND, "Increasing PoW effort from %d to %d after intro "
+               "point unreachable_count=%d",
+               pow_inputs.effort, (int)new_effort, unreachable_count);
+      pow_inputs.effort = (uint32_t)new_effort;
+    }
+
+    if (pow_inputs.effort > 0) {
+      /* send it to the client-side pow cpuworker for solving. */
+      intro_circ->hs_currently_solving_pow = 1;
+      if (hs_pow_queue_work(intro_circ->global_identifier,
+                            rend_circ->hs_ident->rendezvous_cookie,
+                            &pow_inputs) != 0) {
+        log_warn(LD_REND, "Failed to enqueue PoW request");
+      }
+
+      /* can't proceed with the intro1 cell yet, so yield back to the
+       * main loop */
+      goto tran_err;
+    }
+  }
+
+  /* move on to the next phase: actually try to send it */
+  if (send_introduce1(intro_circ, rend_circ, desc, NULL, ip) < 0)
+    goto tran_err;
 
   /* Success. */
   status = 0;
@@ -732,8 +843,8 @@ send_introduce1(origin_circuit_t *intro_circ,
  *
  * Return 0 if everything went well, otherwise return -1 in the case of errors.
  */
-static int
-setup_intro_circ_auth_key(origin_circuit_t *circ)
+int
+hs_client_setup_intro_circ_auth_key(origin_circuit_t *circ)
 {
   const hs_descriptor_t *desc;
   const hs_desc_intro_point_t *ip;
@@ -778,13 +889,6 @@ client_intro_circ_has_opened(origin_circuit_t *circ)
   tor_assert(TO_CIRCUIT(circ)->purpose == CIRCUIT_PURPOSE_C_INTRODUCING);
   log_info(LD_REND, "Introduction circuit %u has opened. Attaching streams.",
            (unsigned int) TO_CIRCUIT(circ)->n_circ_id);
-
-  /* This is an introduction circuit so we'll attach the correct
-   * authentication key to the circuit identifier so it can be identified
-   * properly later on. */
-  if (setup_intro_circ_auth_key(circ) < 0) {
-    return;
-  }
 
   connection_ap_attach_pending(1);
 }
@@ -1390,9 +1494,20 @@ can_client_refetch_desc(const ed25519_public_key_t *identity_pk,
   /* Check if fetching a desc for this HS is useful to us right now */
   {
     const hs_descriptor_t *cached_desc = NULL;
+    int has_usable_intro = false;
+    int has_expired_hs_pow = false;
+
     cached_desc = hs_cache_lookup_as_client(identity_pk);
-    if (cached_desc && hs_client_any_intro_points_usable(identity_pk,
-                                                         cached_desc)) {
+    if (cached_desc) {
+      has_usable_intro = hs_client_any_intro_points_usable(identity_pk,
+                                                           cached_desc);
+      if (cached_desc->encrypted_data.pow_params) {
+        has_expired_hs_pow =
+          cached_desc->encrypted_data.pow_params->expiration_time <
+          approx_time();
+      }
+    }
+    if (has_usable_intro && !has_expired_hs_pow) {
       log_info(LD_GENERAL, "We would fetch a v3 hidden service descriptor "
                            "but we already have a usable descriptor.");
       status = HS_CLIENT_FETCH_HAVE_DESC;
@@ -1972,6 +2087,7 @@ hs_client_circuit_cleanup_on_free(const circuit_t *circ)
 
   orig_circ = CONST_TO_ORIGIN_CIRCUIT(circ);
   tor_assert(orig_circ->hs_ident);
+  const ed25519_public_key_t *intro_pk = &orig_circ->hs_ident->intro_auth_pk;
 
   has_timed_out =
     (circ->marked_for_close_orig_reason == END_CIRC_REASON_TIMEOUT);
@@ -1986,22 +2102,22 @@ hs_client_circuit_cleanup_on_free(const circuit_t *circ)
         safe_str_client(ed25519_fmt(&orig_circ->hs_ident->identity_pk)),
         safe_str_client(build_state_get_exit_nickname(orig_circ->build_state)),
         failure);
+    tor_assert_nonfatal(!ed25519_public_key_is_zero(intro_pk));
     hs_cache_client_intro_state_note(&orig_circ->hs_ident->identity_pk,
-                                     &orig_circ->hs_ident->intro_auth_pk,
-                                     failure);
+                                     intro_pk, failure);
     break;
   case CIRCUIT_PURPOSE_C_INTRODUCING:
     if (has_timed_out || !orig_circ->build_state) {
       break;
     }
+    tor_assert_nonfatal(!ed25519_public_key_is_zero(intro_pk));
     failure = INTRO_POINT_FAILURE_UNREACHABLE;
     log_info(LD_REND, "Failed v3 intro circ for service %s to intro point %s "
                       "(while building circuit). Marking as unreachable.",
        safe_str_client(ed25519_fmt(&orig_circ->hs_ident->identity_pk)),
        safe_str_client(build_state_get_exit_nickname(orig_circ->build_state)));
     hs_cache_client_intro_state_note(&orig_circ->hs_ident->identity_pk,
-                                     &orig_circ->hs_ident->intro_auth_pk,
-                                     failure);
+                                     intro_pk, failure);
     break;
   default:
     break;
@@ -2143,7 +2259,7 @@ int
 hs_client_send_introduce1(origin_circuit_t *intro_circ,
                           origin_circuit_t *rend_circ)
 {
-  return send_introduce1(intro_circ, rend_circ);
+  return consider_sending_introduce1(intro_circ, rend_circ);
 }
 
 /** Called when the client circuit circ has been established. It can be either

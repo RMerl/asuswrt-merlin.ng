@@ -21,13 +21,13 @@
 #ifdef GEOIP_PRIVATE
 STATIC int geoip_parse_entry(const char *line, sa_family_t family);
 STATIC void clear_geoip_db(void);
+
+STATIC int geoip_get_country_by_ipv4(uint32_t ipaddr);
+STATIC int geoip_get_country_by_ipv6(const struct in6_addr *addr);
 #endif /* defined(GEOIP_PRIVATE) */
 
 struct in6_addr;
 struct tor_addr_t;
-
-int geoip_get_country_by_ipv4(uint32_t ipaddr);
-int geoip_get_country_by_ipv6(const struct in6_addr *addr);
 
 /** A per-country GeoIP record. */
 typedef struct geoip_country_t {

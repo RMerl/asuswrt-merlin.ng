@@ -70,6 +70,7 @@
 #include "core/or/circuitpadding.h"
 #include "core/or/connection_edge.h"
 #include "core/or/congestion_control_flow.h"
+#include "core/or/conflux_util.h"
 #include "core/or/circuitstats.h"
 #include "core/or/connection_or.h"
 #include "core/or/extendinfo.h"
@@ -628,6 +629,7 @@ connection_half_edge_add(const edge_connection_t *conn,
 
   if (!circ->half_streams) {
     circ->half_streams = smartlist_new();
+    conflux_update_half_streams(circ, circ->half_streams);
   }
 
   half_conn->stream_id = conn->stream_id;
@@ -671,6 +673,25 @@ connection_half_edge_add(const edge_connection_t *conn,
                                     connection_half_edge_compare_bsearch,
                                     &ignored);
   smartlist_insert(circ->half_streams, insert_at, half_conn);
+}
+
+/**
+ * Return true if the circuit has any half-closed connections
+ * that are still within the end_ack_expected_usec timestamp
+ * from now.
+ */
+bool
+connection_half_edges_waiting(const origin_circuit_t *circ)
+{
+  if (!circ->half_streams)
+    return false;
+
+  SMARTLIST_FOREACH_BEGIN(circ->half_streams, const half_edge_t *, half_conn) {
+    if (half_conn->end_ack_expected_usec > monotime_absolute_usec())
+      return true;
+  } SMARTLIST_FOREACH_END(half_conn);
+
+  return false;
 }
 
 /** Release space held by <b>he</b> */
@@ -1192,7 +1213,10 @@ connection_ap_expire_beginning(void)
      * it here too because controllers that put streams in controller_wait
      * state never ask Tor to attach the circuit. */
     if (AP_CONN_STATE_IS_UNATTACHED(base_conn->state)) {
-      if (seconds_since_born >= options->SocksTimeout) {
+      /* If this is a connection to an HS with PoW defenses enabled, we need to
+       * wait longer than the usual Socks timeout. */
+      if (seconds_since_born >= options->SocksTimeout &&
+          !entry_conn->hs_with_pow_conn) {
         log_fn(severity, LD_APP,
             "Tried for %d seconds to get a connection to %s:%d. "
             "Giving up. (%s)",
@@ -1236,6 +1260,7 @@ connection_ap_expire_beginning(void)
     }
 
     if (circ->purpose != CIRCUIT_PURPOSE_C_GENERAL &&
+        circ->purpose != CIRCUIT_PURPOSE_CONFLUX_LINKED &&
         circ->purpose != CIRCUIT_PURPOSE_CONTROLLER &&
         circ->purpose != CIRCUIT_PURPOSE_C_HSDIR_GET &&
         circ->purpose != CIRCUIT_PURPOSE_S_HSDIR_POST &&
@@ -2029,6 +2054,19 @@ connection_ap_handle_onion(entry_connection_t *conn,
     descriptor_is_usable =
       hs_client_any_intro_points_usable(&hs_conn_ident->identity_pk,
                                         cached_desc);
+    /* Check if PoW parameters have expired. If yes, the descriptor is
+     * unusable. */
+    if (cached_desc->encrypted_data.pow_params) {
+      if (cached_desc->encrypted_data.pow_params->expiration_time <
+          approx_time()) {
+        log_info(LD_REND, "Descriptor PoW parameters have expired.");
+        descriptor_is_usable = 0;
+      } else {
+        /* Mark that the connection is to an HS with PoW defenses on. */
+        conn->hs_with_pow_conn = 1;
+      }
+    }
+
     log_info(LD_GENERAL, "Found %s descriptor in cache for %s. %s.",
              (descriptor_is_usable) ? "usable" : "unusable",
              safe_str_client(socks->address),
@@ -3101,6 +3139,10 @@ get_unique_stream_id_by_circ(origin_circuit_t *circ)
                                            test_stream_id))
     goto again;
 
+  if (TO_CIRCUIT(circ)->conflux) {
+    conflux_sync_circ_fields(TO_CIRCUIT(circ)->conflux, circ);
+  }
+
   return test_stream_id;
 }
 
@@ -3112,6 +3154,8 @@ connection_ap_supports_optimistic_data(const entry_connection_t *conn)
   const edge_connection_t *edge_conn = ENTRY_TO_EDGE_CONN(conn);
   /* We can only send optimistic data if we're connected to an open
      general circuit. */
+  // TODO-329-PURPOSE: Can conflux circuits use optimistic data?
+  // Does anything use optimistic data?
   if (edge_conn->on_circuit == NULL ||
       edge_conn->on_circuit->state != CIRCUIT_STATE_OPEN ||
       (edge_conn->on_circuit->purpose != CIRCUIT_PURPOSE_C_GENERAL &&
@@ -3138,7 +3182,8 @@ connection_ap_get_begincell_flags(entry_connection_t *ap_conn)
     return 0;
 
   /* No flags for hidden services. */
-  if (edge_conn->on_circuit->purpose != CIRCUIT_PURPOSE_C_GENERAL)
+  if (edge_conn->on_circuit->purpose != CIRCUIT_PURPOSE_C_GENERAL &&
+      edge_conn->on_circuit->purpose != CIRCUIT_PURPOSE_CONFLUX_LINKED)
     return 0;
 
   /* If only IPv4 is supported, no flags */
@@ -3222,6 +3267,7 @@ connection_ap_handshake_send_begin,(entry_connection_t *ap_conn))
 
   tor_snprintf(payload,RELAY_PAYLOAD_SIZE, "%s:%d",
                (circ->base_.purpose == CIRCUIT_PURPOSE_C_GENERAL ||
+                circ->base_.purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED ||
                 circ->base_.purpose == CIRCUIT_PURPOSE_CONTROLLER) ?
                  ap_conn->socks_request->address : "",
                ap_conn->socks_request->port);
@@ -3323,7 +3369,8 @@ connection_ap_handshake_send_resolve(entry_connection_t *ap_conn)
   tor_assert(base_conn->type == CONN_TYPE_AP);
   tor_assert(base_conn->state == AP_CONN_STATE_CIRCUIT_WAIT);
   tor_assert(ap_conn->socks_request);
-  tor_assert(circ->base_.purpose == CIRCUIT_PURPOSE_C_GENERAL);
+  tor_assert(circ->base_.purpose == CIRCUIT_PURPOSE_C_GENERAL ||
+             circ->base_.purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED);
 
   command = ap_conn->socks_request->command;
   tor_assert(SOCKS_COMMAND_IS_RESOLVE(command));

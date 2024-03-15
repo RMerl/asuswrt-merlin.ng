@@ -12,9 +12,3 @@ EXTRA_DIST+= \
 conf_DATA = src/config/torrc.sample
 
 tordata_DATA = src/config/geoip src/config/geoip6
-# fallback_consensus
-
-# If we don't have it, fake it.
-src_config_fallback-consensus:
-	touch src/config/fallback-consensus
-

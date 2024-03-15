@@ -581,6 +581,8 @@ cache_client_intro_state_lookup(const ed25519_public_key_t *service_pk,
 
   tor_assert(service_pk);
   tor_assert(auth_key);
+  tor_assert_nonfatal(!ed25519_public_key_is_zero(service_pk));
+  tor_assert_nonfatal(!ed25519_public_key_is_zero(auth_key));
 
   /* Lookup the intro state cache for this service key. */
   cache = digest256map_get(hs_cache_client_intro_state, service_pk->pubkey);
@@ -1081,7 +1083,7 @@ hs_cache_handle_oom(time_t now, size_t min_remove_bytes)
    *
    *   1) Deallocate all entries from v3 cache that are older than K hours
    *      2.1) If the amount of remove bytes has been reached, stop.
-   *   2) Set K = K - RendPostPeriod and repeat process until K is < 0.
+   *   2) Set K = K - 1 hour and repeat process until K is < 0.
    *
    * This ends up being O(Kn).
    */
@@ -1104,8 +1106,9 @@ hs_cache_handle_oom(time_t now, size_t min_remove_bytes)
     if (bytes_removed < min_remove_bytes) {
       /* We haven't remove enough bytes so clean v3 cache. */
       bytes_removed += cache_clean_v3_as_dir(now, cutoff);
-      /* Decrement K by a post period to shorten the cutoff. */
-      k -= get_options()->RendPostPeriod;
+      /* Decrement K by a post period to shorten the cutoff, Two minutes
+       * if we are a testing network, or one hour otherwise. */
+      k -= get_options()->TestingTorNetwork ? 120 : 3600;
     }
   } while (bytes_removed < min_remove_bytes);
 

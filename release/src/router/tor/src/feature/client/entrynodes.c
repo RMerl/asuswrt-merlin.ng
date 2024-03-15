@@ -126,6 +126,7 @@
 #include "core/or/circuitlist.h"
 #include "core/or/circuitstats.h"
 #include "core/or/circuituse.h"
+#include "core/or/conflux_pool.h"
 #include "core/or/policies.h"
 #include "feature/client/bridges.h"
 #include "feature/client/circpathbias.h"
@@ -150,6 +151,9 @@
 #include "feature/nodelist/node_st.h"
 #include "core/or/origin_circuit_st.h"
 #include "app/config/or_state_st.h"
+#include "src/feature/nodelist/routerstatus_st.h"
+
+#include "core/or/conflux_util.h"
 
 /** A list of existing guard selection contexts. */
 static smartlist_t *guard_contexts = NULL;
@@ -610,7 +614,7 @@ mark_primary_guards_maybe_reachable(guard_selection_t *gs)
 }
 
 /* Called when we exhaust all guards in our sampled set: Marks all guards as
-   maybe-reachable so that we 'll try them again. */
+   maybe-reachable so that we'll try them again. */
 static void
 mark_all_guards_maybe_reachable(guard_selection_t *gs)
 {
@@ -1058,7 +1062,7 @@ get_max_sample_size(guard_selection_t *gs,
 }
 
 /**
- * Return a smartlist of the all the guards that are not currently
+ * Return a smartlist of all the guards that are not currently
  * members of the sample (GUARDS - SAMPLED_GUARDS).  The elements of
  * this list are node_t pointers in the non-bridge case, and
  * bridge_info_t pointers in the bridge case.  Set *<b>n_guards_out</b>
@@ -1588,6 +1592,19 @@ guard_create_exit_restriction(const uint8_t *exit_id)
   return rst;
 }
 
+/* Allocate and return a new exit guard restriction that excludes all current
+ * and pending conflux guards */
+STATIC entry_guard_restriction_t *
+guard_create_conflux_restriction(const origin_circuit_t *circ)
+{
+  entry_guard_restriction_t *rst = NULL;
+  rst = tor_malloc_zero(sizeof(entry_guard_restriction_t));
+  rst->type = RST_EXCL_LIST;
+  rst->excluded = smartlist_new();
+  conflux_add_guards_to_exclude_list(circ, rst->excluded);
+  return rst;
+}
+
 /** If we have fewer than this many possible usable guards, don't set
  * MD-availability-based restrictions: we might denylist all of them. */
 #define MIN_GUARDS_FOR_MD_RESTRICTION 10
@@ -1665,6 +1682,17 @@ guard_obeys_md_dirserver_restriction(const entry_guard_t *guard)
 }
 
 /**
+ * Return true if a restriction is reachability related, such that it should
+ * cause us to consider additional primary guards when selecting one.
+ */
+static bool
+entry_guard_restriction_is_reachability(const entry_guard_restriction_t *rst)
+{
+  tor_assert(rst);
+  return (rst->type == RST_OUTDATED_MD_DIRSERVER);
+}
+
+/**
  * Return true iff <b>guard</b> obeys the restrictions defined in <b>rst</b>.
  * (If <b>rst</b> is NULL, there are no restrictions.)
  */
@@ -1680,6 +1708,8 @@ entry_guard_obeys_restriction(const entry_guard_t *guard,
     return guard_obeys_exit_restriction(guard, rst);
   } else if (rst->type == RST_OUTDATED_MD_DIRSERVER) {
     return guard_obeys_md_dirserver_restriction(guard);
+  } else if (rst->type == RST_EXCL_LIST) {
+    return !smartlist_contains_digest(rst->excluded, guard->identity);
   }
 
   tor_assert_nonfatal_unreached();
@@ -1895,7 +1925,7 @@ make_guard_confirmed(guard_selection_t *gs, entry_guard_t *guard)
 
   guard->confirmed_idx = gs->next_confirmed_idx++;
   smartlist_add(gs->confirmed_entry_guards, guard);
-  /** The confirmation ordering might not be the sample ording. We need to
+  /** The confirmation ordering might not be the sample ordering. We need to
    * reorder */
   smartlist_sort(gs->confirmed_entry_guards, compare_guards_by_sampled_idx);
 
@@ -2108,14 +2138,44 @@ select_primary_guard_for_circuit(guard_selection_t *gs,
   const int need_descriptor = (usage == GUARD_USAGE_TRAFFIC);
   entry_guard_t *chosen_guard = NULL;
 
-  int num_entry_guards = get_n_primary_guards_to_use(usage);
+  int num_entry_guards_to_consider = get_n_primary_guards_to_use(usage);
   smartlist_t *usable_primary_guards = smartlist_new();
+  int num_entry_guards_considered = 0;
 
   SMARTLIST_FOREACH_BEGIN(gs->primary_entry_guards, entry_guard_t *, guard) {
     entry_guard_consider_retry(guard);
     if (!entry_guard_obeys_restriction(guard, rst)) {
       log_info(LD_GUARD, "Entry guard %s doesn't obey restriction, we test the"
           " next one", entry_guard_describe(guard));
+      if (!entry_guard_restriction_is_reachability(rst)) {
+        log_info(LD_GUARD,
+                 "Skipping guard %s due to circuit path restriction. "
+                 "Have %d, considered: %d, to consider: %d",
+                 entry_guard_describe(guard),
+                 smartlist_len(usable_primary_guards),
+                 num_entry_guards_considered,
+                 num_entry_guards_to_consider);
+        /* If the restriction is a circuit path restriction (as opposed to a
+         * reachability restriction), count this as considered. */
+        num_entry_guards_considered++;
+
+        /* If we have considered enough guards, *and* we actually have a guard,
+         * then proceed to select one from the list. */
+        if (num_entry_guards_considered >= num_entry_guards_to_consider) {
+          /* This should not happen with 2-leg conflux unless there is a
+           * race between removing a failed leg and a retry, but check
+           * anyway and log. */
+          if (smartlist_len(usable_primary_guards) == 0) {
+            static ratelim_t guardlog = RATELIM_INIT(60);
+            log_fn_ratelim(&guardlog, LOG_NOTICE, LD_GUARD,
+                           "All current guards excluded by path restriction "
+                           "type %d; using an additonal guard.",
+                           rst->type);
+          } else {
+            break;
+          }
+        }
+      }
       continue;
     }
     if (guard->is_reachable != GUARD_REACHABLE_NO) {
@@ -2127,8 +2187,16 @@ select_primary_guard_for_circuit(guard_selection_t *gs,
       *state_out = GUARD_CIRC_STATE_USABLE_ON_COMPLETION;
       guard->last_tried_to_connect = approx_time();
       smartlist_add(usable_primary_guards, guard);
-      if (smartlist_len(usable_primary_guards) >= num_entry_guards)
+      num_entry_guards_considered++;
+
+      /* If we have considered enough guards, then proceed to select
+       * one from the list. */
+      if (num_entry_guards_considered >= num_entry_guards_to_consider) {
         break;
+      }
+    } else {
+      log_info(LD_GUARD, "Guard %s is not reachable",
+          entry_guard_describe(guard));
     }
   } SMARTLIST_FOREACH_END(guard);
 
@@ -2138,6 +2206,10 @@ select_primary_guard_for_circuit(guard_selection_t *gs,
         "Selected primary guard %s for circuit from a list size of %d.",
         entry_guard_describe(chosen_guard),
         smartlist_len(usable_primary_guards));
+    /* Describe each guard in the list: */
+    SMARTLIST_FOREACH_BEGIN(usable_primary_guards, entry_guard_t *, guard) {
+      log_info(LD_GUARD, "  %s", entry_guard_describe(guard));
+    } SMARTLIST_FOREACH_END(guard);
     smartlist_free(usable_primary_guards);
   }
 
@@ -2243,16 +2315,22 @@ select_entry_guard_for_circuit(guard_selection_t *gs,
   /* "If any entry in PRIMARY_GUARDS has {is_reachable} status of
       <maybe> or <yes>, return the first such guard." */
   chosen_guard = select_primary_guard_for_circuit(gs, usage, rst, state_out);
-  if (chosen_guard)
+  if (chosen_guard) {
+    log_info(LD_GUARD, "Selected primary guard %s for circuit.",
+             entry_guard_describe(chosen_guard));
     return chosen_guard;
+  }
 
   /* "Otherwise, if the ordered intersection of {CONFIRMED_GUARDS}
       and {USABLE_FILTERED_GUARDS} is nonempty, return the first
       entry in that intersection that has {is_pending} set to
       false." */
   chosen_guard = select_confirmed_guard_for_circuit(gs, usage, rst, state_out);
-  if (chosen_guard)
+  if (chosen_guard) {
+     log_info(LD_GUARD, "Selected confirmed guard %s for circuit.",
+             entry_guard_describe(chosen_guard));
     return chosen_guard;
+  }
 
   /* "Otherwise, if there is no such entry, select a member
    * {USABLE_FILTERED_GUARDS} following the sample ordering" */
@@ -2265,6 +2343,8 @@ select_entry_guard_for_circuit(guard_selection_t *gs,
     return NULL;
   }
 
+  log_info(LD_GUARD, "Selected filtered guard %s for circuit.",
+             entry_guard_describe(chosen_guard));
   return chosen_guard;
 }
 
@@ -2427,6 +2507,11 @@ entry_guard_has_higher_priority(entry_guard_t *a, entry_guard_t *b)
 STATIC void
 entry_guard_restriction_free_(entry_guard_restriction_t *rst)
 {
+  if (rst && rst->excluded) {
+    SMARTLIST_FOREACH(rst->excluded, void *, g,
+                      tor_free(g));
+    smartlist_free(rst->excluded);
+  }
   tor_free(rst);
 }
 
@@ -3780,7 +3865,8 @@ guards_update_all(void)
 /** Helper: pick a guard for a circuit, with whatever algorithm is
     used. */
 const node_t *
-guards_choose_guard(cpath_build_state_t *state,
+guards_choose_guard(const origin_circuit_t *circ,
+                    cpath_build_state_t *state,
                     uint8_t purpose,
                     circuit_guard_state_t **guard_state_out)
 {
@@ -3788,14 +3874,18 @@ guards_choose_guard(cpath_build_state_t *state,
   const uint8_t *exit_id = NULL;
   entry_guard_restriction_t *rst = NULL;
 
-  /* Only apply restrictions if we have a specific exit node in mind, and only
-   * if we are not doing vanguard circuits: we don't want to apply guard
-   * restrictions to vanguard circuits. */
-  if (state && !circuit_should_use_vanguards(purpose) &&
+  /* If we this is a conflux circuit, build an exclusion list for it. */
+  if (CIRCUIT_IS_CONFLUX(TO_CIRCUIT(circ))) {
+    rst = guard_create_conflux_restriction(circ);
+    /* Don't allow connecting back to the exit if there is one */
+    if (state && (exit_id = build_state_get_exit_rsa_id(state))) {
+      /* add the exit_id to the excluded list */
+      smartlist_add(rst->excluded, tor_memdup(exit_id, DIGEST_LEN));
+    }
+  } else if (state && !circuit_should_use_vanguards(purpose) &&
       (exit_id = build_state_get_exit_rsa_id(state))) {
     /* We're building to a targeted exit node, so that node can't be
-     * chosen as our guard for this circuit.  Remember that fact in a
-     * restriction. */
+     * chosen as our guard for this circuit, unless we're vanguards. */
     rst = guard_create_exit_restriction(exit_id);
     tor_assert(rst);
   }
@@ -4115,8 +4205,10 @@ maintain_layer2_guards(void)
     }
 
     /* Expire if relay has left consensus */
-    if (router_get_consensus_status_by_id(g->identity) == NULL) {
-      log_info(LD_GENERAL, "Removing missing Layer2 guard %s",
+    const routerstatus_t *rs = router_get_consensus_status_by_id(g->identity);
+    if (rs == NULL || !rs->is_stable || !rs->is_fast) {
+      log_info(LD_GENERAL, "Removing %s Layer2 guard %s",
+               rs ? "unsuitable" : "missing",
                safe_str_client(hex_str(g->identity, DIGEST_LEN)));
       // Nickname may be gone from consensus and doesn't matter anyway
       control_event_guard("None", g->identity, "BAD_L2");

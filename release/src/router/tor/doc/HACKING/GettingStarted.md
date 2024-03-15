@@ -38,7 +38,7 @@ Once you've reached this point, here's what you need to know.
      version, run:
 
      ```console
-     $ git clone https://git.torproject.org/git/tor
+     $ git clone https://gitlab.torproject.org/tpo/core/tor.git
      ```
 
      This will give you a checkout of the main branch.  If you're

@@ -14,6 +14,8 @@
 #include "core/or/extend_info_st.h"
 #include "core/or/crypt_path_st.h"
 #define TOR_CONGESTION_CONTROL_PRIVATE
+#define TOR_CONGESTION_CONTROL_COMMON_PRIVATE
+#include "core/or/congestion_control_st.h"
 #include "core/or/congestion_control_common.h"
 #include "app/config/config.h"
 
@@ -262,6 +264,7 @@ test_ntor3_handshake(void *arg)
   tt_int_op(serv_params.cc_enabled, OP_EQ, 0);
 
   /* client off, serv on -> off */
+  congestion_control_set_cc_disabled();
   serv_ns_params.cc_enabled = 1;
   run_full_handshake(&serv_ns_params, &client_params, &serv_params);
   tt_int_op(client_params.cc_enabled, OP_EQ, 0);

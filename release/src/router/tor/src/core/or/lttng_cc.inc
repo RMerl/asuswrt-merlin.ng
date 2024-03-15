@@ -142,7 +142,7 @@ TRACEPOINT_EVENT(tor_cc, flow_decide_xoff_sending,
 /* Emitted when the BDP value has been updated. */
 TRACEPOINT_EVENT(tor_cc, bdp_update,
   TP_ARGS(const circuit_t *, circ, const congestion_control_t *, cc,
-          uint64_t, curr_rtt_usec, uint64_t, sendme_rate_bdp),
+          uint64_t, curr_rtt_usec),
   TP_FIELDS(
     ctf_integer(uint64_t, circuit_ptr, circ)
     ctf_integer(uint32_t, n_circ_id, circ->n_circ_id)
@@ -150,11 +150,7 @@ TRACEPOINT_EVENT(tor_cc, bdp_update,
     ctf_integer(uint64_t, curr_rtt_usec, curr_rtt_usec)
     ctf_integer(uint64_t, ewma_rtt_usec, cc->ewma_rtt_usec)
     ctf_integer(uint64_t, max_rtt_usec, cc->max_rtt_usec)
-    ctf_integer(uint64_t, bdp_inflight_rtt, cc->bdp[BDP_ALG_INFLIGHT_RTT])
-    ctf_integer(uint64_t, bdp_cwnd_rtt, cc->bdp[BDP_ALG_CWND_RTT])
-    ctf_integer(uint64_t, bdp_sendme_rate, cc->bdp[BDP_ALG_SENDME_RATE])
-    ctf_integer(uint64_t, bdp_piecewise, cc->bdp[BDP_ALG_PIECEWISE])
-    ctf_integer(uint64_t, sendme_rate_bdp, sendme_rate_bdp)
+    ctf_integer(uint64_t, bdp_cwnd_rtt, cc->bdp)
   )
 )
 

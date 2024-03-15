@@ -108,6 +108,7 @@ int authdir_policy_valid_address(const tor_addr_t *addr, uint16_t port);
 int authdir_policy_badexit_address(const tor_addr_t *addr, uint16_t port);
 int authdir_policy_middleonly_address(const tor_addr_t *addr, uint16_t port);
 
+int policy_using_default_exit_options(const or_options_t *or_options);
 int validate_addr_policies(const or_options_t *options, char **msg);
 void policy_expand_private(smartlist_t **policy);
 void policy_expand_unspec(smartlist_t **policy);

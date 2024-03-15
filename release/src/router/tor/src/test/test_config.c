@@ -6435,7 +6435,7 @@ test_config_include_opened_file_list(void *data)
   tt_int_op(smartlist_len(opened_files), OP_EQ, 4);
   tt_int_op(smartlist_contains_string(opened_files, torrcd), OP_EQ, 1);
   tt_int_op(smartlist_contains_string(opened_files, subfolder), OP_EQ, 1);
-  // files inside subfolders are not opended, only the subfolder is opened
+  // files inside subfolders are not opened, only the subfolder is opened
   tt_int_op(smartlist_contains_string(opened_files, empty), OP_EQ, 1);
   tt_int_op(smartlist_contains_string(opened_files, file), OP_EQ, 1);
   // dot files are not opened as we ignore them when we get their name from

@@ -44,10 +44,7 @@ getinfo_helper_geoip(control_connection_t *control_conn,
       *errmsg = "GeoIP data not loaded";
       return -1;
     }
-    if (family == AF_INET)
-      c = geoip_get_country_by_ipv4(tor_addr_to_ipv4h(&addr));
-    else                      /* AF_INET6 */
-      c = geoip_get_country_by_ipv6(tor_addr_to_in6(&addr));
+    c = geoip_get_country_by_addr(&addr);
     *answer = tor_strdup(geoip_get_country_name(c));
   }
   return 0;

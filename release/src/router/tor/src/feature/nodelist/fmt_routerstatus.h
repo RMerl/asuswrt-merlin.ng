@@ -35,6 +35,7 @@ char *routerstatus_format_entry(
                               const char *version,
                               const char *protocols,
                               routerstatus_format_type_t format,
-                              const vote_routerstatus_t *vrs);
+                              const vote_routerstatus_t *vrs,
+                              time_t declared_publish_time);
 
 #endif /* !defined(TOR_FMT_ROUTERSTATUS_H) */

@@ -432,7 +432,7 @@ get_second_cached_disaster_srv(void)
  * thus will be ignored for the param construction.
  *
  * The result is put in param_out. */
-static void
+STATIC void
 build_blinded_key_param(const ed25519_public_key_t *pubkey,
                         const uint8_t *secret, size_t secret_len,
                         uint64_t period_num, uint64_t period_length,
@@ -1680,7 +1680,7 @@ hs_get_extend_info_from_lspecs(const smartlist_t *lspecs,
   if (!extend_info_addr_is_allowed(&ap.addr)) {
     log_fn(LOG_PROTOCOL_WARN, LD_REND,
            "Requested address is private and we are not allowed to extend to "
-           "it: %s:%u", fmt_addr(&ap.addr), ap.port);
+           "it: %s:%u", safe_str(fmt_addr(&ap.addr)), ap.port);
     goto done;
   }
 

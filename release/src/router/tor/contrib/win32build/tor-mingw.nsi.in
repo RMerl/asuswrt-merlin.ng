@@ -8,13 +8,13 @@
 !include "LogicLib.nsh"
 !include "FileFunc.nsh"
 !insertmacro GetParameters
-!define VERSION "0.4.7.13"
+!define VERSION "0.4.8.10"
 !define INSTALLER "tor-${VERSION}-win32.exe"
 !define WEBSITE "https://www.torproject.org/"
 !define LICENSE "LICENSE"
 !define BIN "..\bin" ;BIN is where it expects to find tor.exe, tor-resolve.exe
-  
- 
+
+
 SetCompressor /SOLID LZMA ;Tighter compression
 RequestExecutionLevel user ;Updated for Vista compatibility
 OutFile ${INSTALLER}
@@ -29,7 +29,7 @@ VIProductVersion "${VERSION}"
 VIAddVersionKey "ProductName" "The Onion Router: Tor"
 VIAddVersionKey "Comments" "${WEBSITE}"
 VIAddVersionKey "LegalTrademarks" "Three line BSD"
-VIAddVersionKey "LegalCopyright" "©2004-2008, Roger Dingledine, Nick Mathewson. ©2009 The Tor Project, Inc. "
+VIAddVersionKey "LegalCopyright" "Â©2004-2008, Roger Dingledine, Nick Mathewson. Â©2009 The Tor Project, Inc. "
 VIAddVersionKey "FileDescription" "Tor is an implementation of Onion Routing. You can read more at ${WEBSITE}"
 VIAddVersionKey "FileVersion" "${VERSION}"
 
@@ -121,7 +121,7 @@ SectionEnd
 
 Section "Desktop" Desktop
    SetOutPath $INSTDIR
-   CreateShortCut "$DESKTOP\Tor.lnk" "$INSTDIR\tor.exe" "" "$INSTDIR\tor.ico" 
+   CreateShortCut "$DESKTOP\Tor.lnk" "$INSTDIR\tor.exe" "" "$INSTDIR\tor.ico"
 SectionEnd
 
 Section /o "Run at startup" Startup

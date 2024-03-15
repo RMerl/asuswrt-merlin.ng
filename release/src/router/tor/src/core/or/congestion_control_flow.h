@@ -31,8 +31,6 @@ bool edge_uses_flow_control(const edge_connection_t *stream);
 
 bool conn_uses_flow_control(connection_t *stream);
 
-uint64_t edge_get_max_rtt(const edge_connection_t *);
-
 /** Metricsport externs */
 extern uint64_t cc_stats_flow_num_xoff_sent;
 extern uint64_t cc_stats_flow_num_xon_sent;

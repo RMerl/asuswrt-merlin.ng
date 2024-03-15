@@ -54,7 +54,7 @@
 
 #ifndef COCCI
 /** Declare a function that downcasts from a generic dist struct to the actual
- *  subtype probablity distribution it represents. */
+ *  subtype probability distribution it represents. */
 #define DECLARE_PROB_DISTR_DOWNCAST_FN(name) \
   static inline                           \
   const struct name##_t *                             \

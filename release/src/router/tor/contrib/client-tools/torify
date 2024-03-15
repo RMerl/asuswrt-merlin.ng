@@ -37,25 +37,8 @@ case $1 in -v|--verbose)
 	shift
 esac
 
-# taken from Debian's Developer's Reference, 6.4
-pathfind() {
-       OLDIFS="$IFS"
-       IFS=:
-       for p in $PATH; do
-               if [ -x "$p/$*" ]; then
-                       IFS="$OLDIFS"
-                       return 0
-               fi
-       done
-       IFS="$OLDIFS"
-       return 1
-}
-
-if pathfind torsocks; then
+if command -v torsocks > /dev/null; then
     exec torsocks "$@"
-    echo "$0: Failed to exec torsocks $*" >&2
-    exit 1
 else
     echo "$0: torsocks not found in your PATH.  Perhaps it isn't installed?  (tsocks is no longer supported, for security reasons.)" >&2
 fi
-

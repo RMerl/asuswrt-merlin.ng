@@ -21,6 +21,7 @@
 #include "feature/relay/routermode.h"
 #include "feature/stats/geoip_stats.h"
 #include "lib/crypt_ops/crypto_rand.h"
+#include "lib/time/compat_time.h"
 
 #include "core/or/dos.h"
 #include "core/or/dos_sys.h"
@@ -528,7 +529,8 @@ conn_update_on_connect(conn_client_stats_t *stats, const tor_addr_t *addr)
   stats->concurrent_count++;
 
   /* Refill connect connection count. */
-  token_bucket_ctr_refill(&stats->connect_count, (uint32_t) approx_time());
+  token_bucket_ctr_refill(&stats->connect_count,
+                          (uint32_t) monotime_coarse_absolute_sec());
 
   /* Decrement counter for this new connection. */
   if (token_bucket_ctr_get(&stats->connect_count) > 0) {
@@ -558,7 +560,7 @@ conn_update_on_close(conn_client_stats_t *stats, const tor_addr_t *addr)
 {
   /* Extra super duper safety. Going below 0 means an underflow which could
    * lead to most likely a false positive. In theory, this should never happen
-   * but lets be extra safe. */
+   * but let's be extra safe. */
   if (BUG(stats->concurrent_count == 0)) {
     return;
   }
@@ -673,7 +675,7 @@ dos_cc_new_create_cell(channel_t *chan)
   /* This is the detection. Assess at every CREATE cell if the client should
    * get marked as malicious. This should be kept as fast as possible. */
   if (cc_has_exhausted_circuits(&entry->dos_stats)) {
-    /* If this is the first time we mark this entry, log it a info level.
+    /* If this is the first time we mark this entry, log it.
      * Under heavy DDoS, logging each time we mark would results in lots and
      * lots of logs. */
     if (entry->dos_stats.cc_stats.marked_until_ts == 0) {
@@ -808,7 +810,7 @@ dos_geoip_entry_init(clientmap_entry_t *geoip_ent)
    * can be enabled at runtime and these counters need to be valid. */
   token_bucket_ctr_init(&geoip_ent->dos_stats.conn_stats.connect_count,
                         dos_conn_connect_rate, dos_conn_connect_burst,
-                        (uint32_t) approx_time());
+                        (uint32_t) monotime_coarse_absolute_sec());
 }
 
 /** Note that the given channel has sent outbound the maximum amount of cell
@@ -966,18 +968,11 @@ dos_new_client_conn(or_connection_t *or_conn, const char *transport_name)
   clientmap_entry_t *entry;
 
   tor_assert(or_conn);
+  tor_assert_nonfatal(!or_conn->tracked_for_dos_mitigation);
 
   /* Past that point, we know we have at least one DoS detection subsystem
    * enabled so we'll start allocating stuff. */
   if (!dos_is_enabled()) {
-    goto end;
-  }
-
-  /* We ignore any known address meaning an address of a known relay. The
-   * reason to do so is because network reentry is possible where a client
-   * connection comes from an Exit node. Even when we'll fix reentry, this is
-   * a robust defense to keep in place. */
-  if (nodelist_probably_contains_address(&TO_CONN(or_conn)->addr)) {
     goto end;
   }
 

@@ -40,7 +40,6 @@ setup_cfg(flag_vote_test_cfg_t *c)
   memset(c->ri.cache_info.signed_descriptor_digest, 0xee, DIGEST_LEN);
 
   c->ri.cache_info.published_on = c->now - 100;
-  c->expected.published_on = c->now - 100;
 
   tor_addr_from_ipv4h(&c->ri.ipv4_addr, 0x7f010105);
   tor_addr_from_ipv4h(&c->expected.ipv4_addr, 0x7f010105);
@@ -65,7 +64,6 @@ check_result(flag_vote_test_cfg_t *c)
   dirauth_set_routerstatus_from_routerinfo(&rs, &c->node, &c->ri, c->now,
                                            0, 0);
 
-  tt_i64_op(rs.published_on, OP_EQ, c->expected.published_on);
   tt_str_op(rs.nickname, OP_EQ, c->expected.nickname);
 
   // identity_digest and descriptor_digest are not set here.
@@ -144,13 +142,11 @@ test_voting_flags_staledesc(void *arg)
   time_t now = cfg->now;
 
   cfg->ri.cache_info.published_on = now - DESC_IS_STALE_INTERVAL + 10;
-  cfg->expected.published_on = now - DESC_IS_STALE_INTERVAL + 10;
   // no change in expectations for is_staledesc
   if (!check_result(cfg))
     goto done;
 
   cfg->ri.cache_info.published_on = now - DESC_IS_STALE_INTERVAL - 10;
-  cfg->expected.published_on = now - DESC_IS_STALE_INTERVAL - 10;
   cfg->expected.is_staledesc = 1;
   if (!check_result(cfg))
     goto done;

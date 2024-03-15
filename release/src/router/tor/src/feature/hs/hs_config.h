@@ -25,6 +25,9 @@
 #define HS_CONFIG_V3_DOS_DEFENSE_BURST_PER_SEC_MIN 0
 #define HS_CONFIG_V3_DOS_DEFENSE_BURST_PER_SEC_MAX INT32_MAX
 
+/* Default values for the HS anti-DoS PoW defenses. */
+#define HS_CONFIG_V3_POW_DEFENSES_DEFAULT 0
+
 /* API */
 
 int hs_config_service_all(const or_options_t *options, int validate_only);

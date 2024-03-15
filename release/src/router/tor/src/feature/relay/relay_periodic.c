@@ -102,7 +102,9 @@ rotate_onion_key_callback(time_t now, const or_options_t *options)
     }
 
     log_info(LD_GENERAL,"Rotating onion key.");
-    rotate_onion_key();
+    if (!rotate_onion_key()) {
+      return ONION_KEY_CONSENSUS_CHECK_INTERVAL;
+    }
     cpuworkers_rotate_keyinfo();
     if (!router_rebuild_descriptor(1)) {
       log_info(LD_CONFIG, "Couldn't rebuild router descriptor");

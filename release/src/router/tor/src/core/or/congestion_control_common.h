@@ -46,16 +46,14 @@ congestion_control_t *congestion_control_new(
                                     cc_path_t path);
 
 int congestion_control_dispatch_cc_alg(congestion_control_t *cc,
-                                       const circuit_t *circ,
-                                       const crypt_path_t *layer_hint);
+                                       circuit_t *circ);
 
 void congestion_control_note_cell_sent(congestion_control_t *cc,
                                        const circuit_t *circ,
                                        const crypt_path_t *cpath);
 
 bool congestion_control_update_circuit_estimates(congestion_control_t *,
-                                                 const circuit_t *,
-                                                 const crypt_path_t *);
+                                                 const circuit_t *);
 
 int congestion_control_get_package_window(const circuit_t *,
                                           const crypt_path_t *);
@@ -174,14 +172,25 @@ percent_max_mix(uint64_t a, uint64_t b, uint8_t pct_max)
 }
 
 /* Private section starts. */
-#ifdef TOR_CONGESTION_CONTROL_PRIVATE
+#ifdef TOR_CONGESTION_CONTROL_COMMON_PRIVATE
+STATIC uint64_t congestion_control_update_circuit_rtt(congestion_control_t *,
+                                                      uint64_t);
+
+STATIC bool time_delta_stalled_or_jumped(const congestion_control_t *cc,
+                                  uint64_t old_delta, uint64_t new_delta);
+
+STATIC void enqueue_timestamp(smartlist_t *timestamps_u64,
+                                     uint64_t timestamp_usec);
 
 /*
  * Unit tests declaractions.
  */
 #ifdef TOR_UNIT_TESTS
 
+extern bool is_monotime_clock_broken;
+extern cc_alg_t cc_alg;
 void congestion_control_set_cc_enabled(void);
+void congestion_control_set_cc_disabled(void);
 
 #endif /* defined(TOR_UNIT_TESTS) */
 

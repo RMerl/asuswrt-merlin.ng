@@ -44,6 +44,7 @@
 #include "core/or/circuitmux.h"
 #include "core/or/circuitmux_ewma.h"
 #include "core/or/command.h"
+#include "core/or/dos.h"
 #include "app/config/config.h"
 #include "app/config/resolve_addr.h"
 #include "core/mainloop/connection.h"
@@ -54,6 +55,7 @@
 #include "trunnel/link_handshake.h"
 #include "core/or/relay.h"
 #include "feature/stats/rephist.h"
+#include "feature/stats/geoip_stats.h"
 #include "feature/relay/router.h"
 #include "feature/relay/routermode.h"
 #include "feature/nodelist/dirlist.h"
@@ -357,6 +359,20 @@ channel_tls_handle_incoming(or_connection_t *orconn)
 
   /* Register it */
   channel_register(chan);
+
+  char *transport_name = NULL;
+  if (channel_tls_get_transport_name_method(TLS_CHAN_TO_BASE(orconn->chan),
+        &transport_name) < 0) {
+    transport_name = NULL;
+  }
+  /* Start tracking TLS connections in the DoS subsystem as soon as possible,
+   * so we can protect against attacks that use partially open connections.
+   */
+  geoip_note_client_seen(GEOIP_CLIENT_CONNECT,
+                         &TO_CONN(orconn)->addr, transport_name,
+                         time(NULL));
+  dos_new_client_conn(orconn, transport_name);
+  tor_free(transport_name);
 
   return chan;
 }

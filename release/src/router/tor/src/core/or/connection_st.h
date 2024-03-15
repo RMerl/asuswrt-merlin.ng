@@ -88,7 +88,7 @@ struct connection_t {
    * connection. */
   unsigned int linked_conn_is_closed:1;
   /** True iff this connection was opened from a listener and thus we've
-   * recevied this connection. Else, it means we've initiated an outbound
+   * received this connection. Else, it means we've initiated an outbound
    * connection. */
   unsigned int from_listener:1;
 

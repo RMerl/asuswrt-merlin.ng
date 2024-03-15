@@ -153,6 +153,8 @@ STATIC int managed_proxy_severity_parse(const char *);
 STATIC const tor_addr_t *managed_proxy_outbound_address(const or_options_t *,
                                                         sa_family_t);
 
+STATIC const char *managed_proxy_state_to_string(enum pt_proto_state);
+STATIC void managed_proxy_set_state(managed_proxy_t *, enum pt_proto_state);
 #endif /* defined(PT_PRIVATE) */
 
 #endif /* !defined(TOR_TRANSPORTS_H) */

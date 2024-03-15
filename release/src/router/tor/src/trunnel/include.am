@@ -16,7 +16,8 @@ TRUNNELINPUTS = \
 	src/trunnel/flow_control_cells.trunnel \
 	src/trunnel/congestion_control.trunnel \
 	src/trunnel/socks5.trunnel \
-	src/trunnel/circpad_negotiation.trunnel
+	src/trunnel/circpad_negotiation.trunnel \
+	src/trunnel/conflux.trunnel
 
 TRUNNELSOURCES = \
 	src/ext/trunnel/trunnel.c \
@@ -33,7 +34,8 @@ TRUNNELSOURCES = \
 	src/trunnel/congestion_control.c       \
 	src/trunnel/socks5.c \
 	src/trunnel/netinfo.c \
-	src/trunnel/circpad_negotiation.c
+	src/trunnel/circpad_negotiation.c \
+	src/trunnel/conflux.c
 
 TRUNNELHEADERS = \
 	src/ext/trunnel/trunnel.h		\
@@ -52,7 +54,8 @@ TRUNNELHEADERS = \
 	src/trunnel/congestion_control.h    \
 	src/trunnel/socks5.h                    \
 	src/trunnel/netinfo.h \
-	src/trunnel/circpad_negotiation.h
+	src/trunnel/circpad_negotiation.h \
+	src/trunnel/conflux.h
 
 src_trunnel_libor_trunnel_a_SOURCES = $(TRUNNELSOURCES)
 src_trunnel_libor_trunnel_a_CPPFLAGS = \

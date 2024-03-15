@@ -14,7 +14,8 @@
  * Right now, we use this infrastructure
  *  <ul><li>for processing onionskins in onion.c
  *      <li>for compressing consensuses in consdiffmgr.c,
- *      <li>and for calculating diffs and compressing them in consdiffmgr.c.
+ *      <li>for calculating diffs and compressing them in consdiffmgr.c.
+ *      <li>and for solving onion service PoW challenges in pow.c.
  *  </ul>
  **/
 #include "core/or/or.h"
@@ -117,7 +118,7 @@ cpuworker_consensus_has_changed(const networkstatus_t *ns)
  * during Tor's lifetime.
  */
 void
-cpu_init(void)
+cpuworker_init(void)
 {
   if (!replyqueue) {
     replyqueue = replyqueue_new(0);
@@ -129,7 +130,7 @@ cpu_init(void)
       always make sure we have at least two threads, so that there will be at
       least one thread of each kind.
     */
-    const int n_threads = get_num_cpus(get_options()) + 1;
+    const int n_threads = MAX(get_num_cpus(get_options()), 2);
     threadpool = threadpool_new(n_threads,
                                 replyqueue,
                                 worker_state_new,

@@ -89,6 +89,13 @@
  * A: In general, regular monotime uses something that requires a system call.
  * On platforms where system calls are cheap, you win!  Otherwise, you lose.
  *
+ *   XXX: This hasn't been true for a long time. Expect both coarse and fine
+ *        monotime won't require a syscall, but they will have different
+ *        costs in terms of low-level synchronization inside the vDSO and
+ *        the hardware. The basic guidelines here still apply, but we aren't
+ *        really worrying about system calls any more, and the integer div
+ *        concerns are becoming nearly unimportant as well.
+ *
  * On Windows, monotonic time uses QuereyPerformanceCounter.  Storing
  * monotime_t costs 8 bytes.
  *
@@ -232,7 +239,12 @@ MOCK_DECL(uint64_t, monotime_absolute_usec,(void));
  * Fractional units are truncated, not rounded.
  */
 uint64_t monotime_absolute_msec(void);
-
+/**
+ * Return the number of seconds since the timer system was initialized.
+ * The returned value may be equal to zero.
+ * Fractional units are truncated, not rounded.
+ */
+uint64_t monotime_absolute_sec(void);
 /**
  * Set <b>out</b> to zero.
  */
@@ -259,11 +271,13 @@ void monotime_coarse_get(monotime_coarse_t *out);
 uint64_t monotime_coarse_absolute_nsec(void);
 uint64_t monotime_coarse_absolute_usec(void);
 uint64_t monotime_coarse_absolute_msec(void);
+uint64_t monotime_coarse_absolute_sec(void);
 #else /* !defined(MONOTIME_COARSE_FN_IS_DIFFERENT) */
 #define monotime_coarse_get monotime_get
 #define monotime_coarse_absolute_nsec monotime_absolute_nsec
 #define monotime_coarse_absolute_usec monotime_absolute_usec
 #define monotime_coarse_absolute_msec monotime_absolute_msec
+#define monotime_coarse_absolute_sec monotime_absolute_sec
 #endif /* defined(MONOTIME_COARSE_FN_IS_DIFFERENT) */
 
 /**

@@ -243,9 +243,29 @@ test_bwmgt_token_buf_refill(void *arg)
   tt_int_op(b.read_bucket.bucket, OP_GT, 8*KB-400);
   tt_int_op(b.read_bucket.bucket, OP_LT, 8*KB+400);
 
-  // A ridiculous amount of time passes.
-  tt_int_op(0, OP_EQ, token_bucket_rw_refill(&b, INT32_MAX));
+  /* A large amount of time passes, but less than the threshold at which
+   * we start detecting an assumed rollover event. This might be about 20
+   * days on a system with stamp units equal to 1ms. */
+  uint32_t ts_stamp = START_TS + UINT32_MAX / 5;
+  tt_int_op(0, OP_EQ, token_bucket_rw_refill(&b, ts_stamp));
   tt_int_op(b.read_bucket.bucket, OP_EQ, b.cfg.burst);
+
+  /* Fully empty the bucket and make sure it's filling once again */
+  token_bucket_rw_dec_read(&b, b.cfg.burst);
+  tt_int_op(b.read_bucket.bucket, OP_EQ, 0);
+  tt_int_op(1, OP_EQ, token_bucket_rw_refill(&b, ts_stamp += BW_SEC));
+  tt_int_op(b.read_bucket.bucket, OP_GT, 16*KB - 300);
+  tt_int_op(b.read_bucket.bucket, OP_LT, 16*KB + 300);
+
+  /* An even larger amount of time passes, which we take to be a 32-bit
+   * rollover event. The individual update is ignored, but the timestamp
+   * is still updated and the very next update should be accounted properly. */
+  tt_int_op(0, OP_EQ, token_bucket_rw_refill(&b, ts_stamp += UINT32_MAX/2));
+  tt_int_op(b.read_bucket.bucket, OP_GT, 16*KB - 600);
+  tt_int_op(b.read_bucket.bucket, OP_LT, 16*KB + 600);
+  tt_int_op(0, OP_EQ, token_bucket_rw_refill(&b, ts_stamp += BW_SEC));
+  tt_int_op(b.read_bucket.bucket, OP_GT, 32*KB - 600);
+  tt_int_op(b.read_bucket.bucket, OP_LT, 32*KB + 600);
 
  done:
   ;

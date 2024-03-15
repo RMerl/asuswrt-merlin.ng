@@ -55,6 +55,7 @@ static const struct {
   { PRT_PADDING, "Padding"},
   { PRT_CONS, "Cons" },
   { PRT_FLOWCTRL, "FlowCtrl"},
+  { PRT_CONFLUX, "Conflux"},
 };
 
 #define N_PROTOCOL_NAMES ARRAY_LENGTH(PROTOCOL_NAMES)
@@ -386,6 +387,7 @@ protocol_list_supports_protocol_or_later(const char *list,
  * XXX START OF HAZARDOUS ZONE XXX
  */
 /* All protocol version that this relay version supports. */
+#define PR_CONFLUX_V   "1"
 #define PR_CONS_V      "1-2"
 #define PR_DESC_V      "1-2"
 #define PR_DIRCACHE_V  "2"
@@ -409,6 +411,7 @@ const char *
 protover_get_supported(const protocol_type_t type)
 {
   switch (type) {
+  case PRT_CONFLUX: return PR_CONFLUX_V;
   case PRT_CONS: return PR_CONS_V;
   case PRT_DESC: return PR_DESC_V;
   case PRT_DIRCACHE: return PR_DIRCACHE_V;
@@ -471,6 +474,7 @@ protover_get_supported_protocols(void)
    */
 
   return
+    "Conflux=" PR_CONFLUX_V " "
     "Cons=" PR_CONS_V " "
     "Desc=" PR_DESC_V " "
     "DirCache=" PR_DIRCACHE_V " "

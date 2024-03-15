@@ -294,7 +294,9 @@ typedef enum guard_restriction_type_t {
   /* Don't pick the same guard node as our exit node (or its family) */
   RST_EXIT_NODE = 0,
   /* Don't pick dirguards that have previously shown to be outdated */
-  RST_OUTDATED_MD_DIRSERVER = 1
+  RST_OUTDATED_MD_DIRSERVER = 1,
+  /* Don't pick guards if they are in the exclusion list */
+  RST_EXCL_LIST = 2,
 } guard_restriction_type_t;
 
 /**
@@ -312,6 +314,10 @@ struct entry_guard_restriction_t {
    * digest must not equal this; and it must not be in the same family as any
    * node with this digest. */
   uint8_t exclude_id[DIGEST_LEN];
+
+  /* In the case of RST_EXCL_LIST, any identity digests in this list
+   * must not be used. */
+  smartlist_t *excluded;
 };
 
 /**
@@ -337,7 +343,8 @@ struct circuit_guard_state_t {
 
 /* Common entry points for old and new guard code */
 int guards_update_all(void);
-const node_t *guards_choose_guard(cpath_build_state_t *state,
+const node_t *guards_choose_guard(const origin_circuit_t *circ,
+                                  cpath_build_state_t *state,
                                   uint8_t purpose,
                                   circuit_guard_state_t **guard_state_out);
 const node_t *guards_choose_dirguard(uint8_t dir_purpose,
@@ -596,6 +603,9 @@ STATIC entry_guard_restriction_t *guard_create_exit_restriction(
                                                       const uint8_t *exit_id);
 
 STATIC entry_guard_restriction_t *guard_create_dirserver_md_restriction(void);
+
+STATIC entry_guard_restriction_t * guard_create_conflux_restriction(
+                   const origin_circuit_t *circ);
 
 STATIC void entry_guard_restriction_free_(entry_guard_restriction_t *rst);
 #define entry_guard_restriction_free(rst)  \

@@ -1080,7 +1080,7 @@ connection_or_group_set_badness_(smartlist_t *group, int force)
    * XXXX connections. */
 
   or_connection_t *best = NULL;
-  int n_old = 0, n_inprogress = 0, n_canonical = 0, n_other = 0;
+  int n_canonical = 0;
   time_t now = time(NULL);
 
   /* Pass 1: expire everything that's old, and see what the status of
@@ -1089,14 +1089,8 @@ connection_or_group_set_badness_(smartlist_t *group, int force)
     if (connection_or_single_set_badness_(now, or_conn, force))
       continue;
 
-    if (connection_or_is_bad_for_new_circs(or_conn)) {
-      ++n_old;
-    } else if (or_conn->base_.state != OR_CONN_STATE_OPEN) {
-      ++n_inprogress;
-    } else if (or_conn->is_canonical) {
+    if (or_conn->is_canonical) {
       ++n_canonical;
-    } else {
-      ++n_other;
     }
   } SMARTLIST_FOREACH_END(or_conn);
 

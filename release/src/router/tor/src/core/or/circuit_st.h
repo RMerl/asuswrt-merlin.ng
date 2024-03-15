@@ -88,11 +88,11 @@ struct circuit_t {
   extend_info_t *n_hop;
 
   /** True iff we are waiting for n_chan_cells to become less full before
-   * allowing p_streams to add any more cells. (Origin circuit only.) */
-  unsigned int streams_blocked_on_n_chan : 1;
+   * allowing any more cells on this circuit. (Origin circuit only.) */
+  unsigned int circuit_blocked_on_n_chan : 1;
   /** True iff we are waiting for p_chan_cells to become less full before
-   * allowing n_streams to add any more cells. (OR circuit only.) */
-  unsigned int streams_blocked_on_p_chan : 1;
+   * allowing any more cells on this circuit. (OR circuit only.) */
+  unsigned int circuit_blocked_on_p_chan : 1;
 
   /** True iff we have queued a delete backwards on this circuit, but not put
    * it on the output buffer. */
@@ -248,6 +248,27 @@ struct circuit_t {
 
   /** Congestion control fields */
   struct congestion_control_t *ccontrol;
+
+  /** Conflux linked circuit information.
+   *
+   * If this is non-NULL, the circuit is linked and part of a usable set,
+   * and for origin_circuit_t subtypes, the circuit purpose is
+   * CIRCUIT_PURPOSE_CONFLUX_LINKED.
+   *
+   * If this is NULL, the circuit could still be part of a pending conflux
+   * object, in which case the conflux_pending_nonce field is set, and for
+   * origin_circuit_t subtypes, the purpose is
+   * CIRCUIT_PURPOSE_CONFLUX_UNLINKED.
+  */
+  struct conflux_t *conflux;
+
+  /** If set, this circuit is considered *unlinked* and in the pending pool.
+   * The nonce value is used to find the other legs. Origin circuits that
+   * have this set are in the CIRCUIT_PURPOSE_CONFLUX_UNLINKED purpose.
+   *
+   * If this is NULL, and conflux object is set, it means this circuit is
+   * linked and thus part of a usable set. */
+  uint8_t *conflux_pending_nonce;
 };
 
 #endif /* !defined(CIRCUIT_ST_H) */

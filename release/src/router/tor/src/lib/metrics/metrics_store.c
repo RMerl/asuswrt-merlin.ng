@@ -107,7 +107,9 @@ metrics_store_get_all(const metrics_store_t *store, const char *name)
  * unique identifier. The help string can be omitted. */
 metrics_store_entry_t *
 metrics_store_add(metrics_store_t *store, metrics_type_t type,
-                  const char *name, const char *help)
+                  const char *name, const char *help, size_t bucket_count,
+                  const int64_t *buckets)
+
 {
   smartlist_t *entries;
   metrics_store_entry_t *entry;
@@ -120,7 +122,7 @@ metrics_store_add(metrics_store_t *store, metrics_type_t type,
     entries = smartlist_new();
     strmap_set(store->entries, name, entries);
   }
-  entry = metrics_store_entry_new(type, name, help);
+  entry = metrics_store_entry_new(type, name, help, bucket_count, buckets);
   smartlist_add(entries, entry);
 
   return entry;

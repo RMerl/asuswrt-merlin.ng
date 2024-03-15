@@ -78,6 +78,8 @@
 #include "core/crypto/relay_crypto.h"
 #include "feature/nodelist/nodelist.h"
 
+#include "src/core/or/conflux_util.h"
+
 #include "app/config/config.h"
 
 static inline circpad_circuit_state_t circpad_circuit_state(
@@ -251,8 +253,11 @@ circpad_marked_circuit_for_padding(circuit_t *circ, int reason)
      * has shut down, but using the MaxCircuitDirtiness timer instead of
      * the idle circuit timer (again, we want this because we're not
      * supposed to look idle to Guard nodes that can see our lifespan). */
-    if (!circ->timestamp_dirty)
+    if (!circ->timestamp_dirty) {
       circ->timestamp_dirty = approx_time();
+      if (circ->conflux && CIRCUIT_IS_ORIGIN(circ))
+        conflux_sync_circ_fields(circ->conflux, TO_ORIGIN_CIRCUIT(circ));
+    }
 
     /* Take ownership of the circuit */
     circuit_change_purpose(circ, CIRCUIT_PURPOSE_C_CIRCUIT_PADDING);

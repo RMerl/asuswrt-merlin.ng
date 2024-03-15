@@ -20,7 +20,7 @@
  * the others, we're not.
  */
 typedef enum {
-  /** We've noticed a connection as a bridge relay or entry guard. */
+  /** An incoming ORPort connection */
   GEOIP_CLIENT_CONNECT = 0,
   /** We've served a networkstatus consensus as a directory server. */
   GEOIP_CLIENT_NETWORKSTATUS = 1,

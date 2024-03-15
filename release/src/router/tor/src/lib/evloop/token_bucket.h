@@ -66,19 +66,19 @@ typedef struct token_bucket_rw_t {
 void token_bucket_rw_init(token_bucket_rw_t *bucket,
                           uint32_t rate,
                           uint32_t burst,
-                          uint32_t now_ts);
+                          uint32_t now_ts_stamp);
 
 void token_bucket_rw_adjust(token_bucket_rw_t *bucket,
                             uint32_t rate, uint32_t burst);
 
 void token_bucket_rw_reset(token_bucket_rw_t *bucket,
-                           uint32_t now_ts);
+                           uint32_t now_ts_stamp);
 
 #define TB_READ 1
 #define TB_WRITE 2
 
 int token_bucket_rw_refill(token_bucket_rw_t *bucket,
-                           uint32_t now_ts);
+                           uint32_t now_ts_stamp);
 
 int token_bucket_rw_dec_read(token_bucket_rw_t *bucket,
                              ssize_t n);
@@ -114,11 +114,11 @@ typedef struct token_bucket_ctr_t {
 } token_bucket_ctr_t;
 
 void token_bucket_ctr_init(token_bucket_ctr_t *bucket, uint32_t rate,
-                           uint32_t burst, uint32_t now_ts);
+                           uint32_t burst, uint32_t now_ts_sec);
 void token_bucket_ctr_adjust(token_bucket_ctr_t *bucket, uint32_t rate,
                              uint32_t burst);
-void token_bucket_ctr_reset(token_bucket_ctr_t *bucket, uint32_t now_ts);
-void token_bucket_ctr_refill(token_bucket_ctr_t *bucket, uint32_t now_ts);
+void token_bucket_ctr_reset(token_bucket_ctr_t *bucket, uint32_t now_ts_sec);
+void token_bucket_ctr_refill(token_bucket_ctr_t *bucket, uint32_t now_ts_sec);
 
 static inline bool
 token_bucket_ctr_dec(token_bucket_ctr_t *bucket, ssize_t n)

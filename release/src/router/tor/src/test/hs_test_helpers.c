@@ -354,6 +354,18 @@ hs_helper_desc_equal(const hs_descriptor_t *desc1,
     }
   }
 
+  /* Proof of Work DoS mitigation options */
+  tt_int_op(!!desc1->encrypted_data.pow_params, OP_EQ,
+            !!desc2->encrypted_data.pow_params);
+  if (desc1->encrypted_data.pow_params && desc2->encrypted_data.pow_params) {
+    hs_pow_desc_params_t *params1 = desc1->encrypted_data.pow_params;
+    hs_pow_desc_params_t *params2 = desc2->encrypted_data.pow_params;
+    tt_int_op(params1->type, OP_EQ, params2->type);
+    tt_mem_op(params1->seed, OP_EQ, params2->seed, HS_POW_SEED_LEN);
+    tt_int_op(params1->suggested_effort, OP_EQ, params2->suggested_effort);
+    tt_int_op(params1->expiration_time, OP_EQ, params2->expiration_time);
+  }
+
   /* Introduction points. */
   {
     tt_assert(desc1->encrypted_data.intro_points);

@@ -153,6 +153,13 @@ circuit_describe_status_for_controller(origin_circuit_t *circ)
     tor_free(socks_password_escaped);
   }
 
+  /* Attach the proof-of-work solution effort, if it's nonzero. Clients set
+   * this to the effort they've chosen, services set this to a value that
+   * was provided by the client and then verified by the service. */
+  if (circ->hs_pow_effort > 0) {
+    smartlist_add_asprintf(descparts, "HS_POW=v1,%u", circ->hs_pow_effort);
+  }
+
   rv = smartlist_join_strings(descparts, " ", 0, NULL);
 
   SMARTLIST_FOREACH(descparts, char *, cp, tor_free(cp));

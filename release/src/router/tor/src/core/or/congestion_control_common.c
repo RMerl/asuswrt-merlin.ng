@@ -7,6 +7,7 @@
  */
 
 #define TOR_CONGESTION_CONTROL_COMMON_PRIVATE
+#define TOR_CONGESTION_CONTROL_PRIVATE
 
 #include "core/or/or.h"
 
@@ -18,11 +19,12 @@
 #include "core/or/channel.h"
 #include "core/mainloop/connection.h"
 #include "core/or/sendme.h"
+#include "core/or/congestion_control_st.h"
 #include "core/or/congestion_control_common.h"
 #include "core/or/congestion_control_vegas.h"
-#include "core/or/congestion_control_nola.h"
-#include "core/or/congestion_control_westwood.h"
 #include "core/or/congestion_control_st.h"
+#include "core/or/conflux.h"
+#include "core/or/conflux_util.h"
 #include "core/or/trace_probes_cc.h"
 #include "lib/time/compat_time.h"
 #include "feature/nodelist/networkstatus.h"
@@ -38,14 +40,14 @@
 #define SENDME_INC_DFLT (TLS_RECORD_MAX_CELLS)
 #define CIRCWINDOW_INIT (4*SENDME_INC_DFLT)
 
-#define CC_ALG_DFLT (CC_ALG_SENDME)
+#define CC_ALG_DFLT (CC_ALG_VEGAS)
 #define CC_ALG_DFLT_ALWAYS (CC_ALG_VEGAS)
 
-#define CWND_INC_DFLT (TLS_RECORD_MAX_CELLS)
+#define CWND_INC_DFLT (1)
 #define CWND_INC_PCT_SS_DFLT (100)
-#define CWND_INC_RATE_DFLT (1)
+#define CWND_INC_RATE_DFLT (SENDME_INC_DFLT)
 
-#define CWND_MIN_DFLT (2*SENDME_INC_DFLT)
+#define CWND_MIN_DFLT (CIRCWINDOW_INIT)
 #define CWND_MAX_DFLT (INT32_MAX)
 
 #define BWE_SENDME_MIN_DFLT (5)
@@ -82,15 +84,9 @@
 #define CELL_QUEUE_LOW_DFLT (10)
 #define CELL_QUEUE_HIGH_DFLT (256)
 
-static uint64_t congestion_control_update_circuit_rtt(congestion_control_t *,
-                                                      uint64_t);
 static bool congestion_control_update_circuit_bdp(congestion_control_t *,
                                                   const circuit_t *,
-                                                  const crypt_path_t *,
-                                                  uint64_t, uint64_t);
-/* For unit tests */
-void congestion_control_set_cc_enabled(void);
-
+                                                  uint64_t);
 /* Number of times the RTT value was reset. For MetricsPort. */
 static uint64_t num_rtt_reset;
 
@@ -104,33 +100,33 @@ int32_t cell_queue_low = CELL_QUEUE_LOW_DFLT;
 uint32_t or_conn_highwater = OR_CONN_HIGHWATER_DFLT;
 uint32_t or_conn_lowwater = OR_CONN_LOWWATER_DFLT;
 uint8_t cc_sendme_inc = SENDME_INC_DFLT;
-static cc_alg_t cc_alg = CC_ALG_DFLT;
+STATIC cc_alg_t cc_alg = CC_ALG_DFLT;
 
 /**
  * Number of cwnd worth of sendme acks to smooth RTT and BDP with,
  * using N_EWMA */
-static uint8_t n_ewma_cwnd_pct;
+static uint8_t n_ewma_cwnd_pct = N_EWMA_CWND_PCT_DFLT;
 
 /**
  * Maximum number N for the N-count EWMA averaging of RTT and BDP.
  */
-static uint8_t n_ewma_max;
+static uint8_t n_ewma_max = N_EWMA_MAX_DFLT;
 
 /**
  * Maximum number N for the N-count EWMA averaging of RTT in Slow Start.
  */
-static uint8_t n_ewma_ss;
+static uint8_t n_ewma_ss = N_EWMA_SS_DFLT;
 
 /**
  * Minimum number of sendmes before we begin BDP estimates
  */
-static uint8_t bwe_sendme_min;
+static uint8_t bwe_sendme_min = BWE_SENDME_MIN_DFLT;
 
 /**
- * Percentage of the current RTT to use when reseting the minimum RTT
+ * Percentage of the current RTT to use when resetting the minimum RTT
  * for a circuit. (RTT is reset when the cwnd hits cwnd_min).
  */
-static uint8_t rtt_reset_pct;
+static uint8_t rtt_reset_pct = RTT_RESET_PCT_DFLT;
 
 /** Metric to count the number of congestion control circuits **/
 uint64_t cc_stats_circs_created = 0;
@@ -203,7 +199,7 @@ congestion_control_new_consensus_params(const networkstatus_t *ns)
         RTT_RESET_PCT_MAX);
 
 #define SENDME_INC_MIN 1
-#define SENDME_INC_MAX (255)
+#define SENDME_INC_MAX (254)
   cc_sendme_inc =
     networkstatus_get_param(NULL, "cc_sendme_inc",
         SENDME_INC_DFLT,
@@ -217,6 +213,13 @@ congestion_control_new_consensus_params(const networkstatus_t *ns)
         CC_ALG_DFLT,
         CC_ALG_MIN,
         CC_ALG_MAX);
+  if (cc_alg != CC_ALG_SENDME && cc_alg != CC_ALG_VEGAS) {
+    // Does not need rate limiting because consensus updates
+    // are at most 1x/hour
+    log_warn(LD_BUG, "Unsupported congestion control algorithm %d",
+               cc_alg);
+    cc_alg = CC_ALG_DFLT;
+  }
 
 #define BWE_SENDME_MIN_MIN 2
 #define BWE_SENDME_MIN_MAX (20)
@@ -317,37 +320,13 @@ congestion_control_init_params(congestion_control_t *cc,
     cc->cc_alg = cc_alg;
   }
 
-  bdp_alg_t default_bdp_alg = 0;
-
-  switch (cc->cc_alg) {
-    case CC_ALG_WESTWOOD:
-      default_bdp_alg = WESTWOOD_BDP_ALG;
-      break;
-    case CC_ALG_VEGAS:
-      default_bdp_alg = VEGAS_BDP_MIX_ALG;
-      break;
-    case CC_ALG_NOLA:
-      default_bdp_alg = NOLA_BDP_ALG;
-      break;
-    case CC_ALG_SENDME:
-    default:
-      tor_fragile_assert();
-      return; // No alg-specific params
-  }
-
-  cc->bdp_alg =
-    networkstatus_get_param(NULL, "cc_bdp_alg",
-        default_bdp_alg,
-        0,
-        NUM_BDP_ALGS-1);
-
   /* Algorithm-specific parameters */
-  if (cc->cc_alg == CC_ALG_WESTWOOD) {
-    congestion_control_westwood_set_params(cc);
-  } else if (cc->cc_alg == CC_ALG_VEGAS) {
+  if (cc->cc_alg == CC_ALG_VEGAS) {
     congestion_control_vegas_set_params(cc, path);
-  } else if (cc->cc_alg == CC_ALG_NOLA) {
-    congestion_control_nola_set_params(cc);
+  } else {
+    // This should not happen anymore
+    log_warn(LD_BUG, "Unknown congestion control algorithm %d",
+             cc->cc_alg);
   }
 }
 
@@ -385,6 +364,7 @@ congestion_control_enabled(void)
   return cc_alg != CC_ALG_SENDME;
 }
 
+#ifdef TOR_UNIT_TESTS
 /**
  * For unit tests only: set the cached consensus cc alg to
  * specified value.
@@ -394,6 +374,17 @@ congestion_control_set_cc_enabled(void)
 {
   cc_alg = CC_ALG_VEGAS;
 }
+
+/**
+ * For unit tests only: set the cached consensus cc alg to
+ * specified value.
+ */
+void
+congestion_control_set_cc_disabled(void)
+{
+  cc_alg = CC_ALG_SENDME;
+}
+#endif
 
 /**
  * Allocate and initialize fields in congestion control object.
@@ -409,7 +400,6 @@ congestion_control_init(congestion_control_t *cc,
                         cc_path_t path)
 {
   cc->sendme_pending_timestamps = smartlist_new();
-  cc->sendme_arrival_timestamps = smartlist_new();
 
   cc->in_slow_start = 1;
   congestion_control_init_params(cc, params, path);
@@ -440,9 +430,7 @@ congestion_control_free_(congestion_control_t *cc)
     return;
 
   SMARTLIST_FOREACH(cc->sendme_pending_timestamps, uint64_t *, t, tor_free(t));
-  SMARTLIST_FOREACH(cc->sendme_arrival_timestamps, uint64_t *, t, tor_free(t));
   smartlist_free(cc->sendme_pending_timestamps);
-  smartlist_free(cc->sendme_arrival_timestamps);
 
   tor_free(cc);
 }
@@ -450,29 +438,13 @@ congestion_control_free_(congestion_control_t *cc)
 /**
  * Enqueue a u64 timestamp to the end of a queue of timestamps.
  */
-static inline void
+STATIC inline void
 enqueue_timestamp(smartlist_t *timestamps_u64, uint64_t timestamp_usec)
 {
   uint64_t *timestamp_ptr = tor_malloc(sizeof(uint64_t));
   *timestamp_ptr = timestamp_usec;
 
   smartlist_add(timestamps_u64, timestamp_ptr);
-}
-
-/**
- * Peek at the head of a smartlist queue of u64 timestamps.
- */
-static inline uint64_t
-peek_timestamp(const smartlist_t *timestamps_u64_usecs)
-{
-  uint64_t *timestamp_ptr = smartlist_get(timestamps_u64_usecs, 0);
-
-  if (BUG(!timestamp_ptr)) {
-    log_err(LD_CIRC, "Congestion control timestamp list became empty!");
-    return 0;
-  }
-
-  return *timestamp_ptr;
 }
 
 /**
@@ -679,61 +651,6 @@ congestion_control_note_cell_sent(congestion_control_t *cc,
 }
 
 /**
- * Returns true if any edge connections are active.
- *
- * We need to know this so that we can stop computing BDP if the
- * edges are not sending on the circuit.
- */
-static int
-circuit_has_active_streams(const circuit_t *circ,
-                           const crypt_path_t *layer_hint)
-{
-  const edge_connection_t *streams;
-
-  if (CIRCUIT_IS_ORIGIN(circ)) {
-    streams = CONST_TO_ORIGIN_CIRCUIT(circ)->p_streams;
-  } else {
-    streams = CONST_TO_OR_CIRCUIT(circ)->n_streams;
-  }
-
-  /* Check linked list of streams */
-  for (const edge_connection_t *conn = streams; conn != NULL;
-       conn = conn->next_stream) {
-    if (conn->base_.marked_for_close)
-      continue;
-
-    if (!layer_hint || conn->cpath_layer == layer_hint) {
-      if (connection_get_inbuf_len(TO_CONN(conn)) > 0) {
-        log_info(LD_CIRC, "CC: More in edge inbuf...");
-        return 1;
-      }
-
-      /* If we did not reach EOF on this read, there's more */
-      if (!TO_CONN(conn)->inbuf_reached_eof) {
-        log_info(LD_CIRC, "CC: More on edge conn...");
-        return 1;
-      }
-
-      if (TO_CONN(conn)->linked_conn) {
-        if (connection_get_inbuf_len(TO_CONN(conn)->linked_conn) > 0) {
-          log_info(LD_CIRC, "CC: More in linked inbuf...");
-          return 1;
-        }
-
-        /* If there is a linked conn, and *it* did not each EOF,
-         * there's more */
-        if (!TO_CONN(conn)->linked_conn->inbuf_reached_eof) {
-          log_info(LD_CIRC, "CC: More on linked conn...");
-          return 1;
-        }
-      }
-    }
-  }
-
-  return 0;
-}
-
-/**
  * Upon receipt of a SENDME, pop the oldest timestamp off the timestamp
  * list, and use this to update RTT.
  *
@@ -742,15 +659,13 @@ circuit_has_active_streams(const circuit_t *circ,
  */
 bool
 congestion_control_update_circuit_estimates(congestion_control_t *cc,
-                                            const circuit_t *circ,
-                                            const crypt_path_t *layer_hint)
+                                            const circuit_t *circ)
 {
   uint64_t now_usec = monotime_absolute_usec();
 
   /* Update RTT first, then BDP. BDP needs fresh RTT */
   uint64_t curr_rtt_usec = congestion_control_update_circuit_rtt(cc, now_usec);
-  return congestion_control_update_circuit_bdp(cc, circ, layer_hint, now_usec,
-                                               curr_rtt_usec);
+  return congestion_control_update_circuit_bdp(cc, circ, curr_rtt_usec);
 }
 
 /**
@@ -766,18 +681,11 @@ time_delta_should_use_heuristics(const congestion_control_t *cc)
     return true;
   }
 
-  /* If we managed to get enough acks to estimate a SENDME BDP, then
-   * we have enough to estimate clock jumps relative to a baseline,
-   * too. (This is at least 'cc_bwe_min' acks). */
-  if (cc->bdp[BDP_ALG_SENDME_RATE]) {
-    return true;
-  }
-
   /* Not enough data to estimate clock jumps */
   return false;
 }
 
-static bool is_monotime_clock_broken = false;
+STATIC bool is_monotime_clock_broken = false;
 
 /**
  * Returns true if the monotime delta is 0, or is significantly
@@ -788,7 +696,7 @@ static bool is_monotime_clock_broken = false;
  * so we can also provide a is_monotime_clock_reliable() function,
  * used by flow control rate timing.
  */
-static bool
+STATIC bool
 time_delta_stalled_or_jumped(const congestion_control_t *cc,
                              uint64_t old_delta, uint64_t new_delta)
 {
@@ -870,7 +778,7 @@ is_monotime_clock_reliable(void)
  * Returns the current circuit RTT in usecs, or 0 if it could not be
  * measured (due to clock jump, stall, etc).
  */
-static uint64_t
+STATIC uint64_t
 congestion_control_update_circuit_rtt(congestion_control_t *cc,
                                       uint64_t now_usec)
 {
@@ -939,25 +847,21 @@ congestion_control_update_circuit_rtt(congestion_control_t *cc,
 static bool
 congestion_control_update_circuit_bdp(congestion_control_t *cc,
                                       const circuit_t *circ,
-                                      const crypt_path_t *layer_hint,
-                                      uint64_t now_usec,
                                       uint64_t curr_rtt_usec)
 {
   int chan_q = 0;
   unsigned int blocked_on_chan = 0;
-  uint64_t timestamp_usec;
-  uint64_t sendme_rate_bdp = 0;
 
   tor_assert(cc);
 
   if (CIRCUIT_IS_ORIGIN(circ)) {
     /* origin circs use n_chan */
     chan_q = circ->n_chan_cells.n;
-    blocked_on_chan = circ->streams_blocked_on_n_chan;
+    blocked_on_chan = circ->circuit_blocked_on_n_chan;
   } else {
     /* Both onion services and exits use or_circuit and p_chan */
     chan_q = CONST_TO_OR_CIRCUIT(circ)->p_chan_cells.n;
-    blocked_on_chan = circ->streams_blocked_on_p_chan;
+    blocked_on_chan = circ->circuit_blocked_on_p_chan;
   }
 
   /* If we have no EWMA RTT, it is because monotime has been stalled
@@ -984,10 +888,7 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
        cc->blocked_chan = 0;
      }
 
-     cc->bdp[BDP_ALG_CWND_RTT] = cwnd;
-     cc->bdp[BDP_ALG_INFLIGHT_RTT] = cwnd;
-     cc->bdp[BDP_ALG_SENDME_RATE] = cwnd;
-     cc->bdp[BDP_ALG_PIECEWISE] = cwnd;
+     cc->bdp = cwnd;
 
      static ratelim_t dec_notice_limit = RATELIM_INIT(300);
      log_fn_ratelim(&dec_notice_limit, LOG_NOTICE, LD_CIRC,
@@ -1006,84 +907,7 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
    * close to ewma RTT. Since all fields are u64, there is plenty of
    * room here to multiply first.
    */
-  cc->bdp[BDP_ALG_CWND_RTT] = cc->cwnd*cc->min_rtt_usec/cc->ewma_rtt_usec;
-
-  /*
-   * If we have no pending streams, we do not have enough data to fill
-   * the BDP, so preserve our old estimates but do not make any more.
-   */
-  if (!blocked_on_chan && !circuit_has_active_streams(circ, layer_hint)) {
-    log_info(LD_CIRC,
-               "CC: Streams drained. Spare package window: %"PRIu64
-               ", no BDP update", cc->cwnd - cc->inflight);
-
-    /* Clear SENDME timestamps; they will be wrong with intermittent data */
-    SMARTLIST_FOREACH(cc->sendme_arrival_timestamps, uint64_t *, t,
-                      tor_free(t));
-    smartlist_clear(cc->sendme_arrival_timestamps);
-  } else if (curr_rtt_usec && is_monotime_clock_reliable()) {
-    /* Sendme-based BDP will quickly measure BDP in much less than
-     * a cwnd worth of data when in use (in 2-10 SENDMEs).
-     *
-     * But if the link goes idle, it will be vastly lower than true BDP. Hence
-     * we only compute it if we have either pending stream data, or streams
-     * are still blocked on the channel queued data.
-     *
-     * We also do not compute it if we do not have a current RTT passed in,
-     * because that means that monotime is currently stalled or just jumped.
-     */
-    enqueue_timestamp(cc->sendme_arrival_timestamps, now_usec);
-
-    if (smartlist_len(cc->sendme_arrival_timestamps) >= bwe_sendme_min) {
-      /* If we have more sendmes than fit in a cwnd, trim the list.
-       * Those are not acurrately measuring throughput, if cwnd is
-       * currently smaller than BDP */
-      while (smartlist_len(cc->sendme_arrival_timestamps) >
-             bwe_sendme_min &&
-             (uint64_t)smartlist_len(cc->sendme_arrival_timestamps) >
-                       n_ewma_count(cc)) {
-        (void)dequeue_timestamp(cc->sendme_arrival_timestamps);
-      }
-      int sendme_cnt = smartlist_len(cc->sendme_arrival_timestamps);
-
-      /* Calculate SENDME_BWE_COUNT pure average */
-      timestamp_usec = peek_timestamp(cc->sendme_arrival_timestamps);
-      uint64_t delta = now_usec - timestamp_usec;
-
-      /* In Shadow, the time delta between acks can be 0 if there is no
-       * network activity between them. Only update BDP if the delta is
-       * non-zero. */
-      if (delta > 0) {
-        /* The acked data is in sendme_cnt-1 chunks, because we are counting
-         * the data that is processed by the other endpoint *between* all of
-         * these sendmes. There's one less gap between the sendmes than the
-         * number of sendmes. */
-        uint64_t cells = (sendme_cnt-1)*cc->sendme_inc;
-
-        /* The bandwidth estimate is cells/delta, which when multiplied
-         * by min RTT obtains the BDP. However, we multiply first to
-         * avoid precision issues with the RTT being close to delta in size. */
-        sendme_rate_bdp = cells*cc->min_rtt_usec/delta;
-
-        /* Calculate BDP_EWMA_COUNT N-EWMA */
-        cc->bdp[BDP_ALG_SENDME_RATE] =
-                   n_count_ewma(sendme_rate_bdp, cc->bdp[BDP_ALG_SENDME_RATE],
-                                n_ewma_count(cc));
-      }
-    }
-
-    /* In-flight BDP will cause the cwnd to drift down when underutilized.
-     * It is most useful when the local OR conn is blocked, so we only
-     * compute it if we're utilized. */
-    cc->bdp[BDP_ALG_INFLIGHT_RTT] =
-        (cc->inflight - chan_q)*cc->min_rtt_usec/
-                              MAX(cc->ewma_rtt_usec, curr_rtt_usec);
-  } else {
-    /* We can still update inflight with just an EWMA RTT, but only
-     * if there is data flowing */
-    cc->bdp[BDP_ALG_INFLIGHT_RTT] =
-        (cc->inflight - chan_q)*cc->min_rtt_usec/cc->ewma_rtt_usec;
-  }
+  cc->bdp = cc->cwnd*cc->min_rtt_usec/cc->ewma_rtt_usec;
 
   /* The orconn is blocked; use smaller of inflight vs SENDME */
   if (blocked_on_chan) {
@@ -1096,13 +920,6 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
       cc->next_cc_event = 0;
       cc->blocked_chan = 1;
     }
-
-    if (cc->bdp[BDP_ALG_SENDME_RATE]) {
-      cc->bdp[BDP_ALG_PIECEWISE] = MIN(cc->bdp[BDP_ALG_INFLIGHT_RTT],
-                                      cc->bdp[BDP_ALG_SENDME_RATE]);
-    } else {
-      cc->bdp[BDP_ALG_PIECEWISE] = cc->bdp[BDP_ALG_INFLIGHT_RTT];
-    }
   } else {
     /* If we were previously blocked, emit a new congestion event
      * now that we are unblocked, to re-evaluate cwnd */
@@ -1112,19 +929,6 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
       log_info(LD_CIRC, "CC: Streams un-blocked on circ channel. Chanq: %d",
                chan_q);
     }
-
-    cc->bdp[BDP_ALG_PIECEWISE] = MAX(cc->bdp[BDP_ALG_SENDME_RATE],
-                                     cc->bdp[BDP_ALG_CWND_RTT]);
-  }
-
-  /* We can end up with no piecewise value if we didn't have either
-   * a SENDME estimate or enough data for an inflight estimate.
-   * It also happens on the very first sendme, since we need two
-   * to get a BDP. In these cases, use the cwnd method. */
-  if (!cc->bdp[BDP_ALG_PIECEWISE]) {
-    cc->bdp[BDP_ALG_PIECEWISE] = cc->bdp[BDP_ALG_CWND_RTT];
-    log_info(LD_CIRC, "CC: No piecewise BDP. Using %"PRIu64,
-             cc->bdp[BDP_ALG_PIECEWISE]);
   }
 
   if (cc->next_cc_event == 0) {
@@ -1132,44 +936,25 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
       log_info(LD_CIRC,
                  "CC: Circuit %d "
                  "SENDME RTT: %"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64", "
-                 "BDP estimates: "
-                 "%"PRIu64", "
-                 "%"PRIu64", "
-                 "%"PRIu64", "
-                 "%"PRIu64", "
-                 "%"PRIu64". ",
+                 "BDP estimate: %"PRIu64,
                CONST_TO_ORIGIN_CIRCUIT(circ)->global_identifier,
                cc->min_rtt_usec/1000,
                curr_rtt_usec/1000,
                cc->ewma_rtt_usec/1000,
                cc->max_rtt_usec/1000,
-               cc->bdp[BDP_ALG_INFLIGHT_RTT],
-               cc->bdp[BDP_ALG_CWND_RTT],
-               sendme_rate_bdp,
-               cc->bdp[BDP_ALG_SENDME_RATE],
-               cc->bdp[BDP_ALG_PIECEWISE]
-               );
+               cc->bdp);
     } else {
       log_info(LD_CIRC,
                  "CC: Circuit %"PRIu64":%d "
                  "SENDME RTT: %"PRIu64", %"PRIu64", %"PRIu64", %"PRIu64", "
-                 "%"PRIu64", "
-                 "%"PRIu64", "
-                 "%"PRIu64", "
-                 "%"PRIu64", "
-                 "%"PRIu64". ",
+                 "%"PRIu64,
                  CONST_TO_OR_CIRCUIT(circ)->p_chan->global_identifier,
                  CONST_TO_OR_CIRCUIT(circ)->p_circ_id,
                  cc->min_rtt_usec/1000,
                  curr_rtt_usec/1000,
                  cc->ewma_rtt_usec/1000,
                  cc->max_rtt_usec/1000,
-                 cc->bdp[BDP_ALG_INFLIGHT_RTT],
-                 cc->bdp[BDP_ALG_CWND_RTT],
-                 sendme_rate_bdp,
-                 cc->bdp[BDP_ALG_SENDME_RATE],
-                 cc->bdp[BDP_ALG_PIECEWISE]
-                 );
+                 cc->bdp);
     }
   }
 
@@ -1177,8 +962,7 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
    * the curr_rtt_usec was not 0. */
   bool ret = (blocked_on_chan || curr_rtt_usec != 0);
   if (ret) {
-    tor_trace(TR_SUBSYS(cc), TR_EV(bdp_update), circ, cc, curr_rtt_usec,
-              sendme_rate_bdp);
+    tor_trace(TR_SUBSYS(cc), TR_EV(bdp_update), circ, cc, curr_rtt_usec);
   }
   return ret;
 }
@@ -1188,27 +972,12 @@ congestion_control_update_circuit_bdp(congestion_control_t *cc,
  */
 int
 congestion_control_dispatch_cc_alg(congestion_control_t *cc,
-                                   const circuit_t *circ,
-                                   const crypt_path_t *layer_hint)
+                                   circuit_t *circ)
 {
   int ret = -END_CIRC_REASON_INTERNAL;
-  switch (cc->cc_alg) {
-    case CC_ALG_WESTWOOD:
-      ret = congestion_control_westwood_process_sendme(cc, circ, layer_hint);
-      break;
 
-    case CC_ALG_VEGAS:
-      ret = congestion_control_vegas_process_sendme(cc, circ, layer_hint);
-      break;
-
-    case CC_ALG_NOLA:
-      ret = congestion_control_nola_process_sendme(cc, circ, layer_hint);
-      break;
-
-    case CC_ALG_SENDME:
-    default:
-      tor_assert(0);
-  }
+  tor_assert_nonfatal_once(cc->cc_alg == CC_ALG_VEGAS);
+  ret = congestion_control_vegas_process_sendme(cc, circ);
 
   if (cc->cwnd > cwnd_max) {
     static ratelim_t cwnd_limit = RATELIM_INIT(60);
@@ -1217,6 +986,10 @@ congestion_control_dispatch_cc_alg(congestion_control_t *cc,
            cc->cwnd, cwnd_max);
     cc->cwnd = cwnd_max;
   }
+
+  /* If we have a non-zero RTT measurement, update conflux. */
+  if (circ->conflux && cc->ewma_rtt_usec)
+    conflux_update_rtt(circ->conflux, circ, cc->ewma_rtt_usec);
 
   return ret;
 }
@@ -1437,19 +1210,16 @@ bool
 congestion_control_validate_sendme_increment(uint8_t sendme_inc)
 {
   /* We will only accept this response (and this circuit) if sendme_inc
-   * is within a factor of 2 of our consensus value. We should not need
+   * is within +/- 1 of the current consensus value. We should not need
    * to change cc_sendme_inc much, and if we do, we can spread out those
    * changes over smaller increments once every 4 hours. Exits that
    * violate this range should just not be used. */
-#define MAX_SENDME_INC_NEGOTIATE_FACTOR 2
 
   if (sendme_inc == 0)
     return false;
 
-  if (sendme_inc >
-      MAX_SENDME_INC_NEGOTIATE_FACTOR * congestion_control_sendme_inc() ||
-      sendme_inc <
-      congestion_control_sendme_inc() / MAX_SENDME_INC_NEGOTIATE_FACTOR) {
+  if (sendme_inc > (congestion_control_sendme_inc() + 1) ||
+      sendme_inc < (congestion_control_sendme_inc() - 1)) {
     return false;
   }
   return true;

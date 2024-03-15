@@ -11,7 +11,7 @@
  * constructing/sending create/extend cells, and so on).
  *
  * On the client side, this module handles launching circuits. Circuit
- * launches are srtarted from circuit_establish_circuit(), called from
+ * launches are started from circuit_establish_circuit(), called from
  * circuit_launch_by_extend_info()).  To choose the path the circuit will
  * take, onion_extend_cpath() calls into a maze of node selection functions.
  *
@@ -45,6 +45,7 @@
 #include "core/or/command.h"
 #include "core/or/connection_edge.h"
 #include "core/or/connection_or.h"
+#include "core/or/conflux_pool.h"
 #include "core/or/extendinfo.h"
 #include "core/or/onion.h"
 #include "core/or/ocirc_event.h"
@@ -89,7 +90,8 @@ static int circuit_send_first_onion_skin(origin_circuit_t *circ);
 static int circuit_build_no_more_hops(origin_circuit_t *circ);
 static int circuit_send_intermediate_onion_skin(origin_circuit_t *circ,
                                                 crypt_path_t *hop);
-static const node_t *choose_good_middle_server(uint8_t purpose,
+static const node_t *choose_good_middle_server(const origin_circuit_t *,
+                          uint8_t purpose,
                           cpath_build_state_t *state,
                           crypt_path_t *head,
                           int cur_len);
@@ -465,6 +467,8 @@ origin_circuit_init(uint8_t purpose, int flags)
     ((flags & CIRCLAUNCH_IS_INTERNAL) ? 1 : 0);
   circ->build_state->is_ipv6_selftest =
     ((flags & CIRCLAUNCH_IS_IPV6_SELFTEST) ? 1 : 0);
+  circ->build_state->need_conflux =
+    ((flags & CIRCLAUNCH_NEED_CONFLUX) ? 1 : 0);
   circ->base_.purpose = purpose;
   return circ;
 }
@@ -491,6 +495,47 @@ circuit_establish_circuit(uint8_t purpose, extend_info_t *exit_ei, int flags)
   circ = origin_circuit_init(purpose, flags);
 
   if (onion_pick_cpath_exit(circ, exit_ei, is_hs_v3_rp_circuit) < 0 ||
+      onion_populate_cpath(circ) < 0) {
+    circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
+    return NULL;
+  }
+
+  circuit_event_status(circ, CIRC_EVENT_LAUNCHED, 0);
+
+  if ((err_reason = circuit_handle_first_hop(circ)) < 0) {
+    circuit_mark_for_close(TO_CIRCUIT(circ), -err_reason);
+    return NULL;
+  }
+
+  tor_trace(TR_SUBSYS(circuit), TR_EV(establish), circ);
+  return circ;
+}
+
+/**
+ * Build a new conflux circuit for <b>purpose</b>. If <b>exit</b> is defined,
+ * then use that as your exit router, else choose a suitable exit node.
+ * The <b>flags</b> argument is a bitfield of CIRCLAUNCH_* flags, see
+ * circuit_launch_by_extend_info() for more details.
+ *
+ * Also launch a connection to the first OR in the chosen path, if
+ * it's not open already.
+ */
+MOCK_IMPL(origin_circuit_t *,
+circuit_establish_circuit_conflux,(const uint8_t *conflux_nonce,
+                                   uint8_t purpose, extend_info_t *exit_ei,
+                                   int flags))
+{
+  origin_circuit_t *circ;
+  int err_reason = 0;
+
+  /* Right now, only conflux client circuits use this function */
+  tor_assert(purpose == CIRCUIT_PURPOSE_CONFLUX_UNLINKED);
+
+  circ = origin_circuit_init(purpose, flags);
+  TO_CIRCUIT(circ)->conflux_pending_nonce =
+    tor_memdup(conflux_nonce, DIGEST256_LEN);
+
+  if (onion_pick_cpath_exit(circ, exit_ei, 0) < 0 ||
       onion_populate_cpath(circ) < 0) {
     circuit_mark_for_close(TO_CIRCUIT(circ), END_CIRC_REASON_NOPATH);
     return NULL;
@@ -1444,6 +1489,7 @@ route_len_for_purpose(uint8_t purpose, extend_info_t *exit_ei)
   switch (purpose) {
     /* These purposes connect to a router that we chose, so DEFAULT_ROUTE_LEN
      * is safe: */
+  case CIRCUIT_PURPOSE_CONFLUX_UNLINKED:
   case CIRCUIT_PURPOSE_TESTING:
     /* router reachability testing */
     known_purpose = 1;
@@ -1927,6 +1973,7 @@ choose_good_exit_server(origin_circuit_t *circ,
        * since it should be random. */
       tor_assert_nonfatal(is_internal);
       FALLTHROUGH;
+    case CIRCUIT_PURPOSE_CONFLUX_UNLINKED:
     case CIRCUIT_PURPOSE_C_GENERAL:
       if (is_internal) /* pick it like a middle hop */
         return router_choose_random_node(NULL, options->ExcludeNodes, flags);
@@ -1974,6 +2021,8 @@ warn_if_last_router_excluded(origin_circuit_t *circ,
     case CIRCUIT_PURPOSE_S_HSDIR_POST:
     case CIRCUIT_PURPOSE_C_HSDIR_GET:
     case CIRCUIT_PURPOSE_C_GENERAL:
+    case CIRCUIT_PURPOSE_CONFLUX_UNLINKED:
+    case CIRCUIT_PURPOSE_CONFLUX_LINKED:
       if (circ->build_state->is_internal)
         return;
       description = "requested exit node";
@@ -2101,6 +2150,8 @@ onion_pick_cpath_exit(origin_circuit_t *circ, extend_info_t *exit_ei,
       flags |= CRN_DIRECT_CONN;
     if (is_hs_v3_rp_circuit)
       flags |= CRN_RENDEZVOUS_V3;
+    if (state->need_conflux)
+      flags |= CRN_CONFLUX;
     const node_t *node =
       choose_good_exit_server(circ, flags, state->is_internal);
     if (!node) {
@@ -2109,8 +2160,11 @@ onion_pick_cpath_exit(origin_circuit_t *circ, extend_info_t *exit_ei,
     }
     exit_ei = extend_info_from_node(node, state->onehop_tunnel,
                 /* for_exit_use */
-                !state->is_internal && TO_CIRCUIT(circ)->purpose ==
-                  CIRCUIT_PURPOSE_C_GENERAL);
+                !state->is_internal && (
+                  TO_CIRCUIT(circ)->purpose ==
+                  CIRCUIT_PURPOSE_C_GENERAL ||
+                  TO_CIRCUIT(circ)->purpose ==
+                  CIRCUIT_PURPOSE_CONFLUX_UNLINKED));
     if (BUG(exit_ei == NULL))
       return -1;
   }
@@ -2261,7 +2315,8 @@ build_vanguard_middle_exclude_list(uint8_t purpose,
  * hop, based on already chosen nodes.
  */
 static smartlist_t *
-build_middle_exclude_list(uint8_t purpose,
+build_middle_exclude_list(const origin_circuit_t *circ,
+                          uint8_t purpose,
                           cpath_build_state_t *state,
                           crypt_path_t *head,
                           int cur_len)
@@ -2277,6 +2332,9 @@ build_middle_exclude_list(uint8_t purpose,
   }
 
   excluded = smartlist_new();
+
+  // Exclude other middles on pending and built conflux circs
+  conflux_add_middles_to_exclude_list(circ, excluded);
 
   /* For non-vanguard circuits, add the exit and its family to the exclude list
    * (note that the exit/last hop is always chosen first in
@@ -2371,7 +2429,8 @@ pick_vanguard_middle_node(const or_options_t *options,
  * family, and make sure we don't duplicate any previous nodes or their
  * families. */
 static const node_t *
-choose_good_middle_server(uint8_t purpose,
+choose_good_middle_server(const origin_circuit_t * circ,
+                          uint8_t purpose,
                           cpath_build_state_t *state,
                           crypt_path_t *head,
                           int cur_len)
@@ -2386,7 +2445,7 @@ choose_good_middle_server(uint8_t purpose,
   log_debug(LD_CIRC, "Contemplating intermediate hop #%d: random choice.",
             cur_len+1);
 
-  excluded = build_middle_exclude_list(purpose, state, head, cur_len);
+  excluded = build_middle_exclude_list(circ, purpose, state, head, cur_len);
 
   flags |= cpath_build_state_to_crn_flags(state);
   flags |= cpath_build_state_to_crn_ipv6_extend_flag(state, cur_len);
@@ -2431,7 +2490,8 @@ choose_good_middle_server(uint8_t purpose,
  * guard worked or not.
  */
 const node_t *
-choose_good_entry_server(uint8_t purpose, cpath_build_state_t *state,
+choose_good_entry_server(const origin_circuit_t *circ,
+                         uint8_t purpose, cpath_build_state_t *state,
                          circuit_guard_state_t **guard_state_out)
 {
   const node_t *choice;
@@ -2453,7 +2513,7 @@ choose_good_entry_server(uint8_t purpose, cpath_build_state_t *state,
     /* This request is for an entry server to use for a regular circuit,
      * and we use entry guard nodes.  Just return one of the guard nodes.  */
     tor_assert(guard_state_out);
-    return guards_choose_guard(state, purpose, guard_state_out);
+    return guards_choose_guard(circ, state, purpose, guard_state_out);
   }
 
   excluded = smartlist_new();
@@ -2499,7 +2559,7 @@ onion_extend_cpath(origin_circuit_t *circ)
   if (cur_len == state->desired_path_len - 1) { /* Picking last node */
     info = extend_info_dup(state->chosen_exit);
   } else if (cur_len == 0) { /* picking first node */
-    const node_t *r = choose_good_entry_server(purpose, state,
+    const node_t *r = choose_good_entry_server(circ, purpose, state,
                                                &circ->guard_state);
     if (r) {
       /* If we're a client, use the preferred address rather than the
@@ -2512,7 +2572,7 @@ onion_extend_cpath(origin_circuit_t *circ)
     }
   } else {
     const node_t *r =
-      choose_good_middle_server(purpose, state, circ->cpath, cur_len);
+      choose_good_middle_server(circ, purpose, state, circ->cpath, cur_len);
     if (r) {
       info = extend_info_from_node(r, 0, false);
     }

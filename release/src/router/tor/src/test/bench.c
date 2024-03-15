@@ -380,6 +380,7 @@ bench_rand_len(int len)
     uint32_t t=0;
     for (i = 0; i < N; ++i) {
       t += tor_weak_random(&weak);
+      (void) t;
     }
     end = perftime();
     printf("weak_rand(4): %f nsec.\n", NANOCOUNT(start,end,N));

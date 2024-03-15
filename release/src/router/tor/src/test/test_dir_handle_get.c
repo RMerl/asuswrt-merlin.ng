@@ -2073,7 +2073,7 @@ test_dir_handle_get_status_vote_next_bandwidth_not_found(void* data)
   conn = new_dir_conn();
 
   tt_int_op(0, OP_EQ, directory_handle_command_get(conn,
-    GET("/tor/status-vote/next/bandwdith"), NULL, 0));
+    GET("/tor/status-vote/next/bandwidth"), NULL, 0));
 
   fetch_from_buf_http(TO_CONN(conn)->outbuf, &header, MAX_HEADERS_SIZE,
                       NULL, NULL, 1, 0);

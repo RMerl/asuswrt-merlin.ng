@@ -22,6 +22,7 @@
 #include "feature/dircommon/directory.h"
 #include "core/or/connection_or.h"
 #include "lib/net/resolve.h"
+#include "lib/evloop/compat_libevent.h"
 
 #include "test/test_connection.h"
 #include "test/test_helpers.h"
@@ -113,14 +114,8 @@ test_conn_get_basic_teardown(const struct testcase_t *tc, void *arg)
     /* We didn't call tor_libevent_initialize(), so event_base was NULL,
      * so we can't rely on connection_unregister_events() use of event_del().
      */
-    if (conn->linked_conn->read_event) {
-      tor_free(conn->linked_conn->read_event);
-      conn->linked_conn->read_event = NULL;
-    }
-    if (conn->linked_conn->write_event) {
-      tor_free(conn->linked_conn->write_event);
-      conn->linked_conn->write_event = NULL;
-    }
+    tor_event_free(conn->linked_conn->read_event);
+    tor_event_free(conn->linked_conn->write_event);
 
     if (!conn->linked_conn->marked_for_close) {
       connection_close_immediate(conn->linked_conn);
@@ -142,14 +137,8 @@ test_conn_get_basic_teardown(const struct testcase_t *tc, void *arg)
   /* We didn't set the events up properly, so we can't use event_del() in
    * close_closeable_connections() > connection_free()
    * > connection_unregister_events() */
-  if (conn->read_event) {
-    tor_free(conn->read_event);
-    conn->read_event = NULL;
-  }
-  if (conn->write_event) {
-    tor_free(conn->write_event);
-    conn->write_event = NULL;
-  }
+  tor_event_free(conn->read_event);
+  tor_event_free(conn->write_event);
 
   if (!conn->marked_for_close) {
     connection_close_immediate(conn);

@@ -64,6 +64,9 @@ static const size_t NTOR3_CIRC_VERIFICATION_LEN = 14;
 server_onion_keys_t *
 server_onion_keys_new(void)
 {
+  if (!get_master_identity_key())
+    return NULL;
+
   server_onion_keys_t *keys = tor_malloc_zero(sizeof(server_onion_keys_t));
   memcpy(keys->my_identity, router_get_my_id_digest(), DIGEST_LEN);
   ed25519_pubkey_copy(&keys->my_ed_identity, get_master_identity_key());

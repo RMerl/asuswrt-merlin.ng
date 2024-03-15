@@ -26,8 +26,10 @@ metrics_store_t *metrics_store_new(void);
 
 /* Modifiers. */
 metrics_store_entry_t *metrics_store_add(metrics_store_t *store,
-                                         metrics_type_t type,
-                                         const char *name, const char *help);
+                                         metrics_type_t type, const char *name,
+                                         const char *help, size_t bucket_count,
+                                         const int64_t *buckets);
+
 void metrics_store_reset(metrics_store_t *store);
 
 /* Accessors. */

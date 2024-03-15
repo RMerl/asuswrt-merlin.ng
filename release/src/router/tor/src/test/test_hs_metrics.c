@@ -40,7 +40,8 @@ test_metrics(void *arg)
 
   /* Update entry by identifier. */
   hs_metrics_update_by_ident(HS_METRICS_NUM_INTRODUCTIONS,
-                             &service->keys.identity_pk, 0, 42);
+                             &service->keys.identity_pk, 0, NULL, 42,
+                             0, false);
 
   /* Confirm the entry value. */
   const smartlist_t *entries = metrics_store_get_all(service->metrics.store,
@@ -53,8 +54,41 @@ test_metrics(void *arg)
 
   /* Update entry by service now. */
   hs_metrics_update_by_service(HS_METRICS_NUM_INTRODUCTIONS,
-                               service, 0, 42);
+                               service, 0, NULL, 42, 0, false);
   tt_int_op(metrics_store_entry_get_value(entry), OP_EQ, 84);
+
+  const char *reason = HS_METRICS_ERR_INTRO_REQ_BAD_AUTH_KEY;
+
+  /* Update tor_hs_intro_rejected_intro_req_count */
+  hs_metrics_update_by_ident(HS_METRICS_NUM_REJECTED_INTRO_REQ,
+                             &service->keys.identity_pk, 0,
+                             reason, 112, 0, false);
+
+  entries = metrics_store_get_all(service->metrics.store,
+                                  "tor_hs_intro_rejected_intro_req_count");
+  tt_assert(entries);
+  tt_int_op(smartlist_len(entries), OP_EQ,
+            hs_metrics_intro_req_error_reasons_size);
+
+  entry = metrics_store_find_entry_with_label(
+      entries, "reason=\"bad_auth_key\"");
+  tt_assert(entry);
+  tt_int_op(metrics_store_entry_get_value(entry), OP_EQ, 112);
+
+  /* Update tor_hs_intro_rejected_intro_req_count entry by service now. */
+  hs_metrics_update_by_service(HS_METRICS_NUM_REJECTED_INTRO_REQ, service, 0,
+                               reason, 10, 0, false);
+  tt_int_op(metrics_store_entry_get_value(entry), OP_EQ, 122);
+
+  /* So far these have been relative updates. Test updates with reset */
+  hs_metrics_update_by_service(HS_METRICS_NUM_REJECTED_INTRO_REQ,
+                               service, 0, reason, 10, 0, true);
+  tt_int_op(metrics_store_entry_get_value(entry), OP_EQ, 10);
+
+  hs_metrics_update_by_ident(HS_METRICS_NUM_REJECTED_INTRO_REQ,
+                             &service->keys.identity_pk, 0, reason,
+                             345, 0, true);
+  tt_int_op(metrics_store_entry_get_value(entry), OP_EQ, 345);
 
  done:
   hs_free_all();

@@ -414,6 +414,7 @@ connection_or_compute_authenticate_cell_body(or_connection_t *conn,
       log_fn(LOG_PROTOCOL_WARN, LD_OR, "Somebody asked us for an older TLS "
          "authentication method (AUTHTYPE_RSA_SHA256_TLSSECRET) "
          "which we don't support.");
+      goto err;
     }
   } else {
     char label[128];

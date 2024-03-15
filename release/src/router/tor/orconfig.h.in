@@ -6,7 +6,7 @@
 /* All assert failures are fatal */
 #undef ALL_BUGS_ARE_FATAL
 
-/* # for 0.4.7.13 Approximate date when this software was released. (Updated
+/* # for 0.4.8.10 Approximate date when this software was released. (Updated
    when the version changes.) */
 #undef APPROX_RELEASE_DATE
 
@@ -47,6 +47,9 @@
    hardening */
 #undef ENABLE_FRAGILE_HARDENING
 
+/* Defined if tor is building in GPL-licensed mode. */
+#undef ENABLE_GPL
+
 /* Defined if we default to host local appdata paths on Windows */
 #undef ENABLE_LOCAL_APPDATA
 
@@ -65,6 +68,9 @@
 /* Define if enum is always signed */
 #undef ENUM_VALS_ARE_SIGNED
 
+/* We statically link with EquiX */
+#undef EQUIX_STATIC
+
 /* Define to nothing if C supports flexible array members, and to 1 if it does
    not. That way, with a declaration like `struct s { int n; double
    d[FLEXIBLE_ARRAY_MEMBER]; };', the struct hack can be used with pre-C99
@@ -73,6 +79,12 @@
    instead. Don't use 'offsetof (struct s, d[0])', as this doesn't work with
    MSVC and with C++ compilers. */
 #undef FLEXIBLE_ARRAY_MEMBER
+
+/* Output size in bytes for the internal customization of HashX */
+#undef HASHX_SIZE
+
+/* We statically link with HashX */
+#undef HASHX_STATIC
 
 /* Define to 1 if you have the `accept4' function. */
 #undef HAVE_ACCEPT4
@@ -343,6 +355,9 @@
 
 /* Compile with directory cache support */
 #undef HAVE_MODULE_DIRCACHE
+
+/* Compile with proof-of-work support */
+#undef HAVE_MODULE_POW
 
 /* Compile with Relay feature support */
 #undef HAVE_MODULE_RELAY

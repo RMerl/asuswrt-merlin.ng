@@ -254,6 +254,50 @@ test_parsecommon_get_next_token_success(void *arg)
 }
 
 static void
+test_parsecommon_get_next_token_carriage_return(void *arg)
+{
+  memarea_t *area = memarea_new();
+  smartlist_t *tokens = smartlist_new();
+
+  (void)arg;
+
+  token_rule_t table[] = {
+          T01("uptime", K_UPTIME, GE(1), NO_OBJ),
+          T01("hibernating", K_HIBERNATING, GE(1), NO_OBJ),
+          END_OF_TABLE,
+  };
+
+  char *str = tor_strdup(
+          "hibernating 0\r\nuptime 1024\n"
+          "hibernating 0\ruptime 1024\n");
+
+  int retval =
+  tokenize_string(area, str, NULL,
+                  tokens, table, 0);
+
+  tt_int_op(smartlist_len(tokens), OP_EQ, 3);
+  directory_token_t *token = smartlist_get(tokens, 0);
+
+  tt_int_op(token->tp, OP_EQ, K_HIBERNATING);
+
+  token = smartlist_get(tokens, 1);
+
+  tt_int_op(token->tp, OP_EQ, K_UPTIME);
+
+  token = smartlist_get(tokens, 2);
+
+  tt_int_op(token->tp, OP_EQ, K_HIBERNATING);
+
+  tt_int_op(retval, OP_EQ, -1);
+
+ done:
+  tor_free(str);
+  memarea_drop_all(area);
+  smartlist_free(tokens);
+  return;
+}
+
+static void
 test_parsecommon_get_next_token_concat_args(void *arg)
 {
   memarea_t *area = memarea_new();
@@ -571,6 +615,7 @@ test_parsecommon_get_next_token_err_bad_base64(void *arg)
 
 struct testcase_t parsecommon_tests[] = {
   PARSECOMMON_TEST(tokenize_string_null),
+  PARSECOMMON_TEST(get_next_token_carriage_return),
   PARSECOMMON_TEST(tokenize_string_multiple_lines),
   PARSECOMMON_TEST(tokenize_string_min_cnt),
   PARSECOMMON_TEST(tokenize_string_max_cnt),

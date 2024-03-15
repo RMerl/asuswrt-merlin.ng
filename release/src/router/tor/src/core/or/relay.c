@@ -99,6 +99,9 @@
 #include "core/or/sendme.h"
 #include "core/or/congestion_control_common.h"
 #include "core/or/congestion_control_flow.h"
+#include "core/or/conflux.h"
+#include "core/or/conflux_util.h"
+#include "core/or/conflux_pool.h"
 
 static edge_connection_t *relay_lookup_conn(circuit_t *circ, cell_t *cell,
                                             cell_direction_t cell_direction,
@@ -116,6 +119,14 @@ static void adjust_exit_policy_from_exitpolicy_failure(origin_circuit_t *circ,
                                                   entry_connection_t *conn,
                                                   node_t *node,
                                                   const tor_addr_t *addr);
+static int connection_edge_process_ordered_relay_cell(cell_t *cell,
+                                           circuit_t *circ,
+                                           edge_connection_t *conn,
+                                           crypt_path_t *layer_hint,
+                                           relay_header_t *rh);
+static void set_block_state_for_streams(circuit_t *circ,
+                                        edge_connection_t *stream_list,
+                                        int block, streamid_t stream_id);
 
 /** Stats: how many relay cells have originated at this hop, or have
  * been relayed onward (not recognized at this hop)?
@@ -441,13 +452,12 @@ relay_lookup_conn(circuit_t *circ, cell_t *cell,
   /* IN or OUT cells could have come from either direction, now
    * that we allow rendezvous *to* an OP.
    */
-
   if (CIRCUIT_IS_ORIGIN(circ)) {
     for (tmpconn = TO_ORIGIN_CIRCUIT(circ)->p_streams; tmpconn;
          tmpconn=tmpconn->next_stream) {
       if (rh.stream_id == tmpconn->stream_id &&
           !tmpconn->base_.marked_for_close &&
-          tmpconn->cpath_layer == layer_hint) {
+          edge_uses_cpath(tmpconn, layer_hint)) {
         log_debug(LD_APP,"found conn for stream %d.", rh.stream_id);
         return tmpconn;
       }
@@ -535,6 +545,10 @@ relay_command_to_string(uint8_t command)
     case RELAY_COMMAND_EXTENDED2: return "EXTENDED2";
     case RELAY_COMMAND_PADDING_NEGOTIATE: return "PADDING_NEGOTIATE";
     case RELAY_COMMAND_PADDING_NEGOTIATED: return "PADDING_NEGOTIATED";
+    case RELAY_COMMAND_CONFLUX_LINK: return "CONFLUX_LINK";
+    case RELAY_COMMAND_CONFLUX_LINKED: return "CONFLUX_LINKED";
+    case RELAY_COMMAND_CONFLUX_LINKED_ACK: return "CONFLUX_LINKED_ACK";
+    case RELAY_COMMAND_CONFLUX_SWITCH: return "CONFLUX_SWITCH";
     default:
       tor_snprintf(buf, sizeof(buf), "Unrecognized relay command %u",
                    (unsigned)command);
@@ -610,7 +624,7 @@ pad_cell_payload(uint8_t *cell_payload, size_t data_len)
  * return 0.
  */
 MOCK_IMPL(int,
-relay_send_command_from_edge_,(streamid_t stream_id, circuit_t *circ,
+relay_send_command_from_edge_,(streamid_t stream_id, circuit_t *orig_circ,
                                uint8_t relay_command, const char *payload,
                                size_t payload_len, crypt_path_t *cpath_layer,
                                const char *filename, int lineno))
@@ -618,6 +632,26 @@ relay_send_command_from_edge_,(streamid_t stream_id, circuit_t *circ,
   cell_t cell;
   relay_header_t rh;
   cell_direction_t cell_direction;
+  circuit_t *circ = orig_circ;
+
+  /* If conflux is enabled, decide which leg to send on, and use that */
+  if (orig_circ->conflux && conflux_should_multiplex(relay_command)) {
+    circ = conflux_decide_circ_for_send(orig_circ->conflux, orig_circ,
+                                        relay_command);
+    if (BUG(!circ)) {
+      log_warn(LD_BUG, "No circuit to send for conflux for relay command %d, "
+               "called from %s:%d", relay_command, filename, lineno);
+      conflux_log_set(LOG_WARN, orig_circ->conflux,
+                       CIRCUIT_IS_ORIGIN(orig_circ));
+      circ = orig_circ;
+    } else {
+      /* Conflux circuits always send multiplexed relay commands to
+       * to the last hop. (Non-multiplexed commands go on their
+       * original circuit and hop). */
+      cpath_layer = conflux_get_destination_hop(circ);
+    }
+  }
+
   /* XXXX NM Split this function into a separate versions per circuit type? */
 
   tor_assert(circ);
@@ -640,6 +674,7 @@ relay_send_command_from_edge_,(streamid_t stream_id, circuit_t *circ,
   rh.stream_id = stream_id;
   rh.length = payload_len;
   relay_header_pack(cell.payload, &rh);
+
   if (payload_len)
     memcpy(cell.payload+RELAY_HEADER_SIZE, payload, payload_len);
 
@@ -714,11 +749,24 @@ relay_send_command_from_edge_,(streamid_t stream_id, circuit_t *circ,
     return -1;
   }
 
+  if (circ->conflux) {
+    conflux_note_cell_sent(circ->conflux, circ, relay_command);
+  }
+
   /* If applicable, note the cell digest for the SENDME version 1 purpose if
    * we need to. This call needs to be after the circuit_package_relay_cell()
    * because the cell digest is set within that function. */
   if (relay_command == RELAY_COMMAND_DATA) {
     sendme_record_cell_digest_on_circ(circ, cpath_layer);
+
+    /* Handle the circuit-level SENDME package window. */
+    if (sendme_note_circuit_data_packaged(circ, cpath_layer) < 0) {
+      /* Package window has gone under 0. Protocol issue. */
+      log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+             "Circuit package window is below 0. Closing circuit.");
+      circuit_mark_for_close(circ, END_CIRC_REASON_TORPROTOCOL);
+      return -1;
+    }
   }
 
   return 0;
@@ -742,6 +790,7 @@ connection_edge_send_command(edge_connection_t *fromconn,
   circuit_t *circ;
   crypt_path_t *cpath_layer = fromconn->cpath_layer;
   tor_assert(fromconn);
+
   circ = fromconn->on_circuit;
 
   if (fromconn->base_.marked_for_close) {
@@ -1423,7 +1472,7 @@ connection_edge_process_relay_cell_not_open(
           (get_options()->ClientDNSRejectInternalAddresses &&
            tor_addr_is_internal(&addr, 0))) {
         log_info(LD_APP, "...but it claims the IP address was %s. Closing.",
-                 fmt_addr(&addr));
+                 safe_str(fmt_addr(&addr)));
         connection_edge_end(conn, END_STREAM_REASON_TORPROTOCOL);
         connection_mark_unattached_ap(entry_conn,
                                       END_STREAM_REASON_TORPROTOCOL);
@@ -1434,7 +1483,7 @@ connection_edge_process_relay_cell_not_open(
           (family == AF_INET6 && ! entry_conn->entry_cfg.ipv6_traffic)) {
         log_fn(LOG_PROTOCOL_WARN, LD_APP,
                "Got a connected cell to %s with unsupported address family."
-               " Closing.", fmt_addr(&addr));
+               " Closing.", safe_str(fmt_addr(&addr)));
         connection_edge_end(conn, END_STREAM_REASON_TORPROTOCOL);
         connection_mark_unattached_ap(entry_conn,
                                       END_STREAM_REASON_TORPROTOCOL);
@@ -1508,25 +1557,6 @@ connection_edge_process_relay_cell_not_open(
 //  connection_edge_end(conn, END_STREAM_REASON_TORPROTOCOL);
 //  connection_mark_for_close(conn);
 //  return -1;
-}
-
-/**
- * Return true iff our decryption layer_hint is from the last hop
- * in a circuit.
- */
-static bool
-relay_crypt_from_last_hop(origin_circuit_t *circ, crypt_path_t *layer_hint)
-{
-  tor_assert(circ);
-  tor_assert(layer_hint);
-  tor_assert(circ->cpath);
-
-  if (layer_hint != circ->cpath->prev) {
-    log_fn(LOG_PROTOCOL_WARN, LD_CIRC,
-           "Got unexpected relay data from intermediate hop");
-    return false;
-  }
-  return true;
 }
 
 /** Process a SENDME cell that arrived on <b>circ</b>. If it is a stream level
@@ -1632,6 +1662,17 @@ handle_relay_cell_command(cell_t *cell, circuit_t *circ,
 
   /* Now handle all the other commands */
   switch (rh->command) {
+    case RELAY_COMMAND_CONFLUX_LINK:
+      conflux_process_link(circ, cell, rh->length);
+      return 0;
+    case RELAY_COMMAND_CONFLUX_LINKED:
+      conflux_process_linked(circ, layer_hint, cell, rh->length);
+      return 0;
+    case RELAY_COMMAND_CONFLUX_LINKED_ACK:
+      conflux_process_linked_ack(circ);
+      return 0;
+    case RELAY_COMMAND_CONFLUX_SWITCH:
+      return conflux_process_switch_command(circ, layer_hint, cell, rh);
     case RELAY_COMMAND_BEGIN:
     case RELAY_COMMAND_BEGIN_DIR:
       if (layer_hint &&
@@ -1666,19 +1707,6 @@ handle_relay_cell_command(cell_t *cell, circuit_t *circ,
     case RELAY_COMMAND_DATA:
       ++stats_n_data_cells_received;
 
-      /* Update our circuit-level deliver window that we received a DATA cell.
-       * If the deliver window goes below 0, we end the circuit and stream due
-       * to a protocol failure. */
-      if (sendme_circuit_data_received(circ, layer_hint) < 0) {
-        log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
-               "(relay data) circ deliver_window below 0. Killing.");
-        connection_edge_end_close(conn, END_STREAM_REASON_TORPROTOCOL);
-        return -END_CIRC_REASON_TORPROTOCOL;
-      }
-
-      /* Consider sending a circuit-level SENDME cell. */
-      sendme_circuit_consider_sending(circ, layer_hint);
-
       if (rh->stream_id == 0) {
         log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL, "Relay data cell with zero "
                "stream_id. Dropping.");
@@ -1703,7 +1731,6 @@ handle_relay_cell_command(cell_t *cell, circuit_t *circ,
       /* Update our stream-level deliver window that we just received a DATA
        * cell. Going below 0 means we have a protocol level error so the
        * stream and circuit are closed. */
-
       if (sendme_stream_data_received(conn) < 0) {
         log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
                "(relay data) conn deliver_window below 0. Killing.");
@@ -2051,9 +2078,6 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
   static int num_seen=0;
   relay_header_t rh;
   unsigned domain = layer_hint?LD_APP:LD_EXIT;
-  int optimistic_data = 0; /* Set to 1 if we receive data on a stream
-                            * that's in the EXIT_CONN_STATE_RESOLVING
-                            * or EXIT_CONN_STATE_CONNECTING states. */
 
   tor_assert(cell);
   tor_assert(circ);
@@ -2086,8 +2110,86 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
     }
   }
 
+  /* Regardless of conflux or not, we always decide to send a SENDME
+   * for RELAY_DATA immediately
+   */
+  if (rh.command == RELAY_COMMAND_DATA) {
+    /* Update our circuit-level deliver window that we received a DATA cell.
+     * If the deliver window goes below 0, we end the circuit and stream due
+     * to a protocol failure. */
+    if (sendme_circuit_data_received(circ, layer_hint) < 0) {
+      log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
+             "(relay data) circ deliver_window below 0. Killing.");
+      connection_edge_end_close(conn, END_STREAM_REASON_TORPROTOCOL);
+      return -END_CIRC_REASON_TORPROTOCOL;
+    }
+
+    /* Consider sending a circuit-level SENDME cell. */
+    sendme_circuit_consider_sending(circ, layer_hint);
+
+    /* Continue on to process the data cell via conflux or not */
+  }
+
+  /* Conflux handling: If conflux is disabled, or the relay command is not
+   * multiplexed across circuits, then process it immediately.
+   *
+   * Otherwise, we need to process the relay cell against our conflux
+   * queues, and if doing so results in ordered cells to deliver, we
+   * dequeue and process those in-order until there are no more.
+   */
+  if (!circ->conflux || !conflux_should_multiplex(rh.command)) {
+    return connection_edge_process_ordered_relay_cell(cell, circ, conn,
+                                                      layer_hint, &rh);
+  } else {
+    // If conflux says this cell is in-order, then begin processing
+    // cells from queue until there are none. Otherwise, we do nothing
+    // until further cells arrive.
+    if (conflux_process_cell(circ->conflux, circ, layer_hint, cell)) {
+      conflux_cell_t *c_cell = NULL;
+      int ret = 0;
+
+      /* First, process this cell */
+      if ((ret = connection_edge_process_ordered_relay_cell(cell, circ, conn,
+                                                 layer_hint, &rh)) < 0) {
+        return ret;
+      }
+
+      /* Now, check queue for more */
+      while ((c_cell = conflux_dequeue_cell(circ->conflux))) {
+        relay_header_unpack(&rh, c_cell->cell.payload);
+        conn = relay_lookup_conn(circ, &c_cell->cell, CELL_DIRECTION_OUT,
+                                 layer_hint);
+        if ((ret = connection_edge_process_ordered_relay_cell(&c_cell->cell,
+                                                   circ, conn, layer_hint,
+                                                   &rh)) < 0) {
+          /* Negative return value is a fatal error. Return early and tear down
+           * circuit */
+          tor_free(c_cell);
+          return ret;
+        }
+        tor_free(c_cell);
+      }
+    }
+  }
+
+  return 0;
+}
+
+/**
+ * Helper function to process a relay cell that is in the proper order
+ * for processing right now. */
+static int
+connection_edge_process_ordered_relay_cell(cell_t *cell, circuit_t *circ,
+                                           edge_connection_t *conn,
+                                           crypt_path_t *layer_hint,
+                                           relay_header_t *rh)
+{
+  int optimistic_data = 0; /* Set to 1 if we receive data on a stream
+                            * that's in the EXIT_CONN_STATE_RESOLVING
+                            * or EXIT_CONN_STATE_CONNECTING states. */
+
   /* Tell circpad that we've received a recognized cell */
-  circpad_deliver_recognized_relay_cell_events(circ, rh.command, layer_hint);
+  circpad_deliver_recognized_relay_cell_events(circ, rh->command, layer_hint);
 
   /* either conn is NULL, in which case we've got a control cell, or else
    * conn points to the recognized stream. */
@@ -2095,22 +2197,22 @@ connection_edge_process_relay_cell(cell_t *cell, circuit_t *circ,
     if (conn->base_.type == CONN_TYPE_EXIT &&
         (conn->base_.state == EXIT_CONN_STATE_CONNECTING ||
          conn->base_.state == EXIT_CONN_STATE_RESOLVING) &&
-        rh.command == RELAY_COMMAND_DATA) {
+        rh->command == RELAY_COMMAND_DATA) {
       /* Allow DATA cells to be delivered to an exit node in state
        * EXIT_CONN_STATE_CONNECTING or EXIT_CONN_STATE_RESOLVING.
        * This speeds up HTTP, for example. */
       optimistic_data = 1;
-    } else if (rh.stream_id == 0 && rh.command == RELAY_COMMAND_DATA) {
+    } else if (rh->stream_id == 0 && rh->command == RELAY_COMMAND_DATA) {
       log_warn(LD_BUG, "Somehow I had a connection that matched a "
                "data cell with stream ID 0.");
     } else {
       return connection_edge_process_relay_cell_not_open(
-               &rh, cell, circ, conn, layer_hint);
+               rh, cell, circ, conn, layer_hint);
     }
   }
 
   return handle_relay_cell_command(cell, circ, conn, layer_hint,
-                              &rh, optimistic_data);
+                              rh, optimistic_data);
 }
 
 /** How many relay_data cells have we built, ever? */
@@ -2234,7 +2336,7 @@ connection_edge_package_raw_inbuf(edge_connection_t *conn, int package_partial,
 
   tor_assert(conn);
 
-  if (conn->base_.marked_for_close) {
+  if (BUG(conn->base_.marked_for_close)) {
     log_warn(LD_BUG,
              "called on conn that's already marked for close at %s:%d.",
              conn->base_.marked_for_close_file, conn->base_.marked_for_close);
@@ -2313,19 +2415,11 @@ connection_edge_package_raw_inbuf(edge_connection_t *conn, int package_partial,
     buf_add(entry_conn->pending_optimistic_data, payload, length);
   }
 
+  /* Send a data cell. This handles the circuit package window. */
   if (connection_edge_send_command(conn, RELAY_COMMAND_DATA,
                                    payload, length) < 0 ) {
     /* circuit got marked for close, don't continue, don't need to mark conn */
     return 0;
-  }
-
-  /* Handle the circuit-level SENDME package window. */
-  if (sendme_note_circuit_data_packaged(circ, cpath_layer) < 0) {
-    /* Package window has gone under 0. Protocol issue. */
-    log_fn(LOG_PROTOCOL_WARN, LD_PROTOCOL,
-           "Circuit package window is below 0. Closing circuit.");
-    conn->end_reason = END_STREAM_REASON_TORPROTOCOL;
-    return -1;
   }
 
   /* Handle the stream-level SENDME package window. */
@@ -2359,6 +2453,15 @@ circuit_resume_edge_reading(circuit_t *circ, crypt_path_t *layer_hint)
     log_debug(layer_hint?LD_APP:LD_EXIT,"Too big queue, no resuming");
     return;
   }
+
+  /* If we have a conflux negotiated, and it still can't send on
+   * any circuit, then do not resume sending. */
+  if (circ->conflux && !conflux_can_send(circ->conflux)) {
+    log_debug(layer_hint?LD_APP:LD_EXIT,
+              "Conflux can't send, not resuming edges");
+    return;
+  }
+
   log_debug(layer_hint?LD_APP:LD_EXIT,"resuming");
 
   if (CIRCUIT_IS_ORIGIN(circ))
@@ -2391,20 +2494,6 @@ circuit_resume_edge_reading_helper(edge_connection_t *first_conn,
      * to resume. */
     return 0;
   }
-
-  /* How many cells do we have space for?  It will be the minimum of
-   * the number needed to exhaust the package window, and the minimum
-   * needed to fill the cell queue. */
-
-  max_to_package = congestion_control_get_package_window(circ, layer_hint);
-  if (CIRCUIT_IS_ORIGIN(circ)) {
-    cells_on_queue = circ->n_chan_cells.n;
-  } else {
-    or_circuit_t *or_circ = TO_OR_CIRCUIT(circ);
-    cells_on_queue = or_circ->p_chan_cells.n;
-  }
-  if (cell_queue_highwatermark() - cells_on_queue < max_to_package)
-    max_to_package = cell_queue_highwatermark() - cells_on_queue;
 
   /* Once we used to start listening on the streams in the order they
    * appeared in the linked list.  That leads to starvation on the
@@ -2444,11 +2533,13 @@ circuit_resume_edge_reading_helper(edge_connection_t *first_conn,
   /* Activate reading starting from the chosen stream */
   for (conn=chosen_stream; conn; conn = conn->next_stream) {
     /* Start reading for the streams starting from here */
-    if (conn->base_.marked_for_close || conn->package_window <= 0 ||
-        conn->xoff_received)
+    if (conn->base_.marked_for_close || conn->package_window <= 0)
       continue;
-    if (!layer_hint || conn->cpath_layer == layer_hint) {
-      connection_start_reading(TO_CONN(conn));
+
+    if (edge_uses_cpath(conn, layer_hint)) {
+      if (!conn->xoff_received) {
+        connection_start_reading(TO_CONN(conn));
+      }
 
       if (connection_get_inbuf_len(TO_CONN(conn)) > 0)
         ++n_packaging_streams;
@@ -2456,11 +2547,13 @@ circuit_resume_edge_reading_helper(edge_connection_t *first_conn,
   }
   /* Go back and do the ones we skipped, circular-style */
   for (conn = first_conn; conn != chosen_stream; conn = conn->next_stream) {
-    if (conn->base_.marked_for_close || conn->package_window <= 0 ||
-        conn->xoff_received)
+    if (conn->base_.marked_for_close || conn->package_window <= 0)
       continue;
-    if (!layer_hint || conn->cpath_layer == layer_hint) {
-      connection_start_reading(TO_CONN(conn));
+
+    if (edge_uses_cpath(conn, layer_hint)) {
+      if (!conn->xoff_received) {
+        connection_start_reading(TO_CONN(conn));
+      }
 
       if (connection_get_inbuf_len(TO_CONN(conn)) > 0)
         ++n_packaging_streams;
@@ -2471,6 +2564,32 @@ circuit_resume_edge_reading_helper(edge_connection_t *first_conn,
     return 0;
 
  again:
+
+  /* If we're using conflux, the circuit we decide to send on may change
+   * after we're sending. Get it again, and re-check package windows
+   * for it */
+  if (circ->conflux) {
+    if (circuit_consider_stop_edge_reading(circ, layer_hint))
+      return -1;
+
+    circ = conflux_decide_next_circ(circ->conflux);
+
+    /* Get the destination layer hint for this circuit */
+    layer_hint = conflux_get_destination_hop(circ);
+  }
+
+  /* How many cells do we have space for?  It will be the minimum of
+   * the number needed to exhaust the package window, and the minimum
+   * needed to fill the cell queue. */
+  max_to_package = congestion_control_get_package_window(circ, layer_hint);
+  if (CIRCUIT_IS_ORIGIN(circ)) {
+    cells_on_queue = circ->n_chan_cells.n;
+  } else {
+    or_circuit_t *or_circ = TO_OR_CIRCUIT(circ);
+    cells_on_queue = or_circ->p_chan_cells.n;
+  }
+  if (cell_queue_highwatermark() - cells_on_queue < max_to_package)
+    max_to_package = cell_queue_highwatermark() - cells_on_queue;
 
   cells_per_conn = CEIL_DIV(max_to_package, n_packaging_streams);
 
@@ -2485,7 +2604,7 @@ circuit_resume_edge_reading_helper(edge_connection_t *first_conn,
   for (conn=first_conn; conn; conn=conn->next_stream) {
     if (conn->base_.marked_for_close || conn->package_window <= 0)
       continue;
-    if (!layer_hint || conn->cpath_layer == layer_hint) {
+    if (edge_uses_cpath(conn, layer_hint)) {
       int n = cells_per_conn, r;
       /* handle whatever might still be on the inbuf */
       r = connection_edge_package_raw_inbuf(conn, 1, &n);
@@ -2519,7 +2638,6 @@ circuit_resume_edge_reading_helper(edge_connection_t *first_conn,
    */
   if (packaged_this_round && packaged_this_round < max_to_package &&
       n_streams_left) {
-    max_to_package -= packaged_this_round;
     n_packaging_streams = n_streams_left;
     goto again;
   }
@@ -2543,7 +2661,7 @@ circuit_consider_stop_edge_reading(circuit_t *circ, crypt_path_t *layer_hint)
     or_circuit_t *or_circ = TO_OR_CIRCUIT(circ);
     log_debug(domain,"considering circ->package_window %d",
               circ->package_window);
-    if (congestion_control_get_package_window(circ, layer_hint) <= 0) {
+    if (circuit_get_package_window(circ, layer_hint) <= 0) {
       log_debug(domain,"yes, not-at-origin. stopped.");
       for (conn = or_circ->n_streams; conn; conn=conn->next_stream)
         connection_stop_reading(TO_CONN(conn));
@@ -2554,11 +2672,11 @@ circuit_consider_stop_edge_reading(circuit_t *circ, crypt_path_t *layer_hint)
   /* else, layer hint is defined, use it */
   log_debug(domain,"considering layer_hint->package_window %d",
             layer_hint->package_window);
-  if (congestion_control_get_package_window(circ, layer_hint) <= 0) {
+  if (circuit_get_package_window(circ, layer_hint) <= 0) {
     log_debug(domain,"yes, at-origin. stopped.");
     for (conn = TO_ORIGIN_CIRCUIT(circ)->p_streams; conn;
          conn=conn->next_stream) {
-      if (conn->cpath_layer == layer_hint)
+      if (edge_uses_cpath(conn, layer_hint))
         connection_stop_reading(TO_CONN(conn));
     }
     return 1;
@@ -2794,6 +2912,8 @@ cell_queues_check_size(void)
   alloc += geoip_client_cache_total;
   const size_t dns_cache_total = dns_cache_total_allocation();
   alloc += dns_cache_total;
+  const size_t conflux_total = conflux_get_total_bytes_allocation();
+  alloc += conflux_total;
   if (alloc >= get_options()->MaxMemInQueues_low_threshold) {
     last_time_under_memory_pressure = approx_time();
     if (alloc >= get_options()->MaxMemInQueues) {
@@ -2823,6 +2943,14 @@ cell_queues_check_size(void)
           dns_cache_total - (size_t)(get_options()->MaxMemInQueues / 10);
         removed = dns_cache_handle_oom(now, bytes_to_remove);
         oom_stats_n_bytes_removed_dns += removed;
+        alloc -= removed;
+      }
+      /* Like onion service above, try to go down to 10% if we are above 20% */
+      if (conflux_total > get_options()->MaxMemInQueues / 5) {
+        const size_t bytes_to_remove =
+          conflux_total - (size_t)(get_options()->MaxMemInQueues / 10);
+        removed = conflux_handle_oom(bytes_to_remove);
+        oom_stats_n_bytes_removed_cell += removed;
         alloc -= removed;
       }
       removed = circuits_handle_oom(alloc);
@@ -2902,44 +3030,63 @@ channel_unlink_all_circuits(channel_t *chan, smartlist_t *circuits_out)
   chan->num_p_circuits = 0;
 }
 
-/** Block (if <b>block</b> is true) or unblock (if <b>block</b> is false)
+/**
+ * Called when a circuit becomes blocked or unblocked due to the channel
+ * cell queue.
+ *
+ * Block (if <b>block</b> is true) or unblock (if <b>block</b> is false)
  * every edge connection that is using <b>circ</b> to write to <b>chan</b>,
  * and start or stop reading as appropriate.
- *
- * If <b>stream_id</b> is nonzero, block only the edge connection whose
- * stream_id matches it.
- *
- * Returns the number of streams whose status we changed.
  */
-static int
-set_streams_blocked_on_circ(circuit_t *circ, channel_t *chan,
-                            int block, streamid_t stream_id)
+static void
+set_circuit_blocked_on_chan(circuit_t *circ, channel_t *chan, int block)
 {
   edge_connection_t *edge = NULL;
-  int n = 0;
   if (circ->n_chan == chan) {
-    circ->streams_blocked_on_n_chan = block;
+    circ->circuit_blocked_on_n_chan = block;
     if (CIRCUIT_IS_ORIGIN(circ))
       edge = TO_ORIGIN_CIRCUIT(circ)->p_streams;
   } else {
-    circ->streams_blocked_on_p_chan = block;
+    circ->circuit_blocked_on_p_chan = block;
     tor_assert(!CIRCUIT_IS_ORIGIN(circ));
     edge = TO_OR_CIRCUIT(circ)->n_streams;
   }
 
-  for (; edge; edge = edge->next_stream) {
+  set_block_state_for_streams(circ, edge, block, 0);
+}
+
+/**
+ * Helper function to block or unblock streams in a stream list.
+ *
+ * If <b>stream_id</b> is 0, apply the <b>block</b> state to all streams
+ * in the stream list. If it is non-zero, only apply to that specific stream.
+ */
+static void
+set_block_state_for_streams(circuit_t *circ, edge_connection_t *stream_list,
+                            int block, streamid_t stream_id)
+{
+  /* If we have a conflux object, we need to examine its status before
+   * blocking and unblocking streams. */
+  if (circ->conflux) {
+    bool can_send = conflux_can_send(circ->conflux);
+
+    if (block && can_send) {
+      /* Don't actually block streams, since conflux can send*/
+      return;
+    } else if (!block && !can_send) {
+      /* Don't actually unblock streams, since conflux still can't send */
+      return;
+    }
+  }
+
+  for (edge_connection_t *edge = stream_list; edge; edge = edge->next_stream) {
     connection_t *conn = TO_CONN(edge);
     if (stream_id && edge->stream_id != stream_id)
       continue;
 
-    if (edge->edge_blocked_on_circ != block) {
-      ++n;
-      edge->edge_blocked_on_circ = block;
-    }
-
-    if (!conn->read_event) {
-      /* This connection is a placeholder for something; probably a DNS
-       * request.  It can't actually stop or start reading.*/
+    if (!conn->read_event || edge->xoff_received ||
+        conn->marked_for_close) {
+      /* This connection should not start or stop reading. */
       continue;
     }
 
@@ -2952,8 +3099,6 @@ set_streams_blocked_on_circ(circuit_t *circ, channel_t *chan,
         connection_start_reading(conn);
     }
   }
-
-  return n;
 }
 
 /** Extract the command from a packed cell. */
@@ -2991,7 +3136,7 @@ channel_flush_from_first_active_circuit, (channel_t *chan, int max))
   destroy_cell_queue_t *destroy_queue=NULL;
   circuit_t *circ;
   or_circuit_t *or_circ;
-  int streams_blocked;
+  int circ_blocked;
   packed_cell_t *cell;
 
   /* Get the cmux */
@@ -3031,18 +3176,31 @@ channel_flush_from_first_active_circuit, (channel_t *chan, int max))
 
     if (circ->n_chan == chan) {
       queue = &circ->n_chan_cells;
-      streams_blocked = circ->streams_blocked_on_n_chan;
+      circ_blocked = circ->circuit_blocked_on_n_chan;
     } else {
       or_circ = TO_OR_CIRCUIT(circ);
       tor_assert(or_circ->p_chan == chan);
       queue = &TO_OR_CIRCUIT(circ)->p_chan_cells;
-      streams_blocked = circ->streams_blocked_on_p_chan;
+      circ_blocked = circ->circuit_blocked_on_p_chan;
     }
 
-    /* Circuitmux told us this was active, so it should have cells */
-    if (/*BUG(*/ queue->n == 0 /*)*/) {
-      log_warn(LD_BUG, "Found a supposedly active circuit with no cells "
-               "to send. Trying to recover.");
+    /* Circuitmux told us this was active, so it should have cells.
+     *
+     * Note: In terms of logic and coherence, this should never happen but the
+     * cmux dragon is powerful. Reason is that when the OOM is triggered, when
+     * cleaning up circuits, we mark them for close and then clear their cell
+     * queues. And so, we can have a circuit considered active by the cmux
+     * dragon but without cells. The cmux subsystem is only notified of this
+     * when the circuit is freed which leaves a tiny window between close and
+     * free to end up here.
+     *
+     * We are accepting this as an "ok" race else the changes are likely non
+     * trivial to make the mark for close to set the num cells to 0 and change
+     * the free functions to detach the circuit conditionally without creating
+     * a chain effect of madness.
+     *
+     * The lesson here is arti will prevail and leave the cmux dragon alone. */
+    if (queue->n == 0) {
       circuitmux_set_num_cells(cmux, circ, 0);
       if (! circ->marked_for_close)
         circuit_mark_for_close(circ, END_CIRC_REASON_INTERNAL);
@@ -3124,8 +3282,8 @@ channel_flush_from_first_active_circuit, (channel_t *chan, int max))
 
     /* Is the cell queue low enough to unblock all the streams that are waiting
      * to write to this circuit? */
-    if (streams_blocked && queue->n <= cell_queue_lowwatermark())
-      set_streams_blocked_on_circ(circ, chan, 0, 0); /* unblock streams */
+    if (circ_blocked && queue->n <= cell_queue_lowwatermark())
+      set_circuit_blocked_on_chan(circ, chan, 0); /* unblock streams */
 
     /* If n_flushed < max still, loop around and pick another circuit */
   }
@@ -3137,7 +3295,7 @@ channel_flush_from_first_active_circuit, (channel_t *chan, int max))
 /* Minimum value is the maximum circuit window size.
  *
  * This value is set to a lower bound we believe is reasonable with congestion
- * control and basic network tunning parameters.
+ * control and basic network running parameters.
  *
  * SENDME cells makes it that we can control how many cells can be inflight on
  * a circuit from end to end. This logic makes it that on any circuit cell
@@ -3170,7 +3328,7 @@ channel_flush_from_first_active_circuit, (channel_t *chan, int max))
 #define RELAY_CIRC_CELL_QUEUE_SIZE_DEFAULT \
   (50 * RELAY_CIRC_CELL_QUEUE_SIZE_MIN)
 
-/* The maximum number of cell a circuit queue can contain. This is updated at
+/* The maximum number of cells a circuit queue can contain. This is updated at
  * every new consensus and controlled by a parameter. */
 static int32_t max_circuit_cell_queue_size =
   RELAY_CIRC_CELL_QUEUE_SIZE_DEFAULT;
@@ -3230,9 +3388,10 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
                              streamid_t fromstream)
 {
   or_circuit_t *orcirc = NULL;
+  edge_connection_t *stream_list = NULL;
   cell_queue_t *queue;
   int32_t max_queue_size;
-  int streams_blocked;
+  int circ_blocked;
   int exitward;
   if (circ->marked_for_close)
     return;
@@ -3240,13 +3399,16 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
   exitward = (direction == CELL_DIRECTION_OUT);
   if (exitward) {
     queue = &circ->n_chan_cells;
-    streams_blocked = circ->streams_blocked_on_n_chan;
+    circ_blocked = circ->circuit_blocked_on_n_chan;
     max_queue_size = max_circuit_cell_queue_size_out;
+    if (CIRCUIT_IS_ORIGIN(circ))
+      stream_list = TO_ORIGIN_CIRCUIT(circ)->p_streams;
   } else {
     orcirc = TO_OR_CIRCUIT(circ);
     queue = &orcirc->p_chan_cells;
-    streams_blocked = circ->streams_blocked_on_p_chan;
+    circ_blocked = circ->circuit_blocked_on_p_chan;
     max_queue_size = max_circuit_cell_queue_size;
+    stream_list = TO_OR_CIRCUIT(circ)->n_streams;
   }
 
   if (PREDICT_UNLIKELY(queue->n >= max_queue_size)) {
@@ -3261,7 +3423,7 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
            "%s circuit has %d cells in its queue, maximum allowed is %d. "
            "Closing circuit for safety reasons.",
            (exitward) ? "Outbound" : "Inbound", queue->n,
-           max_circuit_cell_queue_size);
+           max_queue_size);
     circuit_mark_for_close(circ, END_CIRC_REASON_RESOURCELIMIT);
     stats_n_circ_max_cell_reached++;
     return;
@@ -3279,14 +3441,16 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
       return;
   }
 
-  /* If we have too many cells on the circuit, we should stop reading from
-   * the edge streams for a while. */
-  if (!streams_blocked && queue->n >= cell_queue_highwatermark())
-    set_streams_blocked_on_circ(circ, chan, 1, 0); /* block streams */
+  /* If we have too many cells on the circuit, note that it should
+   * be blocked from new cells. */
+  if (!circ_blocked && queue->n >= cell_queue_highwatermark())
+    set_circuit_blocked_on_chan(circ, chan, 1);
 
-  if (streams_blocked && fromstream) {
-    /* This edge connection is apparently not blocked; block it. */
-    set_streams_blocked_on_circ(circ, chan, 1, fromstream);
+  if (circ_blocked && fromstream) {
+    /* This edge connection is apparently not blocked; this can happen for
+     * new streams on a blocked circuit, for their CONNECTED response.
+     * block it now, unless we have conflux. */
+    set_block_state_for_streams(circ, stream_list, 1, fromstream);
   }
 
   update_circuit_on_cmux(circ, direction);
@@ -3392,8 +3556,8 @@ static int
 circuit_queue_streams_are_blocked(circuit_t *circ)
 {
   if (CIRCUIT_IS_ORIGIN(circ)) {
-    return circ->streams_blocked_on_n_chan;
+    return circ->circuit_blocked_on_n_chan;
   } else {
-    return circ->streams_blocked_on_p_chan;
+    return circ->circuit_blocked_on_p_chan;
   }
 }

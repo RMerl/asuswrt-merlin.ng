@@ -9,6 +9,7 @@
 #include "core/or/dos.h"
 #include "core/or/circuitlist.h"
 #include "lib/crypt_ops/crypto_rand.h"
+#include "lib/time/compat_time.h"
 #include "feature/stats/geoip_stats.h"
 #include "core/or/channel.h"
 #include "feature/nodelist/microdesc.h"
@@ -22,6 +23,8 @@
 
 #include "test/test.h"
 #include "test/log_test_helpers.h"
+
+static const uint64_t BILLION = 1000000000;
 
 static networkstatus_t *dummy_ns = NULL;
 static networkstatus_t *
@@ -58,14 +61,19 @@ mock_enable_dos_protection(const networkstatus_t *ns)
 static void
 test_dos_conn_creation(void *arg)
 {
+  uint64_t monotime_now = 0xfffffffe;
+
   (void) arg;
 
+  monotime_enable_test_mocking();
+  monotime_coarse_set_mock_time_nsec(monotime_now);
   MOCK(get_param_cc_enabled, mock_enable_dos_protection);
   MOCK(get_param_conn_enabled, mock_enable_dos_protection);
 
   /* Initialize test data */
   or_connection_t or_conn;
-  time_t now = 1281533250; /* 2010-08-11 13:27:30 UTC */
+  memset(&or_conn, 0, sizeof or_conn);
+  time_t wallclock_now = 1281533250; /* 2010-08-11 13:27:30 UTC */
   tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&TO_CONN(&or_conn)->addr,
                                           "18.0.0.1"));
   tor_addr_t *addr = &TO_CONN(&or_conn)->addr;
@@ -75,13 +83,15 @@ test_dos_conn_creation(void *arg)
   uint32_t max_concurrent_conns = get_param_conn_max_concurrent_count(NULL);
 
   /* Introduce new client */
-  geoip_note_client_seen(GEOIP_CLIENT_CONNECT, addr, NULL, now);
+  geoip_note_client_seen(GEOIP_CLIENT_CONNECT, addr, NULL, wallclock_now);
   { /* Register many conns from this client but not enough to get it blocked */
     unsigned int i;
     for (i = 0; i < max_concurrent_conns; i++) {
       /* Don't trigger the connect() rate limitation so advance the clock 1
        * second for each connection. */
-      update_approx_time(++now);
+      monotime_coarse_set_mock_time_nsec(monotime_now += BILLION);
+      update_approx_time(++wallclock_now);
+      or_conn.tracked_for_dos_mitigation = 0;
       dos_new_client_conn(&or_conn, NULL);
     }
   }
@@ -91,12 +101,14 @@ test_dos_conn_creation(void *arg)
             dos_conn_addr_get_defense_type(addr));
 
   /* Register another conn and check that new conns are not allowed anymore */
+  or_conn.tracked_for_dos_mitigation = 0;
   dos_new_client_conn(&or_conn, NULL);
   tt_int_op(DOS_CONN_DEFENSE_CLOSE, OP_EQ,
             dos_conn_addr_get_defense_type(addr));
 
   /* Close a client conn and see that a new conn will be permitted again */
   dos_close_client_conn(&or_conn);
+  or_conn.tracked_for_dos_mitigation = 0;
   tt_int_op(DOS_CONN_DEFENSE_NONE, OP_EQ,
             dos_conn_addr_get_defense_type(addr));
 
@@ -107,6 +119,7 @@ test_dos_conn_creation(void *arg)
 
  done:
   dos_free_all();
+  monotime_disable_test_mocking();
 }
 
 /** Helper mock: Place a fake IP addr for this channel in <b>addr_out</b> */
@@ -141,6 +154,7 @@ test_dos_circuit_creation(void *arg)
 
   /* Initialize test data */
   or_connection_t or_conn;
+  memset(&or_conn, 0, sizeof or_conn);
   time_t now = 1281533250; /* 2010-08-11 13:27:30 UTC */
   tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&TO_CONN(&or_conn)->addr,
                                           "18.0.0.1"));
@@ -156,6 +170,7 @@ test_dos_circuit_creation(void *arg)
    * circuit counting subsystem */
   geoip_note_client_seen(GEOIP_CLIENT_CONNECT, addr, NULL, now);
   for (i = 0; i < min_conc_conns_for_cc ; i++) {
+    or_conn.tracked_for_dos_mitigation = 0;
     dos_new_client_conn(&or_conn, NULL);
   }
 
@@ -205,6 +220,7 @@ test_dos_bucket_refill(void *arg)
   channel_init(chan);
   chan->is_client = 1;
   or_connection_t or_conn;
+  memset(&or_conn, 0, sizeof or_conn);
   tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&TO_CONN(&or_conn)->addr,
                                           "18.0.0.1"));
   tor_addr_t *addr = &TO_CONN(&or_conn)->addr;
@@ -421,12 +437,12 @@ test_dos_bucket_refill(void *arg)
   dos_free_all();
 }
 
-/* Test if we avoid counting a known relay. */
+/* Test if we avoid counting a known relay. (We no longer do) */
 static void
 test_known_relay(void *arg)
 {
   clientmap_entry_t *entry = NULL;
-  routerstatus_t *rs = NULL; microdesc_t *md = NULL; routerinfo_t *ri = NULL;
+  routerstatus_t *rs = NULL;
 
   (void) arg;
 
@@ -446,6 +462,7 @@ test_known_relay(void *arg)
 
   /* Setup an OR conn so we can pass it to the DoS subsystem. */
   or_connection_t or_conn;
+  memset(&or_conn, 0, sizeof or_conn);
   tor_addr_parse(&TO_CONN(&or_conn)->addr, "42.42.42.42");
 
   rs = tor_malloc_zero(sizeof(*rs));
@@ -462,34 +479,24 @@ test_known_relay(void *arg)
    * client connection. */
   geoip_note_client_seen(GEOIP_CLIENT_CONNECT, &TO_CONN(&or_conn)->addr,
                          NULL, 0);
-  /* Suppose we have 5 connections in rapid succession, the counter should
-   * always be 0 because we should ignore this. */
+  /* Suppose we have 5 connections in rapid succession */
   dos_new_client_conn(&or_conn, NULL);
+  or_conn.tracked_for_dos_mitigation = 0;
   dos_new_client_conn(&or_conn, NULL);
+  or_conn.tracked_for_dos_mitigation = 0;
   dos_new_client_conn(&or_conn, NULL);
+  or_conn.tracked_for_dos_mitigation = 0;
   dos_new_client_conn(&or_conn, NULL);
-  dos_new_client_conn(&or_conn, NULL);
-  entry = geoip_lookup_client(&TO_CONN(&or_conn)->addr, NULL,
-                              GEOIP_CLIENT_CONNECT);
-  tt_assert(entry);
-  /* We should have a count of 0. */
-  tt_uint_op(entry->dos_stats.conn_stats.concurrent_count, OP_EQ, 0);
-
-  /* To make sure that his is working properly, make a unknown client
-   * connection and see if we do get it. */
-  tor_addr_parse(&TO_CONN(&or_conn)->addr, "42.42.42.43");
-  geoip_note_client_seen(GEOIP_CLIENT_CONNECT, &TO_CONN(&or_conn)->addr,
-                         NULL, 0);
-  dos_new_client_conn(&or_conn, NULL);
+  or_conn.tracked_for_dos_mitigation = 0;
   dos_new_client_conn(&or_conn, NULL);
   entry = geoip_lookup_client(&TO_CONN(&or_conn)->addr, NULL,
                               GEOIP_CLIENT_CONNECT);
   tt_assert(entry);
-  /* We should have a count of 2. */
-  tt_uint_op(entry->dos_stats.conn_stats.concurrent_count, OP_EQ, 2);
+  /* We should have a count of 5. */
+  tt_uint_op(entry->dos_stats.conn_stats.concurrent_count, OP_EQ, 5);
 
  done:
-  routerstatus_free(rs); routerinfo_free(ri); microdesc_free(md);
+  routerstatus_free(rs);
   smartlist_clear(dummy_ns->routerstatus_list);
   networkstatus_vote_free(dummy_ns);
   dos_free_all();
@@ -511,6 +518,7 @@ test_dos_conn_rate(void *arg)
 
   /* Initialize test data */
   or_connection_t or_conn;
+  memset(&or_conn, 0, sizeof or_conn);
   time_t now = 1281533250; /* 2010-08-11 13:27:30 UTC */
   tt_int_op(AF_INET,OP_EQ, tor_addr_parse(&TO_CONN(&or_conn)->addr,
                                           "18.0.0.1"));
@@ -526,6 +534,7 @@ test_dos_conn_rate(void *arg)
   { /* Register many conns from this client but not enough to get it blocked */
     unsigned int i;
     for (i = 0; i < burst_conn - 1; i++) {
+      or_conn.tracked_for_dos_mitigation = 0;
       dos_new_client_conn(&or_conn, NULL);
     }
   }
@@ -536,6 +545,7 @@ test_dos_conn_rate(void *arg)
 
   /* Register another conn and check that new conns are not allowed anymore.
    * We should have reached our burst. */
+  or_conn.tracked_for_dos_mitigation = 0;
   dos_new_client_conn(&or_conn, NULL);
   tt_int_op(DOS_CONN_DEFENSE_CLOSE, OP_EQ,
             dos_conn_addr_get_defense_type(addr));

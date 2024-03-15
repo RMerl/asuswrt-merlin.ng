@@ -36,6 +36,7 @@
 #include "core/or/circuitstats.h"
 #include "core/or/circuituse.h"
 #include "core/or/circuitpadding.h"
+#include "core/or/conflux_pool.h"
 #include "core/or/connection_edge.h"
 #include "core/or/extendinfo.h"
 #include "core/or/policies.h"
@@ -51,6 +52,7 @@
 #include "feature/hs/hs_client.h"
 #include "feature/hs/hs_common.h"
 #include "feature/hs/hs_ident.h"
+#include "feature/hs/hs_metrics.h"
 #include "feature/hs/hs_stats.h"
 #include "feature/nodelist/describe.h"
 #include "feature/nodelist/networkstatus.h"
@@ -62,6 +64,8 @@
 #include "lib/math/fp.h"
 #include "lib/time/tvdiff.h"
 #include "lib/trace/events.h"
+#include "src/core/mainloop/mainloop.h"
+#include "core/or/conflux.h"
 
 #include "core/or/cpath_build_state_st.h"
 #include "feature/dircommon/dir_connection_st.h"
@@ -70,6 +74,8 @@
 #include "core/or/or_circuit_st.h"
 #include "core/or/origin_circuit_st.h"
 #include "core/or/socks_request_st.h"
+
+#include "core/or/conflux_util.h"
 
 STATIC void circuit_expire_old_circuits_clientside(void);
 static void circuit_increment_failure_count(void);
@@ -97,7 +103,7 @@ circuit_matches_with_rend_stream(const edge_connection_t *edge_conn,
 /** Return 1 if <b>circ</b> could be returned by circuit_get_best().
  * Else return 0.
  */
-static int
+int
 circuit_is_acceptable(const origin_circuit_t *origin_circ,
                       const entry_connection_t *conn,
                       int must_be_open, uint8_t purpose,
@@ -137,7 +143,8 @@ circuit_is_acceptable(const origin_circuit_t *origin_circ,
       purpose == CIRCUIT_PURPOSE_C_HSDIR_GET ||
       purpose == CIRCUIT_PURPOSE_S_HSDIR_POST ||
       purpose == CIRCUIT_PURPOSE_HS_VANGUARDS ||
-      purpose == CIRCUIT_PURPOSE_C_REND_JOINED) {
+      purpose == CIRCUIT_PURPOSE_C_REND_JOINED ||
+      purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED) {
     if (circ->timestamp_dirty &&
        circ->timestamp_dirty+get_options()->MaxCircuitDirtiness <= now)
       return 0;
@@ -161,6 +168,8 @@ circuit_is_acceptable(const origin_circuit_t *origin_circ,
     return 0;
 
   if (purpose == CIRCUIT_PURPOSE_C_GENERAL ||
+      purpose == CIRCUIT_PURPOSE_CONFLUX_UNLINKED ||
+      purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED ||
       purpose == CIRCUIT_PURPOSE_S_HSDIR_POST ||
       purpose == CIRCUIT_PURPOSE_C_HSDIR_GET) {
     tor_addr_t addr;
@@ -329,6 +338,7 @@ circuit_get_best(const entry_connection_t *conn,
 {
   origin_circuit_t *best=NULL;
   struct timeval now;
+  time_t now_sec;
 
   tor_assert(conn);
 
@@ -340,6 +350,14 @@ circuit_get_best(const entry_connection_t *conn,
              purpose == CIRCUIT_PURPOSE_C_REND_JOINED);
 
   tor_gettimeofday(&now);
+  now_sec = now.tv_sec;
+
+  // Prefer pre-built conflux circuits here, if available but only for general
+  // purposes. We don't have onion service conflux support at the moment.
+  if (purpose == CIRCUIT_PURPOSE_C_GENERAL &&
+      (best = conflux_get_circ_for_conn(conn, now_sec))) {
+    return best;
+  }
 
   SMARTLIST_FOREACH_BEGIN(circuit_get_global_list(), circuit_t *, circ) {
     origin_circuit_t *origin_circ;
@@ -348,7 +366,7 @@ circuit_get_best(const entry_connection_t *conn,
     origin_circ = TO_ORIGIN_CIRCUIT(circ);
 
     if (!circuit_is_acceptable(origin_circ,conn,must_be_open,purpose,
-                               need_uptime,need_internal, (time_t)now.tv_sec))
+                               need_uptime,need_internal, now_sec))
       continue;
 
     /* now this is an acceptable circ to hand back. but that doesn't
@@ -695,7 +713,6 @@ circuit_expire_building(void)
     } else { /* circuit not open, consider recording failure as timeout */
       int first_hop_succeeded = TO_ORIGIN_CIRCUIT(victim)->cpath &&
             TO_ORIGIN_CIRCUIT(victim)->cpath->state == CPATH_STATE_OPEN;
-
       if (TO_ORIGIN_CIRCUIT(victim)->p_streams != NULL) {
         log_warn(LD_BUG, "Circuit %d (purpose %d, %s) has timed out, "
                  "yet has attached streams!",
@@ -934,7 +951,7 @@ circuit_log_ancient_one_hop_circuits(int age)
                  c->marked_for_close,
                  c->hold_open_until_flushed ? "" : "not ",
                  conn->edge_has_sent_end ? "" : "not ",
-                 conn->edge_blocked_on_circ ? "Blocked" : "Not blocked");
+                 connection_is_reading(c) ? "Not blocked" : "Blocked");
       if (! c->linked_conn)
         continue;
 
@@ -1002,7 +1019,8 @@ circuit_stream_is_being_handled(entry_connection_t *conn,
   SMARTLIST_FOREACH_BEGIN(circuit_get_global_list(), circuit_t *, circ) {
     if (CIRCUIT_IS_ORIGIN(circ) &&
         !circ->marked_for_close &&
-        circ->purpose == CIRCUIT_PURPOSE_C_GENERAL &&
+        (circ->purpose == CIRCUIT_PURPOSE_C_GENERAL ||
+        circ->purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED) &&
         (!circ->timestamp_dirty ||
          circ->timestamp_dirty + get_options()->MaxCircuitDirtiness > now)) {
       origin_circuit_t *origin_circ = TO_ORIGIN_CIRCUIT(circ);
@@ -1183,6 +1201,10 @@ circuit_predict_and_launch_new(void)
   time_t now = time(NULL);
   int flags = 0;
 
+  /* Attempt to launch predicted conflux circuits. This is outside the HS or
+   * Exit preemptive circuit set. */
+  conflux_predict_new(now);
+
   /* Count how many of each type of circuit we currently have. */
   SMARTLIST_FOREACH_BEGIN(circuit_get_global_list(), circuit_t *, circ) {
     if (!circuit_is_available_for_use(circ))
@@ -1211,6 +1233,7 @@ circuit_predict_and_launch_new(void)
     log_info(LD_CIRC,
              "Have %d clean circs (%d internal), need another exit circ.",
              num, num_internal);
+
     circuit_launch(CIRCUIT_PURPOSE_C_GENERAL, flags);
     return;
   }
@@ -1345,6 +1368,7 @@ circuit_detach_stream(circuit_t *circ, edge_connection_t *conn)
     int removed = 0;
     if (conn == origin_circ->p_streams) {
       origin_circ->p_streams = conn->next_stream;
+      conflux_update_p_streams(origin_circ, conn->next_stream);
       removed = 1;
     } else {
       for (prevconn = origin_circ->p_streams;
@@ -1377,10 +1401,12 @@ circuit_detach_stream(circuit_t *circ, edge_connection_t *conn)
     or_circuit_t *or_circ = TO_OR_CIRCUIT(circ);
     if (conn == or_circ->n_streams) {
       or_circ->n_streams = conn->next_stream;
+      conflux_update_n_streams(or_circ, conn->next_stream);
       return;
     }
     if (conn == or_circ->resolving_streams) {
       or_circ->resolving_streams = conn->next_stream;
+      conflux_update_resolving_streams(or_circ, conn->next_stream);
       return;
     }
 
@@ -1432,6 +1458,7 @@ circuit_expire_old_circuits_clientside(void)
     if (circ->timestamp_dirty &&
         circ->timestamp_dirty + get_options()->MaxCircuitDirtiness <
           now.tv_sec &&
+        !connection_half_edges_waiting(TO_ORIGIN_CIRCUIT(circ)) &&
         !TO_ORIGIN_CIRCUIT(circ)->p_streams /* nothing attached */ ) {
       log_debug(LD_CIRC, "Closing n_circ_id %u (dirty %ld sec ago, "
                 "purpose %d)",
@@ -1449,6 +1476,8 @@ circuit_expire_old_circuits_clientside(void)
       if (timercmp(&circ->timestamp_began, &cutoff, OP_LT)) {
         if (circ->purpose == CIRCUIT_PURPOSE_C_GENERAL ||
                 circ->purpose == CIRCUIT_PURPOSE_C_HSDIR_GET ||
+                circ->purpose == CIRCUIT_PURPOSE_CONFLUX_UNLINKED ||
+                circ->purpose == CIRCUIT_PURPOSE_CONFLUX_LINKED ||
                 circ->purpose == CIRCUIT_PURPOSE_S_HSDIR_POST ||
                 circ->purpose == CIRCUIT_PURPOSE_HS_VANGUARDS ||
                 circ->purpose == CIRCUIT_PURPOSE_C_MEASURE_TIMEOUT ||
@@ -1653,7 +1682,12 @@ circuit_has_opened(origin_circuit_t *circ)
     case CIRCUIT_PURPOSE_C_INTRODUCING:
       hs_client_circuit_has_opened(circ);
       break;
+    case CIRCUIT_PURPOSE_CONFLUX_UNLINKED:
+      conflux_circuit_has_opened(circ);
+      break;
     case CIRCUIT_PURPOSE_C_GENERAL:
+      circuit_try_attaching_streams(circ);
+      break;
     case CIRCUIT_PURPOSE_C_HSDIR_GET:
     case CIRCUIT_PURPOSE_S_HSDIR_POST:
       /* Tell any AP connections that have been waiting for a new
@@ -1751,8 +1785,11 @@ circuit_build_failed(origin_circuit_t *circ)
               circuit_purpose_to_string(TO_CIRCUIT(circ)->purpose));
 
     /* If the path failed on an RP, retry it. */
-    if (TO_CIRCUIT(circ)->purpose == CIRCUIT_PURPOSE_S_CONNECT_REND)
+    if (TO_CIRCUIT(circ)->purpose == CIRCUIT_PURPOSE_S_CONNECT_REND) {
+      hs_metrics_failed_rdv(&circ->hs_ident->identity_pk,
+                            HS_METRICS_ERR_RDV_PATH);
       hs_circ_retry_service_rendezvous_point(circ);
+    }
 
     /* In all other cases, just bail. The rest is just failure accounting
      * that we don't want to do */
@@ -1862,6 +1899,9 @@ circuit_build_failed(origin_circuit_t *circ)
                "(%s hop failed).",
                escaped(build_state_get_exit_nickname(circ->build_state)),
                failed_at_last_hop?"last":"non-last");
+
+      hs_metrics_failed_rdv(&circ->hs_ident->identity_pk,
+                            HS_METRICS_ERR_RDV_RP_CONN_FAILURE);
       hs_circ_retry_service_rendezvous_point(circ);
       break;
     /* default:
@@ -2020,6 +2060,11 @@ circuit_should_cannibalize_to_build(uint8_t purpose_to_build,
    * important that it have lower latency than get built fast.
    */
   if (purpose_to_build == CIRCUIT_PURPOSE_S_ESTABLISH_INTRO) {
+    return 0;
+  }
+
+  /* Do not cannibalize for conflux circuits */
+  if (purpose_to_build == CIRCUIT_PURPOSE_CONFLUX_UNLINKED) {
     return 0;
   }
 
@@ -2507,6 +2552,11 @@ circuit_get_open_circ_or_launch(entry_connection_t *conn,
           circ->hs_ident =
             hs_ident_circuit_new(&edge_conn->hs_ident->identity_pk);
         }
+        if (desired_circuit_purpose == CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT) {
+          if (hs_client_setup_intro_circ_auth_key(circ) < 0) {
+            return 0;
+          }
+        }
         if (circ->base_.purpose == CIRCUIT_PURPOSE_C_ESTABLISH_REND &&
             circ->base_.state == CIRCUIT_STATE_OPEN)
           circuit_has_opened(circ);
@@ -2535,7 +2585,13 @@ circuit_get_open_circ_or_launch(entry_connection_t *conn,
 }
 
 /** Return true iff <b>crypt_path</b> is one of the crypt_paths for
- * <b>circ</b>. */
+ * <b>circ</b>.
+ *
+ * WARNING: This function only validates that the cpath is on the *current*
+ * circuit, for internal consistency checking. For codepaths involving streams,
+ * or cpaths or layer_hints that could be from a different circuit due to
+ * conflux, use edge_uses_cpath() or conflux_validate_source_hop() instead.
+ */
 static int
 cpath_is_on_circuit(origin_circuit_t *circ, crypt_path_t *crypt_path)
 {
@@ -2573,6 +2629,7 @@ link_apconn_to_circ(entry_connection_t *apconn, origin_circuit_t *circ,
   ENTRY_TO_EDGE_CONN(apconn)->on_circuit = TO_CIRCUIT(circ);
   /* assert_connection_ok(conn, time(NULL)); */
   circ->p_streams = ENTRY_TO_EDGE_CONN(apconn);
+  conflux_update_p_streams(circ, ENTRY_TO_EDGE_CONN(apconn));
 
   if (connection_edge_is_rendezvous_stream(ENTRY_TO_EDGE_CONN(apconn))) {
     /* We are attaching a stream to a rendezvous circuit.  That means
@@ -2600,6 +2657,8 @@ link_apconn_to_circ(entry_connection_t *apconn, origin_circuit_t *circ,
     exitnode = node_get_by_id(cpath->extend_info->identity_digest);
 
   /* See if we can use optimistic data on this circuit */
+  // TODO-329-PURPOSE: Can conflux use optimistic data? Does
+  // anything use optimistic data? Does anything use this?
   if (circ->base_.purpose == CIRCUIT_PURPOSE_C_GENERAL ||
       circ->base_.purpose == CIRCUIT_PURPOSE_C_HSDIR_GET ||
       circ->base_.purpose == CIRCUIT_PURPOSE_S_HSDIR_POST ||
@@ -2710,6 +2769,9 @@ connection_ap_handshake_attach_chosen_circuit(entry_connection_t *conn,
     /* When stream isolation is in use and controlled by an application
      * we are willing to keep using the stream. */
     circ->base_.timestamp_dirty = approx_time();
+    if (TO_CIRCUIT(circ)->conflux) {
+      conflux_sync_circ_fields(TO_CIRCUIT(circ)->conflux, circ);
+    }
   }
 
   pathbias_count_use_attempt(circ);
@@ -2784,8 +2846,10 @@ connection_ap_handshake_attach_circuit(entry_connection_t *conn)
 
   conn_age = (int)(time(NULL) - base_conn->timestamp_created);
 
-  /* Is this connection so old that we should give up on it? */
-  if (conn_age >= get_options()->SocksTimeout) {
+  /* Is this connection so old that we should give up on it? Don't timeout if
+   * this is a connection to an HS with PoW enabled because it can take an
+   * arbitrary amount of time. */
+  if (conn_age >= get_options()->SocksTimeout && !conn->hs_with_pow_conn) {
     int severity = (tor_addr_is_null(&base_conn->addr) && !base_conn->port) ?
       LOG_INFO : LOG_NOTICE;
     log_fn(severity, LD_APP,
@@ -2945,6 +3009,16 @@ connection_ap_handshake_attach_circuit(entry_connection_t *conn)
       conn, CIRCUIT_PURPOSE_C_INTRODUCE_ACK_WAIT, &introcirc);
     if (retval < 0) return -1; /* failed */
 
+    if (rendcirc && introcirc) {
+      /* Let's fill out the hs_ident fully as soon as possible, so that
+       * unreachability counts can be updated properly even if circuits close
+       * early. */
+      tor_assert_nonfatal(!ed25519_public_key_is_zero(
+                             &introcirc->hs_ident->intro_auth_pk));
+      ed25519_pubkey_copy(&rendcirc->hs_ident->intro_auth_pk,
+                          &introcirc->hs_ident->intro_auth_pk);
+    }
+
     if (retval > 0) {
       /* one has already sent the intro. keep waiting. */
       tor_assert(introcirc);
@@ -2976,8 +3050,8 @@ connection_ap_handshake_attach_circuit(entry_connection_t *conn)
       if (introcirc->base_.state == CIRCUIT_STATE_OPEN) {
         int ret;
         log_info(LD_REND, "Found open intro circ %u (id: %" PRIu32 "). "
-                          "Rend circuit %u (id: %" PRIu32 "); Sending "
-                          "introduction. (stream %d sec old)",
+                          "Rend circuit %u (id: %" PRIu32 "); Considering "
+                          "sending introduction. (stream %d sec old)",
                  (unsigned) TO_CIRCUIT(introcirc)->n_circ_id,
                  introcirc->global_identifier,
                  (unsigned) TO_CIRCUIT(rendcirc)->n_circ_id,
@@ -3026,6 +3100,13 @@ circuit_change_purpose(circuit_t *circ, uint8_t new_purpose)
              !!(CIRCUIT_PURPOSE_IS_ORIGIN(new_purpose)));
 
   if (circ->purpose == new_purpose) return;
+
+  /* If this is a conflux circuit, a purpose change means we have closed */
+  if (CIRCUIT_IS_CONFLUX(circ)) {
+    /* If we're not transitioning to the linked purpose, we're closed. */
+    if (new_purpose != CIRCUIT_PURPOSE_CONFLUX_LINKED)
+      conflux_circuit_has_closed(circ);
+  }
 
   if (CIRCUIT_IS_ORIGIN(circ)) {
     char old_purpose_desc[80] = "";
@@ -3080,6 +3161,10 @@ mark_circuit_unusable_for_new_conns(origin_circuit_t *circ)
     circ->base_.timestamp_dirty -= options->MaxCircuitDirtiness;
 
   circ->unusable_for_new_conns = 1;
+
+  if (TO_CIRCUIT(circ)->conflux) {
+    conflux_sync_circ_fields(TO_CIRCUIT(circ)->conflux, circ);
+  }
 }
 
 /**

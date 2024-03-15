@@ -10,6 +10,8 @@
 #include "test/test.h"
 #include "lib/crypt_ops/aes.h"
 #include "siphash.h"
+#include "ext/compat_blake2.h"
+#include "ext/equix/hashx/include/hashx.h"
 #include "lib/crypt_ops/crypto_curve25519.h"
 #include "lib/crypt_ops/crypto_dh.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
@@ -1043,6 +1045,7 @@ test_crypto_mac_sha3(void *arg)
 {
   const char msg[] = "i am in a library somewhere using my computer";
   const char key[] = "i'm from the past talking to the future.";
+  char *mem_op_hex_tmp = NULL;
 
   uint8_t hmac_test[DIGEST256_LEN];
   char hmac_manual[DIGEST256_LEN];
@@ -1077,7 +1080,12 @@ test_crypto_mac_sha3(void *arg)
   /* Now compare the two results */
   tt_mem_op(hmac_test, OP_EQ, hmac_manual, DIGEST256_LEN);
 
- done: ;
+  /* Check against a known correct value (computed from python) */
+  test_memeq_hex(hmac_test,
+                  "753fba6d87d49497238a512a3772dd29"
+                  "1e55f7d1cd332c9fb5c967c7a10a13ca");
+ done:
+  tor_free(mem_op_hex_tmp);
 }
 
 /** Run unit tests for our public key crypto functions */
@@ -2844,6 +2852,181 @@ test_crypto_siphash(void *arg)
   ;
 }
 
+static void
+test_crypto_blake2b(void *arg)
+{
+  (void)arg;
+
+  /* There is no official blake2b test vector set, but these are inspired
+   * by RFC7693 and OpenSSL. Note that we need to test shorter hash lengths
+   * separately even though they are implemented by truncating a 512-bit
+   * hash, because the requested length is included in the hash initial state.
+   */
+  static const struct {
+    const char *in_literal;
+    const char *out_hex;
+  } vectors[] = {
+    { "",
+      "786a02f742015903c6c6fd852552d272912f4740e15847618a86e217f71f5419"
+      "d25e1031afee585313896444934eb04b903a685b1448b755d56f701afe9be2ce"
+    },
+    { "a",
+      "333fcb4ee1aa7c115355ec66ceac917c8bfd815bf7587d325aec1864edd24e34"
+      "d5abe2c6b1b5ee3face62fed78dbef802f2a85cb91d455a8f5249d330853cb3c"
+    },
+    { "ab",
+      "b32c0573d242b3a987d8f66bd43266b7925cefab3a854950641a81ef6a3f4b97"
+      "928443850545770f64abac2a75f18475653fa3d9a52c66a840da3b8617ae9607"
+    },
+    { "abc",
+      "ba80a53f981c4d0d6a2797b69f12f6e94c212f14685ac4b74b12bb6fdbffa2d1"
+      "7d87c5392aab792dc252d5de4533cc9518d38aa8dbf1925ab92386edd4009923"
+    },
+    { "", "2e" },
+    { "a", "de" },
+    { "ab", "0e" },
+    { "abc", "6b" },
+    { "", "1271cf25" },
+    { "a", "ca234c55" },
+    { "ab", "3ae897a7" },
+    { "abc", "63906248" },
+    { "A somewhat longer test vector for blake2b xxxxxxxxxxxxxxxxxxxxxx"
+      "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+      "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.",
+      "1d27b0988061a82ff7563a55f9289ff3d878783e688d9e001b3c4b99b675c7f7"
+      "1d4ae57805c6a8e670eb8145ba97960a7859451ab7b1558a60e5b7660d2f4639"
+    },
+    { "A somewhat longer test vector for blake2b xxxxxxxxxxxxxxxxxxxxxx"
+      "yyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyyy"
+      "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz.",
+      "48600bb0"
+    }
+  };
+
+  static const struct {
+    int update_size;
+  } variations[] = {
+    {BLAKE2B_BLOCKBYTES*2},
+    {BLAKE2B_BLOCKBYTES},
+    {BLAKE2B_BLOCKBYTES-1},
+    {1},
+    {2},
+    {3}
+  };
+
+  const size_t num_vectors = sizeof vectors / sizeof vectors[0];
+  const size_t num_variations = sizeof variations / sizeof variations[0];
+
+  for (unsigned vec_i = 0; vec_i < num_vectors; vec_i++) {
+    const char *in_literal = vectors[vec_i].in_literal;
+    const char *out_hex = vectors[vec_i].out_hex;
+    const size_t in_len = strlen(in_literal);
+    const size_t out_hex_len = strlen(out_hex);
+    const size_t hash_size = out_hex_len / 2;
+
+    int retval = -1;
+    uint8_t out_expected[BLAKE2B_OUTBYTES] = { 0 };
+    tt_int_op(out_hex_len, OP_EQ, 2 * hash_size);
+    tt_int_op(hash_size, OP_LE, sizeof out_expected);
+    retval = base16_decode((char*)out_expected, hash_size,
+                           out_hex, out_hex_len);
+    tt_int_op(retval, OP_EQ, hash_size);
+
+    for (size_t vari_i = 0; vari_i < num_variations; vari_i++) {
+      const size_t update_size = variations[vari_i].update_size;
+      uint8_t out_actual[BLAKE2B_OUTBYTES] = { 0 };
+
+      blake2b_state b2_state;
+      retval = blake2b_init(&b2_state, hash_size);
+      tt_int_op(retval, OP_EQ, 0);
+
+      for (size_t in_off = 0; in_off < in_len;) {
+        const size_t this_update = MIN(update_size, in_len - in_off);
+        blake2b_update(&b2_state, (uint8_t*)in_literal + in_off, this_update);
+        in_off += this_update;
+      }
+
+      memset(out_actual, 0xa5, sizeof out_actual);
+      blake2b_final(&b2_state, out_actual, hash_size);
+      tt_mem_op(out_actual, OP_EQ, out_expected, hash_size);
+    }
+  }
+
+ done:
+  ;
+}
+
+static void
+test_crypto_hashx(void *arg)
+{
+  (void)arg;
+
+  /* Specifically test the embedded instance of HashX inside Equi-X.
+   * It uses a non-default setting of HASHX_SIZE=8 */
+  static const struct {
+    const char *seed_literal;
+    uint64_t hash_input;
+    const char *out_hex;
+  } vectors[] = {
+    { "", 0, "466cc2021c268560" },
+    { "a", 0, "b2a110ee695c475c" },
+    { "ab", 0, "57c77f7e0d2c1727" },
+    { "abc", 0, "ef560991338086d1" },
+    { "", 999, "304068b62bc4874e" },
+    { "a", 999, "c8b66a8eb4bba304" },
+    { "ab", 999, "26c1f7031f0b3645" },
+    { "abc", 999, "de84f9d286b39ab5" },
+    { "abc", UINT64_MAX, "f756c266a3cb3b5a" }
+  };
+
+  static const struct {
+    hashx_type type;
+  } variations[] = {
+    { HASHX_TYPE_INTERPRETED },
+#if defined(_M_X64) || defined(__x86_64__) || defined(__aarch64__)
+    { HASHX_TYPE_COMPILED },
+#endif
+  };
+
+  const unsigned num_vectors = sizeof vectors / sizeof vectors[0];
+  const unsigned num_variations = sizeof variations / sizeof variations[0];
+  hashx_ctx *ctx = NULL;
+
+  for (unsigned vec_i = 0; vec_i < num_vectors; vec_i++) {
+    const char *seed_literal = vectors[vec_i].seed_literal;
+    const uint64_t hash_input = vectors[vec_i].hash_input;
+    const char *out_hex = vectors[vec_i].out_hex;
+    const size_t seed_len = strlen(seed_literal);
+    const size_t out_hex_len = strlen(out_hex);
+
+    int retval = -1;
+    uint8_t out_expected[HASHX_SIZE] = { 0 };
+    tt_int_op(out_hex_len, OP_EQ, 2 * HASHX_SIZE);
+    retval = base16_decode((char*)out_expected, HASHX_SIZE,
+                           out_hex, out_hex_len);
+    tt_int_op(retval, OP_EQ, HASHX_SIZE);
+
+    for (unsigned vari_i = 0; vari_i < num_variations; vari_i++) {
+      uint8_t out_actual[HASHX_SIZE] = { 0 };
+
+      hashx_free(ctx);
+      ctx = hashx_alloc(variations[vari_i].type);
+
+      tt_ptr_op(ctx, OP_NE, NULL);
+      retval = hashx_make(ctx, seed_literal, seed_len);
+      tt_int_op(retval, OP_EQ, HASHX_OK);
+
+      memset(out_actual, 0xa5, sizeof out_actual);
+      retval = hashx_exec(ctx, hash_input, out_actual);
+      tt_int_op(retval, OP_EQ, HASHX_OK);
+      tt_mem_op(out_actual, OP_EQ, out_expected, sizeof out_actual);
+    }
+  }
+
+ done:
+  hashx_free(ctx);
+}
+
 /* We want the likelihood that the random buffer exhibits any regular pattern
  * to be far less than the memory bit error rate in the int return value.
  * Using 2048 bits provides a failure rate of 1/(3 * 10^616), and we call
@@ -3073,6 +3256,8 @@ struct testcase_t crypto_tests[] = {
   ED25519_TEST(validation, 0),
   { "ed25519_storage", test_crypto_ed25519_storage, 0, NULL, NULL },
   { "siphash", test_crypto_siphash, 0, NULL, NULL },
+  { "blake2b", test_crypto_blake2b, 0, NULL, NULL },
+  { "hashx", test_crypto_hashx, 0, NULL, NULL },
   { "failure_modes", test_crypto_failure_modes, TT_FORK, NULL, NULL },
   END_OF_TESTCASES
 };

@@ -572,7 +572,9 @@ static bool
 rsa_private_key_too_long(RSA *rsa, int max_bits)
 {
   const BIGNUM *n, *e, *p, *q, *d, *dmp1, *dmq1, *iqmp;
-#ifdef OPENSSL_1_1_API
+#if defined(OPENSSL_1_1_API) && \
+    (!defined(LIBRESSL_VERSION_NUMBER) || \
+     LIBRESSL_VERSION_NUMBER >= OPENSSL_V_SERIES(3,5,0))
 
 #if OPENSSL_VERSION_NUMBER >= OPENSSL_V_SERIES(1,1,1)
   n = RSA_get0_n(rsa);
@@ -591,7 +593,7 @@ rsa_private_key_too_long(RSA *rsa, int max_bits)
 
   if (RSA_bits(rsa) > max_bits)
     return true;
-#else /* !defined(OPENSSL_1_1_API) */
+#else /* !defined(OPENSSL_1_1_API) && ... */
   n = rsa->n;
   e = rsa->e;
   p = rsa->p;
@@ -600,7 +602,7 @@ rsa_private_key_too_long(RSA *rsa, int max_bits)
   dmp1 = rsa->dmp1;
   dmq1 = rsa->dmq1;
   iqmp = rsa->iqmp;
-#endif /* defined(OPENSSL_1_1_API) */
+#endif /* defined(OPENSSL_1_1_API) && ... */
 
   if (n && BN_num_bits(n) > max_bits)
     return true;

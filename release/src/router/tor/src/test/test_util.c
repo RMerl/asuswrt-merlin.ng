@@ -2945,7 +2945,7 @@ test_util_gzip_compression_bomb(void *arg)
   tt_int_op(-1, OP_EQ, tor_compress(&result, &result_len,
                                     one_mb, one_million,
                                     ZLIB_METHOD));
-  expect_single_log_msg_containing(
+  expect_log_msg_containing(
          "We compressed something and got an insanely high "
          "compression factor; other Tors would think this "
          "was a compression bomb.");

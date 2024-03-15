@@ -28,6 +28,7 @@
 #include "core/or/connection_st.h"
 #include "core/or/cell_st.h"
 #include "app/config/config.h"
+#include "core/or/conflux_util.h"
 
 /** Cache consensus parameters */
 static uint32_t xoff_client;
@@ -59,27 +60,6 @@ double cc_stats_flow_xon_outbuf_ma = 0;
 #define XOFF_COUNT_SCALE_AT 200
 #define ONE_MEGABYTE (UINT64_C(1) << 20)
 #define TOTAL_XMIT_SCALE_AT (10 * ONE_MEGABYTE)
-
-/**
- * Return the congestion control object of the given edge connection.
- *
- * Returns NULL if the edge connection doesn't have a cpath_layer or not
- * attached to a circuit. But also if the cpath_layer or circuit doesn't have a
- * congestion control object.
- */
-static inline const congestion_control_t *
-edge_get_ccontrol(const edge_connection_t *edge)
-{
-  congestion_control_t *ccontrol = NULL;
-
-  if (edge->on_circuit && edge->on_circuit->ccontrol) {
-    ccontrol = edge->on_circuit->ccontrol;
-  } else if (edge->cpath_layer && edge->cpath_layer->ccontrol) {
-    ccontrol = edge->cpath_layer->ccontrol;
-  }
-
-  return ccontrol;
-}
 
 /**
  * Update global congestion control related consensus parameter values, every
@@ -265,13 +245,13 @@ circuit_process_stream_xoff(edge_connection_t *conn,
   }
 
   /* Make sure this XOFF came from the right hop */
-  if (layer_hint && layer_hint != conn->cpath_layer) {
+  if (!edge_uses_cpath(conn, layer_hint)) {
     log_fn(LOG_PROTOCOL_WARN, LD_EDGE,
             "Got XOFF from wrong hop.");
     return false;
   }
 
-  if (edge_get_ccontrol(conn) == NULL) {
+  if (!edge_uses_flow_control(conn)) {
     log_fn(LOG_PROTOCOL_WARN, LD_EDGE,
            "Got XOFF for non-congestion control circuit");
     return false;
@@ -359,13 +339,13 @@ circuit_process_stream_xon(edge_connection_t *conn,
   }
 
   /* Make sure this XON came from the right hop */
-  if (layer_hint && layer_hint != conn->cpath_layer) {
+  if (!edge_uses_cpath(conn, layer_hint)) {
     log_fn(LOG_PROTOCOL_WARN, LD_EDGE,
            "Got XON from wrong hop.");
     return false;
   }
 
-  if (edge_get_ccontrol(conn) == NULL) {
+  if (!edge_uses_flow_control(conn)) {
     log_fn(LOG_PROTOCOL_WARN, LD_EDGE,
            "Got XON for non-congestion control circuit");
     return false;
@@ -464,7 +444,7 @@ flow_control_decide_xoff(edge_connection_t *stream)
   size_t total_buffered = connection_get_outbuf_len(TO_CONN(stream));
   uint32_t buffer_limit_xoff = 0;
 
-  if (BUG(edge_get_ccontrol(stream) == NULL)) {
+  if (BUG(!edge_uses_flow_control(stream))) {
     log_err(LD_BUG, "Flow control called for non-congestion control circuit");
     return -1;
   }
@@ -715,21 +695,6 @@ edge_uses_flow_control(const edge_connection_t *stream)
 
   /* All circuits with congestion control use flow control */
   return ret;
-}
-
-/**
- * Returns the max RTT for the circuit that carries this stream,
- * as observed by congestion control.
- */
-uint64_t
-edge_get_max_rtt(const edge_connection_t *stream)
-{
-  if (stream->on_circuit && stream->on_circuit->ccontrol)
-    return stream->on_circuit->ccontrol->max_rtt_usec;
-  else if (stream->cpath_layer && stream->cpath_layer->ccontrol)
-    return stream->cpath_layer->ccontrol->max_rtt_usec;
-
-  return 0;
 }
 
 /** Returns true if a connection is an edge conn that uses flow control */

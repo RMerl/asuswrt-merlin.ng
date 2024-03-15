@@ -1205,7 +1205,7 @@ node_ed25519_id_matches(const node_t *node, const ed25519_public_key_t *id)
 /** Dummy object that should be unreturnable.  Used to ensure that
  * node_get_protover_summary_flags() always returns non-NULL. */
 static const protover_summary_flags_t zero_protover_flags = {
-  0,0,0,0,0,0,0,0,0,0,0,0,0
+  0,0,0,0,0,0,0,0,0,0,0,0,0,0
 };
 
 /** Return the protover_summary_flags for a given node. */
@@ -1339,6 +1339,15 @@ node_supports_accepting_ipv6_extends(const node_t *node,
     return
       node_get_protover_summary_flags(node)->supports_accepting_ipv6_extends;
   }
+}
+
+/** Return true iff the given node supports conflux (Relay=5) */
+bool
+node_supports_conflux(const node_t *node)
+{
+  tor_assert(node);
+
+  return node_get_protover_summary_flags(node)->supports_conflux;
 }
 
 /** Return the RSA ID key's SHA1 digest for the provided node. */

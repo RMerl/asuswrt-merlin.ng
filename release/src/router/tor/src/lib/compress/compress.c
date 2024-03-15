@@ -66,7 +66,15 @@ tor_compress_is_compression_bomb,(size_t size_in, size_t size_out))
   if (size_in == 0 || size_out < CHECK_FOR_COMPRESSION_BOMB_AFTER)
     return 0;
 
-  return (size_out / size_in > MAX_UNCOMPRESSION_FACTOR);
+  if (size_out / size_in > MAX_UNCOMPRESSION_FACTOR) {
+    log_warn(LD_GENERAL,
+             "Detected possible compression bomb with "
+             "input size = %"TOR_PRIuSZ " and output size = %"TOR_PRIuSZ,
+             size_in, size_out);
+    return 1;
+  }
+
+  return 0;
 }
 
 /** Guess the size that <b>in_len</b> will be after compression or

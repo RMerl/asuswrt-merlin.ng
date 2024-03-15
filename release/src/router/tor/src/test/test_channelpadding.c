@@ -862,7 +862,7 @@ test_channelpadding_decide_to_pad_channel(void *arg)
    * 2. Channel that has not "sent a packet" before the timeout:
    * 2a. Not within 1.1s of the timeout.
    *    + We should decide to pad later
-   * 2b. Within 1.1s of the timemout.
+   * 2b. Within 1.1s of the timeout.
    *    + We should schedule padding
    *    + We should get feedback that we wrote a cell
    * 2c. Within 0.1s of the timeout.

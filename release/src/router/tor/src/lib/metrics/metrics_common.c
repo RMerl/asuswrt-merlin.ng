@@ -24,6 +24,8 @@ metrics_type_to_str(const metrics_type_t type)
     return "counter";
   case METRICS_TYPE_GAUGE:
     return "gauge";
+  case METRICS_TYPE_HISTOGRAM:
+    return "histogram";
   default:
     tor_assert_unreached();
   }

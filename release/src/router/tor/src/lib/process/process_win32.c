@@ -888,7 +888,7 @@ process_win32_read_from_handle(process_win32_handle_t *handle,
 
   /* Check if we have been asked to read from a handle that have already told
    * us that we have reached the end of the file. */
-  if (BUG(handle->reached_eof))
+  if (handle->reached_eof)
     return 0;
 
   /* This cast should be safe since our buffer can be at maximum up to

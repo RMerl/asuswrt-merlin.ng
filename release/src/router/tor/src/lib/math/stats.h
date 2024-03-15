@@ -25,7 +25,7 @@ n_count_ewma_double(double avg, double value, uint64_t N)
   /* If the average was not previously computed, return value.
    * The less than is because we have stupid C warning flags that
    * prevent exact comparison to 0.0, so we can't do an exact
-   * check for unitialized double values. Yay pedantry!
+   * check for uninitialized double values. Yay pedantry!
    * Love it when it introduces surprising edge case bugs like
    * this will. */
   if (avg < 0.0000002)

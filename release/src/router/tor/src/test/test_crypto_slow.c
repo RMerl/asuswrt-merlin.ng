@@ -7,6 +7,7 @@
 #define CRYPTO_S2K_PRIVATE
 #include "core/or/or.h"
 #include "test/test.h"
+#include "ext/equix/include/equix.h"
 #include "lib/crypt_ops/crypto_curve25519.h"
 #include "lib/crypt_ops/crypto_ed25519.h"
 #include "lib/crypt_ops/crypto_s2k.h"
@@ -584,6 +585,139 @@ test_crypto_ed25519_fuzz_donna(void *arg)
   ;
 }
 
+static void
+test_crypto_equix(void *arg)
+{
+  (void)arg;
+
+  static const struct {
+    const char *challenge_literal;
+    size_t num_solutions;
+    equix_solution solutions[EQUIX_MAX_SOLS];
+  } vectors[] = {
+    { "zzz", 1, {
+      {{ 0xae21, 0xd392, 0x3215, 0xdd9c, 0x2f08, 0x93df, 0x232c, 0xe5dc }},
+    }},
+    { "rrr", 1, {
+      {{ 0x0873, 0x57a8, 0x73e0, 0x912e, 0x1ca8, 0xad96, 0x9abd, 0xd7de }},
+    }},
+    { "qqq", 0, {{{ 0 }}} },
+    { "0123456789", 0, {{{ 0 }}} },
+    { "zzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzzz", 0, {{{ 0 }}} },
+    { "", 3, {
+      {{ 0x0098, 0x3a4d, 0xc489, 0xcfba, 0x7ef3, 0xa498, 0xa00f, 0xec20 }},
+      {{ 0x78d8, 0x8611, 0xa4df, 0xec19, 0x0927, 0xa729, 0x842f, 0xf771 }},
+      {{ 0x54b5, 0xcc11, 0x1593, 0xe624, 0x9357, 0xb339, 0xb138, 0xed99 }},
+    }},
+    { "a", 3, {
+      {{ 0x4b38, 0x8c81, 0x9255, 0xad99, 0x5ce7, 0xeb3e, 0xc635, 0xee38 }},
+      {{ 0x3f9e, 0x659b, 0x9ae6, 0xb891, 0x63ae, 0x777c, 0x06ca, 0xc593 }},
+      {{ 0x2227, 0xa173, 0x365a, 0xb47d, 0x1bb2, 0xa077, 0x0d5e, 0xf25f }},
+    }},
+    { "abc", 2, {
+      {{ 0x371f, 0x8865, 0x8189, 0xfbc3, 0x26df, 0xe4c0, 0xab39, 0xfe5a }},
+      {{ 0x2101, 0xb88f, 0xc525, 0xccb3, 0x5785, 0xa41e, 0x4fba, 0xed18 }},
+    }},
+    { "abce", 4, {
+      {{ 0x4fca, 0x72eb, 0x101f, 0xafab, 0x1add, 0x2d71, 0x75a3, 0xc978 }},
+      {{ 0x17f1, 0x7aa6, 0x23e3, 0xab00, 0x7e2f, 0x917e, 0x16da, 0xda9e }},
+      {{ 0x70ee, 0x7757, 0x8a54, 0xbd2b, 0x90e4, 0xe31e, 0x2085, 0xe47e }},
+      {{ 0x62c5, 0x86d1, 0x5752, 0xe1f0, 0x12da, 0x8f33, 0x7336, 0xf161 }},
+    }},
+    { "01234567890123456789", 5, {
+      {{ 0x4803, 0x6775, 0xc5c9, 0xd1b0, 0x1bc3, 0xe4f6, 0x4027, 0xf5ad }},
+      {{ 0x5a8a, 0x9542, 0xef99, 0xf0b9, 0x4905, 0x4e29, 0x2da5, 0xfbd5 }},
+      {{ 0x4c79, 0xc935, 0x2bcb, 0xcd0f, 0x0362, 0x9fa9, 0xa62e, 0xf83a }},
+      {{ 0x5878, 0x6edf, 0x1e00, 0xf5e3, 0x43de, 0x9212, 0xd01e, 0xfd11 }},
+      {{ 0x0b69, 0x2d17, 0x01be, 0x6cb4, 0x0fba, 0x4a9e, 0x8d75, 0xa50f }},
+    }},
+  };
+
+  static const struct {
+    equix_ctx_flags flags;
+    equix_result expected;
+    equix_solution_flags sol_flags;
+  } variations[] = {
+    {0, EQUIX_OK, 0},
+    {0, EQUIX_FAIL_ORDER, 0},
+    {0, EQUIX_FAIL_PARTIAL_SUM, 0},
+#if defined(_M_X64) || defined(__x86_64__) || defined(__aarch64__)
+    { EQUIX_CTX_MUST_COMPILE, EQUIX_OK,
+      EQUIX_SOLVER_DID_USE_COMPILER
+    },
+    { EQUIX_CTX_MUST_COMPILE, EQUIX_FAIL_ORDER,
+      EQUIX_SOLVER_DID_USE_COMPILER
+    },
+    { EQUIX_CTX_MUST_COMPILE, EQUIX_FAIL_PARTIAL_SUM,
+      EQUIX_SOLVER_DID_USE_COMPILER
+    },
+#endif
+  };
+
+  const unsigned num_vectors = sizeof vectors / sizeof vectors[0];
+  const unsigned num_variations = sizeof variations / sizeof variations[0];
+
+  for (unsigned vec_i = 0; vec_i < num_vectors; vec_i++) {
+    const char *challenge_literal = vectors[vec_i].challenge_literal;
+    const size_t challenge_len = strlen(challenge_literal);
+
+    const size_t num_sols = vectors[vec_i].num_solutions;
+    const equix_solution *sols_expected = vectors[vec_i].solutions;
+
+    for (unsigned vari_i = 0; vari_i < num_variations; vari_i++) {
+      const equix_ctx_flags flags = variations[vari_i].flags;
+      const equix_solution_flags sol_flags = variations[vari_i].sol_flags;
+      const equix_result expected = variations[vari_i].expected;
+
+      equix_solutions_buffer output;
+      equix_ctx *solve_ctx = NULL, *verify_ctx = NULL;
+
+      solve_ctx = equix_alloc(EQUIX_CTX_SOLVE | flags);
+      tt_ptr_op(solve_ctx, OP_NE, NULL);
+
+      /* Solve phase: Make sure the test vector matches */
+      memset(&output, 0xa5, sizeof output);
+      equix_result result;
+      result = equix_solve(solve_ctx, challenge_literal,
+                           challenge_len, &output);
+      equix_free(solve_ctx);
+      tt_int_op(result, OP_EQ, EQUIX_OK);
+      tt_int_op(output.count, OP_EQ, num_sols);
+      tt_int_op(output.flags, OP_EQ, sol_flags);
+      tt_mem_op(output.sols, OP_EQ, sols_expected,
+                num_sols * sizeof(equix_solution));
+
+      verify_ctx = equix_alloc(EQUIX_CTX_VERIFY | flags);
+      tt_ptr_op(verify_ctx, OP_NE, NULL);
+
+      /* Use each solution for positive and negative tests of verify */
+      for (size_t sol_i = 0; sol_i < num_sols; sol_i++) {
+        equix_idx tmp_idx;
+        equix_solution *sol = &output.sols[sol_i];
+
+        if (expected == EQUIX_FAIL_ORDER) {
+          /* Swap two otherwise valid indices, to trigger an order error */
+          tmp_idx = sol->idx[0];
+          sol->idx[0] = sol->idx[1];
+          sol->idx[1] = tmp_idx;
+        } else if (expected == EQUIX_FAIL_PARTIAL_SUM) {
+          /* Most changes to the solution will cause a partial sum error */
+          sol->idx[0]++;
+        }
+
+        result = equix_verify(verify_ctx, challenge_literal,
+                              challenge_len, sol);
+        tt_int_op(expected, OP_EQ, result);
+      }
+
+      equix_free(verify_ctx);
+    }
+  }
+
+ done:
+  ;
+}
+
 #ifndef COCCI
 #define CRYPTO_LEGACY(name)                                            \
   { #name, test_crypto_ ## name , 0, NULL, NULL }
@@ -619,5 +753,6 @@ struct testcase_t slow_crypto_tests[] = {
   { "pbkdf2_vectors", test_crypto_pbkdf2_vectors, 0, NULL, NULL },
   { "pwbox", test_crypto_pwbox, 0, NULL, NULL },
   ED25519_TEST(fuzz_donna, TT_FORK),
+  { "equix", test_crypto_equix, 0, NULL, NULL },
   END_OF_TESTCASES
 };

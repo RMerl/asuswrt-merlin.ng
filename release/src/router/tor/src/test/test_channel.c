@@ -1264,8 +1264,9 @@ test_channel_duplicates(void *arg)
   /* Try a flat call with channel nor connections. */
   channel_check_for_duplicates();
   expect_log_msg_containing(
-    "Found 0 connections to 0 relays. Found 0 current canonical "
-    "connections, in 0 of which we were a non-canonical peer. "
+    "Found 0 connections to authorities, 0 connections to 0 relays. "
+    "Found 0 current canonical connections, "
+    "in 0 of which we were a non-canonical peer. "
     "0 relays had more than 1 connection, 0 had more than 2, and "
     "0 had more than 4 connections.");
 
@@ -1285,8 +1286,9 @@ test_channel_duplicates(void *arg)
   /* No relay has been associated with this channel. */
   channel_check_for_duplicates();
   expect_log_msg_containing(
-    "Found 0 connections to 0 relays. Found 0 current canonical "
-    "connections, in 0 of which we were a non-canonical peer. "
+    "Found 0 connections to authorities, 0 connections to 0 relays. "
+    "Found 0 current canonical connections, "
+    "in 0 of which we were a non-canonical peer. "
     "0 relays had more than 1 connection, 0 had more than 2, and "
     "0 had more than 4 connections.");
 
@@ -1299,24 +1301,27 @@ test_channel_duplicates(void *arg)
   chan->state = CHANNEL_STATE_CLOSING;
   channel_check_for_duplicates();
   expect_log_msg_containing(
-    "Found 0 connections to 0 relays. Found 0 current canonical "
-    "connections, in 0 of which we were a non-canonical peer. "
+    "Found 0 connections to authorities, 0 connections to 0 relays. "
+    "Found 0 current canonical connections, "
+    "in 0 of which we were a non-canonical peer. "
     "0 relays had more than 1 connection, 0 had more than 2, and "
     "0 had more than 4 connections.");
   chan->state = CHANNEL_STATE_OPEN;
 
   channel_check_for_duplicates();
   expect_log_msg_containing(
-    "Found 1 connections to 1 relays. Found 0 current canonical "
-    "connections, in 0 of which we were a non-canonical peer. "
+    "Found 0 connections to authorities, 1 connections to 1 relays. "
+    "Found 0 current canonical connections, "
+    "in 0 of which we were a non-canonical peer. "
     "0 relays had more than 1 connection, 0 had more than 2, and "
     "0 had more than 4 connections.");
 
   test_chan_should_be_canonical = 1;
   channel_check_for_duplicates();
   expect_log_msg_containing(
-    "Found 1 connections to 1 relays. Found 1 current canonical "
-    "connections, in 1 of which we were a non-canonical peer. "
+    "Found 0 connections to authorities, 1 connections to 1 relays. "
+    "Found 1 current canonical connections, "
+    "in 1 of which we were a non-canonical peer. "
     "0 relays had more than 1 connection, 0 had more than 2, and "
     "0 had more than 4 connections.");
   teardown_capture_of_logs();

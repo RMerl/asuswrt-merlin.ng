@@ -12,9 +12,7 @@
 #ifndef TOR_CPUWORKER_H
 #define TOR_CPUWORKER_H
 
-#include "feature/nodelist/networkstatus_st.h"
-
-void cpu_init(void);
+void cpuworker_init(void);
 void cpuworkers_rotate_keyinfo(void);
 
 void cpuworker_consensus_has_changed(const networkstatus_t *ns);

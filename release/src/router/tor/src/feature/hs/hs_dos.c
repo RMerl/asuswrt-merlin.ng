@@ -28,6 +28,7 @@
 #include "feature/relay/routermode.h"
 
 #include "lib/evloop/token_bucket.h"
+#include "lib/time/compat_time.h"
 
 #include "feature/hs/hs_dos.h"
 
@@ -143,7 +144,7 @@ hs_dos_setup_default_intro2_defenses(or_circuit_t *circ)
   token_bucket_ctr_init(&circ->introduce2_bucket,
                         consensus_param_introduce_rate_per_sec,
                         consensus_param_introduce_burst_per_sec,
-                        (uint32_t) approx_time());
+                        (uint32_t) monotime_coarse_absolute_sec());
 }
 
 /** Called when the consensus has changed. We might have new consensus
@@ -188,7 +189,7 @@ hs_dos_can_send_intro2(or_circuit_t *s_intro_circ)
 
   /* Refill INTRODUCE2 bucket. */
   token_bucket_ctr_refill(&s_intro_circ->introduce2_bucket,
-                          (uint32_t) approx_time());
+                          (uint32_t) monotime_coarse_absolute_sec());
 
   /* Decrement the bucket for this valid INTRODUCE1 cell we just got. Don't
    * underflow else we end up with a too big of a bucket. */

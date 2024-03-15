@@ -56,10 +56,10 @@ EXTRA_DIST+= doc/asciidoc-helper.sh			\
 	     doc/HACKING/HelpfulTools.md 			\
 	     doc/HACKING/HowToReview.md  			\
 	     doc/HACKING/Module.md				\
-	     doc/HACKING/ReleasingTor.md                        \
-	     doc/HACKING/WritingTests.md
-	     doc/HACKING/tracing/Tracing.md				\
-	     doc/HACKING/tracing/EventsCircuit.md
+	     doc/HACKING/ReleasingTor.md			\
+	     doc/HACKING/WritingTests.md			\
+	     doc/HACKING/tracing/EventsCircuit.md		\
+	     doc/HACKING/tracing/README.md
 
 docdir = @docdir@
 

@@ -2006,43 +2006,6 @@ test_options_validate__testing(void *ignored)
 }
 
 static void
-test_options_validate__hidserv(void *ignored)
-{
-  (void)ignored;
-  int ret;
-  char *msg;
-  setup_capture_of_logs(LOG_WARN);
-
-  options_test_data_t *tdata = NULL;
-
-  free_options_test_data(tdata);
-  tdata = get_options_test_data("RendPostPeriod 1\n" );
-  mock_clean_saved_logs();
-  ret = options_validate(NULL, tdata->opt, &msg);
-  tt_int_op(ret, OP_EQ, 0);
-  expect_log_msg("RendPostPeriod option is too short;"
-            " raising to 600 seconds.\n");
-  tt_int_op(tdata->opt->RendPostPeriod, OP_EQ, 600);
-  tor_free(msg);
-
-  free_options_test_data(tdata);
-  tdata = get_options_test_data("RendPostPeriod 302401\n" );
-  mock_clean_saved_logs();
-  ret = options_validate(NULL, tdata->opt, &msg);
-  tt_int_op(ret, OP_EQ, 0);
-  expect_log_msg("RendPostPeriod is too large; "
-            "clipping to 302400s.\n");
-  tt_int_op(tdata->opt->RendPostPeriod, OP_EQ, 302400);
-  tor_free(msg);
-
- done:
-  teardown_capture_of_logs();
-  policies_free_all();
-  free_options_test_data(tdata);
-  tor_free(msg);
-}
-
-static void
 test_options_validate__path_bias(void *ignored)
 {
   (void)ignored;
@@ -4270,7 +4233,6 @@ struct testcase_t options_tests[] = {
   LOCAL_VALIDATE_TEST(safe_logging),
   LOCAL_VALIDATE_TEST(publish_server_descriptor),
   LOCAL_VALIDATE_TEST(testing),
-  LOCAL_VALIDATE_TEST(hidserv),
   LOCAL_VALIDATE_TEST(path_bias),
   LOCAL_VALIDATE_TEST(bandwidth),
   LOCAL_VALIDATE_TEST(circuits),

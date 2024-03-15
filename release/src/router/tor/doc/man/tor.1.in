@@ -2,12 +2,12 @@
 .\"     Title: tor
 .\"    Author: [FIXME: author] [see http://www.docbook.org/tdg5/en/html/author]
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/12/2023
+.\"      Date: 12/08/2023
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR" "1" "01/12/2023" "Tor" "Tor Manual"
+.TH "TOR" "1" "12/08/2023" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------
@@ -338,6 +338,16 @@ In its second form, when set along with a corresponding Bridge line, the Tor cli
 using
 \fIoptions\fR
 as its command\-line options, and forwards its traffic to it\&. It\(cqs the duty of that proxy to properly forward the traffic to the bridge\&. (Default: none)
+.RE
+.PP
+\fBConfluxEnabled\fR \fB0\fR|\fB1\fR|\fBauto\fR
+.RS 4
+If this option is set to 1, general purpose traffic will use Conflux which is traffic splitting among multiple legs (circuits)\&. Onion services are not supported at the moment\&. Default value is set to "auto" meaning the consensus is used to decide unless set\&. (Default: auto)
+.RE
+.PP
+\fBConfluxClientUX\fR \fBthroughput\fR|\fBlatency\fR|\fBthroughput_lowmem\fR|\fBlatency_lowmem\fR
+.RS 4
+This option configures the user experience that the client requests from the exit, for data that the exit sends to the client\&. The default is "throughput", which maximizes throughput\&. "Latency" will tell the exit to only use the circuit with lower latency for all data\&. The lowmem versions minimize queue usage memory at the client\&. (Default: "throughput")
 .RE
 .PP
 \fBConnLimit\fR \fINUM\fR
@@ -766,12 +776,12 @@ If 1, Tor will log with severity \*(Aqwarn\*(Aq various cases of other parties n
 .PP
 \fBRelayBandwidthBurst\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR|\fBTBytes\fR|\fBKBits\fR|\fBMBits\fR|\fBGBits\fR|\fBTBits\fR
 .RS 4
-If not 0, limit the maximum token bucket size (also known as the burst) for _relayed traffic_ to the given number of bytes in each direction\&. They do not include directory fetches by the relay (from authority or other relays), because that is considered "client" activity\&. (Default: 0)
+If not 0, limit the maximum token bucket size (also known as the burst) for _relayed traffic_ to the given number of bytes in each direction\&. They do not include directory fetches by the relay (from authority or other relays), because that is considered "client" activity\&. (Default: 0) RelayBandwidthBurst defaults to the value of RelayBandwidthRate if unset\&.
 .RE
 .PP
 \fBRelayBandwidthRate\fR \fIN\fR \fBbytes\fR|\fBKBytes\fR|\fBMBytes\fR|\fBGBytes\fR|\fBTBytes\fR|\fBKBits\fR|\fBMBits\fR|\fBGBits\fR|\fBTBits\fR
 .RS 4
-If not 0, a separate token bucket limits the average incoming bandwidth usage for _relayed traffic_ on this node to the specified number of bytes per second, and the average outgoing bandwidth usage to that same value\&. Relayed traffic currently is calculated to include answers to directory requests, but that may change in future versions\&. They do not include directory fetches by the relay (from authority or other relays), because that is considered "client" activity\&. (Default: 0)
+If not 0, a separate token bucket limits the average incoming bandwidth usage for _relayed traffic_ on this node to the specified number of bytes per second, and the average outgoing bandwidth usage to that same value\&. Relayed traffic currently is calculated to include answers to directory requests, but that may change in future versions\&. They do not include directory fetches by the relay (from authority or other relays), because that is considered "client" activity\&. (Default: 0) RelayBandwidthRate defaults to the value of RelayBandwidthBurst if unset\&.
 .RE
 .PP
 \fBRephistTrackTime\fR \fIN\fR \fBseconds\fR|\fBminutes\fR|\fBhours\fR|\fBdays\fR|\fBweeks\fR
@@ -1054,7 +1064,7 @@ If this option is set to 1, Tor might connect to directory servers or entry node
 to 0 to disable IPv4\&. Note that clients configured with an IPv6 address in a
 \fBBridge\fR, proxy, or pluggable transportline will try connecting over IPv6 even if
 \fBClientUseIPv6\fR
-is set to 0\&. (Default: 0)
+is set to 0\&. (Default: 1)
 .RE
 .PP
 \fBConnectionPadding\fR \fB0\fR|\fB1\fR|\fBauto\fR
@@ -2901,9 +2911,9 @@ The base time period in seconds that the client connection defense is activated 
 Refuse establishment of rendezvous points for single hop clients\&. In other words, if a client directly connects to the relay and sends an ESTABLISH_RENDEZVOUS cell, it is silently dropped\&. "auto" means use the consensus parameter\&. If not defined in the consensus, the value is 0\&. (Default: auto)
 .RE
 .sp
-As for onion services, only one possible mitigation exists\&. It was intended to protect the network first and thus do not help the service availability or reachability\&.
+For onion services, mitigations are a work in progress and multiple options are currently available\&.
 .sp
-The mitigation we put in place is a rate limit of the amount of introduction that happens at the introduction point for a service\&. In other words, it rates limit the number of clients that are attempting to reach the service at the introduction point instead of at the service itself\&.
+The introduction point defense is a rate limit on the number of introduction requests that will be forwarded to a service by each of its honest introduction point routers\&. This can prevent some types of overwhelming floods from reaching the service, but it will also prevent legitimate clients from establishing new connections\&.
 .sp
 The following options are per onion service:
 .PP
@@ -2937,6 +2947,36 @@ This might be too much for your use case or not, fine tuning these values is har
 Why is this not helping reachability of the service? Because the defenses are at the introduction point, an attacker can easily flood all introduction point rendering the service unavailable due to no client being able to pass through\&. But, the service itself is not overwhelmed with connetions allowing it to function properly for the few clients that were able to go through or other any services running on the same tor instance\&.
 .sp
 The bottom line is that this protects the network by preventing an onion service to flood the network with new rendezvous circuits that is reducing load on the network\&.
+.sp
+A secondary mitigation is available, based on prioritized dispatch of rendezvous circuits for new connections\&. The queue is ordered based on effort a client chooses to spend at computing a proof\-of\-work function\&.
+.sp
+The following options are per onion service:
+.PP
+\fBHiddenServicePoWDefensesEnabled\fR \fB0\fR|\fB1\fR
+.RS 4
+Enable proof\-of\-work based service DoS mitigation\&. If set to 1 (enabled), tor will include parameters for an optional client puzzle in the encrypted portion of this hidden service\(cqs descriptor\&. Incoming rendezvous requests will be prioritized based on the amount of effort a client chooses to make when computing a solution to the puzzle\&. The service will periodically update a suggested amount of effort, based on attack load, and disable the puzzle entirely when the service is not overloaded\&. (Default: 0)
+.RE
+.PP
+\fBHiddenServicePoWQueueRate\fR \fINUM\fR
+.RS 4
+The sustained rate of rendezvous requests to dispatch per second from the priority queue\&. Has no effect when proof\-of\-work is disabled\&. If this is set to 0 there\(cqs no explicit limit and we will process requests as quickly as possible\&. (Default: 250)
+.RE
+.PP
+\fBHiddenServicePoWQueueBurst\fR \fINUM\fR
+.RS 4
+The maximum burst size for rendezvous requests handled from the priority queue at once\&. (Default: 2500)
+.RE
+.sp
+These options are applicable to both onion services and their clients:
+.PP
+\fBCompiledProofOfWorkHash\fR \fB0\fR|\fB1\fR|\fBauto\fR
+.RS 4
+When proof\-of\-work DoS mitigation is active, both the services themselves and the clients which connect will use a dynamically generated hash function as part of the puzzle computation\&.
+
+If this option is set to 1, puzzles will only be solved and verified using the compiled implementation (about 20x faster) and we choose to fail rather than using a slower fallback\&. If it\(cqs 0, the compiler will never be used\&. By default, the compiler is always tried if possible but the interpreter is available as a fallback\&. (Default: auto)
+.RE
+.sp
+See also \-\-list\-modules, these proof of work options have no effect unless the "pow" module is enabled at compile time\&.
 .SH "DIRECTORY AUTHORITY SERVER OPTIONS"
 .sp
 The following options enable operation as a directory authority, and control how Tor behaves as a directory authority\&. You should not need to adjust any of them if you\(cqre running a regular relay or exit server on the public Tor network\&.
@@ -3415,7 +3455,7 @@ configured, the service will be accessible to anyone with the onion address\&.
 .\}
 .nf
 Revoking a client can be done by removing their "\&.auth" file, however the
-revocation will be in effect only after the tor process gets restarted even if
+revocation will be in effect only after the tor process gets restarted or if
 a SIGHUP takes place\&.
 .fi
 .if n \{\
@@ -3491,7 +3531,6 @@ TestingClientMaxIntervalWithoutRequest 5 seconds
 TestingDirConnectionMaxStall 30 seconds
 TestingEnableConnBwEvent 1
 TestingEnableCellStatsEvent 1
-RendPostPeriod 2 minutes
 .fi
 .if n \{\
 .RE

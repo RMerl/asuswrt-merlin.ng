@@ -21,7 +21,6 @@ struct routerstatus_t {
  * routerstatus_has_visibly_changed and the printing function
  * routerstatus_format_entry in NS_CONTROL_PORT mode.
  */
-  time_t published_on; /**< When was this router published? */
   char nickname[MAX_NICKNAME_LEN+1]; /**< The nickname this router says it
                                       * has. */
   char identity_digest[DIGEST_LEN]; /**< Digest of the router's identity

@@ -2292,7 +2292,7 @@ static overload_onionskin_assessment_t overload_onionskin_assessment;
 
 /**
  * We combine ntorv3 and ntor into the same stat, so we must
- * use this function to covert the cell type to a stat index.
+ * use this function to convert the cell type to a stat index.
  */
 static inline uint16_t
 onionskin_type_to_stat(uint16_t type)
@@ -2315,7 +2315,7 @@ onionskin_type_to_stat(uint16_t type)
  * the stats are reset back to 0 and the assessment time period updated.
  *
  * This is called when a ntor handshake is _requested_ because we want to avoid
- * to have an assymetric situation where requested counter is reset to 0 but
+ * to have an asymmetric situation where requested counter is reset to 0 but
  * then a drop happens leading to the drop counter being incremented while the
  * requested counter is 0. */
 static void

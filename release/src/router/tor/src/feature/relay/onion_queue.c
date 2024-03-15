@@ -115,7 +115,7 @@ get_onion_queue_max_delay(const or_options_t *options)
 
 /**
  * We combine ntorv3 and ntor into the same queue, so we must
- * use this function to covert the cell type to a queue index.
+ * use this function to convert the cell type to a queue index.
  */
 static inline uint16_t
 onionskin_type_to_queue(uint16_t type)

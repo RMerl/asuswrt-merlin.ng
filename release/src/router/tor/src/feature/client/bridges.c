@@ -140,6 +140,41 @@ bridge_list_get(void)
 }
 
 /**
+ * Returns true if there are enough bridges to make a conflux set
+ * without re-using the same bridge.
+ */
+bool
+conflux_can_exclude_used_bridges(void)
+{
+  if (smartlist_len(bridge_list_get()) == 1) {
+    static bool warned_once = false;
+    bridge_info_t *bridge = smartlist_get(bridge_list_get(), 0);
+    tor_assert(bridge);
+
+    /* Snowflake is a special case. With one snowflake bridge,
+     * you are load balanced among many back-end bridges.
+     * So we do not need to warn the user for it. */
+    if (bridge->transport_name &&
+        strcasecmp(bridge->transport_name, "snowflake") == 0) {
+      return false;
+    }
+
+    if (!warned_once) {
+      log_warn(LD_CIRC, "Only one bridge (transport: '%s') is configured. "
+                        "You should have at least two for conflux, "
+                        "for any transport that is not 'snowflake'.",
+                        bridge->transport_name ?
+                          bridge->transport_name : "vanilla");
+      warned_once = true;
+    }
+
+    return false;
+  }
+
+  return true;
+}
+
+/**
  * Given a <b>bridge</b>, return a pointer to its RSA identity digest, or
  * NULL if we don't know one for it.
  */

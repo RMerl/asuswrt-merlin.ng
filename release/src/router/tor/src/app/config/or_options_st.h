@@ -396,8 +396,6 @@ struct or_options_t {
   /** List of suffixes for <b>AutomapHostsOnResolve</b>.  The special value
    * "." means "match everything." */
   struct smartlist_t *AutomapHostsSuffixes;
-  int RendPostPeriod; /**< How often do we post each rendezvous service
-                       * descriptor? Remember to publish them independently. */
   int KeepalivePeriod; /**< How often do we send padding cells to keep
                         * connections alive? */
   int SocksTimeout; /**< How long do we let a socks connection wait
@@ -724,6 +722,19 @@ struct or_options_t {
    * clients prefer IPv4. Use reachable_addr_prefer_ipv6_dirport() instead of
    * accessing this value directly.  */
   int ClientPreferIPv6DirPort;
+
+  /** If true, always use the compiled hash implementation. If false, always
+   * the interpreter. Default of "auto" allows a dynamic fallback from
+   * copmiler to interpreter. */
+  int CompiledProofOfWorkHash;
+
+  /** If true, the tor client will use conflux for its general purpose
+   * circuits which excludes onion service traffic. */
+  int ConfluxEnabled;
+
+  /** Has the UX integer value that the client will request from the exit. */
+  char *ConfluxClientUX_option;
+  int ConfluxClientUX;
 
   /** The length of time that we think a consensus should be fresh. */
   int V3AuthVotingInterval;

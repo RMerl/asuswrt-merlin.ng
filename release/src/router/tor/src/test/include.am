@@ -147,8 +147,11 @@ src_test_test_SOURCES += \
 	src/test/test_circuitstats.c \
 	src/test/test_compat_libevent.c \
 	src/test/test_config.c \
+	src/test/test_conflux_cell.c \
+	src/test/test_conflux_pool.c \
 	src/test/test_confmgr.c \
 	src/test/test_confparse.c \
+	src/test/test_congestion_control.c \
 	src/test/test_connection.c \
 	src/test/test_conscache.c \
 	src/test/test_consdiff.c \
@@ -186,6 +189,7 @@ src_test_test_SOURCES += \
 	src/test/test_hs_descriptor.c \
 	src/test/test_hs_dos.c \
 	src/test/test_hs_metrics.c \
+	src/test/test_hs_pow.c \
 	src/test/test_keypin.c \
 	src/test/test_link_handshake.c \
 	src/test/test_logging.c \
@@ -264,6 +268,7 @@ src_test_test_slow_SOURCES += \
 	src/test/test_slow.c \
 	src/test/test_crypto_slow.c \
 	src/test/test_process_slow.c \
+	src/test/test_hs_pow_slow.c \
 	src/test/test_prob_distr.c \
 	src/test/ptr_helpers.c \
 	src/test/test_ptr_slow.c \

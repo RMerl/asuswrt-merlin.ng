@@ -45,7 +45,7 @@ authority_cert_t *get_my_v3_legacy_cert(void);
 crypto_pk_t *get_my_v3_legacy_signing_key(void);
 void dup_onion_keys(crypto_pk_t **key, crypto_pk_t **last);
 void expire_old_onion_keys(void);
-void rotate_onion_key(void);
+bool rotate_onion_key(void);
 void v3_authority_check_key_expiry(void);
 int get_onion_key_lifetime(void);
 int get_onion_key_grace_period(void);

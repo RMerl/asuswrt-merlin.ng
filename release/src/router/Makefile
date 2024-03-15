@@ -5122,8 +5122,9 @@ tor: openssl zlib libevent-2.0.21 tor/Makefile
 tor/Makefile:
 	(cd tor ; autoreconf -i -f && $(CONFIGURE) --with-libevent-dir=$(STAGEDIR)/usr \
 		--with-openssl-dir=$(TOP)/openssl --with-zlib-dir=$(TOP)/zlib \
-		--disable-asciidoc --disable-unittests \
-		--disable-tool-name-check --disable-unittests \
+		--disable-asciidoc --disable-manpage --disable-html-manual \
+		--disable-tool-name-check --disable-unittests --disable-lzma --disable-zstd \
+		--disable-seccomp --disable-libscrypt \
 		CFLAGS="-I$(TOP)/openssl/include" \
 		CPPFLAGS="-I$(TOP)/openssl/include")
 

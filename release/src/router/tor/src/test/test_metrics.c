@@ -28,10 +28,15 @@
 #include "lib/encoding/confline.h"
 #include "lib/metrics/metrics_store.h"
 
+#include <limits.h>
+
 #define TEST_METRICS_ENTRY_NAME    "entryA"
 #define TEST_METRICS_ENTRY_HELP    "Description of entryA"
 #define TEST_METRICS_ENTRY_LABEL_1 "label=\"farfadet\""
 #define TEST_METRICS_ENTRY_LABEL_2 "label=\"ponki\""
+
+#define TEST_METRICS_HIST_ENTRY_NAME    "test_hist_entry"
+#define TEST_METRICS_HIST_ENTRY_HELP    "Description of test_hist_entry"
 
 static void
 set_metrics_port(or_options_t *options)
@@ -189,7 +194,8 @@ test_prometheus(void *arg)
   /* Add entry and validate its content. */
   entry = metrics_store_add(store, METRICS_TYPE_COUNTER,
                             TEST_METRICS_ENTRY_NAME,
-                            TEST_METRICS_ENTRY_HELP);
+                            TEST_METRICS_ENTRY_HELP,
+                            0, NULL);
   tt_assert(entry);
   metrics_store_entry_add_label(entry, TEST_METRICS_ENTRY_LABEL_1);
 
@@ -209,10 +215,60 @@ test_prometheus(void *arg)
 }
 
 static void
+test_prometheus_histogram(void *arg)
+{
+  metrics_store_t *store = NULL;
+  metrics_store_entry_t *entry = NULL;
+  buf_t *buf = buf_new();
+  char *output = NULL;
+  const int64_t buckets[] = { 10, 20, 3000 };
+
+  (void) arg;
+
+  /* Fresh new store. No entries. */
+  store = metrics_store_new();
+  tt_assert(store);
+
+  /* Add a histogram entry and validate its content. */
+  entry = metrics_store_add(store, METRICS_TYPE_HISTOGRAM,
+                            TEST_METRICS_HIST_ENTRY_NAME,
+                            TEST_METRICS_HIST_ENTRY_HELP,
+                            ARRAY_LENGTH(buckets), buckets);
+  tt_assert(entry);
+  metrics_store_entry_add_label(entry, TEST_METRICS_ENTRY_LABEL_1);
+
+  static const char *expected =
+    "# HELP " TEST_METRICS_HIST_ENTRY_NAME " "
+        TEST_METRICS_HIST_ENTRY_HELP "\n"
+    "# TYPE " TEST_METRICS_HIST_ENTRY_NAME " histogram\n"
+    TEST_METRICS_HIST_ENTRY_NAME "_bucket{"
+        TEST_METRICS_ENTRY_LABEL_1 ",le=\"10.00\"} 0\n"
+    TEST_METRICS_HIST_ENTRY_NAME "_bucket{"
+        TEST_METRICS_ENTRY_LABEL_1 ",le=\"20.00\"} 0\n"
+    TEST_METRICS_HIST_ENTRY_NAME "_bucket{"
+        TEST_METRICS_ENTRY_LABEL_1 ",le=\"3000.00\"} 0\n"
+    TEST_METRICS_HIST_ENTRY_NAME "_bucket{"
+        TEST_METRICS_ENTRY_LABEL_1 ",le=\"+Inf\"} 0\n"
+    TEST_METRICS_HIST_ENTRY_NAME "_sum{" TEST_METRICS_ENTRY_LABEL_1 "} 0\n"
+    TEST_METRICS_HIST_ENTRY_NAME "_count{" TEST_METRICS_ENTRY_LABEL_1 "} 0\n";
+
+  metrics_store_get_output(METRICS_FORMAT_PROMETHEUS, store, buf);
+  output = buf_extract(buf, NULL);
+  tt_str_op(expected, OP_EQ, output);
+
+ done:
+  buf_free(buf);
+  tor_free(output);
+  metrics_store_free(store);
+}
+
+static void
 test_store(void *arg)
 {
   metrics_store_t *store = NULL;
   metrics_store_entry_t *entry = NULL;
+  const int64_t buckets[] = { 10, 20, 3000 };
+  const size_t bucket_count = ARRAY_LENGTH(buckets);
 
   (void) arg;
 
@@ -224,7 +280,7 @@ test_store(void *arg)
   /* Add entry and validate its content. */
   entry = metrics_store_add(store, METRICS_TYPE_COUNTER,
                             TEST_METRICS_ENTRY_NAME,
-                            TEST_METRICS_ENTRY_HELP);
+                            TEST_METRICS_ENTRY_HELP, 0, NULL);
   tt_assert(entry);
   tt_int_op(entry->type, OP_EQ, METRICS_TYPE_COUNTER);
   tt_str_op(entry->name, OP_EQ, TEST_METRICS_ENTRY_NAME);
@@ -251,7 +307,7 @@ test_store(void *arg)
   /* Add entry and validate its content. */
   entry = metrics_store_add(store, METRICS_TYPE_COUNTER,
                             TEST_METRICS_ENTRY_NAME,
-                            TEST_METRICS_ENTRY_HELP);
+                            TEST_METRICS_ENTRY_HELP, 0, NULL);
   tt_assert(entry);
   metrics_store_entry_add_label(entry, TEST_METRICS_ENTRY_LABEL_2);
 
@@ -260,6 +316,89 @@ test_store(void *arg)
     metrics_store_get_all(store, TEST_METRICS_ENTRY_NAME);
   tt_assert(entries);
   tt_int_op(smartlist_len(entries), OP_EQ, 2);
+
+  /* Add a histogram entry and validate its content. */
+  entry = metrics_store_add(store, METRICS_TYPE_HISTOGRAM,
+                            TEST_METRICS_HIST_ENTRY_NAME,
+                            TEST_METRICS_HIST_ENTRY_HELP,
+                            bucket_count, buckets);
+
+  tt_assert(entry);
+  tt_int_op(entry->type, OP_EQ, METRICS_TYPE_HISTOGRAM);
+  tt_str_op(entry->name, OP_EQ, TEST_METRICS_HIST_ENTRY_NAME);
+  tt_str_op(entry->help, OP_EQ, TEST_METRICS_HIST_ENTRY_HELP);
+  tt_uint_op(entry->u.histogram.bucket_count, OP_EQ, bucket_count);
+
+  for (size_t i = 0; i < bucket_count; ++i) {
+    tt_uint_op(entry->u.histogram.buckets[i].bucket, OP_EQ, buckets[i]);
+    tt_uint_op(entry->u.histogram.buckets[i].value, OP_EQ, 0);
+  }
+
+  /* Access the entry. */
+  tt_assert(metrics_store_get_all(store, TEST_METRICS_HIST_ENTRY_NAME));
+
+  /* Record various observations. */
+  metrics_store_hist_entry_update(entry, 3, 11);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 10), OP_EQ, 0);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 20), OP_EQ, 3);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 3);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 3);
+  tt_int_op(metrics_store_hist_entry_get_count(entry), OP_EQ, 3);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, 11);
+
+  metrics_store_hist_entry_update(entry, 1, 42);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 10), OP_EQ, 0);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 20), OP_EQ, 3);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 4);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 4);
+  tt_int_op(metrics_store_hist_entry_get_count(entry), OP_EQ, 4);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, 53);
+
+  /* Ensure this resets all buckets back to 0. */
+  metrics_store_entry_reset(entry);
+  for (size_t i = 0; i < bucket_count; ++i) {
+    tt_uint_op(entry->u.histogram.buckets[i].bucket, OP_EQ, buckets[i]);
+    tt_uint_op(entry->u.histogram.buckets[i].value, OP_EQ, 0);
+  }
+
+  /* tt_int_op assigns the third argument to a variable of type long, which
+   * overflows on some platforms (e.g. on some 32-bit systems). We disable
+   * these checks for those platforms. */
+#if LONG_MAX >= INT64_MAX
+  metrics_store_hist_entry_update(entry, 1, INT64_MAX - 13);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, INT64_MAX - 13);
+  metrics_store_hist_entry_update(entry, 1, 13);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, INT64_MAX);
+  /* Uh-oh, the sum of all observations is now greater than INT64_MAX. Make
+   * sure we reset the entry instead of overflowing the sum. */
+  metrics_store_hist_entry_update(entry, 1, 1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 10), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 20), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_count(entry), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, 1);
+#endif
+
+#if LONG_MIN <= INT64_MIN
+  metrics_store_entry_reset(entry);
+  /* In practice, we're not going to have negative observations (as we only use
+   * histograms for timings, which are always positive), but technically
+   * prometheus _does_ support negative observations. */
+  metrics_store_hist_entry_update(entry, 1, INT64_MIN + 13);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, INT64_MIN + 13);
+  metrics_store_hist_entry_update(entry, 1, -13);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, INT64_MIN);
+  /* Uh-oh, the sum of all observations is now less than INT64_MIN. Make
+   * sure we reset the entry instead of underflowing the sum. */
+  metrics_store_hist_entry_update(entry, 1, -1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 10), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 20), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_value(entry, 3000), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_count(entry), OP_EQ, 1);
+  tt_int_op(metrics_store_hist_entry_get_sum(entry), OP_EQ, -1);
+#endif
 
  done:
   metrics_store_free(store);
@@ -270,6 +409,7 @@ struct testcase_t metrics_tests[] = {
   { "config", test_config, TT_FORK, NULL, NULL },
   { "connection", test_connection, TT_FORK, NULL, NULL },
   { "prometheus", test_prometheus, TT_FORK, NULL, NULL },
+  { "prometheus_histogram", test_prometheus_histogram, TT_FORK, NULL, NULL },
   { "store", test_store, TT_FORK, NULL, NULL },
 
   END_OF_TESTCASES

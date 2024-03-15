@@ -282,7 +282,6 @@ test_router_mark_if_too_old(void *arg)
   mock_ns = &ns;
   mock_ns->valid_after = now-3600;
   mock_rs = &rs;
-  mock_rs->published_on = now - 10;
 
   // no reason to mark this time.
   desc_clean_since = now-10;
@@ -302,25 +301,14 @@ test_router_mark_if_too_old(void *arg)
   tt_i64_op(desc_clean_since, OP_EQ, 0);
   tt_str_op(desc_dirty_reason, OP_EQ, "time for new descriptor");
 
-  // Version in consensus published a long time ago?  We won't mark it
-  // if it's been clean for only a short time.
   desc_clean_since = now - 10;
   desc_dirty_reason = NULL;
-  mock_rs->published_on = now - 3600 * 96;
   mark_my_descriptor_dirty_if_too_old(now);
   tt_i64_op(desc_clean_since, OP_EQ, now - 10);
 
-  // ... but if it's been clean a while, we mark.
-  desc_clean_since = now - 2 * 3600;
-  mark_my_descriptor_dirty_if_too_old(now);
-  tt_i64_op(desc_clean_since, OP_EQ, 0);
-  tt_str_op(desc_dirty_reason, OP_EQ,
-            "version listed in consensus is quite old");
-
-  // same deal if we're marked stale.
+  // Version in consensus marked as stale?  We'll mark it.
   desc_clean_since = now - 2 * 3600;
   desc_dirty_reason = NULL;
-  mock_rs->published_on = now - 10;
   mock_rs->is_staledesc = 1;
   mark_my_descriptor_dirty_if_too_old(now);
   tt_i64_op(desc_clean_since, OP_EQ, 0);

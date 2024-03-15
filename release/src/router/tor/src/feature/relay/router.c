@@ -482,8 +482,10 @@ get_my_v3_legacy_signing_key(void)
  *   - schedule all previous cpuworkers to shut down _after_ processing
  *     pending work.  (This will cause fresh cpuworkers to be generated.)
  *   - generate and upload a fresh routerinfo.
+ *
+ * Return true on success, else false on error.
  */
-void
+bool
 rotate_onion_key(void)
 {
   char *fname, *fname_prev;
@@ -491,6 +493,7 @@ rotate_onion_key(void)
   or_state_t *state = get_or_state();
   curve25519_keypair_t new_curve25519_keypair;
   time_t now;
+  bool result = false;
   fname = get_keydir_fname("secret_onion_key");
   fname_prev = get_keydir_fname("secret_onion_key.old");
   /* There isn't much point replacing an old key with an empty file */
@@ -540,6 +543,7 @@ rotate_onion_key(void)
   tor_mutex_release(key_lock);
   mark_my_descriptor_dirty("rotated onion key");
   or_state_mark_dirty(state, get_options()->AvoidDiskWrites ? now+3600 : 0);
+  result = true;
   goto done;
  error:
   log_warn(LD_GENERAL, "Couldn't rotate onion key.");
@@ -549,6 +553,7 @@ rotate_onion_key(void)
   memwipe(&new_curve25519_keypair, 0, sizeof(new_curve25519_keypair));
   tor_free(fname);
   tor_free(fname_prev);
+  return result;
 }
 
 /** Log greeting message that points to new relay lifecycle document the
@@ -911,9 +916,9 @@ router_write_fingerprint(int hashed, int ed25519_identity)
     goto done;
   }
 
-  log_notice(LD_GENERAL, "Your Tor %s identity key %s fingerprint is '%s %s'",
+  log_notice(LD_GENERAL, "Your Tor %s identity key %sfingerprint is '%s %s'",
              hashed ? "bridge's hashed" : "server's",
-             ed25519_identity ? "ed25519" : "",
+             ed25519_identity ? "ed25519 " : "",
              options->Nickname, fingerprint);
 
   result = 0;
@@ -2554,8 +2559,6 @@ mark_my_descriptor_dirty_if_too_old(time_t now)
     rs = networkstatus_vote_find_entry(ns, server_identitykey_digest);
     if (rs == NULL)
       retry_fast_reason = "not listed in consensus";
-    else if (rs->published_on < slow_cutoff)
-      retry_fast_reason = "version listed in consensus is quite old";
     else if (rs->is_staledesc && ns->valid_after > desc_clean_since)
       retry_fast_reason = "listed as stale in consensus";
   }

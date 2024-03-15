@@ -96,6 +96,10 @@ struct entry_connection_t {
    * the exit has sent a CONNECTED cell) and we have chosen to use it.
    */
   unsigned int may_use_optimistic_data : 1;
+
+  /** True iff this is a connection to a HS that has PoW defenses enabled,
+   * so we know not to apply the usual SOCKS timeout. */
+  unsigned int hs_with_pow_conn : 1;
 };
 
 /** Cast a entry_connection_t subtype pointer to a edge_connection_t **/

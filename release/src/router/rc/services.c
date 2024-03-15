@@ -16299,6 +16299,9 @@ check_ddr_done:
 	else if (strcmp(script, "time") == 0)
 	{
 		if(action & RC_SERVICE_STOP) {
+#ifdef RTCONFIG_CROND
+			stop_cron();
+#endif
 #ifdef RTCONFIG_NTPD
 			stop_ntpd();
 #endif
@@ -16327,6 +16330,9 @@ check_ddr_done:
 //			start_firewall(wan_primary_ifunit(), 0);
 #ifdef RTCONFIG_BWDPI
 			start_hour_monitor_service();
+#endif
+#ifdef RTCONFIG_CROND
+			start_cron();
 #endif
 		}
 	}

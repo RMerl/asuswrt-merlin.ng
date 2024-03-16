@@ -2,12 +2,20 @@ Asuswrt-Merlin Changelog
 ========================
 
 3004.388.7 (xx-xxx-2024)
+  - NEW: IGD2 support for UPNP/PCP.  This will allow IPv6 pinhole
+         support for clients.
   - UPDATED: Openvpn to 2.6.9.
   - UPDATED: TOR to 0.4.8.10.
   - UPDATED: wsdd2 to 2023-12-21 snapshot.
+  - UPDATED: miniupnpd to 2.3.5.
+  - CHANGED: hardcoded location of the CA bundle in inadyn, so it
+             no longer need to be manually defined in custom
+             configurations.
   - FIXED: Concurrent cronjob changes through cru could cause
            collisions, leading to missing jobs (dave14305)
   - FIXED: crond would not use the new timezone if it got changed.
+  - FIXED: MiniDLNA web interface could only be accessed through an
+           IP address (regression in 3004.388.6).
 
 
 3004.388.6_2 (26-Feb-2024)

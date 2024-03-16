@@ -1,6 +1,6 @@
 #!/bin/sh
 
-. $(dirname "$0")/miniupnpd_functions.sh
+. "$(dirname "$0")/miniupnpd_functions.sh"
 
 # Prerouting
 $NFT list chain inet $NAT_TABLE $PREROUTING_CHAIN

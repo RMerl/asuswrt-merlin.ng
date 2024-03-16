@@ -1,5 +1,5 @@
 MiniUPnP project.
-(c) 2006-2022 Thomas Bernard
+(c) 2006-2024 Thomas Bernard
 Homepage : http://miniupnp.free.fr/
 Mirror: https://miniupnp.tuxfamily.org/
 github: https://github.com/miniupnp/miniupnp
@@ -126,8 +126,9 @@ https://miniupnp.tuxfamily.org/forum/viewtopic.php?p=4370
 https://github.com/miniupnp/miniupnp/pull/114
 
 =========================== Configuration =============================
-Edit the /etc/miniupnpd.conf file to set options. Almost all options are
-also available through command line switches.
+The configuration file is either installed to /etc/miniupnpd.conf (BSD)
+or /etc/miniupnpd/miniupnpd.conf (Linux)
+Almost all options are also available through command line switches.
 
 A basic configuration would set :
 ext_ifname :   WAN network interface (interface connected to the internet)

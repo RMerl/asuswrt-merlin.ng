@@ -1,11 +1,11 @@
-/* $Id: nftnlrdr.c,v 1.10 2020/11/11 12:08:43 nanard Exp $
+/* $Id: nftnlrdr.c,v 1.15 2024/03/11 23:28:21 nanard Exp $
  * vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * (c) 2015 Tomofumi Hayashi
  * (c) 2019 Sven Auhagen
  * (c) 2019 Paul Chambers
- * (c) 2020-2022 Thomas Bernard
+ * (c) 2020-2024 Thomas Bernard
  *
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution.
@@ -113,6 +113,14 @@ set_rdr_name(rdr_name_type param, const char *string)
 	case RDR_FORWARD_CHAIN_NAME:
 		nft_forward_chain = string;
 		break;
+	case RDR_FAMILY_SPLIT:
+		if(strcmp(string, "yes") == 0) {
+			nft_nat_family = NFPROTO_IPV4;
+			nft_ipv4_family = NFPROTO_IPV4;
+			nft_ipv6_family = NFPROTO_IPV6;
+			syslog(LOG_INFO, "using IPv4/IPv6 Table");
+		}
+		break;
 	default:
 		syslog(LOG_ERR, "%s(): tried to set invalid string parameter: %d", "set_rdr_name", param);
 		return -2;
@@ -191,7 +199,7 @@ add_redirect_rule2(const char * ifname,
 	d_printf(("add redirect rule2(%s, %s, %u, %s, %u, %d, %s)!\n",
 	          ifname, rhost, eport, iaddr, iport, proto, desc));
 
-	r = rule_set_dnat(NFPROTO_INET, ifname, proto,
+	r = rule_set_dnat(nft_nat_family, ifname, proto,
 	                  0, eport,
 	                  inet_addr(iaddr), iport,  desc, NULL);
 
@@ -220,7 +228,7 @@ add_peer_redirect_rule2(const char * ifname,
 
 	d_printf(("add peer redirect rule2()!\n"));
 
-	r = rule_set_snat(NFPROTO_INET, proto,
+	r = rule_set_snat(nft_nat_family, proto,
 	                  inet_addr(rhost), rport,
 	                  inet_addr(eaddr), eport,
 	                  inet_addr(iaddr), iport, desc, NULL);
@@ -249,7 +257,7 @@ add_filter_rule2(const char * ifname,
 	if (rhost != NULL && strcmp(rhost, "") != 0 && strcmp(rhost, "*") != 0) {
 		rhost_addr = inet_addr(rhost);
 	}
-	r = rule_set_filter(NFPROTO_INET, ifname, proto,
+	r = rule_set_filter(nft_nat_family, ifname, proto,
 	                    rhost_addr, inet_addr(iaddr),
 	                    eport, iport, 0,
 	                    desc, 0);
@@ -655,6 +663,7 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 		    p->eport <= endport) {
 
 			if (*number >= capacity) {
+				capacity += 128;
 				tmp = realloc(array,
 					      sizeof(unsigned short)*capacity);
 				if (tmp == NULL) {

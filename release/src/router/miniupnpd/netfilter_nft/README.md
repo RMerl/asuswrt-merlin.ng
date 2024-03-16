@@ -72,3 +72,6 @@ and the following config settings can be used to change the tables and chains :
     upnp_forward_chain=miniupnpd
     upnp_nat_chain=prerouting_miniupnpd
     upnp_nat_postrouting_chain=postrouting_miniupnpd
+
+If you need to use the old ipv4 NAT family style set the flag upnp_nftables_family_split to yes.
+Default is to use INET family which combines IPv4 and IPv6.

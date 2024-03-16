@@ -5,7 +5,7 @@
 # Do not disturb other existing structures in nftables, e.g. those created by firewalld
 #
 
-. $(dirname "$0")/miniupnpd_functions.sh
+. "$(dirname "$0")/miniupnpd_functions.sh"
 
 $NFT --check list table inet $TABLE > /dev/null 2>&1
 if [ $? -eq "0" ]

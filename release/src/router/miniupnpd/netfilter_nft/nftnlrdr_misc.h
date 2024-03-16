@@ -1,9 +1,9 @@
-/*
- * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+/* $Id: nftnlrdr_misc.h,v 1.11 2024/03/11 23:35:07 nanard Exp $ */
+/* MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * (c) 2015 Tomofumi Hayashi
  * (c) 2019 Paul Chambers
- * (c) 2020 Thomas Bernard
+ * (c) 2020-2024 Thomas Bernard
  *
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution.
@@ -15,6 +15,9 @@ extern const char * nft_nat_table;
 extern const char * nft_prerouting_chain;
 extern const char * nft_postrouting_chain;
 extern const char * nft_forward_chain;
+extern int nft_nat_family;
+extern int nft_ipv4_family;
+extern int nft_ipv6_family;
 
 #define NFT_DESCR_SIZE 1024
 

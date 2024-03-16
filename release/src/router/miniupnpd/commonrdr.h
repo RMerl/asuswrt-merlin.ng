@@ -1,6 +1,6 @@
-/* $Id: commonrdr.h,v 1.15 2021/12/01 22:50:09 nanard Exp $ */
+/* $Id: commonrdr.h,v 1.16 2024/03/11 23:28:19 nanard Exp $ */
 /* MiniUPnP project
- * (c) 2006-2021 Thomas Bernard
+ * (c) 2006-2024 Thomas Bernard
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
@@ -81,6 +81,7 @@ typedef enum {
 	RDR_NAT_PREROUTING_CHAIN_NAME,
 	RDR_NAT_POSTROUTING_CHAIN_NAME,
 	RDR_FORWARD_CHAIN_NAME,
+	RDR_FAMILY_SPLIT,
 } rdr_name_type;
 
 /*

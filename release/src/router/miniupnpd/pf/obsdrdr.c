@@ -1,8 +1,8 @@
-/* $Id: obsdrdr.c,v 1.101 2022/02/19 19:15:24 nanard Exp $ */
+/* $Id: obsdrdr.c,v 1.102 2023/12/07 18:56:32 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2022 Thomas Bernard
+ * (c) 2006-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -69,6 +69,7 @@
 #include "obsdrdr.h"
 #include "../upnpglobalvars.h"
 #include "../getifaddr.h"
+#include "rtickets.h"
 
 #ifndef USE_PF
 #error "USE_PF macro is undefined, check consistency between config.h and Makefile"
@@ -459,10 +460,16 @@ int add_nat_rule(const char * ifname,
 	return r;
 }
 
+/*
+ * returns:  0 : OK
+ *          -1 : ERROR
+ *          -2 : Rule not found
+ */
 static int
 delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t iaddr)
 {
-	int i, n;
+	int i, n, r;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 	UNUSED(ifname);
 	if(dev<0) {
@@ -480,16 +487,21 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
-		goto error;
+		return -1;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif /* PF_RELEASETICKETS */
+	r = -2;	/* not found */
 	for(i=0; i<n; i++)
 	{
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 		{
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
-			goto error;
+			r = -1;
+			break;
 		}
 #ifdef TEST
 		syslog(LOG_DEBUG, "%2d port=%hu proto=%d addr=%8x    %8x",
@@ -504,21 +516,27 @@ delete_nat_rule(const char * ifname, unsigned short iport, int proto, in_addr_t 
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0)
 			{
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_GET_TICKET: %m");
-				goto error;
+				r = -1;
+				break;
 			}
 			pr.action = PF_CHANGE_REMOVE;
 			pr.nr = i;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0)
 			{
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_REMOVE: %m");
-				goto error;
+				r = -1;
 			}
-			return 0;
+			else
+			{
+				r = 0;
+			}
+			break;
 		}
 	}
-	syslog(LOG_NOTICE, "could not find nat rule to delete iport=%hu addr=%8x", iport, ntohl(iaddr));
-error:
-	return -1;
+	if (r == -2)
+		syslog(LOG_NOTICE, "could not find nat rule to delete iport=%hu addr=%8x", iport, ntohl(iaddr));
+	release_ticket(dev, tnum);
+	return r;
 }
 #endif
 
@@ -827,12 +845,14 @@ get_redirect_rule_count(const char * ifname)
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
 		return -1;
 	}
+	release_ticket(dev, pr.ticket);
 	return pr.nr;
 }
 
 /* get_redirect_rule()
  * return value : 0 success (found)
- * -1 = error or rule not found */
+ * -1 = error
+ * -2 = rule not found */
 int
 get_redirect_rule(const char * ifname, unsigned short eport, int proto,
                   char * iaddr, int iaddrlen, unsigned short * iport,
@@ -841,7 +861,8 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
                   unsigned int * timestamp,
                   u_int64_t * packets, u_int64_t * bytes)
 {
-	int i, n;
+	int i, n, r;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 #ifndef PF_NEWSTYLE
 	struct pfioc_pooladdr pp;
@@ -860,16 +881,21 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
-		goto error;
+		return -1;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif /* PF_RELEASETICKETS */
+	r = -2;
 	for(i=0; i<n; i++)
 	{
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 		{
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
-			goto error;
+			r = -1;
+			break;
 		}
 #ifdef __APPLE__
 		if( (eport == ntohs(pr.rule.dst.xport.range.port[0]))
@@ -907,18 +933,21 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 			if(ioctl(dev, DIOCGETADDRS, &pp) < 0)
 			{
 				syslog(LOG_ERR, "ioctl(dev, DIOCGETADDRS, ...): %m");
-				goto error;
+				r = -1;
+				break;
 			}
 			if(pp.nr != 1)
 			{
 				syslog(LOG_NOTICE, "No address associated with pf rule");
-				goto error;
+				r = -1;
+				break;
 			}
 			pp.nr = 0;	/* first */
 			if(ioctl(dev, DIOCGETADDR, &pp) < 0)
 			{
 				syslog(LOG_ERR, "ioctl(dev, DIOCGETADDR, ...): %m");
-				goto error;
+				r = -1;
+				break;
 			}
 #ifdef PFVAR_NEW_STYLE
 			inet_ntop(AF_INET, &pp.addr.addr.v.a.addr.v4addr.s_addr,
@@ -954,11 +983,12 @@ get_redirect_rule(const char * ifname, unsigned short eport, int proto,
 			}
 			if(timestamp)
 				*timestamp = get_timestamp(eport, proto);
-			return 0;
+			r = 0;
+			break;
 		}
 	}
-error:
-	return -1;
+	release_ticket(dev, tnum);
+	return r;
 }
 
 #define priv_delete_redirect_rule(ifname, eport, proto, iport, \
@@ -966,7 +996,8 @@ error:
         priv_delete_redirect_rule_check_desc(ifname, eport, proto, iport, \
                                              iaddr, rhost, rhostlen, 0, NULL)
 /* if check_desc is true, only delete the rule if the description differs.
- * returns : -1 : error / rule not found
+ * returns : -2 : rule not found
+ *           -1 : error
  *            0 : rule deleted
  *            1 : rule untouched
  */
@@ -976,7 +1007,8 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
                           in_addr_t * iaddr, char * rhost, int rhostlen,
                           int check_desc, const char * desc)
 {
-	int i, n;
+	int i, n, r;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 	UNUSED(ifname);
 
@@ -992,16 +1024,21 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
-		goto error;
+		return -1;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif /* PF_RELEASETICKETS */
+	r = -2;
 	for(i=0; i<n; i++)
 	{
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 		{
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
-			goto error;
+			r = -1;
+			break;
 		}
 #ifdef __APPLE__
 		if( (eport == ntohs(pr.rule.dst.xport.range.port[0]))
@@ -1027,18 +1064,21 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 				if(ioctl(dev, DIOCGETADDRS, &pp) < 0)
 				{
 					syslog(LOG_ERR, "ioctl(dev, DIOCGETADDRS, ...): %m");
-					goto error;
+					r = -1;
+					break;
 				}
 				if(pp.nr != 1)
 				{
 					syslog(LOG_NOTICE, "No address associated with pf rule");
-					goto error;
+					r = -1;
+					break;
 				}
 				pp.nr = 0;	/* first */
 				if(ioctl(dev, DIOCGETADDR, &pp) < 0)
 				{
 					syslog(LOG_ERR, "ioctl(dev, DIOCGETADDR, ...): %m");
-					goto error;
+					r = -1;
+					break;
 				}
 #ifdef PFVAR_NEW_STYLE
 				*iaddr = pp.addr.addr.v.a.addr.v4addr.s_addr;
@@ -1074,29 +1114,34 @@ priv_delete_redirect_rule_check_desc(const char * ifname, unsigned short eport,
 			if(check_desc) {
 				if((desc == NULL && pr.rule.label[0] == '\0') ||
 				   (desc && 0 == strcmp(desc, pr.rule.label))) {
-					return 1;
+					r = 1;
+					break;
 				}
 			}
 			pr.action = PF_CHANGE_GET_TICKET;
         	if(ioctl(dev, DIOCCHANGERULE, &pr) < 0)
 			{
             	syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_GET_TICKET: %m");
-				goto error;
+				r = -1;
+				break;
 			}
 			pr.action = PF_CHANGE_REMOVE;
 			pr.nr = i;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0)
 			{
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_REMOVE: %m");
-				goto error;
+				r = -1;
+				break;
 			}
 			remove_timestamp_entry(eport, proto);
-			return 0;
+			r = 0;
+			break;
 		}
 	}
-	syslog(LOG_NOTICE, "could not find redirect rule to delete eport=%hu", eport);
-error:
-	return -1;
+	if (r == -2)
+		syslog(LOG_NOTICE, "could not find redirect rule to delete eport=%hu", eport);
+	release_ticket(dev, tnum);
+	return r;
 }
 
 int
@@ -1106,6 +1151,9 @@ delete_redirect_rule(const char * ifname, unsigned short eport,
 	return priv_delete_redirect_rule(ifname, eport, proto, NULL, NULL, NULL, 0);
 }
 
+/* returns:  0 : OK
+ *          -1 : Error
+ *          -2 : rule not found */
 static int
 priv_delete_filter_rule(const char * ifname, unsigned short iport,
                         int proto, in_addr_t iaddr)
@@ -1114,7 +1162,8 @@ priv_delete_filter_rule(const char * ifname, unsigned short iport,
 	UNUSED(ifname); UNUSED(iport); UNUSED(proto); UNUSED(iaddr);
 	return 0;
 #else
-	int i, n;
+	int i, n, r;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 	UNUSED(ifname);
 	if(dev<0) {
@@ -1127,16 +1176,21 @@ priv_delete_filter_rule(const char * ifname, unsigned short iport,
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
-		goto error;
+		return -1;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif /* PF_RELEASETICKETS */
+	r = -2;
 	for(i=0; i<n; i++)
 	{
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0)
 		{
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
-			goto error;
+			r = -1;
+			break;
 		}
 #ifdef TEST
 syslog(LOG_DEBUG, "%2d port=%hu proto=%d addr=%8x",
@@ -1153,30 +1207,42 @@ syslog(LOG_DEBUG, "%2d port=%hu proto=%d addr=%8x",
         	if(ioctl(dev, DIOCCHANGERULE, &pr) < 0)
 			{
             	syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_GET_TICKET: %m");
-				goto error;
+				r = -1;
+				break;
 			}
 			pr.action = PF_CHANGE_REMOVE;
 			pr.nr = i;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0)
 			{
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_REMOVE: %m");
-				goto error;
+				r = -1;
 			}
-			return 0;
+			else
+			{
+				r = 0;
+			}
+			break;
 		}
 	}
-	syslog(LOG_NOTICE, "could not find filter rule to delete iport=%hu addr=%8x", iport, ntohl(iaddr));
-error:
-	return -1;
+	if (r == -2)
+		syslog(LOG_NOTICE, "could not find filter rule to delete iport=%hu addr=%8x", iport, ntohl(iaddr));
+	release_ticket(dev, tnum);
+	return r;
 #endif
 }
 
+/* returns:  0 : OK
+ *          -1 : Error
+ *          -2 : rule not found */
 int
 delete_filter_rule(const char * ifname, unsigned short port, int proto)
 {
 	return priv_delete_filter_rule(ifname, port, proto, 0);
 }
 
+/* returns:  0 : OK
+ *          -1 : Error
+ *          -2 : rule not found */
 int
 delete_redirect_and_filter_rules(const char * ifname, unsigned short eport,
                                  int proto)
@@ -1206,7 +1272,8 @@ get_redirect_rule_by_index(int index,
                            unsigned int * timestamp,
                            u_int64_t * packets, u_int64_t * bytes)
 {
-	int n;
+	int n, r;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 #ifndef PF_NEWSTYLE
 	struct pfioc_pooladdr pp;
@@ -1225,9 +1292,13 @@ get_redirect_rule_by_index(int index,
 	if(ioctl(dev, DIOCGETRULES, &pr) < 0)
 	{
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
-		goto error;
+		return -1;
 	}
 	n = pr.nr;
+	r = -1;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif /* PF_RELEASETICKETS */
 	if(index >= n)
 		goto error;
 	pr.nr = index;
@@ -1318,9 +1389,10 @@ get_redirect_rule_by_index(int index,
 	}
 	if(timestamp)
 		*timestamp = get_timestamp(*eport, *proto);
-	return 0;
+	r = 0;
 error:
-	return -1;
+	release_ticket(dev, tnum);
+	return r;
 }
 
 /* return an (malloc'ed) array of "external" port for which there is
@@ -1330,7 +1402,7 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
                           int proto, unsigned int * number)
 {
 	unsigned short * array;
-	unsigned int capacity;
+	unsigned int capacity, tnum;
 	int i, n;
 	unsigned short eport;
 	struct pfioc_rule pr;
@@ -1359,6 +1431,9 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 		return NULL;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif /* PF_RELEASETICKETS */
 	for(i=0; i<n; i++)
 	{
 		pr.nr = i;
@@ -1388,6 +1463,7 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 					syslog(LOG_ERR, "get_portmappings_in_range() : realloc(%lu) error", sizeof(unsigned short)*capacity);
 					*number = 0;
 					free(array);
+					release_ticket(dev, tnum);
 					return NULL;
 				}
 				array = tmp;
@@ -1396,10 +1472,13 @@ get_portmappings_in_range(unsigned short startport, unsigned short endport,
 			(*number)++;
 		}
 	}
+	release_ticket(dev, tnum);
 	return array;
 }
 
-/* update the port mapping internal port, description and timestamp */
+/* update the port mapping internal port, description and timestamp
+ * returns:  0 : OK
+ *          -1 : Error */
 int
 update_portmapping(const char * ifname, unsigned short eport, int proto,
                    unsigned short iport, const char * desc,
@@ -1415,7 +1494,10 @@ update_portmapping(const char * ifname, unsigned short eport, int proto,
 	if (priv_delete_filter_rule(ifname, old_iport, proto, iaddr) < 0)
 		return -1;
 
-	inet_ntop(AF_INET, &iaddr, iaddr_str, sizeof(iaddr_str));
+	if (inet_ntop(AF_INET, &iaddr, iaddr_str, sizeof(iaddr_str)) == NULL) {
+		syslog(LOG_ERR, "inet_ntop(AF_INET, ...): %m");
+		return -1;
+	}
 
 	if(add_redirect_rule2(ifname, rhost, eport, iaddr_str, iport, proto,
 	                      desc, timestamp) < 0)
@@ -1450,7 +1532,10 @@ update_portmapping_desc_timestamp(const char * ifname,
 	if (priv_delete_filter_rule(ifname, iport, proto, iaddr) < 0)
 		return -1;
 
-	inet_ntop(AF_INET, &iaddr, iaddr_str, sizeof(iaddr_str));
+	if (inet_ntop(AF_INET, &iaddr, iaddr_str, sizeof(iaddr_str)) == NULL) {
+		syslog(LOG_ERR, "inet_ntop(AF_INET, ...): %m");
+		return -1;
+	}
 
 	if(add_redirect_rule2(ifname, rhost, eport, iaddr_str, iport, proto,
 	                      desc, timestamp) < 0)
@@ -1470,6 +1555,7 @@ list_rules(void)
 	char buf[32];
 	char buf2[32];
 	int i, n;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 #ifndef PF_NEWSTYLE
 	struct pfioc_pooladdr pp;
@@ -1536,6 +1622,7 @@ list_rules(void)
 		printf("  %s\n", inet_ntop(AF_INET, &pr.rule.rdr.addr.v.a.addr.v4.s_addr, buf, 32));
 #endif
 	}
+	release_ticket(dev, tnum);
 }
 #endif /* TEST */
 

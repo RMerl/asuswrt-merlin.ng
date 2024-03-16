@@ -1,7 +1,7 @@
-/* $Id: nftpinhole.c,v 1.7 2020/11/11 12:08:43 nanard Exp $ */
+/* $Id: nftpinhole.c,v 1.8 2024/03/11 23:28:22 nanard Exp $ */
 /* MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
- * (c) 2012-2020 Thomas Bernard
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
+ * (c) 2012-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -82,8 +82,8 @@ int add_pinhole(const char * ifname,
 
 	uid = next_uid;
 
-	d_printf(("add_pinhole(%s, %s, %s, %d, %d, %d, %s)\n",
-	          ifname, rem_host, int_client, rem_port, int_port, proto, desc));
+	d_printf(("add_pinhole(%s, %s, %hu, %s, %hu, %d, %s, %u)\n",
+	          ifname, rem_host, rem_port, int_client, int_port, proto, desc, timestamp));
 
 	if (rem_host && rem_host[0] != '\0' && rem_host[0] != '*') {
 		inet_pton(AF_INET6, rem_host, &rhost_addr);
@@ -97,7 +97,7 @@ int add_pinhole(const char * ifname,
 	snprintf(comment, NFT_DESCR_SIZE,
 		         PINEHOLE_LABEL_FORMAT, uid, timestamp, desc);
 
-	r = rule_set_filter6(NFPROTO_INET, ifname, proto,
+	r = rule_set_filter6(nft_ipv6_family, ifname, proto,
 			    rhost_addr_p, &ihost_addr,
 				0, int_port, rem_port, comment, 0);
 
@@ -128,11 +128,18 @@ find_pinhole(const char * ifname,
 	UNUSED(ifname);
 
 	if (rem_host && rem_host[0] != '\0' && rem_host[0] != '*') {
-		inet_pton(AF_INET6, rem_host, &saddr);
+		if (inet_pton(AF_INET6, rem_host, &saddr) < 1) {
+			syslog(LOG_WARNING, "Failed to parse INET6 address \"%s\"", rem_host);
+			memset(&saddr, 0, sizeof(struct in6_addr));
+		}
 	} else {
 		memset(&saddr, 0, sizeof(struct in6_addr));
 	}
-	inet_pton(AF_INET6, int_client, &daddr);
+
+	if (inet_pton(AF_INET6, int_client, &daddr) < 1) {
+		syslog(LOG_WARNING, "Failed to parse INET6 address \"%s\"", int_client);
+		memset(&daddr, 0, sizeof(struct in6_addr));
+	}
 
 	d_printf(("find_pinhole()\n"));
 	refresh_nft_cache_filter();
@@ -146,10 +153,10 @@ find_pinhole(const char * ifname,
 		if (p->desc_len == 0)
 			continue;
 
-		if ((proto == p->proto) && (rem_port == p->rport)
-		   && (0 == memcmp(&saddr, &p->rhost6, sizeof(struct in6_addr)))
-		   && (int_port == p->eport) &&
-		   (0 == memcmp(&daddr, &p->iaddr6, sizeof(struct in6_addr)))) {
+		if ((proto == p->proto) && (rem_port == p->sport)
+		   && (0 == memcmp(&saddr, &p->saddr6, sizeof(struct in6_addr)))
+		   && (int_port == p->dport) &&
+		   (0 == memcmp(&daddr, &p->daddr6, sizeof(struct in6_addr)))) {
 
 			if (sscanf(p->desc, PINEHOLE_LABEL_FORMAT_SKIPDESC, &uid, &ts) != 2) {
 				syslog(LOG_DEBUG, "rule with label '%s' is not a IGD pinhole", p->desc);
@@ -159,11 +166,12 @@ find_pinhole(const char * ifname,
 			if (timestamp)
 				*timestamp = ts;
 
-			if (desc) {
+			if (desc && (desc_len > 0)) {
 				char * pd = strchr(p->desc, ':');
 				if(pd) {
 					pd += 2;
 					strncpy(desc, pd, desc_len);
+					desc[desc_len - 1] = '\0';
 				}
 			}
 
@@ -196,8 +204,10 @@ delete_pinhole(unsigned short uid)
 		if (p->desc_len == 0)
 			continue;
 
-		strncpy(tmp_label, p->desc, p->desc_len);
+		strncpy(tmp_label, p->desc, sizeof(tmp_label));
+		tmp_label[sizeof(tmp_label) - 1] = '\0';
 		strtok(tmp_label, " ");
+		/* compare the uid value */
 		if (0 == strcmp(tmp_label, label_start)) {
 			r = rule_del_handle(p);
 			nft_send_rule(r, NFT_MSG_DELRULE, RULE_CHAIN_FILTER);
@@ -247,38 +257,44 @@ update_pinhole(unsigned short uid, unsigned int timestamp)
 		if (p->desc_len == 0)
 			continue;
 
-		strncpy(tmp_label, p->desc, p->desc_len);
+		strncpy(tmp_label, p->desc, sizeof(tmp_label));
+		tmp_label[sizeof(tmp_label) - 1] = '\0';
 		strtok(tmp_label, " ");
+		/* check for the right uid */
 		if (0 == strcmp(tmp_label, label_start)) {
+			char *pd;
 			/* Source IP Address */
 			// Check if empty
-			if (0 == memcmp(&rhost_addr, &p->rhost6, sizeof(struct in6_addr))) {
+			if (0 == memcmp(&rhost_addr, &p->saddr6, sizeof(struct in6_addr))) {
 				rhost_addr_p = NULL;
 				raddr[0] = '*';
 				raddr[1] = '\0';
 			} else {
-				rhost_addr_p = &p->rhost6;
-				inet_ntop(AF_INET6, rhost_addr_p, raddr, INET6_ADDRSTRLEN);
+				rhost_addr_p = &p->saddr6;
+				if (inet_ntop(AF_INET6, rhost_addr_p, raddr, INET6_ADDRSTRLEN) == NULL) {
+					syslog(LOG_WARNING, "%s: inet_ntop(raddr): %m", "update_pinhole");
+				}
 			}
 
 			/* Source Port */
-			rport = p->iport;
+			rport = p->sport;
 
 			/* Destination IP Address */
-			ihost_addr = p->iaddr6;
+			ihost_addr = p->daddr6;
 
 			/* Destination Port */
-			iport = p->eport;
+			iport = p->dport;
 
 			proto = p->proto;
 
 			ext_if_indx = p->ingress_ifidx;
 			if_indextoname(ext_if_indx, ifname);
 
-			tmp_p = tmp_label;
-			strsep(&tmp_p, " ");
-			if (tmp_p) {
-				strncpy(desc, tmp_p, NFT_DESCR_SIZE);
+			pd = strchr(p->desc, ':');
+			if (pd) {
+				pd += 2;
+				strncpy(desc, pd, sizeof(desc));
+				desc[sizeof(desc) - 1] = '\0';
 			} else {
 				desc[0] = '\0';
 			}
@@ -304,7 +320,7 @@ update_pinhole(unsigned short uid, unsigned int timestamp)
 	d_printf(("update add_pinhole(%s, %s, %s, %d, %d, %d, %s)\n",
 	          ifname, raddr, inet_ntop(AF_INET6, &ihost_addr, iaddr, INET6_ADDRSTRLEN), rport, iport, proto, comment));
 
-	r = rule_set_filter6(NFPROTO_INET, ifname, proto,
+	r = rule_set_filter6(nft_ipv6_family, ifname, proto,
 			    rhost_addr_p, &ihost_addr,
 				0, iport, rport, comment, 0);
 
@@ -345,28 +361,35 @@ get_pinhole_info(unsigned short uid,
 		if (p->desc_len == 0)
 			continue;
 
-		strncpy(tmp_label, p->desc, p->desc_len);
+		strncpy(tmp_label, p->desc, sizeof(tmp_label));
+		tmp_label[sizeof(tmp_label) - 1] = '\0';
 		strtok(tmp_label, " ");
 		if (0 == strcmp(tmp_label, label_start)) {
 			/* Source IP Address */
-			if (rem_host && (rem_host[0] != '\0')) {
-				if(inet_ntop(AF_INET6, &p->rhost6, rem_host, rem_hostlen) == NULL)
+			if (rem_host) {
+				if(inet_ntop(AF_INET6, &p->saddr6, rem_host, rem_hostlen) == NULL) {
+					syslog(LOG_ERR, "%s: inet_ntop(rem_host): %m",
+					       "get_pinhole_info");
 					return -1;
+				}
 			}
 
 			/* Source Port */
 			if (rem_port)
-				*rem_port = p->rport;
+				*rem_port = p->sport;
 
 			/* Destination IP Address */
 			if (int_client) {
-				if(inet_ntop(AF_INET6, &p->iaddr6, int_client, int_clientlen) == NULL)
+				if(inet_ntop(AF_INET6, &p->daddr6, int_client, int_clientlen) == NULL) {
+					syslog(LOG_ERR, "%s: inet_ntop(rem_host): %m",
+					       "get_pinhole_info");
 					return -1;
+				}
 			}
 
 			/* Destination Port */
 			if (int_port)
-				*int_port = p->eport;
+				*int_port = p->dport;
 
 			if (proto)
 				*proto = p->proto;
@@ -381,8 +404,14 @@ get_pinhole_info(unsigned short uid,
 				*timestamp = ts;
 			}
 
-			if (desc)
-				strncpy(desc, p->desc, desclen);
+			if (desc && (desclen > 0)) {
+				char * pd = strchr(p->desc, ':');
+				if(pd) {
+					pd += 2;
+					strncpy(desc, pd, desclen);
+					desc[desclen - 1] = '\0';
+				}
+			}
 
 			if (packets || bytes) {
 				if (packets)

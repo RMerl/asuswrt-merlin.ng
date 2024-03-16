@@ -1,8 +1,8 @@
-/* $Id: upnpsoap.c,v 1.163 2023/02/04 10:36:34 nanard Exp $ */
+/* $Id: upnpsoap.c,v 1.165 2023/06/26 23:15:56 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2023 Thomas Bernard
+ * (c) 2006-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -485,7 +485,11 @@ AddPortMapping(struct upnphttp * h, const char * action, const char * ns)
 			syslog(LOG_INFO, "Client %s tried to redirect port to %s",
 			       inet_ntoa(h->clientaddr), int_ip);
 			ClearNameValueList(&data);
+#ifdef IGD_V2
+			SoapError(h, 606, "Action not authorized");
+#else
 			SoapError(h, 718, "ConflictInMappingEntry");
+#endif
 			return;
 		}
 	}
@@ -509,7 +513,7 @@ AddPortMapping(struct upnphttp * h, const char * action, const char * ns)
 	if (strcmp(ext_port, "*") == 0 || eport == 0)
 	{
 		ClearNameValueList(&data);
-		SoapError(h, 716, "Wildcard not permited in ExtPort");
+		SoapError(h, 716, "WildCardNotPermittedInExtPort");
 		return;
 	}
 
@@ -539,8 +543,8 @@ AddPortMapping(struct upnphttp * h, const char * action, const char * ns)
 	 * 402 - Invalid Args
 	 * 501 - Action Failed
 	 * 606 - Action not authorized (added in IGD v2)
-	 * 715 - Wildcard not permited in SrcAddr
-	 * 716 - Wildcard not permited in ExtPort
+	 * 715 - WildCardNotPermittedInSrcIP
+	 * 716 - WildCardNotPermittedInExtPort
 	 * 718 - ConflictInMappingEntry
 	 * 724 - SamePortValuesRequired (deprecated in IGD v2)
      * 725 - OnlyPermanentLeasesSupported
@@ -578,7 +582,7 @@ AddPortMapping(struct upnphttp * h, const char * action, const char * ns)
 		SoapError(h, 718, "ConflictInMappingEntry");
 		break;
 	default:
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 	}
 }
 
@@ -744,7 +748,7 @@ AddAnyPortMapping(struct upnphttp * h, const char * action, const char * ns)
 		SoapError(h, 606, "Action not authorized");
 		break;
 	default:
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 	}
 }
 
@@ -918,8 +922,11 @@ DeletePortMapping(struct upnphttp * h, const char * action, const char * ns)
 			{
 				if(h->clientaddr.s_addr != int_ip_addr.s_addr)
 				{
+#ifdef IGD_V2
 					SoapError(h, 606, "Action not authorized");
-					/*SoapError(h, 714, "NoSuchEntryInArray");*/
+#else
+					SoapError(h, 714, "NoSuchEntryInArray");
+#endif
 					ClearNameValueList(&data);
 					return;
 				}
@@ -1203,14 +1210,14 @@ http://www.upnp.org/schemas/gw/WANIPConnection-v2.xsd">
 	if(!body)
 	{
 		ClearNameValueList(&data);
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 		return;
 	}
 	bodylen = snprintf(body, bodyalloc, resp_start,
 	              action, ns/*SERVICE_TYPE_WANIPC*/);
 	if(bodylen < 0)
 	{
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 		free(body);
 		return;
 	}
@@ -1232,7 +1239,7 @@ http://www.upnp.org/schemas/gw/WANIPConnection-v2.xsd">
 			{
 				syslog(LOG_CRIT, "realloc(%p, %u) FAILED", body_sav, (unsigned)bodyalloc);
 				ClearNameValueList(&data);
-				SoapError(h, 501, "ActionFailed");
+				SoapError(h, 501, "Action Failed");
 				free(body_sav);
 				free(port_list);
 				return;
@@ -1264,7 +1271,7 @@ http://www.upnp.org/schemas/gw/WANIPConnection-v2.xsd">
 		{
 			syslog(LOG_CRIT, "realloc(%p, %u) FAILED", body_sav, (unsigned)bodyalloc);
 			ClearNameValueList(&data);
-			SoapError(h, 501, "ActionFailed");
+			SoapError(h, 501, "Action Failed");
 			free(body_sav);
 			return;
 		}
@@ -1827,7 +1834,7 @@ AddPinhole(struct upnphttp * h, const char * action, const char * ns)
 			SoapError(h, 701, "PinholeSpaceExhausted");
 			break;
 		default:
-			SoapError(h, 501, "ActionFailed");
+			SoapError(h, 501, "Action Failed");
 			break;
 	}
 	/* 606 Action not authorized
@@ -1900,7 +1907,7 @@ UpdatePinhole(struct upnphttp * h, const char * action, const char * ns)
 	}
 	else
 	{
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 		return;
 	}
 
@@ -1911,7 +1918,7 @@ UpdatePinhole(struct upnphttp * h, const char * action, const char * ns)
 	if(n == -1)
 		SoapError(h, 704, "NoSuchEntry");
 	else if(n < 0)
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 	else {
 		bodylen = snprintf(body, sizeof(body), resp,
 		                   action, ns, action);
@@ -1979,7 +1986,7 @@ GetOutboundPinholeTimeout(struct upnphttp * h, const char * action, const char *
 			SoapError(h, 705, "ProtocolNotSupported");
 			break;
 		default:
-			SoapError(h, 501, "ActionFailed");
+			SoapError(h, 501, "Action Failed");
 	}
 	ClearNameValueList(&data);
 }
@@ -2042,7 +2049,7 @@ DeletePinhole(struct upnphttp * h, const char * action, const char * ns)
 	}
 	else
 	{
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 		return;
 	}
 
@@ -2051,7 +2058,7 @@ DeletePinhole(struct upnphttp * h, const char * action, const char * ns)
 	{
 		syslog(LOG_INFO, "%s: (inbound) failed to remove pinhole with ID: %d",
 	           action, uid);
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 		return;
 	}
 	syslog(LOG_INFO, "%s: (inbound) pinhole with ID %d successfully removed",
@@ -2107,7 +2114,7 @@ CheckPinholeWorking(struct upnphttp * h, const char * action, const char * ns)
 			return ;
 		if(packets == 0)
 		{
-			SoapError(h, 709, "NoPacketSent");
+			SoapError(h, 709, "NoTrafficReceived");
 			return;
 		}
 		bodylen = snprintf(body, sizeof(body), resp,
@@ -2118,7 +2125,7 @@ CheckPinholeWorking(struct upnphttp * h, const char * action, const char * ns)
 	else if(r == -2)
 		SoapError(h, 704, "NoSuchEntry");
 	else
-		SoapError(h, 501, "ActionFailed");
+		SoapError(h, 501, "Action Failed");
 }
 
 static void
@@ -3260,23 +3267,21 @@ void
 ExecuteSoapAction(struct upnphttp * h, const char * action, int n)
 {
 	char * p;
-	char * p2;
 	int i, len, methodlen;
 	char namespace[256];
 
 	/* SoapAction example :
 	 * urn:schemas-upnp-org:service:WANIPConnection:1#GetStatusInfo */
-	p = strchr(action, '#');
-	if(p && (p - action) < n) {
+	p = memchr(action, '#', n);
+	if(p) {
 		for(i = 0; i < ((int)sizeof(namespace) - 1) && (action + i) < p; i++)
 			namespace[i] = action[i];
 		namespace[i] = '\0';
 		p++;
-		p2 = strchr(p, '"');
-		if(p2 && (p2 - action) <= n)
-			methodlen = p2 - p;
-		else
-			methodlen = n - (p - action);
+		methodlen = n - (int)(p - action);
+		if(p[methodlen-1] == '"') {
+			methodlen--;	/* remove the ending " */
+		}
 		/*syslog(LOG_DEBUG, "SoapMethod: %.*s %d %d %p %p %d",
 		       methodlen, p, methodlen, n, action, p, (int)(p - action));*/
 		for(i = 0; soapMethods[i].methodName; i++) {

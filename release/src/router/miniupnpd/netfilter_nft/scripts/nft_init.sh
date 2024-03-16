@@ -5,7 +5,7 @@
 # 'add' doesn't raise an error if the object already exists. 'create' does.
 #
 
-. $(dirname "$0")/miniupnpd_functions.sh
+. "$(dirname "$0")/miniupnpd_functions.sh"
 
 $NFT --check list table inet $TABLE > /dev/null 2>&1
 if [ $? -eq "0" ]

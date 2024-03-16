@@ -1,9 +1,9 @@
-/*
- * MiniUPnP project
- * http://miniupnp.free.fr/ or http://miniupnp.tuxfamily.org/
+/* $Id: nftnlrdr_misc.h,v 1.11 2024/03/11 23:35:07 nanard Exp $ */
+/* MiniUPnP project
+ * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * (c) 2015 Tomofumi Hayashi
  * (c) 2019 Paul Chambers
- * (c) 2020 Thomas Bernard
+ * (c) 2020-2024 Thomas Bernard
  *
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution.
@@ -15,6 +15,9 @@ extern const char * nft_nat_table;
 extern const char * nft_prerouting_chain;
 extern const char * nft_postrouting_chain;
 extern const char * nft_forward_chain;
+extern int nft_nat_family;
+extern int nft_ipv4_family;
+extern int nft_ipv6_family;
 
 #define NFT_DESCR_SIZE 1024
 
@@ -30,6 +33,7 @@ enum rule_reg_type {
 	RULE_REG_IP6_SD_ADDR, /* source & dest */
 	RULE_REG_IP_PROTO,
 	RULE_REG_IP6_PROTO,
+	RULE_REG_TCP_SPORT,
 	RULE_REG_TCP_DPORT,
 	RULE_REG_TCP_SD_PORT, /* source & dest */
 	RULE_REG_IMM_VAL,     /* immediate */
@@ -60,14 +64,14 @@ typedef struct rule_t {
 	uint32_t family;
 	uint32_t ingress_ifidx;
 	uint32_t egress_ifidx;
-	in_addr_t eaddr;
-	in_addr_t iaddr;
-	in_addr_t rhost;
-	struct in6_addr iaddr6;
-	struct in6_addr rhost6;
-	uint16_t eport;
-	uint16_t iport;
-	uint16_t rport;
+	in_addr_t saddr;
+	struct in6_addr saddr6;
+	uint16_t sport;
+	in_addr_t daddr;
+	struct in6_addr daddr6;
+	uint16_t dport;
+	in_addr_t nat_addr;
+	uint16_t nat_port;
 	uint8_t proto;
 	enum rule_reg_type reg1_type;
 	enum rule_reg_type reg2_type;

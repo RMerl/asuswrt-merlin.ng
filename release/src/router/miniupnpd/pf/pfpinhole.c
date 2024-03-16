@@ -1,8 +1,8 @@
-/* $Id: pfpinhole.c,v 1.29 2020/05/10 22:22:50 nanard Exp $ */
+/* $Id: pfpinhole.c,v 1.30 2024/01/14 23:56:45 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2012-2020 Thomas Bernard
+ * (c) 2012-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -34,6 +34,7 @@
 #include "../upnpglobalvars.h"
 #include "../macros.h"
 #include "../upnputils.h"
+#include "rtickets.h"
 
 /* the pass rules created by add_pinhole() are as follow :
  *
@@ -167,7 +168,7 @@ int find_pinhole(const char * ifname,
                  char *desc, int desc_len, unsigned int * timestamp)
 {
 	int uid;
-	unsigned int ts;
+	unsigned int ts, tnum;
 	int i, n;
 	struct pfioc_rule pr;
 	struct in6_addr saddr;
@@ -194,10 +195,14 @@ int find_pinhole(const char * ifname,
 		return -1;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif /* PF_RELEASETICKETS */
 	for(i=0; i<n; i++) {
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0) {
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
+			release_ticket(dev, tnum);
 			return -1;
 		}
 		if((proto == pr.rule.proto) && (rem_port == ntohs(pr.rule.src.port[0]))
@@ -216,15 +221,18 @@ int find_pinhole(const char * ifname,
 					strlcpy(desc, p, desc_len);
 				}
 			}
+			release_ticket(dev, tnum);
 			return uid;
 		}
 	}
+	release_ticket(dev, tnum);
 	return -2;
 }
 
 int delete_pinhole(unsigned short uid)
 {
 	int i, n;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 	char label_start[PF_RULE_LABEL_SIZE];
 	char tmp_label[PF_RULE_LABEL_SIZE];
@@ -245,6 +253,9 @@ int delete_pinhole(unsigned short uid)
 		return -1;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif
 	for(i=0; i<n; i++) {
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0) {
@@ -257,17 +268,21 @@ int delete_pinhole(unsigned short uid)
 			pr.action = PF_CHANGE_GET_TICKET;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0) {
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_GET_TICKET: %m");
+				release_ticket(dev, tnum);
 				return -1;
 			}
 			pr.action = PF_CHANGE_REMOVE;
 			pr.nr = i;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0) {
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_REMOVE: %m");
+				release_ticket(dev, tnum);
 				return -1;
 			}
+			release_ticket(dev, tnum);
 			return 0;
 		}
 	}
+	release_ticket(dev, tnum);
 	/* not found */
 	return -2;
 }
@@ -281,6 +296,7 @@ get_pinhole_info(unsigned short uid,
                  u_int64_t * packets, u_int64_t * bytes)
 {
 	int i, n;
+	unsigned int tnum;
 	struct pfioc_rule pr;
 	char label_start[PF_RULE_LABEL_SIZE];
 	char tmp_label[PF_RULE_LABEL_SIZE];
@@ -302,10 +318,14 @@ get_pinhole_info(unsigned short uid,
 		return -1;
 	}
 	n = pr.nr;
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif
 	for(i=0; i<n; i++) {
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0) {
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
+			release_ticket(dev, tnum);
 			return -1;
 		}
 		strlcpy(tmp_label, pr.rule.label, sizeof(tmp_label));
@@ -313,11 +333,13 @@ get_pinhole_info(unsigned short uid,
 		strsep(&p, " ");
 		if(0 == strcmp(tmp_label, label_start)) {
 			if(rem_host && (inet_ntop(AF_INET6, &pr.rule.src.addr.v.a.addr.v6, rem_host, rem_hostlen) == NULL)) {
+				release_ticket(dev, tnum);
 				return -1;
 			}
 			if(rem_port)
 				*rem_port = ntohs(pr.rule.src.port[0]);
 			if(int_client && (inet_ntop(AF_INET6, &pr.rule.dst.addr.v.a.addr.v6, int_client, int_clientlen) == NULL)) {
+				release_ticket(dev, tnum);
 				return -1;
 			}
 			if(int_port)
@@ -345,9 +367,11 @@ get_pinhole_info(unsigned short uid,
 			if(bytes)
 				*bytes = pr.rule.bytes;
 #endif
+			release_ticket(dev, tnum);
 			return 0;
 		}
 	}
+	release_ticket(dev, tnum);
 	/* not found */
 	return -2;
 }
@@ -370,7 +394,7 @@ int clean_pinhole_list(unsigned int * next_timestamp)
 	int i;
 	struct pfioc_rule pr;
 	time_t current_time;
-	unsigned int ts;
+	unsigned int ts, tnum;
 	int uid;
 	unsigned int min_ts = UINT_MAX;
 	int min_uid = INT_MAX, max_uid = -1;
@@ -390,10 +414,14 @@ int clean_pinhole_list(unsigned int * next_timestamp)
 		syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
 		return -1;
 	}
+#ifdef PF_RELEASETICKETS
+	tnum = pr.ticket;
+#endif
 	for(i = pr.nr - 1; i >= 0; i--) {
 		pr.nr = i;
 		if(ioctl(dev, DIOCGETRULE, &pr) < 0) {
 			syslog(LOG_ERR, "ioctl(dev, DIOCGETRULE): %m");
+			release_ticket(dev, tnum);
 			return -1;
 		}
 		if(sscanf(pr.rule.label, PINEHOLE_LABEL_FORMAT_SKIPDESC, &uid, &ts) != 2) {
@@ -405,22 +433,28 @@ int clean_pinhole_list(unsigned int * next_timestamp)
 			pr.action = PF_CHANGE_GET_TICKET;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0) {
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_GET_TICKET: %m");
+				release_ticket(dev, tnum);
 				return -1;
 			}
 			pr.action = PF_CHANGE_REMOVE;
 			pr.nr = i;
 			if(ioctl(dev, DIOCCHANGERULE, &pr) < 0) {
 				syslog(LOG_ERR, "ioctl(dev, DIOCCHANGERULE, ...) PF_CHANGE_REMOVE: %m");
+				release_ticket(dev, tnum);
 				return -1;
 			}
 			n++;
 #ifndef PF_NEWSTYLE
 			pr.rule.action = PF_PASS;
 #endif
+			release_ticket(dev, tnum);
 			if(ioctl(dev, DIOCGETRULES, &pr) < 0) {
 				syslog(LOG_ERR, "ioctl(dev, DIOCGETRULES, ...): %m");
 				return -1;
 			}
+#ifdef PF_RELEASETICKETS
+			tnum = pr.ticket;
+#endif
 		} else {
 			if(uid > max_uid)
 				max_uid = uid;
@@ -440,6 +474,7 @@ int clean_pinhole_list(unsigned int * next_timestamp)
 			next_uid = 1;
 		}
 	}
+	release_ticket(dev, tnum);
 	return n;	/* number of rules removed */
 }
 

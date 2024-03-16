@@ -1,8 +1,8 @@
-/* $Id: upnpredirect.c,v 1.99 2022/10/21 19:44:59 nanard Exp $ */
+/* $Id: upnpredirect.c,v 1.100 2024/03/19 23:34:58 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * MiniUPnP project
  * http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
- * (c) 2006-2022 Thomas Bernard
+ * (c) 2006-2024 Thomas Bernard
  * This software is subject to the conditions detailed
  * in the LICENCE file provided within the distribution */
 
@@ -581,7 +581,7 @@ upnp_delete_redirection(unsigned short eport, const char * protocol)
 
 /* upnp_get_portmapping_number_of_entries() */
 int
-upnp_get_portmapping_number_of_entries()
+upnp_get_portmapping_number_of_entries(void)
 {
 #if defined(USE_PF) || defined(USE_NFTABLES)
 	return get_redirect_rule_count(ext_if_name);

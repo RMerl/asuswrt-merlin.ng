@@ -1,9 +1,9 @@
-/* $Id: upnphttp.c,v 1.111 2021/05/22 21:34:12 nanard Exp $ */
+/* $Id: upnphttp.c,v 1.114 2024/01/15 00:13:22 nanard Exp $ */
 /* vim: tabstop=4 shiftwidth=4 noexpandtab
  * Project :  miniupnp
  * Website :  http://miniupnp.free.fr/ or https://miniupnp.tuxfamily.org/
  * Author :   Thomas Bernard
- * Copyright (c) 2005-2021 Thomas Bernard
+ * Copyright (c) 2005-2024 Thomas Bernard
  * This software is subject to the conditions detailed in the
  * LICENCE file included in this distribution.
  * */
@@ -310,8 +310,11 @@ ParseHttpHeaders(struct upnphttp * h)
 			}
 			else if(strncasecmp(line, "user-agent:", 11) == 0)
 			{
-				if(strcasestr(line + 11, "microsoft") != NULL)
+				/* - User-Agent: Microsoft-Windows/10.0 UPnP/1.0
+				 * - User-Agent: FDSSDP                           */
+				if(strcasestr(line + 11, "microsoft") != NULL || strstr(line + 11, "FDSSDP") != NULL) {
 					h->respflags |= FLAG_MS_CLIENT;
+				}
 			}
 #ifdef ENABLE_EVENTS
 			else if(strncasecmp(line, "Callback:", 9)==0)
@@ -640,8 +643,7 @@ ProcessHTTPSubscribe_upnphttp(struct upnphttp * h, const char * path)
 	       h->req_Timeout);
 	syslog(LOG_DEBUG, "SID '%.*s'", h->req_SIDLen, h->req_buf + h->req_SIDOff);
 #if defined(UPNP_STRICT) && (UPNP_VERSION_MAJOR > 1) || (UPNP_VERSION_MINOR > 0)
-	/*if(h->req_Timeout < 1800) {*/
-	if(h->req_Timeout == 0) {
+	if(h->req_Timeout < 1800) {
 		/* Second-infinite is forbidden with UDA v1.1 and later :
 		 * (UDA 1.1 : 4.1.1 Subscription)
 		 * UPnP 1.1 control points MUST NOT subscribe using keyword infinite,
@@ -650,7 +652,13 @@ ProcessHTTPSubscribe_upnphttp(struct upnphttp * h, const char * path)
 		 * ignored by a UPnP 1.1 device (the presence of infinite is handled
 		 * by the device as if the TIMEOUT header field in a request was not
 		 * present) . The keyword infinite MUST NOT be returned by a UPnP 1.1
-		 * device. */
+		 * device.
+		 * Also the device must return a value of minimum 1800 seconds in the
+		 * response, according to UDA 1.1 (4.1.2 SUBSCRIBE with NT and CALLBACK):
+		 * TIMEOUT
+		 *   REQUIRED. Field value contains actual duration until subscription
+		 *   expires. Keyword "Second-" followed by an integer (no space).
+		 *   SHOULD be greater than or equal to 1800 seconds (30 minutes).*/
 		h->req_Timeout = 1800;	/* default to 30 minutes */
 	}
 #endif /* UPNP_STRICT */

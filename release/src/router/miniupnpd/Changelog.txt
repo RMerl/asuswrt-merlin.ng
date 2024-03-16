@@ -1,4 +1,47 @@
-$Id: Changelog.txt,v 1.498 2023/02/17 03:18:51 nanard Exp $
+$Id: Changelog.txt,v 1.515 2024/03/19 23:40:30 nanard Exp $
+
+VERSION 2.3.6 : released on 2024/03/20
+
+2024/03/05:
+  NFTables: rewrite rule parsing code to fix source/dest address parsing.
+
+2024/03/04:
+  NFTables: add upnp_nftables_family_split option to use NFPROTO_IPV4/IPV6
+  instead of the generic NFPROTO_INET
+
+VERSION 2.3.5 : released on 2024/03/02
+
+2024/02/25:
+  fix IGDv2 WANIPConnection XML service description for AddAnyPortMapping
+  out argument is NewReservedPort, not NewExternalPort
+
+2024/01/17:
+  default path for miniupnpd.conf is /etc/miniupnpd/miniupnpd.conf
+  under linux
+
+2024/01/15:
+  fix SUBSCRIBE timeout compliance (should be >= 1800 seconds)
+  PCP: fix enforcing min_lifetime minimum of 120secs
+  CACHE-CONTROL: max-age=1800 in M-SEARCH response
+
+2024/01/07:
+  pf: fix for OpenBSD 7.4
+
+VERSION 2.3.4 : released on 2024/01/04
+
+2024/01/04:
+  Fix parsing of action string in ExecuteSoapAction()
+
+2023/06/29:
+  Disable DeviceProtection service by default
+
+2023/06/23:
+  detect FDSSDP as a Microsoft client
+
+2023/05/27:
+  option enable_natpmp => enable_pcp_pmp
+  add a short list of build-time options in --version output
+  enable secure mode by default
 
 VERSION 2.3.3 : released on 2023/02/17
 

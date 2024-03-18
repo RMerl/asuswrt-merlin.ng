@@ -80,16 +80,20 @@ function addBorder(obj){
 }
 
 function doSorter(_flag, _Method, flip){
-	if(aplist.length > 1){
+	if(aplist.length > 1) {
+		// Flip sort order (unless told not to)
+		if (sorter.indexFlag == _flag && flip) {
+			sorter.sortingMethod = (sorter.sortingMethod == "increase") ? "decrease" : "increase";
+		}
+		else {
+			sorter.sortingMethod = "increase";
+		}
 
 		// Set field to sort
 		sorter.indexFlag = _flag;
 
 		// Remember data type for this field
 		sorter.lastType = _Method;
-
-		// Flip sort order (unless told not to)
-		if (flip) sorter.sortingMethod = (sorter.sortingMethod == "increase") ? "decrease" : "increase";
 
 		// doSorter
 		eval("aplist.sort(sorter."+_Method+"_"+sorter.sortingMethod+");");

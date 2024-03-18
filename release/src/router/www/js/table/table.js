@@ -285,7 +285,6 @@ var tableSorter = {
 			tableSorter.sortingMethod = "increase";
 		}
 		tableSorter.indexFlag = _$this.index();
-		tableSorter.sortingMethod = (tableSorter.sortingMethod == "increase") ? "decrease" : "increase";
 		tableSorter.sortingType = _$this.attr("sortType");
 		tableSorter.sortData(tableSorter.indexFlag, tableSorter.sortingType, "tableApi._jsonObj.data");
 		tableApi.genTable(tableApi._jsonObj);

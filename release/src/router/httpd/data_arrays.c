@@ -123,81 +123,66 @@ int
 ej_ipv6_pinhole_array(int eid, webs_t wp, int argc, char_t **argv)
 {
 	FILE *fp;
-	char *ipt_argv[] = {"ip6tables", "-nxL", "UPNP", NULL};
-	char line[256], tmp[256];
-	char target[16], proto[16];
-	char src[45];
-	char dst[45];
-	char *sport, *dport, *ptr, *val;
+	char proto[4], raddr[45], rport[6], iaddr[45], iport[6], timestamp[15], desc[200], desc2[256];
+	char line[256];
 	int ret = 0;
 
-	ret += websWrite(wp, "var pinholes = ");
+	ret = websWrite(wp, "var pinholesarray = [");
 
-        if (!(ipv6_enabled() && is_routing_enabled())) {
-                ret += websWrite(wp, "[];\n");
-                return ret;
-        }
-
-	_eval(ipt_argv, ">/tmp/pinhole.log", 10, NULL);
-
-	fp = fopen("/tmp/pinhole.log", "r");
-	if (fp == NULL) {
+	if (!(ipv6_enabled() && is_routing_enabled())) {
 		ret += websWrite(wp, "[];\n");
 		return ret;
 	}
 
-	ret += websWrite(wp, "[");
+	killall("miniupnpd", SIGUSR2);
+	sleep(1);
+
+	fp = fopen("/tmp/upnp.leases6", "r");
+	if (fp == NULL) {
+		ret += websWrite(wp, "[]];\n");
+		return ret;
+	}
 
 	while (fgets(line, sizeof(line), fp) != NULL)
 	{
-		tmp[0] = '\0';
+		desc[0] = '\0';
+
+// TCP;2600:1000:100:200:300:1234:5678:9abc;40003;::;0;1;1710906282;IGD2 pinhole
+
 		if (sscanf(line,
-		    "%15s%*[ \t]"		// target
-		    "%15s%*[ \t]"		// prot
-		    "%44[^/]/%*d%*[ \t]"	// source
-		    "%44[^/]/%*d%*[ \t]"	// destination
-		    "%255[^\n]",		// options
-		    target, proto, src, dst, tmp) < 5) continue;
+			"%3[^;];"
+			"%44[^;];"
+			"%15[^;];"
+			"%44[^;];"
+			"%15[^;];"
+			"%*[^;];"
+			"%14[^;];"
+			"%199[^\n]",
+			proto, iaddr, iport, raddr, rport, timestamp, desc) < 6) continue;
 
-		if (strcmp(target, "ACCEPT")) continue;
+		if (str_escape_quotes(desc2, desc, sizeof(desc2)) == 0)
+			strlcpy(desc2, desc, sizeof(desc2));
 
-		/* uppercase proto */
-		for (ptr = proto; *ptr; ptr++)
-			*ptr = toupper(*ptr);
+		/* parse remote ip */
+		if (strcmp(raddr, "::") == 0)
+			strcpy(raddr, "ALL");
 
-		/* parse source */
-		if (strcmp(src, "::") == 0)
-			strcpy(src, "ALL");
+		/* parse internal ip */
+		if (strcmp(iaddr, "::") == 0)
+			strcpy(iaddr, "ALL");
 
-		/* parse destination */
-		if (strcmp(dst, "::") == 0)
-			strcpy(dst, "ALL");
+		/* parse remote port */
+		if (strcmp(rport, "0") == 0)
+			strcpy(rport, "ANY");
 
-		/* parse options */
-		sport = dport = "";
-		ptr = tmp;
-		while ((val = strsep(&ptr, " ")) != NULL) {
-			if (strncmp(val, "dpt:", 4) == 0)
-				dport = val + 4;
-			if (strncmp(val, "spt:", 4) == 0)
-				sport = val + 4;
-			else if (strncmp(val, "dpts:", 5) == 0)
-				dport = val + 5;
-			else if (strncmp(val, "spts:", 5) == 0)
-				sport = val + 5;
-		}
-
-		ret += websWrite(wp,
-			"[\"%s\", \"%s\", \"%s\", \"%s\", \"%s\"],\n",
-			src, sport, dst, dport, proto);
+		ret += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"],\n",
+		                      proto, raddr, rport, iaddr, iport, timestamp, desc2);
 	}
+
 	ret += websWrite(wp, "[]];\n");
 
 	fclose(fp);
-	unlink("/tmp/pinhole.log");
-
 	return ret;
-
 }
 #endif
 #endif

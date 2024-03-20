@@ -129,39 +129,41 @@ function show_ipv6clients() {
 
 
 function show_pinholes() {
-	var code, i, rule
+	var code, i, line;
 
-	code = '<table width="100%" id="pinholes" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable_table">';
-	code += '<thead><tr><td colspan="5">IPv6 pinhole rules opened in the firewall through UPnP/IGD2</td></tr></thead>';
-	code += '<th width=34%">Remote</th>';
-	code += '<th width=12%">Port</th>';
-	code += '<th width=34%">Local</th>';
-	code += '<th width=12%">Port</th>';
-	code += '<th width=8%">Proto</th>';
+	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"class="FormTable_table">';
+	code += '<thead><tr><td colspan="5">IPv6 firewall Pinholes</td></tr></thead>';
+	code += '<tr><th width="10%">Proto</th>';
+	code += '<th width="35%">Remote IP</th>';
+	code += '<th width="10%">Port</th>';
+	code += '<th width="35%">Local IP</th>';
+	code += '<th width="10%">Port</th>';
+/*	code += '<th width="20%">Desc</th>'; */
 	code += '</tr>';
 
-        if ("<% nvram_get("upnp_pinhole_enable"); %>" == "0") {
-                code += '<tr><td colspan="5">Pinhole support is currently disabled.</td></tr>';
-
-	} else if (pinholes.length > 1) {
-		for (i = 0; i < pinholes.length-1; ++i) {
-			rule = pinholes[i];
-			code += '<tr>';
-			code += '<td>' + rule[0] + '</td>';	// Remote IP
-			code += '<td>' + rule[1] + '</td>';	// Remote port
-			code += '<td>' + rule[2] + '</td>';	// Local IP
-			code += '<td>' + rule[3] + '</td>';	// Local Port
-			code += '<td>' + rule[4] + '</td>';	// Protocol
-			code += '</tr>';
-		}
+	if ("<% nvram_get("upnp_pinhole_enable"); %>" == "0") {
+		code += '<tr><td colspan="5">Pinhole support is currently disabled.</td></tr>';
 	} else {
-		code += '<tr><td colspan="5"><span>No pinhole configured.</span></td></tr>';
+		if (pinholesarray.length > 1) {
+			for (i = 0; i < pinholesarray.length-1; ++i) {
+				line = pinholesarray[i];
+				code += '<tr>';
+				code += '<td>' + line[0] + '</td>';
+				code += '<td>' + line[1] + '</td>';
+				code += '<td>' + line[2] + '</td>';
+				code += '<td>' + line[3] + '</td>';
+				code += '<td>' + line[4] + '</td>';
+/*				code += '<td>' + line[6] + '</td>'; */
+				code += '</tr>';
+			}
+		} else {
+			code += '<tr><td colspan="5"><span>No pinholes.</span></td></tr>';
+		}
 	}
 
 	code += '</tr></table>';
 	document.getElementById("pinholesblock").innerHTML = code;
 }
-
 
 </script>
 </head>

@@ -6649,6 +6649,9 @@ void start_upnp(void)
 					"model_number=%s\n"
 					"serial=%s\n"
 					"uuid=%s\n"
+#ifdef RTCONFIG_IGD2
+					"lease_file6=/tmp/upnp.leases6\n"
+#endif
 					"lease_file=%s\n",
 					get_wan_ifname(unit),
 					nvram_safe_get("lan_ifname"),

@@ -1,20 +1,20 @@
-<?xml version="1.0" encoding="utf-8" ?>
+<?xml version="1.0" encoding="utf-8"?>
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" xml:lang="en" lang="en">
 <head>
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
-<meta name="generator" content="Docutils 0.17.1: http://docutils.sourceforge.net/" />
+<meta name="generator" content="Docutils 0.20.1: https://docutils.sourceforge.io/" />
 <title>openvpn</title>
 <style type="text/css">
 
 /*
 :Author: David Goodger (goodger@python.org)
-:Id: $Id: html4css1.css 7952 2016-07-26 18:15:59Z milde $
+:Id: $Id: html4css1.css 8954 2022-01-20 10:10:25Z milde $
 :Copyright: This stylesheet has been placed in the public domain.
 
 Default cascading style sheet for the HTML output of Docutils.
 
-See http://docutils.sf.net/docs/howto/html-stylesheets.html for how to
+See https://docutils.sourceforge.io/docs/howto/html-stylesheets.html for how to
 customize this style sheet.
 */
 
@@ -492,7 +492,7 @@ version specified.</p>
 to the configuration if no other compression options are present.</li>
 <li>2.4.x or lower: The cipher in <tt class="docutils literal"><span class="pre">--cipher</span></tt> is appended to
 <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt>.</li>
-<li>2.3.x or lower: <tt class="docutils literal"><span class="pre">--data-cipher-fallback</span></tt> is automatically added with
+<li>2.3.x or lower: <tt class="docutils literal"><span class="pre">--data-ciphers-fallback</span></tt> is automatically added with
 the same cipher as <tt class="docutils literal"><span class="pre">--cipher</span></tt>.</li>
 <li>2.3.6 or lower: <tt class="docutils literal"><span class="pre">--tls-version-min</span> 1.0</tt> is added to the configuration
 when <tt class="docutils literal"><span class="pre">--tls-version-min</span></tt> is not explicitly set.</li>
@@ -1353,6 +1353,15 @@ auth-user-pass up
 lines. If the password line is missing, OpenVPN will prompt for one.</p>
 <p>If <tt class="docutils literal">up</tt> is omitted, username/password will be prompted from the
 console.</p>
+<p>This option can also be inlined</p>
+<pre class="literal-block">
+&lt;auth-user-pass&gt;
+username
+[password]
+&lt;/auth-user-pass&gt;
+</pre>
+<p>where password is optional, and will be prompted from the console if
+missing.</p>
 <p class="last">The server configuration must specify an <tt class="docutils literal"><span class="pre">--auth-user-pass-verify</span></tt>
 script to verify the username/password provided by the client.</p>
 </td></tr>
@@ -3612,7 +3621,7 @@ different backwards compatibility mechanism with older server and clients.</p>
 <div class="section" id="openvpn-2-5-and-later-behaviour">
 <h2>OpenVPN 2.5 and later behaviour</h2>
 <p>When both client and server are at least running OpenVPN 2.5, that the order of
-the ciphers of the server's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> is used to pick the the data cipher.
+the ciphers of the server's <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> is used to pick the data cipher.
 That means that the first cipher in that list that is also in the client's
 <tt class="docutils literal"><span class="pre">--data-ciphers</span></tt> list is chosen. If no common cipher is found the client is rejected
 with a AUTH_FAILED message (as seen in client log):</p>
@@ -4387,7 +4396,7 @@ virtual &quot;multipoint networks&quot;), <tt class="docutils literal"><span cla
 address and subnet mask just as a physical ethernet adapter would be
 similarly configured. If you are attempting to connect to a remote
 ethernet bridge, the IP address and subnet should be set to values which
-would be valid on the the bridged ethernet segment (note also that DHCP
+would be valid on the bridged ethernet segment (note also that DHCP
 can be used for the same purpose).</p>
 <p>This option, while primarily a proxy for the <tt class="docutils literal">ifconfig</tt>(8) command,
 is designed to simplify TUN/TAP tunnel configuration by providing a
@@ -4720,7 +4729,7 @@ deleted or the machine is rebooted.</p>
 <p>One of the advantages of persistent tunnels is that they eliminate the
 need for separate <tt class="docutils literal"><span class="pre">--up</span></tt> and <tt class="docutils literal"><span class="pre">--down</span></tt> scripts to run the appropriate
 <tt class="docutils literal">ifconfig</tt>(8) and <tt class="docutils literal">route</tt>(8) commands. These commands can be
-placed in the the same shell script which starts or terminates an
+placed in the same shell script which starts or terminates an
 OpenVPN session.</p>
 <p>Another advantage is that open connections through the TUN/TAP-based
 tunnel will not be reset if the OpenVPN peer restarts. This can be
@@ -6343,7 +6352,7 @@ declared in all <tt class="docutils literal">&lt;connection&gt;</tt> blocks belo
 <tt class="docutils literal"><span class="pre">--cert</span></tt>, <tt class="docutils literal"><span class="pre">--dh</span></tt>, <tt class="docutils literal"><span class="pre">--extra-certs</span></tt>, <tt class="docutils literal"><span class="pre">--key</span></tt>, <tt class="docutils literal"><span class="pre">--pkcs12</span></tt>,
 <tt class="docutils literal"><span class="pre">--secret</span></tt>, <tt class="docutils literal"><span class="pre">--crl-verify</span></tt>, <tt class="docutils literal"><span class="pre">--http-proxy-user-pass</span></tt>, <tt class="docutils literal"><span class="pre">--tls-auth</span></tt>,
 <tt class="docutils literal"><span class="pre">--auth-gen-token-secret</span></tt>, <tt class="docutils literal"><span class="pre">--peer-fingerprint</span></tt>, <tt class="docutils literal"><span class="pre">--tls-crypt</span></tt>,
-<tt class="docutils literal"><span class="pre">--tls-crypt-v2</span></tt> and <tt class="docutils literal"><span class="pre">--verify-hash</span></tt> options.</p>
+<tt class="docutils literal"><span class="pre">--tls-crypt-v2</span></tt>, <tt class="docutils literal"><span class="pre">--verify-hash</span></tt> and <tt class="docutils literal"><span class="pre">--auth-user-pass</span></tt> options.</p>
 <p>Each inline file started by the line <tt class="docutils literal">&lt;option&gt;</tt> and ended by the line
 <tt class="docutils literal">&lt;/option&gt;</tt></p>
 <p>Here is an example of an inline file usage</p>

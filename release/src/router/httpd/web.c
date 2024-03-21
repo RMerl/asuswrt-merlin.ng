@@ -29911,6 +29911,7 @@ ej_sysinfo(int eid, webs_t wp, int argc, char_t **argv)
 static int
 ej_memory_usage(int eid, webs_t wp, int argc, char_t **argv){
 	unsigned long total, used, mfree  /*, shared, buffers, cached, driver occupied*/;
+	unsigned long sused, sfree;
 	char buf[80];
 	int from_app = 0, i = 0;
 	int memSize[] = {4,8,16,32,64,128,256,512,1024,2048};
@@ -29918,15 +29919,13 @@ ej_memory_usage(int eid, webs_t wp, int argc, char_t **argv){
 	unsigned long  maxSize = 0, currentSize = 0;
 
 	from_app = check_user_agent(user_agent);
-	FILE *fp = NULL;
-	fp = fopen("/proc/meminfo", "r");
-
-	if(fp == NULL)
+	meminfo_t mem;
+	read_meminfo(&mem);
+	total = mem[MI_MemTotal];
+	if(total < 0)
 		return -1;
-
-	fscanf(fp, "MemTotal: %lu %s\n", &total, buf);
-	fscanf(fp, "MemFree: %lu %s\n", &mfree, buf);
-	fclose(fp);
+	mfree = mem[MI_MemFree];
+	sfree = meminfo_compute_simple_free(&mem);
 
 	for(i=0;i<length;i++){
 		currentSize = memSize[i]*1024;
@@ -29937,10 +29936,11 @@ ej_memory_usage(int eid, webs_t wp, int argc, char_t **argv){
 	}
 
 	used = maxSize - mfree;	// (maxSize - total) + (total -mfree)
+	sused = maxSize - sfree;
 	if(from_app == 0){
-		websWrite(wp, "{\"total\":\"%lu\",\"free\":\"%lu\",\"used\":\"%lu\"}", maxSize, mfree, used);
+		websWrite(wp, "{\"total\":\"%lu\",\"free\":\"%lu\",\"used\":\"%lu\",\"simple_free\":\"%lu\",\"simple_used\":\"%lu\"}", maxSize, mfree, used, sfree, sused);
 	}else{
-		websWrite(wp, "\"mem_total\":\"%lu\",\"mem_free\":\"%lu\",\"mem_used\":\"%lu\"", maxSize, mfree, used);
+		websWrite(wp, "\"mem_total\":\"%lu\",\"mem_free\":\"%lu\",\"mem_used\":\"%lu\",\"simple_free\":\"%lu\",\"simple_used\":\"%lu\"", maxSize, mfree, used, sfree, sused);
 	}
 
 	return 0;

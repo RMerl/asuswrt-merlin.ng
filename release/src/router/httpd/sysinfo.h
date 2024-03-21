@@ -16,3 +16,23 @@
  */
 
 extern int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t **argv);
+
+enum
+{
+	MI_MemTotal,
+	MI_MemFree,
+	MI_MemAvailable,
+	MI_Buffers,
+	MI_Cached,
+	MI_SwapCached,
+	MI_SwapTotal,
+	MI_SwapFree,
+	MI_Shmem,
+	MI_SReclaimable,
+	MI_MAX
+};
+
+typedef int meminfo_t[MI_MAX];
+
+void read_meminfo(meminfo_t *m);
+int meminfo_compute_simple_free(const meminfo_t *m);

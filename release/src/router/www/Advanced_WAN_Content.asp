@@ -2346,7 +2346,7 @@ function showInfo(){
 								</td>
 							</tr>
 							<tr id="upnp_pinhole">
-								<th>Enable UPnP IPv6 pinhole support</th>
+								<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,5);">Enable IGDv2 (IPv6 pinhole support)</a></th>
 								<td>
 									<input type="radio" name="upnp_pinhole_enable" class="input" value="1" onclick="display_upnp_options();" <% nvram_match("upnp_pinhole_enable", "1", "checked"); %>><#checkbox_Yes#>
 									<input type="radio" name="upnp_pinhole_enable" class="input" value="0" onclick="display_upnp_options();" <% nvram_match("upnp_pinhole_enable", "0", "checked"); %>><#checkbox_No#>

@@ -6844,7 +6844,13 @@ void start_upnp(void)
 				fclose(f);
 				use_custom_config("upnp", "/etc/upnp/config");
 				run_postconf("upnp", "/etc/upnp/config");
-				xstart("miniupnpd", "-f", "/etc/upnp/config");
+#ifdef RTCONFIG_IGD2
+				if (!nvram_get_int("upnp_pinhole_enable"))
+					xstart("miniupnpd", "-f", "/etc/upnp/config", "-1");
+				else
+#endif
+					xstart("miniupnpd", "-f", "/etc/upnp/config");
+
 #ifdef RTCONFIG_AUPNPC
 				start_aupnpc();
 #endif

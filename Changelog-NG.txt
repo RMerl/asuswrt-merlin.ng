@@ -3,11 +3,16 @@ Asuswrt-Merlin Changelog
 
 3004.388.7 (xx-xxx-2024)
   - NEW: IGD2 support for UPNP/PCP.  This will allow IPv6 pinhole
-         support for clients.
-  - UPDATED: Openvpn to 2.6.9.
+         support for clients.  It must be enabled on the WAN
+         page.  Existing pinholes will be listed on the
+         System Log -> IPV6 page.
+
+         Note that IGDv2 has compatibility issues with various
+         clients that do not properly follow the standard.
+  - UPDATED: Openvpn to 2.6.10.
   - UPDATED: TOR to 0.4.8.10.
   - UPDATED: wsdd2 to 2023-12-21 snapshot.
-  - UPDATED: miniupnpd to 2.3.5.
+  - UPDATED: miniupnpd to 2.3.6.
   - CHANGED: hardcoded location of the CA bundle in inadyn, so it
              no longer need to be manually defined in custom
              configurations.

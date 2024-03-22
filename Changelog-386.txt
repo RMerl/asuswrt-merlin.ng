@@ -2,7 +2,18 @@ Asuswrt-Merlin Changelog
 ========================
 
 386.13 (xx-xx-xxxx)
-  - UPDATED: openvpn to 2.6.9.
+  - NOTE: all the models supported by Asuswrt-Merlin on the
+          386_xx series are now officialy on Asus' End of Life
+          list, which means unless there are new major security
+          issues, no new updates will be provided by Asus.
+
+          Asuswrt-Merlin will tentatively attempt to continue to
+          provide updates and fixes until the end of 2024, at which
+          point all the 386_xx models will no longer be actively
+          maintained.
+
+  - UPDATED: openvpn to 2.6.10.
+  - UPDATED: miniupnpd to 2.3.6.
   - UPDATED: OUI database used by networkmap and the webui.
   - CHANGED: QOS/Classification page can now resolve local IPv6
              addresses.

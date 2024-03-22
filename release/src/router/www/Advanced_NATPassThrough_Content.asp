@@ -163,36 +163,34 @@ function applyRule(){
 									  </tr>
 
 						<tr>
-  	         					<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,14);"><#NAT_RTSP_Passthrough#></a></th>
-    	       					<td>
+  	         					<th><#NAT_RTSP_Passthrough#></th>
+						<td>
 												<select name="fw_pt_rtsp" class="input_option">
 													<option class="content_input_fd" value="0" <% nvram_match("fw_pt_rtsp", "0","selected"); %>><#btn_disable#></option>
-													<option class="content_input_fd" value="2"<% nvram_match("fw_pt_rtsp", "2","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-													<option class="content_input_fd" value="1"<% nvram_match("fw_pt_rtsp", "1","selected"); %>>Enabled + NAT helper</option>
+													<option class="content_input_fd" value="1"<% nvram_match("fw_pt_rtsp", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 												</select>			
         	    				</td>
            					</tr>
 
 						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,14);"><#NAT_H323_Passthrough#></a></th>
+							<th><#NAT_H323_Passthrough#></th>
 						<td>
 												<select name="fw_pt_h323" class="input_option">
 													<option class="content_input_fd" value="0" <% nvram_match("fw_pt_h323", "0","selected"); %>><#btn_disable#></option>
-													<option class="content_input_fd" value="2"<% nvram_match("fw_pt_h323", "2","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-													<option class="content_input_fd" value="1"<% nvram_match("fw_pt_h323", "1","selected"); %>>Enabled + NAT helper</option>
+													<option class="content_input_fd" value="1"<% nvram_match("fw_pt_h323", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 												</select>
 						</td>
 						</tr>
 
 						<tr>
-							<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,14);"><#NAT_SIP_Passthrough#></a></th>
+							<th><#NAT_SIP_Passthrough#></th>
 						<td>
 												<select name="fw_pt_sip" class="input_option" OnChange="update_sip_alg_mode_option();">
 													<option class="content_input_fd" value="0" <% nvram_match("fw_pt_sip", "0","selected"); %>><#btn_disable#></option>
-													<option class="content_input_fd" value="2"<% nvram_match("fw_pt_sip", "2","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
-													<option class="content_input_fd" value="1"<% nvram_match("fw_pt_sip", "1","selected"); %>>Enabled + NAT helper</option>
+													<option class="content_input_fd" value="1"<% nvram_match("fw_pt_sip", "1","selected"); %>><#WLANConfig11b_WirelessCtrl_button1name#></option>
 												</select>
 						</td>
+						</tr>
 						<tr>
 										<th id="fw_pt_sip_mode_th">SIP Passthrough mode<!--untranslated--></th>
 										<td id="fw_pt_sip_mode_td">
@@ -201,7 +199,6 @@ function applyRule(){
 													<option class="content_input_fd" value="1"<% nvram_match("fw_pt_sip_mode", "1","selected"); %>>Cisco<!--untranslated--></option>
 												</select>
 										</td>
-						</tr>
 						</tr>
 
 										<tr>

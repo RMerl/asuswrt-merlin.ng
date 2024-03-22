@@ -509,7 +509,7 @@ int reload_from_lease_file6()
 	if(!lease_file6) return -1;
 	fd = fopen( lease_file6, "r");
 	if (fd==NULL) {
-		syslog(LOG_ERR, "could not open lease file: %s", lease_file6);
+//		syslog(LOG_ERR, "could not open lease file: %s", lease_file6);
 		return -1;
 	}
 	if(unlink(lease_file6) < 0) {

@@ -129,8 +129,8 @@ void
 print_rule_t(const char *func, int line, const rule_t *r)
 {
 	fprintf(stdout, "%s[%d]: ", func, line);
-	printf("%s %s %d %hu => %hu\n", r->table, r->chain, (int)r->type,
-	       r->eport, r->iport);
+	printf("%s %s %d %hu => %hu => %hu\n", r->table, r->chain, (int)r->type,
+	       r->sport, r->dport, r->nat_port);
 }
 
 /* print out the "filter" and "nat" tables */
@@ -300,14 +300,9 @@ parse_rule_nat(struct nftnl_expr *e, rule_t *r)
 	}
 	reg_val_ptr = get_reg_val_ptr(r, addr_min_reg);
 	if (reg_val_ptr != NULL) {
-		if (r->nat_type == NFT_NAT_DNAT) {
-			r->iaddr = (in_addr_t)*reg_val_ptr;
-			r->iport = proto_min_val;
-		} else if (r->nat_type == NFT_NAT_SNAT) {
-			r->eaddr = (in_addr_t)*reg_val_ptr;
-			if (proto_min_reg == NFT_REG_1) {
-				r->eport = proto_min_val;
-			}
+		r->nat_addr = (in_addr_t)*reg_val_ptr;
+		if (proto_min_reg == NFT_REG_1) {
+			r->nat_port = proto_min_val;
 		}
 	} else {
 		syslog(LOG_ERR, "%s: invalid addr_min_reg %u", "parse_rule_nat", addr_min_reg);
@@ -359,15 +354,28 @@ parse_rule_payload(struct nftnl_expr *e, rule_t *r)
 		} else if (offset == offsetof(struct ipv6hdr, saddr) &&
 			   len == sizeof(struct in6_addr) * 2) {
 			*regptr = RULE_REG_IP6_SD_ADDR;
+		} else {
+			syslog(LOG_WARNING,
+				   "%s: Unsupported payload: (dreg:%u, base:NETWORK_HEADER, offset:%u, len:%u)",
+				   "parse_rule_payload", dreg, offset, len);
 		}
 		break;
 	case NFT_PAYLOAD_TRANSPORT_HEADER:
+		/* in both UDP and TCP headers, source port is at offset 0,
+		 * destination port at offset 2 */
 		if (offset == offsetof(struct tcphdr, dest) &&
 		    len == sizeof(uint16_t)) {
 			*regptr = RULE_REG_TCP_DPORT;
 		} else if (offset == offsetof(struct tcphdr, source) &&
+			   len == sizeof(uint16_t)) {
+			*regptr = RULE_REG_TCP_SPORT;
+		} else if (offset == offsetof(struct tcphdr, source) &&
 			   len == sizeof(uint16_t) * 2) {
 			*regptr = RULE_REG_TCP_SD_PORT;
+		} else {
+			syslog(LOG_WARNING,
+				   "%s: Unsupported payload: (dreg:%u, base:TRANSPORT_HEADER, offset:%u, len:%u)",
+				   "parse_rule_payload", dreg, offset, len);
 		}
 		break;
 	default:
@@ -418,44 +426,36 @@ parse_rule_cmp(struct nftnl_expr *e, rule_t *r)
 		break;
 	case RULE_REG_IP_SRC_ADDR:
 		if (data_len == sizeof(in_addr_t)) {
-			r->rhost = *(const in_addr_t *)data_val;
+			r->saddr = *(const in_addr_t *)data_val;
 		}
 		break;
 	case RULE_REG_IP6_SRC_ADDR:
 		if (data_len == sizeof(struct in6_addr)) {
-			r->rhost6 = *(const struct in6_addr *)data_val;
+			r->saddr6 = *(const struct in6_addr *)data_val;
 		}
 		break;
 	case RULE_REG_IP_DEST_ADDR:
 		if (data_len == sizeof(in_addr_t)) {
-			if (r->type == RULE_FILTER) {
-				r->iaddr = *(const in_addr_t *)data_val;
-			} else {
-				r->rhost = *(const in_addr_t *)data_val;
-			}
+			r->daddr = *(const in_addr_t *)data_val;
 		}
 		break;
 	case RULE_REG_IP6_DEST_ADDR:
 		if (data_len == sizeof(struct in6_addr)) {
-			if (r->type == RULE_FILTER) {
-				r->iaddr6 = *(const struct in6_addr *)data_val;
-			} else {
-				r->rhost6 = *(const struct in6_addr *)data_val;
-			}
+			r->daddr6 = *(const struct in6_addr *)data_val;
 		}
 		break;
 	case RULE_REG_IP_SD_ADDR:
 		if (data_len == sizeof(in_addr_t) * 2) {
 			const in_addr_t *addrp = (const in_addr_t *)data_val;
-			r->iaddr = addrp[0];
-			r->rhost = addrp[1];
+			r->saddr = addrp[0];
+			r->daddr = addrp[1];
 		}
 		break;
 	case RULE_REG_IP6_SD_ADDR:
 		if (data_len == sizeof(struct in6_addr) * 2) {
 			const struct in6_addr *addrp6 = (const struct in6_addr *)data_val;
-			r->iaddr6 = addrp6[0];
-			r->rhost6 = addrp6[1];
+			r->saddr6 = addrp6[0];
+			r->daddr6 = addrp6[1];
 		}
 		break;
 	case RULE_REG_IP_PROTO:
@@ -464,16 +464,21 @@ parse_rule_cmp(struct nftnl_expr *e, rule_t *r)
 			r->proto = *(const uint8_t *)data_val;
 		}
 		break;
+	case RULE_REG_TCP_SPORT:
+		if (data_len == sizeof(uint16_t)) {
+			r->sport = ntohs(*(const uint16_t *)data_val);
+		}
+		break;
 	case RULE_REG_TCP_DPORT:
 		if (data_len == sizeof(uint16_t)) {
-			r->eport = ntohs(*(const uint16_t *)data_val);
+			r->dport = ntohs(*(const uint16_t *)data_val);
 		}
 		break;
 	case RULE_REG_TCP_SD_PORT:
 		if (data_len == sizeof(uint16_t) * 2) {
 			const uint16_t * ports = (const uint16_t *)data_val;
-			r->eport = ntohs(ports[0]);
-			r->rport = ntohs(ports[1]);
+			r->sport = ntohs(ports[0]);
+			r->dport = ntohs(ports[1]);
 		}
 		break;
 	default:
@@ -1058,6 +1063,13 @@ rule_set_filter(uint8_t family, const char * ifname, uint8_t proto,
 	return r;
 }
 
+/*
+ * Create the IP6 filter rule
+ * called by add_pinhole() and update_pinhole()
+ * eport is always 0
+ * iport is the destination port of the filter rule
+ * rport is the (optional) source port of the rule
+ */
 struct nftnl_rule *
 rule_set_filter6(uint8_t family, const char * ifname, uint8_t proto,
 		struct in6_addr *rhost6, struct in6_addr *iaddr6,
@@ -1098,6 +1110,12 @@ rule_set_filter6(uint8_t family, const char * ifname, uint8_t proto,
 	return r;
 }
 
+/*
+ * Create common parts for the filter rules (IPv4 or IPv6)
+ * eport is ignored
+ * iport is the destination port of the filter rule
+ * rport is the (optional) source port of the rule
+ */
 struct nftnl_rule *
 rule_set_filter_common(struct nftnl_rule *r, uint8_t family, const char * ifname,
 		uint8_t proto, unsigned short eport, unsigned short iport,

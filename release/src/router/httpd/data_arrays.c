@@ -1173,7 +1173,7 @@ int ej_connlist_array(int eid, webs_t wp, int argc, char **argv) {
 
 	ret += websWrite(wp, "var connarray = [");
 
-	system("/usr/sbin/netstat-nat -r state -xn > /tmp/connect.log 2>&1");
+	system("/usr/sbin/netstat-nat -xn > /tmp/connect.log 2>&1");
 
 	fp = fopen("/tmp/connect.log", "r");
 	if (fp == NULL) {

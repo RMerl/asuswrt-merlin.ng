@@ -7382,7 +7382,7 @@ void dnsmasq_check()
 
 	if (!is_routing_enabled()
 #ifdef RTCONFIG_WIRELESSREPEATER
-		&& sw_mode() != SW_MODE_REPEATER
+		|| sw_mode() == SW_MODE_REPEATER
 #endif
 	)
 		return;

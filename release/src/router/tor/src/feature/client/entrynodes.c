@@ -150,6 +150,7 @@
 #include "feature/nodelist/node_st.h"
 #include "core/or/origin_circuit_st.h"
 #include "app/config/or_state_st.h"
+#include "src/feature/nodelist/routerstatus_st.h"
 
 /** A list of existing guard selection contexts. */
 static smartlist_t *guard_contexts = NULL;
@@ -4115,8 +4116,10 @@ maintain_layer2_guards(void)
     }
 
     /* Expire if relay has left consensus */
-    if (router_get_consensus_status_by_id(g->identity) == NULL) {
-      log_info(LD_GENERAL, "Removing missing Layer2 guard %s",
+    const routerstatus_t *rs = router_get_consensus_status_by_id(g->identity);
+    if (rs == NULL || !rs->is_stable || !rs->is_fast) {
+      log_info(LD_GENERAL, "Removing %s Layer2 guard %s",
+               rs ? "unsuitable" : "missing",
                safe_str_client(hex_str(g->identity, DIGEST_LEN)));
       // Nickname may be gone from consensus and doesn't matter anyway
       control_event_guard("None", g->identity, "BAD_L2");

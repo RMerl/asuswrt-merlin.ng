@@ -2,6 +2,109 @@ This document summarizes new features and bugfixes in each stable
 release of Tor. If you want to see more detailed descriptions of the
 changes in each development snapshot, see the ChangeLog file.
 
+Changes in version 0.4.7.16 - 2023-11-03
+  We are releasing today a fix for a high security issue, TROVE-2023-004, that
+  is affecting relays. Please upgrade as soon as posssible.
+
+  o Major bugfixes (TROVE-2023-004, relay):
+    - Mitigate an issue when Tor compiled with OpenSSL can crash during
+      handshake with a remote relay. Fixes bug 40874; bugfix
+      on 0.2.7.2-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on November 03, 2023.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2023/11/03.
+
+
+Changes in version 0.4.7.15 - 2023-09-18
+  This version contains an important fix for onion service regarding congestion
+  control and its reliability. Apart from that, very minor bugfixes. We
+  strongly recommend all onion service operators to update immediately.
+
+  o Major bugfixes (onion service):
+    - Fix a reliability issue where services were expiring their
+      introduction points every consensus update. This caused
+      connectivity issues for clients caching the old descriptor and
+      intro points. Bug reported and fixed by gitlab user
+      @hyunsoo.kim676. Fixes bug 40858; bugfix on 0.4.7.5-alpha.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on September 18, 2023.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2023/09/18.
+
+  o Minor features (testing):
+    - Enable Doxygen and Stem tests for 0.4.8 and clean-up some logic
+      for handling versions of Tor that are no longer supported. Closes
+      ticket 40859.
+
+  o Minor bugfixes (compression):
+    - Right after compression/decompression work is done, check for
+      errors. Before this, we would consider compression bomb before
+      that and then looking for errors leading to false positive on that
+      log warning. Fixes bug 40739; bugfix on 0.3.5.1-alpha. Patch
+      by "cypherpunks".
+
+  o Minor bugfixes (compression, zstd):
+    - Use less frightening language and lower the log-level of our run-
+      time ABI compatibility check message in our Zstd compression
+      subsystem. Fixes bug 40815; bugfix on 0.4.3.1-alpha.
+
+
+Changes in version 0.4.7.14 - 2023-07-26
+  This version contains several minor fixes and one major bugfix affecting
+  vanguards (onion service). As usual, we recommend upgrading to this version
+  as soon as possible.
+
+  o Major bugfixes (vanguards):
+    - Rotate to a new L2 vanguard whenever an existing one loses the
+      Stable or Fast flag. Previously, we would leave these relays in
+      the L2 vanguard list but never use them, and if all of our
+      vanguards end up like this we wouldn't have any middle nodes left
+      to choose from so we would fail to make onion-related circuits.
+      Fixes bug 40805; bugfix on 0.4.7.1-alpha.
+
+  o Minor feature (CI):
+    - Update CI to use Debian Bullseye for runners.
+
+  o Minor feature (lzma):
+    - Fix compiler warnings for liblzma >= 5.3.1. Closes ticket 40741.
+
+  o Minor features (directory authorities):
+    - Directory authorities now include their AuthDirMaxServersPerAddr
+      config option in the consensus parameter section of their vote.
+      Now external tools can better predict how they will behave.
+      Implements ticket 40753.
+
+  o Minor features (fallbackdir):
+    - Regenerate fallback directories generated on July 26, 2023.
+
+  o Minor features (geoip data):
+    - Update the geoip files to match the IPFire Location Database, as
+      retrieved on 2023/07/26.
+
+  o Minor bugfix (relay, logging):
+    - The wrong max queue cell size was used in a protocol warning
+      logging statement. Fixes bug 40745; bugfix on 0.4.7.1-alpha.
+
+  o Minor bugfixes (compilation):
+    - Fix all -Werror=enum-int-mismatch warnings. No behavior change.
+      Fixes bug 40824; bugfix on 0.3.5.1-alpha.
+
+  o Minor bugfixes (metrics):
+    - Decrement hs_intro_established_count on introduction circuit
+      close. Fixes bug 40751; bugfix on 0.4.7.12.
+
+  o Minor bugfixes (sandbox):
+    - Allow membarrier for the sandbox. And allow rt_sigprocmask when
+      compiled with LTTng. Fixes bug 40799; bugfix on 0.3.5.1-alpha.
+
+
 Changes in version 0.4.7.13 - 2023-01-12
   This version contains three major bugfixes, two for relays and one for
   client being a security fix, TROVE-2022-002. We have added, for Linux, the

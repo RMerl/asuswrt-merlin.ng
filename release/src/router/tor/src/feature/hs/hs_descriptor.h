@@ -281,17 +281,18 @@ MOCK_DECL(int,
                                      const uint8_t *descriptor_cookie,
                                      char **encoded_out));
 
-int hs_desc_decode_descriptor(const char *encoded,
+hs_desc_decode_status_t hs_desc_decode_descriptor(const char *encoded,
                               const hs_subcredential_t *subcredential,
                               const curve25519_secret_key_t *client_auth_sk,
                               hs_descriptor_t **desc_out);
-int hs_desc_decode_plaintext(const char *encoded,
+hs_desc_decode_status_t hs_desc_decode_plaintext(const char *encoded,
                              hs_desc_plaintext_data_t *plaintext);
-int hs_desc_decode_superencrypted(const hs_descriptor_t *desc,
-                                 hs_desc_superencrypted_data_t *desc_out);
-int hs_desc_decode_encrypted(const hs_descriptor_t *desc,
-                             const curve25519_secret_key_t *client_auth_sk,
-                             hs_desc_encrypted_data_t *desc_out);
+hs_desc_decode_status_t hs_desc_decode_superencrypted(
+                                const hs_descriptor_t *desc,
+                                hs_desc_superencrypted_data_t *desc_out);
+hs_desc_decode_status_t hs_desc_decode_encrypted(const hs_descriptor_t *desc,
+                           const curve25519_secret_key_t *client_auth_sk,
+                           hs_desc_encrypted_data_t *desc_out);
 
 size_t hs_desc_obj_size(const hs_descriptor_t *data);
 size_t hs_desc_plaintext_obj_size(const hs_desc_plaintext_data_t *data);

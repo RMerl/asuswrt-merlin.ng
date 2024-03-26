@@ -1765,6 +1765,7 @@ build_service_desc_encrypted(const hs_service_t *service,
   tor_assert(desc);
 
   encrypted = &desc->desc->encrypted_data;
+  encrypted->sendme_inc = congestion_control_sendme_inc();
 
   encrypted->create2_ntor = 1;
   encrypted->single_onion_service = service->config.is_single_onion;

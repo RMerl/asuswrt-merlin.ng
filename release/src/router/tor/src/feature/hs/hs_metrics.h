@@ -65,6 +65,6 @@ void hs_metrics_update_by_service(const hs_metrics_key_t key,
 /** Established introduction circuit closes. This is called when
  * INTRO_ESTABLISHED circuit is marked for close. */
 #define hs_metrics_close_established_intro(i) \
-  hs_metrics_update_by_ident(HS_METRICS_NUM_ESTABLISHED_INTRO, (i), 0, 1)
+  hs_metrics_update_by_ident(HS_METRICS_NUM_ESTABLISHED_INTRO, (i), 0, -1)
 
 #endif /* !defined(TOR_FEATURE_HS_HS_METRICS_H) */

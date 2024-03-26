@@ -944,7 +944,7 @@ static const char SOCKS_PROXY_IS_NOT_AN_HTTP_PROXY_MSG[] =
  * buffer should be cleared).  Instead of pulling more data into the first
  * chunk of the buffer, we set *<b>want_length_out</b> to the number of bytes
  * we'd like to see in the input buffer, if they're available. */
-static int
+static socks_result_t
 parse_socks(const char *data, size_t datalen, socks_request_t *req,
             int log_sockstype, int safe_socks, size_t *drain_out)
 {
@@ -952,7 +952,7 @@ parse_socks(const char *data, size_t datalen, socks_request_t *req,
 
   if (datalen < 2) {
     /* We always need at least 2 bytes. */
-    return 0;
+    return SOCKS_RESULT_TRUNCATED;
   }
 
   first_octet = get_uint8(data);
@@ -985,11 +985,11 @@ parse_socks(const char *data, size_t datalen, socks_request_t *req,
                                     escaped(tmp));
         tor_free(tmp);
       }
-      return -1;
+      return SOCKS_RESULT_INVALID;
   }
 
   tor_assert_unreached();
-  return -1;
+  return SOCKS_RESULT_INVALID;
 }
 
 /** Inspect a reply from SOCKS server stored in <b>buf</b> according

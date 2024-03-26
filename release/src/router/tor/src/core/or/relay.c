@@ -3261,7 +3261,7 @@ append_cell_to_circuit_queue(circuit_t *circ, channel_t *chan,
            "%s circuit has %d cells in its queue, maximum allowed is %d. "
            "Closing circuit for safety reasons.",
            (exitward) ? "Outbound" : "Inbound", queue->n,
-           max_circuit_cell_queue_size);
+           max_queue_size);
     circuit_mark_for_close(circ, END_CIRC_REASON_RESOURCELIMIT);
     stats_n_circ_max_cell_reached++;
     return;

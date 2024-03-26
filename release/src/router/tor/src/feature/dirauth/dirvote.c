@@ -4878,6 +4878,14 @@ dirserv_generate_networkstatus_vote_obj(crypto_pk_t *private_key,
       smartlist_split_string(v3_out->net_params,
                              paramline->value, NULL, 0, 0);
     }
+
+    /* for transparency and visibility, include our current value of
+     * AuthDirMaxServersPerAddr in our consensus params. Once enough dir
+     * auths do this, external tools should be able to use that value to
+     * help understand which relays are allowed into the consensus. */
+    smartlist_add_asprintf(v3_out->net_params, "AuthDirMaxServersPerAddr=%d",
+                           d_options->AuthDirMaxServersPerAddr);
+
     smartlist_sort_strings(v3_out->net_params);
   }
   v3_out->bw_file_headers = bw_file_headers;

@@ -2,12 +2,12 @@
 .\"     Title: tor-print-ed-signing-cert
 .\"    Author: Tor Project, Inc.
 .\" Generator: DocBook XSL Stylesheets vsnapshot <http://docbook.sf.net/>
-.\"      Date: 01/12/2023
+.\"      Date: 11/03/2023
 .\"    Manual: Tor Manual
 .\"    Source: Tor
 .\"  Language: English
 .\"
-.TH "TOR\-PRINT\-ED\-SIGN" "1" "01/12/2023" "Tor" "Tor Manual"
+.TH "TOR\-PRINT\-ED\-SIGN" "1" "11/03/2023" "Tor" "Tor Manual"
 .\" -----------------------------------------------------------------
 .\" * Define some portability stuff
 .\" -----------------------------------------------------------------

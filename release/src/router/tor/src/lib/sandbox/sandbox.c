@@ -220,6 +220,10 @@ static int filter_nopar_gen[] = {
 #endif
     // glob uses this..
     SCMP_SYS(lstat),
+#ifdef __NR_membarrier
+    /* Inter-processor synchronization, needed for tracing support */
+    SCMP_SYS(membarrier),
+#endif
     SCMP_SYS(mkdir),
     SCMP_SYS(mlockall),
 #ifdef __NR_mmap
@@ -1165,7 +1169,8 @@ sb_rt_sigprocmask(scmp_filter_ctx ctx, sandbox_cfg_t *filter)
   int rc = 0;
   (void) filter;
 
-#ifdef ENABLE_FRAGILE_HARDENING
+#if defined(ENABLE_FRAGILE_HARDENING) || \
+    defined(USE_TRACING_INSTRUMENTATION_LTTNG)
   rc = seccomp_rule_add_1(ctx, SCMP_ACT_ALLOW, SCMP_SYS(rt_sigprocmask),
       SCMP_CMP(0, SCMP_CMP_EQ, SIG_BLOCK));
   if (rc)

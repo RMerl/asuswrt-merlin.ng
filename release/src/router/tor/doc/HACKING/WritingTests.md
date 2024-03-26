@@ -465,7 +465,7 @@ Let's assume you actually want to write a test for a previously untested
 controller feature. I'm picking the `exit-policy/*` GETINFO queries. Since
 these are a controller feature that we want to write an integration test for,
 the right file to modify is
-`https://gitweb.torproject.org/stem.git/tree/test/integ/control/controller.py`.
+`https://gitlab.torproject.org/tpo/network-health/stem/-/blob/master/test/integ/control/controller.py`.
 
 First off we notice that there is an integration test called
 `test_get_exit_policy()` that's already written. This exercises the interaction

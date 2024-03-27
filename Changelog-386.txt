@@ -14,6 +14,7 @@ Asuswrt-Merlin Changelog
 
   - UPDATED: openvpn to 2.6.10.
   - UPDATED: miniupnpd to 2.3.6.
+  - UPDATED: tor to 0.4.7.16.
   - UPDATED: OUI database used by networkmap and the webui.
   - CHANGED: QOS/Classification page can now resolve local IPv6
              addresses.

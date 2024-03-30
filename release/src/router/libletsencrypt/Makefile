@@ -12,7 +12,7 @@ LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib -lethctl
 endif
 LDFLAGS += -L$(TOP_PLATFORM)/nvram$(BCMEX)${EX7} ${EXTRA_NV_LDFLAGS} -lnvram
 LDFLAGS += -lcrypt
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
+LDFLAGS += -Wl,-rpath=$(STAGEDIR)/usr/lib -Wl,-rpath-link=$(STAGEDIR)/usr/lib -lcrypto -lssl $(if $(RTCONFIG_OPENSSL11),-lpthread,)
 
 
 INSTALL = install

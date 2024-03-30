@@ -39,7 +39,7 @@ LDFLAGS += -lgcc_s
 endif
 
 ifeq ($(RTCONFIG_AMAS),y)
-LDFLAGS += -L$(TOP)/openssl -lcrypto -lssl
+LDFLAGS += -L$(TOP)/openssl -Wl,-rpath=$(STAGEDIR)/usr/lib -Wl,-rpath-link=$(STAGEDIR)/usr/lib -lcrypto -lssl
 LDFLAGS += -L$(TOP)/json-c/.libs -ljson-c
 ifeq ($(RTCONFIG_LLDPD_1_0_11),y)
 LLDPD_DIR = $(TOP)/lldpd-1.0.11

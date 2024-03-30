@@ -10,7 +10,7 @@ CFLAGS = -I$(TOP)/openssl/include -I$(TOP)/curl-7.21.7/include -I$(TOP)/smartsyn
 CFLAGS += -I$(SRCBASE) -I$(SRCBASE)/include -I. -I$(TOP)/shared -D_FILE_OFFSET_BITS=64 -DNVRAM_
 CFLAGS += $(if $(QCA),$(EXTRACFLAGS))
 
-LDFLAGS = -L$(TOP)/curl-7.21.7/lib/.libs -L$(TOP)/openssl -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(TOP)/shared -L$(TOP)/smartsync_api
+LDFLAGS = -L$(TOP)/curl-7.21.7/lib/.libs -L$(TOP)/openssl -L$(TOP_PLATFORM)/nvram${BCMEX}${EX7} -L$(TOP)/shared -L$(TOP)/smartsync_api -Wl,-rpath=$(STAGEDIR)/usr/lib -Wl,-rpath-link=$(STAGEDIR)/usr/lib
 LIBS = -lpthread -lnvram -lshared -lcrypto -lssl -lcurl -lm -lsmartsync_api
 ifeq ($(RTCONFIG_BCM_502L07P2),y)
 LDFLAGS += -L$(TOP_PLATFORM)/ethctl_lib

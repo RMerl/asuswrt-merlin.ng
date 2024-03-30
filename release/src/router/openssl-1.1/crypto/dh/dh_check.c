@@ -202,6 +202,19 @@ int DH_check_pub_key(const DH *dh, const BIGNUM *pub_key, int *ret)
     if (ctx == NULL)
         goto err;
     BN_CTX_start(ctx);
+
+    /* Don't do any checks at all with an excessively large modulus */
+    if (BN_num_bits(dh->p) > OPENSSL_DH_CHECK_MAX_MODULUS_BITS) {
+        DHerr(DH_F_DH_CHECK, DH_R_MODULUS_TOO_LARGE);
+        *ret = DH_MODULUS_TOO_LARGE | DH_CHECK_PUBKEY_INVALID;
+        goto err;
+    }
+
+    if (dh->q != NULL && BN_ucmp(dh->p, dh->q) < 0) {
+        *ret |= DH_CHECK_INVALID_Q_VALUE | DH_CHECK_PUBKEY_INVALID;
+        goto out;
+    }
+
     tmp = BN_CTX_get(ctx);
     if (tmp == NULL || !BN_set_word(tmp, 1))
         goto err;
@@ -220,6 +233,7 @@ int DH_check_pub_key(const DH *dh, const BIGNUM *pub_key, int *ret)
             *ret |= DH_CHECK_PUBKEY_INVALID;
     }
 
+ out:
     ok = 1;
  err:
     BN_CTX_end(ctx);

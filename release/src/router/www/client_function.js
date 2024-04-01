@@ -1998,20 +1998,35 @@ var sorter = {
 
 		switch (clickItem) {
 			case "all" :
+				if (sorter.all_index == sorterClickIndex) {
+					sorter.sortingMethod = (sorter.sortingMethod == "increase") ? "decrease" : "increase";
+				}
+				else {
+					sorter.sortingMethod = "increase";
+				}
 				sorterLastIndex = sorter.all_index;
 				sorter.all_index = sorterClickIndex;
-				sorter.sortingMethod = (sorter.sortingMethod == "increase") ? "decrease" : "increase";
 				break;
 			case "wired" :
+				if (sorter.all_index == sorterClickIndex) {
+					sorter.sortingMethod = (sorter.sortingMethod == "increase") ? "decrease" : "increase";
+				}
+				else {
+					sorter.sortingMethod = "increase";
+				}
 				sorterLastIndex = sorter.wired_index;
 				sorter.wired_index = sorterClickIndex;
-				sorter.sortingMethod_wired = (sorter.sortingMethod_wired == "increase") ? "decrease" : "increase";
 				break;
 		}
 		if(clickItem.substr(0,2) == "wl" || isSupport("amas") && clickItem.substr(0,2) == "gn"){
+			if (sorter["sortingMethod_"+clickItem+""] == sorter[""+clickItem+"_index"]) {
+				sorter["sortingMethod_"+clickItem+""] = (sorter["sortingMethod_"+clickItem+""] == "increase") ? "decrease" : "increase";
+			}
+			else {
+				sorter["sortingMethod_"+clickItem+""] = "increase";
+			}
 			sorterLastIndex = sorter[""+clickItem+"_index"];
 			sorter[""+clickItem+"_index"] = sorterClickIndex;
-			sorter["sortingMethod_"+clickItem+""] = (sorter["sortingMethod_"+clickItem+""] == "increase") ? "decrease" : "increase";
 		}
 		obj.parentNode.childNodes[sorterLastIndex].style.boxShadow = "";
 	},

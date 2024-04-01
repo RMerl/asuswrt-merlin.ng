@@ -130,7 +130,7 @@ ej_ipv6_pinhole_array(int eid, webs_t wp, int argc, char_t **argv)
 	ret = websWrite(wp, "var pinholesarray = [");
 
 	if (!(ipv6_enabled() && is_routing_enabled())) {
-		ret += websWrite(wp, "[];\n");
+		ret += websWrite(wp, "[]];\n");
 		return ret;
 	}
 

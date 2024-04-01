@@ -85,6 +85,9 @@ function doSorter(_flag, _Method, flip){
 		if (sorter.indexFlag == _flag && flip) {
 			sorter.sortingMethod = (sorter.sortingMethod == "increase") ? "decrease" : "increase";
 		}
+		else if (_flag == 5) {
+			sorter.sortingMethod = "decrease";
+		}
 		else {
 			sorter.sortingMethod = "increase";
 		}

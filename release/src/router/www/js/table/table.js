@@ -278,8 +278,13 @@ var tableSorter = {
 
 	"doSorter" : function(_$this) {	
 		// update variables
+		if (tableSorter.indexFlag == _$this.index()) {
+			tableSorter.sortingMethod = (tableSorter.sortingMethod == "increase") ? "decrease" : "increase";
+		}
+		else {
+			tableSorter.sortingMethod = "increase";
+		}
 		tableSorter.indexFlag = _$this.index();
-		tableSorter.sortingMethod = (tableSorter.sortingMethod == "increase") ? "decrease" : "increase";
 		tableSorter.sortingType = _$this.attr("sortType");
 		tableSorter.sortData(tableSorter.indexFlag, tableSorter.sortingType, "tableApi._jsonObj.data");
 		tableApi.genTable(tableApi._jsonObj);

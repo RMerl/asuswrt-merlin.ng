@@ -49,18 +49,29 @@ CFLAGS += -DRUNSTATEDIR="\"$(RUNSTATEDIR)\""
 ifeq ($(DEBUG),yes)
 CFLAGS += -g
 endif
-WIREGUARD_TOOLS_VERSION = $(patsubst v%,%,$(shell GIT_CEILING_DIRECTORIES="$(PWD)/../.." git describe --dirty 2>/dev/null))
+WIREGUARD_TOOLS_VERSION = $(patsubst v%,%,$(shell GIT_DIR="$(PWD)/../.git" git describe --dirty 2>/dev/null))
 ifneq ($(WIREGUARD_TOOLS_VERSION),)
 CFLAGS += -D'WIREGUARD_TOOLS_VERSION="$(WIREGUARD_TOOLS_VERSION)"'
+endif
+ifeq ($(PLATFORM),freebsd)
+LDLIBS += -lnv
 endif
 ifeq ($(PLATFORM),haiku)
 LDLIBS += -lnetwork -lbsd
 endif
 ifeq ($(PLATFORM),windows)
-CC := x86_64-w64-mingw32-gcc
-CFLAGS += -Iwincompat/include -include wincompat/compat.h
-LDLIBS += -lws2_32
-wg: wincompat/libc.o wincompat/init.o
+CC := x86_64-w64-mingw32-clang
+WINDRES := $(shell $(CC) $(CFLAGS) -print-prog-name=windres 2>/dev/null)
+CFLAGS += -Iwincompat/include -include wincompat/compat.h -DWINVER=0x0601 -D_WIN32_WINNT=0x0601 -flto
+LDLIBS += -lws2_32 -lsetupapi -lole32 -ladvapi32 -lntdll -Lwincompat
+LDFLAGS += -flto -Wl,--dynamicbase -Wl,--nxcompat -Wl,--tsaware -mconsole
+LDFLAGS += -Wl,--major-os-version=6 -Wl,--minor-os-version=1 -Wl,--major-subsystem-version=6 -Wl,--minor-subsystem-version=1
+# The use of -Wl,/delayload: here implies we're using llvm-mingw
+LDFLAGS += -Wl,/delayload:ws2_32.dll -Wl,/delayload:setupapi.dll -Wl,/delayload:ole32.dll -Wl,/delayload:advapi32.dll
+VERSION := $(patsubst "%",%,$(filter "%",$(file < version.h)))
+wg: wincompat/libc.o wincompat/init.o wincompat/loader.o wincompat/resources.o
+wincompat/resources.o: wincompat/resources.rc wincompat/manifest.xml
+	$(WINDRES) -DVERSION_STR=$(VERSION) -O coff -c 65001 -i $< -o $@
 endif
 
 ifneq ($(V),1)
@@ -72,12 +83,13 @@ COMPILE.c = @echo "  CC      $@";
 COMPILE.c += $(BUILT_IN_COMPILE.c)
 BUILT_IN_RM := $(RM)
 RM := @a() { echo "  CLEAN   $$@"; $(BUILT_IN_RM) "$$@"; }; a
+WINDRES := @a() { echo "  WINDRES $${@: -1}"; $(WINDRES) "$$@"; }; a
 endif
 
 wg: $(sort $(patsubst %.c,%.o,$(wildcard *.c)))
 
 clean:
-	$(RM) wg *.o *.d
+	$(RM) wg *.o *.d $(wildcard wincompat/*.o wincompat/*.lib wincompat/*.dll)
 
 install: wg
 	@install -v -d "$(DESTDIR)$(BINDIR)" && install -v -m 0755 wg "$(DESTDIR)$(BINDIR)/wg"

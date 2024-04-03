@@ -5,12 +5,12 @@ _wg_completion() {
 	local a
 
 	if [[ $COMP_CWORD -eq 1 ]]; then
-		COMPREPLY+=( $(compgen -W "show showconf set setconf addconf genkey genpsk pubkey" -- "${COMP_WORDS[1]}") )
+		COMPREPLY+=( $(compgen -W "help show showconf set setconf addconf syncconf genkey genpsk pubkey" -- "${COMP_WORDS[1]}") )
 		return
 	fi
 	case "${COMP_WORDS[1]}" in
 		genkey|genpsk|pubkey|help) return; ;;
-		show|showconf|set|setconf|addconf) ;;
+		show|showconf|set|setconf|addconf|syncconf) ;;
 		*) return;
 	esac
 
@@ -26,7 +26,7 @@ _wg_completion() {
 		return
 	fi
 
-	if [[ $COMP_CWORD -eq 3 && ( ${COMP_WORDS[1]} == setconf || ${COMP_WORDS[1]} == addconf ) ]]; then
+	if [[ $COMP_CWORD -eq 3 && ( ${COMP_WORDS[1]} == setconf || ${COMP_WORDS[1]} == addconf || ${COMP_WORDS[1]} == syncconf) ]]; then
 		compopt -o filenames
 		mapfile -t a < <(compgen -f -- "${COMP_WORDS[3]}")
 		COMPREPLY+=( "${a[@]}" )

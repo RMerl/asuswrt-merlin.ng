@@ -81,7 +81,6 @@ enum wgallowedip_attribute {
 /* libmnl mini library: */
 
 #define MNL_SOCKET_AUTOPID 0
-#define MNL_SOCKET_BUFFER_SIZE (sysconf(_SC_PAGESIZE) < 8192L ? sysconf(_SC_PAGESIZE) : 8192L)
 #define MNL_ALIGNTO 4
 #define MNL_ALIGN(len) (((len)+MNL_ALIGNTO-1) & ~(MNL_ALIGNTO-1))
 #define MNL_NLMSG_HDRLEN MNL_ALIGN(sizeof(struct nlmsghdr))
@@ -129,6 +128,18 @@ typedef int (*mnl_cb_t)(const struct nlmsghdr *nlh, void *data);
 #define MNL_ARRAY_SIZE(a) (sizeof(a)/sizeof((a)[0]))
 #endif
 
+static size_t mnl_ideal_socket_buffer_size(void)
+{
+	static size_t size = 0;
+
+	if (size)
+		return size;
+	size = (size_t)sysconf(_SC_PAGESIZE);
+	if (size > 8192)
+		size = 8192;
+	return size;
+}
+
 static size_t mnl_nlmsg_size(size_t len)
 {
 	return len + MNL_NLMSG_HDRLEN;
@@ -162,7 +173,6 @@ static void *mnl_nlmsg_get_payload_offset(const struct nlmsghdr *nlh, size_t off
 {
 	return (void *)nlh + MNL_NLMSG_HDRLEN + MNL_ALIGN(offset);
 }
-
 
 static bool mnl_nlmsg_ok(const struct nlmsghdr *nlh, int len)
 {
@@ -341,7 +351,6 @@ static uint32_t mnl_attr_get_u32(const struct nlattr *attr)
 	return *((uint32_t *)mnl_attr_get_payload(attr));
 }
 
-
 static uint64_t mnl_attr_get_u64(const struct nlattr *attr)
 {
 	uint64_t tmp;
@@ -409,13 +418,11 @@ static bool mnl_attr_put_u8_check(struct nlmsghdr *nlh, size_t buflen,
 	return mnl_attr_put_check(nlh, buflen, type, sizeof(uint8_t), &data);
 }
 
-
 static bool mnl_attr_put_u16_check(struct nlmsghdr *nlh, size_t buflen,
 				   uint16_t type, uint16_t data)
 {
 	return mnl_attr_put_check(nlh, buflen, type, sizeof(uint16_t), &data);
 }
-
 
 static bool mnl_attr_put_u32_check(struct nlmsghdr *nlh, size_t buflen,
 				   uint16_t type, uint32_t data)
@@ -441,12 +448,12 @@ static void mnl_attr_nest_cancel(struct nlmsghdr *nlh, struct nlattr *start)
 	nlh->nlmsg_len -= mnl_nlmsg_get_payload_tail(nlh) - (void *)start;
 }
 
-static int mnl_cb_noop(const struct nlmsghdr *nlh, void *data)
+static int mnl_cb_noop(__attribute__((unused)) const struct nlmsghdr *nlh, __attribute__((unused)) void *data)
 {
 	return MNL_CB_OK;
 }
 
-static int mnl_cb_error(const struct nlmsghdr *nlh, void *data)
+static int mnl_cb_error(const struct nlmsghdr *nlh, __attribute__((unused)) void *data)
 {
 	const struct nlmsgerr *err = mnl_nlmsg_get_payload(nlh);
 
@@ -463,7 +470,7 @@ static int mnl_cb_error(const struct nlmsghdr *nlh, void *data)
 	return err->error == 0 ? MNL_CB_STOP : MNL_CB_ERROR;
 }
 
-static int mnl_cb_stop(const struct nlmsghdr *nlh, void *data)
+static int mnl_cb_stop(__attribute__((unused)) const struct nlmsghdr *nlh, __attribute__((unused)) void *data)
 {
 	return MNL_CB_STOP;
 }
@@ -496,12 +503,10 @@ static int __mnl_cb_run(const void *buf, size_t numbytes,
 			return -1;
 		}
 
-
 		if (nlh->nlmsg_flags & NLM_F_DUMP_INTR) {
 			errno = EINTR;
 			return -1;
 		}
-
 
 		if (nlh->nlmsg_type >= NLMSG_MIN_TYPE) {
 			if (cb_data){
@@ -572,7 +577,6 @@ static struct mnl_socket *mnl_socket_open(int bus)
 	return __mnl_socket_open(bus, 0);
 }
 
-
 static int mnl_socket_bind(struct mnl_socket *nl, unsigned int groups, pid_t pid)
 {
 	int ret;
@@ -602,7 +606,6 @@ static int mnl_socket_bind(struct mnl_socket *nl, unsigned int groups, pid_t pid
 	return 0;
 }
 
-
 static ssize_t mnl_socket_sendto(const struct mnl_socket *nl, const void *buf,
 				 size_t len)
 {
@@ -612,7 +615,6 @@ static ssize_t mnl_socket_sendto(const struct mnl_socket *nl, const void *buf,
 	return sendto(nl->fd, buf, len, 0,
 		      (struct sockaddr *) &snl, sizeof(snl));
 }
-
 
 static ssize_t mnl_socket_recvfrom(const struct mnl_socket *nl, void *buf,
 				   size_t bufsiz)
@@ -750,7 +752,7 @@ static int mnlg_socket_recv_run(struct mnlg_socket *nlg, mnl_cb_t data_cb, void 
 
 	do {
 		err = mnl_socket_recvfrom(nlg->nl, nlg->buf,
-					  MNL_SOCKET_BUFFER_SIZE);
+					  mnl_ideal_socket_buffer_size());
 		if (err <= 0)
 			break;
 		err = mnl_cb_run2(nlg->buf, err, nlg->seq, nlg->portid,
@@ -796,9 +798,10 @@ static struct mnlg_socket *mnlg_socket_open(const char *family_name, uint8_t ver
 	nlg = malloc(sizeof(*nlg));
 	if (!nlg)
 		return NULL;
+	nlg->id = 0;
 
 	err = -ENOMEM;
-	nlg->buf = malloc(MNL_SOCKET_BUFFER_SIZE);
+	nlg->buf = malloc(mnl_ideal_socket_buffer_size());
 	if (!nlg->buf)
 		goto err_buf_alloc;
 
@@ -942,7 +945,7 @@ static int fetch_device_names(struct string_list *list)
 	struct ifinfomsg *ifm;
 
 	ret = -ENOMEM;
-	rtnl_buffer = calloc(MNL_SOCKET_BUFFER_SIZE, 1);
+	rtnl_buffer = calloc(mnl_ideal_socket_buffer_size(), 1);
 	if (!rtnl_buffer)
 		goto cleanup;
 
@@ -973,7 +976,7 @@ static int fetch_device_names(struct string_list *list)
 	}
 
 another:
-	if ((len = mnl_socket_recvfrom(nl, rtnl_buffer, MNL_SOCKET_BUFFER_SIZE)) < 0) {
+	if ((len = mnl_socket_recvfrom(nl, rtnl_buffer, mnl_ideal_socket_buffer_size())) < 0) {
 		ret = -errno;
 		goto cleanup;
 	}
@@ -1009,7 +1012,7 @@ static int add_del_iface(const char *ifname, bool add)
 	struct ifinfomsg *ifm;
 	struct nlattr *nest;
 
-	rtnl_buffer = calloc(MNL_SOCKET_BUFFER_SIZE, 1);
+	rtnl_buffer = calloc(mnl_ideal_socket_buffer_size(), 1);
 	if (!rtnl_buffer) {
 		ret = -ENOMEM;
 		goto cleanup;
@@ -1041,7 +1044,7 @@ static int add_del_iface(const char *ifname, bool add)
 		ret = -errno;
 		goto cleanup;
 	}
-	if ((len = mnl_socket_recvfrom(nl, rtnl_buffer, MNL_SOCKET_BUFFER_SIZE)) < 0) {
+	if ((len = mnl_socket_recvfrom(nl, rtnl_buffer, mnl_ideal_socket_buffer_size())) < 0) {
 		ret = -errno;
 		goto cleanup;
 	}
@@ -1096,10 +1099,10 @@ again:
 	for (peer = peer ? peer : dev->first_peer; peer; peer = peer->next_peer) {
 		uint32_t flags = 0;
 
-		peer_nest = mnl_attr_nest_start_check(nlh, MNL_SOCKET_BUFFER_SIZE, 0);
+		peer_nest = mnl_attr_nest_start_check(nlh, mnl_ideal_socket_buffer_size(), 0);
 		if (!peer_nest)
 			goto toobig_peers;
-		if (!mnl_attr_put_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGPEER_A_PUBLIC_KEY, sizeof(peer->public_key), peer->public_key))
+		if (!mnl_attr_put_check(nlh, mnl_ideal_socket_buffer_size(), WGPEER_A_PUBLIC_KEY, sizeof(peer->public_key), peer->public_key))
 			goto toobig_peers;
 		if (peer->flags & WGPEER_REMOVE_ME)
 			flags |= WGPEER_F_REMOVE_ME;
@@ -1107,45 +1110,45 @@ again:
 			if (peer->flags & WGPEER_REPLACE_ALLOWEDIPS)
 				flags |= WGPEER_F_REPLACE_ALLOWEDIPS;
 			if (peer->flags & WGPEER_HAS_PRESHARED_KEY) {
-				if (!mnl_attr_put_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGPEER_A_PRESHARED_KEY, sizeof(peer->preshared_key), peer->preshared_key))
+				if (!mnl_attr_put_check(nlh, mnl_ideal_socket_buffer_size(), WGPEER_A_PRESHARED_KEY, sizeof(peer->preshared_key), peer->preshared_key))
 					goto toobig_peers;
 			}
 			if (peer->endpoint.addr.sa_family == AF_INET) {
-				if (!mnl_attr_put_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGPEER_A_ENDPOINT, sizeof(peer->endpoint.addr4), &peer->endpoint.addr4))
+				if (!mnl_attr_put_check(nlh, mnl_ideal_socket_buffer_size(), WGPEER_A_ENDPOINT, sizeof(peer->endpoint.addr4), &peer->endpoint.addr4))
 					goto toobig_peers;
 			} else if (peer->endpoint.addr.sa_family == AF_INET6) {
-				if (!mnl_attr_put_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGPEER_A_ENDPOINT, sizeof(peer->endpoint.addr6), &peer->endpoint.addr6))
+				if (!mnl_attr_put_check(nlh, mnl_ideal_socket_buffer_size(), WGPEER_A_ENDPOINT, sizeof(peer->endpoint.addr6), &peer->endpoint.addr6))
 					goto toobig_peers;
 			}
 			if (peer->flags & WGPEER_HAS_PERSISTENT_KEEPALIVE_INTERVAL) {
-				if (!mnl_attr_put_u16_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGPEER_A_PERSISTENT_KEEPALIVE_INTERVAL, peer->persistent_keepalive_interval))
+				if (!mnl_attr_put_u16_check(nlh, mnl_ideal_socket_buffer_size(), WGPEER_A_PERSISTENT_KEEPALIVE_INTERVAL, peer->persistent_keepalive_interval))
 					goto toobig_peers;
 			}
 		}
 		if (flags) {
-			if (!mnl_attr_put_u32_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGPEER_A_FLAGS, flags))
+			if (!mnl_attr_put_u32_check(nlh, mnl_ideal_socket_buffer_size(), WGPEER_A_FLAGS, flags))
 				goto toobig_peers;
 		}
 		if (peer->first_allowedip) {
 			if (!allowedip)
 				allowedip = peer->first_allowedip;
-			allowedips_nest = mnl_attr_nest_start_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGPEER_A_ALLOWEDIPS);
+			allowedips_nest = mnl_attr_nest_start_check(nlh, mnl_ideal_socket_buffer_size(), WGPEER_A_ALLOWEDIPS);
 			if (!allowedips_nest)
 				goto toobig_allowedips;
 			for (; allowedip; allowedip = allowedip->next_allowedip) {
-				allowedip_nest = mnl_attr_nest_start_check(nlh, MNL_SOCKET_BUFFER_SIZE, 0);
+				allowedip_nest = mnl_attr_nest_start_check(nlh, mnl_ideal_socket_buffer_size(), 0);
 				if (!allowedip_nest)
 					goto toobig_allowedips;
-				if (!mnl_attr_put_u16_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGALLOWEDIP_A_FAMILY, allowedip->family))
+				if (!mnl_attr_put_u16_check(nlh, mnl_ideal_socket_buffer_size(), WGALLOWEDIP_A_FAMILY, allowedip->family))
 					goto toobig_allowedips;
 				if (allowedip->family == AF_INET) {
-					if (!mnl_attr_put_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGALLOWEDIP_A_IPADDR, sizeof(allowedip->ip4), &allowedip->ip4))
+					if (!mnl_attr_put_check(nlh, mnl_ideal_socket_buffer_size(), WGALLOWEDIP_A_IPADDR, sizeof(allowedip->ip4), &allowedip->ip4))
 						goto toobig_allowedips;
 				} else if (allowedip->family == AF_INET6) {
-					if (!mnl_attr_put_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGALLOWEDIP_A_IPADDR, sizeof(allowedip->ip6), &allowedip->ip6))
+					if (!mnl_attr_put_check(nlh, mnl_ideal_socket_buffer_size(), WGALLOWEDIP_A_IPADDR, sizeof(allowedip->ip6), &allowedip->ip6))
 						goto toobig_allowedips;
 				}
-				if (!mnl_attr_put_u8_check(nlh, MNL_SOCKET_BUFFER_SIZE, WGALLOWEDIP_A_CIDR_MASK, allowedip->cidr))
+				if (!mnl_attr_put_u8_check(nlh, mnl_ideal_socket_buffer_size(), WGALLOWEDIP_A_CIDR_MASK, allowedip->cidr))
 					goto toobig_allowedips;
 				mnl_attr_nest_end(nlh, allowedip_nest);
 				allowedip_nest = NULL;

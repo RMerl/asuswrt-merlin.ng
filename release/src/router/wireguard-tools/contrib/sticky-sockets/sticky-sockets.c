@@ -195,10 +195,6 @@ int magic_create_sock4(uint16_t listen_port)
 	if (fd < 0)
 		return fd;
 	
-	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-	if (ret < 0)
-		goto err;
-	
 	ret = setsockopt(fd, IPPROTO_IP, IP_PKTINFO, &on, sizeof(on));
 	if (ret < 0)
 		goto err;
@@ -227,10 +223,6 @@ int magic_create_sock6(uint16_t listen_port)
 	fd = socket(AF_INET6, SOCK_DGRAM, 0);
 	if (fd < 0)
 		return fd;
-	
-	ret = setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on));
-	if (ret < 0)
-		goto err;
 	
 	ret = setsockopt(fd, IPPROTO_IPV6, IPV6_RECVPKTINFO, &on, sizeof(on));
 	if (ret < 0)

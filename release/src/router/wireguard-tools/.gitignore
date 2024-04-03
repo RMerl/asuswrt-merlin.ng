@@ -1,0 +1,17 @@
+cscope.out
+*.o
+*.d
+*.lib
+*.dll
+*.gch
+*.dwo
+src/wg
+src/wg.exe
+*.swp
+*.id0
+*.id1
+*.id2
+*.nam
+*.til
+*.pro.user
+maint/

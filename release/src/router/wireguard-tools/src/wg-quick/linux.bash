@@ -220,9 +220,9 @@ add_default() {
 	fi
 	local proto=-4 iptables=iptables pf=ip
 	[[ $1 == *:* ]] && proto=-6 iptables=ip6tables pf=ip6
-	cmd ip $proto route add "$1" dev "$INTERFACE" table $table
 	cmd ip $proto rule add not fwmark $table table $table
 	cmd ip $proto rule add table main suppress_prefixlength 0
+	cmd ip $proto route add "$1" dev "$INTERFACE" table $table
 
 	local marker="-m comment --comment \"wg-quick(8) rule for $INTERFACE\"" restore=$'*raw\n' nftable="wg-quick-$INTERFACE" nftcmd 
 	printf -v nftcmd '%sadd table %s %s\n' "$nftcmd" "$pf" "$nftable"
@@ -327,8 +327,8 @@ cmd_up() {
 	local i
 	[[ -z $(ip link show dev "$INTERFACE" 2>/dev/null) ]] || die "\`$INTERFACE' already exists"
 	trap 'del_if; exit' INT TERM EXIT
-	execute_hooks "${PRE_UP[@]}"
 	add_if
+	execute_hooks "${PRE_UP[@]}"
 	set_config
 	for i in "${ADDRESSES[@]}"; do
 		add_addr "$i"

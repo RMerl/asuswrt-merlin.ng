@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 OR MIT
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
@@ -12,7 +12,7 @@
 #include "ipc.h"
 #include "subcommands.h"
 
-int set_main(int argc, char *argv[])
+int set_main(int argc, const char *argv[])
 {
 	struct wgdevice *device = NULL;
 	int ret = 1;

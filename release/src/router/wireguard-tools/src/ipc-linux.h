@@ -479,6 +479,12 @@ static int kernel_get_device(struct wgdevice **device, const char *iface)
 	struct nlmsghdr *nlh;
 	struct mnlg_socket *nlg;
 
+	/* libmnl doesn't check the buffer size, so enforce that before using. */
+	if (strlen(iface) >= IFNAMSIZ) {
+		errno = ENAMETOOLONG;
+		return -ENAMETOOLONG;
+	}
+
 try_again:
 	ret = 0;
 	*device = calloc(1, sizeof(**device));

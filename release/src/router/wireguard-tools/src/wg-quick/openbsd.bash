@@ -88,42 +88,33 @@ auto_su() {
 
 
 get_real_interface() {
-	local interface diff
-	wg show interfaces >/dev/null
-	[[ -f "/var/run/wireguard/$INTERFACE.name" ]] || return 1
-	interface="$(< "/var/run/wireguard/$INTERFACE.name")"
-	if [[ $interface != wg* ]]; then
-		[[ -n $interface && -S "/var/run/wireguard/$interface.sock" ]] || return 1
-		diff=$(( $(stat -f %m "/var/run/wireguard/$interface.sock" 2>/dev/null || echo 200) - $(stat -f %m "/var/run/wireguard/$INTERFACE.name" 2>/dev/null || echo 100) ))
-		[[ $diff -ge 2 || $diff -le -2 ]] && return 1
-		echo "[+] Tun interface for $INTERFACE is $interface" >&2
-	else
-		[[ " $(wg show interfaces) " == *" $interface "* ]] || return 1
-	fi
-	REAL_INTERFACE="$interface"
-	return 0
+	local interface line
+	while IFS= read -r line; do
+		if [[ $line =~ ^([a-z]+[0-9]+):\ .+ ]]; then
+			interface="${BASH_REMATCH[1]}"
+			continue
+		fi
+		if [[ $interface == wg* && $line =~ ^\	description:\ wg-quick:\ (.+) && ${BASH_REMATCH[1]} == "$INTERFACE" ]]; then
+			REAL_INTERFACE="$interface"
+			return 0
+		fi
+	done < <(ifconfig)
+	return 1
 }
 
 add_if() {
-	local index=0 ret
 	while true; do
-		if ret="$(cmd ifconfig wg$index create 2>&1)"; then
-			mkdir -p "/var/run/wireguard/"
-			echo wg$index > /var/run/wireguard/$INTERFACE.name
-			get_real_interface
+		local -A existing_ifs="( $(wg show interfaces | sed 's/\([^ ]*\)/[\1]=1/g') )"
+		local index ret
+		for ((index=0; index <= 2147483647; ++index)); do [[ -v existing_ifs[wg$index] ]] || break; done
+		if ret="$(cmd ifconfig wg$index create description "wg-quick: $INTERFACE" 2>&1)"; then
+			REAL_INTERFACE="wg$index"
 			return 0
 		fi
-		if [[ $ret != *"ifconfig: SIOCIFCREATE: File exists"* ]]; then
-			echo "[!] Missing WireGuard kernel support ($ret). Falling back to slow userspace implementation." >&3
-			break
-		fi
-		echo "[+] wg$index in use, trying next"
-		((++index))
+		[[ $ret == *"ifconfig: SIOCIFCREATE: File exists"* ]] && continue
+		echo "$ret" >&3
+		return 1
 	done
-	export WG_TUN_NAME_FILE="/var/run/wireguard/$INTERFACE.name"
-	mkdir -p "/var/run/wireguard/"
-	cmd "${WG_QUICK_USERSPACE_IMPLEMENTATION:-wireguard-go}" tun
-	get_real_interface
 }
 
 del_routes() {
@@ -153,12 +144,7 @@ del_routes() {
 
 del_if() {
 	unset_dns
-	if [[ -n $REAL_INTERFACE && $REAL_INTERFACE != wg* ]]; then
-		cmd rm -f "/var/run/wireguard/$REAL_INTERFACE.sock"
-	else
-		cmd ifconfig $REAL_INTERFACE destroy
-	fi
-	cmd rm -f "/var/run/wireguard/$INTERFACE.name"
+	[[ -n $REAL_INTERFACE ]] && cmd ifconfig $REAL_INTERFACE destroy
 }
 
 up_if() {
@@ -280,30 +266,42 @@ monitor_daemon() {
 	echo "[+] Backgrounding route monitor" >&2
 	(trap 'del_routes; exit 0' INT TERM EXIT
 	exec >/dev/null 2>&1
-	local event
+	exec 19< <(exec route -n monitor)
+	local event pid=$!
 	# TODO: this should also check to see if the endpoint actually changes
 	# in response to incoming packets, and then call set_endpoint_direct_route
 	# then too. That function should be able to gracefully cleanup if the
 	# endpoints change.
-	while read -r event; do
+	while read -u 19 -r event; do
 		[[ $event == RTM_* ]] || continue
 		ifconfig "$REAL_INTERFACE" >/dev/null 2>&1 || break
 		[[ $AUTO_ROUTE4 -eq 1 || $AUTO_ROUTE6 -eq 1 ]] && set_endpoint_direct_route
 		# TODO: set the mtu as well, but only if up
-	done < <(route -n monitor)) & disown
+	done
+	kill $pid) & disown
 }
 
 set_dns() {
 	[[ ${#DNS[@]} -gt 0 ]] || return 0
-	# TODO: this is a horrible way of doing it. Has OpenBSD no resolvconf?
+
+	# TODO: add exclusive support for nameservers
+	if pgrep -qx unwind; then
+		echo "[!] WARNING: unwind will leak DNS queries" >&2
+	elif pgrep -qx resolvd; then
+		echo "[!] WARNING: resolvd may leak DNS queries" >&2
+	else
+		echo "[+] resolvd is not running, DNS will not be configured" >&2
+		return 0
+	fi
+
 	cmd cp /etc/resolv.conf "/etc/resolv.conf.wg-quick-backup.$INTERFACE"
-	{ cmd printf 'nameserver %s\n' "${DNS[@]}"
-	  [[ ${#DNS_SEARCH[@]} -eq 0 ]] || cmd printf 'search %s\n' "${DNS_SEARCH[*]}"
-	} > /etc/resolv.conf
+	[[ ${#DNS_SEARCH[@]} -eq 0 ]] || cmd printf 'search %s\n' "${DNS_SEARCH[*]}" > /etc/resolv.conf
+	route nameserver ${REAL_INTERFACE} ${DNS[@]}
 }
 
 unset_dns() {
 	[[ -f "/etc/resolv.conf.wg-quick-backup.$INTERFACE" ]] || return 0
+	route nameserver ${REAL_INTERFACE}
 	cmd mv "/etc/resolv.conf.wg-quick-backup.$INTERFACE" /etc/resolv.conf
 }
 
@@ -419,8 +417,8 @@ cmd_up() {
 	local i
 	get_real_interface && die "\`$INTERFACE' already exists as \`$REAL_INTERFACE'"
 	trap 'del_if; del_routes; exit' INT TERM EXIT
-	execute_hooks "${PRE_UP[@]}"
 	add_if
+	execute_hooks "${PRE_UP[@]}"
 	set_config
 	for i in "${ADDRESSES[@]}"; do
 		add_addr "$i"
@@ -438,9 +436,7 @@ cmd_up() {
 }
 
 cmd_down() {
-	if ! get_real_interface || [[ " $(wg show interfaces) " != *" $REAL_INTERFACE "* ]]; then
-		die "\`$INTERFACE' is not a WireGuard interface"
-	fi
+	get_real_interface || die "\`$INTERFACE' is not a WireGuard interface"
 	execute_hooks "${PRE_DOWN[@]}"
 	[[ $SAVE_CONFIG -eq 0 ]] || save_config
 	del_if
@@ -449,9 +445,7 @@ cmd_down() {
 }
 
 cmd_save() {
-	if ! get_real_interface || [[ " $(wg show interfaces) " != *" $REAL_INTERFACE "* ]]; then
-		die "\`$INTERFACE' is not a WireGuard interface"
-	fi
+	get_real_interface || die "\`$INTERFACE' is not a WireGuard interface"
 	save_config
 }
 

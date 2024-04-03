@@ -129,7 +129,8 @@ static int kernel_get_device(struct wgdevice **device, const char *iface)
 
 		if (wg_peer->p_flags & WG_PEER_HAS_PSK) {
 			memcpy(peer->preshared_key, wg_peer->p_psk, sizeof(peer->preshared_key));
-			peer->flags |= WGPEER_HAS_PRESHARED_KEY;
+			if (!key_is_zero(peer->preshared_key))
+				peer->flags |= WGPEER_HAS_PRESHARED_KEY;
 		}
 
 		if (wg_peer->p_flags & WG_PEER_HAS_PKA) {
@@ -254,13 +255,12 @@ static int kernel_set_device(struct wgdevice *dev)
 			wg_aip->a_af = aip->family;
 			wg_aip->a_cidr = aip->cidr;
 
-			if (aip->family == AF_INET) {
+			if (aip->family == AF_INET)
 				memcpy(&wg_aip->a_ipv4, &aip->ip4, sizeof(wg_aip->a_ipv4));
-			} else if (aip->family == AF_INET6) {
+			else if (aip->family == AF_INET6)
 				memcpy(&wg_aip->a_ipv6, &aip->ip6, sizeof(wg_aip->a_ipv6));
-			} else {
+			else
 				continue;
-			}
 			++aip_count;
 			++wg_aip;
 		}

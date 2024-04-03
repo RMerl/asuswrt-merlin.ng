@@ -25,5 +25,3 @@
 char *strsep(char **str, const char *sep);
 ssize_t getdelim(char **buf, size_t *bufsiz, int delimiter, FILE *fp);
 ssize_t getline(char **buf, size_t *bufsiz, FILE *fp);
-int inet_pton(int af, const char *src, void *dst);
-const char *inet_ntop(int af, const void *src, char *dst, socklen_t size);

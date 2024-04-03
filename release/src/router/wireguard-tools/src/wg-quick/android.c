@@ -1,6 +1,6 @@
 // SPDX-License-Identifier: GPL-2.0
 /*
- * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
+ * Copyright (C) 2015-2021 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  *
  * This is a shell script written in C. It very intentionally still functions like
  * a shell script, calling out to external executables such as ip(8).
@@ -25,6 +25,7 @@
 #include <sys/stat.h>
 #include <sys/wait.h>
 #include <sys/param.h>
+#include <sys/system_properties.h>
 
 #ifndef WG_PACKAGE_NAME
 #define WG_PACKAGE_NAME "com.wireguard.android"
@@ -39,6 +40,7 @@
 
 static bool is_exiting = false;
 static bool binder_available = false;
+static unsigned int sdk_version;
 
 static void *xmalloc(size_t size)
 {
@@ -727,7 +729,7 @@ static void up_if(unsigned int *netid, const char *iface, uint16_t listen_port)
 		cmd("ip6tables -I INPUT 1 -p udp --dport %u -j %s -m comment --comment \"wireguard rule %s\"", listen_port, should_block_ipv6(iface) ? "DROP" : "ACCEPT", iface);
 	}
 	cmd("ip link set up dev %s", iface);
-	cndc("network create %u vpn 1 1", *netid);
+	cndc(sdk_version < 31 ? "network create %u vpn 1 1" : "network create %u vpn 1", *netid);
 	cndc("network interface add %u %s", *netid, iface);
 }
 
@@ -785,6 +787,7 @@ static uid_t *get_uid_list(const char *selected_applications)
 static void set_users(unsigned int netid, const char *excluded_applications, const char *included_applications)
 {
 	_cleanup_free_ uid_t *uids = NULL;
+	uid_t *uid;
 	unsigned int args_per_command = 0;
 	_cleanup_free_ char *ranges = NULL;
 	char range[22];
@@ -796,14 +799,14 @@ static void set_users(unsigned int netid, const char *excluded_applications, con
 	}
 
 	if (excluded_applications || !included_applications) {
-		uids = get_uid_list(excluded_applications);
-		for (start = 0; *uids; start = *uids + 1, ++uids) {
-			if (start > *uids - 1)
+		uid = uids = get_uid_list(excluded_applications);
+		for (start = 0; *uid; start = *uid + 1, ++uid) {
+			if (start > *uid - 1)
 				continue;
-			else if (start == *uids - 1)
+			else if (start == *uid - 1)
 				snprintf(range, sizeof(range), "%u", start);
 			else
-				snprintf(range, sizeof(range), "%u-%u", start, *uids - 1);
+				snprintf(range, sizeof(range), "%u-%u", start, *uid - 1);
 			ranges = concat_and_free(ranges, " ", range);
 			if (++args_per_command % 18 == 0) {
 				cndc("network users add %u %s", netid, ranges);
@@ -816,8 +819,8 @@ static void set_users(unsigned int netid, const char *excluded_applications, con
 			ranges = concat_and_free(ranges, " ", range);
 		}
 	} else {
-		for (uids = get_uid_list(included_applications); *uids; ++uids) {
-			snprintf(range, sizeof(range), "%u", *uids);
+		for (uid = uids = get_uid_list(included_applications); *uid; ++uid) {
+			snprintf(range, sizeof(range), "%u", *uid);
 			ranges = concat_and_free(ranges, " ", range);
 			if (++args_per_command % 18 == 0) {
 				cndc("network users add %u %s", netid, ranges);
@@ -852,7 +855,7 @@ static void set_dnses(unsigned int netid, const char *dnses)
 	if (!len)
 		return;
 
-	xregcomp(&regex_ipnothost, "^[a-zA-Z0-9_=+.-]{1,15}$", REG_EXTENDED | REG_NOSUB);
+	xregcomp(&regex_ipnothost, "(^[0-9.]+$)|(^.*:.*$)", REG_EXTENDED | REG_NOSUB);
 	for (char *dns = strtok(mutable, ", \t\n"); dns; dns = strtok(NULL, ", \t\n")) {
 		if (strchr(dns, '\'') || strchr(dns, '\\'))
 			continue;
@@ -1277,6 +1280,10 @@ int main(int argc, char *argv[])
 	_cleanup_free_ char *excluded_applications = NULL;
 	_cleanup_free_ char *included_applications = NULL;
 	unsigned int mtu;
+	char prop[PROP_VALUE_MAX + 1];
+
+	if (__system_property_get("ro.build.version.sdk", prop))
+		sdk_version = atoi(prop);
 
 	if (argc == 2 && (!strcmp(argv[1], "help") || !strcmp(argv[1], "--help") || !strcmp(argv[1], "-h")))
 		cmd_usage(argv[0]);

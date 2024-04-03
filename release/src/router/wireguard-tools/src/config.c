@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 OR MIT
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
@@ -561,7 +561,7 @@ static char *strip_spaces(const char *in)
 	return out;
 }
 
-struct wgdevice *config_read_cmd(char *argv[], int argc)
+struct wgdevice *config_read_cmd(const char *argv[], int argc)
 {
 	struct wgdevice *device = calloc(1, sizeof(*device));
 	struct wgpeer *peer = NULL;

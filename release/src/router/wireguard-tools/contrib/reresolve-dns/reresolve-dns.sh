@@ -16,7 +16,7 @@ INTERFACE="${BASH_REMATCH[1]}"
 process_peer() {
 	[[ $PEER_SECTION -ne 1 || -z $PUBLIC_KEY || -z $ENDPOINT ]] && return 0
 	[[ $(wg show "$INTERFACE" latest-handshakes) =~ ${PUBLIC_KEY//+/\\+}\	([0-9]+) ]] || return 0
-	(( ($(date +%s) - ${BASH_REMATCH[1]}) > 135 )) || return 0
+	(( ($EPOCHSECONDS - ${BASH_REMATCH[1]}) > 135 )) || return 0
 	wg set "$INTERFACE" peer "$PUBLIC_KEY" endpoint "$ENDPOINT"
 	reset_peer_section
 }

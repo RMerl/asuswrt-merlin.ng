@@ -219,7 +219,14 @@ by running as root:
 
 \fB    # modprobe wireguard && echo module wireguard +p > /sys/kernel/debug/dynamic_debug/control\fP
 
-On userspace implementations, it is customary to set the \fILOG_LEVEL\fP environment variable to \fIdebug\fP.
+On OpenBSD and FreeBSD, debugging information can be written into
+.BR dmesg (1)
+on a per-interface basis by using
+.BR ifconfig (1):
+
+\fB    # ifconfig wg0 debug
+
+On userspace implementations, it is customary to set the \fILOG_LEVEL\fP environment variable to \fIverbose\fP.
 
 .SH ENVIRONMENT VARIABLES
 .TP

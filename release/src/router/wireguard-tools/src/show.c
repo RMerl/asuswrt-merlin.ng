@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 OR MIT
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
@@ -27,7 +27,7 @@
 static int peer_cmp(const void *first, const void *second)
 {
 	time_t diff;
-	const struct wgpeer *a = *(const void **)first, *b = *(const void **)second;
+	const struct wgpeer *a = *(void *const *)first, *b = *(void *const *)second;
 
 	if (!a->last_handshake_time.tv_sec && !a->last_handshake_time.tv_nsec && (b->last_handshake_time.tv_sec || b->last_handshake_time.tv_nsec))
 		return 1;
@@ -75,14 +75,14 @@ static char *key(const uint8_t key[static WG_KEY_LEN])
 	return base64;
 }
 
-static char *maybe_key(const uint8_t maybe_key[static WG_KEY_LEN], bool have_it)
+static const char *maybe_key(const uint8_t maybe_key[static WG_KEY_LEN], bool have_it)
 {
 	if (!have_it)
 		return "(none)";
 	return key(maybe_key);
 }
 
-static char *masked_key(const uint8_t masked_key[static WG_KEY_LEN])
+static const char *masked_key(const uint8_t masked_key[static WG_KEY_LEN])
 {
 	const char *var = getenv("WG_HIDE_KEYS");
 
@@ -314,9 +314,9 @@ static bool ugly_print(struct wgdevice *device, const char *param, bool with_int
 		else
 			printf("off\n");
 	} else if (!strcmp(param, "endpoints")) {
-		if (with_interface)
-			printf("%s\t", device->name);
 		for_each_wgpeer(device, peer) {
+			if (with_interface)
+				printf("%s\t", device->name);
 			printf("%s\t", key(peer->public_key));
 			if (peer->endpoint.addr.sa_family == AF_INET || peer->endpoint.addr.sa_family == AF_INET6)
 				printf("%s\n", endpoint(&peer->endpoint.addr));
@@ -378,7 +378,7 @@ static bool ugly_print(struct wgdevice *device, const char *param, bool with_int
 	return true;
 }
 
-int show_main(int argc, char *argv[])
+int show_main(int argc, const char *argv[])
 {
 	int ret = 0;
 

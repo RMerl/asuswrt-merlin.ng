@@ -5,6 +5,7 @@
 
 #include <arpa/inet.h>
 #include <errno.h>
+#include <limits.h>
 #include <net/if.h>
 #include <netdb.h>
 #include <netinet/in.h>
@@ -30,8 +31,10 @@ static int userspace_set_device(struct wgdevice *dev)
 	struct wgpeer *peer;
 	struct wgallowedip *allowedip;
 	FILE *f;
-	int ret;
+	int ret, set_errno = -EPROTO;
 	socklen_t addr_len;
+	size_t line_buffer_len = 0, line_len;
+	char *key = NULL, *value;
 
 	f = userspace_interface_file(dev->name);
 	if (!f)
@@ -92,8 +95,30 @@ static int userspace_set_device(struct wgdevice *dev)
 	fprintf(f, "\n");
 	fflush(f);
 
-	if (fscanf(f, "errno=%d\n\n", &ret) != 1)
-		ret = errno ? -errno : -EPROTO;
+	while (getline(&key, &line_buffer_len, f) > 0) {
+		line_len = strlen(key);
+		ret = set_errno;
+		if (line_len == 1 && key[0] == '\n')
+			goto out;
+		value = strchr(key, '=');
+		if (!value || line_len == 0 || key[line_len - 1] != '\n')
+			break;
+		*value++ = key[--line_len] = '\0';
+
+		if (!strcmp(key, "errno")) {
+			long long num;
+			char *end;
+			if (value[0] != '-' && !char_is_digit(value[0]))
+				break;
+			num = strtoll(value, &end, 10);
+			if (*end || num > INT_MAX || num < INT_MIN)
+				break;
+			set_errno = num;
+		}
+	}
+	ret = errno ? -errno : -EPROTO;
+out:
+	free(key);
 	fclose(f);
 	errno = -ret;
 	return ret;

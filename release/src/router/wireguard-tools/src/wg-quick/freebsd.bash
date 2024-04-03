@@ -8,6 +8,7 @@ set -e -o pipefail
 shopt -s extglob
 export LC_ALL=C
 
+exec 3>&2
 SELF="$(readlink -f "${BASH_SOURCE[0]}")"
 export PATH="${SELF%/*}:$PATH"
 
@@ -28,7 +29,7 @@ PROGRAM="${0##*/}"
 ARGS=( "$@" )
 
 cmd() {
-	echo "[#] $*" >&2
+	echo "[#] $*" >&3
 	"$@"
 }
 
@@ -114,6 +115,16 @@ auto_su() {
 }
 
 add_if() {
+	local ret rc
+	if ret="$(cmd ifconfig wg create name "$INTERFACE" 2>&1 >/dev/null)"; then
+		return 0
+	fi
+	rc=$?
+	if [[ $ret == *"ifconfig: ioctl SIOCSIFNAME (set name): File exists"* ]]; then
+		echo "$ret" >&3
+		return $rc
+	fi
+	echo "[!] Missing WireGuard kernel support ($ret). Falling back to slow userspace implementation." >&3
 	cmd "${WG_QUICK_USERSPACE_IMPLEMENTATION:-wireguard-go}" "$INTERFACE"
 }
 
@@ -141,24 +152,14 @@ del_routes() {
 	done
 }
 
-if_exists() {
-	# HACK: The goal is simply to determine whether or not the interface exists. The
-	# straight-forward way of doing this would be `ifconfig $INTERFACE`, but this
-	# invokes the SIOCGIFSTATUS ioctl, which races with interface shutdown inside
-	# the tun driver, resulting in a kernel panic. So we work around it the stupid
-	# way by using the one utility that appears to call if_nametoindex fairly early
-	# and fails if it doesn't exist: `arp`.
-	if arp -i "$INTERFACE" -a -n >/dev/null 2>&1; then
-		return 0
-	else
-		return 1
-	fi
-}
-
 del_if() {
 	[[ $HAVE_SET_DNS -eq 0 ]] || unset_dns
-	cmd rm -f "/var/run/wireguard/$INTERFACE.sock"
-	while if_exists; do
+	if [[ -S /var/run/wireguard/$INTERFACE.sock ]]; then
+		cmd rm -f "/var/run/wireguard/$INTERFACE.sock"
+	else
+		cmd ifconfig "$INTERFACE" destroy
+	fi
+	while ifconfig "$INTERFACE" >/dev/null 2>&1; do
 		# HACK: it would be nice to `route monitor` here and wait for RTM_IFANNOUNCE
 		# but it turns out that the announcement is made before the interface
 		# disappears so we sometimes get a hang. So, we're instead left with polling
@@ -175,7 +176,7 @@ add_addr() {
 	if [[ $1 == *:* ]]; then
 		cmd ifconfig "$INTERFACE" inet6 "$1" alias
 	else
-		cmd ifconfig "$INTERFACE" inet "$1" "${1%%/*}" alias
+		cmd ifconfig "$INTERFACE" inet "$1" alias
 	fi
 }
 
@@ -283,18 +284,19 @@ monitor_daemon() {
 	(make_temp
 	trap 'del_routes; clean_temp; exit 0' INT TERM EXIT
 	exec >/dev/null 2>&1
-	local event
+	exec 19< <(exec route -n monitor)
+	local event pid=$!
 	# TODO: this should also check to see if the endpoint actually changes
 	# in response to incoming packets, and then call set_endpoint_direct_route
 	# then too. That function should be able to gracefully cleanup if the
 	# endpoints change.
-	while read -r event; do
+	while read -u 19 -r event; do
 		[[ $event == RTM_* ]] || continue
-		[[ -e /var/run/wireguard/$INTERFACE.sock ]] || break
-		if_exists || break
+		ifconfig "$INTERFACE" >/dev/null 2>&1 || break
 		[[ $AUTO_ROUTE4 -eq 1 || $AUTO_ROUTE6 -eq 1 ]] && set_endpoint_direct_route
 		# TODO: set the mtu as well, but only if up
-	done < <(route -n monitor)) & disown
+	done
+	kill $pid) & disown
 }
 
 HAVE_SET_DNS=0
@@ -335,7 +337,7 @@ add_route() {
 }
 
 set_config() {
-	cmd wg setconf "$INTERFACE" <(echo "$WG_CONFIG")
+	echo "$WG_CONFIG" | cmd wg setconf "$INTERFACE" /dev/stdin
 }
 
 save_config() {
@@ -418,8 +420,8 @@ cmd_up() {
 	local i
 	[[ -z $(ifconfig "$INTERFACE" 2>/dev/null) ]] || die "\`$INTERFACE' already exists"
 	trap 'del_if; del_routes; clean_temp; exit' INT TERM EXIT
-	execute_hooks "${PRE_UP[@]}"
 	add_if
+	execute_hooks "${PRE_UP[@]}"
 	set_config
 	for i in "${ADDRESSES[@]}"; do
 		add_addr "$i"

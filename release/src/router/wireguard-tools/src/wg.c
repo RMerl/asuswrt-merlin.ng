@@ -1,4 +1,4 @@
-// SPDX-License-Identifier: GPL-2.0
+// SPDX-License-Identifier: GPL-2.0 OR MIT
 /*
  * Copyright (C) 2015-2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
  */
@@ -14,7 +14,7 @@ const char *PROG_NAME;
 
 static const struct {
 	const char *subcommand;
-	int (*function)(int, char**);
+	int (*function)(int, const char**);
 	const char *description;
 } subcommands[] = {
 	{ "show", show_main, "Shows the current configuration and device information" },
@@ -37,7 +37,7 @@ static void show_usage(FILE *file)
 	fprintf(file, "You may pass `--help' to any of these subcommands to view usage.\n");
 }
 
-int main(int argc, char *argv[])
+int main(int argc, const char *argv[])
 {
 	PROG_NAME = argv[0];
 
@@ -51,7 +51,7 @@ int main(int argc, char *argv[])
 	}
 
 	if (argc == 1) {
-		static char *new_argv[] = { "show", NULL };
+		static const char *new_argv[] = { "show", NULL };
 		return show_main(1, new_argv);
 	}
 

@@ -168,7 +168,7 @@ sockets, which bypass Netfilter.) When IPv6 is in use, additional similar lines 
 Or, perhaps it is desirable to store private keys in encrypted form, such as through use of
 .BR pass (1):
 
-    \fBPostUp = wg set %i private-key <(pass WireGuard/private-keys/%i)\fP
+    \fBPreUp = wg set %i private-key <(pass WireGuard/private-keys/%i)\fP
 .br
 
 For use on a server, the following is a more complicated example involving multiple peers:

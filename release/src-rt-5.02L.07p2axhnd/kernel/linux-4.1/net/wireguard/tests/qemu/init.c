@@ -58,27 +58,17 @@ static void print_banner(void)
 
 static void seed_rng(void)
 {
-	int fd;
-	struct {
-		int entropy_count;
-		int buffer_size;
-		unsigned char buffer[256];
-	} entropy = {
-		.entropy_count = sizeof(entropy.buffer) * 8,
-		.buffer_size = sizeof(entropy.buffer),
-		.buffer = "Adding real entropy is not actually important for these tests. Don't try this at home, kids!"
-	};
+	int bits = 4096, fd;
 
-	if (mknod("/dev/urandom", S_IFCHR | 0644, makedev(1, 9)))
-		panic("mknod(/dev/urandom)");
-	fd = open("/dev/urandom", O_WRONLY);
+	pretty_message("[+] Fake seeding RNG...");
+	fd = open("/dev/random", O_WRONLY);
 	if (fd < 0)
-		panic("open(urandom)");
+		panic("open(random)");
 	for (;;) {
-		if (getrandom(entropy.buffer, sizeof(entropy.buffer), GRND_NONBLOCK) != -1 || errno != EAGAIN)
+		if (!getrandom(NULL, 0, GRND_NONBLOCK) || errno == ENOSYS)
 			break;
-		if (ioctl(fd, RNDADDENTROPY, &entropy) < 0)
-			panic("ioctl(urandom)");
+		if (ioctl(fd, RNDADDTOENTCNT, &bits) < 0)
+			panic("ioctl(RNDADDTOENTCNT)");
 	}
 	close(fd);
 }
@@ -124,12 +114,6 @@ static void enable_logging(void)
 	if (fd >= 0) {
 		if (write(fd, "1\n", 2) != 2)
 			panic("write(exception-trace)");
-		close(fd);
-	}
-	fd = open("/proc/sys/kernel/panic_on_warn", O_WRONLY);
-	if (fd >= 0) {
-		if (write(fd, "1\n", 2) != 2)
-			panic("write(panic_on_warn)");
 		close(fd);
 	}
 }
@@ -274,10 +258,10 @@ static void check_leaks(void)
 
 int main(int argc, char *argv[])
 {
-	seed_rng();
 	ensure_console();
 	print_banner();
 	mount_filesystems();
+	seed_rng();
 	kmod_selftests();
 	enable_logging();
 	clear_leaks();

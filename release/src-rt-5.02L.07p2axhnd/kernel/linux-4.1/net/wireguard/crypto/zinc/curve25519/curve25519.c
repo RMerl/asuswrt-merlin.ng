@@ -13,7 +13,6 @@
 #include "../selftest/run.h"
 
 #include <asm/unaligned.h>
-#include <linux/version.h>
 #include <linux/string.h>
 #include <linux/random.h>
 #include <linux/module.h>

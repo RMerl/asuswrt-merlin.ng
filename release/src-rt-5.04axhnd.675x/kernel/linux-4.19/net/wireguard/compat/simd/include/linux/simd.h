@@ -9,7 +9,6 @@
 #include <linux/sched.h>
 #include <asm/simd.h>
 #if defined(CONFIG_X86_64)
-#include <linux/version.h>
 #include <asm/fpu/api.h>
 #elif defined(CONFIG_KERNEL_MODE_NEON)
 #include <asm/neon.h>

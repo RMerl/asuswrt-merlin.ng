@@ -6,9 +6,14 @@ kbuild-dir := $(if $(filter /%,$(src)),$(src),$(srctree)/$(src))
 
 ccflags-y += -include $(kbuild-dir)/compat/compat.h
 asflags-y += -include $(kbuild-dir)/compat/compat-asm.h
+LINUXINCLUDE := -DCOMPAT_VERSION=$(VERSION) -DCOMPAT_PATCHLEVEL=$(PATCHLEVEL) -DCOMPAT_SUBLEVEL=$(SUBLEVEL) -I$(kbuild-dir)/compat/version $(LINUXINCLUDE)
 
 ifeq ($(wildcard $(srctree)/include/linux/ptr_ring.h),)
 ccflags-y += -I$(kbuild-dir)/compat/ptr_ring/include
+endif
+
+ifeq ($(wildcard $(srctree)/include/linux/skb_array.h),)
+ccflags-y += -I$(kbuild-dir)/compat/skb_array/include
 endif
 
 ifeq ($(wildcard $(srctree)/include/linux/siphash.h),)
@@ -62,6 +67,10 @@ ccflags-y += -I$(kbuild-dir)/compat/neon-arm/include
 endif
 ifeq ($(wildcard $(srctree)/arch/arm64/include/asm/neon.h)$(CONFIG_ARM64),y)
 ccflags-y += -I$(kbuild-dir)/compat/neon-arm/include
+endif
+
+ifeq ($(wildcard $(srctree)/include/net/dst_metadata.h),)
+ccflags-y += -I$(kbuild-dir)/compat/dstmetadata/include
 endif
 
 ifeq ($(CONFIG_X86_64),y)

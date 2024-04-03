@@ -15,7 +15,7 @@ endif
 ARCH := $(firstword $(subst -, ,$(CBUILD)))
 
 # Set these from the environment to override
-KERNEL_VERSION ?= 5.4.77
+KERNEL_VERSION ?= 5.4.200
 KERNEL_VERSION := $(KERNEL_VERSION)$(if $(DEBUG_KERNEL),$(if $(findstring -debug,$(KERNEL_VERSION)),,-debug),)
 BUILD_PATH ?= $(PWD)/../../../qemu-build/$(ARCH)
 DISTFILES_PATH ?= $(PWD)/distfiles
@@ -86,8 +86,10 @@ CROSS_COMPILE_FLAG := --build=$(CBUILD) --host=$(CHOST)
 export CROSS_COMPILE=$(CBUILD)-
 STRIP := $(CBUILD)-strip
 endif
+QEMU_VPORT_RESULT :=
 ifeq ($(ARCH),aarch64)
 QEMU_ARCH := aarch64
+QEMU_VPORT_RESULT := virtio-serial-device
 KERNEL_ARCH := arm64
 KERNEL_BZIMAGE := $(KERNEL_PATH)/arch/arm64/boot/Image
 ifeq ($(HOST_ARCH),$(ARCH))
@@ -98,6 +100,7 @@ CFLAGS += -march=armv8-a -mtune=cortex-a53
 endif
 else ifeq ($(ARCH),aarch64_be)
 QEMU_ARCH := aarch64
+QEMU_VPORT_RESULT := virtio-serial-device
 KERNEL_ARCH := arm64
 KERNEL_BZIMAGE := $(KERNEL_PATH)/arch/arm64/boot/Image
 ifeq ($(HOST_ARCH),$(ARCH))
@@ -108,6 +111,7 @@ CFLAGS += -march=armv8-a -mtune=cortex-a53
 endif
 else ifeq ($(ARCH),arm)
 QEMU_ARCH := arm
+QEMU_VPORT_RESULT := virtio-serial-device
 KERNEL_ARCH := arm
 KERNEL_BZIMAGE := $(KERNEL_PATH)/arch/arm/boot/zImage
 ifeq ($(HOST_ARCH),$(ARCH))
@@ -118,6 +122,7 @@ CFLAGS += -march=armv7-a -mtune=cortex-a15 -mabi=aapcs-linux
 endif
 else ifeq ($(ARCH),armeb)
 QEMU_ARCH := arm
+QEMU_VPORT_RESULT := virtio-serial-device
 KERNEL_ARCH := arm
 KERNEL_BZIMAGE := $(KERNEL_PATH)/arch/arm/boot/zImage
 ifeq ($(HOST_ARCH),$(ARCH))
@@ -217,7 +222,7 @@ KERNEL_ARCH := m68k
 KERNEL_BZIMAGE := $(KERNEL_PATH)/vmlinux
 KERNEL_CMDLINE := $(shell sed -n 's/CONFIG_CMDLINE=\(.*\)/\1/p' arch/m68k.config)
 ifeq ($(HOST_ARCH),$(ARCH))
-QEMU_MACHINE := -cpu host,accel=kvm -machine q800 -smp 1 -append $(KERNEL_CMDLINE)
+QEMU_MACHINE := -cpu host,accel=kvm -machine q800 -append $(KERNEL_CMDLINE)
 else
 QEMU_MACHINE := -machine q800 -smp 1 -append $(KERNEL_CMDLINE)
 endif
@@ -230,6 +235,7 @@ MUSL_CC := $(BUILD_PATH)/musl-gcc
 export CC := $(MUSL_CC)
 USERSPACE_DEPS := $(MUSL_CC) $(BUILD_PATH)/include/.installed $(BUILD_PATH)/include/linux/.installed
 
+comma := ,
 build: $(KERNEL_BZIMAGE)
 qemu: $(KERNEL_BZIMAGE)
 	rm -f $(BUILD_PATH)/result
@@ -240,7 +246,8 @@ qemu: $(KERNEL_BZIMAGE)
 		$(QEMU_MACHINE) \
 		-m $$(grep -q CONFIG_DEBUG_KMEMLEAK=y $(KERNEL_PATH)/.config && echo 1G || echo 256M) \
 		-serial stdio \
-		-serial file:$(BUILD_PATH)/result \
+		-chardev file,path=$(BUILD_PATH)/result,id=result \
+		$(if $(QEMU_VPORT_RESULT),-device $(QEMU_VPORT_RESULT) -device virtserialport$(comma)chardev=result,-serial chardev:result) \
 		-no-reboot \
 		-monitor none \
 		-kernel $<
@@ -276,7 +283,7 @@ $(KERNEL_PATH)/.installed: $(KERNEL_TAR)
 	sed -i '/jmp early_idt_handler$$/a .fill early_idt_handlers + i*9 - ., 1, 0xcc' $(KERNEL_PATH)/arch/x86/kernel/head_{64,32}.S || true
 	printf 'ifdef CONFIG_X86_64\nLDFLAGS += $$(call ld-option, -z max-page-size=0x200000)\nendif\n' >> $(KERNEL_PATH)/arch/x86/Makefile
 	sed -i 's/^Elf_Addr per_cpu_load_addr;$$/static \0/' $(KERNEL_PATH)/arch/x86/tools/relocs.c || true
-	if grep -qr UTS_UBUNTU_RELEASE_ABI $(KERNEL_PATH)/debian/rules.d; then echo 'KBUILD_CFLAGS += -DUTS_UBUNTU_RELEASE_ABI=0' >> $(KERNEL_PATH)/Makefile; fi
+	if grep -sqr UTS_UBUNTU_RELEASE_ABI $(KERNEL_PATH)/debian/rules.d; then echo 'KBUILD_CFLAGS += -DUTS_UBUNTU_RELEASE_ABI=0' >> $(KERNEL_PATH)/Makefile; fi
 	sed -i "/^if INET\$$/a source \"net/wireguard/Kconfig\"" $(KERNEL_PATH)/net/Kconfig
 	sed -i "/^obj-\$$(CONFIG_NETFILTER).*+=/a obj-\$$(CONFIG_WIREGUARD) += wireguard/" $(KERNEL_PATH)/net/Makefile
 	ln -sfT $(shell readlink -f ../..) $(KERNEL_PATH)/net/wireguard

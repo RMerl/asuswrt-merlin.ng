@@ -13,6 +13,8 @@ Asuswrt-Merlin Changelog
   - UPDATED: TOR to 0.4.8.10.
   - UPDATED: wsdd2 to 2023-12-21 snapshot.
   - UPDATED: miniupnpd to 2.3.6.
+  - UPDATED: wireguard kernel to v1.0.20220627.
+  - UPDATED: wireguard tools to 2023-08-04 snapshot.
   - CHANGED: hardcoded location of the CA bundle in inadyn, so it
              no longer need to be manually defined in custom
              configurations.

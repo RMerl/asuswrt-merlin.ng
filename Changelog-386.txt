@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.13 (xx-xx-xxxx)
+386.13 (7-Apr-2024)
   - NOTE: all the models supported by Asuswrt-Merlin on the
           386_xx series are now officialy on Asus' End of Life
           list, which means unless there are new major security
@@ -22,6 +22,18 @@ Asuswrt-Merlin Changelog
              page even if QoS isn't set to Adaptive QoS.
   - CHANGED: Prevent the use of Apple's iCloud Private Relay
              when enabling "Prevent client auto DoH".
+  - CHANGED: NAT Passthrough page - removed the "Enabled + NAT
+             Helper" option as the firewall no longer blocks
+             traffic when set to disabled.  This is back to the
+             former behaviour, where this setting only controls
+             whether or not to load the NAT helper.  You might
+             need to readjust that setting if you had previously
+             changed it.
+  - CHANGED: SIP, RTSP and H323 ALG (NAT helpers) are now
+             disabled by default, as these legacy features tend
+             to create issues with modern VoIP setups.
+             This change will only apply to people doing a
+             factory default reset of their router.
   - FIXED: CVE-2023-48795 in dropbear.
   - FIXED: Various issues with the QOS Classification page.
   - FIXED: UPNP leases without a description would not appear

@@ -30,7 +30,8 @@ p{
 	width: unset;
 }
 </style>
-
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script type="text/javascript" src="/js/chart.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
@@ -38,7 +39,6 @@ p{
 <script language="JavaScript" type="text/javascript" src="/tmhist.js"></script>
 <script language="JavaScript" type="text/javascript" src="/tmmenu.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/table/table.js"></script>
 <script>
 
@@ -49,6 +49,70 @@ var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
 
 overlib_str_tmp = "";
 overlib.isOut = true;
+
+var pieColor = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
+
+/*
+var mempieOptions = {
+        segmentShowStroke : false,
+        segmentStrokeColor : "#000",
+        animationEasing : "easeOutQuart",
+        animationSteps : 100,
+        animateScale : true,
+	legend : { display : false },
+
+	tooltips: {
+		callbacks: {
+			title: function (tooltipItem, data) { return data.labels[tooltipItem[0].index]; },
+			label: function (tooltipItem, data) {
+				var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+				var orivalue = value;
+				var total = eval(data.datasets[tooltipItem.datasetIndex].data.join("+"));
+				var unit = " bytes";
+				return value.toFixed(2) + ' MB';
+			},
+		}
+	},
+}
+*/
+
+var memchartPie;
+
+function draw_charts(){
+
+	if (memchartPie != undefined) memchartPie.destroy();
+	var memchart = document.getElementById("memchartId").getContext("2d");
+	var memdata = [mem_stats_arr[0]-mem_stats_arr[1], mem_stats_arr[2], mem_stats_arr[3], mem_stats_arr[1]];
+
+// TODO: add swap if available?
+      
+	memchartPie = new Chart(memchart, {
+		type: 'pie',
+		data: {
+			labels: ["Used", "Buffer", "Cache", "Free"],
+			datasets: [{
+				label: "Memory",
+				data: memdata,
+				backgroundColor: pieColor,
+	                        hoverBackgroundColor: pieColor,
+	                        borderColor: "#444",
+		                borderWidth: "1"
+			}],
+		},
+		options: {
+			responsive: false,
+			animation: false,
+			segmentShowStroke : false,
+			segmentStrokeColor : "#000",
+				legend: {
+					display: true,
+					position: 'right',
+					labels: {fontColor: '#FFF'}
+				},
+		}
+	});
+}
+
 
 function initial(){
 	show_menu();
@@ -271,6 +335,8 @@ function show_memcpu(){
 		document.getElementById("mem_swap_td").innerHTML = mem_stats_arr[4] + " / " + mem_stats_arr[5] + " MB";
 	document.getElementById("nvram_td").innerHTML = mem_stats_arr[6] + " / " + <% sysinfo("nvram.total"); %> + " bytes";
 	document.getElementById("jffs_td").innerHTML = mem_stats_arr[7];
+
+	draw_charts();
 }
 
 
@@ -438,6 +504,9 @@ function show_wifi_version() {
 							<td colspan="2">Memory</td>
 						</tr>
 					</thead>
+					<tr>
+						<td><canvas id="memchartId" height="200"></canvas></td>
+					</tr>
 					<tr>
 						<th>Total</th>
 						<td id="mem_total_td"></td>

@@ -351,7 +351,7 @@ function detect_CPU_RAM(){
 		require(['/require/modules/makeRequest.js'], function(makeRequest){
 			makeRequest.start('/cpu_ram_status.asp', function(xhr){				
 				render_CPU(cpuInfo);
-				render_RAM(memInfo.total, memInfo.free, memInfo.used);
+				render_RAM(memInfo);
 				setTimeout("detect_CPU_RAM();", 2000);
 			}, function(){});
 		});
@@ -391,14 +391,14 @@ function detect_CPU_RAM(){
 					var pt = "";
 					var used_percentage = total_MB = free_MB = used_MB = 0;
 					total_MB = Math.round(memory.total/1024);
-					free_MB = Math.round(memory.free/1024);
-					used_MB = Math.round(memory.used/1024);
+					free_MB = Math.round(memory.simple_free/1024);
+					used_MB = Math.round(memory.simple_used/1024);
 					
 					$("#ram_total_info").html(total_MB + " MB");
 					$("#ram_free_info").html(free_MB + " MB");
 					$("#ram_used_info").html(used_MB + " MB");
 
-					used_percentage = Math.round((memory.used/memory.total)*100);
+					used_percentage = Math.round((used_MB/total_MB)*100);
 					$("#ram_bar").css("width", used_percentage + "%");
 					$("#ram_quantification").html(used_percentage + "%");
 					ram_usage_array.push(100 - used_percentage);

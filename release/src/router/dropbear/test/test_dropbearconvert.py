@@ -7,7 +7,6 @@ keytypes = [
 	"rsa", "rsa-4096",
 	"ed25519",
 	"ecdsa", "ecdsa-256", "ecdsa-384", "ecdsa-521",
-	"dss",
 	]
 
 def parse_keytype(kt):

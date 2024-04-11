@@ -26,6 +26,10 @@ mp_err s_mp_mul_digs_fast(const mp_int *a, const mp_int *b, mp_int *c, int digs)
    mp_digit W[MP_WARRAY];
    mp_word  _W;
 
+   if (digs < 0) {
+      return MP_VAL;
+   }
+
    /* grow the destination as required */
    if (c->alloc < digs) {
       if ((err = mp_grow(c, digs)) != MP_OKAY) {

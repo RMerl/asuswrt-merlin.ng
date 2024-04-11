@@ -6,6 +6,7 @@
 *.bbg
 *.prof
 .*.swp
+/obj
 /autom4te.cache
 /config.log
 /config.status
@@ -26,4 +27,7 @@ Makefile
 tags
 .pytest*
 *.pyc
-/test/venv
+/test/venv/
+/test/init/
+/test/fakekey
+.vscode/

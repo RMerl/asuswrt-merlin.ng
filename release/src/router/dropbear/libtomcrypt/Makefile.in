@@ -42,7 +42,7 @@ ARFLAGS   = r
 EXTRALIBS = ../libtommath/libtommath.a
 
 #Compilation flags
-LTC_CFLAGS  = -Isrc/headers/ -I$(srcdir)/src/headers/ -I../ -I$(srcdir)/../ -DLTC_SOURCE -I../libtommath/ -I$(srcdir)/../libtommath/ $(CFLAGS) $(CPPFLAGS)
+LTC_CFLAGS  = -Isrc/headers/ -I$(srcdir)/src/headers/ -I../ -I$(srcdir)/../src -DLTC_SOURCE -I../libtommath/ -I$(srcdir)/../libtommath/ $(CFLAGS) $(CPPFLAGS)
 LTC_LDFLAGS = $(LDFLAGS) $(EXTRALIBS)
 VERSION=1.18.1
 

@@ -15,6 +15,10 @@ mp_err s_mp_mul_high_digs(const mp_int *a, const mp_int *b, mp_int *c, int digs)
    mp_word  r;
    mp_digit tmpx, *tmpt, *tmpy;
 
+   if (digs < 0) {
+      return MP_VAL;
+   }
+
    /* can we use the fast multiplier? */
    if (MP_HAS(S_MP_MUL_HIGH_DIGS_FAST)
        && ((a->used + b->used + 1) < MP_WARRAY)

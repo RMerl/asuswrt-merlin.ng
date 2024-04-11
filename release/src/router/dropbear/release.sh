@@ -9,7 +9,7 @@ else
     TESTREL=0
 fi
 
-VERSION=$(echo '#include "default_options.h"\n#include "sysoptions.h"\necho DROPBEAR_VERSION' | cpp -DHAVE_CRYPT - | sh)
+VERSION=$(echo '#include "src/default_options.h"\n#include "src/sysoptions.h"\necho DROPBEAR_VERSION' | cpp -DHAVE_CRYPT - | sh)
 
 if [ $TESTREL -eq 1 ]; then
     echo Making test tarball for "$VERSION" ...
@@ -17,6 +17,11 @@ if [ $TESTREL -eq 1 ]; then
     WORKDIR=$(mktemp -d)
     TARSUFFIX="-testrel"
 else
+    if ! git diff -s --exit-code; then
+        echo "Git isn't clean"
+        exit 1
+    fi
+
     echo Releasing version "$VERSION" ...
     if ! head -n1 CHANGES | grep -q $VERSION ; then
         echo "CHANGES needs updating"
@@ -52,16 +57,7 @@ if test -e $ARCHIVE; then
 	exit 1
 fi
 
-if [ -d .hg ]; then
-    hg archive "$RELDIR"  || exit 2
-    # .hg_archival.txt seems to differ between hg versions, isn't good for reproducibility
-    rm "$RELDIR/.hg_archival.txt"
-elif [ -d .git ]; then
-    git -c tar.umask=0022 archive --format tar -o /dev/stdout --prefix=dropbear-$VERSION/ HEAD | tar xf - -C $WORKDIR || exit 2
-else
-    echo "This isn't a hg or git checkout"
-    exit 1
-fi
+git -c tar.umask=0022 archive --format tar -o /dev/stdout --prefix=dropbear-$VERSION/ HEAD | tar xf - -C $WORKDIR || exit 2
 
 chmod -R a+rX $RELDIR
 
@@ -80,5 +76,5 @@ echo "$ARCHIVE"
 
 if [ $TESTREL -eq 0 ]; then
     echo Sign it with
-    echo gpg2 --detach-sign -a -u F29C6773 "$ARCHIVE"
+    echo gpg --detach-sign -a -u F29C6773 "$ARCHIVE"
 fi

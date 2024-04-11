@@ -9,6 +9,10 @@ mp_err mp_grow(mp_int *a, int size)
    int     i;
    mp_digit *tmp;
 
+   if (size < 0) {
+      return MP_VAL;
+   }
+
    /* if the alloc size is smaller alloc more ram */
    if (a->alloc < size) {
       /* reallocate the array a->dp

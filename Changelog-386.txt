@@ -43,6 +43,8 @@ Asuswrt-Merlin Changelog
            validation code for now.
   - FIXED: Concurrent cronjob changes through cru could cause
            collisions, leading to missing jobs (dave14305)
+  - FIXED: CVE-2023-5678 & CVE-2024-0727 in openssl (backport from
+           Ubuntu by RSDNTWK)
 
 
 386.12_6 (26-Feb-2024)

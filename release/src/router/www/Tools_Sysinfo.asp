@@ -11,25 +11,7 @@
 <title><#Web_Title#> - System Information</title>
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
-<link rel="stylesheet" type="text/css" href="/js/table/table.css">
-<style>
-p{
-	font-weight: bolder;
-}
-.tableApi_table th {
-	height: 20px;
-	text-align: left;
-}
-.tableApi_table td {
-	text-align: left;
-}
-.data_tr {
-	height: 30px;
-}
-.row_title th {
-	width: unset;
-}
-</style>
+<link rel="stylesheet" type="text/css" href="/css/networkMap.css">
 <script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
 <script type="text/javascript" src="/js/chart.min.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
@@ -50,46 +32,35 @@ var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
 overlib_str_tmp = "";
 overlib.isOut = true;
 
-var pieColor = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
 
-/*
-var mempieOptions = {
-        segmentShowStroke : false,
-        segmentStrokeColor : "#000",
-        animationEasing : "easeOutQuart",
-        animationSteps : 100,
-        animateScale : true,
-	legend : { display : false },
-
-	tooltips: {
-		callbacks: {
-			title: function (tooltipItem, data) { return data.labels[tooltipItem[0].index]; },
-			label: function (tooltipItem, data) {
-				var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-				var orivalue = value;
-				var total = eval(data.datasets[tooltipItem.datasetIndex].data.join("+"));
-				var unit = " bytes";
-				return value.toFixed(2) + ' MB';
-			},
-		}
-	},
-}
-*/
+var pieColor = ["rgba(0, 84, 159, 1)",
+                "rgba(0, 172, 223, 1)",
+                "rgba(85, 208, 255, 1)"]
 
 var memchartPie;
+var swapchartPie;
+var cputempGraph;
+var cpudata = [];
+var wifi24data = [];
+var wifi51data = [];
+var wifi52data = [];
+var wifi6data = [];
 
-function draw_charts(){
 
-	if (memchartPie != undefined) memchartPie.destroy();
+function draw_mem_charts(){
+
+/* Memory */
+	if (memchartPie != undefined) {
+		memchartPie.update();
+		return;
+	}
 	var memchart = document.getElementById("memchartId").getContext("2d");
-	var memdata = [mem_stats_arr[0]-mem_stats_arr[1], mem_stats_arr[2], mem_stats_arr[3], mem_stats_arr[1]];
+	var memdata = [mem_stats_arr[8], mem_stats_arr[9] - mem_stats_arr[1], mem_stats_arr[1]];
 
-// TODO: add swap if available?
-      
 	memchartPie = new Chart(memchart, {
-		type: 'pie',
+		type: 'doughnut',
 		data: {
-			labels: ["Used", "Buffer", "Cache", "Free"],
+			labels: ["Used", "Reclaimable", "Free"],
 			datasets: [{
 				label: "Memory",
 				data: memdata,
@@ -104,11 +75,223 @@ function draw_charts(){
 			animation: false,
 			segmentShowStroke : false,
 			segmentStrokeColor : "#000",
+			legend: {
+				display: true,
+				position: 'right',
+				labels: {fontColor: '#FFF'}
+			},
+			tooltips: {
+				callbacks: {
+					label: function (tooltipItem, data) {
+						var label = data.labels[tooltipItem.index];
+						var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+						return label + ": " + parseFloat(value).toFixed(2) + " MB";
+					}
+				}
+			}
+		}
+	});
+
+/* SWAP */
+	if (swapchartPie != undefined) {
+		swapchartPie.update();
+		return;
+	}
+	var swapchart = document.getElementById("swapchartId").getContext("2d");
+	var swapdata = [mem_stats_arr[4], mem_stats_arr[5]-mem_stats_arr[4]];
+
+	if (mem_stats_arr[5] > 0) {
+		swapchartPie = new Chart(swapchart, {
+			type: 'doughnut',
+			data: {
+				labels: ["Used", "Free"],
+				datasets: [{
+					label: "Swap",
+					data: swapdata,
+					backgroundColor: pieColor,
+					hoverBackgroundColor: pieColor,
+					borderColor: "#444",
+					borderWidth: "1"
+				}],
+			},
+			options: {
+				responsive: false,
+				animation: false,
+				segmentShowStroke : false,
+				segmentStrokeColor : "#000",
 				legend: {
 					display: true,
 					position: 'right',
 					labels: {fontColor: '#FFF'}
 				},
+				tooltips: {
+					callbacks: {
+						label: function (tooltipItem, data) {
+							var label = data.labels[tooltipItem.index];
+							var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+							return label + ": " + parseInt(value) + " MB";
+						}
+					}
+				}
+			}
+		});
+	}
+
+/* NVRAM */
+
+	nvram_total = <% sysinfo("nvram.total"); %>;
+	used_percentage = Math.round((mem_stats_arr[6]/nvram_total)*100);
+	$("#nvram_bar").css("width", used_percentage +"%");
+	$("#nvram_label").html("<span>NVRAM Usage :</span> " + mem_stats_arr[6] + " / " + nvram_total + " bytes");
+	if (used_percentage > 90)
+		$("#nvram_bar").css("background-color", "orange");
+	else
+		$("#nvram_bar").css("background-color", "#00ACDF");
+
+/* JFFS */
+
+	jffs_total = parseFloat("<% sysinfo("jffs.total"); %>");
+	jffs_free = parseFloat(mem_stats_arr[7]);
+
+	if (jffs_total < 0) {
+		$("#jffs_div").hide();
+		$("#jffs_label").html("<span>JFFS partition not mounted</span>");
+	} else {
+		jffs_used = jffs_total - jffs_free;
+
+		used_percentage = Math.round((jffs_used) / jffs_total * 100);
+		$("#jffs_bar").css("width", used_percentage +"%");
+		$("#jffs_label").html("<span>JFFS Usage: </span>" + jffs_used.toFixed(2) + " / " + jffs_total.toFixed(2) + " MB");
+		if (used_percentage > 90)
+			$("#jffs_bar").css("background-color", "orange");
+		else
+			$("#jffs_bar").css("background-color", "#00ACDF");
+	}
+}
+
+
+function draw_temps_charts(){
+	if (cpudata.length > 20)
+		cpudata.shift();
+	if (wifi24data.length > 20)
+		wifi24data.shift();
+	if (wifi51data.length > 20)
+		wifi51data.shift();
+	if (wifi52data.length > 20)
+		wifi52data.shift();
+	if (wifi6data.length > 20)
+		wifi6data.shift();
+
+        if (cputempGraph != undefined) {
+                cputempGraph.update();
+                return;
+        }
+        var cpuchart = document.getElementById("tempchartId").getContext("2d");
+	var datasets = [];
+
+/* CPU */
+	datasets.push({
+		label: "CPU",
+		data: cpudata,
+		backgroundColor: "rgba(0, 128, 191, 0.3)",
+		borderColor: "rgba(0, 128, 191, 1)",
+		borderWidth: "2",
+		pointStyle: "line",
+		lineTension: "0"
+	});
+
+/* 2.4 GHz */
+	if (typeof wifi24data[0] === "number" && wifi24data[0] > 0) {
+		datasets.push({
+			label: "2.4 GHz",
+			data: wifi24data,
+			backgroundColor: "rgba(200, 200, 0, 0.3)",
+			borderColor: "rgba(200, 200, 0, 1)",
+			borderWidth: "2",
+			pointStyle: "line",
+			lineTension: "0",
+		});
+	}
+
+/* 5 GHz */
+	if (typeof wifi51data[0] === "number" && wifi51data[0] > 0) {
+		datasets.push({
+			label: "5 GHz",
+			data: wifi51data,
+			backgroundColor: "rgba(0, 200, 200, 0.3)",
+			borderColor: "rgba(0, 200, 200,  1)",
+			borderWidth: "2",
+			pointStyle: "line",
+			lineTension: "0",
+		});
+	}
+/* 5 GHz-2 */
+	if (typeof wifi52data[0] === "number" && wifi52data[0] > 0) {
+		datasets.push({
+			label: "5 GHz-2",
+			data: wifi52data,
+			backgroundColor: "rgba(200, 0, 200, 0.3)",
+			borderColor: "rgba(200, 0, 200, 1)",
+			borderWidth: "2",
+			pointStyle: "line",
+			lineTension: "0",
+		});
+	}
+
+/* 6 GHz */
+	if (typeof wifi6data[0] === "number" && wifi6data[0] > 0) {
+		datasets.push({
+			label: "6 GHz",
+			data: wifi6data,
+			backgroundColor: "rgba(128, 191, 0, 0.3)",
+			borderColor: "rgba(128, 191, 0, 1)",
+			borderWidth: "2",
+			pointStyle: "line",
+			lineTension: "0",
+		});
+	}
+
+	cputempGraph = new Chart(cpuchart, {
+		type: "line",
+		data: {datasets: datasets},
+		options: {
+			responsive: false,
+			animation: false,
+			segmentShowStroke : false,
+			segmentStrokeColor : "#000",
+			legend: {
+				display: true,
+				position: "right",
+				labels: {fontColor: "#CCC"}
+			},
+			tooltips: {
+				displayColors: false,
+				bodySpacing: 6,
+				callbacks: {
+					title: function (context) {return "";},
+					label: function (tooltipItem, data) {
+						var label = data.datasets[tooltipItem.datasetIndex].label;
+						var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
+						return label + " - " + value + "°C";
+					}
+				}
+			},
+			scales: {
+				xAxes: [{
+					labels: [0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57,60],
+					ticks: {
+						fontColor: "#CCC",
+						beginAtZero: true,
+						display: true,
+					}
+				}],
+				yAxes: [{
+					ticks: {
+						fontColor: "#CCC",
+						callback: function(value, index, ticks) {return value + "°C";}
+					}
+				}],
+			}
 		}
 	});
 }
@@ -125,10 +308,7 @@ function initial(){
 		document.getElementById("wifi6_clients_tr").style.display = "";
 	}
 
-	if (based_modelid == "RT-AC87U") {
-		document.getElementById("wifi5_clients_tr_qtn").style.display = "";
-		document.getElementById("qtn_version").style.display = "";
-	} else if (band5g_support) {
+	if (band5g_support) {
 		document.getElementById("wifi5_clients_tr").style.display = "";
 	}
 
@@ -140,14 +320,6 @@ function initial(){
 	}
 	else
 		document.getElementById("model_id").innerHTML = productid;
-
-	var firmver = '<% nvram_get("firmver"); %>';
-	var buildno = '<% nvram_get("buildno"); %>';
-	var extendno = '<% nvram_get("extendno"); %>';
-	if ((extendno == "") || (extendno == "0"))
-		document.getElementById("fwver").innerHTML = firmver.replace(/\./g,"") + '.' + buildno;
-	else
-		document.getElementById("fwver").innerHTML = firmver.replace(/\./g,"") + '.' + buildno + '_' + extendno;
 
 	var rc_caps = "<% nvram_get("rc_support"); %>";
 	var rc_caps_arr = rc_caps.split(' ').sort();
@@ -184,23 +356,30 @@ function update_temperatures(){
 					curr_coreTmp_6_raw = curr_coreTmp_wl2_raw;
 			}
 
-			code = "<b>2.4 GHz:</b><span> " + curr_coreTmp_24_raw + "</span>";
+			code = "<span>2.4 GHz:</span> " + curr_coreTmp_24_raw;
+			wifi24data.push(parseInt(curr_coreTmp_24_raw.replace("&deg;C", "")));
 
 			if (wl_info.band5g_2_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>5 GHz-1:</b> <span>" + curr_coreTmp_5_raw + "</span>";
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>5 GHz-2:</b> <span>" + curr_coreTmp_52_raw + "</span>";
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>5 GHz-1: </span>" + curr_coreTmp_5_raw;;
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>5 GHz-2: </span>" + curr_coreTmp_52_raw;
+				wifi51data.push(parseInt(curr_coreTmp_5_raw.replace("&deg;C", "")));
+				wifi52data.push(parseInt(curr_coreTmp_52_raw.replace("&deg;C", "")));
 			} else if (band5g_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>5 GHz:</b> <span>" + curr_coreTmp_5_raw + "</span>";
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>5 GHz: </span>" + curr_coreTmp_5_raw;
+				wifi51data.push(parseInt(curr_coreTmp_5_raw.replace("&deg;C", "")));
 			}
 
 			if (wl_info.band6g_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<b>6 GHz:</b> <span>" + curr_coreTmp_6_raw + "</span>";
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;6 GHz: <span>" + curr_coreTmp_6_raw + "</span>";
+				wifi6data.push(parseInt(curr_coreTmp_6_raw.replace("&deg;C", "")));
 			}
 
-			if (curr_cpuTemp != "")
-				code +="&nbsp;&nbsp;-&nbsp;&nbsp;<b>CPU:</b> <span>" + parseInt(curr_cpuTemp) +"&deg;C</span>";
-
+			if (curr_cpuTemp != "") {
+				code +="&nbsp;&nbsp;-&nbsp;&nbsp;<span>CPU: </span>" + parseInt(curr_cpuTemp) +"&deg;C";
+				cpudata.push(parseInt(curr_cpuTemp));
+			}
 			document.getElementById("temp_td").innerHTML = code;
+			draw_temps_charts();
 			setTimeout("update_temperatures();", 3000);
 		}
 	});
@@ -214,19 +393,18 @@ function hwaccel_state(){
 	if (hnd_support) {
 		var machine_name = "<% get_machine_name(); %>";
 		if (machine_name.search("aarch64") != -1)
-			code = "Runner:<span> ";
+			code = "<span>Runner:</span> ";
 		else
-			code = "Archer:<span> ";
+			code = "<span>Archer:</span> ";
 
 		var state = "<% sysinfo("hwaccel.runner"); %>";
 
 		code += state;
 
-		code += "</span>&nbsp;&nbsp;-&nbsp;&nbsp;Flow Cache:<span> ";
+		code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>Flow Cache:</span> ";
 		state = "<% sysinfo("hwaccel.fc"); %>";
 
 		code += state;
-		code += "</span>";
 	} else {
 		if (ctf_dis == "1") {
 			code = "Disabled";
@@ -277,8 +455,6 @@ function showbootTime(){
 
 
 function show_connstate(){
-	document.getElementById("conn_td").innerHTML = conn_stats_arr[0] + " / <% sysinfo("conn.max"); %>&nbsp;&nbsp;-&nbsp;&nbsp;" + conn_stats_arr[1] + " active";
-
 	if (based_modelid === 'GT-AXE16000') {
 		wlc_24_arr = wlc_3_arr;
 		wlc_51_arr = wlc_0_arr;
@@ -294,51 +470,48 @@ function show_connstate(){
 			wlc_6_arr = wlc_2_arr;
 	}
 
-	document.getElementById("wlc_24_td").innerHTML = "Associated: <span>" + wlc_24_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-	                                                 "Authorized: <span>" + wlc_24_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-	                                                 "Authenticated: <span>" + wlc_24_arr[2] + "</span>";
+	document.getElementById("wlc_24_td").innerHTML = "<span>Associated: </span>" + wlc_24_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	                                                 "<span>Authorized: </span>" + wlc_24_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+	                                                 "<span>Authenticated: </span>" + wlc_24_arr[2];
 
 	if (band5g_support) {
-		if (based_modelid == "RT-AC87U") {
-			document.getElementById("wlc_5qtn_td").innerHTML = "Associated: <span>" +wlc_51_arr[0] + "</span>";
-		} else {
-			document.getElementById("wlc_51_td").innerHTML = "Associated: <span>" + wlc_51_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-			                                                 "Authorized: <span>" + wlc_51_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-			                                                 "Authenticated: <span>" + wlc_51_arr[2] + "</span>";
-		}
+		document.getElementById("wlc_51_td").innerHTML = "<span>Associated: </span>" + wlc_51_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span>Authorized: </span>" + wlc_51_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span>Authenticated: </span>" + wlc_51_arr[2];
 	}
 
 	if (wl_info.band5g_2_support) {
-		document.getElementById("wlc_52_td").innerHTML = "Associated: <span>" + wlc_52_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                 "Authorized: <span>" + wlc_52_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                 "Authenticated: <span>" + wlc_52_arr[2] + "</span>";
+		document.getElementById("wlc_52_td").innerHTML = "<span>Associated: </span>" + wlc_52_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span>Authorized: </span>" + wlc_52_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                 "<span>Authenticated: </span>" + wlc_52_arr[2];
 	}
 
 	if (wl_info.band6g_support) {
-		document.getElementById("wlc_6_td").innerHTML = "Associated: <span>" + wlc_6_arr[0] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                "Authorized: <span>" + wlc_6_arr[1] + "</span>&nbsp;&nbsp;-&nbsp;&nbsp;" +
-		                                                "Authenticated: <span>" + wlc_6_arr[2] + "</span>";
+		document.getElementById("wlc_6_td").innerHTML = "<span>Associated: </span>" + wlc_6_arr[0] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                "<span>Authorized: </span>" + wlc_6_arr[1] + "&nbsp;&nbsp;-&nbsp;&nbsp;" +
+		                                                "<span>Authenticated: </span>" + wlc_6_arr[2];
 	}
-
 }
 
 
 function show_memcpu(){
 	document.getElementById("cpu_stats_td").innerHTML = cpu_stats_arr[0] + ", " + cpu_stats_arr[1] + ", " + cpu_stats_arr[2];
-	document.getElementById("mem_total_td").innerHTML = mem_stats_arr[0] + " MB";
-	document.getElementById("mem_used_td").innerHTML = mem_stats_arr[8] + " MB";
-	document.getElementById("mem_available_td").innerHTML = mem_stats_arr[9] + " MB";
-	document.getElementById("mem_free_td").innerHTML = mem_stats_arr[1] + " MB";
-	document.getElementById("mem_buffer_td").innerHTML = mem_stats_arr[2] + " MB";
-	document.getElementById("mem_cache_td").innerHTML = mem_stats_arr[3] + " MB";
-	if (parseInt(mem_stats_arr[5]) == 0)
-		document.getElementById("mem_swap_td").innerHTML = "<span>No swap configured</span>";
-	else
-		document.getElementById("mem_swap_td").innerHTML = mem_stats_arr[4] + " / " + mem_stats_arr[5] + " MB";
-	document.getElementById("nvram_td").innerHTML = mem_stats_arr[6] + " / " + <% sysinfo("nvram.total"); %> + " bytes";
-	document.getElementById("jffs_td").innerHTML = mem_stats_arr[7];
+	document.getElementById("mem_total_div").innerHTML = mem_stats_arr[0] + " MB";
+	document.getElementById("mem_used_div").innerHTML = mem_stats_arr[8] + " MB";
+	document.getElementById("mem_available_div").innerHTML = mem_stats_arr[9] + " MB";
+	document.getElementById("mem_free_div").innerHTML = mem_stats_arr[1] + " MB";
+	document.getElementById("mem_buffer_div").innerHTML = mem_stats_arr[2] + " MB";
+	document.getElementById("mem_cache_div").innerHTML = mem_stats_arr[3] + " MB";
+	if (parseInt(mem_stats_arr[5]) == 0) {
+		document.getElementById("mem_swap_total_div").innerHTML = "<span>No swap configured</span>";
+		document.getElementById("swap_div").style.display="none";
+	} else {
+		document.getElementById("mem_swap_total_div").innerHTML = mem_stats_arr[5] + " MB";
+		document.getElementById("mem_swap_used_div").innerHTML = mem_stats_arr[4] + " MB";
+		document.getElementById("swap_div").style.display="flex";
+	}
 
-	draw_charts();
+	draw_mem_charts();
 }
 
 
@@ -410,7 +583,6 @@ function show_wifi_version() {
 <input type="hidden" name="ct_udp_timeout" value="<% nvram_get("ct_udp_timeout"); %>">
 
 
-
 <table class="content" align="center" cellpadding="0" cellspacing="0">
   <tr>
     <td width="17">&nbsp;</td>
@@ -427,10 +599,10 @@ function show_wifi_version() {
             <table width="760px" border="0" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTitle" id="FormTitle">
                 <tbody>
                 <tr bgcolor="#4D595D">
-                <td valign="top">
-                <div>&nbsp;</div>
-                <div class="formfonttitle">Tools - System Information</div>
-		<div style="margin:10px 0 10px 5px;" class="splitLine"></div>
+                        <td valign="top">
+                        <div>&nbsp;</div>
+                        <div class="formfonttitle">Tools - System Information</div>
+                        <div style="margin:10px 0 10px 5px;" class="splitLine"></div>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
@@ -443,25 +615,16 @@ function show_wifi_version() {
 							<td id="model_id"><% nvram_get("productid"); %></td>
 					</tr>
 					<tr>
-						<th>Firmware Version</th>
-						<td id="fwver"></td>
-					</tr>
-
-					<tr>
 						<th>Firmware Build</th>
 						<td><% nvram_get("buildinfo"); %></td>
 					</tr>
 					<tr>
-						<th>Bootloader (CFE)</th>
+						<th>Bootloader</th>
 						<td><% sysinfo("cfe_version"); %></td>
 					</tr>
 					<tr>
 						<th>Wireless Driver Version</th>
 						<td id="wifi_version_td"></td>
-					</tr>
-					<tr id="qtn_version" style="display:none;">
-						<th>Quantenna Firmware</th>
-						<td><% sysinfo("qtn_version"); %></td>
 					</tr>
 					<tr>
 						<th>Features</th>
@@ -469,29 +632,19 @@ function show_wifi_version() {
 					</tr>
 					<tr>
 						<th><#General_x_SystemUpTime_itemname#></th>
-						<td><span id="boot_days"></span> <#Day#> <span id="boot_hours"></span> <#Hour#> <span id="boot_minutes"></span> <#Minute#> <span id="boot_seconds"></span> <#Second#></td>
+						<td><span style="color: #FFF;" id="boot_days"></span> <span><#Day#></span> <span style="color: #FFF;" id="boot_hours"></span> <span><#Hour#></span> <span style="color: #FFF;" id="boot_minutes"></span> <span><#Minute#></span> <span style="color: #FFF;" id="boot_seconds"></span> <span><#Second#></span></td>
 					</tr>
 
-					<tr>
-						<th>Temperatures</th>
-						<td id="temp_td"></td>
-					</tr>
 				</table>
-
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
 							<td colspan="2">CPU</td>
 						</tr>
 					</thead>
-
 					<tr>
 						<th>CPU Model</th>
-						<td><% sysinfo("cpu.model"); %>	</td>
-					</tr>
-					<tr>
-						<th>CPU Frequency</th>
-						<td><% sysinfo("cpu.freq"); %> MHz</td>
+						<td><% sysinfo("cpu.model"); %>	@ <% sysinfo("cpu.freq"); %> MHz</td>
 					</tr>
 					<tr>
 						<th>CPU Load Average (1, 5, 15 mins)</th>
@@ -503,45 +656,54 @@ function show_wifi_version() {
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
 					<thead>
 						<tr>
-							<td colspan="2">Memory</td>
+							<td width="50%">Memory</td>
+							<td width="50%">Swap</td>
 						</tr>
 					</thead>
 					<tr>
-						<td><canvas id="memchartId" height="200"></canvas></td>
+						<td><canvas id="memchartId" height="150"></canvas></td>
+						<td><canvas id="swapchartId" height="150"></canvas></td>
 					</tr>
 					<tr>
-						<th>Total</th>
-						<td id="mem_total_td"></td>
-					</tr>
+						<td>
+							<div style="display: flex;">
+								<div class="hint-color" style="width:20%;"> Total :</div>
+								<div style="width:76%;padding-left: 10px;" id="mem_total_div"></div>
+							</div>
+							<div style="display: flex;">
+								<div class="hint-color" style="width:20%;">Used</div>
+								<div style="width:76%;padding-left: 10px;" id="mem_used_div"></div>
+							</div>
 
-					<tr>
-						<th>Used</th>
-						<td id="mem_used_td"></td>
-					</tr>
+							<div style="display: flex;">
+								<div class="hint-color" style="width:20%;">Available :</div>
+								<div style="width:76%;padding-left: 10px;" id="mem_available_div"></div>
+							</div>
+							<div style="display: flex;">
+								<div class="hint-color" style="width:20%;">Free :</div>
+								<div style="width:76%;padding-left: 10px;" id="mem_free_div"></div>
+							</div>
+							<div style="display: flex;">
+								<div class="hint-color" style="width:20%;">Buffers :</div>
+								<div style="width:76%;padding-left: 10px;" id="mem_buffer_div"></div>
+							</div>
+							<div style="display: flex;">
+								<div class="hint-color" style="width:20%;">Cache :</div>
+								<div style="width:76%;padding-left: 10px;" id="mem_cache_div"></div>
+							</div>
+						</td>
 
-					<tr>
-						<th>Available</th>
-						<td id="mem_available_td"></td>
-					</tr>
+						<td style="vertical-align:top;">
+							<div style="display: flex;">
+								<div class="hint-color" style="width:20%;"<th>Total Swap :</div>
+								<div style="width:76%; padding-left: 10px;" id="mem_swap_total_div"></div>
+							</div>
+							<div id="swap_div" style="display: flex;">
+								<div class="hint-color" style="width:20%;"<th>Used Swap :</div>
+								<div style="width:76%; padding-left: 10px;" id="mem_swap_used_div"></div>
+							</div>
+						</td>
 
-					<tr>
-						<th>Free</th>
-						<td id="mem_free_td"></td>
-					</tr>
-
-					<tr>
-						<th>Buffers</th>
-						<td id="mem_buffer_td"></td>
-					</tr>
-
-					<tr>
-						<th>Cache</th>
-						<td id="mem_cache_td"></td>
-					</tr>
-
-					<tr>
-						<th>Swap</th>
-						<td id="mem_swap_td"></td>
 					</tr>
 				</table>
 
@@ -552,13 +714,35 @@ function show_wifi_version() {
 						</tr>
 					</thead>
 					<tr>
-						<th>NVRAM usage</th>
-						<td id="nvram_td"></td>
+						<td width="50%" style="padding: 10px;">
+						        <div class="bar-container" style="width:60%;">
+							        <div id="nvram_bar" class="core-color-container"></div>
+							</div>
+							<div style="padding-top:5px;" id="nvram_label"><span>NVRAM Usage: </span></div>
+						</td>
+						<td width="50%" style="padding: 10px;">
+							<div id="jffs_div" class="bar-container" style="width:60%;">
+								<div id="jffs_bar" class="core-color-container"></div>
+							</div>
+							<div style="padding-top:5px;" id="jffs_label"><span>JFFS Usage: </span></div>
+						</td>
+					</tr>
+				</table>
+
+				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
+					<thead>
+						<tr>
+							<td colspan="2">Temperatures</td>
+						</tr>
+					</thead>
+					<tr>
+						<td colspan="2"><canvas style="background-color:#2f3e44;border-radius:10px;"id="tempchartId" height="200" width="700"></canvas></td>
 					</tr>
 					<tr>
-						<th>JFFS</th>
-						<td id="jffs_td"></td>
+						<th>Temperatures</th>
+						<td id="temp_td"></td>
 					</tr>
+
 				</table>
 
 				<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3"  class="FormTable">
@@ -572,10 +756,6 @@ function show_wifi_version() {
 						<td id="hwaccel"></td>
 					</tr>
 					<tr>
-						<th>Connections</th>
-						<td id="conn_td"></td>
-					</tr>
-					<tr>
 						<th>Wireless Clients (2.4 GHz)</th>
 						<td id="wlc_24_td"></td>
 					</tr>
@@ -587,18 +767,13 @@ function show_wifi_version() {
 						<th>Wireless Clients (5 GHz-2)</th>
 						<td id="wlc_52_td"></td>
 					</tr>
-					<tr id="wifi5_clients_tr_qtn" style="display:none;">
-						<th>Wireless Clients (5 GHz)</th>
-						<td id="wlc_5qtn_td"></td>
-					</tr>
 					<tr id="wifi6_clients_tr" style="display:none;">
 						<th>Wireless Clients (6 GHz)</th>
 						<td id="wlc_6_td"></td>
 					</tr>
 				</table>
 				</td>
-				</tr>
-
+			</tr>
 	        </tbody>
             </table>
             </form>

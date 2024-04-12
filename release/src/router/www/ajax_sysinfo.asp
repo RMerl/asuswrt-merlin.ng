@@ -3,11 +3,9 @@ wlc_1_arr = ["<% sysinfo("conn.wifi.1.assoc"); %>", "<% sysinfo("conn.wifi.1.aut
 wlc_2_arr = ["<% sysinfo("conn.wifi.2.assoc"); %>", "<% sysinfo("conn.wifi.2.autho"); %>", "<% sysinfo("conn.wifi.2.authe"); %>"];
 wlc_3_arr = ["<% sysinfo("conn.wifi.3.assoc"); %>", "<% sysinfo("conn.wifi.3.autho"); %>", "<% sysinfo("conn.wifi.3.authe"); %>"];
 
-conn_stats_arr = ["<% sysinfo("conn.total"); %>","<% sysinfo("conn.active"); %>"];
-
 mem_stats_arr = ["<% sysinfo("memory.total"); %>",  "<% sysinfo("memory.free"); %>", "<% sysinfo("memory.buffer"); %>", 
                  "<% sysinfo("memory.cache"); %>", "<% sysinfo("memory.swap.used"); %>", "<% sysinfo("memory.swap.total"); %>",
-	         "<% sysinfo("nvram.used"); %>", "<% sysinfo("jffs.usage"); %>",
+	         "<% sysinfo("nvram.used"); %>", "<% sysinfo("jffs.free"); %>",
 	         "<% sysinfo("memory.simple.used"); %>", "<% sysinfo("memory.available"); %>"];
 
 cpu_stats_arr = ["<% sysinfo("cpu.load.1"); %>", "<% sysinfo("cpu.load.5"); %>", "<% sysinfo("cpu.load.15"); %>"];

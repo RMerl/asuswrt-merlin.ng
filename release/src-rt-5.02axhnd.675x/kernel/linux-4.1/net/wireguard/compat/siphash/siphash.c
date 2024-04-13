@@ -13,6 +13,14 @@
 #include <linux/siphash.h>
 #include <asm/unaligned.h>
 
+#ifndef __fallthrough
+# if defined(__GNUC__) && __GNUC__ >= 7
+#  define __fallthrough __attribute__ ((fallthrough))
+# else
+#  define __fallthrough
+# endif
+#endif
+
 #if LINUX_VERSION_CODE < KERNEL_VERSION(3, 14, 0)
 #ifdef __LITTLE_ENDIAN
 #define bytemask_from_count(cnt)	(~(~0ul << (cnt)*8))
@@ -77,11 +85,11 @@ u64 __siphash_aligned(const void *data, size_t len, const siphash_key_t *key)
 						  bytemask_from_count(left)));
 #else
 	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
+	case 7: b |= ((u64)end[6]) << 48; __fallthrough;
+	case 6: b |= ((u64)end[5]) << 40; __fallthrough;
+	case 5: b |= ((u64)end[4]) << 32; __fallthrough;
 	case 4: b |= le32_to_cpup(data); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
+	case 3: b |= ((u64)end[2]) << 16; __fallthrough;
 	case 2: b |= le16_to_cpup(data); break;
 	case 1: b |= end[0];
 	}
@@ -109,11 +117,11 @@ u64 __siphash_unaligned(const void *data, size_t len, const siphash_key_t *key)
 						  bytemask_from_count(left)));
 #else
 	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
+	case 7: b |= ((u64)end[6]) << 48; __fallthrough;
+	case 6: b |= ((u64)end[5]) << 40; __fallthrough;
+	case 5: b |= ((u64)end[4]) << 32; __fallthrough;
 	case 4: b |= get_unaligned_le32(end); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
+	case 3: b |= ((u64)end[2]) << 16; __fallthrough;
 	case 2: b |= get_unaligned_le16(end); break;
 	case 1: b |= end[0];
 	}
@@ -269,11 +277,11 @@ u32 __hsiphash_aligned(const void *data, size_t len, const hsiphash_key_t *key)
 						  bytemask_from_count(left)));
 #else
 	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
+	case 7: b |= ((u64)end[6]) << 48; __fallthrough;
+	case 6: b |= ((u64)end[5]) << 40; __fallthrough;
+	case 5: b |= ((u64)end[4]) << 32; __fallthrough;
 	case 4: b |= le32_to_cpup(data); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
+	case 3: b |= ((u64)end[2]) << 16; __fallthrough;
 	case 2: b |= le16_to_cpup(data); break;
 	case 1: b |= end[0];
 	}
@@ -301,11 +309,11 @@ u32 __hsiphash_unaligned(const void *data, size_t len,
 						  bytemask_from_count(left)));
 #else
 	switch (left) {
-	case 7: b |= ((u64)end[6]) << 48; fallthrough;
-	case 6: b |= ((u64)end[5]) << 40; fallthrough;
-	case 5: b |= ((u64)end[4]) << 32; fallthrough;
+	case 7: b |= ((u64)end[6]) << 48; __fallthrough;
+	case 6: b |= ((u64)end[5]) << 40; __fallthrough;
+	case 5: b |= ((u64)end[4]) << 32; __fallthrough;
 	case 4: b |= get_unaligned_le32(end); break;
-	case 3: b |= ((u64)end[2]) << 16; fallthrough;
+	case 3: b |= ((u64)end[2]) << 16; __fallthrough;
 	case 2: b |= get_unaligned_le16(end); break;
 	case 1: b |= end[0];
 	}
@@ -426,7 +434,7 @@ u32 __hsiphash_aligned(const void *data, size_t len, const hsiphash_key_t *key)
 		v0 ^= m;
 	}
 	switch (left) {
-	case 3: b |= ((u32)end[2]) << 16; fallthrough;
+	case 3: b |= ((u32)end[2]) << 16; __fallthrough;
 	case 2: b |= le16_to_cpup(data); break;
 	case 1: b |= end[0];
 	}
@@ -448,7 +456,7 @@ u32 __hsiphash_unaligned(const void *data, size_t len,
 		v0 ^= m;
 	}
 	switch (left) {
-	case 3: b |= ((u32)end[2]) << 16; fallthrough;
+	case 3: b |= ((u32)end[2]) << 16; __fallthrough;
 	case 2: b |= get_unaligned_le16(end); break;
 	case 1: b |= end[0];
 	}

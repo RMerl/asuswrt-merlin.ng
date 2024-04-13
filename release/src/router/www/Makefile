@@ -221,13 +221,13 @@ endif
 	echo " WWW FOR $(BUILD_NAME)"
 
 	rm -rf $(INSTALLDIR)/www/images/New_ui/asustitle_ie6.png
-#ifneq ($(RTCONFIG_FANCTRL),y)
-#	rm -rf $(INSTALLDIR)/www/Advanced_PerformanceTuning_Content.asp
-#	rm -rf $(INSTALLDIR)/www/fan.svg
-#	rm -rf $(INSTALLDIR)/www/images/btnPressed.png
-#	rm -rf $(INSTALLDIR)/www/images/btnReleased.png
-#	rm -rf $(INSTALLDIR)/www/images/position.png
-#endif
+ifneq ($(RTCONFIG_FANCTRL),y)
+	rm -rf $(INSTALLDIR)/www/Advanced_PerformanceTuning_Content.asp
+	rm -rf $(INSTALLDIR)/www/fan.svg
+	rm -rf $(INSTALLDIR)/www/images/btnPressed.png
+	rm -rf $(INSTALLDIR)/www/images/btnReleased.png
+	rm -rf $(INSTALLDIR)/www/images/position.png
+endif
 ifeq ($(RTCONFIG_SFP),y)
 	rm -rf $(INSTALLDIR)/www/images/PrinterServer
 	rm -rf $(INSTALLDIR)/www/images/appinstall

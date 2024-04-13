@@ -713,9 +713,9 @@ define(function(){
 						retArray.push("Captive_Portal_Advanced.asp");
 				}
 
-//				if(!cooler_support){
-//					retArray.push("Advanced_PerformanceTuning_Content.asp");
-//				}
+				if(!cooler_support){
+					retArray.push("Advanced_PerformanceTuning_Content.asp");
+				}
 
 				if(!rrsut_support)
 					retArray.push("cloud_router_sync.asp");

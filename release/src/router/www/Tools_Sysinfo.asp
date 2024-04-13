@@ -24,10 +24,7 @@
 <script type="text/javascript" src="/js/table/table.js"></script>
 <script>
 
-var ctf_dis = "<% nvram_get("ctf_disable"); %>";
-var ctf_dis_force = "<% nvram_get("ctf_disable_force"); %>";
 var odmpid = "<% nvram_get("odmpid");%>";
-var ctf_fa = "<% nvram_get("ctf_fa_mode"); %>";
 
 overlib_str_tmp = "";
 overlib.isOut = true;
@@ -405,34 +402,6 @@ function hwaccel_state(){
 		state = "<% sysinfo("hwaccel.fc"); %>";
 
 		code += state;
-	} else {
-		if (ctf_dis == "1") {
-			code = "Disabled";
-			if (ctf_dis_force == "1")
-				code += " <i>(by user)</i>";
-			else {
-				code += " <i> - incompatible with:<span>  ";	// Two trailing spaces
-				if ('<% nvram_get("cstats_enable"); %>' == '1') code += 'IPTraffic, ';
-				if ((qos_enable == '1') && (qos_type == '0')) code += 'QoS, ';
-				if ('<% nvram_get("sw_mode"); %>' == '2') code += 'Repeater mode, ';
-				if ('<% nvram_get("ctf_disable_modem"); %>' == '1') code += 'USB modem, ';
-
-				// We're disabled but we don't know why
-				if (code.slice(-2) == "  ") code += "&lt;unknown&gt;, ";
-
-				// Trim two trailing chars, either "  " or ", "
-				code = code.slice(0,-2) + "</span>";
-			}
-		} else if (ctf_dis == "0") {
-			code = "<span>Enabled";
-			if (ctf_fa != "") {
-				if (ctf_fa != "0")
-					code += " (CTF + FA)";
-				else
-					code += " (CTF only)";
-	                }
-			code += "</span>";
-		}
 	}
 
 	document.getElementById("hwaccel").innerHTML = code;

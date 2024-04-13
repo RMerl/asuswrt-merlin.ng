@@ -68,10 +68,6 @@ typedef unsigned long long u64;
 
 #include "sysinfo.h"
 
-#ifdef RTCONFIG_QTN
-#include "web-qtn.h"
-#endif
-
 #ifdef RTCONFIG_EXT_RTL8365MB
 #include <linux/major.h>
 #include <rtk_switch.h>
@@ -89,12 +85,6 @@ typedef struct {
 
 unsigned int get_phy_temperature(int radio);
 unsigned int get_wifi_clients(int unit, int querytype);
-
-#ifdef RTCONFIG_QTN
-unsigned int get_qtn_temperature(void);
-unsigned int get_qtn_version(char *version, int len);
-int GetPhyStatus_qtn(void);
-#endif
 
 #ifdef RTCONFIG_EXT_RTL8365MB
 void GetPhyStatus_rtk(int *states);
@@ -374,14 +364,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 			if (sscanf(type,"temperature.%d", &radio) != 1)
 				temperature = 0;
 			else
-			{
-#ifdef RTCONFIG_QTN
-				if (radio == 1)
-					temperature = get_qtn_temperature();
-				else
-#endif
-					temperature = get_phy_temperature(radio);
-			}
+				temperature = get_phy_temperature(radio);
 #ifdef RTAC68U_V4	// Broken on 2.4G, potentially bogus on 5G
 			strcpy(result, "<i>N/A</i>");
 #else
@@ -476,12 +459,6 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				}
 				unlink("/tmp/output.txt");
 			}
-#ifdef RTCONFIG_QTN
-                } else if(strcmp(type,"qtn_version") == 0 ) {
-
-			if (!get_qtn_version(result, sizeof(result)))
-				strcpy(result,"<unknown>");
-#endif
 		} else if(strcmp(type,"cfe_version") == 0 ) {
 #if defined(RTCONFIG_CFEZ)
 			snprintf(result, sizeof result, "%s", nvram_get("bl_version"));
@@ -620,14 +597,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				for (j=0; (j < len); j++) {
 					if (buffer[j] == '\n') buffer[j] = '>';
 				}
-#ifdef RTCONFIG_QTN
-				j = GetPhyStatus_qtn();
-				snprintf(result, sizeof result, (j > 0 ? "%sPort 10: %dFD enabled stp: none vlan: 1 jumbo: off mac: 00:00:00:00:00:00>" :
-							 "%sPort 10: DOWN enabled stp: none vlan: 1 jumbo: off mac: 00:00:00:00:00:00>"),
-							  buffer, j);
-#else
                                 strlcpy(result, buffer, sizeof result);
-#endif
                                 free(buffer);
 
 			}
@@ -672,58 +642,6 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 	return retval;
 }
 
-#ifdef RTCONFIG_QTN
-unsigned int get_qtn_temperature(void)
-{
-        int temp_external, temp_internal, temp_bb;
-	if (!rpc_qtn_ready())
-		return 0;
-
-        if (qcsapi_get_temperature_info(&temp_external, &temp_internal, &temp_bb) >= 0)
-		return temp_internal / 1000000.0f;
-
-	return 0;
-}
-
-int GetPhyStatus_qtn(void)
-{
-	int ret;
-
-	if (!rpc_qtn_ready()) {
-		return -1;
-	}
-	ret = qcsapi_wifi_run_script("set_test_mode", "get_eth_1000m");
-	if (ret < 0) {
-		ret = qcsapi_wifi_run_script("set_test_mode", "get_eth_100m");
-		if (ret < 0) {
-			ret = qcsapi_wifi_run_script("set_test_mode", "get_eth_10m");
-			if (ret < 0) {
-				// fprintf(stderr, "ATE command error\n");
-				return 0;
-			}else{
-				return 10;
-			}
-		}else{
-			return 100;
-		}
-		return -1;
-	}else{
-		return 1000;
-	}
-	return 0;
-}
-
-unsigned int get_qtn_version(char *version, int len)
-{
-        if (!rpc_qtn_ready())
-                return 0;
-
-        if (qcsapi_firmware_get_version(version, len) >= 0)
-                return 1;
-
-        return 0;
-}
-#endif
 
 unsigned int get_phy_temperature(int radio)
 {
@@ -765,9 +683,6 @@ unsigned int get_wifi_clients(int unit, int querytype)
 	struct maclist *clientlist;
 	int max_sta_count, maclist_size;
 	int val, count = 0, subunit;
-#ifdef RTCONFIG_QTN
-	qcsapi_unsigned_int association_count = 0;
-#endif
 #ifdef RTCONFIG_WIRELESSREPEATER
 	int isrepeater = 0;
 #endif
@@ -799,20 +714,6 @@ unsigned int get_wifi_clients(int unit, int querytype)
 
 		name = nvram_pf_safe_get(prefix, "ifname");
 		if (*name == '\0') continue;
-
-#ifdef RTCONFIG_QTN
-		if (unit == 1) {
-			if ((nvram_match("wl1_radio", "0")) || (!rpc_qtn_ready()))
-				count = -1;
-			else if ((querytype == SI_WL_QUERY_ASSOC) &&
-				 (qcsapi_wifi_get_count_associations(name, &association_count) >= 0))
-					count = association_count;
-			else	// All other queries aren't support by QTN
-				count = -1;
-
-			goto exit;
-		}
-#endif
 
 		if (subunit == 0) {
 			wl_ioctl(name, WLC_GET_RADIO, &val, sizeof(val));

@@ -1,6 +1,0 @@
-\..*\.swp
-.*~
-tags
-.pytest*
-.*\.pyc
-test/venv

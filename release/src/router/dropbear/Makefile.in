@@ -12,25 +12,32 @@ ifndef PROGRAMS
 	PROGRAMS=dropbear dbclient dropbearkey dropbearconvert
 endif
 
+srcdir=@srcdir@/src
+VPATH=@srcdir@/src
+
 STATIC_LTC=libtomcrypt/libtomcrypt.a
 STATIC_LTM=libtommath/libtommath.a
 
 LIBTOM_LIBS=@LIBTOM_LIBS@
 
 ifeq (@BUNDLED_LIBTOM@, 1)
-LIBTOM_DEPS=$(STATIC_LTC) $(STATIC_LTM) 
-LIBTOM_CLEAN=ltc-clean ltm-clean
-CPPFLAGS+=-I$(srcdir)/libtomcrypt/src/headers/
-LIBTOM_LIBS=$(STATIC_LTC) $(STATIC_LTM)
+	LIBTOM_DEPS=$(STATIC_LTC) $(STATIC_LTM)
+	LIBTOM_CLEAN=ltc-clean ltm-clean
+	CPPFLAGS+=-I$(srcdir)/../libtomcrypt/src/headers/
+	LIBTOM_LIBS=$(STATIC_LTC) $(STATIC_LTM)
 endif
 
-OPTION_HEADERS = default_options_guard.h sysoptions.h
-ifneq ($(wildcard localoptions.h),)
-CPPFLAGS+=-DLOCALOPTIONS_H_EXISTS
-OPTION_HEADERS += localoptions.h
+ifneq ($(wildcard ./localoptions.h),)
+	CPPFLAGS+=-DLOCALOPTIONS_H_EXISTS
+endif
+ifneq ($(wildcard $(srcdir)/distrooptions.h),)
+	CPPFLAGS+=-DDISTROOPTIONS_H_EXISTS
 endif
 
-COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
+OBJ_DIR=./obj
+MAN_DIR=@srcdir@/manpages
+
+_COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
 		dss.o bignum.o \
 		signkey.o rsa.o dbrandom.o \
 		queue.o \
@@ -39,35 +46,42 @@ COMMONOBJS=dbutil.o buffer.o dbhelpers.o \
 		curve25519.o ed25519.o sk-ed25519.o \
 		dbmalloc.o \
 		gensignkey.o gendss.o genrsa.o gened25519.o
+COMMONOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_COMMONOBJS))
 
-SVROBJS=svr-kex.o svr-auth.o sshpty.o \
+_SVROBJS=svr-kex.o svr-auth.o sshpty.o \
 		svr-authpasswd.o svr-authpubkey.o svr-authpubkeyoptions.o svr-session.o svr-service.o \
 		svr-chansession.o svr-runopts.o svr-agentfwd.o svr-main.o svr-x11fwd.o\
 		svr-tcpfwd.o svr-authpam.o
+SVROBJS = $(patsubst %,$(OBJ_DIR)/%,$(_SVROBJS))
 
-CLIOBJS=cli-main.o cli-auth.o cli-authpasswd.o cli-kex.o \
+_CLIOBJS=cli-main.o cli-auth.o cli-authpasswd.o cli-kex.o \
 		cli-session.o cli-runopts.o cli-chansession.o \
 		cli-authpubkey.o cli-tcpfwd.o cli-channel.o cli-authinteract.o \
-		cli-agentfwd.o 
+		cli-agentfwd.o cli-readconf.o
+CLIOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_CLIOBJS))
 
-CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
-			common-channel.o common-chansession.o termcodes.o loginrec.o \
-			tcp-accept.o listener.o process-packet.o dh_groups.o \
-			common-runopts.o circbuffer.o list.o netio.o chachapoly.o gcm.o
+_CLISVROBJS=common-session.o packet.o common-algo.o common-kex.o \
+		common-channel.o common-chansession.o termcodes.o loginrec.o \
+		tcp-accept.o listener.o process-packet.o dh_groups.o \
+		common-runopts.o circbuffer.o list.o netio.o chachapoly.o gcm.o
+CLISVROBJS = $(patsubst %,$(OBJ_DIR)/%,$(_CLISVROBJS))
 
-KEYOBJS=dropbearkey.o
+_KEYOBJS=dropbearkey.o
+KEYOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_KEYOBJS))
 
-CONVERTOBJS=dropbearconvert.o keyimport.o signkey_ossh.o
+_CONVERTOBJS=dropbearconvert.o keyimport.o signkey_ossh.o
+CONVERTOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_CONVERTOBJS))
 
-SCPOBJS=scp.o progressmeter.o atomicio.o scpmisc.o compat.o
+_SCPOBJS=scp.o progressmeter.o atomicio.o scpmisc.o compat.o
+SCPOBJS = $(patsubst %,$(OBJ_DIR)/%,$(_SCPOBJS))
 
 ifeq (@DROPBEAR_FUZZ@, 1)
 	allobjs = $(COMMONOBJS) fuzz/fuzz-common.o  fuzz/fuzz-wrapfd.o $(CLISVROBJS) $(CLIOBJS) $(SVROBJS) @CRYPTLIB@
-	allobjs:=$(subst svr-main.o, ,$(allobjs))
-	allobjs:=$(subst cli-main.o, ,$(allobjs))
+	allobjs:=$(subst $(OBJ_DIR)/svr-main.o, ,$(allobjs))
+	allobjs:=$(subst $(OBJ_DIR)/cli-main.o, ,$(allobjs))
 
-	dropbearobjs=$(allobjs) svr-main.o
-	dbclientobjs=$(allobjs) cli-main.o
+	dropbearobjs=$(allobjs) $(OBJ_DIR)/svr-main.o
+	dbclientobjs=$(allobjs) $(OBJ_DIR)/cli-main.o
 	dropbearkeyobjs=$(allobjs) $(KEYOBJS)
 	dropbearconvertobjs=$(allobjs) $(CONVERTOBJS)
 	# CXX only set when fuzzing
@@ -82,16 +96,13 @@ else
 endif
 
 ifeq (@DROPBEAR_PLUGIN@, 1)
-    # rdynamic makes all the global symbols of dropbear available to all the loaded shared libraries
-    # this allow a plugin to reuse existing crypto/utilities like base64_decode/base64_encode without
-    # the need to rewrite them.
-    PLUGIN_LIBS=-ldl -rdynamic
+	# rdynamic makes all the global symbols of dropbear available to all the loaded shared libraries
+	# this allow a plugin to reuse existing crypto/utilities like base64_decode/base64_encode without
+	# the need to rewrite them.
+	PLUGIN_LIBS=-ldl -rdynamic
 else
-    PLUGIN_LIBS=
+	PLUGIN_LIBS=
 endif
-
-VPATH=@srcdir@
-srcdir=@srcdir@
 
 prefix=@prefix@
 exec_prefix=@exec_prefix@
@@ -149,15 +160,24 @@ endif
 all: $(TARGETS)
 
 # for simplicity assume all source depends on all headers
-HEADERS=$(wildcard $(srcdir)/*.h *.h) $(OPTION_HEADERS)
-%.o : %.c $(HEADERS)
-	$(CC) -c $(CFLAGS) $(CPPFLAGS) $< -o $@
+HEADERS=$(wildcard $(srcdir)/*.h *.h) default_options_guard.h
 
-default_options_guard.h: default_options.h
+$(OBJ_DIR):
+	mkdir -p $@
+
+$(OBJ_DIR)/%.o: $(srcdir)/%.c $(HEADERS) | $(OBJ_DIR)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -c
+
+fuzz/%.o: $(srcdir)/../fuzz/%.c $(HEADERS)
+	$(CC) $(CFLAGS) $(CPPFLAGS) $< -o $@ -c
+
+default_options_guard.h: $(srcdir)/default_options.h
 	@echo Creating $@
 	@printf "/*\n > > > Do not edit this file (default_options_guard.h) < < <\nGenerated from "$^"\nLocal customisation goes in localoptions.h\n*/\n\n" > $@.tmp
 	@$(srcdir)/ifndef_wrapper.sh < $^ >> $@.tmp
-	@mv $@.tmp $@
+	mv -v $@.tmp $@
+	pwd
+	ls -l $@
 
 strip: $(TARGETS)
 	$(STRIP) $(addsuffix $(EXEEXT), $(TARGETS))
@@ -167,31 +187,31 @@ install: $(addprefix inst_, $(TARGETS))
 insmultidropbear: dropbearmulti$(EXEEXT)
 	$(INSTALL) -d $(DESTDIR)$(sbindir)
 	-rm -f $(DESTDIR)$(sbindir)/dropbear$(EXEEXT)
-	-ln -s $(bindir)/dropbearmulti$(EXEEXT) $(DESTDIR)$(sbindir)/dropbear$(EXEEXT) 
+	-ln -s $(bindir)/dropbearmulti$(EXEEXT) $(DESTDIR)$(sbindir)/dropbear$(EXEEXT)
 	$(INSTALL) -d $(DESTDIR)$(mandir)/man8
-	$(INSTALL) -m 644 $(srcdir)/dropbear.8  $(DESTDIR)$(mandir)/man8/dropbear.8
+	$(INSTALL) -m 644 $(MAN_DIR)/dropbear.8  $(DESTDIR)$(mandir)/man8/dropbear.8
 
 insmulti%: dropbearmulti$(EXEEXT)
 	$(INSTALL) -d $(DESTDIR)$(bindir)
-	-rm -f $(DESTDIR)$(bindir)/$*$(EXEEXT) 
-	-ln -s $(bindir)/dropbearmulti$(EXEEXT) $(DESTDIR)$(bindir)/$*$(EXEEXT) 
+	-rm -f $(DESTDIR)$(bindir)/$*$(EXEEXT)
+	-ln -s $(bindir)/dropbearmulti$(EXEEXT) $(DESTDIR)$(bindir)/$*$(EXEEXT)
 	$(INSTALL) -d $(DESTDIR)$(mandir)/man1
-	if test -e $(srcdir)/$*.1; then $(INSTALL) -m 644 $(srcdir)/$*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
+	if test -e $(MAN_DIR)/$*.1; then $(INSTALL) -m 644 $(MAN_DIR)/$*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
 
 # dropbear should go in sbin, so it needs a separate rule
 inst_dropbear: dropbear
 	$(INSTALL) -d $(DESTDIR)$(sbindir)
 	$(INSTALL) dropbear$(EXEEXT) $(DESTDIR)$(sbindir)
 	$(INSTALL) -d $(DESTDIR)$(mandir)/man8
-	$(INSTALL) -m 644 $(srcdir)/dropbear.8 $(DESTDIR)$(mandir)/man8/dropbear.8
+	$(INSTALL) -m 644 $(MAN_DIR)/dropbear.8 $(DESTDIR)$(mandir)/man8/dropbear.8
 
 inst_%: %
 	$(INSTALL) -d $(DESTDIR)$(bindir)
 	$(INSTALL) $*$(EXEEXT) $(DESTDIR)$(bindir)
 	$(INSTALL) -d $(DESTDIR)$(mandir)/man1
-	if test -e $(srcdir)/$*.1; then $(INSTALL) -m 644 $(srcdir)/$*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
+	if test -e $(MAN_DIR)/$*.1; then $(INSTALL) -m 644 $(MAN_DIR)/$*.1 $(DESTDIR)$(mandir)/man1/$*.1; fi
 
-inst_dropbearmulti: $(addprefix insmulti, $(PROGRAMS)) 
+inst_dropbearmulti: $(addprefix insmulti, $(PROGRAMS))
 
 # for some reason the rule further down doesn't like $($@objs) as a prereq.
 dropbear: $(dropbearobjs)
@@ -216,7 +236,7 @@ scp: $(SCPOBJS)  $(HEADERS) Makefile
 # multi-binary compilation.
 MULTIOBJS=
 ifeq ($(MULTI),1)
-	MULTIOBJS=dbmulti.o $(sort $(foreach prog, $(PROGRAMS), $($(prog)objs)))
+	MULTIOBJS=$(OBJ_DIR)/dbmulti.o $(sort $(foreach prog, $(PROGRAMS), $($(prog)objs)))
 	CPPFLAGS+=$(addprefix -DDBMULTI_, $(PROGRAMS)) -DDROPBEAR_MULTI
 endif
 
@@ -231,10 +251,10 @@ link%:
 	-rm -f $*$(EXEEXT)
 	-ln -s dropbearmulti$(EXEEXT) $*$(EXEEXT)
 
-$(STATIC_LTC): $(OPTION_HEADERS)
+$(STATIC_LTC): $(HEADERS)
 	$(MAKE) -C libtomcrypt
 
-$(STATIC_LTM): $(OPTION_HEADERS)
+$(STATIC_LTM): $(HEADERS)
 	$(MAKE) -C libtommath
 
 .PHONY : clean sizes thisclean distclean tidy ltc-clean ltm-clean lint check
@@ -253,11 +273,12 @@ clean: $(LIBTOM_CLEAN) $(FUZZ_CLEAN) thisclean
 thisclean:
 	-rm -f dropbear$(EXEEXT) dbclient$(EXEEXT) dropbearkey$(EXEEXT) \
 			dropbearconvert$(EXEEXT) scp$(EXEEXT) scp-progress$(EXEEXT) \
-			dropbearmulti$(EXEEXT) *.o *.da *.bb *.bbg *.prof
+			dropbearmulti$(EXEEXT) *.o *.da *.bb *.bbg *.prof \
+			$(OBJ_DIR)/*
 
 distclean: clean tidy
-	-rm -f config.h
-	-rm -f Makefile
+	-rm -f src/config.h config.status config.log
+	-rm -f Makefile test/Makefile
 	-rm -f default_options_guard.h
 
 tidy:
@@ -274,7 +295,7 @@ check: lint
 # list of fuzz targets
 FUZZ_TARGETS=fuzzer-preauth fuzzer-pubkey fuzzer-verify fuzzer-preauth_nomaths \
 	fuzzer-kexdh fuzzer-kexecdh fuzzer-kexcurve25519 fuzzer-client fuzzer-client_nomaths \
-	fuzzer-postauth_nomaths
+	fuzzer-postauth_nomaths fuzzer-cliconf
 
 FUZZER_OPTIONS = $(addsuffix .options, $(FUZZ_TARGETS))
 FUZZ_OBJS = $(addprefix fuzz/,$(addsuffix .o,$(FUZZ_TARGETS))) \
@@ -288,13 +309,13 @@ fuzzstandalone: FUZZLIB=fuzz/fuzz-harness.o
 fuzzstandalone: fuzz/fuzz-harness.o fuzz-targets
 
 # Build all the fuzzers. Usually like
-#   make fuzz-targets FUZZLIB=-lFuzzer.a 
+#   make fuzz-targets FUZZLIB=-lFuzzer.a
 # the library provides main(). Otherwise
 #   make fuzzstandalone
 # provides a main in fuzz-harness.c
 fuzz-targets: $(FUZZ_TARGETS) $(FUZZER_OPTIONS)
 
-$(FUZZ_TARGETS): $(FUZZ_OBJS) $(allobjs) $(LIBTOM_DEPS) 
+$(FUZZ_TARGETS): $(LIBTOM_DEPS) $(allobjs) $(FUZZ_OBJS)
 	$(CXX) $(CXXFLAGS) fuzz/$@.o $(LDFLAGS) $(allobjs) -o $@$(EXEEXT) $(LIBTOM_LIBS) $(LIBS) $(FUZZLIB) @CRYPTLIB@
 
 # fuzzers that use the custom mutator - these expect a SSH network stream
@@ -311,7 +332,7 @@ fuzzer-%.options: Makefile
 	echo "[libfuzzer]"               > $@
 	echo "max_len = 50000"          >> $@
 
-# run this to update hardcoded hostkeys for for fuzzing. 
+# run this to update hardcoded hostkeys for for fuzzing.
 # hostkeys.c is checked in to hg.
 fuzz-hostkeys:
 	dropbearkey -t rsa -f keyr

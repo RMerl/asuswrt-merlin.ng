@@ -1,0 +1,25 @@
+# Can be used locally with https://github.com/nektos/act
+
+name: Out of tree build
+on:
+  pull_request:
+  push:
+    branches:
+      - master
+jobs:
+  outoftree:
+    runs-on: 'ubuntu-22.04'
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: build
+        run: |
+          mkdir build
+          cd build
+          ../configure --enable-fuzz --enable-bundled-libtom --prefix=$PWD/inst
+          make -j3
+          make -j3 fuzzstandalone
+          make install
+          test -x inst/bin/dbclient
+          test -f inst/share/man/man8/dropbear.8

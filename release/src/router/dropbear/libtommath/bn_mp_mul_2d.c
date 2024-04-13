@@ -9,6 +9,10 @@ mp_err mp_mul_2d(const mp_int *a, int b, mp_int *c)
    mp_digit d;
    mp_err   err;
 
+   if (b < 0) {
+      return MP_VAL;
+   }
+
    /* copy */
    if (a != c) {
       if ((err = mp_copy(a, c)) != MP_OKAY) {

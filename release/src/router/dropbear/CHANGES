@@ -1,3 +1,100 @@
+2024.84 - 4 April 2024
+
+Features and Changes:
+  Note >> for compatibility/configuration changes
+
+- >> Only use /etc/shadow when a user has :x: as the crypt in /etc/passwd.
+  This is the documented behaviour of passwd(5) so should be consistent with
+  other programs. Thanks to Paulo Cabral for the report.
+  Note that any users without x as the crypt will not be able
+  to log in with /etc/shadow, in cases were the existing configuration
+  differs.
+
+- Support -o StrictHostKeyChecking, patch from Sergey Ponomarev
+
+- Support -o BatchMode, from Sergey Ponomarev and Hans Harder
+
+- Support various other -o options compatible with OpenSSH, from
+  Sergey Ponomarev. Includes -o PasswordAuthentication
+
+- Add dbclient config file support, ~/.ssh/dropbear_config
+  Thanks to tjkolev
+  Disabled by default, set #define DROPBEAR_USE_SSH_CONFIG 1
+
+- Add support for unix socket forwarding (destination) on
+  the server, thanks to WangYi for the implementation
+
+- Add option to bind to interface, from Diederik De Coninck
+
+- Ignore unsupported arguments in dropbearkey, allow running
+  binary as 'ssh-key'. From Sergey Ponomarev
+
+- Save a public key file on generation with dropbearkey.
+  -C can be used for a comment, and choose a default key
+  type (ed25519 first preference).
+  Thanks to Sergey Ponomarev
+
+- Allow inetd to run in non-syslog modes. Thanks to Laurent Bercot
+  for the report
+
+- Allow user's own gid in PTY permissions, lets Dropbear work as non-root
+  even if /dev/pts isn't mounted with gid=5
+
+- src/distrooptions.h can now be used as another config file.
+  This can be used by distributions for customisations (separate
+  to the build directory's localoptions.h)
+
+Fixes:
+
+- "dbclient host >> output" would previously overwrite "output", instead of
+  appending. Thanks for the report from eSotoIoT
+
+- Add "Strict KEX" support. This mitigates a SSH protocol flaw which lets
+  a MITM attacker silently remove packets immediately after the
+  first key exchange. At present the flaw does not seem to reduce Dropbear's
+  security (the only packet affected would be a server-sig-algs extension,
+  which is used for compatibility not security).
+  For Dropbear, chacha20-poly1305 is the only affected cipher.
+  Both sides of the connection must support Strict KEX for it to be used.
+
+  The protocol flaw is tracked as CVE-2023-48795, details
+  at https://terrapin-attack.com . Thanks to the researchers Fabian Bäumer,
+  Marcus Brinkmann, and Jörg Schwenk. Thanks to OpenSSH for specifying
+  strict KEX mode.
+
+- Fix blocking while closing forwarded TCP sessions. Noticable
+  when many connections are being forwarded. Reported and
+  tested by GektorUA. Github #230
+
+- Don't offer RSA (then fail) if there is no RSA key. Regression in 2020.79
+  Github #219
+
+- Fix missing response to remote TCP requests when it is disabled.
+  Patch from Justin Chen. Github #254
+
+- Fix building with DROPBEAR_RSA disabled
+
+- /proc/timer_list is no longer used for entropy, it was a bottleneck.
+  Thanks to Aleksei Plotnikov for the report.
+
+- Don't unconditionally enable DROPBEAR_DSS
+
+- Make banner reading failure non-fatal
+
+- Fix DROPBEAR_SVR_MULTIUSER. This appears to have been broken since when it
+  was added in 2019. If you're using this let me know (it might be removed
+  if I don't hear otherwise). Thanks to davidatrsp
+
+- Fix Y2038 issues
+
+Infrastructure:
+
+- Move source files to src/ subdirectory. Thanks to tjkolev
+
+- Remove more files with "make distclean"
+
+- Add tests for disabled options
+
 2022.83 - 14 November 2022
 
 Features and Changes:

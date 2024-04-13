@@ -21,11 +21,12 @@ def dropbear(request):
 
 	# split so that "dropbearmulti dropbear" works
 	args = opt.dropbear.split() + [
-		"-p", LOCALADDR, # bind locally only
+		"-p", LOCALADDR + ":" + opt.port, # bind locally only
 		"-r", opt.hostkey,
-		"-p", opt.port,
 		"-F", "-E",
 		]
+	print("subprocess args: ", args)
+
 	p = subprocess.Popen(args, stderr=subprocess.PIPE, text=True)
 	# Wait until it has started listening
 	for l in p.stderr:
@@ -49,6 +50,7 @@ def dbclient(request, *args, **kwargs):
 	if opt.user:
 		base_args.extend(['-l', opt.user])
 	full_args = base_args + list(args)
+	print("subprocess args: ", full_args)
 	bg = kwargs.get("background")
 	if "background" in kwargs:
 		del kwargs["background"]

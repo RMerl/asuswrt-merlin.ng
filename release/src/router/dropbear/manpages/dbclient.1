@@ -1,0 +1,319 @@
+.TH dbclient 1 2023-02-01
+.SH NAME
+dbclient \- lightweight SSH client
+.SH SYNOPSIS
+.B dbclient
+[\fIflag arguments\fR] [\-p
+.I port\fR] [\-i
+.I id\fR] [\-L
+.I l\fR:\fIh\fR:\fIp\fR] [\-R
+.I l\fR:\fIh\fR:\fIp\fR] [\-l
+.IR user ]
+.I host
+.RI [ \fImore\ flags\fR ]
+.RI [ command ]
+
+.B dbclient
+[\fIargs\fR]
+[\fIuser1\fR]@\fIhost1\fR[^\fIport1\fR],[\fIuser2\fR]@\fIhost2\fR[^\fIport2\fR],...
+
+.SH DESCRIPTION
+.B dbclient
+is the client part of Dropbear SSH
+.SH OPTIONS
+.TP
+.B command
+A command to run on the remote host. This will normally be run by the remote host
+using the user's shell. The command begins at the first hyphen argument after the 
+host argument. If no command is specified an interactive terminal will be opened
+(see -t and -T).
+.TP
+.B \-p \fIport
+Connect to 
+.I port
+on the remote host. Alternatively a port can be specified as hostname^port.
+Default is 22.
+.TP
+.B \-i \fIidfile
+Identity file.
+Read the identity key from file
+.I idfile
+(multiple allowed). This file is created with dropbearkey(1) or converted
+from OpenSSH with dropbearconvert(1). The default path ~/.ssh/id_dropbear is used
+.TP
+.B \-L\fR [\fIlistenaddress\fR]:\fIlistenport\fR:\fIhost\fR:\fIport\fR
+Local port forwarding.
+Forward 
+.I listenport
+on the local host through the SSH connection to 
+.I port
+on 
+.IR host .
+.TP
+.B \-R\fR [\fIlistenaddress\fR]:\fIlistenport\fR:\fIhost\fR:\fIport\fR
+Remote port forwarding.
+Forward 
+.I listenport
+on the remote host through the SSH connection to 
+.I port
+on 
+.IR host .
+.TP
+.B \-l \fIuser
+Username.
+Login as
+.I user
+on the remote host. An alternative is to specify user@host.
+.TP
+.B \-t
+Allocate a PTY. This is the default when no command is given, it gives a full
+interactive remote session. The main effect is that keystrokes are sent remotely 
+immediately as opposed to local line-based editing.
+.TP
+.B \-T
+Don't allocate a PTY. This is the default when a command is given. See -t.
+.TP
+.B \-N
+Don't request a remote shell or run any commands. Any command arguments are ignored.
+.TP
+.B \-f
+Fork into the background after authentication. A command argument (or -N) is required.
+This is useful when using password authentication.
+.TP
+.B \-g
+Allow non-local hosts to connect to forwarded ports. Applies to -L and -R
+forwarded ports, though remote connections to -R forwarded ports may be limited
+by the ssh server.
+.TP
+.B \-y
+Always accept hostkeys if they are unknown. If a hostkey mismatch occurs the
+connection will abort as normal. If specified a second time no host key checking
+is performed at all, this is usually undesirable.
+.TP
+.B \-A
+Forward agent connections to the remote host. dbclient will use any
+OpenSSH-style agent program if available ($SSH_AUTH_SOCK will be set) for
+public key authentication.  Forwarding is only enabled if \fI-A\fR is specified.
+
+Beware that a forwarded agent connection will allow the remote server to have
+the same authentication credentials as you have used locally. A compromised
+remote server could use that to log in to other servers. 
+
+In many situations Dropbear's multi-hop mode is a better and more secure alternative
+to agent forwarding, avoiding having to trust the intermediate server.
+
+If the SSH agent program is set to prompt when a key is used, the 
+\fI-o DisableTrivialAuth\fR option can prevent UI confusion.
+
+.TP
+.B \-W \fIwindowsize
+Specify the per-channel receive window buffer size. Increasing this 
+may improve network performance at the expense of memory use. Use -h to see the
+default buffer size.
+.TP
+.B \-K \fItimeout_seconds
+Ensure that traffic is transmitted at a certain interval in seconds. This is
+useful for working around firewalls or routers that drop connections after
+a certain period of inactivity. The trade-off is that a session may be
+closed if there is a temporary lapse of network connectivity. A setting
+if 0 disables keepalives. If no response is received for 3 consecutive keepalives the connection will be closed.
+.TP
+.B \-I \fIidle_timeout
+Disconnect the session if no traffic is transmitted or received for \fIidle_timeout\fR seconds.
+.TP
+.B \-z
+By default Dropbear will send network traffic with the \fBAF21\fR setting for QoS, letting network devices give it higher priority. Some devices may have problems with that, \fI-z\fR can be used to disable it.
+.TP
+
+.\" TODO: how to avoid a line break between these two -J arguments?
+.B \-J \fIproxy_command
+.TP
+.B \-J \fI&fd
+.br
+Use the standard input/output of the program \fIproxy_command\fR rather than using
+a normal TCP connection. A hostname should be still be provided, as this is used for
+comparing saved hostkeys. This command will be executed as "exec proxy_command ..." with the
+default shell.
+
+The second form &fd will make dbclient use the numeric file descriptor as a socket. This
+can be used for more complex tunnelling scenarios. Example usage with socat is
+
+socat EXEC:'dbclient -J &38 ev',fdin=38,fdout=38 TCP4:host.example.com:22
+
+.TP
+.B \-B \fIendhost:endport
+"Netcat-alike" mode, where Dropbear will connect to the given host, then create a
+forwarded connection to \fIendhost\fR. This will then be presented as dbclient's
+standard input/output.
+.TP
+.B \-c \fIcipherlist
+Specify a comma separated list of ciphers to enable. Use \fI-c help\fR to list possibilities.
+.TP
+.B \-m \fIMAClist
+Specify a comma separated list of authentication MACs to enable. Use \fI-m help\fR to list possibilities.
+.TP
+.B \-o \fIoption
+Can be used to give options in the format used by OpenSSH config file. This is
+useful for specifying options for which there is no separate command-line flag.
+For full details of the options listed below, and their possible values, see
+ssh_config(5).
+The following options have currently been implemented:
+
+.RS
+.TP
+.B BatchMode
+Disable interactive prompts e.g. password prompts and host key confirmation. The argument must be "yes" or "no" (the default).
+.TP
+.B BindAddress
+Specify address and port on the local machine as the source address of the connection.
+.TP
+.B DisableTrivialAuth
+Disallow a server immediately
+giving successful authentication (without presenting any password/pubkey prompt).
+This avoids a UI confusion issue where it may appear that the user is accepting
+a SSH agent prompt from their local machine, but are actually accepting a prompt
+sent immediately by the remote server.
+.TP
+.B ExitOnForwardFailure
+Specifies whether dbclient should terminate the connection if it cannot set up all requested local and remote port forwardings. The argument must be "yes" or "no" (the default).
+.TP
+.B ForwardAgent
+Forward the authentication agent to the remote machine. The argument must be "yes" or "no" (the default).
+.TP
+.B GatewayPorts
+Allow to remote host to connect to local forwarded ports. The argument must be "yes" or "no" (the default).
+.TP
+.B IdentityFile
+Specify an authentication identity file path.
+.TP
+.B PasswordAuthentication
+Allow to prompt a user for a password. If the DROPBEAR_PASSWORD env is specified then it still will be used. The argument must be "yes" (the default) or "no".
+.TP
+.B Port
+Specify a listening port, like the \fI-p\fR argument.
+.TP
+.B ProxyCommand
+Specify the proxy command to use to connect to the server.
+.TP
+.B ServerAliveInterval
+Sets a timeout interval in seconds between keep-alive messages through the encrypted channel. The default is 0 e.g. disabled.
+.TP
+.B StrictHostKeyChecking
+Use "yes" to refuse connection to hosts where the host key is not already
+correct in known_hosts. Entries must be added to known_hosts manually.
+
+Use "no" to skip the known_hosts key checking.
+
+Use "accept-new" to add new host keys to the known_hosts and
+refuse to connect if the host key has changed.
+
+"ask" is the default.
+
+.TP
+.B UseSyslog
+Send dbclient log messages to syslog in addition to stderr.
+.RE
+.TP
+.B \-s 
+The specified command will be requested as a subsystem, used for sftp. Dropbear doesn't implement sftp itself but the OpenSSH sftp client can be used eg \fIsftp -S dbclient user@host\fR
+.TP
+.B \-b \fI[address][:port]
+Bind to a specific local address when connecting to the remote host. This can be used to choose from
+multiple outgoing interfaces. Either address or port (or both) can be given.
+.TP
+.B \-V
+Print the version
+
+.SH MULTI-HOP
+Dropbear will also allow multiple "hops" to be specified, separated by commas. In
+this case a connection will be made to the first host, then a TCP forwarded 
+connection will be made through that to the second host, and so on. Hosts other than
+the final destination will not see anything other than the encrypted SSH stream. 
+A port for a host can be specified with a caret (eg matt@martello^44 ).
+This syntax can also be used with scp or rsync (specifying dbclient as the 
+ssh/rsh command). A file can be "bounced" through multiple SSH hops, eg
+
+scp -S dbclient matt@martello,root@wrt,canyons:/tmp/dump .
+
+Note that hostnames are resolved by the prior hop (so "canyons" would be resolved by the host "wrt")
+in the example above, the same way as other -L TCP forwarded hosts are. Host keys are 
+checked locally based on the given hostname.
+
+.SH ESCAPE CHARACTERS
+Typing a newline followed by the  key sequence \fI~.\fR (tilde, dot) will terminate a connection.
+The sequence \fI~^Z\fR (tilde, ctrl-z) will background the connection. This behaviour only
+applies when a PTY is used.
+
+.SH ENVIRONMENT
+.TP
+.B DROPBEAR_PASSWORD
+A password to use for remote authentication can be specified in the environment
+variable DROPBEAR_PASSWORD. Care should be taken that the password is not
+exposed to other users on a multi-user system, or stored in accessible files.
+.TP
+.B SSH_ASKPASS
+dbclient can use an external program to request a password from a user.
+SSH_ASKPASS should be set to the path of a program that will return a password
+on standard output. This program will only be used if either DISPLAY is set and
+standard input is not a TTY, or the environment variable SSH_ASKPASS_ALWAYS is
+set.
+
+.SH FILES
+.B ~/.ssh/dropbear_config
+
+This is the per user configuration file. A very limited subset of the keywords for
+ssh_config(5) is supported, and none of the advanced features. The file contains
+key value pairs on a single line separated with space or '='. Empty lines are ignored.
+Text starting with '#' is a comment, and also ignored.
+
+The file is not considered if multi-hop connection is used. Values on the command line
+override the respective values in the file.
+
+The recognized keywords are as follows. Keywords are case insensitive and values are
+case insensitive.
+
+.TP
+.B Host
+Defines the options that would be applied if this value matches the host specified
+on the command line. The next Host entry or EOF determine the list of applicable
+options.
+
+.TP
+.B HostName
+Specifies the actual host name to connect to. Can be DNS name or IP address.
+
+.TP
+.B Port
+Specifies the port number to use to connect to the remote host.
+
+.TP
+.B 
+User
+Specifies the user name to login in as.
+
+.TP
+.B
+IdentityFile
+Specifies the file with the private key used for public key authentication with the remote
+host. The file must be in the Dropbear format. See dropbearkey(1) to generate one. A '~/' at
+the start of the path will expanded to the executing user's home directory. A path that
+does not start with '/' will be treated relative to this configuration file's directory. Otherwise
+the path will be used as is.
+
+Because this file contains a secret it must have strict permissions to prevent abuse
+attempts - read/write for the executing user, and no access to anyone else.
+
+.SH NOTES
+If compiled with zlib support and if the server supports it, dbclient will
+always use compression.
+
+.SH AUTHOR
+Matt Johnston (matt@ucc.asn.au).
+.br
+Mihnea Stoenescu wrote initial Dropbear client support
+.br
+Gerrit Pape (pape@smarden.org) wrote this manual page.
+.SH SEE ALSO
+dropbear(8), dropbearkey(1)
+.P
+https://matt.ucc.asn.au/dropbear/dropbear.html

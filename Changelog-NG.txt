@@ -15,9 +15,14 @@ Asuswrt-Merlin Changelog
   - UPDATED: miniupnpd to 2.3.6.
   - UPDATED: wireguard kernel to v1.0.20220627.
   - UPDATED: wireguard tools to 2023-08-04 snapshot.
-  - CHANGED: hardcoded location of the CA bundle in inadyn, so it
-             no longer need to be manually defined in custom
+  - UPDATED: dropbear to 2024.84.
+  - CHANGED: Hardcoded location of the CA bundle in inadyn, so it
+             no longer needs to be manually defined in custom
              configurations.
+  - CHANGED: Re-designed Tools->Sysinfo page, adding graphs
+             and removing useless content.
+  - CHANGED: Updated free memory report on networkmap to also
+             consider reclaimable memory as being free (kjbracey)
   - FIXED: Concurrent cronjob changes through cru could cause
            collisions, leading to missing jobs (dave14305)
   - FIXED: crond would not use the new timezone if it got changed.
@@ -27,6 +32,8 @@ Asuswrt-Merlin Changelog
            Ubuntu by RSDNTWK)
   - FIXED: Long lists on System Log -> Connections tab could result
            in a timeout (Sani Huttunen)
+  - REMOVED: Temperature page (charts are now part of the revised
+             Tools->Sysinfo page).
 
 
 3004.388.6_2 (26-Feb-2024)

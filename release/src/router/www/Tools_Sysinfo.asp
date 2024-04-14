@@ -424,6 +424,8 @@ function showbootTime(){
 
 
 function show_connstate(){
+	document.getElementById("conn_td").innerHTML = conn_stats_arr[0] + " / <% sysinfo("conn.max"); %>&nbsp;&nbsp;-&nbsp;&nbsp;" + conn_stats_arr[1] + " active";
+
 	if (based_modelid === 'GT-AXE16000') {
 		wlc_24_arr = wlc_3_arr;
 		wlc_51_arr = wlc_0_arr;
@@ -723,6 +725,10 @@ function show_wifi_version() {
 					<tr>
 						<th>HW acceleration</th>
 						<td id="hwaccel"></td>
+					</tr>
+					<tr>
+						<th>Connections</th>
+						<td id="conn_td"></td>
 					</tr>
 					<tr>
 						<th>Wireless Clients (2.4 GHz)</th>

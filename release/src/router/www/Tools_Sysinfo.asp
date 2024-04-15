@@ -367,7 +367,7 @@ function update_temperatures(){
 			}
 
 			if (wl_info.band6g_support) {
-				code += "&nbsp;&nbsp;-&nbsp;&nbsp;6 GHz: <span>" + curr_coreTmp_6_raw + "</span>";
+				code += "&nbsp;&nbsp;-&nbsp;&nbsp;<span>6 GHz: </span>" + curr_coreTmp_6_raw;
 				wifi6data.push(parseInt(curr_coreTmp_6_raw.replace("&deg;C", "")));
 			}
 

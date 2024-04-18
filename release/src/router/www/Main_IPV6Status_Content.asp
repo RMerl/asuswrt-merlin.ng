@@ -138,7 +138,6 @@ function show_pinholes() {
 	code += '<th width="10%">Port</th>';
 	code += '<th width="35%">Local IP</th>';
 	code += '<th width="10%">Port</th>';
-/*	code += '<th width="20%">Desc</th>'; */
 	code += '</tr>';
 
 	if ("<% nvram_get("upnp_pinhole_enable"); %>" == "0") {
@@ -148,12 +147,13 @@ function show_pinholes() {
 			for (i = 0; i < pinholesarray.length-1; ++i) {
 				line = pinholesarray[i];
 				code += '<tr>';
+				code += '<td style="color: cyan;text-align:left;" colspan="5">' + line[6] + '</td>';
+				code += '</tr><tr>';
 				code += '<td>' + line[0] + '</td>';
 				code += '<td>' + line[1] + '</td>';
 				code += '<td>' + line[2] + '</td>';
 				code += '<td>' + line[3] + '</td>';
 				code += '<td>' + line[4] + '</td>';
-/*				code += '<td>' + line[6] + '</td>'; */
 				code += '</tr>';
 			}
 		} else {

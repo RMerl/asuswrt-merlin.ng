@@ -126,6 +126,8 @@ ej_ipv6_pinhole_array(int eid, webs_t wp, int argc, char_t **argv)
 	char proto[4], raddr[45], rport[6], iaddr[45], iport[6], timestamp[15], desc[200], desc2[256];
 	char line[256];
 	int ret = 0;
+	char *token, *line_dup;
+	int len, count;
 
 	ret = websWrite(wp, "var pinholesarray = [");
 
@@ -145,31 +147,66 @@ ej_ipv6_pinhole_array(int eid, webs_t wp, int argc, char_t **argv)
 
 	while (fgets(line, sizeof(line), fp) != NULL)
 	{
-		desc[0] = '\0';
-
 // TCP;2600:1000:100:200:300:1234:5678:9abc;40003;::;0;1;1710906282;IGD2 pinhole
 
-		if (sscanf(line,
-			"%3[^;];"
-			"%44[^;];"
-			"%15[^;];"
-			"%44[^;];"
-			"%15[^;];"
-			"%*[^;];"
-			"%14[^;];"
-			"%199[^\n]",
-			proto, iaddr, iport, raddr, rport, timestamp, desc) < 6) continue;
+		line_dup = strdup(line);
+			if (line_dup == NULL) {
+			break;
+		}
+
+		count = 0;
+		while ((count < 8) && (token = strsep(&line_dup, ";")) != NULL) {
+
+			switch (count) {
+				case 0:
+					strlcpy(proto, token, sizeof(proto));
+					break;
+				case 1:
+		                        strlcpy(iaddr, token, sizeof(iaddr));
+		                        break;
+				case 2:
+		                        strlcpy(iport, token, sizeof(iport));
+		                        break;
+				case 3:
+		                        strlcpy(raddr, token, sizeof(raddr));
+		                        break;
+				case 4:
+		                        strlcpy(rport, token, sizeof(rport));
+		                        break;
+				case 5:	// Skip UUID
+					break;
+				case 6:
+					strlcpy(timestamp, token, sizeof(timestamp));
+					count++;
+					// fallthrough so we get the remainder, even including delimiter chars
+				case 7:
+					token = strsep(&line_dup, "");
+					if (token)
+						strlcpy(desc, token, sizeof(desc));
+					else
+						strcpy(desc, "");
+					break;
+			}
+
+			count++;
+		}
+
+		if (count != 8) continue;	// Incomplete entry
+
+		len = strlen(desc);
+		if (len > 0 && desc[len-1] == '\n')
+			desc[len-1] = '\0';
 
 		if (str_escape_quotes(desc2, desc, sizeof(desc2)) == 0)
 			strlcpy(desc2, desc, sizeof(desc2));
 
 		/* parse remote ip */
-		if (strcmp(raddr, "::") == 0)
-			strcpy(raddr, "ALL");
+		if (raddr[0] == '\0' || strcmp(raddr, "::") == 0)
+			strcpy(raddr, "ANY");
 
 		/* parse internal ip */
-		if (strcmp(iaddr, "::") == 0)
-			strcpy(iaddr, "ALL");
+		if (iaddr[0] == '\0' || strcmp(iaddr, "::") == 0)
+			strcpy(iaddr, "ANY");
 
 		/* parse remote port */
 		if (strcmp(rport, "0") == 0)
@@ -177,6 +214,8 @@ ej_ipv6_pinhole_array(int eid, webs_t wp, int argc, char_t **argv)
 
 		ret += websWrite(wp, "[\"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\", \"%s\"],\n",
 		                      proto, raddr, rport, iaddr, iport, timestamp, desc2);
+
+		free(line_dup);
 	}
 
 	ret += websWrite(wp, "[]];\n");

@@ -4832,10 +4832,6 @@ define BusyboxOptions
 		fi; \
 	fi;
 	if [ "$(USB)" = "USB" ]; then \
-		if [ "$(NFS)" = "y" ]; then \
-			sed -i "/CONFIG_FEATURE_MOUNT_NFS/d" $(1); \
-			echo "CONFIG_FEATURE_MOUNT_NFS=y" >>$(1); \
-		fi; \
 		if [ "$(DISK_MONITOR)" = "y" ]; then \
 			sed -i "/CONFIG_FSCK/d" $(1); \
 			echo "CONFIG_FSCK=y" >>$(1); \

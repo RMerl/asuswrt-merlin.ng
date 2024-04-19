@@ -596,7 +596,7 @@ endif
 kernelbuild: headers_install \
 		$(if $(BCM_KF),rdp_link) \
 		$(if $(BCM_KF),$(if $(BUILD_BRCM_CPEROUTER),version_info))
-	TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk
+	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk
 
 # For old wlan release, kernelbuild and userspace still depends on hnd_dongle
 # This can be removed if no needs to support these releases in future
@@ -716,8 +716,8 @@ modbuild: shared_link kernelbuild
 ifneq ($(strip $(BRCM_DRIVER_WIRELESS)),)
 	$(MAKE) -C $(BRCMDRIVERS_DIR)/broadcom/net/wl modules_install
 endif
-	TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk modules INSTALL_MOD_PATH=$(PROFILE_DIR)/modules
-	TOOLCHAIN_TOP= $(MAKE) -C $(BUILD_DIR)/build -f Bcmkernel.mk modules_install INSTALL_MOD_PATH=$(PROFILE_DIR)/modules 
+	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk modules INSTALL_MOD_PATH=$(PROFILE_DIR)/modules
+	TOOLCHAIN_TOP= $(MAKE) $(PARALLEL_BUILD) -C $(BUILD_DIR)/build -f Bcmkernel.mk modules_install INSTALL_MOD_PATH=$(PROFILE_DIR)/modules
 	@echo "******************** DONE modbuild ********************";
 
 adslmodbuild:

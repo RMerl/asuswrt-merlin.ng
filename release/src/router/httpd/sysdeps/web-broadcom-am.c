@@ -148,7 +148,7 @@ wl_extent_channel(int unit)
 			/* Convert version 107 to 109 */
 			if (dtoh32(bi->version) == LEGACY_WL_BSS_INFO_VERSION) {
 				old_bi = (wl_bss_info_107_t *)bi;
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 				bi->chanspec = CH20MHZ_CHSPEC(old_bi->channel, WL_CHANNEL_2G5G_BAND(old_bi->channel));
 #else
 				bi->chanspec = CH20MHZ_CHSPEC(old_bi->channel);
@@ -220,7 +220,7 @@ dump_bss_info_array(int eid, webs_t wp, int argc, char_t **argv, wl_bss_info_t *
 	/* Convert version 107 to 109 */
 	if (dtoh32(bi->version) == LEGACY_WL_BSS_INFO_VERSION) {
 		old_bi = (wl_bss_info_107_t *)bi;
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 		bi->chanspec = CH20MHZ_CHSPEC(old_bi->channel, WL_CHANNEL_2G5G_BAND(old_bi->channel));
 #else
 		bi->chanspec = CH20MHZ_CHSPEC(old_bi->channel);

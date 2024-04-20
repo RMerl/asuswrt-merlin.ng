@@ -15,6 +15,48 @@ int update_default_routing_rule() {
 }
 #endif
 
+/* Temporary wedges for Fusion - needed for 3006 */
+void ovpn_up_handler()
+{
+	return;
+}
+
+void ovpn_route_up_handler()
+{
+	return;
+}
+
+void ovpn_route_pre_down_handler()
+{
+	return;
+}
+
+void ovpn_down_handler()
+{
+	return;
+}
+
+void update_ovpn_server_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+{
+	return;
+}
+
+void update_ovpn_client_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+{
+	return;
+}
+
+void update_ovpn_server_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+{
+        return;
+}
+
+void update_ovpn_client_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+{
+        return;
+}
+
+
 #if 0
 int ovpn_route_up_main(int argc, char **argv)
 {

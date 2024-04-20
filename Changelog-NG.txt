@@ -2,6 +2,8 @@ Asuswrt-Merlin Changelog
 ========================
 
 3004.388.7 (xx-xxx-2024)
+  - NOTE: RT-AX56U is exceptionally included in this release.
+
   - NEW: IGD2 support for UPNP/PCP.  This will allow IPv6 pinhole
          support for clients.  It must be enabled on the WAN
          page.  Existing pinholes will be listed on the
@@ -23,6 +25,20 @@ Asuswrt-Merlin Changelog
              and removing useless content.
   - CHANGED: Updated free memory report on networkmap to also
              consider reclaimable memory as being free (kjbracey)
+  - CHANGED: "Prevent client auto DoH" will also prevent the use of
+             Apple's iCloud Private Relay.
+  - CHANGED: NAT Passthrough page - removed the "Enabled + NAT
+             Helper" option as the firewall no longer blocks
+             traffic when set to disabled.  This is back to the
+             former behaviour, where this setting only controls
+             whether or not to load the NAT helper.  You might
+             need to readjust that setting if you had previously
+             changed it.
+  - CHANGED: SIP, RTSP and H323 ALG (NAT helpers) are now
+             disabled by default, as these legacy features tend
+             to create issues with modern VoIP setups.
+             This change will only apply to people doing a
+             factory default reset of their router.
   - FIXED: Concurrent cronjob changes through cru could cause
            collisions, leading to missing jobs (dave14305)
   - FIXED: crond would not use the new timezone if it got changed.
@@ -32,7 +48,7 @@ Asuswrt-Merlin Changelog
            Ubuntu by RSDNTWK)
   - FIXED: Long lists on System Log -> Connections tab could result
            in a timeout (Sani Huttunen)
-  - REMOVED: Temperature page (charts are now part of the revised
+  - REMOVED: Temperature page (charts are now part of the redesigned
              Tools->Sysinfo page).
 
 

@@ -292,13 +292,13 @@ if [ "$CONFIG_GCOV_KERNEL" == "y" ]; then
     cp -avf $BUILD_DIR/userspace/private/apps/scripts/debug/gcov_gather.sh  $TARGETS_DIR/$ROOTFS/bin/
 fi
 
-DMfiles="bin etc lib sbin share tmp usr include doc"
+#DMfiles="bin etc lib sbin share tmp usr include doc"
 
-for f in $DMfiles
-do
-	echo "ln -sf /tmp/opt/$f opt/$f"
-	(cd $TARGETS_DIR/$ROOTFS && ln -sf /tmp/opt/$f opt/$f)
-done
+#for f in $DMfiles
+#do
+#	echo "ln -sf /tmp/opt/$f opt/$f"
+#	(cd $TARGETS_DIR/$ROOTFS && ln -sf /tmp/opt/$f opt/$f)
+#done
 
 if [ "$KSTRIP" != "/bin/touch" ]; then
 # Stripping unneeded module symbols only when strip is "enabled"

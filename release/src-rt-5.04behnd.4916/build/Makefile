@@ -519,9 +519,9 @@ $(CREATE_INSTALL):
 		mkdir -p $(INSTALL_DIR)/etc/snmp
 		mkdir -p $(INSTALL_DIR)/etc/iproute2
 		rm -rf $(INSTALL_DIR)/opt
-		mkdir -p $(INSTALL_DIR)/opt/bin
-		mkdir -p $(INSTALL_DIR)/opt/modules
-		mkdir -p $(INSTALL_DIR)/opt/scripts
+		mkdir -p $(INSTALL_DIR)/rom/bin
+		mkdir -p $(INSTALL_DIR)/rom/modules
+		mkdir -p $(INSTALL_DIR)/rom/scripts
 		touch $@
 
 $(KERNELLINKS): $(KERNEL_INCLUDE_LINK) $(KERNEL_ARM_INCLUDE_LINK)

@@ -676,20 +676,6 @@ function applyRule(){
 			document.form.action_script.value += ";restart_stubby";
 		}
 
-		if ((dnssec_support &&
-		      (getRadioValue(document.form.dnssec_enable) != '<% nvram_get("dnssec_enable"); %>') ||
-		      (getRadioValue(document.form.dnssec_check_unsigned_x) != '<% nvram_get("dnssec_check_unsigned_x"); %>')) ||
-
-		    (dnspriv_support &&
-		      (document.form.dns_priv_override.value == 0) &&
-		      (document.form.dnspriv_enable.value != '<% nvram_get("dnspriv_enable"); %>')) ||
-
-		    (getRadioValue(document.form.dns_norebind) != '<% nvram_get("dns_norebind"); %>') ||
-		    (document.form.dns_priv_override.value != '<% nvram_get("dns_priv_override"); %>') ||
-		    (getRadioValue(document.form.dns_fwd_local) != '<% nvram_get("dns_fwd_local"); %>') )
-
-				document.form.action_script.value += ";restart_dnsmasq";
-
 		if((dnssec_support &&
 				(getRadioValue(document.form.dnssec_enable) != '<% nvram_get("dnssec_enable"); %>') ||
 				(getRadioValue(document.form.dnssec_check_unsigned_x) != '<% nvram_get("dnssec_check_unsigned_x"); %>')) ||
@@ -721,7 +707,6 @@ function applyRule(){
 			document.form.submit();	
 		}
 	}
-
 }
 
 var ctf = {

@@ -460,6 +460,10 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 						strlcpy(result, tmp+1, sizeof result);
 					else
 						strlcpy(result, buffer, sizeof result);
+
+					if (tmp = strstr(result, "FWID"))
+						*tmp = '\0';
+
 					replace_char(result, '\n', ' ');
 					free(buffer);
 				}

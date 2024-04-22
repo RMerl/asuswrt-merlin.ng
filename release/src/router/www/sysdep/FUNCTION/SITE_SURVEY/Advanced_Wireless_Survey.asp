@@ -10,9 +10,13 @@
 <title><#Web_Title#> - Site Survey</title>
 <link rel="stylesheet" type="text/css" href="/form_style.css">
 <link rel="stylesheet" type="text/css" href="index_style.css">
-<link rel="stylesheet" href="./mobile/css/qis.css"></link>
-<link rel="stylesheet" href="./mobile/css/icon.css"></link>
+<link rel="stylesheet" href="/mobile/css/icon.css"></link>
 <style>
+body{
+.ap_icon{
+        width: 38px;
+        height: 32px;
+}
 p{
 	font-weight: bolder;
 }

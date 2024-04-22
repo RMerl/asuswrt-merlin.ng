@@ -51,6 +51,7 @@
 }	
 </style>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
+<script language="JavaSCript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>

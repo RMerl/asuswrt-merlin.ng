@@ -724,7 +724,7 @@ const sha256 = function a(b){function c(a,b){return a>>>b|a<<32-b}for(var d,e,f=
 				<div id="reCaptcha" onclick="regen_captcha();"></div>
 				<div class="error_hint" style="display:none; clear:left;" id="error_captcha_field">Captcha is wrong. Please input again.</div>
 			</div>
-			<input type="submit" value="<#CTL_signin#>" class="button" style="border-style: hidden;" onclick="preLogin();">
+			<input type="button" value="<#CTL_signin#>" class="button" style="border-style: hidden;" onclick="preLogin();">
 		</div>
 
 		<!-- No Login field -->

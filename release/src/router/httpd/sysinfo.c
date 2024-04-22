@@ -185,6 +185,8 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				char model[64];
 #if defined(BCM4912)
 				strcpy(model, "BCM4912 - B53 ARMv8");
+#elif defined(RTCONFIG_HND_ROUTER_BE_4916)
+				strcpy(model, "BCM4916 - B53 ARMv8");
 #else
 
 				char impl[8], arch[8], variant[8], part[10], revision[4];
@@ -243,6 +245,10 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #if defined(BCM4912)
 			if (1)
 				strcpy(result, "2000");
+			else
+#elif defined(RTCONFIG_HND_ROUTER_BE_4916)
+			if (1)
+				strcpy(result, "2600");
 			else
 #else
 			int freq = 0;
@@ -375,7 +381,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 #endif
 		} else if(strcmp(type,"conn.total") == 0) {
 			FILE* fp;
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 			fp = fopen("/proc/sys/net/netfilter/nf_conntrack_count", "r");
 #else
 			fp = fopen("/proc/sys/net/ipv4/netfilter/ip_conntrack_count", "r");
@@ -404,7 +410,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 
 		} else if(strcmp(type,"conn.max") == 0) {
 			FILE* fp;
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 			fp = fopen("/proc/sys/net/netfilter/nf_conntrack_max", "r");
 #else
 			fp = fopen("/proc/sys/net/ipv4/netfilter/ip_conntrack_max", "r");
@@ -613,7 +619,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				system("/bin/fc status | grep \"HW Acceleration\" >/tmp/output.txt");
 #endif
 			else if (!strcmp(&type[8], "fc"))
-#if defined(RTCONFIG_HND_ROUTER_AX_6756)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || RTCONFIG_HND_ROUTER_BE_4916
 				system("/bin/fc status | grep \"Flow Ucast Learning\" >/tmp/output.txt");
 #else
 				system("/bin/fc status | grep \"Flow Learning\" >/tmp/output.txt");

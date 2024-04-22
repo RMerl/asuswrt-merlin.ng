@@ -184,7 +184,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				int count = 0;
 				char model[64];
 #if defined(BCM4912)
-				strcpy(model, "BCM4912 - Cortex B53 ARMv8");
+				strcpy(model, "BCM4912 - B53 ARMv8");
 #else
 
 				char impl[8], arch[8], variant[8], part[10], revision[4];
@@ -206,7 +206,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				    && !strcmp(variant, "0x0")
 				    && !strcmp(part, "0x100")
 				    && !strcmp(arch, "8"))
-					sprintf(model, "BCM490x - Cortex B53 ARMv8 revision %s", revision);
+					sprintf(model, "BCM490x - B53 ARMv8 revision %s", revision);
 				else if (!strcmp(impl, "0x41")
 				    && !strcmp(variant, "0x0")
 				    && !strcmp(part, "0xc07")

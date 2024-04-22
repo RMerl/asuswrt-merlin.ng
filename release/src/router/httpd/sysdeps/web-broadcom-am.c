@@ -37,21 +37,23 @@
 #include <bcmdevs.h>
 #include <sysinfo.h>
 
-const char *phy_type_str_fmt[6] = {
+const char *phy_type_str_fmt[7] = {
         "a",
         "b",
         "g",
         "n",
         "ac",
-        "ax"
+        "ax",
+        "be"
 };
 
-const char *wl_bw_str_fmt[5] = {
+const char *wl_bw_str_fmt[6] = {
 	"",
 	"20MHz",
 	"40MHz",
 	"80MHz",
 	"160MHz",
+	"320MHz",
 };
 
 /* The below macros handle endian mis-matches between wl utility and wl driver. */

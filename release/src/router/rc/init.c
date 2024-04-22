@@ -4037,6 +4037,9 @@ int init_nvram(void)
 #if 0
 	conf_swmode_support(model);
 #endif
+#ifdef RTCONFIG_OPENVPN
+	nvram_set("vpn_upload_state", "");
+#endif
 #ifdef RTCONFIG_SSH
 	if(nvram_get_int("sshd_port")>0 && nvram_get_int("sshd_port_x")<=0)
 		nvram_set("sshd_port_x", nvram_safe_get("sshd_port"));
@@ -22127,24 +22130,6 @@ int init_nvram2(void)
 	}
 #endif
 
-#ifdef RTCONFIG_OPENVPN
-/* Initialize OpenVPN state flags */
-
-	for (i = 1; i <= OVPN_CLIENT_MAX; i++) {
-		sprintf(varname, "vpn_client%d_state", i);
-		nvram_set(varname, "0");
-
-		sprintf(varname, "vpn_client%d_errno", i);
-		nvram_set(varname, "0");
-	}
-
-	nvram_set("vpn_server1_state", "0");
-	nvram_set("vpn_server2_state", "0");
-	nvram_set("vpn_server1_errno", "0");
-	nvram_set("vpn_server2_errno", "0");
-	nvram_set("vpn_upload_state", "");
-#endif
-
 /* Remove potentially outdated data */
 	nvram_unset("webs_state_info");
 	nvram_set("webs_state_flag","0");
@@ -22403,7 +22388,7 @@ int init_nvram2(void)
 	}
 #endif
 #ifdef RTCONFIG_OPENVPN
-//	ovpn_defaults();
+	ovpn_defaults();
 #endif
 
 #if defined(RTCONFIG_IFTTT) || defined(RTCONFIG_ALEXA) || defined(RTCONFIG_GOOGLE_ASST)

@@ -209,4 +209,5 @@ extern ovpn_sconf_t *ovpn_get_sconf(int unit);
 extern char *get_ovpn_custom_old(ovpn_type_t type, int unit, char* buffer, int bufferlen);
 extern char *ovpn_get_policy_rules(int unit, char *buffer, int bufferlen);
 extern int ovpn_set_policy_rules(char *buffer);
+extern void ovpn_defaults();
 #endif

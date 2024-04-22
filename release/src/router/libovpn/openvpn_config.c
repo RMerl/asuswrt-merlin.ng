@@ -609,3 +609,23 @@ ovpn_sconf_t *ovpn_get_sconf(int unit){
 
 	return sconf;
 }
+
+void ovpn_defaults(){
+	int i;
+	char varname[64];
+
+/* Initialize OpenVPN state flags */
+	for (i = 1; i <= OVPN_CLIENT_MAX; i++) {
+		sprintf(varname, "vpn_client%d_state", i);
+		nvram_set(varname, "0");
+
+		sprintf(varname, "vpn_client%d_errno", i);
+		nvram_set(varname, "0");
+	}
+
+	nvram_set("vpn_server1_state", "0");
+	nvram_set("vpn_server2_state", "0");
+	nvram_set("vpn_server1_errno", "0");
+	nvram_set("vpn_server2_errno", "0");
+	nvram_set("vpn_upload_state", "");
+}

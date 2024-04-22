@@ -212,4 +212,5 @@ extern int ovpn_write_key(ovpn_type_t type, int unit, ovpn_key_t key_type);
 extern ovpn_cconf_t *ovpn_get_cconf(int unit);
 extern ovpn_sconf_t *ovpn_get_sconf(int unit);
 extern char *get_ovpn_custom_old(ovpn_type_t type, int unit, char* buffer, int bufferlen);
+extern void ovpn_defaults();
 #endif

@@ -304,7 +304,7 @@ define(function(){
 					{url: "Advanced_VPNDirector.asp", tabName: "VPN Director"},
 					{url: "Advanced_VPN_OpenVPN.asp", tabName: "<#BOP_isp_heart_item#>"},
 					{url: "Advanced_VPNServer_Content.asp", tabName: "__INHERIT__"},
-					{url: "Advanced_OpenVPNClient_Content.asp", tabName: (vpn_fusion_support) ? "<#VPN_Fusion#>" : "<#vpnc_title#>"},
+					{url: "Advanced_OpenVPNClient_Content.asp", tabName: "<#vpnc_title#>"},
 					{url: "Advanced_VPNClient_Content.asp", tabName: "__INHERIT__"},
 					{url: "Advanced_TOR_Content.asp", tabName: "TOR"},
 					{url: "Advanced_Instant_Guard.asp", tabName: "<#Instant_Guard_title#>"},

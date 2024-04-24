@@ -1,6 +1,6 @@
 all:
-	cp -f prebuild/dnsqd dnsqd
-	cp -f prebuild/libdns_app_client.so libdns_app_client.so
+	cp -f prebuild/$(BUILD_NAME)/dnsqd dnsqd
+	cp -f prebuild/$(BUILD_NAME)/libdns_app_client.so libdns_app_client.so
 
 install: all
 	install -d $(INSTALLDIR)/usr/sbin

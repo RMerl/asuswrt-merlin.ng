@@ -93,7 +93,7 @@ int get_dns_filter(int proto, int mode, dnsf_srv_entry_t *dnsfsrv)
 				strlcpy(dnsfsrv->server1, nvram_safe_get("dnsfilter_custom63"), 46);
 				dnsfsrv->server2[0] = '\0';
 				break;
-#if defined(BCM4912)	// Causes kernel checksum errors on HND 5.02
+#if defined(BCM4912) || defined(RTCONFIG_HND_ROUTER_BE_4916)	// Causes kernel checksum errors on HND 5.02
 			case DNSF_SRV_ROUTER:
 				strlcpy(dnsfsrv->server1, nvram_safe_get("ipv6_rtr_addr"), 46);
 				dnsfsrv->server2[0] = '\0';

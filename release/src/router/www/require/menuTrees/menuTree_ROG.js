@@ -506,6 +506,10 @@ define(function(){
 					retArray.push("TrafficAnalyzer_Statistic.asp");
 				}
 
+				if(!wifiRadar_support){
+					retArray.push("WiFi_Insight.asp");
+				}
+
 				if(!bwdpi_mals_support){
 					retArray.push("AiProtection_MaliciousSitesBlocking.asp");
 				}

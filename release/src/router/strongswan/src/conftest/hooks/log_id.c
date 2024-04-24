@@ -35,6 +35,7 @@ METHOD(listener_t, message, bool,
 	private_log_id_t *this, ike_sa_t *ike_sa, message_t *message,
 	bool incoming, bool plain)
 {
+#if DEBUG_LEVEL >= 1
 	if (incoming && plain)
 	{
 		enumerator_t *enumerator;
@@ -62,6 +63,9 @@ METHOD(listener_t, message, bool,
 		enumerator->destroy(enumerator);
 	}
 	return TRUE;
+#else
+	return FALSE;
+#endif
 }
 
 METHOD(hook_t, destroy, void,

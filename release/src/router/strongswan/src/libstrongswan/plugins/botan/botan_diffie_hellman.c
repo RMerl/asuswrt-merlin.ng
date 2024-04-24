@@ -80,7 +80,7 @@ struct private_botan_diffie_hellman_t {
 /**
  * Load a DH private key
  */
-bool load_private_key(private_botan_diffie_hellman_t *this, chunk_t value)
+static bool load_private_key(private_botan_diffie_hellman_t *this, chunk_t value)
 {
 	botan_mp_t xa;
 

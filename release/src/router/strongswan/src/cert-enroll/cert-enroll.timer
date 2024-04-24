@@ -1,0 +1,12 @@
+[Unit]
+Description=daily check of the remaining X.509 certificate lifetime
+Documentation=man:cert-enroll(8)
+
+[Timer]
+# The cert-enroll script should be run once a day.
+OnCalendar=*-*-* 02:00:00
+RandomizedDelaySec=7200
+Persistent=true
+
+[Install]
+WantedBy=timers.target

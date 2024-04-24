@@ -175,7 +175,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 	imv_msg_t *out_msg;
 	imv_hcd_state_t *hcd_state;
 	pa_tnc_attr_t *attr;
-	enum_name_t *pa_subtype_names;
+	enum_name_t *pa_subtype_names DBG_UNUSED;
 	pen_type_t type, msg_type;
 	TNC_Result result;
 	bool fatal_error = FALSE, assessment = FALSE;
@@ -220,6 +220,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 			{
 				case IETF_ATTR_FORWARDING_ENABLED:
 				{
+#if DEBUG_LEVEL >= 2
 					ietf_attr_fwd_enabled_t *attr_cast;
 					os_fwd_status_t fwd_status;
 
@@ -227,12 +228,14 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 					fwd_status = attr_cast->get_status(attr_cast);
 					DBG2(DBG_IMV, "  %N: %N", ietf_attr_names, type.type,
 								   os_fwd_status_names, fwd_status);
+#endif /* DEBUG_LEVEL */
 					state->set_action_flags(state,
 											IMV_HCD_ATTR_FORWARDING_ENABLED);
 					break;
 				}
 				case IETF_ATTR_FACTORY_DEFAULT_PWD_ENABLED:
 				{
+#if DEBUG_LEVEL >= 2
 					generic_attr_bool_t *attr_cast;
 					bool status;
 
@@ -240,6 +243,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 					status = attr_cast->get_status(attr_cast);
 					DBG2(DBG_IMV, "  %N: %s", ietf_attr_names, type.type,
 								   status ? "yes" : "no");
+#endif /* DEBUG_LEVEL */
 					state->set_action_flags(state,
 											IMV_HCD_ATTR_DEFAULT_PWD_ENABLED);
 					break;
@@ -265,49 +269,47 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 				case PWG_HCD_USER_APP_NAME:
 				case PWG_HCD_USER_APP_STRING_VERSION:
 				{
-					chunk_t value;
-
-					value = attr->get_value(attr);
+#if DEBUG_LEVEL >= 2
+					chunk_t value = attr->get_value(attr);
 					DBG2(DBG_IMV, "  %N: %.*s", pwg_attr_names, type.type,
-								  value.len, value.ptr);
+								  (int)value.len, value.ptr);
+#endif /* DEBUG_LEVEL */
 					break;
 				}
 				case PWG_HCD_FIRMWARE_PATCHES:
 				case PWG_HCD_RESIDENT_APP_PATCHES:
 				case PWG_HCD_USER_APP_PATCHES:
 				{
-					chunk_t value;
-					size_t len;
-
-					value = attr->get_value(attr);
-					len = value.len;
+#if DEBUG_LEVEL >= 2
+					chunk_t value = attr->get_value(attr);
 
 					/* remove any trailing LF from patches string */
-					if (len && (value.ptr[len - 1] == '\n'))
+					if (value.len && (value.ptr[value.len - 1] == '\n'))
 					{
-						len--;
+						value.len--;
 					}
 					DBG2(DBG_IMV, "  %N:%s%.*s", pwg_attr_names, type.type,
-								  len ? "\n" : " ", len, value.ptr);
+						 value.len ? "\n" : " ", (int)value.len, value.ptr);
+#endif /* DEBUG_LEVEL */
 					break;
 				}
 				case PWG_HCD_FIRMWARE_VERSION:
 				case PWG_HCD_RESIDENT_APP_VERSION:
 				case PWG_HCD_USER_APP_VERSION:
 				{
-					chunk_t value;
-
-					value = attr->get_value(attr);
+#if DEBUG_LEVEL >= 2
+					chunk_t value = attr->get_value(attr);
 					DBG2(DBG_IMV, "  %N: %#B", pwg_attr_names, type.type, &value);
+#endif /* DEBUG_LEVEL */
 					break;
 				}
 				case PWG_HCD_CERTIFICATION_STATE:
 				case PWG_HCD_CONFIGURATION_STATE:
 				{
-					chunk_t value;
-
-					value = attr->get_value(attr);
+#if DEBUG_LEVEL >= 2
+					chunk_t value = attr->get_value(attr);
 					DBG2(DBG_IMV, "  %N: %B", pwg_attr_names, type.type, &value);
+#endif /* DEBUG_LEVEL */
 					break;
 				}
 				case PWG_HCD_DEFAULT_PWD_ENABLED:
@@ -332,6 +334,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 				}
 				case PWG_HCD_FORWARDING_ENABLED:
 				{
+#if DEBUG_LEVEL >= 2
 					ietf_attr_fwd_enabled_t *attr_cast;
 					os_fwd_status_t fwd_status;
 
@@ -339,11 +342,13 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 					fwd_status = attr_cast->get_status(attr_cast);
 					DBG2(DBG_IMV, "  %N: %N", pwg_attr_names, type.type,
 								  os_fwd_status_names, fwd_status);
+#endif /* DEBUG_LEVEL */
 					break;
 				}
 
 				case PWG_HCD_VENDOR_SMI_CODE:
 				{
+#if DEBUG_LEVEL >= 2
 					pwg_attr_vendor_smi_code_t *attr_cast;
 					uint32_t smi_code;
 
@@ -351,6 +356,7 @@ static TNC_Result receive_msg(private_imv_hcd_agent_t *this, imv_state_t *state,
 					smi_code = attr_cast->get_vendor_smi_code(attr_cast);
 					DBG2(DBG_IMV, "  %N: 0x%06x (%u)", pwg_attr_names, type.type,
 								  smi_code, smi_code);
+#endif /* DEBUG_LEVEL */
 					break;
 				}
 				default:
@@ -590,7 +596,7 @@ METHOD(imv_agent_if_t, solicit_recommendation, TNC_Result,
 	imv_state_t *state;
 	imv_hcd_state_t* hcd_state;
 	imv_hcd_handshake_state_t handshake_state;
-	enum_name_t *pa_subtype_names;
+	enum_name_t *pa_subtype_names DBG_UNUSED;
 	bool missing = FALSE;
 	uint32_t received;
 	int i;

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2018 Tobias Brunner
+ * Copyright (C) 2018-2023 Tobias Brunner
  * Copyright (C) 2018 Andreas Steffen
  *
  * Copyright (C) 2018 René Korthaus
@@ -80,13 +80,45 @@ const char *botan_get_hash(hash_algorithm_t hash)
 	}
 }
 
+/**
+ * Encode the given RSA public key parameter as chunk.
+ */
+static bool encode_rsa_field(botan_pubkey_t pubkey, const char *name,
+							 chunk_t *chunk)
+{
+	botan_mp_t val = NULL;
+	size_t len = 0;
+
+	if (botan_mp_init(&val) ||
+		botan_pubkey_get_field(val, pubkey, name) ||
+		botan_mp_num_bytes(val, &len) || !len)
+	{
+		botan_mp_destroy(val);
+		return FALSE;
+	}
+
+	*chunk = chunk_alloc(len);
+	if (botan_mp_to_bin(val, chunk->ptr))
+	{
+		botan_mp_destroy(val);
+		chunk_free(chunk);
+		return FALSE;
+	}
+	botan_mp_destroy(val);
+	return TRUE;
+}
+
 /*
  * Described in header
  */
 bool botan_get_encoding(botan_pubkey_t pubkey, cred_encoding_type_t type,
 						chunk_t *encoding)
 {
-	bool success = TRUE;
+	chunk_t asn1_encoding, n = chunk_empty, e = chunk_empty;
+	cred_encoding_part_t part = CRED_PART_END;
+	char algo[8];
+	size_t len = sizeof(algo);
+	bool success = FALSE;
 
 	encoding->len = 0;
 	if (botan_pubkey_export(pubkey, NULL, &encoding->len,
@@ -104,15 +136,43 @@ bool botan_get_encoding(botan_pubkey_t pubkey, cred_encoding_type_t type,
 		return FALSE;
 	}
 
-	if (type != PUBKEY_SPKI_ASN1_DER)
+	if (type == PUBKEY_SPKI_ASN1_DER)
 	{
-		chunk_t asn1_encoding = *encoding;
-
-		success = lib->encoding->encode(lib->encoding, type, NULL, encoding,
-										CRED_PART_ECDSA_PUB_ASN1_DER,
-										asn1_encoding, CRED_PART_END);
-		chunk_free(&asn1_encoding);
+		return TRUE;
 	}
+
+	asn1_encoding = *encoding;
+	if (botan_pubkey_algo_name(pubkey, algo, &len))
+	{
+		chunk_free(&asn1_encoding);
+		return FALSE;
+	}
+
+	if (streq(algo, "RSA") &&
+		encode_rsa_field(pubkey, "n", &n) &&
+		encode_rsa_field(pubkey, "e", &e))
+	{
+		success = lib->encoding->encode(lib->encoding, type, NULL, encoding,
+									CRED_PART_RSA_PUB_ASN1_DER, asn1_encoding,
+									CRED_PART_RSA_MODULUS, n,
+									CRED_PART_RSA_PUB_EXP, e, CRED_PART_END);
+	}
+	else
+	{
+		if (streq(algo, "ECDSA"))
+		{
+			part = CRED_PART_ECDSA_PUB_ASN1_DER;
+		}
+		else if (streq(algo, "Ed25519"))
+		{
+			part = CRED_PART_EDDSA_PUB_ASN1_DER;
+		}
+		success = lib->encoding->encode(lib->encoding, type, NULL, encoding,
+										part, asn1_encoding, CRED_PART_END);
+	}
+	chunk_free(&asn1_encoding);
+	chunk_free(&n);
+	chunk_free(&e);
 	return success;
 }
 

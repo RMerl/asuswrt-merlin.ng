@@ -134,7 +134,7 @@ static TNC_Result receive_msg(private_imv_swima_agent_t *this,
 	enumerator = in_msg->create_attribute_enumerator(in_msg);
 	while (enumerator->enumerate(enumerator, &attr))
 	{
-		uint32_t request_id = 0, last_eid, eid_epoch;
+		uint32_t request_id = 0, last_eid DBG_UNUSED, eid_epoch;
 		swima_inventory_t *inventory;
 		swima_events_t *events;
 		pen_type_t type;

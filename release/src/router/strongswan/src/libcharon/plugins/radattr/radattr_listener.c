@@ -60,7 +60,7 @@ struct private_radattr_listener_t {
 static void print_radius_attributes(private_radattr_listener_t *this,
 									message_t *message)
 {
-	radius_attribute_type_t type;
+	radius_attribute_type_t type DBG_UNUSED;
 	enumerator_t *enumerator;
 	notify_payload_t *notify;
 	payload_t *payload;

@@ -163,7 +163,7 @@ int asn1_unwrap(chunk_t *blob, chunk_t *content);
  * Parses an ASN.1 algorithmIdentifier object
  *
  * @param blob		ASN.1 coded blob
- * @param level0	top-most level offset
+ * @param level0	top-most level offset (-1 to suppress log messages)
  * @param params	returns optional [ASN.1 coded] parameters
  * @return			known OID index or OID_UNKNOWN
  */

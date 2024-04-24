@@ -2,7 +2,7 @@
  * Copyright (C) 2000 Andreas Hess, Patric Lichtsteiner, Roger Wegmann
  * Copyright (C) 2001 Marco Bertossa, Andreas Schleiss
  * Copyright (C) 2002 Mario Strasser
- * Copyright (C) 2000-2017 Andreas Steffen
+ * Copyright (C) 2000-2022 Andreas Steffen
  * Copyright (C) 2006-2009 Martin Willi
  * Copyright (C) 2008-2017 Tobias Brunner
  *
@@ -483,8 +483,14 @@ static identification_t *parse_generalName(chunk_t blob, int level0)
 					case 4:
 						id_type = ID_IPV4_ADDR;
 						break;
+					case 8:
+						id_type = ID_IPV4_ADDR_SUBNET;
+						break;
 					case 16:
 						id_type = ID_IPV6_ADDR;
+						break;
+					case 32:
+						id_type = ID_IPV6_ADDR_SUBNET;
 						break;
 					default:
 						break;
@@ -715,9 +721,6 @@ static void parse_keyUsage(chunk_t blob, private_x509_cert_t *this)
 		KU_DECIPHER_ONLY =		8,
 	};
 
-	/* to be compliant with RFC 4945 specific KUs have to be included */
-	this->flags &= ~X509_IKE_COMPLIANT;
-
 	if (asn1_unwrap(&blob, &blob) == ASN1_BIT_STRING && blob.len)
 	{
 		int bit, byte, unused = blob.ptr[0];
@@ -769,10 +772,9 @@ static const asn1Object_t extendedKeyUsageObjects[] = {
 #define EXT_KEY_USAGE_PURPOSE_ID	1
 
 /**
- * Extracts extendedKeyUsage OIDs
+ * Extracts extendedKeyUsage OIDs (shared with x509_pkcs10.c)
  */
-static bool parse_extendedKeyUsage(chunk_t blob, int level0,
-								   private_x509_cert_t *this)
+bool x509_parse_eku_extension(chunk_t blob, int level0, x509_flag_t *flags)
 {
 	asn1_parser_t *parser;
 	chunk_t object;
@@ -789,19 +791,19 @@ static bool parse_extendedKeyUsage(chunk_t blob, int level0,
 			switch (asn1_known_oid(object))
 			{
 				case OID_SERVER_AUTH:
-					this->flags |= X509_SERVER_AUTH;
+					*flags |= X509_SERVER_AUTH;
 					break;
 				case OID_CLIENT_AUTH:
-					this->flags |= X509_CLIENT_AUTH;
+					*flags |= X509_CLIENT_AUTH;
 					break;
 				case OID_IKE_INTERMEDIATE:
-					this->flags |= X509_IKE_INTERMEDIATE;
+					*flags |= X509_IKE_INTERMEDIATE;
 					break;
 				case OID_OCSP_SIGNING:
-					this->flags |= X509_OCSP_SIGNER;
+					*flags |= X509_OCSP_SIGNER;
 					break;
 				case OID_MS_SMARTCARD_LOGON:
-					this->flags |= X509_MS_SMARTCARD_LOGON;
+					*flags |= X509_MS_SMARTCARD_LOGON;
 					break;
 				default:
 					break;
@@ -1392,13 +1394,10 @@ static bool parse_certificate(private_x509_cert_t *this)
 	int objectID;
 	int extn_oid = OID_UNKNOWN;
 	signature_params_t sig_alg = {};
+	bool critical = FALSE, key_usage_parsed = FALSE;
 	bool success = FALSE;
-	bool critical = FALSE;
 
 	parser = asn1_parser_create(certObjects, this->encoding);
-
-	/* unless we see a keyUsage extension we are compliant with RFC 4945 */
-	this->flags |= X509_IKE_COMPLIANT;
 
 	while (parser->iterate(parser, &objectID, &object))
 	{
@@ -1514,9 +1513,10 @@ static bool parse_certificate(private_x509_cert_t *this)
 						break;
 					case OID_KEY_USAGE:
 						parse_keyUsage(object, this);
+						key_usage_parsed = TRUE;
 						break;
 					case OID_EXTENDED_KEY_USAGE:
-						if (!parse_extendedKeyUsage(object, level, this))
+						if (!x509_parse_eku_extension(object, level, &this->flags))
 						{
 							goto end;
 						}
@@ -1610,6 +1610,17 @@ end:
 	if (success)
 	{
 		hasher_t *hasher;
+
+		if (!key_usage_parsed)
+		{
+			/* we are compliant with RFC 4945 without keyUsage extension */
+			this->flags |= X509_IKE_COMPLIANT;
+			/* allow CA certificates without keyUsage extension to sign CRLs */
+			if (this->flags & X509_CA)
+			{
+				this->flags |= X509_CRL_SIGN;
+			}
+		}
 
 		/* check if the certificate is self-signed */
 		if (this->public.interface.interface.issued_by(
@@ -1848,7 +1859,7 @@ METHOD(x509_t, get_flags, x509_flag_t,
 METHOD(x509_t, get_serial, chunk_t,
 	private_x509_cert_t *this)
 {
-	return this->serialNumber;
+	return chunk_skip_zero(this->serialNumber);
 }
 
 METHOD(x509_t, get_subjectKeyIdentifier, chunk_t,
@@ -2041,7 +2052,7 @@ static private_x509_cert_t* create_empty(void)
 /**
  * Build a generalName from an id
  */
-chunk_t build_generalName(identification_t *id)
+static chunk_t build_generalName(identification_t *id)
 {
 	int context;
 
@@ -2058,8 +2069,13 @@ chunk_t build_generalName(identification_t *id)
 		case ID_DER_ASN1_DN:
 			context = ASN1_CONTEXT_C_4;
 			break;
+		case ID_DER_ASN1_GN_URI:
+			context = ASN1_CONTEXT_S_6;
+			break;
 		case ID_IPV4_ADDR:
 		case ID_IPV6_ADDR:
+		case ID_IPV4_ADDR_SUBNET:
+		case ID_IPV6_ADDR_SUBNET:
 			context = ASN1_CONTEXT_S_7;
 			break;
 		default:
@@ -2208,6 +2224,50 @@ static chunk_t generate_ts(traffic_selector_t *ts)
 }
 
 /**
+ * Generate an extendedKeyUsage X.509v3 extension (shared with x509_pkcs10.c)
+ */
+chunk_t x509_generate_eku_extension(x509_flag_t flags)
+{
+	chunk_t extendedKeyUsage = chunk_empty, ocspSigning = chunk_empty;
+	chunk_t serverAuth = chunk_empty, clientAuth = chunk_empty;
+	chunk_t ikeIntermediate = chunk_empty, msSmartcardLogon = chunk_empty;
+
+	if (flags & X509_SERVER_AUTH)
+	{
+		serverAuth = asn1_build_known_oid(OID_SERVER_AUTH);
+	}
+	if (flags & X509_CLIENT_AUTH)
+	{
+		clientAuth = asn1_build_known_oid(OID_CLIENT_AUTH);
+	}
+	if (flags & X509_IKE_INTERMEDIATE)
+	{
+		ikeIntermediate = asn1_build_known_oid(OID_IKE_INTERMEDIATE);
+	}
+	if (flags & X509_OCSP_SIGNER)
+	{
+		ocspSigning = asn1_build_known_oid(OID_OCSP_SIGNING);
+	}
+	if (flags & X509_MS_SMARTCARD_LOGON)
+	{
+		msSmartcardLogon = asn1_build_known_oid(OID_MS_SMARTCARD_LOGON);
+	}
+
+	if (serverAuth.ptr  || clientAuth.ptr || ikeIntermediate.ptr ||
+		ocspSigning.ptr || msSmartcardLogon.ptr)
+	{
+		extendedKeyUsage = asn1_wrap(ASN1_SEQUENCE, "mm",
+								asn1_build_known_oid(OID_EXTENDED_KEY_USAGE),
+								asn1_wrap(ASN1_OCTET_STRING, "m",
+									asn1_wrap(ASN1_SEQUENCE, "mmmmm",
+										serverAuth, clientAuth, ikeIntermediate,
+										ocspSigning, msSmartcardLogon)));
+	}
+
+	return extendedKeyUsage;
+}
+
+/**
  * Generate and sign a new certificate
  */
 static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
@@ -2215,18 +2275,15 @@ static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 {
 	const chunk_t keyUsageCrlSign = chunk_from_chars(0x01, 0x02);
 	const chunk_t keyUsageCertSignCrlSign = chunk_from_chars(0x01, 0x06);
-	chunk_t extensions = chunk_empty, extendedKeyUsage = chunk_empty;
-	chunk_t serverAuth = chunk_empty, clientAuth = chunk_empty;
-	chunk_t ocspSigning = chunk_empty, certPolicies = chunk_empty;
+	chunk_t extensions = chunk_empty, certPolicies = chunk_empty;
 	chunk_t basicConstraints = chunk_empty, nameConstraints = chunk_empty;
 	chunk_t keyUsage = chunk_empty, keyUsageBits = chunk_empty;
 	chunk_t subjectAltNames = chunk_empty, policyMappings = chunk_empty;
 	chunk_t subjectKeyIdentifier = chunk_empty, authKeyIdentifier = chunk_empty;
 	chunk_t crlDistributionPoints = chunk_empty, authorityInfoAccess = chunk_empty;
 	chunk_t policyConstraints = chunk_empty, inhibitAnyPolicy = chunk_empty;
-	chunk_t ikeIntermediate = chunk_empty, msSmartcardLogon = chunk_empty;
 	chunk_t ipAddrBlocks = chunk_empty, sig_scheme = chunk_empty;
-	chunk_t criticalExtension = chunk_empty;
+	chunk_t criticalExtension = chunk_empty, extendedKeyUsage = chunk_empty;
 	identification_t *issuer, *subject;
 	chunk_t key_info;
 	hasher_t *hasher;
@@ -2350,37 +2407,7 @@ static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 	}
 
 	/* add extendedKeyUsage flags */
-	if (cert->flags & X509_SERVER_AUTH)
-	{
-		serverAuth = asn1_build_known_oid(OID_SERVER_AUTH);
-	}
-	if (cert->flags & X509_CLIENT_AUTH)
-	{
-		clientAuth = asn1_build_known_oid(OID_CLIENT_AUTH);
-	}
-	if (cert->flags & X509_IKE_INTERMEDIATE)
-	{
-		ikeIntermediate = asn1_build_known_oid(OID_IKE_INTERMEDIATE);
-	}
-	if (cert->flags & X509_OCSP_SIGNER)
-	{
-		ocspSigning = asn1_build_known_oid(OID_OCSP_SIGNING);
-	}
-	if (cert->flags & X509_MS_SMARTCARD_LOGON)
-	{
-		msSmartcardLogon = asn1_build_known_oid(OID_MS_SMARTCARD_LOGON);
-	}
-
-	if (serverAuth.ptr  || clientAuth.ptr || ikeIntermediate.ptr ||
-		ocspSigning.ptr || msSmartcardLogon.ptr)
-	{
-		extendedKeyUsage = asn1_wrap(ASN1_SEQUENCE, "mm",
-								asn1_build_known_oid(OID_EXTENDED_KEY_USAGE),
-								asn1_wrap(ASN1_OCTET_STRING, "m",
-									asn1_wrap(ASN1_SEQUENCE, "mmmmm",
-										serverAuth, clientAuth, ikeIntermediate,
-										ocspSigning, msSmartcardLogon)));
-	}
+	extendedKeyUsage = x509_generate_eku_extension(cert->flags);
 
 	/* add subjectKeyIdentifier to CA and OCSP signer certificates */
 	if (cert->flags & (X509_CA | X509_OCSP_SIGNER | X509_CRL_SIGN))
@@ -2400,9 +2427,15 @@ static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 	/* add the keyid authKeyIdentifier for non self-signed certificates */
 	if (sign_cert)
 	{
-		chunk_t keyid;
+		x509_t *sign_x509 = (x509_t*)sign_cert;
+		chunk_t keyid = chunk_empty;
 
-		if (sign_key->get_fingerprint(sign_key, KEYID_PUBKEY_SHA1, &keyid))
+		if (sign_cert->get_type(sign_cert) == CERT_X509)
+		{
+			keyid = sign_x509->get_subjectKeyIdentifier(sign_x509);
+		}
+		if (keyid.len ||
+			sign_key->get_fingerprint(sign_key, KEYID_PUBKEY_SHA1, &keyid))
 		{
 			authKeyIdentifier = asn1_wrap(ASN1_SEQUENCE, "mm",
 							asn1_build_known_oid(OID_AUTHORITY_KEY_ID),
@@ -2602,8 +2635,12 @@ static bool generate(private_x509_cert_t *cert, certificate_t *sign_cert,
 					asn1_simple_object(ASN1_OCTET_STRING, chunk_empty));
 	}
 
-	if (basicConstraints.ptr || subjectAltNames.ptr || authKeyIdentifier.ptr ||
-		crlDistributionPoints.ptr || nameConstraints.ptr || ipAddrBlocks.ptr)
+	if (basicConstraints.ptr || keyUsage.ptr || subjectKeyIdentifier.ptr ||
+		authKeyIdentifier.ptr || subjectAltNames.ptr || extendedKeyUsage.ptr ||
+		crlDistributionPoints.ptr || authorityInfoAccess.ptr ||
+		nameConstraints.ptr || certPolicies.ptr || policyMappings.ptr ||
+		policyConstraints.ptr || inhibitAnyPolicy.ptr || ipAddrBlocks.ptr ||
+		criticalExtension.ptr)
 	{
 		extensions = asn1_wrap(ASN1_CONTEXT_C_3, "m",
 						asn1_wrap(ASN1_SEQUENCE, "mmmmmmmmmmmmmmm",

@@ -346,7 +346,7 @@ METHOD(imc_agent_t, create_state, TNC_Result,
 {
 	TNC_ConnectionID conn_id;
 	char *tnccs_p = NULL, *tnccs_v = NULL, *t_p = NULL, *t_v = NULL;
-	bool has_long = FALSE, has_excl = FALSE, has_soh = FALSE;
+	bool has_long = FALSE, has_excl = FALSE, has_soh DBG_UNUSED = FALSE;
 	uint32_t max_msg_len;
 
 	conn_id = state->get_connection_id(state);

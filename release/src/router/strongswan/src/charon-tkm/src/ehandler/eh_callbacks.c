@@ -24,6 +24,6 @@
 void charon_terminate(char *msg)
 {
 	DBG1(DBG_DMN, "critical TKM error, terminating!");
-	DBG1(DBG_DMN, msg);
+	DBG1(DBG_DMN, "%s", msg);
 	kill(0, SIGTERM);
 }

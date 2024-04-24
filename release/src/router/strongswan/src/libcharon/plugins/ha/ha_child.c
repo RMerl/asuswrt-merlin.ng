@@ -60,7 +60,6 @@ METHOD(listener_t, child_keys, bool,
 	linked_list_t *local_ts, *remote_ts;
 	enumerator_t *enumerator;
 	traffic_selector_t *ts;
-	u_int seg_i, seg_o;
 
 	if (this->tunnel && this->tunnel->is_sa(this->tunnel, ike_sa))
 	{	/* do not sync SA between nodes */
@@ -127,6 +126,9 @@ METHOD(listener_t, child_keys, bool,
 	}
 	enumerator->destroy(enumerator);
 
+#if DEBUG_LEVEL >= 1
+	u_int seg_i, seg_o;
+
 	seg_i = this->kernel->get_segment_spi(this->kernel,
 			ike_sa->get_my_host(ike_sa), child_sa->get_spi(child_sa, TRUE));
 	seg_o = this->kernel->get_segment_spi(this->kernel,
@@ -136,6 +138,7 @@ METHOD(listener_t, child_keys, bool,
 		child_sa->get_unique_id(child_sa), local_ts, remote_ts,
 		seg_i, this->segments->is_active(this->segments, seg_i) ? "*" : "",
 		seg_o, this->segments->is_active(this->segments, seg_o) ? "*" : "");
+#endif /* DEBUG_LEVEL */
 
 	local_ts->destroy(local_ts);
 	remote_ts->destroy(remote_ts);

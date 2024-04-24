@@ -47,20 +47,18 @@
 /* PARSE_ERROR is an enum entry in wolfSSL - not used in this plugin */
 #define PARSE_ERROR	WOLFSSL_PARSE_ERROR
 
-/* Remap unused enums from the OpenSSL compatibility layer to avoid conflicts */
-#define ASN1_BOOLEAN         REMAP_ASN1_BOOLEAN
-#define ASN1_OID             REMAP_ASN1_OID
-#define ASN1_INTEGER         REMAP_ASN1_INTEGER
-#define ASN1_BIT_STRING      REMAP_ASN1_BIT_STRING
-#define ASN1_IA5STRING       REMAP_ASN1_IA5STRING
-#define ASN1_OCTET_STRING    REMAP_ASN1_OCTET_STRING
-#define ASN1_UTCTIME         REMAP_ASN1_UTCTIME
-#define ASN1_GENERALIZEDTIME REMAP_ASN1_GENERALIZEDTIME
-
 #ifndef WOLFSSL_USER_SETTINGS
 	#include <wolfssl/options.h>
 #endif
-#include <wolfssl/ssl.h>
+
+/* Disable inclusion of the wolfSSL OpenSSL compatibility layer header (if
+ * configured) as it is not used by the plugin and causes conflicts */
+#define WOLFSSL_OPENSSL_H_
+
+#if  defined(HAVE_FIPS) && \
+    (defined(HAVE_FIPS_VERSION) && (HAVE_FIPS_VERSION >= 2))
+    #include <wolfssl/wolfcrypt/fips_test.h>
+#endif
 
 /* Special type used to handle EdDSA keys depending on config options */
 #if defined(HAVE_ED25519) || defined(HAVE_ED448)
@@ -81,15 +79,6 @@ typedef union {
 #endif /* HAVE_ED25519 || HAVE_ED448 */
 
 #undef PARSE_ERROR
-
-#undef ASN1_BOOLEAN
-#undef ASN1_OID
-#undef ASN1_INTEGER
-#undef ASN1_BIT_STRING
-#undef ASN1_IA5STRING
-#undef ASN1_OCTET_STRING
-#undef ASN1_UTCTIME
-#undef ASN1_GENERALIZEDTIME
 
 /* Eliminate macro conflicts */
 #undef RNG

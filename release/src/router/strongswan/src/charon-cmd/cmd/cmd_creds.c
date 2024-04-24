@@ -237,6 +237,9 @@ METHOD(cmd_creds_t, handle, bool,
 		case CMD_OPT_RSA:
 			load_key(this, KEY_RSA, arg);
 			break;
+		case CMD_OPT_PRIV:
+			load_key(this, KEY_ANY, arg);
+			break;
 		case CMD_OPT_PKCS12:
 			load_pkcs12(this, arg);
 			break;

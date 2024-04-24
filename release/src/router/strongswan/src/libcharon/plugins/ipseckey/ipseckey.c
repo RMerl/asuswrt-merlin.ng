@@ -207,4 +207,3 @@ ipseckey_t *ipseckey_create_frm_rr(rr_t *rr)
 	reader->destroy(reader);
 	return &this->public;
 }
-

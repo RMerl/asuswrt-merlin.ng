@@ -1,10 +1,12 @@
 carol::cat /var/log/daemon.log::server requested EAP_TTLS authentication::YES
 carol::cat /var/log/daemon.log::allow mutual EAP-only authentication::YES
+carol::cat /var/log/daemon.log::negotiated TLS 1.3 using suite TLS_AES_256_GCM_SHA384::YES
 carol::cat /var/log/daemon.log::server requested EAP_MD5 authentication::YES
 carol::cat /var/log/daemon.log::EAP method EAP_TTLS succeeded, MSK established::YES
 carol::cat /var/log/daemon.log::authentication of 'C=CH, O=strongSwan Project, CN=moon.strongswan.org' with EAP successful::YES
 dave:: cat /var/log/daemon.log::server requested EAP_TTLS authentication::YES
 dave:: cat /var/log/daemon.log::allow mutual EAP-only authentication::YES
+dave:: cat /var/log/daemon.log::negotiated TLS 1.2 using suite TLS_DHE_RSA_WITH_AES_256_GCM_SHA384::YES
 dave:: cat /var/log/daemon.log::server requested EAP_MD5 authentication::YES
 dave:: cat /var/log/daemon.log::received EAP_FAILURE, EAP authentication failed::YES
 moon:: cat /var/log/daemon.log::EAP_TTLS phase2 authentication of 'carol@strongswan.org' with EAP_MD5 successful::YES

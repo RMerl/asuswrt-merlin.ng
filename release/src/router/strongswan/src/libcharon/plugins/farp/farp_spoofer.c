@@ -411,7 +411,6 @@ CALLBACK(handler_onarp, bool,
 	farp_handler_t *handler, int fd, watcher_event_t event)
 {
 	struct bpf_hdr *bh;
-	struct ether_header *eh;
 	arp_t *a;
 	host_t *lcl, *rmt;
 	uint8_t *p = handler->bufdat;
@@ -428,7 +427,6 @@ CALLBACK(handler_onarp, bool,
 	while (p < handler->bufdat + n)
 	{
 		bh = (struct bpf_hdr*)p;
-		eh = (struct ether_header*)(p + bh->bh_hdrlen);
 		a = (arp_t*)(p + bh->bh_hdrlen + sizeof(struct ether_header));
 
 		lcl = host_create_from_chunk(AF_INET, chunk_create(a->sender_ip, 4), 0);

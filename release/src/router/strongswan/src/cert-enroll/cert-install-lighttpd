@@ -1,0 +1,48 @@
+#!/bin/bash
+# Install the generated key and certificate as TLS credentials for a web server
+# based based on the lighttpd daemon.
+#
+# Copyright (C) 2023 Andreas Steffen
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+set -e
+
+##############################################################################
+# Change into the certificates directory
+#
+cd $CERTDIR
+
+##############################################################################
+# Install the web server's TLS key and certificate in single file
+#
+cat $HOSTKEY $HOSTCERT > /etc/lighttpd/https-cert.pem
+
+##############################################################################
+# Restart the lighttpd daemon
+#
+test -f /usr/bin/systemctl && /usr/bin/systemctl list-unit-files lighttpd.service | \
+  grep -q "lighttpd.service enabled" && status=$? || status=$?
+if [ $status -eq 0 ]
+then
+  /usr/bin/systemctl restart lighttpd.service
+else
+  /etc/init.d/lighttpd reload
+fi
+exit 0

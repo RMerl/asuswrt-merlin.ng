@@ -113,6 +113,7 @@
 #include "credentials/credential_factory.h"
 #include "credentials/credential_manager.h"
 #include "credentials/cred_encoding.h"
+#include "credentials/ocsp_responders.h"
 #include "metadata/metadata_factory.h"
 #include "utils/chunk.h"
 #include "utils/capabilities.h"
@@ -190,6 +191,11 @@ struct library_t {
 	 * Credential encoding registry and factory
 	 */
 	cred_encoding_t *encoding;
+
+	/**
+	 * Manager for OCSP responders
+	 */
+	ocsp_responders_t *ocsp;
 
 	/**
 	 * Registry and factory for metadata creation

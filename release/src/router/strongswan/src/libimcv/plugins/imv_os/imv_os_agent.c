@@ -250,20 +250,17 @@ static TNC_Result receive_msg(private_imv_os_agent_t *this, imv_state_t *state,
 				}
 				case IETF_ATTR_OPERATIONAL_STATUS:
 				{
-					ietf_attr_op_status_t *attr_cast;
-					op_status_t op_status;
-					op_result_t op_result;
-					time_t last_boot;
-
 					state->set_action_flags(state,
 											IMV_OS_ATTR_OPERATIONAL_STATUS);
-					attr_cast = (ietf_attr_op_status_t*)attr;
-					op_status = attr_cast->get_status(attr_cast);
-					op_result = attr_cast->get_result(attr_cast);
-					last_boot = attr_cast->get_last_use(attr_cast);
+#if DEBUG_LEVEL >= 1
+					ietf_attr_op_status_t *attr_cast = (ietf_attr_op_status_t*)attr;
+					op_status_t op_status = attr_cast->get_status(attr_cast);
+					op_result_t op_result = attr_cast->get_result(attr_cast);
+					time_t last_boot = attr_cast->get_last_use(attr_cast);
 					DBG1(DBG_IMV, "operational status: %N, result: %N",
 						 op_status_names, op_status, op_result_names, op_result);
 					DBG1(DBG_IMV, "last boot: %T", &last_boot, TRUE);
+#endif /* DEBUG_LEVEL */
 					break;
 				}
 				case IETF_ATTR_FORWARDING_ENABLED:

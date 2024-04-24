@@ -14,6 +14,7 @@ pki \-\-req \- Create a PKCS#10 certificate request
 .BI \-\-dn\~ distinguished-name
 .OP \-\-san subjectAltName
 .OP \-\-profile profile
+.OP \-\-flag flag
 .OP \-\-password password
 .OP \-\-digest digest
 .OP \-\-rsa\-padding padding
@@ -90,6 +91,11 @@ UTF8 string. Supported e.g. by
 (with profiles \fIserver\fR, \fIclient\fR, \fIdual\fR, or \fIocsp\fR) that are
 translated into corresponding Extended Key Usage (EKU) flags in the generated
 X.509 certificate.
+.TP
+.BI "\-e, \-\-flag " flag
+Add extendedKeyUsage flag. One of \fIserverAuth\fR, \fIclientAuth\fR,
+\fIocspSigning\fR or \fImsSmartcardLogon\fR. Can be used multiple times. Adds an
+X.509v3 EKU extension containing these flags to the certificate request.
 .TP
 .BI "\-p, \-\-password " password
 The challengePassword to include in the certificate request.

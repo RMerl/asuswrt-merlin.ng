@@ -2312,11 +2312,27 @@ METHOD(tls_crypto_t, derive_app_keys, bool,
 	/* EAP-MSK */
 	if (this->msk_label)
 	{
+		uint8_t type;
+
+		switch (this->tls->get_purpose(this->tls))
+		{
+			case TLS_PURPOSE_EAP_TLS:
+				type = EAP_TLS;
+				break;
+			case TLS_PURPOSE_EAP_PEAP:
+				type = EAP_PEAP;
+				break;
+			case TLS_PURPOSE_EAP_TTLS:
+				type = EAP_TTLS;
+				break;
+			default:
+				return FALSE;
+		}
 		/* because the length is encoded when expanding key material, we
-		 * request the same number of bytes as FreeRADIUS (the first 64 for
-		 * the MSK, the next for the EMSK, which we just ignore) */
-		if (!this->hkdf->export(this->hkdf, this->msk_label, chunk_empty,
-								this->handshake, 128, &this->msk))
+		 * request MSK and EMSK even if we don't use the latter */
+		if (!this->hkdf->export(this->hkdf, "EXPORTER_EAP_TLS_Key_Material",
+								chunk_from_thing(type), this->handshake, 128,
+								&this->msk))
 		{
 			return FALSE;
 		}

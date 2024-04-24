@@ -118,7 +118,7 @@ static void select_method(private_eap_dynamic_t *this)
 {
 	eap_vendor_type_t *entry;
 	linked_list_t *outer = this->types, *inner = this->other_types;
-	char *who = "peer";
+	char *who DBG_UNUSED = "peer";
 
 	if (this->other_types && this->prefer_peer)
 	{

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2023 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
  *
@@ -174,12 +174,17 @@ struct ipsec_sa_mgr_t {
 	 * Since other threads may be waiting for a checked out SA, it should be
 	 * checked in as soon as possible after use.
 	 *
+	 * If no matching outbound SA is found, acquire indicates if an acquire
+	 * should be sent for the given reqid.
+	 *
 	 * @param reqid			reqid of the SA
 	 * @param inbound		TRUE for an inbound SA, FALSE for an outbound SA
+	 * @param[out] acquire	TRUE if an acquire should be triggered, FALSE if one
+	 * 						is already pending or an SA was found
 	 * @return				the matching IPsec SA, or NULL if none is found
 	 */
 	ipsec_sa_t *(*checkout_by_reqid)(ipsec_sa_mgr_t *this, uint32_t reqid,
-									 bool inbound);
+									 bool inbound, bool *acquire);
 
 	/**
 	 * Checkin an SA after use.

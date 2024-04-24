@@ -1,0 +1,4 @@
+charon.plugins.openxpki.database =
+	Database URI connecting to the OpenXPKI **certificate** database. If it
+	contains a password, make sure to adjust the permissions of the config
+	file accordingly.

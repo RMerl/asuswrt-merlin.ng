@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019 Tobias Brunner
+ * Copyright (C) 2006-2023 Tobias Brunner
  * Copyright (C) 2016 Andreas Steffen
  * Copyright (C) 2005-2008 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
@@ -276,7 +276,7 @@ struct private_child_sa_t {
 	uint64_t my_usepackets;
 
 	/**
-	 * last number of outbound bytes
+	 * last number of outbound packets
 	 */
 	uint64_t other_usepackets;
 };
@@ -359,6 +359,17 @@ METHOD(child_sa_t, get_reqid, uint32_t,
 	   private_child_sa_t *this)
 {
 	return this->reqid;
+}
+
+METHOD(child_sa_t, get_reqid_ref, uint32_t,
+	   private_child_sa_t *this)
+{
+	if ((this->reqid_allocated || (!this->static_reqid && this->reqid)) &&
+		charon->kernel->ref_reqid(charon->kernel, this->reqid) == SUCCESS)
+	{
+		return this->reqid;
+	}
+	return 0;
 }
 
 METHOD(child_sa_t, get_unique_id, uint32_t,
@@ -759,19 +770,19 @@ METHOD(child_sa_t, get_usestats, void,
 	private_child_sa_t *this, bool inbound,
 	time_t *time, uint64_t *bytes, uint64_t *packets)
 {
-	if ((!bytes && !packets) || update_usebytes(this, inbound) != FAILED)
+	status_t status = NOT_SUPPORTED;
+	bool sa_use_time;
+
+	sa_use_time = charon->kernel->get_features(charon->kernel) & KERNEL_SA_USE_TIME;
+
+	if (bytes || packets || sa_use_time)
 	{
-		/* there was traffic since last update or the kernel interface
-		 * does not support querying the number of usebytes.
-		 */
-		if (time)
-		{
-			if (!update_usetime(this, inbound) && !bytes && !packets)
-			{
-				/* if policy query did not yield a usetime, query SAs instead */
-				update_usebytes(this, inbound);
-			}
-		}
+		status = update_usebytes(this, inbound);
+	}
+	if (time && !sa_use_time && status != FAILED)
+	{	/* query policies only if last use time is not available from SAs and
+		 * there was either traffic or querying the SA wasn't supported */
+		update_usetime(this, inbound);
 	}
 	if (time)
 	{
@@ -840,6 +851,51 @@ METHOD(child_sa_t, alloc_cpi, uint16_t,
 		return this->my_cpi;
 	}
 	return 0;
+}
+
+/**
+ * Allocate a reqid for the given local and remote traffic selector lists.
+ * On success, release the previously allocated reqid.
+ */
+static status_t alloc_reqid_lists(private_child_sa_t *this,
+								  linked_list_t *my_ts, linked_list_t *other_ts,
+								  uint32_t *reqid)
+{
+	uint32_t existing_reqid = *reqid;
+	status_t status;
+
+	status = charon->kernel->alloc_reqid(
+							charon->kernel, my_ts, other_ts,
+							this->mark_in, this->mark_out, this->if_id_in,
+							this->if_id_out, label_for(this, LABEL_USE_REQID),
+							reqid);
+
+	if (status == SUCCESS && existing_reqid)
+	{
+		if (charon->kernel->release_reqid(charon->kernel,
+										  existing_reqid) != SUCCESS)
+		{
+			DBG1(DBG_CHD, "releasing previous reqid %u failed", existing_reqid);
+		}
+	}
+	return status;
+}
+
+/**
+ * Allocate a reqid for the given local and remote traffic selectors.
+ */
+static status_t alloc_reqid(private_child_sa_t *this, array_t *my_ts,
+							array_t *other_ts, uint32_t *reqid)
+{
+	linked_list_t *my_ts_list, *other_ts_list;
+	status_t status;
+
+	my_ts_list = linked_list_create_from_enumerator(array_create_enumerator(my_ts));
+	other_ts_list = linked_list_create_from_enumerator(array_create_enumerator(other_ts));
+	status = alloc_reqid_lists(this, my_ts_list, other_ts_list, reqid);
+	my_ts_list->destroy(my_ts_list);
+	other_ts_list->destroy(other_ts_list);
+	return status;
 }
 
 /**
@@ -923,10 +979,7 @@ static status_t install_internal(private_child_sa_t *this, chunk_t encr,
 
 	if (!this->reqid_allocated && !this->static_reqid)
 	{
-		status = charon->kernel->alloc_reqid(charon->kernel, my_ts, other_ts,
-								this->mark_in, this->mark_out, this->if_id_in,
-								this->if_id_out, label_for(this, LABEL_USE_REQID),
-								&this->reqid);
+		status = alloc_reqid_lists(this, my_ts, other_ts, &this->reqid);
 		if (status != SUCCESS)
 		{
 			my_ts->destroy(my_ts);
@@ -1094,6 +1147,7 @@ static status_t install_policies_inbound(private_child_sa_t *this,
 		.type = type,
 		.prio = priority,
 		.manual_prio = manual_prio,
+		.hw_offload = this->config->get_hw_offload(this->config),
 		.src = other_addr,
 		.dst = my_addr,
 		.sa = my_sa,
@@ -1131,6 +1185,7 @@ static status_t install_policies_outbound(private_child_sa_t *this,
 		.type = type,
 		.prio = priority,
 		.manual_prio = manual_prio,
+		.hw_offload = this->config->get_hw_offload(this->config),
 		.src = my_addr,
 		.dst = other_addr,
 		.sa = other_sa,
@@ -1206,6 +1261,7 @@ static void del_policies_inbound(private_child_sa_t *this,
 		.type = type,
 		.prio = priority,
 		.manual_prio = manual_prio,
+		.hw_offload = this->config->get_hw_offload(this->config),
 		.src = other_addr,
 		.dst = my_addr,
 		.sa = my_sa,
@@ -1242,6 +1298,7 @@ static void del_policies_outbound(private_child_sa_t *this,
 		.type = type,
 		.prio = priority,
 		.manual_prio = manual_prio,
+		.hw_offload = this->config->get_hw_offload(this->config),
 		.src = my_addr,
 		.dst = other_addr,
 		.sa = other_sa,
@@ -1315,27 +1372,6 @@ METHOD(child_sa_t, set_policies, void,
 	}
 	enumerator->destroy(enumerator);
 	array_sort(this->other_ts, (void*)traffic_selector_cmp, NULL);
-}
-
-/**
- * Allocate a reqid for the given local and remote traffic selectors.
- */
-static status_t alloc_reqid(private_child_sa_t *this, array_t *my_ts,
-							array_t *other_ts, uint32_t *reqid)
-{
-	linked_list_t *my_ts_list, *other_ts_list;
-	status_t status;
-
-	my_ts_list = linked_list_create_from_enumerator(array_create_enumerator(my_ts));
-	other_ts_list = linked_list_create_from_enumerator(array_create_enumerator(other_ts));
-	status = charon->kernel->alloc_reqid(
-							charon->kernel, my_ts_list, other_ts_list,
-							this->mark_in, this->mark_out, this->if_id_in,
-							this->if_id_out, label_for(this, LABEL_USE_REQID),
-							reqid);
-	my_ts_list->destroy(my_ts_list);
-	other_ts_list->destroy(other_ts_list);
-	return status;
 }
 
 METHOD(child_sa_t, install_policies, status_t,
@@ -1806,9 +1842,7 @@ METHOD(child_sa_t, update, status_t,
 		{
 			if (new_reqid &&
 				charon->kernel->release_reqid(charon->kernel,
-						new_reqid, this->mark_in, this->mark_out,
-						this->if_id_in, this->if_id_out,
-						label_for(this, LABEL_USE_REQID)) != SUCCESS)
+											  new_reqid) != SUCCESS)
 			{
 				DBG1(DBG_CHD, "releasing reqid %u failed", new_reqid);
 			}
@@ -1823,9 +1857,7 @@ METHOD(child_sa_t, update, status_t,
 		if (new_reqid)
 		{
 			if (charon->kernel->release_reqid(charon->kernel,
-						this->reqid, this->mark_in, this->mark_out,
-						this->if_id_in, this->if_id_out,
-						label_for(this, LABEL_USE_REQID)) != SUCCESS)
+											  this->reqid) != SUCCESS)
 			{
 				DBG1(DBG_CHD, "releasing reqid %u failed", this->reqid);
 			}
@@ -1943,12 +1975,10 @@ METHOD(child_sa_t, destroy, void,
 		charon->kernel->del_sa(charon->kernel, &id, &sa);
 	}
 
-	if (this->reqid_allocated)
+	if (this->reqid_allocated || (!this->static_reqid && this->reqid))
 	{
 		if (charon->kernel->release_reqid(charon->kernel,
-						this->reqid, this->mark_in, this->mark_out,
-						this->if_id_in, this->if_id_out,
-						label_for(this, LABEL_USE_REQID)) != SUCCESS)
+										  this->reqid) != SUCCESS)
 		{
 			DBG1(DBG_CHD, "releasing reqid %u failed", this->reqid);
 		}
@@ -2014,6 +2044,7 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 		.public = {
 			.get_name = _get_name,
 			.get_reqid = _get_reqid,
+			.get_reqid_ref = _get_reqid_ref,
 			.get_unique_id = _get_unique_id,
 			.get_config = _get_config,
 			.get_state = _get_state,
@@ -2128,7 +2159,11 @@ child_sa_t *child_sa_create(host_t *me, host_t *other, child_cfg_t *config,
 		 * replace the temporary SA on the kernel level. Rekeying such an SA
 		 * requires an explicit reqid, as the cache currently knows the original
 		 * selectors only for that reqid. */
-		this->reqid = data->reqid;
+		if (data->reqid &&
+			charon->kernel->ref_reqid(charon->kernel, data->reqid) == SUCCESS)
+		{
+			this->reqid = data->reqid;
+		}
 	}
 	else
 	{

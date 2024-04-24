@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2016 Tobias Brunner
+ * Copyright (C) 2012-2023 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -23,14 +23,17 @@
 
 #include <utils/debug.h>
 #include <utils/process.h>
-#include <collections/array.h>
+#include <collections/hashtable.h>
 #include <threading/mutex.h>
 
 /* path to resolvconf executable */
 #define RESOLVCONF_EXEC "/sbin/resolvconf"
 
-/* default prefix used for resolvconf interfaces (should have high prio) */
-#define RESOLVCONF_PREFIX "lo.inet.ipsec."
+/* default interface/protocol used for resolvconf (should have high prio) */
+#define RESOLVCONF_IFACE "lo.ipsec"
+
+/* suffix added to lines in resolv.conf */
+#define RESOLV_CONF_SUFFIX "   # by strongSwan"
 
 typedef struct private_resolve_handler_t private_resolve_handler_t;
 
@@ -50,14 +53,14 @@ struct private_resolve_handler_t {
 	char *file;
 
 	/**
-	 * Use resolvconf instead of writing directly to resolv.conf
+	 * Path/command for resolvconf(8)
 	 */
-	bool use_resolvconf;
+	char *resolvconf;
 
 	/**
-	 * Prefix to be used for interface names sent to resolvconf
+	 * Interface name sent to resolvconf
 	 */
-	char *iface_prefix;
+	char *iface;
 
 	/**
 	 * Mutex to access file exclusively
@@ -67,7 +70,7 @@ struct private_resolve_handler_t {
 	/**
 	 * Reference counting for DNS servers dns_server_t
 	 */
-	array_t *servers;
+	hashtable_t *servers;
 };
 
 /**
@@ -88,34 +91,33 @@ typedef struct {
 } dns_server_t;
 
 /**
- * Compare a server and a stored reference
+ * Hash DNS server address
  */
-static int dns_server_find(const void *a, const void *b)
+static u_int dns_server_hash(const void *key)
 {
-	host_t *server = (host_t*)a;
-	dns_server_t *item = (dns_server_t*)b;
-	return chunk_compare(server->get_address(server),
-						 item->server->get_address(item->server));
+	host_t *host = (host_t*)key;
+	return chunk_hash(host->get_address(host));
 }
 
 /**
- * Sort references by DNS server
+ * Compare two DNS server addresses
  */
-static int dns_server_sort(const void *a, const void *b, void *user)
+static bool dns_server_equals(const void *a, const void *b)
 {
-	const dns_server_t *da = a, *db = b;
-	return chunk_compare(da->server->get_address(da->server),
-						 db->server->get_address(db->server));
+	host_t *ha = (host_t*)a, *hb = (host_t*)b;
+	return chunk_equals(ha->get_address(ha), hb->get_address(hb));
 }
 
 /**
- * Writes the given nameserver to resolv.conf
+ * Writes the given nameservers to resolv.conf
  */
-static bool write_nameserver(private_resolve_handler_t *this, host_t *addr)
+static bool write_nameservers(private_resolve_handler_t *this,
+							  hashtable_t *servers)
 {
 	FILE *in, *out;
-	char buf[1024];
-	size_t len;
+	enumerator_t *enumerator;
+	dns_server_t *dns;
+	char line[1024];
 	bool handled = FALSE;
 
 	in = fopen(this->file, "r");
@@ -124,18 +126,28 @@ static bool write_nameserver(private_resolve_handler_t *this, host_t *addr)
 	out = fopen(this->file, "w");
 	if (out)
 	{
-		fprintf(out, "nameserver %H   # by strongSwan\n", addr);
-		DBG1(DBG_IKE, "installing DNS server %H to %s", addr, this->file);
-		handled = TRUE;
+		/* write our current set of servers */
+		enumerator = servers->create_enumerator(servers);
+		while (enumerator->enumerate(enumerator, NULL, &dns))
+		{
+			fprintf(out, "nameserver %H" RESOLV_CONF_SUFFIX "\n", dns->server);
+		}
+		enumerator->destroy(enumerator);
 
-		/* copy rest of the file */
 		if (in)
 		{
-			while ((len = fread(buf, 1, sizeof(buf), in)))
+			/* copy the rest of the file, except our previous servers */
+			while (fgets(line, sizeof(line), in))
 			{
-				ignore_result(fwrite(buf, 1, len, out));
+				if (!strstr(line, RESOLV_CONF_SUFFIX "\n"))
+				{
+					fputs(line, out);
+				}
 			}
 		}
+
+		handled = TRUE;
+
 		fclose(out);
 	}
 	if (in)
@@ -146,59 +158,22 @@ static bool write_nameserver(private_resolve_handler_t *this, host_t *addr)
 }
 
 /**
- * Removes the given nameserver from resolv.conf
+ * Install the given nameservers by invoking resolvconf. If the table is empty,
+ * remove the config.
  */
-static void remove_nameserver(private_resolve_handler_t *this, host_t *addr)
-{
-	FILE *in, *out;
-	char line[1024], matcher[512];
-
-	in = fopen(this->file, "r");
-	if (in)
-	{
-		/* allows us to stream from in to out */
-		unlink(this->file);
-		out = fopen(this->file, "w");
-		if (out)
-		{
-			snprintf(matcher, sizeof(matcher),
-					 "nameserver %H   # by strongSwan\n", addr);
-
-			/* copy all, but matching line */
-			while (fgets(line, sizeof(line), in))
-			{
-				if (strpfx(line, matcher))
-				{
-					DBG1(DBG_IKE, "removing DNS server %H from %s",
-						 addr, this->file);
-				}
-				else
-				{
-					fputs(line, out);
-				}
-			}
-			fclose(out);
-		}
-		fclose(in);
-	}
-}
-
-/**
- * Add or remove the given nameserver by invoking resolvconf.
- */
-static bool invoke_resolvconf(private_resolve_handler_t *this, host_t *addr,
-							  bool install)
+static bool invoke_resolvconf(private_resolve_handler_t *this,
+							  hashtable_t *servers)
 {
 	process_t *process;
+	enumerator_t *enumerator;
+	dns_server_t *dns;
 	FILE *shell;
 	int in, out, retval;
+	bool install = servers->get_count(servers);
 
-	/* we use the nameserver's IP address as part of the interface name to
-	 * make them unique */
-	process = process_start_shell(NULL, install ? &in : NULL, &out, NULL,
-							"2>&1 %s %s %s%H", RESOLVCONF_EXEC,
-							install ? "-a" : "-d", this->iface_prefix, addr);
-
+	process = process_start_shell(NULL, install ? &in : NULL, &out,
+								  NULL, "2>&1 %s %s %s", this->resolvconf,
+								  install ? "-a" : "-d", this->iface);
 	if (!process)
 	{
 		return FALSE;
@@ -208,8 +183,12 @@ static bool invoke_resolvconf(private_resolve_handler_t *this, host_t *addr,
 		shell = fdopen(in, "w");
 		if (shell)
 		{
-			DBG1(DBG_IKE, "installing DNS server %H via resolvconf", addr);
-			fprintf(shell, "nameserver %H\n", addr);
+			enumerator = servers->create_enumerator(servers);
+			while (enumerator->enumerate(enumerator, NULL, &dns))
+			{
+				fprintf(shell, "nameserver %H\n", dns->server);
+			}
+			enumerator->destroy(enumerator);
 			fclose(shell);
 		}
 		else
@@ -222,7 +201,7 @@ static bool invoke_resolvconf(private_resolve_handler_t *this, host_t *addr,
 	}
 	else
 	{
-		DBG1(DBG_IKE, "removing DNS server %H via resolvconf", addr);
+		DBG1(DBG_IKE, "removing DNS servers via resolvconf");
 	}
 	shell = fdopen(out, "r");
 	if (shell)
@@ -255,22 +234,14 @@ static bool invoke_resolvconf(private_resolve_handler_t *this, host_t *addr,
 	{
 		close(out);
 	}
-	if (!process->wait(process, &retval) || retval != EXIT_SUCCESS)
-	{
-		if (install)
-		{	/* revert changes when installing fails */
-			invoke_resolvconf(this, addr, FALSE);
-			return FALSE;
-		}
-	}
-	return TRUE;
+	return process->wait(process, &retval) && retval == EXIT_SUCCESS;
 }
 
 METHOD(attribute_handler_t, handle, bool,
 	private_resolve_handler_t *this, ike_sa_t *ike_sa,
 	configuration_attribute_type_t type, chunk_t data)
 {
-	dns_server_t *found = NULL;
+	dns_server_t *found;
 	host_t *addr;
 	bool handled;
 
@@ -293,24 +264,30 @@ METHOD(attribute_handler_t, handle, bool,
 	}
 
 	this->mutex->lock(this->mutex);
-	if (array_bsearch(this->servers, addr, dns_server_find, &found) == -1)
+	found = this->servers->get(this->servers, addr);
+	if (!found)
 	{
-		if (this->use_resolvconf)
+		INIT(found,
+			.server = addr->clone(addr),
+			.refcount = 1,
+		);
+		this->servers->put(this->servers, found->server, found);
+
+		if (this->resolvconf)
 		{
-			handled = invoke_resolvconf(this, addr, TRUE);
+			DBG1(DBG_IKE, "installing DNS server %H via resolvconf", addr);
+			handled = invoke_resolvconf(this, this->servers);
 		}
 		else
 		{
-			handled = write_nameserver(this, addr);
+			DBG1(DBG_IKE, "installing DNS server %H to %s", addr, this->file);
+			handled = write_nameservers(this, this->servers);
 		}
-		if (handled)
+		if (!handled)
 		{
-			INIT(found,
-				.server = addr->clone(addr),
-				.refcount = 1,
-			);
-			array_insert_create(&this->servers, ARRAY_TAIL, found);
-			array_sort(this->servers, dns_server_sort, NULL);
+			this->servers->remove(this->servers, found->server);
+			found->server->destroy(found->server);
+			free(found);
 		}
 	}
 	else
@@ -334,9 +311,9 @@ METHOD(attribute_handler_t, release, void,
 	private_resolve_handler_t *this, ike_sa_t *ike_sa,
 	configuration_attribute_type_t type, chunk_t data)
 {
-	dns_server_t *found = NULL;
+	dns_server_t *found;
 	host_t *addr;
-	int family, idx;
+	int family;
 
 	switch (type)
 	{
@@ -352,8 +329,8 @@ METHOD(attribute_handler_t, release, void,
 	addr = host_create_from_chunk(family, data, 0);
 
 	this->mutex->lock(this->mutex);
-	idx = array_bsearch(this->servers, addr, dns_server_find, &found);
-	if (idx != -1)
+	found = this->servers->get(this->servers, addr);
+	if (found)
 	{
 		if (--found->refcount > 0)
 		{
@@ -362,17 +339,21 @@ METHOD(attribute_handler_t, release, void,
 		}
 		else
 		{
-			if (this->use_resolvconf)
+			this->servers->remove(this->servers, found->server);
+			found->server->destroy(found->server);
+			free(found);
+
+			if (this->resolvconf)
 			{
-				invoke_resolvconf(this, addr, FALSE);
+				DBG1(DBG_IKE, "removing DNS server %H via resolvconf", addr);
+				invoke_resolvconf(this, this->servers);
 			}
 			else
 			{
-				remove_nameserver(this, addr);
+				DBG1(DBG_IKE, "removing DNS server %H from %s", addr,
+					 this->file);
+				write_nameservers(this, this->servers);
 			}
-			array_remove(this->servers, idx, NULL);
-			found->server->destroy(found->server);
-			free(found);
 		}
 	}
 	this->mutex->unlock(this->mutex);
@@ -460,7 +441,7 @@ METHOD(attribute_handler_t, create_attribute_enumerator, enumerator_t*,
 METHOD(resolve_handler_t, destroy, void,
 	private_resolve_handler_t *this)
 {
-	array_destroy(this->servers);
+	this->servers->destroy(this->servers);
 	this->mutex->destroy(this->mutex);
 	free(this);
 }
@@ -483,17 +464,31 @@ resolve_handler_t *resolve_handler_create()
 			.destroy = _destroy,
 		},
 		.mutex = mutex_create(MUTEX_TYPE_DEFAULT),
-		.file = lib->settings->get_str(lib->settings, "%s.plugins.resolve.file",
-									   RESOLV_CONF, lib->ns),
+		.servers = hashtable_create(dns_server_hash, dns_server_equals, 4),
+		.file = lib->settings->get_str(lib->settings,
+								"%s.plugins.resolve.file", RESOLV_CONF, lib->ns),
+		.resolvconf = lib->settings->get_str(lib->settings,
+								"%s.plugins.resolve.resolvconf.path",
+								NULL, lib->ns),
+		.iface = lib->settings->get_str(lib->settings,
+								"%s.plugins.resolve.resolvconf.iface",
+					lib->settings->get_str(lib->settings,
+								"%s.plugins.resolve.resolvconf.iface_prefix",
+								RESOLVCONF_IFACE, lib->ns), lib->ns),
 	);
 
-	if (stat(RESOLVCONF_EXEC, &st) == 0)
+	if (!this->resolvconf && stat(RESOLVCONF_EXEC, &st) == 0)
 	{
-		this->use_resolvconf = TRUE;
-		this->iface_prefix = lib->settings->get_str(lib->settings,
-								"%s.plugins.resolve.resolvconf.iface_prefix",
-								RESOLVCONF_PREFIX, lib->ns);
+		this->resolvconf = RESOLVCONF_EXEC;
 	}
 
+	if (this->resolvconf)
+	{
+		DBG1(DBG_CFG, "using '%s' to install DNS servers", this->resolvconf);
+	}
+	else
+	{
+		DBG1(DBG_CFG, "install DNS servers in '%s'", this->file);
+	}
 	return &this->public;
 }

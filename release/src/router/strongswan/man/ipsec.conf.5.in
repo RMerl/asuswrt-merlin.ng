@@ -690,7 +690,7 @@ but for the second authentication round (IKEv2 only).
 .BR leftcert " = <path>"
 the path to the left participant's X.509 certificate. The file can be encoded
 either in PEM or DER format. OpenPGP certificates are supported as well.
-Both absolute paths or paths relative to \fI/etc/ipsec.d/certs\fP
+Both absolute paths or paths relative to \fI@sysconfdir@/ipsec.d/certs\fP
 are accepted. By default
 .B leftcert
 sets
@@ -871,7 +871,7 @@ prefix in front of 0x or 0s, the public key is expected to be in either
 the RFC 3110 (not the full RR, only RSA key part) or RFC 4253 public key format,
 respectively.
 Also accepted is the path to a file containing the public key in PEM, DER or SSH
-encoding. Both absolute paths or paths relative to \fI/etc/ipsec.d/certs\fP
+encoding. Both absolute paths or paths relative to \fI@sysconfdir@/ipsec.d/certs\fP
 are accepted.
 .TP
 .BR leftsendcert " = never | no | " ifasked " | always | yes"
@@ -1219,7 +1219,7 @@ of this connection will be used as peer ID.
 .SH "CA SECTIONS"
 These are optional sections that can be used to assign special
 parameters to a Certification Authority (CA). Because the daemons
-automatically import CA certificates from \fI/etc/ipsec.d/cacerts\fP,
+automatically import CA certificates from \fI@sysconfdir@/ipsec.d/cacerts\fP,
 there is no need to explicitly add them with a CA section, unless you
 want to assign special parameters (like a CRL) to a CA.
 .TP
@@ -1235,7 +1235,7 @@ currently can have either the value
 .TP
 .BR cacert " = <path>"
 defines a path to the CA certificate either relative to
-\fI/etc/ipsec.d/cacerts\fP or as an absolute path.
+\fI@sysconfdir@/ipsec.d/cacerts\fP or as an absolute path.
 .br
 A value in the form
 .B %smartcard[<slot nr>[@<module>]]:<keyid>
@@ -1284,7 +1284,7 @@ section are:
 .BR cachecrls " = yes | " no
 if enabled, certificate revocation lists (CRLs) fetched via HTTP or LDAP will
 be cached in
-.I /etc/ipsec.d/crls/
+.I @sysconfdir@/ipsec.d/crls/
 under a unique file name derived from the certification authority's public key.
 .TP
 .BR charondebug " = <debug list>"
@@ -1463,12 +1463,12 @@ time equals zero and, thus, rekeying gets disabled.
 
 .SH FILES
 .nf
-/etc/ipsec.conf
-/etc/ipsec.d/aacerts
-/etc/ipsec.d/acerts
-/etc/ipsec.d/cacerts
-/etc/ipsec.d/certs
-/etc/ipsec.d/crls
+@sysconfdir@/ipsec.conf
+@sysconfdir@/ipsec.d/aacerts
+@sysconfdir@/ipsec.d/acerts
+@sysconfdir@/ipsec.d/cacerts
+@sysconfdir@/ipsec.d/certs
+@sysconfdir@/ipsec.d/crls
 
 .SH SEE ALSO
 strongswan.conf(5), ipsec.secrets(5), ipsec(8)

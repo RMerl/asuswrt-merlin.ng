@@ -274,6 +274,7 @@ static void handle_ietf_message(private_tnccs_20_client_t *this, pb_tnc_msg_t *m
 		}
 		case PB_MSG_ASSESSMENT_RESULT:
 		{
+#if DEBUG_LEVEL >= 1
 			pb_assessment_result_msg_t *assess_msg;
 			uint32_t result;
 
@@ -281,6 +282,7 @@ static void handle_ietf_message(private_tnccs_20_client_t *this, pb_tnc_msg_t *m
 			result = assess_msg->get_assessment_result(assess_msg);
 			DBG1(DBG_TNC, "PB-TNC assessment result is '%N'",
 				 TNC_IMV_Evaluation_Result_names, result);
+#endif
 			break;
 		}
 		case PB_MSG_ACCESS_RECOMMENDATION:
@@ -312,7 +314,7 @@ static void handle_ietf_message(private_tnccs_20_client_t *this, pb_tnc_msg_t *m
 		{
 			pb_remediation_parameters_msg_t *rem_msg;
 			pen_type_t parameters_type;
-			chunk_t parameters, string, lang_code;
+			chunk_t parameters DBG_UNUSED, string DBG_UNUSED, lang_code;
 
 			rem_msg = (pb_remediation_parameters_msg_t*)msg;
 			parameters_type = rem_msg->get_parameters_type(rem_msg);
@@ -347,6 +349,7 @@ static void handle_ietf_message(private_tnccs_20_client_t *this, pb_tnc_msg_t *m
 			break;
 		case PB_MSG_REASON_STRING:
 		{
+#if DEBUG_LEVEL >= 1
 			pb_reason_string_msg_t *reason_msg;
 			chunk_t reason_string, language_code;
 
@@ -356,6 +359,7 @@ static void handle_ietf_message(private_tnccs_20_client_t *this, pb_tnc_msg_t *m
 			DBG1(DBG_TNC, "reason string is '%.*s' [%.*s]",
 				 (int)reason_string.len, reason_string.ptr,
 				 (int)language_code.len, language_code.ptr);
+#endif
 			break;
 		}
 		default:

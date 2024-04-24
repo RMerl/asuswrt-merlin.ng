@@ -1,3 +1,11 @@
 charon.plugins.curl.redir = -1
 	Maximum number of redirects followed by the plugin, set to 0 to disable
 	following redirects, set to -1 for no limit.
+
+charon.plugins.curl.tls_backend =
+	The SSL/TLS backend to configure in curl if multiple are available.
+
+	The SSL/TLS backend to configure in curl if multiple are available (requires
+	libcurl 7.56 or newer). A list of available options is logged on level 2 if
+	nothing is configured. Similar but on level 1 if the selected backend isn't
+	available.

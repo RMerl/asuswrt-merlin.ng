@@ -159,7 +159,7 @@ METHOD(pa_tnc_attr_t, set_noskip_flag,void,
 /**
  * Convert time_t to Simple Component Evidence UTS string format
  */
-void measurement_time_to_utc(time_t measurement_time, chunk_t *utc_time)
+static void measurement_time_to_utc(time_t measurement_time, chunk_t *utc_time)
 {
 	struct tm t;
 
@@ -260,7 +260,7 @@ static const int tm_leap_1970 = 477;
 /**
  * Convert Simple Component Evidence UTS string format to time_t
  */
-bool measurement_time_from_utc(time_t *measurement_time, chunk_t utc_time)
+static bool measurement_time_from_utc(time_t *measurement_time, chunk_t utc_time)
 {
 	int tm_year, tm_mon, tm_day, tm_hour, tm_min, tm_sec;
 	int tm_leap_4, tm_leap_100, tm_leap_400, tm_leap;

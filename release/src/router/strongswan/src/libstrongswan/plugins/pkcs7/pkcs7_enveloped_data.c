@@ -359,7 +359,7 @@ METHOD(container_t, get_encoding, bool,
 METHOD(container_t, destroy, void,
 	private_pkcs7_enveloped_data_t *this)
 {
-	free(this->content.ptr);
+	chunk_clear(&this->content);
 	free(this->encoding.ptr);
 	free(this);
 }

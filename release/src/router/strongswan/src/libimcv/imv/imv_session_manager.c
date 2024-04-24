@@ -50,7 +50,6 @@ METHOD(imv_session_manager_t, add_session, imv_session_t*,
 	linked_list_t *ar_identities)
 {
 	enumerator_t *enumerator;
-	tncif_identity_t *tnc_id;
 	imv_session_t *current, *session = NULL;
 
 	this->mutex->lock(this->mutex);
@@ -77,6 +76,8 @@ METHOD(imv_session_manager_t, add_session, imv_session_t*,
 	}
 
 	/* Output list of Access Requestor identities */
+#if DEBUG_LEVEL >= 2
+	tncif_identity_t *tnc_id;
 	enumerator = ar_identities->create_enumerator(ar_identities);
 	while (enumerator->enumerate(enumerator, &tnc_id))
 	{
@@ -103,6 +104,7 @@ METHOD(imv_session_manager_t, add_session, imv_session_t*,
 			 TNC_Authentication_names, tcg_auth_type);
 	}
 	enumerator->destroy(enumerator);
+#endif /* DEBUG_LEVEL */
 
 	/* create a new session entry */
 	session = imv_session_create(conn_id, ar_identities);

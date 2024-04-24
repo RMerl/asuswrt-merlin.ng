@@ -1,8 +1,8 @@
 <domain type='kvm'>
   <name>winnetou</name>
   <uuid>b1d3d2f7-e20b-ab95-277e-66d4cac33cc3</uuid>
-  <memory unit='KiB'>184320</memory>
-  <currentMemory unit='KiB'>184320</currentMemory>
+  <memory unit='MiB'>160</memory>
+  <currentMemory unit='MiB'>160</currentMemory>
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>

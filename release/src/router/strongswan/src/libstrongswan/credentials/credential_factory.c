@@ -119,7 +119,7 @@ METHOD(credential_factory_t, create, void*,
 	void *construct = NULL;
 	int failures = 0;
 	uintptr_t level;
-	enum_name_t *names;
+	enum_name_t *names DBG_UNUSED;
 
 	switch (type)
 	{

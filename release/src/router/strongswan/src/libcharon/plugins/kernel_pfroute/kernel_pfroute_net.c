@@ -781,19 +781,45 @@ static void process_addr(private_kernel_pfroute_net_t *this,
 }
 
 /**
+ * Check if the address is already known so we can keep it as-is with the
+ * virtual flag.  Destroys the given host_t object if it is found.
+ */
+static bool existing_addr_entry(iface_entry_t *iface, linked_list_t *addrs,
+								host_t *ip)
+{
+	enumerator_t *enumerator;
+	addr_entry_t *addr;
+	bool found = FALSE;
+
+	enumerator = addrs->create_enumerator(addrs);
+	while (enumerator->enumerate(enumerator, &addr))
+	{
+		if (ip->ip_equals(ip, addr->ip))
+		{
+			ip->destroy(ip);
+			addrs->remove_at(addrs, enumerator);
+			iface->addrs->insert_last(iface->addrs, addr);
+			found = TRUE;
+			break;
+		}
+	}
+	enumerator->destroy(enumerator);
+	return found;
+}
+
+/**
  * Re-initialize address list of an interface if it changes state
  */
 static void repopulate_iface(private_kernel_pfroute_net_t *this,
 							 iface_entry_t *iface)
 {
+	linked_list_t *addrs;
 	struct ifaddrs *ifap, *ifa;
 	addr_entry_t *addr;
+	host_t *ip;
 
-	while (iface->addrs->remove_last(iface->addrs, (void**)&addr) == SUCCESS)
-	{
-		addr_map_entry_remove(addr, iface, this);
-		addr_entry_destroy(addr);
-	}
+	addrs = iface->addrs;
+	iface->addrs = linked_list_create();
 
 	if (getifaddrs(&ifap) == 0)
 	{
@@ -805,11 +831,15 @@ static void repopulate_iface(private_kernel_pfroute_net_t *this,
 				{
 					case AF_INET:
 					case AF_INET6:
-						INIT(addr,
-							.ip = host_create_from_sockaddr(ifa->ifa_addr),
-						);
-						iface->addrs->insert_last(iface->addrs, addr);
-						addr_map_entry_add(this, addr, iface);
+						ip = host_create_from_sockaddr(ifa->ifa_addr);
+						if (!existing_addr_entry(iface, addrs, ip))
+						{
+							INIT(addr,
+								.ip = ip,
+							);
+							iface->addrs->insert_last(iface->addrs, addr);
+							addr_map_entry_add(this, addr, iface);
+						}
 						break;
 					default:
 						break;
@@ -818,6 +848,13 @@ static void repopulate_iface(private_kernel_pfroute_net_t *this,
 		}
 		freeifaddrs(ifap);
 	}
+
+	while (addrs->remove_last(addrs, (void**)&addr) == SUCCESS)
+	{
+		addr_map_entry_remove(addr, iface, this);
+		addr_entry_destroy(addr);
+	}
+	addrs->destroy(addrs);
 }
 
 /**
@@ -2114,21 +2151,9 @@ kernel_pfroute_net_t *kernel_pfroute_net_create()
 		destroy(this);
 		return NULL;
 	}
+	lib->watcher->add(lib->watcher, this->socket, WATCHER_READ,
+					  (watcher_cb_t)receive_events, this);
 
-	if (streq(lib->ns, "starter"))
-	{
-		/* starter has no threads, so we do not register for kernel events */
-		if (shutdown(this->socket, SHUT_RD) != 0)
-		{
-			DBG1(DBG_KNL, "closing read end of PF_ROUTE socket failed: %s",
-				 strerror(errno));
-		}
-	}
-	else
-	{
-		lib->watcher->add(lib->watcher, this->socket, WATCHER_READ,
-						  (watcher_cb_t)receive_events, this);
-	}
 	if (init_address_list(this) != SUCCESS)
 	{
 		DBG1(DBG_KNL, "unable to get interface list");

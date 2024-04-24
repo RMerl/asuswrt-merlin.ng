@@ -43,6 +43,7 @@ static int req()
 	chunk_t encoding = chunk_empty;
 	chunk_t challenge_password = chunk_empty;
 	chunk_t cert_type_ext = chunk_empty;
+	x509_flag_t flags = 0;
 	char *arg;
 	bool pss = lib->settings->get_bool(lib->settings, "%s.rsa_pss", FALSE,
 									   lib->ns);
@@ -78,6 +79,24 @@ static int req()
 					goto usage;
 				}
 				continue;
+			case 'e':
+				if (streq(arg, "serverAuth"))
+				{
+					flags |= X509_SERVER_AUTH;
+				}
+				else if (streq(arg, "clientAuth"))
+				{
+					flags |= X509_CLIENT_AUTH;
+				}
+				else if (streq(arg, "ocspSigning"))
+				{
+					flags |= X509_OCSP_SIGNER;
+				}
+				else if (streq(arg, "msSmartcardLogon"))
+				{
+					flags |= X509_MS_SMARTCARD_LOGON;
+				}
+				continue;
 			case 'g':       /* --digest */
 				if (!enum_from_name(hash_algorithm_short_names, arg, &digest))
 				{
@@ -86,12 +105,7 @@ static int req()
 				}
 				continue;
 			case 'R':       /* --rsa-padding */
-				if (streq(arg, "pss"))
-				{
-
-					pss = TRUE;
-				}
-				else if (!streq(arg, "pkcs1"))
+				if (!parse_rsa_padding(arg, &pss))
 				{
 					error = "invalid RSA padding";
 					goto usage;
@@ -213,6 +227,7 @@ static int req()
 								  BUILD_SUBJECT, id,
 								  BUILD_SUBJECT_ALTNAMES, san,
 								  BUILD_CHALLENGE_PWD, challenge_password,
+								  BUILD_X509_FLAG, flags,
 								  BUILD_CERT_TYPE_EXT, cert_type_ext,
 								  BUILD_SIGNATURE_SCHEME, scheme,
 								  BUILD_END);
@@ -264,6 +279,7 @@ static void __attribute__ ((constructor))reg()
 		"create a PKCS#10 certificate request",
 		{"[--in file|--keyid hex] [--type rsa|ecdsa|bliss|priv]",
 		 " --oldreq file|--dn distinguished-name [--san subjectAltName]+",
+		 "[--flag serverAuth|clientAuth|ocspSigning|msSmartcardLogon]+",
 		 "[--profile server|client|dual|ocsp] [--password challengePassword]",
 		 "[--digest sha1|sha224|sha256|sha384|sha512|sha3_224|sha3_256|sha3_384|sha3_512]",
 		 "[--rsa-padding pkcs1|pss] [--outform der|pem]"},
@@ -275,6 +291,7 @@ static void __attribute__ ((constructor))reg()
 			{"oldreq",      'o', 1, "old certificate request to be used as a template"},
 			{"dn",          'd', 1, "subject distinguished name"},
 			{"san",         'a', 1, "subjectAltName to include in cert request"},
+			{"flag",		'e', 1, "include extendedKeyUsage flag"},
 			{"profile",     'P', 1, "certificate profile name to include in cert request"},
 			{"password",    'p', 1, "challengePassword to include in cert request"},
 			{"digest",      'g', 1, "digest for signature creation, default: key-specific"},

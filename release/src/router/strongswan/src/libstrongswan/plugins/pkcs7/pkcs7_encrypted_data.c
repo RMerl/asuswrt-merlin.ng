@@ -54,6 +54,11 @@ static bool decrypt(pkcs5_t *pkcs5, chunk_t data, chunk_t *decrypted)
 	shared_key_t *shared;
 	bool success = FALSE;
 
+	if (pkcs5->decrypt(pkcs5, chunk_empty, data, decrypted))
+	{
+		return TRUE;
+	}
+
 	enumerator = lib->credmgr->create_shared_enumerator(lib->credmgr,
 										SHARED_PRIVATE_KEY_PASS, NULL, NULL);
 	while (enumerator->enumerate(enumerator, &shared, NULL, NULL))
@@ -170,7 +175,7 @@ METHOD(container_t, get_encoding, bool,
 METHOD(container_t, destroy, void,
 	private_pkcs7_encrypted_data_t *this)
 {
-	free(this->content.ptr);
+	chunk_clear(&this->content);
 	free(this->encoding.ptr);
 	free(this);
 }

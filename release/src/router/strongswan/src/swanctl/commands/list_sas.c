@@ -452,10 +452,19 @@ static int list_sas(vici_conn_t *conn)
 	return 0;
 }
 
+CALLBACK(close_cb, void,
+	int *ret)
+{
+	fprintf(stderr, "connection closed\n");
+	*ret = ECONNRESET;
+	send_sigint();
+}
+
 static int monitor_sas(vici_conn_t *conn)
 {
 	command_format_options_t format = COMMAND_FORMAT_NONE;
 	char *arg;
+	int ret = 0;
 
 	while (TRUE)
 	{
@@ -476,6 +485,9 @@ static int monitor_sas(vici_conn_t *conn)
 		}
 		break;
 	}
+
+	vici_on_close(conn, close_cb, &ret);
+
 	if (vici_register(conn, "ike-updown", list_cb, &format) != 0)
 	{
 		fprintf(stderr, "registering for IKE_SAs failed: %s\n",
@@ -491,9 +503,11 @@ static int monitor_sas(vici_conn_t *conn)
 
 	wait_sigint();
 
-	fprintf(stderr, "disconnecting...\n");
-
-	return 0;
+	if (!ret)
+	{
+		fprintf(stderr, "disconnecting...\n");
+	}
+	return ret;
 }
 
 /**

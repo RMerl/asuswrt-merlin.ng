@@ -4,8 +4,10 @@ cd /var/www/tnc
 
 if [ -f django.db ]
 then
-	exit 0 
+	exit 0
 fi
+
+. /usr/local/venvs/tnc/bin/activate
 
 ./manage.py migrate --database meta
 ./manage.py setpassword strongSwan strongSwan

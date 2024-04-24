@@ -56,6 +56,11 @@ struct private_kernel_libipsec_ipsec_t {
 	 * Whether the remote TS may equal the IKE peer
 	 */
 	bool allow_peer_ts;
+
+	/**
+	 * Whether UDP encapsulation is required
+	 */
+	bool require_encap;
 };
 
 typedef struct exclude_route_t exclude_route_t;
@@ -228,10 +233,21 @@ static void expire(uint8_t protocol, uint32_t spi, host_t *dst, bool hard)
 	charon->kernel->expire(charon->kernel, protocol, spi, dst, hard);
 }
 
+/**
+ * Acquire callback
+ */
+static void acquire(uint32_t reqid)
+{
+	kernel_acquire_data_t data = {};
+
+	charon->kernel->acquire(charon->kernel, reqid, &data);
+}
+
 METHOD(kernel_ipsec_t, get_features, kernel_feature_t,
 	private_kernel_libipsec_ipsec_t *this)
 {
-	return KERNEL_REQUIRE_UDP_ENCAPSULATION | KERNEL_ESP_V3_TFC;
+	return KERNEL_ESP_V3_TFC | KERNEL_SA_USE_TIME |
+			(this->require_encap ? KERNEL_REQUIRE_UDP_ENCAPSULATION : 0);
 }
 
 METHOD(kernel_ipsec_t, get_spi, status_t,
@@ -252,6 +268,12 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	private_kernel_libipsec_ipsec_t *this, kernel_ipsec_sa_id_t *id,
 	kernel_ipsec_add_sa_t *data)
 {
+	if (this->require_encap && !data->encap)
+	{
+		DBG1(DBG_ESP, "failed to add SAD entry: only UDP encapsulation is "
+			 "supported");
+		return FAILED;
+	}
 	return ipsec->sas->add_sa(ipsec->sas, id->src, id->dst, id->spi, id->proto,
 					data->reqid, id->mark, data->tfc, data->lifetime,
 					data->enc_alg, data->enc_key, data->int_alg, data->int_key,
@@ -397,8 +419,10 @@ static bool install_route(private_kernel_libipsec_ipsec_t *this,
 	{
 		traffic_selector_t *multicast, *broadcast = NULL;
 		bool ignore = FALSE;
+		int family;
 
-		this->mutex->unlock(this->mutex);
+		/* ignore multi- and broadcast TS, otherwise, install a route without
+		 * preferred source IP to forward non-local traffic via TUN device */
 		switch (src_ts->get_type(src_ts))
 		{
 			case TS_IPV4_ADDR_RANGE:
@@ -406,24 +430,27 @@ static bool install_route(private_kernel_libipsec_ipsec_t *this,
 															  0, 0, 0xffff);
 				broadcast = traffic_selector_create_from_cidr("255.255.255.255/32",
 															  0, 0, 0xffff);
+				family = AF_INET;
 				break;
 			case TS_IPV6_ADDR_RANGE:
 				multicast = traffic_selector_create_from_cidr("ff00::/8",
 															  0, 0, 0xffff);
+				family = AF_INET6;
 				break;
 			default:
+				this->mutex->unlock(this->mutex);
 				return FALSE;
 		}
 		ignore = src_ts->is_contained_in(src_ts, multicast);
 		ignore |= broadcast && src_ts->is_contained_in(src_ts, broadcast);
 		multicast->destroy(multicast);
 		DESTROY_IF(broadcast);
-		if (!ignore)
+		if (ignore)
 		{
-			DBG1(DBG_KNL, "error installing route with policy %R === %R %N",
-				 src_ts, dst_ts, policy_dir_names, policy->direction);
+			this->mutex->unlock(this->mutex);
+			return TRUE;
 		}
-		return ignore;
+		src_ip = host_create_any(family);
 	}
 
 	INIT(route,
@@ -680,12 +707,14 @@ kernel_libipsec_ipsec_t *kernel_libipsec_ipsec_create()
 		},
 		.ipsec_listener = {
 			.expire = expire,
+			.acquire = acquire,
 		},
 		.mutex = mutex_create(MUTEX_TYPE_DEFAULT),
 		.policies = linked_list_create(),
 		.excludes = linked_list_create(),
 		.allow_peer_ts = lib->settings->get_bool(lib->settings,
 					"%s.plugins.kernel-libipsec.allow_peer_ts", FALSE, lib->ns),
+		.require_encap = !lib->get(lib, "kernel-libipsec-esp-handler"),
 	);
 
 	ipsec->events->register_listener(ipsec->events, &this->ipsec_listener);

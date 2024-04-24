@@ -429,12 +429,11 @@ CALLBACK(authority_li, bool,
 static void log_authority_data(authority_t *authority)
 {
 	enumerator_t *enumerator;
-	identification_t *subject;
 	bool first = TRUE;
 	char *uri;
 
-	subject = authority->cert->get_subject(authority->cert);
-	DBG2(DBG_CFG, "  cacert = %Y", subject);
+	DBG2(DBG_CFG, "  cacert = %Y",
+		 authority->cert->get_subject(authority->cert));
 
 	enumerator = authority->crl_uris->create_enumerator(authority->crl_uris);
 	while (enumerator->enumerate(enumerator, &uri))

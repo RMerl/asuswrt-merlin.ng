@@ -1,15 +1,38 @@
 import socket
+import platform
 
 from .exception import SessionException, CommandException, EventUnknownException
-from .protocol import Transport, Packet, Message
+from .protocol import Transport, Packet, Message, RECV_TIMEOUT_DEFAULT
 from .command_wrappers import CommandWrappers
 
 
 class Session(CommandWrappers, object):
     def __init__(self, sock=None):
+        """Establish a session with an IKE daemon.
+
+        By default, the session will connect to the `/var/run/charon.vici` Unix
+        domain socket.
+
+        If there is a need to connect a socket in another location or set
+        specific settings on the socket (like a timeout), create and connect
+        a socket and pass it to the `sock` parameter.
+
+        .. note::
+
+            In case a timeout is set on the socket, the internal read code
+            will temporarily disable it after receiving the first byte to avoid
+            partial read corruptions.
+
+        :param sock: socket connected to the IKE daemon (optional)
+        :type sock: socket.socket
+        """
         if sock is None:
-            sock = socket.socket(socket.AF_UNIX)
-            sock.connect("/var/run/charon.vici")
+            if platform.system() == "Windows":
+                sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+                sock.connect(('127.0.0.1', 4502))
+            else:
+                sock = socket.socket(socket.AF_UNIX)
+                sock.connect("/var/run/charon.vici")
         self.transport = Transport(sock)
 
     def _communicate(self, packet):
@@ -40,7 +63,9 @@ class Session(CommandWrappers, object):
             raise EventUnknownException(
                 "Unknown event type '{event}'".format(event=event_type)
             )
-        elif response.response_type != Packet.EVENT_CONFIRM:
+        while response.response_type == Packet.EVENT:
+            response = Packet.parse(self.transport.receive())
+        if response.response_type != Packet.EVENT_CONFIRM:
             raise SessionException(
                 "Unexpected response type {type}, "
                 "expected '{confirm}' (EVENT_CONFIRM)".format(
@@ -139,11 +164,19 @@ class Session(CommandWrappers, object):
                     )
                 )
 
-    def listen(self, event_types):
+    def listen(self, event_types, timeout=RECV_TIMEOUT_DEFAULT):
         """Register and listen for the given events.
+
+        If a timeout is given, the generator produces a (None, None) tuple
+        if no event has been received for that time. This allows the caller
+        to either abort by breaking from the generator, or perform periodic
+        tasks while staying registered within listen(), and then continue
+        waiting for more events.
 
         :param event_types: event types to register
         :type event_types: list
+        :param timeout: timeout to wait for events, in fractions of a second
+        :type timeout: float
         :return: generator for streamed event responses as (event_type, dict)
         :rtype: generator
         """
@@ -152,7 +185,11 @@ class Session(CommandWrappers, object):
 
         try:
             while True:
-                response = Packet.parse(self.transport.receive())
+                try:
+                    response = Packet.parse(self.transport.receive(timeout))
+                except socket.timeout:
+                    yield None, None
+                    continue
                 if response.response_type == Packet.EVENT:
                     try:
                         msg = Message.deserialize(response.payload)

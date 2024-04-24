@@ -658,7 +658,6 @@ static void process_child_add(private_ha_dispatcher_t *this,
 	uint8_t mode = MODE_TUNNEL, ipcomp = 0;
 	uint16_t encr = 0, integ = 0, len = 0, dh_grp = 0;
 	uint16_t esn = NO_EXT_SEQ_NUMBERS;
-	u_int seg_i, seg_o;
 	chunk_t nonce_i = chunk_empty, nonce_r = chunk_empty, secret = chunk_empty;
 	chunk_t encr_i, integ_i, encr_r, integ_r;
 	linked_list_t *local_ts, *remote_ts;
@@ -858,16 +857,20 @@ static void process_child_add(private_ha_dispatcher_t *this,
 		return;
 	}
 
+#if DEBUG_LEVEL >= 1
+	u_int seg_i, seg_o;
+
 	seg_i = this->kernel->get_segment_spi(this->kernel,
 								ike_sa->get_my_host(ike_sa), inbound_spi);
 	seg_o = this->kernel->get_segment_spi(this->kernel,
 								ike_sa->get_other_host(ike_sa), outbound_spi);
-
 	DBG1(DBG_CFG, "installed HA CHILD_SA %s{%d} %#R === %#R "
 		"(segment in: %d%s, out: %d%s)", child_sa->get_name(child_sa),
 		child_sa->get_unique_id(child_sa), local_ts, remote_ts,
 		seg_i, this->segments->is_active(this->segments, seg_i) ? "*" : "",
 		seg_o, this->segments->is_active(this->segments, seg_o) ? "*" : "");
+#endif /* DEBUG_LEVEL */
+
 	child_sa->install_policies(child_sa);
 	local_ts->destroy_offset(local_ts, offsetof(traffic_selector_t, destroy));
 	remote_ts->destroy_offset(remote_ts, offsetof(traffic_selector_t, destroy));

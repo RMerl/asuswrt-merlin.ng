@@ -111,6 +111,11 @@ struct private_dhcp_socket_t {
 	 * Force configured destination address
 	 */
 	bool force_dst;
+
+	/**
+	 * Source IP if destination address is unicast
+	 */
+	struct sockaddr_in src;
 };
 
 /**
@@ -202,7 +207,6 @@ static int prepare_dhcp(private_dhcp_socket_t *this,
 	identification_t *identity;
 	dhcp_option_t *option;
 	int optlen = 0, remaining;
-	host_t *src;
 	uint32_t id;
 
 	memset(dhcp, 0, sizeof(*dhcp));
@@ -219,14 +223,8 @@ static int prepare_dhcp(private_dhcp_socket_t *this,
 	}
 	else
 	{
-		/* act as relay agent */
-		src = charon->kernel->get_source_addr(charon->kernel, this->dst, NULL);
-		if (src)
-		{
-			memcpy(&dhcp->gateway_address, src->get_address(src).ptr,
-				   sizeof(dhcp->gateway_address));
-			src->destroy(src);
-		}
+		memcpy(&dhcp->gateway_address, &this->src.sin_addr,
+			   sizeof(dhcp->gateway_address));
 	}
 
 	identity = transaction->get_identity(transaction);
@@ -306,13 +304,14 @@ static bool discover(private_dhcp_socket_t *this,
 {
 	dhcp_option_t *option;
 	dhcp_t dhcp;
-	chunk_t mac;
 	int optlen;
 
 	optlen = prepare_dhcp(this, transaction, DHCP_DISCOVER, &dhcp);
 
-	mac = chunk_from_thing(dhcp.client_hw_addr);
+#if DEBUG_LEVEL >= 1
+	chunk_t mac = chunk_from_thing(dhcp.client_hw_addr);
 	DBG1(DBG_CFG, "sending DHCP DISCOVER for %#B to %H", &mac, this->dst);
+#endif
 
 	option = (dhcp_option_t*)&dhcp.options[optlen];
 	option->type = DHCP_PARAM_REQ_LIST;
@@ -736,6 +735,7 @@ dhcp_socket_t *dhcp_socket_create()
 			.s_addr = INADDR_ANY,
 		},
 	};
+	socklen_t addr_len;
 	char *iface;
 	int on = 1, rcvbuf = 0;
 	struct sock_filter dhcp_filter_code[] = {
@@ -884,6 +884,25 @@ dhcp_socket_t *dhcp_socket_create()
 		if (!bind_to_device(this->send, iface) ||
 			!bind_to_device(this->receive, iface))
 		{
+			destroy(this);
+			return NULL;
+		}
+	}
+	if (!is_broadcast(this->dst))
+	{
+		if (connect(this->send, this->dst->get_sockaddr(this->dst),
+					*this->dst->get_sockaddr_len(this->dst)) < 0)
+		{
+			DBG1(DBG_CFG, "unable to connect DHCP send socket: %s",
+				 strerror(errno));
+			destroy(this);
+			return NULL;
+		}
+		addr_len = sizeof(this->src);
+		if (getsockname(this->send, (struct sockaddr*)&this->src, &addr_len) < 0)
+		{
+			DBG1(DBG_CFG, "unable to determine source address for DHCP: %s",
+				 strerror(errno));
 			destroy(this);
 			return NULL;
 		}

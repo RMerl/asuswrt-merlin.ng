@@ -95,6 +95,7 @@ static bool install_shunt_policy(child_cfg_t *child)
 	policy_type_t policy_type;
 	policy_priority_t policy_prio;
 	status_t status = SUCCESS;
+	hw_offload_t hw_offload;
 	uint32_t manual_prio;
 	char *interface;
 	bool fwd_out;
@@ -125,6 +126,7 @@ static bool install_shunt_policy(child_cfg_t *child)
 	hosts->destroy(hosts);
 
 	manual_prio = child->get_manual_prio(child);
+	hw_offload = child->get_hw_offload(child);
 	interface = child->get_interface(child);
 	fwd_out = child->has_option(child, OPT_FWD_OUT_POLICIES);
 
@@ -157,6 +159,7 @@ static bool install_shunt_policy(child_cfg_t *child)
 				.type = policy_type,
 				.prio = policy_prio,
 				.manual_prio = manual_prio,
+				.hw_offload = hw_offload,
 				.src = host_any,
 				.dst = host_any,
 				.sa = &sa,

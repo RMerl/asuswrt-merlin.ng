@@ -1270,6 +1270,7 @@ METHOD(message_t, get_notify, notify_payload_t*,
 	return notify;
 }
 
+#if DEBUG_LEVEL >= 1
 /**
  * get a string representation of the message
  */
@@ -1472,6 +1473,7 @@ static char* get_string(private_message_t *this, char *buf, int len)
 	snprintf(pos, len, " ]");
 	return buf;
 }
+#endif
 
 METHOD(message_t, disable_sort, void,
 	private_message_t *this)
@@ -1668,7 +1670,6 @@ static status_t generate_message(private_message_t *this, keymat_t *keymat,
 	enumerator_t *enumerator;
 	aead_t *aead = NULL;
 	chunk_t hash = chunk_empty;
-	char str[BUF_LEN];
 	ike_header_t *ike_header;
 	payload_t *payload, *next;
 	bool encrypting = FALSE;
@@ -1739,7 +1740,10 @@ static status_t generate_message(private_message_t *this, keymat_t *keymat,
 		enumerator->destroy(enumerator);
 	}
 
+#if DEBUG_LEVEL >= 1
+	char str[BUF_LEN];
 	DBG1(DBG_ENC, "generating %s", get_string(this, str, sizeof(str)));
+#endif
 
 	if (keymat)
 	{
@@ -2627,7 +2631,6 @@ METHOD(message_t, parse_body, status_t,
 	private_message_t *this, keymat_t *keymat)
 {
 	status_t status = SUCCESS;
-	char str[BUF_LEN];
 
 	DBG2(DBG_ENC, "parsing body of message, first payload is %N",
 		 payload_type_names, this->first_payload);
@@ -2665,7 +2668,10 @@ METHOD(message_t, parse_body, status_t,
 		return status;
 	}
 
+#if DEBUG_LEVEL >= 1
+	char str[BUF_LEN];
 	DBG1(DBG_ENC, "parsed %s", get_string(this, str, sizeof(str)));
+#endif
 
 	if (keymat && keymat->get_version(keymat) == IKEV1)
 	{
@@ -2856,7 +2862,6 @@ METHOD(message_t, add_fragment_v2, status_t,
 	enumerator_t *enumerator;
 	chunk_t data;
 	uint16_t total, num;
-	size_t len;
 	status_t status;
 
 	if (!this->frag)
@@ -2938,7 +2943,8 @@ METHOD(message_t, add_fragment_v2, status_t,
 
 	/* we report the length of the complete IKE message when splitting, do the
 	 * same here, so add the IKEv2 header len to the reassembled payload data */
-	len = 28;
+#if DEBUG_LEVEL >= 1
+	size_t len = 28;
 	enumerator = create_payload_enumerator(this);
 	while (enumerator->enumerate(enumerator, &payload))
 	{
@@ -2948,6 +2954,8 @@ METHOD(message_t, add_fragment_v2, status_t,
 
 	DBG1(DBG_ENC, "received fragment #%hu of %hu, reassembled fragmented IKE "
 		 "message (%zu bytes)", num, total, len);
+#endif /* DEBUG_LEVEL */
+
 	return SUCCESS;
 }
 

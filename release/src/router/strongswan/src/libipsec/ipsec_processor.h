@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2023 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -43,8 +43,10 @@ typedef void (*ipsec_inbound_cb_t)(void *data, ip_packet_t *packet);
  *
  * @param data			data supplied during registration of the callback
  * @param packet		ESP packet to send
+ * @param encap			TRUE to send the packet with UDP encapsulation
  */
-typedef void (*ipsec_outbound_cb_t)(void *data, esp_packet_t *packet);
+typedef void (*ipsec_outbound_cb_t)(void *data, esp_packet_t *packet,
+									bool encap);
 
 /**
  *  IPsec processor

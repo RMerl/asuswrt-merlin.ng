@@ -616,6 +616,12 @@ INSERT INTO products (      /* 103 */
  'Debian 11 x86_64'
 );
 
+INSERT INTO products (      /* 104 */
+  name
+) VALUES (
+ 'Debian 12 x86_64'
+);
+
 /* Directories */
 
 INSERT INTO directories (		/*  1 */
@@ -738,6 +744,18 @@ INSERT INTO files (				/*  6 */
   name, dir
 ) VALUES (
   'tnc_config', 2
+);
+
+INSERT INTO files (             /*  7 */
+  name, dir
+) VALUES (
+ 'libcrypto.so.3', 11
+);
+
+INSERT INTO files (             /*  8 */
+  name, dir
+) VALUES (
+ 'libssl.so.3', 11
 );
 
 /* Algorithms */
@@ -995,7 +1013,7 @@ INSERT INTO groups (			/*  4 */
 INSERT INTO groups (			/*  5 */
   name, parent
 ) VALUES (
-  'Debian x86_64', 2
+  'Debian x86_64 OpenSSL 1.1', 2
 );
 
 INSERT INTO groups (			/*  6 */
@@ -1062,6 +1080,12 @@ INSERT INTO groups (      /* 16 */
   name
 ) VALUES (
   'TPM TBOOT'
+);
+
+INSERT INTO groups (      /* 17 */
+  name, parent
+) VALUES (
+  'Debian x86_64', 2
 );
 
 /* Default Product Groups */
@@ -1678,6 +1702,12 @@ INSERT INTO groups_product_defaults (
   15, 79
 );
 
+INSERT INTO groups_product_defaults (
+  group_id, product_id
+) VALUES (
+  17, 104
+);
+
 /* Policies */
 
 INSERT INTO policies (			/*  1 */
@@ -1812,6 +1842,18 @@ INSERT INTO policies (          /* 22 */
   16, 'TPM TBOOT Measurements', 'T', 2, 2
 );
 
+INSERT INTO policies (          /* 23 */
+  type, name, file, rec_fail, rec_noresult
+) VALUES (
+  6, 'Measure /usr/lib/x86_64-linux-gnu/libcrypto.so.3', 7, 2, 2
+);
+
+INSERT INTO policies (          /* 24 */
+  type, name, file, rec_fail, rec_noresult
+) VALUES (
+  6, 'Measure /usr/lib/x86_64-linux-gnu/libssl.so.3', 8, 2, 2
+);
+
 /* Enforcements */
 
 INSERT INTO enforcements (		/*  1 */
@@ -1920,6 +1962,18 @@ INSERT INTO enforcements (      /* 18 */
   policy, group_id, max_age
 ) VALUES (
   22, 16, 60
+);
+
+INSERT INTO enforcements (      /* 19 */
+  policy, group_id, max_age
+) VALUES (
+  23, 17, 86400
+);
+
+INSERT INTO enforcements (      /* 20 */
+  policy, group_id, max_age
+) VALUES (
+  24, 17, 86400
 );
 
 /* swid_entities */

@@ -38,7 +38,7 @@ typedef enum watcher_state_t watcher_state_t;
  * re-enable the event, while the data read can be processed in another
  * asynchronous job.
  *
- * On Linux, even if select() marks an FD as "ready", a subsequent read/write
+ * On Linux, even if poll() marks an FD as "ready", a subsequent read/write
  * can block. It is therefore highly recommended to use non-blocking I/O
  * and handle EAGAIN/EWOULDBLOCK gracefully.
  *
@@ -55,7 +55,6 @@ typedef bool (*watcher_cb_t)(void *data, int fd, watcher_event_t event);
 enum watcher_event_t {
 	WATCHER_READ = (1<<0),
 	WATCHER_WRITE = (1<<1),
-	WATCHER_EXCEPT = (1<<2),
 };
 
 /**
@@ -71,7 +70,7 @@ enum watcher_state_t {
 };
 
 /**
- * Watch multiple file descriptors using select().
+ * Watch multiple file descriptors using poll().
  */
 struct watcher_t {
 

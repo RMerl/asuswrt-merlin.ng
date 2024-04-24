@@ -17,11 +17,8 @@ strongswan_CHARON_PLUGINS := android-log openssl fips-prf random nonce pubkey \
 	pkcs1 pkcs8 pem xcbc hmac kdf kernel-netlink socket-default android-dns \
 	stroke eap-identity eap-mschapv2 eap-md5 eap-gtc
 
-strongswan_STARTER_PLUGINS := kernel-netlink
-
 # list of all plugins - used to enable them with the function below
-strongswan_PLUGINS := $(sort $(strongswan_CHARON_PLUGINS) \
-	$(strongswan_STARTER_PLUGINS))
+strongswan_PLUGINS := $(sort $(strongswan_CHARON_PLUGINS))
 
 include $(LOCAL_PATH)/Android.common.mk
 

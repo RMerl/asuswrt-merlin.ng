@@ -1,0 +1,65 @@
+#!/bin/bash
+# Install the present and past CA certificates in the ldap_tls_cacertdir
+# directory defined by sssd.conf, followed by the execution of the
+# openssl_rehash command in that directory so that the SSSD daemon can verify
+# the LDAP server certificate.
+#
+# Copyright (C) 2023 Andreas Steffen
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+set -e
+
+##############################################################################
+# Set some local paths
+#
+
+# Path to the SSSD configuration file
+SSSD_CONF="/etc/sssd/sssd.conf"
+
+# Extract or set path to the LDAP TLS CA cert directory
+LDAP_TLS_CACERTDIR=$(awk '/ldap_tls_cacertdir/ {print $3}' $SSSD_CONF)
+
+##############################################################################
+# Change into the certificate directory
+#
+cd $CERTDIR
+
+##############################################################################
+# Install and rehash the CA certificates
+#
+cp $ROOTCA $SUBCA $LDAP_TLS_CACERTDIR
+if [ -s old/$ROOTCA ]
+then
+  cp old/$ROOTCA $LDAP_TLS_CACERTDIR/$OLDROOTCA
+fi
+if [ -s old/$SUBCA ]
+then
+  cp old/$SUBCA $LDAP_TLS_CACERTDIR/$OLDSUBCA
+fi
+
+rm -f $LDAP_TLS_CACERTDIR/*.0
+
+/usr/bin/openssl rehash $LDAP_TLS_CACERTDIR
+
+##############################################################################
+# Restart the SSSD systemd service
+#
+/usr/bin/systemctl restart sssd.service
+exit 0

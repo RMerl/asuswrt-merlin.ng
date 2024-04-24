@@ -68,6 +68,8 @@ enum fragmentation_t {
 enum childless_t {
 	/** Allow childless IKE_SAs as responder, but initiate regular IKE_SAs */
 	CHILDLESS_ALLOW,
+	/** Initiate childless IKE_SAs if supported, allow them as responder */
+	CHILDLESS_PREFER,
 	/** Don't accept childless IKE_SAs as responder, don't initiate them */
 	CHILDLESS_NEVER,
 	/** Only accept the creation of childless IKE_SAs (also as responder) */

@@ -79,9 +79,6 @@
 #define ROUTING_TABLE_PRIO 0
 #endif
 
-/** multicast groups (for groups > 31 setsockopt has to be used) */
-#define nl_group(group) (1 << (group - 1))
-
 ENUM(rt_msg_names, RTM_NEWLINK, RTM_GETRULE,
 	"RTM_NEWLINK",
 	"RTM_DELLINK",
@@ -343,9 +340,9 @@ struct private_kernel_netlink_net_t {
 	netlink_socket_t *socket;
 
 	/**
-	 * Netlink rt socket to receive address change events
+	 * Netlink rt event socket
 	 */
-	int socket_events;
+	netlink_event_socket_t *socket_events;
 
 	/**
 	 * earliest time of the next roam event
@@ -1451,76 +1448,36 @@ static void process_rule(private_kernel_netlink_net_t *this,
 #endif
 }
 
-/**
- * Receives events from kernel
- */
-static bool receive_events(private_kernel_netlink_net_t *this, int fd,
-						   watcher_event_t event)
+CALLBACK(receive_events, void,
+	private_kernel_netlink_net_t *this, struct nlmsghdr *hdr)
 {
-	char response[netlink_get_buflen()];
-	struct nlmsghdr *hdr = (struct nlmsghdr*)response;
-	struct sockaddr_nl addr;
-	socklen_t addr_len = sizeof(addr);
-	int len;
-
-	len = recvfrom(this->socket_events, response, sizeof(response),
-				   MSG_DONTWAIT, (struct sockaddr*)&addr, &addr_len);
-	if (len < 0)
+	switch (hdr->nlmsg_type)
 	{
-		switch (errno)
-		{
-			case EINTR:
-				/* interrupted, try again */
-				return TRUE;
-			case EAGAIN:
-				/* no data ready, select again */
-				return TRUE;
-			default:
-				DBG1(DBG_KNL, "unable to receive from RT event socket %s (%d)",
-					 strerror(errno), errno);
-				sleep(1);
-				return TRUE;
-		}
+		case RTM_NEWADDR:
+		case RTM_DELADDR:
+			process_addr(this, hdr, TRUE);
+			break;
+		case RTM_NEWLINK:
+		case RTM_DELLINK:
+			process_link(this, hdr, TRUE);
+			break;
+		case RTM_NEWROUTE:
+		case RTM_DELROUTE:
+			if (this->process_route)
+			{
+				process_route(this, hdr);
+			}
+			break;
+		case RTM_NEWRULE:
+		case RTM_DELRULE:
+			if (this->process_rules)
+			{
+				process_rule(this, hdr);
+			}
+			break;
+		default:
+			break;
 	}
-
-	if (addr.nl_pid != 0)
-	{	/* not from kernel. not interested, try another one */
-		return TRUE;
-	}
-
-	while (NLMSG_OK(hdr, len))
-	{
-		/* looks good so far, dispatch netlink message */
-		switch (hdr->nlmsg_type)
-		{
-			case RTM_NEWADDR:
-			case RTM_DELADDR:
-				process_addr(this, hdr, TRUE);
-				break;
-			case RTM_NEWLINK:
-			case RTM_DELLINK:
-				process_link(this, hdr, TRUE);
-				break;
-			case RTM_NEWROUTE:
-			case RTM_DELROUTE:
-				if (this->process_route)
-				{
-					process_route(this, hdr);
-				}
-				break;
-			case RTM_NEWRULE:
-			case RTM_DELRULE:
-				if (this->process_rules)
-				{
-					process_rule(this, hdr);
-				}
-				break;
-			default:
-				break;
-		}
-		hdr = NLMSG_NEXT(hdr, len);
-	}
-	return TRUE;
 }
 
 /** enumerator over addresses */
@@ -3056,11 +3013,7 @@ METHOD(kernel_net_t, destroy, void,
 		manage_rule(this, RTM_DELRULE, AF_INET6, this->routing_table,
 					this->routing_table_prio);
 	}
-	if (this->socket_events > 0)
-	{
-		lib->watcher->remove(lib->watcher, this->socket_events);
-		close(this->socket_events);
-	}
+	DESTROY_IF(this->socket_events);
 	enumerator = this->routes->ht.create_enumerator(&this->routes->ht);
 	while (enumerator->enumerate(enumerator, NULL, (void**)&route))
 	{
@@ -3096,7 +3049,7 @@ kernel_netlink_net_t *kernel_netlink_net_create()
 {
 	private_kernel_netlink_net_t *this;
 	enumerator_t *enumerator;
-	bool register_for_events = TRUE;
+	uint32_t groups;
 	char *exclude;
 
 	INIT(this,
@@ -3168,11 +3121,6 @@ kernel_netlink_net_t *kernel_netlink_net_create()
 		return NULL;
 	}
 
-	if (streq(lib->ns, "starter"))
-	{	/* starter has no threads, so we do not register for kernel events */
-		register_for_events = FALSE;
-	}
-
 	exclude = lib->settings->get_str(lib->settings,
 									 "%s.ignore_routing_tables", NULL, lib->ns);
 	if (exclude)
@@ -3194,45 +3142,25 @@ kernel_netlink_net_t *kernel_netlink_net_create()
 		enumerator->destroy(enumerator);
 	}
 
-	if (register_for_events)
+	groups = nl_group(RTNLGRP_IPV4_IFADDR) |
+			 nl_group(RTNLGRP_IPV6_IFADDR) |
+			 nl_group(RTNLGRP_LINK);
+	if (this->process_route)
 	{
-		struct sockaddr_nl addr;
-
-		memset(&addr, 0, sizeof(addr));
-		addr.nl_family = AF_NETLINK;
-
-		/* create and bind RT socket for events (address/interface/route changes) */
-		this->socket_events = socket(AF_NETLINK, SOCK_RAW, NETLINK_ROUTE);
-		if (this->socket_events < 0)
-		{
-			DBG1(DBG_KNL, "unable to create RT event socket: %s (%d)",
-				 strerror(errno), errno);
-			destroy(this);
-			return NULL;
-		}
-		addr.nl_groups = nl_group(RTNLGRP_IPV4_IFADDR) |
-						 nl_group(RTNLGRP_IPV6_IFADDR) |
-						 nl_group(RTNLGRP_LINK);
-		if (this->process_route)
-		{
-			addr.nl_groups |= nl_group(RTNLGRP_IPV4_ROUTE) |
-							  nl_group(RTNLGRP_IPV6_ROUTE);
-		}
-		if (this->process_rules)
-		{
-			addr.nl_groups |= nl_group(RTNLGRP_IPV4_RULE) |
-							  nl_group(RTNLGRP_IPV6_RULE);
-		}
-		if (bind(this->socket_events, (struct sockaddr*)&addr, sizeof(addr)))
-		{
-			DBG1(DBG_KNL, "unable to bind RT event socket: %s (%d)",
-				 strerror(errno), errno);
-			destroy(this);
-			return NULL;
-		}
-
-		lib->watcher->add(lib->watcher, this->socket_events, WATCHER_READ,
-						  (watcher_cb_t)receive_events, this);
+		groups |= nl_group(RTNLGRP_IPV4_ROUTE) |
+				  nl_group(RTNLGRP_IPV6_ROUTE);
+	}
+	if (this->process_rules)
+	{
+		groups |= nl_group(RTNLGRP_IPV4_RULE) |
+				  nl_group(RTNLGRP_IPV6_RULE);
+	}
+	this->socket_events = netlink_event_socket_create(NETLINK_ROUTE, groups,
+													  receive_events, this);
+	if (!this->socket_events)
+	{
+		destroy(this);
+		return NULL;
 	}
 
 	if (init_address_list(this) != SUCCESS)

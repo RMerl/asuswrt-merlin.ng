@@ -301,10 +301,10 @@ METHOD(mac_t, destroy, void,
 	free_align(this);
 }
 
-/*
- * Described in header
+/**
+ * Create a generic mac_t object using AESNI XCBC
  */
-mac_t *aesni_xcbc_create(encryption_algorithm_t algo, size_t key_size)
+static mac_t *aesni_xcbc_create(encryption_algorithm_t algo, size_t key_size)
 {
 	private_aesni_mac_t *this;
 

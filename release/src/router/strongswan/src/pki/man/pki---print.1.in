@@ -54,7 +54,8 @@ Type of input. One of \fIx509\fR (X.509 certificate), \fIcrl\fR (Certificate
 Revocation List, CRL), \fIac\fR (Attribute Certificate), \fIpub\fR (public key),
 \fIpriv\fR (private key), \fIrsa\fR (RSA private key), \fIecdsa\fR (ECDSA
 private key), \fIed25519\fR (Ed25519 private key), \fIed448\fR (Ed448 private
-key), \fIbliss\fR (BLISS private key), defaults to \fIx509\fR.
+key), \fIbliss\fR (BLISS private key), \fIocsp-req\fR (OCSP request),
+\fIocsp-rsp\fR (OCSP response), defaults to \fIx509\fR.
 .
 .SH "SEE ALSO"
 .

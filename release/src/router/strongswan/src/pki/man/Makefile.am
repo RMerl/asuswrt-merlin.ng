@@ -7,6 +7,7 @@ man1_MANS = \
 	pki---gen.1 \
 	pki---issue.1 \
 	pki---keyid.1 \
+	pki---ocsp.1 \
 	pki---pkcs7.1 \
 	pki---print.1 \
 	pki---pub.1 \

@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2019 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
+ * Copyright (C) 2023 Andreas Steffen, strongSec GmbH
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -43,6 +44,20 @@ struct ocsp_request_t {
 	 * @return					nonce in the request (internal data)
 	 */
 	chunk_t (*get_nonce)(ocsp_request_t *this);
+
+    /**
+     * Get the optional signer certificate.
+     *
+     * @return                  X.509 signer certificate
+     */
+    certificate_t* (*get_signer_cert)(ocsp_request_t *this);
+
+    /**
+     * Create an enumerator over the request list.
+     *
+     * @return                  enumerator over the request fields
+     */
+    enumerator_t* (*create_request_enumerator)(ocsp_request_t *this);
 };
 
 #endif /** OCSP_REQUEST_H_ @}*/

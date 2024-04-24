@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2018 Tobias Brunner
+ * Copyright (C) 2006-2023 Tobias Brunner
  * Copyright (C) 2005-2010 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005 Jan Hutter
@@ -636,6 +636,21 @@ METHOD(notify_payload_t, set_notify_type, void,
 	this->notify_type = notify_type;
 }
 
+METHOD(notify_payload_t, get_spi_data, chunk_t,
+	private_notify_payload_t *this)
+{
+	return this->spi;
+}
+
+METHOD(notify_payload_t, set_spi_data, void,
+	private_notify_payload_t *this, chunk_t spi)
+{
+	chunk_free(&this->spi);
+	this->spi = chunk_clone(spi);
+	this->spi_size = this->spi.len;
+	compute_length(this);
+}
+
 METHOD(notify_payload_t, get_spi, uint32_t,
 	private_notify_payload_t *this)
 {
@@ -656,50 +671,35 @@ METHOD(notify_payload_t, get_spi, uint32_t,
 METHOD(notify_payload_t, set_spi, void,
 	private_notify_payload_t *this, uint32_t spi)
 {
-	chunk_free(&this->spi);
 	switch (this->protocol_id)
 	{
 		case PROTO_AH:
 		case PROTO_ESP:
-			this->spi = chunk_alloc(4);
-			*((uint32_t*)this->spi.ptr) = spi;
+			set_spi_data(this, chunk_from_thing(spi));
 			break;
 		default:
 			break;
 	}
-	this->spi_size = this->spi.len;
-	compute_length(this);
 }
 
-METHOD(notify_payload_t, get_spi_data, chunk_t,
+METHOD(notify_payload_t, get_ike_spi, uint64_t,
 	private_notify_payload_t *this)
 {
-	switch (this->protocol_id)
+	if (this->protocol_id == PROTO_IKE &&
+		this->spi.len == 8)
 	{
-		case PROTO_IKE:
-			if (this->spi.len == 16)
-			{
-				return this->spi;
-			}
-		default:
-			break;
+		return *((uint64_t*)this->spi.ptr);
 	}
-	return chunk_empty;
+	return 0;
 }
 
-METHOD(notify_payload_t, set_spi_data, void,
-	private_notify_payload_t *this, chunk_t spi)
+METHOD(notify_payload_t, set_ike_spi, void,
+	private_notify_payload_t *this, uint64_t spi)
 {
-	chunk_free(&this->spi);
-	switch (this->protocol_id)
+	if (this->protocol_id == PROTO_IKE)
 	{
-		case PROTO_IKE:
-			this->spi = chunk_clone(spi);
-		default:
-			break;
+		set_spi_data(this, chunk_from_thing(spi));
 	}
-	this->spi_size = this->spi.len;
-	compute_length(this);
 }
 
 METHOD(notify_payload_t, get_notification_data, chunk_t,
@@ -749,6 +749,8 @@ notify_payload_t *notify_payload_create(payload_type_t type)
 			.set_notify_type = _set_notify_type,
 			.get_spi = _get_spi,
 			.set_spi = _set_spi,
+			.get_ike_spi = _get_ike_spi,
+			.set_ike_spi = _set_ike_spi,
 			.get_spi_data = _get_spi_data,
 			.set_spi_data = _set_spi_data,
 			.get_notification_data = _get_notification_data,

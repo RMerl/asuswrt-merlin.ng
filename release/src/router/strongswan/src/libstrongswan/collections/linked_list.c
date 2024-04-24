@@ -62,7 +62,7 @@ bool linked_list_match_str(void *item, va_list args)
 /**
  * Creates an empty linked list object.
  */
-element_t *element_create(void *value)
+static element_t *element_create(void *value)
 {
 	element_t *this;
 	INIT(this,

@@ -60,11 +60,6 @@ bool fetchline(chunk_t *src, chunk_t *line);
 err_t extract_value(chunk_t *value, chunk_t *line);
 
 /**
- * extracts a name: value pair from a text line
- */
-err_t extract_name_value(chunk_t *name, chunk_t *value, chunk_t *line);
-
-/**
  * extracts a parameter: value from a text line
  */
 err_t extract_parameter_value(chunk_t *name, chunk_t *value, chunk_t *line);

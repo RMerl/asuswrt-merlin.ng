@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2023 Tobias Brunner
  * Copyright (C) 2014 Martin Willi
  *
  * libvici.h is MIT-licensed to simplify reuse, but please note that libvici.c
@@ -78,6 +79,8 @@
  * To register or unregister for asynchronous event messages vici_register() is
  * used. The registered callback gets invoked by an asynchronous thread. To
  * parse the event message, the vici_parse*() functions can be used.
+ * To get notified if the connection is closed by the vici service while waiting
+ * for event messages, vici_on_close() may be used.
  */
 
 #ifndef LIBVICI_H_
@@ -159,6 +162,13 @@ typedef int	(*vici_parse_value_cb_t)(void *user, vici_res_t *res, char *name,
  * @return			0 if parsed successfully
  */
 typedef int (*vici_parse_section_cb_t)(void *user, vici_res_t *res, char *name);
+
+/**
+ * Callback function invoked if the connection is closed by the vici service.
+ *
+ * @param user		user data, as passed to vici_on_close()
+ */
+typedef void (*vici_close_cb_t)(void *user);
 
 /**
  * Open a new vici connection.
@@ -457,6 +467,19 @@ void vici_free_res(vici_res_t *res);
  * @return			0 if registered successfully
  */
 int vici_register(vici_conn_t *conn, char *name, vici_event_cb_t cb, void *user);
+
+/**
+ * (Un-)Register a callback that's invoked if the connection is closed by the
+ * vici service.
+ *
+ * Primarily useful when listening for events via vici_register(). The callback
+ * gets invoked by a different thread from the libstrongswan thread pool.
+ *
+ * @param conn		connection context
+ * @param cb		callback function to register, NULL to unregister
+ * @param user		user data passed to callback invocation
+ */
+void vici_on_close(vici_conn_t *conn, vici_close_cb_t cb, void *user);
 
 /**
  * Initialize libvici before first time use.

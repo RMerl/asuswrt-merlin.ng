@@ -151,7 +151,8 @@ static int verify(chunk_t chunk)
 /**
  * Sign data into PKCS#7 signed-data
  */
-static int sign(chunk_t chunk, certificate_t *cert, private_key_t *key)
+static int sign(chunk_t chunk, certificate_t *cert, private_key_t *key,
+				hash_algorithm_t digest, signature_params_t *scheme)
 {
 	container_t *container;
 	chunk_t encoding;
@@ -162,6 +163,8 @@ static int sign(chunk_t chunk, certificate_t *cert, private_key_t *key)
 								   BUILD_BLOB, chunk,
 								   BUILD_SIGNING_CERT, cert,
 								   BUILD_SIGNING_KEY, key,
+								   BUILD_SIGNATURE_SCHEME, scheme,
+								   BUILD_DIGEST_ALG, digest,
 								   BUILD_END);
 	if (container)
 	{
@@ -171,6 +174,7 @@ static int sign(chunk_t chunk, certificate_t *cert, private_key_t *key)
 			free(encoding.ptr);
 		}
 		container->destroy(container);
+		res = 0;
 	}
 	return res;
 }
@@ -196,6 +200,7 @@ static int encrypt(chunk_t chunk, certificate_t *cert)
 			free(encoding.ptr);
 		}
 		container->destroy(container);
+		res = 0;
 	}
 	return res;
 }
@@ -230,8 +235,7 @@ static int decrypt(chunk_t chunk)
 	container->destroy(container);
 
 	write_to_stream(stdout, data);
-	free(data.ptr);
-
+	chunk_clear(&data);
 	return 0;
 }
 
@@ -277,10 +281,12 @@ static int show(chunk_t chunk)
  */
 static int pkcs7()
 {
-	char *arg, *file = NULL;
+	char *arg, *file = NULL, *error = NULL;
 	private_key_t *key = NULL;
 	certificate_t *cert = NULL;
 	chunk_t data = chunk_empty;
+	hash_algorithm_t digest = HASH_UNKNOWN;
+	signature_params_t *scheme = NULL;
 	mem_cred_t *creds;
 	int res = 1;
 	FILE *in;
@@ -292,6 +298,8 @@ static int pkcs7()
 		OP_DECRYPT,
 		OP_SHOW,
 	} op = OP_NONE;
+	bool pss = lib->settings->get_bool(lib->settings, "%s.rsa_pss", FALSE,
+									   lib->ns);
 
 	creds = mem_cred_create();
 
@@ -300,8 +308,7 @@ static int pkcs7()
 		switch (command_getopt(&arg))
 		{
 			case 'h':
-				creds->destroy(creds);
-				return command_usage(NULL);
+				goto usage;
 			case 'i':
 				file = arg;
 				continue;
@@ -342,12 +349,12 @@ static int pkcs7()
 				continue;
 			case 'k':
 				key = lib->creds->create(lib->creds,
-										 CRED_PRIVATE_KEY, KEY_RSA,
+										 CRED_PRIVATE_KEY, KEY_ANY,
 										 BUILD_FROM_FILE, arg, BUILD_END);
 				if (!key)
 				{
-					fprintf(stderr, "parsing private key failed\n");
-					goto end;
+					error = "parsing private key failed";
+					goto usage;
 				}
 				creds->add_key(creds, key);
 				continue;
@@ -357,17 +364,31 @@ static int pkcs7()
 										  BUILD_FROM_FILE, arg, BUILD_END);
 				if (!cert)
 				{
-					fprintf(stderr, "parsing certificate failed\n");
-					goto end;
+					error = "parsing certificate failed";
+					goto usage;
 				}
 				creds->add_cert(creds, TRUE, cert);
+				continue;
+			case 'g':
+				if (!enum_from_name(hash_algorithm_short_names, arg, &digest))
+				{
+					error = "invalid --digest type";
+					goto usage;
+				}
+				continue;
+			case 'R':
+				if (!parse_rsa_padding(arg, &pss))
+				{
+					error = "invalid RSA padding";
+					goto usage;
+				}
 				continue;
 			case EOF:
 				break;
 			default:
 			invalid:
-				creds->destroy(creds);
-				return command_usage("invalid --pkcs7 option");
+				error = "invalid --pkcs7 option";
+				goto usage;
 		}
 		break;
 	}
@@ -388,12 +409,12 @@ static int pkcs7()
 
 	if (!data.len)
 	{
-		fprintf(stderr, "reading input failed!\n");
+		error = "reading input failed";
 		goto end;
 	}
 	if (op != OP_SHOW && !cert)
 	{
-		fprintf(stderr, "requiring a certificate!\n");
+		error = "requiring a certificate";
 		goto end;
 	}
 
@@ -404,11 +425,21 @@ static int pkcs7()
 		case OP_SIGN:
 			if (!key)
 			{
-				fprintf(stderr, "signing requires a private key\n");
-				res = 1;
+				error = "signing requires a private key";
 				break;
 			}
-			res = sign(data, cert, key);
+			scheme = get_signature_scheme(key, digest, pss);
+			if (!scheme)
+			{
+				error = "no signature scheme found";
+				break;
+			}
+			if (digest == HASH_UNKNOWN)
+			{
+				digest = hasher_from_signature_scheme(scheme->scheme,
+													  scheme->params);
+			}
+			res = sign(data, cert, key, digest, scheme);
 			break;
 		case OP_VERIFY:
 			res = verify(data);
@@ -419,8 +450,7 @@ static int pkcs7()
 		case OP_DECRYPT:
 			if (!key)
 			{
-				fprintf(stderr, "decryption requires a private key\n");
-				res = 1;
+				error = "decryption requires a private key";
 				break;
 			}
 			res = decrypt(data);
@@ -435,9 +465,19 @@ static int pkcs7()
 	lib->credmgr->remove_local_set(lib->credmgr, &creds->set);
 
 end:
+	signature_params_destroy(scheme);
 	creds->destroy(creds);
 	free(data.ptr);
+	if (error)
+	{
+		fprintf(stderr, "%s\n", error);
+		return 1;
+	}
 	return res;
+
+usage:
+	creds->destroy(creds);
+	return command_usage(error);
 }
 
 /**
@@ -448,17 +488,21 @@ static void __attribute__ ((constructor))reg()
 	command_register((command_t) {
 		pkcs7, '7', "pkcs7", "PKCS#7 wrap/unwrap functions",
 		{"--sign|--verify|--encrypt|--decrypt|--show",
-		 "[--in file] [--cert file]+ [--key file]"},
+		 "[--in file] [--cert file]+ [--key file]",
+		 "[--digest md5|sha1|sha224|sha256|sha384|sha512|sha3_224|sha3_256|sha3_384|sha3_512]",
+		 "[--rsa-padding pkcs1|pss]"},
 		{
-			{"help",	'h', 0, "show usage information"},
-			{"sign",	's', 0, "create PKCS#7 signed-data"},
-			{"verify",	'u', 0, "verify PKCS#7 signed-data"},
-			{"encrypt",	'e', 0, "create PKCS#7 enveloped-data"},
-			{"decrypt",	'd', 0, "decrypt PKCS#7 enveloped-data"},
-			{"show",	'p', 0, "show info about PKCS#7, print certificates"},
-			{"in",		'i', 1, "input file, default: stdin"},
-			{"key",		'k', 1, "path to private key for sign/decrypt"},
-			{"cert",	'c', 1, "path to certificate for sign/verify/encrypt"},
+			{"help",		'h', 0, "show usage information"},
+			{"sign",		's', 0, "create PKCS#7 signed-data"},
+			{"verify",		'u', 0, "verify PKCS#7 signed-data"},
+			{"encrypt",		'e', 0, "create PKCS#7 enveloped-data"},
+			{"decrypt",		'd', 0, "decrypt PKCS#7 enveloped-data"},
+			{"show",		'p', 0, "show info about PKCS#7, print certificates"},
+			{"in",			'i', 1, "input file, default: stdin"},
+			{"key",			'k', 1, "path to private key for sign/decrypt"},
+			{"cert",		'c', 1, "path to certificate for sign/verify/encrypt"},
+			{"digest",		'g', 1, "digest for signature creation, default: key-specific"},
+			{"rsa-padding",	'R', 1, "padding for RSA signatures, default: pkcs1"},
 		}
 	});
 }

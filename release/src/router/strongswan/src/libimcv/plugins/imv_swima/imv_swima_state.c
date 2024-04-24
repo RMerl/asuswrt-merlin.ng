@@ -312,7 +312,7 @@ METHOD(imv_swima_state_t, set_inventory, void,
     private_imv_swima_state_t *this, swima_inventory_t *inventory)
 {
 	chunk_t sw_id, sw_locator;
-	uint32_t record_id;
+	uint32_t record_id DBG_UNUSED;
 	char *sw_id_str;
 	json_object *jstring;
 	swima_record_t *sw_record;

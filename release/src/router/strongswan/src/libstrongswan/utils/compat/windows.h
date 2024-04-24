@@ -366,7 +366,7 @@ ssize_t windows_send(int sockfd, const void *buf, size_t len, int flags);
 /**
  * recvfrom(2) with support for MSG_DONTWAIT
  */
-#define sendto windows_send
+#define sendto windows_sendto
 ssize_t windows_sendto(int sockfd, const void *buf, size_t len, int flags,
 					   const struct sockaddr *dest_addr, socklen_t addrlen);
 

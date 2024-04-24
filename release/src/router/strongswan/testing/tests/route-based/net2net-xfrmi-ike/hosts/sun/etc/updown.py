@@ -2,11 +2,18 @@
 
 import sys
 import vici
-import daemon
 import logging
 from logging.handlers import SysLogHandler
 import subprocess
+
+# the hard limit (second number) is the value used by python-daemon when closing
+# potentially open file descriptors while daemonizing or even triggered by the
+# import.  since the default limit is 524288 on newer systems, this can take
+# quite a while, and due to how this range of FDs is handled internally (as set)
+# it can even trigger the OOM killer
 import resource
+resource.setrlimit(resource.RLIMIT_NOFILE, (256, 256))  # noqa
+import daemon
 
 
 logger = logging.getLogger('updownLogger')
@@ -27,10 +34,10 @@ def handle_interfaces(ike_sa, up):
 
     if up:
         logger.info("add XFRM interfaces %s and %s", ifname_in, ifname_out)
-        subprocess.call(["/usr/local/libexec/ipsec/xfrmi", "-n", ifname_out,
-                         "-i", str(if_id_out), "-d", "eth0"])
-        subprocess.call(["/usr/local/libexec/ipsec/xfrmi", "-n", ifname_in,
-                         "-i", str(if_id_in), "-d", "eth0"])
+        subprocess.call(["ip", "link", "add", ifname_out, "type", "xfrm",
+                         "if_id", str(if_id_out), "dev", "eth0"])
+        subprocess.call(["ip", "link", "add", ifname_in, "type", "xfrm",
+                         "if_id", str(if_id_in), "dev", "eth0"])
         subprocess.call(["ip", "link", "set", ifname_out, "up"])
         subprocess.call(["ip", "link", "set", ifname_in, "up"])
         subprocess.call(["iptables", "-A", "FORWARD", "-o", ifname_out,
@@ -59,13 +66,6 @@ def install_routes(ike_sa):
         subprocess.call(["ip", "route", "add", ts, "dev", ifname_out])
 
 
-# the hard limit (second number) is the value used by python-daemon when closing
-# potentially open file descriptors while daemonizing.  since the default is
-# 524288 on newer systems, this can take quite a while, and due to how this
-# range of FDs is handled internally (as set) it can even trigger the OOM killer
-resource.setrlimit(resource.RLIMIT_NOFILE, (256, 256))
-
-
 # daemonize and run parallel to the IKE daemon
 with daemon.DaemonContext():
     setup_logger()
@@ -75,7 +75,7 @@ with daemon.DaemonContext():
         ver = {k: v.decode("UTF-8") for k, v in session.version().items()}
         logger.info("connected to {daemon} {version} ({sysname}, {release}, "
                     "{machine})".format(**ver))
-    except:
+    except BaseException:
         logger.error("failed to get status via vici")
         sys.exit(1)
 
@@ -95,6 +95,6 @@ with daemon.DaemonContext():
 
     except IOError:
         logger.error("daemon disconnected")
-    except:
+    except BaseException as e:
         logger.error("exception while listening for events " +
-                     repr(sys.exc_info()[1]))
+                     repr(e))

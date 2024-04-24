@@ -206,19 +206,18 @@ static TNC_Result receive_msg(private_imv_attestation_agent_t *this,
 				{
 					ietf_attr_pa_tnc_error_t *error_attr;
 					pen_type_t error_code;
-					chunk_t msg_info;
 
 					error_attr = (ietf_attr_pa_tnc_error_t*)attr;
 					error_code = error_attr->get_error_code(error_attr);
 
 					if (error_code.vendor_id == PEN_TCG)
 					{
-						msg_info = error_attr->get_msg_info(error_attr);
-
+#if DEBUG_LEVEL >= 1
+						chunk_t msg_info = error_attr->get_msg_info(error_attr);
 						DBG1(DBG_IMV, "received TCG-PTS error '%N'",
 							 pts_error_code_names, error_code.type);
 						DBG1(DBG_IMV, "error information: %B", &msg_info);
-
+#endif /* DEBUG_LEVEL */
 						/* TPM 2.0 doesn't return TPM Version Information */
 						if (error_code.type != TCG_PTS_TPM_VERS_NOT_SUPPORTED)
 						{

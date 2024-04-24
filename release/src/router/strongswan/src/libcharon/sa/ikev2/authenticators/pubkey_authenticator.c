@@ -371,11 +371,13 @@ static status_t sign_signature_auth(private_pubkey_authenticator_t *this,
 	{
 		if (params->scheme == SIGN_RSA_EMSA_PSS)
 		{
+#if DEBUG_LEVEL >= 1
 			rsa_pss_params_t *pss = params->params;
 			DBG1(DBG_IKE, "authentication of '%Y' (myself) with %N_%N_SALT_%zd "
 				 "%s", id, signature_scheme_names, params->scheme,
 				 hash_algorithm_short_names_upper, pss->hash, pss->salt_len,
 				 status == SUCCESS ? "successful" : "failed");
+#endif
 		}
 		else
 		{
@@ -573,7 +575,7 @@ METHOD(authenticator_t, process, status_t,
 	key_type_t key_type = KEY_ECDSA;
 	signature_params_t *params;
 	status_t status = NOT_FOUND;
-	const char *reason = "unsupported";
+	const char *reason DBG_UNUSED = "unsupported";
 	bool online;
 
 	auth_payload = (auth_payload_t*)message->get_payload(message, PLV2_AUTH);
@@ -647,10 +649,12 @@ METHOD(authenticator_t, process, status_t,
 			}
 			else if (params->scheme == SIGN_RSA_EMSA_PSS)
 			{
+#if DEBUG_LEVEL >= 1
 				rsa_pss_params_t *pss = params->params;
 				DBG1(DBG_IKE, "authentication of '%Y' with %N_%N_SALT_%zd "
 					 "successful", id, signature_scheme_names, params->scheme,
 					 hash_algorithm_short_names_upper, pss->hash, pss->salt_len);
+#endif
 			}
 			else
 			{

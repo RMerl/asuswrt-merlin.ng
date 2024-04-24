@@ -2,7 +2,7 @@
 .
 .nf
 .na
-/etc/swanctl/swanctl.conf       configuration file
+@sysconfdir@/swanctl/swanctl.conf       configuration file
 .ad
 .fi
 .

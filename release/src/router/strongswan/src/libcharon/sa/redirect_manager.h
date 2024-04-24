@@ -57,7 +57,7 @@ struct redirect_manager_t {
 	 * IKE_SA_INIT message.
 	 *
 	 * @param ike_sa		IKE_SA for which this is called
-	 * @param gateway[out]	new IKE gateway (IP or FQDN)
+	 * @param[out] gateway	new IKE gateway (IP or FQDN)
 	 * @return				TRUE if client should be redirected, FALSE otherwise
 	 */
 	bool (*redirect_on_init)(redirect_manager_t *this, ike_sa_t *ike_sa,
@@ -69,7 +69,7 @@ struct redirect_manager_t {
 	 * when the server authenticates itself.
 	 *
 	 * @param ike_sa		IKE_SA for which this is called
-	 * @param gateway[out]	new IKE gateway (IP or FQDN)
+	 * @param[out] gateway	new IKE gateway (IP or FQDN)
 	 * @return				TRUE if client should be redirected, FALSE otherwise
 	 */
 	bool (*redirect_on_auth)(redirect_manager_t *this, ike_sa_t *ike_sa,

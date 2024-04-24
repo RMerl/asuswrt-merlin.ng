@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015 Andreas Steffen
+ * Copyright (C) 2015-2023 Andreas Steffen
  * Copyright (C) 2010 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -19,6 +19,7 @@
 #include "credentials/certificates/x509.h"
 #include "credentials/certificates/crl.h"
 #include "credentials/certificates/ac.h"
+#include "credentials/certificates/ocsp_request.h"
 #include "credentials/certificates/ocsp_response.h"
 #include "credentials/certificates/pgp_certificate.h"
 
@@ -85,7 +86,7 @@ static void print_x509(private_certificate_printer_t *this, x509_t *x509)
 	x509_policy_mapping_t *mapping;
 	FILE *f = this->f;
 
-	chunk = chunk_skip_zero(x509->get_serial(x509));
+	chunk = x509->get_serial(x509);
 	fprintf(f, "  serial:    %#B\n", &chunk);
 
 	first = TRUE;
@@ -341,12 +342,11 @@ static void print_crl(private_certificate_printer_t *this, crl_t *crl)
 	x509_cdp_t *cdp;
 	FILE *f = this->f;
 
-	chunk = chunk_skip_zero(crl->get_serial(crl));
+	chunk = crl->get_serial(crl);
 	fprintf(f, "  serial:    %#B\n", &chunk);
 
 	if (crl->is_delta_crl(crl, &chunk))
 	{
-		chunk = chunk_skip_zero(chunk);
 		fprintf(f, "  delta CRL: for serial %#B\n", &chunk);
 	}
 	chunk = crl->get_authKeyIdentifier(crl);
@@ -388,7 +388,6 @@ static void print_crl(private_certificate_printer_t *this, crl_t *crl)
 		enumerator = crl->create_enumerator(crl);
 		while (enumerator->enumerate(enumerator, &chunk, &ts, &reason))
 		{
-			chunk = chunk_skip_zero(chunk);
 			fprintf(f, "    %#B: %T, %N\n", &chunk, &ts, this->utc,
 											crl_reason_names, reason);
 		}
@@ -408,7 +407,7 @@ static void print_ac(private_certificate_printer_t *this, ac_t *ac)
 	bool first = TRUE;
 	FILE *f = this->f;
 
-	chunk = chunk_skip_zero(ac->get_serial(ac));
+	chunk = ac->get_serial(ac);
 	fprintf(f, "  serial:    %#B\n", &chunk);
 
 	id = ac->get_holderIssuer(ac);
@@ -416,7 +415,7 @@ static void print_ac(private_certificate_printer_t *this, ac_t *ac)
 	{
 		fprintf(f, "  hissuer:  \"%Y\"\n", id);
 	}
-	chunk = chunk_skip_zero(ac->get_holderSerial(ac));
+	chunk = ac->get_holderSerial(ac);
 	if (chunk.ptr)
 	{
 		fprintf(f, "  hserial:   %#B\n", &chunk);
@@ -477,6 +476,36 @@ static void print_ac(private_certificate_printer_t *this, ac_t *ac)
 }
 
 /**
+ * Print OCSP request specific information
+ */
+static void print_ocsp_request(private_certificate_printer_t *this,
+							   ocsp_request_t *ocsp_request)
+{
+	enumerator_t *enumerator;
+	chunk_t nonce, issuerNameHash, issuerKeyHash, serialNumber;
+	hash_algorithm_t hashAlgorithm;
+	FILE *f = this->f;
+
+	nonce = ocsp_request->get_nonce(ocsp_request);
+	fprintf(f, "  nonce:     %#B\n", &nonce);
+
+	enumerator = ocsp_request->create_request_enumerator(ocsp_request);
+	while (enumerator->enumerate(enumerator, &hashAlgorithm, &issuerNameHash,
+											 &issuerKeyHash, &serialNumber))
+	{
+		fprintf(f, "  serial:    %#B\n", &serialNumber);
+		fprintf(f, "  issuer:    keyHash:  %#B\n", &issuerKeyHash);
+		fprintf(f, "             nameHash: %#B\n", &issuerNameHash);
+		if (hashAlgorithm != HASH_SHA1)
+		{
+			fprintf(f, "             hashAlg:  %#N\n",
+									 hash_algorithm_short_names, hashAlgorithm);
+		}
+	}
+	enumerator->destroy(enumerator);
+}
+
+/**
  * Print OCSP response specific information
  */
 static void print_ocsp_response(private_certificate_printer_t *this,
@@ -507,7 +536,6 @@ static void print_ocsp_response(private_certificate_printer_t *this,
 			{
 				fprintf(f, "             ");
 			}
-			serialNumber = chunk_skip_zero(serialNumber);
 
 			switch (status)
 			{
@@ -530,6 +558,11 @@ static void print_ocsp_response(private_certificate_printer_t *this,
 			fprintf(f, "\n");
 		}
 		enumerator->destroy(enumerator);
+
+		if (first)
+		{
+			fprintf(f, "(none)\n");
+		}
 	}
 }
 
@@ -579,7 +612,8 @@ METHOD(certificate_printer_t, print, void,
 	{
 		fprintf(f, "  subject:  \"%Y\"\n", subject);
 	}
-	if (type != CERT_TRUSTED_PUBKEY && type != CERT_GPG)
+	if (type != CERT_TRUSTED_PUBKEY && type != CERT_GPG &&
+		type != CERT_X509_OCSP_REQUEST)
 	{
 		fprintf(f, "  issuer:   \"%Y\"\n", cert->get_issuer(cert));
 	}
@@ -640,6 +674,9 @@ METHOD(certificate_printer_t, print, void,
 		case CERT_X509_AC:
 			print_ac(this, (ac_t*)cert);
 			break;
+		case CERT_X509_OCSP_REQUEST:
+			print_ocsp_request(this, (ocsp_request_t*)cert);
+			break;
 		case CERT_X509_OCSP_RESPONSE:
 			print_ocsp_response(this, (ocsp_response_t*)cert);
 			break;
@@ -696,6 +733,9 @@ METHOD(certificate_printer_t, print_caption, void,
 				break;
 			case CERT_X509_CRL:
 				caption = "X.509 CRL";
+				break;
+			case CERT_X509_OCSP_REQUEST:
+				caption = "OCSP Request";
 				break;
 			case CERT_X509_OCSP_RESPONSE:
 				caption = "OCSP Response";

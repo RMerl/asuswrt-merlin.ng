@@ -798,7 +798,6 @@ METHOD(pts_t, quote, bool,
 	private_pts_t *this, tpm_quote_mode_t *quote_mode,
 	tpm_tss_quote_info_t **quote_info, chunk_t *quote_sig)
 {
-	chunk_t pcr_value, pcr_computed;
 	hash_algorithm_t hash_alg;
 	uint32_t pcr, pcr_sel = 0;
 	enumerator_t *enumerator;
@@ -810,14 +809,16 @@ METHOD(pts_t, quote, bool,
 	enumerator = this->pcrs->create_enumerator(this->pcrs);
 	while (enumerator->enumerate(enumerator, &pcr))
 	{
+#if DEBUG_LEVEL >= 2
+		chunk_t pcr_value;
 		if (this->tpm->read_pcr(this->tpm, pcr, &pcr_value, hash_alg))
 		{
-			pcr_computed = this->pcrs->get(this->pcrs, pcr);
+			chunk_t pcr_computed = this->pcrs->get(this->pcrs, pcr);
 			DBG2(DBG_PTS, "PCR %2d %#B  %s", pcr, &pcr_value,
 				 chunk_equals(pcr_value, pcr_computed) ? "ok" : "differs");
 			chunk_free(&pcr_value);
-		};
-
+		}
+#endif
 		/* add PCR to selection list */
 		pcr_sel |= (1 << pcr);
 	}

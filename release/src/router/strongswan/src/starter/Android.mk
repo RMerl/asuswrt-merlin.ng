@@ -18,8 +18,7 @@ LOCAL_C_INCLUDES += \
 	$(strongswan_PATH)/src/stroke
 
 LOCAL_CFLAGS := $(strongswan_CFLAGS) \
-	-DIPSEC_SCRIPT='"ipsec"' \
-	-DPLUGINS='"$(strongswan_STARTER_PLUGINS)"'
+	-DIPSEC_SCRIPT='"ipsec"'
 
 LOCAL_MODULE := starter
 

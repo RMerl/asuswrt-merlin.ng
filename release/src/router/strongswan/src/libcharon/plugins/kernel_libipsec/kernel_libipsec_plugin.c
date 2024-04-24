@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2013 Tobias Brunner
+ * Copyright (C) 2012-2023 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -17,6 +17,7 @@
 #include "kernel_libipsec_plugin.h"
 #include "kernel_libipsec_ipsec.h"
 #include "kernel_libipsec_router.h"
+#include "kernel_libipsec_esp_handler.h"
 
 #include <daemon.h>
 #include <ipsec.h>
@@ -45,6 +46,11 @@ struct private_kernel_libipsec_plugin_t {
 	 * Packet router
 	 */
 	kernel_libipsec_router_t *router;
+
+	/**
+	 * Raw ESP handler
+	 */
+	kernel_libipsec_esp_handler_t *esp_handler;
 };
 
 METHOD(plugin_t, get_name, char*,
@@ -91,6 +97,11 @@ METHOD(plugin_t, destroy, void,
 	{
 		lib->set(lib, "kernel-libipsec-tun", NULL);
 		this->tun->destroy(this->tun);
+	}
+	if (this->esp_handler)
+	{
+		lib->set(lib, "kernel-libipsec-esp-handler", NULL);
+		this->esp_handler->destroy(this->esp_handler);
 	}
 	libipsec_deinit();
 	free(this);
@@ -146,5 +157,17 @@ plugin_t *kernel_libipsec_plugin_create()
 	/* set TUN device as default to install VIPs */
 	lib->settings->set_str(lib->settings, "%s.install_virtual_ip_on",
 						   this->tun->get_name(this->tun), lib->ns);
+
+	if (lib->settings->get_bool(lib->settings,
+						"%s.plugins.kernel-libipsec.raw_esp", FALSE, lib->ns))
+	{
+		this->esp_handler = kernel_libipsec_esp_handler_create();
+		if (!this->esp_handler)
+		{
+			DBG1(DBG_KNL, "only UDP-encapsulated ESP packets supported by "
+				 "kernel-libipsec on this platform");
+		}
+		lib->set(lib, "kernel-libipsec-esp-handler", this->esp_handler);
+	}
 	return &this->public.plugin;
 }

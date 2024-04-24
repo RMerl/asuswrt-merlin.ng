@@ -1432,7 +1432,16 @@ METHOD(quick_mode_t, get_mid, uint32_t,
 METHOD(quick_mode_t, use_reqid, void,
 	private_quick_mode_t *this, uint32_t reqid)
 {
-	this->child.reqid = reqid;
+	uint32_t existing_reqid = this->child.reqid;
+
+	if (!reqid || charon->kernel->ref_reqid(charon->kernel, reqid) == SUCCESS)
+	{
+		this->child.reqid = reqid;
+		if (existing_reqid)
+		{
+			charon->kernel->release_reqid(charon->kernel, existing_reqid);
+		}
+	}
 }
 
 METHOD(quick_mode_t, use_marks, void,
@@ -1496,6 +1505,10 @@ METHOD(task_t, destroy, void,
 	DESTROY_IF(this->child_sa);
 	DESTROY_IF(this->config);
 	DESTROY_IF(this->dh);
+	if (this->child.reqid)
+	{
+		charon->kernel->release_reqid(charon->kernel, this->child.reqid);
+	}
 	free(this);
 }
 

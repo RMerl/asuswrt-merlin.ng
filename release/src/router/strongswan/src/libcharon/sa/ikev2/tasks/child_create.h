@@ -49,6 +49,10 @@ struct child_create_t {
 	 * When this task is used for rekeying, the same reqid is used
 	 * for the new CHILD_SA.
 	 *
+	 * This must only be called with dynamically allocated reqids (i.e. from
+	 * kernel_interface_t::alloc_reqid()), the method takes a reference that's
+	 * maintained for the lifetime of the task.
+	 *
 	 * @param reqid		reqid to use
 	 */
 	void (*use_reqid) (child_create_t *this, uint32_t reqid);

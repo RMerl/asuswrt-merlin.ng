@@ -27,9 +27,13 @@
  */
 START_TEST(test_regular)
 {
+	childless_t childless[] = {
+		CHILDLESS_FORCE,
+		CHILDLESS_PREFER,
+	};
 	exchange_test_sa_conf_t conf = {
 		.initiator = {
-			.childless = CHILDLESS_FORCE,
+			.childless = childless[_i],
 			.esp = "aes128-sha256-modp3072",
 		},
 		.responder = {
@@ -281,7 +285,7 @@ Suite *childless_suite_create()
 	s = suite_create("childless");
 
 	tc = tcase_create("initiation");
-	tcase_add_test(tc, test_regular);
+	tcase_add_loop_test(tc, test_regular, 0, 2);
 	tcase_add_test(tc, test_regular_manual);
 	suite_add_tcase(s, tc);
 

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2015-2022 Tobias Brunner
+ * Copyright (C) 2015-2023 Tobias Brunner
  * Copyright (C) 2007 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -93,6 +93,11 @@ struct private_credential_manager_t {
 	 * Registered data to pass to hook
 	 */
 	void *hook_data;
+
+	/**
+	 * Whether to reject pre-trusted end-entity certificates
+	 */
+	bool reject_pretrusted;
 };
 
 /** data to pass to create_private_enumerator */
@@ -924,6 +929,12 @@ METHOD(enumerator_t, trusted_enumerate, bool,
 		this->pretrusted = get_pretrusted_cert(this->this, this->type, this->id);
 		if (this->pretrusted)
 		{
+			if (this->this->reject_pretrusted)
+			{
+				DBG1(DBG_CFG, "  rejecting trusted certificate \"%Y\"",
+					 this->pretrusted->get_subject(this->pretrusted));
+				return FALSE;
+			}
 			DBG1(DBG_CFG, "  using trusted certificate \"%Y\"",
 				 this->pretrusted->get_subject(this->pretrusted));
 			/* if we find a trusted self signed certificate, we just accept it.
@@ -1114,61 +1125,55 @@ static bool auth_contains_cacert(auth_cfg_t *auth, certificate_t *cert)
 }
 
 /**
- * build a trustchain from subject up to a trust anchor in trusted
+ * Build a trust chain for subject, optionally only up to one of the CA
+ * certificates in auth. Returns whether one of the anchors was found.
  */
 static auth_cfg_t *build_trustchain(private_credential_manager_t *this,
-									 certificate_t *subject, auth_cfg_t *auth)
+									certificate_t *subject, auth_cfg_t *auth,
+									bool *found_anchor)
 {
 	certificate_t *issuer, *current;
 	auth_cfg_t *trustchain;
 	int pathlen = 0;
-	bool has_anchor;
+
+	*found_anchor = FALSE;
 
 	trustchain = auth_cfg_create();
-	has_anchor = auth->get(auth, AUTH_RULE_CA_CERT) != NULL;
-	current = subject->get_ref(subject);
-	while (TRUE)
+	/* immediately return for self-signed certificates */
+	if (issued_by(this, subject, subject, NULL))
 	{
-		if (auth_contains_cacert(auth, current))
-		{
-			trustchain->add(trustchain, AUTH_RULE_CA_CERT, current);
-			return trustchain;
-		}
-		if (subject == current)
-		{
-			trustchain->add(trustchain, AUTH_RULE_SUBJECT_CERT, current);
-		}
-		else
-		{
-			if (!has_anchor && issued_by(this, current, current, NULL))
-			{	/* If no trust anchor specified, accept any CA */
-				trustchain->add(trustchain, AUTH_RULE_CA_CERT, current);
-				return trustchain;
-			}
-			trustchain->add(trustchain, AUTH_RULE_IM_CERT, current);
-		}
-		if (pathlen++ > MAX_TRUST_PATH_LEN)
-		{
-			break;
-		}
+		return trustchain;
+	}
+	current = subject->get_ref(subject);
+	for (pathlen = 0; pathlen <= MAX_TRUST_PATH_LEN; pathlen++)
+	{
 		issuer = get_issuer_cert(this, current, FALSE, NULL);
 		if (!issuer)
-		{
-			if (!has_anchor)
-			{	/* If no trust anchor specified, accept incomplete chains */
-				return trustchain;
-			}
+		{	/* return the incomplete trust chain */
 			break;
 		}
-		if (has_anchor && issuer->equals(issuer, current))
-		{
-			issuer->destroy(issuer);
+		if (auth_contains_cacert(auth, issuer))
+		{	/* stop if we find one of the anchors */
+			trustchain->add(trustchain, AUTH_RULE_CA_CERT, issuer);
+			*found_anchor = TRUE;
 			break;
 		}
-		current = issuer;
+		if (issued_by(this, issuer, issuer, NULL))
+		{	/* trust chain is complete */
+			trustchain->add(trustchain, AUTH_RULE_CA_CERT, issuer);
+			break;
+		}
+		trustchain->add(trustchain, AUTH_RULE_IM_CERT, issuer);
+		current->destroy(current);
+		current = issuer->get_ref(issuer);
 	}
-	trustchain->destroy(trustchain);
-	return NULL;
+	current->destroy(current);
+	if (pathlen > MAX_TRUST_PATH_LEN)
+	{
+		trustchain->destroy(trustchain);
+		return NULL;
+	}
+	return trustchain;
 }
 
 /**
@@ -1225,9 +1230,10 @@ METHOD(credential_manager_t, get_private, private_key_t*,
 {
 	enumerator_t *enumerator;
 	certificate_t *cert;
-	private_key_t *private = NULL;
-	auth_cfg_t *trustchain;
+	private_key_t *private = NULL, *first_private = NULL;
+	auth_cfg_t *trustchain, *first_trustchain = NULL;
 	auth_rule_t rule;
+	bool has_anchor, found_anchor;
 
 	/* check if this is a lookup by key ID, and do it if so */
 	if (id && id->get_type(id) == ID_KEY_ID)
@@ -1241,7 +1247,10 @@ METHOD(credential_manager_t, get_private, private_key_t*,
 
 	if (auth)
 	{
-		/* try to find a trustchain with one of the configured subject certs */
+		has_anchor = auth->get(auth, AUTH_RULE_CA_CERT) != NULL;
+
+		/* try to find a trust chain with one of the configured subject certs,
+		 * prefer one with any given anchor */
 		enumerator = auth->create_enumerator(auth);
 		while (enumerator->enumerate(enumerator, &rule, &cert))
 		{
@@ -1250,13 +1259,24 @@ METHOD(credential_manager_t, get_private, private_key_t*,
 				private = get_private_by_cert(this, cert, type);
 				if (private)
 				{
-					trustchain = build_trustchain(this, cert, auth);
+					trustchain = build_trustchain(this, cert, auth, &found_anchor);
 					if (trustchain)
 					{
-						auth->merge(auth, trustchain, FALSE);
-						prefer_cert(auth, cert->get_ref(cert));
+						if (!has_anchor || found_anchor)
+						{
+							auth->merge(auth, trustchain, FALSE);
+							prefer_cert(auth, cert->get_ref(cert));
+							trustchain->destroy(trustchain);
+							break;
+						}
+						else if (!first_private)
+						{
+							first_private = private;
+							first_trustchain = trustchain;
+							private = NULL;
+							continue;
+						}
 						trustchain->destroy(trustchain);
-						break;
 					}
 					private->destroy(private);
 					private = NULL;
@@ -1264,62 +1284,66 @@ METHOD(credential_manager_t, get_private, private_key_t*,
 			}
 		}
 		enumerator->destroy(enumerator);
-		if (private)
+
+		/* if no certificates are configured, try to find one based on the
+		 * identity, preferably with any of the given anchors */
+		if (!private && !first_private)
 		{
-			return private;
+			enumerator = create_cert_enumerator(this, CERT_ANY, type, id, FALSE);
+			while (enumerator->enumerate(enumerator, &cert))
+			{
+				private = get_private_by_cert(this, cert, type);
+				if (private)
+				{
+					trustchain = build_trustchain(this, cert, auth, &found_anchor);
+					if (trustchain)
+					{
+						if (!has_anchor || found_anchor)
+						{
+							auth->merge(auth, trustchain, FALSE);
+							prefer_cert(auth, cert->get_ref(cert));
+							trustchain->destroy(trustchain);
+							break;
+						}
+						else if (!first_private)
+						{
+							/* add this certificate, if we end up choosing a
+							 * different one, it gets replaced above */
+							auth->add(auth, AUTH_RULE_SUBJECT_CERT,
+									  cert->get_ref(cert));
+							first_private = private;
+							first_trustchain = trustchain;
+							private = NULL;
+							continue;
+						}
+						trustchain->destroy(trustchain);
+					}
+					private->destroy(private);
+					private = NULL;
+				}
+			}
+			enumerator->destroy(enumerator);
 		}
 
-		/* if none yielded a trustchain, enforce the first configured cert */
-		cert = auth->get(auth, AUTH_RULE_SUBJECT_CERT);
-		if (cert)
+		/* fall back to the first configured or found private key */
+		if (!private && first_private)
 		{
-			private = get_private_by_cert(this, cert, type);
-			if (private)
-			{
-				trustchain = build_trustchain(this, cert, auth);
-				if (trustchain)
-				{
-					auth->merge(auth, trustchain, FALSE);
-					trustchain->destroy(trustchain);
-				}
-				return private;
-			}
+			auth->merge(auth, first_trustchain, FALSE);
+			private = first_private->get_ref(first_private);
 		}
-
-		/* try to build a trust chain for each certificate found */
-		enumerator = create_cert_enumerator(this, CERT_ANY, type, id, FALSE);
-		while (enumerator->enumerate(enumerator, &cert))
-		{
-			private = get_private_by_cert(this, cert, type);
-			if (private)
-			{
-				trustchain = build_trustchain(this, cert, auth);
-				if (trustchain)
-				{
-					auth->merge(auth, trustchain, FALSE);
-					trustchain->destroy(trustchain);
-					break;
-				}
-				private->destroy(private);
-				private = NULL;
-			}
-		}
-		enumerator->destroy(enumerator);
+		DESTROY_IF(first_private);
+		DESTROY_IF(first_trustchain);
 	}
-
-	/* if no valid trustchain was found, fall back to the first usable cert */
-	if (!private)
+	else
 	{
+		/* if we have no config, use the first usable cert with the given
+		 * identity */
 		enumerator = create_cert_enumerator(this, CERT_ANY, type, id, FALSE);
 		while (enumerator->enumerate(enumerator, &cert))
 		{
 			private = get_private_by_cert(this, cert, type);
 			if (private)
 			{
-				if (auth)
-				{
-					auth->add(auth, AUTH_RULE_SUBJECT_CERT, cert->get_ref(cert));
-				}
 				break;
 			}
 		}
@@ -1423,6 +1447,8 @@ credential_manager_t *credential_manager_create()
 		.cache_queue = linked_list_create(),
 		.lock = rwlock_create(RWLOCK_TYPE_DEFAULT),
 		.queue_mutex = mutex_create(MUTEX_TYPE_DEFAULT),
+		.reject_pretrusted = lib->settings->get_bool(lib->settings,
+								"%s.reject_trusted_end_entity", FALSE, lib->ns),
 	);
 
 	this->local_sets = thread_value_create((thread_cleanup_t)this->sets->destroy);

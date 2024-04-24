@@ -366,7 +366,7 @@ static status_t destroy_and_reestablish(private_child_delete_t *this)
 		spi = child_sa->get_spi(child_sa, TRUE);
 		child_cfg = child_sa->get_config(child_sa);
 		child_cfg->get_ref(child_cfg);
-		args.reqid = child_sa->get_reqid(child_sa);
+		args.reqid = child_sa->get_reqid_ref(child_sa);
 		args.label = child_sa->get_label(child_sa);
 		if (args.label)
 		{
@@ -391,6 +391,10 @@ static status_t destroy_and_reestablish(private_child_delete_t *this)
 			}
 		}
 		child_cfg->destroy(child_cfg);
+		if (args.reqid)
+		{
+			charon->kernel->release_reqid(charon->kernel, args.reqid);
+		}
 		DESTROY_IF(args.label);
 		if (status != SUCCESS)
 		{

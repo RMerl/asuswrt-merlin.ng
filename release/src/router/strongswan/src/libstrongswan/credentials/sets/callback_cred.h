@@ -29,6 +29,7 @@ typedef struct callback_cred_t callback_cred_t;
 /**
  * Callback function to get shared keys.
  *
+ * @param data			data passed to the constructor
  * @param type			type of requested shared key
  * @param me			own identity
  * @param other			other identity

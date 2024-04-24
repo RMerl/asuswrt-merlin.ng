@@ -495,7 +495,6 @@ static status_t select_and_install(private_child_create_t *this,
 								   bool no_dh, bool ike_auth)
 {
 	status_t status, status_i, status_o;
-	child_sa_outbound_state_t out_state;
 	chunk_t nonce_i, nonce_r;
 	chunk_t encr_i = chunk_empty, encr_r = chunk_empty;
 	chunk_t integ_i = chunk_empty, integ_r = chunk_empty;
@@ -779,11 +778,14 @@ static status_t select_and_install(private_child_create_t *this,
 	charon->bus->child_keys(charon->bus, this->child_sa, this->initiator,
 							this->dh, nonce_i, nonce_r);
 
+#if DEBUG_LEVEL >= 0
+	child_sa_outbound_state_t out_state;
+
+	out_state = this->child_sa->get_outbound_state(this->child_sa);
 	my_ts = linked_list_create_from_enumerator(
 				this->child_sa->create_ts_enumerator(this->child_sa, TRUE));
 	other_ts = linked_list_create_from_enumerator(
 				this->child_sa->create_ts_enumerator(this->child_sa, FALSE));
-	out_state = this->child_sa->get_outbound_state(this->child_sa);
 
 	DBG0(DBG_IKE, "%sCHILD_SA %s{%d} established "
 		 "with SPIs %.8x_i %.8x_o and TS %#R === %#R",
@@ -796,6 +798,7 @@ static status_t select_and_install(private_child_create_t *this,
 
 	my_ts->destroy(my_ts);
 	other_ts->destroy(other_ts);
+#endif
 
 	this->child_sa->set_state(this->child_sa, CHILD_INSTALLED);
 	this->ike_sa->add_child_sa(this->ike_sa, this->child_sa);
@@ -1044,7 +1047,8 @@ static status_t defer_child_sa(private_child_create_t *this)
 		/* with SELinux, we prefer not to create a CHILD_SA when we only have
 		 * the generic label available.  if the peer does not support it,
 		 * creating the SA will most likely fail */
-		if (policy == CHILDLESS_FORCE ||
+		if (policy == CHILDLESS_PREFER ||
+			policy == CHILDLESS_FORCE ||
 			generic_label_only(this))
 		{
 			return NEED_MORE;
@@ -1128,13 +1132,13 @@ static bool check_for_generic_label(private_child_create_t *this)
 {
 	if (generic_label_only(this))
 	{
-		sec_label_t *label;
-
-		label = this->config->get_label(this->config);
+#if DEBUG_LEVEL >= 1
+		sec_label_t *label = this->config->get_label(this->config);
 		DBG1(DBG_IKE, "not establishing CHILD_SA %s{%d} with generic "
 			 "label '%s'", this->child_sa->get_name(this->child_sa),
 			 this->child_sa->get_unique_id(this->child_sa),
 			 label->get_string(label));
+#endif
 		return TRUE;
 	}
 	return FALSE;
@@ -1921,7 +1925,16 @@ METHOD(task_t, process_i, status_t,
 METHOD(child_create_t, use_reqid, void,
 	private_child_create_t *this, uint32_t reqid)
 {
-	this->child.reqid = reqid;
+	uint32_t existing_reqid = this->child.reqid;
+
+	if (!reqid || charon->kernel->ref_reqid(charon->kernel, reqid) == SUCCESS)
+	{
+		this->child.reqid = reqid;
+		if (existing_reqid)
+		{
+			charon->kernel->release_reqid(charon->kernel, existing_reqid);
+		}
+	}
 }
 
 METHOD(child_create_t, use_marks, void,
@@ -2059,6 +2072,10 @@ METHOD(task_t, destroy, void,
 	if (!this->established)
 	{
 		DESTROY_IF(this->child_sa);
+	}
+	if (this->child.reqid)
+	{
+		charon->kernel->release_reqid(charon->kernel, this->child.reqid);
 	}
 	DESTROY_IF(this->packet_tsi);
 	DESTROY_IF(this->packet_tsr);

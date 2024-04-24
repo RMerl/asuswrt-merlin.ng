@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2013 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -25,6 +25,7 @@
 typedef struct ipsec_event_listener_t ipsec_event_listener_t;
 
 #include <library.h>
+#include <selectors/traffic_selector.h>
 
 /**
  * Listener interface for IPsec events
@@ -42,6 +43,13 @@ struct ipsec_event_listener_t {
 	 * @param hard			TRUE if this is a hard expire, FALSE otherwise
 	 */
 	void (*expire)(uint8_t protocol, uint32_t spi, host_t *dst, bool hard);
+
+	/**
+	 * Called when no IPsec SA is found for an outbound policy
+	 *
+	 * @param reqid			reqid of the policy for which to acquire an SA
+	 */
+	void (*acquire)(uint32_t reqid);
 };
 
 #endif /** IPSEC_EVENT_LISTENER_H_ @}*/

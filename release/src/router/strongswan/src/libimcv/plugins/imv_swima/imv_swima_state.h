@@ -105,9 +105,9 @@ struct imv_swima_state_t {
 	json_object* (*get_jrequest)(imv_swima_state_t *this);
 
 	/**
-	 * Set the number of still missing SW [ID] records or envents
+	 * Set the number of still missing SW [ID] records or events
 	 *
-	 * @param count				Number of missing SW [ID] records or envents
+	 * @param count				Number of missing SW [ID] records or events
 	 */
 	void (*set_missing)(imv_swima_state_t *this, uint32_t count);
 

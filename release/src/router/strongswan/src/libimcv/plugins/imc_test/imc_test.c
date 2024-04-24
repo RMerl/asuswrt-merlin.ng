@@ -293,19 +293,19 @@ static TNC_Result receive_message(imc_state_t *state, imc_msg_t *in_msg)
 		}
 		if (attr_type.type == ITA_ATTR_COMMAND)
 		{
-			ita_attr_command_t *ita_attr;
-
-			ita_attr = (ita_attr_command_t*)attr;
+#if DEBUG_LEVEL >= 1
+			ita_attr_command_t *ita_attr = (ita_attr_command_t*)attr;
 			DBG1(DBG_IMC, "received command '%s'",
 				 ita_attr->get_command(ita_attr));
+#endif
 		}
 		else if (attr_type.type == ITA_ATTR_DUMMY)
 		{
-			ita_attr_dummy_t *ita_attr;
-
-			ita_attr = (ita_attr_dummy_t*)attr;
+#if DEBUG_LEVEL >= 1
+			ita_attr_dummy_t *ita_attr = (ita_attr_dummy_t*)attr;
 			DBG1(DBG_IMC, "received dummy attribute value (%d bytes)",
 				 ita_attr->get_size(ita_attr));
+#endif
 		}
 	}
 	enumerator->destroy(enumerator);

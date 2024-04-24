@@ -141,9 +141,7 @@ METHOD(pb_tnc_batch_t, get_encoding, chunk_t,
 METHOD(pb_tnc_batch_t, add_msg, bool,
 	private_pb_tnc_batch_t *this, pb_tnc_msg_t* msg)
 {
-	enum_name_t *msg_type_names;
 	chunk_t msg_value;
-	pen_type_t msg_type;
 	size_t msg_len;
 
 	msg->build(msg);
@@ -157,7 +155,10 @@ METHOD(pb_tnc_batch_t, add_msg, bool,
 	}
 	this->batch_len += msg_len;
 
-	msg_type = msg->get_type(msg);
+#if DEBUG_LEVEL >= 2
+	pen_type_t msg_type = msg->get_type(msg);
+	enum_name_t *msg_type_names;
+
 	switch (msg_type.vendor_id)
 	{
 		default:
@@ -173,6 +174,7 @@ METHOD(pb_tnc_batch_t, add_msg, bool,
 	}
 	DBG2(DBG_TNC, "adding %N/%N message", pen_names, msg_type.vendor_id,
 										  msg_type_names, msg_type.type);
+#endif
 	this->messages->insert_last(this->messages, msg);
 	return TRUE;
 }
@@ -329,7 +331,7 @@ static status_t process_tnc_msg(private_pb_tnc_batch_t *this)
 	uint32_t vendor_id, msg_type, msg_len, offset;
 	chunk_t data, msg_value;
 	bool noskip_flag;
-	enum_name_t *msg_type_names;
+	enum_name_t *msg_type_names DBG_UNUSED;
 	pen_type_t msg_pen_type;
 	status_t status;
 

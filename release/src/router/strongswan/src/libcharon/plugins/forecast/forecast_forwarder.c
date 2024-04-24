@@ -162,7 +162,7 @@ CALLBACK(receive_casts, bool,
 		struct iphdr hdr;
 		char data[2048];
 	} buf;
-	char *type;
+	char *type DBG_UNUSED;
 	ssize_t len;
 	u_int mark, origin = 0;
 	host_t *src, *dst;

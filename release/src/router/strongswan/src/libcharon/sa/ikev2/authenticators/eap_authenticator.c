@@ -156,7 +156,7 @@ static eap_payload_t* server_initiate_eap(private_eap_authenticator_t *this,
 	identification_t *id;
 	pen_t vendor;
 	eap_payload_t *out;
-	char *action;
+	char *action DBG_UNUSED;
 
 	auth = this->ike_sa->get_auth_cfg(this->ike_sa, FALSE);
 
@@ -641,11 +641,12 @@ METHOD(authenticator_t, process_client, status_t,
 		}
 		if (this->require_mutual && !this->method->is_mutual(this->method))
 		{	/* we require mutual authentication due to EAP-only */
+#if DEBUG_LEVEL >= 1
 			pen_t vendor;
-
 			DBG1(DBG_IKE, "EAP-only authentication requires a mutual and "
 				 "MSK deriving EAP method, but %N is not",
 				 eap_type_names, this->method->get_type(this->method, &vendor));
+#endif
 			return FAILED;
 		}
 		return SUCCESS;

@@ -140,6 +140,11 @@ enum level_t {
 # define DBG4(...) {}
 #endif
 
+/** mark variables that are only used in DBG statements */
+#ifndef DBG_UNUSED
+# define DBG_UNUSED __attribute__((unused))
+#endif
+
 /** dbg function hook, uses dbg_default() by default */
 extern void (*dbg) (debug_t group, level_t level, char *fmt, ...);
 

@@ -70,11 +70,16 @@ METHOD(key_exchange_t, get_shared_secret, bool,
 	return TRUE;
 }
 
-
 METHOD(key_exchange_t, set_public_key, bool,
 	private_tkm_diffie_hellman_t *this, chunk_t value)
 {
 	dh_pubvalue_type othervalue;
+
+	if (!key_exchange_verify_pubkey(this->group, value) ||
+		value.len > sizeof(othervalue.data))
+	{
+		return FALSE;
+	}
 	othervalue.size = value.len;
 	memcpy(&othervalue.data, value.ptr, value.len);
 

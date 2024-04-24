@@ -548,9 +548,10 @@ void asn1_debug_simple_object(chunk_t object, asn1_t type, bool private)
 		case ASN1_UTCTIME:
 		case ASN1_GENERALIZEDTIME:
 			{
+#if DEBUG_LEVEL >= 2
 				time_t time = asn1_to_time(&object, type);
-
 				DBG2(DBG_ASN, "  '%T'", &time, TRUE);
+#endif
 			}
 			return;
 		default:
@@ -648,18 +649,27 @@ int asn1_parse_algorithmIdentifier(chunk_t blob, int level0, chunk_t *parameters
 
 	if (asn1_unwrap(&blob, &blob) == ASN1_SEQUENCE)
 	{
-		DBG2(DBG_ASN, "L%d - algorithmIdentifier:", level0);
+		if (level0 >= 0)
+		{
+			DBG2(DBG_ASN, "L%d - algorithmIdentifier:", level0);
+		}
 
 		if (asn1_unwrap(&blob, &object) == ASN1_OID)
 		{
-			DBG2(DBG_ASN, "L%d - algorithm:", level0+1);
-			asn1_debug_simple_object(object, ASN1_OID, FALSE);
+			if (level0 >= 0)
+			{
+				DBG2(DBG_ASN, "L%d - algorithm:", level0+1);
+				asn1_debug_simple_object(object, ASN1_OID, FALSE);
+			}
 			alg = asn1_known_oid(object);
 
 			if (blob.len)
 			{
-				DBG2(DBG_ASN, "L%d - parameters:", level0+1);
-				DBG3(DBG_ASN, "%B", &blob);
+				if (level0 >= 0)
+				{
+					DBG2(DBG_ASN, "L%d - parameters:", level0+1);
+					DBG3(DBG_ASN, "%B", &blob);
+				}
 				if (parameters)
 				{
 					*parameters = blob;

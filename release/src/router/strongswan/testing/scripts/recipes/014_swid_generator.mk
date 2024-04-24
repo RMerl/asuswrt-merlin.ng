@@ -17,4 +17,4 @@ $(TAR):
 	@touch $@
 
 install: .$(PKG)-unpacked-$(REV)
-	cd $(DIR) && python3 setup.py install
+	cd $(DIR) && SETUPTOOLS_USE_DISTUTILS=stdlib python3 setup.py install

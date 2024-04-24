@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2008-2020 Tobias Brunner
+ * Copyright (C) 2008-2023 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -40,7 +40,16 @@ typedef union {
 	u_char bytes[KERNEL_NETLINK_BUFSIZE];
 } netlink_buf_t __attribute__((aligned(RTA_ALIGNTO)));
 
+/**
+ * Callback function for netlink events.
+ *
+ * @param user		user data, as passed to constructor
+ * @param hdr		received netlink message
+ */
+typedef void (*netlink_event_cb_t)(void *user, struct nlmsghdr *hdr);
+
 typedef struct netlink_socket_t netlink_socket_t;
+typedef struct netlink_event_socket_t netlink_event_socket_t;
 
 /**
  * Wrapper around a netlink socket.
@@ -79,6 +88,45 @@ struct netlink_socket_t {
  */
 netlink_socket_t *netlink_socket_create(int protocol, enum_name_t *names,
 										bool parallel);
+
+/**
+ * Wrapper around a bound netlink event socket.
+ */
+struct netlink_event_socket_t {
+
+	/**
+	 * Destroy the event socket.
+	 */
+	void (*destroy)(netlink_event_socket_t *this);
+};
+
+/**
+ * Create a netlink_event_socket_t object.
+ *
+ * @param protocol	protocol type (e.g. NETLINK_XFRM or NETLINK_ROUTE)
+ * @param groups	event groups to bind (use nl_group())
+ * @param cb		callback to invoke for each event
+ * @param user		user data passed to callback
+ */
+netlink_event_socket_t *netlink_event_socket_create(int protocol, uint32_t groups,
+													netlink_event_cb_t cb, void *user);
+
+/**
+ * Helper to create bitmask for Netlink multicast groups.
+ *
+ * For groups > 31, setsockopt() with NETLINK_ADD_MEMBERSHIP has to be used,
+ * which is currently not supported by the event socket.
+ */
+static inline uint32_t nl_group(uint32_t group)
+{
+	if (group > 31)
+	{
+		DBG1(DBG_KNL, "netlink multicast group %d currently not supported",
+			 group);
+		return 0;
+	}
+	return group ? (1 << (group - 1)) : 0;
+}
 
 /**
  * Creates an rtattr and adds it to the given netlink message.
@@ -122,7 +170,17 @@ void netlink_nested_end(struct nlmsghdr *hdr, void *attr);
  * @param len			length of RTA data
  * @return				buffer to len bytes of attribute data, NULL on error
  */
-void* netlink_reserve(struct nlmsghdr *hdr, int buflen, int type, int len);
+void *netlink_reserve(struct nlmsghdr *hdr, int buflen, int type, int len);
+
+/**
+ * Log extended ACK error/warning message in a NLMSG_ERROR message.  In error
+ * messages (i.e. error != 0), the generic error message is logged if no
+ * extended ACK message is available.
+ *
+ * @param hdr			netlink message
+ * @param prefix		optional prefix to add before error message
+ */
+void netlink_log_error(struct nlmsghdr *hdr, const char *prefix);
 
 /**
  * Determine buffer size for received messages (e.g. events).

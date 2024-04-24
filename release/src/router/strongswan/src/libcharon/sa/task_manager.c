@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011 Tobias Brunner
+ * Copyright (C) 2011-2023 Tobias Brunner
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -21,39 +21,64 @@
 #include <sa/ikev2/task_manager_v2.h>
 
 /*
- * See header
+ * Described in header
  */
-u_int task_manager_total_retransmit_timeout()
+void retransmission_parse_default(retransmission_t *settings)
 {
-	double timeout, base, limit = 0, total = 0;
-	int tries, max_tries = 0, i;
+	settings->timeout = lib->settings->get_double(lib->settings,
+					"%s.retransmit_timeout", RETRANSMIT_TIMEOUT, lib->ns);
+	settings->base = lib->settings->get_double(lib->settings,
+					"%s.retransmit_base", RETRANSMIT_BASE, lib->ns);
+	settings->jitter = min(lib->settings->get_int(lib->settings,
+					"%s.retransmit_jitter", 0, lib->ns), RETRANSMIT_JITTER_MAX);
+	settings->limit = lib->settings->get_int(lib->settings,
+					"%s.retransmit_limit", 0, lib->ns) * 1000;
+	settings->tries = lib->settings->get_int(lib->settings,
+					"%s.retransmit_tries", RETRANSMIT_TRIES, lib->ns);
 
-	tries = lib->settings->get_int(lib->settings, "%s.retransmit_tries",
-								   RETRANSMIT_TRIES, lib->ns);
-	base = lib->settings->get_double(lib->settings, "%s.retransmit_base",
-									 RETRANSMIT_BASE, lib->ns);
-	timeout = lib->settings->get_double(lib->settings, "%s.retransmit_timeout",
-										RETRANSMIT_TIMEOUT, lib->ns);
-	limit = lib->settings->get_double(lib->settings, "%s.retransmit_limit",
-									  0, lib->ns);
-
-	if (base > 1)
-	{
-		max_tries = log(UINT32_MAX/(1000.0 * timeout))/log(base);
+	if (settings->base > 1)
+	{	/* based on 1000 * timeout * base^try */
+		settings->max_tries = log(UINT32_MAX/
+								  (1000.0 * settings->timeout))/
+							  log(settings->base);
 	}
+}
 
-	for (i = 0; i <= tries; i++)
+/*
+ * Described in header
+ */
+uint32_t retransmission_timeout(retransmission_t *settings, u_int try,
+								bool randomize)
+{
+	double timeout = UINT32_MAX, max_jitter;
+
+	if (!settings->max_tries || try <= settings->max_tries)
 	{
-		double interval = UINT32_MAX/1000.0;
-		if (max_tries && i <= max_tries)
-		{
-			interval = timeout * pow(base, i);
-		}
-		if (limit)
-		{
-			interval = min(interval, limit);
-		}
-		total += interval;
+		timeout = settings->timeout * 1000.0 * pow(settings->base, try);
+	}
+	if (settings->limit)
+	{
+		timeout = min(timeout, settings->limit);
+	}
+	if (randomize && settings->jitter)
+	{
+		max_jitter = (timeout / 100.0) * settings->jitter;
+		timeout -= max_jitter * (random() / (RAND_MAX + 1.0));
+	}
+	return (uint32_t)timeout;
+}
+
+/*
+ * Described in header
+ */
+u_int retransmission_timeout_total(retransmission_t *settings)
+{
+	double total = 0;
+	int i;
+
+	for (i = 0; i <= settings->tries; i++)
+	{
+		total += retransmission_timeout(settings, i, FALSE) / 1000.0;
 	}
 	return (u_int)total;
 }
@@ -80,4 +105,3 @@ task_manager_t *task_manager_create(ike_sa_t *ike_sa)
 	}
 	return NULL;
 }
-

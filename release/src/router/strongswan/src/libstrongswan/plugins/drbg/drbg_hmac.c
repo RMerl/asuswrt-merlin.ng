@@ -158,7 +158,6 @@ METHOD(drbg_t, generate, bool,
 	private_drbg_hmac_t *this, uint32_t len, uint8_t *out)
 {
 	size_t delta;
-	chunk_t output;
 
 	if (len > MAX_DRBG_BYTES)
 	{
@@ -179,7 +178,9 @@ METHOD(drbg_t, generate, bool,
 	{
 		return FALSE;
 	}
-	output = chunk_create(out, len);
+#if DEBUG_LEVEL >= 4
+	chunk_t output = chunk_create(out, len);
+#endif
 
 	while (len)
 	{
@@ -192,7 +193,7 @@ METHOD(drbg_t, generate, bool,
 		len -= delta;
 		out += delta;
 	}
-	DBG4(DBG_LIB, "HMAC_DRBG Out: %B", &output);
+	DBG4(DBG_LIB, "HMAC_DRBG out: %B", &output);
 
 	if (!update(this, chunk_empty))
 	{

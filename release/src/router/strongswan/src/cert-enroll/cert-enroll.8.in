@@ -1,0 +1,86 @@
+.TH CERT-ENROLL 8 "2023-09-01" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+cert-enroll \- Requests X.509 certificates from a PKI via EST or SCEP protocols
+.
+.SH "SYNOPSIS"
+.
+.SY "cert-enroll"
+.OP \-c "file
+.OP \-i "directory"
+.YS
+.
+.SY "cert-enroll"
+.B \-h
+.YS
+.
+.SH "DESCRIPTION"
+.
+.B cert-enroll
+uses the strongSwan
+.BR pki
+command to request an initial X.509 certificate from a PKI server using either
+the EST (Enrollment over Secure Transport) or the SCEP (Simple Certificate
+Enrollment Protocol) certificate enrollment protocol. After having received the
+host certificate, its expiration date can be monitored periodically and a new
+certificate will be automatically requested when a predefined deadline of
+remaining validity days is reached. The availability of new CA certificates is
+also monitored periodically. The generated RSA or EDCSA private key, the
+downloaded X.509 certificate and the current set of CA certificates can then be
+installed in specific places on the host via a selection of installation scripts.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h"
+Prints usage information and a short summary of the available commands.
+.TP
+.BI "\-c " file
+Path to the optional local configuration file that can be used to overwrite
+parameters in the default configuration file
+@sysconfdir@/cert-enroll.d/cert-enroll.conf.
+Defaults to @sysconfdir@/cert-enroll.d/cert-enroll.conf.local.
+.TP
+.BI "\-i " directory
+Path to the installation script directory. Defaults to
+@sysconfdir@/cert-enroll.d/cert-install.d. This directory will contain dynamic
+links to selected installation scripts available in the
+@sysconfdir@/cert-enroll.d/cert-install-available directory.
+.
+.SH "CONFIGURATION"
+.
+The configuration parameters for the
+.BR cert-enroll
+script are defined in
+.BR cert-enroll.conf.
+and selected parameters can be overwritten with the local configuration file
+.BR cert-enroll.conf.local.
+.
+.SH FILES
+.
+.nf
+.na
+@sysconfdir@/cert-enroll/cert-enroll.conf         default configuration file
+.ad
+.fi
+.nf
+.na
+@sysconfdir@/cert-enroll/cert-enroll.conf.local   optional local configuration file
+.ad
+.fi
+.nf
+.na
+@sysconfdir@/cert-enroll/cert-install.d           default installation script directory
+.ad
+.fi
+.nf
+.na
+@sysconfdir@/cert-enroll/cert-install-available   selection of available installation scripts
+.ad
+.fi
+.nf
+.na
+/root/certificates/                       default certificate directory
+.ad
+.fi

@@ -307,10 +307,10 @@ static bool parse_authenticated_safe(private_pkcs12_t *this, chunk_t blob)
 				if (!parse_safe_contents(this, parser->get_level(parser)+1,
 										 data))
 				{
-					chunk_free(&data);
+					chunk_clear(&data);
 					goto end;
 				}
-				chunk_free(&data);
+				chunk_clear(&data);
 				break;
 			}
 		}
@@ -322,42 +322,61 @@ end:
 }
 
 /**
+ * Verify the given MAC using the given password.
+ */
+static bool verify_mac_pw(signer_t *signer, hash_algorithm_t hash, chunk_t salt,
+						  uint64_t iterations, chunk_t data, chunk_t mac,
+						  chunk_t pw)
+{
+	chunk_t key, calculated;
+	bool success = FALSE;
+
+	key = chunk_alloca(signer->get_key_size(signer));
+	calculated = chunk_alloca(signer->get_block_size(signer));
+
+	if (pkcs12_derive_key(hash, pw, salt, iterations, PKCS12_KEY_MAC, key) &&
+		signer->set_key(signer, key) &&
+		signer->get_signature(signer, data, calculated.ptr) &&
+		chunk_equals_const(mac, calculated))
+	{
+		success = TRUE;
+	}
+	memwipe(key.ptr, key.len);
+	return success;
+}
+
+/**
  * Verify the given MAC with available passwords.
  */
 static bool verify_mac(hash_algorithm_t hash, chunk_t salt,
 					   uint64_t iterations, chunk_t data, chunk_t mac)
 {
-	integrity_algorithm_t integ;
 	enumerator_t *enumerator;
 	shared_key_t *shared;
 	signer_t *signer;
-	chunk_t key, calculated;
 	bool success = FALSE;
 
-	integ = hasher_algorithm_to_integrity(hash, mac.len);
-	signer = lib->crypto->create_signer(lib->crypto, integ);
+	signer = lib->crypto->create_signer(lib->crypto,
+								hasher_algorithm_to_integrity(hash, mac.len));
 	if (!signer)
 	{
 		return FALSE;
 	}
-	key = chunk_alloca(signer->get_key_size(signer));
-	calculated = chunk_alloca(signer->get_block_size(signer));
+
+	/* try without and with an empty password, which is not the same thing */
+	if (verify_mac_pw(signer, hash, salt, iterations, data, mac, chunk_empty) ||
+		verify_mac_pw(signer, hash, salt, iterations, data, mac, chunk_from_str("")))
+	{
+		signer->destroy(signer);
+		return TRUE;
+	}
 
 	enumerator = lib->credmgr->create_shared_enumerator(lib->credmgr,
 										SHARED_PRIVATE_KEY_PASS, NULL, NULL);
 	while (enumerator->enumerate(enumerator, &shared, NULL, NULL))
 	{
-		if (!pkcs12_derive_key(hash, shared->get_key(shared), salt, iterations,
-							   PKCS12_KEY_MAC, key))
-		{
-			break;
-		}
-		if (!signer->set_key(signer, key) ||
-			!signer->get_signature(signer, data, calculated.ptr))
-		{
-			break;
-		}
-		if (chunk_equals_const(mac, calculated))
+		if (verify_mac_pw(signer, hash, salt, iterations, data, mac,
+						  shared->get_key(shared)))
 		{
 			success = TRUE;
 			break;

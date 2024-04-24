@@ -111,6 +111,14 @@ void wait_sigint()
 	sigint_cond->destroy(sigint_cond);
 }
 
+/**
+ * Windows variant
+ */
+void send_sigint()
+{
+	handler(CTRL_C_EVENT);
+}
+
 #else /* !WIN32 */
 
 /**
@@ -129,6 +137,14 @@ void wait_sigint()
 	{
 		/* wait for signal */
 	}
+}
+
+/**
+ * Unix variant
+ */
+void send_sigint()
+{
+	kill(0, SIGINT);
 }
 
 #ifndef HAVE_SIGWAITINFO

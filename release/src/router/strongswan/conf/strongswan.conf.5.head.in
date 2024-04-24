@@ -59,6 +59,27 @@ An example file in this format might look like this:
 .PP
 Indentation is optional, you may use tabs or spaces.
 
+.SH NUMBER FORMATS
+Options that define an integer value can be specified as decimal (the default)
+or hexadecimal ("0x" prefix, upper- or lowercase letters are accepted).
+Locale-dependent strings (e.g. the thousands separator of the current locale)
+may also be accepted in locales other than "C".
+.PP
+Options that define a floating-point value can be specified as decimal (the
+default) or hexadecimal ("0x" prefix, upper- or lowercase letters are accepted).
+The radix character (decimal separator) in either case is locale-dependent,
+usually ".".
+
+.SH TIME FORMATS
+Unless stated otherwise, options that define a time are specified in seconds.
+The "s", "m", "h" and "d" suffixes may be used to automatically convert values
+given in seconds, minutes, hours or days (for instance, instead of configuring
+a rekey time of 4 hours as "14400" seconds, "4h" may be used).
+.PP
+There are some global options that don't accept these suffixes as they are
+configured as integer values in seconds or milliseconds, or even as
+floating-point numbers (e.g. the retransmission timeout). Options that accept
+the suffixes have a corresponding default value.
 
 .SH REFERENCING OTHER SECTIONS
 It is possible to inherit settings and sections from another section. This

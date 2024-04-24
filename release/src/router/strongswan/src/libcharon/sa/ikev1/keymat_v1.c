@@ -799,7 +799,7 @@ METHOD(keymat_v1_t, get_hash_phase2, bool,
 	uint32_t mid, mid_n;
 	chunk_t data = chunk_empty, *n_i, *n_r;
 	bool add_message = TRUE;
-	char *name = "Hash";
+	char *name DBG_UNUSED = "Hash";
 
 	if (!this->prf)
 	{	/* no keys derived yet */

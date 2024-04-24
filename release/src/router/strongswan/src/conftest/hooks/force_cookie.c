@@ -48,12 +48,13 @@ METHOD(listener_t, message, bool,
 			if (payload->get_type(payload) == PLV2_NOTIFY)
 			{
 				notify_payload_t *notify = (notify_payload_t*)payload;
-				chunk_t data;
 
 				if (notify->get_notify_type(notify) == COOKIE)
 				{
-					data = notify->get_notification_data(notify);
+#if DEBUG_LEVEL >= 1
+					chunk_t data = notify->get_notification_data(notify);
 					DBG1(DBG_CFG, "received COOKIE: %#B", &data);
+#endif
 					has_cookie = TRUE;
 					break;
 				}

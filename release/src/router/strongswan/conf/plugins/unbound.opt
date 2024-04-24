@@ -1,7 +1,7 @@
 charon.plugins.unbound.resolv_conf = /etc/resolv.conf
 	File to read DNS resolver configuration from.
 
-charon.plugins.unbound.trust_anchors = /etc/ipsec.d/dnssec.keys
+charon.plugins.unbound.trust_anchors = ${sysconfdir}/ipsec.d/dnssec.keys
 	File to read DNSSEC trust anchors from (usually root zone KSK).
 
 	File to read DNSSEC trust anchors from (usually root zone KSK). The format

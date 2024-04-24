@@ -1,0 +1,4 @@
+V	EE_EXPIRATION		01	unknown	/C=CH/O=strongSwan Project/OU=Research/CN=carol@strongswan.org
+V	EE_EXPIRATION		02	unknown	/C=CH/O=strongSwan Project/OU=Research OCSP Signing Authority/CN=ocsp.research.strongswan.org
+V	EE_EXPIRATION		03	unknown	/C=CH/O=strongSwan Project/OU=Sales/CN=Sales CA
+V	EE_EXPIRATION		04	unknown	/C=CH/O=strongSwan Project/OU=Research/CN=Duck Research CA

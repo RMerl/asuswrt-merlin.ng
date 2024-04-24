@@ -163,11 +163,11 @@ static TNC_Result receive_msg(private_imv_test_agent_t *this, imv_state_t *state
 		}
 		else if (attr_type.type == ITA_ATTR_DUMMY)
 		{
-			ita_attr_dummy_t *ita_attr;
-
-			ita_attr = (ita_attr_dummy_t*)attr;
+#if DEBUG_LEVEL >= 1
+			ita_attr_dummy_t *ita_attr = (ita_attr_dummy_t*)attr;
 			DBG1(DBG_IMV, "received dummy attribute value (%d bytes)",
 						   ita_attr->get_size(ita_attr));
+#endif
 		}
 	}
 	enumerator->destroy(enumerator);

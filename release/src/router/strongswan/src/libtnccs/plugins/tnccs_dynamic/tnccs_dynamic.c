@@ -85,7 +85,7 @@ struct private_tnccs_dynamic_t {
  * defined by section 3.5 "Interoperability with older IF-TNCCS versions" of
  * the TCG TNC IF-TNCCS TLV Bindings Version 2.0 standard.
  */
-tnccs_type_t determine_tnccs_protocol(char version)
+static tnccs_type_t determine_tnccs_protocol(char version)
 {
 	switch (version)
 	{

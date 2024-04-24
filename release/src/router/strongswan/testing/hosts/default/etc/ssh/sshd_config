@@ -1,6 +1,7 @@
 Port 22
 Protocol 2
 Ciphers aes128-gcm@openssh.com
+KexAlgorithms curve25519-sha256
 HostKey /etc/ssh/ssh_host_rsa_key
 HostKey /etc/ssh/ssh_host_ecdsa_key
 PermitRootLogin yes

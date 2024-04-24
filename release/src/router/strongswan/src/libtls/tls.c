@@ -569,7 +569,11 @@ METHOD(tls_t, is_complete, bool,
 METHOD(tls_t, get_eap_msk, chunk_t,
 	private_tls_t *this)
 {
-	return this->crypto->get_eap_msk(this->crypto);
+	if (this->handshake->finished(this->handshake))
+	{
+		return this->crypto->get_eap_msk(this->crypto);
+	}
+	return chunk_empty;
 }
 
 METHOD(tls_t, get_auth, auth_cfg_t*,

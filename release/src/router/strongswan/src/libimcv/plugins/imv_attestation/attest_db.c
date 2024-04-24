@@ -181,7 +181,7 @@ struct private_attest_db_t {
 
 };
 
-char* print_cfn(pts_comp_func_name_t *cfn)
+static char* print_cfn(pts_comp_func_name_t *cfn)
 {
 	static char buf[BUF_LEN];
 	char flags[8];

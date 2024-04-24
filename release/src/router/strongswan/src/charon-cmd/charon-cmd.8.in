@@ -95,6 +95,10 @@ options can be used.
 .TP
 .BI "\-\-rsa " path
 RSA private key to use for authentication (if a password is required, it will
+be requested on demand). For other key types use \fI\-\-priv\fR.
+.TP
+.BI "\-\-priv " path
+Private key to use for authentication (if a password is required, it will
 be requested on demand).
 .TP
 .BI "\-\-p12 " path

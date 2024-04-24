@@ -322,7 +322,7 @@ struct crypto_tester_t {
 	 *
 	 * @param ke			key exchange method to test
 	 * @param create		constructor function for the key exchange method
-	 * @param speed			speeed test result, NULL to omit
+	 * @param speed			speed test result, NULL to omit
 	 * @return				TRUE if test passed
 	 */
 	bool (*test_ke)(crypto_tester_t *this, key_exchange_method_t ke,

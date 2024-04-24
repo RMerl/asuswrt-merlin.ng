@@ -38,8 +38,8 @@ charon.cert_cache = yes
 charon.cache_crls = no
 	Whether Certificate Revocation Lists (CRLs) fetched via HTTP or LDAP should
 	be saved under a unique file name derived from the public key of the
-	Certification Authority (CA) to **/etc/ipsec.d/crls** (stroke) or
-	**/etc/swanctl/x509crl** (vici), respectively.
+	Certification Authority (CA) to **${sysconfdir}/ipsec.d/crls** (stroke) or
+	**${sysconfdir}/swanctl/x509crl** (vici), respectively.
 
 charon.check_current_path = no
 	Whether to use DPD to check if the current path still works after any
@@ -302,6 +302,13 @@ charon.nbns1
 charon.nbns2
 	WINS servers assigned to peer via configuration payload (CP).
 
+charon.ocsp_nonce_len = 32
+	Length of nonces in OCSP requests (1-32).
+
+	Length of nonces in OCSP requests. According to RFC 8954, valid values are
+	between 1 and 32, with new clients required to use 32. Some servers might
+	not support that so lowering the value to e.g. 16 might be necessary.
+
 charon.port = 500
 	UDP port used locally. If set to 0 a random port will be allocated.
 
@@ -372,8 +379,15 @@ charon.receive_delay_request = yes
 charon.receive_delay_type = 0
 	Specific IKEv2 message type to delay, 0 for any.
 
+charon.reject_trusted_end_entity = no
+	Reject peers that use trusted end-entity certificates (i.e. local
+	certificates).
+
 charon.replay_window = 32
 	Size of the AH/ESP replay window, in packets.
+
+charon.reqid_base = 1
+	Value of the first reqid to be automatically assigned to a CHILD_SA.
 
 charon.retransmit_base = 1.8
 	Base to use for calculating exponential back off, see IKEv2 RETRANSMISSION
@@ -392,7 +406,7 @@ charon.retransmit_jitter = 0
 charon.retransmit_limit = 0
 	Upper limit in seconds for calculated retransmission timeout (0 to disable).
 
-charon.retry_initiate_interval = 0
+charon.retry_initiate_interval = 0s
 	Interval in seconds to use when retrying to initiate an IKE_SA (e.g. if DNS
 	resolution failed), 0 to disable retries.
 

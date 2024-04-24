@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012-2017 Tobias Brunner
+ * Copyright (C) 2012-2023 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
  *
@@ -27,6 +27,12 @@
 #include <collections/hashtable.h>
 #include <collections/linked_list.h>
 
+/**
+ * Timeout in seconds for acquires for the same reqid (i.e. the interval used
+ * to trigger acquires while no SA is established).
+ */
+#define ACQUIRE_TIMEOUT 10
+
 typedef struct private_ipsec_sa_mgr_t private_ipsec_sa_mgr_t;
 
 /**
@@ -48,6 +54,11 @@ struct private_ipsec_sa_mgr_t {
 	 * SPIs allocated using get_spi()
 	 */
 	hashtable_t *allocated_spis;
+
+	/**
+	 * Pending acquires (uint32_t => acquire_entry_t)
+	 */
+	hashtable_t *acquires;
 
 	/**
 	 * Mutex used to synchronize access to the SA manager
@@ -90,7 +101,7 @@ typedef struct {
 	 */
 	bool awaits_deletion;
 
-}  ipsec_sa_entry_t;
+} ipsec_sa_entry_t;
 
 /**
  * Helper struct for expiration events
@@ -119,15 +130,32 @@ typedef struct {
 
 } ipsec_sa_expired_t;
 
-/*
- * Used for the hash table of allocated SPIs
+/**
+ * Struct to keep track of acquires
  */
-static bool spi_equals(uint32_t *spi, uint32_t *other_spi)
+typedef struct {
+
+	/**
+	 * Reqid of this acquire
+	 */
+	uint32_t reqid;
+
+	/**
+	 * Time the entry was created or updated
+	 */
+	time_t triggered;
+
+} acquire_entry_t;
+
+/**
+ * Used for the hash table of allocated SPIs and pending acquires
+ */
+static bool uint32_equals(const uint32_t *spi, const uint32_t *other_spi)
 {
 	return *spi == *other_spi;
 }
 
-static u_int spi_hash(uint32_t *spi)
+static u_int uint32_hash(const uint32_t *spi)
 {
 	return chunk_hash(chunk_from_thing(*spi));
 }
@@ -474,7 +502,7 @@ METHOD(ipsec_sa_mgr_t, get_spi, status_t,
 
 METHOD(ipsec_sa_mgr_t, add_sa, status_t,
 	private_ipsec_sa_mgr_t *this, host_t *src, host_t *dst, uint32_t spi,
-	uint8_t protocol, uint32_t reqid,	mark_t mark, uint32_t tfc,
+	uint8_t protocol, uint32_t reqid, mark_t mark, uint32_t tfc,
 	lifetime_cfg_t *lifetime, uint16_t enc_alg, chunk_t enc_key,
 	uint16_t int_alg, chunk_t int_key, ipsec_mode_t mode, uint16_t ipcomp,
 	uint16_t cpi, bool initiator, bool encap, bool esn, bool inbound,
@@ -508,6 +536,10 @@ METHOD(ipsec_sa_mgr_t, add_sa, status_t,
 		spi_alloc = this->allocated_spis->remove(this->allocated_spis, &spi);
 		free(spi_alloc);
 	}
+	if (!inbound)
+	{	/* remove any acquires for outbound SAs */
+		free(this->acquires->remove(this->acquires, &reqid));
+	}
 
 	if (this->sas->find_first(this->sas, match_entry_by_spi_src_dst_cb, NULL,
 							  spi, src, dst))
@@ -536,13 +568,6 @@ METHOD(ipsec_sa_mgr_t, update_sa, status_t,
 	DBG2(DBG_ESP, "updating SAD entry with SPI %.8x from %#H..%#H to %#H..%#H",
 		 ntohl(spi), src, dst, new_src, new_dst);
 
-	if (!new_encap)
-	{
-		DBG1(DBG_ESP, "failed to update SAD entry: can't deactivate UDP "
-			 "encapsulation");
-		return NOT_SUPPORTED;
-	}
-
 	this->mutex->lock(this->mutex);
 	if (this->sas->find_first(this->sas, match_entry_by_spi_src_dst_cb,
 							 (void**)&entry, spi, src, dst) &&
@@ -550,6 +575,7 @@ METHOD(ipsec_sa_mgr_t, update_sa, status_t,
 	{
 		entry->sa->set_source(entry->sa, new_src);
 		entry->sa->set_destination(entry->sa, new_dst);
+		entry->sa->set_encap(entry->sa, new_encap);
 		/* checkin the entry */
 		entry->locked = FALSE;
 		entry->condvar->signal(entry->condvar);
@@ -620,8 +646,53 @@ METHOD(ipsec_sa_mgr_t, del_sa, status_t,
 	return FAILED;
 }
 
+/**
+ * Remove all acquires
+ */
+static void flush_acquires(private_ipsec_sa_mgr_t *this)
+{
+	enumerator_t *enumerator;
+	acquire_entry_t *entry;
+
+	DBG2(DBG_ESP, "flushing acquires");
+	enumerator = this->acquires->create_enumerator(this->acquires);
+	while (enumerator->enumerate(enumerator, NULL, (void**)&entry))
+	{
+		this->acquires->remove_at(this->acquires, enumerator);
+		DBG2(DBG_ESP, "  removed acquire for reqid {%u}", entry->reqid);
+		free(entry);
+	}
+	enumerator->destroy(enumerator);
+}
+
+/**
+ * Check whether an acquire should be sent for the given reqid.
+ */
+static bool check_acquire(private_ipsec_sa_mgr_t *this, uint32_t reqid)
+{
+	acquire_entry_t *entry;
+	time_t now;
+
+	now = time_monotonic(NULL);
+
+	entry = this->acquires->get(this->acquires, &reqid);
+	if (!entry)
+	{
+		INIT(entry,
+			.reqid = reqid,
+		);
+		this->acquires->put(this->acquires, &entry->reqid, entry);
+	}
+	else if (now - entry->triggered <= ACQUIRE_TIMEOUT)
+	{
+		return FALSE;
+	}
+	entry->triggered = now;
+	return TRUE;
+}
+
 METHOD(ipsec_sa_mgr_t, checkout_by_reqid, ipsec_sa_t*,
-	private_ipsec_sa_mgr_t *this, uint32_t reqid, bool inbound)
+	private_ipsec_sa_mgr_t *this, uint32_t reqid, bool inbound, bool *acquire)
 {
 	ipsec_sa_entry_t *entry;
 	ipsec_sa_t *sa = NULL;
@@ -632,6 +703,10 @@ METHOD(ipsec_sa_mgr_t, checkout_by_reqid, ipsec_sa_t*,
 		wait_for_entry(this, entry))
 	{
 		sa = entry->sa;
+	}
+	if (!sa && acquire)
+	{
+		*acquire = !inbound && check_acquire(this, reqid);
 	}
 	this->mutex->unlock(this->mutex);
 	return sa;
@@ -687,9 +762,11 @@ METHOD(ipsec_sa_mgr_t, destroy, void,
 	this->mutex->lock(this->mutex);
 	flush_entries(this);
 	flush_allocated_spis(this);
+	flush_acquires(this);
 	this->mutex->unlock(this->mutex);
 
 	this->allocated_spis->destroy(this->allocated_spis);
+	this->acquires->destroy(this->acquires);
 	this->sas->destroy(this->sas);
 
 	this->mutex->destroy(this->mutex);
@@ -719,8 +796,10 @@ ipsec_sa_mgr_t *ipsec_sa_mgr_create()
 		},
 		.sas = linked_list_create(),
 		.mutex = mutex_create(MUTEX_TYPE_DEFAULT),
-		.allocated_spis = hashtable_create((hashtable_hash_t)spi_hash,
-										   (hashtable_equals_t)spi_equals, 16),
+		.allocated_spis = hashtable_create((hashtable_hash_t)uint32_hash,
+										   (hashtable_equals_t)uint32_equals, 16),
+		.acquires = hashtable_create((hashtable_hash_t)uint32_hash,
+										   (hashtable_equals_t)uint32_equals, 16),
 	);
 
 	return &this->public;

@@ -11,7 +11,8 @@ charon.plugins.eap-peap.phase2_method = mschapv2
 	Phase2 EAP client authentication method.
 
 charon.plugins.eap-peap.phase2_piggyback = no
-	Phase2 EAP Identity request piggybacked by server onto TLS Finished message.
+	Phase2 EAP Identity request piggybacked by server onto TLS Finished message,
+	relevant only if TLS 1.2 or earlier is negotiated.
 
 charon.plugins.eap-peap.phase2_tnc = no
 	Start phase2 EAP TNC protocol after successful client authentication.

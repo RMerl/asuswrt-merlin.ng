@@ -165,37 +165,9 @@ struct private_task_manager_t {
 	bool reset;
 
 	/**
-	 * Number of times we retransmit messages before giving up
+	 * Retransmission settings.
 	 */
-	u_int retransmit_tries;
-
-	/**
-	 * Maximum number of tries possible with current retransmission settings
-	 * before overflowing the range of uint32_t, which we use for the timeout.
-	 * Note that UINT32_MAX milliseconds equal nearly 50 days, so that doesn't
-	 * make much sense without retransmit_limit anyway.
-	 */
-	u_int retransmit_tries_max;
-
-	/**
-	 * Retransmission timeout
-	 */
-	double retransmit_timeout;
-
-	/**
-	 * Base to calculate retransmission timeout
-	 */
-	double retransmit_base;
-
-	/**
-	 * Jitter to apply to calculated retransmit timeout (in percent)
-	 */
-	u_int retransmit_jitter;
-
-	/**
-	 * Limit retransmit timeout to this value
-	 */
-	uint32_t retransmit_limit;
+	retransmission_t retransmit;
 
 	/**
 	 * Use make-before-break instead of break-before-make reauth?
@@ -358,7 +330,7 @@ METHOD(task_manager_t, retransmit, status_t,
 	if (message_id == this->initiating.mid &&
 		array_count(this->initiating.packets))
 	{
-		uint32_t timeout = UINT32_MAX, max_jitter;
+		uint32_t timeout;
 		job_t *job;
 		enumerator_t *enumerator;
 		packet_t *packet;
@@ -384,7 +356,7 @@ METHOD(task_manager_t, retransmit, status_t,
 
 		if (!mobike || !mobike->is_probing(mobike))
 		{
-			if (this->initiating.retransmitted > this->retransmit_tries)
+			if (this->initiating.retransmitted > this->retransmit.tries)
 			{
 				DBG1(DBG_IKE, "giving up after %d retransmits",
 					 this->initiating.retransmitted - 1);
@@ -392,21 +364,8 @@ METHOD(task_manager_t, retransmit, status_t,
 								   packet);
 				return DESTROY_ME;
 			}
-			if (!this->retransmit_tries_max ||
-				this->initiating.retransmitted <= this->retransmit_tries_max)
-			{
-				timeout = (uint32_t)(this->retransmit_timeout * 1000.0 *
-					pow(this->retransmit_base, this->initiating.retransmitted));
-			}
-			if (this->retransmit_limit)
-			{
-				timeout = min(timeout, this->retransmit_limit);
-			}
-			if (this->retransmit_jitter)
-			{
-				max_jitter = (timeout / 100.0) * this->retransmit_jitter;
-				timeout -= max_jitter * (random() / (RAND_MAX + 1.0));
-			}
+			timeout = retransmission_timeout(&this->retransmit,
+											 this->initiating.retransmitted, TRUE);
 			if (this->initiating.retransmitted)
 			{
 				DBG1(DBG_IKE, "retransmit %d of request with message ID %d",
@@ -2167,6 +2126,7 @@ static void trigger_mbb_reauth(private_task_manager_t *this)
 	ike_sa_t *new;
 	host_t *host;
 	queued_task_t *queued;
+	uint32_t reqid;
 	bool children = FALSE;
 
 	new = charon->ike_sa_manager->create_new(charon->ike_sa_manager,
@@ -2206,7 +2166,12 @@ static void trigger_mbb_reauth(private_task_manager_t *this)
 		cfg = child_sa->get_config(child_sa);
 		child_create = child_create_create(new, cfg->get_ref(cfg),
 										   FALSE, NULL, NULL);
-		child_create->use_reqid(child_create, child_sa->get_reqid(child_sa));
+		reqid = child_sa->get_reqid_ref(child_sa);
+		if (reqid)
+		{
+			child_create->use_reqid(child_create, reqid);
+			charon->kernel->release_reqid(charon->kernel, reqid);
+		}
 		child_create->use_marks(child_create,
 								child_sa->get_mark(child_sa, TRUE).value,
 								child_sa->get_mark(child_sa, FALSE).value);
@@ -2625,25 +2590,11 @@ task_manager_v2_t *task_manager_v2_create(ike_sa_t *ike_sa)
 		.queued_tasks = array_create(0, 0),
 		.active_tasks = array_create(0, 0),
 		.passive_tasks = array_create(0, 0),
-		.retransmit_tries = lib->settings->get_int(lib->settings,
-					"%s.retransmit_tries", RETRANSMIT_TRIES, lib->ns),
-		.retransmit_timeout = lib->settings->get_double(lib->settings,
-					"%s.retransmit_timeout", RETRANSMIT_TIMEOUT, lib->ns),
-		.retransmit_base = lib->settings->get_double(lib->settings,
-					"%s.retransmit_base", RETRANSMIT_BASE, lib->ns),
-		.retransmit_jitter = min(lib->settings->get_int(lib->settings,
-					"%s.retransmit_jitter", 0, lib->ns), RETRANSMIT_JITTER_MAX),
-		.retransmit_limit = lib->settings->get_int(lib->settings,
-					"%s.retransmit_limit", 0, lib->ns) * 1000,
 		.make_before_break = lib->settings->get_bool(lib->settings,
 					"%s.make_before_break", FALSE, lib->ns),
 	);
 
-	if (this->retransmit_base > 1)
-	{	/* based on 1000 * timeout * base^try */
-		this->retransmit_tries_max = log(UINT32_MAX/
-										 (1000.0 * this->retransmit_timeout))/
-									 log(this->retransmit_base);
-	}
+	retransmission_parse_default(&this->retransmit);
+
 	return &this->public;
 }

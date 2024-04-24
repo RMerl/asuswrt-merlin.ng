@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2023 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -34,9 +35,20 @@ struct private_eap_tls_t {
 	eap_tls_t public;
 
 	/**
-	 * TLS stack, wrapped by EAP helper
+	 * TLS stack, wrapped by EAP helper below
+	 */
+	tls_t *tls;
+
+	/**
+	 * EAP helper
 	 */
 	tls_eap_t *tls_eap;
+
+	/**
+	 * Whether the "protected success indication" has been sent/received with
+	 * TLS 1.3
+	 */
+	bool indication_sent_received;
 };
 
 /** Maximum number of EAP-TLS messages/fragments allowed */
@@ -84,10 +96,19 @@ METHOD(eap_method_t, get_type, eap_type_t,
 METHOD(eap_method_t, get_msk, status_t,
 	private_eap_tls_t *this, chunk_t *msk)
 {
-	*msk = this->tls_eap->get_msk(this->tls_eap);
-	if (msk->len)
+	if (this->tls->get_version_max(this->tls) < TLS_1_3 ||
+		this->indication_sent_received)
 	{
-		return SUCCESS;
+		*msk = this->tls_eap->get_msk(this->tls_eap);
+		if (msk->len)
+		{
+			return SUCCESS;
+		}
+	}
+	else
+	{
+		DBG1(DBG_TLS, "missing protected success indication for EAP-TLS with "
+			 "%N", tls_version_names, this->tls->get_version_max(this->tls));
 	}
 	return FAILED;
 }
@@ -124,16 +145,142 @@ METHOD(eap_method_t, destroy, void,
 }
 
 /**
+ * Application to send/process the "protected success indication" with TLS 1.3
+ * as specified in RFC 9190
+ */
+typedef struct {
+
+	/**
+	 * Public interface
+	 */
+	tls_application_t public;
+
+	/**
+	 * Reference to the EAP-TLS object
+	 */
+	private_eap_tls_t *this;
+
+	/**
+	 * Whether the server sent the indication
+	 */
+	bool indication_sent;
+
+} eap_tls_app_t;
+
+METHOD(tls_application_t, server_process, status_t,
+	eap_tls_app_t *app, bio_reader_t *reader)
+{
+	/* we don't expect any data from the client, the empty response to our
+	 * indication is handled as ACK in tls_eap_t */
+	DBG1(DBG_TLS, "peer sent unexpected TLS data");
+	return FAILED;
+}
+
+METHOD(tls_application_t, server_build, status_t,
+	eap_tls_app_t *app, bio_writer_t *writer)
+{
+	if (app->this->indication_sent_received)
+	{
+		return SUCCESS;
+	}
+	if (app->this->tls->get_version_max(app->this->tls) >= TLS_1_3)
+	{
+		/* build() is called twice when sending the indication, return the same
+		 * status but data only once */
+		if (app->indication_sent)
+		{
+			app->this->indication_sent_received = TRUE;
+		}
+		else
+		{	/* send a single 0x00 */
+			DBG2(DBG_TLS, "sending protected success indication via TLS");
+			writer->write_uint8(writer, 0);
+			app->indication_sent = TRUE;
+		}
+	}
+	else
+	{
+		/* with earlier TLS versions, return INVALID_STATE without data to send
+		 * the final handshake messages (returning SUCCESS immediately would
+		 * prevent that) */
+		app->this->indication_sent_received = TRUE;
+	}
+	return INVALID_STATE;
+}
+
+METHOD(tls_application_t, client_process, status_t,
+	eap_tls_app_t *app, bio_reader_t *reader)
+{
+	uint8_t indication;
+
+	if (app->this->tls->get_version_max(app->this->tls) < TLS_1_3 ||
+		app->this->indication_sent_received)
+	{
+		DBG1(DBG_TLS, "peer sent unexpected TLS data");
+		return FAILED;
+	}
+	if (!reader->read_uint8(reader, &indication) || indication != 0)
+	{
+		DBG1(DBG_TLS, "received incorrect protected success indication via TLS");
+		return FAILED;
+	}
+	DBG2(DBG_TLS, "received protected success indication via TLS");
+	app->this->indication_sent_received = TRUE;
+	return NEED_MORE;
+}
+
+METHOD(tls_application_t, client_build, status_t,
+	eap_tls_app_t *app, bio_writer_t *writer)
+{
+	if (app->this->tls->get_version_max(app->this->tls) < TLS_1_3 ||
+		app->this->indication_sent_received)
+	{	/* trigger an empty response/ACK */
+		return INVALID_STATE;
+	}
+	return FAILED;
+}
+
+METHOD(tls_application_t, app_destroy, void,
+	eap_tls_app_t *this)
+{
+	free(this);
+}
+
+/**
+ * Create the server/peer implementation to handle the "protected success
+ * indication" with TLS 1.3
+ */
+tls_application_t *eap_tls_app_create(private_eap_tls_t *this, bool is_server)
+{
+	eap_tls_app_t *app;
+
+	INIT(app,
+		.public = {
+			.process = _client_process,
+			.build = _client_build,
+			.destroy = _app_destroy,
+		},
+		.this = this,
+	);
+	if (is_server)
+	{
+		app->public.process = _server_process;
+		app->public.build = _server_build;
+	}
+	return &app->public;
+}
+
+/**
  * Generic private constructor
  */
 static eap_tls_t *eap_tls_create(identification_t *server,
 								 identification_t *peer, bool is_server)
 {
 	private_eap_tls_t *this;
+	tls_application_t *app;
 	size_t frag_size;
 	int max_msg_count;
 	bool include_length;
-	tls_t *tls;
 
 	INIT(this,
 		.public = {
@@ -159,9 +306,11 @@ static eap_tls_t *eap_tls_create(identification_t *server,
 					lib->ns);
 	include_length = lib->settings->get_bool(lib->settings,
 					"%s.plugins.eap-tls.include_length", TRUE, lib->ns);
-	tls = tls_create(is_server, server, peer, TLS_PURPOSE_EAP_TLS, NULL, NULL, 0);
-	this->tls_eap = tls_eap_create(EAP_TLS, tls, frag_size, max_msg_count,
-												 include_length);
+	app = eap_tls_app_create(this, is_server);
+	this->tls = tls_create(is_server, server, peer, TLS_PURPOSE_EAP_TLS, app,
+						   NULL, 0);
+	this->tls_eap = tls_eap_create(EAP_TLS, this->tls, frag_size, max_msg_count,
+								   include_length);
 	if (!this->tls_eap)
 	{
 		free(this);

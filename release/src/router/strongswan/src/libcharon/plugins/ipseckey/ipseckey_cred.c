@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013 Tobias Brunner
+ * Copyright (C) 2013-2023 Tobias Brunner
  * Copyright (C) 2012 Reto Guadagnini
  *
  * Copyright (C) secunet Security Networks AG
@@ -22,6 +22,8 @@
 #include "ipseckey_cred.h"
 #include "ipseckey.h"
 
+#include <asn1/asn1.h>
+#include <asn1/oid.h>
 #include <bio/bio_reader.h>
 
 typedef struct private_ipseckey_cred_t private_ipseckey_cred_t;
@@ -69,13 +71,17 @@ METHOD(enumerator_t, cert_enumerator_enumerate, bool,
 	ipseckey_t *cur_ipseckey;
 	public_key_t *public;
 	rr_t *cur_rr;
-	chunk_t key;
+	chunk_t key, parsed_key;
 
 	VA_ARGS_VGET(args, cert);
 
 	/* Get the next supported IPSECKEY using the inner enumerator. */
 	while (this->inner->enumerate(this->inner, &cur_rr))
 	{
+		key_type_t type = KEY_ANY;
+		builder_part_t subtype = BUILD_BLOB_DNSKEY;
+		int curve = 0;
+
 		cur_ipseckey = ipseckey_create_frm_rr(cur_rr);
 
 		if (!cur_ipseckey)
@@ -84,7 +90,62 @@ METHOD(enumerator_t, cert_enumerator_enumerate, bool,
 			continue;
 		}
 
-		if (cur_ipseckey->get_algorithm(cur_ipseckey) != IPSECKEY_ALGORITHM_RSA)
+		key = parsed_key = cur_ipseckey->get_public_key(cur_ipseckey);
+
+		switch (cur_ipseckey->get_algorithm(cur_ipseckey))
+		{
+			case IPSECKEY_ALGORITHM_RSA:
+				type = KEY_RSA;
+				break;
+			case IPSECKEY_ALGORITHM_ECDSA:
+				/* the format in RFC 8005 is defined as the algorithm-specific
+				 * part of the encoding defined in RFC 6605 (i.e. everything
+				 * after the first four octets), which in turn is the
+				 * uncompressed curve point Q i.e. "x | y".  as RFC 6605 has
+				 * different algorithm identifiers for P-256 and P-384 but
+				 * RFC 8005 does not, we don't have an identifier for the curve.
+				 * but since only two curves are currently specified for DNSSEC,
+				 * we guess the curve from the key's length */
+				if (key.len == 64)
+				{
+					curve = OID_PRIME256V1;
+				}
+				else if (key.len == 96)
+				{
+					curve = OID_SECT384R1;
+				}
+				if (curve)
+				{
+					type = KEY_ECDSA;
+					subtype = BUILD_BLOB_ASN1_DER;
+					/* we currently can only parse complete subjectPublicKeyInfo
+					 * structures for ECDSA keys */
+					key = asn1_wrap(ASN1_SEQUENCE, "mm",
+							asn1_wrap(ASN1_SEQUENCE, "mm",
+								asn1_build_known_oid(OID_EC_PUBLICKEY),
+								asn1_build_known_oid(curve)),
+							asn1_bitstring("m",
+								chunk_cat("cc", chunk_from_chars(0x04), key)));
+				}
+				break;
+			case IPSECKEY_ALGORITHM_EDDSA:
+				/* similar to ECDSA, we don't know the exact type, so we use the
+				 * key length again */
+				subtype = BUILD_EDDSA_PUB;
+				if (key.len == 32)
+				{
+					type = KEY_ED25519;
+				}
+				else if (key.len == 57)
+				{
+					type = KEY_ED448;
+				}
+				break;
+			default:
+				break;
+		}
+
+		if (type == KEY_ANY)
 		{
 			DBG1(DBG_CFG, "  unsupported IPSECKEY algorithm, skipping");
 			cur_ipseckey->destroy(cur_ipseckey);
@@ -93,10 +154,12 @@ METHOD(enumerator_t, cert_enumerator_enumerate, bool,
 
 		/* wrap the key of the IPSECKEY in a certificate and return this
 		 * certificate */
-		key = cur_ipseckey->get_public_key(cur_ipseckey);
-		public = lib->creds->create(lib->creds, CRED_PUBLIC_KEY, KEY_RSA,
-									BUILD_BLOB_DNSKEY, key,
-									BUILD_END);
+		public = lib->creds->create(lib->creds, CRED_PUBLIC_KEY, type,
+									subtype, key, BUILD_END);
+		if (key.ptr != parsed_key.ptr)
+		{
+			chunk_free(&key);
+		}
 		cur_ipseckey->destroy(cur_ipseckey);
 		if (!public)
 		{

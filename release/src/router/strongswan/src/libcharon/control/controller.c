@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2019 Tobias Brunner
+ * Copyright (C) 2011-2023 Tobias Brunner
  * Copyright (C) 2007-2011 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -55,6 +55,11 @@ struct interface_logger_t {
 	 * reference to the listener
 	 */
 	interface_listener_t *listener;
+
+	/**
+	 * Maximum log level to pass to callback
+	 */
+	level_t max_level;
 
 	/**
 	 *  interface callback (listener gets redirected to here)
@@ -228,7 +233,7 @@ METHOD(logger_t, listener_log, void,
 	target = this->listener->ike_sa;
 	this->listener->lock->unlock(this->listener->lock);
 
-	if (target == ike_sa)
+	if (target && target == ike_sa)
 	{
 		if (!this->callback(this->param, group, level, ike_sa, message))
 		{
@@ -241,9 +246,7 @@ METHOD(logger_t, listener_log, void,
 METHOD(logger_t, listener_get_level, level_t,
 	interface_logger_t *this, debug_t group)
 {
-	/* in order to allow callback listeners to decide what they want to log
-	 * we request any log message, but only if we actually want logging */
-	return this->callback == controller_cb_empty ? LEVEL_SILENT : LEVEL_PRIVATE;
+	return this->max_level;
 }
 
 METHOD(job_t, get_priority_medium, job_priority_t,
@@ -475,9 +478,13 @@ METHOD(job_t, initiate_execute, job_requeue_t,
 
 	if (ike_sa->initiate(ike_sa, listener->child_cfg, NULL) == SUCCESS)
 	{
-		if (!listener->logger.callback)
-		{
+		if (!listener->logger.callback ||
+			(!listener->child_cfg &&
+			 ike_sa->get_state(ike_sa) != IKE_CONNECTING))
+		{	/* immediately return if we don't block or after re-initiating an
+			 * existing IKE_SA childless */
 			listener->status = SUCCESS;
+			listener_done(listener);
 		}
 		charon->ike_sa_manager->checkin(charon->ike_sa_manager, ike_sa);
 	}
@@ -492,7 +499,8 @@ METHOD(job_t, initiate_execute, job_requeue_t,
 
 METHOD(controller_t, initiate, status_t,
 	private_controller_t *this, peer_cfg_t *peer_cfg, child_cfg_t *child_cfg,
-	controller_cb_t callback, void *param, u_int timeout, bool limits)
+	controller_cb_t callback, void *param, level_t max_level, u_int timeout,
+	bool limits)
 {
 	interface_job_t *job;
 	status_t status;
@@ -508,6 +516,7 @@ METHOD(controller_t, initiate, status_t,
 					.log = _listener_log,
 					.get_level = _listener_get_level,
 				},
+				.max_level = max_level,
 				.callback = callback,
 				.param = param,
 			},
@@ -583,7 +592,7 @@ METHOD(job_t, terminate_ike_execute, job_requeue_t,
 
 METHOD(controller_t, terminate_ike, status_t,
 	controller_t *this, uint32_t unique_id, bool force,
-	controller_cb_t callback, void *param, u_int timeout)
+	controller_cb_t callback, void *param, level_t max_level, u_int timeout)
 {
 	interface_job_t *job;
 	status_t status;
@@ -598,6 +607,7 @@ METHOD(controller_t, terminate_ike, status_t,
 					.log = _listener_log,
 					.get_level = _listener_get_level,
 				},
+				.max_level = max_level,
 				.callback = callback,
 				.param = param,
 			},
@@ -684,7 +694,7 @@ METHOD(job_t, terminate_child_execute, job_requeue_t,
 
 METHOD(controller_t, terminate_child, status_t,
 	controller_t *this, uint32_t unique_id,
-	controller_cb_t callback, void *param, u_int timeout)
+	controller_cb_t callback, void *param, level_t max_level, u_int timeout)
 {
 	interface_job_t *job;
 	status_t status;
@@ -700,6 +710,7 @@ METHOD(controller_t, terminate_child, status_t,
 					.log = _listener_log,
 					.get_level = _listener_get_level,
 				},
+				.max_level = max_level,
 				.callback = callback,
 				.param = param,
 			},

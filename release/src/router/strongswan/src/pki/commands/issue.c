@@ -56,6 +56,37 @@ static void destroy_cdp(x509_cdp_t *this)
 }
 
 /**
+ * Parse (extended) key usage flag and add it to the given set
+ */
+static void parse_flag(char *arg, x509_flag_t *flags)
+{
+	if (streq(arg, "serverAuth"))
+	{
+		*flags |= X509_SERVER_AUTH;
+	}
+	else if (streq(arg, "clientAuth"))
+	{
+		*flags |= X509_CLIENT_AUTH;
+	}
+	else if (streq(arg, "ikeIntermediate"))
+	{
+		*flags |= X509_IKE_INTERMEDIATE;
+	}
+	else if (streq(arg, "crlSign"))
+	{
+		*flags |= X509_CRL_SIGN;
+	}
+	else if (streq(arg, "ocspSigning"))
+	{
+		*flags |= X509_OCSP_SIGNER;
+	}
+	else if (streq(arg, "msSmartcardLogon"))
+	{
+		*flags |= X509_MS_SMARTCARD_LOGON;
+	}
+}
+
+/**
  * Issue a certificate using a CA certificate and key
  */
 static int issue()
@@ -81,7 +112,7 @@ static int issue()
 	chunk_t critical_extension_oid = chunk_empty;
 	time_t not_before, not_after, lifetime = 1095 * 24 * 60 * 60;
 	char *datenb = NULL, *datena = NULL, *dateform = NULL;
-	x509_flag_t flags = 0;
+	x509_flag_t flags = 0, flags_add = 0, flags_rem = 0;
 	x509_t *x509;
 	x509_cdp_t *cdp = NULL;
 	x509_cert_policy_t *policy = NULL;
@@ -154,11 +185,7 @@ static int issue()
 				}
 				continue;
 			case 'R':
-				if (streq(arg, "pss"))
-				{
-					pss = TRUE;
-				}
-				else if (!streq(arg, "pkcs1"))
+				if (!parse_rsa_padding(arg, &pss))
 				{
 					error = "invalid RSA padding";
 					goto usage;
@@ -291,29 +318,17 @@ static int issue()
 				inhibit_any = atoi(arg);
 				continue;
 			case 'e':
-				if (streq(arg, "serverAuth"))
+				if (strpfx(arg, "+"))
 				{
-					flags |= X509_SERVER_AUTH;
+					parse_flag(&arg[1], &flags_add);
 				}
-				else if (streq(arg, "clientAuth"))
+				else if (strpfx(arg, "-"))
 				{
-					flags |= X509_CLIENT_AUTH;
+					parse_flag(&arg[1], &flags_rem);
 				}
-				else if (streq(arg, "ikeIntermediate"))
+				else
 				{
-					flags |= X509_IKE_INTERMEDIATE;
-				}
-				else if (streq(arg, "crlSign"))
-				{
-					flags |= X509_CRL_SIGN;
-				}
-				else if (streq(arg, "ocspSigning"))
-				{
-					flags |= X509_OCSP_SIGNER;
-				}
-				else if (streq(arg, "msSmartcardLogon"))
-				{
-					flags |= X509_MS_SMARTCARD_LOGON;
+					parse_flag(arg, &flags);
 				}
 				continue;
 			case 'f':
@@ -482,8 +497,11 @@ static int issue()
 		}
 		req = (pkcs10_t*)cert_req;
 
-		/* Add Extended Key Usage (EKU) flags */
-		flags |= req->get_flags(req);
+		/* Add Extended Key Usage (EKU) flags if not overridden */
+		if (!flags)
+		{
+			flags = req->get_flags(req);
+		}
 
 		/* Add subjectAltNames from PKCS#10 certificate request */
 		enumerator = req->create_subjectAltName_enumerator(req);
@@ -542,6 +560,9 @@ static int issue()
 		error = "no signature scheme found";
 		goto end;
 	}
+	/* add and/or remove flags */
+	flags |= flags_add;
+	flags &= ~flags_rem;
 
 	cert = lib->creds->create(lib->creds, CRED_CERTIFICATE, CERT_X509,
 					BUILD_SIGNING_KEY, private, BUILD_SIGNING_CERT, ca,

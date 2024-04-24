@@ -9,6 +9,10 @@ ipseclib_LTLIBRARIES = libradius.la
 libradius_la_LIBADD = \
 	$(top_builddir)/src/libstrongswan/libstrongswan.la -lm
 
+if USE_WINDOWS
+  libradius_la_LIBADD += -lws2_32
+endif
+
 libradius_la_SOURCES = \
 	radius_message.h radius_message.c \
 	radius_socket.h radius_socket.c \

@@ -10,6 +10,12 @@ export LEAK_DETECTIVE_DISABLE=1
 # Determine testing directory
 DIR="$(dirname `readlink -f $0`)/.."
 
+# With OpenSSL 3, we need to generate RSA private keys in the traditional format
+# and not PKCS#8 so e.g. TKM can read them
+if [ 3 -ge $(openssl version | sed -re 's/^OpenSSL ([0-9]+)\..*/\1/') ]; then
+  TRAD="-traditional"
+fi
+
 # Define some global variables
 PROJECT="strongSwan Project"
 CA_DIR="${DIR}/hosts/winnetou/etc/ca"
@@ -166,7 +172,7 @@ do
 
   # Convert host key into DER format
   openssl rsa -in ${HOST_KEY} -outform der -out ${CA_DIR}/keys/${h}Key.der \
-          2> /dev/null
+          ${TRAD} 2> /dev/null
 done
 
 # Put DER-encoded moon private key and Root CA certificate into tkm scenarios
@@ -413,7 +419,7 @@ pki --issue --cakey ${CA_KEY} --cacert ${CA_CERT} --crl ${CA_BASE_CDP} --type rs
 HOST_KEY="${DIR}/hosts/carol/${IPSEC_DIR}/private/carolKey.pem"
 KEY_PWD="nH5ZQEWtku0RJEZ6"
 openssl rsa -in ${HOST_KEY} -aes128 --passout pass:${KEY_PWD} -out ${HOST_KEY} \
-        2> /dev/null
+        ${TRAD} 2> /dev/null
 
 # Put a copy into the ikev2, botan and wolfssl rw-cert scenarios
 for d in ikev2 botan wolfssl
@@ -428,7 +434,7 @@ TEST="${TEST_DIR}/ikev2/crl-revoked"
 TEST_KEY="${TEST}/hosts/carol/${SWANCTL_DIR}/rsa/carolKey.pem"
 TEST_CERT="${TEST}/hosts/carol/${SWANCTL_DIR}/x509/carolCert.pem"
 CN="carol@strongswan.org"
-SERIAL="08"
+SERIAL="88"
 mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/rsa
 mkdir -p ${TEST}/hosts/carol/${SWANCTL_DIR}/x509
 pki --gen --type rsa --size ${RSA_SIZE} --outform pem > ${TEST_KEY}
@@ -615,7 +621,7 @@ pki --issue --cakey ${CA_KEY} --cacert ${CA_CERT} --crl ${CA_CDP} --type rsa \
     --serial ${SERIAL} --dn "C=CH, O=${PROJECT}, OU=SHA-224, CN=${CN}" \
     --digest sha224 --outform pem > ${TEST_CERT}
 openssl rsa -in ${TEST_KEY} -aes128 --passout pass:${KEY_PWD} -out ${TEST_KEY} \
-        2> /dev/null
+        ${TRAD} 2> /dev/null
 cp ${TEST_CERT} ${CA_DIR}/certs/${SERIAL}.pem
 
 # Generate an AES-192 encrypted carol key and a SHA-384 hashed certificate
@@ -632,7 +638,7 @@ pki --issue --cakey ${CA_KEY} --cacert ${CA_CERT} --crl ${CA_CDP} --type rsa \
     --serial ${SERIAL} --dn "C=CH, O=${PROJECT}, OU=SHA-384, CN=${CN}" \
     --digest sha384 --outform pem > ${TEST_CERT}
 openssl rsa -in ${TEST_KEY} -aes192 --passout pass:${KEY_PWD} -out ${TEST_KEY} \
-        2> /dev/null
+        ${TRAD} 2> /dev/null
 cp ${TEST_CERT} ${CA_DIR}/certs/${SERIAL}.pem
 
 # Generate an AES-256 encrypted dave key and a SHA-512 hashed certificate
@@ -649,7 +655,7 @@ pki --issue --cakey ${CA_KEY} --cacert ${CA_CERT} --crl ${CA_CDP} --type rsa \
     --serial ${SERIAL} --dn "C=CH, O=${PROJECT}, OU=SHA-512, CN=${CN}" \
     --digest sha512 --outform pem > ${TEST_CERT}
 openssl rsa -in ${TEST_KEY} -aes256 --passout pass:${KEY_PWD} -out ${TEST_KEY} \
-        2> /dev/null
+        ${TRAD} 2> /dev/null
 cp ${TEST_CERT} ${CA_DIR}/certs/${SERIAL}.pem
 
 # Generate another carol certificate with an OCSP URI
@@ -948,8 +954,8 @@ pki --issue --cakey ${RESEARCH_KEY} --cacert ${RESEARCH_CERT} --type rsa \
 cp ${TEST_CERT} ${RESEARCH_DIR}/certs/${SERIAL}.pem
 
 # Save a copy of the private key in DER format
-openssl rsa -in ${TEST_KEY} -outform der \
-            -out ${RESEARCH_DIR}/keys/${SERIAL}.der 2> /dev/null
+openssl rsa -in ${TEST_KEY} -outform der -out ${RESEARCH_DIR}/keys/${SERIAL}.der \
+        ${TRAD} 2> /dev/null
 
 # Put a copy in the following scenarios
 for t in ikev2-multi-ca/certreq-init ikev2-multi-ca/certreq-resp \
@@ -1056,8 +1062,8 @@ pki --issue --cakey ${SALES_KEY} --cacert ${SALES_CERT} --type rsa \
 cp ${TEST_CERT} ${SALES_DIR}/certs/${SERIAL}.pem
 
 # Save a copy of the private key in DER format
-openssl rsa -in ${TEST_KEY} -outform der \
-            -out ${SALES_DIR}/keys/${SERIAL}.der 2> /dev/null
+openssl rsa -in ${TEST_KEY} -outform der -out ${SALES_DIR}/keys/${SERIAL}.der \
+        ${TRAD} 2> /dev/null
 
 # Put a copy in the following scenarios
 for t in ikev2-multi-ca/certreq-init ikev2-multi-ca/certreq-resp \

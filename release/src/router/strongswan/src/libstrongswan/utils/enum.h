@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2009-2019 Tobias Brunner
+ * Copyright (C) 2009-2023 Tobias Brunner
  * Copyright (C) 2006-2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -139,6 +139,41 @@ struct enum_name_t {
 		BUILD_ASSERT((__builtin_ffs(last)-__builtin_ffs(first)+1) == \
 			countof(((char*[]){__VA_ARGS__}))), \
 		ENUM_FLAG_MAGIC, { unset, __VA_ARGS__ }}; ENUM_END(name, last)
+
+/**
+ * Define a static enum name that can be added and removed to an existing list
+ * via enum_add_enum_names() and enum_remove_enum_names(), respectively.
+ *
+ * @param name		name of the static enum_name element
+ * @param first		enum value of the first enum string
+ * @param last		enum value of the last enum string
+ * @param ...		a list of strings
+ */
+#define ENUM_EXT(name, first, last, ...) \
+	ENUM_BEGIN(name, first, last, __VA_ARGS__); static ENUM_END(name, last)
+
+/**
+ * Register enum names for additional enum values with an existing enum name.
+ *
+ * @note Must be called while running single-threaded, e.g. when plugins and
+ * their features are loaded. Use enum_remove_enum_names() to remove the names
+ * during deinitialization.
+ *
+ * @param e		enum names to add new names to
+ * @param names	additional enum names
+ */
+void enum_add_enum_names(enum_name_t *e, enum_name_t *names);
+
+/**
+ * Remove previously registered enum names.
+ *
+ * @note Must be called while running single-threaded, e.g. when plugins and
+ * their features are unloaded.
+ *
+ * @param e		enum names to remove previously added names from
+ * @param names	additional enum names to remove
+ */
+void enum_remove_enum_names(enum_name_t *e, enum_name_t *names);
 
 /**
  * Convert a enum value to its string representation.

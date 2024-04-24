@@ -378,7 +378,7 @@ wolfssl_ec_public_key_t *wolfssl_ec_public_key_load(key_type_t type,
 
 	idx = 0;
 	ret = wc_EccPublicKeyDecode(blob.ptr, &idx, &this->ec, blob.len);
-	if (ret < 0)
+	if (ret < 0 || this->ec.idx == -1)
 	{
 		destroy(this);
 		return NULL;

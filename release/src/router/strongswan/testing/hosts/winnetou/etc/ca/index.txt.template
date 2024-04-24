@@ -1,0 +1,24 @@
+V	EE_EXPIRATION		01	unknown	/C=CH/O=strongSwan Project/OU=Research/CN=carol@strongswan.org
+V	EE_EXPIRATION		02	unknown	/C=CH/O=strongSwan Project/OU=Accounting/CN=dave@strongswan.org
+V	EE_EXPIRATION		03	unknown	/C=CH/O=strongSwan Project/CN=moon.strongswan.org
+V	EE_EXPIRATION		04	unknown	/C=CH/O=strongSwan Project/CN=sun.strongswan.org
+V	EE_EXPIRATION		05	unknown	/C=CH/O=strongSwan Project/OU=Sales/CN=alice@strongswan.org
+V	EE_EXPIRATION		06	unknown	/C=CH/O=strongSwan Project/CN=venus.strongswan.org
+V	EE_EXPIRATION		07	unknown	/C=CH/O=strongSwan Project/OU=Research/CN=bob@strongswan.org
+R	EE_EXPIRATION	REVOCATION,keyCompromise	88	unknown	/C=CH/O=strongSwan Project/OU=Research/CN=carol@strongswan.org
+V	EE_EXPIRATION		09	unknown	/C=CH/O=strongSwan Project/OU=Research/serialNumber=002/CN=carol@strongswan.org
+R	IM_EXPIRATION	REVOCATION,CACompromise	0A	unknown	/C=CH/O=strongSwan Project/OU=Research/CN=Research CA
+V	IM_EXPIRATION		0B	unknown	/C=CH/O=strongSwan Project/OU=Research/CN=Research CA
+V	IM_EXPIRATION		0C	unknown	/C=CH/O=strongSwan Project/OU=Sales/CN=Sales CA
+V	EE_EXPIRATION		0D	unknown	/C=CH/O=strongSwan Project/OU=SHA-224/CN=moon.strongswan.org
+V	EE_EXPIRATION		0E	unknown	/C=CH/O=strongSwan Project/OU=SHA-384/CN=carol@strongswan.org
+V	EE_EXPIRATION		0F	unknown	/C=CH/O=strongSwan Project/OU=SHA-512/CN=dave@strongswan.org
+V	EE_EXPIRATION		10	unknown	/C=CH/O=strongSwan Project/OU=OCSP/CN=carol@strongswan.org
+V	EE_EXPIRATION		11	unknown	/C=CH/O=strongSwan Project/OU=OCSP Signing Authority/CN=ocsp.strongswan.org
+V	EE_EXPIRATION		12	unknown	/C=CH/O=strongSwan Project/OU=Virtual VPN Gateway/CN=mars.strongswan.org
+V	EE_EXPIRATION		13	unknown	/C=CH/O=strongSwan Project/OU=Critical Extension/CN=moon.strongswan.org
+V	EE_EXPIRATION		14	unknown	/C=CH/O=strongSwan Project/OU=Critical Extension/CN=sun.strongswan.org
+V	EE_EXPIRATION		15	unknown	/C=CH/O=strongSwan Project/CN=winnetou.strongswan.org
+V	EE_EXPIRATION		16	unknown	/C=CH/O=strongSwan Project/CN=aaa.strongswan.org
+V	IM_EXPIRATION		17	unknown	/C=CH/O=strongSwan Project/CN=strongSwan Attribute Authority
+V	SH_EXPIRATION		18	unknown	/C=CH/O=strongSwan Project/CN=strongSwan Legacy AA

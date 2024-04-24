@@ -140,18 +140,49 @@ static bool add_key(private_pkcs12_t *this, EVP_PKEY *private)
 }
 
 /**
+ * Decrypt PKCS#12 file using the given password and unpack credentials
+ */
+static status_t decrypt_and_unpack_pw(private_pkcs12_t *this, char *password)
+{
+	STACK_OF(X509) *cas = NULL;
+	EVP_PKEY *private;
+	X509 *cert;
+
+	if (PKCS12_parse(this->p12, password, &private, &cert, &cas))
+	{
+		/* if at least one is successful, we accept it */
+		if ((int)add_key(this, private) |
+			(int)add_cert(this, cert) |
+			(int)add_cas(this, cas))
+		{
+			return SUCCESS;
+		}
+		return FAILED;
+	}
+	return PARSE_ERROR;
+}
+
+/**
  * Decrypt PKCS#12 file and unpack credentials
  */
 static bool decrypt_and_unpack(private_pkcs12_t *this)
 {
 	enumerator_t *enumerator;
 	shared_key_t *shared;
-	STACK_OF(X509) *cas = NULL;
-	EVP_PKEY *private;
-	X509 *cert;
 	chunk_t key;
 	char *password;
 	bool success = FALSE;
+
+	/* try without password first */
+	switch (decrypt_and_unpack_pw(this, NULL))
+	{
+		case PARSE_ERROR:
+			break;
+		case SUCCESS:
+			return TRUE;
+		default:
+			return FALSE;
+	}
 
 	enumerator = lib->credmgr->create_shared_enumerator(lib->credmgr,
 										SHARED_PRIVATE_KEY_PASS, NULL, NULL);
@@ -160,17 +191,25 @@ static bool decrypt_and_unpack(private_pkcs12_t *this)
 		key = shared->get_key(shared);
 		if (!key.ptr || asprintf(&password, "%.*s", (int)key.len, key.ptr) < 0)
 		{
-			password = NULL;
+			password = strdup("");
 		}
-		if (PKCS12_parse(this->p12, password, &private, &cert, &cas))
+		switch (decrypt_and_unpack_pw(this, password))
 		{
-			success = add_key(this, private);
-			success &= add_cert(this, cert);
-			success &= add_cas(this, cas);
-			free(password);
-			break;
+			case PARSE_ERROR:
+				/* password was incorrect, try another */
+				memwipe(password, strlen(password));
+				free(password);
+				continue;
+			case SUCCESS:
+				success = TRUE;
+				break;
+			default:
+				/* password was correct but we were unable to unpack anything */
+				break;
 		}
+		memwipe(password, strlen(password));
 		free(password);
+		break;
 	}
 	enumerator->destroy(enumerator);
 	return success;

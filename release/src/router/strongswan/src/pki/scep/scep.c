@@ -38,7 +38,7 @@ static const char *operations[] = {
 
 static const char *pkiStatus_values[] = { "0", "2", "3" };
 
-static const char *pkiStatus_names[] = {
+static const char *pkiStatus_names[] DBG_UNUSED = {
 	"SUCCESS",
 	"FAILURE",
 	"PENDING",
@@ -47,7 +47,7 @@ static const char *pkiStatus_names[] = {
 
 static const char *msgType_values[] = { "3", "17", "19", "20", "21", "22" };
 
-static const char *msgType_names[] = {
+static const char *msgType_names[] DBG_UNUSED = {
 	"CertRep",
 	"RenewalReq",
 	"PKCSReq",
@@ -57,7 +57,7 @@ static const char *msgType_names[] = {
 	"Unknown"
 };
 
-static const char *failInfo_reasons[] = {
+static const char *failInfo_reasons[] DBG_UNUSED = {
 	"badAlg - unrecognized or unsupported algorithm identifier",
 	"badMessageCheck - integrity check failed",
 	"badRequest - transaction not permitted or supported",
@@ -395,8 +395,8 @@ bool scep_http_request(const char *url, scep_op_t op, bool http_post,
 /**
  * Extract X.501 attributes
  */
-void extract_attributes(pkcs7_t *pkcs7, enumerator_t *enumerator,
-						scep_attributes_t *attrs)
+static void extract_attributes(pkcs7_t *pkcs7, enumerator_t *enumerator,
+							   scep_attributes_t *attrs)
 {
 	chunk_t attr;
 

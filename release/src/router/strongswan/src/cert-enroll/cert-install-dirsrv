@@ -1,0 +1,103 @@
+#!/bin/bash
+# Install the private key, the server certificate and the CA certificates in
+# the NSS key (key4.db) and certificate (cert9.db) databases used by the 389
+# directory server to identify itself via TLS. 
+#
+# Copyright (C) 2023 Andreas Steffen
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+set -e
+
+##############################################################################
+# Set some local paths 
+#
+
+# Path to the NSS directory 
+NSS_DIR="/etc/dirsrv/slapd-localhost"
+
+# Path to openssl command
+OPENSSL=/usr/bin/openssl
+
+# Path to certutil command
+CERTUTIL=/usr/bin/certutil
+
+# Path to pk12util command
+PK12UTIL=/usr/bin/pk12util
+
+# Path to dsctl command
+DSCTL=/usr/sbin/dsctl
+
+##############################################################################
+# Go to the NSS directory, create a new build subdirectory and change into it
+#
+rm -r -f $NSS_DIR/build && mkdir $NSS_DIR/build && cd $NSS_DIR/build
+
+##############################################################################
+# Generate a new random password into passwd.txt and also store it in pin.txt 
+#
+$OPENSSL rand -base64 48 > passwd.txt
+
+echo "Internal (Software) Token:$(cat passwd.txt)" > pin.txt 
+
+chmod 600 passwd.txt pin.txt
+
+##############################################################################
+# Pack the private key and host certificate into a PKCS#12 container 
+#
+$OPENSSL pkcs12 -export -name "Server-Cert" -passout file:passwd.txt \
+                -in $CERTDIR/$HOSTCERT -inkey $CERTDIR/$HOSTKEY \
+                -out Server-Cert.p12
+
+##############################################################################
+# Create a new password-protected NSS store and import the PKCS#12 file  
+#
+$CERTUTIL -d . -N -f passwd.txt
+$PK12UTIL -d . -i Server-Cert.p12 -w passwd.txt -k passwd.txt 
+  
+##############################################################################
+# Install the CA certificates
+#
+$CERTUTIL -d . -A -t "CT,," -n "Root CA" -i $CERTDIR/$ROOTCA \
+          -f passwd.txt
+$CERTUTIL -d . -A -t "CT,," -n "Sub CA"  -i $CERTDIR/$SUBCA \
+          -f passwd.txt
+if [ -s $CERTDIR/old/$ROOTCA ]
+then
+  $CERTUTIL -d . -A -t "CT,," -n "Old Root CA" -i $CERTDIR/old/$ROOTCA \
+            -f passwd.txt
+fi
+if [ -s $CERTDIR/old/$SUBCA ]
+then
+  $CERTUTIL -d . -A -t "CT,," -n "Old Sub CA" -i $CERTDIR/old/$SUBCA \
+            -f passwd.txt
+fi
+ 
+##############################################################################
+# Move the generated credentials to the correct place and delete the build dir 
+#
+mv key4.db cert9.db passwd.txt pin.txt ..
+
+rm -r $NSS_DIR/build
+
+##############################################################################
+# Restart the 389 directory server
+#
+$DSCTL localhost restart
+exit 0

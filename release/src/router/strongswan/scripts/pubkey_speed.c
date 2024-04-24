@@ -20,12 +20,12 @@
 #include <utils/debug.h>
 #include <credentials/keys/private_key.h>
 
-void start_timing(struct timespec *start)
+static void start_timing(struct timespec *start)
 {
 	clock_gettime(CLOCK_THREAD_CPUTIME_ID, start);
 }
 
-double end_timing(struct timespec *start)
+static double end_timing(struct timespec *start)
 {
 	struct timespec end;
 

@@ -1,4 +1,4 @@
-.TH PKI 1 "2022-08-22" "@PACKAGE_VERSION@" "strongSwan"
+.TH PKI 1 "2023-10-20" "@PACKAGE_VERSION@" "strongSwan"
 .
 .SH "NAME"
 .
@@ -33,13 +33,19 @@ key IDs.
 .P
 The
 .B pki
-command now supports certificate enrollment via the
+command also supports certificate enrollment via the
 .B Simple Certificate Enrollment Protocol
 (SCEP) as defined by RFC 8894, replacing the obsoleted
 .B ipsec scepclient
 tool. Additionally the
 .B Enrollment over Secure Transport
 (EST) protocol (RFC 7030) is supported, too.
+.P
+The latest feature is an
+.B Online Certificate Status Protocol
+(OCSP) responder as defined by RFC 6960, interoperating with an
+.B OpenXPKI
+server by directly accessing its internal certificate datebase.
 .
 .SH "COMMANDS"
 .
@@ -94,6 +100,9 @@ Enroll an X.509 certificate with an EST server.
 .TP
 .B "\-e, \-\-estca"
 Get CA certificate[s] from an EST server.
+.TP
+.B "\-o, \-\-ocsp"
+OCSP request parser and OCSP responder.
 .
 .SH "EXAMPLES"
 .
@@ -188,3 +197,4 @@ certificates with the \-\-crl option.
 .BR pki\ \-\-scepca (1)
 .BR pki\ \-\-est (1)
 .BR pki\ \-\-estca (1)
+.BR pki\ \-\-ocsp (1)

@@ -370,6 +370,8 @@ METHOD(aead_t, destroy, void,
 {
 	this->crypter->destroy(this->crypter);
 	this->iv_gen->destroy(this->iv_gen);
+	memwipe(this->salt, sizeof(this->salt));
+	memwipe(this->h, sizeof(this->h));
 	free(this);
 }
 

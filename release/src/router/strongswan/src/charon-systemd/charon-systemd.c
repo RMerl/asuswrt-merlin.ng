@@ -368,6 +368,9 @@ int main(int argc, char *argv[])
 
 	charon->load_loggers(charon);
 
+	DBG1(DBG_DMN, "Starting charon-systemd IKE daemon (strongSwan "VERSION", "
+		 "%s %s, %s)", utsname.sysname, utsname.release, utsname.machine);
+
 	if (!charon->initialize(charon,
 			lib->settings->get_str(lib->settings, "%s.load", PLUGINS, lib->ns)))
 	{

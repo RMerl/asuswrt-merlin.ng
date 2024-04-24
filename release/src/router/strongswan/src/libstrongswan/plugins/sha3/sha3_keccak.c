@@ -462,6 +462,7 @@ METHOD(sha3_keccak_t, squeeze, void,
 METHOD(sha3_keccak_t, destroy, void,
 	private_sha3_keccak_t *this)
 {
+	memwipe(this->state, sizeof(this->state));
 	free(this);
 }
 

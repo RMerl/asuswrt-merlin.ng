@@ -281,8 +281,8 @@ struct child_cfg_t {
 	 *
 	 * @param labels		list of labels to match
 	 * @param log			FALSE to avoid logging details about the selection
-	 * @param label[out]	selected label or NULL if no label necessary
-	 * @param exact[out]	TRUE if there was an exact match
+	 * @param[out] label	selected label or NULL if no label necessary
+	 * @param[out] exact	TRUE if there was an exact match
 	 * @return				FALSE on failure
 	 */
 	bool (*select_label)(child_cfg_t *this, linked_list_t *labels, bool log,

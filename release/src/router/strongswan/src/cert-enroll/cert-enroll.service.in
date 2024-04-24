@@ -1,0 +1,9 @@
+[Unit]
+Description=X.509 certificate checking (re-enrollment if necessary)
+Documentation=man:cert-enroll(8)
+
+[Service]
+Type=oneshot
+User=root
+ExecStart=@SBINDIR@/cert-enroll
+SuccessExitStatus=1

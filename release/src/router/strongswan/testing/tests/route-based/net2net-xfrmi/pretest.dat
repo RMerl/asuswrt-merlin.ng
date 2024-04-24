@@ -1,7 +1,7 @@
 moon::iptables-restore < /etc/iptables.rules
 sun::iptables-restore < /etc/iptables.rules
-moon::/usr/local/libexec/ipsec/xfrmi -n xfrm-moon-out -d eth0 -i 1337
-moon::/usr/local/libexec/ipsec/xfrmi -n xfrm-moon-in  -d eth0 -i 42
+moon::ip link add xfrm-moon-out type xfrm dev eth0 if_id 1337
+moon::ip link add xfrm-moon-in type xfrm dev eth0 if_id 42
 moon::ip link set xfrm-moon-out up
 moon::ip link set xfrm-moon-in up
 moon::ip route add 10.2.0.0/16 dev xfrm-moon-out

@@ -2,7 +2,7 @@
 
 PKG = spark-crypto
 SRC = https://git.codelabs.ch/spark-crypto.git
-REV = c97939b6cdd5e5f19847cf8d1abb7575e1c01df7
+REV = 153590e2fc784d3173b73642fafa4efb597bb2f3
 
 DESTDIR = /usr/local/ada/lib/gnat
 

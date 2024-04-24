@@ -1,8 +1,8 @@
 <domain type='kvm'>
   <name>dave</name>
   <uuid>05f1debe-4e38-4f3d-10a0-c07fbb70d816</uuid>
-  <memory unit='KiB'>131072</memory>
-  <currentMemory unit='KiB'>131072</currentMemory>
+  <memory unit='MiB'>128</memory>
+  <currentMemory unit='MiB'>128</currentMemory>
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>

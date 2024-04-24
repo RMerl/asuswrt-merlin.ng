@@ -1,0 +1,292 @@
+.TH "PKI \-\-OCSP" 1 "2023-10-29" "@PACKAGE_VERSION@" "strongSwan"
+.
+.SH "NAME"
+.
+pki \-\-ocsp \- OCSP request parser and OCSP responder.
+.
+.SH "SYNOPSIS"
+.
+.SY pki\ \-\-ocsp
+.OP \-\-in file
+.OP \-\-cacert file
+.OP \-\-debug level
+.YS
+
+.SY pki\ \-\-ocsp
+.BI \-\-respond
+.OP \-\-in file
+.BI \-\-cacert\~ file
+.BI \-\-key\~ file
+.OP \-\-cert file
+.OP \-\-index file
+.OP \-\-lifetime minutes
+.OP \-\-digest digest
+.OP \-\-rsa\-padding padding
+.OP \-\-debug level
+.YS
+.
+.SY pki\ \-\-ocsp
+.BI \-\-options\~ file
+.YS
+.
+.SY "pki \-\-ocsp"
+.B \-h
+|
+.B \-\-help
+.YS
+.
+.SH "DESCRIPTION"
+.
+This sub-command of
+.BR pki (1)
+parses an
+.B Online Certificate Status Protocol
+(OCSP) request as defined by RFC 6960 and with the
+.B --respond
+option generates an OCSP response based on the OCSP request.
+The certificate status for this may be provided by plugins so if not using the
+.B --index
+option, this currently requires the
+.B openxpki
+and
+.B mysql
+plugins in order to directly access the internal
+.B certificate
+database of an
+.B OpenXPKI
+(https://openxpki.org) server.
+.
+.SH "OPTIONS"
+.
+.TP
+.B "\-h, \-\-help"
+Print usage information with a summary of the available options.
+.TP
+.BI "\-v, \-\-debug " level
+Set debug level, default: 1.
+.TP
+.BI "\-+, \-\-options " file
+Read command line options from \fIfile\fR.
+.TP
+.BI "\-i, \-\-in " file
+OCSP request. If not given, the OCSP request is read from
+\fISTDIN\fR.
+.TP
+.BI "\-C, \-\-cacert " file
+CA certificate corresponding to one of the issuer hashes contained in the OCSP
+request. If the OCSP request is signed, a CA certificate forming the
+trust chain. Can be used multiple times.
+.TP
+.BI "\-k, \-\-key " file
+OCSP signer key. Can be used multiple times.
+.TP
+.BI "\-c, \-\-cert " file
+OCSP signer certificate (if it is not a CA certificate). Can be used
+multiple times.
+.TP
+.BI "\-x, \-\-index " file
+OpenSSL-style index.txt providing information about the status of certificates
+issued by the CA certificate loaded immediately before. Can be used multiple
+times if the status for multiple CAs should be provided, just make sure to
+pass each index.txt file right after the corresponding CA certificate.
+
+See below for a description of the structure of these files.
+.TP
+.BI "\-l, \-\-lifetime " minutes
+Validity in minutes of the OCSP response (if missing, nextUpdate is omitted).
+.TP
+.BI "\-g, \-\-digest " digest
+Digest to use for signature creation. One of \fImd5\fR, \fIsha1\fR,
+\fIsha224\fR, \fIsha256\fR, \fIsha384\fR, or \fIsha512\fR, \fIsha3_224\fR,
+\fIsha3_256\fR, \fIsha3_384\fR, \fIsha3_512\fR.  The default is
+determined based on the type and size of the OCSP signing key.
+.TP
+.BI "\-R, \-\-rsa\-padding " padding
+Padding to use for RSA signatures. Either \fIpkcs1\fR or \fIpss\fR, defaults
+to \fIpkcs1\fR.
+.
+.SH "INDEX.TXT DESCRIPTION"
+.
+Each line in an index.txt file consists of six columns that are separated by
+tab characters:
+
+The first column denotes the certificate status, which can be either "V" (for
+valid), "E" (for expired, treated like valid), or "R" (for revoked).
+
+The second column contains the certificate's expiration date and time in UTC in
+the format YYMMDDHHMMSSZ. This field is ignored by the command but must not be
+empty.
+
+The third column is the revocation date and time in UTC in the format
+YYMMDDHHMMSSZ and an optional revocation reason that immediately follows it,
+separated by a comma. Valid reasons are "keyCompromise", "CACompromise",
+"affiliationChanged", "superseded", "cessationOfOperation", "certificateHold",
+and "removeFromCRL", any other value or omitting a reason results in
+"unspecified".
+
+The fourth column contains the certificate's serial number in
+hexadecimal encoding.
+
+The fifth and sixth columns are both ignored by the command, so they may be
+omitted completely. They can contain a path to the certificate (usually set to
+"unknown") and the certificate's subject DN with slashes separating the RDNs.
+
+Example index.txt:
+.PP
+.EX
+V    310930122422Z       03  unknown /C=CH/O=strongSwan/CN=moon...
+V    310930122422Z       04  unknown /C=CH/O=strongSwan/CN=sun...
+R    310930122422Z   231002122422Z,keyCompromise 88
+V    Z       05
+.EE
+.PP
+Note that the fields are separated by tabs. So if a certificate is valid, two
+tabs follow after the expiration date.  The third line in this example only
+specifies the relevant first four columns, the fourth even uses a dummy
+expiration date.
+.
+.SH "EXAMPLES"
+.
+Show the raw content of an OCSP request:
+.PP
+.EX
+pki \-\-ocsp \-\-in req_ca.der
+
+nonce:               5b:14:e3:cc:d5:b2:65:ec:c4:0d:c3:11:37:6a:9d:71
+  issuerKeyHash:     b6:76:79:95:b5:58:..:06:93:f3:39:79:19 (no match)
+  issuerNameHash:    af:25:78:ce:fc:15:..:67:95:81:31:a3:4d (no match)
+  serialNumber:      4f:33:21:1d:4d:fd:9b:db
+  issuerKeyHash:     b6:76:79:95:b5:58:..:06:93:f3:39:79:19 (no match)
+  issuerNameHash:    af:25:78:ce:fc:15:..:67:95:81:31:a3:4d (no match)
+  serialNumber:      68:f2:93:10:65:d0:5e:d1
+.EE
+.PP
+Show the content of the same OCSP request if the issuer certificate is given:
+.PP
+.EX
+pki \-\-ocsp \-\-in req_ca.der \-\-cacert cacert.pem
+
+nonce:               5b:14:e3:cc:d5:b2:65:ec:c4:0d:c3:11:37:6a:9d:71
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  issuerKeyHash:     b6:76:79:95:b5:58:..:06:93:f3:39:79:19 (ok)
+  issuerNameHash:    af:25:78:ce:fc:15:..:67:95:81:31:a3:4d (ok)
+  serialNumber:      4f:33:21:1d:4d:fd:9b:db
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  issuerKeyHash:     b6:76:79:95:b5:58:..:06:93:f3:39:79:19 (ok)
+  issuerNameHash:    af:25:78:ce:fc:15:..:67:95:81:31:a3:4d (ok)
+  serialNumber:      68:f2:93:10:65:d0:5e:d1
+.EE
+.PP
+Respond to the OCSP request above, with the OCSP response signed by the CA itself:
+.PP
+.EX
+pki \-\-ocsp \-\-respond \-\-in req_ca.der \-\-cacert cacert.pem \-\-key cakey.pem \\
+           \-\-lifetime 10 > rsp_ca.der
+
+nonce:               5b:14:e3:cc:d5:b2:65:ec:c4:0d:c3:11:37:6a:9d:71
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  issuerKeyHash:     b6:76:79:95:b5:58:..:06:93:f3:39:79:19 (ok)
+  issuerNameHash:    af:25:78:ce:fc:15:..:67:95:81:31:a3:4d (ok)
+  serialNumber:      4f:33:21:1d:4d:fd:9b:db
+  thisUpdate:        Oct 19 15:54:15 UTC 2023
+  nextUpdate:        Oct 19 16:04:15 UTC 2023
+  certValidation:    GOOD
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  issuerKeyHash:     b6:76:79:95:b5:58:..:06:93:f3:39:79:19 (ok)
+  issuerNameHash:    af:25:78:ce:fc:15:..:67:95:81:31:a3:4d (ok)
+  serialNumber:      68:f2:93:10:65:d0:5e:d1
+  thisUpdate:        Oct 19 15:54:15 UTC 2023
+  nextUpdate:        Oct 19 16:04:15 UTC 2023
+  certValidation:    GOOD
+trusted signer:     "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+ocspResponseStatus:  successful
+.EE
+.PP
+Respond to a signed OCSP request providing the complete trust chain:
+.PP
+.EX
+pki \-\-ocsp --respond --in req_signed.der --cacert cacert.pem --cacert issuer1.pem \\
+           \-\-key signerKey1.pem \-\-cert signerCert1.pem \-\-lifetime 10 > rsp_signed.der
+
+requestor:          "C=CH, O=strongSwan Project, CN=vpn.strongswan.org"
+  using certificate "C=CH, O=strongSwan Project, CN=vpn.strongswan.org"
+  using trusted intermediate ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA 1"
+  using trusted ca certificate "C=CH, O=strongSwan Project, CN=strongSwan Root CA"
+  reached self-signed root ca with a path length of 1
+requestor is trusted
+nonce:               a8:0f:29:0f:08:9c:29:c1:0d:a8:cb:b0:21:fa:e1:f7
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA 1"
+  issuerKeyHash:     5a:1b:ec:17:f0:6d:..:a2:c8:e7:6a:84:20 (ok)
+  issuerNameHash:    df:1e:24:71:96:e6:..:b9:82:18:45:e7:09 (ok)
+  serialNumber:      04:ff:cc:8d:36:91:cb:35:d7:c4
+  thisUpdate:        Oct 19 16:30:54 UTC 2023
+  nextUpdate:        Oct 19 16:40:54 UTC 2023
+  certValidation:    REVOKED
+  revocationTime:    Mar 26 06:41:54 UTC 2023
+  revocationReason:  superseded
+trusted signer:     "C=CH, O=strongSwan Project, CN=OCSP signer of strongSwan Issuing CA 1"
+ocspResponseStatus:  successful
+.EE
+.PP
+Respond to an OCSP request containing two items from different known issuers
+having an OCSP signer each. The issuer of the first request item determines the
+OCSP signer used to sign the OCSP response:
+.PP
+.EX
+pki \-\-ocsp \-\-respond \-\-in req.der \-\-cacert issuer1.pem \-\-cacert issuer2.pem \\
+           \-\-key signerKey1.pem \-\-cert signerCert1.pem \\
+           \-\-key signerKey2.pem \-\-cert signerCert2.pem \\
+           \-\-lifetime 10 > rsp_trusted.der
+
+nonce:               a1:33:aa:bc:96:60:69:76:f3:bc:9c:88:3b:07:50:47
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA 2"
+  issuerKeyHash:     72:41:ca:f9:35:87:..:d3:83:ab:d5:89:7b (ok)
+  issuerNameHash:    5e:b2:b4:42:e1:a5:..:b2:c3:9a:38:4f:cd (ok)
+  serialNumber:      29:ff:36:d9:9a:21:49:61:91:1d
+  thisUpdate:        Oct 19 16:02:35 UTC 2023
+  nextUpdate:        Oct 19 16:12:35 UTC 2023
+  certValidation:    REVOKED
+  revocationTime:    Sep 22 13:13:04 UTC 2023
+  revocationReason:  superseded
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA 1"
+  issuerKeyHash:     5a:1b:ec:17:f0:6d:..:a2:c8:e7:6a:84:20 (ok)
+  issuerNameHash:    df:1e:24:71:96:e6:..:b9:82:18:45:e7:09 (ok)
+  serialNumber:      10:ff:45:9a:6d:ee:4c:ec:7c:97
+  thisUpdate:        Oct 19 16:02:35 UTC 2023
+  nextUpdate:        Oct 19 16:12:35 UTC 2023
+  certValidation:    FAILED
+there are multiple known issuers
+trusted signer:     "C=CH, O=strongSwan Project, CN=OCSP signer of strongSwan Issuing CA 2"
+ocspResponseStatus:  successful
+.EE
+.PP
+Repeat the OCSP response above but with a self-signed OCSP signing certificate
+.PP
+.EX
+pki \-\-ocsp --respond \-\-in req.der \-\-cacert issuer1.pem \-\-cacert issuer2.pem \\
+           \-\-key signerKey.pem \-\-cert signerCert.pem \-\-lifetime 10 > rsp_self_signed.der
+
+nonce:               a1:33:aa:bc:96:60:69:76:f3:bc:9c:88:3b:07:50:47
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA 2"
+  issuerKeyHash:     72:41:ca:f9:35:87:..:d3:83:ab:d5:89:7b (ok)
+  issuerNameHash:    5e:b2:b4:42:e1:a5:..:b2:c3:9a:38:4f:cd (ok)
+  serialNumber:      29:ff:36:d9:9a:21:49:61:91:1d
+  thisUpdate:        Oct 19 16:13:23 UTC 2023
+  nextUpdate:        Oct 19 16:23:23 UTC 2023
+  certValidation:    REVOKED
+  revocationTime:    Sep 22 13:13:04 UTC 2023
+  revocationReason:  superseded
+issuer:             "C=CH, O=strongSwan Project, CN=strongSwan Issuing CA 1"
+  issuerKeyHash:     5a:1b:ec:17:f0:6d:..:a2:c8:e7:6a:84:20 (ok)
+  issuerNameHash:    df:1e:24:71:96:e6:..:b9:82:18:45:e7:09 (ok)
+  serialNumber:      10:ff:45:9a:6d:ee:4c:ec:7c:97
+  thisUpdate:        Oct 19 16:13:23 UTC 2023
+  nextUpdate:        Oct 19 16:23:23 UTC 2023
+  certValidation:    GOOD
+there are multiple known issuers
+self-signed signer: "C=CH, O=strongSwan Project, CN=strongSwan OCSP signer"
+ocspResponseStatus:  successful
+.EE
+.PP
+.SH "SEE ALSO"
+.BR pki (1)

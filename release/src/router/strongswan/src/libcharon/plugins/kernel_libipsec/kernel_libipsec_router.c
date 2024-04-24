@@ -18,6 +18,7 @@
 #include <fcntl.h>
 
 #include "kernel_libipsec_router.h"
+#include "kernel_libipsec_esp_handler.h"
 
 #include <daemon.h>
 #include <ipsec.h>
@@ -76,6 +77,11 @@ struct private_kernel_libipsec_router_t {
 	 * Pipe to signal handle_plain() about changes regarding TUN devices
 	 */
 	int notify[2];
+
+	/**
+	 * ESP handler to send raw ESP packets
+	 */
+	kernel_libipsec_esp_handler_t *esp_handler;
 };
 
 /**
@@ -94,28 +100,32 @@ static bool tun_entry_equals(tun_entry_t *a, tun_entry_t *b)
 	return a->addr->ip_equals(a->addr, b->addr);
 }
 
-/**
- * Outbound callback
- */
-static void send_esp(void *data, esp_packet_t *packet)
+CALLBACK(send_esp, void,
+	private_kernel_libipsec_router_t *this, esp_packet_t *packet, bool encap)
 {
-	charon->sender->send_no_marker(charon->sender, (packet_t*)packet);
+	if (encap)
+	{
+		charon->sender->send_no_marker(charon->sender, (packet_t*)packet);
+	}
+	else if (this->esp_handler)
+	{
+		this->esp_handler->send(this->esp_handler, packet);
+	}
+	else
+	{	/* shouldn't happen as UDP encap is forced without ESP handler */
+		packet->destroy(packet);
+	}
 }
 
-/**
- * Receiver callback
- */
-static void receiver_esp_cb(void *data, packet_t *packet)
+CALLBACK(receiver_esp_cb, void,
+	void *data, packet_t *packet)
 {
 	ipsec->processor->queue_inbound(ipsec->processor,
 									esp_packet_create_from_packet(packet));
 }
 
-/**
- * Inbound callback
- */
-static void deliver_plain(private_kernel_libipsec_router_t *this,
-						  ip_packet_t *packet)
+CALLBACK(deliver_plain, void,
+	private_kernel_libipsec_router_t *this, ip_packet_t *packet)
 {
 	tun_device_t *tun;
 	tun_entry_t *entry, lookup = {
@@ -292,12 +302,9 @@ METHOD(kernel_libipsec_router_t, get_tun_name, char*,
 METHOD(kernel_libipsec_router_t, destroy, void,
 	private_kernel_libipsec_router_t *this)
 {
-	charon->receiver->del_esp_cb(charon->receiver,
-								(receiver_esp_cb_t)receiver_esp_cb);
-	ipsec->processor->unregister_outbound(ipsec->processor,
-										 (ipsec_outbound_cb_t)send_esp);
-	ipsec->processor->unregister_inbound(ipsec->processor,
-										 (ipsec_inbound_cb_t)deliver_plain);
+	charon->receiver->del_esp_cb(charon->receiver, receiver_esp_cb);
+	ipsec->processor->unregister_outbound(ipsec->processor, send_esp);
+	ipsec->processor->unregister_inbound(ipsec->processor, deliver_plain);
 	charon->kernel->remove_listener(charon->kernel, &this->public.listener);
 	this->lock->destroy(this->lock);
 	this->tuns->destroy(this->tuns);
@@ -333,7 +340,8 @@ kernel_libipsec_router_t *kernel_libipsec_router_create()
 		},
 		.tun = {
 			.tun = lib->get(lib, "kernel-libipsec-tun"),
-		}
+		},
+		.esp_handler = lib->get(lib, "kernel-libipsec-esp-handler"),
 	);
 
 	if (pipe(this->notify) != 0 ||
@@ -351,11 +359,9 @@ kernel_libipsec_router_t *kernel_libipsec_router_create()
 	this->lock = rwlock_create(RWLOCK_TYPE_DEFAULT);
 
 	charon->kernel->add_listener(charon->kernel, &this->public.listener);
-	ipsec->processor->register_outbound(ipsec->processor, send_esp, NULL);
-	ipsec->processor->register_inbound(ipsec->processor,
-									(ipsec_inbound_cb_t)deliver_plain, this);
-	charon->receiver->add_esp_cb(charon->receiver,
-									(receiver_esp_cb_t)receiver_esp_cb, NULL);
+	ipsec->processor->register_outbound(ipsec->processor, send_esp, this);
+	ipsec->processor->register_inbound(ipsec->processor, deliver_plain, this);
+	charon->receiver->add_esp_cb(charon->receiver, receiver_esp_cb, NULL);
 	lib->processor->queue_job(lib->processor,
 			(job_t*)callback_job_create((callback_job_cb_t)handle_plain, this,
 									NULL, (callback_job_cancel_t)return_false));

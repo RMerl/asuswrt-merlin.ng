@@ -1,8 +1,8 @@
 <domain type='kvm'>
   <name>sun</name>
   <uuid>35341843-346c-a63a-786b-9df0fd5e6264</uuid>
-  <memory unit='KiB'>147456</memory>
-  <currentMemory unit='KiB'>147456</currentMemory>
+  <memory unit='MiB'>144</memory>
+  <currentMemory unit='MiB'>144</currentMemory>
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>

@@ -314,6 +314,7 @@ METHOD(simaka_manager_t, provider_get_quintuplet, bool,
 			this->lock->unlock(this->lock);
 			return TRUE;
 		}
+		tried++;
 	}
 	enumerator->destroy(enumerator);
 	this->lock->unlock(this->lock);

@@ -27,9 +27,12 @@ TEST_OPTS = \
 PLUGINS = \
 	kernel-netlink \
 	pem \
+	pkcs1 \
+	random \
+	sha1 \
 	socket-default \
-	openssl \
-	vici
+	vici \
+	x509
 
 all: build_charon
 

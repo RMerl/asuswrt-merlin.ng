@@ -70,10 +70,11 @@ struct est_tls_t {
  * Create a est_tls instance.
  *
  * @param uri			URI (https://...)
+ * @param label         Optional EST server label
  * @param client_cert   Optional client certificate
  * @param user_pass		Optional username:password for HTTP Basic Authentication
  */
-est_tls_t *est_tls_create(char *uri, certificate_t *client_cert,
+est_tls_t *est_tls_create(char *uri, char *label, certificate_t *client_cert,
 						  char *user_pass);
 
 #endif /** EST_TLS_H_ @}*/

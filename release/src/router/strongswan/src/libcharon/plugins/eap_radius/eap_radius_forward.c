@@ -220,7 +220,7 @@ static void radius2queue(radius_message_t *message, linked_list_t *queue,
 }
 
 /**
- * Copy RADIUS attribute nofifies from IKE message to queue
+ * Copy RADIUS attribute notifies from IKE message to queue
  */
 static void ike2queue(message_t *message, linked_list_t *queue,
 					  linked_list_t *selector)

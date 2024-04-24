@@ -1,0 +1,9 @@
+moon::iptables-restore < /etc/iptables.rules
+# allow traffic from local subnet via TUN device before SA is up
+moon::iptables -I FORWARD -o ipsec0 -s 10.1.0.0/16 -d 10.2.0.0/16 -j ACCEPT
+sun::iptables-restore < /etc/iptables.rules
+moon::systemctl start strongswan
+sun::systemctl start strongswan
+moon::expect-connection gw-gw
+sun::expect-connection gw-gw
+alice::ping -c 3 -W 1 -i 0.2 PH_IP_BOB

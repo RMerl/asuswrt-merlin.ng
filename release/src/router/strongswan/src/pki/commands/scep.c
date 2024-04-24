@@ -162,15 +162,7 @@ static int scep()
 				}
 				continue;
 			case 'R':       /* --rsa-padding */
-				if (streq(arg, "pss"))
-				{
-					pss = TRUE;
-				}
-				else if (streq(arg, "pkcs1"))
-				{
-					pss = FALSE;
-				}
-				else
+				if (!parse_rsa_padding(arg, &pss))
 				{
 					error = "invalid RSA padding";
 					goto usage;
@@ -223,21 +215,23 @@ static int scep()
 
 	if (client_cert_file && !client_key_file)
 	{
-		error = "--oldkey is required if --oldcert is set";
+		error = "--key is required if --cert is set";
 		goto usage;
 	}
 
-	if (!dn)
+	if (!dn && !client_cert_file)
 	{
-		error = "--dn is required";
+		error = "--dn is required if --cert is not set";
 		goto usage;
 	}
-
-	subject = identification_create_from_string(dn);
-	if (subject->get_type(subject) != ID_DER_ASN1_DN)
+	else if (dn)
 	{
-		DBG1(DBG_APP, "supplied --dn is not a distinguished name");
-		goto err;
+		subject = identification_create_from_string(dn);
+		if (subject->get_type(subject) != ID_DER_ASN1_DN)
+		{
+			DBG1(DBG_APP, "supplied --dn is not a distinguished name");
+			goto err;
+		}
 	}
 
 	/* load RSA private key from file or stdin */
@@ -337,43 +331,19 @@ static int scep()
 	}
 	DBG2(DBG_APP, "HTTP POST %ssupported", http_post ? "" : "not ");
 
-	scheme = get_signature_scheme(private, digest_alg, pss);
-	if (!scheme)
-	{
-		DBG1(DBG_APP, "no signature scheme found");
-		goto err;
-	}
-
-	/* generate PKCS#10 certificate request */
-	pkcs10 = lib->creds->create(lib->creds, CRED_CERTIFICATE, CERT_PKCS10_REQUEST,
-							BUILD_SIGNING_KEY, private,
-							BUILD_SUBJECT, subject,
-							BUILD_SUBJECT_ALTNAMES, san,
-							BUILD_CHALLENGE_PWD, challenge_password,
-							BUILD_CERT_TYPE_EXT, cert_type,
-							BUILD_SIGNATURE_SCHEME, scheme,
-							BUILD_END);
-	if (!pkcs10)
-	{
-		DBG1(DBG_APP, "generating certificate request failed");
-		goto err;
-	}
-
-	/* generate PKCS#10 encoding */
-	if (!pkcs10->get_encoding(pkcs10, CERT_ASN1_DER, &pkcs10_encoding))
-	{
-		DBG1(DBG_APP, "encoding certificate request failed");
-		pkcs10->destroy(pkcs10);
-		goto err;
-	}
-	pkcs10->destroy(pkcs10);
-
 	if (!scep_generate_transaction_id(public, &transID, &serialNumber))
 	{
 		DBG1(DBG_APP, "generating transaction ID failed");
 		goto err;
 	}
 	DBG1(DBG_APP, "transaction ID: %.*s", (int)transID.len, transID.ptr);
+
+	scheme = get_signature_scheme(private, digest_alg, pss);
+	if (!scheme)
+	{
+		DBG1(DBG_APP, "no signature scheme found");
+		goto err;
+	}
 
 	if (client_cert_file)
 	{
@@ -409,6 +379,12 @@ static int scep()
 			x509_signer->destroy(x509_signer);
 			goto err;
 		}
+
+		if (!subject)
+		{
+			subject = x509_signer->get_subject(x509_signer);
+			subject = subject->clone(subject);
+		}
 	}
 	else
 	{
@@ -442,6 +418,30 @@ static int scep()
 
 	client_creds->add_cert(client_creds, FALSE, x509_signer);
 	client_creds->add_key(client_creds, priv_signer);
+
+	/* generate PKCS#10 certificate request */
+	pkcs10 = lib->creds->create(lib->creds, CRED_CERTIFICATE, CERT_PKCS10_REQUEST,
+							BUILD_SIGNING_KEY, private,
+							BUILD_SUBJECT, subject,
+							BUILD_SUBJECT_ALTNAMES, san,
+							BUILD_CHALLENGE_PWD, challenge_password,
+							BUILD_CERT_TYPE_EXT, cert_type,
+							BUILD_SIGNATURE_SCHEME, scheme,
+							BUILD_END);
+	if (!pkcs10)
+	{
+		DBG1(DBG_APP, "generating certificate request failed");
+		goto err;
+	}
+
+	/* generate PKCS#10 encoding */
+	if (!pkcs10->get_encoding(pkcs10, CERT_ASN1_DER, &pkcs10_encoding))
+	{
+		DBG1(DBG_APP, "encoding certificate request failed");
+		pkcs10->destroy(pkcs10);
+		goto err;
+	}
+	pkcs10->destroy(pkcs10);
 
 	/* load CA or RA certificate used for encryption */
 	x509_ca_enc = lib->creds->create(lib->creds, CRED_CERTIFICATE, CERT_X509,
@@ -587,7 +587,7 @@ end:
 	if (status == 0)
 	{
 		status = pki_cert_extract_cert(data, form) ? 0 : 1;
-		chunk_free(&data);
+		chunk_clear(&data);
 	}
 
 err:
@@ -630,17 +630,17 @@ static void __attribute__ ((constructor))reg()
 	command_register((command_t) {
 		scep, 'S', "scep",
 		"Enroll an X.509 certificate with a SCEP server",
-		{"--url url [--in file] --dn distinguished-name [--san subjectAltName]+",
+		{"--url url [--in file] [--dn distinguished-name] [--san subjectAltName]+",
 		 "[--profile profile] [--password password]",
 		 " --cacert-enc file --cacert-sig file [--cacert file]+",
-		 " --oldcert file --oldkey file] [--cipher aes|des3]",
+		 " --cert file --key file] [--cipher aes|des3]",
 		 "[--digest sha256|sha384|sha512|sha224|sha1] [--rsa-padding pkcs1|pss]",
 		 "[--interval time] [--maxpolltime time] [--outform der|pem]"},
 		{
 			{"help",        'h', 0, "show usage information"},
 			{"url",         'u', 1, "URL of the SCEP server"},
 			{"in",          'i', 1, "RSA private key input file, default: stdin"},
-			{"dn",          'd', 1, "subject distinguished name"},
+			{"dn",          'd', 1, "subject distinguished name (optional if --cert is given)"},
 			{"san",         'a', 1, "subjectAltName to include in cert request"},
 			{"profile",     'P', 1, "certificate profile name to include in cert request"},
 			{"password",    'p', 1, "challengePassword to include in cert request"},

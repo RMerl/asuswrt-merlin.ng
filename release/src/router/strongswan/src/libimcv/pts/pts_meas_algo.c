@@ -34,6 +34,8 @@ ENUM_NEXT(pts_meas_algorithm_names,	PTS_MEAS_ALGO_SHA1, PTS_MEAS_ALGO_SHA1,
 	"SHA1");
 ENUM_END(pts_meas_algorithm_names,  PTS_MEAS_ALGO_SHA1);
 
+#define ALG_UNAVAIL "  %s PTS measurement algorithm %N not available"
+
 /**
  * Described in header.
  */
@@ -42,48 +44,51 @@ bool pts_meas_algo_probe(pts_meas_algorithms_t *algorithms)
 	enumerator_t *enumerator;
 	hash_algorithm_t hash_alg;
 	const char *plugin_name;
-	char format1[] = "  %s PTS measurement algorithm %N[%s] available";
-	char format2[] = "  %s PTS measurement algorithm %N not available";
 
 	*algorithms = 0;
 
 	enumerator = lib->crypto->create_hasher_enumerator(lib->crypto);
 	while (enumerator->enumerate(enumerator, &hash_alg, &plugin_name))
 	{
-		if (hash_alg == HASH_SHA1)
+		pts_meas_algorithms_t mapped = 0;
+		bool mandatory DBG_UNUSED = FALSE;
+
+		switch (hash_alg)
 		{
-			*algorithms |= PTS_MEAS_ALGO_SHA1;
-			DBG2(DBG_PTS, format1, "mandatory", hash_algorithm_names, hash_alg,
-								  plugin_name);
+			case HASH_SHA1:
+				mapped = PTS_MEAS_ALGO_SHA1;
+				mandatory = TRUE;
+				break;
+			case HASH_SHA256:
+				mapped = PTS_MEAS_ALGO_SHA256;
+				mandatory = TRUE;
+				break;
+			case HASH_SHA384:
+				mapped = PTS_MEAS_ALGO_SHA384;
+				break;
+			case HASH_SHA512:
+				mapped = PTS_MEAS_ALGO_SHA512;
+				break;
+			default:
+				break;
 		}
-		else if (hash_alg == HASH_SHA256)
+		if (mapped)
 		{
-			*algorithms |= PTS_MEAS_ALGO_SHA256;
-			DBG2(DBG_PTS, format1, "mandatory", hash_algorithm_names, hash_alg,
-								  plugin_name);
-		}
-		else if (hash_alg == HASH_SHA384)
-		{
-			*algorithms |= PTS_MEAS_ALGO_SHA384;
-			DBG2(DBG_PTS, format1, "optional ", hash_algorithm_names, hash_alg,
-								  plugin_name);
-		}
-		else if (hash_alg == HASH_SHA512)
-		{
-			*algorithms |= PTS_MEAS_ALGO_SHA512;
-			DBG2(DBG_PTS, format1, "optional ", hash_algorithm_names, hash_alg,
-								  plugin_name);
+			*algorithms |= mapped;
+			DBG2(DBG_PTS, "  %s PTS measurement algorithm %N[%s] available",
+				 mandatory ? "mandatory" : "optional ", hash_algorithm_names,
+				 hash_alg, plugin_name);
 		}
 	}
 	enumerator->destroy(enumerator);
 
 	if (!(*algorithms & PTS_MEAS_ALGO_SHA512))
 	{
-		DBG1(DBG_PTS, format2, "optional ", hash_algorithm_names, HASH_SHA512);
+		DBG1(DBG_PTS, ALG_UNAVAIL, "optional ", hash_algorithm_names, HASH_SHA512);
 	}
 	if (!(*algorithms & PTS_MEAS_ALGO_SHA384))
 	{
-		DBG1(DBG_PTS, format2, "optional ", hash_algorithm_names, HASH_SHA384);
+		DBG1(DBG_PTS, ALG_UNAVAIL, "optional ", hash_algorithm_names, HASH_SHA384);
 	}
 	if ((*algorithms & PTS_MEAS_ALGO_SHA1) &&
 		(*algorithms & PTS_MEAS_ALGO_SHA256))
@@ -92,11 +97,11 @@ bool pts_meas_algo_probe(pts_meas_algorithms_t *algorithms)
 	}
 	if (!(*algorithms & PTS_MEAS_ALGO_SHA256))
 	{
-		DBG1(DBG_PTS, format2, "mandatory", hash_algorithm_names, HASH_SHA256);
+		DBG1(DBG_PTS, ALG_UNAVAIL, "mandatory", hash_algorithm_names, HASH_SHA256);
 	}
 	if (!(*algorithms & PTS_MEAS_ALGO_SHA1))
 	{
-		DBG1(DBG_PTS, format2, "mandatory", hash_algorithm_names, HASH_SHA1);
+		DBG1(DBG_PTS, ALG_UNAVAIL, "mandatory", hash_algorithm_names, HASH_SHA1);
 	}
 	return FALSE;
 }

@@ -43,6 +43,11 @@ struct private_eap_peap_server_t {
 	identification_t *peer;
 
 	/**
+	 * TLS connection
+	 */
+	tls_t *tls;
+
+	/**
 	 * Current EAP-PEAP phase2 state
 	 */
 	bool start_phase2;
@@ -338,19 +343,22 @@ METHOD(tls_application_t, build, status_t,
 {
 	chunk_t data;
 	eap_code_t code;
-	eap_type_t type;
+	eap_type_t type DBG_UNUSED;
 	pen_t vendor;
 
-	if (this->ph2_method == NULL && this->start_phase2 && this->start_phase2_id)
+	if (!this->ph2_method && this->start_phase2 &&
+		(this->start_phase2_id ||
+		 this->tls->get_version_max(this->tls) >= TLS_1_3))
 	{
-		/*
-		 * Start Phase 2 with an EAP Identity request either piggybacked right
-		 * onto the TLS Finished payload or delayed after the reception of an
-		 * empty EAP Acknowledge message.
+		/* for TLS < 1.3, either start Phase 2 with an EAP Identity request
+		 * piggybacked right onto the TLS Finished payload or delayed after the
+		 * reception of an empty EAP Acknowledge message. with TLS 1.3, Phase 2
+		 * is always started immediately as the client finishes the handshake
+		 * after the server
 		 */
 		this->ph2_method = charon->eap->create_instance(charon->eap, EAP_IDENTITY,
 								 0,	EAP_SERVER, this->server, this->peer);
-		if (this->ph2_method == NULL)
+		if (!this->ph2_method)
 		{
 			DBG1(DBG_IKE, "%N method not available",
 				 eap_type_names, EAP_IDENTITY);
@@ -393,6 +401,12 @@ METHOD(tls_application_t, build, status_t,
 	return INVALID_STATE;
 }
 
+METHOD(eap_peap_server_t, set_tls, void,
+	private_eap_peap_server_t *this, tls_t *tls)
+{
+	this->tls = tls;
+}
+
 METHOD(tls_application_t, destroy, void,
 	private_eap_peap_server_t *this)
 {
@@ -420,6 +434,7 @@ eap_peap_server_t *eap_peap_server_create(identification_t *server,
 				.build = _build,
 				.destroy = _destroy,
 			},
+			.set_tls = _set_tls,
 		},
 		.server = server->clone(server),
 		.peer = peer->clone(peer),

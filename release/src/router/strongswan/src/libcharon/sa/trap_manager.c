@@ -524,6 +524,7 @@ METHOD(trap_manager_t, acquire, void,
 	child_cfg_t *child;
 	ike_sa_t *ike_sa;
 	host_t *host;
+	uint32_t allocated_reqid;
 	bool wildcard, ignore = FALSE;
 
 	this->lock->read_lock(this->lock);
@@ -596,6 +597,8 @@ METHOD(trap_manager_t, acquire, void,
 	peer = found->peer_cfg->get_ref(found->peer_cfg);
 	child = found->child_sa->get_config(found->child_sa);
 	child = child->get_ref(child);
+	/* only pass allocated reqids explicitly, take a reference */
+	allocated_reqid = found->child_sa->get_reqid_ref(found->child_sa);
 	/* don't hold the lock while checking out the IKE_SA */
 	this->lock->unlock(this->lock);
 
@@ -635,7 +638,7 @@ METHOD(trap_manager_t, acquire, void,
 	if (ike_sa)
 	{
 		child_init_args_t args = {
-			.reqid = reqid,
+			.reqid = allocated_reqid,
 			.src = data->src,
 			.dst = data->dst,
 			.label = data->label,
@@ -668,6 +671,10 @@ METHOD(trap_manager_t, acquire, void,
 		this->mutex->unlock(this->mutex);
 		destroy_acquire(acquire);
 		child->destroy(child);
+	}
+	if (allocated_reqid)
+	{
+		charon->kernel->release_reqid(charon->kernel, allocated_reqid);
 	}
 }
 

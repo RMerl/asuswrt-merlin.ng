@@ -142,3 +142,7 @@ endif
 if USE_LIBTPMTSS
   SUBDIRS += tpm_extendpcr
 endif
+
+if USE_CERT_ENROLL
+  SUBDIRS += cert-enroll
+endif

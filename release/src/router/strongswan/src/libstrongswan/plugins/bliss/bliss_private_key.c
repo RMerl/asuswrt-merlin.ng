@@ -186,7 +186,7 @@ static bool sign_bliss(private_bliss_private_key_t *this, hash_algorithm_t alg,
 	int32_t scalar, norm, ui;
 	int16_t *ud, *uz2d, *z2d, value;
 	int i, n;
-	double mean1 = 0, mean2 = 0, sigma1 = 0, sigma2 = 0;
+	double mean1 = 0, mean2 = 0, sigma1 DBG_UNUSED = 0, sigma2 DBG_UNUSED = 0;
 	bool accepted, positive, success = FALSE, use_bliss_b;
 
 	/* Initialize signature */
@@ -907,7 +907,7 @@ static bool create_secret(private_bliss_private_key_t *this, rng_t *rng,
 {
 	uint8_t seed_buf[32];
 	uint8_t *f, *g;
-	uint32_t l2_norm, nks;
+	uint32_t l2_norm DBG_UNUSED, nks;
 	int i, n;
 	chunk_t seed;
 	size_t seed_len;

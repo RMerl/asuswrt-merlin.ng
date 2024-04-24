@@ -20,7 +20,7 @@
 #  initialize & set some vars
 # ============================
 
-AC_INIT([strongSwan],[5.9.8])
+AC_INIT([strongSwan],[5.9.13])
 AM_INIT_AUTOMAKE(m4_esyscmd([
 	echo tar-ustar
 	echo subdir-objects
@@ -178,6 +178,7 @@ ARG_DISBL_SET([pkcs12],         [disable PKCS12 container support plugin.])
 ARG_DISBL_SET([pubkey],         [disable RAW public key support plugin.])
 ARG_DISBL_SET([sshkey],         [disable SSH key decoding plugin.])
 ARG_DISBL_SET([x509],           [disable X509 certificate implementation plugin.])
+ARG_ENABL_SET([openxpki],       [enable OCSP responder accessing OpenXPKI certificate database.])
 # fetcher/resolver plugins
 ARG_ENABL_SET([curl],           [enable CURL fetcher plugin to fetch files via libcurl. Requires libcurl.])
 ARG_ENABL_SET([files],          [enable simple file:// URI fetcher.])
@@ -307,6 +308,7 @@ ARG_ENABL_SET([svc],            [enable charon Windows service.])
 ARG_ENABL_SET([systemd],        [enable systemd specific IKE daemon charon-systemd.])
 ARG_DISBL_SET([swanctl],        [disable swanctl configuration and control tool.])
 ARG_ENABL_SET([tkm],            [enable Trusted Key Manager support.])
+ARG_ENABL_SET([cert-enroll],    [enable automatic certificate enrollment via EST or SCEP.])
 # optional features
 ARG_ENABL_SET([bfd-backtraces], [use binutils libbfd to resolve backtraces for memory leaks and segfaults.])
 ARG_ENABL_SET([dbghelp-backtraces],[use dbghlp.dll on Windows to create and print backtraces for memory leaks and segfaults.])
@@ -325,6 +327,7 @@ ARG_ENABL_SET([perl-cpan-install],[enable installation of provided CPAN module.]
 ARG_ENABL_SET([selinux],        [enable SELinux support for labeled IPsec.])
 ARG_ENABL_SET([tss-trousers],   [enable the use of the TrouSerS Trusted Software Stack])
 ARG_ENABL_SET([tss-tss2],       [enable the use of the TSS 2.0 Trusted Software Stack])
+ARG_ENABL_SET([cert-enroll-timer],[enable installation of cert-enroll as a systemd timer.])
 
 # compile options
 ARG_ENABL_SET([asan],           [enable build with AddressSanitizer (ASan).])
@@ -514,6 +517,10 @@ fi
 
 if test x$stroke = xtrue; then
 	counters=true
+fi
+
+if test x$cert_enroll = xtrue; then
+	pki=true
 fi
 
 if test x$kdf = xfalse; then
@@ -744,7 +751,7 @@ AC_COMPILE_IFELSE(
 		  #include <sys/types.h>
 		  #include <sys/socket.h>
 		  #include <netinet/in.h>]],
-		[[struct in6_pktinfo pi;
+		[[struct in6_pktinfo pi = {};
 		  if (pi.ipi6_ifindex)
 		  {
 		    return 0;
@@ -1030,14 +1037,16 @@ if test x$xml = xtrue; then
 	AC_SUBST(xml_LIBS)
 fi
 
-if test x$systemd = xtrue; then
+if test x$systemd = xtrue -o x$cert_enroll_timer = xtrue; then
 	AC_MSG_CHECKING([for systemd system unit directory])
 	if test -n "$systemdsystemunitdir" -a "x$systemdsystemunitdir" != xno; then
 		AC_MSG_RESULT([$systemdsystemunitdir])
 	else
 		AC_MSG_ERROR([not found (try --with-systemdsystemunitdir)])
 	fi
+fi
 
+if test x$systemd = xtrue; then
 	PKG_CHECK_MODULES(systemd, [libsystemd >= 209],
 		[AC_SUBST(systemd_CFLAGS)
 		 AC_SUBST(systemd_LIBS)],
@@ -1169,7 +1178,7 @@ if test x$openssl = xtrue; then
 	if test "x$windows" = xtrue; then
 		openssl_lib=eay32
 		AC_CHECK_LIB([$openssl_lib],[EVP_CIPHER_CTX_new],[LIBS="$LIBS"],
-			[AC_MSG_RESULT([no]);openssl_lib=""],[$DLLIB])
+			[openssl_lib=""],[$DLLIB])
 	fi
 	if test -z "$openssl_lib"; then
 		openssl_lib=crypto
@@ -1207,7 +1216,7 @@ if test x$botan = xtrue; then
 	AC_SUBST(botan_LIBS)
 	saved_LIBS=$LIBS
 	LIBS="$botan_LIBS"
-	AC_CHECK_FUNCS(botan_rng_init_custom)
+	AC_CHECK_FUNCS(botan_rng_init_custom botan_pubkey_ecc_key_used_explicit_encoding)
 	LIBS=$saved_LIBS
 fi
 
@@ -1505,7 +1514,6 @@ m4_include(m4/macros/add-plugin.m4)
 
 # plugin lists for all components
 charon_plugins=
-starter_plugins=
 pool_plugins=
 attest_plugins=
 pki_plugins=
@@ -1585,18 +1593,19 @@ ADD_PLUGIN([curl],                 [s charon pki scripts nm cmd])
 ADD_PLUGIN([files],                [s charon pki scripts nm cmd])
 ADD_PLUGIN([winhttp],              [s charon pki scripts])
 ADD_PLUGIN([soup],                 [s charon pki scripts nm cmd])
-ADD_PLUGIN([mysql],                [s charon pool manager medsrv attest])
-ADD_PLUGIN([sqlite],               [s charon pool manager medsrv attest])
+ADD_PLUGIN([mysql],                [s charon pki pool manager medsrv attest])
+ADD_PLUGIN([sqlite],               [s charon pki pool manager medsrv attest])
+ADD_PLUGIN([openxpki],             [s pki])
 ADD_PLUGIN([attr],                 [c charon])
 ADD_PLUGIN([attr-sql],             [c charon])
 ADD_PLUGIN([load-tester],          [c charon])
 ADD_PLUGIN([kernel-libipsec],      [c charon cmd])
 ADD_PLUGIN([kernel-wfp],           [c charon])
 ADD_PLUGIN([kernel-iph],           [c charon])
-ADD_PLUGIN([kernel-pfkey],         [c charon starter nm cmd])
-ADD_PLUGIN([kernel-pfroute],       [c charon starter nm cmd])
-ADD_PLUGIN([kernel-netlink],       [c charon starter nm cmd])
-ADD_PLUGIN([selinux],              [c charon starter nm cmd])
+ADD_PLUGIN([kernel-pfkey],         [c charon nm cmd])
+ADD_PLUGIN([kernel-pfroute],       [c charon nm cmd])
+ADD_PLUGIN([kernel-netlink],       [c charon nm cmd])
+ADD_PLUGIN([selinux],              [c charon nm cmd])
 ADD_PLUGIN([resolve],              [c charon cmd])
 ADD_PLUGIN([save-keys],            [c])
 ADD_PLUGIN([socket-default],       [c charon nm cmd])
@@ -1666,7 +1675,6 @@ ADD_PLUGIN([unity],                [c charon])
 ADD_PLUGIN([counters],             [c charon])
 
 AC_SUBST(charon_plugins)
-AC_SUBST(starter_plugins)
 AC_SUBST(pool_plugins)
 AC_SUBST(attest_plugins)
 AC_SUBST(pki_plugins)
@@ -1722,6 +1730,7 @@ AM_CONDITIONAL(USE_PKCS1, test x$pkcs1 = xtrue)
 AM_CONDITIONAL(USE_PKCS7, test x$pkcs7 = xtrue)
 AM_CONDITIONAL(USE_PKCS8, test x$pkcs8 = xtrue)
 AM_CONDITIONAL(USE_PKCS12, test x$pkcs12 = xtrue)
+AM_CONDITIONAL(USE_OPENXPKI, test x$openxpki = xtrue)
 AM_CONDITIONAL(USE_PGP, test x$pgp = xtrue)
 AM_CONDITIONAL(USE_DNSKEY, test x$dnskey = xtrue)
 AM_CONDITIONAL(USE_SSHKEY, test x$sshkey = xtrue)
@@ -1895,6 +1904,8 @@ AM_CONDITIONAL(USE_SWANCTL, test x$swanctl = xtrue)
 AM_CONDITIONAL(USE_SVC, test x$svc = xtrue)
 AM_CONDITIONAL(USE_SYSTEMD, test x$systemd = xtrue)
 AM_CONDITIONAL(USE_LEGACY_SYSTEMD, test -n "$systemdsystemunitdir" -a "x$systemdsystemunitdir" != xno)
+AM_CONDITIONAL(USE_CERT_ENROLL, test x$cert_enroll = xtrue)
+AM_CONDITIONAL(USE_CERT_ENROLL_TIMER, test x$cert_enroll_timer = xtrue)
 AM_CONDITIONAL(USE_RUBY_GEMS, test x$ruby_gems = xtrue)
 AM_CONDITIONAL(USE_PYTHON_EGGS, test x$python_eggs = xtrue)
 AM_CONDITIONAL(USE_PERL_CPAN, test x$perl_cpan = xtrue)
@@ -2002,6 +2013,7 @@ AC_CONFIG_FILES([
 	src/libstrongswan/plugins/pkcs7/Makefile
 	src/libstrongswan/plugins/pkcs8/Makefile
 	src/libstrongswan/plugins/pkcs12/Makefile
+	src/libstrongswan/plugins/openxpki/Makefile
 	src/libstrongswan/plugins/pgp/Makefile
 	src/libstrongswan/plugins/dnskey/Makefile
 	src/libstrongswan/plugins/sshkey/Makefile
@@ -2169,6 +2181,7 @@ AC_CONFIG_FILES([
 	src/sw-collector/Makefile
 	src/sec-updater/Makefile
 	src/swanctl/Makefile
+	src/cert-enroll/Makefile
 	src/xfrmi/Makefile
 	scripts/Makefile
 	testing/Makefile
@@ -2192,6 +2205,7 @@ AC_CONFIG_FILES([
 	src/pki/man/pki---gen.1
 	src/pki/man/pki---issue.1
 	src/pki/man/pki---keyid.1
+	src/pki/man/pki---ocsp.1
 	src/pki/man/pki---pkcs12.1
 	src/pki/man/pki---pkcs7.1
 	src/pki/man/pki---print.1
@@ -2208,6 +2222,7 @@ AC_CONFIG_FILES([
 	src/pt-tls-client/pt-tls-client.1
 	src/sw-collector/sw-collector.8
 	src/sec-updater/sec-updater.8
+	src/cert-enroll/cert-enroll.8
 ])
 
 AC_OUTPUT

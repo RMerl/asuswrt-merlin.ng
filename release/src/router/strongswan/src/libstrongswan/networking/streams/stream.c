@@ -188,8 +188,6 @@ static bool watch(private_stream_t *this, int fd, watcher_event_t event)
 				this->write_cb = cb;
 			}
 			break;
-		case WATCHER_EXCEPT:
-			break;
 	}
 	return keep;
 }

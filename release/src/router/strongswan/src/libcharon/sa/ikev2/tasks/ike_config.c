@@ -353,7 +353,7 @@ METHOD(task_t, build_r, status_t,
 		chunk_t value;
 		cp_payload_t *cp = NULL;
 		peer_cfg_t *config;
-		identification_t *id;
+		identification_t *id DBG_UNUSED;
 		linked_list_t *vips, *pools;
 		host_t *requested;
 

@@ -3,7 +3,7 @@
 PV  = $(SWANVERSION)
 PKG = strongswan-$(PV)
 TAR = $(PKG).tar.bz2
-SRC = http://download.strongswan.org/$(TAR)
+SRC = https://download.strongswan.org/$(TAR)
 
 # can be passed to load sources from a directory instead of a tarball
 ifneq ($(origin SRCDIR), undefined)
@@ -130,5 +130,3 @@ build: configure
 install: build
 	cd $(BUILDDIR) && make -j install && \
 		cd $(DIR)/src/libcharon/plugins/vici/python && python3 setup.py install
-	# for Python-based updown scripts
-	pip3 install python-daemon

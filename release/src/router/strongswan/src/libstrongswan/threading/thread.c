@@ -306,7 +306,11 @@ static void thread_cleanup(private_thread_t *this)
 
 /**
  * Main function wrapper for threads.
+ *
+ * Excluded from AddressSanitizer because some newer versions have an issue that
+ * causes an "AddressSanitizer CHECK failed" error for canceled threads.
  */
+ADDRESS_SANITIZER_EXCLUDE
 static void *thread_main(private_thread_t *this)
 {
 	void *res;

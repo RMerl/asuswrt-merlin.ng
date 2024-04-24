@@ -174,7 +174,7 @@ METHOD(signer_t, destroy, void,
 af_alg_signer_t *af_alg_signer_create(integrity_algorithm_t algo)
 {
 	private_af_alg_signer_t *this;
-	size_t block_size, key_size;
+	size_t block_size, key_size = 0;
 	char *name;
 
 	block_size = lookup_alg(algo, &name, &key_size);

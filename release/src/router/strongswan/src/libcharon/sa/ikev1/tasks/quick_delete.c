@@ -151,7 +151,7 @@ static status_t delete_child(private_quick_delete_t *this,
 		if (remote_close)
 		{
 			child_init_args_t args = {
-				.reqid = child_sa->get_reqid(child_sa),
+				.reqid = child_sa->get_reqid_ref(child_sa),
 			};
 			action_t action;
 
@@ -168,6 +168,10 @@ static status_t delete_child(private_quick_delete_t *this,
 			{
 				child_cfg->get_ref(child_cfg);
 				status = this->ike_sa->initiate(this->ike_sa, child_cfg, &args);
+			}
+			if (args.reqid)
+			{
+				charon->kernel->release_reqid(charon->kernel, args.reqid);
 			}
 			child_cfg->destroy(child_cfg);
 		}

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2023 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
  *
@@ -70,6 +70,11 @@ struct private_ipsec_sa_t {
 	ipsec_mode_t mode;
 
 	/**
+	 * TRUE if UDP encapsulation should be used when sending
+	 */
+	bool encap;
+
+	/**
 	 * TRUE if extended sequence numbers are used
 	 */
 	bool esn;
@@ -131,6 +136,18 @@ METHOD(ipsec_sa_t, set_destination, void,
 {
 	this->dst->destroy(this->dst);
 	this->dst = addr->clone(addr);
+}
+
+METHOD(ipsec_sa_t, get_encap, bool,
+	private_ipsec_sa_t *this)
+{
+	return this->encap;
+}
+
+METHOD(ipsec_sa_t, set_encap, void,
+	private_ipsec_sa_t *this, bool encap)
+{
+	this->encap = encap;
 }
 
 METHOD(ipsec_sa_t, get_spi, uint32_t,
@@ -285,11 +302,6 @@ ipsec_sa_t *ipsec_sa_create(uint32_t spi, host_t *src, host_t *dst,
 		DBG1(DBG_ESP, "  IPsec SA: protocol not supported");
 		return NULL;
 	}
-	if (!encap)
-	{
-		DBG1(DBG_ESP, "  IPsec SA: only UDP encapsulation is supported");
-		return NULL;
-	}
 	if (esn)
 	{
 		DBG1(DBG_ESP, "  IPsec SA: ESN not supported");
@@ -313,6 +325,8 @@ ipsec_sa_t *ipsec_sa_create(uint32_t spi, host_t *src, host_t *dst,
 			.get_destination = _get_destination,
 			.set_source = _set_source,
 			.set_destination = _set_destination,
+			.get_encap = _get_encap,
+			.set_encap = _set_encap,
 			.get_spi = _get_spi,
 			.get_reqid = _get_reqid,
 			.get_protocol = _get_protocol,
@@ -333,6 +347,7 @@ ipsec_sa_t *ipsec_sa_create(uint32_t spi, host_t *src, host_t *dst,
 		.protocol = protocol,
 		.reqid = reqid,
 		.mode = mode,
+		.encap = encap,
 		.esn = esn,
 		.inbound = inbound,
 	);

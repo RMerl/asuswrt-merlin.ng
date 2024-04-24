@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2008-2009 Martin Willi
+ * Copyright (C) 2023 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -37,6 +38,23 @@ struct x509_ocsp_response_t {
 	 */
 	ocsp_response_t interface;
 };
+
+/**
+ * Generate a X.509 OCSP response.
+ *
+ * The resulting builder accepts:
+ *  BUILD_OCSP_STATUS:      status from OCSP responder
+ *  BUILD_OCSP_RESPONSES:   enumerator over the list of OCSP single responses
+ *  BUILD_NONCE:            nonce extracted from the OCSP request
+ *  BUILD_SIGNING_CERT:     certificate to create OCSP response signature
+ *  BUILD_SIGNING_KEY:      private key to create OCSP response signature
+ *  BUILD_SIGNATURE_SCHEME: scheme used for the OCSP response signature
+ *
+ * @param type          certificate type, CERT_X509_OCSP_REQUEST only
+ * @param args          builder_part_t argument list
+ * @return              OCSP request, NULL on failure
+ */
+x509_ocsp_response_t *x509_ocsp_response_gen(certificate_type_t type, va_list args);
 
 /**
  * Load a X.509 OCSP response.

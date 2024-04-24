@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019 Tobias Brunner
+ * Copyright (C) 2006-2023 Tobias Brunner
  * Copyright (C) 2005-2009 Martin Willi
  * Copyright (C) 2008-2016 Andreas Steffen
  * Copyright (C) 2006-2007 Fabian Hartmann, Noah Heusser
@@ -44,6 +44,7 @@
 #include <sys/types.h>
 #include <sys/socket.h>
 #include <sys/ioctl.h>
+#include <sys/utsname.h>
 #include <stdint.h>
 #include <linux/ipsec.h>
 #include <linux/netlink.h>
@@ -62,6 +63,7 @@
 
 #include "kernel_netlink_ipsec.h"
 #include "kernel_netlink_shared.h"
+#include "kernel_netlink_xfrmi.h"
 
 #include <daemon.h>
 #include <utils/debug.h>
@@ -107,11 +109,6 @@
  * Map the limit for bytes and packets to XFRM_INF by default
  */
 #define XFRM_LIMIT(x) ((x) == 0 ? XFRM_INF : (x))
-
-/**
- * Create ORable bitfield of XFRM NL groups
- */
-#define XFRMNLGRP(x) (1<<(XFRMNLGRP_##x-1))
 
 /**
  * Returns a pointer to the first rtattr following the nlmsghdr *nlh and the
@@ -342,14 +339,29 @@ struct private_kernel_netlink_ipsec_t {
 	netlink_socket_t *socket_xfrm;
 
 	/**
+	 * XFRM interface manager
+	 */
+	kernel_netlink_xfrmi_t *xfrmi;
+
+	/**
 	 * Netlink xfrm socket to receive acquire and expire events
 	 */
-	int socket_xfrm_events;
+	netlink_event_socket_t *socket_xfrm_events;
+
+	/**
+	 * Whether the kernel reports the last use time on SAs
+	 */
+	bool sa_lastused;
 
 	/**
 	 * Whether to install routes along policies
 	 */
 	bool install_routes;
+
+	/**
+	 * Whether to install routes via XFRM interfaces
+	 */
+	bool install_routes_xfrmi;
 
 	/**
 	 * Whether to set protocol and ports on selector installed with transport
@@ -363,9 +375,33 @@ struct private_kernel_netlink_ipsec_t {
 	bool policy_update;
 
 	/**
-	 * Installed port based IKE bypass policies, as bypass_t
+	 * Whether to use port-based policies instead of socket policies for the
+	 * IKE sockets/ports
+	 */
+	bool port_bypass;
+
+	/**
+	 * Installed port-based IKE bypass policies, as bypass_t
+	 *
+	 * If they are potentially offloaded, the offload mutex has to be locked
+	 * when modifying it
 	 */
 	array_t *bypass;
+
+	/**
+	 * Interfaces that potentially support HW offloading, as offload_iface_t
+	 */
+	hashtable_t *offload_interfaces;
+
+	/**
+	 * Mutex to safely access the interfaces and bypasses
+	 */
+	mutex_t *offload_mutex;
+
+	/**
+	 * Netlink routing socket to receive link events
+	 */
+	netlink_event_socket_t *socket_link_events;
 
 	/**
 	 * Custom priority calculation function
@@ -392,6 +428,9 @@ struct ipsec_sa_t {
 	/** Optional mark */
 	uint32_t if_id;
 
+	/** Optional HW offload */
+	hw_offload_t hw_offload;
+
 	/** Description of this SA */
 	ipsec_sa_cfg_t cfg;
 
@@ -408,7 +447,8 @@ static u_int ipsec_sa_hash(ipsec_sa_t *sa)
 						  chunk_hash_inc(sa->dst->get_address(sa->dst),
 						  chunk_hash_inc(chunk_from_thing(sa->mark),
 						  chunk_hash_inc(chunk_from_thing(sa->if_id),
-						  chunk_hash(chunk_from_thing(sa->cfg))))));
+						  chunk_hash_inc(chunk_from_thing(sa->hw_offload),
+						  chunk_hash(chunk_from_thing(sa->cfg)))))));
 }
 
 /**
@@ -421,6 +461,7 @@ static bool ipsec_sa_equals(ipsec_sa_t *sa, ipsec_sa_t *other_sa)
 		   sa->mark.value == other_sa->mark.value &&
 		   sa->mark.mask == other_sa->mark.mask &&
 		   sa->if_id == other_sa->if_id &&
+		   sa->hw_offload == other_sa->hw_offload &&
 		   ipsec_sa_cfg_equals(&sa->cfg, &other_sa->cfg);
 }
 
@@ -429,7 +470,8 @@ static bool ipsec_sa_equals(ipsec_sa_t *sa, ipsec_sa_t *other_sa)
  */
 static ipsec_sa_t *ipsec_sa_create(private_kernel_netlink_ipsec_t *this,
 								   host_t *src, host_t *dst, mark_t mark,
-								   uint32_t if_id, ipsec_sa_cfg_t *cfg)
+								   uint32_t if_id, hw_offload_t hw_offload,
+								   ipsec_sa_cfg_t *cfg)
 {
 	ipsec_sa_t *sa, *found;
 	INIT(sa,
@@ -437,6 +479,7 @@ static ipsec_sa_t *ipsec_sa_create(private_kernel_netlink_ipsec_t *this,
 		.dst = dst,
 		.mark = mark,
 		.if_id = if_id,
+		.hw_offload = hw_offload,
 		.cfg = *cfg,
 	);
 	found = this->sas->get(this->sas, sa);
@@ -511,7 +554,7 @@ struct policy_sa_out_t {
 static policy_sa_t *policy_sa_create(private_kernel_netlink_ipsec_t *this,
 	policy_dir_t dir, policy_type_t type, host_t *src, host_t *dst,
 	traffic_selector_t *src_ts, traffic_selector_t *dst_ts, mark_t mark,
-	uint32_t if_id, ipsec_sa_cfg_t *cfg)
+	uint32_t if_id, hw_offload_t hw_offload, ipsec_sa_cfg_t *cfg)
 {
 	policy_sa_t *policy;
 
@@ -529,7 +572,7 @@ static policy_sa_t *policy_sa_create(private_kernel_netlink_ipsec_t *this,
 		INIT(policy, .priority = 0);
 	}
 	policy->type = type;
-	policy->sa = ipsec_sa_create(this, src, dst, mark, if_id, cfg);
+	policy->sa = ipsec_sa_create(this, src, dst, mark, if_id, hw_offload, cfg);
 	return policy;
 }
 
@@ -1104,73 +1147,35 @@ static void process_mapping(private_kernel_netlink_ipsec_t *this,
 	}
 }
 
-/**
- * Receives events from kernel
- */
-static bool receive_events(private_kernel_netlink_ipsec_t *this, int fd,
-						   watcher_event_t event)
+CALLBACK(receive_events, void,
+	private_kernel_netlink_ipsec_t *this, struct nlmsghdr *hdr)
 {
-	char response[netlink_get_buflen()];
-	struct nlmsghdr *hdr = (struct nlmsghdr*)response;
-	struct sockaddr_nl addr;
-	socklen_t addr_len = sizeof(addr);
-	int len;
-
-	len = recvfrom(this->socket_xfrm_events, response, sizeof(response),
-				   MSG_DONTWAIT, (struct sockaddr*)&addr, &addr_len);
-	if (len < 0)
+	switch (hdr->nlmsg_type)
 	{
-		switch (errno)
-		{
-			case EINTR:
-				/* interrupted, try again */
-				return TRUE;
-			case EAGAIN:
-				/* no data ready, select again */
-				return TRUE;
-			default:
-				DBG1(DBG_KNL, "unable to receive from XFRM event socket: %s "
-					 "(%d)", strerror(errno), errno);
-				sleep(1);
-				return TRUE;
-		}
+		case XFRM_MSG_ACQUIRE:
+			process_acquire(this, hdr);
+			break;
+		case XFRM_MSG_EXPIRE:
+			process_expire(this, hdr);
+			break;
+		case XFRM_MSG_MIGRATE:
+			process_migrate(this, hdr);
+			break;
+		case XFRM_MSG_MAPPING:
+			process_mapping(this, hdr);
+			break;
+		default:
+			DBG1(DBG_KNL, "received unknown event from XFRM event "
+				 "socket: %d", hdr->nlmsg_type);
+			break;
 	}
-
-	if (addr.nl_pid != 0)
-	{	/* not from kernel. not interested, try another one */
-		return TRUE;
-	}
-
-	while (NLMSG_OK(hdr, len))
-	{
-		switch (hdr->nlmsg_type)
-		{
-			case XFRM_MSG_ACQUIRE:
-				process_acquire(this, hdr);
-				break;
-			case XFRM_MSG_EXPIRE:
-				process_expire(this, hdr);
-				break;
-			case XFRM_MSG_MIGRATE:
-				process_migrate(this, hdr);
-				break;
-			case XFRM_MSG_MAPPING:
-				process_mapping(this, hdr);
-				break;
-			default:
-				DBG1(DBG_KNL, "received unknown event from XFRM event "
-					 "socket: %d", hdr->nlmsg_type);
-				break;
-		}
-		hdr = NLMSG_NEXT(hdr, len);
-	}
-	return TRUE;
 }
 
 METHOD(kernel_ipsec_t, get_features, kernel_feature_t,
 	private_kernel_netlink_ipsec_t *this)
 {
-	return KERNEL_ESP_V3_TFC | KERNEL_POLICY_SPI;
+	return KERNEL_ESP_V3_TFC | KERNEL_POLICY_SPI |
+			(this->sa_lastused ? KERNEL_SA_USE_TIME : 0);
 }
 
 /**
@@ -1217,9 +1222,7 @@ static status_t get_spi_internal(private_kernel_netlink_ipsec_t *this,
 				}
 				case NLMSG_ERROR:
 				{
-					struct nlmsgerr *err = NLMSG_DATA(hdr);
-					DBG1(DBG_KNL, "allocating SPI failed: %s (%d)",
-						 strerror(-err->error), -err->error);
+					netlink_log_error(hdr, "allocating SPI failed");
 					break;
 				}
 				default:
@@ -1391,7 +1394,7 @@ static struct {
 /**
  * Check if kernel supports HW offload and determine feature flag
  */
-static void netlink_find_offload_feature(const char *ifname)
+static bool netlink_find_offload_feature(const char *ifname)
 {
 	struct ethtool_sset_info *sset_info;
 	struct ethtool_gstrings *cmd = NULL;
@@ -1403,7 +1406,7 @@ static void netlink_find_offload_feature(const char *ifname)
 	query_socket = socket(AF_NETLINK, SOCK_DGRAM, NETLINK_XFRM);
 	if (query_socket < 0)
 	{
-		return;
+		return FALSE;
 	}
 
 	/* determine number of device features */
@@ -1455,10 +1458,11 @@ out:
 	free(sset_info);
 	free(cmd);
 	close(query_socket);
+	return netlink_hw_offload.supported;
 }
 
 /**
- * Check if interface supported HW offload
+ * Check if interface supports HW offload
  */
 static bool netlink_detect_offload(const char *ifname)
 {
@@ -1499,11 +1503,6 @@ static bool netlink_detect_offload(const char *ifname)
 			ret = TRUE;
 		}
 	}
-
-	if (!ret)
-	{
-		DBG1(DBG_KNL, "HW offload is not supported by device");
-	}
 	free(cmd);
 	close(query_socket);
 	return ret;
@@ -1511,8 +1510,9 @@ static bool netlink_detect_offload(const char *ifname)
 
 #else
 
-static void netlink_find_offload_feature(const char *ifname)
+static bool netlink_find_offload_feature(const char *ifname)
 {
+	return FALSE;
 }
 
 static bool netlink_detect_offload(const char *ifname)
@@ -1523,59 +1523,129 @@ static bool netlink_detect_offload(const char *ifname)
 #endif
 
 /**
- * There are 3 HW offload configuration values:
- * 1. HW_OFFLOAD_NO   : Do not configure HW offload.
- * 2. HW_OFFLOAD_YES  : Configure HW offload.
- *                      Fail SA addition if offload is not supported.
- * 3. HW_OFFLOAD_AUTO : Configure HW offload if supported by the kernel
- *                      and device.
- *                      Do not fail SA addition otherwise.
+ * Add a HW offload attribute to the given message, return it if it was added.
+ *
+ * There are 4 HW offload configuration values:
+ * 1. HW_OFFLOAD_NO     : Do not configure HW offload.
+ * 2. HW_OFFLOAD_CRYPTO : Configure crypto HW offload.
+ *                        Fail SA addition if crypto offload is not supported.
+ * 3. HW_OFFLOAD_PACKET : Configure packet HW offload.
+ *                        Fail SA addition if packet offload is not supported.
+ * 4. HW_OFFLOAD_AUTO   : Configure packet HW offload if supported by the kernel
+ *                        and device.  If not, configure crypto HW offload if
+ *                        supported by the kernel and device.
+ *                        Do not fail SA addition if offload is not supported.
  */
-static bool config_hw_offload(kernel_ipsec_sa_id_t *id,
-							  kernel_ipsec_add_sa_t *data, struct nlmsghdr *hdr,
-							  int buflen)
+static bool add_hw_offload(struct nlmsghdr *hdr, int buflen, host_t *local,
+						   char *interface, hw_offload_t hw_offload,
+						   struct xfrm_user_offload **offload)
 {
-	host_t *local = data->inbound ? id->dst : id->src;
-	struct xfrm_user_offload *offload;
-	bool hw_offload_yes, ret = FALSE;
 	char *ifname;
+	bool ret;
 
-	/* do Ipsec configuration without offload */
-	if (data->hw_offload == HW_OFFLOAD_NO)
+	/* do IPsec configuration without offload */
+	if (hw_offload == HW_OFFLOAD_NO)
 	{
 		return TRUE;
 	}
 
-	hw_offload_yes = (data->hw_offload == HW_OFFLOAD_YES);
+	/* unless offloading is forced, we return TRUE even if we fail */
+	ret = (hw_offload == HW_OFFLOAD_AUTO);
 
-	if (!charon->kernel->get_interface(charon->kernel, local, &ifname))
+	if (!local || local->is_anyaddr(local) ||
+		!charon->kernel->get_interface(charon->kernel, local, &ifname))
 	{
-		return !hw_offload_yes;
+		if (!interface || !interface[0])
+		{
+			return ret;
+		}
+		ifname = strdup(interface);
 	}
 
 	/* check if interface supports hw_offload */
 	if (!netlink_detect_offload(ifname))
 	{
-		ret = !hw_offload_yes;
+		DBG1(DBG_KNL, "HW offload is not supported by device %s", ifname);
 		goto out;
 	}
 
 	/* activate HW offload */
-	offload = netlink_reserve(hdr, buflen,
-							  XFRMA_OFFLOAD_DEV, sizeof(*offload));
-	if (!offload)
+	*offload = netlink_reserve(hdr, buflen,
+							   XFRMA_OFFLOAD_DEV, sizeof(**offload));
+	if (!(*offload))
 	{
-		ret = !hw_offload_yes;
 		goto out;
 	}
-	offload->ifindex = if_nametoindex(ifname);
-	offload->flags |= data->inbound ? XFRM_OFFLOAD_INBOUND : 0;
+	(*offload)->ifindex = if_nametoindex(ifname);
+
+	if (hw_offload == HW_OFFLOAD_PACKET ||
+		hw_offload == HW_OFFLOAD_AUTO)
+	{
+		(*offload)->flags |= XFRM_OFFLOAD_PACKET;
+	}
 
 	ret = TRUE;
 
 out:
 	free(ifname);
 	return ret;
+}
+
+/**
+ * Add a HW offload attribute to the given SA-related message.
+ */
+static bool add_hw_offload_sa(struct nlmsghdr *hdr, int buflen,
+							  kernel_ipsec_sa_id_t *id,
+							  kernel_ipsec_add_sa_t *data,
+							  struct xfrm_user_offload **offload)
+{
+	host_t *local = data->inbound ? id->dst : id->src;
+
+	if (!add_hw_offload(hdr, buflen, local, NULL, data->hw_offload, offload))
+	{
+		return FALSE;
+	}
+	else if (*offload)
+	{
+		(*offload)->flags |= data->inbound ? XFRM_OFFLOAD_INBOUND : 0;
+	}
+	return TRUE;
+}
+
+/**
+ * Add a HW offload attribute to the given policy-related message.
+ */
+static bool add_hw_offload_policy(struct nlmsghdr *hdr, int buflen,
+								  policy_entry_t *policy,
+								  policy_sa_t *mapping,
+								  struct xfrm_user_offload **offload)
+{
+	ipsec_sa_t *ipsec = mapping->sa;
+	host_t *local = ipsec->src;
+	char ifname[IFNAMSIZ] = "";
+
+	/* only packet offloading is supported for policies, which we try to use
+	 * in automatic mode */
+	if (ipsec->hw_offload != HW_OFFLOAD_PACKET &&
+		ipsec->hw_offload != HW_OFFLOAD_AUTO)
+	{
+		return TRUE;
+	}
+
+	switch (policy->direction)
+	{
+		case POLICY_FWD:
+			/* FWD policies are not offloaded, they are enforced by the kernel */
+			return TRUE;
+		case POLICY_IN:
+			local = ipsec->dst;
+			break;
+	}
+	if (policy->sel.ifindex)
+	{
+		if_indextoname(policy->sel.ifindex, ifname);
+	}
+	return add_hw_offload(hdr, buflen, local, ifname, ipsec->hw_offload, offload);
 }
 
 METHOD(kernel_ipsec_t, add_sa, status_t,
@@ -1587,6 +1657,7 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	char markstr[32] = "";
 	struct nlmsghdr *hdr;
 	struct xfrm_usersa_info *sa;
+	struct xfrm_user_offload *offload = NULL;
 	uint16_t icv_size = 64, ipcomp = data->ipcomp;
 	ipsec_mode_t mode = data->mode, original_mode = data->mode;
 	traffic_selector_t *first_src_ts, *first_dst_ts;
@@ -2009,7 +2080,7 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 		}
 
 		DBG2(DBG_KNL, "  HW offload: %N", hw_offload_names, data->hw_offload);
-		if (!config_hw_offload(id, data, hdr, sizeof(request)))
+		if (!add_hw_offload_sa(hdr, sizeof(request), id, data, &offload))
 		{
 			DBG1(DBG_KNL, "failed to configure HW offload");
 			goto failed;
@@ -2017,6 +2088,16 @@ METHOD(kernel_ipsec_t, add_sa, status_t,
 	}
 
 	status = this->socket_xfrm->send_ack(this->socket_xfrm, hdr);
+
+	if (status != SUCCESS && offload && data->hw_offload == HW_OFFLOAD_AUTO)
+	{
+		DBG1(DBG_KNL, "failed to install SA with %N HW offload, trying with "
+			 "%N HW offload", hw_offload_names, HW_OFFLOAD_PACKET,
+			 hw_offload_names, HW_OFFLOAD_CRYPTO);
+		offload->flags &= ~XFRM_OFFLOAD_PACKET;
+		status = this->socket_xfrm->send_ack(this->socket_xfrm, hdr);
+	}
+
 	if (status == NOT_FOUND && data->update)
 	{
 		DBG1(DBG_KNL, "allocated SPI not found anymore, try to add SAD entry");
@@ -2040,14 +2121,13 @@ failed:
 }
 
 /**
- * Get the ESN replay state (i.e. sequence numbers) of an SA.
+ * Get the usage stats (packets/bytes) and classic replay state (i.e. sequence
+ * numbers for small windows/non-ESN) of an SA.
  *
- * Allocates into one the replay state structure we get from the kernel.
+ * Allocates and copies the attributes we get from the kernel.
  */
 static void get_replay_state(private_kernel_netlink_ipsec_t *this,
 							 kernel_ipsec_sa_id_t *sa,
-							 struct xfrm_replay_state_esn **replay_esn,
-							 uint32_t *replay_esn_len,
 							 struct xfrm_replay_state **replay,
 							 struct xfrm_lifetime_cur **lifetime)
 {
@@ -2099,9 +2179,8 @@ static void get_replay_state(private_kernel_netlink_ipsec_t *this,
 				}
 				case NLMSG_ERROR:
 				{
-					struct nlmsgerr *err = NLMSG_DATA(hdr);
-					DBG1(DBG_KNL, "querying replay state from SAD entry "
-						 "failed: %s (%d)", strerror(-err->error), -err->error);
+					netlink_log_error(hdr, "querying replay state from SAD "
+									  "entry failed");
 					break;
 				}
 				default:
@@ -2134,24 +2213,39 @@ static void get_replay_state(private_kernel_netlink_ipsec_t *this,
 				*replay = malloc(RTA_PAYLOAD(rta));
 				memcpy(*replay, RTA_DATA(rta), RTA_PAYLOAD(rta));
 			}
-			if (rta->rta_type == XFRMA_REPLAY_ESN_VAL &&
-				RTA_PAYLOAD(rta) >= sizeof(**replay_esn))
-			{
-				free(*replay_esn);
-				*replay_esn = malloc(RTA_PAYLOAD(rta));
-				*replay_esn_len = RTA_PAYLOAD(rta);
-				memcpy(*replay_esn, RTA_DATA(rta), RTA_PAYLOAD(rta));
-			}
 			rta = RTA_NEXT(rta, rtasize);
 		}
 	}
 	free(out);
 }
 
+/**
+ * Get the last used time of an SA if provided by the kernel
+ */
+static bool get_lastused(struct nlmsghdr *hdr, uint64_t *lastused)
+{
+	struct rtattr *rta;
+	size_t rtasize;
+
+	rta = XFRM_RTA(hdr, struct xfrm_usersa_info);
+	rtasize = XFRM_PAYLOAD(hdr, struct xfrm_usersa_info);
+	while (RTA_OK(rta, rtasize))
+	{
+		if (rta->rta_type == XFRMA_LASTUSED &&
+			RTA_PAYLOAD(rta) == sizeof(*lastused))
+		{
+			*lastused = *(uint64_t*)RTA_DATA(rta);
+			return TRUE;
+		}
+		rta = RTA_NEXT(rta, rtasize);
+	}
+	return FALSE;
+}
+
 METHOD(kernel_ipsec_t, query_sa, status_t,
 	private_kernel_netlink_ipsec_t *this, kernel_ipsec_sa_id_t *id,
 	kernel_ipsec_query_sa_t *data, uint64_t *bytes, uint64_t *packets,
-	time_t *time)
+	time_t *use_time)
 {
 	netlink_buf_t request;
 	struct nlmsghdr *out = NULL, *hdr;
@@ -2201,11 +2295,7 @@ METHOD(kernel_ipsec_t, query_sa, status_t,
 				}
 				case NLMSG_ERROR:
 				{
-					struct nlmsgerr *err = NLMSG_DATA(hdr);
-
-					DBG1(DBG_KNL, "querying SAD entry with SPI %.8x%s failed: "
-						 "%s (%d)", ntohl(id->spi), markstr,
-						 strerror(-err->error), -err->error);
+					netlink_log_error(hdr, "querying SAD entry failed");
 					break;
 				}
 				default:
@@ -2233,11 +2323,20 @@ METHOD(kernel_ipsec_t, query_sa, status_t,
 		{
 			*packets = sa->curlft.packets;
 		}
-		if (time)
-		{	/* curlft contains an "use" time, but that contains a timestamp
-			 * of the first use, not the last. Last use time must be queried
-			 * on the policy on Linux */
-			*time = 0;
+		if (use_time)
+		{
+			uint64_t lastused = 0;
+
+			/* curlft.use_time contains the timestamp of the SA's first use, not
+			 * the last, but we might get the last use time in an attribute */
+			if (this->sa_lastused && get_lastused(hdr, &lastused))
+			{
+				*use_time = time_monotonic(NULL) - (time(NULL) - lastused);
+			}
+			else
+			{
+				*use_time = 0;
+			}
 		}
 		status = SUCCESS;
 	}
@@ -2325,7 +2424,7 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 	struct xfrm_replay_state *replay = NULL;
 	struct xfrm_replay_state_esn *replay_esn = NULL;
 	struct xfrm_lifetime_cur *lifetime = NULL;
-	uint32_t replay_esn_len = 0;
+	bool replay_state_seen = FALSE;
 	kernel_ipsec_del_sa_t del = { 0 };
 	status_t status = FAILED;
 	traffic_selector_t *ts;
@@ -2391,9 +2490,7 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 				}
 				case NLMSG_ERROR:
 				{
-					struct nlmsgerr *err = NLMSG_DATA(hdr);
-					DBG1(DBG_KNL, "querying SAD entry failed: %s (%d)",
-						 strerror(-err->error), -err->error);
+					netlink_log_error(hdr, "querying SAD entry failed");
 					break;
 				}
 				default:
@@ -2412,8 +2509,7 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 		goto failed;
 	}
 
-	get_replay_state(this, id, &replay_esn, &replay_esn_len, &replay,
-					 &lifetime);
+	get_replay_state(this, id, &replay, &lifetime);
 
 	/* delete the old SA (without affecting the IPComp SA) */
 	if (del_sa(this, id, &del) != SUCCESS)
@@ -2494,6 +2590,11 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 					free(ifname);
 				}
 			}
+			if (rta->rta_type == XFRMA_REPLAY_ESN_VAL ||
+				rta->rta_type == XFRMA_REPLAY_VAL)
+			{
+				replay_state_seen = TRUE;
+			}
 			netlink_add_attribute(hdr, rta->rta_type,
 								  chunk_create(RTA_DATA(rta), RTA_PAYLOAD(rta)),
 								  sizeof(request));
@@ -2515,34 +2616,25 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 		memset(&encap->encap_oa, 0, sizeof (xfrm_address_t));
 	}
 
-	if (replay_esn)
+	if (!replay_state_seen)
 	{
-		struct xfrm_replay_state_esn *state;
-
-		state = netlink_reserve(hdr, sizeof(request), XFRMA_REPLAY_ESN_VAL,
-								replay_esn_len);
-		if (!state)
+		if (replay)
 		{
-			goto failed;
-		}
-		memcpy(state, replay_esn, replay_esn_len);
-	}
-	else if (replay)
-	{
-		struct xfrm_replay_state *state;
+			struct xfrm_replay_state *state;
 
-		state = netlink_reserve(hdr, sizeof(request), XFRMA_REPLAY_VAL,
-								sizeof(*state));
-		if (!state)
-		{
-			goto failed;
+			state = netlink_reserve(hdr, sizeof(request), XFRMA_REPLAY_VAL,
+									sizeof(*state));
+			if (!state)
+			{
+				goto failed;
+			}
+			memcpy(state, replay, sizeof(*state));
 		}
-		memcpy(state, replay, sizeof(*state));
-	}
-	else
-	{
-		DBG1(DBG_KNL, "unable to copy replay state from old SAD entry with "
-			 "SPI %.8x%s", ntohl(id->spi), markstr);
+		else
+		{
+			DBG1(DBG_KNL, "unable to copy replay state from old SAD entry with "
+				 "SPI %.8x%s", ntohl(id->spi), markstr);
+		}
 	}
 	if (lifetime)
 	{
@@ -2636,6 +2728,30 @@ static void policy_change_done(private_kernel_netlink_ipsec_t *this,
 }
 
 /**
+ * Find an XFRM interface with the given ID
+ */
+static bool find_xfrmi(private_kernel_netlink_ipsec_t *this, uint32_t target,
+					   char **if_name)
+{
+	enumerator_t *enumerator;
+	char *name;
+	uint32_t if_id;
+
+	enumerator = this->xfrmi->create_enumerator(this->xfrmi);
+	while (enumerator->enumerate(enumerator, &name, &if_id, NULL, NULL))
+	{
+		if (if_id == target)
+		{
+			*if_name = strdup(name);
+			enumerator->destroy(enumerator);
+			return TRUE;
+		}
+	}
+	enumerator->destroy(enumerator);
+	return FALSE;
+}
+
+/**
  * Install a route for the given policy if enabled and required
  */
 static void install_route(private_kernel_netlink_ipsec_t *this,
@@ -2664,9 +2780,15 @@ static void install_route(private_kernel_netlink_ipsec_t *this,
 
 	if (!ipsec->dst->is_anyaddr(ipsec->dst))
 	{
-		route->gateway = charon->kernel->get_nexthop(charon->kernel,
-											ipsec->dst, -1, ipsec->src,
-											&route->if_name);
+		/* if if_ids are used, install a route via XFRM interface if any,
+		 * otherwise install the route via the interface we reach the peer */
+		if (!policy->if_id || !this->xfrmi ||
+			!find_xfrmi(this, policy->if_id, &route->if_name))
+		{
+			route->gateway = charon->kernel->get_nexthop(charon->kernel,
+												ipsec->dst, -1, ipsec->src,
+												&route->if_name);
+		}
 	}
 	else
 	{	/* for shunt policies */
@@ -2754,6 +2876,7 @@ static status_t add_policy_internal(private_kernel_netlink_ipsec_t *this,
 	policy_entry_t clone;
 	ipsec_sa_t *ipsec = mapping->sa;
 	struct xfrm_userpolicy_info *policy_info;
+	struct xfrm_user_offload *offload = NULL;
 	struct nlmsghdr *hdr;
 	status_t status;
 	int i;
@@ -2867,9 +2990,26 @@ static status_t add_policy_internal(private_kernel_netlink_ipsec_t *this,
 		policy_change_done(this, policy);
 		return FAILED;
 	}
+	/* make sure this is the last attribute added to the message */
+	if (!add_hw_offload_policy(hdr, sizeof(request), policy, mapping, &offload))
+	{
+		policy_change_done(this, policy);
+		return FAILED;
+	}
 	this->mutex->unlock(this->mutex);
 
 	status = this->socket_xfrm->send_ack(this->socket_xfrm, hdr);
+
+	if (status != SUCCESS && offload && mapping->sa->hw_offload == HW_OFFLOAD_AUTO)
+	{
+		DBG1(DBG_KNL, "failed to install SA with %N HW offload, trying without "
+			 "offload", hw_offload_names, HW_OFFLOAD_PACKET);
+		/* the kernel only allows offloading with packet offload and rejects
+		 * the attribute if that flag is not set, so remove it again */
+		hdr->nlmsg_len -= RTA_ALIGN(RTA_LENGTH(sizeof(*offload)));
+		status = this->socket_xfrm->send_ack(this->socket_xfrm, hdr);
+	}
+
 	if (status == ALREADY_DONE && !update)
 	{
 		DBG1(DBG_KNL, "policy already exists, try to update it");
@@ -2887,12 +3027,12 @@ static status_t add_policy_internal(private_kernel_netlink_ipsec_t *this,
 	 * - this is an outbound policy (to just get one for each child)
 	 * - routing is not disabled via strongswan.conf
 	 * - the selector is not for a specific protocol/port
-	 * - no XFRM interface ID is configured
+	 * - routes via XFRM interfaces are enabled or no interface ID is configured
 	 * - we are in tunnel/BEET mode or install a bypass policy
 	 */
 	if (policy->direction == POLICY_OUT && this->install_routes &&
 		!policy->sel.proto && !policy->sel.dport && !policy->sel.sport &&
-		!policy->if_id)
+		(this->install_routes_xfrmi || !policy->if_id))
 	{
 		if (mapping->type == POLICY_PASS ||
 		   (mapping->type == POLICY_IPSEC && ipsec->cfg.mode != MODE_TRANSPORT))
@@ -2913,8 +3053,8 @@ METHOD(kernel_ipsec_t, add_policy, status_t,
 	enumerator_t *enumerator;
 	bool found = FALSE, update = TRUE;
 	char markstr[32] = "", labelstr[128] = "";
-	uint32_t cur_priority = 0;
-	int use_count;
+	uint32_t cur_priority DBG_UNUSED = 0;
+	int use_count DBG_UNUSED;
 
 	/* create a policy */
 	INIT(policy,
@@ -2957,7 +3097,7 @@ METHOD(kernel_ipsec_t, add_policy, status_t,
 	/* cache the assigned IPsec SA */
 	assigned_sa = policy_sa_create(this, id->dir, data->type, data->src,
 								   data->dst, id->src_ts, id->dst_ts, id->mark,
-								   id->if_id, data->sa);
+								   id->if_id, data->hw_offload, data->sa);
 	assigned_sa->auto_priority = get_priority(policy, data->prio, id->interface);
 	assigned_sa->priority = this->get_priority ? this->get_priority(id, data)
 											   : data->manual_prio;
@@ -3086,9 +3226,7 @@ METHOD(kernel_ipsec_t, query_policy, status_t,
 				}
 				case NLMSG_ERROR:
 				{
-					struct nlmsgerr *err = NLMSG_DATA(hdr);
-					DBG1(DBG_KNL, "querying policy failed: %s (%d)",
-						 strerror(-err->error), -err->error);
+					netlink_log_error(hdr, "querying policy failed");
 					break;
 				}
 				default:
@@ -3134,12 +3272,13 @@ METHOD(kernel_ipsec_t, del_policy, status_t,
 	struct nlmsghdr *hdr;
 	struct xfrm_userpolicy_id *policy_id;
 	bool is_installed = TRUE;
-	uint32_t priority, auto_priority, cur_priority;
+	uint32_t priority, auto_priority, cur_priority DBG_UNUSED;
 	ipsec_sa_t assigned_sa = {
 		.src = data->src,
 		.dst = data->dst,
 		.mark = id->mark,
 		.if_id = id->if_id,
+		.hw_offload = data->hw_offload,
 		.cfg = *data->sa,
 	};
 	char markstr[32] = "", labelstr[128] = "";
@@ -3374,6 +3513,44 @@ static bool add_socket_bypass(private_kernel_netlink_ipsec_t *this,
 }
 
 /**
+ * Keep track of interface and its offload support
+ */
+typedef struct {
+
+	/**
+	 * Interface index
+	 */
+	int ifindex;
+
+	/**
+	 * Name of the interface
+	 */
+	char ifname[IFNAMSIZ];
+
+	/**
+	 * Interface flags
+	 */
+	u_int flags;
+
+	/**
+	 * Offload state
+	 */
+	enum {
+		/** Offload support unknown */
+		IFACE_OFFLOAD_UNKNOWN,
+		/** No offload supported */
+		IFACE_OFFLOAD_NONE,
+		/** Interface supports at least crypto offload */
+		IFACE_OFFLOAD_DETECTED,
+		/** Interface supports crypto offload, but no packet and policy offload */
+		IFACE_OFFLOAD_CRYPTO,
+		/** Packet and policy offload supported */
+		IFACE_OFFLOAD_PACKET,
+	} offload;
+
+} offload_iface_t;
+
+/**
  * Port based IKE bypass policy
  */
 typedef struct {
@@ -3386,13 +3563,16 @@ typedef struct {
 } bypass_t;
 
 /**
- * Add or remove a bypass policy from/to kernel
+ * Add or remove a bypass policy from/to kernel. If an interface is given,
+ * the policy is tried to be offloaded to that interface.
  */
 static bool manage_bypass(private_kernel_netlink_ipsec_t *this,
-						  int type, policy_dir_t dir, bypass_t *bypass)
+						  int type, policy_dir_t dir, bypass_t *bypass,
+						  char *ifname)
 {
 	netlink_buf_t request;
 	struct xfrm_selector *sel;
+	struct xfrm_user_offload *offload = NULL;
 	struct nlmsghdr *hdr;
 
 	memset(&request, 0, sizeof(request));
@@ -3418,6 +3598,13 @@ static bool manage_bypass(private_kernel_netlink_ipsec_t *this,
 		policy->lft.hard_packet_limit = XFRM_INF;
 
 		sel = &policy->sel;
+
+		if (ifname &&
+			!add_hw_offload(hdr, sizeof(request), NULL, ifname,
+							HW_OFFLOAD_PACKET, &offload))
+		{
+			return FALSE;
+		}
 	}
 	else /* XFRM_MSG_DELPOLICY */
 	{
@@ -3443,14 +3630,137 @@ static bool manage_bypass(private_kernel_netlink_ipsec_t *this,
 		sel->sport = bypass->port;
 		sel->sport_mask = 0xffff;
 	}
+	if (ifname)
+	{
+		sel->ifindex = if_nametoindex(ifname);
+	}
 	return this->socket_xfrm->send_ack(this->socket_xfrm, hdr) == SUCCESS;
 }
 
+CALLBACK(remove_port_bypass, void,
+	bypass_t *bypass, int idx, void *user)
+{
+	private_kernel_netlink_ipsec_t *this = user;
+	enumerator_t *enumerator;
+	offload_iface_t *iface;
+
+	if (this->port_bypass)
+	{
+		manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_OUT, bypass, NULL);
+		manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_IN, bypass, NULL);
+	}
+	if (this->offload_interfaces)
+	{
+		enumerator = this->offload_interfaces->create_enumerator(this->offload_interfaces);
+		while (enumerator->enumerate(enumerator, NULL, &iface))
+		{
+			if (iface->offload == IFACE_OFFLOAD_PACKET &&
+				iface->flags & IFF_UP)
+			{
+				manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_OUT, bypass,
+							  iface->ifname);
+				manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_IN, bypass,
+							  iface->ifname);
+			}
+		}
+		enumerator->destroy(enumerator);
+	}
+}
+
 /**
- * Bypass socket using a port-based bypass policy
+ * Bypass socket using a port-based bypass policy, optionally offloaded to a
+ * given interface
  */
 static bool add_port_bypass(private_kernel_netlink_ipsec_t *this,
-							int fd, int family)
+							bypass_t *bypass, char *ifname)
+{
+	if (!manage_bypass(this, XFRM_MSG_NEWPOLICY, POLICY_IN, bypass, ifname))
+	{
+		return FALSE;
+	}
+	if (!manage_bypass(this, XFRM_MSG_NEWPOLICY, POLICY_OUT, bypass, ifname))
+	{
+		manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_IN, bypass, ifname);
+		return FALSE;
+	}
+	return TRUE;
+}
+
+/**
+ * Offload the given port-based bypass policy to the given interface if possible.
+ *
+ * offload_mutex is assumed to be locked.
+ */
+static bool offload_bypass_iface(private_kernel_netlink_ipsec_t *this,
+								 bypass_t *bypass, offload_iface_t *iface)
+{
+	if ((iface->offload == IFACE_OFFLOAD_DETECTED ||
+		 iface->offload == IFACE_OFFLOAD_PACKET))
+	{
+		if (add_port_bypass(this, bypass, iface->ifname))
+		{
+			iface->offload = IFACE_OFFLOAD_PACKET;
+			return TRUE;
+		}
+		else if (iface->offload == IFACE_OFFLOAD_DETECTED)
+		{
+			iface->offload = IFACE_OFFLOAD_CRYPTO;
+		}
+	}
+	return FALSE;
+}
+
+/**
+ * Offload all known port-based bypass policies to the given interface.
+ *
+ * offload_mutex is assumed to be locked.
+ */
+static void offload_bypasses(private_kernel_netlink_ipsec_t *this,
+							 offload_iface_t *iface)
+{
+	enumerator_t *enumerator;
+	bypass_t *bypass;
+
+	enumerator = array_create_enumerator(this->bypass);
+	while (enumerator->enumerate(enumerator, &bypass))
+	{
+		if (!offload_bypass_iface(this, bypass, iface))
+		{	/* could indicate a failure but generally means that the interface
+			 * does not support offloading */
+			break;
+		}
+	}
+	enumerator->destroy(enumerator);
+}
+
+/**
+ * Offload a new port-based bypass policy to all known interfaces.
+ *
+ * offload_mutex is assumed to be locked.
+ */
+static void offload_bypass(private_kernel_netlink_ipsec_t *this,
+						   bypass_t *bypass)
+{
+	enumerator_t *enumerator;
+	offload_iface_t *iface;
+
+	enumerator = this->offload_interfaces->create_enumerator(this->offload_interfaces);
+	while (enumerator->enumerate(enumerator, NULL, &iface))
+	{
+		if (iface->flags & IFF_UP)
+		{
+			offload_bypass_iface(this, bypass, iface);
+		}
+	}
+	enumerator->destroy(enumerator);
+}
+
+/**
+ * Offload a bypass policy on supported hardware if the kernel supports it and
+ * optionally install a port-based bypass policy in software.
+ */
+static bool add_and_offload_port_bypass(private_kernel_netlink_ipsec_t *this,
+										int fd, int family)
 {
 	union {
 		struct sockaddr sa;
@@ -3486,39 +3796,38 @@ static bool add_port_bypass(private_kernel_netlink_ipsec_t *this,
 			return FALSE;
 	}
 
-	if (!manage_bypass(this, XFRM_MSG_NEWPOLICY, POLICY_IN, &bypass))
+	if (this->port_bypass &&
+		!add_port_bypass(this, &bypass, NULL))
 	{
 		return FALSE;
 	}
-	if (!manage_bypass(this, XFRM_MSG_NEWPOLICY, POLICY_OUT, &bypass))
+	if (this->offload_interfaces)
 	{
-		manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_IN, &bypass);
-		return FALSE;
+		this->offload_mutex->lock(this->offload_mutex);
+		offload_bypass(this, &bypass);
+		/* store it even if no policy was offloaded because an interface that
+		 * supports offloading might get activated later */
+		array_insert_create_value(&this->bypass, sizeof(bypass_t),
+								  ARRAY_TAIL, &bypass);
+		this->offload_mutex->unlock(this->offload_mutex);
 	}
-	array_insert(this->bypass, ARRAY_TAIL, &bypass);
-
+	else
+	{
+		array_insert_create_value(&this->bypass, sizeof(bypass_t),
+								  ARRAY_TAIL, &bypass);
+	}
 	return TRUE;
-}
-
-/**
- * Remove installed port based bypass policy
- */
-static void remove_port_bypass(bypass_t *bypass, int idx,
-							   private_kernel_netlink_ipsec_t *this)
-{
-	manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_OUT, bypass);
-	manage_bypass(this, XFRM_MSG_DELPOLICY, POLICY_IN, bypass);
 }
 
 METHOD(kernel_ipsec_t, bypass_socket, bool,
 	private_kernel_netlink_ipsec_t *this, int fd, int family)
 {
-	if (lib->settings->get_bool(lib->settings,
-					"%s.plugins.kernel-netlink.port_bypass", FALSE, lib->ns))
+	if ((this->offload_interfaces || this->port_bypass) &&
+		!add_and_offload_port_bypass(this, fd, family))
 	{
-		return add_port_bypass(this, fd, family);
+		return FALSE;
 	}
-	return add_socket_bypass(this, fd, family);
+	return this->port_bypass || add_socket_bypass(this, fd, family);
 }
 
 METHOD(kernel_ipsec_t, enable_udp_decap, bool,
@@ -3534,30 +3843,166 @@ METHOD(kernel_ipsec_t, enable_udp_decap, bool,
 	return TRUE;
 }
 
+CALLBACK(receive_link_events, void,
+	private_kernel_netlink_ipsec_t *this, struct nlmsghdr *hdr)
+{
+	struct ifinfomsg *msg = NLMSG_DATA(hdr);
+	struct rtattr *rta = IFLA_RTA(msg);
+	size_t rtasize = IFLA_PAYLOAD (hdr);
+	offload_iface_t *iface = NULL;
+	char *name = NULL;
+
+	if (hdr->nlmsg_type != RTM_NEWLINK &&
+		hdr->nlmsg_type != RTM_DELLINK)
+	{
+		return;
+	}
+
+	while (RTA_OK(rta, rtasize))
+	{
+		switch (rta->rta_type)
+		{
+			case IFLA_IFNAME:
+				name = RTA_DATA(rta);
+				break;
+		}
+		rta = RTA_NEXT(rta, rtasize);
+	}
+	if (!name)
+	{
+		return;
+	}
+
+	this->offload_mutex->lock(this->offload_mutex);
+	if (hdr->nlmsg_type == RTM_NEWLINK)
+	{
+		iface = this->offload_interfaces->get(this->offload_interfaces,
+											  (void*)(uintptr_t)msg->ifi_index);
+		if (!iface)
+		{
+			INIT(iface,
+				.ifindex = msg->ifi_index
+			);
+			this->offload_interfaces->put(this->offload_interfaces,
+										  (void*)(uintptr_t)msg->ifi_index,
+										  iface);
+		}
+		/* update name in case an interface is renamed */
+		strncpy(iface->ifname, name, IFNAMSIZ-1);
+		iface->ifname[IFNAMSIZ-1] = '\0';
+
+		if (iface->offload == IFACE_OFFLOAD_UNKNOWN)
+		{
+			if (netlink_detect_offload(iface->ifname))
+			{
+				iface->offload = IFACE_OFFLOAD_DETECTED;
+			}
+			else
+			{
+				iface->offload = IFACE_OFFLOAD_NONE;
+			}
+		}
+
+		/* if an interface is activated or newly detected, try to offload known
+		 * IKE bypass policies. we don't have to do anything if the interface
+		 * goes down as the kernel automatically removes the state it has for
+		 * offloaded policies */
+		if (!(iface->flags & IFF_UP) && (msg->ifi_flags & IFF_UP))
+		{
+			offload_bypasses(this, iface);
+		}
+		iface->flags = msg->ifi_flags;
+	}
+	else
+	{
+		iface = this->offload_interfaces->remove(this->offload_interfaces,
+												 (void*)(uintptr_t)msg->ifi_index);
+		free(iface);
+	}
+	this->offload_mutex->unlock(this->offload_mutex);
+}
+
+/**
+ * Enumerate all interfaces and check if they support offloading
+ */
+static bool init_offload_interfaces(private_kernel_netlink_ipsec_t *this)
+{
+	netlink_buf_t request;
+	netlink_socket_t *socket;
+	struct nlmsghdr *out, *current, *in;
+	struct rtgenmsg *msg;
+	size_t len;
+
+	socket = netlink_socket_create(NETLINK_ROUTE, NULL, FALSE);
+	if (!socket)
+	{
+		return FALSE;
+	}
+
+	memset(&request, 0, sizeof(request));
+
+	in = &request.hdr;
+	in->nlmsg_flags = NLM_F_REQUEST | NLM_F_DUMP;
+	in->nlmsg_type = RTM_GETLINK;
+	in->nlmsg_len = NLMSG_LENGTH(sizeof(struct rtgenmsg));
+
+	msg = NLMSG_DATA(in);
+	msg->rtgen_family = AF_UNSPEC;
+
+	if (socket->send(socket, in, &out, &len) != SUCCESS)
+	{
+		socket->destroy(socket);
+		return FALSE;
+	}
+
+	current = out;
+	while (NLMSG_OK(current, len))
+	{
+		receive_link_events(this, current);
+		current = NLMSG_NEXT(current, len);
+	}
+	free(out);
+	socket->destroy(socket);
+	return TRUE;
+}
+
 METHOD(kernel_ipsec_t, destroy, void,
 	private_kernel_netlink_ipsec_t *this)
 {
 	enumerator_t *enumerator;
 	policy_entry_t *policy;
+	offload_iface_t *iface;
 
-	array_destroy_function(this->bypass,
-						   (array_callback_t)remove_port_bypass, this);
-	if (this->socket_xfrm_events > 0)
+	DESTROY_IF(this->socket_link_events);
+	DESTROY_IF(this->socket_xfrm_events);
+	array_destroy_function(this->bypass, remove_port_bypass, this);
+	if (this->xfrmi)
 	{
-		lib->watcher->remove(lib->watcher, this->socket_xfrm_events);
-		close(this->socket_xfrm_events);
+		lib->set(lib, KERNEL_NETLINK_XFRMI_MANAGER, NULL);
+		kernel_netlink_xfrmi_destroy(this->xfrmi);
 	}
 	DESTROY_IF(this->socket_xfrm);
 	enumerator = this->policies->create_enumerator(this->policies);
-	while (enumerator->enumerate(enumerator, &policy, &policy))
+	while (enumerator->enumerate(enumerator, NULL, &policy))
 	{
 		policy_entry_destroy(this, policy);
 	}
 	enumerator->destroy(enumerator);
 	this->policies->destroy(this->policies);
 	this->sas->destroy(this->sas);
+	if (this->offload_interfaces)
+	{
+		enumerator = this->offload_interfaces->create_enumerator(this->offload_interfaces);
+		while (enumerator->enumerate(enumerator, NULL, &iface))
+		{
+			free(iface);
+		}
+		enumerator->destroy(enumerator);
+		this->offload_interfaces->destroy(this->offload_interfaces);
+	}
 	this->condvar->destroy(this->condvar);
 	this->mutex->destroy(this->mutex);
+	DESTROY_IF(this->offload_mutex);
 	free(this);
 }
 
@@ -3609,9 +4054,7 @@ static bool get_spd_hash_thresh(private_kernel_netlink_ipsec_t *this,
 				}
 				case NLMSG_ERROR:
 				{
-					struct nlmsgerr *err = NLMSG_DATA(hdr);
-					DBG1(DBG_KNL, "getting SPD hash threshold failed: %s (%d)",
-						 strerror(-err->error), -err->error);
+					netlink_log_error(hdr, "getting SPD hash threshold failed");
 					break;
 				}
 				default:
@@ -3665,13 +4108,37 @@ static void setup_spd_hash_thresh(private_kernel_netlink_ipsec_t *this,
 	}
 }
 
+/**
+ * Check for kernel features (currently only via version number)
+ */
+static void check_kernel_features(private_kernel_netlink_ipsec_t *this)
+{
+	struct utsname utsname;
+	int a, b, c;
+
+	if (uname(&utsname) == 0)
+	{
+		switch(sscanf(utsname.release, "%d.%d.%d", &a, &b, &c))
+		{
+			case 2:
+			case 3:
+				/* before 6.2 the kernel only provided the last used time for
+				 * specific outbound IPv6 SAs */
+				this->sa_lastused = a > 6 || (a == 6 && b >= 2);
+				break;
+			default:
+				break;
+		}
+	}
+}
+
 /*
  * Described in header.
  */
 kernel_netlink_ipsec_t *kernel_netlink_ipsec_create()
 {
 	private_kernel_netlink_ipsec_t *this;
-	bool register_for_events = TRUE;
+	uint32_t groups;
 
 	INIT(this,
 		.public = {
@@ -3697,24 +4164,26 @@ kernel_netlink_ipsec_t *kernel_netlink_ipsec_create()
 									 (hashtable_equals_t)policy_equals, 32),
 		.sas = hashtable_create((hashtable_hash_t)ipsec_sa_hash,
 								(hashtable_equals_t)ipsec_sa_equals, 32),
-		.bypass = array_create(sizeof(bypass_t), 0),
 		.mutex = mutex_create(MUTEX_TYPE_DEFAULT),
 		.condvar = condvar_create(CONDVAR_TYPE_DEFAULT),
 		.get_priority = dlsym(RTLD_DEFAULT,
 							  "kernel_netlink_get_priority_custom"),
 		.policy_update = lib->settings->get_bool(lib->settings,
-					"%s.plugins.kernel-netlink.policy_update", FALSE, lib->ns),
+						"%s.plugins.kernel-netlink.policy_update",
+						FALSE, lib->ns),
 		.install_routes = lib->settings->get_bool(lib->settings,
-							"%s.install_routes", TRUE, lib->ns),
+						"%s.install_routes", TRUE, lib->ns),
+		.install_routes_xfrmi = lib->settings->get_bool(lib->settings,
+						"%s.plugins.kernel-netlink.install_routes_xfrmi",
+						FALSE, lib->ns),
 		.proto_port_transport = lib->settings->get_bool(lib->settings,
 						"%s.plugins.kernel-netlink.set_proto_port_transport_sa",
 						FALSE, lib->ns),
+		.port_bypass = lib->settings->get_bool(lib->settings,
+						"%s.plugins.kernel-netlink.port_bypass", FALSE, lib->ns),
 	);
 
-	if (streq(lib->ns, "starter"))
-	{	/* starter has no threads, so we do not register for kernel events */
-		register_for_events = FALSE;
-	}
+	check_kernel_features(this);
 
 	this->socket_xfrm = netlink_socket_create(NETLINK_XFRM, xfrm_msg_names,
 				lib->settings->get_bool(lib->settings,
@@ -3728,38 +4197,38 @@ kernel_netlink_ipsec_t *kernel_netlink_ipsec_create()
 	setup_spd_hash_thresh(this, "ipv4", XFRMA_SPD_IPV4_HTHRESH, 32);
 	setup_spd_hash_thresh(this, "ipv6", XFRMA_SPD_IPV6_HTHRESH, 128);
 
-	if (register_for_events)
+	groups = nl_group(XFRMNLGRP_ACQUIRE) | nl_group(XFRMNLGRP_EXPIRE) |
+			 nl_group(XFRMNLGRP_MIGRATE) | nl_group(XFRMNLGRP_MAPPING);
+	this->socket_xfrm_events = netlink_event_socket_create(NETLINK_XFRM, groups,
+														   receive_events, this);
+	if (!this->socket_xfrm_events)
 	{
-		struct sockaddr_nl addr;
-
-		memset(&addr, 0, sizeof(addr));
-		addr.nl_family = AF_NETLINK;
-
-		/* create and bind XFRM socket for ACQUIRE, EXPIRE, MIGRATE & MAPPING */
-		this->socket_xfrm_events = socket(AF_NETLINK, SOCK_RAW, NETLINK_XFRM);
-		if (this->socket_xfrm_events <= 0)
-		{
-			DBG1(DBG_KNL, "unable to create XFRM event socket: %s (%d)",
-				 strerror(errno), errno);
-			destroy(this);
-			return NULL;
-		}
-		addr.nl_groups = XFRMNLGRP(ACQUIRE) | XFRMNLGRP(EXPIRE) |
-						 XFRMNLGRP(MIGRATE) | XFRMNLGRP(MAPPING);
-		if (bind(this->socket_xfrm_events, (struct sockaddr*)&addr, sizeof(addr)))
-		{
-			DBG1(DBG_KNL, "unable to bind XFRM event socket: %s (%d)",
-				 strerror(errno), errno);
-			destroy(this);
-			return NULL;
-		}
-		lib->watcher->add(lib->watcher, this->socket_xfrm_events, WATCHER_READ,
-						  (watcher_cb_t)receive_events, this);
+		destroy(this);
+		return NULL;
 	}
 
-	netlink_find_offload_feature(lib->settings->get_str(lib->settings,
+	if (netlink_find_offload_feature(lib->settings->get_str(lib->settings,
 					"%s.plugins.kernel-netlink.hw_offload_feature_interface",
-					"lo", lib->ns));
+					"lo", lib->ns)))
+	{
+		this->offload_interfaces = hashtable_create(hashtable_hash_ptr,
+													hashtable_equals_ptr, 8);
+		this->offload_mutex = mutex_create(MUTEX_TYPE_DEFAULT);
+		this->socket_link_events = netlink_event_socket_create(NETLINK_ROUTE,
+													nl_group(RTNLGRP_LINK),
+													receive_link_events, this);
+		if (!this->socket_link_events ||
+			!init_offload_interfaces(this))
+		{
+			destroy(this);
+			return NULL;
+		}
+	}
 
+	this->xfrmi = kernel_netlink_xfrmi_create(TRUE);
+	if (this->xfrmi)
+	{
+		lib->set(lib, KERNEL_NETLINK_XFRMI_MANAGER, this->xfrmi);
+	}
 	return &this->public;
 }

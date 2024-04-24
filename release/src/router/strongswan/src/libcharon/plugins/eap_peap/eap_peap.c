@@ -181,6 +181,11 @@ static eap_peap_t *eap_peap_create(private_eap_peap_t * this,
 		free(this);
 		return NULL;
 	}
+	if (is_server)
+	{
+		eap_peap_server_t *server = (eap_peap_server_t*)application;
+		server->set_tls(server, tls);
+	}
 	return &this->public;
 }
 

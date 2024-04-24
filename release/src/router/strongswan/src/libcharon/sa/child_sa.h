@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2019 Tobias Brunner
+ * Copyright (C) 2006-2023 Tobias Brunner
  * Copyright (C) 2006-2008 Martin Willi
  * Copyright (C) 2006 Daniel Roethlisberger
  *
@@ -173,6 +173,18 @@ struct child_sa_t {
 	 * @return 			reqid of the CHILD SA
 	 */
 	uint32_t (*get_reqid)(child_sa_t *this);
+
+	/**
+	 * Get an additional reference to the allocated reqid of this CHILD SA.
+	 *
+	 * For static reqids or until the reqid is allocated (if none was passed
+	 * in the constructor), this returns 0. The returned reqid must be released
+	 * via kernel_interface_t::release_reqid().
+	 *
+	 * @return 			allocated reqid of the CHILD SA, 0 if reqid is static or
+	 *					not allocated yet
+	 */
+	uint32_t (*get_reqid_ref)(child_sa_t *this);
 
 	/**
 	 * Get the unique numerical identifier for this CHILD_SA.

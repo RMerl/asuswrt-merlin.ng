@@ -64,11 +64,7 @@ static int acert()
 				}
 				continue;
 			case 'R':
-				if (streq(arg, "pss"))
-				{
-					pss = TRUE;
-				}
-				else if (!streq(arg, "pkcs1"))
+				if (!parse_rsa_padding(arg, &pss))
 				{
 					error = "invalid RSA padding";
 					goto usage;

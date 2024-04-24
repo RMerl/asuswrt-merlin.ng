@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2023 Tobias Brunner
  * Copyright (C) 2009 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -23,33 +24,9 @@
 
 static void usage()
 {
-	printf("usage: dh_speed plugins rounds group1 [group2 [...]]\n");
+	printf("usage: dh_speed plugins rounds ke1 [ke2 [...]]\n");
 	exit(1);
 }
-
-struct {
-	char *name;
-	key_exchange_method_t group;
-} groups[] = {
-	{"modp768",			MODP_768_BIT},
-	{"modp1024",		MODP_1024_BIT},
-	{"modp1024s160",	MODP_1024_160},
-	{"modp1536",		MODP_1536_BIT},
-	{"modp2048",		MODP_2048_BIT},
-	{"modp2048s224",	MODP_2048_224},
-	{"modp2048s256",	MODP_2048_256},
-	{"modp3072",		MODP_3072_BIT},
-	{"modp4096",		MODP_4096_BIT},
-	{"modp6144",		MODP_6144_BIT},
-	{"modp8192",		MODP_8192_BIT},
-	{"ecp256",			ECP_256_BIT},
-	{"ecp384",			ECP_384_BIT},
-	{"ecp521",			ECP_521_BIT},
-	{"ecp192",			ECP_192_BIT},
-	{"ecp224",			ECP_224_BIT},
-	{"curve25519",		CURVE_25519},
-	{"curve448",		CURVE_448},
-};
 
 static void start_timing(struct timespec *start)
 {
@@ -65,61 +42,67 @@ static double end_timing(struct timespec *start)
 			(end.tv_sec - start->tv_sec) * 1.0;
 }
 
-static void run_test(key_exchange_method_t group, int rounds)
+static void run_test(key_exchange_method_t method, int rounds)
 {
-	key_exchange_t *l[rounds], *r;
-	chunk_t chunk, chunks[rounds], lsecrets[rounds], rsecrets[rounds];
+	key_exchange_t *l[rounds], *r[rounds];
+	chunk_t lpublic[rounds], rpublic[rounds], lsecret[rounds], rsecret[rounds];
 	struct timespec timing;
 	int round;
 
-	r = lib->crypto->create_ke(lib->crypto, group);
-	if (!r)
+	r[0] = lib->crypto->create_ke(lib->crypto, method);
+	if (!r[0])
 	{
-		printf("skipping %N, not supported\n", key_exchange_method_names,
-			   group);
+		fprintf(stderr, "skipping %N, not supported\n", key_exchange_method_names,
+				method);
 		return;
 	}
+	assert(r[0]->get_public_key(r[0], &rpublic[0]));
+	for (round = 1; round < rounds; round++)
+	{
+		r[round] = lib->crypto->create_ke(lib->crypto, method);
+		assert(r[round]->get_public_key(r[round], &rpublic[round]));
+	}
 
-	printf("%N:\t", key_exchange_method_names, group);
+	printf("%N:\t", key_exchange_method_names, method);
 
 	start_timing(&timing);
 	for (round = 0; round < rounds; round++)
 	{
-		l[round] = lib->crypto->create_ke(lib->crypto, group);
-		assert(l[round]->get_public_key(l[round], &chunks[round]));
+		l[round] = lib->crypto->create_ke(lib->crypto, method);
+		assert(l[round]->get_public_key(l[round], &lpublic[round]));
 	}
 	printf("A = g^a/s: %8.1f", rounds / end_timing(&timing));
 
 	for (round = 0; round < rounds; round++)
 	{
-		assert(r->set_public_key(r, chunks[round]));
-		assert(r->get_shared_secret(r, &rsecrets[round]));
-		chunk_free(&chunks[round]);
+		assert(r[round]->set_public_key(r[round], lpublic[round]));
+		assert(r[round]->get_shared_secret(r[round], &rsecret[round]));
+		chunk_free(&lpublic[round]);
 	}
 
-	assert(r->get_public_key(r, &chunk));
 	start_timing(&timing);
 	for (round = 0; round < rounds; round++)
 	{
-		assert(l[round]->set_public_key(l[round], chunk));
-		assert(l[round]->get_shared_secret(l[round], &lsecrets[round]));
+		assert(l[round]->set_public_key(l[round], rpublic[round]));
+		assert(l[round]->get_shared_secret(l[round], &lsecret[round]));
 	}
 	printf(" | S = B^a/s: %8.1f\n", rounds / end_timing(&timing));
-	chunk_free(&chunk);
 
 	for (round = 0; round < rounds; round++)
 	{
-		assert(chunk_equals(rsecrets[round], lsecrets[round]));
-		free(lsecrets[round].ptr);
-		free(rsecrets[round].ptr);
+		assert(chunk_equals(rsecret[round], lsecret[round]));
+		chunk_free(&lsecret[round]);
+		chunk_free(&rsecret[round]);
+		chunk_free(&rpublic[round]);
 		l[round]->destroy(l[round]);
+		r[round]->destroy(r[round]);
 	}
-	r->destroy(r);
 }
 
 int main(int argc, char *argv[])
 {
-	int rounds, i, j;
+	const proposal_token_t *token;
+	int rounds, i;
 
 	if (argc < 4)
 	{
@@ -134,20 +117,19 @@ int main(int argc, char *argv[])
 
 	for (i = 3; i < argc; i++)
 	{
-		bool found = FALSE;
+		token = lib->proposal->get_token(lib->proposal, argv[i]);
+		if (!token)
+		{
+			fprintf(stderr, "KE method '%s' not found\n", argv[i]);
+			return 1;
+		}
+		else if (token->type != KEY_EXCHANGE_METHOD)
+		{
+			fprintf(stderr, "'%s' is not a KE method\n", argv[i]);
+			return 1;
+		}
 
-		for (j = 0; j < countof(groups); j++)
-		{
-			if (streq(groups[j].name, argv[i]))
-			{
-				run_test(groups[j].group, rounds);
-				found = TRUE;
-			}
-		}
-		if (!found)
-		{
-			printf("group %s not found\n", argv[i]);
-		}
+		run_test(token->algorithm, rounds);
 	}
 	return 0;
 }

@@ -300,6 +300,26 @@ METHOD(public_key_t, destroy, void,
 }
 
 /**
+ * Check whether the EC key was decoded with explicit curve parameters instead
+ * of a named curve.
+ */
+bool openssl_check_explicit_params(const EVP_PKEY *key)
+{
+	int explicit = 0;
+
+#if OPENSSL_VERSION_NUMBER >= 0x30000000L
+	if (!EVP_PKEY_get_int_param(key, OSSL_PKEY_PARAM_EC_DECODED_FROM_EXPLICIT_PARAMS,
+								&explicit))
+	{
+		return FALSE;
+	}
+#elif OPENSSL_VERSION_NUMBER >= 0x1010108fL
+	explicit = EC_KEY_decoded_from_explicit_params(EVP_PKEY_get0_EC_KEY((EVP_PKEY*)key));
+#endif
+	return explicit == 1;
+}
+
+/**
  * See header.
  */
 openssl_ec_public_key_t *openssl_ec_public_key_load(key_type_t type,
@@ -324,7 +344,8 @@ openssl_ec_public_key_t *openssl_ec_public_key_load(key_type_t type,
 		break;
 	}
 	key = d2i_PUBKEY(NULL, (const u_char**)&blob.ptr, blob.len);
-	if (!key || EVP_PKEY_base_id(key) != EVP_PKEY_EC)
+	if (!key || EVP_PKEY_base_id(key) != EVP_PKEY_EC ||
+		openssl_check_explicit_params(key))
 	{
 		EVP_PKEY_free(key);
 		return NULL;

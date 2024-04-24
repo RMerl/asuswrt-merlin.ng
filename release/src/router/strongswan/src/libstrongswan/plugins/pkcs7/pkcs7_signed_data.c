@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2023 Tobias Brunner
  * Copyright (C) 2012 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -86,9 +87,9 @@ typedef struct {
 	identification_t *issuer;
 
 	/**
-	 * EncryptedDigest
+	 * Signature
 	 */
-	chunk_t encrypted_digest;
+	chunk_t signature;
 
 	/**
 	 * Digesting algorithm OID
@@ -96,21 +97,22 @@ typedef struct {
 	int digest_alg;
 
 	/**
-	 * Public key encryption algorithm OID
+	 * Signature algorithm
 	 */
-	int enc_alg;
+	signature_params_t sig_alg;
 
 } signerinfo_t;
 
 /**
  * Destroy a signerinfo_t entry
  */
-void signerinfo_destroy(signerinfo_t *this)
+static void signerinfo_destroy(signerinfo_t *this)
 {
 	DESTROY_IF(this->attributes);
 	DESTROY_IF(this->serial);
 	DESTROY_IF(this->issuer);
-	free(this->encrypted_digest.ptr);
+	signature_params_clear(&this->sig_alg);
+	free(this->signature.ptr);
 	free(this);
 }
 
@@ -142,8 +144,8 @@ static const asn1Object_t signedDataObjects[] = {
 	{ 3,       "authenticatedAttributes",	ASN1_CONTEXT_C_0,	ASN1_OPT |
 																ASN1_OBJ  }, /* 19 */
 	{ 3,       "end opt",					ASN1_EOC,			ASN1_END  }, /* 20 */
-	{ 3,       "digestEncryptionAlgorithm",	ASN1_EOC,			ASN1_RAW  }, /* 21 */
-	{ 3,       "encryptedDigest",			ASN1_OCTET_STRING,	ASN1_BODY }, /* 22 */
+	{ 3,       "signatureAlgorithm",		ASN1_EOC,			ASN1_RAW  }, /* 21 */
+	{ 3,       "signature",					ASN1_OCTET_STRING,	ASN1_BODY }, /* 22 */
 	{ 3,       "unauthenticatedAttributes", ASN1_CONTEXT_C_1,	ASN1_OPT  }, /* 23 */
 	{ 3,       "end opt",					ASN1_EOC,			ASN1_END  }, /* 24 */
 	{ 1,   "end loop",						ASN1_EOC,			ASN1_END  }, /* 25 */
@@ -159,8 +161,8 @@ static const asn1Object_t signedDataObjects[] = {
 #define PKCS7_SERIAL_NUMBER			17
 #define PKCS7_DIGEST_ALGORITHM		18
 #define PKCS7_AUTH_ATTRIBUTES		19
-#define PKCS7_DIGEST_ENC_ALGORITHM	21
-#define PKCS7_ENCRYPTED_DIGEST		22
+#define PKCS7_SIGNATURE_ALGORITHM	21
+#define PKCS7_SIGNATURE				22
 
 METHOD(container_t, get_type, container_type_t,
 	private_pkcs7_signed_data_t *this)
@@ -188,7 +190,6 @@ METHOD(enumerator_t, enumerate, bool,
 	signature_enumerator_t *this, va_list args)
 {
 	signerinfo_t *info;
-	signature_scheme_t scheme;
 	hash_algorithm_t algorithm;
 	enumerator_t *enumerator;
 	certificate_t *cert;
@@ -206,25 +207,20 @@ METHOD(enumerator_t, enumerate, bool,
 		DESTROY_IF(this->auth);
 		this->auth = NULL;
 
-		scheme = signature_scheme_from_oid(info->digest_alg);
-		if (scheme == SIGN_UNKNOWN)
-		{
-			DBG1(DBG_LIB, "unsupported signature scheme");
-			continue;
-		}
 		if (!info->attributes)
 		{
 			DBG1(DBG_LIB, "no authenticatedAttributes object found");
 			continue;
 		}
-		if (info->enc_alg != OID_RSA_ENCRYPTION)
+		if (info->sig_alg.scheme == SIGN_UNKNOWN)
 		{
-			DBG1(DBG_LIB, "only RSA digest encryption supported");
+			DBG1(DBG_LIB, "unsupported signature scheme");
 			continue;
 		}
 
 		enumerator = lib->credmgr->create_trusted_enumerator(lib->credmgr,
-												KEY_RSA, info->serial, FALSE);
+							key_type_from_signature_scheme(info->sig_alg.scheme),
+							info->serial, FALSE);
 		while (enumerator->enumerate(enumerator, &cert, &auth))
 		{
 			if (info->issuer->equals(info->issuer, cert->get_issuer(cert)))
@@ -233,8 +229,8 @@ METHOD(enumerator_t, enumerate, bool,
 				if (key)
 				{
 					chunk = info->attributes->get_encoding(info->attributes);
-					if (key->verify(key, scheme, NULL, chunk,
-									info->encrypted_digest))
+					if (key->verify(key, info->sig_alg.scheme,
+									info->sig_alg.params, chunk, info->signature))
 					{
 						this->auth = auth->clone(auth);
 						key->destroy(key);
@@ -409,7 +405,7 @@ static bool parse(private_pkcs7_signed_data_t *this, chunk_t content)
 {
 	asn1_parser_t *parser;
 	chunk_t object;
-	int objectID, version;
+	int objectID;
 	signerinfo_t *info = NULL;
 	bool success = FALSE;
 
@@ -422,8 +418,7 @@ static bool parse(private_pkcs7_signed_data_t *this, chunk_t content)
 		switch (objectID)
 		{
 			case PKCS7_VERSION:
-				version = object.len ? (int)*object.ptr : 0;
-				DBG2(DBG_LIB, "  v%d", version);
+				DBG2(DBG_LIB, "  v%d", object.len ? (int)*object.ptr : 0);
 				break;
 			case PKCS7_CONTENT_INFO:
 				this->content = lib->creds->create(lib->creds,
@@ -448,13 +443,11 @@ static bool parse(private_pkcs7_signed_data_t *this, chunk_t content)
 			case PKCS7_SIGNER_INFO:
 				INIT(info,
 					.digest_alg = OID_UNKNOWN,
-					.enc_alg = OID_UNKNOWN,
 				);
 				this->signerinfos->insert_last(this->signerinfos, info);
 				break;
 			case PKCS7_SIGNER_INFO_VERSION:
-				version = object.len ? (int)*object.ptr : 0;
-				DBG2(DBG_LIB, "  v%d", version);
+				DBG2(DBG_LIB, "  v%d", object.len ? (int)*object.ptr : 0);
 				break;
 			case PKCS7_ISSUER:
 				info->issuer = identification_create_from_encoding(
@@ -474,12 +467,22 @@ static bool parse(private_pkcs7_signed_data_t *this, chunk_t content)
 				info->digest_alg = asn1_parse_algorithmIdentifier(object,
 														level, NULL);
 				break;
-			case PKCS7_DIGEST_ENC_ALGORITHM:
-				info->enc_alg = asn1_parse_algorithmIdentifier(object,
-														level, NULL);
+			case PKCS7_SIGNATURE_ALGORITHM:
+				if (!signature_params_parse(object, level, &info->sig_alg))
+				{
+					if (asn1_parse_algorithmIdentifier(object, -1,
+												NULL) == OID_RSA_ENCRYPTION &&
+						info->digest_alg != OID_UNKNOWN)
+					{
+						/* derive the signature scheme from the digest algorithm
+						 * for the classic PKCS#7 RSA mechanism */
+						info->sig_alg.scheme = signature_scheme_from_oid(
+															info->digest_alg);
+					}
+				}
 				break;
-			case PKCS7_ENCRYPTED_DIGEST:
-				info->encrypted_digest = chunk_clone(object);
+			case PKCS7_SIGNATURE:
+				info->signature = chunk_clone(object);
 				break;
 		}
 	}

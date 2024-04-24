@@ -81,11 +81,11 @@ START_TEST(test_asn1_parse_algorithmIdentifier)
 		parameters = chunk_empty;
 		if (i == 2)
 		{
-			alg = asn1_parse_algorithmIdentifier(algid, 0, NULL);
+			alg = asn1_parse_algorithmIdentifier(algid, _i, NULL);
 		}
 		else
 		{
-			alg = asn1_parse_algorithmIdentifier(algid, 0, &parameters);
+			alg = asn1_parse_algorithmIdentifier(algid, _i, &parameters);
 			if (test[i].empty)
 			{
 				ck_assert(parameters.len == 0 && parameters.ptr == NULL);
@@ -824,7 +824,7 @@ Suite *asn1_suite_create()
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("parse_algorithmIdentifier");
-	tcase_add_test(tc, test_asn1_parse_algorithmIdentifier);
+	tcase_add_loop_test(tc, test_asn1_parse_algorithmIdentifier, -1, 1);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("known_oid");

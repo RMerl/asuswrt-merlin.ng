@@ -107,7 +107,7 @@ METHOD(pts_comp_func_name_t, log_, void,
 {
 	enum_name_t *names, *types;
 	char flags[8];
-	int type;
+	int type DBG_UNUSED;
 
 	names = imcv_pts_components->get_comp_func_names(imcv_pts_components,
 											this->vid);

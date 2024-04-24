@@ -92,13 +92,14 @@ static bool equals(const void *a_pub, const void *b)
 static bool install_generic_trap(ike_sa_t *ike_sa, child_sa_t *child_sa)
 {
 	linked_list_t *local, *remote;
-	sec_label_t *label;
 	bool success;
 
-	label = child_sa->get_label(child_sa);
+#if DEBUG_LEVEL >= 1
+	sec_label_t *label = child_sa->get_label(child_sa);
 	DBG1(DBG_IKE, "installing trap %s{%d} with generic security label '%s'",
 		 child_sa->get_name(child_sa), child_sa->get_unique_id(child_sa),
 		 label->get_string(label));
+#endif
 
 	local = ike_sa_get_dynamic_hosts(ike_sa, TRUE);
 	remote = ike_sa_get_dynamic_hosts(ike_sa, FALSE);
@@ -169,12 +170,13 @@ METHOD(listener_t, ike_updown, bool,
 		{
 			while (array_remove(entry->traps, ARRAY_TAIL, &child_sa))
 			{
+#if DEBUG_LEVEL >= 1
 				sec_label_t *label = child_sa->get_label(child_sa);
-
 				DBG1(DBG_IKE, "uninstalling trap %s{%d} with generic security "
 					 "label '%s'", child_sa->get_name(child_sa),
 					 child_sa->get_unique_id(child_sa),
 					 label->get_string(label));
+#endif
 				charon->traps->remove_external(charon->traps, child_sa);
 				child_sa->destroy(child_sa);
 			}

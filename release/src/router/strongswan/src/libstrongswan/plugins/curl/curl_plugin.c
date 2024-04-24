@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2023 Tobias Brunner
  * Copyright (C) 2008 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -60,7 +61,9 @@ static void add_feature(private_curl_plugin_t *this, plugin_feature_t f)
 static void add_feature_with_ssl(private_curl_plugin_t *this, const char *ssl,
 								 char *proto, plugin_feature_t f)
 {
-	/* http://curl.haxx.se/libcurl/c/libcurl-tutorial.html#Multi-threading */
+	/* according to https://curl.se/libcurl/c/threadsafe.html there is only an
+	 * issue with thread-safety with older versions of OpenSSL (<= 1.0.2) and
+	 * GnuTLS (< 1.6.0), so we just accept all other SSL backends */
 	if (strpfx(ssl, "OpenSSL") || strpfx(ssl, "LibreSSL"))
 	{
 		add_feature(this, f);
@@ -71,15 +74,9 @@ static void add_feature_with_ssl(private_curl_plugin_t *this, const char *ssl,
 		add_feature(this, f);
 		add_feature(this, PLUGIN_DEPENDS(CUSTOM, "gcrypt-threading"));
 	}
-	else if (strpfx(ssl, "NSS") ||
-			 strpfx(ssl, "BoringSSL"))
-	{
-		add_feature(this, f);
-	}
 	else
 	{
-		DBG1(DBG_LIB, "curl SSL backend '%s' not supported, %s disabled",
-			 ssl, proto);
+		add_feature(this, f);
 	}
 }
 
@@ -156,6 +153,60 @@ METHOD(plugin_t, destroy, void,
 	free(this);
 }
 
+#if LIBCURL_VERSION_NUM >= 0x073800
+/**
+ * Configure a specific SSL backend if multiple are available
+ */
+static void set_ssl_backend()
+{
+	const curl_ssl_backend **avail;
+	char *backend, buf[BUF_LEN] = "";
+	int i, len = 0, added;
+
+	backend = lib->settings->get_str(lib->settings, "%s.plugins.curl.tls_backend",
+									 NULL, lib->ns);
+	switch (curl_global_sslset(-1, backend, &avail))
+	{
+		case CURLSSLSET_UNKNOWN_BACKEND:
+			for (i = 0; avail[i]; i++)
+			{
+				added = snprintf(buf + len, sizeof(buf) - len, " %s",
+								 avail[i]->name);
+				if (added < sizeof(buf) - len)
+				{
+					len += added;
+				}
+			}
+			if (backend)
+			{
+				DBG1(DBG_LIB, "unsupported TLS backend '%s' in libcurl, "
+					 "available:%s", backend, buf);
+			}
+			else
+			{
+				DBG2(DBG_LIB, "available TLS backends in libcurl:%s", buf);
+			}
+			break;
+		case CURLSSLSET_NO_BACKENDS:
+			if (backend)
+			{
+				DBG1(DBG_LIB, "unable to set TLS backend '%s', libcurl was "
+					 "built without TLS support", backend);
+			}
+			break;
+		case CURLSSLSET_TOO_LATE:
+			if (backend)
+			{
+				DBG1(DBG_LIB, "unable to set TLS backend '%s' in libcurl, "
+					 "already set", backend);
+			}
+			break;
+		case CURLSSLSET_OK:
+			break;
+	}
+}
+#endif
+
 /*
  * see header file
  */
@@ -173,6 +224,10 @@ plugin_t *curl_plugin_create()
 			},
 		},
 	);
+
+#if LIBCURL_VERSION_NUM >= 0x073800
+	set_ssl_backend();
+#endif
 
 	res = curl_global_init(CURL_GLOBAL_SSL);
 	if (res != CURLE_OK)

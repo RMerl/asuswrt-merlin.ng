@@ -185,8 +185,8 @@ static bool check_padding(chunk_t padding)
 static bool remove_padding(private_esp_packet_t *this, chunk_t plaintext)
 {
 	uint8_t next_header, pad_length;
-	chunk_t padding, payload;
 	bio_reader_t *reader;
+	chunk_t padding;
 
 	reader = bio_reader_create(plaintext);
 	if (!reader->read_uint8_end(reader, &next_header) ||
@@ -209,11 +209,13 @@ static bool remove_padding(private_esp_packet_t *this, chunk_t plaintext)
 		return FALSE;
 	}
 	this->next_header = next_header;
-	payload = this->payload->get_encoding(this->payload);
 
+#if DEBUG_LEVEL >= 3
+	chunk_t encoding = this->payload->get_encoding(this->payload);
 	DBG3(DBG_ESP, "ESP payload:\n  payload %B\n  padding %B\n  "
-		 "padding length = %hhu, next header = %hhu", &payload, &padding,
+		 "padding length = %hhu, next header = %hhu", &encoding, &padding,
 		 pad_length, this->next_header);
+#endif
 	return TRUE;
 
 failed:

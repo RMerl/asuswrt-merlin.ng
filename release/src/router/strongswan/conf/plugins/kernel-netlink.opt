@@ -1,14 +1,6 @@
 charon.plugins.kernel-netlink.buflen = <min(PAGE_SIZE, 8192)>
 	Buffer size for received Netlink messages.
 
-charon.plugins.kernel-netlink.force_receive_buffer_size = no
-	Force maximum Netlink receive buffer on Netlink socket.
-
-	If the maximum Netlink socket receive buffer in bytes set by
-	_receive_buffer_size_ exceeds the system-wide maximum from
-	/proc/sys/net/core/rmem_max, this option can be used to override the limit.
-	Enabling this option requires special privileges (CAP_NET_ADMIN).
-
 charon.plugins.kernel-netlink.fwmark =
 	Firewall mark to set on the routing rule that directs traffic to our routing
 	table.
@@ -27,6 +19,16 @@ charon.plugins.kernel-netlink.hw_offload_feature_interface = lo
 	it should always be present. For rare cases in which the loopback device
 	cannot be used to obtain the appropriate feature flag, this option can
 	be used to specify an alternative interface for offload feature detection.
+
+charon.plugins.kernel-netlink.install_routes_xfrmi = no
+	Whether to install routes for SAs that reference XFRM interfaces.
+
+	Whether routes via XFRM interfaces are automatically installed for SAs that
+	reference such an interface via _if_id_out_.  If the traffic selectors
+	include the IKE traffic to the peer, this requires special care (e.g.
+	installing bypass policies and/or routes, or setting a mark on the IKE
+	socket and excluding such packets from the configured routing table via
+	_fwmark_ option).
 
 charon.plugins.kernel-netlink.mss = 0
 	MSS to set on installed routes, 0 to disable.
@@ -64,14 +66,16 @@ charon.plugins.kernel-netlink.process_rules = no
 	currently only useful if the kernel based route lookup is used (i.e. if
 	route installation is disabled or an inverted fwmark match is configured).
 
-charon.plugins.kernel-netlink.receive_buffer_size = 0
+charon.plugins.kernel-netlink.receive_buffer_size = 8388608
 	Maximum Netlink socket receive buffer in bytes.
 
 	Maximum Netlink socket receive buffer in bytes. This value controls how many
-	bytes of Netlink messages can be received on a Netlink socket. The default
-	value is set by /proc/sys/net/core/rmem_default. The specified value cannot
-	exceed the system-wide maximum from /proc/sys/net/core/rmem_max, unless
-	_force_receive_buffer_size_	is enabled.
+	bytes of Netlink messages can be queued to a Netlink socket. If set to 0,
+	the default from /proc/sys/net/core/rmem_default will apply. Note that the
+	kernel doubles the configured value to account for overhead. To exceed the
+	system-wide	maximum from /proc/sys/net/core/rmem_max, special privileges
+	(CAP_NET_ADMIN) are necessary, otherwise, the kernel silently caps the
+	value.
 
 charon.plugins.kernel-netlink.roam_events = yes
 	Whether to trigger roam events when interfaces, addresses or routes change.

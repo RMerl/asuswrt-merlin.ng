@@ -1,5 +1,5 @@
 The roadwarriors <b>carol</b> and <b>dave</b> set up a connection to gateway <b>moon</b>.
-At the outset the gateway does not send an AUTH payload thus signalling
+At the outset the gateway does not send an AUTH payload thus signaling
 a mutual <b>EAP-only</b> authentication.
 <p/>
 Next the clients use the GSM <i>Subscriber Identity Module</i> (<b>EAP-SIM</b>)

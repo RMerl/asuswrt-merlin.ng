@@ -1326,29 +1326,31 @@ METHOD(ike_sa_manager_t, checkout_by_message, ike_sa_t*,
 		 be64toh(id->get_initiator_spi(id)),
 		 be64toh(id->get_responder_spi(id)));
 
-	if (id->get_responder_spi(id) == 0 &&
-		message->get_message_id(message) == 0)
+	if (message->get_request(message) &&
+		message->get_exchange_type(message) == IKE_SA_INIT)
 	{
-		if (message->get_major_version(message) == IKEV2_MAJOR_VERSION)
+		untrack_half_open = TRUE;
+
+		if (message->get_message_id(message) == 0 &&
+			id->get_responder_spi(id) == 0)
 		{
-			if (message->get_exchange_type(message) == IKE_SA_INIT &&
-				message->get_request(message))
-			{
-				ike_version = IKEV2;
-				is_init = TRUE;
-			}
+			ike_version = IKEV2;
+			is_init = TRUE;
 		}
-		else
+	}
+	else if ((message->get_exchange_type(message) == ID_PROT ||
+			  message->get_exchange_type(message) == AGGRESSIVE) &&
+			 id->get_responder_spi(id) == 0)
+	{
+		untrack_half_open = TRUE;
+
+		if (message->get_message_id(message) == 0)
 		{
-			if (message->get_exchange_type(message) == ID_PROT ||
-				message->get_exchange_type(message) == AGGRESSIVE)
-			{
-				ike_version = IKEV1;
-				is_init = TRUE;
-				if (id->is_initiator(id))
-				{	/* not set in IKEv1, switch back before applying to new SA */
-					id->switch_initiator(id);
-				}
+			ike_version = IKEV1;
+			is_init = TRUE;
+			if (id->is_initiator(id))
+			{	/* not set in IKEv1, switch back before applying to new SA */
+				id->switch_initiator(id);
 			}
 		}
 	}
@@ -1359,7 +1361,6 @@ METHOD(ike_sa_manager_t, checkout_by_message, ike_sa_t*,
 		uint64_t our_spi;
 		chunk_t hash;
 
-		untrack_half_open = TRUE;
 		hasher = lib->crypto->create_hasher(lib->crypto, HASH_SHA1);
 		if (!hasher || !get_init_hash(hasher, message, &hash))
 		{
@@ -1778,8 +1779,8 @@ METHOD(ike_sa_manager_t, new_initiator_spi, bool,
 		return FALSE;
 	}
 
-	/* the hashtable row and segment are determined by the local SPI as
-	 * initiator, so if we change it the row and segment derived from it might
+	/* The hashtable row and segment are determined by the local SPI as
+	 * initiator, so if we change it, the row and segment derived from it might
 	 * change as well.  This could be a problem for threads waiting for the
 	 * entry (in particular those enumerating entries to check them out by
 	 * unique ID or name).  In order to avoid having to drive them out and thus
@@ -1796,7 +1797,49 @@ METHOD(ike_sa_manager_t, new_initiator_spi, bool,
 		 "%.16"PRIx64, ike_sa->get_name(ike_sa), ike_sa->get_unique_id(ike_sa),
 		 be64toh(spi), be64toh(new_spi));
 
-	ike_sa_id->set_initiator_spi(ike_sa_id, new_spi);
+	/* when reauthenticating an IKEv1 SA, we have to migrate children again that
+	 * were adopted previously */
+	if (ike_sa->get_version(ike_sa) == IKEV1 &&
+		ike_sa->get_child_count(ike_sa))
+	{
+		enumerator_t *enumerator;
+		child_sa_t *child_sa;
+		ike_sa_id_t *new_id;
+
+		/* release the segment lock while triggering events and migrating
+		 * children, the IKE_SA is already checked out by our thread */
+		unlock_single_segment(this, segment);
+
+		/* do this before updating the ID on the current IKE_SA so listeners can
+		 * migrate children too */
+		new_id = ike_sa_id->clone(ike_sa_id);
+		new_id->set_initiator_spi(new_id, new_spi);
+		charon->bus->children_migrate(charon->bus, new_id,
+									  ike_sa->get_unique_id(ike_sa));
+		new_id->destroy(new_id);
+
+		/* update the ID so the CHILD_SA manager can migrate entries */
+		ike_sa_id->set_initiator_spi(ike_sa_id, new_spi);
+
+		enumerator = ike_sa->create_child_sa_enumerator(ike_sa);
+		while (enumerator->enumerate(enumerator, &child_sa))
+		{
+			charon->child_sa_manager->remove(charon->child_sa_manager,
+											 child_sa);
+			charon->child_sa_manager->add(charon->child_sa_manager,
+										  child_sa, ike_sa);
+		}
+		enumerator->destroy(enumerator);
+
+		charon->bus->children_migrate(charon->bus, NULL, 0);
+
+		/* no need for another lookup, our entry is already checked out */
+		lock_single_segment(this, segment);
+	}
+	else
+	{
+		ike_sa_id->set_initiator_spi(ike_sa_id, new_spi);
+	}
 	entry->ike_sa_id->replace_values(entry->ike_sa_id, ike_sa_id);
 
 	entry->condvar->signal(entry->condvar);

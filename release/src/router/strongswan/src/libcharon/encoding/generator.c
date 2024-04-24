@@ -442,20 +442,19 @@ METHOD(generator_t, get_chunk, chunk_t,
 METHOD(generator_t, generate_payload, void,
 	private_generator_t *this, payload_t *payload)
 {
-	int i, offset_start, rule_count;
+	int i, rule_count;
 	encoding_rule_t *rules;
-	payload_type_t payload_type;
-
-	this->data_struct = payload;
-	payload_type = payload->get_type(payload);
-
-	offset_start = this->out_position - this->buffer;
+#if DEBUG_LEVEL >= 2
+	int offset_start = this->out_position - this->buffer;
+#endif
 
 	if (this->debug)
 	{
 		DBG2(DBG_ENC, "generating payload of type %N",
-			 payload_type_names, payload_type);
+			 payload_type_names, payload->get_type(payload));
 	}
+
+	this->data_struct = payload;
 
 	/* each payload has its own encoding rules */
 	rule_count = payload->get_encoding_rules(payload, &rules);
@@ -559,7 +558,7 @@ METHOD(generator_t, generate_payload, void,
 	if (this->debug)
 	{
 		DBG2(DBG_ENC, "generating %N payload finished",
-			 payload_type_names, payload_type);
+			 payload_type_names, payload->get_type(payload));
 		DBG3(DBG_ENC, "generated data for this payload %b",
 			 this->buffer + offset_start,
 			 (u_int)(this->out_position - this->buffer - offset_start));

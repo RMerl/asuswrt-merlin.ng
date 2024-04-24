@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2013-2018 Tobias Brunner
+ * Copyright (C) 2013-2023 Tobias Brunner
  * Copyright (C) 2006 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -25,6 +25,7 @@
 
 typedef struct task_manager_t task_manager_t;
 typedef enum task_queue_t task_queue_t;
+typedef struct retransmission_t retransmission_t;
 
 #include <limits.h>
 
@@ -64,6 +65,49 @@ typedef enum task_queue_t task_queue_t;
 #define ROUTABILITY_CHECK_TRIES 10
 
 /**
+ * Retransmission settings.
+ *
+ * See retransmission_timeout() for details on the calculation.
+ */
+struct retransmission_t {
+
+	/**
+	 * Timeout in seconds.
+	 */
+	double timeout;
+
+	/**
+	 * Base that's raised to the power of the retransmission try to calculate
+	 * the timeout.
+	 */
+	double base;
+
+	/**
+	 * Limit for the calculated timeout (in ms).
+	 */
+	uint32_t limit;
+
+	/**
+	 * Maximum jitter to apply to calculated timeout (in percent). A random
+	 * amount of that value will be subtracted from the calculated timeout.
+	 */
+	u_int jitter;
+
+	/**
+	 * Number of tries.
+	 */
+	u_int tries;
+
+	/**
+	 * Maximum number of tries possible with current retransmission settings
+	 * before overflowing the range of uint32_t, which we use for the timeout.
+	 * Note that UINT32_MAX milliseconds equal nearly 50 days, so using a high
+	 * number of retransmits doesn't make much sense without `limit` anyway.
+	 */
+	u_int max_tries;
+};
+
+/**
  * Type of task queues the task manager uses to handle tasks
  */
 enum task_queue_t {
@@ -88,24 +132,8 @@ enum task_queue_t {
  * For the initial IKE_SA setup, several tasks are queued: One for the
  * unauthenticated IKE_SA setup, one for authentication, one for CHILD_SA setup
  * and maybe one for virtual IP assignment.
- * The task manager is also responsible for retransmission. It uses a backoff
- * algorithm. The timeout is calculated using
- * RETRANSMIT_TIMEOUT * (RETRANSMIT_BASE ** try).
- * When try reaches RETRANSMIT_TRIES, retransmission is given up.
- *
- * Using an initial TIMEOUT of 4s, a BASE of 1.8, and 5 TRIES gives us:
- * @verbatim
-                   | relative | absolute
-   ---------------------------------------------------------
-   4s * (1.8 ** 0) =    4s         4s
-   4s * (1.8 ** 1) =    7s        11s
-   4s * (1.8 ** 2) =   13s        24s
-   4s * (1.8 ** 3) =   23s        47s
-   4s * (1.8 ** 4) =   42s        89s
-   4s * (1.8 ** 5) =   76s       165s
-
-   @endverbatim
- * The peer is considered dead after 2min 45s when no reply comes in.
+ * The task manager is also responsible for retransmission (see
+ * retransmission_timeout() for details).
  */
 struct task_manager_t {
 
@@ -305,15 +333,55 @@ struct task_manager_t {
 };
 
 /**
- * Calculate total timeout of the retransmission mechanism.
+ * Parse the default retransmission settings.
  *
- * This is affected by modifications of retransmit_base, retransmit_timeout,
- * retransmit_limit or retransmit_tries. The resulting value can then be used
- * e.g. in kernel plugins to set the system's acquire timeout properly.
+ * @param settings			retransmission settings that are filled in
+ */
+void retransmission_parse_default(retransmission_t *settings);
+
+/**
+ * Calculate the retransmission timeout in ms based on the given settings and
+ * try.
  *
+ * An exponential backoff algorithm is used. The timeout for each retransmit
+ * is calculated as follows: min(timeout * (base ** try), limit)
+ * From the result a random value (of at most jitter percent) is optionally
+ * subtracted.
+ *
+ * Using an initial timeout of 4s, a base of 1.8, and 5 tries gives us:
+ * @verbatim
+                   | relative | absolute
+   ---------------------------------------------------------
+   4s * (1.8 ** 0) =    4s         4s
+   4s * (1.8 ** 1) =    7s        11s
+   4s * (1.8 ** 2) =   13s        24s
+   4s * (1.8 ** 3) =   23s        47s
+   4s * (1.8 ** 4) =   42s        89s
+   4s * (1.8 ** 5) =   76s       165s
+
+   @endverbatim
+ * So the peer is considered dead after 2min 45s when no reply is received.
+ *
+ * @param settings			retransmission settings
+ * @param try				zero-based try to send a packet
+ * @param randomize			whether to apply jitter
+ * @return					timeout for next retransmit in ms
+ */
+uint32_t retransmission_timeout(retransmission_t *settings, u_int try,
+								bool randomize);
+
+/**
+ * Calculate total timeout in s for the given retransmission settings (ignoring
+ * jitter).
+ *
+ * This is affected by modifications of base, timeout, limit and tries. The
+ * resulting value can then be used e.g. in kernel plugins to set the system's
+ * acquire timeout properly.
+ *
+ * @param settings			retransmission settings
  * @return					calculated total retransmission timeout in seconds
  */
-u_int task_manager_total_retransmit_timeout();
+u_int retransmission_timeout_total(retransmission_t *settings);
 
 /**
  * Create a task manager instance for the correct IKE version.

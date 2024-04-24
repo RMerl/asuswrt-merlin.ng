@@ -334,7 +334,7 @@ static void process_filter_id(radius_message_t *msg)
 {
 	enumerator_t *enumerator;
 	int type;
-	uint8_t tunnel_tag;
+	uint8_t tunnel_tag DBG_UNUSED;
 	uint32_t tunnel_type;
 	chunk_t filter_id = chunk_empty, data;
 	bool is_esp_tunnel = FALSE;

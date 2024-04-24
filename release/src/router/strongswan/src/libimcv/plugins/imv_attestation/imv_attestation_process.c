@@ -228,7 +228,7 @@ bool imv_attestation_process(pa_tnc_attr_t *attr, imv_msg_t *out_msg,
 			TNC_IMV_Action_Recommendation rec;
 			tcg_pts_attr_file_meas_t *attr_cast;
 			uint16_t request_id;
-			int arg_int, file_count;
+			int arg_int, file_count DBG_UNUSED;
 			pts_meas_algorithms_t algo;
 			pts_file_meas_t *measurements;
 			imv_workitem_t *workitem, *found = NULL;
@@ -364,6 +364,7 @@ bool imv_attestation_process(pa_tnc_attr_t *attr, imv_msg_t *out_msg,
 		}
 		case TCG_PTS_UNIX_FILE_META:
 		{
+#if DEBUG_LEVEL >= 1
 			tcg_pts_attr_file_meta_t *attr_cast;
 			int file_count;
 			pts_file_meta_t *metadata;
@@ -395,6 +396,7 @@ bool imv_attestation_process(pa_tnc_attr_t *attr, imv_msg_t *out_msg,
 					 &created, utc, &modified, utc, &accessed, utc);
 			}
 			e->destroy(e);
+#endif /* DEBUG_LEVEL */
 			break;
 		}
 		case TCG_PTS_SIMPLE_COMP_EVID:

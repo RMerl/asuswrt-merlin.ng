@@ -1,6 +1,7 @@
 /*
  * Copyright (C) 2017 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
+ * Copyright (C) 2022 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -230,7 +231,7 @@ METHOD(crl_t, create_enumerator, enumerator_t*,
 METHOD(crl_t, get_serial, chunk_t,
 	private_openssl_crl_t *this)
 {
-	return this->serial;
+	return chunk_skip_zero(this->serial);
 }
 
 METHOD(crl_t, is_delta_crl, bool,
@@ -240,7 +241,7 @@ METHOD(crl_t, is_delta_crl, bool,
 	{
 		if (base_crl)
 		{
-			*base_crl = this->base;
+			*base_crl = chunk_skip_zero(this->base);
 		}
 		return TRUE;
 	}
@@ -302,7 +303,7 @@ METHOD(certificate_t, issued_by, bool,
 		return FALSE;
 	}
 	x509 = (x509_t*)issuer;
-	if (!(x509->get_flags(x509) & (X509_CA | X509_CRL_SIGN)))
+	if (!(x509->get_flags(x509) & X509_CRL_SIGN))
 	{
 		return FALSE;
 	}

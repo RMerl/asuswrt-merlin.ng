@@ -570,6 +570,57 @@ START_TEST(test_base32)
 END_TEST
 
 /*******************************************************************************
+ * DEC encoding test
+ */
+
+START_TEST(test_dec)
+{
+	typedef struct {
+		chunk_t in;
+		char *out;
+	} testdata_t;
+
+	testdata_t test[] = {
+		{  chunk_from_chars(            0x00),        "0" },
+		{  chunk_from_chars(            0x09),        "9" },
+		{  chunk_from_chars(            0x0a),       "10" },
+		{  chunk_from_chars(            0x13),       "19" },
+		{  chunk_from_chars(            0x14),       "20" },
+		{  chunk_from_chars(            0x63),       "99" },
+		{  chunk_from_chars(            0x64),      "100" },
+		{  chunk_from_chars(            0x65),      "101" },
+		{  chunk_from_chars(            0xff),      "255" },
+		{  chunk_from_chars(      0x00, 0xff),      "255" },
+		{  chunk_from_chars(      0x01, 0x00),      "256" },
+		{  chunk_from_chars(      0x01, 0x03),      "259" },
+		{  chunk_from_chars(      0x01, 0x04),      "260" },
+		{  chunk_from_chars(      0x09, 0xff),     "2559" },
+		{  chunk_from_chars(      0x0a, 0x00),     "2560" },
+		{  chunk_from_chars(      0x0a, 0x01),     "2561" },
+		{  chunk_from_chars(      0xff, 0xff),    "65535" },
+		{  chunk_from_chars(0x00, 0xff, 0xff),    "65535" },
+		{  chunk_from_chars(0x01, 0x00, 0x00),    "65536" },
+		{  chunk_from_chars(0x01, 0x86, 0x9f),    "99999" },
+		{  chunk_from_chars(0x01, 0x86, 0xa0),   "100000" },
+		{  chunk_from_chars(0x0f, 0x42, 0x40),  "1000000" },
+		{  chunk_from_chars(0xa9, 0x8a, 0xc7), "11111111" },
+		{  chunk_from_chars(0xbc, 0x61, 0x4e), "12345678" },
+	};
+
+	int i;
+
+	for (i = 0; i < countof(test); i++)
+	{
+		char buf[10];
+		chunk_t out;
+
+		out = chunk_to_dec(test[i].in, buf);
+		ck_assert_str_eq(out.ptr, test[i].out);
+	}
+}
+END_TEST
+
+/*******************************************************************************
  * chunk_increment test
  */
 
@@ -1190,6 +1241,7 @@ Suite *chunk_suite_create()
 	tcase_add_test(tc, test_base64);
 	tcase_add_test(tc, test_base32);
 	tcase_add_test(tc, test_base16);
+	tcase_add_test(tc, test_dec);
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("chunk_mac");

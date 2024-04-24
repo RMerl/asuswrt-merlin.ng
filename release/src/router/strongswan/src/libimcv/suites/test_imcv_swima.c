@@ -1000,9 +1000,9 @@ START_TEST(test_imcv_swima_sw_collector)
 	swima_events_t *events;
 	swima_record_t *sw_record;
 	swima_event_t *sw_event;
-	chunk_t sw_id, sw_locator, swid_tag;
+	chunk_t sw_id DBG_UNUSED, sw_locator, swid_tag DBG_UNUSED;
 	enumerator_t *enumerator;
-	uint8_t source_id;
+	uint8_t source_id DBG_UNUSED;
 	int item = 0, items;
 
 	targets = swima_inventory_create();

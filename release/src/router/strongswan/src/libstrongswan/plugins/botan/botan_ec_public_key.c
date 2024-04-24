@@ -235,6 +235,14 @@ botan_ec_public_key_t *botan_ec_public_key_adopt(botan_pubkey_t key)
 {
 	private_botan_ec_public_key_t *this;
 
+#ifdef HAVE_BOTAN_PUBKEY_ECC_KEY_USED_EXPLICIT_ENCODING
+	if (botan_pubkey_ecc_key_used_explicit_encoding(key))
+	{
+		botan_pubkey_destroy(key);
+		return NULL;
+	}
+#endif
+
 	INIT(this,
 		.public = {
 			.key = {

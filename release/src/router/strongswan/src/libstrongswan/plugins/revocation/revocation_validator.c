@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2015-2018 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
- * Copyright (C) 2009 Andreas Steffen
+ * Copyright (C) 2009-2022 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -121,8 +121,14 @@ static certificate_t *fetch_ocsp(char *url, certificate_t *subject,
 		request->destroy(request);
 		return NULL;
 	}
-	ocsp_request = (ocsp_request_t*)request;
 	ocsp_response = (ocsp_response_t*)response;
+	if (ocsp_response->get_ocsp_status(ocsp_response) != OCSP_SUCCESSFUL)
+	{
+		response->destroy(response);
+		request->destroy(request);
+		return NULL;
+	}
+	ocsp_request = (ocsp_request_t*)request;
 	if (ocsp_response->get_nonce(ocsp_response).len &&
 		!chunk_equals_const(ocsp_request->get_nonce(ocsp_request),
 							ocsp_response->get_nonce(ocsp_response)))
@@ -138,7 +144,8 @@ static certificate_t *fetch_ocsp(char *url, certificate_t *subject,
 /**
  * check the signature of an OCSP response
  */
-static bool verify_ocsp(ocsp_response_t *response, certificate_t *ca)
+static bool verify_ocsp(ocsp_response_t *response, certificate_t *ca,
+						bool cached)
 {
 	certificate_t *issuer, *subject;
 	identification_t *responder;
@@ -177,8 +184,11 @@ static bool verify_ocsp(ocsp_response_t *response, certificate_t *ca)
 		found = TRUE;
 		if (lib->credmgr->issued_by(lib->credmgr, subject, issuer, NULL))
 		{
-			DBG1(DBG_CFG, "  ocsp response correctly signed by \"%Y\"",
-				 issuer->get_subject(issuer));
+			if (!cached)
+			{
+				DBG1(DBG_CFG, "  ocsp response correctly signed by \"%Y\"",
+					 issuer->get_subject(issuer));
+			}
 			verified = TRUE;
 			break;
 		}
@@ -204,8 +214,11 @@ static bool verify_ocsp(ocsp_response_t *response, certificate_t *ca)
 				found = TRUE;
 				if (lib->credmgr->issued_by(lib->credmgr, subject, issuer, NULL))
 				{
-					DBG1(DBG_CFG, "  ocsp response correctly signed by \"%Y\"",
-						 issuer->get_subject(issuer));
+					if (!cached)
+					{
+						DBG1(DBG_CFG, "  ocsp response correctly signed by \"%Y\"",
+							 issuer->get_subject(issuer));
+					}
 					verified = TRUE;
 					break;
 				}
@@ -219,7 +232,7 @@ static bool verify_ocsp(ocsp_response_t *response, certificate_t *ca)
 	lib->credmgr->remove_local_set(lib->credmgr, &wrapper->set);
 	wrapper->destroy(wrapper);
 
-	if (!found)
+	if (!found && !cached)
 	{
 		DBG1(DBG_CFG, "ocsp response verification failed, "
 			 "no signer certificate '%Y' found", responder);
@@ -232,7 +245,7 @@ static bool verify_ocsp(ocsp_response_t *response, certificate_t *ca)
  */
 static certificate_t *get_better_ocsp(certificate_t *cand, certificate_t *best,
 									  x509_t *subject, x509_t *issuer,
-									  cert_validation_t *valid, bool cache)
+									  cert_validation_t *valid, bool cached)
 {
 	ocsp_response_t *response;
 	time_t revocation, this_update, next_update, valid_until;
@@ -242,7 +255,7 @@ static certificate_t *get_better_ocsp(certificate_t *cand, certificate_t *best,
 	response = (ocsp_response_t*)cand;
 
 	/* check ocsp signature */
-	if (!verify_ocsp(response, &issuer->interface))
+	if (!verify_ocsp(response, &issuer->interface, cached))
 	{
 		cand->destroy(cand);
 		return best;
@@ -263,7 +276,11 @@ static certificate_t *get_better_ocsp(certificate_t *cand, certificate_t *best,
 		default:
 		case VALIDATION_FAILED:
 			/* candidate unusable, does not contain our cert */
-			DBG1(DBG_CFG, "  ocsp response contains no status on our certificate");
+			if (!cached)
+			{
+				DBG1(DBG_CFG, "  ocsp response contains no status on our "
+					 "certificate");
+			}
 			cand->destroy(cand);
 			return best;
 	}
@@ -278,7 +295,7 @@ static certificate_t *get_better_ocsp(certificate_t *cand, certificate_t *best,
 			DBG1(DBG_CFG, "  ocsp response is valid: until %T",
 							 &valid_until, FALSE);
 			*valid = VALIDATION_GOOD;
-			if (cache)
+			if (!cached)
 			{	/* cache non-stale only, stale certs get refetched */
 				lib->credmgr->cache_cert(lib->credmgr, best);
 			}
@@ -322,7 +339,7 @@ static cert_validation_t check_ocsp(x509_t *subject, x509_t *issuer,
 	while (enumerator->enumerate(enumerator, &current))
 	{
 		current->get_ref(current);
-		best = get_better_ocsp(current, best, subject, issuer, &valid, FALSE);
+		best = get_better_ocsp(current, best, subject, issuer, &valid, TRUE);
 		if (best && valid != VALIDATION_STALE)
 		{
 			DBG1(DBG_CFG, "  using cached ocsp response");
@@ -350,7 +367,7 @@ static cert_validation_t check_ocsp(x509_t *subject, x509_t *issuer,
 			if (current)
 			{
 				best = get_better_ocsp(current, best, subject, issuer,
-									   &valid, TRUE);
+									   &valid, FALSE);
 				if (best && valid != VALIDATION_STALE)
 				{
 					break;
@@ -373,7 +390,7 @@ static cert_validation_t check_ocsp(x509_t *subject, x509_t *issuer,
 			if (current)
 			{
 				best = get_better_ocsp(current, best, subject, issuer,
-									   &valid, TRUE);
+									   &valid, FALSE);
 				if (best && valid != VALIDATION_STALE)
 				{
 					break;
@@ -534,11 +551,11 @@ static certificate_t *get_better_crl(certificate_t *cand, certificate_t *best,
 		return best;
 	}
 
-	subject_serial = chunk_skip_zero(subject->get_serial(subject));
+	subject_serial = subject->get_serial(subject);
 	enumerator = crl->create_enumerator(crl);
 	while (enumerator->enumerate(enumerator, &serial, &revocation, &reason))
 	{
-		if (chunk_equals(subject_serial, chunk_skip_zero(serial)))
+		if (chunk_equals(subject_serial, serial))
 		{
 			if (reason != CRL_REASON_CERTIFICATE_HOLD)
 			{
@@ -672,7 +689,8 @@ static cert_validation_t check_delta_crl(x509_t *subject, x509_t *issuer,
 									u_int timeout)
 {
 	cert_validation_t valid = VALIDATION_SKIPPED;
-	certificate_t *best = NULL, *current, *cissuer = (certificate_t*)issuer;
+	certificate_t *best = NULL, *current;
+	certificate_t *cissuer DBG_UNUSED = (certificate_t*)issuer;
 	enumerator_t *enumerator;
 	identification_t *id;
 	x509_cdp_t *cdp;
@@ -741,7 +759,7 @@ static cert_validation_t check_crl(x509_t *subject, x509_t *issuer,
 								   auth_cfg_t *auth, u_int timeout)
 {
 	cert_validation_t valid = VALIDATION_SKIPPED;
-	certificate_t *best = NULL, *cissuer = (certificate_t*)issuer;
+	certificate_t *best = NULL, *cissuer DBG_UNUSED = (certificate_t*)issuer;
 	identification_t *id;
 	x509_cdp_t *cdp;
 	bool uri_found = FALSE;

@@ -27,14 +27,6 @@
 #include <crypto/signers/signer.h>
 
 /**
- * Create a generic mac_t object using AESNI XCBC
- *
- * @param algo		underlying encryption algorithm
- * @param key_size	size of encryption key, in bytes
- */
-mac_t *aesni_xcbc_create(encryption_algorithm_t algo, size_t key_size);
-
-/**
  * Creates a new prf_t object based AESNI XCBC.
  *
  * @param algo		algorithm to implement

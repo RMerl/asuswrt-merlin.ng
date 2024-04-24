@@ -21,10 +21,11 @@
  * THE SOFTWARE.
  */
 
+#include "wolfssl_common.h"
+
 #include <library.h>
 #include <utils/debug.h>
 
-#include "wolfssl_common.h"
 #include "wolfssl_plugin.h"
 #include "wolfssl_aead.h"
 #include "wolfssl_crypter.h"
@@ -43,6 +44,8 @@
 #include "wolfssl_sha1_prf.h"
 #include "wolfssl_x_diffie_hellman.h"
 #include "wolfssl_xof.h"
+
+#include <wolfssl/ssl.h>
 
 #ifndef FIPS_MODE
 #define FIPS_MODE 0

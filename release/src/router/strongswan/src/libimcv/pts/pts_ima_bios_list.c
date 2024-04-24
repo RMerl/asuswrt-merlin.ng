@@ -201,11 +201,10 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(tpm_tss_t *tpm, char *file,
 											  pts_meas_algorithms_t algo)
 {
 	private_pts_ima_bios_list_t *this;
-	uint32_t pcr, ev_type, event_type, event_len, seek_len, count = 1;
+	uint32_t pcr, event_type, event_len, seek_len, count = 1;
 	uint32_t buf_len = 8192;
 	uint8_t event_buf[buf_len];
 	hash_algorithm_t hash_alg;
-	chunk_t event;
 	bios_entry_t *entry;
 	struct stat st;
 	ssize_t res;
@@ -276,10 +275,12 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(tpm_tss_t *tpm, char *file,
 		{
 			break;
 		}
-		ev_type = (event_type < EV_EFI_EVENT_BASE) ?
-				   event_type : event_type - EV_EFI_OFFSET;
+#if DEBUG_LEVEL >= 2
+		uint32_t ev_type = (event_type < EV_EFI_EVENT_BASE) ?
+							event_type : event_type - EV_EFI_OFFSET;
 		DBG2(DBG_PTS, "%3u %2u  %N  (%u bytes)", count, pcr, event_type_names,
-												 ev_type,  event_len);
+			 ev_type, event_len);
+#endif
 		seek_len = (event_len > buf_len) ? event_len - buf_len : 0;
 		event_len -= seek_len;
 
@@ -310,8 +311,7 @@ pts_ima_bios_list_t* pts_ima_bios_list_create(tpm_tss_t *tpm, char *file,
 			default:
 				break;
 		}
-		event = chunk_create(event_buf, event_len);
-		DBG3(DBG_PTS,"%B", &event);
+		DBG3(DBG_PTS, "%b", event_buf, event_len);
 
 		if (seek_len > 0 && lseek(fd, seek_len, SEEK_CUR) == -1)
 		{

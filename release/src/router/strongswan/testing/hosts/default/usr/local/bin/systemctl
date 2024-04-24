@@ -8,7 +8,7 @@ ORIG=/bin/systemctl
 CONF=/lib/systemd/system/strongswan.service
 
 if [[ "$2" != "strongswan" ]]; then
-	$ORIG "$@"
+	exec $ORIG "$@"
 fi
 
 if [[ "$1" == "start" && -n $LEAK_DETECTIVE_LOG ]]; then
@@ -16,7 +16,10 @@ if [[ "$1" == "start" && -n $LEAK_DETECTIVE_LOG ]]; then
 fi
 
 $ORIG "$@"
+STATUS=$?
 
 if [[ "$1" == "stop" ]]; then
 	sed -i '/LEAK_DETECTIVE_LOG/d' $CONF 2>/dev/null
 fi
+
+exit $STATUS

@@ -86,6 +86,13 @@ ENUM_FLAGS(test_enum_flags_overflow_names, FLAG1, FLAG12, "(unset)",
 	"OVERFLOWFLAGLONGNAME10", "OVERFLOWFLAGLONGNAME11", "OVERFLOWFLAGLONGNAME12");
 
 /*******************************************************************************
+ * add_enum_names
+ */
+
+ENUM_EXT(e1, 65000, 65001, "CONT65000", "CONT65001");
+ENUM_EXT(e2, 62000, 62001, "CONT62000", "CONT62001");
+
+/*******************************************************************************
  * enum_to_name
  */
 
@@ -172,6 +179,15 @@ static struct {
 	{FALSE, 0, "asdf"},
 	{FALSE, 0, ""},
 	{FALSE, 0, NULL},
+}, enum_tests_ext[] = {
+	{TRUE, CONT1, "CONT1"},
+	{TRUE, 62000, "CONT62000"},
+	{TRUE, 62001, "CONT62001"},
+	{TRUE, 65000, "CONT65000"},
+	{TRUE, 65001, "CONT65001"},
+	{FALSE, 0, "CONT64000"},
+	{FALSE, 0, ""},
+	{FALSE, 0, NULL},
 };
 
 START_TEST(test_enum_from_name_cont)
@@ -193,6 +209,23 @@ START_TEST(test_enum_from_name_split)
 	found = enum_from_name(test_enum_split_names, enum_tests_split[_i].str, &val);
 	ck_assert(enum_tests_split[_i].found == found);
 	ck_assert_int_eq(val, enum_tests_split[_i].val);
+}
+END_TEST
+
+START_TEST(test_enum_from_name_ext)
+{
+	int val = 0;
+	bool found;
+
+	enum_add_enum_names(test_enum_cont_names, e1);
+	enum_add_enum_names(test_enum_cont_names, e2);
+
+	found = enum_from_name(test_enum_cont_names, enum_tests_ext[_i].str, &val);
+	ck_assert(enum_tests_ext[_i].found == found);
+	ck_assert_int_eq(val, enum_tests_ext[_i].val);
+
+	enum_remove_enum_names(test_enum_cont_names, e1);
+	enum_remove_enum_names(test_enum_cont_names, e2);
 }
 END_TEST
 
@@ -441,6 +474,51 @@ START_TEST(test_enum_printf_hook_width)
 }
 END_TEST
 
+START_TEST(test_enum_printf_hook_add_enum_names)
+{
+	char buf[128];
+
+	enum_add_enum_names(test_enum_cont_names, e1);
+	snprintf(buf, sizeof(buf), "%N", test_enum_cont_names, 65001);
+	ck_assert_str_eq("CONT65001", buf);
+
+	enum_add_enum_names(test_enum_cont_names, e2);
+	snprintf(buf, sizeof(buf), "%N", test_enum_cont_names, 62001);
+	ck_assert_str_eq("CONT62001", buf);
+
+	/* adding the same list repeatedly should not result in an infinite loop */
+	enum_add_enum_names(test_enum_cont_names, e2);
+	snprintf(buf, sizeof(buf), "%N", test_enum_cont_names, 62001);
+	ck_assert_str_eq("CONT62001", buf);
+
+	/* can also be defined inside a function as long as the same function is
+	 * adding and removing it */
+	ENUM_EXT(e3, 64000, 64001, "CONT64000", "CONT64001");
+	enum_add_enum_names(test_enum_cont_names, e3);
+	snprintf(buf, sizeof(buf), "%N", test_enum_cont_names, 64000);
+	ck_assert_str_eq("CONT64000", buf);
+
+	snprintf(buf, sizeof(buf), "%N, %N, %N", test_enum_cont_names, 62001,
+			test_enum_cont_names, 65000, test_enum_cont_names, 64000);
+	ck_assert_str_eq("CONT62001, CONT65000, CONT64000", buf);
+
+	enum_remove_enum_names(test_enum_cont_names, e2);
+	snprintf(buf, sizeof(buf), "%N, %N, %N", test_enum_cont_names, 62001,
+			test_enum_cont_names, 65000, test_enum_cont_names, 64000);
+	ck_assert_str_eq("(62001), CONT65000, CONT64000", buf);
+
+	enum_remove_enum_names(test_enum_cont_names, e3);
+	snprintf(buf, sizeof(buf), "%N, %N, %N", test_enum_cont_names, 62001,
+			test_enum_cont_names, 65000, test_enum_cont_names, 64000);
+	ck_assert_str_eq("(62001), CONT65000, (64000)", buf);
+
+	enum_remove_enum_names(test_enum_cont_names, e1);
+	snprintf(buf, sizeof(buf), "%N, %N, %N", test_enum_cont_names, 62001,
+			test_enum_cont_names, 65000, test_enum_cont_names, 64000);
+	ck_assert_str_eq("(62001), (65000), (64000)", buf);
+}
+END_TEST
+
 Suite *enum_suite_create()
 {
 	Suite *s;
@@ -456,6 +534,7 @@ Suite *enum_suite_create()
 	tc = tcase_create("enum_from_name");
 	tcase_add_loop_test(tc, test_enum_from_name_cont, 0, countof(enum_tests_cont));
 	tcase_add_loop_test(tc, test_enum_from_name_split, 0, countof(enum_tests_split));
+	tcase_add_loop_test(tc, test_enum_from_name_ext, 0, countof(enum_tests_ext));
 	suite_add_tcase(s, tc);
 
 	tc = tcase_create("enum_flags_to_string");
@@ -478,6 +557,7 @@ Suite *enum_suite_create()
 	tcase_add_loop_test(tc, test_enum_printf_hook_flags_overflow, 0, countof(printf_tests_flags_overflow));
 	tcase_add_loop_test(tc, test_enum_printf_hook_flags_noflagenum, 0, countof(printf_tests_flags_noflagenum));
 	tcase_add_test(tc, test_enum_printf_hook_width);
+	tcase_add_test(tc, test_enum_printf_hook_add_enum_names);
 	suite_add_tcase(s, tc);
 
 	return s;

@@ -541,6 +541,9 @@ static char *whitelist[] = {
 	"tzset",
 	"_IO_file_doallocate",
 	"selinux_check_access",
+	"on_exit",
+	/* glibc thread-local storage triggered primarily by Botan */
+	"__tls_get_addr",
 	/* ignore dlopen, as we do not dlclose to get proper leak reports */
 	"dlopen",
 	"dlerror",
@@ -599,6 +602,7 @@ static char *whitelist[] = {
 	"RAND_DRBG_get0_private",
 	"RAND_DRBG_get0_public",
 	/* OpenSSL 3.0 caches even more static stuff */
+	"evp_generic_fetch_from_prov",
 	"ERR_set_debug",
 	"ERR_set_error",
 	"EVP_DigestSignInit",
@@ -611,6 +615,7 @@ static char *whitelist[] = {
 	"EVP_CIPHER_fetch",
 	"EVP_KDF_fetch",
 	"EVP_KEYEXCH_fetch",
+	"EVP_KEYMGMT_do_all_provided",
 	"EVP_KEYMGMT_fetch",
 	"EVP_MAC_fetch",
 	"EVP_MD_fetch",
@@ -663,6 +668,9 @@ static char *whitelist[] = {
 	"botan_privkey_load",
 	"botan_privkey_load_rsa_pkcs1",
 	"botan_kdf",
+	/* C++ due to Botan */
+	"__cxa_get_globals",
+	"__cxa_thread_atexit",
 };
 
 /**

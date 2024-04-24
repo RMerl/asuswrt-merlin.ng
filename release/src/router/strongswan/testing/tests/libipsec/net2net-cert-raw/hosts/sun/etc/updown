@@ -1,0 +1,59 @@
+#!/bin/sh
+
+TUN_NAME=ipsec0
+
+# use protocol specific options to set ports
+case "$PLUTO_MY_PROTOCOL" in
+1)	# ICMP
+	ICMP_TYPE_OPTION="--icmp-type"
+	;;
+58)	# ICMPv6
+	ICMP_TYPE_OPTION="--icmpv6-type"
+	;;
+*)
+	;;
+esac
+
+# are there port numbers?
+if [ "$PLUTO_MY_PORT" != 0 ]
+then
+	if [ -n "$ICMP_TYPE_OPTION" ]
+	then
+		S_MY_PORT="$ICMP_TYPE_OPTION $PLUTO_MY_PORT"
+		D_MY_PORT="$ICMP_TYPE_OPTION $PLUTO_MY_PORT"
+	else
+		S_MY_PORT="--sport $PLUTO_MY_PORT"
+		D_MY_PORT="--dport $PLUTO_MY_PORT"
+	fi
+fi
+if [ "$PLUTO_PEER_PORT" != 0 ]
+then
+	if [ -n "$ICMP_TYPE_OPTION" ]
+	then
+		# the syntax is --icmp[v6]-type type[/code], so add it to the existing option
+		S_MY_PORT="$S_MY_PORT/$PLUTO_PEER_PORT"
+		D_MY_PORT="$D_MY_PORT/$PLUTO_PEER_PORT"
+	else
+		S_PEER_PORT="--sport $PLUTO_PEER_PORT"
+		D_PEER_PORT="--dport $PLUTO_PEER_PORT"
+	fi
+fi
+
+case "$PLUTO_VERB" in
+up-client)
+	iptables -I FORWARD 1 -o $TUN_NAME -p $PLUTO_PEER_PROTOCOL \
+	    -s $PLUTO_MY_CLIENT $S_MY_PORT \
+	    -d $PLUTO_PEER_CLIENT $D_PEER_PORT -j ACCEPT
+	iptables -I FORWARD 1 -i $TUN_NAME -p $PLUTO_MY_PROTOCOL \
+	    -s $PLUTO_PEER_CLIENT $S_PEER_PORT \
+	    -d $PLUTO_MY_CLIENT $D_MY_PORT -j ACCEPT
+	;;
+down-client)
+	iptables -D FORWARD -o $TUN_NAME -p $PLUTO_PEER_PROTOCOL \
+	    -s $PLUTO_MY_CLIENT $S_MY_PORT \
+	    -d $PLUTO_PEER_CLIENT $D_PEER_PORT -j ACCEPT
+	iptables -D FORWARD -i $TUN_NAME -p $PLUTO_MY_PROTOCOL \
+	    -s $PLUTO_PEER_CLIENT $S_PEER_PORT \
+	    -d $PLUTO_MY_CLIENT $D_MY_PORT -j ACCEPT
+	;;
+esac

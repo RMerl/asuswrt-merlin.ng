@@ -1361,6 +1361,7 @@ METHOD(aead_t, destroy, void,
 	memwipe(&this->hh, sizeof(this->hh));
 	memwipe(&this->hhh, sizeof(this->hhh));
 	memwipe(&this->hhhh, sizeof(this->hhhh));
+	memwipe(this->salt, sizeof(this->salt));
 	this->iv_gen->destroy(this->iv_gen);
 	free_align(this);
 }

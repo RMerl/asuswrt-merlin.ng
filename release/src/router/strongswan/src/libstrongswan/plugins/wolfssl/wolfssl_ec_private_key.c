@@ -449,7 +449,8 @@ wolfssl_ec_private_key_t *wolfssl_ec_private_key_load(key_type_t type,
 	}
 
 	idx = 0;
-	if (wc_EccPrivateKeyDecode(key.ptr, &idx, &this->ec, key.len) < 0)
+	if (wc_EccPrivateKeyDecode(key.ptr, &idx, &this->ec, key.len) < 0 ||
+		this->ec.idx == -1)
 	{
 		destroy(this);
 		return NULL;

@@ -21,7 +21,7 @@ fi
 
 if [[ $KERNELPATCH && ! -f "$KERNELPATCH" ]]
 then
-	url=http://download.strongswan.org/uml/$KERNELPATCH
+	url=https://download.strongswan.org/testing/$KERNELPATCH
 	log_action "Downloading $url"
 	execute "wget -q $url"
 fi
@@ -37,8 +37,9 @@ then
 	then
 		log_action "Applying kernel patch"
 		bzcat $KERNELPATCH | patch -d $KERNELDIR -p1 >>$LOGFILE 2>&1
-		log_status $?
-		[ $? -eq 0 ] || exit 1
+		status=$?
+		log_status $status
+		[ $status -eq 0 ] || exit 1
 	fi
 fi
 cd $KERNELDIR

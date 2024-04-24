@@ -7,8 +7,9 @@ pki \-\-estca \- Get CA certificate[s] from an EST server
 .SH "SYNOPSIS"
 .
 .SY pki\ \-\-estca
-.BI\-\-\-url\~ url
-.BI\-\-\-cacert\~ file
+.BI \-\-url\~ url
+.OP \-\-label label
+.BI \-\-cacert\~ file
 .OP \-\-caout file
 .OP \-\-outform encoding
 .OP \-\-force
@@ -46,6 +47,9 @@ Read command line options from \fIfile\fR.
 .TP
 .BI "\-u, \-\-url " url
 URL of the SCEP server.
+.TP
+.BI "\-l, \-\-label " label
+Label in the EST server path.
 .TP
 .BI "\-C, \-\-cacert " file
 CA certificate in the trust chain used for EST TLS server signature verification.
@@ -88,7 +92,7 @@ To save some typing work the following command line options are stored in a
 .B NOTE:
 For a successful HTTPS connection, trust must be established into the EST server
 certificate. The TLS trust chain including the root CA certificate and optionally
-intermediate CA certificates must be given using [multiple]
+intermediate CA certificates must be given using multiple
 .B --cacert
 options.
 .P

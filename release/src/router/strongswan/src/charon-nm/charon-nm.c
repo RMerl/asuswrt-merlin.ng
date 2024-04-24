@@ -195,6 +195,22 @@ int main(int argc, char *argv[])
 	lib->settings->set_default_str(lib->settings, "charon-nm.port", "0");
 	lib->settings->set_default_str(lib->settings, "charon-nm.port_nat_t", "0");
 
+	/* install VIPs on lo as NM might modify the physical interface (this seems
+	 * to affect IPv6 in particular), it actually installs the VIPs on the
+	 * passed device again, but since that happens after we require them for
+	 * installing routes, we install them ourselves too */
+	lib->settings->set_default_str(lib->settings,
+								   "charon-nm.install_virtual_ip_on", "lo");
+
+	/* install routes via XFRM interfaces, if we can use them */
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.plugins.kernel-netlink.install_routes_xfrmi", "yes");
+	/* bypass IKE traffic from these routes in case traffic selectors conflict */
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.plugins.socket-default.fwmark", "220");
+	lib->settings->set_default_str(lib->settings,
+				"charon-nm.plugins.kernel-netlink.fwmark", "!220");
+
 	DBG1(DBG_DMN, "Starting charon NetworkManager backend (strongSwan "VERSION")");
 	if (lib->integrity)
 	{

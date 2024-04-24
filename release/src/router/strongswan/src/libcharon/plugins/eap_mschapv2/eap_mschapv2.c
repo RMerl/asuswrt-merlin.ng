@@ -661,6 +661,7 @@ static chunk_t utf8_to_utf16le(chunk_t utf8)
 	return utf16;
 }
 
+#if DEBUG_LEVEL >= 1
 /**
  * sanitize a string for printing
  */
@@ -678,6 +679,7 @@ static char* sanitize(char *str)
 	}
 	return str;
 }
+#endif /* DEBUG_LEVEL */
 
 /**
  * Returns a chunk of just the username part of the given user identity.
@@ -966,7 +968,7 @@ static status_t process_peer_failure(private_eap_mschapv2_t *this,
 	eap_mschapv2_header_t *eap;
 	chunk_t data;
 	char *message, *token, *msg = NULL;
-	int message_len, error = 0;
+	int message_len, error DBG_UNUSED = 0;
 	chunk_t challenge = chunk_empty;
 
 	data = in->get_data(in);

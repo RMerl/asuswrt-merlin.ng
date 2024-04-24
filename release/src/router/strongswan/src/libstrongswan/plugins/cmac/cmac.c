@@ -310,10 +310,10 @@ METHOD(mac_t, destroy, void,
 	free(this);
 }
 
-/*
- * Described in header
+/**
+ * Create a generic mac_t object
  */
-mac_t *cmac_create(encryption_algorithm_t algo, size_t key_size)
+static mac_t *cmac_create(encryption_algorithm_t algo, size_t key_size)
 {
 	private_mac_t *this;
 	crypter_t *crypter;

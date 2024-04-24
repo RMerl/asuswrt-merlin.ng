@@ -1,11 +1,20 @@
 charon.plugins.resolve.file = /etc/resolv.conf
-	File where to add DNS server entries.
+	File where to add DNS server entries if not using resolvconf(8).
 
-charon.plugins.resolve.resolvconf.iface_prefix = lo.inet.ipsec.
-	Prefix used for interface names sent to resolvconf(8).
+charon.plugins.resolve.resolvconf.iface = lo.ipsec
+	Interface name/protocol sent to resolvconf(8).
 
-	Prefix used for interface names sent to **resolvconf**(8). The nameserver
-	address is appended to this prefix to make it unique.  The result has to be
-	a valid interface name according to the rules defined by resolvconf.  Also,
-	it should have a high priority according to the order defined in
-	**interface-order**(5).
+	The interface name and protocol sent to **resolvconf**(8). This has to be a
+	valid interface name according to the rules defined by resolvconf.  Also, it
+	should have a high priority according to the order defined in
+	**interface-order**(5) if relevant on the system.
+
+charon.plugins.resolve.resolvconf.path = /sbin/resolvconf
+	Path/command for resolvconf(8).
+
+	Path/command for **resolvconf**(8). The command is executed by a shell, so
+	"resolvconf" will work if it's in $PATH of the daemon.
+
+	If not configured, **resolvconf**(8) will be used if found at the default
+	location.  Otherwise, the file in _charon.plugins.resolve.file_ will be
+	modified directly.

@@ -1,6 +1,8 @@
+carol::cat /var/log/daemon.log::negotiated TLS 1.3 using suite TLS_AES_128_GCM_SHA256::YES
 carol::cat /var/log/daemon.log::PB-TNC access recommendation is 'Access Allowed'::YES
 carol::cat /var/log/daemon.log::EAP method EAP_TTLS succeeded, MSK established::YES
 carol::cat /var/log/daemon.log::authentication of 'moon.strongswan.org' with EAP successful::YES
+dave:: cat /var/log/daemon.log::negotiated TLS 1.2 using suite TLS_DHE_RSA_WITH_AES_128_CBC_SHA256::YES
 dave:: cat /var/log/daemon.log::PB-TNC access recommendation is 'Access Denied'::YES
 dave:: cat /var/log/daemon.log::received EAP_FAILURE, EAP authentication failed::YES
 moon:: cat /var/log/daemon.log::added group membership 'allow'::YES

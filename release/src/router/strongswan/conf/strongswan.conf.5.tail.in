@@ -458,6 +458,7 @@ The variables used above are configured as follows:
 .na
 ${piddir}               @piddir@
 ${prefix}               @prefix@
+${sysconfdir}           @sysconfdir@
 ${random_device}        @random_device@
 ${urandom_device}       @urandom_device@
 .ad
@@ -467,18 +468,19 @@ ${urandom_device}       @urandom_device@
 .
 .nf
 .na
-/etc/strongswan.conf       configuration file
-/etc/strongswan.d/         directory containing included config snippets
-/etc/strongswan.d/charon/  plugin specific config snippets
+@sysconfdir@/strongswan.conf       configuration file
+@sysconfdir@/strongswan.d/         directory containing included config snippets
+@sysconfdir@/strongswan.d/charon/  plugin specific config snippets
 .ad
 .fi
 .
 .SH SEE ALSO
+\fBswanctl.conf\fR(5), \fBswanctl\fR(8),
 \fBipsec.conf\fR(5), \fBipsec.secrets\fR(5), \fBipsec\fR(8), \fBcharon-cmd\fR(8)
 
 .SH HISTORY
 Written for the
-.UR http://www.strongswan.org
+.UR https://www.strongswan.org
 strongSwan project
 .UE
 by Tobias Brunner, Andreas Steffen and Martin Willi.

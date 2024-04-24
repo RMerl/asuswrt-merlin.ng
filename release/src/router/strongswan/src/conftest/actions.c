@@ -66,7 +66,7 @@ static job_requeue_t initiate(char *config)
 	{
 		DBG1(DBG_CFG, "initiating IKE_SA for CHILD_SA config '%s'", config);
 		charon->controller->initiate(charon->controller, peer_cfg, child_cfg,
-									 NULL, NULL, 0, FALSE);
+									 NULL, NULL, 0, 0, FALSE);
 	}
 	else
 	{
@@ -211,7 +211,7 @@ static job_requeue_t close_ike(char *config)
 	{
 		DBG1(DBG_CFG, "closing IKE_SA '%s'", config);
 		charon->controller->terminate_ike(charon->controller, id, FALSE, NULL,
-										  NULL, 0);
+										  NULL, 0, 0);
 	}
 	else
 	{
@@ -251,7 +251,7 @@ static job_requeue_t close_child(char *config)
 	{
 		DBG1(DBG_CFG, "closing CHILD_SA '%s'", config);
 		charon->controller->terminate_child(charon->controller, id,
-											NULL, NULL, 0);
+											NULL, NULL, 0, 0);
 	}
 	else
 	{

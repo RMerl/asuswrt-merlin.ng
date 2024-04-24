@@ -75,17 +75,17 @@ typedef struct {
 
 /* SCEP CA Capabilities */
 typedef enum {
-	SCEP_CAPS_AES =              0,
-	SCEP_CAPS_DES3 =             1,
-	SCEP_CAPS_SHA256 =           2,
-	SCEP_CAPS_SHA384 =           3,
-	SCEP_CAPS_SHA512 =           4,
-	SCEP_CAPS_SHA224 =           5,
-	SCEP_CAPS_SHA1 =             6,
-	SCEP_CAPS_POSTPKIOPERATION = 7,
-	SCEP_CAPS_SCEPSTANDARD =     8,
-	SCEP_CAPS_GETNEXTCACERT =    9,
-	SCEP_CAPS_RENEWAL =         10
+	SCEP_CAPS_AES =              (1<<0),
+	SCEP_CAPS_DES3 =             (1<<1),
+	SCEP_CAPS_SHA256 =           (1<<2),
+	SCEP_CAPS_SHA384 =           (1<<3),
+	SCEP_CAPS_SHA512 =           (1<<4),
+	SCEP_CAPS_SHA224 =           (1<<5),
+	SCEP_CAPS_SHA1 =             (1<<6),
+	SCEP_CAPS_POSTPKIOPERATION = (1<<7),
+	SCEP_CAPS_SCEPSTANDARD =     (1<<8),
+	SCEP_CAPS_GETNEXTCACERT =    (1<<9),
+	SCEP_CAPS_RENEWAL =          (1<<10),
 } scep_caps_t;
 
 extern const scep_attributes_t empty_scep_attributes;

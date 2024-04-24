@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2013 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
  *
@@ -63,32 +63,29 @@ typedef struct {
 	 */
 	enum {
 		IPSEC_EVENT_EXPIRE,
+		IPSEC_EVENT_ACQUIRE,
 	} type;
 
 	/**
-	 * Protocol of the SA
-	 */
-	uint8_t protocol;
-
-	/**
-	 * SPI of the SA, if any
-	 */
-	uint32_t spi;
-
-	/**
-	 * SA destination address
-	 */
-	host_t *dst;
-
-	/**
-	 * Additional data for specific event types
+	 * Data for specific event types
 	 */
 	union {
 
 		struct {
+			/** Protocol of the SA */
+			uint8_t protocol;
+			/** SPI of the SA */
+			uint32_t spi;
+			/** SA destination address */
+			host_t *dst;
 			/** TRUE in case of a hard expire */
 			bool hard;
 		} expire;
+
+		struct {
+			/** Reqid of the SA */
+			uint32_t reqid;
+		} acquire;
 
 	} data;
 
@@ -99,7 +96,14 @@ typedef struct {
  */
 static void ipsec_event_destroy(ipsec_event_t *event)
 {
-	event->dst->destroy(event->dst);
+	switch (event->type)
+	{
+		case IPSEC_EVENT_EXPIRE:
+			event->data.expire.dst->destroy(event->data.expire.dst);
+			break;
+		case IPSEC_EVENT_ACQUIRE:
+			break;
+	}
 	free(event);
 }
 
@@ -123,8 +127,16 @@ static job_requeue_t handle_events(private_ipsec_event_relay_t *this)
 			case IPSEC_EVENT_EXPIRE:
 				if (current->expire)
 				{
-					current->expire(event->protocol, event->spi, event->dst,
+					current->expire(event->data.expire.protocol,
+									event->data.expire.spi,
+									event->data.expire.dst,
 									event->data.expire.hard);
+				}
+				break;
+			case IPSEC_EVENT_ACQUIRE:
+				if (current->acquire)
+				{
+					current->acquire(event->data.acquire.reqid);
 				}
 				break;
 		}
@@ -143,12 +155,28 @@ METHOD(ipsec_event_relay_t, expire, void,
 
 	INIT(event,
 		.type = IPSEC_EVENT_EXPIRE,
-		.protocol = protocol,
-		.spi = spi,
-		.dst = dst->clone(dst),
 		.data = {
 			.expire = {
+				.protocol = protocol,
+				.spi = spi,
+				.dst = dst->clone(dst),
 				.hard = hard,
+			},
+		},
+	);
+	this->queue->enqueue(this->queue, event);
+}
+
+METHOD(ipsec_event_relay_t, acquire, void,
+	private_ipsec_event_relay_t *this, uint32_t reqid)
+{
+	ipsec_event_t *event;
+
+	INIT(event,
+		.type = IPSEC_EVENT_ACQUIRE,
+		.data = {
+			.acquire = {
+				.reqid = reqid,
 			},
 		},
 	);
@@ -190,6 +218,7 @@ ipsec_event_relay_t *ipsec_event_relay_create()
 	INIT(this,
 		.public = {
 			.expire = _expire,
+			.acquire = _acquire,
 			.register_listener = _register_listener,
 			.unregister_listener = _unregister_listener,
 			.destroy = _destroy,

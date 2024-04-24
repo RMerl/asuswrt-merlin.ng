@@ -1,8 +1,8 @@
 <domain type='kvm'>
   <name>alice</name>
   <uuid>1f35c25d-6a7b-4ee1-2461-d7e530e7b2a9</uuid>
-  <memory unit='KiB'>184320</memory>
-  <currentMemory unit='KiB'>184320</currentMemory>
+  <memory unit='MiB'>200</memory>
+  <currentMemory unit='MiB'>200</currentMemory>
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>

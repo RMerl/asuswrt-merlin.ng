@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * Copyright (C) 2016-2022 Andreas Steffen
+ * Copyright (C) 2016-2023 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -78,5 +78,8 @@ ENUM(builder_part_names, BUILD_FROM_FILE, BUILD_END,
 	"BUILD_EDDSA_PUB",
 	"BUILD_EDDSA_PRIV_ASN1_DER",
 	"BUILD_CRITICAL_EXTENSION",
+	"BUILD_NONCE",
+	"BUILD_OCSP_STATUS",
+	"BUILD_OCSP_RESPONSES",
 	"BUILD_END",
 );

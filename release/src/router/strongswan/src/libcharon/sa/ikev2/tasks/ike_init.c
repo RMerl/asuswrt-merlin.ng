@@ -1035,7 +1035,7 @@ METHOD(task_t, process_i, status_t,
 				case INVALID_KE_PAYLOAD:
 				{
 					chunk_t data;
-					key_exchange_method_t bad_group;
+					key_exchange_method_t bad_group DBG_UNUSED;
 
 					bad_group = this->dh_group;
 					data = notify->get_notification_data(notify);

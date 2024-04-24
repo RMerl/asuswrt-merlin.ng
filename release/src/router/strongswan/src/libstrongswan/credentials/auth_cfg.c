@@ -821,7 +821,6 @@ METHOD(auth_cfg_t, complies, bool,
 	signature_params_t *ike_scheme = NULL, *scheme = NULL;
 	u_int strength = 0;
 	auth_rule_t t1, t2;
-	char *key_type;
 	void *value;
 
 	e1 = constraints->create_enumerator(constraints);
@@ -1110,6 +1109,8 @@ METHOD(auth_cfg_t, complies, bool,
 	 * public key strength */
 	if (success && strength)
 	{
+		char *key_type DBG_UNUSED;
+
 		e2 = create_enumerator(this);
 		while (e2->enumerate(e2, &t2, &strength))
 		{

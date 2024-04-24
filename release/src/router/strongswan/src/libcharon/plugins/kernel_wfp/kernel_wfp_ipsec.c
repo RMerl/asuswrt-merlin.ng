@@ -2492,7 +2492,8 @@ METHOD(kernel_ipsec_t, flush_policies, status_t,
  * Add a bypass policy for a specific UDP port
  */
 static bool add_bypass(private_kernel_wfp_ipsec_t *this,
-					   int family, uint16_t port, bool inbound, UINT64 *luid)
+					   int family, uint16_t port, bool inbound, bool tunnel,
+					   UINT64 *luid)
 {
 	FWPM_FILTER_CONDITION0 *cond, *conds = NULL;
 	int count = 0;
@@ -2523,6 +2524,11 @@ static bool add_bypass(private_kernel_wfp_ipsec_t *this,
 			break;
 		default:
 			return FALSE;
+	}
+
+	if (tunnel)
+	{
+		filter.subLayerKey = FWPM_SUBLAYER_IPSEC_TUNNEL;
 	}
 
 	cond = append_condition(&conds, &count);
@@ -2558,8 +2564,8 @@ METHOD(kernel_ipsec_t, bypass_socket, bool,
 		SOCKADDR_IN in;
 		SOCKADDR_IN6 in6;
 	} saddr;
-	int addrlen = sizeof(saddr);
-	UINT64 filter_out, filter_in = 0;
+	int addrlen = sizeof(saddr), i;
+	UINT64 filters[4] = { 0 };
 	uint16_t port;
 
 	if (getsockname(fd, &saddr.sa, &addrlen) == SOCKET_ERROR)
@@ -2578,19 +2584,26 @@ METHOD(kernel_ipsec_t, bypass_socket, bool,
 			return FALSE;
 	}
 
-	if (!add_bypass(this, family, port, TRUE, &filter_in) ||
-		!add_bypass(this, family, port, FALSE, &filter_out))
+	if (!add_bypass(this, family, port, TRUE, FALSE,  &filters[0]) ||
+		!add_bypass(this, family, port, TRUE, TRUE,   &filters[1]) ||
+		!add_bypass(this, family, port, FALSE, FALSE, &filters[2]) ||
+		!add_bypass(this, family, port, FALSE, TRUE,  &filters[3]))
 	{
-		if (filter_in)
+		for (i = 0; i < countof(filters); i++)
 		{
-			FwpmFilterDeleteById0(this->handle, filter_in);
+			if (filters[i])
+			{
+				FwpmFilterDeleteById0(this->handle, filters[i]);
+			}
 		}
 		return FALSE;
 	}
 
 	this->mutex->lock(this->mutex);
-	array_insert(this->bypass, ARRAY_TAIL, &filter_in);
-	array_insert(this->bypass, ARRAY_TAIL, &filter_out);
+	for (i = 0; i < countof(filters); i++)
+	{
+		array_insert(this->bypass, ARRAY_TAIL, &filters[i]);
+	}
 	this->mutex->unlock(this->mutex);
 
 	return TRUE;

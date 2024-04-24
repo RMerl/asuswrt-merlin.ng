@@ -1,8 +1,8 @@
 <domain type='kvm'>
   <name>moon</name>
   <uuid>b5e00ad3-1c81-3b2a-7f66-cdf8727b3c65</uuid>
-  <memory unit='KiB'>131072</memory>
-  <currentMemory unit='KiB'>131072</currentMemory>
+  <memory unit='MiB'>128</memory>
+  <currentMemory unit='MiB'>128</currentMemory>
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>

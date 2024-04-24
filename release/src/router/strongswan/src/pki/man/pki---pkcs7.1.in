@@ -1,4 +1,4 @@
-.TH "PKI \-\-PKCS7" 1 "2013-07-31" "@PACKAGE_VERSION@" "strongSwan"
+.TH "PKI \-\-PKCS7" 1 "2023-03-30" "@PACKAGE_VERSION@" "strongSwan"
 .
 .SH "NAME"
 .
@@ -11,6 +11,8 @@ pki \-\-pkcs7 \- Provides PKCS#7 wrap/unwrap functions
 .OP \-\-in file
 .OP \-\-cert file
 .OP \-\-key file
+.OP \-\-digest digest
+.OP \-\-rsa\-padding padding
 .OP \-\-debug level
 .YS
 .
@@ -73,6 +75,15 @@ Certificate for
 and
 .BR \-\-encrypt.
 Can be used multiple times.
+.TP
+.BI "\-g, \-\-digest " digest
+Digest to use for signature creation. One of \fImd5\fR, \fIsha1\fR,
+\fIsha224\fR, \fIsha256\fR, \fIsha384\fR, or \fIsha512\fR.  The default is
+determined based on the type and size of the signature key.
+.TP
+.BI "\-R, \-\-rsa\-padding " padding
+Padding to use for RSA signatures. Either \fIpkcs1\fR or \fIpss\fR, defaults
+to \fIpkcs1\fR.
 .
 .SH "SEE ALSO"
 .

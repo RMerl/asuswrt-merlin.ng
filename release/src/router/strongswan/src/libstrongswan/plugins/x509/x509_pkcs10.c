@@ -78,6 +78,11 @@ struct private_x509_pkcs10_t {
 	chunk_t certTypeExt;
 
 	/**
+	 * extendedKeyUsage flags
+	 */
+	x509_flag_t flags;
+
+	/**
 	 * Signature scheme
 	 */
 	signature_params_t *scheme;
@@ -109,6 +114,10 @@ struct private_x509_pkcs10_t {
 extern bool x509_parse_generalNames(chunk_t blob, int level0, bool implicit,
 									linked_list_t *list);
 extern chunk_t x509_build_subjectAltNames(linked_list_t *list);
+
+extern bool x509_parse_eku_extension(chunk_t blob, int level0, x509_flag_t *flags);
+
+extern chunk_t x509_generate_eku_extension(x509_flag_t flags);
 
 METHOD(certificate_t, get_type, certificate_type_t,
 	private_x509_pkcs10_t *this)
@@ -238,30 +247,31 @@ METHOD(pkcs10_t, get_challengePassword, chunk_t,
 METHOD(pkcs10_t, get_flags, x509_flag_t,
 	private_x509_pkcs10_t *this)
 {
-	x509_flag_t flags = X509_NONE;
-	char *profile;
+	if (this->certTypeExt.len > 0)
+	{
+		char *profile;
 
-	profile = strndup(this->certTypeExt.ptr, this->certTypeExt.len);
+		profile = strndup(this->certTypeExt.ptr, this->certTypeExt.len);
 
-	if (strcaseeq(profile, "server"))
-	{
-		flags |= X509_SERVER_AUTH;
+		if (strcaseeq(profile, "server"))
+		{
+			this->flags |= X509_SERVER_AUTH;
+		}
+		else if (strcaseeq(profile, "client"))
+		{
+			this->flags |= X509_CLIENT_AUTH;
+		}
+		else if (strcaseeq(profile, "dual"))
+		{
+			this->flags |= (X509_SERVER_AUTH | X509_CLIENT_AUTH);
+		}
+		else if (strcaseeq(profile, "ocsp"))
+		{
+			this->flags |= X509_OCSP_SIGNER;
+		}
+		free(profile);
 	}
-	else if (strcaseeq(profile, "client"))
-	{
-		flags |= X509_CLIENT_AUTH;
-	}
-	else if (strcaseeq(profile, "dual"))
-	{
-		flags |= (X509_SERVER_AUTH | X509_CLIENT_AUTH);
-	}
-	else if (strcaseeq(profile, "ocsp"))
-	{
-		flags |= X509_OCSP_SIGNER;
-	}
-	free(profile);
-
-	return flags;
+	return this->flags;
 }
 
 METHOD(pkcs10_t, create_subjectAltName_enumerator, enumerator_t*,
@@ -279,6 +289,7 @@ static bool generate(private_x509_pkcs10_t *cert, private_key_t *sign_key,
 	chunk_t key_info, subjectAltNames, attributes;
 	chunk_t extensionRequest  = chunk_empty, certTypeExt = chunk_empty;
 	chunk_t challengePassword = chunk_empty, sig_scheme = chunk_empty;
+	chunk_t extendedKeyUsage = chunk_empty;
 	identification_t *subject;
 
 	subject = cert->subject;
@@ -322,13 +333,17 @@ static bool generate(private_x509_pkcs10_t *cert, private_key_t *sign_key,
 				));
 	}
 
+	/* encode extendedKeyUsage flags */
+	extendedKeyUsage = x509_generate_eku_extension(cert->flags);
+
 	/* encode extensionRequest attribute */
-	if (subjectAltNames.ptr || certTypeExt.ptr)
+	if (subjectAltNames.ptr || certTypeExt.ptr || extendedKeyUsage.ptr)
 	{
 		extensionRequest = asn1_wrap(ASN1_SEQUENCE, "mm",
 				asn1_build_known_oid(OID_EXTENSION_REQUEST),
 				asn1_wrap(ASN1_SET, "m",
-					asn1_wrap(ASN1_SEQUENCE, "mm", subjectAltNames, certTypeExt)
+					asn1_wrap(ASN1_SEQUENCE, "mmm",
+						subjectAltNames, certTypeExt, extendedKeyUsage)
 				));
 	}
 
@@ -415,7 +430,6 @@ static bool parse_extension_request(private_x509_pkcs10_t *this, chunk_t blob, i
 	int objectID;
 	int extn_oid = OID_UNKNOWN;
 	bool success = FALSE;
-	bool critical;
 
 	parser = asn1_parser_create(extensionRequestObjects, blob);
 	parser->set_top_level(parser, level0);
@@ -430,8 +444,8 @@ static bool parse_extension_request(private_x509_pkcs10_t *this, chunk_t blob, i
 				extn_oid = asn1_known_oid(object);
 				break;
 			case PKCS10_EXTN_CRITICAL:
-				critical = object.len && *object.ptr;
-				DBG2(DBG_ASN, "  %s", critical ? "TRUE" : "FALSE");
+				DBG2(DBG_ASN, "  %s",
+					 object.len && *object.ptr ? "TRUE" : "FALSE");
 				break;
 			case PKCS10_EXTN_VALUE:
 			{
@@ -451,6 +465,12 @@ static bool parse_extension_request(private_x509_pkcs10_t *this, chunk_t blob, i
 							goto end;
 						}
 						this->certTypeExt = object;
+						break;
+					case OID_EXTENDED_KEY_USAGE:
+						if (!x509_parse_eku_extension(object, level, &this->flags))
+						{
+							goto end;
+						}
 						break;
 					default:
 						break;
@@ -768,6 +788,9 @@ x509_pkcs10_t *x509_pkcs10_gen(certificate_type_t type, va_list args)
 				continue;
 			case BUILD_CERT_TYPE_EXT:
 				cert->certTypeExt = chunk_clone(va_arg(args, chunk_t));
+				continue;
+			case BUILD_X509_FLAG:
+				cert->flags |= va_arg(args, x509_flag_t);
 				continue;
 			case BUILD_SIGNATURE_SCHEME:
 				cert->scheme = va_arg(args, signature_params_t*);

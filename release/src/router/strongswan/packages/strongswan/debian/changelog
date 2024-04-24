@@ -1,5 +1,0 @@
-strongswan (5.0.1dr1) unstable; urgency=low
-
-  * New package for strongSwan 5.0 series
-
- -- Martin Willi <martin@strongswan.org>  Mon, 02 Jul 2012 18:48:55 +0200

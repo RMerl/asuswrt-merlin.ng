@@ -191,7 +191,7 @@ METHOD(tls_application_t, build, status_t,
 {
 	chunk_t data;
 	eap_code_t code;
-	eap_type_t type;
+	eap_type_t type DBG_UNUSED;
 	pen_t vendor;
 
 	if (this->out)

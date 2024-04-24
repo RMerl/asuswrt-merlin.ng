@@ -2,7 +2,7 @@
  * Copyright (C) 2017 Tobias Brunner
  * Copyright (C) 2002 Ueli Galizzi, Ariane Seiler
  * Copyright (C) 2003 Martin Berner, Lukas Suter
- * Copyright (C) 2002-2017 Andreas Steffen
+ * Copyright (C) 2002-2022 Andreas Steffen
  * Copyright (C) 2009 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -335,12 +335,12 @@ static const asn1Object_t acObjects[] =
 {
 	{ 0, "AttributeCertificate",			ASN1_SEQUENCE,		  ASN1_OBJ  }, /*  0 */
 	{ 1,   "AttributeCertificateInfo",		ASN1_SEQUENCE,		  ASN1_OBJ  }, /*  1 */
-	{ 2,       "version",					ASN1_INTEGER,		  ASN1_DEF |
+	{ 2,     "version",						ASN1_INTEGER,		  ASN1_DEF |
 																  ASN1_BODY }, /*  2 */
-	{ 2,       "holder",					ASN1_SEQUENCE,		  ASN1_NONE }, /*  3 */
-	{ 3,         "baseCertificateID",		ASN1_CONTEXT_C_0,	  ASN1_OPT  }, /*  4 */
-	{ 4,           "issuer",				ASN1_SEQUENCE,		  ASN1_OBJ  }, /*  5 */
-	{ 4,           "serial",				ASN1_INTEGER,		  ASN1_BODY }, /*  6 */
+	{ 2,     "holder",						ASN1_SEQUENCE,		  ASN1_NONE }, /*  3 */
+	{ 3,       "baseCertificateID",			ASN1_CONTEXT_C_0,	  ASN1_OPT  }, /*  4 */
+	{ 4,         "issuer",					ASN1_SEQUENCE,		  ASN1_OBJ  }, /*  5 */
+	{ 4,         "serial",					ASN1_INTEGER,		  ASN1_BODY }, /*  6 */
 	{ 4,         "issuerUID",				ASN1_BIT_STRING,	  ASN1_OPT |
 																  ASN1_BODY }, /*  7 */
 	{ 4,         "end opt",					ASN1_EOC,			  ASN1_END  }, /*  8 */
@@ -348,44 +348,44 @@ static const asn1Object_t acObjects[] =
 	{ 3,       "entityName",				ASN1_CONTEXT_C_1,	  ASN1_OPT |
 																  ASN1_OBJ  }, /* 10 */
 	{ 3,       "end opt",					ASN1_EOC,			  ASN1_END  }, /* 11 */
-	{ 3,         "objectDigestInfo",		ASN1_CONTEXT_C_2,	  ASN1_OPT  }, /* 12 */
-	{ 4,           "digestedObjectType",	ASN1_ENUMERATED,	  ASN1_BODY }, /* 13 */
-	{ 4,           "otherObjectTypeID",		ASN1_OID,			  ASN1_OPT |
+	{ 3,       "objectDigestInfo",			ASN1_CONTEXT_C_2,	  ASN1_OPT  }, /* 12 */
+	{ 4,         "digestedObjectType",		ASN1_ENUMERATED,	  ASN1_BODY }, /* 13 */
+	{ 4,         "otherObjectTypeID",		ASN1_OID,			  ASN1_OPT |
 																  ASN1_BODY }, /* 14 */
 	{ 4,         "end opt",					ASN1_EOC,			  ASN1_END  }, /* 15 */
 	{ 4,         "digestAlgorithm",			ASN1_EOC,			  ASN1_RAW  }, /* 16 */
 	{ 3,       "end opt",					ASN1_EOC,			  ASN1_END  }, /* 17 */
-	{ 2,       "v2Form",					ASN1_CONTEXT_C_0,	  ASN1_NONE }, /* 18 */
-	{ 3,         "issuerName",				ASN1_SEQUENCE,		  ASN1_OPT |
+	{ 2,     "v2Form",						ASN1_CONTEXT_C_0,	  ASN1_NONE }, /* 18 */
+	{ 3,       "issuerName",				ASN1_SEQUENCE,		  ASN1_OPT |
 																  ASN1_OBJ  }, /* 19 */
 	{ 3,       "end opt",					ASN1_EOC,			  ASN1_END  }, /* 20 */
-	{ 3,         "baseCertificateID",		ASN1_CONTEXT_C_0,	  ASN1_OPT  }, /* 21 */
-	{ 4,           "issuerSerial",			ASN1_SEQUENCE,		  ASN1_NONE }, /* 22 */
-	{ 5,             "issuer",				ASN1_SEQUENCE,		  ASN1_OBJ  }, /* 23 */
-	{ 5,         "serial",					ASN1_INTEGER,		  ASN1_BODY }, /* 24 */
+	{ 3,       "baseCertificateID",			ASN1_CONTEXT_C_0,	  ASN1_OPT  }, /* 21 */
+	{ 4,         "issuerSerial",			ASN1_SEQUENCE,		  ASN1_NONE }, /* 22 */
+	{ 5,           "issuer",				ASN1_SEQUENCE,		  ASN1_OBJ  }, /* 23 */
+	{ 5,           "serial",				ASN1_INTEGER,		  ASN1_BODY }, /* 24 */
 	{ 5,           "issuerUID",				ASN1_BIT_STRING,	  ASN1_OPT |
 																  ASN1_BODY }, /* 25 */
 	{ 5,           "end opt",				ASN1_EOC,			  ASN1_END  }, /* 26 */
 	{ 3,       "end opt",					ASN1_EOC,			  ASN1_END  }, /* 27 */
 	{ 3,       "objectDigestInfo",			ASN1_CONTEXT_C_1,	  ASN1_OPT  }, /* 28 */
-	{ 4,           "digestInfo",			ASN1_SEQUENCE,		  ASN1_OBJ  }, /* 29 */
-	{ 5,     "digestedObjectType",			ASN1_ENUMERATED,	  ASN1_BODY }, /* 30 */
-	{ 5,         "otherObjectTypeID",		ASN1_OID,			  ASN1_OPT |
+	{ 4,         "digestInfo",				ASN1_SEQUENCE,		  ASN1_OBJ  }, /* 29 */
+	{ 5,           "digestedObjectType",	ASN1_ENUMERATED,	  ASN1_BODY }, /* 30 */
+	{ 5,           "otherObjectTypeID",		ASN1_OID,			  ASN1_OPT |
 																  ASN1_BODY }, /* 31 */
 	{ 5,           "end opt",				ASN1_EOC,			  ASN1_END  }, /* 32 */
 	{ 5,           "digestAlgorithm",		ASN1_EOC,			  ASN1_RAW  }, /* 33 */
 	{ 3,       "end opt",					ASN1_EOC,			  ASN1_END  }, /* 34 */
-	{ 2,       "signature",					ASN1_EOC,			  ASN1_RAW  }, /* 35 */
-	{ 2,       "serialNumber",				ASN1_INTEGER,		  ASN1_BODY }, /* 36 */
-	{ 2,       "attrCertValidityPeriod",	ASN1_SEQUENCE,		  ASN1_NONE }, /* 37 */
-	{ 3,         "notBeforeTime",			ASN1_GENERALIZEDTIME, ASN1_BODY }, /* 38 */
-	{ 3,         "notAfterTime",			ASN1_GENERALIZEDTIME, ASN1_BODY }, /* 39 */
-	{ 2,       "attributes",				ASN1_SEQUENCE,		  ASN1_LOOP }, /* 40 */
+	{ 2,     "signature",					ASN1_EOC,			  ASN1_RAW  }, /* 35 */
+	{ 2,     "serialNumber",				ASN1_INTEGER,		  ASN1_BODY }, /* 36 */
+	{ 2,     "attrCertValidityPeriod",		ASN1_SEQUENCE,		  ASN1_NONE }, /* 37 */
+	{ 3,       "notBeforeTime",				ASN1_GENERALIZEDTIME, ASN1_BODY }, /* 38 */
+	{ 3,       "notAfterTime",				ASN1_GENERALIZEDTIME, ASN1_BODY }, /* 39 */
+	{ 2,     "attributes",					ASN1_SEQUENCE,		  ASN1_LOOP }, /* 40 */
 	{ 3,       "attribute",					ASN1_SEQUENCE,		  ASN1_NONE }, /* 41 */
 	{ 4,         "type",					ASN1_OID,			  ASN1_BODY }, /* 42 */
 	{ 4,         "values",					ASN1_SET, 			  ASN1_LOOP }, /* 43 */
 	{ 5,           "value",					ASN1_EOC, 			  ASN1_RAW  }, /* 44 */
-	{ 4,           "end loop",				ASN1_EOC,			  ASN1_END  }, /* 45 */
+	{ 4,         "end loop",				ASN1_EOC,			  ASN1_END  }, /* 45 */
 	{ 2,     "end loop",					ASN1_EOC,			  ASN1_END  }, /* 46 */
 	{ 2,     "extensions",					ASN1_SEQUENCE,		  ASN1_LOOP }, /* 47 */
 	{ 3,       "extension",					ASN1_SEQUENCE,		  ASN1_NONE }, /* 48 */
@@ -429,7 +429,6 @@ static bool parse_certificate(private_x509_ac_t *this)
 	int extn_oid = OID_UNKNOWN;
 	signature_params_t sig_alg = {};
 	bool success = FALSE;
-	bool critical;
 
 	parser = asn1_parser_create(acObjects, this->encoding);
 
@@ -461,7 +460,7 @@ static bool parse_certificate(private_x509_ac_t *this)
 				break;
 			case AC_OBJ_HOLDER_SERIAL:
 				this->holderSerial = identification_create_from_encoding(
-															ID_KEY_ID, object);
+										ID_KEY_ID, chunk_skip_zero(object));
 				break;
 			case AC_OBJ_ENTITY_NAME:
 				if (!parse_directoryName(object, level, TRUE,
@@ -529,8 +528,8 @@ static bool parse_certificate(private_x509_ac_t *this)
 				extn_oid = asn1_known_oid(object);
 				break;
 			case AC_OBJ_CRITICAL:
-				critical = object.len && *object.ptr;
-				DBG2(DBG_ASN, "  %s",(critical)?"TRUE":"FALSE");
+				DBG2(DBG_ASN, "  %s",
+					 object.len && *object.ptr ? "TRUE" : "FALSE");
 				break;
 			case AC_OBJ_EXTN_VALUE:
 			{
@@ -600,13 +599,16 @@ static chunk_t build_holder(private_x509_ac_t *this)
 	x509_t* x509 = (x509_t*)this->holderCert;
 	identification_t *issuer, *subject;
 
+	this->holderSerial = identification_create_from_encoding(
+							ID_KEY_ID, x509->get_serial(x509));
+
 	issuer = this->holderCert->get_issuer(this->holderCert);
 	subject = this->holderCert->get_subject(this->holderCert);
 
 	return asn1_wrap(ASN1_SEQUENCE, "mm",
 		asn1_wrap(ASN1_CONTEXT_C_0, "mm",
 			build_directoryName(ASN1_SEQUENCE, issuer->get_encoding(issuer)),
-			asn1_simple_object(ASN1_INTEGER, x509->get_serial(x509))),
+			asn1_integer("c", x509->get_serial(x509))),
 		build_directoryName(ASN1_CONTEXT_C_1, subject->get_encoding(subject)));
 }
 
@@ -725,8 +727,8 @@ static chunk_t build_authorityKeyIdentifier(private_x509_ac_t *this)
 	}
 	authorityCertIssuer = build_directoryName(ASN1_CONTEXT_C_1,
 											issuer->get_encoding(issuer));
-	authorityCertSerialNumber = asn1_simple_object(ASN1_CONTEXT_S_2,
-											x509->get_serial(x509));
+	authorityCertSerialNumber = asn1_integer("c", x509->get_serial(x509));
+	authorityCertSerialNumber.ptr[0] = ASN1_CONTEXT_S_2;
 	return asn1_wrap(ASN1_SEQUENCE, "mm",
 				asn1_build_known_oid(OID_AUTHORITY_KEY_ID),
 				asn1_wrap(ASN1_OCTET_STRING, "m",
@@ -759,7 +761,7 @@ static chunk_t build_attr_cert_info(private_x509_ac_t *this, chunk_t sig_scheme)
 				build_holder(this),
 				build_v2_form(this),
 				sig_scheme,
-				asn1_simple_object(ASN1_INTEGER, this->serialNumber),
+				asn1_integer("c", this->serialNumber),
 				build_attr_cert_validity(this),
 				build_attributes(this),
 				build_extensions(this));
@@ -808,7 +810,7 @@ static bool build_ac(private_x509_ac_t *this, hash_algorithm_t digest_alg)
 METHOD(ac_t, get_serial, chunk_t,
 	private_x509_ac_t *this)
 {
-	return this->serialNumber;
+	return chunk_skip_zero(this->serialNumber);
 }
 
 METHOD(ac_t, get_holderSerial, chunk_t,

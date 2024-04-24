@@ -34,7 +34,7 @@ typedef enum {
     CERT_TYPE_RA
 } pki_cert_type_t;
 
-static char *cert_type_label[] = { "Root CA", "Sub CA", "RA" };
+static char *cert_type_label[] DBG_UNUSED = { "Root CA", "Sub CA", "RA" };
 
 /**
  * Determine certificate type based on X.509 certificate flags
@@ -73,7 +73,7 @@ static bool print_cert_info(certificate_t *cert, pki_cert_type_t cert_type)
 	char digest_buf[HASH_SIZE_SHA256];
 	char base64_buf[HASH_SIZE_SHA256];
 	chunk_t cert_digest = {digest_buf, HASH_SIZE_SHA256};
-	chunk_t cert_id, serial, encoding = chunk_empty;
+	chunk_t cert_id DBG_UNUSED, serial DBG_UNUSED, encoding = chunk_empty;
 	x509_t *x509;
 	bool success = FALSE;
 
@@ -207,8 +207,7 @@ static bool write_cert(certificate_t *cert, pki_cert_type_t cert_type,
 					   bool force)
 {
 	chunk_t encoding = chunk_empty;
-	time_t until;
-	bool written, valid;
+	bool written;
 
 	if (path)
 	{
@@ -240,12 +239,14 @@ static bool write_cert(certificate_t *cert, pki_cert_type_t cert_type,
 		path = "stdout";
 	}
 
-	valid = cert->get_validity(cert, NULL, NULL, &until);
+#if DEBUG_LEVEL >= 1
+	time_t until;
+	bool valid = cert->get_validity(cert, NULL, NULL, &until);
 	DBG1(DBG_APP, "%s cert is %strusted, %s %T, %s'%s'",
 		 cert_type_label[cert_type], trusted ? "" : "un",
 		 valid ? "valid until" : "invalid since", &until, FALSE,
 		 path ? "written to " : "", path ? path : "not written");
-
+#endif
 	return TRUE;
 }
 
@@ -338,7 +339,7 @@ bool pki_cert_extract_cacerts(chunk_t data, char *caout, char *raout,
 				}
 				certs->destroy(certs);
 
-				/* otherwise trust in root CA has to be established manuallly */
+				/* otherwise trust in root CA has to be established manually */
 				if (!trusted)
 				{
 					creds->add_cert(creds, TRUE, cert->get_ref(cert));
@@ -466,16 +467,15 @@ bool pki_cert_extract_cert(chunk_t data, cred_encoding_type_t form)
 		x509_t *x509 = (x509_t*)cert;
 		certificate_t *cert_found = NULL;
 		enumerator_t *certs;
-		chunk_t serial;
-		time_t from, until;
-		bool trusted, valid;
+		bool trusted DBG_UNUSED;
 
 		if (!(x509->get_flags(x509) & X509_CA))
 		{
 			DBG1(DBG_APP, "Issued certificate \"%Y\"", cert->get_subject(cert));
-			serial = x509->get_serial(x509);
+#if DEBUG_LEVEL >= 1
+			chunk_t serial = x509->get_serial(x509);
 			DBG1(DBG_APP, "  serial: %#B", &serial);
-
+#endif
 			if (stored)
 			{
 				DBG1(DBG_APP, "multiple certs received, only first stored");
@@ -490,12 +490,14 @@ bool pki_cert_extract_cert(chunk_t data, cred_encoding_type_t form)
 					  (cert_found == cert);
 			certs->destroy(certs);
 
-			valid = cert->get_validity(cert, NULL, &from, &until);
+#if DEBUG_LEVEL >= 1
+			time_t from, until;
+			bool valid = cert->get_validity(cert, NULL, &from, &until);
 			DBG1(DBG_APP, "Issued certificate is %strusted, "
 						  "valid from %T until %T (currently %svalid)",
 						  trusted ? "" : "not ", &from, FALSE, &until, FALSE,
 						  valid ? "" : "not ");
-
+#endif
 			if (!cert->get_encoding(cert, form, &cert_encoding))
 			{
 				DBG1(DBG_APP, "encoding certificate failed");

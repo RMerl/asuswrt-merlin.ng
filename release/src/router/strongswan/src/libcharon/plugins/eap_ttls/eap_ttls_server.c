@@ -308,9 +308,6 @@ METHOD(tls_application_t, build, status_t,
 	private_eap_ttls_server_t *this, bio_writer_t *writer)
 {
 	chunk_t data;
-	eap_code_t code;
-	eap_type_t type;
-	pen_t vendor;
 
 	if (this->method == NULL && this->start_phase2 &&
 		lib->settings->get_bool(lib->settings,
@@ -333,10 +330,13 @@ METHOD(tls_application_t, build, status_t,
 
 	if (this->out)
 	{
-		code = this->out->get_code(this->out);
-		type = this->out->get_type(this->out, &vendor);
+#if DEBUG_LEVEL >= 1
+		pen_t vendor;
+		eap_code_t code = this->out->get_code(this->out);
+		eap_type_t type = this->out->get_type(this->out, &vendor);
 		DBG1(DBG_IKE, "sending tunneled EAP-TTLS AVP [EAP/%N/%N]",
-						eap_code_short_names, code, eap_type_short_names, type);
+			 eap_code_short_names, code, eap_type_short_names, type);
+#endif
 
 		/* get the raw EAP message data */
 		data = this->out->get_data(this->out);

@@ -277,13 +277,10 @@ METHOD(pa_tnc_msg_t, process_ietf_std_errors, bool,
 		{
 			ietf_attr_pa_tnc_error_t *error_attr;
 			pen_type_t error_code, *non_fatal_type;
-			chunk_t msg_info;
-			uint32_t offset;
 			bool fatal_current_error = TRUE;
 
 			error_attr = (ietf_attr_pa_tnc_error_t*)attr;
 			error_code = error_attr->get_error_code(error_attr);
-			msg_info = error_attr->get_msg_info(error_attr);
 
 			/* skip errors from non-IETF namespaces and non PA-TNC msg errors */
 			if (error_code.vendor_id != PEN_IETF ||
@@ -291,15 +288,17 @@ METHOD(pa_tnc_msg_t, process_ietf_std_errors, bool,
 			{
 				continue;
 			}
+#if DEBUG_LEVEL >= 1
+			chunk_t msg_info = error_attr->get_msg_info(error_attr);
 			DBG1(DBG_TNC, "received PA-TNC error '%N' concerning message "
 				 "0x%08x/0x%08x", pa_tnc_error_code_names, error_code.type,
 				 untoh32(msg_info.ptr), untoh32(msg_info.ptr + 4));
-
+#endif
 			switch (error_code.type)
 			{
 				case PA_ERROR_INVALID_PARAMETER:
-					offset = error_attr->get_offset(error_attr);
-					DBG1(DBG_TNC, "  occurred at offset of %u bytes", offset);
+					DBG1(DBG_TNC, "  occurred at offset of %u bytes",
+						 error_attr->get_offset(error_attr));
 					break;
 				case PA_ERROR_ATTR_TYPE_NOT_SUPPORTED:
 					unsupported_type =

@@ -6,8 +6,8 @@ IF_NAME_OUT="${IF_NAME}${PLUTO_IF_ID_OUT}-out"
 
 case "${PLUTO_VERB}" in
     up-client)
-        /usr/local/libexec/ipsec/xfrmi -n "${IF_NAME_OUT}" -i "${PLUTO_IF_ID_OUT}" -d eth0
-        /usr/local/libexec/ipsec/xfrmi -n "${IF_NAME_IN}" -i "${PLUTO_IF_ID_IN}" -d eth0
+        ip link add "${IF_NAME_OUT}" type xfrm if_id "${PLUTO_IF_ID_OUT}" dev eth0
+        ip link add "${IF_NAME_IN}" type xfrm if_id "${PLUTO_IF_ID_IN}" dev eth0
         ip link set "${IF_NAME_OUT}" up
         ip link set "${IF_NAME_IN}" up
         ip route add 10.1.0.0/16 dev "${IF_NAME_OUT}"

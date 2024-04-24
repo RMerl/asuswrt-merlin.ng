@@ -23,9 +23,10 @@ credentials/keys/public_key.c credentials/keys/shared_key.c \
 credentials/keys/signature_params.c \
 credentials/certificates/certificate.c credentials/certificates/crl.c \
 credentials/certificates/ocsp_response.c credentials/certificates/x509.c \
+credentials/certificates/ocsp_single_response.c \
 credentials/certificates/certificate_printer.c \
 credentials/containers/container.c credentials/containers/pkcs12.c \
-credentials/credential_manager.c \
+credentials/credential_manager.c credentials/ocsp_responders.c \
 credentials/sets/auth_cfg_wrapper.c credentials/sets/ocsp_response_wrapper.c \
 credentials/sets/cert_cache.c credentials/sets/mem_cred.c \
 credentials/sets/callback_cred.c credentials/auth_cfg.c database/database.c \
@@ -91,15 +92,18 @@ credentials/keys/signature_params.h \
 credentials/certificates/certificate.h credentials/certificates/x509.h \
 credentials/certificates/ac.h credentials/certificates/crl.h \
 credentials/certificates/pkcs10.h credentials/certificates/ocsp_request.h \
+credentials/certificates/ocsp_single_response.h \
 credentials/certificates/ocsp_response.h \
 credentials/certificates/pgp_certificate.h \
 credentials/certificates/certificate_printer.h \
 credentials/containers/container.h credentials/containers/pkcs7.h \
 credentials/containers/pkcs12.h \
-credentials/credential_manager.h credentials/sets/auth_cfg_wrapper.h \
-credentials/sets/ocsp_response_wrapper.h credentials/sets/cert_cache.h \
-credentials/sets/mem_cred.h credentials/sets/callback_cred.h \
-credentials/auth_cfg.h credentials/credential_set.h credentials/cert_validator.h \
+credentials/credential_manager.h credentials/ocsp_responders.h \
+credentials/ocsp_responder.h \
+credentials/sets/auth_cfg_wrapper.h credentials/sets/ocsp_response_wrapper.h \
+credentials/sets/cert_cache.h credentials/sets/mem_cred.h \
+credentials/sets/callback_cred.h credentials/auth_cfg.h \
+credentials/credential_set.h credentials/cert_validator.h \
 database/database.h database/database_factory.h fetcher/fetcher.h \
 fetcher/fetcher_manager.h eap/eap.h pen/pen.h ipsec/ipsec_types.h \
 metadata/metadata.h metadata/metadata_factory.h metadata/metadata_int.h \
@@ -476,6 +480,13 @@ if USE_PKCS12
   SUBDIRS += plugins/pkcs12
 if MONOLITHIC
   libstrongswan_la_LIBADD += plugins/pkcs12/libstrongswan-pkcs12.la
+endif
+endif
+
+if USE_OPENXPKI
+  SUBDIRS += plugins/openxpki
+if MONOLITHIC
+  libstrongswan_la_LIBADD += plugins/openxpki/libstrongswan-openxpki.la
 endif
 endif
 

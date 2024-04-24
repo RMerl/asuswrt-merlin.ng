@@ -229,7 +229,7 @@ static void fulfill_request(imc_state_t *state, imc_msg_t *msg,
 	size_t msg_len = 64;
 	char error_msg[msg_len], *id_str;
 	bool collect_inventory = TRUE;
-	int items;
+	int items DBG_UNUSED;
 
 	collector = swima_collector_create();
 	id_str = sw_id_only ? " ID" : "";

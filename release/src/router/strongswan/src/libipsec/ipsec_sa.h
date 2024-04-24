@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2012 Tobias Brunner
+ * Copyright (C) 2012-2023 Tobias Brunner
  * Copyright (C) 2012 Giuliano Grassi
  * Copyright (C) 2012 Ralf Sager
  *
@@ -65,6 +65,20 @@ struct ipsec_sa_t {
 	 * @param addr		destination address of this SA (gets cloned)
 	 */
 	void (*set_destination)(ipsec_sa_t *this, host_t *addr);
+
+	/**
+	 * Get whether UDP encapsulation should be used for this SA
+	 *
+	 * @return			TRUE if encapsulation should be used, FALSE otherwise
+	 */
+	bool (*get_encap)(ipsec_sa_t *this);
+
+	/**
+	 * Set whether UDP encapsulation should be used for this SA
+	 *
+	 * @param encap		TRUE if encapsulation should be used, FALSE otherwise
+	 */
+	void (*set_encap)(ipsec_sa_t *this, bool encap);
 
 	/**
 	 * Get the SPI for this SA

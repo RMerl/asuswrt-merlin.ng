@@ -439,7 +439,7 @@ static job_requeue_t initiate(private_cmd_connection_t *this)
 	child_cfg = create_child_cfg(this, peer_cfg);
 
 	if (charon->controller->initiate(charon->controller, peer_cfg, child_cfg,
-								controller_cb_empty, NULL, 0, FALSE) != SUCCESS)
+				controller_cb_empty, NULL, LEVEL_SILENT, 0, FALSE) != SUCCESS)
 	{
 		terminate(pid);
 	}
@@ -499,6 +499,7 @@ METHOD(cmd_connection_t, handle, bool,
 			this->xautheap = arg;
 			break;
 		case CMD_OPT_RSA:
+		case CMD_OPT_PRIV:
 		case CMD_OPT_AGENT:
 		case CMD_OPT_PKCS12:
 			this->key_seen = TRUE;

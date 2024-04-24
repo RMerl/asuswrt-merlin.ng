@@ -183,11 +183,11 @@ public_key_t *tls_find_public_key(auth_cfg_t *peer_auth, identification_t *id)
 	cert = peer_auth->get(peer_auth, AUTH_HELPER_SUBJECT_CERT);
 	if (cert)
 	{
-		public = cert->get_public_key(cert);
-		if (public)
+		current = cert->get_public_key(cert);
+		if (current)
 		{
-			key_type = public->get_type(public);
-			public->destroy(public);
+			key_type = current->get_type(current);
+			current->destroy(current);
 		}
 		enumerator = lib->credmgr->create_public_enumerator(lib->credmgr,
 											key_type, id, peer_auth, TRUE);
@@ -1042,7 +1042,7 @@ static status_t process_key_update(private_tls_server_t *this,
 METHOD(tls_handshake_t, process, status_t,
 	private_tls_server_t *this, tls_handshake_type_t type, bio_reader_t *reader)
 {
-	tls_handshake_type_t expected;
+	tls_handshake_type_t expected DBG_UNUSED;
 
 	if (this->tls->get_version_max(this->tls) < TLS_1_3)
 	{
@@ -1483,20 +1483,23 @@ static status_t send_certificate_request(private_tls_server_t *this,
 }
 
 /**
- * Try to find a curve supported by both, client and server
+ * Try to find a curve/group supported by both, client and server
  */
 static bool find_supported_curve(private_tls_server_t *this,
-								 tls_named_group_t *curve)
+								 tls_named_group_t *curve,
+								 key_exchange_method_t *group)
 {
 	tls_named_group_t current;
+	key_exchange_method_t current_group;
 	enumerator_t *enumerator;
 
 	enumerator = this->crypto->create_ec_enumerator(this->crypto);
-	while (enumerator->enumerate(enumerator, NULL, &current))
+	while (enumerator->enumerate(enumerator, &current_group, &current))
 	{
 		if (peer_supports_curve(this, current))
 		{
 			*curve = current;
+			*group = current_group;
 			enumerator->destroy(enumerator);
 			return TRUE;
 		}
@@ -1520,7 +1523,7 @@ static status_t send_server_key_exchange(private_tls_server_t *this,
 	{
 		curve = tls_ec_group_to_curve(group);
 		if (!curve || (!peer_supports_curve(this, curve) &&
-					   !find_supported_curve(this, &curve)))
+					   !find_supported_curve(this, &curve, &group)))
 		{
 			DBG1(DBG_TLS, "no EC group supported by client and server");
 			this->alert->add(this->alert, TLS_FATAL, TLS_HANDSHAKE_FAILURE);

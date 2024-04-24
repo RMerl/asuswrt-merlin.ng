@@ -277,15 +277,15 @@ static void handle_message(private_tnccs_11_t *this, tnccs_msg_t *msg)
 		}
 		case TNCCS_MSG_ERROR:
 		{
-			tnccs_error_msg_t *err_msg;
+#if DEBUG_LEVEL >= 1
+			tnccs_error_msg_t *err_msg = (tnccs_error_msg_t*)msg;
 			tnccs_error_type_t error_type;
 			char *error_msg;
 
-			err_msg = (tnccs_error_msg_t*)msg;
 			error_msg = err_msg->get_message(err_msg, &error_type);
 			DBG1(DBG_TNC, "received '%N' TNCCS-Error: %s",
 				 tnccs_error_type_names, error_type, error_msg);
-
+#endif
 			/* we assume that all errors are fatal */
 			this->fatal_error = TRUE;
 			break;
@@ -305,6 +305,7 @@ static void handle_message(private_tnccs_11_t *this, tnccs_msg_t *msg)
 		}
 		case TNCCS_MSG_REASON_STRINGS:
 		{
+#if DEBUG_LEVEL >= 2
 			tnccs_reason_strings_msg_t *reason_msg;
 			chunk_t reason_string, reason_lang;
 
@@ -314,6 +315,7 @@ static void handle_message(private_tnccs_11_t *this, tnccs_msg_t *msg)
 													 reason_string.ptr);
 			DBG2(DBG_TNC, "language code is '%.*s'", (int)reason_lang.len,
 													 reason_lang.ptr);
+#endif
 			break;
 		}
 		default:

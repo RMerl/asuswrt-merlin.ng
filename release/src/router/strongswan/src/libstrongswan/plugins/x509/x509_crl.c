@@ -1,7 +1,7 @@
 /*
  * Copyright (C) 2014-2017 Tobias Brunner
  * Copyright (C) 2008-2009 Martin Willi
- * Copyright (C) 2017 Andreas Steffen
+ * Copyright (C) 2017-2022 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -19,7 +19,6 @@
 #include "x509_crl.h"
 
 typedef struct private_x509_crl_t private_x509_crl_t;
-typedef struct revoked_t revoked_t;
 
 #include <time.h>
 
@@ -31,26 +30,6 @@ typedef struct revoked_t revoked_t;
 #include <credentials/certificates/x509.h>
 #include <credentials/keys/private_key.h>
 #include <collections/linked_list.h>
-
-/**
- * entry for a revoked certificate
- */
-struct revoked_t {
-	/**
-	 * serial of the revoked certificate
-	 */
-	chunk_t serial;
-
-	/**
-	 * date of revocation
-	 */
-	time_t date;
-
-	/**
-	 * reason for revocation
-	 */
-	crl_reason_t reason;
-};
 
 /**
  * private data of x509_crl
@@ -98,7 +77,7 @@ struct private_x509_crl_t {
 	time_t nextUpdate;
 
 	/**
-	 * list of revoked certificates as revoked_t
+	 * list of revoked certificates as crl_revoked_t
 	 */
 	linked_list_t *revoked;
 
@@ -235,7 +214,7 @@ static bool parse(private_x509_crl_t *this)
 	signature_params_t sig_alg = {};
 	bool success = FALSE;
 	bool critical = FALSE;
-	revoked_t *revoked = NULL;
+	crl_revoked_t *revoked = NULL;
 
 	parser = asn1_parser_create(crlObjects, this->encoding);
 
@@ -273,7 +252,7 @@ static bool parse(private_x509_crl_t *this)
 				userCertificate = object;
 				break;
 			case CRL_OBJ_REVOCATION_DATE:
-				revoked = malloc_thing(revoked_t);
+				revoked = malloc_thing(crl_revoked_t);
 				revoked->serial = chunk_clone(userCertificate);
 				revoked->date = asn1_parse_time(object, level);
 				revoked->reason = CRL_REASON_UNSPECIFIED;
@@ -385,7 +364,7 @@ end:
 CALLBACK(filter, bool,
 	void *data, enumerator_t *orig, va_list args)
 {
-	revoked_t *revoked;
+	crl_revoked_t *revoked;
 	crl_reason_t *reason;
 	chunk_t *serial;
 	time_t *date;
@@ -396,7 +375,7 @@ CALLBACK(filter, bool,
 	{
 		if (serial)
 		{
-			*serial = revoked->serial;
+			*serial = chunk_skip_zero(revoked->serial);
 		}
 		if (date)
 		{
@@ -414,7 +393,7 @@ CALLBACK(filter, bool,
 METHOD(crl_t, get_serial, chunk_t,
 	private_x509_crl_t *this)
 {
-	return this->crlNumber;
+	return chunk_skip_zero(this->crlNumber);
 }
 
 METHOD(crl_t, get_authKeyIdentifier, chunk_t,
@@ -430,7 +409,7 @@ METHOD(crl_t, is_delta_crl, bool,
 	{
 		if (base_crl)
 		{
-			*base_crl = this->baseCrlNumber;
+			*base_crl = chunk_skip_zero(this->baseCrlNumber);
 		}
 		return TRUE;
 	}
@@ -483,12 +462,12 @@ METHOD(certificate_t, issued_by, bool,
 	x509_t *x509 = (x509_t*)issuer;
 	chunk_t keyid = chunk_empty;
 
-	/* check if issuer is an X.509 CA certificate */
+	/* check if issuer is an X.509 certificate with cRLSign keyUsage bit set */
 	if (issuer->get_type(issuer) != CERT_X509)
 	{
 		return FALSE;
 	}
-	if (!(x509->get_flags(x509) & (X509_CA | X509_CRL_SIGN)))
+	if (!(x509->get_flags(x509) & X509_CRL_SIGN))
 	{
 		return FALSE;
 	}
@@ -593,7 +572,7 @@ METHOD(certificate_t, equals, bool,
 /**
  * Destroy a revoked_t entry
  */
-static void revoked_destroy(revoked_t *revoked)
+static void revoked_destroy(crl_revoked_t *revoked)
 {
 	free(revoked->serial.ptr);
 	free(revoked);
@@ -701,7 +680,7 @@ x509_crl_t *x509_crl_load(certificate_type_t type, va_list args)
  */
 static void read_revoked(private_x509_crl_t *crl, enumerator_t *enumerator)
 {
-	revoked_t *revoked;
+	crl_revoked_t *revoked;
 	chunk_t serial;
 	time_t date;
 	crl_reason_t reason;
@@ -841,7 +820,7 @@ static bool generate(private_x509_crl_t *this, certificate_t *cert,
  */
 x509_crl_t *x509_crl_gen(certificate_type_t type, va_list args)
 {
-	hash_algorithm_t digest_alg = HASH_SHA1;
+	hash_algorithm_t digest_alg = HASH_SHA256;
 	private_x509_crl_t *crl;
 	certificate_t *cert = NULL;
 	private_key_t *key = NULL;
@@ -883,7 +862,7 @@ x509_crl_t *x509_crl_gen(certificate_type_t type, va_list args)
 			case BUILD_BASE_CRL:
 				crl->baseCrlNumber = va_arg(args, chunk_t);
 				crl->baseCrlNumber = chunk_clone(crl->baseCrlNumber);
-				break;
+				continue;
 			case BUILD_CRL_DISTRIBUTION_POINTS:
 			{
 				enumerator_t *enumerator;

@@ -125,8 +125,9 @@ extern enum_name_t *ipcomp_transform_names;
  */
 enum hw_offload_t {
 	HW_OFFLOAD_NO = 0,
-	HW_OFFLOAD_YES = 1,
-	HW_OFFLOAD_AUTO = 2,
+	HW_OFFLOAD_CRYPTO = 1,
+	HW_OFFLOAD_PACKET = 2,
+	HW_OFFLOAD_AUTO = 3,
 };
 
 /**

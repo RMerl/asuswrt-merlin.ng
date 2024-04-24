@@ -420,7 +420,7 @@ save_keys_listener_t *save_keys_listener_create()
 
 	if (this->path && (this->ike || this->esp))
 	{
-		char *keys = "IKE";
+		char *keys DBG_UNUSED = "IKE";
 
 		if (this->ike && this->esp)
 		{

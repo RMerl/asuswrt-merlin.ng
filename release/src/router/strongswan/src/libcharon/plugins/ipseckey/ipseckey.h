@@ -52,6 +52,10 @@ enum ipseckey_algorithm_t {
 	IPSECKEY_ALGORITHM_DSA = 1,
 	/** RSA key */
 	IPSECKEY_ALGORITHM_RSA = 2,
+	/** ECDSA key (RFC 8005) */
+	IPSECKEY_ALGORITHM_ECDSA = 3,
+	/** EdDSA key (RFC 9373) */
+	IPSECKEY_ALGORITHM_EDDSA = 4,
 };
 
 /**

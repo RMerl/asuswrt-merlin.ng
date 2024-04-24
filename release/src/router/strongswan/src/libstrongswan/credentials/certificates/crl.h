@@ -1,6 +1,6 @@
 /*
  * Copyright (C) 2008 Martin Willi
- * Copyright (C) 2006 Andreas Steffen
+ * Copyright (C) 2006-2022 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -24,6 +24,7 @@
 #define CRL_H_
 
 typedef struct crl_t crl_t;
+typedef struct crl_revoked_t crl_revoked_t;
 typedef enum crl_reason_t crl_reason_t;
 
 #include <library.h>
@@ -38,6 +39,7 @@ typedef enum crl_reason_t crl_reason_t;
 # undef CRL_REASON_CA_COMPROMISE
 # undef CRL_REASON_AFFILIATION_CHANGED
 # undef CRL_REASON_SUPERSEDED
+# undef	CRL_REASON_CESSATION_OF_OPERATION
 # undef CRL_REASON_CERTIFICATE_HOLD
 # undef CRL_REASON_REMOVE_FROM_CRL
 #endif
@@ -51,7 +53,7 @@ enum crl_reason_t {
 	CRL_REASON_CA_COMPROMISE			= 2,
 	CRL_REASON_AFFILIATION_CHANGED		= 3,
 	CRL_REASON_SUPERSEDED				= 4,
-	CRL_REASON_CESSATION_OF_OPERATON	= 5,
+	CRL_REASON_CESSATION_OF_OPERATION	= 5,
 	CRL_REASON_CERTIFICATE_HOLD			= 6,
 	CRL_REASON_REMOVE_FROM_CRL			= 8,
 };
@@ -60,6 +62,27 @@ enum crl_reason_t {
  * enum names for crl_reason_t
  */
 extern enum_name_t *crl_reason_names;
+
+/**
+ * Entry for a revoked certificate
+ */
+struct crl_revoked_t {
+
+	/**
+	 * Serial of the revoked certificate
+	 */
+	chunk_t serial;
+
+	/**
+	 * Date of revocation
+	 */
+	time_t date;
+
+	/**
+	 * Reason for revocation
+	 */
+	crl_reason_t reason;
+};
 
 /**
  * X509 certificate revocation list (CRL) interface definition.

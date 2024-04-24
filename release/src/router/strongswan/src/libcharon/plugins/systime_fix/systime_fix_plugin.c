@@ -145,7 +145,7 @@ static job_requeue_t check_systime(private_systime_fix_plugin_t *this)
 {
 	enumerator_t *enumerator;
 	ike_sa_t *ike_sa;
-	char *action;
+	char *action DBG_UNUSED;
 	job_t *job;
 
 	if (time(NULL) < this->threshold)
@@ -204,7 +204,7 @@ static bool load_validator(private_systime_fix_plugin_t *this)
 	struct tm tm = {
 		.tm_mday = 1,
 	};
-	char *str, *fmt, buf[32];
+	char *str, *fmt;
 
 	fmt = lib->settings->get_str(lib->settings,
 			"%s.plugins.%s.threshold_format", "%Y", lib->ns, get_name(this));
@@ -234,8 +234,11 @@ static bool load_validator(private_systime_fix_plugin_t *this)
 		return FALSE;
 	}
 
+#if DEBUG_LEVEL >= 1
+	char buf[32];
 	DBG1(DBG_CFG, "enabling %s, threshold: %s", get_name(this),
 		 asctime_r(&tm, buf));
+#endif
 	this->validator = systime_fix_validator_create(this->threshold);
 	return TRUE;
 }

@@ -1,0 +1,148 @@
+#!/bin/bash
+
+export LEAK_DETECTIVE_DISABLE=1
+
+ROOT="/var/www"
+
+##
+# strongSwan Root CA
+cd /etc/ca
+
+# copy default web page
+cp index.html ${ROOT}
+
+# copy strongsSwan CA certificate
+cp strongswanCert.pem ${ROOT}
+cp strongswanCert.der ${ROOT}
+
+# generate CRL for strongSwan Root CA
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    --lastcrl strongswan.crl > ${ROOT}/strongswan.crl
+
+# revoke moon's current certificate
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    --reason key-compromise --serial 03 \
+    --lastcrl ${ROOT}/strongswan.crl > ${ROOT}/strongswan_moon_revoked.crl
+
+# generate a base CRL
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    --crluri http://crl.strongswan.org/strongswan_delta.crl \
+    --lastcrl strongswan.crl --lifetime 30 > ${ROOT}/strongswan_base.crl
+
+# generate a delta CRL revoking moon's current cert
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    --basecrl ${ROOT}/strongswan_base.crl --reason key-compromise \
+    --serial 03 --lifetime 15 > ${ROOT}/strongswan_delta.crl
+
+# generate Hash-and-URL certificates
+CERTS_DIR="${ROOT}/certs"
+for cert in `ls certs`
+do
+  openssl x509 -in certs/${cert} -outform der -out ${CERTS_DIR}/cert.der
+  mv ${CERTS_DIR}/cert.der ${CERTS_DIR}/`sha1sum ${CERTS_DIR}/cert.der | head -c 40`
+done
+
+##
+# Research CA
+cd /etc/ca/research
+
+# copy Research CA certificate
+cp researchCert.pem ${ROOT}
+cp researchCert.der ${ROOT}
+
+# generate CRL for Research CA
+pki --signcrl --cakey researchKey.pem --cacert researchCert.pem \
+    > ${ROOT}/research.crl
+
+# generate Hash-and-URL certificates
+CERTS_DIR="${ROOT}/certs/research"
+for cert in `ls certs`
+do
+  openssl x509 -in certs/${cert} -outform der -out ${CERTS_DIR}/cert.der
+  mv ${CERTS_DIR}/cert.der ${CERTS_DIR}/`sha1sum ${CERTS_DIR}/cert.der | head -c 40`
+done
+
+##
+# Sales CA
+cd /etc/ca/sales
+
+# copy Sales CA certificate
+cp salesCert.pem ${ROOT}
+cp salesCert.der ${ROOT}
+
+# generate CRL for Sales CA
+pki --signcrl --cakey salesKey.pem --cacert salesCert.pem \
+    > ${ROOT}/sales.crl
+
+# generate Hash-and-URL certificates
+CERTS_DIR="${ROOT}/certs/sales"
+for cert in `ls certs`
+do
+  openssl x509 -in certs/${cert} -outform der -out ${CERTS_DIR}/cert.der
+  mv ${CERTS_DIR}/cert.der ${CERTS_DIR}/`sha1sum ${CERTS_DIR}/cert.der | head -c 40`
+done
+
+##
+# Levels CA and sub-CAs
+cd /etc/ca/levels
+
+# generate CRLs for Levels CA and sub-CAs
+pki --signcrl --cakey levelsKey.pem --cacert levelsCert.pem \
+    > ${ROOT}/levels.crl
+pki --signcrl --cakey levelsKey_l2.pem --cacert levelsCert_l2.pem \
+    > ${ROOT}/levels_l2.crl
+pki --signcrl --cakey levelsKey_l3.pem --cacert levelsCert_l3.pem \
+    > ${ROOT}/levels_l3.crl
+
+##
+# strongSwan EC Root CA
+cd /etc/ca/ecdsa
+
+# copy ECDSA CA certificate
+cp strongswanCert.pem ${ROOT}/strongswan_ecdsaCert.pem
+openssl ec -in strongswanKey.pem -outform der -out ${ROOT}/strongswan_ecdsaCert.der
+chmod a+r ${ROOT}/strongswan_ecdsaCert.der
+
+# generate CRL for strongSwan EC Root CA
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    > ${ROOT}/strongswan_ecdsa.crl
+
+##
+# strongSwan RFC3779 Root CA
+cd /etc/ca/rfc3779
+
+# generate CRL for strongSwan RFC3779 Root CA
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    > ${ROOT}/strongswan_rfc3779.crl
+
+##
+# strongSwan SHA3-RSA Root CA
+cd /etc/ca/sha3-rsa
+
+# generate CRL for strongSwan SHA3-RSA Root CA
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    --digest sha3_256 > ${ROOT}/strongswan_sha3_rsa.crl
+
+##
+# strongSwan Ed25519 Root CA
+cd /etc/ca/ed25519
+
+# generate CRL for strongSwan Ed25519 Root CA
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    > ${ROOT}/strongswan_ed25519.crl
+
+##
+# strongSwan Monster Root CA
+cd /etc/ca/monster
+
+# generate CRL for strongSwan Monster Root CA
+pki --signcrl --cakey strongswanKey.pem --cacert strongswanCert.pem \
+    > ${ROOT}/strongswan_monster.crl
+
+##
+# strongSwan BlISS Root CA
+cd /etc/ca/bliss
+
+# generate CRL for strongSwan BLISS Root CA
+pki --signcrl --cakey strongswan_blissKey.der --cacert strongswan_blissCert.der \
+    --lifetime 30 --digest sha3_512 > ${ROOT}/strongswan_bliss.crl

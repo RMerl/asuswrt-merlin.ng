@@ -82,7 +82,7 @@ size_t hash_len_from_tpm_alg_id(TPM2_ALG_ID alg);
 /**
  * Convert TPM2_ALG_ID to PRF algorithm
  */
-pseudo_random_function_t prf_alg_from_tpm_alg_id(TPM2_ALG_ID alg)
+static pseudo_random_function_t prf_alg_from_tpm_alg_id(TPM2_ALG_ID alg)
 {
 	switch (alg)
 	{
@@ -133,7 +133,7 @@ METHOD(tpm_tss_tss2_session_t, set_cmd_auths, bool,
 	hasher_t *hasher;
 	pseudo_random_function_t prf_alg;
 	prf_t *prf;
-	chunk_t data, cp_hash, cp_hmac, nonce_caller, nonce_tpm, session_attributes;
+	chunk_t data, cp_hash, nonce_caller, nonce_tpm, session_attributes;
 	bool success;
 	uint32_t rval;
 
@@ -233,8 +233,8 @@ METHOD(tpm_tss_tss2_session_t, set_cmd_auths, bool,
 		DBG1(DBG_PTS, "cpHmac computation failed");
 		return FALSE;
 	}
-	cp_hmac = chunk_create(cmd.auths[0].hmac.buffer, cmd.auths[0].hmac.size);
-	DBG2(DBG_PTS, LABEL "cpHmac: %B", &cp_hmac);
+	DBG2(DBG_PTS, LABEL "cpHmac: %b", cmd.auths[0].hmac.buffer,
+		 cmd.auths[0].hmac.size);
 
 	rval = Tss2_Sys_SetCmdAuths(this->sys_context, &cmd);
 	if (rval != TSS2_RC_SUCCESS)
@@ -319,7 +319,7 @@ METHOD(tpm_tss_tss2_session_t, get_rsp_auths, bool,
 	prf_t *prf;
 	crypter_t *crypter;
 	chunk_t kdf_label = chunk_from_chars('C','F','B', 0x00);
-	chunk_t data, rp_hash, rp_hmac, nonce_caller, nonce_tpm, session_attributes;
+	chunk_t data, rp_hash, nonce_caller, nonce_tpm, session_attributes;
 	chunk_t key_mat, aes_key, aes_iv;
 	bool success;
 	uint32_t rval;
@@ -410,8 +410,7 @@ METHOD(tpm_tss_tss2_session_t, get_rsp_auths, bool,
 		DBG1(DBG_PTS, "computation of rpHmac failed");
 		return FALSE;
 	}
-	rp_hmac = chunk_create(rpHmac.buffer, rpHmac.size);
-	DBG2(DBG_PTS, LABEL "rpHMAC: %B", &rp_hmac);
+	DBG2(DBG_PTS, LABEL "rpHMAC: %b", rpHmac.buffer, rpHmac.size);
 
 	/* verify rpHmac */
 	if (!memeq(rsp.auths[0].hmac.buffer, rpHmac.buffer, rpHmac.size))

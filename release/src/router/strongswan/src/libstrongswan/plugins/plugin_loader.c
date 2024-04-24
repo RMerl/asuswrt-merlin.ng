@@ -755,10 +755,11 @@ static bool load_dependencies(private_plugin_loader_t *this,
 		{
 			bool soft = provided->feature[i].kind == FEATURE_SDEPEND;
 
-#ifndef USE_FUZZING
+#if !defined(USE_FUZZING) && DEBUG_LEVEL >= 1
 			char *name, *provide, *depend;
+#if DEBUG_LEVEL >= 3
 			int indent = level * 2;
-
+#endif
 			name = provided->entry->plugin->get_name(provided->entry->plugin);
 			provide = plugin_feature_get_string(&provided->feature[0]);
 			depend = plugin_feature_get_string(&provided->feature[i]);
@@ -779,7 +780,7 @@ static bool load_dependencies(private_plugin_loader_t *this,
 			}
 			free(provide);
 			free(depend);
-#endif /* !USE_FUZZING */
+#endif /* !USE_FUZZING && DEBUG_LEVEL */
 
 			if (soft)
 			{	/* it's ok if we can't resolve soft dependencies */
@@ -809,7 +810,7 @@ static void load_feature(private_plugin_loader_t *this,
 			return;
 		}
 
-#ifndef USE_FUZZING
+#if !defined(USE_FUZZING) && DEBUG_LEVEL >= 1
 		char *name, *provide;
 
 		name = provided->entry->plugin->get_name(provided->entry->plugin);
@@ -825,7 +826,7 @@ static void load_feature(private_plugin_loader_t *this,
 				 provide, name);
 		}
 		free(provide);
-#endif /* !USE_FUZZING */
+#endif /* !USE_FUZZING && DEBUG_LEVEL */
 	}
 	else
 	{	/* TODO: we could check the current level and set a different flag when
@@ -845,13 +846,12 @@ static void load_provided(private_plugin_loader_t *this,
 						  provided_feature_t *provided,
 						  int level)
 {
-
 	if (provided->loaded || provided->failed)
 	{
 		return;
 	}
 
-#ifndef USE_FUZZING
+#if !defined(USE_FUZZING) && DEBUG_LEVEL >= 3
 	char *name, *provide;
 	int indent = level * 2;
 
@@ -872,7 +872,7 @@ static void load_provided(private_plugin_loader_t *this,
 	{
 		return;
 	}
-#endif /* USE_FUZZING */
+#endif /* USE_FUZZING && DEBUG_LEVEL */
 
 	provided->loading = TRUE;
 	load_feature(this, provided, level + 1);

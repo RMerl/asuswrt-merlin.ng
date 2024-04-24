@@ -637,6 +637,12 @@ static void cleanup_tls()
 	private_thread_t *this;
 	bool old;
 
+	/* ignore this if called for the thread that called threads_deinit() */
+	if (!threads_lock)
+	{
+		return;
+	}
+
 	old = set_leak_detective(FALSE);
 	threads_lock->lock(threads_lock);
 
@@ -698,5 +704,6 @@ void threads_deinit()
 	destroy(this);
 
 	threads_lock->destroy(threads_lock);
+	threads_lock = NULL;
 	threads->destroy(threads);
 }

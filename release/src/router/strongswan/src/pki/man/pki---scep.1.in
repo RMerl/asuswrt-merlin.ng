@@ -9,7 +9,7 @@ pki \-\-scep \- Enroll an X.509 certificate with a SCEP server
 .SY pki\ \-\-scep
 .BI\-\-\-url\~ url
 .OP \-\-in file
-.BI \-\-dn\~ distinguished-name
+.OP \-\-dn\~ distinguished-name
 .OP \-\-san subjectAltName
 .OP \-\-profile profile
 .OP \-\-password password
@@ -70,7 +70,7 @@ URL of the SCEP server.
 RSA private key. If not given the key is read from \fISTDIN\fR.
 .TP
 .BI "\-d, \-\-dn " distinguished-name
-Subject distinguished name (DN). Required.
+Subject distinguished name (DN). Required unless \-\-cert is given.
 .TP
 .BI "\-a, \-\-san " subjectAltName
 subjectAltName extension to include in request. Can be used multiple times.

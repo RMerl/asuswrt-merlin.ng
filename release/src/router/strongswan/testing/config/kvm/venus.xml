@@ -1,8 +1,8 @@
 <domain type='kvm'>
   <name>venus</name>
   <uuid>f0838df9-7cc0-84f5-6c14-2d16ab002e8d</uuid>
-  <memory unit='KiB'>131072</memory>
-  <currentMemory unit='KiB'>131072</currentMemory>
+  <memory unit='MiB'>128</memory>
+  <currentMemory unit='MiB'>128</currentMemory>
   <vcpu placement='static'>1</vcpu>
   <os>
     <type arch='x86_64' machine='pc'>hvm</type>

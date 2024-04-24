@@ -110,6 +110,7 @@ struct private_crypto_tester_t {
 	int bench_size;
 };
 
+#if DEBUG_LEVEL >= 1
 /**
  * Get the name of a test vector, if available
  */
@@ -125,6 +126,7 @@ static const char* get_name(void *sym)
 #endif
 	return "unknown";
 }
+#endif
 
 #if defined(CLOCK_THREAD_CPUTIME_ID) && defined(HAVE_CLOCK_GETTIME)
 

@@ -48,7 +48,7 @@ ENUM(cert_validation_names, VALIDATION_GOOD, VALIDATION_REVOKED,
 bool certificate_is_newer(certificate_t *this, certificate_t *other)
 {
 	time_t this_update, that_update;
-	char *type = "certificate";
+	char *type DBG_UNUSED = "certificate";
 	bool newer;
 
 	if (this->get_type(this) == CERT_X509_CRL)

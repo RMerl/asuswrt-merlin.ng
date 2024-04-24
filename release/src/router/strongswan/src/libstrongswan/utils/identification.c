@@ -1441,6 +1441,7 @@ static private_identification_t* create_from_string_with_prefix_type(char *str)
 		{ "asn1gn:",		ID_DER_ASN1_GN			},
 		{ "xmppaddr:",		ID_DER_ASN1_GN          },
 		{ "keyid:",			ID_KEY_ID				},
+		{ "uri:",			ID_DER_ASN1_GN_URI		},
 	};
 	private_identification_t *this;
 	int i;

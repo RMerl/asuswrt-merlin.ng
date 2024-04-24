@@ -1,4 +1,5 @@
 /*
+ * Copyright (C) 2023 Tobias Brunner
  * Copyright (C) 2014 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -66,6 +67,10 @@ struct vici_conn_t {
 	int error;
 	/** wait state */
 	wait_state_t wait;
+	/** callback if connection closed */
+	vici_close_cb_t on_close;
+	/** user data for above callback */
+	void *on_close_user;
 };
 
 /**
@@ -118,6 +123,10 @@ static bool wait_result(vici_conn_t *conn, wait_state_t wait)
 static bool read_error(vici_conn_t *conn, int err)
 {
 	conn->error = err;
+	if (err == ECONNRESET && conn->on_close)
+	{
+		conn->on_close(conn->on_close_user);
+	}
 	return wait_result(conn, WAIT_READ_ERROR);
 }
 
@@ -209,6 +218,10 @@ CALLBACK(on_read, bool,
 		if (errno == EWOULDBLOCK)
 		{
 			return TRUE;
+		}
+		if (!hlen)
+		{
+			errno = ECONNRESET;
 		}
 		return read_error(conn, errno);
 	}
@@ -742,6 +755,12 @@ int vici_register(vici_conn_t *conn, char *name, vici_event_cb_t cb, void *user)
 		}
 	}
 	return ret;
+}
+
+void vici_on_close(vici_conn_t *conn, vici_close_cb_t cb, void *user)
+{
+	conn->on_close = cb;
+	conn->on_close_user = user;
 }
 
 void vici_init()

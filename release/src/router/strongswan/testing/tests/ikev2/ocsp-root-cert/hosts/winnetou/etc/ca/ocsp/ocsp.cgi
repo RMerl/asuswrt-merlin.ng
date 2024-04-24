@@ -5,7 +5,5 @@ cd /etc/ca
 echo "Content-type: application/ocsp-response"
 echo ""
 
-cat | /usr/bin/openssl ocsp -index index.txt -CA strongswanCert.pem \
-	-rkey strongswanKey.pem -rsigner strongswanCert.pem \
-	-resp_no_certs -nmin 5 \
-	-reqin /dev/stdin -respout /dev/stdout | cat
+cat | pki --ocsp --respond --cacert strongswanCert.pem --index index.txt \
+		  --key strongswanKey.pem --lifetime 5 --debug 0

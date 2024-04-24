@@ -56,15 +56,17 @@ METHOD(plugin_t, get_features, int,
 METHOD(plugin_t, reload, bool,
 	private_kernel_netlink_plugin_t *this)
 {
+	retransmission_t settings;
 	u_int timeout;
 	FILE *f;
 
 	f = fopen("/proc/sys/net/core/xfrm_acq_expires", "w");
 	if (f)
 	{
+		retransmission_parse_default(&settings);
 		timeout = lib->settings->get_int(lib->settings,
 							"%s.plugins.kernel-netlink.xfrm_acq_expires",
-							task_manager_total_retransmit_timeout(), lib->ns);
+							retransmission_timeout_total(&settings), lib->ns);
 		fprintf(f, "%u", timeout);
 		fclose(f);
 	}

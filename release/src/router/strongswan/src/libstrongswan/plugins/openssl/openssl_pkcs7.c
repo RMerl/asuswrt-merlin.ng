@@ -213,7 +213,8 @@ typedef struct {
 /**
  * Verify signerInfo signature
  */
-static auth_cfg_t *verify_signature(CMS_SignerInfo *si, int hash_oid)
+static auth_cfg_t *verify_signature(CMS_SignerInfo *si,
+									signature_params_t *sig_alg)
 {
 	enumerator_t *enumerator;
 	public_key_t *key;
@@ -249,7 +250,8 @@ static auth_cfg_t *verify_signature(CMS_SignerInfo *si, int hash_oid)
 	/* TODO: find a better way to access and verify the signature */
 	sig = openssl_asn1_str2chunk(si->signature);
 	enumerator = lib->credmgr->create_trusted_enumerator(lib->credmgr,
-														KEY_RSA, serial, FALSE);
+								key_type_from_signature_scheme(sig_alg->scheme),
+								serial, FALSE);
 	while (enumerator->enumerate(enumerator, &cert, &auth))
 	{
 		if (issuer->equals(issuer, cert->get_issuer(cert)))
@@ -257,7 +259,7 @@ static auth_cfg_t *verify_signature(CMS_SignerInfo *si, int hash_oid)
 			key = cert->get_public_key(cert);
 			if (key)
 			{
-				if (key->verify(key, signature_scheme_from_oid(hash_oid), NULL,
+				if (key->verify(key, sig_alg->scheme, sig_alg->params,
 								attrs, sig))
 				{
 					found = auth->clone(auth);
@@ -340,6 +342,8 @@ METHOD(enumerator_t, signature_enumerate, bool,
 	{
 		CMS_SignerInfo *si;
 		X509_ALGOR *digest, *sig;
+		signature_params_t sig_alg = {};
+		chunk_t sig_scheme;
 		int hash_oid;
 
 		/* clean up previous round */
@@ -350,12 +354,24 @@ METHOD(enumerator_t, signature_enumerate, bool,
 
 		CMS_SignerInfo_get0_algs(si, NULL, NULL, &digest, &sig);
 		hash_oid = openssl_asn1_known_oid(digest->algorithm);
-		if (openssl_asn1_known_oid(sig->algorithm) != OID_RSA_ENCRYPTION)
+		if (openssl_asn1_known_oid(sig->algorithm) == OID_RSA_ENCRYPTION)
 		{
-			DBG1(DBG_LIB, "only RSA digest encryption supported");
-			continue;
+			/* derive the signature scheme from the digest algorithm
+			 * for the classic PKCS#7 RSA mechanism */
+			sig_alg.scheme = signature_scheme_from_oid(hash_oid);
 		}
-		this->auth = verify_signature(si, hash_oid);
+		else
+		{
+			sig_scheme = openssl_i2chunk(X509_ALGOR, sig);
+			if (!signature_params_parse(sig_scheme, 0, &sig_alg))
+			{
+				free(sig_scheme.ptr);
+				continue;
+			}
+			free(sig_scheme.ptr);
+		}
+		this->auth = verify_signature(si, &sig_alg);
+		signature_params_clear(&sig_alg);
 		if (!this->auth)
 		{
 			DBG1(DBG_LIB, "unable to verify pkcs7 attributes signature");

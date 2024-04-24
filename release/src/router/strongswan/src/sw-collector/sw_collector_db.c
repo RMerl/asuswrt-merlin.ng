@@ -315,7 +315,7 @@ METHOD(sw_collector_db_t, destroy, void,
 /**
  * Determine file creation data and convert it into RFC 3339 format
  */
-bool get_file_creation_date(char *pathname, char *timestamp)
+static bool get_file_creation_date(char *pathname, char *timestamp)
 {
 	struct stat st;
 	struct tm ct;

@@ -1,6 +1,7 @@
 import pytest
+import socket
 
-from vici.protocol import Packet, Message, FiniteStream
+from vici.protocol import Packet, Message, FiniteStream, Transport
 from vici.exception import DeserializationException
 
 
@@ -142,3 +143,26 @@ class TestMessage(object):
         assert deserialized_message["key1"] == b"value1"
         assert deserialized_section["sub-section"]["key2"] == b"value2"
         assert deserialized_section["list1"] == [b"item1", b"item2"]
+
+
+class TestTransport(object):
+
+    def interconnect(self):
+        c, s = socket.socketpair(socket.AF_UNIX)
+        return Transport(c), Transport(s)
+
+    def test_sendrecv(self):
+        c, s = self.interconnect()
+        c.send(b"foo")
+        assert s.receive() == b"foo"
+        s.send(b"foobarbaz")
+        s.send(b"")
+        assert c.receive() == b"foobarbaz"
+        assert c.receive() == b""
+
+    def test_timeout(self):
+        c, s = self.interconnect()
+        c.send(b"foo")
+        assert s.receive(timeout=1) == b"foo"
+        with pytest.raises(socket.timeout):
+            s.receive(timeout=0.1)

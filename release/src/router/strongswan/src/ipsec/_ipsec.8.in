@@ -145,25 +145,25 @@ locally by the IKE daemon or received via the IKE protocol.
 .TP
 .BI "listcacerts [" --utc ]
 returns a list of X.509 Certification Authority (CA) certificates that were
-loaded locally by the IKE daemon from the \fI/etc/ipsec.d/cacerts/\fP
+loaded locally by the IKE daemon from the \fI@IPSEC_CONFDIR@/ipsec.d/cacerts/\fP
 directory or received via the IKE protocol.
 .
 .TP
 .BI "listaacerts [" --utc ]
 returns a list of X.509 Authorization Authority (AA) certificates that were
-loaded locally by the IKE daemon from the \fI/etc/ipsec.d/aacerts/\fP
+loaded locally by the IKE daemon from the \fI@IPSEC_CONFDIR@/ipsec.d/aacerts/\fP
 directory.
 .
 .TP
 .BI "listocspcerts [" --utc ]
 returns a list of X.509 OCSP Signer certificates that were either loaded
-locally by the IKE daemon from the \fI/etc/ipsec.d/ocspcerts/\fP
+locally by the IKE daemon from the \fI@IPSEC_CONFDIR@/ipsec.d/ocspcerts/\fP
 directory or were sent by an OCSP server.
 .
 .TP
 .BI "listacerts [" --utc ]
 returns a list of X.509 Attribute certificates that were loaded locally by
-the IKE daemon from the \fI/etc/ipsec.d/acerts/\fP directory.
+the IKE daemon from the \fI@IPSEC_CONFDIR@/ipsec.d/acerts/\fP directory.
 .
 .TP
 .BI "listgroups [" --utc ]
@@ -179,7 +179,7 @@ sections in \fIipsec.conf\fP.
 .TP
 .BI "listcrls [" --utc ]
 returns a list of Certificate Revocation Lists (CRLs) that were either loaded
-by the IKE daemon from the \fI/etc/ipsec.d/crls\fP directory or fetched from
+by the IKE daemon from the \fI@IPSEC_CONFDIR@/ipsec.d/crls\fP directory or fetched from
 an HTTP- or LDAP-based CRL distribution point.
 .
 .TP
@@ -211,7 +211,7 @@ flushes and rereads all secrets defined in \fIipsec.secrets\fP.
 .TP
 .B "rereadcacerts"
 removes previously loaded CA certificates, reads all certificate files
-contained in the \fI/etc/ipsec.d/cacerts\fP directory and adds them to the list
+contained in the \fI@IPSEC_CONFDIR@/ipsec.d/cacerts\fP directory and adds them to the list
 of Certification Authority (CA) certificates. This does not affect certificates
 explicitly defined in a
 .BR ipsec.conf (5)
@@ -220,23 +220,23 @@ ca section, which may be separately updated using the \fBupdate\fP command.
 .TP
 .B "rereadaacerts"
 removes previously loaded AA certificates, reads all certificate files
-contained in the \fI/etc/ipsec.d/aacerts\fP directory and adds them to the list
+contained in the \fI@IPSEC_CONFDIR@/ipsec.d/aacerts\fP directory and adds them to the list
 of Authorization Authority (AA) certificates.
 .
 .TP
 .B "rereadocspcerts"
-reads all certificate files contained in the \fI/etc/ipsec.d/ocspcerts/\fP
+reads all certificate files contained in the \fI@IPSEC_CONFDIR@/ipsec.d/ocspcerts/\fP
 directory and adds them to the list of OCSP signer certificates.
 .
 .TP
 .B "rereadacerts"
-reads all certificate files contained in the  \fI/etc/ipsec.d/acerts/\fP
+reads all certificate files contained in the  \fI@IPSEC_CONFDIR@/ipsec.d/acerts/\fP
 directory and adds them to the list of attribute certificates.
 .
 .TP
 .B "rereadcrls"
 reads  all Certificate  Revocation Lists (CRLs) contained in the
-\fI/etc/ipsec.d/crls/\fP directory and adds them to the list of CRLs.
+\fI@IPSEC_CONFDIR@/ipsec.d/crls/\fP directory and adds them to the list of CRLs.
 .
 .TP
 .B "rereadall"

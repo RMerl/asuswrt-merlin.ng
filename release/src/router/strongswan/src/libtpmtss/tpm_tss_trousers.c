@@ -124,7 +124,6 @@ static bool initialize_context(private_tpm_tss_trousers_t *this)
 	uint32_t version_len;
 
 	TSS_RESULT result;
-	TPM_CAP_VERSION_INFO *info;
 
 	result = Tspi_Context_Create(&this->hContext);
 	if (result != TSS_SUCCESS)
@@ -159,12 +158,14 @@ static bool initialize_context(private_tpm_tss_trousers_t *this)
 		return FALSE;
 	}
 
-	info = (TPM_CAP_VERSION_INFO *)version_ptr;
+#if DEBUG_LEVEL > 2
+	TPM_CAP_VERSION_INFO *info = (TPM_CAP_VERSION_INFO *)version_ptr;
 	DBG2(DBG_PTS, "TPM Version Info: Chip Version: %u.%u.%u.%u, "
 		 "Spec Level: %u, Errata Rev: %u, Vendor ID: %.4s",
 		 info->version.major, info->version.minor,
 		 info->version.revMajor, info->version.revMinor,
 		 untoh16(&info->specLevel), info->errataRev, info->tpmVendorID);
+#endif
 
 	this->version_info = chunk_clone(chunk_create(version_ptr, version_len));
 
@@ -466,7 +467,7 @@ METHOD(tpm_tss_t, quote, bool,
 	uint32_t version_info_size, pcr;
 	aik_t *aik;
 	chunk_t aik_blob = chunk_empty;
-	chunk_t quote_chunk, pcr_digest;
+	chunk_t quote_chunk DBG_UNUSED, pcr_digest;
 	enumerator_t *enumerator;
 	bool success = FALSE;
 

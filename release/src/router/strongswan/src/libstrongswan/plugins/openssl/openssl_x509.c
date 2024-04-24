@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2011-2017 Tobias Brunner
+ * Copyright (C) 2011-2023 Tobias Brunner
  * Copyright (C) 2010 Martin Willi
  *
  * Copyright (C) secunet Security Networks AG
@@ -181,6 +181,15 @@ struct private_openssl_x509_t {
 	 */
 	linked_list_t *ipAddrBlocks;
 
+	/**
+	 * List of permitted name constraints
+	 */
+	linked_list_t *permitted_names;
+
+	/**
+	 * List of excluded name constraints
+	 */
+	linked_list_t *excluded_names;
 
 	/**
 	 * References to this cert
@@ -215,9 +224,19 @@ static identification_t *general_name2id(GENERAL_NAME *name)
 			{
 				return identification_create_from_encoding(ID_IPV4_ADDR, chunk);
 			}
+			if (chunk.len == 8)
+			{
+				return identification_create_from_encoding(ID_IPV4_ADDR_SUBNET,
+														   chunk);
+			}
 			if (chunk.len == 16)
 			{
 				return identification_create_from_encoding(ID_IPV6_ADDR, chunk);
+			}
+			if (chunk.len == 32)
+			{
+				return identification_create_from_encoding(ID_IPV6_ADDR_SUBNET,
+														   chunk);
 			}
 			return NULL;
 		}
@@ -310,6 +329,16 @@ METHOD(x509_t, create_ipAddrBlock_enumerator, enumerator_t*,
 	private_openssl_x509_t *this)
 {
 	return this->ipAddrBlocks->create_enumerator(this->ipAddrBlocks);
+}
+
+METHOD(x509_t, create_name_constraint_enumerator, enumerator_t*,
+	private_openssl_x509_t *this, bool perm)
+{
+	if (perm)
+	{
+		return this->permitted_names->create_enumerator(this->permitted_names);
+	}
+	return this->excluded_names->create_enumerator(this->excluded_names);
 }
 
 METHOD(certificate_t, get_type, certificate_type_t,
@@ -564,6 +593,10 @@ METHOD(certificate_t, destroy, void,
 		this->ocsp_uris->destroy_function(this->ocsp_uris, free);
 		this->ipAddrBlocks->destroy_offset(this->ipAddrBlocks,
 										offsetof(traffic_selector_t, destroy));
+		this->permitted_names->destroy_offset(this->permitted_names,
+										offsetof(identification_t, destroy));
+		this->excluded_names->destroy_offset(this->excluded_names,
+										offsetof(identification_t, destroy));
 		free(this);
 	}
 }
@@ -601,7 +634,7 @@ static private_openssl_x509_t *create_empty()
 				.create_crl_uri_enumerator = _create_crl_uri_enumerator,
 				.create_ocsp_uri_enumerator = _create_ocsp_uri_enumerator,
 				.create_ipAddrBlock_enumerator = _create_ipAddrBlock_enumerator,
-				.create_name_constraint_enumerator = (void*)enumerator_create_empty,
+				.create_name_constraint_enumerator = _create_name_constraint_enumerator,
 				.create_cert_policy_enumerator = (void*)enumerator_create_empty,
 				.create_policy_mapping_enumerator = (void*)enumerator_create_empty,
 			},
@@ -611,6 +644,8 @@ static private_openssl_x509_t *create_empty()
 		.crl_uris = linked_list_create(),
 		.ocsp_uris = linked_list_create(),
 		.ipAddrBlocks = linked_list_create(),
+		.permitted_names = linked_list_create(),
+		.excluded_names = linked_list_create(),
 		.pathlen = X509_NO_CONSTRAINT,
 		.ref = 1,
 	);
@@ -686,9 +721,6 @@ static bool parse_keyUsage_ext(private_openssl_x509_t *this,
 							   X509_EXTENSION *ext)
 {
 	ASN1_BIT_STRING *usage;
-
-	/* to be compliant with RFC 4945 specific KUs have to be included */
-	this->flags &= ~X509_IKE_COMPLIANT;
 
 	usage = X509V3_EXT_d2i(ext);
 	if (usage)
@@ -968,6 +1000,51 @@ static bool parse_ipAddrBlock_ext(private_openssl_x509_t *this,
 #endif /* !OPENSSL_NO_RFC3779 */
 
 /**
+ * Parse a "generalSubtree" structure (sequence of generalNames)
+ */
+static bool parse_generalSubtrees(linked_list_t *list,
+								  STACK_OF(GENERAL_SUBTREE) *subtrees)
+{
+	GENERAL_SUBTREE *subtree;
+	identification_t *id;
+	int i;
+
+	for	(i = 0; i < sk_GENERAL_SUBTREE_num(subtrees); i++)
+	{
+		subtree = sk_GENERAL_SUBTREE_value(subtrees, i);
+		id = general_name2id(subtree->base);
+		if (id)
+		{
+			list->insert_last(list, id);
+		}
+		else
+		{
+			return FALSE;
+		}
+	}
+	return TRUE;
+}
+
+/**
+ * Parse permitted/excluded nameConstraints
+ */
+static bool parse_nameConstraints_ext(private_openssl_x509_t *this,
+									  X509_EXTENSION *ext)
+{
+	NAME_CONSTRAINTS *nc;
+	bool ok = FALSE;
+
+	nc = (NAME_CONSTRAINTS*)X509V3_EXT_d2i(ext);
+	if (nc)
+	{
+		ok = parse_generalSubtrees(this->permitted_names, nc->permittedSubtrees) &&
+			 parse_generalSubtrees(this->excluded_names, nc->excludedSubtrees);
+		NAME_CONSTRAINTS_free(nc);
+	}
+	return ok;
+}
+
+/**
  * Parse authorityKeyIdentifier extension
  */
 static bool parse_authKeyIdentifier_ext(private_openssl_x509_t *this,
@@ -1013,10 +1090,8 @@ static bool parse_subjectKeyIdentifier_ext(private_openssl_x509_t *this,
 static bool parse_extensions(private_openssl_x509_t *this)
 {
 	const STACK_OF(X509_EXTENSION) *extensions;
+	bool key_usage_parsed = FALSE;
 	int i, num;
-
-	/* unless we see a keyUsage extension we are compliant with RFC 4945 */
-	this->flags |= X509_IKE_COMPLIANT;
 
 	extensions = X509_get0_extensions(this->x509);
 	if (extensions)
@@ -1051,6 +1126,7 @@ static bool parse_extensions(private_openssl_x509_t *this)
 					break;
 				case NID_key_usage:
 					ok = parse_keyUsage_ext(this, ext);
+					key_usage_parsed = TRUE;
 					break;
 				case NID_ext_key_usage:
 					ok = parse_extKeyUsage_ext(this, ext);
@@ -1063,6 +1139,9 @@ static bool parse_extensions(private_openssl_x509_t *this)
 					ok = parse_ipAddrBlock_ext(this, ext);
 					break;
 #endif /* !OPENSSL_NO_RFC3779 */
+				case NID_name_constraints:
+					ok = parse_nameConstraints_ext(this, ext);
+					break;
 				default:
 					ok = X509_EXTENSION_get_critical(ext) == 0 ||
 						 !lib->settings->get_bool(lib->settings,
@@ -1082,6 +1161,16 @@ static bool parse_extensions(private_openssl_x509_t *this)
 			{
 				return FALSE;
 			}
+		}
+	}
+	if (!key_usage_parsed)
+	{
+		/* we are compliant with RFC 4945 without keyUsage extension */
+		this->flags |= X509_IKE_COMPLIANT;
+		/* allow CA certificates without keyUsage extension to sign CRLs */
+		if (this->flags & X509_CA)
+		{
+			this->flags |= X509_CRL_SIGN;
 		}
 	}
 	return TRUE;

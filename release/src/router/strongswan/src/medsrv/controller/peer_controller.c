@@ -202,7 +202,7 @@ static void add(private_peer_controller_t *this, fast_request_t *request)
 /**
  * pem encode a public key into an allocated string
  */
-char* pem_encode(chunk_t der)
+static char* pem_encode(chunk_t der)
 {
 	static const char *begin = "-----BEGIN PUBLIC KEY-----\n";
 	static const char *end = "-----END PUBLIC KEY-----";

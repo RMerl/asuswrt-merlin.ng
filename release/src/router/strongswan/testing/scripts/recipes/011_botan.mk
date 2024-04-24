@@ -2,7 +2,7 @@
 
 PKG = botan
 SRC = https://github.com/randombit/$(PKG).git
-REV = 2.19.1
+REV = 3.2.0
 
 NUM_CPUS := $(shell getconf _NPROCESSORS_ONLN)
 

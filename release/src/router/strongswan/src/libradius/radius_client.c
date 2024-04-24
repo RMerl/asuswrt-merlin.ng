@@ -84,7 +84,6 @@ METHOD(radius_client_t, request, radius_message_t*,
 {
 	radius_socket_t *socket;
 	radius_message_t *res;
-	chunk_t data;
 
 	/* add our NAS-Identifier */
 	req->add(req, RAT_NAS_IDENTIFIER,
@@ -104,8 +103,10 @@ METHOD(radius_client_t, request, radius_message_t*,
 		DBG1(DBG_CFG, "received RADIUS %N from server '%s'",
 			 radius_message_code_names, res->get_code(res),
 			 this->config->get_name(this->config));
-		data = res->get_encoding(res);
+#if DEBUG_LEVEL >= 3
+		chunk_t data = res->get_encoding(res);
 		DBG3(DBG_CFG, "%B", &data);
+#endif
 
 		save_state(this, res);
 		if (res->get_code(res) == RMC_ACCESS_ACCEPT)

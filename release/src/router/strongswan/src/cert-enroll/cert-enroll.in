@@ -1,0 +1,413 @@
+#!/bin/bash
+# Enroll or re-enroll X.509 certificates via EST or SCEP protocols using
+# the strongSwan pki tool. Install the certificates via the install scripts
+#
+# Copyright (C) 2023 Andreas Steffen
+#
+# Permission is hereby granted, free of charge, to any person obtaining a copy
+# of this software and associated documentation files (the "Software"), to deal
+# in the Software without restriction, including without limitation the rights
+# to use, copy, modify, merge, publish, distribute, sublicense, and/or sell
+# copies of the Software, and to permit persons to whom the Software is
+# furnished to do so, subject to the following conditions:
+#
+# The above copyright notice and this permission notice shall be included in
+# all copies or substantial portions of the Software.
+#
+# THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR
+# IMPLIED, INCLUDING BUT NOT LIMITED TO THE WARRANTIES OF MERCHANTABILITY,
+# FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE
+# AUTHORS OR COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER
+# LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
+# OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
+# THE SOFTWARE.
+#
+set -e
+
+##############################################################################
+# Set default configuration and installation scripts
+#
+CONFIG_DIR="@SYSCONFDIR@/cert-enroll.d"
+CONFIG_SCRIPT="$CONFIG_DIR/cert-enroll.conf"
+CONFIG_SCRIPT_LOCAL="$CONFIG_DIR/cert-enroll.conf.local"
+INSTALL_SCRIPT_DIR="$CONFIG_DIR/cert-install.d"
+
+##############################################################################
+# Parse optional arguments
+#
+function help()
+{
+  echo "Usage:"
+  echo "cert-enroll [-c filename] [-i directory]"
+  echo "Options:"
+  echo "  -h   print usage information"
+  echo "  -c   local configuration file, defaults to $CONFIG_SCRIPT_LOCAL"
+  echo "  -i   installation script directory,  defaults to $INSTALL_SCRIPT_DIR"
+}
+
+while getopts "c:i:h" opt
+do
+  case "$opt" in
+  c)
+    CONFIG_SCRIPT_LOCAL=${OPTARG}
+    ;;
+  i)
+    INSTALL_SCRIPT_DIR=${OPTARG}
+    ;;
+  h)
+    help; exit 0
+    ;;
+  esac
+done
+
+##############################################################################
+# Set optional local configuration parameters, overwriting default parameters
+#
+if [ -f $CONFIG_SCRIPT_LOCAL ]
+then
+  . $CONFIG_SCRIPT_LOCAL
+fi
+
+##############################################################################
+# Set default configuration parameters
+#
+if [ -f $CONFIG_SCRIPT ]
+then
+  . $CONFIG_SCRIPT
+elif [ -f $CONFIG_SCRIPT_LOCAL ]
+then
+  echo "Warning: default configuration file '$CONFIG_SCRIPT' not found," \
+       "depending on local configuration '$CONFIG_SCRIPT_LOCAL' only"
+else
+  echo "Error: neither '$CONFIG_SCRIPT' nor '$CONFIG_SCRIPT_LOCAL'" \
+       "configuration files found"
+  exit 1
+fi
+
+# Path to the strongSwan pki command
+PKI="@BINDIR@/pki"
+
+##############################################################################
+# Define some local functions
+#
+function gen_private_key()
+{
+  status=0
+  $PKI --gen --type $key_type --size $size --outform pem > "$1" || status=$?
+  if [ $status -ne 0 -o ! -s $1 ]
+  then
+    echo "Error: generation of $size bit $KEYTYPE private key failed"
+    exit 1
+  fi
+  chmod 600 $1
+  echo "  generated $size bit $KEYTYPE private key '$1'"
+}
+
+function gen_cert_request()
+{
+  status=0
+  $PKI --req --in "$1/$HOSTKEY" --type $in_type --dn "$DN" \
+	     $SAN "${ADD_SANS[@]}" \
+             --profile $PROFILE --outform pem > "$1/$CERTREQ" || status=$?
+
+  if [ $status -ne 0 -o ! -s $1 ]
+  then
+    echo "Error: generation of PKCS#10 certificate request failed"
+    exit 1
+  fi
+  chmod 600 $1
+  echo "  generated PKCS#10 certificate request"
+}
+
+function get_ca_certs()
+{
+  cd $1
+  status=0
+  if [ $CA_PROTOCOL == "EST" ]
+  then
+    $PKI --estca --url $EST_URL --cacert $TLSROOTCA --caout $CAOUT \
+                 --outform pem --force || status=$?
+    if [ $status -ne 0 -o ! -s $ROOTCA -o ! -s $SUBCA ]
+    then
+      echo "Error: download of CA certificates via EST failed"
+      exit 1
+    fi
+    echo "  downloaded CA certificates via EST"
+  else
+    $PKI --scepca --url $SCEP_URL --caout $CAOUT --raout $RAOUT \
+                  --outform pem --force || status=$?
+    if [ $status -ne 0 -o ! -s $ROOTCA -o ! -s $SUBCA -o ! -s $RACERT ]
+    then
+      echo "Error: download of CA or RA certificates via SCEP failed"
+      exit 1
+    fi
+    echo "  downloaded CA and RA certificates via SCEP"
+  fi
+  cd $CERTDIR
+}
+
+function check_ca_certs()
+{
+  get_ca_certs "$CERTDIR/new"
+
+  ROOTCA_CHANGED=0
+  cmp -s $ROOTCA new/$ROOTCA || ROOTCA_CHANGED=$?
+  if [ $ROOTCA_CHANGED -ne 0 ]
+  then
+    echo "Warning: '$ROOTCA' has changed"
+    mv $ROOTCA old
+    mv new/$ROOTCA .
+  fi
+
+  SUBCA_CHANGED=0
+  cmp -s $SUBCA new/$SUBCA || SUBCA_CHANGE=$?
+  if [ $SUBCA_CHANGED -ne 0 ]
+  then
+    echo "Warning: '$SUBCA' has changed"
+    mv $SUBCA old
+    mv new/$SUBCA .
+  fi
+
+  if [ $CA_PROTOCOL == "SCEP" ]
+  then
+    mv new/$RACERT .
+  fi
+
+  if [ $ROOTCA_CHANGED -eq 0 -a $SUBCA_CHANGED -eq 0 ]
+  then
+    echo "Ok: '$ROOTCA' and '$SUBCA' are unchanged"
+    rm new/$ROOTCA new/$SUBCA
+    return 0
+  else
+    return 1
+  fi
+}
+
+function install_certs()
+{
+  for script in $INSTALL_SCRIPT_DIR/*
+  do
+    status=0
+    echo "  executing '$script'"
+    KEYTYPE="$KEYTYPE" CERTDIR="$CERTDIR" HOSTKEY="$HOSTKEY" \
+    HOSTCERT="$HOSTCERT" ROOTCA="$ROOTCA" SUBCA="$SUBCA" \
+    OLDROOTCA="$OLDROOTCA" OLDSUBCA="$OLDSUBCA" \
+    USER_GROUP="$USER_GROUP" SERVICE="$SERVICE" \
+    /bin/bash $script || status=$?
+    if [ $status -ne 0 ]
+    then
+      echo "Error: executing '$script' failed"
+    fi
+  done
+}
+
+##############################################################################
+# SCEP certificate enrollment protocol requires RSA
+#
+if [ $PROTOCOL == "SCEP" -a $KEYTYPE != "RSA" ]
+then
+  echo "Warning: the SCEP protocol does not support $KEYTYPE keys," \
+       "switched to RSA key"
+  KEYTYPE="RSA"
+fi
+
+##############################################################################
+# Select key size
+#
+case $KEYTYPE in
+
+
+  RSA)
+    key_type="rsa"
+    in_type="rsa"
+    size=$RSA_SIZE
+    ;;
+
+  ECDSA)
+    key_type="ecdsa"
+    in_type="ecdsa"
+    size=$ECDSA_SIZE
+    ;;
+
+  ED25519)
+    key_type="ed25519"
+    in_type="priv"
+    size="256"
+    ;;
+
+  ED448)
+    key_type="ed448"
+    in_type="priv"
+    size="456"
+    ;;
+
+  *)
+    echo "Error: $KEYTYPE key type unknown"
+    exit 1
+    ;;
+
+esac
+
+##############################################################################
+# Create and change into certificates directory
+#
+mkdir -p $CERTDIR/new $CERTDIR/old
+cd $CERTDIR
+echo "  changed into the '$CERTDIR' directory"
+
+#############################################################################
+# Fetch the CA certificates with the selected enrollment protocol if possible
+#
+if [ $CA_PROTOCOL == "EST" -a ! -s $TLSROOTCA ]
+then
+  echo "  no TLS root CA certificate for EST available," \
+       "revert to SCEP CA protocol"
+  CA_PROTOCOL="SCEP"
+fi
+
+##############################################################################
+# Check if non-empty certificate already exists
+#
+if [ -s $HOSTCERT ]
+then
+##############################################################################
+# Determine the remaining validity of the certificate in days
+#
+  DAYS=$($PKI --print --in $HOSTCERT | awk '/not after/ {
+    if (($7 == "ok") && ($11 == "days)")) {
+      print $10
+    } else {
+      printf("0")
+    }
+  }' -)
+
+  if [ $DAYS -ge $MIN_DAYS ]
+  then
+    echo "Ok: validity of '$HOSTCERT' is $DAYS days," \
+         "more than the minimum of $MIN_DAYS days"
+    if [ $(expr $DAYS % $CA_CHECK_INTERVAL) -eq 0 ]
+    then
+      check_ca_certs && exit 0
+      # update CA certificates if any of them changed
+      install_certs
+    fi
+    exit 0
+  fi
+  echo "Warning: validity of '$HOSTCERT' is only $DAYS days," \
+       "less than the minimum of $MIN_DAYS days"
+
+##############################################################################
+# Check if non-empty private key already exists
+#
+  if [ -s "new/$HOSTKEY" ]
+  then
+    echo "Warning: 'new/$HOSTKEY' already exists," \
+	 "resuming $PROTOCOL re-enrollment"
+  else
+##############################################################################
+# Generate new private key
+#
+    gen_private_key "new/$HOSTKEY"
+  fi
+##############################################################################
+# Get and check CA and RA certificates via SCEP or EST
+#
+  check_ca_certs
+
+##############################################################################
+# Re-enroll certificate via SCEP or EST
+#
+  status=0
+  if [ $PROTOCOL == "SCEP" ]
+  then
+    $PKI --scep --url $SCEP_URL --in new/$HOSTKEY --key $HOSTKEY \
+                --cert $HOSTCERT --dn "$DN" $SAN "${ADD_SANS[@]}" \
+                --cacert-sig $SUBCA --cacert-enc $RACERT --cacert $ROOTCA \
+                --maxpolltime $SCEP_MAX_POLL_TIME --profile $PROFILE \
+                --outform pem > new/$HOSTCERT || status=$?
+  else
+    gen_cert_request "$CERTDIR/new"
+    $PKI --est --url $EST_URL --in new/$CERTREQ --cacert $ROOTCA \
+               --cacert $SUBCA --cacert $TLSROOTCA --key $HOSTKEY \
+               --cert $HOSTCERT --maxpolltime $EST_MAX_POLL_TIME \
+               --outform pem > new/$HOSTCERT || status=$?
+  fi
+
+  if [ $status -ne 0 -o ! -s $HOSTCERT ]
+  then
+    echo "Error: re-enrollment via $PROTOCOL failed"
+    exit 1
+  fi
+  echo "Ok: successfully re-enrolled '$HOSTCERT' via $PROTOCOL"
+
+##############################################################################
+# Replace old key and certificate
+#
+  mv $HOSTKEY $HOSTCERT old
+  mv new/$HOSTKEY new/$HOSTCERT .
+  if [ $PROTOCOL == "EST" ]
+  then
+    mv $CERTREQ old
+    mv new/$CERTREQ .
+  fi
+  echo "  replaced old '$HOSTKEY' and '$HOSTCERT'"
+
+##############################################################################
+# Install keys and certificates
+#
+  install_certs
+  exit 0
+else
+##############################################################################
+# No certificate exists yet
+#
+  echo "  '$HOSTCERT' doesn't exist yet"
+
+##############################################################################
+# Check if non-empty private key already exists
+#
+  if [ -s "$HOSTKEY" ]
+  then
+    echo "Warning: '$HOSTKEY' already exists, resuming $PROTOCOL enrollment"
+  else
+##############################################################################
+# Generate private key
+#
+    gen_private_key "$HOSTKEY"
+  fi
+##############################################################################
+# Get CA and RA certificates via SCEP
+#
+  get_ca_certs "$CERTDIR"
+
+##############################################################################
+# Enroll certificate via SCEP or EST
+#
+  status=0
+  if [ $PROTOCOL == "SCEP" ]
+  then
+    $PKI --scep --url $SCEP_URL --in $HOSTKEY --dn "$DN" $SAN "${ADD_SANS[@]}" \
+                --cacert-sig $SUBCA --cacert-enc $RACERT --cacert $ROOTCA \
+                --profile $PROFILE --maxpolltime $SCEP_MAX_POLL_TIME \
+                --outform pem > $HOSTCERT || status=$?
+  else
+    gen_cert_request "$CERTDIR"
+    $PKI --est --url $EST_URL --in $CERTREQ \
+               --cacert $ROOTCA --cacert $SUBCA --cacert $TLSROOTCA \
+               --maxpolltime $EST_MAX_POLL_TIME \
+               --outform pem > $HOSTCERT || status=$?
+  fi
+
+  if [ $status -ne 0 -o ! -s $HOSTCERT ]
+  then
+    echo "Error: enrollment via $PROTOCOL failed"
+    exit 1
+  fi
+  echo "Ok: successfully enrolled '$HOSTCERT' via $PROTOCOL"
+
+##############################################################################
+# Install keys and certificates
+#
+  install_certs
+  exit 0
+fi

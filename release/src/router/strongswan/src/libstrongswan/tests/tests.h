@@ -1,5 +1,6 @@
 /*
  * Copyright (C) 2013 Tobias Brunner
+ * Copyright (C) 2022 Andreas Steffen
  *
  * Copyright (C) secunet Security Networks AG
  *
@@ -42,6 +43,8 @@ TEST_SUITE_DEPEND(rsa_oaep_sha384_suite_create, PRIVKEY_DECRYPT, ENCRYPT_RSA_OAE
 TEST_SUITE_DEPEND(rsa_oaep_sha512_suite_create, PRIVKEY_DECRYPT, ENCRYPT_RSA_OAEP_SHA512)
 TEST_SUITE_DEPEND(certpolicy_suite_create, CERT_ENCODE, CERT_X509)
 TEST_SUITE_DEPEND(certnames_suite_create, CERT_ENCODE, CERT_X509)
+TEST_SUITE_DEPEND(serial_gen_suite_create, CERT_ENCODE, CERT_X509)
+TEST_SUITE(serial_parse_suite_create)
 TEST_SUITE(host_suite_create)
 TEST_SUITE(printf_suite_create)
 TEST_SUITE(auth_cfg_suite_create)

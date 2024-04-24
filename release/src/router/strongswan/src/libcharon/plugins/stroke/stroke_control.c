@@ -109,7 +109,7 @@ static void charon_initiate(private_stroke_control_t *this, peer_cfg_t *peer_cfg
 	if (msg->output_verbosity < 0)
 	{
 		charon->controller->initiate(charon->controller, peer_cfg, child_cfg,
-									 NULL, NULL, 0, FALSE);
+									 NULL, NULL, 0, 0, FALSE);
 	}
 	else
 	{
@@ -118,7 +118,7 @@ static void charon_initiate(private_stroke_control_t *this, peer_cfg_t *peer_cfg
 
 		status = charon->controller->initiate(charon->controller,
 							peer_cfg, child_cfg, (controller_cb_t)stroke_log,
-							&info, this->timeout, FALSE);
+							&info, msg->output_verbosity, this->timeout, FALSE);
 		switch (status)
 		{
 			case SUCCESS:
@@ -312,25 +312,26 @@ static void charon_terminate(private_stroke_control_t *this, uint32_t id,
 		if (child)
 		{
 			status = charon->controller->terminate_child(charon->controller, id,
-							(controller_cb_t)stroke_log, &info, this->timeout);
+									(controller_cb_t)stroke_log, &info,
+									msg->output_verbosity, this->timeout);
 		}
 		else
 		{
 			status = charon->controller->terminate_ike(charon->controller, id,
-							FALSE, (controller_cb_t)stroke_log, &info,
-							this->timeout);
+									FALSE, (controller_cb_t)stroke_log, &info,
+									msg->output_verbosity, this->timeout);
 		}
 		report_terminate_status(this, status, out, id, child);
 	}
 	else if (child)
 	{
 		charon->controller->terminate_child(charon->controller, id,
-										    NULL, NULL, 0);
+										    NULL, NULL, 0, 0);
 	}
 	else
 	{
 		charon->controller->terminate_ike(charon->controller, id, FALSE,
-										  NULL, NULL, 0);
+										  NULL, NULL, 0, 0);
 	}
 }
 

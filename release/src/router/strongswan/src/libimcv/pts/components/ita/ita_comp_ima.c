@@ -964,7 +964,7 @@ METHOD(pts_component_t, get_ref, pts_component_t*,
 METHOD(pts_component_t, destroy, void,
 	pts_ita_comp_ima_t *this)
 {
-	int count;
+	int count DBG_UNUSED;
 
 	if (ref_put(&this->ref))
 	{

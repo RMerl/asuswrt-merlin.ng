@@ -15,7 +15,8 @@ endif
 libstrongswan_kernel_libipsec_la_SOURCES = \
 	kernel_libipsec_plugin.h kernel_libipsec_plugin.c \
 	kernel_libipsec_ipsec.h kernel_libipsec_ipsec.c \
-	kernel_libipsec_router.h kernel_libipsec_router.c
+	kernel_libipsec_router.h kernel_libipsec_router.c \
+	kernel_libipsec_esp_handler.h kernel_libipsec_esp_handler.c
 
 libstrongswan_kernel_libipsec_la_LIBADD = $(top_builddir)/src/libipsec/libipsec.la
 

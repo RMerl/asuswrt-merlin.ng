@@ -192,8 +192,8 @@ METHOD(pts_component_t, verify, status_t,
 	pts_comp_evidence_t *evidence)
 {
 	bool has_pcr_info;
-	uint32_t extended_pcr, vid, name;
-	enum_name_t *names;
+	uint32_t extended_pcr, vid, name DBG_UNUSED;
+	enum_name_t *names DBG_UNUSED;
 	pts_meas_algorithms_t algo;
 	pts_pcr_transform_t transform;
 	pts_pcr_t *pcrs;
@@ -312,9 +312,9 @@ METHOD(pts_component_t, get_ref, pts_component_t*,
 METHOD(pts_component_t, destroy, void,
 	   pts_ita_comp_tboot_t *this)
 {
-	int count;
-	uint32_t vid, name;
-	enum_name_t *names;
+	int count DBG_UNUSED;
+	uint32_t vid, name DBG_UNUSED;
+	enum_name_t *names DBG_UNUSED;
 
 	if (ref_put(&this->ref))
 	{

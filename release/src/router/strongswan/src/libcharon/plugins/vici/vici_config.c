@@ -520,7 +520,7 @@ typedef struct {
  */
 static void log_child_data(child_data_t *data, char *name)
 {
-	child_cfg_create_t *cfg = &data->cfg;
+	child_cfg_create_t *cfg DBG_UNUSED = &data->cfg;
 
 #define has_opt(opt) ({ (cfg->options & (opt)) == (opt); })
 	DBG2(DBG_CFG, "  child %s:", name);
@@ -1040,9 +1040,11 @@ CALLBACK(parse_hw_offload, bool,
 	action_t *out, chunk_t v)
 {
 	enum_map_t map[] = {
-		{ "no",		HW_OFFLOAD_NO	},
-		{ "yes",	HW_OFFLOAD_YES	},
-		{ "auto",	HW_OFFLOAD_AUTO	},
+		{ "no",		HW_OFFLOAD_NO		},
+		{ "yes",	HW_OFFLOAD_CRYPTO	},
+		{ "crypto",	HW_OFFLOAD_CRYPTO	},
+		{ "packet",	HW_OFFLOAD_PACKET	},
+		{ "auto",	HW_OFFLOAD_AUTO		},
 	};
 	int d;
 
@@ -1641,6 +1643,7 @@ CALLBACK(parse_childless, bool,
 {
 	enum_map_t map[] = {
 		{ "allow",		CHILDLESS_ALLOW		},
+		{ "prefer",		CHILDLESS_PREFER	},
 		{ "never",		CHILDLESS_NEVER		},
 		{ "force",		CHILDLESS_FORCE		},
 	};
@@ -1981,18 +1984,52 @@ CALLBACK(auth_sn, bool,
  */
 static void check_lifetimes(lifetime_cfg_t *lft)
 {
+	/* if no soft lifetime specified, set a default or base it on the hard lifetime */
+	if (lft->time.rekey == LFT_UNDEFINED)
+	{
+		if (lft->time.life != LFT_UNDEFINED)
+		{
+			lft->time.rekey = lft->time.life / 1.1;
+		}
+		else
+		{
+			lft->time.rekey = LFT_DEFAULT_CHILD_REKEY_TIME;
+		}
+	}
+	if (lft->bytes.rekey == LFT_UNDEFINED)
+	{
+		if (lft->bytes.life != LFT_UNDEFINED)
+		{
+			lft->bytes.rekey = lft->bytes.life / 1.1;
+		}
+		else
+		{
+			lft->bytes.rekey = LFT_DEFAULT_CHILD_REKEY_BYTES;
+		}
+	}
+	if (lft->packets.rekey == LFT_UNDEFINED)
+	{
+		if (lft->packets.life != LFT_UNDEFINED)
+		{
+			lft->packets.rekey = lft->packets.life / 1.1;
+		}
+		else
+		{
+			lft->packets.rekey = LFT_DEFAULT_CHILD_REKEY_PACKETS;
+		}
+	}
 	/* if no hard lifetime specified, add one at soft lifetime + 10% */
 	if (lft->time.life == LFT_UNDEFINED)
 	{
-		lft->time.life = lft->time.rekey * 110 / 100;
+		lft->time.life = lft->time.rekey * 1.1;
 	}
 	if (lft->bytes.life == LFT_UNDEFINED)
 	{
-		lft->bytes.life = lft->bytes.rekey * 110 / 100;
+		lft->bytes.life = lft->bytes.rekey * 1.1;
 	}
 	if (lft->packets.life == LFT_UNDEFINED)
 	{
-		lft->packets.life = lft->packets.rekey * 110 / 100;
+		lft->packets.life = lft->packets.rekey * 1.1;
 	}
 	/* if no rand time defined, use difference of hard and soft */
 	if (lft->time.jitter == LFT_UNDEFINED)
@@ -2026,17 +2063,17 @@ CALLBACK(children_sn, bool,
 			.mode = MODE_TUNNEL,
 			.lifetime = {
 				.time = {
-					.rekey = LFT_DEFAULT_CHILD_REKEY_TIME,
+					.rekey = LFT_UNDEFINED,
 					.life = LFT_UNDEFINED,
 					.jitter = LFT_UNDEFINED,
 				},
 				.bytes = {
-					.rekey = LFT_DEFAULT_CHILD_REKEY_BYTES,
+					.rekey = LFT_UNDEFINED,
 					.life = LFT_UNDEFINED,
 					.jitter = LFT_UNDEFINED,
 				},
 				.packets = {
-					.rekey = LFT_DEFAULT_CHILD_REKEY_PACKETS,
+					.rekey = LFT_UNDEFINED,
 					.life = LFT_UNDEFINED,
 					.jitter = LFT_UNDEFINED,
 				},
@@ -2215,7 +2252,7 @@ static void run_start_action(private_vici_config_t *this, peer_cfg_t *peer_cfg,
 		DBG1(DBG_CFG, "initiating '%s'", child_cfg->get_name(child_cfg));
 		charon->controller->initiate(charon->controller,
 					peer_cfg->get_ref(peer_cfg), child_cfg->get_ref(child_cfg),
-					NULL, NULL, 0, FALSE);
+					NULL, NULL, 0, 0, FALSE);
 	}
 }
 
@@ -2311,7 +2348,7 @@ static void clear_start_action(private_vici_config_t *this, char *peer_name,
 			{
 				DBG1(DBG_CFG, "closing '%s' #%u", name, id);
 				charon->controller->terminate_child(charon->controller,
-													id, NULL, NULL, 0);
+													id, NULL, NULL, 0, 0);
 			}
 			array_destroy(ids);
 		}
@@ -2321,7 +2358,7 @@ static void clear_start_action(private_vici_config_t *this, char *peer_name,
 			{
 				DBG1(DBG_CFG, "closing IKE_SA #%u", id);
 				charon->controller->terminate_ike(charon->controller, id,
-												  FALSE, NULL, NULL, 0);
+												  FALSE, NULL, NULL, 0, 0);
 			}
 			array_destroy(ikeids);
 		}
@@ -2567,8 +2604,8 @@ CALLBACK(config_sn, bool,
 #ifdef ME
 	if (peer.mediation && peer.mediated_by)
 	{
-		DBG1(DBG_CFG, "a mediation connection cannot be a mediated connection "
-			 "at the same time, config discarded");
+		request->reply = create_reply("a mediation connection cannot be a "
+									  "mediated connection at the same time");
 		free_peer_data(&peer);
 		return FALSE;
 	}
@@ -2579,23 +2616,23 @@ CALLBACK(config_sn, bool,
 	else if (peer.mediated_by)
 	{	/* fallback to remote identity of first auth round if peer_id is not
 		 * given explicitly */
-		auth_cfg_t *cfg;
+		auth_data_t *auth;
 
 		if (!peer.peer_id &&
-			peer.remote->get_first(peer.remote, (void**)&cfg) == SUCCESS)
+			peer.remote->get_first(peer.remote, (void**)&auth) == SUCCESS)
 		{
-			peer.peer_id = cfg->get(cfg, AUTH_RULE_IDENTITY);
+			peer.peer_id = auth->cfg->get(auth->cfg, AUTH_RULE_IDENTITY);
 			if (peer.peer_id)
 			{
 				peer.peer_id = peer.peer_id->clone(peer.peer_id);
 			}
-			else
-			{
-				DBG1(DBG_CFG, "mediation peer missing for mediated connection, "
-					 "config discarded");
-				free_peer_data(&peer);
-				return FALSE;
-			}
+		}
+		if (!peer.peer_id)
+		{
+			request->reply = create_reply("mediation peer or remote identity "
+										  "missing for mediated connection");
+			free_peer_data(&peer);
+			return FALSE;
 		}
 	}
 #endif /* ME */

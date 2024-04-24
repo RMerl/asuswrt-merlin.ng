@@ -57,6 +57,13 @@ struct ocsp_response_t {
 	certificate_t certificate;
 
 	/**
+	 * Get general status of this OCSP response.
+	 *
+	 * @return					OCSP status
+	 */
+	ocsp_status_t (*get_ocsp_status)(ocsp_response_t *this);
+
+	/**
 	 * Get the nonce received with this OCSP response.
 	 *
 	 * @return					nonce in the response (internal data)
@@ -88,9 +95,9 @@ struct ocsp_response_t {
 	enumerator_t* (*create_cert_enumerator)(ocsp_response_t *this);
 
 	/**
-	 * Create an enumerator over the contained responses.
+	 * Create an enumerator over the contained single responses.
 	 *
-	 * @return					enumerator over major response fields
+	 * @return					enumerator over ocsp_single_response_t objects
 	 */
 	enumerator_t* (*create_response_enumerator)(ocsp_response_t *this);
 };

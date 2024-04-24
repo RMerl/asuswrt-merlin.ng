@@ -1,0 +1,11 @@
+An IPv6 ESP tunnel connection between the gateways <b>moon</b> and <b>sun</b> is set up.
+It connects the two IPv6 subnets hiding behind their respective gateways.
+The authentication is based on <b>X.509 certificates</b> and the <b>kernel-libipsec</b>
+plugin is used for userland IPsec ESP encryption. In this scenario, UDP encapsulation
+isn't enforced by the plugin as sending of raw ESP packets is enabled.
+<p/>
+Upon the successful establishment of the IPsec tunnel, an updown script automatically
+inserts iptables-based firewall rules that let pass the traffic tunneled via the
+<b>ipsec0</b> tun interface. In order to test both tunnel and firewall, client <b>alice</b>
+behind gateway <b>moon</b> sends an IPv6 ICMP request to client <b>bob</b> behind <b>sun</b>
+using the ping6 command.

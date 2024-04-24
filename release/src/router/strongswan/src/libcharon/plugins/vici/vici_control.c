@@ -209,8 +209,8 @@ CALLBACK(initiate, vici_message_t*,
 	{
 		return send_reply(this, "%s config '%s' not found", type, sa);
 	}
-	switch (charon->controller->initiate(charon->controller, peer_cfg,
-									child_cfg, log_cb, &log, timeout, limits))
+	switch (charon->controller->initiate(charon->controller, peer_cfg, child_cfg,
+										 log_cb, &log, log.level, timeout, limits))
 	{
 		case SUCCESS:
 			return send_reply(this, NULL);
@@ -226,11 +226,32 @@ CALLBACK(initiate, vici_message_t*,
 	}
 }
 
+/**
+ * Format the given SA filter parameters for logging.
+ */
+static inline void format_sa_selector(char *buf, size_t len, char *name,
+									  u_int id)
+{
+	if (name && id)
+	{
+		snprintf(buf, len, "'%s' #%d", name, id);
+	}
+	else if (name)
+	{
+		snprintf(buf, len, "'%s'", name);
+	}
+	else if (id)
+	{
+		snprintf(buf, len, "#%d", id);
+	}
+}
+
 CALLBACK(terminate, vici_message_t*,
 	private_vici_control_t *this, char *name, u_int id, vici_message_t *request)
 {
 	enumerator_t *enumerator, *isas, *csas;
 	char *child, *ike, *errmsg = NULL;
+	char child_sel[BUF_LEN] = "", ike_sel[BUF_LEN] = "";
 	u_int child_id, ike_id, current, *del, done = 0;
 	bool force;
 	int timeout;
@@ -257,22 +278,13 @@ CALLBACK(terminate, vici_message_t*,
 		return send_reply(this, "missing terminate selector");
 	}
 
-	if (ike_id)
-	{
-		DBG1(DBG_CFG, "vici terminate IKE_SA #%d", ike_id);
-	}
-	if (child_id)
-	{
-		DBG1(DBG_CFG, "vici terminate CHILD_SA #%d", child_id);
-	}
-	if (ike)
-	{
-		DBG1(DBG_CFG, "vici terminate IKE_SA '%s'", ike);
-	}
-	if (child)
-	{
-		DBG1(DBG_CFG, "vici terminate CHILD_SA '%s'", child);
-	}
+	format_sa_selector(child_sel, sizeof(child_sel), child, child_id);
+	format_sa_selector(ike_sel, sizeof(ike_sel), ike, ike_id);
+
+	DBG1(DBG_CFG, "vici terminate%s%s%s%s%s",
+		 child_sel[0] ? " CHILD_SA " : "", child_sel,
+		 child_sel[0] && ike_sel[0] ? " of" : "",
+		 ike_sel[0] ? " IKE_SA ": "", ike_sel);
 
 	if (timeout >= 0)
 	{
@@ -328,7 +340,7 @@ CALLBACK(terminate, vici_message_t*,
 		if (child || child_id)
 		{
 			if (charon->controller->terminate_child(charon->controller, *del,
-											log_cb, &log, timeout) == SUCCESS)
+									log_cb, &log, log.level, timeout) == SUCCESS)
 			{
 				done++;
 			}
@@ -336,7 +348,7 @@ CALLBACK(terminate, vici_message_t*,
 		else
 		{
 			if (charon->controller->terminate_ike(charon->controller, *del, force,
-											log_cb, &log, timeout) == SUCCESS)
+									log_cb, &log, log.level, timeout) == SUCCESS)
 			{
 				done++;
 			}
@@ -376,6 +388,7 @@ CALLBACK(rekey, vici_message_t*,
 {
 	enumerator_t *isas, *csas;
 	char *child, *ike, *errmsg = NULL;
+	char child_sel[BUF_LEN] = "", ike_sel[BUF_LEN] = "";
 	u_int child_id, ike_id, found = 0;
 	ike_sa_t *ike_sa;
 	child_sa_t *child_sa;
@@ -393,22 +406,13 @@ CALLBACK(rekey, vici_message_t*,
 		return send_reply(this, "missing rekey selector");
 	}
 
-	if (ike_id)
-	{
-		DBG1(DBG_CFG, "vici rekey IKE_SA #%d", ike_id);
-	}
-	if (child_id)
-	{
-		DBG1(DBG_CFG, "vici rekey CHILD_SA #%d", child_id);
-	}
-	if (ike)
-	{
-		DBG1(DBG_CFG, "vici rekey IKE_SA '%s'", ike);
-	}
-	if (child)
-	{
-		DBG1(DBG_CFG, "vici rekey CHILD_SA '%s'", child);
-	}
+	format_sa_selector(child_sel, sizeof(child_sel), child, child_id);
+	format_sa_selector(ike_sel, sizeof(ike_sel), ike, ike_id);
+
+	DBG1(DBG_CFG, "vici rekey%s%s%s%s%s",
+		 child_sel[0] ? " CHILD_SA " : "", child_sel,
+		 child_sel[0] && ike_sel[0] ? " of" : "",
+		 ike_sel[0] ? " IKE_SA ": "", ike_sel);
 
 	isas = charon->controller->create_ike_sa_enumerator(charon->controller, TRUE);
 	while (isas->enumerate(isas, &ike_sa))

@@ -32,7 +32,7 @@
  */
 static int est()
 {
-	char *arg, *url = NULL, *file = NULL, *error = NULL;
+	char *arg, *url = NULL, *label = NULL, *file = NULL, *error = NULL;
 	char *client_cert_file = NULL, *client_key_file = NULL;
 	char *keyid = NULL, *certid = NULL, *user_pass = NULL;
 	cred_encoding_type_t form = CERT_ASN1_DER;
@@ -59,6 +59,9 @@ static int est()
 				goto usage;
 			case 'u':       /* --url */
 				url = arg;
+				continue;
+			case 'l':       /* --label */
+				label = arg;
 				continue;
 			case 'i':       /* --in */
 				file = arg;
@@ -256,7 +259,7 @@ static int est()
 		est_op = EST_SIMPLE_REENROLL;
 	}
 
-	est_tls = est_tls_create(url, client_cert, user_pass);
+	est_tls = est_tls_create(url, label, client_cert, user_pass);
 	if (!est_tls)
 	{
 		DBG1(DBG_APP, "TLS connection to EST server was not established");
@@ -304,7 +307,7 @@ static int est()
 		DBG1(DBG_APP, "  going to sleep for %d seconds", poll_interval);
 		sleep(poll_interval);
 
-		est_tls = est_tls_create(url, client_cert, user_pass);
+		est_tls = est_tls_create(url, label, client_cert, user_pass);
 		if (!est_tls)
 		{
 			DBG1(DBG_APP, "TLS connection to EST server was not established");
@@ -354,14 +357,16 @@ static void __attribute__ ((constructor))reg()
 	command_register((command_t) {
 		est, 'E', "est",
 		"Enroll an X.509 certificate with an EST server",
-		{"--url url [--in file] [--cacert file]+ [-userpass username:password]",
-		 "[--cert file|--certid hex --key file|--keyid hex] [--interval time]",
+		{"--url url [--label label] [--in file] --cacert file",
+		 "[--cert file|--certid hex --key file|--keyid hex]",
+		 "[--userpass username:password] [--interval time]",
 		 "[--maxpolltime time] [--outform der|pem]"},
 		{
 			{"help",        'h', 0, "show usage information"},
 			{"url",         'u', 1, "URL of the EST server"},
+			{"label",       'l', 1, "label in the EST server path"},
 			{"in",          'i', 1, "PKCS#10 input file, default: stdin"},
-			{"cacert",      'C', 1, "CA certificate"},
+			{"cacert",      'C', 1, "CA certificate(s)"},
 			{"cert",        'c', 1, "old certificate about to be renewed"},
 			{"certid",      'X', 1, "smartcard or TPM certificate object handle" },
 			{"key",         'k', 1, "old private key about to be replaced"},

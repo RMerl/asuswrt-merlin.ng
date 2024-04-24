@@ -83,14 +83,14 @@ typedef struct {
 	char *value;
 } setting_t;
 
-int setting_find(const void *a, const void *b)
+static int setting_find(const void *a, const void *b)
 {
 	const char *key = a;
 	const setting_t *setting = b;
 	return strcmp(key, setting->key);
 }
 
-int setting_sort(const void *a, const void *b, void *user)
+static int setting_sort(const void *a, const void *b, void *user)
 {
 	const setting_t *sa = a, *sb = b;
 	return strcmp(sa->key, sb->key);

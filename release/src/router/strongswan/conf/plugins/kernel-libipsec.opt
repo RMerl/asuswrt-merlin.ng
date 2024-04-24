@@ -5,3 +5,10 @@ charon.plugins.kernel-libipsec.allow_peer_ts = no
 	installed for such traffic (via TUN device) usually prevents further IKE
 	traffic. The fwmark options for the _kernel-netlink_ and _socket-default_
 	plugins can be used to circumvent that problem.
+
+charon.plugins.kernel-libipsec.fwmark = charon.plugins.socket-default.fwmark
+	Firewall mark to set on outbound raw ESP packets.
+
+charon.plugins.kernel-libipsec.raw_esp = no
+	Whether to send and receive ESP packets without UDP encapsulation if
+	supported on this platform and no NAT is detected.

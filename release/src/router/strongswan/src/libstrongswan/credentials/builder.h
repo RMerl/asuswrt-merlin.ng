@@ -165,6 +165,12 @@ enum builder_part_t {
 	BUILD_EDDSA_PRIV_ASN1_DER,
 	/** OID of an [unsupported] critical extension */
 	BUILD_CRITICAL_EXTENSION,
+	/** nonce needed for some security protocol */
+	BUILD_NONCE,
+	/** OCSP response status, ocsp_status_t */
+	BUILD_OCSP_STATUS,
+	/** enumerator_t over (ocsp_single_response_t *response) */
+	BUILD_OCSP_RESPONSES,
 	/** end of variable argument builder list */
 	BUILD_END,
 };

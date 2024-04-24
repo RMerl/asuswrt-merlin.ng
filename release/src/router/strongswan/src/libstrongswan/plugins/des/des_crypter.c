@@ -531,13 +531,6 @@ YOU SHOULD NOT HAVE BOTH DES_RISC1 AND DES_RISC2 DEFINED!!!!!
 	PERM_OP(l,r,tt, 4,0x0f0f0f0fL); \
 }
 
-#ifndef NOPROTO
-void fcrypt_body(DES_LONG *out,des_key_schedule ks,
-				 DES_LONG Eswap0, DES_LONG Eswap1);
-#else
-void fcrypt_body();
-#endif
-
 static const DES_LONG des_skb[8][64]={
 	{	/* for C bits (numbered as per FIPS 46) 1 2 3 4 5 6 */
 		0x00000000L,0x00000010L,0x20000000L,0x20000010L,

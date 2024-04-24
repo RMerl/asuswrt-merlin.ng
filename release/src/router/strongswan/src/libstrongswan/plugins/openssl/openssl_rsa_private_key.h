@@ -73,17 +73,4 @@ openssl_rsa_private_key_t *openssl_rsa_private_key_load(key_type_t type,
  */
 private_key_t *openssl_rsa_private_key_create(EVP_PKEY *key, bool engine);
 
-/**
- * Connect to a RSA private key on a smartcard.
- *
- * Accepts the BUILD_SMARTCARD_KEYID and the BUILD_SMARTCARD_PIN
- * arguments.
- *
- * @param type		type of the key, must be KEY_RSA
- * @param args		builder_part_t argument list
- * @return 			loaded key, NULL on failure
- */
-openssl_rsa_private_key_t *openssl_rsa_private_key_connect(key_type_t type,
-														   va_list args);
-
 #endif /** OPENSSL_RSA_PRIVATE_KEY_H_ @}*/

@@ -23,6 +23,7 @@
 #include <threading/rwlock.h>
 #include <collections/linked_list.h>
 #include <credentials/certificates/crl.h>
+#include <credentials/certificates/ocsp_response.h>
 
 /** cache size, a power of 2 for fast modulo */
 #define CACHE_SIZE 32
@@ -127,6 +128,55 @@ static void cache(private_cert_cache_t *this,
 				rel->lock->unlock(rel->lock);
 			}
 		}
+	}
+	else if (subject->get_type(subject) == CERT_X509_OCSP_RESPONSE)
+	{
+		ocsp_response_t *response, *cached_response;
+		enumerator_t *e, *e1;
+		chunk_t serial, serial_cached;
+
+		response = (ocsp_response_t*)subject;
+
+		/* we only check OCSP responses containing one single response */
+		e = response->create_response_enumerator(response);
+		if (e->enumerate(e, &serial, NULL, NULL, NULL) &&
+		   !e->enumerate(e, NULL, NULL, NULL, NULL))
+		{
+			for (i = 0; i < CACHE_SIZE; i++)
+			{
+				rel = &this->relations[i];
+
+				if (rel->subject &&
+					rel->subject->get_type(rel->subject) == CERT_X509_OCSP_RESPONSE &&
+					rel->lock->try_write_lock(rel->lock))
+				{
+					/* double-check having lock */
+					if (rel->subject->get_type(rel->subject) == CERT_X509_OCSP_RESPONSE &&
+						rel->issuer->equals(rel->issuer, issuer) &&
+						certificate_is_newer(subject, rel->subject))
+					{
+						cached_response = (ocsp_response_t*)rel->subject;
+
+						e1 = cached_response->create_response_enumerator(cached_response);
+						if (e1->enumerate(e1, &serial_cached, NULL, NULL, NULL) &&
+						   !e1->enumerate(e1, NULL, NULL, NULL, NULL) &&
+							chunk_equals(serial_cached, serial))
+						{
+							e1->destroy(e1);
+							e->destroy(e);
+							rel->subject->destroy(rel->subject);
+							rel->subject = subject->get_ref(subject);
+							signature_params_destroy(rel->scheme);
+							rel->scheme = signature_params_clone(scheme);
+							return rel->lock->unlock(rel->lock);
+						}
+						e1->destroy(e1);
+					}
+					rel->lock->unlock(rel->lock);
+				}
+			}
+		}
+		e->destroy(e);
 	}
 
 	/* check for a unused relation slot first */

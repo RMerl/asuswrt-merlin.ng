@@ -536,8 +536,8 @@ METHOD(tpm_tss_t, get_version_info, chunk_t,
 /**
  * read the public key portion of a TSS 2.0 key from NVRAM
  */
-bool read_public(private_tpm_tss_tss2_t *this, TPMI_DH_OBJECT handle,
-	TPM2B_PUBLIC *public)
+static bool read_public(private_tpm_tss_tss2_t *this, TPMI_DH_OBJECT handle,
+						TPM2B_PUBLIC *public)
 {
 	uint32_t rval;
 
@@ -664,6 +664,8 @@ METHOD(tpm_tss_t, get_public, chunk_t,
 			DBG1(DBG_PTS, LABEL "unsupported key type");
 			return chunk_empty;
 	}
+
+#if DEBUG_LEVEL >= 1
 	if (public.publicArea.objectAttributes & TPMA_OBJECT_SIGN_ENCRYPT)
 	{
 		TPMT_ASYM_SCHEME *s;
@@ -682,6 +684,7 @@ METHOD(tpm_tss_t, get_public, chunk_t,
 					  tpm_alg_id_names, s->algorithm,
 					  tpm_alg_id_names, s->mode, s->keyBits.sym);
 	}
+#endif
 
 	return aik_pubkey;
 }

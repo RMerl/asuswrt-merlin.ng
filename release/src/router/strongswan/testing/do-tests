@@ -957,6 +957,8 @@ done
 # finish the results html file
 #
 
+printf -v timetotal_fmt '%02d:%02d:%02d' $((timetotal/3600)) $((timetotal%3600/60)) $((timetotal%60))
+
 cat >> $TESTRESULTSHTML << @EOF
     <tr>
       <td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td><td>&nbsp;</td>
@@ -968,7 +970,7 @@ cat >> $TESTRESULTSHTML << @EOF
       <td><b>Failed</b></td><td><b><font color="red">$failed_cnt</font></b></td><td>&nbsp;</td><td>&nbsp;</td>
     </tr>
     <tr>
-      <td><b>Time [s]</b></td><td><b><font color="blue">$timetotal</font></b></td><td>&nbsp;</td><td>&nbsp;</td>
+      <td><b>Time</b></td><td><b><font color="blue">$timetotal_fmt (${timetotal}s)</font></b></td><td>&nbsp;</td><td>&nbsp;</td>
     </tr>
   </table>
 </body>
@@ -1014,4 +1016,4 @@ echo "or via the link http://$ipv4_winnetou/testresults/$TESTDATE"
 
 ENDDATE=`date +%Y%m%d-%H%M-%S`
 echo
-echo "Finished : $ENDDATE"
+echo "Finished : $ENDDATE ($timetotal_fmt)"

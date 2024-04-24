@@ -254,7 +254,6 @@ METHOD(imc_msg_t, receive, TNC_Result,
 	enumerator_t *enumerator;
 	pa_tnc_attr_t *attr;
 	pen_type_t attr_type;
-	chunk_t msg;
 	bool first = TRUE;
 
 	if (this->state->has_long(this->state))
@@ -282,8 +281,10 @@ METHOD(imc_msg_t, receive, TNC_Result,
 					   this->agent->get_name(this->agent),
 					   this->connection_id);
 	}
-	msg = this->pa_msg->get_encoding(this->pa_msg);
+#if DEBUG_LEVEL >= 3
+	chunk_t msg = this->pa_msg->get_encoding(this->pa_msg);
 	DBG3(DBG_IMC, "%B", &msg);
+#endif
 
 	switch (this->pa_msg->process(this->pa_msg))
 	{
@@ -522,7 +523,7 @@ METHOD(imc_msg_t, receive, TNC_Result,
 		{
 			ietf_attr_remediation_instr_t *attr_cast;
 			pen_type_t parameters_type;
-			chunk_t parameters, string, lang_code;
+			chunk_t parameters DBG_UNUSED, string DBG_UNUSED, lang_code;
 
 			attr_cast = (ietf_attr_remediation_instr_t*)attr;
 			parameters_type = attr_cast->get_parameters_type(attr_cast);

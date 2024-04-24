@@ -1659,6 +1659,16 @@ static status_t get_spi_internal(private_kernel_pfkey_ipsec_t *this,
 	return SUCCESS;
 }
 
+METHOD(kernel_ipsec_t, get_features, kernel_feature_t,
+	private_kernel_pfkey_ipsec_t *this)
+{
+#ifdef __APPLE__
+	return KERNEL_SA_USE_TIME;
+#else
+	return 0;
+#endif
+}
+
 METHOD(kernel_ipsec_t, get_spi, status_t,
 	private_kernel_pfkey_ipsec_t *this, host_t *src, host_t *dst,
 	uint8_t protocol, uint32_t *spi)
@@ -1969,7 +1979,7 @@ METHOD(kernel_ipsec_t, update_sa, status_t,
 	}
 #ifndef SADB_X_EXT_NEW_ADDRESS_SRC
 	/* we can't update the SA if any of the ip addresses have changed.
-	 * that's because we can't use SADB_UPDATE and by deleting and readding the
+	 * that's because we can't use SADB_UPDATE and by deleting and re-adding the
 	 * SA the sequence numbers would get lost */
 	if (!id->src->ip_equals(id->src, data->new_src) ||
 		!id->dst->ip_equals(id->dst, data->new_dst))
@@ -2198,9 +2208,9 @@ METHOD(kernel_ipsec_t, query_sa, status_t,
 		/* OS X uses the "last" time of use in usetime */
 		*time = response.lft_current->sadb_lifetime_usetime;
 #else /* !__APPLE__ */
-		/* on Linux, sadb_lifetime_usetime is set to the "first" time of use,
-		 * which is actually correct according to PF_KEY. We have to query
-		 * policies for the last usetime. */
+		/* on Linux and FreeBSD, sadb_lifetime_usetime is set to the "first"
+		 * time of use, which is actually correct according to PF_KEY. We have
+		 * to query policies for the last usetime. */
 		*time = 0;
 #endif /* !__APPLE__ */
 	}
@@ -3303,12 +3313,12 @@ METHOD(kernel_ipsec_t, destroy, void,
 kernel_pfkey_ipsec_t *kernel_pfkey_ipsec_create()
 {
 	private_kernel_pfkey_ipsec_t *this;
-	bool register_for_events = TRUE;
 	int rcv_buffer;
 
 	INIT(this,
 		.public = {
 			.interface = {
+				.get_features = _get_features,
 				.get_spi = _get_spi,
 				.get_cpi = _get_cpi,
 				.add_sa  = _add_sa,
@@ -3339,11 +3349,6 @@ kernel_pfkey_ipsec_t *kernel_pfkey_ipsec_create()
 								FALSE, lib->ns),
 	);
 
-	if (streq(lib->ns, "starter"))
-	{	/* starter has no threads, so we do not register for kernel events */
-		register_for_events = FALSE;
-	}
-
 	/* create a PF_KEY socket to communicate with the kernel */
 	this->socket = socket(PF_KEY, SOCK_RAW, PF_KEY_V2);
 	if (this->socket <= 0)
@@ -3353,41 +3358,38 @@ kernel_pfkey_ipsec_t *kernel_pfkey_ipsec_create()
 		return NULL;
 	}
 
-	if (register_for_events)
+	/* create a PF_KEY socket for ACQUIRE & EXPIRE */
+	this->socket_events = socket(PF_KEY, SOCK_RAW, PF_KEY_V2);
+	if (this->socket_events <= 0)
 	{
-		/* create a PF_KEY socket for ACQUIRE & EXPIRE */
-		this->socket_events = socket(PF_KEY, SOCK_RAW, PF_KEY_V2);
-		if (this->socket_events <= 0)
-		{
-			DBG1(DBG_KNL, "unable to create PF_KEY event socket");
-			destroy(this);
-			return NULL;
-		}
-
-		rcv_buffer = lib->settings->get_int(lib->settings,
-					"%s.plugins.kernel-pfkey.events_buffer_size", 0, lib->ns);
-		if (rcv_buffer > 0)
-		{
-			if (setsockopt(this->socket_events, SOL_SOCKET, SO_RCVBUF,
-						   &rcv_buffer, sizeof(rcv_buffer)) == -1)
-			{
-				DBG1(DBG_KNL, "unable to set receive buffer size on PF_KEY "
-					 "event socket: %s", strerror(errno));
-			}
-		}
-
-		/* register the event socket */
-		if (register_pfkey_socket(this, SADB_SATYPE_ESP) != SUCCESS ||
-			register_pfkey_socket(this, SADB_SATYPE_AH) != SUCCESS)
-		{
-			DBG1(DBG_KNL, "unable to register PF_KEY event socket");
-			destroy(this);
-			return NULL;
-		}
-
-		lib->watcher->add(lib->watcher, this->socket_events, WATCHER_READ,
-						  (watcher_cb_t)receive_events, this);
+		DBG1(DBG_KNL, "unable to create PF_KEY event socket");
+		destroy(this);
+		return NULL;
 	}
+
+	rcv_buffer = lib->settings->get_int(lib->settings,
+					"%s.plugins.kernel-pfkey.events_buffer_size", 0, lib->ns);
+	if (rcv_buffer > 0)
+	{
+		if (setsockopt(this->socket_events, SOL_SOCKET, SO_RCVBUF,
+					   &rcv_buffer, sizeof(rcv_buffer)) == -1)
+		{
+			DBG1(DBG_KNL, "unable to set receive buffer size on PF_KEY "
+				 "event socket: %s", strerror(errno));
+		}
+	}
+
+	/* register the event socket */
+	if (register_pfkey_socket(this, SADB_SATYPE_ESP) != SUCCESS ||
+		register_pfkey_socket(this, SADB_SATYPE_AH) != SUCCESS)
+	{
+		DBG1(DBG_KNL, "unable to register PF_KEY event socket");
+		destroy(this);
+		return NULL;
+	}
+
+	lib->watcher->add(lib->watcher, this->socket_events, WATCHER_READ,
+					  (watcher_cb_t)receive_events, this);
 
 	return &this->public;
 }

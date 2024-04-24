@@ -5,7 +5,7 @@ charon.plugins.eap-radius.accounting_close_on_timeout = yes
 	Close the IKE_SA if there is a timeout during interim RADIUS accounting
 	updates.
 
-charon.plugins.eap-radius.accounting_interval = 0
+charon.plugins.eap-radius.accounting_interval = 0s
 	Interval in seconds for interim RADIUS accounting updates, if not specified
 	by the RADIUS server in the Access-Accept message.
 

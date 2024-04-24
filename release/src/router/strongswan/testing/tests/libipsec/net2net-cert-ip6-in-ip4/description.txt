@@ -1,0 +1,14 @@
+A connection between the subnets behind the gateways <b>moon</b> and <b>sun</b> is set up.
+The authentication is based on <b>X.509 certificates</b> and the <b>kernel-libipsec</b>
+plugin is used for userland IPsec ESP encryption.
+<p/>
+Upon the successful establishment of the IPsec tunnel, an updown script automatically
+inserts iptables-based firewall rules that let pass the traffic tunneled via the
+<b>ipsec0</b> tun interface. In order to test both tunnel and firewall, client <b>alice</b>
+behind gateway <b>moon</b> pings client <b>bob</b> located behind gateway <b>sun</b>.
+<p/>
+This scenario is mainly to test how fragmented IPv6 packets are handled (e.g. determining
+the protocol via IPv6 extension headers). Three pings are required due to PMTUD, the first
+is rejected by <b>moon</b>, so <b>alice</b> adjusts the MTU. The second gets through,
+but the response is rejected by <b>sun</b>, so <b>bob</b> will adjust the MTU. The third
+finally is successful.

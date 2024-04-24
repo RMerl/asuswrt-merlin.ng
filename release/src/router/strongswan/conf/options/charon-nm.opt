@@ -1,3 +1,6 @@
 charon-nm.ca_dir = <default>
 	Directory from which to load CA certificates if no certificate is
 	configured.
+
+charon-nm.mtu = 1400
+	MTU for XFRM interfaces created by the NM plugin.

@@ -1,5 +1,5 @@
 /*
- * Copyright (C) 2006-2018 Tobias Brunner
+ * Copyright (C) 2006-2023 Tobias Brunner
  * Copyright (C) 2006 Daniel Roethlisberger
  * Copyright (C) 2005-2006 Martin Willi
  * Copyright (C) 2005 Jan Hutter
@@ -231,43 +231,60 @@ struct notify_payload_t {
 	void (*set_notify_type) (notify_payload_t *this, notify_type_t type);
 
 	/**
-	 * Returns the currently set spi of this payload.
+	 * Returns the currently set 32-bit SPI of this payload.
 	 *
-	 * This is only valid for notifys with protocol AH|ESP
+	 * This is only valid for notify payloads with protocol AH|ESP.
 	 *
 	 * @return		SPI value
 	 */
 	uint32_t (*get_spi) (notify_payload_t *this);
 
 	/**
-	 * Sets the spi of this payload.
+	 * Sets the 32-bit SPI of this payload.
 	 *
-	 * This is only valid for notifys with protocol AH|ESP
+	 * This is only valid for notify payloads with protocol AH|ESP.
 	 *
 	 * @param spi	SPI value
 	 */
 	void (*set_spi) (notify_payload_t *this, uint32_t spi);
 
 	/**
-	 * Returns the currently set spi of this payload.
+	 * Returns the currently set 64-bit SPI of this payload.
 	 *
-	 * This is only valid for notifys with protocol ISAKMP
+	 * This is only valid for notify payloads with protocol IKE.
 	 *
 	 * @return		SPI value
 	 */
-	chunk_t (*get_spi_data) (notify_payload_t *this);
+	uint64_t (*get_ike_spi)(notify_payload_t *this);
 
 	/**
-	 * Sets the spi of this payload.
+	 * Sets the 64-bit SPI of this payload.
 	 *
-	 * This is only valid for notifys with protocol ISAKMP
+	 * This is only valid for notify payloads with protocol IKE.
 	 *
 	 * @param spi	SPI value
 	 */
-	void (*set_spi_data) (notify_payload_t *this, chunk_t spi);
+	void (*set_ike_spi)(notify_payload_t *this, uint64_t spi);
 
 	/**
-	 * Returns the currently set notification data of payload.
+	 * Returns the data encoded as SPI in this payload.
+	 *
+	 * @return		encoded SPI value
+	 */
+	chunk_t (*get_spi_data)(notify_payload_t *this);
+
+	/**
+	 * Sets the data encoded as SPI in this payload.
+	 *
+	 * This is allowed for any protocol type, but is primarily used for ISAKMP,
+	 * where notify payloads contain both SPIs.
+	 *
+	 * @param spi	SPI value (cloned)
+	 */
+	void (*set_spi_data)(notify_payload_t *this, chunk_t spi);
+
+	/**
+	 * Returns the currently set notification data of this payload.
 	 *
 	 * Returned data are not copied.
 	 *

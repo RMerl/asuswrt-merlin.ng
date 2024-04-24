@@ -335,7 +335,7 @@ static status_t build_set(private_mode_config_t *this, message_t *message)
 	chunk_t value;
 	cp_payload_t *cp;
 	peer_cfg_t *config;
-	identification_t *id;
+	identification_t *id DBG_UNUSED;
 	linked_list_t *pools, *migrated, *vips;
 	host_t *any4, *any6, *found;
 	char *name;
@@ -491,7 +491,7 @@ static status_t build_reply(private_mode_config_t *this, message_t *message)
 	chunk_t value;
 	cp_payload_t *cp;
 	peer_cfg_t *config;
-	identification_t *id;
+	identification_t *id DBG_UNUSED;
 	linked_list_t *vips, *pools, *migrated;
 	host_t *requested, *found;
 

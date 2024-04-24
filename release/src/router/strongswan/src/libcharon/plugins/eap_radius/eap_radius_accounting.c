@@ -554,7 +554,7 @@ typedef struct {
 /**
  * Clean up interim data
  */
-void destroy_interim_data(interim_data_t *this)
+static void destroy_interim_data(interim_data_t *this)
 {
 	this->id->destroy(this->id);
 	free(this);

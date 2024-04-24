@@ -65,7 +65,7 @@ bool wolfssl_mp_split(chunk_t chunk, mp_int *a, mp_int *b);
 
 /**
  * Concatenates two integers into a chunk, thereby enforcing the length of
- * a single integer, if necessary, by pre-pending it with zeros.
+ * a single integer, if necessary, by prepending it with zeros.
  *
  * Note: this function allocates memory for the chunk
  *

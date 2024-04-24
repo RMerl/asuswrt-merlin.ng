@@ -186,7 +186,7 @@ void dnsfilter_settings(FILE *fp) {
 #ifdef RTCONFIG_MULTILAN_CFG
 		/* Reroute all DNS requests from clients of VPN server */
 #ifdef RTCONFIG_OPENVPN
-		if (nvram_get_int("VPNServer_enable")) {
+//		if (nvram_get_int("VPNServer_enable")) {
 			char word[8] = {0};
 			char buf[32] = {0};
 			char *next = NULL;
@@ -198,7 +198,7 @@ void dnsfilter_settings(FILE *fp) {
 					"-A PREROUTING -i tun%d -p tcp -m tcp --dport 53 -j DNSFILTER\n"
 					, OVPN_SERVER_BASE + unit, OVPN_SERVER_BASE + unit);
 			}
-		}
+//		}
 #endif
 #ifdef RTCONFIG_WIREGUARD
 		{

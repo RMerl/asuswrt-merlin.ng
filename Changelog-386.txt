@@ -1,7 +1,7 @@
 Asuswrt-Merlin Changelog
 ========================
 
-386.13_2 (xx-xxx-2024)
+386.13_2 (26-Apr-2024)
   - NOTE: This release is only available for the RT-AC86U
           and GT-AC2900.
   - UPDATED: strongswan to 5.9.13 (fixes CVE-2023-41913)

@@ -7123,6 +7123,7 @@ function show_sdn_profilelist(){
 	}
 }
 var vpnc_profile_list = [];
+/*
 function Get_VPNC_Profile(){
 	var vpnc_profile_attr = function(){
 		this.desc = "";
@@ -7146,6 +7147,44 @@ function Get_VPNC_Profile(){
 		}
 	});
 }
+*/
+
+function Get_VPNC_Profile(){
+        var vpnc_profile_attr = function(){
+                this.desc = "";
+                this.proto = "";
+                this.vpnc_idx = "0";
+                this.activate = "0";
+        };
+	var enabled_ovpn = httpApi.nvramGet(["vpn_clientx_eas"])[["vpn_clientx_eas"]];
+
+	var vpnc_profile = new vpnc_profile_attr();
+
+	for (var unit = 1; unit <= 5; unit++) {
+		var prefix = "vpn_client" + unit + "_";
+		if (httpApi.nvramGet([prefix + "addr"])[[prefix + "addr"]] != "") {
+			vpnc_profile.desc = "OVPN" + unit + ": " + httpApi.nvramGet([prefix + "desc"])[[prefix + "desc"]];
+			vpnc_profile.proto = "OpenVPN";
+			vpnc_profile.vpnc_idx = unit + 5;	// Offset
+			vpnc_profile.activate = (enabled_ovpn.indexOf("" + unit) >= 0 ? 1 : 0);
+			vpnc_profile_list.push(JSON.parse(JSON.stringify(vpnc_profile)));
+		}
+	}
+
+	for (unit = 1; unit <= 5; unit++) {
+		prefix = "wgc" + unit + "_";
+		if (httpApi.nvramGet([prefix + "ep_addr"])[[prefix + "ep_addr"]] != "") {
+			vpnc_profile.desc = "WG" + unit + ": " + httpApi.nvramGet([prefix + "desc"])[[prefix + "desc"]];
+			vpnc_profile.proto = "WireGuard";
+			vpnc_profile.vpnc_idx = unit;
+			vpnc_profile.activate = httpApi.nvramGet([prefix + "enable"])[[prefix + "enable"]];
+			vpnc_profile_list.push(JSON.parse(JSON.stringify(vpnc_profile)));
+		}
+	}
+}
+
+
+
 let FreeWiFi_template = [];
 function Get_FreeWiFi_template(){
 	$.getJSON("/SDN/Captive_Portal/FreeWiFi_template.json", function(data){

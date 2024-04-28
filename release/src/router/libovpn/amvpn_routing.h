@@ -23,7 +23,7 @@ extern void amvpn_update_exclusive_dns_rules();
 extern void ovpn_set_exclusive_dns(int unit);
 #ifdef RTCONFIG_WIREGUARD
 extern void wgc_set_exclusive_dns(int unit);
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X)
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_BCM_502L07P2) || defined(RTCONFIG_HND_ROUTER_AX_675X) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 extern void amvpn_clear_wg_bypass_rules();
 void _amvpn_apply_wg_bypass(int unit, int add);
 extern void amvpn_refresh_wg_bypass_rules();

@@ -809,7 +809,6 @@ static void _wg_x_nf_del(const char* ifname)
 #endif
 }
 
-#ifdef RTCONFIG_VPN_FUSION
 static void _wg_client_dns_setup_vpnc(char* prefix, char* ifname, int vpnc_idx)
 {
 	char wg_dns[128] = {0};
@@ -837,7 +836,8 @@ static void _wg_client_dns_setup_vpnc(char* prefix, char* ifname, int vpnc_idx)
 		nvram_set(buf, trim_r(vpnc_dns));
 	}
 }
-#else
+
+
 static void _wg_client_dns_setup(char* prefix, char* ifname)
 {
 	FILE* fp;
@@ -871,7 +871,6 @@ static void _wg_client_dns_setup(char* prefix, char* ifname)
 			fclose(fp);
 	}
 }
-#endif
 
 static void _wg_client_gen_conf(char* prefix, char* path)
 {
@@ -1564,7 +1563,7 @@ void start_wgc(int unit)
 	table = IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_idx;
 #else
 	/// VPNDirector table
-	table = 115 + unit;
+	table = unit;
 #endif
 
 	/// check configuration
@@ -1600,16 +1599,16 @@ void start_wgc(int unit)
 	_wg_client_ep_route_add(prefix, table);
 
 	/// dns
-#ifdef RTCONFIG_VPN_FUSION
-	_wg_client_dns_setup_vpnc(prefix, ifname, vpnc_idx);
-#else
+//#ifdef RTCONFIG_VPN_FUSION
+//	_wg_client_dns_setup_vpnc(prefix, ifname, vpnc_idx);
+//#else
 	_wg_client_dns_setup(prefix, ifname);
 	// VPNDirector DNS
 	wgc_set_exclusive_dns(unit);
 	amvpn_update_exclusive_dns_rules();
 
 	update_resolvconf();
-#endif
+//#endif
 
 	snprintf(tmp, sizeof(tmp), "%d", unit);
 	run_custom_script("wgclient-start", 0, tmp, NULL);
@@ -1643,7 +1642,7 @@ void stop_wgc(int unit)
 	table = find_vpnc_idx_by_wgc_unit(unit);
 #else
 	// VPNDirector
-	table = 115 + unit;
+	table = unit;
 #endif
 	_wg_client_ep_route_del(prefix, table);
 

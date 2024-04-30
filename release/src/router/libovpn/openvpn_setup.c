@@ -45,6 +45,10 @@
 #include <shutils.h>
 #include <shared.h>
 
+#ifdef RTCONFIG_MULTILAN_CFG
+#include <mtlan_utils.h>
+#endif
+
 #include <openssl/ssl.h>
 #include <openssl/bio.h>
 #include <openssl/pem.h>
@@ -968,6 +972,14 @@ void ovpn_write_server_keys(ovpn_sconf_t *sconf, int unit) {
 void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 	char filename[64];
 	FILE *fp;
+#ifdef RTCONFIG_MULTILAN_CFG
+	int vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit);
+	MTLAN_T *pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	size_t  mtl_sz = 0;
+	int i;
+	char ipset_name[32] = {0};
+#endif
+
 
 	sprintf(filename, "/etc/openvpn/client%d/fw.sh", unit);
 	fp = fopen(filename, "w");
@@ -978,12 +990,24 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 	fprintf(fp, "iptables -I OVPNCF -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
 	fprintf(fp, "iptables -I OVPNCF -o %s -j ACCEPT\n", cconf->if_name);
 	fprintf(fp, "iptables -I OVPNCI -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
+#ifdef RTCONFIG_MULTILAN_CFG
+	snprintf(ipset_name, sizeof(ipset_name), "%s%d", VPNC_IPSET_PREFIX, vpnc_idx);
+	fprintf(fp, "iptables -I OVPNCF -m set --match-set %s dst -i %s -j ACCEPT\n", ipset_name, cconf->if_name);
+	fprintf(fp, "iptables -I OVPNCF -m set --match-set %s src -o %s -j ACCEPT\n", ipset_name, cconf->if_name);
+	fprintf(fp, "iptables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
+	fprintf(fp, "iptables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
+#endif
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
 		fprintf(fp, "ip6tables -I OVPNCF -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
 		fprintf(fp, "ip6tables -I OVPNCF -o %s -j ACCEPT\n", cconf->if_name);
 		fprintf(fp, "ip6tables -I OVPNCI -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
+#ifdef RTCONFIG_MULTILAN_CFG
+		fprintf(fp, "ip6tables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
+		fprintf(fp, "ip6tables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
+#endif
+
 	}
 #endif
 
@@ -1018,6 +1042,24 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 		chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
 		eval(filename);
 	}
+
+#ifdef RTCONFIG_MULTILAN_CFG
+	get_mtlan_by_idx(SDNFT_TYPE_VPNC, vpnc_idx, pmtl, &mtl_sz);
+	if (mtl_sz) {
+		for (i = 0; i < mtl_sz; i++) {
+			snprintf(filename, sizeof(filename), "/etc/openvpn/client%d/fw_sdn%d.sh", unit, pmtl[i].sdn_t.sdn_idx);
+			fp = fopen(filename, "w");
+			if(fp) {
+				fprintf(fp, "#!/bin/sh\n\n");
+				_ovpn_client_nf_bind_sdn(fp, cconf->if_name, pmtl[i].nw_t.ifname);
+				fclose(fp);
+				chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
+				eval(filename);
+			}
+		}
+	}
+	FREE_MTLAN((void *)pmtl);
+#endif
 }
 
 
@@ -1243,11 +1285,7 @@ void ovpn_write_dh(ovpn_sconf_t *sconf, int unit) {
 
 				dhparams = PEM_read_DHparams(fp, NULL, 0, NULL);
 				if (dhparams) {
-#if OPENSSL_VERSION_NUMBER >= 0x10100000L
 					len = DH_bits(dhparams);
-#else
-					len = BN_num_bits(dhparams->p);
-#endif
 					OPENSSL_free(dhparams);
 				}
 				if ((len != 0) && (len < 1024))

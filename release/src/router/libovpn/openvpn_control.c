@@ -41,6 +41,9 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 
+#ifdef RTCONFIG_MULTILAN_CFG
+#include <mtlan_utils.h>
+#endif
 
 int ovpn_skip_dnsmasq() {
 	int unit;
@@ -270,9 +273,20 @@ void ovpn_client_up_handler(int unit)
 	char *network_env, *netmask_env, *gateway_env, *metric_env, *remotegw_env, *dev_env;
 	char *remote_env, *localgw;
 	struct in_addr network, netmask;
-
+#if 0
+	char *ipversion;
+	int vpnc_idx;
+#endif
 	if ((unit < 1) || (unit > OVPN_CLIENT_MAX))
 		return;
+
+#if 0
+#ifdef RTCONFIG_MULTILAN_CFG
+	vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit);
+#else
+	vpnc_idx = unit;
+#endif
+#endif
 
 	snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
 	sprintf(dirname, "/etc/openvpn/client%d", unit);
@@ -284,6 +298,7 @@ void ovpn_client_up_handler(int unit)
 		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route flush table ovpnc%d", unit);
 		system(buffer);
 
+#if 0
 		// Copy main table routes
 		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route show table main > /tmp/vpnroute%d_tmp", unit);
 		system(buffer);
@@ -303,7 +318,7 @@ void ovpn_client_up_handler(int unit)
 			fclose(fp_route);
 		}
 		unlink(buffer);
-
+#endif
 		// Apply pushed routes
 		dev_env = _safe_getenv("dev");
 
@@ -408,6 +423,21 @@ void ovpn_client_up_handler(int unit)
 					goto exit;
 			}
 			fprintf(fp_resolv, "server=%s\n", &option[16]);
+
+#if 0
+			// Local rule for DNS traffic (taken from VPN Fusion, disabled for now)
+			snprintf(buffer2, sizeof(buffer2), "%d", IP_RULE_PREF_VPNC_POLICY_IF + vpnc_idx * 3 + i);
+#ifdef RTCONFIG_IPV6
+			if (is_valid_ip6(&option[16]))
+				ipversion = "-6";
+			else
+#endif
+				ipversion = "-4";
+
+			snprintf(buffer, sizeof (buffer),"/usr/sbin/ip %s rule add iif lo to %s table ovpnc%d priority %s",
+			                                  ipversion, &option[16], unit, buffer2);
+			system(buffer);
+#endif
 
 			// Any search domains for that server
 			j = 1;
@@ -782,20 +812,20 @@ void stop_ovpn_serverall() {
         }
 }
 
-#if 0
 #ifdef RTCONFIG_MULTILAN_CFG
-static void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_type_t client)
+void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_type_t client)
 {
 	int unit, i, j;
 	char prefix[16] = {0};
-	char wg_ifname[8] = {0};
+	char ovpn_ifname[8] = {0};
 	char fpath[128] = {0};
 	VPN_VPNX_T vpnx;
 	FILE *fp;
 	int sdn_rule_exist = 0;
-	int max_unit = (client) ? OVPN_CLIENT_MAX : OVPN_SERVER_MAX;
+	int max_unit = (client ? OVPN_CLIENT_MAX : OVPN_SERVER_MAX);
 	char ipset_name[32] = {0};
 	int vpnc_idx;
+	char tmp[100];
 
 	if (restart_all_sdn) {
 		if (client)
@@ -805,27 +835,30 @@ static void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 	}
 
 	for(unit = 1; unit <= max_unit; unit++) {
-		snprintf(prefix, sizeof(prefix), "%s%d_", (client) ? WG_CLIENT_NVRAM_PREFIX : WG_SERVER_NVRAM_PREFIX, unit);
+		snprintf(prefix, sizeof(prefix), "%s%d_", (client ? "vpn_client" : "vpn_server"), unit);
 
-		if (!nvram_pf_get_int(prefix, "enable"))
+// We lack an enable/disable switch for clients.  Check if currently configured instead.
+//		if (!nvram_pf_get_int(prefix, "enable"))
+		snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/", (client ? "client" : "server"), unit);
+		if (!d_exists(fpath))
 			continue;
 
-		snprintf(wg_ifname, sizeof(wg_ifname), "%s%d", (client) ? WG_CLIENT_IF_PREFIX : WG_SERVER_IF_PREFIX, unit);
-
+		strlcpy(tmp, nvram_pf_safe_get(prefix, "if"), sizeof (tmp));
+		snprintf(ovpn_ifname, sizeof(ovpn_ifname), "%s%d", tmp, (client ? OVPN_CLIENT_BASE : OVPN_SERVER_BASE) + unit);
 		if (restart_all_sdn && client) {
-			vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_WG, unit);
+			vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit);
 			snprintf(ipset_name, sizeof(ipset_name), "%s%d", VPNC_IPSET_PREFIX, vpnc_idx);
-			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "dst", "-i", wg_ifname, "-j", "ACCEPT");
-			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "src", "-o", wg_ifname, "-j", "ACCEPT");
-			eval("iptables", "-I", "OVPNCF", "-o", wg_ifname, "-p", "tcp", "-m", "tcp", "--tcp-flags", "SYN,RST SYN", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
-			eval("iptables", "-A", "OVPNCF", "-i", wg_ifname, "-j", "DROP");
-			eval("iptables", "-A", "OVPNCF", "-o", wg_ifname, "-j", "DROP");
+			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "dst", "-i", ovpn_ifname, "-j", "ACCEPT");
+			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "src", "-o", ovpn_ifname, "-j", "ACCEPT");
+			eval("iptables", "-I", "OVPNCF", "-o", ovpn_ifname, "-p", "tcp", "-m", "tcp", "--tcp-flags", "SYN,RST SYN", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
+			eval("iptables", "-A", "OVPNCF", "-i", ovpn_ifname, "-j", "DROP");
+			eval("iptables", "-A", "OVPNCF", "-o", ovpn_ifname, "-j", "DROP");
 		}
 
 		/// iptables rules
 		for (i = 0; i < mtl_sz; i++) {
 			// delete old rules for specific sdn
-			snprintf(fpath, sizeof(fpath), "%s/fw_%s_sdn%d.sh", WG_DIR_CONF, wg_ifname, pmtl[i].sdn_t.sdn_idx);
+			snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/fw_sdn%d.sh", (client ? "client" : "server"), unit, pmtl[i].sdn_t.sdn_idx);
 			if(f_exists(fpath)) {
 				eval("sed", "-i", "s/-I/-D/", fpath);
 				eval("sed", "-i", "s/-A/-D/", fpath);
@@ -839,12 +872,12 @@ static void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 			else if (client
 					&& pmtl[i].sdn_t.vpnc_idx
 					&& get_vpnx_by_vpnc_idx(&vpnx, pmtl[i].sdn_t.vpnc_idx)
-					&& vpnx.proto == VPN_PROTO_WG
-					&& vpnx.unit == unit) {
+					&& vpnx.proto == VPN_PROTO_OVPN
+					&& vpnx.unit == unit) {		// TODO: should unit be offset?
 				fp = fopen(fpath, "w");
 				if (fp) {
 					fprintf(fp, "#!/bin/sh\n\n");
-					_wg_client_nf_bind_sdn(fp, wg_ifname, pmtl[i].nw_t.ifname);
+					_ovpn_client_nf_bind_sdn(fp, ovpn_ifname, pmtl[i].nw_t.ifname);
 					fclose(fp);
 					chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
 					eval(fpath);
@@ -854,12 +887,12 @@ static void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 				for (j = 0; j < MTLAN_VPNS_MAXINUM; j++) {
 					if (pmtl[i].sdn_t.vpns_idx_rl[j]
 						&& get_vpnx_by_vpns_idx(&vpnx, pmtl[i].sdn_t.vpns_idx_rl[j])
-						&& vpnx.proto == VPN_PROTO_WG
+						&& vpnx.proto == VPN_PROTO_OVPN
 						&& vpnx.unit == unit) {
 						fp = fopen(fpath, "w");
 						if (fp) {
 							fprintf(fp, "#!/bin/sh\n\n");
-							_wg_server_nf_bind_sdn(fp, wg_ifname, pmtl[i].nw_t.ifname);
+							_ovpn_server_nf_bind_sdn(fp, ovpn_ifname, pmtl[i].nw_t.ifname);
 							fclose(fp);
 							chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
 							eval(fpath);
@@ -872,22 +905,23 @@ static void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 		// if no rule for specific SDN, add rule for all SDN.
 		sdn_rule_exist = 0;
 		for (i = 0; i < MTLAN_MAXINUM; i++) {
-			snprintf(fpath, sizeof(fpath), "%s/fw_%s_sdn%d.sh", WG_DIR_CONF, wg_ifname, i);
+			snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/fw_sdn%d.sh",(client ? "client" : "server"), unit, i);
 			if (f_exists(fpath))
 				sdn_rule_exist = 1;
 		}
-		snprintf(fpath, sizeof(fpath), "%s/fw_%s_none.sh", WG_DIR_CONF, wg_ifname);
+// TODO: is it needed for OpenVPN?
+		snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/fw_sdn_none.sh", (client ? "client" : "server"), unit);
 		if (sdn_rule_exist) {
 			if (f_exists(fpath)) {	//none -> bind sdn
 				eval("sed", "-i", "s/-I/-D/", fpath);
 				eval(fpath);
 				unlink(fpath);
-				if (!client)
-					_wg_server_nf_bind_wan(wg_ifname, WG_NF_ADD);
+//				if (!client)
+//					_ovpn_server_nf_bind_wan(ovpn_ifname, WG_NF_ADD);
 			}
 			else if (restart_all_sdn) {
-				if (!client)
-					_wg_server_nf_bind_wan(wg_ifname, WG_NF_ADD);
+//				if (!client)
+//					_ovpn_server_nf_bind_wan(ovpn_ifname, WG_NF_ADD);
 			}
 		}
 		else {
@@ -896,13 +930,13 @@ static void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 				if (fp) {
 					fprintf(fp, "#!/bin/sh\n\n");
 					if (!client)
-						_wg_server_nf_bind_sdn(fp, wg_ifname, NULL);
+						_ovpn_server_nf_bind_sdn(fp, ovpn_ifname, NULL);
 					fclose(fp);
 					chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
 					eval(fpath);
 				}
-				if (!client)
-					_wg_server_nf_bind_wan(wg_ifname, WG_NF_DEL);
+//				if (!client)
+//					_ovpn_server_nf_bind_wan(ovpn_ifname, WG_NF_DEL);
 			}
 			else if (restart_all_sdn) {
 				eval(fpath);
@@ -911,41 +945,40 @@ static void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sd
 	}
 }
 
-void update_wgc_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+void update_ovpn_client_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
 {
-	_update_wg_by_sdn(pmtl, mtl_sz, restart_all_sdn, OVPN_TYPE_CLIENT);
+	_update_ovpn_by_sdn(pmtl, mtl_sz, restart_all_sdn, OVPN_TYPE_CLIENT);
 }
 
-void update_wgs_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
+void update_ovpn_server_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn)
 {
-	_update_wg_by_sdn(pmtl, mtl_sz, restart_all_sdn, OVPN_TYPE_SERVER);
+	_update_ovpn_by_sdn(pmtl, mtl_sz, restart_all_sdn, OVPN_TYPE_SERVER);
 }
 
-static void _update_ovpn_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, wg_type_t client)
+void _update_ovpn_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, wg_type_t client)
 {
 	int unit, i;
 	char prefix[16] = {0};
-	char wg_ifname[8] = {0};
+	char ovpn_ifname[8] = {0};
 	char fpath[128] = {0};
 	FILE *fp;
 	int sdn_rule_exist = 0;
-	int max_unit = (client) ? OVPN_CLIENT_MAX : OVPN_SERVER_MAX;
-
-	//TODO: Define the behaviour of WireGuard Server lanaccess
+	int max_unit = (client ? OVPN_CLIENT_MAX : OVPN_SERVER_MAX);
+	char tmp[100];
 
 	for(unit = 1; unit <= max_unit; unit++) {
-		snprintf(prefix, sizeof(prefix), "%s%d_", (client) ? WG_CLIENT_NVRAM_PREFIX : WG_SERVER_NVRAM_PREFIX, unit);
+		snprintf(prefix, sizeof(prefix), "%s%d_", (client ? "vpn_client" : "vpn_server"), unit);
 
 // TODO: Check if ovpn instance is enabled
-		if (!nvram_pf_get_int(prefix, "enable"))
-			continue;
+//		if (!nvram_pf_get_int(prefix, "enable"))
+//			continue;
 
-// TODO: Retrieve proper interface
-		snprintf(wg_ifname, sizeof(wg_ifname), "%s%d", (client) ? WG_CLIENT_IF_PREFIX : WG_SERVER_IF_PREFIX, unit);
+		strlcpy(tmp, nvram_pf_safe_get(prefix, "if"), sizeof (tmp));
+		snprintf(ovpn_ifname, sizeof(ovpn_ifname), "%s%d", tmp, unit + (client ? OVPN_CLIENT_BASE : OVPN_SERVER_BASE));
 
 		/// remove rule if binded with the removed SDN.
 		for (i = 0; i < mtl_sz; i++) {
-			snprintf(fpath, sizeof(fpath), "/etc/openvpn/client%d/fw_%s_sdn%d.sh", unit, wg_ifname, pmtl[i].sdn_t.sdn_idx);
+			snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/fw_sdn%d.sh", (client ? "client" : "server"), unit, pmtl[i].sdn_t.sdn_idx);
 			if(f_exists(fpath)) {
 				eval("sed", "-i", "s/-I/-D/", fpath);
 				eval("sed", "-i", "s/-A/-D/", fpath);
@@ -957,25 +990,26 @@ static void _update_ovpn_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, wg_type_t c
 		/// if not bind with other SDN, add rule for all SDN.
 		sdn_rule_exist = 0;
 		for (i = 0; i < MTLAN_MAXINUM; i++) {
-			snprintf(fpath, sizeof(fpath), "/etc/openvpn/client%d/fw_%s_sdn%d.sh", unit, wg_ifname, i);
+			snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/fw_sdn%d.sh", (client ? "client" : "server"), unit, i);
 			if (f_exists(fpath))
 				sdn_rule_exist = 1;
 		}
 
+// TODO: Is it needed for OpenVPN?
 		if (sdn_rule_exist == 0) {
-			snprintf(fpath, sizeof(fpath), "/etc/openvpn/client%d/fw_%s_none.sh", unit, wg_ifname);
+			snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/fw_sdn_none.sh", (client ? "client" : "server"), unit);
 			if (!f_exists(fpath)) {	//bind -> none
 				fp = fopen(fpath, "w");
 				if (fp) {
 					fprintf(fp, "#!/bin/sh\n\n");
 					if (!client)
-						_wg_server_nf_bind_sdn(fp, wg_ifname, NULL);
+						_ovpn_server_nf_bind_sdn(fp, ovpn_ifname, NULL);
 					fclose(fp);
 					chmod(fpath, S_IRUSR|S_IWUSR|S_IXUSR);
 					eval(fpath);
 				}
-				if (!client)
-					_wg_server_nf_bind_wan(wg_ifname, WG_NF_DEL);
+//				if (!client)
+//					_ovpn_server_nf_bind_wan(ovpn_ifname, WG_NF_DEL);
 			}
 		}
 	}
@@ -990,6 +1024,59 @@ void update_ovpn_server_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz)
 {
 	_update_ovpn_by_sdn_remove(pmtl, mtl_sz, OVPN_TYPE_SERVER);
 }
+
+void _ovpn_client_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn_ifname) {
+	if (fp) {
+		if (sdn_ifname) {
+			fprintf(fp, "iptables -I OVPNCF -i %s -o %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "iptables -I OVPNCF -o %s -i %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "iptables -I OVPNCF -o %s -i %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "ip6tables -I OVPNCF -i %s -o %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "ip6tables -I OVPNCF -o %s -i %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "ip6tables -I OVPNCF -o %s -i %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ovpn_ifname, sdn_ifname);
+		}
+	}
+}
+
+#if 0
+void _ovpn_server_nf_bind_wan(const char* ifname, int add)
+{
+	char ovpn_ifname[32] = {0};
+	char wan_ifname[32] = {0};
+	strlcpy(ovpn_ifname, ifname, sizeof(ovpn_ifname));
+	strlcpy(wan_ifname, get_wan_ifname(wan_primary_ifunit()), sizeof(wan_ifname));
+	if (wan_ifname[0] != '\0')
+	{
+		eval("iptables", (add)?"-I":"-D", "OVPNSF", "-i", ovpn_ifname, "-o", wan_ifname, "-j", "ACCEPT");
+		eval("iptables", (add)?"-I":"-D", "OVPNSF", "-o", ovpn_ifname, "-i", wan_ifname, "-j", "ACCEPT");
+		eval("iptables", (add)?"-A":"-D", "OVPNSF", "-o", ovpn_ifname, "-j", "DROP");
+	}
+	strlcpy(wan_ifname, get_wan6_ifname(wan_primary_ifunit()), sizeof(wan_ifname));
+	if (wan_ifname[0] != '\0')
+	{
+		eval("ip6tables", (add)?"-I":"-D", "OVPNSF", "-i", ovpn_ifname, "-o", wan_ifname, "-j", "ACCEPT");
+		eval("ip6tables", (add)?"-I":"-D", "OVPNSF", "-o", ovpn_ifname, "-i", wan_ifname, "-j", "ACCEPT");
+		eval("ip6tables", (add)?"-A":"-D", "OVPNSF", "-o", ovpn_ifname, "-j", "DROP");
+	}
+}
 #endif
-#endif // 0
+
+void _ovpn_server_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn_ifname)
+{
+	if (fp) {
+		if (sdn_ifname) {
+			fprintf(fp, "iptables -I OVPNSF -i %s -o %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "iptables -I OVPNSF -o %s -i %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "ip6tables -I OVPNSF -i %s -o %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+			fprintf(fp, "ip6tables -I OVPNSF -o %s -i %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
+		}
+		else {
+			fprintf(fp, "iptables -I OVPNSF -i %s -j ACCEPT\n", ovpn_ifname);
+			fprintf(fp, "iptables -I OVPNSF -o %s -j ACCEPT\n", ovpn_ifname);
+			fprintf(fp, "ip6tables -I OVPNSF -i %s -j ACCEPT\n", ovpn_ifname);
+			fprintf(fp, "ip6tables -I OVPNSF -o %s -j ACCEPT\n", ovpn_ifname);
+		}
+	}
+}
+#endif
 

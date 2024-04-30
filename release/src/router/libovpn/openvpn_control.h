@@ -30,4 +30,13 @@ extern int ovpn_need_dnsmasq_restart();
 
 extern void start_ovpn_serverall();
 extern void stop_ovpn_serverall();
+
+#ifdef RTCONFIG_MULTILAN_CFG
+extern void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_type_t client);
+extern void _update_ovpn_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, wg_type_t client);
+extern void _ovpn_client_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn_ifname);
+//extern void _ovpn_server_nf_bind_wan(const char* ifname, int add);
+extern void _ovpn_server_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn_ifname);
+#endif
+
 #endif

@@ -821,6 +821,7 @@ int get_vpnc_idx_by_proto_unit(VPN_PROTO_T proto, int unit)
 	if (proto == VPN_PROTO_PPTP || proto == VPN_PROTO_L2TP)
 		return 0;
 
+#if 0	// Asus
 	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
 	if (nv) {
 		while ((b = strsep(&nvp, "<"))) {
@@ -836,6 +837,12 @@ int get_vpnc_idx_by_proto_unit(VPN_PROTO_T proto, int unit)
 		}
 		free(nv);
 	}
+#else	// Merlin
+	if (proto == VPN_PROTO_WG)
+		ret = unit;
+	else if (proto == VPN_PROTO_OVPN)
+		ret = unit + 5;
+#endif
 	return (ret);
 }
 
@@ -979,6 +986,7 @@ VPN_VPNX_T* get_vpnx_by_vpnc_idx(VPN_VPNX_T* vpnx, int vpnc_idx)
 	if (!vpnx)
 		return NULL;
 
+#if 0
 	nv = nvp = strdup(nvram_safe_get("vpnc_clientlist"));
 	if (nv) {
 		while ((b = strsep(&nvp, "<"))) {
@@ -1000,6 +1008,18 @@ VPN_VPNX_T* get_vpnx_by_vpnc_idx(VPN_VPNX_T* vpnx, int vpnc_idx)
 		}
 		free(nv);
 	}
+#else
+// AMNG does not use vpnc_clientlist, instead OVPN unit is offset by 5 in sdn_rl nvram
+	if (vpnc_idx > 5) {
+		vpnx->proto = VPN_PROTO_OVPN;
+		vpnx->unit = vpnc_idx - 5;
+		ret = 1;
+	} else {
+		vpnx->proto = VPN_PROTO_WG;
+		vpnx->unit = vpnc_idx;
+		ret = 1;
+	}
+#endif
 
 	return (ret) ? vpnx : NULL;
 }

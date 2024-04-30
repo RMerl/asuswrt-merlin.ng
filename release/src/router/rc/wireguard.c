@@ -1598,6 +1598,11 @@ void start_wgc(int unit)
 	/// set endpoint route
 	_wg_client_ep_route_add(prefix, table);
 
+	// Setup SDN rules
+#ifdef RTCONFIG_MULTILAN_CFG
+	update_sdn_by_vpnc(vpnc_idx);
+#endif
+
 	/// dns
 //#ifdef RTCONFIG_VPN_FUSION
 //	_wg_client_dns_setup_vpnc(prefix, ifname, vpnc_idx);
@@ -1625,6 +1630,9 @@ void stop_wgc(int unit)
 	int wg_enable = is_wg_enabled();
 	char buffer[64];
 	char tmp[4];
+#ifdef RTCONFIG_VPN_FUSION
+	int vpnc_idx;
+#endif
 
 	_dprintf("%s %d\n", __FUNCTION__, unit);
 
@@ -1639,7 +1647,11 @@ void stop_wgc(int unit)
 #endif
 
 #ifdef RTCONFIG_VPN_FUSION
-	table = find_vpnc_idx_by_wgc_unit(unit);
+	vpnc_idx = find_vpnc_idx_by_wgc_unit(unit);
+	table = IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_idx;
+#ifdef RTCONFIG_MULTILAN_CFG
+	update_sdn_by_vpnc(vpnc_idx);
+#endif
 #else
 	// VPNDirector
 	table = unit;

@@ -108,6 +108,9 @@ extern int vpnc_set_iif_routing_rule(const int vpnc_idx, const char* br_ifname);
 #endif
 #ifdef RTCONFIG_MULTILAN_CFG
 extern int vpnc_set_iptables_rule_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn);
+
+extern void _vpnc_ipset_create(int vpnc_idx);
+extern void _vpnc_ipset_destroy(int vpnc_idx);
 #endif
 
 VPNC_PROTO vpnc_get_proto_in_profile_by_vpnc_id(const int vpnc_id);

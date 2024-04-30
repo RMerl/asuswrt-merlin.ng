@@ -61,7 +61,7 @@ static int vpnc_profile_num = 0;
 
 extern int start_firewall(int wanunit, int lanunit);
 
-static int vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, const int tmp_flag);
+extern int vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, const int tmp_flag);
 int vpnc_set_policy_by_ifname(const char *vpnc_ifname, const int action);
 int stop_vpnc_by_unit(const int unit);
 static int _set_routing_table(const int cmd, const int vpnc_id);
@@ -666,6 +666,7 @@ static int _find_vpnc_idx_by_ovpn_unit(const int ovpn_unit)
 
 int find_vpnc_idx_by_wgc_unit(int wgc_unit)
 {
+#if 0
 	int i;
 	VPNC_PROFILE *prof;
 	for (i = 0; i < vpnc_profile_num; ++i)
@@ -675,6 +676,9 @@ int find_vpnc_idx_by_wgc_unit(int wgc_unit)
 			return prof->vpnc_idx;
 	}
 	return -1;
+#else	// AMNG
+	return wgc_unit;	// WG uses same unit number
+#endif
 }
 
 void vpnc_ovpn_set_dns(int ovpn_unit)
@@ -1106,7 +1110,7 @@ static void vpnc_dump_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size
  * RETURN:  number of the list.
  * NOTE:
  *******************************************************************/
-static int
+int
 vpnc_get_dev_policy_list(VPNC_DEV_POLICY *list, const int list_size, const int tmp_flag)
 {
 	int cnt;
@@ -1503,7 +1507,7 @@ static void _del_mtwan_routing_rule(const VPNC_PROFILE *prof)
 #endif
 
 #ifdef RTCONFIG_MULTILAN_CFG
-static void _vpnc_ipset_create(int vpnc_idx)
+void _vpnc_ipset_create(int vpnc_idx)
 {
 	char ipset_name[32] = {0};
 	int policy_cnt;
@@ -1523,7 +1527,7 @@ static void _vpnc_ipset_create(int vpnc_idx)
 	}
 }
 
-static void _vpnc_ipset_destroy(int vpnc_idx)
+void _vpnc_ipset_destroy(int vpnc_idx)
 {
 	char ipset_name[32] = {0};
 

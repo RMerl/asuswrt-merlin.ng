@@ -80,7 +80,9 @@ void amvpn_clear_routing_rules(int unit, vpndir_proto_t proto) {
 				continue;
 
 			// Only remove rules within our official range
-			if ((prio < 10000) || (prio > (10209 + (10 * 200))))
+			// max = base + 10 all + (200 wan) + (5 * 200 ovpn) + (5 * 200 wg)
+			if ((prio < VPNDIR_PRIO_BASE) ||
+			     (prio > (VPNDIR_PRIO_BASE + (OVPN_CLIENT_MAX + WG_CLIENT_MAX) + VPNDIR_PRIO_MAX_RULES + (OVPN_CLIENT_MAX * VPNDIR_PRIO_MAX_RULES) + (WG_CLIENT_MAX * VPNDIR_PRIO_MAX_RULES))))
 				continue;
 
 			if ((lookup = strstr(buffer2, "lookup")) == NULL)
@@ -150,21 +152,26 @@ void amvpn_refresh_wg_bypass_rules() {
 /*
 	Rule priority allocations:
 
-	10000-10009: clients set to OVPN_RGW_ALL
+	VPNDIR_PRIO_ALL
+	- 10000-10009: clients set to OVPN_RGW_ALL
 
-	10010-10209: WAN rules
+	VPNDIR_PRIO_WAN
+	- 10010-10209: WAN rules
 
-	10210-10409: OVPN 1
-	10410-10609: OVPN 2
-	10610-10809: OVPN 3
-	10810-11009: OVPN 4
-	11010-11209: OVPN 5
 
-	11210-11409: WGC 1
-	11410-11609: WGC 2
-	11610-11809: WGC 3
-	11810-12009: WGC 4
-	12010-12209: WGC 5
+	VPNDIR_PRIO_OPENVPN
+	- 10210-10409: OVPN 1
+	- 10410-10609: OVPN 2
+	- 10610-10809: OVPN 3
+	- 10810-11009: OVPN 4
+	- 11010-11209: OVPN 5
+
+	VPNDIR_PRIO_WIREGUARD
+	- 11210-11409: WGC 1
+	- 11410-11609: WGC 2
+	- 11610-11809: WGC 3
+	- 11810-12009: WGC 4
+	- 12010-12209: WGC 5
 */
 void amvpn_set_wan_routing_rules() {
 	char buffer[8000];
@@ -205,7 +212,7 @@ void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 			// Set client rules if running or currently connecting
 			state = get_ovpn_status(OVPN_TYPE_CLIENT, unit);
 			if (state == OVPN_STS_RUNNING || state == OVPN_STS_INIT) {
-				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d", unit, 10000 + unit);
+				snprintf(buffer, sizeof (buffer), "/usr/sbin/ip rule add table ovpnc%d priority %d", unit, VPNDIR_PRIO_ALL + unit);
 				system(buffer);
 				if (verb >= 3)
 					logmessage("openvpn-routing","Routing all traffic through ovpnc%d", unit);

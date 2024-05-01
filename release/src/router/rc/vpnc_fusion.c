@@ -666,7 +666,9 @@ static int _find_vpnc_idx_by_ovpn_unit(const int ovpn_unit)
 
 int find_vpnc_idx_by_wgc_unit(int wgc_unit)
 {
-#if 0
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	return wgc_unit;	// WG uses same unit number
+#else
 	int i;
 	VPNC_PROFILE *prof;
 	for (i = 0; i < vpnc_profile_num; ++i)
@@ -676,8 +678,6 @@ int find_vpnc_idx_by_wgc_unit(int wgc_unit)
 			return prof->vpnc_idx;
 	}
 	return -1;
-#else	// AMNG
-	return wgc_unit;	// WG uses same unit number
 #endif
 }
 

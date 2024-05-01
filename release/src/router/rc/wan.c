@@ -4473,7 +4473,8 @@ NOIP:
 #endif
 
 #ifdef RTCONFIG_WIREGUARD
-#if 1	//#ifndef RTCONFIG_VPN_FUSION
+
+#if defined(RTCONFIG_VPN_FUSION_MERLIN) || !defined(RTCONFIG_VPN_FUSION)
 	stop_wgcall();
 	start_wgcall();
 #endif

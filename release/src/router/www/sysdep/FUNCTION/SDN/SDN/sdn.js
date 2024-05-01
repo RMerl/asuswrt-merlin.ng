@@ -9174,7 +9174,7 @@ function Get_Component_VPN_Profiles(){
 		e = e || event;
 		e.stopPropagation();
 		if(is_Web_iframe){
-			top.location.href = "/Advanced_VPNClient_Content.asp";
+			top.location.href = "/Advanced_OpenVPNClient_Content.asp";
 		}
 		else if(parent.webWrapper){
 			top.location.href = "/index.html?url=vpnc&current_theme=white";

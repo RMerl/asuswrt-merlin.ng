@@ -18,7 +18,6 @@ extern void ovpn_client_route_pre_down_handler();
 extern void ovpn_client_route_up_handler();
 extern void ovpn_client_down_handler(int unit);
 extern void ovpn_client_up_handler(int unit);
-char *_safe_getenv(const char* name);
 void _ovpn_run_event_script();
 extern void ovpn_process_eas(int start);
 extern void ovpn_start_client(int unit);

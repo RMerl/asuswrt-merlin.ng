@@ -294,7 +294,7 @@ void ovpn_client_up_handler(int unit)
 	verb = nvram_pf_get_int(prefix, "verb");
 
 	// Routing handling, only for TUN
-	if (!strncmp(_safe_getenv("dev"),"tun", 3)) {
+	if (!strncmp(safe_getenv("dev"),"tun", 3)) {
 		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route flush table ovpnc%d", unit);
 		system(buffer);
 
@@ -320,7 +320,7 @@ void ovpn_client_up_handler(int unit)
 		unlink(buffer);
 #endif
 		// Apply pushed routes
-		dev_env = _safe_getenv("dev");
+		dev_env = safe_getenv("dev");
 
 		i = 0;
 		while (1) {
@@ -486,20 +486,12 @@ void ovpn_set_killswitch(int unit) {
 }
 
 
-char *_safe_getenv(const char* name) {
-	char *value;
-
-	value = getenv(name);
-	return (value ? value : "");
-}
-
-
 void _ovpn_run_event_script() {
 	ovpn_if_t type;
 
-	if (!strncmp(_safe_getenv("dev"),"tun", 3))
+	if (!strncmp(safe_getenv("dev"),"tun", 3))
 		type = OVPN_IF_TUN;
-	else if (!strncmp(_safe_getenv("dev"),"tap", 3))
+	else if (!strncmp(safe_getenv("dev"),"tap", 3))
 		type = OVPN_IF_TAP;
 	else
 		return;
@@ -508,8 +500,8 @@ void _ovpn_run_event_script() {
 		if (nvram_get_int("jffs2_scripts") == 0) {
 			logmessage("custom_script", "Found openvpn-event, but custom script execution is disabled!");
 		} else {
-			eval("/jffs/scripts/openvpn-event", _safe_getenv("dev"), (type == OVPN_IF_TUN ? _safe_getenv("tun_mtu") : _safe_getenv("tap_mtu")), _safe_getenv("link_mtu"),
-			      _safe_getenv("ifconfig_local"), _safe_getenv("ifconfig_remote"), _safe_getenv("script_context"));
+			eval("/jffs/scripts/openvpn-event", safe_getenv("dev"), (type == OVPN_IF_TUN ? safe_getenv("tun_mtu") : safe_getenv("tap_mtu")), safe_getenv("link_mtu"),
+			      safe_getenv("ifconfig_local"), safe_getenv("ifconfig_remote"), safe_getenv("script_context"));
 			logmessage("custom_script", "Running openvpn-event");
 		}
 	}

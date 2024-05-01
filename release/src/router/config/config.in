@@ -2124,6 +2124,11 @@ config RTCONFIG_MERLINUPDATE
 	bool "Check for new firmware version - Merlin-only"
 	default n
 
+config RTCONFIG_VPN_FUSION_MERLIN
+	bool "Implements Merlin-specific code with Fusion enabled"
+	depends on RTCONFIG_VPN_FUSION
+	default n
+
 config RTCONFIG_OPENSSL11
 	bool "OpenSSL 1.1.x"
 	default n

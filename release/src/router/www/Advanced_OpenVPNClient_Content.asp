@@ -12,15 +12,14 @@
 <link rel="stylesheet" type="text/css" href="index_style.css">
 <link rel="stylesheet" type="text/css" href="form_style.css">
 <link rel="stylesheet" type="text/css" href="css/icon.css">
+<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
+<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <script language="JavaScript" type="text/javascript" src="/state.js"></script>
 <script language="JavaScript" type="text/javascript" src="/general.js"></script>
 <script language="JavaScript" type="text/javascript" src="/popup.js"></script>
 <script language="JavaScript" type="text/javascript" src="/help.js"></script>
 <script language="JavaScript" type="text/javascript" src="/validator.js"></script>
 <script language="JavaScript" type="text/javascript" src="/client_function.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/jquery.js"></script>
-<script language="JavaScript" type="text/javascript" src="/switcherplugin/jquery.iphone-switch.js"></script>
-<script language="JavaScript" type="text/javascript" src="/js/httpApi.js"></script>
 <style type="text/css">
 .contentM_qis{
 	width:740px;
@@ -99,6 +98,8 @@
 </style>
 <script>
 
+MAX_VPN_CLIENTS = 5;
+
 wan_route_x = '<% nvram_get("wan_route_x"); %>';
 wan_nat_x = '<% nvram_get("wan_nat_x"); %>';
 wan_proto = '<% nvram_get("wan_proto"); %>';
@@ -127,12 +128,13 @@ switch (openvpn_unit) {
 		break;
 }
 
+var enabled_ori = "";
 
-enforce_ori = "<% nvram_get("vpn_client_enforce"); %>";
-policy_ori = "<% nvram_get("vpn_client_rgw"); %>";
-dnsmode_ori = "<% nvram_get("vpn_client_adns"); %>";
+var enforce_ori = "<% nvram_get("vpn_client_enforce"); %>";
+var policy_ori = "<% nvram_get("vpn_client_rgw"); %>";
+var dnsmode_ori = "<% nvram_get("vpn_client_adns"); %>";
 
-ciphersarray = [
+var ciphersarray = [
 		["AES-128-CBC"],
 		["AES-192-CBC"],
 		["AES-256-CBC"],
@@ -237,7 +239,8 @@ function initial()
 	}
 
 	// Set these based on a compound field
-	setRadioValue(document.form.vpn_client_x_eas, ((document.form.vpn_clientx_eas.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0"));
+	enabled_ori = (document.form.vpn_clientx_eas.value.indexOf(''+(openvpn_unit)) >= 0) ? "1" : "0";
+	setRadioValue(document.form.vpn_client_x_eas, enabled_ori);
 
 	getTLS(openvpn_unit);
 	update_rgw_options();
@@ -522,23 +525,28 @@ function applyRule(manual_switch){
 		return false;
 	}
 
-	if (manual_switch == 0) {
-		showLoading();
-		if (client_state != 0) {
-			document.form.action_wait.value = 15;
-			document.form.action_script.value = "restart_vpnclient"+openvpn_unit;
-		}
-	}
-
 	tmp_value = "";
 
-	for (var i=1; i < 6; i++) {
-		if (i == openvpn_unit) {
-			if (getRadioValue(document.form.vpn_client_x_eas) == 1)
-				tmp_value += ""+i+",";
+	for (var unit=1; unit <= MAX_VPN_CLIENTS; unit++) {
+		if (unit == openvpn_unit) {
+			if (getRadioValue(document.form.vpn_client_x_eas) == 1) {
+				tmp_value += ""+unit+",";
+				if (client_state != 0) {	// Restart
+					document.form.action_wait.value = 15;
+					document.form.action_script.value = "restart_vpnclient"+openvpn_unit;
+				} else {			// Start
+					document.form.action_wait.value = 10;
+					document.form.action_script.value = "start_vpnclient"+openvpn_unit;
+				}
+			} else {
+				if (client_state != 0) {	// Stop
+					document.form.action_wait.value = 10;
+					document.form.action_script.value = "stop_vpnclient"+openvpn_unit;
+				}
+			}
 		} else {
-			if (document.form.vpn_clientx_eas.value.indexOf(''+(i)) >= 0)
-				tmp_value += ""+i+","
+			if (document.form.vpn_clientx_eas.value.indexOf(''+(unit)) >= 0)
+				tmp_value += ""+unit+","
 		}
 	}
 	document.form.vpn_clientx_eas.value = tmp_value;
@@ -730,8 +738,11 @@ function showConnStatus() {
 	}
 
 	switch (client_state) {
+		case "0":
+			code = "Disconnected";
+			break;
 		case "1":	// Connecting
-			code = "Connecting...";
+			code = '<img id="loadingicon" style="margin-left:5px;margin-right:5px;" src="/images/InternetScan.gif">Connecting...';
 			setTimeout("getConnStatus()",2000);
 			break;
 		case "2":	// Connected
@@ -761,7 +772,7 @@ function showConnStatus() {
 					code = "Error - check configuration!";
 					break;
 			}
-		break;
+			break;
 		default:
 			code = "";
 			break;
@@ -955,47 +966,17 @@ function refreshVPNIP() {
 							</select>
 						</td>
 					</tr>
-					<tr id="service_enable_button">
-						<th>Service state</th>
-						<td>
-							<div class="left" style="width:94px; float:left; cursor:pointer;" id="radio_service_enable"></div>
-							<script type="text/javascript">
-
-								$('#radio_service_enable').iphoneSwitch((client_state > 0),
-									 function() {
-										document.form.action_script.value = "start_vpnclient" + openvpn_unit;
-										document.form.action_wait.value = 10;
-										if (applyRule(1) == false) {
-											$('#iphone_switch').animate({backgroundPosition: -37}, "slow", function() {});
-											curState = 0;
-											return false;
-										} else {
-											parent.showLoading();
-											return true;
-										}
-									 },
-									 function() {
-										document.form.action_script.value = "stop_vpnclient" + openvpn_unit;
-										document.form.action_wait.value = 10;
-										if (applyRule(1)) {
-											parent.showLoading();
-											return true;
-										} else
-											return false;
-									 },
-									 {
-										switch_on_container_path: '/switcherplugin/iphone_switch_container_off.png'
-									 }
-								);
-							</script>
-							<div style="height:30px;line-height:30px;" id="vpn_state_msg"></div>
-					    </td>
-					</tr>
 					<tr>
-						<th>Automatic start at boot time</th>
+						<th>Enable OpenVPN client</th>
 						<td>
 							<input type="radio" name="vpn_client_x_eas" class="input" value="1"><#checkbox_Yes#>
 							<input type="radio" name="vpn_client_x_eas" class="input" value="0"><#checkbox_No#>
+						</td>
+					</tr>
+					<tr>
+						<th>Status</th>
+						<td>
+							<div id="vpn_state_msg"><img id="loadingicon" style="margin-left:5px;" src="/images/InternetScan.gif"></div>
 						</td>
 					</tr>
 					<tr>
@@ -1305,4 +1286,3 @@ function refreshVPNIP() {
 <div id="footer"></div>
 </body>
 </html>
-

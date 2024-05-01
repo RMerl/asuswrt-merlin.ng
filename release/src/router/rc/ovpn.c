@@ -6,8 +6,7 @@
 
 #include "rc.h"
 
-/* Temporary wedge for amas_wgn.o, function exists in VPN Fusion
-   which we don't enable. */
+/* wedge for amas_wgn.o which calls it, but it only exists with Fusion enabled. */
 
 #ifndef RTCONFIG_VPN_FUSION
 int update_default_routing_rule() {

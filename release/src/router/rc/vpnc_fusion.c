@@ -2278,6 +2278,9 @@ int update_default_routing_rule()
 {
 	int unit;
 
+#if defined(RTCONFIG_VPN_FUSION_MERLIN)
+	return 0;
+#endif
 	unit = nvram_get_int("vpnc_default_wan");
 	_set_default_routing_table(VPNC_ROUTE_ADD, unit);
 	return 0;

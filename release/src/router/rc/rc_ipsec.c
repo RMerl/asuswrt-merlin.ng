@@ -3065,7 +3065,7 @@ char *get_virtual_subnet(char *nvram_name, char *output, int _size)
 	return output;
 }
 
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 static int _get_vpnc_idx_by_prof_idx(int prof_idx)
 {
 	char *nv = NULL, *nvp = NULL, *b = NULL;
@@ -3157,7 +3157,7 @@ static void _ipsec_updown_host_net_cli(int unit)
 			fprintf(fp, "iptables -t nat -A POSTROUTING -o %s ! -s %s -j MASQUERADE\n", vif, my_ip4);
 			fclose(fp);
 		}
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 		vpnc_idx = _get_vpnc_idx_by_prof_idx(unit);
 		if (vpnc_idx) {
 			snprintf(table_str, sizeof(table_str), "%d", IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_idx);
@@ -3245,7 +3245,7 @@ static void _ipsec_updown_host_net_cli(int unit)
 		// nat
 		eval("iptables", "-t", "nat", "-D", "POSTROUTING", "-o", vif, "!", "-s", my_ip4, "-j", "MASQUERADE");
 		eval("sed", "-i", "/MASQUERADE/d", FILE_PATH_IPSEC_IPTABLES_RULE);
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 		vpnc_idx = _get_vpnc_idx_by_prof_idx(unit);
 		if (vpnc_idx) {
 			// server route

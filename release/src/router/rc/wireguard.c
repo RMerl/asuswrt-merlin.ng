@@ -809,7 +809,7 @@ static void _wg_x_nf_del(const char* ifname)
 #endif
 }
 
-#ifdef RTCONFIG_VPN_FUSION && !defined(RTCONFIG_VPN_FUSION_MERLIN)
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 static void _wg_client_dns_setup_vpnc(char* prefix, char* ifname, int vpnc_idx)
 {
 	char wg_dns[128] = {0};
@@ -1605,7 +1605,7 @@ void start_wgc(int unit)
 #endif
 
 	/// dns
-#ifdef RTCONFIG_VPN_FUSION && !defined(RTCONFIG_VPN_FUSION_MERLIN)
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 	_wg_client_dns_setup_vpnc(prefix, ifname, vpnc_idx);
 #else
 	_wg_client_dns_setup(prefix, ifname);

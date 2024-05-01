@@ -1806,7 +1806,7 @@ extern void run_ipsec_firewall_scripts(void);
 extern char *get_virtual_subnet(char *nvram_name, char *output, int _size);
 extern int ipsec_updown_main(int argc, char *argv[]);
 extern void rc_ipsec_ctrl(int prof_type, int prof_idx, int enable);
-#ifndef RTCONFIG_VPN_FUSION
+#if !defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_VPN_FUSION_MERLIN)
 extern int write_ipc_resolv_dnsmasq(FILE* fp_servers);
 #endif
 extern void update_ipsec_s2sc_conf();

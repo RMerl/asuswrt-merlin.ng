@@ -3052,7 +3052,7 @@ int update_resolvconf(void)
 		goto NOIP;
 #endif
 
-#if defined(RTCONFIG_OPENVPN) && !defined(RTCONFIG_VPN_FUSION)
+#if defined(RTCONFIG_OPENVPN) && (!defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_VPN_FUSION_MERLIN))
 	write_ovpn_resolv_dnsmasq(fp_servers);
 #endif
 	{
@@ -3096,7 +3096,7 @@ int update_resolvconf(void)
 //				if (write_wgc_resolv_dnsmasq(fp_servers))
 //					break;
 //#endif
-#if defined(RTCONFIG_IPSEC) && !defined(RTCONFIG_VPN_FUSION)
+#if defined(RTCONFIG_IPSEC) && (!defined(RTCONFIG_VPN_FUSION) || defined(RTCONFIG_VPN_FUSION_MERLIN))
 				if (write_ipc_resolv_dnsmasq(fp_servers))
 					break;
 #endif
@@ -3270,7 +3270,7 @@ NOIP:
 
 	file_unlock(lock);
 
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 	if (is_vpnc_dns_active())
 		vpnc_update_resolvconf(nvram_get_int("vpnc_default_wan"));
 #endif
@@ -4366,7 +4366,7 @@ NOIP:
 	}
 #endif
 
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 	vpnc_set_internet_policy(1);
 #endif
 
@@ -4456,7 +4456,7 @@ NOIP:
 #endif
 
 #ifdef RTCONFIG_VPNC
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 	start_vpnc();
 #else
 	if((nvram_match("vpnc_proto", "pptp") || nvram_match("vpnc_proto", "l2tp")) && nvram_match("vpnc_auto_conn", "1"))
@@ -4843,7 +4843,7 @@ wan_down(char *wan_ifname)
 #ifdef RTCONFIG_LANTIQ
 	disable_ppa_wan(wan_ifname);
 #endif
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 	vpnc_set_internet_policy(0);
 #endif
 #ifdef RTCONFIG_MULTIWAN_IF
@@ -5324,7 +5324,7 @@ start_wan(void)
 	symlink("/sbin/rc", "/tmp/ppp/vpnc-ip-down");
 	symlink("/sbin/rc", "/tmp/ppp/vpnc-ip-pre-up");
 	symlink("/sbin/rc", "/tmp/ppp/vpnc-auth-fail");
-#ifdef RTCONFIG_VPN_FUSION
+#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
 	if(!d_exists("/etc/openvpn")) {
 		mkdir("/etc/openvpn", 0700);
 	}

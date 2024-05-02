@@ -644,6 +644,7 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 		if (nvram_match("dns_norebind", "1"))
 		{
 			fprintf(fp, "stop-dns-rebind\n");
+			fprintf(fp, "rebind-domain-ok=dns.msftncsi.com\n");
 		}
 
 		/* Instruct clients like Firefox to not auto-enable DoH */
@@ -657,6 +658,8 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			 ))
 		{
 			fprintf(fp, "address=/use-application-dns.net/\n");
+			fprintf(fp, "address=/_dns.resolver.arpa/\n");
+			fprintf(fp, "address=/mask.icloud.com/mask-h2.icloud.com/\n");
 		}
 
 		/* Protect against VU#598349 */
@@ -777,6 +780,19 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			}
 		}
 #endif
+		/* SNTP & NTP server */
+		if (nvram_get_int("ntpd_enable")) {
+			fprintf(fp, "dhcp-option=lan,option6:31,%s\n", "[::]");
+			fprintf(fp, "dhcp-option=lan,option6:56,%s\n", "[::]");
+		}
+
+		/* Don't log DHCP queries */
+		if (nvram_match("dhcpd_querylog","0")) {
+			fprintf(fp,"quiet-dhcp\n");
+#ifdef RTCONFIG_IPV6
+			fprintf(fp,"quiet-dhcp6\n");
+#endif
+		}
 
 		// TODO: TR-069 related.
 

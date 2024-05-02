@@ -1413,7 +1413,7 @@ void start_dnsmasq(void)
 	FILE *fp;
 	char *lan_ifname, *lan_ipaddr, *lan_hostname;
 	char *value, *value2;
-	int ii, have_dhcp = 0;
+	int /*i,*/ have_dhcp = 0;
 	char *mac, *ip, *dns, *hostname, *lan_domain;
 	char *nv, *nvp, *b;
 	unsigned char ea[ETHER_ADDR_LEN];
@@ -1421,7 +1421,6 @@ void start_dnsmasq(void)
 	int unit;
 	char tmpStr[20];
 #endif
-	char buf[sizeof("/rom/etc/resolv.conf")], *path;
 #ifdef RTCONFIG_MULTILAN_CFG
 	char v6_prefix[INET6_ADDRSTRLEN] = {0};
 	char v6_prefix_length = 0;
@@ -2005,7 +2004,6 @@ void start_dnsmasq(void)
 				lan_ifname, 64, ra_lifetime);
 			have_dhcp |= 2; /* DHCPv6 */
 		}
-
 #else
 		if (stateful) {
 			/* TODO: rework WEB UI to specify ranges without prefix
@@ -2262,33 +2260,6 @@ void start_dnsmasq(void)
 		handle_sdn_feature(sdn_idx, SDN_FEATURE_DNSMASQ, RC_SERVICE_START);
 	}
 #endif
-
-	/* Update local resolving mode */
-	n = readlink("/etc/resolv.conf", buf, sizeof(buf));
-	if (nvram_get_int("dns_local_cache")) {
-		/* Use dnsmasq for local resolving if it did start,
-		 * fallback to wan dns otherwise */
-		path = (char *)dmresolv;
-		for (ii = 4; ii > 0; ii--) {
-			if (pids("dnsmasq")) {
-				/* nameserver 127.0.0.1 */
-				path = "/rom/etc/resolv.conf"; 
-			} else if (ii)
-				sleep(1);
-		}
-	} else
-	if (n == sizeof("/rom/etc/resolv.conf") - 1 &&
-	    strncmp(buf, "/rom/etc/resolv.conf", n) == 0) {
-		/* Use WAN DNS for local resolving only if
-		 * nameservers were not changed externally */
-		path = (char *)dmresolv;
-	} else
-		path = NULL;
-	if (path && !(n == strlen(path) && strncmp(buf, path, n) == 0)) {
-		unlink("/etc/resolv.conf");
-		symlink(path, "/etc/resolv.conf");
-	}
-
 	TRACE_PT("end\n");
 }
 
@@ -2304,10 +2275,6 @@ void stop_dnsmasq(void)
 		notify_rc_and_wait_2min("stop_dnsmasq");
 		return;
 	}
-
-	// Revert back to ISP-filled resolv.conf
-        unlink("/etc/resolv.conf");
-        symlink(dmresolv, "/etc/resolv.conf");
 
 #ifdef RTCONFIG_MULTILAN_CFG
 	char pid_file[256];

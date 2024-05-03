@@ -50,7 +50,7 @@ int ovpn_skip_dnsmasq() {
 	char filename[40], varname[32];
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
-		sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
+		sprintf(filename, "/etc/openvpn/client%d/resolv.dnsmasq", unit);
 		if (f_exists(filename)) {
 			sprintf(varname, "vpn_client%d_", unit);
 
@@ -71,7 +71,7 @@ int ovpn_need_dnsmasq_restart() {
 	char filename[40], varname[32];
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++ ) {
-		sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
+		sprintf(filename, "/etc/openvpn/client%d/resolv.dnsmasq", unit);
 		if (f_exists(filename)) {
 			sprintf(varname, "vpn_client%d_", unit);
 			if ((nvram_pf_get_int(varname, "adns") == OVPN_DNSMODE_STRICT) &&
@@ -252,7 +252,7 @@ void ovpn_client_down_handler(int unit)
 
 	sprintf(dirname, "/etc/openvpn/client%d", unit);
 
-	snprintf(buffer, sizeof(buffer), "%s/client.resolv", dirname);
+	snprintf(buffer, sizeof(buffer), "%s/resolv.dnsmasq", dirname);
 	if (f_exists(buffer))
 		unlink(buffer);
 
@@ -422,7 +422,7 @@ void ovpn_client_up_handler(int unit)
 				continue;
 
 			if (!fp_resolv) {
-				sprintf(buffer, "%s/client.resolv", dirname);
+				sprintf(buffer, "%s/resolv.dnsmasq", dirname);
 				if ((fp_resolv = fopen(buffer, "w")) == NULL)
 					goto exit;
 			}

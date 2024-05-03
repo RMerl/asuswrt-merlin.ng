@@ -19,5 +19,6 @@ extern void ovpn_setup_dirs(ovpn_type_t type, int unit);
 extern void ovpn_cleanup_dirs(ovpn_type_t type, int unit);
 extern void ovpn_write_dh(ovpn_sconf_t *sconf, int unit);
 extern int ovpn_is_clientcert_valid(int unit);
+extern void write_ovpn_server_dnsmasq_config(FILE* dnsmasq_conf);
+extern void write_ovpn_client_dnsmasq_config(FILE* dnsmasq_conf);
 #endif
-

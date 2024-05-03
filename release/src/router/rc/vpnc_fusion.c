@@ -75,7 +75,7 @@ int clean_vpnc_setting_value(const int vpnc_idx);
 static int _get_vpnc_state(const int vpnc_idx);
 int vpnc_update_resolvconf(const int unit);
 static int _set_network_routing_rule(const VPNC_ROUTE_CMD cmd, const int vpnc_idx);
-static int _gen_vpnc_resolv_conf(const int vpnc_idx);
+extern int _gen_vpnc_resolv_conf(const int vpnc_idx);
 
 int vpnc_pppstatus(const int unit)
 {
@@ -716,7 +716,7 @@ void vpnc_ovpn_set_dns(int ovpn_unit)
 
 		trim_r(addr);
 
-		old = nvram_get(nvname);
+		old = nvram_safe_get(nvname);
 		if (*old)
 		{
 			size = strlen(old) + strlen(addr) + 2;
@@ -2543,7 +2543,7 @@ int write_vpn_fusion_mangle()
 	return 0;
 }
 
-static int _gen_vpnc_resolv_conf(const int vpnc_idx)
+int _gen_vpnc_resolv_conf(const int vpnc_idx)
 {
 	FILE *fp;
 	char resolv_file[128], vpnc_prefix[] = "vpncXXXXXX_", *vpnc_dns, *next, tmp[128];

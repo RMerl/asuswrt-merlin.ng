@@ -3285,7 +3285,7 @@ NOIP:
 	else
 #endif
 #ifdef RTCONFIG_MULTILAN_CFG
-	reload_dnsmasq(LAN_IN_SDN_IDX);
+		reload_dnsmasq(LAN_IN_SDN_IDX);
 #else
 		reload_dnsmasq();
 #endif

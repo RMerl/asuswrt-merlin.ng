@@ -65,7 +65,7 @@ void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf) {
 	char *buffer;
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
-		sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
+		sprintf(filename, "/etc/openvpn/client%d/resolv.dnsmasq", unit);
 		if (f_exists(filename)) {
 			sprintf(prefix, "vpn_client%d_", unit);
 
@@ -85,9 +85,14 @@ void write_ovpn_resolv_dnsmasq(FILE* dnsmasq_conf) {
 
 
 void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
-	char prefix[16], filename[40], varname[32];
-	int unit, modeset = 0;
-	char *buffer;
+
+	write_ovpn_server_dnsmasq_config(dnsmasq_conf);
+	write_ovpn_client_dnsmasq_config(dnsmasq_conf);
+}
+
+void write_ovpn_server_dnsmasq_config(FILE* dnsmasq_conf) {
+	char prefix[16], varname[32];
+	int unit;
 
 	// Add interfaces for servers that provide DNS services
 	for (unit = 1; unit <= OVPN_SERVER_MAX; unit++) {
@@ -95,11 +100,17 @@ void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
 		if (nvram_pf_get_int(prefix, "pdns"))
 			fprintf(dnsmasq_conf, "interface=%s%d\n", nvram_pf_safe_get(prefix, "if"), OVPN_SERVER_BASE + unit);
 	}
+}
+
+void write_ovpn_client_dnsmasq_config(FILE* dnsmasq_conf) {
+        char prefix[16], filename[40], varname[32];
+        int unit, modeset = 0;
+        char *buffer;
 
 	for (unit = 1; unit <= OVPN_CLIENT_MAX; unit++) {
 		// Add strict-order if any client is set to "strict" and we haven't done so yet
 		if (!modeset) {
-			sprintf(filename, "/etc/openvpn/client%d/client.resolv", unit);
+			sprintf(filename, "/etc/openvpn/client%d/resolv.dnsmasq", unit);
 			if (f_exists(filename)) {
 				snprintf(varname, sizeof(varname), "vpn_client%d_adns", unit);
 				if (nvram_get_int(varname) == OVPN_DNSMODE_STRICT) {

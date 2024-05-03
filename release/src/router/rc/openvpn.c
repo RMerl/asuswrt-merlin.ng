@@ -35,7 +35,7 @@ void _ovpn_update_routing_rules(int add_cmd, const int unit);
 
 int ovpn_up_main(int argc, char **argv) {
 	int unit;
-	char buffer[64];
+	int vpnc_idx;
 
 	if(argc < 3)
 		return -1;
@@ -47,17 +47,20 @@ int ovpn_up_main(int argc, char **argv) {
 	else if (!strcmp(argv[2], "client")) {
 		ovpn_client_up_handler(unit);
 
+#ifdef RTCONFIG_MULTILAN_CFG
+		vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit);
+
+		// Set vpnc%d_dns nvram
+		vpnc_ovpn_set_dns(unit);
+		// Create vpnc%d_resolv config file
+		_gen_vpnc_resolv_conf(vpnc_idx);
+#endif
 		update_resolvconf();
 
-		sprintf(buffer, "/etc/openvpn/client%d/client.conf", unit);
-		// We got client.conf && update_resolvconf() won't restart it for us
-		if ((f_exists(buffer)) && (ovpn_need_dnsmasq_restart()))
-			notify_rc("start_dnsmasq");
-
 #ifdef RTCONFIG_MULTILAN_CFG
-		update_sdn_by_vpnc( get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit) );
+		// Create iproute2 rules
+		update_sdn_by_vpnc(vpnc_idx);
 #endif
-
 	} else
 		return -1;
 
@@ -66,7 +69,6 @@ int ovpn_up_main(int argc, char **argv) {
 
 int ovpn_down_main(int argc, char **argv) {
 	int unit, restart_dnsmasq = 0;
-	char buffer[64];
 	int vpnc_idx;
 
 	if(argc < 3)
@@ -77,7 +79,10 @@ int ovpn_down_main(int argc, char **argv) {
 		ovpn_server_down_handler(unit);
 	else if (!strcmp(argv[2], "client")) {
 #ifdef RTCONFIG_MULTILAN_CFG
-		update_sdn_by_vpnc( get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit) );
+		vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit);
+		update_sdn_by_vpnc(vpnc_idx);
+		// Remove vpnc%d_dns nvram
+		clean_vpnc_setting_value(vpnc_idx);
 #endif
 
 #if 0	// for dev_policy
@@ -85,19 +90,9 @@ int ovpn_down_main(int argc, char **argv) {
 		clean_routing_rule_by_vpnc_idx(vpnc_idx);	// from vpnc_fusion.c
 #endif
 
-		// Check before handler removes client.conf
-		sprintf(buffer, "/etc/openvpn/client%d/client.conf", unit);
-		// We got client.conf && update_resolvconf() won't restart it for us
-		if ((f_exists(buffer)) && (ovpn_need_dnsmasq_restart()))
-			restart_dnsmasq = 1;
-
 		ovpn_client_down_handler(unit);
 
 		update_resolvconf();
-
-		if (restart_dnsmasq)
-			notify_rc("start_dnsmasq");
-
 	} else
 		return -1;
 

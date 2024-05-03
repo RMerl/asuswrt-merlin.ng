@@ -794,6 +794,11 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 #endif
 		}
 
+#ifdef RTCONFIG_OPENVPN
+		/* OpenVPN clients: WINS and strict-mode support */
+		write_ovpn_client_dnsmasq_config(fp);
+#endif
+
 		// TODO: TR-069 related.
 
 		// TODO: Set VPN server

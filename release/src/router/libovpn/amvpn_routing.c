@@ -569,7 +569,7 @@ void ovpn_set_exclusive_dns(int unit) {
 
 	FILE *fp_resolv, *fp_dns;
 
-	snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/client.resolv", unit);
+	snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/resolv.dnsmasq", unit);
 	fp_resolv = fopen(buffer, "r");
 	snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
 	fp_dns = fopen(buffer, "w");

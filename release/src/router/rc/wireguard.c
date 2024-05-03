@@ -809,7 +809,7 @@ static void _wg_x_nf_del(const char* ifname)
 #endif
 }
 
-#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
+#if defined(RTCONFIG_VPN_FUSION)
 static void _wg_client_dns_setup_vpnc(char* prefix, char* ifname, int vpnc_idx)
 {
 	char wg_dns[128] = {0};
@@ -1605,16 +1605,20 @@ void start_wgc(int unit)
 #endif
 
 	/// dns
-#if defined(RTCONFIG_VPN_FUSION) && !defined(RTCONFIG_VPN_FUSION_MERLIN)
+#if defined(RTCONFIG_VPN_FUSION)
 	_wg_client_dns_setup_vpnc(prefix, ifname, vpnc_idx);
+	// Create vpnc%d_resolv config file for SDN
+	_gen_vpnc_resolv_conf(vpnc_idx);
 #else
+	// Creates resolv file for main dnsmasq + routes
 	_wg_client_dns_setup(prefix, ifname);
+#endif
+
 	// VPNDirector DNS
 	wgc_set_exclusive_dns(unit);
 	amvpn_update_exclusive_dns_rules();
 
 	update_resolvconf();
-#endif
 
 	snprintf(tmp, sizeof(tmp), "%d", unit);
 	run_custom_script("wgclient-start", 0, tmp, NULL);

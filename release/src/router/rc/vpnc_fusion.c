@@ -653,15 +653,19 @@ int vpnc_authfail_main(int argc, char **argv)
  *******************************************************************/
 static int _find_vpnc_idx_by_ovpn_unit(const int ovpn_unit)
 {
+#ifdef RTCONFIG_VPN_FUSION_MERLIN
+	return ovpn_unit + 5;
+#else
 	int i;
 	VPNC_PROFILE *prof;
 	for (i = 0; i < vpnc_profile_num; ++i)
 	{
 		prof = vpnc_profile + i;
-		if (prof->protocol == VPNC_PROTO_OVPN && prof->config.ovpn.ovpn_idx == ovpn_unit)
+		if (prof->protocol == VPNC_PROTO_OVPN && prof->config.ovpn.ovpn_idx == ovpn_unit + 5)
 			return prof->vpnc_idx;
 	}
 	return -1;
+#endif
 }
 
 int find_vpnc_idx_by_wgc_unit(int wgc_unit)

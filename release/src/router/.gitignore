@@ -4,6 +4,7 @@
 
 .*.cmd
 *~
+.*.swp
 
 #
 # asuswrt

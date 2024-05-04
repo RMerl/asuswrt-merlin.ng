@@ -46,6 +46,7 @@ SCRIPTS =
 BINS += $(if $(FLIPBITS),nandflipbits)
 ifeq ($(UBIFS),y)
 BINS += mkfs.ubifs/mkfs.ubifs
+BINS += nanddump
 endif
 
 ifeq ($(UBI),y)

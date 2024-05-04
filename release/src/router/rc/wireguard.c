@@ -1562,11 +1562,13 @@ void start_wgc(int unit)
 #ifdef RTCONFIG_VPN_FUSION
 	vpnc_idx = find_vpnc_idx_by_wgc_unit(unit);
 	table = IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_idx;
+#ifdef RTCONFIG_MULTILAN_CFG
+	_vpnc_ipset_create(vpnc_idx);
+#endif
 #else
 	/// VPNDirector table
 	table = unit;
 #endif
-
 	/// check configuration
 	_wg_client_check_conf(prefix);
 
@@ -1655,6 +1657,7 @@ void stop_wgc(int unit)
 	vpnc_idx = find_vpnc_idx_by_wgc_unit(unit);
 	table = IP_ROUTE_TABLE_ID_VPNC_BASE + vpnc_idx;
 #ifdef RTCONFIG_MULTILAN_CFG
+	_vpnc_ipset_destroy(vpnc_idx);
 	update_sdn_by_vpnc(vpnc_idx);
 #endif
 #else

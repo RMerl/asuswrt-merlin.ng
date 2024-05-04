@@ -88,6 +88,13 @@ static const uint8 wf_chspec_bw_mhz[] = {5, 10, 20, 40, 80, 160, 160};
 #define WF_NUM_BW \
         (sizeof(wf_chspec_bw_mhz)/sizeof(uint8))
 
+#ifdef RTCONFIG_MULTILAN_CFG
+#define MAX_GUEST_SUBUNITS APG_MAXINUM
+#define MERGED_LEASE_FILE "/tmp/dnsmasq-merged.leases"
+#else
+#define MAX_GUEST_SUBUNITS 4
+#endif
+
 /* From web-broadcom.c */
 extern int wl_format_ssid(char* ssid_buf, uint8* ssid, int ssid_len);
 extern int wl_control_channel(int unit);
@@ -356,6 +363,13 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 	wl_dfs_status_t *dfs_status;
 	char chanspec_str[CHANSPEC_STR_LEN];
 #endif
+	char guestssid[SSID_FMT_BUF_LEN];
+#ifdef RTCONFIG_MULTILAN_CFG
+	int guestvlan;
+	MTLAN_T *pmtl = NULL;
+	size_t mtl_sz = 0;
+	char leasefile_path[128] = {0};
+#endif
 
 #ifdef RTCONFIG_PROXYSTA
 	if (psta_exist_except(unit))
@@ -483,9 +497,31 @@ sta_list:
 
 	/* Obtain mac + IP list */
 	arplist = read_whole_file("/proc/net/arp");
+
 	/* Obtain lease list - we still need the arp list for
 	   cases where a device uses a static IP rather than DHCP */
+#ifdef RTCONFIG_MULTILAN_CFG
+	/* Merge all SDN lease files into one */
+	pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
+	if (pmtl) {
+		get_mtlan(pmtl, &mtl_sz);
+		for (i = 0; i < mtl_sz; i++) {
+			if (pmtl[i].enable && pmtl[i].nw_t.dhcp_enable) {
+				if (i)
+					snprintf(leasefile_path, sizeof(leasefile_path), "/var/lib/misc/dnsmasq-%d.leases", pmtl[i].sdn_t.sdn_idx);
+				else
+					strlcpy(leasefile_path, "/var/lib/misc/dnsmasq.leases", sizeof(leasefile_path));
+
+				doSystem("cat %s >> %s", leasefile_path, MERGED_LEASE_FILE);
+			}
+		}
+		FREE_MTLAN((void *)pmtl);
+	}
+	leaselist = read_whole_file(MERGED_LEASE_FILE);
+	unlink(MERGED_LEASE_FILE);
+#else
 	leaselist = read_whole_file("/var/lib/misc/dnsmasq.leases");
+#endif
 
 #ifdef RTCONFIG_IPV6
 	/* Obtain IPv6 info */
@@ -651,12 +687,19 @@ sta_list:
 				(sta->flags & WL_STA_PS) ? "P" : "_");
 #endif
 		}
-		ret += websWrite(wp, "%s%s\"],",
+		ret += websWrite(wp, "%s%s\",",
 			(sta->flags & WL_STA_ASSOC) ? "A" : "_",
 			(sta->flags & WL_STA_AUTHO) ? "U" : "_");
+
+
+// SSID and VLAN (for Guest Networks - unused on main unit)
+		ret += websWrite(wp, "\"\",\"\"],");
 	}
 
-	for (i = 1; i < 4; i++) {
+
+/*** Do Guest Networks ***/
+
+	for (i = 1; i < MAX_GUEST_SUBUNITS; i++) {
 #ifdef RTCONFIG_WIRELESSREPEATER
 		if ((nvram_get_int("sw_mode") == SW_MODE_REPEATER)
 			&& (unit == nvram_get_int("wlc_band")) && (i == 1))
@@ -666,6 +709,12 @@ sta_list:
 		if (nvram_match(strcat_r(prefix, "bss_enabled", tmp), "1"))
 		{
 			sprintf(name_vif, "wl%d.%d", unit, i);
+
+			strlcpy(guestssid, nvram_pf_safe_get(prefix, "ssid"), sizeof(guestssid));
+#ifdef RTCONFIG_MULTILAN_CFG
+			guestvlan = get_apg_vid_by_ifname(name_vif);
+#endif
+
 			memset(auth, 0, mac_list_size);
 
 			/* query wl for authenticated sta list */
@@ -716,6 +765,7 @@ sta_list:
 
 					if ((found) && (str_escape_quotes(hostnameentry, tmp,sizeof(hostnameentry)) == 0 ))
 						strlcpy(hostnameentry, tmp, sizeof(hostnameentry));
+
 
 					switch (found) {
 					case 0:	// Not in arplist nor in leaselist
@@ -820,10 +870,19 @@ sta_list:
 				}
 
 // Auth/Ass (and Guest) flags
-				ret += websWrite(wp, "%s%s%d\"],",
+				ret += websWrite(wp, "%s%s\",",
 					(sta->flags & WL_STA_ASSOC) ? "A" : "_",
-					(sta->flags & WL_STA_AUTHO) ? "U" : "_",
-					i);
+					(sta->flags & WL_STA_AUTHO) ? "U" : "_");
+
+// SSID (for Guest Networks identification)
+				ret += websWrite(wp, "\"%s\",", guestssid);
+
+// VLAN
+#ifdef RTCONFIG_MULTILAN_CFG
+				ret += websWrite(wp, "\"%d\"],", guestvlan);
+#else
+				ret += webswrite(wp, "\"\"],");
+#endif
 			}
 		}
 	}

@@ -54,26 +54,6 @@ var dfs_statusarray0 = [], dfs_statusarray1 = [], dfs_statusarray2 = [];
 
 <% get_wl_status(); %>;
 
-var guestnames = [];
-guestnames.push(["<% nvram_get("wl0.1_ssid"); %>",
-                 "<% nvram_get("wl0.2_ssid"); %>",
-                 "<% nvram_get("wl0.3_ssid"); %>"]);
-if (band5g_support) {
-	guestnames.push(["<% nvram_get("wl1.1_ssid"); %>",
-	                 "<% nvram_get("wl1.2_ssid"); %>",
-	                 "<% nvram_get("wl1.3_ssid"); %>"]);
-	if (wl_info.band5g_2_support || wl_info.band6g_support) {
-		guestnames.push(["<% nvram_get("wl2.1_ssid"); %>",
-		                 "<% nvram_get("wl2.2_ssid"); %>",
-		                 "<% nvram_get("wl2.3_ssid"); %>"]);
-	}
-}
-if (based_modelid === 'GT-AXE16000') {
-		guestnames.push(["<% nvram_get("wl3.1_ssid"); %>",
-		                 "<% nvram_get("wl3.2_ssid"); %>",
-		                 "<% nvram_get("wl3.3_ssid"); %>"]);
-}
-
 var classObj= {
         ToHexCode:function(str){
                 return encodeURIComponent(str).replace(/%/g,"\\x").toLowerCase();
@@ -204,9 +184,9 @@ function redraw(){
 
 function display_clients(clientsarray, obj, unit) {
 	var code, i, ii, client, overlib_str;
-	var mac, ipaddr, hostname, flags;
+	var mac, ipaddr, hostname;
 	var nmapentry;
-	var guestheader = 0;
+	var guestheader = "";
 
 	code = '<table width="100%" border="1" align="center" cellpadding="4" cellspacing="0" bordercolor="#6b8fa3" class="FormTable">';
 	code += '<thead><tr>';
@@ -226,23 +206,18 @@ function display_clients(clientsarray, obj, unit) {
 		for (i = 0; i < clientsarray.length-1; ++i) {
 			client = clientsarray[i];
 
-			// Need Guest header?
-			flags = client[11];
-			for (ii = 1; ii < 5; ii++) {
-				if (flags.indexOf(ii) > 0) {
-					flags = client[11].replace(ii,"");
-					if (guestheader < ii) {
-						guestheader = ii;
-						if (based_modelid === 'GT-AXE16000') {
-							unit = (unit+3)%4;
-						}
-						if (sw_mode == "2")
-							code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Local Clients:</span> ' + guestnames[unit][ii-1] + '</th></tr>';
-						else
-							code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Guest Network ' + guestheader +':</span> ' + guestnames[unit][ii-1] + '</th></tr>';
-						ii = 5;
+			// Display a new Guest header?
+			if (client[12] != "" && client[12] != guestheader) {
+				guestheader = client[12];
+				if (sw_mode == "2") {
+					code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Local Clients: </span> ' + guestheader;
+				} else {
+					code += '<tr><th colspan="6" style="color:white;height:20px;"><span class="hint-color" style="font-weight:bolder;">Guest Network: </span> ' + guestheader;
+					if (client[13] != "") {
+						code += '<span style="float:right;"><span class="hint-color" style="font-weight:bolder;">VLAN: </span> ' + client[13] + '</span>';
 					}
 				}
+				code += '</th></tr>';
 			}
 			code += '<tr>';
 
@@ -299,7 +274,7 @@ function display_clients(clientsarray, obj, unit) {
 			} else {
 				code += '</td>';
 			}
-			code += '<td style="vertical-align:top;">' + flags + '</td>';	// Flags
+			code += '<td style="vertical-align:top;">' + client[11] + '</td>';	// Flags
 			code += '</tr>';
 		}
 	} else {

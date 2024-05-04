@@ -520,7 +520,7 @@ function validForm(){
 	return true;
 }
 
-function applyRule(manual_switch){
+function applyRule(){
 	if (!validForm()){
 		return false;
 	}
@@ -555,12 +555,13 @@ function applyRule(manual_switch){
 
 	if (((enforce_ori != getRadioValue(document.form.vpn_client_enforce)) ||
 	     (policy_ori != document.form.vpn_client_rgw.value)) &&
-	    (client_state == 0) && (manual_switch == 0))
+	    (client_state == 0))
 		document.form.action_script.value += "start_vpnrouting"+openvpn_unit;
 
 	if ((dnsmode_ori != document.form.vpn_client_adns.value) && (client_state != 0))
 		document.form.action_script.value += ";restart_dnsmasq"
 
+	showLoading();
 	document.form.submit();
 }
 
@@ -1268,7 +1269,7 @@ function refreshVPNIP() {
 					</table>
 					<div class="apply_gen">
 						<input type="button" id="restoreButton" class="button_gen" value="<#Setting_factorydefault_value#>" onclick="defaultSettings();">
-						<input name="button" type="button" class="button_gen" onclick="applyRule(0);" value="<#CTL_apply#>"/>
+						<input name="button" type="button" class="button_gen" onclick="applyRule();" value="<#CTL_apply#>"/>
 			        </div>
 				</td></tr>
 	        </tbody>

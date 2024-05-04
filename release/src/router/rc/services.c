@@ -22892,24 +22892,18 @@ void setup_leds()
 		eval("wl", "-i", nvram_safe_get("wl3_ifname"), "ledbh", "12", "7");
 #endif
 
-#if defined(RTBE96U)
-		eval("wl", "-i", "eth6", "ledbh", "12", "7");
-		eval("wl", "-i", "eth7", "ledbh", "12", "7");
-		eval("wl", "-i", "eth8", "ledbh", "12", "7");
-#endif
-
-#ifdef defined(GTBE96)
+#if defined(GTBE96) || defined(RTBE96U)
 		eval("wl", "-i", nvram_safe_get("wl0_ifname"), "ledbh", "12", "7");
 		eval("wl", "-i", nvram_safe_get("wl1_ifname"), "ledbh", "12", "7");
 		eval("wl", "-i", nvram_safe_get("wl2_ifname"), "ledbh", "12", "7");
 #endif
 
-#ifdef defined(RTBE88U)
+#if defined(RTBE88U)
 		eval("wl", "-i", nvram_safe_get("wl0_ifname"), "ledbh", "12", "7");
 		eval("wl", "-i", nvram_safe_get("wl1_ifname"), "ledbh", "12", "7");
 #endif
 
-#ifdef defined(RTBE86U)
+#if defined(RTBE86U)
 		eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 0, 0)), "ledbh", "7", "7");
 		eval("wl", "-i", nvram_safe_get(wl_nvname("ifname", 1, 0)), "ledbh", "12", "7");
 #endif

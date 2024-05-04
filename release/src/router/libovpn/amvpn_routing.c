@@ -502,11 +502,11 @@ void amvpn_clear_exclusive_dns(int unit, vpndir_proto_t proto)
 
 	if (proto == VPNDIR_PROTO_OPENVPN) {
 		snprintf(filename, sizeof (filename), "/etc/openvpn/client%d/dns.sh", unit);
+		unit = unit + WG_CLIENT_MAX;
 	}
 #ifdef RTCONFIG_WIREGUARD
 	else if (proto == VPNDIR_PROTO_WIREGUARD) {
 		snprintf(filename, sizeof (filename), "/etc/wg/dns%d.sh", unit);
-		unit = unit + OVPN_CLIENT_MAX;
 	}
 #endif
 
@@ -532,7 +532,7 @@ void amvpn_update_exclusive_dns_rules()
 		snprintf(buffer, sizeof (buffer), "/etc/wg/dns%d.sh", unit);
 		if (f_exists(buffer)) {
 			// Remove and re-add to ensure proper order
-			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit + OVPN_CLIENT_MAX);
+			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit);
 
 			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
 			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
@@ -547,7 +547,7 @@ void amvpn_update_exclusive_dns_rules()
 		snprintf(buffer, sizeof (buffer), "/etc/openvpn/client%d/dns.sh", unit);
 		if (f_exists(buffer)) {
 			// Remove and re-add to ensure proper order
-			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit);
+			snprintf(buffer, sizeof (buffer), "DNSVPN%d", unit + WG_CLIENT_MAX);
 
 			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "udp", "-m", "udp", "--dport", "53", "-j", buffer);
 			eval("/usr/sbin/iptables", "-t", "nat", "-D", "PREROUTING", "-p", "tcp", "-m", "tcp", "--dport", "53", "-j", buffer);
@@ -584,7 +584,7 @@ void ovpn_set_exclusive_dns(int unit) {
 
 	fprintf(fp_dns, "#!/bin/sh\n"
 	                "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
-	                 unit);
+	                 unit + WG_CLIENT_MAX);
 
 	sprintf(prefix, "vpn_client%d_", unit);
 
@@ -597,7 +597,7 @@ void ovpn_set_exclusive_dns(int unit) {
 			if (!inet_aton(server, &addr))
 				continue;
 
-			fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -j DNAT --to-destination %s\n", unit, server);
+			fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -j DNAT --to-destination %s\n", unit + WG_CLIENT_MAX, server);
 			logmessage("openvpn", "Forcing all to use DNS server %s (OpenVPN client %d is set to Exclusive DNS mode)", server, unit);
 			// Only configure first server found, as others would never get used
 			break;
@@ -642,13 +642,13 @@ void ovpn_set_exclusive_dns(int unit) {
 							if (!inet_aton(server, &addr))
 								continue;
 
-			                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
+			                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit + WG_CLIENT_MAX, src, server);
 			                                logmessage("openvpn", "Forcing %s to use DNS server %s for OVPNC%d", src, server, unit);
 							// Only configure first server found, as others would never get used
 							break;
 						}
 		                        } else if (!strcmp(iface, "WAN")) {
-		                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
+		                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit + WG_CLIENT_MAX, src);
 		                                logmessage("openvpn", "Excluding %s from forced DNS routing for OVPNC%d", src, unit);
 		                        }
 				}
@@ -658,7 +658,7 @@ void ovpn_set_exclusive_dns(int unit) {
 
 	fprintf(fp_dns, "/usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN%d\n"
 	                "/usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN%d\n",
-	                 unit, unit);
+	                 unit + WG_CLIENT_MAX, unit + WG_CLIENT_MAX);
 
 	fclose(fp_resolv);
 	fclose(fp_dns);
@@ -696,7 +696,7 @@ void wgc_set_exclusive_dns(int unit) {
 
 	fprintf(fp_dns, "#!/bin/sh\n"
 	                "/usr/sbin/iptables -t nat -N DNSVPN%d\n",
-	                 unit + OVPN_CLIENT_MAX);
+	                 unit);
 
 	amvpn_get_policy_rules(unit, rules, sizeof (rules), VPNDIR_PROTO_WIREGUARD);
 	amvpn_get_policy_rules(0, wanrules, sizeof (wanrules), VPNDIR_PROTO_WIREGUARD);
@@ -735,7 +735,7 @@ void wgc_set_exclusive_dns(int unit) {
 							if ((p = strchr(server, '/')) != NULL)
 								*p = '\0';
 
-							fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit + OVPN_CLIENT_MAX, src, server);
+							fprintf(fp_dns, "/usr/sbin/iptables -t nat -A DNSVPN%d -s %s -j DNAT --to-destination %s\n", unit, src, server);
 							logmessage("wireguard", "Forcing %s to use DNS server %s for WGC%d", src, server, unit);
 
 							// currently added by rc/wireguard.c - should I add it to the correct table, like Fusion?
@@ -743,7 +743,7 @@ void wgc_set_exclusive_dns(int unit) {
 						}
 					}
 	                        } else if (!strcmp(iface, "WAN")) {
-	                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit + OVPN_CLIENT_MAX, src);
+	                                fprintf(fp_dns, "/usr/sbin/iptables -t nat -I DNSVPN%d -s %s -j RETURN\n", unit, src);
 	                                logmessage("wireguard", "Excluding %s from forced DNS routing for WGC%d", src, unit);
 	                        }
 			}
@@ -752,7 +752,7 @@ void wgc_set_exclusive_dns(int unit) {
 
 	fprintf(fp_dns, "/usr/sbin/iptables -t nat -I PREROUTING -p udp -m udp --dport 53 -j DNSVPN%d\n"
 	                "/usr/sbin/iptables -t nat -I PREROUTING -p tcp -m tcp --dport 53 -j DNSVPN%d\n",
-	                 unit + OVPN_CLIENT_MAX, unit + OVPN_CLIENT_MAX);
+	                 unit, unit);
 
 	fclose(fp_dns);
 	chmod(scriptname, 0755);

@@ -1840,11 +1840,11 @@ function pullOverheadList(_this) {
 	var $element = $("#overhead_presets_list");
 	var isMenuopen = $element[0].offsetWidth > 0 || $element[0].offsetHeight > 0;
 	if(isMenuopen == 0) {
-		$(_this).attr("src","/images/arrow-top.gif");
+		$(_this).attr("src","/images/unfold_less.svg");
 		$element.show();
 	}
 	else {
-		$(_this).attr("src","/images/arrow-down.gif");
+		$(_this).attr("src","/images/unfold_more.svg");
 		$element.hide();
 	}
 }
@@ -1859,7 +1859,7 @@ function set_overhead(entry) {
 		framing = 0;	// fq_codel does not support ptm compensation
 
 	document.getElementById('qos_atm').value = framing;
-	document.getElementById("ovh_pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("ovh_pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('overhead_presets_list').style.display='none';
 }
 
@@ -2118,7 +2118,7 @@ function set_overhead(entry) {
 											<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50, 28);">WAN packet overhead</a></th>
 											<td colspan="2">
 												<input type="text" maxlength="4" class="input_6_table" name="qos_overhead" id="qos_overhead" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, -64, 256);" value="<% nvram_get("qos_overhead"); %>" style="float:left;">
-												<img id="ovh_pull_arrow" class="pull_arrow" height="14px;" src="/images/arrow-down.gif" onclick="pullOverheadList(this);">
+												<img id="ovh_pull_arrow" class="pull_arrow" height="14px;" src="/images/unfold_more.svg" onclick="pullOverheadList(this);">
 												<div id="overhead_presets_list" style="margin-top:25px;height:auto;" class="dns_server_list_dropdown"></div>
 												<label id="qos_mpu_label" style="display:none;float:left;margin-left:25px;margin-right:5px;">MPU:</label>
 												<input type="text" maxlength="4" class="input_6_table" name="qos_mpu" id="qos_mpu" onKeyPress="return validator.isNumber(this,event);" onblur="validator.numberRange(this, 0, 256);" value="<% nvram_get("qos_mpu"); %>" style="display:none;float:left;">

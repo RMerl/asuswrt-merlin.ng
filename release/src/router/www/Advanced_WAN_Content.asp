@@ -2209,14 +2209,14 @@ function update_ipv6_s46_b4addr_selector(){
 var over_var = 0;
 var isMenuopen = 0;
 function hide_aftr_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('aftr_Block_PC').style.display='none';
 	isMenuopen = 0;
 }
 
 function pullaftrList(obj){
 	if(isMenuopen == 0){		
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		document.getElementById("aftr_Block_PC").style.display = 'block';		
 		document.form.ipv6_s46_aftr.focus();		
 		isMenuopen = 1;
@@ -2678,7 +2678,7 @@ function get_default_wan_name(){
 								<th>AFTR Address</th>
 								<td>
 									<input type="text" id="ipv6_s46_aftr" name="ipv6_s46_aftr" maxlength="39" class="input_32_table" value="<% nvram_get("ipv6_s46_aftr"); %>" onKeyPress="" autocorrect="off" autocapitalize="off">
-									<img id="pull_arrow" height="14px;" src="/images/arrow-down.gif" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullaftrList(this);" title="<#select_service#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
+									<img id="pull_arrow" height="14px;" src="/images/unfold_more.svg" style="position:absolute;*margin-left:-3px;*margin-top:1px;" onclick="pullaftrList(this);" title="<#select_service#>" onmouseover="over_var=1;" onmouseout="over_var=0;">
 									<div id="aftr_Block_PC" class="aftr_Block_PC"></div>
 								</td>
 							</tr>

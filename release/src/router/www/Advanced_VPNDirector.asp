@@ -252,7 +252,7 @@ function pullLANIPList(obj){
 	var element = document.getElementById('ClientList_Block');
 	var isMenuopen = element.offsetWidth > 0 || element.offsetHeight > 0;
 	if (isMenuopen == 0) {
-		obj.src = "/images/arrow-top.gif"
+		obj.src = "/images/unfold_less.svg"
 		element.style.display = 'block';
 		document.getElementById("localIP_x").focus();
 	}
@@ -262,7 +262,7 @@ function pullLANIPList(obj){
 
 
 function hideClients_Block(){
-	document.getElementById("pull_arrow").src = "/images/arrow-down.gif";
+	document.getElementById("pull_arrow").src = "/images/unfold_more.svg";
 	document.getElementById('ClientList_Block').style.display = 'none';
 }
 
@@ -730,7 +730,7 @@ function applyRule() {
 			<th>Local IP</th>
 			<td>
 				<input type="text" maxlength="18" class="input_18_table" id="localIP_x" align="left" onKeyPress="return validator.isIPAddrPlusNetmask(this, event)" style="float:left;" onClick="hideClients_Block();" autocomplete="off" autocorrect="off" autocapitalize="off">
-				<img id="pull_arrow" class="pull_arrow" height="16px;" src="images/arrow-down.gif" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
+				<img id="pull_arrow" class="pull_arrow" height="16px;" src="/images/unfold_more.svg" align="right" onclick="pullLANIPList(this);" title="<#select_IP#>">
 				<div id="ClientList_Block" class="clientlist_dropdown" style="margin-left:2px;margin-top:27px;width:238px;"></div>
 				<span style="margin-left:3px; line-height:25px;"><#feedback_optional#></span>
 			</td>

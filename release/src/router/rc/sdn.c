@@ -455,7 +455,11 @@ void _start_sdn_stubby(const MTLAN_T *pmtl, char *config_file, const size_t path
 	if (nv)
 		free(nv);
 
+	snprintf(buf, sizeof(buf), "stubby-%d.yml", pmtl->nw_t.idx);
+	append_custom_config(buf, fp);
 	fclose(fp);
+	snprintf(buf, sizeof(buf), "%d", pmtl->sdn_t.sdn_idx);
+	run_custom_script("stubby-sdn.postconf", 120, config_file, buf);
 	chmod(config_file, 0644);
 
 	if (nvram_get_int("stubby_debug")) {
@@ -518,6 +522,7 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 	int ipv6_service;
 	int wan6_unit;
 #endif
+	char buf[32];
 
 	if (!pmtl || !config_file)
 		return -1;
@@ -803,7 +808,13 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 
 		// TODO: Set VPN server
 
+		snprintf(buf, sizeof(buf), "dnsmasq-%d.conf", pmtl->sdn_t.sdn_idx);
+		append_custom_config(buf, fp);
 		fclose(fp);
+
+		snprintf(buf, sizeof(buf), "%d", pmtl->sdn_t.sdn_idx);
+		run_custom_script("dnsmasq-sdn.postconf", 120, config_file, buf);
+
 		return 0;
 	}
 	return -1;

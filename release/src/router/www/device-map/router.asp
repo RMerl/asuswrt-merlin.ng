@@ -19,7 +19,7 @@
 	<script src="/validator.js" type="text/javascript"></script>
 	<script src="/help.js" type="text/javascript"></script>
 	<script src="../switcherplugin/jquery.iphone-switch.js"></script>
-	<script src="../js/qrcode.min.js"></script>
+	<script src="../js/qrcode/jquery.qrcode.min.js"></script>
 </head>
 <body>
 <style>
@@ -676,7 +676,7 @@ function genElement(){
 		// SSID
 		code += '<div class="info-block">';
 		code += '<div class="info-title"><#QIS_finish_wireless_item1#></div>';
-		code += '<div><input type="text" class="input-size-25" id="wl'+ unit +'_ssid" oninput="updateVariable(this.id, value, false)" maxlength="33" autocomplete="off" autocorrect="off" autocapitalize="off"></div>';
+		code += '<div style="display:flex; align:center;"><input type="text" class="input-size-25" id="wl'+ unit +'_ssid" oninput="updateVariable(this.id, value, false)" maxlength="33" autocomplete="off" autocorrect="off" autocapitalize="off">';
 		code += '</div>';
 
 		// Authentication method
@@ -746,7 +746,7 @@ function genElement(){
 			code += '</div>';
 		}
 
-		code += '<div id="qrcodepanel' + unit + '" class="qrcodepanel" style="display:none; width:180px; margin-top:-200px; margin-left:0px;">';
+		code += '<div id="qrcodepanel' + unit + '" class="qrcodepanel" style="display:none; width:200px; margin-top:-200px; margin-left:0px;">';
 		code += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
 		code += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
 		code += '<div class="qrcodepanelpad" id="qr' + unit +'"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(' + unit + ');"></div></div>';
@@ -1464,37 +1464,36 @@ function gotoSiteSurvey(){
 }
 
 function genQRCodes(){
+	function escape_string(_str){
+		_str = _str.replace(/\\/g, "\\\\");
+		_str = _str.replace(/\"/g, "\\\"");
+		_str = _str.replace(/;/g, "\\;");
+		_str = _str.replace(/:/g, "\\:");
+		_str = _str.replace(/,/g, "\\,");
+		return _str;
+	}
+	function encode_utf8(s){
+		return unescape(encodeURIComponent(s));
+	}
+
 	for(var i=0; i<wlInterface.length; i++){
 		var unit = wlInterface[i][2];
 
-		var ssid = "S:" + variable['wl'+ unit + '_ssid'].replace(/[\\":;,]/g, '\\$&') + ";";
-
-		var _authMode = variable['wl'+ unit +'_auth_mode_x'];
-		if(_authMode == 'psk' || _authMode == 'psk2' || _authMode == 'sae' || _authMode == 'pskpsk2' || _authMode == 'psk2sae'){
-			var type = "T:WPA;";
-			var pass = "P:" + variable['wl'+ unit + '_wpa_psk'].replace(/[\\":;,]/g, '\\$&') + ";";
-		} else if (_authMode == "open") {
-			var type = "T:;";
-			var pass = "P:;";
-		} else if (_authMode == "shared") {
-			var type = "T:WEP;";
-			var pass = "P:" + variable['wl'+ unit +'_key'+ variable['wl'+ unit +'_key']] + ";";
-		} else {
-			ssid = "";	// Unsupported
+		var _authMode = variable['wl'+ unit +'_auth_mode_x']
+		if (_authMode == "shared") {
+			continue;	// WEP not supported
 		}
 
+		var qrstring = "WIFI:";
+		qrstring += "S:" + encode_utf8(escape_string(variable['wl'+ unit + '_ssid'])) + ";";
+		qrstring += "T:" + (_authMode == "open" ? "nopass" : "WPA") + ";";
+		qrstring += "P:" + (_authMode == "open" ? "" : escape_string(variable['wl'+ unit + '_wpa_psk'])) + ";";
 		if (variable['wl'+ unit +'_closed'] == "1")
-			var hide = "H:true;"
-		else
-			var hide = "";
+			qrstring += "H:true;"
 
-		if (ssid != "") {
+		if (variable['wl'+ unit + '_ssid'] != "") {
 			document.getElementById("showqrdiv" + unit).style.display = "";
-			new QRCode(document.getElementById("qr" + unit),  {
-			        text: 'WIFI:'+ type + ssid + pass + hide + ';',
-			        width: 140,
-			        height: 140,
-			});
+			$('#qr'+unit).qrcode({width: 160,height: 160,text: qrstring});
 		}
 	}
 }

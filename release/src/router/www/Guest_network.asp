@@ -23,7 +23,8 @@
 <script type="text/javascript" src="/popup.js"></script>
 <script type="text/javascript" src="/md5.js"></script>
 <script type="text/javascript" src="/validator.js"></script>
-<script src="js/qrcode.min.js"></script>
+<script src="/js/qrcode/jquery.qrcode.min.js"></script>
+
 <style>
 </style>
 <script>
@@ -479,7 +480,7 @@ function gen_gntable_tr(unit, gn_array, slicesb){
 					if(captive_portal_used_wl_array["wl" + unit_subunit] == undefined) {
 						htmlcode += '<tr><td align="center" class="gninfo_table_bottom"></td></tr>';
 
-						htmlcode += '<tfoot><div id="qrcodepanel' + unit + subunit + '" class="qrcodepanel" style="display:none; width:180px; margin-left:15px;">';
+						htmlcode += '<tfoot><div id="qrcodepanel' + unit + subunit + '" class="qrcodepanel" style="display:none; width:200px; margin-left:15px;">';
 						htmlcode += '<div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>';
 						htmlcode += '<div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>';
 						htmlcode += '<div class="qrcodepanelpad" id="qr' + unit + subunit + '"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="hide_qr_code(\'' + unit + subunit + '\');"></div></div>';
@@ -1569,6 +1570,18 @@ function genQRCodes(gn_array, unit){
 		unit = (unit+3)%4;
 	}
 
+	function escape_string(_str){
+		_str = _str.replace(/\\/g, "\\\\");
+		_str = _str.replace(/\"/g, "\\\"");
+		_str = _str.replace(/;/g, "\\;");
+		_str = _str.replace(/:/g, "\\:");
+		_str = _str.replace(/,/g, "\\,");
+		return _str;
+	}
+	function encode_utf8(s){
+		return unescape(encodeURIComponent(s));
+	}
+
 	for(var i=0; i < gn_array.length; i++){
 		var gn_entry = gn_array[i];
 
@@ -1576,36 +1589,27 @@ function genQRCodes(gn_array, unit){
 			continue;
 
 		subunit = i + 1;
-		var ssid = "S:" + decodeURIComponent(gn_entry[1]).replace(/[\\":;,]/g, '\\$&') + ";";
 
 		var _authMode = gn_entry[2];
-		if(_authMode == 'psk' || _authMode == 'psk2' || _authMode == 'sae' || _authMode == 'pskpsk2' || _authMode == 'psk2sae'){
-			var type = "T:WPA;";
-			var pass = "P:" + decodeURIComponent(gn_entry[4]).replace(/[\\":;,]/g, '\\$&') + ";";
-		} else if (_authMode == "open" && gn_entry[5] == "0") {
-			var type = "T:;";
-			var pass = "P:;";
-		} else if (_authMode == "shared" || _authMode == "open") {
-			var type = "T:WEP;";
-			var keyindex = parseInt(gn_entry[6]) + 6;
-			var pass = "P:" + gn_entry[keyindex] + ";";
-		} else {
-			ssid = "";	// Unsupported
+		if (_authMode == "shared") {
+			continue;	// WEP not supported
 		}
+
+		var qrstring = "WIFI:";
+		qrstring += "S:" + encode_utf8(escape_string(gn_entry[1])) + ";";
+		qrstring += "T:" + (_authMode == "open" ? "nopass" : "WPA") + ";";
+		qrstring += "P:" + (_authMode == "open" ? "" : escape_string(gn_entry[4])) + ";";
 
 		if (gn_entry[22] == "1")
 			var hide = "H:true;"
 		else
 			var hide = "";
 
-		if (ssid != "") {
+		if (gn_entry[1] != "") {
 			document.getElementById("showqrdiv" + unit + subunit).style.display = "";
-			new QRCode(document.getElementById("qr" + unit + subunit),  {
-			        text: 'WIFI:'+ type + ssid + pass + hide + ';',
-			        width: 140,
-			        height: 140,
-			});
+			$('#qr' + unit + subunit).qrcode({width: 160,height: 160,text: qrstring});
 		}
+
 	}
 }
 

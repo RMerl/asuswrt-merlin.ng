@@ -144,7 +144,8 @@ else
 	rm -rf $(INSTALLDIR)/www/images/New_ui/SDN/white_theme/Notification/wifi_mlo_lock.svg
 endif
 else
-	rm -rf $(INSTALLDIR)/www/js/qrcode
+#	Used by router.asp and old Guest Network page, keep it
+#	rm -rf $(INSTALLDIR)/www/js/qrcode
 endif
 
 	rm -rf $(INSTALLDIR)/www/images/vpn_illustration.png

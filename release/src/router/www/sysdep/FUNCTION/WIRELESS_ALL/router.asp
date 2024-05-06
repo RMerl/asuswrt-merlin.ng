@@ -17,6 +17,7 @@
         <script src="../js/jquery.js"></script>
         <script src="../js/httpApi.js" t></script>
         <script src="../state.js"></script>
+        <script src="../js/qrcode/jquery.qrcode.min.js"></script>
 
         <!-- <script src="../js/device.js"></script> -->
         <script src="/validator.js"></script>
@@ -40,6 +41,17 @@
 
             .customized_scoreBar {
                 background-size: 300%;
+            }
+
+            .qrcode_btn{
+                 float: right;
+                 width: 30px;
+                 height: 30px;
+                 cursor: pointer;
+                 background-position: center;
+                 background-repeat: repeat;
+                 background-size: cover;
+                 background-image: url(/images/New_ui/SDN/dark_theme/Action/qr_code.svg);
             }
         </style>
         <script>
@@ -208,10 +220,59 @@
                     <div class="info-block">
                         <div class="info-title"><#QIS_finish_wireless_item1#></div>
                         <div>
-                            <input id="${prefix}_ssid" type="text" class="input-size-25" maxlength="32" value="${ssidValue}" onkeypress="validator.isString(this, event)" autocomplete="off" autocapitalize="off" />
+                            <div style="display:flex; align:center;">
+                                <input id="${prefix}_ssid" type="text" class="input-size-25" maxlength="32" value="${ssidValue}" onkeypress="validator.isString(this, event)" autocomplete="off" autocapitalize="off" />
+                                <div id="${prefix}_showqrdiv" class="qrcode_btn" onclick="ShowQRCode('${prefix}');"></div>
+                            </div>
+                            <div id="${prefix}_qrcodepanel" class="qrcodepanel" style="display:none; width:180px; margin-top:-200px; margin-left:0px;">
+                            <div style="padding:10px;"><div style="text-align:center;">Scan to connect:</div>
+                            <div style="margin:10px 0 10px 0px;height:2px;width:100%;padding:0;" class="splitLine"></div>
+                            <div class="qrcodepanelpad" id="${prefix}_qr"></div><input style="margin-top:10px; width:100%;" type="button" class="button_gen" value="Close" onclick="HideQRCode('${prefix}');"></div></div>
                         </div>
                     </div>
                 `;
+            }
+
+            function GenerateQRCode(prefix){
+
+                function escape_string(_str){
+                    _str = _str.replace(/\\/g, "\\\\");
+                    _str = _str.replace(/\"/g, "\\\"");
+                    _str = _str.replace(/;/g, "\\;");
+                    _str = _str.replace(/:/g, "\\:");
+                    _str = _str.replace(/,/g, "\\,");
+                    return _str;
+                }
+                function encode_utf8(s){
+                    return unescape(encodeURIComponent(s));
+                }
+
+                let { wlBandSeq, smartConnect } = systemManipulable;
+                let { smartConnectReferenceIndex } = smartConnect;
+                let prefixNvram = prefix === "smart_connect" ? smartConnectReferenceIndex : prefix;
+                let { ssidValue, authMethod, wpaKeyValue, hideSSIDValue } = wlBandSeq[prefixNvram];
+
+                if (authMethod == "shared")
+                    return;
+
+                var qrstring = "WIFI:";
+                qrstring += "S:" + encode_utf8(escape_string(ssidValue)) + ";";
+                qrstring += "T:" + (authMethod == "open" ? "nopass" : "WPA") + ";";
+                qrstring += "P:" + (authMethod == "open" ? "" : escape_string(wpaKeyValue)) + ";";
+                if (hideSSIDValue == "1")
+                        qrstring += "H:true;"
+
+                $('#'+prefix+'_qr').qrcode({width: 140,height: 140,text: qrstring});
+            }
+
+            function ShowQRCode(prefix) {
+                $("#"+prefix+"_qr").empty();
+                GenerateQRCode(prefix);
+                $("#"+prefix+"_qrcodepanel").fadeIn(300);
+            }
+
+            function HideQRCode(prefix) {
+                $("#"+prefix+"_qrcodepanel").fadeOut(300);
             }
 
             function generateAuthenticationMethod(prefix) {

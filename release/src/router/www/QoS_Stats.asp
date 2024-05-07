@@ -115,38 +115,38 @@ const maxrendered = 750;
 var color = ["#B3645B","#B98F53","#C6B36A","#849E75","#2B6692","#7C637A","#4C8FC0", "#6C604F"];
 
 var pieOptions = {
-        segmentShowStroke : false,
-        segmentStrokeColor : "#000",
-        animationEasing : "easeOutQuart",
-        animationSteps : 100,
-        animateScale : true,
-	legend : { display : false },
-	tooltips: {
-		callbacks: {
-			title: function (tooltipItem, data) { return data.labels[tooltipItem[0].index]; },
-			label: function (tooltipItem, data) {
-				var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-				var orivalue = value;
-				var total = eval(data.datasets[tooltipItem.datasetIndex].data.join("+"));
-				var unit = " bytes";
-				if (value > 1024) {
-					value = value / 1024;
-					unit = " KB";
+	segmentShowStroke: false,
+	segmentStrokeColor: "#000",
+	animationEasing: "easeOutQuart",
+	animationSteps: 100,
+	animateScale: true,
+	plugins: {
+		legend: { display : false },
+		tooltip: {
+			callbacks: {
+				title: function (context) { return context[0].label; },
+				label: function (context) {
+					var value = context.parsed;
+					var orivalue = value;
+					var total = eval(context.dataset.data.join("+"));
+					var unit = " bytes";
+					if (value > 1024) {
+						value = value / 1024;
+						unit = " KB";
+					}
+					if (value > 1024) {
+						value = value / 1024;
+						unit = " MB";
+					}
+					if (value > 1024) {
+						value = value / 1024;
+						unit = " GB";
+					}
+					return value.toFixed(2) + unit + ' ( ' + parseFloat(orivalue * 100 / total).toFixed(2) + '% )';
 				}
-				if (value > 1024) {
-					value = value / 1024;
-					unit = " MB";
-				}
-				if (value > 1024) {
-					value = value / 1024;
-					unit = " GB";
-				}
-				return value.toFixed(2) + unit + ' ( ' + parseFloat(orivalue * 100 / total).toFixed(2) + '% )';
-		              
-			},
+			}
 		}
-	},
-
+	}
 }
 
 function comma(n){

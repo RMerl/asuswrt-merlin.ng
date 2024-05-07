@@ -47,57 +47,64 @@ var wifi6data = [];
 function draw_mem_charts(){
 
 /* Memory */
-	if (memchartPie != undefined) {
-		memchartPie.update();
-		return;
-	}
 	var memchart = document.getElementById("memchartId").getContext("2d");
 	var memdata = [mem_stats_arr[8], mem_stats_arr[9] - mem_stats_arr[1], mem_stats_arr[1]];
 
-	memchartPie = new Chart(memchart, {
-		type: 'doughnut',
-		data: {
-			labels: ["Used", "Reclaimable", "Free"],
-			datasets: [{
-				label: "Memory",
-				data: memdata,
-				backgroundColor: pieColor,
-	                        hoverBackgroundColor: pieColor,
-	                        borderColor: "#444",
-		                borderWidth: "1"
-			}],
-		},
-		options: {
-			responsive: false,
-			animation: false,
-			segmentShowStroke : false,
-			segmentStrokeColor : "#000",
-			legend: {
-				display: true,
-				position: 'right',
-				labels: {fontColor: '#FFF'}
+	if (memchartPie != undefined) {
+		memchartPie.data.datasets[0].data = memdata;
+		memchartPie.update();
+	} else {
+		memchartPie = new Chart(memchart, {
+			type: 'doughnut',
+			data: {
+				labels: ["Used", "Reclaimable", "Free"],
+				datasets: [{
+					label: "Memory",
+					data: memdata,
+					backgroundColor: pieColor,
+					hoverBackgroundColor: pieColor,
+					borderColor: "#444",
+					borderWidth: "1"
+				}],
 			},
-			tooltips: {
-				callbacks: {
-					label: function (tooltipItem, data) {
-						var label = data.labels[tooltipItem.index];
-						var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-						return label + ": " + parseFloat(value).toFixed(2) + " MB";
+			options: {
+				responsive: false,
+				animation: false,
+				segmentShowStroke : false,
+				segmentStrokeColor : "#000",
+				plugins: {
+					legend: {
+						display: true,
+						position: 'right',
+						labels: {color: '#FFF'}
+					},
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								var label = context.label || '';
+								var value = context.parsed;
+								return label + ": " + parseInt(value) + " MB";
+							}
+						}
 					}
 				}
 			}
-		}
-	});
+		});
+	}
 
 /* SWAP */
-	if (swapchartPie != undefined) {
-		swapchartPie.update();
-		return;
-	}
 	var swapchart = document.getElementById("swapchartId").getContext("2d");
 	var swapdata = [mem_stats_arr[4], mem_stats_arr[5]-mem_stats_arr[4]];
 
-	if (mem_stats_arr[5] > 0) {
+	if (swapchartPie != undefined) {
+		if (mem_stats_arr[5] == 0) {
+			swapchartPie.destroy();
+			swapchartPie = undefined;
+		} else {
+			swapchartPie.data.datasets[0].data = swapdata;
+			swapchartPie.update();
+		}
+	} else if (mem_stats_arr[5] > 0) {
 		swapchartPie = new Chart(swapchart, {
 			type: 'doughnut',
 			data: {
@@ -116,17 +123,19 @@ function draw_mem_charts(){
 				animation: false,
 				segmentShowStroke : false,
 				segmentStrokeColor : "#000",
-				legend: {
-					display: true,
-					position: 'right',
-					labels: {fontColor: '#FFF'}
-				},
-				tooltips: {
-					callbacks: {
-						label: function (tooltipItem, data) {
-							var label = data.labels[tooltipItem.index];
-							var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-							return label + ": " + parseInt(value) + " MB";
+				plugins: {
+					legend: {
+						display: true,
+						position: 'right',
+						labels: {color: '#FFF'}
+					},
+					tooltip: {
+						callbacks: {
+							label: function(context) {
+								var label = context.label || '';
+								var value = context.parsed;
+								return label + ": " + parseInt(value) + " MB";
+							}
 						}
 					}
 				}
@@ -194,7 +203,8 @@ function draw_temps_charts(){
 		borderColor: "rgba(0, 128, 191, 1)",
 		borderWidth: "2",
 		pointStyle: "line",
-		lineTension: "0"
+		lineTension: "0",
+		fill: { target: "origin"}
 	});
 
 /* 2.4 GHz */
@@ -207,6 +217,7 @@ function draw_temps_charts(){
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
+			fill: { target: "origin"}
 		});
 	}
 
@@ -220,6 +231,7 @@ function draw_temps_charts(){
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
+			fill: { target: "origin"}
 		});
 	}
 /* 5 GHz-2 */
@@ -232,6 +244,7 @@ function draw_temps_charts(){
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
+			fill: { target: "origin"}
 		});
 	}
 
@@ -245,6 +258,7 @@ function draw_temps_charts(){
 			borderWidth: "2",
 			pointStyle: "line",
 			lineTension: "0",
+			fill: {	target: "origin"}
 		});
 	}
 
@@ -256,38 +270,39 @@ function draw_temps_charts(){
 			animation: false,
 			segmentShowStroke : false,
 			segmentStrokeColor : "#000",
-			legend: {
-				display: true,
-				position: "right",
-				labels: {fontColor: "#CCC"}
-			},
-			tooltips: {
-				displayColors: false,
-				bodySpacing: 6,
-				callbacks: {
-					title: function (context) {return "";},
-					label: function (tooltipItem, data) {
-						var label = data.datasets[tooltipItem.datasetIndex].label;
-						var value = data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index];
-						return label + " - " + value + "°C";
+			plugins: {
+				tooltip: {
+					displayColors: false,
+					bodySpacing: 6,
+					callbacks: {
+						title: function (context) {return "";},
+						label: function (context) {
+							var label = context.dataset.label || '';
+							var value = context.parsed.y;
+							return label + " - " + value + "°C";
+						}
 					}
-				}
+				},
+				legend: {
+					display: true,
+					position: "right",
+					labels: {color: "#CCC"}
+				},
 			},
 			scales: {
-				xAxes: [{
+				x: {
 					labels: [0,3,6,9,12,15,18,21,24,27,30,33,36,39,42,45,48,51,54,57],
 					ticks: {
-						fontColor: "#CCC",
-						beginAtZero: true,
-						display: true,
+						color: "#CCC",
 					}
-				}],
-				yAxes: [{
+				},
+				y: {
+					grace: "5%",
 					ticks: {
-						fontColor: "#CCC",
+						color: "#CCC",
 						callback: function(value, index, ticks) {return value + "°C";}
 					}
-				}],
+				},
 			}
 		}
 	});
@@ -707,7 +722,7 @@ function show_wifi_version() {
 						</tr>
 					</thead>
 					<tr>
-						<td colspan="2"><canvas style="background-color:#2f3e44;border-radius:10px;"id="tempchartId" height="200" width="700"></canvas></td>
+						<td colspan="2"><canvas style="background-color:#2f3e44;border-radius:10px;"id="tempchartId" height="250" width="700"></canvas></td>
 					</tr>
 					<tr>
 						<th>Temperatures</th>

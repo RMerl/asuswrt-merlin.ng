@@ -40,7 +40,7 @@ if (typeof(monthly_history) == 'undefined') {
 var barDataUl, barDataDl, barLabels;
 var myBarChart;
 
-Chart.defaults.global.defaultFontColor = "#CCC";
+Chart.defaults.color = "#CCC";
 
 function save()
 {
@@ -182,28 +182,25 @@ function draw_chart(){
 		animationEasing : "easeOutQuart",
 		animationSteps : 100,
 		animateScale : true,
-		tooltips: {
-			callbacks: {
-				title: function (tooltipItem, data) { return data.labels[tooltipItem[0].index]; },
-				label: function (tooltipItem, data) { return comma(data.datasets[tooltipItem.datasetIndex].data[tooltipItem.index].toFixed(2)) + " " + snames[scale]; },
-			}
+		plugins: {
+			tooltip: {
+				callbacks: {
+					label: function (context) { return comma(context.parsed.y.toFixed(2)) + " " + snames[scale]; },
+				}
+			},
 		},
 		scales: {
-			xAxes: [{
-				gridLines: { display: false }
-			}],
-			yAxes: [{
-				gridLines: { color: "#282828" },
-				scaleLabel: {
-					display: true,
-					labelString: snames[scale]
-					},
+			x: {
+				grid: { display: false },
+			},
+			y: {
+				grid: { color: "#282828" },
 				ticks: {
 					callback: function(value, index, values) {
 						return comma(value);
 					}
 				}
-			}]
+			}
 		}
 	};
 

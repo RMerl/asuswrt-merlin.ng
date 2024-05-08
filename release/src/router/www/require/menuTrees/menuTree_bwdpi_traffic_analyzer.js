@@ -871,6 +871,7 @@ define(function(){
 				if(isSupport("wifi7")){
 					retArray.push("cloud_sync.asp");
 					retArray.push("cloud_router_sync.asp");
+					retArray.push("QoS_Stats.asp");
 				}
 
 				/* Operation Mode */

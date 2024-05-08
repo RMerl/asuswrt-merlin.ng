@@ -162,13 +162,13 @@ var cookie = {
 };
 
 var Session = Session || (function(){
- 	var win = window.top || window;
+	var win = window.top || window;
 	try{
 		var store = (win.name ? JSON.parse(win.name) : {});
 		function Save() {
 			win.name = JSON.stringify(store);
 		};
-
+		
 		if (window.addEventListener) window.addEventListener("unload", Save, false);
 		else if (window.attachEvent) window.attachEvent("onunload", Save);
 		else window.onunload = Save;
@@ -428,7 +428,7 @@ var wl_info = {
 			return true;
 		else
 			return false;
-	})(),
+	})(),	
 	band60g_support:(function(){
 		if(band60g_count > 0)
 			return true;
@@ -442,14 +442,14 @@ var wl_info = {
 	band60g_total:band60g_count,
 
 	wl_if_total:(function(){
-		var count = 0;
-		for (var idx in wl_nband_array) {
-			if (wl_nband_array.hasOwnProperty(idx)) {
-				if(wl_nband_array[idx] != "")
-					count++;
+			var count = 0;
+			for (var idx in wl_nband_array) {
+				if (wl_nband_array.hasOwnProperty(idx)) {
+					if(wl_nband_array[idx] != "")
+						count++;
+				}
 			}
-		}
-		return count;
+			return count;
 	})()
 };
 
@@ -1034,7 +1034,7 @@ var radio_all_disabled = (function(){
 	 && (wlan2_radio_flag == '' || wlan2_radio_flag == '0')){
 		return true;
 	 }
-
+	
 	 return false;
 })();
 var block_all_device = (function(){
@@ -1226,8 +1226,7 @@ function show_banner(L3){// L3 = The third Level of Menu
 		banner_code += '</div>';
 	}
 
-
- 	if(rog_support && current_url.indexOf("GameDashboard") != -1){
+	if(rog_support && current_url.indexOf("GameDashboard") != -1){
  		banner_code +='<td valign="center" class="titledown" width="auto" style="visibility: hidden">';
  	}
  	else{
@@ -1993,7 +1992,6 @@ function show_footer(){
 		var location_href = '/Advanced_Feedback.asp?origPage=' + header_info[0].current_page;
 		footer_code += '&nbsp|&nbsp<a id="fb_link" href="'+location_href+'" target="_self" style="font-weight: bolder;text-decoration:underline;cursor:pointer;"><#menu_feedback#></a>';
 	}
-	
 
 	//APP Link
 	if(app_support){
@@ -2009,7 +2007,7 @@ function show_footer(){
 		footer_code +='</div>';
 		footer_code +='<div style="display:table-cell;">';
 		footer_code +='<div style="padding:5px 0 5px 15px;font-size:22px;">ASUS Router</div>';
-		footer_code +='<div style="padding:5px 0 5px 15px;font-size:14px;color:#BDBDBD">ASUS Router is a mobile app for managing your home network.</div>';
+		footer_code +='<div style="padding:5px 0 5px 15px;font-size:14px;color:#BDBDBD"><#APP_asusrouter_desc#></div>';
 		footer_code +='</div>';
 		footer_code +='</div>';
 		//Play Store
@@ -2024,16 +2022,17 @@ function show_footer(){
 		else{
 			footer_code +='<div style="padding-left: 30px;"><a href="'+Android_app_link+'" target="_blank"><div style="width:160px;height:46px;background:url(\'images/googleplay.png\') no-repeat;background-size:100%;margin:auto;"></div></a></div>';
 		}
-		footer_code +='</div>';
+		
+		footer_code +='</div>'; 
 		footer_code +='</div>';
 		//AppStore
 		footer_code +='<div style="padding:20px 10px;">';
 		footer_code +='<div style="display:table-cell;vertical-align:middle;padding-left:10px;">';
-		banner_code +='<div><img src="'+IOS_QR+'" style="width:75px;height:75px;"></div>';
+		footer_code +='<div><img src="'+IOS_QR+'" style="width:75px;height:75px;"></div>';
 		footer_code +='</div>';
 		footer_code +='<div style="display:table-cell;vertical-align:middle;width:100%;text-align:center">';
 		footer_code +='<div style="padding-left: 30px;"><a href="'+IOS_app_link+'" target="_blank"><div style="width:160px;height:46px;background:url(\'images/AppStore.png\') no-repeat;background-size:100%;margin:auto;"></div></a></div>';
-		footer_code +='</div>';	
+		footer_code +='</div>';
 		footer_code +='</div>';
 
 		footer_code +='</div>';
@@ -2203,21 +2202,21 @@ function browser_compatibility(){
 			}
 		}
 		else{
-		$('<div>')
-			.css({"margin-top":"-140px"})
-			.append($container.children())
-			.appendTo($container)
-	}
+			$('<div>')
+				.css({"margin-top":"-140px"})
+				.append($container.children())
+				.appendTo($container)
+		}	
 	}
 	catch(e){
 		var container = document.getElementById('tabMenu').parentNode;
-		var newDiv = document.createElement('div');	
+		var newDiv = document.createElement('div');
 		if(top_banner_hint > 0){
 			var newDiv_marginTop = -110 + ((top_banner_hint - 1) * 20);
 			newDiv.style.marginTop = newDiv_marginTop + "px";
 		}
 		else{
-		newDiv.style.marginTop = "-140px";
+			newDiv.style.marginTop = "-140px";
 		}
 		
 		for(var i=0; i<container.children.length; i++){
@@ -2349,10 +2348,10 @@ function show_top_status(){
 			FWString += '_swisscom';
 		showtext(document.getElementById("firmver"), FWString);
 	}
-	else{
+  	else{
 		showtext(document.getElementById("firmver"), swpjverno + '_' + extendno);
-	}
-
+ 	}
+	
 	// no_op_mode
 	if ((!dsl_support || support_site_modelid=="DSL-AX82U") && !lyra_hide_support){
 
@@ -3464,24 +3463,24 @@ function refreshStatus(xhr){
 				}
 		}	
 		else if(wl_info.band5g_support || wl_info.band6g_support){
-			if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0"){
-					document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
-					document.getElementById("wifi_hw_sw_status").onclick = function(){}
-			}
-			else{
-					document.getElementById("wifi_hw_sw_status").className = "wifihwswstatuson";
-					document.getElementById("wifi_hw_sw_status").onclick = function(){}
-			}
+				if(wlan0_radio_flag == "0" && wlan1_radio_flag == "0"){
+						document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
+						document.getElementById("wifi_hw_sw_status").onclick = function(){}
+				}
+				else{
+						document.getElementById("wifi_hw_sw_status").className = "wifihwswstatuson";
+						document.getElementById("wifi_hw_sw_status").onclick = function(){}
+				}
 		}
 		else{
 				if(wl_info.wlan0_radio_flag == "0"){
-					document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
-					document.getElementById("wifi_hw_sw_status").onclick = function(){}
-			}
-			else{
-					document.getElementById("wifi_hw_sw_status").className = "wifihwswstatuson";
-					document.getElementById("wifi_hw_sw_status").onclick = function(){}
-			}
+						document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff";
+						document.getElementById("wifi_hw_sw_status").onclick = function(){}
+				}
+				else{
+						document.getElementById("wifi_hw_sw_status").className = "wifihwswstatuson";
+						document.getElementById("wifi_hw_sw_status").onclick = function(){}
+				}
 		}
 	}
 	else	// No HW switch - reflect actual radio states
@@ -3511,10 +3510,9 @@ function refreshStatus(xhr){
 			document.getElementById("wifi_hw_sw_status").className = "wifihwswstatusoff"; 
 			document.getElementById("wifi_hw_sw_status").onclick = function(){}
 		}
- 		document.getElementById("wifi_hw_sw_status").onmouseover = function(){overHint(8);}
-		document.getElementById("wifi_hw_sw_status").onmouseout = function(){nd();}
-	}
-
+		document.getElementById("wifi_hw_sw_status").onmouseover = function(){overHint(8);}
+		document.getElementById("wifi_hw_sw_status").onmouseout = function(){nd();}		
+	}	
 	// usb.storage
 	if(usb_support){
 		if(allUsbStatus != allUsbStatusTmp && allUsbStatusTmp != ""){

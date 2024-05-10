@@ -1005,8 +1005,8 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 	snprintf(ipset_name, sizeof(ipset_name), "%s%d", VPNC_IPSET_PREFIX, vpnc_idx);
 	fprintf(fp, "iptables -I OVPNCF -m set --match-set %s dst -i %s -j ACCEPT\n", ipset_name, cconf->if_name);
 	fprintf(fp, "iptables -I OVPNCF -m set --match-set %s src -o %s -j ACCEPT\n", ipset_name, cconf->if_name);
-	fprintf(fp, "iptables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
-	fprintf(fp, "iptables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
+//	fprintf(fp, "iptables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
+//	fprintf(fp, "iptables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
 #endif
 
 #ifdef RTCONFIG_IPV6
@@ -1015,8 +1015,8 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 		fprintf(fp, "ip6tables -I OVPNCF -o %s -j ACCEPT\n", cconf->if_name);
 		fprintf(fp, "ip6tables -I OVPNCI -i %s -j %s\n", cconf->if_name, (cconf->fw ? "DROP" : "ACCEPT"));
 #ifdef RTCONFIG_MULTILAN_CFG
-		fprintf(fp, "ip6tables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
-		fprintf(fp, "ip6tables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
+//		fprintf(fp, "ip6tables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
+//		fprintf(fp, "ip6tables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
 #endif
 
 	}

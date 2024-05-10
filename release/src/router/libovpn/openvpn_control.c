@@ -866,8 +866,8 @@ void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_t
 			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "dst", "-i", ovpn_ifname, "-j", "ACCEPT");
 			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "src", "-o", ovpn_ifname, "-j", "ACCEPT");
 			eval("iptables", "-I", "OVPNCF", "-o", ovpn_ifname, "-p", "tcp", "-m", "tcp", "--tcp-flags", "SYN,RST SYN", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
-			eval("iptables", "-A", "OVPNCF", "-i", ovpn_ifname, "-j", "DROP");
-			eval("iptables", "-A", "OVPNCF", "-o", ovpn_ifname, "-j", "DROP");
+//			eval("iptables", "-A", "OVPNCF", "-i", ovpn_ifname, "-j", "DROP");
+//			eval("iptables", "-A", "OVPNCF", "-o", ovpn_ifname, "-j", "DROP");
 		}
 
 		/// iptables rules

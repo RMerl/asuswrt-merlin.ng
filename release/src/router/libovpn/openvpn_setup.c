@@ -91,7 +91,7 @@ void write_ovpn_dnsmasq_config(FILE* dnsmasq_conf) {
 }
 
 void write_ovpn_server_dnsmasq_config(FILE* dnsmasq_conf) {
-	char prefix[16], varname[32];
+	char prefix[16];
 	int unit;
 
 	// Add interfaces for servers that provide DNS services
@@ -103,7 +103,7 @@ void write_ovpn_server_dnsmasq_config(FILE* dnsmasq_conf) {
 }
 
 void write_ovpn_client_dnsmasq_config(FILE* dnsmasq_conf) {
-        char prefix[16], filename[40], varname[32];
+        char filename[40], varname[32];
         int unit, modeset = 0;
         char *buffer;
 

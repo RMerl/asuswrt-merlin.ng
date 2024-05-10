@@ -850,14 +850,10 @@ void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_t
 	}
 
 	for(unit = 1; unit <= max_unit; unit++) {
-		snprintf(prefix, sizeof(prefix), "%s%d_", (client ? "vpn_client" : "vpn_server"), unit);
-
-// We lack an enable/disable switch for clients.  Check if currently configured instead.
-//		if (!nvram_pf_get_int(prefix, "enable"))
-		snprintf(fpath, sizeof(fpath), "/etc/openvpn/%s%d/", (client ? "client" : "server"), unit);
-		if (!d_exists(fpath))
+		if (!_check_ovpn_enabled(unit, (client ? OVPN_TYPE_CLIENT : OVPN_TYPE_SERVER)))
 			continue;
 
+		snprintf(prefix, sizeof(prefix), "%s%d_", (client ? "vpn_client" : "vpn_server"), unit);
 		strlcpy(tmp, nvram_pf_safe_get(prefix, "if"), sizeof (tmp));
 		snprintf(ovpn_ifname, sizeof(ovpn_ifname), "%s%d", tmp, (client ? OVPN_CLIENT_BASE : OVPN_SERVER_BASE) + unit);
 		if (restart_all_sdn && client) {
@@ -888,7 +884,7 @@ void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_t
 					&& pmtl[i].sdn_t.vpnc_idx
 					&& get_vpnx_by_vpnc_idx(&vpnx, pmtl[i].sdn_t.vpnc_idx)
 					&& vpnx.proto == VPN_PROTO_OVPN
-					&& vpnx.unit == unit) {		// TODO: should unit be offset?
+					&& vpnx.unit == unit) {
 				fp = fopen(fpath, "w");
 				if (fp) {
 					fprintf(fp, "#!/bin/sh\n\n");
@@ -984,9 +980,8 @@ void _update_ovpn_by_sdn_remove(MTLAN_T *pmtl, size_t mtl_sz, wg_type_t client)
 	for(unit = 1; unit <= max_unit; unit++) {
 		snprintf(prefix, sizeof(prefix), "%s%d_", (client ? "vpn_client" : "vpn_server"), unit);
 
-// TODO: Check if ovpn instance is enabled
-//		if (!nvram_pf_get_int(prefix, "enable"))
-//			continue;
+		if (!_check_ovpn_enabled(unit, (client ? OVPN_TYPE_CLIENT : OVPN_TYPE_SERVER)))
+			continue;
 
 		strlcpy(tmp, nvram_pf_safe_get(prefix, "if"), sizeof (tmp));
 		snprintf(ovpn_ifname, sizeof(ovpn_ifname), "%s%d", tmp, unit + (client ? OVPN_CLIENT_BASE : OVPN_SERVER_BASE));
@@ -1094,4 +1089,3 @@ void _ovpn_server_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn
 	}
 }
 #endif
-

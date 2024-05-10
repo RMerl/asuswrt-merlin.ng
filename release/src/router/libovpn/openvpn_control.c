@@ -643,6 +643,9 @@ void ovpn_start_server(int unit) {
 
 void ovpn_stop_client(int unit) {
 	char buffer[64];
+#ifdef RTCONFIG_MULTILAN_CFG
+	int i;
+#endif
 
 	sprintf(buffer, "stop_vpnclient%d", unit);
 	if (getpid() != 1) {
@@ -678,6 +681,22 @@ void ovpn_stop_client(int unit) {
 		if (!eval("sed", "-i", "s/-[AI]/-D/g", buffer))
 			eval(buffer);
 	}
+
+#ifdef RTCONFIG_MULTILAN_CFG
+	for (i = 0; i <=MTLAN_MAXINUM; i++) {
+		snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/fw_sdn%d.sh", unit, i);
+		if(f_exists(buffer)) {
+			if (!eval("sed", "-i", "s/-[AI]/-D/g", buffer))
+				eval(buffer);
+		}
+	}
+// TODO: Is it necessary for OpenVPN?
+	snprintf(buffer, sizeof(buffer), "/etc/openvpn/client%d/fw_sdn_none.sh", unit);
+	if(f_exists(buffer)) {
+		if (!eval("sed", "-i", "s/-I/-D/", buffer))
+			eval(buffer);
+	}
+#endif
 
 	// Delete all files for this client
 	sprintf(buffer, "/etc/openvpn/client%d",unit);

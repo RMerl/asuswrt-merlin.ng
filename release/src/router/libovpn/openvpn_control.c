@@ -859,11 +859,10 @@ void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_t
 		if (restart_all_sdn && client) {
 			vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit);
 			snprintf(ipset_name, sizeof(ipset_name), "%s%d", VPNC_IPSET_PREFIX, vpnc_idx);
+			eval("iptables", "-I", "OVPNCF", "-i", ovpn_ifname, "-j", (nvram_pf_get_int(prefix, "fw") ? "DROP" : "ACCEPT"));
+			eval("iptables", "-I", "OVPNCF", "-o", ovpn_ifname, "-j", "ACCEPT");
 			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "dst", "-i", ovpn_ifname, "-j", "ACCEPT");
 			eval("iptables", "-I", "OVPNCF", "-m", "set", "--match-set", ipset_name, "src", "-o", ovpn_ifname, "-j", "ACCEPT");
-			eval("iptables", "-I", "OVPNCF", "-o", ovpn_ifname, "-p", "tcp", "-m", "tcp", "--tcp-flags", "SYN,RST SYN", "-j", "TCPMSS", "--clamp-mss-to-pmtu");
-//			eval("iptables", "-A", "OVPNCF", "-i", ovpn_ifname, "-j", "DROP");
-//			eval("iptables", "-A", "OVPNCF", "-o", ovpn_ifname, "-j", "DROP");
 		}
 
 		/// iptables rules
@@ -1040,10 +1039,8 @@ void _ovpn_client_nf_bind_sdn(FILE* fp, const char* ovpn_ifname, const char* sdn
 		if (sdn_ifname) {
 			fprintf(fp, "iptables -I OVPNCF -i %s -o %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
 			fprintf(fp, "iptables -I OVPNCF -o %s -i %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
-			fprintf(fp, "iptables -I OVPNCF -o %s -i %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ovpn_ifname, sdn_ifname);
 			fprintf(fp, "ip6tables -I OVPNCF -i %s -o %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
 			fprintf(fp, "ip6tables -I OVPNCF -o %s -i %s -j ACCEPT\n", ovpn_ifname, sdn_ifname);
-			fprintf(fp, "ip6tables -I OVPNCF -o %s -i %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ovpn_ifname, sdn_ifname);
 		}
 	}
 }

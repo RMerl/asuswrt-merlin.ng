@@ -1008,6 +1008,10 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 //	fprintf(fp, "iptables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
 //	fprintf(fp, "iptables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
 #endif
+#ifdef RTCONFIG_HND_ROUTER
+	fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --or 0x1\n", cconf->if_name);
+	fprintf(fp, "iptables -t mangle -I POSTROUTING -o %s -j MARK --or 0x1\n", cconf->if_name);
+#endif
 
 #ifdef RTCONFIG_IPV6
 	if (ipv6_enabled()) {
@@ -1018,7 +1022,10 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 //		fprintf(fp, "ip6tables -A OVPNCF -i %s -j DROP\n", cconf->if_name);
 //		fprintf(fp, "ip6tables -A OVPNCF -o %s -j DROP\n", cconf->if_name);
 #endif
-
+#ifdef RTCONFIG_HND_ROUTER
+		fprintf(fp, "ip6tables -t mangle -I PREROUTING -i %s -j MARK --or 0x1\n", cconf->if_name);
+		fprintf(fp, "ip6tables -t mangle -I POSTROUTING -o %s -j MARK --or 0x1\n", cconf->if_name);
+#endif
 	}
 #endif
 

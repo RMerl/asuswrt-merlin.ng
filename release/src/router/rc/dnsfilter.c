@@ -263,7 +263,7 @@ void dnsfilter_settings(FILE *fp) {
 		{
 			if(get_mtlan(pmtl, &mtl_sz))
 			{
-				for(i = 0; i < mtl_sz; ++i)
+				for(i = 1; i < mtl_sz; ++i)
 				{
 					if(pmtl[i].enable)
 					{
@@ -420,7 +420,7 @@ void dnsfilter6_settings_mangle(FILE *fp) {
 		{
 			if(get_mtlan(pmtl, &mtl_sz))
 			{
-				for(i = 0; i < mtl_sz; ++i)
+				for(i = 1; i < mtl_sz; ++i)
 				{
 					if(pmtl[i].enable)
 					{

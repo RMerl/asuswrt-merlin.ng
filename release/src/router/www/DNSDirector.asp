@@ -62,11 +62,46 @@ var modes_array = [[ "",   "System" ],
 		  [ "6",  "Yandex Family" ]];
 
 
+if (isSupport("mtlancfg")) {
+	sdnRuleTable = [
+		"idx",
+		"sdn_name",
+		"sdn_enable",
+		"vlan_idx",
+		"subnet_idx",
+		"apg_idx",
+		"vpnc_idx",
+		"vpns_idx",
+		"dns_filter_idx",
+		"urlf_idx",
+		"nwf_idx",
+		"cp_idx",
+		"gre_idx",
+		"firewall_idx",
+		"kill_switch",
+		"access_host_service",
+		"wan_idx",
+		"pppoe-relay",
+		"wan6_idx",
+		"createby",
+		"mtwan_idx",
+		"mswan_idx"
+	];
+
+	var sdn_rl = decodeURIComponent(httpApi.nvramCharToAscii(["sdn_rl"]).sdn_rl)
+	var sdn_rl_json = convertRulelistToJson(sdnRuleTable, sdn_rl);
+}
+
+
 function initial(){
 	show_menu();
 	show_footer();
 
 	show_dnsfilter_list();
+	if (isSupport("mtlancfg")) {
+		document.getElementById("sdnTable_Table").style.display = "";
+		show_sdn_list();
+	}
 	showDropdownClientList('setclientmac', 'mac', 'all', 'ClientList_Block_PC', 'pull_arrow', 'all');
 
 	showhide_settings(document.form.dnsfilter_enable_x.value);
@@ -124,7 +159,7 @@ function gen_modeselect(name, value, onchange){
 	        }
 		if (optGroup != "") obj.appendChild(optGroup);
 	} else {
-		code = '<select class="input_option" name="'+name+'" value="'+value+'" onchange="'+onchange+'">';
+		code = '<select class="input_option" id="'+name+'" name="'+name+'" value="'+value+'" onchange="'+onchange+'">';
 		for (i = 0; i < modes_array.length; i++){
 			if (modes_array[i][0] == "") {
 				if (optGroup != "") code += '</optgroup>';
@@ -234,6 +269,10 @@ function applyRule(){
 		split_clientlist(dnsfilter_rule_list.replace(/&#62/g, ">"));
 	else
 		document.form.dnsfilter_rulelist.value = dnsfilter_rule_list.replace(/&#62/g, ">") ;
+
+	if (isSupport("mtlancfg")) {
+		save_sdn_rules();
+	}
 
 	showLoading();
 	document.form.submit();
@@ -364,6 +403,81 @@ function showhide_settings(state) {
 	showhide("mainTable_Block", state);
 }
 
+
+function convertRulelistToJson(attrArray, rulelist) {
+	var rulelist_json = [];
+
+	var each_rule = rulelist.split("<");
+	var convertAtoJ = function(rule_array) {
+		var rule_json = {}
+		$.each(rule_array, function(index, value) {
+			if (index > attrArray.length - 1)
+				attr = "ext" + index;
+			else
+				attr = attrArray[index];
+			rule_json[attr] = rule_array[index];
+		});
+		return rule_json;
+	}
+
+	$.each(each_rule, function(index, value) {
+		if (value != "") {
+			var one_rule_array = value.split(">");
+			var one_rule_json = convertAtoJ(one_rule_array);
+			if (!one_rule_json.error) rulelist_json.push(one_rule_json);
+		}
+	});
+
+	return rulelist_json;
+}
+
+
+function show_sdn_list() {
+	var code;
+	var i = 0;
+
+	code = '<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="list_table" id="clientTable">';
+
+	$.each(sdn_rl_json, function(index, entry){
+		var sdn_name = decodeURIComponent(httpApi.nvramCharToAscii(["apg" + entry.apg_idx + "_ssid"])["apg" + entry.apg_idx + "_ssid"])
+		if (entry.idx != "0") {	// Skip DEFAULT sdn
+			i++;
+			code +='<tr id="row'+i+'">';
+			code +='<td width="50%" title="'+sdn_name+'">'+sdn_name+'</td>';
+			code +='<td width="50%">'+gen_modeselect("sdn_dns_filter_idx"+entry.idx, entry.dns_filter_idx, "")+'</td>';
+			code += '</tr>';
+		}
+	});
+	code += '</table>';
+
+	document.getElementById("sdnTable_Block").innerHTML = code;
+}
+
+
+function save_sdn_rules() {
+	var nv = "";
+	var new_entry;
+
+	$.each(sdn_rl_json, function(index, entry){
+		if (entry.idx != 0) {
+			entry.dns_filter_idx = document.getElementById("sdn_dns_filter_idx"+entry.idx).value;
+		}
+	});
+
+	$.each(sdn_rl_json, function(idx, profile){
+		nv += "<";
+		new_entry = 1;
+		for (var attr in profile) {
+			if (new_entry)
+				new_entry = 0;
+			else
+				nv += ">";
+			nv += profile[attr];
+		}
+	});
+	document.form.sdn_rl.value = nv;
+}
+
 </script>
 </head>
 
@@ -389,6 +503,7 @@ function showhide_settings(state) {
 <input type="hidden" name="dnsfilter_rulelist3" value="">
 <input type="hidden" name="dnsfilter_rulelist4" value="">
 <input type="hidden" name="dnsfilter_rulelist5" value="">
+<input type="hidden" name="sdn_rl" value="<% nvram_get("sdn_rl"); %>">
 
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>
@@ -501,8 +616,21 @@ function showhide_settings(state) {
 					<td width="15%"><input class="add_btn" type="button" onClick="addRow_main(64)" value=""></td>
 				</tr>
 			</table>
+
 			<!-- Client list -->
 			<div id="mainTable_Block"></div>
+
+			<table width="100%" border="1" cellspacing="0" cellpadding="4" align="center" class="FormTable_table" style="margin-top:8px; display:none;" id="sdnTable_Table">
+			<thead><tr><td colspan="2">Guest Network Pro profiles</td></tr></thead>
+				<tr>
+					<th>Network</th>
+					<th>Redirection</th>
+				</tr>
+			</table>
+
+			<!-- SDN list -->
+			<div id="sdnTable_Block"></div>
+
 			<div class="apply_gen">
 				<input name="button" type="button" class="button_gen" onclick="applyRule()" value="<#CTL_apply#>"/>
 			</div>

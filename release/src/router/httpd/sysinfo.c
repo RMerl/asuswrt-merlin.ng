@@ -666,17 +666,16 @@ unsigned int get_phy_temperature(int radio)
 		interface = nvram_safe_get("wl0_ifname");
 	} else if (radio == 1) {
 		interface = nvram_safe_get("wl1_ifname");
-#if defined(RTCONFIG_HAS_5G_2) || defined (RTCONFIG_WIFI6E)
 	} else if (radio == 2) {
 		interface = nvram_safe_get("wl2_ifname");
-#endif
-#if defined(GTAXE16000)
 	} else if (radio == 3) {
 		interface = nvram_safe_get("wl3_ifname");
-#endif
 	} else {
 		return 0;
 	}
+
+	if (*interface == '\0')
+		return 0;
 
 	if ((ret = wl_ioctl(interface, WLC_GET_VAR, buf, sizeof(buf)))) {
 		return 0;

@@ -1,0 +1,13 @@
+about_resource: .
+name: protobuf-c
+version: 1.4.0
+homepage_url: https://github.com/protobuf-c/protobuf-c
+download_url: https://github.com/protobuf-c/protobuf-c/releases/download/v1.4.0/protobuf-c-1.4.0.tar.gz
+licenses:
+    -   key: bsd-simplified
+        name: BSD-2-Clause
+        file: LICENSE
+        spdx_license_key: BSD-2-Clause
+copyright: Copyright (c) 2008-2015, Dave Benson and the protobuf-c authors.
+
+

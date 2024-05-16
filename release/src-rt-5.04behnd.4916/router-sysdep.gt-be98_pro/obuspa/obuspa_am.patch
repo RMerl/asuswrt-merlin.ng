@@ -1,0 +1,43 @@
+diff -Naur obuspa_orig/Makefile.am obuspa_new/Makefile.am 
+--- obuspa_orig/Makefile.am	2022-07-21 10:39:52.442352903 -0700
++++ obuspa_new/Makefile.am	2022-08-03 12:38:38.519543551 -0700
+@@ -40,14 +40,6 @@
+                     src/core/usp_register.c \
+                     src/core/usp_api.c \
+                     src/core/dm_access.c \
+-                    src/core/device_local_agent.c \
+-                    src/core/device_controller.c \
+-                    src/core/device_mtp.c \
+-                    src/core/device_stomp.c \
+-                    src/core/device_subscription.c \
+-                    src/core/device_security.c \
+-                    src/core/device_ctrust.c \
+-                    src/core/device_bulkdata.c \
+                     src/core/device_selftest_example.c \
+                     src/core/device_time.c \
+                     src/core/uptime.c \
+@@ -74,7 +66,6 @@
+                     src/core/iso8601.c \
+                     src/core/text_utils.c \
+                     src/core/os_utils.c \
+-                    src/core/device_request.c \
+                     src/core/dllist.c \
+                     src/libjson/ccan/json/json.c \
+                     src/protobuf-c/usp-msg.pb-c.c \
+@@ -85,7 +76,6 @@
+                     src/core/coap_server.c \
+                     src/core/uri.c \
+                     src/core/mqtt.c \
+-                    src/core/device_mqtt.c \
+                     src/core/wsclient.c \
+                     src/core/wsserver.c \
+                     src/core/usp_record.c \
+@@ -110,8 +100,6 @@
+ obuspa_LDADD = -lm -ldl -lpthread -lrt
+ obuspa_LDADD += $(openssl_LIBS) $(sqlite3_LIBS) $(libcurl_LIBS) $(zlib_LIBS) $(libmosquitto_LIBS) $(libwebsockets_LIBS)
+ 
+-obuspa_LDFLAGS += -Wl,-rpath=/usr/local/lib
+-
+ # Create obuspa directory for usp.db etc on install
+ # This depends on your prefix setting (default localstatedir=/usr/local/var/)
+ # Default OBUSPA_LOCAL_STATE_DIR=/usr/local/var/obuspa

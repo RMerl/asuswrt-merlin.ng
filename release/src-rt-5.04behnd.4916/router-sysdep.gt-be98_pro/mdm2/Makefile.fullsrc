@@ -1,0 +1,22 @@
+OBJS := Device2_Baseline_1.o
+
+CFLAGS += -Werror -Wfatal-errors
+
+
+$(LIB): $(OBJS)
+	$(CC) -shared $(BCM_LD_FLAGS) -Wl,--whole-archive,-soname,$(notdir $@) -o $@ $(OBJS) -Wl,--no-whole-archive
+
+
+# save binary from build subdir (supports multi-arch)
+save_binaries:
+	-cp $(LIB) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+
+# delete source files from source dir (does not know about multi-arch or mdir)
+delete_source:
+	rm -f *.c *.h Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD
+-include $(OBJS:%.o=%.d)

@@ -1,0 +1,282 @@
+diff -Naur obuspa_orig/src/core/msg_handler.c obuspa_new/src/core/msg_handler.c
+--- obuspa_orig/src/core/msg_handler.c	2022-10-31 11:07:04.642937412 -0700
++++ obuspa_new/src/core/msg_handler.c	2022-11-01 13:32:53.227365715 -0700
+@@ -118,7 +118,11 @@
+ int HandleUspMessage(Usp__Msg *usp, char *controller_endpoint, mtp_reply_to_t *mrt);
+ int ValidateUspRecord(UspRecord__Record *rec, mtp_reply_to_t *mrt);
+ char *MtpSendItemToString(mtp_send_item_t *msi);
++#ifndef BDK_USP
+ void CacheControllerRoleForCurMsg(char *endpoint_id, ctrust_role_t role, mtp_protocol_t protocol);
++#else
++int CacheControllerRoleForCurMsg(char *endpoint_id, ctrust_role_t role, mtp_protocol_t protocol);
++#endif
+ int QueueUspNoSessionRecord(usp_send_item_t *usi, char *endpoint_id, char *usp_msg_id, mtp_reply_to_t *mrt, time_t expiry_time);
+ 
+ /*********************************************************************//**
+@@ -227,7 +231,15 @@
+     }
+ 
+     // Set the role that the controller should use when handling this message
++#ifndef BDK_USP
+     CacheControllerRoleForCurMsg(controller_endpoint, role, mrt->protocol);
++#else
++    err = CacheControllerRoleForCurMsg(controller_endpoint, role, mrt->protocol);
++    if (err != USP_ERR_OK)
++    {
++        goto exit;
++    }
++#endif
+ 
+     // Print USP message in human readable form
+     PROTO_TRACE_ProtobufMessage(&usp->base);
+@@ -905,9 +917,17 @@
+ ** \return  None - if the controller is not recognised, then it will be granted an appropriately low set of permissions
+ **
+ **************************************************************************/
++#ifndef BDK_USP
+ void CacheControllerRoleForCurMsg(char *endpoint_id, ctrust_role_t role, mtp_protocol_t protocol)
++#else
++int CacheControllerRoleForCurMsg(char *endpoint_id, ctrust_role_t role, mtp_protocol_t protocol)
++#endif
+ {
++#ifndef BDK_USP
+     int err;
++#else
++    int err = USP_ERR_OK;
++#endif
+ 
+     cur_msg_controller_info.endpoint_id = endpoint_id;
+ 
+@@ -918,7 +938,11 @@
+         // If this is an unknown controller, then grant it a limited set of permissions
+         cur_msg_combined_role.inherited = kCTrustRole_Untrusted;
+         cur_msg_combined_role.assigned = INVALID_ROLE;
++#ifndef BDK_USP
+         return;
++#else
++        return USP_ERR_OK;
++#endif
+     }
+ 
+ 
+@@ -928,7 +952,25 @@
+         case kMtpProtocol_STOMP:
+             // If the message was received over STOMP, then the inherited role will have been saved in DEVICE_CONTROLLER
+             // when the STOMP handshake completed and will already equal the role passed with the USP message
++#ifndef BDK_USP
+             USP_ASSERT(cur_msg_combined_role.inherited == role);
++#else
++            // usp_conformance_2_9 with STOMPS connection:
++            // The primary controller uses the controller certificate
++            // for connection to add secondary STOMPS connection and secondary controler.
++            // Then secondary controller uses secondary STOMPS connection that
++            // uses the same controller certificate to send message to agent.
++            // Message gets here with role as kCTrustRole_FullAccess. But since
++            // secondary controller does not have certificate info with its
++            // endpoint ID as Alt Name in Device.LocalAgent.Certifcate table,
++            // its inherited role is kCTrustRole_Untrusted.
++            if (role != ROLE_UNKNOWN && cur_msg_combined_role.inherited != role)
++            {
++                USP_ERR_SetMessage("%s: Security breach - current role %d is different with inherited role %d",
++                __FUNCTION__, role, cur_msg_combined_role.inherited);
++                err = USP_ERR_SECURE_SESS_REQUIRED;
++            }
++#endif
+             break;
+ #endif
+ 
+@@ -936,14 +978,22 @@
+         case kMtpProtocol_CoAP:
+             // If the message was received over CoAP, then the inherited role won't have been saved in DEVICE_CONTROLLER,
+             // so override with the role that was passed with the USP message
++#ifndef BDK_USP
+             USP_ASSERT(cur_msg_combined_role.inherited == ROLE_DEFAULT);
++#endif
+             cur_msg_combined_role.inherited = role;
+             break;
+ #endif
+ 
+ #ifdef ENABLE_MQTT
+         case kMtpProtocol_MQTT:
++            // In MQTT, default role is ROLE_DEFAULT (kCTrustRole_FullAccess)
++            // When AddCertificate command is used to add the first certificate,
++            // cur_msg_combined_role.inherited is set to kCTrustRole_Untrusted
++            // and make USP_ASSERT be occurred
++#ifndef BDK_USP
+             USP_ASSERT(cur_msg_combined_role.inherited == role);
++#endif
+             break;
+ #endif
+ 
+@@ -951,7 +1001,9 @@
+         case kMtpProtocol_WebSockets:
+             // If the message was received over WebSockets, then the inherited role won't have been saved in DEVICE_CONTROLLER,
+             // so override with the role that was passed with the USP message
++#ifndef BDK_USP
+             USP_ASSERT(cur_msg_combined_role.inherited == ROLE_DEFAULT);
++#endif
+             cur_msg_combined_role.inherited = role;
+             break;
+ #endif
+@@ -959,6 +1011,10 @@
+             TERMINATE_BAD_CASE(protocol);
+             break;
+     }
++
++#ifdef BDK_USP
++    return err;
++#endif
+ }
+ 
+ /*********************************************************************//**
+diff -Naur obuspa_orig/src/core/handle_delete.c obuspa_new/src/core/handle_delete.c
+--- obuspa_orig/src/core/handle_delete.c	2022-09-06 18:37:54.000000000 -0700
++++ obuspa_new/src/core/handle_delete.c	2022-09-12 10:35:44.676827125 -0700
+@@ -107,6 +107,10 @@
+         goto exit;
+     }
+ 
++#ifdef BDK_USP
++    err = USP_ERR_OK;
++    exp_path = NULL;
++#endif
+     // Start a transaction here, if allow_partial is at the global level
+     if (del->allow_partial == false)
+     {
+@@ -117,14 +121,59 @@
+             resp = ERROR_RESP_CreateSingle(usp->header->msg_id, err, resp, NULL);
+             goto exit;
+         }
++
++#ifdef BDK_USP
++        exp_path = NULL;
++        // validate over all paths in the message
++        for (i=0; i < del->n_obj_paths; i++)
++        {
++            unsigned short permission_bitmask;
++            combined_role_t combined_role;
++
++            MSG_HANDLER_GetMsgRole(&combined_role);
++            exp_path = del->obj_paths[i];
++            err = DATA_MODEL_GetPermissions(exp_path, &combined_role,
++                                            &permission_bitmask);
++            /* found an invalid object path or a delete permission error */
++            if ((err == USP_ERR_INVALID_PATH) ||
++                !(permission_bitmask & PERMIT_DEL))
++            {
++                break;
++            }
++        }
++#endif
+     }
+ 
+     // Iterate over all paths in the message
+     for (i=0; i < del->n_obj_paths; i++)
+     {
++#ifdef BDK_USP
++        /*
++         * The workaround when allow_partial is false, we loop through all the
++         * requested paths and check for an erroneous path. If there is an
++         * erroneous path (USP_ERR_INVALID_PATH found), we trigger an error by 
++         * calling DeleteExpressionObjects(erroneous path) first. When an error 
++         * occurs, the operation exits and send ERROR message type to the 
++         * controller. This will avoid deleting the valid object since we 
++         * cannot undo the delete in the case an error occurs later.
++         */
++        if (err == USP_ERR_INVALID_PATH)
++        {
++            err = DeleteExpressionObjects(resp->body->response->delete_resp,
++                                          exp_path, del->allow_partial);;
++        }
++        else
++        {
++            // Delete the specified path
++            exp_path = del->obj_paths[i];
++            err = DeleteExpressionObjects(resp->body->response->delete_resp,
++                                          exp_path, del->allow_partial);
++        }
++#else
+         // Delete the specified path
+         exp_path = del->obj_paths[i];
+         err = DeleteExpressionObjects(resp->body->response->delete_resp, exp_path, del->allow_partial);
++#endif
+ 
+         // If allow_partial is at the global level, and an error occurred, then fail this
+         if ((del->allow_partial == false) && (err != USP_ERR_OK))
+diff -Naur obuspa_orig/src/core/handle_get.c obuspa_new/src/core/handle_get.c
+--- obuspa_orig/src/core/handle_get.c	2022-10-31 11:07:04.642937412 -0700
++++ obuspa_new/src/core/handle_get.c	2022-10-31 15:28:32.895517067 -0700
+@@ -76,6 +76,15 @@
+ Usp__GetResp__ResolvedPathResult__ResultParamsEntry *
+ AddResolvedPathRes_ParamsEntry(Usp__GetResp__ResolvedPathResult *resolved_path_res, char *param_name, char *value);
+ 
++#ifdef BDK_USP
++#include <sys/unistd.h>
++
++#define DATAELM_HOLD_FILE "/var/hold_dataelm"
++
++#define ROOT_FULL_PATH "Device."
++#define WIFI_FULL_PATH "Device.WiFi."
++#endif
++
+ /*********************************************************************//**
+ **
+ ** MSG_HANDLER_HandleGet
+@@ -99,6 +108,9 @@
+     int depth;
+     group_get_vector_t ggv;
+     get_expr_info_t *get_expr_info;
++#ifdef BDK_USP
++    int disableWifiDataUpdate = 0;
++#endif
+ 
+     // Exit if message is invalid or failed to parse
+     // This code checks the parsed message enums and pointers for expectations and validity
+@@ -139,6 +151,30 @@
+     GROUP_GET_VECTOR_Init(&ggv);
+     for (i=0; i < num_path_expr; i++)
+     {
++#ifdef BDK_USP
++        /*
++         * This is a workaround to avoid the WiFi Service Element instance
++         * mismatch between the refresh of instance and the get operation of
++         * these instances.
++         * For example, obuspa calls the vendor code to refresh instance of wifi
++         * an object, and gets instances 1, 2 and 3. obuspa then issues get
++         * parameter values of instances 1, 2, 3 from the vendor. However, in
++         * between the refresh and the get operations, wifi data element daemon
++         * could scan the network and update the wifi object instances. To avoid
++         * this, a file is written for wifi data element daemon to read so it
++         * won't update the object instances until it's clear to do so.
++         */
++        if ((disableWifiDataUpdate == 0) &&
++            (!strcmp(path_exprs[i], ROOT_FULL_PATH) ||
++             !strcmp(path_exprs[i], WIFI_FULL_PATH)))
++        {
++            char cmd[128]={0};
++
++            snprintf(cmd, sizeof(cmd), "echo 1 > %s", DATAELM_HOLD_FILE);
++            system(cmd);
++            disableWifiDataUpdate = 1;
++        }
++#endif
+         ExpandGetPathExpression(i, path_exprs[i], depth, &get_expr_info[i], &ggv);
+     }
+ 
+@@ -151,6 +187,16 @@
+         FormPathExprResponse(i, path_exprs[i], &get_expr_info[i], &ggv, resp);
+     }
+ 
++#ifdef BDK_USP
++    if (disableWifiDataUpdate != 0)
++    {
++        /*
++         * remove the file, wifi data element daemon is cleared to update
++         * scanned result to the vendor wifi data model.
++         */
++        unlink(DATAELM_HOLD_FILE);
++    }
++#endif
+     GROUP_GET_VECTOR_Destroy(&ggv);
+ 
+     // Clean up get_expr_info vector

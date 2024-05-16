@@ -1,0 +1,499 @@
+diff -Naur obuspa_orig/src/core/mqtt.c obuspa_new/src/core/mqtt.c
+--- obuspa_orig/src/core/mqtt.c	2023-03-28 11:22:54.236037740 -0700
++++ obuspa_new/src/core/mqtt.c	2023-04-05 14:36:49.639434678 -0700
+@@ -63,6 +63,9 @@
+ #ifdef ENABLE_MQTT
+ 
+ #include <mosquitto.h>
++#ifdef BDK_USP
++#include "mqtt_protocol.h"   // for MQTT_PROP_SERVER_KEEP_ALIVE
++#endif
+ 
+ // Defines for MQTT Property Values
+ #define PUBLISH 0x30
+@@ -85,6 +88,10 @@
+     kMqttFailure_Connect,
+     kMqttFailure_ReadWrite,
+     kMqttFailure_Misconfigured,
++#ifdef BDK_USP
++    kMqttFailure_DnsLookup,
++    kMqttFailure_ForceDisconnect,
++#endif
+     kMqttFailure_OtherError,
+ } mqtt_failure_t;
+ 
+@@ -230,6 +237,16 @@
+ void HandleMqttReconnectAfterDisconnect(mqtt_client_t *client);
+ void HandleMqttDisconnect(mqtt_client_t *client);
+ 
++#ifdef BDK_USP
++static void setMqttClientStatus(const mqtt_client_t *client);
++static void setMqttSubscriptionStatus(const mqtt_client_t *client, const mqtt_subscription_t *sub);
++extern int DEVICE_MTP_SetAgentMqttResponseTopic(int instance, const char *topic);
++extern int DEVICE_MQTT_CLIENT_SetClientId(int instance, const char *id);
++extern int DEVICE_MQTT_CLIENT_SetStatus(int instance, const char *status);
++extern int DEVICE_MQTT_SUBSCRIPTION_SetStatus(int instance, int sub_instance, const char *status);
++static int mosq_connect_err = MOSQ_ERR_SUCCESS;
++#endif
++
+ //------------------------------------------------------------------------------------
+ #define DEFINE_MQTT_TrustCertVerifyCallbackIndex(index) \
+ int MQTT_TrustCertVerifyCallback_##index (int preverify_ok, X509_STORE_CTX *x509_ctx) \
+@@ -628,7 +645,22 @@
+     // Make sure we use the same instance
+     client->next_params.instance = client->conn_params.instance;
+ 
++#ifdef BDK_USP
++    // usp_conformance_11_16: set schedule_reconnect to kScheduledAction_Activated
++    // instead of waiting for MQTT_ActivateScheduledActions()
++    // to change it since MQTT_ScheduleReconnect() is called by
++    // DEVICE_MQTT_CLIENT_ConfigChange() AFTER MQTT_ActivateScheduledActions()
++    // is called by MTP_EXEC_ActivateScheduledActions() when HandleUspMessage()
++    client->schedule_reconnect = kScheduledAction_Activated;
++
++    // usp_conformance_1_78: for MQTT version 5.0 only, set client state
++    // to Idle for sending connect to the newly added controller that 
++    // uses the newly added MQTT client connection.
++    if (client->conn_params.version == kMqttProtocol_5_0)
++       client->state = kMqttState_Idle;
++#else
+     client->schedule_reconnect = kScheduledAction_Signalled;
++#endif
+ 
+ exit:
+     OS_UTILS_UnlockMutex(&mqtt_access_mutex);
+@@ -975,6 +1007,12 @@
+ 
+             case kMqttSubState_Subscribed:
+                 // Unsubscribe, ignoring any errors, since we are going to mark the subscription as not in use anyway
++#ifdef BDK_USP
++                // usp_conformance_11_9: call setMqttSubscriptionStatus() to
++                // change MQTT subscription status when its state is changed
++                sub->state = kMqttSubState_Unsubscribed;
++                setMqttSubscriptionStatus(client, sub);
++#endif
+                 Unsubscribe(client, sub);
+                 break;
+ 
+@@ -1096,11 +1134,21 @@
+         {
+             // Set state to resubscribe to new topic on reception of UNSUBACK (initiated by the unsubscribe, above)
+             sub->state = kMqttSubState_Resubscribing;
++#ifdef BDK_USP
++            // usp_conformance_11_9: call setMqttSubscriptionStatus() to
++            // change MQTT subscription status when its state is changed
++            setMqttSubscriptionStatus(client, sub);
++#endif
+         }
+         else
+         {
+             // Since new subscription is disabled, do not resubscribe on reception of UNSUBACK
+             sub->state = kMqttSubState_Unsubscribing;
++#ifdef BDK_USP
++            // usp_conformance_11_9: call setMqttSubscriptionStatus() to
++            // change MQTT subscription status when its state is changed
++            setMqttSubscriptionStatus(client, sub);
++#endif
+         }
+     }
+     else
+@@ -1122,6 +1170,11 @@
+         {
+             // NOTE: Nothing to do, if not unsubscribing, and new subscription is disabled
+             sub->state = kMqttSubState_Unsubscribed;
++#ifdef BDK_USP
++            // usp_conformance_11_9: call setMqttSubscriptionStatus() to
++            // change MQTT subscription status when its state is changed
++            setMqttSubscriptionStatus(client, sub);
++#endif
+         }
+     }
+ 
+@@ -1754,6 +1807,9 @@
+     client->retry_time = 0;
+ 
+     MoveState(&client->state, kMqttState_Idle, "Disable Client");
++#ifdef BDK_USP
++    setMqttClientStatus(client);
++#endif
+ 
+     // Exit if this function is not being called as part of a reconnect sequence
+     if (is_reconnect)
+@@ -1859,6 +1915,9 @@
+     {
+         // Start the connection!
+         MoveState(&client->state, kMqttState_SendingConnect, "Starting Connection");
++#ifdef BDK_USP
++        setMqttClientStatus(client);
++#endif
+     }
+ 
+     return err;
+@@ -2117,10 +2176,29 @@
+     if (err == USP_ERR_OK)
+     {
+         MoveState(&client->state, kMqttState_AwaitingConnect, "Connect sent");
++#ifdef BDK_USP
++        setMqttClientStatus(client);
++#endif
+     }
+     else
+     {
++#ifdef BDK_USP
++        // MOSQ_ERR_EAI is defined as "DNS lookup error"
++        // since getaddrinfo() returns EAI_AGAIN
++        // when DNS lookup timed out error. 
++        if (mosq_connect_err == MOSQ_ERR_EAI)
++        {
++            HandleMqttError(client, kMqttFailure_DnsLookup,
++                            "DNS Lookup Error");
++        }
++        else
++        {
++            HandleMqttError(client, kMqttFailure_Connect,
++                            "Failed to connect to client");
++        }
++#else
+         HandleMqttError(client, kMqttFailure_Connect, "Failed to connect to client");
++#endif
+     }
+ }
+ 
+@@ -2144,7 +2222,12 @@
+     int keep_alive;
+ 
+     // Exit if unable to configure username/password for this mosquitto context
++#ifdef BDK_USP
++    if (client->conn_params.username != NULL &&
++        strlen(client->conn_params.username) > 0)
++#else
+     if (strlen(client->conn_params.username) > 0)
++#endif
+     {
+         if (mosquitto_username_pw_set(client->mosq, client->conn_params.username, client->conn_params.password) != MOSQ_ERR_SUCCESS)
+         {
+@@ -2213,6 +2296,12 @@
+     // Take the access mutex again
+     OS_UTILS_LockMutex(&mqtt_access_mutex);
+ 
++#ifdef BDK_USP
++    // Keep the MQTT connection error for checking DNS look up error
++    // in MQTT_ProcessAllSocketActivity() function
++    mosq_connect_err = mosq_err;
++#endif
++
+     // Exit if failed to connect
+     if (mosq_err != MOSQ_ERR_SUCCESS)
+     {
+@@ -2362,6 +2451,9 @@
+ 
+         MoveState(&client->state, kMqttState_Running, "Connect Callback Received");
+         SubscribeToAll(client);
++#ifdef BDK_USP
++        setMqttClientStatus(client);
++#endif
+     }
+ 
+ exit:
+@@ -2445,6 +2537,7 @@
+             USP_LOG_Debug("%s: Received client_id: \"%s\"", __FUNCTION__, client_id_ptr);
+             USP_SAFE_FREE(client->conn_params.client_id);
+             client->conn_params.client_id = USP_STRDUP(client_id_ptr);
++            DEVICE_MQTT_CLIENT_SetClientId(instance, client_id_ptr);
+             free(client_id_ptr);
+         }
+ 
+@@ -2455,6 +2548,7 @@
+         {
+             // Then replace the response_topic in subscription with this
+             SaveAgentTopicFromConnack(client, response_info_ptr);
++            DEVICE_MTP_SetAgentMqttResponseTopic(instance, response_info_ptr);
+             free(response_info_ptr);
+         }
+         else
+@@ -2468,6 +2562,7 @@
+                 if (strcmp("subscribe-topic", userPropName) == 0)
+                 {
+                     SaveAgentTopicFromConnack(client, subscribe_topic_ptr);
++                    DEVICE_MTP_SetAgentMqttResponseTopic(instance, subscribe_topic_ptr);
+                     free(subscribe_topic_ptr);
+                     free(userPropName);
+                 }
+@@ -2483,6 +2578,7 @@
+                         if (strcmp("subscribe-topic", userPropName) == 0)
+                         {
+                             SaveAgentTopicFromConnack(client, subscribe_topic_ptr);
++                            DEVICE_MTP_SetAgentMqttResponseTopic(instance, subscribe_topic_ptr);
+                         }
+                         free(subscribe_topic_ptr);
+                         free(userPropName);
+@@ -2497,6 +2593,9 @@
+ 
+         MoveState(&client->state, kMqttState_Running, "Connect Callback Received");
+         SubscribeToAll(client);
++#ifdef BDK_USP
++        setMqttClientStatus(client);
++#endif
+     }
+ 
+ exit:
+@@ -2604,6 +2703,32 @@
+     USP_LOG_Debug("%s: Disconnected (rc=%d, is_reconnect=%d)\n", __FUNCTION__, rc, client->is_reconnect);
+     client->is_disconnected = true;
+ 
++#ifdef BDK_USP
++    if (rc != 0)
++    {
++        if (client->state != kMqttState_ErrorRetrying)
++        {
++            USP_LOG_Debug("%s: DisconnectCallback rc is %d\n", __FUNCTION__, rc);
++            HandleMqttError(client, kMqttFailure_ForceDisconnect, "Force disconnected from broker");
++        }
++    }
++    else
++    {
++        // usp_conformance_11_16: if state is kMqttState_ErrorRetrying
++        // call HandleMqttError() to retry 
++        if (client->state == kMqttState_ErrorRetrying)
++        {
++            HandleMqttError(client, kMqttState_ErrorRetrying, "Error Retrying");
++        }
++        else
++        {
++            // We have successfully performed an agent-initiated disconnect from the broker
++            MoveState(&client->state, kMqttState_Idle, "Disconnected from broker - ok");
++            setMqttClientStatus(client);
++        }
++    }
++#endif
++
+ exit:
+     OS_UTILS_UnlockMutex(&mqtt_access_mutex);
+ }
+@@ -2698,6 +2823,11 @@
+     int version = client->conn_params.version;
+ 
+     sub->state = kMqttSubState_Subscribing;
++#ifdef BDK_USP
++    // usp_conformance_11_9: call setMqttSubscriptionStatus() to
++    // change MQTT subscription status when its state is changed
++    setMqttSubscriptionStatus(client, sub);
++#endif
+     if (version == kMqttProtocol_5_0)
+     {
+         USP_LOG_Debug("%s: Sending subscribe to %s %d %d", __FUNCTION__, sub->topic, sub->mid, sub->qos);
+@@ -2863,6 +2993,16 @@
+         goto exit;
+     }
+ 
++#ifdef BDK_USP
++    // usp_conformance_11_11: Check for Unspecified error (128) in SUBACK
++    if (qos_count == 1 && granted_qos[0] == 128)
++    {
++        USP_LOG_Error("%s: Unspecified error (128) in SUBACK", __FUNCTION__);
++        HandleMqttError(client, kMqttFailure_OtherError, "Unspecified error (128) in SUBACK");
++        goto exit;
++    }
++#endif
++
+     if (sub->state != kMqttSubState_Subscribing)
+     {
+         USP_LOG_Error("%s: Wrong state %d", __FUNCTION__, sub->state);
+@@ -2870,6 +3010,11 @@
+     else
+     {
+         sub->state = kMqttSubState_Subscribed;
++#ifdef BDK_USP
++        // usp_conformance_11_9: call setMqttSubscriptionStatus() to
++        // change MQTT subscription status when its state is changed
++        setMqttSubscriptionStatus(client, sub);
++#endif
+     }
+ 
+ exit:
+@@ -2927,6 +3072,11 @@
+     int err = USP_ERR_OK;
+ 
+     sub->state = kMqttSubState_Unsubscribing;
++#ifdef BDK_USP
++    // usp_conformance_11_9: call setMqttSubscriptionStatus() to
++    // change MQTT subscription status when its state is changed
++    setMqttSubscriptionStatus(client, sub);
++#endif
+     if (version == kMqttProtocol_5_0)
+     {
+         err = UnsubscribeV5(client, sub);
+@@ -3515,9 +3665,39 @@
+ 
+     // Move to retrying state
+     MoveState(&client->state, kMqttState_ErrorRetrying, message);
++#ifdef BDK_USP
++    setMqttClientStatus(client);
++#endif
++
++#ifdef BDK_USP
++    switch (failure_code)
++    {
++        case kMqttFailure_DnsLookup:
++            if (client->retry_count == 0)
++            {
++                // do nothing, if error is DNS lookup at the first retry
++                USP_LOG_Warning("%s: Retry count is not increased: DNS lookup error at the first retry connection", __FUNCTION__);
++            }
++            else
++            {
++                // Increment retry count
++                client->retry_count++;
++            }
++            break;
++
++        // usp_conformance_11_6: do not reset retry counter when
++        // error is kMqttFailure_ForceDisconnect to make message retry
++        // mechanism work correctly.
+ 
++        default:
++            // Increment retry count
++            client->retry_count++;
++            break;
++    }
++#else
+     // Increment retry count
+     client->retry_count++;
++#endif
+ 
+     // Calculate a wait time until retry
+     mqtt_retry_params_t *retry = &client->conn_params.retry;
+@@ -3689,6 +3869,14 @@
+     for (i = 0; i < MAX_MQTT_SUBSCRIPTIONS; i++)
+     {
+         subs = &client->subscriptions[i];
++#ifdef BDK_USP
++        // usp_conformance_11_9: return available subscription if
++        // subinstance is INVALID
++        if (subs->instance == 0 && subinstance == INVALID)
++        {
++            return subs;
++        }
++#endif
+         if (subs->instance == subinstance)
+         {
+             return subs;
+@@ -3893,4 +4081,118 @@
+     }
+ }
+ 
++#ifdef BDK_USP
++static void setMqttClientStatus(const mqtt_client_t *client)
++{
++   int ret = 0;
++   char *status = NULL;
++
++   /* This function simply reads the mqtt client status and update the MDM.
++    * The logic is copied from MQTT_GetClientStatus() function. And the main
++    * reason is to avoid using the MUTEX code.
++    */
++
++   if (client)
++   {
++      switch (client->state)
++      {
++         case kMqttState_SendingConnect:
++         case kMqttState_AwaitingConnect:
++            status = "Connecting";
++            break;
++         case kMqttState_Running:
++            status = "Connected";
++            break;
++         case kMqttState_ErrorRetrying:
++            {
++               switch (client->failure_code)
++               {
++                  case kMqttFailure_Misconfigured:
++                     status = "Error_Misconfigured";
++                     break;
++                  case kMqttFailure_Connect:
++                     status = "Error_BrokerUnreachable";
++                     break;
++                  default:
++                     status = "Error";
++               }
++            }
++            break;
++         case kMqttState_Idle: // Fallthrough, for completeness
++         default:
++             status = "Disabled";
++             break;
++      }
++   }
++   else
++   {
++      status = "Disabled";
++   }
++
++   ret = DEVICE_MQTT_CLIENT_SetStatus(client->conn_params.instance, status);
++
++   if (ret)
++   {
++      USP_LOG_Error("%s: Cannot set MQTT client status <%s>, ret<%d>",
++         __FUNCTION__, status, ret);
++   }
++}
++
++// usp_conformance_11_9: add setMqttSubscriptionStatus() to
++// change MQTT subscription status
++static void setMqttSubscriptionStatus
++   (const mqtt_client_t *client, const mqtt_subscription_t *sub)
++{
++   int ret = 0;
++   char *status = NULL;
++
++   if (client == NULL || sub == NULL)
++   {
++      return;
++   }
++
++   if (sub->instance <= 0)
++   {
++      return;
++   }
++
++   if (sub->enabled == true)
++   {
++      switch (sub->state)
++      {
++         case kMqttSubState_Subscribing:
++         case kMqttSubState_Resubscribing:
++            status = "Subscribing";
++            break;
++         case kMqttSubState_Subscribed:
++            status = "Subscribed";
++            break;
++         case kMqttSubState_Unsubscribing:
++            status = "Unsubscribing";
++            break;
++         case kMqttSubState_Unsubscribed:
++            status = "Unsubscribed";
++            break;
++         default:
++             status = "Error";
++             break;
++      }
++   }
++   else
++   {
++      status = "Unsubscribed";
++   }
++   
++   ret = DEVICE_MQTT_SUBSCRIPTION_SetStatus
++      (client->conn_params.instance, sub->instance, status);
++
++   if (ret)
++   {
++      USP_LOG_Error("%s: Cannot set MQTT subscription status <%s>, ret<%d>",
++         __FUNCTION__, status, ret);
++   }
++}
++
++#endif   /* BDK_USP */
++
+ #endif

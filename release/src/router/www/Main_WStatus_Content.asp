@@ -66,7 +66,7 @@ decodeURIComponent(m.replace(/\\x/g, '%'))).replace(/\\n/g,
 }
 
 var content = "";
-function GenContent(){
+function Get_wireless_log(){
 	var dead = 0;
 	$.ajax({
 		url: '/wl_log.asp',
@@ -78,7 +78,7 @@ function GenContent(){
 			}
 			else{
 				dead++;
-				setTimeout("GenContent();", 1000);
+				setTimeout("Get_wireless_log();", 1000);
 			}
 		},
 
@@ -109,80 +109,66 @@ function initial(){
 
 
 function redraw(){
+	var client_array = [];
+	var apinfo_array = [];
+	var dfs_array = [];
+	var bandname_array = [];
+	var code = "";
+
 	if (based_modelid === 'GT-AXE16000') {
-		dataarray24 = dataarray3;
-		wificlients24 = wificlients3;
-		dataarray5 = dataarray0;
-		wificlients5 = wificlients0;
-		dataarray52 = dataarray1;
-		wificlients52 = wificlients1;
-		dataarray6 = dataarray2;
-		wificlients6 = wificlients2;
-		dfs_statusarray5 = dfs_statusarray0;
-		dfs_statusarray52 = dfs_statusarray1;
+		apinfo_array = [dataarray3, dataarray0, dataarray1, dataarray2];
+		client_array = [wificlients3, wificlients0, wificlients1, wificlients2];
+		dfs_array = [[],dfs_statusarray0, dfs_statusarray1, []];
+		bandname_array = ["2.4 GHz", "5 GHz-1", "5 GHz-2", "6 GHz"];
+	} else if (based_modelid === 'GT-BE98_PRO') {
+		apinfo_array = [dataarray3, dataarray0, dataarray1, dataarray2];
+		client_array = [wificlients3, wificlients0, wificlients1, wificlients2];
+		dfs_array = [[], dfs_statusarray0, [], []];
+		bandname_array = ["2.4 GHz", "5 GHz", "6 GHz-1", "6 GHz-2"];
 	} else {
-		dataarray24 = dataarray0;
-		wificlients24 = wificlients0;
+		apinfo_array = [dataarray0];
+		client_array = [wificlients0];
+		dfs_array = [[]];
+		bandname_array = ["2.4 GHz"];
+
 		if (band5g_support) {
-			dataarray5 = dataarray1;
-			wificlients5 = wificlients1;
-			dfs_statusarray5 = dfs_statusarray1;
+			apinfo_array.push(dataarray1);
+			client_array.push(wificlients1);
+			dfs_array.push(dfs_statusarray1);
+			if (wl_info.band5g_2_support)
+				bandname_array.push("5 GHz-1");
+			else
+				bandname_array.push("5 GHz");
 		}
 		if (band6g_support) {
-			dataarray6 = dataarray2;
-			wificlients6 = wificlients2;
+			apinfo_array.push(dataarray2);
+			client_array.push(wificlients2);
+			dfs_array.push([]);
+			bandname_array.push("6 GHz");
 		} else if (wl_info.band5g_2_support) {
-			dataarray52 = dataarray2;
-			wificlients52 = wificlients2;
-			dfs_statusarray52 = dfs_statusarray2;
+			apinfo_array.push(dataarray2);
+			client_array,push(wificlients2);
+			dfs_array.push(dfs_statusarray2);
+			bandname_array.push("5 GHz-2");
 		}
 	}
 
-	if (dataarray24.length == 0) {
-		document.getElementById('wifi24headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 2.4 GHz is disabled.</span>';
-	} else {
-		display_header(dataarray24, 'Wireless 2.4 GHz', document.getElementById('wifi24headerblock'), []);
-		display_clients(wificlients24, document.getElementById('wifi24block'), 0);
-	}
-
-	if (band6g_support) {
-		if (dataarray6.length == 0) {
-		        document.getElementById('wifi6headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 6 GHz is disabled.</span>';
+	for (i = 0; i < client_array.length; i++) {
+		if (client_array[i].length == 0) {
+			code += '<div><span class="hint-color" style="font-size: 125%;">Wireless '+bandname_array[i]+' is disabled.</span></div><br><br>';
 		} else {
-		        display_header(dataarray6, 'Wireless 6 GHz', document.getElementById('wifi6headerblock'), []);
-		        display_clients(wificlients6, document.getElementById('wifi6block'), 2);
+			code += '<div>';
+			code += generate_header(apinfo_array[i], bandname_array[i], dfs_array[i]);
+			code += generate_clients(client_array[i]);
+			code += '</div><br><br>';
 		}
 	}
-
-	if (band5g_support) {
-		if (wl_info.band5g_2_support) {
-			if (dataarray5.length == 0) {
-				document.getElementById('wifi5headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 5 GHz-1 is disabled.</span>';
-			} else {
-				display_header(dataarray5, 'Wireless 5 GHz-1', document.getElementById('wifi5headerblock'), dfs_statusarray5);
-				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
-			}
-			if (dataarray52.length == 0) {
-				document.getElementById('wifi52headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 5 GHz-2 is disabled.</span>';
-			} else {
-				display_header(dataarray52, 'Wireless 5 GHz-2', document.getElementById('wifi52headerblock'), dfs_statusarray52);
-				display_clients(wificlients52, document.getElementById('wifi52block'), 2);
-			}
-		} else {
-			if (dataarray5.length == 0) {
-				document.getElementById('wifi5headerblock').innerHTML='<span class="hint-color" style="font-size: 125%;">Wireless 5 GHz is disabled.</span>';
-			} else {
-				display_header(dataarray5, 'Wireless 5 GHz', document.getElementById('wifi5headerblock'), dfs_statusarray5);
-				display_clients(wificlients5, document.getElementById('wifi5block'), 1);
-			}
-		}
-	}
-
-	GenContent();
+	document.getElementById("datablock").innerHTML = code;
+	Get_wireless_log();
 }
 
 
-function display_clients(clientsarray, obj, unit) {
+function generate_clients(clientsarray) {
 	var code, i, ii, client, overlib_str;
 	var mac, ipaddr, hostname;
 	var nmapentry;
@@ -282,17 +268,17 @@ function display_clients(clientsarray, obj, unit) {
 	}
 
 	code += '</tr></table>';
-	obj.innerHTML = code;
+	return code;
 }
 
 
-function display_header(dataarray, title, obj, dfs_statusarray) {
+function generate_header(dataarray, title, dfs_statusarray) {
 	var code;
 	var channel, i;
 	var time, formatted_time;
 
 	code = '<table width="100%" style="border: none;">';
-	code += '<thead><tr><span class="hint-color" style="font-size: 125%;">' + title +'</span></tr></thead>';
+	code += '<thead><tr><span class="hint-color" style="font-size: 125%;">Wireless ' + title +'</span></tr></thead>';
 	code += '<tr><td colspan="2"><span class="hint-color">SSID: </span>' + dataarray[0] + '</td>';
 	code += '<td><span class="hint-color">BSSID: </span>' + dataarray[5] +'</td>';
 	code += '<td><span class="hint-color">Mode: </span>' + dataarray[7] + '</td>';
@@ -321,7 +307,7 @@ function display_header(dataarray, title, obj, dfs_statusarray) {
 	}
 
 	code += '</table>';
-	obj.innerHTML = code;
+	return code;
 }
 
 
@@ -433,17 +419,7 @@ function hide_details_window(){
 										</tr>
 									</table>
 									<br>
-									<div id="wifi24headerblock"></div>
-									<div id="wifi24block"></div>
-									<br><br>
-									<div id="wifi5headerblock"></div>
-									<div id="wifi5block"></div>
-									<br><br>
-									<div id="wifi52headerblock"></div>
-									<div id="wifi52block"></div>
-									<br><br>
-									<div id="wifi6headerblock"></div>
-									<div id="wifi6block"></div>
+									<div id="datablock"></div>
 									<div id="flags_mumimo_div" style="display:none;">Flags: <span class="hint-color">P</span>=Powersave Mode, <span class="hint-color">S</span>=Short GI, <span class="hint-color">T</span>=STBC, <span class="hint-color">M</span>=MU Beamforming, <span class="hint-color">A</span>=Associated, <span class="hint-color">U</span>=Authenticated</div>
 									<div id="flags_div">Flags: <span class="hint-color">P</span>=Powersave Mode, <span class="hint-color">S</span>=Short GI, <span class="hint-color">T</span>=STBC, <span class="hint-color">A</span>=Associated, <span class="hint-color">U</span>=Authenticated</div>
 									<br>

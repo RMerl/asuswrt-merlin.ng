@@ -96,7 +96,6 @@ function initial() {
 
 	if ((machine_name.search("arm") != -1) || hnd_support) {
 		document.getElementById("ct_established_default").innerHTML = "Default: 2400";
-		if (!hnd_support) showhide("memory_mgmt_tr" ,1);
 	}
 
 	document.aidiskForm.protocol.value = PROTOCOL;
@@ -853,13 +852,6 @@ function done_validating(action){
 							<td colspan="2">Advanced Tweaks and Hacks</td>
 						</tr>
 					</thead>
-					<tr id="memory_mgmt_tr" style="display:none;">
-						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,2);">Memory Management: Regularly flush caches (default: Yes)</a></th>
-						<td>
-							<input type="radio" name="drop_caches" class="input" value="1" <% nvram_match_x("", "drop_caches", "1", "checked"); %>><#checkbox_Yes#>
-							<input type="radio" name="drop_caches" class="input" value="0" <% nvram_match_x("", "drop_caches", "0", "checked"); %>><#checkbox_No#>
-						</td>
-					</tr>
 					<tr>
 						<th><a class="hintstyle" href="javascript:void(0);" onClick="openHint(50,4);">Firewall: Drop IPv6 neighbour solicitation broadcasts (default: No)</a></th>
 						<td>

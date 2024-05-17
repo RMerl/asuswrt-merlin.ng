@@ -25175,8 +25175,7 @@ _dprintf("%s %d turnning on power on ethernet here\n", __func__, __LINE__);
 #endif
 #if defined(RTCONFIG_BCMARM) && !defined(HND_ROUTER)
 		/* free pagecache */
-		if (nvram_get_int("drop_caches"))
-			f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
+		f_write_string("/proc/sys/vm/drop_caches", "1", 0, 0);
 #endif
 #if defined(RTCONFIG_SOC_IPQ40XX)
 		/* free pagecache */

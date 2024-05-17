@@ -4527,14 +4527,6 @@ filter_setting(int wan_unit, char *lan_if, char *lan_ip, char *logaccept, char *
 	fprintf(fp, "-A FORWARD -j IPSEC_STRONGSWAN\n");
 #endif /* RTCONFIG_IPSEC */
 
-/* Setup traffic accounting */
-#if !defined(HND_ROUTER)
-	if (nvram_match("cstats_enable", "1")) {
-		fprintf(fp, ":ipttolan - [0:0]\n:iptfromlan - [0:0]\n");
-		ipt_account(fp, NULL);
-	}
-#endif
-
 #if defined(WEB_REDIRECT)
 	/* Below rules are supposed to be used if below conditions are true
 	 * and output interface should be WAN interface.

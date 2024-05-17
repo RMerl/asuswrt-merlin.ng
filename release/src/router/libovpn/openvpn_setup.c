@@ -1029,12 +1029,6 @@ void ovpn_setup_client_fw(ovpn_cconf_t *cconf, int unit) {
 	}
 #endif
 
-#if !defined(HND_ROUTER)
-	// Setup traffic accounting
-	if (nvram_match("cstats_enable", "1")) {
-		ipt_account(fp, cconf->if_name);
-	}
-#endif
 	// Disable rp_filter when in policy mode - firewall restart would re-enable it
 	if (cconf->redirect_gateway >= OVPN_RGW_POLICY) {
 		fprintf(fp, "for i in /proc/sys/net/ipv4/conf/*/rp_filter ; do\n"); /* */
@@ -1181,11 +1175,6 @@ void ovpn_setup_server_fw(ovpn_sconf_t *sconf, int unit) {
 #endif
 	}
 
-#if !defined(HND_ROUTER)
-	if (nvram_match("cstats_enable", "1")) {
-		ipt_account(fp, sconf->if_name);
-	}
-#endif
 	fclose(fp);
 	chmod(filename, S_IRUSR|S_IWUSR|S_IXUSR);
 	eval(filename);

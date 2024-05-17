@@ -2848,11 +2848,6 @@ extern void start_sendDSLdiag(void);
 extern void start_snmpd(void);
 extern void stop_snmpd(void);
 #endif
-#if !defined(HND_ROUTER)
-void start_cstats(int new);
-void restart_cstats(void);
-void stop_cstats(void);
-#endif
 extern void setup_leds();
 int ddns_custom_updated_main(int argc, char *argv[]);
 #if defined(RTCONFIG_HND_ROUTER_AX)

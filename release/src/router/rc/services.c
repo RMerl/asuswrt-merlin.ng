@@ -6510,9 +6510,6 @@ stop_misc(void)
 	stop_lltd();
 	stop_snooper();
 	stop_rstats();
-#if !defined(HND_ROUTER)
-	stop_cstats();
-#endif
 #ifdef RTCONFIG_DSL
 	stop_spectrum(); //Ren
 #endif //For DSL-N55U
@@ -12362,9 +12359,6 @@ start_services(void)
 
 	start_infosvr();
 	restart_rstats();
-#if !defined(HND_ROUTER)
-	restart_cstats();
-#endif
 #ifdef RTCONFIG_DSL
 	start_spectrum(); //Ren
 #endif
@@ -12801,9 +12795,6 @@ stop_services(void)
 #ifdef RTCONFIG_PROXYSTA
 	stop_psta_monitor();
 #endif
-#endif
-#if !defined(HND_ROUTER)
-	stop_cstats();
 #endif
 	stop_rstats();
 #ifdef RTCONFIG_DSL
@@ -19829,13 +19820,6 @@ retry_wps_enr:
 		if(action & RC_SERVICE_STOP) stop_rstats();
 		if(action & RC_SERVICE_START) restart_rstats();
 	}
-#if !defined(HND_ROUTER)
-        else if (strcmp(script, "cstats") == 0)
-        {
-                if(action & RC_SERVICE_STOP) stop_cstats();
-                if(action & RC_SERVICE_START) restart_cstats();
-        }
-#endif
 	else if (strcmp(script, "conntrack") == 0)
 	{
 		setup_conntrack();
@@ -22943,64 +22927,6 @@ void setup_leds()
 	start_aurargb();
 #endif
 }
-
-#if !defined(HND_ROUTER)
-void stop_cstats(void)
-{
-	int n, m;
-	int pid;
-	int pidz;
-	int ppidz;
-	int w = 0;
-
-	n = 60;
-	m = 15;
-	while ((n-- > 0) && ((pid = pidof("cstats")) > 0)) {
-		w = 1;
-		pidz = pidof("gzip");
-		if (pidz < 1) pidz = pidof("cp");
-		ppidz = ppid(ppid(pidz));
-		if ((m > 0) && (pidz > 0) && (pid == ppidz)) {
-			syslog(LOG_DEBUG, "cstats(PID %d) shutting down, waiting for helper process to complete(PID %d, PPID %d).\n", pid, pidz, ppidz);
-			--m;
-		} else {
-			kill(pid, SIGTERM);
-		}
-		sleep(1);
-	}
-	if ((w == 1) && (n > 0))
-		syslog(LOG_DEBUG, "cstats stopped.\n");
-}
-
-void start_cstats(int new)
-{
-	if (nvram_match("cstats_enable", "1")) {
-		stop_cstats();
-		if (new) {
-			syslog(LOG_DEBUG, "starting cstats (new datafile).\n");
-			xstart("cstats", "--new");
-		} else {
-			syslog(LOG_DEBUG, "starting cstats.\n");
-			xstart("cstats");
-		}
-	}
-}
-
-void restart_cstats(void)
-{
-        if (nvram_match("cstats_new", "1"))
-        {
-                start_cstats(1);
-                nvram_set("cstats_new", "0");
-		nvram_commit();		// Otherwise it doesn't get written back to mtd
-        }
-        else
-        {
-                start_cstats(0);
-        }
-}
-#endif
-
 
 // Takes one argument:  0 = update failure
 //                      1 (or missing argument) = update success

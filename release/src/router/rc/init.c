@@ -22735,9 +22735,6 @@ fa_mode_adjust()
 	) {
 		if (!nvram_match("ctf_disable_force", "1")
 			&& nvram_get_int("ctf_fa_cap")
-#if !defined(HND_ROUTER)
-			&& !nvram_get_int("cstats_enable")
-#endif
 			&& !nvram_match("gmac3_enable", "1")
 			&& !nvram_get_int("qos_enable")
 			&& nvram_match("x_Setting", "1")

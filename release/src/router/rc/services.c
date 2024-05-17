@@ -22934,8 +22934,8 @@ void setup_leds()
 		start_ledg();
 		start_antled();
 #endif
-#if defined(GTAXE16000) || defined(GTAX11000_PRO)
-		notify_rc("restart_ledg");
+#if defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96)
+		notify_rc_and_wait_2min("restart_ledg");
 #endif
 #endif // RT-AX86U_PRO
 	}

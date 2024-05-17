@@ -29,7 +29,7 @@ function initial(){
 			curTheme = "WHITE";
 		}
 		else{
-			if(based_modelid.substr(0,2) == "GT"){
+			if(rog_support){
 				curTheme = "ROG";
 			}
 		}

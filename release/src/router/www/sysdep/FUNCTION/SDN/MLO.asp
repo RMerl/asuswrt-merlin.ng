@@ -29,10 +29,10 @@ function initial(){
 			curTheme = "WHITE";
 		}
 		else{
-			if(based_modelid.substr(0,2) == "GT"){
+			if(rog_support){
 				curTheme = "ROG";
 			}
-else if(based_modelid.substr(0,3) == "TUF"){
+else if(tuf_support){
 				curTheme = "TUF";
 			}
 		}

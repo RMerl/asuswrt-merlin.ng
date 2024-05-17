@@ -431,18 +431,7 @@ ej_wl_unit_status_array(int eid, webs_t wp, int argc, char_t **argv, int unit)
 
 // DFS status
 #ifdef RTCONFIG_BCMWL6
-#if defined(GTAXE16000)
-	if (unit == 2 || unit == 3)
-#else
-	if ((unit == 0)
-#ifdef RTCONFIG_WIFI6E
-	|| (unit == 2)
-#endif
-	)
-#endif
-		goto sta_list;
-
-	if (nvram_match(strcat_r(prefix, "reg_mode", tmp), "off"))
+	if (!nvram_match(strlcat_r(prefix, "reg_mode", tmp, sizeof(tmp)), "h"))
 		goto sta_list;
 
 	memset(buf, 0, sizeof(buf));

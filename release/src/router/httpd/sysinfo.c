@@ -90,6 +90,11 @@ unsigned int get_wifi_clients(int unit, int querytype);
 void GetPhyStatus_rtk(int *states);
 #endif
 
+#ifdef RTCONFIG_MULTILAN_CFG
+#define MAX_GUEST_SUBUNITS APG_MAXINUM
+#else
+#define MAX_GUEST_SUBUNITS 4
+#endif
 
 #define MBYTES (1024 * 1024)
 #define KBYTES 1024
@@ -704,7 +709,7 @@ unsigned int get_wifi_clients(int unit, int querytype)
 	if (!clientlist)
 		return 0;
 
-	for (subunit = 0; subunit < 4; subunit++) {
+	for (subunit = 0; subunit < MAX_GUEST_SUBUNITS; subunit++) {
 #ifdef RTCONFIG_WIRELESSREPEATER
 		if ((nvram_get_int("sw_mode") == SW_MODE_REPEATER) && (unit == nvram_get_int("wlc_band"))) {
 			if (subunit == 0)

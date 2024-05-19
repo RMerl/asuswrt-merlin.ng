@@ -34,26 +34,30 @@ BAC68=y
 BAC88=y
 BAC3100=y
 BAC5300=y
-
 BAC86=y
 BGTAC2900=y
+BAC68V4=y
 
 BAX88=y
 BGTAX11000=y
 
-BAX58=y
 BAX56=y
+BAX58=y
 
 BAX86=y
 BAX68=y
 BGTAXE11000=y
-BAC68V4=y
 
 BGTAX6000=y
 BXT12=y
 BGTAXE16000=y
 BGTAX11000_PRO=y
 BAX86_PRO=y
+BAX88_PRO=y
+
+BBE96=y
+BGTBE98PRO=y
+
 
 ### Branches for each model
 BRANCH_AC68=386_x
@@ -65,8 +69,8 @@ BRANCH_AC5300=386_x
 BRANCH_AC86=386_x
 BRANCH_GTAC2900=386_x
 
-BRANCH_AX88=388_20566
-BRANCH_GTAX11000=388_20566
+BRANCH_AX88=master
+BRANCH_GTAX11000=master
 
 BRANCH_AX58=master
 BRANCH_AX56=master
@@ -81,6 +85,10 @@ BRANCH_XT12=master
 BRANCH_GTAXE16000=master
 BRANCH_GTAX11000_PRO=master
 BRANCH_AX86_PRO=master
+BRANCH_AX88_PRO=master
+
+BRANCH_BE96=3006_x
+BRANCH_GTBE98_PRO=3006_x
 
 ### Paths
 # Store built images there
@@ -108,6 +116,7 @@ build_fw()
 	if make "$FWMODEL" > "output.txt" 2>&1; then
 		cd image || exit
 		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "rt-ax88u" ] || [ "$FWMODEL" = "gt-ax11000" ] ; then
+			rm *_cferom_ubi.w
 			FWNAME="$(find -- *_ubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_ubi.w~~g').zip"
 		elif [ "$FWMODEL" = "rt-ax58u" ] || [ "$FWMODEL" = "rt-ac68u_v4" ]; then
@@ -122,7 +131,10 @@ build_fw()
 			rm *_cferom_pureubi.w
 			FWNAME="$(find -- *_pureubi.w | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_pureubi.w~~g').zip"
-		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] || [ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] || [ "$FWMODEL" = "rt-ax86u_pro" ] ; then
+		elif [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "xt12" ] || [ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] || [ "$FWMODEL" = "rt-ax86u_pro" ] || [ "$FWMODEL" = "rt-ax88u_pro" ] ; then
+			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
+			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
+		elif [ "$FWMODEL" = "gt-be98_pro" ] || [ "$FWMODEL" = "gt-be98" ] || [ "$FWMODEL" = "rt-be96u" ] ; then
 			FWNAME="$(find -- *_nand_squashfs.pkgtb | head -n 1)"
 			ZIPNAME="$(echo "$FWNAME" | sed 's~_nand_squashfs.pkgtb~~g').zip"
 		else
@@ -144,6 +156,7 @@ build_fw()
 				if [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] ; then
 					FWNAME="$(find -- *rog*_nand_squashfs.pkgtb | head -n 1)"
 				elif [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "gt-ax11000" ] ; then
+					rm *_cferom_ubi.w
 					FWNAME="$(find -- *rog*_ubi.w | head -n 1)"
 				elif [ "$FWMODEL" = "gt-axe11000" ] ; then
 					rm *_cferom_pureubi.w
@@ -261,12 +274,29 @@ fi
 if [ "$BAX86_PRO" = "y" ]; then
 	clean_tree amng.ax86pro release/src-rt-5.04axhnd.675x rt-ax86u_pro $BRANCH_AX86_PRO
 fi
+if [ "$BAX88_PRO" = "y" ]; then
+	clean_tree amng.ax88pro release/src-rt-5.04axhnd.675x rt-ax88u_pro $BRANCH_AX88_PRO
+fi
+if [ "$BGTBE98PRO" = "y" ]; then
+	clean_tree amng.gtbe98pro amng.gtbe98pro/release/src-rt-5.04behnd.4916 gt-be98_pro $BRANCH_GTBE98_PRO
+fi
+if [ "$BBE96" = "y" ]; then
+        clean_tree amng.be96 amng.be96/release/src-rt-5.04behnd.4916 rt-be96u $BRANCH_BE96
+fi
 
 echo "--- $(date +%R) - All trees ready!"
 
 # Launch parallel builds
 
 echo "--- $(date +%R) - Launching all builds"
+if [ "$BGTBE98PRO" = "y" ]; then
+	build_fw amng.gtbe98pro/release/src-rt-5.04behnd.4916 gt-be98_pro &
+fi
+
+if [ "$BBE96" = "y" ]; then
+        build_fw amng.be96/release/src-rt-5.04behnd.4916 rt-be96u &
+fi
+
 if [ "$BGTAX6000" = "y" ]; then
 	build_fw amng.gtax6000/release/src-rt-5.04axhnd.675x gt-ax6000 &
 fi
@@ -277,6 +307,10 @@ fi
 
 if [ "$BAX86_PRO" = "y" ]; then
 	build_fw amng.ax86pro/release/src-rt-5.04axhnd.675x rt-ax86u_pro &
+fi
+
+if [ "$BAX88_PRO" = "y" ]; then
+	build_fw amng.ax88pro/release/src-rt-5.04axhnd.675x rt-ax88u_pro &
 fi
 
 if [ "$BGTAX11000_PRO" = "y" ]; then
@@ -367,7 +401,7 @@ fi
 
 echo
 cd "$STAGE_LOC" || exit 1
-rm sha256sums-ng.txt
+mv -n sha256sums-ng.txt sha256sums-ng-$(date +%Y%m%d).txt
 sha256sum *.trx  | unix2dos >> sha256sums-ng.txt
 sha256sum *.w  | unix2dos >> sha256sums-ng.txt
 sha256sum *.pkgtb  | unix2dos >> sha256sums-ng.txt

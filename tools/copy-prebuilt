@@ -154,6 +154,44 @@ then
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 	cp release/src-rt-5.04axhnd.675x/bcmdrivers/broadcom/char/wlcsm_ext/impl1/wlcsm.o $REPO/release/src-rt-5.04axhnd.675x/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
 
+elif [ "$BUILD_NAME" == "RT-BE96U" ] || [ "$BUILD_NAME" == "GT-BE98_PRO" ]
+then
+        SDK="_4916hnd"
+        ARCH="_arm"
+        HND="_behnd"
+
+	# Must be done first, since we will add hnd_extra files later on
+	rsync -a --del release/src-rt-5.04behnd.4916/router-sysdep/ $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC --exclude "stress/Makefile" --exclude "wlc_types.h"
+	rsync -a --del release/src-rt-5.04behnd.4916/bootloaders/obj/ $REPO/release/src-rt-5.04behnd.4916/bootloaders/obj.$BUILD_NAME_LC
+#	cp release/src-rt-5.04behnd.4916/wl/exe/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl101/main/src/wl/exe/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/addvtoken $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/$BUILD_NAME/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/lzop $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/$BUILD_NAME/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/cmplzma $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/lzmacmd $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt//cmplzma $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/mkfs.ubifs $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/mksquashfs $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/
+	cp release/src-rt-5.04behnd.4916/hostTools/prebuilt/ubinize $REPO/release/src-rt-5.04behnd.4916/hostTools/prebuilt/
+	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl101/main/components/apps/acsdv2/prebuilt/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl101/main/components/apps/acsdv2/prebuilt/$BUILD_NAME/
+
+	cp -ar release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl101/sys/src/dongle/bin/6717a0/release/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl101/sys/src/dongle/sysdeps/$BUILD_NAME/6717a0/
+        cp -ar release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl101/sys/src/dongle/bin/6726b0/release/* $REPO/release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/wl/impl101/sys/src/dongle/sysdeps/$BUILD_NAME/6726b0/
+
+
+	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/mpm/impl1/bcm_mpm.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+	cp release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pktrunner/impl2/pktrunner.o $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/
+
+        aarch64-buildroot-linux-gnu-strip --strip-debug $REPO/release/src-rt-5.04behnd.4916/router-sysdep.$BUILD_NAME_LC/hnd_extra/prebuilt/*.o
+
+# Found in bcmdrivers - do we have to copy/sort into prebuild?  They don't show anywhere else in a compiled tree, so might not be used.
+#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/cmdlist/impl1/cmdlist.o
+#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pktflow/impl1/pktflow.o
+#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/pon_drv/impl2/bcm_pondrv.o
+#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/char/vlan/impl2/bcmvlan.o
+
+#	release/src-rt-5.04behnd.4916/bcmdrivers/broadcom/net/gdx/impl1/prebuilt/gdx_hw.o
+
 else
 	echo "Unrecognized BUILD_NAME!"
 	exit
@@ -179,9 +217,9 @@ fi;
 
 # Common to all
 
-# NOTE: these are new in 388, need to determine which platform uses them
 cp release/src/router/dns_ping/prebuild/* $REPO/release/src/router/dns_ping/prebuild/$BUILD_NAME
 cp release/src/router/fsmd/prebuild/* $REPO/release/src/router/fsmd/prebuild/$BUILD_NAME
+cp release/src/router/dnsqd/prebuild/* $REPO/release/src/router/dnsqd/prebuild/$BUILD_NAME
 
 echo "*** Copying common files..."
 rsync -a --del release/src/router/httpd/prebuild/ $REPO/release/src/router/httpd/prebuild/$BUILD_NAME

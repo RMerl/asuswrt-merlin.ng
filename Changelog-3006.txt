@@ -1,0 +1,74 @@
+Asuswrt-Merlin 3006.xxx Changelog
+=================================
+
+3006.102.1 (xx-xxx-2024)
+
+  This is the initial release of Asuswrt-Merlin based on
+  the 3006 codebase.  Only a few specific models are
+  currently available, more will be added over time as
+  Asus progressively migrates devices to the new codebase.
+
+  3006 introduces a number of major features, these will not
+  be listed - please review Asus' own documentation on the
+  new features added in 3006 (AKA Asuswrt 5.0).  The two most
+  notable ones are VLAN and Guest Network Pro (also called
+  Self-Defined Networks, or SDN), both of which are supported
+  in Asuswrt-Merlin.
+
+  This initial 3006.102.xx release also includes a number of
+  potentially breaking changes over 3004.  The most relevant
+  ones will be listed below.
+
+  Note that while Asus uses VPNFusion, Asuswrt-Merlin still
+  uses VPNDirector.  The integration with Guest Network Pro
+  had to be re-implemented to work with Asuswrt-Merlin,
+  which required a few backend changes.
+
+  Due to the VPN backend differences, it's strongly recommended
+  to do a factory default reset after coming from the original
+  Asus firmware if you used any VPN-related functionality.
+
+
+  - NEW: Added support for GT-BE98_PRO.
+  - NEW: Added support for RT-BE96U.
+  - NOTE: Wifi 7 devices don't support NFS (issue with new
+          toolchain), QoS classification page (issue with
+          TrendMicro BWDPI) or Wifi Radar (not updated by
+          Broadcom).
+  - NEW: Added dnsmasq-INDEX.conf.add and stubby-INDEX.yml.add,
+         which are appended to SDN config files (INDEX = SDN
+         index number)
+  - NEW: Added dnsmasq-sdn.postconf and stubby-sdn.postconf.
+         They take two arguments:
+           - path to the config file for that SDN's instance
+           - the SDN index number (1 for the first SDN instance)
+
+  - CHANGED: Merged with GPL 3.0.0.6.102_34369.
+  - CHANGED: Chart.js was upgraded from 2.x to 3.9, to share the
+             same version used by Asus.  Any third party addon
+             that used it will need to upgrade their charts to
+             the new version.
+  - CHANGED: Switched to a different qrcode generation script, to
+             share the same script used by Asus.
+  - CHANGED: WireGuard and OpenVPN clients use different iproute2
+             table IDs, to be in line with Asus's own table IDs.
+             The names defined in rt_tables remain unchanged.
+  - CHANGED: Implemented support for Wifi 7 and SDN on the
+             Wireless Log page.
+  - CHANGED: Implemented DNSDirector webui for SDN.
+  - CHANGED: Main routing table is no longer copied to the OpenVPN
+             client routing tables, to be in line both Asus' own
+             behaviour and the way WireGuard clients already work.
+  - CHANGED: Removed stop/start and "Start with WAN" buttons from
+             OpenVPN clients.  There is now just a single
+             "Enable" option, which will immediately start the
+             client when applying changes, and will also start it
+             automatically when WAN comes up.  This is to reduce
+             confusion, better integrate into SDN, and match how
+             WireGuard clients already worked.
+  - CHANGED: ipset is now compiled into the kernel rather than as
+             modules (to match with Asus)
+  - FIXED: JS error on Wifi 6e/7 models when toggling DDNS.
+  - REMOVED: Option dns_local_cache from Tools -> Tweak settings,
+             to avoid issues with SDN that run their own
+             dnsmasq instances.

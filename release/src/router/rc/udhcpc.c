@@ -1874,15 +1874,15 @@ bound6(char *wan_ifname, int bound)
 			goto skip;
 
 		prefix_changed = (!nvram_match(ipv6_nvname_by_unit("ipv6_prefix", wan_unit), addr) ||
-					nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan_unit)) != size);
+					nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_len_wan", wan_unit)) != size);
 		if (prefix_changed) {
 			eval("ip", "-6", "addr", "flush", "scope", "global", "dev", lan_ifname);
 			nvram_set(ipv6_nvname_by_unit("ipv6_rtr_addr", wan_unit), "");
 			nvram_set(ipv6_nvname_by_unit("ipv6_prefix", wan_unit), addr);
-			nvram_set_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan_unit), size);
+			nvram_set_int(ipv6_nvname_by_unit("ipv6_prefix_length", wan_unit), 64);
 			logmessage("dhcp6 client", "WAN Prefix Size Requested:/%d, Received:/%d",
-				 nvram_get_int(ipv6_nvname("ipv6_prefix_len_wan")), size);
-			nvram_set_int(ipv6_nvname("ipv6_prefix_len_wan"), size);
+				 nvram_get_int(ipv6_nvname_by_unit("ipv6_prefix_len_wan", wan_unit)), size);
+			nvram_set_int(ipv6_nvname_by_unit("ipv6_prefix_len_wan", wan_unit), size);
 		}
 		if (*addr)
 			add_ip6_lanaddr();

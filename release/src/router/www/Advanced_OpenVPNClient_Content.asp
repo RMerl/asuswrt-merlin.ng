@@ -247,6 +247,12 @@ function initial()
 	document.form.vpn_client_rgw.value = policy_ori;
 	update_visibility();
 
+	if (enabled_ori == "0") {
+		document.getElementById("vpn_state_msg").innerHTML = '<span>Disconnected</span>';
+	} else {
+		document.getElementById("vpn_state_msg").innerHTML = '<img id="loadingicon" style="margin-left:5px;" src="/images/InternetScan.gif">';
+	}
+
 	setTimeout("getConnStatus()", 2000);
 
 }
@@ -977,7 +983,7 @@ function refreshVPNIP() {
 					<tr>
 						<th>Status</th>
 						<td>
-							<div id="vpn_state_msg"><img id="loadingicon" style="margin-left:5px;" src="/images/InternetScan.gif"></div>
+							<div id="vpn_state_msg"></div>
 						</td>
 					</tr>
 					<tr>

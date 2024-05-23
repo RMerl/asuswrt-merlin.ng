@@ -375,8 +375,13 @@ function update_rgw_options(){
 	free_options(document.form.vpn_client_rgw);
 	add_option(document.form.vpn_client_rgw, "No","0",(currentpolicy == 0));
 	add_option(document.form.vpn_client_rgw, "Yes (all)","1",(currentpolicy == 1));
-	if (iface == "tun")
-		add_option(document.form.vpn_client_rgw, "VPN Director (policy rules)","2",(currentpolicy == 2));
+	if (iface == "tun") {
+		if (isSupport("mtlancfg")) {
+			add_option(document.form.vpn_client_rgw, "VPN Director / Guest Network","2",(currentpolicy == 2));
+		} else {
+			add_option(document.form.vpn_client_rgw, "VPN Director (policy rules)","2",(currentpolicy == 2));
+		}
+	}
 }
 
 

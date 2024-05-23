@@ -628,7 +628,7 @@ int ej_show_sysinfo(int eid, webs_t wp, int argc, char_t ** argv)
 				system("/bin/fc status | grep \"HW Acceleration\" >/tmp/output.txt");
 #endif
 			else if (!strcmp(&type[8], "fc"))
-#if defined(RTCONFIG_HND_ROUTER_AX_6756) || RTCONFIG_HND_ROUTER_BE_4916
+#if defined(RTCONFIG_HND_ROUTER_AX_6756) || defined(RTCONFIG_HND_ROUTER_BE_4916)
 				system("/bin/fc status | grep \"Flow Ucast Learning\" >/tmp/output.txt");
 #else
 				system("/bin/fc status | grep \"Flow Learning\" >/tmp/output.txt");

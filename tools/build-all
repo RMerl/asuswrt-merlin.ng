@@ -25,7 +25,7 @@ RSYNC_TREE=y
 COMBINED=y
 
 # Build ROG UI image for GT models in addition to regular image
-BUILD_ROGUI=y
+BUILD_ROGUI=n
 
 ### Uncomment the models you wish to build.
 
@@ -108,11 +108,12 @@ SRC_LOC="$HOME/amng"
 
 build_fw()
 {
-	BRANCH="$3"
-	FWMODEL="$2"
+	BRANCH="$4"
+	FWMODEL="$3"
+	SDKPATH="$2"
 	FWPATH="$1"
 	echo "*** $(date +%R) - Starting building $FWMODEL..."
-	cd "$HOME/$FWPATH" || exit 1
+	cd "$HOME/$FWPATH/$SDKPATH" || exit 1
 	if make "$FWMODEL" > "output.txt" 2>&1; then
 		cd image || exit
 		if [ "$FWMODEL" = "rt-ac86u" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "rt-ax88u" ] || [ "$FWMODEL" = "gt-ax11000" ] ; then
@@ -143,7 +144,17 @@ build_fw()
 		fi
 		cp "$FWNAME" "$STAGE_LOC/"
 		sha256sum "$FWNAME" > sha256sum.sha256
-		zip -qj "$STAGE_LOC/$ZIPNAME" "$FWNAME" "$STAGE_LOC/README-merlin.txt" "$STAGE_LOC"/Changelog*.txt "sha256sum.sha256" 2>/dev/null
+
+		if [[ "$FWNAME" == *"3004_388"* ]]; then
+			CHANGELOG="Changelog-NG.txt"
+		elif [[ "$FWNAME" == *"3006_102"* ]]; then
+			CHANGELOG="Changelog-3006.txt"
+		else
+			CHANGELOG="Changelog-386.txt"
+		fi
+		cp $HOME/$FWPATH/$CHANGELOG $STAGE_LOC/
+
+		zip -qj "$STAGE_LOC/$ZIPNAME" "$FWNAME" "$STAGE_LOC/README-merlin.txt" "$STAGE_LOC/$CHANGELOG" "sha256sum.sha256" 2>/dev/null
 		echo "*** $(date +%R) - Done building $FWMODEL!"
 
 		if [ "$BUILD_ROGUI" = "y" ] && ([ "$FWMODEL" = "gt-axe16000" ] || [ "$FWMODEL" = "gt-ax6000" ] || [ "$FWMODEL" = "gt-ax11000_pro" ] || [ "$FWMODEL" = "gt-ac2900" ] || [ "$FWMODEL" = "gt-ax11000" ] || [ "$FWMODEL" = "gt-axe11000" ]) ; then
@@ -290,91 +301,91 @@ echo "--- $(date +%R) - All trees ready!"
 
 echo "--- $(date +%R) - Launching all builds"
 if [ "$BGTBE98PRO" = "y" ]; then
-	build_fw amng.gtbe98pro/release/src-rt-5.04behnd.4916 gt-be98_pro &
+	build_fw amng.gtbe98pro release/src-rt-5.04behnd.4916 gt-be98_pro &
 fi
 
 if [ "$BBE96" = "y" ]; then
-        build_fw amng.be96/release/src-rt-5.04behnd.4916 rt-be96u &
+        build_fw amng.be96 release/src-rt-5.04behnd.4916 rt-be96u &
 fi
 
 if [ "$BGTAX6000" = "y" ]; then
-	build_fw amng.gtax6000/release/src-rt-5.04axhnd.675x gt-ax6000 &
+	build_fw amng.gtax6000 release/src-rt-5.04axhnd.675x gt-ax6000 &
 fi
 
 if [ "$BXT12" = "y" ]; then
-	build_fw amng.xt12/release/src-rt-5.04axhnd.675x xt12 &
+	build_fw amng.xt12 release/src-rt-5.04axhnd.675x xt12 &
 fi
 
 if [ "$BAX86_PRO" = "y" ]; then
-	build_fw amng.ax86pro/release/src-rt-5.04axhnd.675x rt-ax86u_pro &
+	build_fw amng.ax86pro release/src-rt-5.04axhnd.675x rt-ax86u_pro &
 fi
 
 if [ "$BAX88_PRO" = "y" ]; then
-	build_fw amng.ax88pro/release/src-rt-5.04axhnd.675x rt-ax88u_pro &
+	build_fw amng.ax88pro release/src-rt-5.04axhnd.675x rt-ax88u_pro &
 fi
 
 if [ "$BGTAX11000_PRO" = "y" ]; then
-	build_fw amng.gtax11000pro/release/src-rt-5.04axhnd.675x gt-ax11000_pro &
+	build_fw amng.gtax11000pro release/src-rt-5.04axhnd.675x gt-ax11000_pro &
 fi
 
 if [ "$BGTAXE16000" = "y" ]; then
-	build_fw amng.gtaxe16000/release/src-rt-5.04axhnd.675x gt-axe16000 &
+	build_fw amng.gtaxe16000 release/src-rt-5.04axhnd.675x gt-axe16000 &
 fi
 
 if [ "$BAC86" = "y" ]; then
-	build_fw amng.ac86/release/src-rt-5.02hnd rt-ac86u &
+	build_fw amng.ac86 release/src-rt-5.02hnd rt-ac86u &
 fi
 
 if [ "$BGTAC2900" = "y" ]; then
-	build_fw amng.gt2900/release/src-rt-5.02hnd gt-ac2900 &
+	build_fw amng.gt2900 release/src-rt-5.02hnd gt-ac2900 &
 fi
 
 if [ "$BAX88" = "y" ]; then
-	build_fw amng.ax88/release/src-rt-5.02axhnd rt-ax88u &
+	build_fw amng.ax88 release/src-rt-5.02axhnd rt-ax88u &
 fi
 
 if [ "$BGTAX11000" = "y" ]; then
-	build_fw amng.gtax11000/release/src-rt-5.02axhnd gt-ax11000 &
+	build_fw amng.gtax11000 release/src-rt-5.02axhnd gt-ax11000 &
 fi
 
 if [ "$BGTAXE11000" = "y" ]; then
-	build_fw amng.gtaxe11000/release/src-rt-5.02L.07p2axhnd gt-axe11000 &
+	build_fw amng.gtaxe11000 release/src-rt-5.02L.07p2axhnd gt-axe11000 &
 fi
 
 if [ "$BAC68V4" = "y" ]; then
-	build_fw amng.ac68v4/release/src-rt-5.02L.07p2axhnd rt-ac68u_v4 &
+	build_fw amng.ac68v4 release/src-rt-5.02L.07p2axhnd rt-ac68u_v4 &
 fi
 
 if [ "$BAX58" = "y" ]; then
-	build_fw amng.ax58/release/src-rt-5.02axhnd.675x rt-ax58u &
+	build_fw amng.ax58 release/src-rt-5.02axhnd.675x rt-ax58u &
 fi
 
 if [ "$BAX56" = "y" ]; then
-	build_fw amng.ax56/release/src-rt-5.02axhnd.675x rt-ax56u &
+	build_fw amng.ax56 release/src-rt-5.02axhnd.675x rt-ax56u &
 fi
 
 if [ "$BAX86" = "y" ]; then
-	build_fw amng.ax86/release/src-rt-5.02L.07p2axhnd rt-ax86u &
+	build_fw amng.ax86 release/src-rt-5.02L.07p2axhnd rt-ax86u &
 fi
 
 if [ "$BAX68" = "y" ]; then
-	build_fw amng.ax68/release/src-rt-5.02L.07p2axhnd rt-ax68u &
+	build_fw amng.ax68 release/src-rt-5.02L.07p2axhnd rt-ax68u &
 fi
 
 if [ "$BAC68" = "y" ]; then
-	build_fw amng.ac68/release/src-rt-6.x.4708 rt-ac68u &
+	build_fw amng.ac68 release/src-rt-6.x.4708 rt-ac68u &
 fi
 
 if [ "$BAC3100" = "y" ]; then
-	build_fw amng.ac3100/release/src-rt-7.14.114.x/src rt-ac3100 &
+	build_fw amng.ac3100 release/src-rt-7.14.114.x/src rt-ac3100 &
 fi
 
 if [ "$BAC88" = "y" ]; then
-	build_fw amng.ac88/release/src-rt-7.14.114.x/src rt-ac88u &
+	build_fw amng.ac88 release/src-rt-7.14.114.x/src rt-ac88u &
 fi
 
 if [ "$BAC5300" = "y" ]; then
-	build_fw amng.ac5300/release/src-rt-7.14.114.x/src rt-ac5300 &
+	build_fw amng.ac5300 release/src-rt-7.14.114.x/src rt-ac5300 &
 fi
 
 sleep 5\

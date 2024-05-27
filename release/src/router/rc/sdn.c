@@ -785,11 +785,6 @@ static int _gen_sdn_dnsmasq_conf(const MTLAN_T *pmtl, char *config_file, const s
 			}
 		}
 #endif
-		/* SNTP & NTP server */
-		if (nvram_get_int("ntpd_enable")) {
-			fprintf(fp, "dhcp-option=lan,option6:31,%s\n", "[::]");
-			fprintf(fp, "dhcp-option=lan,option6:56,%s\n", "[::]");
-		}
 
 		/* Don't log DHCP queries */
 		if (nvram_match("dhcpd_querylog","0")) {

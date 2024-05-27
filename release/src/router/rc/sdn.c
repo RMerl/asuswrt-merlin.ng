@@ -1127,6 +1127,15 @@ static int _handle_sdn_wan(const MTLAN_T *pmtl, const char *logdrop, const char 
 		else
 			snprintf(pref, sizeof(pref), "%d", IP_RULE_PREF_DEFAULT_CONN);
 		eval("ip", "rule", "add", "iif", (char*)pmtl->nw_t.ifname, "table", table, "pref", pref);
+
+		// Update VPNDirector killswitch
+		VPN_VPNX_T vpnx;
+		if (get_vpnx_by_vpnc_idx(&vpnx, pmtl->sdn_t.vpnc_idx) && vpnx.proto == VPN_PROTO_OVPN)
+		{
+			logmessage("sdn", "Setting up killswitch if necessary for OpenVPN Client %d bound to %s", vpnx.unit, (char*)pmtl->nw_t.ifname);
+			amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, vpnx.unit, (char*)pmtl->nw_t.ifname);
+		}
+
 #ifdef RTCONFIG_IPV6
 		_remove_sdn_routing_rule(pmtl, 1);
 		if(ipv6_enabled() && pmtl->nw_t.v6_enable)

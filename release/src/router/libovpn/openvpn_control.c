@@ -266,10 +266,8 @@ void ovpn_client_up_handler(int unit)
 	char buffer[128];
 	char dirname[64];
 	char prefix[32];
-#if 0	// Used for main table copy
 	FILE *fp_route = NULL;
 	char buffer2[128], buffer3[128];
-#endif
 	FILE *fp_resolv = NULL, *fp_conf = NULL;
 	int i, j, verb, rgw, lock;
 	char *option, *option2;
@@ -301,27 +299,27 @@ void ovpn_client_up_handler(int unit)
 		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route flush table ovpnc%d", unit);
 		system(buffer);
 
-#if 0
-		// Copy main table routes
-		snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route show table main > /tmp/vpnroute%d_tmp", unit);
-		system(buffer);
+		if (!nvram_pf_get_int(prefix, "noroutecopy")) {
+			// Copy main table routes
+			snprintf(buffer, sizeof (buffer), "/usr/sbin/ip route show table main > /tmp/vpnroute%d_tmp", unit);
+			system(buffer);
 
-		snprintf(buffer, sizeof (buffer), "/tmp/vpnroute%d_tmp", unit);
-		fp_route = fopen(buffer, "r");
+			snprintf(buffer, sizeof (buffer), "/tmp/vpnroute%d_tmp", unit);
+			fp_route = fopen(buffer, "r");
 
-		if (fp_route) {
-			while (fgets(buffer2, sizeof(buffer2), fp_route) != NULL) {
-				if (buffer2[strlen(buffer2)-1] == '\n')
-					buffer2[strlen(buffer2)-1] = '\0';
-				snprintf(buffer3, sizeof (buffer3), "/usr/sbin/ip route add %s table ovpnc%d", buffer2, unit);
-				system(buffer3);
-				if (verb >= 6)
-					logmessage("openvpn-routing", "Copy main table route: %s", buffer3);
+			if (fp_route) {
+				while (fgets(buffer2, sizeof(buffer2), fp_route) != NULL) {
+					if (buffer2[strlen(buffer2)-1] == '\n')
+						buffer2[strlen(buffer2)-1] = '\0';
+					snprintf(buffer3, sizeof (buffer3), "/usr/sbin/ip route add %s table ovpnc%d", buffer2, unit);
+					system(buffer3);
+					if (verb >= 6)
+						logmessage("openvpn-routing", "Copy main table route: %s", buffer3);
+				}
+				fclose(fp_route);
 			}
-			fclose(fp_route);
+			unlink(buffer);
 		}
-		unlink(buffer);
-#endif
 		// Apply pushed routes
 		dev_env = safe_getenv("dev");
 

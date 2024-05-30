@@ -799,7 +799,7 @@ void wgc_set_exclusive_dns(int unit) {
 */
 
 void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname) {
-	int prio;
+	int prio, verb = 3;
 	char buffer[256], prio_str[6];
 #ifdef RTCONFIG_MULTILAN_CFG
 	int vpnc_idx, i;
@@ -810,9 +810,13 @@ void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifna
 	if (proto == VPNDIR_PROTO_OPENVPN && unit != -1) {
 		prio = VPNDIR_PRIO_KS + unit - 1;
 
+		snprintf(buffer, sizeof (buffer), "vpn_client%d_verb", unit);
+		verb = nvram_get_int(buffer);
+
 		// Delete as many priority "prio" as there are rules of that priority
 		snprintf(buffer, sizeof (buffer), "ip rule show priority %d | while read -r rule; do ip rule del priority %d; done", prio, prio);
-		logmessage("openvpn-routing", "Clearing killswitch for OpenVPN unit %d", unit);
+		if (verb > 3)
+			logmessage("openvpn-routing", "Clearing killswitch for OpenVPN unit %d", unit);
 		system(buffer);
 	}
 
@@ -823,11 +827,13 @@ void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifna
 	// SDN specified interface
 	if (sdn_ifname && *sdn_ifname) {
 		eval("ip", "rule", "del", "priority", prio_str, "iif", sdn_ifname);
-		logmessage("openvpn-routing", "Clearing killswitch for SDN %s", sdn_ifname);
+		if (verb > 3)
+			logmessage("openvpn-routing", "Clearing killswitch for SDN %s", sdn_ifname);
 
 	} else if (unit == -1) {	// Remove all existing SDN rules
 		snprintf(buffer, sizeof (buffer), "ip rule show priority %d | while read -r rule; do ip rule del priority %d; done", prio, prio);
-		logmessage("openvpn-routing", "Clearing killswitch for all SDN");
+		if (verb > 3)
+			logmessage("openvpn-routing", "Clearing killswitch for all SDN");
 		system(buffer);
 
 	} else {	// Only by unit, so walk through whole SDN list for matching vpnc_idx
@@ -839,7 +845,8 @@ void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifna
 			for (i = 1; i < mtl_sz; ++i) {	// Skip first (Default) SDN
 				if (pmtl[i].sdn_t.vpnc_idx == vpnc_idx) {
 					eval("ip", "rule", "del", "priority", prio_str,  "iif", pmtl[i].nw_t.ifname);
-					logmessage("openvpn-routing", "Clearing killswitch for SDN %s", pmtl[i].nw_t.ifname);
+					if (verb > 3)
+						logmessage("openvpn-routing", "Clearing killswitch for SDN %s", pmtl[i].nw_t.ifname);
 				}
 			}
 			FREE_MTLAN((void *)pmtl);
@@ -854,7 +861,7 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 	char buffer[8000], prefix[32], prio_str[6];
 	char *buffer_tmp, *buffer_tmp2, *rule;
 	char *enable, *desc, *target, *src, *dst;
-	int killswitch, rgw;
+	int killswitch, rgw, verb = 3;
 #ifdef RTCONFIG_MULTILAN_CFG
 	int vpnc_idx, i;
 	MTLAN_T *pmtl = NULL;
@@ -870,13 +877,15 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
                 snprintf(prefix, sizeof(prefix), "vpn_client%d_", unit);
                 killswitch = nvram_pf_get_int(prefix, "enforce");
                 rgw = nvram_pf_get_int(prefix, "rgw");
+		verb = nvram_pf_get_int(prefix, "verb");
 
 		if (killswitch == 0)
 			return;
 
 		if (rgw == OVPN_RGW_ALL) {
 			eval("ip", "rule", "add", "from", "all", "iif", nvram_safe_get("lan_ifname"), "priority", prio_str, "prohibit");
-			logmessage("openvpn-routing","Setting global killswitch rule for OpenVPN client %d", unit);
+			if (verb > 3)
+				logmessage("openvpn-routing","Setting global killswitch rule for OpenVPN client %d", unit);
 		} else if (rgw == OVPN_RGW_POLICY) {
 			/* Do VPNDirector */
 			amvpn_get_policy_rules(unit, buffer, sizeof (buffer), proto);
@@ -895,7 +904,8 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 				if (!strncmp(target, "OVPN", 4) && *src && strcmp(src, "0.0.0.0")) {
 					// Create deny rule
 					eval("ip", "rule", "add", "from", src, "priority", prio_str, "prohibit");
-					logmessage("openvpn-routing","Setting killswitch rule for %s", src);
+					if (verb > 3)
+						logmessage("openvpn-routing","Setting killswitch rule for %s", src);
 				}
 			}
 			free(buffer_tmp);
@@ -906,7 +916,8 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 			if (sdn_ifname && *sdn_ifname) {
 				snprintf(prio_str, sizeof(prio_str), "%d", VPNDIR_PRIO_KS_SDN);
 				eval("ip", "rule", "add", "from", "all", "iif", sdn_ifname, "priority", prio_str, "prohibit");
-				logmessage("openvpn-routing", "Setting killswitch rule for SDN %s", sdn_ifname);
+				if (verb > 3)
+					logmessage("openvpn-routing", "Setting killswitch rule for SDN %s", sdn_ifname);
 			} else {	/* Locate SDN instance that might be using this VPN client */
 				vpnc_idx = get_vpnc_idx_by_proto_unit(VPN_PROTO_OVPN, unit);
 				pmtl = (MTLAN_T *)INIT_MTLAN(sizeof(MTLAN_T));
@@ -917,7 +928,8 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 						if ((rgw == OVPN_RGW_POLICY && pmtl[i].sdn_t.vpnc_idx == vpnc_idx) ||
 						    (rgw == OVPN_RGW_ALL && pmtl[i].sdn_t.vpnc_idx == 0)) {
 							eval("ip", "rule", "add", "from", "all", "priority", prio_str,  "iif", pmtl[i].nw_t.ifname, "prohibit");
-							logmessage("openvpn-routing", "Setting killswitch rule for SDN %s", pmtl[i].nw_t.ifname);
+							if (verb > 3)
+								logmessage("openvpn-routing", "Setting killswitch rule for SDN %s", pmtl[i].nw_t.ifname);
 						}
 					}
 					FREE_MTLAN((void *)pmtl);

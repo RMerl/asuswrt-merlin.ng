@@ -836,7 +836,7 @@ void _update_ovpn_by_sdn(MTLAN_T *pmtl, size_t mtl_sz, int restart_all_sdn, wg_t
 	for(unit = 1; unit <= max_unit; unit++) {
 		// Killswitch refresh
 		if (client) {
-			logmessage("vpndirector", "Updating SDN status for unit %d", unit);
+//			logmessage("vpndirector", "Updating SDN status for unit %d", unit);
 			amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, unit, NULL);
 		}
 

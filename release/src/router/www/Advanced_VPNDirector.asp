@@ -62,8 +62,9 @@ var ruleMaxNum = 199;
 var ovpn_info = {
         "desc": "",
         "routing": "",
-	"enforce" : "",
-        "state": ""
+        "enforce" : "",
+        "state": "",
+        "enabled": ""
         }
 
 var wgc_info = {
@@ -175,6 +176,12 @@ function get_wgc_infos(unit, refresh) {
 	return wgc_info;
 }
 
+
+function is_ovpn_enabled(unit) {
+	return (document.form.vpn_clientx_eas.value.indexOf(''+(unit)) >= 0) ? 1 : 0;
+}
+
+
 function get_ovpn_infos(unit, refresh) {
 	if (refresh) {
 		var vpnstate = httpApi.nvramGet(["vpn_client1_state", "vpn_client2_state", "vpn_client3_state", "vpn_client4_state", "vpn_client5_state"], true);
@@ -193,36 +200,42 @@ function get_ovpn_infos(unit, refresh) {
 			ovpn_info.routing = "<% nvram_get("vpn_client1_rgw"); %>";
 			ovpn_info.enforce = "<% nvram_get("vpn_client1_enforce"); %>";
 			ovpn_info.state = vpnstate.vpn_client1_state;
+			ovpn_info.enabled = is_ovpn_enabled(1);
 			break;
                 case 2:
 			ovpn_info.desc = "<% nvram_get("vpn_client2_desc"); %>";
 			ovpn_info.routing = "<% nvram_get("vpn_client2_rgw"); %>";
 			ovpn_info.enforce = "<% nvram_get("vpn_client2_enforce"); %>";
 			ovpn_info.state = vpnstate.vpn_client2_state;
+			ovpn_info.enabled = is_ovpn_enabled(2);
 			break;
                 case 3:
 			ovpn_info.desc = "<% nvram_get("vpn_client3_desc"); %>";
 			ovpn_info.routing = "<% nvram_get("vpn_client3_rgw"); %>";
 			ovpn_info.enforce = "<% nvram_get("vpn_client3_enforce"); %>";
 			ovpn_info.state = vpnstate.vpn_client3_state;
+			ovpn_info.enabled = is_ovpn_enabled(3);
 			break;
                 case 4:
 			ovpn_info.desc = "<% nvram_get("vpn_client4_desc"); %>";
 			ovpn_info.routing = "<% nvram_get("vpn_client4_rgw"); %>";
 			ovpn_info.enforce = "<% nvram_get("vpn_client4_enforce"); %>";
 			ovpn_info.state = vpnstate.vpn_client4_state;
+			ovpn_info.enabled = is_ovpn_enabled(4);
 			break;
                 case 5:
 			ovpn_info.desc = "<% nvram_get("vpn_client5_desc"); %>";
 			ovpn_info.routing = "<% nvram_get("vpn_client5_rgw"); %>";
 			ovpn_info.enforce = "<% nvram_get("vpn_client5_enforce"); %>";
 			ovpn_info.state = vpnstate.vpn_client5_state;
+			ovpn_info.enabled = is_ovpn_enabled(5);
 			break;
 		default:
 			ovpn_info.desc = "";
 			ovpn_info.routing = "";
 			ovpn_info.enforce = "";
 			ovpn_info.state = "";
+			ovpn_info.enabled = "";
 	}
 
 	return ovpn_info;
@@ -293,14 +306,14 @@ function show_ovpn_summary(refresh) {
 				break;
 		}
 
-		if (ovpn_info.state == 2)
-			code += '<tr><td><img title="Enabled" src="/images/New_ui/enable.svg" onMouseOver="EnableMouseOver(this, \'1\');" onMouseOut="EnableMouseOut(this, \'1\');" onclick="stop_ovpn_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
-		else if (ovpn_info.state == 0 || ovpn_info.state == -1)
-			code += '<tr><td><img title="Disabled" src="/images/New_ui/disable.svg" onMouseOver="EnableMouseOver(this, \'0\');" onMouseOut="EnableMouseOut(this, \'0\');" onclick="start_ovpn_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
-		else {	// Taking a long time to start, keep spinning and refresh again
+		if (ovpn_info.state == 1) {        // Taking a long time to start, keep spinning and refresh again
 			setTimeout("show_ovpn_summary(1)", 3000);
 			code += '<tr><td><img id="SearchingIcon" src="/images/InternetScan.gif"></td></tr>';
 		}
+		else if (ovpn_info.enabled == 1)
+			code += '<tr><td><img title="Enabled" src="/images/New_ui/enable.svg" onMouseOver="EnableMouseOver(this, \'1\');" onMouseOut="EnableMouseOut(this, \'1\');" onclick="disable_ovpn_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
+		else if (ovpn_info.enabled == 0)
+			code += '<tr><td><img title="Disabled" src="/images/New_ui/disable.svg" onMouseOver="EnableMouseOver(this, \'0\');" onMouseOut="EnableMouseOut(this, \'0\');" onclick="enable_ovpn_client(\''+i+'\', this);" style="width:20px; height:20px; cursor:pointer;"></td>';
 
 		code += '<td style="text-align:left; padding-left:10px;">OVPN' + i + ': ' + ovpn_info.desc + '</td>';
 		code += '<td style="text-align:left; padding-left:10px;">' + routing + '</td>';
@@ -354,24 +367,31 @@ function edit_wgc_client(_unit) {
         setTimeout("window.location = 'Advanced_WireguardClient_Content.asp';", 2000);
 }
 
-function stop_ovpn_client(unit, _this) {
+function disable_ovpn_client(unit, _this) {
 	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
 	var obj = {
 		"action_mode": "apply",
 	}
 
+	rebuild_ovpn_eas(unit, 0);
+
 	obj["rc_service"] = "stop_vpnclient" + unit;
+	obj["vpn_clientx_eas"] = document.form.vpn_clientx_eas.value;
 	httpApi.nvramSet(obj);
 
 	setTimeout("show_ovpn_summary(1)", 5000);
 }
 
-function start_ovpn_client(unit, _this) {
+function enable_ovpn_client(unit, _this) {
 	_this.outerHTML = '<img id="SearchingIcon" src="/images/InternetScan.gif">';
 	var obj = {
 		"action_mode": "apply",
 	}
+
+	rebuild_ovpn_eas(unit, 1);
+
 	obj["rc_service"] = "start_vpnclient" + unit;
+	obj["vpn_clientx_eas"] = document.form.vpn_clientx_eas.value;
 	httpApi.nvramSet(obj);
 
 	setTimeout("show_ovpn_summary(1)", 5000);
@@ -405,6 +425,23 @@ function enable_wgc_client(unit, _this) {
 	httpApi.nvramSet(obj);
 
 	setTimeout("show_wgc_summary(1)", 3000);
+}
+
+
+function rebuild_ovpn_eas(toggle_unit, new_state) {
+	tmp_value = "";
+
+	for (var unit=1; unit <= 5; unit++) {
+		if (unit == toggle_unit) {
+			if (new_state == 1)
+				tmp_value += ""+unit+",";
+		} else {
+			if (is_ovpn_enabled(unit))
+				tmp_value += ""+unit+",";
+		}
+	}
+
+	document.form.vpn_clientx_eas.value = tmp_value;
 }
 
 
@@ -605,6 +642,7 @@ function applyRule() {
 <input type="hidden" name="preferred_lang" id="preferred_lang" value="<% nvram_get("preferred_lang"); %>">
 <input type="hidden" name="firmver" value="<% nvram_get("firmver"); %>">
 <input type="hidden" name="vpndirector_rulelist" value="">
+<input type="hidden" name="vpn_clientx_eas" value="<% nvram_get("vpn_clientx_eas"); %>">
 <table class="content" align="center" cellpadding="0" cellspacing="0" >
 	<tr>
 		<td width="17">&nbsp;</td>

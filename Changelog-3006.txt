@@ -43,6 +43,13 @@ Asuswrt-Merlin 3006.xxx Changelog
            - path to the config file for that SDN's instance
            - the SDN index number (1 for the first SDN instance)
 
+  - NEW: Rewrote OpenVPN killswitch implementation.  The new method
+         uses an always present routing rule to prohibit access to
+         the main routing table, so it will be active even if the
+         user manually stops a client.  Removing the prohibit rule
+         requires disabling the killswitch on the webui.
+         The rules are also created before WAN goes up, to reduce
+         the risks of leaks between WAN going up and VPN connecting.
   - CHANGED: Merged with GPL 3.0.0.6.102_34369.
   - CHANGED: Chart.js was upgraded from 2.x to 3.9, to share the
              same version used by Asus.  Any third party addon
@@ -56,9 +63,6 @@ Asuswrt-Merlin 3006.xxx Changelog
   - CHANGED: Implemented support for Wifi 7 and SDN on the
              Wireless Log page.
   - CHANGED: Implemented DNSDirector webui for SDN.
-  - CHANGED: Main routing table is no longer copied to the OpenVPN
-             client routing tables, to be in line both Asus' own
-             behaviour and the way WireGuard clients already work.
   - CHANGED: Removed stop/start and "Start with WAN" buttons from
              OpenVPN clients.  There is now just a single
              "Enable" option, which will immediately start the
@@ -68,6 +72,8 @@ Asuswrt-Merlin 3006.xxx Changelog
              WireGuard clients already worked.
   - CHANGED: ipset is now compiled into the kernel rather than as
              modules (to match with Asus)
+  - CHANGED: Removed led_disable nvram, we now share the same AllLED
+             nvram as used by Asus for the LED button (and AiMesh sync)
   - FIXED: JS error on Wifi 6e/7 models when toggling DDNS.
   - REMOVED: Option dns_local_cache from Tools -> Tweak settings,
              to avoid issues with SDN that run their own

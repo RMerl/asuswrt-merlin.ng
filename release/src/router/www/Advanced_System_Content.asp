@@ -2689,10 +2689,10 @@ function build_boostkey_options() {
 					</td>
 				</tr>
 				<tr>
-					<th>Disable LEDs</th>
+					<th>Enable LEDs</th>
 					<td>
-						<input type="radio" name="led_disable" value="1" <% nvram_match_x("", "led_disable", "1", "checked"); %>><#checkbox_Yes#>
-						<input type="radio" name="led_disable" value="0" <% nvram_match_x("", "led_disable", "0", "checked"); %>><#checkbox_No#>
+						<input type="radio" name="AllLED" value="1" <% nvram_match_x("", "AllLED", "1", "checked"); %>><#checkbox_Yes#>
+						<input type="radio" name="AllLED" value="0" <% nvram_match_x("", "AllLED", "0", "checked"); %>><#checkbox_No#>
 					</td>
 				</tr>
 

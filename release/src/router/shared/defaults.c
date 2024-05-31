@@ -4919,7 +4919,6 @@ struct nvram_tuple router_defaults[] = {
 	{ "log_level", "7", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },			// <  LOG_DEBUG
 	{ "message_loglevel", "5", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	// KERN_INFO
 	{ "http_dut_redir", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },      // 1: redir lan_ip to router.asus.com
-	{ "led_disable", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },
 	{ "dns_norebind", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },		// dnsmasq DNS rebind protection
 	{ "dns_priv_override", "0", CKN_STR1, CKN_TYPE_DEFAULT, CKN_ACC_LEVEL_DEFAULT, CKN_ENC_DEFAULT, 0 },	// Override DoH - 0: auto, 1: yes, 2: disable
 

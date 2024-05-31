@@ -22709,20 +22709,13 @@ int service_main(int argc, char *argv[])
 
 void setup_leds()
 {
-/*** Disable ***/
-	if (nvram_get_int("led_disable") == 1) {
+#ifndef RTCONFIG_SW_CTRL_ALLLED	// Currently only needed for GT-AXE11000, more may be added later
+	if (nvram_get_int("AllLED") == 0) {
 		setAllLedOff();
-		nvram_set("AllLED", "0");
 #ifdef RTCONFIG_USB
 		stop_usbled();
 #endif
 	} else {
-/*** Enable ***/
-		nvram_set("AllLED", "1");
-#if defined(RTAX86U_PRO) || defined(RTAX88U_PRO)
-		setAllLedNormal();
-		led_control(LED_POWER, LED_ON);	// Must be run after
-#else
 		led_control(LED_POWER, LED_ON);
 #ifdef RTCONFIG_USB
 		start_usbled();
@@ -22931,8 +22924,16 @@ void setup_leds()
 #if defined(GTAX11000_PRO) || defined(GTAXE16000) || defined(GTBE98) || defined(GTBE98_PRO) || defined(GTBE96)
 		start_ledg();
 #endif
-#endif // RT-AX86U_PRO
 	}
+
+#else 	// RTCONFIG_SW_CTRL_ALLLED
+	if (nvram_get_int("AllLED") == 0)
+		setAllLedOff();
+	else
+		setAllLedNormal();
+#endif	// RTCONFIG_SW_CTRL_ALLLED
+
+
 #if defined(RTCONFIG_RGBLED)
 	start_aurargb();
 #endif

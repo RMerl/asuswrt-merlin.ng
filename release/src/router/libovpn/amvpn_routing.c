@@ -192,7 +192,7 @@ void amvpn_set_wan_routing_rules() {
 void amvpn_set_routing_rules(int unit, vpndir_proto_t proto) {
 	char prefix[32], buffer[8000];
 	int rgw, state, verb;
-#ifdef RTCONFIG_MULTILAN_CFG
+#if 0	//#ifdef RTCONFIG_MULTILAN_CFG
 	int i;
 	MTLAN_T *pmtl = NULL;
 	size_t mtl_sz = 0;

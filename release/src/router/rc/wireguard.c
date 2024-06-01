@@ -685,24 +685,18 @@ static void _wg_client_nf_add(int unit, char* prefix, char* ifname)
 		fprintf(fp, "#!/bin/sh\n\n");
 
 		fprintf(fp, "iptables -I WGCI -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "iptables -I WGCF -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "iptables -I WGCF -o %s -j ACCEPT\n", ifname);
 		fprintf(fp, "ip6tables -I WGCI -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "ip6tables -I WGCF -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
+		fprintf(fp, "ip6tables -I WGCF -o %s -j ACCEPT\n", ifname);
 #if defined(RTCONFIG_MULTILAN_CFG)
 		snprintf(ipset_name, sizeof(ipset_name), "%s%d", VPNC_IPSET_PREFIX, vpnc_idx);
 		fprintf(fp, "iptables -I WGCF -m set --match-set %s dst -i %s -j ACCEPT\n", ipset_name, ifname);
 		fprintf(fp, "iptables -I WGCF -m set --match-set %s src -o %s -j ACCEPT\n", ipset_name, ifname);
-		fprintf(fp, "iptables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);
-		fprintf(fp, "iptables -A WGCF -i %s -j DROP\n", ifname);
-		fprintf(fp, "iptables -A WGCF -o %s -j DROP\n", ifname);
-		fprintf(fp, "ip6tables -A WGCF -i %s -j DROP\n", ifname);
-		fprintf(fp, "ip6tables -A WGCF -o %s -j DROP\n", ifname);
-#else
-		fprintf(fp, "iptables -I WGCF -i %s -j %s\n", ifname, (fw ? "DROP" : "ACCEPT"));
-		fprintf(fp, "iptables -I WGCF -o %s -j ACCEPT\n", ifname);
-		fprintf(fp, "iptables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);
-		fprintf(fp, "ip6tables -I WGCF -i %s -j ACCEPT\n", ifname);
-		fprintf(fp, "ip6tables -I WGCF -o %s -j ACCEPT\n", ifname);
-		fprintf(fp, "ip6tables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);
 #endif
+		fprintf(fp, "iptables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);
+		fprintf(fp, "ip6tables -I WGCF -o %s -p tcp -m tcp --tcp-flags SYN,RST SYN -j TCPMSS --clamp-mss-to-pmtu\n", ifname);
 
 #ifdef RTCONFIG_HND_ROUTER
 		fprintf(fp, "iptables -t mangle -I PREROUTING -i %s -j MARK --or 0x1\n", ifname);

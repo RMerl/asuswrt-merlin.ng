@@ -26,6 +26,7 @@
 var wgc_enable = '<% nvram_get("wgc_enable"); %>';
 var wgc_unit = '<% nvram_get("wgc_unit"); %>';
 var directorrules_array = "<% nvram_char_to_ascii("", "vpndirector_rulelist"); %>";
+var enforce_ori = "<% nvram_get("wgc_enforce"); %>";
 
 function initial(){
 	show_menu();
@@ -81,8 +82,9 @@ function initial(){
 }
 
 function applyRule(){
-
 	if(validForm()){
+		if (enforce_ori != getRadioValue(document.form.wgc_enforce))
+			document.form.action_script.value += ";start_vpnrouting0";
 
 		showLoading();
 		document.form.submit();
@@ -566,6 +568,13 @@ function show_director_rules(){
 							<td>
 								<input type="radio" name="wgc_fw" class="input" value="1" <% nvram_match_x("", "wgc_fw", "1", "checked"); %>>Block
 								<input type="radio" name="wgc_fw" class="input" value="0" <% nvram_match_x("", "wgc_fw", "0", "checked"); %>>Allow
+							</td>
+						</tr>
+						<tr>
+							<th>Killswitch - Block routed clients if tunnel goes down</th>
+							<td>
+								<input type="radio" name="wgc_enforce" class="input" value="1" <% nvram_match_x("", "wgc_enforce", "1", "checked"); %>><#checkbox_Yes#>
+								<input type="radio" name="wgc_enforce" class="input" value="0" <% nvram_match_x("", "wgc_enforce", "0", "checked"); %>><#checkbox_No#>
 							</td>
 						</tr>
 						<tr>

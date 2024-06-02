@@ -34,5 +34,6 @@ extern void amvpn_set_wan_routing_rules();
 
 extern void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname);
 extern void amvpn_clear_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname);
+extern void amvpn_set_kilswitch_rules_all();
 #endif
 

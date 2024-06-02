@@ -43,13 +43,14 @@ Asuswrt-Merlin 3006.xxx Changelog
            - path to the config file for that SDN's instance
            - the SDN index number (1 for the first SDN instance)
 
-  - NEW: Rewrote OpenVPN killswitch implementation.  The new method
+  - NEW: Rewrote VPN killswitch implementation.  The new method
          uses an always present routing rule to prohibit access to
          the main routing table, so it will be active even if the
          user manually stops a client.  Removing the prohibit rule
          requires disabling the killswitch on the webui.
          The rules are also created before WAN goes up, to reduce
          the risks of leaks between WAN going up and VPN connecting.
+  - NEW: Added killswitch support for WireGuard clients.
   - CHANGED: Merged with GPL 3.0.0.6.102_34369.
   - CHANGED: Chart.js was upgraded from 2.x to 3.9, to share the
              same version used by Asus.  Any third party addon

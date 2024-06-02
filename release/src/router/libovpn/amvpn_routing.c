@@ -838,3 +838,17 @@ void amvpn_set_killswitch_rules(vpndir_proto_t proto, int unit, char *sdn_ifname
 		}
 	}
 }
+
+void amvpn_set_kilswitch_rules_all() {
+	int i;
+        logmessage("openvpn-routing", "Applying all killswitches");
+#ifdef RTCONFIG_WIREGUARD
+	for (i = WG_CLIENT_MAX; i > 0; i--) {
+		amvpn_set_killswitch_rules(VPNDIR_PROTO_WIREGUARD, i, NULL);
+	}
+#endif
+	for (i = OVPN_CLIENT_MAX; i > 0; i --) {
+		amvpn_set_killswitch_rules(VPNDIR_PROTO_OPENVPN, i, NULL);
+	}
+}
+

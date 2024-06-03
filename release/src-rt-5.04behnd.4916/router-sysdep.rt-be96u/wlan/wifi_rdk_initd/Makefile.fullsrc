@@ -1,0 +1,26 @@
+OBJS := wifi_rdk_initd.o
+
+LIBS := -lbcm_comp_md -lmdm_cli $(MDM_CORE_LIBS) -lmdm_cbk_wifi \
+        -lcms_msg $(CMS_COMMON_LIBS)
+
+
+CFLAGS+=-DRDK_BUILD
+
+CFLAGS += -Werror -Wfatal-errors
+
+$(EXE): $(OBJS)
+	$(CC) $(BCM_LD_FLAGS) -o $@ $(OBJS) $(CMS_RPATH_OPTION) $(CMS_LIB_PATH) $(LIBS)
+
+
+save_binaries:
+	-cp $(EXE) $(mdir)/$(SAVED)
+	-$(MAKE) -f $(name) clean
+
+# delete source files from source dir (does not know about multi-arch or mdir)
+delete_source:
+	rm -f *.c *.h Makefile.fullsrc
+
+
+# Generate and use dependencies.
+CFLAGS += -MD
+-include $(OBJS:.o=.d)

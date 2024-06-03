@@ -1,0 +1,224 @@
+invalid 
+invalid   
+invalid "
+invalid [,]
+invalid [)
+invalid []]
+invalid [}
+invalid {,}
+invalid {]
+invalid ["1":2]
+invalid [1,2,]
+invalid [1:2}
+invalid {"1":2,}
+invalid {1:2}
+invalid {"1":2, "2.5" : [3, 4, {}, {"5": ["6"], [7 ]}]}
+invalid {"1":2, "2.5" : [3, 4, {}, {"5": ["6"], [7]}]}
+invalid {"1":2, "2.5" : [3, 4, {}, {"5": ["6"], "7" :[8 ]}]
+invalid {"1":2, "2.5" : [3, 4, {}, {"5": ["6"], "7" :[8 ]}]]
+invalid {"1":2, "3":4
+invalid "1\u2"
+invalid [,2]
+invalid "3
+invalid "3" "4"
+invalid [3[4]
+invalid [3[4]]
+invalid [3, [4, [5], 6] 7, 8 9]
+invalid [3, [4, [5], 6] 7, 8, 9]
+invalid [3, [4, [5], 6], 7, 8 9]
+invalid {"hello":true, "bye":false, null}
+invalid {"hello":true, "bye":false, null:null}
+invalid "hi
+invalid "hi"""
+invalid {"hi": "bye"]
+invalid "\uD800\uD800"
+invalid "\uD800\uDBFF"
+invalid "\UD834\UDD1E"
+invalid "\uDB00"
+invalid "\uDB00\uDBFF"
+valid "\uFFFE"
+valid "\uFFFF"
+invalid .
+valid ""
+valid []
+valid {}
+invalid +.
+valid 0.5
+invalid 0.e1
+valid {"1":{}}
+valid {"1":2}
+valid {"1":2, "2.5" : [3, 4, {}, {"5": ["6"]}]}
+valid {"1":2, "2.5" : [3, 4, {}, {"5": ["6"], "7" :[8 ]}]}
+valid 1234
+valid -1234
+valid {"1":2, "3":4}
+invalid +1234
+invalid ++1234
+valid 123.456e142
+valid 123.456e-142
+valid 123.456e+142
+invalid 123.e-142
+valid "1\u2000"
+valid "1\u20001"
+valid 2
+invalid .246e-142
+invalid .2e-142
+valid 3
+invalid .3
+valid "3"
+valid [3]
+invalid +3.
+valid 3.2e+1
+valid [3, [4]]
+valid [3, [4, [5]]]
+valid [3, [4, [5], 6]]
+valid [3, [4, [5], 6], 7]
+valid [3, [4, [5], 6], 7, 8]
+valid [3, [4, [5], 6], 7, 8, 9]
+invalid +3.5
+invalid .3e
+invalid .3e1
+invalid .3e-1
+invalid .3e+1
+invalid 3.e1
+invalid 3.e+1
+valid 3e+1
+invalid .5
+invalid +.5
+invalid .5e+1
+valid [ 7]
+valid [7 ]
+valid [7]
+invalid .e-14234
+valid "hello"
+valid ["hello"]
+valid ["hello", "bye"]
+valid ["hello", "bye\n"]
+valid ["hello", "bye\n\r\t"]
+valid ["hello", "bye\n\r\t\b"]
+valid ["hello", "bye\n\r\t\b",true]
+valid ["hello", "bye\n\r\t\b",true , false]
+valid ["hello", "bye\n\r\t\b",true , false,    null]
+invalid ["hello", "bye\n\r\t\v"]
+valid {"hello":true}
+valid {"hello":true, "bye":false}
+valid {"hello":true, "bye":false, "foo":["one","two","three"]}
+valid "hi"
+valid ["hi"]
+valid ["hi", "bye"]
+valid {"hi": "bye"}
+valid ["hi", "bye", 3]
+valid ["hi", "bye[", 3]
+valid "\u0007"
+valid "\u0008"
+valid "\u0009"
+valid "\u0010"
+valid "\u0020"
+valid "\u10000"
+valid "\u1234"
+valid "\u99999"
+valid "\ud800\udc00"
+valid "\uD800\uDC00"
+valid "\uD834\uDD1E"
+valid "\uDBFF\uDFFF"
+valid "\uFFFD"
+valid "\uFFFF"
+invalid hello
+valid [32, 1]
+invalid [32, 
+valid "\uD800\uDC00"
+valid "\n"
+valid "hello"
+valid "hello\u0009world"
+valid "hello"
+valid "hello\n"
+valid "hello"
+valid 3
+invalid 3.
+invalid .3
+valid 0.3
+invalid 0.3e
+invalid 0.3e+
+valid 0.3e+5
+valid 0.3e-5
+valid 0.3e5
+valid "hello"
+invalid +3
+valid -3
+invalid -3.
+valid -3.1
+invalid .5
+invalid 5.
+invalid 5.e1
+valid 0.5
+invalid .3e1
+invalid .3e+1
+invalid .3e-1
+invalid .3e-1 .5
+invalid .3e-1.5
+invalid .3e+1.5
+invalid .3e+.
+invalid .3e+.5
+invalid .3e+1.5
+invalid 9.3e+1.5
+invalid 9.e+1.5
+invalid 9.e+
+invalid 9.e+1
+valid "\""
+valid "\"3.5"
+valid "\"."
+invalid "\".".
+valid "\"....."
+invalid "\"\"\"\"""
+invalid ["\"\"\"\"", .5]
+invalid [.5]
+valid ["\"\"\"\"", 0.5]
+invalid ["\"\"\"\"", .5]
+invalid ["\"\"\"\"",.5]
+invalid ["\"",.5]
+invalid ["\".5",.5]
+invalid ["\".5",".5\"".5]
+invalid ["\".5",".5\"", .5]
+invalid ["\".5",".5\"",.5]
+valid ["\".5",".5\"",0.5]
+invalid {"key":/*comment*/"value"}
+invalid {"key":/*comment"value"}
+invalid {"key":"value"}/*
+invalid {"key":"value"}/**/
+invalid {"key":"value"}/***/
+invalid {"key":"value"}/**//
+invalid {"key":"value"}/**///
+invalid {"key":"value"}/**///----
+invalid {"key":"value"}#
+invalid {"key":"value"}#{
+invalid {"key":"value"}#{}
+invalid {"key":"value"}#,
+invalid {"key":"value"/**/, "k2":"v2"}
+valid "\u0027"
+invalid "hello\'"
+invalid 'hello\''
+invalid 'hello'
+invalid 'hell\'o'
+invalid '\'hello'
+invalid '\'hello\''
+invalid \'hello\'
+invalid 'hello\'
+invalid ['hello\']
+invalid ['hello\'']
+invalid ['hello"']
+invalid ['hello\"']
+invalid ['hello"o']
+invalid ['"']
+invalid '"'
+invalid '"hello"'
+invalid '"hello'
+invalid '"hi"'
+valid 	 [ 1 , 2 , 3 ]    
+invalid nil
+invalid fals
+invalid falsify
+invalid falsetto
+invalid truism
+invalid {"key"
+invalid {"key","key2":value}
+invalid "\u0000"

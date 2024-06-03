@@ -1,2 +1,0 @@
-libapi-y += fd/
-libapi-y += fs/

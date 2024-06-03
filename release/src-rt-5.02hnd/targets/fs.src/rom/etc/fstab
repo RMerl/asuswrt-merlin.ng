@@ -1,7 +1,0 @@
-# fstab file - used to mount file systems
-proc		/proc	proc	defaults			0	0
-tmpfs		/var	tmpfs	noexec				0	0
-tmpfs		/mnt	tmpfs	size=16k,noexec			0	0
-tmpfs		/dev	tmpfs	size=64k,mode=0755,noexec	0	0
-sysfs		/sys	sysfs	defaults			0	0
-

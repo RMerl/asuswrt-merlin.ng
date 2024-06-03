@@ -1,3 +1,0 @@
-A wiki document on how to use Generic Netlink can be found here:
-
- * http://linux-net.osdl.org/index.php/Generic_Netlink_HOWTO
